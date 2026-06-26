@@ -1014,6 +1014,8 @@ ncm_status_changes_player_state(void) {
     case NCM_STATUS_PLAYER_PAUSE:
     case NCM_STATUS_PLAYER_UNKNOWN:
         break;
+    default:
+        break;
     }
 
     player_state_len = status_player_state_string(
@@ -1129,6 +1131,8 @@ status_player_state_string(char *buffer, int32 buffer_cap) {
         if (Config.design == NCM_DESIGN_ALTERNATIVE) {
             string = "[stopped]";
         }
+        break;
+    default:
         break;
     }
 
@@ -1280,6 +1284,8 @@ status_player_state_env(void) {
         return "pause";
     case NCM_STATUS_PLAYER_UNKNOWN:
         return "unknown";
+    default:
+        break;
     }
 
     return "unknown";
@@ -1436,6 +1442,8 @@ status_draw_player_state_label(char *state, int32 state_len) {
         }
         break;
     case NCM_DESIGN_LAST:
+        break;
+    default:
         break;
     }
     return;
@@ -1776,6 +1784,8 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
         break;
     case NCM_DESIGN_LAST:
         break;
+    default:
+        break;
     }
 
     if (ncm_progressbar_is_unlocked()) {
@@ -1900,6 +1910,8 @@ ncm_status_changes_flags(void) {
         break;
     case NCM_DESIGN_LAST:
         break;
+    default:
+        break;
     }
 
     nc_window_refresh(header);
@@ -1933,6 +1945,8 @@ ncm_status_changes_mixer(void) {
         global_volume_state_set(" Vol: ", STRLIT_LEN(" Vol: "));
         break;
     case NCM_DESIGN_LAST:
+        break;
+    default:
         break;
     }
 

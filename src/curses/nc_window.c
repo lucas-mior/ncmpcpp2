@@ -983,6 +983,8 @@ nc_window_apply_term_manip(NcWindow *window, enum NcTermManip tm) {
         mvwhline(window->window, y, x, ' ', nc_i32(window->width) - x);
         nc_window_go_to_xy(window, x, y);
         break;
+    default:
+        break;
     }
     return;
 }
@@ -1029,6 +1031,8 @@ nc_window_apply_format(NcWindow *window, enum NcFormat format) {
     case NC_FORMAT_NO_ITALIC:
         nc_window_decrease_format(window, &window->italic_counter,
                                   nc_window_italic);
+        break;
+    default:
         break;
     }
     return;
