@@ -473,6 +473,8 @@ native_tag_editor_screen_active_menu(NativeTagEditorScreen *screen) {
     case NATIVE_TAG_EDITOR_FOCUS_PARSER_LEGEND:
     case NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW:
         return NULL;
+    default:
+        break;
     }
     return NULL;
 }
@@ -496,6 +498,8 @@ native_tag_editor_screen_active_window(NativeTagEditorScreen *screen) {
     case NATIVE_TAG_EDITOR_FOCUS_PARSER_LEGEND:
     case NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW:
         return &screen->parser_helper_window;
+    default:
+        break;
     }
     return NULL;
 }
@@ -1750,11 +1754,15 @@ tag_editor_can_run_current(NcScreen *screen) {
         case TAG_EDITOR_TAG_TYPE_ACTION_RESET:
         case TAG_EDITOR_TAG_TYPE_ACTION_SAVE:
             return false;
+        default:
+            break;
         }
         return false;
     case NATIVE_TAG_EDITOR_FOCUS_PARSER_LEGEND:
     case NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW:
         return false;
+    default:
+        break;
     }
     return false;
 }
@@ -1782,6 +1790,8 @@ tag_editor_run_current(NcScreen *screen) {
     case NATIVE_TAG_EDITOR_FOCUS_PARSER_LEGEND:
     case NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW:
         return false;
+    default:
+        break;
     }
     return false;
 }
@@ -2221,6 +2231,8 @@ tag_editor_run_tag_type_current(NativeTagEditorScreen *screen) {
             screen, Config.mpd_music_dir);
     case TAG_EDITOR_TAG_TYPE_ACTION_NONE:
         return false;
+    default:
+        break;
     }
     return false;
 }
@@ -2513,6 +2525,8 @@ tag_editor_column_focus(enum NativeTagEditorColumn column) {
         return NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES;
     case NATIVE_TAG_EDITOR_COLUMN_TAGS:
         return NATIVE_TAG_EDITOR_FOCUS_TAGS;
+    default:
+        break;
     }
     return NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES;
 }

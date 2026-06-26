@@ -509,6 +509,8 @@ ncm_mpd_replay_gain_mode_name(enum NcmMpdReplayGainMode mode) {
         return "track";
     case NCM_MPD_REPLAY_GAIN_ALBUM:
         return "album";
+    default:
+        break;
     }
 
     return "off";

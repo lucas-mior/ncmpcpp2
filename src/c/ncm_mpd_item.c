@@ -85,6 +85,8 @@ ncm_mpd_item_destroy(NcmMpdItem *item) {
         break;
     case NCM_MPD_ITEM_UNKNOWN:
         break;
+    default:
+        break;
     }
 
     item->kind = NCM_MPD_ITEM_UNKNOWN;
@@ -191,6 +193,8 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
                                    &source->value.playlist);
         break;
     case NCM_MPD_ITEM_UNKNOWN:
+        break;
+    default:
         break;
     }
 

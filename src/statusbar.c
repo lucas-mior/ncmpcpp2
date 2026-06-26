@@ -58,6 +58,8 @@ statusbar_redraw_after_stop_unlock(void) {
         break;
     case NCM_DESIGN_LAST:
         break;
+    default:
+        break;
     }
     nc_window_refresh(window);
     return;
@@ -87,6 +89,8 @@ statusbar_redraw_after_unlock(void) {
         case NCM_STATUS_PLAYER_PAUSE:
             ncm_status_changes_elapsed_time(false);
             break;
+        default:
+            break;
         }
         break;
     case NCM_DESIGN_ALTERNATIVE:
@@ -94,6 +98,8 @@ statusbar_redraw_after_unlock(void) {
                              ncm_status_state_total_time());
         break;
     case NCM_DESIGN_LAST:
+        break;
+    default:
         break;
     }
     nc_window_refresh(window);
@@ -405,7 +411,7 @@ ncm_statusbar_prompt_return_one_of(NcWindow *window,
         return false;
     }
 
-    for (;;) {
+    while (true) {
         if (nc_window_raw(window) != NULL) {
             nc_window_refresh(window);
         }

@@ -119,7 +119,7 @@ void
 ncm_window_title_write(char *title, int32 title_len) {
     printf("\033]0;");
     if ((title != NULL) && (title_len > 0)) {
-        fwrite(title, 1, (size_t)title_len, stdout);
+        fwrite64(title, 1, title_len, stdout);
     }
     printf("\7");
     fflush(stdout);
@@ -172,6 +172,8 @@ ncm_title_draw_header_with_config(char *title, int32 title_len,
         title_draw_alternative(window, title, title_len, separator_color);
         break;
     case NCM_DESIGN_LAST:
+        break;
+    default:
         break;
     }
 
