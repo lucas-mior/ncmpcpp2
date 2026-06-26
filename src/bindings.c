@@ -272,6 +272,8 @@ ncm_binding_action_can_run(NcmBindingAction *action,
     case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
     case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
         return true;
+    default:
+        break;
     }
 
     return false;
@@ -317,6 +319,8 @@ ncm_binding_action_run(NcmBindingAction *action,
         return runtime->run_external_console_command(action->argument,
                                                      action->argument_len,
                                                      runtime->user);
+    default:
+        break;
     }
 
     return false;
@@ -1209,7 +1213,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
     char *path_copy;
     int32 path_cap;
     char *line;
-    size_t line_cap;
+    int64 line_cap;
     int32 in_progress;
     int32 line_no;
     bool ok;

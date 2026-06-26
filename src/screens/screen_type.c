@@ -51,6 +51,8 @@ screen_type_to_native_type(enum ScreenType screen_type) {
         return NC_SCREEN_TYPE_UNKNOWN;
     case NCM_SCREEN_TYPE_LAST:
         break;
+    default:
+        break;
     }
 
     return NC_SCREEN_TYPE_UNKNOWN;

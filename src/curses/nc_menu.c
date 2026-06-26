@@ -274,6 +274,8 @@ scroll_internal(NcMenu *menu, int64 height, enum NcScroll where,
                             user, depth + 1);
         }
         break;
+    default:
+        break;
     }
 
     if (menu->autocenter_cursor) {

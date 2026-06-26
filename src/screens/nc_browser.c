@@ -1172,6 +1172,8 @@ native_browser_screen_render_item(NativeBrowserScreen *screen,
         break;
     case NCM_MPD_ITEM_UNKNOWN:
         break;
+    default:
+        return false;
     }
     return true;
 }
@@ -1228,6 +1230,8 @@ native_browser_screen_item_to_string(NativeBrowserScreen *screen,
         break;
     case NCM_MPD_ITEM_UNKNOWN:
         break;
+    default:
+        return false;
     }
     return true;
 }
@@ -2136,8 +2140,9 @@ native_browser_collect_item_songs(NativeBrowserScreen *screen,
     case NCM_MPD_ITEM_PLAYLIST:
     case NCM_MPD_ITEM_UNKNOWN:
         return true;
+    default:
+        return false;
     }
-    return true;
 }
 
 static bool
@@ -2269,6 +2274,8 @@ native_browser_delete_item(NativeBrowserScreen *screen,
         return native_browser_delete_playlist_item(screen, client, item,
                                                    error);
     case NCM_MPD_ITEM_UNKNOWN:
+        break;
+    default:
         break;
     }
 
@@ -2811,6 +2818,8 @@ native_browser_compare_item_values(NativeBrowserScreen *screen,
                 native_browser_playlist_sort_view(right));
         case NCM_MPD_ITEM_UNKNOWN:
             return 0;
+        default:
+            break;
         }
         break;
     case NCM_SORT_MODE_CUSTOM_FORMAT:
@@ -2836,6 +2845,8 @@ native_browser_compare_item_values(NativeBrowserScreen *screen,
             return result;
         case NCM_MPD_ITEM_UNKNOWN:
             return 0;
+        default:
+            break;
         }
         break;
     case NCM_SORT_MODE_MODIFICATION_TIME:
@@ -2858,11 +2869,15 @@ native_browser_compare_item_values(NativeBrowserScreen *screen,
                 ncm_song_mtime(ncm_mpd_item_song(right)));
         case NCM_MPD_ITEM_UNKNOWN:
             return 0;
+        default:
+            break;
         }
         break;
     case NCM_SORT_MODE_NONE:
     case NCM_SORT_MODE_LAST:
         return 0;
+    default:
+        break;
     }
     return 0;
 }
@@ -2878,6 +2893,8 @@ native_browser_item_sort_rank(NcmMpdItem *item) {
         return 2;
     case NCM_MPD_ITEM_UNKNOWN:
         return 3;
+    default:
+        break;
     }
     return 3;
 }

@@ -1483,6 +1483,8 @@ action_runtime_switch_to_screen(enum ScreenType type) {
     case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
         break;
+    default:
+        break;
     }
 
     return false;
@@ -2065,6 +2067,8 @@ action_runtime_toggle_interface(void) {
             ui_state_statusbar_visibility_baseline();
         break;
     case NCM_DESIGN_LAST:
+        return false;
+    default:
         return false;
     }
 
@@ -2975,6 +2979,8 @@ action_runtime_current_menu(void) {
     case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
         break;
+    default:
+        break;
     }
     return NULL;
 }
@@ -3325,6 +3331,8 @@ action_runtime_selected_songs(NcmSongArray *songs) {
     case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
         break;
+    default:
+        break;
     }
     return false;
 }
@@ -3399,6 +3407,8 @@ action_runtime_current_song(NcmSong *song) {
 #endif
     case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
+        break;
+    default:
         break;
     }
     return false;
@@ -3820,6 +3830,8 @@ action_runtime_browser_item_name(NcmMpdItem *item, NcmBuffer *name) {
         }
         break;
     case NCM_MPD_ITEM_UNKNOWN:
+        return false;
+    default:
         return false;
     }
 
@@ -5604,6 +5616,10 @@ action_runtime_toggle_browser_sort_mode(void) {
     case NCM_SORT_MODE_LAST:
         message = "Sort songs by: type";
         break;
+    default:
+        Config.browser_sort_mode = NCM_SORT_MODE_TYPE;
+        message = "Sort songs by: type";
+        break;
     }
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
                                 message);
@@ -5696,6 +5712,8 @@ action_runtime_replay_gain_mode_name(enum NcmMpdReplayGainMode mode) {
         return "track";
     case NCM_MPD_REPLAY_GAIN_ALBUM:
         return "album";
+    default:
+        break;
     }
     return "unknown";
 }
@@ -5823,6 +5841,8 @@ ncm_action_edit_song(NcmSong *song) {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
             "Couldn't prepare tiny tag editor");
+        break;
+    default:
         break;
     }
     ncm_buffer_destroy(&path);

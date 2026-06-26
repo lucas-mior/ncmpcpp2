@@ -18,6 +18,8 @@ app_binding_migration_action_kind_is_c_safe(NcmBindingAction *action) {
     case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
     case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
         return true;
+    default:
+        break;
     }
 
     return false;
@@ -57,6 +59,8 @@ app_binding_migration_screen_is_c_only(enum ScreenType type) {
     case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
         return false;
+    default:
+        break;
     }
 
     return false;

@@ -370,6 +370,8 @@ ncm_format_expr_destroy(NcmFormatExpr *expr) {
     case NCM_FORMAT_EXPR_OUTPUT_SWITCH:
     case NCM_FORMAT_EXPR_SONG_TAG:
         break;
+    default:
+        break;
     }
     ncm_format_expr_init(expr);
     return;
@@ -410,41 +412,18 @@ bool
 ncm_format_ast_append_column_types(NcmFormatAst *ast,
                                    char *types, int32 types_len) {
     NcmFormatExpr *first;
-    NcmFormatExpr *separator;
-    enum NcmSongGetter getter;
-    int32 getters_len;
 
-    if (ast == NULL) {
-        return false;
-    }
-    if (types_len < 0) {
-        return false;
-    }
-    if (types_len == 0) {
+    if (types_len <= 0) {
         return true;
     }
-    if (types == NULL) {
+    if ((ast == NULL) || (types == NULL)) {
         return false;
     }
 
-    getters_len = 0;
     for (int32 i = 0; i < types_len; i += 1) {
-        getter = ncm_song_getter_from_char(types[i]);
-        if (getter != NCM_SONG_GETTER_NONE) {
-            getters_len += 1;
-        }
-    }
-    if (getters_len <= 0) {
-        return true;
-    }
-
-    if (ast->root.len > 0) {
-        separator = ncm_format_expr_list_append(&ast->root);
-        if (separator == NULL) {
+        if (ncm_song_getter_from_char(types[i]) == NCM_SONG_GETTER_NONE) {
             return false;
         }
-        separator->type = NCM_FORMAT_EXPR_TEXT;
-        ncm_buffer_append_byte(&separator->value.text, ' ');
     }
 
     first = ncm_format_expr_list_append(&ast->root);
@@ -457,16 +436,43 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
     for (int32 i = 0; i < types_len; i += 1) {
         NcmFormatExpr *tag;
 
-        getter = ncm_song_getter_from_char(types[i]);
-        if (getter == NCM_SONG_GETTER_NONE) {
-            continue;
-        }
         tag = ncm_format_expr_list_append(&first->value.list);
         if (tag == NULL) {
             return false;
         }
         tag->type = NCM_FORMAT_EXPR_SONG_TAG;
-        tag->value.song_tag.getter = getter;
+        tag->value.song_tag.getter = ncm_song_getter_from_char(types[i]);
+        tag->value.song_tag.delimiter = 0;
+    }
+    return true;
+}
+
+bool
+ncm_format_ast_append_first_of_getters(NcmFormatAst *ast,
+                                       enum NcmSongGetter *getters,
+                                       int32 getters_len) {
+    NcmFormatExpr *first;
+
+    if (getters_len <= 0) {
+        return true;
+    }
+
+    first = ncm_format_expr_list_append(&ast->root);
+    if (first == NULL) {
+        return false;
+    }
+    first->type = NCM_FORMAT_EXPR_FIRST_OF;
+    ncm_format_expr_list_init(&first->value.list);
+
+    for (int32 i = 0; i < getters_len; i += 1) {
+        NcmFormatExpr *tag;
+
+        tag = ncm_format_expr_list_append(&first->value.list);
+        if (tag == NULL) {
+            return false;
+        }
+        tag->type = NCM_FORMAT_EXPR_SONG_TAG;
+        tag->value.song_tag.getter = getters[i];
         tag->value.song_tag.delimiter = 0;
     }
     return true;
@@ -920,6 +926,8 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
             }
         }
         return NCM_FORMAT_RESULT_EMPTY;
+    default:
+        break;
     }
 
     return NCM_FORMAT_RESULT_EMPTY;
