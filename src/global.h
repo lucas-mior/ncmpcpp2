@@ -21,7 +21,7 @@
 #ifndef NCMPCPP_GLOBAL_H
 #define NCMPCPP_GLOBAL_H
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <chrono>
 #include <random>
 
 #include "mpdpp.h"
@@ -58,7 +58,7 @@ extern bool SeekingInProgress;
 extern std::string VolumeState;
 
 // global timer
-extern boost::posix_time::ptime Timer;
+extern std::chrono::steady_clock::time_point Timer;
 
 // global RNG
 extern std::mt19937 RNG;

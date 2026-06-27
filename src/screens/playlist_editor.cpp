@@ -20,7 +20,6 @@
 
 #include <algorithm>
 #include <optional>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <cassert>
 
 #include "curses/menu_impl.h"
@@ -63,9 +62,9 @@ std::optional<size_t> GetSongIndexInPlaylist(MPD::Playlist playlist, const MPD::
 }
 
 PlaylistEditor::PlaylistEditor()
-: m_timer(boost::posix_time::from_time_t(0))
+: m_timer()
 , m_window_timeout(Config.data_fetching_delay ? 250 : BaseScreen::defaultWindowTimeout)
-, m_fetching_delay(boost::posix_time::milliseconds(Config.data_fetching_delay ? 250 : -1))
+, m_fetching_delay(Config.data_fetching_delay ? 250 : -1)
 {
 	size_t ra = Config.playlist_editor_column_width_ratio[0];
 	size_t rb = Config.playlist_editor_column_width_ratio[1];

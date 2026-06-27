@@ -21,7 +21,7 @@
 #ifndef NCMPCPP_PLAYLIST_H
 #define NCMPCPP_PLAYLIST_H
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <chrono>
 #include <unordered_map>
 
 #include "interfaces.h"
@@ -93,7 +93,7 @@ private:
 	size_t m_remaining_time;
 	size_t m_scroll_begin;
 	
-	boost::posix_time::ptime m_timer;
+	std::chrono::steady_clock::time_point m_timer;
 
 	bool m_reload_total_length;
 	bool m_reload_remaining;

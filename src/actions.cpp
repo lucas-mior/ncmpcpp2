@@ -20,8 +20,8 @@
 
 #include <cassert>
 #include <cerrno>
+#include <chrono>
 #include <cstring>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/locale/conversion.hpp>
 #include <algorithm>
@@ -307,7 +307,7 @@ std::shared_ptr<BaseAction> get_(const std::string &name)
 
 UpdateEnvironment::UpdateEnvironment()
 : BaseAction(Type::UpdateEnvironment, "update_environment")
-, m_past(boost::posix_time::from_time_t(0))
+, m_past()
 { }
 
 void UpdateEnvironment::run(bool update_timer, bool refresh_window, bool mpd_sync)
@@ -323,7 +323,7 @@ void UpdateEnvironment::run(bool update_timer, bool refresh_window, bool mpd_syn
 
 	// header stuff
 	if ((myScreen == myPlaylist || myScreen == myBrowser || myScreen == myLyrics)
-	&&  (Timer - m_past > boost::posix_time::milliseconds(500))
+	&&  (Timer - m_past > std::chrono::milliseconds(500))
 	)
 	{
 		drawHeader();
@@ -2973,8 +2973,9 @@ void seek(SearchDirection sd)
 	{
 		Status::trace();
 		
+		auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(Timer-t);
 		unsigned howmuch = Config.incremental_seeking
-		                 ? (Timer-t).total_seconds()/2+Config.seek_time
+		                 ? static_cast<unsigned>(elapsed.count()/2)+Config.seek_time
 		                 : Config.seek_time;
 		
 		NC::Key::Type input = readKey(*wFooter);

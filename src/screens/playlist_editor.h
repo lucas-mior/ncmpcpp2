@@ -21,7 +21,7 @@
 #ifndef NCMPCPP_PLAYLIST_EDITOR_H
 #define NCMPCPP_PLAYLIST_EDITOR_H
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <chrono>
 
 #include "interfaces.h"
 #include "regex_filter.h"
@@ -88,10 +88,10 @@ private:
 	bool m_playlists_update_requested;
 	bool m_content_update_requested;
 
-	boost::posix_time::ptime m_timer;
+	std::chrono::steady_clock::time_point m_timer;
 
 	const int m_window_timeout;
-	const boost::posix_time::time_duration m_fetching_delay;
+	const std::chrono::milliseconds m_fetching_delay;
 
 	Regex::Filter<MPD::Playlist> m_playlists_search_predicate;
 	Regex::Filter<MPD::Song> m_content_search_predicate;

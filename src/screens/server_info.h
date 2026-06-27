@@ -21,7 +21,7 @@
 #ifndef NCMPCPP_SERVER_INFO_H
 #define NCMPCPP_SERVER_INFO_H
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <chrono>
 
 #include "interfaces.h"
 #include "screens/screen.h"
@@ -45,7 +45,7 @@ struct ServerInfo: Screen<NC::Scrollpad>, Tabbable
 private:
 	void SetDimensions();
 	
-	boost::posix_time::ptime m_timer;
+	std::chrono::steady_clock::time_point m_timer;
 
 	std::vector<std::string> m_url_handlers;
 	std::vector<std::string> m_tag_types;
