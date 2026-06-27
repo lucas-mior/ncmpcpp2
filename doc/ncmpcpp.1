@@ -30,10 +30,10 @@ Ignore unknown and invalid options in configuration files
 Specify bindings file(s)
 .TP
 \fB\-s\fR, \fB\-\-screen <name>\fR
-Specify the startup screen (<name> may be: help, playlist, browser, search_engine, media_library, playlist_editor, tag_editor, outputs, visualizer, clock)
+Specify the startup screen (<name> may be: help, playlist, browser, search_engine, media_library, playlist_editor, tag_editor, outputs, visualizer)
 .TP
 \fB\-S\fR, \fB\-\-slave-screen <name>\fR
-Specify the startup slave screen (<name> may be: help, playlist, browser, search_engine, media_library, playlist_editor, tag_editor, outputs, visualizer, clock)
+Specify the startup slave screen (<name> may be: help, playlist, browser, search_engine, media_library, playlist_editor, tag_editor, outputs, visualizer)
 .TP
 \fB\-q\fR, \fB\-\-quiet\fR
 Suppress logs and excess output
@@ -356,9 +356,6 @@ If enabled, ncmpcpp will jump at start to now playing song if mpd is playing or 
 .TP
 .B ask_before_clearing_playlists = yes/no
 If enabled, user will be asked if he really wants to clear the playlist after pressing key responsible for that.
-.TP
-.B clock_display_seconds = yes/no
-If enabled, clock will display time in format hh:mm:ss, otherwise hh:mm.
 .TP
 .B display_volume_level = yes/no
 If enabled, volume level will be displayed in statusbar, otherwise not.

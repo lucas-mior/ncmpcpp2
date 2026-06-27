@@ -589,8 +589,6 @@ void BindingsConfiguration::generateDefaults()
 		bind(k, Actions::Type::ShowOutputs);
 	if (notBound(k = stringToKey("8")))
 		bind(k, Actions::Type::ShowVisualizer);
-	if (notBound(k = stringToKey("=")))
-		bind(k, Actions::Type::ShowClock);
 	if (notBound(k = stringToKey("@")))
 		bind(k, Actions::Type::ShowServerInfo);
 	if (notBound(k = stringToKey("s")))

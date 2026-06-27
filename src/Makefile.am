@@ -4,7 +4,6 @@ ncmpcpp_SOURCES = \
 	curses/scrollpad.cpp \
 	curses/window.cpp \
 	screens/browser.cpp \
-	screens/clock.cpp \
 	screens/help.cpp \
 	screens/lastfm.cpp \
 	screens/lyrics.cpp \
@@ -66,7 +65,6 @@ noinst_HEADERS = \
 	curses/strbuffer.h \
 	curses/window.h \
 	screens/browser.h \
-	screens/clock.h \
 	screens/help.h \
 	screens/lastfm.h \
 	screens/lyrics.h \

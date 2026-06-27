@@ -13,7 +13,6 @@ LT_INIT
 
 AC_ARG_ENABLE(outputs, AS_HELP_STRING([--enable-outputs], [Enable outputs screen @<:@default=no@:>@]), [outputs=$enableval], [outputs=no])
 AC_ARG_ENABLE(visualizer, AS_HELP_STRING([--enable-visualizer], [Enable music visualizer screen @<:@default=no@:>@]), [visualizer=$enableval], [visualizer=no])
-AC_ARG_ENABLE(clock, AS_HELP_STRING([--enable-clock], [Enable clock screen @<:@default=no@:>@]), [clock=$enableval], [clock=no])
 
 AC_ARG_WITH(fftw, AS_HELP_STRING([--with-fftw], [Enable fftw support (required for frequency spectrum vizualization) @<:@default=auto@:>@]), [fftw=$withval], [fftw=auto])
 AC_ARG_WITH(taglib, AS_HELP_STRING([--with-taglib], [Enable tag editor @<:@default=auto@:>@]), [taglib=$withval], [taglib=auto])
@@ -23,9 +22,6 @@ if test "$outputs" = "yes"; then
 	AC_DEFINE([ENABLE_OUTPUTS], [1], [enables outputs screen])
 fi
 
-if test "$clock" = "yes"; then
-	AC_DEFINE([ENABLE_CLOCK], [1], [enables clock screen])
-fi
 
 # -flto
 if test "$lto" != "no"; then

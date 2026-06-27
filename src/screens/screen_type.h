@@ -29,9 +29,6 @@ struct BaseScreen;
 
 enum class ScreenType {
 	Browser,
-#	ifdef ENABLE_CLOCK
-	Clock,
-#	endif // ENABLE_CLOCK
 	Help,
 	Lastfm,
 	Lyrics,

@@ -1,7 +1,8 @@
 # ncmpcpp2
 This is a fork of ncmpcpp. The goals are:
-- ~~Remove clock~~
-- Remove other features I don't use.
+- Remove features I don't use:
+  + ~~Remove clock~~
+  + Remove others?
 - Remove boost dependency.
 - Convert the project to C11.
 - Fix the bugs reported in original repo.
