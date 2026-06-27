@@ -4,7 +4,7 @@
 
 # shellcheck disable=SC2046
 
-# autoreconf -fiv  # generate the `configure` script.
+autoreconf -fiv  # generate the `configure` script.
 
 # ./configure \
 #     --enable-outputs \
@@ -12,14 +12,14 @@
 #     --with-fftw \
 #     --with-taglib
 
-# ./configure \
-#   --disable-dependency-tracking \
-#   --with-lto=no \
-#   --enable-outputs \
-#   --enable-visualizer \
-#   --with-fftw \
-#   --with-taglib \
-#   CXXFLAGS="-O0 -g3"
+./configure \
+  --disable-dependency-tracking \
+  --with-lto=no \
+  --enable-outputs \
+  --enable-visualizer \
+  --with-fftw \
+  --with-taglib \
+  CXXFLAGS="-O0 -g3"
 
 make -j"$(nproc)"
 

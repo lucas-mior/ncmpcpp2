@@ -9,6 +9,7 @@ autom4te.cache/
 compile
 config.*
 configure
+configure~
 depcomp
 **/.dirstamp
 install-sh
