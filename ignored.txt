@@ -1,8 +1,13 @@
 .git
+.github
 .cache
+autom4te.cache
 .clangd
 LICENSE
 bin
 tags
 .tags.vim
 compile_commands.json
+.*\.o
+.deps
+src/ncmpcpp$
