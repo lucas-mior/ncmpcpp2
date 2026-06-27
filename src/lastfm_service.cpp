@@ -20,7 +20,6 @@
 
 #include "lastfm_service.h"
 
-#include <boost/locale/conversion.hpp>
 #include <fstream>
 #include <regex>
 #include "charset.h"

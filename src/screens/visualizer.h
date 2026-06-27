@@ -25,7 +25,6 @@
 
 #ifdef ENABLE_VISUALIZER
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include "curses/window.h"
 #include "interfaces.h"
 #include "screens/screen.h"
