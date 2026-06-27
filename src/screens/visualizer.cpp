@@ -24,12 +24,12 @@
 
 #include <algorithm>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/math/constants/constants.hpp>
 #include <cerrno>
 #include <cmath>
 #include <cstring>
 #include <fstream>
 #include <limits>
+#include <numbers>
 #include <fcntl.h>
 #include <netdb.h>
 #include <cassert>
@@ -361,7 +361,7 @@ void Visualizer::DrawSoundEllipse(const int16_t *buf, ssize_t samples, size_t, s
 	const size_t half_height = height/2;
 
 	// Make it so that the loop goes around the ellipse exactly once.
-	const double deg_multiplier = 2*boost::math::constants::pi<double>()/samples;
+	const double deg_multiplier = 2*std::numbers::pi/samples;
 
 	int32_t x, y;
 	double radius, max_radius;
@@ -646,7 +646,7 @@ void Visualizer::ApplyWindow(double *output, const int16_t *input, ssize_t sampl
 	const double a0 = (1 - alpha) / 2;
 	const double a1 = 0.5;
 	const double a2 = alpha / 2;
-	const double pi = boost::math::constants::pi<double>();
+	const double pi = std::numbers::pi;
 	for (unsigned i = 0; i < samples; ++i)
 	{
 		double window = a0 - a1*cos(2*pi*i/(DFT_NONZERO_SIZE-1)) + a2*cos(4*pi*i/(DFT_NONZERO_SIZE-1));

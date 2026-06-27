@@ -33,36 +33,94 @@
 #ifndef NCMPCPP_UTILITY_OPTION_PARSER_H
 #define NCMPCPP_UTILITY_OPTION_PARSER_H
 
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/tokenizer.hpp>
-#include <boost/lexical_cast.hpp>
 #include <cassert>
+#include <functional>
+#include <sstream>
+#include <string>
 #include <stdexcept>
+#include <type_traits>
 #include <unordered_map>
+#include <vector>
 
 [[noreturn]] inline void invalid_value(const std::string &v)
 {
 	throw std::runtime_error("invalid value: " + v);
 }
 
-template <typename DestT>
-DestT verbose_lexical_cast(const std::string &v)
+inline std::string trim_copy(std::string s)
 {
-	try {
-		return boost::lexical_cast<DestT>(v);
-	} catch (boost::bad_lexical_cast &) {
-		invalid_value(v);
+	auto first = s.find_first_not_of(" \t\r\n");
+	if (first == std::string::npos)
+		return "";
+	auto last = s.find_last_not_of(" \t\r\n");
+	return s.substr(first, last-first+1);
+}
+
+template <typename DestT>
+DestT parse_value(const std::string &v)
+{
+	if constexpr (std::is_same_v<DestT, std::string>)
+		return v;
+	else
+	{
+		std::istringstream is(v);
+		DestT result;
+		if (!(is >> result))
+			invalid_value(v);
+		is >> std::ws;
+		if (!is.eof())
+			invalid_value(v);
+		return result;
 	}
 }
 
+inline std::vector<std::string> split_escaped_list(const std::string &v,
+                                                   const std::string &escape,
+                                                   const std::string &sep,
+                                                   const std::string &quote)
+{
+	std::vector<std::string> result;
+	std::string current;
+	bool quoted = false;
+	char escape_char = escape.empty() ? '\0' : escape.front();
+	char quote_char = quote.empty() ? '\0' : quote.front();
+	for (size_t i = 0; i < v.size(); ++i)
+	{
+		char c = v[i];
+		if (escape_char != '\0' && c == escape_char && i+1 < v.size())
+		{
+			current += v[++i];
+			continue;
+		}
+		if (quote_char != '\0' && c == quote_char)
+		{
+			quoted = !quoted;
+			continue;
+		}
+		if (!quoted && sep.find(c) != std::string::npos)
+		{
+			result.push_back(trim_copy(current));
+			current.clear();
+			continue;
+		}
+		current += c;
+	}
+	result.push_back(trim_copy(current));
+	return result;
+}
+
 template <typename ValueT, typename ConvertT>
-std::vector<ValueT> list_of(const std::string &v, ConvertT convert, const typename std::vector<ValueT>::size_type length, const std::string &escape, const std::string &sep, const std::string &quote)
+std::vector<ValueT> list_of(const std::string &v,
+                            ConvertT convert,
+                            const typename std::vector<ValueT>::size_type length,
+                            const std::string &escape,
+                            const std::string &sep,
+                            const std::string &quote)
 {
 	std::vector<ValueT> result;
-	boost::escaped_list_separator<char> esq(escape, sep, quote);
-	boost::tokenizer<boost::escaped_list_separator<char>> elems(v, esq);
+	auto elems = split_escaped_list(v, escape, sep, quote);
 	for (auto &value : elems)
-		result.push_back(convert(boost::trim_copy(value)));
+		result.push_back(convert(value));
 	if (result.empty())
 		throw std::runtime_error("empty list");
 	if (length > 0 && result.size() != length)
@@ -79,7 +137,7 @@ std::vector<ValueT> list_of(const std::string &v, ConvertT convert)
 template <typename ValueT>
 std::vector<ValueT> list_of(const std::string &v)
 {
-	return list_of<ValueT>(v, verbose_lexical_cast<ValueT>);
+	return list_of<ValueT>(v, parse_value<ValueT>);
 }
 
 bool yes_no(const std::string &v);
@@ -177,7 +235,7 @@ public:
 	template <typename DestT>
 	void add(std::string option, DestT *dest, std::string default_)
 	{
-		add(std::move(option), dest, std::move(default_), verbose_lexical_cast<DestT>);
+		add(std::move(option), dest, std::move(default_), parse_value<DestT>);
 	}
 
 	bool run(std::istream &is, bool warn_on_errors);

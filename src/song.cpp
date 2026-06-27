@@ -20,9 +20,11 @@
 
 #include <cassert>
 #include <cstring>
+#include <functional>
 #include <iomanip>
 #include <memory>
 #include <sstream>
+#include <string>
 
 #include "curses/window.h"
 #include "song.h"
@@ -42,7 +44,7 @@ void format_numeric_tag(std::string &s)
 
 void hash_combine(size_t &seed, char c)
 {
-	seed ^= static_cast<unsigned char>(c) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+	seed ^= std::hash<char>{}(c) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
 size_t calc_hash(const char *s, size_t seed = 0)
@@ -316,9 +318,11 @@ std::string Song::ShowTime(unsigned length)
 
 	std::ostringstream result;
 	if (hours > 0)
-		result << hours << ":";
-	result << std::setfill('0') << std::setw(2) << minutes
-	       << ":" << std::setw(2) << seconds;
+		result << hours << ":"
+		       << std::setw(2) << std::setfill('0') << minutes << ":";
+	else
+		result << minutes << ":";
+	result << std::setw(2) << std::setfill('0') << seconds;
 	return result.str();
 }
 

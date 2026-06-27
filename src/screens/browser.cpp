@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 #include <algorithm>
-#include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/locale/conversion.hpp>
 #include <time.h>
@@ -618,7 +617,8 @@ std::string realPath(bool local_browser, std::string path)
 
 bool isStringParentDirectory(const std::string &directory)
 {
-	return boost::algorithm::ends_with(directory, "/..");
+	return directory.size() >= 3
+	    && directory.compare(directory.size()-3, 3, "/..") == 0;
 }
 
 bool isItemParentDirectory(const MPD::Item &item)

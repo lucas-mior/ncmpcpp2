@@ -22,7 +22,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include <map>
-#include <boost/regex.hpp>
+#include <regex>
 
 #include "charset.h"
 #include "mpdpp.h"
@@ -632,9 +632,9 @@ bool Connection::AddRandomSongs(size_t number, const std::string &random_exclude
 		std::shuffle(files.begin(), files.end(), rng);
 		StartCommandsList();
 		auto it = files.begin();
-		boost::regex re(random_exclude_pattern);
+		std::regex re(random_exclude_pattern);
 		for (size_t i = 0; i < number && it != files.end(); ++it) {
-			if (random_exclude_pattern.empty() || !boost::regex_match((*it), re)) {
+			if (random_exclude_pattern.empty() || !std::regex_match((*it), re)) {
 				AddSong(*it);
 				i++;
 			}

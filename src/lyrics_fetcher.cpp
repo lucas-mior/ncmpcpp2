@@ -20,13 +20,10 @@
 
 #include "config.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/regex.hpp>
+#include <regex>
 
 #ifdef HAVE_TAGLIB_H
 #include <fileref.h>
@@ -39,6 +36,58 @@
 #include "settings.h"
 #include "utility/html.h"
 #include "utility/string.h"
+
+namespace {
+
+void replaceAll(std::string &s, const std::string &from, const std::string &to)
+{
+	for (size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos; pos += to.size())
+		s.replace(pos, from.size(), to);
+}
+
+void trim(std::string &s)
+{
+	auto first = s.find_first_not_of(" \t\r\n");
+	if (first == std::string::npos)
+	{
+		s.clear();
+		return;
+	}
+	auto last = s.find_last_not_of(" \t\r\n");
+	s = s.substr(first, last-first+1);
+}
+
+std::vector<std::string> splitLines(const std::string &s)
+{
+	std::vector<std::string> result;
+	std::string current;
+	for (char c : s)
+	{
+		if (c == '\r' || c == '\n')
+		{
+			result.push_back(std::move(current));
+			current.clear();
+		}
+		else
+			current += c;
+	}
+	result.push_back(std::move(current));
+	return result;
+}
+
+std::string joinLines(const std::vector<std::string> &lines)
+{
+	std::string result;
+	for (auto it = lines.begin(); it != lines.end(); ++it)
+	{
+		if (it != lines.begin())
+			result += "\n";
+		result += *it;
+	}
+	return result;
+}
+
+}
 
 std::istream &operator>>(std::istream &is, LyricsFetcher_ &fetcher)
 {
@@ -75,8 +124,8 @@ LyricsFetcher::Result LyricsFetcher::fetch(const std::string &artist,
 	result.first = false;
 	
 	std::string url = urlTemplate();
-	boost::replace_all(url, "%artist%", Curl::escape(artist));
-	boost::replace_all(url, "%title%", Curl::escape(title));
+	replaceAll(url, "%artist%", Curl::escape(artist));
+	replaceAll(url, "%title%", Curl::escape(title));
 
 	std::string data;
 	CURLcode code = Curl::perform(data, url, "", true);
@@ -121,9 +170,9 @@ std::vector<std::string> LyricsFetcher::getContent(const char *regex_,
                                                    const std::string &data)
 {
 	std::vector<std::string> result;
-	boost::regex rx(regex_, boost::regex::perl);
-	auto first = boost::sregex_iterator(data.begin(), data.end(), rx);
-	auto last = boost::sregex_iterator();
+	std::regex rx(regex_);
+	auto first = std::sregex_iterator(data.begin(), data.end(), rx);
+	auto last = std::sregex_iterator();
 	for (; first != last; ++first)
 	{
 		std::string content;
@@ -139,17 +188,16 @@ void LyricsFetcher::postProcess(std::string &data) const
 	data = unescapeHtmlUtf8(data);
 	stripHtmlTags(data);
 	// Remove indentation from each line and collapse multiple newlines into one.
-	std::vector<std::string> lines;
-	boost::split(lines, data, boost::is_any_of("\r\n"));
+	auto lines = splitLines(data);
 	for (auto &line : lines)
-		boost::trim(line);
+		trim(line);
 	auto last = std::unique(
 		lines.begin(),
 		lines.end(),
 		[](std::string &a, std::string &b) { return a.empty() && b.empty(); });
 	lines.erase(last, lines.end());
-	data = boost::algorithm::join(lines, "\n");
-	boost::trim(data);
+	data = joinLines(lines);
+	trim(data);
 }
 
 /**********************************************************************/

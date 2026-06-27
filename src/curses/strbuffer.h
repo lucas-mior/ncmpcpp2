@@ -21,9 +21,9 @@
 #ifndef NCMPCPP_STRBUFFER_H
 #define NCMPCPP_STRBUFFER_H
 
-#include <boost/lexical_cast.hpp>
 #include <boost/variant.hpp>
 #include <map>
+#include <sstream>
 #include "curses/formatted_color.h"
 #include "curses/window.h"
 
@@ -61,6 +61,14 @@ template <typename CharT> class BasicBuffer
 		               > m_impl;
 		size_t m_id;
 	};
+
+	template <typename NumberT>
+	void appendNumber(NumberT n)
+	{
+		std::basic_ostringstream<CharT> os;
+		os << n;
+		m_string += os.str();
+	}
 	
 public:
 	typedef std::basic_string<CharT> StringType;
@@ -101,25 +109,25 @@ public:
 	
 	BasicBuffer<CharT> &operator<<(int n)
 	{
-		m_string += boost::lexical_cast<StringType>(n);
+		appendNumber(n);
 		return *this;
 	}
 	
 	BasicBuffer<CharT> &operator<<(long int n)
 	{
-		m_string += boost::lexical_cast<StringType>(n);
+		appendNumber(n);
 		return *this;
 	}
 	
 	BasicBuffer<CharT> &operator<<(unsigned int n)
 	{
-		m_string += boost::lexical_cast<StringType>(n);
+		appendNumber(n);
 		return *this;
 	}
 	
 	BasicBuffer<CharT> &operator<<(unsigned long int n)
 	{
-		m_string += boost::lexical_cast<StringType>(n);
+		appendNumber(n);
 		return *this;
 	}
 	

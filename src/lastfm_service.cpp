@@ -20,10 +20,9 @@
 
 #include "lastfm_service.h"
 
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/trim.hpp>
 #include <boost/locale/conversion.hpp>
 #include <fstream>
+#include <regex>
 #include "charset.h"
 #include "curl_handle.h"
 #include "settings.h"
@@ -34,6 +33,25 @@ namespace {
 
 const char *apiUrl = "http://ws.audioscrobbler.com/2.0/?api_key=d94e5b6e26469a2d1ffae8ef20131b79&method=";
 const char *msgInvalidResponse = "Invalid response";
+
+void replaceFirst(std::string &s, const std::string &from, const std::string &to)
+{
+	auto pos = s.find(from);
+	if (pos != std::string::npos)
+		s.replace(pos, from.size(), to);
+}
+
+void trim(std::string &s)
+{
+	auto first = s.find_first_not_of(" \t\r\n");
+	if (first == std::string::npos)
+	{
+		s.clear();
+		return;
+	}
+	auto last = s.find_last_not_of(" \t\r\n");
+	s = s.substr(first, last-first+1);
+}
 
 }
 
@@ -94,7 +112,7 @@ void ArtistInfo::beautifyOutput(NC::Scrollpad &w)
 {
 	w.setProperties(NC::Format::Bold, "\n\nSimilar artists:\n", NC::Format::NoBold, 0);
 	w.setProperties(NC::Format::Bold, "\n\nSimilar tags:\n", NC::Format::NoBold, 0);
-	w.setProperties(Config.color2, "\n * ", boost::regex::literal);
+	w.setProperties(Config.color2, "\n \\* ", 0);
 }
 
 Service::Result ArtistInfo::processData(const std::string &data)
@@ -103,9 +121,9 @@ Service::Result ArtistInfo::processData(const std::string &data)
 	Service::Result result;
 	result.first = false;
 	
-	boost::regex rx("<content>(.*?)</content>");
-	boost::smatch what;
-	if (boost::regex_search(data, what, rx))
+	std::regex rx("<content>(.*?)</content>");
+	std::smatch what;
+	if (std::regex_search(data, what, rx))
 	{
 		std::string desc = what[1];
 		// if there is a description...
@@ -113,7 +131,7 @@ Service::Result ArtistInfo::processData(const std::string &data)
 		{
 			// ...locate the link to wiki on last.fm...
 			rx.assign("<link rel=\"original\" href=\"(.*?)\"");
-			if (boost::regex_search(data, what, rx))
+			if (std::regex_search(data, what, rx))
 			{
 				std::string url = what[1], wiki;
 				// unescape &amp;s
@@ -121,7 +139,7 @@ Service::Result ArtistInfo::processData(const std::string &data)
 				// fill in language info since url points to english version.
 				const auto &lang = m_arguments["lang"];
 				if (!lang.empty() && lang != "en")
-					boost::replace_first(url, "last.fm/music/", "last.fm/" + lang + "/music/");
+					replaceFirst(url, "last.fm/music/", "last.fm/" + lang + "/music/");
 				// ...try to get the content of it...
 				CURLcode code = Curl::perform(wiki, url, "", true);
 
@@ -134,14 +152,14 @@ Service::Result ArtistInfo::processData(const std::string &data)
 				{
 					// ...and filter it to get the whole description.
 					rx.assign("<div class=\"wiki\">(.*?)</div>");
-					if (boost::regex_search(wiki, what, rx))
+					if (std::regex_search(wiki, what, rx))
 						desc = unescapeHtmlUtf8(what[1]);
 				}
 			}
 			stripHtmlTags(desc);
 			// Needs to be done after stripHtmlTags in case there are &#10;s there.
 			desc = unescapeHtmlUtf8(desc);
-			boost::trim(desc);
+			trim(desc);
 			result.second += desc;
 		}
 		else
@@ -156,7 +174,7 @@ Service::Result ArtistInfo::processData(const std::string &data)
 		return result;
 	}
 	
-	auto add_similars = [&result](boost::sregex_iterator &it, const boost::sregex_iterator &last) {
+	auto add_similars = [&result](std::sregex_iterator &it, const std::sregex_iterator &last) {
 		for (; it != last; ++it)
 		{
 			std::string value = it->str(1);
@@ -176,8 +194,8 @@ Service::Result ArtistInfo::processData(const std::string &data)
 	if (a != std::string::npos && b != std::string::npos)
 	{
 		rx.assign("<artist>.*?<name>(.*?)</name>.*?<url>(.*?)</url>.*?</artist>");
-		auto it = boost::sregex_iterator(data.begin()+a, data.begin()+b, rx);
-		auto last = boost::sregex_iterator();
+		auto it = std::sregex_iterator(data.begin()+a, data.begin()+b, rx);
+		auto last = std::sregex_iterator();
 		if (it != last)
 			result.second += "\n\nSimilar artists:\n";
 		add_similars(it, last);
@@ -188,8 +206,8 @@ Service::Result ArtistInfo::processData(const std::string &data)
 	if (a != std::string::npos && b != std::string::npos)
 	{
 		rx.assign("<tag>.*?<name>(.*?)</name>.*?<url>(.*?)</url>.*?</tag>");
-		auto it = boost::sregex_iterator(data.begin()+a, data.begin()+b, rx);
-		auto last = boost::sregex_iterator();
+		auto it = std::sregex_iterator(data.begin()+a, data.begin()+b, rx);
+		auto last = std::sregex_iterator();
 		if (it != last)
 			result.second += "\n\nSimilar tags:\n";
 		add_similars(it, last);
@@ -198,7 +216,7 @@ Service::Result ArtistInfo::processData(const std::string &data)
 	// get artist we look for, it's the one before similar artists
 	rx.assign("<name>.*?</name>.*?<url>(.*?)</url>.*?<similar>");
 	
-	if (boost::regex_search(data, what, rx))
+	if (std::regex_search(data, what, rx))
 	{
 		std::string url = what[1];
 		stripHtmlTags(url);

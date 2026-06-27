@@ -18,9 +18,8 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <boost/algorithm/string/classification.hpp>
+#include <algorithm>
 #include <boost/filesystem/operations.hpp>
-#include <boost/range/algorithm_ext/erase.hpp>
 #include <cassert>
 #include <cerrno>
 #include <cstring>
@@ -94,7 +93,7 @@ bool loadLyrics(NC::Scrollpad &w, const std::string &filename)
 		while (std::getline(input, line))
 		{
 			// Remove carriage returns as they mess up the display.
-			boost::remove_erase(line, '\r');
+			line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
 			if (!first_line)
 				w << '\n';
 			w << Charset::utf8ToLocale(line);
@@ -134,7 +133,9 @@ LyricsFetcher::Result downloadLyrics(
 		s_artist.clear();
 		s_title = s.getName();
 		// Get rid of underscores to improve search results.
-		std::replace_if(s_title.begin(), s_title.end(), boost::is_any_of("-_"), ' ');
+		std::replace_if(
+			s_title.begin(), s_title.end(),
+			[](char c) { return c == '-' || c == '_'; }, ' ');
 		size_t dot = s_title.rfind('.');
 		if (dot != std::string::npos)
 			s_title.resize(dot);
@@ -428,14 +429,14 @@ void Lyrics::fetchInBackground(const MPD::Song &s, bool notify_)
 	}
 }
 
-boost::optional<std::string> Lyrics::tryTakeConsumerMessage()
+std::optional<std::string> Lyrics::tryTakeConsumerMessage()
 {
-	boost::optional<std::string> result;
+	std::optional<std::string> result;
 	auto consumer = m_consumer_state.acquire();
 	if (consumer->message)
 	{
 		result = std::move(consumer->message);
-		consumer->message = boost::none;
+		consumer->message = std::nullopt;
 	}
 	return result;
 }

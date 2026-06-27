@@ -21,11 +21,13 @@
 #ifndef NCMPCPP_UTILITY_CONVERSION_H
 #define NCMPCPP_UTILITY_CONVERSION_H
 
-#include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/type_traits/is_unsigned.hpp>
+#include <exception>
+#include <sstream>
+#include <string>
+#include <type_traits>
 
 #include "config.h"
+#include "utility/string_format.h"
 
 struct ConversionError
 {
@@ -45,22 +47,22 @@ struct OutOfBounds : std::exception
 	template <typename Type>
 	[[noreturn]] static void raise(const Type &value, const Type &lbound, const Type &ubound)
 	{
-		throw OutOfBounds((boost::format(
-			"value is out of bounds ([%1%, %2%] expected, %3% given)") % lbound % ubound % value).str());
+		throw OutOfBounds(stringFormat(
+			"value is out of bounds ([%1%, %2%] expected, %3% given)", lbound, ubound, value));
 	}
 	
 	template <typename Type>
 	[[noreturn]] static void raiseLower(const Type &value, const Type &lbound)
 	{
-		throw OutOfBounds((boost::format(
-			"value is out of bounds ([%1%, ->) expected, %2% given)") % lbound % value).str());
+		throw OutOfBounds(stringFormat(
+			"value is out of bounds ([%1%, ->) expected, %2% given)", lbound, value));
 	}
 	
 	template <typename Type>
 	[[noreturn]] static void raiseUpper(const Type &value, const Type &ubound)
 	{
-		throw OutOfBounds((boost::format(
-			"value is out of bounds ((<-, %1%] expected, %2% given)") % ubound % value).str());
+		throw OutOfBounds(stringFormat(
+			"value is out of bounds ((<-, %1%] expected, %2% given)", ubound, value));
 	}
 	
 	virtual const char *what() const noexcept override { return m_error_message.c_str(); }
@@ -89,15 +91,15 @@ struct unsigned_checker<TargetT, true>
 template <typename TargetT>
 TargetT fromString(const std::string &source)
 {
-	unsigned_checker<TargetT, boost::is_unsigned<TargetT>::value>::apply(source);
-	try
-	{
-		return boost::lexical_cast<TargetT>(source);
-	}
-	catch (boost::bad_lexical_cast &)
-	{
+	unsigned_checker<TargetT, std::is_unsigned<TargetT>::value>::apply(source);
+	std::istringstream is(source);
+	TargetT result;
+	if (!(is >> result))
 		throw ConversionError(source);
-	}
+	is >> std::ws;
+	if (!is.eof())
+		throw ConversionError(source);
+	return result;
 }
 
 template <typename Type>

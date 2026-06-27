@@ -24,9 +24,10 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/locale/conversion.hpp>
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <iostream>
+#include <regex>
+#include <string>
 
 #include "actions.h"
 #include "charset.h"
@@ -57,6 +58,7 @@
 #include "screens/outputs.h"
 #include "utility/readline.h"
 #include "utility/string.h"
+#include "utility/string_format.h"
 #include "utility/type_conversions.h"
 #include "screens/tag_editor.h"
 #include "screens/tiny_tag_editor.h"
@@ -251,10 +253,10 @@ void setWindowsDimensions()
 	FooterHeight = Config.statusbar_visibility ? 2 : 1;
 }
 
-void confirmAction(const boost::format &description)
+void confirmAction(const std::string &description)
 {
 	Statusbar::ScopedLock slock;
-	Statusbar::put() << description.str()
+	Statusbar::put() << description
 	<< " [" << NC::Format::Bold << 'y' << NC::Format::NoBold
 	<< '/' << NC::Format::Bold << 'n' << NC::Format::NoBold
 	<< "] ";
@@ -708,9 +710,9 @@ void DeleteBrowserItems::run()
 		return iname;
 	};
 
-	boost::format question;
+	std::string question;
 	if (hasSelected(myBrowser->main().begin(), myBrowser->main().end()))
-		question = boost::format("Delete selected items?");
+		question = "Delete selected items?";
 	else
 	{
 		const auto &item = myBrowser->main().current()->value();
@@ -719,8 +721,8 @@ void DeleteBrowserItems::run()
 		if (myBrowser->isParentDirectory(item))
 			return;
 		const char msg[] = "Delete \"%1%\"?";
-		question = boost::format(msg) % wideShorten(
-			get_name(item), COLS-const_strlen(msg)-5
+		question = stringFormat(msg,
+			wideShorten(get_name(item), COLS-const_strlen(msg)-5)
 		);
 	}
 	confirmAction(question);
@@ -754,13 +756,18 @@ void DeleteStoredPlaylist::run()
 {
 	if (myPlaylistEditor->Playlists.empty())
 		return;
-	boost::format question;
+	std::string question;
 	if (hasSelected(myPlaylistEditor->Playlists.begin(), myPlaylistEditor->Playlists.end()))
-		question = boost::format("Delete selected playlists?");
+		question = "Delete selected playlists?";
 	else
-		question = boost::format("Delete playlist \"%1%\"?")
-			% wideShorten(myPlaylistEditor->Playlists.current()->value().path(), COLS-question.size()-10);
+	{
+		const char msg[] = "Delete playlist \"%1%\"?";
+		question = stringFormat(msg,
+			wideShorten(myPlaylistEditor->Playlists.current()->value().path(),
+			            COLS-const_strlen(msg)-10));
+	}
 	confirmAction(question);
+
 	auto list = getSelectedOrCurrent(
 		myPlaylistEditor->Playlists.begin(),
 		myPlaylistEditor->Playlists.end(),
@@ -825,7 +832,7 @@ void SavePlaylist::run()
 		if (e.code() == MPD_SERVER_ERROR_EXIST)
 		{
 			confirmAction(
-				boost::format("Playlist \"%1%\" already exists, overwrite?") % playlist_name
+				stringFormat("Playlist \"%1%\" already exists, overwrite?", playlist_name)
 			);
 			Mpd.DeletePlaylist(playlist_name);
 			Mpd.SavePlaylist(playlist_name);
@@ -1696,7 +1703,7 @@ void ToggleScreenLock::run()
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << "% of the locked screen's width to be reserved (20-80): ";
-			part = fromString<unsigned>(wFooter->prompt(boost::lexical_cast<std::string>(part)));
+			part = fromString<unsigned>(wFooter->prompt(std::to_string(part)));
 		}
 		boundsCheck(part, 20u, 80u);
 		Config.locked_screen_width_part = part/100.0;
@@ -1742,10 +1749,10 @@ void JumpToPositionInSong::run()
 		spos = wFooter->prompt();
 	}
 	
-	boost::regex rx;
-	boost::smatch what;
+	std::regex rx;
+	std::smatch what;
 	// mm:ss
-	if (boost::regex_match(spos, what, rx.assign("([0-9]+):([0-9]{2})")))
+	if (std::regex_match(spos, what, rx.assign("([0-9]+):([0-9]{2})")))
 	{
 		auto mins = fromString<unsigned>(what[1]);
 		auto secs = fromString<unsigned>(what[2]);
@@ -1753,13 +1760,13 @@ void JumpToPositionInSong::run()
 		Mpd.Seek(s.getPosition(), mins * 60 + secs);
 	}
 	// position in seconds
-	else if (boost::regex_match(spos, what, rx.assign("([0-9]+)s")))
+	else if (std::regex_match(spos, what, rx.assign("([0-9]+)s")))
 	{
 		auto secs = fromString<unsigned>(what[1]);
 		Mpd.Seek(s.getPosition(), secs);
 	}
 	// position in%
-	else if (boost::regex_match(spos, what, rx.assign("([0-9]+)[%]{0,1}")))
+	else if (std::regex_match(spos, what, rx.assign("([0-9]+)[%]{0,1}")))
 	{
 		auto percent = fromString<unsigned>(what[1]);
 		boundsCheck(percent, 0u, 100u);
@@ -1767,7 +1774,7 @@ void JumpToPositionInSong::run()
 		Mpd.Seek(s.getPosition(), secs);
 	}
 	// position in hh:mm:ss
-	else if (boost::regex_match(spos, what, rx.assign("([0-9]+):([0-9]{2}):([0-9]{2})")))
+	else if (std::regex_match(spos, what, rx.assign("([0-9]+):([0-9]{2}):([0-9]{2})")))
 	{
 		auto hours = fromString<unsigned>(what[1]);
 		auto mins  = fromString<unsigned>(what[2]);
@@ -1939,7 +1946,7 @@ void CropPlaylist::run()
 	assert(!myPlaylistEditor->Playlists.empty());
 	std::string playlist = myPlaylistEditor->Playlists.current()->value().path();
 	if (Config.ask_before_clearing_playlists)
-		confirmAction(boost::format("Do you really want to crop playlist \"%1%\"?") % playlist);
+		confirmAction(stringFormat("Do you really want to crop playlist \"%1%\"?", playlist));
 	selectCurrentIfNoneSelected(w);
 	Statusbar::printf("Cropping playlist \"%1%\"...", playlist);
 	cropPlaylist(w, std::bind(&MPD::Connection::PlaylistDelete, ph::_1, playlist, ph::_2));
@@ -1966,7 +1973,7 @@ void ClearPlaylist::run()
 		return;
 	std::string playlist = myPlaylistEditor->Playlists.current()->value().path();
 	if (Config.ask_before_clearing_playlists)
-		confirmAction(boost::format("Do you really want to clear playlist \"%1%\"?") % playlist);
+		confirmAction(stringFormat("Do you really want to clear playlist \"%1%\"?", playlist));
 	Mpd.ClearPlaylist(playlist);
 	Statusbar::printf("Playlist \"%1%\" cleared", playlist);
 }
@@ -2164,7 +2171,7 @@ void ToggleReplayGainMode::run()
 			break;
 		default: // impossible
 			throw std::runtime_error(
-				(boost::format("ToggleReplayGainMode: impossible case reached: %1%") % rgm).str()
+				stringFormat("ToggleReplayGainMode: impossible case reached: %1%", rgm)
 			);
 	}
 	Statusbar::printf("Replay gain mode: %1%", Mpd.GetReplayGainMode());
@@ -2862,7 +2869,7 @@ void populateActions()
 	{
 		if (AvailableActions[i] == nullptr)
 			throw std::logic_error("undefined action at position "
-			                       + boost::lexical_cast<std::string>(i));
+			                       + std::to_string(i));
 	}
 }
 
@@ -3059,7 +3066,7 @@ void findItem(const SearchDirection direction)
 		NC::Window::ScopedPromptHook prompt_hook(
 			*wFooter,
 			Statusbar::Helpers::FindImmediately(w, direction));
-		Statusbar::put() << (boost::format("Find %1%: ") % direction).str();
+		Statusbar::put() << stringFormat("Find %1%: ", direction);
 		constraint = wFooter->prompt(constraint);
 	}
 	catch (NC::PromptAborted &)

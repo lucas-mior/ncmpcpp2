@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <string>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 
@@ -641,7 +642,7 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 				if (Config.display_bitrate && m_kbps)
 				{
 					tracklength += "(";
-					tracklength += boost::lexical_cast<std::string>(m_kbps);
+					tracklength += std::to_string(m_kbps);
 					tracklength += " kbps) ";
 				}
 				tracklength += "[";
@@ -694,7 +695,7 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 			if (Config.display_bitrate && m_kbps)
 			{
 				tracklength += " (";
-				tracklength += boost::lexical_cast<std::string>(m_kbps);
+				tracklength += std::to_string(m_kbps);
 				tracklength += " kbps)";
 			}
 
@@ -827,7 +828,7 @@ void Status::Changes::mixer()
 		VolumeState += "n/a";
 	else
 	{
-		VolumeState += boost::lexical_cast<std::string>(m_volume);
+		VolumeState += std::to_string(m_volume);
 		VolumeState += "%";
 	}
 	*wHeader << NC::XY(wHeader->getWidth()-VolumeState.length(), 0)

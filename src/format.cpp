@@ -18,7 +18,9 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
+#include <sstream>
 #include <stdexcept>
+#include <string>
 
 #include "format_impl.h"
 #include "utility/type_conversions.h"
@@ -37,15 +39,25 @@ template <typename CharT>
 std::string invalidCharacter(CharT c)
 {
 	return "invalid character '"
-	     + convertString<char, CharT>::apply(boost::lexical_cast<string<CharT>>(c))
+	     + convertString<char, CharT>::apply(string<CharT>(1, c))
 	     + "'";
+}
+
+template <typename ValueT>
+bool readValue(const std::string &s, ValueT &result)
+{
+	std::istringstream is(s);
+	if (!(is >> result))
+		return false;
+	is >> std::ws;
+	return is.eof();
 }
 
 template <typename CharT>
 void throwError(const string<CharT> &s, iterator<CharT> current, std::string msg)
 {
 	throw std::runtime_error(
-		std::move(msg) + " at position " + boost::lexical_cast<std::string>(current - s.begin())
+		std::move(msg) + " at position " + std::to_string(current - s.begin())
 	);
 }
 
@@ -138,7 +150,9 @@ expressions<CharT> parseBracket(const string<CharT> &s,
 					sdelimiter += *it++;
 				while (it != end && isdigit(*it));
 				rangeCheck(s, it, end);
-				delimiter = boost::lexical_cast<unsigned>(sdelimiter);
+				auto value = convertString<char, CharT>::apply(sdelimiter);
+				if (!readValue(value, delimiter))
+					throwError(s, it, "invalid tag delimiter \"" + value + "\"");
 			}
 			auto f = charToGetFunction(*it);
 			if (f == nullptr)
@@ -174,11 +188,11 @@ expressions<CharT> parseBracket(const string<CharT> &s,
 				while (it != end && *it != ')');
 				rangeCheck(s, it, end);
 				auto value = convertString<char, CharT>::apply(scolor);
-				try {
-					result.push_back(boost::lexical_cast<NC::Color>(value));
-				} catch (boost::bad_lexical_cast &) {
+				NC::Color color;
+				if (readValue(value, color))
+					result.push_back(color);
+				else
 					throwError(s, jt, "invalid color \"" + value + "\"");
-				}
 			}
 			// output switch
 			else if (flags & Format::Flags::OutputSwitch && *it == 'R')
