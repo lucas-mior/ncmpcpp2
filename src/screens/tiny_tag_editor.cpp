@@ -22,7 +22,6 @@
 
 #ifdef HAVE_TAGLIB_H
 
-#include <boost/locale/conversion.hpp>
 #include <string>
 
 // taglib includes
@@ -206,7 +205,7 @@ bool TinyTagEditor::getTags()
 		return false;
 	
 	std::string ext = itsEdited.getURI();
-	ext = boost::locale::to_lower(ext.substr(ext.rfind(".")+1));
+	ext = lowercaseAscii(ext.substr(ext.rfind(".")+1));
 	
 	w.clear();
 	w.reset();

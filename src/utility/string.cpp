@@ -55,6 +55,17 @@ std::string getSharedDirectory(const std::string &dir1, const std::string &dir2)
 		return dir1.substr(0, i);
 }
 
+
+std::string lowercaseAscii(std::string s)
+{
+	for (char &c : s)
+	{
+		if (c >= 'A' && c <= 'Z')
+			c += 'a' - 'A';
+	}
+	return s;
+}
+
 std::string getEnclosedString(const std::string &s, char a, char b, size_t *pos)
 {
 	std::string result;

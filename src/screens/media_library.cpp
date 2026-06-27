@@ -18,7 +18,6 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <boost/locale/conversion.hpp>
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -35,6 +34,7 @@
 #include "statusbar.h"
 #include "format_impl.h"
 #include "helpers/song_iterator_maker.h"
+#include "utility/string.h"
 #include "utility/comparators.h"
 #include "utility/functional.h"
 #include "utility/type_conversions.h"
@@ -731,7 +731,7 @@ bool MediaLibrary::addItemToPlaylist(bool play)
 				std::make_move_iterator(MPD::SongIterator()));
 			std::sort(list.begin(), list.end(), SortSongs());
 			result = addSongsToPlaylist(list.begin(), list.end(), play, -1);
-			std::string tag_type = boost::locale::to_lower(
+			std::string tag_type = lowercaseAscii(
 				tagTypeToString(Config.media_lib_primary_tag));
 			Statusbar::printf("Songs with %1% \"%2%\" added%3%",
 				tag_type, Tags.current()->value().tag(), withErrors(result));
@@ -925,7 +925,7 @@ void MediaLibrary::toggleColumnsMode()
 			nextColumn();
 		if (Config.titles_visibility)
 		{
-			std::string item_type = boost::locale::to_lower(
+			std::string item_type = lowercaseAscii(
 				tagTypeToString(Config.media_lib_primary_tag));
 			if (isAlbumOnly)
 			{
@@ -965,7 +965,7 @@ void MediaLibrary::toggleSortMode()
 		Songs.clear();
 		if (Config.titles_visibility)
 		{
-			std::string item_type = boost::locale::to_lower(
+			std::string item_type = lowercaseAscii(
 				tagTypeToString(Config.media_lib_primary_tag));
 			if (isAlbumOnly)
 			{
@@ -1003,7 +1003,7 @@ void MediaLibrary::locateSong(const MPD::Song &s)
 	std::string primary_tag = s.get(Config.media_lib_primary_tag);
 	if (primary_tag.empty())
 	{
-		std::string item_type = boost::locale::to_lower(
+		std::string item_type = lowercaseAscii(
 			tagTypeToString(Config.media_lib_primary_tag));
 		Statusbar::printf("Can't use this function because the song has no %s tag", item_type);
 		return;

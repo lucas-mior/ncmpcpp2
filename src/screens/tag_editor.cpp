@@ -22,7 +22,6 @@
 
 #ifdef HAVE_TAGLIB_H
 
-#include <boost/locale/conversion.hpp>
 #include <algorithm>
 #include <fstream>
 #include <string>
@@ -39,6 +38,7 @@
 #include "screens/song_info.h"
 #include "statusbar.h"
 #include "helpers/song_iterator_maker.h"
+#include "utility/string.h"
 #include "utility/functional.h"
 #include "utility/comparators.h"
 #include "title.h"
@@ -1051,7 +1051,7 @@ void LowerAllLetters(MPD::MutableSong &s)
 	{
 		unsigned i = 0;
 		for (std::string tag; !(tag = (s.*m->Get)(i)).empty(); ++i)
-			(s.*m->Set)(boost::locale::to_lower(tag), i);
+			(s.*m->Set)(lowercaseAscii(tag), i);
 	}
 }
 
