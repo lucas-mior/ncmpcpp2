@@ -162,7 +162,6 @@ enum class Type
 	ShowTagEditor,
 	ShowOutputs,
 	ShowVisualizer,
-	ShowClock,
 	ShowServerInfo,
 	_numberOfActions // needed to dynamically calculate size of action array
 };
@@ -1405,14 +1404,6 @@ private:
 	virtual void run() override;
 };
 
-struct ShowClock: BaseAction
-{
-	ShowClock(): BaseAction(Type::ShowClock, "show_clock") { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
 
 struct ShowServerInfo: BaseAction
 {

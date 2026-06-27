@@ -479,7 +479,6 @@
 
 # ncmpcpp-0.3 (2009-01-22)
 * general core rewrite
-* new screen - clock
 * support for asian wide characters
 * support for non-utf8 encodings
 * a lot of bugfixes

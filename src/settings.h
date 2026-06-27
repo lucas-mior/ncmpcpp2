@@ -167,7 +167,6 @@ struct Configuration
 	bool local_browser_show_hidden_files;
 	bool search_in_db;
 	bool jump_to_now_playing_song_at_start;
-	bool clock_display_seconds;
 	bool display_volume_level;
 	bool display_bitrate;
 	bool display_remaining_time;

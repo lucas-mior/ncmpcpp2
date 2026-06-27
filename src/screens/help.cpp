@@ -166,9 +166,6 @@ void write_bindings(NC::Scrollpad &w)
 #	ifdef ENABLE_VISUALIZER
 	key(w, Type::ShowVisualizer, "Show music visualizer");
 #	endif // ENABLE_VISUALIZER
-#	ifdef ENABLE_CLOCK
-	key(w, Type::ShowClock, "Show clock");
-#	endif // ENABLE_CLOCK
 	w << '\n';
 	key(w, Type::ShowServerInfo, "Show server info");
 

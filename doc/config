@@ -454,8 +454,8 @@
 ## - "screen1,...,screenN" - switch between given sequence of screens.
 ##
 ## Screens available for use: help, playlist, browser, search_engine,
-## media_library, playlist_editor, tag_editor, outputs, visualizer, clock,
-## lyrics, last_fm.
+## media_library, playlist_editor, tag_editor, outputs, visualizer, lyrics,
+## last_fm.
 ##
 #screen_switcher_mode = playlist, browser
 #
@@ -497,8 +497,6 @@
 #jump_to_now_playing_song_at_start = yes
 #
 #ask_before_clearing_playlists = yes
-#
-#clock_display_seconds = no
 #
 #display_volume_level = yes
 #

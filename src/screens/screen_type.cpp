@@ -22,7 +22,6 @@
 #include "screens/screen_type.h"
 
 #include "screens/browser.h"
-#include "screens/clock.h"
 #include "screens/help.h"
 #include "screens/lastfm.h"
 #include "screens/lyrics.h"
@@ -45,10 +44,6 @@ std::string screenTypeToString(ScreenType st)
 	{
 	case ScreenType::Browser:
 		return "browser";
-#ifdef ENABLE_CLOCK
-	case ScreenType::Clock:
-		return "clock";
-#endif // ENABLE_CLOCK
 	case ScreenType::Help:
 		return "help";
 	case ScreenType::Lastfm:
@@ -97,10 +92,6 @@ ScreenType stringtoStartupScreenType(const std::string &s)
 	ScreenType result = ScreenType::Unknown;
 	if (s == "browser")
 		result = ScreenType::Browser;
-#	ifdef ENABLE_CLOCK
-	else if (s == "clock")
-		result = ScreenType::Clock;
-#	endif // ENABLE_CLOCK
 	else if (s == "help")
 		result = ScreenType::Help;
 	else if (s == "media_library")
@@ -161,10 +152,6 @@ BaseScreen *toScreen(ScreenType st)
 	{
 		case ScreenType::Browser:
 			return myBrowser;
-#		ifdef ENABLE_CLOCK
-		case ScreenType::Clock:
-			return myClock;
-#		endif // ENABLE_CLOCK
 		case ScreenType::Help:
 			return myHelp;
 		case ScreenType::Lastfm:

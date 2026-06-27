@@ -88,7 +88,7 @@
 ##      is not met, whole chain is aborted and we're fine.
 ##
 ##    - require_screen "screen" - checks whether given screen is
-##      currently active. accepted values: browser, clock, help,
+##      currently active. accepted values: browser, help,
 ##      media_library, outputs, playlist, playlist_editor,
 ##      search_engine, tag_editor, visualizer, last_fm, lyrics,
 ##      selected_items_adder, server_info, song_info,
@@ -296,9 +296,6 @@
 #
 #def_key "8"
 #  show_visualizer
-#
-#def_key "="
-#  show_clock
 #
 #def_key "@"
 #  show_server_info
