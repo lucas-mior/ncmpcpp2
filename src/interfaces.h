@@ -21,9 +21,8 @@
 #ifndef NCMPCPP_INTERFACES_H
 #define NCMPCPP_INTERFACES_H
 
-#include <boost/range/detail/any_iterator.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <string>
+#include <vector>
 #include "enums.h"
 #include "screens/screen.h"
 #include "song.h"

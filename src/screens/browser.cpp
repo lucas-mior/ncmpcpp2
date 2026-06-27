@@ -20,7 +20,6 @@
 
 #include <algorithm>
 #include <boost/filesystem.hpp>
-#include <boost/locale/conversion.hpp>
 #include <time.h>
 
 #include "screens/browser.h"
