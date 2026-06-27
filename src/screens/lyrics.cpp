@@ -19,7 +19,7 @@
  ***************************************************************************/
 
 #include <algorithm>
-#include <boost/filesystem/operations.hpp>
+#include <filesystem>
 #include <cassert>
 #include <chrono>
 #include <cerrno>
@@ -364,7 +364,7 @@ void Lyrics::toggleFetcher()
 
 /* For HTTP(S) streams, fetchInBackground makes ncmpcpp crash: the lyrics_file
  * gets set to the stream URL, which is too long, hence
- * boost::filesystem::exists() fails.
+ * std::filesystem::exists() fails.
  * Possible solutions:
  * - truncate the URL and use that as a filename. Problem: resulting filename
  *   might not be unique.
@@ -398,9 +398,9 @@ void Lyrics::fetchInBackground(const MPD::Song &s, bool notify_)
 				}
 				lyrics_file = lyricsFilename(consumer->songs.front().song());
 
-				// For long filenames (e.g. http(s) stream URLs), boost::filesystem::exists() fails.
+				// For long filenames (e.g. http(s) stream URLs), std::filesystem::exists() fails.
 				// This if condition is fine, because evaluation order is guaranteed.
-				if (!consumer->songs.front().song().isStream() && !boost::filesystem::exists(lyrics_file))
+				if (!consumer->songs.front().song().isStream() && !std::filesystem::exists(lyrics_file))
 				{
 					cs = consumer->songs.front();
 					if (cs.notify())
