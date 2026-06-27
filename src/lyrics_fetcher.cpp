@@ -212,11 +212,17 @@ LyricsFetcher::Result InternetLyricsFetcher::fetch(const std::string &artist,
                                                    const std::string &title,
                                                    const MPD::Song &song)
 {
-	GoogleLyricsFetcher::fetch(artist, title, song);
+	URL.clear();
+	LyricsFetcher::Result google_result = GoogleLyricsFetcher::fetch(artist, title, song);
 	LyricsFetcher::Result result;
 	result.first = false;
-	result.second = "The following site may contain lyrics for this song: ";
-	result.second += URL;
+	if (!URL.empty())
+	{
+		result.second = "The following site may contain lyrics for this song: ";
+		result.second += URL;
+	}
+	else
+		result.second = google_result.second;
 	return result;
 }
 
