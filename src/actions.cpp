@@ -22,7 +22,7 @@
 #include <cerrno>
 #include <chrono>
 #include <cstring>
-#include <boost/filesystem/operations.hpp>
+#include <filesystem>
 #include <boost/locale/conversion.hpp>
 #include <algorithm>
 #include <iostream>
@@ -1570,7 +1570,7 @@ void EditDirectoryName::run()
 			if (!myBrowser->isLocal())
 				full_new_dir += Config.mpd_music_dir;
 			full_new_dir += new_dir;
-			boost::filesystem::rename(full_old_dir, full_new_dir);
+			std::filesystem::rename(full_old_dir, full_new_dir);
 			const char msg[] = "Directory renamed to \"%1%\"";
 			Statusbar::printf(msg, wideShorten(new_dir, COLS-const_strlen(msg)));
 			if (!myBrowser->isLocal())

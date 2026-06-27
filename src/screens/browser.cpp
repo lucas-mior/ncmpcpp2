@@ -19,7 +19,8 @@
  ***************************************************************************/
 
 #include <algorithm>
-#include <boost/filesystem.hpp>
+#include <chrono>
+#include <filesystem>
 #include <time.h>
 
 #include "screens/browser.h"
@@ -46,7 +47,7 @@ using Global::MainHeight;
 using Global::MainStartY;
 using Global::myScreen;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 namespace ph = std::placeholders;
 
 Browser *myBrowser;
@@ -61,6 +62,7 @@ bool isItemParentDirectory(const MPD::Item &item);
 bool isRootDirectory(const std::string &directory);
 bool isHidden(const fs::directory_iterator &entry);
 bool hasSupportedExtension(const fs::directory_entry &entry);
+time_t lastWriteTime(const fs::path &path);
 MPD::Song getLocalSong(const fs::directory_entry &entry, bool read_tags);
 void getLocalDirectory(NC::Menu<MPD::Item> &menu, const std::string &directory);
 void getLocalDirectoryRecursively(std::vector<MPD::Song> &songs,
@@ -633,26 +635,36 @@ bool isRootDirectory(const std::string &directory)
 
 bool isHidden(const fs::directory_iterator &entry)
 {
-	return entry->path().filename().native()[0] == '.';
+	return entry->path().filename().string()[0] == '.';
 }
 
 bool hasSupportedExtension(const fs::directory_entry &entry)
 {
-	return lm_supported_extensions.find(entry.path().extension().native())
+	return lm_supported_extensions.find(entry.path().extension().string())
 	    != lm_supported_extensions.end();
+}
+
+time_t lastWriteTime(const fs::path &path)
+{
+	auto file_time = fs::last_write_time(path);
+	auto system_time = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+		file_time - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
+	);
+	return std::chrono::system_clock::to_time_t(system_time);
 }
 
 MPD::Song getLocalSong(const fs::directory_entry &entry, bool read_tags)
 {
-	mpd_pair pair = { "file", entry.path().c_str() };
+	auto path = entry.path().string();
+	mpd_pair pair = { "file", path.c_str() };
 	mpd_song *s = mpd_song_begin(&pair);
 	if (s == nullptr)
-		throw std::runtime_error("invalid path: " + entry.path().native());
+		throw std::runtime_error("invalid path: " + path);
 	if (read_tags)
 	{
 #ifdef HAVE_TAGLIB_H
 		Tags::setAttribute(s, "Last-Modified",
-			timeFormat("%Y-%m-%dT%H:%M:%SZ", fs::last_write_time(entry.path()))
+			timeFormat("%Y-%m-%dT%H:%M:%SZ", lastWriteTime(entry.path()))
 		);
 		// read tags
 		Tags::read(s);
@@ -668,10 +680,10 @@ void getLocalDirectory(NC::Menu<MPD::Item> &menu, const std::string &directory)
 		if (!Config.local_browser_show_hidden_files && isHidden(entry))
 			continue;
 
-	if (fs::is_directory(*entry))
+	if (entry->is_directory())
 	{
-		menu.addItem(MPD::Directory(entry->path().native(),
-		                            fs::last_write_time(entry->path())));
+		menu.addItem(MPD::Directory(entry->path().string(),
+		                            lastWriteTime(entry->path())));
 	}
 	else if (hasSupportedExtension(*entry))
 		menu.addItem(getLocalSong(*entry, true));
@@ -686,9 +698,9 @@ void getLocalDirectoryRecursively(std::vector<MPD::Song> &songs, const std::stri
 		if (!Config.local_browser_show_hidden_files && isHidden(entry))
 			continue;
 
-		if (fs::is_directory(*entry))
+		if (entry->is_directory())
 		{
-			getLocalDirectoryRecursively(songs, entry->path().native());
+			getLocalDirectoryRecursively(songs, entry->path().string());
 			sort_offset = songs.size();
 		}
 		else if (hasSupportedExtension(*entry))
@@ -707,10 +719,10 @@ void clearDirectory(const std::string &directory)
 {
 	for (fs::directory_iterator entry(directory), end; entry != end; ++entry)
 	{
-		if (!fs::is_symlink(*entry) && fs::is_directory(*entry))
-			clearDirectory(entry->path().native());
+		if (!entry->is_symlink() && entry->is_directory())
+			clearDirectory(entry->path().string());
 		const char msg[] = "Deleting \"%1%\"...";
-		Statusbar::printf(msg, wideShorten(entry->path().native(), COLS-const_strlen(msg)));
+		Statusbar::printf(msg, wideShorten(entry->path().string(), COLS-const_strlen(msg)));
 		fs::remove(entry->path());
 	};
 }

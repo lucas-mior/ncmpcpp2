@@ -19,7 +19,7 @@
  ***************************************************************************/
 
 #include <algorithm>
-#include <boost/filesystem/operations.hpp>
+#include <filesystem>
 #include <boost/program_options.hpp>
 #include <iomanip>
 #include <iostream>
@@ -224,8 +224,8 @@ bool configure(int argc, char **argv)
 		Bindings.generateDefaults();
 
 		// create directories
-		boost::filesystem::create_directories(Config.ncmpcpp_directory);
-		boost::filesystem::create_directory(Config.lyrics_directory);
+		std::filesystem::create_directories(Config.ncmpcpp_directory);
+		std::filesystem::create_directory(Config.lyrics_directory);
 
 		// try to get MPD connection details from environment variables
 		// as they take precedence over these from the configuration.
