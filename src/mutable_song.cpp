@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 #include "statusbar.h"
-#include <boost/algorithm/string/split.hpp>
 #include "mutable_song.h"
 
 namespace MPD {
@@ -178,10 +177,37 @@ void MutableSong::setMTime(time_t mtime)
 	m_mtime = mtime;
 }
 
+namespace {
+
+std::vector<std::string> splitTags(const std::string &value)
+{
+	std::vector<std::string> result;
+	const std::string &separator = Song::TagsSeparator;
+	if (separator.empty())
+	{
+		result.push_back(value);
+		return result;
+	}
+	size_t begin = 0;
+	while (true)
+	{
+		size_t end = value.find(separator, begin);
+		if (end == std::string::npos)
+		{
+			result.push_back(value.substr(begin));
+			break;
+		}
+		result.push_back(value.substr(begin, end-begin));
+		begin = end + separator.length();
+	}
+	return result;
+}
+
+}
+
 void MutableSong::setTags(SetFunction set, const std::string &value)
 {
-	std::vector<std::string> tags;
-	boost::iter_split(tags, value, boost::first_finder(Song::TagsSeparator));
+	std::vector<std::string> tags = splitTags(value);
 	size_t i = 0;
 	for (; i < tags.size(); ++i)
 		(this->*set)(tags[i], i);
