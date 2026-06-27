@@ -19,9 +19,25 @@
  ***************************************************************************/
 
 #include <algorithm>
-#include <boost/algorithm/string/replace.hpp>
 #include <cstdlib>
 #include "utility/html.h"
+
+namespace {
+
+void replaceAll(std::string &s, const std::string &from, const std::string &to)
+{
+	if (from.empty())
+		return;
+
+	size_t pos = 0;
+	while ((pos = s.find(from, pos)) != std::string::npos)
+	{
+		s.replace(pos, from.length(), to);
+		pos += to.length();
+	}
+}
+
+}
 
 std::string unescapeHtmlUtf8(const std::string &data)
 {
@@ -67,14 +83,14 @@ std::string unescapeHtmlUtf8(const std::string &data)
 void unescapeHtmlEntities(std::string &s)
 {
 	// well, at least some of them.
-	boost::replace_all(s, "&apos;", "'");
-	boost::replace_all(s, "&amp;", "&");
-	boost::replace_all(s, "&gt;", ">");
-	boost::replace_all(s, "&lt;", "<");
-	boost::replace_all(s, "&nbsp;", " ");
-	boost::replace_all(s, "&quot;", "\"");
-	boost::replace_all(s, "&ndash;", "–");
-	boost::replace_all(s, "&mdash;", "—");
+	replaceAll(s, "&apos;", "'");
+	replaceAll(s, "&amp;", "&");
+	replaceAll(s, "&gt;", ">");
+	replaceAll(s, "&lt;", "<");
+	replaceAll(s, "&nbsp;", " ");
+	replaceAll(s, "&quot;", "\"");
+	replaceAll(s, "&ndash;", "–");
+	replaceAll(s, "&mdash;", "—");
 }
 
 void stripHtmlTags(std::string &s)

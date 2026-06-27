@@ -20,11 +20,9 @@
 
 #include <cassert>
 #include <cstring>
-#include <boost/format.hpp>
-#include <boost/functional/hash.hpp>
-#include <boost/lexical_cast.hpp>
-#include <iostream>
+#include <iomanip>
 #include <memory>
+#include <sstream>
 
 #include "curses/window.h"
 #include "song.h"
@@ -42,10 +40,15 @@ void format_numeric_tag(std::string &s)
 		s = "0"+s;
 }
 
+void hash_combine(size_t &seed, char c)
+{
+	seed ^= static_cast<unsigned char>(c) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
 size_t calc_hash(const char *s, size_t seed = 0)
 {
 	for (; *s != '\0'; ++s)
-		boost::hash_combine(seed, *s);
+		hash_combine(seed, *s);
 	return seed;
 }
 
@@ -209,7 +212,7 @@ std::string Song::getPriority(unsigned idx) const
 	assert(m_song);
 	if (idx > 0)
 		return "";
-	return boost::lexical_cast<std::string>(getPrio());
+	return std::to_string(getPrio());
 }
 
 std::string MPD::Song::getTags(GetFunction f) const
@@ -311,12 +314,12 @@ std::string Song::ShowTime(unsigned length)
 	length -= minutes*60;
 	int seconds = length;
 
-	std::string result;
+	std::ostringstream result;
 	if (hours > 0)
-		result = (boost::format("%d:%02d:%02d") % hours % minutes % seconds).str();
-	else
-		result = (boost::format("%d:%02d") % minutes % seconds).str();
-	return result;
+		result << hours << ":";
+	result << std::setfill('0') << std::setw(2) << minutes
+	       << ":" << std::setw(2) << seconds;
+	return result.str();
 }
 
 }
