@@ -21,7 +21,7 @@
 #ifndef NCMPCPP_MEDIA_LIBRARY_H
 #define NCMPCPP_MEDIA_LIBRARY_H
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <chrono>
 
 #include "interfaces.h"
 #include "regex_filter.h"
@@ -143,10 +143,10 @@ private:
 	bool m_albums_update_request;
 	bool m_songs_update_request;
 
-	boost::posix_time::ptime m_timer;
+	std::chrono::steady_clock::time_point m_timer;
 
 	const int m_window_timeout;
-	const boost::posix_time::time_duration m_fetching_delay;
+	const std::chrono::milliseconds m_fetching_delay;
 
 	Regex::Filter<PrimaryTag> m_tags_search_predicate;
 	Regex::ItemFilter<AlbumEntry> m_albums_search_predicate;

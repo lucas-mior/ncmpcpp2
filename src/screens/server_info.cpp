@@ -18,7 +18,7 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <chrono>
 #include <iomanip>
 
 #include "global.h"
@@ -33,7 +33,7 @@ using Global::MainStartY;
 ServerInfo *myServerInfo;
 
 ServerInfo::ServerInfo()
-: m_timer(boost::posix_time::from_time_t(0))
+: m_timer()
 {
 	SetDimensions();
 	w = NC::Scrollpad((COLS-m_width)/2, (MainHeight-m_height)/2+MainStartY, m_width, m_height, "MPD server info", Config.main_color, Config.window_border);
@@ -84,7 +84,7 @@ std::wstring ServerInfo::title()
 
 void ServerInfo::update()
 {
-	if (Global::Timer - m_timer < boost::posix_time::seconds(1))
+	if (Global::Timer - m_timer < std::chrono::seconds(1))
 		return;
 	m_timer = Global::Timer;
 	

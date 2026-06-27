@@ -18,6 +18,7 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
+#include <chrono>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -295,7 +296,7 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 		});
 	p.add("playlist_disable_highlight_delay", &playlist_disable_highlight_delay,
 	      "5", [](std::string v) {
-		      return boost::posix_time::seconds(parse_value<unsigned>(v));
+		      return std::chrono::seconds(parse_value<unsigned>(v));
 	      });
 	p.add("message_delay_time", &message_delay_time, "5");
 	p.add("song_list_format", &song_list_format,

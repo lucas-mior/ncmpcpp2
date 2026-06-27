@@ -18,7 +18,7 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <chrono>
 #include <string>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
@@ -55,7 +55,7 @@ using Global::VolumeState;
 
 namespace {
 
-boost::posix_time::ptime past = boost::posix_time::from_time_t(0);
+std::chrono::steady_clock::time_point past;
 
 size_t playing_song_scroll_begin = 0;
 size_t first_line_scroll_begin = 0;
@@ -225,14 +225,14 @@ void Status::handleServerError(MPD::ServerError &e)
 void Status::trace(bool update_timer, bool update_window_timeout)
 {
 	if (update_timer)
-		Timer = boost::posix_time::microsec_clock::local_time();
+		Timer = std::chrono::steady_clock::now();
 	if (Mpd.Connected())
 	{
 		if (!m_status_initialized)
 			initialize_status();
 
 		if (m_player_state == MPD::psPlay
-		&&  Global::Timer - past > boost::posix_time::seconds(1))
+		&&  Global::Timer - past > std::chrono::seconds(1))
 		{
 			// update elapsed time/bitrate of the current song
 			Status::Changes::elapsedTime(true);

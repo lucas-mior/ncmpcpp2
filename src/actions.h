@@ -21,7 +21,7 @@
 #ifndef NCMPCPP_ACTIONS_H
 #define NCMPCPP_ACTIONS_H
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <chrono>
 #include <map>
 #include <string>
 #include "curses/window.h"
@@ -232,7 +232,7 @@ struct UpdateEnvironment: BaseAction
 	void run(bool update_status, bool refresh_window, bool mpd_sync);
 
 private:
-	boost::posix_time::ptime m_past;
+	std::chrono::steady_clock::time_point m_past;
 
 	virtual void run() override;
 };

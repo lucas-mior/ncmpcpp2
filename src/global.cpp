@@ -36,7 +36,7 @@ bool ShowMessages = false;
 bool SeekingInProgress = false;
 
 std::string VolumeState;
-boost::posix_time::ptime Timer;
+std::chrono::steady_clock::time_point Timer;
 
 std::mt19937 RNG;
 

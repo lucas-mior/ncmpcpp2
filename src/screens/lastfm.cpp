@@ -20,6 +20,8 @@
 
 #include "screens/lastfm.h"
 
+#include <chrono>
+
 #include "helpers.h"
 #include "charset.h"
 #include "global.h"
@@ -56,7 +58,8 @@ std::wstring Lastfm::title()
 
 void Lastfm::update()
 {
-	if (m_worker.valid() && m_worker.is_ready())
+	if (m_worker.valid()
+	    && m_worker.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
 	{
 		auto result = m_worker.get();
 		if (result.first)
@@ -68,7 +71,7 @@ void Lastfm::update()
 		else
 			w << " " << NC::Color::Red << result.second << NC::Color::End;
 		// reset m_worker so it's no longer valid
-		m_worker = boost::BOOST_THREAD_FUTURE<LastFm::Service::Result>();
+		m_worker = std::future<LastFm::Service::Result>();
 		m_refresh_window = true;
 	}
 

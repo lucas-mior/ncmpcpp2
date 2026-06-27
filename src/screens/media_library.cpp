@@ -18,7 +18,6 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/locale/conversion.hpp>
 #include <algorithm>
 #include <array>
@@ -175,9 +174,9 @@ public:
 }
 
 MediaLibrary::MediaLibrary()
-: m_timer(boost::posix_time::from_time_t(0))
+: m_timer()
 , m_window_timeout(Config.data_fetching_delay ? 250 : BaseScreen::defaultWindowTimeout)
-, m_fetching_delay(boost::posix_time::milliseconds(Config.data_fetching_delay ? 250 : -1))
+, m_fetching_delay(Config.data_fetching_delay ? 250 : -1)
 {
 	hasTwoColumns = 0;
 	isAlbumOnly = 0;

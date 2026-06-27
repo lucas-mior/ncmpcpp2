@@ -21,9 +21,12 @@
 #include <algorithm>
 #include <boost/filesystem/operations.hpp>
 #include <cassert>
+#include <chrono>
 #include <cerrno>
 #include <cstring>
 #include <fstream>
+#include <functional>
+#include <future>
 #include <thread>
 
 #include "curses/scrollpad.h"
@@ -215,7 +218,7 @@ void Lyrics::update()
 			m_refresh_window = true;
 		}
 
-		if (m_worker.is_ready())
+		if (m_worker.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
 		{
 			auto lyrics = m_worker.get();
 			if (lyrics.first)
@@ -288,8 +291,8 @@ void Lyrics::fetch(const MPD::Song &s)
 		{
 			m_download_stopper = std::make_shared<std::atomic<bool>>(false);
 			m_shared_buffer = std::make_shared<Shared<NC::Buffer>>();
-			m_worker = boost::async(
-				boost::launch::async,
+			m_worker = std::async(
+				std::launch::async,
 				std::bind(downloadLyrics,
 				          m_song, m_shared_buffer, m_download_stopper, m_fetcher));
 		}
@@ -444,7 +447,7 @@ std::optional<std::string> Lyrics::tryTakeConsumerMessage()
 void Lyrics::clearWorker()
 {
 	m_shared_buffer.reset();
-	m_worker = boost::BOOST_THREAD_FUTURE<LyricsFetcher::Result>();
+	m_worker = std::future<LyricsFetcher::Result>();
 }
 
 void Lyrics::stopDownload()

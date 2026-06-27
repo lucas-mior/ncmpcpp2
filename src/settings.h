@@ -21,7 +21,7 @@
 #ifndef NCMPCPP_SETTINGS_H
 #define NCMPCPP_SETTINGS_H
 
-#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <chrono>
 #include <optional>
 #include <boost/regex.hpp>
 #include <cassert>
@@ -203,7 +203,7 @@ struct Configuration
 
 	boost::regex::flag_type regex_type;
 
-	boost::posix_time::seconds playlist_disable_highlight_delay;
+	std::chrono::seconds playlist_disable_highlight_delay;
 
 	double locked_screen_width_part;
 

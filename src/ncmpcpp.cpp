@@ -19,11 +19,11 @@
  ***************************************************************************/
 
 #include <cerrno>
+#include <chrono>
 #include <clocale>
 #include <csignal>
 #include <cstring>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <locale>
 #include <iostream>
 #include <fstream>
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 	wFooter->setPromptHook(Statusbar::Helpers::mainHook);
 	
 	// initialize global timer
-	Timer = boost::posix_time::microsec_clock::local_time();
+	Timer = std::chrono::steady_clock::now();
 
 	// initialize global random number generator
 	Global::RNG.seed(std::random_device()());
@@ -165,7 +165,7 @@ int main(int argc, char **argv)
 	// local variables
 	bool key_pressed = false;
 	auto input = NC::Key::None;
-	auto connect_attempt = boost::posix_time::from_time_t(0);
+	std::chrono::steady_clock::time_point connect_attempt;
 	auto update_environment = static_cast<Actions::UpdateEnvironment &>(
 		Actions::get(Actions::Type::UpdateEnvironment));
 	
@@ -173,7 +173,7 @@ int main(int argc, char **argv)
 	{
 		try
 		{
-			if (!Mpd.Connected() && Timer - connect_attempt > boost::posix_time::seconds(1))
+			if (!Mpd.Connected() && Timer - connect_attempt > std::chrono::seconds(1))
 			{
 				connect_attempt = Timer;
 				// reset local status info
@@ -214,7 +214,7 @@ int main(int argc, char **argv)
 			// ~400ms inaccurate. On the other hand, if keys are being pressed, we don't
 			// want to update timer in both Status::trace and here. Therefore we update
 			// timer in Status::trace only if there was no recent input.
-			Timer = boost::posix_time::microsec_clock::local_time();
+			Timer = std::chrono::steady_clock::now();
 
 			try
 			{

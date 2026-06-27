@@ -19,7 +19,7 @@
  ***************************************************************************/
 
 #include <algorithm>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <chrono>
 #include <sstream>
 
 #include "curses/menu_impl.h"
@@ -53,7 +53,7 @@ bool playlistEntryMatcher(const Regex::Regex &rx, const MPD::Song &s);
 
 Playlist::Playlist()
 : m_total_length(0), m_remaining_time(0), m_scroll_begin(0)
-, m_timer(boost::posix_time::from_time_t(0))
+, m_timer()
 , m_reload_total_length(false), m_reload_remaining(false)
 {
 	w = NC::Menu<MPD::Song>(0, MainStartY, COLS, MainHeight, Config.playlist_display_mode == DisplayMode::Columns && Config.titles_visibility ? Display::Columns(COLS) : "", Config.main_color, NC::Border());
@@ -123,7 +123,7 @@ std::wstring Playlist::title()
 void Playlist::update()
 {
 	if (w.isHighlighted()
-	&&  Config.playlist_disable_highlight_delay.time_duration::seconds() > 0
+	&&  Config.playlist_disable_highlight_delay > std::chrono::seconds(0)
 	&&  Global::Timer - m_timer > Config.playlist_disable_highlight_delay)
 	{
 		w.setHighlighting(false);

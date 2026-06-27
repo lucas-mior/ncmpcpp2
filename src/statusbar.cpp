@@ -18,6 +18,8 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
+#include <chrono>
+
 #include "global.h"
 #include "settings.h"
 #include "status.h"
@@ -32,8 +34,8 @@ namespace {
 
 bool progressbar_block_update = false;
 
-boost::posix_time::ptime statusbar_lock_time;
-boost::posix_time::seconds statusbar_lock_delay(-1);
+std::chrono::steady_clock::time_point statusbar_lock_time;
+std::chrono::seconds statusbar_lock_delay(-1);
 
 bool statusbar_block_update = false;
 bool statusbar_allow_unlock = true;
@@ -96,7 +98,7 @@ Statusbar::ScopedLock::~ScopedLock() noexcept
 {
 	// unlock
 	statusbar_allow_unlock = true;
-	if (statusbar_lock_delay.is_negative())
+	if (statusbar_lock_delay < std::chrono::seconds(0))
 	{
 		if (Config.statusbar_visibility)
 			statusbar_block_update = false;
@@ -126,10 +128,10 @@ bool Statusbar::isUnlocked()
 void Statusbar::tryRedraw()
 {
 	using Global::Timer;
-	if (statusbar_lock_delay > boost::posix_time::seconds(0)
+	if (statusbar_lock_delay > std::chrono::seconds(0)
 	&&  Timer - statusbar_lock_time > statusbar_lock_delay)
 	{
-		statusbar_lock_delay = boost::posix_time::seconds(-1);
+		statusbar_lock_delay = std::chrono::seconds(-1);
 		
 		if (Config.statusbar_visibility)
 			statusbar_block_update = !statusbar_allow_unlock;
@@ -175,7 +177,7 @@ void Statusbar::print(int delay, const std::string &message)
         if(delay)
         {
             statusbar_lock_time = Global::Timer;
-            statusbar_lock_delay = boost::posix_time::seconds(delay);
+            statusbar_lock_delay = std::chrono::seconds(delay);
             if (Config.statusbar_visibility)
                 statusbar_block_update = true;
             else
