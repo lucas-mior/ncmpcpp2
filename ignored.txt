@@ -1,0 +1,8 @@
+.git
+.cache
+.clangd
+LICENSE
+bin
+tags
+.tags.vim
+compile_commands.json
