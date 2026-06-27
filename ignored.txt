@@ -11,3 +11,5 @@ compile_commands.json
 .*\.o
 .deps
 src/ncmpcpp$
+configure
+libtool
