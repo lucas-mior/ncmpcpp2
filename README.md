@@ -1,3 +1,12 @@
+# ncmpcpp2
+This is a fork of ncmpcpp. The goals are:
+- Remove clock and other features I don't use.
+- Remove boost dependency.
+- Convert the project to C11.
+- Fix the bugs reported in original repo.
+
+Original README is below.
+
 # NCurses Music Player Client (Plus Plus)
 
 ## ncmpcpp – featureful ncurses based MPD client inspired by ncmpc
