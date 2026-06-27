@@ -23,7 +23,6 @@
 #include <chrono>
 #include <cstring>
 #include <filesystem>
-#include <boost/locale/conversion.hpp>
 #include <algorithm>
 #include <iostream>
 #include <regex>
@@ -2234,7 +2233,7 @@ void AddRandomItems::run()
 	if (rnd_type != 's')
 	{
 		tag_type = charToTagType(rnd_type);
-		tag_type_str = boost::locale::to_lower(tagTypeToString(tag_type));
+		tag_type_str = lowercaseAscii(tagTypeToString(tag_type));
 	}
 	else
 		tag_type_str = "song";
@@ -2326,7 +2325,7 @@ void ToggleLibraryTagType::run()
 		std::string item_type = tagTypeToString(Config.media_lib_primary_tag);
 		myLibrary->Tags.setTitle(Config.titles_visibility ? item_type + "s" : "");
 		myLibrary->Tags.reset();
-		item_type = boost::locale::to_lower(item_type);
+		item_type = lowercaseAscii(item_type);
 		std::string and_mtime = Config.media_library_sort_by_mtime ?
 		                        " and mtime" :
 		                        "";
