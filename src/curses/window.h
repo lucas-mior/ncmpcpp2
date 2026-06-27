@@ -27,7 +27,7 @@
 
 #include "curses.h"
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <functional>
 #include <list>
 #include <stack>
@@ -35,6 +35,7 @@
 #include <string>
 #include <tuple>
 #include <queue>
+#include <stdexcept>
 
 #if NCURSES_MOUSE_VERSION == 1
 # define BUTTON5_PRESSED (1U << 27)
@@ -189,7 +190,7 @@ private:
 
 std::istream &operator>>(std::istream &is, Color &f);
 
-typedef boost::optional<Color> Border;
+typedef std::optional<Color> Border;
 
 /// Terminal manipulation functions
 enum class TermManip { ClearToEOL };

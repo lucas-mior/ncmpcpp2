@@ -19,12 +19,12 @@
  ***************************************************************************/
 
 #include <algorithm>
-#include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/program_options.hpp>
 #include <iomanip>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include "bindings.h"
 #include "configuration.h"
@@ -42,6 +42,36 @@ using std::cout;
 namespace {
 
 const char *env_home;
+
+std::string trimCopy(std::string s)
+{
+	auto first = s.find_first_not_of(" \t\r\n");
+	if (first == std::string::npos)
+		return "";
+	auto last = s.find_last_not_of(" \t\r\n");
+	return s.substr(first, last-first+1);
+}
+
+int parseInt(const std::string &s)
+{
+	std::istringstream is(s);
+	int result;
+	if (!(is >> result))
+		throw std::invalid_argument(s);
+	is >> std::ws;
+	if (!is.eof())
+		throw std::invalid_argument(s);
+	return result;
+}
+
+LyricsFetcher_ makeLyricsFetcher(const std::string &name)
+{
+	std::istringstream is(name);
+	LyricsFetcher_ result;
+	if (!(is >> result))
+		throw std::runtime_error("Unknown lyrics fetcher: " + name);
+	return result;
+}
 
 std::string xdg_config_home()
 {
@@ -161,7 +191,7 @@ bool configure(int argc, char **argv)
 			};
 			for (auto &data : fetcher_data)
 			{
-				auto fetcher = boost::lexical_cast<LyricsFetcher_>(std::get<0>(data));
+				auto fetcher = makeLyricsFetcher(std::get<0>(data));
 				std::cout << std::setw(20)
 				          << std::left
 				          << fetcher->name()
@@ -205,10 +235,10 @@ bool configure(int argc, char **argv)
 			Mpd.SetHostname(env_host);
 		if (env_port != nullptr)
 		{
-			auto trimmed_env_port = boost::trim_copy<std::string>(env_port);
+			auto trimmed_env_port = trimCopy(env_port);
 			try {
-				Mpd.SetPort(boost::lexical_cast<int>(trimmed_env_port));
-			} catch (boost::bad_lexical_cast &) {
+				Mpd.SetPort(parseInt(trimmed_env_port));
+			} catch (std::invalid_argument &) {
 				throw std::runtime_error("MPD_PORT environment variable ("
 				                         + std::string(env_port)
 				                         + ") is not a number");

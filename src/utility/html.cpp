@@ -26,15 +26,8 @@ namespace {
 
 void replaceAll(std::string &s, const std::string &from, const std::string &to)
 {
-	if (from.empty())
-		return;
-
-	size_t pos = 0;
-	while ((pos = s.find(from, pos)) != std::string::npos)
-	{
-		s.replace(pos, from.length(), to);
-		pos += to.length();
-	}
+	for (size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos; pos += to.size())
+		s.replace(pos, from.size(), to);
 }
 
 }

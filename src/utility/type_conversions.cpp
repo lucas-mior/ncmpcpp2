@@ -18,8 +18,8 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <boost/lexical_cast.hpp>
 #include <cassert>
+#include <string>
 #include "utility/type_conversions.h"
 
 std::string channelsToString(int channels)
@@ -31,7 +31,7 @@ std::string channelsToString(int channels)
 	case 2:
 		return "Stereo";
 	default:
-		return boost::lexical_cast<std::string>(channels);
+		return std::to_string(channels);
 	}
 }
 
@@ -201,7 +201,7 @@ MPD::Song::GetFunction charToGetFunction(char c)
 	}
 }
 
-boost::optional<mpd_tag_type> getFunctionToTagType(MPD::Song::GetFunction f)
+std::optional<mpd_tag_type> getFunctionToTagType(MPD::Song::GetFunction f)
 {
 	if (f == &MPD::Song::getArtist)
 		return MPD_TAG_ARTIST;
@@ -228,7 +228,7 @@ boost::optional<mpd_tag_type> getFunctionToTagType(MPD::Song::GetFunction f)
 	else if (f == &MPD::Song::getComment)
 		return MPD_TAG_COMMENT;
 	else
-		return boost::none;
+		return std::nullopt;
 }
 
 std::string itemTypeToString(MPD::Item::Type type)

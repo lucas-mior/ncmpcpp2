@@ -25,6 +25,7 @@
 #include <boost/locale/conversion.hpp>
 #include <algorithm>
 #include <fstream>
+#include <string>
 
 #include "actions.h"
 #include "screens/browser.h"
@@ -716,9 +717,9 @@ void TagEditor::runAction()
 		for (unsigned i = 1; i <= EditedSongs.size(); ++i, ++it)
 		{
 			if (Config.tag_editor_extended_numeration)
-				(*it)->setTrack(boost::lexical_cast<std::string>(i) + "/" + boost::lexical_cast<std::string>(EditedSongs.size()));
+				(*it)->setTrack(std::to_string(i) + "/" + std::to_string(EditedSongs.size()));
 			else
-				(*it)->setTrack(boost::lexical_cast<std::string>(i));
+				(*it)->setTrack(std::to_string(i));
 			// discard other track number tags
 			(*it)->setTrack("", 1);
 		}

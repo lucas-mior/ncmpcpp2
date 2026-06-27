@@ -22,6 +22,8 @@
 
 #ifdef HAVE_TAGLIB_H
 
+#include <charconv>
+
 // taglib includes
 #include <id3v1tag.h>
 #include <id3v2tag.h>
@@ -43,6 +45,18 @@
 
 namespace {
 
+bool parseUnsigned(const std::string &value, unsigned &result)
+{
+	if (value.empty())
+		return false;
+
+	auto begin = value.data();
+	auto end = begin + value.size();
+	auto [ptr, ec] = std::from_chars(begin, end, result);
+	return ec == std::errc() && ptr == end;
+}
+
+
 TagLib::StringList tagList(const MPD::MutableSong &s, MPD::Song::GetFunction f)
 {
 	TagLib::StringList result;
@@ -57,8 +71,8 @@ void readCommonTags(mpd_song *s, TagLib::Tag *tag)
 	Tags::setAttribute(s, "Title", tag->title().to8Bit(true));
 	Tags::setAttribute(s, "Artist", tag->artist().to8Bit(true));
 	Tags::setAttribute(s, "Album", tag->album().to8Bit(true));
-	Tags::setAttribute(s, "Date", boost::lexical_cast<std::string>(tag->year()));
-	Tags::setAttribute(s, "Track", boost::lexical_cast<std::string>(tag->track()));
+	Tags::setAttribute(s, "Date", std::to_string(tag->year()));
+	Tags::setAttribute(s, "Track", std::to_string(tag->track()));
 	Tags::setAttribute(s, "Genre", tag->genre().to8Bit(true));
 	Tags::setAttribute(s, "Comment", tag->comment().to8Bit(true));
 }
@@ -122,14 +136,16 @@ void writeCommonTags(const MPD::MutableSong &s, TagLib::Tag *tag)
 	tag->setTitle(ToWString(s.getTitle()));
 	tag->setArtist(ToWString(s.getArtist()));
 	tag->setAlbum(ToWString(s.getAlbum()));
-	try {
-		tag->setYear(boost::lexical_cast<unsigned>(s.getDate()));
-	} catch (boost::bad_lexical_cast &) {
+	unsigned year;
+	if (parseUnsigned(s.getDate(), year))
+		tag->setYear(year);
+	else {
 		std::cerr << "writeCommonTags: couldn't write 'year' tag to '" << s.getURI() << "' as it's not a positive integer\n";
 	}
-	try {
-		tag->setTrack(boost::lexical_cast<unsigned>(s.getTrack()));
-	} catch (boost::bad_lexical_cast &) {
+	unsigned track;
+	if (parseUnsigned(s.getTrack(), track))
+		tag->setTrack(track);
+	else {
 		std::cerr << "writeCommonTags: couldn't write 'track' tag to '" << s.getURI() << "' as it's not a positive integer\n";
 	}
 	tag->setGenre(ToWString(s.getGenre()));
@@ -262,7 +278,7 @@ void read(mpd_song *s)
 	if (f.isNull())
 		return;
 	
-	setAttribute(s, "Time", boost::lexical_cast<std::string>(f.audioProperties()->lengthInSeconds()));
+	setAttribute(s, "Time", std::to_string(f.audioProperties()->lengthInSeconds()));
 	
 	if (auto mpeg_file = dynamic_cast<TagLib::MPEG::File *>(f.file()))
 	{

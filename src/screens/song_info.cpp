@@ -26,10 +26,11 @@
 #include "title.h"
 #include "screens/screen_switcher.h"
 
+#include <string>
+
 #ifdef HAVE_TAGLIB_H
 # include "fileref.h"
 # include "tag.h"
-# include <boost/lexical_cast.hpp>
 #endif // HAVE_TAGLIB_H
 
 using Global::MainHeight;
@@ -126,10 +127,10 @@ void SongInfo::PrepareSong(const MPD::Song &s)
 		{
 			print_key_value(
 				"Bitrate",
-				boost::lexical_cast<std::string>(f.audioProperties()->bitrate()) + " kbps");
+				std::to_string(f.audioProperties()->bitrate()) + " kbps");
 			print_key_value(
 				"Sample rate",
-				boost::lexical_cast<std::string>(f.audioProperties()->sampleRate()) + " Hz");
+				std::to_string(f.audioProperties()->sampleRate()) + " Hz");
 			print_key_value("Channels", channelsToString(f.audioProperties()->channels()));
 			
 			auto rginfo = Tags::readReplayGain(f.file());

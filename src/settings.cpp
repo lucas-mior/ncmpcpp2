@@ -18,9 +18,8 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <boost/tuple/tuple.hpp>
-#include <boost/tokenizer.hpp>
 #include <fstream>
+#include <sstream>
 #include <stdexcept>
 
 #include "configuration.h"
@@ -53,7 +52,7 @@ std::vector<Column> generate_columns(const std::string &format)
 		if (scolor.empty())
 			col.color = NC::Color::Default;
 		else
-			col.color = boost::lexical_cast<NC::Color>(scolor);
+			col.color = parse_value<NC::Color>(scolor);
 
 		if (*width.rbegin() == 'f')
 		{
@@ -98,7 +97,7 @@ std::vector<Column> generate_columns(const std::string &format)
 		else // empty column
 			col.display_empty_tag = 0;
 
-		col.width = boost::lexical_cast<int>(width);
+		col.width = parse_value<int>(width);
 		result.push_back(col);
 	}
 
@@ -220,7 +219,7 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 			Mpd.SetHostname(host);
 		});
 	p.add<void>("mpd_port", nullptr, "6600", [](std::string port) {
-			Mpd.SetPort(verbose_lexical_cast<unsigned>(port));
+			Mpd.SetPort(parse_value<unsigned>(port));
 		});
 	p.add<void>("mpd_password", nullptr, "", [](std::string password) {
 			if (!password.empty())
@@ -247,7 +246,7 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 	});
 	p.add("visualizer_fps", &visualizer_fps,
 			"60", [](std::string v) {
-			uint32_t result = verbose_lexical_cast<uint32_t>(v);
+			uint32_t result = parse_value<uint32_t>(v);
 			boundsCheck<uint32_t>(result, 30, 1000);
 			return result;
 			});
@@ -256,25 +255,25 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 	p.add("visualizer_spectrum_smooth_look_legacy_chars", &visualizer_spectrum_smooth_look_legacy_chars, "yes", yes_no);
 	p.add("visualizer_spectrum_dft_size", &visualizer_spectrum_dft_size,
 			"2", [](std::string v) {
-			auto result = verbose_lexical_cast<size_t>(v);
+			auto result = parse_value<size_t>(v);
 			boundsCheck<size_t>(result, 1, 5);
 			return result;
 			});
 	p.add("visualizer_spectrum_gain", &visualizer_spectrum_gain,
 			"10", [](std::string v) {
-			auto result = verbose_lexical_cast<double>(v);
+			auto result = parse_value<double>(v);
 			boundsCheck<double>(result, 0, 100);
 			return result;
 			});
 	p.add("visualizer_spectrum_hz_min", &visualizer_spectrum_hz_min,
 			"20", [](std::string v) {
-			auto result = verbose_lexical_cast<double>(v);
+			auto result = parse_value<double>(v);
 			lowerBoundCheck<double>(result, 1);
 			return result;
 			});
 	p.add("visualizer_spectrum_hz_max", &visualizer_spectrum_hz_max,
 			"20000", [](std::string v) {
-			auto result = verbose_lexical_cast<double>(v);
+			auto result = parse_value<double>(v);
 			lowerBoundCheck<double>(result, Config.visualizer_spectrum_hz_min+1);
 			return result;
 			});
@@ -296,7 +295,7 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 		});
 	p.add("playlist_disable_highlight_delay", &playlist_disable_highlight_delay,
 	      "5", [](std::string v) {
-		      return boost::posix_time::seconds(verbose_lexical_cast<unsigned>(v));
+		      return boost::posix_time::seconds(parse_value<unsigned>(v));
 	      });
 	p.add("message_delay_time", &message_delay_time, "5");
 	p.add("song_list_format", &song_list_format,
@@ -380,7 +379,7 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 			           "use 'none' instead");
 			v = "none";
 		}
-		return verbose_lexical_cast<SortMode>(v);
+		return parse_value<SortMode>(v);
 	});
 	p.add("browser_sort_format", &browser_sort_format,
 	      "{%a - }{%t}|{%f} {%l}", [](std::string v) {
@@ -468,11 +467,9 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 	      "tekstowo, plyrics, justsomelyrics, jahlyrics, zeneszoveg, internet", [this](std::string v) {
 		      lyrics_fetchers = list_of<LyricsFetcher_>(v, [](std::string s) {
 			      LyricsFetcher_ fetcher;
-			      try {
-				      fetcher = boost::lexical_cast<LyricsFetcher_>(s);
-			      } catch (boost::bad_lexical_cast &) {
+			      std::istringstream is(s);
+			      if (!(is >> fetcher))
 				      std::clog << "Unknown lyrics fetcher: " << s << "\n";
-			      }
 			      return fetcher;
 		      });
 		      auto last = std::remove_if(
@@ -517,7 +514,7 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 			return screen;
 		});
 	p.add("startup_slave_screen", &startup_slave_screen_type, "", [](std::string v) {
-			boost::optional<ScreenType> screen;
+			std::optional<ScreenType> screen;
 			if (!v.empty())
 			{
 				screen = stringtoStartupScreenType(v);
@@ -529,7 +526,7 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 	p.add("startup_slave_screen_focus", &startup_slave_screen_focus, "no", yes_no);
 	p.add("locked_screen_width_part", &locked_screen_width_part,
 	      "50", [](std::string v) {
-		      return verbose_lexical_cast<double>(v) / 100;
+		      return parse_value<double>(v) / 100;
 	      });
 	p.add("ask_for_locked_screen_width_part", &ask_for_locked_screen_width_part,
 	      "yes", yes_no);
@@ -588,7 +585,7 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 		});
 	p.add("search_engine_default_search_mode", &search_engine_default_search_mode,
 	      "1", [](std::string v) {
-		      auto mode = verbose_lexical_cast<unsigned>(v);
+		      auto mode = parse_value<unsigned>(v);
 		      boundsCheck<unsigned>(mode, 1, 3);
 		      return --mode;
 	      });
@@ -609,9 +606,9 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 	p.add("statusbar_time_color", &statusbar_time_color, "default:b");
 	p.add("player_state_color", &player_state_color, "default:b");
 	p.add("alternative_ui_separator_color", &alternative_ui_separator_color, "black:b");
-	p.add("window_border_color", &window_border, "green", verbose_lexical_cast<NC::Color>);
+	p.add("window_border_color", &window_border, "green", parse_value<NC::Color>);
 	p.add("active_window_border", &active_window_border, "red",
-	      verbose_lexical_cast<NC::Color>);
+	      parse_value<NC::Color>);
 
 	return std::all_of(
 		config_paths.begin(),

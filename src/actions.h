@@ -22,7 +22,6 @@
 #define NCMPCPP_ACTIONS_H
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
-#include <boost/format.hpp>
 #include <map>
 #include <string>
 #include "curses/window.h"
@@ -172,11 +171,7 @@ void setResizeFlags();
 void resizeScreen(bool reload_main_window);
 void setWindowsDimensions();
 
-void confirmAction(const boost::format &description);
-inline void confirmAction(const std::string &description)
-{
-	confirmAction(boost::format(description));
-}
+void confirmAction(const std::string &description);
 
 bool isMPDMusicDirSet();
 

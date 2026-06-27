@@ -30,8 +30,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <boost/regex.hpp>
 #include <iostream>
+#include <regex>
 
 #include "utility/option_parser.h"
 
@@ -47,7 +47,7 @@ bool yes_no(const std::string &v)
 
 std::vector<size_t> parse_ratio(const std::string &v, const std::vector<size_t>::size_type length)
 {
-	std::vector<size_t> ret = list_of<size_t>(v, verbose_lexical_cast<size_t>, length, "", ":", "");
+	std::vector<size_t> ret = list_of<size_t>(v, parse_value<size_t>, length, "", ":", "");
 
 	size_t total = 0;
 	for (auto i : ret)
@@ -64,15 +64,15 @@ std::vector<size_t> parse_ratio(const std::string &v, const std::vector<size_t>:
 bool option_parser::run(std::istream &is, bool ignore_errors)
 {
 	// quoted value. leftmost and rightmost quotation marks are the delimiters.
-	boost::regex quoted("(\\w+)\\h*=\\h*\"(.*)\"[^\"]*");
+	std::regex quoted("(\\w+)[ \t]*=[ \t]*\"(.*)\"[^\"]*");
 	// unquoted value. whitespaces get trimmed.
-	boost::regex unquoted("(\\w+)\\h*=\\h*(.*?)\\h*");
-	boost::smatch match;
+	std::regex unquoted("(\\w+)[ \t]*=[ \t]*(.*?)[ \t]*");
+	std::smatch match;
 	std::string line;
 	while (std::getline(is, line))
 	{
-		if (boost::regex_match(line, match, quoted)
-		||  boost::regex_match(line, match, unquoted))
+		if (std::regex_match(line, match, quoted)
+		||  std::regex_match(line, match, unquoted))
 		{
 			std::string option = match[1];
 			auto it = m_parsers.find(option);

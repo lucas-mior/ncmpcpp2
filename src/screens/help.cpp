@@ -26,6 +26,7 @@
 #include "settings.h"
 #include "status.h"
 #include "utility/string.h"
+#include "utility/string_format.h"
 #include "utility/wide_string.h"
 #include "title.h"
 #include "screens/screen_switcher.h"
@@ -94,9 +95,9 @@ void key(NC::Scrollpad &w, const Actions::Type at, const char *desc)
 	w << "    " << display_keys(at) << " : " << desc << '\n';
 }
 
-void key(NC::Scrollpad &w, const Actions::Type at, const boost::format &desc)
+void key(NC::Scrollpad &w, const Actions::Type at, const std::string &desc)
 {
-	w << "    " << display_keys(at) << " : " << desc.str() << '\n';
+	w << "    " << display_keys(at) << " : " << desc << '\n';
 }
 
 void key(NC::Scrollpad &w, NC::Key::Type k, const std::string &desc)
@@ -179,10 +180,10 @@ void write_bindings(NC::Scrollpad &w)
 	key(w, Type::SeekForward, "Seek forward in playing song");
 	key(w, Type::SeekBackward, "Seek backward in playing song");
 	key(w, Type::VolumeDown,
-		boost::format("Decrease volume by %1%%%") % Config.volume_change_step
+		stringFormat("Decrease volume by %1%%%", Config.volume_change_step)
 	);
 	key(w, Type::VolumeUp,
-		boost::format("Increase volume by %1%%%") % Config.volume_change_step
+		stringFormat("Increase volume by %1%%%", Config.volume_change_step)
 	);
 	w << '\n';
 	key(w, Type::ToggleAddMode, "Toggle add mode (add or remove/always add)");

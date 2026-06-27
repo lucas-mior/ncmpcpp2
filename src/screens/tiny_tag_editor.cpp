@@ -23,6 +23,7 @@
 #ifdef HAVE_TAGLIB_H
 
 #include <boost/locale/conversion.hpp>
+#include <string>
 
 // taglib includes
 #include <fileref.h>
@@ -247,11 +248,11 @@ bool TinyTagEditor::getTags()
 	print_key_value(
 		w[4].value(),
 		"Bitrate",
-		boost::lexical_cast<std::string>(f.audioProperties()->bitrate()) + " kbps");
+		std::to_string(f.audioProperties()->bitrate()) + " kbps");
 	print_key_value(
 		w[5].value(),
 		"Sample rate",
-		boost::lexical_cast<std::string>(f.audioProperties()->sampleRate()) + " Hz");
+		std::to_string(f.audioProperties()->sampleRate()) + " Hz");
 	print_key_value(
 		w[6].value(),
 		"Channels",

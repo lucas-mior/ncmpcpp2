@@ -19,7 +19,7 @@
  ***************************************************************************/
 
 #include <algorithm>
-#include <boost/optional.hpp>
+#include <optional>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <cassert>
 
@@ -38,6 +38,7 @@
 #include "helpers/song_iterator_maker.h"
 #include "utility/functional.h"
 #include "utility/comparators.h"
+#include "utility/string_format.h"
 #include "title.h"
 #include "screens/screen_switcher.h"
 
@@ -58,7 +59,7 @@ size_t RightColumnWidth;
 std::string SongToString(const MPD::Song &s);
 bool PlaylistEntryMatcher(const Regex::Regex &rx, const MPD::Playlist &playlist);
 bool SongEntryMatcher(const Regex::Regex &rx, const MPD::Song &s);
-boost::optional<size_t> GetSongIndexInPlaylist(MPD::Playlist playlist, const MPD::Song &song);
+std::optional<size_t> GetSongIndexInPlaylist(MPD::Playlist playlist, const MPD::Song &song);
 }
 
 PlaylistEditor::PlaylistEditor()
@@ -200,9 +201,9 @@ void PlaylistEditor::update()
 			std::string wtitle;
 			if (Config.titles_visibility)
 			{
-				wtitle = (boost::format("Content (%1% %2%)")
-				          % boost::lexical_cast<std::string>(Content.size())
-				          % (Content.size() == 1 ? "item" : "items")).str();
+				wtitle = stringFormat("Content (%1% %2%)",
+				                      Content.size(),
+				                      Content.size() == 1 ? "item" : "items");
 				wtitle.resize(Content.getWidth());
 			}
 			Content.setTitle(wtitle);
@@ -587,7 +588,7 @@ bool SongEntryMatcher(const Regex::Regex &rx, const MPD::Song &s)
 	return Regex::search(SongToString(s), rx, Config.ignore_diacritics);
 }
 
-boost::optional<size_t> GetSongIndexInPlaylist(MPD::Playlist playlist, const MPD::Song &song)
+std::optional<size_t> GetSongIndexInPlaylist(MPD::Playlist playlist, const MPD::Song &song)
 {
 	size_t index = 0;
 	MPD::SongIterator it = Mpd.GetPlaylistContentNoInfo(playlist.path()), end;
@@ -595,7 +596,7 @@ boost::optional<size_t> GetSongIndexInPlaylist(MPD::Playlist playlist, const MPD
 	for (;;)
 	{
 		if (it == end)
-			return boost::none;
+			return std::nullopt;
 		if (*it == song)
 			return index;
 

@@ -21,10 +21,10 @@
 #ifndef NCMPCPP_STATUSBAR_H
 #define NCMPCPP_STATUSBAR_H
 
-#include <boost/format.hpp>
 #include "curses/window.h"
 #include "settings.h"
 #include "interfaces.h"
+#include "utility/string_format.h"
 
 namespace Progressbar {
 
@@ -133,31 +133,19 @@ inline void print(const std::string &message)
 }
 
 /// displays formatted message in statusbar for period of time set in configuration file
-template <typename FormatT>
-void printf(FormatT &&fmt)
+template <typename FormatT, typename... Args>
+void printf(FormatT &&fmt, Args&&... args)
 {
-	print(Config.message_delay_time, boost::format(std::forward<FormatT>(fmt)).str());
-}
-template <typename FormatT, typename ArgT, typename... Args>
-void printf(FormatT &&fmt, ArgT &&arg, Args&&... args)
-{
-	printf(boost::format(std::forward<FormatT>(fmt)) % std::forward<ArgT>(arg),
-		std::forward<Args>(args)...
-	);
+	print(Config.message_delay_time,
+	      stringFormat(std::forward<FormatT>(fmt), std::forward<Args>(args)...));
 }
 
 /// displays formatted message in statusbar for a given period of time
-template <typename FormatT>
-void printf(int delay, FormatT &&fmt)
+template <typename FormatT, typename... Args>
+void printf(int delay, FormatT &&fmt, Args&&... args)
 {
-	print(delay, boost::format(std::forward<FormatT>(fmt)).str());
-}
-template <typename FormatT, typename ArgT, typename... Args>
-void printf(int delay, FormatT &&fmt, ArgT &&arg, Args&&... args)
-{
-	printf(delay, boost::format(std::forward<FormatT>(fmt)) % std::forward<ArgT>(arg),
-		std::forward<Args>(args)...
-	);
+	print(delay,
+	      stringFormat(std::forward<FormatT>(fmt), std::forward<Args>(args)...));
 }
 
 }

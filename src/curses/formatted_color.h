@@ -21,8 +21,6 @@
 #ifndef NCMPCPP_FORMATTED_COLOR_H
 #define NCMPCPP_FORMATTED_COLOR_H
 
-#include <boost/optional.hpp>
-#include <boost/range/adaptor/reversed.hpp>
 #include "curses/window.h"
 #include "utility/storage_kind.h"
 
@@ -93,8 +91,9 @@ OutputStreamT &operator<<(OutputStreamT &os,
 {
 	if (rfc.base().color() != Color::Default)
 		os << Color::End;
-	for (auto &fmt : boost::adaptors::reverse(rfc.base().formats()))
-		os << reverseFormat(fmt);
+	const auto &formats = rfc.base().formats();
+	for (auto it = formats.rbegin(); it != formats.rend(); ++it)
+		os << reverseFormat(*it);
 	return os;
 }
 
