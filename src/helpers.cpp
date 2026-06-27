@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 #include <algorithm>
-#include <boost/range/adaptor/reversed.hpp>
 #include <time.h>
 
 #include "enums.h"
@@ -45,33 +44,41 @@ const MPD::Song *currentSong(const BaseScreen *screen)
 void deleteSelectedSongsFromPlaylist(NC::Menu<MPD::Song> &playlist)
 {
 	selectCurrentIfNoneSelected(playlist);
-	boost::optional<int> range_end;
+	bool in_range = false;
+	int range_end = 0;
 	Mpd.StartCommandsList();
-	for (auto &s : boost::adaptors::reverse(playlist))
+	for (auto it = playlist.rbegin(); it != playlist.rend(); ++it)
 	{
+		auto &s = *it;
 		if (s.isSelected())
 		{
 			s.setSelected(false);
-			if (range_end == boost::none)
+			if (!in_range)
+			{
 				range_end = s.value().getPosition() + 1;
+				in_range = true;
+			}
 		}
-		else if (range_end != boost::none)
+		else if (in_range)
 		{
-			Mpd.DeleteRange(s.value().getPosition() + 1, *range_end);
-			range_end.reset();
+			Mpd.DeleteRange(s.value().getPosition() + 1, range_end);
+			in_range = false;
 		}
 	}
-	if (range_end != boost::none)
-		Mpd.DeleteRange(0, *range_end);
+	if (in_range)
+		Mpd.DeleteRange(0, range_end);
 	Mpd.CommitCommandsList();
 }
 
 void removeSongFromPlaylist(const SongMenu &playlist, const MPD::Song &s)
 {
 	Mpd.StartCommandsList();
-	for (auto &item : boost::adaptors::reverse(playlist))
+	for (auto it = playlist.rbegin(); it != playlist.rend(); ++it)
+	{
+		const auto &item = *it;
 		if (item.value() == s)
 			Mpd.Delete(item.value().getPosition());
+	}
 	Mpd.CommitCommandsList();
 }
 
