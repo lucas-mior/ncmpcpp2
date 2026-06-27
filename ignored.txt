@@ -11,8 +11,9 @@ compile_commands.json
 .*\.o
 .deps
 src/ncmpcpp$
-configure
+configure$
 libtool
-Makefile.*
+Makefile.in
+Makefile$
 config.log
 .*~$
