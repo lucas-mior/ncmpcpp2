@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 #include <cassert>
-#include <boost/regex.hpp>
 #include <iostream>
 
 #include "curses/scrollpad.h"
@@ -29,20 +28,15 @@ namespace {
 
 template <typename BeginT, typename EndT>
 bool regexSearch(NC::Buffer &buf, const BeginT &begin, const std::string &ws,
-                 const EndT &end, boost::regex::flag_type flags, size_t id)
+                 const EndT &end, Regex::Flags flags, size_t id)
 {
 	try {
-		boost::regex rx(ws, flags);
-		auto first = boost::sregex_iterator(buf.str().begin(), buf.str().end(), rx);
-		auto last = boost::sregex_iterator();
-		bool success = first != last;
-		for (; first != last; ++first)
-		{
-			buf.addProperty(first->position(), begin, id);
-			buf.addProperty(first->position() + first->length(), end, id);
-		}
-		return success;
-	} catch (boost::bad_expression &e) {
+		return Regex::forEachMatch(
+			buf.str(), ws, flags, [&buf, &begin, &end, id](size_t pos, size_t len) {
+				buf.addProperty(pos, begin, id);
+				buf.addProperty(pos + len, end, id);
+			});
+	} catch (Regex::Error &e) {
 		std::cerr << "regexSearch: bad_expression: " << e.what() << "\n";
 		return false;
 	}
@@ -272,19 +266,19 @@ void Scrollpad::reset()
 }
 
 bool Scrollpad::setProperties(const Color &begin, const std::string &s,
-                              const Color &end, size_t flags, size_t id)
+                              const Color &end, Regex::Flags flags, size_t id)
 {
-	return regexSearch(m_buffer, std::move(begin), s, std::move(end), id, flags);
+	return regexSearch(m_buffer, begin, s, end, flags, id);
 }
 
 bool Scrollpad::setProperties(const Format &begin, const std::string &s,
-                              const Format &end, size_t flags, size_t id)
+                              const Format &end, Regex::Flags flags, size_t id)
 {
 	return regexSearch(m_buffer, begin, s, end, flags, id);
 }
 
 bool Scrollpad::setProperties(const FormattedColor &fc, const std::string &s,
-                              size_t flags, size_t id)
+                              Regex::Flags flags, size_t id)
 {
 	return regexSearch(m_buffer,
 	                   fc,

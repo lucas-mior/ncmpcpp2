@@ -23,7 +23,6 @@
 
 #include <chrono>
 #include <optional>
-#include <boost/regex.hpp>
 #include <cassert>
 #include <vector>
 #include <mpd/client.h>
@@ -34,6 +33,7 @@
 #include "format.h"
 #include "lyrics_fetcher.h"
 #include "screens/screen_type.h"
+#include "utility/regex.h"
 
 struct Column
 {
@@ -201,7 +201,7 @@ struct Configuration
 	unsigned lines_scrolled;
 	unsigned search_engine_default_search_mode;
 
-	boost::regex::flag_type regex_type;
+	Regex::Flags regex_type;
 
 	std::chrono::seconds playlist_disable_highlight_delay;
 

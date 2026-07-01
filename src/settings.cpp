@@ -548,14 +548,14 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 	p.add("display_remaining_time", &display_remaining_time, "no", yes_no);
 	p.add("regular_expressions", &regex_type, "perl", [](std::string v) {
 			if (v == "none")
-				return boost::regex::icase | boost::regex::literal;
+				return Regex::literalCaseInsensitive();
 			else if (v == "basic")
-				return boost::regex::icase | boost::regex::basic;
+				return Regex::basicCaseInsensitive();
 
 			else if (v == "extended")
-				return boost::regex::icase |  boost::regex::extended;
+				return Regex::extendedCaseInsensitive();
 			else if (v == "perl")
-				return boost::regex::icase | boost::regex::perl;
+				return Regex::perlCaseInsensitive();
 			else
 				invalid_value(v);
 	});

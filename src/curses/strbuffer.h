@@ -21,9 +21,11 @@
 #ifndef NCMPCPP_STRBUFFER_H
 #define NCMPCPP_STRBUFFER_H
 
-#include <boost/variant.hpp>
+#include <cassert>
 #include <map>
 #include <sstream>
+#include <utility>
+#include <variant>
 #include "curses/formatted_color.h"
 #include "curses/window.h"
 
@@ -49,16 +51,16 @@ template <typename CharT> class BasicBuffer
 		template <typename OutputStreamT>
 		friend OutputStreamT &operator<<(OutputStreamT &os, const Property &p)
 		{
-			boost::apply_visitor([&os](const auto &v) { os << v; }, p.m_impl);
+			std::visit([&os](const auto &v) { os << v; }, p.m_impl);
 			return os;
 		}
 		
 	private:
-		boost::variant<Color,
-		               Format,
-		               FormattedColor,
-		               FormattedColor::End<StorageKind::Value>
-		               > m_impl;
+		std::variant<Color,
+		             Format,
+		             FormattedColor,
+		             FormattedColor::End<StorageKind::Value>
+		             > m_impl;
 		size_t m_id;
 	};
 
