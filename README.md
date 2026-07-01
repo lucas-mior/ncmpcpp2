@@ -5,7 +5,7 @@ This is a fork of ncmpcpp. The goals are:
   + Remove others?
 - Remove dependency on external C++ utility libraries.
 - ~~Remove boost~~
-- Convert the project to C11.
+- Convert the project to C23.
 - Fix the bugs reported in original repo.
 
 Original README is below.
