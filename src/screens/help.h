@@ -32,7 +32,7 @@ struct Help: Screen<NC::Scrollpad>, Tabbable
 	virtual void resize() override;
 	virtual void switchTo() override;
 	
-	virtual std::wstring title() override;
+	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::Help; }
 	
 	virtual void update() override { }

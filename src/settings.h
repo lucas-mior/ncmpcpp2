@@ -39,7 +39,7 @@ struct Column
 {
 	Column() : stretch_limit(-1), right_alignment(0), display_empty_tag(1) { }
 
-	std::wstring name;
+	std::string name;
 	std::string type;
 	int width;
 	int stretch_limit;
@@ -72,17 +72,16 @@ struct Configuration
 	Format::AST<char> song_columns_mode_format;
 	Format::AST<char> browser_sort_format;
 	Format::AST<char> song_status_format;
-	Format::AST<wchar_t> song_status_wformat;
-	Format::AST<wchar_t> new_header_first_line;
-	Format::AST<wchar_t> new_header_second_line;
+	Format::AST<char> new_header_first_line;
+	Format::AST<char> new_header_second_line;
 
 	std::string external_editor;
 	std::string system_encoding;
 	std::string execute_on_song_change;
 	std::string execute_on_player_state_change;
 	std::string lastfm_preferred_language;
-	std::wstring progressbar;
-	std::wstring visualizer_chars;
+	std::string progressbar;
+	std::string visualizer_chars;
 	size_t visualizer_fps;
 	bool visualizer_autoscale;
 	bool visualizer_spectrum_smooth_look;

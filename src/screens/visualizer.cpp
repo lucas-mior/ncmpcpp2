@@ -42,7 +42,7 @@
 #include "screens/screen_switcher.h"
 #include "status.h"
 #include "enums.h"
-#include "utility/wide_string.h"
+#include "utility/utf8.h"
 
 using Samples = std::vector<int16_t>;
 
@@ -83,8 +83,8 @@ Visualizer::Visualizer()
   HZ_MIN(Config.visualizer_spectrum_hz_min),
   HZ_MAX(Config.visualizer_spectrum_hz_max),
   GAIN(Config.visualizer_spectrum_gain),
-  SMOOTH_CHARS(ToWString("▁▂▃▄▅▆▇█")),
-  SMOOTH_CHARS_FLIPPED(ToWString("▔🮂🮃🮄🬎🮅🮆█")) // https://unicode.org/charts/PDF/U1FB00.pdf
+  SMOOTH_CHARS(Utf8::split("▁▂▃▄▅▆▇█")),
+  SMOOTH_CHARS_FLIPPED(Utf8::split("▔🮂🮃🮄🬎🮅🮆█")) // https://unicode.org/charts/PDF/U1FB00.pdf
 #endif
 {
 	InitDataSource();
@@ -127,9 +127,9 @@ void Visualizer::resize()
 #	endif // HAVE_FFTW3_H
 }
 
-std::wstring Visualizer::title()
+std::string Visualizer::title()
 {
-	return L"Music visualizer";
+	return "Music visualizer";
 }
 
 void Visualizer::update()
@@ -257,11 +257,12 @@ void Visualizer::DrawSoundWave(const int16_t *buf, ssize_t samples, size_t y_off
 	if (samples_per_column == 0)
 		return;
 
+	const auto visualizer_chars = Utf8::split(Config.visualizer_chars);
 	auto draw_point = [&](size_t x, int32_t y) {
 		auto c = toColor(std::abs(y), half_height, false);
 		w << NC::XY(x, base_y+y)
 		  << c
-		  << Config.visualizer_chars[0]
+		  << visualizer_chars[0]
 		  << NC::FormattedColor::End<>(c);
 	};
 
@@ -312,6 +313,7 @@ void Visualizer::DrawSoundWaveStereo(const int16_t *buf_left, const int16_t *buf
 // channel.
 void Visualizer::DrawSoundWaveFill(const int16_t *buf, ssize_t samples, size_t y_offset, size_t height)
 {
+	const auto visualizer_chars = Utf8::split(Config.visualizer_chars);
 	// if right channel is drawn, bars descend from the top to the bottom
 	const bool flipped = y_offset > 0;
 	const size_t win_width = w.getWidth();
@@ -339,7 +341,7 @@ void Visualizer::DrawSoundWaveFill(const int16_t *buf, ssize_t samples, size_t y
 			size_t y = flipped ? y_offset+j : y_offset+height-j-1;
 			w << NC::XY(x, y)
 			  << c
-			  << Config.visualizer_chars[1]
+			  << visualizer_chars[1]
 			  << NC::FormattedColor::End<>(c);
 		}
 	}
@@ -356,6 +358,7 @@ void Visualizer::DrawSoundWaveFillStereo(const int16_t *buf_left, const int16_t 
 // Draws the sound wave as an ellipse with origin in the center of the screen.
 void Visualizer::DrawSoundEllipse(const int16_t *buf, ssize_t samples, size_t, size_t height)
 {
+	const auto visualizer_chars = Utf8::split(Config.visualizer_chars);
 	const size_t half_width = w.getWidth()/2;
 	const size_t half_height = height/2;
 
@@ -382,7 +385,7 @@ void Visualizer::DrawSoundEllipse(const int16_t *buf, ssize_t samples, size_t, s
 		auto c = toColor(sqrt(x*x + y*y), max_radius, false);
 		w << NC::XY(half_width + x, half_height + y)
 		  << c
-		  << Config.visualizer_chars[0]
+		  << visualizer_chars[0]
 		  << NC::FormattedColor::End<>(c);
 	}
 }
@@ -399,6 +402,7 @@ void Visualizer::DrawSoundEllipse(const int16_t *buf, ssize_t samples, size_t, s
 // it will be an ellipse.
 void Visualizer::DrawSoundEllipseStereo(const int16_t *buf_left, const int16_t *buf_right, ssize_t samples, size_t half_height)
 {
+	const auto visualizer_chars = Utf8::split(Config.visualizer_chars);
 	const size_t width = w.getWidth();
 	const size_t left_half_width = width/2;
 	const size_t right_half_width = width - left_half_width;
@@ -421,7 +425,7 @@ void Visualizer::DrawSoundEllipseStereo(const int16_t *buf_left, const int16_t *
 		auto c = toColor(sqrt(x*x + 4*y*y), radius, true);
 		w << NC::XY(left_half_width + x, top_half_height + y)
 		  << c
-		  << Config.visualizer_chars[0]
+		  << visualizer_chars[0]
 		  << NC::FormattedColor::End<>(c);
 	}
 }
@@ -496,6 +500,7 @@ void Visualizer::DrawFrequencySpectrum(const int16_t *buf, ssize_t samples, size
 		m_bar_heights.emplace_back(x, bar_height);
 	}
 
+	const auto visualizer_chars = Utf8::split(Config.visualizer_chars);
 	size_t h_idx = 0;
 	for (size_t x = 0; x < win_width; ++x)
 	{
@@ -522,7 +527,7 @@ void Visualizer::DrawFrequencySpectrum(const int16_t *buf, ssize_t samples, size
 		{
 			size_t y = flipped ? y_offset+j : y_offset+height-j-1;
 			auto color = toColor(j, height, false);
-			std::wstring ch;
+			std::string ch;
 	
 			// select character to draw
 			if (Config.visualizer_spectrum_smooth_look) {
@@ -547,7 +552,7 @@ void Visualizer::DrawFrequencySpectrum(const int16_t *buf, ssize_t samples, size
 				}
 			} else  {
 				// default, non-smooth
-				ch = Config.visualizer_chars[1];
+				ch = visualizer_chars[1];
 			}
 
 			// draw character on screen

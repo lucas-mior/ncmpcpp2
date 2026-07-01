@@ -94,15 +94,6 @@ BOOST_REQUIRE([1.60])
 AC_SUBST(BOOST_CPPFLAGS)
 CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
 
-BOOST_VARIANT
-
-BOOST_LOCALE
-AC_SUBST(BOOST_LOCALE_LDFLAGS)
-AC_SUBST(BOOST_LOCALE_LIBS)
-LDFLAGS="$LDFLAGS $BOOST_LOCALE_LDFLAGS"
-LIBS="$LIBS $BOOST_LOCALE_LIBS"
-
-
 BOOST_REGEX
 AC_SUBST(BOOST_REGEX_LDFLAGS)
 AC_SUBST(BOOST_REGEX_LIBS)
@@ -132,7 +123,6 @@ PKG_CHECK_MODULES([ICU], [icu-i18n icu-uc], [
 
 # various headers
 AC_CHECK_HEADERS([netinet/tcp.h netinet/in.h], , AC_MSG_ERROR(vital headers missing))
-AC_CHECK_HEADERS([langinfo.h], , AC_MSG_WARN(locale detection disabled))
 
 # libmpdclient2
 PKG_CHECK_MODULES([libmpdclient], [libmpdclient >= 2.8], [
@@ -173,14 +163,6 @@ PKG_CHECK_MODULES([ncursesw], [ncursesw], [
 		AC_MSG_ERROR([missing curses.h header])
 	)
   AC_CHECK_LIB(ncursesw, initscr, , AC_MSG_ERROR([ncursesw doesn't provide initscr]))
-  AC_MSG_CHECKING([whether curses.h exposes wide-char functions by default])
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([
-    #include <curses.h>
-    ], [waddnwstr(stdscr, L"123", 3)])],
-	AC_MSG_RESULT([yes]),
-	AC_MSG_RESULT([no])
-		CPPFLAGS="$CPPFLAGS -D_XOPEN_SOURCE_EXTENDED",
-	)
 ],
 	AC_MSG_ERROR([ncursesw is required!])
 )

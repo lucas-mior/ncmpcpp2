@@ -67,9 +67,9 @@ void SongInfo::resize()
 	hasToBeResized = 0;
 }
 
-std::wstring SongInfo::title()
+std::string SongInfo::title()
 {
-	return L"Song info";
+	return "Song info";
 }
 
 void SongInfo::switchTo()

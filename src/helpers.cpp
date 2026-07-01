@@ -132,32 +132,33 @@ std::string Timestamp(time_t t)
 	return result;
 }
 
-std::wstring Scroller(const std::wstring &str, size_t &pos, size_t width)
+std::string Scroller(const std::string &str, size_t &pos, size_t width)
 {
-	std::wstring s(str);
+	std::string s(str);
 	if (!Config.header_text_scrolling)
 		return s;
-	std::wstring result;
-	size_t len = wideLength(s);
+	std::string result;
+	size_t len = Utf8::width(s);
 	
 	if (len > width)
 	{
-		s += L" ** ";
+		s += " ** ";
+		auto chars = Utf8::split(s);
 		len = 0;
-		auto b = s.begin(), e = s.end();
-		for (auto it = b+pos; it < e && len < width; ++it)
+		size_t i = pos;
+		for (; i < chars.size() && len < width; ++i)
 		{
-			if ((len += wcwidth(*it)) > width)
+			if ((len += Utf8::width(chars[i])) > width)
 				break;
-			result += *it;
+			result += chars[i];
 		}
-		if (++pos >= s.length())
+		if (++pos >= chars.size())
 			pos = 0;
-		for (; len < width; ++b)
+		for (i = 0; len < width && i < chars.size(); ++i)
 		{
-			if ((len += wcwidth(*b)) > width)
+			if ((len += Utf8::width(chars[i])) > width)
 				break;
-			result += *b;
+			result += chars[i];
 		}
 	}
 	else
@@ -165,51 +166,62 @@ std::wstring Scroller(const std::wstring &str, size_t &pos, size_t width)
 	return result;
 }
 
-void writeCyclicBuffer(const NC::WBuffer &buf, NC::Window &w, size_t &start_pos,
-                       size_t width, const std::wstring &separator)
+void writeCyclicBuffer(const NC::Buffer &buf, NC::Window &w, size_t &start_pos,
+                       size_t width, const std::string &separator)
 {
 	const auto &s = buf.str();
-	size_t len = wideLength(s);
-	if (len > width)
+	size_t string_width = Utf8::width(s);
+	if (string_width > width)
 	{
-		len = 0;
+		const auto string_length = Utf8::characters(s);
+		const auto separator_length = Utf8::characters(separator);
+		if (start_pos >= string_length + separator_length)
+			start_pos = 0;
+
+		size_t len = 0;
 		const auto &ps = buf.properties();
 		auto p = ps.begin();
 		
 		// load attributes from before starting pos
-		for (; p != ps.end() && p->first < start_pos; ++p)
+		const size_t start_byte = Utf8::bytePosition(s, start_pos);
+		for (; p != ps.end() && p->first < start_byte; ++p)
 			w << p->second;
 		
 		auto write_buffer = [&](size_t start) {
-			for (size_t i = start; i < s.length() && len < width; ++i)
+			for (size_t i = start; i < s.size() && len < width;)
 			{
 				for (; p != ps.end() && p->first == i; ++p)
 					w << p->second;
-				len += wcwidth(s[i]);
+				size_t next = Utf8::nextPosition(s, i);
+				std::string ch = s.substr(i, next-i);
+				len += Utf8::width(ch);
 				if (len > width)
 					break;
-				w << s[i];
+				w << ch;
+				i = next;
 			}
 			for (; p != ps.end(); ++p)
 				w << p->second;
 			p = ps.begin();
 		};
 		
-		write_buffer(start_pos);
+		write_buffer(start_byte);
+
+		auto separator_chars = Utf8::split(separator);
 		size_t i = 0;
-		if (start_pos > s.length())
-			i = start_pos - s.length();
-		for (; i < separator.length() && len < width; ++i)
+		if (start_pos > string_length)
+			i = start_pos - string_length;
+		for (; i < separator_chars.size() && len < width; ++i)
 		{
-			len += wcwidth(separator[i]);
+			len += Utf8::width(separator_chars[i]);
 			if (len > width)
 				break;
-			w << separator[i];
+			w << separator_chars[i];
 		}
 		write_buffer(0);
 		
 		++start_pos;
-		if (start_pos >= s.length() + separator.length())
+		if (start_pos >= string_length + separator_length)
 			start_pos = 0;
 	}
 	else

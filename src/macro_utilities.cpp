@@ -23,7 +23,7 @@
 #include "macro_utilities.h"
 #include "curses/window.h"
 #include "utility/string.h"
-#include "utility/wide_string.h"
+#include "utility/utf8.h"
 
 namespace Actions {
 
@@ -35,7 +35,7 @@ PushCharacters::PushCharacters(NC::Window **w, std::vector<NC::Key::Type> &&queu
 	assert(w != nullptr);
 	std::vector<std::string> keys;
 	for (const auto &key : queue)
-		keys.push_back(ToString(keyToWString(key)));
+		keys.push_back(NC::keyToString(key));
 	m_name += " \"";
 	m_name += join<std::string>(keys, ", ");
 	m_name += "\"";

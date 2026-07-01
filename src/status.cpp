@@ -661,8 +661,8 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 				else
 					tracklength += MPD::Song::ShowTime(m_elapsed_time);
 				tracklength += "]";
-				NC::WBuffer np_song;
-				Format::print(Config.song_status_wformat, np_song, &np);
+				NC::Buffer np_song;
+				Format::print(Config.song_status_format, np_song, &np);
 				*wFooter << NC::XY(0, 1)
 				         << NC::TermManip::ClearToEOL
 				         << Config.player_state_color
@@ -671,7 +671,7 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 				         << " ";
 				writeCyclicBuffer(
 					np_song, *wFooter, playing_song_scroll_begin,
-					wFooter->getWidth()-ps.length()-tracklength.length()-2, L" ** ");
+					wFooter->getWidth()-ps.length()-tracklength.length()-2, " ** ");
 				*wFooter << NC::XY(wFooter->getWidth()-tracklength.length(), 1)
 				         << Config.statusbar_time_color
 				         << tracklength
@@ -699,16 +699,16 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 				tracklength += " kbps)";
 			}
 
-			NC::WBuffer first, second;
+			NC::Buffer first, second;
 			Format::print(Config.new_header_first_line, first, &np);
 			Format::print(Config.new_header_second_line, second, &np);
 
-			size_t first_len = wideLength(first.str());
+			size_t first_len = Utf8::width(first.str());
 			size_t first_margin = std::max(tracklength.length()+1, VolumeState.length())*2;
 			size_t first_start = first_len < COLS-first_margin
 			                                 ? (COLS-first_len)/2
 			                                 : tracklength.length()+1;
-			size_t second_len = wideLength(second.str());
+			size_t second_len = Utf8::width(second.str());
 			size_t second_margin = (std::max(ps.length(), size_t(8))+1)*2;
 			size_t second_start = second_len < COLS-second_margin
 			                                   ? (COLS-second_len)/2
@@ -723,7 +723,7 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 			*wHeader << NC::XY(first_start, 0);
 
 			writeCyclicBuffer(first, *wHeader, first_line_scroll_begin,
-			                  COLS-tracklength.length()-VolumeState.length()-1, L" ** ");
+			                  COLS-tracklength.length()-VolumeState.length()-1, " ** ");
 
 			*wHeader << NC::XY(0, 1)
 			         << NC::TermManip::ClearToEOL
@@ -733,7 +733,7 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 			         << NC::XY(second_start, 1);
 
 			writeCyclicBuffer(second, *wHeader, second_line_scroll_begin,
-			                  COLS-ps.length()-8-2, L" ** ");
+			                  COLS-ps.length()-8-2, " ** ");
 
 			*wHeader << NC::XY(wHeader->getWidth()-VolumeState.length(), 0)
 			         << Config.volume_color

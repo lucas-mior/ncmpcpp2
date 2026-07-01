@@ -105,18 +105,18 @@ void Playlist::resize()
 	hasToBeResized = 0;
 }
 
-std::wstring Playlist::title()
+std::string Playlist::title()
 {
-	std::wstring result = L"Playlist ";
+	std::string result = "Playlist ";
 	if (Config.playlist_show_mpd_host)
 	{
-		result += L"on ";
-		result += ToWString(Mpd.GetHostname());
-		result += L" ";
+		result += "on ";
+		result += (Mpd.GetHostname());
+		result += " ";
 	}
 	if (m_reload_total_length || m_reload_remaining)
 		m_stats = getTotalLength();
-	result += Scroller(ToWString(m_stats), m_scroll_begin, COLS-result.length()-(Config.design == Design::Alternative ? 2 : Global::VolumeState.length()));
+	result += Scroller(m_stats, m_scroll_begin, COLS-Utf8::width(result)-(Config.design == Design::Alternative ? 2 : Global::VolumeState.length()));
 	return result;
 }
 

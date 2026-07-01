@@ -129,9 +129,9 @@ void PlaylistEditor::resize()
 	hasToBeResized = 0;
 }
 
-std::wstring PlaylistEditor::title()
+std::string PlaylistEditor::title()
 {
-	return L"Playlist editor";
+	return "Playlist editor";
 }
 
 void PlaylistEditor::refresh()

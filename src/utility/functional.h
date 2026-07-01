@@ -21,7 +21,9 @@
 #ifndef NCMPCPP_UTILITY_FUNCTIONAL_H
 #define NCMPCPP_UTILITY_FUNCTIONAL_H
 
-#include <boost/locale/encoding_utf.hpp>
+#include <algorithm>
+#include <string>
+#include <type_traits>
 #include <utility>
 
 /// Map over the first element in range satisfying the predicate.
@@ -50,7 +52,9 @@ struct convertString
 {
 	static std::basic_string<TargetT> apply(const std::basic_string<SourceT> &s)
 	{
-		return boost::locale::conv::utf_to_utf<TargetT>(s);
+		static_assert(std::is_same_v<TargetT, SourceT>,
+		              "non-UTF-8 string conversions are not supported");
+		return s;
 	}
 };
 template <typename TargetT>

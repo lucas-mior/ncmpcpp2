@@ -70,9 +70,9 @@ void Outputs::resize()
 	hasToBeResized = 0;
 }
 
-std::wstring Outputs::title()
+std::string Outputs::title()
 {
-	return L"Outputs";
+	return "Outputs";
 }
 
 void Outputs::mouseButtonPressed(MEVENT me)

@@ -18,44 +18,25 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#ifndef NCMPCPP_OUTPUTS_H
-#define NCMPCPP_OUTPUTS_H
+#ifndef NCMPCPP_UTILITY_UTF8_H
+#define NCMPCPP_UTILITY_UTF8_H
 
-#include "config.h"
+#include <string>
+#include <vector>
 
-#ifdef ENABLE_OUTPUTS
+namespace Utf8 {
 
-#include "interfaces.h"
-#include "menu.h"
-#include "mpdpp.h"
-#include "screens/screen.h"
+size_t characters(const std::string &s);
+size_t bytePosition(const std::string &s, size_t character);
+size_t nextPosition(const std::string &s, size_t byte);
+size_t width(const std::string &s);
+void cut(std::string &s, size_t max_width);
+std::string shorten(const std::string &s, size_t max_width);
+std::vector<std::string> split(const std::string &s);
+std::string repeat(const std::string &s, size_t count);
+void resize(std::string &s, size_t count, char fill = '\0');
+std::string capitalizeFirstLetters(const std::string &s);
 
-struct Outputs: Screen<NC::Menu<MPD::Output>>, Tabbable
-{
-	Outputs();
-	
-	// Screen< NC::Menu<MPD::Output> > implementation
-	virtual void switchTo() override;
-	virtual void resize() override;
-	
-	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::Outputs; }
-	
-	virtual void update() override { }
-	
-	virtual void mouseButtonPressed(MEVENT me) override;
-	
-	virtual bool isLockable() override { return true; }
-	virtual bool isMergable() override { return true; }
-	
-	// private members
-	void fetchList();
-	void toggleOutput();
-};
+}
 
-extern Outputs *myOutputs;
-
-#endif // ENABLE_OUTPUTS
-
-#endif // NCMPCPP_OUTPUTS_H
-
+#endif // NCMPCPP_UTILITY_UTF8_H

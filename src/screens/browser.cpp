@@ -169,10 +169,10 @@ void Browser::switchTo()
 	m_redraw_header = true;
 }
 
-std::wstring Browser::title()
+std::string Browser::title()
 {
-	std::wstring result = L"Browse: ";
-	result += Scroller(ToWString(m_current_directory), m_scroll_beginning, COLS-result.length()-(Config.design == Design::Alternative ? 2 : Global::VolumeState.length()));
+	std::string result = "Browse: ";
+	result += Scroller(m_current_directory, m_scroll_beginning, COLS-Utf8::width(result)-(Config.design == Design::Alternative ? 2 : Global::VolumeState.length()));
 	return result;
 }
 
@@ -722,7 +722,7 @@ void clearDirectory(const std::string &directory)
 		if (!entry->is_symlink() && entry->is_directory())
 			clearDirectory(entry->path().string());
 		const char msg[] = "Deleting \"%1%\"...";
-		Statusbar::printf(msg, wideShorten(entry->path().string(), COLS-const_strlen(msg)));
+		Statusbar::printf(msg, Utf8::shorten(entry->path().string(), COLS-const_strlen(msg)));
 		fs::remove(entry->path());
 	};
 }

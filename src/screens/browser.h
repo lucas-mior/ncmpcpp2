@@ -51,7 +51,7 @@ struct Browser: Screen<BrowserWindow>, Filterable, HasSongs, Searchable, Tabbabl
 	virtual void resize() override;
 	virtual void switchTo() override;
 	
-	virtual std::wstring title() override;
+	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::Browser; }
 	
 	virtual void update() override;

@@ -721,7 +721,7 @@ void DeleteBrowserItems::run()
 			return;
 		const char msg[] = "Delete \"%1%\"?";
 		question = stringFormat(msg,
-			wideShorten(get_name(item), COLS-const_strlen(msg)-5)
+			Utf8::shorten(get_name(item), COLS-const_strlen(msg)-5)
 		);
 	}
 	confirmAction(question);
@@ -737,7 +737,7 @@ void DeleteBrowserItems::run()
 		const char msg[] = "Deleted %1% \"%2%\"";
 		Statusbar::printf(msg,
 			itemTypeToString(item->value().type()),
-			wideShorten(get_name(item->value()), COLS-const_strlen(msg))
+			Utf8::shorten(get_name(item->value()), COLS-const_strlen(msg))
 		);
 	}
 
@@ -762,7 +762,7 @@ void DeleteStoredPlaylist::run()
 	{
 		const char msg[] = "Delete playlist \"%1%\"?";
 		question = stringFormat(msg,
-			wideShorten(myPlaylistEditor->Playlists.current()->value().path(),
+			Utf8::shorten(myPlaylistEditor->Playlists.current()->value().path(),
 			            COLS-const_strlen(msg)-10));
 	}
 	confirmAction(question);
@@ -1512,15 +1512,15 @@ void EditLibraryAlbum::run()
 			if (f.isNull())
 			{
 				const char msg[] = "Error while opening file \"%1%\"";
-				Statusbar::printf(msg, wideShorten(myLibrary->Songs[i].value().getURI(), COLS-const_strlen(msg)));
+				Statusbar::printf(msg, Utf8::shorten(myLibrary->Songs[i].value().getURI(), COLS-const_strlen(msg)));
 				success = 0;
 				break;
 			}
-			f.tag()->setAlbum(ToWString(new_album));
+			f.tag()->setAlbum(TagLib::String(new_album, TagLib::String::UTF8));
 			if (!f.save())
 			{
 				const char msg[] = "Error while writing tags in \"%1%\"";
-				Statusbar::printf(msg, wideShorten(myLibrary->Songs[i].value().getURI(), COLS-const_strlen(msg)));
+				Statusbar::printf(msg, Utf8::shorten(myLibrary->Songs[i].value().getURI(), COLS-const_strlen(msg)));
 				success = 0;
 				break;
 			}
@@ -1571,7 +1571,7 @@ void EditDirectoryName::run()
 			full_new_dir += new_dir;
 			std::filesystem::rename(full_old_dir, full_new_dir);
 			const char msg[] = "Directory renamed to \"%1%\"";
-			Statusbar::printf(msg, wideShorten(new_dir, COLS-const_strlen(msg)));
+			Statusbar::printf(msg, Utf8::shorten(new_dir, COLS-const_strlen(msg)));
 			if (!myBrowser->isLocal())
 				Mpd.UpdateDirectory(getSharedDirectory(old_dir, new_dir));
 			myBrowser->requestUpdate();
@@ -1593,13 +1593,13 @@ void EditDirectoryName::run()
 			if (rename(full_old_dir.c_str(), full_new_dir.c_str()) == 0)
 			{
 				const char msg[] = "Directory renamed to \"%1%\"";
-				Statusbar::printf(msg, wideShorten(new_dir, COLS-const_strlen(msg)));
+				Statusbar::printf(msg, Utf8::shorten(new_dir, COLS-const_strlen(msg)));
 				Mpd.UpdateDirectory(myTagEditor->CurrentDir());
 			}
 			else
 			{
 				const char msg[] = "Couldn't rename \"%1%\": %2%";
-				Statusbar::printf(msg, wideShorten(old_dir, COLS-const_strlen(msg)-25), strerror(errno));
+				Statusbar::printf(msg, Utf8::shorten(old_dir, COLS-const_strlen(msg)-25), strerror(errno));
 			}
 		}
 	}
@@ -1632,7 +1632,7 @@ void EditPlaylistName::run()
 	{
 		Mpd.Rename(old_name, new_name);
 		const char msg[] = "Playlist renamed to \"%1%\"";
-		Statusbar::printf(msg, wideShorten(new_name, COLS-const_strlen(msg)));
+		Statusbar::printf(msg, Utf8::shorten(new_name, COLS-const_strlen(msg)));
 	}
 }
 

@@ -40,7 +40,7 @@ struct SongInfo: Screen<NC::Scrollpad>, Tabbable
 	virtual void switchTo() override;
 	virtual void resize() override;
 	
-	virtual std::wstring title() override;
+	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::SongInfo; }
 	
 	virtual void update() override { }

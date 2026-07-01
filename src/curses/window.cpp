@@ -29,7 +29,7 @@
 
 #include "utility/readline.h"
 #include "utility/string.h"
-#include "utility/wide_string.h"
+#include "utility/utf8.h"
 #include "window.h"
 #include <cassert>
 
@@ -84,52 +84,16 @@ int read_key(FILE *)
 
 void display_string()
 {
-	auto print_char = [](wchar_t wc) {
+	auto print_string = [](const std::string &s) {
 		if (encrypted)
-			*w << '*';
+			*w << std::string(Utf8::characters(s), '*');
 		else
-			*w << wc;
-	};
-	auto print_string = [](wchar_t *ws, size_t len) {
-		if (encrypted)
-			for (size_t i = 0; i < len; ++i)
-				*w << '*';
-		else
-			*w << ws;
-	};
-	auto narrow_to_wide = [](wchar_t *dest, const char *src, size_t n) {
-		size_t result = 0;
-		// convert the string and substitute invalid multibyte chars with dots.
-		for (size_t i = 0; i < n;)
-		{
-			int ret = mbtowc(&dest[result], &src[i], n-i);
-			if (ret > 0)
-			{
-				i += ret;
-				++result;
-			}
-			else if (ret == -1)
-			{
-				dest[result] = L'.';
-				++i;
-				++result;
-			}
-			else
-				throw std::runtime_error("mbtowc: unexpected return value");
-		}
-		return result;
+			*w << s;
 	};
 
-	// copy the part of the string that is before the cursor to pre_pos
-	char pt = rl_line_buffer[rl_point];
-	rl_line_buffer[rl_point] = 0;
-	wchar_t pre_pos[rl_point+1];
-	pre_pos[narrow_to_wide(pre_pos, rl_line_buffer, rl_point)] = 0;
-	rl_line_buffer[rl_point] = pt;
-
-	int pos = wcswidth(pre_pos, rl_point);
-	if (pos < 0)
-		pos = rl_point;
+	std::string before_cursor(rl_line_buffer, rl_point);
+	std::string after_cursor(rl_line_buffer+rl_point, rl_end-rl_point);
+	int pos = Utf8::width(before_cursor);
 
 	// clear the area for the string
 	mvwhline(w->raw(), start_y, start_x, ' ', width+1);
@@ -140,28 +104,17 @@ void display_string()
 		// if the current position in the string is not bigger than allowed
 		// width, print the part of the string before cursor position...
 
-		print_string(pre_pos, pos);
+		print_string(before_cursor);
 
 		// ...and then print the rest char-by-char until there is no more area
-		wchar_t post_pos[rl_end-rl_point+1];
-		post_pos[narrow_to_wide(post_pos, rl_line_buffer+rl_point, rl_end-rl_point)] = 0;
-
 		size_t cpos = pos;
-		for (wchar_t *c = post_pos; *c != 0; ++c)
+		for (const auto &c : Utf8::split(after_cursor))
 		{
-			int n = wcwidth(*c);
-			if (n < 0)
-			{
-				print_char(L'.');
-				++cpos;
-			}
-			else
-			{
-				if (cpos+n > width)
-					break;
-				cpos += n;
-				print_char(*c);
-			}
+			size_t n = Utf8::width(c);
+			if (cpos+n > width)
+				break;
+			cpos += n;
+			print_string(c);
 		}
 	}
 	else
@@ -172,19 +125,18 @@ void display_string()
 		// let's stick to that) by cutting the beginning of the part
 		// of the string before the cursor until it fits the area.
 
-		wchar_t *mod_pre_pos = pre_pos;
-		while (*mod_pre_pos != 0)
+		auto chars = Utf8::split(before_cursor);
+		std::string tail;
+		pos = 0;
+		for (auto it = chars.rbegin(); it != chars.rend(); ++it)
 		{
-			++mod_pre_pos;
-			int n = wcwidth(*mod_pre_pos);
-			if (n < 0)
-				--pos;
-			else
-				pos -= n;
-			if (size_t(pos) <= width)
+			size_t n = Utf8::width(*it);
+			if (size_t(pos)+n > width)
 				break;
+			pos += n;
+			tail.insert(0, *it);
 		}
-		print_string(mod_pre_pos, pos);
+		print_string(tail);
 	}
 	w->goToXY(start_x+pos, start_y);
 }
@@ -205,6 +157,57 @@ termios orig_termios;
 }
 
 namespace NC {
+
+
+std::string keyToString(Key::Type key)
+{
+	std::string result;
+	if (key & Key::Ctrl)
+		result += "Ctrl+";
+	if (key & Key::Alt)
+		result += "Alt+";
+	if (key & Key::Shift)
+		result += "Shift+";
+
+	Key::Type base = key & ~(Key::Ctrl | Key::Alt | Key::Shift);
+	if (base >= Key::F1 && base <= Key::F12)
+		result += "F" + std::to_string(base-Key::F1+1);
+	else
+	{
+		switch (base)
+		{
+			case Key::Space: result += "Space"; break;
+			case Key::Backspace: result += "Backspace"; break;
+			case Key::Tab: result += "Tab"; break;
+			case Key::Enter: result += "Enter"; break;
+			case Key::Escape: result += "Escape"; break;
+			case Key::Insert: result += "Insert"; break;
+			case Key::Delete: result += "Delete"; break;
+			case Key::Home: result += "Home"; break;
+			case Key::End: result += "End"; break;
+			case Key::PageUp: result += "PageUp"; break;
+			case Key::PageDown: result += "PageDown"; break;
+			case Key::Up: result += "Up"; break;
+			case Key::Down: result += "Down"; break;
+			case Key::Left: result += "Left"; break;
+			case Key::Right: result += "Right"; break;
+			case Key::Mouse: result += "Mouse"; break;
+			case Key::EoF: result += "EoF"; break;
+			default:
+				if (base >= 32 && base <= 126)
+					result += static_cast<char>(base);
+				else if (base >= 1 && base <= 26)
+				{
+					if (result.empty())
+						result += "Ctrl+";
+					result += static_cast<char>('A'+base-1);
+				}
+				else
+					result += std::to_string(base);
+		}
+	}
+	return result;
+}
 
 const short Color::transparent = -1;
 const short Color::current = -2;
@@ -1473,17 +1476,7 @@ Window &Window::operator<<(char c)
 	return *this;
 }
 
-Window &Window::operator<<(const wchar_t *ws)
-{
-	waddwstr(m_window, ws);
-	return *this;
-}
 
-Window &Window::operator<<(wchar_t wc)
-{
-	waddnwstr(m_window, &wc, 1);
-	return *this;
-}
 
 Window &Window::operator<<(int i)
 {
@@ -1503,11 +1496,6 @@ Window &Window::operator<<(const std::string &s)
 	return *this;
 }
 
-Window &Window::operator<<(const std::wstring &ws)
-{
-	waddnwstr(m_window, ws.c_str(), ws.length());
-	return *this;
-}
 
 Window &Window::operator<<(size_t s)
 {

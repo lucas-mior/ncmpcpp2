@@ -30,7 +30,7 @@
 #include "interfaces.h"
 #include "lastfm_service.h"
 #include "screens/screen.h"
-#include "utility/wide_string.h"
+#include "utility/utf8.h"
 
 struct Lastfm: Screen<NC::Scrollpad>, Tabbable
 {
@@ -39,7 +39,7 @@ struct Lastfm: Screen<NC::Scrollpad>, Tabbable
 	virtual void switchTo() override;
 	virtual void resize() override;
 	
-	virtual std::wstring title() override;
+	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::Lastfm; }
 	
 	virtual void update() override;
@@ -63,11 +63,11 @@ struct Lastfm: Screen<NC::Scrollpad>, Tabbable
 		w.clear();
 		w << "Fetching information...";
 		m_refresh_window = true;
-		m_title = ToWString(m_service->name());
+		m_title = m_service->name();
 	}
 
 private:
-	std::wstring m_title;
+	std::string m_title;
 	bool m_refresh_window;
 	
 	std::shared_ptr<LastFm::Service> m_service;

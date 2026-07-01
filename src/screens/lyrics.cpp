@@ -258,16 +258,16 @@ void Lyrics::switchTo()
 		switchToPreviousScreen();
 }
 
-std::wstring Lyrics::title()
+std::string Lyrics::title()
 {
-	std::wstring result = L"Lyrics";
+	std::string result = "Lyrics";
 	if (!m_song.empty())
 	{
-		result += L": ";
+		result += ": ";
 		result += Scroller(
-			Format::stringify<wchar_t>(Format::parse(L"{%a - %t}|{%f}"), &m_song),
+			Format::stringify<char>(Format::parse("{%a - %t}|{%f}"), &m_song),
 			m_scroll_begin,
-			COLS - result.length() - (Config.design == Design::Alternative
+			COLS - Utf8::width(result) - (Config.design == Design::Alternative
 			                          ? 2
 			                          : Global::VolumeState.length()));
 	}
@@ -305,7 +305,7 @@ void Lyrics::refetchCurrent()
 	if (std::remove(filename.c_str()) == -1 && errno != ENOENT)
 	{
 		const char msg[] = "Couldn't remove \"%1%\": %2%";
-		Statusbar::printf(msg, wideShorten(filename, COLS - const_strlen(msg) - 25),
+		Statusbar::printf(msg, Utf8::shorten(filename, COLS - const_strlen(msg) - 25),
 		                  strerror(errno));
 	}
 	else

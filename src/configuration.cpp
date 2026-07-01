@@ -443,12 +443,7 @@ bool configure(int argc, char **argv)
 	#		ifdef ENABLE_VISUALIZER
 			<< " - visualizer\n"
 	#		endif
-			<< "\nencoding detection: "
-	#		ifdef HAVE_LANGINFO_H
-			<< "enabled"
-	#		else
-			<< "disabled"
-	#		endif // HAVE_LANGINFO_H
+			<< "\nencoding: UTF-8"
 			<< "\nbuilt with support for:"
 	#		ifdef HAVE_FFTW3_H
 			<< " fftw"

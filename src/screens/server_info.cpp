@@ -77,7 +77,7 @@ void ServerInfo::resize()
 	hasToBeResized = 0;
 }
 
-std::wstring ServerInfo::title()
+std::string ServerInfo::title()
 {
 	return previousScreen()->title();
 }

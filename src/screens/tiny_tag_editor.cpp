@@ -91,13 +91,13 @@ void TinyTagEditor::switchTo()
 		full_path += itsEdited.getURI();
 		
 		const char msg[] = "Couldn't read file \"%1%\"";
-		Statusbar::printf(msg, wideShorten(full_path, COLS-const_strlen(msg)));
+		Statusbar::printf(msg, Utf8::shorten(full_path, COLS-const_strlen(msg)));
 	}
 }
 
-std::wstring TinyTagEditor::title()
+std::string TinyTagEditor::title()
 {
-	return L"Tiny tag editor";
+	return "Tiny tag editor";
 }
 
 void TinyTagEditor::mouseButtonPressed(MEVENT me)

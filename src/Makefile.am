@@ -27,7 +27,7 @@ ncmpcpp_SOURCES = \
 	utility/sample_buffer.cpp \
 	utility/string.cpp \
 	utility/type_conversions.cpp \
-	utility/wide_string.cpp \
+	utility/utf8.cpp \
 	actions.cpp \
 	bindings.cpp \
 	charset.cpp \
@@ -97,7 +97,7 @@ noinst_HEADERS = \
 	utility/shared_resource.h \
 	utility/string.h \
 	utility/type_conversions.h \
-	utility/wide_string.h \
+	utility/utf8.h \
 	bindings.h \
 	charset.h \
 	configuration.h \

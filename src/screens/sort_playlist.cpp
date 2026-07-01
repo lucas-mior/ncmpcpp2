@@ -105,7 +105,7 @@ void SortPlaylistDialog::resize()
 	hasToBeResized = false;
 }
 
-std::wstring SortPlaylistDialog::title()
+std::string SortPlaylistDialog::title()
 {
 	return previousScreen()->title();
 }

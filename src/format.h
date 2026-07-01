@@ -169,7 +169,6 @@ template <typename CharT>
 TagVector<CharT> flatten(const AST<CharT> &ast, const MPD::Song &song);
 
 AST<char> parse(const std::string &s, const unsigned flags = Flags::All);
-AST<wchar_t> parse(const std::wstring &ws, const unsigned flags = Flags::All);
 
 }
 

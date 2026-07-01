@@ -37,7 +37,7 @@ struct TinyTagEditor: Screen<NC::Menu<NC::Buffer>>, HasActions
 	virtual void resize() override;
 	virtual void switchTo() override;
 	
-	virtual std::wstring title() override;
+	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::TinyTagEditor; }
 	
 	virtual void update() override { }

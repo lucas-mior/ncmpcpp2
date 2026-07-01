@@ -31,10 +31,6 @@
 #include "utility/option_parser.h"
 #include "utility/type_conversions.h"
 
-#ifdef HAVE_LANGINFO_H
-# include <langinfo.h>
-#endif
-
 namespace ph = std::placeholders;
 
 Configuration Config;
@@ -68,7 +64,7 @@ std::vector<Column> generate_columns(const std::string &format)
 		size_t tag_type_colon_pos = tag_type.find(':');
 		if (tag_type_colon_pos != std::string::npos)
 		{
-			col.name = ToWString(tag_type.substr(tag_type_colon_pos+1));
+			col.name = tag_type.substr(tag_type_colon_pos+1);
 			tag_type.resize(tag_type_colon_pos);
 		}
 
@@ -189,7 +185,7 @@ NC::Buffer buffer_wlength(const NC::Buffer *target,
 	if (target == nullptr || target->empty())
 	{
 		NC::Buffer result = buffer(v);
-		wlength = wideLength(ToWString(result.str()));
+		wlength = Utf8::width(result.str());
 		return result;
 	}
 	else
@@ -241,8 +237,8 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 #endif
 		);
 	p.add("visualizer_look", &visualizer_chars, "●▮", [](std::string s) {
-			auto result = ToWString(std::move(s));
-			boundsCheck<std::wstring::size_type>(result.size(), 2, 2);
+			auto result = std::move(s);
+			boundsCheck<size_t>(Utf8::characters(result), 2, 2);
 			return result;
 	});
 	p.add("visualizer_fps", &visualizer_fps,
@@ -282,17 +278,8 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 	p.add("visualizer_spectrum_log_scale_y", &visualizer_spectrum_log_scale_y, "yes", yes_no);
 	p.add("visualizer_color", &visualizer_colors,
 	      "blue, cyan, green, yellow, magenta, red", list_of<NC::FormattedColor>);
-	p.add("system_encoding", &system_encoding, "", [](std::string encoding) {
-#ifdef HAVE_LANGINFO_H
-			// try to autodetect system encoding
-			if (encoding.empty())
-			{
-				encoding = nl_langinfo(CODESET);
-				if (encoding == "UTF-8") // mpd uses utf-8 by default so no need to convert
-					encoding.clear();
-			}
-#endif // HAVE_LANGINFO_H
-			return encoding;
+	p.add("system_encoding", &system_encoding, "", [](std::string) {
+			return std::string();
 		});
 	p.add("playlist_disable_highlight_delay", &playlist_disable_highlight_delay,
 	      "5", [](std::string v) {
@@ -304,10 +291,8 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 		      return Format::parse(v);
 	      });
 	p.add("song_status_format", &song_status_format,
-	      "{{%a{ \"%b\"{ (%y)}} - }{%t}}|{%f}", [this](std::string v) {
+	      "{{%a{ \"%b\"{ (%y)}} - }{%t}}|{%f}", [](std::string v) {
 		      auto flags = Format::Flags::All ^ Format::Flags::OutputSwitch;
-		      // precompute wide format for status display
-		      song_status_wformat = Format::parse(ToWString(v), flags);
 		      return Format::parse(v, flags);
 	});
 	p.add("song_library_format", &song_library_format,
@@ -316,12 +301,12 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 	      });
 	p.add("alternative_header_first_line_format", &new_header_first_line,
 	      "$b$1$aqqu$/a$9 {%t}|{%f} $1$atqq$/a$9$/b", [](std::string v) {
-		      return Format::parse(ToWString(std::move(v)),
+		      return Format::parse(std::move(v),
 		                           Format::Flags::All ^ Format::Flags::OutputSwitch);
 	});
 	p.add("alternative_header_second_line_format", &new_header_second_line,
 	      "{{$4$b%a$/b$9}{ - $7%b$9}{ ($4%y$9)}}|{%D}", [](std::string v) {
-		      return Format::parse(ToWString(std::move(v)),
+		      return Format::parse(std::move(v),
 		                           Format::Flags::All ^ Format::Flags::OutputSwitch);
 	});
 	p.add("current_item_prefix", &current_item_prefix, "$(yellow)$r",
@@ -412,10 +397,10 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 	p.add("autocenter_mode", &autocenter_mode, "no", yes_no);
 	p.add("centered_cursor", &centered_cursor, "no", yes_no);
 	p.add("progressbar_look", &progressbar, "=>", [](std::string v) {
-			auto result = ToWString(std::move(v));
-			boundsCheck<std::wstring::size_type>(result.size(), 2, 3);
+			auto result = std::move(v);
+			boundsCheck<size_t>(Utf8::characters(result), 2, 3);
 			// If two characters were specified, fill \0 as the third one.
-			result.resize(3);
+			Utf8::resize(result, 3);
 			return result;
 	});
 	p.add("default_place_to_search_in", &search_in_db, "database", [](std::string v) {

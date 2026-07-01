@@ -26,7 +26,7 @@
 #include "statusbar.h"
 #include "bindings.h"
 #include "screens/playlist.h"
-#include "utility/wide_string.h"
+#include "utility/utf8.h"
 
 using Global::wFooter;
 
@@ -61,12 +61,13 @@ void Progressbar::draw(unsigned int elapsed, unsigned int time)
 {
 	unsigned pb_width = wFooter->getWidth();
 	unsigned howlong = time ? pb_width*elapsed/time : 0;
+	const auto progressbar = Utf8::split(Config.progressbar);
 	*wFooter << Config.progressbar_color;
-	if (Config.progressbar[2] != '\0')
+	if (!progressbar[2].empty() && progressbar[2][0] != '\0')
 	{
 		wFooter->goToXY(0, 0);
 		for (unsigned i = 0; i < pb_width; ++i)
-			*wFooter << Config.progressbar[2];
+			*wFooter << progressbar[2];
 		wFooter->goToXY(0, 0);
 	}
 	else
@@ -77,9 +78,9 @@ void Progressbar::draw(unsigned int elapsed, unsigned int time)
 		*wFooter << Config.progressbar_elapsed_color;
 		pb_width = std::min(size_t(howlong), wFooter->getWidth());
 		for (unsigned i = 0; i < pb_width; ++i)
-			*wFooter << Config.progressbar[0];
+			*wFooter << progressbar[0];
 		if (howlong < wFooter->getWidth())
-			*wFooter << Config.progressbar[1];
+			*wFooter << progressbar[1];
 		*wFooter << NC::FormattedColor::End<>(Config.progressbar_elapsed_color);
 	}
 }
