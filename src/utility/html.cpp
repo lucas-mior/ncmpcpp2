@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include "c/ncm_utf8.h"
 #include "utility/html.h"
 
 namespace {
@@ -52,19 +53,10 @@ std::string unescapeHtmlUtf8(const std::string &data)
 				base = 10;
 			}
 			int n = strtol(&data.c_str()[i+offset], nullptr, base);
-			if (n >= 0x800)
-			{
-				result += (0xe0 | ((n >> 12) & 0x0f));
-				result += (0x80 | ((n >> 6) & 0x3f));
-				result += (0x80 | (n & 0x3f));
-			}
-			else if (n >= 0x80)
-			{
-				result += (0xc0 | ((n >> 6) & 0x1f));
-				result += (0x80 | (n & 0x3f));
-			}
-			else
-				result += n;
+			char buffer[4];
+			int32 len = ncm_utf8_encode(static_cast<uint32>(n), buffer, sizeof(buffer));
+			if (len > 0)
+				result.append(buffer, static_cast<size_t>(len));
 			i = j;
 		}
 		else

@@ -23,44 +23,42 @@
 #include <algorithm>
 #include <array>
 #include <climits>
-#include <cstdlib>
-#include <cwchar>
 #include <cwctype>
+
+#include "c/ncm_utf8.h"
 
 namespace {
 
+int32 stringSize(const std::string &s)
+{
+	return static_cast<int32>(s.size());
+}
+
 size_t nextChar(const std::string &s, size_t pos, wchar_t &wc)
 {
-	std::mbstate_t state = std::mbstate_t();
-	const char *start = s.data()+pos;
-	size_t length = std::mbrtowc(&wc, start, s.size()-pos, &state);
-	if (length == 0)
-	{
-		wc = L'\0';
-		return 1;
-	}
-	if (length == static_cast<size_t>(-1) || length == static_cast<size_t>(-2))
-	{
-		wc = L'.';
-		return 1;
-	}
-	return length;
+	uint32 rune;
+	int32 length = ncm_utf8_decode(
+		const_cast<char *>(s.data()+pos),
+		static_cast<int32>(s.size()-pos),
+		&rune);
+
+	wc = static_cast<wchar_t>(rune);
+	return static_cast<size_t>(length);
 }
 
 int charWidth(wchar_t wc)
 {
-	int result = wcwidth(wc);
-	return result < 0 ? 1 : result;
+	return ncm_utf8_char_width(static_cast<uint32>(wc));
 }
 
 std::string encode(wchar_t wc, const std::string &fallback)
 {
-	std::mbstate_t state = std::mbstate_t();
 	std::array<char, MB_LEN_MAX> buf;
-	size_t length = std::wcrtomb(buf.data(), wc, &state);
-	if (length == static_cast<size_t>(-1))
+	int32 length = ncm_utf8_encode(
+		static_cast<uint32>(wc), buf.data(), static_cast<int32>(buf.size()));
+	if (length <= 0)
 		return fallback;
-	return std::string(buf.data(), length);
+	return std::string(buf.data(), static_cast<size_t>(length));
 }
 
 }
@@ -69,13 +67,8 @@ namespace Utf8 {
 
 size_t characters(const std::string &s)
 {
-	size_t result = 0;
-	for (size_t i = 0; i < s.size(); ++result)
-	{
-		wchar_t wc;
-		i += nextChar(s, i, wc);
-	}
-	return result;
+	return static_cast<size_t>(
+		ncm_utf8_characters(const_cast<char *>(s.data()), stringSize(s)));
 }
 
 
@@ -89,42 +82,21 @@ size_t bytePosition(const std::string &s, size_t character)
 
 size_t nextPosition(const std::string &s, size_t byte)
 {
-	if (byte >= s.size())
-		return s.size();
-	wchar_t wc;
-	return std::min(s.size(), byte+nextChar(s, byte, wc));
+	return static_cast<size_t>(ncm_utf8_next_position(
+		const_cast<char *>(s.data()), stringSize(s), static_cast<int32>(byte)));
 }
 
 size_t width(const std::string &s)
 {
-	size_t result = 0;
-	for (size_t i = 0; i < s.size();)
-	{
-		wchar_t wc;
-		i += nextChar(s, i, wc);
-		result += charWidth(wc);
-	}
-	return result;
+	return static_cast<size_t>(
+		ncm_utf8_width(const_cast<char *>(s.data()), stringSize(s)));
 }
 
 void cut(std::string &s, size_t max_width)
 {
-	size_t i = 0;
-	size_t byte_pos = 0;
-	size_t result_width = 0;
-	for (; byte_pos < s.size(); ++i)
-	{
-		wchar_t wc;
-		size_t length = nextChar(s, byte_pos, wc);
-		size_t next_width = result_width + charWidth(wc);
-		if (next_width > max_width)
-		{
-			s.resize(byte_pos);
-			return;
-		}
-		result_width = next_width;
-		byte_pos += length;
-	}
+	int32 new_size = ncm_utf8_cut_width(
+		s.data(), stringSize(s), static_cast<int32>(max_width));
+	s.resize(static_cast<size_t>(new_size));
 }
 
 std::string shorten(const std::string &s, size_t max_width)
@@ -171,10 +143,9 @@ std::vector<std::string> split(const std::string &s)
 	std::vector<std::string> result;
 	for (size_t i = 0; i < s.size();)
 	{
-		wchar_t wc;
-		size_t length = nextChar(s, i, wc);
-		result.push_back(s.substr(i, length));
-		i += length;
+		size_t next = nextPosition(s, i);
+		result.push_back(s.substr(i, next-i));
+		i = next;
 	}
 	return result;
 }
