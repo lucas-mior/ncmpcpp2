@@ -1,10 +1,9 @@
 .git
-.github
 .cache
 autom4te.cache
 .clangd
 LICENSE
-bin
+bin$
 tags
 .tags.vim
 compile_commands.json
