@@ -24,12 +24,6 @@ jobs:
         env:
           PACKAGES: >
             ccache
-            libboost-dev
-            libboost-filesystem-dev
-            libboost-locale-dev
-            libboost-program-options-dev
-            libboost-regex-dev
-            libboost-thread-dev
             libcurl4-gnutls-dev
             libfftw3-dev
             libmpdclient-dev
