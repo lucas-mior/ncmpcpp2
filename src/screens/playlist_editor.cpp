@@ -579,12 +579,12 @@ std::string SongToString(const MPD::Song &s)
 
 bool PlaylistEntryMatcher(const Regex::Regex &rx, const MPD::Playlist &playlist)
 {
-	return Regex::search(playlist.path(), rx, Config.ignore_diacritics);
+	return Regex::search(playlist.path(), rx);
 }
 
 bool SongEntryMatcher(const Regex::Regex &rx, const MPD::Song &s)
 {
-	return Regex::search(SongToString(s), rx, Config.ignore_diacritics);
+	return Regex::search(SongToString(s), rx);
 }
 
 std::optional<size_t> GetSongIndexInPlaylist(MPD::Playlist playlist, const MPD::Song &song)

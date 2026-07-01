@@ -38,7 +38,6 @@
 #mpd_crossfade_time = 5
 #
 # Exclude pattern for random song action
-# http://www.boost.org/doc/libs/1_46_1/libs/regex/doc/html/boost_regex/syntax/perl_syntax.html
 #random_exclude_pattern = "^(temp|midi_songs).*"
 #
 ##### music visualizer #####
@@ -508,12 +507,6 @@
 ##
 #ignore_leading_the = no
 #
-##
-## Note: if below is enabled, ncmpcpp will ignore diacritics while searching and
-## filtering lists. This takes an effect only if boost was compiled with ICU
-## support.
-##
-#ignore_diacritics = no
 #
 #block_search_constraints_change_if_items_found = yes
 #

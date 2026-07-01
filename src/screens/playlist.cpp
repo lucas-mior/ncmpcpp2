@@ -352,7 +352,7 @@ std::string songToString(const MPD::Song &s)
 
 bool playlistEntryMatcher(const Regex::Regex &rx, const MPD::Song &s)
 {
-	return Regex::search(songToString(s), rx, Config.ignore_diacritics);
+	return Regex::search(songToString(s), rx);
 }
 
 }

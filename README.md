@@ -3,7 +3,7 @@ This is a fork of ncmpcpp. The goals are:
 - Remove features I don't use:
   + ~~Remove clock~~
   + Remove others?
-- Remove boost dependency.
+- Remove dependency on external C++ utility libraries.
 - Convert the project to C11.
 - Fix the bugs reported in original repo.
 
@@ -36,7 +36,6 @@ new, incompatible versions of dependencies, it will be fixed.
 …and a lot more minor functions.
 
 ### Dependencies:
-* [boost](https://www.boost.org/)
 * [ncurses](https://invisible-island.net/ncurses/announce.html)
 * [readline](https://tiswww.case.edu/php/chet/readline/rltop.html)
 * [curl](https://curl.se), for fetching lyrics and last.fm data

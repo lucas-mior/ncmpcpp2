@@ -89,38 +89,6 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [[auto f = [](auto n) { return n*n; }; f(
 # warnings
 CXXFLAGS="$CXXFLAGS -Wall -Wextra -Wshadow -Wimplicit-fallthrough"
 
-# boost
-BOOST_REQUIRE([1.60])
-AC_SUBST(BOOST_CPPFLAGS)
-CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-
-BOOST_REGEX
-AC_SUBST(BOOST_REGEX_LDFLAGS)
-AC_SUBST(BOOST_REGEX_LIBS)
-LDFLAGS="$LDFLAGS $BOOST_REGEX_LDFLAGS"
-LIBS="$LIBS $BOOST_REGEX_LIBS"
-
-# icu
-AH_TEMPLATE([BOOST_REGEX_ICU], [boost.regex was compiled with ICU support])
-PKG_CHECK_MODULES([ICU], [icu-i18n icu-uc], [
-	old_CPPFLAGS="$CPPFLAGS"
-	old_LIBS="$LIBS"
-	AC_SUBST(ICU_CFLAGS)
-	AC_SUBST(ICU_LIBS)
-	CPPFLAGS="$CPPFLAGS $ICU_CFLAGS"
-	LIBS="$LIBS $ICU_LIBS"
-	AC_MSG_CHECKING([whether boost.regex was compiled with ICU support])
-	AC_LINK_IFELSE([AC_LANG_PROGRAM([
-    #include <boost/regex/icu.hpp>
-    ], [boost::u32regex rx = boost::make_u32regex("foo"); if (boost::u32regex_search("foobar", rx)) { }])],
-	AC_MSG_RESULT([yes])
-		AC_DEFINE([BOOST_REGEX_ICU], [1]),
-	AC_MSG_RESULT([no])
-		CPPFLAGS="$old_CPPFLAGS"
-		LIBS="$old_LIBS",
-	)
-], [[]])
-
 # various headers
 AC_CHECK_HEADERS([netinet/tcp.h netinet/in.h], , AC_MSG_ERROR(vital headers missing))
 
