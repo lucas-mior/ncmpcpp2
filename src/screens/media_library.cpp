@@ -1144,19 +1144,19 @@ std::string SongToString(const MPD::Song &s)
 
 bool TagEntryMatcher(const Regex::Regex &rx, const PrimaryTag &pt)
 {
-	return Regex::search(pt.tag(), rx, Config.ignore_diacritics);
+	return Regex::search(pt.tag(), rx);
 }
 
 bool AlbumEntryMatcher(const Regex::Regex &rx, const NC::Menu<AlbumEntry>::Item &item, bool filter)
 {
 	if (item.isSeparator() || item.value().isAllTracksEntry())
 		return filter;
-	return Regex::search(AlbumToString(item.value()), rx, Config.ignore_diacritics);
+	return Regex::search(AlbumToString(item.value()), rx);
 }
 
 bool SongEntryMatcher(const Regex::Regex &rx, const MPD::Song &s)
 {
-	return Regex::search(SongToString(s), rx, Config.ignore_diacritics);
+	return Regex::search(SongToString(s), rx);
 }
 
 bool MoveToTag(NC::Menu<PrimaryTag> &tags, const std::string &primary_tag)

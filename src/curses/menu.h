@@ -253,7 +253,7 @@ struct Menu: Window, List
 		typename Item::template ExtractProperties<Const::Yes>,
 		ConstIterator> ConstPropertiesIterator;
 
-	// For compliance with boost utilities.
+	// Expose standard iterator aliases for utility interoperability.
 	typedef Iterator iterator;
 	typedef ConstIterator const_iterator;
 

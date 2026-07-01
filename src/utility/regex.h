@@ -21,19 +21,9 @@
 #ifndef NCMPCPP_UTILITY_REGEX_H
 #define NCMPCPP_UTILITY_REGEX_H
 
-#include "config.h"
-
-#ifdef BOOST_REGEX_ICU
-# include <boost/regex/icu.hpp>
-# include <unicode/errorcode.h>
-# include <unicode/translit.h>
-#endif // BOOST_REGEX_ICU
-
-#include <boost/regex.hpp>
-
 #include <cstddef>
 #include <iostream>
-#include <stdexcept>
+#include <regex>
 #include <string>
 #include <utility>
 
@@ -41,99 +31,138 @@
 
 namespace {
 
-#ifdef BOOST_REGEX_ICU
-
-struct StripDiacritics
+inline std::string escapeRegexLiteral(const std::string &s)
 {
-	static void convert(icu::UnicodeString &s)
+	std::string result;
+	result.reserve(s.size() * 2);
+	for (char c : s)
 	{
-		if (m_converter == nullptr)
+		switch (c)
 		{
-			icu::ErrorCode result;
-			m_converter = icu::Transliterator::createInstance(
-				"NFD; [:M:] Remove; NFC", UTRANS_FORWARD, result);
-			if (result.isFailure())
-				throw std::runtime_error(
-					"instantiation of transliterator instance failed with "
-					+ std::string(result.errorName()));
+			case '\\':
+			case '^':
+			case '$':
+			case '.':
+			case '|':
+			case '?':
+			case '*':
+			case '+':
+			case '(':
+			case ')':
+			case '[':
+			case ']':
+			case '{':
+			case '}':
+				result += '\\';
+				break;
 		}
-		m_converter->transliterate(s);
+		result += c;
 	}
-
-private:
-	static icu::Transliterator *m_converter;
-};
-
-icu::Transliterator *StripDiacritics::m_converter;
-
-#endif // BOOST_REGEX_ICU
+	return result;
+}
 
 }
 
 namespace Regex {
 
-typedef boost::regex::flag_type Flags;
-typedef boost::bad_expression Error;
+class Flags
+{
+public:
+	using Syntax = std::regex_constants::syntax_option_type;
 
-typedef
-#ifdef BOOST_REGEX_ICU
-	boost::u32regex
-#else
-	boost::regex
-#endif // BOOST_REGEX_ICU
-Regex;
+	Flags()
+		: m_syntax(std::regex_constants::ECMAScript)
+		, m_literal(false)
+	{ }
+
+	Flags(int)
+		: Flags()
+	{ }
+
+	Flags(Syntax syntax, bool literal = false)
+		: m_syntax(syntax)
+		, m_literal(literal)
+	{ }
+
+	Syntax syntax() const
+	{
+		return m_syntax;
+	}
+
+	bool literal() const
+	{
+		return m_literal;
+	}
+
+private:
+	Syntax m_syntax;
+	bool m_literal;
+};
+
+typedef std::regex_error Error;
+
+class Regex
+{
+public:
+	Regex()
+		: m_empty(true)
+	{ }
+
+	Regex(const std::string &s, Flags flags)
+		: m_rx(flags.literal() ? escapeRegexLiteral(s) : s, flags.syntax())
+		, m_empty(false)
+	{ }
+
+	const std::regex &get() const
+	{
+		return m_rx;
+	}
+
+	bool empty() const
+	{
+		return m_empty;
+	}
+
+private:
+	std::regex m_rx;
+	bool m_empty;
+};
 
 inline Flags literalCaseInsensitive()
 {
-	return boost::regex::icase | boost::regex::literal;
+	return Flags(std::regex_constants::ECMAScript | std::regex_constants::icase,
+	             true);
 }
 
 inline Flags basicCaseInsensitive()
 {
-	return boost::regex::icase | boost::regex::basic;
+	return Flags(std::regex_constants::basic | std::regex_constants::icase);
 }
 
 inline Flags extendedCaseInsensitive()
 {
-	return boost::regex::icase | boost::regex::extended;
+	return Flags(std::regex_constants::extended | std::regex_constants::icase);
 }
 
 inline Flags perlCaseInsensitive()
 {
-	return boost::regex::icase | boost::regex::perl;
+	return Flags(std::regex_constants::ECMAScript | std::regex_constants::icase);
 }
 
 template <typename StringT>
 inline Regex make(StringT &&s, Flags flags)
 {
-	return
-#ifdef BOOST_REGEX_ICU
-	boost::make_u32regex
-#else
-	boost::regex
-#endif // BOOST_REGEX_ICU
-	(std::forward<StringT>(s), flags);
+	return Regex(std::forward<StringT>(s), flags);
 }
 
 template <typename CharT>
-inline bool search(const std::basic_string<CharT> &s,
-                   const Regex &rx,
-                   bool ignore_diacritics)
+inline bool search(const std::basic_string<CharT> &s, const Regex &rx)
 {
 	try {
-#ifdef BOOST_REGEX_ICU
-		if (ignore_diacritics)
-		{
-			auto us = icu::UnicodeString::fromUTF8(
-				icu::StringPiece(convertString<char, CharT>::apply(s)));
-			StripDiacritics::convert(us);
-			return boost::u32regex_search(us, rx);
-		}
-		else
-			return boost::u32regex_search(s, rx);
-#else
-		return boost::regex_search(s, rx);
-#endif // BOOST_REGEX_ICU
+		if (rx.empty())
+			return false;
+		const auto &str = convertString<char, CharT>::apply(s);
+		return std::regex_search(str, rx.get());
 	} catch (std::out_of_range &e) {
 		// Invalid UTF-8 sequence, ignore the string.
 		std::cerr << "Regex::search: error while processing \""
@@ -151,9 +180,9 @@ inline bool forEachMatch(const std::string &s,
                          Flags flags,
                          CallbackT &&callback)
 {
-	boost::regex rx(constraint, flags);
-	auto first = boost::sregex_iterator(s.begin(), s.end(), rx);
-	auto last = boost::sregex_iterator();
+	Regex rx = make(constraint, flags);
+	auto first = std::sregex_iterator(s.begin(), s.end(), rx.get());
+	auto last = std::sregex_iterator();
 	bool success = first != last;
 	for (; first != last; ++first)
 		callback(first->position(), first->length());
