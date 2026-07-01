@@ -7,9 +7,10 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_PREREQ([2.71])
 
-AC_LANG([C++])
+AC_PROG_CC
 AC_PROG_CXX
 LT_INIT
+AC_LANG([C++])
 
 AC_ARG_ENABLE(outputs, AS_HELP_STRING([--enable-outputs], [Enable outputs screen @<:@default=no@:>@]), [outputs=$enableval], [outputs=no])
 AC_ARG_ENABLE(visualizer, AS_HELP_STRING([--enable-visualizer], [Enable music visualizer screen @<:@default=no@:>@]), [visualizer=$enableval], [visualizer=no])
@@ -22,6 +23,25 @@ if test "$outputs" = "yes"; then
 	AC_DEFINE([ENABLE_OUTPUTS], [1], [enables outputs screen])
 fi
 
+# -std=c23
+AC_LANG_PUSH([C])
+AC_MSG_CHECKING([whether C compiler supports C23])
+old_CFLAGS="$CFLAGS"
+std_c23=""
+for flag in -std=c23 -std=c2x; do
+  CFLAGS="$old_CFLAGS $flag"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[ ]])],
+    [std_c23="$flag"; break],
+    []
+  )
+done
+if test "x$std_c23" = "x"; then
+  AC_MSG_RESULT([no])
+  AC_MSG_ERROR([[Your compiler doesn't seem to support C23, please upgrade]])
+fi
+AC_MSG_RESULT([$std_c23])
+CFLAGS="$old_CFLAGS $std_c23"
+AC_LANG_POP([C])
 
 # -flto
 if test "$lto" != "no"; then
@@ -87,6 +107,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [[auto f = [](auto n) { return n*n; }; f(
 )
 
 # warnings
+CFLAGS="$CFLAGS -Wall -Wextra -Wshadow -Wimplicit-fallthrough"
 CXXFLAGS="$CXXFLAGS -Wall -Wextra -Wshadow -Wimplicit-fallthrough"
 
 # various headers
