@@ -1,6 +1,13 @@
 #!/bin/sh
 
 export LC_ALL=C
+
+: "${CC:=clang}"
+: "${CXX:=clang++}"
+: "${CFLAGS:=-O0 -g3}"
+: "${CXXFLAGS:=-O0 -g3}"
+export CC CXX CFLAGS CXXFLAGS
+
 make clean
 
 # shellcheck disable=SC2046
@@ -20,8 +27,10 @@ autoreconf -fiv  # generate the `configure` script.
   --enable-visualizer \
   --with-fftw \
   --with-taglib \
-  CFLAGS="-O0 -g3" \
-  CXXFLAGS="-O0 -g3"
+  CC="$CC" \
+  CXX="$CXX" \
+  CFLAGS="$CFLAGS" \
+  CXXFLAGS="$CXXFLAGS"
 
 make -j"$(nproc)"
 
