@@ -210,9 +210,9 @@ void SearchEngine::switchTo()
 	drawHeader();
 }
 
-std::wstring SearchEngine::title()
+std::string SearchEngine::title()
 {
-	return L"Search engine";
+	return "Search engine";
 }
 
 void SearchEngine::mouseButtonPressed(MEVENT me)

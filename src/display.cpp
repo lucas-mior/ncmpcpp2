@@ -32,49 +32,50 @@
 #include "screens/tag_editor.h"
 #include "utility/string.h"
 #include "utility/type_conversions.h"
+#include "utility/utf8.h"
 
 using Global::myScreen;
 
 namespace {
 
-const wchar_t *toColumnName(char c)
+const char *toColumnName(char c)
 {
 	switch (c)
 	{
 		case 'l':
-			return L"Time";
+			return "Time";
 		case 'f':
-			return L"Filename";
+			return "Filename";
 		case 'D':
-			return L"Directory";
+			return "Directory";
 		case 'F':
-			return L"Filepath";
+			return "Filepath";
 		case 'a':
-			return L"Artist";
+			return "Artist";
 		case 'A':
-			return L"Album Artist";
+			return "Album Artist";
 		case 't':
-			return L"Title";
+			return "Title";
 		case 'b':
-			return L"Album";
+			return "Album";
 		case 'y':
-			return L"Date";
+			return "Date";
 		case 'n': case 'N':
-			return L"Track";
+			return "Track";
 		case 'g':
-			return L"Genre";
+			return "Genre";
 		case 'c':
-			return L"Composer";
+			return "Composer";
 		case 'p':
-			return L"Performer";
+			return "Performer";
 		case 'd':
-			return L"Disc";
+			return "Disc";
 		case 'C':
-			return L"Comment";
+			return "Comment";
 		case 'P':
-			return L"Priority";
+			return "Priority";
 		default:
-			return L"?";
+			return "?";
 	}
 }
 
@@ -150,7 +151,7 @@ void showSongs(NC::Menu<T> &menu, const MPD::Song &s, const SongList &list, cons
 	);
 	if (!right_aligned.str().empty())
 	{
-		size_t x_off = menu.getWidth() - wideLength(ToWString(right_aligned.str()));
+		size_t x_off = menu.getWidth() - Utf8::width(right_aligned.str());
 		if (menu.isHighlighted() && list.currentS()->song() == &s)
 		{
 			if (menu.highlightSuffix() == Config.current_item_suffix)
@@ -229,18 +230,18 @@ void showSongsInColumns(NC::Menu<T> &menu, const MPD::Song &s, const SongList &l
 		if (remained_width-width < 0 || width < 0 /* this one may come from (*) */)
 			break;
 
-		std::wstring tag;
+		std::string tag;
 		for (size_t i = 0; i < it->type.length(); ++i)
 		{
 			MPD::Song::GetFunction get = charToGetFunction(it->type[i]);
 			assert(get);
-			tag = ToWString(Charset::utf8ToLocale(s.getTags(get)));
+			tag = Charset::utf8ToLocale(s.getTags(get));
 			if (!tag.empty())
 				break;
 		}
 		if (tag.empty() && it->display_empty_tag)
-			tag = ToWString(Config.empty_tag);
-		wideCut(tag, width);
+			tag = Config.empty_tag;
+		Utf8::cut(tag, width);
 
 		if (!discard_colors && it->color != NC::Color::Default)
 			menu << it->color;
@@ -249,7 +250,7 @@ void showSongsInColumns(NC::Menu<T> &menu, const MPD::Song &s, const SongList &l
 		// if column uses right alignment, calculate proper offset.
 		// otherwise just assume offset is 0, ie. we start from the left.
 		if (it->right_alignment)
-			x_off = std::max(0, width - int(wideLength(tag)));
+			x_off = std::max(0, width - int(Utf8::width(tag)));
 
 		whline(menu.raw(), NC::Key::Space, width);
 		menu.goToXY(x + x_off, y);
@@ -300,7 +301,7 @@ std::string Display::Columns(size_t list_width)
 		if (remained_width-width < 0 || width < 0 /* this one may come from (*) */)
 			break;
 		
-		std::wstring name;
+		std::string name;
 		if (it->name.empty())
 		{
 			size_t j = 0;
@@ -316,17 +317,17 @@ std::string Display::Columns(size_t list_width)
 		}
 		else
 			name = it->name;
-		wideCut(name, width);
+		Utf8::cut(name, width);
 		
-		int x_off = std::max(0, width - int(wideLength(name)));
+		int x_off = std::max(0, width - int(Utf8::width(name)));
 		if (it->right_alignment)
 		{
 			result += std::string(x_off, NC::Key::Space);
-			result += Charset::utf8ToLocale(ToString(name));
+			result += Charset::utf8ToLocale(name);
 		}
 		else
 		{
-			result += Charset::utf8ToLocale(ToString(name));
+			result += Charset::utf8ToLocale(name);
 			result += std::string(x_off, NC::Key::Space);
 		}
 		

@@ -35,6 +35,7 @@
 #include <string>
 #include <tuple>
 #include <queue>
+#include <cstdint>
 #include <stdexcept>
 
 #if NCURSES_MOUSE_VERSION == 1
@@ -127,6 +128,8 @@ const Type Mouse    = Special | 278;
 const Type EoF      = Special | 279;
 
 }
+
+std::string keyToString(Key::Type key);
 
 /// Thrown if Ctrl-C or Ctrl-G is pressed during the call to Window::getString()
 /// @see Window::getString()
@@ -458,13 +461,10 @@ struct Window
 	Window &operator<<(const XY &coords);
 	Window &operator<<(const char *s);
 	Window &operator<<(char c);
-	Window &operator<<(const wchar_t *ws);
-	Window &operator<<(wchar_t wc);
 	Window &operator<<(int i);
 	Window &operator<<(double d);
 	Window &operator<<(size_t s);
 	Window &operator<<(const std::string &s);
-	Window &operator<<(const std::wstring &ws);
 protected:
 	/// Sets colors of window (interal use only)
 	/// @param fg foregound color

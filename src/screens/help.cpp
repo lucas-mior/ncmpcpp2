@@ -27,7 +27,7 @@
 #include "status.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
-#include "utility/wide_string.h"
+#include "utility/utf8.h"
 #include "title.h"
 #include "screens/screen_switcher.h"
 
@@ -38,32 +38,32 @@ Help *myHelp;
 
 namespace {
 
-std::string align_key_rep(std::wstring keys)
+std::string align_key_rep(std::string keys)
 {
 	size_t i = 0, len = 0;
 	const size_t max_len = 20;
 	for (; i < keys.size(); ++i)
 	{
-		int width = std::max(1, wcwidth(keys[i]));
+		size_t width = Utf8::width(keys.substr(i, 1));
 		if (len+width > max_len)
 			break;
 		else
 			len += width;
 	}
 	keys.resize(i + max_len - len, ' ');
-	return ToString(keys);
+	return keys;
 }
 
 std::string display_keys(const Actions::Type at)
 {
-	std::wstring result, skey;
+	std::string result, skey;
 	for (auto it = Bindings.begin(); it != Bindings.end(); ++it)
 	{
 		for (auto j = it->second.begin(); j != it->second.end(); ++j)
 		{
 			if (j->isSingle() && j->action().type() == at)
 			{
-				skey = keyToWString(it->first);
+				skey = NC::keyToString(it->first);
 				if (!skey.empty())
 				{
 					result += std::move(skey);
@@ -102,7 +102,7 @@ void key(NC::Scrollpad &w, const Actions::Type at, const std::string &desc)
 
 void key(NC::Scrollpad &w, NC::Key::Type k, const std::string &desc)
 {
-	w << "    " << align_key_rep(keyToWString(k)) << " : " << desc << '\n';
+	w << "    " << align_key_rep(NC::keyToString(k)) << " : " << desc << '\n';
 }
 
 /**********************************************************************/
@@ -454,7 +454,7 @@ void Help::switchTo()
 	drawHeader();
 }
 
-std::wstring Help::title()
+std::string Help::title()
 {
-	return L"Help";
+	return "Help";
 }

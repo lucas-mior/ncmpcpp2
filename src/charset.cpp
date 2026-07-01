@@ -18,67 +18,51 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <boost/locale.hpp>
 #include "charset.h"
-#include "settings.h"
+
+#include <stdexcept>
 
 namespace Charset {
 
 std::locale internalLocale()
 {
-	boost::locale::generator gen;
-	std::locale loc = gen("");
-	bool is_utf = std::use_facet<boost::locale::info>(loc).utf8();
-	std::string name = std::use_facet<boost::locale::info>(loc).name();
-	if (!is_utf && name != "C" && name != "POSIX")
+	try
 	{
-		// if current locale does not use unicode, use variant of this
-		// locale with utf8 as ncmpcpp uses utf8 internally and we need
-		// current locale for sorting, case conversions etc.
-		std::string new_name = std::use_facet<boost::locale::info>(loc).language()
-		                     + "_"
-		                     + std::use_facet<boost::locale::info>(loc).country()
-		                     + ".UTF-8";
-		loc = gen(new_name);
+		return std::locale("");
 	}
-	return loc;
+	catch (const std::runtime_error &)
+	{
+		return std::locale::classic();
+	}
 }
 
-std::string toUtf8From(const std::string &s, const char *charset)
+std::string toUtf8From(const std::string &s, const char *)
 {
-	return boost::locale::conv::to_utf<char>(s, charset);
+	return s;
 }
 
-std::string fromUtf8To(const std::string &s, const char *charset)
+std::string fromUtf8To(const std::string &s, const char *)
 {
-	return boost::locale::conv::to_utf<char>(s, charset);
+	return s;
 }
 
 std::string utf8ToLocale(const std::string &s)
 {
-	return Config.system_encoding.empty()
-	     ? s
-	     : boost::locale::conv::from_utf<char>(s, Config.system_encoding);
+	return s;
 }
 
 std::string localeToUtf8(const std::string &s)
 {
-	return Config.system_encoding.empty()
-	     ? s
-	     : boost::locale::conv::to_utf<char>(s, Config.system_encoding);
+	return s;
 }
 
 std::string utf8ToLocale(std::string &&s)
 {
-	if (!Config.system_encoding.empty())
-		s = boost::locale::conv::from_utf<char>(s, Config.system_encoding);
 	return std::move(s);
 }
 
 std::string localeToUtf8(std::string &&s)
 {
-	if (!Config.system_encoding.empty())
-		s = boost::locale::conv::to_utf<char>(s, Config.system_encoding);
 	return std::move(s);
 }
 

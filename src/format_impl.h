@@ -28,7 +28,7 @@
 #include "format.h"
 #include "song.h"
 #include "utility/functional.h"
-#include "utility/wide_string.h"
+#include "utility/utf8.h"
 
 namespace Format {
 
@@ -129,7 +129,7 @@ struct Printer
 				    || st.function() == &MPD::Song::getLength)
 					tags.resize(st.delimiter());
 				else
-					tags = wideShorten(tags, st.delimiter());
+					tags = Utf8::shorten(tags, st.delimiter());
 			}
 			output(tags, &st);
 			return Result::Ok;

@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# make clean
+export LC_ALL=C
+make clean
 
 # shellcheck disable=SC2046
 

@@ -40,6 +40,7 @@
 #include "helpers/song_iterator_maker.h"
 #include "utility/string.h"
 #include "utility/functional.h"
+#include "utility/utf8.h"
 #include "utility/comparators.h"
 #include "title.h"
 #include "tags.h"
@@ -240,9 +241,9 @@ void TagEditor::resize()
 	hasToBeResized = 0;
 }
 
-std::wstring TagEditor::title()
+std::string TagEditor::title()
 {
-	return L"Tag editor";
+	return "Tag editor";
 }
 
 void TagEditor::switchTo()
@@ -1024,15 +1025,7 @@ bool isAnyModified(const NC::Menu<MPD::MutableSong> &m)
 
 std::string CapitalizeFirstLetters(const std::string &s)
 {
-	std::wstring ws = ToWString(s);
-	wchar_t prev = 0;
-	for (auto it = ws.begin(); it != ws.end(); ++it)
-	{
-		if (!iswalpha(prev) && prev != L'\'')
-			*it = towupper(*it);
-		prev = *it;
-	}
-	return ToString(ws);
+	return Utf8::capitalizeFirstLetters(s);
 }
 
 void CapitalizeFirstLetters(MPD::MutableSong &s)

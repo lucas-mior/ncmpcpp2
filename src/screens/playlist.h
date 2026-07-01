@@ -38,7 +38,7 @@ struct Playlist: Screen<SongMenu>, Filterable, HasSongs, Searchable, Tabbable
 	virtual void switchTo() override;
 	virtual void resize() override;
 	
-	virtual std::wstring title() override;
+	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::Playlist; }
 	
 	virtual void update() override;

@@ -30,6 +30,9 @@
 #include "screens/screen.h"
 #include "utility/sample_buffer.h"
 
+#include <string>
+#include <vector>
+
 #ifdef HAVE_FFTW3_H
 # include <fftw3.h>
 #endif
@@ -42,7 +45,7 @@ struct Visualizer: Screen<NC::Window>, Tabbable
 	virtual void switchTo() override;
 	virtual void resize() override;
 
-	virtual std::wstring title() override;
+	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::Visualizer; }
 
 	virtual void update() override;
@@ -114,8 +117,8 @@ private:
 	const double HZ_MIN;
 	const double HZ_MAX;
 	const double GAIN;
-	const std::wstring SMOOTH_CHARS;
-	const std::wstring SMOOTH_CHARS_FLIPPED;
+	const std::vector<std::string> SMOOTH_CHARS;
+	const std::vector<std::string> SMOOTH_CHARS_FLIPPED;
 	std::vector<double> m_dft_freqspace;
 	std::vector<std::pair<size_t, double>> m_bar_heights;
 

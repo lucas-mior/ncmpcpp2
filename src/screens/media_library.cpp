@@ -288,9 +288,9 @@ void MediaLibrary::switchTo()
 	refresh();
 }
 
-std::wstring MediaLibrary::title()
+std::string MediaLibrary::title()
 {
-	return L"Media library";
+	return "Media library";
 }
 
 void MediaLibrary::update()

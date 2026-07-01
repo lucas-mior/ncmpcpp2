@@ -30,7 +30,7 @@
 #include "status.h"
 #include "utility/string.h"
 #include "utility/type_conversions.h"
-#include "utility/wide_string.h"
+#include "utility/utf8.h"
 
 enum ReapplyFilter { Yes, No };
 
@@ -538,8 +538,8 @@ std::string timeFormat(const char *format, time_t t);
 
 std::string Timestamp(time_t t);
 
-std::wstring Scroller(const std::wstring &str, size_t &pos, size_t width);
-void writeCyclicBuffer(const NC::WBuffer &buf, NC::Window &w, size_t &start_pos,
-                       size_t width, const std::wstring &separator);
+std::string Scroller(const std::string &str, size_t &pos, size_t width);
+void writeCyclicBuffer(const NC::Buffer &buf, NC::Window &w, size_t &start_pos,
+                       size_t width, const std::string &separator);
 
 #endif // NCMPCPP_HELPERS_H

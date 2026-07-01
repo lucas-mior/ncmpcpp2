@@ -244,9 +244,5 @@ AST<char> parse(const std::string &s, const unsigned flags)
 	return AST<char>(parseBracket(s, s.begin(), s.end(), flags));
 }
 
-AST<wchar_t> parse(const std::wstring &s, const unsigned flags)
-{
-	return AST<wchar_t>(parseBracket(s, s.begin(), s.end(), flags));
-}
 
 }

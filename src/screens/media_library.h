@@ -35,7 +35,7 @@ struct MediaLibrary: Screen<NC::Window *>, Filterable, HasColumns, HasSongs, Sea
 	virtual void switchTo() override;
 	virtual void resize() override;
 	
-	virtual std::wstring title() override;
+	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::MediaLibrary; }
 	
 	virtual void refresh() override;

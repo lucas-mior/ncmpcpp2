@@ -24,7 +24,7 @@
 #include "global.h"
 #include "settings.h"
 #include "title.h"
-#include "utility/wide_string.h"
+#include "utility/utf8.h"
 
 void windowTitle(const std::string &status)
 {
@@ -54,14 +54,14 @@ void drawHeader()
 			         << NC::FormattedColor::End<>(Config.volume_color);
 			break;
 		case Design::Alternative:
-			std::wstring title = myScreen->title();
+			std::string title = myScreen->title();
 			*wHeader << NC::XY(0, 3)
 			         << NC::TermManip::ClearToEOL
 			         << Config.alternative_ui_separator_color;
 			mvwhline(wHeader->raw(), 2, 0, 0, COLS);
 			mvwhline(wHeader->raw(), 4, 0, 0, COLS);
 			*wHeader << NC::FormattedColor::End<>(Config.alternative_ui_separator_color)
-			         << NC::XY((COLS-wideLength(title))/2, 3)
+			         << NC::XY((COLS-Utf8::width(title))/2, 3)
 			         << NC::Format::Bold
 			         << title
 			         << NC::Format::NoBold;

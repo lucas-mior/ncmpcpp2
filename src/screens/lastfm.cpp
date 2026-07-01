@@ -48,10 +48,10 @@ void Lastfm::resize()
 	hasToBeResized = 0;
 }
 
-std::wstring Lastfm::title()
+std::string Lastfm::title()
 {
 	if (m_title.empty())
-		return L"Last.fm";
+		return "Last.fm";
 	else
 		return m_title;
 }

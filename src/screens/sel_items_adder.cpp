@@ -164,7 +164,7 @@ void SelectedItemsAdder::refresh()
 		m_playlist_selector.display();
 }
 
-std::wstring SelectedItemsAdder::title()
+std::string SelectedItemsAdder::title()
 {
 	return previousScreen()->title();
 }

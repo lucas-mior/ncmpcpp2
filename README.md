@@ -45,7 +45,7 @@ new, incompatible versions of dependencies, it will be fixed.
 * [taglib](https://taglib.org/), for tag editing
 
 ### Known issues:
-* No full support for handling encodings other than UTF-8.
+* ncmpcpp assumes UTF-8 input, output, and terminal locale.
 
 ### Installation:
 The simplest way to compile this package is:

@@ -64,7 +64,7 @@ struct BaseScreen
 	virtual int windowTimeout() = 0;
 	
 	/// @return title of the screen
-	virtual std::wstring title() = 0;
+	virtual std::string title() = 0;
 	
 	/// @return type of the screen
 	virtual ScreenType type() = 0;

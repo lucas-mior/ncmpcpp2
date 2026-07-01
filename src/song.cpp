@@ -29,7 +29,6 @@
 #include "curses/window.h"
 #include "song.h"
 #include "utility/type_conversions.h"
-#include "utility/wide_string.h"
 
 namespace {
 

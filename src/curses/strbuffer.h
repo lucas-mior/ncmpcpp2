@@ -187,7 +187,6 @@ private:
 };
 
 typedef BasicBuffer<char> Buffer;
-typedef BasicBuffer<wchar_t> WBuffer;
 
 template <typename CharT>
 bool operator==(const BasicBuffer<CharT> &lhs, const BasicBuffer<CharT> &rhs)

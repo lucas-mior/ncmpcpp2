@@ -99,7 +99,7 @@ struct SearchEngine: Screen<SearchEngineWindow>, Filterable, HasActions, HasSong
 	virtual void resize() override;
 	virtual void switchTo() override;
 	
-	virtual std::wstring title() override;
+	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::SearchEngine; }
 	
 	virtual void update() override { }
