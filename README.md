@@ -4,6 +4,7 @@ This is a fork of ncmpcpp. The goals are:
   + ~~Remove clock~~
   + Remove others?
 - Remove dependency on external C++ utility libraries.
+- ~~Remove boost~~
 - Convert the project to C11.
 - Fix the bugs reported in original repo.
 
