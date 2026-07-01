@@ -43,6 +43,7 @@ struct Song
 	virtual ~Song() { }
 	
 	Song(mpd_song *s);
+	Song(const mpd_song *s, std::shared_ptr<mpd_entity> owner);
 
 	Song(const Song &rhs) : m_song(rhs.m_song), m_hash(rhs.m_hash) { }
 	Song(Song &&rhs) : m_song(std::move(rhs.m_song)), m_hash(rhs.m_hash) { }

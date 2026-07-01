@@ -22,6 +22,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <regex>
 
 #include "charset.h"
@@ -67,8 +68,11 @@ bool fetchItemSong(MPD::SongIterator::State &state)
 	}
 	if (src != nullptr)
 	{
-		state.setObject(mpd_song_dup(mpd_entity_get_song(src)));
-		mpd_entity_free(src);
+		std::shared_ptr<mpd_entity> owner(src, mpd_entity_free);
+		const mpd_song *song = mpd_entity_get_song(src);
+		if (song == nullptr)
+			throw std::runtime_error("song entity without song");
+		state.setObject(MPD::Song(song, std::move(owner)));
 		return true;
 	}
 	else
@@ -78,6 +82,34 @@ bool fetchItemSong(MPD::SongIterator::State &state)
 }
 
 namespace MPD {
+
+Item::Item(mpd_entity *entity)
+{
+	assert(entity != nullptr);
+	std::shared_ptr<mpd_entity> owner(entity, mpd_entity_free);
+	switch (mpd_entity_get_type(entity))
+	{
+		case MPD_ENTITY_TYPE_DIRECTORY:
+			m_type = Type::Directory;
+			m_directory = Directory(mpd_entity_get_directory(entity));
+			break;
+		case MPD_ENTITY_TYPE_SONG:
+		{
+			const mpd_song *song = mpd_entity_get_song(entity);
+			if (song == nullptr)
+				throw std::runtime_error("song entity without song");
+			m_type = Type::Song;
+			m_song = Song(song, owner);
+			break;
+		}
+		case MPD_ENTITY_TYPE_PLAYLIST:
+			m_type = Type::Playlist;
+			m_playlist = Playlist(mpd_entity_get_playlist(entity));
+			break;
+		default:
+			throw std::runtime_error("unknown mpd_entity type");
+	}
+}
 
 void checkConnectionErrors(mpd_connection *conn)
 {

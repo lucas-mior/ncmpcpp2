@@ -217,28 +217,7 @@ struct Item
 {
 	enum class Type { Directory, Song, Playlist };
 
-	Item(mpd_entity *entity)
-	{
-		assert(entity != nullptr);
-		switch (mpd_entity_get_type(entity))
-		{
-			case MPD_ENTITY_TYPE_DIRECTORY:
-				m_type = Type::Directory;
-				m_directory = Directory(mpd_entity_get_directory(entity));
-				break;
-			case MPD_ENTITY_TYPE_SONG:
-				m_type = Type::Song;
-				m_song = Song(mpd_song_dup(mpd_entity_get_song(entity)));
-				break;
-			case MPD_ENTITY_TYPE_PLAYLIST:
-				m_type = Type::Playlist;
-				m_playlist = Playlist(mpd_entity_get_playlist(entity));
-				break;
-			default:
-				throw std::runtime_error("unknown mpd_entity type");
-		}
-		mpd_entity_free(entity);
-	}
+	Item(mpd_entity *entity);
 	Item(Directory directory_)
 	: m_type(Type::Directory)
 	, m_directory(std::move(directory_))

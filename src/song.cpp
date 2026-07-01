@@ -23,8 +23,11 @@
 #include <functional>
 #include <iomanip>
 #include <memory>
+#include <new>
 #include <sstream>
+#include <stdexcept>
 #include <string>
+#include <utility>
 
 #include "curses/window.h"
 #include "song.h"
@@ -53,6 +56,17 @@ size_t calc_hash(const char *s, size_t seed = 0)
 	return seed;
 }
 
+const char *checked_uri(const mpd_song *s)
+{
+	if (s == nullptr)
+		throw std::bad_alloc();
+
+	const char *uri = mpd_song_get_uri(s);
+	if (uri == nullptr)
+		throw std::runtime_error("song without uri");
+	return uri;
+}
+
 }
 
 namespace MPD {
@@ -74,7 +88,16 @@ Song::Song(mpd_song *s)
 {
 	assert(s);
 	m_song = std::shared_ptr<mpd_song>(s, mpd_song_free);
-	m_hash = calc_hash(mpd_song_get_uri(s));
+	m_hash = calc_hash(checked_uri(s));
+}
+
+Song::Song(const mpd_song *s, std::shared_ptr<mpd_entity> owner)
+{
+	assert(s);
+	assert(owner);
+	m_song = std::shared_ptr<mpd_song>(std::move(owner),
+	                                  const_cast<mpd_song *>(s));
+	m_hash = calc_hash(checked_uri(s));
 }
 
 std::string Song::getURI(unsigned idx) const
