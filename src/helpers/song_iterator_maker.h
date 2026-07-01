@@ -21,9 +21,11 @@
 #ifndef NCMPCPP_HELPERS_SONG_ITERATOR_MAKER_H
 #define NCMPCPP_HELPERS_SONG_ITERATOR_MAKER_H
 
-#include <boost/iterator/transform_iterator.hpp>
+#include <type_traits>
+
 #include "curses/menu.h"
 #include "song_list.h"
+#include "utility/transform_iterator.h"
 
 template <typename SongT>
 struct SongPropertiesExtractor
@@ -49,7 +51,7 @@ SongIterator makeSongIterator(IteratorT it)
 		std::invoke_result_t<Extractor, typename IteratorT::reference>,
 		SongProperties &
 		>::value, "invalid result type of SongPropertiesExtractor");
-	return SongIterator(boost::make_transform_iterator(it, Extractor{}));
+	return SongIterator(Utility::makeTransformIterator(it, Extractor{}));
 }
 
 template <typename ConstIteratorT>
@@ -63,7 +65,7 @@ ConstSongIterator makeConstSongIterator(ConstIteratorT it)
 		std::invoke_result_t<Extractor, typename ConstIteratorT::reference>,
 		const SongProperties &
 		>::value, "invalid result type of SongPropertiesExtractor");
-	return ConstSongIterator(boost::make_transform_iterator(it, Extractor{}));
+	return ConstSongIterator(Utility::makeTransformIterator(it, Extractor{}));
 }
 
 #endif // NCMPCPP_HELPERS_SONG_ITERATOR_MAKER_H

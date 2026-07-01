@@ -21,7 +21,6 @@
 #ifndef NCMPCPP_MENU_H
 #define NCMPCPP_MENU_H
 
-#include <boost/iterator/transform_iterator.hpp>
 #include <boost/range/detail/any_iterator.hpp>
 #include <cassert>
 #include <functional>
@@ -33,6 +32,7 @@
 #include "curses/strbuffer.h"
 #include "curses/window.h"
 #include "utility/const.h"
+#include "utility/transform_iterator.h"
 
 namespace NC {
 
@@ -242,19 +242,19 @@ struct Menu: Window, List
 	typedef std::reverse_iterator<Iterator> ReverseIterator;
 	typedef std::reverse_iterator<ConstIterator> ConstReverseIterator;
 
-	typedef boost::transform_iterator<
+	typedef Utility::TransformIterator<
 		typename Item::template ExtractValue<Const::No>,
 		Iterator> ValueIterator;
-	typedef boost::transform_iterator<
+	typedef Utility::TransformIterator<
 		typename Item::template ExtractValue<Const::Yes>,
 		ConstIterator> ConstValueIterator;
 	typedef std::reverse_iterator<ValueIterator> ReverseValueIterator;
 	typedef std::reverse_iterator<ConstValueIterator> ConstReverseValueIterator;
 	
-	typedef boost::transform_iterator<
+	typedef Utility::TransformIterator<
 		typename Item::template ExtractProperties<Const::No>,
 		Iterator> PropertiesIterator;
-	typedef boost::transform_iterator<
+	typedef Utility::TransformIterator<
 		typename Item::template ExtractProperties<Const::Yes>,
 		ConstIterator> ConstPropertiesIterator;
 

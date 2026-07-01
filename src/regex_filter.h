@@ -21,104 +21,14 @@
 #ifndef NCMPCPP_REGEX_FILTER_H
 #define NCMPCPP_REGEX_FILTER_H
 
-#include "config.h"
-
-#ifdef BOOST_REGEX_ICU
-# include <boost/regex/icu.hpp>
-# include <unicode/errorcode.h>
-# include <unicode/translit.h>
-#else
-# include <boost/regex.hpp>
-#endif // BOOST_REGEX_ICU
-
 #include <cassert>
-#include <iostream>
+#include <functional>
+#include <string>
+#include <utility>
 
-#include "utility/functional.h"
-
-namespace {
-
-#ifdef BOOST_REGEX_ICU
-
-struct StripDiacritics
-{
-	static void convert(icu::UnicodeString &s)
-	{
-		if (m_converter == nullptr)
-		{
-			icu::ErrorCode result;
-			m_converter = icu::Transliterator::createInstance(
-				"NFD; [:M:] Remove; NFC", UTRANS_FORWARD, result);
-			if (result.isFailure())
-				throw std::runtime_error(
-					"instantiation of transliterator instance failed with "
-					+ std::string(result.errorName()));
-		}
-		m_converter->transliterate(s);
-	}
-
-private:
-	static icu::Transliterator *m_converter;
-};
-
-icu::Transliterator *StripDiacritics::m_converter;
-
-#endif // BOOST_REGEX_ICU
-
-}
+#include "utility/regex.h"
 
 namespace Regex {
-
-typedef
-#ifdef BOOST_REGEX_ICU
-	boost::u32regex
-#else
-	boost::regex
-#endif // BOOST_REGEX_ICU
-Regex;
-
-template <typename StringT>
-inline Regex make(StringT &&s,
-                  boost::regex_constants::syntax_option_type flags)
-{
-	return
-#ifdef BOOST_REGEX_ICU
-	boost::make_u32regex
-#else
-	boost::regex
-#endif // BOOST_REGEX_ICU
-	(std::forward<StringT>(s), flags);
-}
-
-template <typename CharT>
-inline bool search(const std::basic_string<CharT> &s,
-                   const Regex &rx,
-                   bool ignore_diacritics)
-{
-	try {
-#ifdef BOOST_REGEX_ICU
-		if (ignore_diacritics)
-		{
-			auto us = icu::UnicodeString::fromUTF8(
-				icu::StringPiece(convertString<char, CharT>::apply(s)));
-			StripDiacritics::convert(us);
-			return boost::u32regex_search(us, rx);
-		}
-		else
-			return boost::u32regex_search(s, rx);
-#else
-		return boost::regex_search(s, rx);
-#endif // BOOST_REGEX_ICU
-	} catch (std::out_of_range &e) {
-		// Invalid UTF-8 sequence, ignore the string.
-		std::cerr << "Regex::search: error while processing \""
-		          << s
-		          << "\": "
-		          << e.what()
-		          << "\n";
-		return false;
-	}
-}
 
 template <typename T>
 struct Filter
@@ -131,7 +41,7 @@ struct Filter
 
 	template <typename FilterT>
 	Filter(const std::string &constraint_,
-	       boost::regex_constants::syntax_option_type flags,
+	       Flags flags,
 	       FilterT &&filter)
 		: m_rx(make(constraint_, flags))
 		, m_constraint(constraint_)
@@ -173,7 +83,7 @@ template <typename T> struct ItemFilter
 
 	template <typename FilterT>
 	ItemFilter(const std::string &constraint_,
-	           boost::regex_constants::syntax_option_type flags,
+	           Flags flags,
 	           FilterT &&filter)
 		: m_rx(make(constraint_, flags))
 		, m_constraint(constraint_)

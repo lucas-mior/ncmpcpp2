@@ -37,7 +37,7 @@
 #include <commentsframe.h>
 #include <xiphcomment.h>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "global.h"
 #include "settings.h"
 #include "utility/string.h"
@@ -349,7 +349,7 @@ bool write(MPD::MutableSong &s)
 		new_name += s.getDirectory();
 		new_name += "/";
 		new_name += s.getNewName();
-		boost::filesystem::rename(old_name, new_name);
+		std::filesystem::rename(old_name, new_name);
 	}
 	return true;
 }

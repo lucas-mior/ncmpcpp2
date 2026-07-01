@@ -89,6 +89,7 @@ noinst_HEADERS = \
 	utility/html.h \
 	utility/option_parser.h \
 	utility/readline.h \
+	utility/regex.h \
 	utility/sample_buffer.h \
 	utility/scoped_value.h \
 	utility/storage_kind.h \

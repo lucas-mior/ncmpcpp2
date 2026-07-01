@@ -23,6 +23,7 @@
 
 #include "curses/window.h"
 #include "curses/strbuffer.h"
+#include "utility/regex.h"
 
 namespace NC {
 
@@ -47,11 +48,11 @@ struct Scrollpad: public Window
 	void reset();
 	
 	bool setProperties(const Color &begin, const std::string &s, const Color &end,
-	                   size_t flags, size_t id = -2);
+	                   Regex::Flags flags, size_t id = -2);
 	bool setProperties(const Format &begin, const std::string &s, const Format &end,
-	                   size_t flags, size_t id = -2);
+	                   Regex::Flags flags, size_t id = -2);
 	bool setProperties(const FormattedColor &fc, const std::string &s,
-	                   size_t flags, size_t id = -2);
+	                   Regex::Flags flags, size_t id = -2);
 	void removeProperties(size_t id = -2);
 	
 	Scrollpad &operator<<(int n) { return write(n); }

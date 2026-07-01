@@ -234,7 +234,7 @@ bool Statusbar::Helpers::ApplyFilterImmediately::operator()(const char *s)
 				myPlaylist->enableHighlighting();
 			myScreen->refreshWindow();
 		}
-	} catch (boost::bad_expression &) { }
+	} catch (Regex::Error &) { }
 	return true;
 }
 
@@ -251,7 +251,7 @@ bool Statusbar::Helpers::FindImmediately::operator()(const char *s)
 				myPlaylist->enableHighlighting();
 			myScreen->refreshWindow();
 		}
-	} catch (boost::bad_expression &) { }
+	} catch (Regex::Error &) { }
 	return true;
 }
 
