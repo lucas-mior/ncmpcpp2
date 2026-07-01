@@ -1,3 +1,6 @@
+# ncmpcpp2
+* Remove Boost as a dependency.
+
 # ncmpcpp-0.10.2 (2025-??-??)
 * Update lyrics fetchers.
 * Add support for hexadecimal HTML escape codes.
