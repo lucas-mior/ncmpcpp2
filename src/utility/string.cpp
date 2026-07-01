@@ -19,26 +19,30 @@
  ***************************************************************************/
 
 #include <cassert>
-#include <cwctype>
 #include <algorithm>
+#include "c/ncm_string.h"
 #include "utility/string.h"
+
+namespace {
+
+int32 stringSize(const std::string &s)
+{
+	return static_cast<int32>(s.size());
+}
+
+}
 
 std::string getBasename(const std::string &path)
 {
-	size_t slash = path.rfind("/");
-	if (slash == std::string::npos)
-		return path;
-	else
-		return path.substr(slash+1);
+	int32 start = ncm_string_basename_start(
+		const_cast<char *>(path.data()), stringSize(path));
+	return path.substr(static_cast<size_t>(start));
 }
 
 std::string getParentDirectory(std::string path)
 {
-	size_t slash = path.rfind('/');
-	if (slash == std::string::npos)
-		path = "";
-	else
-		path.resize(slash);
+	int32 len = ncm_string_parent_directory_len(path.data(), stringSize(path));
+	path.resize(static_cast<size_t>(len));
 	return path;
 }
 
@@ -58,11 +62,7 @@ std::string getSharedDirectory(const std::string &dir1, const std::string &dir2)
 
 std::string lowercaseAscii(std::string s)
 {
-	for (char &c : s)
-	{
-		if (c >= 'A' && c <= 'Z')
-			c += 'a' - 'A';
-	}
+	ncm_string_lowercase_ascii(s.data(), stringSize(s));
 	return s;
 }
 
