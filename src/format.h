@@ -21,8 +21,11 @@
 #ifndef NCMPCPP_HAVE_FORMAT_H
 #define NCMPCPP_HAVE_FORMAT_H
 
-#include <boost/variant.hpp>
+#include <memory>
 #include <optional>
+#include <utility>
+#include <variant>
+#include <vector>
 
 #include "curses/menu.h"
 #include "song.h"
@@ -79,15 +82,56 @@ using TagVector = std::vector<
 
 enum class Result { Empty, Missing, Ok };
 
+template <typename T>
+class Recursive
+{
+public:
+	Recursive(const T &value)
+	: m_value(std::make_unique<T>(value))
+	{ }
+
+	Recursive(T &&value)
+	: m_value(std::make_unique<T>(std::move(value)))
+	{ }
+
+	Recursive(const Recursive &rhs)
+	: m_value(rhs.m_value ? std::make_unique<T>(*rhs.m_value) : nullptr)
+	{ }
+
+	Recursive(Recursive &&) noexcept = default;
+
+	Recursive &operator=(const Recursive &rhs)
+	{
+		if (this != &rhs)
+		{
+			m_value = rhs.m_value
+			        ? std::make_unique<T>(*rhs.m_value)
+			        : nullptr;
+		}
+		return *this;
+	}
+
+	Recursive &operator=(Recursive &&) noexcept = default;
+
+	T &get() { return *m_value; }
+	const T &get() const { return *m_value; }
+
+	operator T &() { return get(); }
+	operator const T &() const { return get(); }
+
+private:
+	std::unique_ptr<T> m_value;
+};
+
 template <typename CharT>
-using Expression = boost::variant<
+using Expression = std::variant<
 	std::basic_string<CharT>,
 	NC::Color,
 	NC::Format,
 	OutputSwitch,
 	SongTag,
-	boost::recursive_wrapper<FirstOf<CharT>>,
-	boost::recursive_wrapper<Group<CharT>>
+	Recursive<FirstOf<CharT>>,
+	Recursive<Group<CharT>>
 >;
 
 template <ListType Type, typename CharT>

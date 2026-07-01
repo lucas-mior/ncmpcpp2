@@ -21,7 +21,7 @@
 #ifndef NCMPCPP_HAVE_FORMAT_IMPL_H
 #define NCMPCPP_HAVE_FORMAT_IMPL_H
 
-#include <boost/variant.hpp>
+#include <variant>
 
 #include "curses/menu.h"
 #include "curses/strbuffer.h"
@@ -66,7 +66,7 @@ inline Result &operator+=(Result &base, Result result)
 }*/
 
 template <typename CharT, typename OutputT, typename SecondOutputT = OutputT>
-struct Printer: boost::static_visitor<Result>
+struct Printer
 {
 	typedef std::basic_string<CharT> StringT;
 
@@ -146,7 +146,7 @@ struct Printer: boost::static_visitor<Result>
 			Result result = Result::Empty;
 			for (const auto &ex : group.base())
 			{
-				result += boost::apply_visitor(*this, ex);
+				result += std::visit(*this, ex);
 				if (result == Result::Missing)
 				{
 					result = Result::Empty;
@@ -169,7 +169,7 @@ struct Printer: boost::static_visitor<Result>
 	{
 		for (const auto &ex : first_of.base())
 		{
-			if (boost::apply_visitor(*this, ex) == Result::Ok)
+			if (std::visit(*this, ex) == Result::Ok)
 				return Result::Ok;
 		}
 		return Result::Empty;
@@ -257,7 +257,7 @@ template <typename CharT, typename VisitorT>
 void visit(VisitorT &visitor, const AST<CharT> &ast)
 {
 	for (const auto &ex : ast.base())
-		boost::apply_visitor(visitor, ex);
+		std::visit(visitor, ex);
 }
 
 template <typename CharT, typename ItemT>
