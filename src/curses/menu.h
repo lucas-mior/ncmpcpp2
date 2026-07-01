@@ -21,7 +21,6 @@
 #ifndef NCMPCPP_MENU_H
 #define NCMPCPP_MENU_H
 
-#include <boost/range/detail/any_iterator.hpp>
 #include <cassert>
 #include <functional>
 #include <iterator>
@@ -31,6 +30,7 @@
 #include "curses/formatted_color.h"
 #include "curses/strbuffer.h"
 #include "curses/window.h"
+#include "utility/any_iterator.h"
 #include "utility/const.h"
 #include "utility/transform_iterator.h"
 
@@ -93,12 +93,7 @@ struct List
 	};
 
 	template <typename ValueT>
-	using PropertiesIterator = boost::range_detail::any_iterator<
-		ValueT,
-		boost::random_access_traversal_tag,
-		ValueT &,
-		std::ptrdiff_t
-	>;
+	using PropertiesIterator = Utility::AnyRandomAccessIterator<ValueT>;
 
 	typedef PropertiesIterator<Properties> Iterator;
 	typedef PropertiesIterator<const Properties> ConstIterator;

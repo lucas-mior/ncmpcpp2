@@ -21,9 +21,9 @@
 #ifndef NCMPCPP_SONG_LIST_H
 #define NCMPCPP_SONG_LIST_H
 
-#include <boost/range/detail/any_iterator.hpp>
 #include "curses/menu.h"
 #include "song.h"
+#include "utility/any_iterator.h"
 #include "utility/const.h"
 
 struct SongProperties
@@ -86,18 +86,11 @@ private:
 };
 
 template <Const const_>
-using SongIteratorT = boost::range_detail::any_iterator<
+using SongIteratorT = Utility::AnyRandomAccessIterator<
 	typename std::conditional<
 		const_ == Const::Yes,
 		const SongProperties,
-		SongProperties>::type,
-	boost::random_access_traversal_tag,
-	typename std::conditional<
-		const_ == Const::Yes,
-		const SongProperties &,
-		SongProperties &>::type,
-	std::ptrdiff_t
-	>;
+		SongProperties>::type>;
 
 typedef SongIteratorT<Const::No> SongIterator;
 typedef SongIteratorT<Const::Yes> ConstSongIterator;

@@ -82,6 +82,7 @@ noinst_HEADERS = \
 	screens/tag_editor.h \
 	screens/tiny_tag_editor.h \
 	screens/visualizer.h \
+	utility/any_iterator.h \
 	utility/comparators.h \
 	utility/const.h \
 	utility/conversion.h \
