@@ -7,6 +7,32 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_PREREQ([2.71])
 
+AC_DEFUN([NCMPCPP_APPEND_SUPPORTED_CFLAG], [
+  AC_LANG_PUSH([C])
+  AC_MSG_CHECKING([whether C compiler supports $1])
+  ncmpcpp_save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS $1"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+    [AC_MSG_RESULT([yes])
+     ncmpcpp_supported_CFLAGS="$ncmpcpp_supported_CFLAGS $1"],
+    [AC_MSG_RESULT([no])])
+  CFLAGS="$ncmpcpp_save_CFLAGS"
+  AC_LANG_POP([C])
+])
+
+AC_DEFUN([NCMPCPP_APPEND_SUPPORTED_CXXFLAG], [
+  AC_LANG_PUSH([C++])
+  AC_MSG_CHECKING([whether C++ compiler supports $1])
+  ncmpcpp_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS $1"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+    [AC_MSG_RESULT([yes])
+     ncmpcpp_supported_CXXFLAGS="$ncmpcpp_supported_CXXFLAGS $1"],
+    [AC_MSG_RESULT([no])])
+  CXXFLAGS="$ncmpcpp_save_CXXFLAGS"
+  AC_LANG_POP([C++])
+])
+
 AC_PROG_CC
 AC_PROG_CXX
 LT_INIT
@@ -107,8 +133,78 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [[auto f = [](auto n) { return n*n; }; f(
 )
 
 # warnings
-CFLAGS="$CFLAGS -Wall -Wextra -Wshadow -Wimplicit-fallthrough"
-CXXFLAGS="$CXXFLAGS -Wall -Wextra -Wshadow -Wimplicit-fallthrough"
+ncmpcpp_supported_CFLAGS=""
+ncmpcpp_supported_CXXFLAGS=""
+
+for warning in -Wfatal-errors -Wall -Wextra -Wshadow \
+               -Wimplicit-fallthrough; do
+  NCMPCPP_APPEND_SUPPORTED_CFLAG([$warning])
+  NCMPCPP_APPEND_SUPPORTED_CXXFLAG([$warning])
+done
+
+AC_LANG_PUSH([C])
+AC_CACHE_CHECK([whether the C compiler is clang],
+  [ncmpcpp_cv_c_compiler_clang],
+  [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#ifndef __clang__
+#error not clang
+#endif
+  ]], [[]])],
+    [ncmpcpp_cv_c_compiler_clang=yes],
+    [ncmpcpp_cv_c_compiler_clang=no])])
+AC_LANG_POP([C])
+
+AC_LANG_PUSH([C++])
+AC_CACHE_CHECK([whether the C++ compiler is clang],
+  [ncmpcpp_cv_cxx_compiler_clang],
+  [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#ifndef __clang__
+#error not clang
+#endif
+  ]], [[]])],
+    [ncmpcpp_cv_cxx_compiler_clang=yes],
+    [ncmpcpp_cv_cxx_compiler_clang=no])])
+AC_LANG_POP([C++])
+
+clang_common_warnings="-Weverything"
+clang_common_warnings="$clang_common_warnings -Wno-unknown-warning-option"
+clang_common_warnings="$clang_common_warnings -Wno-format-pedantic"
+clang_common_warnings="$clang_common_warnings -Wno-unused-macros"
+clang_common_warnings="$clang_common_warnings -Wno-unused-function"
+clang_common_warnings="$clang_common_warnings -Wno-constant-logical-operand"
+clang_common_warnings="$clang_common_warnings -Wno-float-equal"
+clang_common_warnings="$clang_common_warnings -Wno-undefined-internal"
+clang_common_warnings="$clang_common_warnings -Wno-cast-qual"
+clang_common_warnings="$clang_common_warnings -Wno-unknown-pragmas"
+clang_common_warnings="$clang_common_warnings -Wno-unsafe-buffer-usage"
+clang_common_warnings="$clang_common_warnings -Wno-format-nonliteral"
+clang_common_warnings="$clang_common_warnings -Wno-disabled-macro-expansion"
+clang_common_warnings="$clang_common_warnings -Wno-ignored-attributes"
+clang_common_warnings="$clang_common_warnings -Wno-covered-switch-default"
+clang_common_warnings="$clang_common_warnings -Wno-used-but-marked-unused"
+clang_common_warnings="$clang_common_warnings -Wno-implicit-int-enum-cast"
+clang_common_warnings="$clang_common_warnings -Wno-cast-function-type-strict"
+
+clang_cxx_warnings="$clang_common_warnings"
+clang_cxx_warnings="$clang_cxx_warnings -Wno-c++98-compat"
+clang_cxx_warnings="$clang_cxx_warnings -Wno-c++98-compat-pedantic"
+clang_cxx_warnings="$clang_cxx_warnings -Wno-pre-c++20-compat"
+clang_cxx_warnings="$clang_cxx_warnings -Wno-pre-c++20-compat-pedantic"
+
+if test "$ncmpcpp_cv_c_compiler_clang" = "yes"; then
+  for warning in $clang_common_warnings; do
+    NCMPCPP_APPEND_SUPPORTED_CFLAG([$warning])
+  done
+fi
+
+if test "$ncmpcpp_cv_cxx_compiler_clang" = "yes"; then
+  for warning in $clang_cxx_warnings; do
+    NCMPCPP_APPEND_SUPPORTED_CXXFLAG([$warning])
+  done
+fi
+
+CFLAGS="$CFLAGS$ncmpcpp_supported_CFLAGS"
+CXXFLAGS="$CXXFLAGS$ncmpcpp_supported_CXXFLAGS"
 
 # various headers
 AC_CHECK_HEADERS([netinet/tcp.h netinet/in.h], , AC_MSG_ERROR(vital headers missing))
