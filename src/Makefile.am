@@ -57,6 +57,7 @@ AM_CPPFLAGS= $(all_includes)
 
 # the library search path.
 ncmpcpp_LDFLAGS = $(all_libraries)
+ncmpcpp_LDADD = ../cbase/libcbase.la
 noinst_HEADERS = \
 	curses/formatted_color.h \
 	curses/menu.h \

@@ -21,3 +21,5 @@ missing
 src/ncmpcpp
 stamp-h1
 compile_commands.json
+libcbase.la
+.libs/
