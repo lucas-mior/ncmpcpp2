@@ -1,5 +1,5 @@
-.git/$
-.cache/$
+.git/
+.cache/
 autom4te.cache$
 .clangd$
 LICENSE$
@@ -8,7 +8,7 @@ tags$
 .tags.vim$
 compile_commands.json$
 .*\.o
-.deps/$
+.deps/
 src/ncmpcpp$
 configure$
 libtool$
