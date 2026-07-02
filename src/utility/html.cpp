@@ -18,94 +18,42 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <algorithm>
-#include <cstdlib>
-#include "c/ncm_utf8.h"
+#include "c/ncm_html.h"
 #include "utility/html.h"
 
 namespace {
 
-void replaceAll(std::string &s, const std::string &from, const std::string &to)
+int32 stringSize(const std::string &s)
 {
-	for (size_t pos = 0; (pos = s.find(from, pos)) != std::string::npos; pos += to.size())
-		s.replace(pos, from.size(), to);
+	return static_cast<int32>(s.size());
+}
+
+std::string toStringAndDestroy(NcmBuffer &buffer)
+{
+	std::string result;
+	if (buffer.len > 0)
+		result.assign(buffer.data, static_cast<size_t>(buffer.len));
+	ncm_buffer_destroy(&buffer);
+	return result;
 }
 
 }
 
 std::string unescapeHtmlUtf8(const std::string &data)
 {
-	int base;
-	size_t offset;
-	std::string result;
-	for (size_t i = 0, j; i < data.length(); ++i)
-	{
-		if (data[i] == '&' && data[i+1] == '#' && (j = data.find(';', i)) != std::string::npos)
-		{
-			if (data[i+2] == 'x')
-			{
-				offset = 3;
-				base = 16;
-			}
-			else
-			{
-				offset = 2;
-				base = 10;
-			}
-			int n = strtol(&data.c_str()[i+offset], nullptr, base);
-			char buffer[4];
-			int32 len = ncm_utf8_encode(static_cast<uint32>(n), buffer, sizeof(buffer));
-			if (len > 0)
-				result.append(buffer, static_cast<size_t>(len));
-			i = j;
-		}
-		else
-			result += data[i];
-	}
-	return result;
+	NcmBuffer result = ncm_html_unescape_utf8(
+		const_cast<char *>(data.data()), stringSize(data));
+	return toStringAndDestroy(result);
 }
 
 void unescapeHtmlEntities(std::string &s)
 {
-	// well, at least some of them.
-	replaceAll(s, "&apos;", "'");
-	replaceAll(s, "&amp;", "&");
-	replaceAll(s, "&gt;", ">");
-	replaceAll(s, "&lt;", "<");
-	replaceAll(s, "&nbsp;", " ");
-	replaceAll(s, "&quot;", "\"");
-	replaceAll(s, "&ndash;", "–");
-	replaceAll(s, "&mdash;", "—");
+	NcmBuffer result = ncm_html_unescape_entities(s.data(), stringSize(s));
+	s = toStringAndDestroy(result);
 }
 
 void stripHtmlTags(std::string &s)
 {
-	// Erase newlines so they don't duplicate with HTML ones.
-	s.erase(std::remove_if(s.begin(), s.end(), [](char c) {
-				return c == '\n' || c == '\r';
-			}), s.end());
-
-	bool is_newline;
-	for (size_t i = s.find("<"); i != std::string::npos; i = s.find("<"))
-	{
-		size_t j = s.find(">", i);
-		if (j != std::string::npos)
-		{
-			++j;
-			is_newline
-				=  s.compare(i, std::min<size_t>(3, j-i), "<p ") == 0
-				|| s.compare(i, j-i, "<p>") == 0
-				|| s.compare(i, j-i, "</p>") == 0
-				|| s.compare(i, j-i, "<br>") == 0
-				|| s.compare(i, j-i, "<br/>") == 0
-				|| s.compare(i, std::min<size_t>(4, j-i), "<br ") == 0;
-			if (is_newline)
-				s.replace(i, j-i, "\n");
-			else
-				s.replace(i, j-i, "");
-		}
-		else
-			break;
-	}
-	unescapeHtmlEntities(s);
+	NcmBuffer result = ncm_html_strip_tags(s.data(), stringSize(s));
+	s = toStringAndDestroy(result);
 }

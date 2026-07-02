@@ -1,5 +1,8 @@
 bin_PROGRAMS = ncmpcpp
 ncmpcpp_SOURCES = \
+	c/ncm_base.c \
+	c/ncm_html.c \
+	c/ncm_sample_buffer.c \
 	c/ncm_string.c \
 	c/ncm_utf8.c \
 	curses/formatted_color.cpp \
@@ -61,6 +64,9 @@ AM_CPPFLAGS= $(all_includes)
 ncmpcpp_LDFLAGS = $(all_libraries)
 ncmpcpp_LDADD = ../cbase/libcbase.la
 noinst_HEADERS = \
+	c/ncm_base.h \
+	c/ncm_html.h \
+	c/ncm_sample_buffer.h \
 	c/ncm_string.h \
 	c/ncm_utf8.h \
 	curses/formatted_color.h \
