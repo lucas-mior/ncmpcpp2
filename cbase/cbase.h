@@ -9,6 +9,13 @@ extern "C" {
 
 void cbase_application_mode_link_anchor(void);
 
+void *cbase_malloc(int64 size);
+void *cbase_realloc_array(void *old, int64 old_capacity,
+                          int64 new_capacity, int64 obj_size);
+void cbase_free(void *pointer, int64 size);
+void cbase_memcpy(void *dest, void *source, int64 n);
+void cbase_memmove(void *dest, void *source, int64 n);
+
 void cbase_string_lowercase_ascii(char *string, int32 string_len);
 int32 cbase_string_last_index_of(char *string, int32 string_len, char needle);
 

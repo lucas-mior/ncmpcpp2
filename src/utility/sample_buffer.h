@@ -24,11 +24,19 @@
 #include <cstdint>
 #include <vector>
 
+#include "c/ncm_sample_buffer.h"
+
 struct SampleBuffer
 {
 	typedef std::vector<int16_t>::iterator Iterator;
 
-	SampleBuffer() : m_offset(0) { }
+	SampleBuffer();
+	SampleBuffer(const SampleBuffer &rhs);
+	SampleBuffer(SampleBuffer &&rhs) noexcept;
+	~SampleBuffer();
+
+	SampleBuffer &operator=(const SampleBuffer &rhs);
+	SampleBuffer &operator=(SampleBuffer &&rhs) noexcept;
 
 	void put(Iterator begin, Iterator end);
 	size_t get(size_t elems, std::vector<int16_t> &dest);
@@ -40,8 +48,10 @@ struct SampleBuffer
 	const std::vector<int16_t> &buffer() const;
 
 private:
-	size_t m_offset;
-	std::vector<int16_t> m_buffer;
+	static int32 checkedSize(size_t size);
+
+	mutable std::vector<int16_t> m_buffer_view;
+	NcmSampleBuffer m_buffer;
 };
 
 #endif // NCMPCPP_SAMPLE_BUFFER_H

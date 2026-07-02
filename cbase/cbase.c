@@ -97,3 +97,40 @@ cbase_application_mode_link_anchor(void) {
     sort_functions_sink();
     return;
 }
+
+void *
+cbase_malloc(int64 size) {
+    return malloc2(size);
+}
+
+void *
+cbase_realloc_array(void *old, int64 old_capacity,
+                    int64 new_capacity, int64 obj_size) {
+    void *result;
+
+    if (new_capacity <= 0) {
+        cbase_free(old, old_capacity*obj_size);
+        return NULL;
+    }
+
+    result = realloc2(old, old_capacity, new_capacity, obj_size);
+    return result;
+}
+
+void
+cbase_free(void *pointer, int64 size) {
+    free2(pointer, size);
+    return;
+}
+
+void
+cbase_memcpy(void *dest, void *source, int64 n) {
+    memcpy64(dest, source, n);
+    return;
+}
+
+void
+cbase_memmove(void *dest, void *source, int64 n) {
+    memmove64(dest, source, n);
+    return;
+}
