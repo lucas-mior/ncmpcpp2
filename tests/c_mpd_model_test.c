@@ -32,6 +32,8 @@ static void require_string(char *file, int32 line, char *name,
 static void test_directory(void);
 static void test_playlist(void);
 static void test_song_empty_copy(void);
+static void test_song_uri_helpers(void);
+static void test_song_format_helpers(void);
 static void test_item_unknown(void);
 static void test_item_directory_copy(void);
 static void test_item_playlist_replacement(void);
@@ -134,6 +136,76 @@ test_song_empty_copy(void) {
 
     ncm_song_destroy(&copy);
     ncm_song_destroy(&song);
+    return;
+}
+
+
+static void
+test_song_uri_helpers(void) {
+    NcmStringView view;
+
+    REQUIRE(ncm_song_name_from_uri(LIT_ARGS("dir/song.flac"), &view));
+    REQUIRE_STRING(view.data, view.len, "song.flac");
+
+    REQUIRE(ncm_song_name_from_uri(LIT_ARGS("song.flac"), &view));
+    REQUIRE_STRING(view.data, view.len, "song.flac");
+
+    REQUIRE(ncm_song_directory_from_uri(LIT_ARGS("dir/song.flac"), &view));
+    REQUIRE_STRING(view.data, view.len, "dir");
+
+    REQUIRE(ncm_song_directory_from_uri(LIT_ARGS("song.flac"), &view));
+    REQUIRE_STRING(view.data, view.len, "/");
+
+    REQUIRE(ncm_song_directory_from_uri(LIT_ARGS("/music/song.flac"),
+                                        &view));
+    REQUIRE_STRING(view.data, view.len, "/music");
+
+    REQUIRE(ncm_song_uri_is_from_database(LIT_ARGS("dir/song.flac")));
+    REQUIRE(ncm_song_uri_is_from_database(LIT_ARGS("song.flac")));
+    REQUIRE(!ncm_song_uri_is_from_database(LIT_ARGS("/tmp/song.flac")));
+
+    REQUIRE(ncm_song_uri_is_stream(LIT_ARGS("http://example/stream")));
+    REQUIRE(ncm_song_uri_is_stream(LIT_ARGS("https://example/stream")));
+    REQUIRE(!ncm_song_uri_is_stream(LIT_ARGS("ftp://example/stream")));
+    return;
+}
+
+static void
+test_song_format_helpers(void) {
+    char buffer[32];
+    int32 len;
+
+    REQUIRE_INT(ncm_song_numeric_tag_len(LIT_ARGS("1")), 2);
+    len = ncm_song_format_numeric_tag(buffer, NCM_ARRAY_LEN(buffer),
+                                      LIT_ARGS("1"));
+    REQUIRE_STRING(buffer, len, "01");
+
+    len = ncm_song_format_numeric_tag(buffer, NCM_ARRAY_LEN(buffer),
+                                      LIT_ARGS("0"));
+    REQUIRE_STRING(buffer, len, "0");
+
+    len = ncm_song_format_numeric_tag(buffer, NCM_ARRAY_LEN(buffer),
+                                      LIT_ARGS("1/12"));
+    REQUIRE_STRING(buffer, len, "01/12");
+
+    len = ncm_song_format_numeric_tag(buffer, NCM_ARRAY_LEN(buffer),
+                                      LIT_ARGS("10/12"));
+    REQUIRE_STRING(buffer, len, "10/12");
+
+    REQUIRE_INT(ncm_song_track_number_len(LIT_ARGS("1/12")), 2);
+    len = ncm_song_format_track_number(buffer, NCM_ARRAY_LEN(buffer),
+                                       LIT_ARGS("1/12"));
+    REQUIRE_STRING(buffer, len, "01");
+
+    len = ncm_song_format_track_number(buffer, NCM_ARRAY_LEN(buffer),
+                                       LIT_ARGS("10/12"));
+    REQUIRE_STRING(buffer, len, "10");
+
+    len = ncm_song_show_time(65, buffer, NCM_ARRAY_LEN(buffer));
+    REQUIRE_STRING(buffer, len, "1:05");
+
+    len = ncm_song_show_time(3661, buffer, NCM_ARRAY_LEN(buffer));
+    REQUIRE_STRING(buffer, len, "1:01:01");
     return;
 }
 
@@ -244,6 +316,8 @@ main(void) {
     test_directory();
     test_playlist();
     test_song_empty_copy();
+    test_song_uri_helpers();
+    test_song_format_helpers();
     test_item_unknown();
     test_item_directory_copy();
     test_item_playlist_replacement();

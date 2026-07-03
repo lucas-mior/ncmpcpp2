@@ -26,6 +26,7 @@ libcbase.la
 *.lo
 *.part
 *.log
+c_mpd_model_test
 c_foundation_test
 *.trs
 test-driver
