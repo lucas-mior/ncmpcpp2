@@ -25,6 +25,7 @@ c_mpd_model_test_SOURCES = \
 	../src/c/ncm_base.c \
 	../src/c/ncm_directory.c \
 	../src/c/ncm_mpd_item.c \
+	../src/c/ncm_path.c \
 	../src/c/ncm_playlist.c \
 	../src/c/ncm_song.c \
 	../src/c/ncm_string.c
