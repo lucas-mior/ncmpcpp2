@@ -1,0 +1,253 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "c/ncm_directory.h"
+#include "c/ncm_mpd_item.h"
+#include "c/ncm_playlist.h"
+#include "c/ncm_song.h"
+#include "c/ncm_string.h"
+#include "cbase/base_macros.h"
+
+#define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
+
+#define REQUIRE(COND) do {                                                \
+    if (!(COND)) {                                                        \
+        fail(__FILE__, __LINE__, (char *)#COND);                         \
+    }                                                                     \
+} while (0)
+
+#define REQUIRE_INT(ACTUAL, EXPECTED)                                     \
+    require_int(__FILE__, __LINE__, (char *)#ACTUAL, ACTUAL, EXPECTED)
+
+#define REQUIRE_STRING(ACTUAL, ACTUAL_LEN, EXPECTED)                      \
+    require_string(__FILE__, __LINE__, (char *)#ACTUAL,                   \
+                   ACTUAL, ACTUAL_LEN, LIT_ARGS(EXPECTED))
+
+static void fail(char *file, int32 line, char *condition);
+static void require_int(char *file, int32 line, char *name,
+                        int32 actual, int32 expected);
+static void require_string(char *file, int32 line, char *name,
+                           char *actual, int32 actual_len,
+                           char *expected, int32 expected_len);
+static void test_directory(void);
+static void test_playlist(void);
+static void test_song_empty_copy(void);
+static void test_item_unknown(void);
+static void test_item_directory_copy(void);
+static void test_item_playlist_replacement(void);
+static void test_item_empty_song_copy(void);
+
+static void
+fail(char *file, int32 line, char *condition) {
+    fprintf(stderr, "%s:%d: requirement failed: %s\n",
+            file, line, condition);
+    exit(EXIT_FAILURE);
+}
+
+static void
+require_int(char *file, int32 line, char *name,
+            int32 actual, int32 expected) {
+    if (actual != expected) {
+        fprintf(stderr, "%s:%d: %s: expected %d, got %d\n",
+                file, line, name, expected, actual);
+        exit(EXIT_FAILURE);
+    }
+    return;
+}
+
+static void
+require_string(char *file, int32 line, char *name,
+               char *actual, int32 actual_len,
+               char *expected, int32 expected_len) {
+    if (!ncm_string_equal(actual, actual_len, expected, expected_len)) {
+        fprintf(stderr, "%s:%d: %s: expected '%.*s', got '%.*s'\n",
+                file, line, name,
+                expected_len, expected, actual_len, actual);
+        exit(EXIT_FAILURE);
+    }
+    return;
+}
+
+static void
+test_directory(void) {
+    NcmDirectory directory;
+    NcmDirectory copy;
+
+    ncm_directory_init(&directory);
+    ncm_directory_init(&copy);
+
+    REQUIRE(ncm_directory_set(&directory, LIT_ARGS("Jazz/Live"), 123));
+    REQUIRE_STRING(directory.path, directory.path_len, "Jazz/Live");
+    REQUIRE_INT((int32)directory.last_modified, 123);
+
+    REQUIRE(ncm_directory_copy(&copy, &directory));
+    REQUIRE_STRING(copy.path, copy.path_len, "Jazz/Live");
+    REQUIRE_INT((int32)copy.last_modified, 123);
+
+    REQUIRE(ncm_directory_set(&directory, LIT_ARGS("Other"), 456));
+    REQUIRE_STRING(directory.path, directory.path_len, "Other");
+    REQUIRE_STRING(copy.path, copy.path_len, "Jazz/Live");
+
+    ncm_directory_destroy(&copy);
+    ncm_directory_destroy(&directory);
+    return;
+}
+
+static void
+test_playlist(void) {
+    NcmPlaylist playlist;
+    NcmPlaylist copy;
+
+    ncm_playlist_init(&playlist);
+    ncm_playlist_init(&copy);
+
+    REQUIRE(ncm_playlist_set(&playlist, LIT_ARGS("favorites"), 321));
+    REQUIRE_STRING(playlist.path, playlist.path_len, "favorites");
+    REQUIRE_INT((int32)playlist.last_modified, 321);
+
+    REQUIRE(ncm_playlist_copy(&copy, &playlist));
+    REQUIRE_STRING(copy.path, copy.path_len, "favorites");
+    REQUIRE_INT((int32)copy.last_modified, 321);
+
+    REQUIRE(ncm_playlist_set(&playlist, LIT_ARGS("recent"), 654));
+    REQUIRE_STRING(playlist.path, playlist.path_len, "recent");
+    REQUIRE_STRING(copy.path, copy.path_len, "favorites");
+
+    ncm_playlist_destroy(&copy);
+    ncm_playlist_destroy(&playlist);
+    return;
+}
+
+static void
+test_song_empty_copy(void) {
+    NcmSong song;
+    NcmSong copy;
+
+    ncm_song_init(&song);
+    ncm_song_init(&copy);
+
+    REQUIRE(ncm_song_empty(&song));
+    REQUIRE(ncm_song_copy(&copy, &song));
+    REQUIRE(ncm_song_empty(&copy));
+    REQUIRE(ncm_song_mpd_song(&copy) == NULL);
+    REQUIRE(ncm_song_dup_mpd_song(&copy) == NULL);
+
+    ncm_song_destroy(&copy);
+    ncm_song_destroy(&song);
+    return;
+}
+
+static void
+test_item_unknown(void) {
+    NcmMpdItem item;
+
+    ncm_mpd_item_init(&item);
+    REQUIRE_INT((int32)ncm_mpd_item_kind(&item), NCM_MPD_ITEM_UNKNOWN);
+    REQUIRE(ncm_mpd_item_directory(&item) == NULL);
+    REQUIRE(ncm_mpd_item_playlist(&item) == NULL);
+    REQUIRE(ncm_mpd_item_song(&item) == NULL);
+
+    ncm_mpd_item_destroy(&item);
+    REQUIRE_INT((int32)ncm_mpd_item_kind(&item), NCM_MPD_ITEM_UNKNOWN);
+    return;
+}
+
+static void
+test_item_directory_copy(void) {
+    NcmMpdItem item;
+    NcmMpdItem copy;
+    NcmDirectory *directory;
+
+    ncm_mpd_item_init(&item);
+    ncm_mpd_item_init(&copy);
+
+    item.kind = NCM_MPD_ITEM_DIRECTORY;
+    ncm_directory_init(&item.value.directory);
+    REQUIRE(ncm_directory_set(&item.value.directory,
+                              LIT_ARGS("Albums"), 111));
+
+    REQUIRE(ncm_mpd_item_copy(&copy, &item));
+    REQUIRE_INT((int32)ncm_mpd_item_kind(&copy), NCM_MPD_ITEM_DIRECTORY);
+    directory = ncm_mpd_item_directory(&copy);
+    REQUIRE(directory != NULL);
+    REQUIRE_STRING(directory->path, directory->path_len, "Albums");
+    REQUIRE_INT((int32)directory->last_modified, 111);
+    REQUIRE(ncm_mpd_item_playlist(&copy) == NULL);
+
+    REQUIRE(ncm_directory_set(&item.value.directory,
+                              LIT_ARGS("Changed"), 222));
+    REQUIRE_STRING(directory->path, directory->path_len, "Albums");
+
+    ncm_mpd_item_destroy(&copy);
+    ncm_mpd_item_destroy(&item);
+    return;
+}
+
+static void
+test_item_playlist_replacement(void) {
+    NcmMpdItem item;
+    NcmMpdItem replacement;
+    NcmPlaylist *playlist;
+
+    ncm_mpd_item_init(&item);
+    ncm_mpd_item_init(&replacement);
+
+    item.kind = NCM_MPD_ITEM_DIRECTORY;
+    ncm_directory_init(&item.value.directory);
+    REQUIRE(ncm_directory_set(&item.value.directory,
+                              LIT_ARGS("Old"), 10));
+
+    replacement.kind = NCM_MPD_ITEM_PLAYLIST;
+    ncm_playlist_init(&replacement.value.playlist);
+    REQUIRE(ncm_playlist_set(&replacement.value.playlist,
+                             LIT_ARGS("Mix"), 20));
+
+    REQUIRE(ncm_mpd_item_copy(&item, &replacement));
+    REQUIRE_INT((int32)ncm_mpd_item_kind(&item), NCM_MPD_ITEM_PLAYLIST);
+    playlist = ncm_mpd_item_playlist(&item);
+    REQUIRE(playlist != NULL);
+    REQUIRE_STRING(playlist->path, playlist->path_len, "Mix");
+    REQUIRE_INT((int32)playlist->last_modified, 20);
+    REQUIRE(ncm_mpd_item_directory(&item) == NULL);
+
+    ncm_mpd_item_destroy(&replacement);
+    ncm_mpd_item_destroy(&item);
+    return;
+}
+
+static void
+test_item_empty_song_copy(void) {
+    NcmMpdItem item;
+    NcmMpdItem copy;
+    NcmSong *song;
+
+    ncm_mpd_item_init(&item);
+    ncm_mpd_item_init(&copy);
+
+    item.kind = NCM_MPD_ITEM_SONG;
+    ncm_song_init(&item.value.song);
+
+    REQUIRE(ncm_mpd_item_copy(&copy, &item));
+    REQUIRE_INT((int32)ncm_mpd_item_kind(&copy), NCM_MPD_ITEM_SONG);
+    song = ncm_mpd_item_song(&copy);
+    REQUIRE(song != NULL);
+    REQUIRE(ncm_song_empty(song));
+    REQUIRE(ncm_mpd_item_directory(&copy) == NULL);
+
+    ncm_mpd_item_destroy(&copy);
+    ncm_mpd_item_destroy(&item);
+    return;
+}
+
+int
+main(void) {
+    test_directory();
+    test_playlist();
+    test_song_empty_copy();
+    test_item_unknown();
+    test_item_directory_copy();
+    test_item_playlist_replacement();
+    test_item_empty_song_copy();
+
+    exit(EXIT_SUCCESS);
+}
