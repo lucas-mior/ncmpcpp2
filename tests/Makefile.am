@@ -1,5 +1,5 @@
-TESTS = c_foundation_test
-check_PROGRAMS = c_foundation_test
+TESTS = c_foundation_test c_mpd_model_test
+check_PROGRAMS = c_foundation_test c_mpd_model_test
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
@@ -19,3 +19,16 @@ c_foundation_test_SOURCES = \
 
 c_foundation_test_LDADD = \
 	$(top_builddir)/cbase/libcbase.la
+
+c_mpd_model_test_SOURCES = \
+	c_mpd_model_test.c \
+	../src/c/ncm_base.c \
+	../src/c/ncm_directory.c \
+	../src/c/ncm_mpd_item.c \
+	../src/c/ncm_playlist.c \
+	../src/c/ncm_song.c \
+	../src/c/ncm_string.c
+
+c_mpd_model_test_LDADD = \
+	$(top_builddir)/cbase/libcbase.la \
+	$(libmpdclient_LIBS)

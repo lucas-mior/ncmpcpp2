@@ -1,10 +1,14 @@
 bin_PROGRAMS = ncmpcpp
 ncmpcpp_SOURCES = \
 	c/ncm_base.c \
+	c/ncm_directory.c \
 	c/ncm_error.c \
 	c/ncm_html.c \
+	c/ncm_mpd_item.c \
 	c/ncm_path.c \
+	c/ncm_playlist.c \
 	c/ncm_sample_buffer.c \
+	c/ncm_song.c \
 	c/ncm_string.c \
 	c/ncm_type_conversions.c \
 	c/ncm_utf8.c \
@@ -69,10 +73,14 @@ ncmpcpp_LDADD = ../cbase/libcbase.la
 noinst_HEADERS = \
 	c/ncm_base.h \
 	c/ncm_defs.h \
+	c/ncm_directory.h \
 	c/ncm_error.h \
 	c/ncm_html.h \
+	c/ncm_mpd_item.h \
 	c/ncm_path.h \
+	c/ncm_playlist.h \
 	c/ncm_sample_buffer.h \
+	c/ncm_song.h \
 	c/ncm_string.h \
 	c/ncm_type_conversions.h \
 	c/ncm_utf8.h \
