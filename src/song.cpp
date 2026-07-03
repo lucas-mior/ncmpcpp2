@@ -21,27 +21,43 @@
 #include <cassert>
 #include <cstring>
 #include <functional>
-#include <iomanip>
 #include <memory>
 #include <new>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-#include "curses/window.h"
+#include "c/ncm_song.h"
 #include "song.h"
-#include "utility/type_conversions.h"
 
 namespace {
 
-// Prepend '0' if the tag is a single digit number so that we get "expected"
-// sort order with regular string comparison.
-void format_numeric_tag(std::string &s)
+std::string stringFromView(NcmStringView view)
 {
-	if ((s.length() == 1 && s[0] != '0')
-	    || (s.length() > 3 && s[1] == '/'))
-		s = "0"+s;
+	if (view.data == nullptr)
+		return "";
+	else
+		return std::string(view.data, view.len);
+}
+
+std::string formattedNumericTag(NcmStringView tag)
+{
+	int len = ncm_song_numeric_tag_len(tag.data, tag.len);
+	std::string result(len+1, '\0');
+	int written = ncm_song_format_numeric_tag(result.data(), result.size(),
+	                                        tag.data, tag.len);
+	result.resize(written);
+	return result;
+}
+
+std::string formattedTrackNumber(NcmStringView tag)
+{
+	int len = ncm_song_track_number_len(tag.data, tag.len);
+	std::string result(len+1, '\0');
+	int written = ncm_song_format_track_number(result.data(), result.size(),
+	                                          tag.data, tag.len);
+	result.resize(written);
+	return result;
 }
 
 void hash_combine(size_t &seed, char c)
@@ -58,17 +74,17 @@ size_t calc_hash(const char *s, size_t seed = 0)
 
 const char *checked_uri(const mpd_song *s)
 {
+	NcmStringView uri;
+
 	if (s == nullptr)
 		throw std::bad_alloc();
 
-	const char *uri = mpd_song_get_uri(s);
-	if (uri == nullptr)
+	if (!ncm_mpd_song_uri_view(const_cast<mpd_song *>(s), 0, &uri))
 		throw std::runtime_error("song without uri");
-	return uri;
+	return uri.data;
 }
 
 }
-
 namespace MPD {
 
 std::string Song::TagsSeparator = " | ";
@@ -77,11 +93,12 @@ bool Song::ShowDuplicateTags = true;
 
 std::string Song::get(mpd_tag_type type, unsigned idx) const
 {
-	std::string result;
-	const char *tag = mpd_song_get_tag(m_song.get(), type, idx);
-	if (tag)
-		result = tag;
-	return result;
+	NcmStringView tag;
+
+	assert(m_song);
+	if (!ncm_mpd_song_tag_view(m_song.get(), type, idx, &tag))
+		return "";
+	return stringFromView(tag);
 }
 
 Song::Song(mpd_song *s)
@@ -102,41 +119,32 @@ Song::Song(const mpd_song *s, std::shared_ptr<mpd_entity> owner)
 
 std::string Song::getURI(unsigned idx) const
 {
+	NcmStringView uri;
+
 	assert(m_song);
-	if (idx > 0)
+	if (!ncm_mpd_song_uri_view(m_song.get(), idx, &uri))
 		return "";
-	else
-		return mpd_song_get_uri(m_song.get());
+	return stringFromView(uri);
 }
 
 std::string Song::getName(unsigned idx) const
 {
+	NcmStringView name;
+
 	assert(m_song);
-	mpd_song *s = m_song.get();
-	const char *res = mpd_song_get_tag(s, MPD_TAG_NAME, idx);
-	if (res)
-		return res;
-	else if (idx > 0)
+	if (!ncm_mpd_song_name_view(m_song.get(), idx, &name))
 		return "";
-	const char *uri = mpd_song_get_uri(s);
-	const char *name = strrchr(uri, '/');
-	if (name)
-		return name+1;
-	else
-		return uri;
+	return stringFromView(name);
 }
 
 std::string Song::getDirectory(unsigned idx) const
 {
+	NcmStringView directory;
+
 	assert(m_song);
-	if (idx > 0 || isStream())
+	if (!ncm_mpd_song_directory_view(m_song.get(), idx, &directory))
 		return "";
-	const char *uri = mpd_song_get_uri(m_song.get());
-	const char *name = strrchr(uri, '/');
-	if (name)
-		return std::string(uri, name-uri);
-	else
-		return "/";
+	return stringFromView(directory);
 }
 
 std::string Song::getArtist(unsigned idx) const
@@ -165,20 +173,22 @@ std::string Song::getAlbumArtist(unsigned idx) const
 
 std::string Song::getTrack(unsigned idx) const
 {
+	NcmStringView track;
+
 	assert(m_song);
-	std::string track = get(MPD_TAG_TRACK, idx);
-	format_numeric_tag(track);
-	return track;
+	if (!ncm_mpd_song_tag_view(m_song.get(), MPD_TAG_TRACK, idx, &track))
+		return "";
+	return formattedNumericTag(track);
 }
 
 std::string Song::getTrackNumber(unsigned idx) const
 {
+	NcmStringView track;
+
 	assert(m_song);
-	std::string track = getTrack(idx);
-	size_t slash = track.find('/');
-	if (slash != std::string::npos)
-		track.resize(slash);
-	return track;
+	if (!ncm_mpd_song_tag_view(m_song.get(), MPD_TAG_TRACK, idx, &track))
+		return "";
+	return formattedTrackNumber(track);
 }
 
 std::string Song::getDate(unsigned idx) const
@@ -207,10 +217,12 @@ std::string Song::getPerformer(unsigned idx) const
 
 std::string Song::getDisc(unsigned idx) const
 {
+	NcmStringView disc;
+
 	assert(m_song);
-	std::string disc = get(MPD_TAG_DISC, idx);
-	format_numeric_tag(disc);
-	return disc;
+	if (!ncm_mpd_song_tag_view(m_song.get(), MPD_TAG_DISC, idx, &disc))
+		return "";
+	return formattedNumericTag(disc);
 }
 
 std::string Song::getComment(unsigned idx) const
@@ -313,16 +325,13 @@ time_t Song::getMTime() const
 bool Song::isFromDatabase() const
 {
 	assert(m_song);
-	const char *uri = mpd_song_get_uri(m_song.get());
-	return uri[0] != '/' || !strrchr(uri, '/');
+	return ncm_mpd_song_is_from_database(m_song.get());
 }
 
 bool Song::isStream() const
 {
 	assert(m_song);
-	const char *song_uri = mpd_song_get_uri(m_song.get());
-	// Stream schemas: http, https
-	return !strncmp(song_uri, "http://", 7) || !strncmp(song_uri, "https://", 8);
+	return ncm_mpd_song_is_stream(m_song.get());
 }
 
 bool Song::empty() const
@@ -332,20 +341,10 @@ bool Song::empty() const
 
 std::string Song::ShowTime(unsigned length)
 {
-	int hours = length/3600;
-	length -= hours*3600;
-	int minutes = length/60;
-	length -= minutes*60;
-	int seconds = length;
+	char buffer[32];
+	int len = ncm_song_show_time(length, buffer, sizeof(buffer));
 
-	std::ostringstream result;
-	if (hours > 0)
-		result << hours << ":"
-		       << std::setw(2) << std::setfill('0') << minutes << ":";
-	else
-		result << minutes << ":";
-	result << std::setw(2) << std::setfill('0') << seconds;
-	return result.str();
+	return std::string(buffer, len);
 }
 
 }

@@ -29,6 +29,8 @@
 
 #include <mpd/client.h>
 
+#include "c/ncm_song.h"
+
 namespace MPD {
 
 struct Song
@@ -98,7 +100,14 @@ struct Song
 		return !(operator==(rhs));
 	}
 
-	const char *c_uri() const { return m_song ? mpd_song_get_uri(m_song.get()) : ""; }
+	const char *c_uri() const
+	{
+		NcmStringView uri;
+		if (ncm_mpd_song_uri_view(m_song.get(), 0, &uri))
+			return uri.data;
+		else
+			return "";
+	}
 
 	static std::string ShowTime(unsigned length);
 
