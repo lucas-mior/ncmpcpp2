@@ -21,8 +21,8 @@
 #ifndef NCMPCPP_EDITABLE_SONG_H
 #define NCMPCPP_EDITABLE_SONG_H
 
-#include <map>
 #include "config.h"
+#include "c/ncm_mutable_song.h"
 #include "song.h"
 
 namespace MPD {
@@ -31,8 +31,13 @@ struct MutableSong : public Song
 {
 	typedef void (MutableSong::*SetFunction)(const std::string &, unsigned);
 	
-	MutableSong() : m_mtime(0), m_duration(0) { }
-	MutableSong(Song s) : Song(s), m_mtime(0), m_duration(0) { }
+	MutableSong();
+	MutableSong(Song s);
+	MutableSong(const MutableSong &rhs);
+	MutableSong(MutableSong &&rhs) noexcept;
+	MutableSong &operator=(const MutableSong &rhs);
+	MutableSong &operator=(MutableSong &&rhs) noexcept;
+	virtual ~MutableSong() override;
 	
 	virtual std::string getArtist(unsigned idx = 0) const override;
 	virtual std::string getTitle(unsigned idx = 0) const override;
@@ -58,7 +63,7 @@ struct MutableSong : public Song
 	void setDisc(const std::string &value, unsigned idx = 0);
 	void setComment(const std::string &value, unsigned idx = 0);
 	
-	const std::string &getNewName() const;
+	std::string getNewName() const;
 	void setNewName(const std::string &value);
 	
 	virtual unsigned getDuration() const override;
@@ -71,44 +76,19 @@ struct MutableSong : public Song
 	bool isModified() const;
 	void clearModifications();
 	
+	NcmMutableSong *cMutableSong();
+
 private:
-	struct Tag
-	{
-		Tag(mpd_tag_type type_, unsigned idx_) : m_type(type_), m_idx(idx_) { }
-		
-		mpd_tag_type type() const { return m_type; }
-		unsigned idx() const { return m_idx; }
-		
-		bool operator<(const Tag &t) const
-		{
-			if (m_type != t.m_type)
-				return m_type < t.m_type;
-			return m_idx < t.m_idx;
-		}
-		
-	private:
-		mpd_tag_type m_type;
-		unsigned m_idx;
-	};
+	std::string getTag(enum NcmTagsField field, unsigned idx) const;
+	void setTag(enum NcmTagsField field, const std::string &value, unsigned idx);
+	void loadOriginals();
+	void loadOriginalTag(enum NcmTagsField field, unsigned idx,
+	                     const std::string &value);
+	void loadOriginalTags(enum NcmTagsField field,
+	                      std::string (*getter)(const Song *, unsigned));
+	static enum NcmTagsField fieldForSetFunction(SetFunction set);
 	
-	void replaceTag(mpd_tag_type tag_type, std::string orig_value,
-	                const std::string &value, unsigned idx);
-	
-	template <typename F>
-	std::string getTag(mpd_tag_type tag_type, F orig_value, unsigned idx) const {
-		auto it = m_tags.find(Tag(tag_type, idx));
-		std::string result;
-		if (it == m_tags.end())
-			result = orig_value();
-		else
-			result = it->second;
-		return result;
-	}
-	
-	std::string m_name;
-	time_t m_mtime;
-	unsigned m_duration;
-	std::map<Tag, std::string> m_tags;
+	NcmMutableSong m_mutable;
 };
 
 }
