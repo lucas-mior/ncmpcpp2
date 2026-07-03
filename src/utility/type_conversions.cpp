@@ -19,45 +19,43 @@
  ***************************************************************************/
 
 #include <cassert>
+#include <stdexcept>
 #include <string>
+#include "c/ncm_type_conversions.h"
 #include "utility/type_conversions.h"
 
 std::string channelsToString(int channels)
 {
-	switch (channels)
-	{
-	case 1:
-		return "Mono";
-	case 2:
-		return "Stereo";
-	default:
-		return std::to_string(channels);
-	}
+	char buffer[32];
+	int32 len = ncm_channels_to_string(
+		static_cast<int32>(channels),
+		buffer, static_cast<int32>(sizeof(buffer)));
+	return std::string(buffer, static_cast<size_t>(len));
 }
 
 NC::Color charToColor(char c)
 {
-	switch (c)
+	switch (ncm_color_index_from_char(c))
 	{
-		case '0':
+		case 0:
 			return NC::Color::Default;
-		case '1':
+		case 1:
 			return NC::Color::Black;
-		case '2':
+		case 2:
 			return NC::Color::Red;
-		case '3':
+		case 3:
 			return NC::Color::Green;
-		case '4':
+		case 4:
 			return NC::Color::Yellow;
-		case '5':
+		case 5:
 			return NC::Color::Blue;
-		case '6':
+		case 6:
 			return NC::Color::Magenta;
-		case '7':
+		case 7:
 			return NC::Color::Cyan;
-		case '8':
+		case 8:
 			return NC::Color::White;
-		case '9':
+		case 9:
 			return NC::Color::End;
 		default:
 			throw std::runtime_error("invalid character");
@@ -66,33 +64,7 @@ NC::Color charToColor(char c)
 
 std::string tagTypeToString(mpd_tag_type tag)
 {
-	switch (tag)
-	{
-		case MPD_TAG_ARTIST:
-			return "Artist";
-		case MPD_TAG_ALBUM:
-			return "Album";
-		case MPD_TAG_ALBUM_ARTIST:
-			return "Album Artist";
-		case MPD_TAG_TITLE:
-			return "Title";
-		case MPD_TAG_TRACK:
-			return "Track";
-		case MPD_TAG_GENRE:
-			return "Genre";
-		case MPD_TAG_DATE:
-			return "Date";
-		case MPD_TAG_COMPOSER:
-			return "Composer";
-		case MPD_TAG_PERFORMER:
-			return "Performer";
-		case MPD_TAG_COMMENT:
-			return "Comment";
-		case MPD_TAG_DISC:
-			return "Disc";
-		default:
-			return "";
-	}
+	return ncm_tag_type_name(tag);
 }
 
 MPD::MutableSong::SetFunction tagTypeToSetFunction(mpd_tag_type tag)
@@ -128,34 +100,8 @@ MPD::MutableSong::SetFunction tagTypeToSetFunction(mpd_tag_type tag)
 
 mpd_tag_type charToTagType(char c)
 {
-	switch (c)
-	{
-		case 'a':
-			return MPD_TAG_ARTIST;
-		case 'A':
-			return MPD_TAG_ALBUM_ARTIST;
-		case 't':
-			return MPD_TAG_TITLE;
-		case 'b':
-			return MPD_TAG_ALBUM;
-		case 'y':
-			return MPD_TAG_DATE;
-		case 'n':
-			return MPD_TAG_TRACK;
-		case 'g':
-			return MPD_TAG_GENRE;
-		case 'c':
-			return MPD_TAG_COMPOSER;
-		case 'p':
-			return MPD_TAG_PERFORMER;
-		case 'd':
-			return MPD_TAG_DISC;
-		case 'C':
-			return MPD_TAG_COMMENT;
-		default:
-			assert(false);
-			return MPD_TAG_ARTIST;
-	}
+	assert(ncm_char_is_tag_type(c));
+	return ncm_char_to_tag_type(c);
 }
 
 MPD::Song::GetFunction charToGetFunction(char c)
@@ -233,18 +179,14 @@ std::optional<mpd_tag_type> getFunctionToTagType(MPD::Song::GetFunction f)
 
 std::string itemTypeToString(MPD::Item::Type type)
 {
-	std::string result;
 	switch (type)
 	{
 		case MPD::Item::Type::Directory:
-			result = "directory";
-			break;
+			return ncm_item_type_name(NCM_ITEM_DIRECTORY);
 		case MPD::Item::Type::Song:
-			result = "song";
-			break;
+			return ncm_item_type_name(NCM_ITEM_SONG);
 		case MPD::Item::Type::Playlist:
-			result = "playlist";
-			break;
+			return ncm_item_type_name(NCM_ITEM_PLAYLIST);
 	}
-	return result;
+	return ncm_item_type_name(NCM_ITEM_UNKNOWN);
 }
