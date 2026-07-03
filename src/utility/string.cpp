@@ -20,6 +20,9 @@
 
 #include <cassert>
 #include <algorithm>
+#include <cstring>
+#include "c/ncm_base.h"
+#include "c/ncm_path.h"
 #include "c/ncm_string.h"
 #include "utility/string.h"
 
@@ -34,14 +37,14 @@ int32 stringSize(const std::string &s)
 
 std::string getBasename(const std::string &path)
 {
-	int32 start = ncm_string_basename_start(
+	int32 start = ncm_path_basename_start(
 		const_cast<char *>(path.data()), stringSize(path));
 	return path.substr(static_cast<size_t>(start));
 }
 
 std::string getParentDirectory(std::string path)
 {
-	int32 len = ncm_string_parent_directory_len(path.data(), stringSize(path));
+	int32 len = ncm_path_parent_directory_len(path.data(), stringSize(path));
 	path.resize(static_cast<size_t>(len));
 	return path;
 }
@@ -94,28 +97,34 @@ std::string getEnclosedString(const std::string &s, char a, char b, size_t *pos)
 
 void removeInvalidCharsFromFilename(std::string &filename, bool win32_compatible)
 {
-	const char *unallowed_chars = win32_compatible ? "\"*/:<>?\\|" : "/";
-	for (const char *c = unallowed_chars; *c; ++c)
-	{
-		for (size_t i = 0; i < filename.length(); ++i)
-		{
-			if (filename[i] == *c)
-			{
-				filename.erase(filename.begin()+i);
-				--i;
-			}
-		}
-	}
+	char win32_unallowed_chars[] = "\"*/:<>?\\|";
+	char unix_unallowed_chars[] = "/";
+	char *unallowed_chars;
+	int32 filename_len = stringSize(filename);
+	int32 unallowed_chars_len;
+
+	if (win32_compatible)
+		unallowed_chars = win32_unallowed_chars;
+	else
+		unallowed_chars = unix_unallowed_chars;
+	unallowed_chars_len = static_cast<int32>(std::strlen(unallowed_chars));
+
+	ncm_string_remove_chars(filename.data(), &filename_len,
+	                        unallowed_chars, unallowed_chars_len);
+	filename.resize(static_cast<size_t>(filename_len));
 }
 
 void escapeSingleQuotes(std::string &filename)
 {
-	for (size_t i = 0; i < filename.length(); ++i)
-	{
-		if (filename[i] == '\'')
-		{
-			filename.replace(i, 1, "'\\''");
-			i += 3;
-		}
-	}
+	NcmBuffer buffer;
+
+	ncm_buffer_init(&buffer);
+	ncm_string_append_shell_escaped_single_quotes(&buffer,
+	                                              filename.data(),
+	                                              stringSize(filename));
+	if (buffer.data != nullptr)
+		filename.assign(buffer.data, static_cast<size_t>(buffer.len));
+	else
+		filename.clear();
+	ncm_buffer_destroy(&buffer);
 }
