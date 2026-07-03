@@ -5,6 +5,7 @@ ncmpcpp_SOURCES = \
 	c/ncm_error.c \
 	c/ncm_html.c \
 	c/ncm_mpd_item.c \
+	c/ncm_mutable_song.c \
 	c/ncm_path.c \
 	c/ncm_playlist.c \
 	c/ncm_sample_buffer.c \
@@ -79,6 +80,7 @@ noinst_HEADERS = \
 	c/ncm_error.h \
 	c/ncm_html.h \
 	c/ncm_mpd_item.h \
+	c/ncm_mutable_song.h \
 	c/ncm_path.h \
 	c/ncm_playlist.h \
 	c/ncm_sample_buffer.h \
