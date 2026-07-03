@@ -22,215 +22,99 @@
 
 #ifdef HAVE_TAGLIB_H
 
-#include <charconv>
-
-// taglib includes
-#include <id3v1tag.h>
-#include <id3v2tag.h>
-#include <fileref.h>
-#include <flacfile.h>
-#include <mpegfile.h>
-#include <vorbisfile.h>
-#include <opusfile.h>
-#include <tag.h>
-#include <textidentificationframe.h>
-#include <commentsframe.h>
-#include <xiphcomment.h>
-
 #include <filesystem>
+#include <string>
+#include <vector>
+
+#include "c/ncm_taglib.h"
 #include "global.h"
 #include "settings.h"
-#include "utility/string.h"
-#include "utility/wide_string.h"
 
 namespace {
 
-bool parseUnsigned(const std::string &value, unsigned &result)
+void setAttributeCallback(char *name, char *value, void *user)
 {
-	if (value.empty())
-		return false;
-
-	auto begin = value.data();
-	auto end = begin + value.size();
-	auto [ptr, ec] = std::from_chars(begin, end, result);
-	return ec == std::errc() && ptr == end;
+	Tags::setAttribute(static_cast<mpd_song *>(user), name, value);
 }
 
-
-TagLib::StringList tagList(const MPD::MutableSong &s, MPD::Song::GetFunction f)
+void appendStringCallback(char *value, void *user)
 {
-	TagLib::StringList result;
-	unsigned idx = 0;
-	for (std::string value; !(value = (s.*f)(idx)).empty(); ++idx)
-		result.append(ToWString(value));
+	auto strings = static_cast<std::vector<std::string> *>(user);
+	strings->emplace_back(value);
+}
+
+std::vector<std::string> readProperty(NcmTaglibFile &file, char *property)
+{
+	std::vector<std::string> values;
+	ncm_taglib_read_property(&file, property, appendStringCallback, &values);
+	return values;
+}
+
+std::string readFirstProperty(NcmTaglibFile &file, char *property)
+{
+	auto values = readProperty(file, property);
+	if (values.empty())
+		return std::string();
+	return values.front();
+}
+
+std::string joinProperty(NcmTaglibFile &file, char *property,
+                         const std::string &separator)
+{
+	auto values = readProperty(file, property);
+	std::string result;
+	for (size_t i = 0; i < values.size(); ++i)
+	{
+		if (i != 0)
+			result += separator;
+		result += values[i];
+	}
 	return result;
 }
 
-void readCommonTags(mpd_song *s, TagLib::Tag *tag)
+void clearAlias(NcmTaglibFile &file, char *property)
 {
-	Tags::setAttribute(s, "Title", tag->title().to8Bit(true));
-	Tags::setAttribute(s, "Artist", tag->artist().to8Bit(true));
-	Tags::setAttribute(s, "Album", tag->album().to8Bit(true));
-	Tags::setAttribute(s, "Date", std::to_string(tag->year()));
-	Tags::setAttribute(s, "Track", std::to_string(tag->track()));
-	Tags::setAttribute(s, "Genre", tag->genre().to8Bit(true));
-	Tags::setAttribute(s, "Comment", tag->comment().to8Bit(true));
+	ncm_taglib_clear_property(&file, property);
 }
 
-void readID3v1Tags(mpd_song *s, TagLib::ID3v1::Tag *tag)
+void writeProperty(NcmTaglibFile &file, char *property,
+                   const MPD::MutableSong &s, MPD::Song::GetFunction f)
 {
-	readCommonTags(s, tag);
-}
-
-void readID3v2Tags(mpd_song *s, TagLib::ID3v2::Tag *tag)
-{
-	auto readFrame = [s](const TagLib::ID3v2::FrameList &fields, const char *name) {
-		for (const auto &field : fields)
-		{
-			if (auto textFrame = dynamic_cast<TagLib::ID3v2::TextIdentificationFrame *>(field))
-			{
-				auto values = textFrame->fieldList();
-				for (const auto &value : values)
-					Tags::setAttribute(s, name, value.to8Bit(true));
-			}
-			else
-				Tags::setAttribute(s, name, field->toString().to8Bit(true));
-		}
-	};
-	auto &frames = tag->frameListMap();
-	readFrame(frames["TIT2"], "Title");
-	readFrame(frames["TPE1"], "Artist");
-	readFrame(frames["TPE2"], "AlbumArtist");
-	readFrame(frames["TALB"], "Album");
-	readFrame(frames["TDRC"], "Date");
-	readFrame(frames["TRCK"], "Track");
-	readFrame(frames["TCON"], "Genre");
-	readFrame(frames["TCOM"], "Composer");
-	readFrame(frames["TPE4"], "Performer");
-	readFrame(frames["TPOS"], "Disc");
-	readFrame(frames["COMM"], "Comment");
-}
-
-void readXiphComments(mpd_song *s, TagLib::Ogg::XiphComment *tag)
-{
-	auto readField = [s](const TagLib::StringList &fields, const char *name) {
-		for (const auto &field : fields)
-			Tags::setAttribute(s, name, field.to8Bit(true));
-	};
-	auto &fields = tag->fieldListMap();
-	readField(fields["TITLE"], "Title");
-	readField(fields["ARTIST"], "Artist");
-	readField(fields["ALBUMARTIST"], "AlbumArtist");
-	readField(fields["ALBUM"], "Album");
-	readField(fields["DATE"], "Date");
-	readField(fields["TRACKNUMBER"], "Track");
-	readField(fields["GENRE"], "Genre");
-	readField(fields["COMPOSER"], "Composer");
-	readField(fields["PERFORMER"], "Performer");
-	readField(fields["DISCNUMBER"], "Disc");
-	readField(fields["COMMENT"], "Comment");
-}
-
-void writeCommonTags(const MPD::MutableSong &s, TagLib::Tag *tag)
-{
-	tag->setTitle(ToWString(s.getTitle()));
-	tag->setArtist(ToWString(s.getArtist()));
-	tag->setAlbum(ToWString(s.getAlbum()));
-	unsigned year;
-	if (parseUnsigned(s.getDate(), year))
-		tag->setYear(year);
-	else {
-		std::cerr << "writeCommonTags: couldn't write 'year' tag to '" << s.getURI() << "' as it's not a positive integer\n";
+	ncm_taglib_clear_property(&file, property);
+	for (unsigned idx = 0; ; ++idx)
+	{
+		auto value = (s.*f)(idx);
+		if (value.empty())
+			break;
+		ncm_taglib_append_property(&file, property,
+		                           const_cast<char *>(value.c_str()));
 	}
-	unsigned track;
-	if (parseUnsigned(s.getTrack(), track))
-		tag->setTrack(track);
-	else {
-		std::cerr << "writeCommonTags: couldn't write 'track' tag to '" << s.getURI() << "' as it's not a positive integer\n";
-	}
-	tag->setGenre(ToWString(s.getGenre()));
-	tag->setComment(ToWString(s.getComment()));
 }
 
-void writeID3v2Tags(const MPD::MutableSong &s, TagLib::ID3v2::Tag *tag)
+void writeTags(const MPD::MutableSong &s, NcmTaglibFile &file)
 {
-	auto writeID3v2 = [&](const TagLib::ByteVector &type, const TagLib::StringList &list) {
-		tag->removeFrames(type);
-		if (!list.isEmpty())
-		{
-			if (type == "COMM") // comment needs to be handled separately
-			{
-				auto frame = new TagLib::ID3v2::CommentsFrame(TagLib::String::UTF8);
-				// apparently there can't be multiple comments,
-				// so if there is more than one, join them.
-				frame->setText(join(list, TagLib::String(MPD::Song::TagsSeparator, TagLib::String::UTF8)));
-				tag->addFrame(frame);
-			}
-			else
-			{
-				auto frame = new TagLib::ID3v2::TextIdentificationFrame(type, TagLib::String::UTF8);
-				frame->setText(list);
-				tag->addFrame(frame);
-			}
-		}
-	};
-	writeID3v2("TIT2", tagList(s, &MPD::Song::getTitle));
-	writeID3v2("TPE1", tagList(s, &MPD::Song::getArtist));
-	writeID3v2("TPE2", tagList(s, &MPD::Song::getAlbumArtist));
-	writeID3v2("TALB", tagList(s, &MPD::Song::getAlbum));
-	writeID3v2("TDRC", tagList(s, &MPD::Song::getDate));
-	writeID3v2("TRCK", tagList(s, &MPD::Song::getTrack));
-	writeID3v2("TCON", tagList(s, &MPD::Song::getGenre));
-	writeID3v2("TCOM", tagList(s, &MPD::Song::getComposer));
-	writeID3v2("TPE4", tagList(s, &MPD::Song::getPerformer));
-	writeID3v2("TPOS", tagList(s, &MPD::Song::getDisc));
-	writeID3v2("COMM", tagList(s, &MPD::Song::getComment));
-}
+	clearAlias(file, const_cast<char *>("ALBUM ARTIST"));
+	clearAlias(file, const_cast<char *>("TRACK"));
+	clearAlias(file, const_cast<char *>("DISC"));
+	clearAlias(file, const_cast<char *>("DESCRIPTION"));
 
-void writeXiphComments(const MPD::MutableSong &s, TagLib::Ogg::XiphComment *tag)
-{
-	auto writeXiph = [&](const TagLib::String &type, const TagLib::StringList &list) {
-		tag->removeFields(type);
-		for (auto it = list.begin(); it != list.end(); ++it)
-			tag->addField(type, *it, it == list.begin());
-	};
-	// remove field previously used as album artist
-	tag->removeFields("ALBUM ARTIST");
-	// remove field TRACK, some taggers use it as TRACKNUMBER
-	tag->removeFields("TRACK");
-	// remove field DISC, some taggers use it as DISCNUMBER
-	tag->removeFields("DISC");
-	// remove field DESCRIPTION, it's displayed as COMMENT
-	tag->removeFields("DESCRIPTION");
-	writeXiph("TITLE", tagList(s, &MPD::Song::getTitle));
-	writeXiph("ARTIST", tagList(s, &MPD::Song::getArtist));
-	writeXiph("ALBUMARTIST", tagList(s, &MPD::Song::getAlbumArtist));
-	writeXiph("ALBUM", tagList(s, &MPD::Song::getAlbum));
-	writeXiph("DATE", tagList(s, &MPD::Song::getDate));
-	writeXiph("TRACKNUMBER", tagList(s, &MPD::Song::getTrack));
-	writeXiph("GENRE", tagList(s, &MPD::Song::getGenre));
-	writeXiph("COMPOSER", tagList(s, &MPD::Song::getComposer));
-	writeXiph("PERFORMER", tagList(s, &MPD::Song::getPerformer));
-	writeXiph("DISCNUMBER", tagList(s, &MPD::Song::getDisc));
-	writeXiph("COMMENT", tagList(s, &MPD::Song::getComment));
-}
-
-Tags::ReplayGainInfo getReplayGain(TagLib::Ogg::XiphComment *tag)
-{
-	auto first_or_empty = [](const TagLib::StringList &list) {
-		std::string result;
-		if (!list.isEmpty())
-			result = list.front().to8Bit(true);
-		return result;
-	};
-	auto &fields = tag->fieldListMap();
-	return Tags::ReplayGainInfo(
-		first_or_empty(fields["REPLAYGAIN_REFERENCE_LOUDNESS"]),
-		first_or_empty(fields["REPLAYGAIN_TRACK_GAIN"]),
-		first_or_empty(fields["REPLAYGAIN_TRACK_PEAK"]),
-		first_or_empty(fields["REPLAYGAIN_ALBUM_GAIN"]),
-		first_or_empty(fields["REPLAYGAIN_ALBUM_PEAK"])
-	);
+	writeProperty(file, const_cast<char *>("TITLE"), s, &MPD::Song::getTitle);
+	writeProperty(file, const_cast<char *>("ARTIST"), s, &MPD::Song::getArtist);
+	writeProperty(file, const_cast<char *>("ALBUMARTIST"), s,
+	              &MPD::Song::getAlbumArtist);
+	writeProperty(file, const_cast<char *>("ALBUM"), s, &MPD::Song::getAlbum);
+	writeProperty(file, const_cast<char *>("DATE"), s, &MPD::Song::getDate);
+	writeProperty(file, const_cast<char *>("TRACKNUMBER"), s,
+	              &MPD::Song::getTrack);
+	writeProperty(file, const_cast<char *>("GENRE"), s, &MPD::Song::getGenre);
+	writeProperty(file, const_cast<char *>("COMPOSER"), s,
+	              &MPD::Song::getComposer);
+	writeProperty(file, const_cast<char *>("PERFORMER"), s,
+	              &MPD::Song::getPerformer);
+	writeProperty(file, const_cast<char *>("DISCNUMBER"), s,
+	              &MPD::Song::getDisc);
+	writeProperty(file, const_cast<char *>("COMMENT"), s,
+	              &MPD::Song::getComment);
 }
 
 }
@@ -243,101 +127,93 @@ void setAttribute(mpd_song *s, const char *name, const std::string &value)
 	mpd_song_feed(s, &pair);
 }
 
-bool extendedSetSupported(const TagLib::File *f)
+bool extendedSetSupported(const char *path)
 {
-	return dynamic_cast<const TagLib::MPEG::File *>(f)
-	||     dynamic_cast<const TagLib::Ogg::Vorbis::File *>(f)
-	||     dynamic_cast<const TagLib::Ogg::Opus::File *>(f)
-	||     dynamic_cast<const TagLib::FLAC::File *>(f);
+	NcmTaglibFile file;
+	bool result;
+
+	ncm_taglib_file_init(&file);
+	if (!ncm_taglib_file_open(&file, const_cast<char *>(path)))
+		return false;
+
+	result = ncm_taglib_extended_set_supported(&file);
+	ncm_taglib_file_close(&file);
+	return result;
 }
 
-ReplayGainInfo readReplayGain(TagLib::File *f)
+ReplayGainInfo readReplayGain(const char *path)
 {
+	NcmTaglibFile file;
 	ReplayGainInfo result;
-	if (auto vorbis_file = dynamic_cast<TagLib::Ogg::Vorbis::File *>(f))
-	{
-		if (auto xiph = vorbis_file->tag())
-			result = getReplayGain(xiph);
-	}
-	else if (auto opus_file = dynamic_cast<TagLib::Ogg::Opus::File *>(f))
-	{
-		if (auto xiph = opus_file->tag())
-			result = getReplayGain(xiph);
-	}
-	else if (auto flac_file = dynamic_cast<TagLib::FLAC::File *>(f))
-	{
-		if (auto xiph = flac_file->xiphComment())
-			result = getReplayGain(xiph);
-	}
+
+	ncm_taglib_file_init(&file);
+	if (!ncm_taglib_file_open(&file, const_cast<char *>(path)))
+		return result;
+
+	result = ReplayGainInfo(
+		readFirstProperty(file, const_cast<char *>("REPLAYGAIN_REFERENCE_LOUDNESS")),
+		readFirstProperty(file, const_cast<char *>("REPLAYGAIN_TRACK_GAIN")),
+		readFirstProperty(file, const_cast<char *>("REPLAYGAIN_TRACK_PEAK")),
+		readFirstProperty(file, const_cast<char *>("REPLAYGAIN_ALBUM_GAIN")),
+		readFirstProperty(file, const_cast<char *>("REPLAYGAIN_ALBUM_PEAK"))
+	);
+	ncm_taglib_file_close(&file);
+	return result;
+}
+
+std::string readLyrics(const char *path)
+{
+	NcmTaglibFile file;
+	std::string result;
+
+	ncm_taglib_file_init(&file);
+	if (!ncm_taglib_file_open(&file, const_cast<char *>(path)))
+		return result;
+
+	result = joinProperty(file, const_cast<char *>("LYRICS"), "\n\n");
+	if (result.empty())
+		result = joinProperty(file, const_cast<char *>("UNSYNCEDLYRICS"), "\n\n");
+
+	ncm_taglib_file_close(&file);
 	return result;
 }
 
 void read(mpd_song *s)
 {
-	TagLib::FileRef f(mpd_song_get_uri(s));
-	if (f.isNull())
+	NcmTaglibFile file;
+	NcmTaglibAudioProperties properties;
+
+	ncm_taglib_file_init(&file);
+	if (!ncm_taglib_file_open(&file,
+	                          const_cast<char *>(mpd_song_get_uri(s))))
 		return;
-	
-	setAttribute(s, "Time", std::to_string(f.audioProperties()->lengthInSeconds()));
-	
-	if (auto mpeg_file = dynamic_cast<TagLib::MPEG::File *>(f.file()))
-	{
-		// prefer id3v2 only if available
-		if (auto id3v2 = mpeg_file->ID3v2Tag())
-			readID3v2Tags(s, id3v2);
-		else if (auto id3v1 = mpeg_file->ID3v1Tag())
-			readID3v1Tags(s, id3v1);
-	}
-	else if (auto vorbis_file = dynamic_cast<TagLib::Ogg::Vorbis::File *>(f.file()))
-	{
-		if (auto xiph = vorbis_file->tag())
-			readXiphComments(s, xiph);
-	}
-	else if (auto opus_file = dynamic_cast<TagLib::Ogg::Opus::File *>(f.file()))
-	{
-		if (auto xiph = opus_file->tag())
-			readXiphComments(s, xiph);
-	}
-	else if (auto flac_file = dynamic_cast<TagLib::FLAC::File *>(f.file()))
-	{
-		if (auto xiph = flac_file->xiphComment())
-			readXiphComments(s, xiph);
-	}
-	else
-		readCommonTags(s, f.tag());
+
+	if (ncm_taglib_file_audio_properties(&file, &properties))
+		setAttribute(s, "Time", std::to_string(properties.length));
+
+	ncm_taglib_read_mapped_properties(&file, setAttributeCallback, s);
+	ncm_taglib_file_close(&file);
+	ncm_taglib_clear_strings();
 }
 
 bool write(MPD::MutableSong &s)
 {
+	NcmTaglibFile file;
 	std::string old_name;
+	bool saved;
+
 	if (s.isFromDatabase())
 		old_name += Config.mpd_music_dir;
 	old_name += s.getURI();
-	
-	TagLib::FileRef f(old_name.c_str());
-	if (f.isNull())
+
+	ncm_taglib_file_init(&file);
+	if (!ncm_taglib_file_open(&file, const_cast<char *>(old_name.c_str())))
 		return false;
-	
-	if (auto mpeg_file = dynamic_cast<TagLib::MPEG::File *>(f.file()))
-	{
-		writeID3v2Tags(s, mpeg_file->ID3v2Tag(true));
-	}
-	else if (auto vorbis_file = dynamic_cast<TagLib::Ogg::Vorbis::File *>(f.file()))
-	{
-		writeXiphComments(s, vorbis_file->tag());
-	}
-	else if (auto opus_file = dynamic_cast<TagLib::Ogg::Opus::File *>(f.file()))
-	{
-		writeXiphComments(s, opus_file->tag());
-	}
-	else if (auto flac_file = dynamic_cast<TagLib::FLAC::File *>(f.file()))
-	{
-		writeXiphComments(s, flac_file->xiphComment(true));
-	}
-	else
-		writeCommonTags(s, f.tag());
-	
-	if (!f.save())
+
+	writeTags(s, file);
+	saved = ncm_taglib_file_save(&file);
+	ncm_taglib_file_close(&file);
+	if (!saved)
 		return false;
 
 	// TODO: move this somewhere else
