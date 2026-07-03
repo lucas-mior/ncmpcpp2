@@ -38,6 +38,7 @@ static void test_item_unknown(void);
 static void test_item_directory_copy(void);
 static void test_item_playlist_replacement(void);
 static void test_item_empty_song_copy(void);
+static void test_item_song_null_constructors(void);
 
 static void
 fail(char *file, int32 line, char *condition) {
@@ -129,8 +130,12 @@ test_song_empty_copy(void) {
     ncm_song_init(&copy);
 
     REQUIRE(ncm_song_empty(&song));
+    REQUIRE(!ncm_song_owns_mpd_song(&song));
+    REQUIRE(!ncm_song_borrows_mpd_song(&song));
     REQUIRE(ncm_song_copy(&copy, &song));
     REQUIRE(ncm_song_empty(&copy));
+    REQUIRE(!ncm_song_owns_mpd_song(&copy));
+    REQUIRE(!ncm_song_borrows_mpd_song(&copy));
     REQUIRE(ncm_song_mpd_song(&copy) == NULL);
     REQUIRE(ncm_song_dup_mpd_song(&copy) == NULL);
 
@@ -311,6 +316,21 @@ test_item_empty_song_copy(void) {
     return;
 }
 
+static void
+test_item_song_null_constructors(void) {
+    NcmMpdItem item;
+
+    ncm_mpd_item_init(&item);
+
+    REQUIRE(!ncm_mpd_item_from_mpd_song_copy(&item, NULL));
+    REQUIRE_INT((int32)ncm_mpd_item_kind(&item), NCM_MPD_ITEM_UNKNOWN);
+    REQUIRE(!ncm_mpd_item_from_mpd_song_borrow(&item, NULL));
+    REQUIRE_INT((int32)ncm_mpd_item_kind(&item), NCM_MPD_ITEM_UNKNOWN);
+
+    ncm_mpd_item_destroy(&item);
+    return;
+}
+
 int
 main(void) {
     test_directory();
@@ -322,6 +342,7 @@ main(void) {
     test_item_directory_copy();
     test_item_playlist_replacement();
     test_item_empty_song_copy();
+    test_item_song_null_constructors();
 
     exit(EXIT_SUCCESS);
 }

@@ -109,18 +109,8 @@ Item::Item(mpd_entity *entity)
 {
 	assert(entity != nullptr);
 	std::shared_ptr<mpd_entity> owner(entity, mpd_entity_free);
-	if (mpd_entity_get_type(owner.get()) == MPD_ENTITY_TYPE_SONG)
-	{
-		const mpd_song *song = mpd_entity_get_song(owner.get());
-		if (song == nullptr)
-			throw std::runtime_error("song entity without song");
-		m_type = Type::Song;
-		m_song = Song(song, std::move(owner));
-		return;
-	}
-
 	NcmMpdItemGuard item;
-	if (!ncm_mpd_item_from_entity(item.get(), owner.get()))
+	if (!ncm_mpd_item_from_entity_borrow(item.get(), owner.get()))
 		throw std::runtime_error("unknown or invalid mpd_entity");
 
 	switch (ncm_mpd_item_kind(item.get()))
@@ -138,14 +128,15 @@ Item::Item(mpd_entity *entity)
 		case NCM_MPD_ITEM_SONG:
 		{
 			NcmSong *song = ncm_mpd_item_song(item.get());
-			mpd_song *copy;
+			mpd_song *source;
 
 			assert(song != nullptr);
-			copy = ncm_song_dup_mpd_song(song);
-			if (copy == nullptr)
-				throw std::bad_alloc();
+			assert(ncm_song_borrows_mpd_song(song));
+			source = ncm_song_mpd_song(song);
+			if (source == nullptr)
+				throw std::runtime_error("song entity without song");
 			m_type = Type::Song;
-			m_song = Song(copy);
+			m_song = Song(source, std::move(owner));
 			break;
 		}
 		case NCM_MPD_ITEM_PLAYLIST:
