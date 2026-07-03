@@ -161,7 +161,7 @@ void TinyTagEditor::runAction()
 	if (option == 22)
 	{
 		Statusbar::print("Updating tags...");
-		if (Tags::write(itsEdited))
+		if (ncm_tags_write_mutable_song(itsEdited))
 		{
 			Statusbar::print("Tags updated");
 			if (itsEdited.isFromDatabase())

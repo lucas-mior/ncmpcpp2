@@ -36,7 +36,7 @@
 #include "statusbar.h"
 #include "screens/tag_editor.h"
 #include "title.h"
-#include "tags.h"
+#include "c/ncm_tags.h"
 #include "format_impl.h"
 #include "helpers/song_iterator_maker.h"
 #include "utility/comparators.h"
@@ -663,11 +663,14 @@ MPD::Song getLocalSong(const fs::directory_entry &entry, bool read_tags)
 	if (read_tags)
 	{
 #ifdef HAVE_TAGLIB_H
-		Tags::setAttribute(s, "Last-Modified",
-			timeFormat("%Y-%m-%dT%H:%M:%SZ", lastWriteTime(entry.path()))
-		);
+		auto last_modified = timeFormat("%Y-%m-%dT%H:%M:%SZ",
+		                              lastWriteTime(entry.path()));
+		ncm_tags_set_attribute(
+			s,
+			const_cast<char *>("Last-Modified"),
+			const_cast<char *>(last_modified.c_str()));
 		// read tags
-		Tags::read(s);
+		ncm_tags_read_song(s);
 #endif // HAVE_TAGLIB_H
 	}
 	return s;
