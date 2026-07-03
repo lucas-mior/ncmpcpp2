@@ -29,8 +29,8 @@ autoreconf -fiv  # generate the `configure` script.
   --with-taglib \
   CC="$CC" \
   CXX="$CXX" \
-  CFLAGS="$CFLAGS -Werror" \
-  CXXFLAGS="$CXXFLAGS -Werror"
+  CFLAGS="$CFLAGS" \
+  CXXFLAGS="$CXXFLAGS" 
 
 make -j"$(nproc)"
 

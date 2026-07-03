@@ -23,9 +23,11 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <new>
 #include <regex>
 
 #include "charset.h"
+#include "c/ncm_mpd_item.h"
 #include "mpdpp.h"
 
 MPD::Connection Mpd;
@@ -41,6 +43,26 @@ const char *mpdDirectory(const std::string &directory)
 	else
 		return directory.c_str();
 }
+
+struct NcmMpdItemGuard
+{
+	NcmMpdItemGuard()
+	{
+		ncm_mpd_item_init(&m_item);
+	}
+	~NcmMpdItemGuard()
+	{
+		ncm_mpd_item_destroy(&m_item);
+	}
+
+	NcmMpdItem *get()
+	{
+		return &m_item;
+	}
+
+private:
+	NcmMpdItem m_item;
+};
 
 template <typename ObjectT, typename SourceT>
 std::function<bool(typename MPD::Iterator<ObjectT>::State &)>
@@ -86,27 +108,49 @@ namespace MPD {
 Item::Item(mpd_entity *entity)
 {
 	assert(entity != nullptr);
-	std::shared_ptr<mpd_entity> owner(entity, mpd_entity_free);
-	switch (mpd_entity_get_type(entity))
+	std::unique_ptr<mpd_entity, decltype(&mpd_entity_free)> owner(
+		entity, mpd_entity_free);
+	NcmMpdItemGuard item;
+
+	if (!ncm_mpd_item_from_entity(item.get(), owner.get()))
+		throw std::runtime_error("unknown or invalid mpd_entity");
+
+	switch (ncm_mpd_item_kind(item.get()))
 	{
-		case MPD_ENTITY_TYPE_DIRECTORY:
-			m_type = Type::Directory;
-			m_directory = Directory(mpd_entity_get_directory(entity));
-			break;
-		case MPD_ENTITY_TYPE_SONG:
+		case NCM_MPD_ITEM_DIRECTORY:
 		{
-			const mpd_song *song = mpd_entity_get_song(entity);
-			if (song == nullptr)
-				throw std::runtime_error("song entity without song");
-			m_type = Type::Song;
-			m_song = Song(song, owner);
+			NcmDirectory *directory = ncm_mpd_item_directory(item.get());
+			assert(directory != nullptr);
+			m_type = Type::Directory;
+			m_directory = Directory(
+				std::string(directory->path, directory->path_len),
+				directory->last_modified);
 			break;
 		}
-		case MPD_ENTITY_TYPE_PLAYLIST:
-			m_type = Type::Playlist;
-			m_playlist = Playlist(mpd_entity_get_playlist(entity));
+		case NCM_MPD_ITEM_SONG:
+		{
+			NcmSong *song = ncm_mpd_item_song(item.get());
+			mpd_song *copy;
+
+			assert(song != nullptr);
+			copy = ncm_song_dup_mpd_song(song);
+			if (copy == nullptr)
+				throw std::bad_alloc();
+			m_type = Type::Song;
+			m_song = Song(copy);
 			break;
-		default:
+		}
+		case NCM_MPD_ITEM_PLAYLIST:
+		{
+			NcmPlaylist *playlist = ncm_mpd_item_playlist(item.get());
+			assert(playlist != nullptr);
+			m_type = Type::Playlist;
+			m_playlist = Playlist(
+				std::string(playlist->path, playlist->path_len),
+				playlist->last_modified);
+			break;
+		}
+		case NCM_MPD_ITEM_UNKNOWN:
 			throw std::runtime_error("unknown mpd_entity type");
 	}
 }
