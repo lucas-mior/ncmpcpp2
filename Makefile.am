@@ -2,7 +2,7 @@
 # have all needed files, that a GNU package needs
 AUTOMAKE_OPTIONS = foreign 1.4
 
-SUBDIRS = cbase src doc
+SUBDIRS = cbase src tests doc
 docdir = $(prefix)/share/doc/$(PACKAGE)
 doc_DATA = AUTHORS CHANGELOG.md COPYING
 EXTRA_DIST = $(doc_DATA)

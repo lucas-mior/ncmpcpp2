@@ -25,3 +25,7 @@ libcbase.la
 .libs/
 *.lo
 *.part
+*.log
+c_foundation_test
+*.trs
+test-driver
