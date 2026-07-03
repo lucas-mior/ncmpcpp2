@@ -122,16 +122,21 @@ ncm_song_format_numeric_tag_prefix(char *buffer, int32 buffer_cap,
 void
 ncm_song_init(NcmSong *song) {
     song->song = NULL;
+    song->ownership = NCM_SONG_BORROWED;
     return;
 }
 
 void
 ncm_song_destroy(NcmSong *song) {
-    if (song->song) {
+    if (song == NULL) {
+        return;
+    }
+    if ((song->song != NULL) && (song->ownership == NCM_SONG_OWNED)) {
         mpd_song_free(song->song);
     }
 
     song->song = NULL;
+    song->ownership = NCM_SONG_BORROWED;
     return;
 }
 
@@ -149,6 +154,9 @@ ncm_song_copy(NcmSong *dest, NcmSong *source) {
         ncm_song_destroy(dest);
         return true;
     }
+    if (mpd_song_get_uri(source->song) == NULL) {
+        return false;
+    }
 
     copy = mpd_song_dup(source->song);
     if (copy == NULL) {
@@ -157,11 +165,17 @@ ncm_song_copy(NcmSong *dest, NcmSong *source) {
 
     ncm_song_destroy(dest);
     dest->song = copy;
+    dest->ownership = NCM_SONG_OWNED;
     return true;
 }
 
 bool
 ncm_song_from_mpd_song(NcmSong *dest, struct mpd_song *source) {
+    return ncm_song_from_mpd_song_copy(dest, source);
+}
+
+bool
+ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source) {
     NcmSong replacement;
 
     if (dest == NULL) {
@@ -170,7 +184,6 @@ ncm_song_from_mpd_song(NcmSong *dest, struct mpd_song *source) {
     if (source == NULL) {
         return false;
     }
-
     if (mpd_song_get_uri(source) == NULL) {
         return false;
     }
@@ -180,6 +193,30 @@ ncm_song_from_mpd_song(NcmSong *dest, struct mpd_song *source) {
     if (replacement.song == NULL) {
         return false;
     }
+    replacement.ownership = NCM_SONG_OWNED;
+
+    ncm_song_destroy(dest);
+    *dest = replacement;
+    return true;
+}
+
+bool
+ncm_song_borrow_mpd_song(NcmSong *dest, struct mpd_song *source) {
+    NcmSong replacement;
+
+    if (dest == NULL) {
+        return false;
+    }
+    if (source == NULL) {
+        return false;
+    }
+    if (mpd_song_get_uri(source) == NULL) {
+        return false;
+    }
+
+    ncm_song_init(&replacement);
+    replacement.song = source;
+    replacement.ownership = NCM_SONG_BORROWED;
 
     ncm_song_destroy(dest);
     *dest = replacement;
@@ -212,8 +249,35 @@ ncm_song_dup_mpd_song(NcmSong *song) {
     if (song->song == NULL) {
         return NULL;
     }
+    if (mpd_song_get_uri(song->song) == NULL) {
+        return NULL;
+    }
 
     return mpd_song_dup(song->song);
+}
+
+bool
+ncm_song_owns_mpd_song(NcmSong *song) {
+    if (song == NULL) {
+        return false;
+    }
+    if (song->song == NULL) {
+        return false;
+    }
+
+    return song->ownership == NCM_SONG_OWNED;
+}
+
+bool
+ncm_song_borrows_mpd_song(NcmSong *song) {
+    if (song == NULL) {
+        return false;
+    }
+    if (song->song == NULL) {
+        return false;
+    }
+
+    return song->ownership == NCM_SONG_BORROWED;
 }
 
 bool
