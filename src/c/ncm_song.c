@@ -54,13 +54,13 @@ ncm_song_from_mpd_song(NcmSong *dest, struct mpd_song *source) {
         return false;
     }
 
+    if (mpd_song_get_uri(source) == NULL) {
+        return false;
+    }
+
     ncm_song_init(&replacement);
     replacement.song = mpd_song_dup(source);
     if (replacement.song == NULL) {
-        return false;
-    }
-    if (mpd_song_get_uri(replacement.song) == NULL) {
-        ncm_song_destroy(&replacement);
         return false;
     }
 
