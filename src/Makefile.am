@@ -11,6 +11,7 @@ ncmpcpp_SOURCES = \
 	c/ncm_song.c \
 	c/ncm_string.c \
 	c/ncm_taglib.c \
+	c/ncm_tags.c \
 	c/ncm_type_conversions.c \
 	c/ncm_utf8.c \
 	curses/formatted_color.cpp \
@@ -84,6 +85,7 @@ noinst_HEADERS = \
 	c/ncm_song.h \
 	c/ncm_string.h \
 	c/ncm_taglib.h \
+	c/ncm_tags.h \
 	c/ncm_type_conversions.h \
 	c/ncm_utf8.h \
 	curses/formatted_color.h \

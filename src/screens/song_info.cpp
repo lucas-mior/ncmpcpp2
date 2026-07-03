@@ -22,7 +22,6 @@
 #include "helpers.h"
 #include "screens/song_info.h"
 #include "screens/tag_editor.h"
-#include "tags.h"
 #include "title.h"
 #include "screens/screen_switcher.h"
 
@@ -30,6 +29,7 @@
 
 #ifdef HAVE_TAGLIB_H
 # include "c/ncm_taglib.h"
+# include "c/ncm_tags.h"
 #endif // HAVE_TAGLIB_H
 
 using Global::MainHeight;
@@ -139,16 +139,29 @@ void SongInfo::PrepareSong(const MPD::Song &s)
 				                channelsToString(properties.channels));
 			}
 
-			auto rginfo = Tags::readReplayGain(path_to_file.c_str());
-			if (!rginfo.empty())
+			NcmTagsReplayGainInfo rginfo;
+			ncm_tags_replay_gain_info_init(&rginfo);
+			if (ncm_tags_read_replay_gain(
+					const_cast<char *>(path_to_file.c_str()),
+					&rginfo)
+					&& !ncm_tags_replay_gain_info_empty(&rginfo))
 			{
+				auto view_string = [](NcmStringView view) {
+					return view.data != nullptr ? view.data : "";
+				};
 				w << "\n";
-				print_key_value("Reference loudness", rginfo.referenceLoudness());
-				print_key_value("Track gain", rginfo.trackGain());
-				print_key_value("Track peak", rginfo.trackPeak());
-				print_key_value("Album gain", rginfo.albumGain());
-				print_key_value("Album peak", rginfo.albumPeak());
+				print_key_value("Reference loudness",
+				                view_string(rginfo.reference_loudness));
+				print_key_value("Track gain",
+				                view_string(rginfo.track_gain));
+				print_key_value("Track peak",
+				                view_string(rginfo.track_peak));
+				print_key_value("Album gain",
+				                view_string(rginfo.album_gain));
+				print_key_value("Album peak",
+				                view_string(rginfo.album_peak));
 			}
+			ncm_tags_replay_gain_info_destroy(&rginfo);
 			ncm_taglib_file_close(&file);
 		}
 	}
