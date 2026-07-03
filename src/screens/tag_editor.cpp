@@ -803,7 +803,7 @@ void TagEditor::runAction()
 				if ((*it)->isModified())
 				{
 					Statusbar::printf("Writing tags in \"%1%\"...", (*it)->getName());
-					if (!Tags::write(**it))
+					if (!ncm_tags_write_mutable_song(**it))
 					{
 						Statusbar::printf("Error while writing tags to \"%1%\": %2%",
 						                  (*it)->getName(), strerror(errno));

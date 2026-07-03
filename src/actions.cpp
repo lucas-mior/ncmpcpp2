@@ -1455,7 +1455,7 @@ void EditLibraryTag::run()
 			ms.setTags(set, new_tag);
 			Statusbar::printf("Updating tags in \"%1%\"...", ms.getName());
 			std::string path = Config.mpd_music_dir + ms.getURI();
-			if (!Tags::write(ms))
+			if (!ncm_tags_write_mutable_song(ms))
 			{
 				success = false;
 				Statusbar::printf("Error while writing tags to \"%1%\": %2%",

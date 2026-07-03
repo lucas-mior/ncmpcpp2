@@ -26,7 +26,7 @@
 #include <regex>
 
 #ifdef HAVE_TAGLIB_H
-#include "c/ncm_taglib.h"
+#include "c/ncm_tags.h"
 #endif // HAVE_TAGLIB_H
 
 #include "charset.h"
@@ -87,21 +87,12 @@ std::string joinLines(const std::vector<std::string> &lines)
 }
 
 #ifdef HAVE_TAGLIB_H
-void appendLyricsValue(char *value, void *user)
+void appendLyricsValue(char *value, [[maybe_unused]] int32 value_len, void *user)
 {
 	auto result = static_cast<std::string *>(user);
 	if (!result->empty())
 		*result += "\n\n";
 	*result += value;
-}
-
-std::string readLyricsFromTags(NcmTaglibFile &file)
-{
-	std::string result;
-	ncm_taglib_read_property(&file, const_cast<char *>("LYRICS"), appendLyricsValue, &result);
-	if (result.empty())
-		ncm_taglib_read_property(&file, const_cast<char *>("UNSYNCEDLYRICS"), appendLyricsValue, &result);
-	return result;
 }
 #endif // HAVE_TAGLIB_H
 
@@ -311,17 +302,16 @@ LyricsFetcher::Result TagsLyricsFetcher::fetch([[maybe_unused]] const std::strin
 		path += Config.mpd_music_dir;
 	path += song.getURI();
 
-	NcmTaglibFile file;
-	ncm_taglib_file_init(&file);
-	if (!ncm_taglib_file_open(&file, const_cast<char *>(path.c_str())))
+	auto read_result = ncm_tags_read_lyrics(
+		const_cast<char *>(path.c_str()),
+		appendLyricsValue,
+		&result.second);
+	if (read_result == NCM_TAGS_READ_OPEN_FAILED)
 	{
 		result.second = "Could not open file";
 		return result;
 	}
-	result.second = readLyricsFromTags(file);
-	ncm_taglib_file_close(&file);
-
-	if (!result.second.empty())
+	if (read_result == NCM_TAGS_READ_OK)
 	{
 		result.first = true;
 	}
