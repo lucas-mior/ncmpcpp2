@@ -289,32 +289,39 @@ PKG_CHECK_MODULES([libcurl], [libcurl], [
 	AC_MSG_ERROR([libcurl is required!])
 )
 
-# taglib
+# taglib C API
 if test "$taglib" != "no" ; then
-	PKG_CHECK_MODULES([taglib], [taglib], [
+	PKG_CHECK_MODULES([taglib], [taglib_c], [
 		AC_SUBST(taglib_CFLAGS)
 		AC_SUBST(taglib_LIBS)
 	], [
-		AC_PATH_PROG([TAGLIB_CONFIG], [taglib-config])
-		if test "$TAGLIB_CONFIG" != ""; then
-			taglib_CFLAGS=`$TAGLIB_CONFIG --cflags`
-			taglib_LIBS=`$TAGLIB_CONFIG --libs`
-		else
+		AC_CHECK_LIB([tag_c], [taglib_file_new], [
+			taglib_LIBS="-ltag_c"
+		], [
 			if test "$taglib" = "yes" ; then
-				AC_MSG_ERROR([could not find taglib.pc or taglib-config executable])
+				AC_MSG_ERROR([could not find taglib_c.pc or libtag_c])
 			fi
-		fi
+		])
 	])
 
-	if test "$TAGLIB_CONFIG$taglib_LIBS" != "" ; then
+	if test "$taglib_LIBS" != "" ; then
+		taglib_c_ok=yes
 		CPPFLAGS="$CPPFLAGS $taglib_CFLAGS"
 		LIBS="$LIBS $taglib_LIBS"
 
-		AC_CHECK_HEADERS([taglib.h], ,
+		AC_CHECK_HEADER([tag_c.h], [], [taglib_c_ok=no])
+		AC_CHECK_FUNCS([taglib_file_new taglib_file_save \
+			taglib_property_get taglib_property_set \
+			taglib_property_set_append], [], [taglib_c_ok=no])
+
+		if test "$taglib_c_ok" = "yes" ; then
+			AC_DEFINE([HAVE_TAGLIB_H], [1],
+			          [Define if TagLib C API is available])
+		else
 			if test "$taglib" = "yes" ; then
-				AC_MSG_ERROR([missing taglib.h header])
+				AC_MSG_ERROR([missing required TagLib C API])
 			fi
-		)
+		fi
 	fi
 fi
 

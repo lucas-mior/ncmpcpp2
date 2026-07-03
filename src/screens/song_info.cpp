@@ -29,8 +29,7 @@
 #include <string>
 
 #ifdef HAVE_TAGLIB_H
-# include "fileref.h"
-# include "tag.h"
+# include "c/ncm_taglib.h"
 #endif // HAVE_TAGLIB_H
 
 using Global::MainHeight;
@@ -122,18 +121,25 @@ void SongInfo::PrepareSong(const MPD::Song &s)
 		if (s.isFromDatabase())
 			path_to_file += Config.mpd_music_dir;
 		path_to_file += s.getURI();
-		TagLib::FileRef f(path_to_file.c_str());
-		if (!f.isNull())
+		NcmTaglibFile file;
+		NcmTaglibAudioProperties properties;
+
+		ncm_taglib_file_init(&file);
+		if (ncm_taglib_file_open(&file, const_cast<char *>(path_to_file.c_str())))
 		{
-			print_key_value(
-				"Bitrate",
-				std::to_string(f.audioProperties()->bitrate()) + " kbps");
-			print_key_value(
-				"Sample rate",
-				std::to_string(f.audioProperties()->sampleRate()) + " Hz");
-			print_key_value("Channels", channelsToString(f.audioProperties()->channels()));
-			
-			auto rginfo = Tags::readReplayGain(f.file());
+			if (ncm_taglib_file_audio_properties(&file, &properties))
+			{
+				print_key_value(
+					"Bitrate",
+					std::to_string(properties.bitrate) + " kbps");
+				print_key_value(
+					"Sample rate",
+					std::to_string(properties.sample_rate) + " Hz");
+				print_key_value("Channels",
+				                channelsToString(properties.channels));
+			}
+
+			auto rginfo = Tags::readReplayGain(path_to_file.c_str());
 			if (!rginfo.empty())
 			{
 				w << "\n";
@@ -143,6 +149,7 @@ void SongInfo::PrepareSong(const MPD::Song &s)
 				print_key_value("Album gain", rginfo.albumGain());
 				print_key_value("Album peak", rginfo.albumPeak());
 			}
+			ncm_taglib_file_close(&file);
 		}
 	}
 #	endif // HAVE_TAGLIB_H

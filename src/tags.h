@@ -25,7 +25,6 @@
 
 #ifdef HAVE_TAGLIB_H
 
-#include <tfile.h>
 #include "mutable_song.h"
 
 namespace Tags {
@@ -64,9 +63,9 @@ private:
 
 void setAttribute(mpd_song *s, const char *name, const std::string &value);
 
-ReplayGainInfo readReplayGain(TagLib::File *f);
-
-bool extendedSetSupported(const TagLib::File *f);
+ReplayGainInfo readReplayGain(const char *path);
+std::string readLyrics(const char *path);
+bool extendedSetSupported(const char *path);
 
 void read(mpd_song *s);
 bool write(MPD::MutableSong &);

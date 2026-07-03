@@ -66,8 +66,7 @@
 #include "tags.h"
 
 #ifdef HAVE_TAGLIB_H
-# include "fileref.h"
-# include "tag.h"
+# include "c/ncm_taglib.h"
 #endif // HAVE_TAGLIB_H
 
 using Global::myScreen;
@@ -1508,22 +1507,27 @@ void EditLibraryAlbum::run()
 		{
 			Statusbar::printf("Updating tags in \"%1%\"...", myLibrary->Songs[i].value().getName());
 			std::string path = Config.mpd_music_dir + myLibrary->Songs[i].value().getURI();
-			TagLib::FileRef f(path.c_str());
-			if (f.isNull())
+			NcmTaglibFile file;
+			ncm_taglib_file_init(&file);
+			if (!ncm_taglib_file_open(&file, const_cast<char *>(path.c_str())))
 			{
 				const char msg[] = "Error while opening file \"%1%\"";
 				Statusbar::printf(msg, Utf8::shorten(myLibrary->Songs[i].value().getURI(), COLS-const_strlen(msg)));
 				success = 0;
 				break;
 			}
-			f.tag()->setAlbum(TagLib::String(new_album, TagLib::String::UTF8));
-			if (!f.save())
+			ncm_taglib_clear_property(&file, const_cast<char *>("ALBUM"));
+			ncm_taglib_append_property(&file, const_cast<char *>("ALBUM"),
+			                           const_cast<char *>(new_album.c_str()));
+			if (!ncm_taglib_file_save(&file))
 			{
 				const char msg[] = "Error while writing tags in \"%1%\"";
 				Statusbar::printf(msg, Utf8::shorten(myLibrary->Songs[i].value().getURI(), COLS-const_strlen(msg)));
+				ncm_taglib_file_close(&file);
 				success = 0;
 				break;
 			}
+			ncm_taglib_file_close(&file);
 		}
 		if (success)
 		{

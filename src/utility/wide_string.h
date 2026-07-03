@@ -27,10 +27,6 @@
 #include <limits>
 #include <string>
 
-#ifdef HAVE_TAGLIB_H
-# include <tstring.h>
-#endif // HAVE_TAGLIB_H
-
 namespace Utf8Compatibility {
 
 class String
@@ -55,13 +51,6 @@ public:
 		}
 		return result;
 	}
-
-#ifdef HAVE_TAGLIB_H
-	operator TagLib::String() const
-	{
-		return TagLib::String(m_value, TagLib::String::UTF8);
-	}
-#endif // HAVE_TAGLIB_H
 
 private:
 	static constexpr uint32_t ReplacementCharacter = 0xfffd;

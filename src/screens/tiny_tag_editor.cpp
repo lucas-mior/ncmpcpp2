@@ -24,9 +24,7 @@
 
 #include <string>
 
-// taglib includes
-#include <fileref.h>
-#include <tag.h>
+#include "c/ncm_taglib.h"
 
 #include "curses/menu_impl.h"
 #include "screens/browser.h"
@@ -200,9 +198,12 @@ bool TinyTagEditor::getTags()
 		path_to_file += Config.mpd_music_dir;
 	path_to_file += itsEdited.getURI();
 	
-	TagLib::FileRef f(path_to_file.c_str());
-	if (f.isNull())
+	NcmTaglibFile file;
+	NcmTaglibAudioProperties properties;
+	ncm_taglib_file_init(&file);
+	if (!ncm_taglib_file_open(&file, const_cast<char *>(path_to_file.c_str())))
 		return false;
+	ncm_taglib_file_audio_properties(&file, &properties);
 	
 	std::string ext = itsEdited.getURI();
 	ext = lowercaseAscii(ext.substr(ext.rfind(".")+1));
@@ -219,13 +220,14 @@ bool TinyTagEditor::getTags()
 	w[19].setSeparator(true);
 	w[21].setSeparator(true);
 	
-	if (!Tags::extendedSetSupported(f.file()))
+	if (!ncm_taglib_extended_set_supported(&file))
 	{
 		w[10].setInactive(true);
 		for (size_t i = 15; i <= 17; ++i)
 			w[i].setInactive(true);
 	}
 	
+	ncm_taglib_file_close(&file);
 	w.highlight(8);
 
 	auto print_key_value = [](NC::Buffer &buf, const char *key, const auto &value) {
@@ -247,15 +249,15 @@ bool TinyTagEditor::getTags()
 	print_key_value(
 		w[4].value(),
 		"Bitrate",
-		std::to_string(f.audioProperties()->bitrate()) + " kbps");
+		std::to_string(properties.bitrate) + " kbps");
 	print_key_value(
 		w[5].value(),
 		"Sample rate",
-		std::to_string(f.audioProperties()->sampleRate()) + " Hz");
+		std::to_string(properties.sample_rate) + " Hz");
 	print_key_value(
 		w[6].value(),
 		"Channels",
-		channelsToString(f.audioProperties()->channels()));
+		channelsToString(properties.channels));
 	
 	unsigned pos = 8;
 	for (const SongInfo::Metadata *m = SongInfo::Tags; m->Name; ++m, ++pos)
