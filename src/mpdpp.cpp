@@ -108,10 +108,18 @@ namespace MPD {
 Item::Item(mpd_entity *entity)
 {
 	assert(entity != nullptr);
-	std::unique_ptr<mpd_entity, decltype(&mpd_entity_free)> owner(
-		entity, mpd_entity_free);
-	NcmMpdItemGuard item;
+	std::shared_ptr<mpd_entity> owner(entity, mpd_entity_free);
+	if (mpd_entity_get_type(owner.get()) == MPD_ENTITY_TYPE_SONG)
+	{
+		const mpd_song *song = mpd_entity_get_song(owner.get());
+		if (song == nullptr)
+			throw std::runtime_error("song entity without song");
+		m_type = Type::Song;
+		m_song = Song(song, std::move(owner));
+		return;
+	}
 
+	NcmMpdItemGuard item;
 	if (!ncm_mpd_item_from_entity(item.get(), owner.get()))
 		throw std::runtime_error("unknown or invalid mpd_entity");
 
