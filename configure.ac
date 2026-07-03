@@ -318,5 +318,5 @@ if test "$taglib" != "no" ; then
 	fi
 fi
 
-AC_CONFIG_FILES([Makefile cbase/Makefile src/Makefile doc/Makefile])
+AC_CONFIG_FILES([Makefile cbase/Makefile src/Makefile tests/Makefile doc/Makefile])
 AC_OUTPUT
