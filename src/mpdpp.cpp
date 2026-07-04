@@ -593,17 +593,21 @@ void Connection::setNoidleCallback(NoidleCallback callback)
 
 Statistics Connection::getStatistics()
 {
+	NcmMpdStats stats{};
+
 	prechecks();
-	mpd_stats *stats = mpd_run_stats(rawConnection());
-	checkErrors();
+	if (!ncm_mpd_connection_get_stats(&m_connection, &stats))
+		throwConnectionError();
 	return Statistics(stats);
 }
 
 Status Connection::getStatus()
 {
+	NcmMpdStatus status{};
+
 	prechecks();
-	mpd_status *status = mpd_run_status(rawConnection());
-	checkErrors();
+	if (!ncm_mpd_connection_get_status(&m_connection, &status))
+		throwConnectionError();
 	return Status(status);
 }
 
