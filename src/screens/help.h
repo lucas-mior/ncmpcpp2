@@ -23,25 +23,35 @@
 
 #include "actions.h"
 #include "interfaces.h"
+#include "screens/nc_help.h"
 #include "screens/screen.h"
 
-struct Help: Screen<NC::Scrollpad>, Tabbable
+struct Help: BaseScreen, Tabbable
 {
 	Help();
 	
+	// BaseScreen implementation
+	virtual bool isActiveWindow(const NC::Window &w_) const override;
+	virtual NC::Window *activeWindow() override;
+	virtual const NC::Window *activeWindow() const override;
+	virtual void refresh() override;
+	virtual void refreshWindow() override;
+	virtual void scroll(NC::Scroll where) override;
 	virtual void resize() override;
 	virtual void switchTo() override;
-	
+	virtual int windowTimeout() override;
 	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::Help; }
-	
 	virtual void update() override { }
-	
+	virtual void mouseButtonPressed(MEVENT me) override;
 	virtual bool isLockable() override { return true; }
 	virtual bool isMergable() override { return true; }
+
+private:
+	NC::Scrollpad w;
+	NcHelpScreen m_screen;
 };
 
 extern Help *myHelp;
 
 #endif // NCMPCPP_HELP_H
-
