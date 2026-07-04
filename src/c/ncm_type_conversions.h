@@ -5,6 +5,7 @@
 #include <mpd/tag.h>
 
 #include "c/ncm_defs.h"
+#include "c/ncm_tags.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -46,6 +47,14 @@ enum mpd_tag_type ncm_char_to_tag_type(char c);
 enum NcmSongGetter ncm_song_getter_from_char(char c);
 enum NcmSongGetter ncm_song_getter_from_tag_type(enum mpd_tag_type tag);
 enum mpd_tag_type ncm_song_getter_to_tag_type(enum NcmSongGetter getter);
+char *ncm_song_getter_name(enum NcmSongGetter getter);
+bool ncm_char_is_tags_field(char c);
+enum NcmTagsField ncm_tags_field_from_char(char c);
+enum NcmTagsField ncm_tags_field_from_tag_type(enum mpd_tag_type tag);
+enum mpd_tag_type ncm_tags_field_to_tag_type(enum NcmTagsField field);
+enum NcmSongGetter ncm_tags_field_to_song_getter(enum NcmTagsField field);
+enum NcmTagsField ncm_song_getter_to_tags_field(enum NcmSongGetter getter);
+char *ncm_tags_field_name(enum NcmTagsField field);
 char *ncm_item_type_name(enum NcmItemType type);
 
 #if defined(__cplusplus)
