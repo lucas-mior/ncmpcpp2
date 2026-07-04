@@ -147,6 +147,7 @@ private:
 struct Color
 {
 	friend struct Window;
+	friend NcColor toNcColor(Color color);
 
 	static const short transparent;
 	static const short current;
