@@ -25,18 +25,15 @@
 
 #include "config.h"
 
-#include "curses.h"
+#include "curses/nc_window.h"
 
 #include <optional>
 #include <functional>
-#include <list>
-#include <stack>
-#include <vector>
 #include <string>
 #include <tuple>
-#include <queue>
 #include <cstdint>
 #include <stdexcept>
+#include <utility>
 
 #if NCURSES_MOUSE_VERSION == 1
 # define BUTTON5_PRESSED (1U << 27)
@@ -289,7 +286,7 @@ struct Window
 		int m_timeout;
 	};
 
-	Window() : m_window(nullptr) { }
+	Window();
 	
 	/// Constructs an empty window with given parameters
 	/// @param startx X position of left upper corner of constructed window
@@ -300,7 +297,7 @@ struct Window
 	/// @param color base color of constructed window
 	/// @param border border of constructed window
 	Window(size_t startx, size_t starty, size_t width, size_t height,
-			std::string title, Color color, Border border);
+	        std::string title, Color color, Border border);
 	
 	Window(const Window &rhs);
 	Window(Window &&rhs);
@@ -448,9 +445,6 @@ struct Window
 	/// Push single character into input queue, so it can get consumed by ReadKey
 	void pushChar(const NC::Key::Type ch);
 	
-	/// @return const reference to internal input queue
-	const std::queue<NC::Key::Type> &inputQueue() { return m_input_queue; }
-	
 	/// Scrolls the window by amount of lines given in its parameter
 	/// @param where indicates how many lines it has to scroll
 	virtual void scroll(Scroll where);
@@ -511,64 +505,18 @@ protected:
 	Border m_border;
 	
 private:
-	Key::Type getInputChar(int key);
+	static NcColor toNcColor(Color color);
+	static Color fromNcColor(NcColor color);
+	static NcBorder toNcBorder(Border border);
+	static Border fromNcBorder(NcBorder border);
+	static NcFormat toNcFormat(Format format);
+	static NcScroll toNcScroll(Scroll scroll);
 
-	/// Sets state of bold attribute (internal use only)
-	/// @param bold_state state of bold attribute
-	///
-	void bold(bool bold_state) const;
-	
-	/// Sets state of underline attribute (internal use only)
-	/// @param underline_state state of underline attribute
-	///
-	void underline(bool underline_state) const;
-	
-	/// Sets state of reverse attribute (internal use only)
-	/// @param reverse_state state of reverse attribute
-	///
-	void reverse(bool reverse_state) const;
-	
-	/// Sets state of altcharset attribute (internal use only)
-	/// @param altcharset_state state of altcharset attribute
-	///
-	void altCharset(bool altcharset_state) const;
+	void syncFromC();
 
-	/// Sets state of italic attribute (internal use only)
-	/// @param italic_state state of italic attribute
-	///
-	void italic(bool italic_state) const;
-	
-	/// pointer to helper function used by getString()
-	/// @see getString()
-	///
+	NcWindow m_impl;
 	PromptHook m_prompt_hook;
-	
-	/// window title
 	std::string m_title;
-	
-	/// stack of colors
-	std::stack<Color> m_color_stack;
-	
-	/// input queue of a window. you can put characters there using
-	/// PushChar and they will be immediately consumed and
-	/// returned by ReadKey
-	std::queue<Key::Type> m_input_queue;
-	
-	/// containter used for additional file descriptors that have
-	/// to be polled in ReadKey() and correspondent callbacks that
-	/// are invoked if there is data available in them
-	typedef std::vector< std::pair<int, void (*)()> > FDCallbacks;
-	FDCallbacks m_fds;
-	
-	MEVENT m_mouse_event;
-	bool m_escape_terminal_sequences;
-
-	/// counters for format flags
-	int m_bold_counter;
-	int m_underline_counter;
-	int m_reverse_counter;
-	int m_alt_charset_counter;
-	int m_italic_counter;
 };
 
 }
