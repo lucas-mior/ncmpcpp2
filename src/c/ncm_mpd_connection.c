@@ -21,6 +21,8 @@ static bool ncm_mpd_item_list_push(NcmMpdItemList *list,
                                    NcmMpdItem *item);
 static bool ncm_mpd_string_list_push(NcmMpdStringList *list,
                                      char *value);
+static bool ncm_mpd_output_list_push(NcmMpdOutputList *list,
+                                     struct mpd_output *output);
 static char *ncm_mpd_connection_mpd_directory(char *directory);
 static bool ncm_mpd_connection_recv_song(NcmMpdConnection *connection,
                                          NcmSong *song);
@@ -207,6 +209,49 @@ ncm_mpd_string_list_push(NcmMpdStringList *list, char *value) {
     string->value = (char *)ncm_malloc(value_len + 1);
     string->value_len = value_len;
     ncm_mpd_connection_cstring_copy(string->value, value_len + 1, value);
+    list->count += 1;
+    return true;
+}
+
+
+static bool
+ncm_mpd_output_list_push(NcmMpdOutputList *list,
+                         struct mpd_output *output) {
+    int32 old_capacity;
+    int32 new_capacity;
+    char *name;
+    int32 name_len;
+    NcmMpdOutput *item;
+
+    if (list == NULL) {
+        return false;
+    }
+    if (output == NULL) {
+        return false;
+    }
+
+    if (list->count >= list->capacity) {
+        old_capacity = list->capacity;
+        new_capacity = old_capacity*2;
+        if (new_capacity < 8) {
+            new_capacity = 8;
+        }
+
+        list->items = (NcmMpdOutput *)ncm_realloc_array(
+            list->items, old_capacity, new_capacity, SIZEOF(*list->items));
+        list->capacity = new_capacity;
+    }
+
+    name = (char *)mpd_output_get_name(output);
+    name_len = ncm_mpd_connection_cstring_len(name);
+
+    item = &list->items[list->count];
+    item->id = mpd_output_get_id(output);
+    item->name = (char *)ncm_malloc(name_len + 1);
+    item->name_len = name_len;
+    item->enabled = mpd_output_get_enabled(output);
+    ncm_mpd_connection_cstring_copy(item->name, name_len + 1, name);
+
     list->count += 1;
     return true;
 }
@@ -543,6 +588,51 @@ ncm_mpd_string_list_clear(NcmMpdStringList *list) {
         ncm_free(list->items[i].value, list->items[i].value_len + 1);
         list->items[i].value = NULL;
         list->items[i].value_len = 0;
+    }
+    list->count = 0;
+    return;
+}
+
+
+void
+ncm_mpd_output_list_init(NcmMpdOutputList *list) {
+    if (list == NULL) {
+        return;
+    }
+
+    list->items = NULL;
+    list->count = 0;
+    list->capacity = 0;
+    return;
+}
+
+void
+ncm_mpd_output_list_destroy(NcmMpdOutputList *list) {
+    if (list == NULL) {
+        return;
+    }
+
+    ncm_mpd_output_list_clear(list);
+    if (list->items != NULL) {
+        ncm_free(list->items, list->capacity*SIZEOF(*list->items));
+    }
+
+    ncm_mpd_output_list_init(list);
+    return;
+}
+
+void
+ncm_mpd_output_list_clear(NcmMpdOutputList *list) {
+    if (list == NULL) {
+        return;
+    }
+
+    for (int32 i = 0; i < list->count; i += 1) {
+        ncm_free(list->items[i].name, list->items[i].name_len + 1);
+        list->items[i].name = NULL;
+        list->items[i].name_len = 0;
+        list->items[i].id = 0;
+        list->items[i].enabled = false;
     }
     list->count = 0;
     return;
@@ -1186,6 +1276,111 @@ ncm_mpd_connection_rescan_database(NcmMpdConnection *connection,
     }
     mpd_response_finish(connection->mpd);
     return ncm_mpd_connection_check_error(connection);
+}
+
+
+bool
+ncm_mpd_connection_get_outputs(NcmMpdConnection *connection,
+                               NcmMpdOutputList *outputs) {
+    struct mpd_output *output;
+    bool ok;
+
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+    if (outputs == NULL) {
+        return false;
+    }
+
+    ncm_mpd_output_list_clear(outputs);
+    if (!mpd_send_outputs(connection->mpd)) {
+        return ncm_mpd_connection_check_error(connection);
+    }
+
+    for (;;) {
+        output = mpd_recv_output(connection->mpd);
+        if (output == NULL) {
+            break;
+        }
+
+        ok = ncm_mpd_output_list_push(outputs, output);
+        mpd_output_free(output);
+        if (!ok) {
+            ncm_mpd_connection_set_error(
+                connection, MPD_ERROR_STATE,
+                (enum mpd_server_error)0, false,
+                (char *)"Could not read MPD output");
+            mpd_response_finish(connection->mpd);
+            return false;
+        }
+    }
+
+    mpd_response_finish(connection->mpd);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_enable_output(NcmMpdConnection *connection,
+                                 uint32 id) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_enable_output(connection->mpd, id);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_disable_output(NcmMpdConnection *connection,
+                                  uint32 id) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_disable_output(connection->mpd, id);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_toggle_output(NcmMpdConnection *connection,
+                                 uint32 id) {
+    NcmMpdOutputList outputs;
+    bool found;
+    bool enabled;
+    bool ok;
+
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    ncm_mpd_output_list_init(&outputs);
+    ok = ncm_mpd_connection_get_outputs(connection, &outputs);
+    found = false;
+    enabled = false;
+    if (ok) {
+        for (int32 i = 0; i < outputs.count; i += 1) {
+            if (outputs.items[i].id == id) {
+                found = true;
+                enabled = outputs.items[i].enabled;
+                break;
+            }
+        }
+    }
+    ncm_mpd_output_list_destroy(&outputs);
+    if (!ok) {
+        return false;
+    }
+    if (!found) {
+        ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
+                                     (enum mpd_server_error)0, false,
+                                     (char *)"MPD output not found");
+        return false;
+    }
+
+    if (enabled) {
+        return ncm_mpd_connection_disable_output(connection, id);
+    }
+    return ncm_mpd_connection_enable_output(connection, id);
 }
 
 bool
