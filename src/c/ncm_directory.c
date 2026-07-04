@@ -86,6 +86,79 @@ ncm_directory_copy(NcmDirectory *dest, NcmDirectory *source) {
                              source->last_modified);
 }
 
+void
+ncm_directory_move(NcmDirectory *dest, NcmDirectory *source) {
+    if (dest == NULL) {
+        return;
+    }
+    if (dest == source) {
+        return;
+    }
+
+    ncm_directory_destroy(dest);
+    if (source == NULL) {
+        ncm_directory_init(dest);
+        return;
+    }
+
+    *dest = *source;
+    ncm_directory_init(source);
+    return;
+}
+
+bool
+ncm_directory_path_view(NcmDirectory *directory, NcmStringView *view) {
+    if (view != NULL) {
+        view->data = NULL;
+        view->len = 0;
+    }
+    if (directory == NULL) {
+        return false;
+    }
+    if (directory->path == NULL) {
+        return false;
+    }
+    if (view != NULL) {
+        view->data = directory->path;
+        view->len = directory->path_len;
+    }
+
+    return true;
+}
+
+time_t
+ncm_directory_last_modified(NcmDirectory *directory) {
+    if (directory == NULL) {
+        return 0;
+    }
+
+    return directory->last_modified;
+}
+
+bool
+ncm_directory_equal(NcmDirectory *a, NcmDirectory *b) {
+    if ((a == NULL) || (b == NULL)) {
+        return a == b;
+    }
+    if (a->last_modified != b->last_modified) {
+        return false;
+    }
+    if (a->path_len != b->path_len) {
+        return false;
+    }
+    if ((a->path == NULL) || (b->path == NULL)) {
+        return a->path == b->path;
+    }
+
+    for (int32 i = 0; i < a->path_len; i += 1) {
+        if (a->path[i] != b->path[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool
 ncm_directory_from_mpd_directory(NcmDirectory *dest,
                                  struct mpd_directory *source) {

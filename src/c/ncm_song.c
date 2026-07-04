@@ -7,6 +7,7 @@
 #include "c/ncm_path.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
+#include "cbase/rapidhash.h"
 
 static int32 ncm_song_cstring_len(char *string);
 static void ncm_song_clear_view(NcmStringView *view);
@@ -1152,6 +1153,21 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
     }
 
     return result;
+}
+
+uint64
+ncm_song_hash(NcmSong *song) {
+    char *uri;
+    int32 uri_len;
+
+    uri = "";
+    uri_len = 0;
+    if ((song != NULL) && (song->uri != NULL)) {
+        uri = song->uri;
+        uri_len = song->uri_len;
+    }
+
+    return rapidhash(uri, uri_len);
 }
 
 bool

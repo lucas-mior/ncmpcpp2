@@ -8,32 +8,6 @@ static bool ncm_mpd_item_set_directory_from_mpd(NcmMpdItem *item,
                                                 struct mpd_directory *source);
 static bool ncm_mpd_item_set_playlist_from_mpd(NcmMpdItem *item,
                                                struct mpd_playlist *source);
-static bool ncm_mpd_item_directory_equal(NcmDirectory *a,
-                                         NcmDirectory *b);
-
-static bool
-ncm_mpd_item_directory_equal(NcmDirectory *a, NcmDirectory *b) {
-    if ((a == NULL) || (b == NULL)) {
-        return a == b;
-    }
-    if (a->last_modified != b->last_modified) {
-        return false;
-    }
-    if (a->path_len != b->path_len) {
-        return false;
-    }
-    if ((a->path == NULL) || (b->path == NULL)) {
-        return a->path == b->path;
-    }
-
-    for (int32 i = 0; i < a->path_len; i += 1) {
-        if (a->path[i] != b->path[i]) {
-            return false;
-        }
-    }
-
-    return true;
-}
 
 static bool
 ncm_mpd_item_set_song_copy(NcmMpdItem *item,
@@ -271,8 +245,8 @@ ncm_mpd_item_equal(NcmMpdItem *a, NcmMpdItem *b) {
     case NCM_MPD_ITEM_SONG:
         return ncm_song_equal(&a->value.song, &b->value.song);
     case NCM_MPD_ITEM_DIRECTORY:
-        return ncm_mpd_item_directory_equal(&a->value.directory,
-                                            &b->value.directory);
+        return ncm_directory_equal(&a->value.directory,
+                                   &b->value.directory);
     case NCM_MPD_ITEM_PLAYLIST:
         return ncm_playlist_equal(&a->value.playlist,
                                   &b->value.playlist);
