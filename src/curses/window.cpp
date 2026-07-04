@@ -609,7 +609,9 @@ void Window::refreshBorder() const
 
 void Window::display()
 {
-	nc_window_display(&m_impl);
+	refreshBorder();
+	refresh();
+	refresh();
 }
 
 void Window::refresh()
