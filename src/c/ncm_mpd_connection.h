@@ -4,6 +4,7 @@
 #include <mpd/client.h>
 
 #include "c/ncm_error.h"
+#include "c/ncm_song.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -26,6 +27,12 @@ typedef struct NcmMpdStats {
     uint64 db_update_time;
     uint64 db_play_time;
 } NcmMpdStats;
+
+typedef struct NcmMpdSongList {
+    NcmSong *items;
+    int32 count;
+    int32 capacity;
+} NcmMpdSongList;
 
 typedef struct NcmMpdStatus {
     int32 volume;
@@ -71,6 +78,26 @@ bool ncm_mpd_connection_get_stats(NcmMpdConnection *connection,
                                   NcmMpdStats *stats);
 bool ncm_mpd_connection_get_status(NcmMpdConnection *connection,
                                    NcmMpdStatus *status);
+
+void ncm_mpd_song_list_init(NcmMpdSongList *list);
+void ncm_mpd_song_list_destroy(NcmMpdSongList *list);
+void ncm_mpd_song_list_clear(NcmMpdSongList *list);
+
+bool ncm_mpd_connection_get_current_song(NcmMpdConnection *connection,
+                                         NcmSong *song);
+bool ncm_mpd_connection_get_song(NcmMpdConnection *connection,
+                                 char *path,
+                                 NcmSong *song);
+bool ncm_mpd_connection_get_queue_changes(NcmMpdConnection *connection,
+                                          uint32 version,
+                                          NcmMpdSongList *songs);
+bool ncm_mpd_connection_get_playlist_content(NcmMpdConnection *connection,
+                                             char *path,
+                                             NcmMpdSongList *songs);
+bool ncm_mpd_connection_get_playlist_content_no_info(
+    NcmMpdConnection *connection,
+    char *path,
+    NcmMpdSongList *songs);
 
 bool ncm_mpd_connection_play(NcmMpdConnection *connection);
 bool ncm_mpd_connection_play_pos(NcmMpdConnection *connection, int32 pos);

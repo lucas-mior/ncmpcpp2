@@ -64,6 +64,56 @@ private:
 	NcmMpdItem m_item;
 };
 
+struct NcmSongGuard
+{
+	NcmSongGuard()
+	{
+		ncm_song_init(&m_song);
+	}
+	~NcmSongGuard()
+	{
+		ncm_song_destroy(&m_song);
+	}
+
+	NcmSong *get()
+	{
+		return &m_song;
+	}
+
+private:
+	NcmSong m_song;
+};
+
+struct NcmMpdSongListGuard
+{
+	NcmMpdSongListGuard()
+	{
+		ncm_mpd_song_list_init(&m_list);
+	}
+	~NcmMpdSongListGuard()
+	{
+		ncm_mpd_song_list_destroy(&m_list);
+	}
+
+	NcmMpdSongList *get()
+	{
+		return &m_list;
+	}
+
+private:
+	NcmMpdSongList m_list;
+};
+
+std::vector<MPD::Song> songVectorFromList(NcmMpdSongList *list)
+{
+	std::vector<MPD::Song> result;
+
+	result.reserve(static_cast<size_t>(list->count));
+	for (int32 i = 0; i < list->count; i += 1)
+		result.emplace_back(&list->items[i]);
+	return result;
+}
+
 template <typename ObjectT, typename SourceT>
 std::function<bool(typename MPD::Iterator<ObjectT>::State &)>
 defaultFetcher(SourceT *(fetcher)(mpd_connection *))
@@ -776,52 +826,61 @@ void Connection::Rename(const std::string &from, const std::string &to)
 
 SongIterator Connection::GetPlaylistChanges(unsigned version)
 {
+	NcmMpdSongListGuard songs;
+
 	prechecksNoCommandsList();
-	mpd_send_queue_changes_meta(rawConnection(), version);
-	checkErrors();
-	return SongIterator(rawConnection(), defaultFetcher<Song>(mpd_recv_song));
+	if (!ncm_mpd_connection_get_queue_changes(&m_connection, version,
+	                                           songs.get()))
+		throwConnectionError();
+	return SongIterator(songVectorFromList(songs.get()));
 }
 
 Song Connection::GetCurrentSong()
 {
+	NcmSongGuard song;
+
 	prechecksNoCommandsList();
-	mpd_send_current_song(rawConnection());
-	mpd_song *s = mpd_recv_song(rawConnection());
-	mpd_response_finish(rawConnection());
-	checkErrors();
+	if (!ncm_mpd_connection_get_current_song(&m_connection, song.get()))
+		throwConnectionError();
 	// currentsong doesn't return error if there is no playing song.
-	if (s == nullptr)
+	if (ncm_song_empty(song.get()))
 		return Song();
 	else
-		return Song(s);
+		return Song(song.get());
 }
 
 Song Connection::GetSong(const std::string &path)
 {
+	NcmSongGuard song;
+
 	prechecksNoCommandsList();
-	mpd_send_list_all_meta(rawConnection(), path.c_str());
-	mpd_song *s = mpd_recv_song(rawConnection());
-	mpd_response_finish(rawConnection());
-	checkErrors();
-	return Song(s);
+	if (!ncm_mpd_connection_get_song(&m_connection,
+	                                 const_cast<char *>(path.c_str()),
+	                                 song.get()))
+		throwConnectionError();
+	return Song(song.get());
 }
 
 SongIterator Connection::GetPlaylistContent(const std::string &path)
 {
+	NcmMpdSongListGuard songs;
+
 	prechecksNoCommandsList();
-	mpd_send_list_playlist_meta(rawConnection(), path.c_str());
-	SongIterator result(rawConnection(), defaultFetcher<Song>(mpd_recv_song));
-	checkErrors();
-	return result;
+	if (!ncm_mpd_connection_get_playlist_content(
+		    &m_connection, const_cast<char *>(path.c_str()), songs.get()))
+		throwConnectionError();
+	return SongIterator(songVectorFromList(songs.get()));
 }
 
 SongIterator Connection::GetPlaylistContentNoInfo(const std::string &path)
 {
+	NcmMpdSongListGuard songs;
+
 	prechecksNoCommandsList();
-	mpd_send_list_playlist(rawConnection(), path.c_str());
-	SongIterator result(rawConnection(), defaultFetcher<Song>(mpd_recv_song));
-	checkErrors();
-	return result;
+	if (!ncm_mpd_connection_get_playlist_content_no_info(
+		    &m_connection, const_cast<char *>(path.c_str()), songs.get()))
+		throwConnectionError();
+	return SongIterator(songVectorFromList(songs.get()));
 }
 
 StringIterator Connection::GetSupportedExtensions()
