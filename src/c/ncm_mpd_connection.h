@@ -72,6 +72,27 @@ bool ncm_mpd_connection_get_stats(NcmMpdConnection *connection,
 bool ncm_mpd_connection_get_status(NcmMpdConnection *connection,
                                    NcmMpdStatus *status);
 
+bool ncm_mpd_connection_play(NcmMpdConnection *connection);
+bool ncm_mpd_connection_play_pos(NcmMpdConnection *connection, int32 pos);
+bool ncm_mpd_connection_play_id(NcmMpdConnection *connection, int32 id);
+bool ncm_mpd_connection_pause(NcmMpdConnection *connection, bool state);
+bool ncm_mpd_connection_toggle_pause(NcmMpdConnection *connection);
+bool ncm_mpd_connection_stop(NcmMpdConnection *connection);
+bool ncm_mpd_connection_next(NcmMpdConnection *connection);
+bool ncm_mpd_connection_previous(NcmMpdConnection *connection);
+bool ncm_mpd_connection_seek_pos(NcmMpdConnection *connection,
+                                 uint32 pos,
+                                 uint32 seconds);
+bool ncm_mpd_connection_set_repeat(NcmMpdConnection *connection, bool mode);
+bool ncm_mpd_connection_set_random(NcmMpdConnection *connection, bool mode);
+bool ncm_mpd_connection_set_single(NcmMpdConnection *connection, bool mode);
+bool ncm_mpd_connection_set_consume(NcmMpdConnection *connection, bool mode);
+bool ncm_mpd_connection_set_crossfade(NcmMpdConnection *connection,
+                                      uint32 seconds);
+bool ncm_mpd_connection_set_volume(NcmMpdConnection *connection, uint32 vol);
+bool ncm_mpd_connection_change_volume(NcmMpdConnection *connection,
+                                      int32 change);
+
 #if defined(__cplusplus)
 }
 #endif
