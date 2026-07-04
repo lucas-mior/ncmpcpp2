@@ -71,11 +71,15 @@ ncm_playlist_set(NcmPlaylist *playlist, char *path,
 
 bool
 ncm_playlist_copy(NcmPlaylist *dest, NcmPlaylist *source) {
+    if (dest == NULL) {
+        return false;
+    }
     if (source == NULL) {
         return false;
     }
     if (source->path == NULL) {
-        return false;
+        ncm_playlist_destroy(dest);
+        return true;
     }
 
     return ncm_playlist_set(dest, source->path, source->path_len,

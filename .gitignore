@@ -28,5 +28,6 @@ libcbase.la
 *.log
 c_mpd_model_test
 c_foundation_test
+c_mutable_song_test
 *.trs
 test-driver

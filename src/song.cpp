@@ -72,16 +72,12 @@ size_t calc_hash(const char *s, size_t seed = 0)
 	return seed;
 }
 
-const char *checked_uri(const mpd_song *s)
+void checkedLoadMpdSong(NcmSong *dest, const mpd_song *source)
 {
-	NcmStringView uri;
-
-	if (s == nullptr)
+	if (source == nullptr)
 		throw std::bad_alloc();
-
-	if (!ncm_mpd_song_uri_view(const_cast<mpd_song *>(s), 0, &uri))
-		throw std::runtime_error("song without uri");
-	return uri.data;
+	if (!ncm_song_from_mpd_song_copy(dest, const_cast<mpd_song *>(source)))
+		throw std::runtime_error("invalid mpd song");
 }
 
 }
@@ -91,38 +87,107 @@ std::string Song::TagsSeparator = " | ";
 
 bool Song::ShowDuplicateTags = true;
 
+Song::Song()
+: m_hash(0)
+{
+	ncm_song_init(&m_song);
+}
+
+Song::~Song()
+{
+	ncm_song_destroy(&m_song);
+}
+
+Song::Song(mpd_song *s)
+: m_hash(0)
+{
+	ncm_song_init(&m_song);
+	try
+	{
+		checkedLoadMpdSong(&m_song, s);
+		m_hash = calc_hash(c_uri());
+	}
+	catch (...)
+	{
+		if (s != nullptr)
+			mpd_song_free(s);
+		throw;
+	}
+	mpd_song_free(s);
+}
+
+Song::Song(const mpd_song *s, std::shared_ptr<mpd_entity> owner)
+: m_hash(0)
+{
+	(void)owner;
+	ncm_song_init(&m_song);
+	checkedLoadMpdSong(&m_song, s);
+	m_hash = calc_hash(c_uri());
+}
+
+Song::Song(NcmSong *song)
+: m_hash(0)
+{
+	ncm_song_init(&m_song);
+	if (!ncm_song_copy(&m_song, song))
+		throw std::runtime_error("invalid song");
+	m_hash = calc_hash(c_uri());
+}
+
+Song::Song(const Song &rhs)
+: m_hash(rhs.m_hash)
+{
+	ncm_song_init(&m_song);
+	if (!ncm_song_copy(&m_song, const_cast<NcmSong *>(&rhs.m_song)))
+		throw std::bad_alloc();
+}
+
+Song::Song(Song &&rhs) noexcept
+: m_hash(rhs.m_hash)
+{
+	ncm_song_init(&m_song);
+	ncm_song_move(&m_song, &rhs.m_song);
+	rhs.m_hash = 0;
+}
+
+Song &Song::operator=(const Song &rhs)
+{
+	if (this != &rhs)
+	{
+		if (!ncm_song_copy(&m_song, const_cast<NcmSong *>(&rhs.m_song)))
+			throw std::bad_alloc();
+		m_hash = rhs.m_hash;
+	}
+	return *this;
+}
+
+Song &Song::operator=(Song &&rhs) noexcept
+{
+	if (this != &rhs)
+	{
+		ncm_song_move(&m_song, &rhs.m_song);
+		m_hash = rhs.m_hash;
+		rhs.m_hash = 0;
+	}
+	return *this;
+}
+
 std::string Song::get(mpd_tag_type type, unsigned idx) const
 {
 	NcmStringView tag;
 
-	assert(m_song);
-	if (!ncm_mpd_song_tag_view(m_song.get(), type, idx, &tag))
+	assert(!empty());
+	if (!ncm_song_tag_view(const_cast<NcmSong *>(&m_song), type, idx, &tag))
 		return "";
 	return stringFromView(tag);
-}
-
-Song::Song(mpd_song *s)
-{
-	assert(s);
-	m_song = std::shared_ptr<mpd_song>(s, mpd_song_free);
-	m_hash = calc_hash(checked_uri(s));
-}
-
-Song::Song(const mpd_song *s, std::shared_ptr<mpd_entity> owner)
-{
-	assert(s);
-	assert(owner);
-	m_song = std::shared_ptr<mpd_song>(std::move(owner),
-	                                  const_cast<mpd_song *>(s));
-	m_hash = calc_hash(checked_uri(s));
 }
 
 std::string Song::getURI(unsigned idx) const
 {
 	NcmStringView uri;
 
-	assert(m_song);
-	if (!ncm_mpd_song_uri_view(m_song.get(), idx, &uri))
+	assert(!empty());
+	if (!ncm_song_uri_view(const_cast<NcmSong *>(&m_song), idx, &uri))
 		return "";
 	return stringFromView(uri);
 }
@@ -131,8 +196,8 @@ std::string Song::getName(unsigned idx) const
 {
 	NcmStringView name;
 
-	assert(m_song);
-	if (!ncm_mpd_song_name_view(m_song.get(), idx, &name))
+	assert(!empty());
+	if (!ncm_song_name_view(const_cast<NcmSong *>(&m_song), idx, &name))
 		return "";
 	return stringFromView(name);
 }
@@ -141,33 +206,34 @@ std::string Song::getDirectory(unsigned idx) const
 {
 	NcmStringView directory;
 
-	assert(m_song);
-	if (!ncm_mpd_song_directory_view(m_song.get(), idx, &directory))
+	assert(!empty());
+	if (!ncm_song_directory_view(const_cast<NcmSong *>(&m_song), idx,
+	                            &directory))
 		return "";
 	return stringFromView(directory);
 }
 
 std::string Song::getArtist(unsigned idx) const
 {
-	assert(m_song);
+	assert(!empty());
 	return get(MPD_TAG_ARTIST, idx);
 }
 
 std::string Song::getTitle(unsigned idx) const
 {
-	assert(m_song);
+	assert(!empty());
 	return get(MPD_TAG_TITLE, idx);
 }
 
 std::string Song::getAlbum(unsigned idx) const
 {
-	assert(m_song);
+	assert(!empty());
 	return get(MPD_TAG_ALBUM, idx);
 }
 
 std::string Song::getAlbumArtist(unsigned idx) const
 {
-	assert(m_song);
+	assert(!empty());
 	return get(MPD_TAG_ALBUM_ARTIST, idx);
 }
 
@@ -175,8 +241,9 @@ std::string Song::getTrack(unsigned idx) const
 {
 	NcmStringView track;
 
-	assert(m_song);
-	if (!ncm_mpd_song_tag_view(m_song.get(), MPD_TAG_TRACK, idx, &track))
+	assert(!empty());
+	if (!ncm_song_tag_view(const_cast<NcmSong *>(&m_song), MPD_TAG_TRACK,
+	                       idx, &track))
 		return "";
 	return formattedNumericTag(track);
 }
@@ -185,33 +252,34 @@ std::string Song::getTrackNumber(unsigned idx) const
 {
 	NcmStringView track;
 
-	assert(m_song);
-	if (!ncm_mpd_song_tag_view(m_song.get(), MPD_TAG_TRACK, idx, &track))
+	assert(!empty());
+	if (!ncm_song_tag_view(const_cast<NcmSong *>(&m_song), MPD_TAG_TRACK,
+	                       idx, &track))
 		return "";
 	return formattedTrackNumber(track);
 }
 
 std::string Song::getDate(unsigned idx) const
 {
-	assert(m_song);
+	assert(!empty());
 	return get(MPD_TAG_DATE, idx);
 }
 
 std::string Song::getGenre(unsigned idx) const
 {
-	assert(m_song);
+	assert(!empty());
 	return get(MPD_TAG_GENRE, idx);
 }
 
 std::string Song::getComposer(unsigned idx) const
 {
-	assert(m_song);
+	assert(!empty());
 	return get(MPD_TAG_COMPOSER, idx);
 }
 
 std::string Song::getPerformer(unsigned idx) const
 {
-	assert(m_song);
+	assert(!empty());
 	return get(MPD_TAG_PERFORMER, idx);
 }
 
@@ -219,21 +287,22 @@ std::string Song::getDisc(unsigned idx) const
 {
 	NcmStringView disc;
 
-	assert(m_song);
-	if (!ncm_mpd_song_tag_view(m_song.get(), MPD_TAG_DISC, idx, &disc))
+	assert(!empty());
+	if (!ncm_song_tag_view(const_cast<NcmSong *>(&m_song), MPD_TAG_DISC,
+	                       idx, &disc))
 		return "";
 	return formattedNumericTag(disc);
 }
 
 std::string Song::getComment(unsigned idx) const
 {
-	assert(m_song);
+	assert(!empty());
 	return get(MPD_TAG_COMMENT, idx);
 }
 
 std::string Song::getLength(unsigned idx) const
 {
-	assert(m_song);
+	assert(!empty());
 	if (idx > 0)
 		return "";
 	unsigned len = getDuration();
@@ -245,7 +314,7 @@ std::string Song::getLength(unsigned idx) const
 
 std::string Song::getPriority(unsigned idx) const
 {
-	assert(m_song);
+	assert(!empty());
 	if (idx > 0)
 		return "";
 	return std::to_string(getPrio());
@@ -253,7 +322,7 @@ std::string Song::getPriority(unsigned idx) const
 
 std::string MPD::Song::getTags(GetFunction f) const
 {
-	assert(m_song);
+	assert(!empty());
 	unsigned idx = 0;
 	std::string result;
 	if (ShowDuplicateTags)
@@ -294,49 +363,49 @@ std::string MPD::Song::getTags(GetFunction f) const
 
 unsigned Song::getDuration() const
 {
-	assert(m_song);
-	return mpd_song_get_duration(m_song.get());
+	assert(!empty());
+	return ncm_song_duration(const_cast<NcmSong *>(&m_song));
 }
 
 unsigned Song::getPosition() const
 {
-	assert(m_song);
-	return mpd_song_get_pos(m_song.get());
+	assert(!empty());
+	return ncm_song_position(const_cast<NcmSong *>(&m_song));
 }
 
 unsigned Song::getID() const
 {
-	assert(m_song);
-	return mpd_song_get_id(m_song.get());
+	assert(!empty());
+	return ncm_song_id(const_cast<NcmSong *>(&m_song));
 }
 
 unsigned Song::getPrio() const
 {
-	assert(m_song);
-	return mpd_song_get_prio(m_song.get());
+	assert(!empty());
+	return ncm_song_priority(const_cast<NcmSong *>(&m_song));
 }
 
 time_t Song::getMTime() const
 {
-	assert(m_song);
-	return mpd_song_get_last_modified(m_song.get());
+	assert(!empty());
+	return ncm_song_mtime(const_cast<NcmSong *>(&m_song));
 }
 
 bool Song::isFromDatabase() const
 {
-	assert(m_song);
-	return ncm_mpd_song_is_from_database(m_song.get());
+	assert(!empty());
+	return ncm_song_is_from_database(const_cast<NcmSong *>(&m_song));
 }
 
 bool Song::isStream() const
 {
-	assert(m_song);
-	return ncm_mpd_song_is_stream(m_song.get());
+	assert(!empty());
+	return ncm_song_is_stream(const_cast<NcmSong *>(&m_song));
 }
 
 bool Song::empty() const
 {
-	return m_song.get() == 0;
+	return ncm_song_empty(const_cast<NcmSong *>(&m_song));
 }
 
 std::string Song::ShowTime(unsigned length)
@@ -345,6 +414,49 @@ std::string Song::ShowTime(unsigned length)
 	int len = ncm_song_show_time(length, buffer, sizeof(buffer));
 
 	return std::string(buffer, len);
+}
+
+Song::GetFunction getFunctionFromChar(char c)
+{
+	switch (c)
+	{
+		case 'l':
+			return &Song::getLength;
+		case 'D':
+			return &Song::getDirectory;
+		case 'f':
+			return &Song::getName;
+		case 'F':
+			return &Song::getURI;
+		case 'a':
+			return &Song::getArtist;
+		case 'A':
+			return &Song::getAlbumArtist;
+		case 't':
+			return &Song::getTitle;
+		case 'b':
+			return &Song::getAlbum;
+		case 'y':
+			return &Song::getDate;
+		case 'n':
+			return &Song::getTrackNumber;
+		case 'N':
+			return &Song::getTrack;
+		case 'g':
+			return &Song::getGenre;
+		case 'c':
+			return &Song::getComposer;
+		case 'p':
+			return &Song::getPerformer;
+		case 'd':
+			return &Song::getDisc;
+		case 'C':
+			return &Song::getComment;
+		case 'P':
+			return &Song::getPriority;
+		default:
+			return nullptr;
+	}
 }
 
 }

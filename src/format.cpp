@@ -23,7 +23,7 @@
 #include <string>
 
 #include "format_impl.h"
-#include "utility/type_conversions.h"
+#include "c/ncm_type_conversions.h"
 
 namespace {
 
@@ -34,6 +34,35 @@ const unsigned properties = Format::Flags::Color
 template <typename CharT> using string = std::basic_string<CharT>;
 template <typename CharT> using iterator = typename std::basic_string<CharT>::const_iterator;
 template <typename CharT> using expressions = std::vector<Format::Expression<CharT>>;
+
+NC::Color colorFromChar(char c)
+{
+	switch (ncm_color_index_from_char(c))
+	{
+		case 0:
+			return NC::Color::Default;
+		case 1:
+			return NC::Color::Black;
+		case 2:
+			return NC::Color::Red;
+		case 3:
+			return NC::Color::Green;
+		case 4:
+			return NC::Color::Yellow;
+		case 5:
+			return NC::Color::Blue;
+		case 6:
+			return NC::Color::Magenta;
+		case 7:
+			return NC::Color::Cyan;
+		case 8:
+			return NC::Color::White;
+		case 9:
+			return NC::Color::End;
+		default:
+			throw std::runtime_error("invalid character");
+	}
+}
 
 template <typename CharT>
 std::string invalidCharacter(CharT c)
@@ -154,7 +183,7 @@ expressions<CharT> parseBracket(const string<CharT> &s,
 				if (!readValue(value, delimiter))
 					throwError(s, it, "invalid tag delimiter \"" + value + "\"");
 			}
-			auto f = charToGetFunction(*it);
+			auto f = MPD::getFunctionFromChar(*it);
 			if (f == nullptr)
 				throwError(s, it, invalidCharacter(*it));
 			result.push_back(Format::SongTag(f, delimiter));
@@ -173,7 +202,7 @@ expressions<CharT> parseBracket(const string<CharT> &s,
 			// legacy colors
 			if (flags & Format::Flags::Color && isdigit(*it))
 			{
-				auto color = charToColor(*it);
+				auto color = colorFromChar(*it);
 				result.push_back(color);
 			}
 			// new colors

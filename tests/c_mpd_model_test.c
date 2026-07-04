@@ -32,6 +32,7 @@ static void require_string(char *file, int32 line, char *name,
 static void test_directory(void);
 static void test_playlist(void);
 static void test_song_empty_copy(void);
+static void test_song_storage_copy(void);
 static void test_song_uri_helpers(void);
 static void test_song_format_helpers(void);
 static void test_item_unknown(void);
@@ -144,6 +145,51 @@ test_song_empty_copy(void) {
     return;
 }
 
+
+
+static void
+test_song_storage_copy(void) {
+    NcmSong song;
+    NcmSong copy;
+    NcmStringView view;
+
+    ncm_song_init(&song);
+    ncm_song_init(&copy);
+
+    REQUIRE(ncm_song_set_uri(&song, LIT_ARGS("dir/song.flac")));
+    REQUIRE(ncm_song_add_tag(&song, MPD_TAG_ARTIST, LIT_ARGS("One")));
+    REQUIRE(ncm_song_add_tag(&song, MPD_TAG_ARTIST, LIT_ARGS("Two")));
+    REQUIRE(ncm_song_add_tag(&song, MPD_TAG_TITLE, LIT_ARGS("Title")));
+    ncm_song_set_duration(&song, 123);
+    ncm_song_set_position(&song, 7);
+    ncm_song_set_id(&song, 8);
+    ncm_song_set_priority(&song, 9);
+    ncm_song_set_mtime(&song, 10);
+
+    REQUIRE(ncm_song_copy(&copy, &song));
+    REQUIRE(!ncm_song_empty(&copy));
+    REQUIRE(ncm_song_uri_view(&copy, 0, &view));
+    REQUIRE_STRING(view.data, view.len, "dir/song.flac");
+    REQUIRE(ncm_song_tag_view(&copy, MPD_TAG_ARTIST, 0, &view));
+    REQUIRE_STRING(view.data, view.len, "One");
+    REQUIRE(ncm_song_tag_view(&copy, MPD_TAG_ARTIST, 1, &view));
+    REQUIRE_STRING(view.data, view.len, "Two");
+    REQUIRE(ncm_song_tag_view(&copy, MPD_TAG_TITLE, 0, &view));
+    REQUIRE_STRING(view.data, view.len, "Title");
+    REQUIRE_INT((int32)ncm_song_duration(&copy), 123);
+    REQUIRE_INT((int32)ncm_song_position(&copy), 7);
+    REQUIRE_INT((int32)ncm_song_id(&copy), 8);
+    REQUIRE_INT((int32)ncm_song_priority(&copy), 9);
+    REQUIRE_INT((int32)ncm_song_mtime(&copy), 10);
+
+    REQUIRE(ncm_song_set_uri(&song, LIT_ARGS("changed.flac")));
+    REQUIRE(ncm_song_uri_view(&copy, 0, &view));
+    REQUIRE_STRING(view.data, view.len, "dir/song.flac");
+
+    ncm_song_destroy(&copy);
+    ncm_song_destroy(&song);
+    return;
+}
 
 static void
 test_song_uri_helpers(void) {
@@ -336,6 +382,7 @@ main(void) {
     test_directory();
     test_playlist();
     test_song_empty_copy();
+    test_song_storage_copy();
     test_song_uri_helpers();
     test_song_format_helpers();
     test_item_unknown();

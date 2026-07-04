@@ -31,6 +31,9 @@ typedef struct NcmMpdItem {
 void ncm_mpd_item_init(NcmMpdItem *item);
 void ncm_mpd_item_destroy(NcmMpdItem *item);
 bool ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source);
+bool ncm_mpd_item_set_song(NcmMpdItem *item, NcmSong *source);
+bool ncm_mpd_item_set_directory(NcmMpdItem *item, NcmDirectory *source);
+bool ncm_mpd_item_set_playlist(NcmMpdItem *item, NcmPlaylist *source);
 bool ncm_mpd_item_from_mpd_song_copy(NcmMpdItem *item,
                                      struct mpd_song *source);
 bool ncm_mpd_item_from_mpd_song_borrow(NcmMpdItem *item,

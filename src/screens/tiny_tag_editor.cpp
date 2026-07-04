@@ -25,6 +25,7 @@
 #include <string>
 
 #include "c/ncm_taglib.h"
+#include "c/ncm_type_conversions.h"
 
 #include "curses/menu_impl.h"
 #include "screens/browser.h"
@@ -46,6 +47,20 @@ using Global::MainHeight;
 using Global::MainStartY;
 
 TinyTagEditor *myTinyTagEditor;
+
+namespace {
+
+std::string channelsString(int channels)
+{
+	char buffer[32];
+	int32 len = ncm_channels_to_string(
+		static_cast<int32>(channels),
+		buffer,
+		static_cast<int32>(sizeof(buffer)));
+	return std::string(buffer, static_cast<size_t>(len));
+}
+
+}
 
 TinyTagEditor::TinyTagEditor()
 : Screen(NC::Menu<NC::Buffer>(0, MainStartY, COLS, MainHeight, "", Config.main_color, NC::Border()))
@@ -257,7 +272,7 @@ bool TinyTagEditor::getTags()
 	print_key_value(
 		w[6].value(),
 		"Channels",
-		channelsToString(properties.channels));
+		channelsString(properties.channels));
 	
 	unsigned pos = 8;
 	for (const SongInfo::Metadata *m = SongInfo::Tags; m->Name; ++m, ++pos)

@@ -27,6 +27,8 @@
 
 #include <string>
 
+#include "c/ncm_type_conversions.h"
+
 #ifdef HAVE_TAGLIB_H
 # include "c/ncm_taglib.h"
 # include "c/ncm_tags.h"
@@ -36,6 +38,20 @@ using Global::MainHeight;
 using Global::MainStartY;
 
 SongInfo *mySongInfo;
+
+namespace {
+
+std::string channelsString(int channels)
+{
+	char buffer[32];
+	int32 len = ncm_channels_to_string(
+		static_cast<int32>(channels),
+		buffer,
+		static_cast<int32>(sizeof(buffer)));
+	return std::string(buffer, static_cast<size_t>(len));
+}
+
+}
 
 const SongInfo::Metadata SongInfo::Tags[] =
 {
@@ -136,7 +152,7 @@ void SongInfo::PrepareSong(const MPD::Song &s)
 					"Sample rate",
 					std::to_string(properties.sample_rate) + " Hz");
 				print_key_value("Channels",
-				                channelsToString(properties.channels));
+				                channelsString(properties.channels));
 			}
 
 			NcmTagsReplayGainInfo rginfo;

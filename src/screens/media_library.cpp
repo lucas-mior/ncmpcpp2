@@ -37,7 +37,7 @@
 #include "utility/string.h"
 #include "utility/comparators.h"
 #include "utility/functional.h"
-#include "utility/type_conversions.h"
+#include "c/ncm_type_conversions.h"
 #include "title.h"
 #include "screens/screen_switcher.h"
 
@@ -191,7 +191,7 @@ MediaLibrary::MediaLibrary()
 	itsRightColStartX = itsMiddleColStartX+itsMiddleColWidth+1;
 	itsRightColWidth = COLS-itsLeftColWidth-itsMiddleColWidth-2;
 	
-	Tags = NC::Menu<PrimaryTag>(0, MainStartY, itsLeftColWidth, MainHeight, Config.titles_visibility ? tagTypeToString(Config.media_lib_primary_tag) + "s" : "", Config.main_color, NC::Border());
+	Tags = NC::Menu<PrimaryTag>(0, MainStartY, itsLeftColWidth, MainHeight, Config.titles_visibility ? std::string(ncm_tag_type_name(Config.media_lib_primary_tag)) + "s" : "", Config.main_color, NC::Border());
 	setHighlightFixes(Tags);
 	Tags.cyclicScrolling(Config.use_cyclic_scrolling);
 	Tags.centeredCursor(Config.centered_cursor);
@@ -732,7 +732,7 @@ bool MediaLibrary::addItemToPlaylist(bool play)
 			std::sort(list.begin(), list.end(), SortSongs());
 			result = addSongsToPlaylist(list.begin(), list.end(), play, -1);
 			std::string tag_type = lowercaseAscii(
-				tagTypeToString(Config.media_lib_primary_tag));
+				ncm_tag_type_name(Config.media_lib_primary_tag));
 			Statusbar::printf("Songs with %1% \"%2%\" added%3%",
 				tag_type, Tags.current()->value().tag(), withErrors(result));
 		}
@@ -926,7 +926,7 @@ void MediaLibrary::toggleColumnsMode()
 		if (Config.titles_visibility)
 		{
 			std::string item_type = lowercaseAscii(
-				tagTypeToString(Config.media_lib_primary_tag));
+				ncm_tag_type_name(Config.media_lib_primary_tag));
 			if (isAlbumOnly)
 			{
 				std::string and_mtime = Config.media_library_sort_by_mtime ? " (sorted by mtime)" : "";
@@ -966,7 +966,7 @@ void MediaLibrary::toggleSortMode()
 		if (Config.titles_visibility)
 		{
 			std::string item_type = lowercaseAscii(
-				tagTypeToString(Config.media_lib_primary_tag));
+				ncm_tag_type_name(Config.media_lib_primary_tag));
 			if (isAlbumOnly)
 			{
 				std::string and_mtime = Config.media_library_sort_by_mtime ? " (sorted by mtime)" : "";
@@ -1004,7 +1004,7 @@ void MediaLibrary::locateSong(const MPD::Song &s)
 	if (primary_tag.empty())
 	{
 		std::string item_type = lowercaseAscii(
-			tagTypeToString(Config.media_lib_primary_tag));
+			ncm_tag_type_name(Config.media_lib_primary_tag));
 		Statusbar::printf("Can't use this function because the song has no %s tag", item_type);
 		return;
 	}

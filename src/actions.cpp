@@ -58,7 +58,7 @@
 #include "utility/readline.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
-#include "utility/type_conversions.h"
+#include "c/ncm_type_conversions.h"
 #include "screens/tag_editor.h"
 #include "screens/tiny_tag_editor.h"
 #include "screens/visualizer.h"
@@ -76,6 +76,20 @@ namespace ph = std::placeholders;
 namespace {
 
 std::vector<std::shared_ptr<Actions::BaseAction>> AvailableActions;
+
+char *itemTypeName(MPD::Item::Type type)
+{
+	switch (type)
+	{
+		case MPD::Item::Type::Directory:
+			return ncm_item_type_name(NCM_ITEM_DIRECTORY);
+		case MPD::Item::Type::Song:
+			return ncm_item_type_name(NCM_ITEM_SONG);
+		case MPD::Item::Type::Playlist:
+			return ncm_item_type_name(NCM_ITEM_PLAYLIST);
+	}
+	return ncm_item_type_name(NCM_ITEM_UNKNOWN);
+}
 
 void populateActions();
 
@@ -735,7 +749,7 @@ void DeleteBrowserItems::run()
 		myBrowser->remove(item->value());
 		const char msg[] = "Deleted %1% \"%2%\"";
 		Statusbar::printf(msg,
-			itemTypeToString(item->value().type()),
+			itemTypeName(item->value().type()),
 			Utf8::shorten(get_name(item->value()), COLS-const_strlen(msg))
 		);
 	}
@@ -1437,7 +1451,7 @@ void EditLibraryTag::run()
 	std::string new_tag;
 	{
 		Statusbar::ScopedLock slock;
-		Statusbar::put() << NC::Format::Bold << tagTypeToString(Config.media_lib_primary_tag) << NC::Format::NoBold << ": ";
+		Statusbar::put() << NC::Format::Bold << ncm_tag_type_name(Config.media_lib_primary_tag) << NC::Format::NoBold << ": ";
 		new_tag = wFooter->prompt(myLibrary->Tags.current()->value().tag());
 	}
 	if (!new_tag.empty() && new_tag != myLibrary->Tags.current()->value().tag())
@@ -1445,7 +1459,7 @@ void EditLibraryTag::run()
 		Statusbar::print("Updating tags...");
 		Mpd.StartSearch(true);
 		Mpd.AddSearch(Config.media_lib_primary_tag, myLibrary->Tags.current()->value().tag());
-		MPD::MutableSong::SetFunction set = tagTypeToSetFunction(Config.media_lib_primary_tag);
+		MPD::MutableSong::SetFunction set = MPD::setFunctionFromTagType(Config.media_lib_primary_tag);
 		assert(set);
 		bool success = true;
 		std::string dir_to_update;
@@ -2236,8 +2250,8 @@ void AddRandomItems::run()
 	std::string tag_type_str ;
 	if (rnd_type != 's')
 	{
-		tag_type = charToTagType(rnd_type);
-		tag_type_str = lowercaseAscii(tagTypeToString(tag_type));
+		tag_type = ncm_char_to_tag_type(rnd_type);
+		tag_type_str = lowercaseAscii(ncm_tag_type_name(tag_type));
 	}
 	else
 		tag_type_str = "song";
@@ -2322,11 +2336,11 @@ void ToggleLibraryTagType::run()
 		<< "] ";
 		tag_type = Statusbar::Helpers::promptReturnOneOf({'a', 'A', 'y', 'g', 'c', 'p'});
 	}
-	mpd_tag_type new_tagitem = charToTagType(tag_type);
+	mpd_tag_type new_tagitem = ncm_char_to_tag_type(tag_type);
 	if (new_tagitem != Config.media_lib_primary_tag)
 	{
 		Config.media_lib_primary_tag = new_tagitem;
-		std::string item_type = tagTypeToString(Config.media_lib_primary_tag);
+		std::string item_type = ncm_tag_type_name(Config.media_lib_primary_tag);
 		myLibrary->Tags.setTitle(Config.titles_visibility ? item_type + "s" : "");
 		myLibrary->Tags.reset();
 		item_type = lowercaseAscii(item_type);
