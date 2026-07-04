@@ -52,6 +52,19 @@ typedef struct NcmMpdStringList {
     int32 capacity;
 } NcmMpdStringList;
 
+typedef struct NcmMpdOutput {
+    uint32 id;
+    char *name;
+    int32 name_len;
+    bool enabled;
+} NcmMpdOutput;
+
+typedef struct NcmMpdOutputList {
+    NcmMpdOutput *items;
+    int32 count;
+    int32 capacity;
+} NcmMpdOutputList;
+
 typedef struct NcmMpdStatus {
     int32 volume;
     bool repeat;
@@ -106,6 +119,9 @@ void ncm_mpd_item_list_clear(NcmMpdItemList *list);
 void ncm_mpd_string_list_init(NcmMpdStringList *list);
 void ncm_mpd_string_list_destroy(NcmMpdStringList *list);
 void ncm_mpd_string_list_clear(NcmMpdStringList *list);
+void ncm_mpd_output_list_init(NcmMpdOutputList *list);
+void ncm_mpd_output_list_destroy(NcmMpdOutputList *list);
+void ncm_mpd_output_list_clear(NcmMpdOutputList *list);
 
 bool ncm_mpd_connection_get_current_song(NcmMpdConnection *connection,
                                          NcmSong *song);
@@ -171,6 +187,14 @@ bool ncm_mpd_connection_update_database(NcmMpdConnection *connection,
 bool ncm_mpd_connection_rescan_database(NcmMpdConnection *connection,
                                         char *path,
                                         uint32 *id);
+bool ncm_mpd_connection_get_outputs(NcmMpdConnection *connection,
+                                    NcmMpdOutputList *outputs);
+bool ncm_mpd_connection_enable_output(NcmMpdConnection *connection,
+                                      uint32 id);
+bool ncm_mpd_connection_disable_output(NcmMpdConnection *connection,
+                                       uint32 id);
+bool ncm_mpd_connection_toggle_output(NcmMpdConnection *connection,
+                                      uint32 id);
 
 bool ncm_mpd_connection_play(NcmMpdConnection *connection);
 bool ncm_mpd_connection_play_pos(NcmMpdConnection *connection, int32 pos);

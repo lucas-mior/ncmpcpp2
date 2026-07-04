@@ -134,6 +134,26 @@ private:
 	NcmMpdStringList m_list;
 };
 
+struct NcmMpdOutputListGuard
+{
+	NcmMpdOutputListGuard()
+	{
+		ncm_mpd_output_list_init(&m_list);
+	}
+	~NcmMpdOutputListGuard()
+	{
+		ncm_mpd_output_list_destroy(&m_list);
+	}
+
+	NcmMpdOutputList *get()
+	{
+		return &m_list;
+	}
+
+private:
+	NcmMpdOutputList m_list;
+};
+
 std::vector<MPD::Song> songVectorFromList(NcmMpdSongList *list)
 {
 	std::vector<MPD::Song> result;
@@ -176,6 +196,16 @@ std::vector<std::string> stringVectorFromList(NcmMpdStringList *list)
 		result.emplace_back(list->items[i].value,
 		                    static_cast<size_t>(list->items[i].value_len));
 	}
+	return result;
+}
+
+std::vector<MPD::Output> outputVectorFromList(NcmMpdOutputList *list)
+{
+	std::vector<MPD::Output> result;
+
+	result.reserve(static_cast<size_t>(list->count));
+	for (int32 i = 0; i < list->count; i += 1)
+		result.emplace_back(&list->items[i]);
 	return result;
 }
 
@@ -1318,24 +1348,28 @@ SongIterator Connection::GetSongs(const std::string &directory)
 
 OutputIterator Connection::GetOutputs()
 {
+	NcmMpdOutputListGuard outputs;
+
 	prechecksNoCommandsList();
-	mpd_send_outputs(rawConnection());
-	checkErrors();
-	return OutputIterator(rawConnection(), defaultFetcher<Output>(mpd_recv_output));
+	if (!ncm_mpd_connection_get_outputs(&m_connection, outputs.get()))
+		throwConnectionError();
+	return OutputIterator(outputVectorFromList(outputs.get()));
 }
 
 void Connection::EnableOutput(int id)
 {
 	prechecksNoCommandsList();
-	mpd_run_enable_output(rawConnection(), id);
-	checkErrors();
+	if (!ncm_mpd_connection_enable_output(&m_connection,
+	                                      static_cast<uint32>(id)))
+		throwConnectionError();
 }
 
 void Connection::DisableOutput(int id)
 {
 	prechecksNoCommandsList();
-	mpd_run_disable_output(rawConnection(), id);
-	checkErrors();
+	if (!ncm_mpd_connection_disable_output(&m_connection,
+	                                       static_cast<uint32>(id)))
+		throwConnectionError();
 }
 
 StringIterator Connection::GetURLHandlers()

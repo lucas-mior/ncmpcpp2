@@ -26,6 +26,7 @@
 #include <random>
 #include <set>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 #include <mpd/client.h>
@@ -261,9 +262,16 @@ private:
 
 struct Output
 {
-	Output() { }
-	Output(mpd_output *output)
-	: m_output(output, mpd_output_free)
+	Output()
+	: m_id(0)
+	, m_enabled(false)
+	, m_empty(true)
+	{ }
+	Output(NcmMpdOutput *output)
+	: m_id(output->id)
+	, m_name(output->name, static_cast<size_t>(output->name_len))
+	, m_enabled(output->enabled)
+	, m_empty(false)
 	{ }
 
 	bool operator==(const Output &rhs) const
@@ -284,24 +292,27 @@ struct Output
 
 	unsigned id() const
 	{
-		assert(m_output.get() != nullptr);
-		return mpd_output_get_id(m_output.get());
+		assert(!empty());
+		return static_cast<unsigned>(m_id);
 	}
 	const char *name() const
 	{
-		assert(m_output.get() != nullptr);
-		return mpd_output_get_name(m_output.get());
+		assert(!empty());
+		return m_name.c_str();
 	}
 	bool enabled() const
 	{
-		assert(m_output.get() != nullptr);
-		return mpd_output_get_enabled(m_output.get());
+		assert(!empty());
+		return m_enabled;
 	}
 
-	bool empty() const { return m_output.get() == nullptr; }
+	bool empty() const { return m_empty; }
 
 private:
-	std::shared_ptr<mpd_output> m_output;
+	uint32 m_id;
+	std::string m_name;
+	bool m_enabled;
+	bool m_empty;
 };
 
 template <typename ObjectT>
