@@ -97,6 +97,18 @@ bool ncm_mpd_connection_is_connected(NcmMpdConnection *connection);
 struct mpd_connection *ncm_mpd_connection_mpd(
     NcmMpdConnection *connection);
 int32 ncm_mpd_connection_fd(NcmMpdConnection *connection);
+bool ncm_mpd_connection_get_fd(NcmMpdConnection *connection, int32 *fd);
+bool ncm_mpd_connection_set_timeout(NcmMpdConnection *connection,
+                                    uint32 timeout_ms);
+bool ncm_mpd_connection_idle(NcmMpdConnection *connection,
+                             enum mpd_idle events,
+                             enum mpd_idle *out_events);
+bool ncm_mpd_connection_noidle(NcmMpdConnection *connection);
+bool ncm_mpd_connection_send_idle(NcmMpdConnection *connection,
+                                  enum mpd_idle events);
+bool ncm_mpd_connection_recv_idle(NcmMpdConnection *connection,
+                                  bool disable_timeout,
+                                  enum mpd_idle *out_events);
 bool ncm_mpd_connection_check_error(NcmMpdConnection *connection);
 char *ncm_mpd_connection_error(NcmMpdConnection *connection);
 void ncm_mpd_connection_clear_error(NcmMpdConnection *connection);
