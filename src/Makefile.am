@@ -41,6 +41,7 @@ ncmpcpp_SOURCES = \
 	screens/tiny_tag_editor.cpp \
 	screens/visualizer.cpp \
 	utility/comparators.cpp \
+	utility/html.cpp \
 	utility/option_parser.cpp \
 	utility/sample_buffer.cpp \
 	utility/string.cpp \
@@ -121,6 +122,7 @@ noinst_HEADERS = \
 	utility/const.h \
 	utility/conversion.h \
 	utility/functional.h \
+	utility/html.h \
 	utility/option_parser.h \
 	utility/readline.h \
 	utility/regex.h \
