@@ -1,5 +1,6 @@
-bin_PROGRAMS = ncmpcpp
-ncmpcpp_SOURCES = \
+noinst_LTLIBRARIES = libncmpcpp_c.la
+
+libncmpcpp_c_la_SOURCES = \
 	c/ncm_base.c \
 	c/ncm_directory.c \
 	c/ncm_error.c \
@@ -14,7 +15,10 @@ ncmpcpp_SOURCES = \
 	c/ncm_taglib.c \
 	c/ncm_tags.c \
 	c/ncm_type_conversions.c \
-	c/ncm_utf8.c \
+	c/ncm_utf8.c
+
+bin_PROGRAMS = ncmpcpp
+ncmpcpp_SOURCES = \
 	curses/formatted_color.cpp \
 	curses/scrollpad.cpp \
 	curses/window.cpp \
@@ -70,7 +74,7 @@ AM_CPPFLAGS= $(all_includes)
 
 # the library search path.
 ncmpcpp_LDFLAGS = $(all_libraries)
-ncmpcpp_LDADD = ../cbase/libcbase.la
+ncmpcpp_LDADD = libncmpcpp_c.la ../cbase/libcbase.la
 noinst_HEADERS = \
 	c/ncm_base.h \
 	c/ncm_defs.h \
