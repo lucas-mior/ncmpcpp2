@@ -496,11 +496,11 @@ struct Connection
 	
 	unsigned Version() const;
 	
-	int GetFD() const { return m_fd; }
+	int GetFD() const;
 	
 	void SetHostname(const std::string &);
 	void SetPort(int port) { m_port = port; }
-	void SetTimeout(int timeout) { m_timeout = timeout; }
+	void SetTimeout(int timeout);
 	void SetPassword(const std::string &password) { m_password = password; }
 	void SendPassword();
 	

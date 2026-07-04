@@ -671,6 +671,24 @@ unsigned Connection::Version() const
 	return Connected() ? mpd_connection_get_server_version(rawConnection())[1] : 0;
 }
 
+int Connection::GetFD() const
+{
+	int32 fd = -1;
+	ncm_mpd_connection_get_fd(
+		const_cast<NcmMpdConnection *>(&m_connection), &fd);
+	return fd;
+}
+
+void Connection::SetTimeout(int timeout)
+{
+	m_timeout = timeout;
+	if (Connected())
+	{
+		ncm_mpd_connection_set_timeout(
+			&m_connection, static_cast<uint32>(timeout * 1000));
+	}
+}
+
 void Connection::SetHostname(const std::string &host)
 {
 	size_t at = host.find("@");
@@ -697,8 +715,8 @@ void Connection::idle()
 	checkConnection();
 	if (!m_idle)
 	{
-		mpd_send_idle(rawConnection());
-		checkErrors();
+		if (!ncm_mpd_connection_send_idle(&m_connection, (enum mpd_idle)0))
+			throwConnectionError();
 	}
 	m_idle = true;
 }
@@ -706,15 +724,14 @@ void Connection::idle()
 int Connection::noidle()
 {
 	checkConnection();
-	int flags = 0;
-	if (m_idle && mpd_send_noidle(rawConnection()))
+	enum mpd_idle flags = (enum mpd_idle)0;
+	if (m_idle && ncm_mpd_connection_noidle(&m_connection))
 	{
 		m_idle = false;
-		flags = mpd_recv_idle(rawConnection(), true);
-		mpd_response_finish(rawConnection());
-		checkErrors();
+		if (!ncm_mpd_connection_recv_idle(&m_connection, true, &flags))
+			throwConnectionError();
 	}
-	return flags;
+	return static_cast<int>(flags);
 }
 
 void Connection::setNoidleCallback(NoidleCallback callback)
