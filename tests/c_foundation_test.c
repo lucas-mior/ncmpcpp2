@@ -199,10 +199,17 @@ test_path(void) {
 
 static void
 test_string(void) {
+    NcmBuffer shared;
+    NcmBuffer enclosed;
     NcmBuffer escaped;
     char lowercase[] = "AbC-123-Ç";
     char invalid[] = "a/b:c*d?e";
+    char win32_filename[] = "a/b:c*d?e";
+    char unix_filename[] = "a/b:c*d?e";
     int32 invalid_len;
+    int32 win32_filename_len;
+    int32 unix_filename_len;
+    int32 pos;
 
     ncm_string_lowercase_ascii(lowercase, STRLIT_LEN("AbC-123-Ç"));
     REQUIRE_STRING(lowercase, STRLIT_LEN("abc-123-Ç"), "abc-123-Ç");
@@ -216,9 +223,60 @@ test_string(void) {
     REQUIRE_INT(ncm_string_find_char(LIT_ARGS("abc"), 'b'), 1);
     REQUIRE_INT(ncm_string_find_char(LIT_ARGS("abc"), 'z'), -1);
 
+    shared = ncm_string_shared_directory(LIT_ARGS("/music/a"),
+                                         LIT_ARGS("/music/b"));
+    require_buffer_string((char *)"shared directory", &shared,
+                          LIT_ARGS("/music"));
+    ncm_buffer_destroy(&shared);
+
+    shared = ncm_string_shared_directory(LIT_ARGS("/a"), LIT_ARGS("/b"));
+    require_buffer_string((char *)"shared root slash", &shared,
+                          LIT_ARGS(""));
+    ncm_buffer_destroy(&shared);
+
+    shared = ncm_string_shared_directory(LIT_ARGS("relative/a"),
+                                         LIT_ARGS("other/b"));
+    require_buffer_string((char *)"shared fallback", &shared, LIT_ARGS("/"));
+    ncm_buffer_destroy(&shared);
+
+    pos = 0;
+    enclosed = ncm_string_get_enclosed(LIT_ARGS("a[bc\\]d]e"),
+                                       '[', ']', 0, &pos);
+    require_buffer_string((char *)"escaped enclosed", &enclosed,
+                          LIT_ARGS("bc]d"));
+    REQUIRE_INT(pos, 8);
+    ncm_buffer_destroy(&enclosed);
+
+    enclosed = ncm_string_get_enclosed(LIT_ARGS("x[one] [two]"),
+                                       '[', ']', 6, &pos);
+    require_buffer_string((char *)"enclosed after start", &enclosed,
+                          LIT_ARGS("two"));
+    REQUIRE_INT(pos, 12);
+    ncm_buffer_destroy(&enclosed);
+
+    enclosed = ncm_string_get_enclosed(LIT_ARGS("a[bc"), '[', ']', 0, &pos);
+    require_buffer_string((char *)"missing close", &enclosed, LIT_ARGS(""));
+    REQUIRE_INT(pos, 4);
+    ncm_buffer_destroy(&enclosed);
+
+    enclosed = ncm_string_get_enclosed(LIT_ARGS("abc"), '[', ']', 0, &pos);
+    require_buffer_string((char *)"missing open", &enclosed, LIT_ARGS(""));
+    REQUIRE_INT(pos, -1);
+    ncm_buffer_destroy(&enclosed);
+
     invalid_len = STRLIT_LEN("a/b:c*d?e");
     ncm_string_remove_chars(invalid, &invalid_len, LIT_ARGS("/:*?"));
     REQUIRE_STRING(invalid, invalid_len, "abcde");
+
+    win32_filename_len = STRLIT_LEN("a/b:c*d?e");
+    ncm_string_remove_invalid_filename_chars(win32_filename,
+                                             &win32_filename_len, true);
+    REQUIRE_STRING(win32_filename, win32_filename_len, "abcde");
+
+    unix_filename_len = STRLIT_LEN("a/b:c*d?e");
+    ncm_string_remove_invalid_filename_chars(unix_filename,
+                                             &unix_filename_len, false);
+    REQUIRE_STRING(unix_filename, unix_filename_len, "ab:c*d?e");
 
     ncm_buffer_init(&escaped);
     ncm_string_append_shell_escaped_single_quotes(&escaped,
