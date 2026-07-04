@@ -42,11 +42,10 @@ ServerInfo::ServerInfo()
 	                           this,
 	                           COLS,
 	                           LINES,
+	                           MainStartY,
 	                           MainHeight);
-	w = NC::Scrollpad(nc_server_info_screen_start_x(&m_screen, COLS),
-	                  nc_server_info_screen_start_y(&m_screen,
-	                                                MainStartY,
-	                                                MainHeight),
+	w = NC::Scrollpad(nc_server_info_screen_start_x(&m_screen),
+	                  nc_server_info_screen_start_y(&m_screen),
 	                  nc_server_info_screen_width(&m_screen),
 	                  nc_server_info_screen_height(&m_screen),
 	                  "MPD server info",
@@ -114,16 +113,14 @@ void ServerInfo::resize()
 	setDimensions();
 	w.resize(nc_server_info_screen_width(&m_screen),
 	         nc_server_info_screen_height(&m_screen));
-	w.moveTo(nc_server_info_screen_start_x(&m_screen, COLS),
-	         nc_server_info_screen_start_y(&m_screen,
-	                                       MainStartY,
-	                                       MainHeight));
+	w.moveTo(nc_server_info_screen_start_x(&m_screen),
+	         nc_server_info_screen_start_y(&m_screen));
 	if (previousScreen() && previousScreen()->hasToBeResized) // resize background window
 	{
 		previousScreen()->resize();
 		previousScreen()->refresh();
 	}
-	nc_screen_set_has_to_be_resized(&m_screen.base, false);
+	nc_screen_set_has_to_be_resized(nc_server_info_screen_base(&m_screen), false);
 	hasToBeResized = false;
 }
 
@@ -188,5 +185,6 @@ void ServerInfo::setDimensions()
 	nc_server_info_screen_set_dimensions(&m_screen,
 	                                     COLS,
 	                                     LINES,
+	                                     MainStartY,
 	                                     MainHeight);
 }
