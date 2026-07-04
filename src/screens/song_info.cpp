@@ -70,16 +70,71 @@ const SongInfo::Metadata SongInfo::Tags[] =
 };
 
 SongInfo::SongInfo()
-: Screen(NC::Scrollpad(0, MainStartY, COLS, MainHeight, "", Config.main_color, NC::Border()))
-{ }
+: w(0, MainStartY, COLS, MainHeight, "", Config.main_color, NC::Border())
+{
+	NcScreenCallbacks callbacks = {0};
+
+	nc_song_info_screen_init(&m_screen,
+	                         callbacks,
+	                         this,
+	                         0,
+	                         COLS,
+	                         MainStartY,
+	                         MainHeight);
+}
+
+bool SongInfo::isActiveWindow(const NC::Window &w_) const
+{
+	return &w == &w_;
+}
+
+NC::Window *SongInfo::activeWindow()
+{
+	return &w;
+}
+
+const NC::Window *SongInfo::activeWindow() const
+{
+	return &w;
+}
+
+void SongInfo::refresh()
+{
+	w.display();
+}
+
+void SongInfo::refreshWindow()
+{
+	w.display();
+}
+
+void SongInfo::scroll(NC::Scroll where)
+{
+	w.scroll(where);
+}
 
 void SongInfo::resize()
 {
-	size_t x_offset, width;
+	size_t x_offset;
+	size_t width;
+
 	getWindowResizeParams(x_offset, width);
-	w.resize(width, MainHeight);
-	w.moveTo(x_offset, MainStartY);
-	hasToBeResized = 0;
+	nc_song_info_screen_set_geometry(&m_screen,
+	                                 static_cast<int64>(x_offset),
+	                                 static_cast<int64>(width),
+	                                 MainStartY,
+	                                 MainHeight);
+	w.resize(nc_song_info_screen_width(&m_screen),
+	         nc_song_info_screen_height(&m_screen));
+	w.moveTo(nc_song_info_screen_start_x(&m_screen),
+	         nc_song_info_screen_start_y(&m_screen));
+	nc_screen_set_has_to_be_resized(&m_screen.base, false);
+	hasToBeResized = false;
+}
+
+int SongInfo::windowTimeout()
+{
+	return defaultWindowTimeout;
 }
 
 std::string SongInfo::title()
@@ -107,6 +162,11 @@ void SongInfo::switchTo()
 	}
 	else
 		switchToPreviousScreen();
+}
+
+void SongInfo::mouseButtonPressed(MEVENT me)
+{
+	scrollpadMouseButtonPressed(w, me);
 }
 
 void SongInfo::PrepareSong(const MPD::Song &s)
