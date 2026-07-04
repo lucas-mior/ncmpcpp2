@@ -2,6 +2,7 @@
 #define NCM_SONG_H
 
 #include <mpd/tag.h>
+#include <time.h>
 
 #include "c/ncm_defs.h"
 
@@ -16,22 +17,61 @@ enum NcmSongOwnership {
     NCM_SONG_OWNED,
 };
 
+typedef struct NcmSongTag {
+    char *value;
+    int32 value_len;
+    enum mpd_tag_type type;
+} NcmSongTag;
+
 typedef struct NcmSong {
-    struct mpd_song *song;
-    enum NcmSongOwnership ownership;
+    char *uri;
+    int32 uri_len;
+
+    NcmSongTag *tags;
+    int32 tags_len;
+    int32 tags_cap;
+
+    uint32 duration;
+    uint32 position;
+    uint32 id;
+    uint32 priority;
+    time_t last_modified;
 } NcmSong;
 
 void ncm_song_init(NcmSong *song);
 void ncm_song_destroy(NcmSong *song);
+void ncm_song_move(NcmSong *dest, NcmSong *source);
 bool ncm_song_copy(NcmSong *dest, NcmSong *source);
 bool ncm_song_from_mpd_song(NcmSong *dest, struct mpd_song *source);
 bool ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source);
 bool ncm_song_borrow_mpd_song(NcmSong *dest, struct mpd_song *source);
+bool ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len);
+bool ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
+                      char *value, int32 value_len);
+void ncm_song_set_duration(NcmSong *song, uint32 duration);
+void ncm_song_set_position(NcmSong *song, uint32 position);
+void ncm_song_set_id(NcmSong *song, uint32 id);
+void ncm_song_set_priority(NcmSong *song, uint32 priority);
+void ncm_song_set_mtime(NcmSong *song, time_t last_modified);
+uint32 ncm_song_duration(NcmSong *song);
+uint32 ncm_song_position(NcmSong *song);
+uint32 ncm_song_id(NcmSong *song);
+uint32 ncm_song_priority(NcmSong *song);
+time_t ncm_song_mtime(NcmSong *song);
 bool ncm_song_owns_mpd_song(NcmSong *song);
 bool ncm_song_borrows_mpd_song(NcmSong *song);
 bool ncm_song_empty(NcmSong *song);
 struct mpd_song *ncm_song_mpd_song(NcmSong *song);
 struct mpd_song *ncm_song_dup_mpd_song(NcmSong *song);
+
+bool ncm_song_tag_view(NcmSong *song, enum mpd_tag_type tag,
+                       uint32 idx, NcmStringView *view);
+bool ncm_song_uri_view(NcmSong *song, uint32 idx, NcmStringView *view);
+bool ncm_song_name_view(NcmSong *song, uint32 idx, NcmStringView *view);
+bool ncm_song_directory_view(NcmSong *song, uint32 idx,
+                             NcmStringView *view);
+bool ncm_song_is_from_database(NcmSong *song);
+bool ncm_song_is_stream(NcmSong *song);
 
 bool ncm_song_name_from_uri(char *uri, int32 uri_len, NcmStringView *view);
 bool ncm_song_directory_from_uri(char *uri, int32 uri_len,

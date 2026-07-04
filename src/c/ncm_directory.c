@@ -71,11 +71,15 @@ ncm_directory_set(NcmDirectory *directory, char *path,
 
 bool
 ncm_directory_copy(NcmDirectory *dest, NcmDirectory *source) {
+    if (dest == NULL) {
+        return false;
+    }
     if (source == NULL) {
         return false;
     }
     if (source->path == NULL) {
-        return false;
+        ncm_directory_destroy(dest);
+        return true;
     }
 
     return ncm_directory_set(dest, source->path, source->path_len,

@@ -91,6 +91,8 @@ private:
 	NcmMutableSong m_mutable;
 };
 
+MutableSong::SetFunction setFunctionFromTagType(mpd_tag_type tag);
+
 }
 
 #endif // NCMPCPP_EDITABLE_SONG_H

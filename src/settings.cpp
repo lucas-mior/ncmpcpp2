@@ -29,7 +29,6 @@
 #include "settings.h"
 #include "utility/conversion.h"
 #include "utility/option_parser.h"
-#include "utility/type_conversions.h"
 
 namespace ph = std::placeholders;
 
@@ -128,7 +127,7 @@ Format::AST<char> columns_to_format(const std::vector<Column> &columns)
 		Format::FirstOf<char> first_of;
 		for (const auto &type : column->type)
 		{
-			auto f = charToGetFunction(type);
+			auto f = MPD::getFunctionFromChar(type);
 			assert(f != nullptr);
 			first_of.base().push_back(f);
 		}

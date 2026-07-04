@@ -29,7 +29,6 @@
 #include "song_list.h"
 #include "status.h"
 #include "utility/string.h"
-#include "utility/type_conversions.h"
 #include "utility/utf8.h"
 
 enum ReapplyFilter { Yes, No };

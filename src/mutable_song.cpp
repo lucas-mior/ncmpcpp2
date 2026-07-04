@@ -438,4 +438,35 @@ enum NcmTagsField MutableSong::fieldForSetFunction(SetFunction set)
 	return NCM_TAGS_FIELD_LAST;
 }
 
+MutableSong::SetFunction setFunctionFromTagType(mpd_tag_type tag)
+{
+	switch (tag)
+	{
+		case MPD_TAG_ARTIST:
+			return &MutableSong::setArtist;
+		case MPD_TAG_ALBUM:
+			return &MutableSong::setAlbum;
+		case MPD_TAG_ALBUM_ARTIST:
+			return &MutableSong::setAlbumArtist;
+		case MPD_TAG_TITLE:
+			return &MutableSong::setTitle;
+		case MPD_TAG_TRACK:
+			return &MutableSong::setTrack;
+		case MPD_TAG_GENRE:
+			return &MutableSong::setGenre;
+		case MPD_TAG_DATE:
+			return &MutableSong::setDate;
+		case MPD_TAG_COMPOSER:
+			return &MutableSong::setComposer;
+		case MPD_TAG_PERFORMER:
+			return &MutableSong::setPerformer;
+		case MPD_TAG_COMMENT:
+			return &MutableSong::setComment;
+		case MPD_TAG_DISC:
+			return &MutableSong::setDisc;
+		default:
+			return nullptr;
+	}
+}
+
 }

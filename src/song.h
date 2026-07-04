@@ -41,20 +41,17 @@ struct Song
 
 	typedef std::string (Song::*GetFunction)(unsigned) const;
 	
-	Song() : m_hash(0) { }
-	virtual ~Song() { }
+	Song();
+	virtual ~Song();
 	
 	Song(mpd_song *s);
 	Song(const mpd_song *s, std::shared_ptr<mpd_entity> owner);
+	Song(NcmSong *song);
 
-	Song(const Song &rhs) : m_song(rhs.m_song), m_hash(rhs.m_hash) { }
-	Song(Song &&rhs) : m_song(std::move(rhs.m_song)), m_hash(rhs.m_hash) { }
-	Song &operator=(Song rhs)
-	{
-		m_song = std::move(rhs.m_song);
-		m_hash = rhs.m_hash;
-		return *this;
-	}
+	Song(const Song &rhs);
+	Song(Song &&rhs) noexcept;
+	Song &operator=(const Song &rhs);
+	Song &operator=(Song &&rhs) noexcept;
 	
 	std::string get(mpd_tag_type type, unsigned idx = 0) const;
 	
@@ -103,10 +100,15 @@ struct Song
 	const char *c_uri() const
 	{
 		NcmStringView uri;
-		if (ncm_mpd_song_uri_view(m_song.get(), 0, &uri))
+		if (ncm_song_uri_view(const_cast<NcmSong *>(&m_song), 0, &uri))
 			return uri.data;
 		else
 			return "";
+	}
+
+	NcmSong *cSong()
+	{
+		return &m_song;
 	}
 
 	static std::string ShowTime(unsigned length);
@@ -116,11 +118,12 @@ struct Song
 	static bool ShowDuplicateTags;
 
 private:
-	std::shared_ptr<mpd_song> m_song;
+	NcmSong m_song;
 	size_t m_hash;
 };
+
+Song::GetFunction getFunctionFromChar(char c);
 
 }
 
 #endif // NCMPCPP_SONG_H
-
