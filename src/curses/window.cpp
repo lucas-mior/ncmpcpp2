@@ -542,6 +542,16 @@ void Window::syncFromC()
 		m_title.clear();
 }
 
+NcWindow *Window::cWindow()
+{
+	return &m_impl;
+}
+
+const NcWindow *Window::cWindow() const
+{
+	return &m_impl;
+}
+
 void Window::setColor(Color c)
 {
 	nc_window_set_color(&m_impl, toNcColor(c));
