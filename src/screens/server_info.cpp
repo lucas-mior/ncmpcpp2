@@ -35,8 +35,53 @@ ServerInfo *myServerInfo;
 ServerInfo::ServerInfo()
 : m_timer()
 {
-	SetDimensions();
-	w = NC::Scrollpad((COLS-m_width)/2, (MainHeight-m_height)/2+MainStartY, m_width, m_height, "MPD server info", Config.main_color, Config.window_border);
+	NcScreenCallbacks callbacks = {0};
+
+	nc_server_info_screen_init(&m_screen,
+	                           callbacks,
+	                           this,
+	                           COLS,
+	                           LINES,
+	                           MainHeight);
+	w = NC::Scrollpad(nc_server_info_screen_start_x(&m_screen, COLS),
+	                  nc_server_info_screen_start_y(&m_screen,
+	                                                MainStartY,
+	                                                MainHeight),
+	                  nc_server_info_screen_width(&m_screen),
+	                  nc_server_info_screen_height(&m_screen),
+	                  "MPD server info",
+	                  Config.main_color,
+	                  Config.window_border);
+}
+
+bool ServerInfo::isActiveWindow(const NC::Window &w_) const
+{
+	return &w == &w_;
+}
+
+NC::Window *ServerInfo::activeWindow()
+{
+	return &w;
+}
+
+const NC::Window *ServerInfo::activeWindow() const
+{
+	return &w;
+}
+
+void ServerInfo::refresh()
+{
+	w.display();
+}
+
+void ServerInfo::refreshWindow()
+{
+	w.display();
+}
+
+void ServerInfo::scroll(NC::Scroll where)
+{
+	w.scroll(where);
 }
 
 void ServerInfo::switchTo()
@@ -66,15 +111,25 @@ void ServerInfo::switchTo()
 
 void ServerInfo::resize()
 {
-	SetDimensions();
-	w.resize(m_width, m_height);
-	w.moveTo((COLS-m_width)/2, (MainHeight-m_height)/2+MainStartY);
+	setDimensions();
+	w.resize(nc_server_info_screen_width(&m_screen),
+	         nc_server_info_screen_height(&m_screen));
+	w.moveTo(nc_server_info_screen_start_x(&m_screen, COLS),
+	         nc_server_info_screen_start_y(&m_screen,
+	                                       MainStartY,
+	                                       MainHeight));
 	if (previousScreen() && previousScreen()->hasToBeResized) // resize background window
 	{
 		previousScreen()->resize();
 		previousScreen()->refresh();
 	}
-	hasToBeResized = 0;
+	nc_screen_set_has_to_be_resized(&m_screen.base, false);
+	hasToBeResized = false;
+}
+
+int ServerInfo::windowTimeout()
+{
+	return defaultWindowTimeout;
 }
 
 std::string ServerInfo::title()
@@ -98,7 +153,8 @@ void ServerInfo::update()
 	w << NC::Format::Bold << "Uptime: " << NC::Format::NoBold;
 	ShowTime(w, stats.uptime(), 1);
 	w << '\n';
-	w << NC::Format::Bold << "Time playing: " << NC::Format::NoBold << MPD::Song::ShowTime(stats.playTime()) << '\n';
+	w << NC::Format::Bold << "Time playing: " << NC::Format::NoBold
+	  << MPD::Song::ShowTime(stats.playTime()) << '\n';
 	w << '\n';
 	w << NC::Format::Bold << "Total playtime: " << NC::Format::NoBold;
 	ShowTime(w, stats.dbPlayTime(), 1);
@@ -107,7 +163,8 @@ void ServerInfo::update()
 	w << NC::Format::Bold << "Album names: " << NC::Format::NoBold << stats.albums() << '\n';
 	w << NC::Format::Bold << "Songs in database: " << NC::Format::NoBold << stats.songs() << '\n';
 	w << '\n';
-	w << NC::Format::Bold << "Last DB update: " << NC::Format::NoBold << Timestamp(stats.dbUpdateTime()) << '\n';
+	w << NC::Format::Bold << "Last DB update: " << NC::Format::NoBold
+	  << Timestamp(stats.dbUpdateTime()) << '\n';
 	w << '\n';
 	w << NC::Format::Bold << "URL Handlers:" << NC::Format::NoBold;
 	for (auto it = m_url_handlers.begin(); it != m_url_handlers.end(); ++it)
@@ -121,9 +178,15 @@ void ServerInfo::update()
 	w.refresh();
 }
 
-void ServerInfo::SetDimensions()
+void ServerInfo::mouseButtonPressed(MEVENT me)
 {
-	m_width = COLS*0.6;
-	m_height = std::min(size_t(LINES*0.7), MainHeight);
+	scrollpadMouseButtonPressed(w, me);
 }
 
+void ServerInfo::setDimensions()
+{
+	nc_server_info_screen_set_dimensions(&m_screen,
+	                                     COLS,
+	                                     LINES,
+	                                     MainHeight);
+}
