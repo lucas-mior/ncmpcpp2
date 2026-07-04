@@ -101,6 +101,7 @@ NcmBuffer ncm_song_getter_buffer(NcmSong *song,
 NcmBuffer ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
                                char *separator, int32 separator_len,
                                bool show_duplicates);
+uint64 ncm_song_hash(NcmSong *song);
 bool ncm_song_equal(NcmSong *a, NcmSong *b);
 
 #if defined(__cplusplus)

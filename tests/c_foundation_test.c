@@ -612,6 +612,49 @@ test_type_conversions(void) {
     REQUIRE(ncm_song_getter_to_tag_type(NCM_SONG_GETTER_NONE)
             == MPD_TAG_UNKNOWN);
 
+    REQUIRE_CSTRING(ncm_song_getter_name(NCM_SONG_GETTER_TITLE), "Title");
+    REQUIRE_CSTRING(ncm_song_getter_name(NCM_SONG_GETTER_NAME),
+                    "Filename");
+    REQUIRE_CSTRING(ncm_song_getter_name(NCM_SONG_GETTER_NONE), "");
+
+    REQUIRE(ncm_char_is_tags_field('a'));
+    REQUIRE(!ncm_char_is_tags_field('x'));
+    REQUIRE(ncm_tags_field_from_char('t') == NCM_TAGS_FIELD_TITLE);
+    REQUIRE(ncm_tags_field_from_char('A')
+            == NCM_TAGS_FIELD_ALBUM_ARTIST);
+    REQUIRE(ncm_tags_field_from_char('n') == NCM_TAGS_FIELD_TRACK);
+    REQUIRE(ncm_tags_field_from_char('x') == NCM_TAGS_FIELD_LAST);
+
+    REQUIRE(ncm_tags_field_from_tag_type(MPD_TAG_ARTIST)
+            == NCM_TAGS_FIELD_ARTIST);
+    REQUIRE(ncm_tags_field_from_tag_type(MPD_TAG_TRACK)
+            == NCM_TAGS_FIELD_TRACK);
+    REQUIRE(ncm_tags_field_from_tag_type((enum mpd_tag_type)-999)
+            == NCM_TAGS_FIELD_LAST);
+
+    REQUIRE(ncm_tags_field_to_tag_type(NCM_TAGS_FIELD_ARTIST)
+            == MPD_TAG_ARTIST);
+    REQUIRE(ncm_tags_field_to_tag_type(NCM_TAGS_FIELD_TRACK)
+            == MPD_TAG_TRACK);
+    REQUIRE(ncm_tags_field_to_tag_type(NCM_TAGS_FIELD_LAST)
+            == MPD_TAG_UNKNOWN);
+
+    REQUIRE(ncm_tags_field_to_song_getter(NCM_TAGS_FIELD_TRACK)
+            == NCM_SONG_GETTER_TRACK);
+    REQUIRE(ncm_tags_field_to_song_getter(NCM_TAGS_FIELD_LAST)
+            == NCM_SONG_GETTER_NONE);
+
+    REQUIRE(ncm_song_getter_to_tags_field(NCM_SONG_GETTER_TRACK)
+            == NCM_TAGS_FIELD_TRACK);
+    REQUIRE(ncm_song_getter_to_tags_field(NCM_SONG_GETTER_TRACK_NUMBER)
+            == NCM_TAGS_FIELD_TRACK);
+    REQUIRE(ncm_song_getter_to_tags_field(NCM_SONG_GETTER_URI)
+            == NCM_TAGS_FIELD_LAST);
+
+    REQUIRE_CSTRING(ncm_tags_field_name(NCM_TAGS_FIELD_ALBUM_ARTIST),
+                    "Album Artist");
+    REQUIRE_CSTRING(ncm_tags_field_name(NCM_TAGS_FIELD_LAST), "");
+
     REQUIRE_CSTRING(ncm_item_type_name(NCM_ITEM_DIRECTORY), "directory");
     REQUIRE_CSTRING(ncm_item_type_name(NCM_ITEM_SONG), "song");
     REQUIRE_CSTRING(ncm_item_type_name((enum NcmItemType)-1), "unknown");

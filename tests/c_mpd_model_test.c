@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "c/ncm_base.h"
 #include "c/ncm_directory.h"
 #include "c/ncm_mpd_item.h"
 #include "c/ncm_playlist.h"
@@ -35,6 +36,7 @@ static void test_song_empty_copy(void);
 static void test_song_storage_copy(void);
 static void test_song_uri_helpers(void);
 static void test_song_format_helpers(void);
+static void test_song_getter_buffers_and_hash(void);
 static void test_item_unknown(void);
 static void test_item_directory_copy(void);
 static void test_item_playlist_replacement(void);
@@ -76,22 +78,36 @@ static void
 test_directory(void) {
     NcmDirectory directory;
     NcmDirectory copy;
+    NcmDirectory moved;
+    NcmStringView view;
 
     ncm_directory_init(&directory);
     ncm_directory_init(&copy);
+    ncm_directory_init(&moved);
 
     REQUIRE(ncm_directory_set(&directory, LIT_ARGS("Jazz/Live"), 123));
     REQUIRE_STRING(directory.path, directory.path_len, "Jazz/Live");
     REQUIRE_INT((int32)directory.last_modified, 123);
+    REQUIRE(ncm_directory_path_view(&directory, &view));
+    REQUIRE_STRING(view.data, view.len, "Jazz/Live");
+    REQUIRE_INT((int32)ncm_directory_last_modified(&directory), 123);
 
     REQUIRE(ncm_directory_copy(&copy, &directory));
     REQUIRE_STRING(copy.path, copy.path_len, "Jazz/Live");
     REQUIRE_INT((int32)copy.last_modified, 123);
+    REQUIRE(ncm_directory_equal(&copy, &directory));
 
     REQUIRE(ncm_directory_set(&directory, LIT_ARGS("Other"), 456));
     REQUIRE_STRING(directory.path, directory.path_len, "Other");
     REQUIRE_STRING(copy.path, copy.path_len, "Jazz/Live");
+    REQUIRE(!ncm_directory_equal(&copy, &directory));
 
+    ncm_directory_move(&moved, &copy);
+    REQUIRE(ncm_directory_path_view(&moved, &view));
+    REQUIRE_STRING(view.data, view.len, "Jazz/Live");
+    REQUIRE(!ncm_directory_path_view(&copy, &view));
+
+    ncm_directory_destroy(&moved);
     ncm_directory_destroy(&copy);
     ncm_directory_destroy(&directory);
     return;
@@ -261,6 +277,81 @@ test_song_format_helpers(void) {
 }
 
 static void
+test_song_getter_buffers_and_hash(void) {
+    NcmSong song;
+    NcmSong copy;
+    NcmBuffer buffer;
+    uint64 hash;
+
+    ncm_song_init(&song);
+    ncm_song_init(&copy);
+
+    REQUIRE(ncm_song_hash(NULL) == ncm_song_hash(&song));
+    REQUIRE(ncm_song_set_uri(&song, LIT_ARGS("dir/song.flac")));
+    REQUIRE(ncm_song_add_tag(&song, MPD_TAG_TITLE, LIT_ARGS("Title")));
+    REQUIRE(ncm_song_add_tag(&song, MPD_TAG_ARTIST, LIT_ARGS("Dup")));
+    REQUIRE(ncm_song_add_tag(&song, MPD_TAG_ARTIST, LIT_ARGS("Dup")));
+    REQUIRE(ncm_song_add_tag(&song, MPD_TAG_TRACK, LIT_ARGS("1/12")));
+    ncm_song_set_duration(&song, 65);
+    ncm_song_set_priority(&song, 4);
+
+    buffer = ncm_song_getter_buffer(&song, NCM_SONG_GETTER_TITLE, 0);
+    REQUIRE_STRING(buffer.data, buffer.len, "Title");
+    ncm_buffer_destroy(&buffer);
+
+    buffer = ncm_song_getter_buffer(&song, NCM_SONG_GETTER_DIRECTORY, 0);
+    REQUIRE_STRING(buffer.data, buffer.len, "dir");
+    ncm_buffer_destroy(&buffer);
+
+    buffer = ncm_song_getter_buffer(&song, NCM_SONG_GETTER_NAME, 0);
+    REQUIRE_STRING(buffer.data, buffer.len, "song.flac");
+    ncm_buffer_destroy(&buffer);
+
+    buffer = ncm_song_getter_buffer(&song, NCM_SONG_GETTER_TRACK, 0);
+    REQUIRE_STRING(buffer.data, buffer.len, "01/12");
+    ncm_buffer_destroy(&buffer);
+
+    buffer = ncm_song_getter_buffer(&song, NCM_SONG_GETTER_TRACK_NUMBER, 0);
+    REQUIRE_STRING(buffer.data, buffer.len, "01");
+    ncm_buffer_destroy(&buffer);
+
+    buffer = ncm_song_getter_buffer(&song, NCM_SONG_GETTER_LENGTH, 0);
+    REQUIRE_STRING(buffer.data, buffer.len, "1:05");
+    ncm_buffer_destroy(&buffer);
+
+    buffer = ncm_song_getter_buffer(&song, NCM_SONG_GETTER_PRIORITY, 0);
+    REQUIRE_STRING(buffer.data, buffer.len, "4");
+    ncm_buffer_destroy(&buffer);
+
+    buffer = ncm_song_tags_buffer(&song, NCM_SONG_GETTER_ARTIST,
+                                  LIT_ARGS(", "), false);
+    REQUIRE_STRING(buffer.data, buffer.len, "Dup");
+    ncm_buffer_destroy(&buffer);
+
+    buffer = ncm_song_tags_buffer(&song, NCM_SONG_GETTER_ARTIST,
+                                  LIT_ARGS(", "), true);
+    REQUIRE_STRING(buffer.data, buffer.len, "Dup, Dup");
+    ncm_buffer_destroy(&buffer);
+
+    hash = ncm_song_hash(&song);
+    REQUIRE(ncm_song_copy(&copy, &song));
+    REQUIRE(ncm_song_equal(&copy, &song));
+    REQUIRE(ncm_song_hash(&copy) == hash);
+
+    REQUIRE(ncm_song_add_tag(&copy, MPD_TAG_COMMENT, LIT_ARGS("Other")));
+    REQUIRE(ncm_song_equal(&copy, &song));
+    REQUIRE(ncm_song_hash(&copy) == hash);
+
+    REQUIRE(ncm_song_set_uri(&copy, LIT_ARGS("dir/other.flac")));
+    REQUIRE(!ncm_song_equal(&copy, &song));
+    REQUIRE(ncm_song_hash(&copy) != hash);
+
+    ncm_song_destroy(&copy);
+    ncm_song_destroy(&song);
+    return;
+}
+
+static void
 test_item_unknown(void) {
     NcmMpdItem item;
 
@@ -385,6 +476,7 @@ main(void) {
     test_song_storage_copy();
     test_song_uri_helpers();
     test_song_format_helpers();
+    test_song_getter_buffers_and_hash();
     test_item_unknown();
     test_item_directory_copy();
     test_item_playlist_replacement();

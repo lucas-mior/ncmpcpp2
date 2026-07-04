@@ -24,8 +24,6 @@ static bool ncm_mutable_song_tag_copy(NcmMutableSongTag *dest,
 static bool ncm_mutable_song_write_callback(enum NcmTagsField field,
                                             int32 idx, NcmStringView *value,
                                             void *user);
-static enum NcmSongGetter ncm_mutable_song_field_getter(
-    enum NcmTagsField field);
 
 static void
 ncm_mutable_song_view_init(NcmStringView *view) {
@@ -238,37 +236,6 @@ ncm_mutable_song_tag_copy(NcmMutableSongTag *dest,
     }
 
     return true;
-}
-
-static enum NcmSongGetter
-ncm_mutable_song_field_getter(enum NcmTagsField field) {
-    switch (field) {
-    case NCM_TAGS_FIELD_TITLE:
-        return NCM_SONG_GETTER_TITLE;
-    case NCM_TAGS_FIELD_ARTIST:
-        return NCM_SONG_GETTER_ARTIST;
-    case NCM_TAGS_FIELD_ALBUM_ARTIST:
-        return NCM_SONG_GETTER_ALBUM_ARTIST;
-    case NCM_TAGS_FIELD_ALBUM:
-        return NCM_SONG_GETTER_ALBUM;
-    case NCM_TAGS_FIELD_DATE:
-        return NCM_SONG_GETTER_DATE;
-    case NCM_TAGS_FIELD_TRACK:
-        return NCM_SONG_GETTER_TRACK;
-    case NCM_TAGS_FIELD_GENRE:
-        return NCM_SONG_GETTER_GENRE;
-    case NCM_TAGS_FIELD_COMPOSER:
-        return NCM_SONG_GETTER_COMPOSER;
-    case NCM_TAGS_FIELD_PERFORMER:
-        return NCM_SONG_GETTER_PERFORMER;
-    case NCM_TAGS_FIELD_DISC:
-        return NCM_SONG_GETTER_DISC;
-    case NCM_TAGS_FIELD_COMMENT:
-        return NCM_SONG_GETTER_COMMENT;
-    case NCM_TAGS_FIELD_LAST:
-    default:
-        return NCM_SONG_GETTER_NONE;
-    }
 }
 
 static bool
@@ -657,7 +624,7 @@ ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
     for (uint32 field = 0; field < NCM_TAGS_FIELD_LAST; field += 1) {
         enum NcmSongGetter getter;
 
-        getter = ncm_mutable_song_field_getter((enum NcmTagsField)field);
+        getter = ncm_tags_field_to_song_getter((enum NcmTagsField)field);
         if (getter == NCM_SONG_GETTER_NONE) {
             continue;
         }
