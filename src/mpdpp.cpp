@@ -144,10 +144,10 @@ Directory::Directory(const Directory &rhs)
 }
 
 Directory::Directory(Directory &&rhs) noexcept
-: m_directory(rhs.m_directory)
-, m_path_cache(std::move(rhs.m_path_cache))
+: m_path_cache(std::move(rhs.m_path_cache))
 {
-	ncm_directory_init(&rhs.m_directory);
+	ncm_directory_init(&m_directory);
+	ncm_directory_move(&m_directory, &rhs.m_directory);
 }
 
 Directory &Directory::operator=(const Directory &rhs)
@@ -166,10 +166,8 @@ Directory &Directory::operator=(Directory &&rhs) noexcept
 {
 	if (this != &rhs)
 	{
-		ncm_directory_destroy(&m_directory);
-		m_directory = rhs.m_directory;
+		ncm_directory_move(&m_directory, &rhs.m_directory);
 		m_path_cache = std::move(rhs.m_path_cache);
-		ncm_directory_init(&rhs.m_directory);
 	}
 	return *this;
 }
@@ -181,22 +179,26 @@ Directory::~Directory()
 
 bool Directory::operator==(const Directory &rhs) const
 {
-	return path() == rhs.path()
-	    && lastModified() == rhs.lastModified();
+	return ncm_directory_equal(const_cast<NcmDirectory *>(&m_directory),
+	                           const_cast<NcmDirectory *>(&rhs.m_directory));
 }
 
 const std::string &Directory::path() const
 {
-	if (m_directory.path == nullptr)
-		m_path_cache.clear();
+	NcmStringView path;
+
+	if (ncm_directory_path_view(const_cast<NcmDirectory *>(&m_directory),
+	                            &path))
+		m_path_cache.assign(path.data, path.len);
 	else
-		m_path_cache.assign(m_directory.path, m_directory.path_len);
+		m_path_cache.clear();
 	return m_path_cache;
 }
 
 time_t Directory::lastModified() const
 {
-	return m_directory.last_modified;
+	return ncm_directory_last_modified(
+		const_cast<NcmDirectory *>(&m_directory));
 }
 
 Playlist::Playlist()

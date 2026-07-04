@@ -587,6 +587,84 @@ ncm_mutable_song_get_numeric_tag_buffer(NcmMutableSong *song,
     return buffer;
 }
 
+NcmBuffer
+ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
+                                enum NcmTagsField field, int32 idx) {
+    NcmBuffer buffer;
+    NcmStringView view;
+
+    ncm_buffer_init(&buffer);
+    if (field == NCM_TAGS_FIELD_TRACK) {
+        ncm_buffer_destroy(&buffer);
+        return ncm_mutable_song_get_numeric_tag_buffer(song, field, idx);
+    }
+    if (!ncm_mutable_song_get_tag(song, field, idx, &view)) {
+        return buffer;
+    }
+
+    ncm_buffer_append(&buffer, view.data, view.len);
+    return buffer;
+}
+
+NcmBuffer
+ncm_mutable_song_tags_buffer(NcmMutableSong *song,
+                             enum NcmTagsField field,
+                             char *separator, int32 separator_len,
+                             bool show_duplicates) {
+    NcmBuffer result;
+    NcmBuffer tag;
+
+    ncm_buffer_init(&result);
+    if (song == NULL) {
+        return result;
+    }
+    if (field >= NCM_TAGS_FIELD_LAST) {
+        return result;
+    }
+    if ((separator == NULL) || (separator_len < 0)) {
+        separator = "";
+        separator_len = 0;
+    }
+
+    for (int32 i = 0; ; i += 1) {
+        bool already_present;
+
+        tag = ncm_mutable_song_get_tag_buffer(song, field, i);
+        if (tag.len == 0) {
+            ncm_buffer_destroy(&tag);
+            break;
+        }
+
+        already_present = false;
+        if (!show_duplicates) {
+            for (int32 j = 0; j < i; j += 1) {
+                NcmBuffer previous;
+
+                previous = ncm_mutable_song_get_tag_buffer(song, field, j);
+                if (ncm_mutable_song_string_equal(previous.data,
+                                                  previous.len,
+                                                  tag.data, tag.len)) {
+                    already_present = true;
+                }
+                ncm_buffer_destroy(&previous);
+                if (already_present) {
+                    break;
+                }
+            }
+        }
+
+        if (!already_present) {
+            if (result.len > 0) {
+                ncm_buffer_append(&result, separator, separator_len);
+            }
+            ncm_buffer_append(&result, tag.data, tag.len);
+        }
+        ncm_buffer_destroy(&tag);
+    }
+
+    return result;
+}
+
 bool
 ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
                                           NcmSong *source) {
