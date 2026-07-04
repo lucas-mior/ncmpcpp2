@@ -83,54 +83,69 @@ struct Statistics
 {
 	friend struct Connection;
 	
-	bool empty() const { return m_stats.get() == nullptr; }
+	bool empty() const { return !m_valid; }
 	
-	unsigned artists() const { return mpd_stats_get_number_of_artists(m_stats.get()); }
-	unsigned albums() const { return mpd_stats_get_number_of_albums(m_stats.get()); }
-	unsigned songs() const { return mpd_stats_get_number_of_songs(m_stats.get()); }
-	unsigned long playTime() const { return mpd_stats_get_play_time(m_stats.get()); }
-	unsigned long uptime() const { return mpd_stats_get_uptime(m_stats.get()); }
-	unsigned long dbUpdateTime() const { return mpd_stats_get_db_update_time(m_stats.get()); }
-	unsigned long dbPlayTime() const { return mpd_stats_get_db_play_time(m_stats.get()); }
+	unsigned artists() const { return m_stats.artists; }
+	unsigned albums() const { return m_stats.albums; }
+	unsigned songs() const { return m_stats.songs; }
+	unsigned long playTime() const { return m_stats.play_time; }
+	unsigned long uptime() const { return m_stats.uptime; }
+	unsigned long dbUpdateTime() const { return m_stats.db_update_time; }
+	unsigned long dbPlayTime() const { return m_stats.db_play_time; }
 	
 private:
-	Statistics(mpd_stats *stats) : m_stats(stats, mpd_stats_free) { }
+	Statistics(const NcmMpdStats &stats)
+	: m_stats(stats)
+	, m_valid(true)
+	{ }
 	
-	std::shared_ptr<mpd_stats> m_stats;
+	NcmMpdStats m_stats;
+	bool m_valid;
 };
 
 struct Status
 {
 	friend struct Connection;
 	
-	Status() { }
+	Status()
+	: m_status{}
+	, m_valid(false)
+	{ }
 	
-	void clear() { m_status.reset(); }
-	bool empty() const { return m_status.get() == nullptr; }
+	void clear()
+	{
+		m_status = NcmMpdStatus{};
+		m_valid = false;
+	}
+	bool empty() const { return !m_valid; }
 	
-	int volume() const { return mpd_status_get_volume(m_status.get()); }
-	bool repeat() const { return mpd_status_get_repeat(m_status.get()); }
-	bool random() const { return mpd_status_get_random(m_status.get()); }
-	bool single() const { return mpd_status_get_single(m_status.get()); }
-	bool consume() const { return mpd_status_get_consume(m_status.get()); }
-	unsigned playlistLength() const { return mpd_status_get_queue_length(m_status.get()); }
-	unsigned playlistVersion() const { return mpd_status_get_queue_version(m_status.get()); }
-	PlayerState playerState() const { return PlayerState(mpd_status_get_state(m_status.get())); }
-	unsigned crossfade() const { return mpd_status_get_crossfade(m_status.get()); }
-	int currentSongPosition() const { return mpd_status_get_song_pos(m_status.get()); }
-	int currentSongID() const { return mpd_status_get_song_id(m_status.get()); }
-	int nextSongPosition() const { return mpd_status_get_next_song_pos(m_status.get()); }
-	int nextSongID() const { return mpd_status_get_next_song_id(m_status.get()); }
-	unsigned elapsedTime() const { return mpd_status_get_elapsed_time(m_status.get()); }
-	unsigned totalTime() const { return mpd_status_get_total_time(m_status.get()); }
-	unsigned kbps() const { return mpd_status_get_kbit_rate(m_status.get()); }
-	unsigned updateID() const { return mpd_status_get_update_id(m_status.get()); }
-	const char *error() const { return mpd_status_get_error(m_status.get()); }
+	int volume() const { return m_status.volume; }
+	bool repeat() const { return m_status.repeat; }
+	bool random() const { return m_status.random; }
+	bool single() const { return m_status.single; }
+	bool consume() const { return m_status.consume; }
+	unsigned playlistLength() const { return m_status.queue_length; }
+	unsigned playlistVersion() const { return m_status.queue_version; }
+	PlayerState playerState() const { return PlayerState(m_status.state); }
+	unsigned crossfade() const { return m_status.crossfade; }
+	int currentSongPosition() const { return m_status.song_pos; }
+	int currentSongID() const { return m_status.song_id; }
+	int nextSongPosition() const { return m_status.next_song_pos; }
+	int nextSongID() const { return m_status.next_song_id; }
+	unsigned elapsedTime() const { return m_status.elapsed_time; }
+	unsigned totalTime() const { return m_status.total_time; }
+	unsigned kbps() const { return m_status.kbit_rate; }
+	unsigned updateID() const { return m_status.update_id; }
+	const char *error() const { return m_status.error; }
 	
 private:
-	Status(mpd_status *status) : m_status(status, mpd_status_free) { }
+	Status(const NcmMpdStatus &status)
+	: m_status(status)
+	, m_valid(true)
+	{ }
 	
-	std::shared_ptr<mpd_status> m_status;
+	NcmMpdStatus m_status;
+	bool m_valid;
 };
 
 struct Directory
