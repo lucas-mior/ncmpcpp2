@@ -37,7 +37,8 @@ struct MutableSong : public Song
 	MutableSong &operator=(MutableSong &&rhs) noexcept;
 	virtual ~MutableSong() override;
 	
-	virtual std::string get(enum NcmSongGetter getter, unsigned idx = 0) const override;
+	virtual std::string get(enum NcmSongGetter getter,
+	                        unsigned idx = 0) const override;
 	virtual std::string getArtist(unsigned idx = 0) const override;
 	virtual std::string getTitle(unsigned idx = 0) const override;
 	virtual std::string getAlbum(unsigned idx = 0) const override;
@@ -81,8 +82,6 @@ struct MutableSong : public Song
 	NcmMutableSong *cMutableSong();
 
 private:
-	std::string getTag(enum NcmTagsField field, unsigned idx) const;
-	void setTag(enum NcmTagsField field, const std::string &value, unsigned idx);
 	void loadOriginals();
 	
 	NcmMutableSong m_mutable;
