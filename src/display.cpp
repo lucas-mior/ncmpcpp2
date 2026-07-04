@@ -232,9 +232,9 @@ void showSongsInColumns(NC::Menu<T> &menu, const MPD::Song &s, const SongList &l
 		std::string tag;
 		for (size_t i = 0; i < it->type.length(); ++i)
 		{
-			MPD::Song::GetFunction get = MPD::getFunctionFromChar(it->type[i]);
-			assert(get);
-			tag = Charset::utf8ToLocale(s.getTags(get));
+			enum NcmSongGetter getter = ncm_song_getter_from_char(it->type[i]);
+			assert(getter != NCM_SONG_GETTER_NONE);
+			tag = Charset::utf8ToLocale(s.getTags(getter));
 			if (!tag.empty())
 				break;
 		}

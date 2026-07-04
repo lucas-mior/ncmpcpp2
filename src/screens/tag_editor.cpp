@@ -27,6 +27,7 @@
 #include <string>
 
 #include "actions.h"
+#include "c/ncm_type_conversions.h"
 #include "screens/browser.h"
 #include "charset.h"
 #include "display.h"
@@ -82,7 +83,7 @@ void LowerAllLetters(MPD::MutableSong &s);
 void GetPatternList();
 void SavePatternList();
 
-MPD::MutableSong::SetFunction IntoSetFunction(char c);
+enum NcmTagsField IntoTagsField(char c);
 std::string GenerateFilename(const MPD::MutableSong &s, const std::string &pattern);
 std::string ParseFilename(MPD::MutableSong &s, std::string mask, bool preview);
 
@@ -730,23 +731,23 @@ void TagEditor::runAction()
 
 	if (id < 11)
 	{
-		MPD::Song::GetFunction get = SongInfo::Tags[id].Get;
-		MPD::MutableSong::SetFunction set = SongInfo::Tags[id].Set;
+		enum NcmSongGetter getter = SongInfo::Tags[id].Get;
+		enum NcmTagsField field = SongInfo::Tags[id].Field;
 		if (w == TagTypes)
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << NC::Format::Bold << TagTypes->current()->value() << NC::Format::NoBold << ": ";
-			std::string new_tag = wFooter->prompt(Tags->current()->value().getTags(get));
+			std::string new_tag = wFooter->prompt(Tags->current()->value().getTags(getter));
 			for (auto it = EditedSongs.begin(); it != EditedSongs.end(); ++it)
-				(*it)->setTags(set, new_tag);
+				(*it)->setTags(field, new_tag);
 		}
 		else if (w == Tags)
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << NC::Format::Bold << TagTypes->current()->value() << NC::Format::NoBold << ": ";
-			std::string new_tag = wFooter->prompt(Tags->current()->value().getTags(get));
-			if (new_tag != Tags->current()->value().getTags(get))
-				Tags->current()->value().setTags(set, new_tag);
+			std::string new_tag = wFooter->prompt(Tags->current()->value().getTags(getter));
+			if (new_tag != Tags->current()->value().getTags(getter))
+				Tags->current()->value().setTags(field, new_tag);
 			Tags->scroll(NC::Scroll::Down);
 		}
 	}
@@ -1033,8 +1034,8 @@ void CapitalizeFirstLetters(MPD::MutableSong &s)
 	for (const SongInfo::Metadata *m = SongInfo::Tags; m->Name; ++m)
 	{
 		unsigned i = 0;
-		for (std::string tag; !(tag = (s.*m->Get)(i)).empty(); ++i)
-			(s.*m->Set)(CapitalizeFirstLetters(tag), i);
+		for (std::string tag; !(tag = s.get(m->Get, i)).empty(); ++i)
+			s.set(m->Field, CapitalizeFirstLetters(tag), i);
 	}
 }
 
@@ -1043,8 +1044,8 @@ void LowerAllLetters(MPD::MutableSong &s)
 	for (const SongInfo::Metadata *m = SongInfo::Tags; m->Name; ++m)
 	{
 		unsigned i = 0;
-		for (std::string tag; !(tag = (s.*m->Get)(i)).empty(); ++i)
-			(s.*m->Set)(lowercaseAscii(tag), i);
+		for (std::string tag; !(tag = s.get(m->Get, i)).empty(); ++i)
+			s.set(m->Field, lowercaseAscii(tag), i);
 	}
 }
 
@@ -1075,35 +1076,9 @@ void SavePatternList()
 		output.close();
 	}
 }
-MPD::MutableSong::SetFunction IntoSetFunction(char c)
+enum NcmTagsField IntoTagsField(char c)
 {
-	switch (c)
-	{
-		case 'a':
-			return &MPD::MutableSong::setArtist;
-		case 'A':
-			return &MPD::MutableSong::setAlbumArtist;
-		case 't':
-			return &MPD::MutableSong::setTitle;
-		case 'b':
-			return &MPD::MutableSong::setAlbum;
-		case 'y':
-			return &MPD::MutableSong::setDate;
-		case 'n':
-			return &MPD::MutableSong::setTrack;
-		case 'g':
-			return &MPD::MutableSong::setGenre;
-		case 'c':
-			return &MPD::MutableSong::setComposer;
-		case 'p':
-			return &MPD::MutableSong::setPerformer;
-		case 'd':
-			return &MPD::MutableSong::setDisc;
-		case 'C':
-			return &MPD::MutableSong::setComment;
-		default:
-			return 0;
-	}
+	return ncm_tags_field_from_char(c);
 }
 
 std::string GenerateFilename(const MPD::MutableSong &s, const std::string &pattern)
@@ -1163,9 +1138,9 @@ std::string ParseFilename(MPD::MutableSong &s, std::string mask, bool preview)
 			
 		if (!preview)
 		{
-			MPD::MutableSong::SetFunction set = IntoSetFunction(it->first);
-			if (set)
-				s.setTags(set, it->second);
+			enum NcmTagsField field = IntoTagsField(it->first);
+			if (field != NCM_TAGS_FIELD_LAST)
+				s.setTags(field, it->second);
 		}
 		else
 			result << "%" << it->first << ": " << it->second << "\n";
@@ -1178,7 +1153,7 @@ std::string SongToString(const MPD::MutableSong &s)
 	std::string result;
 	size_t i = myTagEditor->TagTypes->choice();
 	if (i < 11)
-		result = (s.*SongInfo::Tags[i].Get)(0);
+		result = s.get(SongInfo::Tags[i].Get, 0);
 	else if (i == 12)
 		result = s.getNewName().empty() ? s.getName() : s.getName() + " -> " + s.getNewName();
 	return result.empty() ? Config.empty_tag : result;

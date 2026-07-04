@@ -52,20 +52,20 @@ struct OutputSwitch { };
 
 struct SongTag
 {
-	SongTag(MPD::Song::GetFunction function_, unsigned delimiter_ = 0)
-	: m_function(function_), m_delimiter(delimiter_)
+	SongTag(enum NcmSongGetter getter_, unsigned delimiter_ = 0)
+	: m_getter(getter_), m_delimiter(delimiter_)
 	{ }
 
-	MPD::Song::GetFunction function() const { return m_function; }
+	enum NcmSongGetter getter() const { return m_getter; }
 	unsigned delimiter() const { return m_delimiter; }
 
 private:
-	MPD::Song::GetFunction m_function;
+	enum NcmSongGetter m_getter;
 	unsigned m_delimiter;
 };
 
 inline bool operator==(const SongTag &lhs, const SongTag &rhs) {
-	return lhs.function() == rhs.function()
+	return lhs.getter() == rhs.getter()
 		&& lhs.delimiter() == rhs.delimiter();
 }
 inline bool operator!=(const SongTag &lhs, const SongTag &rhs) {

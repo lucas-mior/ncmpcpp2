@@ -19,8 +19,10 @@
  ***************************************************************************/
 
 #include <utility>
+#include <vector>
 
 #include "c/ncm_base.h"
+#include "c/ncm_type_conversions.h"
 #include "mutable_song.h"
 
 namespace {
@@ -104,116 +106,223 @@ MutableSong::~MutableSong()
 	ncm_mutable_song_destroy(&m_mutable);
 }
 
+std::string MutableSong::get(enum NcmSongGetter getter, unsigned idx) const
+{
+	switch (getter)
+	{
+		case NCM_SONG_GETTER_ARTIST:
+		case NCM_SONG_GETTER_ALBUM_ARTIST:
+		case NCM_SONG_GETTER_TITLE:
+		case NCM_SONG_GETTER_ALBUM:
+		case NCM_SONG_GETTER_DATE:
+		case NCM_SONG_GETTER_TRACK:
+		case NCM_SONG_GETTER_GENRE:
+		case NCM_SONG_GETTER_COMPOSER:
+		case NCM_SONG_GETTER_PERFORMER:
+		case NCM_SONG_GETTER_DISC:
+		case NCM_SONG_GETTER_COMMENT:
+			return get(ncm_song_getter_to_tags_field(getter), idx);
+		case NCM_SONG_GETTER_NONE:
+		case NCM_SONG_GETTER_LENGTH:
+		case NCM_SONG_GETTER_DIRECTORY:
+		case NCM_SONG_GETTER_NAME:
+		case NCM_SONG_GETTER_URI:
+		case NCM_SONG_GETTER_TRACK_NUMBER:
+		case NCM_SONG_GETTER_PRIORITY:
+		default:
+			return Song::get(getter, idx);
+	}
+}
+
+std::string MutableSong::get(enum NcmTagsField field, unsigned idx) const
+{
+	switch (field)
+	{
+		case NCM_TAGS_FIELD_TRACK:
+			return stringFromBuffer(ncm_mutable_song_get_numeric_tag_buffer(
+				const_cast<NcmMutableSong *>(&m_mutable), field,
+				static_cast<int32>(idx)));
+		case NCM_TAGS_FIELD_TITLE:
+		case NCM_TAGS_FIELD_ARTIST:
+		case NCM_TAGS_FIELD_ALBUM_ARTIST:
+		case NCM_TAGS_FIELD_ALBUM:
+		case NCM_TAGS_FIELD_DATE:
+		case NCM_TAGS_FIELD_GENRE:
+		case NCM_TAGS_FIELD_COMPOSER:
+		case NCM_TAGS_FIELD_PERFORMER:
+		case NCM_TAGS_FIELD_DISC:
+		case NCM_TAGS_FIELD_COMMENT:
+			return getTag(field, idx);
+		case NCM_TAGS_FIELD_LAST:
+		default:
+			return "";
+	}
+}
+
+void MutableSong::set(enum NcmTagsField field, const std::string &value,
+                      unsigned idx)
+{
+	if (field == NCM_TAGS_FIELD_LAST)
+		return;
+	setTag(field, value, idx);
+}
+
+void MutableSong::setTags(enum NcmTagsField field, const std::string &value)
+{
+	if (field == NCM_TAGS_FIELD_LAST)
+		return;
+
+	ncm_mutable_song_set_tags(&m_mutable, field,
+	                          const_cast<char *>(value.c_str()),
+	                          stringLength(value),
+	                          const_cast<char *>(Song::TagsSeparator.c_str()),
+	                          stringLength(Song::TagsSeparator));
+}
+
 std::string MutableSong::getArtist(unsigned idx) const
 {
-	return getTag(NCM_TAGS_FIELD_ARTIST, idx);
+	return get(NCM_TAGS_FIELD_ARTIST, idx);
 }
 
 std::string MutableSong::getTitle(unsigned idx) const
 {
-	return getTag(NCM_TAGS_FIELD_TITLE, idx);
+	return get(NCM_TAGS_FIELD_TITLE, idx);
 }
 
 std::string MutableSong::getAlbum(unsigned idx) const
 {
-	return getTag(NCM_TAGS_FIELD_ALBUM, idx);
+	return get(NCM_TAGS_FIELD_ALBUM, idx);
 }
 
 std::string MutableSong::getAlbumArtist(unsigned idx) const
 {
-	return getTag(NCM_TAGS_FIELD_ALBUM_ARTIST, idx);
+	return get(NCM_TAGS_FIELD_ALBUM_ARTIST, idx);
 }
 
 std::string MutableSong::getTrack(unsigned idx) const
 {
-	return stringFromBuffer(ncm_mutable_song_get_numeric_tag_buffer(
-		const_cast<NcmMutableSong *>(&m_mutable), NCM_TAGS_FIELD_TRACK,
-		static_cast<int32>(idx)));
+	return get(NCM_TAGS_FIELD_TRACK, idx);
 }
 
 std::string MutableSong::getDate(unsigned idx) const
 {
-	return getTag(NCM_TAGS_FIELD_DATE, idx);
+	return get(NCM_TAGS_FIELD_DATE, idx);
 }
 
 std::string MutableSong::getGenre(unsigned idx) const
 {
-	return getTag(NCM_TAGS_FIELD_GENRE, idx);
+	return get(NCM_TAGS_FIELD_GENRE, idx);
 }
 
 std::string MutableSong::getComposer(unsigned idx) const
 {
-	return getTag(NCM_TAGS_FIELD_COMPOSER, idx);
+	return get(NCM_TAGS_FIELD_COMPOSER, idx);
 }
 
 std::string MutableSong::getPerformer(unsigned idx) const
 {
-	return getTag(NCM_TAGS_FIELD_PERFORMER, idx);
+	return get(NCM_TAGS_FIELD_PERFORMER, idx);
 }
 
 std::string MutableSong::getDisc(unsigned idx) const
 {
-	return getTag(NCM_TAGS_FIELD_DISC, idx);
+	return get(NCM_TAGS_FIELD_DISC, idx);
 }
 
 std::string MutableSong::getComment(unsigned idx) const
 {
-	return getTag(NCM_TAGS_FIELD_COMMENT, idx);
+	return get(NCM_TAGS_FIELD_COMMENT, idx);
 }
 
 void MutableSong::setArtist(const std::string &value, unsigned idx)
 {
-	setTag(NCM_TAGS_FIELD_ARTIST, value, idx);
+	set(NCM_TAGS_FIELD_ARTIST, value, idx);
 }
 
 void MutableSong::setTitle(const std::string &value, unsigned idx)
 {
-	setTag(NCM_TAGS_FIELD_TITLE, value, idx);
+	set(NCM_TAGS_FIELD_TITLE, value, idx);
 }
 
 void MutableSong::setAlbum(const std::string &value, unsigned idx)
 {
-	setTag(NCM_TAGS_FIELD_ALBUM, value, idx);
+	set(NCM_TAGS_FIELD_ALBUM, value, idx);
 }
 
 void MutableSong::setAlbumArtist(const std::string &value, unsigned idx)
 {
-	setTag(NCM_TAGS_FIELD_ALBUM_ARTIST, value, idx);
+	set(NCM_TAGS_FIELD_ALBUM_ARTIST, value, idx);
 }
 
 void MutableSong::setTrack(const std::string &value, unsigned idx)
 {
-	setTag(NCM_TAGS_FIELD_TRACK, value, idx);
+	set(NCM_TAGS_FIELD_TRACK, value, idx);
 }
 
 void MutableSong::setDate(const std::string &value, unsigned idx)
 {
-	setTag(NCM_TAGS_FIELD_DATE, value, idx);
+	set(NCM_TAGS_FIELD_DATE, value, idx);
 }
 
 void MutableSong::setGenre(const std::string &value, unsigned idx)
 {
-	setTag(NCM_TAGS_FIELD_GENRE, value, idx);
+	set(NCM_TAGS_FIELD_GENRE, value, idx);
 }
 
 void MutableSong::setComposer(const std::string &value, unsigned idx)
 {
-	setTag(NCM_TAGS_FIELD_COMPOSER, value, idx);
+	set(NCM_TAGS_FIELD_COMPOSER, value, idx);
 }
 
 void MutableSong::setPerformer(const std::string &value, unsigned idx)
 {
-	setTag(NCM_TAGS_FIELD_PERFORMER, value, idx);
+	set(NCM_TAGS_FIELD_PERFORMER, value, idx);
 }
 
 void MutableSong::setDisc(const std::string &value, unsigned idx)
 {
-	setTag(NCM_TAGS_FIELD_DISC, value, idx);
+	set(NCM_TAGS_FIELD_DISC, value, idx);
 }
 
 void MutableSong::setComment(const std::string &value, unsigned idx)
 {
-	setTag(NCM_TAGS_FIELD_COMMENT, value, idx);
+	set(NCM_TAGS_FIELD_COMMENT, value, idx);
+}
+
+std::string MutableSong::getTags(enum NcmSongGetter getter) const
+{
+	std::string result;
+	std::vector<std::string> seen;
+
+	if (getter == NCM_SONG_GETTER_NONE)
+		return result;
+
+	for (unsigned i = 0; ; ++i)
+	{
+		std::string tag = get(getter, i);
+		if (tag.empty())
+			break;
+
+		bool already_present = false;
+		if (!Song::ShowDuplicateTags)
+		{
+			for (const auto &previous : seen)
+			{
+				if (previous == tag)
+				{
+					already_present = true;
+					break;
+				}
+			}
+		}
+		seen.push_back(tag);
+		if (already_present)
+			continue;
+		if (!result.empty())
+			result += Song::TagsSeparator;
+		result += tag;
+	}
+	return result;
 }
 
 std::string MutableSong::getNewName() const
@@ -266,19 +375,6 @@ void MutableSong::setMTime(time_t mtime)
 	ncm_mutable_song_set_mtime(&m_mutable, static_cast<int64>(mtime));
 }
 
-void MutableSong::setTags(SetFunction set, const std::string &value)
-{
-	enum NcmTagsField field = fieldForSetFunction(set);
-	if (field == NCM_TAGS_FIELD_LAST)
-		return;
-
-	ncm_mutable_song_set_tags(&m_mutable, field,
-	                          const_cast<char *>(value.c_str()),
-	                          stringLength(value),
-	                          const_cast<char *>(Song::TagsSeparator.c_str()),
-	                          stringLength(Song::TagsSeparator));
-}
-
 bool MutableSong::isModified() const
 {
 	return ncm_mutable_song_is_modified(
@@ -318,62 +414,5 @@ void MutableSong::loadOriginals()
 	ncm_mutable_song_load_originals_from_song(&m_mutable, cSong());
 }
 
-enum NcmTagsField MutableSong::fieldForSetFunction(SetFunction set)
-{
-	if (set == &MutableSong::setArtist)
-		return NCM_TAGS_FIELD_ARTIST;
-	if (set == &MutableSong::setTitle)
-		return NCM_TAGS_FIELD_TITLE;
-	if (set == &MutableSong::setAlbum)
-		return NCM_TAGS_FIELD_ALBUM;
-	if (set == &MutableSong::setAlbumArtist)
-		return NCM_TAGS_FIELD_ALBUM_ARTIST;
-	if (set == &MutableSong::setTrack)
-		return NCM_TAGS_FIELD_TRACK;
-	if (set == &MutableSong::setDate)
-		return NCM_TAGS_FIELD_DATE;
-	if (set == &MutableSong::setGenre)
-		return NCM_TAGS_FIELD_GENRE;
-	if (set == &MutableSong::setComposer)
-		return NCM_TAGS_FIELD_COMPOSER;
-	if (set == &MutableSong::setPerformer)
-		return NCM_TAGS_FIELD_PERFORMER;
-	if (set == &MutableSong::setDisc)
-		return NCM_TAGS_FIELD_DISC;
-	if (set == &MutableSong::setComment)
-		return NCM_TAGS_FIELD_COMMENT;
-	return NCM_TAGS_FIELD_LAST;
-}
-
-MutableSong::SetFunction setFunctionFromTagType(mpd_tag_type tag)
-{
-	switch (tag)
-	{
-		case MPD_TAG_ARTIST:
-			return &MutableSong::setArtist;
-		case MPD_TAG_ALBUM:
-			return &MutableSong::setAlbum;
-		case MPD_TAG_ALBUM_ARTIST:
-			return &MutableSong::setAlbumArtist;
-		case MPD_TAG_TITLE:
-			return &MutableSong::setTitle;
-		case MPD_TAG_TRACK:
-			return &MutableSong::setTrack;
-		case MPD_TAG_GENRE:
-			return &MutableSong::setGenre;
-		case MPD_TAG_DATE:
-			return &MutableSong::setDate;
-		case MPD_TAG_COMPOSER:
-			return &MutableSong::setComposer;
-		case MPD_TAG_PERFORMER:
-			return &MutableSong::setPerformer;
-		case MPD_TAG_COMMENT:
-			return &MutableSong::setComment;
-		case MPD_TAG_DISC:
-			return &MutableSong::setDisc;
-		default:
-			return nullptr;
-	}
-}
 
 }

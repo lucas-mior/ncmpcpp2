@@ -38,7 +38,6 @@ struct Song
 		size_t operator()(const Song &s) const { return s.m_hash; }
 	};
 
-	typedef std::string (Song::*GetFunction)(unsigned) const;
 	
 	Song();
 	virtual ~Song();
@@ -53,6 +52,7 @@ struct Song
 	Song &operator=(Song &&rhs) noexcept;
 	
 	std::string get(mpd_tag_type type, unsigned idx = 0) const;
+	virtual std::string get(enum NcmSongGetter getter, unsigned idx = 0) const;
 	
 	virtual std::string getURI(unsigned idx = 0) const;
 	virtual std::string getName(unsigned idx = 0) const;
@@ -72,7 +72,7 @@ struct Song
 	virtual std::string getLength(unsigned idx = 0) const;
 	virtual std::string getPriority(unsigned idx = 0) const;
 	
-	virtual std::string getTags(GetFunction f) const;
+	virtual std::string getTags(enum NcmSongGetter getter) const;
 	
 	virtual unsigned getDuration() const;
 	virtual unsigned getPosition() const;
@@ -121,8 +121,6 @@ private:
 	NcmSong m_song;
 	size_t m_hash;
 };
-
-Song::GetFunction getFunctionFromChar(char c);
 
 }
 

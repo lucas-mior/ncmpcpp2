@@ -97,7 +97,7 @@ bool MoveToAlbum(NC::Menu<AlbumEntry> &albums, const std::string &primary_tag, c
 struct SortSongs {
 	typedef NC::Menu<MPD::Song>::Item SongItem;
 	
-	static const std::array<MPD::Song::GetFunction, 4> GetFuns;
+	static const std::array<NcmSongGetter, 4> GetFuns;
 	
 	LocaleStringComparison m_cmp;
 
@@ -121,11 +121,11 @@ public:
 	}
 };
 
-const std::array<MPD::Song::GetFunction, 4> SortSongs::GetFuns = {{
-	&MPD::Song::getDate,
-	&MPD::Song::getAlbum,
-	&MPD::Song::getDisc,
-	&MPD::Song::getTrackNumber,
+const std::array<NcmSongGetter, 4> SortSongs::GetFuns = {{
+	NCM_SONG_GETTER_DATE,
+	NCM_SONG_GETTER_ALBUM,
+	NCM_SONG_GETTER_DISC,
+	NCM_SONG_GETTER_TRACK_NUMBER,
 }};
 
 class SortAlbumEntries {

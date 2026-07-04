@@ -8,6 +8,7 @@ export LC_ALL=C
 : "${CXXFLAGS:=-O0 -g3 -Wfatal-errors}"
 export CC CXX CFLAGS CXXFLAGS
 
+make distclean
 make clean
 
 # shellcheck disable=SC2046

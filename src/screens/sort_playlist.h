@@ -27,7 +27,7 @@
 #include "song.h"
 
 struct SortPlaylistDialog
-	: Screen<NC::Menu<RunnableItem<std::pair<std::string, MPD::Song::GetFunction>, void()>>>, HasActions, Tabbable
+	: Screen<NC::Menu<RunnableItem<std::pair<std::string, NcmSongGetter>, void()>>>, HasActions, Tabbable
 {
 	typedef SortPlaylistDialog Self;
 	

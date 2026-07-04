@@ -29,8 +29,6 @@ namespace MPD {
 
 struct MutableSong : public Song
 {
-	typedef void (MutableSong::*SetFunction)(const std::string &, unsigned);
-	
 	MutableSong();
 	MutableSong(Song s);
 	MutableSong(const MutableSong &rhs);
@@ -39,6 +37,7 @@ struct MutableSong : public Song
 	MutableSong &operator=(MutableSong &&rhs) noexcept;
 	virtual ~MutableSong() override;
 	
+	virtual std::string get(enum NcmSongGetter getter, unsigned idx = 0) const override;
 	virtual std::string getArtist(unsigned idx = 0) const override;
 	virtual std::string getTitle(unsigned idx = 0) const override;
 	virtual std::string getAlbum(unsigned idx = 0) const override;
@@ -50,6 +49,11 @@ struct MutableSong : public Song
 	virtual std::string getPerformer(unsigned idx = 0) const override;
 	virtual std::string getDisc(unsigned idx = 0) const override;
 	virtual std::string getComment(unsigned idx = 0) const override;
+	virtual std::string getTags(enum NcmSongGetter getter) const override;
+	
+	std::string get(enum NcmTagsField field, unsigned idx = 0) const;
+	void set(enum NcmTagsField field, const std::string &value, unsigned idx = 0);
+	void setTags(enum NcmTagsField field, const std::string &value);
 	
 	void setArtist(const std::string &value, unsigned idx = 0);
 	void setTitle(const std::string &value, unsigned idx = 0);
@@ -71,8 +75,6 @@ struct MutableSong : public Song
 	void setDuration(unsigned duration);
 	void setMTime(time_t mtime);
 	
-	void setTags(SetFunction set, const std::string &value);
-	
 	bool isModified() const;
 	void clearModifications();
 	
@@ -82,12 +84,10 @@ private:
 	std::string getTag(enum NcmTagsField field, unsigned idx) const;
 	void setTag(enum NcmTagsField field, const std::string &value, unsigned idx);
 	void loadOriginals();
-	static enum NcmTagsField fieldForSetFunction(SetFunction set);
 	
 	NcmMutableSong m_mutable;
 };
 
-MutableSong::SetFunction setFunctionFromTagType(mpd_tag_type tag);
 
 }
 
