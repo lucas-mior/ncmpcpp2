@@ -18,11 +18,8 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <cassert>
-#include <algorithm>
-#include <cstring>
+#include <limits>
 #include "c/ncm_base.h"
-#include "c/ncm_path.h"
 #include "c/ncm_string.h"
 #include "utility/string.h"
 
@@ -33,35 +30,47 @@ int32 stringSize(const std::string &s)
 	return static_cast<int32>(s.size());
 }
 
+std::string takeBuffer(NcmBuffer &buffer)
+{
+	std::string result;
+	if (buffer.data != nullptr)
+		result.assign(buffer.data, static_cast<size_t>(buffer.len));
+	ncm_buffer_destroy(&buffer);
+	return result;
+}
+
+int32 startPosition(const std::string &s, size_t *pos)
+{
+	if (pos == nullptr)
+		return 0;
+	if (*pos > static_cast<size_t>(std::numeric_limits<int32>::max()))
+		return stringSize(s);
+	return static_cast<int32>(*pos);
+}
+
 }
 
 std::string getBasename(const std::string &path)
 {
-	int32 start = ncm_path_basename_start(
+	int32 start = ncm_string_basename_start(
 		const_cast<char *>(path.data()), stringSize(path));
 	return path.substr(static_cast<size_t>(start));
 }
 
 std::string getParentDirectory(std::string path)
 {
-	int32 len = ncm_path_parent_directory_len(path.data(), stringSize(path));
+	int32 len = ncm_string_parent_directory_len(path.data(), stringSize(path));
 	path.resize(static_cast<size_t>(len));
 	return path;
 }
 
 std::string getSharedDirectory(const std::string &dir1, const std::string &dir2)
 {
-	size_t i = 0;
-	size_t min_len = std::min(dir1.length(), dir2.length());
-	while (i < min_len && !dir1.compare(i, 1, dir2, i, 1))
-		++i;
-	i = dir1.rfind("/", i);
-	if (i == std::string::npos)
-		return "/";
-	else
-		return dir1.substr(0, i);
+	NcmBuffer buffer = ncm_string_shared_directory(
+		const_cast<char *>(dir1.data()), stringSize(dir1),
+		const_cast<char *>(dir2.data()), stringSize(dir2));
+	return takeBuffer(buffer);
 }
-
 
 std::string lowercaseAscii(std::string s)
 {
@@ -71,46 +80,25 @@ std::string lowercaseAscii(std::string s)
 
 std::string getEnclosedString(const std::string &s, char a, char b, size_t *pos)
 {
-	std::string result;
-	size_t i = s.find(a, pos ? *pos : 0);
-	if (i != std::string::npos)
+	int32 c_pos;
+	NcmBuffer buffer = ncm_string_get_enclosed(
+		const_cast<char *>(s.data()), stringSize(s),
+		a, b, startPosition(s, pos), &c_pos);
+	if (pos != nullptr)
 	{
-		++i;
-		while (i < s.length() && s[i] != b)
-		{
-			if (s[i] == '\\' && i+1 < s.length() && (s[i+1] == '\\' || s[i+1] == b))
-				result += s[++i];
-			else
-				result += s[i];
-			++i;
-		}
-		// we want to set pos to char after b if possible
-		if (i < s.length())
-			++i;
-		else // we reached end of string and didn't encounter closing char
-			result.clear();
+		if (c_pos < 0)
+			*pos = std::string::npos;
+		else
+			*pos = static_cast<size_t>(c_pos);
 	}
-	if (pos != 0)
-		*pos = i;
-	return result;
+	return takeBuffer(buffer);
 }
 
 void removeInvalidCharsFromFilename(std::string &filename, bool win32_compatible)
 {
-	char win32_unallowed_chars[] = "\"*/:<>?\\|";
-	char unix_unallowed_chars[] = "/";
-	char *unallowed_chars;
 	int32 filename_len = stringSize(filename);
-	int32 unallowed_chars_len;
-
-	if (win32_compatible)
-		unallowed_chars = win32_unallowed_chars;
-	else
-		unallowed_chars = unix_unallowed_chars;
-	unallowed_chars_len = static_cast<int32>(std::strlen(unallowed_chars));
-
-	ncm_string_remove_chars(filename.data(), &filename_len,
-	                        unallowed_chars, unallowed_chars_len);
+	ncm_string_remove_invalid_filename_chars(filename.data(), &filename_len,
+	                                             win32_compatible);
 	filename.resize(static_cast<size_t>(filename_len));
 }
 
@@ -122,9 +110,5 @@ void escapeSingleQuotes(std::string &filename)
 	ncm_string_append_shell_escaped_single_quotes(&buffer,
 	                                              filename.data(),
 	                                              stringSize(filename));
-	if (buffer.data != nullptr)
-		filename.assign(buffer.data, static_cast<size_t>(buffer.len));
-	else
-		filename.clear();
-	ncm_buffer_destroy(&buffer);
+	filename = takeBuffer(buffer);
 }
