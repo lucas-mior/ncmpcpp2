@@ -2,12 +2,79 @@
 
 #include <assert.h>
 
+#include "cbase/array.h"
+#include "cbase/cbase.h"
+
 static int64
 min_int64(int64 left, int64 right) {
     if (left < right) {
         return left;
     }
     return right;
+}
+
+static void ***
+menu_array_pointer(NcMenu *menu, enum NcMenuItemSource source) {
+    if (source == NC_MENU_ITEMS_FILTERED) {
+        return &menu->filtered_items;
+    }
+    return &menu->all_items;
+}
+
+static void **
+menu_array(NcMenu *menu, enum NcMenuItemSource source) {
+    return *menu_array_pointer(menu, source);
+}
+
+static int64
+menu_array_count(NcMenu *menu, enum NcMenuItemSource source) {
+    void **items;
+
+    items = menu_array(menu, source);
+    return ARRAY_LEN(items);
+}
+
+static void *
+menu_allocate_item(NcMenu *menu) {
+    void *item;
+
+    assert(menu->item_callbacks.item_size > 0);
+    item = cbase_malloc(menu->item_callbacks.item_size);
+    return item;
+}
+
+static void *
+menu_copy_item(NcMenu *menu, void *source) {
+    void *item;
+
+    item = menu_allocate_item(menu);
+    if (menu->item_callbacks.copy) {
+        menu->item_callbacks.copy(item, source, menu->item_callbacks.user);
+    }
+    return item;
+}
+
+static void *
+menu_construct_item(NcMenu *menu) {
+    void *item;
+
+    item = menu_allocate_item(menu);
+    if (menu->item_callbacks.construct) {
+        menu->item_callbacks.construct(item, menu->item_callbacks.user);
+    }
+    return item;
+}
+
+static void
+menu_destroy_item(NcMenu *menu, void *item) {
+    if (item == NULL) {
+        return;
+    }
+    if (menu->item_callbacks.destroy) {
+        menu->item_callbacks.destroy(item, menu->item_callbacks.user);
+    }
+    cbase_free(item, menu->item_callbacks.item_size);
+    return;
 }
 
 static bool
@@ -179,6 +246,14 @@ scroll_internal(NcMenu *menu, int64 height, enum NcScroll where,
 
 void
 nc_menu_init(NcMenu *menu) {
+    menu->all_items = NULL;
+    menu->filtered_items = NULL;
+    menu->active_items = NC_MENU_ITEMS_ALL;
+    menu->item_callbacks.item_size = 0;
+    menu->item_callbacks.construct = NULL;
+    menu->item_callbacks.copy = NULL;
+    menu->item_callbacks.destroy = NULL;
+    menu->item_callbacks.user = NULL;
     menu->item_count = 0;
     menu->beginning = 0;
     menu->highlight = 0;
@@ -190,8 +265,21 @@ nc_menu_init(NcMenu *menu) {
 }
 
 void
+nc_menu_destroy(NcMenu *menu) {
+    nc_menu_clear_items(menu);
+    return;
+}
+
+void
 nc_menu_copy(NcMenu *dest, NcMenu *source) {
-    *dest = *source;
+    dest->active_items = NC_MENU_ITEMS_ALL;
+    dest->item_count = 0;
+    dest->beginning = source->beginning;
+    dest->highlight = source->highlight;
+    dest->drawn_position = source->drawn_position;
+    dest->highlight_enabled = source->highlight_enabled;
+    dest->cyclic_scroll_enabled = source->cyclic_scroll_enabled;
+    dest->autocenter_cursor = source->autocenter_cursor;
     return;
 }
 
@@ -206,6 +294,20 @@ nc_menu_swap(NcMenu *left, NcMenu *right) {
 }
 
 void
+nc_menu_set_item_callbacks(NcMenu *menu, NcMenuItemCallbacks callbacks) {
+    assert(menu_array_count(menu, NC_MENU_ITEMS_ALL) == 0);
+    assert(menu_array_count(menu, NC_MENU_ITEMS_FILTERED) == 0);
+    menu->item_callbacks = callbacks;
+    return;
+}
+
+void
+nc_menu_sync_item_count(NcMenu *menu) {
+    menu->item_count = menu_array_count(menu, menu->active_items);
+    return;
+}
+
+void
 nc_menu_set_item_count(NcMenu *menu, int64 item_count) {
     if (item_count < 0) {
         item_count = 0;
@@ -216,7 +318,18 @@ nc_menu_set_item_count(NcMenu *menu, int64 item_count) {
 
 int64
 nc_menu_item_count(NcMenu *menu) {
+    nc_menu_sync_item_count(menu);
     return menu->item_count;
+}
+
+int64
+nc_menu_all_item_count(NcMenu *menu) {
+    return menu_array_count(menu, NC_MENU_ITEMS_ALL);
+}
+
+int64
+nc_menu_filtered_item_count(NcMenu *menu) {
+    return menu_array_count(menu, NC_MENU_ITEMS_FILTERED);
 }
 
 int64
@@ -283,6 +396,7 @@ nc_menu_prepare_refresh(NcMenu *menu, int64 height,
     int64 max_beginning;
     int64 max_visible_highlight;
 
+    nc_menu_sync_item_count(menu);
     if (menu->item_count <= 0) {
         return;
     }
@@ -322,6 +436,7 @@ nc_menu_prepare_refresh(NcMenu *menu, int64 height,
 void
 nc_menu_scroll(NcMenu *menu, int64 height, enum NcScroll where,
                NcMenuHighlightableFunc is_highlightable, void *user) {
+    nc_menu_sync_item_count(menu);
     scroll_internal(menu, height, where, is_highlightable, user, 0);
     return;
 }
@@ -337,6 +452,7 @@ void
 nc_menu_highlight_position(NcMenu *menu, int64 pos, int64 height) {
     int64 half_height;
 
+    nc_menu_sync_item_count(menu);
     assert(pos >= 0);
     assert(pos < menu->item_count);
 
@@ -352,5 +468,139 @@ nc_menu_highlight_position(NcMenu *menu, int64 pos, int64 height) {
     } else {
         menu->beginning = pos - half_height;
     }
+    return;
+}
+
+void
+nc_menu_resize_all_items(NcMenu *menu, int64 new_size) {
+    int64 old_size;
+
+    assert(new_size >= 0);
+    old_size = menu_array_count(menu, NC_MENU_ITEMS_ALL);
+    while (old_size > new_size) {
+        old_size -= 1;
+        menu_destroy_item(menu, menu->all_items[old_size]);
+        ARRAY_HEADER(menu->all_items)->count -= 1;
+    }
+    while (old_size < new_size) {
+        ARRAY_PUSH(menu->all_items, menu_construct_item(menu));
+        old_size += 1;
+    }
+    nc_menu_sync_item_count(menu);
+    return;
+}
+
+void
+nc_menu_add_item(NcMenu *menu, void *item) {
+    ARRAY_PUSH(menu->all_items, menu_copy_item(menu, item));
+    nc_menu_sync_item_count(menu);
+    return;
+}
+
+void
+nc_menu_insert_item(NcMenu *menu, int64 pos, void *item) {
+    int64 count;
+    void *new_item;
+
+    count = menu_array_count(menu, NC_MENU_ITEMS_ALL);
+    assert(pos >= 0);
+    assert(pos <= count);
+
+    new_item = menu_copy_item(menu, item);
+    ARRAY_PUSH(menu->all_items, NULL);
+    if (pos < count) {
+        cbase_memmove(&menu->all_items[pos + 1], &menu->all_items[pos],
+                      (count - pos)*SIZEOF(*menu->all_items));
+    }
+    menu->all_items[pos] = new_item;
+    nc_menu_sync_item_count(menu);
+    return;
+}
+
+void
+nc_menu_clear_items(NcMenu *menu) {
+    enum NcMenuItemSource active_items;
+    int64 count;
+
+    active_items = menu->active_items;
+    count = menu_array_count(menu, NC_MENU_ITEMS_ALL);
+    for (int64 i = 0; i < count; i += 1) {
+        menu_destroy_item(menu, menu->all_items[i]);
+    }
+    ARRAY_FREE(menu->all_items);
+    ARRAY_FREE(menu->filtered_items);
+    menu->active_items = active_items;
+    menu->item_count = 0;
+    return;
+}
+
+void
+nc_menu_clear_filtered_items(NcMenu *menu) {
+    ARRAY_FREE(menu->filtered_items);
+    nc_menu_sync_item_count(menu);
+    return;
+}
+
+void
+nc_menu_add_filtered_item_ref(NcMenu *menu, void *item) {
+    assert(item != NULL);
+    ARRAY_PUSH(menu->filtered_items, item);
+    nc_menu_sync_item_count(menu);
+    return;
+}
+
+void
+nc_menu_show_all_items(NcMenu *menu) {
+    menu->active_items = NC_MENU_ITEMS_ALL;
+    nc_menu_sync_item_count(menu);
+    return;
+}
+
+void
+nc_menu_show_filtered_items(NcMenu *menu) {
+    menu->active_items = NC_MENU_ITEMS_FILTERED;
+    nc_menu_sync_item_count(menu);
+    return;
+}
+
+bool
+nc_menu_is_filtered(NcMenu *menu) {
+    return menu->active_items == NC_MENU_ITEMS_FILTERED;
+}
+
+void *
+nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int64 pos) {
+    void **items;
+    int64 count;
+
+    items = menu_array(menu, source);
+    count = menu_array_count(menu, source);
+    assert(pos >= 0);
+    assert(pos < count);
+    return items[pos];
+}
+
+void *
+nc_menu_active_item_at(NcMenu *menu, int64 pos) {
+    return nc_menu_item_at(menu, menu->active_items, pos);
+}
+
+void
+nc_menu_swap_item_slots(NcMenu *menu, enum NcMenuItemSource source,
+                        int64 left, int64 right) {
+    void **items;
+    void *temp;
+    int64 count;
+
+    items = menu_array(menu, source);
+    count = menu_array_count(menu, source);
+    assert(left >= 0);
+    assert(right >= 0);
+    assert(left < count);
+    assert(right < count);
+
+    temp = items[left];
+    items[left] = items[right];
+    items[right] = temp;
     return;
 }
