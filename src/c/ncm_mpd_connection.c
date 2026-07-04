@@ -1136,6 +1136,59 @@ ncm_mpd_connection_commit_search_tags(NcmMpdConnection *connection,
 }
 
 bool
+ncm_mpd_connection_update_database(NcmMpdConnection *connection,
+                                   char *path,
+                                   uint32 *id) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    if (id != NULL) {
+        *id = 0;
+    }
+
+    /*
+     * Use send/receive instead of mpd_run_update because mpd_run_update does
+     * not call mpd_response_finish if MPD returns update id 0, which breaks
+     * Mopidy.
+     */
+    if (!mpd_send_update(connection->mpd, path)) {
+        return ncm_mpd_connection_check_error(connection);
+    }
+    if (id != NULL) {
+        *id = mpd_recv_update_id(connection->mpd);
+    } else {
+        mpd_recv_update_id(connection->mpd);
+    }
+    mpd_response_finish(connection->mpd);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_rescan_database(NcmMpdConnection *connection,
+                                   char *path,
+                                   uint32 *id) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    if (id != NULL) {
+        *id = 0;
+    }
+
+    if (!mpd_send_rescan(connection->mpd, path)) {
+        return ncm_mpd_connection_check_error(connection);
+    }
+    if (id != NULL) {
+        *id = mpd_recv_update_id(connection->mpd);
+    } else {
+        mpd_recv_update_id(connection->mpd);
+    }
+    mpd_response_finish(connection->mpd);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
 ncm_mpd_connection_play(NcmMpdConnection *connection) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
