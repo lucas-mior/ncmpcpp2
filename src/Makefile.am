@@ -26,6 +26,8 @@ ncmpcpp_SOURCES = \
 	curses/nc_menu.c \
 	curses/nc_scrollpad.c \
 	curses/nc_window.c \
+	screens/nc_screen.c \
+	screens/nc_server_info.c \
 	curses/scrollpad.cpp \
 	curses/window.cpp \
 	screens/browser.cpp \
@@ -109,6 +111,8 @@ noinst_HEADERS = \
 	curses/nc_scrollpad.h \
 	curses/nc_window.h \
 	curses/scrollpad.h \
+	screens/nc_screen.h \
+	screens/nc_server_info.h \
 	curses/strbuffer.h \
 	curses/window.h \
 	screens/browser.h \
