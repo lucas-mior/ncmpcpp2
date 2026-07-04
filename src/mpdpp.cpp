@@ -731,25 +731,15 @@ void Connection::Prev()
 void Connection::Move(unsigned from, unsigned to)
 {
 	prechecks();
-	if (m_command_list_active)
-		mpd_send_move(rawConnection(), from, to);
-	else
-	{
-		mpd_run_move(rawConnection(), from, to);
-		checkErrors();
-	}
+	if (!ncm_mpd_connection_move(&m_connection, from, to, m_command_list_active))
+		throwConnectionError();
 }
 
 void Connection::Swap(unsigned from, unsigned to)
 {
 	prechecks();
-	if (m_command_list_active)
-		mpd_send_swap(rawConnection(), from, to);
-	else
-	{
-		mpd_run_swap(rawConnection(), from, to);
-		checkErrors();
-	}
+	if (!ncm_mpd_connection_swap(&m_connection, from, to, m_command_list_active))
+		throwConnectionError();
 }
 
 void Connection::Seek(unsigned pos, unsigned where)
@@ -762,22 +752,22 @@ void Connection::Seek(unsigned pos, unsigned where)
 void Connection::Shuffle()
 {
 	prechecksNoCommandsList();
-	mpd_run_shuffle(rawConnection());
-	checkErrors();
+	if (!ncm_mpd_connection_shuffle(&m_connection))
+		throwConnectionError();
 }
 
 void Connection::ShuffleRange(unsigned start, unsigned end)
 {
 	prechecksNoCommandsList();
-	mpd_run_shuffle_range(rawConnection(), start, end);
-	checkErrors();
+	if (!ncm_mpd_connection_shuffle_range(&m_connection, start, end))
+		throwConnectionError();
 }
 
 void Connection::ClearMainPlaylist()
 {
 	prechecksNoCommandsList();
-	mpd_run_clear(rawConnection());
-	checkErrors();
+	if (!ncm_mpd_connection_clear_queue(&m_connection))
+		throwConnectionError();
 }
 
 void Connection::ClearPlaylist(const std::string &playlist)
@@ -993,31 +983,20 @@ void Connection::SetCrossfade(unsigned crossfade)
 void Connection::SetPriority(const Song &s, int prio)
 {
 	prechecks();
-	if (m_command_list_active)
-		mpd_send_prio_id(rawConnection(), prio, s.getID());
-	else
-	{
-		mpd_run_prio_id(rawConnection(), prio, s.getID());
-		checkErrors();
-	}
+	if (!ncm_mpd_connection_set_priority_id(&m_connection, s.getID(), prio,
+	                                       m_command_list_active))
+		throwConnectionError();
 }
 
 int Connection::AddSong(const std::string &path, int pos)
 {
-	prechecks();
 	int id;
-	if (pos < 0)
-		mpd_send_add_id(rawConnection(), path.c_str());
-	else
-		mpd_send_add_id_to(rawConnection(), path.c_str(), pos);
-	if (!m_command_list_active)
-	{
-		id = mpd_recv_song_id(rawConnection());
-		mpd_response_finish(rawConnection());
-		checkErrors();
-	}
-	else
-		id = 0;
+
+	prechecks();
+	if (!ncm_mpd_connection_add_song(&m_connection,
+	                                 const_cast<char *>(path.c_str()), pos,
+	                                 m_command_list_active, &id))
+		throwConnectionError();
 	return id;
 }
 
@@ -1029,14 +1008,12 @@ int Connection::AddSong(const Song &s, int pos)
 bool Connection::Add(const std::string &path)
 {
 	bool result;
+
 	prechecks();
-	if (m_command_list_active)
-		result = mpd_send_add(rawConnection(), path.c_str());
-	else
-	{
-		result = mpd_run_add(rawConnection(), path.c_str());
-		checkErrors();
-	}
+	if (!ncm_mpd_connection_add(&m_connection,
+	                            const_cast<char *>(path.c_str()),
+	                            m_command_list_active, &result))
+		throwConnectionError();
 	return result;
 }
 
@@ -1106,23 +1083,16 @@ bool Connection::AddRandomSongs(size_t number, const std::string &random_exclude
 void Connection::Delete(unsigned pos)
 {
 	prechecks();
-	mpd_send_delete(rawConnection(), pos);
-	if (!m_command_list_active)
-	{
-		mpd_response_finish(rawConnection());
-		checkErrors();
-	}
+	if (!ncm_mpd_connection_delete(&m_connection, pos, m_command_list_active))
+		throwConnectionError();
 }
 
 void Connection::DeleteRange(unsigned begin, unsigned end)
 {
 	prechecks();
-	mpd_send_delete_range(rawConnection(), begin, end);
-	if (!m_command_list_active)
-	{
-		mpd_response_finish(rawConnection());
-		checkErrors();
-	}
+	if (!ncm_mpd_connection_delete_range(&m_connection, begin, end,
+	                                    m_command_list_active))
+		throwConnectionError();
 }
 
 void Connection::PlaylistDelete(const std::string &playlist, unsigned pos)
