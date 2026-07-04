@@ -482,6 +482,10 @@ protected:
 	/// @see resize()
 	///
 	virtual void recreate(size_t width, size_t height);
+
+	NcWindow *cWindow();
+	const NcWindow *cWindow() const;
+	void syncFromC();
 	
 	/// internal WINDOW pointers
 	WINDOW *m_window;
@@ -511,8 +515,6 @@ private:
 	static Border fromNcBorder(NcBorder border);
 	static NcFormat toNcFormat(Format format);
 	static NcScroll toNcScroll(Scroll scroll);
-
-	void syncFromC();
 
 	NcWindow m_impl;
 	PromptHook m_prompt_hook;

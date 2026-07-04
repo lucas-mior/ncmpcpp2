@@ -18,13 +18,32 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <cassert>
 #include <iostream>
 
 #include "curses/scrollpad.h"
 #include "utility/storage_kind.h"
 
 namespace {
+
+NcScroll to_nc_scroll(NC::Scroll scroll)
+{
+	switch (scroll)
+	{
+		case NC::Scroll::Up:
+			return NC_SCROLL_UP;
+		case NC::Scroll::Down:
+			return NC_SCROLL_DOWN;
+		case NC::Scroll::PageUp:
+			return NC_SCROLL_PAGE_UP;
+		case NC::Scroll::PageDown:
+			return NC_SCROLL_PAGE_DOWN;
+		case NC::Scroll::Home:
+			return NC_SCROLL_HOME;
+		case NC::Scroll::End:
+			return NC_SCROLL_END;
+	}
+	return NC_SCROLL_UP;
+}
 
 template <typename BeginT, typename EndT>
 bool regexSearch(NC::Buffer &buf, const BeginT &begin, const std::string &ws,
@@ -46,6 +65,11 @@ bool regexSearch(NC::Buffer &buf, const BeginT &begin, const std::string &ws,
 
 namespace NC {
 
+Scrollpad::Scrollpad()
+{
+	nc_scrollpad_init_empty(&m_scrollpad);
+}
+
 Scrollpad::Scrollpad(size_t startx,
 size_t starty,
 size_t width,
@@ -53,76 +77,34 @@ size_t height,
 const std::string &title,
 Color color,
 Border border)
-: Window(startx, starty, width, height, title, color, border),
-m_beginning(0),
-m_real_height(height)
+: Window(startx, starty, width, height, title, color, border)
 {
+	nc_scrollpad_init(&m_scrollpad, static_cast<int64>(height));
 }
 
 void Scrollpad::refresh()
 {
-	assert(m_real_height >= m_height);
-	size_t max_beginning = m_real_height - m_height;
-	m_beginning = std::min(m_beginning, max_beginning);
-	prefresh(m_window, m_beginning, 0, m_start_y, m_start_x, m_start_y+m_height-1, m_start_x+m_width-1);
+	nc_scrollpad_refresh(&m_scrollpad, cWindow());
+	syncFromC();
 }
 
 void Scrollpad::resize(size_t new_width, size_t new_height)
 {
-	adjustDimensions(new_width, new_height);
-	recreate(new_width, new_height);
+	nc_scrollpad_resize(&m_scrollpad, cWindow(), new_width, new_height);
+	syncFromC();
 	flush();
 }
 
 void Scrollpad::scroll(Scroll where)
 {
-	assert(m_real_height >= m_height);
-	size_t max_beginning = m_real_height - m_height;
-	switch (where)
-	{
-		case Scroll::Up:
-		{
-			if (m_beginning > 0)
-				--m_beginning;
-			break;
-		}
-		case Scroll::Down:
-		{
-			if (m_beginning < max_beginning)
-				++m_beginning;
-			break;
-		}
-		case Scroll::PageUp:
-		{
-			if (m_beginning > m_height)
-				m_beginning -= m_height;
-			else
-				m_beginning = 0;
-			break;
-		}
-		case Scroll::PageDown:
-		{
-			m_beginning = std::min(m_beginning + m_height, max_beginning);
-			break;
-		}
-		case Scroll::Home:
-		{
-			m_beginning = 0;
-			break;
-		}
-		case Scroll::End:
-		{
-			m_beginning = max_beginning;
-			break;
-		}
-	}
+	nc_scrollpad_scroll(&m_scrollpad, cWindow(), to_nc_scroll(where));
 }
 
 void Scrollpad::clear()
 {
-	m_real_height = m_height;
 	m_buffer.clear();
-	Window::clear();
+	nc_scrollpad_clear(&m_scrollpad, cWindow());
+	syncFromC();
 }
 
 const std::string &Scrollpad::buffer()
@@ -252,17 +234,14 @@ void Scrollpad::flush()
 			w << p->second;
 		return height;
 	};
-	m_real_height = std::max(write_buffer(true), m_height);
-	if (m_real_height > m_height)
-		recreate(m_width, m_real_height);
-	else
-		werase(m_window);
+	nc_scrollpad_prepare_flush(&m_scrollpad, cWindow(), write_buffer(true));
+	syncFromC();
 	write_buffer(false);
 }
 
 void Scrollpad::reset()
 {
-	m_beginning = 0;
+	nc_scrollpad_reset(&m_scrollpad);
 }
 
 bool Scrollpad::setProperties(const Color &begin, const std::string &s,

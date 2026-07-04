@@ -22,6 +22,7 @@
 #define NCMPCPP_SCROLLPAD_H
 
 #include "curses/window.h"
+#include "curses/nc_scrollpad.h"
 #include "curses/strbuffer.h"
 #include "utility/regex.h"
 
@@ -31,7 +32,7 @@ namespace NC {
 /// supports scrolling if the amount of it is bigger than the window area.
 struct Scrollpad: public Window
 {
-	Scrollpad() { }
+	Scrollpad();
 	
 	Scrollpad(size_t startx, size_t starty, size_t width, size_t height,
 	          const std::string &title, Color color, Border border);
@@ -74,9 +75,7 @@ private:
 	}
 
 	Buffer m_buffer;
-	
-	size_t m_beginning;
-	size_t m_real_height;
+	NcScrollpad m_scrollpad;
 };
 
 }
