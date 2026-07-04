@@ -75,6 +75,107 @@ ncm_string_contains_char(char *string, int32 string_len, char needle) {
     return ncm_string_find_char(string, string_len, needle) >= 0;
 }
 
+NcmBuffer
+ncm_string_shared_directory(char *left, int32 left_len,
+                            char *right, int32 right_len) {
+    NcmBuffer result;
+    int32 min_len;
+    int32 common;
+    int32 slash;
+
+    ncm_buffer_init(&result);
+    if ((left == NULL) || (right == NULL)) {
+        ncm_buffer_append(&result, STRLIT_ARGS("/"));
+        return result;
+    }
+    if (left_len < 0) {
+        left_len = 0;
+    }
+    if (right_len < 0) {
+        right_len = 0;
+    }
+
+    min_len = left_len;
+    if (right_len < min_len) {
+        min_len = right_len;
+    }
+
+    common = 0;
+    while ((common < min_len) && (left[common] == right[common])) {
+        common += 1;
+    }
+
+    slash = -1;
+    for (int32 i = 0; (i <= common) && (i < left_len); i += 1) {
+        if (left[i] == '/') {
+            slash = i;
+        }
+    }
+
+    if (slash < 0) {
+        ncm_buffer_append(&result, STRLIT_ARGS("/"));
+    } else if (slash > 0) {
+        ncm_buffer_append(&result, left, slash);
+    }
+
+    return result;
+}
+
+NcmBuffer
+ncm_string_get_enclosed(char *string, int32 string_len,
+                        char open, char close,
+                        int32 start, int32 *pos) {
+    NcmBuffer result;
+    int32 i;
+
+    ncm_buffer_init(&result);
+    if (pos) {
+        *pos = -1;
+    }
+    if (string == NULL) {
+        return result;
+    }
+    if (string_len < 0) {
+        string_len = 0;
+    }
+    if (start < 0) {
+        start = 0;
+    }
+    if (start > string_len) {
+        start = string_len;
+    }
+
+    i = start;
+    while ((i < string_len) && (string[i] != open)) {
+        i += 1;
+    }
+    if (i >= string_len) {
+        return result;
+    }
+
+    i += 1;
+    while ((i < string_len) && (string[i] != close)) {
+        if ((string[i] == '\\')
+            && (i + 1 < string_len)
+            && ((string[i + 1] == '\\') || (string[i + 1] == close))) {
+            i += 1;
+        }
+        ncm_buffer_append_byte(&result, string[i]);
+        i += 1;
+    }
+
+    if (i < string_len) {
+        i += 1;
+    } else {
+        ncm_buffer_clear(&result);
+    }
+    if (pos) {
+        *pos = i;
+    }
+
+    return result;
+}
+
 void
 ncm_string_remove_chars(char *string, int32 *string_len,
                         char *chars, int32 chars_len) {
@@ -105,6 +206,28 @@ ncm_string_remove_chars(char *string, int32 *string_len,
     if (out >= 0) {
         string[out] = '\0';
     }
+    return;
+}
+
+void
+ncm_string_remove_invalid_filename_chars(char *filename,
+                                         int32 *filename_len,
+                                         bool win32_compatible) {
+    char win32_unallowed_chars[] = "\"*/:<>?\\|";
+    char unix_unallowed_chars[] = "/";
+    char *unallowed_chars;
+    int32 unallowed_chars_len;
+
+    if (win32_compatible) {
+        unallowed_chars = win32_unallowed_chars;
+        unallowed_chars_len = STRLIT_LEN("\"*/:<>?\\|");
+    } else {
+        unallowed_chars = unix_unallowed_chars;
+        unallowed_chars_len = STRLIT_LEN("/");
+    }
+
+    ncm_string_remove_chars(filename, filename_len,
+                            unallowed_chars, unallowed_chars_len);
     return;
 }
 
