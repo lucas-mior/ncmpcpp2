@@ -1,0 +1,79 @@
+#if !defined(NCM_MPD_CONNECTION_H)
+#define NCM_MPD_CONNECTION_H
+
+#include <mpd/client.h>
+
+#include "c/ncm_error.h"
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+typedef struct NcmMpdConnection {
+    struct mpd_connection *mpd;
+    NcmError error;
+    enum mpd_error error_code;
+    enum mpd_server_error server_error_code;
+    bool error_clearable;
+} NcmMpdConnection;
+
+typedef struct NcmMpdStats {
+    uint32 artists;
+    uint32 albums;
+    uint32 songs;
+    uint64 play_time;
+    uint64 uptime;
+    uint64 db_update_time;
+    uint64 db_play_time;
+} NcmMpdStats;
+
+typedef struct NcmMpdStatus {
+    int32 volume;
+    bool repeat;
+    bool random;
+    bool single;
+    bool consume;
+    uint32 queue_length;
+    uint32 queue_version;
+    enum mpd_state state;
+    uint32 crossfade;
+    int32 song_pos;
+    int32 song_id;
+    int32 next_song_pos;
+    int32 next_song_id;
+    uint32 elapsed_time;
+    uint32 total_time;
+    uint32 kbit_rate;
+    uint32 update_id;
+    char error[256];
+} NcmMpdStatus;
+
+void ncm_mpd_connection_init(NcmMpdConnection *connection);
+void ncm_mpd_connection_destroy(NcmMpdConnection *connection);
+bool ncm_mpd_connection_connect(NcmMpdConnection *connection,
+                                char *host,
+                                uint16 port,
+                                uint32 timeout_ms);
+void ncm_mpd_connection_disconnect(NcmMpdConnection *connection);
+bool ncm_mpd_connection_is_connected(NcmMpdConnection *connection);
+struct mpd_connection *ncm_mpd_connection_mpd(
+    NcmMpdConnection *connection);
+int32 ncm_mpd_connection_fd(NcmMpdConnection *connection);
+bool ncm_mpd_connection_check_error(NcmMpdConnection *connection);
+char *ncm_mpd_connection_error(NcmMpdConnection *connection);
+void ncm_mpd_connection_clear_error(NcmMpdConnection *connection);
+enum mpd_error ncm_mpd_connection_error_code(
+    NcmMpdConnection *connection);
+enum mpd_server_error ncm_mpd_connection_server_error_code(
+    NcmMpdConnection *connection);
+bool ncm_mpd_connection_error_clearable(NcmMpdConnection *connection);
+bool ncm_mpd_connection_get_stats(NcmMpdConnection *connection,
+                                  NcmMpdStats *stats);
+bool ncm_mpd_connection_get_status(NcmMpdConnection *connection,
+                                   NcmMpdStatus *status);
+
+#if defined(__cplusplus)
+}
+#endif
+
+#endif /* NCM_MPD_CONNECTION_H */
