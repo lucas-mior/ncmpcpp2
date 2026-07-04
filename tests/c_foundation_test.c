@@ -273,14 +273,49 @@ test_html(void) {
 static void
 test_sample_buffer(void) {
     NcmSampleBuffer buffer;
-    int16 first_samples[] = {1, 2, 3, 4};
-    int16 second_samples[] = {5, 6, 7};
-    int16 too_many_samples[] = {8, 9, 10, 11, 12};
-    int16 dest[] = {-1, -1, -1};
-    int16 copy_dest[] = {0, 0, 0, 0};
+    NcmSampleBuffer copy;
+    NcmSampleBuffer moved;
+    int16 first_samples[] = {
+        1,
+        2,
+        3,
+        4,
+    };
+    int16 second_samples[] = {
+        5,
+        6,
+        7,
+    };
+    int16 too_many_samples[] = {
+        8,
+        9,
+        10,
+        11,
+        12,
+    };
+    int16 dest[] = {
+        -1,
+        -1,
+        -1,
+    };
+    int16 copy_dest[] = {
+        0,
+        0,
+        0,
+        0,
+    };
+    int16 snapshot[] = {
+        0,
+        0,
+        0,
+        0,
+    };
     int32 copied;
 
     ncm_sample_buffer_init(&buffer);
+    ncm_sample_buffer_init(&copy);
+    ncm_sample_buffer_init(&moved);
+
     ncm_sample_buffer_resize(&buffer, 4);
     REQUIRE_INT(ncm_sample_buffer_capacity(&buffer), 4);
     REQUIRE_INT(ncm_sample_buffer_size(&buffer), 0);
@@ -288,6 +323,28 @@ test_sample_buffer(void) {
     REQUIRE(ncm_sample_buffer_put(&buffer, first_samples,
                                   NCM_ARRAY_LEN(first_samples)));
     REQUIRE_INT(ncm_sample_buffer_size(&buffer), 4);
+    copied = ncm_sample_buffer_copy_data(&buffer, snapshot,
+                                         NCM_ARRAY_LEN(snapshot));
+    REQUIRE_INT(copied, 4);
+    REQUIRE_INT(snapshot[0], 1);
+    REQUIRE_INT(snapshot[1], 2);
+    REQUIRE_INT(snapshot[2], 3);
+    REQUIRE_INT(snapshot[3], 4);
+
+    ncm_sample_buffer_copy(&copy, &buffer);
+    REQUIRE_INT(ncm_sample_buffer_capacity(&copy), 4);
+    REQUIRE_INT(ncm_sample_buffer_size(&copy), 4);
+    copied = ncm_sample_buffer_get_clamped(&copy, (int64)1 << 40,
+                                           copy_dest,
+                                           NCM_ARRAY_LEN(copy_dest));
+    REQUIRE_INT(copied, 4);
+    REQUIRE_INT(copy_dest[0], 1);
+    REQUIRE_INT(copy_dest[1], 2);
+    REQUIRE_INT(copy_dest[2], 3);
+    REQUIRE_INT(copy_dest[3], 4);
+    REQUIRE_INT(ncm_sample_buffer_size(&copy), 0);
+    REQUIRE_INT(ncm_sample_buffer_size(&buffer), 4);
+
     REQUIRE(!ncm_sample_buffer_put(&buffer, too_many_samples,
                                    NCM_ARRAY_LEN(too_many_samples)));
     REQUIRE_INT(ncm_sample_buffer_size(&buffer), 4);
@@ -302,15 +359,32 @@ test_sample_buffer(void) {
     REQUIRE(ncm_sample_buffer_put(&buffer, second_samples,
                                   NCM_ARRAY_LEN(second_samples)));
     REQUIRE_INT(ncm_sample_buffer_size(&buffer), 4);
-    copied = ncm_sample_buffer_get(&buffer, 1000,
-                                   copy_dest, NCM_ARRAY_LEN(copy_dest));
+
+    ncm_sample_buffer_move(&moved, &buffer);
+    REQUIRE_INT(ncm_sample_buffer_capacity(&buffer), 0);
+    REQUIRE_INT(ncm_sample_buffer_size(&buffer), 0);
+    REQUIRE_INT(ncm_sample_buffer_capacity(&moved), 4);
+    REQUIRE_INT(ncm_sample_buffer_size(&moved), 4);
+
+    copied = ncm_sample_buffer_get_clamped(&moved, 1000,
+                                           copy_dest,
+                                           NCM_ARRAY_LEN(copy_dest));
     REQUIRE_INT(copied, 4);
     REQUIRE_INT(copy_dest[0], 4);
     REQUIRE_INT(copy_dest[1], 5);
     REQUIRE_INT(copy_dest[2], 6);
     REQUIRE_INT(copy_dest[3], 7);
-    REQUIRE_INT(ncm_sample_buffer_size(&buffer), 0);
+    REQUIRE_INT(ncm_sample_buffer_size(&moved), 0);
 
+    ncm_sample_buffer_clear(&moved);
+    REQUIRE_INT(ncm_sample_buffer_size(&moved), 0);
+    REQUIRE_INT(ncm_sample_buffer_capacity(&moved), 4);
+    ncm_sample_buffer_resize(&moved, -1);
+    REQUIRE_INT(ncm_sample_buffer_capacity(&moved), 0);
+    REQUIRE_INT(ncm_sample_buffer_size(&moved), 0);
+
+    ncm_sample_buffer_destroy(&moved);
+    ncm_sample_buffer_destroy(&copy);
     ncm_sample_buffer_destroy(&buffer);
     return;
 }

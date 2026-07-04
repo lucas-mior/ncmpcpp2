@@ -49,6 +49,7 @@ struct SampleBuffer
 
 private:
 	static int32 checkedSize(size_t size);
+	static int64 checkedRequest(size_t size);
 
 	mutable std::vector<int16_t> m_buffer_view;
 	NcmSampleBuffer m_buffer;
