@@ -214,6 +214,7 @@ struct Item
 
 	Item();
 	Item(mpd_entity *entity);
+	Item(NcmMpdItem *item);
 	Item(Directory directory_);
 	Item(Song song_);
 	Item(Playlist playlist_);
