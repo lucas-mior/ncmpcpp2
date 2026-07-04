@@ -20,6 +20,7 @@
 
 #include <utility>
 
+#include "c/ncm_base.h"
 #include "mutable_song.h"
 
 namespace {
@@ -37,59 +38,13 @@ std::string stringFromView(NcmStringView view)
 		return std::string(view.data, view.len);
 }
 
-std::string songArtist(const MPD::Song *song, unsigned idx)
+std::string stringFromBuffer(NcmBuffer buffer)
 {
-	return song->MPD::Song::getArtist(idx);
-}
-
-std::string songTitle(const MPD::Song *song, unsigned idx)
-{
-	return song->MPD::Song::getTitle(idx);
-}
-
-std::string songAlbum(const MPD::Song *song, unsigned idx)
-{
-	return song->MPD::Song::getAlbum(idx);
-}
-
-std::string songAlbumArtist(const MPD::Song *song, unsigned idx)
-{
-	return song->MPD::Song::getAlbumArtist(idx);
-}
-
-std::string songTrack(const MPD::Song *song, unsigned idx)
-{
-	return song->MPD::Song::getTrack(idx);
-}
-
-std::string songDate(const MPD::Song *song, unsigned idx)
-{
-	return song->MPD::Song::getDate(idx);
-}
-
-std::string songGenre(const MPD::Song *song, unsigned idx)
-{
-	return song->MPD::Song::getGenre(idx);
-}
-
-std::string songComposer(const MPD::Song *song, unsigned idx)
-{
-	return song->MPD::Song::getComposer(idx);
-}
-
-std::string songPerformer(const MPD::Song *song, unsigned idx)
-{
-	return song->MPD::Song::getPerformer(idx);
-}
-
-std::string songDisc(const MPD::Song *song, unsigned idx)
-{
-	return song->MPD::Song::getDisc(idx);
-}
-
-std::string songComment(const MPD::Song *song, unsigned idx)
-{
-	return song->MPD::Song::getComment(idx);
+	std::string result;
+	if (buffer.data != nullptr)
+		result.assign(buffer.data, buffer.len);
+	ncm_buffer_destroy(&buffer);
+	return result;
 }
 
 }
@@ -171,12 +126,9 @@ std::string MutableSong::getAlbumArtist(unsigned idx) const
 
 std::string MutableSong::getTrack(unsigned idx) const
 {
-	std::string track = getTag(NCM_TAGS_FIELD_TRACK, idx);
-	if ((track.length() == 1 && track[0] != '0')
-	||  (track.length() > 3  && track[1] == '/'))
-		return "0"+track;
-	else
-		return track;
+	return stringFromBuffer(ncm_mutable_song_get_numeric_tag_buffer(
+		const_cast<NcmMutableSong *>(&m_mutable), NCM_TAGS_FIELD_TRACK,
+		static_cast<int32>(idx)));
 }
 
 std::string MutableSong::getDate(unsigned idx) const
@@ -363,52 +315,7 @@ void MutableSong::setTag(enum NcmTagsField field, const std::string &value,
 
 void MutableSong::loadOriginals()
 {
-	std::string uri = Song::getURI();
-	std::string directory = Song::getDirectory();
-	std::string name = Song::getName();
-
-	ncm_mutable_song_set_uri(&m_mutable, const_cast<char *>(uri.c_str()),
-	                         stringLength(uri));
-	ncm_mutable_song_set_directory(&m_mutable,
-	                               const_cast<char *>(directory.c_str()),
-	                               stringLength(directory));
-	ncm_mutable_song_set_name(&m_mutable, const_cast<char *>(name.c_str()),
-	                          stringLength(name));
-	ncm_mutable_song_set_from_database(&m_mutable, Song::isFromDatabase());
-
-	loadOriginalTags(NCM_TAGS_FIELD_ARTIST, songArtist);
-	loadOriginalTags(NCM_TAGS_FIELD_TITLE, songTitle);
-	loadOriginalTags(NCM_TAGS_FIELD_ALBUM, songAlbum);
-	loadOriginalTags(NCM_TAGS_FIELD_ALBUM_ARTIST, songAlbumArtist);
-	loadOriginalTags(NCM_TAGS_FIELD_TRACK, songTrack);
-	loadOriginalTags(NCM_TAGS_FIELD_DATE, songDate);
-	loadOriginalTags(NCM_TAGS_FIELD_GENRE, songGenre);
-	loadOriginalTags(NCM_TAGS_FIELD_COMPOSER, songComposer);
-	loadOriginalTags(NCM_TAGS_FIELD_PERFORMER, songPerformer);
-	loadOriginalTags(NCM_TAGS_FIELD_DISC, songDisc);
-	loadOriginalTags(NCM_TAGS_FIELD_COMMENT, songComment);
-}
-
-void MutableSong::loadOriginalTag(enum NcmTagsField field, unsigned idx,
-                                  const std::string &value)
-{
-	ncm_mutable_song_set_original_tag(&m_mutable, field,
-	                                  static_cast<int32>(idx),
-	                                  const_cast<char *>(value.c_str()),
-	                                  stringLength(value));
-}
-
-void MutableSong::loadOriginalTags(enum NcmTagsField field,
-                                   std::string (*getter)(const Song *,
-                                                         unsigned))
-{
-	for (unsigned i = 0; ; i += 1)
-	{
-		std::string value = getter(this, i);
-		if (value.empty())
-			break;
-		loadOriginalTag(field, i, value);
-	}
+	ncm_mutable_song_load_originals_from_song(&m_mutable, cSong());
 }
 
 enum NcmTagsField MutableSong::fieldForSetFunction(SetFunction set)

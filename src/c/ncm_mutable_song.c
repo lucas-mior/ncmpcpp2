@@ -1,5 +1,6 @@
 #include "c/ncm_mutable_song.h"
 
+#include "c/ncm_base.h"
 #include "cbase/base_macros.h"
 #include "cbase/cbase.h"
 
@@ -23,6 +24,8 @@ static bool ncm_mutable_song_tag_copy(NcmMutableSongTag *dest,
 static bool ncm_mutable_song_write_callback(enum NcmTagsField field,
                                             int32 idx, NcmStringView *value,
                                             void *user);
+static enum NcmSongGetter ncm_mutable_song_field_getter(
+    enum NcmTagsField field);
 
 static void
 ncm_mutable_song_view_init(NcmStringView *view) {
@@ -235,6 +238,37 @@ ncm_mutable_song_tag_copy(NcmMutableSongTag *dest,
     }
 
     return true;
+}
+
+static enum NcmSongGetter
+ncm_mutable_song_field_getter(enum NcmTagsField field) {
+    switch (field) {
+    case NCM_TAGS_FIELD_TITLE:
+        return NCM_SONG_GETTER_TITLE;
+    case NCM_TAGS_FIELD_ARTIST:
+        return NCM_SONG_GETTER_ARTIST;
+    case NCM_TAGS_FIELD_ALBUM_ARTIST:
+        return NCM_SONG_GETTER_ALBUM_ARTIST;
+    case NCM_TAGS_FIELD_ALBUM:
+        return NCM_SONG_GETTER_ALBUM;
+    case NCM_TAGS_FIELD_DATE:
+        return NCM_SONG_GETTER_DATE;
+    case NCM_TAGS_FIELD_TRACK:
+        return NCM_SONG_GETTER_TRACK;
+    case NCM_TAGS_FIELD_GENRE:
+        return NCM_SONG_GETTER_GENRE;
+    case NCM_TAGS_FIELD_COMPOSER:
+        return NCM_SONG_GETTER_COMPOSER;
+    case NCM_TAGS_FIELD_PERFORMER:
+        return NCM_SONG_GETTER_PERFORMER;
+    case NCM_TAGS_FIELD_DISC:
+        return NCM_SONG_GETTER_DISC;
+    case NCM_TAGS_FIELD_COMMENT:
+        return NCM_SONG_GETTER_COMMENT;
+    case NCM_TAGS_FIELD_LAST:
+    default:
+        return NCM_SONG_GETTER_NONE;
+    }
 }
 
 static bool
@@ -563,6 +597,88 @@ ncm_mutable_song_get_tag(NcmMutableSong *song, enum NcmTagsField field,
 
     view->data = tag->original;
     view->len = tag->original_len;
+    return true;
+}
+
+NcmBuffer
+ncm_mutable_song_get_numeric_tag_buffer(NcmMutableSong *song,
+                                        enum NcmTagsField field,
+                                        int32 idx) {
+    NcmBuffer buffer;
+    NcmStringView view;
+    int32 len;
+
+    ncm_buffer_init(&buffer);
+    if (!ncm_mutable_song_get_tag(song, field, idx, &view)) {
+        return buffer;
+    }
+
+    len = ncm_song_numeric_tag_len(view.data, view.len);
+    ncm_buffer_reserve(&buffer, len);
+    buffer.len = ncm_song_format_numeric_tag(buffer.data, buffer.cap,
+                                             view.data, view.len);
+    return buffer;
+}
+
+bool
+ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
+                                          NcmSong *source) {
+    NcmStringView view;
+
+    if (dest == NULL) {
+        return false;
+    }
+    if (source == NULL) {
+        return false;
+    }
+    if (!ncm_song_uri_view(source, 0, &view)) {
+        return false;
+    }
+    if (!ncm_mutable_song_set_uri(dest, view.data, view.len)) {
+        return false;
+    }
+    if (ncm_song_directory_view(source, 0, &view)) {
+        if (!ncm_mutable_song_set_directory(dest, view.data, view.len)) {
+            return false;
+        }
+    } else if (!ncm_mutable_song_set_directory(dest, "", 0)) {
+        return false;
+    }
+    if (ncm_song_name_view(source, 0, &view)) {
+        if (!ncm_mutable_song_set_name(dest, view.data, view.len)) {
+            return false;
+        }
+    } else if (!ncm_mutable_song_set_name(dest, "", 0)) {
+        return false;
+    }
+    ncm_mutable_song_set_from_database(dest,
+                                       ncm_song_is_from_database(source));
+
+    for (uint32 field = 0; field < NCM_TAGS_FIELD_LAST; field += 1) {
+        enum NcmSongGetter getter;
+
+        getter = ncm_mutable_song_field_getter((enum NcmTagsField)field);
+        if (getter == NCM_SONG_GETTER_NONE) {
+            continue;
+        }
+        for (uint32 i = 0; ; i += 1) {
+            NcmBuffer buffer;
+
+            buffer = ncm_song_getter_buffer(source, getter, i);
+            if (buffer.len == 0) {
+                ncm_buffer_destroy(&buffer);
+                break;
+            }
+            if (!ncm_mutable_song_set_original_tag(
+                    dest, (enum NcmTagsField)field, (int32)i,
+                    buffer.data, buffer.len)) {
+                ncm_buffer_destroy(&buffer);
+                return false;
+            }
+            ncm_buffer_destroy(&buffer);
+        }
+    }
+
     return true;
 }
 

@@ -7,8 +7,12 @@
 #include "c/ncm_base.h"
 #include "c/ncm_error.h"
 #include "c/ncm_html.h"
+#include "c/ncm_mpd_item.h"
+#include "c/ncm_mutable_song.h"
 #include "c/ncm_path.h"
+#include "c/ncm_playlist.h"
 #include "c/ncm_sample_buffer.h"
+#include "c/ncm_song.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
 #include "c/ncm_utf8.h"
@@ -51,6 +55,7 @@ static void test_path(void);
 static void test_string(void);
 static void test_html(void);
 static void test_sample_buffer(void);
+static void test_model_wrappers(void);
 static void test_type_conversions(void);
 static void test_utf8(void);
 
@@ -448,6 +453,112 @@ test_sample_buffer(void) {
 }
 
 static void
+test_model_wrappers(void) {
+    NcmSong song;
+    NcmSong same_song;
+    NcmSong other_song;
+    NcmMutableSong mutable_song;
+    NcmPlaylist playlist;
+    NcmPlaylist same_playlist;
+    NcmPlaylist moved_playlist;
+    NcmMpdItem song_item;
+    NcmMpdItem same_song_item;
+    NcmMpdItem moved_item;
+    NcmBuffer buffer;
+    NcmStringView view;
+
+    ncm_song_init(&song);
+    ncm_song_init(&same_song);
+    ncm_song_init(&other_song);
+    ncm_mutable_song_init(&mutable_song);
+    ncm_playlist_init(&playlist);
+    ncm_playlist_init(&same_playlist);
+    ncm_playlist_init(&moved_playlist);
+    ncm_mpd_item_init(&song_item);
+    ncm_mpd_item_init(&same_song_item);
+    ncm_mpd_item_init(&moved_item);
+
+    REQUIRE(ncm_song_set_uri(&song, LIT_ARGS("album/track.flac")));
+    REQUIRE(ncm_song_add_tag(&song, MPD_TAG_ARTIST, LIT_ARGS("Alice")));
+    REQUIRE(ncm_song_add_tag(&song, MPD_TAG_ARTIST, LIT_ARGS("Alice")));
+    REQUIRE(ncm_song_add_tag(&song, MPD_TAG_ARTIST, LIT_ARGS("Bob")));
+    REQUIRE(ncm_song_add_tag(&song, MPD_TAG_TRACK, LIT_ARGS("1")));
+    ncm_song_set_duration(&song, 65);
+    ncm_song_set_priority(&song, 7);
+
+    REQUIRE(ncm_song_copy(&same_song, &song));
+    REQUIRE(ncm_song_set_uri(&other_song, LIT_ARGS("other.flac")));
+    REQUIRE(ncm_song_equal(&song, &same_song));
+    REQUIRE(!ncm_song_equal(&song, &other_song));
+
+    buffer = ncm_song_getter_buffer(&song, NCM_SONG_GETTER_TRACK, 0);
+    require_buffer_string((char *)"song track", &buffer, LIT_ARGS("01"));
+    ncm_buffer_destroy(&buffer);
+
+    buffer = ncm_song_getter_buffer(&song, NCM_SONG_GETTER_TRACK_NUMBER, 0);
+    require_buffer_string((char *)"song track number", &buffer,
+                          LIT_ARGS("01"));
+    ncm_buffer_destroy(&buffer);
+
+    buffer = ncm_song_getter_buffer(&song, NCM_SONG_GETTER_LENGTH, 0);
+    require_buffer_string((char *)"song length", &buffer, LIT_ARGS("1:05"));
+    ncm_buffer_destroy(&buffer);
+
+    buffer = ncm_song_tags_buffer(&song, NCM_SONG_GETTER_ARTIST,
+                                  LIT_ARGS(" | "), false);
+    require_buffer_string((char *)"deduplicated song tags", &buffer,
+                          LIT_ARGS("Alice | Bob"));
+    ncm_buffer_destroy(&buffer);
+
+    REQUIRE(ncm_mutable_song_load_originals_from_song(&mutable_song, &song));
+    REQUIRE(ncm_mutable_song_get_tag(&mutable_song, NCM_TAGS_FIELD_ARTIST,
+                                     2, &view));
+    REQUIRE_STRING(view.data, view.len, "Bob");
+    REQUIRE(ncm_mutable_song_get_tag(&mutable_song, NCM_TAGS_FIELD_TRACK,
+                                     0, &view));
+    REQUIRE_STRING(view.data, view.len, "01");
+    buffer = ncm_mutable_song_get_numeric_tag_buffer(
+        &mutable_song, NCM_TAGS_FIELD_TRACK, 0);
+    require_buffer_string((char *)"mutable numeric track", &buffer,
+                          LIT_ARGS("01"));
+    ncm_buffer_destroy(&buffer);
+    REQUIRE(!ncm_mutable_song_is_modified(&mutable_song));
+    REQUIRE(ncm_mutable_song_set_tag(&mutable_song, NCM_TAGS_FIELD_TITLE,
+                                     0, LIT_ARGS("New Title")));
+    REQUIRE(ncm_mutable_song_is_modified(&mutable_song));
+
+    REQUIRE(ncm_playlist_set(&playlist, LIT_ARGS("mix.m3u"), 123));
+    REQUIRE(ncm_playlist_copy(&same_playlist, &playlist));
+    REQUIRE(ncm_playlist_equal(&playlist, &same_playlist));
+    REQUIRE(ncm_playlist_path_view(&playlist, &view));
+    REQUIRE_STRING(view.data, view.len, "mix.m3u");
+    REQUIRE_INT((int32)ncm_playlist_last_modified(&playlist), 123);
+    ncm_playlist_move(&moved_playlist, &same_playlist);
+    REQUIRE(ncm_playlist_path_view(&moved_playlist, &view));
+    REQUIRE_STRING(view.data, view.len, "mix.m3u");
+    REQUIRE(!ncm_playlist_path_view(&same_playlist, &view));
+
+    REQUIRE(ncm_mpd_item_set_song(&song_item, &song));
+    REQUIRE(ncm_mpd_item_set_song(&same_song_item, &same_song));
+    REQUIRE(ncm_mpd_item_equal(&song_item, &same_song_item));
+    ncm_mpd_item_move(&moved_item, &same_song_item);
+    REQUIRE(ncm_mpd_item_kind(&moved_item) == NCM_MPD_ITEM_SONG);
+    REQUIRE(ncm_mpd_item_kind(&same_song_item) == NCM_MPD_ITEM_UNKNOWN);
+
+    ncm_mpd_item_destroy(&moved_item);
+    ncm_mpd_item_destroy(&same_song_item);
+    ncm_mpd_item_destroy(&song_item);
+    ncm_playlist_destroy(&moved_playlist);
+    ncm_playlist_destroy(&same_playlist);
+    ncm_playlist_destroy(&playlist);
+    ncm_mutable_song_destroy(&mutable_song);
+    ncm_song_destroy(&other_song);
+    ncm_song_destroy(&same_song);
+    ncm_song_destroy(&song);
+    return;
+}
+
+static void
 test_type_conversions(void) {
     char buffer[16];
     int32 len;
@@ -548,6 +659,7 @@ main(void) {
     test_string();
     test_html();
     test_sample_buffer();
+    test_model_wrappers();
     test_type_conversions();
     test_utf8();
     return EXIT_SUCCESS;

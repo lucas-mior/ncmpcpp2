@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 #include <cassert>
-#include <cstring>
 #include <functional>
 #include <memory>
 #include <new>
@@ -27,6 +26,7 @@
 #include <string>
 #include <utility>
 
+#include "c/ncm_base.h"
 #include "c/ncm_song.h"
 #include "song.h"
 
@@ -40,24 +40,103 @@ std::string stringFromView(NcmStringView view)
 		return std::string(view.data, view.len);
 }
 
-std::string formattedNumericTag(NcmStringView tag)
+std::string stringFromBuffer(NcmBuffer buffer)
 {
-	int len = ncm_song_numeric_tag_len(tag.data, tag.len);
-	std::string result(len+1, '\0');
-	int written = ncm_song_format_numeric_tag(result.data(), result.size(),
-	                                        tag.data, tag.len);
-	result.resize(written);
+	std::string result;
+	if (buffer.data != nullptr)
+		result.assign(buffer.data, buffer.len);
+	ncm_buffer_destroy(&buffer);
 	return result;
 }
 
-std::string formattedTrackNumber(NcmStringView tag)
+std::string songString(const NcmSong *song, NcmSongGetter getter,
+                       unsigned idx)
 {
-	int len = ncm_song_track_number_len(tag.data, tag.len);
-	std::string result(len+1, '\0');
-	int written = ncm_song_format_track_number(result.data(), result.size(),
-	                                          tag.data, tag.len);
-	result.resize(written);
-	return result;
+	return stringFromBuffer(ncm_song_getter_buffer(
+		const_cast<NcmSong *>(song), getter, idx));
+}
+
+MPD::Song::GetFunction functionFromGetter(NcmSongGetter getter)
+{
+	switch (getter)
+	{
+		case NCM_SONG_GETTER_LENGTH:
+			return &MPD::Song::getLength;
+		case NCM_SONG_GETTER_DIRECTORY:
+			return &MPD::Song::getDirectory;
+		case NCM_SONG_GETTER_NAME:
+			return &MPD::Song::getName;
+		case NCM_SONG_GETTER_URI:
+			return &MPD::Song::getURI;
+		case NCM_SONG_GETTER_ARTIST:
+			return &MPD::Song::getArtist;
+		case NCM_SONG_GETTER_ALBUM_ARTIST:
+			return &MPD::Song::getAlbumArtist;
+		case NCM_SONG_GETTER_TITLE:
+			return &MPD::Song::getTitle;
+		case NCM_SONG_GETTER_ALBUM:
+			return &MPD::Song::getAlbum;
+		case NCM_SONG_GETTER_DATE:
+			return &MPD::Song::getDate;
+		case NCM_SONG_GETTER_TRACK_NUMBER:
+			return &MPD::Song::getTrackNumber;
+		case NCM_SONG_GETTER_TRACK:
+			return &MPD::Song::getTrack;
+		case NCM_SONG_GETTER_GENRE:
+			return &MPD::Song::getGenre;
+		case NCM_SONG_GETTER_COMPOSER:
+			return &MPD::Song::getComposer;
+		case NCM_SONG_GETTER_PERFORMER:
+			return &MPD::Song::getPerformer;
+		case NCM_SONG_GETTER_DISC:
+			return &MPD::Song::getDisc;
+		case NCM_SONG_GETTER_COMMENT:
+			return &MPD::Song::getComment;
+		case NCM_SONG_GETTER_PRIORITY:
+			return &MPD::Song::getPriority;
+		case NCM_SONG_GETTER_NONE:
+		default:
+			return nullptr;
+	}
+}
+
+NcmSongGetter getterFromFunction(MPD::Song::GetFunction f)
+{
+	if (f == &MPD::Song::getLength)
+		return NCM_SONG_GETTER_LENGTH;
+	if (f == &MPD::Song::getDirectory)
+		return NCM_SONG_GETTER_DIRECTORY;
+	if (f == &MPD::Song::getName)
+		return NCM_SONG_GETTER_NAME;
+	if (f == &MPD::Song::getURI)
+		return NCM_SONG_GETTER_URI;
+	if (f == &MPD::Song::getArtist)
+		return NCM_SONG_GETTER_ARTIST;
+	if (f == &MPD::Song::getAlbumArtist)
+		return NCM_SONG_GETTER_ALBUM_ARTIST;
+	if (f == &MPD::Song::getTitle)
+		return NCM_SONG_GETTER_TITLE;
+	if (f == &MPD::Song::getAlbum)
+		return NCM_SONG_GETTER_ALBUM;
+	if (f == &MPD::Song::getDate)
+		return NCM_SONG_GETTER_DATE;
+	if (f == &MPD::Song::getTrackNumber)
+		return NCM_SONG_GETTER_TRACK_NUMBER;
+	if (f == &MPD::Song::getTrack)
+		return NCM_SONG_GETTER_TRACK;
+	if (f == &MPD::Song::getGenre)
+		return NCM_SONG_GETTER_GENRE;
+	if (f == &MPD::Song::getComposer)
+		return NCM_SONG_GETTER_COMPOSER;
+	if (f == &MPD::Song::getPerformer)
+		return NCM_SONG_GETTER_PERFORMER;
+	if (f == &MPD::Song::getDisc)
+		return NCM_SONG_GETTER_DISC;
+	if (f == &MPD::Song::getComment)
+		return NCM_SONG_GETTER_COMMENT;
+	if (f == &MPD::Song::getPriority)
+		return NCM_SONG_GETTER_PRIORITY;
+	return NCM_SONG_GETTER_NONE;
 }
 
 void hash_combine(size_t &seed, char c)
@@ -184,33 +263,20 @@ std::string Song::get(mpd_tag_type type, unsigned idx) const
 
 std::string Song::getURI(unsigned idx) const
 {
-	NcmStringView uri;
-
 	assert(!empty());
-	if (!ncm_song_uri_view(const_cast<NcmSong *>(&m_song), idx, &uri))
-		return "";
-	return stringFromView(uri);
+	return songString(&m_song, NCM_SONG_GETTER_URI, idx);
 }
 
 std::string Song::getName(unsigned idx) const
 {
-	NcmStringView name;
-
 	assert(!empty());
-	if (!ncm_song_name_view(const_cast<NcmSong *>(&m_song), idx, &name))
-		return "";
-	return stringFromView(name);
+	return songString(&m_song, NCM_SONG_GETTER_NAME, idx);
 }
 
 std::string Song::getDirectory(unsigned idx) const
 {
-	NcmStringView directory;
-
 	assert(!empty());
-	if (!ncm_song_directory_view(const_cast<NcmSong *>(&m_song), idx,
-	                            &directory))
-		return "";
-	return stringFromView(directory);
+	return songString(&m_song, NCM_SONG_GETTER_DIRECTORY, idx);
 }
 
 std::string Song::getArtist(unsigned idx) const
@@ -239,24 +305,14 @@ std::string Song::getAlbumArtist(unsigned idx) const
 
 std::string Song::getTrack(unsigned idx) const
 {
-	NcmStringView track;
-
 	assert(!empty());
-	if (!ncm_song_tag_view(const_cast<NcmSong *>(&m_song), MPD_TAG_TRACK,
-	                       idx, &track))
-		return "";
-	return formattedNumericTag(track);
+	return songString(&m_song, NCM_SONG_GETTER_TRACK, idx);
 }
 
 std::string Song::getTrackNumber(unsigned idx) const
 {
-	NcmStringView track;
-
 	assert(!empty());
-	if (!ncm_song_tag_view(const_cast<NcmSong *>(&m_song), MPD_TAG_TRACK,
-	                       idx, &track))
-		return "";
-	return formattedTrackNumber(track);
+	return songString(&m_song, NCM_SONG_GETTER_TRACK_NUMBER, idx);
 }
 
 std::string Song::getDate(unsigned idx) const
@@ -285,13 +341,8 @@ std::string Song::getPerformer(unsigned idx) const
 
 std::string Song::getDisc(unsigned idx) const
 {
-	NcmStringView disc;
-
 	assert(!empty());
-	if (!ncm_song_tag_view(const_cast<NcmSong *>(&m_song), MPD_TAG_DISC,
-	                       idx, &disc))
-		return "";
-	return formattedNumericTag(disc);
+	return songString(&m_song, NCM_SONG_GETTER_DISC, idx);
 }
 
 std::string Song::getComment(unsigned idx) const
@@ -303,62 +354,22 @@ std::string Song::getComment(unsigned idx) const
 std::string Song::getLength(unsigned idx) const
 {
 	assert(!empty());
-	if (idx > 0)
-		return "";
-	unsigned len = getDuration();
-	if (len > 0)
-		return ShowTime(len);
-	else
-		return "-:--";
+	return songString(&m_song, NCM_SONG_GETTER_LENGTH, idx);
 }
 
 std::string Song::getPriority(unsigned idx) const
 {
 	assert(!empty());
-	if (idx > 0)
-		return "";
-	return std::to_string(getPrio());
+	return songString(&m_song, NCM_SONG_GETTER_PRIORITY, idx);
 }
 
 std::string MPD::Song::getTags(GetFunction f) const
 {
 	assert(!empty());
-	unsigned idx = 0;
-	std::string result;
-	if (ShowDuplicateTags)
-	{
-		for (std::string tag; !(tag = (this->*f)(idx)).empty(); ++idx)
-		{
-			if (!result.empty())
-				result += TagsSeparator;
-			result += tag;
-		}
-	}
-	else
-	{
-		bool already_present;
-		// This is O(n^2), but it doesn't really matter as a list of tags will have
-		// at most 2 or 3 items the vast majority of time.
-		for (std::string tag; !(tag = (this->*f)(idx)).empty(); ++idx)
-		{
-			already_present = false;
-			for (unsigned i = 0; i < idx; ++i)
-			{
-				if ((this->*f)(i) == tag)
-				{
-					already_present = true;
-					break;
-				}
-			}
-			if (!already_present)
-			{
-				if (idx > 0)
-					result += TagsSeparator;
-				result += tag;
-			}
-		}
-	}
-	return result;
+	return stringFromBuffer(ncm_song_tags_buffer(
+		const_cast<NcmSong *>(&m_song), getterFromFunction(f),
+		const_cast<char *>(TagsSeparator.c_str()),
+		static_cast<int32>(TagsSeparator.size()), ShowDuplicateTags));
 }
 
 unsigned Song::getDuration() const
@@ -418,45 +429,7 @@ std::string Song::ShowTime(unsigned length)
 
 Song::GetFunction getFunctionFromChar(char c)
 {
-	switch (c)
-	{
-		case 'l':
-			return &Song::getLength;
-		case 'D':
-			return &Song::getDirectory;
-		case 'f':
-			return &Song::getName;
-		case 'F':
-			return &Song::getURI;
-		case 'a':
-			return &Song::getArtist;
-		case 'A':
-			return &Song::getAlbumArtist;
-		case 't':
-			return &Song::getTitle;
-		case 'b':
-			return &Song::getAlbum;
-		case 'y':
-			return &Song::getDate;
-		case 'n':
-			return &Song::getTrackNumber;
-		case 'N':
-			return &Song::getTrack;
-		case 'g':
-			return &Song::getGenre;
-		case 'c':
-			return &Song::getComposer;
-		case 'p':
-			return &Song::getPerformer;
-		case 'd':
-			return &Song::getDisc;
-		case 'C':
-			return &Song::getComment;
-		case 'P':
-			return &Song::getPriority;
-		default:
-			return nullptr;
-	}
+	return functionFromGetter(ncm_song_getter_from_char(c));
 }
 
 }

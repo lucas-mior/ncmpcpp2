@@ -21,6 +21,7 @@
 #ifndef NCMPCPP_UTILITY_COMPARATORS_H
 #define NCMPCPP_UTILITY_COMPARATORS_H
 
+#include <cstring>
 #include <string>
 #include "runnable_item.h"
 #include "mpdpp.h"

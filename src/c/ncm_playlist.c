@@ -106,3 +106,76 @@ ncm_playlist_from_mpd_playlist(NcmPlaylist *dest,
     last_modified = mpd_playlist_get_last_modified(source);
     return ncm_playlist_set(dest, path, path_len, last_modified);
 }
+
+void
+ncm_playlist_move(NcmPlaylist *dest, NcmPlaylist *source) {
+    if (dest == NULL) {
+        return;
+    }
+    if (dest == source) {
+        return;
+    }
+
+    ncm_playlist_destroy(dest);
+    if (source == NULL) {
+        ncm_playlist_init(dest);
+        return;
+    }
+
+    *dest = *source;
+    ncm_playlist_init(source);
+    return;
+}
+
+bool
+ncm_playlist_path_view(NcmPlaylist *playlist, NcmStringView *view) {
+    if (view != NULL) {
+        view->data = NULL;
+        view->len = 0;
+    }
+    if (playlist == NULL) {
+        return false;
+    }
+    if (playlist->path == NULL) {
+        return false;
+    }
+    if (view != NULL) {
+        view->data = playlist->path;
+        view->len = playlist->path_len;
+    }
+
+    return true;
+}
+
+time_t
+ncm_playlist_last_modified(NcmPlaylist *playlist) {
+    if (playlist == NULL) {
+        return 0;
+    }
+
+    return playlist->last_modified;
+}
+
+bool
+ncm_playlist_equal(NcmPlaylist *a, NcmPlaylist *b) {
+    if ((a == NULL) || (b == NULL)) {
+        return a == b;
+    }
+    if (a->last_modified != b->last_modified) {
+        return false;
+    }
+    if (a->path_len != b->path_len) {
+        return false;
+    }
+    if ((a->path == NULL) || (b->path == NULL)) {
+        return a->path == b->path;
+    }
+
+    for (int32 i = 0; i < a->path_len; i += 1) {
+        if (a->path[i] != b->path[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
