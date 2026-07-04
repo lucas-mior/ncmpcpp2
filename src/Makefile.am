@@ -41,7 +41,6 @@ ncmpcpp_SOURCES = \
 	utility/option_parser.cpp \
 	utility/sample_buffer.cpp \
 	utility/string.cpp \
-	utility/type_conversions.cpp \
 	utility/utf8.cpp \
 	actions.cpp \
 	bindings.cpp \
@@ -128,7 +127,6 @@ noinst_HEADERS = \
 	utility/storage_kind.h \
 	utility/shared_resource.h \
 	utility/string.h \
-	utility/type_conversions.h \
 	utility/utf8.h \
 	bindings.h \
 	charset.h \

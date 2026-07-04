@@ -29,6 +29,7 @@
 #include <vector>
 
 #include <mpd/client.h>
+#include "c/ncm_mpd_item.h"
 #include "song.h"
 
 namespace MPD {
@@ -132,120 +133,86 @@ private:
 
 struct Directory
 {
-	Directory()
-	: m_last_modified(0)
-	{ }
-	Directory(const mpd_directory *directory)
-	{
-		assert(directory != nullptr);
-		m_path = mpd_directory_get_path(directory);
-		m_last_modified = mpd_directory_get_last_modified(directory);
-	}
-	Directory(std::string path_, time_t last_modified = 0)
-	: m_path(std::move(path_))
-	, m_last_modified(last_modified)
-	{ }
+	Directory();
+	Directory(const mpd_directory *directory);
+	Directory(NcmDirectory *directory);
+	Directory(std::string path_, time_t last_modified = 0);
+	Directory(const Directory &rhs);
+	Directory(Directory &&rhs) noexcept;
+	Directory &operator=(const Directory &rhs);
+	Directory &operator=(Directory &&rhs) noexcept;
+	~Directory();
 
-	bool operator==(const Directory &rhs) const
-	{
-		return m_path == rhs.m_path
-		    && m_last_modified == rhs.m_last_modified;
-	}
+	bool operator==(const Directory &rhs) const;
 	bool operator!=(const Directory &rhs) const
 	{
 		return !(*this == rhs);
 	}
 
-	const std::string &path() const
+	const std::string &path() const;
+	time_t lastModified() const;
+	NcmDirectory *cDirectory()
 	{
-		return m_path;
-	}
-	time_t lastModified() const
-	{
-		return m_last_modified;
+		return &m_directory;
 	}
 
 private:
-	std::string m_path;
-	time_t m_last_modified;
+	NcmDirectory m_directory;
+	mutable std::string m_path_cache;
 };
 
 struct Playlist
 {
-	Playlist()
-	: m_last_modified(0)
-	{ }
-	Playlist(const mpd_playlist *playlist)
-	{
-		assert(playlist != nullptr);
-		m_path = mpd_playlist_get_path(playlist);
-		m_last_modified = mpd_playlist_get_last_modified(playlist);
-	}
-	Playlist(std::string path_, time_t last_modified = 0)
-	: m_path(std::move(path_))
-	, m_last_modified(last_modified)
-	{
-		if (m_path.empty())
-			throw std::runtime_error("empty path");
-	}
+	Playlist();
+	Playlist(const mpd_playlist *playlist);
+	Playlist(NcmPlaylist *playlist);
+	Playlist(std::string path_, time_t last_modified = 0);
+	Playlist(const Playlist &rhs);
+	Playlist(Playlist &&rhs) noexcept;
+	Playlist &operator=(const Playlist &rhs);
+	Playlist &operator=(Playlist &&rhs) noexcept;
+	~Playlist();
 
-	bool operator==(const Playlist &rhs) const
-	{
-		return m_path == rhs.m_path
-		    && m_last_modified == rhs.m_last_modified;
-	}
+	bool operator==(const Playlist &rhs) const;
 	bool operator!=(const Playlist &rhs) const
 	{
 		return !(*this == rhs);
 	}
 
-	const std::string &path() const
+	const std::string &path() const;
+	time_t lastModified() const;
+	NcmPlaylist *cPlaylist()
 	{
-		return m_path;
-	}
-	time_t lastModified() const
-	{
-		return m_last_modified;
+		return &m_playlist;
 	}
 
 private:
-	std::string m_path;
-	time_t m_last_modified;
+	NcmPlaylist m_playlist;
+	mutable std::string m_path_cache;
 };
 
 struct Item
 {
 	enum class Type { Directory, Song, Playlist };
 
+	Item();
 	Item(mpd_entity *entity);
-	Item(Directory directory_)
-	: m_type(Type::Directory)
-	, m_directory(std::move(directory_))
-	{ }
-	Item(Song song_)
-	: m_type(Type::Song)
-	, m_song(std::move(song_))
-	{ }
-	Item(Playlist playlist_)
-	: m_type(Type::Playlist)
-	, m_playlist(std::move(playlist_))
-	{ }
+	Item(Directory directory_);
+	Item(Song song_);
+	Item(Playlist playlist_);
+	Item(const Item &rhs);
+	Item(Item &&rhs) noexcept;
+	Item &operator=(const Item &rhs);
+	Item &operator=(Item &&rhs) noexcept;
+	~Item();
 
-	bool operator==(const Item &rhs) const
-	{
-		return m_directory == rhs.m_directory
-		    && m_song == rhs.m_song
-		    && m_playlist == rhs.m_playlist;
-	}
+	bool operator==(const Item &rhs) const;
 	bool operator!=(const Item &rhs) const
 	{
 		return !(*this == rhs);
 	}
 
-	Type type() const
-	{
-		return m_type;
-	}
+	Type type() const;
 
 	Directory &directory()
 	{
@@ -263,27 +230,15 @@ struct Item
 			static_cast<const Item &>(*this).playlist());
 	}
 
-	const Directory &directory() const
-	{
-		assert(m_type == Type::Directory);
-		return m_directory;
-	}
-	const Song &song() const
-	{
-		assert(m_type == Type::Song);
-		return m_song;
-	}
-	const Playlist &playlist() const
-	{
-		assert(m_type == Type::Playlist);
-		return m_playlist;
-	}
+	const Directory &directory() const;
+	const Song &song() const;
+	const Playlist &playlist() const;
 
 private:
-	Type m_type;
-	Directory m_directory;
-	Song m_song;
-	Playlist m_playlist;
+	NcmMpdItem m_item;
+	mutable Directory m_directory_cache;
+	mutable Song m_song_cache;
+	mutable Playlist m_playlist_cache;
 };
 
 struct Output

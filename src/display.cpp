@@ -31,7 +31,6 @@
 #include "global.h"
 #include "screens/tag_editor.h"
 #include "utility/string.h"
-#include "utility/type_conversions.h"
 #include "utility/utf8.h"
 
 using Global::myScreen;
@@ -233,7 +232,7 @@ void showSongsInColumns(NC::Menu<T> &menu, const MPD::Song &s, const SongList &l
 		std::string tag;
 		for (size_t i = 0; i < it->type.length(); ++i)
 		{
-			MPD::Song::GetFunction get = charToGetFunction(it->type[i]);
+			MPD::Song::GetFunction get = MPD::getFunctionFromChar(it->type[i]);
 			assert(get);
 			tag = Charset::utf8ToLocale(s.getTags(get));
 			if (!tag.empty())

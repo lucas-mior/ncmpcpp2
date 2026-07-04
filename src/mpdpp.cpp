@@ -105,53 +105,335 @@ bool fetchItemSong(MPD::SongIterator::State &state)
 
 namespace MPD {
 
+Directory::Directory()
+{
+	ncm_directory_init(&m_directory);
+}
+
+Directory::Directory(const mpd_directory *directory)
+{
+	ncm_directory_init(&m_directory);
+	if (!ncm_directory_from_mpd_directory(
+		    &m_directory, const_cast<mpd_directory *>(directory)))
+		throw std::runtime_error("invalid mpd directory");
+}
+
+Directory::Directory(NcmDirectory *directory)
+{
+	ncm_directory_init(&m_directory);
+	if (!ncm_directory_copy(&m_directory, directory))
+		throw std::runtime_error("invalid directory");
+}
+
+Directory::Directory(std::string path_, time_t last_modified)
+{
+	ncm_directory_init(&m_directory);
+	if (!ncm_directory_set(&m_directory,
+	                       const_cast<char *>(path_.c_str()),
+	                       static_cast<int32>(path_.size()),
+	                       last_modified))
+		throw std::runtime_error("empty path");
+}
+
+Directory::Directory(const Directory &rhs)
+{
+	ncm_directory_init(&m_directory);
+	if (!ncm_directory_copy(&m_directory,
+	                        const_cast<NcmDirectory *>(&rhs.m_directory)))
+		throw std::bad_alloc();
+}
+
+Directory::Directory(Directory &&rhs) noexcept
+: m_directory(rhs.m_directory)
+, m_path_cache(std::move(rhs.m_path_cache))
+{
+	ncm_directory_init(&rhs.m_directory);
+}
+
+Directory &Directory::operator=(const Directory &rhs)
+{
+	if (this != &rhs)
+	{
+		if (!ncm_directory_copy(&m_directory,
+		                        const_cast<NcmDirectory *>(&rhs.m_directory)))
+			throw std::bad_alloc();
+		m_path_cache.clear();
+	}
+	return *this;
+}
+
+Directory &Directory::operator=(Directory &&rhs) noexcept
+{
+	if (this != &rhs)
+	{
+		ncm_directory_destroy(&m_directory);
+		m_directory = rhs.m_directory;
+		m_path_cache = std::move(rhs.m_path_cache);
+		ncm_directory_init(&rhs.m_directory);
+	}
+	return *this;
+}
+
+Directory::~Directory()
+{
+	ncm_directory_destroy(&m_directory);
+}
+
+bool Directory::operator==(const Directory &rhs) const
+{
+	return path() == rhs.path()
+	    && lastModified() == rhs.lastModified();
+}
+
+const std::string &Directory::path() const
+{
+	if (m_directory.path == nullptr)
+		m_path_cache.clear();
+	else
+		m_path_cache.assign(m_directory.path, m_directory.path_len);
+	return m_path_cache;
+}
+
+time_t Directory::lastModified() const
+{
+	return m_directory.last_modified;
+}
+
+Playlist::Playlist()
+{
+	ncm_playlist_init(&m_playlist);
+}
+
+Playlist::Playlist(const mpd_playlist *playlist)
+{
+	ncm_playlist_init(&m_playlist);
+	if (!ncm_playlist_from_mpd_playlist(
+		    &m_playlist, const_cast<mpd_playlist *>(playlist)))
+		throw std::runtime_error("invalid mpd playlist");
+}
+
+Playlist::Playlist(NcmPlaylist *playlist)
+{
+	ncm_playlist_init(&m_playlist);
+	if (!ncm_playlist_copy(&m_playlist, playlist))
+		throw std::runtime_error("invalid playlist");
+}
+
+Playlist::Playlist(std::string path_, time_t last_modified)
+{
+	ncm_playlist_init(&m_playlist);
+	if (!ncm_playlist_set(&m_playlist,
+	                      const_cast<char *>(path_.c_str()),
+	                      static_cast<int32>(path_.size()),
+	                      last_modified))
+		throw std::runtime_error("empty path");
+}
+
+Playlist::Playlist(const Playlist &rhs)
+{
+	ncm_playlist_init(&m_playlist);
+	if (!ncm_playlist_copy(&m_playlist,
+	                       const_cast<NcmPlaylist *>(&rhs.m_playlist)))
+		throw std::bad_alloc();
+}
+
+Playlist::Playlist(Playlist &&rhs) noexcept
+: m_playlist(rhs.m_playlist)
+, m_path_cache(std::move(rhs.m_path_cache))
+{
+	ncm_playlist_init(&rhs.m_playlist);
+}
+
+Playlist &Playlist::operator=(const Playlist &rhs)
+{
+	if (this != &rhs)
+	{
+		if (!ncm_playlist_copy(&m_playlist,
+		                       const_cast<NcmPlaylist *>(&rhs.m_playlist)))
+			throw std::bad_alloc();
+		m_path_cache.clear();
+	}
+	return *this;
+}
+
+Playlist &Playlist::operator=(Playlist &&rhs) noexcept
+{
+	if (this != &rhs)
+	{
+		ncm_playlist_destroy(&m_playlist);
+		m_playlist = rhs.m_playlist;
+		m_path_cache = std::move(rhs.m_path_cache);
+		ncm_playlist_init(&rhs.m_playlist);
+	}
+	return *this;
+}
+
+Playlist::~Playlist()
+{
+	ncm_playlist_destroy(&m_playlist);
+}
+
+bool Playlist::operator==(const Playlist &rhs) const
+{
+	return path() == rhs.path()
+	    && lastModified() == rhs.lastModified();
+}
+
+const std::string &Playlist::path() const
+{
+	if (m_playlist.path == nullptr)
+		m_path_cache.clear();
+	else
+		m_path_cache.assign(m_playlist.path, m_playlist.path_len);
+	return m_path_cache;
+}
+
+time_t Playlist::lastModified() const
+{
+	return m_playlist.last_modified;
+}
+
+Item::Item()
+{
+	ncm_mpd_item_init(&m_item);
+}
+
 Item::Item(mpd_entity *entity)
 {
-	assert(entity != nullptr);
+	ncm_mpd_item_init(&m_item);
 	std::shared_ptr<mpd_entity> owner(entity, mpd_entity_free);
-	NcmMpdItemGuard item;
-	if (!ncm_mpd_item_from_entity_borrow(item.get(), owner.get()))
+	if (!ncm_mpd_item_from_entity_copy(&m_item, owner.get()))
 		throw std::runtime_error("unknown or invalid mpd_entity");
+}
 
-	switch (ncm_mpd_item_kind(item.get()))
+Item::Item(Directory directory_)
+{
+	ncm_mpd_item_init(&m_item);
+	if (!ncm_mpd_item_set_directory(&m_item, directory_.cDirectory()))
+		throw std::runtime_error("invalid directory item");
+}
+
+Item::Item(Song song_)
+{
+	ncm_mpd_item_init(&m_item);
+	if (!ncm_mpd_item_set_song(&m_item, song_.cSong()))
+		throw std::runtime_error("invalid song item");
+}
+
+Item::Item(Playlist playlist_)
+{
+	ncm_mpd_item_init(&m_item);
+	if (!ncm_mpd_item_set_playlist(&m_item, playlist_.cPlaylist()))
+		throw std::runtime_error("invalid playlist item");
+}
+
+Item::Item(const Item &rhs)
+{
+	ncm_mpd_item_init(&m_item);
+	if (!ncm_mpd_item_copy(&m_item, const_cast<NcmMpdItem *>(&rhs.m_item)))
+		throw std::bad_alloc();
+}
+
+Item::Item(Item &&rhs) noexcept
+: m_item(rhs.m_item)
+, m_directory_cache(std::move(rhs.m_directory_cache))
+, m_song_cache(std::move(rhs.m_song_cache))
+, m_playlist_cache(std::move(rhs.m_playlist_cache))
+{
+	ncm_mpd_item_init(&rhs.m_item);
+}
+
+Item &Item::operator=(const Item &rhs)
+{
+	if (this != &rhs)
+	{
+		if (!ncm_mpd_item_copy(&m_item,
+		                       const_cast<NcmMpdItem *>(&rhs.m_item)))
+			throw std::bad_alloc();
+	}
+	return *this;
+}
+
+Item &Item::operator=(Item &&rhs) noexcept
+{
+	if (this != &rhs)
+	{
+		ncm_mpd_item_destroy(&m_item);
+		m_item = rhs.m_item;
+		m_directory_cache = std::move(rhs.m_directory_cache);
+		m_song_cache = std::move(rhs.m_song_cache);
+		m_playlist_cache = std::move(rhs.m_playlist_cache);
+		ncm_mpd_item_init(&rhs.m_item);
+	}
+	return *this;
+}
+
+Item::~Item()
+{
+	ncm_mpd_item_destroy(&m_item);
+}
+
+bool Item::operator==(const Item &rhs) const
+{
+	if (type() != rhs.type())
+		return false;
+
+	switch (type())
+	{
+		case Type::Directory:
+			return directory() == rhs.directory();
+		case Type::Song:
+			return song() == rhs.song();
+		case Type::Playlist:
+			return playlist() == rhs.playlist();
+	}
+	return false;
+}
+
+Item::Type Item::type() const
+{
+	switch (ncm_mpd_item_kind(const_cast<NcmMpdItem *>(&m_item)))
 	{
 		case NCM_MPD_ITEM_DIRECTORY:
-		{
-			NcmDirectory *directory = ncm_mpd_item_directory(item.get());
-			assert(directory != nullptr);
-			m_type = Type::Directory;
-			m_directory = Directory(
-				std::string(directory->path, directory->path_len),
-				directory->last_modified);
-			break;
-		}
+			return Type::Directory;
 		case NCM_MPD_ITEM_SONG:
-		{
-			NcmSong *song = ncm_mpd_item_song(item.get());
-			mpd_song *source;
-
-			assert(song != nullptr);
-			assert(ncm_song_borrows_mpd_song(song));
-			source = ncm_song_mpd_song(song);
-			if (source == nullptr)
-				throw std::runtime_error("song entity without song");
-			m_type = Type::Song;
-			m_song = Song(source, std::move(owner));
-			break;
-		}
+			return Type::Song;
 		case NCM_MPD_ITEM_PLAYLIST:
-		{
-			NcmPlaylist *playlist = ncm_mpd_item_playlist(item.get());
-			assert(playlist != nullptr);
-			m_type = Type::Playlist;
-			m_playlist = Playlist(
-				std::string(playlist->path, playlist->path_len),
-				playlist->last_modified);
-			break;
-		}
+			return Type::Playlist;
 		case NCM_MPD_ITEM_UNKNOWN:
-			throw std::runtime_error("unknown mpd_entity type");
+			throw std::runtime_error("unknown item type");
 	}
+	throw std::runtime_error("unknown item type");
+}
+
+const Directory &Item::directory() const
+{
+	NcmDirectory *directory;
+
+	directory = ncm_mpd_item_directory(const_cast<NcmMpdItem *>(&m_item));
+	assert(directory != nullptr);
+	m_directory_cache = Directory(directory);
+	return m_directory_cache;
+}
+
+const Song &Item::song() const
+{
+	NcmSong *song;
+
+	song = ncm_mpd_item_song(const_cast<NcmMpdItem *>(&m_item));
+	assert(song != nullptr);
+	m_song_cache = Song(song);
+	return m_song_cache;
+}
+
+const Playlist &Item::playlist() const
+{
+	NcmPlaylist *playlist;
+
+	playlist = ncm_mpd_item_playlist(const_cast<NcmMpdItem *>(&m_item));
+	assert(playlist != nullptr);
+	m_playlist_cache = Playlist(playlist);
+	return m_playlist_cache;
 }
 
 void checkConnectionErrors(mpd_connection *conn)
