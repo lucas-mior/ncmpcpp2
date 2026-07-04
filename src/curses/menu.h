@@ -28,6 +28,7 @@
 #include <set>
 
 #include "curses/formatted_color.h"
+#include "curses/nc_menu.h"
 #include "curses/strbuffer.h"
 #include "curses/window.h"
 #include "utility/any_iterator.h"
@@ -302,10 +303,10 @@ struct Menu: Window, List
 	
 	/// Checks if list is empty
 	/// @return true if list is empty, false otherwise
-	virtual bool empty() const override { return m_items->empty(); }
+	virtual bool empty() const override { return m_menu.item_count == 0; }
 
 	/// @return size of the list
-	virtual size_t size() const override { return m_items->size(); }
+	virtual size_t size() const override { return static_cast<size_t>(m_menu.item_count); }
 
 	/// @return currently highlighted position
 	virtual size_t choice() const override;
@@ -349,10 +350,10 @@ struct Menu: Window, List
 	bool isFiltered() const { return m_items == &m_filtered_items; }
 
 	/// Show all items.
-	void showAllItems() { m_items = &m_all_items; }
+	void showAllItems() { m_items = &m_all_items; syncMenuSize(); }
 
 	/// Show filtered items.
-	void showFilteredItems() { m_items = &m_filtered_items; }
+	void showFilteredItems() { m_items = &m_filtered_items; syncMenuSize(); }
 
 	/// Sets prefix, that is put before each selected item to indicate its selection
 	/// Note that the passed variable is not deleted along with menu object.
@@ -371,24 +372,24 @@ struct Menu: Window, List
 	const Buffer &highlightSuffix() const { return m_highlight_suffix; }
 
 	/// @return state of highlighting
-	bool isHighlighted() { return m_highlight_enabled; }
+	bool isHighlighted() { return nc_menu_highlight_enabled(&m_menu); }
 	
 	/// Turns on/off highlighting
 	/// @param state state of hihglighting
-	void setHighlighting(bool state) { m_highlight_enabled = state; }
+	void setHighlighting(bool state) { nc_menu_set_highlighting(&m_menu, state); }
 	
 	/// Turns on/off cyclic scrolling
 	/// @param state state of cyclic scrolling
-	void cyclicScrolling(bool state) { m_cyclic_scroll_enabled = state; }
+	void cyclicScrolling(bool state) { nc_menu_set_cyclic_scrolling(&m_menu, state); }
 	
 	/// Turns on/off centered cursor
 	/// @param state state of centered cursor
-	void centeredCursor(bool state) { m_autocenter_cursor = state; }
+	void centeredCursor(bool state) { nc_menu_set_centered_cursor(&m_menu, state); }
 	
 	/// @return currently drawn item. The result is defined only within
 	/// drawing function that is called by refresh()
 	/// @see refresh()
-	ConstIterator drawn() const { return begin() + m_drawn_position; }
+	ConstIterator drawn() const { return begin() + static_cast<size_t>(m_menu.drawn_position); }
 	
 	/// @param pos requested position
 	/// @return reference to item at given position
@@ -408,8 +409,13 @@ struct Menu: Window, List
 	/// @return const reference to item at given position
 	Menu<ItemT>::Item &operator[](size_t pos) { return (*m_items)[pos]; }
 	
-	Iterator current() { return Iterator(m_items->begin() + m_highlight); }
-	ConstIterator current() const { return ConstIterator(m_items->begin() + m_highlight); }
+	Iterator current() {
+		return Iterator(m_items->begin() + static_cast<size_t>(m_menu.highlight));
+	}
+	ConstIterator current() const {
+		return ConstIterator(m_items->begin()
+		                     + static_cast<size_t>(m_menu.highlight));
+	}
 	ReverseIterator rcurrent() {
 		if (empty())
 			return rend();
@@ -423,8 +429,14 @@ struct Menu: Window, List
 			return ConstReverseIterator(++current());
 	}
 
-	ValueIterator currentV() { return ValueIterator(m_items->begin() + m_highlight); }
-	ConstValueIterator currentV() const { return ConstValueIterator(m_items->begin() + m_highlight); }
+	ValueIterator currentV() {
+		return ValueIterator(m_items->begin()
+		                     + static_cast<size_t>(m_menu.highlight));
+	}
+	ConstValueIterator currentV() const {
+		return ConstValueIterator(m_items->begin()
+		                          + static_cast<size_t>(m_menu.highlight));
+	}
 	ReverseValueIterator rcurrentV() {
 		if (empty())
 			return rendV();
@@ -459,10 +471,12 @@ struct Menu: Window, List
 	ConstReverseValueIterator rendV() const { return ConstReverseValueIterator(beginV()); }
 	
 	virtual List::Iterator currentP() override {
-		return List::Iterator(PropertiesIterator(m_items->begin() + m_highlight));
+		return List::Iterator(PropertiesIterator(
+			m_items->begin() + static_cast<size_t>(m_menu.highlight)));
 	}
 	virtual List::ConstIterator currentP() const override {
-		return List::ConstIterator(ConstPropertiesIterator(m_items->begin() + m_highlight));
+		return List::ConstIterator(ConstPropertiesIterator(
+			m_items->begin() + static_cast<size_t>(m_menu.highlight)));
 	}
 	virtual List::Iterator beginP() override {
 		return List::Iterator(PropertiesIterator(m_items->begin()));
@@ -478,6 +492,37 @@ struct Menu: Window, List
 	}
 
 private:
+	static enum NcScroll toNcScroll(Scroll scroll)
+	{
+		switch (scroll)
+		{
+		case Scroll::Up:
+			return NC_SCROLL_UP;
+		case Scroll::Down:
+			return NC_SCROLL_DOWN;
+		case Scroll::PageUp:
+			return NC_SCROLL_PAGE_UP;
+		case Scroll::PageDown:
+			return NC_SCROLL_PAGE_DOWN;
+		case Scroll::Home:
+			return NC_SCROLL_HOME;
+		case Scroll::End:
+			return NC_SCROLL_END;
+		}
+		return NC_SCROLL_HOME;
+	}
+
+	static bool isHighlightableCallback(int64 pos, void *user)
+	{
+		return static_cast<Menu<ItemT> *>(user)->isHighlightable(
+			static_cast<size_t>(pos));
+	}
+
+	void syncMenuSize()
+	{
+		nc_menu_set_item_count(&m_menu, static_cast<int64>(m_items->size()));
+	}
+
 	bool isHighlightable(size_t pos)
 	{
 		return !(*m_items)[pos].isSeparator()
@@ -490,16 +535,7 @@ private:
 	std::vector<Item> *m_items;
 	std::vector<Item> m_all_items;
 	std::vector<Item> m_filtered_items;
-	
-	size_t m_beginning;
-	size_t m_highlight;
-	
-	bool m_highlight_enabled;
-	bool m_cyclic_scroll_enabled;
-	
-	bool m_autocenter_cursor;
-	
-	size_t m_drawn_position;
+	NcMenu m_menu;
 
 	Buffer m_highlight_prefix;
 	Buffer m_highlight_suffix;
