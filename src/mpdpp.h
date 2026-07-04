@@ -30,6 +30,7 @@
 
 #include <mpd/client.h>
 #include "c/ncm_mpd_item.h"
+#include "c/ncm_mpd_connection.h"
 #include "cbase/cbase.h"
 #include "song.h"
 
@@ -431,6 +432,7 @@ struct Connection
 	typedef std::function<void(int)> NoidleCallback;
 
 	Connection();
+	~Connection();
 	
 	void Connect();
 	bool Connected() const;
@@ -537,19 +539,15 @@ struct Connection
 	void setNoidleCallback(NoidleCallback callback);
 	
 private:
-	struct ConnectionDeleter {
-		void operator()(mpd_connection *connection) {
-			mpd_connection_free(connection);
-		}
-	};
-
+	mpd_connection *rawConnection() const;
+	void throwConnectionError() const;
 	void checkConnection() const;
 	void prechecks();
 	void prechecksNoCommandsList();
 	void checkErrors() const;
 
 	NoidleCallback m_noidle_callback;
-	std::unique_ptr<mpd_connection, ConnectionDeleter> m_connection;
+	NcmMpdConnection m_connection;
 	bool m_command_list_active;
 	
 	int m_fd;

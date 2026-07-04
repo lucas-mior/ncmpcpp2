@@ -451,25 +451,67 @@ void checkConnectionErrors(mpd_connection *conn)
 	}
 }
 
-Connection::Connection() : m_connection(nullptr),
-				m_command_list_active(false),
-				m_idle(false),
-				m_host("localhost"),
-				m_port(6600),
-				m_timeout(15)
+Connection::Connection()
+: m_command_list_active(false)
+, m_fd(-1)
+, m_idle(false)
+, m_host("localhost")
+, m_port(6600)
+, m_timeout(15)
 {
+	ncm_mpd_connection_init(&m_connection);
+}
+
+Connection::~Connection()
+{
+	ncm_mpd_connection_destroy(&m_connection);
+}
+
+mpd_connection *Connection::rawConnection() const
+{
+	return ncm_mpd_connection_mpd(
+		const_cast<NcmMpdConnection *>(&m_connection));
+}
+
+void Connection::throwConnectionError() const
+{
+	NcmMpdConnection *connection;
+	mpd_error code;
+	std::string msg;
+	bool clearable;
+
+	connection = const_cast<NcmMpdConnection *>(&m_connection);
+	code = ncm_mpd_connection_error_code(connection);
+	msg = ncm_mpd_connection_error(connection);
+	clearable = ncm_mpd_connection_error_clearable(connection);
+
+	if (code == MPD_ERROR_SERVER)
+	{
+		throw ServerError(
+			ncm_mpd_connection_server_error_code(connection),
+			msg,
+			clearable);
+	}
+	else
+	{
+		throw ClientError(code, msg, clearable);
+	}
 }
 
 void Connection::Connect()
 {
-	assert(!m_connection);
+	assert(!Connected());
 	try
 	{
-		m_connection.reset(mpd_connection_new(m_host.c_str(), m_port, m_timeout * 1000));
-		checkErrors();
+		if (!ncm_mpd_connection_connect(
+			    &m_connection,
+			    const_cast<char *>(m_host.c_str()),
+			    static_cast<uint16>(m_port),
+			    static_cast<uint32>(m_timeout * 1000)))
+			throwConnectionError();
 		if (!m_password.empty())
 			SendPassword();
-		m_fd = mpd_connection_get_fd(m_connection.get());
+		m_fd = ncm_mpd_connection_fd(&m_connection);
 		checkErrors();
 	}
 	catch (MPD::ClientError &e)
@@ -481,19 +523,21 @@ void Connection::Connect()
 
 bool Connection::Connected() const
 {
-	return m_connection.get() != nullptr;
+	return ncm_mpd_connection_is_connected(
+		const_cast<NcmMpdConnection *>(&m_connection));
 }
 
 void Connection::Disconnect()
 {
-	m_connection = nullptr;
+	ncm_mpd_connection_disconnect(&m_connection);
 	m_command_list_active = false;
 	m_idle = false;
+	m_fd = -1;
 }
 
 unsigned Connection::Version() const
 {
-	return m_connection ? mpd_connection_get_server_version(m_connection.get())[1] : 0;
+	return Connected() ? mpd_connection_get_server_version(rawConnection())[1] : 0;
 }
 
 void Connection::SetHostname(const std::string &host)
@@ -510,10 +554,10 @@ void Connection::SetHostname(const std::string &host)
 
 void Connection::SendPassword()
 {
-	assert(m_connection);
+	assert(Connected());
 	noidle();
 	assert(!m_command_list_active);
-	mpd_run_password(m_connection.get(), m_password.c_str());
+	mpd_run_password(rawConnection(), m_password.c_str());
 	checkErrors();
 }
 
@@ -522,7 +566,7 @@ void Connection::idle()
 	checkConnection();
 	if (!m_idle)
 	{
-		mpd_send_idle(m_connection.get());
+		mpd_send_idle(rawConnection());
 		checkErrors();
 	}
 	m_idle = true;
@@ -532,11 +576,11 @@ int Connection::noidle()
 {
 	checkConnection();
 	int flags = 0;
-	if (m_idle && mpd_send_noidle(m_connection.get()))
+	if (m_idle && mpd_send_noidle(rawConnection()))
 	{
 		m_idle = false;
-		flags = mpd_recv_idle(m_connection.get(), true);
-		mpd_response_finish(m_connection.get());
+		flags = mpd_recv_idle(rawConnection(), true);
+		mpd_response_finish(rawConnection());
 		checkErrors();
 	}
 	return flags;
@@ -550,7 +594,7 @@ void Connection::setNoidleCallback(NoidleCallback callback)
 Statistics Connection::getStatistics()
 {
 	prechecks();
-	mpd_stats *stats = mpd_run_stats(m_connection.get());
+	mpd_stats *stats = mpd_run_stats(rawConnection());
 	checkErrors();
 	return Statistics(stats);
 }
@@ -558,7 +602,7 @@ Statistics Connection::getStatistics()
 Status Connection::getStatus()
 {
 	prechecks();
-	mpd_status *status = mpd_run_status(m_connection.get());
+	mpd_status *status = mpd_run_status(rawConnection());
 	checkErrors();
 	return Status(status);
 }
@@ -568,65 +612,65 @@ void Connection::UpdateDirectory(const std::string &path)
 	prechecksNoCommandsList();
 	// Use update as mpd_run_update doesn't call mpd_response_finish if the id
 	// returned from mpd_recv_update_id is 0 which breaks mopidy.
-	mpd_send_update(m_connection.get(), path.c_str());
-	mpd_recv_update_id(m_connection.get());
-	mpd_response_finish(m_connection.get());
+	mpd_send_update(rawConnection(), path.c_str());
+	mpd_recv_update_id(rawConnection());
+	mpd_response_finish(rawConnection());
 	checkErrors();
 }
 
 void Connection::Play()
 {
 	prechecksNoCommandsList();
-	mpd_run_play(m_connection.get());
+	mpd_run_play(rawConnection());
 	checkErrors();
 }
 
 void Connection::Play(int pos)
 {
 	prechecksNoCommandsList();
-	mpd_run_play_pos(m_connection.get(), pos);
+	mpd_run_play_pos(rawConnection(), pos);
 	checkErrors();
 }
 
 void Connection::PlayID(int id)
 {
 	prechecksNoCommandsList();
-	mpd_run_play_id(m_connection.get(), id);
+	mpd_run_play_id(rawConnection(), id);
 	checkErrors();
 }
 
 void Connection::Pause(bool state)
 {
 	prechecksNoCommandsList();
-	mpd_run_pause(m_connection.get(), state);
+	mpd_run_pause(rawConnection(), state);
 	checkErrors();
 }
 
 void Connection::Toggle()
 {
 	prechecksNoCommandsList();
-	mpd_run_toggle_pause(m_connection.get());
+	mpd_run_toggle_pause(rawConnection());
 	checkErrors();
 }
 
 void Connection::Stop()
 {
 	prechecksNoCommandsList();
-	mpd_run_stop(m_connection.get());
+	mpd_run_stop(rawConnection());
 	checkErrors();
 }
 
 void Connection::Next()
 {
 	prechecksNoCommandsList();
-	mpd_run_next(m_connection.get());
+	mpd_run_next(rawConnection());
 	checkErrors();
 }
 
 void Connection::Prev()
 {
 	prechecksNoCommandsList();
-	mpd_run_previous(m_connection.get());
+	mpd_run_previous(rawConnection());
 	checkErrors();
 }
 
@@ -634,10 +678,10 @@ void Connection::Move(unsigned from, unsigned to)
 {
 	prechecks();
 	if (m_command_list_active)
-		mpd_send_move(m_connection.get(), from, to);
+		mpd_send_move(rawConnection(), from, to);
 	else
 	{
-		mpd_run_move(m_connection.get(), from, to);
+		mpd_run_move(rawConnection(), from, to);
 		checkErrors();
 	}
 }
@@ -646,10 +690,10 @@ void Connection::Swap(unsigned from, unsigned to)
 {
 	prechecks();
 	if (m_command_list_active)
-		mpd_send_swap(m_connection.get(), from, to);
+		mpd_send_swap(rawConnection(), from, to);
 	else
 	{
-		mpd_run_swap(m_connection.get(), from, to);
+		mpd_run_swap(rawConnection(), from, to);
 		checkErrors();
 	}
 }
@@ -657,35 +701,35 @@ void Connection::Swap(unsigned from, unsigned to)
 void Connection::Seek(unsigned pos, unsigned where)
 {
 	prechecksNoCommandsList();
-	mpd_run_seek_pos(m_connection.get(), pos, where);
+	mpd_run_seek_pos(rawConnection(), pos, where);
 	checkErrors();
 }
 
 void Connection::Shuffle()
 {
 	prechecksNoCommandsList();
-	mpd_run_shuffle(m_connection.get());
+	mpd_run_shuffle(rawConnection());
 	checkErrors();
 }
 
 void Connection::ShuffleRange(unsigned start, unsigned end)
 {
 	prechecksNoCommandsList();
-	mpd_run_shuffle_range(m_connection.get(), start, end);
+	mpd_run_shuffle_range(rawConnection(), start, end);
 	checkErrors();
 }
 
 void Connection::ClearMainPlaylist()
 {
 	prechecksNoCommandsList();
-	mpd_run_clear(m_connection.get());
+	mpd_run_clear(rawConnection());
 	checkErrors();
 }
 
 void Connection::ClearPlaylist(const std::string &playlist)
 {
 	prechecksNoCommandsList();
-	mpd_run_playlist_clear(m_connection.get(), playlist.c_str());
+	mpd_run_playlist_clear(rawConnection(), playlist.c_str());
 	checkErrors();
 }
 
@@ -698,10 +742,10 @@ void Connection::AddToPlaylist(const std::string &path, const std::string &file)
 {
 	prechecks();
 	if (m_command_list_active)
-		mpd_send_playlist_add(m_connection.get(), path.c_str(), file.c_str());
+		mpd_send_playlist_add(rawConnection(), path.c_str(), file.c_str());
 	else
 	{
-		mpd_run_playlist_add(m_connection.get(), path.c_str(), file.c_str());
+		mpd_run_playlist_add(rawConnection(), path.c_str(), file.c_str());
 		checkErrors();
 	}
 }
@@ -710,11 +754,11 @@ void Connection::PlaylistMove(const std::string &path, int from, int to)
 {
 	prechecks();
 	if (m_command_list_active)
-		mpd_send_playlist_move(m_connection.get(), path.c_str(), from, to);
+		mpd_send_playlist_move(rawConnection(), path.c_str(), from, to);
 	else
 	{
-		mpd_send_playlist_move(m_connection.get(), path.c_str(), from, to);
-		mpd_response_finish(m_connection.get());
+		mpd_send_playlist_move(rawConnection(), path.c_str(), from, to);
+		mpd_response_finish(rawConnection());
 		checkErrors();
 	}
 }
@@ -722,24 +766,24 @@ void Connection::PlaylistMove(const std::string &path, int from, int to)
 void Connection::Rename(const std::string &from, const std::string &to)
 {
 	prechecksNoCommandsList();
-	mpd_run_rename(m_connection.get(), from.c_str(), to.c_str());
+	mpd_run_rename(rawConnection(), from.c_str(), to.c_str());
 	checkErrors();
 }
 
 SongIterator Connection::GetPlaylistChanges(unsigned version)
 {
 	prechecksNoCommandsList();
-	mpd_send_queue_changes_meta(m_connection.get(), version);
+	mpd_send_queue_changes_meta(rawConnection(), version);
 	checkErrors();
-	return SongIterator(m_connection.get(), defaultFetcher<Song>(mpd_recv_song));
+	return SongIterator(rawConnection(), defaultFetcher<Song>(mpd_recv_song));
 }
 
 Song Connection::GetCurrentSong()
 {
 	prechecksNoCommandsList();
-	mpd_send_current_song(m_connection.get());
-	mpd_song *s = mpd_recv_song(m_connection.get());
-	mpd_response_finish(m_connection.get());
+	mpd_send_current_song(rawConnection());
+	mpd_song *s = mpd_recv_song(rawConnection());
+	mpd_response_finish(rawConnection());
 	checkErrors();
 	// currentsong doesn't return error if there is no playing song.
 	if (s == nullptr)
@@ -751,9 +795,9 @@ Song Connection::GetCurrentSong()
 Song Connection::GetSong(const std::string &path)
 {
 	prechecksNoCommandsList();
-	mpd_send_list_all_meta(m_connection.get(), path.c_str());
-	mpd_song *s = mpd_recv_song(m_connection.get());
-	mpd_response_finish(m_connection.get());
+	mpd_send_list_all_meta(rawConnection(), path.c_str());
+	mpd_song *s = mpd_recv_song(rawConnection());
+	mpd_response_finish(rawConnection());
 	checkErrors();
 	return Song(s);
 }
@@ -761,8 +805,8 @@ Song Connection::GetSong(const std::string &path)
 SongIterator Connection::GetPlaylistContent(const std::string &path)
 {
 	prechecksNoCommandsList();
-	mpd_send_list_playlist_meta(m_connection.get(), path.c_str());
-	SongIterator result(m_connection.get(), defaultFetcher<Song>(mpd_recv_song));
+	mpd_send_list_playlist_meta(rawConnection(), path.c_str());
+	SongIterator result(rawConnection(), defaultFetcher<Song>(mpd_recv_song));
 	checkErrors();
 	return result;
 }
@@ -770,8 +814,8 @@ SongIterator Connection::GetPlaylistContent(const std::string &path)
 SongIterator Connection::GetPlaylistContentNoInfo(const std::string &path)
 {
 	prechecksNoCommandsList();
-	mpd_send_list_playlist(m_connection.get(), path.c_str());
-	SongIterator result(m_connection.get(), defaultFetcher<Song>(mpd_recv_song));
+	mpd_send_list_playlist(rawConnection(), path.c_str());
+	SongIterator result(rawConnection(), defaultFetcher<Song>(mpd_recv_song));
 	checkErrors();
 	return result;
 }
@@ -779,9 +823,9 @@ SongIterator Connection::GetPlaylistContentNoInfo(const std::string &path)
 StringIterator Connection::GetSupportedExtensions()
 {
 	prechecksNoCommandsList();
-	mpd_send_command(m_connection.get(), "decoders", NULL);
+	mpd_send_command(rawConnection(), "decoders", NULL);
 	checkErrors();
-	return StringIterator(m_connection.get(), [](StringIterator::State &state) {
+	return StringIterator(rawConnection(), [](StringIterator::State &state) {
 		auto src = mpd_recv_pair_named(state.connection(), "suffix");
 		if (src != nullptr)
 		{
@@ -797,42 +841,42 @@ StringIterator Connection::GetSupportedExtensions()
 void Connection::SetRepeat(bool mode)
 {
 	prechecksNoCommandsList();
-	mpd_run_repeat(m_connection.get(), mode);
+	mpd_run_repeat(rawConnection(), mode);
 	checkErrors();
 }
 
 void Connection::SetRandom(bool mode)
 {
 	prechecksNoCommandsList();
-	mpd_run_random(m_connection.get(), mode);
+	mpd_run_random(rawConnection(), mode);
 	checkErrors();
 }
 
 void Connection::SetSingle(bool mode)
 {
 	prechecksNoCommandsList();
-	mpd_run_single(m_connection.get(), mode);
+	mpd_run_single(rawConnection(), mode);
 	checkErrors();
 }
 
 void Connection::SetConsume(bool mode)
 {
 	prechecksNoCommandsList();
-	mpd_run_consume(m_connection.get(), mode);
+	mpd_run_consume(rawConnection(), mode);
 	checkErrors();
 }
 
 void Connection::SetVolume(unsigned vol)
 {
 	prechecksNoCommandsList();
-	mpd_run_set_volume(m_connection.get(), vol);
+	mpd_run_set_volume(rawConnection(), vol);
 	checkErrors();
 }
 
 void Connection::ChangeVolume(int change)
 {
 	prechecksNoCommandsList();
-	mpd_run_change_volume(m_connection.get(), change);
+	mpd_run_change_volume(rawConnection(), change);
 	checkErrors();
 }
 
@@ -840,14 +884,14 @@ void Connection::ChangeVolume(int change)
 std::string Connection::GetReplayGainMode()
 {
 	prechecksNoCommandsList();
-	mpd_send_command(m_connection.get(), "replay_gain_status", NULL);
+	mpd_send_command(rawConnection(), "replay_gain_status", NULL);
 	std::string result;
-	if (mpd_pair *pair = mpd_recv_pair_named(m_connection.get(), "replay_gain_mode"))
+	if (mpd_pair *pair = mpd_recv_pair_named(rawConnection(), "replay_gain_mode"))
 	{
 		result = pair->value;
-		mpd_return_pair(m_connection.get(), pair);
+		mpd_return_pair(rawConnection(), pair);
 	}
-	mpd_response_finish(m_connection.get());
+	mpd_response_finish(rawConnection());
 	checkErrors();
 	return result;
 }
@@ -871,15 +915,15 @@ void Connection::SetReplayGainMode(ReplayGainMode mode)
 			rg_mode = "";
 			break;
 	}
-	mpd_send_command(m_connection.get(), "replay_gain_mode", rg_mode, NULL);
-	mpd_response_finish(m_connection.get());
+	mpd_send_command(rawConnection(), "replay_gain_mode", rg_mode, NULL);
+	mpd_response_finish(rawConnection());
 	checkErrors();
 }
 
 void Connection::SetCrossfade(unsigned crossfade)
 {
 	prechecksNoCommandsList();
-	mpd_run_crossfade(m_connection.get(), crossfade);
+	mpd_run_crossfade(rawConnection(), crossfade);
 	checkErrors();
 }
 
@@ -887,10 +931,10 @@ void Connection::SetPriority(const Song &s, int prio)
 {
 	prechecks();
 	if (m_command_list_active)
-		mpd_send_prio_id(m_connection.get(), prio, s.getID());
+		mpd_send_prio_id(rawConnection(), prio, s.getID());
 	else
 	{
-		mpd_run_prio_id(m_connection.get(), prio, s.getID());
+		mpd_run_prio_id(rawConnection(), prio, s.getID());
 		checkErrors();
 	}
 }
@@ -900,13 +944,13 @@ int Connection::AddSong(const std::string &path, int pos)
 	prechecks();
 	int id;
 	if (pos < 0)
-		mpd_send_add_id(m_connection.get(), path.c_str());
+		mpd_send_add_id(rawConnection(), path.c_str());
 	else
-		mpd_send_add_id_to(m_connection.get(), path.c_str(), pos);
+		mpd_send_add_id_to(rawConnection(), path.c_str(), pos);
 	if (!m_command_list_active)
 	{
-		id = mpd_recv_song_id(m_connection.get());
-		mpd_response_finish(m_connection.get());
+		id = mpd_recv_song_id(rawConnection());
+		mpd_response_finish(rawConnection());
 		checkErrors();
 	}
 	else
@@ -924,10 +968,10 @@ bool Connection::Add(const std::string &path)
 	bool result;
 	prechecks();
 	if (m_command_list_active)
-		result = mpd_send_add(m_connection.get(), path.c_str());
+		result = mpd_send_add(rawConnection(), path.c_str());
 	else
 	{
-		result = mpd_run_add(m_connection.get(), path.c_str());
+		result = mpd_run_add(rawConnection(), path.c_str());
 		checkErrors();
 	}
 	return result;
@@ -964,13 +1008,13 @@ bool Connection::AddRandomSongs(size_t number, const std::string &random_exclude
 {
 	prechecksNoCommandsList();
 	std::vector<std::string> files;
-	mpd_send_list_all(m_connection.get(), "/");
-	while (mpd_pair *item = mpd_recv_pair_named(m_connection.get(), "file"))
+	mpd_send_list_all(rawConnection(), "/");
+	while (mpd_pair *item = mpd_recv_pair_named(rawConnection(), "file"))
 	{
 		files.push_back(item->value);
-		mpd_return_pair(m_connection.get(), item);
+		mpd_return_pair(rawConnection(), item);
 	}
-	mpd_response_finish(m_connection.get());
+	mpd_response_finish(rawConnection());
 	checkErrors();
 	
 	if (number > files.size())
@@ -999,10 +1043,10 @@ bool Connection::AddRandomSongs(size_t number, const std::string &random_exclude
 void Connection::Delete(unsigned pos)
 {
 	prechecks();
-	mpd_send_delete(m_connection.get(), pos);
+	mpd_send_delete(rawConnection(), pos);
 	if (!m_command_list_active)
 	{
-		mpd_response_finish(m_connection.get());
+		mpd_response_finish(rawConnection());
 		checkErrors();
 	}
 }
@@ -1010,10 +1054,10 @@ void Connection::Delete(unsigned pos)
 void Connection::DeleteRange(unsigned begin, unsigned end)
 {
 	prechecks();
-	mpd_send_delete_range(m_connection.get(), begin, end);
+	mpd_send_delete_range(rawConnection(), begin, end);
 	if (!m_command_list_active)
 	{
-		mpd_response_finish(m_connection.get());
+		mpd_response_finish(rawConnection());
 		checkErrors();
 	}
 }
@@ -1021,10 +1065,10 @@ void Connection::DeleteRange(unsigned begin, unsigned end)
 void Connection::PlaylistDelete(const std::string &playlist, unsigned pos)
 {
 	prechecks();
-	mpd_send_playlist_delete(m_connection.get(), playlist.c_str(), pos);
+	mpd_send_playlist_delete(rawConnection(), playlist.c_str(), pos);
 	if (!m_command_list_active)
 	{
-		mpd_response_finish(m_connection.get());
+		mpd_response_finish(rawConnection());
 		checkErrors();
 	}
 }
@@ -1032,7 +1076,7 @@ void Connection::PlaylistDelete(const std::string &playlist, unsigned pos)
 void Connection::StartCommandsList()
 {
 	prechecksNoCommandsList();
-	mpd_command_list_begin(m_connection.get(), true);
+	mpd_command_list_begin(rawConnection(), true);
 	m_command_list_active = true;
 	checkErrors();
 }
@@ -1041,8 +1085,8 @@ void Connection::CommitCommandsList()
 {
 	prechecks();
 	assert(m_command_list_active);
-	mpd_command_list_end(m_connection.get());
-	mpd_response_finish(m_connection.get());
+	mpd_command_list_end(rawConnection());
+	mpd_response_finish(rawConnection());
 	m_command_list_active = false;
 	checkErrors();
 }
@@ -1050,14 +1094,14 @@ void Connection::CommitCommandsList()
 void Connection::DeletePlaylist(const std::string &name)
 {
 	prechecksNoCommandsList();
-	mpd_run_rm(m_connection.get(), name.c_str());
+	mpd_run_rm(rawConnection(), name.c_str());
 	checkErrors();
 }
 
 bool Connection::LoadPlaylist(const std::string &name)
 {
 	prechecksNoCommandsList();
-	bool result = mpd_run_load(m_connection.get(), name.c_str());
+	bool result = mpd_run_load(rawConnection(), name.c_str());
 	checkErrors();
 	return result;
 }
@@ -1065,26 +1109,26 @@ bool Connection::LoadPlaylist(const std::string &name)
 void Connection::SavePlaylist(const std::string &name)
 {
 	prechecksNoCommandsList();
-	mpd_send_save(m_connection.get(), name.c_str());
-	mpd_response_finish(m_connection.get());
+	mpd_send_save(rawConnection(), name.c_str());
+	mpd_response_finish(rawConnection());
 	checkErrors();
 }
 
 PlaylistIterator Connection::GetPlaylists()
 {
 	prechecksNoCommandsList();
-	mpd_send_list_playlists(m_connection.get());
+	mpd_send_list_playlists(rawConnection());
 	checkErrors();
-	return PlaylistIterator(m_connection.get(), defaultFetcher<Playlist>(mpd_recv_playlist));
+	return PlaylistIterator(rawConnection(), defaultFetcher<Playlist>(mpd_recv_playlist));
 }
 
 StringIterator Connection::GetList(mpd_tag_type type)
 {
 	prechecksNoCommandsList();
-	mpd_search_db_tags(m_connection.get(), type);
-	mpd_search_commit(m_connection.get());
+	mpd_search_db_tags(rawConnection(), type);
+	mpd_search_commit(rawConnection());
 	checkErrors();
-	return StringIterator(m_connection.get(), [type](StringIterator::State &state) {
+	return StringIterator(rawConnection(), [type](StringIterator::State &state) {
 		auto src = mpd_recv_pair_tag(state.connection(), type);
 		if (src != nullptr)
 		{
@@ -1100,101 +1144,101 @@ StringIterator Connection::GetList(mpd_tag_type type)
 void Connection::StartSearch(bool exact_match)
 {
 	prechecksNoCommandsList();
-	mpd_search_db_songs(m_connection.get(), exact_match);
+	mpd_search_db_songs(rawConnection(), exact_match);
 }
 
 void Connection::StartFieldSearch(mpd_tag_type item)
 {
 	prechecksNoCommandsList();
-	mpd_search_db_tags(m_connection.get(), item);
+	mpd_search_db_tags(rawConnection(), item);
 }
 
 void Connection::AddSearch(mpd_tag_type item, const std::string &str) const
 {
 	checkConnection();
-	mpd_search_add_tag_constraint(m_connection.get(), MPD_OPERATOR_DEFAULT, item, str.c_str());
+	mpd_search_add_tag_constraint(rawConnection(), MPD_OPERATOR_DEFAULT, item, str.c_str());
 }
 
 void Connection::AddSearchAny(const std::string &str) const
 {
 	checkConnection();
-	mpd_search_add_any_tag_constraint(m_connection.get(), MPD_OPERATOR_DEFAULT, str.c_str());
+	mpd_search_add_any_tag_constraint(rawConnection(), MPD_OPERATOR_DEFAULT, str.c_str());
 }
 
 void Connection::AddSearchURI(const std::string &str) const
 {
 	checkConnection();
-	mpd_search_add_uri_constraint(m_connection.get(), MPD_OPERATOR_DEFAULT, str.c_str());
+	mpd_search_add_uri_constraint(rawConnection(), MPD_OPERATOR_DEFAULT, str.c_str());
 }
 
 SongIterator Connection::CommitSearchSongs()
 {
 	prechecksNoCommandsList();
-	mpd_search_commit(m_connection.get());
+	mpd_search_commit(rawConnection());
 	checkErrors();
-	return SongIterator(m_connection.get(), defaultFetcher<Song>(mpd_recv_song));
+	return SongIterator(rawConnection(), defaultFetcher<Song>(mpd_recv_song));
 }
 
 ItemIterator Connection::GetDirectory(const std::string &directory)
 {
 	prechecksNoCommandsList();
-	mpd_send_list_meta(m_connection.get(), mpdDirectory(directory));
+	mpd_send_list_meta(rawConnection(), mpdDirectory(directory));
 	checkErrors();
-	return ItemIterator(m_connection.get(), defaultFetcher<Item>(mpd_recv_entity));
+	return ItemIterator(rawConnection(), defaultFetcher<Item>(mpd_recv_entity));
 }
 
 SongIterator Connection::GetDirectoryRecursive(const std::string &directory)
 {
 	prechecksNoCommandsList();
-	mpd_send_list_all_meta(m_connection.get(), mpdDirectory(directory));
+	mpd_send_list_all_meta(rawConnection(), mpdDirectory(directory));
 	checkErrors();
-	return SongIterator(m_connection.get(), fetchItemSong);
+	return SongIterator(rawConnection(), fetchItemSong);
 }
 
 DirectoryIterator Connection::GetDirectories(const std::string &directory)
 {
 	prechecksNoCommandsList();
-	mpd_send_list_meta(m_connection.get(), mpdDirectory(directory));
+	mpd_send_list_meta(rawConnection(), mpdDirectory(directory));
 	checkErrors();
-	return DirectoryIterator(m_connection.get(), defaultFetcher<Directory>(mpd_recv_directory));
+	return DirectoryIterator(rawConnection(), defaultFetcher<Directory>(mpd_recv_directory));
 }
 
 SongIterator Connection::GetSongs(const std::string &directory)
 {
 	prechecksNoCommandsList();
-	mpd_send_list_meta(m_connection.get(), mpdDirectory(directory));
+	mpd_send_list_meta(rawConnection(), mpdDirectory(directory));
 	checkErrors();
-	return SongIterator(m_connection.get(), defaultFetcher<Song>(mpd_recv_song));
+	return SongIterator(rawConnection(), defaultFetcher<Song>(mpd_recv_song));
 }
 
 OutputIterator Connection::GetOutputs()
 {
 	prechecksNoCommandsList();
-	mpd_send_outputs(m_connection.get());
+	mpd_send_outputs(rawConnection());
 	checkErrors();
-	return OutputIterator(m_connection.get(), defaultFetcher<Output>(mpd_recv_output));
+	return OutputIterator(rawConnection(), defaultFetcher<Output>(mpd_recv_output));
 }
 
 void Connection::EnableOutput(int id)
 {
 	prechecksNoCommandsList();
-	mpd_run_enable_output(m_connection.get(), id);
+	mpd_run_enable_output(rawConnection(), id);
 	checkErrors();
 }
 
 void Connection::DisableOutput(int id)
 {
 	prechecksNoCommandsList();
-	mpd_run_disable_output(m_connection.get(), id);
+	mpd_run_disable_output(rawConnection(), id);
 	checkErrors();
 }
 
 StringIterator Connection::GetURLHandlers()
 {
 	prechecksNoCommandsList();
-	mpd_send_list_url_schemes(m_connection.get());
+	mpd_send_list_url_schemes(rawConnection());
 	checkErrors();
-	return StringIterator(m_connection.get(), [](StringIterator::State &state) {
+	return StringIterator(rawConnection(), [](StringIterator::State &state) {
 		auto src = mpd_recv_pair_named(state.connection(), "handler");
 		if (src != nullptr)
 		{
@@ -1211,9 +1255,9 @@ StringIterator Connection::GetTagTypes()
 {
 	
 	prechecksNoCommandsList();
-	mpd_send_list_tag_types(m_connection.get());
+	mpd_send_list_tag_types(rawConnection());
 	checkErrors();
-	return StringIterator(m_connection.get(), [](StringIterator::State &state) {
+	return StringIterator(rawConnection(), [](StringIterator::State &state) {
 		auto src = mpd_recv_pair_named(state.connection(), "tagtype");
 		if (src != nullptr)
 		{
@@ -1228,7 +1272,7 @@ StringIterator Connection::GetTagTypes()
 
 void Connection::checkConnection() const
 {
-	if (!m_connection)
+	if (!Connected())
 		throw ClientError(MPD_ERROR_STATE, "No active MPD connection", false);
 }
 
@@ -1248,7 +1292,9 @@ void Connection::prechecksNoCommandsList()
 
 void Connection::checkErrors() const
 {
-	checkConnectionErrors(m_connection.get());
+	if (!ncm_mpd_connection_check_error(
+	    const_cast<NcmMpdConnection *>(&m_connection)))
+		throwConnectionError();
 }
 
 }
