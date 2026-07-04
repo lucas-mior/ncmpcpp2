@@ -460,6 +460,9 @@ struct Window
 	Window &operator<<(double d);
 	Window &operator<<(size_t s);
 	Window &operator<<(const std::string &s);
+
+	NcWindow *nativeWindow();
+	const NcWindow *nativeWindow() const;
 protected:
 	/// Sets colors of window (interal use only)
 	/// @param fg foregound color
