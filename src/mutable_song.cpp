@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 #include <utility>
-#include <vector>
 
 #include "c/ncm_base.h"
 #include "c/ncm_type_conversions.h"
@@ -108,55 +107,19 @@ MutableSong::~MutableSong()
 
 std::string MutableSong::get(enum NcmSongGetter getter, unsigned idx) const
 {
-	switch (getter)
-	{
-		case NCM_SONG_GETTER_ARTIST:
-		case NCM_SONG_GETTER_ALBUM_ARTIST:
-		case NCM_SONG_GETTER_TITLE:
-		case NCM_SONG_GETTER_ALBUM:
-		case NCM_SONG_GETTER_DATE:
-		case NCM_SONG_GETTER_TRACK:
-		case NCM_SONG_GETTER_GENRE:
-		case NCM_SONG_GETTER_COMPOSER:
-		case NCM_SONG_GETTER_PERFORMER:
-		case NCM_SONG_GETTER_DISC:
-		case NCM_SONG_GETTER_COMMENT:
-			return get(ncm_song_getter_to_tags_field(getter), idx);
-		case NCM_SONG_GETTER_NONE:
-		case NCM_SONG_GETTER_LENGTH:
-		case NCM_SONG_GETTER_DIRECTORY:
-		case NCM_SONG_GETTER_NAME:
-		case NCM_SONG_GETTER_URI:
-		case NCM_SONG_GETTER_TRACK_NUMBER:
-		case NCM_SONG_GETTER_PRIORITY:
-		default:
-			return Song::get(getter, idx);
-	}
+	enum NcmTagsField field = ncm_song_getter_to_tags_field(getter);
+
+	if (field == NCM_TAGS_FIELD_LAST
+	    || getter == NCM_SONG_GETTER_TRACK_NUMBER)
+		return Song::get(getter, idx);
+	return get(field, idx);
 }
 
 std::string MutableSong::get(enum NcmTagsField field, unsigned idx) const
 {
-	switch (field)
-	{
-		case NCM_TAGS_FIELD_TRACK:
-			return stringFromBuffer(ncm_mutable_song_get_numeric_tag_buffer(
-				const_cast<NcmMutableSong *>(&m_mutable), field,
-				static_cast<int32>(idx)));
-		case NCM_TAGS_FIELD_TITLE:
-		case NCM_TAGS_FIELD_ARTIST:
-		case NCM_TAGS_FIELD_ALBUM_ARTIST:
-		case NCM_TAGS_FIELD_ALBUM:
-		case NCM_TAGS_FIELD_DATE:
-		case NCM_TAGS_FIELD_GENRE:
-		case NCM_TAGS_FIELD_COMPOSER:
-		case NCM_TAGS_FIELD_PERFORMER:
-		case NCM_TAGS_FIELD_DISC:
-		case NCM_TAGS_FIELD_COMMENT:
-			return getTag(field, idx);
-		case NCM_TAGS_FIELD_LAST:
-		default:
-			return "";
-	}
+	return stringFromBuffer(ncm_mutable_song_get_tag_buffer(
+		const_cast<NcmMutableSong *>(&m_mutable), field,
+		static_cast<int32>(idx)));
 }
 
 void MutableSong::set(enum NcmTagsField field, const std::string &value,
@@ -164,7 +127,9 @@ void MutableSong::set(enum NcmTagsField field, const std::string &value,
 {
 	if (field == NCM_TAGS_FIELD_LAST)
 		return;
-	setTag(field, value, idx);
+	ncm_mutable_song_set_tag(&m_mutable, field, static_cast<int32>(idx),
+	                         const_cast<char *>(value.c_str()),
+	                         stringLength(value));
 }
 
 void MutableSong::setTags(enum NcmTagsField field, const std::string &value)
@@ -291,38 +256,16 @@ void MutableSong::setComment(const std::string &value, unsigned idx)
 
 std::string MutableSong::getTags(enum NcmSongGetter getter) const
 {
-	std::string result;
-	std::vector<std::string> seen;
+	enum NcmTagsField field = ncm_song_getter_to_tags_field(getter);
 
-	if (getter == NCM_SONG_GETTER_NONE)
-		return result;
-
-	for (unsigned i = 0; ; ++i)
-	{
-		std::string tag = get(getter, i);
-		if (tag.empty())
-			break;
-
-		bool already_present = false;
-		if (!Song::ShowDuplicateTags)
-		{
-			for (const auto &previous : seen)
-			{
-				if (previous == tag)
-				{
-					already_present = true;
-					break;
-				}
-			}
-		}
-		seen.push_back(tag);
-		if (already_present)
-			continue;
-		if (!result.empty())
-			result += Song::TagsSeparator;
-		result += tag;
-	}
-	return result;
+	if (field == NCM_TAGS_FIELD_LAST
+	    || getter == NCM_SONG_GETTER_TRACK_NUMBER)
+		return Song::getTags(getter);
+	return stringFromBuffer(ncm_mutable_song_tags_buffer(
+		const_cast<NcmMutableSong *>(&m_mutable), field,
+		const_cast<char *>(Song::TagsSeparator.c_str()),
+		static_cast<int32>(Song::TagsSeparator.size()),
+		Song::ShowDuplicateTags));
 }
 
 std::string MutableSong::getNewName() const
@@ -389,24 +332,6 @@ void MutableSong::clearModifications()
 NcmMutableSong *MutableSong::cMutableSong()
 {
 	return &m_mutable;
-}
-
-std::string MutableSong::getTag(enum NcmTagsField field, unsigned idx) const
-{
-	NcmStringView value;
-
-	if (!ncm_mutable_song_get_tag(const_cast<NcmMutableSong *>(&m_mutable),
-	                              field, static_cast<int32>(idx), &value))
-		return "";
-	return stringFromView(value);
-}
-
-void MutableSong::setTag(enum NcmTagsField field, const std::string &value,
-                         unsigned idx)
-{
-	ncm_mutable_song_set_tag(&m_mutable, field, static_cast<int32>(idx),
-	                         const_cast<char *>(value.c_str()),
-	                         stringLength(value));
 }
 
 void MutableSong::loadOriginals()

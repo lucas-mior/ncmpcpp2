@@ -19,12 +19,10 @@
  ***************************************************************************/
 
 #include <cassert>
-#include <functional>
 #include <memory>
 #include <new>
 #include <stdexcept>
 #include <string>
-#include <utility>
 
 #include "c/ncm_base.h"
 #include "c/ncm_song.h"
@@ -47,13 +45,6 @@ std::string stringFromBuffer(NcmBuffer buffer)
 		result.assign(buffer.data, buffer.len);
 	ncm_buffer_destroy(&buffer);
 	return result;
-}
-
-std::string songString(const NcmSong *song, NcmSongGetter getter,
-                       unsigned idx)
-{
-	return stringFromBuffer(ncm_song_getter_buffer(
-		const_cast<NcmSong *>(song), getter, idx));
 }
 
 void checkedLoadMpdSong(NcmSong *dest, const mpd_song *source)
@@ -169,7 +160,8 @@ std::string Song::get(mpd_tag_type type, unsigned idx) const
 std::string Song::get(enum NcmSongGetter getter, unsigned idx) const
 {
 	assert(!empty());
-	return songString(&m_song, getter, idx);
+	return stringFromBuffer(ncm_song_getter_buffer(
+		const_cast<NcmSong *>(&m_song), getter, idx));
 }
 
 std::string Song::getURI(unsigned idx) const
