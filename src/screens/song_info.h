@@ -21,11 +21,14 @@
 #ifndef NCMPCPP_SONG_INFO_H
 #define NCMPCPP_SONG_INFO_H
 
+#include <string>
+
 #include "interfaces.h"
 #include "mutable_song.h"
+#include "screens/nc_song_info.h"
 #include "screens/screen.h"
 
-struct SongInfo: Screen<NC::Scrollpad>, Tabbable
+struct SongInfo: BaseScreen, Tabbable
 {
 	struct Metadata
 	{
@@ -36,15 +39,20 @@ struct SongInfo: Screen<NC::Scrollpad>, Tabbable
 	
 	SongInfo();
 	
-	// Screen<NC::Scrollpad> implementation
+	// BaseScreen implementation
+	virtual bool isActiveWindow(const NC::Window &w_) const override;
+	virtual NC::Window *activeWindow() override;
+	virtual const NC::Window *activeWindow() const override;
+	virtual void refresh() override;
+	virtual void refreshWindow() override;
+	virtual void scroll(NC::Scroll where) override;
 	virtual void switchTo() override;
 	virtual void resize() override;
-	
+	virtual int windowTimeout() override;
 	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::SongInfo; }
-	
 	virtual void update() override { }
-	
+	virtual void mouseButtonPressed(MEVENT me) override;
 	virtual bool isLockable() override { return false; }
 	virtual bool isMergable() override { return true; }
 	
@@ -53,9 +61,11 @@ struct SongInfo: Screen<NC::Scrollpad>, Tabbable
 	
 private:
 	void PrepareSong(const MPD::Song &s);
+
+	NC::Scrollpad w;
+	NcSongInfoScreen m_screen;
 };
 
 extern SongInfo *mySongInfo;
 
 #endif // NCMPCPP_SONG_INFO_H
-
