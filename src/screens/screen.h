@@ -23,6 +23,7 @@
 
 #include "curses/menu.h"
 #include "curses/scrollpad.h"
+#include "screens/nc_screen.h"
 #include "screens/screen_type.h"
 
 void drawSeparator(int x);
@@ -86,6 +87,10 @@ struct BaseScreen
 	/// if one of the screens is locked. Screens that somehow resemble popups
 	/// will want to return false here.
 	virtual bool isMergable() = 0;
+
+	/// @return C screen backing this screen, or null if it is still C++ only.
+	virtual NcScreen *nativeScreen() { return nullptr; }
+	virtual const NcScreen *nativeScreen() const { return nullptr; }
 	
 	/// Locks current screen.
 	/// @return true if lock was successful, false otherwise. Note that

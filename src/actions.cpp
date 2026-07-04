@@ -139,6 +139,8 @@ size_t FooterStartY;
 
 void initializeScreens()
 {
+	nc_screen_registry_init(&Global::myScreenRegistry);
+
 	myHelp = new Help;
 	myPlaylist = new Playlist;
 	myBrowser = new Browser;

@@ -552,6 +552,16 @@ const NcWindow *Window::cWindow() const
 	return &m_impl;
 }
 
+NcWindow *Window::nativeWindow()
+{
+	return cWindow();
+}
+
+const NcWindow *Window::nativeWindow() const
+{
+	return cWindow();
+}
+
 void Window::setColor(Color c)
 {
 	nc_window_set_color(&m_impl, toNcColor(c));
