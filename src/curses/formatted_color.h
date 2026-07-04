@@ -21,6 +21,9 @@
 #ifndef NCMPCPP_FORMATTED_COLOR_H
 #define NCMPCPP_FORMATTED_COLOR_H
 
+#include <vector>
+
+#include "curses/nc_formatted_color.h"
 #include "curses/window.h"
 #include "utility/storage_kind.h"
 
@@ -56,23 +59,37 @@ struct FormattedColor
 
 	typedef std::vector<Format> Formats;
 
-	FormattedColor() { }
-
+	FormattedColor();
 	FormattedColor(Color color_, Formats formats_);
+	explicit FormattedColor(NcFormattedColor *formatted_color);
+	FormattedColor(const FormattedColor &rhs);
+	FormattedColor(FormattedColor &&rhs) noexcept;
+	FormattedColor &operator=(const FormattedColor &rhs);
+	FormattedColor &operator=(FormattedColor &&rhs) noexcept;
+	~FormattedColor();
 
-	const Color &color() const { return m_color; }
-	const Formats &formats() const { return m_formats; }
+	const Color &color() const;
+	Formats formats() const;
+
+	NcFormattedColor *cFormattedColor();
+	const NcFormattedColor *cFormattedColor() const;
 
 private:
-	Color m_color;
-	Formats m_formats;
+	NcFormattedColor m_impl;
+	mutable Color m_color_cache;
 };
 
 inline bool operator==(const FormattedColor &lhs, const FormattedColor &rhs)
 {
-	return lhs.color() == rhs.color()
-		&& lhs.formats() == rhs.formats();
+	return nc_formatted_color_equal(
+		const_cast<NcFormattedColor *>(lhs.cFormattedColor()),
+		const_cast<NcFormattedColor *>(rhs.cFormattedColor()));
 }
+
+NcColor toNcColor(Color color);
+Color fromNcColor(NcColor color);
+NcFormat toNcFormat(Format format);
+Format fromNcFormat(NcFormat format);
 
 std::istream &operator>>(std::istream &is, FormattedColor &fc);
 
@@ -91,7 +108,7 @@ OutputStreamT &operator<<(OutputStreamT &os,
 {
 	if (rfc.base().color() != Color::Default)
 		os << Color::End;
-	const auto &formats = rfc.base().formats();
+	auto formats = rfc.base().formats();
 	for (auto it = formats.rbegin(); it != formats.rend(); ++it)
 		os << reverseFormat(*it);
 	return os;

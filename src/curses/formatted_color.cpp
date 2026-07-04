@@ -38,13 +38,163 @@ void verifyFormats(const NC::FormattedColor::Formats &formats)
 
 }
 
+NC::FormattedColor::FormattedColor()
+{
+	nc_formatted_color_init(&m_impl);
+}
+
 NC::FormattedColor::FormattedColor(Color color_, Formats formats_)
 {
 	if (color_ == NC::Color::End)
 		throw std::logic_error("FormattedColor can't hold Color::End");
-	m_color = std::move(color_);
 	verifyFormats(formats_);
-	m_formats = std::move(formats_);
+	nc_formatted_color_init_color(&m_impl, toNcColor(color_));
+	for (auto &format : formats_)
+		nc_formatted_color_add_format(&m_impl, toNcFormat(format));
+}
+
+NC::FormattedColor::FormattedColor(NcFormattedColor *formatted_color)
+{
+	nc_formatted_color_copy(&m_impl, formatted_color);
+}
+
+NC::FormattedColor::FormattedColor(const FormattedColor &rhs)
+{
+	nc_formatted_color_copy(&m_impl,
+	                        const_cast<NcFormattedColor *>(rhs.cFormattedColor()));
+}
+
+NC::FormattedColor::FormattedColor(FormattedColor &&rhs) noexcept
+{
+	nc_formatted_color_move(&m_impl, rhs.cFormattedColor());
+}
+
+NC::FormattedColor &NC::FormattedColor::operator=(const FormattedColor &rhs)
+{
+	if (this != &rhs)
+	{
+		nc_formatted_color_destroy(&m_impl);
+		nc_formatted_color_copy(
+			&m_impl, const_cast<NcFormattedColor *>(rhs.cFormattedColor()));
+	}
+	return *this;
+}
+
+NC::FormattedColor &NC::FormattedColor::operator=(FormattedColor &&rhs) noexcept
+{
+	if (this != &rhs)
+	{
+		nc_formatted_color_destroy(&m_impl);
+		nc_formatted_color_move(&m_impl, rhs.cFormattedColor());
+	}
+	return *this;
+}
+
+NC::FormattedColor::~FormattedColor()
+{
+	nc_formatted_color_destroy(&m_impl);
+}
+
+const NC::Color &NC::FormattedColor::color() const
+{
+	m_color_cache = fromNcColor(m_impl.color);
+	return m_color_cache;
+}
+
+NC::FormattedColor::Formats NC::FormattedColor::formats() const
+{
+	Formats result;
+	auto formats = nc_formatted_color_formats(
+		const_cast<NcFormattedColor *>(&m_impl));
+	auto count = nc_formatted_color_format_count(
+		const_cast<NcFormattedColor *>(&m_impl));
+	for (int32 i = 0; i < count; i += 1)
+		result.push_back(fromNcFormat(formats[i]));
+	return result;
+}
+
+NcFormattedColor *NC::FormattedColor::cFormattedColor()
+{
+	return &m_impl;
+}
+
+const NcFormattedColor *NC::FormattedColor::cFormattedColor() const
+{
+	return &m_impl;
+}
+
+NcColor NC::toNcColor(Color color)
+{
+	if (color.isDefault())
+		return nc_color_default();
+	if (color.isEnd())
+		return nc_color_end();
+	return nc_color_make(color.foreground(), color.background(), false, false);
+}
+
+NC::Color NC::fromNcColor(NcColor color)
+{
+	if (nc_color_is_default(color))
+		return Color::Default;
+	if (nc_color_is_end(color))
+		return Color::End;
+	return Color(color.foreground, color.background, false, false);
+}
+
+NcFormat NC::toNcFormat(Format format)
+{
+	switch (format)
+	{
+	case Format::Bold:
+		return NC_FORMAT_BOLD;
+	case Format::NoBold:
+		return NC_FORMAT_NO_BOLD;
+	case Format::Underline:
+		return NC_FORMAT_UNDERLINE;
+	case Format::NoUnderline:
+		return NC_FORMAT_NO_UNDERLINE;
+	case Format::Reverse:
+		return NC_FORMAT_REVERSE;
+	case Format::NoReverse:
+		return NC_FORMAT_NO_REVERSE;
+	case Format::AltCharset:
+		return NC_FORMAT_ALT_CHARSET;
+	case Format::NoAltCharset:
+		return NC_FORMAT_NO_ALT_CHARSET;
+	case Format::Italic:
+		return NC_FORMAT_ITALIC;
+	case Format::NoItalic:
+		return NC_FORMAT_NO_ITALIC;
+	}
+	return NC_FORMAT_BOLD;
+}
+
+NC::Format NC::fromNcFormat(NcFormat format)
+{
+	switch (format)
+	{
+	case NC_FORMAT_BOLD:
+		return Format::Bold;
+	case NC_FORMAT_NO_BOLD:
+		return Format::NoBold;
+	case NC_FORMAT_UNDERLINE:
+		return Format::Underline;
+	case NC_FORMAT_NO_UNDERLINE:
+		return Format::NoUnderline;
+	case NC_FORMAT_REVERSE:
+		return Format::Reverse;
+	case NC_FORMAT_NO_REVERSE:
+		return Format::NoReverse;
+	case NC_FORMAT_ALT_CHARSET:
+		return Format::AltCharset;
+	case NC_FORMAT_NO_ALT_CHARSET:
+		return Format::NoAltCharset;
+	case NC_FORMAT_ITALIC:
+		return Format::Italic;
+	case NC_FORMAT_NO_ITALIC:
+		return Format::NoItalic;
+	}
+	return Format::Bold;
 }
 
 std::istream &NC::operator>>(std::istream &is, NC::FormattedColor &fc)

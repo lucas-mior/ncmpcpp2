@@ -26,7 +26,9 @@
 #include <sstream>
 #include <utility>
 #include <variant>
+
 #include "curses/formatted_color.h"
+#include "curses/nc_buffer.h"
 #include "curses/window.h"
 
 namespace NC {
@@ -64,102 +66,213 @@ template <typename CharT> class BasicBuffer
 		size_t m_id;
 	};
 
-	template <typename NumberT>
-	void appendNumber(NumberT n)
-	{
-		std::basic_ostringstream<CharT> os;
-		os << n;
-		m_string += os.str();
-	}
-	
 public:
 	typedef std::basic_string<CharT> StringType;
 	typedef std::multimap<size_t, Property> Properties;
-	
-	const StringType &str() const { return m_string; }
-	const Properties &properties() const { return m_properties; }
-	
-	template <typename PropertyT>
-	void addProperty(size_t position, PropertyT &&property, size_t id = -1)
+
+	BasicBuffer()
+		: m_string_cache_valid(false), m_properties_cache_valid(false)
 	{
-		assert(position <= m_string.size());
-		m_properties.emplace(position, Property(std::forward<PropertyT>(property), id));
+		nc_buffer_init(&m_buffer);
+	}
+
+	BasicBuffer(const BasicBuffer &rhs)
+		: m_string_cache_valid(false), m_properties_cache_valid(false)
+	{
+		nc_buffer_copy(&m_buffer, const_cast<NcBuffer *>(rhs.cBuffer()));
+	}
+
+	BasicBuffer(BasicBuffer &&rhs) noexcept
+		: m_string_cache(std::move(rhs.m_string_cache)),
+		  m_properties_cache(std::move(rhs.m_properties_cache)),
+		  m_string_cache_valid(rhs.m_string_cache_valid),
+		  m_properties_cache_valid(rhs.m_properties_cache_valid)
+	{
+		nc_buffer_move(&m_buffer, rhs.cBuffer());
+		rhs.m_string_cache_valid = false;
+		rhs.m_properties_cache_valid = false;
+	}
+
+	BasicBuffer &operator=(const BasicBuffer &rhs)
+	{
+		if (this != &rhs)
+		{
+			nc_buffer_destroy(&m_buffer);
+			nc_buffer_copy(&m_buffer, const_cast<NcBuffer *>(rhs.cBuffer()));
+			invalidateCaches();
+		}
+		return *this;
+	}
+
+	BasicBuffer &operator=(BasicBuffer &&rhs) noexcept
+	{
+		if (this != &rhs)
+		{
+			nc_buffer_destroy(&m_buffer);
+			nc_buffer_move(&m_buffer, rhs.cBuffer());
+			m_string_cache = std::move(rhs.m_string_cache);
+			m_properties_cache = std::move(rhs.m_properties_cache);
+			m_string_cache_valid = rhs.m_string_cache_valid;
+			m_properties_cache_valid = rhs.m_properties_cache_valid;
+			rhs.m_string_cache_valid = false;
+			rhs.m_properties_cache_valid = false;
+		}
+		return *this;
+	}
+
+	~BasicBuffer()
+	{
+		nc_buffer_destroy(&m_buffer);
+	}
+	
+	const StringType &str() const
+	{
+		refreshStringCache();
+		return m_string_cache;
+	}
+
+	const Properties &properties() const
+	{
+		refreshPropertiesCache();
+		return m_properties_cache;
+	}
+
+	NcBuffer *cBuffer()
+	{
+		return &m_buffer;
+	}
+
+	const NcBuffer *cBuffer() const
+	{
+		return &m_buffer;
+	}
+	
+	void addProperty(size_t position, const Color &color, size_t id = -1)
+	{
+		assert(position <= static_cast<size_t>(nc_buffer_len(&m_buffer)));
+		nc_buffer_add_color(&m_buffer,
+		                    static_cast<int32>(position),
+		                    toNcColor(color),
+		                    static_cast<uint64>(id));
+		invalidatePropertiesCache();
+	}
+
+	void addProperty(size_t position, const Format &format, size_t id = -1)
+	{
+		assert(position <= static_cast<size_t>(nc_buffer_len(&m_buffer)));
+		nc_buffer_add_format(&m_buffer,
+		                     static_cast<int32>(position),
+		                     toNcFormat(format),
+		                     static_cast<uint64>(id));
+		invalidatePropertiesCache();
+	}
+
+	void addProperty(size_t position,
+	                 const FormattedColor &formatted_color,
+	                 size_t id = -1)
+	{
+		assert(position <= static_cast<size_t>(nc_buffer_len(&m_buffer)));
+		nc_buffer_add_formatted_color(
+			&m_buffer,
+			static_cast<int32>(position),
+			const_cast<NcFormattedColor *>(formatted_color.cFormattedColor()),
+			static_cast<uint64>(id));
+		invalidatePropertiesCache();
+	}
+
+	template <StorageKind storage>
+	void addProperty(size_t position,
+	                 const FormattedColor::End<storage> &formatted_color_end,
+	                 size_t id = -1)
+	{
+		assert(position <= static_cast<size_t>(nc_buffer_len(&m_buffer)));
+		nc_buffer_add_formatted_color_end(
+			&m_buffer,
+			static_cast<int32>(position),
+			const_cast<NcFormattedColor *>(
+				formatted_color_end.base().cFormattedColor()),
+			static_cast<uint64>(id));
+		invalidatePropertiesCache();
 	}
 
 	void removeProperties(size_t id = -1)
 	{
-		auto it = m_properties.begin();
-		while (it != m_properties.end())
-		{
-			if (it->second.id() == id)
-				m_properties.erase(it++);
-			else
-				++it;
-		}
+		nc_buffer_remove_properties(&m_buffer, static_cast<uint64>(id));
+		invalidatePropertiesCache();
 	}
 
 	bool empty() const
 	{
-		return m_string.empty() && m_properties.empty();
+		return nc_buffer_empty(const_cast<NcBuffer *>(&m_buffer));
 	}
 
 	void clear()
 	{
-		m_string.clear();
-		m_properties.clear();
+		nc_buffer_clear(&m_buffer);
+		invalidateCaches();
 	}
 	
 	BasicBuffer<CharT> &operator<<(int n)
 	{
-		appendNumber(n);
+		nc_buffer_append_int32(&m_buffer, static_cast<int32>(n));
+		invalidateStringCache();
 		return *this;
 	}
 	
 	BasicBuffer<CharT> &operator<<(long int n)
 	{
-		appendNumber(n);
+		nc_buffer_append_int64(&m_buffer, static_cast<int64>(n));
+		invalidateStringCache();
 		return *this;
 	}
 	
 	BasicBuffer<CharT> &operator<<(unsigned int n)
 	{
-		appendNumber(n);
+		nc_buffer_append_uint32(&m_buffer, static_cast<uint32>(n));
+		invalidateStringCache();
 		return *this;
 	}
 	
 	BasicBuffer<CharT> &operator<<(unsigned long int n)
 	{
-		appendNumber(n);
+		nc_buffer_append_uint64(&m_buffer, static_cast<uint64>(n));
+		invalidateStringCache();
 		return *this;
 	}
 	
 	BasicBuffer<CharT> &operator<<(CharT c)
 	{
-		m_string += c;
+		nc_buffer_append_char(&m_buffer, static_cast<char>(c));
+		invalidateStringCache();
 		return *this;
 	}
 
 	BasicBuffer<CharT> &operator<<(const CharT *s)
 	{
-		m_string += s;
+		nc_buffer_append_cstring(&m_buffer, const_cast<char *>(s));
+		invalidateStringCache();
 		return *this;
 	}
 	
 	BasicBuffer<CharT> &operator<<(const StringType &s)
 	{
-		m_string += s;
+		nc_buffer_append_data(
+			&m_buffer,
+			const_cast<char *>(reinterpret_cast<const char *>(s.data())),
+			static_cast<int32>(s.size()));
+		invalidateStringCache();
 		return *this;
 	}
 	
 	BasicBuffer<CharT> &operator<<(const Color &color)
 	{
-		addProperty(m_string.size(), color);
+		addProperty(static_cast<size_t>(nc_buffer_len(&m_buffer)), color);
 		return *this;
 	}
 	
 	BasicBuffer<CharT> &operator<<(const Format &format)
 	{
-		addProperty(m_string.size(), format);
+		addProperty(static_cast<size_t>(nc_buffer_len(&m_buffer)), format);
 		return *this;
 	}
 
@@ -182,8 +295,80 @@ private:
 		construct(std::forward<Args>(args)...);
 	}
 
-	StringType m_string;
-	Properties m_properties;
+	void invalidateStringCache()
+	{
+		m_string_cache_valid = false;
+	}
+
+	void invalidatePropertiesCache()
+	{
+		m_properties_cache_valid = false;
+	}
+
+	void invalidateCaches()
+	{
+		invalidateStringCache();
+		invalidatePropertiesCache();
+	}
+
+	void refreshStringCache() const
+	{
+		if (m_string_cache_valid)
+			return;
+		m_string_cache.assign(nc_buffer_data(const_cast<NcBuffer *>(&m_buffer)),
+		                      static_cast<size_t>(
+			                      nc_buffer_len(const_cast<NcBuffer *>(&m_buffer))));
+		m_string_cache_valid = true;
+	}
+
+	void refreshPropertiesCache() const
+	{
+		if (m_properties_cache_valid)
+			return;
+
+		m_properties_cache.clear();
+		auto properties = nc_buffer_properties(const_cast<NcBuffer *>(&m_buffer));
+		auto count = nc_buffer_property_count(const_cast<NcBuffer *>(&m_buffer));
+		for (int32 i = 0; i < count; i += 1)
+		{
+			auto &property = properties[i];
+			switch (property.type)
+			{
+			case NC_BUFFER_PROPERTY_COLOR:
+				m_properties_cache.emplace(
+					property.position,
+					Property(fromNcColor(property.value.color), property.id));
+				break;
+			case NC_BUFFER_PROPERTY_FORMAT:
+				m_properties_cache.emplace(
+					property.position,
+					Property(fromNcFormat(property.value.format), property.id));
+				break;
+			case NC_BUFFER_PROPERTY_FORMATTED_COLOR:
+				m_properties_cache.emplace(
+					property.position,
+					Property(
+						FormattedColor(&property.value.formatted_color),
+						property.id));
+				break;
+			case NC_BUFFER_PROPERTY_FORMATTED_COLOR_END:
+				m_properties_cache.emplace(
+					property.position,
+					Property(
+						FormattedColor::End<StorageKind::Value>(
+							FormattedColor(&property.value.formatted_color)),
+						property.id));
+				break;
+			}
+		}
+		m_properties_cache_valid = true;
+	}
+
+	NcBuffer m_buffer;
+	mutable StringType m_string_cache;
+	mutable Properties m_properties_cache;
+	mutable bool m_string_cache_valid;
+	mutable bool m_properties_cache_valid;
 };
 
 typedef BasicBuffer<char> Buffer;
@@ -191,8 +376,8 @@ typedef BasicBuffer<char> Buffer;
 template <typename CharT>
 bool operator==(const BasicBuffer<CharT> &lhs, const BasicBuffer<CharT> &rhs)
 {
-	return lhs.str() == rhs.str()
-		&& lhs.properties() == rhs.properties();
+	return nc_buffer_equal(const_cast<NcBuffer *>(lhs.cBuffer()),
+	                       const_cast<NcBuffer *>(rhs.cBuffer()));
 }
 
 

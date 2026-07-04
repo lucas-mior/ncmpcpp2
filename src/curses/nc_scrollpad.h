@@ -1,6 +1,7 @@
 #if !defined(NCMPCPP_NC_SCROLLPAD_H)
 #define NCMPCPP_NC_SCROLLPAD_H
 
+#include "curses/nc_buffer.h"
 #include "curses/nc_window.h"
 
 #if defined(__cplusplus)
@@ -26,6 +27,8 @@ void nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
 void nc_scrollpad_clear(NcScrollpad *scrollpad, NcWindow *window);
 void nc_scrollpad_prepare_flush(NcScrollpad *scrollpad, NcWindow *window,
                                 int64 generated_height);
+void nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window,
+                        NcBuffer *buffer);
 void nc_scrollpad_reset(NcScrollpad *scrollpad);
 
 #if defined(__cplusplus)
