@@ -238,10 +238,10 @@ Playlist::Playlist(const Playlist &rhs)
 }
 
 Playlist::Playlist(Playlist &&rhs) noexcept
-: m_playlist(rhs.m_playlist)
-, m_path_cache(std::move(rhs.m_path_cache))
+: m_path_cache(std::move(rhs.m_path_cache))
 {
-	ncm_playlist_init(&rhs.m_playlist);
+	ncm_playlist_init(&m_playlist);
+	ncm_playlist_move(&m_playlist, &rhs.m_playlist);
 }
 
 Playlist &Playlist::operator=(const Playlist &rhs)
@@ -260,10 +260,8 @@ Playlist &Playlist::operator=(Playlist &&rhs) noexcept
 {
 	if (this != &rhs)
 	{
-		ncm_playlist_destroy(&m_playlist);
-		m_playlist = rhs.m_playlist;
+		ncm_playlist_move(&m_playlist, &rhs.m_playlist);
 		m_path_cache = std::move(rhs.m_path_cache);
-		ncm_playlist_init(&rhs.m_playlist);
 	}
 	return *this;
 }
@@ -275,22 +273,24 @@ Playlist::~Playlist()
 
 bool Playlist::operator==(const Playlist &rhs) const
 {
-	return path() == rhs.path()
-	    && lastModified() == rhs.lastModified();
+	return ncm_playlist_equal(const_cast<NcmPlaylist *>(&m_playlist),
+	                          const_cast<NcmPlaylist *>(&rhs.m_playlist));
 }
 
 const std::string &Playlist::path() const
 {
-	if (m_playlist.path == nullptr)
-		m_path_cache.clear();
+	NcmStringView path;
+
+	if (ncm_playlist_path_view(const_cast<NcmPlaylist *>(&m_playlist), &path))
+		m_path_cache.assign(path.data, path.len);
 	else
-		m_path_cache.assign(m_playlist.path, m_playlist.path_len);
+		m_path_cache.clear();
 	return m_path_cache;
 }
 
 time_t Playlist::lastModified() const
 {
-	return m_playlist.last_modified;
+	return ncm_playlist_last_modified(const_cast<NcmPlaylist *>(&m_playlist));
 }
 
 Item::Item()
@@ -335,12 +335,12 @@ Item::Item(const Item &rhs)
 }
 
 Item::Item(Item &&rhs) noexcept
-: m_item(rhs.m_item)
-, m_directory_cache(std::move(rhs.m_directory_cache))
+: m_directory_cache(std::move(rhs.m_directory_cache))
 , m_song_cache(std::move(rhs.m_song_cache))
 , m_playlist_cache(std::move(rhs.m_playlist_cache))
 {
-	ncm_mpd_item_init(&rhs.m_item);
+	ncm_mpd_item_init(&m_item);
+	ncm_mpd_item_move(&m_item, &rhs.m_item);
 }
 
 Item &Item::operator=(const Item &rhs)
@@ -358,12 +358,10 @@ Item &Item::operator=(Item &&rhs) noexcept
 {
 	if (this != &rhs)
 	{
-		ncm_mpd_item_destroy(&m_item);
-		m_item = rhs.m_item;
+		ncm_mpd_item_move(&m_item, &rhs.m_item);
 		m_directory_cache = std::move(rhs.m_directory_cache);
 		m_song_cache = std::move(rhs.m_song_cache);
 		m_playlist_cache = std::move(rhs.m_playlist_cache);
-		ncm_mpd_item_init(&rhs.m_item);
 	}
 	return *this;
 }
@@ -375,19 +373,14 @@ Item::~Item()
 
 bool Item::operator==(const Item &rhs) const
 {
-	if (type() != rhs.type())
-		return false;
-
-	switch (type())
-	{
-		case Type::Directory:
-			return directory() == rhs.directory();
-		case Type::Song:
-			return song() == rhs.song();
-		case Type::Playlist:
-			return playlist() == rhs.playlist();
-	}
-	return false;
+	if (ncm_mpd_item_kind(const_cast<NcmMpdItem *>(&m_item))
+	    == NCM_MPD_ITEM_UNKNOWN)
+		throw std::runtime_error("unknown item type");
+	if (ncm_mpd_item_kind(const_cast<NcmMpdItem *>(&rhs.m_item))
+	    == NCM_MPD_ITEM_UNKNOWN)
+		throw std::runtime_error("unknown item type");
+	return ncm_mpd_item_equal(const_cast<NcmMpdItem *>(&m_item),
+	                          const_cast<NcmMpdItem *>(&rhs.m_item));
 }
 
 Item::Type Item::type() const

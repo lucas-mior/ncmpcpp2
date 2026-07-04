@@ -22,6 +22,7 @@
 
 #ifdef HAVE_TAGLIB_H
 
+#include <cstring>
 #include <string>
 
 #include "c/ncm_taglib.h"

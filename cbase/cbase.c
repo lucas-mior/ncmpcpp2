@@ -26,6 +26,14 @@ cbase_string_lowercase_ascii(char *string, int32 string_len) {
     return;
 }
 
+bool
+cbase_strequal(const char *s1, const char *s2) {
+    bool result;
+
+    result = strequal((char *)s1, (char *)s2);
+    return result;
+}
+
 int32
 cbase_string_last_index_of(char *string, int32 string_len, char needle) {
     char *found;

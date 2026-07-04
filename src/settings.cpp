@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include <chrono>
+#include <cstring>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>

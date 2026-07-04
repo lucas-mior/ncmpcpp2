@@ -82,10 +82,6 @@ private:
 	std::string getTag(enum NcmTagsField field, unsigned idx) const;
 	void setTag(enum NcmTagsField field, const std::string &value, unsigned idx);
 	void loadOriginals();
-	void loadOriginalTag(enum NcmTagsField field, unsigned idx,
-	                     const std::string &value);
-	void loadOriginalTags(enum NcmTagsField field,
-	                      std::string (*getter)(const Song *, unsigned));
 	static enum NcmTagsField fieldForSetFunction(SetFunction set);
 	
 	NcmMutableSong m_mutable;

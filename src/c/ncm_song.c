@@ -994,3 +994,180 @@ ncm_song_show_time(uint32 length, char *buffer, int32 buffer_cap) {
 
     return result;
 }
+
+NcmBuffer
+ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter,
+                       uint32 idx) {
+    NcmBuffer buffer;
+    NcmStringView view;
+    char number_buffer[32];
+    int32 len;
+    enum mpd_tag_type tag;
+
+    ncm_buffer_init(&buffer);
+    if (song == NULL) {
+        return buffer;
+    }
+
+    switch (getter) {
+    case NCM_SONG_GETTER_LENGTH:
+        if (idx > 0) {
+            return buffer;
+        }
+        if (song->duration > 0) {
+            len = ncm_song_show_time(song->duration, number_buffer,
+                                     NCM_ARRAY_LEN(number_buffer));
+            ncm_buffer_append(&buffer, number_buffer, len);
+        } else {
+            ncm_buffer_append(&buffer, STRLIT_ARGS("-:--"));
+        }
+        return buffer;
+    case NCM_SONG_GETTER_DIRECTORY:
+        if (ncm_song_directory_view(song, idx, &view)) {
+            ncm_buffer_append(&buffer, view.data, view.len);
+        }
+        return buffer;
+    case NCM_SONG_GETTER_NAME:
+        if (ncm_song_name_view(song, idx, &view)) {
+            ncm_buffer_append(&buffer, view.data, view.len);
+        }
+        return buffer;
+    case NCM_SONG_GETTER_URI:
+        if (ncm_song_uri_view(song, idx, &view)) {
+            ncm_buffer_append(&buffer, view.data, view.len);
+        }
+        return buffer;
+    case NCM_SONG_GETTER_TRACK:
+        if (ncm_song_tag_view(song, MPD_TAG_TRACK, idx, &view)) {
+            len = ncm_song_numeric_tag_len(view.data, view.len);
+            ncm_buffer_reserve(&buffer, len);
+            buffer.len = ncm_song_format_numeric_tag(buffer.data,
+                                                     buffer.cap,
+                                                     view.data, view.len);
+        }
+        return buffer;
+    case NCM_SONG_GETTER_TRACK_NUMBER:
+        if (ncm_song_tag_view(song, MPD_TAG_TRACK, idx, &view)) {
+            len = ncm_song_track_number_len(view.data, view.len);
+            ncm_buffer_reserve(&buffer, len);
+            buffer.len = ncm_song_format_track_number(buffer.data,
+                                                      buffer.cap,
+                                                      view.data, view.len);
+        }
+        return buffer;
+    case NCM_SONG_GETTER_DISC:
+        if (ncm_song_tag_view(song, MPD_TAG_DISC, idx, &view)) {
+            len = ncm_song_numeric_tag_len(view.data, view.len);
+            ncm_buffer_reserve(&buffer, len);
+            buffer.len = ncm_song_format_numeric_tag(buffer.data,
+                                                     buffer.cap,
+                                                     view.data, view.len);
+        }
+        return buffer;
+    case NCM_SONG_GETTER_PRIORITY:
+        if (idx > 0) {
+            return buffer;
+        }
+        len = snprintf(number_buffer, (size_t)NCM_ARRAY_LEN(number_buffer),
+                       "%u", song->priority);
+        if (len > 0) {
+            if (len >= NCM_ARRAY_LEN(number_buffer)) {
+                len = NCM_ARRAY_LEN(number_buffer) - 1;
+            }
+            ncm_buffer_append(&buffer, number_buffer, len);
+        }
+        return buffer;
+    case NCM_SONG_GETTER_ARTIST:
+    case NCM_SONG_GETTER_ALBUM_ARTIST:
+    case NCM_SONG_GETTER_TITLE:
+    case NCM_SONG_GETTER_ALBUM:
+    case NCM_SONG_GETTER_DATE:
+    case NCM_SONG_GETTER_GENRE:
+    case NCM_SONG_GETTER_COMPOSER:
+    case NCM_SONG_GETTER_PERFORMER:
+    case NCM_SONG_GETTER_COMMENT:
+        tag = ncm_song_getter_to_tag_type(getter);
+        if (ncm_song_tag_view(song, tag, idx, &view)) {
+            ncm_buffer_append(&buffer, view.data, view.len);
+        }
+        return buffer;
+    case NCM_SONG_GETTER_NONE:
+    default:
+        return buffer;
+    }
+}
+
+NcmBuffer
+ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
+                     char *separator, int32 separator_len,
+                     bool show_duplicates) {
+    NcmBuffer result;
+    NcmBuffer tag;
+
+    ncm_buffer_init(&result);
+    if (song == NULL) {
+        return result;
+    }
+    if (getter == NCM_SONG_GETTER_NONE) {
+        return result;
+    }
+    if ((separator == NULL) || (separator_len < 0)) {
+        separator = "";
+        separator_len = 0;
+    }
+
+    for (uint32 i = 0; ; i += 1) {
+        bool already_present;
+
+        tag = ncm_song_getter_buffer(song, getter, i);
+        if (tag.len == 0) {
+            ncm_buffer_destroy(&tag);
+            break;
+        }
+
+        already_present = false;
+        if (!show_duplicates) {
+            for (uint32 j = 0; j < i; j += 1) {
+                NcmBuffer previous;
+
+                previous = ncm_song_getter_buffer(song, getter, j);
+                if (ncm_string_equal(previous.data, previous.len,
+                                     tag.data, tag.len)) {
+                    already_present = true;
+                }
+                ncm_buffer_destroy(&previous);
+                if (already_present) {
+                    break;
+                }
+            }
+        }
+
+        if (!already_present) {
+            if (result.len > 0) {
+                ncm_buffer_append(&result, separator, separator_len);
+            }
+            ncm_buffer_append(&result, tag.data, tag.len);
+        }
+        ncm_buffer_destroy(&tag);
+    }
+
+    return result;
+}
+
+bool
+ncm_song_equal(NcmSong *a, NcmSong *b) {
+    NcmStringView a_uri;
+    NcmStringView b_uri;
+
+    if ((a == NULL) || (b == NULL)) {
+        return a == b;
+    }
+    if (!ncm_song_uri_view(a, 0, &a_uri)) {
+        return !ncm_song_uri_view(b, 0, &b_uri);
+    }
+    if (!ncm_song_uri_view(b, 0, &b_uri)) {
+        return false;
+    }
+
+    return ncm_string_equal(a_uri.data, a_uri.len, b_uri.data, b_uri.len);
+}

@@ -2,6 +2,7 @@
 #define NCM_MUTABLE_SONG_H
 
 #include "c/ncm_defs.h"
+#include "c/ncm_song.h"
 #include "c/ncm_tags.h"
 
 #if defined(__cplusplus)
@@ -63,6 +64,11 @@ bool ncm_mutable_song_set_tags(NcmMutableSong *song, enum NcmTagsField field,
                                char *separator, int32 separator_len);
 bool ncm_mutable_song_get_tag(NcmMutableSong *song, enum NcmTagsField field,
                               int32 idx, NcmStringView *view);
+NcmBuffer ncm_mutable_song_get_numeric_tag_buffer(NcmMutableSong *song,
+                                                  enum NcmTagsField field,
+                                                  int32 idx);
+bool ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
+                                               NcmSong *source);
 
 bool ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
                                    int32 new_name_len);
