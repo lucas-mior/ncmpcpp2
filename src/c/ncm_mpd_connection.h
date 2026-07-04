@@ -4,6 +4,7 @@
 #include <mpd/client.h>
 
 #include "c/ncm_error.h"
+#include "c/ncm_mpd_item.h"
 #include "c/ncm_song.h"
 
 #if defined(__cplusplus)
@@ -33,6 +34,12 @@ typedef struct NcmMpdSongList {
     int32 count;
     int32 capacity;
 } NcmMpdSongList;
+
+typedef struct NcmMpdItemList {
+    NcmMpdItem *items;
+    int32 count;
+    int32 capacity;
+} NcmMpdItemList;
 
 typedef struct NcmMpdStatus {
     int32 volume;
@@ -82,6 +89,9 @@ bool ncm_mpd_connection_get_status(NcmMpdConnection *connection,
 void ncm_mpd_song_list_init(NcmMpdSongList *list);
 void ncm_mpd_song_list_destroy(NcmMpdSongList *list);
 void ncm_mpd_song_list_clear(NcmMpdSongList *list);
+void ncm_mpd_item_list_init(NcmMpdItemList *list);
+void ncm_mpd_item_list_destroy(NcmMpdItemList *list);
+void ncm_mpd_item_list_clear(NcmMpdItemList *list);
 
 bool ncm_mpd_connection_get_current_song(NcmMpdConnection *connection,
                                          NcmSong *song);
@@ -98,6 +108,17 @@ bool ncm_mpd_connection_get_playlist_content_no_info(
     NcmMpdConnection *connection,
     char *path,
     NcmMpdSongList *songs);
+
+bool ncm_mpd_connection_get_directory(NcmMpdConnection *connection,
+                                      char *path,
+                                      NcmMpdItemList *items);
+bool ncm_mpd_connection_get_directory_recursive(
+    NcmMpdConnection *connection,
+    char *path,
+    NcmMpdSongList *songs);
+bool ncm_mpd_connection_get_directory_songs(NcmMpdConnection *connection,
+                                            char *path,
+                                            NcmMpdSongList *songs);
 
 bool ncm_mpd_connection_play(NcmMpdConnection *connection);
 bool ncm_mpd_connection_play_pos(NcmMpdConnection *connection, int32 pos);
@@ -154,6 +175,31 @@ bool ncm_mpd_connection_delete_range(NcmMpdConnection *connection,
                                      uint32 begin,
                                      uint32 end,
                                      bool command_list_active);
+bool ncm_mpd_connection_clear_playlist(NcmMpdConnection *connection,
+                                       char *playlist);
+bool ncm_mpd_connection_add_to_playlist(NcmMpdConnection *connection,
+                                        char *playlist,
+                                        char *path,
+                                        bool command_list_active);
+bool ncm_mpd_connection_playlist_move(NcmMpdConnection *connection,
+                                      char *playlist,
+                                      uint32 from,
+                                      uint32 to,
+                                      bool command_list_active);
+bool ncm_mpd_connection_playlist_delete(NcmMpdConnection *connection,
+                                        char *playlist,
+                                        uint32 pos,
+                                        bool command_list_active);
+bool ncm_mpd_connection_rename_playlist(NcmMpdConnection *connection,
+                                        char *from,
+                                        char *to);
+bool ncm_mpd_connection_delete_playlist(NcmMpdConnection *connection,
+                                        char *playlist);
+bool ncm_mpd_connection_load_playlist(NcmMpdConnection *connection,
+                                      char *playlist,
+                                      bool *loaded);
+bool ncm_mpd_connection_save_playlist(NcmMpdConnection *connection,
+                                      char *playlist);
 
 #if defined(__cplusplus)
 }
