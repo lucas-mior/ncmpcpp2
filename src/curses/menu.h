@@ -526,15 +526,31 @@ struct Menu: Window, List
 	/// Sets prefix, that is put before each selected item to indicate its selection
 	/// Note that the passed variable is not deleted along with menu object.
 	/// @param b pointer to buffer that contains the prefix
-	void setSelectedPrefix(const Buffer &b) { m_selected_prefix = b; }
+	void setSelectedPrefix(const Buffer &b)
+		{
+			m_selected_prefix = b;
+			syncMenuPrefixes();
+		}
 	
 	/// Sets suffix, that is put after each selected item to indicate its selection
 	/// Note that the passed variable is not deleted along with menu object.
 	/// @param b pointer to buffer that contains the suffix
-	void setSelectedSuffix(const Buffer &b) { m_selected_suffix = b; }
+	void setSelectedSuffix(const Buffer &b)
+		{
+			m_selected_suffix = b;
+			syncMenuPrefixes();
+		}
 
-	void setHighlightPrefix(const Buffer &b) { m_highlight_prefix = b; }
-	void setHighlightSuffix(const Buffer &b) { m_highlight_suffix = b; }
+	void setHighlightPrefix(const Buffer &b)
+		{
+			m_highlight_prefix = b;
+			syncMenuPrefixes();
+		}
+	void setHighlightSuffix(const Buffer &b)
+		{
+			m_highlight_suffix = b;
+			syncMenuPrefixes();
+		}
 
 	const Buffer &highlightPrefix() const { return m_highlight_prefix; }
 	const Buffer &highlightSuffix() const { return m_highlight_suffix; }
@@ -693,44 +709,103 @@ private:
 			static_cast<size_t>(pos));
 	}
 
-	static NcMenuItemCallbacks itemCallbacks()
-	{
-		NcMenuItemCallbacks callbacks;
+		static NcMenuItemCallbacks itemCallbacks()
+		{
+			NcMenuItemCallbacks callbacks;
 
-		callbacks.item_size = sizeof(Item);
-		callbacks.construct = &Menu<ItemT>::constructItem;
-		callbacks.copy = &Menu<ItemT>::copyItem;
-		callbacks.destroy = &Menu<ItemT>::destroyItem;
-		callbacks.user = nullptr;
-		return callbacks;
-	}
+			callbacks.item_size = sizeof(Item);
+			callbacks.construct = &Menu<ItemT>::constructItem;
+			callbacks.copy = &Menu<ItemT>::copyItem;
+			callbacks.destroy = &Menu<ItemT>::destroyItem;
+			callbacks.user = nullptr;
+			return callbacks;
+		}
 
-	static void constructItem(void *dest, void *)
-	{
-		new (dest) Item();
-	}
+		NcMenuDisplayCallbacks displayCallbacks()
+		{
+			NcMenuDisplayCallbacks callbacks;
 
-	static void copyItem(void *dest, void *source, void *)
-	{
-		new (dest) Item(*static_cast<Item *>(source));
-	}
+			callbacks.draw = &Menu<ItemT>::drawItemCallback;
+			callbacks.filter = &Menu<ItemT>::filterItemCallback;
+			callbacks.is_separator = &Menu<ItemT>::isSeparatorCallback;
+			callbacks.is_selected = &Menu<ItemT>::isSelectedCallback;
+			callbacks.is_inactive = &Menu<ItemT>::isInactiveCallback;
+			callbacks.user = this;
+			return callbacks;
+		}
 
-	static void destroyItem(void *item, void *)
-	{
-		static_cast<Item *>(item)->~Item();
-	}
+		static void constructItem(void *dest, void *)
+		{
+			new (dest) Item();
+		}
 
-	void initItemStorage()
-	{
-		nc_menu_set_item_callbacks(&m_menu, itemCallbacks());
-	}
+		static void copyItem(void *dest, void *source, void *)
+		{
+			new (dest) Item(*static_cast<Item *>(source));
+		}
 
-	void syncMenuSize()
-	{
-		nc_menu_sync_item_count(&m_menu);
-	}
+		static void destroyItem(void *item, void *)
+		{
+			static_cast<Item *>(item)->~Item();
+		}
 
-	size_t activeItemCount() const
+		static void drawItemCallback(NcMenu *, NcWindow *, void *item,
+		                             int64, void *user)
+		{
+			(void)item;
+			auto menu = static_cast<Menu<ItemT> *>(user);
+			if (menu->m_item_displayer)
+				menu->m_item_displayer(*menu);
+		}
+
+		static bool filterItemCallback(NcMenu *, void *item, void *user)
+		{
+			auto menu = static_cast<Menu<ItemT> *>(user);
+			if (!menu->m_filter_predicate)
+				return false;
+			return menu->m_filter_predicate(*static_cast<Item *>(item));
+		}
+
+		static bool isSeparatorCallback(void *item, void *)
+		{
+			return static_cast<Item *>(item)->isSeparator();
+		}
+
+		static bool isSelectedCallback(void *item, void *)
+		{
+			return static_cast<Item *>(item)->isSelected();
+		}
+
+		static bool isInactiveCallback(void *item, void *)
+		{
+			return static_cast<Item *>(item)->isInactive();
+		}
+
+		void initItemStorage()
+		{
+			nc_menu_set_item_callbacks(&m_menu, itemCallbacks());
+			syncDisplayCallbacks();
+		}
+
+		void syncDisplayCallbacks()
+		{
+			nc_menu_set_display_callbacks(&m_menu, displayCallbacks());
+		}
+
+		void syncMenuPrefixes()
+		{
+			nc_menu_set_highlight_prefix(&m_menu, m_highlight_prefix.cBuffer());
+			nc_menu_set_highlight_suffix(&m_menu, m_highlight_suffix.cBuffer());
+			nc_menu_set_selected_prefix(&m_menu, m_selected_prefix.cBuffer());
+			nc_menu_set_selected_suffix(&m_menu, m_selected_suffix.cBuffer());
+		}
+
+		void syncMenuSize()
+		{
+			nc_menu_sync_item_count(&m_menu);
+		}
+
+		size_t activeItemCount() const
 	{
 		return static_cast<size_t>(
 			nc_menu_item_count(const_cast<NcMenu *>(&m_menu)));
