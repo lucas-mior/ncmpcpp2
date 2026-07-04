@@ -237,14 +237,30 @@ test_html(void) {
     require_buffer_string((char *)"entities", &result, LIT_ARGS("a&b\"c d"));
     ncm_buffer_destroy(&result);
 
+    result = ncm_html_unescape_entities(
+        LIT_ARGS("&apos;&lt;&gt;&ndash;&mdash;"));
+    require_buffer_string((char *)"extra entities", &result,
+                          LIT_ARGS("'<>–—"));
+    ncm_buffer_destroy(&result);
+
     result = ncm_html_unescape_utf8(LIT_ARGS("&#65; &#x20ac; &#bad;"));
     require_buffer_string((char *)"numeric utf8", &result,
                           LIT_ARGS("A € &#bad;"));
     ncm_buffer_destroy(&result);
 
+    result = ncm_html_unescape_utf8(LIT_ARGS("&#x110000; &#1114112;"));
+    require_buffer_string((char *)"invalid numeric utf8", &result,
+                          LIT_ARGS("&#x110000; &#1114112;"));
+    ncm_buffer_destroy(&result);
+
     result = ncm_html_strip_tags(LIT_ARGS("a<p>b<br>c</p>&amp;"));
     require_buffer_string((char *)"strip tags", &result,
                           LIT_ARGS("a\nb\nc\n&"));
+    ncm_buffer_destroy(&result);
+
+    result = ncm_html_strip_tags(LIT_ARGS("<p class=x>a<br />b&lt;c"));
+    require_buffer_string((char *)"strip tag variants", &result,
+                          LIT_ARGS("\na\nb<c"));
     ncm_buffer_destroy(&result);
 
     result = ncm_html_strip_tags(LIT_ARGS("a <broken b\nc"));
