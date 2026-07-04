@@ -21,6 +21,7 @@ libncmpcpp_c_la_SOURCES = \
 bin_PROGRAMS = ncmpcpp
 ncmpcpp_SOURCES = \
 	curses/formatted_color.cpp \
+	curses/nc_scrollpad.c \
 	curses/nc_window.c \
 	curses/scrollpad.cpp \
 	curses/window.cpp \
@@ -99,6 +100,7 @@ noinst_HEADERS = \
 	curses/formatted_color.h \
 	curses/menu.h \
 	curses/menu_impl.h \
+	curses/nc_scrollpad.h \
 	curses/nc_window.h \
 	curses/scrollpad.h \
 	curses/strbuffer.h \
