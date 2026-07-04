@@ -5,6 +5,7 @@ libncmpcpp_c_la_SOURCES = \
 	c/ncm_directory.c \
 	c/ncm_error.c \
 	c/ncm_html.c \
+	c/ncm_mpd_connection.c \
 	c/ncm_mpd_item.c \
 	c/ncm_mutable_song.c \
 	c/ncm_path.c \
@@ -82,6 +83,7 @@ noinst_HEADERS = \
 	c/ncm_directory.h \
 	c/ncm_error.h \
 	c/ncm_html.h \
+	c/ncm_mpd_connection.h \
 	c/ncm_mpd_item.h \
 	c/ncm_mutable_song.h \
 	c/ncm_path.h \
