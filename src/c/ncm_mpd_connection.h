@@ -41,6 +41,17 @@ typedef struct NcmMpdItemList {
     int32 capacity;
 } NcmMpdItemList;
 
+typedef struct NcmMpdString {
+    char *value;
+    int32 value_len;
+} NcmMpdString;
+
+typedef struct NcmMpdStringList {
+    NcmMpdString *items;
+    int32 count;
+    int32 capacity;
+} NcmMpdStringList;
+
 typedef struct NcmMpdStatus {
     int32 volume;
     bool repeat;
@@ -92,6 +103,9 @@ void ncm_mpd_song_list_clear(NcmMpdSongList *list);
 void ncm_mpd_item_list_init(NcmMpdItemList *list);
 void ncm_mpd_item_list_destroy(NcmMpdItemList *list);
 void ncm_mpd_item_list_clear(NcmMpdItemList *list);
+void ncm_mpd_string_list_init(NcmMpdStringList *list);
+void ncm_mpd_string_list_destroy(NcmMpdStringList *list);
+void ncm_mpd_string_list_clear(NcmMpdStringList *list);
 
 bool ncm_mpd_connection_get_current_song(NcmMpdConnection *connection,
                                          NcmSong *song);
@@ -144,6 +158,12 @@ bool ncm_mpd_connection_add_search_uri(NcmMpdConnection *connection,
                                        char *value);
 bool ncm_mpd_connection_commit_search_songs(NcmMpdConnection *connection,
                                             NcmMpdSongList *songs);
+bool ncm_mpd_connection_list_tag_values(NcmMpdConnection *connection,
+                                        enum mpd_tag_type tag,
+                                        NcmMpdStringList *strings);
+bool ncm_mpd_connection_commit_search_tags(NcmMpdConnection *connection,
+                                           enum mpd_tag_type tag,
+                                           NcmMpdStringList *strings);
 
 bool ncm_mpd_connection_play(NcmMpdConnection *connection);
 bool ncm_mpd_connection_play_pos(NcmMpdConnection *connection, int32 pos);
