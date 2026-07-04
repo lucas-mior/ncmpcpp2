@@ -147,7 +147,7 @@ void TinyTagEditor::runAction()
 		Statusbar::ScopedLock slock;
 		size_t pos = option-8;
 		Statusbar::put() << NC::Format::Bold << SongInfo::Tags[pos].Name << ": " << NC::Format::NoBold;
-		itsEdited.setTags(SongInfo::Tags[pos].Set, Global::wFooter->prompt(
+		itsEdited.setTags(SongInfo::Tags[pos].Field, Global::wFooter->prompt(
 			itsEdited.getTags(SongInfo::Tags[pos].Get)));
 		w.at(option).value().clear();
 		w.at(option).value() << NC::Format::Bold << SongInfo::Tags[pos].Name << ':' << NC::Format::NoBold << ' ';

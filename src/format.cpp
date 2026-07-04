@@ -183,10 +183,10 @@ expressions<CharT> parseBracket(const string<CharT> &s,
 				if (!readValue(value, delimiter))
 					throwError(s, it, "invalid tag delimiter \"" + value + "\"");
 			}
-			auto f = MPD::getFunctionFromChar(*it);
-			if (f == nullptr)
+			enum NcmSongGetter getter = ncm_song_getter_from_char(*it);
+			if (getter == NCM_SONG_GETTER_NONE)
 				throwError(s, it, invalidCharacter(*it));
-			result.push_back(Format::SongTag(f, delimiter));
+			result.push_back(Format::SongTag(getter, delimiter));
 		}
 		else if (flags & properties && *it == '$')
 		{

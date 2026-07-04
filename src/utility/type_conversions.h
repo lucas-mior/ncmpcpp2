@@ -21,11 +21,8 @@
 #ifndef NCMPCPP_UTILITY_TYPE_CONVERSIONS_H
 #define NCMPCPP_UTILITY_TYPE_CONVERSIONS_H
 
-#include <optional>
-
 #include "curses/window.h"
 #include "mpdpp.h"
-#include "mutable_song.h"
 #include "enums.h"
 
 std::string channelsToString(int channels);
@@ -33,13 +30,8 @@ std::string channelsToString(int channels);
 NC::Color charToColor(char c);
 
 std::string tagTypeToString(mpd_tag_type tag);
-MPD::MutableSong::SetFunction tagTypeToSetFunction(mpd_tag_type tag);
 
 mpd_tag_type charToTagType(char c);
-MPD::Song::GetFunction charToGetFunction(char c);
-
-std::optional<mpd_tag_type> getFunctionToTagType(MPD::Song::GetFunction f);
-
 std::string itemTypeToString(MPD::Item::Type type);
 
 #endif // NCMPCPP_UTILITY_TYPE_CONVERSIONS_H
