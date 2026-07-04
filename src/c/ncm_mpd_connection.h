@@ -120,6 +120,41 @@ bool ncm_mpd_connection_set_volume(NcmMpdConnection *connection, uint32 vol);
 bool ncm_mpd_connection_change_volume(NcmMpdConnection *connection,
                                       int32 change);
 
+
+bool ncm_mpd_connection_move(NcmMpdConnection *connection,
+                             uint32 from,
+                             uint32 to,
+                             bool command_list_active);
+bool ncm_mpd_connection_swap(NcmMpdConnection *connection,
+                             uint32 from,
+                             uint32 to,
+                             bool command_list_active);
+bool ncm_mpd_connection_shuffle(NcmMpdConnection *connection);
+bool ncm_mpd_connection_shuffle_range(NcmMpdConnection *connection,
+                                      uint32 start,
+                                      uint32 end);
+bool ncm_mpd_connection_clear_queue(NcmMpdConnection *connection);
+bool ncm_mpd_connection_set_priority_id(NcmMpdConnection *connection,
+                                        uint32 id,
+                                        int32 prio,
+                                        bool command_list_active);
+bool ncm_mpd_connection_add_song(NcmMpdConnection *connection,
+                                 char *path,
+                                 int32 pos,
+                                 bool command_list_active,
+                                 int32 *id);
+bool ncm_mpd_connection_add(NcmMpdConnection *connection,
+                            char *path,
+                            bool command_list_active,
+                            bool *added);
+bool ncm_mpd_connection_delete(NcmMpdConnection *connection,
+                               uint32 pos,
+                               bool command_list_active);
+bool ncm_mpd_connection_delete_range(NcmMpdConnection *connection,
+                                     uint32 begin,
+                                     uint32 end,
+                                     bool command_list_active);
+
 #if defined(__cplusplus)
 }
 #endif
