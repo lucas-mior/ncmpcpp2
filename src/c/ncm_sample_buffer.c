@@ -128,6 +128,41 @@ ncm_sample_buffer_get(NcmSampleBuffer *buffer,
     return result;
 }
 
+int32
+ncm_sample_buffer_get_clamped(NcmSampleBuffer *buffer,
+                              int64 samples_len,
+                              int16 *dest, int32 dest_len) {
+    if (samples_len > buffer->len) {
+        samples_len = buffer->len;
+    }
+    if (samples_len <= 0) {
+        return 0;
+    }
+
+    return ncm_sample_buffer_get(buffer, (int32)samples_len, dest, dest_len);
+}
+
+int32
+ncm_sample_buffer_copy_data(NcmSampleBuffer *buffer,
+                            int16 *dest, int32 dest_len) {
+    int32 copied;
+
+    if (dest_len <= 0) {
+        return 0;
+    }
+    if (buffer->cap <= 0) {
+        return 0;
+    }
+
+    copied = dest_len;
+    if (copied > buffer->cap) {
+        copied = buffer->cap;
+    }
+
+    ncm_memcpy(dest, buffer->data, copied*SIZEOF(*dest));
+    return copied;
+}
+
 void
 ncm_sample_buffer_resize(NcmSampleBuffer *buffer, int32 cap) {
     if (cap < 0) {

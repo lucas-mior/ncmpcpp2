@@ -23,6 +23,11 @@ bool ncm_sample_buffer_put(NcmSampleBuffer *buffer,
                            int16 *samples, int32 samples_len);
 int32 ncm_sample_buffer_get(NcmSampleBuffer *buffer,
                             int32 samples_len, int16 *dest, int32 dest_len);
+int32 ncm_sample_buffer_get_clamped(NcmSampleBuffer *buffer,
+                                    int64 samples_len,
+                                    int16 *dest, int32 dest_len);
+int32 ncm_sample_buffer_copy_data(NcmSampleBuffer *buffer,
+                                  int16 *dest, int32 dest_len);
 void ncm_sample_buffer_resize(NcmSampleBuffer *buffer, int32 cap);
 void ncm_sample_buffer_clear(NcmSampleBuffer *buffer);
 int32 ncm_sample_buffer_size(NcmSampleBuffer *buffer);
