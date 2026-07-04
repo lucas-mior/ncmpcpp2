@@ -30,6 +30,7 @@ ncmpcpp_SOURCES = \
 	screens/nc_scrollpad_screen.c \
 	screens/nc_help.c \
 	screens/nc_lyrics.c \
+	screens/nc_outputs.c \
 	screens/nc_server_info.c \
 	screens/nc_song_info.c \
 	curses/scrollpad.cpp \
@@ -119,6 +120,7 @@ noinst_HEADERS = \
 	screens/nc_scrollpad_screen.h \
 	screens/nc_help.h \
 	screens/nc_lyrics.h \
+	screens/nc_outputs.h \
 	screens/nc_server_info.h \
 	screens/nc_song_info.h \
 	curses/strbuffer.h \
