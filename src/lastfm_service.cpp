@@ -25,7 +25,7 @@
 #include "charset.h"
 #include "curl_handle.h"
 #include "settings.h"
-#include "utility/html.h"
+#include "c/ncm_html.h"
 #include "utility/string.h"
 
 namespace {
@@ -50,6 +50,39 @@ void trim(std::string &s)
 	}
 	auto last = s.find_last_not_of(" \t\r\n");
 	s = s.substr(first, last-first+1);
+}
+
+int32 stringSize(const std::string &s)
+{
+	return static_cast<int32>(s.size());
+}
+
+std::string htmlBufferToString(NcmBuffer &buffer)
+{
+	std::string result;
+	if (buffer.len > 0)
+		result.assign(buffer.data, static_cast<size_t>(buffer.len));
+	ncm_buffer_destroy(&buffer);
+	return result;
+}
+
+std::string ncmHtmlUnescapeUtf8(const std::string &data)
+{
+	NcmBuffer result = ncm_html_unescape_utf8(
+		const_cast<char *>(data.data()), stringSize(data));
+	return htmlBufferToString(result);
+}
+
+void ncmHtmlUnescapeEntities(std::string &s)
+{
+	NcmBuffer result = ncm_html_unescape_entities(s.data(), stringSize(s));
+	s = htmlBufferToString(result);
+}
+
+void ncmHtmlStripTags(std::string &s)
+{
+	NcmBuffer result = ncm_html_strip_tags(s.data(), stringSize(s));
+	s = htmlBufferToString(result);
 }
 
 }
@@ -134,7 +167,7 @@ Service::Result ArtistInfo::processData(const std::string &data)
 			{
 				std::string url = what[1], wiki;
 				// unescape &amp;s
-				unescapeHtmlEntities(url);
+				ncmHtmlUnescapeEntities(url);
 				// fill in language info since url points to english version.
 				const auto &lang = m_arguments["lang"];
 				if (!lang.empty() && lang != "en")
@@ -152,12 +185,12 @@ Service::Result ArtistInfo::processData(const std::string &data)
 					// ...and filter it to get the whole description.
 					rx.assign("<div class=\"wiki\">(.*?)</div>");
 					if (std::regex_search(wiki, what, rx))
-						desc = unescapeHtmlUtf8(what[1]);
+						desc = ncmHtmlUnescapeUtf8(what[1]);
 				}
 			}
-			stripHtmlTags(desc);
-			// Needs to be done after stripHtmlTags in case there are &#10;s there.
-			desc = unescapeHtmlUtf8(desc);
+			ncmHtmlStripTags(desc);
+			// Needs to be done after stripping HTML in case there are &#10;s there.
+			desc = ncmHtmlUnescapeUtf8(desc);
 			trim(desc);
 			result.second += desc;
 		}
@@ -178,8 +211,8 @@ Service::Result ArtistInfo::processData(const std::string &data)
 		{
 			std::string value = it->str(1);
 			std::string url = it->str(2);
-			stripHtmlTags(value);
-			stripHtmlTags(url);
+			ncmHtmlStripTags(value);
+			ncmHtmlStripTags(url);
 			result.second += "\n * ";
 			result.second += value;
 			result.second += " (";
@@ -218,7 +251,7 @@ Service::Result ArtistInfo::processData(const std::string &data)
 	if (std::regex_search(data, what, rx))
 	{
 		std::string url = what[1];
-		stripHtmlTags(url);
+		ncmHtmlStripTags(url);
 		result.second += "\n\n";
 		// add only url
 		result.second += url;
