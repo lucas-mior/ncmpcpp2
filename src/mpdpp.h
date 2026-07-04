@@ -322,13 +322,22 @@ struct Iterator
 		State(mpd_connection *connection_, Fetcher fetcher)
 		: m_connection(connection_)
 		, m_fetcher(fetcher)
+		, m_objects(nullptr)
+		, m_index(0)
 		{
 			assert(m_connection != nullptr);
 			assert(m_fetcher != nullptr);
 		}
+		State(std::vector<ObjectT> objects)
+		: m_connection(nullptr)
+		, m_fetcher(nullptr)
+		, m_objects(new std::vector<ObjectT>(std::move(objects)))
+		, m_index(0)
+		{ }
 		~State()
 		{
-			mpd_response_finish(m_connection);
+			if (m_connection != nullptr)
+				mpd_response_finish(m_connection);
 		}
 
 		mpd_connection *connection() const
@@ -357,6 +366,14 @@ struct Iterator
 
 		bool fetch()
 		{
+			if (m_objects != nullptr)
+			{
+				if (m_index >= m_objects->size())
+					return false;
+				setObject(std::move((*m_objects)[m_index]));
+				m_index += 1;
+				return true;
+			}
 			return m_fetcher(*this);
 		}
 		ObjectT &getObject() const
@@ -370,6 +387,8 @@ struct Iterator
 
 		mpd_connection *m_connection;
 		Fetcher m_fetcher;
+		std::shared_ptr<std::vector<ObjectT>> m_objects;
+		size_t m_index;
 		std::unique_ptr<ObjectT> m_object;
 	};
 
@@ -382,9 +401,15 @@ struct Iterator
 		// get the first element
 		++*this;
 	}
+	Iterator(std::vector<ObjectT> objects)
+	: m_state(std::make_shared<State>(std::move(objects)))
+	{
+		// get the first element
+		++*this;
+	}
 	~Iterator()
 	{
-		if (m_state)
+		if (m_state && m_state->connection() != nullptr)
 			checkConnectionErrors(m_state->connection());
 	}
 
@@ -392,7 +417,8 @@ struct Iterator
 	{
 		assert(m_state);
 		// check errors and change the iterator into end iterator
-		checkConnectionErrors(m_state->connection());
+		if (m_state->connection() != nullptr)
+			checkConnectionErrors(m_state->connection());
 		m_state = nullptr;
 	}
 
