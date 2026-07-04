@@ -128,7 +128,7 @@ void SongInfo::resize()
 	         nc_song_info_screen_height(&m_screen));
 	w.moveTo(nc_song_info_screen_start_x(&m_screen),
 	         nc_song_info_screen_start_y(&m_screen));
-	nc_screen_set_has_to_be_resized(&m_screen.base, false);
+	nc_screen_set_has_to_be_resized(nc_song_info_screen_base(&m_screen), false);
 	hasToBeResized = false;
 }
 
