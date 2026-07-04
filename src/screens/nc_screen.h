@@ -11,8 +11,12 @@ extern "C" {
 #endif
 
 #define NC_SCREEN_DEFAULT_WINDOW_TIMEOUT 500
+#define NC_SCREEN_TYPE_UNKNOWN 0
+#define NC_SCREEN_REGISTRY_MAX_SCREENS 64
 
 typedef struct NcScreen NcScreen;
+typedef struct NcScreenRegistry NcScreenRegistry;
+typedef void (*NcScreenEachCallback)(NcScreen *screen, void *user);
 
 typedef struct NcScreenCallbacks {
     NcWindow *(*active_window)(NcScreen *screen);
@@ -27,6 +31,7 @@ typedef struct NcScreenCallbacks {
     void (*mouse_button_pressed)(NcScreen *screen, MEVENT event);
     bool (*is_lockable)(NcScreen *screen);
     bool (*is_mergable)(NcScreen *screen);
+    void (*destroy)(NcScreen *screen);
 } NcScreenCallbacks;
 
 struct NcScreen {
@@ -34,6 +39,15 @@ struct NcScreen {
     void *user;
     int32 type;
     bool has_to_be_resized;
+};
+
+struct NcScreenRegistry {
+    NcScreen *screens[NC_SCREEN_REGISTRY_MAX_SCREENS];
+    NcScreen *current_screen;
+    NcScreen *previous_screen;
+    NcScreen *locked_screen;
+    NcScreen *inactive_screen;
+    int32 screens_len;
 };
 
 void nc_screen_init(NcScreen *screen, NcScreenCallbacks callbacks,
@@ -54,7 +68,44 @@ bool nc_screen_is_mergable(NcScreen *screen);
 bool nc_screen_has_to_be_resized(NcScreen *screen);
 void nc_screen_set_has_to_be_resized(NcScreen *screen,
                                      bool has_to_be_resized);
+void nc_screen_destroy(NcScreen *screen);
 void *nc_screen_user(NcScreen *screen);
+
+void nc_screen_registry_init(NcScreenRegistry *registry);
+bool nc_screen_registry_register(NcScreenRegistry *registry,
+                                 NcScreen *screen);
+bool nc_screen_registry_unregister(NcScreenRegistry *registry,
+                                   NcScreen *screen);
+NcScreen *nc_screen_registry_find(NcScreenRegistry *registry, int32 type);
+NcScreen *nc_screen_registry_current(NcScreenRegistry *registry);
+NcScreen *nc_screen_registry_previous(NcScreenRegistry *registry);
+NcScreen *nc_screen_registry_locked(NcScreenRegistry *registry);
+NcScreen *nc_screen_registry_inactive(NcScreenRegistry *registry);
+int32 nc_screen_registry_count(NcScreenRegistry *registry);
+bool nc_screen_registry_is_registered(NcScreenRegistry *registry,
+                                      NcScreen *screen);
+bool nc_screen_registry_switch_to(NcScreenRegistry *registry,
+                                  NcScreen *screen);
+bool nc_screen_registry_switch_to_type(NcScreenRegistry *registry,
+                                       int32 type);
+bool nc_screen_registry_lock_current(NcScreenRegistry *registry);
+void nc_screen_registry_unlock(NcScreenRegistry *registry);
+bool nc_screen_registry_is_visible(NcScreenRegistry *registry,
+                                   NcScreen *screen);
+void nc_screen_registry_each_visible(NcScreenRegistry *registry,
+                                     NcScreenEachCallback callback,
+                                     void *user);
+void nc_screen_registry_update_current(NcScreenRegistry *registry);
+void nc_screen_registry_update_visible(NcScreenRegistry *registry);
+void nc_screen_registry_update_all(NcScreenRegistry *registry);
+void nc_screen_registry_resize_current(NcScreenRegistry *registry);
+void nc_screen_registry_resize_visible(NcScreenRegistry *registry);
+void nc_screen_registry_resize_all(NcScreenRegistry *registry);
+bool nc_screen_registry_destroy_screen(NcScreenRegistry *registry,
+                                       NcScreen *screen);
+bool nc_screen_registry_destroy_type(NcScreenRegistry *registry,
+                                     int32 type);
+void nc_screen_registry_destroy_all(NcScreenRegistry *registry);
 
 #if defined(__cplusplus)
 }
