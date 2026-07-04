@@ -328,6 +328,7 @@ test_type_conversions(void) {
     REQUIRE_STRING(buffer, len, "6");
     len = ncm_channels_to_string(123456, buffer, 4);
     REQUIRE_STRING(buffer, len, "123");
+    REQUIRE_INT(ncm_channels_to_string(5, NULL, 0), 0);
 
     REQUIRE_INT(ncm_color_index_from_char('0'), 0);
     REQUIRE_INT(ncm_color_index_from_char('9'), 9);
@@ -343,6 +344,30 @@ test_type_conversions(void) {
     REQUIRE(ncm_char_to_tag_type('a') == MPD_TAG_ARTIST);
     REQUIRE(ncm_char_to_tag_type('A') == MPD_TAG_ALBUM_ARTIST);
     REQUIRE(ncm_char_to_tag_type('C') == MPD_TAG_COMMENT);
+    REQUIRE(ncm_char_to_tag_type('x') == MPD_TAG_UNKNOWN);
+
+    REQUIRE(ncm_song_getter_from_char('l') == NCM_SONG_GETTER_LENGTH);
+    REQUIRE(ncm_song_getter_from_char('F') == NCM_SONG_GETTER_URI);
+    REQUIRE(ncm_song_getter_from_char('n') == NCM_SONG_GETTER_TRACK_NUMBER);
+    REQUIRE(ncm_song_getter_from_char('N') == NCM_SONG_GETTER_TRACK);
+    REQUIRE(ncm_song_getter_from_char('P') == NCM_SONG_GETTER_PRIORITY);
+    REQUIRE(ncm_song_getter_from_char('x') == NCM_SONG_GETTER_NONE);
+
+    REQUIRE(ncm_song_getter_from_tag_type(MPD_TAG_ARTIST)
+            == NCM_SONG_GETTER_ARTIST);
+    REQUIRE(ncm_song_getter_from_tag_type(MPD_TAG_TRACK)
+            == NCM_SONG_GETTER_TRACK);
+    REQUIRE(ncm_song_getter_from_tag_type((enum mpd_tag_type)-999)
+            == NCM_SONG_GETTER_NONE);
+
+    REQUIRE(ncm_song_getter_to_tag_type(NCM_SONG_GETTER_ARTIST)
+            == MPD_TAG_ARTIST);
+    REQUIRE(ncm_song_getter_to_tag_type(NCM_SONG_GETTER_TRACK)
+            == MPD_TAG_TRACK);
+    REQUIRE(ncm_song_getter_to_tag_type(NCM_SONG_GETTER_TRACK_NUMBER)
+            == MPD_TAG_UNKNOWN);
+    REQUIRE(ncm_song_getter_to_tag_type(NCM_SONG_GETTER_NONE)
+            == MPD_TAG_UNKNOWN);
 
     REQUIRE_CSTRING(ncm_item_type_name(NCM_ITEM_DIRECTORY), "directory");
     REQUIRE_CSTRING(ncm_item_type_name(NCM_ITEM_SONG), "song");

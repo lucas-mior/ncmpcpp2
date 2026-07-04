@@ -24,6 +24,128 @@
 #include "c/ncm_type_conversions.h"
 #include "utility/type_conversions.h"
 
+namespace {
+
+MPD::MutableSong::SetFunction songGetterToSetFunction(NcmSongGetter getter)
+{
+	switch (getter)
+	{
+		case NCM_SONG_GETTER_ARTIST:
+			return &MPD::MutableSong::setArtist;
+		case NCM_SONG_GETTER_ALBUM:
+			return &MPD::MutableSong::setAlbum;
+		case NCM_SONG_GETTER_ALBUM_ARTIST:
+			return &MPD::MutableSong::setAlbumArtist;
+		case NCM_SONG_GETTER_TITLE:
+			return &MPD::MutableSong::setTitle;
+		case NCM_SONG_GETTER_TRACK:
+			return &MPD::MutableSong::setTrack;
+		case NCM_SONG_GETTER_GENRE:
+			return &MPD::MutableSong::setGenre;
+		case NCM_SONG_GETTER_DATE:
+			return &MPD::MutableSong::setDate;
+		case NCM_SONG_GETTER_COMPOSER:
+			return &MPD::MutableSong::setComposer;
+		case NCM_SONG_GETTER_PERFORMER:
+			return &MPD::MutableSong::setPerformer;
+		case NCM_SONG_GETTER_COMMENT:
+			return &MPD::MutableSong::setComment;
+		case NCM_SONG_GETTER_DISC:
+			return &MPD::MutableSong::setDisc;
+		default:
+			return nullptr;
+	}
+}
+
+MPD::Song::GetFunction songGetterToGetFunction(NcmSongGetter getter)
+{
+	switch (getter)
+	{
+		case NCM_SONG_GETTER_LENGTH:
+			return &MPD::Song::getLength;
+		case NCM_SONG_GETTER_DIRECTORY:
+			return &MPD::Song::getDirectory;
+		case NCM_SONG_GETTER_NAME:
+			return &MPD::Song::getName;
+		case NCM_SONG_GETTER_URI:
+			return &MPD::Song::getURI;
+		case NCM_SONG_GETTER_ARTIST:
+			return &MPD::Song::getArtist;
+		case NCM_SONG_GETTER_ALBUM_ARTIST:
+			return &MPD::Song::getAlbumArtist;
+		case NCM_SONG_GETTER_TITLE:
+			return &MPD::Song::getTitle;
+		case NCM_SONG_GETTER_ALBUM:
+			return &MPD::Song::getAlbum;
+		case NCM_SONG_GETTER_DATE:
+			return &MPD::Song::getDate;
+		case NCM_SONG_GETTER_TRACK_NUMBER:
+			return &MPD::Song::getTrackNumber;
+		case NCM_SONG_GETTER_TRACK:
+			return &MPD::Song::getTrack;
+		case NCM_SONG_GETTER_GENRE:
+			return &MPD::Song::getGenre;
+		case NCM_SONG_GETTER_COMPOSER:
+			return &MPD::Song::getComposer;
+		case NCM_SONG_GETTER_PERFORMER:
+			return &MPD::Song::getPerformer;
+		case NCM_SONG_GETTER_DISC:
+			return &MPD::Song::getDisc;
+		case NCM_SONG_GETTER_COMMENT:
+			return &MPD::Song::getComment;
+		case NCM_SONG_GETTER_PRIORITY:
+			return &MPD::Song::getPriority;
+		default:
+			return nullptr;
+	}
+}
+
+std::optional<NcmSongGetter> getFunctionToSongGetter(MPD::Song::GetFunction f)
+{
+	if (f == &MPD::Song::getArtist)
+		return NCM_SONG_GETTER_ARTIST;
+	else if (f == &MPD::Song::getTitle)
+		return NCM_SONG_GETTER_TITLE;
+	else if (f == &MPD::Song::getAlbum)
+		return NCM_SONG_GETTER_ALBUM;
+	else if (f == &MPD::Song::getAlbumArtist)
+		return NCM_SONG_GETTER_ALBUM_ARTIST;
+	else if (f == &MPD::Song::getTrackNumber)
+		return NCM_SONG_GETTER_TRACK_NUMBER;
+	else if (f == &MPD::Song::getTrack)
+		return NCM_SONG_GETTER_TRACK;
+	else if (f == &MPD::Song::getDate)
+		return NCM_SONG_GETTER_DATE;
+	else if (f == &MPD::Song::getGenre)
+		return NCM_SONG_GETTER_GENRE;
+	else if (f == &MPD::Song::getComposer)
+		return NCM_SONG_GETTER_COMPOSER;
+	else if (f == &MPD::Song::getPerformer)
+		return NCM_SONG_GETTER_PERFORMER;
+	else if (f == &MPD::Song::getComment)
+		return NCM_SONG_GETTER_COMMENT;
+	else if (f == &MPD::Song::getDisc)
+		return NCM_SONG_GETTER_DISC;
+	else
+		return std::nullopt;
+}
+
+NcmItemType itemTypeToNcmItemType(MPD::Item::Type type)
+{
+	switch (type)
+	{
+		case MPD::Item::Type::Directory:
+			return NCM_ITEM_DIRECTORY;
+		case MPD::Item::Type::Song:
+			return NCM_ITEM_SONG;
+		case MPD::Item::Type::Playlist:
+			return NCM_ITEM_PLAYLIST;
+	}
+	return NCM_ITEM_UNKNOWN;
+}
+
+}
+
 std::string channelsToString(int channels)
 {
 	char buffer[32];
@@ -69,33 +191,7 @@ std::string tagTypeToString(mpd_tag_type tag)
 
 MPD::MutableSong::SetFunction tagTypeToSetFunction(mpd_tag_type tag)
 {
-	switch (tag)
-	{
-		case MPD_TAG_ARTIST:
-			return &MPD::MutableSong::setArtist;
-		case MPD_TAG_ALBUM:
-			return &MPD::MutableSong::setAlbum;
-		case MPD_TAG_ALBUM_ARTIST:
-			return &MPD::MutableSong::setAlbumArtist;
-		case MPD_TAG_TITLE:
-			return &MPD::MutableSong::setTitle;
-		case MPD_TAG_TRACK:
-			return &MPD::MutableSong::setTrack;
-		case MPD_TAG_GENRE:
-			return &MPD::MutableSong::setGenre;
-		case MPD_TAG_DATE:
-			return &MPD::MutableSong::setDate;
-		case MPD_TAG_COMPOSER:
-			return &MPD::MutableSong::setComposer;
-		case MPD_TAG_PERFORMER:
-			return &MPD::MutableSong::setPerformer;
-		case MPD_TAG_COMMENT:
-			return &MPD::MutableSong::setComment;
-		case MPD_TAG_DISC:
-			return &MPD::MutableSong::setDisc;
-		default:
-			return nullptr;
-	}
+	return songGetterToSetFunction(ncm_song_getter_from_tag_type(tag));
 }
 
 mpd_tag_type charToTagType(char c)
@@ -106,87 +202,24 @@ mpd_tag_type charToTagType(char c)
 
 MPD::Song::GetFunction charToGetFunction(char c)
 {
-	switch (c)
-	{
-		case 'l':
-			return &MPD::Song::getLength;
-		case 'D':
-			return &MPD::Song::getDirectory;
-		case 'f':
-			return &MPD::Song::getName;
-		case 'F':
-			return &MPD::Song::getURI;
-		case 'a':
-			return &MPD::Song::getArtist;
-		case 'A':
-			return &MPD::Song::getAlbumArtist;
-		case 't':
-			return &MPD::Song::getTitle;
-		case 'b':
-			return &MPD::Song::getAlbum;
-		case 'y':
-			return &MPD::Song::getDate;
-		case 'n':
-			return &MPD::Song::getTrackNumber;
-		case 'N':
-			return &MPD::Song::getTrack;
-		case 'g':
-			return &MPD::Song::getGenre;
-		case 'c':
-			return &MPD::Song::getComposer;
-		case 'p':
-			return &MPD::Song::getPerformer;
-		case 'd':
-			return &MPD::Song::getDisc;
-		case 'C':
-			return &MPD::Song::getComment;
-		case 'P':
-			return &MPD::Song::getPriority;
-		default:
-			return nullptr;
-	}
+	return songGetterToGetFunction(ncm_song_getter_from_char(c));
 }
 
 std::optional<mpd_tag_type> getFunctionToTagType(MPD::Song::GetFunction f)
 {
-	if (f == &MPD::Song::getArtist)
-		return MPD_TAG_ARTIST;
-	else if (f == &MPD::Song::getTitle)
-		return MPD_TAG_TITLE;
-	else if (f == &MPD::Song::getAlbum)
-		return MPD_TAG_ALBUM;
-	else if (f == &MPD::Song::getAlbumArtist)
-		return MPD_TAG_ALBUM_ARTIST;
-	else if (f == &MPD::Song::getTrack)
-		return MPD_TAG_TRACK;
-	else if (f == &MPD::Song::getDate)
-		return MPD_TAG_DATE;
-	else if (f == &MPD::Song::getGenre)
-		return MPD_TAG_GENRE;
-	else if (f == &MPD::Song::getComposer)
-		return MPD_TAG_COMPOSER;
-	else if (f == &MPD::Song::getPerformer)
-		return MPD_TAG_PERFORMER;
-	else if (f == &MPD::Song::getComment)
-		return MPD_TAG_COMMENT;
-	else if (f == &MPD::Song::getDisc)
-		return MPD_TAG_DISC;
-	else if (f == &MPD::Song::getComment)
-		return MPD_TAG_COMMENT;
-	else
+	std::optional<NcmSongGetter> getter = getFunctionToSongGetter(f);
+
+	if (!getter)
 		return std::nullopt;
+
+	mpd_tag_type tag = ncm_song_getter_to_tag_type(*getter);
+	if (tag == MPD_TAG_UNKNOWN)
+		return std::nullopt;
+
+	return tag;
 }
 
 std::string itemTypeToString(MPD::Item::Type type)
 {
-	switch (type)
-	{
-		case MPD::Item::Type::Directory:
-			return ncm_item_type_name(NCM_ITEM_DIRECTORY);
-		case MPD::Item::Type::Song:
-			return ncm_item_type_name(NCM_ITEM_SONG);
-		case MPD::Item::Type::Playlist:
-			return ncm_item_type_name(NCM_ITEM_PLAYLIST);
-	}
-	return ncm_item_type_name(NCM_ITEM_UNKNOWN);
+	return ncm_item_type_name(itemTypeToNcmItemType(type));
 }
