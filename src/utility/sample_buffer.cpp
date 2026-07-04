@@ -18,7 +18,6 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <algorithm>
 #include <limits>
 #include <stdexcept>
 
@@ -73,12 +72,9 @@ void SampleBuffer::put(SampleBuffer::Iterator begin, SampleBuffer::Iterator end)
 
 size_t SampleBuffer::get(size_t elems, std::vector<int16_t> &dest)
 {
-	size_t available = size();
-	if (elems > available)
-		elems = available;
-
-	int32 result = ncm_sample_buffer_get(
-		&m_buffer, checkedSize(elems), dest.data(), checkedSize(dest.size()));
+	int32 result = ncm_sample_buffer_get_clamped(
+		&m_buffer, checkedRequest(elems),
+		dest.data(), checkedSize(dest.size()));
 	return static_cast<size_t>(result);
 }
 
@@ -100,14 +96,12 @@ size_t SampleBuffer::size() const
 
 const std::vector<int16_t> &SampleBuffer::buffer() const
 {
-	int32 capacity = ncm_sample_buffer_capacity(
-		const_cast<NcmSampleBuffer *>(&m_buffer));
-	int16_t *data = ncm_sample_buffer_data(
-		const_cast<NcmSampleBuffer *>(&m_buffer));
+	NcmSampleBuffer *buffer = const_cast<NcmSampleBuffer *>(&m_buffer);
+	int32 capacity = ncm_sample_buffer_capacity(buffer);
 
 	m_buffer_view.resize(static_cast<size_t>(capacity));
-	if (capacity > 0)
-		std::copy(data, data + capacity, m_buffer_view.begin());
+	ncm_sample_buffer_copy_data(
+		buffer, m_buffer_view.data(), checkedSize(m_buffer_view.size()));
 	return m_buffer_view;
 }
 
@@ -116,4 +110,12 @@ int32 SampleBuffer::checkedSize(size_t size)
 	if (size > static_cast<size_t>(std::numeric_limits<int32>::max()))
 		throw std::out_of_range("Sample buffer size is too large");
 	return static_cast<int32>(size);
+}
+
+int64 SampleBuffer::checkedRequest(size_t size)
+{
+	size_t max_size = static_cast<size_t>(std::numeric_limits<int64>::max());
+	if (size > max_size)
+		return std::numeric_limits<int64>::max();
+	return static_cast<int64>(size);
 }
