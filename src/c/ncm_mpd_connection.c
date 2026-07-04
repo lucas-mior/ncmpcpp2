@@ -733,6 +733,91 @@ ncm_mpd_connection_fd(NcmMpdConnection *connection) {
 }
 
 bool
+ncm_mpd_connection_get_fd(NcmMpdConnection *connection, int32 *fd) {
+    if (fd == NULL) {
+        return false;
+    }
+
+    *fd = ncm_mpd_connection_fd(connection);
+    return *fd >= 0;
+}
+
+bool
+ncm_mpd_connection_set_timeout(NcmMpdConnection *connection,
+                               uint32 timeout_ms) {
+    if (connection == NULL) {
+        return false;
+    }
+    if (connection->mpd == NULL) {
+        return true;
+    }
+
+    mpd_connection_set_timeout(connection->mpd, timeout_ms);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_send_idle(NcmMpdConnection *connection,
+                             enum mpd_idle events) {
+    (void)events;
+
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    if (!mpd_send_idle(connection->mpd)) {
+        return ncm_mpd_connection_check_error(connection);
+    }
+
+    return true;
+}
+
+bool
+ncm_mpd_connection_recv_idle(NcmMpdConnection *connection,
+                             bool disable_timeout,
+                             enum mpd_idle *out_events) {
+    enum mpd_idle events;
+    bool ok;
+
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    events = (enum mpd_idle)mpd_recv_idle(connection->mpd, disable_timeout);
+    mpd_response_finish(connection->mpd);
+    ok = ncm_mpd_connection_check_error(connection);
+    if (out_events != NULL) {
+        *out_events = events;
+    }
+
+    return ok;
+}
+
+bool
+ncm_mpd_connection_idle(NcmMpdConnection *connection,
+                        enum mpd_idle events,
+                        enum mpd_idle *out_events) {
+    if (!ncm_mpd_connection_send_idle(connection, events)) {
+        return false;
+    }
+
+    return ncm_mpd_connection_recv_idle(connection, true, out_events);
+}
+
+bool
+ncm_mpd_connection_noidle(NcmMpdConnection *connection) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    if (!mpd_send_noidle(connection->mpd)) {
+        return ncm_mpd_connection_check_error(connection);
+    }
+
+    return true;
+}
+
+bool
 ncm_mpd_connection_check_error(NcmMpdConnection *connection) {
     enum mpd_error code;
     enum mpd_server_error server_code;
