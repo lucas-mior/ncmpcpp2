@@ -1197,39 +1197,58 @@ StringIterator Connection::GetList(mpd_tag_type type)
 void Connection::StartSearch(bool exact_match)
 {
 	prechecksNoCommandsList();
-	mpd_search_db_songs(rawConnection(), exact_match);
+	if (!ncm_mpd_connection_start_search_songs(&m_connection, exact_match))
+		throwConnectionError();
 }
 
 void Connection::StartFieldSearch(mpd_tag_type item)
 {
 	prechecksNoCommandsList();
-	mpd_search_db_tags(rawConnection(), item);
+	if (!ncm_mpd_connection_start_search_tags(&m_connection, item))
+		throwConnectionError();
 }
 
 void Connection::AddSearch(mpd_tag_type item, const std::string &str) const
 {
+	NcmMpdConnection *connection;
+
+	connection = const_cast<NcmMpdConnection *>(&m_connection);
 	checkConnection();
-	mpd_search_add_tag_constraint(rawConnection(), MPD_OPERATOR_DEFAULT, item, str.c_str());
+	if (!ncm_mpd_connection_add_search_tag(
+	        connection, item, const_cast<char *>(str.c_str())))
+		throwConnectionError();
 }
 
 void Connection::AddSearchAny(const std::string &str) const
 {
+	NcmMpdConnection *connection;
+
+	connection = const_cast<NcmMpdConnection *>(&m_connection);
 	checkConnection();
-	mpd_search_add_any_tag_constraint(rawConnection(), MPD_OPERATOR_DEFAULT, str.c_str());
+	if (!ncm_mpd_connection_add_search_any(
+	        connection, const_cast<char *>(str.c_str())))
+		throwConnectionError();
 }
 
 void Connection::AddSearchURI(const std::string &str) const
 {
+	NcmMpdConnection *connection;
+
+	connection = const_cast<NcmMpdConnection *>(&m_connection);
 	checkConnection();
-	mpd_search_add_uri_constraint(rawConnection(), MPD_OPERATOR_DEFAULT, str.c_str());
+	if (!ncm_mpd_connection_add_search_uri(
+	        connection, const_cast<char *>(str.c_str())))
+		throwConnectionError();
 }
 
 SongIterator Connection::CommitSearchSongs()
 {
+	NcmMpdSongListGuard songs;
+
 	prechecksNoCommandsList();
-	mpd_search_commit(rawConnection());
-	checkErrors();
-	return SongIterator(rawConnection(), defaultFetcher<Song>(mpd_recv_song));
+	if (!ncm_mpd_connection_commit_search_songs(&m_connection, songs.get()))
+		throwConnectionError();
+	return SongIterator(songVectorFromList(songs.get()));
 }
 
 ItemIterator Connection::GetDirectory(const std::string &directory)
@@ -1248,7 +1267,7 @@ SongIterator Connection::GetDirectoryRecursive(const std::string &directory)
 	NcmMpdSongListGuard songs;
 
 	prechecksNoCommandsList();
-	if (!ncm_mpd_connection_get_directory_recursive(
+	if (!ncm_mpd_connection_list_all_songs(
 	        &m_connection, const_cast<char *>(directory.c_str()), songs.get()))
 		throwConnectionError();
 	return SongIterator(songVectorFromList(songs.get()));
