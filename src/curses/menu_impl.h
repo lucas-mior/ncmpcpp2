@@ -30,6 +30,7 @@ Menu<ItemT>::Menu()
 {
 	nc_menu_init(&m_menu);
 	initItemStorage();
+	syncMenuPrefixes();
 	syncMenuSize();
 }
 
@@ -50,6 +51,7 @@ Menu<ItemT>::Menu(size_t startx,
 	auto fc = FormattedColor(m_base_color, {Format::Reverse});
 	m_highlight_prefix << fc;
 	m_highlight_suffix << FormattedColor::End<>(fc);
+	syncMenuPrefixes();
 	syncMenuSize();
 }
 
@@ -66,6 +68,7 @@ Menu<ItemT>::Menu(const Menu &rhs)
 	nc_menu_init(&m_menu);
 	initItemStorage();
 	nc_menu_copy(&m_menu, const_cast<NcMenu *>(&rhs.m_menu));
+	syncDisplayCallbacks();
 	// TODO: move filtered items
 	for (int64 i = 0;
 	     i < nc_menu_all_item_count(const_cast<NcMenu *>(&rhs.m_menu));
@@ -95,6 +98,8 @@ Menu<ItemT>::Menu(Menu &&rhs)
 	nc_menu_init(&m_menu);
 	initItemStorage();
 	nc_menu_swap(&m_menu, &rhs.m_menu);
+	syncDisplayCallbacks();
+	rhs.syncDisplayCallbacks();
 }
 
 template <typename ItemT>
@@ -114,6 +119,8 @@ Menu<ItemT> &Menu<ItemT>::operator=(Menu rhs)
 	std::swap(m_highlight_suffix, rhs.m_highlight_suffix);
 	std::swap(m_selected_prefix, rhs.m_selected_prefix);
 	std::swap(m_selected_suffix, rhs.m_selected_suffix);
+	syncDisplayCallbacks();
+	rhs.syncDisplayCallbacks();
 	syncMenuSize();
 	return *this;
 }
@@ -179,50 +186,8 @@ template <typename ItemT>
 void Menu<ItemT>::refresh()
 {
 	syncMenuSize();
-	if (size() == 0)
-	{
-		Window::clear();
-		Window::refresh();
-		return;
-	}
-
-	nc_menu_prepare_refresh(&m_menu, static_cast<int64>(m_height),
-	                        &Menu<ItemT>::isHighlightableCallback, this);
-
-	size_t line = 0;
-	const size_t end_ = static_cast<size_t>(nc_menu_beginning(&m_menu)) + m_height;
-	for (size_t pos = static_cast<size_t>(nc_menu_beginning(&m_menu));
-	     pos < end_;
-	     ++pos, ++line)
-	{
-		nc_menu_set_drawn_position(&m_menu, static_cast<int64>(pos));
-		goToXY(0, line);
-		if (pos >= size())
-		{
-			for (; line < m_height; ++line)
-				mvwhline(m_window, line, 0, NC::Key::Space, m_width);
-			break;
-		}
-		if (activeItemAt(pos).isSeparator())
-		{
-			mvwhline(m_window, line, 0, 0, m_width);
-			continue;
-		}
-		if (nc_menu_highlight_enabled(&m_menu)
-		    && pos == static_cast<size_t>(nc_menu_highlight(&m_menu)))
-			*this << m_highlight_prefix;
-		if (activeItemAt(pos).isSelected())
-			*this << m_selected_prefix;
-		*this << NC::TermManip::ClearToEOL;
-		if (m_item_displayer)
-			m_item_displayer(*this);
-		if (activeItemAt(pos).isSelected())
-			*this << m_selected_suffix;
-		if (nc_menu_highlight_enabled(&m_menu)
-		    && pos == static_cast<size_t>(nc_menu_highlight(&m_menu)))
-			*this << m_highlight_suffix;
-	}
-	Window::refresh();
+	nc_menu_refresh(&m_menu, cWindow(), static_cast<int64>(m_width),
+	                static_cast<int64>(m_height));
 }
 
 template <typename ItemT>
@@ -269,16 +234,7 @@ template <typename ItemT> template <typename PredicateT>
 void Menu<ItemT>::applyFilter(PredicateT &&pred)
 {
 	m_filter_predicate = std::forward<PredicateT>(pred);
-	nc_menu_clear_filtered_items(&m_menu);
-
-	for (int64 i = 0; i < nc_menu_all_item_count(&m_menu); i += 1)
-	{
-		Item &item = allItemAt(static_cast<size_t>(i));
-		if (m_filter_predicate(item))
-			nc_menu_add_filtered_item_ref(&m_menu, &item);
-	}
-
-	nc_menu_show_filtered_items(&m_menu);
+	nc_menu_apply_filter(&m_menu);
 	syncMenuSize();
 }
 
