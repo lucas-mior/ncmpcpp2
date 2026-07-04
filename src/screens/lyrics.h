@@ -29,23 +29,29 @@
 
 #include "interfaces.h"
 #include "lyrics_fetcher.h"
+#include "screens/nc_lyrics.h"
 #include "screens/screen.h"
 #include "song.h"
 #include "utility/shared_resource.h"
 
-struct Lyrics: Screen<NC::Scrollpad>, Tabbable
+struct Lyrics: BaseScreen, Tabbable
 {
 	Lyrics();
 	
-	// Screen<NC::Scrollpad> implementation
+	// BaseScreen implementation
+	virtual bool isActiveWindow(const NC::Window &w_) const override;
+	virtual NC::Window *activeWindow() override;
+	virtual const NC::Window *activeWindow() const override;
+	virtual void refresh() override;
+	virtual void refreshWindow() override;
+	virtual void scroll(NC::Scroll where) override;
 	virtual void resize() override;
 	virtual void switchTo() override;
-	
+	virtual int windowTimeout() override;
 	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::Lyrics; }
-	
 	virtual void update() override;
-	
+	virtual void mouseButtonPressed(MEVENT me) override;
 	virtual bool isLockable() override { return true; }
 	virtual bool isMergable() override { return true; }
 
@@ -91,8 +97,8 @@ private:
 	void clearWorker();
 	void stopDownload();
 
-	bool m_refresh_window;
-	size_t m_scroll_begin;
+	NC::Scrollpad w;
+	NcLyricsScreen m_screen;
 
 	std::shared_ptr<Shared<NC::Buffer>> m_shared_buffer;
 	std::shared_ptr<std::atomic<bool>> m_download_stopper;
