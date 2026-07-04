@@ -21,7 +21,6 @@
 #ifndef NCMPCPP_SONG_H
 #define NCMPCPP_SONG_H
 
-#include <cstring>
 #include <functional>
 #include <memory>
 #include <string>
@@ -90,7 +89,8 @@ struct Song
 	{
 		if (m_hash != rhs.m_hash)
 			return false;
-		return strcmp(c_uri(), rhs.c_uri()) == 0;
+		return ncm_song_equal(const_cast<NcmSong *>(&m_song),
+		                      const_cast<NcmSong *>(&rhs.m_song));
 	}
 	bool operator!=(const Song &rhs) const
 	{

@@ -30,6 +30,7 @@
 
 #include <mpd/client.h>
 #include "c/ncm_mpd_item.h"
+#include "cbase/cbase.h"
 #include "song.h"
 
 namespace MPD {
@@ -254,7 +255,7 @@ struct Output
 			return true;
 		else if (!empty() && !rhs.empty())
 			return id() == rhs.id()
-			    && strcmp(name(), rhs.name()) == 0
+			    && strequal(name(), rhs.name())
 			    && enabled() == rhs.enabled();
 		else
 			return false;
