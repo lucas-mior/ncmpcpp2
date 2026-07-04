@@ -23,6 +23,7 @@ ncmpcpp_SOURCES = \
 	curses/formatted_color.cpp \
 	curses/nc_buffer.c \
 	curses/nc_formatted_color.c \
+	curses/nc_menu.c \
 	curses/nc_scrollpad.c \
 	curses/nc_window.c \
 	curses/scrollpad.cpp \
@@ -104,6 +105,7 @@ noinst_HEADERS = \
 	curses/menu_impl.h \
 	curses/nc_buffer.h \
 	curses/nc_formatted_color.h \
+	curses/nc_menu.h \
 	curses/nc_scrollpad.h \
 	curses/nc_window.h \
 	curses/scrollpad.h \
