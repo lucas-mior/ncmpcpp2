@@ -224,9 +224,7 @@ directly instead of checking if it is defined:
 #endif
 ```
 
-Keep them as is. The only change to make is to break lines longer than 80
-characters with the backslash. Example:
-
+Break lines longer than 80 characters with the backslash. Example:
 ```c
 #define MY_VERY_EXTREMELY_LONG_MACRO_NAME \
   12.4779847021478714732904782347234237409192312
