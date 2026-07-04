@@ -10,6 +10,8 @@ static void ncm_mpd_connection_set_error(NcmMpdConnection *connection,
                                          enum mpd_server_error server_code,
                                          bool clearable,
                                          char *message);
+static bool ncm_mpd_connection_require_connected(
+    NcmMpdConnection *connection);
 
 static int32
 ncm_mpd_connection_cstring_len(char *string) {
@@ -74,6 +76,21 @@ ncm_mpd_connection_set_error(NcmMpdConnection *connection,
     message_len = ncm_mpd_connection_cstring_len(message);
     ncm_error_set(&connection->error, (int32)code, message, message_len);
     return;
+}
+
+static bool
+ncm_mpd_connection_require_connected(NcmMpdConnection *connection) {
+    if (connection == NULL) {
+        return false;
+    }
+    if (connection->mpd == NULL) {
+        ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
+                                     (enum mpd_server_error)0, false,
+                                     (char *)"No active MPD connection");
+        return false;
+    }
+
+    return true;
 }
 
 void
@@ -261,16 +278,10 @@ ncm_mpd_connection_get_stats(NcmMpdConnection *connection,
     struct mpd_stats *stats;
     bool ok;
 
-    if (connection == NULL) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
     }
     if (out_stats == NULL) {
-        return false;
-    }
-    if (connection->mpd == NULL) {
-        ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
-                                     (enum mpd_server_error)0, false,
-                                     (char *)"No active MPD connection");
         return false;
     }
 
@@ -303,16 +314,10 @@ ncm_mpd_connection_get_status(NcmMpdConnection *connection,
     char *error;
     bool ok;
 
-    if (connection == NULL) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
     }
     if (out_status == NULL) {
-        return false;
-    }
-    if (connection->mpd == NULL) {
-        ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
-                                     (enum mpd_server_error)0, false,
-                                     (char *)"No active MPD connection");
         return false;
     }
 
@@ -351,4 +356,168 @@ ncm_mpd_connection_get_status(NcmMpdConnection *connection,
     mpd_status_free(status);
     ok = ncm_mpd_connection_check_error(connection);
     return ok;
+}
+
+bool
+ncm_mpd_connection_play(NcmMpdConnection *connection) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_play(connection->mpd);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_play_pos(NcmMpdConnection *connection, int32 pos) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_play_pos(connection->mpd, (unsigned)pos);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_play_id(NcmMpdConnection *connection, int32 id) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_play_id(connection->mpd, (unsigned)id);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_pause(NcmMpdConnection *connection, bool state) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_pause(connection->mpd, state);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_toggle_pause(NcmMpdConnection *connection) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_toggle_pause(connection->mpd);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_stop(NcmMpdConnection *connection) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_stop(connection->mpd);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_next(NcmMpdConnection *connection) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_next(connection->mpd);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_previous(NcmMpdConnection *connection) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_previous(connection->mpd);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_seek_pos(NcmMpdConnection *connection,
+                            uint32 pos,
+                            uint32 seconds) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_seek_pos(connection->mpd, pos, seconds);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_set_repeat(NcmMpdConnection *connection, bool mode) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_repeat(connection->mpd, mode);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_set_random(NcmMpdConnection *connection, bool mode) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_random(connection->mpd, mode);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_set_single(NcmMpdConnection *connection, bool mode) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_single(connection->mpd, mode);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_set_consume(NcmMpdConnection *connection, bool mode) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_consume(connection->mpd, mode);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_set_crossfade(NcmMpdConnection *connection,
+                                 uint32 seconds) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_crossfade(connection->mpd, seconds);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_set_volume(NcmMpdConnection *connection, uint32 vol) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_set_volume(connection->mpd, vol);
+    return ncm_mpd_connection_check_error(connection);
+}
+
+bool
+ncm_mpd_connection_change_volume(NcmMpdConnection *connection,
+                                 int32 change) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    mpd_run_change_volume(connection->mpd, change);
+    return ncm_mpd_connection_check_error(connection);
 }

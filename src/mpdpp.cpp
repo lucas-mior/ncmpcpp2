@@ -625,57 +625,57 @@ void Connection::UpdateDirectory(const std::string &path)
 void Connection::Play()
 {
 	prechecksNoCommandsList();
-	mpd_run_play(rawConnection());
-	checkErrors();
+	if (!ncm_mpd_connection_play(&m_connection))
+		throwConnectionError();
 }
 
 void Connection::Play(int pos)
 {
 	prechecksNoCommandsList();
-	mpd_run_play_pos(rawConnection(), pos);
-	checkErrors();
+	if (!ncm_mpd_connection_play_pos(&m_connection, pos))
+		throwConnectionError();
 }
 
 void Connection::PlayID(int id)
 {
 	prechecksNoCommandsList();
-	mpd_run_play_id(rawConnection(), id);
-	checkErrors();
+	if (!ncm_mpd_connection_play_id(&m_connection, id))
+		throwConnectionError();
 }
 
 void Connection::Pause(bool state)
 {
 	prechecksNoCommandsList();
-	mpd_run_pause(rawConnection(), state);
-	checkErrors();
+	if (!ncm_mpd_connection_pause(&m_connection, state))
+		throwConnectionError();
 }
 
 void Connection::Toggle()
 {
 	prechecksNoCommandsList();
-	mpd_run_toggle_pause(rawConnection());
-	checkErrors();
+	if (!ncm_mpd_connection_toggle_pause(&m_connection))
+		throwConnectionError();
 }
 
 void Connection::Stop()
 {
 	prechecksNoCommandsList();
-	mpd_run_stop(rawConnection());
-	checkErrors();
+	if (!ncm_mpd_connection_stop(&m_connection))
+		throwConnectionError();
 }
 
 void Connection::Next()
 {
 	prechecksNoCommandsList();
-	mpd_run_next(rawConnection());
-	checkErrors();
+	if (!ncm_mpd_connection_next(&m_connection))
+		throwConnectionError();
 }
 
 void Connection::Prev()
 {
 	prechecksNoCommandsList();
-	mpd_run_previous(rawConnection());
-	checkErrors();
+	if (!ncm_mpd_connection_previous(&m_connection))
+		throwConnectionError();
 }
 
 void Connection::Move(unsigned from, unsigned to)
@@ -705,8 +705,8 @@ void Connection::Swap(unsigned from, unsigned to)
 void Connection::Seek(unsigned pos, unsigned where)
 {
 	prechecksNoCommandsList();
-	mpd_run_seek_pos(rawConnection(), pos, where);
-	checkErrors();
+	if (!ncm_mpd_connection_seek_pos(&m_connection, pos, where))
+		throwConnectionError();
 }
 
 void Connection::Shuffle()
@@ -845,43 +845,43 @@ StringIterator Connection::GetSupportedExtensions()
 void Connection::SetRepeat(bool mode)
 {
 	prechecksNoCommandsList();
-	mpd_run_repeat(rawConnection(), mode);
-	checkErrors();
+	if (!ncm_mpd_connection_set_repeat(&m_connection, mode))
+		throwConnectionError();
 }
 
 void Connection::SetRandom(bool mode)
 {
 	prechecksNoCommandsList();
-	mpd_run_random(rawConnection(), mode);
-	checkErrors();
+	if (!ncm_mpd_connection_set_random(&m_connection, mode))
+		throwConnectionError();
 }
 
 void Connection::SetSingle(bool mode)
 {
 	prechecksNoCommandsList();
-	mpd_run_single(rawConnection(), mode);
-	checkErrors();
+	if (!ncm_mpd_connection_set_single(&m_connection, mode))
+		throwConnectionError();
 }
 
 void Connection::SetConsume(bool mode)
 {
 	prechecksNoCommandsList();
-	mpd_run_consume(rawConnection(), mode);
-	checkErrors();
+	if (!ncm_mpd_connection_set_consume(&m_connection, mode))
+		throwConnectionError();
 }
 
 void Connection::SetVolume(unsigned vol)
 {
 	prechecksNoCommandsList();
-	mpd_run_set_volume(rawConnection(), vol);
-	checkErrors();
+	if (!ncm_mpd_connection_set_volume(&m_connection, vol))
+		throwConnectionError();
 }
 
 void Connection::ChangeVolume(int change)
 {
 	prechecksNoCommandsList();
-	mpd_run_change_volume(rawConnection(), change);
-	checkErrors();
+	if (!ncm_mpd_connection_change_volume(&m_connection, change))
+		throwConnectionError();
 }
 
 
@@ -927,8 +927,8 @@ void Connection::SetReplayGainMode(ReplayGainMode mode)
 void Connection::SetCrossfade(unsigned crossfade)
 {
 	prechecksNoCommandsList();
-	mpd_run_crossfade(rawConnection(), crossfade);
-	checkErrors();
+	if (!ncm_mpd_connection_set_crossfade(&m_connection, crossfade))
+		throwConnectionError();
 }
 
 void Connection::SetPriority(const Song &s, int prio)
