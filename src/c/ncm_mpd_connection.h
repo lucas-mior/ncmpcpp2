@@ -119,6 +119,31 @@ bool ncm_mpd_connection_get_directory_recursive(
 bool ncm_mpd_connection_get_directory_songs(NcmMpdConnection *connection,
                                             char *path,
                                             NcmMpdSongList *songs);
+bool ncm_mpd_connection_search_songs(NcmMpdConnection *connection,
+                                     bool exact_match,
+                                     enum mpd_tag_type tag,
+                                     char *value,
+                                     NcmMpdSongList *songs);
+bool ncm_mpd_connection_find_songs(NcmMpdConnection *connection,
+                                   enum mpd_tag_type tag,
+                                   char *value,
+                                   NcmMpdSongList *songs);
+bool ncm_mpd_connection_list_all_songs(NcmMpdConnection *connection,
+                                       char *path,
+                                       NcmMpdSongList *songs);
+bool ncm_mpd_connection_start_search_songs(NcmMpdConnection *connection,
+                                           bool exact_match);
+bool ncm_mpd_connection_start_search_tags(NcmMpdConnection *connection,
+                                          enum mpd_tag_type tag);
+bool ncm_mpd_connection_add_search_tag(NcmMpdConnection *connection,
+                                       enum mpd_tag_type tag,
+                                       char *value);
+bool ncm_mpd_connection_add_search_any(NcmMpdConnection *connection,
+                                       char *value);
+bool ncm_mpd_connection_add_search_uri(NcmMpdConnection *connection,
+                                       char *value);
+bool ncm_mpd_connection_commit_search_songs(NcmMpdConnection *connection,
+                                            NcmMpdSongList *songs);
 
 bool ncm_mpd_connection_play(NcmMpdConnection *connection);
 bool ncm_mpd_connection_play_pos(NcmMpdConnection *connection, int32 pos);

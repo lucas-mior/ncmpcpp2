@@ -855,6 +855,128 @@ ncm_mpd_connection_get_directory_songs(NcmMpdConnection *connection,
 }
 
 bool
+ncm_mpd_connection_search_songs(NcmMpdConnection *connection,
+                                bool exact_match,
+                                enum mpd_tag_type tag,
+                                char *value,
+                                NcmMpdSongList *songs) {
+    if (!ncm_mpd_connection_start_search_songs(connection, exact_match)) {
+        return false;
+    }
+    if (!ncm_mpd_connection_add_search_tag(connection, tag, value)) {
+        return false;
+    }
+
+    return ncm_mpd_connection_commit_search_songs(connection, songs);
+}
+
+bool
+ncm_mpd_connection_find_songs(NcmMpdConnection *connection,
+                              enum mpd_tag_type tag,
+                              char *value,
+                              NcmMpdSongList *songs) {
+    return ncm_mpd_connection_search_songs(connection, true, tag, value, songs);
+}
+
+bool
+ncm_mpd_connection_list_all_songs(NcmMpdConnection *connection,
+                                  char *path,
+                                  NcmMpdSongList *songs) {
+    return ncm_mpd_connection_get_directory_recursive(connection, path, songs);
+}
+
+bool
+ncm_mpd_connection_start_search_songs(NcmMpdConnection *connection,
+                                      bool exact_match) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    if (!mpd_search_db_songs(connection->mpd, exact_match)) {
+        return ncm_mpd_connection_check_error(connection);
+    }
+
+    return true;
+}
+
+bool
+ncm_mpd_connection_start_search_tags(NcmMpdConnection *connection,
+                                     enum mpd_tag_type tag) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    if (!mpd_search_db_tags(connection->mpd, tag)) {
+        return ncm_mpd_connection_check_error(connection);
+    }
+
+    return true;
+}
+
+bool
+ncm_mpd_connection_add_search_tag(NcmMpdConnection *connection,
+                                  enum mpd_tag_type tag,
+                                  char *value) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    if (!mpd_search_add_tag_constraint(connection->mpd, MPD_OPERATOR_DEFAULT,
+                                       tag, value)) {
+        return ncm_mpd_connection_check_error(connection);
+    }
+
+    return true;
+}
+
+bool
+ncm_mpd_connection_add_search_any(NcmMpdConnection *connection,
+                                  char *value) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    if (!mpd_search_add_any_tag_constraint(connection->mpd,
+                                           MPD_OPERATOR_DEFAULT, value)) {
+        return ncm_mpd_connection_check_error(connection);
+    }
+
+    return true;
+}
+
+bool
+ncm_mpd_connection_add_search_uri(NcmMpdConnection *connection,
+                                  char *value) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    if (!mpd_search_add_uri_constraint(connection->mpd, MPD_OPERATOR_DEFAULT,
+                                       value)) {
+        return ncm_mpd_connection_check_error(connection);
+    }
+
+    return true;
+}
+
+bool
+ncm_mpd_connection_commit_search_songs(NcmMpdConnection *connection,
+                                       NcmMpdSongList *songs) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+    if (songs == NULL) {
+        return false;
+    }
+
+    if (!mpd_search_commit(connection->mpd)) {
+        return ncm_mpd_connection_check_error(connection);
+    }
+
+    return ncm_mpd_connection_recv_song_list(connection, songs);
+}
+
+bool
 ncm_mpd_connection_play(NcmMpdConnection *connection) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
