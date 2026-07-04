@@ -114,6 +114,26 @@ private:
 	NcmMpdItemList m_list;
 };
 
+struct NcmMpdStringListGuard
+{
+	NcmMpdStringListGuard()
+	{
+		ncm_mpd_string_list_init(&m_list);
+	}
+	~NcmMpdStringListGuard()
+	{
+		ncm_mpd_string_list_destroy(&m_list);
+	}
+
+	NcmMpdStringList *get()
+	{
+		return &m_list;
+	}
+
+private:
+	NcmMpdStringList m_list;
+};
+
 std::vector<MPD::Song> songVectorFromList(NcmMpdSongList *list)
 {
 	std::vector<MPD::Song> result;
@@ -142,6 +162,19 @@ std::vector<MPD::Directory> directoryVectorFromItemList(NcmMpdItemList *list)
 	{
 		if (ncm_mpd_item_kind(&list->items[i]) == NCM_MPD_ITEM_DIRECTORY)
 			result.emplace_back(ncm_mpd_item_directory(&list->items[i]));
+	}
+	return result;
+}
+
+std::vector<std::string> stringVectorFromList(NcmMpdStringList *list)
+{
+	std::vector<std::string> result;
+
+	result.reserve(static_cast<size_t>(list->count));
+	for (int32 i = 0; i < list->count; i += 1)
+	{
+		result.emplace_back(list->items[i].value,
+		                    static_cast<size_t>(list->items[i].value_len));
 	}
 	return result;
 }
@@ -1177,21 +1210,12 @@ PlaylistIterator Connection::GetPlaylists()
 
 StringIterator Connection::GetList(mpd_tag_type type)
 {
+	NcmMpdStringListGuard strings;
+
 	prechecksNoCommandsList();
-	mpd_search_db_tags(rawConnection(), type);
-	mpd_search_commit(rawConnection());
-	checkErrors();
-	return StringIterator(rawConnection(), [type](StringIterator::State &state) {
-		auto src = mpd_recv_pair_tag(state.connection(), type);
-		if (src != nullptr)
-		{
-			state.setObject(src->value);
-			mpd_return_pair(state.connection(), src);
-			return true;
-		}
-		else
-			return false;
-	});
+	if (!ncm_mpd_connection_list_tag_values(&m_connection, type, strings.get()))
+		throwConnectionError();
+	return StringIterator(stringVectorFromList(strings.get()));
 }
 
 void Connection::StartSearch(bool exact_match)
