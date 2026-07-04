@@ -165,6 +165,13 @@ bool ncm_mpd_connection_commit_search_tags(NcmMpdConnection *connection,
                                            enum mpd_tag_type tag,
                                            NcmMpdStringList *strings);
 
+bool ncm_mpd_connection_update_database(NcmMpdConnection *connection,
+                                        char *path,
+                                        uint32 *id);
+bool ncm_mpd_connection_rescan_database(NcmMpdConnection *connection,
+                                        char *path,
+                                        uint32 *id);
+
 bool ncm_mpd_connection_play(NcmMpdConnection *connection);
 bool ncm_mpd_connection_play_pos(NcmMpdConnection *connection, int32 pos);
 bool ncm_mpd_connection_play_id(NcmMpdConnection *connection, int32 id);
