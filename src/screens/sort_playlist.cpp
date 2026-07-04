@@ -47,44 +47,44 @@ SortPlaylistDialog::SortPlaylistDialog()
 		menu << Charset::utf8ToLocale(menu.drawn()->value().item().first);
 	});
 	
-	w.addItem(Entry(std::make_pair("Artist", &MPD::Song::getArtist),
+	w.addItem(Entry(std::make_pair("Artist", NCM_SONG_GETTER_ARTIST),
 		std::bind(&Self::moveSortOrderHint, this)
 	));
-	w.addItem(Entry(std::make_pair("Album artist", &MPD::Song::getAlbumArtist),
+	w.addItem(Entry(std::make_pair("Album artist", NCM_SONG_GETTER_ALBUM_ARTIST),
 		std::bind(&Self::moveSortOrderHint, this)
 	));
-	w.addItem(Entry(std::make_pair("Album", &MPD::Song::getAlbum),
+	w.addItem(Entry(std::make_pair("Album", NCM_SONG_GETTER_ALBUM),
 		std::bind(&Self::moveSortOrderHint, this)
 	));
-	w.addItem(Entry(std::make_pair("Disc", &MPD::Song::getDisc),
+	w.addItem(Entry(std::make_pair("Disc", NCM_SONG_GETTER_DISC),
 		std::bind(&Self::moveSortOrderHint, this)
 	));
-	w.addItem(Entry(std::make_pair("Track", &MPD::Song::getTrack),
+	w.addItem(Entry(std::make_pair("Track", NCM_SONG_GETTER_TRACK),
 		std::bind(&Self::moveSortOrderHint, this)
 	));
-	w.addItem(Entry(std::make_pair("Genre", &MPD::Song::getGenre),
+	w.addItem(Entry(std::make_pair("Genre", NCM_SONG_GETTER_GENRE),
 		std::bind(&Self::moveSortOrderHint, this)
 	));
-	w.addItem(Entry(std::make_pair("Date", &MPD::Song::getDate),
+	w.addItem(Entry(std::make_pair("Date", NCM_SONG_GETTER_DATE),
 		std::bind(&Self::moveSortOrderHint, this)
 	));
-	w.addItem(Entry(std::make_pair("Composer", &MPD::Song::getComposer),
+	w.addItem(Entry(std::make_pair("Composer", NCM_SONG_GETTER_COMPOSER),
 		std::bind(&Self::moveSortOrderHint, this)
 	));
-	w.addItem(Entry(std::make_pair("Performer", &MPD::Song::getPerformer),
+	w.addItem(Entry(std::make_pair("Performer", NCM_SONG_GETTER_PERFORMER),
 		std::bind(&Self::moveSortOrderHint, this)
 	));
-	w.addItem(Entry(std::make_pair("Title", &MPD::Song::getTitle),
+	w.addItem(Entry(std::make_pair("Title", NCM_SONG_GETTER_TITLE),
 		std::bind(&Self::moveSortOrderHint, this)
 	));
-	w.addItem(Entry(std::make_pair("Filename", &MPD::Song::getURI),
+	w.addItem(Entry(std::make_pair("Filename", NCM_SONG_GETTER_URI),
 		std::bind(&Self::moveSortOrderHint, this)
 	));
 	w.addSeparator();
-	w.addItem(Entry(std::make_pair("Sort", static_cast<MPD::Song::GetFunction>(0)),
+	w.addItem(Entry(std::make_pair("Sort", NCM_SONG_GETTER_NONE),
 		std::bind(&Self::sort, this)
 	));
-	w.addItem(Entry(std::make_pair("Cancel", static_cast<MPD::Song::GetFunction>(0)),
+	w.addItem(Entry(std::make_pair("Cancel", NCM_SONG_GETTER_NONE),
 		std::bind(&Self::cancel, this)
 	));
 }
@@ -142,7 +142,7 @@ void SortPlaylistDialog::runAction()
 void SortPlaylistDialog::moveSortOrderDown()
 {
 	auto cur = w.currentV();
-	if ((cur+1)->item().second)
+	if ((cur+1)->item().second != NCM_SONG_GETTER_NONE)
 	{
 		std::iter_swap(cur, cur+1);
 		w.scroll(NC::Scroll::Down);
@@ -152,7 +152,7 @@ void SortPlaylistDialog::moveSortOrderDown()
 void SortPlaylistDialog::moveSortOrderUp()
 {
 	auto cur = w.currentV();
-	if (cur > w.beginV() && cur->item().second)
+	if (cur > w.beginV() && cur->item().second != NCM_SONG_GETTER_NONE)
 	{
 		std::iter_swap(cur, cur-1);
 		w.scroll(NC::Scroll::Up);
@@ -181,7 +181,7 @@ void SortPlaylistDialog::sort() const
 	LocaleStringComparison cmp(std::locale(), Config.ignore_leading_the);
 	std::function<void(Iterator, Iterator)> iter_swap, quick_sort;
 	auto song_cmp = [this, &cmp](const MPD::Song &a, const MPD::Song &b) -> bool {
-		for (auto it = w.beginV();  it->item().second; ++it)
+		for (auto it = w.beginV(); it->item().second != NCM_SONG_GETTER_NONE; ++it)
 		{
 			int res = cmp(a.getTags(it->item().second),
 			              b.getTags(it->item().second));

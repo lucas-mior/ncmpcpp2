@@ -94,8 +94,8 @@ char *itemTypeName(MPD::Item::Type type)
 void populateActions();
 
 bool scrollTagCanBeRun(NC::List *&list, const SongList *&songs);
-void scrollTagUpRun(NC::List *list, const SongList *songs, MPD::Song::GetFunction get);
-void scrollTagDownRun(NC::List *list, const SongList *songs, MPD::Song::GetFunction get);
+void scrollTagUpRun(NC::List *list, const SongList *songs, enum NcmSongGetter getter);
+void scrollTagDownRun(NC::List *list, const SongList *songs, enum NcmSongGetter getter);
 
 void seek(SearchDirection sd);
 void findItem(const SearchDirection direction);
@@ -425,7 +425,7 @@ bool ScrollUpArtist::canBeRun()
 
 void ScrollUpArtist::run()
 {
-	scrollTagUpRun(m_list, m_songs, &MPD::Song::getArtist);
+	scrollTagUpRun(m_list, m_songs, NCM_SONG_GETTER_ARTIST);
 }
 
 bool ScrollUpAlbum::canBeRun()
@@ -435,7 +435,7 @@ bool ScrollUpAlbum::canBeRun()
 
 void ScrollUpAlbum::run()
 {
-	scrollTagUpRun(m_list, m_songs, &MPD::Song::getAlbum);
+	scrollTagUpRun(m_list, m_songs, NCM_SONG_GETTER_ALBUM);
 }
 
 bool ScrollDownArtist::canBeRun()
@@ -445,7 +445,7 @@ bool ScrollDownArtist::canBeRun()
 
 void ScrollDownArtist::run()
 {
-	scrollTagDownRun(m_list, m_songs, &MPD::Song::getArtist);
+	scrollTagDownRun(m_list, m_songs, NCM_SONG_GETTER_ARTIST);
 }
 
 bool ScrollDownAlbum::canBeRun()
@@ -455,7 +455,7 @@ bool ScrollDownAlbum::canBeRun()
 
 void ScrollDownAlbum::run()
 {
-	scrollTagDownRun(m_list, m_songs, &MPD::Song::getAlbum);
+	scrollTagDownRun(m_list, m_songs, NCM_SONG_GETTER_ALBUM);
 }
 
 void PageUp::run()
@@ -1459,14 +1459,14 @@ void EditLibraryTag::run()
 		Statusbar::print("Updating tags...");
 		Mpd.StartSearch(true);
 		Mpd.AddSearch(Config.media_lib_primary_tag, myLibrary->Tags.current()->value().tag());
-		MPD::MutableSong::SetFunction set = MPD::setFunctionFromTagType(Config.media_lib_primary_tag);
-		assert(set);
+		enum NcmTagsField field = ncm_tags_field_from_tag_type(Config.media_lib_primary_tag);
+		assert(field != NCM_TAGS_FIELD_LAST);
 		bool success = true;
 		std::string dir_to_update;
 		for (MPD::SongIterator s = Mpd.CommitSearchSongs(), end; s != end; ++s)
 		{
 			MPD::MutableSong ms = std::move(*s);
-			ms.setTags(set, new_tag);
+			ms.setTags(field, new_tag);
 			Statusbar::printf("Updating tags in \"%1%\"...", ms.getName());
 			std::string path = Config.mpd_music_dir + ms.getURI();
 			if (!ncm_tags_write_mutable_song(ms))
@@ -1877,13 +1877,13 @@ void SelectAlbum::run()
 	const auto front = m_songs->beginS(), current = m_songs->currentS(), end = m_songs->endS();
 	if (current->song() == nullptr)
 		return;
-	auto get = &MPD::Song::getAlbum;
-	const std::string tag = current->song()->getTags(get);
+	enum NcmSongGetter getter = NCM_SONG_GETTER_ALBUM;
+	const std::string tag = current->song()->getTags(getter);
 	// go up
 	for (auto it = current; it != front;)
 	{
 		--it;
-		if (it->song() == nullptr || it->song()->getTags(get) != tag)
+		if (it->song() == nullptr || it->song()->getTags(getter) != tag)
 			break;
 		it->properties().setSelected(true);
 	}
@@ -1893,7 +1893,7 @@ void SelectAlbum::run()
 		it->properties().setSelected(true);
 		if (++it == end)
 			break;
-		if (it->song() == nullptr || it->song()->getTags(get) != tag)
+		if (it->song() == nullptr || it->song()->getTags(getter) != tag)
 			break;
 	}
 	Statusbar::print("Album around cursor position selected");
@@ -2901,34 +2901,34 @@ bool scrollTagCanBeRun(NC::List *&list, const SongList *&songs)
 	    && songs != nullptr;
 }
 
-void scrollTagUpRun(NC::List *list, const SongList *songs, MPD::Song::GetFunction get)
+void scrollTagUpRun(NC::List *list, const SongList *songs, enum NcmSongGetter getter)
 {
 	const auto front = songs->beginS();
 	auto it = songs->currentS();
 	if (it->song() != nullptr)
 	{
-		const std::string tag = it->song()->getTags(get);
+		const std::string tag = it->song()->getTags(getter);
 		while (it != front)
 		{
 			--it;
-			if (it->song() == nullptr || it->song()->getTags(get) != tag)
+			if (it->song() == nullptr || it->song()->getTags(getter) != tag)
 				break;
 		}
 		list->highlight(it-front);
 	}
 }
 
-void scrollTagDownRun(NC::List *list, const SongList *songs, MPD::Song::GetFunction get)
+void scrollTagDownRun(NC::List *list, const SongList *songs, enum NcmSongGetter getter)
 {
 	const auto front = songs->beginS(), back = --songs->endS();
 	auto it = songs->currentS();
 	if (it->song() != nullptr)
 	{
-		const std::string tag = it->song()->getTags(get);
+		const std::string tag = it->song()->getTags(getter);
 		while (it != back)
 		{
 			++it;
-			if (it->song() == nullptr || it->song()->getTags(get) != tag)
+			if (it->song() == nullptr || it->song()->getTags(getter) != tag)
 				break;
 		}
 		list->highlight(it-front);

@@ -55,18 +55,18 @@ std::string channelsString(int channels)
 
 const SongInfo::Metadata SongInfo::Tags[] =
 {
- { "Title",        &MPD::Song::getTitle,       &MPD::MutableSong::setTitle       },
- { "Artist",       &MPD::Song::getArtist,      &MPD::MutableSong::setArtist      },
- { "Album Artist", &MPD::Song::getAlbumArtist, &MPD::MutableSong::setAlbumArtist },
- { "Album",        &MPD::Song::getAlbum,       &MPD::MutableSong::setAlbum       },
- { "Date",         &MPD::Song::getDate,        &MPD::MutableSong::setDate        },
- { "Track",        &MPD::Song::getTrack,       &MPD::MutableSong::setTrack       },
- { "Genre",        &MPD::Song::getGenre,       &MPD::MutableSong::setGenre       },
- { "Composer",     &MPD::Song::getComposer,    &MPD::MutableSong::setComposer    },
- { "Performer",    &MPD::Song::getPerformer,   &MPD::MutableSong::setPerformer   },
- { "Disc",         &MPD::Song::getDisc,        &MPD::MutableSong::setDisc        },
- { "Comment",      &MPD::Song::getComment,     &MPD::MutableSong::setComment     },
- { 0,              0,                          0                                 }
+ { "Title",        NCM_SONG_GETTER_TITLE,        NCM_TAGS_FIELD_TITLE        },
+ { "Artist",       NCM_SONG_GETTER_ARTIST,       NCM_TAGS_FIELD_ARTIST       },
+ { "Album Artist", NCM_SONG_GETTER_ALBUM_ARTIST, NCM_TAGS_FIELD_ALBUM_ARTIST },
+ { "Album",        NCM_SONG_GETTER_ALBUM,        NCM_TAGS_FIELD_ALBUM        },
+ { "Date",         NCM_SONG_GETTER_DATE,         NCM_TAGS_FIELD_DATE         },
+ { "Track",        NCM_SONG_GETTER_TRACK,        NCM_TAGS_FIELD_TRACK        },
+ { "Genre",        NCM_SONG_GETTER_GENRE,        NCM_TAGS_FIELD_GENRE        },
+ { "Composer",     NCM_SONG_GETTER_COMPOSER,     NCM_TAGS_FIELD_COMPOSER     },
+ { "Performer",    NCM_SONG_GETTER_PERFORMER,    NCM_TAGS_FIELD_PERFORMER    },
+ { "Disc",         NCM_SONG_GETTER_DISC,         NCM_TAGS_FIELD_DISC         },
+ { "Comment",      NCM_SONG_GETTER_COMMENT,      NCM_TAGS_FIELD_COMMENT      },
+ { 0,              NCM_SONG_GETTER_NONE,         NCM_TAGS_FIELD_LAST         }
 };
 
 SongInfo::SongInfo()

@@ -117,7 +117,7 @@ struct Printer
 		if (m_flags & Flags::Tag && m_song != nullptr)
 		{
 			tags = convertString<CharT, char>::apply(
-				m_song->getTags(st.function())
+				m_song->getTags(st.getter())
 			);
 		}
 		if (!tags.empty())
@@ -125,8 +125,8 @@ struct Printer
 			if (st.delimiter() > 0)
 			{
 				// shorten date/length by simple truncation
-				if (st.function() == &MPD::Song::getDate
-				    || st.function() == &MPD::Song::getLength)
+				if (st.getter() == NCM_SONG_GETTER_DATE
+				    || st.getter() == NCM_SONG_GETTER_LENGTH)
 					tags.resize(st.delimiter());
 				else
 					tags = Utf8::shorten(tags, st.delimiter());

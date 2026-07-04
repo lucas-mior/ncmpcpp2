@@ -128,9 +128,9 @@ Format::AST<char> columns_to_format(const std::vector<Column> &columns)
 		Format::FirstOf<char> first_of;
 		for (const auto &type : column->type)
 		{
-			auto f = MPD::getFunctionFromChar(type);
-			assert(f != nullptr);
-			first_of.base().push_back(f);
+			enum NcmSongGetter getter = ncm_song_getter_from_char(type);
+			assert(getter != NCM_SONG_GETTER_NONE);
+			first_of.base().push_back(getter);
 		}
 		result.push_back(std::move(first_of));
 

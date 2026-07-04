@@ -30,8 +30,8 @@ struct SongInfo: Screen<NC::Scrollpad>, Tabbable
 	struct Metadata
 	{
 		const char *Name;
-		MPD::Song::GetFunction Get;
-		MPD::MutableSong::SetFunction Set;
+		enum NcmSongGetter Get;
+		enum NcmTagsField Field;
 	};
 	
 	SongInfo();
