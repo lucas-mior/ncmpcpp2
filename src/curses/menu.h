@@ -25,7 +25,10 @@
 #include <functional>
 #include <iterator>
 #include <memory>
+#include <new>
 #include <set>
+#include <stdexcept>
+#include <type_traits>
 
 #include "curses/formatted_color.h"
 #include "curses/nc_menu.h"
@@ -233,8 +236,172 @@ struct Menu: Window, List
 		std::shared_ptr<std::tuple<ItemT, Properties>> m_impl;
 	};
 
-	typedef typename std::vector<Item>::iterator Iterator;
-	typedef typename std::vector<Item>::const_iterator ConstIterator;
+	template <Const const_>
+	struct ItemIterator
+	{
+		friend struct Menu<ItemT>;
+
+		typedef std::random_access_iterator_tag iterator_category;
+		typedef std::ptrdiff_t difference_type;
+		typedef Item value_type;
+		typedef typename std::conditional<
+			const_ == Const::Yes,
+			const Item &,
+			Item &>::type reference;
+		typedef typename std::conditional<
+			const_ == Const::Yes,
+			const Item *,
+			Item *>::type pointer;
+
+		ItemIterator() = default;
+
+		ItemIterator(NcMenu *menu, enum NcMenuItemSource source, int64 pos)
+			: m_menu(menu)
+			, m_source(source)
+			, m_pos(pos)
+		{ }
+
+		template <Const other_,
+		          typename = std::enable_if_t<
+		              const_ == Const::Yes && other_ == Const::No>>
+		ItemIterator(const ItemIterator<other_> &rhs)
+			: m_menu(rhs.m_menu)
+			, m_source(rhs.m_source)
+			, m_pos(rhs.m_pos)
+		{ }
+
+		reference operator*() const
+		{
+			return *static_cast<pointer>(
+				nc_menu_item_at(m_menu, m_source, m_pos));
+		}
+
+		pointer operator->() const
+		{
+			return std::addressof(operator*());
+		}
+
+		reference operator[](difference_type n) const
+		{
+			return *(*this + n);
+		}
+
+		ItemIterator &operator++()
+		{
+			m_pos += 1;
+			return *this;
+		}
+
+		ItemIterator operator++(int)
+		{
+			auto result = *this;
+			++*this;
+			return result;
+		}
+
+		ItemIterator &operator--()
+		{
+			m_pos -= 1;
+			return *this;
+		}
+
+		ItemIterator operator--(int)
+		{
+			auto result = *this;
+			--*this;
+			return result;
+		}
+
+		ItemIterator &operator+=(difference_type n)
+		{
+			m_pos += n;
+			return *this;
+		}
+
+		ItemIterator &operator-=(difference_type n)
+		{
+			m_pos -= n;
+			return *this;
+		}
+
+		friend ItemIterator operator+(ItemIterator iterator, difference_type n)
+		{
+			iterator += n;
+			return iterator;
+		}
+
+		friend ItemIterator operator+(difference_type n, ItemIterator iterator)
+		{
+			iterator += n;
+			return iterator;
+		}
+
+		friend ItemIterator operator-(ItemIterator iterator, difference_type n)
+		{
+			iterator -= n;
+			return iterator;
+		}
+
+		friend difference_type operator-(ItemIterator lhs, ItemIterator rhs)
+		{
+			assert(lhs.m_menu == rhs.m_menu);
+			assert(lhs.m_source == rhs.m_source);
+			return lhs.m_pos - rhs.m_pos;
+		}
+
+		friend bool operator==(ItemIterator lhs, ItemIterator rhs)
+		{
+			return lhs.m_menu == rhs.m_menu
+				&& lhs.m_source == rhs.m_source
+				&& lhs.m_pos == rhs.m_pos;
+		}
+
+		friend bool operator!=(ItemIterator lhs, ItemIterator rhs)
+		{
+			return !(lhs == rhs);
+		}
+
+		friend bool operator<(ItemIterator lhs, ItemIterator rhs)
+		{
+			assert(lhs.m_menu == rhs.m_menu);
+			assert(lhs.m_source == rhs.m_source);
+			return lhs.m_pos < rhs.m_pos;
+		}
+
+		friend bool operator>(ItemIterator lhs, ItemIterator rhs)
+		{
+			return rhs < lhs;
+		}
+
+		friend bool operator<=(ItemIterator lhs, ItemIterator rhs)
+		{
+			return !(rhs < lhs);
+		}
+
+		friend bool operator>=(ItemIterator lhs, ItemIterator rhs)
+		{
+			return !(lhs < rhs);
+		}
+
+		friend void iter_swap(ItemIterator lhs, ItemIterator rhs)
+		{
+			static_assert(const_ == Const::No);
+			assert(lhs.m_menu == rhs.m_menu);
+			assert(lhs.m_source == rhs.m_source);
+			nc_menu_swap_item_slots(lhs.m_menu, lhs.m_source,
+			                        lhs.m_pos, rhs.m_pos);
+		}
+
+	private:
+		template <Const> friend struct ItemIterator;
+
+		NcMenu *m_menu = nullptr;
+		enum NcMenuItemSource m_source = NC_MENU_ITEMS_ALL;
+		int64 m_pos = 0;
+	};
+
+	typedef ItemIterator<Const::No> Iterator;
+	typedef ItemIterator<Const::Yes> ConstIterator;
 	typedef std::reverse_iterator<Iterator> ReverseIterator;
 	typedef std::reverse_iterator<ConstIterator> ConstReverseIterator;
 
@@ -272,6 +439,7 @@ struct Menu: Window, List
 	
 	Menu(const Menu &rhs);
 	Menu(Menu &&rhs);
+	~Menu();
 	Menu &operator=(Menu rhs);
 	
 	/// Sets helper function that is responsible for displaying items
@@ -303,10 +471,10 @@ struct Menu: Window, List
 	
 	/// Checks if list is empty
 	/// @return true if list is empty, false otherwise
-	virtual bool empty() const override { return m_menu.item_count == 0; }
+	virtual bool empty() const override { return activeItemCount() == 0; }
 
 	/// @return size of the list
-	virtual size_t size() const override { return static_cast<size_t>(m_menu.item_count); }
+	virtual size_t size() const override { return activeItemCount(); }
 
 	/// @return currently highlighted position
 	virtual size_t choice() const override;
@@ -347,13 +515,13 @@ struct Menu: Window, List
 	void clearFilter();
 
 	/// @return true if menu is filtered.
-	bool isFiltered() const { return m_items == &m_filtered_items; }
+	bool isFiltered() const { return nc_menu_is_filtered(const_cast<NcMenu *>(&m_menu)); }
 
 	/// Show all items.
-	void showAllItems() { m_items = &m_all_items; syncMenuSize(); }
+	void showAllItems() { nc_menu_show_all_items(&m_menu); }
 
 	/// Show filtered items.
-	void showFilteredItems() { m_items = &m_filtered_items; syncMenuSize(); }
+	void showFilteredItems() { nc_menu_show_filtered_items(&m_menu); }
 
 	/// Sets prefix, that is put before each selected item to indicate its selection
 	/// Note that the passed variable is not deleted along with menu object.
@@ -389,32 +557,34 @@ struct Menu: Window, List
 	/// @return currently drawn item. The result is defined only within
 	/// drawing function that is called by refresh()
 	/// @see refresh()
-	ConstIterator drawn() const { return begin() + static_cast<size_t>(m_menu.drawn_position); }
+	ConstIterator drawn() const { return begin() + nc_menu_drawn_position(const_cast<NcMenu *>(&m_menu)); }
 	
 	/// @param pos requested position
 	/// @return reference to item at given position
 	/// @throw std::out_of_range if given position is out of range
-	Menu<ItemT>::Item &at(size_t pos) { return m_items->at(pos); }
+	Menu<ItemT>::Item &at(size_t pos) { return activeItemAt(pos); }
 	
 	/// @param pos requested position
 	/// @return const reference to item at given position
 	/// @throw std::out_of_range if given position is out of range
-	const Menu<ItemT>::Item &at(size_t pos) const { return m_items->at(pos); }
+	const Menu<ItemT>::Item &at(size_t pos) const { return activeItemAt(pos); }
 	
 	/// @param pos requested position
 	/// @return const reference to item at given position
-	const Menu<ItemT>::Item &operator[](size_t pos) const { return (*m_items)[pos]; }
+	const Menu<ItemT>::Item &operator[](size_t pos) const { return activeItemAt(pos); }
 	
 	/// @param pos requested position
 	/// @return const reference to item at given position
-	Menu<ItemT>::Item &operator[](size_t pos) { return (*m_items)[pos]; }
+	Menu<ItemT>::Item &operator[](size_t pos) { return activeItemAt(pos); }
 	
 	Iterator current() {
-		return Iterator(m_items->begin() + static_cast<size_t>(m_menu.highlight));
+		return Iterator(&m_menu, activeItemSource(), nc_menu_highlight(&m_menu));
 	}
 	ConstIterator current() const {
-		return ConstIterator(m_items->begin()
-		                     + static_cast<size_t>(m_menu.highlight));
+		return ConstIterator(
+			const_cast<NcMenu *>(&m_menu),
+			activeItemSource(),
+			nc_menu_highlight(const_cast<NcMenu *>(&m_menu)));
 	}
 	ReverseIterator rcurrent() {
 		if (empty())
@@ -430,12 +600,10 @@ struct Menu: Window, List
 	}
 
 	ValueIterator currentV() {
-		return ValueIterator(m_items->begin()
-		                     + static_cast<size_t>(m_menu.highlight));
+		return ValueIterator(current());
 	}
 	ConstValueIterator currentV() const {
-		return ConstValueIterator(m_items->begin()
-		                          + static_cast<size_t>(m_menu.highlight));
+		return ConstValueIterator(current());
 	}
 	ReverseValueIterator rcurrentV() {
 		if (empty())
@@ -450,10 +618,19 @@ struct Menu: Window, List
 			return ConstReverseValueIterator(++currentV());
 	}
 	
-	Iterator begin() { return Iterator(m_items->begin()); }
-	ConstIterator begin() const { return ConstIterator(m_items->begin()); }
-	Iterator end() { return Iterator(m_items->end()); }
-	ConstIterator end() const { return ConstIterator(m_items->end()); }
+	Iterator begin() { return Iterator(&m_menu, activeItemSource(), 0); }
+	ConstIterator begin() const {
+		return ConstIterator(const_cast<NcMenu *>(&m_menu), activeItemSource(), 0);
+	}
+	Iterator end() {
+		return Iterator(&m_menu, activeItemSource(), static_cast<int64>(size()));
+	}
+	ConstIterator end() const {
+		return ConstIterator(
+			const_cast<NcMenu *>(&m_menu),
+			activeItemSource(),
+			static_cast<int64>(size()));
+	}
 	
 	ReverseIterator rbegin() { return ReverseIterator(end()); }
 	ConstReverseIterator rbegin() const { return ConstReverseIterator(end()); }
@@ -471,24 +648,22 @@ struct Menu: Window, List
 	ConstReverseValueIterator rendV() const { return ConstReverseValueIterator(beginV()); }
 	
 	virtual List::Iterator currentP() override {
-		return List::Iterator(PropertiesIterator(
-			m_items->begin() + static_cast<size_t>(m_menu.highlight)));
+		return List::Iterator(PropertiesIterator(current()));
 	}
 	virtual List::ConstIterator currentP() const override {
-		return List::ConstIterator(ConstPropertiesIterator(
-			m_items->begin() + static_cast<size_t>(m_menu.highlight)));
+		return List::ConstIterator(ConstPropertiesIterator(current()));
 	}
 	virtual List::Iterator beginP() override {
-		return List::Iterator(PropertiesIterator(m_items->begin()));
+		return List::Iterator(PropertiesIterator(begin()));
 	}
 	virtual List::ConstIterator beginP() const override {
-		return List::ConstIterator(ConstPropertiesIterator(m_items->begin()));
+		return List::ConstIterator(ConstPropertiesIterator(begin()));
 	}
 	virtual List::Iterator endP() override {
-		return List::Iterator(PropertiesIterator(m_items->end()));
+		return List::Iterator(PropertiesIterator(end()));
 	}
 	virtual List::ConstIterator endP() const override {
-		return List::ConstIterator(ConstPropertiesIterator(m_items->end()));
+		return List::ConstIterator(ConstPropertiesIterator(end()));
 	}
 
 private:
@@ -518,23 +693,91 @@ private:
 			static_cast<size_t>(pos));
 	}
 
+	static NcMenuItemCallbacks itemCallbacks()
+	{
+		NcMenuItemCallbacks callbacks;
+
+		callbacks.item_size = sizeof(Item);
+		callbacks.construct = &Menu<ItemT>::constructItem;
+		callbacks.copy = &Menu<ItemT>::copyItem;
+		callbacks.destroy = &Menu<ItemT>::destroyItem;
+		callbacks.user = nullptr;
+		return callbacks;
+	}
+
+	static void constructItem(void *dest, void *)
+	{
+		new (dest) Item();
+	}
+
+	static void copyItem(void *dest, void *source, void *)
+	{
+		new (dest) Item(*static_cast<Item *>(source));
+	}
+
+	static void destroyItem(void *item, void *)
+	{
+		static_cast<Item *>(item)->~Item();
+	}
+
+	void initItemStorage()
+	{
+		nc_menu_set_item_callbacks(&m_menu, itemCallbacks());
+	}
+
 	void syncMenuSize()
 	{
-		nc_menu_set_item_count(&m_menu, static_cast<int64>(m_items->size()));
+		nc_menu_sync_item_count(&m_menu);
+	}
+
+	size_t activeItemCount() const
+	{
+		return static_cast<size_t>(
+			nc_menu_item_count(const_cast<NcMenu *>(&m_menu)));
+	}
+
+	enum NcMenuItemSource activeItemSource() const
+	{
+		if (nc_menu_is_filtered(const_cast<NcMenu *>(&m_menu)))
+			return NC_MENU_ITEMS_FILTERED;
+		else
+			return NC_MENU_ITEMS_ALL;
+	}
+
+	Item &activeItemAt(size_t pos)
+	{
+		if (pos >= size())
+			throw std::out_of_range("NC::Menu::at");
+		return *static_cast<Item *>(
+			nc_menu_active_item_at(&m_menu, static_cast<int64>(pos)));
+	}
+
+	const Item &activeItemAt(size_t pos) const
+	{
+		if (pos >= size())
+			throw std::out_of_range("NC::Menu::at");
+		return *static_cast<const Item *>(
+			nc_menu_active_item_at(
+				const_cast<NcMenu *>(&m_menu),
+				static_cast<int64>(pos)));
+	}
+
+	Item &allItemAt(size_t pos)
+	{
+		return *static_cast<Item *>(
+			nc_menu_item_at(&m_menu, NC_MENU_ITEMS_ALL,
+			                static_cast<int64>(pos)));
 	}
 
 	bool isHighlightable(size_t pos)
 	{
-		return !(*m_items)[pos].isSeparator()
-			&& !(*m_items)[pos].isInactive();
+		return !activeItemAt(pos).isSeparator()
+			&& !activeItemAt(pos).isInactive();
 	}
 
 	ItemDisplayer m_item_displayer;
 	FilterPredicate m_filter_predicate;
 
-	std::vector<Item> *m_items;
-	std::vector<Item> m_all_items;
-	std::vector<Item> m_filtered_items;
 	NcMenu m_menu;
 
 	Buffer m_highlight_prefix;
