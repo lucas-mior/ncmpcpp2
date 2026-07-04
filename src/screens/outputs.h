@@ -28,29 +28,37 @@
 #include "interfaces.h"
 #include "menu.h"
 #include "mpdpp.h"
+#include "screens/nc_outputs.h"
 #include "screens/screen.h"
 
-struct Outputs: Screen<NC::Menu<MPD::Output>>, Tabbable
+struct Outputs: BaseScreen, Tabbable
 {
 	Outputs();
 	
-	// Screen< NC::Menu<MPD::Output> > implementation
+	// BaseScreen implementation
+	virtual bool isActiveWindow(const NC::Window &w_) const override;
+	virtual NC::Window *activeWindow() override;
+	virtual const NC::Window *activeWindow() const override;
+	virtual void refresh() override;
+	virtual void refreshWindow() override;
+	virtual void scroll(NC::Scroll where) override;
 	virtual void switchTo() override;
 	virtual void resize() override;
-	
+	virtual int windowTimeout() override;
 	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::Outputs; }
-	
 	virtual void update() override { }
-	
 	virtual void mouseButtonPressed(MEVENT me) override;
-	
 	virtual bool isLockable() override { return true; }
 	virtual bool isMergable() override { return true; }
 	
 	// private members
 	void fetchList();
 	void toggleOutput();
+
+private:
+	NC::Menu<MPD::Output> w;
+	NcOutputsScreen m_screen;
 };
 
 extern Outputs *myOutputs;
@@ -58,4 +66,3 @@ extern Outputs *myOutputs;
 #endif // ENABLE_OUTPUTS
 
 #endif // NCMPCPP_OUTPUTS_H
-
