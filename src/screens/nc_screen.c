@@ -428,9 +428,12 @@ nc_screen_registry_destroy_type(NcScreenRegistry *registry,
 
 void
 nc_screen_registry_destroy_all(NcScreenRegistry *registry) {
-    for (int32 i = registry->screens_len - 1; i >= 0; i -= 1) {
-        nc_screen_destroy(registry->screens[i]);
-        registry->screens[i] = NULL;
+    while (registry->screens_len > 0) {
+        NcScreen *screen;
+
+        screen = registry->screens[registry->screens_len - 1];
+        nc_screen_registry_unregister(registry, screen);
+        nc_screen_destroy(screen);
     }
     registry->current_screen = NULL;
     registry->previous_screen = NULL;
