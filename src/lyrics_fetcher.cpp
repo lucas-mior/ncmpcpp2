@@ -33,7 +33,7 @@
 #include "curl_handle.h"
 #include "lyrics_fetcher.h"
 #include "settings.h"
-#include "c/ncm_html.h"
+#include "utility/html.h"
 #include "utility/string.h"
 
 namespace {
@@ -54,33 +54,6 @@ void trim(std::string &s)
 	}
 	auto last = s.find_last_not_of(" \t\r\n");
 	s = s.substr(first, last-first+1);
-}
-
-int32 stringSize(const std::string &s)
-{
-	return static_cast<int32>(s.size());
-}
-
-std::string htmlBufferToString(NcmBuffer &buffer)
-{
-	std::string result;
-	if (buffer.len > 0)
-		result.assign(buffer.data, static_cast<size_t>(buffer.len));
-	ncm_buffer_destroy(&buffer);
-	return result;
-}
-
-std::string ncmHtmlUnescapeUtf8(const std::string &data)
-{
-	NcmBuffer result = ncm_html_unescape_utf8(
-		const_cast<char *>(data.data()), stringSize(data));
-	return htmlBufferToString(result);
-}
-
-void ncmHtmlStripTags(std::string &s)
-{
-	NcmBuffer result = ncm_html_strip_tags(s.data(), stringSize(s));
-	s = htmlBufferToString(result);
 }
 
 std::vector<std::string> splitLines(const std::string &s)
@@ -221,8 +194,8 @@ std::vector<std::string> LyricsFetcher::getContent(const char *regex_,
 
 void LyricsFetcher::postProcess(std::string &data) const
 {
-	data = ncmHtmlUnescapeUtf8(data);
-	ncmHtmlStripTags(data);
+	data = unescapeHtmlUtf8(data);
+	stripHtmlTags(data);
 	// Remove indentation from each line and collapse multiple newlines into one.
 	auto lines = splitLines(data);
 	for (auto &line : lines)
@@ -279,7 +252,7 @@ LyricsFetcher::Result GoogleLyricsFetcher::fetch(const std::string &artist,
 		return result;
 	}
 
-	data = ncmHtmlUnescapeUtf8(urls[0]);
+	data = unescapeHtmlUtf8(urls[0]);
 
 	URL = data.c_str();
 	return LyricsFetcher::fetch("", "", song);

@@ -31,3 +31,4 @@ c_foundation_test
 c_mutable_song_test
 *.trs
 test-driver
+*.la
