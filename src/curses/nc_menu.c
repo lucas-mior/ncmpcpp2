@@ -267,6 +267,9 @@ nc_menu_init(NcMenu *menu) {
     menu->display_callbacks.is_selected = NULL;
     menu->display_callbacks.is_inactive = NULL;
     menu->display_callbacks.user = NULL;
+    menu->action_callbacks.activate = NULL;
+    menu->action_callbacks.set_selected = NULL;
+    menu->action_callbacks.user = NULL;
     nc_buffer_init(&menu->highlight_prefix);
     nc_buffer_init(&menu->highlight_suffix);
     nc_buffer_init(&menu->selected_prefix);
@@ -295,6 +298,7 @@ void
 nc_menu_copy(NcMenu *dest, NcMenu *source) {
     dest->active_items = NC_MENU_ITEMS_ALL;
     dest->display_callbacks = source->display_callbacks;
+    dest->action_callbacks = source->action_callbacks;
     menu_copy_buffer(&dest->highlight_prefix, &source->highlight_prefix);
     menu_copy_buffer(&dest->highlight_suffix, &source->highlight_suffix);
     menu_copy_buffer(&dest->selected_prefix, &source->selected_prefix);
@@ -331,6 +335,13 @@ void
 nc_menu_set_display_callbacks(NcMenu *menu,
                               NcMenuDisplayCallbacks callbacks) {
     menu->display_callbacks = callbacks;
+    return;
+}
+
+void
+nc_menu_set_action_callbacks(NcMenu *menu,
+                             NcMenuActionCallbacks callbacks) {
+    menu->action_callbacks = callbacks;
     return;
 }
 
@@ -710,6 +721,116 @@ nc_menu_is_filtered(NcMenu *menu) {
     return menu->active_items == NC_MENU_ITEMS_FILTERED;
 }
 
+bool
+nc_menu_empty(NcMenu *menu) {
+    return nc_menu_item_count(menu) == 0;
+}
+
+bool
+nc_menu_position_is_selectable(NcMenu *menu, int64 pos) {
+    void *item;
+
+    if ((pos < 0) || (pos >= nc_menu_item_count(menu))) {
+        return false;
+    }
+
+    item = nc_menu_active_item_at(menu, pos);
+    if (menu_is_separator(menu, item)) {
+        return false;
+    }
+    if (menu_is_inactive(menu, item)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool
+nc_menu_position_is_selected(NcMenu *menu, int64 pos) {
+    void *item;
+
+    if ((pos < 0) || (pos >= nc_menu_item_count(menu))) {
+        return false;
+    }
+
+    item = nc_menu_active_item_at(menu, pos);
+    return menu_is_selected(menu, item);
+}
+
+bool
+nc_menu_set_position_selected(NcMenu *menu, int64 pos, bool selected) {
+    void *item;
+
+    if (menu->action_callbacks.set_selected == NULL) {
+        return false;
+    }
+    if ((pos < 0) || (pos >= nc_menu_item_count(menu))) {
+        return false;
+    }
+    if (!nc_menu_position_is_selectable(menu, pos)) {
+        return false;
+    }
+
+    item = nc_menu_active_item_at(menu, pos);
+    menu->action_callbacks.set_selected(item, selected,
+                                        menu->action_callbacks.user);
+    return true;
+}
+
+bool
+nc_menu_toggle_position_selected(NcMenu *menu, int64 pos) {
+    bool selected;
+
+    selected = nc_menu_position_is_selected(menu, pos);
+    return nc_menu_set_position_selected(menu, pos, !selected);
+}
+
+bool
+nc_menu_current_is_selectable(NcMenu *menu) {
+    return nc_menu_position_is_selectable(menu, nc_menu_highlight(menu));
+}
+
+bool
+nc_menu_current_is_selected(NcMenu *menu) {
+    return nc_menu_position_is_selected(menu, nc_menu_highlight(menu));
+}
+
+bool
+nc_menu_set_current_selected(NcMenu *menu, bool selected) {
+    return nc_menu_set_position_selected(menu, nc_menu_highlight(menu),
+                                         selected);
+}
+
+bool
+nc_menu_toggle_current_selected(NcMenu *menu) {
+    return nc_menu_toggle_position_selected(menu, nc_menu_highlight(menu));
+}
+
+bool
+nc_menu_activate_position(NcMenu *menu, int64 pos) {
+    void *item;
+
+    if (menu->action_callbacks.activate == NULL) {
+        return false;
+    }
+    if ((pos < 0) || (pos >= nc_menu_item_count(menu))) {
+        return false;
+    }
+    if (!nc_menu_position_is_selectable(menu, pos)) {
+        return false;
+    }
+
+    item = nc_menu_active_item_at(menu, pos);
+    menu->action_callbacks.activate(menu, item, pos,
+                                    menu->action_callbacks.user);
+    return true;
+}
+
+bool
+nc_menu_activate_current(NcMenu *menu) {
+    return nc_menu_activate_position(menu, nc_menu_highlight(menu));
+}
+
 void *
 nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int64 pos) {
     void **items;
@@ -725,6 +846,14 @@ nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int64 pos) {
 void *
 nc_menu_active_item_at(NcMenu *menu, int64 pos) {
     return nc_menu_item_at(menu, menu->active_items, pos);
+}
+
+void *
+nc_menu_current_item(NcMenu *menu) {
+    if (nc_menu_empty(menu)) {
+        return NULL;
+    }
+    return nc_menu_active_item_at(menu, nc_menu_highlight(menu));
 }
 
 void

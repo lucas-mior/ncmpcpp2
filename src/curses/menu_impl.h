@@ -69,6 +69,7 @@ Menu<ItemT>::Menu(const Menu &rhs)
 	initItemStorage();
 	nc_menu_copy(&m_menu, const_cast<NcMenu *>(&rhs.m_menu));
 	syncDisplayCallbacks();
+	syncActionCallbacks();
 	// TODO: move filtered items
 	for (int64 i = 0;
 	     i < nc_menu_all_item_count(const_cast<NcMenu *>(&rhs.m_menu));
@@ -99,7 +100,9 @@ Menu<ItemT>::Menu(Menu &&rhs)
 	initItemStorage();
 	nc_menu_swap(&m_menu, &rhs.m_menu);
 	syncDisplayCallbacks();
+	syncActionCallbacks();
 	rhs.syncDisplayCallbacks();
+	rhs.syncActionCallbacks();
 }
 
 template <typename ItemT>
@@ -120,7 +123,9 @@ Menu<ItemT> &Menu<ItemT>::operator=(Menu rhs)
 	std::swap(m_selected_prefix, rhs.m_selected_prefix);
 	std::swap(m_selected_suffix, rhs.m_selected_suffix);
 	syncDisplayCallbacks();
+	syncActionCallbacks();
 	rhs.syncDisplayCallbacks();
+	rhs.syncActionCallbacks();
 	syncMenuSize();
 	return *this;
 }

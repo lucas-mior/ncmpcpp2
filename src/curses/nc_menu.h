@@ -38,12 +38,19 @@ typedef struct NcMenuDisplayCallbacks {
     void *user;
 } NcMenuDisplayCallbacks;
 
+typedef struct NcMenuActionCallbacks {
+    void (*activate)(NcMenu *menu, void *item, int64 pos, void *user);
+    void (*set_selected)(void *item, bool selected, void *user);
+    void *user;
+} NcMenuActionCallbacks;
+
 struct NcMenu {
     void **all_items;
     void **filtered_items;
     enum NcMenuItemSource active_items;
     NcMenuItemCallbacks item_callbacks;
     NcMenuDisplayCallbacks display_callbacks;
+    NcMenuActionCallbacks action_callbacks;
 
     NcBuffer highlight_prefix;
     NcBuffer highlight_suffix;
@@ -67,6 +74,8 @@ void nc_menu_swap(NcMenu *left, NcMenu *right);
 void nc_menu_set_item_callbacks(NcMenu *menu, NcMenuItemCallbacks callbacks);
 void nc_menu_set_display_callbacks(NcMenu *menu,
                                    NcMenuDisplayCallbacks callbacks);
+void nc_menu_set_action_callbacks(NcMenu *menu,
+                                  NcMenuActionCallbacks callbacks);
 void nc_menu_sync_item_count(NcMenu *menu);
 void nc_menu_set_item_count(NcMenu *menu, int64 item_count);
 int64 nc_menu_item_count(NcMenu *menu);
@@ -105,8 +114,20 @@ void nc_menu_apply_filter(NcMenu *menu);
 void nc_menu_show_all_items(NcMenu *menu);
 void nc_menu_show_filtered_items(NcMenu *menu);
 bool nc_menu_is_filtered(NcMenu *menu);
+bool nc_menu_empty(NcMenu *menu);
+bool nc_menu_position_is_selectable(NcMenu *menu, int64 pos);
+bool nc_menu_position_is_selected(NcMenu *menu, int64 pos);
+bool nc_menu_set_position_selected(NcMenu *menu, int64 pos, bool selected);
+bool nc_menu_toggle_position_selected(NcMenu *menu, int64 pos);
+bool nc_menu_current_is_selectable(NcMenu *menu);
+bool nc_menu_current_is_selected(NcMenu *menu);
+bool nc_menu_set_current_selected(NcMenu *menu, bool selected);
+bool nc_menu_toggle_current_selected(NcMenu *menu);
+bool nc_menu_activate_position(NcMenu *menu, int64 pos);
+bool nc_menu_activate_current(NcMenu *menu);
 void *nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int64 pos);
 void *nc_menu_active_item_at(NcMenu *menu, int64 pos);
+void *nc_menu_current_item(NcMenu *menu);
 void nc_menu_swap_item_slots(NcMenu *menu, enum NcMenuItemSource source,
                              int64 left, int64 right);
 
