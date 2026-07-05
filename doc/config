@@ -93,8 +93,7 @@
 #visualizer_sync_interval = 0
 #
 ##
-## Note: To enable spectrum frequency visualization you need to compile ncmpcpp
-## with fftw3 support.
+## Note: Spectrum frequency visualization uses fftw3.
 ##
 #
 ## Available values: spectrum, wave, wave_filled, ellipse.

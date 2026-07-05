@@ -46,28 +46,10 @@ jobs:
         run: |
           autoreconf -fiv
 
-      - name: Build ncmpcpp (light)
+      - name: Build ncmpcpp
         env:
-          CCACHE_DIR: ${{ github.workspace }}/.ccache/light
+          CCACHE_DIR: ${{ github.workspace }}/.ccache/build
         run: |
           CC='ccache gcc' CXX='ccache g++' ./configure \
-            --disable-outputs \
-            --disable-visualizer \
-            --disable-clock \
-            --without-fftw \
-            --without-taglib \
-            --with-lto=$(nproc)
-          make -j$(nproc) || exit 1
-
-      - name: Build ncmpcpp (full)
-        env:
-          CCACHE_DIR: ${{ github.workspace }}/.ccache/full
-        run: |
-          CC='ccache gcc' CXX='ccache g++' ./configure \
-            --enable-outputs \
-            --enable-visualizer \
-            --enable-clock \
-            --with-fftw \
-            --with-taglib \
             --with-lto=$(nproc)
           make -j$(nproc) || exit 1
