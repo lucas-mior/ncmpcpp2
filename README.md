@@ -62,16 +62,17 @@ The simplest way to compile this package is:
      * libmpdclient >= 2.8
      * taglib C API
 
-  3. Run `./build.sh` to compile the package. The binary is written to
+  3. Run `make` to compile the package. The binary is written to
      `build/ncmpcpp`.
 
-  4. Run `./build.sh check` to compile and run the C test programs.
+  4. Run `make check` to compile and run the C test programs.
 
-  5. Run `sudo ./build.sh install` to install the program, docs, and man page.
-     Use `PREFIX=/some/path ./build.sh install` for a non-default prefix.
+  5. Run `sudo make install` to install the program, docs, and man page.
+     Use `PREFIX=/some/path make install` for a non-default prefix.
 
-  6. Run `./build.sh clean` to remove build outputs.
+  6. Run `make clean` to remove build outputs.
 
 The autotools files are no longer used. If this tree still has generated
-artifacts from the old build system, run `./build.sh prune-autotools` once to
-remove the paths listed in `REMOVE_AUTOTOOLS_FILES.txt`.
+artifacts from the old build system or the old shell build script, run
+`make prune-autotools` once to remove the paths listed in
+`REMOVE_AUTOTOOLS_FILES.txt`.

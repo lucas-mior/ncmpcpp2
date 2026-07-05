@@ -1,10 +1,11 @@
 Build and installation
 ======================
 
-This fork builds with a simple ./build.sh script. Autotools is not used.
+This fork builds with a single Makefile. Autotools and build.sh are not used.
 
 Required tools and libraries:
 
+* GNU make
 * C23-capable C compiler
 * C++20-capable C++ compiler
 * pkg-config
@@ -17,25 +18,25 @@ Required tools and libraries:
 
 Build:
 
-    ./build.sh
+    make
 
 Run tests:
 
-    ./build.sh check
+    make check
 
 Install:
 
-    sudo ./build.sh install
+    sudo make install
 
 Install under another prefix:
 
-    PREFIX=/opt/ncmpcpp ./build.sh install
+    PREFIX=/opt/ncmpcpp make install
 
 Remove build outputs:
 
-    ./build.sh clean
+    make clean
 
-If the working tree still contains files from the old autotools build system,
-remove them with:
+If the working tree still contains files from the old autotools build system
+or the old shell build script, remove them with:
 
-    ./build.sh prune-autotools
+    make prune-autotools
