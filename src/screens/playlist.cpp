@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include <algorithm>
+#include <cassert>
 #include <chrono>
 #include <sstream>
 
@@ -46,6 +47,8 @@ Playlist *myPlaylist;
 
 namespace {
 
+NC::Scroll to_cpp_scroll(enum NcScroll where);
+enum NcScroll to_nc_scroll(NC::Scroll where);
 std::string songToString(const MPD::Song &s);
 bool playlistEntryMatcher(const Regex::Regex &rx, const MPD::Song &s);
 
@@ -75,75 +78,100 @@ Playlist::Playlist()
 			));
 			break;
 	}
+
+	NcScreenCallbacks callbacks = makeCallbacks();
+	nc_playlist_screen_init(&m_screen,
+	                        callbacks,
+	                        this,
+	                        w.nativeMenu(),
+	                        0,
+	                        COLS,
+	                        MainStartY,
+	                        MainHeight);
+
+	bool register_success = nc_screen_registry_register(
+		&Global::myScreenRegistry, nativeScreen());
+	assert(register_success);
+	(void)register_success;
+}
+
+Playlist::~Playlist()
+{
+	if (nc_screen_registry_is_registered(&Global::myScreenRegistry,
+	                                     nativeScreen()))
+	{
+		nc_screen_registry_unregister(&Global::myScreenRegistry,
+		                              nativeScreen());
+	}
+}
+
+void Playlist::refresh()
+{
+	nc_screen_refresh(nativeScreen());
+}
+
+void Playlist::refreshWindow()
+{
+	nc_screen_refresh_window(nativeScreen());
+}
+
+void Playlist::scroll(NC::Scroll where)
+{
+	nc_screen_scroll(nativeScreen(), to_nc_scroll(where));
 }
 
 void Playlist::switchTo()
 {
-	SwitchTo::execute(this);
-	m_scroll_begin = 0;
-	drawHeader();
+	nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
+	nc_screen_registry_switch_to(&Global::myScreenRegistry, nativeScreen());
 }
 
 void Playlist::resize()
 {
-	size_t x_offset, width;
-	getWindowResizeParams(x_offset, width);
-	w.resize(width, MainHeight);
-	w.moveTo(x_offset, MainStartY);
+	nc_screen_resize(nativeScreen());
+}
 
-	switch (Config.playlist_display_mode)
-	{
-		case DisplayMode::Columns:
-			if (Config.titles_visibility)
-				w.setTitle(Display::Columns(w.getWidth()));
-			break;
-		case DisplayMode::Classic:
-			w.setTitle("");
-			break;
-	}
-
-	hasToBeResized = 0;
+int Playlist::windowTimeout()
+{
+	return nc_screen_window_timeout(nativeScreen());
 }
 
 std::string Playlist::title()
 {
-	std::string result = "Playlist ";
-	if (Config.playlist_show_mpd_host)
-	{
-		result += "on ";
-		result += (Mpd.GetHostname());
-		result += " ";
-	}
-	if (m_reload_total_length || m_reload_remaining)
-		m_stats = getTotalLength();
-	result += Scroller(m_stats, m_scroll_begin, COLS-Utf8::width(result)-(Config.design == Design::Alternative ? 2 : Global::VolumeState.length()));
+	char *result = nc_screen_title(nativeScreen());
+	if (result == nullptr)
+		return "";
 	return result;
 }
 
 void Playlist::update()
 {
-	if (w.isHighlighted()
-	&&  Config.playlist_disable_highlight_delay > std::chrono::seconds(0)
-	&&  Global::Timer - m_timer > Config.playlist_disable_highlight_delay)
-	{
-		w.setHighlighting(false);
-		w.refresh();
-	}
+	nc_screen_update(nativeScreen());
 }
 
 void Playlist::mouseButtonPressed(MEVENT me)
 {
-	if (!w.empty() && w.hasCoords(me.x, me.y))
-	{
-		if (size_t(me.y) < w.size() && (me.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)))
-		{
-			w.Goto(me.y);
-			if (me.bstate & BUTTON3_PRESSED)
-				addItemToPlaylist(true);
-		}
-		else
-			Screen<WindowType>::mouseButtonPressed(me);
-	}
+	nc_screen_mouse_button_pressed(nativeScreen(), me);
+}
+
+bool Playlist::isLockable()
+{
+	return nc_screen_is_lockable(nativeScreen());
+}
+
+bool Playlist::isMergable()
+{
+	return nc_screen_is_mergable(nativeScreen());
+}
+
+NcScreen *Playlist::nativeScreen()
+{
+	return nc_playlist_screen_base(&m_screen);
+}
+
+const NcScreen *Playlist::nativeScreen() const
+{
+	return nc_playlist_screen_base(const_cast<NcPlaylistScreen *>(&m_screen));
 }
 
 /***********************************************************************/
@@ -334,7 +362,217 @@ void Playlist::unregisterSong(const MPD::Song &s)
 		--it->second;
 }
 
+NcScreenCallbacks Playlist::makeCallbacks()
+{
+	NcScreenCallbacks callbacks = {0};
+
+	callbacks.active_window = activeWindowCallback;
+	callbacks.refresh = refreshCallback;
+	callbacks.refresh_window = refreshWindowCallback;
+	callbacks.scroll = scrollCallback;
+	callbacks.switch_to = switchToCallback;
+	callbacks.resize = resizeCallback;
+	callbacks.window_timeout = windowTimeoutCallback;
+	callbacks.title = titleCallback;
+	callbacks.update = updateCallback;
+	callbacks.mouse_button_pressed = mouseButtonPressedCallback;
+	callbacks.is_lockable = isLockableCallback;
+	callbacks.is_mergable = isMergableCallback;
+	callbacks.destroy = destroyCallback;
+	return callbacks;
+}
+
+Playlist *Playlist::fromScreen(NcScreen *screen)
+{
+	return static_cast<Playlist *>(nc_screen_user(screen));
+}
+
+NcWindow *Playlist::activeWindowCallback(NcScreen *screen)
+{
+	return fromScreen(screen)->w.nativeWindow();
+}
+
+void Playlist::refreshCallback(NcScreen *screen)
+{
+	fromScreen(screen)->w.display();
+}
+
+void Playlist::refreshWindowCallback(NcScreen *screen)
+{
+	fromScreen(screen)->w.display();
+}
+
+void Playlist::scrollCallback(NcScreen *screen, enum NcScroll where)
+{
+	fromScreen(screen)->w.scroll(to_cpp_scroll(where));
+}
+
+void Playlist::switchToCallback(NcScreen *screen)
+{
+	Playlist *playlist = fromScreen(screen);
+
+	SwitchTo::execute(playlist);
+	playlist->m_scroll_begin = 0;
+	drawHeader();
+}
+
+void Playlist::resizeCallback(NcScreen *screen)
+{
+	Playlist *playlist = fromScreen(screen);
+	size_t x_offset;
+	size_t width;
+
+	playlist->getWindowResizeParams(x_offset, width);
+	nc_playlist_screen_set_geometry(&playlist->m_screen,
+	                                static_cast<int64>(x_offset),
+	                                static_cast<int64>(width),
+	                                MainStartY,
+	                                MainHeight);
+	playlist->w.resize(nc_playlist_screen_width(&playlist->m_screen),
+	                   nc_playlist_screen_height(&playlist->m_screen));
+	playlist->w.moveTo(nc_playlist_screen_start_x(&playlist->m_screen),
+	                   nc_playlist_screen_start_y(&playlist->m_screen));
+
+	switch (Config.playlist_display_mode)
+	{
+		case DisplayMode::Columns:
+			if (Config.titles_visibility)
+				playlist->w.setTitle(Display::Columns(playlist->w.getWidth()));
+			break;
+		case DisplayMode::Classic:
+			playlist->w.setTitle("");
+			break;
+	}
+
+	playlist->hasToBeResized = false;
+}
+
+int32 Playlist::windowTimeoutCallback(NcScreen *screen)
+{
+	(void)screen;
+	return defaultWindowTimeout;
+}
+
+char *Playlist::titleCallback(NcScreen *screen)
+{
+	Playlist *playlist = fromScreen(screen);
+
+	playlist->m_title_cache = "Playlist ";
+	if (Config.playlist_show_mpd_host)
+	{
+		playlist->m_title_cache += "on ";
+		playlist->m_title_cache += Mpd.GetHostname();
+		playlist->m_title_cache += " ";
+	}
+	if (playlist->m_reload_total_length || playlist->m_reload_remaining)
+		playlist->m_stats = playlist->getTotalLength();
+	playlist->m_title_cache += Scroller(
+		playlist->m_stats,
+		playlist->m_scroll_begin,
+		COLS - Utf8::width(playlist->m_title_cache)
+		     - (Config.design == Design::Alternative
+		        ? 2
+		        : Global::VolumeState.length()));
+	return const_cast<char *>(playlist->m_title_cache.c_str());
+}
+
+void Playlist::updateCallback(NcScreen *screen)
+{
+	Playlist *playlist = fromScreen(screen);
+
+	if (playlist->w.isHighlighted()
+	&&  Config.playlist_disable_highlight_delay > std::chrono::seconds(0)
+	&&  Global::Timer - playlist->m_timer > Config.playlist_disable_highlight_delay)
+	{
+		playlist->w.setHighlighting(false);
+		playlist->w.refresh();
+	}
+}
+
+void Playlist::mouseButtonPressedCallback(NcScreen *screen, MEVENT event)
+{
+	Playlist *playlist = fromScreen(screen);
+
+	if (!playlist->w.empty() && playlist->w.hasCoords(event.x, event.y))
+	{
+		if (static_cast<size_t>(event.y) < playlist->w.size()
+		&&  (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)))
+		{
+			playlist->w.Goto(event.y);
+			if (event.bstate & BUTTON3_PRESSED)
+				playlist->addItemToPlaylist(true);
+		}
+		else
+			genericMouseButtonPressed(playlist->w, event);
+	}
+}
+
+bool Playlist::isLockableCallback(NcScreen *screen)
+{
+	(void)screen;
+	return true;
+}
+
+bool Playlist::isMergableCallback(NcScreen *screen)
+{
+	(void)screen;
+	return true;
+}
+
+void Playlist::destroyCallback(NcScreen *screen)
+{
+	Playlist *playlist = fromScreen(screen);
+
+	if (nc_screen_registry_is_registered(&Global::myScreenRegistry,
+	                                     playlist->nativeScreen()))
+	{
+		nc_screen_registry_unregister(&Global::myScreenRegistry,
+		                              playlist->nativeScreen());
+	}
+	delete playlist;
+}
+
 namespace {
+
+NC::Scroll to_cpp_scroll(enum NcScroll where)
+{
+	switch (where)
+	{
+		case NC_SCROLL_UP:
+			return NC::Scroll::Up;
+		case NC_SCROLL_DOWN:
+			return NC::Scroll::Down;
+		case NC_SCROLL_PAGE_UP:
+			return NC::Scroll::PageUp;
+		case NC_SCROLL_PAGE_DOWN:
+			return NC::Scroll::PageDown;
+		case NC_SCROLL_HOME:
+			return NC::Scroll::Home;
+		case NC_SCROLL_END:
+			return NC::Scroll::End;
+	}
+	return NC::Scroll::Up;
+}
+
+enum NcScroll to_nc_scroll(NC::Scroll where)
+{
+	switch (where)
+	{
+		case NC::Scroll::Up:
+			return NC_SCROLL_UP;
+		case NC::Scroll::Down:
+			return NC_SCROLL_DOWN;
+		case NC::Scroll::PageUp:
+			return NC_SCROLL_PAGE_UP;
+		case NC::Scroll::PageDown:
+			return NC_SCROLL_PAGE_DOWN;
+		case NC::Scroll::Home:
+			return NC_SCROLL_HOME;
+		case NC::Scroll::End:
+			return NC_SCROLL_END;
+	}
+	return NC_SCROLL_UP;
+}
 
 std::string songToString(const MPD::Song &s)
 {
