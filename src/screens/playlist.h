@@ -26,6 +26,7 @@
 
 #include "interfaces.h"
 #include "regex_filter.h"
+#include "screens/nc_playlist.h"
 #include "screens/screen.h"
 #include "song.h"
 #include "song_list.h"
@@ -33,10 +34,15 @@
 struct Playlist: Screen<SongMenu>, Filterable, HasSongs, Searchable, Tabbable
 {
 	Playlist();
+	virtual ~Playlist();
 	
 	// Screen<SongMenu> implementation
+	virtual void refresh() override;
+	virtual void refreshWindow() override;
+	virtual void scroll(NC::Scroll where) override;
 	virtual void switchTo() override;
 	virtual void resize() override;
+	virtual int windowTimeout() override;
 	
 	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::Playlist; }
@@ -45,8 +51,10 @@ struct Playlist: Screen<SongMenu>, Filterable, HasSongs, Searchable, Tabbable
 	
 	virtual void mouseButtonPressed(MEVENT me) override;
 	
-	virtual bool isLockable() override { return true; }
-	virtual bool isMergable() override { return true; }
+	virtual bool isLockable() override;
+	virtual bool isMergable() override;
+	virtual NcScreen *nativeScreen() override;
+	virtual const NcScreen *nativeScreen() const override;
 	
 	// Searchable implementation
 	virtual bool allowsSearching() override;
@@ -83,9 +91,27 @@ struct Playlist: Screen<SongMenu>, Filterable, HasSongs, Searchable, Tabbable
 	void reloadRemaining() { m_reload_remaining = true; }
 	
 private:
+	NcScreenCallbacks makeCallbacks();
+
+	static Playlist *fromScreen(NcScreen *screen);
+	static NcWindow *activeWindowCallback(NcScreen *screen);
+	static void refreshCallback(NcScreen *screen);
+	static void refreshWindowCallback(NcScreen *screen);
+	static void scrollCallback(NcScreen *screen, enum NcScroll where);
+	static void switchToCallback(NcScreen *screen);
+	static void resizeCallback(NcScreen *screen);
+	static int32 windowTimeoutCallback(NcScreen *screen);
+	static char *titleCallback(NcScreen *screen);
+	static void updateCallback(NcScreen *screen);
+	static void mouseButtonPressedCallback(NcScreen *screen, MEVENT event);
+	static bool isLockableCallback(NcScreen *screen);
+	static bool isMergableCallback(NcScreen *screen);
+	static void destroyCallback(NcScreen *screen);
+
 	std::string getTotalLength();
 
 	std::string m_stats;
+	std::string m_title_cache;
 	
 	std::unordered_map<MPD::Song, int, MPD::Song::Hash> m_song_refs;
 	
@@ -97,6 +123,8 @@ private:
 
 	bool m_reload_total_length;
 	bool m_reload_remaining;
+
+	NcPlaylistScreen m_screen;
 
 	Regex::Filter<MPD::Song> m_search_predicate;
 };

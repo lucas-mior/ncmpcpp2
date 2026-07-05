@@ -557,6 +557,9 @@ struct Menu: Window, List
 
 	/// @return state of highlighting
 	bool isHighlighted() { return nc_menu_highlight_enabled(&m_menu); }
+
+	NcMenu *nativeMenu() { return &m_menu; }
+	const NcMenu *nativeMenu() const { return &m_menu; }
 	
 	/// Turns on/off highlighting
 	/// @param state state of hihglighting
@@ -734,6 +737,16 @@ private:
 			return callbacks;
 		}
 
+		NcMenuActionCallbacks actionCallbacks()
+		{
+			NcMenuActionCallbacks callbacks;
+
+			callbacks.activate = nullptr;
+			callbacks.set_selected = &Menu<ItemT>::setSelectedCallback;
+			callbacks.user = this;
+			return callbacks;
+		}
+
 		static void constructItem(void *dest, void *)
 		{
 			new (dest) Item();
@@ -781,15 +794,26 @@ private:
 			return static_cast<Item *>(item)->isInactive();
 		}
 
+		static void setSelectedCallback(void *item, bool selected, void *)
+		{
+			static_cast<Item *>(item)->setSelected(selected);
+		}
+
 		void initItemStorage()
 		{
 			nc_menu_set_item_callbacks(&m_menu, itemCallbacks());
 			syncDisplayCallbacks();
+			syncActionCallbacks();
 		}
 
 		void syncDisplayCallbacks()
 		{
 			nc_menu_set_display_callbacks(&m_menu, displayCallbacks());
+		}
+
+		void syncActionCallbacks()
+		{
+			nc_menu_set_action_callbacks(&m_menu, actionCallbacks());
 		}
 
 		void syncMenuPrefixes()
