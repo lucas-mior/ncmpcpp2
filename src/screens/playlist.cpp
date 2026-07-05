@@ -299,7 +299,7 @@ void Playlist::enableHighlighting()
 std::string Playlist::getTotalLength()
 {
 	std::ostringstream result;
-	
+
 	if (m_reload_total_length)
 	{
 		m_total_length = 0;
@@ -315,7 +315,7 @@ std::string Playlist::getTotalLength()
 			m_remaining_time += w[i].value().getDuration();
 		m_reload_remaining = false;
 	}
-	
+
 	result << '(' << w.size() << (w.size() == 1 ? " item" : " items");
 
 	if (w.isFiltered())
@@ -323,7 +323,7 @@ std::string Playlist::getTotalLength()
 		ScopedUnfilteredMenu<MPD::Song> sunfilter(ReapplyFilter::No, w);
 		result << " (out of " << w.size() << ")";
 	}
-	
+
 	if (m_total_length)
 	{
 		result << ", length: ";
@@ -419,7 +419,7 @@ void Playlist::switchToCallback(NcScreen *screen)
 {
 	Playlist *playlist = fromScreen(screen);
 
-	SwitchTo::execute(playlist);
+	SwitchTo::finishNativeSwitch(playlist);
 	playlist->m_scroll_begin = 0;
 	drawHeader();
 }

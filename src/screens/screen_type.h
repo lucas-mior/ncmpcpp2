@@ -23,6 +23,7 @@
 
 #include <string>
 #include "config.h"
+#include "screens/nc_screen.h"
 
 // forward declaration
 struct BaseScreen;
@@ -59,5 +60,6 @@ ScreenType stringtoStartupScreenType(const std::string &s);
 ScreenType stringToScreenType(const std::string &s);
 
 BaseScreen *toScreen(ScreenType st);
+NcScreen *toNativeScreen(ScreenType st);
 
 #endif // NCMPCPP_SCREEN_TYPE_H

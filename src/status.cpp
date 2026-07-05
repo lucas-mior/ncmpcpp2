@@ -240,7 +240,7 @@ void Status::trace(bool update_timer, bool update_window_timeout)
 			past = Timer;
 		}
 
-		applyToVisibleWindows(&BaseScreen::update);
+		applyToVisibleScreens(nc_screen_update);
 		Statusbar::tryRedraw();
 
 		Mpd.idle();
@@ -250,8 +250,8 @@ void Status::trace(bool update_timer, bool update_window_timeout)
 	{
 		// set appropriate window timeout
 		int nc_wtimeout = std::numeric_limits<int>::max();
-		applyToVisibleWindows([&nc_wtimeout](BaseScreen *s) {
-			nc_wtimeout = std::min(nc_wtimeout, s->windowTimeout());
+		applyToVisibleScreens([&nc_wtimeout](NcScreen *s) {
+			nc_wtimeout = std::min(nc_wtimeout, nc_screen_window_timeout(s));
 		});
 		wFooter->setTimeout(nc_wtimeout);
 	}
@@ -340,7 +340,7 @@ void Status::update(int event)
 		wFooter->refresh();
 
 	if (event & (MPD_IDLE_PLAYLIST | MPD_IDLE_DATABASE | MPD_IDLE_PLAYER))
-		applyToVisibleWindows(&BaseScreen::refreshWindow);
+		applyToVisibleScreens(nc_screen_refresh_window);
 }
 
 void Status::clear()

@@ -57,7 +57,7 @@ std::streambuf *cerr_buffer;
 std::streambuf *clog_buffer;
 
 volatile bool run_resize_screen = false;
-	
+
 void sighandler(int sig)
 {
 	if (sig == SIGWINCH)
@@ -84,13 +84,13 @@ void do_at_exit()
 int main(int argc, char **argv)
 {
 	using Global::myScreen;
-	
+
 	using Global::wHeader;
 	using Global::wFooter;
-	
+
 	using Global::VolumeState;
 	using Global::Timer;
-	
+
 	std::setlocale(LC_ALL, "");
 	std::locale::global(Charset::internalLocale());
 
@@ -99,43 +99,43 @@ int main(int argc, char **argv)
 
 	if (!configure(argc, argv))
 		return 0;
-	
+
 	// always execute these commands, even if ncmpcpp use exit function
 	atexit(do_at_exit);
-	
+
 	// redirect std::cerr output to the error.log file
 	errorlog.open((Config.ncmpcpp_directory + "error.log").c_str(), std::ios::app);
 	cerr_buffer = std::cerr.rdbuf();
 	std::cerr.rdbuf(errorlog.rdbuf());
-	
+
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGWINCH, sighandler);
 
 	Mpd.setNoidleCallback(Status::update);
 
 	NC::initScreen(Config.colors_enabled, Config.mouse_support);
-	
+
 	Actions::OriginalStatusbarVisibility = Config.statusbar_visibility;
 
 	if (Config.design == Design::Alternative)
 		Config.statusbar_visibility = 0;
-	
+
 	Actions::setWindowsDimensions();
 	Actions::initializeScreens();
-	
+
 	wHeader = new NC::Window(0, 0, COLS, Actions::HeaderHeight, "", Config.header_color, NC::Border());
 	if (Config.header_visibility || Config.design == Design::Alternative)
 		wHeader->display();
-	
+
 	wFooter = new NC::Window(0, Actions::FooterStartY, COLS, Actions::FooterHeight, "", Config.statusbar_color, NC::Border());
 	wFooter->setPromptHook(Statusbar::Helpers::mainHook);
-	
+
 	// initialize global timer
 	Timer = std::chrono::steady_clock::now();
 
 	// initialize global random number generator
 	Global::RNG.seed(std::random_device()());
-	
+
 	// initialize playlist
 	myPlaylist->switchTo();
 
@@ -168,7 +168,7 @@ int main(int argc, char **argv)
 	std::chrono::steady_clock::time_point connect_attempt;
 	auto update_environment = static_cast<Actions::UpdateEnvironment &>(
 		Actions::get(Actions::Type::UpdateEnvironment));
-	
+
 	while (!Actions::ExitMainLoop)
 	{
 		try

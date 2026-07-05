@@ -27,6 +27,7 @@
 #include "global.h"
 #include "helpers.h"
 #include "screens/server_info.h"
+#include "screens/screen_switcher.h"
 #include "statusbar.h"
 
 using Global::MainHeight;
@@ -220,13 +221,13 @@ void ServerInfo::renderServerInfo()
 	if (Global::Timer - m_timer < std::chrono::seconds(1))
 		return;
 	m_timer = Global::Timer;
-	
+
 	MPD::Statistics stats = Mpd.getStatistics();
 	if (stats.empty())
 		return;
-	
+
 	w.clear();
-	
+
 	w << NC::Format::Bold << "Version: " << NC::Format::NoBold
 	  << "0." << Mpd.Version() << ".*\n";
 	w << NC::Format::Bold << "Uptime: " << NC::Format::NoBold;
@@ -255,7 +256,7 @@ void ServerInfo::renderServerInfo()
 	w << NC::Format::Bold << "Tag Types:" << NC::Format::NoBold;
 	for (auto it = m_tag_types.begin(); it != m_tag_types.end(); ++it)
 		w << (it != m_tag_types.begin() ? ", " : " ") << *it;
-	
+
 	w.flush();
 	w.refresh();
 }
@@ -321,9 +322,7 @@ void ServerInfo::switchToCallback(NcScreen *screen)
 
 	if (myScreen != server_info)
 	{
-		if (dynamic_cast<Tabbable *>(myScreen))
-			server_info->setPreviousScreen(myScreen);
-		myScreen = server_info;
+		SwitchTo::finishNativeSwitch(server_info);
 		server_info->loadServerInfoLists();
 	}
 	else

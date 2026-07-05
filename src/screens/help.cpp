@@ -640,7 +640,7 @@ void Help::switchToCallback(NcScreen *screen)
 	Help *help = fromScreen(screen);
 
 	if (myScreen != help)
-		SwitchTo::execute(help);
+		SwitchTo::finishNativeSwitch(help);
 	drawHeader();
 }
 
