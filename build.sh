@@ -6,10 +6,22 @@ CC=clang
 CXX=clang++
 
 CFLAGS="-O0 -g3"
-CFLAGS="$CFLAGS -Wfatal-errors -Wno-pre-c23-compat -Wno-documentation"
+CFLAGS="$CFLAGS -Wall -Wextra"
+CFLAGS="$CFLAGS -Wfatal-errors"
 
 CXXFLAGS="-O0 -g3"
 CXXFLAGS="$CXXFLAGS -Wfatal-errors -Wno-pre-c23-compat -Wno-documentation"
+
+if [ "$CC" = "clang" ]; then
+    CFLAGS="$CFLAGS -Weverything"
+    CFLAGS="$CFLAGS -Wformat-non-literal"
+    CFLAGS="$CFLAGS -Wunsafe-buffer-usage"
+
+    CFLAGS="$CFLAGS -Wno-pre-c23-compat"
+    CFLAGS="$CFLAGS -Wno-documentation"
+fi
+
+CFLAGS="$CXXFLAGS"
 
 export CC CXX CFLAGS CXXFLAGS
 
