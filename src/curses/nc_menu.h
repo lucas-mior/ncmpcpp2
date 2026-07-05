@@ -95,6 +95,7 @@ void nc_menu_set_cyclic_scrolling(NcMenu *menu, bool state);
 void nc_menu_set_centered_cursor(NcMenu *menu, bool state);
 bool nc_menu_goto(NcMenu *menu, int64 y,
                   NcMenuHighlightableFunc is_highlightable, void *user);
+bool nc_menu_goto_selectable(NcMenu *menu, int64 y);
 void nc_menu_prepare_refresh(NcMenu *menu, int64 height,
                              NcMenuHighlightableFunc is_highlightable,
                              void *user);
@@ -102,6 +103,8 @@ void nc_menu_refresh(NcMenu *menu, NcWindow *window, int64 width,
                      int64 height);
 void nc_menu_scroll(NcMenu *menu, int64 height, enum NcScroll where,
                     NcMenuHighlightableFunc is_highlightable, void *user);
+void nc_menu_scroll_selectable(NcMenu *menu, int64 height,
+                               enum NcScroll where);
 void nc_menu_reset(NcMenu *menu);
 void nc_menu_highlight_position(NcMenu *menu, int64 pos, int64 height);
 void nc_menu_resize_all_items(NcMenu *menu, int64 new_size);
