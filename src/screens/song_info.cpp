@@ -25,6 +25,7 @@
 #include "title.h"
 #include "screens/screen_switcher.h"
 
+#include <cassert>
 #include <string>
 
 #include "c/ncm_type_conversions.h"
@@ -40,6 +41,46 @@ using Global::MainStartY;
 SongInfo *mySongInfo;
 
 namespace {
+
+NC::Scroll to_cpp_scroll(enum NcScroll where)
+{
+	switch (where)
+	{
+		case NC_SCROLL_UP:
+			return NC::Scroll::Up;
+		case NC_SCROLL_DOWN:
+			return NC::Scroll::Down;
+		case NC_SCROLL_PAGE_UP:
+			return NC::Scroll::PageUp;
+		case NC_SCROLL_PAGE_DOWN:
+			return NC::Scroll::PageDown;
+		case NC_SCROLL_HOME:
+			return NC::Scroll::Home;
+		case NC_SCROLL_END:
+			return NC::Scroll::End;
+	}
+	return NC::Scroll::Up;
+}
+
+enum NcScroll to_nc_scroll(NC::Scroll where)
+{
+	switch (where)
+	{
+		case NC::Scroll::Up:
+			return NC_SCROLL_UP;
+		case NC::Scroll::Down:
+			return NC_SCROLL_DOWN;
+		case NC::Scroll::PageUp:
+			return NC_SCROLL_PAGE_UP;
+		case NC::Scroll::PageDown:
+			return NC_SCROLL_PAGE_DOWN;
+		case NC::Scroll::Home:
+			return NC_SCROLL_HOME;
+		case NC::Scroll::End:
+			return NC_SCROLL_END;
+	}
+	return NC_SCROLL_UP;
+}
 
 std::string channelsString(int channels)
 {
@@ -72,7 +113,7 @@ const SongInfo::Metadata SongInfo::Tags[] =
 SongInfo::SongInfo()
 : w(0, MainStartY, COLS, MainHeight, "", Config.main_color, NC::Border())
 {
-	NcScreenCallbacks callbacks = {0};
+	NcScreenCallbacks callbacks = makeCallbacks();
 
 	nc_song_info_screen_init(&m_screen,
 	                         callbacks,
@@ -81,6 +122,21 @@ SongInfo::SongInfo()
 	                         COLS,
 	                         MainStartY,
 	                         MainHeight);
+
+	bool register_success = nc_screen_registry_register(
+		&Global::myScreenRegistry, nativeScreen());
+	assert(register_success);
+	(void)register_success;
+}
+
+SongInfo::~SongInfo()
+{
+	if (nc_screen_registry_is_registered(&Global::myScreenRegistry,
+	                                     nativeScreen()))
+	{
+		nc_screen_registry_unregister(&Global::myScreenRegistry,
+		                              nativeScreen());
+	}
 }
 
 bool SongInfo::isActiveWindow(const NC::Window &w_) const
@@ -100,73 +156,213 @@ const NC::Window *SongInfo::activeWindow() const
 
 void SongInfo::refresh()
 {
-	w.display();
+	nc_screen_refresh(nativeScreen());
 }
 
 void SongInfo::refreshWindow()
 {
-	w.display();
+	nc_screen_refresh_window(nativeScreen());
 }
 
 void SongInfo::scroll(NC::Scroll where)
 {
-	w.scroll(where);
+	nc_screen_scroll(nativeScreen(), to_nc_scroll(where));
 }
 
 void SongInfo::resize()
 {
-	size_t x_offset;
-	size_t width;
-
-	getWindowResizeParams(x_offset, width);
-	nc_song_info_screen_set_geometry(&m_screen,
-	                                 static_cast<int64>(x_offset),
-	                                 static_cast<int64>(width),
-	                                 MainStartY,
-	                                 MainHeight);
-	w.resize(nc_song_info_screen_width(&m_screen),
-	         nc_song_info_screen_height(&m_screen));
-	w.moveTo(nc_song_info_screen_start_x(&m_screen),
-	         nc_song_info_screen_start_y(&m_screen));
-	nc_screen_set_has_to_be_resized(nc_song_info_screen_base(&m_screen), false);
-	hasToBeResized = false;
+	nc_screen_resize(nativeScreen());
 }
 
 int SongInfo::windowTimeout()
 {
-	return defaultWindowTimeout;
+	return nc_screen_window_timeout(nativeScreen());
 }
 
 std::string SongInfo::title()
 {
-	return "Song info";
+	char *result = nc_screen_title(nativeScreen());
+	if (result == nullptr)
+		return "";
+	return result;
 }
 
 void SongInfo::switchTo()
 {
 	using Global::myScreen;
-	if (myScreen != this)
+
+	if ((myScreen != this) && !currentSong(myScreen))
+		return;
+	if (myScreen == this)
+	{
+		nc_screen_switch_to(nativeScreen());
+		return;
+	}
+	nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
+	nc_screen_registry_switch_to(&Global::myScreenRegistry, nativeScreen());
+}
+
+void SongInfo::mouseButtonPressed(MEVENT me)
+{
+	nc_screen_mouse_button_pressed(nativeScreen(), me);
+}
+
+void SongInfo::update()
+{
+	nc_screen_update(nativeScreen());
+}
+
+bool SongInfo::isLockable()
+{
+	return nc_screen_is_lockable(nativeScreen());
+}
+
+bool SongInfo::isMergable()
+{
+	return nc_screen_is_mergable(nativeScreen());
+}
+
+NcScreen *SongInfo::nativeScreen()
+{
+	return nc_song_info_screen_base(&m_screen);
+}
+
+const NcScreen *SongInfo::nativeScreen() const
+{
+	return nc_song_info_screen_base(const_cast<NcSongInfoScreen *>(&m_screen));
+}
+
+NcScreenCallbacks SongInfo::makeCallbacks()
+{
+	NcScreenCallbacks callbacks = {0};
+
+	callbacks.active_window = activeWindowCallback;
+	callbacks.refresh = refreshCallback;
+	callbacks.refresh_window = refreshWindowCallback;
+	callbacks.scroll = scrollCallback;
+	callbacks.switch_to = switchToCallback;
+	callbacks.resize = resizeCallback;
+	callbacks.window_timeout = windowTimeoutCallback;
+	callbacks.title = titleCallback;
+	callbacks.update = updateCallback;
+	callbacks.mouse_button_pressed = mouseButtonPressedCallback;
+	callbacks.is_lockable = isLockableCallback;
+	callbacks.is_mergable = isMergableCallback;
+	callbacks.destroy = destroyCallback;
+	return callbacks;
+}
+
+SongInfo *SongInfo::fromScreen(NcScreen *screen)
+{
+	return static_cast<SongInfo *>(nc_screen_user(screen));
+}
+
+NcWindow *SongInfo::activeWindowCallback(NcScreen *screen)
+{
+	return fromScreen(screen)->w.nativeWindow();
+}
+
+void SongInfo::refreshCallback(NcScreen *screen)
+{
+	fromScreen(screen)->w.display();
+}
+
+void SongInfo::refreshWindowCallback(NcScreen *screen)
+{
+	fromScreen(screen)->w.display();
+}
+
+void SongInfo::scrollCallback(NcScreen *screen, enum NcScroll where)
+{
+	fromScreen(screen)->w.scroll(to_cpp_scroll(where));
+}
+
+void SongInfo::switchToCallback(NcScreen *screen)
+{
+	SongInfo *song_info = fromScreen(screen);
+	using Global::myScreen;
+
+	if (myScreen != song_info)
 	{
 		auto s = currentSong(myScreen);
 		if (!s)
 			return;
-		SwitchTo::execute(this);
-		w.clear();
-		w.reset();
-		PrepareSong(*s);
-		w.flush();
+		SwitchTo::execute(song_info);
+		song_info->w.clear();
+		song_info->w.reset();
+		song_info->PrepareSong(*s);
+		song_info->w.flush();
 		// redraw header after we're done with the file, since reading it from disk
 		// takes a bit of time and having header updated before content of a window
 		// is displayed doesn't look nice.
 		drawHeader();
 	}
 	else
-		switchToPreviousScreen();
+		song_info->switchToPreviousScreen();
 }
 
-void SongInfo::mouseButtonPressed(MEVENT me)
+void SongInfo::resizeCallback(NcScreen *screen)
 {
-	scrollpadMouseButtonPressed(w, me);
+	SongInfo *song_info = fromScreen(screen);
+	size_t x_offset;
+	size_t width;
+
+	song_info->getWindowResizeParams(x_offset, width);
+	nc_song_info_screen_set_geometry(&song_info->m_screen,
+	                                 static_cast<int64>(x_offset),
+	                                 static_cast<int64>(width),
+	                                 MainStartY,
+	                                 MainHeight);
+	song_info->w.resize(nc_song_info_screen_width(&song_info->m_screen),
+	                    nc_song_info_screen_height(&song_info->m_screen));
+	song_info->w.moveTo(nc_song_info_screen_start_x(&song_info->m_screen),
+	                    nc_song_info_screen_start_y(&song_info->m_screen));
+	song_info->hasToBeResized = false;
+}
+
+int32 SongInfo::windowTimeoutCallback(NcScreen *screen)
+{
+	(void)screen;
+	return defaultWindowTimeout;
+}
+
+char *SongInfo::titleCallback(NcScreen *screen)
+{
+	static char title[] = "Song info";
+
+	(void)screen;
+	return title;
+}
+
+void SongInfo::updateCallback(NcScreen *screen)
+{
+	(void)screen;
+}
+
+void SongInfo::mouseButtonPressedCallback(NcScreen *screen, MEVENT event)
+{
+	scrollpadMouseButtonPressed(fromScreen(screen)->w, event);
+}
+
+bool SongInfo::isLockableCallback(NcScreen *screen)
+{
+	(void)screen;
+	return false;
+}
+
+bool SongInfo::isMergableCallback(NcScreen *screen)
+{
+	(void)screen;
+	return true;
+}
+
+void SongInfo::destroyCallback(NcScreen *screen)
+{
+	SongInfo *song_info = fromScreen(screen);
+
+	if (mySongInfo == song_info)
+		mySongInfo = nullptr;
+	delete song_info;
 }
 
 void SongInfo::PrepareSong(const MPD::Song &s)

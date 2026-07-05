@@ -38,6 +38,7 @@ struct SongInfo: BaseScreen, Tabbable
 	};
 	
 	SongInfo();
+	virtual ~SongInfo();
 	
 	// BaseScreen implementation
 	virtual bool isActiveWindow(const NC::Window &w_) const override;
@@ -51,16 +52,34 @@ struct SongInfo: BaseScreen, Tabbable
 	virtual int windowTimeout() override;
 	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::SongInfo; }
-	virtual void update() override { }
+	virtual void update() override;
 	virtual void mouseButtonPressed(MEVENT me) override;
-	virtual bool isLockable() override { return false; }
-	virtual bool isMergable() override { return true; }
+	virtual bool isLockable() override;
+	virtual bool isMergable() override;
+	virtual NcScreen *nativeScreen() override;
+	virtual const NcScreen *nativeScreen() const override;
 	
 	// private members
 	static const Metadata Tags[];
 	
 private:
 	void PrepareSong(const MPD::Song &s);
+	NcScreenCallbacks makeCallbacks();
+	
+	static SongInfo *fromScreen(NcScreen *screen);
+	static NcWindow *activeWindowCallback(NcScreen *screen);
+	static void refreshCallback(NcScreen *screen);
+	static void refreshWindowCallback(NcScreen *screen);
+	static void scrollCallback(NcScreen *screen, enum NcScroll where);
+	static void switchToCallback(NcScreen *screen);
+	static void resizeCallback(NcScreen *screen);
+	static int32 windowTimeoutCallback(NcScreen *screen);
+	static char *titleCallback(NcScreen *screen);
+	static void updateCallback(NcScreen *screen);
+	static void mouseButtonPressedCallback(NcScreen *screen, MEVENT event);
+	static bool isLockableCallback(NcScreen *screen);
+	static bool isMergableCallback(NcScreen *screen);
+	static void destroyCallback(NcScreen *screen);
 
 	NC::Scrollpad w;
 	NcSongInfoScreen m_screen;
