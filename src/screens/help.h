@@ -29,6 +29,7 @@
 struct Help: BaseScreen, Tabbable
 {
 	Help();
+	virtual ~Help();
 	
 	// BaseScreen implementation
 	virtual bool isActiveWindow(const NC::Window &w_) const override;
@@ -42,12 +43,31 @@ struct Help: BaseScreen, Tabbable
 	virtual int windowTimeout() override;
 	virtual std::string title() override;
 	virtual ScreenType type() override { return ScreenType::Help; }
-	virtual void update() override { }
+	virtual void update() override;
 	virtual void mouseButtonPressed(MEVENT me) override;
-	virtual bool isLockable() override { return true; }
-	virtual bool isMergable() override { return true; }
+	virtual bool isLockable() override;
+	virtual bool isMergable() override;
+	virtual NcScreen *nativeScreen() override;
+	virtual const NcScreen *nativeScreen() const override;
 
 private:
+	NcScreenCallbacks makeCallbacks();
+
+	static Help *fromScreen(NcScreen *screen);
+	static NcWindow *activeWindowCallback(NcScreen *screen);
+	static void refreshCallback(NcScreen *screen);
+	static void refreshWindowCallback(NcScreen *screen);
+	static void scrollCallback(NcScreen *screen, enum NcScroll where);
+	static void switchToCallback(NcScreen *screen);
+	static void resizeCallback(NcScreen *screen);
+	static int32 windowTimeoutCallback(NcScreen *screen);
+	static char *titleCallback(NcScreen *screen);
+	static void updateCallback(NcScreen *screen);
+	static void mouseButtonPressedCallback(NcScreen *screen, MEVENT event);
+	static bool isLockableCallback(NcScreen *screen);
+	static bool isMergableCallback(NcScreen *screen);
+	static void destroyCallback(NcScreen *screen);
+
 	NC::Scrollpad w;
 	NcHelpScreen m_screen;
 };
