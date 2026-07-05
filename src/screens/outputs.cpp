@@ -280,7 +280,7 @@ void Outputs::switchToCallback(NcScreen *screen)
 	Outputs *outputs = fromScreen(screen);
 
 	if (myScreen != outputs)
-		SwitchTo::execute(outputs);
+		SwitchTo::finishNativeSwitch(outputs);
 	drawHeader();
 }
 

@@ -192,3 +192,12 @@ BaseScreen *toScreen(ScreenType st)
 			return nullptr;
 	}
 }
+
+NcScreen *toNativeScreen(ScreenType st)
+{
+	BaseScreen *screen = toScreen(st);
+
+	if (screen == nullptr)
+		return nullptr;
+	return screen->nativeScreen();
+}

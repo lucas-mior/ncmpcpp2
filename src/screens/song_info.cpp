@@ -287,7 +287,7 @@ void SongInfo::switchToCallback(NcScreen *screen)
 		auto s = currentSong(myScreen);
 		if (!s)
 			return;
-		SwitchTo::execute(song_info);
+		SwitchTo::finishNativeSwitch(song_info);
 		song_info->w.clear();
 		song_info->w.reset();
 		song_info->PrepareSong(*s);
@@ -439,7 +439,7 @@ void SongInfo::PrepareSong(const MPD::Song &s)
 	}
 #	endif // HAVE_TAGLIB_H
 	w << NC::Color::Default;
-	
+
 	for (const Metadata *m = Tags; m->Name; ++m)
 	{
 		w << NC::Format::Bold << "\n" << m->Name << ":" << NC::Format::NoBold << " ";

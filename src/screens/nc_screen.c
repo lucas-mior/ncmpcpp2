@@ -92,6 +92,12 @@ nc_screen_type(NcScreen *screen) {
 }
 
 void
+nc_screen_set_type(NcScreen *screen, int32 type) {
+    screen->type = type;
+    return;
+}
+
+void
 nc_screen_update(NcScreen *screen) {
     if (screen->callbacks.update) {
         screen->callbacks.update(screen);
@@ -303,16 +309,24 @@ nc_screen_registry_lock_current(NcScreenRegistry *registry) {
 
 void
 nc_screen_registry_unlock(NcScreenRegistry *registry) {
+    bool current_changed;
+
     if (registry->locked_screen == NULL) {
         return;
     }
+
+    current_changed = false;
     if ((registry->inactive_screen != NULL)
         && (registry->inactive_screen != registry->locked_screen)) {
         registry->previous_screen = registry->current_screen;
         registry->current_screen = registry->inactive_screen;
+        current_changed = true;
     }
     registry->locked_screen = NULL;
     registry->inactive_screen = NULL;
+    if (current_changed && (registry->current_screen != NULL)) {
+        nc_screen_switch_to(registry->current_screen);
+    }
     return;
 }
 
