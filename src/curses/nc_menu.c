@@ -457,6 +457,11 @@ nc_menu_goto(NcMenu *menu, int64 y,
     return true;
 }
 
+bool
+nc_menu_goto_selectable(NcMenu *menu, int64 y) {
+    return nc_menu_goto(menu, y, menu_is_position_highlightable, menu);
+}
+
 void
 nc_menu_prepare_refresh(NcMenu *menu, int64 height,
                         NcMenuHighlightableFunc is_highlightable,
@@ -573,6 +578,14 @@ nc_menu_scroll(NcMenu *menu, int64 height, enum NcScroll where,
                NcMenuHighlightableFunc is_highlightable, void *user) {
     nc_menu_sync_item_count(menu);
     scroll_internal(menu, height, where, is_highlightable, user, 0);
+    return;
+}
+
+void
+nc_menu_scroll_selectable(NcMenu *menu, int64 height,
+                          enum NcScroll where) {
+    nc_menu_scroll(menu, height, where, menu_is_position_highlightable,
+                   menu);
     return;
 }
 

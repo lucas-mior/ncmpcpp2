@@ -47,7 +47,6 @@ Playlist *myPlaylist;
 
 namespace {
 
-NC::Scroll to_cpp_scroll(enum NcScroll where);
 enum NcScroll to_nc_scroll(NC::Scroll where);
 std::string songToString(const MPD::Song &s);
 bool playlistEntryMatcher(const Regex::Regex &rx, const MPD::Song &s);
@@ -78,6 +77,10 @@ Playlist::Playlist()
 			));
 			break;
 	}
+	w.setItemActivator([](NC::Menu<MPD::Song> &,
+	                         NC::Menu<MPD::Song>::Item &item) {
+		Mpd.PlayID(item.value().getID());
+	});
 
 	NcScreenCallbacks callbacks = makeCallbacks();
 	nc_playlist_screen_init(&m_screen,
@@ -88,6 +91,9 @@ Playlist::Playlist()
 	                        COLS,
 	                        MainStartY,
 	                        MainHeight);
+	nc_playlist_screen_set_mouse_config(&m_screen,
+	                                    Config.lines_scrolled,
+	                                    Config.mouse_list_scroll_whole_page);
 
 	bool register_success = nc_screen_registry_register(
 		&Global::myScreenRegistry, nativeScreen());
@@ -242,7 +248,7 @@ bool Playlist::itemAvailable()
 bool Playlist::addItemToPlaylist(bool play)
 {
 	if (play)
-		Mpd.PlayID(w.currentV()->getID());
+		return nc_playlist_screen_activate_current(&m_screen);
 	return true;
 }
 
@@ -404,7 +410,9 @@ void Playlist::refreshWindowCallback(NcScreen *screen)
 
 void Playlist::scrollCallback(NcScreen *screen, enum NcScroll where)
 {
-	fromScreen(screen)->w.scroll(to_cpp_scroll(where));
+	Playlist *playlist = fromScreen(screen);
+
+	nc_playlist_screen_scroll(&playlist->m_screen, where);
 }
 
 void Playlist::switchToCallback(NcScreen *screen)
@@ -444,6 +452,9 @@ void Playlist::resizeCallback(NcScreen *screen)
 			break;
 	}
 
+	nc_playlist_screen_set_mouse_config(&playlist->m_screen,
+	                                    Config.lines_scrolled,
+	                                    Config.mouse_list_scroll_whole_page);
 	playlist->hasToBeResized = false;
 }
 
@@ -493,18 +504,7 @@ void Playlist::mouseButtonPressedCallback(NcScreen *screen, MEVENT event)
 {
 	Playlist *playlist = fromScreen(screen);
 
-	if (!playlist->w.empty() && playlist->w.hasCoords(event.x, event.y))
-	{
-		if (static_cast<size_t>(event.y) < playlist->w.size()
-		&&  (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)))
-		{
-			playlist->w.Goto(event.y);
-			if (event.bstate & BUTTON3_PRESSED)
-				playlist->addItemToPlaylist(true);
-		}
-		else
-			genericMouseButtonPressed(playlist->w, event);
-	}
+	nc_playlist_screen_mouse_button_pressed(&playlist->m_screen, event);
 }
 
 bool Playlist::isLockableCallback(NcScreen *screen)
@@ -534,25 +534,6 @@ void Playlist::destroyCallback(NcScreen *screen)
 
 namespace {
 
-NC::Scroll to_cpp_scroll(enum NcScroll where)
-{
-	switch (where)
-	{
-		case NC_SCROLL_UP:
-			return NC::Scroll::Up;
-		case NC_SCROLL_DOWN:
-			return NC::Scroll::Down;
-		case NC_SCROLL_PAGE_UP:
-			return NC::Scroll::PageUp;
-		case NC_SCROLL_PAGE_DOWN:
-			return NC::Scroll::PageDown;
-		case NC_SCROLL_HOME:
-			return NC::Scroll::Home;
-		case NC_SCROLL_END:
-			return NC::Scroll::End;
-	}
-	return NC::Scroll::Up;
-}
 
 enum NcScroll to_nc_scroll(NC::Scroll where)
 {

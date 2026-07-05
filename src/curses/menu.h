@@ -429,6 +429,7 @@ struct Menu: Window, List
 	/// If not set by setItemDisplayer(), menu won't display anything.
 	/// @see setItemDisplayer()
 	typedef std::function<void(Menu<ItemT> &)> ItemDisplayer;
+	typedef std::function<void(Menu<ItemT> &, Item &)> ItemActivator;
 
 	typedef std::function<bool(const Item &)> FilterPredicate;
 
@@ -446,6 +447,10 @@ struct Menu: Window, List
 	/// @param ptr function pointer that matches the ItemDisplayer prototype
 	template <typename ItemDisplayerT>
 	void setItemDisplayer(ItemDisplayerT &&displayer);
+
+	/// Sets helper function that is responsible for item activation.
+	template <typename ItemActivatorT>
+	void setItemActivator(ItemActivatorT &&activator);
 	
 	/// Resizes the list to given size (adequate to std::vector::resize())
 	/// @param size requested size
@@ -741,7 +746,9 @@ private:
 		{
 			NcMenuActionCallbacks callbacks;
 
-			callbacks.activate = nullptr;
+			callbacks.activate = m_item_activator
+			                   ? &Menu<ItemT>::activateItemCallback
+			                   : nullptr;
 			callbacks.set_selected = &Menu<ItemT>::setSelectedCallback;
 			callbacks.user = this;
 			return callbacks;
@@ -792,6 +799,14 @@ private:
 		static bool isInactiveCallback(void *item, void *)
 		{
 			return static_cast<Item *>(item)->isInactive();
+		}
+
+		static void activateItemCallback(NcMenu *, void *item, int64,
+		                                 void *user)
+		{
+			auto menu = static_cast<Menu<ItemT> *>(user);
+			if (menu->m_item_activator)
+				menu->m_item_activator(*menu, *static_cast<Item *>(item));
 		}
 
 		static void setSelectedCallback(void *item, bool selected, void *)
@@ -875,6 +890,7 @@ private:
 	}
 
 	ItemDisplayer m_item_displayer;
+	ItemActivator m_item_activator;
 	FilterPredicate m_filter_predicate;
 
 	NcMenu m_menu;
