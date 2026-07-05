@@ -53,6 +53,46 @@ Lyrics *myLyrics;
 
 namespace {
 
+NC::Scroll to_cpp_scroll(enum NcScroll where)
+{
+	switch (where)
+	{
+		case NC_SCROLL_UP:
+			return NC::Scroll::Up;
+		case NC_SCROLL_DOWN:
+			return NC::Scroll::Down;
+		case NC_SCROLL_PAGE_UP:
+			return NC::Scroll::PageUp;
+		case NC_SCROLL_PAGE_DOWN:
+			return NC::Scroll::PageDown;
+		case NC_SCROLL_HOME:
+			return NC::Scroll::Home;
+		case NC_SCROLL_END:
+			return NC::Scroll::End;
+	}
+	return NC::Scroll::Up;
+}
+
+enum NcScroll to_nc_scroll(NC::Scroll where)
+{
+	switch (where)
+	{
+		case NC::Scroll::Up:
+			return NC_SCROLL_UP;
+		case NC::Scroll::Down:
+			return NC_SCROLL_DOWN;
+		case NC::Scroll::PageUp:
+			return NC_SCROLL_PAGE_UP;
+		case NC::Scroll::PageDown:
+			return NC_SCROLL_PAGE_DOWN;
+		case NC::Scroll::Home:
+			return NC_SCROLL_HOME;
+		case NC::Scroll::End:
+			return NC_SCROLL_END;
+	}
+	return NC_SCROLL_UP;
+}
+
 std::string removeExtension(std::string filename)
 {
 	size_t dot = filename.rfind('.');
@@ -194,7 +234,7 @@ Lyrics::Lyrics()
 	: w(0, MainStartY, COLS, MainHeight, "", Config.main_color, NC::Border())
 	, m_fetcher(nullptr)
 {
-	NcScreenCallbacks callbacks = {0};
+	NcScreenCallbacks callbacks = makeCallbacks();
 
 	nc_lyrics_screen_init(&m_screen,
 	                      callbacks,
@@ -203,6 +243,22 @@ Lyrics::Lyrics()
 	                      COLS,
 	                      MainStartY,
 	                      MainHeight);
+
+	bool register_success = nc_screen_registry_register(
+		&Global::myScreenRegistry, nativeScreen());
+	assert(register_success);
+	(void)register_success;
+}
+
+Lyrics::~Lyrics()
+{
+	stopDownload();
+	if (nc_screen_registry_is_registered(&Global::myScreenRegistry,
+	                                     nativeScreen()))
+	{
+		nc_screen_registry_unregister(&Global::myScreenRegistry,
+		                              nativeScreen());
+	}
 }
 
 bool Lyrics::isActiveWindow(const NC::Window &w_) const
@@ -222,117 +278,247 @@ const NC::Window *Lyrics::activeWindow() const
 
 void Lyrics::refresh()
 {
-	w.display();
+	nc_screen_refresh(nativeScreen());
 }
 
 void Lyrics::refreshWindow()
 {
-	w.display();
+	nc_screen_refresh_window(nativeScreen());
 }
 
 void Lyrics::scroll(NC::Scroll where)
 {
-	w.scroll(where);
+	nc_screen_scroll(nativeScreen(), to_nc_scroll(where));
 }
 
 void Lyrics::resize()
 {
-	size_t x_offset;
-	size_t width;
-
-	getWindowResizeParams(x_offset, width);
-	nc_lyrics_screen_set_geometry(&m_screen,
-	                              static_cast<int64>(x_offset),
-	                              static_cast<int64>(width),
-	                              MainStartY,
-	                              MainHeight);
-	w.resize(nc_lyrics_screen_width(&m_screen),
-	         nc_lyrics_screen_height(&m_screen));
-	w.moveTo(nc_lyrics_screen_start_x(&m_screen),
-	         nc_lyrics_screen_start_y(&m_screen));
-	nc_screen_set_has_to_be_resized(nc_lyrics_screen_base(&m_screen), false);
-	hasToBeResized = false;
+	nc_screen_resize(nativeScreen());
 }
 
 int Lyrics::windowTimeout()
 {
-	return defaultWindowTimeout;
+	return nc_screen_window_timeout(nativeScreen());
 }
 
 void Lyrics::mouseButtonPressed(MEVENT me)
 {
-	scrollpadMouseButtonPressed(w, me);
+	nc_screen_mouse_button_pressed(nativeScreen(), me);
 }
 
 void Lyrics::update()
 {
-	if (m_worker.valid())
-	{
-		auto buffer = m_shared_buffer->acquire();
-		if (!buffer->empty())
-		{
-			w << *buffer;
-			buffer->clear();
-			nc_lyrics_screen_request_refresh(&m_screen);
-		}
-
-		if (m_worker.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-		{
-			auto lyrics = m_worker.get();
-			if (lyrics.first)
-			{
-				w.clear();
-				w << Charset::utf8ToLocale(lyrics.second);
-				std::string filename = lyricsFilename(m_song);
-				if (!saveLyrics(filename, lyrics.second))
-					Statusbar::printf("Couldn't save lyrics as \"%1%\": %2%",
-					                  filename, strerror(errno));
-			}
-			else
-				w << "\nLyrics were not found.\n";
-			clearWorker();
-			nc_lyrics_screen_request_refresh(&m_screen);
-		}
-	}
-
-	if (nc_lyrics_screen_take_refresh_request(&m_screen))
-	{
-		w.flush();
-		w.refresh();
-	}
+	nc_screen_update(nativeScreen());
 }
 
 void Lyrics::switchTo()
 {
-	using Global::myScreen;
-	if (myScreen != this)
-	{
-		SwitchTo::execute(this);
-		nc_lyrics_screen_reset_scroll_begin(&m_screen);
-		drawHeader();
-	}
-	else
-		switchToPreviousScreen();
+	nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
+	nc_screen_registry_switch_to(&Global::myScreenRegistry, nativeScreen());
 }
 
 std::string Lyrics::title()
 {
-	std::string result = "Lyrics";
-	if (!m_song.empty())
+	char *result = nc_screen_title(nativeScreen());
+	if (result == nullptr)
+		return "";
+	return result;
+}
+
+bool Lyrics::isLockable()
+{
+	return nc_screen_is_lockable(nativeScreen());
+}
+
+bool Lyrics::isMergable()
+{
+	return nc_screen_is_mergable(nativeScreen());
+}
+
+NcScreen *Lyrics::nativeScreen()
+{
+	return nc_lyrics_screen_base(&m_screen);
+}
+
+const NcScreen *Lyrics::nativeScreen() const
+{
+	return nc_lyrics_screen_base(const_cast<NcLyricsScreen *>(&m_screen));
+}
+
+NcScreenCallbacks Lyrics::makeCallbacks()
+{
+	NcScreenCallbacks callbacks = {0};
+
+	callbacks.active_window = activeWindowCallback;
+	callbacks.refresh = refreshCallback;
+	callbacks.refresh_window = refreshWindowCallback;
+	callbacks.scroll = scrollCallback;
+	callbacks.switch_to = switchToCallback;
+	callbacks.resize = resizeCallback;
+	callbacks.window_timeout = windowTimeoutCallback;
+	callbacks.title = titleCallback;
+	callbacks.update = updateCallback;
+	callbacks.mouse_button_pressed = mouseButtonPressedCallback;
+	callbacks.is_lockable = isLockableCallback;
+	callbacks.is_mergable = isMergableCallback;
+	callbacks.destroy = destroyCallback;
+	return callbacks;
+}
+
+Lyrics *Lyrics::fromScreen(NcScreen *screen)
+{
+	return static_cast<Lyrics *>(nc_screen_user(screen));
+}
+
+NcWindow *Lyrics::activeWindowCallback(NcScreen *screen)
+{
+	return fromScreen(screen)->w.nativeWindow();
+}
+
+void Lyrics::refreshCallback(NcScreen *screen)
+{
+	fromScreen(screen)->w.display();
+}
+
+void Lyrics::refreshWindowCallback(NcScreen *screen)
+{
+	fromScreen(screen)->w.display();
+}
+
+void Lyrics::scrollCallback(NcScreen *screen, enum NcScroll where)
+{
+	fromScreen(screen)->w.scroll(to_cpp_scroll(where));
+}
+
+void Lyrics::switchToCallback(NcScreen *screen)
+{
+	Lyrics *lyrics = fromScreen(screen);
+	using Global::myScreen;
+
+	if (myScreen != lyrics)
+	{
+		SwitchTo::execute(lyrics);
+		nc_lyrics_screen_reset_scroll_begin(&lyrics->m_screen);
+		drawHeader();
+	}
+	else
+		lyrics->switchToPreviousScreen();
+}
+
+void Lyrics::resizeCallback(NcScreen *screen)
+{
+	Lyrics *lyrics = fromScreen(screen);
+	size_t x_offset;
+	size_t width;
+
+	lyrics->getWindowResizeParams(x_offset, width);
+	nc_lyrics_screen_set_geometry(&lyrics->m_screen,
+	                              static_cast<int64>(x_offset),
+	                              static_cast<int64>(width),
+	                              MainStartY,
+	                              MainHeight);
+	lyrics->w.resize(nc_lyrics_screen_width(&lyrics->m_screen),
+	                 nc_lyrics_screen_height(&lyrics->m_screen));
+	lyrics->w.moveTo(nc_lyrics_screen_start_x(&lyrics->m_screen),
+	                 nc_lyrics_screen_start_y(&lyrics->m_screen));
+	lyrics->hasToBeResized = false;
+}
+
+int32 Lyrics::windowTimeoutCallback(NcScreen *screen)
+{
+	(void)screen;
+	return defaultWindowTimeout;
+}
+
+char *Lyrics::titleCallback(NcScreen *screen)
+{
+	static std::string result;
+	Lyrics *lyrics = fromScreen(screen);
+
+	result = "Lyrics";
+	if (!lyrics->m_song.empty())
 	{
 		result += ": ";
 		size_t scroll_begin = static_cast<size_t>(
-			nc_lyrics_screen_scroll_begin(&m_screen));
+			nc_lyrics_screen_scroll_begin(&lyrics->m_screen));
 		result += Scroller(
-			Format::stringify<char>(Format::parse("{%a - %t}|{%f}"), &m_song),
+			Format::stringify<char>(Format::parse("{%a - %t}|{%f}"),
+			                       &lyrics->m_song),
 			scroll_begin,
 			COLS - Utf8::width(result) - (Config.design == Design::Alternative
 			                          ? 2
 			                          : Global::VolumeState.length()));
-		nc_lyrics_screen_set_scroll_begin(&m_screen,
+		nc_lyrics_screen_set_scroll_begin(&lyrics->m_screen,
 		                                  static_cast<int64>(scroll_begin));
 	}
-	return result;
+	return const_cast<char *>(result.c_str());
+}
+
+void Lyrics::updateCallback(NcScreen *screen)
+{
+	Lyrics *lyrics = fromScreen(screen);
+
+	if (lyrics->m_worker.valid())
+	{
+		auto buffer = lyrics->m_shared_buffer->acquire();
+		if (!buffer->empty())
+		{
+			lyrics->w << *buffer;
+			buffer->clear();
+			nc_lyrics_screen_request_refresh(&lyrics->m_screen);
+		}
+
+		if (lyrics->m_worker.wait_for(std::chrono::seconds(0))
+		 == std::future_status::ready)
+		{
+			auto fetched_lyrics = lyrics->m_worker.get();
+			if (fetched_lyrics.first)
+			{
+				lyrics->w.clear();
+				lyrics->w << Charset::utf8ToLocale(fetched_lyrics.second);
+				std::string filename = lyricsFilename(lyrics->m_song);
+				if (!saveLyrics(filename, fetched_lyrics.second))
+					Statusbar::printf("Couldn't save lyrics as \"%1%\": %2%",
+					                  filename, strerror(errno));
+			}
+			else
+				lyrics->w << "\nLyrics were not found.\n";
+			lyrics->clearWorker();
+			nc_lyrics_screen_request_refresh(&lyrics->m_screen);
+		}
+	}
+
+	if (nc_lyrics_screen_take_refresh_request(&lyrics->m_screen))
+	{
+		lyrics->w.flush();
+		lyrics->w.refresh();
+	}
+}
+
+void Lyrics::mouseButtonPressedCallback(NcScreen *screen, MEVENT event)
+{
+	scrollpadMouseButtonPressed(fromScreen(screen)->w, event);
+}
+
+bool Lyrics::isLockableCallback(NcScreen *screen)
+{
+	(void)screen;
+	return true;
+}
+
+bool Lyrics::isMergableCallback(NcScreen *screen)
+{
+	(void)screen;
+	return true;
+}
+
+void Lyrics::destroyCallback(NcScreen *screen)
+{
+	Lyrics *lyrics = fromScreen(screen);
+
+	if (myLyrics == lyrics)
+		myLyrics = nullptr;
+	delete lyrics;
 }
 
 void Lyrics::fetch(const MPD::Song &s)
