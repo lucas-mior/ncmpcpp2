@@ -44,6 +44,7 @@ Menu<ItemT>::Menu(size_t startx,
                   Border border)
 	: Window(startx, starty, width, height, title, color, border)
 	, m_item_displayer(nullptr)
+	, m_item_activator(nullptr)
 	, m_filter_predicate(nullptr)
 {
 	nc_menu_init(&m_menu);
@@ -59,6 +60,7 @@ template <typename ItemT>
 Menu<ItemT>::Menu(const Menu &rhs)
 	: Window(rhs)
 	, m_item_displayer(rhs.m_item_displayer)
+	, m_item_activator(rhs.m_item_activator)
 	, m_filter_predicate(rhs.m_filter_predicate)
 	, m_highlight_prefix(rhs.m_highlight_prefix)
 	, m_highlight_suffix(rhs.m_highlight_suffix)
@@ -90,6 +92,7 @@ template <typename ItemT>
 Menu<ItemT>::Menu(Menu &&rhs)
 	: Window(rhs)
 	, m_item_displayer(std::move(rhs.m_item_displayer))
+	, m_item_activator(std::move(rhs.m_item_activator))
 	, m_filter_predicate(std::move(rhs.m_filter_predicate))
 	, m_highlight_prefix(std::move(rhs.m_highlight_prefix))
 	, m_highlight_suffix(std::move(rhs.m_highlight_suffix))
@@ -116,6 +119,7 @@ Menu<ItemT> &Menu<ItemT>::operator=(Menu rhs)
 {
 	std::swap(static_cast<Window &>(*this), static_cast<Window &>(rhs));
 	std::swap(m_item_displayer, rhs.m_item_displayer);
+	std::swap(m_item_activator, rhs.m_item_activator);
 	std::swap(m_filter_predicate, rhs.m_filter_predicate);
 	nc_menu_swap(&m_menu, &rhs.m_menu);
 	std::swap(m_highlight_prefix, rhs.m_highlight_prefix);
@@ -134,6 +138,13 @@ template <typename ItemT> template <typename ItemDisplayerT>
 void Menu<ItemT>::setItemDisplayer(ItemDisplayerT &&displayer)
 {
 	m_item_displayer = std::forward<ItemDisplayerT>(displayer);
+}
+
+template <typename ItemT> template <typename ItemActivatorT>
+void Menu<ItemT>::setItemActivator(ItemActivatorT &&activator)
+{
+	m_item_activator = std::forward<ItemActivatorT>(activator);
+	syncActionCallbacks();
 }
 
 template <typename ItemT>
