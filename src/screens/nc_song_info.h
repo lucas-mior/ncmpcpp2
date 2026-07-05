@@ -1,25 +1,48 @@
 #if !defined(NCMPCPP_NC_SONG_INFO_H)
 #define NCMPCPP_NC_SONG_INFO_H
 
+#include "curses/nc_buffer.h"
+#include "curses/nc_scrollpad.h"
 #include "screens/nc_scrollpad_screen.h"
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-typedef struct NcSongInfoScreen {
+typedef struct NcSongInfoScreen NcSongInfoScreen;
+
+typedef struct NcSongInfoHooks {
+    bool (*render)(void *user, NcSongInfoScreen *screen, NcBuffer *buffer);
+    void (*switch_to)(void *user, NcSongInfoScreen *screen);
+    void (*resize_layout)(void *user, NcSongInfoScreen *screen);
+    void (*destroy)(void *user);
+    void *user;
+} NcSongInfoHooks;
+
+struct NcSongInfoScreen {
     NcScrollpadScreen scrollpad_screen;
-} NcSongInfoScreen;
+    NcWindow window;
+    NcScrollpad scrollpad;
+    NcBuffer buffer;
+    NcSongInfoHooks hooks;
+
+    int64 lines_scrolled;
+};
 
 void nc_song_info_screen_init(NcSongInfoScreen *screen,
-                              NcScreenCallbacks callbacks, void *user,
+                              NcSongInfoHooks hooks,
                               int64 start_x, int64 width,
-                              int64 main_start_y, int64 main_height);
+                              int64 main_start_y, int64 main_height,
+                              NcColor color, NcBorder border,
+                              int64 lines_scrolled);
+void nc_song_info_screen_destroy(NcSongInfoScreen *screen);
 void nc_song_info_screen_set_geometry(NcSongInfoScreen *screen,
                                       int64 start_x, int64 width,
                                       int64 main_start_y,
                                       int64 main_height);
+bool nc_song_info_screen_prepare_current(NcSongInfoScreen *screen);
 NcScreen *nc_song_info_screen_base(NcSongInfoScreen *screen);
+NcWindow *nc_song_info_screen_window(NcSongInfoScreen *screen);
 int64 nc_song_info_screen_start_x(NcSongInfoScreen *screen);
 int64 nc_song_info_screen_start_y(NcSongInfoScreen *screen);
 int64 nc_song_info_screen_width(NcSongInfoScreen *screen);
