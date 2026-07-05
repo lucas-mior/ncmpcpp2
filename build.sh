@@ -4,8 +4,8 @@ export LC_ALL=C
 
 : "${CC:=clang}"
 : "${CXX:=clang++}"
-: "${CFLAGS:=-O0 -g3 -Wfatal-errors -Wno-pre-c23-compat}"
-: "${CXXFLAGS:=-O0 -g3 -Wfatal-errors}"
+: "${CFLAGS:=-O0 -g3 -Wfatal-errors -Wno-pre-c23-compat -Wno-documentation}"
+: "${CXXFLAGS:=-O0 -g3 -Wfatal-errors -Wno-pre-c23-compat -Wno-documentation}"
 export CC CXX CFLAGS CXXFLAGS
 
 make distclean
