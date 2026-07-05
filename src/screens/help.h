@@ -21,55 +21,47 @@
 #ifndef NCMPCPP_HELP_H
 #define NCMPCPP_HELP_H
 
-#include "actions.h"
+#include <string>
+
 #include "interfaces.h"
 #include "screens/nc_help.h"
 #include "screens/screen.h"
 
 struct Help: BaseScreen, Tabbable
 {
-	Help();
-	virtual ~Help();
-	
-	// BaseScreen implementation
-	virtual bool isActiveWindow(const NC::Window &w_) const override;
-	virtual NC::Window *activeWindow() override;
-	virtual const NC::Window *activeWindow() const override;
-	virtual void refresh() override;
-	virtual void refreshWindow() override;
-	virtual void scroll(NC::Scroll where) override;
-	virtual void resize() override;
-	virtual void switchTo() override;
-	virtual int windowTimeout() override;
-	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::Help; }
-	virtual void update() override;
-	virtual void mouseButtonPressed(MEVENT me) override;
-	virtual bool isLockable() override;
-	virtual bool isMergable() override;
-	virtual NcScreen *nativeScreen() override;
-	virtual const NcScreen *nativeScreen() const override;
+    Help();
+    virtual ~Help();
+
+    virtual bool isActiveWindow(const NC::Window &w_) const override;
+    virtual NC::Window *activeWindow() override;
+    virtual const NC::Window *activeWindow() const override;
+    virtual void refresh() override;
+    virtual void refreshWindow() override;
+    virtual void scroll(NC::Scroll where) override;
+    virtual void resize() override;
+    virtual void switchTo() override;
+    virtual int windowTimeout() override;
+    virtual std::string title() override;
+    virtual ScreenType type() override { return ScreenType::Help; }
+    virtual void update() override;
+    virtual void mouseButtonPressed(MEVENT me) override;
+    virtual bool isLockable() override;
+    virtual bool isMergable() override;
+    virtual NcScreen *nativeScreen() override;
+    virtual const NcScreen *nativeScreen() const override;
 
 private:
-	NcScreenCallbacks makeCallbacks();
+    bool renderBindings(NcBuffer *buffer);
+    void setGeometry(NcHelpScreen *screen);
+    NcHelpHooks makeHooks();
 
-	static Help *fromScreen(NcScreen *screen);
-	static NcWindow *activeWindowCallback(NcScreen *screen);
-	static void refreshCallback(NcScreen *screen);
-	static void refreshWindowCallback(NcScreen *screen);
-	static void scrollCallback(NcScreen *screen, enum NcScroll where);
-	static void switchToCallback(NcScreen *screen);
-	static void resizeCallback(NcScreen *screen);
-	static int32 windowTimeoutCallback(NcScreen *screen);
-	static char *titleCallback(NcScreen *screen);
-	static void updateCallback(NcScreen *screen);
-	static void mouseButtonPressedCallback(NcScreen *screen, MEVENT event);
-	static bool isLockableCallback(NcScreen *screen);
-	static bool isMergableCallback(NcScreen *screen);
-	static void destroyCallback(NcScreen *screen);
+    static bool renderHook(void *user, NcBuffer *buffer);
+    static void switchToHook(void *user);
+    static void resizeLayoutHook(void *user, NcHelpScreen *screen);
+    static void resizeBackgroundHook(void *user);
+    static void destroyHook(void *user);
 
-	NC::Scrollpad w;
-	NcHelpScreen m_screen;
+    NcHelpScreen m_screen;
 };
 
 extern Help *myHelp;
