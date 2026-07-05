@@ -143,7 +143,6 @@ private:
 
 void applyToVisibleScreens(std::function<void(NcScreen *)> f);
 void applyToVisibleWindows(std::function<void(BaseScreen *)> f);
-void updateInactiveScreen(BaseScreen *screen_to_be_set);
 void syncLegacyScreenPointers();
 bool isVisible(BaseScreen *screen);
 
