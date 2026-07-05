@@ -47,4 +47,4 @@ jobs:
         env:
           CCACHE_DIR: ${{ github.workspace }}/.ccache/build
         run: |
-          CC='ccache gcc' CXX='ccache g++' ./build.sh check
+          make check CC='ccache gcc' CXX='ccache g++'
