@@ -38,16 +38,10 @@ AC_PROG_CXX
 LT_INIT
 AC_LANG([C++])
 
-AC_ARG_ENABLE(outputs, AS_HELP_STRING([--enable-outputs], [Enable outputs screen @<:@default=no@:>@]), [outputs=$enableval], [outputs=no])
-AC_ARG_ENABLE(visualizer, AS_HELP_STRING([--enable-visualizer], [Enable music visualizer screen @<:@default=no@:>@]), [visualizer=$enableval], [visualizer=no])
-
-AC_ARG_WITH(fftw, AS_HELP_STRING([--with-fftw], [Enable fftw support (required for frequency spectrum vizualization) @<:@default=auto@:>@]), [fftw=$withval], [fftw=auto])
-AC_ARG_WITH(taglib, AS_HELP_STRING([--with-taglib], [Enable tag editor @<:@default=auto@:>@]), [taglib=$withval], [taglib=auto])
 AC_ARG_WITH(lto, AS_HELP_STRING([--with-lto], [Enable LTO (link time optimization) @<:@default=yes@:>@]), [lto=$withval], [lto=yes])
 
-if test "$outputs" = "yes"; then
-	AC_DEFINE([ENABLE_OUTPUTS], [1], [enables outputs screen])
-fi
+AC_DEFINE([ENABLE_OUTPUTS], [1], [enables outputs screen])
+AC_DEFINE([ENABLE_VISUALIZER], [1], [enables music visualizer screen])
 
 # -std=c23
 AC_LANG_PUSH([C])
@@ -253,27 +247,18 @@ PKG_CHECK_MODULES([ncursesw], [ncursesw], [
 )
 
 # fftw3
-if test "$visualizer" = "yes" ; then
-	if test "$fftw" != "no" ; then
-		PKG_CHECK_MODULES([fftw3], [fftw3 >= 3], [
-			AC_SUBST(fftw3_LIBS)
-			AC_SUBST(fftw3_CFLAGS)
-			CPPFLAGS="$CPPFLAGS $fftw3_CFLAGS"
-			AC_CHECK_HEADERS([fftw3.h],
-				LIBS="$LIBS $fftw3_LIBS"
-			,
-				if test "$fftw" = "yes" ; then
-					AC_MSG_ERROR([missing fftw3.h header])
-				fi
-			)
-		],
-			if test "$fftw" = "yes" ; then
-				AC_MSG_ERROR([fftw3 library is required!])
-			fi
-		)
-	fi
-	AC_DEFINE([ENABLE_VISUALIZER], [1], [enables music visualizer screen])
-fi
+PKG_CHECK_MODULES([fftw3], [fftw3 >= 3], [
+	AC_SUBST(fftw3_LIBS)
+	AC_SUBST(fftw3_CFLAGS)
+	CPPFLAGS="$CPPFLAGS $fftw3_CFLAGS"
+	AC_CHECK_HEADERS([fftw3.h],
+		LIBS="$LIBS $fftw3_LIBS"
+	,
+		AC_MSG_ERROR([missing fftw3.h header])
+	)
+],
+	AC_MSG_ERROR([fftw3 library is required!])
+)
 
 # libcurl
 PKG_CHECK_MODULES([libcurl], [libcurl], [
@@ -290,39 +275,33 @@ PKG_CHECK_MODULES([libcurl], [libcurl], [
 )
 
 # taglib C API
-if test "$taglib" != "no" ; then
-	PKG_CHECK_MODULES([taglib], [taglib_c], [
+PKG_CHECK_MODULES([taglib], [taglib_c], [
+	AC_SUBST(taglib_CFLAGS)
+	AC_SUBST(taglib_LIBS)
+], [
+	AC_CHECK_LIB([tag_c], [taglib_file_new], [
+		taglib_LIBS="-ltag_c"
 		AC_SUBST(taglib_CFLAGS)
 		AC_SUBST(taglib_LIBS)
 	], [
-		AC_CHECK_LIB([tag_c], [taglib_file_new], [
-			taglib_LIBS="-ltag_c"
-		], [
-			if test "$taglib" = "yes" ; then
-				AC_MSG_ERROR([could not find taglib_c.pc or libtag_c])
-			fi
-		])
+		AC_MSG_ERROR([could not find taglib_c.pc or libtag_c])
 	])
+])
 
-	if test "$taglib_LIBS" != "" ; then
-		taglib_c_ok=yes
-		CPPFLAGS="$CPPFLAGS $taglib_CFLAGS"
-		LIBS="$LIBS $taglib_LIBS"
+taglib_c_ok=yes
+CPPFLAGS="$CPPFLAGS $taglib_CFLAGS"
+LIBS="$LIBS $taglib_LIBS"
 
-		AC_CHECK_HEADER([tag_c.h], [], [taglib_c_ok=no])
-		AC_CHECK_FUNCS([taglib_file_new taglib_file_save \
-			taglib_property_get taglib_property_set \
-			taglib_property_set_append], [], [taglib_c_ok=no])
+AC_CHECK_HEADER([tag_c.h], [], [taglib_c_ok=no])
+AC_CHECK_FUNCS([taglib_file_new taglib_file_save \
+	taglib_property_get taglib_property_set \
+	taglib_property_set_append], [], [taglib_c_ok=no])
 
-		if test "$taglib_c_ok" = "yes" ; then
-			AC_DEFINE([HAVE_TAGLIB_H], [1],
-			          [Define if TagLib C API is available])
-		else
-			if test "$taglib" = "yes" ; then
-				AC_MSG_ERROR([missing required TagLib C API])
-			fi
-		fi
-	fi
+if test "$taglib_c_ok" = "yes" ; then
+	AC_DEFINE([HAVE_TAGLIB_H], [1],
+	          [Define if TagLib C API is available])
+else
+	AC_MSG_ERROR([missing required TagLib C API])
 fi
 
 AC_CONFIG_FILES([Makefile cbase/Makefile src/Makefile tests/Makefile doc/Makefile])

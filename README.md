@@ -40,7 +40,6 @@ new, incompatible versions of dependencies, it will be fixed.
 * [ncurses](https://invisible-island.net/ncurses/announce.html)
 * [readline](https://tiswww.case.edu/php/chet/readline/rltop.html)
 * [curl](https://curl.se), for fetching lyrics and last.fm data
-#### Optional libraries
 * [fftw](http://www.fftw.org), for frequency spectrum music visualization mode
 * [taglib](https://taglib.org/), for tag editing
 
@@ -71,8 +70,4 @@ The simplest way to compile this package is:
 
 Detailed intallation instructions can be found in the `INSTALL` file. 
 
-### Optional features:
-Optional features can be enable by specifying them during configure. For
-example, to enable visualizer run `./configure --enable-visualizer`. 
-
-Additional details can be found in the INSTALL file. 
+Additional details can be found in the INSTALL file.
