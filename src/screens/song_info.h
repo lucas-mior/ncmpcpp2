@@ -23,66 +23,57 @@
 
 #include <string>
 
+#include "c/ncm_type_conversions.h"
 #include "interfaces.h"
-#include "mutable_song.h"
+#include "song.h"
 #include "screens/nc_song_info.h"
 #include "screens/screen.h"
 
 struct SongInfo: BaseScreen, Tabbable
 {
-	struct Metadata
-	{
-		const char *Name;
-		enum NcmSongGetter Get;
-		enum NcmTagsField Field;
-	};
-	
-	SongInfo();
-	virtual ~SongInfo();
-	
-	// BaseScreen implementation
-	virtual bool isActiveWindow(const NC::Window &w_) const override;
-	virtual NC::Window *activeWindow() override;
-	virtual const NC::Window *activeWindow() const override;
-	virtual void refresh() override;
-	virtual void refreshWindow() override;
-	virtual void scroll(NC::Scroll where) override;
-	virtual void switchTo() override;
-	virtual void resize() override;
-	virtual int windowTimeout() override;
-	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::SongInfo; }
-	virtual void update() override;
-	virtual void mouseButtonPressed(MEVENT me) override;
-	virtual bool isLockable() override;
-	virtual bool isMergable() override;
-	virtual NcScreen *nativeScreen() override;
-	virtual const NcScreen *nativeScreen() const override;
-	
-	// private members
-	static const Metadata Tags[];
-	
-private:
-	void PrepareSong(const MPD::Song &s);
-	NcScreenCallbacks makeCallbacks();
-	
-	static SongInfo *fromScreen(NcScreen *screen);
-	static NcWindow *activeWindowCallback(NcScreen *screen);
-	static void refreshCallback(NcScreen *screen);
-	static void refreshWindowCallback(NcScreen *screen);
-	static void scrollCallback(NcScreen *screen, enum NcScroll where);
-	static void switchToCallback(NcScreen *screen);
-	static void resizeCallback(NcScreen *screen);
-	static int32 windowTimeoutCallback(NcScreen *screen);
-	static char *titleCallback(NcScreen *screen);
-	static void updateCallback(NcScreen *screen);
-	static void mouseButtonPressedCallback(NcScreen *screen, MEVENT event);
-	static bool isLockableCallback(NcScreen *screen);
-	static bool isMergableCallback(NcScreen *screen);
-	static void destroyCallback(NcScreen *screen);
+    struct Metadata
+    {
+        const char *Name;
+        enum NcmSongGetter Get;
+        enum NcmTagsField Field;
+    };
 
-	NC::Scrollpad w;
-	NcSongInfoScreen m_screen;
+    SongInfo();
+    virtual ~SongInfo();
+
+    virtual bool isActiveWindow(const NC::Window &w_) const override;
+    virtual NC::Window *activeWindow() override;
+    virtual const NC::Window *activeWindow() const override;
+    virtual void refresh() override;
+    virtual void refreshWindow() override;
+    virtual void scroll(NC::Scroll where) override;
+    virtual void switchTo() override;
+    virtual void resize() override;
+    virtual int windowTimeout() override;
+    virtual std::string title() override;
+    virtual ScreenType type() override { return ScreenType::SongInfo; }
+    virtual void update() override;
+    virtual void mouseButtonPressed(MEVENT me) override;
+    virtual bool isLockable() override;
+    virtual bool isMergable() override;
+    virtual NcScreen *nativeScreen() override;
+    virtual const NcScreen *nativeScreen() const override;
+
+    static const Metadata Tags[];
+
+private:
+    bool renderSong(NcBuffer *buffer);
+    void setGeometry(NcSongInfoScreen *screen);
+    NcSongInfoHooks makeHooks();
+
+    static bool renderHook(void *user, NcSongInfoScreen *screen,
+                           NcBuffer *buffer);
+    static void switchToHook(void *user, NcSongInfoScreen *screen);
+    static void resizeLayoutHook(void *user, NcSongInfoScreen *screen);
+    static void destroyHook(void *user);
+
+    NcSongInfoScreen m_screen;
+    const MPD::Song *m_pending_song;
 };
 
 extern SongInfo *mySongInfo;
