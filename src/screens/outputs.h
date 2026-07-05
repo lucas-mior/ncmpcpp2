@@ -25,60 +25,52 @@
 
 #ifdef ENABLE_OUTPUTS
 
+#include <string>
+
 #include "interfaces.h"
-#include "menu.h"
-#include "mpdpp.h"
 #include "screens/nc_outputs.h"
 #include "screens/screen.h"
 
 struct Outputs: BaseScreen, Tabbable
 {
-	Outputs();
-	virtual ~Outputs();
-	
-	// BaseScreen implementation
-	virtual bool isActiveWindow(const NC::Window &w_) const override;
-	virtual NC::Window *activeWindow() override;
-	virtual const NC::Window *activeWindow() const override;
-	virtual void refresh() override;
-	virtual void refreshWindow() override;
-	virtual void scroll(NC::Scroll where) override;
-	virtual void switchTo() override;
-	virtual void resize() override;
-	virtual int windowTimeout() override;
-	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::Outputs; }
-	virtual void update() override;
-	virtual void mouseButtonPressed(MEVENT me) override;
-	virtual bool isLockable() override;
-	virtual bool isMergable() override;
-	virtual NcScreen *nativeScreen() override;
-	virtual const NcScreen *nativeScreen() const override;
-	
-	// private members
-	void fetchList();
-	void toggleOutput();
+    Outputs();
+    virtual ~Outputs();
+
+    virtual bool isActiveWindow(const NC::Window &w_) const override;
+    virtual NC::Window *activeWindow() override;
+    virtual const NC::Window *activeWindow() const override;
+    virtual void refresh() override;
+    virtual void refreshWindow() override;
+    virtual void scroll(NC::Scroll where) override;
+    virtual void switchTo() override;
+    virtual void resize() override;
+    virtual int windowTimeout() override;
+    virtual std::string title() override;
+    virtual ScreenType type() override { return ScreenType::Outputs; }
+    virtual void update() override;
+    virtual void mouseButtonPressed(MEVENT me) override;
+    virtual bool isLockable() override;
+    virtual bool isMergable() override;
+    virtual NcScreen *nativeScreen() override;
+    virtual const NcScreen *nativeScreen() const override;
+
+    void fetchList();
+    void toggleOutput();
 
 private:
-	NcScreenCallbacks makeCallbacks();
-	
-	static Outputs *fromScreen(NcScreen *screen);
-	static NcWindow *activeWindowCallback(NcScreen *screen);
-	static void refreshCallback(NcScreen *screen);
-	static void refreshWindowCallback(NcScreen *screen);
-	static void scrollCallback(NcScreen *screen, enum NcScroll where);
-	static void switchToCallback(NcScreen *screen);
-	static void resizeCallback(NcScreen *screen);
-	static int32 windowTimeoutCallback(NcScreen *screen);
-	static char *titleCallback(NcScreen *screen);
-	static void updateCallback(NcScreen *screen);
-	static void mouseButtonPressedCallback(NcScreen *screen, MEVENT event);
-	static bool isLockableCallback(NcScreen *screen);
-	static bool isMergableCallback(NcScreen *screen);
-	static void destroyCallback(NcScreen *screen);
-	
-	NC::Menu<MPD::Output> w;
-	NcOutputsScreen m_screen;
+    void loadOutputs(NcOutputsScreen *screen);
+    bool toggleOutput(uint32 id, bool enabled, char *name, int32 name_len);
+    NcOutputsHooks makeHooks();
+
+    static void fetchOutputsHook(void *user, NcOutputsScreen *screen);
+    static bool toggleOutputHook(void *user, uint32 id, bool enabled,
+                                 char *name, int32 name_len);
+    static void switchToHook(void *user);
+    static void resizeLayoutHook(void *user, NcOutputsScreen *screen);
+    static void resizeBackgroundHook(void *user);
+    static void destroyHook(void *user);
+
+    NcOutputsScreen m_screen;
 };
 
 extern Outputs *myOutputs;

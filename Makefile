@@ -48,7 +48,12 @@ NCMPCPP_C_LIB := $(BUILD_DIR)/libncmpcpp_c.a
 CBASE_SRCS := cbase/cbase.c
 NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
 APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
-APP_CXX_SRCS := $(shell find src -type f -name '*.cpp' | sort)
+REMOVED_CXX_SRCS := \
+	src/screens/outputs.cpp \
+	src/screens/server_info.cpp \
+	src/screens/song_info.cpp
+APP_CXX_SRCS := $(filter-out $(REMOVED_CXX_SRCS),\
+	$(shell find src -type f -name '*.cpp' | sort))
 TEST_SRCS := $(sort $(wildcard tests/*_test.c))
 
 CBASE_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(CBASE_SRCS))
