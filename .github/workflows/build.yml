@@ -24,6 +24,7 @@ jobs:
         env:
           PACKAGES: >
             ccache
+            pkg-config
             libcurl4-gnutls-dev
             libfftw3-dev
             libmpdclient-dev
@@ -42,14 +43,8 @@ jobs:
           key: ccache-${{ matrix.os }}-${{ github.run_id }}
           restore-keys: ccache-${{ matrix.os }}-
 
-      - name: Run autoreconf
-        run: |
-          autoreconf -fiv
-
-      - name: Build ncmpcpp
+      - name: Build and test ncmpcpp
         env:
           CCACHE_DIR: ${{ github.workspace }}/.ccache/build
         run: |
-          CC='ccache gcc' CXX='ccache g++' ./configure \
-            --with-lto=$(nproc)
-          make -j$(nproc) || exit 1
+          CC='ccache gcc' CXX='ccache g++' ./build.sh check

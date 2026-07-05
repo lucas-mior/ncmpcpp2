@@ -32,3 +32,4 @@ c_mutable_song_test
 *.trs
 test-driver
 *.la
+build/

@@ -51,23 +51,27 @@ The simplest way to compile this package is:
 
   1. `cd` to the directory containing the package's source code.
 
-  For the next two commands, `csh` users will need to prefix them with
-  `sh `.
+  2. Install the build dependencies and their pkg-config files:
+     * C23-capable C compiler
+     * C++20-capable C++ compiler
+     * pkg-config
+     * ncursesw
+     * readline
+     * curl
+     * fftw3
+     * libmpdclient >= 2.8
+     * taglib C API
 
-  2. Run `autoreconf -fiv` to generate the `configure` script.
+  3. Run `./build.sh` to compile the package. The binary is written to
+     `build/ncmpcpp`.
 
-  3. Run `./configure` to configure the package for your system.  This
-     will take a while.  While running, it prints some messages
-     telling which features it is checking for.
+  4. Run `./build.sh check` to compile and run the C test programs.
 
-  4. Run `make` to compile the package.
+  5. Run `sudo ./build.sh install` to install the program, docs, and man page.
+     Use `PREFIX=/some/path ./build.sh install` for a non-default prefix.
 
-  5. Type `make install` to install the programs and any data files
-     and documentation.
+  6. Run `./build.sh clean` to remove build outputs.
 
-  6. You can remove the program binaries and object files from the
-     source code directory by typing `make clean`.
-
-Detailed intallation instructions can be found in the `INSTALL` file. 
-
-Additional details can be found in the INSTALL file.
+The autotools files are no longer used. If this tree still has generated
+artifacts from the old build system, run `./build.sh prune-autotools` once to
+remove the paths listed in `REMOVE_AUTOTOOLS_FILES.txt`.
