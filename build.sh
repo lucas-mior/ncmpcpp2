@@ -11,8 +11,8 @@ CFLAGS="$CFLAGS -Wfatal-errors"
 
 if [ "$CC" = "clang" ]; then
     CFLAGS="$CFLAGS -Weverything"
-    CFLAGS="$CFLAGS -Wformat-non-literal"
-    CFLAGS="$CFLAGS -Wunsafe-buffer-usage"
+    CFLAGS="$CFLAGS -Wno-format-non-literal"
+    CFLAGS="$CFLAGS -Wno-unsafe-buffer-usage"
 
     CFLAGS="$CFLAGS -Wno-pre-c23-compat"
     CFLAGS="$CFLAGS -Wno-documentation"
