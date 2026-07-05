@@ -397,7 +397,7 @@ void Lyrics::switchToCallback(NcScreen *screen)
 
 	if (myScreen != lyrics)
 	{
-		SwitchTo::execute(lyrics);
+		SwitchTo::finishNativeSwitch(lyrics);
 		nc_lyrics_screen_reset_scroll_begin(&lyrics->m_screen);
 		drawHeader();
 	}

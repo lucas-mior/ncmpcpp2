@@ -77,6 +77,7 @@ void nc_screen_resize(NcScreen *screen);
 int32 nc_screen_window_timeout(NcScreen *screen);
 char *nc_screen_title(NcScreen *screen);
 int32 nc_screen_type(NcScreen *screen);
+void nc_screen_set_type(NcScreen *screen, int32 type);
 void nc_screen_update(NcScreen *screen);
 void nc_screen_mouse_button_pressed(NcScreen *screen, MEVENT event);
 bool nc_screen_is_lockable(NcScreen *screen);

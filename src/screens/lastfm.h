@@ -29,49 +29,78 @@
 
 #include "interfaces.h"
 #include "lastfm_service.h"
+#include "screens/nc_lastfm.h"
 #include "screens/screen.h"
 #include "utility/utf8.h"
 
-struct Lastfm: Screen<NC::Scrollpad>, Tabbable
+struct Lastfm: BaseScreen, Tabbable
 {
-	Lastfm();
-	
-	virtual void switchTo() override;
-	virtual void resize() override;
-	
-	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::Lastfm; }
-	
-	virtual void update() override;
-	
-	virtual bool isLockable() override { return true; }
-	virtual bool isMergable() override { return true; }
-	
-	template <typename ServiceT>
-	void queueJob(ServiceT *service)
-	{
-		auto old_service = dynamic_cast<ServiceT *>(m_service.get());
-		// if the same service and arguments were used, leave old info
-		if (old_service != nullptr && *old_service == *service)
-			return;
+    Lastfm();
+    virtual ~Lastfm();
 
-		m_service = std::shared_ptr<ServiceT>(service);
-		m_worker = std::async(
-			std::launch::async,
-			std::bind(&LastFm::Service::fetch, m_service));
+    virtual bool isActiveWindow(const NC::Window &w_) const override;
+    virtual NC::Window *activeWindow() override;
+    virtual const NC::Window *activeWindow() const override;
+    virtual void refresh() override;
+    virtual void refreshWindow() override;
+    virtual void scroll(NC::Scroll where) override;
+    virtual void switchTo() override;
+    virtual void resize() override;
+    virtual int windowTimeout() override;
+    virtual std::string title() override;
+    virtual ScreenType type() override { return ScreenType::Lastfm; }
+    virtual void update() override;
+    virtual void mouseButtonPressed(MEVENT me) override;
+    virtual bool isLockable() override { return true; }
+    virtual bool isMergable() override { return true; }
+    virtual NcScreen *nativeScreen() override;
+    virtual const NcScreen *nativeScreen() const override;
 
-		w.clear();
-		w << "Fetching information...";
-		m_refresh_window = true;
-		m_title = m_service->name();
-	}
+    template <typename ServiceT>
+    void queueJob(ServiceT *service)
+    {
+        auto old_service = dynamic_cast<ServiceT *>(m_service.get());
+        // if the same service and arguments were used, leave old info
+        if (old_service != nullptr && *old_service == *service)
+            return;
+
+        m_service = std::shared_ptr<ServiceT>(service);
+        m_worker = std::async(
+            std::launch::async,
+            std::bind(&LastFm::Service::fetch, m_service));
+
+        w.clear();
+        w << "Fetching information...";
+        m_refresh_window = true;
+        m_title = m_service->name();
+    }
 
 private:
-	std::string m_title;
-	bool m_refresh_window;
-	
-	std::shared_ptr<LastFm::Service> m_service;
-	std::future<LastFm::Service::Result> m_worker;
+    void setDimensions();
+    NcScreenCallbacks makeCallbacks();
+
+    static Lastfm *fromScreen(NcScreen *screen);
+    static NcWindow *activeWindowCallback(NcScreen *screen);
+    static void refreshCallback(NcScreen *screen);
+    static void refreshWindowCallback(NcScreen *screen);
+    static void scrollCallback(NcScreen *screen, enum NcScroll where);
+    static void switchToCallback(NcScreen *screen);
+    static void resizeCallback(NcScreen *screen);
+    static int32 windowTimeoutCallback(NcScreen *screen);
+    static char *titleCallback(NcScreen *screen);
+    static void updateCallback(NcScreen *screen);
+    static void mouseButtonPressedCallback(NcScreen *screen, MEVENT event);
+    static bool isLockableCallback(NcScreen *screen);
+    static bool isMergableCallback(NcScreen *screen);
+
+    NC::Scrollpad w;
+    NcLastfmScreen m_screen;
+    std::string m_title;
+    std::string m_title_cache;
+    bool m_refresh_window;
+
+    std::shared_ptr<LastFm::Service> m_service;
+    std::future<LastFm::Service::Result> m_worker;
 };
 
 extern Lastfm *myLastfm;
