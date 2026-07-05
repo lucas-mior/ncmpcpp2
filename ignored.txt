@@ -8,6 +8,7 @@ tags$
 .tags.vim$
 compile_commands.json$
 .*\.o
+.*\.a
 .deps/
 src/ncmpcpp$
 configure$

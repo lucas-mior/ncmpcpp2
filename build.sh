@@ -19,6 +19,101 @@ AR=${AR:-ar}
 VERSION=0.10.2_dev
 PACKAGE=ncmpcpp
 
+CBASE_SOURCES='
+cbase/cbase.c
+'
+
+NCMPCPP_C_SOURCES='
+src/c/ncm_base.c
+src/c/ncm_directory.c
+src/c/ncm_error.c
+src/c/ncm_html.c
+src/c/ncm_mpd_connection.c
+src/c/ncm_mpd_item.c
+src/c/ncm_mutable_song.c
+src/c/ncm_path.c
+src/c/ncm_playlist.c
+src/c/ncm_sample_buffer.c
+src/c/ncm_song.c
+src/c/ncm_string.c
+src/c/ncm_taglib.c
+src/c/ncm_tags.c
+src/c/ncm_type_conversions.c
+src/c/ncm_utf8.c
+'
+
+APP_C_SOURCES='
+src/curses/nc_buffer.c
+src/curses/nc_formatted_color.c
+src/curses/nc_menu.c
+src/curses/nc_scrollpad.c
+src/curses/nc_window.c
+src/screens/nc_help.c
+src/screens/nc_lastfm.c
+src/screens/nc_lyrics.c
+src/screens/nc_outputs.c
+src/screens/nc_playlist.c
+src/screens/nc_screen.c
+src/screens/nc_scrollpad_screen.c
+src/screens/nc_server_info.c
+src/screens/nc_song_info.c
+'
+
+APP_CXX_SOURCES='
+src/actions.cpp
+src/bindings.cpp
+src/charset.cpp
+src/configuration.cpp
+src/curl_handle.cpp
+src/curses/formatted_color.cpp
+src/curses/scrollpad.cpp
+src/curses/window.cpp
+src/display.cpp
+src/enums.cpp
+src/format.cpp
+src/global.cpp
+src/helpers.cpp
+src/lastfm_service.cpp
+src/lyrics_fetcher.cpp
+src/macro_utilities.cpp
+src/mpdpp.cpp
+src/mutable_song.cpp
+src/ncmpcpp.cpp
+src/screens/browser.cpp
+src/screens/help_bridge.cpp
+src/screens/lastfm.cpp
+src/screens/lyrics.cpp
+src/screens/media_library.cpp
+src/screens/outputs_bridge.cpp
+src/screens/playlist.cpp
+src/screens/playlist_editor.cpp
+src/screens/screen.cpp
+src/screens/screen_type.cpp
+src/screens/search_engine.cpp
+src/screens/sel_items_adder.cpp
+src/screens/server_info_bridge.cpp
+src/screens/song_info_bridge.cpp
+src/screens/sort_playlist.cpp
+src/screens/tag_editor.cpp
+src/screens/tiny_tag_editor.cpp
+src/screens/visualizer.cpp
+src/settings.cpp
+src/song.cpp
+src/song_list.cpp
+src/status.cpp
+src/statusbar.cpp
+src/tags.cpp
+src/title.cpp
+src/utility/comparators.cpp
+src/utility/html.cpp
+src/utility/option_parser.cpp
+src/utility/sample_buffer.cpp
+src/utility/string.cpp
+src/utility/type_conversions.cpp
+src/utility/utf8.cpp
+src/utility/wide_string.cpp
+'
+
 fail() {
     printf '%s\n' "$1" >&2
     exit 1
@@ -232,14 +327,14 @@ prepare() {
 
 build_libs() {
     CBASE_OBJECTS=
-    for src in cbase/cbase.c; do
+    for src in $CBASE_SOURCES; do
         compile_c "$src"
         CBASE_OBJECTS="$CBASE_OBJECTS $(object_path "$src")"
     done
     archive "$BUILD_DIR/libcbase.a" $CBASE_OBJECTS
 
     NCMPCPP_C_OBJECTS=
-    for src in $(find src/c -type f -name '*.c' | sort); do
+    for src in $NCMPCPP_C_SOURCES; do
         compile_c "$src"
         NCMPCPP_C_OBJECTS="$NCMPCPP_C_OBJECTS $(object_path "$src")"
     done
@@ -248,11 +343,11 @@ build_libs() {
 
 build_program() {
     APP_OBJECTS=
-    for src in $(find src -type f -name '*.c' ! -path 'src/c/*' | sort); do
+    for src in $APP_C_SOURCES; do
         compile_c "$src"
         APP_OBJECTS="$APP_OBJECTS $(object_path "$src")"
     done
-    for src in $(find src -type f -name '*.cpp' | sort); do
+    for src in $APP_CXX_SOURCES; do
         compile_cxx "$src"
         APP_OBJECTS="$APP_OBJECTS $(object_path "$src")"
     done

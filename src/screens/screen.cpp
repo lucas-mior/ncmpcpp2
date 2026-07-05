@@ -394,29 +394,6 @@ void applyToVisibleWindows(std::function<void(BaseScreen *)> f)
     });
 }
 
-void updateInactiveScreen(BaseScreen *screen_to_be_set)
-{
-    NcScreen *screen;
-
-    screen = screen_to_be_set->nativeScreen();
-    if (myInactiveScreen && myLockedScreen != myInactiveScreen
-        && myLockedScreen == screen_to_be_set)
-    {
-        myInactiveScreen->refresh();
-        drawSeparator(COLS*Config.locked_screen_width_part);
-    }
-    else
-    {
-        if (myLockedScreen == screen_to_be_set)
-            myInactiveScreen = 0;
-        else
-            myInactiveScreen = myLockedScreen;
-    }
-
-    if (nc_screen_registry_is_registered(&Global::myScreenRegistry, screen))
-        (void)nc_screen_registry_switch_to(&Global::myScreenRegistry, screen);
-}
-
 void syncLegacyScreenPointers()
 {
     myScreen = legacyOwner(
