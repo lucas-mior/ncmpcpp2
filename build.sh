@@ -9,9 +9,6 @@ CFLAGS="-O0 -g3"
 CFLAGS="$CFLAGS -Wall -Wextra"
 CFLAGS="$CFLAGS -Wfatal-errors"
 
-CXXFLAGS="-O0 -g3"
-CXXFLAGS="$CXXFLAGS -Wfatal-errors -Wno-pre-c23-compat -Wno-documentation"
-
 if [ "$CC" = "clang" ]; then
     CFLAGS="$CFLAGS -Weverything"
     CFLAGS="$CFLAGS -Wformat-non-literal"
