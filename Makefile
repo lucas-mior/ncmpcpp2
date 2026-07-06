@@ -41,6 +41,7 @@ THREAD_FLAGS := -pthread
 OBJ_DIR := $(BUILD_DIR)/obj
 TOOLS_STAMP := $(BUILD_DIR)/.tools-ok
 CONFIG_H := $(BUILD_DIR)/config.h
+AUTOTOOLS_PRUNE_LIST := REMOVE_AUTOTOOLS_FILES.txt
 BINARY := $(BUILD_DIR)/ncmpcpp
 CBASE_LIB := $(BUILD_DIR)/libcbase.a
 NCMPCPP_C_LIB := $(BUILD_DIR)/libncmpcpp_c.a
@@ -94,7 +95,7 @@ DEPS := \
 	$(APP_CXX_OBJS:.o=.d) \
 	$(TEST_OBJS:.o=.d)
 
-.PHONY: all check install clean prune-autotools cxx-report cxx-count help FORCE
+.PHONY: all check install clean prune-autotools cxx-report cxx-count no-cxx help FORCE
 .DELETE_ON_ERROR:
 .SECONDARY: $(CBASE_OBJS) $(NCMPCPP_C_OBJS) $(APP_C_OBJS) $(APP_CXX_OBJS) $(TEST_OBJS)
 
@@ -260,13 +261,56 @@ clean:
 	rm -rf '$(BUILD_DIR)'
 
 prune-autotools:
+	@test -f '$(AUTOTOOLS_PRUNE_LIST)' || { \
+		printf 'missing %s\n' '$(AUTOTOOLS_PRUNE_LIST)' >&2; \
+		exit 1; \
+	}
 	@while IFS= read -r path; do \
 		case $$path in ''|'#'*) continue ;; esac; \
-		rm -rf -- $$path; \
-	done < REMOVE_AUTOTOOLS_FILES.txt
+		printf 'RM  %s\n' "$$path"; \
+		rm -rf -- "$$path"; \
+	done < '$(AUTOTOOLS_PRUNE_LIST)'
+
+no-cxx:
+	@status=0; \
+	source_files=$$(find src extras -type f \
+		\( -name '*.c' -o -name '*.h' -o -name '*.cpp' \
+		-o -name '*.cc' -o -name '*.cxx' -o -name '*.hpp' \
+		-o -name '*.hh' -o -name '*.hxx' \) | sort); \
+	cxx_files=$$(find src extras -type f \
+		\( -name '*.cpp' -o -name '*.cc' -o -name '*.cxx' \
+		-o -name '*.hpp' -o -name '*.hh' -o -name '*.hxx' \) \
+		| sort); \
+	if test -n "$$cxx_files"; then \
+		printf '%s\n' 'C++ source files remain:' >&2; \
+		printf '%s\n' "$$cxx_files" >&2; \
+		status=1; \
+	fi; \
+	if test -n "$$source_files"; then \
+		std_include_pattern='^[[:space:]]*#[[:space:]]*include[[:space:]]*<(algorithm|array|atomic|bit|bitset|cassert|cctype|cerrno|cfenv|cfloat|charconv|chrono|cinttypes|climits|clocale|cmath|codecvt|compare|complex|concepts|condition_variable|csetjmp|csignal|cstdarg|cstddef|cstdint|cstdio|cstdlib|cstring|ctime|cwchar|cwctype|deque|exception|execution|filesystem|format|forward_list|fstream|functional|future|initializer_list|iomanip|ios|iosfwd|iostream|istream|iterator|limits|list|locale|map|memory|mutex|new|numbers|numeric|optional|ostream|queue|random|ranges|ratio|regex|scoped_allocator|set|shared_mutex|span|sstream|stack|stdexcept|streambuf|string|string_view|strstream|syncstream|system_error|thread|tuple|type_traits|typeindex|typeinfo|unordered_map|unordered_set|utility|valarray|variant|vector)>'; \
+		std_includes=$$(grep -nE "$$std_include_pattern" $$source_files || true); \
+		if test -n "$$std_includes"; then \
+			printf '%s\n' 'C++ standard library includes remain:' >&2; \
+			printf '%s\n' "$$std_includes" >&2; \
+			status=1; \
+		fi; \
+		token_pattern='(^|[^[:alnum:]_])(namespace|class|template|virtual|override|try|catch|throw|new|delete)([^[:alnum:]_]|$$)|std::'; \
+		tokens=$$(grep -nE "$$token_pattern" $$source_files || true); \
+		if test -n "$$tokens"; then \
+			printf '%s\n' 'C++ constructs remain:' >&2; \
+			printf '%s\n' "$$tokens" >&2; \
+			status=1; \
+		fi; \
+	fi; \
+	if test "$$status" -eq 0; then \
+		printf '%s\n' 'No C++ sources or banned C++ constructs remain.'; \
+	fi; \
+	exit "$$status"
 
 help:
-	@printf '%s\n' 'usage: make [all|check|install|clean|prune-autotools|cxx-report|cxx-count]'
+	@printf '%s\n' 'usage: make [all|check|install|clean|prune-autotools|cxx-report|cxx-count|no-cxx|help]'
+	@printf '%s\n' ''
+	@printf '%s\n' 'Only the project root Makefile is supported during migration.'
 	@printf '%s\n' ''
 	@printf '%s\n' 'Common variables:'
 	@printf '%s\n' '  CC, CXX, AR        compiler and archive commands'
