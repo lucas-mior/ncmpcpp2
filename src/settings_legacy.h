@@ -21,7 +21,6 @@
 #ifndef NCMPCPP_SETTINGS_LEGACY_H
 #define NCMPCPP_SETTINGS_LEGACY_H
 
-#include <chrono>
 #include <optional>
 #include <cassert>
 #include <vector>
@@ -52,7 +51,7 @@ struct Column
 struct Configuration
 {
 	Configuration()
-	: playlist_disable_highlight_delay(0)
+	: playlist_disable_highlight_delay_seconds(0)
 	{ }
 
 	bool read(const std::vector<std::string> &config_paths, bool ignore_errors);
@@ -201,7 +200,7 @@ struct Configuration
 
 	Regex::Flags regex_type;
 
-	std::chrono::seconds playlist_disable_highlight_delay;
+	unsigned playlist_disable_highlight_delay_seconds;
 
 	double locked_screen_width_part;
 
