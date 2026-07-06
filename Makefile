@@ -14,8 +14,8 @@ CXX ?= c++
 AR ?= ar
 
 CPPFLAGS ?=
-CFLAGS ?= -O2 -g
-CXXFLAGS ?= -O2 -g
+CFLAGS ?= -O0 -g3
+CXXFLAGS ?= -O0 -g3
 LDFLAGS ?=
 CXXSTD ?= -std=c++20
 
