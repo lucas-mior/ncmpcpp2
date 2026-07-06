@@ -22,8 +22,38 @@
 #define NCMPCPP_MACRO_UTILITIES_H
 
 #include <cassert>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "actions.h"
+#include "c/ncm_error.h"
+#include "c/ncm_macro_utilities.h"
+#include "curses/window.h"
+#include "screens/screen_legacy.h"
 #include "screens/screen_type.h"
+#include "utility/string.h"
+
+inline void runExternalConsoleCommand(const std::string &cmd)
+{
+	NcmError error;
+
+	ncm_error_clear(&error);
+	NC::pauseScreen();
+	ncm_macro_run_external_console_command(
+		const_cast<char *>(cmd.data()), static_cast<int32>(cmd.size()), &error);
+	NC::unpauseScreen();
+}
+
+inline void runExternalCommand(const std::string &cmd, bool block)
+{
+	NcmError error;
+
+	ncm_error_clear(&error);
+	ncm_macro_run_external_command(
+		const_cast<char *>(cmd.data()), static_cast<int32>(cmd.size()),
+		block, &error);
+}
 
 namespace Actions {
 
@@ -31,62 +61,114 @@ struct PushCharacters: BaseAction
 {
 	using WindowProvider = NC::Window *(*)();
 
-	PushCharacters(WindowProvider window, std::vector<NC::Key::Type> &&queue);
+	PushCharacters(WindowProvider window, std::vector<NC::Key::Type> &&queue)
+		: BaseAction(Type::MacroUtility, "push_characters")
+		, m_window(window)
+		, m_queue(queue)
+	{
+		assert(window != nullptr);
+		std::vector<std::string> keys;
+		for (const auto &key : queue)
+			keys.push_back(NC::keyToString(key));
+		m_name += " \"";
+		m_name += join<std::string>(keys, ", ");
+		m_name += "\"";
+	}
 
 private:
-	virtual void run() override;
-	
+	virtual void run() override
+	{
+		for (auto it = m_queue.begin(); it != m_queue.end(); ++it)
+			m_window()->pushChar(*it);
+	}
+
 	WindowProvider m_window;
 	std::vector<NC::Key::Type> m_queue;
 };
 
 struct RequireRunnable: BaseAction
 {
-	RequireRunnable(std::shared_ptr<BaseAction> action);
-	
+	RequireRunnable(std::shared_ptr<BaseAction> action)
+		: BaseAction(Type::MacroUtility, "require_runnable")
+		, m_action(std::move(action))
+	{
+		assert(m_action != nullptr);
+		m_name += " \"";
+		m_name += m_action->name();
+		m_name += "\"";
+	}
+
 private:
-	virtual bool canBeRun() override;
+	virtual bool canBeRun() override
+	{
+		return m_action->canBeRun();
+	}
 	virtual void run() override { }
-	
+
 	std::shared_ptr<BaseAction> m_action;
 };
 
 struct RequireScreen: BaseAction
 {
-	RequireScreen(ScreenType screen_type);
-	
+	RequireScreen(ScreenType screen_type)
+		: BaseAction(Type::MacroUtility, "require_screen")
+		, m_screen_type(screen_type)
+	{
+		m_name += " \"";
+		m_name += screenTypeToString(m_screen_type);
+		m_name += "\"";
+	}
+
 private:
-	virtual bool canBeRun() override;
+	virtual bool canBeRun() override
+	{
+		return screenLegacyCurrent()->type() == m_screen_type;
+	}
 	virtual void run() override { }
-	
+
 	ScreenType m_screen_type;
 };
 
 struct RunExternalCommand: BaseAction
 {
-	RunExternalCommand(std::string &&command);
-	
+	RunExternalCommand(std::string &&command)
+		: BaseAction(Type::MacroUtility, "run_external_command")
+		, m_command(std::move(command))
+	{
+		m_name += " \"";
+		m_name += m_command;
+		m_name += "\"";
+	}
+
 private:
-	virtual void run() override;
-	
+	virtual void run() override
+	{
+		runExternalCommand(m_command, true);
+	}
+
 	std::string m_command;
 };
 
 struct RunExternalConsoleCommand: BaseAction
 {
-	RunExternalConsoleCommand(std::string &&command);
+	RunExternalConsoleCommand(std::string &&command)
+		: BaseAction(Type::MacroUtility, "run_external_console_command")
+		, m_command(std::move(command))
+	{
+		m_name += " \"";
+		m_name += m_command;
+		m_name += "\"";
+	}
 
 private:
-	virtual void run() override;
+	virtual void run() override
+	{
+		runExternalConsoleCommand(m_command);
+	}
 
 	std::string m_command;
 };
 
 }
-
-// Helpers
-
-void runExternalConsoleCommand(const std::string &cmd);
-void runExternalCommand(const std::string &cmd, bool block);
 
 #endif // NCMPCPP_MACRO_UTILITIES_H
