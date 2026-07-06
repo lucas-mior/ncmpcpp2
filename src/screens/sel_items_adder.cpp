@@ -31,6 +31,7 @@
 #include "statusbar.h"
 #include "utility/comparators.h"
 #include "screens/screen_switcher.h"
+#include "screens/screen_legacy.h"
 #include "charset.h"
 
 SelectedItemsAdder *mySelectedItemsAdder;
@@ -111,9 +112,8 @@ SelectedItemsAdder::SelectedItemsAdder()
 
 void SelectedItemsAdder::switchTo()
 {
-	using Global::myScreen;
-	
-	auto hs = dynamic_cast<HasSongs *>(myScreen);
+		
+	auto hs = dynamic_cast<HasSongs *>(screenLegacyCurrent());
 	if (!hs)
 		return;
 	
@@ -124,7 +124,7 @@ void SelectedItemsAdder::switchTo()
 		Statusbar::print("No selected songs");
 		return;
 	}
-	populatePlaylistSelector(myScreen);
+	populatePlaylistSelector(screenLegacyCurrent());
 	SwitchTo::execute(this);
 	// default to main window
 	w = &m_playlist_selector;

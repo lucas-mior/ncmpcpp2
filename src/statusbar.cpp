@@ -21,6 +21,7 @@
 #include <chrono>
 
 #include "global.h"
+#include "screens/screen_legacy.h"
 #include "settings.h"
 #include "status.h"
 #include "statusbar.h"
@@ -225,15 +226,14 @@ bool Statusbar::Helpers::ImmediatelyReturnOneOf::operator()(const char *s) const
 
 bool Statusbar::Helpers::ApplyFilterImmediately::operator()(const char *s)
 {
-	using Global::myScreen;
 	Status::trace();
 	try {
 		if (m_w->allowsFiltering() && m_w->currentFilter() != s)
 		{
 			m_w->applyFilter(s);
-			if (myScreen == myPlaylist)
+			if (screenLegacyCurrent() == myPlaylist)
 				myPlaylist->enableHighlighting();
-			myScreen->refreshWindow();
+			screenLegacyCurrent()->refreshWindow();
 		}
 	} catch (Regex::Error &) { }
 	return true;
@@ -241,16 +241,15 @@ bool Statusbar::Helpers::ApplyFilterImmediately::operator()(const char *s)
 
 bool Statusbar::Helpers::FindImmediately::operator()(const char *s)
 {
-	using Global::myScreen;
 	Status::trace();
 	try {
 		if (m_w->allowsSearching() && m_w->searchConstraint() != s)
 		{
 			m_w->setSearchConstraint(s);
 			m_w->search(m_direction, Config.wrapped_search, false);
-			if (myScreen == myPlaylist)
+			if (screenLegacyCurrent() == myPlaylist)
 				myPlaylist->enableHighlighting();
-			myScreen->refreshWindow();
+			screenLegacyCurrent()->refreshWindow();
 		}
 	} catch (Regex::Error &) { }
 	return true;

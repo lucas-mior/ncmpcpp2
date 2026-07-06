@@ -42,6 +42,7 @@
 #include "title.h"
 #include "tags.h"
 #include "screens/screen_switcher.h"
+#include "screens/screen_legacy.h"
 #include "utility/string.h"
 
 using Global::MainHeight;
@@ -86,14 +87,13 @@ void TinyTagEditor::resize()
 
 void TinyTagEditor::switchTo()
 {
-	using Global::myScreen;
-	if (itsEdited.isStream())
+		if (itsEdited.isStream())
 	{
 		Statusbar::print("Streams can't be edited");
 	}
 	else if (getTags())
 	{
-		m_previous_screen = myScreen;
+		m_previous_screen = screenLegacyCurrent();
 		SwitchTo::execute(this);
 		drawHeader();
 	}

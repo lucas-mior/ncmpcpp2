@@ -22,10 +22,6 @@
 
 namespace Global {
 
-BaseScreen *myScreen;
-BaseScreen *myLockedScreen;
-BaseScreen *myInactiveScreen;
-
 NC::Window *wHeader;
 NC::Window *wFooter;
 

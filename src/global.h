@@ -22,22 +22,17 @@
 #define NCMPCPP_GLOBAL_H
 
 #include <chrono>
+#include <stddef.h>
 #include <random>
+#include <string>
 
 #include "mpdpp.h"
-#include "screens/screen.h"
+
+namespace NC {
+struct Window;
+}
 
 namespace Global {
-
-// currently active screen (displayed in main window)
-extern BaseScreen *myScreen;
-
-// points at the screen that was locked (or is null if no screen is locked)
-extern BaseScreen *myLockedScreen;
-
-// points at inactive screen, if locking was enabled and two screens are displayed
-extern BaseScreen *myInactiveScreen;
-
 
 // header window (above main window)
 extern NC::Window *wHeader;

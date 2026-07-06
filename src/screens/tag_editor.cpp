@@ -46,8 +46,8 @@
 #include "title.h"
 #include "tags.h"
 #include "screens/screen_switcher.h"
+#include "screens/screen_legacy.h"
 
-using Global::myScreen;
 using Global::MainHeight;
 using Global::MainStartY;
 
@@ -954,13 +954,13 @@ void TagEditor::nextColumn()
 
 void TagEditor::LocateSong(const MPD::Song &s)
 {
-	if (myScreen == this)
+	if (screenLegacyCurrent() == this)
 		return;
 	
 	if (s.getDirectory().empty())
 		return;
 	
-	if (Global::myScreen != this)
+	if (screenLegacyCurrent() != this)
 		switchTo();
 	
 	// go to right directory

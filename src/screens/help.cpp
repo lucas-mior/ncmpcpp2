@@ -18,107 +18,68 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
+#include "mpdpp.h"
+
 #include <cassert>
-#include <string>
-#include <vector>
 
 #include "bindings.h"
-#include "curses/formatted_color.h"
 #include "app_controller.h"
 #include "global.h"
 #include "screens/help.h"
-#include "screens/screen_switcher.h"
-#include "screens/screen_legacy.h"
 #include "settings.h"
-#include "title.h"
+#include "status.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
 #include "utility/utf8.h"
+#include "title.h"
+#include "screens/screen_switcher.h"
+#include "screens/screen_legacy.h"
 
 using Global::MainHeight;
 using Global::MainStartY;
 
+Help *myHelp;
+
 namespace {
 
-struct HelpBuffer
+NC::Scroll to_cpp_scroll(enum NcScroll where)
 {
-    NcBuffer *buffer;
-};
-
-NcScroll toNcScroll(NC::Scroll where)
-{
-    switch (where)
-    {
-        case NC::Scroll::Up:
-            return NC_SCROLL_UP;
-        case NC::Scroll::Down:
-            return NC_SCROLL_DOWN;
-        case NC::Scroll::PageUp:
-            return NC_SCROLL_PAGE_UP;
-        case NC::Scroll::PageDown:
-            return NC_SCROLL_PAGE_DOWN;
-        case NC::Scroll::Home:
-            return NC_SCROLL_HOME;
-        case NC::Scroll::End:
-            return NC_SCROLL_END;
-    }
-    return NC_SCROLL_UP;
+	switch (where)
+	{
+		case NC_SCROLL_UP:
+			return NC::Scroll::Up;
+		case NC_SCROLL_DOWN:
+			return NC::Scroll::Down;
+		case NC_SCROLL_PAGE_UP:
+			return NC::Scroll::PageUp;
+		case NC_SCROLL_PAGE_DOWN:
+			return NC::Scroll::PageDown;
+		case NC_SCROLL_HOME:
+			return NC::Scroll::Home;
+		case NC_SCROLL_END:
+			return NC::Scroll::End;
+	}
+	return NC::Scroll::Up;
 }
 
-NcBorder toNcBorder(NC::Border border)
+enum NcScroll to_nc_scroll(NC::Scroll where)
 {
-    NcBorder result = {};
-
-    if (border)
-    {
-        result.enabled = true;
-        result.color = NC::toNcColor(*border);
-    }
-    return result;
-}
-
-HelpBuffer &operator<<(HelpBuffer &output, char value)
-{
-    nc_buffer_append_char(output.buffer, value);
-    return output;
-}
-
-HelpBuffer &operator<<(HelpBuffer &output, const char *value)
-{
-    nc_buffer_append_cstring(output.buffer, const_cast<char *>(value));
-    return output;
-}
-
-HelpBuffer &operator<<(HelpBuffer &output, const std::string &value)
-{
-    nc_buffer_append_data(output.buffer,
-                          const_cast<char *>(value.data()),
-                          static_cast<int32>(value.size()));
-    return output;
-}
-
-HelpBuffer &operator<<(HelpBuffer &output, int value)
-{
-    nc_buffer_append_int32(output.buffer, static_cast<int32>(value));
-    return output;
-}
-
-HelpBuffer &operator<<(HelpBuffer &output, NC::Format format)
-{
-    nc_buffer_add_format(output.buffer,
-                         nc_buffer_len(output.buffer),
-                         NC::toNcFormat(format),
-                         0);
-    return output;
-}
-
-HelpBuffer &operator<<(HelpBuffer &output, NC::Color color)
-{
-    nc_buffer_add_color(output.buffer,
-                        nc_buffer_len(output.buffer),
-                        NC::toNcColor(color),
-                        0);
-    return output;
+	switch (where)
+	{
+		case NC::Scroll::Up:
+			return NC_SCROLL_UP;
+		case NC::Scroll::Down:
+			return NC_SCROLL_DOWN;
+		case NC::Scroll::PageUp:
+			return NC_SCROLL_PAGE_UP;
+		case NC::Scroll::PageDown:
+			return NC_SCROLL_PAGE_DOWN;
+		case NC::Scroll::Home:
+			return NC_SCROLL_HOME;
+		case NC::Scroll::End:
+			return NC_SCROLL_END;
+	}
+	return NC_SCROLL_UP;
 }
 
 std::string align_key_rep(std::string keys)
@@ -158,7 +119,7 @@ std::string display_keys(const Actions::Type at)
 	return align_key_rep(std::move(result));
 }
 
-void section(HelpBuffer &w, const char *type_, const char *title_)
+void section(NC::Scrollpad &w, const char *type_, const char *title_)
 {
 	w << "\n  " << NC::Format::Bold;
 	if (type_[0] != '\0')
@@ -168,48 +129,48 @@ void section(HelpBuffer &w, const char *type_, const char *title_)
 
 /**********************************************************************/
 
-void key_section(HelpBuffer &w, const char *title_)
+void key_section(NC::Scrollpad &w, const char *title_)
 {
 	section(w, "Keys", title_);
 }
 
-void key(HelpBuffer &w, const Actions::Type at, const char *desc)
+void key(NC::Scrollpad &w, const Actions::Type at, const char *desc)
 {
 	w << "    " << display_keys(at) << " : " << desc << '\n';
 }
 
-void key(HelpBuffer &w, const Actions::Type at, const std::string &desc)
+void key(NC::Scrollpad &w, const Actions::Type at, const std::string &desc)
 {
 	w << "    " << display_keys(at) << " : " << desc << '\n';
 }
 
-void key(HelpBuffer &w, NC::Key::Type k, const std::string &desc)
+void key(NC::Scrollpad &w, NC::Key::Type k, const std::string &desc)
 {
 	w << "    " << align_key_rep(NC::keyToString(k)) << " : " << desc << '\n';
 }
 
 /**********************************************************************/
 
-void mouse_section(HelpBuffer &w, const char *title_)
+void mouse_section(NC::Scrollpad &w, const char *title_)
 {
 	section(w, "Mouse", title_);
 }
 
-void mouse(HelpBuffer &w, std::string action, const char *desc, bool indent = false)
+void mouse(NC::Scrollpad &w, std::string action, const char *desc, bool indent = false)
 {
 	action.resize(31 - (indent ? 2 : 0), ' ');
 	w << "    " << (indent ? "  " : "") << action;
 	w << ": " << desc << '\n';
 }
 
-void mouse_column(HelpBuffer &w, const char *column)
+void mouse_column(NC::Scrollpad &w, const char *column)
 {
 	w << NC::Format::Bold << "    " << column << " column:\n" << NC::Format::NoBold;
 }
 
 /**********************************************************************/
 
-void write_bindings(HelpBuffer &w)
+void write_bindings(NC::Scrollpad &w)
 {
 	using Actions::Type;
 
@@ -513,196 +474,234 @@ void write_bindings(HelpBuffer &w)
 	}
 }
 
-
 }
 
-Help *myHelp;
-
 Help::Help()
+: w(0, MainStartY, COLS, MainHeight, "", Config.main_color, NC::Border())
 {
-    nc_help_screen_init(&m_screen,
-                        makeHooks(),
-                        0,
-                        COLS,
-                        MainStartY,
-                        MainHeight,
-                        NC::toNcColor(Config.main_color),
-                        toNcBorder(NC::Border()),
-                        static_cast<int64>(Config.lines_scrolled));
-    bool loaded = nc_help_screen_reload(&m_screen);
-    assert(loaded);
-    (void)loaded;
+	NcScreenCallbacks callbacks = makeCallbacks();
 
-    bool register_success = app_controller_register_screen(nativeScreen());
-    assert(register_success);
-    (void)register_success;
+	nc_help_screen_init(&m_screen,
+	                    callbacks,
+	                    this,
+	                    0,
+	                    COLS,
+	                    MainStartY,
+	                    MainHeight);
+	write_bindings(w);
+	w.flush();
+
+	bool register_success = app_controller_register_screen(nativeScreen());
+	assert(register_success);
+	(void)register_success;
 }
 
 Help::~Help()
 {
-    if (app_controller_is_screen_registered(nativeScreen()))
-    {
-        app_controller_unregister_screen(nativeScreen());
-    }
-    nc_help_screen_destroy(&m_screen);
+	if (app_controller_is_screen_registered(nativeScreen()))
+	{
+		app_controller_unregister_screen(nativeScreen());
+	}
 }
 
 bool Help::isActiveWindow(const NC::Window &w_) const
 {
-    (void)w_;
-    return false;
+	return &w == &w_;
 }
 
 NC::Window *Help::activeWindow()
 {
-    return nullptr;
+	return &w;
 }
 
 const NC::Window *Help::activeWindow() const
 {
-    return nullptr;
+	return &w;
 }
 
 void Help::refresh()
 {
-    nc_screen_refresh(nativeScreen());
+	nc_screen_refresh(nativeScreen());
 }
 
 void Help::refreshWindow()
 {
-    nc_screen_refresh_window(nativeScreen());
+	nc_screen_refresh_window(nativeScreen());
 }
 
 void Help::scroll(NC::Scroll where)
 {
-    nc_screen_scroll(nativeScreen(), toNcScroll(where));
+	nc_screen_scroll(nativeScreen(), to_nc_scroll(where));
 }
 
 void Help::resize()
 {
-    nc_screen_resize(nativeScreen());
+	nc_screen_resize(nativeScreen());
 }
 
 void Help::switchTo()
 {
-    nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-    app_controller_switch_to_screen(nativeScreen());
+	nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
+	app_controller_switch_to_screen(nativeScreen());
 }
 
 int Help::windowTimeout()
 {
-    return nc_screen_window_timeout(nativeScreen());
+	return nc_screen_window_timeout(nativeScreen());
 }
 
 std::string Help::title()
 {
-    char *result = nc_screen_title(nativeScreen());
-
-    if (result == nullptr)
-    {
-        return "";
-    }
-    return result;
+	char *result = nc_screen_title(nativeScreen());
+	if (result == nullptr)
+		return "";
+	return result;
 }
 
 void Help::update()
 {
-    nc_screen_update(nativeScreen());
+	nc_screen_update(nativeScreen());
 }
 
 void Help::mouseButtonPressed(MEVENT me)
 {
-    nc_screen_mouse_button_pressed(nativeScreen(), me);
+	nc_screen_mouse_button_pressed(nativeScreen(), me);
 }
 
 bool Help::isLockable()
 {
-    return nc_screen_is_lockable(nativeScreen());
+	return nc_screen_is_lockable(nativeScreen());
 }
 
 bool Help::isMergable()
 {
-    return nc_screen_is_mergable(nativeScreen());
+	return nc_screen_is_mergable(nativeScreen());
 }
 
 NcScreen *Help::nativeScreen()
 {
-    return nc_help_screen_base(&m_screen);
+	return nc_help_screen_base(&m_screen);
 }
 
 const NcScreen *Help::nativeScreen() const
 {
-    return nc_help_screen_base(const_cast<NcHelpScreen *>(&m_screen));
+	return nc_help_screen_base(const_cast<NcHelpScreen *>(&m_screen));
 }
 
-bool Help::renderBindings(NcBuffer *buffer)
+NcScreenCallbacks Help::makeCallbacks()
 {
-    HelpBuffer output = {buffer};
+	NcScreenCallbacks callbacks = {0};
 
-    write_bindings(output);
-    return true;
+	callbacks.active_window = activeWindowCallback;
+	callbacks.refresh = refreshCallback;
+	callbacks.refresh_window = refreshWindowCallback;
+	callbacks.scroll = scrollCallback;
+	callbacks.switch_to = switchToCallback;
+	callbacks.resize = resizeCallback;
+	callbacks.window_timeout = windowTimeoutCallback;
+	callbacks.title = titleCallback;
+	callbacks.update = updateCallback;
+	callbacks.mouse_button_pressed = mouseButtonPressedCallback;
+	callbacks.is_lockable = isLockableCallback;
+	callbacks.is_mergable = isMergableCallback;
+	callbacks.destroy = destroyCallback;
+	return callbacks;
 }
 
-void Help::setGeometry(NcHelpScreen *screen)
+Help *Help::fromScreen(NcScreen *screen)
 {
-    size_t x_offset;
-    size_t width;
-
-    getWindowResizeParams(x_offset, width);
-    nc_help_screen_set_geometry(screen,
-                                static_cast<int64>(x_offset),
-                                static_cast<int64>(width),
-                                MainStartY,
-                                MainHeight);
-    hasToBeResized = false;
+	return static_cast<Help *>(nc_screen_user(screen));
 }
 
-NcHelpHooks Help::makeHooks()
+NcWindow *Help::activeWindowCallback(NcScreen *screen)
 {
-    NcHelpHooks hooks = {};
-
-    hooks.render = renderHook;
-    hooks.switch_to = switchToHook;
-    hooks.resize_layout = resizeLayoutHook;
-    hooks.resize_background = resizeBackgroundHook;
-    hooks.destroy = destroyHook;
-    hooks.user = this;
-    return hooks;
+	return fromScreen(screen)->w.nativeWindow();
 }
 
-bool Help::renderHook(void *user, NcBuffer *buffer)
+void Help::refreshCallback(NcScreen *screen)
 {
-    return static_cast<Help *>(user)->renderBindings(buffer);
+	fromScreen(screen)->w.display();
 }
 
-void Help::switchToHook(void *user)
+void Help::refreshWindowCallback(NcScreen *screen)
 {
-    Help *help = static_cast<Help *>(user);
-    
-    if (screenLegacySwitchChanged())
-    {
-        SwitchTo::finishNativeSwitch(help);
-    }
-    drawHeader();
+	fromScreen(screen)->w.display();
 }
 
-void Help::resizeLayoutHook(void *user, NcHelpScreen *screen)
+void Help::scrollCallback(NcScreen *screen, enum NcScroll where)
 {
-    static_cast<Help *>(user)->setGeometry(screen);
+	fromScreen(screen)->w.scroll(to_cpp_scroll(where));
 }
 
-void Help::resizeBackgroundHook(void *user)
+void Help::switchToCallback(NcScreen *screen)
 {
-    (void)user;
+	Help *help = fromScreen(screen);
+
+	if (screenLegacySwitchChanged())
+		SwitchTo::finishNativeSwitch(help);
+	drawHeader();
 }
 
-void Help::destroyHook(void *user)
+void Help::resizeCallback(NcScreen *screen)
 {
-    Help *help = static_cast<Help *>(user);
+	Help *help = fromScreen(screen);
+	size_t x_offset;
+	size_t width;
 
-    if (myHelp == help)
-    {
-        myHelp = nullptr;
-    }
-    delete help;
+	help->getWindowResizeParams(x_offset, width);
+	nc_help_screen_set_geometry(&help->m_screen,
+	                            static_cast<int64>(x_offset),
+	                            static_cast<int64>(width),
+	                            MainStartY,
+	                            MainHeight);
+	help->w.resize(nc_help_screen_width(&help->m_screen),
+	               nc_help_screen_height(&help->m_screen));
+	help->w.moveTo(nc_help_screen_start_x(&help->m_screen),
+	               nc_help_screen_start_y(&help->m_screen));
+	help->hasToBeResized = false;
+}
+
+int32 Help::windowTimeoutCallback(NcScreen *screen)
+{
+	(void)screen;
+	return defaultWindowTimeout;
+}
+
+char *Help::titleCallback(NcScreen *screen)
+{
+	static char title[] = "Help";
+
+	(void)screen;
+	return title;
+}
+
+void Help::updateCallback(NcScreen *screen)
+{
+	(void)screen;
+}
+
+void Help::mouseButtonPressedCallback(NcScreen *screen, MEVENT event)
+{
+	scrollpadMouseButtonPressed(fromScreen(screen)->w, event);
+}
+
+bool Help::isLockableCallback(NcScreen *screen)
+{
+	(void)screen;
+	return true;
+}
+
+bool Help::isMergableCallback(NcScreen *screen)
+{
+	(void)screen;
+	return true;
+}
+
+void Help::destroyCallback(NcScreen *screen)
+{
+	Help *help = fromScreen(screen);
+
+	if (myHelp == help)
+		myHelp = nullptr;
+	delete help;
 }

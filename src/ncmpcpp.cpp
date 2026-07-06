@@ -37,6 +37,7 @@
 #include "charset.h"
 #include "configuration.h"
 #include "global.h"
+#include "screens/screen_legacy.h"
 #include "helpers.h"
 #include "screens/lyrics.h"
 #include "screens/outputs.h"
@@ -83,8 +84,7 @@ void do_at_exit()
 
 int main(int argc, char **argv)
 {
-	using Global::myScreen;
-
+	
 	using Global::wHeader;
 	using Global::wFooter;
 
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
 	myPlaylist->switchTo();
 
 	// go to startup screen
-	if (Config.startup_screen_type != myScreen->type())
+	if (Config.startup_screen_type != screenLegacyCurrent()->type())
 	{
 		auto startup_screen = toScreen(Config.startup_screen_type);
 		assert(startup_screen != nullptr);
@@ -151,8 +151,8 @@ int main(int argc, char **argv)
 	if (Config.startup_slave_screen_type)
 	{
 		auto slave_screen_type = *Config.startup_slave_screen_type;
-		bool screen_locked = myScreen->lock();
-		if (screen_locked && slave_screen_type != myScreen->type())
+		bool screen_locked = screenLegacyCurrent()->lock();
+		if (screen_locked && slave_screen_type != screenLegacyCurrent()->type())
 		{
 			auto slave_screen = toScreen(slave_screen_type);
 			assert(slave_screen != nullptr);
@@ -237,7 +237,7 @@ int main(int argc, char **argv)
 				Statusbar::printf("Action aborted");
 			}
 
-			if (myScreen == myPlaylist)
+			if (screenLegacyCurrent() == myPlaylist)
 				myPlaylist->enableHighlighting();
 		}
 		catch (MPD::ClientError &e)
