@@ -25,14 +25,13 @@
 #include "charset.h"
 #include "app_controller.h"
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "helpers.h"
 #include "screens/screen_switcher.h"
 #include "screens/screen_legacy.h"
 #include "statusbar.h"
 #include "title.h"
 
-using Global::MainHeight;
-using Global::MainStartY;
 
 namespace {
 
@@ -90,8 +89,8 @@ Lastfm::Lastfm()
                           this,
                           0,
                           COLS,
-                          MainStartY,
-                          MainHeight);
+                          ui_state_legacy_main_start_y(),
+                          ui_state_legacy_main_height());
     w = NC::Scrollpad(nc_lastfm_screen_start_x(&m_screen),
                       nc_lastfm_screen_start_y(&m_screen),
                       nc_lastfm_screen_width(&m_screen),
@@ -222,8 +221,8 @@ void Lastfm::setDimensions()
     nc_lastfm_screen_set_geometry(&m_screen,
                                   static_cast<int64>(x_offset),
                                   static_cast<int64>(width),
-                                  MainStartY,
-                                  MainHeight);
+                                  ui_state_legacy_main_start_y(),
+                                  ui_state_legacy_main_height());
 }
 
 NcScreenCallbacks Lastfm::makeCallbacks()

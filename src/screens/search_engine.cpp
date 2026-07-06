@@ -24,6 +24,7 @@
 #include "curses/menu_impl.h"
 #include "display.h"
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "helpers.h"
 #include "screens/playlist.h"
 #include "screens/search_engine.h"
@@ -36,8 +37,6 @@
 #include "title.h"
 #include "screens/screen_switcher.h"
 
-using Global::MainHeight;
-using Global::MainStartY;
 
 namespace ph = std::placeholders;
 
@@ -172,7 +171,7 @@ size_t SearchEngine::ResetButton = 16;
 size_t SearchEngine::SearchButton = 15;
 
 SearchEngine::SearchEngine()
-: Screen(NC::Menu<SEItem>(0, MainStartY, COLS, MainHeight, "", Config.main_color, NC::Border()))
+: Screen(NC::Menu<SEItem>(0, ui_state_legacy_main_start_y(), COLS, ui_state_legacy_main_height(), "", Config.main_color, NC::Border()))
 {
 	setHighlightFixes(w);
 	w.cyclicScrolling(Config.use_cyclic_scrolling);
@@ -187,8 +186,8 @@ void SearchEngine::resize()
 {
 	size_t x_offset, width;
 	getWindowResizeParams(x_offset, width);
-	w.resize(width, MainHeight);
-	w.moveTo(x_offset, MainStartY);
+	w.resize(width, ui_state_legacy_main_height());
+	w.moveTo(x_offset, ui_state_legacy_main_start_y());
 	switch (Config.search_engine_display_mode)
 	{
 		case DisplayMode::Columns:
@@ -314,7 +313,7 @@ void SearchEngine::runAction()
 		Statusbar::ScopedLock slock;
 		std::string constraint = ConstraintsNames[option];
 		Statusbar::put() << NC::Format::Bold << constraint << NC::Format::NoBold << ": ";
-		itsConstraints[option] = Global::wFooter->prompt(itsConstraints[option]);
+		itsConstraints[option] = ui_state_legacy_footer_window()->prompt(itsConstraints[option]);
 		w.current()->value().buffer().clear();
 		constraint.resize(13, ' ');
 		w.current()->value().buffer() << NC::Format::Bold << constraint << NC::Format::NoBold << ": ";

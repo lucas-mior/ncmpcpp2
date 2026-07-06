@@ -34,6 +34,7 @@
 #include "display.h"
 #include "helpers.h"
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "screens/song_info.h"
 #include "screens/playlist.h"
 #include "screens/search_engine.h"
@@ -45,8 +46,6 @@
 #include "screens/screen_legacy.h"
 #include "utility/string.h"
 
-using Global::MainHeight;
-using Global::MainStartY;
 
 TinyTagEditor *myTinyTagEditor;
 
@@ -65,7 +64,7 @@ std::string channelsString(int channels)
 }
 
 TinyTagEditor::TinyTagEditor()
-: Screen(NC::Menu<NC::Buffer>(0, MainStartY, COLS, MainHeight, "", Config.main_color, NC::Border()))
+: Screen(NC::Menu<NC::Buffer>(0, ui_state_legacy_main_start_y(), COLS, ui_state_legacy_main_height(), "", Config.main_color, NC::Border()))
 {
 	w.setHighlightPrefix(Config.current_item_prefix);
 	w.setHighlightSuffix(Config.current_item_suffix);
@@ -80,8 +79,8 @@ void TinyTagEditor::resize()
 {
 	size_t x_offset, width;
 	getWindowResizeParams(x_offset, width);
-	w.resize(width, MainHeight);
-	w.moveTo(x_offset, MainStartY);
+	w.resize(width, ui_state_legacy_main_height());
+	w.moveTo(x_offset, ui_state_legacy_main_start_y());
 	hasToBeResized = 0;
 }
 
@@ -147,7 +146,7 @@ void TinyTagEditor::runAction()
 		Statusbar::ScopedLock slock;
 		size_t pos = option-8;
 		Statusbar::put() << NC::Format::Bold << SongInfo::Tags[pos].Name << ": " << NC::Format::NoBold;
-		itsEdited.setTags(SongInfo::Tags[pos].Field, Global::wFooter->prompt(
+		itsEdited.setTags(SongInfo::Tags[pos].Field, ui_state_legacy_footer_window()->prompt(
 			itsEdited.getTags(SongInfo::Tags[pos].Get)));
 		w.at(option).value().clear();
 		w.at(option).value() << NC::Format::Bold << SongInfo::Tags[pos].Name << ':' << NC::Format::NoBold << ' ';
@@ -165,7 +164,7 @@ void TinyTagEditor::runAction()
 			extension = filename.substr(dot);
 			filename = filename.substr(0, dot);
 		}
-		std::string new_name = Global::wFooter->prompt(filename);
+		std::string new_name = ui_state_legacy_footer_window()->prompt(filename);
 		if (!new_name.empty())
 		{
 			itsEdited.setNewName(new_name + extension);

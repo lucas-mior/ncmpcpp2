@@ -22,29 +22,12 @@
 #define NCMPCPP_GLOBAL_H
 
 #include <chrono>
-#include <stddef.h>
 #include <random>
 #include <string>
 
 #include "mpdpp.h"
 
-namespace NC {
-struct Window;
-}
-
 namespace Global {
-
-// header window (above main window)
-extern NC::Window *wHeader;
-
-// footer window (below main window)
-extern NC::Window *wFooter;
-
-// Y coordinate of top of main window
-extern size_t MainStartY;
-
-// height of main window
-extern size_t MainHeight;
 
 // indicates whether seeking action in currently in progress
 extern bool SeekingInProgress;

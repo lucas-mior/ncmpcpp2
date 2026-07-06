@@ -37,6 +37,7 @@
 #include "charset.h"
 #include "configuration.h"
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "screens/screen_legacy.h"
 #include "helpers.h"
 #include "screens/lyrics.h"
@@ -85,9 +86,6 @@ void do_at_exit()
 int main(int argc, char **argv)
 {
 	
-	using Global::wHeader;
-	using Global::wFooter;
-
 	using Global::VolumeState;
 	using Global::Timer;
 
@@ -123,12 +121,14 @@ int main(int argc, char **argv)
 	Actions::setWindowsDimensions();
 	Actions::initializeScreens();
 
-	wHeader = new NC::Window(0, 0, COLS, Actions::HeaderHeight, "", Config.header_color, NC::Border());
+	auto header_window = new NC::Window(0, 0, COLS, Actions::HeaderHeight, "", Config.header_color, NC::Border());
+	ui_state_legacy_set_header_window(header_window);
 	if (Config.header_visibility || Config.design == Design::Alternative)
-		wHeader->display();
+		header_window->display();
 
-	wFooter = new NC::Window(0, Actions::FooterStartY, COLS, Actions::FooterHeight, "", Config.statusbar_color, NC::Border());
-	wFooter->setPromptHook(Statusbar::Helpers::mainHook);
+	auto footer_window = new NC::Window(0, Actions::FooterStartY, COLS, Actions::FooterHeight, "", Config.statusbar_color, NC::Border());
+	ui_state_legacy_set_footer_window(footer_window);
+	footer_window->setPromptHook(Statusbar::Helpers::mainHook);
 
 	// initialize global timer
 	Timer = std::chrono::steady_clock::now();
@@ -179,7 +179,7 @@ int main(int argc, char **argv)
 				// reset local status info
 				Status::clear();
 				// clear mpd callback
-				wFooter->clearFDCallbacksList();
+				ui_state_legacy_footer_window()->clearFDCallbacksList();
 				try
 				{
 					Mpd.Connect();
@@ -203,7 +203,7 @@ int main(int argc, char **argv)
 
 			update_environment.run(!key_pressed, key_pressed, false);
 
-			input = readKey(*wFooter);
+			input = readKey(*ui_state_legacy_footer_window());
 			key_pressed = input != NC::Key::None;
 			if (!key_pressed)
 				continue;

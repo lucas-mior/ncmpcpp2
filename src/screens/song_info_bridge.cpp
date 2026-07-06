@@ -25,6 +25,7 @@
 #include "curses/formatted_color.h"
 #include "app_controller.h"
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "helpers.h"
 #include "screens/screen_switcher.h"
 #include "screens/screen_legacy.h"
@@ -37,8 +38,6 @@
 # include "c/ncm_tags.h"
 #endif
 
-using Global::MainHeight;
-using Global::MainStartY;
 
 namespace {
 
@@ -195,8 +194,8 @@ SongInfo::SongInfo()
                              makeHooks(),
                              0,
                              COLS,
-                             MainStartY,
-                             MainHeight,
+                             ui_state_legacy_main_start_y(),
+                             ui_state_legacy_main_height(),
                              NC::toNcColor(Config.main_color),
                              toNcBorder(NC::Border()),
                              static_cast<int64>(Config.lines_scrolled));
@@ -408,8 +407,8 @@ void SongInfo::setGeometry(NcSongInfoScreen *screen)
     nc_song_info_screen_set_geometry(screen,
                                      static_cast<int64>(x_offset),
                                      static_cast<int64>(width),
-                                     MainStartY,
-                                     MainHeight);
+                                     ui_state_legacy_main_start_y(),
+                                     ui_state_legacy_main_height());
     hasToBeResized = false;
 }
 
