@@ -120,27 +120,11 @@ std::vector<Column> generate_columns(const std::string &format)
 
 Format::AST<char> columns_to_format(const std::vector<Column> &columns)
 {
-	std::vector<Format::Expression<char>> result;
+	std::vector<std::string> types;
 
-	auto column = columns.begin();
-	while (true)
-	{
-		Format::FirstOf<char> first_of;
-		for (const auto &type : column->type)
-		{
-			enum NcmSongGetter getter = ncm_song_getter_from_char(type);
-			assert(getter != NCM_SONG_GETTER_NONE);
-			first_of.base().push_back(getter);
-		}
-		result.push_back(std::move(first_of));
-
-		if (++column != columns.end())
-			result.push_back(" ");
-		else
-			break;
-	}
-
-	return Format::AST<char>(std::move(result));
+	for (const auto &column : columns)
+		types.push_back(column.type);
+	return Format::makeColumnsFormat(types);
 }
 
 void add_slash_at_the_end(std::string &s)

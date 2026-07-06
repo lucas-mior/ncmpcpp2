@@ -258,5 +258,7 @@ template <> inline void Screen<NC::Scrollpad>::mouseButtonPressed(MEVENT me) {
 	scrollpadMouseButtonPressed(w, me);
 }
 
+#include "screens/screen_compat_impl.h"
+
 #endif // NCMPCPP_SCREEN_H
 

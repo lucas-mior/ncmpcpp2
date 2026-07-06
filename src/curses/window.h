@@ -527,4 +527,6 @@ private:
 
 }
 
+#include "curses/window_compat_impl.h"
+
 #endif // NCMPCPP_WINDOW_H

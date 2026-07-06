@@ -51,6 +51,11 @@ NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
 APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
 REMOVED_CXX_SRCS := \
 	src/charset.cpp \
+	src/curses/formatted_color.cpp \
+	src/curses/scrollpad.cpp \
+	src/curses/window.cpp \
+	src/display.cpp \
+	src/format.cpp \
 	src/enums.cpp \
 	src/global.cpp \
 	src/macro_utilities.cpp \
@@ -59,6 +64,10 @@ REMOVED_CXX_SRCS := \
 	src/screens/outputs.cpp \
 	src/screens/server_info.cpp \
 	src/screens/song_info.cpp \
+	src/screens/native_c_screens.cpp \
+	src/screens/screen.cpp \
+	src/screens/screen_legacy.cpp \
+	src/screens/screen_type.cpp \
 	src/song.cpp \
 	src/song_list.cpp \
 	src/tags.cpp \
