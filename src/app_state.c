@@ -47,6 +47,11 @@ app_state_unregister_screen(NcScreen *screen) {
     return nc_screen_registry_unregister(&screen_registry, screen);
 }
 
+NcScreen *
+app_state_find_screen_type(int32 type) {
+    return nc_screen_registry_find(&screen_registry, type);
+}
+
 bool
 app_state_switch_to_screen(NcScreen *screen) {
     last_switch_changed_screen = screen_registry.current_screen != screen;

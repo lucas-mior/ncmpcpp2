@@ -85,4 +85,20 @@ private:
 	BaseScreen *m_previous_screen;
 };
 
+namespace screen_compat {
+
+inline void set_tab_previous_screen(BaseScreen *screen)
+{
+    BaseScreen *previous_screen = previous_legacy_screen();
+    auto tab = dynamic_cast<Tabbable *>(screen);
+
+    if (tab == nullptr)
+        return;
+    if (dynamic_cast<Tabbable *>(previous_screen) == nullptr)
+        return;
+    tab->setPreviousScreen(previous_screen);
+}
+
+}
+
 #endif // NCMPCPP_INTERFACES_H

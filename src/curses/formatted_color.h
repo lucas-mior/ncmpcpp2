@@ -116,4 +116,6 @@ OutputStreamT &operator<<(OutputStreamT &os,
 
 }
 
+#include "curses/formatted_color_compat_impl.h"
+
 #endif // NCMPCPP_FORMATTED_COLOR_H

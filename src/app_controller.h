@@ -17,6 +17,7 @@ NcScreen *app_controller_inactive_screen(void);
 bool app_controller_last_switch_changed_screen(void);
 bool app_controller_register_screen(NcScreen *screen);
 bool app_controller_unregister_screen(NcScreen *screen);
+NcScreen *app_controller_find_screen_type(int32 type);
 bool app_controller_is_screen_registered(NcScreen *screen);
 bool app_controller_is_screen_visible(NcScreen *screen);
 void app_controller_each_visible_screen(NcScreenEachCallback callback,
