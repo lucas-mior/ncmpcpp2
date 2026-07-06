@@ -28,7 +28,7 @@
 #include "mpdpp.h"
 #include "screens/playlist.h"
 #include "screens/sel_items_adder.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "statusbar.h"
 #include "utility/comparators.h"
 #include "screens/screen_switcher.h"

@@ -23,12 +23,14 @@
 
 #include <algorithm>
 #include <cassert>
+#include <string>
 #include <unordered_map>
+#include "curses/nc_window.h"
 #include "actions.h"
 #include "macro_utilities.h"
 
-NC::Key::Type readKey(NC::Window &w);
-std::wstring keyToWString(const NC::Key::Type key);
+NcKey readKey(NC::Window &w);
+std::wstring keyToWString(const NcKey key);
 
 /// Represents either single action or chain of actions bound to a certain key
 struct Binding
@@ -85,7 +87,7 @@ private:
 class BindingsConfiguration
 {
 	typedef std::unordered_map<std::string, Command> CommandsSet;
-	typedef std::unordered_map<NC::Key::Type, std::vector<Binding>> BindingsMap;
+	typedef std::unordered_map<NcKey, std::vector<Binding>> BindingsMap;
 
 public:
 	typedef BindingsMap::value_type::second_type::iterator BindingIterator;
@@ -96,18 +98,18 @@ public:
 	void generateDefaults();
 
 	const Command *findCommand(const std::string &name);
-	BindingIteratorPair get(const NC::Key::Type &k);
+	BindingIteratorPair get(const NcKey &k);
 
 	BindingsMap::const_iterator begin() const { return m_bindings.begin(); }
 	BindingsMap::const_iterator end() const { return m_bindings.end(); }
 
 private:
-	bool notBound(const NC::Key::Type &k) const {
-		return k != NC::Key::None && m_bindings.find(k) == m_bindings.end();
+	bool notBound(const NcKey &k) const {
+		return k != NC_KEY_NONE && m_bindings.find(k) == m_bindings.end();
 	}
 
 	template <typename ArgT>
-	void bind(NC::Key::Type k, ArgT &&t) {
+	void bind(NcKey k, ArgT &&t) {
 		m_bindings[k].push_back(std::forward<ArgT>(t));
 	}
 

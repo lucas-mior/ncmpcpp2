@@ -27,7 +27,7 @@
 #include "configuration.h"
 #include "format_impl.h"
 #include "helpers.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "utility/conversion.h"
 #include "utility/option_parser.h"
 

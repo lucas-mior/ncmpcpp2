@@ -31,28 +31,28 @@
 #include "screens/outputs.h"
 #include "screens/screen_switcher.h"
 #include "screens/screen_legacy.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "statusbar.h"
 #include "title.h"
 
 
 namespace {
 
-NcScroll toNcScroll(NC::Scroll where)
+NcScroll toNcScroll(enum NcScroll where)
 {
     switch (where)
     {
-        case NC::Scroll::Up:
+        case NC_SCROLL_UP:
             return NC_SCROLL_UP;
-        case NC::Scroll::Down:
+        case NC_SCROLL_DOWN:
             return NC_SCROLL_DOWN;
-        case NC::Scroll::PageUp:
+        case NC_SCROLL_PAGE_UP:
             return NC_SCROLL_PAGE_UP;
-        case NC::Scroll::PageDown:
+        case NC_SCROLL_PAGE_DOWN:
             return NC_SCROLL_PAGE_DOWN;
-        case NC::Scroll::Home:
+        case NC_SCROLL_HOME:
             return NC_SCROLL_HOME;
-        case NC::Scroll::End:
+        case NC_SCROLL_END:
             return NC_SCROLL_END;
     }
     return NC_SCROLL_UP;
@@ -134,7 +134,7 @@ void Outputs::refreshWindow()
     nc_screen_refresh_window(nativeScreen());
 }
 
-void Outputs::scroll(NC::Scroll where)
+void Outputs::scroll(enum NcScroll where)
 {
     nc_screen_scroll(nativeScreen(), toNcScroll(where));
 }

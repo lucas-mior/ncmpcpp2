@@ -153,54 +153,13 @@ int add_base()
 namespace NC {
 
 
-inline std::string keyToString(Key::Type key)
+inline std::string keyToString(NcKey key)
 {
-	std::string result;
-	if (key & Key::Ctrl)
-		result += "Ctrl+";
-	if (key & Key::Alt)
-		result += "Alt+";
-	if (key & Key::Shift)
-		result += "Shift+";
+	char buffer[64];
 
-	Key::Type base = key & ~(Key::Ctrl | Key::Alt | Key::Shift);
-	if (base >= Key::F1 && base <= Key::F12)
-		result += "F" + std::to_string(base-Key::F1+1);
-	else
-	{
-		switch (base)
-		{
-			case Key::Space: result += "Space"; break;
-			case Key::Backspace: result += "Backspace"; break;
-			case Key::Tab: result += "Tab"; break;
-			case Key::Enter: result += "Enter"; break;
-			case Key::Escape: result += "Escape"; break;
-			case Key::Insert: result += "Insert"; break;
-			case Key::Delete: result += "Delete"; break;
-			case Key::Home: result += "Home"; break;
-			case Key::End: result += "End"; break;
-			case Key::PageUp: result += "PageUp"; break;
-			case Key::PageDown: result += "PageDown"; break;
-			case Key::Up: result += "Up"; break;
-			case Key::Down: result += "Down"; break;
-			case Key::Left: result += "Left"; break;
-			case Key::Right: result += "Right"; break;
-			case Key::Mouse: result += "Mouse"; break;
-			case Key::EoF: result += "EoF"; break;
-			default:
-				if (base >= 32 && base <= 126)
-					result += static_cast<char>(base);
-				else if (base >= 1 && base <= 26)
-				{
-					if (result.empty())
-						result += "Ctrl+";
-					result += static_cast<char>('A'+base-1);
-				}
-				else
-					result += std::to_string(base);
-		}
-	}
-	return result;
+	if (nc_key_name(key, buffer, sizeof(buffer)) < 0)
+		return std::to_string(key);
+	return buffer;
 }
 
 inline const short Color::transparent = -1;
@@ -294,53 +253,11 @@ inline std::istream &operator>>(std::istream &is, Color &c)
 	return is;
 }
 
-inline NC::Format reverseFormat(NC::Format fmt)
+inline enum NcFormat reverseFormat(enum NcFormat format)
 {
-	switch (fmt)
-	{
-	case NC::Format::Bold:
-		return NC::Format::NoBold;
-	case NC::Format::NoBold:
-		return NC::Format::Bold;
-	case NC::Format::Underline:
-		return NC::Format::NoUnderline;
-	case NC::Format::NoUnderline:
-		return NC::Format::Underline;
-	case NC::Format::Reverse:
-		return NC::Format::NoReverse;
-	case NC::Format::NoReverse:
-		return NC::Format::Reverse;
-	case NC::Format::AltCharset:
-		return NC::Format::NoAltCharset;
-	case NC::Format::NoAltCharset:
-		return NC::Format::AltCharset;
-	case NC::Format::Italic:
-		return NC::Format::NoItalic;
-	case NC::Format::NoItalic:
-		return NC::Format::Italic;
-	}
-	// Unreachable, silence GCC.
-	return fmt;
+	return nc_format_reverse(format);
 }
 
-namespace Mouse {
-
-inline void enable()
-{
-	nc_mouse_enable();
-}
-
-inline void disable()
-{
-	nc_mouse_disable();
-}
-
-}
-
-inline int colorCount()
-{
-	return nc_color_count();
-}
 
 inline void initScreen(bool enable_colors, bool enable_mouse)
 {
@@ -373,6 +290,11 @@ inline void initScreen(bool enable_colors, bool enable_mouse)
 	rl_getc_function = rl::read_key;
 	rl_redisplay_function = rl::display_string;
 	rl_startup_hook = rl::add_base;
+}
+
+inline int colorCount()
+{
+	return nc_color_count();
 }
 
 inline void pauseScreen()
@@ -476,53 +398,17 @@ inline Border Window::fromNcBorder(NcBorder border)
 	return fromNcColor(border.color);
 }
 
-inline NcFormat Window::toNcFormat(Format format)
+inline NcFormat Window::toNcFormat(enum NcFormat format)
 {
-	switch (format)
-	{
-	case Format::Bold:
-		return NC_FORMAT_BOLD;
-	case Format::NoBold:
-		return NC_FORMAT_NO_BOLD;
-	case Format::Underline:
-		return NC_FORMAT_UNDERLINE;
-	case Format::NoUnderline:
-		return NC_FORMAT_NO_UNDERLINE;
-	case Format::Reverse:
-		return NC_FORMAT_REVERSE;
-	case Format::NoReverse:
-		return NC_FORMAT_NO_REVERSE;
-	case Format::AltCharset:
-		return NC_FORMAT_ALT_CHARSET;
-	case Format::NoAltCharset:
-		return NC_FORMAT_NO_ALT_CHARSET;
-	case Format::Italic:
-		return NC_FORMAT_ITALIC;
-	case Format::NoItalic:
-		return NC_FORMAT_NO_ITALIC;
-	}
-	return NC_FORMAT_BOLD;
+	return format;
 }
 
-inline NcScroll Window::toNcScroll(Scroll scroll)
+
+inline NcScroll Window::toNcScroll(enum NcScroll scroll)
 {
-	switch (scroll)
-	{
-	case Scroll::Up:
-		return NC_SCROLL_UP;
-	case Scroll::Down:
-		return NC_SCROLL_DOWN;
-	case Scroll::PageUp:
-		return NC_SCROLL_PAGE_UP;
-	case Scroll::PageDown:
-		return NC_SCROLL_PAGE_DOWN;
-	case Scroll::Home:
-		return NC_SCROLL_HOME;
-	case Scroll::End:
-		return NC_SCROLL_END;
-	}
-	return NC_SCROLL_UP;
+	return scroll;
 }
+
 
 inline void Window::syncFromC()
 {
@@ -658,12 +544,12 @@ inline bool Window::FDCallbacksListEmpty() const
 	return nc_window_fd_callbacks_empty(const_cast<NcWindow *>(&m_impl));
 }
 
-inline Key::Type Window::readKey()
+inline NcKey Window::readKey()
 {
 	return nc_window_read_key(&m_impl);
 }
 
-inline void Window::pushChar(const Key::Type ch)
+inline void Window::pushChar(NcKey ch)
 {
 	nc_window_push_key(&m_impl, ch);
 }
@@ -680,11 +566,11 @@ inline std::string Window::prompt(const std::string &base, size_t width, bool en
 	rl::base = base.c_str();
 
 	curs_set(1);
-	Mouse::disable();
+	nc_mouse_disable();
 	nc_window_set_escape_terminal_sequences(&m_impl, false);
 	char *input = readline(nullptr);
 	nc_window_set_escape_terminal_sequences(&m_impl, true);
-	Mouse::enable();
+	nc_mouse_enable();
 	curs_set(0);
 	if (input != nullptr)
 	{
@@ -788,7 +674,7 @@ inline const MEVENT &Window::getMouseEvent()
 	return *nc_window_mouse_event(&m_impl);
 }
 
-inline void Window::scroll(Scroll where)
+inline void Window::scroll(enum NcScroll where)
 {
 	nc_window_scroll(&m_impl, toNcScroll(where));
 }
@@ -800,7 +686,7 @@ inline Window &Window::operator<<(const Color &c)
 	return *this;
 }
 
-inline Window &Window::operator<<(Format format)
+inline Window &Window::operator<<(enum NcFormat format)
 {
 	nc_window_apply_format(&m_impl, toNcFormat(format));
 	return *this;

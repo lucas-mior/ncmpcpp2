@@ -25,7 +25,7 @@
 #include "ui_state_legacy.h"
 #include "helpers.h"
 #include "screens/playlist.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "screens/sort_playlist.h"
 #include "statusbar.h"
 #include "utility/comparators.h"
@@ -142,7 +142,7 @@ void SortPlaylistDialog::moveSortOrderDown()
 	if ((cur+1)->item().second != NCM_SONG_GETTER_NONE)
 	{
 		std::iter_swap(cur, cur+1);
-		w.scroll(NC::Scroll::Down);
+		w.scroll(NC_SCROLL_DOWN);
 	}
 }
 
@@ -152,7 +152,7 @@ void SortPlaylistDialog::moveSortOrderUp()
 	if (cur > w.beginV() && cur->item().second != NCM_SONG_GETTER_NONE)
 	{
 		std::iter_swap(cur, cur-1);
-		w.scroll(NC::Scroll::Up);
+		w.scroll(NC_SCROLL_UP);
 	}
 }
 

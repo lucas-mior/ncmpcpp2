@@ -551,7 +551,7 @@ void TagEditor::runAction()
 		*FParserLegend << "%p - performer\n";
 		*FParserLegend << "%d - disc\n";
 		*FParserLegend << "%C - comment\n\n";
-		*FParserLegend << NC::Format::Bold << "Files:\n" << NC::Format::NoBold;
+		*FParserLegend << NC_FORMAT_BOLD << "Files:\n" << NC_FORMAT_NO_BOLD;
 		for (auto it = EditedSongs.begin(); it != EditedSongs.end(); ++it)
 			*FParserLegend << Config.color2
 			               << " * "
@@ -617,7 +617,7 @@ void TagEditor::runAction()
 				{
 					if (FParserUsePreview)
 					{
-						*FParserPreview << NC::Format::Bold << s.getName() << ":\n" << NC::Format::NoBold;
+						*FParserPreview << NC_FORMAT_BOLD << s.getName() << ":\n" << NC_FORMAT_NO_BOLD;
 						*FParserPreview << ParseFilename(s, Config.pattern, FParserUsePreview) << '\n';
 					}
 					else
@@ -734,7 +734,7 @@ void TagEditor::runAction()
 		if (w == TagTypes)
 		{
 			Statusbar::ScopedLock slock;
-			Statusbar::put() << NC::Format::Bold << TagTypes->current()->value() << NC::Format::NoBold << ": ";
+			Statusbar::put() << NC_FORMAT_BOLD << TagTypes->current()->value() << NC_FORMAT_NO_BOLD << ": ";
 			std::string new_tag = ui_state_legacy_footer_window()->prompt(Tags->current()->value().getTags(getter));
 			for (auto it = EditedSongs.begin(); it != EditedSongs.end(); ++it)
 				(*it)->setTags(field, new_tag);
@@ -742,11 +742,11 @@ void TagEditor::runAction()
 		else if (w == Tags)
 		{
 			Statusbar::ScopedLock slock;
-			Statusbar::put() << NC::Format::Bold << TagTypes->current()->value() << NC::Format::NoBold << ": ";
+			Statusbar::put() << NC_FORMAT_BOLD << TagTypes->current()->value() << NC_FORMAT_NO_BOLD << ": ";
 			std::string new_tag = ui_state_legacy_footer_window()->prompt(Tags->current()->value().getTags(getter));
 			if (new_tag != Tags->current()->value().getTags(getter))
 				Tags->current()->value().setTags(field, new_tag);
-			Tags->scroll(NC::Scroll::Down);
+			Tags->scroll(NC_SCROLL_DOWN);
 		}
 	}
 	else
@@ -766,11 +766,11 @@ void TagEditor::runAction()
 				size_t last_dot = old_name.rfind(".");
 				std::string extension = old_name.substr(last_dot);
 				old_name = old_name.substr(0, last_dot);
-				Statusbar::put() << NC::Format::Bold << "New filename: " << NC::Format::NoBold;
+				Statusbar::put() << NC_FORMAT_BOLD << "New filename: " << NC_FORMAT_NO_BOLD;
 				std::string new_name = ui_state_legacy_footer_window()->prompt(old_name);
 				if (!new_name.empty())
 					s.setNewName(new_name + extension);
-				Tags->scroll(NC::Scroll::Down);
+				Tags->scroll(NC_SCROLL_DOWN);
 			}
 		}
 		else if (id == TagTypes->size()-5) // capitalize first letters

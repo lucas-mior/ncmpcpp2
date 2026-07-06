@@ -33,7 +33,7 @@
 #include "curses/menu_impl.h"
 #include "screens/screen_switcher.h"
 #include "screens/screen_legacy.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "status.h"
 #include "statusbar.h"
 #include "screens/tag_editor.h"

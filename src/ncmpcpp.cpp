@@ -41,7 +41,7 @@
 #include "helpers.h"
 #include "screens/lyrics.h"
 #include "screens/playlist.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "status.h"
 #include "statusbar.h"
 #include "screens/visualizer.h"
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
 
 	// local variables
 	bool key_pressed = false;
-	auto input = NC::Key::None;
+	auto input = NC_KEY_NONE;
 	NcmTimePoint connect_attempt = {};
 	auto update_environment = static_cast<Actions::UpdateEnvironment &>(
 		Actions::get(Actions::Type::UpdateEnvironment));
@@ -202,7 +202,7 @@ int main(int argc, char **argv)
 			update_environment.run(!key_pressed, key_pressed, false);
 
 			input = readKey(*ui_state_legacy_footer_window());
-			key_pressed = input != NC::Key::None;
+			key_pressed = input != NC_KEY_NONE;
 			if (!key_pressed)
 				continue;
 
