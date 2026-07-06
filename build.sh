@@ -43,6 +43,7 @@ src/c/ncm_utf8.c
 '
 
 APP_C_SOURCES='
+src/app_controller.c
 src/app_state.c
 src/curses/nc_buffer.c
 src/curses/nc_formatted_color.c
@@ -89,6 +90,7 @@ src/screens/outputs_bridge.cpp
 src/screens/playlist.cpp
 src/screens/playlist_editor.cpp
 src/screens/screen.cpp
+src/screens/screen_legacy.cpp
 src/screens/screen_type.cpp
 src/screens/search_engine.cpp
 src/screens/sel_items_adder.cpp

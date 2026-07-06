@@ -20,6 +20,8 @@ libncmpcpp_c_la_SOURCES = \
 
 bin_PROGRAMS = ncmpcpp
 ncmpcpp_SOURCES = \
+	app_controller.c \
+	app_state.c \
 	curses/formatted_color.cpp \
 	curses/nc_buffer.c \
 	curses/nc_formatted_color.c \
@@ -27,6 +29,7 @@ ncmpcpp_SOURCES = \
 	curses/nc_scrollpad.c \
 	curses/nc_window.c \
 	screens/nc_screen.c \
+	screens/nc_lastfm.c \
 	screens/nc_scrollpad_screen.c \
 	screens/nc_help.c \
 	screens/nc_lyrics.c \
@@ -37,19 +40,20 @@ ncmpcpp_SOURCES = \
 	curses/scrollpad.cpp \
 	curses/window.cpp \
 	screens/browser.cpp \
-	screens/help.cpp \
+	screens/help_bridge.cpp \
 	screens/lastfm.cpp \
 	screens/lyrics.cpp \
 	screens/media_library.cpp \
-	screens/outputs.cpp \
+	screens/outputs_bridge.cpp \
 	screens/playlist.cpp \
 	screens/playlist_editor.cpp \
 	screens/screen.cpp \
+	screens/screen_legacy.cpp \
 	screens/screen_type.cpp \
 	screens/search_engine.cpp \
 	screens/sel_items_adder.cpp \
-	screens/server_info.cpp \
-	screens/song_info.cpp \
+	screens/server_info_bridge.cpp \
+	screens/song_info_bridge.cpp \
 	screens/sort_playlist.cpp \
 	screens/tag_editor.cpp \
 	screens/tiny_tag_editor.cpp \
@@ -91,6 +95,8 @@ AM_CPPFLAGS= $(all_includes)
 ncmpcpp_LDFLAGS = $(all_libraries)
 ncmpcpp_LDADD = libncmpcpp_c.la ../cbase/libcbase.la
 noinst_HEADERS = \
+	app_controller.h \
+	app_state.h \
 	c/ncm_base.h \
 	c/ncm_defs.h \
 	c/ncm_directory.h \
@@ -118,6 +124,7 @@ noinst_HEADERS = \
 	curses/nc_window.h \
 	curses/scrollpad.h \
 	screens/nc_screen.h \
+	screens/nc_lastfm.h \
 	screens/nc_scrollpad_screen.h \
 	screens/nc_help.h \
 	screens/nc_lyrics.h \
@@ -135,6 +142,7 @@ noinst_HEADERS = \
 	screens/outputs.h \
 	screens/playlist_editor.h \
 	screens/screen.h \
+	screens/screen_legacy.h \
 	screens/screen_switcher.h \
 	screens/screen_type.h \
 	screens/search_engine.h \

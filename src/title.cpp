@@ -22,6 +22,7 @@
 #include <iostream>
 
 #include "global.h"
+#include "screens/screen_legacy.h"
 #include "settings.h"
 #include "title.h"
 #include "utility/utf8.h"
@@ -34,7 +35,6 @@ void windowTitle(const std::string &status)
 
 void drawHeader()
 {
-	using Global::myScreen;
 	using Global::wHeader;
 	using Global::VolumeState;
 	
@@ -46,7 +46,7 @@ void drawHeader()
 			*wHeader << NC::XY(0, 0)
 			         << NC::TermManip::ClearToEOL
 			         << NC::Format::Bold
-			         << myScreen->title()
+			         << screenLegacyCurrent()->title()
 			         << NC::Format::NoBold
 			         << NC::XY(wHeader->getWidth()-VolumeState.length(), 0)
 			         << Config.volume_color
@@ -54,7 +54,7 @@ void drawHeader()
 			         << NC::FormattedColor::End<>(Config.volume_color);
 			break;
 		case Design::Alternative:
-			std::string title = myScreen->title();
+			std::string title = screenLegacyCurrent()->title();
 			*wHeader << NC::XY(0, 3)
 			         << NC::TermManip::ClearToEOL
 			         << Config.alternative_ui_separator_color;

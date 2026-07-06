@@ -33,7 +33,6 @@
 #include "utility/string.h"
 #include "utility/utf8.h"
 
-using Global::myScreen;
 
 namespace {
 

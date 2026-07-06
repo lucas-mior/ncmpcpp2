@@ -25,7 +25,7 @@
 
 #include "curses/menu_impl.h"
 #include "display.h"
-#include "app_state.h"
+#include "app_controller.h"
 #include "global.h"
 #include "helpers.h"
 #include "screens/playlist.h"
@@ -96,16 +96,16 @@ Playlist::Playlist()
 	                                    Config.lines_scrolled,
 	                                    Config.mouse_list_scroll_whole_page);
 
-	bool register_success = app_state_register_screen(nativeScreen());
+	bool register_success = app_controller_register_screen(nativeScreen());
 	assert(register_success);
 	(void)register_success;
 }
 
 Playlist::~Playlist()
 {
-	if (app_state_is_screen_registered(nativeScreen()))
+	if (app_controller_is_screen_registered(nativeScreen()))
 	{
-		app_state_unregister_screen(nativeScreen());
+		app_controller_unregister_screen(nativeScreen());
 	}
 }
 
@@ -127,7 +127,7 @@ void Playlist::scroll(NC::Scroll where)
 void Playlist::switchTo()
 {
 	nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-	app_state_switch_to_screen(nativeScreen());
+	app_controller_switch_to_screen(nativeScreen());
 }
 
 void Playlist::resize()
@@ -521,9 +521,9 @@ void Playlist::destroyCallback(NcScreen *screen)
 {
 	Playlist *playlist = fromScreen(screen);
 
-	if (app_state_is_screen_registered(playlist->nativeScreen()))
+	if (app_controller_is_screen_registered(playlist->nativeScreen()))
 	{
-		app_state_unregister_screen(playlist->nativeScreen());
+		app_controller_unregister_screen(playlist->nativeScreen());
 	}
 	delete playlist;
 }

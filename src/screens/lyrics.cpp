@@ -34,7 +34,7 @@
 #include "charset.h"
 #include "curl_handle.h"
 #include "format_impl.h"
-#include "app_state.h"
+#include "app_controller.h"
 #include "global.h"
 #include "helpers.h"
 #include "macro_utilities.h"
@@ -45,6 +45,7 @@
 #include "statusbar.h"
 #include "title.h"
 #include "screens/screen_switcher.h"
+#include "screens/screen_legacy.h"
 #include "utility/string.h"
 
 using Global::MainHeight;
@@ -245,7 +246,7 @@ Lyrics::Lyrics()
 	                      MainStartY,
 	                      MainHeight);
 
-	bool register_success = app_state_register_screen(nativeScreen());
+	bool register_success = app_controller_register_screen(nativeScreen());
 	assert(register_success);
 	(void)register_success;
 }
@@ -253,9 +254,9 @@ Lyrics::Lyrics()
 Lyrics::~Lyrics()
 {
 	stopDownload();
-	if (app_state_is_screen_registered(nativeScreen()))
+	if (app_controller_is_screen_registered(nativeScreen()))
 	{
-		app_state_unregister_screen(nativeScreen());
+		app_controller_unregister_screen(nativeScreen());
 	}
 }
 
@@ -312,7 +313,7 @@ void Lyrics::update()
 void Lyrics::switchTo()
 {
 	nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-	app_state_switch_to_screen(nativeScreen());
+	app_controller_switch_to_screen(nativeScreen());
 }
 
 std::string Lyrics::title()
@@ -391,9 +392,8 @@ void Lyrics::scrollCallback(NcScreen *screen, enum NcScroll where)
 void Lyrics::switchToCallback(NcScreen *screen)
 {
 	Lyrics *lyrics = fromScreen(screen);
-	using Global::myScreen;
-
-	if (myScreen != lyrics)
+	
+	if (screenLegacySwitchChanged())
 	{
 		SwitchTo::finishNativeSwitch(lyrics);
 		nc_lyrics_screen_reset_scroll_begin(&lyrics->m_screen);

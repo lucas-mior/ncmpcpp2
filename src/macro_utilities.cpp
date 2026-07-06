@@ -20,6 +20,7 @@
 
 #include "bindings.h"
 #include "global.h"
+#include "screens/screen_legacy.h"
 #include "macro_utilities.h"
 #include "curses/window.h"
 #include "utility/string.h"
@@ -73,7 +74,7 @@ RequireScreen::RequireScreen(ScreenType screen_type)
 
 bool RequireScreen::canBeRun()
 {
-	return Global::myScreen->type() == m_screen_type;
+	return screenLegacyCurrent()->type() == m_screen_type;
 }
 
 RunExternalCommand::RunExternalCommand(std::string &&command)

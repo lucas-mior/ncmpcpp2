@@ -23,11 +23,12 @@
 
 #include "charset.h"
 #include "curses/formatted_color.h"
-#include "app_state.h"
+#include "app_controller.h"
 #include "global.h"
 #include "mpdpp.h"
 #include "screens/outputs.h"
 #include "screens/screen_switcher.h"
+#include "screens/screen_legacy.h"
 #include "settings.h"
 #include "statusbar.h"
 #include "title.h"
@@ -93,16 +94,16 @@ Outputs::Outputs()
     nc_outputs_screen_set_highlight_suffix(
         &m_screen, Config.current_item_suffix.cBuffer());
 
-    bool register_success = app_state_register_screen(nativeScreen());
+    bool register_success = app_controller_register_screen(nativeScreen());
     assert(register_success);
     (void)register_success;
 }
 
 Outputs::~Outputs()
 {
-    if (app_state_is_screen_registered(nativeScreen()))
+    if (app_controller_is_screen_registered(nativeScreen()))
     {
-        app_state_unregister_screen(nativeScreen());
+        app_controller_unregister_screen(nativeScreen());
     }
     nc_outputs_screen_destroy(&m_screen);
 }
@@ -141,7 +142,7 @@ void Outputs::scroll(NC::Scroll where)
 void Outputs::switchTo()
 {
     nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-    app_state_switch_to_screen(nativeScreen());
+    app_controller_switch_to_screen(nativeScreen());
 }
 
 void Outputs::resize()
@@ -268,7 +269,7 @@ void Outputs::switchToHook(void *user)
 {
     Outputs *outputs = static_cast<Outputs *>(user);
 
-    if (Global::myScreen != outputs)
+    if (screenLegacySwitchChanged())
         SwitchTo::finishNativeSwitch(outputs);
     drawHeader();
 }

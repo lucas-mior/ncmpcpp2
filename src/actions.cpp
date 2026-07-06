@@ -32,8 +32,9 @@
 #include "charset.h"
 #include "config.h"
 #include "display.h"
-#include "app_state.h"
+#include "app_controller.h"
 #include "global.h"
+#include "screens/screen_legacy.h"
 #include "mpdpp.h"
 #include "helpers.h"
 #include "statusbar.h"
@@ -70,7 +71,6 @@
 # include "c/ncm_taglib.h"
 #endif // HAVE_TAGLIB_H
 
-using Global::myScreen;
 
 namespace ph = std::placeholders;
 
@@ -140,7 +140,7 @@ size_t FooterStartY;
 
 void initializeScreens()
 {
-	app_state_init();
+	app_controller_init();
 
 	myHelp = new Help;
 	myPlaylist = new Playlist;
@@ -251,7 +251,7 @@ void resizeScreen(bool reload_main_window)
 
 	setResizeFlags();
 
-	applyToVisibleScreens(nc_screen_resize);
+	app_controller_resize_visible_screens();
 
 	if (Config.header_visibility || Config.design == Design::Alternative)
 		wHeader->resize(COLS, HeaderHeight);
@@ -260,7 +260,7 @@ void resizeScreen(bool reload_main_window)
 	wFooter->moveTo(0, FooterStartY);
 	wFooter->resize(COLS, Config.statusbar_visibility ? 2 : 1);
 
-	applyToVisibleScreens(nc_screen_refresh);
+	app_controller_refresh_visible_screens();
 
 	Status::Changes::elapsedTime(false);
 	Status::Changes::playerState();
@@ -363,7 +363,7 @@ void UpdateEnvironment::run(bool update_timer, bool refresh_window, bool mpd_syn
 		Statusbar::print(*message);
 
 	// header stuff
-	if ((myScreen == myPlaylist || myScreen == myBrowser || myScreen == myLyrics)
+	if ((screenLegacyCurrent() == myPlaylist || screenLegacyCurrent() == myBrowser || screenLegacyCurrent() == myLyrics)
 	&&  (Timer - m_past > std::chrono::milliseconds(500))
 	)
 	{
@@ -372,7 +372,7 @@ void UpdateEnvironment::run(bool update_timer, bool refresh_window, bool mpd_syn
 	}
 
 	if (refresh_window)
-		myScreen->refreshWindow();
+		app_controller_refresh_current_window();
 
 	// We want to synchronize with MPD during execution of an action chain.
 	if (mpd_sync)
@@ -432,18 +432,18 @@ void MouseEvent::run()
 			get(Type::VolumeUp).execute();
 	}
 	else if (m_mouse_event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED | BUTTON4_PRESSED | BUTTON5_PRESSED))
-		myScreen->mouseButtonPressed(m_mouse_event);
+		app_controller_mouse_button_pressed_current(m_mouse_event);
 }
 
 void ScrollUp::run()
 {
-	myScreen->scroll(NC::Scroll::Up);
+	app_controller_scroll_current_screen(NC_SCROLL_UP);
 	listsChangeFinisher();
 }
 
 void ScrollDown::run()
 {
-	myScreen->scroll(NC::Scroll::Down);
+	app_controller_scroll_current_screen(NC_SCROLL_DOWN);
 	listsChangeFinisher();
 }
 
@@ -489,25 +489,25 @@ void ScrollDownAlbum::run()
 
 void PageUp::run()
 {
-	myScreen->scroll(NC::Scroll::PageUp);
+	app_controller_scroll_current_screen(NC_SCROLL_PAGE_UP);
 	listsChangeFinisher();
 }
 
 void PageDown::run()
 {
-	myScreen->scroll(NC::Scroll::PageDown);
+	app_controller_scroll_current_screen(NC_SCROLL_PAGE_DOWN);
 	listsChangeFinisher();
 }
 
 void MoveHome::run()
 {
-	myScreen->scroll(NC::Scroll::Home);
+	app_controller_scroll_current_screen(NC_SCROLL_HOME);
 	listsChangeFinisher();
 }
 
 void MoveEnd::run()
 {
-	myScreen->scroll(NC::Scroll::End);
+	app_controller_scroll_current_screen(NC_SCROLL_END);
 	listsChangeFinisher();
 }
 
@@ -535,16 +535,16 @@ void ToggleInterface::run()
 
 bool JumpToParentDirectory::canBeRun()
 {
-	return (myScreen == myBrowser)
+	return (screenLegacyCurrent() == myBrowser)
 #	ifdef HAVE_TAGLIB_H
-	    || (myScreen->activeWindow() == myTagEditor->Dirs)
+	    || (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs)
 #	endif // HAVE_TAGLIB_H
 	;
 }
 
 void JumpToParentDirectory::run()
 {
-	if (myScreen == myBrowser)
+	if (screenLegacyCurrent() == myBrowser)
 	{
 		if (!myBrowser->inRootDirectory())
 		{
@@ -553,7 +553,7 @@ void JumpToParentDirectory::run()
 		}
 	}
 #	ifdef HAVE_TAGLIB_H
-	else if (myScreen == myTagEditor)
+	else if (screenLegacyCurrent() == myTagEditor)
 	{
 		if (myTagEditor->CurrentDir() != "/")
 		{
@@ -566,7 +566,7 @@ void JumpToParentDirectory::run()
 
 bool RunAction::canBeRun()
 {
-	m_ha = dynamic_cast<HasActions *>(myScreen);
+	m_ha = dynamic_cast<HasActions *>(screenLegacyCurrent());
 	return m_ha != nullptr
 		&& m_ha->actionRunnable();
 }
@@ -578,7 +578,7 @@ void RunAction::run()
 
 bool PreviousColumn::canBeRun()
 {
-	m_hc = dynamic_cast<HasColumns *>(myScreen);
+	m_hc = dynamic_cast<HasColumns *>(screenLegacyCurrent());
 	return m_hc != nullptr
 		&& m_hc->previousColumnAvailable();
 }
@@ -590,7 +590,7 @@ void PreviousColumn::run()
 
 bool NextColumn::canBeRun()
 {
-	m_hc = dynamic_cast<HasColumns *>(myScreen);
+	m_hc = dynamic_cast<HasColumns *>(screenLegacyCurrent());
 	return m_hc != nullptr
 		&& m_hc->nextColumnAvailable();
 }
@@ -602,12 +602,12 @@ void NextColumn::run()
 
 bool MasterScreen::canBeRun()
 {
-	return app_state_can_show_locked_screen();
+	return app_controller_can_show_locked_screen();
 }
 
 void MasterScreen::run()
 {
-	if (app_state_show_locked_screen())
+	if (app_controller_show_locked_screen())
 	{
 		syncLegacyScreenPointers();
 		drawHeader();
@@ -616,12 +616,12 @@ void MasterScreen::run()
 
 bool SlaveScreen::canBeRun()
 {
-	return app_state_can_show_inactive_screen();
+	return app_controller_can_show_inactive_screen();
 }
 
 void SlaveScreen::run()
 {
-	if (app_state_show_inactive_screen())
+	if (app_controller_show_inactive_screen())
 	{
 		syncLegacyScreenPointers();
 		drawHeader();
@@ -650,7 +650,7 @@ void VolumeDown::run()
 
 bool AddItemToPlaylist::canBeRun()
 {
-	m_hs = dynamic_cast<HasSongs *>(myScreen);
+	m_hs = dynamic_cast<HasSongs *>(screenLegacyCurrent());
 	return m_hs != nullptr && m_hs->itemAvailable();
 }
 
@@ -659,14 +659,14 @@ void AddItemToPlaylist::run()
 	bool success = m_hs->addItemToPlaylist(false);
 	if (success)
 	{
-		myScreen->scroll(NC::Scroll::Down);
+		app_controller_scroll_current_screen(NC_SCROLL_DOWN);
 		listsChangeFinisher();
 	}
 }
 
 bool PlayItem::canBeRun()
 {
-	m_hs = dynamic_cast<HasSongs *>(myScreen);
+	m_hs = dynamic_cast<HasSongs *>(screenLegacyCurrent());
 	return m_hs != nullptr && m_hs->itemAvailable();
 }
 
@@ -679,19 +679,19 @@ void PlayItem::run()
 
 bool DeletePlaylistItems::canBeRun()
 {
-	return (myScreen == myPlaylist && !myPlaylist->main().empty())
-	    || (myScreen->isActiveWindow(myPlaylistEditor->Content) && !myPlaylistEditor->Content.empty());
+	return (screenLegacyCurrent() == myPlaylist && !myPlaylist->main().empty())
+	    || (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content) && !myPlaylistEditor->Content.empty());
 }
 
 void DeletePlaylistItems::run()
 {
-	if (myScreen == myPlaylist)
+	if (screenLegacyCurrent() == myPlaylist)
 	{
 		Statusbar::print("Deleting items...");
 		deleteSelectedSongsFromPlaylist(myPlaylist->main());
 		Statusbar::print("Item(s) deleted");
 	}
-	else if (myScreen->isActiveWindow(myPlaylistEditor->Content))
+	else if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content))
 	{
 		std::string playlist = myPlaylistEditor->Playlists.current()->value().path();
 		auto delete_fun = std::bind(&MPD::Connection::PlaylistDelete, ph::_1, playlist, ph::_2);
@@ -712,7 +712,7 @@ bool DeleteBrowserItems::canBeRun()
 			return false;
 		}
 	};
-	return myScreen == myBrowser
+	return screenLegacyCurrent() == myBrowser
 	    && !myBrowser->main().empty()
 	    && isMPDMusicDirSet()
 	    && check_if_deletion_allowed();
@@ -776,7 +776,7 @@ void DeleteBrowserItems::run()
 
 bool DeleteStoredPlaylist::canBeRun()
 {
-	return myScreen->isActiveWindow(myPlaylistEditor->Playlists);
+	return screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists);
 }
 
 void DeleteStoredPlaylist::run()
@@ -909,7 +909,7 @@ void ExecuteCommand::run()
 
 bool MoveSortOrderUp::canBeRun()
 {
-	return myScreen == mySortPlaylistDialog;
+	return screenLegacyCurrent() == mySortPlaylistDialog;
 }
 
 void MoveSortOrderUp::run()
@@ -919,7 +919,7 @@ void MoveSortOrderUp::run()
 
 bool MoveSortOrderDown::canBeRun()
 {
-	return myScreen == mySortPlaylistDialog;
+	return screenLegacyCurrent() == mySortPlaylistDialog;
 }
 
 void MoveSortOrderDown::run()
@@ -929,16 +929,16 @@ void MoveSortOrderDown::run()
 
 bool MoveSelectedItemsUp::canBeRun()
 {
-	return ((myScreen == myPlaylist
+	return ((screenLegacyCurrent() == myPlaylist
 	    &&  !myPlaylist->main().empty())
-	 ||    (myScreen->isActiveWindow(myPlaylistEditor->Content)
+	 ||    (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content)
 	    &&  !myPlaylistEditor->Content.empty()));
 }
 
 void MoveSelectedItemsUp::run()
 {
 	const char *filteredMsg = "Moving items up is disabled in filtered playlist";
-	if (myScreen == myPlaylist)
+	if (screenLegacyCurrent() == myPlaylist)
 	{
 		if (myPlaylist->main().isFiltered())
 			Statusbar::print(filteredMsg);
@@ -947,7 +947,7 @@ void MoveSelectedItemsUp::run()
 				myPlaylist->main(),
 				std::bind(&MPD::Connection::Move, ph::_1, ph::_2, ph::_3));
 	}
-	else if (myScreen == myPlaylistEditor)
+	else if (screenLegacyCurrent() == myPlaylistEditor)
 	{
 		if (myPlaylistEditor->Content.isFiltered())
 			Statusbar::print(filteredMsg);
@@ -963,16 +963,16 @@ void MoveSelectedItemsUp::run()
 
 bool MoveSelectedItemsDown::canBeRun()
 {
-	return ((myScreen == myPlaylist
+	return ((screenLegacyCurrent() == myPlaylist
 	    &&  !myPlaylist->main().empty())
-	 ||    (myScreen->isActiveWindow(myPlaylistEditor->Content)
+	 ||    (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content)
 	    &&  !myPlaylistEditor->Content.empty()));
 }
 
 void MoveSelectedItemsDown::run()
 {
 	const char *filteredMsg = "Moving items down is disabled in filtered playlist";
-	if (myScreen == myPlaylist)
+	if (screenLegacyCurrent() == myPlaylist)
 	{
 		if (myPlaylist->main().isFiltered())
 			Statusbar::print(filteredMsg);
@@ -981,7 +981,7 @@ void MoveSelectedItemsDown::run()
 				myPlaylist->main(),
 				std::bind(&MPD::Connection::Move, ph::_1, ph::_2, ph::_3));
 	}
-	else if (myScreen == myPlaylistEditor)
+	else if (screenLegacyCurrent() == myPlaylistEditor)
 	{
 		if (myPlaylistEditor->Content.isFiltered())
 			Statusbar::print(filteredMsg);
@@ -997,13 +997,13 @@ void MoveSelectedItemsDown::run()
 
 bool MoveSelectedItemsTo::canBeRun()
 {
-	return myScreen == myPlaylist
-	    || myScreen->isActiveWindow(myPlaylistEditor->Content);
+	return screenLegacyCurrent() == myPlaylist
+	    || screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content);
 }
 
 void MoveSelectedItemsTo::run()
 {
-	if (myScreen == myPlaylist)
+	if (screenLegacyCurrent() == myPlaylist)
 	{
 		if (!myPlaylist->main().empty())
 			moveSelectedItemsTo(myPlaylist->main(), std::bind(&MPD::Connection::Move, ph::_1, ph::_2, ph::_3));
@@ -1019,7 +1019,7 @@ void MoveSelectedItemsTo::run()
 
 bool Add::canBeRun()
 {
-	return myScreen != myPlaylistEditor
+	return screenLegacyCurrent() != myPlaylistEditor
 	   || !myPlaylistEditor->Playlists.empty();
 }
 
@@ -1030,7 +1030,7 @@ void Add::run()
 	std::string path;
 	{
 		Statusbar::ScopedLock slock;
-		Statusbar::put() << (myScreen == myPlaylistEditor ? "Add to playlist: " : "Add: ");
+		Statusbar::put() << (screenLegacyCurrent() == myPlaylistEditor ? "Add to playlist: " : "Add: ");
 		path = wFooter->prompt();
 	}
 
@@ -1040,7 +1040,7 @@ void Add::run()
 
 	Statusbar::put() << "Adding...";
 	wFooter->refresh();
-	if (myScreen == myPlaylistEditor)
+	if (screenLegacyCurrent() == myPlaylistEditor)
 		Mpd.AddToPlaylist(myPlaylistEditor->Playlists.current()->value().path(), path);
 	else
 	{
@@ -1061,7 +1061,7 @@ void Add::run()
 
 bool Load::canBeRun()
 {
-	return myScreen != myPlaylistEditor;
+	return screenLegacyCurrent() != myPlaylistEditor;
 }
 
 void Load::run()
@@ -1102,15 +1102,15 @@ void SeekBackward::run()
 
 bool ToggleDisplayMode::canBeRun()
 {
-	return myScreen == myPlaylist
-	    || myScreen == myBrowser
-	    || myScreen == mySearcher
-	    || myScreen->isActiveWindow(myPlaylistEditor->Content);
+	return screenLegacyCurrent() == myPlaylist
+	    || screenLegacyCurrent() == myBrowser
+	    || screenLegacyCurrent() == mySearcher
+	    || screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content);
 }
 
 void ToggleDisplayMode::run()
 {
-	if (myScreen == myPlaylist)
+	if (screenLegacyCurrent() == myPlaylist)
 	{
 		switch (Config.playlist_display_mode)
 		{
@@ -1133,7 +1133,7 @@ void ToggleDisplayMode::run()
 		}
 		Statusbar::printf("Playlist display mode: %1%", Config.playlist_display_mode);
 	}
-	else if (myScreen == myBrowser)
+	else if (screenLegacyCurrent() == myBrowser)
 	{
 		switch (Config.browser_display_mode)
 		{
@@ -1151,7 +1151,7 @@ void ToggleDisplayMode::run()
 		}
 		Statusbar::printf("Browser display mode: %1%", Config.browser_display_mode);
 	}
-	else if (myScreen == mySearcher)
+	else if (screenLegacyCurrent() == mySearcher)
 	{
 		switch (Config.search_engine_display_mode)
 		{
@@ -1171,7 +1171,7 @@ void ToggleDisplayMode::run()
 				: ""
 			);
 	}
-	else if (myScreen->isActiveWindow(myPlaylistEditor->Content))
+	else if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content))
 	{
 		switch (Config.playlist_editor_display_mode)
 		{
@@ -1207,7 +1207,7 @@ void ToggleSeparatorsBetweenAlbums::run()
 
 bool ToggleLyricsUpdateOnSongChange::canBeRun()
 {
-	return myScreen == myLyrics;
+	return screenLegacyCurrent() == myLyrics;
 }
 
 void ToggleLyricsUpdateOnSongChange::run()
@@ -1246,10 +1246,10 @@ void TogglePlayingSongCentering::run()
 
 void UpdateDatabase::run()
 {
-	if (myScreen == myBrowser)
+	if (screenLegacyCurrent() == myBrowser)
 		Mpd.UpdateDirectory(myBrowser->currentDirectory());
 #	ifdef HAVE_TAGLIB_H
-	else if (myScreen == myTagEditor)
+	else if (screenLegacyCurrent() == myTagEditor)
 		Mpd.UpdateDirectory(myTagEditor->CurrentDir());
 #	endif // HAVE_TAGLIB_H
 	else
@@ -1260,27 +1260,27 @@ bool JumpToPlayingSong::canBeRun()
 {
 	m_song = myPlaylist->nowPlayingSong();
 	return !m_song.empty()
-		&& (myScreen == myPlaylist
-		    || myScreen == myPlaylistEditor
-		    || myScreen == myBrowser
-		    || myScreen == myLibrary);
+		&& (screenLegacyCurrent() == myPlaylist
+		    || screenLegacyCurrent() == myPlaylistEditor
+		    || screenLegacyCurrent() == myBrowser
+		    || screenLegacyCurrent() == myLibrary);
 }
 
 void JumpToPlayingSong::run()
 {
-	if (myScreen == myPlaylist)
+	if (screenLegacyCurrent() == myPlaylist)
 	{
 		myPlaylist->locateSong(m_song);
 	}
-	else if (myScreen == myPlaylistEditor)
+	else if (screenLegacyCurrent() == myPlaylistEditor)
 	{
 		myPlaylistEditor->locateSong(m_song);
 	}
-	else if (myScreen == myBrowser)
+	else if (screenLegacyCurrent() == myBrowser)
 	{
 		myBrowser->locateSong(m_song);
 	}
-	else if (myScreen == myLibrary)
+	else if (screenLegacyCurrent() == myLibrary)
 	{
 		myLibrary->locateSong(m_song);
 	}
@@ -1293,7 +1293,7 @@ void ToggleRepeat::run()
 
 bool Shuffle::canBeRun()
 {
-	if (myScreen != myPlaylist)
+	if (screenLegacyCurrent() != myPlaylist)
 		return false;
 	m_begin = myPlaylist->main().begin();
 	m_end = myPlaylist->main().end();
@@ -1316,7 +1316,7 @@ void ToggleRandom::run()
 
 bool StartSearching::canBeRun()
 {
-	return myScreen == mySearcher && !mySearcher->main()[0].isInactive();
+	return screenLegacyCurrent() == mySearcher && !mySearcher->main()[0].isInactive();
 }
 
 void StartSearching::run()
@@ -1331,8 +1331,8 @@ void StartSearching::run()
 bool SaveTagChanges::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	return myScreen == myTinyTagEditor
-	    || myScreen->activeWindow() == myTagEditor->TagTypes;
+	return screenLegacyCurrent() == myTinyTagEditor
+	    || screenLegacyCurrent()->activeWindow() == myTagEditor->TagTypes;
 #	else
 	return false;
 #	endif // HAVE_TAGLIB_H
@@ -1341,12 +1341,12 @@ bool SaveTagChanges::canBeRun()
 void SaveTagChanges::run()
 {
 #	ifdef HAVE_TAGLIB_H
-	if (myScreen == myTinyTagEditor)
+	if (screenLegacyCurrent() == myTinyTagEditor)
 	{
 		myTinyTagEditor->main().highlight(myTinyTagEditor->main().size()-2); // Save
 		myTinyTagEditor->runAction();
 	}
-	else if (myScreen->activeWindow() == myTagEditor->TagTypes)
+	else if (screenLegacyCurrent()->activeWindow() == myTagEditor->TagTypes)
 	{
 		myTagEditor->TagTypes->highlight(myTagEditor->TagTypes->size()-1); // Save
 		myTagEditor->runAction();
@@ -1404,13 +1404,13 @@ void SetVolume::run()
 bool EnterDirectory::canBeRun()
 {
 	bool result = false;
-	if (myScreen == myBrowser && !myBrowser->main().empty())
+	if (screenLegacyCurrent() == myBrowser && !myBrowser->main().empty())
 	{
 		result = myBrowser->main().current()->value().type()
 			== MPD::Item::Type::Directory;
 	}
 #ifdef HAVE_TAGLIB_H
-	else if (myScreen->activeWindow() == myTagEditor->Dirs)
+	else if (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs)
 		result = true;
 #endif // HAVE_TAGLIB_H
 	return result;
@@ -1418,10 +1418,10 @@ bool EnterDirectory::canBeRun()
 
 void EnterDirectory::run()
 {
-	if (myScreen == myBrowser)
+	if (screenLegacyCurrent() == myBrowser)
 		myBrowser->enterDirectory();
 #ifdef HAVE_TAGLIB_H
-	else if (myScreen->activeWindow() == myTagEditor->Dirs)
+	else if (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs)
 	{
 		if (!myTagEditor->enterDirectory())
 			Statusbar::print("No subdirectories found");
@@ -1432,7 +1432,7 @@ void EnterDirectory::run()
 bool EditSong::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	m_song = currentSong(myScreen);
+	m_song = currentSong(screenLegacyCurrent());
 	return m_song != nullptr && isMPDMusicDirSet();
 #	else
 	return false;
@@ -1450,7 +1450,7 @@ void EditSong::run()
 bool EditLibraryTag::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	return myScreen->isActiveWindow(myLibrary->Tags)
+	return screenLegacyCurrent()->isActiveWindow(myLibrary->Tags)
 	    && !myLibrary->Tags.empty()
 	    && isMPDMusicDirSet();
 #	else
@@ -1509,7 +1509,7 @@ void EditLibraryTag::run()
 bool EditLibraryAlbum::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	return myScreen->isActiveWindow(myLibrary->Albums)
+	return screenLegacyCurrent()->isActiveWindow(myLibrary->Albums)
 	    && !myLibrary->Albums.empty()
 		&& isMPDMusicDirSet();
 #	else
@@ -1569,11 +1569,11 @@ void EditLibraryAlbum::run()
 
 bool EditDirectoryName::canBeRun()
 {
-	return  ((myScreen == myBrowser
+	return  ((screenLegacyCurrent() == myBrowser
 	      && !myBrowser->main().empty()
 	      && myBrowser->main().current()->value().type() == MPD::Item::Type::Directory)
 #	ifdef HAVE_TAGLIB_H
-	    ||   (myScreen->activeWindow() == myTagEditor->Dirs
+	    ||   (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs
 	      && !myTagEditor->Dirs->empty()
 	      && myTagEditor->Dirs->choice() > 0)
 #	endif // HAVE_TAGLIB_H
@@ -1583,7 +1583,7 @@ bool EditDirectoryName::canBeRun()
 void EditDirectoryName::run()
 {
 	using Global::wFooter;
-	if (myScreen == myBrowser)
+	if (screenLegacyCurrent() == myBrowser)
 	{
 		std::string old_dir = myBrowser->main().current()->value().directory().path();
 		std::string new_dir;
@@ -1611,7 +1611,7 @@ void EditDirectoryName::run()
 		}
 	}
 #	ifdef HAVE_TAGLIB_H
-	else if (myScreen->activeWindow() == myTagEditor->Dirs)
+	else if (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs)
 	{
 		std::string old_dir = myTagEditor->Dirs->current()->value().first, new_dir;
 		{
@@ -1641,9 +1641,9 @@ void EditDirectoryName::run()
 
 bool EditPlaylistName::canBeRun()
 {
-	return   (myScreen->isActiveWindow(myPlaylistEditor->Playlists)
+	return   (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists)
 	      && !myPlaylistEditor->Playlists.empty())
-	    ||   (myScreen == myBrowser
+	    ||   (screenLegacyCurrent() == myBrowser
 	      && !myBrowser->main().empty()
 		  && myBrowser->main().current()->value().type() == MPD::Item::Type::Playlist);
 }
@@ -1652,7 +1652,7 @@ void EditPlaylistName::run()
 {
 	using Global::wFooter;
 	std::string old_name, new_name;
-	if (myScreen->isActiveWindow(myPlaylistEditor->Playlists))
+	if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists))
 		old_name = myPlaylistEditor->Playlists.current()->value().path();
 	else
 		old_name = myBrowser->main().current()->value().playlist().path();
@@ -1671,7 +1671,7 @@ void EditPlaylistName::run()
 
 bool EditLyrics::canBeRun()
 {
-	return myScreen == myLyrics;
+	return screenLegacyCurrent() == myLyrics;
 }
 
 void EditLyrics::run()
@@ -1681,7 +1681,7 @@ void EditLyrics::run()
 
 bool JumpToBrowser::canBeRun()
 {
-	m_song = currentSong(myScreen);
+	m_song = currentSong(screenLegacyCurrent());
 	return m_song != nullptr;
 }
 
@@ -1692,7 +1692,7 @@ void JumpToBrowser::run()
 
 bool JumpToMediaLibrary::canBeRun()
 {
-	m_song = currentSong(myScreen);
+	m_song = currentSong(screenLegacyCurrent());
 	return m_song != nullptr;
 }
 
@@ -1703,7 +1703,7 @@ void JumpToMediaLibrary::run()
 
 bool JumpToPlaylistEditor::canBeRun()
 {
-	return myScreen == myBrowser
+	return screenLegacyCurrent() == myBrowser
 	    && myBrowser->main().current()->value().type() == MPD::Item::Type::Playlist;
 }
 
@@ -1715,16 +1715,15 @@ void JumpToPlaylistEditor::run()
 void ToggleScreenLock::run()
 {
 	using Global::wFooter;
-	using Global::myLockedScreen;
 	const char *msg_unlockable_screen = "Current screen can't be locked";
-	if (myLockedScreen != nullptr)
+	if (screenLegacyLocked() != nullptr)
 	{
 		BaseScreen::unlock();
 		Actions::setResizeFlags();
-		myScreen->resize();
+		app_controller_resize_current_screen();
 		Statusbar::print("Screen unlocked");
 	}
-	else if (!myScreen->isLockable())
+	else if (!screenLegacyCurrent()->isLockable())
 	{
 		Statusbar::print(msg_unlockable_screen);
 	}
@@ -1739,7 +1738,7 @@ void ToggleScreenLock::run()
 		}
 		boundsCheck(part, 20u, 80u);
 		Config.locked_screen_width_part = part/100.0;
-		if (myScreen->lock())
+		if (screenLegacyCurrent()->lock())
 			Statusbar::printf("Screen locked (with %1%%% width)", part);
 		else
 			Statusbar::print(msg_unlockable_screen);
@@ -1749,7 +1748,7 @@ void ToggleScreenLock::run()
 bool JumpToTagEditor::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	m_song = currentSong(myScreen);
+	m_song = currentSong(screenLegacyCurrent());
 	return m_song != nullptr && isMPDMusicDirSet();
 #	else
 	return false;
@@ -1821,7 +1820,7 @@ void JumpToPositionInSong::run()
 
 bool SelectItem::canBeRun()
 {
-	m_list = dynamic_cast<NC::List *>(myScreen->activeWindow());
+	m_list = dynamic_cast<NC::List *>(screenLegacyCurrent()->activeWindow());
 	return m_list != nullptr
 	    && !m_list->empty()
 	    && m_list->currentP()->isSelectable();
@@ -1835,7 +1834,7 @@ void SelectItem::run()
 
 bool SelectRange::canBeRun()
 {
-	m_list = dynamic_cast<NC::List *>(myScreen->activeWindow());
+	m_list = dynamic_cast<NC::List *>(screenLegacyCurrent()->activeWindow());
 	if (m_list == nullptr)
 		return false;
 	m_begin = m_list->beginP();
@@ -1852,7 +1851,7 @@ void SelectRange::run()
 
 bool ReverseSelection::canBeRun()
 {
-	m_list = dynamic_cast<NC::List *>(myScreen->activeWindow());
+	m_list = dynamic_cast<NC::List *>(screenLegacyCurrent()->activeWindow());
 	return m_list != nullptr;
 }
 
@@ -1865,7 +1864,7 @@ void ReverseSelection::run()
 
 bool RemoveSelection::canBeRun()
 {
-	m_list = dynamic_cast<NC::List *>(myScreen->activeWindow());
+	m_list = dynamic_cast<NC::List *>(screenLegacyCurrent()->activeWindow());
 	return m_list != nullptr;
 }
 
@@ -1878,7 +1877,7 @@ void RemoveSelection::run()
 
 bool SelectAlbum::canBeRun()
 {
-	auto *w = myScreen->activeWindow();
+	auto *w = screenLegacyCurrent()->activeWindow();
 	if (m_list != static_cast<void *>(w))
 		m_list = dynamic_cast<NC::List *>(w);
 	if (m_songs != static_cast<void *>(w))
@@ -1916,17 +1915,17 @@ void SelectAlbum::run()
 
 bool SelectFoundItems::canBeRun()
 {
-	m_list = dynamic_cast<NC::List *>(myScreen->activeWindow());
+	m_list = dynamic_cast<NC::List *>(screenLegacyCurrent()->activeWindow());
 	if (m_list == nullptr || m_list->empty())
 		return false;
-	m_searchable = dynamic_cast<Searchable *>(myScreen);
+	m_searchable = dynamic_cast<Searchable *>(screenLegacyCurrent());
 	return m_searchable != nullptr && m_searchable->allowsSearching();
 }
 
 void SelectFoundItems::run()
 {
 	auto current_pos = m_list->choice();
-	myScreen->activeWindow()->scroll(NC::Scroll::Home);
+	screenLegacyCurrent()->activeWindow()->scroll(NC::Scroll::Home);
 	bool found = m_searchable->search(SearchDirection::Forward, false, false);
 	if (found)
 	{
@@ -1941,7 +1940,7 @@ void SelectFoundItems::run()
 
 bool AddSelectedItems::canBeRun()
 {
-	return myScreen != mySelectedItemsAdder;
+	return screenLegacyCurrent() != mySelectedItemsAdder;
 }
 
 void AddSelectedItems::run()
@@ -1966,7 +1965,7 @@ void CropMainPlaylist::run()
 
 bool CropPlaylist::canBeRun()
 {
-	return myScreen == myPlaylistEditor;
+	return screenLegacyCurrent() == myPlaylistEditor;
 }
 
 void CropPlaylist::run()
@@ -1996,7 +1995,7 @@ void ClearMainPlaylist::run()
 
 bool ClearPlaylist::canBeRun()
 {
-	return myScreen == myPlaylistEditor;
+	return screenLegacyCurrent() == myPlaylistEditor;
 }
 
 void ClearPlaylist::run()
@@ -2012,7 +2011,7 @@ void ClearPlaylist::run()
 
 bool SortPlaylist::canBeRun()
 {
-	if (myScreen != myPlaylist)
+	if (screenLegacyCurrent() != myPlaylist)
 		return false;
 	auto first = myPlaylist->main().begin(), last = myPlaylist->main().end();
 	return findSelectedRangeAndPrintInfoIfNot(first, last);
@@ -2025,7 +2024,7 @@ void SortPlaylist::run()
 
 bool ReversePlaylist::canBeRun()
 {
-	if (myScreen != myPlaylist)
+	if (screenLegacyCurrent() != myPlaylist)
 		return false;
 	m_begin = myPlaylist->main().begin();
 	m_end = myPlaylist->main().end();
@@ -2047,7 +2046,7 @@ void ReversePlaylist::run()
 
 bool ApplyFilter::canBeRun()
 {
-	m_filterable = dynamic_cast<Filterable *>(myScreen);
+	m_filterable = dynamic_cast<Filterable *>(screenLegacyCurrent());
 	return m_filterable != nullptr
 		&& m_filterable->allowsFiltering();
 }
@@ -2060,7 +2059,7 @@ void ApplyFilter::run()
 	if (!filter.empty())
 	{
 		m_filterable->applyFilter(filter);
-		myScreen->refreshWindow();
+		app_controller_refresh_current_window();
 	}
 
 	try
@@ -2084,7 +2083,7 @@ void ApplyFilter::run()
 	else
 		Statusbar::printf("Using filter \"%1%\"", filter);
 
-	if (myScreen == myPlaylist)
+	if (screenLegacyCurrent() == myPlaylist)
 		myPlaylist->reloadTotalLength();
 
 	listsChangeFinisher();
@@ -2092,9 +2091,9 @@ void ApplyFilter::run()
 
 bool Find::canBeRun()
 {
-	return myScreen == myHelp
-		|| myScreen == myLyrics
-		|| myScreen == myLastfm;
+	return screenLegacyCurrent() == myHelp
+		|| screenLegacyCurrent() == myLyrics
+		|| screenLegacyCurrent() == myLastfm;
 }
 
 void Find::run()
@@ -2109,7 +2108,7 @@ void Find::run()
 	}
 
 	Statusbar::print("Searching...");
-	auto s = static_cast<Screen<NC::Scrollpad> *>(myScreen);
+	auto s = static_cast<Screen<NC::Scrollpad> *>(screenLegacyCurrent());
 	s->main().removeProperties();
 	if (token.empty() || s->main().setProperties(NC::Format::Reverse, token, NC::Format::NoReverse, Config.regex_type))
 		Statusbar::print("Done");
@@ -2120,7 +2119,7 @@ void Find::run()
 
 bool FindItemBackward::canBeRun()
 {
-	auto w = dynamic_cast<Searchable *>(myScreen);
+	auto w = dynamic_cast<Searchable *>(screenLegacyCurrent());
 	return w && w->allowsSearching();
 }
 
@@ -2132,7 +2131,7 @@ void FindItemForward::run()
 
 bool FindItemForward::canBeRun()
 {
-	auto w = dynamic_cast<Searchable *>(myScreen);
+	auto w = dynamic_cast<Searchable *>(screenLegacyCurrent());
 	return w && w->allowsSearching();
 }
 
@@ -2144,12 +2143,12 @@ void FindItemBackward::run()
 
 bool NextFoundItem::canBeRun()
 {
-	return dynamic_cast<Searchable *>(myScreen);
+	return dynamic_cast<Searchable *>(screenLegacyCurrent());
 }
 
 void NextFoundItem::run()
 {
-	Searchable *w = dynamic_cast<Searchable *>(myScreen);
+	Searchable *w = dynamic_cast<Searchable *>(screenLegacyCurrent());
 	assert(w != nullptr);
 	w->search(SearchDirection::Forward, Config.wrapped_search, true);
 	listsChangeFinisher();
@@ -2157,12 +2156,12 @@ void NextFoundItem::run()
 
 bool PreviousFoundItem::canBeRun()
 {
-	return dynamic_cast<Searchable *>(myScreen);
+	return dynamic_cast<Searchable *>(screenLegacyCurrent());
 }
 
 void PreviousFoundItem::run()
 {
-	Searchable *w = dynamic_cast<Searchable *>(myScreen);
+	Searchable *w = dynamic_cast<Searchable *>(screenLegacyCurrent());
 	assert(w != nullptr);
 	w->search(SearchDirection::Backward, Config.wrapped_search, true);
 	listsChangeFinisher();
@@ -2291,7 +2290,7 @@ void AddRandomItems::run()
 
 bool ToggleBrowserSortMode::canBeRun()
 {
-	return myScreen == myBrowser;
+	return screenLegacyCurrent() == myBrowser;
 }
 
 void ToggleBrowserSortMode::run()
@@ -2330,8 +2329,8 @@ void ToggleBrowserSortMode::run()
 
 bool ToggleLibraryTagType::canBeRun()
 {
-	return (myScreen->isActiveWindow(myLibrary->Tags))
-	    || (myLibrary->columns() == 2 && myScreen->isActiveWindow(myLibrary->Albums));
+	return (screenLegacyCurrent()->isActiveWindow(myLibrary->Tags))
+	    || (myLibrary->columns() == 2 && screenLegacyCurrent()->isActiveWindow(myLibrary->Albums));
 }
 
 void ToggleLibraryTagType::run()
@@ -2381,7 +2380,7 @@ void ToggleLibraryTagType::run()
 
 bool ToggleMediaLibrarySortMode::canBeRun()
 {
-	return myScreen == myLibrary;
+	return screenLegacyCurrent() == myLibrary;
 }
 
 void ToggleMediaLibrarySortMode::run()
@@ -2391,7 +2390,7 @@ void ToggleMediaLibrarySortMode::run()
 
 bool FetchLyricsInBackground::canBeRun()
 {
-	m_hs = dynamic_cast<HasSongs *>(myScreen);
+	m_hs = dynamic_cast<HasSongs *>(screenLegacyCurrent());
 	return m_hs != nullptr && m_hs->itemAvailable();
 }
 
@@ -2405,7 +2404,7 @@ void FetchLyricsInBackground::run()
 
 bool RefetchLyrics::canBeRun()
 {
-	return myScreen == myLyrics;
+	return screenLegacyCurrent() == myLyrics;
 }
 
 void RefetchLyrics::run()
@@ -2420,7 +2419,7 @@ bool SetSelectedItemsPriority::canBeRun()
 		Statusbar::print("Priorities are supported in MPD >= 0.17.0");
 		return false;
 	}
-	return myScreen == myPlaylist && !myPlaylist->main().empty();
+	return screenLegacyCurrent() == myPlaylist && !myPlaylist->main().empty();
 }
 
 void SetSelectedItemsPriority::run()
@@ -2440,7 +2439,7 @@ void SetSelectedItemsPriority::run()
 bool ToggleOutput::canBeRun()
 {
 #ifdef ENABLE_OUTPUTS
-	return myScreen == myOutputs;
+	return screenLegacyCurrent() == myOutputs;
 #else
 	return false;
 #endif // ENABLE_OUTPUTS
@@ -2456,7 +2455,7 @@ void ToggleOutput::run()
 bool ToggleVisualizationType::canBeRun()
 {
 #	ifdef ENABLE_VISUALIZER
-	return myScreen == myVisualizer;
+	return screenLegacyCurrent() == myVisualizer;
 #	else
 	return false;
 #	endif // ENABLE_VISUALIZER
@@ -2476,23 +2475,23 @@ void ShowSongInfo::run()
 
 bool ShowArtistInfo::canBeRun()
 {
-	return myScreen == myLastfm
-		|| (myScreen->isActiveWindow(myLibrary->Tags)
+	return screenLegacyCurrent() == myLastfm
+		|| (screenLegacyCurrent()->isActiveWindow(myLibrary->Tags)
 		    && !myLibrary->Tags.empty()
 		    && Config.media_lib_primary_tag == MPD_TAG_ARTIST)
-		|| currentSong(myScreen);
+		|| currentSong(screenLegacyCurrent());
 }
 
 void ShowArtistInfo::run()
 {
-	if (myScreen == myLastfm)
+	if (screenLegacyCurrent() == myLastfm)
 	{
 		myLastfm->switchTo();
 		return;
 	}
 
 	std::string artist;
-	if (myScreen->isActiveWindow(myLibrary->Tags))
+	if (screenLegacyCurrent()->isActiveWindow(myLibrary->Tags))
 	{
 		assert(!myLibrary->Tags.empty());
 		assert(Config.media_lib_primary_tag == MPD_TAG_ARTIST);
@@ -2500,7 +2499,7 @@ void ShowArtistInfo::run()
 	}
 	else
 	{
-		auto s = currentSong(myScreen);
+		auto s = currentSong(screenLegacyCurrent());
 		assert(s);
 		artist = s->getArtist();
 	}
@@ -2515,14 +2514,14 @@ void ShowArtistInfo::run()
 
 bool ShowLyrics::canBeRun()
 {
-	if (myScreen == myLyrics)
+	if (screenLegacyCurrent() == myLyrics)
 	{
 		m_song = nullptr;
 		return true;
 	}
 	else
 	{
-		m_song = currentSong(myScreen);
+		m_song = currentSong(screenLegacyCurrent());
 		return m_song != nullptr;
 	}
 }
@@ -2531,7 +2530,7 @@ void ShowLyrics::run()
 {
 	if (m_song != nullptr)
 		myLyrics->fetch(*m_song);
-	if (myScreen == myLyrics || !isVisible(myLyrics))
+	if (screenLegacyCurrent() == myLyrics || !isVisible(myLyrics))
 		myLyrics->switchTo();
 }
 
@@ -2544,7 +2543,7 @@ void NextScreen::run()
 {
 	if (Config.screen_switcher_previous)
 	{
-		if (auto tababble = dynamic_cast<Tabbable *>(myScreen))
+		if (auto tababble = dynamic_cast<Tabbable *>(screenLegacyCurrent()))
 			tababble->switchToPreviousScreen();
 	}
 	else if (!Config.screen_sequence.empty())
@@ -2552,7 +2551,7 @@ void NextScreen::run()
 		auto screen = nextScreenTypeInSequence(
 			Config.screen_sequence.begin(),
 			Config.screen_sequence.end(),
-			myScreen->type());
+			screenLegacyCurrent()->type());
 		toScreen(*screen)->switchTo();
 	}
 }
@@ -2561,7 +2560,7 @@ void PreviousScreen::run()
 {
 	if (Config.screen_switcher_previous)
 	{
-		if (auto tababble = dynamic_cast<Tabbable *>(myScreen))
+		if (auto tababble = dynamic_cast<Tabbable *>(screenLegacyCurrent()))
 			tababble->switchToPreviousScreen();
 	}
 	else if (!Config.screen_sequence.empty())
@@ -2569,16 +2568,16 @@ void PreviousScreen::run()
 		auto screen = nextScreenTypeInSequence(
 			Config.screen_sequence.rbegin(),
 			Config.screen_sequence.rend(),
-			myScreen->type());
+			screenLegacyCurrent()->type());
 		toScreen(*screen)->switchTo();
 	}
 }
 
 bool ShowHelp::canBeRun()
 {
-	return myScreen != myHelp
+	return screenLegacyCurrent() != myHelp
 #	ifdef HAVE_TAGLIB_H
-	    && myScreen != myTinyTagEditor
+	    && screenLegacyCurrent() != myTinyTagEditor
 #	endif // HAVE_TAGLIB_H
 	;
 }
@@ -2590,9 +2589,9 @@ void ShowHelp::run()
 
 bool ShowPlaylist::canBeRun()
 {
-	return myScreen != myPlaylist
+	return screenLegacyCurrent() != myPlaylist
 #	ifdef HAVE_TAGLIB_H
-	    && myScreen != myTinyTagEditor
+	    && screenLegacyCurrent() != myTinyTagEditor
 #	endif // HAVE_TAGLIB_H
 	;
 }
@@ -2604,9 +2603,9 @@ void ShowPlaylist::run()
 
 bool ShowBrowser::canBeRun()
 {
-	return myScreen != myBrowser
+	return screenLegacyCurrent() != myBrowser
 #	ifdef HAVE_TAGLIB_H
-	    && myScreen != myTinyTagEditor
+	    && screenLegacyCurrent() != myTinyTagEditor
 #	endif // HAVE_TAGLIB_H
 	;
 }
@@ -2618,7 +2617,7 @@ void ShowBrowser::run()
 
 bool ChangeBrowseMode::canBeRun()
 {
-	return myScreen == myBrowser;
+	return screenLegacyCurrent() == myBrowser;
 }
 
 void ChangeBrowseMode::run()
@@ -2628,9 +2627,9 @@ void ChangeBrowseMode::run()
 
 bool ShowSearchEngine::canBeRun()
 {
-	return myScreen != mySearcher
+	return screenLegacyCurrent() != mySearcher
 #	ifdef HAVE_TAGLIB_H
-	    && myScreen != myTinyTagEditor
+	    && screenLegacyCurrent() != myTinyTagEditor
 #	endif // HAVE_TAGLIB_H
 	;
 }
@@ -2642,7 +2641,7 @@ void ShowSearchEngine::run()
 
 bool ResetSearchEngine::canBeRun()
 {
-	return myScreen == mySearcher;
+	return screenLegacyCurrent() == mySearcher;
 }
 
 void ResetSearchEngine::run()
@@ -2652,9 +2651,9 @@ void ResetSearchEngine::run()
 
 bool ShowMediaLibrary::canBeRun()
 {
-	return myScreen != myLibrary
+	return screenLegacyCurrent() != myLibrary
 #	ifdef HAVE_TAGLIB_H
-	    && myScreen != myTinyTagEditor
+	    && screenLegacyCurrent() != myTinyTagEditor
 #	endif // HAVE_TAGLIB_H
 	;
 }
@@ -2666,7 +2665,7 @@ void ShowMediaLibrary::run()
 
 bool ToggleMediaLibraryColumnsMode::canBeRun()
 {
-	return myScreen == myLibrary;
+	return screenLegacyCurrent() == myLibrary;
 }
 
 void ToggleMediaLibraryColumnsMode::run()
@@ -2677,9 +2676,9 @@ void ToggleMediaLibraryColumnsMode::run()
 
 bool ShowPlaylistEditor::canBeRun()
 {
-	return myScreen != myPlaylistEditor
+	return screenLegacyCurrent() != myPlaylistEditor
 #	ifdef HAVE_TAGLIB_H
-	    && myScreen != myTinyTagEditor
+	    && screenLegacyCurrent() != myTinyTagEditor
 #	endif // HAVE_TAGLIB_H
 	;
 }
@@ -2692,8 +2691,8 @@ void ShowPlaylistEditor::run()
 bool ShowTagEditor::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	return myScreen != myTagEditor
-	    && myScreen != myTinyTagEditor;
+	return screenLegacyCurrent() != myTagEditor
+	    && screenLegacyCurrent() != myTinyTagEditor;
 #	else
 	return false;
 #	endif // HAVE_TAGLIB_H
@@ -2710,9 +2709,9 @@ void ShowTagEditor::run()
 bool ShowOutputs::canBeRun()
 {
 #	ifdef ENABLE_OUTPUTS
-	return myScreen != myOutputs
+	return screenLegacyCurrent() != myOutputs
 #	ifdef HAVE_TAGLIB_H
-	    && myScreen != myTinyTagEditor
+	    && screenLegacyCurrent() != myTinyTagEditor
 #	endif // HAVE_TAGLIB_H
 	;
 #	else
@@ -2730,9 +2729,9 @@ void ShowOutputs::run()
 bool ShowVisualizer::canBeRun()
 {
 #	ifdef ENABLE_VISUALIZER
-	return myScreen != myVisualizer
+	return screenLegacyCurrent() != myVisualizer
 #	ifdef HAVE_TAGLIB_H
-	    && myScreen != myTinyTagEditor
+	    && screenLegacyCurrent() != myTinyTagEditor
 #	endif // HAVE_TAGLIB_H
 	;
 #	else
@@ -2751,7 +2750,7 @@ void ShowVisualizer::run()
 #ifdef HAVE_TAGLIB_H
 bool ShowServerInfo::canBeRun()
 {
-	return myScreen != myTinyTagEditor;
+	return screenLegacyCurrent() != myTinyTagEditor;
 }
 #endif // HAVE_TAGLIB_H
 
@@ -2907,7 +2906,7 @@ void populateActions()
 
 bool scrollTagCanBeRun(NC::List *&list, const SongList *&songs)
 {
-	auto w = myScreen->activeWindow();
+	auto w = screenLegacyCurrent()->activeWindow();
 	if (list != static_cast<void *>(w))
 		list = dynamic_cast<NC::List *>(w);
 	if (songs != static_cast<void *>(w))
@@ -3003,7 +3002,7 @@ void seek(SearchDirection sd)
 	SeekingInProgress = true;
 	while (true)
 	{
-		Status::trace();
+	Status::trace();
 
 		auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(Timer-t);
 		unsigned howmuch = Config.incremental_seeking
@@ -3087,7 +3086,7 @@ void findItem(const SearchDirection direction)
 {
 	using Global::wFooter;
 
-	Searchable *w = dynamic_cast<Searchable *>(myScreen);
+	Searchable *w = dynamic_cast<Searchable *>(screenLegacyCurrent());
 	assert(w != nullptr);
 	assert(w->allowsSearching());
 
@@ -3120,14 +3119,14 @@ void findItem(const SearchDirection direction)
 
 void listsChangeFinisher()
 {
-	if (myScreen == myLibrary
-	||  myScreen == myPlaylistEditor
+	if (screenLegacyCurrent() == myLibrary
+	||  screenLegacyCurrent() == myPlaylistEditor
 #	ifdef HAVE_TAGLIB_H
-	||  myScreen == myTagEditor
+	||  screenLegacyCurrent() == myTagEditor
 #	endif // HAVE_TAGLIB_H
 	   )
 	{
-		if (myScreen->activeWindow() == &myLibrary->Tags)
+		if (screenLegacyCurrent()->activeWindow() == &myLibrary->Tags)
 		{
 			myLibrary->Albums.clear();
 			myLibrary->Albums.refresh();
@@ -3135,20 +3134,20 @@ void listsChangeFinisher()
 			myLibrary->Songs.refresh();
 			myLibrary->updateTimer();
 		}
-		else if (myScreen->activeWindow() == &myLibrary->Albums)
+		else if (screenLegacyCurrent()->activeWindow() == &myLibrary->Albums)
 		{
 			myLibrary->Songs.clear();
 			myLibrary->Songs.refresh();
 			myLibrary->updateTimer();
 		}
-		else if (myScreen->isActiveWindow(myPlaylistEditor->Playlists))
+		else if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists))
 		{
 			myPlaylistEditor->Content.clear();
 			myPlaylistEditor->Content.refresh();
 			myPlaylistEditor->updateTimer();
 		}
 #		ifdef HAVE_TAGLIB_H
-		else if (myScreen->activeWindow() == myTagEditor->Dirs)
+		else if (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs)
 		{
 			myTagEditor->Tags->clear();
 		}

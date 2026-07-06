@@ -23,10 +23,11 @@
 
 #include "c/ncm_type_conversions.h"
 #include "curses/formatted_color.h"
-#include "app_state.h"
+#include "app_controller.h"
 #include "global.h"
 #include "helpers.h"
 #include "screens/screen_switcher.h"
+#include "screens/screen_legacy.h"
 #include "screens/song_info.h"
 #include "settings.h"
 #include "title.h"
@@ -200,16 +201,16 @@ SongInfo::SongInfo()
                              toNcBorder(NC::Border()),
                              static_cast<int64>(Config.lines_scrolled));
 
-    bool register_success = app_state_register_screen(nativeScreen());
+    bool register_success = app_controller_register_screen(nativeScreen());
     assert(register_success);
     (void)register_success;
 }
 
 SongInfo::~SongInfo()
 {
-    if (app_state_is_screen_registered(nativeScreen()))
+    if (app_controller_is_screen_registered(nativeScreen()))
     {
-        app_state_unregister_screen(nativeScreen());
+        app_controller_unregister_screen(nativeScreen());
     }
     nc_song_info_screen_destroy(&m_screen);
 }
@@ -247,14 +248,13 @@ void SongInfo::scroll(NC::Scroll where)
 
 void SongInfo::switchTo()
 {
-    using Global::myScreen;
-
-    if ((myScreen != this) && !currentSong(myScreen))
+    
+    if ((screenLegacyCurrent() != this) && !currentSong(screenLegacyCurrent()))
     {
         return;
     }
     nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-    app_state_switch_to_screen(nativeScreen());
+    app_controller_switch_to_screen(nativeScreen());
 }
 
 void SongInfo::resize()
@@ -435,11 +435,10 @@ bool SongInfo::renderHook(void *user, NcSongInfoScreen *screen,
 void SongInfo::switchToHook(void *user, NcSongInfoScreen *screen)
 {
     SongInfo *song_info = static_cast<SongInfo *>(user);
-    using Global::myScreen;
-
-    if (myScreen != song_info)
+    
+    if (screenLegacySwitchChanged())
     {
-        const MPD::Song *song = currentSong(myScreen);
+        const MPD::Song *song = currentSong(screenLegacyPrevious());
         if (song == nullptr)
         {
             return;
