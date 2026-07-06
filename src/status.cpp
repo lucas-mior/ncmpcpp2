@@ -45,7 +45,6 @@
 #include "title.h"
 #include "utility/string.h"
 
-using Global::myScreen;
 
 using Global::wFooter;
 using Global::wHeader;

@@ -20,15 +20,13 @@
 
 #include <cassert>
 
-#include "app_state.h"
+#include "app_controller.h"
 #include "global.h"
+#include "screens/screen_legacy.h"
 #include "interfaces.h"
 #include "screens/screen.h"
 #include "settings.h"
 
-using Global::myScreen;
-using Global::myLockedScreen;
-using Global::myInactiveScreen;
 
 namespace {
 
@@ -109,7 +107,7 @@ BaseScreen *legacyOwner(NcScreen *screen)
 
 BaseScreen *previousLegacyScreen()
 {
-    return legacyOwner(app_state_get_previous_screen());
+    return legacyOwner(app_controller_previous_screen());
 }
 
 void setTabPreviousScreen(BaseScreen *screen)
@@ -179,9 +177,9 @@ BaseScreen::BaseScreen()
 
 BaseScreen::~BaseScreen()
 {
-    if (app_state_is_screen_registered(&m_native_screen))
+    if (app_controller_is_screen_registered(&m_native_screen))
     {
-        app_state_unregister_screen(&m_native_screen);
+        app_controller_unregister_screen(&m_native_screen);
     }
 }
 
@@ -190,9 +188,9 @@ void BaseScreen::registerNativeScreen()
     NcScreen *screen = nativeScreen();
 
     nc_screen_set_type(screen, toNativeType(type()));
-    if (!app_state_is_screen_registered(screen))
+    if (!app_controller_is_screen_registered(screen))
     {
-        bool success = app_state_register_screen(screen);
+        bool success = app_controller_register_screen(screen);
         assert(success);
         (void)success;
     }
@@ -266,7 +264,7 @@ void BaseScreen::nativeSwitchToCallback(NcScreen *screen)
 
     if (owner == nullptr)
         return;
-    if (myScreen != owner)
+    if (screenLegacySwitchChanged())
         setTabPreviousScreen(owner);
     syncLegacyScreenPointers();
 }
@@ -339,8 +337,8 @@ void BaseScreen::getWindowResizeParams(size_t &x_offset, size_t &width,
     NcScreen *locked_screen;
     NcScreen *inactive_screen;
 
-    locked_screen = app_state_get_locked_screen();
-    inactive_screen = app_state_get_inactive_screen();
+    locked_screen = app_controller_locked_screen();
+    inactive_screen = app_controller_inactive_screen();
 
     width = COLS;
     x_offset = 0;
@@ -366,8 +364,8 @@ void BaseScreen::getWindowResizeParams(size_t &x_offset, size_t &width,
 
 bool BaseScreen::lock()
 {
-    assert(app_state_get_locked_screen() == nullptr);
-    if (!app_state_lock_current_screen())
+    assert(app_controller_locked_screen() == nullptr);
+    if (!app_controller_lock_current_screen())
         return false;
     syncLegacyScreenPointers();
     return true;
@@ -375,7 +373,7 @@ bool BaseScreen::lock()
 
 void BaseScreen::unlock()
 {
-    app_state_unlock_screen();
+    app_controller_unlock_screen();
     syncLegacyScreenPointers();
 }
 
@@ -383,7 +381,7 @@ void BaseScreen::unlock()
 
 void applyToVisibleScreens(std::function<void(NcScreen *)> f)
 {
-    app_state_each_visible_screen(
+    app_controller_each_visible_screen(
         [](NcScreen *screen, void *user) {
             auto *callback = static_cast<
                 std::function<void(NcScreen *)> *>(user);
@@ -404,13 +402,10 @@ void applyToVisibleWindows(std::function<void(BaseScreen *)> f)
 
 void syncLegacyScreenPointers()
 {
-    myScreen = legacyOwner(app_state_get_screen());
-    myLockedScreen = legacyOwner(app_state_get_locked_screen());
-    myInactiveScreen = legacyOwner(app_state_get_inactive_screen());
 }
 
 bool isVisible(BaseScreen *screen)
 {
     assert(screen != 0);
-    return app_state_is_screen_visible(screen->nativeScreen());
+    return app_controller_is_screen_visible(screen->nativeScreen());
 }

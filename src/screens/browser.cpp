@@ -31,6 +31,7 @@
 #include "screens/playlist.h"
 #include "curses/menu_impl.h"
 #include "screens/screen_switcher.h"
+#include "screens/screen_legacy.h"
 #include "settings.h"
 #include "status.h"
 #include "statusbar.h"
@@ -45,7 +46,6 @@
 
 using Global::MainHeight;
 using Global::MainStartY;
-using Global::myScreen;
 
 namespace fs = std::filesystem;
 namespace ph = std::placeholders;
@@ -422,7 +422,7 @@ void Browser::locateSong(const MPD::Song &s)
 	
 	m_local_browser = !s.isFromDatabase();
 	
-	if (myScreen != this)
+	if (screenLegacyCurrent() != this)
 		switchTo();
 
 	w.clearFilter();

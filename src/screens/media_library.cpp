@@ -40,10 +40,10 @@
 #include "c/ncm_type_conversions.h"
 #include "title.h"
 #include "screens/screen_switcher.h"
+#include "screens/screen_legacy.h"
 
 using Global::MainHeight;
 using Global::MainStartY;
-using Global::myScreen;
 
 namespace ph = std::placeholders;
 
@@ -1015,7 +1015,7 @@ void MediaLibrary::locateSong(const MPD::Song &s)
 		return;
 	}
 	
-	if (myScreen != this)
+	if (screenLegacyCurrent() != this)
 		switchTo();
 	Statusbar::put() << "Jumping to song...";
 	Global::wFooter->refresh();

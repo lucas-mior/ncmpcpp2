@@ -23,10 +23,11 @@
 #include <chrono>
 
 #include "charset.h"
-#include "app_state.h"
+#include "app_controller.h"
 #include "global.h"
 #include "helpers.h"
 #include "screens/screen_switcher.h"
+#include "screens/screen_legacy.h"
 #include "statusbar.h"
 #include "title.h"
 
@@ -102,9 +103,9 @@ Lastfm::Lastfm()
 
 Lastfm::~Lastfm()
 {
-    if (app_state_is_screen_registered(nativeScreen()))
+    if (app_controller_is_screen_registered(nativeScreen()))
     {
-        app_state_unregister_screen(nativeScreen());
+        app_controller_unregister_screen(nativeScreen());
     }
 }
 
@@ -201,12 +202,11 @@ const NcScreen *Lastfm::nativeScreen() const
 
 void Lastfm::switchTo()
 {
-    using Global::myScreen;
-
-    if (myScreen != this)
+    
+    if (screenLegacyCurrent() != this)
     {
         nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-        app_state_switch_to_screen(nativeScreen());
+        app_controller_switch_to_screen(nativeScreen());
         drawHeader();
     }
     else
@@ -273,9 +273,8 @@ void Lastfm::scrollCallback(NcScreen *screen, enum NcScroll where)
 void Lastfm::switchToCallback(NcScreen *screen)
 {
     Lastfm *lastfm = fromScreen(screen);
-    using Global::myScreen;
-
-    if (myScreen != lastfm)
+    
+    if (screenLegacySwitchChanged())
         SwitchTo::finishNativeSwitch(lastfm);
     else
         lastfm->switchToPreviousScreen();

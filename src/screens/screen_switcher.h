@@ -23,16 +23,16 @@
 
 #include <cassert>
 
-#include "app_state.h"
+#include "app_controller.h"
 #include "global.h"
+#include "screens/screen_legacy.h"
 #include "interfaces.h"
 
 class SwitchTo
 {
     static BaseScreen *previousScreen()
     {
-        return BaseScreen::legacyFromNativeScreen(
-            app_state_get_previous_screen());
+        return screenLegacyPrevious();
     }
 
     static void setPreviousScreen(BaseScreen *screen)
@@ -58,14 +58,14 @@ public:
 
         nc_screen_set_has_to_be_resized(native_screen,
                                         screen->hasToBeResized);
-        switched = app_state_switch_to_screen(native_screen);
+        switched = app_controller_switch_to_screen(native_screen);
         assert(switched);
         (void)switched;
     }
 
     static void finishNativeSwitch(BaseScreen *screen)
     {
-        if (Global::myScreen != screen)
+        if (screenLegacySwitchChanged())
             setPreviousScreen(screen);
         syncLegacyScreenPointers();
     }
