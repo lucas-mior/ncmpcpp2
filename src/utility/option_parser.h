@@ -42,6 +42,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "c/ncm_enums.h"
+
 [[noreturn]] inline void invalid_value(const std::string &v)
 {
 	throw std::runtime_error("invalid value: " + v);
@@ -143,6 +145,72 @@ std::vector<ValueT> list_of(const std::string &v)
 bool yes_no(const std::string &v);
 
 std::vector<size_t> parse_ratio(const std::string &v, const std::vector<size_t>::size_type length);
+
+template <>
+inline SearchDirection parse_value<SearchDirection>(const std::string &v)
+{
+    SearchDirection result;
+    if (!ncm_search_direction_parse(const_cast<char *>(v.data()),
+                                    static_cast<int32>(v.length()),
+                                    &result))
+        invalid_value(v);
+    return result;
+}
+
+template <>
+inline SpaceAddMode parse_value<SpaceAddMode>(const std::string &v)
+{
+    SpaceAddMode result;
+    if (!ncm_space_add_mode_parse(const_cast<char *>(v.data()),
+                                  static_cast<int32>(v.length()),
+                                  &result))
+        invalid_value(v);
+    return result;
+}
+
+template <>
+inline SortMode parse_value<SortMode>(const std::string &v)
+{
+    SortMode result;
+    if (!ncm_sort_mode_parse(const_cast<char *>(v.data()),
+                             static_cast<int32>(v.length()),
+                             &result))
+        invalid_value(v);
+    return result;
+}
+
+template <>
+inline DisplayMode parse_value<DisplayMode>(const std::string &v)
+{
+    DisplayMode result;
+    if (!ncm_display_mode_parse(const_cast<char *>(v.data()),
+                                static_cast<int32>(v.length()),
+                                &result))
+        invalid_value(v);
+    return result;
+}
+
+template <>
+inline Design parse_value<Design>(const std::string &v)
+{
+    Design result;
+    if (!ncm_design_parse(const_cast<char *>(v.data()),
+                          static_cast<int32>(v.length()),
+                          &result))
+        invalid_value(v);
+    return result;
+}
+
+template <>
+inline VisualizerType parse_value<VisualizerType>(const std::string &v)
+{
+    VisualizerType result;
+    if (!ncm_visualizer_type_parse(const_cast<char *>(v.data()),
+                                   static_cast<int32>(v.length()),
+                                   &result))
+        invalid_value(v);
+    return result;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 

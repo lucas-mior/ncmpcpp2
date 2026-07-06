@@ -58,7 +58,7 @@ Playlist::Playlist()
 , m_timer()
 , m_reload_total_length(false), m_reload_remaining(false)
 {
-	w = NC::Menu<MPD::Song>(0, ui_state_legacy_main_start_y(), COLS, ui_state_legacy_main_height(), Config.playlist_display_mode == DisplayMode::Columns && Config.titles_visibility ? Display::Columns(COLS) : "", Config.main_color, NC::Border());
+	w = NC::Menu<MPD::Song>(0, ui_state_legacy_main_start_y(), COLS, ui_state_legacy_main_height(), Config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS && Config.titles_visibility ? Display::Columns(COLS) : "", Config.main_color, NC::Border());
 	w.cyclicScrolling(Config.use_cyclic_scrolling);
 	w.centeredCursor(Config.centered_cursor);
 	setHighlightFixes(w);
@@ -66,12 +66,12 @@ Playlist::Playlist()
 	w.setSelectedSuffix(Config.selected_item_suffix);
 	switch (Config.playlist_display_mode)
 	{
-		case DisplayMode::Classic:
+		case NCM_DISPLAY_MODE_CLASSIC:
 			w.setItemDisplayer(std::bind(
 				Display::Songs, ph::_1, std::cref(w), std::cref(Config.song_list_format)
 			));
 			break;
-		case DisplayMode::Columns:
+		case NCM_DISPLAY_MODE_COLUMNS:
 			w.setItemDisplayer(std::bind(
 				Display::SongsInColumns, ph::_1, std::cref(w)
 			));
@@ -290,7 +290,7 @@ void Playlist::locateSong(const MPD::Song &s)
 void Playlist::enableHighlighting()
 {
 	w.setHighlighting(true);
-	m_timer = Global::Timer;
+	m_timer = global_timer;
 }
 
 std::string Playlist::getTotalLength()
@@ -440,11 +440,11 @@ void Playlist::resizeCallback(NcScreen *screen)
 
 	switch (Config.playlist_display_mode)
 	{
-		case DisplayMode::Columns:
+		case NCM_DISPLAY_MODE_COLUMNS:
 			if (Config.titles_visibility)
 				playlist->w.setTitle(Display::Columns(playlist->w.getWidth()));
 			break;
-		case DisplayMode::Classic:
+		case NCM_DISPLAY_MODE_CLASSIC:
 			playlist->w.setTitle("");
 			break;
 	}
@@ -478,9 +478,9 @@ char *Playlist::titleCallback(NcScreen *screen)
 		playlist->m_stats,
 		playlist->m_scroll_begin,
 		COLS - Utf8::width(playlist->m_title_cache)
-		     - (Config.design == Design::Alternative
+		     - (Config.design == NCM_DESIGN_ALTERNATIVE
 		        ? 2
-		        : Global::VolumeState.length()));
+		        : global_volume_state_len()));
 	return const_cast<char *>(playlist->m_title_cache.c_str());
 }
 
@@ -489,8 +489,9 @@ void Playlist::updateCallback(NcScreen *screen)
 	Playlist *playlist = fromScreen(screen);
 
 	if (playlist->w.isHighlighted()
-	&&  Config.playlist_disable_highlight_delay > std::chrono::seconds(0)
-	&&  Global::Timer - playlist->m_timer > Config.playlist_disable_highlight_delay)
+	&&  Config.playlist_disable_highlight_delay.count() > 0
+	&&  global_timer_elapsed_seconds(playlist->m_timer)
+	    > Config.playlist_disable_highlight_delay.count())
 	{
 		playlist->w.setHighlighting(false);
 		playlist->w.refresh();
@@ -555,10 +556,10 @@ std::string songToString(const MPD::Song &s)
 	std::string result;
 	switch (Config.playlist_display_mode)
 	{
-		case DisplayMode::Classic:
+		case NCM_DISPLAY_MODE_CLASSIC:
 			result = Format::stringify<char>(Config.song_list_format, &s);
 			break;
-		case DisplayMode::Columns:
+		case NCM_DISPLAY_MODE_COLUMNS:
 			result = Format::stringify<char>(Config.song_columns_mode_format, &s);
 	}
 	return result;

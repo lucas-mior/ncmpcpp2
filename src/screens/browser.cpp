@@ -134,7 +134,7 @@ Browser::Browser()
 , m_scroll_beginning(0)
 , m_current_directory("/")
 {
-	w = NC::Menu<MPD::Item>(0, ui_state_legacy_main_start_y(), COLS, ui_state_legacy_main_height(), Config.browser_display_mode == DisplayMode::Columns && Config.titles_visibility ? Display::Columns(COLS) : "", Config.main_color, NC::Border());
+	w = NC::Menu<MPD::Item>(0, ui_state_legacy_main_start_y(), COLS, ui_state_legacy_main_height(), Config.browser_display_mode == NCM_DISPLAY_MODE_COLUMNS && Config.titles_visibility ? Display::Columns(COLS) : "", Config.main_color, NC::Border());
 	setHighlightFixes(w);
 	w.cyclicScrolling(Config.use_cyclic_scrolling);
 	w.centeredCursor(Config.centered_cursor);
@@ -151,11 +151,11 @@ void Browser::resize()
 	w.moveTo(x_offset, ui_state_legacy_main_start_y());
 	switch (Config.browser_display_mode)
 	{
-		case DisplayMode::Columns:
+		case NCM_DISPLAY_MODE_COLUMNS:
 			if (Config.titles_visibility)
 				w.setTitle(Display::Columns(w.getWidth()));
 			break;
-		case DisplayMode::Classic:
+		case NCM_DISPLAY_MODE_CLASSIC:
 			w.setTitle("");
 			break;
 	}
@@ -171,7 +171,7 @@ void Browser::switchTo()
 std::string Browser::title()
 {
 	std::string result = "Browse: ";
-	result += Scroller(m_current_directory, m_scroll_beginning, COLS-Utf8::width(result)-(Config.design == Design::Alternative ? 2 : Global::VolumeState.length()));
+	result += Scroller(m_current_directory, m_scroll_beginning, COLS-Utf8::width(result)-(Config.design == NCM_DESIGN_ALTERNATIVE ? 2 : global_volume_state_len()));
 	return result;
 }
 
@@ -499,11 +499,11 @@ void Browser::getDirectory(std::string directory)
 		if (m_local_browser)
 		{
 			getLocalDirectory(w, directory);
-			if (Config.browser_sort_mode == SortMode::None
-			    || Config.browser_sort_mode == SortMode::Type)
+			if (Config.browser_sort_mode == NCM_SORT_MODE_NONE
+			    || Config.browser_sort_mode == NCM_SORT_MODE_TYPE)
 			{
 				Statusbar::print("Switching to sorting songs by name for the local browser");
-				Config.browser_sort_mode = SortMode::Name;
+				Config.browser_sort_mode = NCM_SORT_MODE_NAME;
 			}
 		}
 		else
@@ -513,7 +513,7 @@ void Browser::getDirectory(std::string directory)
 				w.addItem(std::move(*dir));
 		}
 
-		if (Config.browser_sort_mode != SortMode::None)
+		if (Config.browser_sort_mode != NCM_SORT_MODE_NONE)
 		{
 			std::stable_sort(
 				w.begin() + (is_root ? 0 : 1), w.end(),
@@ -709,7 +709,7 @@ void getLocalDirectoryRecursively(std::vector<MPD::Song> &songs, const std::stri
 			songs.push_back(getLocalSong(*entry, false));
 	};
 
-	if (Config.browser_sort_mode != SortMode::None)
+	if (Config.browser_sort_mode != NCM_SORT_MODE_NONE)
 	{
 		std::stable_sort(songs.begin()+sort_offset, songs.end(),
 		                 LocaleBasedSorting(std::locale(), Config.ignore_leading_the)
@@ -742,10 +742,10 @@ std::string itemToString(const MPD::Item &item)
 		case MPD::Item::Type::Song:
 			switch (Config.browser_display_mode)
 			{
-				case DisplayMode::Classic:
+				case NCM_DISPLAY_MODE_CLASSIC:
 					result = Format::stringify<char>(Config.song_list_format, &item.song());
 					break;
-				case DisplayMode::Columns:
+				case NCM_DISPLAY_MODE_COLUMNS:
 					result = Format::stringify<char>(Config.song_columns_mode_format, &item.song());
 					break;
 			}

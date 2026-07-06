@@ -105,7 +105,7 @@ bool search(NC::Menu<ItemT> &m, const PredicateT &pred,
 	{
 		switch (direction)
 		{
-			case SearchDirection::Backward:
+			case NCM_SEARCH_DIRECTION_BACKWARD:
 			{
 				auto it = wrappedSearch(m.rbegin(), m.rcurrent(), m.rend(),
 					pred, wrap, skip_current
@@ -117,7 +117,7 @@ bool search(NC::Menu<ItemT> &m, const PredicateT &pred,
 				}
 				break;
 			}
-			case SearchDirection::Forward:
+			case NCM_SEARCH_DIRECTION_FORWARD:
 			{
 				auto it = wrappedSearch(m.begin(), m.current(), m.end(),
 					pred, wrap, skip_current

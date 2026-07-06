@@ -190,11 +190,11 @@ void SearchEngine::resize()
 	w.moveTo(x_offset, ui_state_legacy_main_start_y());
 	switch (Config.search_engine_display_mode)
 	{
-		case DisplayMode::Columns:
+		case NCM_DISPLAY_MODE_COLUMNS:
 			if (Config.titles_visibility)
 				w.setTitle(Display::Columns(w.getWidth()));
 			break;
-		case DisplayMode::Classic:
+		case NCM_DISPLAY_MODE_CLASSIC:
 			w.setTitle("");
 			break;
 	}
@@ -339,7 +339,7 @@ void SearchEngine::runAction()
 		Search();
 		if (w.rbegin()->value().isSong())
 		{
-			if (Config.search_engine_display_mode == DisplayMode::Columns)
+			if (Config.search_engine_display_mode == NCM_DISPLAY_MODE_COLUMNS)
 				w.setTitle(Config.titles_visibility ? Display::Columns(w.getWidth()) : "");
 			size_t found = w.size()-SearchEngine::StaticOptions;
 			found += 3; // don't count options inserted below
@@ -587,10 +587,10 @@ std::string SEItemToString(const SEItem &ei)
 	{
 		switch (Config.search_engine_display_mode)
 		{
-			case DisplayMode::Classic:
+			case NCM_DISPLAY_MODE_CLASSIC:
 				result = Format::stringify<char>(Config.song_list_format, &ei.song());
 				break;
-			case DisplayMode::Columns:
+			case NCM_DISPLAY_MODE_COLUMNS:
 				result = Format::stringify<char>(Config.song_columns_mode_format, &ei.song());
 				break;
 		}

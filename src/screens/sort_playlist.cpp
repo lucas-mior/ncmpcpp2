@@ -194,7 +194,8 @@ void SortPlaylistDialog::sort() const
 	quick_sort = [&song_cmp, &quick_sort, &iter_swap](Iterator first, Iterator last) {
 		if (last-first > 1)
 		{
-			Iterator pivot = first+Global::RNG()%(last-first);
+			Iterator pivot = first + ncm_random_range_i32(&global_random,
+			                                      last - first);
 			iter_swap(pivot, last-1);
 			pivot = last-1;
 			

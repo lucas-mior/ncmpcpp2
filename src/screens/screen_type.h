@@ -1,65 +1,61 @@
-/***************************************************************************
- *   Copyright (C) 2008-2021 by Andrzej Rybczak                            *
- *   andrzej@rybczak.net                                                   *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
- ***************************************************************************/
-
-#ifndef NCMPCPP_SCREEN_TYPE_H
+#if !defined(NCMPCPP_SCREEN_TYPE_H)
 #define NCMPCPP_SCREEN_TYPE_H
 
-#include <string>
 #include "config.h"
-#include "screens/nc_screen.h"
+#include "c/ncm_defs.h"
 
-// forward declaration
-struct BaseScreen;
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-enum class ScreenType {
-	Browser,
-	Help,
-	Lastfm,
-	Lyrics,
-	MediaLibrary,
-#	ifdef ENABLE_OUTPUTS
-	Outputs,
-#	endif // ENABLE_OUTPUTS
-	Playlist,
-	PlaylistEditor,
-	SearchEngine,
-	SelectedItemsAdder,
-	ServerInfo,
-	SongInfo,
-	SortPlaylistDialog,
-#	ifdef HAVE_TAGLIB_H
-	TagEditor,
-	TinyTagEditor,
-#	endif // HAVE_TAGLIB_H
-	Unknown,
-#	ifdef ENABLE_VISUALIZER
-	Visualizer,
-#	endif // ENABLE_VISUALIZER
+enum ScreenType {
+    NCM_SCREEN_TYPE_BROWSER,
+    NCM_SCREEN_TYPE_HELP,
+    NCM_SCREEN_TYPE_LASTFM,
+    NCM_SCREEN_TYPE_LYRICS,
+    NCM_SCREEN_TYPE_MEDIA_LIBRARY,
+#if defined(ENABLE_OUTPUTS)
+    NCM_SCREEN_TYPE_OUTPUTS,
+#endif
+    NCM_SCREEN_TYPE_PLAYLIST,
+    NCM_SCREEN_TYPE_PLAYLIST_EDITOR,
+    NCM_SCREEN_TYPE_SEARCH_ENGINE,
+    NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER,
+    NCM_SCREEN_TYPE_SERVER_INFO,
+    NCM_SCREEN_TYPE_SONG_INFO,
+    NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG,
+#if defined(HAVE_TAGLIB_H)
+    NCM_SCREEN_TYPE_TAG_EDITOR,
+    NCM_SCREEN_TYPE_TINY_TAG_EDITOR,
+#endif
+    NCM_SCREEN_TYPE_UNKNOWN,
+#if defined(ENABLE_VISUALIZER)
+    NCM_SCREEN_TYPE_VISUALIZER,
+#endif
+    NCM_SCREEN_TYPE_LAST,
 };
 
-std::string screenTypeToString(ScreenType st);
+char *screen_type_str(enum ScreenType screen_type);
+bool screen_type_parse_startup(char *string, int32 string_len,
+                               enum ScreenType *screen_type);
+bool screen_type_parse(char *string, int32 string_len,
+                       enum ScreenType *screen_type);
 
+#if defined(__cplusplus)
+}
+#endif
+
+#if defined(__cplusplus)
+#include <string>
+#include "screens/nc_screen.h"
+
+struct BaseScreen;
+
+std::string screenTypeToString(ScreenType st);
 ScreenType stringtoStartupScreenType(const std::string &s);
 ScreenType stringToScreenType(const std::string &s);
-
 BaseScreen *toScreen(ScreenType st);
 NcScreen *toNativeScreen(ScreenType st);
+#endif
 
-#endif // NCMPCPP_SCREEN_TYPE_H
+#endif /* NCMPCPP_SCREEN_TYPE_H */

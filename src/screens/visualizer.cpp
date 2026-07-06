@@ -43,7 +43,7 @@
 #include "title.h"
 #include "screens/screen_switcher.h"
 #include "status.h"
-#include "enums.h"
+#include "c/ncm_enums.h"
 #include "utility/utf8.h"
 
 using Samples = std::vector<int16_t>;
@@ -728,7 +728,7 @@ void Visualizer::InitVisualization()
 	size_t rendered_samples = 0;
 	switch (Config.visualizer_type)
 	{
-	case VisualizerType::Wave:
+	case NCM_VISUALIZER_TYPE_WAVE:
 		// Guarantee integral amount of samples per column.
 		rendered_samples = ceil(44100.0 / Config.visualizer_fps / w.getWidth());
 		rendered_samples *= w.getWidth();
@@ -737,7 +737,7 @@ void Visualizer::InitVisualization()
 		draw = &Visualizer::DrawSoundWave;
 		drawStereo = &Visualizer::DrawSoundWaveStereo;
 		break;
-	case VisualizerType::WaveFilled:
+	case NCM_VISUALIZER_TYPE_WAVE_FILLED:
 		// Guarantee integral amount of samples per column.
 		rendered_samples = ceil(44100.0 / Config.visualizer_fps / w.getWidth());
 		rendered_samples *= w.getWidth();
@@ -747,13 +747,13 @@ void Visualizer::InitVisualization()
 		drawStereo = &Visualizer::DrawSoundWaveFillStereo;
 		break;
 #	ifdef HAVE_FFTW3_H
-	case VisualizerType::Spectrum:
+	case NCM_VISUALIZER_TYPE_SPECTRUM:
 		rendered_samples = DFT_NONZERO_SIZE;
 		draw = &Visualizer::DrawFrequencySpectrum;
 		drawStereo = &Visualizer::DrawFrequencySpectrumStereo;
 		break;
 #	endif // HAVE_FFTW3_H
-	case VisualizerType::Ellipse:
+	case NCM_VISUALIZER_TYPE_ELLIPSE:
 		// Keep constant amount of samples on the screen regardless of fps.
 		rendered_samples = 44100 / 30;
 		draw = &Visualizer::DrawSoundEllipse;
@@ -795,23 +795,23 @@ void Visualizer::ToggleVisualizationType()
 {
 	switch (Config.visualizer_type)
 	{
-		case VisualizerType::Wave:
-			Config.visualizer_type = VisualizerType::WaveFilled;
+		case NCM_VISUALIZER_TYPE_WAVE:
+			Config.visualizer_type = NCM_VISUALIZER_TYPE_WAVE_FILLED;
 			break;
-		case VisualizerType::WaveFilled:
+		case NCM_VISUALIZER_TYPE_WAVE_FILLED:
 #			ifdef HAVE_FFTW3_H
-			Config.visualizer_type = VisualizerType::Spectrum;
+			Config.visualizer_type = NCM_VISUALIZER_TYPE_SPECTRUM;
 #			else
-			Config.visualizer_type = VisualizerType::Ellipse;
+			Config.visualizer_type = NCM_VISUALIZER_TYPE_ELLIPSE;
 #			endif // HAVE_FFTW3_H
 			break;
 #		ifdef HAVE_FFTW3_H
-		case VisualizerType::Spectrum:
-			Config.visualizer_type = VisualizerType::Ellipse;
+		case NCM_VISUALIZER_TYPE_SPECTRUM:
+			Config.visualizer_type = NCM_VISUALIZER_TYPE_ELLIPSE;
 			break;
 #		endif // HAVE_FFTW3_H
-		case VisualizerType::Ellipse:
-			Config.visualizer_type = VisualizerType::Wave;
+		case NCM_VISUALIZER_TYPE_ELLIPSE:
+			Config.visualizer_type = NCM_VISUALIZER_TYPE_WAVE;
 			break;
 	}
 	InitVisualization();

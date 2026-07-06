@@ -28,6 +28,7 @@
 
 #include "charset.h"
 #include "c/ncm_mpd_item.h"
+#include "c/ncm_random.h"
 #include "mpdpp.h"
 
 MPD::Connection Mpd;
@@ -1111,7 +1112,7 @@ bool Connection::Add(const std::string &path)
 	return result;
 }
 
-bool Connection::AddRandomTag(mpd_tag_type tag, size_t number, std::mt19937 &rng)
+bool Connection::AddRandomTag(mpd_tag_type tag, size_t number, NcmRandom *rng)
 {
 	std::vector<std::string> tags(
 		std::make_move_iterator(GetList(tag)),
@@ -1120,7 +1121,13 @@ bool Connection::AddRandomTag(mpd_tag_type tag, size_t number, std::mt19937 &rng
 	if (number > tags.size())
 		return false;
 
-	std::shuffle(tags.begin(), tags.end(), rng);
+	for (size_t i = tags.size(); i > 1; i -= 1)
+	{
+		size_t j = ncm_random_range_u32(rng, static_cast<uint32>(i));
+		if (j != i - 1)
+			std::iter_swap(tags.begin() + static_cast<std::ptrdiff_t>(i - 1),
+			               tags.begin() + static_cast<std::ptrdiff_t>(j));
+	}
 	auto it = tags.begin();
 	for (size_t i = 0; i < number && it != tags.end(); ++i)
 	{
@@ -1138,7 +1145,7 @@ bool Connection::AddRandomTag(mpd_tag_type tag, size_t number, std::mt19937 &rng
 	return true;
 }
 
-bool Connection::AddRandomSongs(size_t number, const std::string &random_exclude_pattern, std::mt19937 &rng)
+bool Connection::AddRandomSongs(size_t number, const std::string &random_exclude_pattern, NcmRandom *rng)
 {
 	prechecksNoCommandsList();
 	std::vector<std::string> files;
@@ -1159,7 +1166,13 @@ bool Connection::AddRandomSongs(size_t number, const std::string &random_exclude
 	}
 	else
 	{
-		std::shuffle(files.begin(), files.end(), rng);
+		for (size_t i = files.size(); i > 1; i -= 1)
+	{
+		size_t j = ncm_random_range_u32(rng, static_cast<uint32>(i));
+		if (j != i - 1)
+			std::iter_swap(files.begin() + static_cast<std::ptrdiff_t>(i - 1),
+			               files.begin() + static_cast<std::ptrdiff_t>(j));
+	}
 		StartCommandsList();
 		auto it = files.begin();
 		std::regex re(random_exclude_pattern);

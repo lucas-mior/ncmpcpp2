@@ -239,7 +239,7 @@ void resizeScreen(bool reload_main_window)
 	ui_state_legacy_set_screen_size(COLS, LINES);
 
 	std::size_t main_height = static_cast<std::size_t>(std::max(
-	    LINES-(Config.design == Design::Alternative ? 7 : 4),
+	    LINES-(Config.design == NCM_DESIGN_ALTERNATIVE ? 7 : 4),
 	    0));
 
 	if (!Config.header_visibility)
@@ -252,7 +252,7 @@ void resizeScreen(bool reload_main_window)
 
 	app_controller_resize_visible_screens();
 
-	if (Config.header_visibility || Config.design == Design::Alternative)
+	if (Config.header_visibility || Config.design == NCM_DESIGN_ALTERNATIVE)
 		ui_state_legacy_header_window()->resize(COLS, HeaderHeight);
 
 	FooterStartY = LINES-(Config.statusbar_visibility ? 2 : 1);
@@ -276,9 +276,9 @@ void setWindowsDimensions()
 {
 	ui_state_legacy_set_screen_size(COLS, LINES);
 
-	std::size_t main_start_y = Config.design == Design::Alternative ? 5 : 2;
+	std::size_t main_start_y = Config.design == NCM_DESIGN_ALTERNATIVE ? 5 : 2;
 	std::size_t main_height = static_cast<std::size_t>(std::max(
-	    LINES-(Config.design == Design::Alternative ? 7 : 4),
+	    LINES-(Config.design == NCM_DESIGN_ALTERNATIVE ? 7 : 4),
 	    0));
 
 	if (!Config.header_visibility)
@@ -290,7 +290,7 @@ void setWindowsDimensions()
 		main_height += 1;
 	ui_state_legacy_set_main_geometry(main_start_y, main_height);
 
-	HeaderHeight = Config.design == Design::Alternative ? (Config.header_visibility ? 5 : 3) : 2;
+	HeaderHeight = Config.design == NCM_DESIGN_ALTERNATIVE ? (Config.header_visibility ? 5 : 3) : 2;
 	FooterStartY = LINES-(Config.statusbar_visibility ? 2 : 1);
 	FooterHeight = Config.statusbar_visibility ? 2 : 1;
 }
@@ -354,7 +354,6 @@ UpdateEnvironment::UpdateEnvironment()
 
 void UpdateEnvironment::run(bool update_timer, bool refresh_window, bool mpd_sync)
 {
-	using Global::Timer;
 
 	// update timer, status if necessary etc.
 	Status::trace(update_timer, true);
@@ -365,11 +364,11 @@ void UpdateEnvironment::run(bool update_timer, bool refresh_window, bool mpd_syn
 
 	// header stuff
 	if ((screenLegacyCurrent() == myPlaylist || screenLegacyCurrent() == myBrowser || screenLegacyCurrent() == myLyrics)
-	&&  (Timer - m_past > std::chrono::milliseconds(500))
+	&&  (global_timer_elapsed_ms(m_past) > 500)
 	)
 	{
 		drawHeader();
-		m_past = Timer;
+		m_past = global_timer;
 	}
 
 	if (refresh_window)
@@ -396,7 +395,6 @@ bool MouseEvent::canBeRun()
 
 void MouseEvent::run()
 {
-	using Global::VolumeState;
 
 	m_old_mouse_event = m_mouse_event;
 	m_mouse_event = ui_state_legacy_footer_window()->getMouseEvent();
@@ -413,17 +411,17 @@ void MouseEvent::run()
 			Status::State::totalTime()*m_mouse_event.x/double(COLS));
 	}
 	else if (m_mouse_event.bstate & BUTTON1_PRESSED
-	     &&  (Config.statusbar_visibility || Config.design == Design::Alternative)
+	     &&  (Config.statusbar_visibility || Config.design == NCM_DESIGN_ALTERNATIVE)
 	     &&  Status::State::player() != MPD::psStop
-	     &&  m_mouse_event.y == (Config.design == Design::Alternative ? 1 : LINES-1)
+	     &&  m_mouse_event.y == (Config.design == NCM_DESIGN_ALTERNATIVE ? 1 : LINES-1)
 			 &&  m_mouse_event.x < 9
 		) // playing/paused
 	{
 		Mpd.Toggle();
 	}
 	else if ((m_mouse_event.bstate & BUTTON5_PRESSED || m_mouse_event.bstate & BUTTON4_PRESSED)
-	     &&	 (Config.header_visibility || Config.design == Design::Alternative)
-	     &&	 m_mouse_event.y == 0 && size_t(m_mouse_event.x) > COLS-VolumeState.length()
+	     &&	 (Config.header_visibility || Config.design == NCM_DESIGN_ALTERNATIVE)
+	     &&	 m_mouse_event.y == 0 && size_t(m_mouse_event.x) > COLS-global_volume_state_len()
 	) // volume
 	{
 		if (m_mouse_event.bstate & BUTTON5_PRESSED)
@@ -515,12 +513,12 @@ void ToggleInterface::run()
 {
 	switch (Config.design)
 	{
-		case Design::Classic:
-			Config.design = Design::Alternative;
+		case NCM_DESIGN_CLASSIC:
+			Config.design = NCM_DESIGN_ALTERNATIVE;
 			Config.statusbar_visibility = false;
 			break;
-		case Design::Alternative:
-			Config.design = Design::Classic;
+		case NCM_DESIGN_ALTERNATIVE:
+			Config.design = NCM_DESIGN_CLASSIC;
 			Config.statusbar_visibility = OriginalStatusbarVisibility;
 			break;
 	}
@@ -1083,7 +1081,7 @@ bool SeekForward::canBeRun()
 
 void SeekForward::run()
 {
-	seek(SearchDirection::Forward);
+	seek(NCM_SEARCH_DIRECTION_FORWARD);
 }
 
 bool SeekBackward::canBeRun()
@@ -1093,7 +1091,7 @@ bool SeekBackward::canBeRun()
 
 void SeekBackward::run()
 {
-	seek(SearchDirection::Backward);
+	seek(NCM_SEARCH_DIRECTION_BACKWARD);
 }
 
 bool ToggleDisplayMode::canBeRun()
@@ -1110,8 +1108,8 @@ void ToggleDisplayMode::run()
 	{
 		switch (Config.playlist_display_mode)
 		{
-			case DisplayMode::Classic:
-				Config.playlist_display_mode = DisplayMode::Columns;
+			case NCM_DISPLAY_MODE_CLASSIC:
+				Config.playlist_display_mode = NCM_DISPLAY_MODE_COLUMNS;
 				myPlaylist->main().setItemDisplayer(std::bind(
 					Display::SongsInColumns, ph::_1, std::cref(myPlaylist->main())
 				));
@@ -1120,8 +1118,8 @@ void ToggleDisplayMode::run()
 				else
 					myPlaylist->main().setTitle("");
 				break;
-			case DisplayMode::Columns:
-				Config.playlist_display_mode = DisplayMode::Classic;
+			case NCM_DISPLAY_MODE_COLUMNS:
+				Config.playlist_display_mode = NCM_DISPLAY_MODE_CLASSIC;
 				myPlaylist->main().setItemDisplayer(std::bind(
 					Display::Songs, ph::_1, std::cref(myPlaylist->main()), std::cref(Config.song_list_format)
 				));
@@ -1133,15 +1131,15 @@ void ToggleDisplayMode::run()
 	{
 		switch (Config.browser_display_mode)
 		{
-			case DisplayMode::Classic:
-				Config.browser_display_mode = DisplayMode::Columns;
+			case NCM_DISPLAY_MODE_CLASSIC:
+				Config.browser_display_mode = NCM_DISPLAY_MODE_COLUMNS;
 				if (Config.titles_visibility)
 					myBrowser->main().setTitle(Display::Columns(myBrowser->main().getWidth()));
 				else
 					myBrowser->main().setTitle("");
 				break;
-			case DisplayMode::Columns:
-				Config.browser_display_mode = DisplayMode::Classic;
+			case NCM_DISPLAY_MODE_COLUMNS:
+				Config.browser_display_mode = NCM_DISPLAY_MODE_CLASSIC;
 				myBrowser->main().setTitle("");
 				break;
 		}
@@ -1151,17 +1149,17 @@ void ToggleDisplayMode::run()
 	{
 		switch (Config.search_engine_display_mode)
 		{
-			case DisplayMode::Classic:
-				Config.search_engine_display_mode = DisplayMode::Columns;
+			case NCM_DISPLAY_MODE_CLASSIC:
+				Config.search_engine_display_mode = NCM_DISPLAY_MODE_COLUMNS;
 				break;
-			case DisplayMode::Columns:
-				Config.search_engine_display_mode = DisplayMode::Classic;
+			case NCM_DISPLAY_MODE_COLUMNS:
+				Config.search_engine_display_mode = NCM_DISPLAY_MODE_CLASSIC;
 				break;
 		}
 		Statusbar::printf("Search engine display mode: %1%", Config.search_engine_display_mode);
 		if (mySearcher->main().size() > SearchEngine::StaticOptions)
 			mySearcher->main().setTitle(
-				   Config.search_engine_display_mode == DisplayMode::Columns
+				   Config.search_engine_display_mode == NCM_DISPLAY_MODE_COLUMNS
 				&& Config.titles_visibility
 				? Display::Columns(mySearcher->main().getWidth())
 				: ""
@@ -1171,14 +1169,14 @@ void ToggleDisplayMode::run()
 	{
 		switch (Config.playlist_editor_display_mode)
 		{
-			case DisplayMode::Classic:
-				Config.playlist_editor_display_mode = DisplayMode::Columns;
+			case NCM_DISPLAY_MODE_CLASSIC:
+				Config.playlist_editor_display_mode = NCM_DISPLAY_MODE_COLUMNS;
 				myPlaylistEditor->Content.setItemDisplayer(std::bind(
 					Display::SongsInColumns, ph::_1, std::cref(myPlaylistEditor->Content)
 				));
 				break;
-			case DisplayMode::Columns:
-				Config.playlist_editor_display_mode = DisplayMode::Classic;
+			case NCM_DISPLAY_MODE_COLUMNS:
+				Config.playlist_editor_display_mode = NCM_DISPLAY_MODE_CLASSIC;
 				myPlaylistEditor->Content.setItemDisplayer(std::bind(
 					Display::Songs, ph::_1, std::cref(myPlaylistEditor->Content), std::cref(Config.song_list_format)
 				));
@@ -1914,12 +1912,12 @@ void SelectFoundItems::run()
 {
 	auto current_pos = m_list->choice();
 	screenLegacyCurrent()->activeWindow()->scroll(NC::Scroll::Home);
-	bool found = m_searchable->search(SearchDirection::Forward, false, false);
+	bool found = m_searchable->search(NCM_SEARCH_DIRECTION_FORWARD, false, false);
 	if (found)
 	{
 		Statusbar::print("Searching for items...");
 		m_list->currentP()->setSelected(true);
-		while (m_searchable->search(SearchDirection::Forward, false, true))
+		while (m_searchable->search(NCM_SEARCH_DIRECTION_FORWARD, false, true))
 			m_list->currentP()->setSelected(true);
 		Statusbar::print("Found items selected");
 	}
@@ -2111,7 +2109,7 @@ bool FindItemBackward::canBeRun()
 
 void FindItemForward::run()
 {
-	findItem(SearchDirection::Forward);
+	findItem(NCM_SEARCH_DIRECTION_FORWARD);
 	listsChangeFinisher();
 }
 
@@ -2123,7 +2121,7 @@ bool FindItemForward::canBeRun()
 
 void FindItemBackward::run()
 {
-	findItem(SearchDirection::Backward);
+	findItem(NCM_SEARCH_DIRECTION_BACKWARD);
 	listsChangeFinisher();
 }
 
@@ -2136,7 +2134,7 @@ void NextFoundItem::run()
 {
 	Searchable *w = dynamic_cast<Searchable *>(screenLegacyCurrent());
 	assert(w != nullptr);
-	w->search(SearchDirection::Forward, Config.wrapped_search, true);
+	w->search(NCM_SEARCH_DIRECTION_FORWARD, Config.wrapped_search, true);
 	listsChangeFinisher();
 }
 
@@ -2149,7 +2147,7 @@ void PreviousFoundItem::run()
 {
 	Searchable *w = dynamic_cast<Searchable *>(screenLegacyCurrent());
 	assert(w != nullptr);
-	w->search(SearchDirection::Backward, Config.wrapped_search, true);
+	w->search(NCM_SEARCH_DIRECTION_BACKWARD, Config.wrapped_search, true);
 	listsChangeFinisher();
 }
 
@@ -2198,12 +2196,12 @@ void ToggleAddMode::run()
 	std::string mode_desc;
 	switch (Config.space_add_mode)
 	{
-		case SpaceAddMode::AddRemove:
-			Config.space_add_mode = SpaceAddMode::AlwaysAdd;
+		case NCM_SPACE_ADD_MODE_ADD_REMOVE:
+			Config.space_add_mode = NCM_SPACE_ADD_MODE_ALWAYS_ADD;
 			mode_desc = "always add an item to playlist";
 			break;
-		case SpaceAddMode::AlwaysAdd:
-			Config.space_add_mode = SpaceAddMode::AddRemove;
+		case NCM_SPACE_ADD_MODE_ALWAYS_ADD:
+			Config.space_add_mode = NCM_SPACE_ADD_MODE_ADD_REMOVE;
 			mode_desc = "add an item to playlist or remove if already added";
 			break;
 	}
@@ -2264,9 +2262,10 @@ void AddRandomItems::run()
 	{
 		bool success;
 		if (rnd_type == 's')
-			success = Mpd.AddRandomSongs(number, Config.random_exclude_pattern, Global::RNG);
+			success = Mpd.AddRandomSongs(number, Config.random_exclude_pattern,
+			                          &global_random);
 		else
-			success = Mpd.AddRandomTag(tag_type, number, Global::RNG);
+			success = Mpd.AddRandomTag(tag_type, number, &global_random);
 		if (success)
 			Statusbar::printf("%1% random %2%%3% added to playlist", number, tag_type_str, number == 1 ? "" : "s");
 	}
@@ -2281,27 +2280,27 @@ void ToggleBrowserSortMode::run()
 {
 	switch (Config.browser_sort_mode)
 	{
-		case SortMode::Type:
-			Config.browser_sort_mode = SortMode::Name;
+		case NCM_SORT_MODE_TYPE:
+			Config.browser_sort_mode = NCM_SORT_MODE_NAME;
 			Statusbar::print("Sort songs by: name");
 			break;
-		case SortMode::Name:
-			Config.browser_sort_mode = SortMode::ModificationTime;
+		case NCM_SORT_MODE_NAME:
+			Config.browser_sort_mode = NCM_SORT_MODE_MODIFICATION_TIME;
 			Statusbar::print("Sort songs by: modification time");
 			break;
-		case SortMode::ModificationTime:
-			Config.browser_sort_mode = SortMode::CustomFormat;
+		case NCM_SORT_MODE_MODIFICATION_TIME:
+			Config.browser_sort_mode = NCM_SORT_MODE_CUSTOM_FORMAT;
 			Statusbar::print("Sort songs by: custom format");
 			break;
-		case SortMode::CustomFormat:
-			Config.browser_sort_mode = SortMode::None;
+		case NCM_SORT_MODE_CUSTOM_FORMAT:
+			Config.browser_sort_mode = NCM_SORT_MODE_NONE;
 			Statusbar::print("Do not sort songs");
 			break;
-		case SortMode::None:
-			Config.browser_sort_mode = SortMode::Type;
+		case NCM_SORT_MODE_NONE:
+			Config.browser_sort_mode = NCM_SORT_MODE_TYPE;
 			Statusbar::print("Sort songs by: type");
 	}
-	if (Config.browser_sort_mode != SortMode::None)
+	if (Config.browser_sort_mode != NCM_SORT_MODE_NONE)
 	{
 		size_t sort_offset = myBrowser->inRootDirectory() ? 0 : 1;
 		std::stable_sort(
@@ -2933,9 +2932,7 @@ void scrollTagDownRun(NC::List *list, const SongList *songs, enum NcmSongGetter 
 
 void seek(SearchDirection sd)
 {
-			using Global::Timer;
-	using Global::SeekingInProgress;
-
+		
 	if (!Status::State::totalTime())
 	{
 		Statusbar::print("Unknown item length");
@@ -2946,7 +2943,7 @@ void seek(SearchDirection sd)
 	Statusbar::ScopedLock statusbar_lock;
 
 	unsigned songpos = Status::State::elapsedTime();
-	auto t = Timer;
+	auto t = global_timer;
 
 	NC::Window::ScopedTimeout stimeout{*ui_state_legacy_footer_window(), BaseScreen::defaultWindowTimeout};
 
@@ -2979,21 +2976,21 @@ void seek(SearchDirection sd)
 		return success;
 	};
 
-	SeekingInProgress = true;
+	global_seeking_in_progress = true;
 	while (true)
 	{
 	Status::trace();
 
-		auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(Timer-t);
+		int64 elapsed_seconds = global_timer_elapsed_seconds(t);
 		unsigned howmuch = Config.incremental_seeking
-		                 ? static_cast<unsigned>(elapsed.count()/2)+Config.seek_time
+		                 ? static_cast<unsigned>(elapsed_seconds/2)+Config.seek_time
 		                 : Config.seek_time;
 
 		NC::Key::Type input = readKey(*ui_state_legacy_footer_window());
 
 		switch (sd)
 		{
-		case SearchDirection::Backward:
+		case NCM_SEARCH_DIRECTION_BACKWARD:
 			if (songpos > 0)
 			{
 				if (songpos < howmuch)
@@ -3002,7 +2999,7 @@ void seek(SearchDirection sd)
 					songpos -= howmuch;
 			}
 			break;
-		case SearchDirection::Forward:
+		case NCM_SEARCH_DIRECTION_FORWARD:
 			if (songpos < Status::State::totalTime())
 				songpos = std::min(songpos + howmuch, Status::State::totalTime());
 			break;
@@ -3012,7 +3009,7 @@ void seek(SearchDirection sd)
 		// FIXME: merge this with the code in status.cpp
 		switch (Config.design)
 		{
-			case Design::Classic:
+			case NCM_DESIGN_CLASSIC:
 				tracklength = " [";
 				if (Config.display_remaining_time)
 				{
@@ -3029,7 +3026,7 @@ void seek(SearchDirection sd)
 				         << tracklength
 				         << NC::FormattedColor::End<>(Config.statusbar_time_color);
 				break;
-			case Design::Alternative:
+			case NCM_DESIGN_ALTERNATIVE:
 				if (Config.display_remaining_time)
 				{
 					tracklength = "-";
@@ -3052,13 +3049,13 @@ void seek(SearchDirection sd)
 
 		auto k = Bindings.get(input);
 		if (hasRunnableAction(k, Actions::Type::SeekBackward))
-			sd = SearchDirection::Backward;
+			sd = NCM_SEARCH_DIRECTION_BACKWARD;
 		else if (hasRunnableAction(k, Actions::Type::SeekForward))
-			sd = SearchDirection::Forward;
+			sd = NCM_SEARCH_DIRECTION_FORWARD;
 		else
 			break;
 	}
-	SeekingInProgress = false;
+	global_seeking_in_progress = false;
 	Mpd.Seek(Status::State::currentSongPosition(), songpos);
 }
 

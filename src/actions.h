@@ -21,9 +21,9 @@
 #ifndef NCMPCPP_ACTIONS_H
 #define NCMPCPP_ACTIONS_H
 
-#include <chrono>
 #include <map>
 #include <string>
+#include "c/ncm_time.h"
 #include "curses/window.h"
 #include "interfaces.h"
 
@@ -232,7 +232,7 @@ struct UpdateEnvironment: BaseAction
 	void run(bool update_status, bool refresh_window, bool mpd_sync);
 
 private:
-	std::chrono::steady_clock::time_point m_past;
+	NcmTimePoint m_past;
 
 	virtual void run() override;
 };

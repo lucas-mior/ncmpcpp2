@@ -21,8 +21,7 @@
 #ifndef NCMPCPP_MEDIA_LIBRARY_H
 #define NCMPCPP_MEDIA_LIBRARY_H
 
-#include <chrono>
-
+#include "c/ncm_time.h"
 #include "interfaces.h"
 #include "regex_filter.h"
 #include "screens/screen.h"
@@ -36,7 +35,7 @@ struct MediaLibrary: Screen<NC::Window *>, Filterable, HasColumns, HasSongs, Sea
 	virtual void resize() override;
 	
 	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::MediaLibrary; }
+	virtual ScreenType type() override { return NCM_SCREEN_TYPE_MEDIA_LIBRARY; }
 	
 	virtual void refresh() override;
 	virtual void update() override;
@@ -143,10 +142,10 @@ private:
 	bool m_albums_update_request;
 	bool m_songs_update_request;
 
-	std::chrono::steady_clock::time_point m_timer;
+	NcmTimePoint m_timer;
 
 	const int m_window_timeout;
-	const std::chrono::milliseconds m_fetching_delay;
+	const int64 m_fetching_delay_ms;
 
 	Regex::Filter<PrimaryTag> m_tags_search_predicate;
 	Regex::ItemFilter<AlbumEntry> m_albums_search_predicate;

@@ -71,10 +71,10 @@ bool LocaleBasedItemSorting::operator()(const MPD::Item &a, const MPD::Item &b) 
 	{
 		switch (m_sort_mode)
 		{
-			case SortMode::Type:
+			case NCM_SORT_MODE_TYPE:
 				result = a.type() > b.type();
 				break;
-			case SortMode::Name:
+			case NCM_SORT_MODE_NAME:
 				switch (a.type())
 				{
 					case MPD::Item::Type::Directory:
@@ -88,7 +88,7 @@ bool LocaleBasedItemSorting::operator()(const MPD::Item &a, const MPD::Item &b) 
 						break;
 				}
 				break;
-			case SortMode::CustomFormat:
+			case NCM_SORT_MODE_CUSTOM_FORMAT:
 				switch (a.type())
 				{
 					case MPD::Item::Type::Directory:
@@ -103,7 +103,7 @@ bool LocaleBasedItemSorting::operator()(const MPD::Item &a, const MPD::Item &b) 
 						break;
 				}
 				break;
-			case SortMode::ModificationTime:
+			case NCM_SORT_MODE_MODIFICATION_TIME:
 				switch (a.type())
 				{
 					case MPD::Item::Type::Directory:
@@ -117,7 +117,7 @@ bool LocaleBasedItemSorting::operator()(const MPD::Item &a, const MPD::Item &b) 
 						break;
 				}
 				break;
-			case SortMode::None:
+			case NCM_SORT_MODE_NONE:
 				throw std::logic_error("can't sort with None sorting mode");
 		}
 	}

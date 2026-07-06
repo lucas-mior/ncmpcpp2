@@ -176,7 +176,7 @@ std::shared_ptr<Actions::BaseAction> parseActionLine(const std::string &line, F 
 			// require screen of given type
 			std::string arg = getEnclosedString(line, '"', '"', 0);
 			ScreenType screen_type = stringToScreenType(arg);
-			if (screen_type != ScreenType::Unknown)
+			if (screen_type != NCM_SCREEN_TYPE_UNKNOWN)
 				result = std::static_pointer_cast<Actions::BaseAction>(
 					std::make_shared<Actions::RequireScreen>(screen_type));
 			else

@@ -175,7 +175,7 @@ public:
 MediaLibrary::MediaLibrary()
 : m_timer()
 , m_window_timeout(Config.data_fetching_delay ? 250 : BaseScreen::defaultWindowTimeout)
-, m_fetching_delay(Config.data_fetching_delay ? 250 : -1)
+, m_fetching_delay_ms(Config.data_fetching_delay ? 250 : -1)
 {
 	hasTwoColumns = 0;
 	isAlbumOnly = 0;
@@ -410,7 +410,7 @@ void MediaLibrary::update()
 		{
 			ScopedUnfilteredMenu<AlbumEntry> sunfilter_albums(ReapplyFilter::No, Albums);
 			if (!Tags.empty()
-			    && ((Albums.empty() && Global::Timer - m_timer > m_fetching_delay)
+			    && ((Albums.empty() && global_timer_elapsed_ms(m_timer) > m_fetching_delay_ms)
 			        || m_albums_update_request))
 			{
 				m_albums_update_request = false;
@@ -459,7 +459,7 @@ void MediaLibrary::update()
 
 	ScopedUnfilteredMenu<MPD::Song> sunfilter_songs(ReapplyFilter::No, Songs);
 	if (!Albums.empty()
-	    && ((Songs.empty() && Global::Timer - m_timer > m_fetching_delay)
+	    && ((Songs.empty() && global_timer_elapsed_ms(m_timer) > m_fetching_delay_ms)
 	        || m_songs_update_request))
 	{
 		m_songs_update_request = false;
@@ -899,7 +899,7 @@ void MediaLibrary::nextColumn()
 
 void MediaLibrary::updateTimer()
 {
-	m_timer = Global::Timer;
+	m_timer = global_timer;
 }
 
 void MediaLibrary::toggleColumnsMode()

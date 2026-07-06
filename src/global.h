@@ -1,47 +1,32 @@
-/***************************************************************************
- *   Copyright (C) 2008-2021 by Andrzej Rybczak                            *
- *   andrzej@rybczak.net                                                   *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
- ***************************************************************************/
-
-#ifndef NCMPCPP_GLOBAL_H
+#if !defined(NCMPCPP_GLOBAL_H)
 #define NCMPCPP_GLOBAL_H
 
-#include <chrono>
-#include <random>
-#include <string>
+#include "c/ncm_base.h"
+#include "c/ncm_random.h"
+#include "c/ncm_time.h"
 
-#include "mpdpp.h"
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-namespace Global {
+extern bool global_show_messages;
+extern bool global_seeking_in_progress;
+extern NcmBuffer global_volume_state;
+extern NcmTimePoint global_timer;
+extern NcmRandom global_random;
 
-// indicates whether seeking action in currently in progress
-extern bool SeekingInProgress;
+void global_state_init(void);
+void global_state_destroy(void);
+bool global_timer_update(NcmError *error);
+int64 global_timer_elapsed_ms(NcmTimePoint start);
+int64 global_timer_elapsed_seconds(NcmTimePoint start);
+void global_volume_state_set(char *string, int32 string_len);
+void global_volume_state_append(char *string, int32 string_len);
+char *global_volume_state_cstr(void);
+int32 global_volume_state_len(void);
 
-// string that represents volume in right top corner. being global
-// to be used for calculating width offsets in various files.
-extern std::string VolumeState;
-
-// global timer
-extern std::chrono::steady_clock::time_point Timer;
-
-// global RNG
-extern std::mt19937 RNG;
-
+#if defined(__cplusplus)
 }
+#endif
 
-#endif // NCMPCPP_GLOBAL_H
+#endif /* NCMPCPP_GLOBAL_H */

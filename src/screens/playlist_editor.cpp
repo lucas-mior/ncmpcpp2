@@ -63,7 +63,7 @@ std::optional<size_t> GetSongIndexInPlaylist(MPD::Playlist playlist, const MPD::
 PlaylistEditor::PlaylistEditor()
 : m_timer()
 , m_window_timeout(Config.data_fetching_delay ? 250 : BaseScreen::defaultWindowTimeout)
-, m_fetching_delay(Config.data_fetching_delay ? 250 : -1)
+, m_fetching_delay_ms(Config.data_fetching_delay ? 250 : -1)
 {
 	size_t ra = Config.playlist_editor_column_width_ratio[0];
 	size_t rb = Config.playlist_editor_column_width_ratio[1];
@@ -91,12 +91,12 @@ PlaylistEditor::PlaylistEditor()
 	Content.setSelectedSuffix(Config.selected_item_suffix);
 	switch (Config.playlist_editor_display_mode)
 	{
-		case DisplayMode::Classic:
+		case NCM_DISPLAY_MODE_CLASSIC:
 			Content.setItemDisplayer(std::bind(
 				Display::Songs, ph::_1, std::cref(Content), std::cref(Config.song_list_format)
 			));
 			break;
-		case DisplayMode::Columns:
+		case NCM_DISPLAY_MODE_COLUMNS:
 			Content.setItemDisplayer(std::bind(
 				Display::SongsInColumns, ph::_1, std::cref(Content)
 			));
@@ -180,7 +180,7 @@ void PlaylistEditor::update()
 	{
 		ScopedUnfilteredMenu<MPD::Song> sunfilter_content(ReapplyFilter::No, Content);
 		if (!Playlists.empty()
-		    && ((Content.empty() && Global::Timer - m_timer > m_fetching_delay)
+		    && ((Content.empty() && global_timer_elapsed_ms(m_timer) > m_fetching_delay_ms)
 		        || m_content_update_requested))
 		{
 			m_content_update_requested = false;
@@ -484,7 +484,7 @@ void PlaylistEditor::nextColumn()
 
 void PlaylistEditor::updateTimer()
 {
-	m_timer = Global::Timer;
+	m_timer = global_timer;
 }
 
 void PlaylistEditor::locatePlaylist(const MPD::Playlist &playlist)
@@ -566,10 +566,10 @@ std::string SongToString(const MPD::Song &s)
 	std::string result;
 	switch (Config.playlist_display_mode)
 	{
-		case DisplayMode::Classic:
+		case NCM_DISPLAY_MODE_CLASSIC:
 			result = Format::stringify<char>(Config.song_list_format, &s);
 			break;
-		case DisplayMode::Columns:
+		case NCM_DISPLAY_MODE_COLUMNS:
 			result = Format::stringify<char>(Config.song_columns_mode_format, &s);
 			break;
 	}

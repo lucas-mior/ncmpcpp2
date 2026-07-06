@@ -50,7 +50,7 @@ struct Lyrics: BaseScreen, Tabbable
 	virtual void switchTo() override;
 	virtual int windowTimeout() override;
 	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::Lyrics; }
+	virtual ScreenType type() override { return NCM_SCREEN_TYPE_LYRICS; }
 	virtual void update() override;
 	virtual void mouseButtonPressed(MEVENT me) override;
 	virtual bool isLockable() override;
