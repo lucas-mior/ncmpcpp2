@@ -23,6 +23,7 @@
 
 #include "c/ncm_type_conversions.h"
 #include "curses/formatted_color.h"
+#include "app_state.h"
 #include "global.h"
 #include "helpers.h"
 #include "screens/screen_switcher.h"
@@ -199,19 +200,16 @@ SongInfo::SongInfo()
                              toNcBorder(NC::Border()),
                              static_cast<int64>(Config.lines_scrolled));
 
-    bool register_success = nc_screen_registry_register(
-        &Global::myScreenRegistry, nativeScreen());
+    bool register_success = app_state_register_screen(nativeScreen());
     assert(register_success);
     (void)register_success;
 }
 
 SongInfo::~SongInfo()
 {
-    if (nc_screen_registry_is_registered(&Global::myScreenRegistry,
-                                         nativeScreen()))
+    if (app_state_is_screen_registered(nativeScreen()))
     {
-        nc_screen_registry_unregister(&Global::myScreenRegistry,
-                                      nativeScreen());
+        app_state_unregister_screen(nativeScreen());
     }
     nc_song_info_screen_destroy(&m_screen);
 }
@@ -256,7 +254,7 @@ void SongInfo::switchTo()
         return;
     }
     nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-    nc_screen_registry_switch_to(&Global::myScreenRegistry, nativeScreen());
+    app_state_switch_to_screen(nativeScreen());
 }
 
 void SongInfo::resize()

@@ -25,7 +25,6 @@ namespace Global {
 BaseScreen *myScreen;
 BaseScreen *myLockedScreen;
 BaseScreen *myInactiveScreen;
-NcScreenRegistry myScreenRegistry;
 
 NC::Window *wHeader;
 NC::Window *wFooter;

@@ -95,6 +95,9 @@ struct BaseScreen
 	virtual NcScreen *nativeScreen() { return &m_native_screen; }
 	virtual const NcScreen *nativeScreen() const { return &m_native_screen; }
 
+	/// Legacy C++ owner used by compatibility code that still needs BaseScreen.
+	static BaseScreen *legacyFromNativeScreen(NcScreen *screen);
+
 	/// Registers this screen in the C screen registry.
 	void registerNativeScreen();
 
