@@ -44,6 +44,7 @@ CONFIG_H := $(BUILD_DIR)/config.h
 BINARY := $(BUILD_DIR)/ncmpcpp
 CBASE_LIB := $(BUILD_DIR)/libcbase.a
 NCMPCPP_C_LIB := $(BUILD_DIR)/libncmpcpp_c.a
+NCMPCPP_APP_C_LIB := $(BUILD_DIR)/libncmpcpp_app_c.a
 
 CBASE_SRCS := cbase/cbase.c
 NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
@@ -70,7 +71,7 @@ DEPS := \
 	$(APP_CXX_OBJS:.o=.d) \
 	$(TEST_OBJS:.o=.d)
 
-.PHONY: all check install clean prune-autotools help FORCE
+.PHONY: all check install clean prune-autotools cxx-report cxx-count help FORCE
 .DELETE_ON_ERROR:
 .SECONDARY: $(CBASE_OBJS) $(NCMPCPP_C_OBJS) $(APP_C_OBJS) $(APP_CXX_OBJS) $(TEST_OBJS)
 
@@ -157,6 +158,11 @@ $(NCMPCPP_C_LIB): $(NCMPCPP_C_OBJS)
 	@rm -f $@
 	@$(AR) rcs $@ $^
 
+$(NCMPCPP_APP_C_LIB): $(APP_C_OBJS)
+	@printf 'AR  %s\n' '$@'
+	@rm -f $@
+	@$(AR) rcs $@ $^
+
 $(BINARY): $(APP_C_OBJS) $(APP_CXX_OBJS) $(NCMPCPP_C_LIB) $(CBASE_LIB)
 	@printf 'LD  %s\n' '$@'
 	@$(CXX) $(LDFLAGS) -o $@ \
@@ -168,15 +174,46 @@ $(BINARY): $(APP_C_OBJS) $(APP_CXX_OBJS) $(NCMPCPP_C_LIB) $(CBASE_LIB)
 		$(PKG_LIBS) \
 		$(THREAD_FLAGS)
 
-$(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(CBASE_LIB)
+$(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LIB) $(CBASE_LIB)
 	@mkdir -p $(@D)
 	@printf 'LD  %s\n' '$@'
 	@$(CC) $(LDFLAGS) -o $@ \
 		$< \
 		$(NCMPCPP_C_LIB) \
+		$(NCMPCPP_APP_C_LIB) \
 		$(CBASE_LIB) \
 		$(PKG_LIBS) \
 		$(THREAD_FLAGS)
+
+
+cxx-report:
+	@printf '%s\n' 'C++ sources still built by the root Makefile:'
+	@if test -n "$(strip $(APP_CXX_SRCS))"; then \
+		for src in $(APP_CXX_SRCS); do \
+			printf '%s\n' "$$src"; \
+		done; \
+	else \
+		printf '%s\n' '  none'; \
+	fi
+	@printf '\n%s\n' 'C++ sources present but not built by the root Makefile:'
+	@tmp_all=$$(mktemp); \
+	tmp_built=$$(mktemp); \
+	find . -type f -name '*.cpp' | sed 's#^./##' | sort >"$$tmp_all"; \
+	for src in $(APP_CXX_SRCS); do \
+		printf '%s\n' "$$src"; \
+	done | sort >"$$tmp_built"; \
+	other_cxx=$$(comm -23 "$$tmp_all" "$$tmp_built"); \
+	rm -f "$$tmp_all" "$$tmp_built"; \
+	if test -n "$$other_cxx"; then \
+		printf '%s\n' "$$other_cxx"; \
+	else \
+		printf '%s\n' '  none'; \
+	fi
+
+cxx-count:
+	@set -- $(APP_CXX_SRCS); printf 'built_cpp=%s\n' "$$#"
+	@find . -type f -name '*.cpp' | wc -l | tr -d ' ' | sed 's/^/total_cpp=/'
+
 
 check: $(TEST_BINS)
 	@set -e; \
@@ -204,7 +241,7 @@ prune-autotools:
 	done < REMOVE_AUTOTOOLS_FILES.txt
 
 help:
-	@printf '%s\n' 'usage: make [all|check|install|clean|prune-autotools]'
+	@printf '%s\n' 'usage: make [all|check|install|clean|prune-autotools|cxx-report|cxx-count]'
 	@printf '%s\n' ''
 	@printf '%s\n' 'Common variables:'
 	@printf '%s\n' '  CC, CXX, AR        compiler and archive commands'
