@@ -692,7 +692,9 @@ void DeletePlaylistItems::run()
 	else if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content))
 	{
 		std::string playlist = myPlaylistEditor->Playlists.current()->value().path();
-		auto delete_fun = std::bind(&MPD::Connection::PlaylistDelete, ph::_1, playlist, ph::_2);
+		auto delete_fun = [playlist](auto &, unsigned pos) {
+			Mpd.PlaylistDelete(playlist, pos);
+		};
 		Statusbar::print("Deleting items...");
 		deleteSelectedSongs(myPlaylistEditor->Content, delete_fun);
 		Statusbar::print("Item(s) deleted");
@@ -941,7 +943,7 @@ void MoveSelectedItemsUp::run()
 		else
 			moveSelectedItemsUp(
 				myPlaylist->main(),
-				std::bind(&MPD::Connection::Move, ph::_1, ph::_2, ph::_3));
+				[](auto &, unsigned from, unsigned to) { Mpd.Move(from, to); });
 	}
 	else if (screenLegacyCurrent() == myPlaylistEditor)
 	{
@@ -952,7 +954,9 @@ void MoveSelectedItemsUp::run()
 			auto playlist = myPlaylistEditor->Playlists.current()->value().path();
 			moveSelectedItemsUp(
 				myPlaylistEditor->Content,
-				std::bind(&MPD::Connection::PlaylistMove, ph::_1, playlist, ph::_2, ph::_3));
+				[playlist](auto &, unsigned from, unsigned to) {
+					Mpd.PlaylistMove(playlist, from, to);
+				});
 		}
 	}
 }
@@ -975,7 +979,7 @@ void MoveSelectedItemsDown::run()
 		else
 			moveSelectedItemsDown(
 				myPlaylist->main(),
-				std::bind(&MPD::Connection::Move, ph::_1, ph::_2, ph::_3));
+				[](auto &, unsigned from, unsigned to) { Mpd.Move(from, to); });
 	}
 	else if (screenLegacyCurrent() == myPlaylistEditor)
 	{
@@ -986,7 +990,9 @@ void MoveSelectedItemsDown::run()
 			auto playlist = myPlaylistEditor->Playlists.current()->value().path();
 			moveSelectedItemsDown(
 				myPlaylistEditor->Content,
-				std::bind(&MPD::Connection::PlaylistMove, ph::_1, playlist, ph::_2, ph::_3));
+				[playlist](auto &, unsigned from, unsigned to) {
+					Mpd.PlaylistMove(playlist, from, to);
+				});
 		}
 	}
 }
@@ -1002,13 +1008,15 @@ void MoveSelectedItemsTo::run()
 	if (screenLegacyCurrent() == myPlaylist)
 	{
 		if (!myPlaylist->main().empty())
-			moveSelectedItemsTo(myPlaylist->main(), std::bind(&MPD::Connection::Move, ph::_1, ph::_2, ph::_3));
+			moveSelectedItemsTo(myPlaylist->main(), [](auto &, unsigned from, unsigned to) { Mpd.Move(from, to); });
 	}
 	else
 	{
 		assert(!myPlaylistEditor->Playlists.empty());
 		std::string playlist = myPlaylistEditor->Playlists.current()->value().path();
-		auto move_fun = std::bind(&MPD::Connection::PlaylistMove, ph::_1, playlist, ph::_2, ph::_3);
+		auto move_fun = [playlist](auto &, unsigned from, unsigned to) {
+			Mpd.PlaylistMove(playlist, from, to);
+		};
 		moveSelectedItemsTo(myPlaylistEditor->Content, move_fun);
 	}
 }
@@ -1966,7 +1974,7 @@ void CropPlaylist::run()
 		confirmAction(stringFormat("Do you really want to crop playlist \"%1%\"?", playlist));
 	selectCurrentIfNoneSelected(w);
 	Statusbar::printf("Cropping playlist \"%1%\"...", playlist);
-	cropPlaylist(w, std::bind(&MPD::Connection::PlaylistDelete, ph::_1, playlist, ph::_2));
+	cropPlaylist(w, [playlist](auto &, unsigned pos) { Mpd.PlaylistDelete(playlist, pos); });
 	Statusbar::printf("Playlist \"%1%\" cropped", playlist);
 }
 

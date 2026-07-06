@@ -5,6 +5,7 @@
 
 #include "c/ncm_error.h"
 #include "c/ncm_mpd_item.h"
+#include "c/ncm_playlist.h"
 #include "c/ncm_song.h"
 
 #if defined(__cplusplus)
@@ -65,6 +66,19 @@ typedef struct NcmMpdOutputList {
     int32 capacity;
 } NcmMpdOutputList;
 
+
+typedef struct NcmMpdPlaylistList {
+    NcmPlaylist *items;
+    int32 count;
+    int32 capacity;
+} NcmMpdPlaylistList;
+
+enum NcmMpdReplayGainMode {
+    NCM_MPD_REPLAY_GAIN_OFF,
+    NCM_MPD_REPLAY_GAIN_TRACK,
+    NCM_MPD_REPLAY_GAIN_ALBUM,
+};
+
 typedef struct NcmMpdStatus {
     int32 volume;
     bool repeat;
@@ -122,6 +136,30 @@ bool ncm_mpd_connection_get_stats(NcmMpdConnection *connection,
 bool ncm_mpd_connection_get_status(NcmMpdConnection *connection,
                                    NcmMpdStatus *status);
 
+uint32 ncm_mpd_connection_version(NcmMpdConnection *connection);
+bool ncm_mpd_connection_send_password(NcmMpdConnection *connection,
+                                      char *password);
+bool ncm_mpd_connection_start_command_list(NcmMpdConnection *connection);
+bool ncm_mpd_connection_commit_command_list(NcmMpdConnection *connection);
+bool ncm_mpd_connection_get_supported_extensions(
+    NcmMpdConnection *connection,
+    NcmMpdStringList *strings);
+bool ncm_mpd_connection_get_replay_gain_mode(
+    NcmMpdConnection *connection,
+    enum NcmMpdReplayGainMode *mode);
+bool ncm_mpd_connection_set_replay_gain_mode(
+    NcmMpdConnection *connection,
+    enum NcmMpdReplayGainMode mode);
+bool ncm_mpd_connection_get_playlists(NcmMpdConnection *connection,
+                                      NcmMpdPlaylistList *playlists);
+bool ncm_mpd_connection_list_all_song_uris(NcmMpdConnection *connection,
+                                           char *path,
+                                           NcmMpdStringList *strings);
+bool ncm_mpd_connection_get_url_handlers(NcmMpdConnection *connection,
+                                         NcmMpdStringList *strings);
+bool ncm_mpd_connection_get_tag_types(NcmMpdConnection *connection,
+                                      NcmMpdStringList *strings);
+
 void ncm_mpd_song_list_init(NcmMpdSongList *list);
 void ncm_mpd_song_list_destroy(NcmMpdSongList *list);
 void ncm_mpd_song_list_clear(NcmMpdSongList *list);
@@ -134,6 +172,10 @@ void ncm_mpd_string_list_clear(NcmMpdStringList *list);
 void ncm_mpd_output_list_init(NcmMpdOutputList *list);
 void ncm_mpd_output_list_destroy(NcmMpdOutputList *list);
 void ncm_mpd_output_list_clear(NcmMpdOutputList *list);
+
+void ncm_mpd_playlist_list_init(NcmMpdPlaylistList *list);
+void ncm_mpd_playlist_list_destroy(NcmMpdPlaylistList *list);
+void ncm_mpd_playlist_list_clear(NcmMpdPlaylistList *list);
 
 bool ncm_mpd_connection_get_current_song(NcmMpdConnection *connection,
                                          NcmSong *song);
