@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "c/ncm_defs.h"
+#include "screens/nc_screen.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -36,6 +37,7 @@ enum ScreenType {
 };
 
 char *screen_type_str(enum ScreenType screen_type);
+int32 screen_type_to_native_type(enum ScreenType screen_type);
 bool screen_type_parse_startup(char *string, int32 string_len,
                                enum ScreenType *screen_type);
 bool screen_type_parse(char *string, int32 string_len,
@@ -47,15 +49,52 @@ bool screen_type_parse(char *string, int32 string_len,
 
 #if defined(__cplusplus)
 #include <string>
-#include "screens/nc_screen.h"
+
+#include "app_controller.h"
 
 struct BaseScreen;
 
-std::string screenTypeToString(ScreenType st);
-ScreenType stringtoStartupScreenType(const std::string &s);
-ScreenType stringToScreenType(const std::string &s);
-BaseScreen *toScreen(ScreenType st);
-NcScreen *toNativeScreen(ScreenType st);
+inline std::string screenTypeToString(ScreenType st)
+{
+    return screen_type_str(st);
+}
+
+inline ScreenType stringtoStartupScreenType(const std::string &s)
+{
+    ScreenType result;
+
+    if (!screen_type_parse_startup(const_cast<char *>(s.data()),
+                                   static_cast<int32>(s.length()),
+                                   &result))
+        return NCM_SCREEN_TYPE_UNKNOWN;
+
+    return result;
+}
+
+inline ScreenType stringToScreenType(const std::string &s)
+{
+    ScreenType result;
+
+    if (!screen_type_parse(const_cast<char *>(s.data()),
+                           static_cast<int32>(s.length()), &result))
+        return NCM_SCREEN_TYPE_UNKNOWN;
+
+    return result;
+}
+
+inline NcScreen *toNativeScreen(ScreenType st)
+{
+    return app_controller_find_screen_type(screen_type_to_native_type(st));
+}
+
+inline BaseScreen *toScreen(ScreenType st)
+{
+    NcScreen *screen = toNativeScreen(st);
+
+    if (screen == nullptr)
+        return nullptr;
+    return static_cast<BaseScreen *>(nc_screen_user(screen));
+}
 #endif
 
 #endif /* NCMPCPP_SCREEN_TYPE_H */

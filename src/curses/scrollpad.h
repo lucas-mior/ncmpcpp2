@@ -80,5 +80,7 @@ private:
 
 }
 
+#include "curses/scrollpad_compat_impl.h"
+
 #endif // NCMPCPP_SCROLLPAD_H
 

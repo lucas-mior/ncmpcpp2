@@ -47,6 +47,11 @@ app_controller_unregister_screen(NcScreen *screen) {
     return app_state_unregister_screen(screen);
 }
 
+NcScreen *
+app_controller_find_screen_type(int32 type) {
+    return app_state_find_screen_type(type);
+}
+
 bool
 app_controller_is_screen_registered(NcScreen *screen) {
     return app_state_is_screen_registered(screen);
