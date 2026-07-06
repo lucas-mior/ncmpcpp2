@@ -27,6 +27,7 @@
 #include "display.h"
 #include "app_controller.h"
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "helpers.h"
 #include "screens/playlist.h"
 #include "screens/screen_switcher.h"
@@ -39,8 +40,6 @@
 #include "utility/functional.h"
 #include "title.h"
 
-using Global::MainHeight;
-using Global::MainStartY;
 
 namespace ph = std::placeholders;
 
@@ -59,7 +58,7 @@ Playlist::Playlist()
 , m_timer()
 , m_reload_total_length(false), m_reload_remaining(false)
 {
-	w = NC::Menu<MPD::Song>(0, MainStartY, COLS, MainHeight, Config.playlist_display_mode == DisplayMode::Columns && Config.titles_visibility ? Display::Columns(COLS) : "", Config.main_color, NC::Border());
+	w = NC::Menu<MPD::Song>(0, ui_state_legacy_main_start_y(), COLS, ui_state_legacy_main_height(), Config.playlist_display_mode == DisplayMode::Columns && Config.titles_visibility ? Display::Columns(COLS) : "", Config.main_color, NC::Border());
 	w.cyclicScrolling(Config.use_cyclic_scrolling);
 	w.centeredCursor(Config.centered_cursor);
 	setHighlightFixes(w);
@@ -90,8 +89,8 @@ Playlist::Playlist()
 	                        w.nativeMenu(),
 	                        0,
 	                        COLS,
-	                        MainStartY,
-	                        MainHeight);
+	                        ui_state_legacy_main_start_y(),
+	                        ui_state_legacy_main_height());
 	nc_playlist_screen_set_mouse_config(&m_screen,
 	                                    Config.lines_scrolled,
 	                                    Config.mouse_list_scroll_whole_page);
@@ -432,8 +431,8 @@ void Playlist::resizeCallback(NcScreen *screen)
 	nc_playlist_screen_set_geometry(&playlist->m_screen,
 	                                static_cast<int64>(x_offset),
 	                                static_cast<int64>(width),
-	                                MainStartY,
-	                                MainHeight);
+	                                ui_state_legacy_main_start_y(),
+	                                ui_state_legacy_main_height());
 	playlist->w.resize(nc_playlist_screen_width(&playlist->m_screen),
 	                   nc_playlist_screen_height(&playlist->m_screen));
 	playlist->w.moveTo(nc_playlist_screen_start_x(&playlist->m_screen),

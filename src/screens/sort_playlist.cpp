@@ -22,6 +22,7 @@
 #include "charset.h"
 #include "display.h"
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "helpers.h"
 #include "screens/playlist.h"
 #include "settings.h"
@@ -36,11 +37,9 @@ SortPlaylistDialog::SortPlaylistDialog()
 {
 	typedef WindowType::Item::Type Entry;
 	
-	using Global::MainHeight;
-	using Global::MainStartY;
-	
+			
 	setDimensions();
-	w = WindowType((COLS-m_width)/2, (MainHeight-m_height)/2+MainStartY, m_width, m_height, "Sort songs by...", Config.main_color, Config.window_border);
+	w = WindowType((COLS-m_width)/2, (ui_state_legacy_main_height()-m_height)/2+ui_state_legacy_main_start_y(), m_width, m_height, "Sort songs by...", Config.main_color, Config.window_border);
 	w.cyclicScrolling(Config.use_cyclic_scrolling);
 	w.centeredCursor(Config.centered_cursor);
 	w.setItemDisplayer([](Self::WindowType &menu) {
@@ -97,11 +96,9 @@ void SortPlaylistDialog::switchTo()
 
 void SortPlaylistDialog::resize()
 {
-	using Global::MainHeight;
-	using Global::MainStartY;
-	setDimensions();
+			setDimensions();
 	w.resize(m_width, m_height);
-	w.moveTo((COLS-m_width)/2, (MainHeight-m_height)/2+MainStartY);
+	w.moveTo((COLS-m_width)/2, (ui_state_legacy_main_height()-m_height)/2+ui_state_legacy_main_start_y());
 	hasToBeResized = false;
 }
 
@@ -227,6 +224,6 @@ void SortPlaylistDialog::cancel() const
 
 void SortPlaylistDialog::setDimensions()
 {
-	m_height = std::min(size_t(17), Global::MainHeight);
+	m_height = std::min(size_t(17), ui_state_legacy_main_height());
 	m_width = 30;
 }

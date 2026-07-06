@@ -45,6 +45,7 @@ src/c/ncm_utf8.c
 APP_C_SOURCES='
 src/app_controller.c
 src/app_state.c
+src/ui_state.c
 src/curses/nc_buffer.c
 src/curses/nc_formatted_color.c
 src/curses/nc_menu.c

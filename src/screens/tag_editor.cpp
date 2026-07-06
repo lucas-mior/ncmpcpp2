@@ -32,6 +32,7 @@
 #include "charset.h"
 #include "display.h"
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "helpers.h"
 #include "format_impl.h"
 #include "curses/menu_impl.h"
@@ -48,8 +49,6 @@
 #include "screens/screen_switcher.h"
 #include "screens/screen_legacy.h"
 
-using Global::MainHeight;
-using Global::MainStartY;
 
 namespace ph = std::placeholders;
 
@@ -134,23 +133,23 @@ TagEditor::TagEditor() : FParser(0), FParserHelper(0), FParserLegend(0), FParser
 {
 	PatternsFile = Config.ncmpcpp_directory + "patterns.list";
 	SetDimensions(0, COLS);
-	
-	Dirs = new NC::Menu< std::pair<std::string, std::string> >(0, MainStartY, LeftColumnWidth, MainHeight, Config.titles_visibility ? "Directories" : "", Config.main_color, NC::Border());
+
+	Dirs = new NC::Menu< std::pair<std::string, std::string> >(0, ui_state_legacy_main_start_y(), LeftColumnWidth, ui_state_legacy_main_height(), Config.titles_visibility ? "Directories" : "", Config.main_color, NC::Border());
 	setHighlightFixes(*Dirs);
 	Dirs->cyclicScrolling(Config.use_cyclic_scrolling);
 	Dirs->centeredCursor(Config.centered_cursor);
 	Dirs->setItemDisplayer([](NC::Menu<std::pair<std::string, std::string>> &menu) {
 		menu << Charset::utf8ToLocale(menu.drawn()->value().first);
 	});
-	
-	TagTypes = new NC::Menu<std::string>(MiddleColumnStartX, MainStartY, MiddleColumnWidth, MainHeight, Config.titles_visibility ? "Tag types" : "", Config.main_color, NC::Border());
+
+	TagTypes = new NC::Menu<std::string>(MiddleColumnStartX, ui_state_legacy_main_start_y(), MiddleColumnWidth, ui_state_legacy_main_height(), Config.titles_visibility ? "Tag types" : "", Config.main_color, NC::Border());
 	setHighlightInactiveColumnFixes(*TagTypes);
 	TagTypes->cyclicScrolling(Config.use_cyclic_scrolling);
 	TagTypes->centeredCursor(Config.centered_cursor);
 	TagTypes->setItemDisplayer([](NC::Menu<std::string> &menu) {
 		menu << Charset::utf8ToLocale(menu.drawn()->value());
 	});
-	
+
 	for (const SongInfo::Metadata *m = SongInfo::Tags; m->Name; ++m)
 		TagTypes->addItem(m->Name);
 	TagTypes->addSeparator();
@@ -166,36 +165,36 @@ TagEditor::TagEditor() : FParser(0), FParserHelper(0), FParserLegend(0), FParser
 	TagTypes->addSeparator();
 	TagTypes->addItem("Reset");
 	TagTypes->addItem("Save");
-	
-	Tags = new TagsWindow(NC::Menu<MPD::MutableSong>(RightColumnStartX, MainStartY, RightColumnWidth, MainHeight, Config.titles_visibility ? "Tags" : "", Config.main_color, NC::Border()));
+
+	Tags = new TagsWindow(NC::Menu<MPD::MutableSong>(RightColumnStartX, ui_state_legacy_main_start_y(), RightColumnWidth, ui_state_legacy_main_height(), Config.titles_visibility ? "Tags" : "", Config.main_color, NC::Border()));
 	setHighlightInactiveColumnFixes(*Tags);
 	Tags->cyclicScrolling(Config.use_cyclic_scrolling);
 	Tags->centeredCursor(Config.centered_cursor);
 	Tags->setSelectedPrefix(Config.selected_item_prefix);
 	Tags->setSelectedSuffix(Config.selected_item_suffix);
 	Tags->setItemDisplayer(Display::Tags);
-	
+
 	auto parser_display = [](NC::Menu<std::string> &menu) {
 		menu << Charset::utf8ToLocale(menu.drawn()->value());
 	};
-	
-	FParserDialog = new NC::Menu<std::string>((COLS-FParserDialogWidth)/2, (MainHeight-FParserDialogHeight)/2+MainStartY, FParserDialogWidth, FParserDialogHeight, "", Config.main_color, Config.window_border);
+
+	FParserDialog = new NC::Menu<std::string>((COLS-FParserDialogWidth)/2, (ui_state_legacy_main_height()-FParserDialogHeight)/2+ui_state_legacy_main_start_y(), FParserDialogWidth, FParserDialogHeight, "", Config.main_color, Config.window_border);
 	FParserDialog->cyclicScrolling(Config.use_cyclic_scrolling);
 	FParserDialog->centeredCursor(Config.centered_cursor);
 	FParserDialog->setItemDisplayer(parser_display);
 	FParserDialog->addItem("Get tags from filename");
 	FParserDialog->addItem("Rename files");
 	FParserDialog->addItem("Cancel");
-	
-	FParser = new NC::Menu<std::string>((COLS-FParserWidth)/2, (MainHeight-FParserHeight)/2+MainStartY, FParserWidthOne, FParserHeight, "_", Config.main_color, Config.active_window_border);
+
+	FParser = new NC::Menu<std::string>((COLS-FParserWidth)/2, (ui_state_legacy_main_height()-FParserHeight)/2+ui_state_legacy_main_start_y(), FParserWidthOne, FParserHeight, "_", Config.main_color, Config.active_window_border);
 	FParser->cyclicScrolling(Config.use_cyclic_scrolling);
 	FParser->centeredCursor(Config.centered_cursor);
 	FParser->setItemDisplayer(parser_display);
-	
-	FParserLegend = new NC::Scrollpad((COLS-FParserWidth)/2+FParserWidthOne, (MainHeight-FParserHeight)/2+MainStartY, FParserWidthTwo, FParserHeight, "Legend", Config.main_color, Config.window_border);
-	
-	FParserPreview = new NC::Scrollpad((COLS-FParserWidth)/2+FParserWidthOne, (MainHeight-FParserHeight)/2+MainStartY, FParserWidthTwo, FParserHeight, "Preview", Config.main_color, Config.window_border);
-	
+
+	FParserLegend = new NC::Scrollpad((COLS-FParserWidth)/2+FParserWidthOne, (ui_state_legacy_main_height()-FParserHeight)/2+ui_state_legacy_main_start_y(), FParserWidthTwo, FParserHeight, "Legend", Config.main_color, Config.window_border);
+
+	FParserPreview = new NC::Scrollpad((COLS-FParserWidth)/2+FParserWidthOne, (ui_state_legacy_main_height()-FParserHeight)/2+ui_state_legacy_main_start_y(), FParserWidthTwo, FParserHeight, "Preview", Config.main_color, Config.window_border);
+
 	w = Dirs;
 }
 
@@ -207,11 +206,11 @@ void TagEditor::SetDimensions(size_t x_offset, size_t width)
 	MiddleColumnStartX = LeftColumnStartX+LeftColumnWidth+1;
 	RightColumnWidth = width-LeftColumnWidth-MiddleColumnWidth-2;
 	RightColumnStartX = MiddleColumnStartX+MiddleColumnWidth+1;
-	
+
 	FParserDialogWidth = std::min(30, COLS);
-	FParserDialogHeight = std::min(size_t(5), MainHeight);
+	FParserDialogHeight = std::min(size_t(5), ui_state_legacy_main_height());
 	FParserWidth = width*0.9;
-	FParserHeight = std::min(size_t(LINES*0.8), MainHeight);
+	FParserHeight = std::min(size_t(LINES*0.8), ui_state_legacy_main_height());
 	FParserWidthOne = FParserWidth/2;
 	FParserWidthTwo = FParserWidth-FParserWidthOne;
 }
@@ -221,24 +220,24 @@ void TagEditor::resize()
 	size_t x_offset, width;
 	getWindowResizeParams(x_offset, width);
 	SetDimensions(x_offset, width);
-	
-	Dirs->resize(LeftColumnWidth, MainHeight);
-	TagTypes->resize(MiddleColumnWidth, MainHeight);
-	Tags->resize(RightColumnWidth, MainHeight);
+
+	Dirs->resize(LeftColumnWidth, ui_state_legacy_main_height());
+	TagTypes->resize(MiddleColumnWidth, ui_state_legacy_main_height());
+	Tags->resize(RightColumnWidth, ui_state_legacy_main_height());
 	FParserDialog->resize(FParserDialogWidth, FParserDialogHeight);
 	FParser->resize(FParserWidthOne, FParserHeight);
 	FParserLegend->resize(FParserWidthTwo, FParserHeight);
 	FParserPreview->resize(FParserWidthTwo, FParserHeight);
-	
-	Dirs->moveTo(LeftColumnStartX, MainStartY);
-	TagTypes->moveTo(MiddleColumnStartX, MainStartY);
-	Tags->moveTo(RightColumnStartX, MainStartY);
-	
-	FParserDialog->moveTo(x_offset+(width-FParserDialogWidth)/2, (MainHeight-FParserDialogHeight)/2+MainStartY);
-	FParser->moveTo(x_offset+(width-FParserWidth)/2, (MainHeight-FParserHeight)/2+MainStartY);
-	FParserLegend->moveTo(x_offset+(width-FParserWidth)/2+FParserWidthOne, (MainHeight-FParserHeight)/2+MainStartY);
-	FParserPreview->moveTo(x_offset+(width-FParserWidth)/2+FParserWidthOne, (MainHeight-FParserHeight)/2+MainStartY);
-	
+
+	Dirs->moveTo(LeftColumnStartX, ui_state_legacy_main_start_y());
+	TagTypes->moveTo(MiddleColumnStartX, ui_state_legacy_main_start_y());
+	Tags->moveTo(RightColumnStartX, ui_state_legacy_main_start_y());
+
+	FParserDialog->moveTo(x_offset+(width-FParserDialogWidth)/2, (ui_state_legacy_main_height()-FParserDialogHeight)/2+ui_state_legacy_main_start_y());
+	FParser->moveTo(x_offset+(width-FParserWidth)/2, (ui_state_legacy_main_height()-FParserHeight)/2+ui_state_legacy_main_start_y());
+	FParserLegend->moveTo(x_offset+(width-FParserWidth)/2+FParserWidthOne, (ui_state_legacy_main_height()-FParserHeight)/2+ui_state_legacy_main_start_y());
+	FParserPreview->moveTo(x_offset+(width-FParserWidth)/2+FParserWidthOne, (ui_state_legacy_main_height()-FParserHeight)/2+ui_state_legacy_main_start_y());
+
 	hasToBeResized = 0;
 }
 
@@ -261,7 +260,7 @@ void TagEditor::refresh()
 	TagTypes->display();
 	drawSeparator(RightColumnStartX-1);
 	Tags->display();
-	
+
 	if (w == FParserDialog)
 	{
 		FParserDialog->display();
@@ -279,7 +278,7 @@ void TagEditor::update()
 	{
 		Dirs->Window::clear();
 		Tags->clear();
-		
+
 		if (itsBrowsedDir != "/")
 			Dirs->addItem(std::make_pair("..", getParentDirectory(itsBrowsedDir)));
 		else
@@ -295,7 +294,7 @@ void TagEditor::update()
 			LocaleBasedSorting(std::locale(), Config.ignore_leading_the));
 		Dirs->display();
 	}
-	
+
 	if (Tags->empty())
 	{
 		Tags->reset();
@@ -306,7 +305,7 @@ void TagEditor::update()
 			LocaleBasedSorting(std::locale(), Config.ignore_leading_the));
 		Tags->refresh();
 	}
-	
+
 	if (w == TagTypes && TagTypes->choice() < 13)
 	{
 		Tags->refresh();
@@ -526,7 +525,6 @@ bool TagEditor::actionRunnable()
 
 void TagEditor::runAction()
 {
-	using Global::wFooter;
 
 	if (w == FParserDialog)
 	{
@@ -601,7 +599,7 @@ void TagEditor::runAction()
 			{
 				Statusbar::ScopedLock slock;
 				Statusbar::put() << "Pattern: ";
-				new_pattern = wFooter->prompt(Config.pattern);
+				new_pattern = ui_state_legacy_footer_window()->prompt(Config.pattern);
 			}
 			Config.pattern = new_pattern;
 			FParser->at(0).value() = "Pattern: ";
@@ -737,7 +735,7 @@ void TagEditor::runAction()
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << NC::Format::Bold << TagTypes->current()->value() << NC::Format::NoBold << ": ";
-			std::string new_tag = wFooter->prompt(Tags->current()->value().getTags(getter));
+			std::string new_tag = ui_state_legacy_footer_window()->prompt(Tags->current()->value().getTags(getter));
 			for (auto it = EditedSongs.begin(); it != EditedSongs.end(); ++it)
 				(*it)->setTags(field, new_tag);
 		}
@@ -745,7 +743,7 @@ void TagEditor::runAction()
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << NC::Format::Bold << TagTypes->current()->value() << NC::Format::NoBold << ": ";
-			std::string new_tag = wFooter->prompt(Tags->current()->value().getTags(getter));
+			std::string new_tag = ui_state_legacy_footer_window()->prompt(Tags->current()->value().getTags(getter));
 			if (new_tag != Tags->current()->value().getTags(getter))
 				Tags->current()->value().setTags(field, new_tag);
 			Tags->scroll(NC::Scroll::Down);
@@ -769,7 +767,7 @@ void TagEditor::runAction()
 				std::string extension = old_name.substr(last_dot);
 				old_name = old_name.substr(0, last_dot);
 				Statusbar::put() << NC::Format::Bold << "New filename: " << NC::Format::NoBold;
-				std::string new_name = wFooter->prompt(old_name);
+				std::string new_name = ui_state_legacy_footer_window()->prompt(old_name);
 				if (!new_name.empty())
 					s.setNewName(new_name + extension);
 				Tags->scroll(NC::Scroll::Down);
@@ -956,13 +954,13 @@ void TagEditor::LocateSong(const MPD::Song &s)
 {
 	if (screenLegacyCurrent() == this)
 		return;
-	
+
 	if (s.getDirectory().empty())
 		return;
-	
+
 	if (screenLegacyCurrent() != this)
 		switchTo();
-	
+
 	// go to right directory
 	if (itsBrowsedDir != s.getDirectory())
 	{
@@ -979,7 +977,7 @@ void TagEditor::LocateSong(const MPD::Song &s)
 	}
 	if (itsBrowsedDir == "/")
 		Dirs->reset(); // go to the first pos, which is "." (music dir root)
-	
+
 	// highlight directory we need and get files from it
 	std::string dir = getBasename(s.getDirectory());
 	for (size_t i = 0; i < Dirs->size(); ++i)
@@ -992,17 +990,17 @@ void TagEditor::LocateSong(const MPD::Song &s)
 	}
 	// refresh window so we can be highlighted item
 	Dirs->refresh();
-	
+
 	Tags->clear();
 	update();
-	
+
 	// reset TagTypes since it can be under Filename
 	// and then songs in right column are not visible.
 	TagTypes->reset();
 	// go to the right column
 	nextColumn();
 	nextColumn();
-	
+
 	// highlight our file
 	for (size_t i = 0; i < Tags->size(); ++i)
 	{
@@ -1094,7 +1092,7 @@ std::string ParseFilename(MPD::MutableSong &s, std::string mask, bool preview)
 	std::vector<std::string> separators;
 	std::vector< std::pair<char, std::string> > tags;
 	std::string file = s.getName().substr(0, s.getName().rfind("."));
-	
+
 	size_t i = mask.find("%");
 
 	if (!mask.substr(0, i).empty())
@@ -1123,19 +1121,19 @@ std::string ParseFilename(MPD::MutableSong &s, std::string mask, bool preview)
 			goto PARSE_FAILED;
 		tags.at(i).second = file;
 	}
-	
+
 	if (0) // tss...
 	{
 		PARSE_FAILED:
 		return "Error while parsing filename!\n";
 	}
-	
+
 	for (auto it = tags.begin(); it != tags.end(); ++it)
 	{
 		for (std::string::iterator j = it->second.begin(); j != it->second.end(); ++j)
 			if (*j == '_')
 				*j = ' ';
-			
+
 		if (!preview)
 		{
 			enum NcmTagsField field = IntoTagsField(it->first);

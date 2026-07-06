@@ -18,16 +18,17 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include "global.h"
+#ifndef NCMPCPP_SCREEN_LEGACY_H
+#define NCMPCPP_SCREEN_LEGACY_H
 
-namespace Global {
+#include "screens/screen.h"
+#include "screens/screen_legacy.h"
 
-bool ShowMessages = false;
-bool SeekingInProgress = false;
+BaseScreen *screenLegacyCurrent();
+BaseScreen *screenLegacyPrevious();
+BaseScreen *screenLegacyLocked();
+BaseScreen *screenLegacyInactive();
+bool screenLegacyIsCurrent(BaseScreen *screen);
+bool screenLegacySwitchChanged();
 
-std::string VolumeState;
-std::chrono::steady_clock::time_point Timer;
-
-std::mt19937 RNG;
-
-}
+#endif // NCMPCPP_SCREEN_LEGACY_H

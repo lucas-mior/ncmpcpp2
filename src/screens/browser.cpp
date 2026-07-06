@@ -27,6 +27,7 @@
 #include "charset.h"
 #include "display.h"
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "helpers.h"
 #include "screens/playlist.h"
 #include "curses/menu_impl.h"
@@ -44,8 +45,6 @@
 #include "utility/string.h"
 #include "configuration.h"
 
-using Global::MainHeight;
-using Global::MainStartY;
 
 namespace fs = std::filesystem;
 namespace ph = std::placeholders;
@@ -135,7 +134,7 @@ Browser::Browser()
 , m_scroll_beginning(0)
 , m_current_directory("/")
 {
-	w = NC::Menu<MPD::Item>(0, MainStartY, COLS, MainHeight, Config.browser_display_mode == DisplayMode::Columns && Config.titles_visibility ? Display::Columns(COLS) : "", Config.main_color, NC::Border());
+	w = NC::Menu<MPD::Item>(0, ui_state_legacy_main_start_y(), COLS, ui_state_legacy_main_height(), Config.browser_display_mode == DisplayMode::Columns && Config.titles_visibility ? Display::Columns(COLS) : "", Config.main_color, NC::Border());
 	setHighlightFixes(w);
 	w.cyclicScrolling(Config.use_cyclic_scrolling);
 	w.centeredCursor(Config.centered_cursor);
@@ -148,8 +147,8 @@ void Browser::resize()
 {
 	size_t x_offset, width;
 	getWindowResizeParams(x_offset, width);
-	w.resize(width, MainHeight);
-	w.moveTo(x_offset, MainStartY);
+	w.resize(width, ui_state_legacy_main_height());
+	w.moveTo(x_offset, ui_state_legacy_main_start_y());
 	switch (Config.browser_display_mode)
 	{
 		case DisplayMode::Columns:
