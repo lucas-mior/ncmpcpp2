@@ -191,6 +191,25 @@ Rules:
     - Public macro APIs should be avoided unless they are already part of the C
       foundation style.
 
+Shared utility replacement modules
+==================================
+
+Use these C modules instead of the remaining shared C++ utility headers:
+
+    utility/conversion.h          -> src/c/ncm_conversion.*
+    utility/string_format.h       -> src/c/ncm_string_format.*
+    utility/wide_string.h         -> src/c/ncm_wide_string.*
+    utility/regex.h               -> src/c/ncm_regex.*
+    utility/readline.h            -> src/c/ncm_readline.*
+    utility/functional.h          -> src/c/ncm_functional.*
+    utility/scoped_value.h        -> src/c/ncm_scoped_value.*
+    utility/shared_resource.h     -> src/c/ncm_shared_resource.*
+    utility/any_iterator.h        -> src/c/ncm_any_iterator.h
+    utility/transform_iterator.h  -> src/c/ncm_transform_iterator.h
+
+Do not add new wrappers for behavior already covered by cbase/ or src/c/.
+Extend the existing C module instead.
+
 Streams and formatting
 ======================
 
