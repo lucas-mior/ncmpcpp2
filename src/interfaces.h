@@ -23,7 +23,7 @@
 
 #include <string>
 #include <vector>
-#include "enums.h"
+#include "c/ncm_enums.h"
 #include "screens/screen.h"
 #include "song.h"
 

@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <time.h>
 
-#include "enums.h"
+#include "c/ncm_enums.h"
 #include "helpers.h"
 #include "format_impl.h"
 #include "screens/playlist.h"
@@ -85,7 +85,7 @@ void removeSongFromPlaylist(const SongMenu &playlist, const MPD::Song &s)
 bool addSongToPlaylist(const MPD::Song &s, bool play, int position)
 {
 	bool result = false;
-	if (Config.space_add_mode == SpaceAddMode::AddRemove
+	if (Config.space_add_mode == NCM_SPACE_ADD_MODE_ADD_REMOVE
 	&&  myPlaylist->checkForSong(s)
 	   )
 	{

@@ -48,7 +48,7 @@ struct Lastfm: BaseScreen, Tabbable
     virtual void resize() override;
     virtual int windowTimeout() override;
     virtual std::string title() override;
-    virtual ScreenType type() override { return ScreenType::Lastfm; }
+    virtual ScreenType type() override { return NCM_SCREEN_TYPE_LASTFM; }
     virtual void update() override;
     virtual void mouseButtonPressed(MEVENT me) override;
     virtual bool isLockable() override { return true; }

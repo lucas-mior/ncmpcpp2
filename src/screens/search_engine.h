@@ -100,7 +100,7 @@ struct SearchEngine: Screen<SearchEngineWindow>, Filterable, HasActions, HasSong
 	virtual void switchTo() override;
 	
 	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::SearchEngine; }
+	virtual ScreenType type() override { return NCM_SCREEN_TYPE_SEARCH_ENGINE; }
 	
 	virtual void update() override { }
 	

@@ -36,24 +36,23 @@ void windowTitle(const std::string &status)
 
 void drawHeader()
 {
-	using Global::VolumeState;
 
 	if (!Config.header_visibility)
 		return;
 	switch (Config.design)
 	{
-		case Design::Classic:
+		case NCM_DESIGN_CLASSIC:
 			*ui_state_legacy_header_window() << NC::XY(0, 0)
 			         << NC::TermManip::ClearToEOL
 			         << NC::Format::Bold
 			         << screenLegacyCurrent()->title()
 			         << NC::Format::NoBold
-			         << NC::XY(ui_state_legacy_header_window()->getWidth()-VolumeState.length(), 0)
+			         << NC::XY(ui_state_legacy_header_window()->getWidth()-global_volume_state_len(), 0)
 			         << Config.volume_color
-			         << VolumeState
+			         << global_volume_state_cstr()
 			         << NC::FormattedColor::End<>(Config.volume_color);
 			break;
-		case Design::Alternative:
+		case NCM_DESIGN_ALTERNATIVE:
 			std::string title = screenLegacyCurrent()->title();
 			*ui_state_legacy_header_window() << NC::XY(0, 3)
 			         << NC::TermManip::ClearToEOL

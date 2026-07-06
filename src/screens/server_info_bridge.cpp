@@ -235,11 +235,11 @@ void ServerInfo::loadServerInfoLists()
 
 bool ServerInfo::renderServerInfo(NcBuffer *buffer)
 {
-    if (Global::Timer - m_timer < std::chrono::seconds(1))
+    if (global_timer_elapsed_ms(m_timer) < 1000)
     {
         return false;
     }
-    m_timer = Global::Timer;
+    m_timer = global_timer;
 
     MPD::Statistics stats = Mpd.getStatistics();
     if (stats.empty())

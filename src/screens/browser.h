@@ -52,7 +52,7 @@ struct Browser: Screen<BrowserWindow>, Filterable, HasSongs, Searchable, Tabbabl
 	virtual void switchTo() override;
 	
 	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::Browser; }
+	virtual ScreenType type() override { return NCM_SCREEN_TYPE_BROWSER; }
 	
 	virtual void update() override;
 	

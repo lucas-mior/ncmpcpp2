@@ -46,7 +46,7 @@ struct Visualizer: Screen<NC::Window>, Tabbable
 	virtual void resize() override;
 
 	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::Visualizer; }
+	virtual ScreenType type() override { return NCM_SCREEN_TYPE_VISUALIZER; }
 
 	virtual void update() override;
 	virtual void scroll(NC::Scroll) override { }

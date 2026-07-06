@@ -29,7 +29,7 @@
 
 #include "curses/formatted_color.h"
 #include "curses/strbuffer.h"
-#include "enums.h"
+#include "c/ncm_enums.h"
 #include "format.h"
 #include "lyrics_fetcher.h"
 #include "screens/screen_type.h"

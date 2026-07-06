@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 #include <cerrno>
-#include <chrono>
 #include <clocale>
 #include <csignal>
 #include <cstring>
@@ -75,6 +74,7 @@ void do_at_exit()
 	std::cerr.rdbuf(cerr_buffer);
 	std::clog.rdbuf(clog_buffer);
 	errorlog.close();
+	global_state_destroy();
 	Mpd.Disconnect();
 	NC::destroyScreen();
 	windowTitle("");
@@ -85,8 +85,7 @@ void do_at_exit()
 int main(int argc, char **argv)
 {
 	
-	using Global::VolumeState;
-	using Global::Timer;
+	global_state_init();
 
 	std::setlocale(LC_ALL, "");
 	std::locale::global(Charset::internalLocale());
@@ -114,7 +113,7 @@ int main(int argc, char **argv)
 
 	Actions::OriginalStatusbarVisibility = Config.statusbar_visibility;
 
-	if (Config.design == Design::Alternative)
+	if (Config.design == NCM_DESIGN_ALTERNATIVE)
 		Config.statusbar_visibility = 0;
 
 	Actions::setWindowsDimensions();
@@ -122,7 +121,7 @@ int main(int argc, char **argv)
 
 	auto header_window = new NC::Window(0, 0, COLS, Actions::HeaderHeight, "", Config.header_color, NC::Border());
 	ui_state_legacy_set_header_window(header_window);
-	if (Config.header_visibility || Config.design == Design::Alternative)
+	if (Config.header_visibility || Config.design == NCM_DESIGN_ALTERNATIVE)
 		header_window->display();
 
 	auto footer_window = new NC::Window(0, Actions::FooterStartY, COLS, Actions::FooterHeight, "", Config.statusbar_color, NC::Border());
@@ -130,10 +129,10 @@ int main(int argc, char **argv)
 	footer_window->setPromptHook(Statusbar::Helpers::mainHook);
 
 	// initialize global timer
-	Timer = std::chrono::steady_clock::now();
+	global_timer_update(nullptr);
 
 	// initialize global random number generator
-	Global::RNG.seed(std::random_device()());
+	ncm_random_seed_from_time(&global_random, nullptr);
 
 	// initialize playlist
 	myPlaylist->switchTo();
@@ -164,7 +163,7 @@ int main(int argc, char **argv)
 	// local variables
 	bool key_pressed = false;
 	auto input = NC::Key::None;
-	std::chrono::steady_clock::time_point connect_attempt;
+	NcmTimePoint connect_attempt = {};
 	auto update_environment = static_cast<Actions::UpdateEnvironment &>(
 		Actions::get(Actions::Type::UpdateEnvironment));
 
@@ -172,9 +171,9 @@ int main(int argc, char **argv)
 	{
 		try
 		{
-			if (!Mpd.Connected() && Timer - connect_attempt > std::chrono::seconds(1))
+			if (!Mpd.Connected() && global_timer_elapsed_ms(connect_attempt) > 1000)
 			{
-				connect_attempt = Timer;
+				connect_attempt = global_timer;
 				// reset local status info
 				Status::clear();
 				// clear mpd callback
@@ -209,11 +208,11 @@ int main(int argc, char **argv)
 
 			// The reason we want to update timer here is that if the timer is updated
 			// in Status::trace, then Key::read usually blocks for 500ms and if key is
-			// pressed 400ms after Key::read was called, we end up with Timer that is
+			// pressed 400ms after Key::read was called, we end up with global_timer that is
 			// ~400ms inaccurate. On the other hand, if keys are being pressed, we don't
 			// want to update timer in both Status::trace and here. Therefore we update
 			// timer in Status::trace only if there was no recent input.
-			Timer = std::chrono::steady_clock::now();
+			global_timer_update(nullptr);
 
 			try
 			{

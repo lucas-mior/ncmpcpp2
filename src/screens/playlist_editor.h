@@ -21,8 +21,7 @@
 #ifndef NCMPCPP_PLAYLIST_EDITOR_H
 #define NCMPCPP_PLAYLIST_EDITOR_H
 
-#include <chrono>
-
+#include "c/ncm_time.h"
 #include "interfaces.h"
 #include "regex_filter.h"
 #include "screens/screen.h"
@@ -36,7 +35,7 @@ struct PlaylistEditor: Screen<NC::Window *>, Filterable, HasColumns, HasSongs, S
 	virtual void resize() override;
 	
 	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::PlaylistEditor; }
+	virtual ScreenType type() override { return NCM_SCREEN_TYPE_PLAYLIST_EDITOR; }
 	
 	virtual void refresh() override;
 	virtual void update() override;
@@ -88,10 +87,10 @@ private:
 	bool m_playlists_update_requested;
 	bool m_content_update_requested;
 
-	std::chrono::steady_clock::time_point m_timer;
+	NcmTimePoint m_timer;
 
 	const int m_window_timeout;
-	const std::chrono::milliseconds m_fetching_delay;
+	const int64 m_fetching_delay_ms;
 
 	Regex::Filter<MPD::Playlist> m_playlists_search_predicate;
 	Regex::Filter<MPD::Song> m_content_search_predicate;

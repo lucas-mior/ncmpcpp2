@@ -21,10 +21,10 @@
 #ifndef NCMPCPP_SERVER_INFO_H
 #define NCMPCPP_SERVER_INFO_H
 
-#include <chrono>
 #include <string>
 #include <vector>
 
+#include "c/ncm_time.h"
 #include "interfaces.h"
 #include "screens/nc_server_info.h"
 #include "screens/screen.h"
@@ -44,7 +44,7 @@ struct ServerInfo: BaseScreen, Tabbable
     virtual void resize() override;
     virtual int windowTimeout() override;
     virtual std::string title() override;
-    virtual ScreenType type() override { return ScreenType::ServerInfo; }
+    virtual ScreenType type() override { return NCM_SCREEN_TYPE_SERVER_INFO; }
     virtual void update() override;
     virtual void mouseButtonPressed(MEVENT me) override;
     virtual bool isLockable() override;
@@ -67,7 +67,7 @@ private:
     static void destroyHook(void *user);
 
     NcServerInfoScreen m_screen;
-    std::chrono::steady_clock::time_point m_timer;
+    NcmTimePoint m_timer;
     std::string m_title_cache;
     std::string m_render_scratch;
 

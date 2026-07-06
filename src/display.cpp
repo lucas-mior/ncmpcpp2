@@ -388,10 +388,10 @@ void Display::Items(NC::Menu<MPD::Item> &menu, const SongList &list)
 		case MPD::Item::Type::Song:
 			switch (Config.browser_display_mode)
 			{
-				case DisplayMode::Classic:
+				case NCM_DISPLAY_MODE_CLASSIC:
 					showSongs(menu, item.song(), list, Config.song_list_format);
 					break;
-				case DisplayMode::Columns:
+				case NCM_DISPLAY_MODE_COLUMNS:
 					showSongsInColumns(menu, item.song(), list);
 					break;
 			}
@@ -410,10 +410,10 @@ void Display::SEItems(NC::Menu<SEItem> &menu, const SongList &list)
 	{
 		switch (Config.search_engine_display_mode)
 		{
-			case DisplayMode::Classic:
+			case NCM_DISPLAY_MODE_CLASSIC:
 				showSongs(menu, si.song(), list, Config.song_list_format);
 				break;
-			case DisplayMode::Columns:
+			case NCM_DISPLAY_MODE_COLUMNS:
 				showSongsInColumns(menu, si.song(), list);
 				break;
 		}

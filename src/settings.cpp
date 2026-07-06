@@ -487,7 +487,7 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 				screen_switcher_previous = false;
 				screen_sequence = list_of<ScreenType>(v, [](std::string s) {
 						auto screen = stringtoStartupScreenType(s);
-						if (screen == ScreenType::Unknown)
+						if (screen == NCM_SCREEN_TYPE_UNKNOWN)
 							invalid_value(s);
 						return screen;
 					});
@@ -495,7 +495,7 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 		});
 	p.add("startup_screen", &startup_screen_type, "playlist", [](std::string v) {
 			auto screen = stringtoStartupScreenType(v);
-			if (screen == ScreenType::Unknown)
+			if (screen == NCM_SCREEN_TYPE_UNKNOWN)
 				invalid_value(v);
 			return screen;
 		});
@@ -504,7 +504,7 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 			if (!v.empty())
 			{
 				screen = stringtoStartupScreenType(v);
-				if (screen == ScreenType::Unknown)
+				if (screen == NCM_SCREEN_TYPE_UNKNOWN)
 					invalid_value(v);
 			}
 			return screen;
