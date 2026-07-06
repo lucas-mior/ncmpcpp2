@@ -360,3 +360,12 @@ Rules:
     - Store optional screen values as a bool has_* flag plus the value.
     - Store durations as integer seconds.
     - Store vector-like configuration fields in typed C arrays.
+    - Store song-column configuration in ColumnArray through
+      column_init(), column_destroy(), column_array_init(),
+      column_array_destroy(), and column_array_append().
+    - Store screen switcher configuration in ScreenTypeArray through
+      screen_type_array_init(), screen_type_array_destroy(), and
+      screen_type_array_append().
+    - Keep the temporary C++ settings bridge in settings_legacy.h/.cpp until
+      the remaining C++ screens no longer use Configuration methods or
+      std::vector-based settings.

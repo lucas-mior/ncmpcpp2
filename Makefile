@@ -57,6 +57,7 @@ REMOVED_CXX_SRCS := \
 	src/curses/window.cpp \
 	src/display.cpp \
 	src/format.cpp \
+	src/settings.cpp \
 	src/enums.cpp \
 	src/global.cpp \
 	src/macro_utilities.cpp \
