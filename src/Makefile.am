@@ -45,6 +45,7 @@ ncmpcpp_SOURCES = \
 	screens/lastfm.cpp \
 	screens/lyrics.cpp \
 	screens/media_library.cpp \
+	screens/native_c_screens.cpp \
 	screens/outputs_bridge.cpp \
 	screens/playlist.cpp \
 	screens/playlist_editor.cpp \
@@ -142,6 +143,7 @@ noinst_HEADERS = \
 	screens/lastfm.h \
 	screens/lyrics.h \
 	screens/media_library.h \
+	screens/native_c_screens.h \
 	screens/outputs.h \
 	screens/playlist_editor.h \
 	screens/screen.h \

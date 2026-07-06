@@ -33,7 +33,7 @@
 #include "macro_utilities.h"
 #include "screens/lyrics.h"
 #include "screens/media_library.h"
-#include "screens/outputs.h"
+#include "screens/native_c_screens.h"
 #include "screens/playlist.h"
 #include "screens/playlist_editor.h"
 #include "screens/search_engine.h"
@@ -159,7 +159,7 @@ void initialize_status()
 
 	myBrowser->fetchSupportedExtensions();
 #	ifdef ENABLE_OUTPUTS
-	myOutputs->fetchList();
+	native_c_screen_outputs_fetch_list();
 #	endif // ENABLE_OUTPUTS
 #	ifdef ENABLE_VISUALIZER
 	myVisualizer->CloseDataSource();
@@ -839,8 +839,7 @@ void Status::Changes::mixer()
 void Status::Changes::outputs()
 {
 #	ifdef ENABLE_OUTPUTS
-	myOutputs->fetchList();
-	if (isVisible(myOutputs))
-		myOutputs->refreshWindow();
+	native_c_screen_outputs_fetch_list();
+	native_c_screen_outputs_refresh_if_visible();
 #	endif // ENABLE_OUTPUTS
 }

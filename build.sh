@@ -87,6 +87,7 @@ src/screens/help_bridge.cpp
 src/screens/lastfm.cpp
 src/screens/lyrics.cpp
 src/screens/media_library.cpp
+src/screens/native_c_screens.cpp
 src/screens/outputs_bridge.cpp
 src/screens/playlist.cpp
 src/screens/playlist_editor.cpp

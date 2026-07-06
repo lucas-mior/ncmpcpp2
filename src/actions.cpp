@@ -46,7 +46,7 @@
 #include "curses/menu_impl.h"
 #include "bindings.h"
 #include "screens/browser.h"
-#include "screens/help.h"
+#include "screens/native_c_screens.h"
 #include "screens/media_library.h"
 #include "screens/lastfm.h"
 #include "screens/lyrics.h"
@@ -55,9 +55,6 @@
 #include "screens/sort_playlist.h"
 #include "screens/search_engine.h"
 #include "screens/sel_items_adder.h"
-#include "screens/server_info.h"
-#include "screens/song_info.h"
-#include "screens/outputs.h"
 #include "utility/readline.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
@@ -143,7 +140,7 @@ void initializeScreens()
 {
 	app_controller_init();
 
-	myHelp = new Help;
+	native_c_screen_help_init();
 	myPlaylist = new Playlist;
 	myBrowser = new Browser;
 	mySearcher = new SearchEngine;
@@ -151,8 +148,8 @@ void initializeScreens()
 	myPlaylistEditor = new PlaylistEditor;
 	myLyrics = new Lyrics;
 	mySelectedItemsAdder = new SelectedItemsAdder;
-	mySongInfo = new SongInfo;
-	myServerInfo = new ServerInfo;
+	native_c_screen_song_info_init();
+	native_c_screen_server_info_init();
 	mySortPlaylistDialog = new SortPlaylistDialog;
 	myLastfm = new Lastfm;
 
@@ -166,10 +163,10 @@ void initializeScreens()
 #	endif // ENABLE_VISUALIZER
 
 #	ifdef ENABLE_OUTPUTS
-	myOutputs = new Outputs;
+	native_c_screen_outputs_init();
 #	endif // ENABLE_OUTPUTS
 
-	myHelp->registerNativeScreen();
+	native_c_screen_help_register();
 	myPlaylist->registerNativeScreen();
 	myBrowser->registerNativeScreen();
 	mySearcher->registerNativeScreen();
@@ -177,8 +174,8 @@ void initializeScreens()
 	myPlaylistEditor->registerNativeScreen();
 	myLyrics->registerNativeScreen();
 	mySelectedItemsAdder->registerNativeScreen();
-	mySongInfo->registerNativeScreen();
-	myServerInfo->registerNativeScreen();
+	native_c_screen_song_info_register();
+	native_c_screen_server_info_register();
 	mySortPlaylistDialog->registerNativeScreen();
 	myLastfm->registerNativeScreen();
 
@@ -192,14 +189,14 @@ void initializeScreens()
 #	endif // ENABLE_VISUALIZER
 
 #	ifdef ENABLE_OUTPUTS
-	myOutputs->registerNativeScreen();
+	native_c_screen_outputs_register();
 #	endif // ENABLE_OUTPUTS
 
 }
 
 void setResizeFlags()
 {
-	myHelp->hasToBeResized = 1;
+	native_c_screen_help_set_resize();
 	myPlaylist->hasToBeResized = 1;
 	myBrowser->hasToBeResized = 1;
 	mySearcher->hasToBeResized = 1;
@@ -207,8 +204,8 @@ void setResizeFlags()
 	myPlaylistEditor->hasToBeResized = 1;
 	myLyrics->hasToBeResized = 1;
 	mySelectedItemsAdder->hasToBeResized = 1;
-	mySongInfo->hasToBeResized = 1;
-	myServerInfo->hasToBeResized = 1;
+	native_c_screen_song_info_set_resize();
+	native_c_screen_server_info_set_resize();
 	mySortPlaylistDialog->hasToBeResized = 1;
 	myLastfm->hasToBeResized = 1;
 
@@ -222,7 +219,7 @@ void setResizeFlags()
 #	endif // ENABLE_VISUALIZER
 
 #	ifdef ENABLE_OUTPUTS
-	myOutputs->hasToBeResized = 1;
+	native_c_screen_outputs_set_resize();
 #	endif // ENABLE_OUTPUTS
 
 }
@@ -2081,7 +2078,7 @@ void ApplyFilter::run()
 
 bool Find::canBeRun()
 {
-	return screenLegacyCurrent() == myHelp
+	return native_c_screen_help_is_current()
 		|| screenLegacyCurrent() == myLyrics
 		|| screenLegacyCurrent() == myLastfm;
 }
@@ -2424,7 +2421,7 @@ void SetSelectedItemsPriority::run()
 bool ToggleOutput::canBeRun()
 {
 #ifdef ENABLE_OUTPUTS
-	return screenLegacyCurrent() == myOutputs;
+	return native_c_screen_outputs_is_current();
 #else
 	return false;
 #endif // ENABLE_OUTPUTS
@@ -2433,7 +2430,7 @@ bool ToggleOutput::canBeRun()
 void ToggleOutput::run()
 {
 #ifdef ENABLE_OUTPUTS
-	myOutputs->toggleOutput();
+	native_c_screen_outputs_toggle();
 #endif // ENABLE_OUTPUTS
 }
 
@@ -2455,7 +2452,7 @@ void ToggleVisualizationType::run()
 
 void ShowSongInfo::run()
 {
-	mySongInfo->switchTo();
+	native_c_screen_song_info_switch_to();
 }
 
 bool ShowArtistInfo::canBeRun()
@@ -2560,7 +2557,7 @@ void PreviousScreen::run()
 
 bool ShowHelp::canBeRun()
 {
-	return screenLegacyCurrent() != myHelp
+	return !native_c_screen_help_is_current()
 #	ifdef HAVE_TAGLIB_H
 	    && screenLegacyCurrent() != myTinyTagEditor
 #	endif // HAVE_TAGLIB_H
@@ -2569,7 +2566,7 @@ bool ShowHelp::canBeRun()
 
 void ShowHelp::run()
 {
-	myHelp->switchTo();
+	native_c_screen_help_switch_to();
 }
 
 bool ShowPlaylist::canBeRun()
@@ -2694,7 +2691,7 @@ void ShowTagEditor::run()
 bool ShowOutputs::canBeRun()
 {
 #	ifdef ENABLE_OUTPUTS
-	return screenLegacyCurrent() != myOutputs
+	return !native_c_screen_outputs_is_current()
 #	ifdef HAVE_TAGLIB_H
 	    && screenLegacyCurrent() != myTinyTagEditor
 #	endif // HAVE_TAGLIB_H
@@ -2707,7 +2704,7 @@ bool ShowOutputs::canBeRun()
 void ShowOutputs::run()
 {
 #	ifdef ENABLE_OUTPUTS
-	myOutputs->switchTo();
+	native_c_screen_outputs_switch_to();
 #	endif // ENABLE_OUTPUTS
 }
 
@@ -2741,7 +2738,7 @@ bool ShowServerInfo::canBeRun()
 
 void ShowServerInfo::run()
 {
-	myServerInfo->switchTo();
+	native_c_screen_server_info_switch_to();
 }
 
 }

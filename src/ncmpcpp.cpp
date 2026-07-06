@@ -41,7 +41,6 @@
 #include "screens/screen_legacy.h"
 #include "helpers.h"
 #include "screens/lyrics.h"
-#include "screens/outputs.h"
 #include "screens/playlist.h"
 #include "settings.h"
 #include "status.h"
