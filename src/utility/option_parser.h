@@ -35,6 +35,7 @@
 
 #include <cassert>
 #include <functional>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <stdexcept>
@@ -43,6 +44,7 @@
 #include <vector>
 
 #include "c/ncm_enums.h"
+#include "c/ncm_option_parser.h"
 
 [[noreturn]] inline void invalid_value(const std::string &v)
 {
@@ -142,9 +144,31 @@ std::vector<ValueT> list_of(const std::string &v)
 	return list_of<ValueT>(v, parse_value<ValueT>);
 }
 
-bool yes_no(const std::string &v);
+inline bool yes_no(const std::string &v)
+{
+    bool result;
 
-std::vector<size_t> parse_ratio(const std::string &v, const std::vector<size_t>::size_type length);
+    if (!ncm_option_parser_yes_no(const_cast<char *>(v.data()),
+                                  static_cast<int32>(v.size()),
+                                  &result))
+        invalid_value(v);
+    return result;
+}
+
+inline std::vector<size_t> parse_ratio(
+    const std::string &v, const std::vector<size_t>::size_type length)
+{
+    std::vector<size_t> ret =
+        list_of<size_t>(v, parse_value<size_t>, length, "", ":", "");
+
+    size_t total = 0;
+    for (auto i : ret)
+        total += i;
+    if (total == 0)
+        invalid_value(v);
+
+    return ret;
+}
 
 template <>
 inline SearchDirection parse_value<SearchDirection>(const std::string &v)
@@ -309,5 +333,67 @@ public:
 	bool run(std::istream &is, bool warn_on_errors);
 	bool initialize_undefined(bool warn_on_errors);
 };
+
+inline bool option_parser::run(std::istream &is, bool ignore_errors)
+{
+	std::string line;
+	while (std::getline(is, line))
+	{
+		NcmOptionLine parsed;
+		if (ncm_option_parser_parse_line(
+			line.data(), static_cast<int32>(line.size()), &parsed))
+		{
+			std::string option(parsed.option,
+			                   static_cast<size_t>(parsed.option_len));
+			auto it = m_parsers.find(option);
+			if (it != m_parsers.end())
+			{
+				try
+				{
+					it->second.parse(std::string(
+						parsed.value,
+						static_cast<size_t>(parsed.value_len)));
+				}
+				catch (std::exception &e)
+				{
+					std::cerr << "Error while processing option \""
+					          << option << "\": " << e.what() << "\n";
+					if (!ignore_errors)
+						return false;
+				}
+			}
+			else
+			{
+				std::cerr << "Unknown option: " << option << "\n";
+				if (!ignore_errors)
+					return false;
+			}
+		}
+	}
+	return true;
+}
+
+inline bool option_parser::initialize_undefined(bool ignore_errors)
+{
+	for (auto &pp : m_parsers)
+	{
+		auto &p = pp.second;
+		if (!p.used())
+		{
+			try
+			{
+				p.parse_default();
+			}
+			catch (std::exception &e)
+			{
+				std::cerr << "Error while initializing option \""
+				          << pp.first << "\": " << e.what() << "\n";
+				if (ignore_errors)
+					return false;
+			}
+		}
+	}
+	return true;
+}
 
 #endif // NCMPCPP_UTILITY_OPTION_PARSER_H

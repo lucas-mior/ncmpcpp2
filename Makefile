@@ -50,12 +50,20 @@ CBASE_SRCS := cbase/cbase.c
 NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
 APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
 REMOVED_CXX_SRCS := \
+	src/charset.cpp \
 	src/enums.cpp \
 	src/global.cpp \
+	src/macro_utilities.cpp \
 	src/screens/help.cpp \
 	src/screens/outputs.cpp \
 	src/screens/server_info.cpp \
-	src/screens/song_info.cpp
+	src/screens/song_info.cpp \
+	src/utility/comparators.cpp \
+	src/utility/html.cpp \
+	src/utility/option_parser.cpp \
+	src/utility/sample_buffer.cpp \
+	src/utility/string.cpp \
+	src/utility/utf8.cpp
 APP_CXX_SRCS := $(filter-out $(REMOVED_CXX_SRCS),\
 	$(shell find src -type f -name '*.cpp' | sort))
 TEST_SRCS := $(sort $(wildcard tests/*_test.c))
