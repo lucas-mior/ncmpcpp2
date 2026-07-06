@@ -22,7 +22,7 @@
 #include "global.h"
 #include "ui_state_legacy.h"
 #include "screens/screen_legacy.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "status.h"
 #include "statusbar.h"
 #include "bindings.h"
@@ -205,12 +205,12 @@ char Statusbar::Helpers::promptReturnOneOf(const std::vector<char> &values)
 {
 	if (values.empty())
 		throw std::logic_error("empty vector of acceptable input");
-	NC::Key::Type result;
+	NcKey result;
 	do
 	{
 		ui_state_legacy_footer_window()->refresh();
 		result = ui_state_legacy_footer_window()->readKey();
-		if (result == NC::Key::Ctrl_C || result == NC::Key::Ctrl_G)
+		if (result == NC_KEY_CTRL_C || result == NC_KEY_CTRL_G)
 			throw NC::PromptAborted();
 	}
 	while (std::find(values.begin(), values.end(), result) == values.end());

@@ -49,7 +49,7 @@ Menu<ItemT>::Menu(size_t startx,
 {
 	nc_menu_init(&m_menu);
 	initItemStorage();
-	auto fc = FormattedColor(m_base_color, {Format::Reverse});
+	auto fc = FormattedColor(m_base_color, {NC_FORMAT_REVERSE});
 	m_highlight_prefix << fc;
 	m_highlight_suffix << FormattedColor::End<>(fc);
 	syncMenuPrefixes();
@@ -207,7 +207,7 @@ void Menu<ItemT>::refresh()
 }
 
 template <typename ItemT>
-void Menu<ItemT>::scroll(Scroll where)
+void Menu<ItemT>::scroll(enum NcScroll where)
 {
 	syncMenuSize();
 	nc_menu_scroll(&m_menu, static_cast<int64>(m_height),

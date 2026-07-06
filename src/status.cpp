@@ -38,7 +38,7 @@
 #include "screens/playlist_editor.h"
 #include "screens/search_engine.h"
 #include "screens/sel_items_adder.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "status.h"
 #include "statusbar.h"
 #include "screens/tag_editor.h"
@@ -542,7 +542,7 @@ void Status::Changes::playerState()
 	std::string state = playerStateToString(m_player_state);
 	if (Config.design == NCM_DESIGN_ALTERNATIVE)
 	{
-		*ui_state_legacy_header_window() << NC::XY(0, 1) << NC::Format::Bold << state << NC::Format::NoBold;
+		*ui_state_legacy_header_window() << NC::XY(0, 1) << NC_FORMAT_BOLD << state << NC_FORMAT_NO_BOLD;
 		ui_state_legacy_header_window()->refresh();
 	}
 	else if (Statusbar::isUnlocked() && Config.statusbar_visibility)
@@ -551,7 +551,7 @@ void Status::Changes::playerState()
 		if (state.empty())
 			*ui_state_legacy_footer_window() << NC::TermManip::ClearToEOL;
 		else
-			*ui_state_legacy_footer_window() << NC::Format::Bold << state << NC::Format::NoBold;
+			*ui_state_legacy_footer_window() << NC_FORMAT_BOLD << state << NC_FORMAT_NO_BOLD;
 	}
 
 	// needed for immediate display after starting

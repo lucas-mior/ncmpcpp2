@@ -61,7 +61,7 @@ struct PushCharacters: BaseAction
 {
 	using WindowProvider = NC::Window *(*)();
 
-	PushCharacters(WindowProvider window, std::vector<NC::Key::Type> &&queue)
+	PushCharacters(WindowProvider window, std::vector<NcKey> &&queue)
 		: BaseAction(Type::MacroUtility, "push_characters")
 		, m_window(window)
 		, m_queue(queue)
@@ -69,7 +69,11 @@ struct PushCharacters: BaseAction
 		assert(window != nullptr);
 		std::vector<std::string> keys;
 		for (const auto &key : queue)
-			keys.push_back(NC::keyToString(key));
+		{
+			char key_name[64];
+			nc_key_name(key, key_name, sizeof(key_name));
+			keys.push_back(key_name);
+		}
 		m_name += " \"";
 		m_name += join<std::string>(keys, ", ");
 		m_name += "\"";
@@ -83,7 +87,7 @@ private:
 	}
 
 	WindowProvider m_window;
-	std::vector<NC::Key::Type> m_queue;
+	std::vector<NcKey> m_queue;
 };
 
 struct RequireRunnable: BaseAction

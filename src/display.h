@@ -39,7 +39,7 @@
 #include "screens/search_engine.h"
 #include "screens/song_info.h"
 #include "screens/tag_editor.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "song_list.h"
 #include "utility/string.h"
 #include "utility/utf8.h"
@@ -112,9 +112,9 @@ void setProperties(NC::Menu<T> &menu, const MPD::Song &s,
 	}
 	if (separate_albums)
 	{
-		menu << NC::Format::Underline;
+		menu << NC_FORMAT_UNDERLINE;
 		mvwhline(menu.raw(), menu.getY(), 0,
-		        NC::Key::Space, menu.getWidth());
+		        NC_KEY_SPACE, menu.getWidth());
 	}
 
 	int song_pos = s.getPosition();
@@ -127,7 +127,7 @@ void setProperties(NC::Menu<T> &menu, const MPD::Song &s,
 	is_in_playlist = !myPlaylist->isActiveWindow(menu)
 		&& myPlaylist->checkForSong(s);
 	if (is_in_playlist)
-		menu << NC::Format::Bold;
+		menu << NC_FORMAT_BOLD;
 
 	is_selected = menu.drawn()->isSelected();
 	discard_colors = Config.discard_colors_if_item_is_selected && is_selected;
@@ -138,13 +138,13 @@ void unsetProperties(NC::Menu<T> &menu, bool separate_albums,
                      bool is_now_playing, bool is_in_playlist)
 {
 	if (is_in_playlist)
-		menu << NC::Format::NoBold;
+		menu << NC_FORMAT_NO_BOLD;
 
 	if (is_now_playing)
 		menu << Config.now_playing_suffix;
 
 	if (separate_albums)
-		menu << NC::Format::NoUnderline;
+		menu << NC_FORMAT_NO_UNDERLINE;
 }
 
 template <typename T>
@@ -269,7 +269,7 @@ void showSongsInColumns(NC::Menu<T> &menu, const MPD::Song &s,
 		if (it->right_alignment)
 			x_off = std::max(0, width - int(Utf8::width(tag)));
 
-		whline(menu.raw(), NC::Key::Space, width);
+		whline(menu.raw(), NC_KEY_SPACE, width);
 		menu.goToXY(x + x_off, y);
 		menu << tag;
 		menu.goToXY(x + width, y);
@@ -333,13 +333,13 @@ inline std::string Columns(size_t list_width)
 		int x_off = std::max(0, width - int(Utf8::width(name)));
 		if (it->right_alignment)
 		{
-			result += std::string(x_off, NC::Key::Space);
+			result += std::string(x_off, NC_KEY_SPACE);
 			result += Charset::utf8ToLocale(name);
 		}
 		else
 		{
 			result += Charset::utf8ToLocale(name);
-			result += std::string(x_off, NC::Key::Space);
+			result += std::string(x_off, NC_KEY_SPACE);
 		}
 
 		if (it != last)

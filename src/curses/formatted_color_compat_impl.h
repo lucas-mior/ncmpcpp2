@@ -29,11 +29,11 @@ void verifyFormats(const NC::FormattedColor::Formats &formats)
 {
 	for (auto &fmt : formats)
 	{
-		if (fmt == NC::Format::NoBold
-		    || fmt == NC::Format::NoUnderline
-		    || fmt == NC::Format::NoReverse
-		    || fmt == NC::Format::NoAltCharset
-		    || fmt == NC::Format::NoItalic)
+		if (fmt == NC_FORMAT_NO_BOLD
+		    || fmt == NC_FORMAT_NO_UNDERLINE
+		    || fmt == NC_FORMAT_NO_REVERSE
+		    || fmt == NC_FORMAT_NO_ALT_CHARSET
+		    || fmt == NC_FORMAT_NO_ITALIC)
 			throw std::logic_error("FormattedColor can't hold disabling formats");
 	}
 }
@@ -143,61 +143,17 @@ inline NC::Color NC::fromNcColor(NcColor color)
 	return Color(color.foreground, color.background, false, false);
 }
 
-inline NcFormat NC::toNcFormat(Format format)
+inline NcFormat NC::toNcFormat(enum NcFormat format)
 {
-	switch (format)
-	{
-	case Format::Bold:
-		return NC_FORMAT_BOLD;
-	case Format::NoBold:
-		return NC_FORMAT_NO_BOLD;
-	case Format::Underline:
-		return NC_FORMAT_UNDERLINE;
-	case Format::NoUnderline:
-		return NC_FORMAT_NO_UNDERLINE;
-	case Format::Reverse:
-		return NC_FORMAT_REVERSE;
-	case Format::NoReverse:
-		return NC_FORMAT_NO_REVERSE;
-	case Format::AltCharset:
-		return NC_FORMAT_ALT_CHARSET;
-	case Format::NoAltCharset:
-		return NC_FORMAT_NO_ALT_CHARSET;
-	case Format::Italic:
-		return NC_FORMAT_ITALIC;
-	case Format::NoItalic:
-		return NC_FORMAT_NO_ITALIC;
-	}
-	return NC_FORMAT_BOLD;
+	return format;
 }
 
-inline NC::Format NC::fromNcFormat(NcFormat format)
+
+inline enum NcFormat NC::fromNcFormat(NcFormat format)
 {
-	switch (format)
-	{
-	case NC_FORMAT_BOLD:
-		return Format::Bold;
-	case NC_FORMAT_NO_BOLD:
-		return Format::NoBold;
-	case NC_FORMAT_UNDERLINE:
-		return Format::Underline;
-	case NC_FORMAT_NO_UNDERLINE:
-		return Format::NoUnderline;
-	case NC_FORMAT_REVERSE:
-		return Format::Reverse;
-	case NC_FORMAT_NO_REVERSE:
-		return Format::NoReverse;
-	case NC_FORMAT_ALT_CHARSET:
-		return Format::AltCharset;
-	case NC_FORMAT_NO_ALT_CHARSET:
-		return Format::NoAltCharset;
-	case NC_FORMAT_ITALIC:
-		return Format::Italic;
-	case NC_FORMAT_NO_ITALIC:
-		return Format::NoItalic;
-	}
-	return Format::Bold;
+	return format;
 }
+
 
 inline std::istream &NC::operator>>(std::istream &is, NC::FormattedColor &fc)
 {
@@ -213,19 +169,19 @@ inline std::istream &NC::operator>>(std::istream &is, NC::FormattedColor &fc)
 			switch (flag)
 			{
 			case 'b':
-				formats.push_back(NC::Format::Bold);
+				formats.push_back(NC_FORMAT_BOLD);
 				break;
 			case 'u':
-				formats.push_back(NC::Format::Underline);
+				formats.push_back(NC_FORMAT_UNDERLINE);
 				break;
 			case 'r':
-				formats.push_back(NC::Format::Reverse);
+				formats.push_back(NC_FORMAT_REVERSE);
 				break;
 			case 'a':
-				formats.push_back(NC::Format::AltCharset);
+				formats.push_back(NC_FORMAT_ALT_CHARSET);
 				break;
 			case 'i':
-				formats.push_back(NC::Format::Italic);
+				formats.push_back(NC_FORMAT_ITALIC);
 				break;
 			default:
 				is.setstate(std::ios::failbit);

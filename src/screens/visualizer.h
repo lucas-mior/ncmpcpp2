@@ -49,7 +49,7 @@ struct Visualizer: Screen<NC::Window>, Tabbable
 	virtual ScreenType type() override { return NCM_SCREEN_TYPE_VISUALIZER; }
 
 	virtual void update() override;
-	virtual void scroll(NC::Scroll) override { }
+	virtual void scroll(enum NcScroll) override { }
 
 	virtual int windowTimeout() override;
 

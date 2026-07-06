@@ -59,7 +59,7 @@ template <typename CharT> class BasicBuffer
 		
 	private:
 		std::variant<Color,
-		             Format,
+		             enum NcFormat,
 		             FormattedColor,
 		             FormattedColor::End<StorageKind::Value>
 		             > m_impl;
@@ -157,7 +157,7 @@ public:
 		invalidatePropertiesCache();
 	}
 
-	void addProperty(size_t position, const Format &format, size_t id = -1)
+	void addProperty(size_t position, enum NcFormat format, size_t id = -1)
 	{
 		assert(position <= static_cast<size_t>(nc_buffer_len(&m_buffer)));
 		nc_buffer_add_format(&m_buffer,
@@ -270,7 +270,7 @@ public:
 		return *this;
 	}
 	
-	BasicBuffer<CharT> &operator<<(const Format &format)
+	BasicBuffer<CharT> &operator<<(enum NcFormat format)
 	{
 		addProperty(static_cast<size_t>(nc_buffer_len(&m_buffer)), format);
 		return *this;

@@ -309,8 +309,8 @@ void confirmAction(const std::string &description)
 {
 	Statusbar::ScopedLock slock;
 	Statusbar::put() << description
-	<< " [" << NC::Format::Bold << 'y' << NC::Format::NoBold
-	<< '/' << NC::Format::Bold << 'n' << NC::Format::NoBold
+	<< " [" << NC_FORMAT_BOLD << 'y' << NC_FORMAT_NO_BOLD
+	<< '/' << NC_FORMAT_BOLD << 'n' << NC_FORMAT_NO_BOLD
 	<< "] ";
 	char answer = Statusbar::Helpers::promptReturnOneOf({'y', 'n'});
 	if (answer == 'n')
@@ -898,7 +898,7 @@ void ExecuteCommand::run()
 		NC::Window::ScopedPromptHook helper(*ui_state_legacy_footer_window(),
 			Statusbar::Helpers::TryExecuteImmediateCommand()
 		);
-		Statusbar::put() << NC::Format::Bold << ":" << NC::Format::NoBold;
+		Statusbar::put() << NC_FORMAT_BOLD << ":" << NC_FORMAT_NO_BOLD;
 		cmd_name = ui_state_legacy_footer_window()->prompt();
 	}
 
@@ -1475,7 +1475,7 @@ void EditLibraryTag::run()
 	std::string new_tag;
 	{
 		Statusbar::ScopedLock slock;
-		Statusbar::put() << NC::Format::Bold << ncm_tag_type_name(Config.media_lib_primary_tag) << NC::Format::NoBold << ": ";
+		Statusbar::put() << NC_FORMAT_BOLD << ncm_tag_type_name(Config.media_lib_primary_tag) << NC_FORMAT_NO_BOLD << ": ";
 		new_tag = ui_state_legacy_footer_window()->prompt(myLibrary->Tags.current()->value().tag());
 	}
 	if (!new_tag.empty() && new_tag != myLibrary->Tags.current()->value().tag())
@@ -1533,7 +1533,7 @@ void EditLibraryAlbum::run()
 	std::string new_album;
 	{
 		Statusbar::ScopedLock slock;
-		Statusbar::put() << NC::Format::Bold << "Album: " << NC::Format::NoBold;
+		Statusbar::put() << NC_FORMAT_BOLD << "Album: " << NC_FORMAT_NO_BOLD;
 		new_album = ui_state_legacy_footer_window()->prompt(myLibrary->Albums.current()->value().entry().album());
 	}
 	if (!new_album.empty() && new_album != myLibrary->Albums.current()->value().entry().album())
@@ -1596,7 +1596,7 @@ void EditDirectoryName::run()
 		std::string new_dir;
 		{
 			Statusbar::ScopedLock slock;
-			Statusbar::put() << NC::Format::Bold << "Directory: " << NC::Format::NoBold;
+			Statusbar::put() << NC_FORMAT_BOLD << "Directory: " << NC_FORMAT_NO_BOLD;
 			new_dir = ui_state_legacy_footer_window()->prompt(old_dir);
 		}
 		if (!new_dir.empty() && new_dir != old_dir)
@@ -1623,7 +1623,7 @@ void EditDirectoryName::run()
 		std::string old_dir = myTagEditor->Dirs->current()->value().first, new_dir;
 		{
 			Statusbar::ScopedLock slock;
-			Statusbar::put() << NC::Format::Bold << "Directory: " << NC::Format::NoBold;
+			Statusbar::put() << NC_FORMAT_BOLD << "Directory: " << NC_FORMAT_NO_BOLD;
 			new_dir = ui_state_legacy_footer_window()->prompt(old_dir);
 		}
 		if (!new_dir.empty() && new_dir != old_dir)
@@ -1664,7 +1664,7 @@ void EditPlaylistName::run()
 		old_name = myBrowser->main().current()->value().playlist().path();
 	{
 		Statusbar::ScopedLock slock;
-		Statusbar::put() << NC::Format::Bold << "Playlist: " << NC::Format::NoBold;
+		Statusbar::put() << NC_FORMAT_BOLD << "Playlist: " << NC_FORMAT_NO_BOLD;
 		new_name = ui_state_legacy_footer_window()->prompt(old_name);
 	}
 	if (!new_name.empty() && new_name != old_name)
@@ -1930,7 +1930,7 @@ bool SelectFoundItems::canBeRun()
 void SelectFoundItems::run()
 {
 	auto current_pos = m_list->choice();
-	screenLegacyCurrent()->activeWindow()->scroll(NC::Scroll::Home);
+	screenLegacyCurrent()->activeWindow()->scroll(NC_SCROLL_HOME);
 	bool found = m_searchable->search(NCM_SEARCH_DIRECTION_FORWARD, false, false);
 	if (found)
 	{
@@ -2113,7 +2113,7 @@ void Find::run()
 	Statusbar::print("Searching...");
 	auto s = static_cast<Screen<NC::Scrollpad> *>(screenLegacyCurrent());
 	s->main().removeProperties();
-	if (token.empty() || s->main().setProperties(NC::Format::Reverse, token, NC::Format::NoReverse, Config.regex_type))
+	if (token.empty() || s->main().setProperties(NC_FORMAT_REVERSE, token, NC_FORMAT_NO_REVERSE, Config.regex_type))
 		Statusbar::print("Done");
 	else
 		Statusbar::print("No matching patterns found");
@@ -2185,9 +2185,9 @@ void ToggleReplayGainMode::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Replay gain mode? "
-		<< "[" << NC::Format::Bold << 'o' << NC::Format::NoBold << "ff"
-		<< "/" << NC::Format::Bold << 't' << NC::Format::NoBold << "rack"
-		<< "/" << NC::Format::Bold << 'a' << NC::Format::NoBold << "lbum"
+		<< "[" << NC_FORMAT_BOLD << 'o' << NC_FORMAT_NO_BOLD << "ff"
+		<< "/" << NC_FORMAT_BOLD << 't' << NC_FORMAT_NO_BOLD << "rack"
+		<< "/" << NC_FORMAT_BOLD << 'a' << NC_FORMAT_NO_BOLD << "lbum"
 		<< "] ";
 		rgm = Statusbar::Helpers::promptReturnOneOf({'t', 'a', 'o'});
 	}
@@ -2231,9 +2231,9 @@ void ToggleMouse::run()
 {
 	Config.mouse_support = !Config.mouse_support;
 	if (Config.mouse_support)
-		NC::Mouse::enable();
+		nc_mouse_enable();
 	else
-		NC::Mouse::disable();
+		nc_mouse_disable();
 	Statusbar::printf("Mouse support %1%",
 		Config.mouse_support ? "enabled" : "disabled"
 	);
@@ -2253,10 +2253,10 @@ void AddRandomItems::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Add random? "
-		<< "[" << NC::Format::Bold << 's' << NC::Format::NoBold << "ongs"
-		<< "/" << NC::Format::Bold << 'a' << NC::Format::NoBold << "rtists"
-		<< "/" << "album" << NC::Format::Bold << 'A' << NC::Format::NoBold << "rtists"
-		<< "/" << "al" << NC::Format::Bold << 'b' << NC::Format::NoBold << "ums"
+		<< "[" << NC_FORMAT_BOLD << 's' << NC_FORMAT_NO_BOLD << "ongs"
+		<< "/" << NC_FORMAT_BOLD << 'a' << NC_FORMAT_NO_BOLD << "rtists"
+		<< "/" << "album" << NC_FORMAT_BOLD << 'A' << NC_FORMAT_NO_BOLD << "rtists"
+		<< "/" << "al" << NC_FORMAT_BOLD << 'b' << NC_FORMAT_NO_BOLD << "ums"
 		<< "] ";
 		rnd_type = Statusbar::Helpers::promptReturnOneOf({'s', 'a', 'A', 'b'});
 	}
@@ -2342,12 +2342,12 @@ void ToggleLibraryTagType::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Tag type? "
-		<< "[" << NC::Format::Bold << 'a' << NC::Format::NoBold << "rtist"
-		<< "/" << "album" << NC::Format::Bold << 'A' << NC::Format::NoBold << "rtist"
-		<< "/" << NC::Format::Bold << 'y' << NC::Format::NoBold << "ear"
-		<< "/" << NC::Format::Bold << 'g' << NC::Format::NoBold << "enre"
-		<< "/" << NC::Format::Bold << 'c' << NC::Format::NoBold << "omposer"
-		<< "/" << NC::Format::Bold << 'p' << NC::Format::NoBold << "erformer"
+		<< "[" << NC_FORMAT_BOLD << 'a' << NC_FORMAT_NO_BOLD << "rtist"
+		<< "/" << "album" << NC_FORMAT_BOLD << 'A' << NC_FORMAT_NO_BOLD << "rtist"
+		<< "/" << NC_FORMAT_BOLD << 'y' << NC_FORMAT_NO_BOLD << "ear"
+		<< "/" << NC_FORMAT_BOLD << 'g' << NC_FORMAT_NO_BOLD << "enre"
+		<< "/" << NC_FORMAT_BOLD << 'c' << NC_FORMAT_NO_BOLD << "omposer"
+		<< "/" << NC_FORMAT_BOLD << 'p' << NC_FORMAT_NO_BOLD << "erformer"
 		<< "] ";
 		tag_type = Statusbar::Helpers::promptReturnOneOf({'a', 'A', 'y', 'g', 'c', 'p'});
 	}
@@ -3005,7 +3005,7 @@ void seek(SearchDirection sd)
 		                 ? static_cast<unsigned>(elapsed_seconds/2)+Config.seek_time
 		                 : Config.seek_time;
 
-		NC::Key::Type input = readKey(*ui_state_legacy_footer_window());
+		NcKey input = readKey(*ui_state_legacy_footer_window());
 
 		switch (sd)
 		{

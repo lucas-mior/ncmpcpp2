@@ -39,7 +39,7 @@ struct Playlist: Screen<SongMenu>, Filterable, HasSongs, Searchable, Tabbable
 	// Screen<SongMenu> implementation
 	virtual void refresh() override;
 	virtual void refreshWindow() override;
-	virtual void scroll(NC::Scroll where) override;
+	virtual void scroll(enum NcScroll where) override;
 	virtual void switchTo() override;
 	virtual void resize() override;
 	virtual int windowTimeout() override;

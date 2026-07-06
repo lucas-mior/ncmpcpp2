@@ -37,7 +37,7 @@
 
 #include "global.h"
 #include "ui_state_legacy.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "status.h"
 #include "statusbar.h"
 #include "title.h"
@@ -561,7 +561,7 @@ void Visualizer::DrawFrequencySpectrum(const int16_t *buf, ssize_t samples, size
 							ch = SMOOTH_CHARS_FLIPPED[idx];
 						} else {
 							ch = SMOOTH_CHARS[size-idx-2];
-							color = NC::FormattedColor(color.color(), {NC::Format::Reverse});
+							color = NC::FormattedColor(color.color(), {NC_FORMAT_REVERSE});
 						}
 					} else {
 						ch = SMOOTH_CHARS[idx];

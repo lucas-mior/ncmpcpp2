@@ -25,7 +25,7 @@
 #include "mpdpp.h"
 #include "screens/playlist.h"
 #include "screens/screen.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "song_list.h"
 #include "status.h"
 #include "utility/string.h"
@@ -251,7 +251,7 @@ void moveSelectedItemsUp(NC::Menu<MPD::Song> &m, F swap_fun)
 			// if we move only one item, do not select it. however, if single item
 			// was selected prior to move, it'll deselect it. oh well.
 			list[0]->setSelected(false);
-			m.scroll(NC::Scroll::Up);
+			m.scroll(NC_SCROLL_UP);
 		}
 	}
 }
@@ -283,7 +283,7 @@ void moveSelectedItemsDown(NC::Menu<MPD::Song> &m, F swap_fun)
 			// if we move only one item, do not select it. however, if single item
 			// was selected prior to move, it'll deselect it. oh well.
 			list[0]->setSelected(false);
-			m.scroll(NC::Scroll::Down);
+			m.scroll(NC_SCROLL_DOWN);
 		}
 	}
 }

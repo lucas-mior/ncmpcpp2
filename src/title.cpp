@@ -24,7 +24,7 @@
 #include "global.h"
 #include "ui_state_legacy.h"
 #include "screens/screen_legacy.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "title.h"
 #include "utility/utf8.h"
 
@@ -44,9 +44,9 @@ void drawHeader()
 		case NCM_DESIGN_CLASSIC:
 			*ui_state_legacy_header_window() << NC::XY(0, 0)
 			         << NC::TermManip::ClearToEOL
-			         << NC::Format::Bold
+			         << NC_FORMAT_BOLD
 			         << screenLegacyCurrent()->title()
-			         << NC::Format::NoBold
+			         << NC_FORMAT_NO_BOLD
 			         << NC::XY(ui_state_legacy_header_window()->getWidth()-global_volume_state_len(), 0)
 			         << Config.volume_color
 			         << global_volume_state_cstr()
@@ -61,9 +61,9 @@ void drawHeader()
 			mvwhline(ui_state_legacy_header_window()->raw(), 4, 0, 0, COLS);
 			*ui_state_legacy_header_window() << NC::FormattedColor::End<>(Config.alternative_ui_separator_color)
 			         << NC::XY((COLS-Utf8::width(title))/2, 3)
-			         << NC::Format::Bold
+			         << NC_FORMAT_BOLD
 			         << title
-			         << NC::Format::NoBold;
+			         << NC_FORMAT_NO_BOLD;
 			break;
 	}
 	ui_state_legacy_header_window()->refresh();

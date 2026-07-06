@@ -55,7 +55,7 @@ struct BaseScreen
 	virtual void refreshWindow() = 0;
 
 	/// @see Screen::scroll()
-	virtual void scroll(NC::Scroll where) = 0;
+	virtual void scroll(enum NcScroll where) = 0;
 
 	/// Method used for switching to screen
 	virtual void switchTo() = 0;
@@ -218,7 +218,7 @@ public:
 	/// if fancy scrolling feature is disabled, enters the
 	/// loop that holds main loop until user releases the key
 	/// @param where indicates where one wants to scroll
-	virtual void scroll(NC::Scroll where) override {
+	virtual void scroll(enum NcScroll where) override {
 		Accessor::apply(w).scroll(where);
 	}
 

@@ -36,83 +36,83 @@ void warning(const char *msg)
 	std::cerr << "WARNING: " << msg << "\n";
 }
 
-NC::Key::Type stringToKey(const std::string &s);
+NcKey stringToKey(const std::string &s);
 
-NC::Key::Type stringToSpecialKey(const std::string &s)
+NcKey stringToSpecialKey(const std::string &s)
 {
-	NC::Key::Type result = NC::Key::None;
+	NcKey result = NC_KEY_NONE;
 	if (!s.compare(0, 4, "ctrl") && s.length() == 6 && s[4] == '-')
 	{
 		if (s[5] >= 'a' && s[5] <= 'z')
-			result = NC::Key::Ctrl_A + (s[5] - 'a');
+			result = NC_KEY_CTRL_A + (s[5] - 'a');
 		else if (s[5] == '[')
-			result = NC::Key::Ctrl_LeftBracket;
+			result = NC_KEY_CTRL_LEFT_BRACKET;
 		else if (s[5] == '\\')
-			result = NC::Key::Ctrl_Backslash;
+			result = NC_KEY_CTRL_BACKSLASH;
 		else if (s[5] == ']')
-			result = NC::Key::Ctrl_RightBracket;
+			result = NC_KEY_CTRL_RIGHT_BRACKET;
 		else if (s[5] == '^')
-			result = NC::Key::Ctrl_Caret;
+			result = NC_KEY_CTRL_CARET;
 		else if (s[5] == '_')
-			result = NC::Key::Ctrl_Underscore;
+			result = NC_KEY_CTRL_UNDERSCORE;
 	}
 	else if (!s.compare(0, 3, "alt") && s.length() > 3 && s[3] == '-')
 	{
-		result = NC::Key::Alt | stringToKey(s.substr(4));
+		result = NC_KEY_ALT | stringToKey(s.substr(4));
 	}
 	else if (!s.compare(0, 4, "ctrl") && s.length() > 4 && s[4] == '-')
 	{
-		result = NC::Key::Ctrl | stringToKey(s.substr(5));
+		result = NC_KEY_CTRL | stringToKey(s.substr(5));
 	}
 	else if (!s.compare(0, 5, "shift") && s.length() > 5 && s[5] == '-')
 	{
-		result = NC::Key::Shift | stringToKey(s.substr(6));
+		result = NC_KEY_SHIFT | stringToKey(s.substr(6));
 	}
 	else if (!s.compare("escape"))
-		result = NC::Key::Escape;
+		result = NC_KEY_ESCAPE;
 	else if (!s.compare("mouse"))
-		result = NC::Key::Mouse;
+		result = NC_KEY_MOUSE;
 	else if (!s.compare("up"))
-		result = NC::Key::Up;
+		result = NC_KEY_UP;
 	else if (!s.compare("down"))
-		result = NC::Key::Down;
+		result = NC_KEY_DOWN;
 	else if (!s.compare("page_up"))
-		result = NC::Key::PageUp;
+		result = NC_KEY_PAGE_UP;
 	else if (!s.compare("page_down"))
-		result = NC::Key::PageDown;
+		result = NC_KEY_PAGE_DOWN;
 	else if (!s.compare("home"))
-		result = NC::Key::Home;
+		result = NC_KEY_HOME;
 	else if (!s.compare("end"))
-		result = NC::Key::End;
+		result = NC_KEY_END;
 	else if (!s.compare("space"))
-		result = NC::Key::Space;
+		result = NC_KEY_SPACE;
 	else if (!s.compare("enter"))
-		result = NC::Key::Enter;
+		result = NC_KEY_ENTER;
 	else if (!s.compare("insert"))
-		result = NC::Key::Insert;
+		result = NC_KEY_INSERT;
 	else if (!s.compare("delete"))
-		result = NC::Key::Delete;
+		result = NC_KEY_DELETE;
 	else if (!s.compare("left"))
-		result = NC::Key::Left;
+		result = NC_KEY_LEFT;
 	else if (!s.compare("right"))
-		result = NC::Key::Right;
+		result = NC_KEY_RIGHT;
 	else if (!s.compare("tab"))
-		result = NC::Key::Tab;
+		result = NC_KEY_TAB;
 	else if ((s.length() == 2 || s.length() == 3) && s[0] == 'f')
 	{
 		int n = atoi(s.c_str() + 1);
 		if (n >= 1 && n <= 12)
-			result = NC::Key::F1 + n - 1;
+			result = NC_KEY_F1 + n - 1;
 	}
 	else if (!s.compare("backspace"))
-		result = NC::Key::Backspace;
+		result = NC_KEY_BACKSPACE;
 	return result;
 }
 
-NC::Key::Type stringToKey(const std::string &s)
+NcKey stringToKey(const std::string &s)
 {
-	NC::Key::Type result = stringToSpecialKey(s);
-	if (result == NC::Key::None)
+	NcKey result = stringToSpecialKey(s);
+	if (result == NC_KEY_NONE)
 	{
 		std::wstring ws = ToWString(s);
 		if (ws.length() == 1)
@@ -145,12 +145,12 @@ std::shared_ptr<Actions::BaseAction> parseActionLine(const std::string &line, F 
 		{
 			// push single character into input queue
 			std::string arg = getEnclosedString(line, '"', '"', 0);
-			NC::Key::Type k = stringToSpecialKey(arg);
-			if (k != NC::Key::None)
+			NcKey k = stringToSpecialKey(arg);
+			if (k != NC_KEY_NONE)
 				result = std::static_pointer_cast<Actions::BaseAction>(
 					std::make_shared<Actions::PushCharacters>(
 						ui_state_legacy_footer_window,
-						std::vector<NC::Key::Type>{k}));
+						std::vector<NcKey>{k}));
 			else
 				error() << "invalid character passed to push_character: '" << arg << "'\n";
 		}
@@ -166,7 +166,7 @@ std::shared_ptr<Actions::BaseAction> parseActionLine(const std::string &line, F 
 				result = std::static_pointer_cast<Actions::BaseAction>(
 					std::make_shared<Actions::PushCharacters>(
 						ui_state_legacy_footer_window,
-						std::vector<NC::Key::Type>{arg.begin(), arg.end()}));
+						std::vector<NcKey>{arg.begin(), arg.end()}));
 			}
 			else
 				error() << "empty argument passed to push_characters\n";
@@ -217,22 +217,22 @@ std::shared_ptr<Actions::BaseAction> parseActionLine(const std::string &line, F 
 
 }
 
-NC::Key::Type readKey(NC::Window &w)
+NcKey readKey(NC::Window &w)
 {
-	NC::Key::Type result = NC::Key::None;
+	NcKey result = NC_KEY_NONE;
 	std::string tmp;
-	NC::Key::Type input;
+	NcKey input;
 	bool alt_pressed = false;
 	while (true)
 	{
 		input = w.readKey();
-		if (input == NC::Key::None)
+		if (input == NC_KEY_NONE)
 			break;
-		if (input & NC::Key::Alt)
+		if (input & NC_KEY_ALT)
 		{
 			// Complete the key and reapply the mask at the end.
 			alt_pressed = true;
-			input &= ~NC::Key::Alt;
+			input &= ~NC_KEY_ALT;
 		}
 		if (input > 255) // NC special character
 		{
@@ -256,88 +256,88 @@ NC::Key::Type readKey(NC::Window &w)
 		}
 	}
 	if (alt_pressed)
-		result |= NC::Key::Alt;
+		result |= NC_KEY_ALT;
 	return result;
 }
 
-std::wstring keyToWString(const NC::Key::Type key)
+std::wstring keyToWString(const NcKey key)
 {
 	std::wstring result;
 
-	if (key == NC::Key::Tab)
+	if (key == NC_KEY_TAB)
 		result += L"Tab";
-	else if (key == NC::Key::Enter)
+	else if (key == NC_KEY_ENTER)
 		result += L"Enter";
-	else if (key == NC::Key::Escape)
+	else if (key == NC_KEY_ESCAPE)
 		result += L"Escape";
-	else if (key >= NC::Key::Ctrl_A && key <= NC::Key::Ctrl_Z)
+	else if (key >= NC_KEY_CTRL_A && key <= NC_KEY_CTRL_Z)
 	{
 		result += L"Ctrl-";
-		result += 'A' + (key - NC::Key::Ctrl_A);
+		result += (wchar_t)('A' + (key - NC_KEY_CTRL_A));
 	}
-	else if (key == NC::Key::Ctrl_LeftBracket)
+	else if (key == NC_KEY_CTRL_LEFT_BRACKET)
 		result += L"Ctrl-[";
-	else if (key == NC::Key::Ctrl_Backslash)
+	else if (key == NC_KEY_CTRL_BACKSLASH)
 		result += L"Ctrl-\\";
-	else if (key == NC::Key::Ctrl_RightBracket)
+	else if (key == NC_KEY_CTRL_RIGHT_BRACKET)
 		result += L"Ctrl-]";
-	else if (key == NC::Key::Ctrl_Caret)
+	else if (key == NC_KEY_CTRL_CARET)
 		result += L"Ctrl-^";
-	else if (key == NC::Key::Ctrl_Underscore)
+	else if (key == NC_KEY_CTRL_UNDERSCORE)
 		result += L"Ctrl-_";
-	else if (key & NC::Key::Alt)
+	else if (key & NC_KEY_ALT)
 	{
 		result += L"Alt-";
-		result += keyToWString(key & ~NC::Key::Alt);
+		result += keyToWString(key & ~NC_KEY_ALT);
 	}
-	else if (key & NC::Key::Ctrl)
+	else if (key & NC_KEY_CTRL)
 	{
 		result += L"Ctrl-";
-		result += keyToWString(key & ~NC::Key::Ctrl);
+		result += keyToWString(key & ~NC_KEY_CTRL);
 	}
-	else if (key & NC::Key::Shift)
+	else if (key & NC_KEY_SHIFT)
 	{
 		result += L"Shift-";
-		result += keyToWString(key & ~NC::Key::Shift);
+		result += keyToWString(key & ~NC_KEY_SHIFT);
 	}
-	else if (key == NC::Key::Space)
+	else if (key == NC_KEY_SPACE)
 		result += L"Space";
-	else if (key == NC::Key::Backspace)
+	else if (key == NC_KEY_BACKSPACE)
 		result += L"Backspace";
-	else if (key == NC::Key::Insert)
+	else if (key == NC_KEY_INSERT)
 		result += L"Insert";
-	else if (key == NC::Key::Delete)
+	else if (key == NC_KEY_DELETE)
 		result += L"Delete";
-	else if (key == NC::Key::Home)
+	else if (key == NC_KEY_HOME)
 		result += L"Home";
-	else if (key == NC::Key::End)
+	else if (key == NC_KEY_END)
 		result += L"End";
-	else if (key == NC::Key::PageUp)
+	else if (key == NC_KEY_PAGE_UP)
 		result += L"PageUp";
-	else if (key == NC::Key::PageDown)
+	else if (key == NC_KEY_PAGE_DOWN)
 		result += L"PageDown";
-	else if (key == NC::Key::Up)
+	else if (key == NC_KEY_UP)
 		result += L"Up";
-	else if (key == NC::Key::Down)
+	else if (key == NC_KEY_DOWN)
 		result += L"Down";
-	else if (key == NC::Key::Left)
+	else if (key == NC_KEY_LEFT)
 		result += L"Left";
-	else if (key == NC::Key::Right)
+	else if (key == NC_KEY_RIGHT)
 		result += L"Right";
-	else if (key == NC::Key::EoF)
+	else if (key == NC_KEY_EOF)
 		result += L"EoF";
-	else if (key >= NC::Key::F1 && key <= NC::Key::F9)
+	else if (key >= NC_KEY_F1 && key <= NC_KEY_F9)
 	{
 		result += L"F";
-		result += '1' + (key - NC::Key::F1);
+		result += (wchar_t)('1' + (key - NC_KEY_F1));
 	}
-	else if (key >= NC::Key::F10 && key <= NC::Key::F12)
+	else if (key >= NC_KEY_F10 && key <= NC_KEY_F12)
 	{
 		result += L"F1";
-		result += '0' + (key - NC::Key::F10);
+		result += (wchar_t)('0' + (key - NC_KEY_F10));
 	}
 	else
-		result += std::wstring(1, key);
+		result += std::wstring(1, (wchar_t)key);
 
 	return result;
 }
@@ -359,7 +359,7 @@ bool BindingsConfiguration::read(const std::string &file)
 	Binding::ActionChain actions;
 	
 	// def_key specific variables
-	NC::Key::Type key = NC::Key::None;
+	NcKey key = NC_KEY_NONE;
 	std::string strkey;
 	
 	// def_command specific variables
@@ -450,7 +450,7 @@ bool BindingsConfiguration::read(const std::string &file)
 			in_progress = InProgress::Key;
 			strkey = getEnclosedString(line, '"', '"', 0);
 			key = stringToKey(strkey);
-			if (key == NC::Key::None)
+			if (key == NC_KEY_NONE)
 			{
 				error() << "invalid key: '" << strkey << "'\n";
 				break;
@@ -495,8 +495,8 @@ bool BindingsConfiguration::read(const std::vector<std::string> &binding_paths)
 
 void BindingsConfiguration::generateDefaults()
 {
-	NC::Key::Type k = NC::Key::None;
-	bind(NC::Key::EoF, Actions::Type::Quit);
+	NcKey k = NC_KEY_NONE;
+	bind(NC_KEY_EOF, Actions::Type::Quit);
 	if (notBound(k = stringToKey("mouse")))
 		bind(k, Actions::Type::MouseEvent);
 	if (notBound(k = stringToKey("up")))
@@ -775,7 +775,7 @@ const Command *BindingsConfiguration::findCommand(const std::string &name)
 	return ptr;
 }
 
-BindingsConfiguration::BindingIteratorPair BindingsConfiguration::get(const NC::Key::Type &k)
+BindingsConfiguration::BindingIteratorPair BindingsConfiguration::get(const NcKey &k)
 {
 	std::pair<BindingIterator, BindingIterator> result;
 	auto it = m_bindings.find(k);

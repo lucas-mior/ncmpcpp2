@@ -1,229 +1,282 @@
-/***************************************************************************
- *   Copyright (C) 2008-2021 by Andrzej Rybczak                            *
- *   andrzej@rybczak.net                                                   *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
- ***************************************************************************/
-
-#ifndef NCMPCPP_SETTINGS_H
+#if !defined(NCMPCPP_SETTINGS_H)
 #define NCMPCPP_SETTINGS_H
 
-#include <chrono>
-#include <optional>
-#include <cassert>
-#include <vector>
-#include <mpd/client.h>
+#include <stdbool.h>
 
-#include "curses/formatted_color.h"
-#include "curses/strbuffer.h"
+#include <mpd/tag.h>
+
+#include "c/ncm_app_arrays.h"
+#include "c/ncm_array.h"
 #include "c/ncm_enums.h"
-#include "format.h"
-#include "lyrics_fetcher.h"
+#include "c/ncm_format.h"
+#include "c/ncm_regex.h"
+#include "c/ncm_song.h"
+#include "curses/nc_buffer.h"
+#include "curses/nc_formatted_color.h"
+#include "curses/nc_window.h"
 #include "screens/screen_type.h"
-#include "utility/regex.h"
 
-struct Column
-{
-	Column() : stretch_limit(-1), right_alignment(0), display_empty_tag(1) { }
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-	std::string name;
-	std::string type;
-	int width;
-	int stretch_limit;
-	NC::Color color;
-	bool fixed;
-	bool right_alignment;
-	bool display_empty_tag;
-};
+typedef struct Column {
+    char *name;
+    char *type;
 
-struct Configuration
-{
-	Configuration()
-	: playlist_disable_highlight_delay(0)
-	{ }
+    int32 name_len;
+    int32 name_cap;
+    int32 type_len;
+    int32 type_cap;
 
-	bool read(const std::vector<std::string> &config_paths, bool ignore_errors);
+    int32 width;
+    int32 stretch_limit;
+    NcColor color;
 
-	std::string ncmpcpp_directory;
-	std::string lyrics_directory;
+    bool fixed;
+    bool right_alignment;
+    bool display_empty_tag;
+} Column;
 
-	std::string mpd_music_dir;
-	std::string visualizer_fifo_path; // deprecated
-	std::string visualizer_data_source;
-	std::string visualizer_output_name;
-	std::string empty_tag;
+typedef struct NcmLyricsFetcherDef {
+    char *name;
+    char *url_template;
+    char *match_regex;
 
-	Format::AST<char> song_list_format;
-	Format::AST<char> song_window_title_format;
-	Format::AST<char> song_library_format;
-	Format::AST<char> song_columns_mode_format;
-	Format::AST<char> browser_sort_format;
-	Format::AST<char> song_status_format;
-	Format::AST<char> new_header_first_line;
-	Format::AST<char> new_header_second_line;
+    int32 name_len;
+    int32 name_cap;
+    int32 url_template_len;
+    int32 url_template_cap;
+    int32 match_regex_len;
+    int32 match_regex_cap;
 
-	std::string external_editor;
-	std::string system_encoding;
-	std::string execute_on_song_change;
-	std::string execute_on_player_state_change;
-	std::string lastfm_preferred_language;
-	std::string progressbar;
-	std::string visualizer_chars;
-	size_t visualizer_fps;
-	bool visualizer_autoscale;
-	bool visualizer_spectrum_smooth_look;
-	bool visualizer_spectrum_smooth_look_legacy_chars;
-	uint32_t visualizer_spectrum_dft_size;
-	double visualizer_spectrum_gain;
-	double visualizer_spectrum_hz_min;
-	double visualizer_spectrum_hz_max;
-	bool visualizer_spectrum_log_scale_x;
-	bool visualizer_spectrum_log_scale_y;
+    bool enabled;
+} NcmLyricsFetcherDef;
 
-	std::string pattern;
+NCM_ARRAY_DECLARE(ncm_int32_array, NcmInt32Array, int32)
+NCM_ARRAY_DECLARE(ncm_screen_type_array,
+                  NcmScreenTypeArray,
+                  enum ScreenType)
+NCM_ARRAY_DECLARE(ncm_column_array, NcmColumnArray, Column)
+NCM_ARRAY_DECLARE(ncm_formatted_color_array,
+                  NcmFormattedColorArray,
+                  NcFormattedColor)
+NCM_ARRAY_DECLARE(ncm_lyrics_fetcher_array,
+                  NcmLyricsFetcherArray,
+                  NcmLyricsFetcherDef)
 
-	std::vector<size_t> playlist_editor_column_width_ratio;
-	std::vector<size_t> media_library_column_width_ratio_two;
-	std::vector<size_t> media_library_column_width_ratio_three;
+typedef struct Configuration {
+    char *ncmpcpp_directory;
+    char *lyrics_directory;
+    char *mpd_music_dir;
+    char *visualizer_fifo_path;
+    char *visualizer_data_source;
+    char *visualizer_output_name;
+    char *empty_tag;
+    char *external_editor;
+    char *system_encoding;
+    char *execute_on_song_change;
+    char *execute_on_player_state_change;
+    char *lastfm_preferred_language;
+    char *pattern;
+    char *random_exclude_pattern;
 
-	std::vector<Column> columns;
+    int32 ncmpcpp_directory_len;
+    int32 lyrics_directory_len;
+    int32 mpd_music_dir_len;
+    int32 visualizer_fifo_path_len;
+    int32 visualizer_data_source_len;
+    int32 visualizer_output_name_len;
+    int32 empty_tag_len;
+    int32 external_editor_len;
+    int32 system_encoding_len;
+    int32 execute_on_song_change_len;
+    int32 execute_on_player_state_change_len;
+    int32 lastfm_preferred_language_len;
+    int32 pattern_len;
+    int32 random_exclude_pattern_len;
 
-	DisplayMode playlist_display_mode;
-	DisplayMode browser_display_mode;
-	DisplayMode search_engine_display_mode;
-	DisplayMode playlist_editor_display_mode;
+    int32 ncmpcpp_directory_cap;
+    int32 lyrics_directory_cap;
+    int32 mpd_music_dir_cap;
+    int32 visualizer_fifo_path_cap;
+    int32 visualizer_data_source_cap;
+    int32 visualizer_output_name_cap;
+    int32 empty_tag_cap;
+    int32 external_editor_cap;
+    int32 system_encoding_cap;
+    int32 execute_on_song_change_cap;
+    int32 execute_on_player_state_change_cap;
+    int32 lastfm_preferred_language_cap;
+    int32 pattern_cap;
+    int32 random_exclude_pattern_cap;
 
-	NC::Buffer browser_playlist_prefix;
-	NC::Buffer selected_item_prefix;
-	NC::Buffer selected_item_suffix;
-	NC::Buffer now_playing_prefix;
-	NC::Buffer now_playing_suffix;
-	NC::Buffer modified_item_prefix;
-	NC::Buffer current_item_prefix;
-	NC::Buffer current_item_suffix;
-	NC::Buffer current_item_inactive_column_prefix;
-	NC::Buffer current_item_inactive_column_suffix;
+    NcmBuffer progressbar;
+    NcmBuffer visualizer_chars;
 
-	NC::Color header_color;
-	NC::Color main_color;
-	NC::Color statusbar_color;
+    NcmFormatAst song_list_format;
+    NcmFormatAst song_window_title_format;
+    NcmFormatAst song_library_format;
+    NcmFormatAst song_columns_mode_format;
+    NcmFormatAst browser_sort_format;
+    NcmFormatAst song_status_format;
+    NcmFormatAst new_header_first_line;
+    NcmFormatAst new_header_second_line;
 
-	NC::FormattedColor color1;
-	NC::FormattedColor color2;
-	NC::FormattedColor empty_tags_color;
-	NC::FormattedColor volume_color;
-	NC::FormattedColor state_line_color;
-	NC::FormattedColor state_flags_color;
-	NC::FormattedColor progressbar_color;
-	NC::FormattedColor progressbar_elapsed_color;
-	NC::FormattedColor player_state_color;
-	NC::FormattedColor statusbar_time_color;
-	NC::FormattedColor alternative_ui_separator_color;
+    NcmInt32Array playlist_editor_column_width_ratio;
+    NcmInt32Array media_library_column_width_ratio_two;
+    NcmInt32Array media_library_column_width_ratio_three;
+    NcmColumnArray columns;
 
-	std::vector<NC::FormattedColor> visualizer_colors;
-	VisualizerType visualizer_type;
+    enum DisplayMode playlist_display_mode;
+    enum DisplayMode browser_display_mode;
+    enum DisplayMode search_engine_display_mode;
+    enum DisplayMode playlist_editor_display_mode;
 
-	NC::Border window_border;
-	NC::Border active_window_border;
+    NcBuffer browser_playlist_prefix;
+    NcBuffer selected_item_prefix;
+    NcBuffer selected_item_suffix;
+    NcBuffer now_playing_prefix;
+    NcBuffer now_playing_suffix;
+    NcBuffer modified_item_prefix;
+    NcBuffer current_item_prefix;
+    NcBuffer current_item_suffix;
+    NcBuffer current_item_inactive_column_prefix;
+    NcBuffer current_item_inactive_column_suffix;
 
-	Design design;
+    NcColor header_color;
+    NcColor main_color;
+    NcColor statusbar_color;
 
-	SpaceAddMode space_add_mode;
+    NcFormattedColor color1;
+    NcFormattedColor color2;
+    NcFormattedColor empty_tags_color;
+    NcFormattedColor volume_color;
+    NcFormattedColor state_line_color;
+    NcFormattedColor state_flags_color;
+    NcFormattedColor progressbar_color;
+    NcFormattedColor progressbar_elapsed_color;
+    NcFormattedColor player_state_color;
+    NcFormattedColor statusbar_time_color;
+    NcFormattedColor alternative_ui_separator_color;
+    NcmFormattedColorArray visualizer_colors;
 
-	mpd_tag_type media_lib_primary_tag;
+    enum VisualizerType visualizer_type;
+    NcBorder window_border;
+    NcBorder active_window_border;
+    enum Design design;
+    enum SpaceAddMode space_add_mode;
+    enum mpd_tag_type media_lib_primary_tag;
+    enum SortMode browser_sort_mode;
 
-	bool colors_enabled;
-	bool playlist_show_mpd_host;
-	bool playlist_show_remaining_time;
-	bool playlist_shorten_total_times;
-	bool playlist_separate_albums;
-	bool set_window_title;
-	bool header_visibility;
-	bool header_text_scrolling;
-	bool statusbar_visibility;
-	bool connected_message_on_startup;
-	bool titles_visibility;
-	bool centered_cursor;
-	bool screen_switcher_previous;
-	bool autocenter_mode;
-	bool wrapped_search;
-	bool incremental_seeking;
-	bool now_playing_lyrics;
-	bool fetch_lyrics_in_background;
-	bool local_browser_show_hidden_files;
-	bool search_in_db;
-	bool jump_to_now_playing_song_at_start;
-	bool display_volume_level;
-	bool display_bitrate;
-	bool display_remaining_time;
-	bool ignore_leading_the;
-	bool block_search_constraints_change;
-	bool use_console_editor;
-	bool use_cyclic_scrolling;
-	bool ask_before_clearing_playlists;
-	bool ask_before_shuffling_playlists;
-	bool mouse_support;
-	bool mouse_list_scroll_whole_page;
-	bool visualizer_in_stereo;
-	bool data_fetching_delay;
-	bool media_library_sort_by_mtime;
-	bool media_lib_hide_album_dates;
-	bool tag_editor_extended_numeration;
-	bool discard_colors_if_item_is_selected;
-	bool store_lyrics_in_song_dir;
-	bool generate_win32_compatible_filenames;
-	bool ask_for_locked_screen_width_part;
-	bool allow_for_physical_item_deletion;
-	bool media_library_albums_split_by_date;
-	bool startup_slave_screen_focus;
+    bool colors_enabled;
+    bool playlist_show_mpd_host;
+    bool playlist_show_remaining_time;
+    bool playlist_shorten_total_times;
+    bool playlist_separate_albums;
+    bool set_window_title;
+    bool header_visibility;
+    bool header_text_scrolling;
+    bool statusbar_visibility;
+    bool connected_message_on_startup;
+    bool titles_visibility;
+    bool centered_cursor;
+    bool screen_switcher_previous;
+    bool autocenter_mode;
+    bool wrapped_search;
+    bool incremental_seeking;
+    bool now_playing_lyrics;
+    bool fetch_lyrics_in_background;
+    bool local_browser_show_hidden_files;
+    bool search_in_db;
+    bool jump_to_now_playing_song_at_start;
+    bool display_volume_level;
+    bool display_bitrate;
+    bool display_remaining_time;
+    bool ignore_leading_the;
+    bool block_search_constraints_change;
+    bool use_console_editor;
+    bool use_cyclic_scrolling;
+    bool ask_before_clearing_playlists;
+    bool ask_before_shuffling_playlists;
+    bool mouse_support;
+    bool mouse_list_scroll_whole_page;
+    bool visualizer_in_stereo;
+    bool visualizer_autoscale;
+    bool visualizer_spectrum_smooth_look;
+    bool visualizer_spectrum_smooth_look_legacy_chars;
+    bool visualizer_spectrum_log_scale_x;
+    bool visualizer_spectrum_log_scale_y;
+    bool data_fetching_delay;
+    bool media_library_sort_by_mtime;
+    bool media_lib_hide_album_dates;
+    bool tag_editor_extended_numeration;
+    bool discard_colors_if_item_is_selected;
+    bool store_lyrics_in_song_dir;
+    bool generate_win32_compatible_filenames;
+    bool ask_for_locked_screen_width_part;
+    bool allow_for_physical_item_deletion;
+    bool media_library_albums_split_by_date;
+    bool startup_slave_screen_focus;
+    bool has_startup_slave_screen_type;
 
-	unsigned mpd_connection_timeout;
-	unsigned crossfade_time;
-	unsigned seek_time;
-	unsigned volume_change_step;
-	unsigned message_delay_time;
-	unsigned lyrics_db;
-	unsigned lines_scrolled;
-	unsigned search_engine_default_search_mode;
+    uint32 mpd_connection_timeout;
+    uint32 crossfade_time;
+    uint32 seek_time;
+    uint32 volume_change_step;
+    uint32 message_delay_time;
+    uint32 lyrics_db;
+    uint32 lines_scrolled;
+    uint32 search_engine_default_search_mode;
+    uint32 visualizer_fps;
+    uint32 visualizer_spectrum_dft_size;
+    uint32 playlist_disable_highlight_delay_seconds;
+    uint32 regex_type;
 
-	Regex::Flags regex_type;
+    double visualizer_spectrum_gain;
+    double visualizer_spectrum_hz_min;
+    double visualizer_spectrum_hz_max;
+    double locked_screen_width_part;
 
-	std::chrono::seconds playlist_disable_highlight_delay;
+    int32 selected_item_prefix_length;
+    int32 selected_item_suffix_length;
+    int32 now_playing_prefix_length;
+    int32 now_playing_suffix_length;
+    int32 current_item_prefix_length;
+    int32 current_item_suffix_length;
+    int32 current_item_inactive_column_prefix_length;
+    int32 current_item_inactive_column_suffix_length;
 
-	double locked_screen_width_part;
+    enum ScreenType startup_screen_type;
+    enum ScreenType startup_slave_screen_type;
+    NcmScreenTypeArray screen_sequence;
 
-	size_t selected_item_prefix_length;
-	size_t selected_item_suffix_length;
-	size_t now_playing_prefix_length;
-	size_t now_playing_suffix_length;
-	size_t current_item_prefix_length;
-	size_t current_item_suffix_length;
-	size_t current_item_inactive_column_prefix_length;
-	size_t current_item_inactive_column_suffix_length;
+    NcmLyricsFetcherArray lyrics_fetchers;
+} Configuration;
 
-	ScreenType startup_screen_type;
-	std::optional<ScreenType> startup_slave_screen_type;
-	std::vector<ScreenType> screen_sequence;
+void column_init(Column *column);
+void column_destroy(Column *column);
+bool column_copy(Column *dest, Column *source);
+void column_move(Column *dest, Column *source);
 
-	std::string random_exclude_pattern;
-	SortMode browser_sort_mode;
+void ncm_lyrics_fetcher_def_init(NcmLyricsFetcherDef *fetcher);
+void ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher);
+bool ncm_lyrics_fetcher_def_copy(NcmLyricsFetcherDef *dest,
+                                 NcmLyricsFetcherDef *source);
+void ncm_lyrics_fetcher_def_move(NcmLyricsFetcherDef *dest,
+                                 NcmLyricsFetcherDef *source);
 
-	LyricsFetchers lyrics_fetchers;
-};
+void configuration_init(Configuration *config);
+void configuration_destroy(Configuration *config);
+void configuration_clear(Configuration *config);
+bool configuration_read(Configuration *config,
+                        NcmStringViewArray *config_paths,
+                        bool ignore_errors);
 
 extern Configuration Config;
 
-#endif // NCMPCPP_SETTINGS_H
+#if defined(__cplusplus)
+}
+#endif
+
+#endif /* NCMPCPP_SETTINGS_H */

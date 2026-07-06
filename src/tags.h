@@ -26,7 +26,7 @@
 #ifdef HAVE_TAGLIB_H
 
 #include "mutable_song.h"
-#include "settings.h"
+#include "settings_legacy.h"
 
 inline bool ncm_tags_write_mutable_song(MPD::MutableSong &song)
 {

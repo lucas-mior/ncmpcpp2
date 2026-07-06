@@ -298,3 +298,65 @@ Migration checklist for each converted C++ file
 6. Remove the .cpp file from the build only after the C replacement is compiled
    and linked.
 7. Run make all and make check after each migration batch.
+
+Curses wrapper migration
+========================
+
+Use the native C curses types directly in converted code:
+
+    NC::Key::Type     -> NcKey
+    NC::Key::*        -> NC_KEY_*
+    NC::Mouse::*      -> nc_mouse_*
+    NC::Format        -> enum NcFormat
+    NC::Format::*     -> NC_FORMAT_*
+    NC::Scroll        -> enum NcScroll
+    NC::Scroll::*     -> NC_SCROLL_*
+    NC::Window        -> NcWindow
+    NC::Buffer        -> NcBuffer
+    NC::Color         -> NcColor
+    NC::Border        -> NcBorder
+
+Prefer nc_key_name(), nc_format_reverse(), nc_border_none(), and
+nc_border_make() over reintroducing C++ helper namespaces.
+
+Typed menu adapters
+===================
+
+Use src/curses/nc_app_menus.h for concrete replacements of current
+NC::Menu<T> instantiations.
+
+    NC::Menu<MPD::Song>              -> NcSongMenu
+    NC::Menu<MPD::Item>              -> NcMpdItemMenu or NcBrowserEntryMenu
+    NC::Menu<NcOutputsItem>          -> NcOutputMenu
+    NC::Menu<NcmPlaylist>            -> NcPlaylistEntryMenu
+    NC::Menu<MPD::MutableSong>       -> NcTagRowMenu
+    NC::Menu<SEItem>                 -> NcSearchRowMenu
+    NC::Menu<MediaLibrary::PrimaryTag> -> NcMediaLibraryTagMenu
+    NC::Menu<MediaLibrary::AlbumEntry> -> NcMediaLibraryAlbumMenu
+    NC::Menu<std::string>            -> NcEditorStringMenu
+    NC::Menu<std::pair<string,string>> -> NcEditorPairMenu
+    NC::Menu<RunnableItem<...>>      -> NcEditorActionMenu or NcEditorSortMenu
+    NC::Menu<NC::Buffer>             -> NcEditorBufferMenu
+
+Rules:
+    - Store items by value in NcMenu through the typed adapter.
+    - Attach draw, filter, selection, inactive, and activate callbacks through
+      the underlying NcMenu returned by *_base().
+    - Keep item ownership inside the adapter callbacks.
+    - Do not add new NC::Menu<T> instantiations.
+
+Configuration migration
+=======================
+
+Use src/settings.h as the C configuration contract. During the mixed-language
+migration, existing C++ files include src/settings_legacy.h. New C code must not
+include src/settings_legacy.h.
+
+Rules:
+    - Store owned strings as char * plus explicit int32 length and capacity.
+    - Store parsed display formats as NcmFormatAst.
+    - Store curses display fragments as NcBuffer.
+    - Store formatted colors as NcFormattedColor and NcmFormattedColorArray.
+    - Store optional screen values as a bool has_* flag plus the value.
+    - Store durations as integer seconds.
+    - Store vector-like configuration fields in typed C arrays.

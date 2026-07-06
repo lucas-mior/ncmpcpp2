@@ -29,6 +29,37 @@ typedef uint64 NcKey;
 #define NC_KEY_NULL      ((NcKey)0)
 #define NC_KEY_SPACE     ((NcKey)32)
 #define NC_KEY_BACKSPACE ((NcKey)127)
+#define NC_KEY_CTRL_A    ((NcKey)1)
+#define NC_KEY_CTRL_B    ((NcKey)2)
+#define NC_KEY_CTRL_C    ((NcKey)3)
+#define NC_KEY_CTRL_D    ((NcKey)4)
+#define NC_KEY_CTRL_E    ((NcKey)5)
+#define NC_KEY_CTRL_F    ((NcKey)6)
+#define NC_KEY_CTRL_G    ((NcKey)7)
+#define NC_KEY_CTRL_H    ((NcKey)8)
+#define NC_KEY_CTRL_I    ((NcKey)9)
+#define NC_KEY_CTRL_J    ((NcKey)10)
+#define NC_KEY_CTRL_K    ((NcKey)11)
+#define NC_KEY_CTRL_L    ((NcKey)12)
+#define NC_KEY_CTRL_M    ((NcKey)13)
+#define NC_KEY_CTRL_N    ((NcKey)14)
+#define NC_KEY_CTRL_O    ((NcKey)15)
+#define NC_KEY_CTRL_P    ((NcKey)16)
+#define NC_KEY_CTRL_Q    ((NcKey)17)
+#define NC_KEY_CTRL_R    ((NcKey)18)
+#define NC_KEY_CTRL_S    ((NcKey)19)
+#define NC_KEY_CTRL_T    ((NcKey)20)
+#define NC_KEY_CTRL_U    ((NcKey)21)
+#define NC_KEY_CTRL_V    ((NcKey)22)
+#define NC_KEY_CTRL_W    ((NcKey)23)
+#define NC_KEY_CTRL_X    ((NcKey)24)
+#define NC_KEY_CTRL_Y    ((NcKey)25)
+#define NC_KEY_CTRL_Z    ((NcKey)26)
+#define NC_KEY_CTRL_LEFT_BRACKET  ((NcKey)27)
+#define NC_KEY_CTRL_BACKSLASH     ((NcKey)28)
+#define NC_KEY_CTRL_RIGHT_BRACKET ((NcKey)29)
+#define NC_KEY_CTRL_CARET         ((NcKey)30)
+#define NC_KEY_CTRL_UNDERSCORE    ((NcKey)31)
 #define NC_KEY_TAB       ((NcKey)9)
 #define NC_KEY_ENTER     ((NcKey)13)
 #define NC_KEY_ESCAPE    ((NcKey)27)
@@ -56,6 +87,9 @@ typedef uint64 NcKey;
 #define NC_KEY_F12       (NC_KEY_SPECIAL | 277)
 #define NC_KEY_MOUSE     (NC_KEY_SPECIAL | 278)
 #define NC_KEY_EOF       (NC_KEY_SPECIAL | 279)
+
+#define NC_COLOR_TRANSPARENT ((int16)-1)
+#define NC_COLOR_CURRENT     ((int16)-2)
 
 typedef struct NcColor {
     int16 foreground;
@@ -134,11 +168,18 @@ NcColor nc_color_make(int16 foreground, int16 background,
                       bool is_default, bool is_end);
 NcColor nc_color_default(void);
 NcColor nc_color_end(void);
+NcColor nc_color_transparent(void);
+NcColor nc_color_current(void);
 bool nc_color_equal(NcColor left, NcColor right);
 bool nc_color_is_default(NcColor color);
 bool nc_color_is_end(NcColor color);
 bool nc_color_current_background(NcColor color);
 int32 nc_color_pair_number(NcColor color);
+
+NcBorder nc_border_none(void);
+NcBorder nc_border_make(NcColor color);
+enum NcFormat nc_format_reverse(enum NcFormat format);
+int32 nc_key_name(NcKey key, char *buffer, int32 buffer_len);
 
 void nc_mouse_enable(void);
 void nc_mouse_disable(void);
