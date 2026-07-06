@@ -1,0 +1,281 @@
+C++ TO C MIGRATION PATTERN DEFINITIONS
+
+Purpose
+=======
+
+This file defines the standard C replacements to use while converting the
+remaining C++ code to C.  New migration work should follow these patterns so
+that the C codebase does not accumulate multiple styles for the same concept.
+
+General API rules
+=================
+
+1. Public migration APIs should be plain C and should not require C++ syntax,
+   C++ headers, C++ object lifetime rules, or C++ name mangling.
+2. Prefer existing C modules in src/c/ and src/curses/ before adding a new
+   helper type.
+3. Ownership must be explicit.  Any function that allocates, borrows, takes, or
+   releases storage should make that visible in its name, documentation, or
+   surrounding type contract.
+4. Initialization and cleanup must be explicit.  A type with owned resources
+   should have init and destroy functions, or an equivalent create/free pair.
+5. Error paths must be explicit.  Do not emulate exceptions with hidden global
+   state or longjmp-style control flow unless a module already requires fatal
+   termination.
+6. Prefer concrete typed functions over clever generic abstractions.  Use macros
+   only when they clearly reduce duplication without hiding ownership, cleanup,
+   or evaluation order.
+
+String values
+=============
+
+C++ pattern:
+    std::string
+
+C replacement:
+    Use char * with an explicit length field when the string is mutable,
+    slice-like, or may contain embedded NUL bytes.  Use existing NcmString
+    utilities when they already cover the needed ownership and formatting
+    behavior.
+
+Rules:
+    - Use const char * for borrowed NUL-terminated strings.
+    - Use char * for owned NUL-terminated strings.
+    - Use a length field, normally int32 len, when repeated strlen calls would
+      be wasteful or when the string is not guaranteed to be NUL-terminated.
+    - Do not return pointers to temporary buffers.
+    - Formatting should use existing C string/format helpers or snprintf-style
+      functions.
+
+Dynamic arrays
+==============
+
+C++ pattern:
+    std::vector<T>
+
+C replacement:
+    Use the existing dynamic array helpers, especially src/c/ncm_array.h, or a
+    dedicated typed array struct when the element type needs custom ownership.
+
+Rules:
+    - Array structs should track pointer, count, and capacity.
+    - Elements that own memory must be destroyed before the array storage is
+      released.
+    - Prefer append/reserve/clear/destroy functions over open-coded realloc at
+      call sites.
+    - Use int32 or int64 consistently with nearby code and expected sizes.
+
+Associative maps
+================
+
+C++ pattern:
+    std::map, std::unordered_map
+
+C replacement:
+    Use an explicit sorted array, a hash table, or a dedicated lookup struct.
+    Choose the simplest representation that matches the data size and lookup
+    frequency.
+
+Rules:
+    - For small fixed or rarely mutated sets, prefer sorted arrays and binary
+      search.
+    - For larger or frequently queried sets, use a hash table module or create a
+      narrow dedicated lookup type.
+    - Do not expose generic map internals through public APIs unless multiple
+      modules truly share the same abstraction.
+
+Optional values
+===============
+
+C++ pattern:
+    std::optional<T>
+
+C replacement:
+    Use a bool has_x field plus a value field T x.
+
+Rules:
+    - The bool field should be checked before reading the value field.
+    - Use names that make the relationship obvious, such as has_album and album.
+    - If the optional value owns memory, cleanup should check the bool field or
+      tolerate an empty value safely.
+
+Errors and exceptions
+=====================
+
+C++ pattern:
+    exceptions, throw, catch
+
+C replacement:
+    Use return codes, NcmError, or an explicit fatal call at the call site.
+
+Rules:
+    - Recoverable failures should return false, NULL, or a negative/enum error
+      code, depending on the local API style.
+    - Detailed recoverable diagnostics should use NcmError when available.
+    - Fatal failures should be obvious at the call site and should not look like
+      normal return paths.
+    - Cleanup after failure should use explicit cleanup blocks or direct calls
+      before returning.
+
+Resource lifetime
+=================
+
+C++ pattern:
+    RAII
+
+C replacement:
+    Use explicit init/destroy functions, create/free functions, and cleanup
+    blocks.
+
+Rules:
+    - init should leave the object safe to destroy even after partial failure.
+    - destroy should tolerate already-empty internal fields where practical.
+    - A function with multiple owned resources should use a single cleanup path
+      when that makes ownership clearer.
+    - Avoid hidden allocation inside functions whose names do not imply it.
+
+Object construction and destruction
+===================================
+
+C++ pattern:
+    constructors, destructors
+
+C replacement:
+    Use explicit lifecycle functions.
+
+Preferred names:
+    type_init
+    type_destroy
+    type_create
+    type_free
+    type_reset
+    type_clear
+
+Rules:
+    - init/destroy are preferred for stack or embedded objects.
+    - create/free are preferred when the object itself is heap allocated.
+    - reset/clear should define whether capacity is retained or released.
+
+Inheritance and virtual dispatch
+================================
+
+C++ pattern:
+    inheritance, virtual methods, override
+
+C replacement:
+    Use structs with function pointers, or explicit screen vtables for screen
+    implementations.
+
+Rules:
+    - Shared base state should be stored in an embedded common struct.
+    - Behavior should be represented by a small function table when dynamic
+      dispatch is required.
+    - Prefer direct function calls when the concrete type is known.
+    - Screen implementations should follow the project screen abstraction rather
+      than inventing per-screen dispatch styles.
+
+Templates
+=========
+
+C++ pattern:
+    templates
+
+C replacement:
+    Use typed macros only for simple repeated container operations, or write
+    concrete typed functions.
+
+Rules:
+    - Prefer concrete typed functions when behavior is nontrivial.
+    - Macros must not evaluate arguments more than once unless this is clearly
+      documented and safe.
+    - Public macro APIs should be avoided unless they are already part of the C
+      foundation style.
+
+Streams and formatting
+======================
+
+C++ pattern:
+    iostream, fstream, stringstream
+
+C replacement:
+    Use FILE *, snprintf, and the existing string formatting helpers.
+
+Rules:
+    - File input should use FILE * or existing filesystem helpers.
+    - Formatted output should use snprintf-style functions or existing buffer
+      helpers.
+    - Avoid fixed-size stack buffers for unbounded user/config data unless the
+      limit is intentional and checked.
+    - Do not introduce C++ stream-like wrappers in C.
+
+Filesystem operations
+=====================
+
+C++ pattern:
+    std::filesystem
+
+C replacement:
+    Use src/c/ncm_fs.* and POSIX filesystem calls.
+
+Rules:
+    - Prefer ncm_fs helpers for paths, existence checks, directory creation, and
+      file operations when they already exist.
+    - Use POSIX calls directly only when no project helper exists or when the
+      helper would obscure required behavior.
+    - Path ownership must be explicit: borrowed path, caller-owned path, or
+      newly allocated path.
+
+Regular expressions
+===================
+
+C++ pattern:
+    std::regex
+
+C replacement:
+    Use src/c/ncm_regex.*.
+
+Rules:
+    - Compile regex objects explicitly and release them explicitly.
+    - Keep matching/parsing code isolated from UI code where practical.
+    - Prefer parser-specific tests for regex-heavy behavior.
+
+Threads and async work
+======================
+
+C++ pattern:
+    std::thread, std::future, std::async
+
+C replacement:
+    Use a pthread-based job abstraction, preferably src/c/ncm_job.*.
+
+Rules:
+    - Async jobs should have explicit ownership of input and output data.
+    - Cancellation, completion, and cleanup should be part of the job contract.
+    - Do not let worker threads access curses/UI state directly.
+    - Results should be transferred back to the main/UI thread through explicit
+      state or callback mechanisms.
+
+Screen migration rules
+======================
+
+1. Convert each screen's C++ class state into a named C struct.
+2. Convert methods into type-prefixed C functions.
+3. Use the common C screen abstraction and vtable/function-table pattern for
+   screen lifecycle, input handling, resize, refresh, and update behavior.
+4. Keep curses/menu ownership explicit.  A screen that owns a window, menu, or
+   buffer must destroy it in its cleanup path.
+5. Keep model operations outside rendering functions when practical so they can
+   be tested without curses.
+
+Migration checklist for each converted C++ file
+===============================================
+
+1. Identify the C++ patterns used by the file.
+2. Map each pattern to the replacement defined in this document.
+3. Reuse existing src/c or src/curses modules where possible.
+4. Add missing helper functions to the relevant C module instead of creating a
+   one-off local abstraction.
+5. Add or update tests when the converted behavior is nontrivial.
+6. Remove the .cpp file from the build only after the C replacement is compiled
+   and linked.
+7. Run make all and make check after each migration batch.
