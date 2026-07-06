@@ -74,8 +74,8 @@ void do_at_exit()
 	std::cerr.rdbuf(cerr_buffer);
 	std::clog.rdbuf(clog_buffer);
 	errorlog.close();
-	global_state_destroy();
 	Mpd.Disconnect();
+	global_state_destroy();
 	NC::destroyScreen();
 	windowTitle("");
 }
