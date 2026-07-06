@@ -54,10 +54,14 @@ REMOVED_CXX_SRCS := \
 	src/enums.cpp \
 	src/global.cpp \
 	src/macro_utilities.cpp \
+	src/mutable_song.cpp \
 	src/screens/help.cpp \
 	src/screens/outputs.cpp \
 	src/screens/server_info.cpp \
 	src/screens/song_info.cpp \
+	src/song.cpp \
+	src/song_list.cpp \
+	src/tags.cpp \
 	src/utility/comparators.cpp \
 	src/utility/html.cpp \
 	src/utility/option_parser.cpp \

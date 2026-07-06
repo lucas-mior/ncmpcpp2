@@ -90,6 +90,16 @@ char *itemTypeName(MPD::Item::Type type)
 	return ncm_item_type_name(NCM_ITEM_UNKNOWN);
 }
 
+std::string storedPlaylistPath(const NcmPlaylist &playlist)
+{
+	return ncm_playlist_cpp_path(playlist);
+}
+
+std::string currentStoredPlaylistPath()
+{
+	return storedPlaylistPath(myPlaylistEditor->Playlists.current()->value());
+}
+
 void populateActions();
 
 bool scrollTagCanBeRun(NC::List *&list, const SongList *&songs);
@@ -691,7 +701,7 @@ void DeletePlaylistItems::run()
 	}
 	else if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content))
 	{
-		std::string playlist = myPlaylistEditor->Playlists.current()->value().path();
+		std::string playlist = currentStoredPlaylistPath();
 		auto delete_fun = [playlist](auto &, unsigned pos) {
 			Mpd.PlaylistDelete(playlist, pos);
 		};
@@ -790,7 +800,7 @@ void DeleteStoredPlaylist::run()
 	{
 		const char msg[] = "Delete playlist \"%1%\"?";
 		question = stringFormat(msg,
-			Utf8::shorten(myPlaylistEditor->Playlists.current()->value().path(),
+			Utf8::shorten(currentStoredPlaylistPath(),
 			            COLS-const_strlen(msg)-10));
 	}
 	confirmAction(question);
@@ -801,7 +811,7 @@ void DeleteStoredPlaylist::run()
 		myPlaylistEditor->Playlists.current()
 	);
 	for (const auto &item : list)
-		Mpd.DeletePlaylist(item->value().path());
+		Mpd.DeletePlaylist(storedPlaylistPath(item->value()));
 	Statusbar::printf("%1% deleted", list.size() == 1 ? "Playlist" : "Playlists");
 	// force playlists update. this happens automatically, but only after call
 	// to Key::read, therefore when we call PlaylistEditor::Update, it won't
@@ -951,7 +961,7 @@ void MoveSelectedItemsUp::run()
 			Statusbar::print(filteredMsg);
 		else
 		{
-			auto playlist = myPlaylistEditor->Playlists.current()->value().path();
+			auto playlist = currentStoredPlaylistPath();
 			moveSelectedItemsUp(
 				myPlaylistEditor->Content,
 				[playlist](auto &, unsigned from, unsigned to) {
@@ -987,7 +997,7 @@ void MoveSelectedItemsDown::run()
 			Statusbar::print(filteredMsg);
 		else
 		{
-			auto playlist = myPlaylistEditor->Playlists.current()->value().path();
+			auto playlist = currentStoredPlaylistPath();
 			moveSelectedItemsDown(
 				myPlaylistEditor->Content,
 				[playlist](auto &, unsigned from, unsigned to) {
@@ -1013,7 +1023,7 @@ void MoveSelectedItemsTo::run()
 	else
 	{
 		assert(!myPlaylistEditor->Playlists.empty());
-		std::string playlist = myPlaylistEditor->Playlists.current()->value().path();
+		std::string playlist = currentStoredPlaylistPath();
 		auto move_fun = [playlist](auto &, unsigned from, unsigned to) {
 			Mpd.PlaylistMove(playlist, from, to);
 		};
@@ -1044,7 +1054,7 @@ void Add::run()
 	Statusbar::put() << "Adding...";
 	ui_state_legacy_footer_window()->refresh();
 	if (screenLegacyCurrent() == myPlaylistEditor)
-		Mpd.AddToPlaylist(myPlaylistEditor->Playlists.current()->value().path(), path);
+		Mpd.AddToPlaylist(currentStoredPlaylistPath(), path);
 	else
 	{
 		try
@@ -1649,7 +1659,7 @@ void EditPlaylistName::run()
 {
 		std::string old_name, new_name;
 	if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists))
-		old_name = myPlaylistEditor->Playlists.current()->value().path();
+		old_name = currentStoredPlaylistPath();
 	else
 		old_name = myBrowser->main().current()->value().playlist().path();
 	{
@@ -1705,7 +1715,8 @@ bool JumpToPlaylistEditor::canBeRun()
 
 void JumpToPlaylistEditor::run()
 {
-	myPlaylistEditor->locatePlaylist(myBrowser->main().current()->value().playlist());
+	myPlaylistEditor->locatePlaylist(
+		*myBrowser->main().current()->value().playlist().cPlaylist());
 }
 
 void ToggleScreenLock::run()
@@ -1969,7 +1980,7 @@ void CropPlaylist::run()
 	if (w.size() <= 1)
 		return;
 	assert(!myPlaylistEditor->Playlists.empty());
-	std::string playlist = myPlaylistEditor->Playlists.current()->value().path();
+	std::string playlist = currentStoredPlaylistPath();
 	if (Config.ask_before_clearing_playlists)
 		confirmAction(stringFormat("Do you really want to crop playlist \"%1%\"?", playlist));
 	selectCurrentIfNoneSelected(w);
@@ -1996,7 +2007,7 @@ void ClearPlaylist::run()
 {
 	if (myPlaylistEditor->Playlists.empty())
 		return;
-	std::string playlist = myPlaylistEditor->Playlists.current()->value().path();
+	std::string playlist = currentStoredPlaylistPath();
 	if (Config.ask_before_clearing_playlists)
 		confirmAction(stringFormat("Do you really want to clear playlist \"%1%\"?", playlist));
 	Mpd.ClearPlaylist(playlist);

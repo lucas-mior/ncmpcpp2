@@ -137,25 +137,6 @@ private:
 	NcmMpdStringList m_list;
 };
 
-struct NcmMpdOutputListGuard
-{
-	NcmMpdOutputListGuard()
-	{
-		ncm_mpd_output_list_init(&m_list);
-	}
-	~NcmMpdOutputListGuard()
-	{
-		ncm_mpd_output_list_destroy(&m_list);
-	}
-
-	NcmMpdOutputList *get()
-	{
-		return &m_list;
-	}
-
-private:
-	NcmMpdOutputList m_list;
-};
 
 
 struct NcmMpdPlaylistListGuard
@@ -223,15 +204,7 @@ std::vector<std::string> stringVectorFromList(NcmMpdStringList *list)
 	return result;
 }
 
-std::vector<MPD::Output> outputVectorFromList(NcmMpdOutputList *list)
-{
-	std::vector<MPD::Output> result;
 
-	result.reserve(static_cast<size_t>(list->count));
-	for (int32 i = 0; i < list->count; i += 1)
-		result.emplace_back(&list->items[i]);
-	return result;
-}
 
 template <typename ObjectT, typename SourceT>
 std::function<bool(typename MPD::Iterator<ObjectT>::State &)>
@@ -608,15 +581,6 @@ void checkConnectionErrors(mpd_connection *conn)
 
 namespace {
 
-std::vector<MPD::Playlist> playlistVectorFromList(NcmMpdPlaylistList *list)
-{
-	std::vector<MPD::Playlist> result;
-
-	result.reserve(static_cast<size_t>(list->count));
-	for (int32 i = 0; i < list->count; i += 1)
-		result.emplace_back(&list->items[i]);
-	return result;
-}
 
 const char *replayGainModeName(NcmMpdReplayGainMode mode)
 {
@@ -1290,15 +1254,6 @@ SongIterator Connection::CommitSearchSongs()
 	return SongIterator(songVectorFromList(songs.get()));
 }
 
-PlaylistIterator Connection::GetPlaylists()
-{
-	NcmError error{};
-	NcmMpdPlaylistListGuard playlists;
-
-	throwIfFailed(ncm_mpd_client_get_playlists(
-		&global_mpd, playlists.get(), &error), error);
-	return PlaylistIterator(playlistVectorFromList(playlists.get()));
-}
 
 StringIterator Connection::GetList(mpd_tag_type type)
 {
@@ -1354,29 +1309,6 @@ SongIterator Connection::GetSongs(const std::string &directory)
 	return SongIterator(songVectorFromList(songs.get()));
 }
 
-OutputIterator Connection::GetOutputs()
-{
-	NcmError error{};
-	NcmMpdOutputListGuard outputs;
-
-	throwIfFailed(ncm_mpd_client_get_outputs(
-		&global_mpd, outputs.get(), &error), error);
-	return OutputIterator(outputVectorFromList(outputs.get()));
-}
-
-void Connection::EnableOutput(int id)
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_enable_output(
-		&global_mpd, static_cast<uint32>(id), &error), error);
-}
-
-void Connection::DisableOutput(int id)
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_disable_output(
-		&global_mpd, static_cast<uint32>(id), &error), error);
-}
 
 StringIterator Connection::GetURLHandlers()
 {
