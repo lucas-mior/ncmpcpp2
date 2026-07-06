@@ -21,6 +21,7 @@
 #ifndef NCMPCPP_PLAYLIST_EDITOR_H
 #define NCMPCPP_PLAYLIST_EDITOR_H
 
+#include "c/ncm_playlist.h"
 #include "c/ncm_time.h"
 #include "interfaces.h"
 #include "regex_filter.h"
@@ -77,10 +78,10 @@ struct PlaylistEditor: Screen<NC::Window *>, Filterable, HasColumns, HasSongs, S
 	void requestPlaylistsUpdate() { m_playlists_update_requested = true; }
 	void requestContentUpdate() { m_content_update_requested = true; }
 	
-	void locatePlaylist(const MPD::Playlist &playlist);
+	void locatePlaylist(const NcmPlaylist &playlist);
 	void locateSong(const MPD::Song &s);
 
-	NC::Menu<MPD::Playlist> Playlists;
+	NC::Menu<NcmPlaylist> Playlists;
 	SongMenu Content;
 	
 private:
@@ -92,7 +93,7 @@ private:
 	const int m_window_timeout;
 	const int64 m_fetching_delay_ms;
 
-	Regex::Filter<MPD::Playlist> m_playlists_search_predicate;
+	Regex::Filter<NcmPlaylist> m_playlists_search_predicate;
 	Regex::Filter<MPD::Song> m_content_search_predicate;
 };
 

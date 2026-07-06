@@ -21,51 +21,6 @@
 #ifndef NCMPCPP_HELPERS_SONG_ITERATOR_MAKER_H
 #define NCMPCPP_HELPERS_SONG_ITERATOR_MAKER_H
 
-#include <type_traits>
-
-#include "curses/menu.h"
 #include "song_list.h"
-#include "utility/transform_iterator.h"
-
-template <typename SongT>
-struct SongPropertiesExtractor
-{
-	template <typename ItemT>
-	auto &operator()(ItemT &item) const
-	{
-		return m_cache.assign(&item.properties(), &item.value());
-	}
-
-private:
-	mutable SongProperties m_cache;
-};
-
-template <typename IteratorT>
-SongIterator makeSongIterator(IteratorT it)
-{
-	typedef SongPropertiesExtractor<
-		typename IteratorT::value_type::Type
-		> Extractor;
-	static_assert(
-		std::is_convertible<
-		std::invoke_result_t<Extractor, typename IteratorT::reference>,
-		SongProperties &
-		>::value, "invalid result type of SongPropertiesExtractor");
-	return SongIterator(Utility::makeTransformIterator(it, Extractor{}));
-}
-
-template <typename ConstIteratorT>
-ConstSongIterator makeConstSongIterator(ConstIteratorT it)
-{
-	typedef SongPropertiesExtractor<
-		typename ConstIteratorT::value_type::Type
-		> Extractor;
-	static_assert(
-		std::is_convertible<
-		std::invoke_result_t<Extractor, typename ConstIteratorT::reference>,
-		const SongProperties &
-		>::value, "invalid result type of SongPropertiesExtractor");
-	return ConstSongIterator(Utility::makeTransformIterator(it, Extractor{}));
-}
 
 #endif // NCMPCPP_HELPERS_SONG_ITERATOR_MAKER_H

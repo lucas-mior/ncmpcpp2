@@ -244,12 +244,27 @@ void SelectedItemsAdder::populatePlaylistSelector(BaseScreen *old_screen)
 	if (!in_local_browser)
 	{
 		size_t begin = m_playlist_selector.size();
-		for (MPD::PlaylistIterator it = Mpd.GetPlaylists(), end; it != end; ++it)
+		NcmError error = {};
+		NcmMpdPlaylistList playlists;
+
+		ncm_mpd_playlist_list_init(&playlists);
+		if (!ncm_mpd_client_get_playlists(&global_mpd, &playlists, &error))
 		{
-			m_playlist_selector.addItem(Entry(it->path(),
-				std::bind(&Self::addToExistingPlaylist, this, it->path())
-			));
-		};
+			Statusbar::printf("Could not fetch playlists: %s",
+			                  error.message);
+		}
+		else
+		{
+			for (int32 i = 0; i < playlists.count; i += 1)
+			{
+				std::string path = ncm_playlist_cpp_path(playlists.items[i]);
+
+				m_playlist_selector.addItem(Entry(path,
+					std::bind(&Self::addToExistingPlaylist, this, path)
+				));
+			}
+		}
+		ncm_mpd_playlist_list_destroy(&playlists);
 		std::sort(m_playlist_selector.beginV()+begin, m_playlist_selector.endV(),
 			LocaleBasedSorting(std::locale(), Config.ignore_leading_the));
 		if (begin < m_playlist_selector.size())

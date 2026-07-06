@@ -19,14 +19,15 @@
  ***************************************************************************/
 
 #include <cassert>
-#include <utility>
+#include <string>
+
+#include "c/ncm_mpd_client.h"
 
 #include "charset.h"
 #include "curses/formatted_color.h"
 #include "app_controller.h"
 #include "global.h"
 #include "ui_state_legacy.h"
-#include "mpdpp.h"
 #include "screens/outputs.h"
 #include "screens/screen_switcher.h"
 #include "screens/screen_legacy.h"
@@ -205,33 +206,59 @@ void Outputs::toggleOutput()
 
 void Outputs::loadOutputs(NcOutputsScreen *screen)
 {
-    for (MPD::OutputIterator out = Mpd.GetOutputs(), end; out != end; ++out)
+    NcmError error = {};
+    NcmMpdOutputList outputs;
+
+    ncm_mpd_output_list_init(&outputs);
+    if (!ncm_mpd_client_get_outputs(&global_mpd, &outputs, &error))
     {
-        MPD::Output output = std::move(*out);
-        std::string name = Charset::utf8ToLocale(output.name());
+        Statusbar::printf("Could not fetch outputs: %s", error.message);
+        ncm_mpd_output_list_destroy(&outputs);
+        return;
+    }
+
+    for (int32 i = 0; i < outputs.count; i += 1)
+    {
+        NcmMpdOutput *output = &outputs.items[i];
+        std::string name = Charset::utf8ToLocale(output->name);
 
         nc_outputs_screen_add_output(screen,
-                                     output.id(),
+                                     output->id,
                                      const_cast<char *>(name.data()),
                                      static_cast<int32>(name.size()),
-                                     output.enabled());
+                                     output->enabled);
     }
+    ncm_mpd_output_list_destroy(&outputs);
 }
 
 bool Outputs::toggleOutput(uint32 id, bool enabled,
                            char *name, int32 name_len)
 {
+    NcmError error = {};
+    bool ok;
     std::string name_string(name, static_cast<size_t>(name_len));
 
     if (enabled)
     {
-        Mpd.DisableOutput(static_cast<int>(id));
+        ok = ncm_mpd_client_disable_output(&global_mpd, id, &error);
+        if (!ok)
+        {
+            Statusbar::printf("Could not disable output \"%s\": %s",
+                              name_string.c_str(), error.message);
+            return false;
+        }
         Statusbar::printf("Output \"%s\" disabled",
                           name_string.c_str());
     }
     else
     {
-        Mpd.EnableOutput(static_cast<int>(id));
+        ok = ncm_mpd_client_enable_output(&global_mpd, id, &error);
+        if (!ok)
+        {
+            Statusbar::printf("Could not enable output \"%s\": %s",
+                              name_string.c_str(), error.message);
+            return false;
+        }
         Statusbar::printf("Output \"%s\" enabled",
                           name_string.c_str());
     }

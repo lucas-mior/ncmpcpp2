@@ -44,6 +44,7 @@
 #include "screens/screen_switcher.h"
 #include "status.h"
 #include "c/ncm_enums.h"
+#include "c/ncm_mpd_client.h"
 #include "utility/utf8.h"
 
 using Samples = std::vector<int16_t>;
@@ -141,9 +142,25 @@ void Visualizer::update()
 	// visualization.
 	if (m_reset_output && m_output_id != -1)
 	{
-		Mpd.DisableOutput(m_output_id);
+		NcmError error = {};
+
+		if (!ncm_mpd_client_disable_output(&global_mpd,
+		                                   static_cast<uint32>(m_output_id),
+		                                   &error))
+		{
+			Statusbar::printf("Could not disable visualizer output: %s",
+			                  error.message);
+			return;
+		}
 		usleep(50000);
-		Mpd.EnableOutput(m_output_id);
+		if (!ncm_mpd_client_enable_output(&global_mpd,
+		                                  static_cast<uint32>(m_output_id),
+		                                  &error))
+		{
+			Statusbar::printf("Could not enable visualizer output: %s",
+			                  error.message);
+			return;
+		}
 		m_reset_output = false;
 	}
 
@@ -887,14 +904,27 @@ void Visualizer::FindOutputID()
 	// samples from a FIFO.
 	if (!Config.visualizer_output_name.empty() && m_source_port.empty())
 	{
-		for (MPD::OutputIterator out = Mpd.GetOutputs(), end; out != end; ++out)
+		NcmError error = {};
+		NcmMpdOutputList outputs;
+
+		ncm_mpd_output_list_init(&outputs);
+		if (!ncm_mpd_client_get_outputs(&global_mpd, &outputs, &error))
 		{
-			if (out->name() == Config.visualizer_output_name)
+			Statusbar::printf("Could not fetch outputs: %s", error.message);
+			ncm_mpd_output_list_destroy(&outputs);
+			return;
+		}
+		for (int32 i = 0; i < outputs.count; i += 1)
+		{
+			NcmMpdOutput *output = &outputs.items[i];
+
+			if (Config.visualizer_output_name == output->name)
 			{
-				m_output_id = out->id();
+				m_output_id = static_cast<int>(output->id);
 				break;
 			}
 		}
+		ncm_mpd_output_list_destroy(&outputs);
 		if (m_output_id == -1)
 			Statusbar::printf("There is no output named \"%s\"", Config.visualizer_output_name);
 	}
