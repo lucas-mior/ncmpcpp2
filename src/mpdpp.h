@@ -22,10 +22,15 @@
 #define NCMPCPP_MPDPP_H
 
 #include <cassert>
+#include <cstddef>
 #include <exception>
+#include <functional>
+#include <iterator>
+#include <memory>
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <mpd/client.h>
@@ -260,60 +265,6 @@ private:
 	mutable Playlist m_playlist_cache;
 };
 
-struct Output
-{
-	Output()
-	: m_id(0)
-	, m_enabled(false)
-	, m_empty(true)
-	{ }
-	Output(NcmMpdOutput *output)
-	: m_id(output->id)
-	, m_name(output->name, static_cast<size_t>(output->name_len))
-	, m_enabled(output->enabled)
-	, m_empty(false)
-	{ }
-
-	bool operator==(const Output &rhs) const
-	{
-		if (empty() && rhs.empty())
-			return true;
-		else if (!empty() && !rhs.empty())
-			return id() == rhs.id()
-			    && strequal(name(), rhs.name())
-			    && enabled() == rhs.enabled();
-		else
-			return false;
-	}
-	bool operator!=(const Output &rhs) const
-	{
-		return !(*this == rhs);
-	}
-
-	unsigned id() const
-	{
-		assert(!empty());
-		return static_cast<unsigned>(m_id);
-	}
-	const char *name() const
-	{
-		assert(!empty());
-		return m_name.c_str();
-	}
-	bool enabled() const
-	{
-		assert(!empty());
-		return m_enabled;
-	}
-
-	bool empty() const { return m_empty; }
-
-private:
-	uint32 m_id;
-	std::string m_name;
-	bool m_enabled;
-	bool m_empty;
-};
 
 template <typename ObjectT>
 struct Iterator
@@ -475,8 +426,6 @@ private:
 
 typedef Iterator<Directory> DirectoryIterator;
 typedef Iterator<Item> ItemIterator;
-typedef Iterator<Output> OutputIterator;
-typedef Iterator<Playlist> PlaylistIterator;
 typedef Iterator<Song> SongIterator;
 typedef Iterator<std::string> StringIterator;
 
@@ -573,16 +522,11 @@ struct Connection
 	void AddSearchURI(const std::string &str) const;
 	SongIterator CommitSearchSongs();
 	
-	PlaylistIterator GetPlaylists();
 	StringIterator GetList(mpd_tag_type type);
 	ItemIterator GetDirectory(const std::string &directory);
 	SongIterator GetDirectoryRecursive(const std::string &directory);
 	SongIterator GetSongs(const std::string &directory);
 	DirectoryIterator GetDirectories(const std::string &directory);
-	
-	OutputIterator GetOutputs();
-	void EnableOutput(int id);
-	void DisableOutput(int id);
 	
 	StringIterator GetURLHandlers();
 	StringIterator GetTagTypes();
