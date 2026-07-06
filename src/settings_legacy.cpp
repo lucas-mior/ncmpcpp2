@@ -18,13 +18,12 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <chrono>
 #include <cstring>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
 
-#include "configuration.h"
+#include "configuration_legacy.h"
 #include "format_impl.h"
 #include "helpers.h"
 #include "settings_legacy.h"
@@ -265,10 +264,8 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 	p.add("system_encoding", &system_encoding, "", [](std::string) {
 			return std::string();
 		});
-	p.add("playlist_disable_highlight_delay", &playlist_disable_highlight_delay,
-	      "5", [](std::string v) {
-		      return std::chrono::seconds(parse_value<unsigned>(v));
-	      });
+	p.add("playlist_disable_highlight_delay",
+      &playlist_disable_highlight_delay_seconds, "5");
 	p.add("message_delay_time", &message_delay_time, "5");
 	p.add("song_list_format", &song_list_format,
 	      "{%a - }{%t}|{$8%f$9}$R{$3%l$9}", [](std::string v) {

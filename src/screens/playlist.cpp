@@ -20,7 +20,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <chrono>
 #include <sstream>
 
 #include "curses/menu_impl.h"
@@ -489,9 +488,9 @@ void Playlist::updateCallback(NcScreen *screen)
 	Playlist *playlist = fromScreen(screen);
 
 	if (playlist->w.isHighlighted()
-	&&  Config.playlist_disable_highlight_delay.count() > 0
+	&&  Config.playlist_disable_highlight_delay_seconds > 0
 	&&  global_timer_elapsed_seconds(playlist->m_timer)
-	    > Config.playlist_disable_highlight_delay.count())
+	    > static_cast<int64>(Config.playlist_disable_highlight_delay_seconds))
 	{
 		playlist->w.setHighlighting(false);
 		playlist->w.refresh();

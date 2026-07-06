@@ -1184,7 +1184,7 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
     int32 pos;
     bool added;
 
-    ncm_lyrics_fetcher_array_clear(&config->lyrics_fetchers);
+    ncm_lyrics_fetcher_registry_clear(&config->lyrics_fetchers);
     pos = 0;
     added = false;
     while (pos <= value_len) {
@@ -1199,7 +1199,7 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
         if (item_len <= 0) {
             continue;
         }
-        fetcher = ncm_lyrics_fetcher_array_append(&config->lyrics_fetchers);
+        fetcher = ncm_lyrics_fetcher_registry_append(&config->lyrics_fetchers);
         if (fetcher == NULL) {
             settings_error(error,
                            STRLIT_ARGS("failed to append lyrics fetcher"));

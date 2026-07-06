@@ -369,3 +369,25 @@ Rules:
     - Keep the temporary C++ settings bridge in settings_legacy.h/.cpp until
       the remaining C++ screens no longer use Configuration methods or
       std::vector-based settings.
+    - Store lyrics fetcher definitions in NcmLyricsFetcherRegistry, not in
+      C++ LyricsFetchers.
+
+Configuration entry-point migration
+===================================
+
+Use src/configuration.h and src/configuration.c for the C configuration entry
+point.
+
+    expand_home(std::string &) -> expand_home(char **path, int32 *path_len,
+                                              NcmError *error)
+    configuration.cpp          -> configuration.c
+
+Rules:
+    - Expand only owned C strings allocated with ncm_malloc().
+    - Pass config paths into configuration_read() as NcmStringViewArray.
+    - Build default config and bindings paths with ncm_fs_user_config_dir()
+      and ncm_fs_join().
+    - Create directories with ncm_fs_mkdir_all().
+    - Apply MPD host, port, and timeout through NcmMpdClient helpers.
+    - Keep configuration_legacy.h/.cpp only while ncmpcpp.cpp and the old C++
+      screens still require the C++ settings bridge.
