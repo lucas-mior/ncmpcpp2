@@ -38,6 +38,18 @@ typedef struct Column {
     bool display_empty_tag;
 } Column;
 
+typedef struct ColumnArray {
+    Column *items;
+    int32 len;
+    int32 cap;
+} ColumnArray;
+
+typedef struct ScreenTypeArray {
+    enum ScreenType *items;
+    int32 len;
+    int32 cap;
+} ScreenTypeArray;
+
 typedef struct NcmLyricsFetcherDef {
     char *name;
     char *url_template;
@@ -54,10 +66,6 @@ typedef struct NcmLyricsFetcherDef {
 } NcmLyricsFetcherDef;
 
 NCM_ARRAY_DECLARE(ncm_int32_array, NcmInt32Array, int32)
-NCM_ARRAY_DECLARE(ncm_screen_type_array,
-                  NcmScreenTypeArray,
-                  enum ScreenType)
-NCM_ARRAY_DECLARE(ncm_column_array, NcmColumnArray, Column)
 NCM_ARRAY_DECLARE(ncm_formatted_color_array,
                   NcmFormattedColorArray,
                   NcFormattedColor)
@@ -80,6 +88,7 @@ typedef struct Configuration {
     char *lastfm_preferred_language;
     char *pattern;
     char *random_exclude_pattern;
+    char *tags_separator;
 
     int32 ncmpcpp_directory_len;
     int32 lyrics_directory_len;
@@ -95,6 +104,7 @@ typedef struct Configuration {
     int32 lastfm_preferred_language_len;
     int32 pattern_len;
     int32 random_exclude_pattern_len;
+    int32 tags_separator_len;
 
     int32 ncmpcpp_directory_cap;
     int32 lyrics_directory_cap;
@@ -110,6 +120,7 @@ typedef struct Configuration {
     int32 lastfm_preferred_language_cap;
     int32 pattern_cap;
     int32 random_exclude_pattern_cap;
+    int32 tags_separator_cap;
 
     NcmBuffer progressbar;
     NcmBuffer visualizer_chars;
@@ -126,7 +137,7 @@ typedef struct Configuration {
     NcmInt32Array playlist_editor_column_width_ratio;
     NcmInt32Array media_library_column_width_ratio_two;
     NcmInt32Array media_library_column_width_ratio_three;
-    NcmColumnArray columns;
+    ColumnArray columns;
 
     enum DisplayMode playlist_display_mode;
     enum DisplayMode browser_display_mode;
@@ -216,6 +227,7 @@ typedef struct Configuration {
     bool generate_win32_compatible_filenames;
     bool ask_for_locked_screen_width_part;
     bool allow_for_physical_item_deletion;
+    bool show_duplicate_tags;
     bool media_library_albums_split_by_date;
     bool startup_slave_screen_focus;
     bool has_startup_slave_screen_type;
@@ -249,7 +261,7 @@ typedef struct Configuration {
 
     enum ScreenType startup_screen_type;
     enum ScreenType startup_slave_screen_type;
-    NcmScreenTypeArray screen_sequence;
+    ScreenTypeArray screen_sequence;
 
     NcmLyricsFetcherArray lyrics_fetchers;
 } Configuration;
@@ -258,6 +270,17 @@ void column_init(Column *column);
 void column_destroy(Column *column);
 bool column_copy(Column *dest, Column *source);
 void column_move(Column *dest, Column *source);
+
+void column_array_init(ColumnArray *array);
+void column_array_destroy(ColumnArray *array);
+Column *column_array_append(ColumnArray *array);
+bool column_array_append_copy(ColumnArray *array, Column *column);
+void column_array_clear(ColumnArray *array);
+
+void screen_type_array_init(ScreenTypeArray *array);
+void screen_type_array_destroy(ScreenTypeArray *array);
+enum ScreenType *screen_type_array_append(ScreenTypeArray *array);
+void screen_type_array_clear(ScreenTypeArray *array);
 
 void ncm_lyrics_fetcher_def_init(NcmLyricsFetcherDef *fetcher);
 void ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher);
