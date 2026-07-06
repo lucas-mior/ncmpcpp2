@@ -27,26 +27,6 @@
 
 namespace {
 
-NcScroll nc_scrollpad_compat_to_nc_scroll(NC::Scroll scroll)
-{
-	switch (scroll)
-	{
-		case NC::Scroll::Up:
-			return NC_SCROLL_UP;
-		case NC::Scroll::Down:
-			return NC_SCROLL_DOWN;
-		case NC::Scroll::PageUp:
-			return NC_SCROLL_PAGE_UP;
-		case NC::Scroll::PageDown:
-			return NC_SCROLL_PAGE_DOWN;
-		case NC::Scroll::Home:
-			return NC_SCROLL_HOME;
-		case NC::Scroll::End:
-			return NC_SCROLL_END;
-	}
-	return NC_SCROLL_UP;
-}
-
 template <typename BeginT, typename EndT>
 bool regexSearch(NC::Buffer &buf, const BeginT &begin, const std::string &ws,
                  const EndT &end, Regex::Flags flags, size_t id)
@@ -97,9 +77,9 @@ inline void Scrollpad::resize(size_t new_width, size_t new_height)
 	flush();
 }
 
-inline void Scrollpad::scroll(Scroll where)
+inline void Scrollpad::scroll(enum NcScroll where)
 {
-	nc_scrollpad_scroll(&m_scrollpad, cWindow(), nc_scrollpad_compat_to_nc_scroll(where));
+	nc_scrollpad_scroll(&m_scrollpad, cWindow(), where);
 }
 
 inline void Scrollpad::clear()
@@ -131,8 +111,8 @@ inline bool Scrollpad::setProperties(const Color &begin, const std::string &s,
 	return regexSearch(m_buffer, begin, s, end, flags, id);
 }
 
-inline bool Scrollpad::setProperties(const Format &begin, const std::string &s,
-                              const Format &end, Regex::Flags flags, size_t id)
+inline bool Scrollpad::setProperties(enum NcFormat begin, const std::string &s,
+                              enum NcFormat end, Regex::Flags flags, size_t id)
 {
 	return regexSearch(m_buffer, begin, s, end, flags, id);
 }

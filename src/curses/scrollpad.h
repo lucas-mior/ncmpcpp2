@@ -39,7 +39,7 @@ struct Scrollpad: public Window
 	
 	// override a few Window functions
 	virtual void refresh() override;
-	virtual void scroll(Scroll where) override;
+	virtual void scroll(enum NcScroll where) override;
 	virtual void resize(size_t new_width, size_t new_height) override;
 	virtual void clear() override;
 	
@@ -50,7 +50,7 @@ struct Scrollpad: public Window
 	
 	bool setProperties(const Color &begin, const std::string &s, const Color &end,
 	                   Regex::Flags flags, size_t id = -2);
-	bool setProperties(const Format &begin, const std::string &s, const Format &end,
+	bool setProperties(enum NcFormat begin, const std::string &s, enum NcFormat end,
 	                   Regex::Flags flags, size_t id = -2);
 	bool setProperties(const FormattedColor &fc, const std::string &s,
 	                   Regex::Flags flags, size_t id = -2);
@@ -64,7 +64,7 @@ struct Scrollpad: public Window
 	Scrollpad &operator<<(const char *s) { return write(s); }
 	Scrollpad &operator<<(const std::string &s) { return write(s); }
 	Scrollpad &operator<<(Color color) { return write(color); }
-	Scrollpad &operator<<(Format format) { return write(format); }
+	Scrollpad &operator<<(enum NcFormat format) { return write(format); }
 
 private:
 	template <typename ItemT>

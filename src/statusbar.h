@@ -22,7 +22,7 @@
 #define NCMPCPP_STATUSBAR_H
 
 #include "curses/window.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "interfaces.h"
 #include "utility/string_format.h"
 

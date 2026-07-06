@@ -1,0 +1,676 @@
+#include "settings.h"
+
+#include "c/ncm_base.h"
+
+static NcmArrayItemCallbacks settings_no_callbacks = {0};
+
+static void settings_column_array_init_item(void *item);
+static void settings_column_array_destroy_item(void *item);
+static bool settings_column_array_copy_item(void *dest, void *source);
+static void settings_column_array_move_item(void *dest, void *source);
+static void settings_formatted_color_array_init_item(void *item);
+static void settings_formatted_color_array_destroy_item(void *item);
+static bool settings_formatted_color_array_copy_item(void *dest,
+                                                     void *source);
+static void settings_formatted_color_array_move_item(void *dest,
+                                                     void *source);
+static void settings_lyrics_fetcher_array_init_item(void *item);
+static void settings_lyrics_fetcher_array_destroy_item(void *item);
+static bool settings_lyrics_fetcher_array_copy_item(void *dest,
+                                                    void *source);
+static void settings_lyrics_fetcher_array_move_item(void *dest,
+                                                    void *source);
+
+static NcmArrayItemCallbacks settings_column_callbacks = {
+    .init = settings_column_array_init_item,
+    .destroy = settings_column_array_destroy_item,
+    .copy = settings_column_array_copy_item,
+    .move = settings_column_array_move_item,
+};
+static NcmArrayItemCallbacks settings_formatted_color_callbacks = {
+    .init = settings_formatted_color_array_init_item,
+    .destroy = settings_formatted_color_array_destroy_item,
+    .copy = settings_formatted_color_array_copy_item,
+    .move = settings_formatted_color_array_move_item,
+};
+static NcmArrayItemCallbacks settings_lyrics_fetcher_callbacks = {
+    .init = settings_lyrics_fetcher_array_init_item,
+    .destroy = settings_lyrics_fetcher_array_destroy_item,
+    .copy = settings_lyrics_fetcher_array_copy_item,
+    .move = settings_lyrics_fetcher_array_move_item,
+};
+
+static void settings_string_destroy(char **data, int32 *len, int32 *cap);
+static bool settings_string_copy(char **dest_data, int32 *dest_len,
+                                 int32 *dest_cap, char *source_data,
+                                 int32 source_len);
+static void settings_string_move(char **dest_data, int32 *dest_len,
+                                 int32 *dest_cap, char **source_data,
+                                 int32 *source_len, int32 *source_cap);
+static void configuration_init_strings(Configuration *config);
+static void configuration_destroy_strings(Configuration *config);
+static void configuration_init_buffers(Configuration *config);
+static void configuration_destroy_buffers(Configuration *config);
+static void configuration_init_formats(Configuration *config);
+static void configuration_destroy_formats(Configuration *config);
+static void configuration_init_colors(Configuration *config);
+static void configuration_destroy_colors(Configuration *config);
+static void configuration_init_arrays(Configuration *config);
+static void configuration_destroy_arrays(Configuration *config);
+
+NCM_ARRAY_DEFINE(ncm_int32_array,
+                 NcmInt32Array,
+                 int32,
+                 &settings_no_callbacks)
+NCM_ARRAY_DEFINE(ncm_screen_type_array,
+                 NcmScreenTypeArray,
+                 enum ScreenType,
+                 &settings_no_callbacks)
+NCM_ARRAY_DEFINE(ncm_column_array,
+                 NcmColumnArray,
+                 Column,
+                 &settings_column_callbacks)
+NCM_ARRAY_DEFINE(ncm_formatted_color_array,
+                 NcmFormattedColorArray,
+                 NcFormattedColor,
+                 &settings_formatted_color_callbacks)
+NCM_ARRAY_DEFINE(ncm_lyrics_fetcher_array,
+                 NcmLyricsFetcherArray,
+                 NcmLyricsFetcherDef,
+                 &settings_lyrics_fetcher_callbacks)
+
+static void
+settings_string_destroy(char **data, int32 *len, int32 *cap) {
+    if (*data != NULL) {
+        ncm_free(*data, *cap);
+    }
+    *data = NULL;
+    *len = 0;
+    *cap = 0;
+    return;
+}
+
+static bool
+settings_string_copy(char **dest_data, int32 *dest_len, int32 *dest_cap,
+                     char *source_data, int32 source_len) {
+    char *new_data;
+    int32 new_cap;
+
+    settings_string_destroy(dest_data, dest_len, dest_cap);
+    if (source_data == NULL || source_len <= 0) {
+        return true;
+    }
+
+    new_cap = source_len + 1;
+    new_data = ncm_malloc(new_cap);
+    ncm_memcpy(new_data, source_data, source_len);
+    new_data[source_len] = '\0';
+
+    *dest_data = new_data;
+    *dest_len = source_len;
+    *dest_cap = new_cap;
+    return true;
+}
+
+static void
+settings_string_move(char **dest_data, int32 *dest_len, int32 *dest_cap,
+                     char **source_data, int32 *source_len,
+                     int32 *source_cap) {
+    settings_string_destroy(dest_data, dest_len, dest_cap);
+    *dest_data = *source_data;
+    *dest_len = *source_len;
+    *dest_cap = *source_cap;
+    *source_data = NULL;
+    *source_len = 0;
+    *source_cap = 0;
+    return;
+}
+
+void
+column_init(Column *column) {
+    column->name = NULL;
+    column->type = NULL;
+    column->name_len = 0;
+    column->name_cap = 0;
+    column->type_len = 0;
+    column->type_cap = 0;
+    column->width = 0;
+    column->stretch_limit = -1;
+    column->color = nc_color_default();
+    column->fixed = false;
+    column->right_alignment = false;
+    column->display_empty_tag = true;
+    return;
+}
+
+void
+column_destroy(Column *column) {
+    if (column == NULL) {
+        return;
+    }
+    settings_string_destroy(&column->name, &column->name_len,
+                            &column->name_cap);
+    settings_string_destroy(&column->type, &column->type_len,
+                            &column->type_cap);
+    column_init(column);
+    return;
+}
+
+bool
+column_copy(Column *dest, Column *source) {
+    Column tmp;
+
+    if (dest == NULL || source == NULL) {
+        return false;
+    }
+
+    column_init(&tmp);
+    if (!settings_string_copy(&tmp.name, &tmp.name_len, &tmp.name_cap,
+                              source->name, source->name_len)) {
+        column_destroy(&tmp);
+        return false;
+    }
+    if (!settings_string_copy(&tmp.type, &tmp.type_len, &tmp.type_cap,
+                              source->type, source->type_len)) {
+        column_destroy(&tmp);
+        return false;
+    }
+
+    tmp.width = source->width;
+    tmp.stretch_limit = source->stretch_limit;
+    tmp.color = source->color;
+    tmp.fixed = source->fixed;
+    tmp.right_alignment = source->right_alignment;
+    tmp.display_empty_tag = source->display_empty_tag;
+
+    column_destroy(dest);
+    *dest = tmp;
+    return true;
+}
+
+void
+column_move(Column *dest, Column *source) {
+    if (dest == NULL || source == NULL) {
+        return;
+    }
+
+    column_destroy(dest);
+    *dest = *source;
+    column_init(source);
+    return;
+}
+
+void
+ncm_lyrics_fetcher_def_init(NcmLyricsFetcherDef *fetcher) {
+    fetcher->name = NULL;
+    fetcher->url_template = NULL;
+    fetcher->match_regex = NULL;
+    fetcher->name_len = 0;
+    fetcher->name_cap = 0;
+    fetcher->url_template_len = 0;
+    fetcher->url_template_cap = 0;
+    fetcher->match_regex_len = 0;
+    fetcher->match_regex_cap = 0;
+    fetcher->enabled = true;
+    return;
+}
+
+void
+ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher) {
+    if (fetcher == NULL) {
+        return;
+    }
+    settings_string_destroy(&fetcher->name, &fetcher->name_len,
+                            &fetcher->name_cap);
+    settings_string_destroy(&fetcher->url_template,
+                            &fetcher->url_template_len,
+                            &fetcher->url_template_cap);
+    settings_string_destroy(&fetcher->match_regex,
+                            &fetcher->match_regex_len,
+                            &fetcher->match_regex_cap);
+    ncm_lyrics_fetcher_def_init(fetcher);
+    return;
+}
+
+bool
+ncm_lyrics_fetcher_def_copy(NcmLyricsFetcherDef *dest,
+                            NcmLyricsFetcherDef *source) {
+    NcmLyricsFetcherDef tmp;
+
+    if (dest == NULL || source == NULL) {
+        return false;
+    }
+
+    ncm_lyrics_fetcher_def_init(&tmp);
+    if (!settings_string_copy(&tmp.name, &tmp.name_len, &tmp.name_cap,
+                              source->name, source->name_len)) {
+        ncm_lyrics_fetcher_def_destroy(&tmp);
+        return false;
+    }
+    if (!settings_string_copy(&tmp.url_template,
+                              &tmp.url_template_len,
+                              &tmp.url_template_cap,
+                              source->url_template,
+                              source->url_template_len)) {
+        ncm_lyrics_fetcher_def_destroy(&tmp);
+        return false;
+    }
+    if (!settings_string_copy(&tmp.match_regex,
+                              &tmp.match_regex_len,
+                              &tmp.match_regex_cap,
+                              source->match_regex,
+                              source->match_regex_len)) {
+        ncm_lyrics_fetcher_def_destroy(&tmp);
+        return false;
+    }
+    tmp.enabled = source->enabled;
+
+    ncm_lyrics_fetcher_def_destroy(dest);
+    *dest = tmp;
+    return true;
+}
+
+void
+ncm_lyrics_fetcher_def_move(NcmLyricsFetcherDef *dest,
+                            NcmLyricsFetcherDef *source) {
+    if (dest == NULL || source == NULL) {
+        return;
+    }
+
+    ncm_lyrics_fetcher_def_destroy(dest);
+    settings_string_move(&dest->name, &dest->name_len, &dest->name_cap,
+                         &source->name, &source->name_len,
+                         &source->name_cap);
+    settings_string_move(&dest->url_template,
+                         &dest->url_template_len,
+                         &dest->url_template_cap,
+                         &source->url_template,
+                         &source->url_template_len,
+                         &source->url_template_cap);
+    settings_string_move(&dest->match_regex,
+                         &dest->match_regex_len,
+                         &dest->match_regex_cap,
+                         &source->match_regex,
+                         &source->match_regex_len,
+                         &source->match_regex_cap);
+    dest->enabled = source->enabled;
+    source->enabled = true;
+    return;
+}
+
+static void
+settings_column_array_init_item(void *item) {
+    column_init(item);
+    return;
+}
+
+static void
+settings_column_array_destroy_item(void *item) {
+    column_destroy(item);
+    return;
+}
+
+static bool
+settings_column_array_copy_item(void *dest, void *source) {
+    return column_copy(dest, source);
+}
+
+static void
+settings_column_array_move_item(void *dest, void *source) {
+    column_move(dest, source);
+    return;
+}
+
+static void
+settings_formatted_color_array_init_item(void *item) {
+    nc_formatted_color_init(item);
+    return;
+}
+
+static void
+settings_formatted_color_array_destroy_item(void *item) {
+    nc_formatted_color_destroy(item);
+    return;
+}
+
+static bool
+settings_formatted_color_array_copy_item(void *dest, void *source) {
+    nc_formatted_color_copy(dest, source);
+    return true;
+}
+
+static void
+settings_formatted_color_array_move_item(void *dest, void *source) {
+    nc_formatted_color_move(dest, source);
+    return;
+}
+
+static void
+settings_lyrics_fetcher_array_init_item(void *item) {
+    ncm_lyrics_fetcher_def_init(item);
+    return;
+}
+
+static void
+settings_lyrics_fetcher_array_destroy_item(void *item) {
+    ncm_lyrics_fetcher_def_destroy(item);
+    return;
+}
+
+static bool
+settings_lyrics_fetcher_array_copy_item(void *dest, void *source) {
+    return ncm_lyrics_fetcher_def_copy(dest, source);
+}
+
+static void
+settings_lyrics_fetcher_array_move_item(void *dest, void *source) {
+    ncm_lyrics_fetcher_def_move(dest, source);
+    return;
+}
+
+static void
+configuration_init_strings(Configuration *config) {
+#define NCM_CONFIG_STRING_INIT(name) \
+    config->name = NULL; \
+    config->name##_len = 0; \
+    config->name##_cap = 0
+
+    NCM_CONFIG_STRING_INIT(ncmpcpp_directory);
+    NCM_CONFIG_STRING_INIT(lyrics_directory);
+    NCM_CONFIG_STRING_INIT(mpd_music_dir);
+    NCM_CONFIG_STRING_INIT(visualizer_fifo_path);
+    NCM_CONFIG_STRING_INIT(visualizer_data_source);
+    NCM_CONFIG_STRING_INIT(visualizer_output_name);
+    NCM_CONFIG_STRING_INIT(empty_tag);
+    NCM_CONFIG_STRING_INIT(external_editor);
+    NCM_CONFIG_STRING_INIT(system_encoding);
+    NCM_CONFIG_STRING_INIT(execute_on_song_change);
+    NCM_CONFIG_STRING_INIT(execute_on_player_state_change);
+    NCM_CONFIG_STRING_INIT(lastfm_preferred_language);
+    NCM_CONFIG_STRING_INIT(pattern);
+    NCM_CONFIG_STRING_INIT(random_exclude_pattern);
+
+#undef NCM_CONFIG_STRING_INIT
+    return;
+}
+
+static void
+configuration_destroy_strings(Configuration *config) {
+#define NCM_CONFIG_STRING_DESTROY(name) \
+    settings_string_destroy(&config->name, &config->name##_len, \
+                            &config->name##_cap)
+
+    NCM_CONFIG_STRING_DESTROY(ncmpcpp_directory);
+    NCM_CONFIG_STRING_DESTROY(lyrics_directory);
+    NCM_CONFIG_STRING_DESTROY(mpd_music_dir);
+    NCM_CONFIG_STRING_DESTROY(visualizer_fifo_path);
+    NCM_CONFIG_STRING_DESTROY(visualizer_data_source);
+    NCM_CONFIG_STRING_DESTROY(visualizer_output_name);
+    NCM_CONFIG_STRING_DESTROY(empty_tag);
+    NCM_CONFIG_STRING_DESTROY(external_editor);
+    NCM_CONFIG_STRING_DESTROY(system_encoding);
+    NCM_CONFIG_STRING_DESTROY(execute_on_song_change);
+    NCM_CONFIG_STRING_DESTROY(execute_on_player_state_change);
+    NCM_CONFIG_STRING_DESTROY(lastfm_preferred_language);
+    NCM_CONFIG_STRING_DESTROY(pattern);
+    NCM_CONFIG_STRING_DESTROY(random_exclude_pattern);
+
+#undef NCM_CONFIG_STRING_DESTROY
+    return;
+}
+
+static void
+configuration_init_buffers(Configuration *config) {
+    ncm_buffer_init(&config->progressbar);
+    ncm_buffer_init(&config->visualizer_chars);
+    nc_buffer_init(&config->browser_playlist_prefix);
+    nc_buffer_init(&config->selected_item_prefix);
+    nc_buffer_init(&config->selected_item_suffix);
+    nc_buffer_init(&config->now_playing_prefix);
+    nc_buffer_init(&config->now_playing_suffix);
+    nc_buffer_init(&config->modified_item_prefix);
+    nc_buffer_init(&config->current_item_prefix);
+    nc_buffer_init(&config->current_item_suffix);
+    nc_buffer_init(&config->current_item_inactive_column_prefix);
+    nc_buffer_init(&config->current_item_inactive_column_suffix);
+    return;
+}
+
+static void
+configuration_destroy_buffers(Configuration *config) {
+    ncm_buffer_destroy(&config->progressbar);
+    ncm_buffer_destroy(&config->visualizer_chars);
+    nc_buffer_destroy(&config->browser_playlist_prefix);
+    nc_buffer_destroy(&config->selected_item_prefix);
+    nc_buffer_destroy(&config->selected_item_suffix);
+    nc_buffer_destroy(&config->now_playing_prefix);
+    nc_buffer_destroy(&config->now_playing_suffix);
+    nc_buffer_destroy(&config->modified_item_prefix);
+    nc_buffer_destroy(&config->current_item_prefix);
+    nc_buffer_destroy(&config->current_item_suffix);
+    nc_buffer_destroy(&config->current_item_inactive_column_prefix);
+    nc_buffer_destroy(&config->current_item_inactive_column_suffix);
+    return;
+}
+
+static void
+configuration_init_formats(Configuration *config) {
+    ncm_format_ast_init(&config->song_list_format);
+    ncm_format_ast_init(&config->song_window_title_format);
+    ncm_format_ast_init(&config->song_library_format);
+    ncm_format_ast_init(&config->song_columns_mode_format);
+    ncm_format_ast_init(&config->browser_sort_format);
+    ncm_format_ast_init(&config->song_status_format);
+    ncm_format_ast_init(&config->new_header_first_line);
+    ncm_format_ast_init(&config->new_header_second_line);
+    return;
+}
+
+static void
+configuration_destroy_formats(Configuration *config) {
+    ncm_format_ast_destroy(&config->song_list_format);
+    ncm_format_ast_destroy(&config->song_window_title_format);
+    ncm_format_ast_destroy(&config->song_library_format);
+    ncm_format_ast_destroy(&config->song_columns_mode_format);
+    ncm_format_ast_destroy(&config->browser_sort_format);
+    ncm_format_ast_destroy(&config->song_status_format);
+    ncm_format_ast_destroy(&config->new_header_first_line);
+    ncm_format_ast_destroy(&config->new_header_second_line);
+    return;
+}
+
+static void
+configuration_init_colors(Configuration *config) {
+    config->header_color = nc_color_default();
+    config->main_color = nc_color_default();
+    config->statusbar_color = nc_color_default();
+    nc_formatted_color_init(&config->color1);
+    nc_formatted_color_init(&config->color2);
+    nc_formatted_color_init(&config->empty_tags_color);
+    nc_formatted_color_init(&config->volume_color);
+    nc_formatted_color_init(&config->state_line_color);
+    nc_formatted_color_init(&config->state_flags_color);
+    nc_formatted_color_init(&config->progressbar_color);
+    nc_formatted_color_init(&config->progressbar_elapsed_color);
+    nc_formatted_color_init(&config->player_state_color);
+    nc_formatted_color_init(&config->statusbar_time_color);
+    nc_formatted_color_init(&config->alternative_ui_separator_color);
+    config->window_border = nc_border_none();
+    config->active_window_border = nc_border_none();
+    return;
+}
+
+static void
+configuration_destroy_colors(Configuration *config) {
+    nc_formatted_color_destroy(&config->color1);
+    nc_formatted_color_destroy(&config->color2);
+    nc_formatted_color_destroy(&config->empty_tags_color);
+    nc_formatted_color_destroy(&config->volume_color);
+    nc_formatted_color_destroy(&config->state_line_color);
+    nc_formatted_color_destroy(&config->state_flags_color);
+    nc_formatted_color_destroy(&config->progressbar_color);
+    nc_formatted_color_destroy(&config->progressbar_elapsed_color);
+    nc_formatted_color_destroy(&config->player_state_color);
+    nc_formatted_color_destroy(&config->statusbar_time_color);
+    nc_formatted_color_destroy(&config->alternative_ui_separator_color);
+    return;
+}
+
+static void
+configuration_init_arrays(Configuration *config) {
+    ncm_int32_array_init(&config->playlist_editor_column_width_ratio);
+    ncm_int32_array_init(&config->media_library_column_width_ratio_two);
+    ncm_int32_array_init(&config->media_library_column_width_ratio_three);
+    ncm_column_array_init(&config->columns);
+    ncm_formatted_color_array_init(&config->visualizer_colors);
+    ncm_screen_type_array_init(&config->screen_sequence);
+    ncm_lyrics_fetcher_array_init(&config->lyrics_fetchers);
+    return;
+}
+
+static void
+configuration_destroy_arrays(Configuration *config) {
+    ncm_int32_array_destroy(&config->playlist_editor_column_width_ratio);
+    ncm_int32_array_destroy(&config->media_library_column_width_ratio_two);
+    ncm_int32_array_destroy(&config->media_library_column_width_ratio_three);
+    ncm_column_array_destroy(&config->columns);
+    ncm_formatted_color_array_destroy(&config->visualizer_colors);
+    ncm_screen_type_array_destroy(&config->screen_sequence);
+    ncm_lyrics_fetcher_array_destroy(&config->lyrics_fetchers);
+    return;
+}
+
+void
+configuration_init(Configuration *config) {
+    if (config == NULL) {
+        return;
+    }
+
+    configuration_init_strings(config);
+    configuration_init_buffers(config);
+    configuration_init_formats(config);
+    configuration_init_colors(config);
+    configuration_init_arrays(config);
+
+    config->playlist_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+    config->browser_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+    config->search_engine_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+    config->playlist_editor_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+    config->visualizer_type = NCM_VISUALIZER_TYPE_WAVE;
+    config->design = NCM_DESIGN_CLASSIC;
+    config->space_add_mode = NCM_SPACE_ADD_MODE_ADD_REMOVE;
+    config->media_lib_primary_tag = MPD_TAG_ARTIST;
+    config->browser_sort_mode = NCM_SORT_MODE_TYPE;
+
+    config->colors_enabled = false;
+    config->playlist_show_mpd_host = false;
+    config->playlist_show_remaining_time = false;
+    config->playlist_shorten_total_times = false;
+    config->playlist_separate_albums = false;
+    config->set_window_title = false;
+    config->header_visibility = false;
+    config->header_text_scrolling = false;
+    config->statusbar_visibility = false;
+    config->connected_message_on_startup = false;
+    config->titles_visibility = false;
+    config->centered_cursor = false;
+    config->screen_switcher_previous = false;
+    config->autocenter_mode = false;
+    config->wrapped_search = false;
+    config->incremental_seeking = false;
+    config->now_playing_lyrics = false;
+    config->fetch_lyrics_in_background = false;
+    config->local_browser_show_hidden_files = false;
+    config->search_in_db = false;
+    config->jump_to_now_playing_song_at_start = false;
+    config->display_volume_level = false;
+    config->display_bitrate = false;
+    config->display_remaining_time = false;
+    config->ignore_leading_the = false;
+    config->block_search_constraints_change = false;
+    config->use_console_editor = false;
+    config->use_cyclic_scrolling = false;
+    config->ask_before_clearing_playlists = false;
+    config->ask_before_shuffling_playlists = false;
+    config->mouse_support = false;
+    config->mouse_list_scroll_whole_page = false;
+    config->visualizer_in_stereo = false;
+    config->visualizer_autoscale = false;
+    config->visualizer_spectrum_smooth_look = false;
+    config->visualizer_spectrum_smooth_look_legacy_chars = false;
+    config->visualizer_spectrum_log_scale_x = false;
+    config->visualizer_spectrum_log_scale_y = false;
+    config->data_fetching_delay = false;
+    config->media_library_sort_by_mtime = false;
+    config->media_lib_hide_album_dates = false;
+    config->tag_editor_extended_numeration = false;
+    config->discard_colors_if_item_is_selected = false;
+    config->store_lyrics_in_song_dir = false;
+    config->generate_win32_compatible_filenames = false;
+    config->ask_for_locked_screen_width_part = false;
+    config->allow_for_physical_item_deletion = false;
+    config->media_library_albums_split_by_date = false;
+    config->startup_slave_screen_focus = false;
+    config->has_startup_slave_screen_type = false;
+
+    config->mpd_connection_timeout = 0;
+    config->crossfade_time = 0;
+    config->seek_time = 0;
+    config->volume_change_step = 0;
+    config->message_delay_time = 0;
+    config->lyrics_db = 0;
+    config->lines_scrolled = 0;
+    config->search_engine_default_search_mode = 0;
+    config->visualizer_fps = 0;
+    config->visualizer_spectrum_dft_size = 0;
+    config->playlist_disable_highlight_delay_seconds = 0;
+    config->regex_type = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
+
+    config->visualizer_spectrum_gain = 0;
+    config->visualizer_spectrum_hz_min = 0;
+    config->visualizer_spectrum_hz_max = 0;
+    config->locked_screen_width_part = 0;
+
+    config->selected_item_prefix_length = 0;
+    config->selected_item_suffix_length = 0;
+    config->now_playing_prefix_length = 0;
+    config->now_playing_suffix_length = 0;
+    config->current_item_prefix_length = 0;
+    config->current_item_suffix_length = 0;
+    config->current_item_inactive_column_prefix_length = 0;
+    config->current_item_inactive_column_suffix_length = 0;
+
+    config->startup_screen_type = NCM_SCREEN_TYPE_PLAYLIST;
+    config->startup_slave_screen_type = NCM_SCREEN_TYPE_UNKNOWN;
+    return;
+}
+
+void
+configuration_destroy(Configuration *config) {
+    if (config == NULL) {
+        return;
+    }
+
+    configuration_destroy_strings(config);
+    configuration_destroy_buffers(config);
+    configuration_destroy_formats(config);
+    configuration_destroy_colors(config);
+    configuration_destroy_arrays(config);
+    configuration_init(config);
+    return;
+}
+
+void
+configuration_clear(Configuration *config) {
+    configuration_destroy(config);
+    return;
+}
+
+bool
+configuration_read(Configuration *config, NcmStringViewArray *config_paths,
+                   bool ignore_errors) {
+    (void)config;
+    (void)config_paths;
+    (void)ignore_errors;
+    return false;
+}

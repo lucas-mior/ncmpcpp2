@@ -12,9 +12,6 @@
 #include "cbase/base_macros.h"
 #include "cbase/cbase.h"
 
-#define NC_COLOR_TRANSPARENT -1
-#define NC_COLOR_CURRENT -2
-
 static int32 max_color;
 static int32 color_pair_counter;
 static int32 *color_pair_map;
@@ -66,6 +63,18 @@ nc_color_end(void) {
     return nc_color_make(0, 0, false, true);
 }
 
+NcColor
+nc_color_transparent(void) {
+    return nc_color_make(NC_COLOR_TRANSPARENT, NC_COLOR_TRANSPARENT,
+                         false, false);
+}
+
+NcColor
+nc_color_current(void) {
+    return nc_color_make(NC_COLOR_TRANSPARENT, NC_COLOR_CURRENT,
+                         false, false);
+}
+
 bool
 nc_color_equal(NcColor left, NcColor right) {
     if (left.foreground != right.foreground) {
@@ -97,6 +106,151 @@ nc_color_is_end(NcColor color) {
 bool
 nc_color_current_background(NcColor color) {
     return color.background == NC_COLOR_CURRENT;
+}
+
+NcBorder
+nc_border_none(void) {
+    NcBorder result;
+
+    result.color = nc_color_default();
+    result.enabled = false;
+
+    return result;
+}
+
+NcBorder
+nc_border_make(NcColor color) {
+    NcBorder result;
+
+    result.color = color;
+    result.enabled = true;
+
+    return result;
+}
+
+enum NcFormat
+nc_format_reverse(enum NcFormat format) {
+    enum NcFormat result;
+
+    switch (format) {
+    case NC_FORMAT_BOLD:
+        result = NC_FORMAT_NO_BOLD;
+        break;
+    case NC_FORMAT_NO_BOLD:
+        result = NC_FORMAT_BOLD;
+        break;
+    case NC_FORMAT_UNDERLINE:
+        result = NC_FORMAT_NO_UNDERLINE;
+        break;
+    case NC_FORMAT_NO_UNDERLINE:
+        result = NC_FORMAT_UNDERLINE;
+        break;
+    case NC_FORMAT_REVERSE:
+        result = NC_FORMAT_NO_REVERSE;
+        break;
+    case NC_FORMAT_NO_REVERSE:
+        result = NC_FORMAT_REVERSE;
+        break;
+    case NC_FORMAT_ALT_CHARSET:
+        result = NC_FORMAT_NO_ALT_CHARSET;
+        break;
+    case NC_FORMAT_NO_ALT_CHARSET:
+        result = NC_FORMAT_ALT_CHARSET;
+        break;
+    case NC_FORMAT_ITALIC:
+        result = NC_FORMAT_NO_ITALIC;
+        break;
+    case NC_FORMAT_NO_ITALIC:
+        result = NC_FORMAT_ITALIC;
+        break;
+    default:
+        result = format;
+        break;
+    }
+
+    return result;
+}
+
+int32
+nc_key_name(NcKey key, char *buffer, int32 buffer_len) {
+    int32 result;
+    char rest[64];
+
+    result = -1;
+    rest[0] = '\0';
+    if ((buffer == NULL) || (buffer_len <= 0)) {
+        return result;
+    }
+
+    if (key == NC_KEY_TAB) {
+        result = snprintf(buffer, (size_t)buffer_len, "Tab");
+    } else if (key == NC_KEY_ENTER) {
+        result = snprintf(buffer, (size_t)buffer_len, "Enter");
+    } else if (key == NC_KEY_ESCAPE) {
+        result = snprintf(buffer, (size_t)buffer_len, "Escape");
+    } else if ((key >= NC_KEY_CTRL_A) && (key <= NC_KEY_CTRL_Z)) {
+        result = snprintf(buffer, (size_t)buffer_len, "Ctrl-%c",
+                          (char)('A' + key - NC_KEY_CTRL_A));
+    } else if (key == NC_KEY_CTRL_LEFT_BRACKET) {
+        result = snprintf(buffer, (size_t)buffer_len, "Ctrl-[");
+    } else if (key == NC_KEY_CTRL_BACKSLASH) {
+        result = snprintf(buffer, (size_t)buffer_len, "Ctrl-\\");
+    } else if (key == NC_KEY_CTRL_RIGHT_BRACKET) {
+        result = snprintf(buffer, (size_t)buffer_len, "Ctrl-]");
+    } else if (key == NC_KEY_CTRL_CARET) {
+        result = snprintf(buffer, (size_t)buffer_len, "Ctrl-^");
+    } else if (key == NC_KEY_CTRL_UNDERSCORE) {
+        result = snprintf(buffer, (size_t)buffer_len, "Ctrl-_");
+    } else if ((key & NC_KEY_ALT) != 0) {
+        nc_key_name(key & ~NC_KEY_ALT, rest, (int32)sizeof(rest));
+        result = snprintf(buffer, (size_t)buffer_len, "Alt-%s", rest);
+    } else if ((key & NC_KEY_CTRL) != 0) {
+        nc_key_name(key & ~NC_KEY_CTRL, rest, (int32)sizeof(rest));
+        result = snprintf(buffer, (size_t)buffer_len, "Ctrl-%s", rest);
+    } else if ((key & NC_KEY_SHIFT) != 0) {
+        nc_key_name(key & ~NC_KEY_SHIFT, rest, (int32)sizeof(rest));
+        result = snprintf(buffer, (size_t)buffer_len, "Shift-%s", rest);
+    } else if (key == NC_KEY_SPACE) {
+        result = snprintf(buffer, (size_t)buffer_len, "Space");
+    } else if (key == NC_KEY_BACKSPACE) {
+        result = snprintf(buffer, (size_t)buffer_len, "Backspace");
+    } else if (key == NC_KEY_INSERT) {
+        result = snprintf(buffer, (size_t)buffer_len, "Insert");
+    } else if (key == NC_KEY_DELETE) {
+        result = snprintf(buffer, (size_t)buffer_len, "Delete");
+    } else if (key == NC_KEY_HOME) {
+        result = snprintf(buffer, (size_t)buffer_len, "Home");
+    } else if (key == NC_KEY_END) {
+        result = snprintf(buffer, (size_t)buffer_len, "End");
+    } else if (key == NC_KEY_PAGE_UP) {
+        result = snprintf(buffer, (size_t)buffer_len, "PageUp");
+    } else if (key == NC_KEY_PAGE_DOWN) {
+        result = snprintf(buffer, (size_t)buffer_len, "PageDown");
+    } else if (key == NC_KEY_UP) {
+        result = snprintf(buffer, (size_t)buffer_len, "Up");
+    } else if (key == NC_KEY_DOWN) {
+        result = snprintf(buffer, (size_t)buffer_len, "Down");
+    } else if (key == NC_KEY_LEFT) {
+        result = snprintf(buffer, (size_t)buffer_len, "Left");
+    } else if (key == NC_KEY_RIGHT) {
+        result = snprintf(buffer, (size_t)buffer_len, "Right");
+    } else if (key == NC_KEY_EOF) {
+        result = snprintf(buffer, (size_t)buffer_len, "EoF");
+    } else if ((key >= NC_KEY_F1) && (key <= NC_KEY_F9)) {
+        result = snprintf(buffer, (size_t)buffer_len, "F%c",
+                          (char)('1' + key - NC_KEY_F1));
+    } else if ((key >= NC_KEY_F10) && (key <= NC_KEY_F12)) {
+        result = snprintf(buffer, (size_t)buffer_len, "F1%c",
+                          (char)('0' + key - NC_KEY_F10));
+    } else {
+        result = snprintf(buffer, (size_t)buffer_len, "%c", (char)key);
+    }
+
+    if (result >= buffer_len) {
+        result = -1;
+    }
+
+    return result;
 }
 
 int32

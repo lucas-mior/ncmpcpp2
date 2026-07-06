@@ -26,29 +26,29 @@
 
 #include "app_controller.h"
 #include "global.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "ui_state_legacy.h"
 
 namespace screen_compat {
 
-inline NC::Scroll to_cpp_scroll(enum NcScroll where)
+inline enum NcScroll to_cpp_scroll(enum NcScroll where)
 {
     switch (where)
     {
         case NC_SCROLL_UP:
-            return NC::Scroll::Up;
+            return NC_SCROLL_UP;
         case NC_SCROLL_DOWN:
-            return NC::Scroll::Down;
+            return NC_SCROLL_DOWN;
         case NC_SCROLL_PAGE_UP:
-            return NC::Scroll::PageUp;
+            return NC_SCROLL_PAGE_UP;
         case NC_SCROLL_PAGE_DOWN:
-            return NC::Scroll::PageDown;
+            return NC_SCROLL_PAGE_DOWN;
         case NC_SCROLL_HOME:
-            return NC::Scroll::Home;
+            return NC_SCROLL_HOME;
         case NC_SCROLL_END:
-            return NC::Scroll::End;
+            return NC_SCROLL_END;
     }
-    return NC::Scroll::Up;
+    return NC_SCROLL_UP;
 }
 
 inline BaseScreen *legacy_owner(NcScreen *screen)
@@ -81,18 +81,18 @@ inline void genericMouseButtonPressed(NC::Window &w, MEVENT me)
     if (me.bstate & BUTTON5_PRESSED)
     {
         if (Config.mouse_list_scroll_whole_page)
-            w.scroll(NC::Scroll::PageDown);
+            w.scroll(NC_SCROLL_PAGE_DOWN);
         else
             for (size_t i = 0; i < Config.lines_scrolled; ++i)
-                w.scroll(NC::Scroll::Down);
+                w.scroll(NC_SCROLL_DOWN);
     }
     else if (me.bstate & BUTTON4_PRESSED)
     {
         if (Config.mouse_list_scroll_whole_page)
-            w.scroll(NC::Scroll::PageUp);
+            w.scroll(NC_SCROLL_PAGE_UP);
         else
             for (size_t i = 0; i < Config.lines_scrolled; ++i)
-                w.scroll(NC::Scroll::Up);
+                w.scroll(NC_SCROLL_UP);
     }
 }
 
@@ -101,12 +101,12 @@ inline void scrollpadMouseButtonPressed(NC::Scrollpad &w, MEVENT me)
     if (me.bstate & BUTTON5_PRESSED)
     {
         for (size_t i = 0; i < Config.lines_scrolled; ++i)
-            w.scroll(NC::Scroll::Down);
+            w.scroll(NC_SCROLL_DOWN);
     }
     else if (me.bstate & BUTTON4_PRESSED)
     {
         for (size_t i = 0; i < Config.lines_scrolled; ++i)
-            w.scroll(NC::Scroll::Up);
+            w.scroll(NC_SCROLL_UP);
     }
 }
 

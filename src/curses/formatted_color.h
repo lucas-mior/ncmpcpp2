@@ -57,7 +57,7 @@ struct FormattedColor
 		                          FormattedColor>::type m_fc;
 	};
 
-	typedef std::vector<Format> Formats;
+	typedef std::vector<enum NcFormat> Formats;
 
 	FormattedColor();
 	FormattedColor(Color color_, Formats formats_);
@@ -88,8 +88,8 @@ inline bool operator==(const FormattedColor &lhs, const FormattedColor &rhs)
 
 NcColor toNcColor(Color color);
 Color fromNcColor(NcColor color);
-NcFormat toNcFormat(Format format);
-Format fromNcFormat(NcFormat format);
+NcFormat toNcFormat(enum NcFormat format);
+enum NcFormat fromNcFormat(NcFormat format);
 
 std::istream &operator>>(std::istream &is, FormattedColor &fc);
 

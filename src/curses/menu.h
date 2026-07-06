@@ -495,7 +495,7 @@ struct Menu: Window, List
 	/// Scrolls by given amount of lines
 	/// @param where indicated where exactly one wants to go
 	/// @see Window::scroll()
-	virtual void scroll(Scroll where) override;
+	virtual void scroll(enum NcScroll where) override;
 	
 	/// Cleares all options, used filters etc. It doesn't reset highlighted position though.
 	/// @see reset()
@@ -691,25 +691,11 @@ struct Menu: Window, List
 	}
 
 private:
-	static enum NcScroll toNcScroll(Scroll scroll)
+	static enum NcScroll toNcScroll(enum NcScroll scroll)
 	{
-		switch (scroll)
-		{
-		case Scroll::Up:
-			return NC_SCROLL_UP;
-		case Scroll::Down:
-			return NC_SCROLL_DOWN;
-		case Scroll::PageUp:
-			return NC_SCROLL_PAGE_UP;
-		case Scroll::PageDown:
-			return NC_SCROLL_PAGE_DOWN;
-		case Scroll::Home:
-			return NC_SCROLL_HOME;
-		case Scroll::End:
-			return NC_SCROLL_END;
-		}
-		return NC_SCROLL_HOME;
+		return scroll;
 	}
+
 
 	static bool isHighlightableCallback(int64 pos, void *user)
 	{

@@ -41,7 +41,7 @@
 #include "macro_utilities.h"
 #include "screens/lyrics.h"
 #include "screens/playlist.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "song.h"
 #include "statusbar.h"
 #include "title.h"
@@ -54,41 +54,41 @@ Lyrics *myLyrics;
 
 namespace {
 
-NC::Scroll to_cpp_scroll(enum NcScroll where)
+enum NcScroll to_cpp_scroll(enum NcScroll where)
 {
 	switch (where)
 	{
 		case NC_SCROLL_UP:
-			return NC::Scroll::Up;
+			return NC_SCROLL_UP;
 		case NC_SCROLL_DOWN:
-			return NC::Scroll::Down;
+			return NC_SCROLL_DOWN;
 		case NC_SCROLL_PAGE_UP:
-			return NC::Scroll::PageUp;
+			return NC_SCROLL_PAGE_UP;
 		case NC_SCROLL_PAGE_DOWN:
-			return NC::Scroll::PageDown;
+			return NC_SCROLL_PAGE_DOWN;
 		case NC_SCROLL_HOME:
-			return NC::Scroll::Home;
+			return NC_SCROLL_HOME;
 		case NC_SCROLL_END:
-			return NC::Scroll::End;
+			return NC_SCROLL_END;
 	}
-	return NC::Scroll::Up;
+	return NC_SCROLL_UP;
 }
 
-enum NcScroll to_nc_scroll(NC::Scroll where)
+enum NcScroll to_nc_scroll(enum NcScroll where)
 {
 	switch (where)
 	{
-		case NC::Scroll::Up:
+		case NC_SCROLL_UP:
 			return NC_SCROLL_UP;
-		case NC::Scroll::Down:
+		case NC_SCROLL_DOWN:
 			return NC_SCROLL_DOWN;
-		case NC::Scroll::PageUp:
+		case NC_SCROLL_PAGE_UP:
 			return NC_SCROLL_PAGE_UP;
-		case NC::Scroll::PageDown:
+		case NC_SCROLL_PAGE_DOWN:
 			return NC_SCROLL_PAGE_DOWN;
-		case NC::Scroll::Home:
+		case NC_SCROLL_HOME:
 			return NC_SCROLL_HOME;
-		case NC::Scroll::End:
+		case NC_SCROLL_END:
 			return NC_SCROLL_END;
 	}
 	return NC_SCROLL_UP;
@@ -191,9 +191,9 @@ LyricsFetcher::Result downloadLyrics(
 			{
 				auto buf = shared_buffer->acquire();
 				*buf << "Fetching lyrics from "
-				     << NC::Format::Bold
+				     << NC_FORMAT_BOLD
 				     << fetcher_->name()
-				     << NC::Format::NoBold << "... ";
+				     << NC_FORMAT_NO_BOLD << "... ";
 			}
 		}
 		auto result_ = fetcher_->fetch(s_artist, s_title, s);
@@ -284,7 +284,7 @@ void Lyrics::refreshWindow()
 	nc_screen_refresh_window(nativeScreen());
 }
 
-void Lyrics::scroll(NC::Scroll where)
+void Lyrics::scroll(enum NcScroll where)
 {
 	nc_screen_scroll(nativeScreen(), to_nc_scroll(where));
 }

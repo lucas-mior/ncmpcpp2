@@ -31,7 +31,7 @@
 #include "format_impl.h"
 #include "mpdpp.h"
 #include "runnable_item.h"
-#include "settings.h"
+#include "settings_legacy.h"
 
 class LocaleStringComparison
 {

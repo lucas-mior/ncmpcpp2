@@ -39,7 +39,7 @@ struct ServerInfo: BaseScreen, Tabbable
     virtual const NC::Window *activeWindow() const override;
     virtual void refresh() override;
     virtual void refreshWindow() override;
-    virtual void scroll(NC::Scroll where) override;
+    virtual void scroll(enum NcScroll where) override;
     virtual void switchTo() override;
     virtual void resize() override;
     virtual int windowTimeout() override;

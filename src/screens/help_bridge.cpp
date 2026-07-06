@@ -30,7 +30,7 @@
 #include "screens/help.h"
 #include "screens/screen_switcher.h"
 #include "screens/screen_legacy.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "title.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
@@ -44,21 +44,21 @@ struct HelpBuffer
     NcBuffer *buffer;
 };
 
-NcScroll toNcScroll(NC::Scroll where)
+NcScroll toNcScroll(enum NcScroll where)
 {
     switch (where)
     {
-        case NC::Scroll::Up:
+        case NC_SCROLL_UP:
             return NC_SCROLL_UP;
-        case NC::Scroll::Down:
+        case NC_SCROLL_DOWN:
             return NC_SCROLL_DOWN;
-        case NC::Scroll::PageUp:
+        case NC_SCROLL_PAGE_UP:
             return NC_SCROLL_PAGE_UP;
-        case NC::Scroll::PageDown:
+        case NC_SCROLL_PAGE_DOWN:
             return NC_SCROLL_PAGE_DOWN;
-        case NC::Scroll::Home:
+        case NC_SCROLL_HOME:
             return NC_SCROLL_HOME;
-        case NC::Scroll::End:
+        case NC_SCROLL_END:
             return NC_SCROLL_END;
     }
     return NC_SCROLL_UP;
@@ -102,7 +102,7 @@ HelpBuffer &operator<<(HelpBuffer &output, int value)
     return output;
 }
 
-HelpBuffer &operator<<(HelpBuffer &output, NC::Format format)
+HelpBuffer &operator<<(HelpBuffer &output, enum NcFormat format)
 {
     nc_buffer_add_format(output.buffer,
                          nc_buffer_len(output.buffer),
@@ -159,10 +159,10 @@ std::string display_keys(const Actions::Type at)
 
 void section(HelpBuffer &w, const char *type_, const char *title_)
 {
-	w << "\n  " << NC::Format::Bold;
+	w << "\n  " << NC_FORMAT_BOLD;
 	if (type_[0] != '\0')
 		w << type_ << " - ";
-	w << title_ << NC::Format::NoBold << "\n\n";
+	w << title_ << NC_FORMAT_NO_BOLD << "\n\n";
 }
 
 /**********************************************************************/
@@ -182,7 +182,7 @@ void key(HelpBuffer &w, const Actions::Type at, const std::string &desc)
 	w << "    " << display_keys(at) << " : " << desc << '\n';
 }
 
-void key(HelpBuffer &w, NC::Key::Type k, const std::string &desc)
+void key(HelpBuffer &w, NcKey k, const std::string &desc)
 {
 	w << "    " << align_key_rep(NC::keyToString(k)) << " : " << desc << '\n';
 }
@@ -203,7 +203,7 @@ void mouse(HelpBuffer &w, std::string action, const char *desc, bool indent = fa
 
 void mouse_column(HelpBuffer &w, const char *column)
 {
-	w << NC::Format::Bold << "    " << column << " column:\n" << NC::Format::NoBold;
+	w << NC_FORMAT_BOLD << "    " << column << " column:\n" << NC_FORMAT_NO_BOLD;
 }
 
 /**********************************************************************/
@@ -572,7 +572,7 @@ void Help::refreshWindow()
     nc_screen_refresh_window(nativeScreen());
 }
 
-void Help::scroll(NC::Scroll where)
+void Help::scroll(enum NcScroll where)
 {
     nc_screen_scroll(nativeScreen(), toNcScroll(where));
 }

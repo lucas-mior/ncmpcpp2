@@ -47,7 +47,7 @@ Playlist *myPlaylist;
 
 namespace {
 
-enum NcScroll to_nc_scroll(NC::Scroll where);
+enum NcScroll to_nc_scroll(enum NcScroll where);
 std::string songToString(const MPD::Song &s);
 bool playlistEntryMatcher(const Regex::Regex &rx, const MPD::Song &s);
 
@@ -118,7 +118,7 @@ void Playlist::refreshWindow()
 	nc_screen_refresh_window(nativeScreen());
 }
 
-void Playlist::scroll(NC::Scroll where)
+void Playlist::scroll(enum NcScroll where)
 {
 	nc_screen_scroll(nativeScreen(), to_nc_scroll(where));
 }
@@ -531,21 +531,21 @@ void Playlist::destroyCallback(NcScreen *screen)
 namespace {
 
 
-enum NcScroll to_nc_scroll(NC::Scroll where)
+enum NcScroll to_nc_scroll(enum NcScroll where)
 {
 	switch (where)
 	{
-		case NC::Scroll::Up:
+		case NC_SCROLL_UP:
 			return NC_SCROLL_UP;
-		case NC::Scroll::Down:
+		case NC_SCROLL_DOWN:
 			return NC_SCROLL_DOWN;
-		case NC::Scroll::PageUp:
+		case NC_SCROLL_PAGE_UP:
 			return NC_SCROLL_PAGE_UP;
-		case NC::Scroll::PageDown:
+		case NC_SCROLL_PAGE_DOWN:
 			return NC_SCROLL_PAGE_DOWN;
-		case NC::Scroll::Home:
+		case NC_SCROLL_HOME:
 			return NC_SCROLL_HOME;
-		case NC::Scroll::End:
+		case NC_SCROLL_END:
 			return NC_SCROLL_END;
 	}
 	return NC_SCROLL_UP;

@@ -145,17 +145,17 @@ void TinyTagEditor::runAction()
 	{
 		Statusbar::ScopedLock slock;
 		size_t pos = option-8;
-		Statusbar::put() << NC::Format::Bold << SongInfo::Tags[pos].Name << ": " << NC::Format::NoBold;
+		Statusbar::put() << NC_FORMAT_BOLD << SongInfo::Tags[pos].Name << ": " << NC_FORMAT_NO_BOLD;
 		itsEdited.setTags(SongInfo::Tags[pos].Field, ui_state_legacy_footer_window()->prompt(
 			itsEdited.getTags(SongInfo::Tags[pos].Get)));
 		w.at(option).value().clear();
-		w.at(option).value() << NC::Format::Bold << SongInfo::Tags[pos].Name << ':' << NC::Format::NoBold << ' ';
+		w.at(option).value() << NC_FORMAT_BOLD << SongInfo::Tags[pos].Name << ':' << NC_FORMAT_NO_BOLD << ' ';
 		ShowTag(w.at(option).value(), itsEdited.getTags(SongInfo::Tags[pos].Get));
 	}
 	else if (option == 20)
 	{
 		Statusbar::ScopedLock slock;
-		Statusbar::put() << NC::Format::Bold << "Filename: " << NC::Format::NoBold;
+		Statusbar::put() << NC_FORMAT_BOLD << "Filename: " << NC_FORMAT_NO_BOLD;
 		std::string filename = itsEdited.getNewName().empty() ? itsEdited.getName() : itsEdited.getNewName();
 		size_t dot = filename.rfind(".");
 		std::string extension;
@@ -169,7 +169,7 @@ void TinyTagEditor::runAction()
 		{
 			itsEdited.setNewName(new_name + extension);
 			w.at(option).value().clear();
-			w.at(option).value() << NC::Format::Bold << "Filename:" << NC::Format::NoBold << ' ' << (itsEdited.getNewName().empty() ? itsEdited.getName() : itsEdited.getNewName());
+			w.at(option).value() << NC_FORMAT_BOLD << "Filename:" << NC_FORMAT_NO_BOLD << ' ' << (itsEdited.getNewName().empty() ? itsEdited.getName() : itsEdited.getNewName());
 		}
 	}
 
@@ -246,12 +246,12 @@ bool TinyTagEditor::getTags()
 	w.highlight(8);
 
 	auto print_key_value = [](NC::Buffer &buf, const char *key, const auto &value) {
-		buf << NC::Format::Bold
+		buf << NC_FORMAT_BOLD
 		    << Config.color1
 		    << key
 		    << ":"
 		    << NC::FormattedColor::End<>(Config.color1)
-		    << NC::Format::NoBold
+		    << NC_FORMAT_NO_BOLD
 		    << " "
 		    << Config.color2
 		    << value
@@ -277,17 +277,17 @@ bool TinyTagEditor::getTags()
 	unsigned pos = 8;
 	for (const SongInfo::Metadata *m = SongInfo::Tags; m->Name; ++m, ++pos)
 	{
-		w[pos].value() << NC::Format::Bold
+		w[pos].value() << NC_FORMAT_BOLD
 		                  << m->Name
 		                  << ":"
-		                  << NC::Format::NoBold
+		                  << NC_FORMAT_NO_BOLD
 		                  << " ";
 		ShowTag(w[pos].value(), itsEdited.getTags(m->Get));
 	}
 	
-	w[20].value() << NC::Format::Bold
+	w[20].value() << NC_FORMAT_BOLD
 	                 << "Filename:"
-	                 << NC::Format::NoBold
+	                 << NC_FORMAT_NO_BOLD
 	                 << " "
 	                 << itsEdited.getName();
 	

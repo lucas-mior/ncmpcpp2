@@ -35,41 +35,41 @@
 
 namespace {
 
-NC::Scroll to_cpp_scroll(enum NcScroll where)
+enum NcScroll to_cpp_scroll(enum NcScroll where)
 {
     switch (where)
     {
         case NC_SCROLL_UP:
-            return NC::Scroll::Up;
+            return NC_SCROLL_UP;
         case NC_SCROLL_DOWN:
-            return NC::Scroll::Down;
+            return NC_SCROLL_DOWN;
         case NC_SCROLL_PAGE_UP:
-            return NC::Scroll::PageUp;
+            return NC_SCROLL_PAGE_UP;
         case NC_SCROLL_PAGE_DOWN:
-            return NC::Scroll::PageDown;
+            return NC_SCROLL_PAGE_DOWN;
         case NC_SCROLL_HOME:
-            return NC::Scroll::Home;
+            return NC_SCROLL_HOME;
         case NC_SCROLL_END:
-            return NC::Scroll::End;
+            return NC_SCROLL_END;
     }
-    return NC::Scroll::Up;
+    return NC_SCROLL_UP;
 }
 
-enum NcScroll to_nc_scroll(NC::Scroll where)
+enum NcScroll to_nc_scroll(enum NcScroll where)
 {
     switch (where)
     {
-        case NC::Scroll::Up:
+        case NC_SCROLL_UP:
             return NC_SCROLL_UP;
-        case NC::Scroll::Down:
+        case NC_SCROLL_DOWN:
             return NC_SCROLL_DOWN;
-        case NC::Scroll::PageUp:
+        case NC_SCROLL_PAGE_UP:
             return NC_SCROLL_PAGE_UP;
-        case NC::Scroll::PageDown:
+        case NC_SCROLL_PAGE_DOWN:
             return NC_SCROLL_PAGE_DOWN;
-        case NC::Scroll::Home:
+        case NC_SCROLL_HOME:
             return NC_SCROLL_HOME;
-        case NC::Scroll::End:
+        case NC_SCROLL_END:
             return NC_SCROLL_END;
     }
     return NC_SCROLL_UP;
@@ -133,7 +133,7 @@ void Lastfm::refreshWindow()
     nc_screen_refresh_window(nativeScreen());
 }
 
-void Lastfm::scroll(NC::Scroll where)
+void Lastfm::scroll(enum NcScroll where)
 {
     nc_screen_scroll(nativeScreen(), to_nc_scroll(where));
 }

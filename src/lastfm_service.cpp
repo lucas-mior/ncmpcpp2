@@ -24,7 +24,7 @@
 #include <regex>
 #include "charset.h"
 #include "curl_handle.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "utility/html.h"
 #include "utility/string.h"
 
@@ -109,8 +109,8 @@ bool ArtistInfo::argumentsOk()
 
 void ArtistInfo::beautifyOutput(NC::Scrollpad &w)
 {
-	w.setProperties(NC::Format::Bold, "\n\nSimilar artists:\n", NC::Format::NoBold, 0);
-	w.setProperties(NC::Format::Bold, "\n\nSimilar tags:\n", NC::Format::NoBold, 0);
+	w.setProperties(NC_FORMAT_BOLD, "\n\nSimilar artists:\n", NC_FORMAT_NO_BOLD, 0);
+	w.setProperties(NC_FORMAT_BOLD, "\n\nSimilar tags:\n", NC_FORMAT_NO_BOLD, 0);
 	w.setProperties(Config.color2, "\n \\* ", 0);
 }
 

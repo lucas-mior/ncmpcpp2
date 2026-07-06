@@ -32,7 +32,7 @@
 #include "charset.h"
 #include "curl_handle.h"
 #include "lyrics_fetcher.h"
-#include "settings.h"
+#include "settings_legacy.h"
 #include "utility/html.h"
 #include "utility/string.h"
 
