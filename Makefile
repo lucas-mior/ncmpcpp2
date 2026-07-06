@@ -50,6 +50,8 @@ CBASE_SRCS := cbase/cbase.c
 NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
 APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
 REMOVED_CXX_SRCS := \
+	src/enums.cpp \
+	src/global.cpp \
 	src/screens/help.cpp \
 	src/screens/outputs.cpp \
 	src/screens/server_info.cpp \

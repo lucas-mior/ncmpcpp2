@@ -18,7 +18,6 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <chrono>
 
 #include "global.h"
 #include "ui_state_legacy.h"
@@ -35,8 +34,8 @@ namespace {
 
 bool progressbar_block_update = false;
 
-std::chrono::steady_clock::time_point statusbar_lock_time;
-std::chrono::seconds statusbar_lock_delay(-1);
+NcmTimePoint statusbar_lock_time;
+int64 statusbar_lock_delay_seconds = -1;
 
 bool statusbar_block_update = false;
 bool statusbar_allow_unlock = true;
@@ -100,7 +99,7 @@ Statusbar::ScopedLock::~ScopedLock() noexcept
 {
 	// unlock
 	statusbar_allow_unlock = true;
-	if (statusbar_lock_delay < std::chrono::seconds(0))
+	if (statusbar_lock_delay_seconds < 0)
 	{
 		if (Config.statusbar_visibility)
 			statusbar_block_update = false;
@@ -111,10 +110,10 @@ Statusbar::ScopedLock::~ScopedLock() noexcept
 	{
 		switch (Config.design)
 		{
-			case Design::Classic:
+			case NCM_DESIGN_CLASSIC:
 				put(); // clear statusbar
 				break;
-			case Design::Alternative:
+			case NCM_DESIGN_ALTERNATIVE:
 				Progressbar::draw(Status::State::elapsedTime(), Status::State::totalTime());
 				break;
 		}
@@ -129,11 +128,11 @@ bool Statusbar::isUnlocked()
 
 void Statusbar::tryRedraw()
 {
-	using Global::Timer;
-	if (statusbar_lock_delay > std::chrono::seconds(0)
-	&&  Timer - statusbar_lock_time > statusbar_lock_delay)
+	if (statusbar_lock_delay_seconds > 0
+	&&  global_timer_elapsed_seconds(statusbar_lock_time)
+	    > statusbar_lock_delay_seconds)
 	{
-		statusbar_lock_delay = std::chrono::seconds(-1);
+		statusbar_lock_delay_seconds = -1;
 		
 		if (Config.statusbar_visibility)
 			statusbar_block_update = !statusbar_allow_unlock;
@@ -144,7 +143,7 @@ void Statusbar::tryRedraw()
 		{
 			switch (Config.design)
 			{
-				case Design::Classic:
+				case NCM_DESIGN_CLASSIC:
 					switch (Status::State::player())
 					{
 						case MPD::psUnknown:
@@ -157,7 +156,7 @@ void Statusbar::tryRedraw()
 						break;
 					}
 					break;
-				case Design::Alternative:
+				case NCM_DESIGN_ALTERNATIVE:
 					Progressbar::draw(Status::State::elapsedTime(), Status::State::totalTime());
 					break;
 			}
@@ -178,8 +177,8 @@ void Statusbar::print(int delay, const std::string &message)
 	{
         if(delay)
         {
-            statusbar_lock_time = Global::Timer;
-            statusbar_lock_delay = std::chrono::seconds(delay);
+            statusbar_lock_time = global_timer;
+            statusbar_lock_delay_seconds = delay;
             if (Config.statusbar_visibility)
                 statusbar_block_update = true;
             else

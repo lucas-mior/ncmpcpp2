@@ -55,45 +55,45 @@ int32 toNativeType(ScreenType type)
 {
     switch (type)
     {
-        case ScreenType::Browser:
+        case NCM_SCREEN_TYPE_BROWSER:
             return NC_SCREEN_TYPE_BROWSER;
-        case ScreenType::Help:
+        case NCM_SCREEN_TYPE_HELP:
             return NC_SCREEN_TYPE_HELP;
-        case ScreenType::Lastfm:
+        case NCM_SCREEN_TYPE_LASTFM:
             return NC_SCREEN_TYPE_LASTFM;
-        case ScreenType::Lyrics:
+        case NCM_SCREEN_TYPE_LYRICS:
             return NC_SCREEN_TYPE_LYRICS;
-        case ScreenType::MediaLibrary:
+        case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
             return NC_SCREEN_TYPE_MEDIA_LIBRARY;
 #ifdef ENABLE_OUTPUTS
-        case ScreenType::Outputs:
+        case NCM_SCREEN_TYPE_OUTPUTS:
             return NC_SCREEN_TYPE_OUTPUTS;
 #endif // ENABLE_OUTPUTS
-        case ScreenType::Playlist:
+        case NCM_SCREEN_TYPE_PLAYLIST:
             return NC_SCREEN_TYPE_PLAYLIST;
-        case ScreenType::PlaylistEditor:
+        case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
             return NC_SCREEN_TYPE_PLAYLIST_EDITOR;
-        case ScreenType::SearchEngine:
+        case NCM_SCREEN_TYPE_SEARCH_ENGINE:
             return NC_SCREEN_TYPE_SEARCH_ENGINE;
-        case ScreenType::SelectedItemsAdder:
+        case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
             return NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER;
-        case ScreenType::ServerInfo:
+        case NCM_SCREEN_TYPE_SERVER_INFO:
             return NC_SCREEN_TYPE_SERVER_INFO;
-        case ScreenType::SongInfo:
+        case NCM_SCREEN_TYPE_SONG_INFO:
             return NC_SCREEN_TYPE_SONG_INFO;
-        case ScreenType::SortPlaylistDialog:
+        case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
             return NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG;
 #ifdef HAVE_TAGLIB_H
-        case ScreenType::TagEditor:
+        case NCM_SCREEN_TYPE_TAG_EDITOR:
             return NC_SCREEN_TYPE_TAG_EDITOR;
-        case ScreenType::TinyTagEditor:
+        case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
             return NC_SCREEN_TYPE_TINY_TAG_EDITOR;
 #endif // HAVE_TAGLIB_H
 #ifdef ENABLE_VISUALIZER
-        case ScreenType::Visualizer:
+        case NCM_SCREEN_TYPE_VISUALIZER:
             return NC_SCREEN_TYPE_VISUALIZER;
 #endif // ENABLE_VISUALIZER
-        case ScreenType::Unknown:
+        case NCM_SCREEN_TYPE_UNKNOWN:
             return NC_SCREEN_TYPE_UNKNOWN;
     }
     return NC_SCREEN_TYPE_UNKNOWN;

@@ -51,7 +51,7 @@ struct SongInfo: BaseScreen, Tabbable
     virtual void resize() override;
     virtual int windowTimeout() override;
     virtual std::string title() override;
-    virtual ScreenType type() override { return ScreenType::SongInfo; }
+    virtual ScreenType type() override { return NCM_SCREEN_TYPE_SONG_INFO; }
     virtual void update() override;
     virtual void mouseButtonPressed(MEVENT me) override;
     virtual bool isLockable() override;

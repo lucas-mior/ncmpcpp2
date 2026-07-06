@@ -18,7 +18,6 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include <chrono>
 #include <string>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
@@ -28,6 +27,7 @@
 #include "charset.h"
 #include "format_impl.h"
 #include "global.h"
+#include "cbase/base_macros.h"
 #include "ui_state_legacy.h"
 #include "helpers.h"
 #include "macro_utilities.h"
@@ -48,12 +48,10 @@
 
 
 
-using Global::Timer;
-using Global::VolumeState;
 
 namespace {
 
-std::chrono::steady_clock::time_point past;
+NcmTimePoint past;
 
 size_t playing_song_scroll_begin = 0;
 size_t first_line_scroll_begin = 0;
@@ -92,20 +90,20 @@ std::string playerStateToString(MPD::PlayerState ps)
 		case MPD::psUnknown:
 			switch (Config.design)
 			{
-				case Design::Alternative:
+				case NCM_DESIGN_ALTERNATIVE:
 					result = "[unknown]";
 					break;
-				case Design::Classic:
+				case NCM_DESIGN_CLASSIC:
 					break;
 			}
 			break;
 		case MPD::psPlay:
 			switch (Config.design)
 			{
-				case Design::Alternative:
+				case NCM_DESIGN_ALTERNATIVE:
 					result = "[playing]";
 					break;
-				case Design::Classic:
+				case NCM_DESIGN_CLASSIC:
 					result = "Playing:";
 					break;
 			}
@@ -113,10 +111,10 @@ std::string playerStateToString(MPD::PlayerState ps)
 		case MPD::psPause:
 			switch (Config.design)
 			{
-				case Design::Alternative:
+				case NCM_DESIGN_ALTERNATIVE:
 					result = "[paused]";
 					break;
-				case Design::Classic:
+				case NCM_DESIGN_CLASSIC:
 					result = "Paused:";
 					break;
 			}
@@ -124,10 +122,10 @@ std::string playerStateToString(MPD::PlayerState ps)
 		case MPD::psStop:
 			switch (Config.design)
 			{
-				case Design::Alternative:
+				case NCM_DESIGN_ALTERNATIVE:
 					result = "[stopped]";
 					break;
-				case Design::Classic:
+				case NCM_DESIGN_CLASSIC:
 					break;
 			}
 			break;
@@ -223,19 +221,19 @@ void Status::handleServerError(MPD::ServerError &e)
 void Status::trace(bool update_timer, bool update_window_timeout)
 {
 	if (update_timer)
-		Timer = std::chrono::steady_clock::now();
+		global_timer_update(nullptr);
 	if (Mpd.Connected())
 	{
 		if (!m_status_initialized)
 			initialize_status();
 
 		if (m_player_state == MPD::psPlay
-		&&  Global::Timer - past > std::chrono::seconds(1))
+		&&  global_timer_elapsed_ms(past) > 1000)
 		{
 			// update elapsed time/bitrate of the current song
 			Status::Changes::elapsedTime(true);
 			ui_state_legacy_footer_window()->refresh();
-			past = Timer;
+			past = global_timer;
 		}
 
 		applyToVisibleScreens(nc_screen_update);
@@ -525,7 +523,7 @@ void Status::Changes::playerState()
 			if (Progressbar::isUnlocked())
 				Progressbar::draw(0, 0);
 			myPlaylist->reloadRemaining();
-			if (Config.design == Design::Alternative)
+			if (Config.design == NCM_DESIGN_ALTERNATIVE)
 			{
 				*ui_state_legacy_header_window() << NC::XY(0, 0) << NC::TermManip::ClearToEOL;
 				*ui_state_legacy_header_window() << NC::XY(0, 1) << NC::TermManip::ClearToEOL;
@@ -542,7 +540,7 @@ void Status::Changes::playerState()
 	}
 
 	std::string state = playerStateToString(m_player_state);
-	if (Config.design == Design::Alternative)
+	if (Config.design == NCM_DESIGN_ALTERNATIVE)
 	{
 		*ui_state_legacy_header_window() << NC::XY(0, 1) << NC::Format::Bold << state << NC::Format::NoBold;
 		ui_state_legacy_header_window()->refresh();
@@ -634,7 +632,7 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 	drawTitle(np);
 	switch (Config.design)
 	{
-		case Design::Classic:
+		case NCM_DESIGN_CLASSIC:
 			if (Statusbar::isUnlocked() && Config.statusbar_visibility)
 			{
 				if (Config.display_bitrate && m_kbps)
@@ -676,7 +674,7 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 				         << NC::FormattedColor::End<>(Config.statusbar_time_color);
 			}
 			break;
-		case Design::Alternative:
+		case NCM_DESIGN_ALTERNATIVE:
 			if (Config.display_remaining_time)
 			{
 				tracklength = "-";
@@ -702,7 +700,8 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 			Format::print(Config.new_header_second_line, second, &np);
 
 			size_t first_len = Utf8::width(first.str());
-			size_t first_margin = std::max(tracklength.length()+1, VolumeState.length())*2;
+			size_t first_margin = std::max(tracklength.length()+1,
+			                            static_cast<size_t>(global_volume_state_len()))*2;
 			size_t first_start = first_len < COLS-first_margin
 			                                 ? (COLS-first_len)/2
 			                                 : tracklength.length()+1;
@@ -711,7 +710,7 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 			size_t second_start = second_len < COLS-second_margin
 			                                   ? (COLS-second_len)/2
 			                                   : ps.length()+1;
-			if (!Global::SeekingInProgress)
+			if (!global_seeking_in_progress)
 				*ui_state_legacy_header_window() << NC::XY(0, 0)
 				         << NC::TermManip::ClearToEOL
 				         << Config.statusbar_time_color
@@ -721,7 +720,7 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 			*ui_state_legacy_header_window() << NC::XY(first_start, 0);
 
 			writeCyclicBuffer(first, *ui_state_legacy_header_window(), first_line_scroll_begin,
-			                  COLS-tracklength.length()-VolumeState.length()-1, " ** ");
+			                  COLS-tracklength.length()-global_volume_state_len()-1, " ** ");
 
 			*ui_state_legacy_header_window() << NC::XY(0, 1)
 			         << NC::TermManip::ClearToEOL
@@ -733,9 +732,9 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 			writeCyclicBuffer(second, *ui_state_legacy_header_window(), second_line_scroll_begin,
 			                  COLS-ps.length()-8-2, " ** ");
 
-			*ui_state_legacy_header_window() << NC::XY(ui_state_legacy_header_window()->getWidth()-VolumeState.length(), 0)
+			*ui_state_legacy_header_window() << NC::XY(ui_state_legacy_header_window()->getWidth()-global_volume_state_len(), 0)
 			         << Config.volume_color
-			         << VolumeState
+			         << global_volume_state_cstr()
 			         << NC::FormattedColor::End<>(Config.volume_color);
 
 			flags();
@@ -746,13 +745,13 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 
 void Status::Changes::flags()
 {
-	if (!Config.header_visibility && Config.design == Design::Classic)
+	if (!Config.header_visibility && Config.design == NCM_DESIGN_CLASSIC)
 		return;
 
 	std::string switch_state;
 	switch (Config.design)
 	{
-		case Design::Classic:
+		case NCM_DESIGN_CLASSIC:
 			if (m_repeat)
 				switch_state += m_repeat;
 			if (m_random)
@@ -783,7 +782,7 @@ void Status::Changes::flags()
 				         << NC::FormattedColor::End<>(Config.state_line_color);
 
 			break;
-		case Design::Alternative:
+		case NCM_DESIGN_ALTERNATIVE:
 			switch_state += '[';
 			switch_state += m_repeat ? m_repeat : '-';
 			switch_state += m_random ? m_random : '-';
@@ -810,28 +809,32 @@ void Status::Changes::flags()
 void Status::Changes::mixer()
 {
 	if (!Config.display_volume_level
-	    || (!Config.header_visibility && Config.design == Design::Classic))
+	    || (!Config.header_visibility && Config.design == NCM_DESIGN_CLASSIC))
 		return;
 
 	switch (Config.design)
 	{
-		case Design::Classic:
-			VolumeState = " Volume: ";
+		case NCM_DESIGN_CLASSIC:
+			global_volume_state_set((char *)" Volume: ",
+			                        STRLIT_LEN(" Volume: "));
 			break;
-		case Design::Alternative:
-			VolumeState = " Vol: ";
+		case NCM_DESIGN_ALTERNATIVE:
+			global_volume_state_set((char *)" Vol: ",
+			                        STRLIT_LEN(" Vol: "));
 			break;
 	}
 	if (m_volume < 0)
-		VolumeState += "n/a";
+		global_volume_state_append((char *)"n/a", STRLIT_LEN("n/a"));
 	else
 	{
-		VolumeState += std::to_string(m_volume);
-		VolumeState += "%";
+		std::string volume = std::to_string(m_volume);
+		global_volume_state_append(const_cast<char *>(volume.data()),
+		                           static_cast<int32>(volume.length()));
+		global_volume_state_append((char *)"%", STRLIT_LEN("%"));
 	}
-	*ui_state_legacy_header_window() << NC::XY(ui_state_legacy_header_window()->getWidth()-VolumeState.length(), 0)
+	*ui_state_legacy_header_window() << NC::XY(ui_state_legacy_header_window()->getWidth()-global_volume_state_len(), 0)
 	         << Config.volume_color
-	         << VolumeState
+	         << global_volume_state_cstr()
 	         << NC::FormattedColor::End<>(Config.volume_color);
 	ui_state_legacy_header_window()->refresh();
 }

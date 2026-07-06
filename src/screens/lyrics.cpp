@@ -442,9 +442,9 @@ char *Lyrics::titleCallback(NcScreen *screen)
 			Format::stringify<char>(Format::parse("{%a - %t}|{%f}"),
 			                       &lyrics->m_song),
 			scroll_begin,
-			COLS - Utf8::width(result) - (Config.design == Design::Alternative
+			COLS - Utf8::width(result) - (Config.design == NCM_DESIGN_ALTERNATIVE
 			                          ? 2
-			                          : Global::VolumeState.length()));
+			                          : global_volume_state_len()));
 		nc_lyrics_screen_set_scroll_begin(&lyrics->m_screen,
 		                                  static_cast<int64>(scroll_begin));
 	}

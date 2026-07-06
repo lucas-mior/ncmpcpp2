@@ -57,7 +57,7 @@ struct TagEditor: Screen<NC::Window *>, HasActions, HasColumns, HasSongs, Search
 	virtual void switchTo() override;
 	
 	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::TagEditor; }
+	virtual ScreenType type() override { return NCM_SCREEN_TYPE_TAG_EDITOR; }
 	
 	virtual void refresh() override;
 	virtual void update() override;

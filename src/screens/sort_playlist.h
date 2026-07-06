@@ -37,7 +37,7 @@ struct SortPlaylistDialog
 	virtual void resize() override;
 	
 	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::SortPlaylistDialog; }
+	virtual ScreenType type() override { return NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG; }
 	
 	virtual void update() override { }
 	

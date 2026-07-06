@@ -1,23 +1,3 @@
-/***************************************************************************
- *   Copyright (C) 2008-2021 by Andrzej Rybczak                            *
- *   andrzej@rybczak.net                                                   *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
- ***************************************************************************/
-
 #include "config.h"
 #include "screens/screen_type.h"
 
@@ -37,180 +17,100 @@
 
 std::string screenTypeToString(ScreenType st)
 {
-	switch (st)
-	{
-	case ScreenType::Browser:
-		return "browser";
-	case ScreenType::Help:
-		return "help";
-	case ScreenType::Lastfm:
-		return "last_fm";
-	case ScreenType::Lyrics:
-		return "lyrics";
-	case ScreenType::MediaLibrary:
-		return "media_library";
-#ifdef ENABLE_OUTPUTS
-	case ScreenType::Outputs:
-		return "outputs";
-#endif // ENABLE_OUTPUTS
-	case ScreenType::Playlist:
-		return "playlist";
-	case ScreenType::PlaylistEditor:
-		return "playlist_editor";
-	case ScreenType::SearchEngine:
-		return "search_engine";
-	case ScreenType::SelectedItemsAdder:
-		return "selected_items_adder";
-	case ScreenType::ServerInfo:
-		return "server_info";
-	case ScreenType::SongInfo:
-		return "song_info";
-	case ScreenType::SortPlaylistDialog:
-		return "sort_playlist_dialog";
-#ifdef HAVE_TAGLIB_H
-	case ScreenType::TagEditor:
-		return "tag_editor";
-	case ScreenType::TinyTagEditor:
-		return "tiny_tag_editor";
-#endif // HAVE_TAGLIB_H
-	case ScreenType::Unknown:
-		return "unknown";
-#ifdef ENABLE_VISUALIZER
-	case ScreenType::Visualizer:
-		return "visualizer";
-#endif // ENABLE_VISUALIZER
-	}
-	// silence gcc warning
-	throw std::runtime_error("unreachable");
+    return screen_type_str(st);
 }
 
 ScreenType stringtoStartupScreenType(const std::string &s)
 {
-	ScreenType result = ScreenType::Unknown;
-	if (s == "browser")
-		result = ScreenType::Browser;
-	else if (s == "help")
-		result = ScreenType::Help;
-	else if (s == "media_library")
-		result = ScreenType::MediaLibrary;
-#	ifdef ENABLE_OUTPUTS
-	else if (s == "outputs")
-		result = ScreenType::Outputs;
-#	endif // ENABLE_OUTPUTS
-	else if (s == "playlist")
-		result = ScreenType::Playlist;
-	else if (s == "playlist_editor")
-		result = ScreenType::PlaylistEditor;
-	else if (s == "search_engine")
-		result = ScreenType::SearchEngine;
-#	ifdef HAVE_TAGLIB_H
-	else if (s == "tag_editor")
-		result = ScreenType::TagEditor;
-#	endif // HAVE_TAGLIB_H
-#	ifdef ENABLE_VISUALIZER
-	else if (s == "visualizer")
-		result = ScreenType::Visualizer;
-#	endif // ENABLE_VISUALIZER
-	else if (s == "lyrics")
-		result = ScreenType::Lyrics;
-	else if (s == "last_fm")
-		result = ScreenType::Lastfm;
-	return result;
+    ScreenType result;
+
+    if (!screen_type_parse_startup(const_cast<char *>(s.data()),
+                                   static_cast<int32>(s.length()),
+                                   &result))
+        return NCM_SCREEN_TYPE_UNKNOWN;
+
+    return result;
 }
 
 ScreenType stringToScreenType(const std::string &s)
 {
-	ScreenType result = stringtoStartupScreenType(s);
-	if (result == ScreenType::Unknown)
-	{
-		if (s == "lyrics")
-			result = ScreenType::Lyrics;
-		else if (s == "last_fm")
-			result = ScreenType::Lastfm;
-		else if (s == "selected_items_adder")
-			result = ScreenType::SelectedItemsAdder;
-		else if (s == "server_info")
-			result = ScreenType::ServerInfo;
-		else if (s == "song_info")
-			result = ScreenType::SongInfo;
-		else if (s == "sort_playlist_dialog")
-			result = ScreenType::SortPlaylistDialog;
-#		ifdef HAVE_TAGLIB_H
-		else if (s == "tiny_tag_editor")
-			result = ScreenType::TinyTagEditor;
-#		endif // HAVE_TAGLIB_H
-	}
-	return result;
+    ScreenType result;
+
+    if (!screen_type_parse(const_cast<char *>(s.data()),
+                           static_cast<int32>(s.length()), &result))
+        return NCM_SCREEN_TYPE_UNKNOWN;
+
+    return result;
 }
 
 BaseScreen *toScreen(ScreenType st)
 {
-	switch (st)
-	{
-		case ScreenType::Browser:
-			return myBrowser;
-		case ScreenType::Help:
-			return native_c_screen_help_legacy();
-		case ScreenType::Lastfm:
-			return myLastfm;
-		case ScreenType::Lyrics:
-			return myLyrics;
-		case ScreenType::MediaLibrary:
-			return myLibrary;
-#		ifdef ENABLE_OUTPUTS
-		case ScreenType::Outputs:
-			return native_c_screen_outputs_legacy();
-#		endif // ENABLE_OUTPUTS
-		case ScreenType::Playlist:
-			return myPlaylist;
-		case ScreenType::PlaylistEditor:
-			return myPlaylistEditor;
-		case ScreenType::SearchEngine:
-			return mySearcher;
-		case ScreenType::SelectedItemsAdder:
-			return mySelectedItemsAdder;
-		case ScreenType::ServerInfo:
-			return native_c_screen_server_info_legacy();
-		case ScreenType::SongInfo:
-			return native_c_screen_song_info_legacy();
-		case ScreenType::SortPlaylistDialog:
-			return mySortPlaylistDialog;
-#		ifdef HAVE_TAGLIB_H
-		case ScreenType::TagEditor:
-			return myTagEditor;
-		case ScreenType::TinyTagEditor:
-			return myTinyTagEditor;
-#		endif // HAVE_TAGLIB_H
-#		ifdef ENABLE_VISUALIZER
-		case ScreenType::Visualizer:
-			return myVisualizer;
-#		endif // ENABLE_VISUALIZER
-		default:
-			return nullptr;
-	}
+    switch (st)
+    {
+        case NCM_SCREEN_TYPE_BROWSER:
+            return myBrowser;
+        case NCM_SCREEN_TYPE_HELP:
+            return native_c_screen_help_legacy();
+        case NCM_SCREEN_TYPE_LASTFM:
+            return myLastfm;
+        case NCM_SCREEN_TYPE_LYRICS:
+            return myLyrics;
+        case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
+            return myLibrary;
+#       ifdef ENABLE_OUTPUTS
+        case NCM_SCREEN_TYPE_OUTPUTS:
+            return native_c_screen_outputs_legacy();
+#       endif // ENABLE_OUTPUTS
+        case NCM_SCREEN_TYPE_PLAYLIST:
+            return myPlaylist;
+        case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
+            return myPlaylistEditor;
+        case NCM_SCREEN_TYPE_SEARCH_ENGINE:
+            return mySearcher;
+        case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
+            return mySelectedItemsAdder;
+        case NCM_SCREEN_TYPE_SERVER_INFO:
+            return native_c_screen_server_info_legacy();
+        case NCM_SCREEN_TYPE_SONG_INFO:
+            return native_c_screen_song_info_legacy();
+        case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
+            return mySortPlaylistDialog;
+#       ifdef HAVE_TAGLIB_H
+        case NCM_SCREEN_TYPE_TAG_EDITOR:
+            return myTagEditor;
+        case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+            return myTinyTagEditor;
+#       endif // HAVE_TAGLIB_H
+#       ifdef ENABLE_VISUALIZER
+        case NCM_SCREEN_TYPE_VISUALIZER:
+            return myVisualizer;
+#       endif // ENABLE_VISUALIZER
+        default:
+            return nullptr;
+    }
 }
 
 NcScreen *toNativeScreen(ScreenType st)
 {
-	switch (st)
-	{
-		case ScreenType::Help:
-			return native_c_screen_help_native();
-#		ifdef ENABLE_OUTPUTS
-		case ScreenType::Outputs:
-			return native_c_screen_outputs_native();
-#		endif // ENABLE_OUTPUTS
-		case ScreenType::ServerInfo:
-			return native_c_screen_server_info_native();
-		case ScreenType::SongInfo:
-			return native_c_screen_song_info_native();
-		default:
-			break;
-	}
+    switch (st)
+    {
+        case NCM_SCREEN_TYPE_HELP:
+            return native_c_screen_help_native();
+#       ifdef ENABLE_OUTPUTS
+        case NCM_SCREEN_TYPE_OUTPUTS:
+            return native_c_screen_outputs_native();
+#       endif // ENABLE_OUTPUTS
+        case NCM_SCREEN_TYPE_SERVER_INFO:
+            return native_c_screen_server_info_native();
+        case NCM_SCREEN_TYPE_SONG_INFO:
+            return native_c_screen_song_info_native();
+        default:
+            break;
+    }
 
-	BaseScreen *screen = toScreen(st);
+    BaseScreen *screen = toScreen(st);
 
-	if (screen == nullptr)
-		return nullptr;
-	return screen->nativeScreen();
+    if (screen == nullptr)
+        return nullptr;
+    return screen->nativeScreen();
 }

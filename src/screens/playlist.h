@@ -21,9 +21,9 @@
 #ifndef NCMPCPP_PLAYLIST_H
 #define NCMPCPP_PLAYLIST_H
 
-#include <chrono>
 #include <unordered_map>
 
+#include "c/ncm_time.h"
 #include "interfaces.h"
 #include "regex_filter.h"
 #include "screens/nc_playlist.h"
@@ -45,7 +45,7 @@ struct Playlist: Screen<SongMenu>, Filterable, HasSongs, Searchable, Tabbable
 	virtual int windowTimeout() override;
 	
 	virtual std::string title() override;
-	virtual ScreenType type() override { return ScreenType::Playlist; }
+	virtual ScreenType type() override { return NCM_SCREEN_TYPE_PLAYLIST; }
 	
 	virtual void update() override;
 	
@@ -119,7 +119,7 @@ private:
 	size_t m_remaining_time;
 	size_t m_scroll_begin;
 	
-	std::chrono::steady_clock::time_point m_timer;
+	NcmTimePoint m_timer;
 
 	bool m_reload_total_length;
 	bool m_reload_remaining;

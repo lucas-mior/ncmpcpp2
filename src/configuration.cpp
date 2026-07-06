@@ -546,7 +546,7 @@ bool configure(int argc, char **argv)
 		if (options.screen)
 		{
 			Config.startup_screen_type = stringtoStartupScreenType(options.screen_name);
-			if (Config.startup_screen_type == ScreenType::Unknown)
+			if (Config.startup_screen_type == NCM_SCREEN_TYPE_UNKNOWN)
 			{
 				std::cerr << "Unknown screen: " << options.screen_name << "\n";
 				exit(1);
@@ -557,7 +557,7 @@ bool configure(int argc, char **argv)
 		if (options.slave_screen)
 		{
 			Config.startup_slave_screen_type = stringtoStartupScreenType(options.slave_screen_name);
-			if (Config.startup_slave_screen_type == ScreenType::Unknown)
+			if (Config.startup_slave_screen_type == NCM_SCREEN_TYPE_UNKNOWN)
 			{
 				std::cerr << "Unknown slave screen: " << options.slave_screen_name << "\n";
 				exit(1);
