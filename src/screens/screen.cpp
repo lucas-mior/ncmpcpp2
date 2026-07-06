@@ -20,6 +20,7 @@
 
 #include <cassert>
 
+#include "app_state.h"
 #include "global.h"
 #include "interfaces.h"
 #include "screens/screen.h"
@@ -106,14 +107,21 @@ BaseScreen *legacyOwner(NcScreen *screen)
     return static_cast<BaseScreen *>(nc_screen_user(screen));
 }
 
+BaseScreen *previousLegacyScreen()
+{
+    return legacyOwner(app_state_get_previous_screen());
+}
+
 void setTabPreviousScreen(BaseScreen *screen)
 {
+    BaseScreen *previous_screen = previousLegacyScreen();
     auto tab = dynamic_cast<Tabbable *>(screen);
+
     if (tab == nullptr)
         return;
-    if (dynamic_cast<Tabbable *>(myScreen) == nullptr)
+    if (dynamic_cast<Tabbable *>(previous_screen) == nullptr)
         return;
-    tab->setPreviousScreen(myScreen);
+    tab->setPreviousScreen(previous_screen);
 }
 
 }
@@ -171,11 +179,9 @@ BaseScreen::BaseScreen()
 
 BaseScreen::~BaseScreen()
 {
-    if (nc_screen_registry_is_registered(&Global::myScreenRegistry,
-                                         &m_native_screen))
+    if (app_state_is_screen_registered(&m_native_screen))
     {
-        nc_screen_registry_unregister(&Global::myScreenRegistry,
-                                      &m_native_screen);
+        app_state_unregister_screen(&m_native_screen);
     }
 }
 
@@ -184,13 +190,17 @@ void BaseScreen::registerNativeScreen()
     NcScreen *screen = nativeScreen();
 
     nc_screen_set_type(screen, toNativeType(type()));
-    if (!nc_screen_registry_is_registered(&Global::myScreenRegistry, screen))
+    if (!app_state_is_screen_registered(screen))
     {
-        bool success = nc_screen_registry_register(&Global::myScreenRegistry,
-                                                  screen);
+        bool success = app_state_register_screen(screen);
         assert(success);
         (void)success;
     }
+}
+
+BaseScreen *BaseScreen::legacyFromNativeScreen(NcScreen *screen)
+{
+    return fromNativeScreen(screen);
 }
 
 BaseScreen *BaseScreen::fromNativeScreen(NcScreen *screen)
@@ -258,7 +268,6 @@ void BaseScreen::nativeSwitchToCallback(NcScreen *screen)
         return;
     if (myScreen != owner)
         setTabPreviousScreen(owner);
-    myScreen = owner;
     syncLegacyScreenPointers();
 }
 
@@ -330,8 +339,8 @@ void BaseScreen::getWindowResizeParams(size_t &x_offset, size_t &width,
     NcScreen *locked_screen;
     NcScreen *inactive_screen;
 
-    locked_screen = nc_screen_registry_locked(&Global::myScreenRegistry);
-    inactive_screen = nc_screen_registry_inactive(&Global::myScreenRegistry);
+    locked_screen = app_state_get_locked_screen();
+    inactive_screen = app_state_get_inactive_screen();
 
     width = COLS;
     x_offset = 0;
@@ -357,8 +366,8 @@ void BaseScreen::getWindowResizeParams(size_t &x_offset, size_t &width,
 
 bool BaseScreen::lock()
 {
-    assert(nc_screen_registry_locked(&Global::myScreenRegistry) == nullptr);
-    if (!nc_screen_registry_lock_current(&Global::myScreenRegistry))
+    assert(app_state_get_locked_screen() == nullptr);
+    if (!app_state_lock_current_screen())
         return false;
     syncLegacyScreenPointers();
     return true;
@@ -366,7 +375,7 @@ bool BaseScreen::lock()
 
 void BaseScreen::unlock()
 {
-    nc_screen_registry_unlock(&Global::myScreenRegistry);
+    app_state_unlock_screen();
     syncLegacyScreenPointers();
 }
 
@@ -374,8 +383,7 @@ void BaseScreen::unlock()
 
 void applyToVisibleScreens(std::function<void(NcScreen *)> f)
 {
-    nc_screen_registry_each_visible(
-        &Global::myScreenRegistry,
+    app_state_each_visible_screen(
         [](NcScreen *screen, void *user) {
             auto *callback = static_cast<
                 std::function<void(NcScreen *)> *>(user);
@@ -396,17 +404,13 @@ void applyToVisibleWindows(std::function<void(BaseScreen *)> f)
 
 void syncLegacyScreenPointers()
 {
-    myScreen = legacyOwner(
-        nc_screen_registry_current(&Global::myScreenRegistry));
-    myLockedScreen = legacyOwner(
-        nc_screen_registry_locked(&Global::myScreenRegistry));
-    myInactiveScreen = legacyOwner(
-        nc_screen_registry_inactive(&Global::myScreenRegistry));
+    myScreen = legacyOwner(app_state_get_screen());
+    myLockedScreen = legacyOwner(app_state_get_locked_screen());
+    myInactiveScreen = legacyOwner(app_state_get_inactive_screen());
 }
 
 bool isVisible(BaseScreen *screen)
 {
     assert(screen != 0);
-    return nc_screen_registry_is_visible(&Global::myScreenRegistry,
-                                         screen->nativeScreen());
+    return app_state_is_screen_visible(screen->nativeScreen());
 }

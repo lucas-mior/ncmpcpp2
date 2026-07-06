@@ -23,6 +23,7 @@
 
 #include "charset.h"
 #include "curses/formatted_color.h"
+#include "app_state.h"
 #include "global.h"
 #include "mpdpp.h"
 #include "screens/outputs.h"
@@ -92,19 +93,16 @@ Outputs::Outputs()
     nc_outputs_screen_set_highlight_suffix(
         &m_screen, Config.current_item_suffix.cBuffer());
 
-    bool register_success = nc_screen_registry_register(
-        &Global::myScreenRegistry, nativeScreen());
+    bool register_success = app_state_register_screen(nativeScreen());
     assert(register_success);
     (void)register_success;
 }
 
 Outputs::~Outputs()
 {
-    if (nc_screen_registry_is_registered(&Global::myScreenRegistry,
-                                         nativeScreen()))
+    if (app_state_is_screen_registered(nativeScreen()))
     {
-        nc_screen_registry_unregister(&Global::myScreenRegistry,
-                                      nativeScreen());
+        app_state_unregister_screen(nativeScreen());
     }
     nc_outputs_screen_destroy(&m_screen);
 }
@@ -143,7 +141,7 @@ void Outputs::scroll(NC::Scroll where)
 void Outputs::switchTo()
 {
     nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-    nc_screen_registry_switch_to(&Global::myScreenRegistry, nativeScreen());
+    app_state_switch_to_screen(nativeScreen());
 }
 
 void Outputs::resize()
