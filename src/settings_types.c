@@ -1,13 +1,10 @@
 #include "settings.h"
 
 #include "c/ncm_base.h"
+#include "cbase/base_macros.h"
 
 static NcmArrayItemCallbacks settings_no_callbacks = {0};
 
-static void settings_column_array_init_item(void *item);
-static void settings_column_array_destroy_item(void *item);
-static bool settings_column_array_copy_item(void *dest, void *source);
-static void settings_column_array_move_item(void *dest, void *source);
 static void settings_formatted_color_array_init_item(void *item);
 static void settings_formatted_color_array_destroy_item(void *item);
 static bool settings_formatted_color_array_copy_item(void *dest,
@@ -21,12 +18,6 @@ static bool settings_lyrics_fetcher_array_copy_item(void *dest,
 static void settings_lyrics_fetcher_array_move_item(void *dest,
                                                     void *source);
 
-static NcmArrayItemCallbacks settings_column_callbacks = {
-    .init = settings_column_array_init_item,
-    .destroy = settings_column_array_destroy_item,
-    .copy = settings_column_array_copy_item,
-    .move = settings_column_array_move_item,
-};
 static NcmArrayItemCallbacks settings_formatted_color_callbacks = {
     .init = settings_formatted_color_array_init_item,
     .destroy = settings_formatted_color_array_destroy_item,
@@ -62,14 +53,6 @@ NCM_ARRAY_DEFINE(ncm_int32_array,
                  NcmInt32Array,
                  int32,
                  &settings_no_callbacks)
-NCM_ARRAY_DEFINE(ncm_screen_type_array,
-                 NcmScreenTypeArray,
-                 enum ScreenType,
-                 &settings_no_callbacks)
-NCM_ARRAY_DEFINE(ncm_column_array,
-                 NcmColumnArray,
-                 Column,
-                 &settings_column_callbacks)
 NCM_ARRAY_DEFINE(ncm_formatted_color_array,
                  NcmFormattedColorArray,
                  NcFormattedColor,
@@ -201,6 +184,179 @@ column_move(Column *dest, Column *source) {
 }
 
 void
+column_array_init(ColumnArray *array) {
+    array->items = NULL;
+    array->len = 0;
+    array->cap = 0;
+    return;
+}
+
+void
+column_array_clear(ColumnArray *array) {
+    if (array == NULL) {
+        return;
+    }
+    for (int32 i = 0; i < array->len; i += 1) {
+        column_destroy(&array->items[i]);
+    }
+    array->len = 0;
+    return;
+}
+
+void
+column_array_destroy(ColumnArray *array) {
+    if (array == NULL) {
+        return;
+    }
+    column_array_clear(array);
+    if (array->items) {
+        ncm_free(array->items, array->cap*SIZEOF(*array->items));
+    }
+    column_array_init(array);
+    return;
+}
+
+static bool
+column_array_reserve(ColumnArray *array, int32 extra) {
+    int32 needed;
+    int32 old_cap;
+    int32 new_cap;
+
+    if (array == NULL) {
+        return false;
+    }
+    if (extra <= 0) {
+        return true;
+    }
+
+    needed = array->len + extra;
+    if (needed <= array->cap) {
+        return true;
+    }
+
+    old_cap = array->cap;
+    new_cap = array->cap;
+    if (new_cap <= 0) {
+        new_cap = 8;
+    }
+    while (new_cap < needed) {
+        new_cap *= 2;
+    }
+
+    array->items = ncm_realloc_array(array->items, old_cap, new_cap,
+                                     SIZEOF(*array->items));
+    array->cap = new_cap;
+    return true;
+}
+
+Column *
+column_array_append(ColumnArray *array) {
+    Column *column;
+
+    if (!column_array_reserve(array, 1)) {
+        return NULL;
+    }
+
+    column = &array->items[array->len];
+    array->len += 1;
+    column_init(column);
+    return column;
+}
+
+bool
+column_array_append_copy(ColumnArray *array, Column *column) {
+    Column *dest;
+
+    dest = column_array_append(array);
+    if (dest == NULL) {
+        return false;
+    }
+    if (!column_copy(dest, column)) {
+        array->len -= 1;
+        column_destroy(dest);
+        return false;
+    }
+
+    return true;
+}
+
+void
+screen_type_array_init(ScreenTypeArray *array) {
+    array->items = NULL;
+    array->len = 0;
+    array->cap = 0;
+    return;
+}
+
+void
+screen_type_array_clear(ScreenTypeArray *array) {
+    if (array == NULL) {
+        return;
+    }
+    array->len = 0;
+    return;
+}
+
+void
+screen_type_array_destroy(ScreenTypeArray *array) {
+    if (array == NULL) {
+        return;
+    }
+    if (array->items) {
+        ncm_free(array->items, array->cap*SIZEOF(*array->items));
+    }
+    screen_type_array_init(array);
+    return;
+}
+
+static bool
+screen_type_array_reserve(ScreenTypeArray *array, int32 extra) {
+    int32 needed;
+    int32 old_cap;
+    int32 new_cap;
+
+    if (array == NULL) {
+        return false;
+    }
+    if (extra <= 0) {
+        return true;
+    }
+
+    needed = array->len + extra;
+    if (needed <= array->cap) {
+        return true;
+    }
+
+    old_cap = array->cap;
+    new_cap = array->cap;
+    if (new_cap <= 0) {
+        new_cap = 8;
+    }
+    while (new_cap < needed) {
+        new_cap *= 2;
+    }
+
+    array->items = ncm_realloc_array(array->items, old_cap, new_cap,
+                                     SIZEOF(*array->items));
+    array->cap = new_cap;
+    return true;
+}
+
+enum ScreenType *
+screen_type_array_append(ScreenTypeArray *array) {
+    enum ScreenType *screen_type;
+
+    if (!screen_type_array_reserve(array, 1)) {
+        return NULL;
+    }
+
+    screen_type = &array->items[array->len];
+    array->len += 1;
+    *screen_type = NCM_SCREEN_TYPE_UNKNOWN;
+    return screen_type;
+}
+
+void
 ncm_lyrics_fetcher_def_init(NcmLyricsFetcherDef *fetcher) {
     fetcher->name = NULL;
     fetcher->url_template = NULL;
@@ -299,29 +455,6 @@ ncm_lyrics_fetcher_def_move(NcmLyricsFetcherDef *dest,
 }
 
 static void
-settings_column_array_init_item(void *item) {
-    column_init(item);
-    return;
-}
-
-static void
-settings_column_array_destroy_item(void *item) {
-    column_destroy(item);
-    return;
-}
-
-static bool
-settings_column_array_copy_item(void *dest, void *source) {
-    return column_copy(dest, source);
-}
-
-static void
-settings_column_array_move_item(void *dest, void *source) {
-    column_move(dest, source);
-    return;
-}
-
-static void
 settings_formatted_color_array_init_item(void *item) {
     nc_formatted_color_init(item);
     return;
@@ -389,6 +522,7 @@ configuration_init_strings(Configuration *config) {
     NCM_CONFIG_STRING_INIT(lastfm_preferred_language);
     NCM_CONFIG_STRING_INIT(pattern);
     NCM_CONFIG_STRING_INIT(random_exclude_pattern);
+    NCM_CONFIG_STRING_INIT(tags_separator);
 
 #undef NCM_CONFIG_STRING_INIT
     return;
@@ -414,6 +548,7 @@ configuration_destroy_strings(Configuration *config) {
     NCM_CONFIG_STRING_DESTROY(lastfm_preferred_language);
     NCM_CONFIG_STRING_DESTROY(pattern);
     NCM_CONFIG_STRING_DESTROY(random_exclude_pattern);
+    NCM_CONFIG_STRING_DESTROY(tags_separator);
 
 #undef NCM_CONFIG_STRING_DESTROY
     return;
@@ -521,9 +656,9 @@ configuration_init_arrays(Configuration *config) {
     ncm_int32_array_init(&config->playlist_editor_column_width_ratio);
     ncm_int32_array_init(&config->media_library_column_width_ratio_two);
     ncm_int32_array_init(&config->media_library_column_width_ratio_three);
-    ncm_column_array_init(&config->columns);
+    column_array_init(&config->columns);
     ncm_formatted_color_array_init(&config->visualizer_colors);
-    ncm_screen_type_array_init(&config->screen_sequence);
+    screen_type_array_init(&config->screen_sequence);
     ncm_lyrics_fetcher_array_init(&config->lyrics_fetchers);
     return;
 }
@@ -533,9 +668,9 @@ configuration_destroy_arrays(Configuration *config) {
     ncm_int32_array_destroy(&config->playlist_editor_column_width_ratio);
     ncm_int32_array_destroy(&config->media_library_column_width_ratio_two);
     ncm_int32_array_destroy(&config->media_library_column_width_ratio_three);
-    ncm_column_array_destroy(&config->columns);
+    column_array_destroy(&config->columns);
     ncm_formatted_color_array_destroy(&config->visualizer_colors);
-    ncm_screen_type_array_destroy(&config->screen_sequence);
+    screen_type_array_destroy(&config->screen_sequence);
     ncm_lyrics_fetcher_array_destroy(&config->lyrics_fetchers);
     return;
 }
@@ -609,6 +744,7 @@ configuration_init(Configuration *config) {
     config->generate_win32_compatible_filenames = false;
     config->ask_for_locked_screen_width_part = false;
     config->allow_for_physical_item_deletion = false;
+    config->show_duplicate_tags = false;
     config->media_library_albums_split_by_date = false;
     config->startup_slave_screen_focus = false;
     config->has_startup_slave_screen_type = false;
@@ -666,11 +802,3 @@ configuration_clear(Configuration *config) {
     return;
 }
 
-bool
-configuration_read(Configuration *config, NcmStringViewArray *config_paths,
-                   bool ignore_errors) {
-    (void)config;
-    (void)config_paths;
-    (void)ignore_errors;
-    return false;
-}

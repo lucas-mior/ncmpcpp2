@@ -33,7 +33,7 @@
 
 namespace ph = std::placeholders;
 
-Configuration Config;
+Configuration ConfigLegacy;
 
 namespace {
 

@@ -224,6 +224,8 @@ struct Configuration
 	LyricsFetchers lyrics_fetchers;
 };
 
-extern Configuration Config;
+extern Configuration ConfigLegacy;
+
+#define Config ConfigLegacy
 
 #endif // NCMPCPP_SETTINGS_LEGACY_H
