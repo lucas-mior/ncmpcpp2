@@ -14,6 +14,12 @@ extern "C" {
 #define NCM_REGEX_LITERAL  0x04u
 #define NCM_REGEX_NOSUB    0x08u
 
+#define NCM_REGEX_BASIC_CASE_INSENSITIVE NCM_REGEX_ICASE
+#define NCM_REGEX_EXTENDED_CASE_INSENSITIVE \
+    (NCM_REGEX_EXTENDED | NCM_REGEX_ICASE)
+#define NCM_REGEX_LITERAL_CASE_INSENSITIVE \
+    (NCM_REGEX_LITERAL | NCM_REGEX_EXTENDED | NCM_REGEX_ICASE)
+
 typedef bool (*NcmRegexMatchCallback)(int32 start, int32 len, void *user);
 
 typedef struct NcmRegex {
