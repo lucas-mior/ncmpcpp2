@@ -22,6 +22,7 @@ bin_PROGRAMS = ncmpcpp
 ncmpcpp_SOURCES = \
 	app_controller.c \
 	app_state.c \
+	ui_state.c \
 	curses/formatted_color.cpp \
 	curses/nc_buffer.c \
 	curses/nc_formatted_color.c \
@@ -97,6 +98,8 @@ ncmpcpp_LDADD = libncmpcpp_c.la ../cbase/libcbase.la
 noinst_HEADERS = \
 	app_controller.h \
 	app_state.h \
+	ui_state.h \
+	ui_state_legacy.h \
 	c/ncm_base.h \
 	c/ncm_defs.h \
 	c/ncm_directory.h \

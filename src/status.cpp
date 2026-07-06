@@ -28,6 +28,7 @@
 #include "charset.h"
 #include "format_impl.h"
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "helpers.h"
 #include "macro_utilities.h"
 #include "screens/lyrics.h"
@@ -46,8 +47,6 @@
 #include "utility/string.h"
 
 
-using Global::wFooter;
-using Global::wHeader;
 
 using Global::Timer;
 using Global::VolumeState;
@@ -169,7 +168,7 @@ void initialize_status()
 #	endif // ENABLE_VISUALIZER
 
 	m_status_initialized = true;
-	wFooter->addFDCallback(Mpd.GetFD(), Statusbar::Helpers::mpd);
+	ui_state_legacy_footer_window()->addFDCallback(Mpd.GetFD(), Statusbar::Helpers::mpd);
 	if (Config.connected_message_on_startup)
 	{
 		Statusbar::printf("Connected to %1%", Mpd.GetHostname());
@@ -194,9 +193,9 @@ void Status::handleServerError(MPD::ServerError &e)
 	{
 		try
 		{
-			NC::Window::ScopedPromptHook helper(*wFooter, nullptr);
+			NC::Window::ScopedPromptHook helper(*ui_state_legacy_footer_window(), nullptr);
 			Statusbar::put() << "Password: ";
-			Mpd.SetPassword(wFooter->prompt("", -1, true));
+			Mpd.SetPassword(ui_state_legacy_footer_window()->prompt("", -1, true));
 			Mpd.SendPassword();
 			Statusbar::print("Password accepted");
 		}
@@ -235,7 +234,7 @@ void Status::trace(bool update_timer, bool update_window_timeout)
 		{
 			// update elapsed time/bitrate of the current song
 			Status::Changes::elapsedTime(true);
-			wFooter->refresh();
+			ui_state_legacy_footer_window()->refresh();
 			past = Timer;
 		}
 
@@ -252,7 +251,7 @@ void Status::trace(bool update_timer, bool update_window_timeout)
 		applyToVisibleScreens([&nc_wtimeout](NcScreen *s) {
 			nc_wtimeout = std::min(nc_wtimeout, nc_screen_window_timeout(s));
 		});
-		wFooter->setTimeout(nc_wtimeout);
+		ui_state_legacy_footer_window()->setTimeout(nc_wtimeout);
 	}
 }
 
@@ -336,7 +335,7 @@ void Status::update(int event)
 	m_status_initialized = true;
 
 	if (event & MPD_IDLE_PLAYER)
-		wFooter->refresh();
+		ui_state_legacy_footer_window()->refresh();
 
 	if (event & (MPD_IDLE_PLAYLIST | MPD_IDLE_DATABASE | MPD_IDLE_PLAYER))
 		applyToVisibleScreens(nc_screen_refresh_window);
@@ -528,8 +527,8 @@ void Status::Changes::playerState()
 			myPlaylist->reloadRemaining();
 			if (Config.design == Design::Alternative)
 			{
-				*wHeader << NC::XY(0, 0) << NC::TermManip::ClearToEOL;
-				*wHeader << NC::XY(0, 1) << NC::TermManip::ClearToEOL;
+				*ui_state_legacy_header_window() << NC::XY(0, 0) << NC::TermManip::ClearToEOL;
+				*ui_state_legacy_header_window() << NC::XY(0, 1) << NC::TermManip::ClearToEOL;
 				mixer();
 				flags();
 			}
@@ -545,16 +544,16 @@ void Status::Changes::playerState()
 	std::string state = playerStateToString(m_player_state);
 	if (Config.design == Design::Alternative)
 	{
-		*wHeader << NC::XY(0, 1) << NC::Format::Bold << state << NC::Format::NoBold;
-		wHeader->refresh();
+		*ui_state_legacy_header_window() << NC::XY(0, 1) << NC::Format::Bold << state << NC::Format::NoBold;
+		ui_state_legacy_header_window()->refresh();
 	}
 	else if (Statusbar::isUnlocked() && Config.statusbar_visibility)
 	{
-		*wFooter << NC::XY(0, 1);
+		*ui_state_legacy_footer_window() << NC::XY(0, 1);
 		if (state.empty())
-			*wFooter << NC::TermManip::ClearToEOL;
+			*ui_state_legacy_footer_window() << NC::TermManip::ClearToEOL;
 		else
-			*wFooter << NC::Format::Bold << state << NC::Format::NoBold;
+			*ui_state_legacy_footer_window() << NC::Format::Bold << state << NC::Format::NoBold;
 	}
 
 	// needed for immediate display after starting
@@ -615,7 +614,7 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 	{
 		// MPD is not playing, clear statusbar and exit.
 		if (Statusbar::isUnlocked() && Config.statusbar_visibility)
-			*wFooter << NC::XY(0, 1)
+			*ui_state_legacy_footer_window() << NC::XY(0, 1)
 			         << NC::TermManip::ClearToEOL;
 		if (Progressbar::isUnlocked())
 			Progressbar::draw(0, 0);
@@ -662,16 +661,16 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 				tracklength += "]";
 				NC::Buffer np_song;
 				Format::print(Config.song_status_format, np_song, &np);
-				*wFooter << NC::XY(0, 1)
+				*ui_state_legacy_footer_window() << NC::XY(0, 1)
 				         << NC::TermManip::ClearToEOL
 				         << Config.player_state_color
 				         << ps
 				         << NC::FormattedColor::End<>(Config.player_state_color)
 				         << " ";
 				writeCyclicBuffer(
-					np_song, *wFooter, playing_song_scroll_begin,
-					wFooter->getWidth()-ps.length()-tracklength.length()-2, " ** ");
-				*wFooter << NC::XY(wFooter->getWidth()-tracklength.length(), 1)
+					np_song, *ui_state_legacy_footer_window(), playing_song_scroll_begin,
+					ui_state_legacy_footer_window()->getWidth()-ps.length()-tracklength.length()-2, " ** ");
+				*ui_state_legacy_footer_window() << NC::XY(ui_state_legacy_footer_window()->getWidth()-tracklength.length(), 1)
 				         << Config.statusbar_time_color
 				         << tracklength
 				         << NC::FormattedColor::End<>(Config.statusbar_time_color);
@@ -713,28 +712,28 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 			                                   ? (COLS-second_len)/2
 			                                   : ps.length()+1;
 			if (!Global::SeekingInProgress)
-				*wHeader << NC::XY(0, 0)
+				*ui_state_legacy_header_window() << NC::XY(0, 0)
 				         << NC::TermManip::ClearToEOL
 				         << Config.statusbar_time_color
 				         << tracklength
 				         << NC::FormattedColor::End<>(Config.statusbar_time_color);
 
-			*wHeader << NC::XY(first_start, 0);
+			*ui_state_legacy_header_window() << NC::XY(first_start, 0);
 
-			writeCyclicBuffer(first, *wHeader, first_line_scroll_begin,
+			writeCyclicBuffer(first, *ui_state_legacy_header_window(), first_line_scroll_begin,
 			                  COLS-tracklength.length()-VolumeState.length()-1, " ** ");
 
-			*wHeader << NC::XY(0, 1)
+			*ui_state_legacy_header_window() << NC::XY(0, 1)
 			         << NC::TermManip::ClearToEOL
 			         << Config.player_state_color
 			         << ps
 			         << NC::FormattedColor::End<>(Config.player_state_color)
 			         << NC::XY(second_start, 1);
 
-			writeCyclicBuffer(second, *wHeader, second_line_scroll_begin,
+			writeCyclicBuffer(second, *ui_state_legacy_header_window(), second_line_scroll_begin,
 			                  COLS-ps.length()-8-2, " ** ");
 
-			*wHeader << NC::XY(wHeader->getWidth()-VolumeState.length(), 0)
+			*ui_state_legacy_header_window() << NC::XY(ui_state_legacy_header_window()->getWidth()-VolumeState.length(), 0)
 			         << Config.volume_color
 			         << VolumeState
 			         << NC::FormattedColor::End<>(Config.volume_color);
@@ -767,12 +766,12 @@ void Status::Changes::flags()
 			if (m_db_updating)
 				switch_state += m_db_updating;
 
-			*wHeader << Config.state_line_color;
-			mvwhline(wHeader->raw(), 1, 0, 0, COLS);
-			*wHeader << NC::FormattedColor::End<>(Config.state_line_color);
+			*ui_state_legacy_header_window() << Config.state_line_color;
+			mvwhline(ui_state_legacy_header_window()->raw(), 1, 0, 0, COLS);
+			*ui_state_legacy_header_window() << NC::FormattedColor::End<>(Config.state_line_color);
 
 			if (!switch_state.empty())
-				*wHeader << NC::XY(COLS-switch_state.length()-3, 1)
+				*ui_state_legacy_header_window() << NC::XY(COLS-switch_state.length()-3, 1)
 				         << Config.state_line_color
 				         << "["
 				         << NC::FormattedColor::End<>(Config.state_line_color)
@@ -793,19 +792,19 @@ void Status::Changes::flags()
 			switch_state += m_crossfade ? m_crossfade : '-';
 			switch_state += m_db_updating ? m_db_updating : '-';
 			switch_state += ']';
-			*wHeader << NC::XY(COLS-switch_state.length(), 1)
+			*ui_state_legacy_header_window() << NC::XY(COLS-switch_state.length(), 1)
 			         << Config.state_flags_color
 			         << switch_state
 			         << NC::FormattedColor::End<>(Config.state_flags_color);
 			if (!Config.header_visibility) // in this case also draw separator
 			{
-				*wHeader << Config.alternative_ui_separator_color;
-				mvwhline(wHeader->raw(), 2, 0, 0, COLS);
-				*wHeader << NC::FormattedColor::End<>(Config.alternative_ui_separator_color);
+				*ui_state_legacy_header_window() << Config.alternative_ui_separator_color;
+				mvwhline(ui_state_legacy_header_window()->raw(), 2, 0, 0, COLS);
+				*ui_state_legacy_header_window() << NC::FormattedColor::End<>(Config.alternative_ui_separator_color);
 			}
 			break;
 	}
-	wHeader->refresh();
+	ui_state_legacy_header_window()->refresh();
 }
 
 void Status::Changes::mixer()
@@ -830,11 +829,11 @@ void Status::Changes::mixer()
 		VolumeState += std::to_string(m_volume);
 		VolumeState += "%";
 	}
-	*wHeader << NC::XY(wHeader->getWidth()-VolumeState.length(), 0)
+	*ui_state_legacy_header_window() << NC::XY(ui_state_legacy_header_window()->getWidth()-VolumeState.length(), 0)
 	         << Config.volume_color
 	         << VolumeState
 	         << NC::FormattedColor::End<>(Config.volume_color);
-	wHeader->refresh();
+	ui_state_legacy_header_window()->refresh();
 }
 
 void Status::Changes::outputs()

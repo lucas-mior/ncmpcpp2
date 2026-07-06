@@ -22,6 +22,7 @@
 #include <iostream>
 
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "screens/screen_legacy.h"
 #include "settings.h"
 #include "title.h"
@@ -35,37 +36,36 @@ void windowTitle(const std::string &status)
 
 void drawHeader()
 {
-	using Global::wHeader;
 	using Global::VolumeState;
-	
+
 	if (!Config.header_visibility)
 		return;
 	switch (Config.design)
 	{
 		case Design::Classic:
-			*wHeader << NC::XY(0, 0)
+			*ui_state_legacy_header_window() << NC::XY(0, 0)
 			         << NC::TermManip::ClearToEOL
 			         << NC::Format::Bold
 			         << screenLegacyCurrent()->title()
 			         << NC::Format::NoBold
-			         << NC::XY(wHeader->getWidth()-VolumeState.length(), 0)
+			         << NC::XY(ui_state_legacy_header_window()->getWidth()-VolumeState.length(), 0)
 			         << Config.volume_color
 			         << VolumeState
 			         << NC::FormattedColor::End<>(Config.volume_color);
 			break;
 		case Design::Alternative:
 			std::string title = screenLegacyCurrent()->title();
-			*wHeader << NC::XY(0, 3)
+			*ui_state_legacy_header_window() << NC::XY(0, 3)
 			         << NC::TermManip::ClearToEOL
 			         << Config.alternative_ui_separator_color;
-			mvwhline(wHeader->raw(), 2, 0, 0, COLS);
-			mvwhline(wHeader->raw(), 4, 0, 0, COLS);
-			*wHeader << NC::FormattedColor::End<>(Config.alternative_ui_separator_color)
+			mvwhline(ui_state_legacy_header_window()->raw(), 2, 0, 0, COLS);
+			mvwhline(ui_state_legacy_header_window()->raw(), 4, 0, 0, COLS);
+			*ui_state_legacy_header_window() << NC::FormattedColor::End<>(Config.alternative_ui_separator_color)
 			         << NC::XY((COLS-Utf8::width(title))/2, 3)
 			         << NC::Format::Bold
 			         << title
 			         << NC::Format::NoBold;
 			break;
 	}
-	wHeader->refresh();
+	ui_state_legacy_header_window()->refresh();
 }

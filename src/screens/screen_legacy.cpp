@@ -18,16 +18,41 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include "global.h"
+#include "screens/screen_legacy.h"
 
-namespace Global {
+#include "app_controller.h"
 
-bool ShowMessages = false;
-bool SeekingInProgress = false;
-
-std::string VolumeState;
-std::chrono::steady_clock::time_point Timer;
-
-std::mt19937 RNG;
-
+BaseScreen *screenLegacyCurrent()
+{
+    return BaseScreen::legacyFromNativeScreen(
+        app_controller_current_screen());
 }
+
+BaseScreen *screenLegacyPrevious()
+{
+    return BaseScreen::legacyFromNativeScreen(
+        app_controller_previous_screen());
+}
+
+BaseScreen *screenLegacyLocked()
+{
+    return BaseScreen::legacyFromNativeScreen(
+        app_controller_locked_screen());
+}
+
+BaseScreen *screenLegacyInactive()
+{
+    return BaseScreen::legacyFromNativeScreen(
+        app_controller_inactive_screen());
+}
+
+bool screenLegacyIsCurrent(BaseScreen *screen)
+{
+    return screenLegacyCurrent() == screen;
+}
+
+bool screenLegacySwitchChanged()
+{
+    return app_controller_last_switch_changed_screen();
+}
+

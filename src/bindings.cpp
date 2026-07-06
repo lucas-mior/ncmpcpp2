@@ -20,7 +20,7 @@
 
 #include <fstream>
 #include <iostream>
-#include "global.h"
+#include "ui_state_legacy.h"
 #include "bindings.h"
 #include "utility/string.h"
 #include "utility/wide_string.h"
@@ -149,7 +149,7 @@ std::shared_ptr<Actions::BaseAction> parseActionLine(const std::string &line, F 
 			if (k != NC::Key::None)
 				result = std::static_pointer_cast<Actions::BaseAction>(
 					std::make_shared<Actions::PushCharacters>(
-						&Global::wFooter,
+						ui_state_legacy_footer_window,
 						std::vector<NC::Key::Type>{k}));
 			else
 				error() << "invalid character passed to push_character: '" << arg << "'\n";
@@ -165,7 +165,7 @@ std::shared_ptr<Actions::BaseAction> parseActionLine(const std::string &line, F 
 					*it &= 0xff;
 				result = std::static_pointer_cast<Actions::BaseAction>(
 					std::make_shared<Actions::PushCharacters>(
-						&Global::wFooter,
+						ui_state_legacy_footer_window,
 						std::vector<NC::Key::Type>{arg.begin(), arg.end()}));
 			}
 			else

@@ -21,6 +21,7 @@
 #include <chrono>
 
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "screens/screen_legacy.h"
 #include "settings.h"
 #include "status.h"
@@ -29,7 +30,6 @@
 #include "screens/playlist.h"
 #include "utility/utf8.h"
 
-using Global::wFooter;
 
 namespace {
 
@@ -60,29 +60,29 @@ bool Progressbar::isUnlocked()
 
 void Progressbar::draw(unsigned int elapsed, unsigned int time)
 {
-	unsigned pb_width = wFooter->getWidth();
+	unsigned pb_width = ui_state_legacy_footer_window()->getWidth();
 	unsigned howlong = time ? pb_width*elapsed/time : 0;
 	const auto progressbar = Utf8::split(Config.progressbar);
-	*wFooter << Config.progressbar_color;
+	*ui_state_legacy_footer_window() << Config.progressbar_color;
 	if (!progressbar[2].empty() && progressbar[2][0] != '\0')
 	{
-		wFooter->goToXY(0, 0);
+		ui_state_legacy_footer_window()->goToXY(0, 0);
 		for (unsigned i = 0; i < pb_width; ++i)
-			*wFooter << progressbar[2];
-		wFooter->goToXY(0, 0);
+			*ui_state_legacy_footer_window() << progressbar[2];
+		ui_state_legacy_footer_window()->goToXY(0, 0);
 	}
 	else
-		mvwhline(wFooter->raw(), 0, 0, 0, pb_width);
-	*wFooter << NC::FormattedColor::End<>(Config.progressbar_color);
+		mvwhline(ui_state_legacy_footer_window()->raw(), 0, 0, 0, pb_width);
+	*ui_state_legacy_footer_window() << NC::FormattedColor::End<>(Config.progressbar_color);
 	if (time)
 	{
-		*wFooter << Config.progressbar_elapsed_color;
-		pb_width = std::min(size_t(howlong), wFooter->getWidth());
+		*ui_state_legacy_footer_window() << Config.progressbar_elapsed_color;
+		pb_width = std::min(size_t(howlong), ui_state_legacy_footer_window()->getWidth());
 		for (unsigned i = 0; i < pb_width; ++i)
-			*wFooter << progressbar[0];
-		if (howlong < wFooter->getWidth())
-			*wFooter << progressbar[1];
-		*wFooter << NC::FormattedColor::End<>(Config.progressbar_elapsed_color);
+			*ui_state_legacy_footer_window() << progressbar[0];
+		if (howlong < ui_state_legacy_footer_window()->getWidth())
+			*ui_state_legacy_footer_window() << progressbar[1];
+		*ui_state_legacy_footer_window() << NC::FormattedColor::End<>(Config.progressbar_elapsed_color);
 	}
 }
 
@@ -118,7 +118,7 @@ Statusbar::ScopedLock::~ScopedLock() noexcept
 				Progressbar::draw(Status::State::elapsedTime(), Status::State::totalTime());
 				break;
 		}
-		wFooter->refresh();
+		ui_state_legacy_footer_window()->refresh();
 	}
 }
 
@@ -161,15 +161,15 @@ void Statusbar::tryRedraw()
 					Progressbar::draw(Status::State::elapsedTime(), Status::State::totalTime());
 					break;
 			}
-			wFooter->refresh();
+			ui_state_legacy_footer_window()->refresh();
 		}
 	}
 }
 
 NC::Window &Statusbar::put()
 {
-	*wFooter << NC::XY(0, Config.statusbar_visibility ? 1 : 0) << NC::TermManip::ClearToEOL;
-	return *wFooter;
+	*ui_state_legacy_footer_window() << NC::XY(0, Config.statusbar_visibility ? 1 : 0) << NC::TermManip::ClearToEOL;
+	return *ui_state_legacy_footer_window();
 }
 
 void Statusbar::print(int delay, const std::string &message)
@@ -184,10 +184,10 @@ void Statusbar::print(int delay, const std::string &message)
                 statusbar_block_update = true;
             else
                 progressbar_block_update = true;
-            wFooter->goToXY(0, Config.statusbar_visibility);
-            *wFooter << message << NC::TermManip::ClearToEOL;
+            ui_state_legacy_footer_window()->goToXY(0, Config.statusbar_visibility);
+            *ui_state_legacy_footer_window() << message << NC::TermManip::ClearToEOL;
         }
-		wFooter->refresh();
+		ui_state_legacy_footer_window()->refresh();
 	}
 }
 
@@ -209,8 +209,8 @@ char Statusbar::Helpers::promptReturnOneOf(const std::vector<char> &values)
 	NC::Key::Type result;
 	do
 	{
-		wFooter->refresh();
-		result = wFooter->readKey();
+		ui_state_legacy_footer_window()->refresh();
+		result = ui_state_legacy_footer_window()->readKey();
 		if (result == NC::Key::Ctrl_C || result == NC::Key::Ctrl_G)
 			throw NC::PromptAborted();
 	}

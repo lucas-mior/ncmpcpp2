@@ -29,12 +29,14 @@ namespace Actions {
 
 struct PushCharacters: BaseAction
 {
-	PushCharacters(NC::Window **w, std::vector<NC::Key::Type> &&queue);
+	using WindowProvider = NC::Window *(*)();
+
+	PushCharacters(WindowProvider window, std::vector<NC::Key::Type> &&queue);
 
 private:
 	virtual void run() override;
 	
-	NC::Window **m_window;
+	WindowProvider m_window;
 	std::vector<NC::Key::Type> m_queue;
 };
 

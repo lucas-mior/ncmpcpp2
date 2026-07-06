@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 #include "bindings.h"
-#include "global.h"
 #include "screens/screen_legacy.h"
 #include "macro_utilities.h"
 #include "curses/window.h"
@@ -28,12 +27,12 @@
 
 namespace Actions {
 
-PushCharacters::PushCharacters(NC::Window **w, std::vector<NC::Key::Type> &&queue)
+PushCharacters::PushCharacters(WindowProvider window, std::vector<NC::Key::Type> &&queue)
 	: BaseAction(Type::MacroUtility, "push_characters")
-	, m_window(w)
+	, m_window(window)
 	, m_queue(queue)
 {
-	assert(w != nullptr);
+	assert(window != nullptr);
 	std::vector<std::string> keys;
 	for (const auto &key : queue)
 		keys.push_back(NC::keyToString(key));
@@ -45,7 +44,7 @@ PushCharacters::PushCharacters(NC::Window **w, std::vector<NC::Key::Type> &&queu
 void PushCharacters::run()
 {
 	for (auto it = m_queue.begin(); it != m_queue.end(); ++it)
-		(*m_window)->pushChar(*it);
+		m_window()->pushChar(*it);
 }
 
 RequireRunnable::RequireRunnable(std::shared_ptr<BaseAction> action)

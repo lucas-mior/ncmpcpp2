@@ -34,6 +34,7 @@
 #include "display.h"
 #include "app_controller.h"
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "screens/screen_legacy.h"
 #include "mpdpp.h"
 #include "helpers.h"
@@ -228,10 +229,6 @@ void setResizeFlags()
 
 void resizeScreen(bool reload_main_window)
 {
-	using Global::MainHeight;
-	using Global::wHeader;
-	using Global::wFooter;
-
 	// update internal screen dimensions
 	if (reload_main_window)
 	{
@@ -242,23 +239,28 @@ void resizeScreen(bool reload_main_window)
 		getch();
 	}
 
-	MainHeight = std::max(LINES-(Config.design == Design::Alternative ? 7 : 4), 0);
+	ui_state_legacy_set_screen_size(COLS, LINES);
+
+	std::size_t main_height = static_cast<std::size_t>(std::max(
+	    LINES-(Config.design == Design::Alternative ? 7 : 4),
+	    0));
 
 	if (!Config.header_visibility)
-		MainHeight += 2;
+		main_height += 2;
 	if (!Config.statusbar_visibility)
-		++MainHeight;
+		main_height += 1;
+	ui_state_legacy_set_main_height(main_height);
 
 	setResizeFlags();
 
 	app_controller_resize_visible_screens();
 
 	if (Config.header_visibility || Config.design == Design::Alternative)
-		wHeader->resize(COLS, HeaderHeight);
+		ui_state_legacy_header_window()->resize(COLS, HeaderHeight);
 
 	FooterStartY = LINES-(Config.statusbar_visibility ? 2 : 1);
-	wFooter->moveTo(0, FooterStartY);
-	wFooter->resize(COLS, Config.statusbar_visibility ? 2 : 1);
+	ui_state_legacy_footer_window()->moveTo(0, FooterStartY);
+	ui_state_legacy_footer_window()->resize(COLS, Config.statusbar_visibility ? 2 : 1);
 
 	app_controller_refresh_visible_screens();
 
@@ -269,25 +271,27 @@ void resizeScreen(bool reload_main_window)
 	// NcmpcppStatusChanges.StatusFlags
 	Status::Changes::flags();
 	drawHeader();
-	wFooter->refresh();
+	ui_state_legacy_footer_window()->refresh();
 	refresh();
 }
 
 void setWindowsDimensions()
 {
-	using Global::MainStartY;
-	using Global::MainHeight;
+	ui_state_legacy_set_screen_size(COLS, LINES);
 
-	MainStartY = Config.design == Design::Alternative ? 5 : 2;
-	MainHeight = std::max(LINES-(Config.design == Design::Alternative ? 7 : 4), 0);
+	std::size_t main_start_y = Config.design == Design::Alternative ? 5 : 2;
+	std::size_t main_height = static_cast<std::size_t>(std::max(
+	    LINES-(Config.design == Design::Alternative ? 7 : 4),
+	    0));
 
 	if (!Config.header_visibility)
 	{
-		MainStartY -= 2;
-		MainHeight += 2;
+		main_start_y -= 2;
+		main_height += 2;
 	}
 	if (!Config.statusbar_visibility)
-		++MainHeight;
+		main_height += 1;
+	ui_state_legacy_set_main_geometry(main_start_y, main_height);
 
 	HeaderHeight = Config.design == Design::Alternative ? (Config.header_visibility ? 5 : 3) : 2;
 	FooterStartY = LINES-(Config.statusbar_visibility ? 2 : 1);
@@ -396,10 +400,9 @@ bool MouseEvent::canBeRun()
 void MouseEvent::run()
 {
 	using Global::VolumeState;
-	using Global::wFooter;
 
 	m_old_mouse_event = m_mouse_event;
-	m_mouse_event = wFooter->getMouseEvent();
+	m_mouse_event = ui_state_legacy_footer_window()->getMouseEvent();
 
 	//Statusbar::printf("(%1%, %2%, %3%)", m_mouse_event.bstate, m_mouse_event.x, m_mouse_event.y);
 
@@ -841,13 +844,12 @@ void Pause::run()
 
 void SavePlaylist::run()
 {
-	using Global::wFooter;
 
 	std::string playlist_name;
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Save playlist as: ";
-		playlist_name = wFooter->prompt();
+		playlist_name = ui_state_legacy_footer_window()->prompt();
 	}
 	try
 	{
@@ -882,16 +884,15 @@ void Play::run()
 
 void ExecuteCommand::run()
 {
-	using Global::wFooter;
 
 	std::string cmd_name;
 	{
 		Statusbar::ScopedLock slock;
-		NC::Window::ScopedPromptHook helper(*wFooter,
+		NC::Window::ScopedPromptHook helper(*ui_state_legacy_footer_window(),
 			Statusbar::Helpers::TryExecuteImmediateCommand()
 		);
 		Statusbar::put() << NC::Format::Bold << ":" << NC::Format::NoBold;
-		cmd_name = wFooter->prompt();
+		cmd_name = ui_state_legacy_footer_window()->prompt();
 	}
 
 	auto cmd = Bindings.findCommand(cmd_name);
@@ -1025,13 +1026,12 @@ bool Add::canBeRun()
 
 void Add::run()
 {
-	using Global::wFooter;
 
 	std::string path;
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << (screenLegacyCurrent() == myPlaylistEditor ? "Add to playlist: " : "Add: ");
-		path = wFooter->prompt();
+		path = ui_state_legacy_footer_window()->prompt();
 	}
 
 	// confirm when one wants to add the whole database
@@ -1039,7 +1039,7 @@ void Add::run()
 		confirmAction("Are you sure you want to add the whole database?");
 
 	Statusbar::put() << "Adding...";
-	wFooter->refresh();
+	ui_state_legacy_footer_window()->refresh();
 	if (screenLegacyCurrent() == myPlaylistEditor)
 		Mpd.AddToPlaylist(myPlaylistEditor->Playlists.current()->value().path(), path);
 	else
@@ -1066,17 +1066,16 @@ bool Load::canBeRun()
 
 void Load::run()
 {
-	using Global::wFooter;
 
 	std::string path;
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Load playlist: ";
-		path = wFooter->prompt();
+		path = ui_state_legacy_footer_window()->prompt();
 	}
 
 	Statusbar::put() << "Loading...";
-	wFooter->refresh();
+	ui_state_legacy_footer_window()->refresh();
 	Mpd.LoadPlaylist(path);
 }
 
@@ -1371,11 +1370,10 @@ void ToggleCrossfade::run()
 
 void SetCrossfade::run()
 {
-	using Global::wFooter;
 
 	Statusbar::ScopedLock slock;
 	Statusbar::put() << "Set crossfade to: ";
-	auto crossfade = fromString<unsigned>(wFooter->prompt());
+	auto crossfade = fromString<unsigned>(ui_state_legacy_footer_window()->prompt());
 	lowerBoundCheck(crossfade, 0u);
 	Config.crossfade_time = crossfade;
 	Mpd.SetCrossfade(crossfade);
@@ -1388,13 +1386,12 @@ bool SetVolume::canBeRun()
 
 void SetVolume::run()
 {
-	using Global::wFooter;
 
 	unsigned volume;
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Set volume to: ";
-		volume = fromString<unsigned>(wFooter->prompt());
+		volume = fromString<unsigned>(ui_state_legacy_footer_window()->prompt());
 		boundsCheck(volume, 0u, 100u);
 		Mpd.SetVolume(volume);
 	}
@@ -1461,13 +1458,12 @@ bool EditLibraryTag::canBeRun()
 void EditLibraryTag::run()
 {
 #	ifdef HAVE_TAGLIB_H
-	using Global::wFooter;
 
 	std::string new_tag;
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << NC::Format::Bold << ncm_tag_type_name(Config.media_lib_primary_tag) << NC::Format::NoBold << ": ";
-		new_tag = wFooter->prompt(myLibrary->Tags.current()->value().tag());
+		new_tag = ui_state_legacy_footer_window()->prompt(myLibrary->Tags.current()->value().tag());
 	}
 	if (!new_tag.empty() && new_tag != myLibrary->Tags.current()->value().tag())
 	{
@@ -1520,13 +1516,12 @@ bool EditLibraryAlbum::canBeRun()
 void EditLibraryAlbum::run()
 {
 #	ifdef HAVE_TAGLIB_H
-	using Global::wFooter;
-	// FIXME: merge this and EditLibraryTag. also, prompt on failure if user wants to continue
+		// FIXME: merge this and EditLibraryTag. also, prompt on failure if user wants to continue
 	std::string new_album;
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << NC::Format::Bold << "Album: " << NC::Format::NoBold;
-		new_album = wFooter->prompt(myLibrary->Albums.current()->value().entry().album());
+		new_album = ui_state_legacy_footer_window()->prompt(myLibrary->Albums.current()->value().entry().album());
 	}
 	if (!new_album.empty() && new_album != myLibrary->Albums.current()->value().entry().album())
 	{
@@ -1582,15 +1577,14 @@ bool EditDirectoryName::canBeRun()
 
 void EditDirectoryName::run()
 {
-	using Global::wFooter;
-	if (screenLegacyCurrent() == myBrowser)
+		if (screenLegacyCurrent() == myBrowser)
 	{
 		std::string old_dir = myBrowser->main().current()->value().directory().path();
 		std::string new_dir;
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << NC::Format::Bold << "Directory: " << NC::Format::NoBold;
-			new_dir = wFooter->prompt(old_dir);
+			new_dir = ui_state_legacy_footer_window()->prompt(old_dir);
 		}
 		if (!new_dir.empty() && new_dir != old_dir)
 		{
@@ -1617,7 +1611,7 @@ void EditDirectoryName::run()
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << NC::Format::Bold << "Directory: " << NC::Format::NoBold;
-			new_dir = wFooter->prompt(old_dir);
+			new_dir = ui_state_legacy_footer_window()->prompt(old_dir);
 		}
 		if (!new_dir.empty() && new_dir != old_dir)
 		{
@@ -1650,8 +1644,7 @@ bool EditPlaylistName::canBeRun()
 
 void EditPlaylistName::run()
 {
-	using Global::wFooter;
-	std::string old_name, new_name;
+		std::string old_name, new_name;
 	if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists))
 		old_name = myPlaylistEditor->Playlists.current()->value().path();
 	else
@@ -1659,7 +1652,7 @@ void EditPlaylistName::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << NC::Format::Bold << "Playlist: " << NC::Format::NoBold;
-		new_name = wFooter->prompt(old_name);
+		new_name = ui_state_legacy_footer_window()->prompt(old_name);
 	}
 	if (!new_name.empty() && new_name != old_name)
 	{
@@ -1714,8 +1707,7 @@ void JumpToPlaylistEditor::run()
 
 void ToggleScreenLock::run()
 {
-	using Global::wFooter;
-	const char *msg_unlockable_screen = "Current screen can't be locked";
+		const char *msg_unlockable_screen = "Current screen can't be locked";
 	if (screenLegacyLocked() != nullptr)
 	{
 		BaseScreen::unlock();
@@ -1734,7 +1726,7 @@ void ToggleScreenLock::run()
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << "% of the locked screen's width to be reserved (20-80): ";
-			part = fromString<unsigned>(wFooter->prompt(std::to_string(part)));
+			part = fromString<unsigned>(ui_state_legacy_footer_window()->prompt(std::to_string(part)));
 		}
 		boundsCheck(part, 20u, 80u);
 		Config.locked_screen_width_part = part/100.0;
@@ -1769,7 +1761,6 @@ bool JumpToPositionInSong::canBeRun()
 
 void JumpToPositionInSong::run()
 {
-	using Global::wFooter;
 
 	const MPD::Song s = myPlaylist->nowPlayingSong();
 
@@ -1777,7 +1768,7 @@ void JumpToPositionInSong::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Position to go (in %/h:m:ss/m:ss/seconds(s)): ";
-		spos = wFooter->prompt();
+		spos = ui_state_legacy_footer_window()->prompt();
 	}
 
 	std::regex rx;
@@ -2053,7 +2044,6 @@ bool ApplyFilter::canBeRun()
 
 void ApplyFilter::run()
 {
-	using Global::wFooter;
 
 	std::string filter = m_filterable->currentFilter();
 	if (!filter.empty())
@@ -2067,10 +2057,10 @@ void ApplyFilter::run()
 		ScopedValue<bool> disabled_autocenter_mode(Config.autocenter_mode, false);
 		Statusbar::ScopedLock slock;
 		NC::Window::ScopedPromptHook helper(
-			*wFooter,
+			*ui_state_legacy_footer_window(),
 			Statusbar::Helpers::ApplyFilterImmediately(m_filterable));
 		Statusbar::put() << "Apply filter: ";
-		filter = wFooter->prompt(filter);
+		filter = ui_state_legacy_footer_window()->prompt(filter);
 	}
 	catch (NC::PromptAborted &)
 	{
@@ -2098,13 +2088,12 @@ bool Find::canBeRun()
 
 void Find::run()
 {
-	using Global::wFooter;
 
 	std::string token;
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Find: ";
-		token = wFooter->prompt();
+		token = ui_state_legacy_footer_window()->prompt();
 	}
 
 	Statusbar::print("Searching...");
@@ -2177,7 +2166,6 @@ void ToggleFindMode::run()
 
 void ToggleReplayGainMode::run()
 {
-	using Global::wFooter;
 
 	char rgm = 0;
 	{
@@ -2247,8 +2235,7 @@ void ToggleBitrateVisibility::run()
 
 void AddRandomItems::run()
 {
-	using Global::wFooter;
-	char rnd_type = 0;
+		char rnd_type = 0;
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Add random? "
@@ -2274,7 +2261,7 @@ void AddRandomItems::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Number of random " << tag_type_str << "s: ";
-		number = fromString<unsigned>(wFooter->prompt());
+		number = fromString<unsigned>(ui_state_legacy_footer_window()->prompt());
 	}
 	if (number > 0)
 	{
@@ -2335,7 +2322,6 @@ bool ToggleLibraryTagType::canBeRun()
 
 void ToggleLibraryTagType::run()
 {
-	using Global::wFooter;
 
 	char tag_type = 0;
 	{
@@ -2424,13 +2410,12 @@ bool SetSelectedItemsPriority::canBeRun()
 
 void SetSelectedItemsPriority::run()
 {
-	using Global::wFooter;
 
 	unsigned prio;
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Set priority [0-255]: ";
-		prio = fromString<unsigned>(wFooter->prompt());
+		prio = fromString<unsigned>(ui_state_legacy_footer_window()->prompt());
 		boundsCheck(prio, 0u, 255u);
 	}
 	myPlaylist->setSelectedItemsPriority(prio);
@@ -2951,9 +2936,7 @@ void scrollTagDownRun(NC::List *list, const SongList *songs, enum NcmSongGetter 
 
 void seek(SearchDirection sd)
 {
-	using Global::wHeader;
-	using Global::wFooter;
-	using Global::Timer;
+			using Global::Timer;
 	using Global::SeekingInProgress;
 
 	if (!Status::State::totalTime())
@@ -2968,7 +2951,7 @@ void seek(SearchDirection sd)
 	unsigned songpos = Status::State::elapsedTime();
 	auto t = Timer;
 
-	NC::Window::ScopedTimeout stimeout{*wFooter, BaseScreen::defaultWindowTimeout};
+	NC::Window::ScopedTimeout stimeout{*ui_state_legacy_footer_window(), BaseScreen::defaultWindowTimeout};
 
 	// Accept single action of a given type or action chain for which all actions
 	// can be run and one of them is of the given type. This will still not work
@@ -3009,7 +2992,7 @@ void seek(SearchDirection sd)
 		                 ? static_cast<unsigned>(elapsed.count()/2)+Config.seek_time
 		                 : Config.seek_time;
 
-		NC::Key::Type input = readKey(*wFooter);
+		NC::Key::Type input = readKey(*ui_state_legacy_footer_window());
 
 		switch (sd)
 		{
@@ -3044,7 +3027,7 @@ void seek(SearchDirection sd)
 				tracklength += "/";
 				tracklength += MPD::Song::ShowTime(Status::State::totalTime());
 				tracklength += "]";
-				*wFooter << NC::XY(wFooter->getWidth()-tracklength.length(), 1)
+				*ui_state_legacy_footer_window() << NC::XY(ui_state_legacy_footer_window()->getWidth()-tracklength.length(), 1)
 				         << Config.statusbar_time_color
 				         << tracklength
 				         << NC::FormattedColor::End<>(Config.statusbar_time_color);
@@ -3059,16 +3042,16 @@ void seek(SearchDirection sd)
 					tracklength = MPD::Song::ShowTime(songpos);
 				tracklength += "/";
 				tracklength += MPD::Song::ShowTime(Status::State::totalTime());
-				*wHeader << NC::XY(0, 0)
+				*ui_state_legacy_header_window() << NC::XY(0, 0)
 				         << Config.statusbar_time_color
 				         << tracklength
 				         << NC::FormattedColor::End<>(Config.statusbar_time_color)
 				         << " ";
-				wHeader->refresh();
+				ui_state_legacy_header_window()->refresh();
 				break;
 		}
 		Progressbar::draw(songpos, Status::State::totalTime());
-		wFooter->refresh();
+		ui_state_legacy_footer_window()->refresh();
 
 		auto k = Bindings.get(input);
 		if (hasRunnableAction(k, Actions::Type::SeekBackward))
@@ -3084,7 +3067,6 @@ void seek(SearchDirection sd)
 
 void findItem(const SearchDirection direction)
 {
-	using Global::wFooter;
 
 	Searchable *w = dynamic_cast<Searchable *>(screenLegacyCurrent());
 	assert(w != nullptr);
@@ -3096,10 +3078,10 @@ void findItem(const SearchDirection direction)
 		ScopedValue<bool> disabled_autocenter_mode(Config.autocenter_mode, false);
 		Statusbar::ScopedLock slock;
 		NC::Window::ScopedPromptHook prompt_hook(
-			*wFooter,
+			*ui_state_legacy_footer_window(),
 			Statusbar::Helpers::FindImmediately(w, direction));
 		Statusbar::put() << stringFormat("Find %1%: ", direction);
-		constraint = wFooter->prompt(constraint);
+		constraint = ui_state_legacy_footer_window()->prompt(constraint);
 	}
 	catch (NC::PromptAborted &)
 	{

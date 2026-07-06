@@ -27,14 +27,13 @@
 #include "curses/formatted_color.h"
 #include "app_controller.h"
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "helpers.h"
 #include "screens/server_info.h"
 #include "screens/screen_switcher.h"
 #include "screens/screen_legacy.h"
 #include "statusbar.h"
 
-using Global::MainHeight;
-using Global::MainStartY;
 
 namespace {
 
@@ -113,8 +112,8 @@ ServerInfo::ServerInfo()
                                makeHooks(),
                                COLS,
                                LINES,
-                               MainStartY,
-                               MainHeight,
+                               ui_state_legacy_main_start_y(),
+                               ui_state_legacy_main_height(),
                                NC::toNcColor(Config.main_color),
                                toNcBorder(Config.window_border));
 
@@ -303,8 +302,8 @@ void ServerInfo::setDimensions()
     nc_server_info_screen_set_dimensions(&m_screen,
                                          COLS,
                                          LINES,
-                                         MainStartY,
-                                         MainHeight);
+                                         ui_state_legacy_main_start_y(),
+                                         ui_state_legacy_main_height());
 }
 
 NcServerInfoHooks ServerInfo::makeHooks()

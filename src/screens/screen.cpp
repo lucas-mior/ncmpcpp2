@@ -22,6 +22,7 @@
 
 #include "app_controller.h"
 #include "global.h"
+#include "ui_state_legacy.h"
 #include "screens/screen_legacy.h"
 #include "interfaces.h"
 #include "screens/screen.h"
@@ -127,7 +128,7 @@ void setTabPreviousScreen(BaseScreen *screen)
 void drawSeparator(int x)
 {
     color_set(Config.main_color.pairNumber(), nullptr);
-    mvvline(Global::MainStartY, x, 0, Global::MainHeight);
+    mvvline(ui_state_legacy_main_start_y(), x, 0, ui_state_legacy_main_height());
     standend();
     refresh();
 }
