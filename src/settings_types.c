@@ -454,6 +454,42 @@ ncm_lyrics_fetcher_def_move(NcmLyricsFetcherDef *dest,
     return;
 }
 
+
+void
+ncm_lyrics_fetcher_registry_init(NcmLyricsFetcherRegistry *registry) {
+    if (registry == NULL) {
+        return;
+    }
+    ncm_lyrics_fetcher_array_init(&registry->fetchers);
+    return;
+}
+
+void
+ncm_lyrics_fetcher_registry_destroy(NcmLyricsFetcherRegistry *registry) {
+    if (registry == NULL) {
+        return;
+    }
+    ncm_lyrics_fetcher_array_destroy(&registry->fetchers);
+    return;
+}
+
+void
+ncm_lyrics_fetcher_registry_clear(NcmLyricsFetcherRegistry *registry) {
+    if (registry == NULL) {
+        return;
+    }
+    ncm_lyrics_fetcher_array_clear(&registry->fetchers);
+    return;
+}
+
+NcmLyricsFetcherDef *
+ncm_lyrics_fetcher_registry_append(NcmLyricsFetcherRegistry *registry) {
+    if (registry == NULL) {
+        return NULL;
+    }
+    return ncm_lyrics_fetcher_array_append(&registry->fetchers);
+}
+
 static void
 settings_formatted_color_array_init_item(void *item) {
     nc_formatted_color_init(item);
@@ -659,7 +695,7 @@ configuration_init_arrays(Configuration *config) {
     column_array_init(&config->columns);
     ncm_formatted_color_array_init(&config->visualizer_colors);
     screen_type_array_init(&config->screen_sequence);
-    ncm_lyrics_fetcher_array_init(&config->lyrics_fetchers);
+    ncm_lyrics_fetcher_registry_init(&config->lyrics_fetchers);
     return;
 }
 
@@ -671,7 +707,7 @@ configuration_destroy_arrays(Configuration *config) {
     column_array_destroy(&config->columns);
     ncm_formatted_color_array_destroy(&config->visualizer_colors);
     screen_type_array_destroy(&config->screen_sequence);
-    ncm_lyrics_fetcher_array_destroy(&config->lyrics_fetchers);
+    ncm_lyrics_fetcher_registry_destroy(&config->lyrics_fetchers);
     return;
 }
 

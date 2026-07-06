@@ -73,6 +73,10 @@ NCM_ARRAY_DECLARE(ncm_lyrics_fetcher_array,
                   NcmLyricsFetcherArray,
                   NcmLyricsFetcherDef)
 
+typedef struct NcmLyricsFetcherRegistry {
+    NcmLyricsFetcherArray fetchers;
+} NcmLyricsFetcherRegistry;
+
 typedef struct Configuration {
     char *ncmpcpp_directory;
     char *lyrics_directory;
@@ -263,7 +267,7 @@ typedef struct Configuration {
     enum ScreenType startup_slave_screen_type;
     ScreenTypeArray screen_sequence;
 
-    NcmLyricsFetcherArray lyrics_fetchers;
+    NcmLyricsFetcherRegistry lyrics_fetchers;
 } Configuration;
 
 void column_init(Column *column);
@@ -288,6 +292,12 @@ bool ncm_lyrics_fetcher_def_copy(NcmLyricsFetcherDef *dest,
                                  NcmLyricsFetcherDef *source);
 void ncm_lyrics_fetcher_def_move(NcmLyricsFetcherDef *dest,
                                  NcmLyricsFetcherDef *source);
+
+void ncm_lyrics_fetcher_registry_init(NcmLyricsFetcherRegistry *registry);
+void ncm_lyrics_fetcher_registry_destroy(NcmLyricsFetcherRegistry *registry);
+void ncm_lyrics_fetcher_registry_clear(NcmLyricsFetcherRegistry *registry);
+NcmLyricsFetcherDef *ncm_lyrics_fetcher_registry_append(
+    NcmLyricsFetcherRegistry *registry);
 
 void configuration_init(Configuration *config);
 void configuration_destroy(Configuration *config);

@@ -34,7 +34,7 @@
 #include "bindings.h"
 #include "screens/browser.h"
 #include "charset.h"
-#include "configuration.h"
+#include "configuration_legacy.h"
 #include "global.h"
 #include "ui_state_legacy.h"
 #include "screens/screen_legacy.h"

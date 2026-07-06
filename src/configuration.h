@@ -18,11 +18,22 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#ifndef NCMPCPP_CONFIGURATION_H
+#if !defined(NCMPCPP_CONFIGURATION_H)
 #define NCMPCPP_CONFIGURATION_H
 
-void expand_home(std::string &path);
+#include <stdbool.h>
 
-bool configure(int argc, char **argv);
+#include "c/ncm_error.h"
 
-#endif // NCMPCPP_CONFIGURATION_H
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+bool expand_home(char **path, int32 *path_len, NcmError *error);
+bool configure(int32 argc, char **argv);
+
+#if defined(__cplusplus)
+}
+#endif
+
+#endif /* NCMPCPP_CONFIGURATION_H */

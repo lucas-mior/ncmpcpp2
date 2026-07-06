@@ -43,7 +43,7 @@
 #include "helpers/song_iterator_maker.h"
 #include "utility/comparators.h"
 #include "utility/string.h"
-#include "configuration.h"
+#include "configuration_legacy.h"
 
 
 namespace fs = std::filesystem;
