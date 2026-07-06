@@ -202,9 +202,11 @@ $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LI
 	@printf 'LD  %s\n' '$@'
 	@$(CC) $(LDFLAGS) -o $@ \
 		$< \
+		-Wl,--start-group \
 		$(NCMPCPP_APP_C_LIB) \
 		$(NCMPCPP_C_LIB) \
 		$(CBASE_LIB) \
+		-Wl,--end-group \
 		$(PKG_LIBS) \
 		$(THREAD_FLAGS)
 
