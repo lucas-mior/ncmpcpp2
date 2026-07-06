@@ -22,17 +22,14 @@
 #include "screens/screen_type.h"
 
 #include "screens/browser.h"
-#include "screens/help.h"
 #include "screens/lastfm.h"
 #include "screens/lyrics.h"
 #include "screens/media_library.h"
-#include "screens/outputs.h"
+#include "screens/native_c_screens.h"
 #include "screens/playlist.h"
 #include "screens/playlist_editor.h"
 #include "screens/search_engine.h"
 #include "screens/sel_items_adder.h"
-#include "screens/server_info.h"
-#include "screens/song_info.h"
 #include "screens/sort_playlist.h"
 #include "screens/tag_editor.h"
 #include "screens/tiny_tag_editor.h"
@@ -153,7 +150,7 @@ BaseScreen *toScreen(ScreenType st)
 		case ScreenType::Browser:
 			return myBrowser;
 		case ScreenType::Help:
-			return myHelp;
+			return native_c_screen_help_legacy();
 		case ScreenType::Lastfm:
 			return myLastfm;
 		case ScreenType::Lyrics:
@@ -162,7 +159,7 @@ BaseScreen *toScreen(ScreenType st)
 			return myLibrary;
 #		ifdef ENABLE_OUTPUTS
 		case ScreenType::Outputs:
-			return myOutputs;
+			return native_c_screen_outputs_legacy();
 #		endif // ENABLE_OUTPUTS
 		case ScreenType::Playlist:
 			return myPlaylist;
@@ -173,9 +170,9 @@ BaseScreen *toScreen(ScreenType st)
 		case ScreenType::SelectedItemsAdder:
 			return mySelectedItemsAdder;
 		case ScreenType::ServerInfo:
-			return myServerInfo;
+			return native_c_screen_server_info_legacy();
 		case ScreenType::SongInfo:
-			return mySongInfo;
+			return native_c_screen_song_info_legacy();
 		case ScreenType::SortPlaylistDialog:
 			return mySortPlaylistDialog;
 #		ifdef HAVE_TAGLIB_H
@@ -195,6 +192,22 @@ BaseScreen *toScreen(ScreenType st)
 
 NcScreen *toNativeScreen(ScreenType st)
 {
+	switch (st)
+	{
+		case ScreenType::Help:
+			return native_c_screen_help_native();
+#		ifdef ENABLE_OUTPUTS
+		case ScreenType::Outputs:
+			return native_c_screen_outputs_native();
+#		endif // ENABLE_OUTPUTS
+		case ScreenType::ServerInfo:
+			return native_c_screen_server_info_native();
+		case ScreenType::SongInfo:
+			return native_c_screen_song_info_native();
+		default:
+			break;
+	}
+
 	BaseScreen *screen = toScreen(st);
 
 	if (screen == nullptr)
