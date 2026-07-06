@@ -1,9 +1,9 @@
 # C++ to C conversion
 
-- Replace std::chrono::seconds playlist_disable_highlight_delay with an integer seconds field.
-- Replace LyricsFetchers in Configuration with a C lyrics-fetcher registry struct.
-- Convert src/configuration.h to a C header with expand_home(char **path, int32 *path_len)-style APIs.
-- Convert src/configuration.cpp to src/configuration.c.
+- ~~Replace std::chrono::seconds playlist_disable_highlight_delay with an integer seconds field.~~
+- ~~Replace LyricsFetchers in Configuration with a C lyrics-fetcher registry struct.~~
+- ~~Convert src/configuration.h to a C header with expand_home(char **path, int32 *path_len)-style APIs.~~
+- ~~Convert src/configuration.cpp to src/configuration.c.~~
 - Replace config-path discovery in configuration.c with ncm_fs_user_config_dir, ncm_fs_exists, ncm_fs_mkdir_all, and explicit NcmBuffer path building.
 - Replace all config parsing exceptions with explicit bool/NcmError returns.
 - Replace utility/option_parser.h usage with src/c/ncm_option_parser.*.
