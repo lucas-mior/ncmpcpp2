@@ -491,17 +491,17 @@ struct Connection
 	bool Connected() const;
 	void Disconnect();
 	
-	const std::string &GetHostname() { return m_host; }
-	int GetPort() { return m_port; }
+	const std::string &GetHostname();
+	int GetPort();
 	
 	unsigned Version() const;
 	
 	int GetFD() const;
 	
 	void SetHostname(const std::string &);
-	void SetPort(int port) { m_port = port; }
+	void SetPort(int port);
 	void SetTimeout(int timeout);
-	void SetPassword(const std::string &password) { m_password = password; }
+	void SetPassword(const std::string &password);
 	void SendPassword();
 	
 	Statistics getStatistics();
@@ -590,6 +590,7 @@ struct Connection
 	void idle();
 	int noidle();
 	void setNoidleCallback(NoidleCallback callback);
+	void dispatchNoidleCallback(int flags);
 	
 private:
 	mpd_connection *rawConnection() const;
@@ -600,12 +601,6 @@ private:
 	void checkErrors() const;
 
 	NoidleCallback m_noidle_callback;
-	NcmMpdConnection m_connection;
-	bool m_command_list_active;
-	
-	int m_fd;
-	bool m_idle;
-	
 	std::string m_host;
 	int m_port;
 	int m_timeout;

@@ -2,6 +2,7 @@
 #define NCMPCPP_GLOBAL_H
 
 #include "c/ncm_base.h"
+#include "c/ncm_mpd_client.h"
 #include "c/ncm_random.h"
 #include "c/ncm_time.h"
 
@@ -14,6 +15,7 @@ extern bool global_seeking_in_progress;
 extern NcmBuffer global_volume_state;
 extern NcmTimePoint global_timer;
 extern NcmRandom global_random;
+extern NcmMpdClient global_mpd;
 
 void global_state_init(void);
 void global_state_destroy(void);
