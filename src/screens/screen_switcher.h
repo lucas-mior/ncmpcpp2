@@ -23,20 +23,28 @@
 
 #include <cassert>
 
+#include "app_state.h"
 #include "global.h"
 #include "interfaces.h"
 
 class SwitchTo
 {
+    static BaseScreen *previousScreen()
+    {
+        return BaseScreen::legacyFromNativeScreen(
+            app_state_get_previous_screen());
+    }
+
     static void setPreviousScreen(BaseScreen *screen)
     {
+        BaseScreen *previous_screen = previousScreen();
         Tabbable *tabbable = dynamic_cast<Tabbable *>(screen);
 
         if (tabbable == nullptr)
             return;
-        if (dynamic_cast<Tabbable *>(Global::myScreen) == nullptr)
+        if (dynamic_cast<Tabbable *>(previous_screen) == nullptr)
             return;
-        tabbable->setPreviousScreen(Global::myScreen);
+        tabbable->setPreviousScreen(previous_screen);
     }
 
 public:
@@ -50,8 +58,7 @@ public:
 
         nc_screen_set_has_to_be_resized(native_screen,
                                         screen->hasToBeResized);
-        switched = nc_screen_registry_switch_to(&Global::myScreenRegistry,
-                                                native_screen);
+        switched = app_state_switch_to_screen(native_screen);
         assert(switched);
         (void)switched;
     }
@@ -60,7 +67,6 @@ public:
     {
         if (Global::myScreen != screen)
             setPreviousScreen(screen);
-        Global::myScreen = screen;
         syncLegacyScreenPointers();
     }
 };

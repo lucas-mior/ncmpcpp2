@@ -25,6 +25,7 @@
 #include <sstream>
 
 #include "curses/formatted_color.h"
+#include "app_state.h"
 #include "global.h"
 #include "helpers.h"
 #include "screens/server_info.h"
@@ -116,19 +117,16 @@ ServerInfo::ServerInfo()
                                NC::toNcColor(Config.main_color),
                                toNcBorder(Config.window_border));
 
-    bool register_success = nc_screen_registry_register(
-        &Global::myScreenRegistry, nativeScreen());
+    bool register_success = app_state_register_screen(nativeScreen());
     assert(register_success);
     (void)register_success;
 }
 
 ServerInfo::~ServerInfo()
 {
-    if (nc_screen_registry_is_registered(&Global::myScreenRegistry,
-                                         nativeScreen()))
+    if (app_state_is_screen_registered(nativeScreen()))
     {
-        nc_screen_registry_unregister(&Global::myScreenRegistry,
-                                      nativeScreen());
+        app_state_unregister_screen(nativeScreen());
     }
     nc_server_info_screen_destroy(&m_screen);
 }
@@ -167,7 +165,7 @@ void ServerInfo::scroll(NC::Scroll where)
 void ServerInfo::switchTo()
 {
     nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-    nc_screen_registry_switch_to(&Global::myScreenRegistry, nativeScreen());
+    app_state_switch_to_screen(nativeScreen());
 }
 
 void ServerInfo::resize()

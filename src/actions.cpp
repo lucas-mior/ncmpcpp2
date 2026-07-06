@@ -32,6 +32,7 @@
 #include "charset.h"
 #include "config.h"
 #include "display.h"
+#include "app_state.h"
 #include "global.h"
 #include "mpdpp.h"
 #include "helpers.h"
@@ -139,7 +140,7 @@ size_t FooterStartY;
 
 void initializeScreens()
 {
-	nc_screen_registry_init(&Global::myScreenRegistry);
+	app_state_init();
 
 	myHelp = new Help;
 	myPlaylist = new Playlist;
@@ -601,42 +602,30 @@ void NextColumn::run()
 
 bool MasterScreen::canBeRun()
 {
-	NcScreenRegistry *registry = &Global::myScreenRegistry;
-
-	return registry->locked_screen
-	    && registry->inactive_screen
-	    && registry->locked_screen != registry->current_screen
-	    && nc_screen_is_mergable(registry->current_screen);
+	return app_state_can_show_locked_screen();
 }
 
 void MasterScreen::run()
 {
-	NcScreenRegistry *registry = &Global::myScreenRegistry;
-
-	registry->inactive_screen = registry->current_screen;
-	registry->current_screen = registry->locked_screen;
-	syncLegacyScreenPointers();
-	drawHeader();
+	if (app_state_show_locked_screen())
+	{
+		syncLegacyScreenPointers();
+		drawHeader();
+	}
 }
 
 bool SlaveScreen::canBeRun()
 {
-	NcScreenRegistry *registry = &Global::myScreenRegistry;
-
-	return registry->locked_screen
-	    && registry->inactive_screen
-	    && registry->locked_screen == registry->current_screen
-	    && nc_screen_is_mergable(registry->current_screen);
+	return app_state_can_show_inactive_screen();
 }
 
 void SlaveScreen::run()
 {
-	NcScreenRegistry *registry = &Global::myScreenRegistry;
-
-	registry->current_screen = registry->inactive_screen;
-	registry->inactive_screen = registry->locked_screen;
-	syncLegacyScreenPointers();
-	drawHeader();
+	if (app_state_show_inactive_screen())
+	{
+		syncLegacyScreenPointers();
+		drawHeader();
+	}
 }
 
 bool VolumeUp::canBeRun()

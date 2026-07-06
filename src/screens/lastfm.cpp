@@ -23,6 +23,7 @@
 #include <chrono>
 
 #include "charset.h"
+#include "app_state.h"
 #include "global.h"
 #include "helpers.h"
 #include "screens/screen_switcher.h"
@@ -101,11 +102,9 @@ Lastfm::Lastfm()
 
 Lastfm::~Lastfm()
 {
-    if (nc_screen_registry_is_registered(&Global::myScreenRegistry,
-                                         nativeScreen()))
+    if (app_state_is_screen_registered(nativeScreen()))
     {
-        nc_screen_registry_unregister(&Global::myScreenRegistry,
-                                      nativeScreen());
+        app_state_unregister_screen(nativeScreen());
     }
 }
 
@@ -207,8 +206,7 @@ void Lastfm::switchTo()
     if (myScreen != this)
     {
         nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-        nc_screen_registry_switch_to(&Global::myScreenRegistry,
-                                     nativeScreen());
+        app_state_switch_to_screen(nativeScreen());
         drawHeader();
     }
     else

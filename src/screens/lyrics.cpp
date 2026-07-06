@@ -34,6 +34,7 @@
 #include "charset.h"
 #include "curl_handle.h"
 #include "format_impl.h"
+#include "app_state.h"
 #include "global.h"
 #include "helpers.h"
 #include "macro_utilities.h"
@@ -244,8 +245,7 @@ Lyrics::Lyrics()
 	                      MainStartY,
 	                      MainHeight);
 
-	bool register_success = nc_screen_registry_register(
-		&Global::myScreenRegistry, nativeScreen());
+	bool register_success = app_state_register_screen(nativeScreen());
 	assert(register_success);
 	(void)register_success;
 }
@@ -253,11 +253,9 @@ Lyrics::Lyrics()
 Lyrics::~Lyrics()
 {
 	stopDownload();
-	if (nc_screen_registry_is_registered(&Global::myScreenRegistry,
-	                                     nativeScreen()))
+	if (app_state_is_screen_registered(nativeScreen()))
 	{
-		nc_screen_registry_unregister(&Global::myScreenRegistry,
-		                              nativeScreen());
+		app_state_unregister_screen(nativeScreen());
 	}
 }
 
@@ -314,7 +312,7 @@ void Lyrics::update()
 void Lyrics::switchTo()
 {
 	nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-	nc_screen_registry_switch_to(&Global::myScreenRegistry, nativeScreen());
+	app_state_switch_to_screen(nativeScreen());
 }
 
 std::string Lyrics::title()

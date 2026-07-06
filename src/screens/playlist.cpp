@@ -25,6 +25,7 @@
 
 #include "curses/menu_impl.h"
 #include "display.h"
+#include "app_state.h"
 #include "global.h"
 #include "helpers.h"
 #include "screens/playlist.h"
@@ -95,19 +96,16 @@ Playlist::Playlist()
 	                                    Config.lines_scrolled,
 	                                    Config.mouse_list_scroll_whole_page);
 
-	bool register_success = nc_screen_registry_register(
-		&Global::myScreenRegistry, nativeScreen());
+	bool register_success = app_state_register_screen(nativeScreen());
 	assert(register_success);
 	(void)register_success;
 }
 
 Playlist::~Playlist()
 {
-	if (nc_screen_registry_is_registered(&Global::myScreenRegistry,
-	                                     nativeScreen()))
+	if (app_state_is_screen_registered(nativeScreen()))
 	{
-		nc_screen_registry_unregister(&Global::myScreenRegistry,
-		                              nativeScreen());
+		app_state_unregister_screen(nativeScreen());
 	}
 }
 
@@ -129,7 +127,7 @@ void Playlist::scroll(NC::Scroll where)
 void Playlist::switchTo()
 {
 	nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-	nc_screen_registry_switch_to(&Global::myScreenRegistry, nativeScreen());
+	app_state_switch_to_screen(nativeScreen());
 }
 
 void Playlist::resize()
@@ -523,11 +521,9 @@ void Playlist::destroyCallback(NcScreen *screen)
 {
 	Playlist *playlist = fromScreen(screen);
 
-	if (nc_screen_registry_is_registered(&Global::myScreenRegistry,
-	                                     playlist->nativeScreen()))
+	if (app_state_is_screen_registered(playlist->nativeScreen()))
 	{
-		nc_screen_registry_unregister(&Global::myScreenRegistry,
-		                              playlist->nativeScreen());
+		app_state_unregister_screen(playlist->nativeScreen());
 	}
 	delete playlist;
 }

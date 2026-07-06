@@ -25,7 +25,6 @@
 #include <random>
 
 #include "mpdpp.h"
-#include "screens/nc_screen.h"
 #include "screens/screen.h"
 
 namespace Global {
@@ -39,9 +38,6 @@ extern BaseScreen *myLockedScreen;
 // points at inactive screen, if locking was enabled and two screens are displayed
 extern BaseScreen *myInactiveScreen;
 
-// C-side registry for screens that have been migrated away from
-// the C++ Screen inheritance path.
-extern NcScreenRegistry myScreenRegistry;
 
 // header window (above main window)
 extern NC::Window *wHeader;

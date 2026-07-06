@@ -24,6 +24,7 @@
 
 #include "bindings.h"
 #include "curses/formatted_color.h"
+#include "app_state.h"
 #include "global.h"
 #include "screens/help.h"
 #include "screens/screen_switcher.h"
@@ -531,19 +532,16 @@ Help::Help()
     assert(loaded);
     (void)loaded;
 
-    bool register_success = nc_screen_registry_register(
-        &Global::myScreenRegistry, nativeScreen());
+    bool register_success = app_state_register_screen(nativeScreen());
     assert(register_success);
     (void)register_success;
 }
 
 Help::~Help()
 {
-    if (nc_screen_registry_is_registered(&Global::myScreenRegistry,
-                                         nativeScreen()))
+    if (app_state_is_screen_registered(nativeScreen()))
     {
-        nc_screen_registry_unregister(&Global::myScreenRegistry,
-                                      nativeScreen());
+        app_state_unregister_screen(nativeScreen());
     }
     nc_help_screen_destroy(&m_screen);
 }
@@ -587,7 +585,7 @@ void Help::resize()
 void Help::switchTo()
 {
     nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-    nc_screen_registry_switch_to(&Global::myScreenRegistry, nativeScreen());
+    app_state_switch_to_screen(nativeScreen());
 }
 
 int Help::windowTimeout()
