@@ -490,8 +490,7 @@ adder_scroll_callback(NcScreen *screen, enum NcScroll where) {
 
 static void
 adder_switch_to_callback(NcScreen *screen) {
-    (void)nc_screen_switcher_switch_to(screen,
-                                       nc_screen_has_to_be_resized(screen));
+    (void)screen;
     return;
 }
 

@@ -2,7 +2,6 @@
 
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
-#include "screens/screen_switcher.h"
 
 static NativeMediaLibraryScreen *native_library_from_screen(NcScreen *screen);
 static NcWindow *native_library_active_window(NcScreen *screen);
@@ -569,8 +568,7 @@ native_library_scroll(NcScreen *screen, enum NcScroll where) {
 
 static void
 native_library_switch_to(NcScreen *screen) {
-    (void)nc_screen_switcher_switch_to(screen,
-                                       nc_screen_has_to_be_resized(screen));
+    (void)screen;
     return;
 }
 

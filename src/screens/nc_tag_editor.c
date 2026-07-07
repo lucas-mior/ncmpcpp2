@@ -7,7 +7,6 @@
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
 #include "cbase/base_macros.h"
-#include "screens/screen_switcher.h"
 
 static NativeTagEditorScreen *tag_editor_from_screen(NcScreen *screen);
 static NcWindow *tag_editor_active_window(NcScreen *screen);
@@ -856,8 +855,7 @@ tag_editor_scroll(NcScreen *screen, enum NcScroll where) {
 
 static void
 tag_editor_switch_to(NcScreen *screen) {
-    (void)nc_screen_switcher_switch_to(screen, nc_screen_has_to_be_resized(
-                                           screen));
+    (void)screen;
     return;
 }
 

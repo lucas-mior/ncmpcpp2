@@ -33,8 +33,6 @@
 #include "global.h"
 #include "mpdpp.h"
 
-MPD::Connection Mpd;
-
 namespace {
 
 struct NcmMpdItemGuard
@@ -225,6 +223,12 @@ defaultFetcher(SourceT *(fetcher)(mpd_connection *))
 }
 
 namespace MPD {
+
+Connection &legacyConnection()
+{
+	static Connection connection;
+	return connection;
+}
 
 Directory::Directory()
 {

@@ -553,6 +553,12 @@ private:
 
 }
 
-extern MPD::Connection Mpd;
+namespace MPD {
+
+Connection &legacyConnection();
+
+}
+
+#define Mpd MPD::legacyConnection()
 
 #endif // NCMPCPP_MPDPP_H

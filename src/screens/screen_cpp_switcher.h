@@ -24,28 +24,11 @@
 #include <cassert>
 
 #include "interfaces.h"
-#include "screens/screen_cpp_legacy.h"
+#include "screens/screen_cpp_compat.h"
 #include "screens/screen_switcher.h"
 
 class SwitchTo
 {
-    static BaseScreen *previousScreen()
-    {
-        return screenLegacyPrevious();
-    }
-
-    static void setPreviousScreen(BaseScreen *screen)
-    {
-        BaseScreen *previous_screen = previousScreen();
-        Tabbable *tabbable = dynamic_cast<Tabbable *>(screen);
-
-        if (tabbable == nullptr)
-            return;
-        if (dynamic_cast<Tabbable *>(previous_screen) == nullptr)
-            return;
-        tabbable->setPreviousScreen(previous_screen);
-    }
-
 public:
     static void execute(BaseScreen *screen)
     {
@@ -64,7 +47,7 @@ public:
     static void finishNativeSwitch(BaseScreen *screen)
     {
         if (nc_screen_switcher_finish_switch(screen->nativeScreen()))
-            setPreviousScreen(screen);
+            screen_compat::set_tab_previous_screen(screen);
         syncLegacyScreenPointers();
     }
 };
