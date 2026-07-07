@@ -340,15 +340,6 @@ CommandLineOptions parseCommandLine(
 	return options;
 }
 
-LyricsFetcher_ makeLyricsFetcher(const std::string &name)
-{
-	std::istringstream is(name);
-	LyricsFetcher_ result;
-	if (!(is >> result))
-		throw std::runtime_error("Unknown lyrics fetcher: " + name);
-	return result;
-}
-
 void printUsage(
 	const char *program,
 	const std::vector<std::string> &default_config_paths,
@@ -467,15 +458,31 @@ bool configure(int argc, char **argv)
 			};
 			for (auto &data : fetcher_data)
 			{
-				auto fetcher = makeLyricsFetcher(std::get<0>(data));
+				NcmLyricsFetcherDef fetcher;
+				NcmLyricsResult result;
+				std::string name = std::get<0>(data);
+
+				ncm_lyrics_fetcher_def_init(&fetcher);
+				ncm_lyrics_result_init(&result);
+				if (!ncm_lyrics_fetcher_def_set_name(
+				        &fetcher, name.data(), static_cast<int32>(name.size())))
+					throw std::runtime_error("Unknown lyrics fetcher: " + name);
 				std::cout << std::setw(20)
 				          << std::left
-				          << fetcher->name()
+				          << ncm_lyrics_fetcher_name(&fetcher)
 				          << " : "
 				          << std::flush;
-				auto result = fetcher->fetch(std::get<1>(data), std::get<2>(data), {});
-				std::cout << (result.first ? "ok" : "failed")
+				ncm_lyrics_fetcher_fetch(
+					&fetcher, &result,
+					std::get<1>(data).data(),
+					static_cast<int32>(std::get<1>(data).size()),
+					std::get<2>(data).data(),
+					static_cast<int32>(std::get<2>(data).size()),
+					nullptr);
+				std::cout << (result.success ? "ok" : "failed")
 				          << "\n";
+				ncm_lyrics_result_destroy(&result);
+				ncm_lyrics_fetcher_def_destroy(&fetcher);
 			}
 			exit(0);
 		}

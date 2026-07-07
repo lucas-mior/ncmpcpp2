@@ -18,19 +18,33 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#ifndef NCMPCPP_CURL_HANDLE_H
+#if !defined(NCMPCPP_CURL_HANDLE_H)
 #define NCMPCPP_CURL_HANDLE_H
 
 #include "config.h"
 
-#include <string>
-#include "curl/curl.h"
+#include <stdbool.h>
 
-namespace Curl
-{
-	CURLcode perform(std::string &data, const std::string &URL, const std::string &referer = "", bool follow_redirect = false, unsigned timeout = 10);
-	
-	std::string escape(const std::string &s);
-}
+#include <curl/curl.h>
 
-#endif // NCMPCPP_CURL_HANDLE_H
+#include "c/ncm_defs.h"
+
+NCM_EXTERN_C_BEGIN
+
+typedef struct NcmCurlResponseWriter {
+    NcmBuffer *buffer;
+} NcmCurlResponseWriter;
+
+void ncm_curl_response_writer_init(NcmCurlResponseWriter *writer,
+                                   NcmBuffer *buffer);
+void ncm_curl_response_writer_destroy(NcmCurlResponseWriter *writer);
+
+CURLcode ncm_curl_perform(NcmBuffer *data, char *url, int32 url_len,
+                          char *referer, int32 referer_len,
+                          bool follow_redirect,
+                          int32 timeout_seconds);
+CURLcode ncm_curl_escape(NcmBuffer *out, char *string, int32 string_len);
+
+NCM_EXTERN_C_END
+
+#endif /* NCMPCPP_CURL_HANDLE_H */

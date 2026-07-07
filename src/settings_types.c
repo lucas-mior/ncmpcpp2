@@ -11,24 +11,12 @@ static bool settings_formatted_color_array_copy_item(void *dest,
                                                      void *source);
 static void settings_formatted_color_array_move_item(void *dest,
                                                      void *source);
-static void settings_lyrics_fetcher_array_init_item(void *item);
-static void settings_lyrics_fetcher_array_destroy_item(void *item);
-static bool settings_lyrics_fetcher_array_copy_item(void *dest,
-                                                    void *source);
-static void settings_lyrics_fetcher_array_move_item(void *dest,
-                                                    void *source);
 
 static NcmArrayItemCallbacks settings_formatted_color_callbacks = {
     .init = settings_formatted_color_array_init_item,
     .destroy = settings_formatted_color_array_destroy_item,
     .copy = settings_formatted_color_array_copy_item,
     .move = settings_formatted_color_array_move_item,
-};
-static NcmArrayItemCallbacks settings_lyrics_fetcher_callbacks = {
-    .init = settings_lyrics_fetcher_array_init_item,
-    .destroy = settings_lyrics_fetcher_array_destroy_item,
-    .copy = settings_lyrics_fetcher_array_copy_item,
-    .move = settings_lyrics_fetcher_array_move_item,
 };
 
 static void settings_string_destroy(char **data, int32 *len, int32 *cap);
@@ -57,10 +45,6 @@ NCM_ARRAY_DEFINE(ncm_formatted_color_array,
                  NcmFormattedColorArray,
                  NcFormattedColor,
                  &settings_formatted_color_callbacks)
-NCM_ARRAY_DEFINE(ncm_lyrics_fetcher_array,
-                 NcmLyricsFetcherArray,
-                 NcmLyricsFetcherDef,
-                 &settings_lyrics_fetcher_callbacks)
 
 static void
 settings_string_destroy(char **data, int32 *len, int32 *cap) {
@@ -349,145 +333,10 @@ screen_type_array_append(ScreenTypeArray *array) {
     if (!screen_type_array_reserve(array, 1)) {
         return NULL;
     }
-
     screen_type = &array->items[array->len];
     array->len += 1;
-    *screen_type = NCM_SCREEN_TYPE_UNKNOWN;
+    *screen_type = NCM_SCREEN_TYPE_PLAYLIST;
     return screen_type;
-}
-
-void
-ncm_lyrics_fetcher_def_init(NcmLyricsFetcherDef *fetcher) {
-    fetcher->name = NULL;
-    fetcher->url_template = NULL;
-    fetcher->match_regex = NULL;
-    fetcher->name_len = 0;
-    fetcher->name_cap = 0;
-    fetcher->url_template_len = 0;
-    fetcher->url_template_cap = 0;
-    fetcher->match_regex_len = 0;
-    fetcher->match_regex_cap = 0;
-    fetcher->enabled = true;
-    return;
-}
-
-void
-ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher) {
-    if (fetcher == NULL) {
-        return;
-    }
-    settings_string_destroy(&fetcher->name, &fetcher->name_len,
-                            &fetcher->name_cap);
-    settings_string_destroy(&fetcher->url_template,
-                            &fetcher->url_template_len,
-                            &fetcher->url_template_cap);
-    settings_string_destroy(&fetcher->match_regex,
-                            &fetcher->match_regex_len,
-                            &fetcher->match_regex_cap);
-    ncm_lyrics_fetcher_def_init(fetcher);
-    return;
-}
-
-bool
-ncm_lyrics_fetcher_def_copy(NcmLyricsFetcherDef *dest,
-                            NcmLyricsFetcherDef *source) {
-    NcmLyricsFetcherDef tmp;
-
-    if (dest == NULL || source == NULL) {
-        return false;
-    }
-
-    ncm_lyrics_fetcher_def_init(&tmp);
-    if (!settings_string_copy(&tmp.name, &tmp.name_len, &tmp.name_cap,
-                              source->name, source->name_len)) {
-        ncm_lyrics_fetcher_def_destroy(&tmp);
-        return false;
-    }
-    if (!settings_string_copy(&tmp.url_template,
-                              &tmp.url_template_len,
-                              &tmp.url_template_cap,
-                              source->url_template,
-                              source->url_template_len)) {
-        ncm_lyrics_fetcher_def_destroy(&tmp);
-        return false;
-    }
-    if (!settings_string_copy(&tmp.match_regex,
-                              &tmp.match_regex_len,
-                              &tmp.match_regex_cap,
-                              source->match_regex,
-                              source->match_regex_len)) {
-        ncm_lyrics_fetcher_def_destroy(&tmp);
-        return false;
-    }
-    tmp.enabled = source->enabled;
-
-    ncm_lyrics_fetcher_def_destroy(dest);
-    *dest = tmp;
-    return true;
-}
-
-void
-ncm_lyrics_fetcher_def_move(NcmLyricsFetcherDef *dest,
-                            NcmLyricsFetcherDef *source) {
-    if (dest == NULL || source == NULL) {
-        return;
-    }
-
-    ncm_lyrics_fetcher_def_destroy(dest);
-    settings_string_move(&dest->name, &dest->name_len, &dest->name_cap,
-                         &source->name, &source->name_len,
-                         &source->name_cap);
-    settings_string_move(&dest->url_template,
-                         &dest->url_template_len,
-                         &dest->url_template_cap,
-                         &source->url_template,
-                         &source->url_template_len,
-                         &source->url_template_cap);
-    settings_string_move(&dest->match_regex,
-                         &dest->match_regex_len,
-                         &dest->match_regex_cap,
-                         &source->match_regex,
-                         &source->match_regex_len,
-                         &source->match_regex_cap);
-    dest->enabled = source->enabled;
-    source->enabled = true;
-    return;
-}
-
-
-void
-ncm_lyrics_fetcher_registry_init(NcmLyricsFetcherRegistry *registry) {
-    if (registry == NULL) {
-        return;
-    }
-    ncm_lyrics_fetcher_array_init(&registry->fetchers);
-    return;
-}
-
-void
-ncm_lyrics_fetcher_registry_destroy(NcmLyricsFetcherRegistry *registry) {
-    if (registry == NULL) {
-        return;
-    }
-    ncm_lyrics_fetcher_array_destroy(&registry->fetchers);
-    return;
-}
-
-void
-ncm_lyrics_fetcher_registry_clear(NcmLyricsFetcherRegistry *registry) {
-    if (registry == NULL) {
-        return;
-    }
-    ncm_lyrics_fetcher_array_clear(&registry->fetchers);
-    return;
-}
-
-NcmLyricsFetcherDef *
-ncm_lyrics_fetcher_registry_append(NcmLyricsFetcherRegistry *registry) {
-    if (registry == NULL) {
-        return NULL;
-    }
-    return ncm_lyrics_fetcher_array_append(&registry->fetchers);
 }
 
 static void
@@ -510,30 +359,9 @@ settings_formatted_color_array_copy_item(void *dest, void *source) {
 
 static void
 settings_formatted_color_array_move_item(void *dest, void *source) {
-    nc_formatted_color_move(dest, source);
-    return;
-}
-
-static void
-settings_lyrics_fetcher_array_init_item(void *item) {
-    ncm_lyrics_fetcher_def_init(item);
-    return;
-}
-
-static void
-settings_lyrics_fetcher_array_destroy_item(void *item) {
-    ncm_lyrics_fetcher_def_destroy(item);
-    return;
-}
-
-static bool
-settings_lyrics_fetcher_array_copy_item(void *dest, void *source) {
-    return ncm_lyrics_fetcher_def_copy(dest, source);
-}
-
-static void
-settings_lyrics_fetcher_array_move_item(void *dest, void *source) {
-    ncm_lyrics_fetcher_def_move(dest, source);
+    nc_formatted_color_destroy(dest);
+    *(NcFormattedColor *)dest = *(NcFormattedColor *)source;
+    nc_formatted_color_init(source);
     return;
 }
 

@@ -12,6 +12,7 @@
 #include "c/ncm_format.h"
 #include "c/ncm_regex.h"
 #include "c/ncm_song.h"
+#include "lyrics_fetcher.h"
 #include "curses/nc_buffer.h"
 #include "curses/nc_formatted_color.h"
 #include "curses/nc_window.h"
@@ -51,32 +52,10 @@ typedef struct ScreenTypeArray {
     int32 cap;
 } ScreenTypeArray;
 
-typedef struct NcmLyricsFetcherDef {
-    char *name;
-    char *url_template;
-    char *match_regex;
-
-    int32 name_len;
-    int32 name_cap;
-    int32 url_template_len;
-    int32 url_template_cap;
-    int32 match_regex_len;
-    int32 match_regex_cap;
-
-    bool enabled;
-} NcmLyricsFetcherDef;
-
 NCM_ARRAY_DECLARE(ncm_int32_array, NcmInt32Array, int32)
 NCM_ARRAY_DECLARE(ncm_formatted_color_array,
                   NcmFormattedColorArray,
                   NcFormattedColor)
-NCM_ARRAY_DECLARE(ncm_lyrics_fetcher_array,
-                  NcmLyricsFetcherArray,
-                  NcmLyricsFetcherDef)
-
-typedef struct NcmLyricsFetcherRegistry {
-    NcmLyricsFetcherArray fetchers;
-} NcmLyricsFetcherRegistry;
 
 typedef struct Configuration {
     char *ncmpcpp_directory;
@@ -286,19 +265,6 @@ void screen_type_array_init(ScreenTypeArray *array);
 void screen_type_array_destroy(ScreenTypeArray *array);
 enum ScreenType *screen_type_array_append(ScreenTypeArray *array);
 void screen_type_array_clear(ScreenTypeArray *array);
-
-void ncm_lyrics_fetcher_def_init(NcmLyricsFetcherDef *fetcher);
-void ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher);
-bool ncm_lyrics_fetcher_def_copy(NcmLyricsFetcherDef *dest,
-                                 NcmLyricsFetcherDef *source);
-void ncm_lyrics_fetcher_def_move(NcmLyricsFetcherDef *dest,
-                                 NcmLyricsFetcherDef *source);
-
-void ncm_lyrics_fetcher_registry_init(NcmLyricsFetcherRegistry *registry);
-void ncm_lyrics_fetcher_registry_destroy(NcmLyricsFetcherRegistry *registry);
-void ncm_lyrics_fetcher_registry_clear(NcmLyricsFetcherRegistry *registry);
-NcmLyricsFetcherDef *ncm_lyrics_fetcher_registry_append(
-    NcmLyricsFetcherRegistry *registry);
 
 void configuration_init(Configuration *config);
 void configuration_destroy(Configuration *config);

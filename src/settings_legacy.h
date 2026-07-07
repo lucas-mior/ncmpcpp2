@@ -52,7 +52,14 @@ struct Configuration
 {
 	Configuration()
 	: playlist_disable_highlight_delay_seconds(0)
-	{ }
+	{
+		ncm_lyrics_fetcher_registry_init(&lyrics_fetchers);
+	}
+
+	~Configuration()
+	{
+		ncm_lyrics_fetcher_registry_destroy(&lyrics_fetchers);
+	}
 
 	bool read(const std::vector<std::string> &config_paths, bool ignore_errors);
 
@@ -220,7 +227,7 @@ struct Configuration
 	std::string random_exclude_pattern;
 	SortMode browser_sort_mode;
 
-	LyricsFetchers lyrics_fetchers;
+	NcmLyricsFetcherRegistry lyrics_fetchers;
 };
 
 extern Configuration ConfigLegacy;
