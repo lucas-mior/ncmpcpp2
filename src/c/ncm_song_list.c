@@ -257,6 +257,177 @@ ncm_song_list_item_set_selected(NcmSongListItem *item, bool selected) {
     return;
 }
 
+int32
+ncm_song_list_selected_count(NcmSongList *list) {
+    int32 count;
+
+    if (list == NULL) {
+        return 0;
+    }
+
+    count = 0;
+    for (int32 i = 0; i < list->len; i += 1) {
+        if (ncm_song_list_item_is_selected(&list->items[i])) {
+            count += 1;
+        }
+    }
+    return count;
+}
+
+bool
+ncm_song_list_has_selected(NcmSongList *list) {
+    return ncm_song_list_selected_count(list) > 0;
+}
+
+bool
+ncm_song_list_each_selected_song(NcmSongList *list,
+                                NcmSongListEachFunc each, void *user) {
+    if (list == NULL) {
+        return false;
+    }
+    if (each == NULL) {
+        return false;
+    }
+
+    for (int32 i = 0; i < list->len; i += 1) {
+        if (ncm_song_list_item_is_selected(&list->items[i])) {
+            if (!each(&list->items[i].song, i, user)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool
+ncm_song_list_select_current_song_if_none_selected(NcmSongList *list) {
+    NcmSongListItem *item;
+
+    if (list == NULL) {
+        return false;
+    }
+    if (ncm_song_list_has_selected(list)) {
+        return true;
+    }
+
+    item = ncm_song_list_current(list);
+    if (item == NULL) {
+        return false;
+    }
+    if (!ncm_song_list_item_is_selectable(item)) {
+        return false;
+    }
+    ncm_song_list_item_set_selected(item, true);
+    return true;
+}
+
+void
+ncm_song_list_clear_selection(NcmSongList *list) {
+    if (list == NULL) {
+        return;
+    }
+
+    for (int32 i = 0; i < list->len; i += 1) {
+        ncm_song_list_item_set_selected(&list->items[i], false);
+    }
+    return;
+}
+
+void
+ncm_song_list_reverse_selectable_selection(NcmSongList *list) {
+    NcmSongListItem *item;
+
+    if (list == NULL) {
+        return;
+    }
+
+    for (int32 i = 0; i < list->len; i += 1) {
+        item = &list->items[i];
+        if (ncm_song_list_item_is_selectable(item)) {
+            ncm_song_list_item_set_selected(
+                item, !ncm_song_list_item_is_selected(item));
+        }
+    }
+    return;
+}
+
+bool
+ncm_song_list_find_position(NcmSongList *list, uint32 position,
+                            int32 *idx) {
+    if (idx != NULL) {
+        *idx = -1;
+    }
+    if (list == NULL) {
+        return false;
+    }
+
+    for (int32 i = 0; i < list->len; i += 1) {
+        if (ncm_song_position(&list->items[i].song) == position) {
+            if (idx != NULL) {
+                *idx = i;
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+bool
+ncm_song_list_wrapped_song_search(NcmSongList *list,
+                             NcmSongListPredicate predicate, void *user,
+                             enum NcmSongListSearchDirection direction,
+                             bool wrap, bool skip_current) {
+    int32 start;
+    int32 step;
+    int32 limit;
+    int32 idx;
+
+    if (list == NULL) {
+        return false;
+    }
+    if (predicate == NULL) {
+        return false;
+    }
+    if (list->len <= 0) {
+        return false;
+    }
+
+    start = list->current;
+    if ((start < 0) || (start >= list->len)) {
+        start = 0;
+    }
+
+    step = 1;
+    if (direction == NCM_SONG_LIST_SEARCH_BACKWARD) {
+        step = -1;
+    }
+    if (skip_current) {
+        start += step;
+    }
+
+    limit = list->len;
+    idx = start;
+    for (int32 i = 0; i < limit; i += 1) {
+        if ((idx < 0) || (idx >= list->len)) {
+            if (!wrap) {
+                return false;
+            }
+            if (idx < 0) {
+                idx = list->len - 1;
+            } else {
+                idx = 0;
+            }
+        }
+
+        if (predicate(&list->items[idx].song, user)) {
+            list->current = idx;
+            return true;
+        }
+        idx += step;
+    }
+    return false;
+}
+
 bool
 ncm_song_list_selected_songs(NcmSongList *list, NcmSongArray *songs) {
     bool found;
