@@ -42,10 +42,10 @@
 #include "screens/lyrics.h"
 #include "screens/playlist.h"
 #include "settings_legacy.h"
-#include "status.h"
-#include "statusbar.h"
+#include "status_legacy.h"
+#include "statusbar_legacy.h"
 #include "screens/visualizer.h"
-#include "title.h"
+#include "title_legacy.h"
 #include "utility/conversion.h"
 
 namespace ph = std::placeholders;

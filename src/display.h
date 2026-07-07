@@ -32,6 +32,7 @@
 #include "format.h"
 #include "global.h"
 #include "helpers_legacy.h"
+#include "status_legacy.h"
 #include "interfaces.h"
 #include "curses/menu.h"
 #include "mutable_song.h"

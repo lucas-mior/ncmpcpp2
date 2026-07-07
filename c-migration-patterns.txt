@@ -597,3 +597,14 @@ Rules:
       result batches, and NcMenu/Nc*Menu base pointers for menu selections.
     - Keep C++-only helpers in src/helpers_legacy.h only until the old screens
       are converted.
+
+## Status/title/statusbar C split
+
+- `src/status.h`, `src/statusbar.h`, and `src/title.h` are now pure C headers.
+- `src/status.c`, `src/statusbar.c`, and `src/title.c` contain the C-side state,
+  statusbar, and terminal-title helpers.
+- The old C++ runtime implementation remains temporarily in
+  `src/status_legacy.cpp`, `src/statusbar_legacy.cpp`, and `src/title_legacy.cpp`
+  for screens that still depend on the legacy C++ window/menu layer.
+- Remaining C++ callers must include the matching `_legacy.h` header instead of
+  the pure-C header.

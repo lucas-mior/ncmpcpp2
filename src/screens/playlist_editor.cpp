@@ -31,15 +31,15 @@
 #include "screens/playlist.h"
 #include "screens/playlist_editor.h"
 #include "mpdpp.h"
-#include "status.h"
-#include "statusbar.h"
+#include "status_legacy.h"
+#include "statusbar_legacy.h"
 #include "screens/tag_editor.h"
 #include "format_impl.h"
 #include "helpers/song_iterator_maker.h"
 #include "utility/functional.h"
 #include "utility/comparators.h"
 #include "utility/string_format.h"
-#include "title.h"
+#include "title_legacy.h"
 #include "screens/screen_switcher.h"
 
 

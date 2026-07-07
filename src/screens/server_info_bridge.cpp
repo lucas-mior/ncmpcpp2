@@ -32,7 +32,7 @@
 #include "screens/server_info.h"
 #include "screens/screen_switcher.h"
 #include "screens/screen_legacy.h"
-#include "statusbar.h"
+#include "statusbar_legacy.h"
 
 
 namespace {

@@ -27,7 +27,7 @@
 #include "screens/playlist.h"
 #include "settings_legacy.h"
 #include "screens/sort_playlist.h"
-#include "statusbar.h"
+#include "statusbar_legacy.h"
 #include "utility/comparators.h"
 #include "screens/screen_switcher.h"
 
