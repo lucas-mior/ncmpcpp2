@@ -1,5 +1,73 @@
 #include "screens/nc_lyrics.h"
 
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "app_controller.h"
+#include "c/ncm_base.h"
+#include "c/ncm_string.h"
+#include "cbase/base_macros.h"
+#include "settings.h"
+#include "screens/screen_switcher.h"
+#include "statusbar.h"
+#include "title.h"
+#include "ui_state.h"
+
+#define NATIVE_LYRICS_TITLE "Lyrics"
+
+typedef struct NativeLyricsJob {
+    NativeLyricsScreen *screen;
+    NcmSong song;
+    NcmLyricsFetcherDef *fetcher;
+    NcmLyricsResult result;
+    bool notify;
+    bool background;
+} NativeLyricsJob;
+
+static NcWindow *lyrics_active_window_callback(NcScreen *screen);
+static void lyrics_refresh_callback(NcScreen *screen);
+static void lyrics_refresh_window_callback(NcScreen *screen);
+static void lyrics_scroll_callback(NcScreen *screen, enum NcScroll where);
+static void lyrics_switch_to_callback(NcScreen *screen);
+static void lyrics_resize_callback(NcScreen *screen);
+static int32 lyrics_window_timeout_callback(NcScreen *screen);
+static char *lyrics_title_callback(NcScreen *screen);
+static void lyrics_update_callback(NcScreen *screen);
+static void lyrics_mouse_button_pressed_callback(NcScreen *screen,
+                                                 MEVENT event);
+static bool lyrics_is_lockable_callback(NcScreen *screen);
+static bool lyrics_is_mergable_callback(NcScreen *screen);
+static void lyrics_destroy_callback(NcScreen *screen);
+static NcScreenCallbacks native_lyrics_callbacks(void);
+static NativeLyricsScreen *lyrics_from_screen(NcScreen *screen);
+static bool native_lyrics_song_artist_title(NcmSong *song,
+                                            NcmBuffer *artist,
+                                            NcmBuffer *title);
+static void native_lyrics_remove_extension(NcmBuffer *buffer);
+static bool native_lyrics_filename_from_song(NcmBuffer *filename,
+                                             NcmSong *song,
+                                             char *music_dir,
+                                             int32 music_dir_len,
+                                             char *lyrics_dir,
+                                             int32 lyrics_dir_len,
+                                             bool store_in_song_dir,
+                                             bool win32_filename);
+static bool native_lyrics_queue_song(NativeLyricsScreen *screen,
+                                     NcmSong *song, bool notify);
+static NativeLyricsQueuedSong *native_lyrics_dequeue_song(
+    NativeLyricsScreen *screen);
+static NativeLyricsJob *native_lyrics_job_create(NativeLyricsScreen *screen,
+                                                 NcmSong *song,
+                                                 NcmLyricsFetcherDef *fetcher,
+                                                 bool notify,
+                                                 bool background);
+static bool native_lyrics_job_run(void *user, NcmError *error);
+static void native_lyrics_job_complete(bool success, NcmError *error,
+                                       void *user);
+static void native_lyrics_job_destroy(void *user);
+static void native_lyrics_start_next_background(NativeLyricsScreen *screen);
+
 void
 nc_lyrics_screen_init(NcLyricsScreen *screen,
                       NcScreenCallbacks callbacks, void *user,
@@ -89,5 +157,829 @@ void
 nc_lyrics_screen_set_scroll_begin(NcLyricsScreen *screen,
                                   int64 scroll_begin) {
     screen->scroll_begin = scroll_begin;
+    return;
+}
+
+void
+native_lyrics_queued_song_init(NativeLyricsQueuedSong *queued) {
+    ncm_song_init(&queued->song);
+    queued->notify = false;
+    return;
+}
+
+void
+native_lyrics_queued_song_destroy(NativeLyricsQueuedSong *queued) {
+    ncm_song_destroy(&queued->song);
+    queued->notify = false;
+    return;
+}
+
+bool
+native_lyrics_queued_song_copy(NativeLyricsQueuedSong *dest,
+                               NativeLyricsQueuedSong *source) {
+    if (!ncm_song_copy(&dest->song, &source->song)) {
+        return false;
+    }
+    dest->notify = source->notify;
+    return true;
+}
+
+void
+native_lyrics_queued_song_move(NativeLyricsQueuedSong *dest,
+                               NativeLyricsQueuedSong *source) {
+    ncm_song_move(&dest->song, &source->song);
+    dest->notify = source->notify;
+    source->notify = false;
+    return;
+}
+
+static NcScreenCallbacks
+native_lyrics_callbacks(void) {
+    NcScreenCallbacks callbacks = {0};
+
+    callbacks.active_window = lyrics_active_window_callback;
+    callbacks.refresh = lyrics_refresh_callback;
+    callbacks.refresh_window = lyrics_refresh_window_callback;
+    callbacks.scroll = lyrics_scroll_callback;
+    callbacks.switch_to = lyrics_switch_to_callback;
+    callbacks.resize = lyrics_resize_callback;
+    callbacks.window_timeout = lyrics_window_timeout_callback;
+    callbacks.title = lyrics_title_callback;
+    callbacks.update = lyrics_update_callback;
+    callbacks.mouse_button_pressed = lyrics_mouse_button_pressed_callback;
+    callbacks.is_lockable = lyrics_is_lockable_callback;
+    callbacks.is_mergable = lyrics_is_mergable_callback;
+    callbacks.destroy = lyrics_destroy_callback;
+    return callbacks;
+}
+
+void
+native_lyrics_screen_init(NativeLyricsScreen *screen,
+                          int64 start_x, int64 width,
+                          int64 main_start_y, int64 main_height,
+                          NcColor color, NcBorder border,
+                          int32 lines_scrolled) {
+    nc_lyrics_screen_init(&screen->screen,
+                          native_lyrics_callbacks(),
+                          screen,
+                          start_x,
+                          width,
+                          main_start_y,
+                          main_height);
+    nc_window_init(&screen->window,
+                   nc_lyrics_screen_start_x(&screen->screen),
+                   nc_lyrics_screen_start_y(&screen->screen),
+                   nc_lyrics_screen_width(&screen->screen),
+                   nc_lyrics_screen_height(&screen->screen),
+                   STRLIT_ARGS(""),
+                   color,
+                   border);
+    nc_scrollpad_init(&screen->scrollpad,
+                      nc_lyrics_screen_height(&screen->screen));
+    nc_buffer_init(&screen->display);
+    ncm_song_init(&screen->song);
+    ncm_buffer_init(&screen->filename);
+    ncm_lyrics_result_init(&screen->result);
+    ncm_job_queue_init(&screen->jobs);
+    screen->queued_songs = NULL;
+    screen->queued_songs_len = 0;
+    screen->queued_songs_cap = 0;
+    ncm_buffer_init(&screen->consumer_message);
+    screen->fetcher = NULL;
+    screen->has_song = false;
+    screen->initialized = true;
+    nc_window_set_timeout(&screen->window, lines_scrolled);
+    return;
+}
+
+void
+native_lyrics_screen_destroy(NativeLyricsScreen *screen) {
+    if (!screen->initialized) {
+        return;
+    }
+
+    ncm_job_queue_destroy(&screen->jobs);
+    for (int32 i = 0; i < screen->queued_songs_len; i += 1) {
+        native_lyrics_queued_song_destroy(&screen->queued_songs[i]);
+    }
+    if (screen->queued_songs != NULL) {
+        ncm_free(screen->queued_songs,
+                 screen->queued_songs_cap*SIZEOF(*screen->queued_songs));
+    }
+    ncm_buffer_destroy(&screen->consumer_message);
+    ncm_lyrics_result_destroy(&screen->result);
+    ncm_buffer_destroy(&screen->filename);
+    ncm_song_destroy(&screen->song);
+    nc_buffer_destroy(&screen->display);
+    nc_window_destroy(&screen->window);
+    screen->queued_songs = NULL;
+    screen->queued_songs_len = 0;
+    screen->queued_songs_cap = 0;
+    screen->fetcher = NULL;
+    screen->has_song = false;
+    screen->initialized = false;
+    return;
+}
+
+NcLyricsScreen *
+native_lyrics_screen_typed(NativeLyricsScreen *screen) {
+    return &screen->screen;
+}
+
+NcScreen *
+native_lyrics_screen_base(NativeLyricsScreen *screen) {
+    return nc_lyrics_screen_base(&screen->screen);
+}
+
+NcWindow *
+native_lyrics_screen_window(NativeLyricsScreen *screen) {
+    return &screen->window;
+}
+
+void
+native_lyrics_screen_set_geometry(NativeLyricsScreen *screen,
+                                  int64 start_x, int64 width,
+                                  int64 main_start_y, int64 main_height) {
+    nc_lyrics_screen_set_geometry(&screen->screen,
+                                  start_x,
+                                  width,
+                                  main_start_y,
+                                  main_height);
+    nc_window_resize(&screen->window,
+                     nc_lyrics_screen_width(&screen->screen),
+                     nc_lyrics_screen_height(&screen->screen));
+    nc_window_move_to(&screen->window,
+                      nc_lyrics_screen_start_x(&screen->screen),
+                      nc_lyrics_screen_start_y(&screen->screen));
+    nc_scrollpad_resize(&screen->scrollpad,
+                        &screen->window,
+                        nc_lyrics_screen_width(&screen->screen),
+                        nc_lyrics_screen_height(&screen->screen));
+    return;
+}
+
+bool
+native_lyrics_screen_build_filename(NativeLyricsScreen *screen,
+                                    NcmSong *song,
+                                    char *music_dir,
+                                    int32 music_dir_len,
+                                    char *lyrics_dir,
+                                    int32 lyrics_dir_len,
+                                    bool store_in_song_dir,
+                                    bool win32_filename) {
+    (void)screen;
+    return native_lyrics_filename_from_song(&screen->filename,
+                                            song,
+                                            music_dir,
+                                            music_dir_len,
+                                            lyrics_dir,
+                                            lyrics_dir_len,
+                                            store_in_song_dir,
+                                            win32_filename);
+}
+
+bool
+native_lyrics_screen_load_file(NativeLyricsScreen *screen,
+                               char *filename, int32 filename_len,
+                               NcmError *error) {
+    FILE *file;
+    char line[1024];
+    int32 line_len;
+    bool first;
+
+    if ((filename == NULL) || (filename_len <= 0)) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing lyrics file"));
+        return false;
+    }
+
+    file = fopen(filename, "rb");
+    if (file == NULL) {
+        ncm_error_set(error, errno, STRLIT_ARGS("failed to open lyrics"));
+        return false;
+    }
+
+    nc_buffer_clear(&screen->display);
+    first = true;
+    while (fgets(line, (int32)SIZEOF(line), file) != NULL) {
+        line_len = (int32)strlen(line);
+        ncm_string_remove_chars(line, &line_len, STRLIT_ARGS("\r"));
+        if (!first) {
+            nc_buffer_append_char(&screen->display, '\n');
+        }
+        nc_buffer_append_data(&screen->display, line, line_len);
+        first = false;
+    }
+    fclose(file);
+    nc_lyrics_screen_request_refresh(&screen->screen);
+    ncm_error_clear(error);
+    return true;
+}
+
+bool
+native_lyrics_screen_save_file(NativeLyricsScreen *screen,
+                               char *filename, int32 filename_len,
+                               char *lyrics, int32 lyrics_len,
+                               NcmError *error) {
+    FILE *file;
+    int32 written;
+
+    (void)screen;
+    if ((filename == NULL) || (filename_len <= 0)) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing lyrics file"));
+        return false;
+    }
+
+    file = fopen(filename, "wb");
+    if (file == NULL) {
+        ncm_error_set(error, errno, STRLIT_ARGS("failed to write lyrics"));
+        return false;
+    }
+
+    written = 0;
+    if ((lyrics != NULL) && (lyrics_len > 0)) {
+        written = (int32)fwrite(lyrics, 1, (size_t)lyrics_len, file);
+    }
+    if ((written != lyrics_len) || (fclose(file) != 0)) {
+        ncm_error_set(error, errno, STRLIT_ARGS("failed to save lyrics"));
+        return false;
+    }
+
+    ncm_error_clear(error);
+    return true;
+}
+
+bool
+native_lyrics_screen_fetch(NativeLyricsScreen *screen,
+                           NcmSong *song,
+                           NcmLyricsFetcherDef *fetcher,
+                           NcmError *error) {
+    NativeLyricsJob *job;
+
+    if ((screen == NULL) || (song == NULL) || ncm_song_empty(song)) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing song"));
+        return false;
+    }
+    if (!ncm_job_queue_start(&screen->jobs, error)) {
+        return false;
+    }
+
+    ncm_song_copy(&screen->song, song);
+    screen->has_song = true;
+    screen->fetcher = fetcher;
+    job = native_lyrics_job_create(screen, song, fetcher, false, false);
+    if (!ncm_job_queue_push(&screen->jobs,
+                            (NcmJob){
+                                .run = native_lyrics_job_run,
+                                .complete = native_lyrics_job_complete,
+                                .destroy = native_lyrics_job_destroy,
+                                .user = job,
+                            },
+                            error)) {
+        native_lyrics_job_destroy(job);
+        return false;
+    }
+    ncm_error_clear(error);
+    return true;
+}
+
+bool
+native_lyrics_screen_fetch_in_background(NativeLyricsScreen *screen,
+                                         NcmSong *song,
+                                         bool notify,
+                                         NcmError *error) {
+    if (!native_lyrics_queue_song(screen, song, notify)) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("failed to queue song"));
+        return false;
+    }
+    if (!ncm_job_queue_start(&screen->jobs, error)) {
+        return false;
+    }
+    native_lyrics_start_next_background(screen);
+    ncm_error_clear(error);
+    return true;
+}
+
+int32
+native_lyrics_screen_dispatch_jobs(NativeLyricsScreen *screen) {
+    int32 result;
+
+    result = ncm_job_queue_dispatch_completed(&screen->jobs);
+    native_lyrics_start_next_background(screen);
+    return result;
+}
+
+void
+native_lyrics_screen_update(NativeLyricsScreen *screen) {
+    native_lyrics_screen_dispatch_jobs(screen);
+    if (nc_lyrics_screen_take_refresh_request(&screen->screen)) {
+        nc_scrollpad_flush(&screen->scrollpad,
+                           &screen->window,
+                           &screen->display);
+        nc_scrollpad_refresh(&screen->scrollpad, &screen->window);
+    }
+    return;
+}
+
+void
+native_lyrics_screen_stop_downloads(NativeLyricsScreen *screen) {
+    ncm_job_queue_stop(&screen->jobs);
+    return;
+}
+
+void
+native_lyrics_screen_clear_worker(NativeLyricsScreen *screen) {
+    ncm_lyrics_result_clear(&screen->result);
+    return;
+}
+
+void
+native_lyrics_screen_refetch_current(NativeLyricsScreen *screen,
+                                     NcmError *error) {
+    if (!screen->has_song) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("no current song"));
+        return;
+    }
+    if (screen->filename.len > 0) {
+        (void)ncm_fs_unlink(screen->filename.data,
+                            screen->filename.len,
+                            error);
+    }
+    (void)native_lyrics_screen_fetch(screen,
+                                     &screen->song,
+                                     screen->fetcher,
+                                     error);
+    return;
+}
+
+NcmLyricsFetcherDef *
+native_lyrics_screen_toggle_fetcher(NativeLyricsScreen *screen,
+                                    NcmLyricsFetcherRegistry *registry) {
+    int32 idx;
+
+    if ((registry == NULL) || (registry->fetchers.len <= 0)) {
+        screen->fetcher = NULL;
+        return NULL;
+    }
+    if (screen->fetcher == NULL) {
+        screen->fetcher = &registry->fetchers.items[0];
+        return screen->fetcher;
+    }
+
+    idx = -1;
+    for (int32 i = 0; i < registry->fetchers.len; i += 1) {
+        if (&registry->fetchers.items[i] == screen->fetcher) {
+            idx = i;
+            break;
+        }
+    }
+    idx += 1;
+    if ((idx >= 0) && (idx < registry->fetchers.len)) {
+        screen->fetcher = &registry->fetchers.items[idx];
+    } else {
+        screen->fetcher = NULL;
+    }
+    return screen->fetcher;
+}
+
+bool
+native_lyrics_screen_try_take_consumer_message(NativeLyricsScreen *screen,
+                                               NcmBuffer *message) {
+    if ((screen == NULL) || (message == NULL)) {
+        return false;
+    }
+    if (screen->consumer_message.len <= 0) {
+        return false;
+    }
+    ncm_buffer_copy(message, &screen->consumer_message);
+    ncm_buffer_clear(&screen->consumer_message);
+    return true;
+}
+
+NcmSong *
+native_lyrics_screen_song(NativeLyricsScreen *screen) {
+    if (!screen->has_song) {
+        return NULL;
+    }
+    return &screen->song;
+}
+
+NcmLyricsResult *
+native_lyrics_screen_result(NativeLyricsScreen *screen) {
+    return &screen->result;
+}
+
+NcmBuffer *
+native_lyrics_screen_filename(NativeLyricsScreen *screen) {
+    return &screen->filename;
+}
+
+NcBuffer *
+native_lyrics_screen_display(NativeLyricsScreen *screen) {
+    return &screen->display;
+}
+
+int32
+native_lyrics_screen_pending_jobs(NativeLyricsScreen *screen) {
+    return ncm_job_queue_pending_count(&screen->jobs);
+}
+
+int32
+native_lyrics_screen_completed_jobs(NativeLyricsScreen *screen) {
+    return ncm_job_queue_completed_count(&screen->jobs);
+}
+
+int32
+native_lyrics_screen_queued_count(NativeLyricsScreen *screen) {
+    return screen->queued_songs_len;
+}
+
+static NativeLyricsScreen *
+lyrics_from_screen(NcScreen *screen) {
+    return nc_screen_user(screen);
+}
+
+static NcWindow *
+lyrics_active_window_callback(NcScreen *screen) {
+    return native_lyrics_screen_window(lyrics_from_screen(screen));
+}
+
+static void
+lyrics_refresh_callback(NcScreen *screen) {
+    nc_window_display(native_lyrics_screen_window(lyrics_from_screen(screen)));
+    return;
+}
+
+static void
+lyrics_refresh_window_callback(NcScreen *screen) {
+    nc_window_display(native_lyrics_screen_window(lyrics_from_screen(screen)));
+    return;
+}
+
+static void
+lyrics_scroll_callback(NcScreen *screen, enum NcScroll where) {
+    NativeLyricsScreen *lyrics;
+
+    lyrics = lyrics_from_screen(screen);
+    nc_scrollpad_scroll(&lyrics->scrollpad, &lyrics->window, where);
+    return;
+}
+
+static void
+lyrics_switch_to_callback(NcScreen *screen) {
+    (void)app_controller_switch_to_screen(screen);
+    nc_lyrics_screen_reset_scroll_begin(&lyrics_from_screen(screen)->screen);
+    ncm_title_draw_header(nc_screen_title(screen),
+                          (int32)strlen(nc_screen_title(screen)));
+    return;
+}
+
+static void
+lyrics_resize_callback(NcScreen *screen) {
+    NativeLyricsScreen *lyrics;
+    int64 x;
+    int64 width;
+
+    lyrics = lyrics_from_screen(screen);
+    nc_screen_switcher_get_resize_params(screen, &x, &width, true);
+    native_lyrics_screen_set_geometry(lyrics,
+                                      x,
+                                      width,
+                                      ui_state_main_start_y(),
+                                      ui_state_main_height());
+    nc_screen_clear_resize_request(screen);
+    return;
+}
+
+static int32
+lyrics_window_timeout_callback(NcScreen *screen) {
+    (void)screen;
+    return 500;
+}
+
+static char *
+lyrics_title_callback(NcScreen *screen) {
+    (void)screen;
+    return (char *)NATIVE_LYRICS_TITLE;
+}
+
+static void
+lyrics_update_callback(NcScreen *screen) {
+    native_lyrics_screen_update(lyrics_from_screen(screen));
+    return;
+}
+
+static void
+lyrics_mouse_button_pressed_callback(NcScreen *screen, MEVENT event) {
+    (void)screen;
+    (void)event;
+    return;
+}
+
+static bool
+lyrics_is_lockable_callback(NcScreen *screen) {
+    (void)screen;
+    return true;
+}
+
+static bool
+lyrics_is_mergable_callback(NcScreen *screen) {
+    (void)screen;
+    return true;
+}
+
+static void
+lyrics_destroy_callback(NcScreen *screen) {
+    native_lyrics_screen_destroy(lyrics_from_screen(screen));
+    return;
+}
+
+static bool
+native_lyrics_song_artist_title(NcmSong *song,
+                                NcmBuffer *artist,
+                                NcmBuffer *title) {
+    NcmBuffer fallback;
+    NcmStringView artist_view;
+    NcmStringView title_view;
+    NcmStringView name_view;
+
+    ncm_string_view_init(&artist_view);
+    ncm_string_view_init(&title_view);
+    ncm_string_view_init(&name_view);
+    ncm_buffer_clear(artist);
+    ncm_buffer_clear(title);
+    if (ncm_song_tag_view(song, MPD_TAG_ARTIST, 0, &artist_view)
+        && ncm_song_tag_view(song, MPD_TAG_TITLE, 0, &title_view)) {
+        ncm_buffer_append(artist, artist_view.data, artist_view.len);
+        ncm_buffer_append(title, title_view.data, title_view.len);
+        return true;
+    }
+
+    ncm_buffer_init(&fallback);
+    if (ncm_song_name_view(song, 0, &name_view)) {
+        ncm_buffer_append(&fallback, name_view.data, name_view.len);
+    } else if (ncm_song_uri_view(song, 0, &name_view)) {
+        ncm_buffer_append(&fallback, name_view.data, name_view.len);
+    }
+    native_lyrics_remove_extension(&fallback);
+    ncm_buffer_copy(title, &fallback);
+    ncm_buffer_destroy(&fallback);
+    return title->len > 0;
+}
+
+static void
+native_lyrics_remove_extension(NcmBuffer *buffer) {
+    for (int32 i = buffer->len - 1; i >= 0; i -= 1) {
+        if (buffer->data[i] == '/') {
+            break;
+        }
+        if (buffer->data[i] == '.') {
+            buffer->len = i;
+            buffer->data[i] = '\0';
+            break;
+        }
+    }
+    return;
+}
+
+static bool
+native_lyrics_filename_from_song(NcmBuffer *filename,
+                                 NcmSong *song,
+                                 char *music_dir,
+                                 int32 music_dir_len,
+                                 char *lyrics_dir,
+                                 int32 lyrics_dir_len,
+                                 bool store_in_song_dir,
+                                 bool win32_filename) {
+    NcmBuffer artist;
+    NcmBuffer title;
+    NcmStringView uri;
+
+    ncm_buffer_init(&artist);
+    ncm_buffer_init(&title);
+    ncm_string_view_init(&uri);
+    ncm_buffer_clear(filename);
+    if (store_in_song_dir && !ncm_song_is_stream(song)) {
+        if (ncm_song_is_from_database(song) && (music_dir_len > 0)) {
+            ncm_buffer_append(filename, music_dir, music_dir_len);
+            if ((filename->len > 0)
+                && (filename->data[filename->len - 1] != '/')) {
+                ncm_buffer_append_byte(filename, '/');
+            }
+        }
+        if (ncm_song_uri_view(song, 0, &uri)) {
+            ncm_buffer_append(filename, uri.data, uri.len);
+        }
+        native_lyrics_remove_extension(filename);
+    } else {
+        (void)native_lyrics_song_artist_title(song, &artist, &title);
+        if (lyrics_dir_len > 0) {
+            ncm_buffer_append(filename, lyrics_dir, lyrics_dir_len);
+            if ((filename->len > 0)
+                && (filename->data[filename->len - 1] != '/')) {
+                ncm_buffer_append_byte(filename, '/');
+            }
+        }
+        if ((artist.len > 0) && (title.len > 0)) {
+            ncm_buffer_append(filename, artist.data, artist.len);
+            ncm_buffer_append(filename, STRLIT_ARGS(" - "));
+            ncm_buffer_append(filename, title.data, title.len);
+        } else {
+            ncm_buffer_append(filename, title.data, title.len);
+        }
+        ncm_string_remove_invalid_filename_chars(filename->data,
+                                                &filename->len,
+                                                win32_filename);
+        filename->data[filename->len] = '\0';
+    }
+    native_lyrics_remove_extension(filename);
+    ncm_buffer_append(filename, STRLIT_ARGS(".txt"));
+    ncm_buffer_destroy(&title);
+    ncm_buffer_destroy(&artist);
+    return filename->len > 4;
+}
+
+static bool
+native_lyrics_queue_song(NativeLyricsScreen *screen,
+                         NcmSong *song, bool notify) {
+    NativeLyricsQueuedSong *queued;
+    int32 new_cap;
+
+    if ((song == NULL) || ncm_song_empty(song)) {
+        return false;
+    }
+    if (screen->queued_songs_len >= screen->queued_songs_cap) {
+        new_cap = screen->queued_songs_cap;
+        if (new_cap <= 0) {
+            new_cap = 8;
+        } else {
+            new_cap *= 2;
+        }
+        screen->queued_songs = ncm_realloc_array(
+            screen->queued_songs,
+            screen->queued_songs_cap,
+            new_cap,
+            SIZEOF(*screen->queued_songs));
+        for (int32 i = screen->queued_songs_cap; i < new_cap; i += 1) {
+            native_lyrics_queued_song_init(&screen->queued_songs[i]);
+        }
+        screen->queued_songs_cap = new_cap;
+    }
+    queued = &screen->queued_songs[screen->queued_songs_len];
+    ncm_song_copy(&queued->song, song);
+    queued->notify = notify;
+    screen->queued_songs_len += 1;
+    return true;
+}
+
+static NativeLyricsQueuedSong *
+native_lyrics_dequeue_song(NativeLyricsScreen *screen) {
+    NativeLyricsQueuedSong *queued;
+
+    if (screen->queued_songs_len <= 0) {
+        return NULL;
+    }
+    queued = ncm_malloc(SIZEOF(*queued));
+    native_lyrics_queued_song_init(queued);
+    native_lyrics_queued_song_move(queued, &screen->queued_songs[0]);
+    for (int32 i = 1; i < screen->queued_songs_len; i += 1) {
+        native_lyrics_queued_song_move(&screen->queued_songs[i - 1],
+                                       &screen->queued_songs[i]);
+    }
+    screen->queued_songs_len -= 1;
+    return queued;
+}
+
+static NativeLyricsJob *
+native_lyrics_job_create(NativeLyricsScreen *screen,
+                         NcmSong *song,
+                         NcmLyricsFetcherDef *fetcher,
+                         bool notify,
+                         bool background) {
+    NativeLyricsJob *job;
+
+    job = ncm_malloc(SIZEOF(*job));
+    job->screen = screen;
+    ncm_song_init(&job->song);
+    ncm_song_copy(&job->song, song);
+    job->fetcher = fetcher;
+    ncm_lyrics_result_init(&job->result);
+    job->notify = notify;
+    job->background = background;
+    return job;
+}
+
+static bool
+native_lyrics_job_run(void *user, NcmError *error) {
+    NativeLyricsJob *job;
+    NcmBuffer artist;
+    NcmBuffer title;
+
+    job = user;
+    ncm_buffer_init(&artist);
+    ncm_buffer_init(&title);
+    if (!native_lyrics_song_artist_title(&job->song, &artist, &title)) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing song metadata"));
+        ncm_buffer_destroy(&title);
+        ncm_buffer_destroy(&artist);
+        return false;
+    }
+    (void)ncm_lyrics_fetcher_fetch(job->fetcher,
+                                   &job->result,
+                                   artist.data,
+                                   artist.len,
+                                   title.data,
+                                   title.len,
+                                   &job->song);
+    ncm_buffer_destroy(&title);
+    ncm_buffer_destroy(&artist);
+    if (!job->result.success) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("lyrics not found"));
+    }
+    return job->result.success;
+}
+
+static void
+native_lyrics_job_complete(bool success, NcmError *error, void *user) {
+    NativeLyricsJob *job;
+    NativeLyricsScreen *screen;
+
+    (void)success;
+    (void)error;
+    job = user;
+    screen = job->screen;
+    if (!job->background) {
+        ncm_lyrics_result_clear(&screen->result);
+        (void)ncm_lyrics_result_set(&screen->result,
+                                    job->result.success,
+                                    job->result.text,
+                                    job->result.text_len);
+        nc_buffer_clear(&screen->display);
+        if (job->result.success) {
+            nc_buffer_append_data(&screen->display,
+                                  job->result.text,
+                                  job->result.text_len);
+        } else {
+            nc_buffer_append_cstring(&screen->display,
+                                     (char *)"\nLyrics were not found.\n");
+        }
+        nc_lyrics_screen_request_refresh(&screen->screen);
+    } else if (job->notify) {
+        if (job->result.success) {
+            ncm_buffer_set(&screen->consumer_message,
+                           STRLIT_ARGS("Lyrics fetched"));
+        } else {
+            ncm_buffer_set(&screen->consumer_message,
+                           STRLIT_ARGS("Lyrics were not found"));
+        }
+    }
+    return;
+}
+
+static void
+native_lyrics_job_destroy(void *user) {
+    NativeLyricsJob *job;
+
+    job = user;
+    if (job == NULL) {
+        return;
+    }
+    ncm_song_destroy(&job->song);
+    ncm_lyrics_result_destroy(&job->result);
+    ncm_free(job, SIZEOF(*job));
+    return;
+}
+
+static void
+native_lyrics_start_next_background(NativeLyricsScreen *screen) {
+    NativeLyricsQueuedSong *queued;
+    NativeLyricsJob *job;
+    NcmError error = {0};
+
+    if (ncm_job_queue_pending_count(&screen->jobs) > 0) {
+        return;
+    }
+    if (ncm_job_queue_completed_count(&screen->jobs) > 0) {
+        return;
+    }
+    queued = native_lyrics_dequeue_song(screen);
+    if (queued == NULL) {
+        return;
+    }
+    job = native_lyrics_job_create(screen,
+                                   &queued->song,
+                                   screen->fetcher,
+                                   queued->notify,
+                                   true);
+    (void)ncm_job_queue_push(&screen->jobs,
+                             (NcmJob){
+                                 .run = native_lyrics_job_run,
+                                 .complete = native_lyrics_job_complete,
+                                 .destroy = native_lyrics_job_destroy,
+                                 .user = job,
+                             },
+                             &error);
+    ncm_error_clear(&error);
+    native_lyrics_queued_song_destroy(queued);
+    ncm_free(queued, SIZEOF(*queued));
     return;
 }
