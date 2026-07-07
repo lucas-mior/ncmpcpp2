@@ -26,6 +26,7 @@
 #include "c/ncm_defs.h"
 #include "screens/nc_help.h"
 #include "screens/nc_outputs.h"
+#include "screens/nc_playlist.h"
 #include "screens/nc_server_info.h"
 #include "screens/nc_song_info.h"
 #include "screens/nc_screen.h"
@@ -45,6 +46,15 @@ bool native_c_screen_help_is_current(void);
 NativeHelpScreen *native_c_screen_help(void);
 NcHelpScreen *native_c_screen_help_typed(void);
 NcScreen *native_c_screen_help_native(void);
+
+void native_c_screen_playlist_init(void);
+void native_c_screen_playlist_register(void);
+void native_c_screen_playlist_set_resize(void);
+void native_c_screen_playlist_switch_to(void);
+bool native_c_screen_playlist_is_current(void);
+NativePlaylistScreen *native_c_screen_playlist(void);
+NcPlaylistScreen *native_c_screen_playlist_typed(void);
+NcScreen *native_c_screen_playlist_native(void);
 
 void native_c_screen_song_info_init(void);
 void native_c_screen_song_info_register(void);

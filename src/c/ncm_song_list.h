@@ -28,6 +28,14 @@ typedef struct NcmSongList {
     int32 current;
 } NcmSongList;
 
+enum NcmSongListSearchDirection {
+    NCM_SONG_LIST_SEARCH_FORWARD,
+    NCM_SONG_LIST_SEARCH_BACKWARD,
+};
+
+typedef bool (*NcmSongListPredicate)(NcmSong *song, void *user);
+typedef bool (*NcmSongListEachFunc)(NcmSong *song, int32 idx, void *user);
+
 void ncm_song_list_item_init(NcmSongListItem *item);
 void ncm_song_list_item_destroy(NcmSongListItem *item);
 bool ncm_song_list_item_copy(NcmSongListItem *dest,
@@ -51,6 +59,21 @@ bool ncm_song_list_item_is_selected(NcmSongListItem *item);
 bool ncm_song_list_item_is_selectable(NcmSongListItem *item);
 void ncm_song_list_item_set_selected(NcmSongListItem *item, bool selected);
 bool ncm_song_list_selected_songs(NcmSongList *list, NcmSongArray *songs);
+int32 ncm_song_list_selected_count(NcmSongList *list);
+bool ncm_song_list_has_selected(NcmSongList *list);
+bool ncm_song_list_each_selected_song(NcmSongList *list,
+                                 NcmSongListEachFunc each,
+                                 void *user);
+bool ncm_song_list_select_current_song_if_none_selected(NcmSongList *list);
+void ncm_song_list_clear_selection(NcmSongList *list);
+void ncm_song_list_reverse_selectable_selection(NcmSongList *list);
+bool ncm_song_list_find_position(NcmSongList *list, uint32 position,
+                                 int32 *idx);
+bool ncm_song_list_wrapped_song_search(NcmSongList *list,
+                                  NcmSongListPredicate predicate,
+                                  void *user,
+                                  enum NcmSongListSearchDirection direction,
+                                  bool wrap, bool skip_current);
 
 #if defined(__cplusplus)
 }

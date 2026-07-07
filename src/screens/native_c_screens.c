@@ -33,6 +33,7 @@ struct NativeOutputsScreen {
     bool initialized;
 };
 
+
 struct NativeServerInfoScreen {
     NcServerInfoScreen screen;
     NcmMpdStringList url_handlers;
@@ -70,6 +71,8 @@ NcmSongInfoMetadata ncm_song_info_tags[] = {
 
 static struct NativeHelpScreen help_screen;
 static struct NativeOutputsScreen outputs_screen;
+static NativePlaylistScreen playlist_screen;
+static bool playlist_screen_initialized;
 static struct NativeServerInfoScreen server_info_screen;
 static struct NativeSongInfoScreen song_info_screen;
 
@@ -185,6 +188,70 @@ NcScreen *
 native_c_screen_help_native(void) {
     native_c_screen_help_init();
     return nc_help_screen_base(&help_screen.screen);
+}
+
+void
+native_c_screen_playlist_init(void) {
+    if (playlist_screen_initialized) {
+        return;
+    }
+
+    native_playlist_screen_init(&playlist_screen,
+                                0,
+                                ui_state_screen_width(),
+                                ui_state_main_start_y(),
+                                ui_state_main_height(),
+                                Config.main_color,
+                                native_no_border());
+    native_playlist_screen_set_mouse_config(
+        &playlist_screen, Config.lines_scrolled,
+        Config.mouse_list_scroll_whole_page);
+    playlist_screen_initialized = true;
+    return;
+}
+
+void
+native_c_screen_playlist_register(void) {
+    native_c_screen_playlist_init();
+    assert(native_register_screen(native_c_screen_playlist_native()));
+    return;
+}
+
+void
+native_c_screen_playlist_set_resize(void) {
+    nc_screen_request_resize(native_c_screen_playlist_native());
+    return;
+}
+
+void
+native_c_screen_playlist_switch_to(void) {
+    (void)nc_screen_switcher_switch_to(native_c_screen_playlist_native(),
+                                       nc_screen_has_to_be_resized(
+                                           native_c_screen_playlist_native()));
+    return;
+}
+
+bool
+native_c_screen_playlist_is_current(void) {
+    return nc_screen_switcher_is_current(native_c_screen_playlist_native());
+}
+
+NativePlaylistScreen *
+native_c_screen_playlist(void) {
+    native_c_screen_playlist_init();
+    return &playlist_screen;
+}
+
+NcPlaylistScreen *
+native_c_screen_playlist_typed(void) {
+    native_c_screen_playlist_init();
+    return native_playlist_screen_playlist(&playlist_screen);
+}
+
+NcScreen *
+native_c_screen_playlist_native(void) {
+    native_c_screen_playlist_init();
+    return native_playlist_screen_base(&playlist_screen);
 }
 
 void
