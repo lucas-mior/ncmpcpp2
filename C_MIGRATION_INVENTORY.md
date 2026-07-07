@@ -11,7 +11,7 @@ plain C, ownership is explicit, resource lifetimes use `init`/`destroy` or
 
 ## Current C++ count
 
-Collected with `make cxx-count` after Stage 2 changes:
+Collected with `make cxx-count` after Stage 3.1 changes:
 
 ```text
 built_cpp=21
@@ -20,8 +20,12 @@ total_cpp=38
 
 `make no-cxx` is expected to fail until the later stages remove every entry in
 this inventory.  Stage 2 removes `src/ncmpcpp.cpp` from the root build but
-keeps it on disk for comparison until final cleanup.  The target now uses `tools/no-cxx-scan.py`, which ignores
-comments and literals before checking banned C++ tokens.
+keeps it on disk for comparison until final cleanup.  Stage 3.1 keeps the
+remaining C++ screen files built, but screen lookup, startup switching, current
+screen type checks, locking, and resize requests now resolve through the native
+`NcScreen` registry API instead of direct `BaseScreen *` startup paths.  The
+target now uses `tools/no-cxx-scan.py`, which ignores comments and literals
+before checking banned C++ tokens.
 
 ## C++ source inventory
 

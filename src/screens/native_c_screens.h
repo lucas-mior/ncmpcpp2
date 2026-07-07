@@ -41,6 +41,7 @@
 #include "screens/nc_server_info.h"
 #include "screens/nc_song_info.h"
 #include "screens/nc_screen.h"
+#include "screens/screen_type.h"
 
 NCM_EXTERN_C_BEGIN
 
@@ -49,6 +50,15 @@ typedef struct NativeOutputsScreen NativeOutputsScreen;
 typedef struct NativeServerInfoScreen NativeServerInfoScreen;
 typedef struct NativeSongInfoScreen NativeSongInfoScreen;
 
+
+void native_c_screens_init_all(void);
+void native_c_screens_register_native_only(void);
+void native_c_screens_request_registered_resize(void);
+bool native_c_screens_is_registered_type(enum ScreenType screen_type);
+NcScreen *native_c_screens_find_type(enum ScreenType screen_type);
+bool native_c_screens_switch_to_type(enum ScreenType screen_type);
+bool native_c_screens_lock_current(void);
+enum ScreenType native_c_screens_current_type(void);
 
 void native_c_screen_browser_init(void);
 void native_c_screen_browser_register(void);
