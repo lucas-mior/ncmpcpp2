@@ -73,6 +73,12 @@ static NativeBrowserScreen browser_screen;
 static bool browser_screen_initialized;
 static struct NativeHelpScreen help_screen;
 static struct NativeOutputsScreen outputs_screen;
+static NativeLastfmScreen lastfm_screen;
+static bool lastfm_screen_initialized;
+static NativeLyricsScreen lyrics_screen;
+static bool lyrics_screen_initialized;
+static NativeVisualizerScreen visualizer_screen;
+static bool visualizer_screen_initialized;
 static NativePlaylistScreen playlist_screen;
 static NativePlaylistEditorScreen playlist_editor_screen;
 static NativeSelectedItemsAdderScreen selected_items_adder_screen;
@@ -84,6 +90,10 @@ static bool sort_playlist_dialog_initialized;
 static bool search_engine_screen_initialized;
 static NativeMediaLibraryScreen media_library_screen;
 static bool media_library_screen_initialized;
+static NativeTagEditorScreen tag_editor_screen;
+static bool tag_editor_screen_initialized;
+static NativeTinyTagEditorScreen tiny_tag_editor_screen;
+static bool tiny_tag_editor_screen_initialized;
 static bool playlist_screen_initialized;
 static struct NativeServerInfoScreen server_info_screen;
 static struct NativeSongInfoScreen song_info_screen;
@@ -253,6 +263,200 @@ NcHelpScreen *
 native_c_screen_help_typed(void) {
     native_c_screen_help_init();
     return &help_screen.screen;
+}
+
+
+void
+native_c_screen_lastfm_init(void) {
+    if (lastfm_screen_initialized) {
+        return;
+    }
+
+    native_lastfm_screen_init(&lastfm_screen,
+                              0,
+                              ui_state_screen_width(),
+                              ui_state_main_start_y(),
+                              ui_state_main_height(),
+                              Config.main_color,
+                              native_no_border(),
+                              Config.lines_scrolled);
+    lastfm_screen_initialized = true;
+    return;
+}
+
+void
+native_c_screen_lastfm_register(void) {
+    native_c_screen_lastfm_init();
+    assert(native_register_screen(native_c_screen_lastfm_native()));
+    return;
+}
+
+void
+native_c_screen_lastfm_set_resize(void) {
+    nc_screen_request_resize(native_c_screen_lastfm_native());
+    return;
+}
+
+void
+native_c_screen_lastfm_switch_to(void) {
+    (void)nc_screen_switcher_switch_to(native_c_screen_lastfm_native(),
+                                       nc_screen_has_to_be_resized(
+                                           native_c_screen_lastfm_native()));
+    return;
+}
+
+bool
+native_c_screen_lastfm_is_current(void) {
+    return nc_screen_switcher_is_current(native_c_screen_lastfm_native());
+}
+
+NativeLastfmScreen *
+native_c_screen_lastfm(void) {
+    native_c_screen_lastfm_init();
+    return &lastfm_screen;
+}
+
+NcLastfmScreen *
+native_c_screen_lastfm_typed(void) {
+    native_c_screen_lastfm_init();
+    return native_lastfm_screen_typed(&lastfm_screen);
+}
+
+NcScreen *
+native_c_screen_lastfm_native(void) {
+    native_c_screen_lastfm_init();
+    return native_lastfm_screen_base(&lastfm_screen);
+}
+
+void
+native_c_screen_lyrics_init(void) {
+    if (lyrics_screen_initialized) {
+        return;
+    }
+
+    native_lyrics_screen_init(&lyrics_screen,
+                              0,
+                              ui_state_screen_width(),
+                              ui_state_main_start_y(),
+                              ui_state_main_height(),
+                              Config.main_color,
+                              native_no_border(),
+                              Config.lines_scrolled);
+    lyrics_screen_initialized = true;
+    return;
+}
+
+void
+native_c_screen_lyrics_register(void) {
+    native_c_screen_lyrics_init();
+    assert(native_register_screen(native_c_screen_lyrics_native()));
+    return;
+}
+
+void
+native_c_screen_lyrics_set_resize(void) {
+    nc_screen_request_resize(native_c_screen_lyrics_native());
+    return;
+}
+
+void
+native_c_screen_lyrics_switch_to(void) {
+    (void)nc_screen_switcher_switch_to(native_c_screen_lyrics_native(),
+                                       nc_screen_has_to_be_resized(
+                                           native_c_screen_lyrics_native()));
+    return;
+}
+
+bool
+native_c_screen_lyrics_is_current(void) {
+    return nc_screen_switcher_is_current(native_c_screen_lyrics_native());
+}
+
+NativeLyricsScreen *
+native_c_screen_lyrics(void) {
+    native_c_screen_lyrics_init();
+    return &lyrics_screen;
+}
+
+NcLyricsScreen *
+native_c_screen_lyrics_typed(void) {
+    native_c_screen_lyrics_init();
+    return native_lyrics_screen_typed(&lyrics_screen);
+}
+
+NcScreen *
+native_c_screen_lyrics_native(void) {
+    native_c_screen_lyrics_init();
+    return native_lyrics_screen_base(&lyrics_screen);
+}
+
+void
+native_c_screen_visualizer_init(void) {
+#if defined(ENABLE_VISUALIZER)
+    if (visualizer_screen_initialized) {
+        return;
+    }
+
+    native_visualizer_screen_init(&visualizer_screen,
+                                  0,
+                                  ui_state_main_start_y(),
+                                  ui_state_screen_width(),
+                                  ui_state_main_height(),
+                                  Config.main_color,
+                                  native_no_border(),
+                                  Config.visualizer_fps,
+                                  Config.visualizer_in_stereo);
+    visualizer_screen_initialized = true;
+#endif
+    return;
+}
+
+void
+native_c_screen_visualizer_register(void) {
+#if defined(ENABLE_VISUALIZER)
+    native_c_screen_visualizer_init();
+    assert(native_register_screen(native_c_screen_visualizer_native()));
+#endif
+    return;
+}
+
+void
+native_c_screen_visualizer_set_resize(void) {
+#if defined(ENABLE_VISUALIZER)
+    nc_screen_request_resize(native_c_screen_visualizer_native());
+#endif
+    return;
+}
+
+void
+native_c_screen_visualizer_switch_to(void) {
+#if defined(ENABLE_VISUALIZER)
+    (void)nc_screen_switcher_switch_to(
+        native_c_screen_visualizer_native(),
+        nc_screen_has_to_be_resized(native_c_screen_visualizer_native()));
+#endif
+    return;
+}
+
+bool
+native_c_screen_visualizer_is_current(void) {
+#if defined(ENABLE_VISUALIZER)
+    return nc_screen_switcher_is_current(native_c_screen_visualizer_native());
+#else
+    return false;
+#endif
+}
+
+NativeVisualizerScreen *
+native_c_screen_visualizer(void) {
+    native_c_screen_visualizer_init();
+    return &visualizer_screen;
+}
+
+NcScreen *
+native_c_screen_visualizer_native(void) {
+    native_c_screen_visualizer_init();
+    return native_visualizer_screen_base(&visualizer_screen);
 }
 
 NcScreen *
@@ -609,6 +813,116 @@ NcScreen *
 native_c_screen_media_library_native(void) {
     native_c_screen_media_library_init();
     return native_media_library_screen_base(&media_library_screen);
+}
+
+void
+native_c_screen_tag_editor_init(void) {
+    if (tag_editor_screen_initialized) {
+        return;
+    }
+
+    native_tag_editor_screen_init(&tag_editor_screen, 0,
+                                  ui_state_screen_width(),
+                                  ui_state_main_start_y(),
+                                  ui_state_main_height(),
+                                  Config.main_color,
+                                  native_no_border());
+    tag_editor_screen_initialized = true;
+    return;
+}
+
+void
+native_c_screen_tag_editor_register(void) {
+    native_c_screen_tag_editor_init();
+    assert(native_register_screen(native_c_screen_tag_editor_native()));
+    return;
+}
+
+void
+native_c_screen_tag_editor_set_resize(void) {
+    nc_screen_request_resize(native_c_screen_tag_editor_native());
+    return;
+}
+
+void
+native_c_screen_tag_editor_switch_to(void) {
+    (void)nc_screen_switcher_switch_to(
+        native_c_screen_tag_editor_native(),
+        nc_screen_has_to_be_resized(native_c_screen_tag_editor_native()));
+    return;
+}
+
+bool
+native_c_screen_tag_editor_is_current(void) {
+    return nc_screen_switcher_is_current(native_c_screen_tag_editor_native());
+}
+
+NativeTagEditorScreen *
+native_c_screen_tag_editor(void) {
+    native_c_screen_tag_editor_init();
+    return &tag_editor_screen;
+}
+
+NcScreen *
+native_c_screen_tag_editor_native(void) {
+    native_c_screen_tag_editor_init();
+    return native_tag_editor_screen_base(&tag_editor_screen);
+}
+
+void
+native_c_screen_tiny_tag_editor_init(void) {
+    if (tiny_tag_editor_screen_initialized) {
+        return;
+    }
+
+    native_tiny_tag_editor_screen_init(&tiny_tag_editor_screen, 0,
+                                       ui_state_screen_width(),
+                                       ui_state_main_start_y(),
+                                       ui_state_main_height(),
+                                       Config.main_color,
+                                       native_no_border());
+    tiny_tag_editor_screen_initialized = true;
+    return;
+}
+
+void
+native_c_screen_tiny_tag_editor_register(void) {
+    native_c_screen_tiny_tag_editor_init();
+    assert(native_register_screen(native_c_screen_tiny_tag_editor_native()));
+    return;
+}
+
+void
+native_c_screen_tiny_tag_editor_set_resize(void) {
+    nc_screen_request_resize(native_c_screen_tiny_tag_editor_native());
+    return;
+}
+
+void
+native_c_screen_tiny_tag_editor_switch_to(void) {
+    (void)nc_screen_switcher_switch_to(
+        native_c_screen_tiny_tag_editor_native(),
+        nc_screen_has_to_be_resized(
+            native_c_screen_tiny_tag_editor_native()));
+    return;
+}
+
+bool
+native_c_screen_tiny_tag_editor_is_current(void) {
+    return nc_screen_switcher_is_current(
+        native_c_screen_tiny_tag_editor_native());
+}
+
+NativeTinyTagEditorScreen *
+native_c_screen_tiny_tag_editor(void) {
+    native_c_screen_tiny_tag_editor_init();
+    return &tiny_tag_editor_screen;
+}
+
+NcScreen *
+native_c_screen_tiny_tag_editor_native(void) {
+    native_c_screen_tiny_tag_editor_init();
+    return native_tiny_tag_editor_screen_base(&tiny_tag_editor_screen);
 }
 
 void

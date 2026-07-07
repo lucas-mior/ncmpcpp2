@@ -26,6 +26,8 @@
 #include "c/ncm_defs.h"
 #include "screens/nc_browser.h"
 #include "screens/nc_help.h"
+#include "screens/nc_lastfm.h"
+#include "screens/nc_lyrics.h"
 #include "screens/nc_outputs.h"
 #include "screens/nc_media_library.h"
 #include "screens/nc_playlist.h"
@@ -33,6 +35,9 @@
 #include "screens/nc_sel_items_adder.h"
 #include "screens/nc_sort_playlist.h"
 #include "screens/nc_search_engine.h"
+#include "screens/nc_tag_editor.h"
+#include "screens/nc_tiny_tag_editor.h"
+#include "screens/nc_visualizer.h"
 #include "screens/nc_server_info.h"
 #include "screens/nc_song_info.h"
 #include "screens/nc_screen.h"
@@ -61,6 +66,32 @@ bool native_c_screen_help_is_current(void);
 NativeHelpScreen *native_c_screen_help(void);
 NcHelpScreen *native_c_screen_help_typed(void);
 NcScreen *native_c_screen_help_native(void);
+
+void native_c_screen_lastfm_init(void);
+void native_c_screen_lastfm_register(void);
+void native_c_screen_lastfm_set_resize(void);
+void native_c_screen_lastfm_switch_to(void);
+bool native_c_screen_lastfm_is_current(void);
+NativeLastfmScreen *native_c_screen_lastfm(void);
+NcLastfmScreen *native_c_screen_lastfm_typed(void);
+NcScreen *native_c_screen_lastfm_native(void);
+
+void native_c_screen_lyrics_init(void);
+void native_c_screen_lyrics_register(void);
+void native_c_screen_lyrics_set_resize(void);
+void native_c_screen_lyrics_switch_to(void);
+bool native_c_screen_lyrics_is_current(void);
+NativeLyricsScreen *native_c_screen_lyrics(void);
+NcLyricsScreen *native_c_screen_lyrics_typed(void);
+NcScreen *native_c_screen_lyrics_native(void);
+
+void native_c_screen_visualizer_init(void);
+void native_c_screen_visualizer_register(void);
+void native_c_screen_visualizer_set_resize(void);
+void native_c_screen_visualizer_switch_to(void);
+bool native_c_screen_visualizer_is_current(void);
+NativeVisualizerScreen *native_c_screen_visualizer(void);
+NcScreen *native_c_screen_visualizer_native(void);
 
 void native_c_screen_playlist_init(void);
 void native_c_screen_playlist_register(void);
@@ -110,6 +141,23 @@ void native_c_screen_media_library_switch_to(void);
 bool native_c_screen_media_library_is_current(void);
 NativeMediaLibraryScreen *native_c_screen_media_library(void);
 NcScreen *native_c_screen_media_library_native(void);
+
+
+void native_c_screen_tag_editor_init(void);
+void native_c_screen_tag_editor_register(void);
+void native_c_screen_tag_editor_set_resize(void);
+void native_c_screen_tag_editor_switch_to(void);
+bool native_c_screen_tag_editor_is_current(void);
+NativeTagEditorScreen *native_c_screen_tag_editor(void);
+NcScreen *native_c_screen_tag_editor_native(void);
+
+void native_c_screen_tiny_tag_editor_init(void);
+void native_c_screen_tiny_tag_editor_register(void);
+void native_c_screen_tiny_tag_editor_set_resize(void);
+void native_c_screen_tiny_tag_editor_switch_to(void);
+bool native_c_screen_tiny_tag_editor_is_current(void);
+NativeTinyTagEditorScreen *native_c_screen_tiny_tag_editor(void);
+NcScreen *native_c_screen_tiny_tag_editor_native(void);
 
 void native_c_screen_song_info_init(void);
 void native_c_screen_song_info_register(void);
