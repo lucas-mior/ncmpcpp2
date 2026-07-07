@@ -7,6 +7,7 @@
 
 typedef struct TestMenuItem {
     int32 value;
+    bool constructed;
 } TestMenuItem;
 
 typedef struct TestMenuState {
@@ -37,6 +38,7 @@ test_item_construct(void *dest, void *user) {
     (void)user;
     item = dest;
     item->value = 0;
+    item->constructed = true;
     return;
 }
 
@@ -49,6 +51,7 @@ test_item_copy(void *dest, void *source, void *user) {
     dest_item = dest;
     source_item = source;
     state = user;
+    assert(dest_item->constructed);
     dest_item->value = source_item->value;
     if (state != NULL) {
         state->copies += 1;
@@ -63,7 +66,9 @@ test_item_destroy(void *item, void *user) {
 
     test_item = item;
     state = user;
+    assert(test_item->constructed);
     test_item->value = 0;
+    test_item->constructed = false;
     if (state != NULL) {
         state->destroys += 1;
     }
