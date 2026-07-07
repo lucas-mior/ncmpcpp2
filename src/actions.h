@@ -146,6 +146,33 @@ enum NcmActionType {
 typedef bool (*NcmActionCanRunFn)(void *user);
 typedef bool (*NcmActionRunFn)(void *user);
 
+#define NCM_ACTION_RUNTIME_DEFER 0
+#define NCM_ACTION_RUNTIME_ALLOW 1
+#define NCM_ACTION_RUNTIME_DENY -1
+
+typedef int32 (*NcmActionRuntimeHook)(enum NcmActionType type,
+                                      void *user);
+
+typedef struct NcmActionRuntime {
+    NcmActionRuntimeHook can_run_hook;
+    NcmActionRuntimeHook run_hook;
+    void *user;
+    bool exit_requested;
+} NcmActionRuntime;
+
+void ncm_action_runtime_init(NcmActionRuntime *runtime);
+void ncm_action_runtime_set_hooks(NcmActionRuntime *runtime,
+                                  NcmActionRuntimeHook can_run_hook,
+                                  NcmActionRuntimeHook run_hook,
+                                  void *user);
+NcmActionRuntime *ncm_action_runtime_global(void);
+bool ncm_action_runtime_exit_requested(NcmActionRuntime *runtime);
+void ncm_action_runtime_clear_exit_request(NcmActionRuntime *runtime);
+bool ncm_action_runtime_can_run(NcmActionRuntime *runtime,
+                                enum NcmActionType type);
+bool ncm_action_runtime_run(NcmActionRuntime *runtime,
+                            enum NcmActionType type);
+
 typedef struct NcmActionDef {
     char *name;
 

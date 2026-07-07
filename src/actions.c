@@ -2,6 +2,14 @@
 
 #include <string.h>
 
+#include "app_controller.h"
+#include "global.h"
+#include "settings.h"
+#include "screens/native_c_screens.h"
+#include "screens/screen_type.h"
+#include "status.h"
+#include "statusbar.h"
+
 #include "cbase/base_macros.h"
 
 static bool ncm_action_can_run_always(void *user);
@@ -391,4 +399,647 @@ ncm_action_can_run(enum NcmActionType type, void *user) {
 bool
 ncm_action_run(enum NcmActionType type, void *user) {
     return ncm_action_def_run(ncm_action_get(type), user);
+}
+
+static NcmActionRuntime action_global_runtime;
+static bool action_global_runtime_initialized;
+
+static NcmActionRuntime *action_runtime_or_global(
+    NcmActionRuntime *runtime);
+static int32 action_runtime_call_hook(NcmActionRuntimeHook hook,
+                                      enum NcmActionType type,
+                                      void *user);
+static bool action_runtime_hook_allowed(int32 result, bool *handled);
+static bool action_runtime_hook_denied(int32 result, bool *handled);
+static bool action_runtime_builtin_can_run(NcmActionRuntime *runtime,
+                                           enum NcmActionType type);
+static bool action_runtime_builtin_run(NcmActionRuntime *runtime,
+                                       enum NcmActionType type);
+static bool action_runtime_current_screen_is(enum ScreenType type);
+static bool action_runtime_switch_to_screen(enum ScreenType type);
+static bool action_runtime_switch_to_next_screen(bool reverse);
+static bool action_runtime_mpd_error(NcmError *error);
+static bool action_runtime_mpd_simple(
+    bool (*func)(NcmMpdClient *client, NcmError *error));
+static bool action_runtime_mpd_toggle(
+    bool (*func)(NcmMpdClient *client, bool mode, NcmError *error),
+    bool current);
+static bool action_runtime_volume(int32 change);
+static bool action_runtime_update_database(void);
+static bool action_runtime_replay_song(void);
+static bool action_runtime_update_environment(void);
+static bool action_runtime_toggle_crossfade(void);
+
+void
+ncm_action_runtime_init(NcmActionRuntime *runtime) {
+    if (runtime == NULL) {
+        return;
+    }
+
+    runtime->can_run_hook = NULL;
+    runtime->run_hook = NULL;
+    runtime->user = NULL;
+    runtime->exit_requested = false;
+    return;
+}
+
+void
+ncm_action_runtime_set_hooks(NcmActionRuntime *runtime,
+                             NcmActionRuntimeHook can_run_hook,
+                             NcmActionRuntimeHook run_hook,
+                             void *user) {
+    if (runtime == NULL) {
+        return;
+    }
+
+    runtime->can_run_hook = can_run_hook;
+    runtime->run_hook = run_hook;
+    runtime->user = user;
+    return;
+}
+
+NcmActionRuntime *
+ncm_action_runtime_global(void) {
+    if (!action_global_runtime_initialized) {
+        ncm_action_runtime_init(&action_global_runtime);
+        action_global_runtime_initialized = true;
+    }
+    return &action_global_runtime;
+}
+
+bool
+ncm_action_runtime_exit_requested(NcmActionRuntime *runtime) {
+    runtime = action_runtime_or_global(runtime);
+    return runtime->exit_requested;
+}
+
+void
+ncm_action_runtime_clear_exit_request(NcmActionRuntime *runtime) {
+    runtime = action_runtime_or_global(runtime);
+    runtime->exit_requested = false;
+    return;
+}
+
+bool
+ncm_action_runtime_can_run(NcmActionRuntime *runtime,
+                           enum NcmActionType type) {
+    int32 hook_result;
+    bool handled;
+
+    runtime = action_runtime_or_global(runtime);
+    hook_result = action_runtime_call_hook(runtime->can_run_hook, type,
+                                           runtime->user);
+    if (action_runtime_hook_allowed(hook_result, &handled)) {
+        return true;
+    }
+    if (action_runtime_hook_denied(hook_result, &handled)) {
+        return false;
+    }
+
+    return action_runtime_builtin_can_run(runtime, type);
+}
+
+bool
+ncm_action_runtime_run(NcmActionRuntime *runtime,
+                       enum NcmActionType type) {
+    int32 hook_result;
+    bool handled;
+
+    runtime = action_runtime_or_global(runtime);
+    if (!ncm_action_runtime_can_run(runtime, type)) {
+        return false;
+    }
+
+    hook_result = action_runtime_call_hook(runtime->run_hook, type,
+                                           runtime->user);
+    if (action_runtime_hook_allowed(hook_result, &handled)) {
+        return true;
+    }
+    if (action_runtime_hook_denied(hook_result, &handled)) {
+        return false;
+    }
+
+    return action_runtime_builtin_run(runtime, type);
+}
+
+static NcmActionRuntime *
+action_runtime_or_global(NcmActionRuntime *runtime) {
+    if (runtime != NULL) {
+        return runtime;
+    }
+    return ncm_action_runtime_global();
+}
+
+static int32
+action_runtime_call_hook(NcmActionRuntimeHook hook,
+                         enum NcmActionType type,
+                         void *user) {
+    if (hook == NULL) {
+        return NCM_ACTION_RUNTIME_DEFER;
+    }
+    return hook(type, user);
+}
+
+static bool
+action_runtime_hook_allowed(int32 result, bool *handled) {
+    if (handled != NULL) {
+        *handled = result != NCM_ACTION_RUNTIME_DEFER;
+    }
+    return result == NCM_ACTION_RUNTIME_ALLOW;
+}
+
+static bool
+action_runtime_hook_denied(int32 result, bool *handled) {
+    if (handled != NULL) {
+        *handled = result != NCM_ACTION_RUNTIME_DEFER;
+    }
+    return result == NCM_ACTION_RUNTIME_DENY;
+}
+
+static bool
+action_runtime_current_screen_is(enum ScreenType type) {
+    NcScreen *screen;
+    int32 native_type;
+
+    screen = app_controller_current_screen();
+    if (screen == NULL) {
+        return false;
+    }
+
+    native_type = screen_type_to_native_type(type);
+    return nc_screen_type(screen) == native_type;
+}
+
+static bool
+action_runtime_switch_to_screen(enum ScreenType type) {
+    switch (type) {
+    case NCM_SCREEN_TYPE_BROWSER:
+        native_c_screen_browser_register();
+        native_c_screen_browser_switch_to();
+        return true;
+    case NCM_SCREEN_TYPE_HELP:
+        native_c_screen_help_register();
+        native_c_screen_help_switch_to();
+        return true;
+    case NCM_SCREEN_TYPE_LASTFM:
+        native_c_screen_lastfm_register();
+        native_c_screen_lastfm_switch_to();
+        return true;
+    case NCM_SCREEN_TYPE_LYRICS:
+        native_c_screen_lyrics_register();
+        native_c_screen_lyrics_switch_to();
+        return true;
+    case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
+        native_c_screen_media_library_register();
+        native_c_screen_media_library_switch_to();
+        return true;
+#if defined(ENABLE_OUTPUTS)
+    case NCM_SCREEN_TYPE_OUTPUTS:
+        native_c_screen_outputs_register();
+        native_c_screen_outputs_switch_to();
+        return true;
+#endif
+    case NCM_SCREEN_TYPE_PLAYLIST:
+        native_c_screen_playlist_register();
+        native_c_screen_playlist_switch_to();
+        return true;
+    case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
+        native_c_screen_playlist_editor_register();
+        native_c_screen_playlist_editor_switch_to();
+        return true;
+    case NCM_SCREEN_TYPE_SEARCH_ENGINE:
+        native_c_screen_search_engine_register();
+        native_c_screen_search_engine_switch_to();
+        return true;
+    case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
+        native_c_screen_selected_items_adder_register();
+        native_c_screen_selected_items_adder_switch_to();
+        return true;
+    case NCM_SCREEN_TYPE_SERVER_INFO:
+        native_c_screen_server_info_register();
+        native_c_screen_server_info_switch_to();
+        return true;
+    case NCM_SCREEN_TYPE_SONG_INFO:
+        native_c_screen_song_info_register();
+        native_c_screen_song_info_switch_to();
+        return true;
+    case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
+        native_c_screen_sort_playlist_dialog_register();
+        native_c_screen_sort_playlist_dialog_switch_to();
+        return true;
+#if defined(HAVE_TAGLIB_H)
+    case NCM_SCREEN_TYPE_TAG_EDITOR:
+        native_c_screen_tag_editor_register();
+        native_c_screen_tag_editor_switch_to();
+        return true;
+    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+        native_c_screen_tiny_tag_editor_register();
+        native_c_screen_tiny_tag_editor_switch_to();
+        return true;
+#endif
+#if defined(ENABLE_VISUALIZER)
+    case NCM_SCREEN_TYPE_VISUALIZER:
+        native_c_screen_visualizer_register();
+        native_c_screen_visualizer_switch_to();
+        return true;
+#endif
+    case NCM_SCREEN_TYPE_UNKNOWN:
+    case NCM_SCREEN_TYPE_LAST:
+        break;
+    }
+
+    return false;
+}
+
+static bool
+action_runtime_switch_to_next_screen(bool reverse) {
+    ScreenTypeArray *sequence;
+    NcScreen *current;
+    int32 current_index;
+    int32 next_index;
+
+    sequence = &Config.screen_sequence;
+    if (sequence->len <= 0) {
+        return false;
+    }
+
+    current = app_controller_current_screen();
+    if (current == NULL) {
+        return action_runtime_switch_to_screen(sequence->items[0]);
+    }
+
+    current_index = -1;
+    for (int32 i = 0; i < sequence->len; i += 1) {
+        if (screen_type_to_native_type(sequence->items[i])
+            == nc_screen_type(current)) {
+            current_index = i;
+            break;
+        }
+    }
+    if (current_index < 0) {
+        current_index = 0;
+    }
+
+    if (reverse) {
+        next_index = current_index - 1;
+        if (next_index < 0) {
+            next_index = sequence->len - 1;
+        }
+    } else {
+        next_index = current_index + 1;
+        if (next_index >= sequence->len) {
+            next_index = 0;
+        }
+    }
+
+    return action_runtime_switch_to_screen(sequence->items[next_index]);
+}
+
+static bool
+action_runtime_mpd_error(NcmError *error) {
+    if ((error != NULL) && ncm_error_is_set(error)) {
+        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                    error->message);
+    }
+    return false;
+}
+
+static bool
+action_runtime_mpd_simple(
+    bool (*func)(NcmMpdClient *client, NcmError *error)) {
+    NcmError error;
+
+    ncm_error_clear(&error);
+    if (!func(&global_mpd, &error)) {
+        return action_runtime_mpd_error(&error);
+    }
+    (void)ncm_status_update(&global_mpd, -1, &error);
+    return true;
+}
+
+static bool
+action_runtime_mpd_toggle(
+    bool (*func)(NcmMpdClient *client, bool mode, NcmError *error),
+    bool current) {
+    NcmError error;
+
+    ncm_error_clear(&error);
+    if (!func(&global_mpd, !current, &error)) {
+        return action_runtime_mpd_error(&error);
+    }
+    (void)ncm_status_update(&global_mpd, -1, &error);
+    return true;
+}
+
+static bool
+action_runtime_volume(int32 change) {
+    NcmError error;
+
+    ncm_error_clear(&error);
+    if (!ncm_mpd_client_change_volume(&global_mpd, change, &error)) {
+        return action_runtime_mpd_error(&error);
+    }
+    (void)ncm_status_update(&global_mpd, -1, &error);
+    return true;
+}
+
+static bool
+action_runtime_update_database(void) {
+    NcmError error;
+
+    ncm_error_clear(&error);
+    if (!ncm_mpd_client_update_directory(&global_mpd, NULL, NULL,
+                                         &error)) {
+        return action_runtime_mpd_error(&error);
+    }
+    return true;
+}
+
+static bool
+action_runtime_replay_song(void) {
+    NcmError error;
+    int32 position;
+
+    position = ncm_status_state_current_song_position();
+    if (position < 0) {
+        return false;
+    }
+
+    ncm_error_clear(&error);
+    if (!ncm_mpd_client_play_pos(&global_mpd, (uint32)position,
+                                 &error)) {
+        return action_runtime_mpd_error(&error);
+    }
+    return true;
+}
+
+static bool
+action_runtime_toggle_crossfade(void) {
+    NcmError error;
+    uint32 seconds;
+
+    ncm_error_clear(&error);
+    seconds = Config.crossfade_time;
+    if (ncm_status_state_crossfade()) {
+        seconds = 0;
+    }
+    if (!ncm_mpd_client_set_crossfade(&global_mpd, seconds, &error)) {
+        return action_runtime_mpd_error(&error);
+    }
+    (void)ncm_status_update(&global_mpd, -1, &error);
+    return true;
+}
+
+static bool
+action_runtime_update_environment(void) {
+    NcmError error;
+    int32 flags;
+
+    ncm_error_clear(&error);
+    ncm_status_trace(&global_mpd, true, true, &error);
+    app_controller_refresh_current_window();
+
+    flags = 0;
+    if (ncm_mpd_client_connected(&global_mpd)) {
+        if (ncm_mpd_client_noidle(&global_mpd, &flags, &error)) {
+            if (flags != 0) {
+                (void)ncm_status_update(&global_mpd, flags, &error);
+            }
+        }
+    }
+    return true;
+}
+
+static bool
+action_runtime_builtin_can_run(NcmActionRuntime *runtime,
+                               enum NcmActionType type) {
+    (void)runtime;
+
+    switch (type) {
+    case NCM_ACTION_DUMMY:
+    case NCM_ACTION_UPDATE_ENVIRONMENT:
+    case NCM_ACTION_SCROLL_UP:
+    case NCM_ACTION_SCROLL_DOWN:
+    case NCM_ACTION_PAGE_UP:
+    case NCM_ACTION_PAGE_DOWN:
+    case NCM_ACTION_MOVE_HOME:
+    case NCM_ACTION_MOVE_END:
+    case NCM_ACTION_TOGGLE_INTERFACE:
+    case NCM_ACTION_QUIT:
+    case NCM_ACTION_NEXT_SCREEN:
+    case NCM_ACTION_PREVIOUS_SCREEN:
+    case NCM_ACTION_SHOW_HELP:
+    case NCM_ACTION_SHOW_PLAYLIST:
+    case NCM_ACTION_SHOW_BROWSER:
+    case NCM_ACTION_SHOW_SEARCH_ENGINE:
+    case NCM_ACTION_SHOW_MEDIA_LIBRARY:
+    case NCM_ACTION_SHOW_PLAYLIST_EDITOR:
+    case NCM_ACTION_SHOW_SERVER_INFO:
+    case NCM_ACTION_SHOW_SONG_INFO:
+    case NCM_ACTION_TOGGLE_SCREEN_LOCK:
+    case NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING:
+    case NCM_ACTION_TOGGLE_MOUSE:
+    case NCM_ACTION_TOGGLE_BITRATE_VISIBILITY:
+    case NCM_ACTION_TOGGLE_ADD_MODE:
+    case NCM_ACTION_TOGGLE_LYRICS_FETCHER:
+    case NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND:
+    case NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE:
+        return true;
+    case NCM_ACTION_PAUSE:
+        return ncm_status_state_player() != NCM_STATUS_PLAYER_STOP;
+    case NCM_ACTION_PLAY:
+    case NCM_ACTION_STOP:
+    case NCM_ACTION_NEXT:
+    case NCM_ACTION_PREVIOUS:
+    case NCM_ACTION_VOLUME_UP:
+    case NCM_ACTION_VOLUME_DOWN:
+        return ncm_mpd_client_connected(&global_mpd);
+    case NCM_ACTION_REPLAY_SONG:
+        return ncm_mpd_client_connected(&global_mpd)
+            && (ncm_status_state_current_song_position() >= 0);
+    case NCM_ACTION_TOGGLE_REPEAT:
+    case NCM_ACTION_TOGGLE_RANDOM:
+    case NCM_ACTION_TOGGLE_SINGLE:
+    case NCM_ACTION_TOGGLE_CONSUME:
+    case NCM_ACTION_TOGGLE_CROSSFADE:
+    case NCM_ACTION_SHUFFLE:
+    case NCM_ACTION_UPDATE_DATABASE:
+        return ncm_mpd_client_connected(&global_mpd);
+#if defined(ENABLE_OUTPUTS)
+    case NCM_ACTION_SHOW_OUTPUTS:
+    case NCM_ACTION_TOGGLE_OUTPUT:
+        return true;
+#endif
+#if defined(ENABLE_VISUALIZER)
+    case NCM_ACTION_SHOW_VISUALIZER:
+    case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
+        return true;
+#endif
+#if defined(HAVE_TAGLIB_H)
+    case NCM_ACTION_SHOW_TAG_EDITOR:
+        return true;
+#endif
+    case NCM_ACTION_CHANGE_BROWSE_MODE:
+        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER);
+    case NCM_ACTION_RESET_SEARCH_ENGINE:
+        return action_runtime_current_screen_is(
+            NCM_SCREEN_TYPE_SEARCH_ENGINE);
+    case NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE:
+        return action_runtime_current_screen_is(
+            NCM_SCREEN_TYPE_MEDIA_LIBRARY);
+    default:
+        return false;
+    }
+}
+
+static bool
+action_runtime_builtin_run(NcmActionRuntime *runtime,
+                           enum NcmActionType type) {
+    switch (type) {
+    case NCM_ACTION_DUMMY:
+        return true;
+    case NCM_ACTION_UPDATE_ENVIRONMENT:
+        return action_runtime_update_environment();
+    case NCM_ACTION_SCROLL_UP:
+        app_controller_scroll_current_screen(NC_SCROLL_UP);
+        return true;
+    case NCM_ACTION_SCROLL_DOWN:
+        app_controller_scroll_current_screen(NC_SCROLL_DOWN);
+        return true;
+    case NCM_ACTION_PAGE_UP:
+        app_controller_scroll_current_screen(NC_SCROLL_PAGE_UP);
+        return true;
+    case NCM_ACTION_PAGE_DOWN:
+        app_controller_scroll_current_screen(NC_SCROLL_PAGE_DOWN);
+        return true;
+    case NCM_ACTION_MOVE_HOME:
+        app_controller_scroll_current_screen(NC_SCROLL_HOME);
+        return true;
+    case NCM_ACTION_MOVE_END:
+        app_controller_scroll_current_screen(NC_SCROLL_END);
+        return true;
+    case NCM_ACTION_TOGGLE_INTERFACE:
+        Config.header_visibility = !Config.header_visibility;
+        Config.statusbar_visibility = !Config.statusbar_visibility;
+        app_controller_request_visible_screens_resize();
+        return true;
+    case NCM_ACTION_PLAY:
+        return action_runtime_mpd_simple(ncm_mpd_client_play);
+    case NCM_ACTION_PAUSE:
+        return action_runtime_mpd_simple(ncm_mpd_client_toggle_pause);
+    case NCM_ACTION_STOP:
+        return action_runtime_mpd_simple(ncm_mpd_client_stop);
+    case NCM_ACTION_NEXT:
+        return action_runtime_mpd_simple(ncm_mpd_client_next);
+    case NCM_ACTION_PREVIOUS:
+        return action_runtime_mpd_simple(ncm_mpd_client_previous);
+    case NCM_ACTION_REPLAY_SONG:
+        return action_runtime_replay_song();
+    case NCM_ACTION_VOLUME_UP:
+        return action_runtime_volume((int32)Config.volume_change_step);
+    case NCM_ACTION_VOLUME_DOWN:
+        return action_runtime_volume(-((int32)Config.volume_change_step));
+    case NCM_ACTION_TOGGLE_REPEAT:
+        return action_runtime_mpd_toggle(ncm_mpd_client_set_repeat,
+                                         ncm_status_state_repeat());
+    case NCM_ACTION_TOGGLE_RANDOM:
+        return action_runtime_mpd_toggle(ncm_mpd_client_set_random,
+                                         ncm_status_state_random());
+    case NCM_ACTION_TOGGLE_SINGLE:
+        return action_runtime_mpd_toggle(ncm_mpd_client_set_single,
+                                         ncm_status_state_single());
+    case NCM_ACTION_TOGGLE_CONSUME:
+        return action_runtime_mpd_toggle(ncm_mpd_client_set_consume,
+                                         ncm_status_state_consume());
+    case NCM_ACTION_TOGGLE_CROSSFADE:
+        return action_runtime_toggle_crossfade();
+    case NCM_ACTION_SHUFFLE:
+        return action_runtime_mpd_simple(ncm_mpd_client_shuffle);
+    case NCM_ACTION_UPDATE_DATABASE:
+        return action_runtime_update_database();
+    case NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING:
+        Config.autocenter_mode = !Config.autocenter_mode;
+        return true;
+    case NCM_ACTION_TOGGLE_MOUSE:
+        Config.mouse_support = !Config.mouse_support;
+        return true;
+    case NCM_ACTION_TOGGLE_BITRATE_VISIBILITY:
+        Config.display_bitrate = !Config.display_bitrate;
+        return true;
+    case NCM_ACTION_TOGGLE_ADD_MODE:
+        if (Config.space_add_mode == NCM_SPACE_ADD_MODE_ADD_REMOVE) {
+            Config.space_add_mode = NCM_SPACE_ADD_MODE_ALWAYS_ADD;
+        } else {
+            Config.space_add_mode = NCM_SPACE_ADD_MODE_ADD_REMOVE;
+        }
+        return true;
+    case NCM_ACTION_TOGGLE_LYRICS_FETCHER:
+        Config.lyrics_db += 1;
+        if (Config.lyrics_db >= (uint32)Config.lyrics_fetchers.fetchers.len) {
+            Config.lyrics_db = 0;
+        }
+        return true;
+    case NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND:
+        Config.fetch_lyrics_in_background =
+            !Config.fetch_lyrics_in_background;
+        return true;
+    case NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE:
+        Config.now_playing_lyrics = !Config.now_playing_lyrics;
+        return true;
+    case NCM_ACTION_QUIT:
+        runtime->exit_requested = true;
+        return true;
+    case NCM_ACTION_NEXT_SCREEN:
+        return action_runtime_switch_to_next_screen(false);
+    case NCM_ACTION_PREVIOUS_SCREEN:
+        return action_runtime_switch_to_next_screen(true);
+    case NCM_ACTION_SHOW_HELP:
+        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_HELP);
+    case NCM_ACTION_SHOW_PLAYLIST:
+        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_PLAYLIST);
+    case NCM_ACTION_SHOW_BROWSER:
+        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_BROWSER);
+    case NCM_ACTION_SHOW_SEARCH_ENGINE:
+        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_SEARCH_ENGINE);
+    case NCM_ACTION_SHOW_MEDIA_LIBRARY:
+        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_MEDIA_LIBRARY);
+    case NCM_ACTION_SHOW_PLAYLIST_EDITOR:
+        return action_runtime_switch_to_screen(
+            NCM_SCREEN_TYPE_PLAYLIST_EDITOR);
+    case NCM_ACTION_SHOW_SERVER_INFO:
+        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_SERVER_INFO);
+    case NCM_ACTION_SHOW_SONG_INFO:
+        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_SONG_INFO);
+#if defined(ENABLE_OUTPUTS)
+    case NCM_ACTION_SHOW_OUTPUTS:
+        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_OUTPUTS);
+    case NCM_ACTION_TOGGLE_OUTPUT:
+        native_c_screen_outputs_toggle();
+        return true;
+#endif
+#if defined(ENABLE_VISUALIZER)
+    case NCM_ACTION_SHOW_VISUALIZER:
+        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_VISUALIZER);
+    case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
+        native_visualizer_screen_toggle_type(native_c_screen_visualizer());
+        return true;
+#endif
+#if defined(HAVE_TAGLIB_H)
+    case NCM_ACTION_SHOW_TAG_EDITOR:
+        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_TAG_EDITOR);
+#endif
+    case NCM_ACTION_TOGGLE_SCREEN_LOCK:
+        if (app_controller_locked_screen() != NULL) {
+            app_controller_unlock_screen();
+        } else {
+            (void)app_controller_lock_current_screen();
+        }
+        return true;
+    case NCM_ACTION_CHANGE_BROWSE_MODE:
+    case NCM_ACTION_RESET_SEARCH_ENGINE:
+    case NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE:
+        return true;
+    default:
+        return false;
+    }
 }
