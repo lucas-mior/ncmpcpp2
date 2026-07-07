@@ -930,7 +930,9 @@ void ExecuteCommand::run()
 		cmd_name = static_cast<NC::Window *>(ui_state_footer_window())->prompt();
 	}
 
-	auto cmd = bindings_legacy_find_command(cmd_name);
+	auto cmd = ncm_bindings_configuration_find_command(
+		&Bindings, const_cast<char *>(cmd_name.data()),
+		static_cast<int32>(cmd_name.size()));
 	if (cmd)
 	{
 		Statusbar::printf(1, "Executing %1%...", cmd_name);
@@ -3104,7 +3106,7 @@ void seek(SearchDirection sd)
 		Progressbar::draw(songpos, Status::State::totalTime());
 		static_cast<NC::Window *>(ui_state_footer_window())->refresh();
 
-		auto k = bindings_legacy_get(input);
+		auto k = ncm_bindings_configuration_get(&Bindings, input);
 		if (hasRunnableAction(k, Actions::Type::SeekBackward))
 			sd = NCM_SEARCH_DIRECTION_BACKWARD;
 		else if (hasRunnableAction(k, Actions::Type::SeekForward))

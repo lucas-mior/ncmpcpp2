@@ -298,6 +298,9 @@ ncm_binding_copy(NcmBinding *dest, NcmBinding *source) {
 
 bool
 ncm_binding_is_single(NcmBinding *binding) {
+    if (binding == NULL) {
+        return false;
+    }
     return binding->actions_len == 1;
 }
 
@@ -315,6 +318,190 @@ ncm_binding_execute(NcmBinding *binding,
     }
 
     return true;
+}
+
+bool
+ncm_binding_action_can_run(NcmBindingAction *action,
+                           NcmBindingRuntime *runtime) {
+    if (action == NULL) {
+        return false;
+    }
+
+    switch (action->kind) {
+    case NCM_BINDING_ACTION_NORMAL:
+    case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
+        if ((runtime != NULL) && (runtime->can_run_action != NULL)) {
+            return runtime->can_run_action(action->type, runtime->user);
+        }
+        return ncm_action_can_run(action->type, NULL);
+    case NCM_BINDING_ACTION_PUSH_CHARACTERS:
+        return true;
+    case NCM_BINDING_ACTION_REQUIRE_SCREEN:
+        if ((runtime == NULL) || (runtime->current_screen_is == NULL)) {
+            return false;
+        }
+        return runtime->current_screen_is(action->screen_type, runtime->user);
+    case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
+    case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
+        return true;
+    }
+
+    return false;
+}
+
+bool
+ncm_binding_action_run(NcmBindingAction *action,
+                       NcmBindingRuntime *runtime) {
+    if (!ncm_binding_action_can_run(action, runtime)) {
+        return false;
+    }
+
+    switch (action->kind) {
+    case NCM_BINDING_ACTION_NORMAL:
+        if ((runtime != NULL) && (runtime->run_action != NULL)) {
+            return runtime->run_action(action->type, runtime->user);
+        }
+        return ncm_action_run(action->type, NULL);
+    case NCM_BINDING_ACTION_PUSH_CHARACTERS:
+        if ((runtime == NULL) || (runtime->push_key == NULL)) {
+            return false;
+        }
+        for (int32 i = 0; i < action->keys_len; i += 1) {
+            runtime->push_key(action->keys[i], runtime->user);
+        }
+        return true;
+    case NCM_BINDING_ACTION_REQUIRE_SCREEN:
+    case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
+        return true;
+    case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
+        if ((runtime == NULL)
+            || (runtime->run_external_command == NULL)) {
+            return false;
+        }
+        return runtime->run_external_command(action->argument,
+                                             action->argument_len,
+                                             runtime->user);
+    case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
+        if ((runtime == NULL)
+            || (runtime->run_external_console_command == NULL)) {
+            return false;
+        }
+        return runtime->run_external_console_command(action->argument,
+                                                     action->argument_len,
+                                                     runtime->user);
+    }
+
+    return false;
+}
+
+bool
+ncm_binding_execute_runtime(NcmBinding *binding,
+                            NcmBindingRuntime *runtime) {
+    if (binding == NULL) {
+        return false;
+    }
+
+    for (int32 i = 0; i < binding->actions_len; i += 1) {
+        if (!ncm_binding_action_run(binding->actions + i, runtime)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool
+ncm_binding_has_runnable_action(NcmBinding *binding,
+                                enum NcmActionType type,
+                                NcmBindingRuntime *runtime) {
+    bool success;
+
+    if (binding == NULL) {
+        return false;
+    }
+
+    success = false;
+    for (int32 i = 0; i < binding->actions_len; i += 1) {
+        NcmBindingAction *action;
+
+        action = binding->actions + i;
+        if (!ncm_binding_action_can_run(action, runtime)) {
+            return false;
+        }
+        if ((action->kind == NCM_BINDING_ACTION_NORMAL)
+            && (action->type == type)) {
+            success = true;
+        }
+    }
+
+    return success;
+}
+
+bool
+ncm_binding_is_single_action_type(NcmBinding *binding,
+                                  enum NcmActionType type) {
+    if (!ncm_binding_is_single(binding)) {
+        return false;
+    }
+    if (binding->actions[0].kind != NCM_BINDING_ACTION_NORMAL) {
+        return false;
+    }
+    return binding->actions[0].type == type;
+}
+
+void
+ncm_binding_action_format(NcmBuffer *buffer,
+                          NcmBindingAction *action) {
+    if ((buffer == NULL) || (action == NULL)) {
+        return;
+    }
+
+    switch (action->kind) {
+    case NCM_BINDING_ACTION_NORMAL:
+        ncm_buffer_append(buffer, ncm_action_type_name(action->type),
+                          ncm_string_len(
+                              ncm_action_type_name(action->type)));
+        break;
+    case NCM_BINDING_ACTION_PUSH_CHARACTERS:
+        ncm_buffer_append(buffer, STRLIT_ARGS("push_characters \""));
+        for (int32 i = 0; i < action->keys_len; i += 1) {
+            if (i > 0) {
+                ncm_buffer_append(buffer, STRLIT_ARGS(", "));
+            }
+            ncm_bindings_format_key(buffer, action->keys[i]);
+        }
+        ncm_buffer_append_byte(buffer, '"');
+        break;
+    case NCM_BINDING_ACTION_REQUIRE_SCREEN:
+        ncm_buffer_append(buffer, STRLIT_ARGS("require_screen \""));
+        ncm_buffer_append(buffer, screen_type_str(action->screen_type),
+                          ncm_string_len(
+                              screen_type_str(action->screen_type)));
+        ncm_buffer_append_byte(buffer, '"');
+        break;
+    case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
+        ncm_buffer_append(buffer, STRLIT_ARGS("require_runnable \""));
+        ncm_buffer_append(buffer, ncm_action_type_name(action->type),
+                          ncm_string_len(
+                              ncm_action_type_name(action->type)));
+        ncm_buffer_append_byte(buffer, '"');
+        break;
+    case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
+        ncm_buffer_append(buffer,
+                          STRLIT_ARGS("run_external_command \""));
+        ncm_buffer_append(buffer, action->argument, action->argument_len);
+        ncm_buffer_append_byte(buffer, '"');
+        break;
+    case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
+        ncm_buffer_append(buffer,
+                          STRLIT_ARGS(
+                              "run_external_console_command \""));
+        ncm_buffer_append(buffer, action->argument, action->argument_len);
+        ncm_buffer_append_byte(buffer, '"');
+        break;
+    }
+
+    return;
 }
 
 void
