@@ -153,8 +153,8 @@ size_t FooterStartY;
 void initializeScreens()
 {
 	app_controller_init();
+	native_c_screens_init_all();
 
-	native_c_screen_help_init();
 	myPlaylist = new Playlist;
 	myBrowser = new Browser;
 	mySearcher = new SearchEngine;
@@ -162,8 +162,6 @@ void initializeScreens()
 	myPlaylistEditor = new PlaylistEditor;
 	myLyrics = new Lyrics;
 	mySelectedItemsAdder = new SelectedItemsAdder;
-	native_c_screen_song_info_init();
-	native_c_screen_server_info_init();
 	mySortPlaylistDialog = new SortPlaylistDialog;
 	myLastfm = new Lastfm;
 
@@ -176,11 +174,7 @@ void initializeScreens()
 	myVisualizer = new Visualizer;
 #	endif // ENABLE_VISUALIZER
 
-#	ifdef ENABLE_OUTPUTS
-	native_c_screen_outputs_init();
-#	endif // ENABLE_OUTPUTS
-
-	native_c_screen_help_register();
+	native_c_screens_register_native_only();
 	myPlaylist->registerNativeScreen();
 	myBrowser->registerNativeScreen();
 	mySearcher->registerNativeScreen();
@@ -188,8 +182,7 @@ void initializeScreens()
 	myPlaylistEditor->registerNativeScreen();
 	myLyrics->registerNativeScreen();
 	mySelectedItemsAdder->registerNativeScreen();
-	native_c_screen_song_info_register();
-	native_c_screen_server_info_register();
+
 	mySortPlaylistDialog->registerNativeScreen();
 	myLastfm->registerNativeScreen();
 
@@ -202,15 +195,12 @@ void initializeScreens()
 	myVisualizer->registerNativeScreen();
 #	endif // ENABLE_VISUALIZER
 
-#	ifdef ENABLE_OUTPUTS
-	native_c_screen_outputs_register();
-#	endif // ENABLE_OUTPUTS
 
 }
 
 void setResizeFlags()
 {
-	native_c_screen_help_set_resize();
+	native_c_screens_request_registered_resize();
 	myPlaylist->hasToBeResized = 1;
 	myBrowser->hasToBeResized = 1;
 	mySearcher->hasToBeResized = 1;
@@ -218,8 +208,6 @@ void setResizeFlags()
 	myPlaylistEditor->hasToBeResized = 1;
 	myLyrics->hasToBeResized = 1;
 	mySelectedItemsAdder->hasToBeResized = 1;
-	native_c_screen_song_info_set_resize();
-	native_c_screen_server_info_set_resize();
 	mySortPlaylistDialog->hasToBeResized = 1;
 	myLastfm->hasToBeResized = 1;
 
@@ -232,9 +220,6 @@ void setResizeFlags()
 	myVisualizer->hasToBeResized = 1;
 #	endif // ENABLE_VISUALIZER
 
-#	ifdef ENABLE_OUTPUTS
-	native_c_screen_outputs_set_resize();
-#	endif // ENABLE_OUTPUTS
 
 }
 
@@ -3312,7 +3297,7 @@ void ncmpcpp_legacy_resize_screen(bool reload_main_window)
 
 void ncmpcpp_legacy_playlist_switch_to(void)
 {
-	myPlaylist->switchTo();
+	(void)native_c_screens_switch_to_type(NCM_SCREEN_TYPE_PLAYLIST);
 }
 
 void ncmpcpp_legacy_playlist_enable_highlighting_if_current(void)
@@ -3323,26 +3308,17 @@ void ncmpcpp_legacy_playlist_enable_highlighting_if_current(void)
 
 bool ncmpcpp_legacy_switch_to_screen_type(enum ScreenType screen_type)
 {
-	BaseScreen *screen = toScreen(screen_type);
-
-	if (screen == nullptr)
-		return false;
-	screen->switchTo();
-	return true;
+	return native_c_screens_switch_to_type(screen_type);
 }
 
 bool ncmpcpp_legacy_lock_current_screen(void)
 {
-	return screenLegacyCurrent()->lock();
+	return native_c_screens_lock_current();
 }
 
 enum ScreenType ncmpcpp_legacy_current_screen_type(void)
 {
-	BaseScreen *screen = screenLegacyCurrent();
-
-	if (screen == nullptr)
-		return NCM_SCREEN_TYPE_UNKNOWN;
-	return screen->type();
+	return native_c_screens_current_type();
 }
 
 void ncmpcpp_legacy_set_noidle_status_callback(void)
