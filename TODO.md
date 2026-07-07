@@ -33,10 +33,10 @@
 - Delete src/mpdpp.h after all callers use src/c/ncm_mpd_client.h and src/c/ncm_mpd_connection.h.
 - Convert src/mpdpp.cpp functionality into missing src/c/ncm_mpd_client.c and src/c/ncm_mpd_connection.c functions.
 - Add C tests for all MPD wrapper behavior previously covered only by mpdpp.cpp.
-- Convert src/curl_handle.h to a C header.
-- Convert src/curl_handle.cpp to src/curl_handle.c or move it into src/c/ncm_curl_handle.c.
-- Replace std::string curl buffers with NcmBuffer.
-- Replace curl callback ownership with explicit init/destroy functions.
+- ~~Convert src/curl_handle.h to a C header.~~
+- ~~Convert src/curl_handle.cpp to src/curl_handle.c or move it into src/c/ncm_curl_handle.c.~~
+- ~~Replace std::string curl buffers with NcmBuffer.~~
+- ~~Replace curl callback ownership with explicit init/destroy functions.~~
 - Convert src/lastfm_service.h to C.
 - Convert src/lastfm_service.cpp to src/lastfm_service.c.
 - Replace std::regex in Last.fm parsing with src/c/ncm_regex.*.
