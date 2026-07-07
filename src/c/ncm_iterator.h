@@ -3,6 +3,8 @@
 
 #include "c/ncm_defs.h"
 
+NCM_EXTERN_C_BEGIN
+
 typedef struct NcmAnyIterator {
     char *items;
     int32 items_len;
@@ -45,5 +47,7 @@ void *ncm_transform_iterator_at(NcmTransformIterator *iterator,
                                 int32 offset);
 void ncm_transform_iterator_advance(NcmTransformIterator *iterator,
                                     int32 offset);
+
+NCM_EXTERN_C_END
 
 #endif /* NCM_ITERATOR_H */

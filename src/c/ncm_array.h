@@ -31,6 +31,9 @@ typedef struct NcmArrayItemCallbacks {
     void PREFIX##_init(ARRAY_TYPE *array);                                \
     void PREFIX##_destroy(ARRAY_TYPE *array);                             \
     void PREFIX##_clear(ARRAY_TYPE *array);                               \
+    bool PREFIX##_copy(ARRAY_TYPE *dest, ARRAY_TYPE *source);             \
+    void PREFIX##_move(ARRAY_TYPE *dest, ARRAY_TYPE *source);             \
+    void PREFIX##_swap(ARRAY_TYPE *left, ARRAY_TYPE *right);              \
     bool PREFIX##_reserve(ARRAY_TYPE *array, int32 extra);                \
     ITEM_TYPE *PREFIX##_append(ARRAY_TYPE *array);                        \
     bool PREFIX##_append_copy(ARRAY_TYPE *array, ITEM_TYPE *item);        \
@@ -74,6 +77,72 @@ typedef struct NcmArrayItemCallbacks {
                      array->cap*SIZEOF(*array->items));                  \
         }                                                                \
         PREFIX##_init(array);                                             \
+        return;                                                           \
+    }                                                                    \
+                                                                         \
+    bool                                                                 \
+    PREFIX##_copy(ARRAY_TYPE *dest, ARRAY_TYPE *source) {                 \
+        ARRAY_TYPE replacement;                                           \
+                                                                         \
+        if (dest == NULL) {                                               \
+            return false;                                                 \
+        }                                                                \
+        if (dest == source) {                                             \
+            return true;                                                  \
+        }                                                                \
+                                                                         \
+        PREFIX##_init(&replacement);                                      \
+        if (source != NULL) {                                             \
+            if (!PREFIX##_reserve(&replacement, source->len)) {           \
+                PREFIX##_destroy(&replacement);                           \
+                return false;                                             \
+            }                                                            \
+            for (int32 i = 0; i < source->len; i += 1) {                 \
+                if (!PREFIX##_append_copy(&replacement,                   \
+                                          &source->items[i])) {           \
+                    PREFIX##_destroy(&replacement);                       \
+                    return false;                                         \
+                }                                                        \
+            }                                                            \
+        }                                                                \
+                                                                         \
+        PREFIX##_destroy(dest);                                           \
+        *dest = replacement;                                              \
+        return true;                                                      \
+    }                                                                    \
+                                                                         \
+    void                                                                 \
+    PREFIX##_move(ARRAY_TYPE *dest, ARRAY_TYPE *source) {                 \
+        if (dest == NULL) {                                               \
+            return;                                                       \
+        }                                                                \
+        if (dest == source) {                                             \
+            return;                                                       \
+        }                                                                \
+                                                                         \
+        PREFIX##_destroy(dest);                                           \
+        if (source == NULL) {                                             \
+            PREFIX##_init(dest);                                          \
+            return;                                                       \
+        }                                                                \
+        *dest = *source;                                                  \
+        PREFIX##_init(source);                                            \
+        return;                                                           \
+    }                                                                    \
+                                                                         \
+    void                                                                 \
+    PREFIX##_swap(ARRAY_TYPE *left, ARRAY_TYPE *right) {                  \
+        ARRAY_TYPE temp;                                                  \
+                                                                         \
+        if (left == NULL) {                                               \
+            return;                                                       \
+        }                                                                \
+        if (right == NULL) {                                              \
+            return;                                                       \
+        }                                                                \
+        temp = *left;                                                     \
+        *left = *right;                                                   \
+        *right = temp;                                                    \
         return;                                                           \
     }                                                                    \
                                                                          \

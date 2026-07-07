@@ -2,6 +2,9 @@
 #define NCM_STRING_FORMAT_H
 
 #include "c/ncm_base.h"
+#include "c/ncm_string.h"
+
+NCM_EXTERN_C_BEGIN
 
 enum NcmStringFormatArgType {
     NCM_STRING_FORMAT_ARG_STRING,
@@ -24,7 +27,6 @@ typedef struct NcmStringFormatArg {
     } value;
 } NcmStringFormatArg;
 
-NcmStringView ncm_string_view_make(char *data, int32 len);
 NcmStringFormatArg ncm_string_format_arg_string(char *data, int32 len);
 NcmStringFormatArg ncm_string_format_arg_cstring(char *data);
 NcmStringFormatArg ncm_string_format_arg_i64(int64 value);
@@ -40,5 +42,7 @@ void ncm_string_format_apply(NcmBuffer *out, char *format,
 NcmBuffer ncm_string_format_make(char *format, int32 format_len,
                                  NcmStringFormatArg *args,
                                  int32 args_len);
+
+NCM_EXTERN_C_END
 
 #endif /* NCM_STRING_FORMAT_H */
