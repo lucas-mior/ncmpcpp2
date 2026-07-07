@@ -19,6 +19,7 @@ static bool menu_is_inactive(NcMenu *menu, void *item);
 static bool menu_is_position_highlightable(int64 pos, void *user);
 static void menu_print_buffer(NcWindow *window, NcBuffer *buffer);
 static void menu_copy_buffer(NcBuffer *dest, NcBuffer *source);
+static void *menu_construct_item(NcMenu *menu);
 
 static uint32 menu_default_item_flags(void);
 static uint32 menu_flags_for_item(NcMenu *menu, void *item);
@@ -81,7 +82,7 @@ static void *
 menu_copy_item(NcMenu *menu, void *source) {
     void *item;
 
-    item = menu_allocate_item(menu);
+    item = menu_construct_item(menu);
     if (menu->item_callbacks.copy) {
         menu->item_callbacks.copy(item, source, menu->item_callbacks.user);
     }
