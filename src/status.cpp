@@ -29,7 +29,7 @@
 #include "global.h"
 #include "cbase/base_macros.h"
 #include "ui_state_legacy.h"
-#include "helpers.h"
+#include "helpers_legacy.h"
 #include "macro_utilities.h"
 #include "screens/lyrics.h"
 #include "screens/media_library.h"

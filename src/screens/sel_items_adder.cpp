@@ -24,7 +24,7 @@
 #include "screens/browser.h"
 #include "global.h"
 #include "ui_state_legacy.h"
-#include "helpers.h"
+#include "helpers_legacy.h"
 #include "mpdpp.h"
 #include "ncm_playlist_legacy.h"
 #include "screens/playlist.h"

@@ -27,7 +27,7 @@
 #include "app_controller.h"
 #include "global.h"
 #include "ui_state_legacy.h"
-#include "helpers.h"
+#include "helpers_legacy.h"
 #include "screens/screen_switcher.h"
 #include "screens/screen_legacy.h"
 #include "statusbar.h"

@@ -23,7 +23,7 @@
 #include "display.h"
 #include "global.h"
 #include "ui_state_legacy.h"
-#include "helpers.h"
+#include "helpers_legacy.h"
 #include "screens/playlist.h"
 #include "settings_legacy.h"
 #include "screens/sort_playlist.h"

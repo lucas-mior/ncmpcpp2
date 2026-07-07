@@ -555,3 +555,45 @@ Rules:
     - Clean fetched lyric text with ncm_lyrics_cleanup_html().
     - Do not use std::regex in Last.fm or lyrics parsing code; use
       src/c/ncm_regex.* or explicit C string scans.
+
+Helpers migration
+=================
+
+The shared helpers entry point is now a C API.
+
+    src/helpers.h                   -> pure C helpers API
+    src/helpers.cpp                 -> src/helpers.c
+    old C++ helper templates        -> src/helpers_legacy.h while screens move
+    old C++ helper runtime bodies   -> src/helpers_legacy.cpp while screens move
+
+Concrete C replacements:
+
+    withErrors(success)
+        -> ncm_helpers_with_errors(success)
+    showSongTime(length)
+        -> ncm_helpers_show_song_time(length, buffer, buffer_cap)
+    timeFormat(format, t)
+        -> ncm_helpers_time_format(NcmBuffer *, format, t)
+    Timestamp(t)
+        -> ncm_helpers_timestamp(NcmBuffer *, t)
+    hasSelected(begin, end)
+        -> ncm_song_list_has_selected_item() or ncm_menu_has_selected_item()
+    selectCurrentIfNoneSelected(menu)
+        -> ncm_song_list_select_current_if_none_selected()
+        -> ncm_menu_select_current_if_none_selected()
+    reverseSelectionHelper(begin, end)
+        -> ncm_song_list_reverse_selection()
+        -> ncm_menu_reverse_selection()
+    wrappedSearch(...)
+        -> ncm_song_list_wrapped_search()
+        -> ncm_mpd_song_list_wrapped_search()
+        -> ncm_menu_wrapped_search()
+
+Rules:
+    - Do not add new helper templates to src/helpers.h.
+    - Use NcmSongListIterFunc, NcmMpdSongListIterFunc, or NcmMenuIterFunc for
+      iteration callbacks.
+    - Use NcmSongList for selectable song list rows, NcmMpdSongList for MPD
+      result batches, and NcMenu/Nc*Menu base pointers for menu selections.
+    - Keep C++-only helpers in src/helpers_legacy.h only until the old screens
+      are converted.
