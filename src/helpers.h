@@ -33,6 +33,14 @@
 
 enum ReapplyFilter { Yes, No };
 
+inline std::string showSongTime(unsigned length)
+{
+	char buffer[64];
+
+	ncm_song_show_time(length, buffer, static_cast<int32>(sizeof(buffer)));
+	return buffer;
+}
+
 template <typename ItemT>
 struct ScopedUnfilteredMenu
 {
@@ -404,7 +412,7 @@ bool addSongsToPlaylist(Iterator first, Iterator last, bool play, int position)
 	auto addSongNoError = [&](Iterator it) -> int {
 		try
 		{
-			return Mpd.AddSong(*it, position);
+			return Mpd.AddSong(it->cSong(), position);
 		}
 		catch (MPD::ServerError &e)
 		{

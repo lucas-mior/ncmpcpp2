@@ -641,6 +641,22 @@ void throwIfFailed(bool ok, const NcmError &error)
 		throwClientError(error);
 }
 
+std::string songUriString(NcmSong *song, bool add_file_prefix)
+{
+	NcmStringView uri;
+	std::string result;
+
+	if (song == nullptr)
+		throw std::runtime_error("missing song");
+	if (!ncm_song_uri_view(song, 0, &uri))
+		throw std::runtime_error("song has no URI");
+	if (add_file_prefix && !ncm_song_is_from_database(song))
+		result = "file://";
+	result.append(uri.data, static_cast<size_t>(uri.len));
+	return result;
+}
+
+
 void noidleThunk(int32 flags, void *user)
 {
 	auto connection = static_cast<MPD::Connection *>(user);
@@ -1046,12 +1062,14 @@ void Connection::SetReplayGainMode(ReplayGainMode mode)
 		&global_mpd, replayGainModeFromLegacy(mode), &error), error);
 }
 
-void Connection::SetPriority(const MPD::Song &s, int prio)
+void Connection::SetPriority(NcmSong *s, int prio)
 {
 	NcmError error{};
 
+	if (s == nullptr)
+		throw std::runtime_error("missing song");
 	throwIfFailed(ncm_mpd_client_set_priority_id(
-		&global_mpd, s.getID(), prio, &error), error);
+		&global_mpd, ncm_song_id(s), prio, &error), error);
 }
 
 int Connection::AddSong(const std::string &path, int pos)
@@ -1065,9 +1083,9 @@ int Connection::AddSong(const std::string &path, int pos)
 	return id;
 }
 
-int Connection::AddSong(const Song &s, int pos)
+int Connection::AddSong(NcmSong *s, int pos)
 {
-	return AddSong((!s.isFromDatabase() ? "file://" : "") + s.getURI(), pos);
+	return AddSong(songUriString(s, true), pos);
 }
 
 bool Connection::AddRandomTag(mpd_tag_type tag, size_t number, NcmRandom *rng)
@@ -1172,9 +1190,9 @@ void Connection::ClearPlaylist(const std::string &playlist)
 		&global_mpd, const_cast<char *>(playlist.c_str()), &error), error);
 }
 
-void Connection::AddToPlaylist(const std::string &path, const Song &s)
+void Connection::AddToPlaylist(const std::string &path, NcmSong *s)
 {
-	AddToPlaylist(path, s.getURI());
+	AddToPlaylist(path, songUriString(s, false));
 }
 
 void Connection::AddToPlaylist(const std::string &path,

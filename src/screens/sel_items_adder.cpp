@@ -297,7 +297,7 @@ void SelectedItemsAdder::addToExistingPlaylist(const std::string &playlist) cons
 {
 	Mpd.StartCommandsList();
 	for (auto s = m_selected_items.begin(); s != m_selected_items.end(); ++s)
-		Mpd.AddToPlaylist(playlist, *s);
+		Mpd.AddToPlaylist(playlist, s->cSong());
 	Mpd.CommitCommandsList();
 	Statusbar::printf("Selected item(s) added to playlist \"%1%\"", playlist);
 	switchToPreviousScreen();

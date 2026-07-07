@@ -489,3 +489,24 @@ Rules:
     - Use `NCM_EXTERN_C_BEGIN` and `NCM_EXTERN_C_END` for C ABI linkage when a
       C header must still be included by temporary C++ migration code.
     - Use C++ wrapper types outside src/c/ for remaining mixed-runtime code.
+
+MPD model caller migration
+==========================
+
+Move public C++ MPD command entry points to C model structs before replacing
+screen storage.
+
+    Connection::SetPriority(const MPD::Song &, prio)
+        -> Connection::SetPriority(NcmSong *, prio)
+    Connection::AddSong(const MPD::Song &, pos)
+        -> Connection::AddSong(NcmSong *, pos)
+    Connection::AddToPlaylist(path, const MPD::Song &)
+        -> Connection::AddToPlaylist(path, NcmSong *)
+
+Rules:
+    - Existing C++ code may temporarily obtain the C model with cSong().
+    - New code must call ncm_song_* helpers directly and must not introduce new
+      MPD::Song command APIs.
+    - Remaining MPD::Song by-value storage in NC::Menu and std::vector must be
+      removed together with the screen/menu conversion because plain C structs
+      require explicit copy/move/destroy ownership.

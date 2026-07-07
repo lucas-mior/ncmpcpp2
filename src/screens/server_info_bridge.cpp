@@ -241,43 +241,47 @@ bool ServerInfo::renderServerInfo(NcBuffer *buffer)
     }
     m_timer = global_timer;
 
-    MPD::Statistics stats = Mpd.getStatistics();
-    if (stats.empty())
+    NcmMpdStats stats;
+    NcmError error{};
+
+    if (!ncm_mpd_client_get_stats(&global_mpd, &stats, &error))
     {
         return false;
     }
 
     appendBoldLabel(buffer, "Version: ");
     appendCString(buffer, "0.");
-    nc_buffer_append_uint32(buffer, Mpd.Version());
+    nc_buffer_append_uint32(buffer, ncm_mpd_client_version(&global_mpd));
     appendCString(buffer, ".*\n");
 
     appendBoldLabel(buffer, "Uptime: ");
-    appendData(buffer, showLongTime(stats.uptime()));
+    appendData(buffer, showLongTime(stats.uptime));
     appendCString(buffer, "\n");
 
     appendBoldLabel(buffer, "Time playing: ");
-    appendData(buffer, MPD::Song::ShowTime(stats.playTime()));
+    char play_time[64];
+    ncm_song_show_time((uint32)stats.play_time, play_time, (int32)sizeof(play_time));
+    appendData(buffer, play_time);
     appendCString(buffer, "\n\n");
 
     appendBoldLabel(buffer, "Total playtime: ");
-    appendData(buffer, showLongTime(stats.dbPlayTime()));
+    appendData(buffer, showLongTime(stats.db_play_time));
     appendCString(buffer, "\n");
 
     appendBoldLabel(buffer, "Artist names: ");
-    nc_buffer_append_uint32(buffer, stats.artists());
+    nc_buffer_append_uint32(buffer, stats.artists);
     appendCString(buffer, "\n");
 
     appendBoldLabel(buffer, "Album names: ");
-    nc_buffer_append_uint32(buffer, stats.albums());
+    nc_buffer_append_uint32(buffer, stats.albums);
     appendCString(buffer, "\n");
 
     appendBoldLabel(buffer, "Songs in database: ");
-    nc_buffer_append_uint32(buffer, stats.songs());
+    nc_buffer_append_uint32(buffer, stats.songs);
     appendCString(buffer, "\n\n");
 
     appendBoldLabel(buffer, "Last DB update: ");
-    appendData(buffer, Timestamp(stats.dbUpdateTime()));
+    appendData(buffer, Timestamp(stats.db_update_time));
     appendCString(buffer, "\n\n");
 
     appendBoldLabel(buffer, "URL Handlers:");
