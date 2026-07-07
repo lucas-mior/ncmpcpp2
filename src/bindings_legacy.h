@@ -6,9 +6,6 @@
 
 #include "actions.h"
 #include "bindings.h"
-#include "curses/window.h"
-
-NcKey readKey(NC::Window &window);
 
 bool bindings_legacy_read_paths(const std::vector<std::string> &paths);
 void bindings_legacy_generate_defaults(void);

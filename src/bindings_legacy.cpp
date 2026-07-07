@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "macro_utilities.h"
+#include "c/ncm_base.h"
 #include "screens/screen_legacy.h"
 #include "ui_state_legacy.h"
 
@@ -47,7 +48,7 @@ bool legacy_can_run(NcmBindingAction *action)
     return false;
 }
 
-bool legacy_run(NcmBindingAction *action)
+bool legacy_run(NcmBindingAction *action, void *)
 {
     Actions::BaseAction *runtime_action;
     std::string command;
@@ -83,11 +84,6 @@ bool legacy_run(NcmBindingAction *action)
 }
 
 } // namespace
-
-NcKey readKey(NC::Window &window)
-{
-    return ncm_bindings_read_key(window.nativeWindow());
-}
 
 bool bindings_legacy_read_paths(const std::vector<std::string> &paths)
 {
@@ -134,7 +130,7 @@ bool bindings_legacy_execute(NcmBinding *binding)
 {
     for (int32 i = 0; i < binding->actions_len; i += 1)
     {
-        if (!legacy_run(binding->actions + i))
+        if (!legacy_run(binding->actions + i, nullptr))
             return false;
     }
     return true;
@@ -170,7 +166,6 @@ bool bindings_legacy_is_single_action(NcmBinding *binding,
 
 std::string bindings_legacy_action_name(NcmBindingAction *action)
 {
-    char key_name[64];
     std::string result;
 
     switch (action->kind)
@@ -182,11 +177,15 @@ std::string bindings_legacy_action_name(NcmBindingAction *action)
         result = "push_characters \"";
         for (int32 i = 0; i < action->keys_len; i += 1)
         {
+            NcmBuffer key_name;
+
             if (i > 0)
                 result += ", ";
-            if (nc_key_name(action->keys[i], key_name,
-                            static_cast<int32>(sizeof(key_name))) >= 0)
-                result += key_name;
+            ncm_buffer_init(&key_name);
+            ncm_bindings_format_key(&key_name, action->keys[i]);
+            result.append(key_name.data,
+                          static_cast<size_t>(key_name.len));
+            ncm_buffer_destroy(&key_name);
         }
         result += "\"";
         break;

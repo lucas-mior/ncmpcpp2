@@ -2990,7 +2990,7 @@ void seek(SearchDirection sd)
 		                 ? static_cast<unsigned>(elapsed_seconds/2)+Config.seek_time
 		                 : Config.seek_time;
 
-		NcKey input = readKey(*ui_state_legacy_footer_window());
+		NcKey input = ncm_read_key(ui_state_legacy_footer_window()->nativeWindow());
 
 		switch (sd)
 		{
