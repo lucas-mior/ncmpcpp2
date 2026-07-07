@@ -4,10 +4,10 @@
 - ~~Replace LyricsFetchers in Configuration with a C lyrics-fetcher registry struct.~~
 - ~~Convert src/configuration.h to a C header with expand_home(char **path, int32 *path_len)-style APIs.~~
 - ~~Convert src/configuration.cpp to src/configuration.c.~~
-- Replace config-path discovery in configuration.c with ncm_fs_user_config_dir, ncm_fs_exists, ncm_fs_mkdir_all, and explicit NcmBuffer path building.
-- Replace all config parsing exceptions with explicit bool/NcmError returns.
-- Replace utility/option_parser.h usage with src/c/ncm_option_parser.*.
-- Add C tests for config defaults, config file parsing, option parsing, invalid config values, and path expansion.
+- ~~Replace config-path discovery in configuration.c with ncm_fs_user_config_dir, ncm_fs_exists, ncm_fs_mkdir_all, and explicit NcmBuffer path building.~~
+- ~~Replace all config parsing exceptions with explicit bool/NcmError returns.~~
+- ~~Replace utility/option_parser.h usage with src/c/ncm_option_parser.*.~~
+- ~~Add C tests for config defaults, config file parsing, option parsing, invalid config values, and path expansion.~~
 - Replace src/bindings.h with a pure C binding API.
 - Convert src/bindings.cpp to src/bindings.c.
 - Replace Binding::ActionChain with a typed array of action enum values or action pointers.

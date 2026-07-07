@@ -12,6 +12,7 @@
 #include "config.h"
 #include "c/ncm_base.h"
 #include "c/ncm_conversion.h"
+#include "c/ncm_fs.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_option_parser.h"
 #include "c/ncm_string.h"
@@ -96,16 +97,18 @@ static SettingsOption *settings_find_option(SettingsOption *options,
                                             char *name, int32 name_len);
 static bool settings_read_file(Configuration *config, SettingsOption *options,
                                int32 option_count, char *path,
-                               int32 path_len, bool ignore_errors);
+                               int32 path_len, bool ignore_errors,
+                               NcmError *error);
 static bool settings_initialize_defaults(Configuration *config,
                                          SettingsOption *options,
                                          int32 option_count,
-                                         bool ignore_errors);
+                                         bool ignore_errors,
+                                         NcmError *error);
 static bool settings_apply_option(Configuration *config,
                                   SettingsOption *option,
                                   char *value, int32 value_len,
                                   bool default_value,
-                                  bool ignore_errors);
+                                  bool ignore_errors, NcmError *error);
 
 static bool apply_ncmpcpp_directory(Configuration *config, char *value,
                                     int32 value_len, NcmError *error);
@@ -2116,28 +2119,108 @@ settings_find_option(SettingsOption *options, int32 option_count,
     return NULL;
 }
 
+static void
+settings_set_option_error(NcmError *error, bool default_value,
+                          SettingsOption *option, NcmError *cause) {
+    char message[256];
+    char *phase;
+    char *detail;
+    int32 detail_len;
+    int32 len;
+
+    if (default_value) {
+        phase = (char *)"initializing";
+    } else {
+        phase = (char *)"processing";
+    }
+    detail = (char *)"invalid value";
+    detail_len = STRLIT_LEN("invalid value");
+    if (ncm_error_is_set(cause)) {
+        detail = cause->message;
+        detail_len = (int32)strlen(cause->message);
+    }
+
+    len = snprintf(message, (size_t)SIZEOF(message),
+                   "error while %s option \"%.*s\": %.*s",
+                   phase, option->name_len, option->name,
+                   detail_len, detail);
+    if (len < 0) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("error while processing option"));
+        return;
+    }
+    if (len >= (int32)SIZEOF(message)) {
+        len = (int32)SIZEOF(message) - 1;
+    }
+    if (ncm_error_is_set(cause)) {
+        ncm_error_set(error, cause->code, message, len);
+    } else {
+        ncm_error_set(error, EINVAL, message, len);
+    }
+    return;
+}
+
+static void
+settings_set_unknown_option_error(NcmError *error, char *option,
+                                  int32 option_len) {
+    char message[256];
+    int32 len;
+
+    len = snprintf(message, (size_t)SIZEOF(message),
+                   "unknown option: %.*s", option_len, option);
+    if (len < 0) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("unknown option"));
+        return;
+    }
+    if (len >= (int32)SIZEOF(message)) {
+        len = (int32)SIZEOF(message) - 1;
+    }
+    ncm_error_set(error, EINVAL, message, len);
+    return;
+}
+
+static void
+settings_set_duplicate_option_error(NcmError *error, SettingsOption *option) {
+    char message[256];
+    int32 len;
+
+    len = snprintf(message, (size_t)SIZEOF(message),
+                   "error while processing option \"%.*s\": "
+                   "option already set",
+                   option->name_len, option->name);
+    if (len < 0) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("option already set"));
+        return;
+    }
+    if (len >= (int32)SIZEOF(message)) {
+        len = (int32)SIZEOF(message) - 1;
+    }
+    ncm_error_set(error, EINVAL, message, len);
+    return;
+}
+
+static bool
+settings_report_or_ignore(NcmError *error, bool ignore_errors) {
+    if (ncm_error_is_set(error)) {
+        fprintf(stderr, "%s\n", error->message);
+    }
+    if (!ignore_errors) {
+        return false;
+    }
+    ncm_error_clear(error);
+    return true;
+}
+
 static bool
 settings_apply_option(Configuration *config, SettingsOption *option,
                       char *value, int32 value_len, bool default_value,
-                      bool ignore_errors) {
-    NcmError error;
+                      bool ignore_errors, NcmError *error) {
+    NcmError cause;
 
-    ncm_error_clear(&error);
-    if (!option->apply(config, value, value_len, &error)) {
-        if (default_value) {
-            fprintf(stderr, "Error while initializing option \"%.*s\"",
-                    option->name_len, option->name);
-        } else {
-            fprintf(stderr, "Error while processing option \"%.*s\"",
-                    option->name_len, option->name);
-        }
-        if (ncm_error_is_set(&error)) {
-            fprintf(stderr, ": %s", error.message);
-        }
-        fprintf(stderr, "\n");
-        if (!ignore_errors) {
-            return false;
-        }
+    ncm_error_clear(&cause);
+    if (!option->apply(config, value, value_len, &cause)) {
+        settings_set_option_error(error, default_value, option, &cause);
+        return settings_report_or_ignore(error, ignore_errors);
     }
     return true;
 }
@@ -2145,18 +2228,38 @@ settings_apply_option(Configuration *config, SettingsOption *option,
 static bool
 settings_read_file(Configuration *config, SettingsOption *options,
                    int32 option_count, char *path, int32 path_len,
-                   bool ignore_errors) {
+                   bool ignore_errors, NcmError *error) {
     FILE *file;
     NcmBuffer path_buffer;
     char line[SETTINGS_LINE_CAP];
+
+    if (!ncm_fs_exists(path, path_len)) {
+        return true;
+    }
 
     ncm_buffer_init(&path_buffer);
     ncm_buffer_append(&path_buffer, path, path_len);
     file = fopen(path_buffer.data, "r");
     if (file == NULL) {
+        char message[256];
+        int32 len;
+
+        len = snprintf(message, (size_t)SIZEOF(message),
+                       "failed to open configuration file '%.*s': %s",
+                       path_len, path, strerror(errno));
+        if (len < 0) {
+            ncm_error_set(error, errno,
+                          STRLIT_ARGS("failed to open configuration file"));
+        } else {
+            if (len >= (int32)SIZEOF(message)) {
+                len = (int32)SIZEOF(message) - 1;
+            }
+            ncm_error_set(error, errno, message, len);
+        }
         ncm_buffer_destroy(&path_buffer);
-        return true;
+        return settings_report_or_ignore(error, ignore_errors);
     }
+
     fprintf(stderr, "Reading configuration from %s...\n",
             path_buffer.data);
     while (fgets(line, (int32)SIZEOF(line), file) != NULL) {
@@ -2177,9 +2280,9 @@ settings_read_file(Configuration *config, SettingsOption *options,
         option = settings_find_option(options, option_count, parsed.option,
                                       parsed.option_len);
         if (option == NULL) {
-            fprintf(stderr, "Unknown option: %.*s\n", parsed.option_len,
-                    parsed.option);
-            if (!ignore_errors) {
+            settings_set_unknown_option_error(error, parsed.option,
+                                              parsed.option_len);
+            if (!settings_report_or_ignore(error, ignore_errors)) {
                 fclose(file);
                 ncm_buffer_destroy(&path_buffer);
                 return false;
@@ -2187,10 +2290,8 @@ settings_read_file(Configuration *config, SettingsOption *options,
             continue;
         }
         if (option->used) {
-            fprintf(stderr, "Error while processing option \"%.*s\": "
-                    "option already set\n", option->name_len,
-                    option->name);
-            if (!ignore_errors) {
+            settings_set_duplicate_option_error(error, option);
+            if (!settings_report_or_ignore(error, ignore_errors)) {
                 fclose(file);
                 ncm_buffer_destroy(&path_buffer);
                 return false;
@@ -2200,7 +2301,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
         option->used = true;
         if (!settings_apply_option(config, option, parsed.value,
                                    parsed.value_len, false,
-                                   ignore_errors)) {
+                                   ignore_errors, error)) {
             fclose(file);
             ncm_buffer_destroy(&path_buffer);
             return false;
@@ -2213,7 +2314,8 @@ settings_read_file(Configuration *config, SettingsOption *options,
 
 static bool
 settings_initialize_defaults(Configuration *config, SettingsOption *options,
-                             int32 option_count, bool ignore_errors) {
+                             int32 option_count, bool ignore_errors,
+                             NcmError *error) {
     for (int32 i = 0; i < option_count; i += 1) {
         if (options[i].used) {
             continue;
@@ -2221,7 +2323,7 @@ settings_initialize_defaults(Configuration *config, SettingsOption *options,
         if (!settings_apply_option(config, &options[i],
                                    options[i].default_value,
                                    options[i].default_value_len,
-                                   true, ignore_errors)) {
+                                   true, ignore_errors, error)) {
             return false;
         }
     }
@@ -2230,7 +2332,7 @@ settings_initialize_defaults(Configuration *config, SettingsOption *options,
 
 bool
 configuration_read(Configuration *config, NcmStringViewArray *config_paths,
-                   bool ignore_errors) {
+                   bool ignore_errors, NcmError *error) {
     SettingsOption options[] = {
         SETTINGS_OPTION("ncmpcpp_directory", "~/.config/ncmpcpp/",
                         apply_ncmpcpp_directory),
@@ -2511,11 +2613,11 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
             path = config_paths->items[i];
             if (!settings_read_file(config, options, option_count,
                                     path.data, path.len,
-                                    ignore_errors)) {
+                                    ignore_errors, error)) {
                 return false;
             }
         }
     }
     return settings_initialize_defaults(config, options, option_count,
-                                        ignore_errors);
+                                        ignore_errors, error);
 }

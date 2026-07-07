@@ -391,3 +391,21 @@ Rules:
     - Apply MPD host, port, and timeout through NcmMpdClient helpers.
     - Keep configuration_legacy.h/.cpp only while ncmpcpp.cpp and the old C++
       screens still require the C++ settings bridge.
+
+Configuration parser follow-up
+==============================
+
+Use src/c/ncm_option_parser.h and src/c/ncm_option_parser.c for C config-file
+option parsing.
+
+    utility/option_parser.h line parsing -> ncm_option_parser_parse_line()
+    utility yes_no()                     -> ncm_option_parser_yes_no()
+    parser exceptions                    -> bool return plus NcmError
+
+Rules:
+    - Build default config and bindings paths with NcmBuffer, not std::string.
+    - Discover XDG config paths with ncm_fs_user_config_dir().
+    - Check existing migrated paths with ncm_fs_exists().
+    - Create missing XDG config directories with ncm_fs_mkdir_all().
+    - Keep detailed parser failures in NcmError instead of replacing them with
+      generic failure messages.

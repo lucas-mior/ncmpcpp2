@@ -8,6 +8,7 @@
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_array.h"
 #include "c/ncm_enums.h"
+#include "c/ncm_error.h"
 #include "c/ncm_format.h"
 #include "c/ncm_regex.h"
 #include "c/ncm_song.h"
@@ -304,7 +305,7 @@ void configuration_destroy(Configuration *config);
 void configuration_clear(Configuration *config);
 bool configuration_read(Configuration *config,
                         NcmStringViewArray *config_paths,
-                        bool ignore_errors);
+                        bool ignore_errors, NcmError *error);
 
 extern Configuration Config;
 
