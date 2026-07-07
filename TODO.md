@@ -8,10 +8,10 @@
 - ~~Replace all config parsing exceptions with explicit bool/NcmError returns.~~
 - ~~Replace utility/option_parser.h usage with src/c/ncm_option_parser.*.~~
 - ~~Add C tests for config defaults, config file parsing, option parsing, invalid config values, and path expansion.~~
-- Replace src/bindings.h with a pure C binding API.
-- Convert src/bindings.cpp to src/bindings.c.
-- Replace Binding::ActionChain with a typed array of action enum values or action pointers.
-- Replace BindingsConfiguration::CommandsSet and BindingsMap with sorted arrays or hash tables.
+- ~~Replace src/bindings.h with a pure C binding API.~~
+- ~~Convert src/bindings.cpp to src/bindings.c.~~
+- ~~Replace Binding::ActionChain with a typed array of action enum values or action pointers.~~
+- ~~Replace BindingsConfiguration::CommandsSet and BindingsMap with sorted arrays or hash tables.~~
 - Replace std::wstring keyToWString with a C key-formatting function that writes into NcmBuffer.
 - Replace readKey(NC::Window &w) with ncm_read_key(NcWindow *window).
 - Add C tests for default bindings, command lookup, key lookup, chained action execution, and binding file parsing.
