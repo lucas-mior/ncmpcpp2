@@ -74,6 +74,7 @@ REMOVED_CXX_SRCS := \
 	src/global.cpp \
 	src/helpers.cpp \
 	src/macro_utilities.cpp \
+	src/ncmpcpp.cpp \
 	src/mutable_song.cpp \
 	src/screens/help.cpp \
 	src/screens/help_bridge.cpp \

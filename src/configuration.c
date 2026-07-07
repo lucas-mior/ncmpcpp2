@@ -36,6 +36,7 @@
 #include "cbase/base_macros.h"
 #include "config.h"
 #include "global.h"
+#include "bindings.h"
 #include "settings.h"
 #include "lyrics_fetcher.h"
 #include "screens/screen_type.h"
@@ -86,6 +87,8 @@ static void configuration_print_version(void);
 static bool configuration_make_string_views(NcmStringViewArray *views,
                                             NcmBufferArray *buffers);
 static bool configuration_read_settings(NcmConfigurationOptions *options,
+                                        NcmError *error);
+static bool configuration_read_bindings(NcmConfigurationOptions *options,
                                         NcmError *error);
 static bool configuration_create_directories(NcmError *error);
 static bool configuration_apply_mpd_environment(NcmError *error);
@@ -830,6 +833,27 @@ configuration_read_settings(NcmConfigurationOptions *options, NcmError *error) {
     return true;
 }
 
+
+static bool
+configuration_read_bindings(NcmConfigurationOptions *options,
+                            NcmError *error) {
+    ncm_bindings_configuration_clear(&Bindings);
+    for (int32 i = 0; i < options->bindings_paths.len; i += 1) {
+        NcmBuffer *path;
+
+        path = &options->bindings_paths.items[i];
+        if (!configuration_expand_buffer(path, error)) {
+            return false;
+        }
+        if (!ncm_bindings_configuration_read(&Bindings, path->data,
+                                             path->len, error)) {
+            return false;
+        }
+    }
+    ncm_bindings_configuration_generate_defaults(&Bindings);
+    return true;
+}
+
 static bool
 configuration_create_directories(NcmError *error) {
     if (!ncm_fs_exists(Config.ncmpcpp_directory,
@@ -1104,6 +1128,9 @@ configure(int32 argc, char **argv) {
     }
 
     result = ncm_configuration_options_apply(&options, &error);
+    if (result && !options.current_song) {
+        result = configuration_read_bindings(&options, &error);
+    }
     if (result && options.current_song) {
         result = configuration_print_current_song(&options, &error);
         ncm_configuration_options_destroy(&options);

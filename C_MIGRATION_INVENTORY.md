@@ -11,15 +11,16 @@ plain C, ownership is explicit, resource lifetimes use `init`/`destroy` or
 
 ## Current C++ count
 
-Collected with `make cxx-count` before Stage 1 changes:
+Collected with `make cxx-count` after Stage 2 changes:
 
 ```text
-built_cpp=22
+built_cpp=21
 total_cpp=38
 ```
 
 `make no-cxx` is expected to fail until the later stages remove every entry in
-this inventory.  The target now uses `tools/no-cxx-scan.py`, which ignores
+this inventory.  Stage 2 removes `src/ncmpcpp.cpp` from the root build but
+keeps it on disk for comparison until final cleanup.  The target now uses `tools/no-cxx-scan.py`, which ignores
 comments and literals before checking banned C++ tokens.
 
 ## C++ source inventory
@@ -39,7 +40,7 @@ comments and literals before checking banned C++ tokens.
 | `src/lastfm_service.cpp` | no | already replaced source | Delete; keep `src/lastfm_service.c`. |
 | `src/lyrics_fetcher.cpp` | no | already replaced source | Delete; keep `src/lyrics_fetcher.c`. |
 | `src/mpdpp.cpp` | yes | MPD wrapper/model bridge | Replace with `NcmMpdClient`, `NcmSong`, `NcmMutableSong`, `NcmMpdItem`, and `NcmPlaylist`, then delete. |
-| `src/ncmpcpp.cpp` | yes | application entry/runtime | Translate startup, shutdown, logging, screen setup, MPD connection, and main loop to `src/ncmpcpp.c`, then delete. |
+| `src/ncmpcpp.cpp` | no | application entry/runtime | Replaced in the root build by `src/ncmpcpp.c`; delete during final C cleanup once later stages remove the legacy bridge. |
 | `src/screens/browser.cpp` | yes | C++ screen class | Move missing behavior to `src/screens/nc_browser.c`, then delete. |
 | `src/screens/help_bridge.cpp` | no | already replaced bridge | Delete after native C screen switching no longer needs C++ bridge glue. |
 | `src/screens/lastfm.cpp` | yes | C++ screen class | Move missing behavior to `src/screens/nc_lastfm.c`, then delete. |
