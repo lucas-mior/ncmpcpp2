@@ -74,7 +74,13 @@ static bool browser_screen_initialized;
 static struct NativeHelpScreen help_screen;
 static struct NativeOutputsScreen outputs_screen;
 static NativePlaylistScreen playlist_screen;
+static NativePlaylistEditorScreen playlist_editor_screen;
+static NativeSelectedItemsAdderScreen selected_items_adder_screen;
+static NativeSortPlaylistDialog sort_playlist_dialog;
 static NativeSearchEngineScreen search_engine_screen;
+static bool playlist_editor_screen_initialized;
+static bool selected_items_adder_screen_initialized;
+static bool sort_playlist_dialog_initialized;
 static bool search_engine_screen_initialized;
 static NativeMediaLibraryScreen media_library_screen;
 static bool media_library_screen_initialized;
@@ -319,6 +325,179 @@ native_c_screen_playlist_native(void) {
     return native_playlist_screen_base(&playlist_screen);
 }
 
+void
+native_c_screen_playlist_editor_init(void) {
+    if (playlist_editor_screen_initialized) {
+        return;
+    }
+    native_playlist_editor_screen_init(&playlist_editor_screen,
+                                       0,
+                                       ui_state_screen_width(),
+                                       ui_state_main_start_y(),
+                                       ui_state_main_height(),
+                                       Config.main_color,
+                                       native_no_border());
+    if (Config.playlist_editor_column_width_ratio.len >= 2
+        && Config.playlist_editor_column_width_ratio.items[0] > 0
+        && Config.playlist_editor_column_width_ratio.items[1] > 0) {
+        native_playlist_editor_screen_set_column_ratio(
+            &playlist_editor_screen,
+            Config.playlist_editor_column_width_ratio.items[0],
+            Config.playlist_editor_column_width_ratio.items[1]);
+    }
+    playlist_editor_screen_initialized = true;
+    return;
+}
+
+void
+native_c_screen_playlist_editor_register(void) {
+    native_c_screen_playlist_editor_init();
+    assert(native_register_screen(native_c_screen_playlist_editor_native()));
+    return;
+}
+
+void
+native_c_screen_playlist_editor_set_resize(void) {
+    nc_screen_request_resize(native_c_screen_playlist_editor_native());
+    return;
+}
+
+void
+native_c_screen_playlist_editor_switch_to(void) {
+    (void)nc_screen_switcher_switch_to(
+        native_c_screen_playlist_editor_native(),
+        nc_screen_has_to_be_resized(
+            native_c_screen_playlist_editor_native()));
+    return;
+}
+
+bool
+native_c_screen_playlist_editor_is_current(void) {
+    return nc_screen_switcher_is_current(
+        native_c_screen_playlist_editor_native());
+}
+
+NativePlaylistEditorScreen *
+native_c_screen_playlist_editor(void) {
+    native_c_screen_playlist_editor_init();
+    return &playlist_editor_screen;
+}
+
+NcScreen *
+native_c_screen_playlist_editor_native(void) {
+    native_c_screen_playlist_editor_init();
+    return native_playlist_editor_screen_base(&playlist_editor_screen);
+}
+
+void
+native_c_screen_selected_items_adder_init(void) {
+    if (selected_items_adder_screen_initialized) {
+        return;
+    }
+    native_selected_items_adder_screen_init(
+        &selected_items_adder_screen, 0, ui_state_main_start_y(),
+        ui_state_screen_width(), ui_state_main_height(),
+        Config.main_color, Config.window_border);
+    selected_items_adder_screen_initialized = true;
+    return;
+}
+
+void
+native_c_screen_selected_items_adder_register(void) {
+    native_c_screen_selected_items_adder_init();
+    assert(native_register_screen(
+        native_c_screen_selected_items_adder_native()));
+    return;
+}
+
+void
+native_c_screen_selected_items_adder_set_resize(void) {
+    nc_screen_request_resize(native_c_screen_selected_items_adder_native());
+    return;
+}
+
+void
+native_c_screen_selected_items_adder_switch_to(void) {
+    (void)nc_screen_switcher_switch_to(
+        native_c_screen_selected_items_adder_native(),
+        nc_screen_has_to_be_resized(
+            native_c_screen_selected_items_adder_native()));
+    return;
+}
+
+bool
+native_c_screen_selected_items_adder_is_current(void) {
+    return nc_screen_switcher_is_current(
+        native_c_screen_selected_items_adder_native());
+}
+
+NativeSelectedItemsAdderScreen *
+native_c_screen_selected_items_adder(void) {
+    native_c_screen_selected_items_adder_init();
+    return &selected_items_adder_screen;
+}
+
+NcScreen *
+native_c_screen_selected_items_adder_native(void) {
+    native_c_screen_selected_items_adder_init();
+    return native_selected_items_adder_screen_base(
+        &selected_items_adder_screen);
+}
+
+void
+native_c_screen_sort_playlist_dialog_init(void) {
+    if (sort_playlist_dialog_initialized) {
+        return;
+    }
+    native_sort_playlist_dialog_init(&sort_playlist_dialog, 0,
+                                     ui_state_main_start_y(),
+                                     30, ui_state_main_height(),
+                                     Config.main_color,
+                                     Config.window_border);
+    sort_playlist_dialog_initialized = true;
+    return;
+}
+
+void
+native_c_screen_sort_playlist_dialog_register(void) {
+    native_c_screen_sort_playlist_dialog_init();
+    assert(native_register_screen(
+        native_c_screen_sort_playlist_dialog_native()));
+    return;
+}
+
+void
+native_c_screen_sort_playlist_dialog_set_resize(void) {
+    nc_screen_request_resize(native_c_screen_sort_playlist_dialog_native());
+    return;
+}
+
+void
+native_c_screen_sort_playlist_dialog_switch_to(void) {
+    (void)nc_screen_switcher_switch_to(
+        native_c_screen_sort_playlist_dialog_native(),
+        nc_screen_has_to_be_resized(
+            native_c_screen_sort_playlist_dialog_native()));
+    return;
+}
+
+bool
+native_c_screen_sort_playlist_dialog_is_current(void) {
+    return nc_screen_switcher_is_current(
+        native_c_screen_sort_playlist_dialog_native());
+}
+
+NativeSortPlaylistDialog *
+native_c_screen_sort_playlist_dialog(void) {
+    native_c_screen_sort_playlist_dialog_init();
+    return &sort_playlist_dialog;
+}
+
+NcScreen *
+native_c_screen_sort_playlist_dialog_native(void) {
+    native_c_screen_sort_playlist_dialog_init();
+    return native_sort_playlist_dialog_base(&sort_playlist_dialog);
+}
 
 void
 native_c_screen_search_engine_init(void) {
