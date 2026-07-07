@@ -98,6 +98,8 @@ static bool playlist_screen_initialized;
 static struct NativeServerInfoScreen server_info_screen;
 static struct NativeSongInfoScreen song_info_screen;
 
+static enum ScreenType native_screen_type_from_native_type(int32 type);
+static void native_request_registered_resize(int32 type);
 static NcBorder native_no_border(void);
 static int32 native_cstring_len(char *string);
 static void native_draw_screen_header(NcScreen *screen);
@@ -1169,6 +1171,175 @@ native_c_screen_outputs_native(void) {
 #else
     return NULL;
 #endif
+}
+
+void
+native_c_screens_init_all(void) {
+    native_c_screen_browser_init();
+    native_c_screen_help_init();
+    native_c_screen_lastfm_init();
+    native_c_screen_lyrics_init();
+    native_c_screen_media_library_init();
+    native_c_screen_playlist_init();
+    native_c_screen_playlist_editor_init();
+    native_c_screen_search_engine_init();
+    native_c_screen_selected_items_adder_init();
+    native_c_screen_server_info_init();
+    native_c_screen_song_info_init();
+    native_c_screen_sort_playlist_dialog_init();
+#if defined(HAVE_TAGLIB_H)
+    native_c_screen_tag_editor_init();
+    native_c_screen_tiny_tag_editor_init();
+#endif
+#if defined(ENABLE_VISUALIZER)
+    native_c_screen_visualizer_init();
+#endif
+#if defined(ENABLE_OUTPUTS)
+    native_c_screen_outputs_init();
+#endif
+    return;
+}
+
+void
+native_c_screens_register_native_only(void) {
+    native_c_screen_help_register();
+    native_c_screen_song_info_register();
+    native_c_screen_server_info_register();
+#if defined(ENABLE_OUTPUTS)
+    native_c_screen_outputs_register();
+#endif
+    return;
+}
+
+void
+native_c_screens_request_registered_resize(void) {
+    native_request_registered_resize(NC_SCREEN_TYPE_BROWSER);
+    native_request_registered_resize(NC_SCREEN_TYPE_HELP);
+    native_request_registered_resize(NC_SCREEN_TYPE_LASTFM);
+    native_request_registered_resize(NC_SCREEN_TYPE_LYRICS);
+    native_request_registered_resize(NC_SCREEN_TYPE_MEDIA_LIBRARY);
+    native_request_registered_resize(NC_SCREEN_TYPE_PLAYLIST);
+    native_request_registered_resize(NC_SCREEN_TYPE_PLAYLIST_EDITOR);
+    native_request_registered_resize(NC_SCREEN_TYPE_SEARCH_ENGINE);
+    native_request_registered_resize(NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
+    native_request_registered_resize(NC_SCREEN_TYPE_SERVER_INFO);
+    native_request_registered_resize(NC_SCREEN_TYPE_SONG_INFO);
+    native_request_registered_resize(NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
+#if defined(HAVE_TAGLIB_H)
+    native_request_registered_resize(NC_SCREEN_TYPE_TAG_EDITOR);
+    native_request_registered_resize(NC_SCREEN_TYPE_TINY_TAG_EDITOR);
+#endif
+#if defined(ENABLE_VISUALIZER)
+    native_request_registered_resize(NC_SCREEN_TYPE_VISUALIZER);
+#endif
+#if defined(ENABLE_OUTPUTS)
+    native_request_registered_resize(NC_SCREEN_TYPE_OUTPUTS);
+#endif
+    return;
+}
+
+bool
+native_c_screens_is_registered_type(enum ScreenType screen_type) {
+    return native_c_screens_find_type(screen_type) != NULL;
+}
+
+NcScreen *
+native_c_screens_find_type(enum ScreenType screen_type) {
+    int32 type;
+
+    type = screen_type_to_native_type(screen_type);
+    if (type == NC_SCREEN_TYPE_UNKNOWN) {
+        return NULL;
+    }
+    return app_controller_find_screen_type(type);
+}
+
+bool
+native_c_screens_switch_to_type(enum ScreenType screen_type) {
+    NcScreen *screen;
+
+    screen = native_c_screens_find_type(screen_type);
+    if (screen == NULL) {
+        return false;
+    }
+    return nc_screen_switcher_switch_to(screen,
+                                       nc_screen_has_to_be_resized(screen));
+}
+
+bool
+native_c_screens_lock_current(void) {
+    return app_controller_lock_current_screen();
+}
+
+enum ScreenType
+native_c_screens_current_type(void) {
+    NcScreen *screen;
+
+    screen = app_controller_current_screen();
+    if (screen == NULL) {
+        return NCM_SCREEN_TYPE_UNKNOWN;
+    }
+    return native_screen_type_from_native_type(nc_screen_type(screen));
+}
+
+static enum ScreenType
+native_screen_type_from_native_type(int32 type) {
+    switch (type) {
+    case NC_SCREEN_TYPE_BROWSER:
+        return NCM_SCREEN_TYPE_BROWSER;
+    case NC_SCREEN_TYPE_HELP:
+        return NCM_SCREEN_TYPE_HELP;
+    case NC_SCREEN_TYPE_LASTFM:
+        return NCM_SCREEN_TYPE_LASTFM;
+    case NC_SCREEN_TYPE_LYRICS:
+        return NCM_SCREEN_TYPE_LYRICS;
+    case NC_SCREEN_TYPE_MEDIA_LIBRARY:
+        return NCM_SCREEN_TYPE_MEDIA_LIBRARY;
+#if defined(ENABLE_OUTPUTS)
+    case NC_SCREEN_TYPE_OUTPUTS:
+        return NCM_SCREEN_TYPE_OUTPUTS;
+#endif
+    case NC_SCREEN_TYPE_PLAYLIST:
+        return NCM_SCREEN_TYPE_PLAYLIST;
+    case NC_SCREEN_TYPE_PLAYLIST_EDITOR:
+        return NCM_SCREEN_TYPE_PLAYLIST_EDITOR;
+    case NC_SCREEN_TYPE_SEARCH_ENGINE:
+        return NCM_SCREEN_TYPE_SEARCH_ENGINE;
+    case NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
+        return NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER;
+    case NC_SCREEN_TYPE_SERVER_INFO:
+        return NCM_SCREEN_TYPE_SERVER_INFO;
+    case NC_SCREEN_TYPE_SONG_INFO:
+        return NCM_SCREEN_TYPE_SONG_INFO;
+    case NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
+        return NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG;
+#if defined(HAVE_TAGLIB_H)
+    case NC_SCREEN_TYPE_TAG_EDITOR:
+        return NCM_SCREEN_TYPE_TAG_EDITOR;
+    case NC_SCREEN_TYPE_TINY_TAG_EDITOR:
+        return NCM_SCREEN_TYPE_TINY_TAG_EDITOR;
+#endif
+#if defined(ENABLE_VISUALIZER)
+    case NC_SCREEN_TYPE_VISUALIZER:
+        return NCM_SCREEN_TYPE_VISUALIZER;
+#endif
+    case NC_SCREEN_TYPE_UNKNOWN:
+        break;
+    default:
+        break;
+    }
+    return NCM_SCREEN_TYPE_UNKNOWN;
+}
+
+static void
+native_request_registered_resize(int32 type) {
+    NcScreen *screen;
+
+    screen = app_controller_find_screen_type(type);
+    if (screen != NULL) {
+        nc_screen_request_resize(screen);
+    }
+    return;
 }
 
 static NcBorder
