@@ -44,7 +44,7 @@
 #include "utility/scoped_value.h"
 
 #include "curses/menu_impl.h"
-#include "bindings.h"
+#include "bindings_legacy.h"
 #include "screens/browser.h"
 #include "screens/native_c_screens.h"
 #include "screens/media_library.h"
@@ -902,11 +902,11 @@ void ExecuteCommand::run()
 		cmd_name = ui_state_legacy_footer_window()->prompt();
 	}
 
-	auto cmd = Bindings.findCommand(cmd_name);
+	auto cmd = bindings_legacy_find_command(cmd_name);
 	if (cmd)
 	{
 		Statusbar::printf(1, "Executing %1%...", cmd_name);
-		bool res = cmd->binding().execute();
+		bool res = bindings_legacy_execute(&cmd->binding);
 		Statusbar::printf("Execution of command \"%1%\" %2%.",
 			cmd_name, res ? "successful" : "unsuccessful"
 		);
@@ -2970,29 +2970,14 @@ void seek(SearchDirection sd)
 	// can be run and one of them is of the given type. This will still not work
 	// in some contrived cases, but allows for more flexibility than accepting
 	// single actions only.
-	auto hasRunnableAction = [](BindingsConfiguration::BindingIteratorPair &bindings,
+	auto hasRunnableAction = [](NcmBindingSlice bindings,
 	                            Actions::Type type) {
-		bool success = false;
-		for (auto binding = bindings.first; binding != bindings.second; ++binding)
+		for (int32 i = 0; i < bindings.len; i += 1)
 		{
-			auto &actions = binding->actions();
-			for (const auto &action : actions)
-			{
-				if (action->canBeRun())
-				{
-					if (action->type() == type)
-						success = true;
-				}
-				else
-				{
-					success = false;
-					break;
-				}
-			}
-			if (success)
-				break;
+			if (bindings_legacy_has_runnable_action(bindings.data + i, type))
+				return true;
 		}
-		return success;
+		return false;
 	};
 
 	global_seeking_in_progress = true;
@@ -3066,7 +3051,7 @@ void seek(SearchDirection sd)
 		Progressbar::draw(songpos, Status::State::totalTime());
 		ui_state_legacy_footer_window()->refresh();
 
-		auto k = Bindings.get(input);
+		auto k = bindings_legacy_get(input);
 		if (hasRunnableAction(k, Actions::Type::SeekBackward))
 			sd = NCM_SEARCH_DIRECTION_BACKWARD;
 		else if (hasRunnableAction(k, Actions::Type::SeekForward))

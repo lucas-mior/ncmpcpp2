@@ -31,7 +31,7 @@
 #include <tuple>
 #include <vector>
 
-#include "bindings.h"
+#include "bindings_legacy.h"
 #include "configuration_legacy.h"
 #include "config.h"
 #include "mpdpp.h"
@@ -495,9 +495,9 @@ bool configure(int argc, char **argv)
 
 		// read bindings
 		std::for_each(options.bindings_paths.begin(), options.bindings_paths.end(), expand_home);
-		if (Bindings.read(options.bindings_paths) == false)
+		if (bindings_legacy_read_paths(options.bindings_paths) == false)
 			exit(1);
-		Bindings.generateDefaults();
+		bindings_legacy_generate_defaults();
 
 		// create directories
 		std::filesystem::create_directories(Config.ncmpcpp_directory);

@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-#include "bindings.h"
+#include "bindings_legacy.h"
 #include "curses/formatted_color.h"
 #include "app_controller.h"
 #include "global.h"
@@ -139,13 +139,15 @@ std::string align_key_rep(std::string keys)
 std::string display_keys(const Actions::Type at)
 {
 	std::string result, skey;
-	for (auto it = Bindings.begin(); it != Bindings.end(); ++it)
+	for (int32 i = 0; i < Bindings.keys_len; i += 1)
 	{
-		for (auto j = it->second.begin(); j != it->second.end(); ++j)
+		NcmKeyBindings *key_bindings = Bindings.keys + i;
+		for (int32 j = 0; j < key_bindings->bindings_len; j += 1)
 		{
-			if (j->isSingle() && j->action().type() == at)
+			NcmBinding *binding = key_bindings->bindings + j;
+			if (bindings_legacy_is_single_action(binding, at))
 			{
-				skey = NC::keyToString(it->first);
+				skey = NC::keyToString(key_bindings->key);
 				if (!skey.empty())
 				{
 					result += std::move(skey);
@@ -491,16 +493,19 @@ void write_bindings(HelpBuffer &w)
 #	endif // ENABLE_OUTPUTS
 
 	section(w, "", "Action chains");
-	for (const auto &k : Bindings)
+	for (int32 i = 0; i < Bindings.keys_len; i += 1)
 	{
-		for (const auto &binding : k.second)
+		NcmKeyBindings *key_bindings = Bindings.keys + i;
+		for (int32 j = 0; j < key_bindings->bindings_len; j += 1)
 		{
-			if (!binding.isSingle())
+			NcmBinding *binding = key_bindings->bindings + j;
+			if (!ncm_binding_is_single(binding))
 			{
 				std::vector<std::string> commands;
-				for (const auto &action : binding.actions())
-					commands.push_back(action->name());
-				key(w, k.first, join<std::string>(commands, ", "));
+				for (int32 k = 0; k < binding->actions_len; k += 1)
+					commands.push_back(
+						bindings_legacy_action_name(binding->actions + k));
+				key(w, key_bindings->key, join<std::string>(commands, ", "));
 			}
 		}
 	}
