@@ -6,8 +6,14 @@
 #include "cbase/primitives.h"
 
 #if defined(__cplusplus)
-extern "C" {
+#define NCM_EXTERN_C_BEGIN extern "C" {
+#define NCM_EXTERN_C_END }
+#else
+#define NCM_EXTERN_C_BEGIN
+#define NCM_EXTERN_C_END
 #endif
+
+NCM_EXTERN_C_BEGIN
 
 #define NCM_ARRAY_LEN(array) ((int32)(sizeof(array) / sizeof((array)[0])))
 
@@ -22,8 +28,6 @@ typedef struct NcmBuffer {
     int32 cap;
 } NcmBuffer;
 
-#if defined(__cplusplus)
-}
-#endif
+NCM_EXTERN_C_END
 
 #endif /* NCM_DEFS_H */

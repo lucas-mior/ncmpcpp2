@@ -9,17 +9,17 @@
 
 namespace {
 
-Actions::Type to_action_type(NcmActionType type)
+NcmActionType to_ncm_action_type(Actions::Type type)
 {
-    return static_cast<Actions::Type>(type);
+    return static_cast<NcmActionType>(type);
 }
 
 Actions::BaseAction *legacy_action(NcmBindingAction *action)
 {
     if (action->kind == NCM_BINDING_ACTION_NORMAL)
-        return &Actions::get(to_action_type(action->type));
+        return Actions::runtimeAction(action->type);
     if (action->kind == NCM_BINDING_ACTION_REQUIRE_RUNNABLE)
-        return &Actions::get(to_action_type(action->type));
+        return Actions::runtimeAction(action->type);
     return nullptr;
 }
 
@@ -148,7 +148,7 @@ bool bindings_legacy_has_runnable_action(NcmBinding *binding,
         if (!legacy_can_run(action))
             return false;
         if ((action->kind == NCM_BINDING_ACTION_NORMAL)
-            && (to_action_type(action->type) == type))
+            && (action->type == to_ncm_action_type(type)))
             success = true;
     }
     return success;
@@ -161,7 +161,7 @@ bool bindings_legacy_is_single_action(NcmBinding *binding,
         return false;
     if (binding->actions[0].kind != NCM_BINDING_ACTION_NORMAL)
         return false;
-    return to_action_type(binding->actions[0].type) == type;
+    return binding->actions[0].type == to_ncm_action_type(type);
 }
 
 std::string bindings_legacy_action_name(NcmBindingAction *action)
