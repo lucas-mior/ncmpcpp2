@@ -18,535 +18,95 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#ifndef NCMPCPP_HELPERS_H
+#if !defined(NCMPCPP_HELPERS_H)
 #define NCMPCPP_HELPERS_H
 
-#include "interfaces.h"
-#include "mpdpp.h"
-#include "screens/playlist.h"
-#include "screens/screen.h"
-#include "settings_legacy.h"
-#include "song_list.h"
-#include "status.h"
-#include "utility/string.h"
-#include "utility/utf8.h"
+#include <stdbool.h>
+#include <time.h>
 
-enum ReapplyFilter { Yes, No };
+#include "c/ncm_base.h"
+#include "c/ncm_enums.h"
+#include "c/ncm_mpd_connection.h"
+#include "c/ncm_song_list.h"
+#include "curses/nc_menu.h"
 
-inline std::string showSongTime(unsigned length)
-{
-	char buffer[64];
+NCM_EXTERN_C_BEGIN
 
-	ncm_song_show_time(length, buffer, static_cast<int32>(sizeof(buffer)));
-	return buffer;
-}
-
-template <typename ItemT>
-struct ScopedUnfilteredMenu
-{
-	ScopedUnfilteredMenu(ReapplyFilter reapply_filter, NC::Menu<ItemT> &menu)
-		: m_refresh(false), m_reapply_filter(reapply_filter), m_menu(menu)
-	{
-		m_is_filtered = m_menu.isFiltered();
-		if (m_is_filtered)
-			m_menu.showAllItems();
-	}
-
-	~ScopedUnfilteredMenu()
-	{
-		if (m_is_filtered)
-		{
-			switch (m_reapply_filter)
-			{
-			case ReapplyFilter::Yes:
-				m_menu.reapplyFilter();
-				break;
-			case ReapplyFilter::No:
-				m_menu.showFilteredItems();
-				break;
-			}
-		}
-		if (m_refresh)
-			m_menu.refresh();
-	}
-
-	void set(ReapplyFilter reapply_filter, bool refresh)
-	{
-		m_reapply_filter = reapply_filter;
-		m_refresh = refresh;
-	}
-
-private:
-	bool m_is_filtered;
-	bool m_refresh;
-	ReapplyFilter m_reapply_filter;
-	NC::Menu<ItemT> &m_menu;
+enum NcmReapplyFilter {
+    NCM_REAPPLY_FILTER_YES,
+    NCM_REAPPLY_FILTER_NO,
 };
 
-template <typename Iterator, typename PredicateT>
-Iterator wrappedSearch(Iterator begin, Iterator current, Iterator end,
-                       const PredicateT &pred, bool wrap, bool skip_current)
-{
-	if (begin == end)
-	{
-		assert(current == end);
-		return begin;
-	}
-	if (skip_current)
-		++current;
-	auto it = std::find_if(current, end, pred);
-	if (it == end && wrap)
-	{
-		it = std::find_if(begin, current, pred);
-		if (it == current)
-			it = end;
-	}
-	return it;
-}
+typedef bool (*NcmSongListIterFunc)(NcmSongListItem *item, int32 idx,
+                                    void *user);
+typedef bool (*NcmMpdSongListIterFunc)(NcmSong *song, int32 idx,
+                                       void *user);
+typedef bool (*NcmMenuIterFunc)(void *item, int64 pos, void *user);
 
-template <typename ItemT, typename PredicateT>
-bool search(NC::Menu<ItemT> &m, const PredicateT &pred,
-                  SearchDirection direction, bool wrap, bool skip_current)
-{
-	bool result = false;
-	if (pred.defined())
-	{
-		switch (direction)
-		{
-			case NCM_SEARCH_DIRECTION_BACKWARD:
-			{
-				auto it = wrappedSearch(m.rbegin(), m.rcurrent(), m.rend(),
-					pred, wrap, skip_current
-				);
-				if (it != m.rend())
-				{
-					m.highlight(it.base()-m.begin()-1);
-					result = true;
-				}
-				break;
-			}
-			case NCM_SEARCH_DIRECTION_FORWARD:
-			{
-				auto it = wrappedSearch(m.begin(), m.current(), m.end(),
-					pred, wrap, skip_current
-				);
-				if (it != m.end())
-				{
-					m.highlight(it-m.begin());
-					result = true;
-				}
-			}
-		}
-	}
-	return result;
-}
+char *ncm_helpers_with_errors(bool success);
+int32 ncm_helpers_show_song_time(uint32 length, char *buffer,
+                                 int32 buffer_cap);
+bool ncm_helpers_time_format(NcmBuffer *buffer, char *format,
+                             time_t value);
+bool ncm_helpers_timestamp(NcmBuffer *buffer, time_t value);
 
-template <typename Iterator>
-bool hasSelected(Iterator first, Iterator last)
-{
-	for (; first != last; ++first)
-		if (first->isSelected())
-			return true;
-	return false;
-}
+bool ncm_song_list_each_item(NcmSongList *list, NcmSongListIterFunc func,
+                             void *user);
+bool ncm_song_list_each_item_reverse(NcmSongList *list,
+                                     NcmSongListIterFunc func, void *user);
+bool ncm_song_list_each_selected(NcmSongList *list,
+                                 NcmSongListIterFunc func, void *user);
+bool ncm_song_list_each_selected_or_current(NcmSongList *list,
+                                            NcmSongListIterFunc func,
+                                            void *user);
+bool ncm_song_list_has_selected_item(NcmSongList *list);
+void ncm_song_list_select_current_if_none_selected(NcmSongList *list);
+void ncm_song_list_reverse_selection(NcmSongList *list);
+bool ncm_song_list_find_selected_range(NcmSongList *list, int32 *first,
+                                       int32 *last);
+bool ncm_song_list_find_full_selected_range(NcmSongList *list,
+                                            int32 *first, int32 *last);
+int32 ncm_song_list_wrapped_search(NcmSongList *list, int32 current,
+                                   enum SearchDirection direction,
+                                   bool wrap, bool skip_current,
+                                   NcmSongListIterFunc predicate,
+                                   void *user);
 
-template <typename Iterator>
-std::vector<Iterator> getSelected(Iterator first, Iterator last)
-{
-	std::vector<Iterator> result;
-	for (; first != last; ++first)
-		if (first->isSelected())
-			result.push_back(first);
-	return result;
-}
+bool ncm_mpd_song_list_each_song(NcmMpdSongList *list,
+                                 NcmMpdSongListIterFunc func, void *user);
+bool ncm_mpd_song_list_each_song_reverse(NcmMpdSongList *list,
+                                         NcmMpdSongListIterFunc func,
+                                         void *user);
+int32 ncm_mpd_song_list_wrapped_search(NcmMpdSongList *list,
+                                       int32 current,
+                                       enum SearchDirection direction,
+                                       bool wrap, bool skip_current,
+                                       NcmMpdSongListIterFunc predicate,
+                                       void *user);
 
-/// @return true if range that begins and ends with selected items was
-/// found, false when there is no selected items (in which case first
-/// == last).
-template <typename Iterator>
-bool findRange(Iterator &first, Iterator &last)
-{
-	for (; first != last; ++first)
-	{
-		if (first->isSelected())
-			break;
-	}
-	if (first == last)
-		return false;
-	--last;
-	for (; first != last; --last)
-	{
-		if (last->isSelected())
-			break;
-	}
-	++last;
-	return true;
-}
+bool ncm_menu_each_item(NcMenu *menu, enum NcMenuItemSource source,
+                        NcmMenuIterFunc func, void *user);
+bool ncm_menu_each_item_reverse(NcMenu *menu, enum NcMenuItemSource source,
+                                NcmMenuIterFunc func, void *user);
+bool ncm_menu_each_selected(NcMenu *menu, enum NcMenuItemSource source,
+                            NcmMenuIterFunc func, void *user);
+bool ncm_menu_each_selected_or_current(NcMenu *menu,
+                                       enum NcMenuItemSource source,
+                                       NcmMenuIterFunc func, void *user);
+bool ncm_menu_has_selected_item(NcMenu *menu, enum NcMenuItemSource source);
+void ncm_menu_select_current_if_none_selected(NcMenu *menu);
+void ncm_menu_reverse_selection(NcMenu *menu, enum NcMenuItemSource source);
+bool ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
+                                  int64 *first, int64 *last);
+bool ncm_menu_find_full_selected_range(NcMenu *menu,
+                                       enum NcMenuItemSource source,
+                                       int64 *first, int64 *last);
+int64 ncm_menu_wrapped_search(NcMenu *menu, enum NcMenuItemSource source,
+                              int64 current,
+                              enum SearchDirection direction, bool wrap,
+                              bool skip_current, NcmMenuIterFunc predicate,
+                              void *user);
 
-/// @return true if fully selected range was found or no selected
-/// items were found, false otherwise.
-template <typename Iterator>
-bool findSelectedRange(Iterator &first, Iterator &last)
-{
-	auto orig_first = first;
-	if (!findRange(first, last))
-	{
-		// If no selected items were found, return original range.
-		if (first == last)
-		{
-			first = orig_first;
-			return true;
-		}
-		else
-			return false;
-	}
-	// We have range, now check if it's filled with selected items.
-	for (auto it = first; it != last; ++it)
-	{
-		if (!it->isSelected())
-			return false;
-	}
-	return true;
-}
+NCM_EXTERN_C_END
 
-template <typename T>
-void selectCurrentIfNoneSelected(NC::Menu<T> &m)
-{
-	if (!hasSelected(m.begin(), m.end()))
-		m.current()->setSelected(true);
-}
-
-template <typename Iterator>
-std::vector<Iterator> getSelectedOrCurrent(Iterator first, Iterator last, Iterator current)
-{
-	std::vector<Iterator> result = getSelected(first, last);
-	if (result.empty())
-		result.push_back(current);
-	return result;
-}
-
-template <typename Iterator>
-void reverseSelectionHelper(Iterator first, Iterator last)
-{
-	for (; first != last; ++first)
-		first->setSelected(!first->isSelected());
-}
-
-template <typename F>
-void moveSelectedItemsUp(NC::Menu<MPD::Song> &m, F swap_fun)
-{
-	if (m.choice() > 0)
-		selectCurrentIfNoneSelected(m);
-	auto list = getSelected(m.begin(), m.end());
-	auto begin = m.begin();
-	if (!list.empty() && list.front() != m.begin())
-	{
-		Mpd.StartCommandsList();
-		for (auto it = list.begin(); it != list.end(); ++it)
-			swap_fun(Mpd, *it - begin, *it - begin - 1);
-		Mpd.CommitCommandsList();
-		if (list.size() > 1)
-		{
-			for (auto it = list.begin(); it != list.end(); ++it)
-			{
-				(*it)->setSelected(false);
-				(*it-1)->setSelected(true);
-			}
-			m.highlight(list[(list.size())/2] - begin - 1);
-		}
-		else
-		{
-			// if we move only one item, do not select it. however, if single item
-			// was selected prior to move, it'll deselect it. oh well.
-			list[0]->setSelected(false);
-			m.scroll(NC_SCROLL_UP);
-		}
-	}
-}
-
-template <typename F>
-void moveSelectedItemsDown(NC::Menu<MPD::Song> &m, F swap_fun)
-{
-	if (m.choice() < m.size()-1)
-		selectCurrentIfNoneSelected(m);
-	auto list = getSelected(m.rbegin(), m.rend());
-	auto begin = m.begin() + 1; // reverse iterators add 1, so we need to cancel it
-	if (!list.empty() && list.front() != m.rbegin())
-	{
-		Mpd.StartCommandsList();
-		for (auto it = list.begin(); it != list.end(); ++it)
-			swap_fun(Mpd, it->base() - begin, it->base() - begin + 1);
-		Mpd.CommitCommandsList();
-		if (list.size() > 1)
-		{
-			for (auto it = list.begin(); it != list.end(); ++it)
-			{
-				(*it)->setSelected(false);
-				(*it-1)->setSelected(true);
-			}
-			m.highlight(list[(list.size())/2].base() - begin + 1);
-		}
-		else
-		{
-			// if we move only one item, do not select it. however, if single item
-			// was selected prior to move, it'll deselect it. oh well.
-			list[0]->setSelected(false);
-			m.scroll(NC_SCROLL_DOWN);
-		}
-	}
-}
-
-template <typename F>
-void moveSelectedItemsTo(NC::Menu<MPD::Song> &menu, F &&move_fun)
-{
-	auto cur_ptr = &menu.current()->value();
-	ScopedUnfilteredMenu<MPD::Song> sunfilter(ReapplyFilter::No, menu);
-	// this is kinda shitty, but there is no other way to know
-	// what position current item has in unfiltered menu.
-	ptrdiff_t pos = 0;
-	for (auto it = menu.begin(); it != menu.end(); ++it, ++pos)
-		if (&it->value() == cur_ptr)
-			break;
-	auto begin = menu.begin();
-	auto list = getSelected(menu.begin(), menu.end());
-	// we move only truly selected items
-	if (list.empty())
-		return;
-	// we can't move to the middle of selected items
-	//(this also handles case when list.size() == 1)
-	if (pos >= (list.front() - begin) && pos <= (list.back() - begin))
-		return;
-	int diff = pos - (list.front() - begin);
-	Mpd.StartCommandsList();
-	if (diff > 0) // move down
-	{
-		pos -= list.size();
-		size_t i = list.size()-1;
-		for (auto it = list.rbegin(); it != list.rend(); ++it, --i)
-			move_fun(Mpd, *it - begin, pos+i);
-		Mpd.CommitCommandsList();
-		i = list.size()-1;
-		for (auto it = list.rbegin(); it != list.rend(); ++it, --i)
-		{
-			(*it)->setSelected(false);
-			menu[pos+i].setSelected(true);
-		}
-	}
-	else if (diff < 0) // move up
-	{
-		size_t i = 0;
-		for (auto it = list.begin(); it != list.end(); ++it, ++i)
-			move_fun(Mpd, *it - begin, pos+i);
-		Mpd.CommitCommandsList();
-		i = 0;
-		for (auto it = list.begin(); it != list.end(); ++it, ++i)
-		{
-			(*it)->setSelected(false);
-			menu[pos+i].setSelected(true);
-		}
-	}
-}
-
-template <typename F>
-void deleteSelectedSongs(NC::Menu<MPD::Song> &menu, F &&delete_fun)
-{
-	selectCurrentIfNoneSelected(menu);
-	// We need to operate on the whole playlist to get positions right, but at the
-	// same time we need to ignore all songs that are not filtered. We abuse the
-	// fact that both ranges share the same values, i.e. we can compare addresses
-	// of item values to check whether an item belongs to filtered range. TODO: do
-	// something more sane here.
-	NC::Menu<MPD::Song>::Iterator begin;
-	NC::Menu<MPD::Song>::ReverseIterator real_begin, real_end;
-	{
-		ScopedUnfilteredMenu<MPD::Song> sunfilter(ReapplyFilter::No, menu);
-		// obtain iterators for unfiltered range
-		begin = menu.begin() + 1; // cancel reverse iterator's offset
-		real_begin = menu.rbegin();
-		real_end = menu.rend();
-	};
-	// get iterator to filtered range
-	auto cur_filtered = menu.rbegin();
-	Mpd.StartCommandsList();
-	for (auto it = real_begin; it != real_end; ++it)
-	{
-		// current iterator belongs to filtered range, proceed
-		if (&it->value() == &cur_filtered->value())
-		{
-			if (it->isSelected())
-			{
-				it->setSelected(false);
-				delete_fun(Mpd, it.base() - begin);
-			}
-			++cur_filtered;
-		}
-	}
-	Mpd.CommitCommandsList();
-}
-
-template <typename F>
-void cropPlaylist(NC::Menu<MPD::Song> &m, F delete_fun)
-{
-	reverseSelectionHelper(m.begin(), m.end());
-	deleteSelectedSongs(m, delete_fun);
-}
-
-template <typename Iterator>
-std::string getSharedDirectory(Iterator first, Iterator last)
-{
-	assert(first != last);
-	std::string result = first->getDirectory();
-	while (++first != last)
-	{
-		result = getSharedDirectory(result, first->getDirectory());
-		if (result == "/")
-			break;
-	}
-	return result;
-}
-
-template <typename Iterator>
-bool addSongsToPlaylist(Iterator first, Iterator last, bool play, int position)
-{
-	bool result = true;
-	auto addSongNoError = [&](Iterator it) -> int {
-		try
-		{
-			return Mpd.AddSong(it->cSong(), position);
-		}
-		catch (MPD::ServerError &e)
-		{
-			Status::handleServerError(e);
-			result = false;
-			return -1;
-		}
-	};
-
-	if (last-first >= 1)
-	{
-		int id;
-		while (true)
-		{
-			id = addSongNoError(first);
-			if (id >= 0)
-				break;
-			++first;
-			if (first == last)
-				return result;
-		}
-
-		if (position == -1)
-		{
-			++first;
-			for(; first != last; ++first)
-				addSongNoError(first);
-		}
-		else
-		{
-			++position;
-			--last;
-			for (; first != last; --last)
-				addSongNoError(last);
-		}
-		if (play)
-			Mpd.PlayID(id);
-	}
-
-	return result;
-}
-
-template <typename T> void ShowTime(T &buf, size_t length, bool short_names)
-{
-	const unsigned MINUTE = 60;
-	const unsigned HOUR = 60*MINUTE;
-	const unsigned DAY = 24*HOUR;
-	const unsigned YEAR = 365*DAY;
-	
-	unsigned years = length/YEAR;
-	if (years)
-	{
-		buf << years << (short_names ? "y" : (years == 1 ? " year" : " years"));
-		length -= years*YEAR;
-		if (length)
-			buf << ", ";
-	}
-	unsigned days = length/DAY;
-	if (days)
-	{
-		buf << days << (short_names ? "d" : (days == 1 ? " day" : " days"));
-		length -= days*DAY;
-		if (length)
-			buf << ", ";
-	}
-	unsigned hours = length/HOUR;
-	if (hours)
-	{
-		buf << hours << (short_names ? "h" : (hours == 1 ? " hour" : " hours"));
-		length -= hours*HOUR;
-		if (length)
-			buf << ", ";
-	}
-	unsigned minutes = length/MINUTE;
-	if (minutes)
-	{
-		buf << minutes << (short_names ? "m" : (minutes == 1 ? " minute" : " minutes"));
-		length -= minutes*MINUTE;
-		if (length)
-			buf << ", ";
-	}
-	if (length)
-		buf << length << (short_names ? "s" : (length == 1 ? " second" : " seconds"));
-}
-
-template <typename BufferT>
-void ShowTag(BufferT &buf, const std::string &tag)
-{
-	if (tag.empty())
-		buf << Config.empty_tags_color
-		    << Config.empty_tag
-		    << NC::FormattedColor::End<>(Config.empty_tags_color);
-	else
-		buf << tag;
-}
-
-inline NC::Buffer ShowTag(const std::string &tag)
-{
-	NC::Buffer result;
-	ShowTag(result, tag);
-	return result;
-}
-
-template <typename T>
-void setHighlightFixes(NC::Menu<T> &m)
-{
-	m.setHighlightPrefix(Config.current_item_prefix);
-	m.setHighlightSuffix(Config.current_item_suffix);
-}
-
-template <typename T>
-void setHighlightInactiveColumnFixes(NC::Menu<T> &m)
-{
-	m.setHighlightPrefix(Config.current_item_inactive_column_prefix);
-	m.setHighlightSuffix(Config.current_item_inactive_column_suffix);
-}
-
-inline const char *withErrors(bool success)
-{
-	return success ? "" : " " "(with errors)";
-}
-
-void deleteSelectedSongsFromPlaylist(NC::Menu<MPD::Song> &playlist);
-
-bool addSongToPlaylist(const MPD::Song &s, bool play, int position = -1);
-
-const MPD::Song *currentSong(const BaseScreen *screen);
-
-std::string timeFormat(const char *format, time_t t);
-
-std::string Timestamp(time_t t);
-
-std::string Scroller(const std::string &str, size_t &pos, size_t width);
-void writeCyclicBuffer(const NC::Buffer &buf, NC::Window &w, size_t &start_pos,
-                       size_t width, const std::string &separator);
-
-#endif // NCMPCPP_HELPERS_H
+#endif /* NCMPCPP_HELPERS_H */

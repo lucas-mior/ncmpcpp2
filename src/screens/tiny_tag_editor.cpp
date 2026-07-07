@@ -32,7 +32,7 @@
 #include "screens/browser.h"
 #include "charset.h"
 #include "display.h"
-#include "helpers.h"
+#include "helpers_legacy.h"
 #include "global.h"
 #include "ui_state_legacy.h"
 #include "screens/song_info.h"

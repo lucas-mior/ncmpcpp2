@@ -22,7 +22,7 @@
 #include <time.h>
 
 #include "c/ncm_enums.h"
-#include "helpers.h"
+#include "helpers_legacy.h"
 #include "format_impl.h"
 #include "screens/playlist.h"
 #include "statusbar.h"

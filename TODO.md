@@ -48,10 +48,10 @@
 - ~~Replace lyrics-fetcher regex parsing with ncm_regex.~~
 - ~~Replace lyrics-fetcher string cleanup with explicit lyrics_result_destroy.~~
 - ~~Add C tests for lyrics provider registration, URL construction, HTML cleanup, and failed fetch handling.~~
-- Convert src/helpers.h to C.
-- Convert src/helpers.cpp to src/helpers.c.
-- Replace helper templates with concrete typed functions.
-- Replace song iterator helpers with concrete C iteration helpers over NcmSongList, NcmMpdSongList, and menu selections.
+- ~~Convert src/helpers.h to C.~~
+- ~~Convert src/helpers.cpp to src/helpers.c.~~
+- ~~Replace helper templates with concrete typed functions.~~
+- ~~Replace song iterator helpers with concrete C iteration helpers over NcmSongList, NcmMpdSongList, and menu selections.~~
 - Convert src/statusbar.h to C.
 - Convert src/statusbar.cpp to src/statusbar.c.
 - Convert src/title.h to C.

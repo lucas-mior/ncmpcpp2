@@ -28,7 +28,7 @@
 #include "display.h"
 #include "global.h"
 #include "ui_state_legacy.h"
-#include "helpers.h"
+#include "helpers_legacy.h"
 #include "screens/playlist.h"
 #include "curses/menu_impl.h"
 #include "screens/screen_switcher.h"
