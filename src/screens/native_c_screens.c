@@ -69,9 +69,15 @@ NcmSongInfoMetadata ncm_song_info_tags[] = {
     {NULL, NCM_SONG_GETTER_NONE, NCM_TAGS_FIELD_LAST},
 };
 
+static NativeBrowserScreen browser_screen;
+static bool browser_screen_initialized;
 static struct NativeHelpScreen help_screen;
 static struct NativeOutputsScreen outputs_screen;
 static NativePlaylistScreen playlist_screen;
+static NativeSearchEngineScreen search_engine_screen;
+static bool search_engine_screen_initialized;
+static NativeMediaLibraryScreen media_library_screen;
+static bool media_library_screen_initialized;
 static bool playlist_screen_initialized;
 static struct NativeServerInfoScreen server_info_screen;
 static struct NativeSongInfoScreen song_info_screen;
@@ -125,6 +131,65 @@ static void native_song_info_resize(void *user, NcSongInfoScreen *screen);
 static void native_song_info_destroy(void *user);
 static NcSongInfoHooks native_song_info_hooks(void);
 static void native_show_long_time(NcBuffer *buffer, uint64 seconds);
+
+
+void
+native_c_screen_browser_init(void) {
+    if (browser_screen_initialized) {
+        return;
+    }
+
+    native_browser_screen_init(&browser_screen,
+                               0,
+                               ui_state_screen_width(),
+                               ui_state_main_start_y(),
+                               ui_state_main_height(),
+                               Config.main_color,
+                               native_no_border());
+    native_browser_screen_set_mouse_config(
+        &browser_screen, Config.lines_scrolled,
+        Config.mouse_list_scroll_whole_page);
+    browser_screen_initialized = true;
+    return;
+}
+
+void
+native_c_screen_browser_register(void) {
+    native_c_screen_browser_init();
+    assert(native_register_screen(native_c_screen_browser_native()));
+    return;
+}
+
+void
+native_c_screen_browser_set_resize(void) {
+    nc_screen_request_resize(native_c_screen_browser_native());
+    return;
+}
+
+void
+native_c_screen_browser_switch_to(void) {
+    (void)nc_screen_switcher_switch_to(native_c_screen_browser_native(),
+                                       nc_screen_has_to_be_resized(
+                                           native_c_screen_browser_native()));
+    return;
+}
+
+bool
+native_c_screen_browser_is_current(void) {
+    return nc_screen_switcher_is_current(native_c_screen_browser_native());
+}
+
+NativeBrowserScreen *
+native_c_screen_browser(void) {
+    native_c_screen_browser_init();
+    return &browser_screen;
+}
+
+NcScreen *
+native_c_screen_browser_native(void) {
+    native_c_screen_browser_init();
+    return native_browser_screen_base(&browser_screen);
+}
 
 void
 native_c_screen_help_init(void) {
@@ -252,6 +317,119 @@ NcScreen *
 native_c_screen_playlist_native(void) {
     native_c_screen_playlist_init();
     return native_playlist_screen_base(&playlist_screen);
+}
+
+
+void
+native_c_screen_search_engine_init(void) {
+    if (search_engine_screen_initialized) {
+        return;
+    }
+
+    native_search_engine_screen_init(&search_engine_screen,
+                                     0,
+                                     ui_state_screen_width(),
+                                     ui_state_main_start_y(),
+                                     ui_state_main_height(),
+                                     Config.main_color,
+                                     native_no_border());
+    search_engine_screen_initialized = true;
+    return;
+}
+
+void
+native_c_screen_search_engine_register(void) {
+    native_c_screen_search_engine_init();
+    assert(native_register_screen(native_c_screen_search_engine_native()));
+    return;
+}
+
+void
+native_c_screen_search_engine_set_resize(void) {
+    nc_screen_request_resize(native_c_screen_search_engine_native());
+    return;
+}
+
+void
+native_c_screen_search_engine_switch_to(void) {
+    (void)nc_screen_switcher_switch_to(
+        native_c_screen_search_engine_native(),
+        nc_screen_has_to_be_resized(native_c_screen_search_engine_native()));
+    return;
+}
+
+bool
+native_c_screen_search_engine_is_current(void) {
+    return nc_screen_switcher_is_current(
+        native_c_screen_search_engine_native());
+}
+
+NativeSearchEngineScreen *
+native_c_screen_search_engine(void) {
+    native_c_screen_search_engine_init();
+    return &search_engine_screen;
+}
+
+NcScreen *
+native_c_screen_search_engine_native(void) {
+    native_c_screen_search_engine_init();
+    return native_search_engine_screen_base(&search_engine_screen);
+}
+
+void
+native_c_screen_media_library_init(void) {
+    if (media_library_screen_initialized) {
+        return;
+    }
+
+    native_media_library_screen_init(&media_library_screen,
+                                     0,
+                                     ui_state_screen_width(),
+                                     ui_state_main_start_y(),
+                                     ui_state_main_height(),
+                                     Config.main_color,
+                                     native_no_border());
+    media_library_screen_initialized = true;
+    return;
+}
+
+void
+native_c_screen_media_library_register(void) {
+    native_c_screen_media_library_init();
+    assert(native_register_screen(native_c_screen_media_library_native()));
+    return;
+}
+
+void
+native_c_screen_media_library_set_resize(void) {
+    nc_screen_request_resize(native_c_screen_media_library_native());
+    return;
+}
+
+void
+native_c_screen_media_library_switch_to(void) {
+    (void)nc_screen_switcher_switch_to(
+        native_c_screen_media_library_native(),
+        nc_screen_has_to_be_resized(native_c_screen_media_library_native()));
+    return;
+}
+
+bool
+native_c_screen_media_library_is_current(void) {
+    return nc_screen_switcher_is_current(
+        native_c_screen_media_library_native());
+}
+
+NativeMediaLibraryScreen *
+native_c_screen_media_library(void) {
+    native_c_screen_media_library_init();
+    return &media_library_screen;
+}
+
+NcScreen *
+native_c_screen_media_library_native(void) {
+    native_c_screen_media_library_init();
+    return native_media_library_screen_base(&media_library_screen);
 }
 
 void

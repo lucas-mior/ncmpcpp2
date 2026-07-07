@@ -24,9 +24,12 @@
 #include <stdbool.h>
 
 #include "c/ncm_defs.h"
+#include "screens/nc_browser.h"
 #include "screens/nc_help.h"
 #include "screens/nc_outputs.h"
+#include "screens/nc_media_library.h"
 #include "screens/nc_playlist.h"
+#include "screens/nc_search_engine.h"
 #include "screens/nc_server_info.h"
 #include "screens/nc_song_info.h"
 #include "screens/nc_screen.h"
@@ -37,6 +40,15 @@ typedef struct NativeHelpScreen NativeHelpScreen;
 typedef struct NativeOutputsScreen NativeOutputsScreen;
 typedef struct NativeServerInfoScreen NativeServerInfoScreen;
 typedef struct NativeSongInfoScreen NativeSongInfoScreen;
+
+
+void native_c_screen_browser_init(void);
+void native_c_screen_browser_register(void);
+void native_c_screen_browser_set_resize(void);
+void native_c_screen_browser_switch_to(void);
+bool native_c_screen_browser_is_current(void);
+NativeBrowserScreen *native_c_screen_browser(void);
+NcScreen *native_c_screen_browser_native(void);
 
 void native_c_screen_help_init(void);
 void native_c_screen_help_register(void);
@@ -55,6 +67,23 @@ bool native_c_screen_playlist_is_current(void);
 NativePlaylistScreen *native_c_screen_playlist(void);
 NcPlaylistScreen *native_c_screen_playlist_typed(void);
 NcScreen *native_c_screen_playlist_native(void);
+
+
+void native_c_screen_search_engine_init(void);
+void native_c_screen_search_engine_register(void);
+void native_c_screen_search_engine_set_resize(void);
+void native_c_screen_search_engine_switch_to(void);
+bool native_c_screen_search_engine_is_current(void);
+NativeSearchEngineScreen *native_c_screen_search_engine(void);
+NcScreen *native_c_screen_search_engine_native(void);
+
+void native_c_screen_media_library_init(void);
+void native_c_screen_media_library_register(void);
+void native_c_screen_media_library_set_resize(void);
+void native_c_screen_media_library_switch_to(void);
+bool native_c_screen_media_library_is_current(void);
+NativeMediaLibraryScreen *native_c_screen_media_library(void);
+NcScreen *native_c_screen_media_library_native(void);
 
 void native_c_screen_song_info_init(void);
 void native_c_screen_song_info_register(void);
