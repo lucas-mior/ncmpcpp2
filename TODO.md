@@ -24,12 +24,12 @@
 - ~~Add C tests for action name lookup, duplicate action detection, disabled action checks, and representative action execution paths.~~
 - ~~Remove C++ constructors, destructors, operators, and #if defined(__cplusplus) blocks from src/c/ncm_mpd_item.h.~~
 - ~~Remove C++ compatibility code from src/c/ncm_playlist.h and any other src/c/*.h header that still exposes C++ APIs.~~
-- Convert remaining callers of MPD::Song to NcmSong.
-- Convert remaining callers of MPD::MutableSong to NcmMutableSong.
-- Convert remaining callers of MPD::Item to NcmMpdItem.
-- Convert remaining callers of MPD::Directory to NcmDirectory.
-- Convert remaining callers of MPD::Playlist to NcmPlaylist.
-- Convert remaining callers of MPD::Connection to NcmMpdClient or NcmMpdConnection.
+- ~~Convert remaining callers of MPD::Song to NcmSong.~~
+- ~~Convert remaining callers of MPD::MutableSong to NcmMutableSong.~~
+- ~~Convert remaining callers of MPD::Item to NcmMpdItem.~~
+- ~~Convert remaining callers of MPD::Directory to NcmDirectory.~~
+- ~~Convert remaining callers of MPD::Playlist to NcmPlaylist.~~
+- ~~Convert remaining callers of MPD::Connection to NcmMpdClient or NcmMpdConnection.~~
 - Delete src/mpdpp.h after all callers use src/c/ncm_mpd_client.h and src/c/ncm_mpd_connection.h.
 - Convert src/mpdpp.cpp functionality into missing src/c/ncm_mpd_client.c and src/c/ncm_mpd_connection.c functions.
 - Add C tests for all MPD wrapper behavior previously covered only by mpdpp.cpp.
