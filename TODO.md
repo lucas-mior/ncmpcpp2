@@ -12,9 +12,9 @@
 - ~~Convert src/bindings.cpp to src/bindings.c.~~
 - ~~Replace Binding::ActionChain with a typed array of action enum values or action pointers.~~
 - ~~Replace BindingsConfiguration::CommandsSet and BindingsMap with sorted arrays or hash tables.~~
-- Replace std::wstring keyToWString with a C key-formatting function that writes into NcmBuffer.
-- Replace readKey(NC::Window &w) with ncm_read_key(NcWindow *window).
-- Add C tests for default bindings, command lookup, key lookup, chained action execution, and binding file parsing.
+- ~~Replace std::wstring keyToWString with a C key-formatting function that writes into NcmBuffer.~~
+- ~~Replace readKey(NC::Window &w) with ncm_read_key(NcWindow *window).~~
+- ~~Add C tests for default bindings, command lookup, key lookup, chained action execution, and binding file parsing.~~
 - Replace src/actions.h with a pure C action table API.
 - Convert src/actions.cpp to src/actions.c.
 - Replace the Actions::BaseAction inheritance tree with NcmActionDef { type, name, can_run, run }.
