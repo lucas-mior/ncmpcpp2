@@ -26,7 +26,7 @@
 #include <utility>
 #include <vector>
 
-#include "actions.h"
+#include "actions_legacy.h"
 #include "c/ncm_error.h"
 #include "c/ncm_macro_utilities.h"
 #include "curses/window.h"

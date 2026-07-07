@@ -30,7 +30,7 @@
 
 #include "mpdpp.h"
 
-#include "actions.h"
+#include "actions_legacy.h"
 #include "bindings_legacy.h"
 #include "screens/browser.h"
 #include "charset.h"

@@ -15,9 +15,9 @@
 - ~~Replace std::wstring keyToWString with a C key-formatting function that writes into NcmBuffer.~~
 - ~~Replace readKey(NC::Window &w) with ncm_read_key(NcWindow *window).~~
 - ~~Add C tests for default bindings, command lookup, key lookup, chained action execution, and binding file parsing.~~
-- Replace src/actions.h with a pure C action table API.
-- Convert src/actions.cpp to src/actions.c.
-- Replace the Actions::BaseAction inheritance tree with NcmActionDef { type, name, can_run, run }.
+- ~~Replace src/actions.h with a pure C action table API.~~
+- ~~Convert src/actions.cpp to src/actions.c.~~
+- ~~Replace the Actions::BaseAction inheritance tree with NcmActionDef { type, name, can_run, run }.~~
 - Convert every action struct in actions.h into one static bool action_x_can_run(void) function and one static void action_x_run(void) function.
 - Replace Actions::get, Actions::get_, and name lookup with C table lookup functions.
 - Replace all action exceptions with explicit fatal calls or statusbar error messages at the call site.

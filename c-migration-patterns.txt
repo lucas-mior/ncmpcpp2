@@ -446,3 +446,16 @@ Rules:
       caller supplies the action runner callback.
     - Existing C++ runtime code should pass window.nativeWindow() directly to
       ncm_read_key() until NC::Window is removed.
+
+## Actions conversion
+
+- `src/actions.h` is now the pure C action table API.
+- `src/actions.c` owns the `NcmActionDef` name/type table and lookup helpers.
+- C code uses `enum NcmActionType`, `ncm_action_get()`,
+  `ncm_action_find()`, `ncm_action_type_name()`, and
+  `ncm_action_type_parse()`.
+- The old `Actions::BaseAction` inheritance tree is isolated in
+  `src/actions_legacy.h` and `src/actions_legacy.cpp` until the remaining
+  C++ screen runtime is migrated.
+- `bindings.h` now consumes action types from `actions.h`; it no longer owns
+  the action enum or action-name table.

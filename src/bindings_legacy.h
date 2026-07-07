@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "actions.h"
+#include "actions_legacy.h"
 #include "bindings.h"
 
 bool bindings_legacy_read_paths(const std::vector<std::string> &paths);
