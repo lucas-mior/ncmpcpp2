@@ -6,3 +6,6 @@ src/curl_handle.cpp
 src/lastfm_service.cpp
 src/lyrics_fetcher.cpp
 src/helpers.cpp
+src/status.cpp
+src/statusbar.cpp
+src/title.cpp

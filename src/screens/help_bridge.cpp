@@ -31,7 +31,7 @@
 #include "screens/screen_switcher.h"
 #include "screens/screen_legacy.h"
 #include "settings_legacy.h"
-#include "title.h"
+#include "title_legacy.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
 #include "utility/utf8.h"

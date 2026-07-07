@@ -1,73 +1,50 @@
-/***************************************************************************
- *   Copyright (C) 2008-2021 by Andrzej Rybczak                            *
- *   andrzej@rybczak.net                                                   *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
- ***************************************************************************/
+#if !defined(NCMPCPP_STATUS_H)
+#define NCMPCPP_STATUS_H
 
-#ifndef NCMPCPP_STATUS_CHECKER_H
-#define NCMPCPP_STATUS_CHECKER_H
+#include <stdbool.h>
 
-#include "interfaces.h"
-#include "mpdpp.h"
+#include "c/ncm_error.h"
+#include "c/ncm_mpd_client.h"
 
-namespace Status {
+NCM_EXTERN_C_BEGIN
 
-void handleClientError(MPD::ClientError &e);
-void handleServerError(MPD::ServerError &e);
+enum NcmStatusPlayerState {
+    NCM_STATUS_PLAYER_UNKNOWN,
+    NCM_STATUS_PLAYER_STOP,
+    NCM_STATUS_PLAYER_PLAY,
+    NCM_STATUS_PLAYER_PAUSE,
+};
 
-void trace(bool update_timer, bool update_window_timeout);
-inline void trace() { trace(true, false); }
-void update(int event);
-void clear();
+void ncm_status_handle_client_error(NcmMpdClient *client);
+void ncm_status_handle_server_error(NcmMpdClient *client);
+void ncm_status_trace(NcmMpdClient *client, bool update_timer,
+                      bool update_window_timeout, NcmError *error);
+bool ncm_status_update(NcmMpdClient *client, int32 event, NcmError *error);
+void ncm_status_clear(void);
 
-namespace State {
+bool ncm_status_state_consume(void);
+bool ncm_status_state_crossfade(void);
+bool ncm_status_state_repeat(void);
+bool ncm_status_state_random(void);
+bool ncm_status_state_single(void);
+int32 ncm_status_state_current_song_id(void);
+int32 ncm_status_state_current_song_position(void);
+uint32 ncm_status_state_playlist_length(void);
+uint32 ncm_status_state_elapsed_time(void);
+enum NcmStatusPlayerState ncm_status_state_player(void);
+uint32 ncm_status_state_total_time(void);
+int32 ncm_status_state_volume(void);
 
-// flags
-bool consume();
-bool crossfade();
-bool repeat();
-bool random();
-bool single();
+void ncm_status_changes_playlist(uint32 previous_version);
+void ncm_status_changes_stored_playlists(void);
+void ncm_status_changes_database(void);
+void ncm_status_changes_player_state(void);
+void ncm_status_changes_song_id(int32 song_id);
+void ncm_status_changes_elapsed_time(bool update_elapsed);
+void ncm_status_changes_flags(void);
+void ncm_status_changes_mixer(void);
+void ncm_status_changes_outputs(void);
 
-// misc
-int currentSongID();
-int currentSongPosition();
-unsigned playlistLength();
-unsigned elapsedTime();
-MPD::PlayerState player();
-unsigned totalTime();
-int volume();
+NCM_EXTERN_C_END
 
-}
-
-namespace Changes {
-
-void playlist(unsigned previous_version);
-void storedPlaylists();
-void database();
-void playerState();
-void songID(int song_id);
-void elapsedTime(bool update_elapsed);
-void flags();
-void mixer();
-void outputs();
-
-}
-
-}
-
-#endif // NCMPCPP_STATUS_CHECKER_H
+#endif /* NCMPCPP_STATUS_H */

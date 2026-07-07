@@ -62,6 +62,9 @@ REMOVED_CXX_SRCS := \
 	src/display.cpp \
 	src/format.cpp \
 	src/settings.cpp \
+	src/title.cpp \
+	src/statusbar.cpp \
+	src/status.cpp \
 	src/lastfm_service.cpp \
 	src/lyrics_fetcher.cpp \
 	src/enums.cpp \

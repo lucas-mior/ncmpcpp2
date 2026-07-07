@@ -25,7 +25,7 @@
 #include "helpers_legacy.h"
 #include "format_impl.h"
 #include "screens/playlist.h"
-#include "statusbar.h"
+#include "statusbar_legacy.h"
 #include "utility/functional.h"
 
 const MPD::Song *currentSong(const BaseScreen *screen)

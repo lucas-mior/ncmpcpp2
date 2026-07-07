@@ -32,8 +32,8 @@
 #include "screens/screen_switcher.h"
 #include "screens/screen_legacy.h"
 #include "settings_legacy.h"
-#include "statusbar.h"
-#include "title.h"
+#include "statusbar_legacy.h"
+#include "title_legacy.h"
 
 
 namespace {
