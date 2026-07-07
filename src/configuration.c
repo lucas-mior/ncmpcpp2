@@ -28,13 +28,16 @@
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_base.h"
 #include "c/ncm_conversion.h"
+#include "c/ncm_format.h"
 #include "c/ncm_fs.h"
 #include "c/ncm_mpd_client.h"
+#include "c/ncm_song.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
 #include "config.h"
 #include "global.h"
 #include "settings.h"
+#include "lyrics_fetcher.h"
 #include "screens/screen_type.h"
 
 #if !defined(VERSION)
@@ -43,30 +46,7 @@
 
 static char current_song_default_format[] = "{{{(%l) }{{%a - }%t}}|{%f}}";
 
-typedef struct CommandLineOptions {
-    NcmBuffer host;
-    NcmBuffer current_song_format;
-    NcmBuffer screen_name;
-    NcmBuffer slave_screen_name;
-    NcmBufferArray config_paths;
-    NcmBufferArray bindings_paths;
 
-    uint32 port;
-
-    bool host_provided;
-    bool port_provided;
-    bool current_song;
-    bool ignore_config_errors;
-    bool test_lyrics_fetchers;
-    bool screen;
-    bool slave_screen;
-    bool help;
-    bool version;
-    bool quiet;
-} CommandLineOptions;
-
-static void command_line_options_init(CommandLineOptions *options);
-static void command_line_options_destroy(CommandLineOptions *options);
 static bool command_line_options_append_path(NcmBufferArray *paths,
                                              char *path, int32 path_len);
 static bool configuration_append_buffer_path(NcmBufferArray *paths,
@@ -91,35 +71,35 @@ static bool configuration_parse_port(char *value, int32 value_len,
                                      uint32 *port, NcmError *error);
 static bool configuration_is_flag_short_option(char c);
 static bool configuration_is_value_short_option(char c);
-static bool configuration_set_short_flag(CommandLineOptions *options,
+static bool configuration_set_short_flag(NcmConfigurationOptions *options,
                                          char c);
 static bool configuration_looks_like_option(char *arg, int32 arg_len);
-static bool configuration_parse_short_option(CommandLineOptions *options,
+static bool configuration_parse_short_option(NcmConfigurationOptions *options,
                                              int32 argc, char **argv,
                                              int32 *i, NcmError *error);
-static bool configuration_parse_long_option(CommandLineOptions *options,
+static bool configuration_parse_long_option(NcmConfigurationOptions *options,
                                             int32 argc, char **argv,
                                             int32 *i, NcmError *error);
-static bool configuration_parse_command_line(CommandLineOptions *options,
-                                             int32 argc, char **argv,
-                                             NcmError *error);
 static void configuration_print_usage(char *program,
-                                      CommandLineOptions *options);
+                                      NcmConfigurationOptions *options);
 static void configuration_print_version(void);
 static bool configuration_make_string_views(NcmStringViewArray *views,
                                             NcmBufferArray *buffers);
-static bool configuration_read_settings(CommandLineOptions *options,
+static bool configuration_read_settings(NcmConfigurationOptions *options,
                                         NcmError *error);
 static bool configuration_create_directories(NcmError *error);
 static bool configuration_apply_mpd_environment(NcmError *error);
-static bool configuration_apply_mpd_command_line(CommandLineOptions *options,
-                                                 NcmError *error);
-static bool configuration_apply_screen_options(CommandLineOptions *options,
+static bool configuration_apply_mpd_command_line(
+    NcmConfigurationOptions *options, NcmError *error);
+static bool configuration_apply_screen_options(NcmConfigurationOptions *options,
                                                NcmError *error);
+static bool configuration_print_current_song(NcmConfigurationOptions *options,
+                                             NcmError *error);
+static bool configuration_test_lyrics_fetchers(NcmError *error);
 static void configuration_print_error(char *context, NcmError *error);
 
-static void
-command_line_options_init(CommandLineOptions *options) {
+void
+ncm_configuration_options_init(NcmConfigurationOptions *options) {
     ncm_buffer_init(&options->host);
     ncm_buffer_init(&options->current_song_format);
     ncm_buffer_init(&options->screen_name);
@@ -146,8 +126,8 @@ command_line_options_init(CommandLineOptions *options) {
     return;
 }
 
-static void
-command_line_options_destroy(CommandLineOptions *options) {
+void
+ncm_configuration_options_destroy(NcmConfigurationOptions *options) {
     ncm_buffer_destroy(&options->host);
     ncm_buffer_destroy(&options->current_song_format);
     ncm_buffer_destroy(&options->screen_name);
@@ -412,7 +392,7 @@ configuration_is_value_short_option(char c) {
 }
 
 static bool
-configuration_set_short_flag(CommandLineOptions *options, char c) {
+configuration_set_short_flag(NcmConfigurationOptions *options, char c) {
     switch (c) {
     case '?':
         options->help = true;
@@ -436,7 +416,7 @@ configuration_looks_like_option(char *arg, int32 arg_len) {
 }
 
 static bool
-configuration_parse_short_option(CommandLineOptions *options,
+configuration_parse_short_option(NcmConfigurationOptions *options,
                                  int32 argc, char **argv, int32 *i,
                                  NcmError *error) {
     char *arg;
@@ -521,7 +501,7 @@ configuration_parse_short_option(CommandLineOptions *options,
 }
 
 static bool
-configuration_parse_long_option(CommandLineOptions *options,
+configuration_parse_long_option(NcmConfigurationOptions *options,
                                 int32 argc, char **argv, int32 *i,
                                 NcmError *error) {
     char *arg;
@@ -646,8 +626,8 @@ configuration_parse_long_option(CommandLineOptions *options,
     return true;
 }
 
-static bool
-configuration_parse_command_line(CommandLineOptions *options,
+bool
+ncm_configuration_options_parse(NcmConfigurationOptions *options,
                                  int32 argc, char **argv,
                                  NcmError *error) {
     for (int32 i = 1; i < argc; i += 1) {
@@ -730,7 +710,7 @@ configuration_parse_command_line(CommandLineOptions *options,
 }
 
 static void
-configuration_print_usage(char *program, CommandLineOptions *options) {
+configuration_print_usage(char *program, NcmConfigurationOptions *options) {
     printf("Usage: %s [options]...\n", program);
     printf("Options:\n");
     printf("  -h, --host HOST              connect to server at host\n");
@@ -819,7 +799,7 @@ configuration_make_string_views(NcmStringViewArray *views,
 }
 
 static bool
-configuration_read_settings(CommandLineOptions *options, NcmError *error) {
+configuration_read_settings(NcmConfigurationOptions *options, NcmError *error) {
     NcmStringViewArray config_views;
     bool result;
 
@@ -896,7 +876,7 @@ configuration_apply_mpd_environment(NcmError *error) {
 }
 
 static bool
-configuration_apply_mpd_command_line(CommandLineOptions *options,
+configuration_apply_mpd_command_line(NcmConfigurationOptions *options,
                                      NcmError *error) {
     if (options->host_provided) {
         if (!ncm_mpd_client_set_hostname(&global_mpd, options->host.data,
@@ -916,7 +896,7 @@ configuration_apply_mpd_command_line(CommandLineOptions *options,
 }
 
 static bool
-configuration_apply_screen_options(CommandLineOptions *options,
+configuration_apply_screen_options(NcmConfigurationOptions *options,
                                    NcmError *error) {
     if (options->screen) {
         if (!screen_type_parse_startup(options->screen_name.data,
@@ -939,6 +919,144 @@ configuration_apply_screen_options(CommandLineOptions *options,
     return true;
 }
 
+bool
+ncm_configuration_options_apply(NcmConfigurationOptions *options,
+                                NcmError *error) {
+    return configuration_read_settings(options, error)
+           && configuration_create_directories(error)
+           && configuration_apply_mpd_environment(error)
+           && configuration_apply_mpd_command_line(options, error)
+           && configuration_apply_screen_options(options, error);
+}
+
+static bool
+configuration_print_current_song(NcmConfigurationOptions *options,
+                                 NcmError *error) {
+    NcmSong song;
+    NcmFormatAst format;
+    NcmBuffer output;
+    bool result;
+
+    ncm_song_init(&song);
+    ncm_format_ast_init(&format);
+    ncm_buffer_init(&output);
+
+    result = ncm_mpd_client_connect(&global_mpd, error)
+             && ncm_mpd_client_get_current_song(&global_mpd, &song,
+                                                error);
+    if (result && !ncm_song_empty(&song)) {
+        result = ncm_format_parse(&format,
+                                  options->current_song_format.data,
+                                  options->current_song_format.len,
+                                  NCM_FORMAT_FLAG_TAG, error);
+        if (result) {
+            output = ncm_format_render_string(&format, &song);
+            if (output.len > 0) {
+                fwrite(output.data, 1, (size_t)output.len, stdout);
+            }
+        }
+    }
+
+    ncm_buffer_destroy(&output);
+    ncm_format_ast_destroy(&format);
+    ncm_song_destroy(&song);
+    ncm_mpd_client_disconnect(&global_mpd);
+    return result;
+}
+
+typedef struct ConfigurationLyricsFetcherTest {
+    char *name;
+    char *artist;
+    char *title;
+    int32 name_len;
+    int32 artist_len;
+    int32 title_len;
+} ConfigurationLyricsFetcherTest;
+
+static bool
+configuration_test_lyrics_fetchers(NcmError *error) {
+    ConfigurationLyricsFetcherTest tests[] = {
+        {
+            .name = (char *)"justsomelyrics",
+            .artist = (char *)"rihanna",
+            .title = (char *)"umbrella",
+            .name_len = STRLIT_LEN("justsomelyrics"),
+            .artist_len = STRLIT_LEN("rihanna"),
+            .title_len = STRLIT_LEN("umbrella"),
+        },
+        {
+            .name = (char *)"jahlyrics",
+            .artist = (char *)"sean kingston",
+            .title = (char *)"dry your eyes",
+            .name_len = STRLIT_LEN("jahlyrics"),
+            .artist_len = STRLIT_LEN("sean kingston"),
+            .title_len = STRLIT_LEN("dry your eyes"),
+        },
+        {
+            .name = (char *)"plyrics",
+            .artist = (char *)"rihanna",
+            .title = (char *)"umbrella",
+            .name_len = STRLIT_LEN("plyrics"),
+            .artist_len = STRLIT_LEN("rihanna"),
+            .title_len = STRLIT_LEN("umbrella"),
+        },
+        {
+            .name = (char *)"tekstowo",
+            .artist = (char *)"rihanna",
+            .title = (char *)"umbrella",
+            .name_len = STRLIT_LEN("tekstowo"),
+            .artist_len = STRLIT_LEN("rihanna"),
+            .title_len = STRLIT_LEN("umbrella"),
+        },
+        {
+            .name = (char *)"zeneszoveg",
+            .artist = (char *)"rihanna",
+            .title = (char *)"umbrella",
+            .name_len = STRLIT_LEN("zeneszoveg"),
+            .artist_len = STRLIT_LEN("rihanna"),
+            .title_len = STRLIT_LEN("umbrella"),
+        },
+    };
+    bool ok;
+
+    ok = true;
+    for (int32 i = 0; i < NCM_ARRAY_LEN(tests); i += 1) {
+        NcmLyricsFetcherDef fetcher;
+        NcmLyricsResult result;
+
+        ncm_lyrics_fetcher_def_init(&fetcher);
+        ncm_lyrics_result_init(&result);
+        if (!ncm_lyrics_fetcher_def_set_name(&fetcher, tests[i].name,
+                                             tests[i].name_len)) {
+            ncm_error_set(error, EINVAL,
+                          STRLIT_ARGS("unknown lyrics fetcher"));
+            ok = false;
+        }
+        if (ok) {
+            printf("%-20.*s : ",
+                   ncm_lyrics_fetcher_name_len(&fetcher),
+                   ncm_lyrics_fetcher_name(&fetcher));
+            fflush(stdout);
+            (void)ncm_lyrics_fetcher_fetch(&fetcher, &result,
+                                            tests[i].artist,
+                                            tests[i].artist_len,
+                                            tests[i].title,
+                                            tests[i].title_len, NULL);
+            if (result.success) {
+                printf("ok\n");
+            } else {
+                printf("failed\n");
+            }
+        }
+        ncm_lyrics_result_destroy(&result);
+        ncm_lyrics_fetcher_def_destroy(&fetcher);
+        if (!ok) {
+            break;
+        }
+    }
+    return ok;
+}
+
 static void
 configuration_print_error(char *context, NcmError *error) {
     if ((error != NULL) && (error->message[0] != '\0')) {
@@ -951,52 +1069,58 @@ configuration_print_error(char *context, NcmError *error) {
 
 bool
 configure(int32 argc, char **argv) {
-    CommandLineOptions options;
+    NcmConfigurationOptions options;
     NcmError error;
     bool result;
 
     ncm_error_clear(&error);
-    command_line_options_init(&options);
-    if (!configuration_parse_command_line(&options, argc, argv, &error)) {
+    ncm_configuration_options_init(&options);
+    if (!ncm_configuration_options_parse(&options, argc, argv, &error)) {
         configuration_print_error("Error while processing configuration",
                                   &error);
-        command_line_options_destroy(&options);
+        ncm_configuration_options_destroy(&options);
         exit(EXIT_FAILURE);
     }
 
     if (options.help) {
         configuration_print_usage(argv[0], &options);
-        command_line_options_destroy(&options);
+        ncm_configuration_options_destroy(&options);
         return false;
     }
     if (options.version) {
         configuration_print_version();
-        command_line_options_destroy(&options);
+        ncm_configuration_options_destroy(&options);
         return false;
     }
     if (options.test_lyrics_fetchers) {
-        fprintf(stderr, "lyrics fetcher tests are not converted to C yet\n");
-        command_line_options_destroy(&options);
-        exit(EXIT_FAILURE);
-    }
-    if (options.current_song) {
-        fprintf(stderr, "current-song output is not converted to C yet\n");
-        command_line_options_destroy(&options);
-        exit(EXIT_FAILURE);
+        result = configuration_test_lyrics_fetchers(&error);
+        ncm_configuration_options_destroy(&options);
+        if (!result) {
+            configuration_print_error("Error while testing lyrics fetchers",
+                                      &error);
+            exit(EXIT_FAILURE);
+        }
+        exit(EXIT_SUCCESS);
     }
 
-    result = configuration_read_settings(&options, &error)
-             && configuration_create_directories(&error)
-             && configuration_apply_mpd_environment(&error)
-             && configuration_apply_mpd_command_line(&options, &error)
-             && configuration_apply_screen_options(&options, &error);
+    result = ncm_configuration_options_apply(&options, &error);
+    if (result && options.current_song) {
+        result = configuration_print_current_song(&options, &error);
+        ncm_configuration_options_destroy(&options);
+        if (!result) {
+            configuration_print_error("Error while printing current song",
+                                      &error);
+            exit(EXIT_FAILURE);
+        }
+        return false;
+    }
     if (!result) {
         configuration_print_error("Error while processing configuration",
                                   &error);
-        command_line_options_destroy(&options);
+        ncm_configuration_options_destroy(&options);
         exit(EXIT_FAILURE);
     }
 
-    command_line_options_destroy(&options);
+    ncm_configuration_options_destroy(&options);
     return true;
 }
