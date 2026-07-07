@@ -26,6 +26,7 @@
 #include "ui_state_legacy.h"
 #include "helpers.h"
 #include "mpdpp.h"
+#include "ncm_playlist_legacy.h"
 #include "screens/playlist.h"
 #include "screens/sel_items_adder.h"
 #include "settings_legacy.h"

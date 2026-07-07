@@ -70,8 +70,8 @@ public:
 		return m_cmp(a, b) < 0;
 	}
 
-	bool operator()(const NcmPlaylist &a, const NcmPlaylist &b) const {
-		return m_cmp(ncm_playlist_cpp_path(a), ncm_playlist_cpp_path(b)) < 0;
+	bool operator()(const MPD::Playlist &a, const MPD::Playlist &b) const {
+		return m_cmp(a.path(), b.path()) < 0;
 	}
 
 	bool operator()(const MPD::Song &a, const MPD::Song &b) const {

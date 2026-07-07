@@ -181,6 +181,12 @@ ncm_action_name_equals(char *left, int32 left_len, char *right) {
     return memcmp(left, right, (size_t)left_len) == 0;
 }
 
+static void
+ncm_action_error(NcmError *error, char *message, int32 message_len) {
+    ncm_error_set(error, 1, message, message_len);
+    return;
+}
+
 int32
 ncm_action_count(void) {
     return NCM_ARRAY_LEN(action_defs);
@@ -192,23 +198,123 @@ ncm_action_table(void) {
 }
 
 NcmActionDef *
-ncm_action_get(enum NcmActionType type) {
-    for (int32 i = 0; i < NCM_ARRAY_LEN(action_defs); i += 1) {
-        if (action_defs[i].type == type) {
-            return action_defs + i;
+ncm_action_table_get(NcmActionDef *defs, int32 defs_len,
+                     enum NcmActionType type) {
+    if (defs == NULL) {
+        return NULL;
+    }
+
+    for (int32 i = 0; i < defs_len; i += 1) {
+        if (defs[i].type == type) {
+            return defs + i;
         }
     }
-    return 0;
+    return NULL;
+}
+
+NcmActionDef *
+ncm_action_table_find(NcmActionDef *defs, int32 defs_len,
+                      char *name, int32 name_len) {
+    if ((defs == NULL) || (name == NULL) || (name_len <= 0)) {
+        return NULL;
+    }
+
+    for (int32 i = 0; i < defs_len; i += 1) {
+        if ((defs[i].name != NULL)
+            && ncm_action_name_equals(name, name_len, defs[i].name)) {
+            return defs + i;
+        }
+    }
+    return NULL;
+}
+
+bool
+ncm_action_table_validate(NcmActionDef *defs, int32 defs_len,
+                          NcmError *error) {
+    if (defs == NULL) {
+        ncm_action_error(error, STRLIT_ARGS("missing action table"));
+        return false;
+    }
+    if (defs_len <= 0) {
+        ncm_action_error(error, STRLIT_ARGS("empty action table"));
+        return false;
+    }
+
+    for (int32 i = 0; i < defs_len; i += 1) {
+        if (defs[i].name == NULL) {
+            ncm_action_error(error, STRLIT_ARGS("action without name"));
+            return false;
+        }
+        if ((defs[i].type < 0) || (defs[i].type >= NCM_ACTION_LAST)) {
+            ncm_action_error(error, STRLIT_ARGS("invalid action type"));
+            return false;
+        }
+        if (defs[i].can_run == NULL) {
+            ncm_action_error(error, STRLIT_ARGS("action without can_run"));
+            return false;
+        }
+        if (defs[i].run == NULL) {
+            ncm_action_error(error, STRLIT_ARGS("action without run"));
+            return false;
+        }
+
+        for (int32 j = i + 1; j < defs_len; j += 1) {
+            if (defs[i].type == defs[j].type) {
+                ncm_action_error(error,
+                                 STRLIT_ARGS("duplicate action type"));
+                return false;
+            }
+            if ((defs[j].name != NULL)
+                && ncm_action_name_equals(defs[i].name,
+                                          ncm_action_name_len(defs[i].name),
+                                          defs[j].name)) {
+                ncm_action_error(error,
+                                 STRLIT_ARGS("duplicate action name"));
+                return false;
+            }
+        }
+    }
+
+    ncm_error_clear(error);
+    return true;
+}
+
+bool
+ncm_action_validate(NcmError *error) {
+    bool seen[NCM_ACTION_LAST] = {0};
+
+    if (!ncm_action_table_validate(action_defs, NCM_ARRAY_LEN(action_defs),
+                                   error)) {
+        return false;
+    }
+    if (NCM_ARRAY_LEN(action_defs) != NCM_ACTION_LAST) {
+        ncm_action_error(error, STRLIT_ARGS("incomplete action table"));
+        return false;
+    }
+
+    for (int32 i = 0; i < NCM_ARRAY_LEN(action_defs); i += 1) {
+        seen[action_defs[i].type] = true;
+    }
+    for (int32 i = 0; i < NCM_ACTION_LAST; i += 1) {
+        if (!seen[i]) {
+            ncm_action_error(error, STRLIT_ARGS("missing action type"));
+            return false;
+        }
+    }
+
+    ncm_error_clear(error);
+    return true;
+}
+
+NcmActionDef *
+ncm_action_get(enum NcmActionType type) {
+    return ncm_action_table_get(action_defs, NCM_ARRAY_LEN(action_defs), type);
 }
 
 NcmActionDef *
 ncm_action_find(char *name, int32 name_len) {
-    for (int32 i = 0; i < NCM_ARRAY_LEN(action_defs); i += 1) {
-        if (ncm_action_name_equals(name, name_len, action_defs[i].name)) {
-            return action_defs + i;
-        }
-    }
-    return 0;
+    return ncm_action_table_find(action_defs, NCM_ARRAY_LEN(action_defs), name,
+                                 name_len);
 }
 
 char *
@@ -216,7 +322,7 @@ ncm_action_type_name(enum NcmActionType type) {
     NcmActionDef *action;
 
     action = ncm_action_get(type);
-    if (action == 0) {
+    if (action == NULL) {
         return (char *)"";
     }
     return action->name;
@@ -227,8 +333,12 @@ ncm_action_type_parse(char *name, int32 name_len,
                       enum NcmActionType *type) {
     NcmActionDef *action;
 
+    if (type == NULL) {
+        return false;
+    }
+
     action = ncm_action_find(name, name_len);
-    if (action == 0) {
+    if (action == NULL) {
         return false;
     }
     *type = action->type;
@@ -236,23 +346,49 @@ ncm_action_type_parse(char *name, int32 name_len,
 }
 
 bool
-ncm_action_can_run(enum NcmActionType type, void *user) {
-    NcmActionDef *action;
-
-    action = ncm_action_get(type);
-    if ((action == 0) || (action->can_run == 0)) {
+ncm_action_def_can_run(NcmActionDef *action, void *user) {
+    if ((action == NULL) || (action->can_run == NULL)) {
         return false;
     }
     return action->can_run(user);
 }
 
 bool
-ncm_action_run(enum NcmActionType type, void *user) {
-    NcmActionDef *action;
-
-    action = ncm_action_get(type);
-    if ((action == 0) || (action->run == 0)) {
+ncm_action_def_run(NcmActionDef *action, void *user) {
+    if ((action == NULL) || (action->run == NULL)) {
+        return false;
+    }
+    if (!ncm_action_def_can_run(action, user)) {
         return false;
     }
     return action->run(user);
+}
+
+bool
+ncm_action_set_callbacks(enum NcmActionType type,
+                         NcmActionCanRunFn can_run,
+                         NcmActionRunFn run) {
+    NcmActionDef *action;
+
+    action = ncm_action_get(type);
+    if (action == NULL) {
+        return false;
+    }
+    if (can_run != NULL) {
+        action->can_run = can_run;
+    }
+    if (run != NULL) {
+        action->run = run;
+    }
+    return true;
+}
+
+bool
+ncm_action_can_run(enum NcmActionType type, void *user) {
+    return ncm_action_def_can_run(ncm_action_get(type), user);
+}
+
+bool
+ncm_action_run(enum NcmActionType type, void *user) {
+    return ncm_action_def_run(ncm_action_get(type), user);
 }

@@ -459,3 +459,33 @@ Rules:
   C++ screen runtime is migrated.
 - `bindings.h` now consumes action types from `actions.h`; it no longer owns
   the action enum or action-name table.
+
+Action runtime lookup migration:
+- Use ncm_action_get(), ncm_action_find(), ncm_action_type_parse(),
+  ncm_action_can_run(), and ncm_action_run() for C action lookup and dispatch.
+- Use ncm_action_table_validate() on generated or hand-built action tables to
+  reject duplicate action names or duplicate action enum values.
+- The temporary C++ action bridge must call Actions::runtimeAction() and must
+  not call Actions::get(), Actions::get_(), or perform std::string action-name
+  scans.
+
+C model header cleanup
+======================
+
+Keep src/c/*.h headers as C contracts only.
+
+    NcmPlaylist C++ constructors/operators -> MPD::Playlist wrapper or
+                                             explicit ncm_playlist_* calls
+    ncm_playlist_cpp_path() in src/c       -> src/ncm_playlist_legacy.h
+                                             during the mixed C++ phase
+    NcmMpdItem C++ constructors/operators  -> explicit ncm_mpd_item_init(),
+                                             ncm_mpd_item_copy(),
+                                             ncm_mpd_item_move(), and
+                                             ncm_mpd_item_destroy()
+
+Rules:
+    - Do not add constructors, destructors, overloaded operators, `std::`,
+      `throw`, `noexcept`, or other C++ API surface to src/c/*.h.
+    - Use `NCM_EXTERN_C_BEGIN` and `NCM_EXTERN_C_END` for C ABI linkage when a
+      C header must still be included by temporary C++ migration code.
+    - Use C++ wrapper types outside src/c/ for remaining mixed-runtime code.

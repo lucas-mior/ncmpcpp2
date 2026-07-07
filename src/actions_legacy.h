@@ -23,6 +23,7 @@
 
 #include <map>
 #include <string>
+#include "actions.h"
 #include "c/ncm_time.h"
 #include "curses/window.h"
 #include "interfaces.h"
@@ -171,7 +172,7 @@ void setResizeFlags();
 void resizeScreen(bool reload_main_window);
 void setWindowsDimensions();
 
-void confirmAction(const std::string &description);
+bool confirmAction(const std::string &description);
 
 bool isMPDMusicDirSet();
 
@@ -212,10 +213,10 @@ private:
 	Type m_type;
 };
 
-BaseAction &get(Type at);
-
-std::shared_ptr<BaseAction> get_(Type at);
-std::shared_ptr<BaseAction> get_(const std::string &name);
+BaseAction *runtimeAction(enum NcmActionType type);
+BaseAction *runtimeActionByName(char *name, int32 name_len);
+bool canRun(enum NcmActionType type);
+bool execute(enum NcmActionType type);
 
 struct Dummy: BaseAction
 {
