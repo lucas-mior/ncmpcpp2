@@ -52,12 +52,12 @@
 - ~~Convert src/helpers.cpp to src/helpers.c.~~
 - ~~Replace helper templates with concrete typed functions.~~
 - ~~Replace song iterator helpers with concrete C iteration helpers over NcmSongList, NcmMpdSongList, and menu selections.~~
-- Convert src/statusbar.h to C.
-- Convert src/statusbar.cpp to src/statusbar.c.
-- Convert src/title.h to C.
-- Convert src/title.cpp to src/title.c.
-- Convert src/status.h to C.
-- Convert src/status.cpp to src/status.c.
+- ~~Convert src/statusbar.h to C.~~
+- ~~Convert src/statusbar.cpp to src/statusbar.c.~~
+- ~~Convert src/title.h to C.~~
+- ~~Convert src/title.cpp to src/title.c.~~
+- ~~Convert src/status.h to C.~~
+- ~~Convert src/status.cpp to src/status.c.~~
 - Replace all screen_legacy.h calls in status handling with app_controller_* and NcScreen calls.
 - Replace all ui_state_legacy.h calls with ui_state.h.
 - Delete src/ui_state_legacy.h.

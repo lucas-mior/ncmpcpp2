@@ -31,13 +31,13 @@
 #include "screens/playlist.h"
 #include "screens/screen_switcher.h"
 #include "song.h"
-#include "status.h"
-#include "statusbar.h"
+#include "status_legacy.h"
+#include "statusbar_legacy.h"
 #include "format_impl.h"
 #include "helpers/song_iterator_maker.h"
 #include "utility/comparators.h"
 #include "utility/functional.h"
-#include "title.h"
+#include "title_legacy.h"
 
 
 namespace ph = std::placeholders;

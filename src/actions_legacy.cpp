@@ -39,7 +39,8 @@
 #include "screens/screen_legacy.h"
 #include "mpdpp.h"
 #include "helpers_legacy.h"
-#include "statusbar.h"
+#include "statusbar_legacy.h"
+#include "status_legacy.h"
 #include "utility/comparators.h"
 #include "utility/conversion.h"
 #include "utility/scoped_value.h"
@@ -63,7 +64,7 @@
 #include "screens/tag_editor.h"
 #include "screens/tiny_tag_editor.h"
 #include "screens/visualizer.h"
-#include "title.h"
+#include "title_legacy.h"
 #include "tags.h"
 
 #ifdef HAVE_TAGLIB_H

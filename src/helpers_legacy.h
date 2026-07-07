@@ -29,7 +29,7 @@
 #include "screens/screen.h"
 #include "settings_legacy.h"
 #include "song_list.h"
-#include "status.h"
+#include "status_legacy.h"
 #include "utility/string.h"
 #include "utility/utf8.h"
 

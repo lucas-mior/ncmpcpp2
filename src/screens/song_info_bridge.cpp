@@ -31,7 +31,7 @@
 #include "screens/screen_legacy.h"
 #include "screens/song_info.h"
 #include "settings_legacy.h"
-#include "title.h"
+#include "title_legacy.h"
 
 #if defined(HAVE_TAGLIB_H)
 # include "c/ncm_taglib.h"
