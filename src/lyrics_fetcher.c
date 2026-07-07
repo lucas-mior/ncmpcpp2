@@ -537,6 +537,11 @@ lyrics_name_to_type(char *name, int32 name_len,
         *type = NCM_LYRICS_FETCHER_PLYRICS;
         return true;
     }
+    if (ncm_string_equal(name, name_len, STRLIT_ARGS("azlyrics"))
+        || ncm_string_equal(name, name_len, STRLIT_ARGS("azlyrics.com"))) {
+        *type = NCM_LYRICS_FETCHER_AZLYRICS;
+        return true;
+    }
     if (ncm_string_equal(name, name_len, STRLIT_ARGS("tekstowo"))
         || ncm_string_equal(name, name_len, STRLIT_ARGS("tekstowo.pl"))) {
         *type = NCM_LYRICS_FETCHER_TEKSTOWO;
@@ -571,6 +576,9 @@ lyrics_type_name(enum NcmLyricsFetcherType type, int32 *len) {
     case NCM_LYRICS_FETCHER_PLYRICS:
         *len = STRLIT_LEN("plyrics.com");
         return (char *)"plyrics.com";
+    case NCM_LYRICS_FETCHER_AZLYRICS:
+        *len = STRLIT_LEN("azlyrics.com");
+        return (char *)"azlyrics.com";
     case NCM_LYRICS_FETCHER_TEKSTOWO:
         *len = STRLIT_LEN("tekstowo.pl");
         return (char *)"tekstowo.pl";
@@ -601,6 +609,9 @@ lyrics_type_site(enum NcmLyricsFetcherType type, int32 *len) {
     case NCM_LYRICS_FETCHER_PLYRICS:
         *len = STRLIT_LEN("plyrics.com");
         return (char *)"plyrics.com";
+    case NCM_LYRICS_FETCHER_AZLYRICS:
+        *len = STRLIT_LEN("azlyrics.com");
+        return (char *)"azlyrics.com";
     case NCM_LYRICS_FETCHER_TEKSTOWO:
         *len = STRLIT_LEN("tekstowo.pl");
         return (char *)"tekstowo.pl";
@@ -625,6 +636,9 @@ lyrics_type_regex(enum NcmLyricsFetcherType type, int32 *len) {
     case NCM_LYRICS_FETCHER_PLYRICS:
         *len = STRLIT_LEN("start of lyrics");
         return (char *)"start of lyrics";
+    case NCM_LYRICS_FETCHER_AZLYRICS:
+        *len = STRLIT_LEN("Usage of azlyrics.com");
+        return (char *)"Usage of azlyrics.com";
     case NCM_LYRICS_FETCHER_TEKSTOWO:
         *len = STRLIT_LEN("inner-text");
         return (char *)"inner-text";
@@ -642,6 +656,7 @@ lyrics_type_is_google(enum NcmLyricsFetcherType type) {
     return (type == NCM_LYRICS_FETCHER_JUSTSOMELYRICS)
            || (type == NCM_LYRICS_FETCHER_JAHLYRICS)
            || (type == NCM_LYRICS_FETCHER_PLYRICS)
+           || (type == NCM_LYRICS_FETCHER_AZLYRICS)
            || (type == NCM_LYRICS_FETCHER_TEKSTOWO)
            || (type == NCM_LYRICS_FETCHER_ZENESZOVEG)
            || (type == NCM_LYRICS_FETCHER_INTERNET);
@@ -801,6 +816,12 @@ lyrics_extract_content(NcmLyricsFetcherDef *fetcher, NcmBuffer *out,
         lyrics_extract_between(out, data, data_len,
                                STRLIT_ARGS("<!-- start of lyrics -->"),
                                STRLIT_ARGS("<!-- end of lyrics -->"));
+        break;
+    case NCM_LYRICS_FETCHER_AZLYRICS:
+        lyrics_extract_after_until(out, data, data_len,
+                                   STRLIT_ARGS("Usage of azlyrics.com"),
+                                   STRLIT_ARGS("-->"),
+                                   STRLIT_ARGS("</div>"));
         break;
     case NCM_LYRICS_FETCHER_TEKSTOWO:
         lyrics_extract_between(out, data, data_len,
