@@ -69,10 +69,16 @@ static void command_line_options_init(CommandLineOptions *options);
 static void command_line_options_destroy(CommandLineOptions *options);
 static bool command_line_options_append_path(NcmBufferArray *paths,
                                              char *path, int32 path_len);
-static bool configuration_default_path(NcmBufferArray *paths,
-                                       char *filename,
-                                       int32 filename_len,
-                                       NcmError *error);
+static bool configuration_append_buffer_path(NcmBufferArray *paths,
+                                             NcmBuffer *path);
+static bool configuration_append_default_file(NcmBufferArray *paths,
+                                              char *filename,
+                                              int32 filename_len,
+                                              NcmError *error);
+static bool configuration_append_legacy_file(NcmBufferArray *paths,
+                                             char *filename,
+                                             int32 filename_len,
+                                             NcmError *error);
 static bool configuration_copy_string(NcmBuffer *buffer, char *string,
                                       int32 string_len);
 static bool configuration_expand_buffer(NcmBuffer *buffer, NcmError *error);
@@ -165,19 +171,96 @@ command_line_options_append_path(NcmBufferArray *paths, char *path,
 }
 
 static bool
-configuration_default_path(NcmBufferArray *paths, char *filename,
-                           int32 filename_len, NcmError *error) {
-    NcmBuffer base;
+configuration_append_buffer_path(NcmBufferArray *paths, NcmBuffer *path) {
+    return command_line_options_append_path(paths, path->data, path->len);
+}
+
+static bool
+configuration_append_default_file(NcmBufferArray *paths, char *filename,
+                                  int32 filename_len, NcmError *error) {
+    NcmBuffer directory;
+    NcmBuffer path;
     bool result;
 
-    ncm_buffer_init(&base);
-    result = ncm_fs_user_config_dir(&base, STRLIT_ARGS("ncmpcpp"), error);
-    if (result) {
-        ncm_fs_join(&base, base.data, base.len, filename, filename_len);
-        result = command_line_options_append_path(paths, base.data,
-                                                  base.len);
+    ncm_buffer_init(&directory);
+    ncm_buffer_init(&path);
+
+    result = ncm_fs_user_config_dir(&directory, STRLIT_ARGS("ncmpcpp"),
+                                    error);
+    if (result && !ncm_fs_exists(directory.data, directory.len)) {
+        result = ncm_fs_mkdir_all(directory.data, directory.len, error);
     }
-    ncm_buffer_destroy(&base);
+    if (result) {
+        result = ncm_fs_join(&path, directory.data, directory.len,
+                             filename, filename_len);
+    }
+    if (result) {
+        result = configuration_append_buffer_path(paths, &path);
+    }
+
+    ncm_buffer_destroy(&path);
+    ncm_buffer_destroy(&directory);
+    return result;
+}
+
+static bool
+configuration_append_legacy_file(NcmBufferArray *paths, char *filename,
+                                 int32 filename_len, NcmError *error) {
+    NcmBuffer directory;
+    NcmBuffer path;
+    bool result;
+
+    ncm_buffer_init(&directory);
+    ncm_buffer_init(&path);
+
+    ncm_buffer_append(&directory, STRLIT_ARGS("~/.ncmpcpp"));
+    result = configuration_expand_buffer(&directory, error);
+    if (result && !ncm_fs_exists(directory.data, directory.len)) {
+        ncm_buffer_destroy(&path);
+        ncm_buffer_destroy(&directory);
+        ncm_error_clear(error);
+        return true;
+    }
+    if (result) {
+        result = ncm_fs_join(&path, directory.data, directory.len,
+                             filename, filename_len);
+    }
+    if (result && ncm_fs_exists(path.data, path.len)) {
+        result = configuration_append_buffer_path(paths, &path);
+    }
+
+    ncm_buffer_destroy(&path);
+    ncm_buffer_destroy(&directory);
+    return result;
+}
+
+bool
+configuration_discover_default_paths(NcmBufferArray *config_paths,
+                                     NcmBufferArray *bindings_paths,
+                                     NcmError *error) {
+    bool result;
+
+    if ((config_paths == NULL) || (bindings_paths == NULL)) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing default path output"));
+        return false;
+    }
+
+    result = configuration_append_default_file(config_paths,
+                                               STRLIT_ARGS("config"),
+                                               error);
+    result = result
+             && configuration_append_legacy_file(config_paths,
+                                                 STRLIT_ARGS("config"),
+                                                 error);
+    result = result
+             && configuration_append_default_file(bindings_paths,
+                                                 STRLIT_ARGS("bindings"),
+                                                 error);
+    result = result
+             && configuration_append_legacy_file(bindings_paths,
+                                                 STRLIT_ARGS("bindings"),
+                                                 error);
     return result;
 }
 
@@ -608,21 +691,40 @@ configuration_parse_command_line(CommandLineOptions *options,
         }
     }
 
-    if (options->config_paths.len == 0) {
-        if (!configuration_default_path(&options->config_paths,
-                                        STRLIT_ARGS("config"), error)) {
+    if ((options->config_paths.len == 0)
+        || (options->bindings_paths.len == 0)) {
+        NcmBufferArray default_config_paths;
+        NcmBufferArray default_bindings_paths;
+
+        ncm_buffer_array_init(&default_config_paths);
+        ncm_buffer_array_init(&default_bindings_paths);
+        if (!configuration_discover_default_paths(&default_config_paths,
+                                                  &default_bindings_paths,
+                                                  error)) {
+            ncm_buffer_array_destroy(&default_config_paths);
+            ncm_buffer_array_destroy(&default_bindings_paths);
             return false;
         }
-        command_line_options_append_path(&options->config_paths,
-                                         STRLIT_ARGS("~/.ncmpcpp/config"));
-    }
-    if (options->bindings_paths.len == 0) {
-        if (!configuration_default_path(&options->bindings_paths,
-                                        STRLIT_ARGS("bindings"), error)) {
-            return false;
+        if (options->config_paths.len == 0) {
+            for (int32 j = 0; j < default_config_paths.len; j += 1) {
+                NcmBuffer *path;
+
+                path = &default_config_paths.items[j];
+                command_line_options_append_path(&options->config_paths,
+                                                 path->data, path->len);
+            }
         }
-        command_line_options_append_path(&options->bindings_paths,
-                                         STRLIT_ARGS("~/.ncmpcpp/bindings"));
+        if (options->bindings_paths.len == 0) {
+            for (int32 j = 0; j < default_bindings_paths.len; j += 1) {
+                NcmBuffer *path;
+
+                path = &default_bindings_paths.items[j];
+                command_line_options_append_path(&options->bindings_paths,
+                                                 path->data, path->len);
+            }
+        }
+        ncm_buffer_array_destroy(&default_config_paths);
+        ncm_buffer_array_destroy(&default_bindings_paths);
     }
     return true;
 }
@@ -736,11 +838,13 @@ configuration_read_settings(CommandLineOptions *options, NcmError *error) {
 
     configuration_clear(&Config);
     result = configuration_read(&Config, &config_views,
-                                options->ignore_config_errors);
+                                options->ignore_config_errors, error);
     ncm_string_view_array_destroy(&config_views);
     if (!result) {
-        ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("failed to read configuration"));
+        if (!ncm_error_is_set(error)) {
+            ncm_error_set(error, EINVAL,
+                          STRLIT_ARGS("failed to read configuration"));
+        }
         return false;
     }
     return true;
@@ -748,12 +852,15 @@ configuration_read_settings(CommandLineOptions *options, NcmError *error) {
 
 static bool
 configuration_create_directories(NcmError *error) {
-    if (!ncm_fs_mkdir_all(Config.ncmpcpp_directory,
-                          Config.ncmpcpp_directory_len, error)) {
+    if (!ncm_fs_exists(Config.ncmpcpp_directory,
+                       Config.ncmpcpp_directory_len)
+        && !ncm_fs_mkdir_all(Config.ncmpcpp_directory,
+                             Config.ncmpcpp_directory_len, error)) {
         return false;
     }
-    if (!ncm_fs_mkdir_all(Config.lyrics_directory,
-                          Config.lyrics_directory_len, error)) {
+    if (!ncm_fs_exists(Config.lyrics_directory, Config.lyrics_directory_len)
+        && !ncm_fs_mkdir_all(Config.lyrics_directory,
+                             Config.lyrics_directory_len, error)) {
         return false;
     }
     return true;
