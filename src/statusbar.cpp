@@ -209,7 +209,7 @@ char Statusbar::Helpers::promptReturnOneOf(const std::vector<char> &values)
 	do
 	{
 		ui_state_legacy_footer_window()->refresh();
-		result = ui_state_legacy_footer_window()->readKey();
+		result = ncm_read_key(ui_state_legacy_footer_window()->nativeWindow());
 		if (result == NC_KEY_CTRL_C || result == NC_KEY_CTRL_G)
 			throw NC::PromptAborted();
 	}

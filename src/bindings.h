@@ -193,6 +193,9 @@ typedef struct NcmBindingSlice {
     int32 len;
 } NcmBindingSlice;
 
+typedef bool (*NcmBindingActionRunner)(NcmBindingAction *action,
+                                       void *user);
+
 typedef struct NcmBindingsConfiguration {
     NcmCommand *commands;
     NcmKeyBindings *keys;
@@ -216,6 +219,8 @@ bool ncm_binding_append_action(NcmBinding *binding,
                                NcmBindingAction *action);
 bool ncm_binding_copy(NcmBinding *dest, NcmBinding *source);
 bool ncm_binding_is_single(NcmBinding *binding);
+bool ncm_binding_execute(NcmBinding *binding,
+                         NcmBindingActionRunner runner, void *user);
 
 void ncm_command_init(NcmCommand *command);
 void ncm_command_destroy(NcmCommand *command);
@@ -244,6 +249,8 @@ char *ncm_action_type_name(enum NcmActionType type);
 bool ncm_action_type_parse(char *name, int32 name_len,
                            enum NcmActionType *type);
 NcKey ncm_bindings_string_to_key(char *string, int32 string_len);
+void ncm_bindings_format_key(NcmBuffer *buffer, NcKey key);
+NcKey ncm_read_key(NcWindow *window);
 NcKey ncm_bindings_read_key(NcWindow *window);
 int32 ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len);
 

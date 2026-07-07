@@ -430,3 +430,19 @@ Rules:
     - Keep bindings_legacy.h/.cpp only while the C++ Actions runtime still owns
       action execution.
     - Do not add new std::unordered_map or std::vector storage to bindings.
+
+Bindings input and key formatting
+=================================
+
+Use the C bindings helpers for keyboard input and key display text.
+
+    std::wstring keyToWString(key) -> ncm_bindings_format_key(buffer, key)
+    readKey(NC::Window &)          -> ncm_read_key(NcWindow *)
+
+Rules:
+    - Build key display names in NcmBuffer.
+    - Keep ncm_bindings_key_name() only as a fixed-size-buffer adapter.
+    - Execute typed binding chains through ncm_binding_execute() once the
+      caller supplies the action runner callback.
+    - Existing C++ runtime code should pass window.nativeWindow() directly to
+      ncm_read_key() until NC::Window is removed.

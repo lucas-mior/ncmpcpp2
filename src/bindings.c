@@ -446,6 +446,22 @@ ncm_binding_is_single(NcmBinding *binding) {
     return binding->actions_len == 1;
 }
 
+bool
+ncm_binding_execute(NcmBinding *binding,
+                    NcmBindingActionRunner runner, void *user) {
+    if (runner == NULL) {
+        return false;
+    }
+
+    for (int32 i = 0; i < binding->actions_len; i += 1) {
+        if (!runner(binding->actions + i, user)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void
 ncm_command_init(NcmCommand *command) {
     command->name = NULL;
@@ -658,8 +674,22 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
     return result;
 }
 
+void
+ncm_bindings_format_key(NcmBuffer *buffer, NcKey key) {
+    char name[64];
+    int32 name_len;
+
+    name_len = nc_key_name(key, name, (int32)SIZEOF(name));
+    if (name_len < 0) {
+        return;
+    }
+
+    ncm_buffer_append(buffer, name, name_len);
+    return;
+}
+
 NcKey
-ncm_bindings_read_key(NcWindow *window) {
+ncm_read_key(NcWindow *window) {
     NcKey result;
     NcmBuffer tmp;
     bool alt_pressed;
@@ -701,9 +731,33 @@ ncm_bindings_read_key(NcWindow *window) {
     return result;
 }
 
+NcKey
+ncm_bindings_read_key(NcWindow *window) {
+    return ncm_read_key(window);
+}
+
 int32
 ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len) {
-    return nc_key_name(key, buffer, buffer_len);
+    NcmBuffer key_name;
+    int32 result;
+
+    if ((buffer == NULL) || (buffer_len <= 0)) {
+        return -1;
+    }
+
+    ncm_buffer_init(&key_name);
+    ncm_bindings_format_key(&key_name, key);
+    if (key_name.len >= buffer_len) {
+        result = -1;
+    } else {
+        result = key_name.len;
+        if (key_name.len > 0) {
+            ncm_memcpy(buffer, key_name.data, key_name.len);
+        }
+        buffer[key_name.len] = '\0';
+    }
+    ncm_buffer_destroy(&key_name);
+    return result;
 }
 
 static bool
