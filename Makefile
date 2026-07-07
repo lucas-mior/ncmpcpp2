@@ -9,6 +9,7 @@ MANDIR ?= $(PREFIX)/share/man
 DESTDIR ?=
 
 PKG_CONFIG ?= pkg-config
+PYTHON ?= python3
 CC ?= cc
 CXX ?= c++
 AR ?= ar
@@ -47,6 +48,7 @@ BINARY := $(BUILD_DIR)/ncmpcpp
 CBASE_LIB := $(BUILD_DIR)/libcbase.a
 NCMPCPP_C_LIB := $(BUILD_DIR)/libncmpcpp_c.a
 NCMPCPP_APP_C_LIB := $(BUILD_DIR)/libncmpcpp_app_c.a
+NO_CXX_SCAN := tools/no-cxx-scan.py
 
 CBASE_SRCS := cbase/cbase.c
 NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
@@ -290,40 +292,7 @@ prune-autotools:
 	done < '$(AUTOTOOLS_PRUNE_LIST)'
 
 no-cxx:
-	@status=0; \
-	source_files=$$(find src extras -type f \
-		\( -name '*.c' -o -name '*.h' -o -name '*.cpp' \
-		-o -name '*.cc' -o -name '*.cxx' -o -name '*.hpp' \
-		-o -name '*.hh' -o -name '*.hxx' \) | sort); \
-	cxx_files=$$(find src extras -type f \
-		\( -name '*.cpp' -o -name '*.cc' -o -name '*.cxx' \
-		-o -name '*.hpp' -o -name '*.hh' -o -name '*.hxx' \) \
-		| sort); \
-	if test -n "$$cxx_files"; then \
-		printf '%s\n' 'C++ source files remain:' >&2; \
-		printf '%s\n' "$$cxx_files" >&2; \
-		status=1; \
-	fi; \
-	if test -n "$$source_files"; then \
-		std_include_pattern='^[[:space:]]*#[[:space:]]*include[[:space:]]*<(algorithm|array|atomic|bit|bitset|cassert|cctype|cerrno|cfenv|cfloat|charconv|chrono|cinttypes|climits|clocale|cmath|codecvt|compare|complex|concepts|condition_variable|csetjmp|csignal|cstdarg|cstddef|cstdint|cstdio|cstdlib|cstring|ctime|cwchar|cwctype|deque|exception|execution|filesystem|format|forward_list|fstream|functional|future|initializer_list|iomanip|ios|iosfwd|iostream|istream|iterator|limits|list|locale|map|memory|mutex|new|numbers|numeric|optional|ostream|queue|random|ranges|ratio|regex|scoped_allocator|set|shared_mutex|span|sstream|stack|stdexcept|streambuf|string|string_view|strstream|syncstream|system_error|thread|tuple|type_traits|typeindex|typeinfo|unordered_map|unordered_set|utility|valarray|variant|vector)>'; \
-		std_includes=$$(grep -nE "$$std_include_pattern" $$source_files || true); \
-		if test -n "$$std_includes"; then \
-			printf '%s\n' 'C++ standard library includes remain:' >&2; \
-			printf '%s\n' "$$std_includes" >&2; \
-			status=1; \
-		fi; \
-		token_pattern='(^|[^[:alnum:]_])(namespace|class|template|virtual|override|try|catch|throw|new|delete)([^[:alnum:]_]|$$)|std::'; \
-		tokens=$$(grep -nE "$$token_pattern" $$source_files || true); \
-		if test -n "$$tokens"; then \
-			printf '%s\n' 'C++ constructs remain:' >&2; \
-			printf '%s\n' "$$tokens" >&2; \
-			status=1; \
-		fi; \
-	fi; \
-	if test "$$status" -eq 0; then \
-		printf '%s\n' 'No C++ sources or banned C++ constructs remain.'; \
-	fi; \
-	exit "$$status"
+	@$(PYTHON) $(NO_CXX_SCAN) src extras
 
 help:
 	@printf '%s\n' 'usage: make [all|check|install|clean|prune-autotools|cxx-report|cxx-count|no-cxx|help]'
@@ -332,6 +301,7 @@ help:
 	@printf '%s\n' ''
 	@printf '%s\n' 'Common variables:'
 	@printf '%s\n' '  CC, CXX, AR        compiler and archive commands'
+	@printf '%s\n' '  PYTHON             Python command for migration checks'
 	@printf '%s\n' '  CFLAGS, CXXFLAGS   extra compiler flags'
 	@printf '%s\n' '  CPPFLAGS, LDFLAGS  extra preprocessor and linker flags'
 	@printf '%s\n' '  LDLIBS             extra libraries, default: -lm'
