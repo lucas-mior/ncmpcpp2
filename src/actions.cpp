@@ -22,14 +22,13 @@
 #include <cerrno>
 #include <chrono>
 #include <cstring>
-#include <cstdlib>
 #include <filesystem>
 #include <algorithm>
 #include <iostream>
 #include <regex>
 #include <string>
 
-#include "actions_legacy.h"
+#include "actions.h"
 #include "charset.h"
 #include "config.h"
 #include "display.h"
@@ -38,15 +37,14 @@
 #include "ui_state.h"
 #include "screens/screen_legacy.h"
 #include "mpdpp.h"
-#include "helpers_legacy.h"
-#include "statusbar_legacy.h"
-#include "status_legacy.h"
+#include "helpers.h"
+#include "statusbar.h"
 #include "utility/comparators.h"
 #include "utility/conversion.h"
 #include "utility/scoped_value.h"
 
 #include "curses/menu_impl.h"
-#include "bindings_legacy.h"
+#include "bindings.h"
 #include "screens/browser.h"
 #include "screens/native_c_screens.h"
 #include "screens/media_library.h"
@@ -64,7 +62,7 @@
 #include "screens/tag_editor.h"
 #include "screens/tiny_tag_editor.h"
 #include "screens/visualizer.h"
-#include "title_legacy.h"
+#include "title.h"
 #include "tags.h"
 
 #ifdef HAVE_TAGLIB_H
@@ -92,9 +90,9 @@ char *itemTypeName(MPD::Item::Type type)
 	return ncm_item_type_name(NCM_ITEM_UNKNOWN);
 }
 
-std::string storedPlaylistPath(const MPD::Playlist &playlist)
+std::string storedPlaylistPath(const NcmPlaylist &playlist)
 {
-	return playlist.path();
+	return ncm_playlist_cpp_path(playlist);
 }
 
 std::string currentStoredPlaylistPath()
@@ -307,20 +305,16 @@ void setWindowsDimensions()
 	FooterHeight = Config.statusbar_visibility ? 2 : 1;
 }
 
-bool confirmAction(const std::string &description)
+void confirmAction(const std::string &description)
 {
 	Statusbar::ScopedLock slock;
 	Statusbar::put() << description
-	<< " [" << NC_FORMAT_BOLD << 'y' << NC_FORMAT_NO_BOLD
-	<< '/' << NC_FORMAT_BOLD << 'n' << NC_FORMAT_NO_BOLD
+	<< " [" << NC::Format::Bold << 'y' << NC::Format::NoBold
+	<< '/' << NC::Format::Bold << 'n' << NC::Format::NoBold
 	<< "] ";
 	char answer = Statusbar::Helpers::promptReturnOneOf({'y', 'n'});
 	if (answer == 'n')
-	{
-		Statusbar::print("Action cancelled");
-		return false;
-	}
-	return true;
+		throw NC::PromptAborted(std::string(1, answer));
 }
 
 bool isMPDMusicDirSet()
@@ -333,50 +327,34 @@ bool isMPDMusicDirSet()
 	return true;
 }
 
-BaseAction *runtimeAction(enum NcmActionType type)
+BaseAction &get(Actions::Type at)
 {
-	NcmActionDef *definition = ncm_action_get(type);
-	if (definition == nullptr)
-	{
-		Statusbar::printf("Unknown action type: %1%", static_cast<int>(type));
-		return nullptr;
-	}
-
 	if (AvailableActions.empty())
 		populateActions();
+	return *AvailableActions.at(static_cast<size_t>(at));
+}
 
-	auto index = static_cast<size_t>(type);
-	if (index >= AvailableActions.size() || AvailableActions[index] == nullptr)
+std::shared_ptr<BaseAction> get_(Actions::Type at)
+{
+	if (AvailableActions.empty())
+		populateActions();
+	return AvailableActions.at(static_cast<size_t>(at));
+}
+
+std::shared_ptr<BaseAction> get_(const std::string &name)
+{
+	std::shared_ptr<BaseAction> result;
+	if (AvailableActions.empty())
+		populateActions();
+	for (const auto &action : AvailableActions)
 	{
-		std::cerr << "fatal: action not implemented: "
-		          << definition->name << std::endl;
-		std::exit(EXIT_FAILURE);
+		if (action->name() == name)
+		{
+			result = action;
+			break;
+		}
 	}
-
-	return AvailableActions[index].get();
-}
-
-BaseAction *runtimeActionByName(char *name, int32 name_len)
-{
-	NcmActionDef *definition = ncm_action_find(name, name_len);
-	if (definition == nullptr)
-	{
-		Statusbar::printf("Unknown action: %1%", std::string(name, name_len));
-		return nullptr;
-	}
-	return runtimeAction(definition->type);
-}
-
-bool canRun(enum NcmActionType type)
-{
-	BaseAction *action = runtimeAction(type);
-	return action != nullptr && action->canBeRun();
-}
-
-bool execute(enum NcmActionType type)
-{
-	BaseAction *action = runtimeAction(type);
-	return action != nullptr && action->execute();
+	return result;
 }
 
 UpdateEnvironment::UpdateEnvironment()
@@ -457,9 +435,9 @@ void MouseEvent::run()
 	) // volume
 	{
 		if (m_mouse_event.bstate & BUTTON5_PRESSED)
-			Actions::execute(NCM_ACTION_VOLUME_DOWN);
+			get(Type::VolumeDown).execute();
 		else
-			Actions::execute(NCM_ACTION_VOLUME_UP);
+			get(Type::VolumeUp).execute();
 	}
 	else if (m_mouse_event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED | BUTTON4_PRESSED | BUTTON5_PRESSED))
 		app_controller_mouse_button_pressed_current(m_mouse_event);
@@ -784,8 +762,7 @@ void DeleteBrowserItems::run()
 			Utf8::shorten(get_name(item), COLS-const_strlen(msg)-5)
 		);
 	}
-	if (!confirmAction(question))
-		return;
+	confirmAction(question);
 
 	auto items = getSelectedOrCurrent(
 		myBrowser->main().begin(),
@@ -826,8 +803,7 @@ void DeleteStoredPlaylist::run()
 			Utf8::shorten(currentStoredPlaylistPath(),
 			            COLS-const_strlen(msg)-10));
 	}
-	if (!confirmAction(question))
-		return;
+	confirmAction(question);
 
 	auto list = getSelectedOrCurrent(
 		myPlaylistEditor->Playlists.begin(),
@@ -891,19 +867,15 @@ void SavePlaylist::run()
 	{
 		if (e.code() == MPD_SERVER_ERROR_EXIST)
 		{
-			if (!confirmAction(
+			confirmAction(
 				stringFormat("Playlist \"%1%\" already exists, overwrite?", playlist_name)
-			))
-				return;
+			);
 			Mpd.DeletePlaylist(playlist_name);
 			Mpd.SavePlaylist(playlist_name);
 			Statusbar::print("Playlist overwritten");
 		}
 		else
-		{
-			Statusbar::printf("Error while saving playlist: %1%", e.what());
-			return;
-		}
+			throw;
 	}
 }
 
@@ -926,15 +898,15 @@ void ExecuteCommand::run()
 		NC::Window::ScopedPromptHook helper(*static_cast<NC::Window *>(ui_state_footer_window()),
 			Statusbar::Helpers::TryExecuteImmediateCommand()
 		);
-		Statusbar::put() << NC_FORMAT_BOLD << ":" << NC_FORMAT_NO_BOLD;
+		Statusbar::put() << NC::Format::Bold << ":" << NC::Format::NoBold;
 		cmd_name = static_cast<NC::Window *>(ui_state_footer_window())->prompt();
 	}
 
-	auto cmd = bindings_legacy_find_command(cmd_name);
+	auto cmd = Bindings.findCommand(cmd_name);
 	if (cmd)
 	{
 		Statusbar::printf(1, "Executing %1%...", cmd_name);
-		bool res = bindings_legacy_execute(&cmd->binding);
+		bool res = cmd->binding().execute();
 		Statusbar::printf("Execution of command \"%1%\" %2%.",
 			cmd_name, res ? "successful" : "unsuccessful"
 		);
@@ -1077,8 +1049,7 @@ void Add::run()
 
 	// confirm when one wants to add the whole database
 	if (path.empty())
-		if (!confirmAction("Are you sure you want to add the whole database?"))
-			return;
+		confirmAction("Are you sure you want to add the whole database?");
 
 	Statusbar::put() << "Adding...";
 	static_cast<NC::Window *>(ui_state_footer_window())->refresh();
@@ -1096,10 +1067,7 @@ void Add::run()
 			if (err.code() == MPD_SERVER_ERROR_NO_EXIST)
 				Mpd.LoadPlaylist(path);
 			else
-			{
-				Statusbar::printf("Error while adding item: %1%", err.what());
-				return;
-			}
+				throw;
 		}
 	}
 }
@@ -1347,8 +1315,7 @@ bool Shuffle::canBeRun()
 void Shuffle::run()
 {
 	if (Config.ask_before_shuffling_playlists)
-		if (!confirmAction("Do you really want to shuffle selected range?"))
-			return;
+		confirmAction("Do you really want to shuffle selected range?");
 	auto begin = myPlaylist->main().begin();
 	Mpd.ShuffleRange(m_begin-begin, m_end-begin);
 	Statusbar::print("Range shuffled");
@@ -1508,7 +1475,7 @@ void EditLibraryTag::run()
 	std::string new_tag;
 	{
 		Statusbar::ScopedLock slock;
-		Statusbar::put() << NC_FORMAT_BOLD << ncm_tag_type_name(Config.media_lib_primary_tag) << NC_FORMAT_NO_BOLD << ": ";
+		Statusbar::put() << NC::Format::Bold << ncm_tag_type_name(Config.media_lib_primary_tag) << NC::Format::NoBold << ": ";
 		new_tag = static_cast<NC::Window *>(ui_state_footer_window())->prompt(myLibrary->Tags.current()->value().tag());
 	}
 	if (!new_tag.empty() && new_tag != myLibrary->Tags.current()->value().tag())
@@ -1566,7 +1533,7 @@ void EditLibraryAlbum::run()
 	std::string new_album;
 	{
 		Statusbar::ScopedLock slock;
-		Statusbar::put() << NC_FORMAT_BOLD << "Album: " << NC_FORMAT_NO_BOLD;
+		Statusbar::put() << NC::Format::Bold << "Album: " << NC::Format::NoBold;
 		new_album = static_cast<NC::Window *>(ui_state_footer_window())->prompt(myLibrary->Albums.current()->value().entry().album());
 	}
 	if (!new_album.empty() && new_album != myLibrary->Albums.current()->value().entry().album())
@@ -1629,7 +1596,7 @@ void EditDirectoryName::run()
 		std::string new_dir;
 		{
 			Statusbar::ScopedLock slock;
-			Statusbar::put() << NC_FORMAT_BOLD << "Directory: " << NC_FORMAT_NO_BOLD;
+			Statusbar::put() << NC::Format::Bold << "Directory: " << NC::Format::NoBold;
 			new_dir = static_cast<NC::Window *>(ui_state_footer_window())->prompt(old_dir);
 		}
 		if (!new_dir.empty() && new_dir != old_dir)
@@ -1656,7 +1623,7 @@ void EditDirectoryName::run()
 		std::string old_dir = myTagEditor->Dirs->current()->value().first, new_dir;
 		{
 			Statusbar::ScopedLock slock;
-			Statusbar::put() << NC_FORMAT_BOLD << "Directory: " << NC_FORMAT_NO_BOLD;
+			Statusbar::put() << NC::Format::Bold << "Directory: " << NC::Format::NoBold;
 			new_dir = static_cast<NC::Window *>(ui_state_footer_window())->prompt(old_dir);
 		}
 		if (!new_dir.empty() && new_dir != old_dir)
@@ -1697,7 +1664,7 @@ void EditPlaylistName::run()
 		old_name = myBrowser->main().current()->value().playlist().path();
 	{
 		Statusbar::ScopedLock slock;
-		Statusbar::put() << NC_FORMAT_BOLD << "Playlist: " << NC_FORMAT_NO_BOLD;
+		Statusbar::put() << NC::Format::Bold << "Playlist: " << NC::Format::NoBold;
 		new_name = static_cast<NC::Window *>(ui_state_footer_window())->prompt(old_name);
 	}
 	if (!new_name.empty() && new_name != old_name)
@@ -1749,7 +1716,7 @@ bool JumpToPlaylistEditor::canBeRun()
 void JumpToPlaylistEditor::run()
 {
 	myPlaylistEditor->locatePlaylist(
-		myBrowser->main().current()->value().playlist());
+		*myBrowser->main().current()->value().playlist().cPlaylist());
 }
 
 void ToggleScreenLock::run()
@@ -1963,7 +1930,7 @@ bool SelectFoundItems::canBeRun()
 void SelectFoundItems::run()
 {
 	auto current_pos = m_list->choice();
-	screenLegacyCurrent()->activeWindow()->scroll(NC_SCROLL_HOME);
+	screenLegacyCurrent()->activeWindow()->scroll(NC::Scroll::Home);
 	bool found = m_searchable->search(NCM_SEARCH_DIRECTION_FORWARD, false, false);
 	if (found)
 	{
@@ -1993,8 +1960,7 @@ void CropMainPlaylist::run()
 	if (w.size() <= 1)
 		return;
 	if (Config.ask_before_clearing_playlists)
-		if (!confirmAction("Do you really want to crop main playlist?"))
-			return;
+		confirmAction("Do you really want to crop main playlist?");
 	Statusbar::print("Cropping playlist...");
 	selectCurrentIfNoneSelected(w);
 	reverseSelectionHelper(w.begin(), w.end());
@@ -2015,10 +1981,8 @@ void CropPlaylist::run()
 		return;
 	assert(!myPlaylistEditor->Playlists.empty());
 	std::string playlist = currentStoredPlaylistPath();
-	if (Config.ask_before_clearing_playlists
-	    && !confirmAction(stringFormat("Do you really want to crop playlist \"%1%\"?",
-	                                  playlist)))
-		return;
+	if (Config.ask_before_clearing_playlists)
+		confirmAction(stringFormat("Do you really want to crop playlist \"%1%\"?", playlist));
 	selectCurrentIfNoneSelected(w);
 	Statusbar::printf("Cropping playlist \"%1%\"...", playlist);
 	cropPlaylist(w, [playlist](auto &, unsigned pos) { Mpd.PlaylistDelete(playlist, pos); });
@@ -2028,8 +1992,7 @@ void CropPlaylist::run()
 void ClearMainPlaylist::run()
 {
 	if (!myPlaylist->main().empty() && Config.ask_before_clearing_playlists)
-		if (!confirmAction("Do you really want to clear main playlist?"))
-			return;
+		confirmAction("Do you really want to clear main playlist?");
 	Mpd.ClearMainPlaylist();
 	Statusbar::print("Playlist cleared");
 	myPlaylist->main().reset();
@@ -2045,10 +2008,8 @@ void ClearPlaylist::run()
 	if (myPlaylistEditor->Playlists.empty())
 		return;
 	std::string playlist = currentStoredPlaylistPath();
-	if (Config.ask_before_clearing_playlists
-	    && !confirmAction(stringFormat("Do you really want to clear playlist \"%1%\"?",
-	                                  playlist)))
-		return;
+	if (Config.ask_before_clearing_playlists)
+		confirmAction(stringFormat("Do you really want to clear playlist \"%1%\"?", playlist));
 	Mpd.ClearPlaylist(playlist);
 	Statusbar::printf("Playlist \"%1%\" cleared", playlist);
 }
@@ -2118,8 +2079,7 @@ void ApplyFilter::run()
 	catch (NC::PromptAborted &)
 	{
 		m_filterable->applyFilter(filter);
-		Statusbar::print("Action cancelled");
-		return;
+		throw;
 	}
 
 	if (filter.empty())
@@ -2153,7 +2113,7 @@ void Find::run()
 	Statusbar::print("Searching...");
 	auto s = static_cast<Screen<NC::Scrollpad> *>(screenLegacyCurrent());
 	s->main().removeProperties();
-	if (token.empty() || s->main().setProperties(NC_FORMAT_REVERSE, token, NC_FORMAT_NO_REVERSE, Config.regex_type))
+	if (token.empty() || s->main().setProperties(NC::Format::Reverse, token, NC::Format::NoReverse, Config.regex_type))
 		Statusbar::print("Done");
 	else
 		Statusbar::print("No matching patterns found");
@@ -2225,9 +2185,9 @@ void ToggleReplayGainMode::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Replay gain mode? "
-		<< "[" << NC_FORMAT_BOLD << 'o' << NC_FORMAT_NO_BOLD << "ff"
-		<< "/" << NC_FORMAT_BOLD << 't' << NC_FORMAT_NO_BOLD << "rack"
-		<< "/" << NC_FORMAT_BOLD << 'a' << NC_FORMAT_NO_BOLD << "lbum"
+		<< "[" << NC::Format::Bold << 'o' << NC::Format::NoBold << "ff"
+		<< "/" << NC::Format::Bold << 't' << NC::Format::NoBold << "rack"
+		<< "/" << NC::Format::Bold << 'a' << NC::Format::NoBold << "lbum"
 		<< "] ";
 		rgm = Statusbar::Helpers::promptReturnOneOf({'t', 'a', 'o'});
 	}
@@ -2243,9 +2203,9 @@ void ToggleReplayGainMode::run()
 			Mpd.SetReplayGainMode(MPD::rgmOff);
 			break;
 		default: // impossible
-			Statusbar::printf("Internal error: invalid replay gain mode: %1%",
-			                  rgm);
-			return;
+			throw std::runtime_error(
+				stringFormat("ToggleReplayGainMode: impossible case reached: %1%", rgm)
+			);
 	}
 	Statusbar::printf("Replay gain mode: %1%", Mpd.GetReplayGainMode());
 }
@@ -2271,9 +2231,9 @@ void ToggleMouse::run()
 {
 	Config.mouse_support = !Config.mouse_support;
 	if (Config.mouse_support)
-		nc_mouse_enable();
+		NC::Mouse::enable();
 	else
-		nc_mouse_disable();
+		NC::Mouse::disable();
 	Statusbar::printf("Mouse support %1%",
 		Config.mouse_support ? "enabled" : "disabled"
 	);
@@ -2293,10 +2253,10 @@ void AddRandomItems::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Add random? "
-		<< "[" << NC_FORMAT_BOLD << 's' << NC_FORMAT_NO_BOLD << "ongs"
-		<< "/" << NC_FORMAT_BOLD << 'a' << NC_FORMAT_NO_BOLD << "rtists"
-		<< "/" << "album" << NC_FORMAT_BOLD << 'A' << NC_FORMAT_NO_BOLD << "rtists"
-		<< "/" << "al" << NC_FORMAT_BOLD << 'b' << NC_FORMAT_NO_BOLD << "ums"
+		<< "[" << NC::Format::Bold << 's' << NC::Format::NoBold << "ongs"
+		<< "/" << NC::Format::Bold << 'a' << NC::Format::NoBold << "rtists"
+		<< "/" << "album" << NC::Format::Bold << 'A' << NC::Format::NoBold << "rtists"
+		<< "/" << "al" << NC::Format::Bold << 'b' << NC::Format::NoBold << "ums"
 		<< "] ";
 		rnd_type = Statusbar::Helpers::promptReturnOneOf({'s', 'a', 'A', 'b'});
 	}
@@ -2382,12 +2342,12 @@ void ToggleLibraryTagType::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Tag type? "
-		<< "[" << NC_FORMAT_BOLD << 'a' << NC_FORMAT_NO_BOLD << "rtist"
-		<< "/" << "album" << NC_FORMAT_BOLD << 'A' << NC_FORMAT_NO_BOLD << "rtist"
-		<< "/" << NC_FORMAT_BOLD << 'y' << NC_FORMAT_NO_BOLD << "ear"
-		<< "/" << NC_FORMAT_BOLD << 'g' << NC_FORMAT_NO_BOLD << "enre"
-		<< "/" << NC_FORMAT_BOLD << 'c' << NC_FORMAT_NO_BOLD << "omposer"
-		<< "/" << NC_FORMAT_BOLD << 'p' << NC_FORMAT_NO_BOLD << "erformer"
+		<< "[" << NC::Format::Bold << 'a' << NC::Format::NoBold << "rtist"
+		<< "/" << "album" << NC::Format::Bold << 'A' << NC::Format::NoBold << "rtist"
+		<< "/" << NC::Format::Bold << 'y' << NC::Format::NoBold << "ear"
+		<< "/" << NC::Format::Bold << 'g' << NC::Format::NoBold << "enre"
+		<< "/" << NC::Format::Bold << 'c' << NC::Format::NoBold << "omposer"
+		<< "/" << NC::Format::Bold << 'p' << NC::Format::NoBold << "erformer"
 		<< "] ";
 		tag_type = Statusbar::Helpers::promptReturnOneOf({'a', 'A', 'y', 'g', 'c', 'p'});
 	}
@@ -2546,7 +2506,7 @@ void ShowArtistInfo::run()
 
 	if (!artist.empty())
 	{
-		myLastfm->queueArtistInfo(artist, Config.lastfm_preferred_language);
+		myLastfm->queueJob(new LastFm::ArtistInfo(artist, Config.lastfm_preferred_language));
 		if (!isVisible(myLastfm))
 			myLastfm->switchTo();
 	}
@@ -2936,24 +2896,11 @@ void populateActions()
 	insert_action(new Actions::ShowOutputs());
 	insert_action(new Actions::ShowVisualizer());
 	insert_action(new Actions::ShowServerInfo());
-	NcmError action_error;
-	ncm_error_clear(&action_error);
-	if (!ncm_action_validate(&action_error))
+	for (size_t i = 0; i < AvailableActions.size(); ++i)
 	{
-		std::cerr << "fatal: invalid action table: "
-		          << action_error.message << std::endl;
-		std::exit(EXIT_FAILURE);
-	}
-
-	for (int32 i = 0; i < NCM_ACTION_LAST; i += 1)
-	{
-		if (AvailableActions[static_cast<size_t>(i)] == nullptr)
-		{
-			std::cerr << "fatal: undefined action: "
-			          << ncm_action_type_name(static_cast<NcmActionType>(i))
-			          << std::endl;
-			std::exit(EXIT_FAILURE);
-		}
+		if (AvailableActions[i] == nullptr)
+			throw std::logic_error("undefined action at position "
+			                       + std::to_string(i));
 	}
 }
 
@@ -3023,14 +2970,29 @@ void seek(SearchDirection sd)
 	// can be run and one of them is of the given type. This will still not work
 	// in some contrived cases, but allows for more flexibility than accepting
 	// single actions only.
-	auto hasRunnableAction = [](NcmBindingSlice bindings,
+	auto hasRunnableAction = [](BindingsConfiguration::BindingIteratorPair &bindings,
 	                            Actions::Type type) {
-		for (int32 i = 0; i < bindings.len; i += 1)
+		bool success = false;
+		for (auto binding = bindings.first; binding != bindings.second; ++binding)
 		{
-			if (bindings_legacy_has_runnable_action(bindings.data + i, type))
-				return true;
+			auto &actions = binding->actions();
+			for (const auto &action : actions)
+			{
+				if (action->canBeRun())
+				{
+					if (action->type() == type)
+						success = true;
+				}
+				else
+				{
+					success = false;
+					break;
+				}
+			}
+			if (success)
+				break;
 		}
-		return false;
+		return success;
 	};
 
 	global_seeking_in_progress = true;
@@ -3043,7 +3005,7 @@ void seek(SearchDirection sd)
 		                 ? static_cast<unsigned>(elapsed_seconds/2)+Config.seek_time
 		                 : Config.seek_time;
 
-		NcKey input = ncm_read_key(static_cast<NC::Window *>(ui_state_footer_window())->nativeWindow());
+		NC::Key::Type input = readKey(*static_cast<NC::Window *>(ui_state_footer_window()));
 
 		switch (sd)
 		{
@@ -3071,12 +3033,12 @@ void seek(SearchDirection sd)
 				if (Config.display_remaining_time)
 				{
 					tracklength += "-";
-					tracklength += showSongTime(Status::State::totalTime()-songpos);
+					tracklength += MPD::Song::ShowTime(Status::State::totalTime()-songpos);
 				}
 				else
-					tracklength += showSongTime(songpos);
+					tracklength += MPD::Song::ShowTime(songpos);
 				tracklength += "/";
-				tracklength += showSongTime(Status::State::totalTime());
+				tracklength += MPD::Song::ShowTime(Status::State::totalTime());
 				tracklength += "]";
 				*static_cast<NC::Window *>(ui_state_footer_window()) << NC::XY(static_cast<NC::Window *>(ui_state_footer_window())->getWidth()-tracklength.length(), 1)
 				         << Config.statusbar_time_color
@@ -3087,12 +3049,12 @@ void seek(SearchDirection sd)
 				if (Config.display_remaining_time)
 				{
 					tracklength = "-";
-					tracklength += showSongTime(Status::State::totalTime()-songpos);
+					tracklength += MPD::Song::ShowTime(Status::State::totalTime()-songpos);
 				}
 				else
-					tracklength = showSongTime(songpos);
+					tracklength = MPD::Song::ShowTime(songpos);
 				tracklength += "/";
-				tracklength += showSongTime(Status::State::totalTime());
+				tracklength += MPD::Song::ShowTime(Status::State::totalTime());
 				*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(0, 0)
 				         << Config.statusbar_time_color
 				         << tracklength
@@ -3104,7 +3066,7 @@ void seek(SearchDirection sd)
 		Progressbar::draw(songpos, Status::State::totalTime());
 		static_cast<NC::Window *>(ui_state_footer_window())->refresh();
 
-		auto k = bindings_legacy_get(input);
+		auto k = Bindings.get(input);
 		if (hasRunnableAction(k, Actions::Type::SeekBackward))
 			sd = NCM_SEARCH_DIRECTION_BACKWARD;
 		else if (hasRunnableAction(k, Actions::Type::SeekForward))
@@ -3138,8 +3100,7 @@ void findItem(const SearchDirection direction)
 	{
 		w->setSearchConstraint(constraint);
 		w->search(direction, Config.wrapped_search, false);
-		Statusbar::print("Action cancelled");
-		return;
+		throw;
 	}
 
 	if (constraint.empty())

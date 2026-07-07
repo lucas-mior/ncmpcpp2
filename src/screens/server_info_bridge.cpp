@@ -27,7 +27,7 @@
 #include "curses/formatted_color.h"
 #include "app_controller.h"
 #include "global.h"
-#include "ui_state_legacy.h"
+#include "ui_state.h"
 #include "helpers_legacy.h"
 #include "screens/server_info.h"
 #include "screens/screen_switcher.h"
@@ -112,8 +112,8 @@ ServerInfo::ServerInfo()
                                makeHooks(),
                                COLS,
                                LINES,
-                               ui_state_legacy_main_start_y(),
-                               ui_state_legacy_main_height(),
+                               static_cast<size_t>(ui_state_main_start_y()),
+                               static_cast<size_t>(ui_state_main_height()),
                                NC::toNcColor(Config.main_color),
                                toNcBorder(Config.window_border));
 
@@ -306,8 +306,8 @@ void ServerInfo::setDimensions()
     nc_server_info_screen_set_dimensions(&m_screen,
                                          COLS,
                                          LINES,
-                                         ui_state_legacy_main_start_y(),
-                                         ui_state_legacy_main_height());
+                                         static_cast<size_t>(ui_state_main_start_y()),
+                                         static_cast<size_t>(ui_state_main_height()));
 }
 
 NcServerInfoHooks ServerInfo::makeHooks()

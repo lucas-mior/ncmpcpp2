@@ -26,7 +26,7 @@
 #include "display.h"
 #include "helpers_legacy.h"
 #include "global.h"
-#include "ui_state_legacy.h"
+#include "ui_state.h"
 #include "curses/menu_impl.h"
 #include "mpdpp.h"
 #include "screens/playlist.h"
@@ -190,7 +190,7 @@ MediaLibrary::MediaLibrary()
 	itsRightColStartX = itsMiddleColStartX+itsMiddleColWidth+1;
 	itsRightColWidth = COLS-itsLeftColWidth-itsMiddleColWidth-2;
 	
-	Tags = NC::Menu<PrimaryTag>(0, ui_state_legacy_main_start_y(), itsLeftColWidth, ui_state_legacy_main_height(), Config.titles_visibility ? std::string(ncm_tag_type_name(Config.media_lib_primary_tag)) + "s" : "", Config.main_color, NC::Border());
+	Tags = NC::Menu<PrimaryTag>(0, static_cast<size_t>(ui_state_main_start_y()), itsLeftColWidth, static_cast<size_t>(ui_state_main_height()), Config.titles_visibility ? std::string(ncm_tag_type_name(Config.media_lib_primary_tag)) + "s" : "", Config.main_color, NC::Border());
 	setHighlightFixes(Tags);
 	Tags.cyclicScrolling(Config.use_cyclic_scrolling);
 	Tags.centeredCursor(Config.centered_cursor);
@@ -204,7 +204,7 @@ MediaLibrary::MediaLibrary()
 			menu << Charset::utf8ToLocale(tag);
 	});
 	
-	Albums = NC::Menu<AlbumEntry>(itsMiddleColStartX, ui_state_legacy_main_start_y(), itsMiddleColWidth, ui_state_legacy_main_height(), Config.titles_visibility ? "Albums" : "", Config.main_color, NC::Border());
+	Albums = NC::Menu<AlbumEntry>(itsMiddleColStartX, static_cast<size_t>(ui_state_main_start_y()), itsMiddleColWidth, static_cast<size_t>(ui_state_main_height()), Config.titles_visibility ? "Albums" : "", Config.main_color, NC::Border());
 	setHighlightInactiveColumnFixes(Albums);
 	Albums.cyclicScrolling(Config.use_cyclic_scrolling);
 	Albums.centeredCursor(Config.centered_cursor);
@@ -214,7 +214,7 @@ MediaLibrary::MediaLibrary()
 		menu << Charset::utf8ToLocale(AlbumToString(menu.drawn()->value()));
 	});
 	
-	Songs = NC::Menu<MPD::Song>(itsRightColStartX, ui_state_legacy_main_start_y(), itsRightColWidth, ui_state_legacy_main_height(), Config.titles_visibility ? "Songs" : "", Config.main_color, NC::Border());
+	Songs = NC::Menu<MPD::Song>(itsRightColStartX, static_cast<size_t>(ui_state_main_start_y()), itsRightColWidth, static_cast<size_t>(ui_state_main_height()), Config.titles_visibility ? "Songs" : "", Config.main_color, NC::Border());
 	setHighlightInactiveColumnFixes(Songs);
 	Songs.cyclicScrolling(Config.use_cyclic_scrolling);
 	Songs.centeredCursor(Config.centered_cursor);
@@ -255,13 +255,13 @@ void MediaLibrary::resize()
 		itsRightColWidth = width-itsMiddleColWidth-1;
 	}
 	
-	Tags.resize(itsLeftColWidth, ui_state_legacy_main_height());
-	Albums.resize(itsMiddleColWidth, ui_state_legacy_main_height());
-	Songs.resize(itsRightColWidth, ui_state_legacy_main_height());
+	Tags.resize(itsLeftColWidth, static_cast<size_t>(ui_state_main_height()));
+	Albums.resize(itsMiddleColWidth, static_cast<size_t>(ui_state_main_height()));
+	Songs.resize(itsRightColWidth, static_cast<size_t>(ui_state_main_height()));
 	
-	Tags.moveTo(itsLeftColStartX, ui_state_legacy_main_start_y());
-	Albums.moveTo(itsMiddleColStartX, ui_state_legacy_main_start_y());
-	Songs.moveTo(itsRightColStartX, ui_state_legacy_main_start_y());
+	Tags.moveTo(itsLeftColStartX, static_cast<size_t>(ui_state_main_start_y()));
+	Albums.moveTo(itsMiddleColStartX, static_cast<size_t>(ui_state_main_start_y()));
+	Songs.moveTo(itsRightColStartX, static_cast<size_t>(ui_state_main_start_y()));
 	
 	hasToBeResized = 0;
 }
@@ -1017,7 +1017,7 @@ void MediaLibrary::locateSong(const MPD::Song &s)
 	if (screenLegacyCurrent() != this)
 		switchTo();
 	Statusbar::put() << "Jumping to song...";
-	ui_state_legacy_footer_window()->refresh();
+	static_cast<NC::Window *>(ui_state_footer_window())->refresh();
 
 	if (!hasTwoColumns)
 	{

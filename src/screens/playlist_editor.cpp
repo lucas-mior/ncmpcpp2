@@ -26,7 +26,7 @@
 #include "charset.h"
 #include "display.h"
 #include "global.h"
-#include "ui_state_legacy.h"
+#include "ui_state.h"
 #include "helpers_legacy.h"
 #include "screens/playlist.h"
 #include "screens/playlist_editor.h"
@@ -73,7 +73,7 @@ PlaylistEditor::PlaylistEditor()
 	RightColumnWidth = COLS-LeftColumnWidth-1;
 
 
-	Playlists = NC::Menu<MPD::Playlist>(0, ui_state_legacy_main_start_y(), LeftColumnWidth, ui_state_legacy_main_height(), Config.titles_visibility ? "Playlists" : "", Config.main_color, NC::Border());
+	Playlists = NC::Menu<MPD::Playlist>(0, static_cast<size_t>(ui_state_main_start_y()), LeftColumnWidth, static_cast<size_t>(ui_state_main_height()), Config.titles_visibility ? "Playlists" : "", Config.main_color, NC::Border());
 	setHighlightFixes(Playlists);
 	Playlists.cyclicScrolling(Config.use_cyclic_scrolling);
 	Playlists.centeredCursor(Config.centered_cursor);
@@ -83,7 +83,7 @@ PlaylistEditor::PlaylistEditor()
 		menu << Charset::utf8ToLocale(menu.drawn()->value().path());
 	});
 	
-	Content = NC::Menu<MPD::Song>(RightColumnStartX, ui_state_legacy_main_start_y(), RightColumnWidth, ui_state_legacy_main_height(), Config.titles_visibility ? "Content" : "", Config.main_color, NC::Border());
+	Content = NC::Menu<MPD::Song>(RightColumnStartX, static_cast<size_t>(ui_state_main_start_y()), RightColumnWidth, static_cast<size_t>(ui_state_main_height()), Config.titles_visibility ? "Content" : "", Config.main_color, NC::Border());
 	setHighlightInactiveColumnFixes(Content);
 	Content.cyclicScrolling(Config.use_cyclic_scrolling);
 	Content.centeredCursor(Config.centered_cursor);
@@ -119,11 +119,11 @@ void PlaylistEditor::resize()
 	RightColumnStartX = LeftColumnStartX+LeftColumnWidth+1;
 	RightColumnWidth = width-LeftColumnWidth-1;
 
-	Playlists.resize(LeftColumnWidth, ui_state_legacy_main_height());
-	Content.resize(RightColumnWidth, ui_state_legacy_main_height());
+	Playlists.resize(LeftColumnWidth, static_cast<size_t>(ui_state_main_height()));
+	Content.resize(RightColumnWidth, static_cast<size_t>(ui_state_main_height()));
 	
-	Playlists.moveTo(LeftColumnStartX, ui_state_legacy_main_start_y());
-	Content.moveTo(RightColumnStartX, ui_state_legacy_main_start_y());
+	Playlists.moveTo(LeftColumnStartX, static_cast<size_t>(ui_state_main_start_y()));
+	Content.moveTo(RightColumnStartX, static_cast<size_t>(ui_state_main_start_y()));
 	
 	hasToBeResized = 0;
 }
