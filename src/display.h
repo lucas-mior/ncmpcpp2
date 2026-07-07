@@ -373,7 +373,7 @@ inline void Tags(NC::Menu<MPD::MutableSong> &menu)
 	size_t i = myTagEditor->TagTypes->choice();
 	if (i < 11)
 	{
-		ShowTag(menu, Charset::utf8ToLocale(s.getTags(SongInfo::Tags[i].Get)));
+		ShowTag(menu, Charset::utf8ToLocale(s.getTags(ncm_song_info_tags[i].get)));
 	}
 	else if (i == 12)
 	{

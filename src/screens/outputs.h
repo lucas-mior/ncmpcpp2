@@ -22,59 +22,6 @@
 #define NCMPCPP_OUTPUTS_H
 
 #include "config.h"
+#include "screens/native_c_screens.h"
 
-#ifdef ENABLE_OUTPUTS
-
-#include <string>
-
-#include "interfaces.h"
-#include "screens/nc_outputs.h"
-#include "screens/screen_cpp_compat.h"
-
-struct Outputs: BaseScreen, Tabbable
-{
-    Outputs();
-    virtual ~Outputs();
-
-    virtual bool isActiveWindow(const NC::Window &w_) const override;
-    virtual NC::Window *activeWindow() override;
-    virtual const NC::Window *activeWindow() const override;
-    virtual void refresh() override;
-    virtual void refreshWindow() override;
-    virtual void scroll(enum NcScroll where) override;
-    virtual void switchTo() override;
-    virtual void resize() override;
-    virtual int windowTimeout() override;
-    virtual std::string title() override;
-    virtual ScreenType type() override { return NCM_SCREEN_TYPE_OUTPUTS; }
-    virtual void update() override;
-    virtual void mouseButtonPressed(MEVENT me) override;
-    virtual bool isLockable() override;
-    virtual bool isMergable() override;
-    virtual NcScreen *nativeScreen() override;
-    virtual const NcScreen *nativeScreen() const override;
-
-    void fetchList();
-    void toggleOutput();
-
-private:
-    void loadOutputs(NcOutputsScreen *screen);
-    bool toggleOutput(uint32 id, bool enabled, char *name, int32 name_len);
-    NcOutputsHooks makeHooks();
-
-    static void fetchOutputsHook(void *user, NcOutputsScreen *screen);
-    static bool toggleOutputHook(void *user, uint32 id, bool enabled,
-                                 char *name, int32 name_len);
-    static void switchToHook(void *user);
-    static void resizeLayoutHook(void *user, NcOutputsScreen *screen);
-    static void resizeBackgroundHook(void *user);
-    static void destroyHook(void *user);
-
-    NcOutputsScreen m_screen;
-};
-
-extern Outputs *myOutputs;
-
-#endif // ENABLE_OUTPUTS
-
-#endif // NCMPCPP_OUTPUTS_H
+#endif /* NCMPCPP_OUTPUTS_H */

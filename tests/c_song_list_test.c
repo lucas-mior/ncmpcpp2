@@ -28,6 +28,7 @@ static void require_string(char *file, int32 line, char *name,
                            char *expected, int32 expected_len);
 static void test_selected_songs(void);
 static void test_move_append(void);
+static void test_empty_selection(void);
 
 static void
 fail(char *file, int32 line, char *condition) {
@@ -123,9 +124,26 @@ test_move_append(void) {
     return;
 }
 
+static void
+test_empty_selection(void) {
+    NcmSongList list;
+    NcmSongArray selected;
+
+    ncm_song_list_init(&list);
+    ncm_song_array_init(&selected);
+
+    REQUIRE(ncm_song_list_selected_songs(&list, &selected));
+    REQUIRE_INT(selected.len, 0);
+
+    ncm_song_array_destroy(&selected);
+    ncm_song_list_destroy(&list);
+    return;
+}
+
 int
 main(void) {
     test_selected_songs();
     test_move_append();
+    test_empty_selection();
     return EXIT_SUCCESS;
 }

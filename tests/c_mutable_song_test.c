@@ -36,6 +36,7 @@ static void test_split_tags_and_truncation(void);
 static void test_new_name(void);
 static void test_copy_and_clear(void);
 static void test_write_callback(void);
+static void test_load_originals_from_song(void);
 
 bool ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
                     char *directory, char *new_name,
@@ -241,6 +242,38 @@ test_write_callback(void) {
     return;
 }
 
+static void
+test_load_originals_from_song(void) {
+    NcmSong source;
+    NcmMutableSong song;
+    NcmStringView value;
+
+    ncm_song_init(&source);
+    ncm_mutable_song_init(&song);
+
+    REQUIRE(ncm_song_set_uri(&source, LIT_ARGS("dir/file.flac")));
+    REQUIRE(ncm_song_add_tag(&source, MPD_TAG_ARTIST, LIT_ARGS("Artist")));
+    REQUIRE(ncm_song_add_tag(&source, MPD_TAG_TITLE, LIT_ARGS("Title")));
+    ncm_song_set_duration(&source, 99);
+
+    REQUIRE(ncm_mutable_song_load_originals_from_song(&song, &source));
+    REQUIRE_STRING(song.uri, song.uri_len, "dir/file.flac");
+    REQUIRE_STRING(song.directory, song.directory_len, "dir");
+    REQUIRE_STRING(song.name, song.name_len, "file.flac");
+    REQUIRE(ncm_mutable_song_get_tag(&song, NCM_TAGS_FIELD_ARTIST,
+                                     0, &value));
+    REQUIRE_STRING(value.data, value.len, "Artist");
+    REQUIRE(ncm_mutable_song_get_tag(&song, NCM_TAGS_FIELD_TITLE,
+                                     0, &value));
+    REQUIRE_STRING(value.data, value.len, "Title");
+    REQUIRE_INT((int32)ncm_mutable_song_duration(&song), 0);
+    REQUIRE(!ncm_mutable_song_is_modified(&song));
+
+    ncm_mutable_song_destroy(&song);
+    ncm_song_destroy(&source);
+    return;
+}
+
 int
 main(void) {
     test_single_tag_edit();
@@ -248,5 +281,6 @@ main(void) {
     test_new_name();
     test_copy_and_clear();
     test_write_callback();
+    test_load_originals_from_song();
     return EXIT_SUCCESS;
 }

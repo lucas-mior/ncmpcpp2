@@ -21,61 +21,21 @@
 #ifndef NCMPCPP_SONG_INFO_H
 #define NCMPCPP_SONG_INFO_H
 
-#include <string>
-
+#include "c/ncm_defs.h"
+#include "c/ncm_tags.h"
 #include "c/ncm_type_conversions.h"
-#include "interfaces.h"
-#include "song.h"
-#include "screens/nc_song_info.h"
-#include "screens/screen_cpp_compat.h"
+#include "screens/native_c_screens.h"
 
-struct SongInfo: BaseScreen, Tabbable
-{
-    struct Metadata
-    {
-        const char *Name;
-        enum NcmSongGetter Get;
-        enum NcmTagsField Field;
-    };
+NCM_EXTERN_C_BEGIN
 
-    SongInfo();
-    virtual ~SongInfo();
+typedef struct NcmSongInfoMetadata {
+    char *name;
+    enum NcmSongGetter get;
+    enum NcmTagsField field;
+} NcmSongInfoMetadata;
 
-    virtual bool isActiveWindow(const NC::Window &w_) const override;
-    virtual NC::Window *activeWindow() override;
-    virtual const NC::Window *activeWindow() const override;
-    virtual void refresh() override;
-    virtual void refreshWindow() override;
-    virtual void scroll(enum NcScroll where) override;
-    virtual void switchTo() override;
-    virtual void resize() override;
-    virtual int windowTimeout() override;
-    virtual std::string title() override;
-    virtual ScreenType type() override { return NCM_SCREEN_TYPE_SONG_INFO; }
-    virtual void update() override;
-    virtual void mouseButtonPressed(MEVENT me) override;
-    virtual bool isLockable() override;
-    virtual bool isMergable() override;
-    virtual NcScreen *nativeScreen() override;
-    virtual const NcScreen *nativeScreen() const override;
+extern NcmSongInfoMetadata ncm_song_info_tags[];
 
-    static const Metadata Tags[];
+NCM_EXTERN_C_END
 
-private:
-    bool renderSong(NcBuffer *buffer);
-    void setGeometry(NcSongInfoScreen *screen);
-    NcSongInfoHooks makeHooks();
-
-    static bool renderHook(void *user, NcSongInfoScreen *screen,
-                           NcBuffer *buffer);
-    static void switchToHook(void *user, NcSongInfoScreen *screen);
-    static void resizeLayoutHook(void *user, NcSongInfoScreen *screen);
-    static void destroyHook(void *user);
-
-    NcSongInfoScreen m_screen;
-    const MPD::Song *m_pending_song;
-};
-
-extern SongInfo *mySongInfo;
-
-#endif // NCMPCPP_SONG_INFO_H
+#endif /* NCMPCPP_SONG_INFO_H */

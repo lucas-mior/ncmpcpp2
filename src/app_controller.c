@@ -62,6 +62,68 @@ app_controller_is_screen_visible(NcScreen *screen) {
     return app_state_is_screen_visible(screen);
 }
 
+bool
+app_controller_is_current_screen(NcScreen *screen) {
+    return app_state_is_current_screen(screen);
+}
+
+bool
+app_controller_is_previous_screen(NcScreen *screen) {
+    return app_state_is_previous_screen(screen);
+}
+
+NcScreenResizeParams
+app_controller_screen_resize_params(NcScreen *screen,
+                                    bool adjust_locked_screen) {
+    return app_state_screen_resize_params(screen, adjust_locked_screen);
+}
+
+bool
+app_controller_request_screen_resize(NcScreen *screen) {
+    return app_state_request_screen_resize(screen);
+}
+
+bool
+app_controller_request_screen_update(NcScreen *screen) {
+    return app_state_request_screen_update(screen);
+}
+
+void
+app_controller_request_current_screen_resize(void) {
+    app_state_request_current_screen_resize();
+    return;
+}
+
+void
+app_controller_request_visible_screens_resize(void) {
+    app_state_request_visible_screens_resize();
+    return;
+}
+
+void
+app_controller_request_all_screens_resize(void) {
+    app_state_request_all_screens_resize();
+    return;
+}
+
+void
+app_controller_request_current_screen_update(void) {
+    app_state_request_current_screen_update();
+    return;
+}
+
+void
+app_controller_request_visible_screens_update(void) {
+    app_state_request_visible_screens_update();
+    return;
+}
+
+void
+app_controller_request_all_screens_update(void) {
+    app_state_request_all_screens_update();
+    return;
+}
+
 void
 app_controller_each_visible_screen(NcScreenEachCallback callback,
                                    void *user) {

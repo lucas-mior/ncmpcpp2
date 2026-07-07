@@ -210,6 +210,33 @@ nc_menu_owned_string_move(char **dest_data, int32 *dest_len,
         nc_menu_add_item(&menu->menu, item); \
         return; \
     } \
+    void \
+    PREFIX##_add_with_flags(TYPE_NAME *menu, ITEM_TYPE *item, \
+                            uint32 flags) { \
+        nc_menu_add_item_with_flags(&menu->menu, item, flags); \
+        return; \
+    } \
+    void \
+    PREFIX##_add_separator(TYPE_NAME *menu) { \
+        nc_menu_add_separator(&menu->menu); \
+        return; \
+    } \
+    void \
+    PREFIX##_insert(TYPE_NAME *menu, int64 pos, ITEM_TYPE *item) { \
+        nc_menu_insert_item(&menu->menu, pos, item); \
+        return; \
+    } \
+    void \
+    PREFIX##_insert_with_flags(TYPE_NAME *menu, int64 pos, \
+                               ITEM_TYPE *item, uint32 flags) { \
+        nc_menu_insert_item_with_flags(&menu->menu, pos, item, flags); \
+        return; \
+    } \
+    bool \
+    PREFIX##_remove(TYPE_NAME *menu, enum NcMenuItemSource source, \
+                    int64 pos) { \
+        return nc_menu_remove_item(&menu->menu, source, pos); \
+    } \
     ITEM_TYPE * \
     PREFIX##_item_at(TYPE_NAME *menu, enum NcMenuItemSource source, \
                      int64 pos) { \
