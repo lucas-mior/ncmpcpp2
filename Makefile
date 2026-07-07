@@ -66,6 +66,7 @@ REMOVED_CXX_SRCS := \
 	src/lyrics_fetcher.cpp \
 	src/enums.cpp \
 	src/global.cpp \
+	src/helpers.cpp \
 	src/macro_utilities.cpp \
 	src/mutable_song.cpp \
 	src/screens/help.cpp \

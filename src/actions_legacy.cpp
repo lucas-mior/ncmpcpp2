@@ -38,7 +38,7 @@
 #include "ui_state_legacy.h"
 #include "screens/screen_legacy.h"
 #include "mpdpp.h"
-#include "helpers.h"
+#include "helpers_legacy.h"
 #include "statusbar.h"
 #include "utility/comparators.h"
 #include "utility/conversion.h"
