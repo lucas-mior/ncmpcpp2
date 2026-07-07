@@ -24,7 +24,7 @@
 #include "interfaces.h"
 #include "mpdpp.h"
 #include "regex_filter.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 #include "song_list.h"
 
 struct BrowserWindow: NC::Menu<MPD::Item>, SongList

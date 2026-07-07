@@ -18,52 +18,55 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#ifndef NCMPCPP_HELP_H
-#define NCMPCPP_HELP_H
+#ifndef NCMPCPP_SCREEN_CPP_SWITCHER_H
+#define NCMPCPP_SCREEN_CPP_SWITCHER_H
 
-#include <string>
+#include <cassert>
 
 #include "interfaces.h"
-#include "screens/nc_help.h"
-#include "screens/screen_cpp_compat.h"
+#include "screens/screen_cpp_legacy.h"
+#include "screens/screen_switcher.h"
 
-struct Help: BaseScreen, Tabbable
+class SwitchTo
 {
-    Help();
-    virtual ~Help();
+    static BaseScreen *previousScreen()
+    {
+        return screenLegacyPrevious();
+    }
 
-    virtual bool isActiveWindow(const NC::Window &w_) const override;
-    virtual NC::Window *activeWindow() override;
-    virtual const NC::Window *activeWindow() const override;
-    virtual void refresh() override;
-    virtual void refreshWindow() override;
-    virtual void scroll(enum NcScroll where) override;
-    virtual void resize() override;
-    virtual void switchTo() override;
-    virtual int windowTimeout() override;
-    virtual std::string title() override;
-    virtual ScreenType type() override { return NCM_SCREEN_TYPE_HELP; }
-    virtual void update() override;
-    virtual void mouseButtonPressed(MEVENT me) override;
-    virtual bool isLockable() override;
-    virtual bool isMergable() override;
-    virtual NcScreen *nativeScreen() override;
-    virtual const NcScreen *nativeScreen() const override;
+    static void setPreviousScreen(BaseScreen *screen)
+    {
+        BaseScreen *previous_screen = previousScreen();
+        Tabbable *tabbable = dynamic_cast<Tabbable *>(screen);
 
-private:
-    bool renderBindings(NcBuffer *buffer);
-    void setGeometry(NcHelpScreen *screen);
-    NcHelpHooks makeHooks();
+        if (tabbable == nullptr)
+            return;
+        if (dynamic_cast<Tabbable *>(previous_screen) == nullptr)
+            return;
+        tabbable->setPreviousScreen(previous_screen);
+    }
 
-    static bool renderHook(void *user, NcBuffer *buffer);
-    static void switchToHook(void *user);
-    static void resizeLayoutHook(void *user, NcHelpScreen *screen);
-    static void resizeBackgroundHook(void *user);
-    static void destroyHook(void *user);
+public:
+    static void execute(BaseScreen *screen)
+    {
+        NcScreen *native_screen;
+        bool switched;
 
-    NcHelpScreen m_screen;
+        native_screen = screen->nativeScreen();
+        assert(native_screen != nullptr);
+
+        switched = nc_screen_switcher_switch_to(native_screen,
+                                                screen->hasToBeResized);
+        assert(switched);
+        (void)switched;
+    }
+
+    static void finishNativeSwitch(BaseScreen *screen)
+    {
+        if (nc_screen_switcher_finish_switch(screen->nativeScreen()))
+            setPreviousScreen(screen);
+        syncLegacyScreenPointers();
+    }
 };
 
-extern Help *myHelp;
-
-#endif // NCMPCPP_HELP_H
+#endif // NCMPCPP_SCREEN_CPP_SWITCHER_H

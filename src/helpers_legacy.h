@@ -26,7 +26,7 @@
 #include "interfaces.h"
 #include "mpdpp.h"
 #include "screens/playlist.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 #include "settings_legacy.h"
 #include "song_list.h"
 #include "status_legacy.h"

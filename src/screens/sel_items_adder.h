@@ -24,7 +24,7 @@
 #include "runnable_item.h"
 #include "interfaces.h"
 #include "regex_filter.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 #include "song.h"
 
 struct SelectedItemsAdder: Screen<NC::Menu<RunnableItem<std::string, void()>> *>, HasActions, Searchable, Tabbable

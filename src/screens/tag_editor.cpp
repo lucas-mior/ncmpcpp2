@@ -46,8 +46,8 @@
 #include "utility/comparators.h"
 #include "title_legacy.h"
 #include "tags.h"
-#include "screens/screen_switcher.h"
-#include "screens/screen_legacy.h"
+#include "screens/screen_cpp_switcher.h"
+#include "screens/screen_cpp_legacy.h"
 
 
 namespace ph = std::placeholders;

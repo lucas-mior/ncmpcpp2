@@ -30,8 +30,8 @@
 #include "ui_state.h"
 #include "helpers_legacy.h"
 #include "screens/server_info.h"
-#include "screens/screen_switcher.h"
-#include "screens/screen_legacy.h"
+#include "screens/screen_cpp_switcher.h"
+#include "screens/screen_cpp_legacy.h"
 #include "statusbar_legacy.h"
 
 

@@ -27,7 +27,7 @@
 
 #include "interfaces.h"
 #include "mutable_song.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 
 struct TinyTagEditor: Screen<NC::Menu<NC::Buffer>>, HasActions
 {

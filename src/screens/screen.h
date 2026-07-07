@@ -1,264 +1,114 @@
-/***************************************************************************
- *   Copyright (C) 2008-2021 by Andrzej Rybczak                            *
- *   andrzej@rybczak.net                                                   *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
- ***************************************************************************/
-
-#ifndef NCMPCPP_SCREEN_H
+#if !defined(NCMPCPP_SCREEN_H)
 #define NCMPCPP_SCREEN_H
 
-#include <functional>
-#include <string>
-
-#include "curses/menu.h"
-#include "curses/scrollpad.h"
 #include "screens/nc_screen.h"
-#include "screens/screen_type.h"
 
-void drawSeparator(int x);
-void genericMouseButtonPressed(NC::Window &w, MEVENT me);
-void scrollpadMouseButtonPressed(NC::Scrollpad &w, MEVENT me);
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-/// An interface for various instantiations of Screen template class. Since C++ doesn't like
-/// comparison of two different instantiations of the same template class we need the most
-/// basic class to be non-template to allow it.
-struct BaseScreen
-{
-	BaseScreen();
-	virtual ~BaseScreen();
-
-	/// @see Screen::isActiveWindow()
-	virtual bool isActiveWindow(const NC::Window &w_) const = 0;
-
-	/// @see Screen::activeWindow()
-	virtual NC::Window *activeWindow() = 0;
-	virtual const NC::Window *activeWindow() const = 0;
-
-	/// @see Screen::refresh()
-	virtual void refresh() = 0;
-
-	/// @see Screen::refreshWindow()
-	virtual void refreshWindow() = 0;
-
-	/// @see Screen::scroll()
-	virtual void scroll(enum NcScroll where) = 0;
-
-	/// Method used for switching to screen
-	virtual void switchTo() = 0;
-
-	/// Method that should resize screen
-	/// if requested by hasToBeResized
-	virtual void resize() = 0;
-
-	/// @return ncurses timeout parameter for the screen
-	virtual int windowTimeout() = 0;
-
-	/// @return title of the screen
-	virtual std::string title() = 0;
-
-	/// @return type of the screen
-	virtual ScreenType type() = 0;
-
-	/// If the screen contantly has to update itself
-	/// somehow, it should be called by this function.
-	virtual void update() = 0;
-
-	/// @see Screen::mouseButtonPressed()
-	virtual void mouseButtonPressed(MEVENT me) = 0;
-
-	/// @return true if screen can be locked. Note that returning
-	/// false here doesn't neccesarily mean that screen is also not
-	/// mergable (eg. lyrics screen is not lockable since that wouldn't
-	/// make much sense, but it's perfectly fine to merge it).
-	virtual bool isLockable() = 0;
-
-	/// @return true if screen is mergable, ie. can be "proper" subwindow
-	/// if one of the screens is locked. Screens that somehow resemble popups
-	/// will want to return false here.
-	virtual bool isMergable() = 0;
-
-	/// @return C screen backing this screen, or null if it is still C++ only.
-	virtual NcScreen *nativeScreen() { return &m_native_screen; }
-	virtual const NcScreen *nativeScreen() const { return &m_native_screen; }
-
-	/// Legacy C++ owner used by compatibility code that still needs BaseScreen.
-	static BaseScreen *legacyFromNativeScreen(NcScreen *screen);
-
-	/// Registers this screen in the C screen registry.
-	void registerNativeScreen();
-
-	/// Locks current screen.
-	/// @return true if lock was successful, false otherwise. Note that
-	/// if there is already locked screen, it'll not overwrite it.
-	bool lock();
-
-	/// Should be set to true each time screen needs resize
-	bool hasToBeResized;
-
-	/// Unlocks a screen, ie. hides merged window (if there is one set).
-	static void unlock();
-
-	const static int defaultWindowTimeout = 500;
-
-protected:
-	/// Legacy C++ owner used by the compatibility NcScreen callbacks.
-	static BaseScreen *fromNativeScreen(NcScreen *screen);
-
-	/// Gets X offset and width of current screen to be used eg. in resize() function.
-	/// @param adjust_locked_screen indicates whether this function should
-	/// automatically adjust locked screen's dimensions (if there is one set)
-	/// if current screen is going to be subwindow.
-	void getWindowResizeParams(size_t &x_offset, size_t &width, bool adjust_locked_screen = true);
-
-private:
-	NcScreen m_native_screen;
-	std::string m_native_title_cache;
-
-	static NcScreenCallbacks makeNativeCallbacks();
-	static NcWindow *nativeActiveWindowCallback(NcScreen *screen);
-	static void nativeRefreshCallback(NcScreen *screen);
-	static void nativeRefreshWindowCallback(NcScreen *screen);
-	static void nativeScrollCallback(NcScreen *screen, enum NcScroll where);
-	static void nativeSwitchToCallback(NcScreen *screen);
-	static void nativeResizeCallback(NcScreen *screen);
-	static int32 nativeWindowTimeoutCallback(NcScreen *screen);
-	static char *nativeTitleCallback(NcScreen *screen);
-	static void nativeUpdateCallback(NcScreen *screen);
-	static void nativeMouseButtonPressedCallback(NcScreen *screen,
-	                                            MEVENT event);
-	static bool nativeIsLockableCallback(NcScreen *screen);
-	static bool nativeIsMergableCallback(NcScreen *screen);
-};
-
-void applyToVisibleScreens(std::function<void(NcScreen *)> f);
-void applyToVisibleWindows(std::function<void(BaseScreen *)> f);
-void syncLegacyScreenPointers();
-bool isVisible(BaseScreen *screen);
-
-/// Class that all screens should derive from. It provides basic interface
-/// for the screen to be working properly and assumes that we didn't forget
-/// about anything vital.
-///
-template <typename WindowT> struct Screen : public BaseScreen
-{
-	typedef WindowT WindowType;
-	typedef typename std::add_lvalue_reference<
-		WindowType
-	>::type WindowReference;
-	typedef typename std::add_lvalue_reference<
-		typename std::add_const<WindowType>::type
-	>::type ConstWindowReference;
-
-private:
-	template <bool IsPointer, typename Result, typename ConstResult>
-	struct getObject {
-		static Result &apply(WindowReference w) { return w; }
-		static ConstResult &constApply(ConstWindowReference w) { return w; }
-	};
-	template <typename Result, typename ConstResult>
-	struct getObject<true, Result, ConstResult> {
-		static Result &apply(WindowType w) { return *w; }
-		static ConstResult &constApply(const WindowType w) { return *w; }
-	};
-
-	typedef getObject<
-		std::is_pointer<WindowT>::value,
-		typename std::remove_pointer<WindowT>::type,
-		typename std::add_const<
-			typename std::remove_pointer<WindowT>::type
-		>::type
-	> Accessor;
-
-public:
-	Screen() { }
-	Screen(WindowT w_) : w(w_) { }
-
-	virtual ~Screen() { }
-
-	virtual bool isActiveWindow(const NC::Window &w_) const override {
-		return &Accessor::constApply(w) == &w_;
-	}
-
-	/// Since some screens contain more that one window
-	/// it's useful to determine the one that is being
-	/// active
-	/// @return address to window object cast to void *
-	virtual NC::Window *activeWindow() override {
-		return &Accessor::apply(w);
-	}
-	virtual const NC::Window *activeWindow() const override {
-		return &Accessor::constApply(w);
-	}
-
-	/// Refreshes whole screen
-	virtual void refresh() override {
-		Accessor::apply(w).display();
-	}
-
-	/// Refreshes active window of the screen
-	virtual void refreshWindow() override {
-		Accessor::apply(w).display();
-	}
-
-	/// Scrolls the screen by given amount of lines and
-	/// if fancy scrolling feature is disabled, enters the
-	/// loop that holds main loop until user releases the key
-	/// @param where indicates where one wants to scroll
-	virtual void scroll(enum NcScroll where) override {
-		Accessor::apply(w).scroll(where);
-	}
-
-	/// @return timeout parameter used for the screen (in ms)
-	/// @default defaultWindowTimeout
-	virtual int windowTimeout() override {
-		return defaultWindowTimeout;
-	}
-
-	/// Invoked after there was one of mouse buttons pressed
-	/// @param me struct that contains coords of where the click
-	/// had its place and button actions
-	virtual void mouseButtonPressed(MEVENT me) override {
-		genericMouseButtonPressed(Accessor::apply(w), me);
-	}
-
-	/// @return currently active window
-	WindowReference main() {
-		return w;
-	}
-	ConstWindowReference main() const {
-		return w;
-	}
-
-protected:
-	/// Template parameter that should indicate the main type
-	/// of window used by the screen. What is more, it should
-	/// always be assigned to the currently active window (if
-	/// acreen contains more that one)
-	WindowT w;
-};
-
-/// Specialization for Screen<Scrollpad>::mouseButtonPressed that should
-/// not scroll whole page, but rather a few lines (the number of them is
-/// defined in the config)
-template <> inline void Screen<NC::Scrollpad>::mouseButtonPressed(MEVENT me) {
-	scrollpadMouseButtonPressed(w, me);
+static inline NcWindow *
+screen_active_window(NcScreen *screen) {
+    return nc_screen_active_window(screen);
 }
 
-#include "screens/screen_compat_impl.h"
+static inline void
+screen_refresh(NcScreen *screen) {
+    nc_screen_refresh(screen);
+    return;
+}
 
-#endif // NCMPCPP_SCREEN_H
+static inline void
+screen_refresh_window(NcScreen *screen) {
+    nc_screen_refresh_window(screen);
+    return;
+}
 
+static inline void
+screen_scroll(NcScreen *screen, enum NcScroll where) {
+    nc_screen_scroll(screen, where);
+    return;
+}
+
+static inline void
+screen_switch_to(NcScreen *screen) {
+    nc_screen_switch_to(screen);
+    return;
+}
+
+static inline void
+screen_resize(NcScreen *screen) {
+    nc_screen_resize(screen);
+    return;
+}
+
+static inline int32
+screen_window_timeout(NcScreen *screen) {
+    return nc_screen_window_timeout(screen);
+}
+
+static inline char *
+screen_title(NcScreen *screen) {
+    return nc_screen_title(screen);
+}
+
+static inline int32
+screen_type(NcScreen *screen) {
+    return nc_screen_type(screen);
+}
+
+static inline void
+screen_set_type(NcScreen *screen, int32 type) {
+    nc_screen_set_type(screen, type);
+    return;
+}
+
+static inline void
+screen_update(NcScreen *screen) {
+    nc_screen_update(screen);
+    return;
+}
+
+static inline void
+screen_mouse_button_pressed(NcScreen *screen, MEVENT event) {
+    nc_screen_mouse_button_pressed(screen, event);
+    return;
+}
+
+static inline bool
+screen_is_lockable(NcScreen *screen) {
+    return nc_screen_is_lockable(screen);
+}
+
+static inline bool
+screen_is_mergable(NcScreen *screen) {
+    return nc_screen_is_mergable(screen);
+}
+
+static inline bool
+screen_has_to_be_resized(NcScreen *screen) {
+    return nc_screen_has_to_be_resized(screen);
+}
+
+static inline void
+screen_set_has_to_be_resized(NcScreen *screen, bool has_to_be_resized) {
+    nc_screen_set_has_to_be_resized(screen, has_to_be_resized);
+    return;
+}
+
+static inline void
+screen_destroy(NcScreen *screen) {
+    nc_screen_destroy(screen);
+    return;
+}
+
+static inline void *
+screen_user(NcScreen *screen) {
+    return nc_screen_user(screen);
+}
+
+#if defined(__cplusplus)
+}
+#endif
+
+#endif /* NCMPCPP_SCREEN_H */

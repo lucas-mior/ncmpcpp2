@@ -35,7 +35,7 @@
 #include "helpers/song_iterator_maker.h"
 #include "utility/comparators.h"
 #include "title_legacy.h"
-#include "screens/screen_switcher.h"
+#include "screens/screen_cpp_switcher.h"
 
 
 namespace ph = std::placeholders;

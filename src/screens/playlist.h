@@ -27,7 +27,7 @@
 #include "interfaces.h"
 #include "regex_filter.h"
 #include "screens/nc_playlist.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 #include "song.h"
 #include "song_list.h"
 
