@@ -29,6 +29,9 @@
 #include "screens/nc_outputs.h"
 #include "screens/nc_media_library.h"
 #include "screens/nc_playlist.h"
+#include "screens/nc_playlist_editor.h"
+#include "screens/nc_sel_items_adder.h"
+#include "screens/nc_sort_playlist.h"
 #include "screens/nc_search_engine.h"
 #include "screens/nc_server_info.h"
 #include "screens/nc_song_info.h"
@@ -68,6 +71,29 @@ NativePlaylistScreen *native_c_screen_playlist(void);
 NcPlaylistScreen *native_c_screen_playlist_typed(void);
 NcScreen *native_c_screen_playlist_native(void);
 
+void native_c_screen_playlist_editor_init(void);
+void native_c_screen_playlist_editor_register(void);
+void native_c_screen_playlist_editor_set_resize(void);
+void native_c_screen_playlist_editor_switch_to(void);
+bool native_c_screen_playlist_editor_is_current(void);
+NativePlaylistEditorScreen *native_c_screen_playlist_editor(void);
+NcScreen *native_c_screen_playlist_editor_native(void);
+
+void native_c_screen_selected_items_adder_init(void);
+void native_c_screen_selected_items_adder_register(void);
+void native_c_screen_selected_items_adder_set_resize(void);
+void native_c_screen_selected_items_adder_switch_to(void);
+bool native_c_screen_selected_items_adder_is_current(void);
+NativeSelectedItemsAdderScreen *native_c_screen_selected_items_adder(void);
+NcScreen *native_c_screen_selected_items_adder_native(void);
+
+void native_c_screen_sort_playlist_dialog_init(void);
+void native_c_screen_sort_playlist_dialog_register(void);
+void native_c_screen_sort_playlist_dialog_set_resize(void);
+void native_c_screen_sort_playlist_dialog_switch_to(void);
+bool native_c_screen_sort_playlist_dialog_is_current(void);
+NativeSortPlaylistDialog *native_c_screen_sort_playlist_dialog(void);
+NcScreen *native_c_screen_sort_playlist_dialog_native(void);
 
 void native_c_screen_search_engine_init(void);
 void native_c_screen_search_engine_register(void);
