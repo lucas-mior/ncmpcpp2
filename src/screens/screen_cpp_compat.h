@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <functional>
 #include <string>
+#include <unordered_map>
 
 #include "app_controller.h"
 #include "global.h"
@@ -287,10 +288,32 @@ inline enum NcScroll to_cpp_scroll(enum NcScroll where)
     return NC_SCROLL_UP;
 }
 
+inline std::unordered_map<NcScreen *, BaseScreen *> &legacy_owner_map()
+{
+    static std::unordered_map<NcScreen *, BaseScreen *> owners;
+
+    return owners;
+}
+
+inline void bind_legacy_owner(NcScreen *screen, BaseScreen *owner)
+{
+    if (screen == nullptr)
+        return;
+    if (owner == nullptr)
+        legacy_owner_map().erase(screen);
+    else
+        legacy_owner_map()[screen] = owner;
+}
+
 inline BaseScreen *legacy_owner(NcScreen *screen)
 {
     if (screen == nullptr)
         return nullptr;
+
+    auto owner = legacy_owner_map().find(screen);
+    if (owner != legacy_owner_map().end())
+        return owner->second;
+
     return static_cast<BaseScreen *>(nc_screen_user(screen));
 }
 

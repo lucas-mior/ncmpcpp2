@@ -34,8 +34,6 @@
 #include "bindings.h"
 #include "configuration_legacy.h"
 #include "config.h"
-#include "mpdpp.h"
-#include "format_impl.h"
 #include "settings_legacy.h"
 #include "utility/string.h"
 
@@ -68,15 +66,6 @@ struct CommandLineOptions
 	bool version = false;
 	bool quiet = false;
 };
-
-std::string trimCopy(std::string s)
-{
-	auto first = s.find_first_not_of(" \t\r\n");
-	if (first == std::string::npos)
-		return "";
-	auto last = s.find_last_not_of(" \t\r\n");
-	return s.substr(first, last-first+1);
-}
 
 bool readBindingPaths(const std::vector<std::string> &paths)
 {
@@ -533,44 +522,8 @@ bool configure(int argc, char **argv)
 		std::filesystem::create_directories(Config.ncmpcpp_directory);
 		std::filesystem::create_directory(Config.lyrics_directory);
 
-		// try to get MPD connection details from environment variables
-		// as they take precedence over these from the configuration.
-		auto env_host = getenv("MPD_HOST");
-		auto env_port = getenv("MPD_PORT");
-		if (env_host != nullptr)
-			Mpd.SetHostname(env_host);
-		if (env_port != nullptr)
-		{
-			auto trimmed_env_port = trimCopy(env_port);
-			try {
-				Mpd.SetPort(parseInt(trimmed_env_port));
-			} catch (std::invalid_argument &) {
-				throw std::runtime_error("MPD_PORT environment variable ("
-				                         + std::string(env_port)
-				                         + ") is not a number");
-			}
-		}
-
-		// if MPD connection details are provided as command line
-		// parameters, use them as their priority is the highest.
-		if (options.host_provided)
-			Mpd.SetHostname(options.host);
-		if (options.port_provided)
-			Mpd.SetPort(options.port);
-		Mpd.SetTimeout(Config.mpd_connection_timeout);
-
-		// print current song
-		if (options.current_song)
-		{
-			Mpd.Connect();
-			auto s = Mpd.GetCurrentSong();
-			if (!s.empty())
-			{
-				auto format = Format::parse(options.current_song_format, Format::Flags::Tag);
-				std::cout << Format::stringify<char>(format, &s);
-			}
-			return false;
-		}
+		// MPD connection options and --current-song are applied by the C
+		// configuration path after this legacy pass completes.
 
 		// custom startup screen
 		if (options.screen)

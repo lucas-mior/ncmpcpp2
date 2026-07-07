@@ -3,7 +3,6 @@
 #include <math.h>
 #include <string.h>
 
-#include "app_controller.h"
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
 #include "screens/screen_switcher.h"
@@ -352,7 +351,6 @@ visualizer_scroll_callback(NcScreen *screen, enum NcScroll where) {
 
 static void
 visualizer_switch_to_callback(NcScreen *screen) {
-    (void)app_controller_switch_to_screen(screen);
     ncm_title_draw_header(nc_screen_title(screen),
                           (int32)strlen(nc_screen_title(screen)));
     return;
