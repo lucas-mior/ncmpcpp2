@@ -29,7 +29,7 @@
 #include "screens/sort_playlist.h"
 #include "statusbar_legacy.h"
 #include "utility/comparators.h"
-#include "screens/screen_switcher.h"
+#include "screens/screen_cpp_switcher.h"
 
 SortPlaylistDialog *mySortPlaylistDialog;
 

@@ -42,8 +42,8 @@
 #include "screens/tag_editor.h"
 #include "title_legacy.h"
 #include "tags.h"
-#include "screens/screen_switcher.h"
-#include "screens/screen_legacy.h"
+#include "screens/screen_cpp_switcher.h"
+#include "screens/screen_cpp_legacy.h"
 #include "utility/string.h"
 
 

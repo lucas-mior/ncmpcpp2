@@ -30,7 +30,7 @@
 #include "interfaces.h"
 #include "mutable_song.h"
 #include "regex_filter.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 #include "song_list.h"
 
 struct TagsWindow: NC::Menu<MPD::MutableSong>, SongList

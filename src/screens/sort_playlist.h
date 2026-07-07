@@ -23,7 +23,7 @@
 
 #include "runnable_item.h"
 #include "interfaces.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 #include "song.h"
 
 struct SortPlaylistDialog

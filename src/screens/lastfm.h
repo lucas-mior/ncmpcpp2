@@ -31,7 +31,7 @@
 #include "interfaces.h"
 #include "lastfm_service.h"
 #include "screens/nc_lastfm.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 #include "utility/utf8.h"
 
 struct Lastfm: BaseScreen, Tabbable

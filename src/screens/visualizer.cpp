@@ -41,7 +41,7 @@
 #include "status_legacy.h"
 #include "statusbar_legacy.h"
 #include "title_legacy.h"
-#include "screens/screen_switcher.h"
+#include "screens/screen_cpp_switcher.h"
 #include "status_legacy.h"
 #include "c/ncm_enums.h"
 #include "c/ncm_mpd_client.h"

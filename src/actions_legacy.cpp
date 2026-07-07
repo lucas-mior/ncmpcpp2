@@ -36,7 +36,7 @@
 #include "app_controller.h"
 #include "global.h"
 #include "ui_state.h"
-#include "screens/screen_legacy.h"
+#include "screens/screen_cpp_legacy.h"
 #include "mpdpp.h"
 #include "helpers_legacy.h"
 #include "statusbar_legacy.h"

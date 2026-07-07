@@ -27,7 +27,7 @@
 #include "interfaces.h"
 #include "song.h"
 #include "screens/nc_song_info.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 
 struct SongInfo: BaseScreen, Tabbable
 {

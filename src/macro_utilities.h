@@ -30,7 +30,7 @@
 #include "c/ncm_error.h"
 #include "c/ncm_macro_utilities.h"
 #include "curses/window.h"
-#include "screens/screen_legacy.h"
+#include "screens/screen_cpp_legacy.h"
 #include "screens/screen_type.h"
 #include "utility/string.h"
 
