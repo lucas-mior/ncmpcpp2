@@ -219,7 +219,7 @@ int main(int argc, char **argv)
 
 			try
 			{
-				auto k = bindings_legacy_get(input);
+				auto k = ncm_bindings_configuration_get(&Bindings, input);
 				bool executed = false;
 				for (int32 i = 0; i < k.len; i += 1)
 				{

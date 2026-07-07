@@ -22,7 +22,8 @@
 #include <string>
 #include <vector>
 
-#include "bindings_legacy.h"
+#include "bindings.h"
+#include "c/ncm_base.h"
 #include "curses/formatted_color.h"
 #include "app_controller.h"
 #include "global.h"
@@ -136,7 +137,18 @@ std::string align_key_rep(std::string keys)
 	return keys;
 }
 
-std::string display_keys(const Actions::Type at)
+
+std::string key_to_string(NcKey key)
+{
+	char name[64];
+	int32 name_len = ncm_bindings_key_name(key, name, (int32)sizeof(name));
+
+	if (name_len < 0)
+		return {};
+	return std::string(name, static_cast<size_t>(name_len));
+}
+
+std::string display_keys(enum NcmActionType at)
 {
 	std::string result, skey;
 	for (int32 i = 0; i < Bindings.keys_len; i += 1)
@@ -145,9 +157,10 @@ std::string display_keys(const Actions::Type at)
 		for (int32 j = 0; j < key_bindings->bindings_len; j += 1)
 		{
 			NcmBinding *binding = key_bindings->bindings + j;
-			if (bindings_legacy_is_single_action(binding, at))
+			if (ncm_binding_is_single_action_type(
+				binding, at))
 			{
-				skey = NC::keyToString(key_bindings->key);
+				skey = key_to_string(key_bindings->key);
 				if (!skey.empty())
 				{
 					result += std::move(skey);
@@ -174,19 +187,19 @@ void key_section(HelpBuffer &w, const char *title_)
 	section(w, "Keys", title_);
 }
 
-void key(HelpBuffer &w, const Actions::Type at, const char *desc)
+void key(HelpBuffer &w, enum NcmActionType at, const char *desc)
 {
 	w << "    " << display_keys(at) << " : " << desc << '\n';
 }
 
-void key(HelpBuffer &w, const Actions::Type at, const std::string &desc)
+void key(HelpBuffer &w, enum NcmActionType at, const std::string &desc)
 {
 	w << "    " << display_keys(at) << " : " << desc << '\n';
 }
 
 void key(HelpBuffer &w, NcKey k, const std::string &desc)
 {
-	w << "    " << align_key_rep(NC::keyToString(k)) << " : " << desc << '\n';
+	w << "    " << align_key_rep(key_to_string(k)) << " : " << desc << '\n';
 }
 
 /**********************************************************************/
@@ -212,219 +225,217 @@ void mouse_column(HelpBuffer &w, const char *column)
 
 void write_bindings(HelpBuffer &w)
 {
-	using Actions::Type;
-
 	key_section(w, "Movement");
-	key(w, Type::ScrollUp, "Move cursor up");
-	key(w, Type::ScrollDown, "Move cursor down");
-	key(w, Type::ScrollUpAlbum, "Move cursor up one album");
-	key(w, Type::ScrollDownAlbum, "Move cursor down one album");
-	key(w, Type::ScrollUpArtist, "Move cursor up one artist");
-	key(w, Type::ScrollDownArtist, "Move cursor down one artist");
-	key(w, Type::PageUp, "Page up");
-	key(w, Type::PageDown, "Page down");
-	key(w, Type::MoveHome, "Home");
-	key(w, Type::MoveEnd, "End");
+	key(w, NCM_ACTION_SCROLL_UP, "Move cursor up");
+	key(w, NCM_ACTION_SCROLL_DOWN, "Move cursor down");
+	key(w, NCM_ACTION_SCROLL_UP_ALBUM, "Move cursor up one album");
+	key(w, NCM_ACTION_SCROLL_DOWN_ALBUM, "Move cursor down one album");
+	key(w, NCM_ACTION_SCROLL_UP_ARTIST, "Move cursor up one artist");
+	key(w, NCM_ACTION_SCROLL_DOWN_ARTIST, "Move cursor down one artist");
+	key(w, NCM_ACTION_PAGE_UP, "Page up");
+	key(w, NCM_ACTION_PAGE_DOWN, "Page down");
+	key(w, NCM_ACTION_MOVE_HOME, "Home");
+	key(w, NCM_ACTION_MOVE_END, "End");
 	w << '\n';
 	if (Config.screen_switcher_previous)
 	{
-		key(w, Type::NextScreen, "Switch between current and last screen");
-		key(w, Type::PreviousScreen, "Switch between current and last screen");
+		key(w, NCM_ACTION_NEXT_SCREEN, "Switch between current and last screen");
+		key(w, NCM_ACTION_PREVIOUS_SCREEN, "Switch between current and last screen");
 	}
 	else
 	{
-		key(w, Type::NextScreen, "Switch to next screen in sequence");
-		key(w, Type::PreviousScreen, "Switch to previous screen in sequence");
+		key(w, NCM_ACTION_NEXT_SCREEN, "Switch to next screen in sequence");
+		key(w, NCM_ACTION_PREVIOUS_SCREEN, "Switch to previous screen in sequence");
 	}
-	key(w, Type::ShowHelp, "Show help");
-	key(w, Type::ShowPlaylist, "Show playlist");
-	key(w, Type::ShowBrowser, "Show browser");
-	key(w, Type::ShowSearchEngine, "Show search engine");
-	key(w, Type::ShowMediaLibrary, "Show media library");
-	key(w, Type::ShowPlaylistEditor, "Show playlist editor");
+	key(w, NCM_ACTION_SHOW_HELP, "Show help");
+	key(w, NCM_ACTION_SHOW_PLAYLIST, "Show playlist");
+	key(w, NCM_ACTION_SHOW_BROWSER, "Show browser");
+	key(w, NCM_ACTION_SHOW_SEARCH_ENGINE, "Show search engine");
+	key(w, NCM_ACTION_SHOW_MEDIA_LIBRARY, "Show media library");
+	key(w, NCM_ACTION_SHOW_PLAYLIST_EDITOR, "Show playlist editor");
 #	ifdef HAVE_TAGLIB_H
-	key(w, Type::ShowTagEditor, "Show tag editor");
+	key(w, NCM_ACTION_SHOW_TAG_EDITOR, "Show tag editor");
 #	endif // HAVE_TAGLIB_H
 #	ifdef ENABLE_OUTPUTS
-	key(w, Type::ShowOutputs, "Show outputs");
+	key(w, NCM_ACTION_SHOW_OUTPUTS, "Show outputs");
 #	endif // ENABLE_OUTPUTS
 #	ifdef ENABLE_VISUALIZER
-	key(w, Type::ShowVisualizer, "Show music visualizer");
+	key(w, NCM_ACTION_SHOW_VISUALIZER, "Show music visualizer");
 #	endif // ENABLE_VISUALIZER
 	w << '\n';
-	key(w, Type::ShowServerInfo, "Show server info");
+	key(w, NCM_ACTION_SHOW_SERVER_INFO, "Show server info");
 
 	key_section(w, "Global");
-	key(w, Type::Play, "Play");
-	key(w, Type::Stop, "Stop");
-	key(w, Type::Pause, "Pause");
-	key(w, Type::Next, "Next track");
-	key(w, Type::Previous, "Previous track");
-	key(w, Type::ReplaySong, "Replay current song");
-	key(w, Type::SeekForward, "Seek forward in playing song");
-	key(w, Type::SeekBackward, "Seek backward in playing song");
-	key(w, Type::VolumeDown,
+	key(w, NCM_ACTION_PLAY, "Play");
+	key(w, NCM_ACTION_STOP, "Stop");
+	key(w, NCM_ACTION_PAUSE, "Pause");
+	key(w, NCM_ACTION_NEXT, "Next track");
+	key(w, NCM_ACTION_PREVIOUS, "Previous track");
+	key(w, NCM_ACTION_REPLAY_SONG, "Replay current song");
+	key(w, NCM_ACTION_SEEK_FORWARD, "Seek forward in playing song");
+	key(w, NCM_ACTION_SEEK_BACKWARD, "Seek backward in playing song");
+	key(w, NCM_ACTION_VOLUME_DOWN,
 		stringFormat("Decrease volume by %1%%%", Config.volume_change_step)
 	);
-	key(w, Type::VolumeUp,
+	key(w, NCM_ACTION_VOLUME_UP,
 		stringFormat("Increase volume by %1%%%", Config.volume_change_step)
 	);
 	w << '\n';
-	key(w, Type::ToggleAddMode, "Toggle add mode (add or remove/always add)");
-	key(w, Type::ToggleMouse, "Toggle mouse support");
-	key(w, Type::SelectRange, "Select range");
-	key(w, Type::ReverseSelection, "Reverse selection");
-	key(w, Type::RemoveSelection, "Remove selection");
-	key(w, Type::SelectItem, "Select current item");
-	key(w, Type::SelectFoundItems, "Select found items");
-	key(w, Type::SelectAlbum, "Select songs of album around the cursor");
-	key(w, Type::AddSelectedItems, "Add selected items to playlist");
-	key(w, Type::AddRandomItems, "Add random items to playlist");
+	key(w, NCM_ACTION_TOGGLE_ADD_MODE, "Toggle add mode (add or remove/always add)");
+	key(w, NCM_ACTION_TOGGLE_MOUSE, "Toggle mouse support");
+	key(w, NCM_ACTION_SELECT_RANGE, "Select range");
+	key(w, NCM_ACTION_REVERSE_SELECTION, "Reverse selection");
+	key(w, NCM_ACTION_REMOVE_SELECTION, "Remove selection");
+	key(w, NCM_ACTION_SELECT_ITEM, "Select current item");
+	key(w, NCM_ACTION_SELECT_FOUND_ITEMS, "Select found items");
+	key(w, NCM_ACTION_SELECT_ALBUM, "Select songs of album around the cursor");
+	key(w, NCM_ACTION_ADD_SELECTED_ITEMS, "Add selected items to playlist");
+	key(w, NCM_ACTION_ADD_RANDOM_ITEMS, "Add random items to playlist");
 	w << '\n';
-	key(w, Type::ToggleRepeat, "Toggle repeat mode");
-	key(w, Type::ToggleRandom, "Toggle random mode");
-	key(w, Type::ToggleSingle, "Toggle single mode");
-	key(w, Type::ToggleConsume, "Toggle consume mode");
-	key(w, Type::ToggleReplayGainMode, "Toggle replay gain mode");
-	key(w, Type::ToggleBitrateVisibility, "Toggle bitrate visibility");
-	key(w, Type::ToggleCrossfade, "Toggle crossfade mode");
-	key(w, Type::SetCrossfade, "Set crossfade");
-	key(w, Type::SetVolume, "Set volume");
-	key(w, Type::UpdateDatabase, "Start music database update");
+	key(w, NCM_ACTION_TOGGLE_REPEAT, "Toggle repeat mode");
+	key(w, NCM_ACTION_TOGGLE_RANDOM, "Toggle random mode");
+	key(w, NCM_ACTION_TOGGLE_SINGLE, "Toggle single mode");
+	key(w, NCM_ACTION_TOGGLE_CONSUME, "Toggle consume mode");
+	key(w, NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE, "Toggle replay gain mode");
+	key(w, NCM_ACTION_TOGGLE_BITRATE_VISIBILITY, "Toggle bitrate visibility");
+	key(w, NCM_ACTION_TOGGLE_CROSSFADE, "Toggle crossfade mode");
+	key(w, NCM_ACTION_SET_CROSSFADE, "Set crossfade");
+	key(w, NCM_ACTION_SET_VOLUME, "Set volume");
+	key(w, NCM_ACTION_UPDATE_DATABASE, "Start music database update");
 	w << '\n';
-	key(w, Type::ExecuteCommand, "Execute command");
-	key(w, Type::ApplyFilter, "Apply filter");
-	key(w, Type::FindItemForward, "Find item forward");
-	key(w, Type::FindItemBackward, "Find item backward");
-	key(w, Type::PreviousFoundItem, "Jump to previous found item");
-	key(w, Type::NextFoundItem, "Jump to next found item");
-	key(w, Type::ToggleFindMode, "Toggle find mode (normal/wrapped)");
-	key(w, Type::JumpToBrowser, "Locate song in browser");
-	key(w, Type::JumpToMediaLibrary, "Locate song in media library");
-	key(w, Type::ToggleScreenLock, "Lock/unlock current screen");
-	key(w, Type::MasterScreen, "Switch to master screen (left one)");
-	key(w, Type::SlaveScreen, "Switch to slave screen (right one)");
+	key(w, NCM_ACTION_EXECUTE_COMMAND, "Execute command");
+	key(w, NCM_ACTION_APPLY_FILTER, "Apply filter");
+	key(w, NCM_ACTION_FIND_ITEM_FORWARD, "Find item forward");
+	key(w, NCM_ACTION_FIND_ITEM_BACKWARD, "Find item backward");
+	key(w, NCM_ACTION_PREVIOUS_FOUND_ITEM, "Jump to previous found item");
+	key(w, NCM_ACTION_NEXT_FOUND_ITEM, "Jump to next found item");
+	key(w, NCM_ACTION_TOGGLE_FIND_MODE, "Toggle find mode (normal/wrapped)");
+	key(w, NCM_ACTION_JUMP_TO_BROWSER, "Locate song in browser");
+	key(w, NCM_ACTION_JUMP_TO_MEDIA_LIBRARY, "Locate song in media library");
+	key(w, NCM_ACTION_TOGGLE_SCREEN_LOCK, "Lock/unlock current screen");
+	key(w, NCM_ACTION_MASTER_SCREEN, "Switch to master screen (left one)");
+	key(w, NCM_ACTION_SLAVE_SCREEN, "Switch to slave screen (right one)");
 #	ifdef HAVE_TAGLIB_H
-	key(w, Type::JumpToTagEditor, "Locate song in tag editor");
+	key(w, NCM_ACTION_JUMP_TO_TAG_EDITOR, "Locate song in tag editor");
 #	endif // HAVE_TAGLIB_H
-	key(w, Type::ToggleDisplayMode, "Toggle display mode");
-	key(w, Type::ToggleInterface, "Toggle user interface");
-	key(w, Type::ToggleSeparatorsBetweenAlbums, "Toggle displaying separators between albums");
-	key(w, Type::JumpToPositionInSong, "Jump to given position in playing song (formats: mm:ss, x%)");
-	key(w, Type::ShowSongInfo, "Show song info");
-	key(w, Type::ShowArtistInfo, "Show artist info");
-	key(w, Type::FetchLyricsInBackground, "Fetch lyrics for selected songs");
-	key(w, Type::ToggleLyricsFetcher, "Toggle lyrics fetcher");
-	key(w, Type::ToggleFetchingLyricsInBackground, "Toggle fetching lyrics for playing songs in background");
-	key(w, Type::ShowLyrics, "Show/hide song lyrics");
+	key(w, NCM_ACTION_TOGGLE_DISPLAY_MODE, "Toggle display mode");
+	key(w, NCM_ACTION_TOGGLE_INTERFACE, "Toggle user interface");
+	key(w, NCM_ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS, "Toggle displaying separators between albums");
+	key(w, NCM_ACTION_JUMP_TO_POSITION_IN_SONG, "Jump to given position in playing song (formats: mm:ss, x%)");
+	key(w, NCM_ACTION_SHOW_SONG_INFO, "Show song info");
+	key(w, NCM_ACTION_SHOW_ARTIST_INFO, "Show artist info");
+	key(w, NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND, "Fetch lyrics for selected songs");
+	key(w, NCM_ACTION_TOGGLE_LYRICS_FETCHER, "Toggle lyrics fetcher");
+	key(w, NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND, "Toggle fetching lyrics for playing songs in background");
+	key(w, NCM_ACTION_SHOW_LYRICS, "Show/hide song lyrics");
 	w << '\n';
-	key(w, Type::Quit, "Quit");
+	key(w, NCM_ACTION_QUIT, "Quit");
 
 	key_section(w, "Playlist");
-	key(w, Type::PlayItem, "Play selected item");
-	key(w, Type::DeletePlaylistItems, "Delete selected item(s) from playlist");
-	key(w, Type::ClearMainPlaylist, "Clear playlist");
-	key(w, Type::CropMainPlaylist, "Clear playlist except selected item(s)");
-	key(w, Type::SetSelectedItemsPriority, "Set priority of selected items");
-	key(w, Type::MoveSelectedItemsUp, "Move selected item(s) up");
-	key(w, Type::MoveSelectedItemsDown, "Move selected item(s) down");
-	key(w, Type::MoveSelectedItemsTo, "Move selected item(s) to cursor position");
-	key(w, Type::Add, "Add item to playlist");
-	key(w, Type::Load, "Load stored playlist");
+	key(w, NCM_ACTION_PLAY_ITEM, "Play selected item");
+	key(w, NCM_ACTION_DELETE_PLAYLIST_ITEMS, "Delete selected item(s) from playlist");
+	key(w, NCM_ACTION_CLEAR_MAIN_PLAYLIST, "Clear playlist");
+	key(w, NCM_ACTION_CROP_MAIN_PLAYLIST, "Clear playlist except selected item(s)");
+	key(w, NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY, "Set priority of selected items");
+	key(w, NCM_ACTION_MOVE_SELECTED_ITEMS_UP, "Move selected item(s) up");
+	key(w, NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN, "Move selected item(s) down");
+	key(w, NCM_ACTION_MOVE_SELECTED_ITEMS_TO, "Move selected item(s) to cursor position");
+	key(w, NCM_ACTION_ADD, "Add item to playlist");
+	key(w, NCM_ACTION_LOAD, "Load stored playlist");
 #	ifdef HAVE_TAGLIB_H
-	key(w, Type::EditSong, "Edit song");
+	key(w, NCM_ACTION_EDIT_SONG, "Edit song");
 #	endif // HAVE_TAGLIB_H
-	key(w, Type::SavePlaylist, "Save playlist");
-	key(w, Type::Shuffle, "Shuffle range");
-	key(w, Type::SortPlaylist, "Sort range");
-	key(w, Type::ReversePlaylist, "Reverse range");
-	key(w, Type::JumpToPlayingSong, "Jump to current song");
-	key(w, Type::TogglePlayingSongCentering, "Toggle playing song centering");
+	key(w, NCM_ACTION_SAVE_PLAYLIST, "Save playlist");
+	key(w, NCM_ACTION_SHUFFLE, "Shuffle range");
+	key(w, NCM_ACTION_SORT_PLAYLIST, "Sort range");
+	key(w, NCM_ACTION_REVERSE_PLAYLIST, "Reverse range");
+	key(w, NCM_ACTION_JUMP_TO_PLAYING_SONG, "Jump to current song");
+	key(w, NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING, "Toggle playing song centering");
 
 	key_section(w, "Browser");
-	key(w, Type::EnterDirectory, "Enter directory");
-	key(w, Type::PlayItem, "Add item to playlist and play it");
-	key(w, Type::AddItemToPlaylist, "Add item to playlist");
+	key(w, NCM_ACTION_ENTER_DIRECTORY, "Enter directory");
+	key(w, NCM_ACTION_PLAY_ITEM, "Add item to playlist and play it");
+	key(w, NCM_ACTION_ADD_ITEM_TO_PLAYLIST, "Add item to playlist");
 #	ifdef HAVE_TAGLIB_H
-	key(w, Type::EditSong, "Edit song");
+	key(w, NCM_ACTION_EDIT_SONG, "Edit song");
 #	endif // HAVE_TAGLIB_H
-	key(w, Type::EditDirectoryName, "Edit directory name");
-	key(w, Type::EditPlaylistName, "Edit playlist name");
-	key(w, Type::ChangeBrowseMode, "Browse MPD database/local filesystem");
-	key(w, Type::ToggleBrowserSortMode, "Toggle sort mode");
-	key(w, Type::JumpToPlayingSong, "Locate current song");
-	key(w, Type::JumpToParentDirectory, "Jump to parent directory");
-	key(w, Type::DeleteBrowserItems, "Delete selected items from disk");
-	key(w, Type::JumpToPlaylistEditor, "Jump to playlist editor (playlists only)");
+	key(w, NCM_ACTION_EDIT_DIRECTORY_NAME, "Edit directory name");
+	key(w, NCM_ACTION_EDIT_PLAYLIST_NAME, "Edit playlist name");
+	key(w, NCM_ACTION_CHANGE_BROWSE_MODE, "Browse MPD database/local filesystem");
+	key(w, NCM_ACTION_TOGGLE_BROWSER_SORT_MODE, "Toggle sort mode");
+	key(w, NCM_ACTION_JUMP_TO_PLAYING_SONG, "Locate current song");
+	key(w, NCM_ACTION_JUMP_TO_PARENT_DIRECTORY, "Jump to parent directory");
+	key(w, NCM_ACTION_DELETE_BROWSER_ITEMS, "Delete selected items from disk");
+	key(w, NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR, "Jump to playlist editor (playlists only)");
 
 	key_section(w, "Search engine");
-	key(w, Type::RunAction, "Modify option / Run action");
-	key(w, Type::AddItemToPlaylist, "Add item to playlist");
-	key(w, Type::PlayItem, "Add item to playlist and play it");
+	key(w, NCM_ACTION_RUN_ACTION, "Modify option / Run action");
+	key(w, NCM_ACTION_ADD_ITEM_TO_PLAYLIST, "Add item to playlist");
+	key(w, NCM_ACTION_PLAY_ITEM, "Add item to playlist and play it");
 #	ifdef HAVE_TAGLIB_H
-	key(w, Type::EditSong, "Edit song");
+	key(w, NCM_ACTION_EDIT_SONG, "Edit song");
 #	endif // HAVE_TAGLIB_H
-	key(w, Type::StartSearching, "Start searching");
-	key(w, Type::ResetSearchEngine, "Reset search constraints and clear results");
+	key(w, NCM_ACTION_START_SEARCHING, "Start searching");
+	key(w, NCM_ACTION_RESET_SEARCH_ENGINE, "Reset search constraints and clear results");
 
 	key_section(w, "Media library");
-	key(w, Type::ToggleMediaLibraryColumnsMode, "Switch between two/three columns mode");
-	key(w, Type::PreviousColumn, "Previous column");
-	key(w, Type::NextColumn, "Next column");
-	key(w, Type::PlayItem, "Add item to playlist and play it");
-	key(w, Type::AddItemToPlaylist, "Add item to playlist");
-	key(w, Type::JumpToPlayingSong, "Locate current song");
+	key(w, NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE, "Switch between two/three columns mode");
+	key(w, NCM_ACTION_PREVIOUS_COLUMN, "Previous column");
+	key(w, NCM_ACTION_NEXT_COLUMN, "Next column");
+	key(w, NCM_ACTION_PLAY_ITEM, "Add item to playlist and play it");
+	key(w, NCM_ACTION_ADD_ITEM_TO_PLAYLIST, "Add item to playlist");
+	key(w, NCM_ACTION_JUMP_TO_PLAYING_SONG, "Locate current song");
 #	ifdef HAVE_TAGLIB_H
-	key(w, Type::EditSong, "Edit song");
+	key(w, NCM_ACTION_EDIT_SONG, "Edit song");
 #	endif // HAVE_TAGLIB_H
-	key(w, Type::EditLibraryTag, "Edit tag (left column)/album (middle/right column)");
-	key(w, Type::ToggleLibraryTagType, "Toggle type of tag used in left column");
-	key(w, Type::ToggleMediaLibrarySortMode, "Toggle sort mode");
+	key(w, NCM_ACTION_EDIT_LIBRARY_TAG, "Edit tag (left column)/album (middle/right column)");
+	key(w, NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE, "Toggle type of tag used in left column");
+	key(w, NCM_ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE, "Toggle sort mode");
 
 	key_section(w, "Playlist editor");
-	key(w, Type::PreviousColumn, "Previous column");
-	key(w, Type::NextColumn, "Next column");
-	key(w, Type::PlayItem, "Add item to playlist and play it");
-	key(w, Type::AddItemToPlaylist, "Add item to playlist");
-	key(w, Type::JumpToPlayingSong, "Locate current song");
+	key(w, NCM_ACTION_PREVIOUS_COLUMN, "Previous column");
+	key(w, NCM_ACTION_NEXT_COLUMN, "Next column");
+	key(w, NCM_ACTION_PLAY_ITEM, "Add item to playlist and play it");
+	key(w, NCM_ACTION_ADD_ITEM_TO_PLAYLIST, "Add item to playlist");
+	key(w, NCM_ACTION_JUMP_TO_PLAYING_SONG, "Locate current song");
 #	ifdef HAVE_TAGLIB_H
-	key(w, Type::EditSong, "Edit song");
+	key(w, NCM_ACTION_EDIT_SONG, "Edit song");
 #	endif // HAVE_TAGLIB_H
-	key(w, Type::EditPlaylistName, "Edit playlist name");
-	key(w, Type::MoveSelectedItemsUp, "Move selected item(s) up");
-	key(w, Type::MoveSelectedItemsDown, "Move selected item(s) down");
-	key(w, Type::DeleteStoredPlaylist, "Delete selected playlists (left column)");
-	key(w, Type::DeletePlaylistItems, "Delete selected item(s) from playlist (right column)");
-	key(w, Type::ClearPlaylist, "Clear playlist");
-	key(w, Type::CropPlaylist, "Clear playlist except selected items");
+	key(w, NCM_ACTION_EDIT_PLAYLIST_NAME, "Edit playlist name");
+	key(w, NCM_ACTION_MOVE_SELECTED_ITEMS_UP, "Move selected item(s) up");
+	key(w, NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN, "Move selected item(s) down");
+	key(w, NCM_ACTION_DELETE_STORED_PLAYLIST, "Delete selected playlists (left column)");
+	key(w, NCM_ACTION_DELETE_PLAYLIST_ITEMS, "Delete selected item(s) from playlist (right column)");
+	key(w, NCM_ACTION_CLEAR_PLAYLIST, "Clear playlist");
+	key(w, NCM_ACTION_CROP_PLAYLIST, "Clear playlist except selected items");
 
 	key_section(w, "Lyrics");
-	key(w, Type::ToggleLyricsUpdateOnSongChange, "Toggle lyrics update on song change");
-	key(w, Type::EditLyrics, "Open lyrics in external editor");
-	key(w, Type::RefetchLyrics, "Refetch lyrics");
+	key(w, NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE, "Toggle lyrics update on song change");
+	key(w, NCM_ACTION_EDIT_LYRICS, "Open lyrics in external editor");
+	key(w, NCM_ACTION_REFETCH_LYRICS, "Refetch lyrics");
 
 #	ifdef HAVE_TAGLIB_H
 	key_section(w, "Tiny tag editor");
-	key(w, Type::RunAction, "Edit tag / Run action");
-	key(w, Type::SaveTagChanges, "Save");
+	key(w, NCM_ACTION_RUN_ACTION, "Edit tag / Run action");
+	key(w, NCM_ACTION_SAVE_TAG_CHANGES, "Save");
 
 	key_section(w, "Tag editor");
-	key(w, Type::EnterDirectory, "Enter directory (right column)");
-	key(w, Type::RunAction, "Perform operation on selected items (middle column)");
-	key(w, Type::RunAction, "Edit item (left column)");
-	key(w, Type::PreviousColumn, "Previous column");
-	key(w, Type::NextColumn, "Next column");
-	key(w, Type::JumpToParentDirectory, "Jump to parent directory (left column, directories view)");
+	key(w, NCM_ACTION_ENTER_DIRECTORY, "Enter directory (right column)");
+	key(w, NCM_ACTION_RUN_ACTION, "Perform operation on selected items (middle column)");
+	key(w, NCM_ACTION_RUN_ACTION, "Edit item (left column)");
+	key(w, NCM_ACTION_PREVIOUS_COLUMN, "Previous column");
+	key(w, NCM_ACTION_NEXT_COLUMN, "Next column");
+	key(w, NCM_ACTION_JUMP_TO_PARENT_DIRECTORY, "Jump to parent directory (left column, directories view)");
 #	endif // HAVE_TAGLIB_H
 
 #	ifdef ENABLE_OUTPUTS
 	key_section(w, "Outputs");
-	key(w, Type::ToggleOutput, "Toggle output");
+	key(w, NCM_ACTION_TOGGLE_OUTPUT, "Toggle output");
 #	endif // ENABLE_OUTPUTS
 
 #	if defined(ENABLE_VISUALIZER) && defined(HAVE_FFTW3_H)
 	key_section(w, "Music visualizer");
-	key(w, Type::ToggleVisualizationType, "Toggle visualization type");
+	key(w, NCM_ACTION_TOGGLE_VISUALIZATION_TYPE, "Toggle visualization type");
 #	endif // ENABLE_VISUALIZER && HAVE_FFTW3_H
 
 	mouse_section(w, "Global");
@@ -503,8 +514,15 @@ void write_bindings(HelpBuffer &w)
 			{
 				std::vector<std::string> commands;
 				for (int32 k = 0; k < binding->actions_len; k += 1)
-					commands.push_back(
-						bindings_legacy_action_name(binding->actions + k));
+				{
+					NcmBuffer command;
+
+					ncm_buffer_init(&command);
+					ncm_binding_action_format(&command, binding->actions + k);
+					commands.emplace_back(command.data,
+					                      static_cast<size_t>(command.len));
+					ncm_buffer_destroy(&command);
+				}
 				key(w, key_bindings->key, join<std::string>(commands, ", "));
 			}
 		}

@@ -31,7 +31,7 @@
 #include <tuple>
 #include <vector>
 
-#include "bindings_legacy.h"
+#include "bindings.h"
 #include "configuration_legacy.h"
 #include "config.h"
 #include "mpdpp.h"
@@ -76,6 +76,29 @@ std::string trimCopy(std::string s)
 		return "";
 	auto last = s.find_last_not_of(" \t\r\n");
 	return s.substr(first, last-first+1);
+}
+
+bool readBindingPaths(const std::vector<std::string> &paths)
+{
+	std::vector<char *> c_paths;
+	std::vector<int32> c_path_lens;
+	NcmError error;
+
+	c_paths.reserve(paths.size());
+	c_path_lens.reserve(paths.size());
+	for (const auto &path : paths)
+	{
+		c_paths.push_back(const_cast<char *>(path.data()));
+		c_path_lens.push_back(static_cast<int32>(path.size()));
+	}
+
+	ncm_error_clear(&error);
+	return ncm_bindings_configuration_read_paths(
+		&Bindings,
+		c_paths.empty() ? nullptr : c_paths.data(),
+		c_path_lens.empty() ? nullptr : c_path_lens.data(),
+		static_cast<int32>(c_paths.size()),
+		&error);
 }
 
 int parseInt(const std::string &s)
@@ -502,9 +525,9 @@ bool configure(int argc, char **argv)
 
 		// read bindings
 		std::for_each(options.bindings_paths.begin(), options.bindings_paths.end(), expand_home);
-		if (bindings_legacy_read_paths(options.bindings_paths) == false)
+		if (readBindingPaths(options.bindings_paths) == false)
 			exit(1);
-		bindings_legacy_generate_defaults();
+		ncm_bindings_configuration_generate_defaults(&Bindings);
 
 		// create directories
 		std::filesystem::create_directories(Config.ncmpcpp_directory);

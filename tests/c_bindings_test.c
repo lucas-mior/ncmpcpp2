@@ -30,6 +30,20 @@ typedef struct TestRunnerState {
     int32 fail_at;
 } TestRunnerState;
 
+typedef struct TestRuntimeState {
+    enum NcmActionType ran[8];
+    NcKey pushed[8];
+    char external[64];
+    char console[64];
+
+    int32 ran_len;
+    int32 pushed_len;
+    int32 external_len;
+    int32 console_len;
+
+    enum ScreenType current_screen;
+} TestRuntimeState;
+
 static void fail(char *file, int32 line, char *condition);
 static void require_int(char *file, int32 line, char *name,
                         int32 actual, int32 expected);
@@ -39,11 +53,25 @@ static void require_string(char *file, int32 line, char *name,
 static void write_file(char *path, char *data, int32 data_len);
 static void append_action(NcmBinding *binding, enum NcmActionType type);
 static bool record_action(NcmBindingAction *action, void *user);
+static bool runtime_can_run_action(enum NcmActionType type, void *user);
+static bool runtime_run_action(enum NcmActionType type, void *user);
+static bool runtime_current_screen_is(enum ScreenType screen_type,
+                                      void *user);
+static void runtime_push_key(NcKey key, void *user);
+static bool runtime_run_external_command(char *command, int32 command_len,
+                                         void *user);
+static bool runtime_run_external_console_command(char *command,
+                                                 int32 command_len,
+                                                 void *user);
+static NcmBindingRuntime runtime_make(TestRuntimeState *state);
 static void test_default_bindings(void);
 static void test_key_lookup(void);
 static void test_command_lookup(void);
 static void test_binding_file_parsing(void);
 static void test_chained_action_execution(void);
+static void test_runtime_action_execution(void);
+static void test_binding_action_formatting(void);
+static void test_read_paths(void);
 static void test_key_formatting(void);
 
 static void
@@ -110,6 +138,79 @@ record_action(NcmBindingAction *action, void *user) {
         return false;
     }
     return true;
+}
+
+static bool
+runtime_can_run_action(enum NcmActionType type, void *user) {
+    (void)type;
+    (void)user;
+    return true;
+}
+
+static bool
+runtime_run_action(enum NcmActionType type, void *user) {
+    TestRuntimeState *state;
+
+    state = user;
+    state->ran[state->ran_len++] = type;
+    return true;
+}
+
+static bool
+runtime_current_screen_is(enum ScreenType screen_type, void *user) {
+    TestRuntimeState *state;
+
+    state = user;
+    return state->current_screen == screen_type;
+}
+
+static void
+runtime_push_key(NcKey key, void *user) {
+    TestRuntimeState *state;
+
+    state = user;
+    state->pushed[state->pushed_len++] = key;
+    return;
+}
+
+static bool
+runtime_run_external_command(char *command, int32 command_len,
+                             void *user) {
+    TestRuntimeState *state;
+
+    state = user;
+    REQUIRE(command_len < (int32)SIZEOF(state->external));
+    ncm_memcpy(state->external, command, command_len);
+    state->external[command_len] = '\0';
+    state->external_len = command_len;
+    return true;
+}
+
+static bool
+runtime_run_external_console_command(char *command, int32 command_len,
+                                     void *user) {
+    TestRuntimeState *state;
+
+    state = user;
+    REQUIRE(command_len < (int32)SIZEOF(state->console));
+    ncm_memcpy(state->console, command, command_len);
+    state->console[command_len] = '\0';
+    state->console_len = command_len;
+    return true;
+}
+
+static NcmBindingRuntime
+runtime_make(TestRuntimeState *state) {
+    NcmBindingRuntime runtime;
+
+    runtime.can_run_action = runtime_can_run_action;
+    runtime.run_action = runtime_run_action;
+    runtime.current_screen_is = runtime_current_screen_is;
+    runtime.push_key = runtime_push_key;
+    runtime.run_external_command = runtime_run_external_command;
+    runtime.run_external_console_command = runtime_run_external_console_command;
+    runtime.user = state;
+    return runtime;
 }
 
 static void
@@ -269,6 +370,146 @@ test_chained_action_execution(void) {
 }
 
 static void
+test_runtime_action_execution(void) {
+    TestRuntimeState state;
+    NcmBindingsConfiguration bindings;
+    NcmBindingRuntime runtime;
+    NcmBindingSlice slice;
+    NcmError error;
+    char template[] = "/tmp/ncmpcpp-bindings-runtime-XXXXXX";
+    int32 fd;
+
+    fd = mkstemp(template);
+    REQUIRE(fd >= 0);
+    REQUIRE(close(fd) == 0);
+    write_file(template,
+               LIT_ARGS("def_key \"ctrl-z\"\n"
+                        "  require_screen \"playlist\"\n"
+                        "  push_characters \"x\"\n"
+                        "  run_external_command \"notify hi\"\n"
+                        "  run_external_console_command \"clear\"\n"
+                        "  quit\n"));
+
+    ncm_error_clear(&error);
+    ncm_bindings_configuration_init(&bindings);
+    REQUIRE(ncm_bindings_configuration_read(&bindings, template,
+                                            (int32)strlen(template),
+                                            &error));
+    slice = ncm_bindings_configuration_get(
+        &bindings, ncm_bindings_string_to_key(LIT_ARGS("ctrl-z")));
+    REQUIRE_INT(slice.len, 1);
+
+    state = (TestRuntimeState){0};
+    state.current_screen = NCM_SCREEN_TYPE_PLAYLIST;
+    runtime = runtime_make(&state);
+    REQUIRE(ncm_binding_execute_runtime(slice.data, &runtime));
+    REQUIRE_INT(state.pushed_len, 1);
+    REQUIRE_INT(state.pushed[0], 'x');
+    REQUIRE_INT(state.ran_len, 1);
+    REQUIRE_INT(state.ran[0], NCM_ACTION_QUIT);
+    REQUIRE_STRING(state.external, state.external_len, "notify hi");
+    REQUIRE_STRING(state.console, state.console_len, "clear");
+
+    state = (TestRuntimeState){0};
+    state.current_screen = NCM_SCREEN_TYPE_BROWSER;
+    runtime = runtime_make(&state);
+    REQUIRE(!ncm_binding_execute_runtime(slice.data, &runtime));
+
+    ncm_bindings_configuration_destroy(&bindings);
+    REQUIRE(unlink(template) == 0);
+    return;
+}
+
+static void
+test_binding_action_formatting(void) {
+    NcmBindingsConfiguration bindings;
+    NcmBindingSlice slice;
+    NcmBuffer buffer;
+    NcmError error;
+    char template[] = "/tmp/ncmpcpp-bindings-format-XXXXXX";
+    int32 fd;
+
+    fd = mkstemp(template);
+    REQUIRE(fd >= 0);
+    REQUIRE(close(fd) == 0);
+    write_file(template,
+               LIT_ARGS("def_key \"ctrl-j\"\n"
+                        "  require_screen \"playlist\"\n"
+                        "  run_external_command \"echo ok\"\n"
+                        "  quit\n"));
+
+    ncm_error_clear(&error);
+    ncm_bindings_configuration_init(&bindings);
+    REQUIRE(ncm_bindings_configuration_read(&bindings, template,
+                                            (int32)strlen(template),
+                                            &error));
+    slice = ncm_bindings_configuration_get(
+        &bindings, ncm_bindings_string_to_key(LIT_ARGS("ctrl-j")));
+    REQUIRE_INT(slice.len, 1);
+
+    ncm_buffer_init(&buffer);
+    ncm_binding_action_format(&buffer, slice.data[0].actions + 0);
+    REQUIRE_STRING(buffer.data, buffer.len,
+                   "require_screen \"playlist\"");
+    ncm_buffer_clear(&buffer);
+    ncm_binding_action_format(&buffer, slice.data[0].actions + 1);
+    REQUIRE_STRING(buffer.data, buffer.len,
+                   "run_external_command \"echo ok\"");
+    ncm_buffer_clear(&buffer);
+    ncm_binding_action_format(&buffer, slice.data[0].actions + 2);
+    REQUIRE_STRING(buffer.data, buffer.len, "quit");
+    ncm_buffer_destroy(&buffer);
+
+    ncm_bindings_configuration_destroy(&bindings);
+    REQUIRE(unlink(template) == 0);
+    return;
+}
+
+static void
+test_read_paths(void) {
+    NcmBindingsConfiguration bindings;
+    NcmCommand *command;
+    NcmError error;
+    char first[] = "/tmp/ncmpcpp-bindings-path-a-XXXXXX";
+    char second[] = "/tmp/ncmpcpp-bindings-path-b-XXXXXX";
+    char *paths[2];
+    int32 path_lens[2];
+    int32 fd;
+
+    fd = mkstemp(first);
+    REQUIRE(fd >= 0);
+    REQUIRE(close(fd) == 0);
+    fd = mkstemp(second);
+    REQUIRE(fd >= 0);
+    REQUIRE(close(fd) == 0);
+    write_file(first,
+               LIT_ARGS("def_command \"first-command\" [deferred]\n"
+                        "  quit\n"));
+    write_file(second,
+               LIT_ARGS("def_key \"ctrl-q\"\n"
+                        "  quit\n"));
+
+    paths[0] = first;
+    paths[1] = second;
+    path_lens[0] = (int32)strlen(first);
+    path_lens[1] = (int32)strlen(second);
+
+    ncm_error_clear(&error);
+    ncm_bindings_configuration_init(&bindings);
+    REQUIRE(ncm_bindings_configuration_read_paths(&bindings, paths,
+                                                  path_lens, 2, &error));
+    command = ncm_bindings_configuration_find_command(
+        &bindings, LIT_ARGS("first-command"));
+    REQUIRE(command != NULL);
+    REQUIRE_INT(command->binding.actions[0].type, NCM_ACTION_QUIT);
+
+    ncm_bindings_configuration_destroy(&bindings);
+    REQUIRE(unlink(first) == 0);
+    REQUIRE(unlink(second) == 0);
+    return;
+}
+
+static void
 test_key_formatting(void) {
     NcmBuffer buffer;
     NcKey key;
@@ -288,6 +529,9 @@ main(void) {
     test_command_lookup();
     test_binding_file_parsing();
     test_chained_action_execution();
+    test_runtime_action_execution();
+    test_binding_action_formatting();
+    test_read_paths();
     test_key_formatting();
     exit(EXIT_SUCCESS);
 }

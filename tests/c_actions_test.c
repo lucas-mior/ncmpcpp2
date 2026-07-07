@@ -40,6 +40,7 @@ static void test_duplicate_action_detection(void);
 static void test_disabled_action_checks(void);
 static void test_action_execution_paths(void);
 static void test_custom_table_lookup(void);
+static void test_action_callback_installation(void);
 
 static void
 fail(char *file, int32 line, char *condition) {
@@ -198,6 +199,21 @@ test_action_execution_paths(void) {
     return;
 }
 
+
+static void
+test_action_callback_installation(void) {
+    ActionTestState state;
+
+    state = (ActionTestState){0};
+    REQUIRE(ncm_action_set_callbacks(NCM_ACTION_DUMMY, can_run_true,
+                                     run_record));
+    REQUIRE(ncm_action_run(NCM_ACTION_DUMMY, &state));
+    REQUIRE_INT(state.calls, 1);
+    REQUIRE(!ncm_action_set_callbacks(NCM_ACTION_MACRO_UTILITY,
+                                      can_run_true, run_record));
+    return;
+}
+
 static void
 test_custom_table_lookup(void) {
     NcmActionDef table[] = {
@@ -228,5 +244,6 @@ main(void) {
     test_disabled_action_checks();
     test_action_execution_paths();
     test_custom_table_lookup();
+    test_action_callback_installation();
     exit(EXIT_SUCCESS);
 }

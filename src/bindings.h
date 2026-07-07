@@ -66,6 +66,27 @@ typedef struct NcmBindingSlice {
 typedef bool (*NcmBindingActionRunner)(NcmBindingAction *action,
                                        void *user);
 
+typedef bool (*NcmBindingCanRunActionFn)(enum NcmActionType type,
+                                         void *user);
+typedef bool (*NcmBindingRunActionFn)(enum NcmActionType type,
+                                      void *user);
+typedef bool (*NcmBindingCurrentScreenIsFn)(enum ScreenType screen_type,
+                                            void *user);
+typedef void (*NcmBindingPushKeyFn)(NcKey key, void *user);
+typedef bool (*NcmBindingRunExternalCommandFn)(char *command,
+                                               int32 command_len,
+                                               void *user);
+
+typedef struct NcmBindingRuntime {
+    NcmBindingCanRunActionFn can_run_action;
+    NcmBindingRunActionFn run_action;
+    NcmBindingCurrentScreenIsFn current_screen_is;
+    NcmBindingPushKeyFn push_key;
+    NcmBindingRunExternalCommandFn run_external_command;
+    NcmBindingRunExternalCommandFn run_external_console_command;
+    void *user;
+} NcmBindingRuntime;
+
 typedef struct NcmBindingsConfiguration {
     NcmCommand *commands;
     NcmKeyBindings *keys;
@@ -91,6 +112,19 @@ bool ncm_binding_copy(NcmBinding *dest, NcmBinding *source);
 bool ncm_binding_is_single(NcmBinding *binding);
 bool ncm_binding_execute(NcmBinding *binding,
                          NcmBindingActionRunner runner, void *user);
+bool ncm_binding_action_can_run(NcmBindingAction *action,
+                                NcmBindingRuntime *runtime);
+bool ncm_binding_action_run(NcmBindingAction *action,
+                            NcmBindingRuntime *runtime);
+bool ncm_binding_execute_runtime(NcmBinding *binding,
+                                 NcmBindingRuntime *runtime);
+bool ncm_binding_has_runnable_action(NcmBinding *binding,
+                                     enum NcmActionType type,
+                                     NcmBindingRuntime *runtime);
+bool ncm_binding_is_single_action_type(NcmBinding *binding,
+                                       enum NcmActionType type);
+void ncm_binding_action_format(NcmBuffer *buffer,
+                               NcmBindingAction *action);
 
 void ncm_command_init(NcmCommand *command);
 void ncm_command_destroy(NcmCommand *command);
