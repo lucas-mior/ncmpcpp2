@@ -17,6 +17,7 @@ CPPFLAGS ?=
 CFLAGS ?= -O0 -g3
 CXXFLAGS ?= -O0 -g3
 LDFLAGS ?=
+LDLIBS ?= -lm
 CXXSTD ?= -std=c++20
 
 PKG_DEPS := 'libmpdclient >= 2.8' ncursesw 'fftw3 >= 3' libcurl taglib_c
@@ -211,6 +212,7 @@ $(BINARY): $(APP_C_OBJS) $(APP_CXX_OBJS) $(NCMPCPP_C_LIB) $(CBASE_LIB)
 		$(CBASE_LIB) \
 		$(READLINE_LIBS) \
 		$(PKG_LIBS) \
+		$(LDLIBS) \
 		$(THREAD_FLAGS)
 
 $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LIB) $(CBASE_LIB)
@@ -224,6 +226,7 @@ $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LI
 		$(CBASE_LIB) \
 		-Wl,--end-group \
 		$(PKG_LIBS) \
+		$(LDLIBS) \
 		$(THREAD_FLAGS)
 
 
@@ -331,6 +334,7 @@ help:
 	@printf '%s\n' '  CC, CXX, AR        compiler and archive commands'
 	@printf '%s\n' '  CFLAGS, CXXFLAGS   extra compiler flags'
 	@printf '%s\n' '  CPPFLAGS, LDFLAGS  extra preprocessor and linker flags'
+	@printf '%s\n' '  LDLIBS             extra libraries, default: -lm'
 	@printf '%s\n' '  BUILD_DIR          build output directory, default: build'
 	@printf '%s\n' '  PREFIX             install prefix, default: /usr/local'
 	@printf '%s\n' '  BINDIR             binary install directory, default: PREFIX/bin'
