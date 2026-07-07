@@ -753,6 +753,8 @@ native_lyrics_filename_from_song(NcmBuffer *filename,
     NcmBuffer artist;
     NcmBuffer title;
     NcmStringView uri;
+    int32 basename_start;
+    int32 basename_len;
 
     ncm_buffer_init(&artist);
     ncm_buffer_init(&title);
@@ -779,6 +781,7 @@ native_lyrics_filename_from_song(NcmBuffer *filename,
                 ncm_buffer_append_byte(filename, '/');
             }
         }
+        basename_start = filename->len;
         if ((artist.len > 0) && (title.len > 0)) {
             ncm_buffer_append(filename, artist.data, artist.len);
             ncm_buffer_append(filename, STRLIT_ARGS(" - "));
@@ -786,12 +789,16 @@ native_lyrics_filename_from_song(NcmBuffer *filename,
         } else {
             ncm_buffer_append(filename, title.data, title.len);
         }
-        ncm_string_remove_invalid_filename_chars(filename->data,
-                                                &filename->len,
-                                                win32_filename);
-        filename->data[filename->len] = '\0';
+        basename_len = filename->len - basename_start;
+        if (basename_len > 0) {
+            ncm_string_remove_invalid_filename_chars(
+                filename->data + basename_start,
+                &basename_len,
+                win32_filename);
+            filename->len = basename_start + basename_len;
+            filename->data[filename->len] = '\0';
+        }
     }
-    native_lyrics_remove_extension(filename);
     ncm_buffer_append(filename, STRLIT_ARGS(".txt"));
     ncm_buffer_destroy(&title);
     ncm_buffer_destroy(&artist);
