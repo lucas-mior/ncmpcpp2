@@ -150,8 +150,8 @@ TagEditor::TagEditor() : FParser(0), FParserHelper(0), FParserLegend(0), FParser
 		menu << Charset::utf8ToLocale(menu.drawn()->value());
 	});
 
-	for (const SongInfo::Metadata *m = SongInfo::Tags; m->Name; ++m)
-		TagTypes->addItem(m->Name);
+	for (const NcmSongInfoMetadata *m = ncm_song_info_tags; m->name; ++m)
+		TagTypes->addItem(m->name);
 	TagTypes->addSeparator();
 	TagTypes->addItem("Filename");
 	TagTypes->addSeparator();
@@ -730,8 +730,8 @@ void TagEditor::runAction()
 
 	if (id < 11)
 	{
-		enum NcmSongGetter getter = SongInfo::Tags[id].Get;
-		enum NcmTagsField field = SongInfo::Tags[id].Field;
+		enum NcmSongGetter getter = ncm_song_info_tags[id].get;
+		enum NcmTagsField field = ncm_song_info_tags[id].field;
 		if (w == TagTypes)
 		{
 			Statusbar::ScopedLock slock;
@@ -1031,21 +1031,21 @@ std::string CapitalizeFirstLetters(const std::string &s)
 
 void CapitalizeFirstLetters(MPD::MutableSong &s)
 {
-	for (const SongInfo::Metadata *m = SongInfo::Tags; m->Name; ++m)
+	for (const NcmSongInfoMetadata *m = ncm_song_info_tags; m->name; ++m)
 	{
 		unsigned i = 0;
-		for (std::string tag; !(tag = s.get(m->Get, i)).empty(); ++i)
-			s.set(m->Field, CapitalizeFirstLetters(tag), i);
+		for (std::string tag; !(tag = s.get(m->get, i)).empty(); ++i)
+			s.set(m->field, CapitalizeFirstLetters(tag), i);
 	}
 }
 
 void LowerAllLetters(MPD::MutableSong &s)
 {
-	for (const SongInfo::Metadata *m = SongInfo::Tags; m->Name; ++m)
+	for (const NcmSongInfoMetadata *m = ncm_song_info_tags; m->name; ++m)
 	{
 		unsigned i = 0;
-		for (std::string tag; !(tag = s.get(m->Get, i)).empty(); ++i)
-			s.set(m->Field, lowercaseAscii(tag), i);
+		for (std::string tag; !(tag = s.get(m->get, i)).empty(); ++i)
+			s.set(m->field, lowercaseAscii(tag), i);
 	}
 }
 
@@ -1153,7 +1153,7 @@ std::string SongToString(const MPD::MutableSong &s)
 	std::string result;
 	size_t i = myTagEditor->TagTypes->choice();
 	if (i < 11)
-		result = s.get(SongInfo::Tags[i].Get, 0);
+		result = s.get(ncm_song_info_tags[i].get, 0);
 	else if (i == 12)
 		result = s.getNewName().empty() ? s.getName() : s.getName() + " -> " + s.getNewName();
 	return result.empty() ? Config.empty_tag : result;

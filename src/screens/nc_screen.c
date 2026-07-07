@@ -2,6 +2,9 @@
 
 #include <stddef.h>
 
+#include "settings.h"
+#include "ui_state.h"
+
 static int32 nc_screen_registry_index_of(NcScreenRegistry *registry,
                                          NcScreen *screen);
 static bool nc_screen_registry_has_type(NcScreenRegistry *registry,
@@ -10,6 +13,10 @@ static void nc_screen_registry_clear_refs(NcScreenRegistry *registry,
                                           NcScreen *screen);
 static void nc_screen_registry_update_one(NcScreen *screen, void *user);
 static void nc_screen_registry_resize_one(NcScreen *screen, void *user);
+static void nc_screen_registry_request_resize_one(NcScreen *screen,
+                                                  void *user);
+static void nc_screen_registry_request_update_one(NcScreen *screen,
+                                                  void *user);
 
 void
 nc_screen_init(NcScreen *screen, NcScreenCallbacks callbacks,
@@ -18,6 +25,7 @@ nc_screen_init(NcScreen *screen, NcScreenCallbacks callbacks,
     screen->user = user;
     screen->type = type;
     screen->has_to_be_resized = false;
+    screen->has_to_be_updated = false;
     return;
 }
 
@@ -51,6 +59,14 @@ nc_screen_scroll(NcScreen *screen, enum NcScroll where) {
         screen->callbacks.scroll(screen, where);
     }
     return;
+}
+
+bool
+nc_screen_is_active_window(NcScreen *screen, NcWindow *window) {
+    if (screen == NULL || window == NULL) {
+        return false;
+    }
+    return nc_screen_active_window(screen) == window;
 }
 
 void
@@ -102,6 +118,7 @@ nc_screen_update(NcScreen *screen) {
     if (screen->callbacks.update) {
         screen->callbacks.update(screen);
     }
+    screen->has_to_be_updated = false;
     return;
 }
 
@@ -138,6 +155,77 @@ void
 nc_screen_set_has_to_be_resized(NcScreen *screen,
                                 bool has_to_be_resized) {
     screen->has_to_be_resized = has_to_be_resized;
+    return;
+}
+
+bool
+nc_screen_has_to_be_updated(NcScreen *screen) {
+    return screen->has_to_be_updated;
+}
+
+void
+nc_screen_set_has_to_be_updated(NcScreen *screen,
+                                bool has_to_be_updated) {
+    screen->has_to_be_updated = has_to_be_updated;
+    return;
+}
+
+void
+nc_screen_request_resize(NcScreen *screen) {
+    nc_screen_set_has_to_be_resized(screen, true);
+    return;
+}
+
+void
+nc_screen_request_update(NcScreen *screen) {
+    nc_screen_set_has_to_be_updated(screen, true);
+    return;
+}
+
+void
+nc_screen_clear_resize_request(NcScreen *screen) {
+    nc_screen_set_has_to_be_resized(screen, false);
+    return;
+}
+
+void
+nc_screen_clear_update_request(NcScreen *screen) {
+    nc_screen_set_has_to_be_updated(screen, false);
+    return;
+}
+
+NcScreenResizeParams
+nc_screen_resize_params(NcScreen *screen) {
+    NcScreenResizeParams params;
+
+    (void)screen;
+    params.x_offset = 0;
+    params.width = ui_state_screen_width();
+    return params;
+}
+
+void
+nc_screen_get_resize_params(NcScreen *screen, int64 *x_offset,
+                            int64 *width) {
+    NcScreenResizeParams params;
+
+    params = nc_screen_resize_params(screen);
+    if (x_offset != NULL) {
+        *x_offset = params.x_offset;
+    }
+    if (width != NULL) {
+        *width = params.width;
+    }
+    return;
+}
+
+void
+nc_screen_draw_vertical_separator(int64 x) {
+    color_set(nc_color_pair_number(Config.main_color), NULL);
+    mvvline((int32)ui_state_main_start_y(), (int32)x, 0,
+            (int32)ui_state_main_height());
+    standend();
+    refresh();
     return;
 }
 
@@ -245,6 +333,130 @@ bool
 nc_screen_registry_is_registered(NcScreenRegistry *registry,
                                  NcScreen *screen) {
     return nc_screen_registry_index_of(registry, screen) >= 0;
+}
+
+bool
+nc_screen_registry_is_current(NcScreenRegistry *registry,
+                              NcScreen *screen) {
+    return registry->current_screen == screen;
+}
+
+bool
+nc_screen_registry_is_previous(NcScreenRegistry *registry,
+                               NcScreen *screen) {
+    return registry->previous_screen == screen;
+}
+
+bool
+nc_screen_registry_request_resize(NcScreenRegistry *registry,
+                                  NcScreen *screen) {
+    if (!nc_screen_registry_is_registered(registry, screen)) {
+        return false;
+    }
+    nc_screen_request_resize(screen);
+    return true;
+}
+
+bool
+nc_screen_registry_request_update(NcScreenRegistry *registry,
+                                  NcScreen *screen) {
+    if (!nc_screen_registry_is_registered(registry, screen)) {
+        return false;
+    }
+    nc_screen_request_update(screen);
+    return true;
+}
+
+void
+nc_screen_registry_request_resize_current(NcScreenRegistry *registry) {
+    if (registry->current_screen != NULL) {
+        nc_screen_request_resize(registry->current_screen);
+    }
+    return;
+}
+
+void
+nc_screen_registry_request_resize_visible(NcScreenRegistry *registry) {
+    nc_screen_registry_each_visible(
+        registry, nc_screen_registry_request_resize_one, NULL);
+    return;
+}
+
+void
+nc_screen_registry_request_resize_all(NcScreenRegistry *registry) {
+    for (int32 i = 0; i < registry->screens_len; i += 1) {
+        nc_screen_request_resize(registry->screens[i]);
+    }
+    return;
+}
+
+void
+nc_screen_registry_request_update_current(NcScreenRegistry *registry) {
+    if (registry->current_screen != NULL) {
+        nc_screen_request_update(registry->current_screen);
+    }
+    return;
+}
+
+void
+nc_screen_registry_request_update_visible(NcScreenRegistry *registry) {
+    nc_screen_registry_each_visible(
+        registry, nc_screen_registry_request_update_one, NULL);
+    return;
+}
+
+void
+nc_screen_registry_request_update_all(NcScreenRegistry *registry) {
+    for (int32 i = 0; i < registry->screens_len; i += 1) {
+        nc_screen_request_update(registry->screens[i]);
+    }
+    return;
+}
+
+NcScreenResizeParams
+nc_screen_registry_resize_params(NcScreenRegistry *registry,
+                                 NcScreen *screen,
+                                 bool adjust_locked_screen) {
+    NcScreenResizeParams params;
+    NcScreen *locked_screen;
+    NcScreen *inactive_screen;
+    int64 locked_width;
+
+    params = nc_screen_resize_params(screen);
+    if (registry == NULL) {
+        return params;
+    }
+
+    locked_screen = registry->locked_screen;
+    inactive_screen = registry->inactive_screen;
+    if (locked_screen == NULL || inactive_screen == NULL) {
+        return params;
+    }
+    if (params.width <= 0) {
+        return params;
+    }
+
+    locked_width = (int64)(params.width * Config.locked_screen_width_part);
+    if (locked_width < 0) {
+        locked_width = 0;
+    }
+    if (locked_width >= params.width) {
+        locked_width = params.width - 1;
+    }
+
+    if (locked_screen == screen) {
+        params.width = locked_width;
+        return params;
+    }
+
+    params.x_offset = locked_width + 1;
+    params.width = params.width - locked_width - 1;
+    if (adjust_locked_screen) {
+        nc_screen_resize(locked_screen);
+        nc_screen_refresh(locked_screen);
+        nc_screen_draw_vertical_separator(params.x_offset - 1);
+    }
+    return params;
 }
 
 bool
@@ -508,5 +720,21 @@ static void
 nc_screen_registry_resize_one(NcScreen *screen, void *user) {
     (void)user;
     nc_screen_resize(screen);
+    return;
+}
+
+static void
+nc_screen_registry_request_resize_one(NcScreen *screen,
+                                      void *user) {
+    (void)user;
+    nc_screen_request_resize(screen);
+    return;
+}
+
+static void
+nc_screen_registry_request_update_one(NcScreen *screen,
+                                      void *user) {
+    (void)user;
+    nc_screen_request_update(screen);
     return;
 }

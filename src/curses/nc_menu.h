@@ -20,6 +20,13 @@ enum NcMenuItemSource {
     NC_MENU_ITEMS_FILTERED,
 };
 
+enum NcMenuItemFlag {
+    NC_MENU_ITEM_SELECTABLE = 1U << 0,
+    NC_MENU_ITEM_SELECTED = 1U << 1,
+    NC_MENU_ITEM_INACTIVE = 1U << 2,
+    NC_MENU_ITEM_SEPARATOR = 1U << 3,
+};
+
 typedef struct NcMenuItemCallbacks {
     int64 item_size;
     void (*construct)(void *dest, void *user);
@@ -47,6 +54,8 @@ typedef struct NcMenuActionCallbacks {
 struct NcMenu {
     void **all_items;
     void **filtered_items;
+    uint32 *all_item_flags;
+    uint32 *filtered_item_flags;
     enum NcMenuItemSource active_items;
     NcMenuItemCallbacks item_callbacks;
     NcMenuDisplayCallbacks display_callbacks;
@@ -109,7 +118,16 @@ void nc_menu_reset(NcMenu *menu);
 void nc_menu_highlight_position(NcMenu *menu, int64 pos, int64 height);
 void nc_menu_resize_all_items(NcMenu *menu, int64 new_size);
 void nc_menu_add_item(NcMenu *menu, void *item);
+void nc_menu_add_item_with_flags(NcMenu *menu, void *item, uint32 flags);
+void nc_menu_add_separator(NcMenu *menu);
 void nc_menu_insert_item(NcMenu *menu, int64 pos, void *item);
+void nc_menu_insert_item_with_flags(NcMenu *menu, int64 pos, void *item,
+                                    uint32 flags);
+void nc_menu_insert_separator(NcMenu *menu, int64 pos);
+bool nc_menu_remove_item(NcMenu *menu, enum NcMenuItemSource source,
+                         int64 pos);
+bool nc_menu_replace_item(NcMenu *menu, enum NcMenuItemSource source,
+                          int64 pos, void *item);
 void nc_menu_clear_items(NcMenu *menu);
 void nc_menu_clear_filtered_items(NcMenu *menu);
 void nc_menu_add_filtered_item_ref(NcMenu *menu, void *item);
@@ -119,15 +137,30 @@ void nc_menu_show_filtered_items(NcMenu *menu);
 bool nc_menu_is_filtered(NcMenu *menu);
 bool nc_menu_empty(NcMenu *menu);
 bool nc_menu_position_is_selectable(NcMenu *menu, int64 pos);
+bool nc_menu_position_is_separator(NcMenu *menu, int64 pos);
+bool nc_menu_position_is_inactive(NcMenu *menu, int64 pos);
 bool nc_menu_position_is_selected(NcMenu *menu, int64 pos);
 bool nc_menu_set_position_selected(NcMenu *menu, int64 pos, bool selected);
 bool nc_menu_toggle_position_selected(NcMenu *menu, int64 pos);
+bool nc_menu_select_range(NcMenu *menu, int64 first, int64 last,
+                          bool selected);
+void nc_menu_clear_selection(NcMenu *menu);
+void nc_menu_reverse_selection(NcMenu *menu);
+bool nc_menu_has_selected(NcMenu *menu);
+int64 nc_menu_selected_count(NcMenu *menu);
+int64 nc_menu_first_selected_position(NcMenu *menu);
 bool nc_menu_current_is_selectable(NcMenu *menu);
 bool nc_menu_current_is_selected(NcMenu *menu);
+bool nc_menu_current_is_separator(NcMenu *menu);
+bool nc_menu_current_is_inactive(NcMenu *menu);
 bool nc_menu_set_current_selected(NcMenu *menu, bool selected);
 bool nc_menu_toggle_current_selected(NcMenu *menu);
 bool nc_menu_activate_position(NcMenu *menu, int64 pos);
 bool nc_menu_activate_current(NcMenu *menu);
+uint32 nc_menu_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
+                             int64 pos);
+bool nc_menu_set_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
+                               int64 pos, uint32 flags);
 void *nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int64 pos);
 void *nc_menu_active_item_at(NcMenu *menu, int64 pos);
 void *nc_menu_current_item(NcMenu *menu);

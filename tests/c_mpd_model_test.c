@@ -3,6 +3,7 @@
 
 #include "c/ncm_base.h"
 #include "c/ncm_directory.h"
+#include "c/ncm_mpd_connection.h"
 #include "c/ncm_mpd_item.h"
 #include "c/ncm_playlist.h"
 #include "c/ncm_song.h"
@@ -42,6 +43,9 @@ static void test_item_directory_copy(void);
 static void test_item_playlist_replacement(void);
 static void test_item_empty_song_copy(void);
 static void test_item_song_null_constructors(void);
+static void test_mpd_song_list_copy_and_array(void);
+static void test_mpd_item_list_directory_array(void);
+static void test_mpd_string_output_and_playlist_lists(void);
 
 static void
 fail(char *file, int32 line, char *condition) {
@@ -468,6 +472,136 @@ test_item_song_null_constructors(void) {
     return;
 }
 
+static void
+test_mpd_song_list_copy_and_array(void) {
+    NcmSong song;
+    NcmMpdSongList list;
+    NcmMpdSongList copy;
+    NcmSongArray array;
+    NcmStringView view;
+
+    ncm_song_init(&song);
+    ncm_mpd_song_list_init(&list);
+    ncm_mpd_song_list_init(&copy);
+    ncm_song_array_init(&array);
+
+    REQUIRE(ncm_song_set_uri(&song, LIT_ARGS("one.flac")));
+    REQUIRE(ncm_mpd_song_list_append_copy(&list, &song));
+    REQUIRE(ncm_song_set_uri(&song, LIT_ARGS("two.flac")));
+    ncm_mpd_song_list_append_move(&list, &song);
+    REQUIRE(ncm_song_empty(&song));
+    REQUIRE_INT(ncm_mpd_song_list_count(&list), 2);
+
+    REQUIRE(ncm_mpd_song_list_copy(&copy, &list));
+    REQUIRE_INT(ncm_mpd_song_list_count(&copy), 2);
+    REQUIRE(ncm_song_uri_view(ncm_mpd_song_list_at(&copy, 1), 0, &view));
+    REQUIRE_STRING(view.data, view.len, "two.flac");
+
+    REQUIRE(ncm_mpd_song_list_to_song_array(&copy, &array));
+    REQUIRE_INT(array.len, 2);
+    REQUIRE(ncm_song_uri_view(&array.items[0], 0, &view));
+    REQUIRE_STRING(view.data, view.len, "one.flac");
+
+    ncm_song_array_destroy(&array);
+    ncm_mpd_song_list_destroy(&copy);
+    ncm_mpd_song_list_destroy(&list);
+    ncm_song_destroy(&song);
+    return;
+}
+
+static void
+test_mpd_item_list_directory_array(void) {
+    NcmDirectory directory;
+    NcmMpdItem item;
+    NcmMpdItemList list;
+    NcmMpdItemArray items;
+    NcmDirectoryArray directories;
+
+    ncm_directory_init(&directory);
+    ncm_mpd_item_init(&item);
+    ncm_mpd_item_list_init(&list);
+    ncm_mpd_item_array_init(&items);
+    ncm_directory_array_init(&directories);
+
+    REQUIRE(ncm_directory_set(&directory, LIT_ARGS("Albums"), 77));
+    REQUIRE(ncm_mpd_item_set_directory(&item, &directory));
+    REQUIRE(ncm_mpd_item_list_append_copy(&list, &item));
+    REQUIRE_INT(ncm_mpd_item_list_count(&list), 1);
+    REQUIRE(ncm_mpd_item_list_to_item_array(&list, &items));
+    REQUIRE_INT(items.len, 1);
+    REQUIRE(ncm_mpd_item_list_to_directory_array(&list, &directories));
+    REQUIRE_INT(directories.len, 1);
+    REQUIRE_STRING(directories.items[0].path,
+                   directories.items[0].path_len, "Albums");
+
+    ncm_directory_array_destroy(&directories);
+    ncm_mpd_item_array_destroy(&items);
+    ncm_mpd_item_list_destroy(&list);
+    ncm_mpd_item_destroy(&item);
+    ncm_directory_destroy(&directory);
+    return;
+}
+
+static void
+test_mpd_string_output_and_playlist_lists(void) {
+    NcmMpdString string;
+    NcmMpdStringList strings;
+    NcmBufferArray buffers;
+    NcmMpdOutput output;
+    NcmMpdOutputList outputs;
+    NcmMpdOutputList outputs_copy;
+    NcmPlaylist playlist;
+    NcmMpdPlaylistList playlists;
+    NcmPlaylistArray playlist_array;
+
+    ncm_mpd_string_init(&string);
+    ncm_mpd_string_list_init(&strings);
+    ncm_buffer_array_init(&buffers);
+    ncm_mpd_output_init(&output);
+    ncm_mpd_output_list_init(&outputs);
+    ncm_mpd_output_list_init(&outputs_copy);
+    ncm_playlist_init(&playlist);
+    ncm_mpd_playlist_list_init(&playlists);
+    ncm_playlist_array_init(&playlist_array);
+
+    REQUIRE(ncm_mpd_string_set(&string, LIT_ARGS("handler")));
+    REQUIRE_STRING(string.value, string.value_len, "handler");
+    REQUIRE(ncm_mpd_string_list_append(&strings, LIT_ARGS("alpha")));
+    REQUIRE(ncm_mpd_string_list_append(&strings, LIT_ARGS("beta")));
+    REQUIRE_INT(ncm_mpd_string_list_count(&strings), 2);
+    REQUIRE(ncm_mpd_string_list_to_buffer_array(&strings, &buffers));
+    REQUIRE_INT(buffers.len, 2);
+    REQUIRE_STRING(buffers.items[1].data, buffers.items[1].len, "beta");
+
+    REQUIRE(ncm_mpd_output_set(&output, 42, LIT_ARGS("speakers"), true));
+    REQUIRE(ncm_mpd_output_list_append_copy(&outputs, &output));
+    REQUIRE(ncm_mpd_output_list_copy(&outputs_copy, &outputs));
+    REQUIRE_INT(ncm_mpd_output_list_count(&outputs_copy), 1);
+    REQUIRE_INT((int32)ncm_mpd_output_list_at(&outputs_copy, 0)->id, 42);
+    REQUIRE_STRING(outputs_copy.items[0].name,
+                   outputs_copy.items[0].name_len, "speakers");
+    REQUIRE(outputs_copy.items[0].enabled);
+
+    REQUIRE(ncm_playlist_set(&playlist, LIT_ARGS("favorites"), 5));
+    REQUIRE(ncm_mpd_playlist_list_append_copy(&playlists, &playlist));
+    REQUIRE(ncm_mpd_playlist_list_to_playlist_array(&playlists,
+                                                    &playlist_array));
+    REQUIRE_INT(playlist_array.len, 1);
+    REQUIRE_STRING(playlist_array.items[0].path,
+                   playlist_array.items[0].path_len, "favorites");
+
+    ncm_playlist_array_destroy(&playlist_array);
+    ncm_mpd_playlist_list_destroy(&playlists);
+    ncm_playlist_destroy(&playlist);
+    ncm_mpd_output_list_destroy(&outputs_copy);
+    ncm_mpd_output_list_destroy(&outputs);
+    ncm_mpd_output_destroy(&output);
+    ncm_buffer_array_destroy(&buffers);
+    ncm_mpd_string_list_destroy(&strings);
+    ncm_mpd_string_destroy(&string);
+    return;
+}
+
 int
 main(void) {
     test_directory();
@@ -482,6 +616,9 @@ main(void) {
     test_item_playlist_replacement();
     test_item_empty_song_copy();
     test_item_song_null_constructors();
+    test_mpd_song_list_copy_and_array();
+    test_mpd_item_list_directory_array();
+    test_mpd_string_output_and_playlist_lists();
 
     exit(EXIT_SUCCESS);
 }

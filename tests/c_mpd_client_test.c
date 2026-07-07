@@ -14,6 +14,15 @@ expect_true(bool value, char *message) {
 }
 
 static void
+expect_false(bool value, char *message) {
+    if (value) {
+        fprintf(stderr, "%s\n", message);
+        exit(EXIT_FAILURE);
+    }
+    return;
+}
+
+static void
 expect_string(char *actual, char *expected, char *message) {
     if (strcmp(actual, expected) != 0) {
         fprintf(stderr, "%s: got '%s', expected '%s'\n",
@@ -57,9 +66,54 @@ test_host_password_split(void) {
     return;
 }
 
+static void
+test_song_based_api_guards(void) {
+    NcmMpdClient client;
+    NcmSong song;
+    NcmSongList list;
+    NcmMpdSongList mpd_list;
+    NcmError error;
+
+    ncm_mpd_client_init(&client);
+    ncm_song_init(&song);
+    ncm_song_list_init(&list);
+    ncm_mpd_song_list_init(&mpd_list);
+    ncm_error_clear(&error);
+
+    expect_false(ncm_mpd_client_set_priority_song(&client, NULL,
+                                                  1, &error),
+                 "missing song priority guard failed");
+    expect_true(ncm_error_is_set(&error), "missing song error not set");
+    ncm_error_clear(&error);
+
+    expect_false(ncm_mpd_client_add_song_value(&client, &song,
+                                               -1, NULL, &error),
+                 "song without URI guard failed");
+    expect_true(ncm_error_is_set(&error), "missing URI error not set");
+    ncm_error_clear(&error);
+
+    expect_false(ncm_mpd_client_add_song_list(&client, &mpd_list,
+                                               -1, &error),
+                 "empty MPD song list guard failed");
+    expect_true(ncm_error_is_set(&error), "empty MPD list error not set");
+    ncm_error_clear(&error);
+
+    expect_false(ncm_mpd_client_add_selected_songs(&client, &list,
+                                                   -1, &error),
+                 "empty selected song list guard failed");
+    expect_true(ncm_error_is_set(&error), "empty selection error not set");
+
+    ncm_mpd_song_list_destroy(&mpd_list);
+    ncm_song_list_destroy(&list);
+    ncm_song_destroy(&song);
+    ncm_mpd_client_destroy(&client);
+    return;
+}
+
 int
 main(void) {
     test_client_defaults();
     test_host_password_split();
+    test_song_based_api_guards();
     return EXIT_SUCCESS;
 }

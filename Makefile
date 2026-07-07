@@ -73,9 +73,13 @@ REMOVED_CXX_SRCS := \
 	src/macro_utilities.cpp \
 	src/mutable_song.cpp \
 	src/screens/help.cpp \
+	src/screens/help_bridge.cpp \
 	src/screens/outputs.cpp \
+	src/screens/outputs_bridge.cpp \
 	src/screens/server_info.cpp \
+	src/screens/server_info_bridge.cpp \
 	src/screens/song_info.cpp \
+	src/screens/song_info_bridge.cpp \
 	src/screens/native_c_screens.cpp \
 	src/screens/screen.cpp \
 	src/screens/screen_legacy.cpp \

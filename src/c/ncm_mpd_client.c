@@ -550,6 +550,21 @@ ncm_mpd_client_update_directory(NcmMpdClient *client, char *path,
 }
 
 bool
+ncm_mpd_client_rescan_directory(NcmMpdClient *client, char *path,
+                                uint32 *id, NcmError *error) {
+    if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
+        return false;
+    }
+    if (!ncm_mpd_connection_rescan_database(&client->connection, path, id)) {
+        ncm_mpd_client_copy_connection_error(client, error);
+        return false;
+    }
+
+    ncm_error_clear(error);
+    return true;
+}
+
+bool
 ncm_mpd_client_play_pos(NcmMpdClient *client, int32 pos, NcmError *error) {
     if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
         return false;
@@ -887,6 +902,18 @@ ncm_mpd_client_set_priority_id(NcmMpdClient *client, uint32 id,
 }
 
 bool
+ncm_mpd_client_set_priority_song(NcmMpdClient *client, NcmSong *song,
+                                 int32 priority, NcmError *error) {
+    if (song == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD song"));
+        return false;
+    }
+
+    return ncm_mpd_client_set_priority_id(client, ncm_song_id(song),
+                                          priority, error);
+}
+
+bool
 ncm_mpd_client_add_song(NcmMpdClient *client, char *path, int32 pos,
                         int32 *id, NcmError *error) {
     if (!ncm_mpd_client_prechecks(client, error)) {
@@ -900,6 +927,128 @@ ncm_mpd_client_add_song(NcmMpdClient *client, char *path, int32 pos,
 
     ncm_error_clear(error);
     return true;
+}
+
+bool
+ncm_mpd_client_add_song_value(NcmMpdClient *client, NcmSong *song,
+                              int32 pos, int32 *id, NcmError *error) {
+    NcmStringView uri;
+
+    if (song == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD song"));
+        return false;
+    }
+    if (!ncm_song_uri_view(song, 0, &uri)) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("MPD song has no URI"));
+        return false;
+    }
+
+    return ncm_mpd_client_add_song(client, uri.data, pos, id, error);
+}
+
+bool
+ncm_mpd_client_add_song_list(NcmMpdClient *client,
+                             NcmMpdSongList *songs, int32 pos,
+                             NcmError *error) {
+    bool started;
+    int32 insert_pos;
+
+    if (songs == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD song list"));
+        return false;
+    }
+    if (client == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
+        return false;
+    }
+    if (songs->count == 0) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("empty MPD song list"));
+        return false;
+    }
+
+    started = false;
+    if (!client->command_list_active) {
+        if (!ncm_mpd_client_start_command_list(client, error)) {
+            return false;
+        }
+        started = true;
+    }
+
+    for (int32 i = 0; i < songs->count; i += 1) {
+        insert_pos = -1;
+        if (pos >= 0) {
+            insert_pos = pos + i;
+        }
+        if (!ncm_mpd_client_add_song_value(client, &songs->items[i],
+                                           insert_pos, NULL, error)) {
+            if (started) {
+                client->command_list_active = false;
+            }
+            return false;
+        }
+    }
+
+    if (started) {
+        return ncm_mpd_client_commit_command_list(client, error);
+    }
+
+    ncm_error_clear(error);
+    return true;
+}
+
+bool
+ncm_mpd_client_add_selected_songs(NcmMpdClient *client,
+                                  NcmSongList *songs, int32 pos,
+                                  NcmError *error) {
+    NcmSongArray selected;
+    bool started;
+    int32 insert_pos;
+    bool ok;
+
+    if (songs == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing song list"));
+        return false;
+    }
+    if (client == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
+        return false;
+    }
+
+    ncm_song_array_init(&selected);
+    if (!ncm_song_list_selected_songs(songs, &selected)) {
+        ncm_song_array_destroy(&selected);
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("no songs selected"));
+        return false;
+    }
+    if (selected.len == 0) {
+        ncm_song_array_destroy(&selected);
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("no songs selected"));
+        return false;
+    }
+
+    started = false;
+    ok = true;
+    if (!client->command_list_active) {
+        ok = ncm_mpd_client_start_command_list(client, error);
+        started = ok;
+    }
+    for (int32 i = 0; ok && (i < selected.len); i += 1) {
+        insert_pos = -1;
+        if (pos >= 0) {
+            insert_pos = pos + i;
+        }
+        ok = ncm_mpd_client_add_song_value(client, &selected.items[i],
+                                           insert_pos, NULL, error);
+    }
+    if (ok && started) {
+        ok = ncm_mpd_client_commit_command_list(client, error);
+    }
+    if (!ok && started) {
+        client->command_list_active = false;
+    }
+
+    ncm_song_array_destroy(&selected);
+    return ok;
 }
 
 bool
@@ -1062,6 +1211,25 @@ ncm_mpd_client_add_to_playlist(NcmMpdClient *client, char *playlist,
 
     ncm_error_clear(error);
     return true;
+}
+
+bool
+ncm_mpd_client_add_song_to_playlist(NcmMpdClient *client,
+                                    char *playlist, NcmSong *song,
+                                    NcmError *error) {
+    NcmStringView uri;
+
+    if (song == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD song"));
+        return false;
+    }
+    if (!ncm_song_uri_view(song, 0, &uri)) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("MPD song has no URI"));
+        return false;
+    }
+
+    return ncm_mpd_client_add_to_playlist(client, playlist, uri.data,
+                                          error);
 }
 
 bool
@@ -1278,6 +1446,49 @@ bool
 ncm_mpd_client_get_directories(NcmMpdClient *client, char *path,
                                NcmMpdItemList *items, NcmError *error) {
     return ncm_mpd_client_get_directory(client, path, items, error);
+}
+
+bool
+ncm_mpd_client_get_directory_entries(NcmMpdClient *client, char *path,
+                                     NcmMpdItemArray *items,
+                                     NcmError *error) {
+    NcmMpdItemList list;
+    bool ok;
+
+    if (items == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD item array"));
+        return false;
+    }
+
+    ncm_mpd_item_list_init(&list);
+    ok = ncm_mpd_client_get_directory(client, path, &list, error);
+    if (ok) {
+        ok = ncm_mpd_item_list_to_item_array(&list, items);
+    }
+    ncm_mpd_item_list_destroy(&list);
+    return ok;
+}
+
+bool
+ncm_mpd_client_get_directory_list(NcmMpdClient *client, char *path,
+                                  NcmDirectoryArray *directories,
+                                  NcmError *error) {
+    NcmMpdItemList items;
+    bool ok;
+
+    if (directories == NULL) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing MPD directory array"));
+        return false;
+    }
+
+    ncm_mpd_item_list_init(&items);
+    ok = ncm_mpd_client_get_directory(client, path, &items, error);
+    if (ok) {
+        ok = ncm_mpd_item_list_to_directory_array(&items, directories);
+    }
+    ncm_mpd_item_list_destroy(&items);
+    return ok;
 }
 
 bool
