@@ -25,7 +25,7 @@
 #include "ui_state_legacy.h"
 #include "screens/screen_legacy.h"
 #include "settings_legacy.h"
-#include "title.h"
+#include "title_legacy.h"
 #include "utility/utf8.h"
 
 void windowTitle(const std::string &status)

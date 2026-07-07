@@ -39,11 +39,11 @@
 #include "screens/search_engine.h"
 #include "screens/sel_items_adder.h"
 #include "settings_legacy.h"
-#include "status.h"
-#include "statusbar.h"
+#include "status_legacy.h"
+#include "statusbar_legacy.h"
 #include "screens/tag_editor.h"
 #include "screens/visualizer.h"
-#include "title.h"
+#include "title_legacy.h"
 #include "utility/string.h"
 
 
