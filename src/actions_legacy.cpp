@@ -3070,12 +3070,12 @@ void seek(SearchDirection sd)
 				if (Config.display_remaining_time)
 				{
 					tracklength += "-";
-					tracklength += MPD::Song::ShowTime(Status::State::totalTime()-songpos);
+					tracklength += showSongTime(Status::State::totalTime()-songpos);
 				}
 				else
-					tracklength += MPD::Song::ShowTime(songpos);
+					tracklength += showSongTime(songpos);
 				tracklength += "/";
-				tracklength += MPD::Song::ShowTime(Status::State::totalTime());
+				tracklength += showSongTime(Status::State::totalTime());
 				tracklength += "]";
 				*ui_state_legacy_footer_window() << NC::XY(ui_state_legacy_footer_window()->getWidth()-tracklength.length(), 1)
 				         << Config.statusbar_time_color
@@ -3086,12 +3086,12 @@ void seek(SearchDirection sd)
 				if (Config.display_remaining_time)
 				{
 					tracklength = "-";
-					tracklength += MPD::Song::ShowTime(Status::State::totalTime()-songpos);
+					tracklength += showSongTime(Status::State::totalTime()-songpos);
 				}
 				else
-					tracklength = MPD::Song::ShowTime(songpos);
+					tracklength = showSongTime(songpos);
 				tracklength += "/";
-				tracklength += MPD::Song::ShowTime(Status::State::totalTime());
+				tracklength += showSongTime(Status::State::totalTime());
 				*ui_state_legacy_header_window() << NC::XY(0, 0)
 				         << Config.statusbar_time_color
 				         << tracklength

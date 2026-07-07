@@ -339,7 +339,7 @@ void Playlist::setSelectedItemsPriority(int prio)
 	auto list = getSelectedOrCurrent(w.begin(), w.end(), w.current());
 	Mpd.StartCommandsList();
 	for (auto it = list.begin(); it != list.end(); ++it)
-		Mpd.SetPriority((*it)->value(), prio);
+		Mpd.SetPriority((*it)->value().cSong(), prio);
 	Mpd.CommitCommandsList();
 	Statusbar::print("Priority set");
 }

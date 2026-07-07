@@ -493,10 +493,10 @@ struct Connection
 	std::string GetReplayGainMode();
 	void SetReplayGainMode(ReplayGainMode);
 	
-	void SetPriority(const MPD::Song &s, int prio);
+	void SetPriority(NcmSong *s, int prio);
 	
 	int AddSong(const std::string &, int = -1); // returns id of added song
-	int AddSong(const Song &, int = -1); // returns id of added song
+	int AddSong(NcmSong *, int = -1); // returns id of added song
 	bool AddRandomTag(mpd_tag_type, size_t, NcmRandom *rng);
 	bool AddRandomSongs(size_t number, const std::string &random_exclude_pattern, NcmRandom *rng);
 	bool Add(const std::string &path);
@@ -510,7 +510,7 @@ struct Connection
 	bool LoadPlaylist(const std::string &name);
 	void SavePlaylist(const std::string &);
 	void ClearPlaylist(const std::string &playlist);
-	void AddToPlaylist(const std::string &, const Song &);
+	void AddToPlaylist(const std::string &, NcmSong *);
 	void AddToPlaylist(const std::string &, const std::string &);
 	void PlaylistMove(const std::string &path, int from, int to);
 	void Rename(const std::string &from, const std::string &to);

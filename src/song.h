@@ -142,6 +142,11 @@ struct Song
 		return &m_song;
 	}
 
+	NcmSong *cSong() const
+	{
+		return const_cast<NcmSong *>(&m_song);
+	}
+
 	static std::string ShowTime(unsigned length);
 
 	inline static std::string TagsSeparator = " | ";
