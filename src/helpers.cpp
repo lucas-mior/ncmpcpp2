@@ -102,7 +102,7 @@ bool addSongToPlaylist(const MPD::Song &s, bool play, int position)
 			removeSongFromPlaylist(myPlaylist->main(), s);
 		return result;
 	}
-	int id = Mpd.AddSong(s, position);
+	int id = Mpd.AddSong(s.cSong(), position);
 	if (id >= 0)
 	{
 		Statusbar::printf("Added to playlist: %s",
