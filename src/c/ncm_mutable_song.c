@@ -1,10 +1,10 @@
 #include "c/ncm_mutable_song.h"
 
+#include "c/ncm_string.h"
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
 #include "cbase/cbase.h"
 
-static void ncm_mutable_song_view_init(NcmStringView *view);
 static void ncm_mutable_song_free_string(char **string, int32 *string_len);
 static bool ncm_mutable_song_set_string(char **dest, int32 *dest_len,
                                         char *source, int32 source_len);
@@ -24,17 +24,6 @@ static bool ncm_mutable_song_tag_copy(NcmMutableSongTag *dest,
 static bool ncm_mutable_song_write_callback(enum NcmTagsField field,
                                             int32 idx, NcmStringView *value,
                                             void *user);
-
-static void
-ncm_mutable_song_view_init(NcmStringView *view) {
-    if (view == NULL) {
-        return;
-    }
-
-    view->data = NULL;
-    view->len = 0;
-    return;
-}
 
 static void
 ncm_mutable_song_free_string(char **string, int32 *string_len) {
@@ -541,7 +530,7 @@ ncm_mutable_song_get_tag(NcmMutableSong *song, enum NcmTagsField field,
                          int32 idx, NcmStringView *view) {
     NcmMutableSongTag *tag;
 
-    ncm_mutable_song_view_init(view);
+    ncm_string_view_init(view);
     if (song == NULL) {
         return false;
     }
@@ -753,7 +742,7 @@ ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
 
 bool
 ncm_mutable_song_get_new_name(NcmMutableSong *song, NcmStringView *view) {
-    ncm_mutable_song_view_init(view);
+    ncm_string_view_init(view);
     if (song == NULL) {
         return false;
     }

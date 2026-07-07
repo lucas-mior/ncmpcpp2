@@ -6,6 +6,64 @@
 #include "c/ncm_path.h"
 
 void
+ncm_string_view_init(NcmStringView *view) {
+    if (view == NULL) {
+        return;
+    }
+
+    view->data = NULL;
+    view->len = 0;
+    return;
+}
+
+NcmStringView
+ncm_string_view_make(char *data, int32 len) {
+    NcmStringView result;
+
+    result.data = data;
+    result.len = len;
+    if (data == NULL) {
+        result.len = 0;
+    }
+    if (result.len < 0) {
+        result.len = 0;
+    }
+    return result;
+}
+
+void
+ncm_string_view_set(NcmStringView *view, char *data, int32 len) {
+    if (view == NULL) {
+        return;
+    }
+
+    *view = ncm_string_view_make(data, len);
+    return;
+}
+
+void
+ncm_string_view_clear(NcmStringView *view) {
+    ncm_string_view_init(view);
+    return;
+}
+
+bool
+ncm_string_view_empty(NcmStringView *view) {
+    if (view == NULL) {
+        return true;
+    }
+    return view->len <= 0;
+}
+
+bool
+ncm_string_view_equal(NcmStringView *left, NcmStringView *right) {
+    if ((left == NULL) || (right == NULL)) {
+        return left == right;
+    }
+    return ncm_string_equal(left->data, left->len, right->data, right->len);
+}
+
+void
 ncm_string_lowercase_ascii(char *string, int32 string_len) {
     cbase_string_lowercase_ascii(string, string_len);
     return;

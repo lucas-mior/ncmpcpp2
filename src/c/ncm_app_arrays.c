@@ -87,26 +87,12 @@ ncm_app_array_buffer_destroy(void *item) {
 
 static bool
 ncm_app_array_buffer_copy(void *dest, void *source) {
-    NcmBuffer *dest_buffer;
-    NcmBuffer *source_buffer;
-
-    dest_buffer = dest;
-    source_buffer = source;
-    ncm_buffer_clear(dest_buffer);
-    ncm_buffer_append(dest_buffer, source_buffer->data, source_buffer->len);
-    return true;
+    return ncm_buffer_copy(dest, source);
 }
 
 static void
 ncm_app_array_buffer_move(void *dest, void *source) {
-    NcmBuffer *dest_buffer;
-    NcmBuffer *source_buffer;
-
-    dest_buffer = dest;
-    source_buffer = source;
-    ncm_buffer_destroy(dest_buffer);
-    *dest_buffer = *source_buffer;
-    ncm_buffer_init(source_buffer);
+    ncm_buffer_move(dest, source);
     return;
 }
 

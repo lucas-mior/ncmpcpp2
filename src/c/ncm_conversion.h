@@ -3,6 +3,8 @@
 
 #include "c/ncm_error.h"
 
+NCM_EXTERN_C_BEGIN
+
 bool ncm_parse_int32(char *source, int32 source_len,
                      int32 *out, NcmError *error);
 bool ncm_parse_uint32(char *source, int32 source_len,
@@ -34,5 +36,7 @@ bool ncm_lower_bound_check_f64(double value, double lbound,
                                NcmError *error);
 bool ncm_upper_bound_check_f64(double value, double ubound,
                                NcmError *error);
+
+NCM_EXTERN_C_END
 
 #endif /* NCM_CONVERSION_H */
