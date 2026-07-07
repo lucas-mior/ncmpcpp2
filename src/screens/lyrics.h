@@ -26,6 +26,7 @@
 #include <memory>
 #include <optional>
 #include <queue>
+#include <string>
 
 #include "interfaces.h"
 #include "lyrics_fetcher.h"
@@ -33,6 +34,12 @@
 #include "screens/screen.h"
 #include "song.h"
 #include "utility/shared_resource.h"
+
+struct LyricsDownloadResult
+{
+	bool success;
+	std::string text;
+};
 
 struct Lyrics: BaseScreen, Tabbable
 {
@@ -123,8 +130,8 @@ private:
 	std::shared_ptr<std::atomic<bool>> m_download_stopper;
 
 	MPD::Song m_song;
-	LyricsFetcher *m_fetcher;
-	std::future<LyricsFetcher::Result> m_worker;
+	NcmLyricsFetcherDef *m_fetcher;
+	std::future<LyricsDownloadResult> m_worker;
 
 	Shared<ConsumerState> m_consumer_state;
 };

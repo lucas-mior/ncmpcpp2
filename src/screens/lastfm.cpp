@@ -23,6 +23,7 @@
 #include <chrono>
 
 #include "charset.h"
+#include "c/ncm_base.h"
 #include "app_controller.h"
 #include "global.h"
 #include "ui_state_legacy.h"
@@ -73,6 +74,13 @@ enum NcScroll to_nc_scroll(enum NcScroll where)
             return NC_SCROLL_END;
     }
     return NC_SCROLL_UP;
+}
+
+
+static void destroy_lastfm_service(NcmLastfmService *service)
+{
+    ncm_lastfm_service_destroy(service);
+    ncm_free(service, static_cast<int64>(sizeof(*service)));
 }
 
 }
@@ -163,16 +171,25 @@ void Lastfm::update()
             == std::future_status::ready))
     {
         auto result = m_worker.get();
-        if (result.first)
+        if (result.success)
         {
             w.clear();
-            w << Charset::utf8ToLocale(result.second);
-            m_service->beautifyOutput(w);
+            w << Charset::utf8ToLocale(result.text);
+            if (m_service
+                && ncm_lastfm_service_type(m_service.get())
+                   == NCM_LASTFM_SERVICE_ARTIST_INFO)
+            {
+                w.setProperties(NC_FORMAT_BOLD, "\n\nSimilar artists:\n",
+                                NC_FORMAT_NO_BOLD, 0);
+                w.setProperties(NC_FORMAT_BOLD, "\n\nSimilar tags:\n",
+                                NC_FORMAT_NO_BOLD, 0);
+                w.setProperties(Config.color2, "\n * ", 0);
+            }
         }
         else
-            w << " " << NC::Color::Red << result.second << NC::Color::End;
+            w << " " << NC::Color::Red << result.text << NC::Color::End;
         // reset m_worker so it's no longer valid
-        m_worker = std::future<LastFm::Service::Result>();
+        m_worker = std::future<AsyncResult>();
         m_refresh_window = true;
     }
 
@@ -210,6 +227,54 @@ void Lastfm::switchTo()
     }
     else
         switchToPreviousScreen();
+}
+
+void Lastfm::queueArtistInfo(const std::string &artist,
+                             const std::string &lang)
+{
+    NcmLastfmService *service;
+    NcmLastfmService candidate;
+
+    ncm_lastfm_service_init(&candidate);
+    ncm_lastfm_artist_info_init(
+        &candidate, const_cast<char *>(artist.data()),
+        static_cast<int32>(artist.size()), const_cast<char *>(lang.data()),
+        static_cast<int32>(lang.size()));
+    if (m_service
+        && ncm_lastfm_service_equal(m_service.get(), &candidate))
+    {
+        ncm_lastfm_service_destroy(&candidate);
+        return;
+    }
+
+    service = static_cast<NcmLastfmService *>(
+        ncm_malloc(static_cast<int64>(sizeof(*service))));
+    ncm_lastfm_service_init(service);
+    ncm_lastfm_artist_info_init(
+        service, const_cast<char *>(artist.data()),
+        static_cast<int32>(artist.size()), const_cast<char *>(lang.data()),
+        static_cast<int32>(lang.size()));
+    ncm_lastfm_service_destroy(&candidate);
+
+    m_service = std::shared_ptr<NcmLastfmService>(service,
+                                                 destroy_lastfm_service);
+    m_worker = std::async(std::launch::async, [service = m_service] {
+        NcmLastfmResult c_result;
+        AsyncResult result;
+
+        ncm_lastfm_result_init(&c_result);
+        ncm_lastfm_service_fetch(service.get(), &c_result);
+        result.success = c_result.success;
+        if (c_result.text != nullptr)
+            result.text.assign(c_result.text, c_result.text_len);
+        ncm_lastfm_result_destroy(&c_result);
+        return result;
+    });
+
+    w.clear();
+    w << "Fetching information...";
+    m_refresh_window = true;
+    m_title = ncm_lastfm_service_name(m_service.get());
 }
 
 void Lastfm::setDimensions()

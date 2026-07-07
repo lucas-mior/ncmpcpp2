@@ -1193,8 +1193,6 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
     while (pos <= value_len) {
         char *item;
         int32 item_len;
-        NcmLyricsFetcherDef *fetcher;
-
         if (!settings_next_list_item(value, value_len, &pos, &item,
                                      &item_len)) {
             break;
@@ -1202,15 +1200,12 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
         if (item_len <= 0) {
             continue;
         }
-        fetcher = ncm_lyrics_fetcher_registry_append(&config->lyrics_fetchers);
-        if (fetcher == NULL) {
+        if (!ncm_lyrics_fetcher_registry_append_name(&config->lyrics_fetchers,
+                                                     item, item_len)) {
             settings_error(error,
-                           STRLIT_ARGS("failed to append lyrics fetcher"));
+                           STRLIT_ARGS("unknown lyrics fetcher"));
             return false;
         }
-        settings_string_set(&fetcher->name, &fetcher->name_len,
-                            &fetcher->name_cap, item, item_len);
-        fetcher->enabled = true;
         added = true;
     }
     if (!added) {

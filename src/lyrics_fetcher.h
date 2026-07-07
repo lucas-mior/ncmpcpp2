@@ -18,124 +18,126 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#ifndef NCMPCPP_LYRICS_FETCHER_H
+#if !defined(NCMPCPP_LYRICS_FETCHER_H)
 #define NCMPCPP_LYRICS_FETCHER_H
 
 #include "config.h"
 
-#include <memory>
-#include <string>
+#include <stdbool.h>
 
-#include "song.h"
+#include <curl/curl.h>
 
-struct LyricsFetcher
-{
-	typedef std::pair<bool, std::string> Result;
+#include "c/ncm_array.h"
+#include "c/ncm_defs.h"
+#include "c/ncm_song.h"
+#include "curl_handle.h"
 
-	virtual ~LyricsFetcher() { }
+NCM_EXTERN_C_BEGIN
 
-	virtual const char *name() const = 0;
-	virtual Result fetch(const std::string &artist, const std::string &title, const MPD::Song &song);
-	
-protected:
-	virtual const char *urlTemplate() const = 0;
-	virtual const char *regex() const = 0;
-	
-	virtual bool notLyrics(const std::string &) const { return false; }
-	virtual void postProcess(std::string &data) const;
-	
-	std::vector<std::string> getContent(const char *regex, const std::string &data);
-	
-	static const char msgNotFound[];
+enum NcmLyricsFetcherType {
+    NCM_LYRICS_FETCHER_UNKNOWN,
+    NCM_LYRICS_FETCHER_JUSTSOMELYRICS,
+    NCM_LYRICS_FETCHER_JAHLYRICS,
+    NCM_LYRICS_FETCHER_PLYRICS,
+    NCM_LYRICS_FETCHER_TEKSTOWO,
+    NCM_LYRICS_FETCHER_ZENESZOVEG,
+    NCM_LYRICS_FETCHER_INTERNET,
+    NCM_LYRICS_FETCHER_TAGS,
 };
 
-typedef std::unique_ptr<LyricsFetcher> LyricsFetcher_;
+typedef struct NcmLyricsResult {
+    char *text;
+    int32 text_len;
+    int32 text_cap;
+    bool success;
+} NcmLyricsResult;
 
-typedef std::vector<LyricsFetcher_> LyricsFetchers;
+typedef struct NcmLyricsFetcherDef {
+    char *name;
+    char *url_template;
+    char *match_regex;
 
-std::istream &operator>>(std::istream &is, LyricsFetcher_ &fetcher);
+    int32 name_len;
+    int32 name_cap;
+    int32 url_template_len;
+    int32 url_template_cap;
+    int32 match_regex_len;
+    int32 match_regex_cap;
 
-/**********************************************************************/
+    enum NcmLyricsFetcherType type;
+    bool enabled;
+} NcmLyricsFetcherDef;
 
-struct GoogleLyricsFetcher : public LyricsFetcher
-{
-	virtual Result fetch(const std::string &artist, const std::string &title, const MPD::Song &song);
-	
-protected:
-	virtual const char *urlTemplate() const { return URL; }
-	virtual const char *siteKeyword() const { return name(); }
-	
-	virtual bool isURLOk(const std::string &url);
-	
-private:
-	const char *URL;
-};
+NCM_ARRAY_DECLARE(ncm_lyrics_fetcher_array,
+                  NcmLyricsFetcherArray,
+                  NcmLyricsFetcherDef)
 
-struct JustSomeLyricsFetcher : public GoogleLyricsFetcher
-{
-	virtual const char *name() const override { return "justsomelyrics.com"; }
-	
-protected:
-	virtual const char *regex() const override { return "<div class=\"content.*?</div>(.*?)See also"; }
-};
+typedef struct NcmLyricsFetcherRegistry {
+    NcmLyricsFetcherArray fetchers;
+} NcmLyricsFetcherRegistry;
 
-struct JahLyricsFetcher : public GoogleLyricsFetcher
-{
-	virtual const char *name() const override { return "jah-lyrics.com"; }
+typedef CURLcode (*NcmLyricsCurlPerformFn)(NcmBuffer *data,
+                                           char *url,
+                                           int32 url_len,
+                                           char *referer,
+                                           int32 referer_len,
+                                           bool follow_redirect,
+                                           int32 timeout_seconds,
+                                           void *user);
 
-protected:
-	virtual const char *regex() const override { return "<div class=\"song-header\">.*?</div>(.*?)<p class=\"disclaimer\">"; }
-};
+typedef CURLcode (*NcmLyricsCurlEscapeFn)(NcmBuffer *out,
+                                          char *string,
+                                          int32 string_len,
+                                          void *user);
 
-struct PLyricsFetcher : public GoogleLyricsFetcher
-{
-	virtual const char *name() const override { return "plyrics.com"; }
+void ncm_lyrics_result_init(NcmLyricsResult *result);
+void ncm_lyrics_result_destroy(NcmLyricsResult *result);
+void ncm_lyrics_result_clear(NcmLyricsResult *result);
+bool ncm_lyrics_result_set(NcmLyricsResult *result, bool success,
+                           char *text, int32 text_len);
 
-protected:
-	virtual const char *regex() const override { return "<!-- start of lyrics -->(.*?)<!-- end of lyrics -->"; }
-};
+void ncm_lyrics_fetcher_def_init(NcmLyricsFetcherDef *fetcher);
+void ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher);
+bool ncm_lyrics_fetcher_def_copy(NcmLyricsFetcherDef *dest,
+                                 NcmLyricsFetcherDef *source);
+void ncm_lyrics_fetcher_def_move(NcmLyricsFetcherDef *dest,
+                                 NcmLyricsFetcherDef *source);
+bool ncm_lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *fetcher,
+                                     char *name, int32 name_len);
+char *ncm_lyrics_fetcher_name(NcmLyricsFetcherDef *fetcher);
+int32 ncm_lyrics_fetcher_name_len(NcmLyricsFetcherDef *fetcher);
 
-struct TekstowoFetcher : public GoogleLyricsFetcher
-{
-	virtual const char *name() const override { return "tekstowo.pl"; }
+void ncm_lyrics_fetcher_registry_init(NcmLyricsFetcherRegistry *registry);
+void ncm_lyrics_fetcher_registry_destroy(NcmLyricsFetcherRegistry *registry);
+void ncm_lyrics_fetcher_registry_clear(NcmLyricsFetcherRegistry *registry);
+NcmLyricsFetcherDef *ncm_lyrics_fetcher_registry_append(
+    NcmLyricsFetcherRegistry *registry);
+bool ncm_lyrics_fetcher_registry_append_name(
+    NcmLyricsFetcherRegistry *registry,
+    char *name,
+    int32 name_len);
+bool ncm_lyrics_fetcher_registry_add_defaults(
+    NcmLyricsFetcherRegistry *registry);
 
-protected:
-	virtual const char *regex() const override { return "<div class=\"inner-text\">(.*?)</div>"; }
-};
+bool ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher,
+                              NcmLyricsResult *result,
+                              char *artist,
+                              int32 artist_len,
+                              char *title,
+                              int32 title_len,
+                              NcmSong *song);
+bool ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher,
+                                  NcmBuffer *url,
+                                  char *artist,
+                                  int32 artist_len,
+                                  char *title,
+                                  int32 title_len);
+void ncm_lyrics_cleanup_html(NcmBuffer *out, char *data, int32 data_len);
 
-struct ZeneszovegFetcher : public GoogleLyricsFetcher
-{
-	virtual const char *name() const override { return "zeneszoveg.hu"; }
+void ncm_lyrics_fetcher_set_io_for_tests(NcmLyricsCurlPerformFn perform,
+                                         NcmLyricsCurlEscapeFn escape,
+                                         void *user);
 
-protected:
-	virtual const char *regex() const override { return "<div class=\"lyrics-plain-text trans_original\">(.*?)</div>"; }
-};
+NCM_EXTERN_C_END
 
-struct InternetLyricsFetcher : public GoogleLyricsFetcher
-{
-	virtual const char *name() const override { return "the Internet"; }
-	virtual Result fetch(const std::string &artist, const std::string &title, const MPD::Song &song) override;
-	
-protected:
-	virtual const char *siteKeyword() const override { return nullptr; }
-	virtual const char *regex() const override { return ""; }
-	
-	virtual bool isURLOk(const std::string &url) override;
-	
-private:
-	std::string URL;
-};
-
-#ifdef HAVE_TAGLIB_H
-struct TagsLyricsFetcher : public LyricsFetcher
-{
-	virtual const char *name() const override { return "tags"; }
-	virtual Result fetch(const std::string &artist, const std::string &title, const MPD::Song &song) override;
-
-protected:
-	virtual const char *urlTemplate() const override { return ""; }
-	virtual const char *regex() const override { return ""; }
-};
-#endif // HAVE_TAGLIB_H
-
-#endif // NCMPCPP_LYRICS_FETCHER_H
+#endif /* NCMPCPP_LYRICS_FETCHER_H */

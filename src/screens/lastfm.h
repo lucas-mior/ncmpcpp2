@@ -26,6 +26,7 @@
 #include <functional>
 #include <future>
 #include <memory>
+#include <string>
 
 #include "interfaces.h"
 #include "lastfm_service.h"
@@ -56,26 +57,16 @@ struct Lastfm: BaseScreen, Tabbable
     virtual NcScreen *nativeScreen() override;
     virtual const NcScreen *nativeScreen() const override;
 
-    template <typename ServiceT>
-    void queueJob(ServiceT *service)
-    {
-        auto old_service = dynamic_cast<ServiceT *>(m_service.get());
-        // if the same service and arguments were used, leave old info
-        if (old_service != nullptr && *old_service == *service)
-            return;
-
-        m_service = std::shared_ptr<ServiceT>(service);
-        m_worker = std::async(
-            std::launch::async,
-            std::bind(&LastFm::Service::fetch, m_service));
-
-        w.clear();
-        w << "Fetching information...";
-        m_refresh_window = true;
-        m_title = m_service->name();
-    }
+    void queueArtistInfo(const std::string &artist,
+                         const std::string &lang);
 
 private:
+    struct AsyncResult
+    {
+        bool success;
+        std::string text;
+    };
+
     void setDimensions();
     NcScreenCallbacks makeCallbacks();
 
@@ -99,8 +90,8 @@ private:
     std::string m_title_cache;
     bool m_refresh_window;
 
-    std::shared_ptr<LastFm::Service> m_service;
-    std::future<LastFm::Service::Result> m_worker;
+    std::shared_ptr<NcmLastfmService> m_service;
+    std::future<AsyncResult> m_worker;
 };
 
 extern Lastfm *myLastfm;

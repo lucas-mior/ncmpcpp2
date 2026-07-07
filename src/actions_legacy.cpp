@@ -2545,7 +2545,7 @@ void ShowArtistInfo::run()
 
 	if (!artist.empty())
 	{
-		myLastfm->queueJob(new LastFm::ArtistInfo(artist, Config.lastfm_preferred_language));
+		myLastfm->queueArtistInfo(artist, Config.lastfm_preferred_language);
 		if (!isVisible(myLastfm))
 			myLastfm->switchTo();
 	}

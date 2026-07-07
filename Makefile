@@ -54,6 +54,7 @@ REMOVED_CXX_SRCS := \
 	src/actions.cpp \
 	src/bindings.cpp \
 	src/configuration.cpp \
+	src/curl_handle.cpp \
 	src/charset.cpp \
 	src/curses/formatted_color.cpp \
 	src/curses/scrollpad.cpp \
@@ -61,6 +62,8 @@ REMOVED_CXX_SRCS := \
 	src/display.cpp \
 	src/format.cpp \
 	src/settings.cpp \
+	src/lastfm_service.cpp \
+	src/lyrics_fetcher.cpp \
 	src/enums.cpp \
 	src/global.cpp \
 	src/macro_utilities.cpp \

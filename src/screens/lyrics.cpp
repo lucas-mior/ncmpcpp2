@@ -162,11 +162,11 @@ bool saveLyrics(const std::string &filename, const std::string &lyrics)
 		return false;
 }
 
-LyricsFetcher::Result downloadLyrics(
+LyricsDownloadResult downloadLyrics(
 	const MPD::Song &s,
 	std::shared_ptr<Shared<NC::Buffer>> shared_buffer,
 	std::shared_ptr<std::atomic<bool>> download_stopper,
-	LyricsFetcher *current_fetcher)
+	NcmLyricsFetcherDef *current_fetcher)
 {
 	std::string s_artist = s.getArtist();
 	std::string s_title  = s.getTitle();
@@ -185,41 +185,55 @@ LyricsFetcher::Result downloadLyrics(
 			s_title.resize(dot);
 	}
 
-	auto fetch_lyrics = [&](auto &fetcher_) {
+	auto fetch_lyrics = [&](NcmLyricsFetcherDef *fetcher_) {
+		NcmLyricsResult c_result;
+		LyricsDownloadResult result_;
+
+		result_.success = false;
+		ncm_lyrics_result_init(&c_result);
 		{
 			if (shared_buffer)
 			{
 				auto buf = shared_buffer->acquire();
 				*buf << "Fetching lyrics from "
 				     << NC_FORMAT_BOLD
-				     << fetcher_->name()
+				     << ncm_lyrics_fetcher_name(fetcher_)
 				     << NC_FORMAT_NO_BOLD << "... ";
 			}
 		}
-		auto result_ = fetcher_->fetch(s_artist, s_title, s);
-		if (result_.first == false)
+		ncm_lyrics_fetcher_fetch(
+			fetcher_, &c_result, const_cast<char *>(s_artist.data()),
+			static_cast<int32>(s_artist.size()),
+			const_cast<char *>(s_title.data()),
+			static_cast<int32>(s_title.size()), s.cSong());
+		result_.success = c_result.success;
+		if (c_result.text != nullptr)
+			result_.text.assign(c_result.text, c_result.text_len);
+		if (result_.success == false)
 		{
 			if (shared_buffer)
 			{
 				auto buf = shared_buffer->acquire();
 				*buf << NC::Color::Red
-				     << result_.second
+				     << result_.text
 				     << NC::Color::End
 				     << '\n';
 			}
 		}
+		ncm_lyrics_result_destroy(&c_result);
 		return result_;
 	};
 
-	LyricsFetcher::Result fetcher_result;
+	LyricsDownloadResult fetcher_result = { false, "" };
 	if (current_fetcher == nullptr)
 	{
-		for (auto &fetcher : Config.lyrics_fetchers)
+		for (int32 i = 0; i < Config.lyrics_fetchers.fetchers.len; i += 1)
 		{
 			if (download_stopper && download_stopper->load())
-				return LyricsFetcher::Result(false, "");
-			fetcher_result = fetch_lyrics(fetcher);
-			if (fetcher_result.first)
+				return LyricsDownloadResult{false, ""};
+			fetcher_result = fetch_lyrics(
+				&Config.lyrics_fetchers.fetchers.items[i]);
+			if (fetcher_result.success)
 				break;
 		}
 	}
@@ -469,12 +483,12 @@ void Lyrics::updateCallback(NcScreen *screen)
 		 == std::future_status::ready)
 		{
 			auto fetched_lyrics = lyrics->m_worker.get();
-			if (fetched_lyrics.first)
+			if (fetched_lyrics.success)
 			{
 				lyrics->w.clear();
-				lyrics->w << Charset::utf8ToLocale(fetched_lyrics.second);
+				lyrics->w << Charset::utf8ToLocale(fetched_lyrics.text);
 				std::string filename = lyricsFilename(lyrics->m_song);
-				if (!saveLyrics(filename, fetched_lyrics.second))
+				if (!saveLyrics(filename, fetched_lyrics.text))
 					Statusbar::printf("Couldn't save lyrics as \"%1%\": %2%",
 					                  filename, strerror(errno));
 			}
@@ -584,24 +598,32 @@ void Lyrics::toggleFetcher()
 {
 	if (m_fetcher != nullptr)
 	{
-		auto fetcher = std::find_if(Config.lyrics_fetchers.begin(),
-		                            Config.lyrics_fetchers.end(),
-		                            [this](auto &f) { return f.get() == m_fetcher; });
-		assert(fetcher != Config.lyrics_fetchers.end());
-		++fetcher;
-		if (fetcher != Config.lyrics_fetchers.end())
-			m_fetcher = fetcher->get();
+		int32 idx = -1;
+
+		for (int32 i = 0; i < Config.lyrics_fetchers.fetchers.len; i += 1)
+		{
+			if (&Config.lyrics_fetchers.fetchers.items[i] == m_fetcher)
+			{
+				idx = i;
+				break;
+			}
+		}
+		assert(idx >= 0);
+		idx += 1;
+		if (idx < Config.lyrics_fetchers.fetchers.len)
+			m_fetcher = &Config.lyrics_fetchers.fetchers.items[idx];
 		else
 			m_fetcher = nullptr;
 	}
 	else
 	{
-		assert(!Config.lyrics_fetchers.empty());
-		m_fetcher = Config.lyrics_fetchers[0].get();
+		assert(Config.lyrics_fetchers.fetchers.len > 0);
+		m_fetcher = &Config.lyrics_fetchers.fetchers.items[0];
 	}
 
 	if (m_fetcher != nullptr)
-		Statusbar::printf("Using lyrics fetcher: %s", m_fetcher->name());
+		Statusbar::printf("Using lyrics fetcher: %s",
+		                  ncm_lyrics_fetcher_name(m_fetcher));
 	else
 		Statusbar::print("Using all lyrics fetchers");
 }
@@ -659,8 +681,8 @@ void Lyrics::fetchInBackground(const MPD::Song &s, bool notify_)
 			if (!cs.song().empty() && !cs.song().isStream())
 			{
 				auto lyrics = downloadLyrics(cs.song(), nullptr, nullptr, m_fetcher);
-				if (lyrics.first)
-					saveLyrics(lyrics_file, lyrics.second);
+				if (lyrics.success)
+					saveLyrics(lyrics_file, lyrics.text);
 			}
 		}
 	};
@@ -691,7 +713,7 @@ std::optional<std::string> Lyrics::tryTakeConsumerMessage()
 void Lyrics::clearWorker()
 {
 	m_shared_buffer.reset();
-	m_worker = std::future<LyricsFetcher::Result>();
+	m_worker = std::future<LyricsDownloadResult>();
 }
 
 void Lyrics::stopDownload()

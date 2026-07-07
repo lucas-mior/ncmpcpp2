@@ -18,61 +18,62 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#ifndef NCMPCPP_LASTFM_SERVICE_H
+#if !defined(NCMPCPP_LASTFM_SERVICE_H)
 #define NCMPCPP_LASTFM_SERVICE_H
 
 #include "config.h"
 
-#include <map>
-#include <string>
+#include <stdbool.h>
 
-#include "curses/scrollpad.h"
+#include "c/ncm_defs.h"
 
-namespace LastFm {
+NCM_EXTERN_C_BEGIN
 
-struct Service
-{
-	typedef std::map<std::string, std::string> Arguments;
-	typedef std::pair<bool, std::string> Result;
-	
-	Service(Arguments args) : m_arguments(args) { }
-
-	virtual const char *name() = 0;
-	virtual Result fetch();
-	
-	virtual void beautifyOutput(NC::Scrollpad &w) = 0;
-	
-protected:
-	virtual bool argumentsOk() = 0;
-	virtual bool actionFailed(const std::string &data);
-	
-	virtual Result processData(const std::string &data) = 0;
-	
-	virtual const char *methodName() = 0;
-	
-	Arguments m_arguments;
+enum NcmLastfmServiceType {
+    NCM_LASTFM_SERVICE_NONE,
+    NCM_LASTFM_SERVICE_ARTIST_INFO,
 };
 
-struct ArtistInfo : public Service
-{
-	ArtistInfo(std::string artist, std::string lang)
-	: Service({{"artist", artist}, {"lang", lang}}) { }
+typedef struct NcmLastfmResult {
+    char *text;
+    int32 text_len;
+    int32 text_cap;
+    bool success;
+} NcmLastfmResult;
 
-	virtual ~ArtistInfo() { }
-	
-	virtual const char *name() { return "Artist info"; }
-	
-	virtual void beautifyOutput(NC::Scrollpad &w);
-	
-	bool operator==(const ArtistInfo &ai) const { return m_arguments == ai.m_arguments; }
-	
-protected:
-	virtual bool argumentsOk();
-	virtual Result processData(const std::string &data);
-	
-	virtual const char *methodName() { return "artist.getinfo"; }
-};
+typedef struct NcmLastfmService {
+    char *artist;
+    char *lang;
 
-}
+    int32 artist_len;
+    int32 artist_cap;
+    int32 lang_len;
+    int32 lang_cap;
 
-#endif // NCMPCPP_LASTFM_SERVICE_H
+    enum NcmLastfmServiceType type;
+} NcmLastfmService;
+
+void ncm_lastfm_result_init(NcmLastfmResult *result);
+void ncm_lastfm_result_destroy(NcmLastfmResult *result);
+void ncm_lastfm_result_clear(NcmLastfmResult *result);
+bool ncm_lastfm_result_set(NcmLastfmResult *result, bool success,
+                           char *text, int32 text_len);
+
+void ncm_lastfm_service_init(NcmLastfmService *service);
+void ncm_lastfm_service_destroy(NcmLastfmService *service);
+bool ncm_lastfm_artist_info_init(NcmLastfmService *service,
+                                 char *artist,
+                                 int32 artist_len,
+                                 char *lang,
+                                 int32 lang_len);
+bool ncm_lastfm_service_equal(NcmLastfmService *left,
+                              NcmLastfmService *right);
+char *ncm_lastfm_service_name(NcmLastfmService *service);
+enum NcmLastfmServiceType ncm_lastfm_service_type(
+    NcmLastfmService *service);
+bool ncm_lastfm_service_fetch(NcmLastfmService *service,
+                              NcmLastfmResult *result);
+
+NCM_EXTERN_C_END
+
+#endif /* NCMPCPP_LASTFM_SERVICE_H */
