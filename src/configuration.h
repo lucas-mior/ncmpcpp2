@@ -23,6 +23,7 @@
 
 #include <stdbool.h>
 
+#include "c/ncm_app_arrays.h"
 #include "c/ncm_error.h"
 
 #if defined(__cplusplus)
@@ -30,6 +31,9 @@ extern "C" {
 #endif
 
 bool expand_home(char **path, int32 *path_len, NcmError *error);
+bool configuration_discover_default_paths(NcmBufferArray *config_paths,
+                                          NcmBufferArray *bindings_paths,
+                                          NcmError *error);
 bool configure(int32 argc, char **argv);
 
 #if defined(__cplusplus)
