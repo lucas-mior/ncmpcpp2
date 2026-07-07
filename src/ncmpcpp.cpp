@@ -36,7 +36,7 @@
 #include "charset.h"
 #include "configuration_legacy.h"
 #include "global.h"
-#include "ui_state_legacy.h"
+#include "ui_state.h"
 #include "screens/screen_legacy.h"
 #include "helpers_legacy.h"
 #include "screens/lyrics.h"
@@ -120,12 +120,12 @@ int main(int argc, char **argv)
 	Actions::initializeScreens();
 
 	auto header_window = new NC::Window(0, 0, COLS, Actions::HeaderHeight, "", Config.header_color, NC::Border());
-	ui_state_legacy_set_header_window(header_window);
+	ui_state_set_header_window(header_window);
 	if (Config.header_visibility || Config.design == NCM_DESIGN_ALTERNATIVE)
 		header_window->display();
 
 	auto footer_window = new NC::Window(0, Actions::FooterStartY, COLS, Actions::FooterHeight, "", Config.statusbar_color, NC::Border());
-	ui_state_legacy_set_footer_window(footer_window);
+	ui_state_set_footer_window(footer_window);
 	footer_window->setPromptHook(Statusbar::Helpers::mainHook);
 
 	// initialize global timer
@@ -180,7 +180,7 @@ int main(int argc, char **argv)
 				// reset local status info
 				Status::clear();
 				// clear mpd callback
-				ui_state_legacy_footer_window()->clearFDCallbacksList();
+				static_cast<NC::Window *>(ui_state_footer_window())->clearFDCallbacksList();
 				try
 				{
 					Mpd.Connect();
@@ -204,7 +204,7 @@ int main(int argc, char **argv)
 
 			update_environment.run(!key_pressed, key_pressed, false);
 
-			input = ncm_read_key(ui_state_legacy_footer_window()->nativeWindow());
+			input = ncm_read_key(static_cast<NC::Window *>(ui_state_footer_window())->nativeWindow());
 			key_pressed = input != NC_KEY_NONE;
 			if (!key_pressed)
 				continue;

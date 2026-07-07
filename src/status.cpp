@@ -29,7 +29,7 @@
 #include "global.h"
 #include "cbase/base_macros.h"
 #include "ui_state.h"
-#include "helpers_legacy.h"
+#include "helpers.h"
 #include "macro_utilities.h"
 #include "screens/lyrics.h"
 #include "screens/media_library.h"
@@ -38,12 +38,12 @@
 #include "screens/playlist_editor.h"
 #include "screens/search_engine.h"
 #include "screens/sel_items_adder.h"
-#include "settings_legacy.h"
-#include "status_legacy.h"
-#include "statusbar_legacy.h"
+#include "settings.h"
+#include "status.h"
+#include "statusbar.h"
 #include "screens/tag_editor.h"
 #include "screens/visualizer.h"
-#include "title_legacy.h"
+#include "title.h"
 #include "utility/string.h"
 
 
@@ -542,7 +542,7 @@ void Status::Changes::playerState()
 	std::string state = playerStateToString(m_player_state);
 	if (Config.design == NCM_DESIGN_ALTERNATIVE)
 	{
-		*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(0, 1) << NC_FORMAT_BOLD << state << NC_FORMAT_NO_BOLD;
+		*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(0, 1) << NC::Format::Bold << state << NC::Format::NoBold;
 		static_cast<NC::Window *>(ui_state_header_window())->refresh();
 	}
 	else if (Statusbar::isUnlocked() && Config.statusbar_visibility)
@@ -551,7 +551,7 @@ void Status::Changes::playerState()
 		if (state.empty())
 			*static_cast<NC::Window *>(ui_state_footer_window()) << NC::TermManip::ClearToEOL;
 		else
-			*static_cast<NC::Window *>(ui_state_footer_window()) << NC_FORMAT_BOLD << state << NC_FORMAT_NO_BOLD;
+			*static_cast<NC::Window *>(ui_state_footer_window()) << NC::Format::Bold << state << NC::Format::NoBold;
 	}
 
 	// needed for immediate display after starting
@@ -647,15 +647,15 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 					if (Config.display_remaining_time)
 					{
 						tracklength += "-";
-						tracklength += showSongTime(m_total_time-m_elapsed_time);
+						tracklength += MPD::Song::ShowTime(m_total_time-m_elapsed_time);
 					}
 					else
-						tracklength += showSongTime(m_elapsed_time);
+						tracklength += MPD::Song::ShowTime(m_elapsed_time);
 					tracklength += "/";
-					tracklength += showSongTime(m_total_time);
+					tracklength += MPD::Song::ShowTime(m_total_time);
 				}
 				else
-					tracklength += showSongTime(m_elapsed_time);
+					tracklength += MPD::Song::ShowTime(m_elapsed_time);
 				tracklength += "]";
 				NC::Buffer np_song;
 				Format::print(Config.song_status_format, np_song, &np);
@@ -678,14 +678,14 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 			if (Config.display_remaining_time)
 			{
 				tracklength = "-";
-				tracklength += showSongTime(m_total_time-m_elapsed_time);
+				tracklength += MPD::Song::ShowTime(m_total_time-m_elapsed_time);
 			}
 			else
-				tracklength = showSongTime(m_elapsed_time);
+				tracklength = MPD::Song::ShowTime(m_elapsed_time);
 			if (m_total_time)
 			{
 				tracklength += "/";
-				tracklength += showSongTime(m_total_time);
+				tracklength += MPD::Song::ShowTime(m_total_time);
 			}
 			// bitrate here doesn't look good, but it can be moved somewhere else later
 			if (Config.display_bitrate && m_kbps)

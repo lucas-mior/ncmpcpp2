@@ -27,7 +27,7 @@
 #include "app_controller.h"
 #include "global.h"
 #include "settings_legacy.h"
-#include "ui_state_legacy.h"
+#include "ui_state.h"
 
 namespace screen_compat {
 
@@ -70,8 +70,8 @@ void set_tab_previous_screen(BaseScreen *screen);
 inline void drawSeparator(int x)
 {
     color_set(Config.main_color.pairNumber(), nullptr);
-    mvvline(ui_state_legacy_main_start_y(), x, 0,
-            ui_state_legacy_main_height());
+    mvvline(static_cast<size_t>(ui_state_main_start_y()), x, 0,
+            static_cast<size_t>(ui_state_main_height()));
     standend();
     refresh();
 }

@@ -9,3 +9,4 @@ src/helpers.cpp
 src/status.cpp
 src/statusbar.cpp
 src/title.cpp
+src/ui_state_legacy.h

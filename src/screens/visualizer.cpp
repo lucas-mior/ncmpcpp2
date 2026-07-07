@@ -36,7 +36,7 @@
 #include <vector>
 
 #include "global.h"
-#include "ui_state_legacy.h"
+#include "ui_state.h"
 #include "settings_legacy.h"
 #include "status_legacy.h"
 #include "statusbar_legacy.h"
@@ -69,7 +69,7 @@ const NC::FormattedColor &toColor(size_t number, size_t max, bool wrap)
 }
 
 Visualizer::Visualizer()
-: Screen(NC::Window(0, ui_state_legacy_main_start_y(), COLS, ui_state_legacy_main_height(), "", NC::Color::Default, NC::Border()))
+: Screen(NC::Window(0, static_cast<size_t>(ui_state_main_start_y()), COLS, static_cast<size_t>(ui_state_main_height()), "", NC::Color::Default, NC::Border()))
 , m_output_id(-1)
 , m_reset_output(false)
 , m_source_fd(-1)
@@ -118,8 +118,8 @@ void Visualizer::resize()
 {
 	size_t x_offset, width;
 	getWindowResizeParams(x_offset, width);
-	w.resize(width, ui_state_legacy_main_height());
-	w.moveTo(x_offset, ui_state_legacy_main_start_y());
+	w.resize(width, static_cast<size_t>(ui_state_main_height()));
+	w.moveTo(x_offset, static_cast<size_t>(ui_state_main_start_y()));
 	hasToBeResized = 0;
 	InitVisualization();
 #	ifdef HAVE_FFTW3_H

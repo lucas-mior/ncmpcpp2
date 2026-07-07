@@ -23,7 +23,7 @@
 #include "curses/menu_impl.h"
 #include "screens/browser.h"
 #include "global.h"
-#include "ui_state_legacy.h"
+#include "ui_state.h"
 #include "helpers_legacy.h"
 #include "mpdpp.h"
 #include "ncm_playlist_legacy.h"
@@ -62,7 +62,7 @@ SelectedItemsAdder::SelectedItemsAdder()
 	
 	m_playlist_selector = Component(
 		(COLS-m_playlist_selector_width)/2,
-		ui_state_legacy_main_start_y()+(ui_state_legacy_main_height()-m_playlist_selector_height)/2,
+		static_cast<size_t>(ui_state_main_start_y())+(static_cast<size_t>(ui_state_main_height())-m_playlist_selector_height)/2,
 		m_playlist_selector_width,
 		m_playlist_selector_height,
 		"Add selected item(s) to...",
@@ -76,7 +76,7 @@ SelectedItemsAdder::SelectedItemsAdder()
 	
 	m_position_selector = Component(
 		(COLS-m_position_selector_width)/2,
-		ui_state_legacy_main_start_y()+(ui_state_legacy_main_height()-m_position_selector_height)/2,
+		static_cast<size_t>(ui_state_main_start_y())+(static_cast<size_t>(ui_state_main_height())-m_position_selector_height)/2,
 		m_position_selector_width,
 		m_position_selector_height,
 		"Where?",
@@ -137,12 +137,12 @@ void SelectedItemsAdder::resize()
 	m_playlist_selector.resize(m_playlist_selector_width, m_playlist_selector_height);
 	m_playlist_selector.moveTo(
 		(COLS-m_playlist_selector_width)/2,
-		ui_state_legacy_main_start_y()+(ui_state_legacy_main_height()-m_playlist_selector_height)/2
+		static_cast<size_t>(ui_state_main_start_y())+(static_cast<size_t>(ui_state_main_height())-m_playlist_selector_height)/2
 	);
 	m_position_selector.resize(m_position_selector_width, m_position_selector_height);
 	m_position_selector.moveTo(
 		(COLS-m_position_selector_width)/2,
-		ui_state_legacy_main_start_y()+(ui_state_legacy_main_height()-m_position_selector_height)/2
+		static_cast<size_t>(ui_state_main_start_y())+(static_cast<size_t>(ui_state_main_height())-m_position_selector_height)/2
 	);
 	if (previousScreen() && previousScreen()->hasToBeResized) // resize background window
 	{
@@ -289,7 +289,7 @@ void SelectedItemsAdder::addToNewPlaylist() const
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Save playlist as: ";
-		playlist = ui_state_legacy_footer_window()->prompt();
+		playlist = static_cast<NC::Window *>(ui_state_footer_window())->prompt();
 	}
 	addToExistingPlaylist(playlist);
 }
@@ -365,8 +365,8 @@ void SelectedItemsAdder::setDimensions()
 {
 		
 	m_playlist_selector_width = COLS*0.6;
-	m_playlist_selector_height = std::min(ui_state_legacy_main_height(), size_t(LINES*0.66));
+	m_playlist_selector_height = std::min(static_cast<size_t>(ui_state_main_height()), size_t(LINES*0.66));
 	
 	m_position_selector_width = std::min(size_t(35), size_t(COLS));
-	m_position_selector_height = std::min(size_t(11), ui_state_legacy_main_height());
+	m_position_selector_height = std::min(size_t(11), static_cast<size_t>(ui_state_main_height()));
 }

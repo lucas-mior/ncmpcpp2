@@ -22,10 +22,10 @@
 #include "global.h"
 #include "app_controller.h"
 #include "ui_state.h"
-#include "settings_legacy.h"
-#include "status_legacy.h"
-#include "statusbar_legacy.h"
-#include "bindings_legacy.h"
+#include "settings.h"
+#include "status.h"
+#include "statusbar.h"
+#include "bindings.h"
 #include "screens/playlist.h"
 #include "utility/utf8.h"
 
@@ -205,12 +205,12 @@ char Statusbar::Helpers::promptReturnOneOf(const std::vector<char> &values)
 {
 	if (values.empty())
 		throw std::logic_error("empty vector of acceptable input");
-	NcKey result;
+	NC::Key::Type result;
 	do
 	{
 		static_cast<NC::Window *>(ui_state_footer_window())->refresh();
-		result = ncm_read_key(static_cast<NC::Window *>(ui_state_footer_window())->nativeWindow());
-		if (result == NC_KEY_CTRL_C || result == NC_KEY_CTRL_G)
+		result = static_cast<NC::Window *>(ui_state_footer_window())->readKey();
+		if (result == NC::Key::Ctrl_C || result == NC::Key::Ctrl_G)
 			throw NC::PromptAborted();
 	}
 	while (std::find(values.begin(), values.end(), result) == values.end());
@@ -266,8 +266,8 @@ bool Statusbar::Helpers::TryExecuteImmediateCommand::operator()(const char *s)
 	if (m_s != s)
 	{
 		m_s = s;
-		auto cmd = bindings_legacy_find_command(m_s);
-		if (cmd && cmd->immediate)
+		auto cmd = Bindings.findCommand(m_s);
+		if (cmd && cmd->immediate())
 			continue_ = false;
 	}
 	Status::trace();
