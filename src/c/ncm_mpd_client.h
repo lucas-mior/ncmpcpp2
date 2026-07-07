@@ -3,6 +3,7 @@
 
 #include "c/ncm_base.h"
 #include "c/ncm_mpd_connection.h"
+#include "c/ncm_song_list.h"
 #include "c/ncm_random.h"
 
 #if defined(__cplusplus)
@@ -62,6 +63,8 @@ bool ncm_mpd_client_get_stats(NcmMpdClient *client, NcmMpdStats *stats,
 bool ncm_mpd_client_get_status(NcmMpdClient *client, NcmMpdStatus *status,
                                NcmError *error);
 bool ncm_mpd_client_update_directory(NcmMpdClient *client, char *path,
+                                     uint32 *id, NcmError *error);
+bool ncm_mpd_client_rescan_directory(NcmMpdClient *client, char *path,
                                      uint32 *id, NcmError *error);
 
 bool ncm_mpd_client_play(NcmMpdClient *client, NcmError *error);
@@ -130,8 +133,20 @@ bool ncm_mpd_client_set_replay_gain_mode(
 
 bool ncm_mpd_client_set_priority_id(NcmMpdClient *client, uint32 id,
                                     int32 priority, NcmError *error);
+bool ncm_mpd_client_set_priority_song(NcmMpdClient *client,
+                                      NcmSong *song, int32 priority,
+                                      NcmError *error);
 bool ncm_mpd_client_add_song(NcmMpdClient *client, char *path, int32 pos,
                              int32 *id, NcmError *error);
+bool ncm_mpd_client_add_song_value(NcmMpdClient *client, NcmSong *song,
+                                   int32 pos, int32 *id,
+                                   NcmError *error);
+bool ncm_mpd_client_add_song_list(NcmMpdClient *client,
+                                  NcmMpdSongList *songs, int32 pos,
+                                  NcmError *error);
+bool ncm_mpd_client_add_selected_songs(NcmMpdClient *client,
+                                       NcmSongList *songs, int32 pos,
+                                       NcmError *error);
 bool ncm_mpd_client_add(NcmMpdClient *client, char *path, bool *added,
                         NcmError *error);
 bool ncm_mpd_client_add_random_tag(NcmMpdClient *client,
@@ -164,6 +179,9 @@ bool ncm_mpd_client_clear_playlist(NcmMpdClient *client, char *name,
                                    NcmError *error);
 bool ncm_mpd_client_add_to_playlist(NcmMpdClient *client, char *playlist,
                                     char *path, NcmError *error);
+bool ncm_mpd_client_add_song_to_playlist(NcmMpdClient *client,
+                                         char *playlist, NcmSong *song,
+                                         NcmError *error);
 bool ncm_mpd_client_playlist_move(NcmMpdClient *client, char *playlist,
                                   uint32 from, uint32 to,
                                   NcmError *error);
@@ -204,6 +222,13 @@ bool ncm_mpd_client_get_songs(NcmMpdClient *client, char *path,
 bool ncm_mpd_client_get_directories(NcmMpdClient *client, char *path,
                                     NcmMpdItemList *items,
                                     NcmError *error);
+bool ncm_mpd_client_get_directory_entries(NcmMpdClient *client,
+                                          char *path,
+                                          NcmMpdItemArray *items,
+                                          NcmError *error);
+bool ncm_mpd_client_get_directory_list(NcmMpdClient *client, char *path,
+                                       NcmDirectoryArray *directories,
+                                       NcmError *error);
 bool ncm_mpd_client_get_outputs(NcmMpdClient *client,
                                 NcmMpdOutputList *outputs,
                                 NcmError *error);

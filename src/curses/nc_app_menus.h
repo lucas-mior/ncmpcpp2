@@ -83,6 +83,14 @@ typedef struct NcEditorSortRow {
     void PREFIX##_destroy(TYPE_NAME *menu); \
     NcMenu *PREFIX##_base(TYPE_NAME *menu); \
     void PREFIX##_add(TYPE_NAME *menu, ITEM_TYPE *item); \
+    void PREFIX##_add_with_flags(TYPE_NAME *menu, ITEM_TYPE *item, \
+                                 uint32 flags); \
+    void PREFIX##_add_separator(TYPE_NAME *menu); \
+    void PREFIX##_insert(TYPE_NAME *menu, int64 pos, ITEM_TYPE *item); \
+    void PREFIX##_insert_with_flags(TYPE_NAME *menu, int64 pos, \
+                                    ITEM_TYPE *item, uint32 flags); \
+    bool PREFIX##_remove(TYPE_NAME *menu, enum NcMenuItemSource source, \
+                         int64 pos); \
     ITEM_TYPE *PREFIX##_item_at(TYPE_NAME *menu, \
                                 enum NcMenuItemSource source, \
                                 int64 pos); \

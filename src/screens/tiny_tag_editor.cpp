@@ -145,12 +145,12 @@ void TinyTagEditor::runAction()
 	{
 		Statusbar::ScopedLock slock;
 		size_t pos = option-8;
-		Statusbar::put() << NC_FORMAT_BOLD << SongInfo::Tags[pos].Name << ": " << NC_FORMAT_NO_BOLD;
-		itsEdited.setTags(SongInfo::Tags[pos].Field, static_cast<NC::Window *>(ui_state_footer_window())->prompt(
-			itsEdited.getTags(SongInfo::Tags[pos].Get)));
+		Statusbar::put() << NC_FORMAT_BOLD << ncm_song_info_tags[pos].name << ": " << NC_FORMAT_NO_BOLD;
+		itsEdited.setTags(ncm_song_info_tags[pos].field, static_cast<NC::Window *>(ui_state_footer_window())->prompt(
+			itsEdited.getTags(ncm_song_info_tags[pos].get)));
 		w.at(option).value().clear();
-		w.at(option).value() << NC_FORMAT_BOLD << SongInfo::Tags[pos].Name << ':' << NC_FORMAT_NO_BOLD << ' ';
-		ShowTag(w.at(option).value(), itsEdited.getTags(SongInfo::Tags[pos].Get));
+		w.at(option).value() << NC_FORMAT_BOLD << ncm_song_info_tags[pos].name << ':' << NC_FORMAT_NO_BOLD << ' ';
+		ShowTag(w.at(option).value(), itsEdited.getTags(ncm_song_info_tags[pos].get));
 	}
 	else if (option == 20)
 	{
@@ -275,14 +275,14 @@ bool TinyTagEditor::getTags()
 		channelsString(properties.channels));
 	
 	unsigned pos = 8;
-	for (const SongInfo::Metadata *m = SongInfo::Tags; m->Name; ++m, ++pos)
+	for (const NcmSongInfoMetadata *m = ncm_song_info_tags; m->name; ++m, ++pos)
 	{
 		w[pos].value() << NC_FORMAT_BOLD
-		                  << m->Name
+		                  << m->name
 		                  << ":"
 		                  << NC_FORMAT_NO_BOLD
 		                  << " ";
-		ShowTag(w[pos].value(), itsEdited.getTags(m->Get));
+		ShowTag(w[pos].value(), itsEdited.getTags(m->get));
 	}
 	
 	w[20].value() << NC_FORMAT_BOLD

@@ -28,6 +28,18 @@ bool app_state_can_show_inactive_screen(void);
 bool app_state_show_inactive_screen(void);
 bool app_state_is_screen_registered(NcScreen *screen);
 bool app_state_is_screen_visible(NcScreen *screen);
+bool app_state_is_current_screen(NcScreen *screen);
+bool app_state_is_previous_screen(NcScreen *screen);
+NcScreenResizeParams app_state_screen_resize_params(
+    NcScreen *screen, bool adjust_locked_screen);
+bool app_state_request_screen_resize(NcScreen *screen);
+bool app_state_request_screen_update(NcScreen *screen);
+void app_state_request_current_screen_resize(void);
+void app_state_request_visible_screens_resize(void);
+void app_state_request_all_screens_resize(void);
+void app_state_request_current_screen_update(void);
+void app_state_request_visible_screens_update(void);
+void app_state_request_all_screens_update(void);
 void app_state_each_visible_screen(NcScreenEachCallback callback, void *user);
 void app_state_update_current_screen(void);
 void app_state_update_visible_screens(void);

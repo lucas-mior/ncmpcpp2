@@ -20,6 +20,20 @@ static bool menu_is_position_highlightable(int64 pos, void *user);
 static void menu_print_buffer(NcWindow *window, NcBuffer *buffer);
 static void menu_copy_buffer(NcBuffer *dest, NcBuffer *source);
 
+static uint32 menu_default_item_flags(void);
+static uint32 menu_flags_for_item(NcMenu *menu, void *item);
+static uint32 **menu_flags_array_pointer(NcMenu *menu,
+                                         enum NcMenuItemSource source);
+static uint32 *menu_flags_array(NcMenu *menu,
+                                enum NcMenuItemSource source);
+static int64 menu_item_index(NcMenu *menu, enum NcMenuItemSource source,
+                             void *item);
+static bool menu_remove_array_slot(NcMenu *menu,
+                                   enum NcMenuItemSource source,
+                                   int64 pos, bool destroy_item);
+static void menu_set_flags_for_item(NcMenu *menu, void *item,
+                                    uint32 flags);
+
 static void ***
 menu_array_pointer(NcMenu *menu, enum NcMenuItemSource source) {
     if (source == NC_MENU_ITEMS_FILTERED) {
@@ -31,6 +45,19 @@ menu_array_pointer(NcMenu *menu, enum NcMenuItemSource source) {
 static void **
 menu_array(NcMenu *menu, enum NcMenuItemSource source) {
     return *menu_array_pointer(menu, source);
+}
+
+static uint32 **
+menu_flags_array_pointer(NcMenu *menu, enum NcMenuItemSource source) {
+    if (source == NC_MENU_ITEMS_FILTERED) {
+        return &menu->filtered_item_flags;
+    }
+    return &menu->all_item_flags;
+}
+
+static uint32 *
+menu_flags_array(NcMenu *menu, enum NcMenuItemSource source) {
+    return *menu_flags_array_pointer(menu, source);
 }
 
 static int64
@@ -255,6 +282,8 @@ void
 nc_menu_init(NcMenu *menu) {
     menu->all_items = NULL;
     menu->filtered_items = NULL;
+    menu->all_item_flags = NULL;
+    menu->filtered_item_flags = NULL;
     menu->active_items = NC_MENU_ITEMS_ALL;
     menu->item_callbacks.item_size = 0;
     menu->item_callbacks.construct = NULL;
@@ -296,7 +325,12 @@ nc_menu_destroy(NcMenu *menu) {
 
 void
 nc_menu_copy(NcMenu *dest, NcMenu *source) {
+    dest->all_items = NULL;
+    dest->filtered_items = NULL;
+    dest->all_item_flags = NULL;
+    dest->filtered_item_flags = NULL;
     dest->active_items = NC_MENU_ITEMS_ALL;
+    dest->item_callbacks = source->item_callbacks;
     dest->display_callbacks = source->display_callbacks;
     dest->action_callbacks = source->action_callbacks;
     menu_copy_buffer(&dest->highlight_prefix, &source->highlight_prefix);
@@ -629,9 +663,11 @@ nc_menu_resize_all_items(NcMenu *menu, int64 new_size) {
         old_size -= 1;
         menu_destroy_item(menu, menu->all_items[old_size]);
         ARRAY_HEADER(menu->all_items)->count -= 1;
+        ARRAY_HEADER(menu->all_item_flags)->count -= 1;
     }
     while (old_size < new_size) {
         ARRAY_PUSH(menu->all_items, menu_construct_item(menu));
+        ARRAY_PUSH(menu->all_item_flags, menu_default_item_flags());
         old_size += 1;
     }
     nc_menu_sync_item_count(menu);
@@ -640,13 +676,39 @@ nc_menu_resize_all_items(NcMenu *menu, int64 new_size) {
 
 void
 nc_menu_add_item(NcMenu *menu, void *item) {
+    nc_menu_add_item_with_flags(menu, item, menu_default_item_flags());
+    return;
+}
+
+void
+nc_menu_add_item_with_flags(NcMenu *menu, void *item, uint32 flags) {
     ARRAY_PUSH(menu->all_items, menu_copy_item(menu, item));
+    ARRAY_PUSH(menu->all_item_flags, flags);
+    nc_menu_sync_item_count(menu);
+    return;
+}
+
+void
+nc_menu_add_separator(NcMenu *menu) {
+    void *item;
+
+    item = menu_construct_item(menu);
+    ARRAY_PUSH(menu->all_items, item);
+    ARRAY_PUSH(menu->all_item_flags, NC_MENU_ITEM_SEPARATOR);
     nc_menu_sync_item_count(menu);
     return;
 }
 
 void
 nc_menu_insert_item(NcMenu *menu, int64 pos, void *item) {
+    nc_menu_insert_item_with_flags(menu, pos, item,
+                                   menu_default_item_flags());
+    return;
+}
+
+void
+nc_menu_insert_item_with_flags(NcMenu *menu, int64 pos, void *item,
+                               uint32 flags) {
     int64 count;
     void *new_item;
 
@@ -656,13 +718,66 @@ nc_menu_insert_item(NcMenu *menu, int64 pos, void *item) {
 
     new_item = menu_copy_item(menu, item);
     ARRAY_PUSH(menu->all_items, NULL);
+    ARRAY_PUSH(menu->all_item_flags, 0);
     if (pos < count) {
         cbase_memmove(&menu->all_items[pos + 1], &menu->all_items[pos],
                       (count - pos)*SIZEOF(*menu->all_items));
+        cbase_memmove(&menu->all_item_flags[pos + 1],
+                      &menu->all_item_flags[pos],
+                      (count - pos)*SIZEOF(*menu->all_item_flags));
     }
     menu->all_items[pos] = new_item;
+    menu->all_item_flags[pos] = flags;
+    nc_menu_clear_filtered_items(menu);
     nc_menu_sync_item_count(menu);
     return;
+}
+
+void
+nc_menu_insert_separator(NcMenu *menu, int64 pos) {
+    void *item;
+
+    item = menu_construct_item(menu);
+    nc_menu_insert_item_with_flags(menu, pos, item,
+                                   NC_MENU_ITEM_SEPARATOR);
+    menu_destroy_item(menu, item);
+    return;
+}
+
+bool
+nc_menu_remove_item(NcMenu *menu, enum NcMenuItemSource source,
+                    int64 pos) {
+    bool destroy_item;
+
+    destroy_item = source == NC_MENU_ITEMS_ALL;
+    return menu_remove_array_slot(menu, source, pos, destroy_item);
+}
+
+bool
+nc_menu_replace_item(NcMenu *menu, enum NcMenuItemSource source,
+                     int64 pos, void *item) {
+    void *old_item;
+    void *new_item;
+    int64 all_pos;
+
+    if ((pos < 0) || (pos >= menu_array_count(menu, source))) {
+        return false;
+    }
+
+    old_item = menu_array(menu, source)[pos];
+    new_item = menu_copy_item(menu, item);
+    all_pos = menu_item_index(menu, NC_MENU_ITEMS_ALL, old_item);
+    if (all_pos >= 0) {
+        menu->all_items[all_pos] = new_item;
+    }
+    for (int64 i = 0; i < menu_array_count(menu, NC_MENU_ITEMS_FILTERED);
+         i += 1) {
+        if (menu->filtered_items[i] == old_item) {
+            menu->filtered_items[i] = new_item;
+        }
+    }
+    menu_destroy_item(menu, old_item);
+    return true;
 }
 
 void
@@ -677,6 +792,8 @@ nc_menu_clear_items(NcMenu *menu) {
     }
     ARRAY_FREE(menu->all_items);
     ARRAY_FREE(menu->filtered_items);
+    ARRAY_FREE(menu->all_item_flags);
+    ARRAY_FREE(menu->filtered_item_flags);
     menu->active_items = active_items;
     menu->item_count = 0;
     return;
@@ -685,6 +802,7 @@ nc_menu_clear_items(NcMenu *menu) {
 void
 nc_menu_clear_filtered_items(NcMenu *menu) {
     ARRAY_FREE(menu->filtered_items);
+    ARRAY_FREE(menu->filtered_item_flags);
     nc_menu_sync_item_count(menu);
     return;
 }
@@ -693,6 +811,7 @@ void
 nc_menu_add_filtered_item_ref(NcMenu *menu, void *item) {
     assert(item != NULL);
     ARRAY_PUSH(menu->filtered_items, item);
+    ARRAY_PUSH(menu->filtered_item_flags, menu_flags_for_item(menu, item));
     nc_menu_sync_item_count(menu);
     return;
 }
@@ -742,12 +861,17 @@ nc_menu_empty(NcMenu *menu) {
 bool
 nc_menu_position_is_selectable(NcMenu *menu, int64 pos) {
     void *item;
+    uint32 flags;
 
     if ((pos < 0) || (pos >= nc_menu_item_count(menu))) {
         return false;
     }
 
+    flags = nc_menu_item_flags_at(menu, menu->active_items, pos);
     item = nc_menu_active_item_at(menu, pos);
+    if (!(flags & NC_MENU_ITEM_SELECTABLE)) {
+        return false;
+    }
     if (menu_is_separator(menu, item)) {
         return false;
     }
@@ -756,6 +880,30 @@ nc_menu_position_is_selectable(NcMenu *menu, int64 pos) {
     }
 
     return true;
+}
+
+bool
+nc_menu_position_is_separator(NcMenu *menu, int64 pos) {
+    void *item;
+
+    if ((pos < 0) || (pos >= nc_menu_item_count(menu))) {
+        return false;
+    }
+
+    item = nc_menu_active_item_at(menu, pos);
+    return menu_is_separator(menu, item);
+}
+
+bool
+nc_menu_position_is_inactive(NcMenu *menu, int64 pos) {
+    void *item;
+
+    if ((pos < 0) || (pos >= nc_menu_item_count(menu))) {
+        return false;
+    }
+
+    item = nc_menu_active_item_at(menu, pos);
+    return menu_is_inactive(menu, item);
 }
 
 bool
@@ -773,10 +921,8 @@ nc_menu_position_is_selected(NcMenu *menu, int64 pos) {
 bool
 nc_menu_set_position_selected(NcMenu *menu, int64 pos, bool selected) {
     void *item;
+    uint32 flags;
 
-    if (menu->action_callbacks.set_selected == NULL) {
-        return false;
-    }
     if ((pos < 0) || (pos >= nc_menu_item_count(menu))) {
         return false;
     }
@@ -785,8 +931,18 @@ nc_menu_set_position_selected(NcMenu *menu, int64 pos, bool selected) {
     }
 
     item = nc_menu_active_item_at(menu, pos);
-    menu->action_callbacks.set_selected(item, selected,
-                                        menu->action_callbacks.user);
+    if (menu->action_callbacks.set_selected != NULL) {
+        menu->action_callbacks.set_selected(item, selected,
+                                            menu->action_callbacks.user);
+    }
+
+    flags = menu_flags_for_item(menu, item);
+    if (selected) {
+        flags |= NC_MENU_ITEM_SELECTED;
+    } else {
+        flags &= ~NC_MENU_ITEM_SELECTED;
+    }
+    menu_set_flags_for_item(menu, item, flags);
     return true;
 }
 
@@ -799,6 +955,84 @@ nc_menu_toggle_position_selected(NcMenu *menu, int64 pos) {
 }
 
 bool
+nc_menu_select_range(NcMenu *menu, int64 first, int64 last,
+                     bool selected) {
+    bool changed;
+    int64 item_count;
+
+    changed = false;
+    item_count = nc_menu_item_count(menu);
+    if (item_count == 0) {
+        return false;
+    }
+    if (first > last) {
+        int64 tmp;
+
+        tmp = first;
+        first = last;
+        last = tmp;
+    }
+    if (first < 0) {
+        first = 0;
+    }
+    if (last >= item_count) {
+        last = item_count - 1;
+    }
+    for (int64 i = first; i <= last; i += 1) {
+        if (nc_menu_set_position_selected(menu, i, selected)) {
+            changed = true;
+        }
+    }
+    return changed;
+}
+
+void
+nc_menu_clear_selection(NcMenu *menu) {
+    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        nc_menu_set_position_selected(menu, i, false);
+    }
+    return;
+}
+
+void
+nc_menu_reverse_selection(NcMenu *menu) {
+    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        if (nc_menu_position_is_selectable(menu, i)) {
+            nc_menu_toggle_position_selected(menu, i);
+        }
+    }
+    return;
+}
+
+bool
+nc_menu_has_selected(NcMenu *menu) {
+    return nc_menu_first_selected_position(menu) >= 0;
+}
+
+int64
+nc_menu_selected_count(NcMenu *menu) {
+    int64 count;
+
+    count = 0;
+    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        if (nc_menu_position_is_selected(menu, i)) {
+            count += 1;
+        }
+    }
+    return count;
+}
+
+int64
+nc_menu_first_selected_position(NcMenu *menu) {
+    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        if (nc_menu_position_is_selected(menu, i)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+bool
 nc_menu_current_is_selectable(NcMenu *menu) {
     return nc_menu_position_is_selectable(menu, nc_menu_highlight(menu));
 }
@@ -806,6 +1040,16 @@ nc_menu_current_is_selectable(NcMenu *menu) {
 bool
 nc_menu_current_is_selected(NcMenu *menu) {
     return nc_menu_position_is_selected(menu, nc_menu_highlight(menu));
+}
+
+bool
+nc_menu_current_is_separator(NcMenu *menu) {
+    return nc_menu_position_is_separator(menu, nc_menu_highlight(menu));
+}
+
+bool
+nc_menu_current_is_inactive(NcMenu *menu) {
+    return nc_menu_position_is_inactive(menu, nc_menu_highlight(menu));
 }
 
 bool
@@ -844,6 +1088,32 @@ nc_menu_activate_current(NcMenu *menu) {
     return nc_menu_activate_position(menu, nc_menu_highlight(menu));
 }
 
+uint32
+nc_menu_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
+                         int64 pos) {
+    uint32 *flags;
+    int64 count;
+
+    flags = menu_flags_array(menu, source);
+    count = menu_array_count(menu, source);
+    assert(pos >= 0);
+    assert(pos < count);
+    return flags[pos];
+}
+
+bool
+nc_menu_set_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
+                          int64 pos, uint32 flags) {
+    void *item;
+
+    if ((pos < 0) || (pos >= menu_array_count(menu, source))) {
+        return false;
+    }
+    item = menu_array(menu, source)[pos];
+    menu_set_flags_for_item(menu, item, flags);
+    return true;
+}
+
 void *
 nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int64 pos) {
     void **items;
@@ -872,11 +1142,14 @@ nc_menu_current_item(NcMenu *menu) {
 void
 nc_menu_swap_item_slots(NcMenu *menu, enum NcMenuItemSource source,
                         int64 left, int64 right) {
+    uint32 *flags;
     void **items;
     void *temp;
+    uint32 temp_flags;
     int64 count;
 
     items = menu_array(menu, source);
+    flags = menu_flags_array(menu, source);
     count = menu_array_count(menu, source);
     assert(left >= 0);
     assert(right >= 0);
@@ -886,11 +1159,18 @@ nc_menu_swap_item_slots(NcMenu *menu, enum NcMenuItemSource source,
     temp = items[left];
     items[left] = items[right];
     items[right] = temp;
+
+    temp_flags = flags[left];
+    flags[left] = flags[right];
+    flags[right] = temp_flags;
     return;
 }
 
 static bool
 menu_is_separator(NcMenu *menu, void *item) {
+    if (menu_flags_for_item(menu, item) & NC_MENU_ITEM_SEPARATOR) {
+        return true;
+    }
     if (!menu->display_callbacks.is_separator) {
         return false;
     }
@@ -900,6 +1180,9 @@ menu_is_separator(NcMenu *menu, void *item) {
 
 static bool
 menu_is_selected(NcMenu *menu, void *item) {
+    if (menu_flags_for_item(menu, item) & NC_MENU_ITEM_SELECTED) {
+        return true;
+    }
     if (!menu->display_callbacks.is_selected) {
         return false;
     }
@@ -909,11 +1192,99 @@ menu_is_selected(NcMenu *menu, void *item) {
 
 static bool
 menu_is_inactive(NcMenu *menu, void *item) {
+    if (menu_flags_for_item(menu, item) & NC_MENU_ITEM_INACTIVE) {
+        return true;
+    }
     if (!menu->display_callbacks.is_inactive) {
         return false;
     }
     return menu->display_callbacks.is_inactive(
         item, menu->display_callbacks.user);
+}
+
+static uint32
+menu_default_item_flags(void) {
+    return NC_MENU_ITEM_SELECTABLE;
+}
+
+static uint32
+menu_flags_for_item(NcMenu *menu, void *item) {
+    int64 pos;
+
+    pos = menu_item_index(menu, NC_MENU_ITEMS_ALL, item);
+    if (pos >= 0) {
+        return menu->all_item_flags[pos];
+    }
+
+    pos = menu_item_index(menu, NC_MENU_ITEMS_FILTERED, item);
+    if (pos >= 0) {
+        return menu->filtered_item_flags[pos];
+    }
+
+    return menu_default_item_flags();
+}
+
+static int64
+menu_item_index(NcMenu *menu, enum NcMenuItemSource source, void *item) {
+    void **items;
+    int64 count;
+
+    items = menu_array(menu, source);
+    count = menu_array_count(menu, source);
+    for (int64 i = 0; i < count; i += 1) {
+        if (items[i] == item) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static bool
+menu_remove_array_slot(NcMenu *menu, enum NcMenuItemSource source,
+                       int64 pos, bool destroy_item) {
+    uint32 *flags;
+    void **items;
+    int64 count;
+
+    items = menu_array(menu, source);
+    flags = menu_flags_array(menu, source);
+    count = menu_array_count(menu, source);
+    if ((pos < 0) || (pos >= count)) {
+        return false;
+    }
+
+    if (destroy_item) {
+        menu_destroy_item(menu, items[pos]);
+    }
+    if (pos < count - 1) {
+        cbase_memmove(&items[pos], &items[pos + 1],
+                      (count - pos - 1)*SIZEOF(*items));
+        cbase_memmove(&flags[pos], &flags[pos + 1],
+                      (count - pos - 1)*SIZEOF(*flags));
+    }
+    ARRAY_HEADER(items)->count -= 1;
+    ARRAY_HEADER(flags)->count -= 1;
+    if (source == NC_MENU_ITEMS_ALL) {
+        nc_menu_clear_filtered_items(menu);
+    }
+    nc_menu_sync_item_count(menu);
+    return true;
+}
+
+static void
+menu_set_flags_for_item(NcMenu *menu, void *item, uint32 flags) {
+    int64 pos;
+
+    pos = menu_item_index(menu, NC_MENU_ITEMS_ALL, item);
+    if (pos >= 0) {
+        menu->all_item_flags[pos] = flags;
+    }
+
+    pos = menu_item_index(menu, NC_MENU_ITEMS_FILTERED, item);
+    if (pos >= 0) {
+        menu->filtered_item_flags[pos] = flags;
+    }
+    return;
 }
 
 static bool
