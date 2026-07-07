@@ -5,7 +5,7 @@
 #include "macro_utilities.h"
 #include "c/ncm_base.h"
 #include "screens/screen_legacy.h"
-#include "ui_state_legacy.h"
+#include "ui_state.h"
 
 namespace {
 
@@ -64,7 +64,7 @@ bool legacy_run(NcmBindingAction *action, void *)
         return runtime_action->execute();
     case NCM_BINDING_ACTION_PUSH_CHARACTERS:
         for (int32 i = 0; i < action->keys_len; i += 1)
-            ui_state_legacy_footer_window()->pushChar(action->keys[i]);
+            static_cast<NC::Window *>(ui_state_footer_window())->pushChar(action->keys[i]);
         return true;
     case NCM_BINDING_ACTION_REQUIRE_SCREEN:
     case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:

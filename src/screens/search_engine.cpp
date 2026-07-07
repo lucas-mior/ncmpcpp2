@@ -24,7 +24,7 @@
 #include "curses/menu_impl.h"
 #include "display.h"
 #include "global.h"
-#include "ui_state_legacy.h"
+#include "ui_state.h"
 #include "helpers_legacy.h"
 #include "screens/playlist.h"
 #include "screens/search_engine.h"
@@ -171,7 +171,7 @@ size_t SearchEngine::ResetButton = 16;
 size_t SearchEngine::SearchButton = 15;
 
 SearchEngine::SearchEngine()
-: Screen(NC::Menu<SEItem>(0, ui_state_legacy_main_start_y(), COLS, ui_state_legacy_main_height(), "", Config.main_color, NC::Border()))
+: Screen(NC::Menu<SEItem>(0, static_cast<size_t>(ui_state_main_start_y()), COLS, static_cast<size_t>(ui_state_main_height()), "", Config.main_color, NC::Border()))
 {
 	setHighlightFixes(w);
 	w.cyclicScrolling(Config.use_cyclic_scrolling);
@@ -186,8 +186,8 @@ void SearchEngine::resize()
 {
 	size_t x_offset, width;
 	getWindowResizeParams(x_offset, width);
-	w.resize(width, ui_state_legacy_main_height());
-	w.moveTo(x_offset, ui_state_legacy_main_start_y());
+	w.resize(width, static_cast<size_t>(ui_state_main_height()));
+	w.moveTo(x_offset, static_cast<size_t>(ui_state_main_start_y()));
 	switch (Config.search_engine_display_mode)
 	{
 		case NCM_DISPLAY_MODE_COLUMNS:
@@ -313,7 +313,7 @@ void SearchEngine::runAction()
 		Statusbar::ScopedLock slock;
 		std::string constraint = ConstraintsNames[option];
 		Statusbar::put() << NC_FORMAT_BOLD << constraint << NC_FORMAT_NO_BOLD << ": ";
-		itsConstraints[option] = ui_state_legacy_footer_window()->prompt(itsConstraints[option]);
+		itsConstraints[option] = static_cast<NC::Window *>(ui_state_footer_window())->prompt(itsConstraints[option]);
 		w.current()->value().buffer().clear();
 		constraint.resize(13, ' ');
 		w.current()->value().buffer() << NC_FORMAT_BOLD << constraint << NC_FORMAT_NO_BOLD << ": ";

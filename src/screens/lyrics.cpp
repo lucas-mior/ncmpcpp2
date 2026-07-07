@@ -36,7 +36,7 @@
 #include "format_impl.h"
 #include "app_controller.h"
 #include "global.h"
-#include "ui_state_legacy.h"
+#include "ui_state.h"
 #include "helpers_legacy.h"
 #include "macro_utilities.h"
 #include "screens/lyrics.h"
@@ -246,7 +246,7 @@ LyricsDownloadResult downloadLyrics(
 }
 
 Lyrics::Lyrics()
-	: w(0, ui_state_legacy_main_start_y(), COLS, ui_state_legacy_main_height(), "", Config.main_color, NC::Border())
+	: w(0, static_cast<size_t>(ui_state_main_start_y()), COLS, static_cast<size_t>(ui_state_main_height()), "", Config.main_color, NC::Border())
 	, m_fetcher(nullptr)
 {
 	NcScreenCallbacks callbacks = makeCallbacks();
@@ -256,8 +256,8 @@ Lyrics::Lyrics()
 	                      this,
 	                      0,
 	                      COLS,
-	                      ui_state_legacy_main_start_y(),
-	                      ui_state_legacy_main_height());
+	                      static_cast<size_t>(ui_state_main_start_y()),
+	                      static_cast<size_t>(ui_state_main_height()));
 
 	bool register_success = app_controller_register_screen(nativeScreen());
 	assert(register_success);
@@ -426,8 +426,8 @@ void Lyrics::resizeCallback(NcScreen *screen)
 	nc_lyrics_screen_set_geometry(&lyrics->m_screen,
 	                              static_cast<int64>(x_offset),
 	                              static_cast<int64>(width),
-	                              ui_state_legacy_main_start_y(),
-	                              ui_state_legacy_main_height());
+	                              static_cast<size_t>(ui_state_main_start_y()),
+	                              static_cast<size_t>(ui_state_main_height()));
 	lyrics->w.resize(nc_lyrics_screen_width(&lyrics->m_screen),
 	                 nc_lyrics_screen_height(&lyrics->m_screen));
 	lyrics->w.moveTo(nc_lyrics_screen_start_x(&lyrics->m_screen),

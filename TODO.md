@@ -58,9 +58,9 @@
 - ~~Convert src/title.cpp to src/title.c.~~
 - ~~Convert src/status.h to C.~~
 - ~~Convert src/status.cpp to src/status.c.~~
-- Replace all screen_legacy.h calls in status handling with app_controller_* and NcScreen calls.
-- Replace all ui_state_legacy.h calls with ui_state.h.
-- Delete src/ui_state_legacy.h.
+- ~~Replace all screen_legacy.h calls in status handling with app_controller_* and NcScreen calls.~~
+- ~~Replace all ui_state_legacy.h calls with ui_state.h.~~
+- ~~Delete src/ui_state_legacy.h.~~
 - Replace src/screens/screen.h, src/screens/screen_compat_impl.h, src/screens/screen_legacy.h, and src/screens/screen_switcher.h with pure C APIs around src/screens/nc_screen.h.
 - Move remaining screen switching logic into app_controller.c or a new src/screens/nc_screen_switcher.c.
 - Convert src/screens/help_bridge.cpp into pure C glue inside src/screens/nc_help.c or src/screens/nc_help_app.c.

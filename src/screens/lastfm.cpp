@@ -26,7 +26,7 @@
 #include "c/ncm_base.h"
 #include "app_controller.h"
 #include "global.h"
-#include "ui_state_legacy.h"
+#include "ui_state.h"
 #include "helpers_legacy.h"
 #include "screens/screen_switcher.h"
 #include "screens/screen_legacy.h"
@@ -97,8 +97,8 @@ Lastfm::Lastfm()
                           this,
                           0,
                           COLS,
-                          ui_state_legacy_main_start_y(),
-                          ui_state_legacy_main_height());
+                          static_cast<size_t>(ui_state_main_start_y()),
+                          static_cast<size_t>(ui_state_main_height()));
     w = NC::Scrollpad(nc_lastfm_screen_start_x(&m_screen),
                       nc_lastfm_screen_start_y(&m_screen),
                       nc_lastfm_screen_width(&m_screen),
@@ -286,8 +286,8 @@ void Lastfm::setDimensions()
     nc_lastfm_screen_set_geometry(&m_screen,
                                   static_cast<int64>(x_offset),
                                   static_cast<int64>(width),
-                                  ui_state_legacy_main_start_y(),
-                                  ui_state_legacy_main_height());
+                                  static_cast<size_t>(ui_state_main_start_y()),
+                                  static_cast<size_t>(ui_state_main_height()));
 }
 
 NcScreenCallbacks Lastfm::makeCallbacks()
