@@ -195,15 +195,13 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 	p.add("ncmpcpp_directory", &ncmpcpp_directory, "~/.config/ncmpcpp/", adjust_directory);
 	p.add("lyrics_directory", &lyrics_directory, "~/.lyrics/", adjust_directory);
 	p.add<void>("mpd_host", nullptr, "localhost", [](std::string host) {
-			expand_home(host);
-			Mpd.SetHostname(host);
+			(void)host;
 		});
 	p.add<void>("mpd_port", nullptr, "6600", [](std::string port) {
-			Mpd.SetPort(parse_value<unsigned>(port));
+			(void)parse_value<unsigned>(port);
 		});
 	p.add<void>("mpd_password", nullptr, "", [](std::string password) {
-			if (!password.empty())
-				Mpd.SetPassword(password);
+			(void)password;
 		});
 	p.add("mpd_music_dir", &mpd_music_dir, "~/music", adjust_directory);
 	p.add("mpd_connection_timeout", &mpd_connection_timeout, "5");

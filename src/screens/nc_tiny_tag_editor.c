@@ -8,7 +8,6 @@
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
 #include "cbase/base_macros.h"
-#include "screens/screen_switcher.h"
 
 static NativeTinyTagEditorScreen *tiny_editor_from_screen(NcScreen *screen);
 static NcWindow *tiny_editor_active_window(NcScreen *screen);
@@ -358,9 +357,7 @@ tiny_editor_switch_to(NcScreen *screen) {
     NativeTinyTagEditorScreen *editor;
 
     editor = tiny_editor_from_screen(screen);
-    editor->previous_screen = nc_screen_switcher_current();
-    (void)nc_screen_switcher_switch_to(screen, nc_screen_has_to_be_resized(
-                                           screen));
+    editor->previous_screen = app_controller_previous_screen();
     return;
 }
 

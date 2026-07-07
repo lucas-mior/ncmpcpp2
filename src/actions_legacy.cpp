@@ -78,6 +78,44 @@ namespace ph = std::placeholders;
 
 namespace {
 
+void legacy_noidle_status_update(int32 flags, void *)
+{
+	Status::update(flags);
+}
+
+std::string legacy_mpd_error_message(const NcmError &error)
+{
+	if (error.message[0] != '\0')
+		return error.message;
+
+	char *message = ncm_mpd_client_error_message(&global_mpd);
+	if (message != nullptr && message[0] != '\0')
+		return message;
+
+	return "MPD command failed";
+}
+
+void legacy_report_mpd_error(const NcmError &error)
+{
+	if (ncm_mpd_client_error_code(&global_mpd) == MPD_ERROR_SERVER
+	    || error.code == MPD_ERROR_SERVER)
+	{
+		MPD::ServerError server_error(
+		    ncm_mpd_client_server_error_code(&global_mpd),
+		    legacy_mpd_error_message(error),
+		    ncm_mpd_client_error_clearable(&global_mpd));
+		Status::handleServerError(server_error);
+	}
+	else
+	{
+		MPD::ClientError client_error(
+		    static_cast<mpd_error>(error.code),
+		    legacy_mpd_error_message(error),
+		    ncm_mpd_client_error_clearable(&global_mpd));
+		Status::handleClientError(client_error);
+	}
+}
+
 std::vector<std::shared_ptr<Actions::BaseAction>> AvailableActions;
 
 char *itemTypeName(MPD::Item::Type type)
@@ -3323,34 +3361,33 @@ enum ScreenType ncmpcpp_legacy_current_screen_type(void)
 
 void ncmpcpp_legacy_set_noidle_status_callback(void)
 {
-	Mpd.setNoidleCallback(Status::update);
+	ncm_mpd_client_set_noidle_callback(
+	    &global_mpd, legacy_noidle_status_update, nullptr);
 }
 
 bool ncmpcpp_legacy_mpd_connected(void)
 {
-	return Mpd.Connected();
+	return ncm_mpd_client_connected(&global_mpd);
 }
 
 void ncmpcpp_legacy_connect_or_report(void)
 {
-	try
+	NcmError error{};
+
+	if (!ncm_mpd_client_connect(&global_mpd, &error))
 	{
-		Mpd.Connect();
-		if (Mpd.Version() < 16)
-		{
-			Mpd.Disconnect();
-			throw MPD::ClientError(
-			    MPD_ERROR_STATE, "MPD < 0.16.0 is not supported",
-			    false);
-		}
+		legacy_report_mpd_error(error);
+		return;
 	}
-	catch (MPD::ClientError &e)
+
+	if (ncm_mpd_client_version(&global_mpd) < 16)
 	{
-		Status::handleClientError(e);
-	}
-	catch (MPD::ServerError &e)
-	{
-		Status::handleServerError(e);
+		ncm_mpd_client_disconnect(&global_mpd);
+		ncm_error_set(&error, MPD_ERROR_STATE,
+		              const_cast<char *>("MPD < 0.16.0 is not supported"),
+		              static_cast<int32>(
+		                  strlen("MPD < 0.16.0 is not supported")));
+		legacy_report_mpd_error(error);
 	}
 }
 

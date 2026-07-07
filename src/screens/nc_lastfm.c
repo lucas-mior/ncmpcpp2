@@ -3,7 +3,6 @@
 #include <errno.h>
 #include <string.h>
 
-#include "app_controller.h"
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
@@ -395,7 +394,6 @@ lastfm_scroll_callback(NcScreen *screen, enum NcScroll where) {
 
 static void
 lastfm_switch_to_callback(NcScreen *screen) {
-    (void)app_controller_switch_to_screen(screen);
     ncm_title_draw_header(nc_screen_title(screen),
                           (int32)strlen(nc_screen_title(screen)));
     return;

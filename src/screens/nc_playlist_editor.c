@@ -6,7 +6,6 @@
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
-#include "screens/screen_switcher.h"
 
 static NativePlaylistEditorScreen *playlist_editor_from_screen(
     NcScreen *screen);
@@ -671,8 +670,7 @@ playlist_editor_scroll_callback(NcScreen *screen, enum NcScroll where) {
 
 static void
 playlist_editor_switch_to_callback(NcScreen *screen) {
-    (void)nc_screen_switcher_switch_to(screen,
-                                       nc_screen_has_to_be_resized(screen));
+    (void)screen;
     return;
 }
 
