@@ -22,8 +22,8 @@
 - ~~Replace Actions::get, Actions::get_, and name lookup with C table lookup functions.~~
 - ~~Replace all action exceptions with explicit fatal calls or statusbar error messages at the call site.~~
 - ~~Add C tests for action name lookup, duplicate action detection, disabled action checks, and representative action execution paths.~~
-- Remove C++ constructors, destructors, operators, and #if defined(__cplusplus) blocks from src/c/ncm_mpd_item.h.
-- Remove C++ compatibility code from src/c/ncm_playlist.h and any other src/c/*.h header that still exposes C++ APIs.
+- ~~Remove C++ constructors, destructors, operators, and #if defined(__cplusplus) blocks from src/c/ncm_mpd_item.h.~~
+- ~~Remove C++ compatibility code from src/c/ncm_playlist.h and any other src/c/*.h header that still exposes C++ APIs.~~
 - Convert remaining callers of MPD::Song to NcmSong.
 - Convert remaining callers of MPD::MutableSong to NcmMutableSong.
 - Convert remaining callers of MPD::Item to NcmMpdItem.
