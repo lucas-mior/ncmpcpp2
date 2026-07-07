@@ -9,7 +9,12 @@
 #include <string.h>
 #include <wchar.h>
 
+#include "app_controller.h"
 #include "c/ncm_base.h"
+#include "c/ncm_macro_utilities.h"
+#include "screens/screen_type.h"
+#include "ui_state.h"
+
 #include "cbase/base_macros.h"
 
 #define NCM_BINDINGS_ERROR_PARSE 1
@@ -435,6 +440,113 @@ ncm_binding_has_runnable_action(NcmBinding *binding,
     }
 
     return success;
+}
+
+bool
+ncm_binding_runtime_can_run_action(enum NcmActionType type,
+                                   void *user) {
+    return ncm_action_runtime_can_run(user, type);
+}
+
+bool
+ncm_binding_runtime_run_action(enum NcmActionType type, void *user) {
+    return ncm_action_runtime_run(user, type);
+}
+
+bool
+ncm_binding_runtime_current_screen_is(enum ScreenType screen_type,
+                                      void *user) {
+    NcScreen *screen;
+    int32 native_type;
+
+    (void)user;
+    screen = app_controller_current_screen();
+    if (screen == NULL) {
+        return false;
+    }
+
+    native_type = screen_type_to_native_type(screen_type);
+    return nc_screen_type(screen) == native_type;
+}
+
+void
+ncm_binding_runtime_push_key(NcKey key, void *user) {
+    NcWindow *window;
+
+    (void)user;
+    window = (NcWindow *)ui_state_footer_window();
+    if (window != NULL) {
+        nc_window_push_key(window, key);
+    }
+    return;
+}
+
+bool
+ncm_binding_runtime_run_external_command(char *command,
+                                         int32 command_len,
+                                         void *user) {
+    NcmError error;
+
+    (void)user;
+    ncm_error_clear(&error);
+    return ncm_macro_run_external_command(command, command_len, true,
+                                          &error);
+}
+
+bool
+ncm_binding_runtime_run_external_console_command(char *command,
+                                                 int32 command_len,
+                                                 void *user) {
+    NcmError error;
+
+    (void)user;
+    ncm_error_clear(&error);
+    return ncm_macro_run_external_console_command(command, command_len,
+                                                  &error);
+}
+
+void
+ncm_binding_runtime_init(NcmBindingRuntime *runtime,
+                         NcmActionRuntime *action_runtime) {
+    if (runtime == NULL) {
+        return;
+    }
+
+    runtime->can_run_action = ncm_binding_runtime_can_run_action;
+    runtime->run_action = ncm_binding_runtime_run_action;
+    runtime->current_screen_is = ncm_binding_runtime_current_screen_is;
+    runtime->push_key = ncm_binding_runtime_push_key;
+    runtime->run_external_command =
+        ncm_binding_runtime_run_external_command;
+    runtime->run_external_console_command =
+        ncm_binding_runtime_run_external_console_command;
+    runtime->user = action_runtime;
+    return;
+}
+
+NcmBindingRuntime *
+ncm_binding_default_runtime(void) {
+    static NcmBindingRuntime runtime;
+    static bool initialized;
+
+    if (!initialized) {
+        ncm_binding_runtime_init(&runtime, ncm_action_runtime_global());
+        initialized = true;
+    }
+    return &runtime;
+}
+
+bool
+ncm_binding_execute_default(NcmBinding *binding) {
+    return ncm_binding_execute_runtime(binding,
+                                       ncm_binding_default_runtime());
+}
+
+bool
+ncm_binding_has_runnable_action_default(NcmBinding *binding,
+                                        enum NcmActionType type) {
+    return ncm_binding_has_runnable_action(binding, type,
+                                           ncm_binding_default_runtime());
 }
 
 bool

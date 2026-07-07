@@ -121,6 +121,24 @@ bool ncm_binding_execute_runtime(NcmBinding *binding,
 bool ncm_binding_has_runnable_action(NcmBinding *binding,
                                      enum NcmActionType type,
                                      NcmBindingRuntime *runtime);
+bool ncm_binding_runtime_can_run_action(enum NcmActionType type,
+                                        void *user);
+bool ncm_binding_runtime_run_action(enum NcmActionType type,
+                                    void *user);
+bool ncm_binding_runtime_current_screen_is(enum ScreenType screen_type,
+                                           void *user);
+void ncm_binding_runtime_push_key(NcKey key, void *user);
+bool ncm_binding_runtime_run_external_command(char *command,
+                                              int32 command_len,
+                                              void *user);
+bool ncm_binding_runtime_run_external_console_command(
+    char *command, int32 command_len, void *user);
+void ncm_binding_runtime_init(NcmBindingRuntime *runtime,
+                              NcmActionRuntime *action_runtime);
+NcmBindingRuntime *ncm_binding_default_runtime(void);
+bool ncm_binding_execute_default(NcmBinding *binding);
+bool ncm_binding_has_runnable_action_default(NcmBinding *binding,
+                                             enum NcmActionType type);
 bool ncm_binding_is_single_action_type(NcmBinding *binding,
                                        enum NcmActionType type);
 void ncm_binding_action_format(NcmBuffer *buffer,
