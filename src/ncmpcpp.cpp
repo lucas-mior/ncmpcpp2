@@ -156,7 +156,7 @@ int main(int argc, char **argv)
 			assert(slave_screen != nullptr);
 			slave_screen->switchTo();
 			if (!Config.startup_slave_screen_focus)
-				Actions::get(Actions::Type::MasterScreen).execute();
+				Actions::execute(NCM_ACTION_MASTER_SCREEN);
 		}
 	}
 
@@ -164,8 +164,11 @@ int main(int argc, char **argv)
 	bool key_pressed = false;
 	auto input = NC_KEY_NONE;
 	NcmTimePoint connect_attempt = {};
+	auto update_environment_action =
+		Actions::runtimeAction(NCM_ACTION_UPDATE_ENVIRONMENT);
+	assert(update_environment_action != nullptr);
 	auto update_environment = static_cast<Actions::UpdateEnvironment &>(
-		Actions::get(Actions::Type::UpdateEnvironment));
+		*update_environment_action);
 
 	while (!Actions::ExitMainLoop)
 	{

@@ -22,6 +22,7 @@
 #include <cerrno>
 #include <chrono>
 #include <cstring>
+#include <cstdlib>
 #include <filesystem>
 #include <algorithm>
 #include <iostream>
@@ -90,9 +91,9 @@ char *itemTypeName(MPD::Item::Type type)
 	return ncm_item_type_name(NCM_ITEM_UNKNOWN);
 }
 
-std::string storedPlaylistPath(const NcmPlaylist &playlist)
+std::string storedPlaylistPath(const MPD::Playlist &playlist)
 {
-	return ncm_playlist_cpp_path(playlist);
+	return playlist.path();
 }
 
 std::string currentStoredPlaylistPath()
@@ -305,7 +306,7 @@ void setWindowsDimensions()
 	FooterHeight = Config.statusbar_visibility ? 2 : 1;
 }
 
-void confirmAction(const std::string &description)
+bool confirmAction(const std::string &description)
 {
 	Statusbar::ScopedLock slock;
 	Statusbar::put() << description
@@ -314,7 +315,11 @@ void confirmAction(const std::string &description)
 	<< "] ";
 	char answer = Statusbar::Helpers::promptReturnOneOf({'y', 'n'});
 	if (answer == 'n')
-		throw NC::PromptAborted(std::string(1, answer));
+	{
+		Statusbar::print("Action cancelled");
+		return false;
+	}
+	return true;
 }
 
 bool isMPDMusicDirSet()
@@ -327,34 +332,50 @@ bool isMPDMusicDirSet()
 	return true;
 }
 
-BaseAction &get(Actions::Type at)
+BaseAction *runtimeAction(enum NcmActionType type)
 {
-	if (AvailableActions.empty())
-		populateActions();
-	return *AvailableActions.at(static_cast<size_t>(at));
-}
-
-std::shared_ptr<BaseAction> get_(Actions::Type at)
-{
-	if (AvailableActions.empty())
-		populateActions();
-	return AvailableActions.at(static_cast<size_t>(at));
-}
-
-std::shared_ptr<BaseAction> get_(const std::string &name)
-{
-	std::shared_ptr<BaseAction> result;
-	if (AvailableActions.empty())
-		populateActions();
-	for (const auto &action : AvailableActions)
+	NcmActionDef *definition = ncm_action_get(type);
+	if (definition == nullptr)
 	{
-		if (action->name() == name)
-		{
-			result = action;
-			break;
-		}
+		Statusbar::printf("Unknown action type: %1%", static_cast<int>(type));
+		return nullptr;
 	}
-	return result;
+
+	if (AvailableActions.empty())
+		populateActions();
+
+	auto index = static_cast<size_t>(type);
+	if (index >= AvailableActions.size() || AvailableActions[index] == nullptr)
+	{
+		std::cerr << "fatal: action not implemented: "
+		          << definition->name << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
+
+	return AvailableActions[index].get();
+}
+
+BaseAction *runtimeActionByName(char *name, int32 name_len)
+{
+	NcmActionDef *definition = ncm_action_find(name, name_len);
+	if (definition == nullptr)
+	{
+		Statusbar::printf("Unknown action: %1%", std::string(name, name_len));
+		return nullptr;
+	}
+	return runtimeAction(definition->type);
+}
+
+bool canRun(enum NcmActionType type)
+{
+	BaseAction *action = runtimeAction(type);
+	return action != nullptr && action->canBeRun();
+}
+
+bool execute(enum NcmActionType type)
+{
+	BaseAction *action = runtimeAction(type);
+	return action != nullptr && action->execute();
 }
 
 UpdateEnvironment::UpdateEnvironment()
@@ -435,9 +456,9 @@ void MouseEvent::run()
 	) // volume
 	{
 		if (m_mouse_event.bstate & BUTTON5_PRESSED)
-			get(Type::VolumeDown).execute();
+			Actions::execute(NCM_ACTION_VOLUME_DOWN);
 		else
-			get(Type::VolumeUp).execute();
+			Actions::execute(NCM_ACTION_VOLUME_UP);
 	}
 	else if (m_mouse_event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED | BUTTON4_PRESSED | BUTTON5_PRESSED))
 		app_controller_mouse_button_pressed_current(m_mouse_event);
@@ -762,7 +783,8 @@ void DeleteBrowserItems::run()
 			Utf8::shorten(get_name(item), COLS-const_strlen(msg)-5)
 		);
 	}
-	confirmAction(question);
+	if (!confirmAction(question))
+		return;
 
 	auto items = getSelectedOrCurrent(
 		myBrowser->main().begin(),
@@ -803,7 +825,8 @@ void DeleteStoredPlaylist::run()
 			Utf8::shorten(currentStoredPlaylistPath(),
 			            COLS-const_strlen(msg)-10));
 	}
-	confirmAction(question);
+	if (!confirmAction(question))
+		return;
 
 	auto list = getSelectedOrCurrent(
 		myPlaylistEditor->Playlists.begin(),
@@ -867,15 +890,19 @@ void SavePlaylist::run()
 	{
 		if (e.code() == MPD_SERVER_ERROR_EXIST)
 		{
-			confirmAction(
+			if (!confirmAction(
 				stringFormat("Playlist \"%1%\" already exists, overwrite?", playlist_name)
-			);
+			))
+				return;
 			Mpd.DeletePlaylist(playlist_name);
 			Mpd.SavePlaylist(playlist_name);
 			Statusbar::print("Playlist overwritten");
 		}
 		else
-			throw;
+		{
+			Statusbar::printf("Error while saving playlist: %1%", e.what());
+			return;
+		}
 	}
 }
 
@@ -1049,7 +1076,8 @@ void Add::run()
 
 	// confirm when one wants to add the whole database
 	if (path.empty())
-		confirmAction("Are you sure you want to add the whole database?");
+		if (!confirmAction("Are you sure you want to add the whole database?"))
+			return;
 
 	Statusbar::put() << "Adding...";
 	ui_state_legacy_footer_window()->refresh();
@@ -1067,7 +1095,10 @@ void Add::run()
 			if (err.code() == MPD_SERVER_ERROR_NO_EXIST)
 				Mpd.LoadPlaylist(path);
 			else
-				throw;
+			{
+				Statusbar::printf("Error while adding item: %1%", err.what());
+				return;
+			}
 		}
 	}
 }
@@ -1315,7 +1346,8 @@ bool Shuffle::canBeRun()
 void Shuffle::run()
 {
 	if (Config.ask_before_shuffling_playlists)
-		confirmAction("Do you really want to shuffle selected range?");
+		if (!confirmAction("Do you really want to shuffle selected range?"))
+			return;
 	auto begin = myPlaylist->main().begin();
 	Mpd.ShuffleRange(m_begin-begin, m_end-begin);
 	Statusbar::print("Range shuffled");
@@ -1716,7 +1748,7 @@ bool JumpToPlaylistEditor::canBeRun()
 void JumpToPlaylistEditor::run()
 {
 	myPlaylistEditor->locatePlaylist(
-		*myBrowser->main().current()->value().playlist().cPlaylist());
+		myBrowser->main().current()->value().playlist());
 }
 
 void ToggleScreenLock::run()
@@ -1960,7 +1992,8 @@ void CropMainPlaylist::run()
 	if (w.size() <= 1)
 		return;
 	if (Config.ask_before_clearing_playlists)
-		confirmAction("Do you really want to crop main playlist?");
+		if (!confirmAction("Do you really want to crop main playlist?"))
+			return;
 	Statusbar::print("Cropping playlist...");
 	selectCurrentIfNoneSelected(w);
 	reverseSelectionHelper(w.begin(), w.end());
@@ -1981,8 +2014,10 @@ void CropPlaylist::run()
 		return;
 	assert(!myPlaylistEditor->Playlists.empty());
 	std::string playlist = currentStoredPlaylistPath();
-	if (Config.ask_before_clearing_playlists)
-		confirmAction(stringFormat("Do you really want to crop playlist \"%1%\"?", playlist));
+	if (Config.ask_before_clearing_playlists
+	    && !confirmAction(stringFormat("Do you really want to crop playlist \"%1%\"?",
+	                                  playlist)))
+		return;
 	selectCurrentIfNoneSelected(w);
 	Statusbar::printf("Cropping playlist \"%1%\"...", playlist);
 	cropPlaylist(w, [playlist](auto &, unsigned pos) { Mpd.PlaylistDelete(playlist, pos); });
@@ -1992,7 +2027,8 @@ void CropPlaylist::run()
 void ClearMainPlaylist::run()
 {
 	if (!myPlaylist->main().empty() && Config.ask_before_clearing_playlists)
-		confirmAction("Do you really want to clear main playlist?");
+		if (!confirmAction("Do you really want to clear main playlist?"))
+			return;
 	Mpd.ClearMainPlaylist();
 	Statusbar::print("Playlist cleared");
 	myPlaylist->main().reset();
@@ -2008,8 +2044,10 @@ void ClearPlaylist::run()
 	if (myPlaylistEditor->Playlists.empty())
 		return;
 	std::string playlist = currentStoredPlaylistPath();
-	if (Config.ask_before_clearing_playlists)
-		confirmAction(stringFormat("Do you really want to clear playlist \"%1%\"?", playlist));
+	if (Config.ask_before_clearing_playlists
+	    && !confirmAction(stringFormat("Do you really want to clear playlist \"%1%\"?",
+	                                  playlist)))
+		return;
 	Mpd.ClearPlaylist(playlist);
 	Statusbar::printf("Playlist \"%1%\" cleared", playlist);
 }
@@ -2079,7 +2117,8 @@ void ApplyFilter::run()
 	catch (NC::PromptAborted &)
 	{
 		m_filterable->applyFilter(filter);
-		throw;
+		Statusbar::print("Action cancelled");
+		return;
 	}
 
 	if (filter.empty())
@@ -2203,9 +2242,9 @@ void ToggleReplayGainMode::run()
 			Mpd.SetReplayGainMode(MPD::rgmOff);
 			break;
 		default: // impossible
-			throw std::runtime_error(
-				stringFormat("ToggleReplayGainMode: impossible case reached: %1%", rgm)
-			);
+			Statusbar::printf("Internal error: invalid replay gain mode: %1%",
+			                  rgm);
+			return;
 	}
 	Statusbar::printf("Replay gain mode: %1%", Mpd.GetReplayGainMode());
 }
@@ -2896,11 +2935,24 @@ void populateActions()
 	insert_action(new Actions::ShowOutputs());
 	insert_action(new Actions::ShowVisualizer());
 	insert_action(new Actions::ShowServerInfo());
-	for (size_t i = 0; i < AvailableActions.size(); ++i)
+	NcmError action_error;
+	ncm_error_clear(&action_error);
+	if (!ncm_action_validate(&action_error))
 	{
-		if (AvailableActions[i] == nullptr)
-			throw std::logic_error("undefined action at position "
-			                       + std::to_string(i));
+		std::cerr << "fatal: invalid action table: "
+		          << action_error.message << std::endl;
+		std::exit(EXIT_FAILURE);
+	}
+
+	for (int32 i = 0; i < NCM_ACTION_LAST; i += 1)
+	{
+		if (AvailableActions[static_cast<size_t>(i)] == nullptr)
+		{
+			std::cerr << "fatal: undefined action: "
+			          << ncm_action_type_name(static_cast<NcmActionType>(i))
+			          << std::endl;
+			std::exit(EXIT_FAILURE);
+		}
 	}
 }
 
@@ -3085,7 +3137,8 @@ void findItem(const SearchDirection direction)
 	{
 		w->setSearchConstraint(constraint);
 		w->search(direction, Config.wrapped_search, false);
-		throw;
+		Statusbar::print("Action cancelled");
+		return;
 	}
 
 	if (constraint.empty())

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "c/ncm_defs.h"
+#include "c/ncm_error.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -155,11 +156,23 @@ typedef struct NcmActionDef {
 
 int32 ncm_action_count(void);
 NcmActionDef *ncm_action_table(void);
+bool ncm_action_table_validate(NcmActionDef *defs, int32 defs_len,
+                               NcmError *error);
+NcmActionDef *ncm_action_table_get(NcmActionDef *defs, int32 defs_len,
+                                   enum NcmActionType type);
+NcmActionDef *ncm_action_table_find(NcmActionDef *defs, int32 defs_len,
+                                    char *name, int32 name_len);
+bool ncm_action_validate(NcmError *error);
 NcmActionDef *ncm_action_get(enum NcmActionType type);
 NcmActionDef *ncm_action_find(char *name, int32 name_len);
 char *ncm_action_type_name(enum NcmActionType type);
 bool ncm_action_type_parse(char *name, int32 name_len,
                            enum NcmActionType *type);
+bool ncm_action_def_can_run(NcmActionDef *action, void *user);
+bool ncm_action_def_run(NcmActionDef *action, void *user);
+bool ncm_action_set_callbacks(enum NcmActionType type,
+                              NcmActionCanRunFn can_run,
+                              NcmActionRunFn run);
 bool ncm_action_can_run(enum NcmActionType type, void *user);
 bool ncm_action_run(enum NcmActionType type, void *user);
 

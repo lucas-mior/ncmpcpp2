@@ -19,9 +19,9 @@
 - ~~Convert src/actions.cpp to src/actions.c.~~
 - ~~Replace the Actions::BaseAction inheritance tree with NcmActionDef { type, name, can_run, run }.~~
 - Convert every action struct in actions.h into one static bool action_x_can_run(void) function and one static void action_x_run(void) function.
-- Replace Actions::get, Actions::get_, and name lookup with C table lookup functions.
-- Replace all action exceptions with explicit fatal calls or statusbar error messages at the call site.
-- Add C tests for action name lookup, duplicate action detection, disabled action checks, and representative action execution paths.
+- ~~Replace Actions::get, Actions::get_, and name lookup with C table lookup functions.~~
+- ~~Replace all action exceptions with explicit fatal calls or statusbar error messages at the call site.~~
+- ~~Add C tests for action name lookup, duplicate action detection, disabled action checks, and representative action execution paths.~~
 - Remove C++ constructors, destructors, operators, and #if defined(__cplusplus) blocks from src/c/ncm_mpd_item.h.
 - Remove C++ compatibility code from src/c/ncm_playlist.h and any other src/c/*.h header that still exposes C++ APIs.
 - Convert remaining callers of MPD::Song to NcmSong.

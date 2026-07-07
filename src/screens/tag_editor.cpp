@@ -712,7 +712,8 @@ void TagEditor::runAction()
 
 	if (w == TagTypes && id == 5)
 	{
-		Actions::confirmAction("Number tracks?");
+		if (!Actions::confirmAction("Number tracks?"))
+			return;
 		auto it = EditedSongs.begin();
 		for (unsigned i = 1; i <= EditedSongs.size(); ++i, ++it)
 		{
@@ -869,8 +870,9 @@ bool TagEditor::previousColumnAvailable()
 	}
 	else if (w == TagTypes)
 	{
-		if (!Dirs->empty() && isAnyModified(*Tags))
-			Actions::confirmAction("There are pending changes, are you sure?");
+		if (!Dirs->empty() && isAnyModified(*Tags)
+		    && !Actions::confirmAction("There are pending changes, are you sure?"))
+			return false;
 		result = true;
 	}
 	else if (w == FParserHelper)
