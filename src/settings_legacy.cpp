@@ -432,19 +432,19 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 	      "tags, "
 #endif
 	      "tekstowo, plyrics, justsomelyrics, jahlyrics, zeneszoveg, internet", [this](std::string v) {
-		      lyrics_fetchers = list_of<LyricsFetcher_>(v, [](std::string s) {
-			      LyricsFetcher_ fetcher;
-			      std::istringstream is(s);
-			      if (!(is >> fetcher))
-				      std::clog << "Unknown lyrics fetcher: " << s << "\n";
-			      return fetcher;
-		      });
-		      auto last = std::remove_if(
-			      lyrics_fetchers.begin(), lyrics_fetchers.end(),
-			      [](const auto &f) { return f.get() == nullptr; });
-		      lyrics_fetchers.erase(last, lyrics_fetchers.end());
-		      if (lyrics_fetchers.empty())
-			      invalid_value(v);
+		      auto names = list_of<std::string>(v, [](std::string s) { return s; });
+
+		      ncm_lyrics_fetcher_registry_clear(&lyrics_fetchers);
+		      for (auto &name : names)
+		      {
+		      	  if (!ncm_lyrics_fetcher_registry_append_name(
+		      	          &lyrics_fetchers, name.data(), static_cast<int32>(name.size())))
+		      	  {
+		      	      std::clog << "Unknown lyrics fetcher: " << name << "\n";
+		      	  }
+		      }
+		      if (lyrics_fetchers.fetchers.len == 0)
+		      	  invalid_value(v);
 	      });
 	p.add("follow_now_playing_lyrics", &now_playing_lyrics, "no", yes_no);
 	p.add("fetch_lyrics_for_current_song_in_background", &fetch_lyrics_in_background,

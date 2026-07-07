@@ -510,3 +510,48 @@ Rules:
     - Remaining MPD::Song by-value storage in NC::Menu and std::vector must be
       removed together with the screen/menu conversion because plain C structs
       require explicit copy/move/destroy ownership.
+
+Curl wrapper migration
+======================
+
+The curl wrapper is a C API.
+
+    Curl::perform(std::string &, url, referer, follow, timeout)
+        -> ncm_curl_perform(NcmBuffer *, url, url_len, referer,
+                            referer_len, follow, timeout)
+    Curl::escape(std::string)
+        -> ncm_curl_escape(NcmBuffer *, string, string_len)
+
+Rules:
+    - Curl response callbacks must receive an initialized
+      NcmCurlResponseWriter.
+    - NcmCurlResponseWriter ownership is explicit: call
+      ncm_curl_response_writer_init() before curl_easy_perform() and
+      ncm_curl_response_writer_destroy() before leaving the request path.
+    - Curl response data is stored in NcmBuffer, not std::string.
+    - Temporary C++ callers may convert the completed NcmBuffer to std::string
+      for legacy parsing, but new code must keep the NcmBuffer representation.
+
+Last.fm and lyrics service migration
+====================================
+
+The Last.fm and lyrics service APIs are C APIs.
+
+    LastFm::ArtistInfo                -> NcmLastfmService
+    LastFm::Service::fetch()          -> ncm_lastfm_service_fetch()
+    LyricsFetcher::fetch()            -> ncm_lyrics_fetcher_fetch()
+    LyricsFetcher::Result             -> NcmLyricsResult
+    std::vector<LyricsFetcher_>        -> NcmLyricsFetcherRegistry
+    std::regex lyrics parsing          -> ncm_regex_* plus explicit string scans
+
+Rules:
+    - Initialize and destroy every NcmLastfmResult and NcmLyricsResult with the
+      matching init/destroy functions.
+    - Initialize and destroy every NcmLyricsFetcherDef and
+      NcmLyricsFetcherRegistry explicitly.
+    - Store lyrics providers as NcmLyricsFetcherDef entries in the registry;
+      do not add new fetcher subclasses.
+    - Build provider URLs with ncm_lyrics_fetcher_build_url().
+    - Clean fetched lyric text with ncm_lyrics_cleanup_html().
+    - Do not use std::regex in Last.fm or lyrics parsing code; use
+      src/c/ncm_regex.* or explicit C string scans.

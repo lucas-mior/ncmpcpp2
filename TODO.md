@@ -37,17 +37,17 @@
 - ~~Convert src/curl_handle.cpp to src/curl_handle.c or move it into src/c/ncm_curl_handle.c.~~
 - ~~Replace std::string curl buffers with NcmBuffer.~~
 - ~~Replace curl callback ownership with explicit init/destroy functions.~~
-- Convert src/lastfm_service.h to C.
-- Convert src/lastfm_service.cpp to src/lastfm_service.c.
-- Replace std::regex in Last.fm parsing with src/c/ncm_regex.*.
-- Replace Last.fm file I/O with FILE * and ncm_fs helpers.
-- Convert src/lyrics_fetcher.h to C.
-- Convert src/lyrics_fetcher.cpp to src/lyrics_fetcher.c.
-- Replace lyrics-fetcher inheritance with a fetcher function table.
-- Replace lyrics-fetcher std::vector storage with a typed C array.
-- Replace lyrics-fetcher regex parsing with ncm_regex.
-- Replace lyrics-fetcher string cleanup with explicit lyrics_result_destroy.
-- Add C tests for lyrics provider registration, URL construction, HTML cleanup, and failed fetch handling.
+- ~~Convert src/lastfm_service.h to C.~~
+- ~~Convert src/lastfm_service.cpp to src/lastfm_service.c.~~
+- ~~Replace std::regex in Last.fm parsing with src/c/ncm_regex.*.~~
+- ~~Replace Last.fm file I/O with FILE * and ncm_fs helpers.~~
+- ~~Convert src/lyrics_fetcher.h to C.~~
+- ~~Convert src/lyrics_fetcher.cpp to src/lyrics_fetcher.c.~~
+- ~~Replace lyrics-fetcher inheritance with a fetcher function table.~~
+- ~~Replace lyrics-fetcher std::vector storage with a typed C array.~~
+- ~~Replace lyrics-fetcher regex parsing with ncm_regex.~~
+- ~~Replace lyrics-fetcher string cleanup with explicit lyrics_result_destroy.~~
+- ~~Add C tests for lyrics provider registration, URL construction, HTML cleanup, and failed fetch handling.~~
 - Convert src/helpers.h to C.
 - Convert src/helpers.cpp to src/helpers.c.
 - Replace helper templates with concrete typed functions.

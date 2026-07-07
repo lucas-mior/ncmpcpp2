@@ -1,0 +1,7 @@
+src/settings.cpp
+src/configuration.cpp
+src/bindings.cpp
+src/actions.cpp
+src/curl_handle.cpp
+src/lastfm_service.cpp
+src/lyrics_fetcher.cpp
