@@ -1,3 +1,4 @@
 src/settings.cpp
 src/configuration.cpp
 src/bindings.cpp
+src/actions.cpp

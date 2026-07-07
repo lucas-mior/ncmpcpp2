@@ -26,7 +26,7 @@
 #include <fstream>
 #include <string>
 
-#include "actions.h"
+#include "actions_legacy.h"
 #include "c/ncm_type_conversions.h"
 #include "screens/browser.h"
 #include "charset.h"
