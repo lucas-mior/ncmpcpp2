@@ -525,8 +525,7 @@ native_tag_editor_screen_clear_modifications(NativeTagEditorScreen *screen) {
     for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmMutableSong *song;
 
-        song = nc_tag_row_menu_item_at(&screen->tags, NC_MENU_ITEMS_FILTERED,
-                                       i);
+        song = nc_menu_active_item_at(menu, i);
         if (song != NULL) {
             ncm_mutable_song_clear_modifications(song);
         }
@@ -967,8 +966,7 @@ tag_editor_copy_selected_song_at(NativeTagEditorScreen *screen,
                                   NcmMutableSongArray *songs, int64 pos) {
     NcmMutableSong *song;
 
-    song = nc_tag_row_menu_item_at(&screen->tags, NC_MENU_ITEMS_FILTERED,
-                                   pos);
+    song = nc_menu_active_item_at(nc_tag_row_menu_base(&screen->tags), pos);
     if (song == NULL) {
         return false;
     }
@@ -993,8 +991,7 @@ tag_editor_for_each_target(NativeTagEditorScreen *screen,
         if (has_selected && !nc_menu_position_is_selected(menu, i)) {
             continue;
         }
-        song = nc_tag_row_menu_item_at(&screen->tags,
-                                       NC_MENU_ITEMS_FILTERED, i);
+        song = nc_menu_active_item_at(menu, i);
         if (song != NULL && !cb(song, user)) {
             return false;
         }
