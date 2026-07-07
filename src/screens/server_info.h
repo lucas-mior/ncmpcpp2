@@ -27,7 +27,7 @@
 #include "c/ncm_time.h"
 #include "interfaces.h"
 #include "screens/nc_server_info.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 
 struct ServerInfo: BaseScreen, Tabbable
 {

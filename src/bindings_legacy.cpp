@@ -4,7 +4,7 @@
 
 #include "macro_utilities.h"
 #include "c/ncm_base.h"
-#include "screens/screen_legacy.h"
+#include "screens/screen_cpp_legacy.h"
 #include "ui_state.h"
 
 namespace {

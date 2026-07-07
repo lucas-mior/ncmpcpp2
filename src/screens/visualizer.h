@@ -27,7 +27,7 @@
 
 #include "curses/window.h"
 #include "interfaces.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 #include "utility/sample_buffer.h"
 
 #include <string>

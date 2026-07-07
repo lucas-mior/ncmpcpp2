@@ -65,8 +65,8 @@ NcScreen *native_c_screen_outputs_native();
 #include "config.h"
 #include "screens/help.h"
 #include "screens/outputs.h"
-#include "screens/screen.h"
-#include "screens/screen_legacy.h"
+#include "screens/screen_cpp_compat.h"
+#include "screens/screen_cpp_legacy.h"
 #include "screens/server_info.h"
 #include "screens/song_info.h"
 

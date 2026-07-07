@@ -31,7 +31,7 @@
 #include "interfaces.h"
 #include "lyrics_fetcher.h"
 #include "screens/nc_lyrics.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 #include "song.h"
 #include "utility/shared_resource.h"
 

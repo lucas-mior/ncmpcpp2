@@ -33,8 +33,8 @@
 #include "statusbar_legacy.h"
 #include "status_legacy.h"
 #include "utility/comparators.h"
-#include "screens/screen_switcher.h"
-#include "screens/screen_legacy.h"
+#include "screens/screen_cpp_switcher.h"
+#include "screens/screen_cpp_legacy.h"
 #include "charset.h"
 
 SelectedItemsAdder *mySelectedItemsAdder;

@@ -29,7 +29,7 @@
 #include "ui_state.h"
 #include "helpers_legacy.h"
 #include "screens/playlist.h"
-#include "screens/screen_switcher.h"
+#include "screens/screen_cpp_switcher.h"
 #include "song.h"
 #include "status_legacy.h"
 #include "statusbar_legacy.h"

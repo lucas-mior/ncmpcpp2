@@ -37,7 +37,7 @@
 #include "configuration_legacy.h"
 #include "global.h"
 #include "ui_state.h"
-#include "screens/screen_legacy.h"
+#include "screens/screen_cpp_legacy.h"
 #include "helpers_legacy.h"
 #include "screens/lyrics.h"
 #include "screens/playlist.h"

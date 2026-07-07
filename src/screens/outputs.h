@@ -29,7 +29,7 @@
 
 #include "interfaces.h"
 #include "screens/nc_outputs.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 
 struct Outputs: BaseScreen, Tabbable
 {

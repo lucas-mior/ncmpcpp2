@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 #include "c/ncm_enums.h"
-#include "screens/screen.h"
+#include "screens/screen_cpp_compat.h"
 #include "song.h"
 
 struct Searchable
