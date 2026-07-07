@@ -100,15 +100,6 @@ ncm_string_format_append_arg(NcmBuffer *out, NcmStringFormatArg *arg) {
     return;
 }
 
-NcmStringView
-ncm_string_view_make(char *data, int32 len) {
-    NcmStringView result;
-
-    result.data = data;
-    result.len = len;
-    return result;
-}
-
 NcmStringFormatArg
 ncm_string_format_arg_string(char *data, int32 len) {
     NcmStringFormatArg result;

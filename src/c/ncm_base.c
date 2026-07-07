@@ -61,6 +61,61 @@ ncm_buffer_clear(NcmBuffer *buffer) {
     return;
 }
 
+bool
+ncm_buffer_copy(NcmBuffer *dest, NcmBuffer *source) {
+    if (dest == NULL) {
+        return false;
+    }
+    if (dest == source) {
+        return true;
+    }
+    if (source == NULL) {
+        ncm_buffer_destroy(dest);
+        return true;
+    }
+
+    ncm_buffer_clear(dest);
+    ncm_buffer_append(dest, source->data, source->len);
+    return true;
+}
+
+void
+ncm_buffer_move(NcmBuffer *dest, NcmBuffer *source) {
+    if (dest == NULL) {
+        return;
+    }
+    if (dest == source) {
+        return;
+    }
+
+    ncm_buffer_destroy(dest);
+    if (source == NULL) {
+        ncm_buffer_init(dest);
+        return;
+    }
+
+    *dest = *source;
+    ncm_buffer_init(source);
+    return;
+}
+
+bool
+ncm_buffer_set(NcmBuffer *buffer, char *data, int32 data_len) {
+    if (buffer == NULL) {
+        return false;
+    }
+    if (data_len < 0) {
+        return false;
+    }
+    if ((data == NULL) && (data_len > 0)) {
+        return false;
+    }
+
+    ncm_buffer_clear(buffer);
+    ncm_buffer_append(buffer, data, data_len);
+    return true;
+}
+
 void
 ncm_buffer_reserve(NcmBuffer *buffer, int32 extra) {
     int32 needed;

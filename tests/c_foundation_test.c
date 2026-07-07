@@ -4,6 +4,7 @@
 
 #include <mpd/tag.h>
 
+#include "c/ncm_app_arrays.h"
 #include "c/ncm_base.h"
 #include "c/ncm_error.h"
 #include "c/ncm_html.h"
@@ -50,6 +51,7 @@ static void require_cstring(char *file, int32 line, char *name,
 static void require_buffer_string(char *name, NcmBuffer *buffer,
                                   char *expected, int32 expected_len);
 static void test_buffer(void);
+static void test_app_arrays(void);
 static void test_error(void);
 static void test_path(void);
 static void test_string(void);
@@ -121,16 +123,35 @@ require_buffer_string(char *name, NcmBuffer *buffer,
 static void
 test_buffer(void) {
     NcmBuffer buffer;
+    NcmBuffer copy;
+    NcmBuffer moved;
     char *stolen;
     int32 stolen_len;
     int32 stolen_cap;
 
     ncm_buffer_init(&buffer);
+    ncm_buffer_init(&copy);
+    ncm_buffer_init(&moved);
+
     ncm_buffer_append(&buffer, LIT_ARGS("ab"));
     ncm_buffer_append_byte(&buffer, 'c');
     REQUIRE_INT(buffer.len, 3);
     REQUIRE(buffer.cap >= 4);
     REQUIRE_STRING(buffer.data, buffer.len, "abc");
+
+    REQUIRE(ncm_buffer_copy(&copy, &buffer));
+    REQUIRE_STRING(copy.data, copy.len, "abc");
+    ncm_buffer_append_byte(&buffer, 'd');
+    REQUIRE_STRING(copy.data, copy.len, "abc");
+
+    REQUIRE(ncm_buffer_set(&copy, LIT_ARGS("xy")));
+    REQUIRE_STRING(copy.data, copy.len, "xy");
+
+    ncm_buffer_move(&moved, &copy);
+    REQUIRE_STRING(moved.data, moved.len, "xy");
+    REQUIRE(copy.data == NULL);
+    REQUIRE_INT(copy.len, 0);
+    REQUIRE_INT(copy.cap, 0);
 
     ncm_buffer_clear(&buffer);
     REQUIRE_INT(buffer.len, 0);
@@ -145,7 +166,51 @@ test_buffer(void) {
     REQUIRE_INT(buffer.cap, 0);
 
     ncm_free(stolen, stolen_cap);
+    ncm_buffer_destroy(&moved);
+    ncm_buffer_destroy(&copy);
     ncm_buffer_destroy(&buffer);
+    return;
+}
+
+static void
+test_app_arrays(void) {
+    NcmBufferArray buffers;
+    NcmBufferArray copy;
+    NcmBufferArray moved;
+    NcmBuffer *item;
+
+    ncm_buffer_array_init(&buffers);
+    ncm_buffer_array_init(&copy);
+    ncm_buffer_array_init(&moved);
+
+    item = ncm_buffer_array_append(&buffers);
+    REQUIRE(item != NULL);
+    ncm_buffer_append(item, LIT_ARGS("first"));
+    item = ncm_buffer_array_append(&buffers);
+    REQUIRE(item != NULL);
+    ncm_buffer_append(item, LIT_ARGS("second"));
+
+    REQUIRE(ncm_buffer_array_copy(&copy, &buffers));
+    REQUIRE_INT(copy.len, 2);
+    REQUIRE_STRING(copy.items[0].data, copy.items[0].len, "first");
+    REQUIRE_STRING(copy.items[1].data, copy.items[1].len, "second");
+
+    ncm_buffer_append(&buffers.items[0], LIT_ARGS(" changed"));
+    REQUIRE_STRING(copy.items[0].data, copy.items[0].len, "first");
+
+    ncm_buffer_array_move(&moved, &copy);
+    REQUIRE_INT(moved.len, 2);
+    REQUIRE_INT(copy.len, 0);
+    REQUIRE(copy.items == NULL);
+
+    ncm_buffer_array_swap(&buffers, &moved);
+    REQUIRE_STRING(buffers.items[0].data, buffers.items[0].len, "first");
+    REQUIRE_STRING(moved.items[0].data, moved.items[0].len,
+                   "first changed");
+
+    ncm_buffer_array_destroy(&moved);
+    ncm_buffer_array_destroy(&copy);
+    ncm_buffer_array_destroy(&buffers);
     return;
 }
 
@@ -207,6 +272,8 @@ test_string(void) {
     NcmBuffer shared;
     NcmBuffer enclosed;
     NcmBuffer escaped;
+    NcmStringView first_view;
+    NcmStringView second_view;
     char lowercase[] = "AbC-123-Ç";
     char invalid[] = "a/b:c*d?e";
     char win32_filename[] = "a/b:c*d?e";
@@ -227,6 +294,14 @@ test_string(void) {
     REQUIRE(!ncm_string_ends_with(LIT_ARGS("track.flac"), LIT_ARGS("mp3")));
     REQUIRE_INT(ncm_string_find_char(LIT_ARGS("abc"), 'b'), 1);
     REQUIRE_INT(ncm_string_find_char(LIT_ARGS("abc"), 'z'), -1);
+
+    ncm_string_view_init(&first_view);
+    REQUIRE(ncm_string_view_empty(&first_view));
+    ncm_string_view_set(&first_view, LIT_ARGS("view"));
+    second_view = ncm_string_view_make(LIT_ARGS("view"));
+    REQUIRE(ncm_string_view_equal(&first_view, &second_view));
+    ncm_string_view_clear(&first_view);
+    REQUIRE(ncm_string_view_empty(&first_view));
 
     shared = ncm_string_shared_directory(LIT_ARGS("/music/a"),
                                          LIT_ARGS("/music/b"));
@@ -697,6 +772,7 @@ test_utf8(void) {
 int
 main(void) {
     test_buffer();
+    test_app_arrays();
     test_error();
     test_path();
     test_string();
