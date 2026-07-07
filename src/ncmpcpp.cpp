@@ -201,7 +201,7 @@ int main(int argc, char **argv)
 
 			update_environment.run(!key_pressed, key_pressed, false);
 
-			input = readKey(*ui_state_legacy_footer_window());
+			input = ncm_read_key(ui_state_legacy_footer_window()->nativeWindow());
 			key_pressed = input != NC_KEY_NONE;
 			if (!key_pressed)
 				continue;
