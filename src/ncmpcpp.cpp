@@ -31,7 +31,7 @@
 #include "mpdpp.h"
 
 #include "actions.h"
-#include "bindings.h"
+#include "bindings_legacy.h"
 #include "screens/browser.h"
 #include "charset.h"
 #include "configuration_legacy.h"
@@ -216,11 +216,17 @@ int main(int argc, char **argv)
 
 			try
 			{
-				auto k = Bindings.get(input);
-				[[maybe_unused]] bool executed = std::any_of(
-					k.first,
-					k.second,
-					std::bind(&Binding::execute, ph::_1));
+				auto k = bindings_legacy_get(input);
+				bool executed = false;
+				for (int32 i = 0; i < k.len; i += 1)
+				{
+					if (bindings_legacy_execute(k.data + i))
+					{
+						executed = true;
+						break;
+					}
+				}
+				(void)executed;
 			}
 			catch (ConversionError &e)
 			{

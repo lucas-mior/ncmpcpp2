@@ -409,3 +409,24 @@ Rules:
     - Create missing XDG config directories with ncm_fs_mkdir_all().
     - Keep detailed parser failures in NcmError instead of replacing them with
       generic failure messages.
+
+Bindings migration
+==================
+
+Use src/bindings.h and src/bindings.c as the C binding configuration owner.
+
+    Binding::ActionChain        -> NcmBinding.actions typed C array
+    BindingsConfiguration       -> NcmBindingsConfiguration
+    CommandsSet unordered_map   -> sorted NcmCommand array
+    BindingsMap unordered_map   -> sorted NcmKeyBindings array
+    Bindings.findCommand(name)  -> ncm_bindings_configuration_find_command()
+    Bindings.get(key)           -> ncm_bindings_configuration_get()
+    Bindings.generateDefaults() -> ncm_bindings_configuration_generate_defaults()
+    Bindings.read(paths)        -> ncm_bindings_configuration_read_paths()
+
+Rules:
+    - Store runtime bindings as typed action descriptors, not C++ action
+      objects.
+    - Keep bindings_legacy.h/.cpp only while the C++ Actions runtime still owns
+      action execution.
+    - Do not add new std::unordered_map or std::vector storage to bindings.

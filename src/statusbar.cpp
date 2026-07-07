@@ -25,7 +25,7 @@
 #include "settings_legacy.h"
 #include "status.h"
 #include "statusbar.h"
-#include "bindings.h"
+#include "bindings_legacy.h"
 #include "screens/playlist.h"
 #include "utility/utf8.h"
 
@@ -260,8 +260,8 @@ bool Statusbar::Helpers::TryExecuteImmediateCommand::operator()(const char *s)
 	if (m_s != s)
 	{
 		m_s = s;
-		auto cmd = Bindings.findCommand(m_s);
-		if (cmd && cmd->immediate())
+		auto cmd = bindings_legacy_find_command(m_s);
+		if (cmd && cmd->immediate)
 			continue_ = false;
 	}
 	Status::trace();
