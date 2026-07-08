@@ -474,7 +474,7 @@ ncm_binding_runtime_push_key(NcKey key, void *user) {
     NcWindow *window;
 
     (void)user;
-    window = (NcWindow *)ui_state_footer_window();
+    window = ui_state_footer_window();
     if (window != NULL) {
         nc_window_push_key(window, key);
     }

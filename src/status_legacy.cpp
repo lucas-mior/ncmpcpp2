@@ -166,7 +166,7 @@ void initialize_status()
 #	endif // ENABLE_VISUALIZER
 
 	m_status_initialized = true;
-	static_cast<NC::Window *>(ui_state_footer_window())->addFDCallback(Mpd.GetFD(), Statusbar::Helpers::mpd);
+	static_cast<NC::Window *>(ui_state_footer_legacy_window())->addFDCallback(Mpd.GetFD(), Statusbar::Helpers::mpd);
 	if (Config.connected_message_on_startup)
 	{
 		Statusbar::printf("Connected to %1%", Mpd.GetHostname());
@@ -191,9 +191,9 @@ void Status::handleServerError(MPD::ServerError &e)
 	{
 		try
 		{
-			NC::Window::ScopedPromptHook helper(*static_cast<NC::Window *>(ui_state_footer_window()), nullptr);
+			NC::Window::ScopedPromptHook helper(*static_cast<NC::Window *>(ui_state_footer_legacy_window()), nullptr);
 			Statusbar::put() << "Password: ";
-			Mpd.SetPassword(static_cast<NC::Window *>(ui_state_footer_window())->prompt("", -1, true));
+			Mpd.SetPassword(static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt("", -1, true));
 			Mpd.SendPassword();
 			Statusbar::print("Password accepted");
 		}
@@ -232,7 +232,7 @@ void Status::trace(bool update_timer, bool update_window_timeout)
 		{
 			// update elapsed time/bitrate of the current song
 			Status::Changes::elapsedTime(true);
-			static_cast<NC::Window *>(ui_state_footer_window())->refresh();
+			static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
 			past = global_timer;
 		}
 
@@ -249,7 +249,7 @@ void Status::trace(bool update_timer, bool update_window_timeout)
 		applyToVisibleScreens([&nc_wtimeout](NcScreen *s) {
 			nc_wtimeout = std::min(nc_wtimeout, nc_screen_window_timeout(s));
 		});
-		static_cast<NC::Window *>(ui_state_footer_window())->setTimeout(nc_wtimeout);
+		static_cast<NC::Window *>(ui_state_footer_legacy_window())->setTimeout(nc_wtimeout);
 	}
 }
 
@@ -333,7 +333,7 @@ void Status::update(int event)
 	m_status_initialized = true;
 
 	if (event & MPD_IDLE_PLAYER)
-		static_cast<NC::Window *>(ui_state_footer_window())->refresh();
+		static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
 
 	if (event & (MPD_IDLE_PLAYLIST | MPD_IDLE_DATABASE | MPD_IDLE_PLAYER))
 		applyToVisibleScreens(nc_screen_refresh_window);
@@ -525,8 +525,8 @@ void Status::Changes::playerState()
 			myPlaylist->reloadRemaining();
 			if (Config.design == NCM_DESIGN_ALTERNATIVE)
 			{
-				*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(0, 0) << NC::TermManip::ClearToEOL;
-				*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(0, 1) << NC::TermManip::ClearToEOL;
+				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 0) << NC::TermManip::ClearToEOL;
+				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 1) << NC::TermManip::ClearToEOL;
 				mixer();
 				flags();
 			}
@@ -542,16 +542,16 @@ void Status::Changes::playerState()
 	std::string state = playerStateToString(m_player_state);
 	if (Config.design == NCM_DESIGN_ALTERNATIVE)
 	{
-		*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(0, 1) << NC_FORMAT_BOLD << state << NC_FORMAT_NO_BOLD;
-		static_cast<NC::Window *>(ui_state_header_window())->refresh();
+		*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 1) << NC_FORMAT_BOLD << state << NC_FORMAT_NO_BOLD;
+		static_cast<NC::Window *>(ui_state_header_legacy_window())->refresh();
 	}
 	else if (Statusbar::isUnlocked() && Config.statusbar_visibility)
 	{
-		*static_cast<NC::Window *>(ui_state_footer_window()) << NC::XY(0, 1);
+		*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(0, 1);
 		if (state.empty())
-			*static_cast<NC::Window *>(ui_state_footer_window()) << NC::TermManip::ClearToEOL;
+			*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::TermManip::ClearToEOL;
 		else
-			*static_cast<NC::Window *>(ui_state_footer_window()) << NC_FORMAT_BOLD << state << NC_FORMAT_NO_BOLD;
+			*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC_FORMAT_BOLD << state << NC_FORMAT_NO_BOLD;
 	}
 
 	// needed for immediate display after starting
@@ -612,7 +612,7 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 	{
 		// MPD is not playing, clear statusbar and exit.
 		if (Statusbar::isUnlocked() && Config.statusbar_visibility)
-			*static_cast<NC::Window *>(ui_state_footer_window()) << NC::XY(0, 1)
+			*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(0, 1)
 			         << NC::TermManip::ClearToEOL;
 		if (Progressbar::isUnlocked())
 			Progressbar::draw(0, 0);
@@ -659,16 +659,16 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 				tracklength += "]";
 				NC::Buffer np_song;
 				Format::print(Config.song_status_format, np_song, &np);
-				*static_cast<NC::Window *>(ui_state_footer_window()) << NC::XY(0, 1)
+				*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(0, 1)
 				         << NC::TermManip::ClearToEOL
 				         << Config.player_state_color
 				         << ps
 				         << NC::FormattedColor::End<>(Config.player_state_color)
 				         << " ";
 				writeCyclicBuffer(
-					np_song, *static_cast<NC::Window *>(ui_state_footer_window()), playing_song_scroll_begin,
-					static_cast<NC::Window *>(ui_state_footer_window())->getWidth()-ps.length()-tracklength.length()-2, " ** ");
-				*static_cast<NC::Window *>(ui_state_footer_window()) << NC::XY(static_cast<NC::Window *>(ui_state_footer_window())->getWidth()-tracklength.length(), 1)
+					np_song, *static_cast<NC::Window *>(ui_state_footer_legacy_window()), playing_song_scroll_begin,
+					static_cast<NC::Window *>(ui_state_footer_legacy_window())->getWidth()-ps.length()-tracklength.length()-2, " ** ");
+				*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(static_cast<NC::Window *>(ui_state_footer_legacy_window())->getWidth()-tracklength.length(), 1)
 				         << Config.statusbar_time_color
 				         << tracklength
 				         << NC::FormattedColor::End<>(Config.statusbar_time_color);
@@ -711,28 +711,28 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 			                                   ? (COLS-second_len)/2
 			                                   : ps.length()+1;
 			if (!global_seeking_in_progress)
-				*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(0, 0)
+				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 0)
 				         << NC::TermManip::ClearToEOL
 				         << Config.statusbar_time_color
 				         << tracklength
 				         << NC::FormattedColor::End<>(Config.statusbar_time_color);
 
-			*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(first_start, 0);
+			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(first_start, 0);
 
-			writeCyclicBuffer(first, *static_cast<NC::Window *>(ui_state_header_window()), first_line_scroll_begin,
+			writeCyclicBuffer(first, *static_cast<NC::Window *>(ui_state_header_legacy_window()), first_line_scroll_begin,
 			                  COLS-tracklength.length()-global_volume_state_len()-1, " ** ");
 
-			*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(0, 1)
+			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 1)
 			         << NC::TermManip::ClearToEOL
 			         << Config.player_state_color
 			         << ps
 			         << NC::FormattedColor::End<>(Config.player_state_color)
 			         << NC::XY(second_start, 1);
 
-			writeCyclicBuffer(second, *static_cast<NC::Window *>(ui_state_header_window()), second_line_scroll_begin,
+			writeCyclicBuffer(second, *static_cast<NC::Window *>(ui_state_header_legacy_window()), second_line_scroll_begin,
 			                  COLS-ps.length()-8-2, " ** ");
 
-			*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(static_cast<NC::Window *>(ui_state_header_window())->getWidth()-global_volume_state_len(), 0)
+			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(static_cast<NC::Window *>(ui_state_header_legacy_window())->getWidth()-global_volume_state_len(), 0)
 			         << Config.volume_color
 			         << global_volume_state_cstr()
 			         << NC::FormattedColor::End<>(Config.volume_color);
@@ -765,12 +765,12 @@ void Status::Changes::flags()
 			if (m_db_updating)
 				switch_state += m_db_updating;
 
-			*static_cast<NC::Window *>(ui_state_header_window()) << Config.state_line_color;
-			mvwhline(static_cast<NC::Window *>(ui_state_header_window())->raw(), 1, 0, 0, COLS);
-			*static_cast<NC::Window *>(ui_state_header_window()) << NC::FormattedColor::End<>(Config.state_line_color);
+			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << Config.state_line_color;
+			mvwhline(static_cast<NC::Window *>(ui_state_header_legacy_window())->raw(), 1, 0, 0, COLS);
+			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::FormattedColor::End<>(Config.state_line_color);
 
 			if (!switch_state.empty())
-				*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(COLS-switch_state.length()-3, 1)
+				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(COLS-switch_state.length()-3, 1)
 				         << Config.state_line_color
 				         << "["
 				         << NC::FormattedColor::End<>(Config.state_line_color)
@@ -791,19 +791,19 @@ void Status::Changes::flags()
 			switch_state += m_crossfade ? m_crossfade : '-';
 			switch_state += m_db_updating ? m_db_updating : '-';
 			switch_state += ']';
-			*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(COLS-switch_state.length(), 1)
+			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(COLS-switch_state.length(), 1)
 			         << Config.state_flags_color
 			         << switch_state
 			         << NC::FormattedColor::End<>(Config.state_flags_color);
 			if (!Config.header_visibility) // in this case also draw separator
 			{
-				*static_cast<NC::Window *>(ui_state_header_window()) << Config.alternative_ui_separator_color;
-				mvwhline(static_cast<NC::Window *>(ui_state_header_window())->raw(), 2, 0, 0, COLS);
-				*static_cast<NC::Window *>(ui_state_header_window()) << NC::FormattedColor::End<>(Config.alternative_ui_separator_color);
+				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << Config.alternative_ui_separator_color;
+				mvwhline(static_cast<NC::Window *>(ui_state_header_legacy_window())->raw(), 2, 0, 0, COLS);
+				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::FormattedColor::End<>(Config.alternative_ui_separator_color);
 			}
 			break;
 	}
-	static_cast<NC::Window *>(ui_state_header_window())->refresh();
+	static_cast<NC::Window *>(ui_state_header_legacy_window())->refresh();
 }
 
 void Status::Changes::mixer()
@@ -832,11 +832,11 @@ void Status::Changes::mixer()
 		                           static_cast<int32>(volume.length()));
 		global_volume_state_append((char *)"%", STRLIT_LEN("%"));
 	}
-	*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(static_cast<NC::Window *>(ui_state_header_window())->getWidth()-global_volume_state_len(), 0)
+	*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(static_cast<NC::Window *>(ui_state_header_legacy_window())->getWidth()-global_volume_state_len(), 0)
 	         << Config.volume_color
 	         << global_volume_state_cstr()
 	         << NC::FormattedColor::End<>(Config.volume_color);
-	static_cast<NC::Window *>(ui_state_header_window())->refresh();
+	static_cast<NC::Window *>(ui_state_header_legacy_window())->refresh();
 }
 
 void Status::Changes::outputs()

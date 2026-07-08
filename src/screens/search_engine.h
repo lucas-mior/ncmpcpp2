@@ -490,7 +490,7 @@ inline void SearchEngine::runAction()
         Statusbar::ScopedLock slock;
         std::string constraint = ConstraintsNames[option];
         Statusbar::put() << NC_FORMAT_BOLD << constraint << NC_FORMAT_NO_BOLD << ": ";
-        itsConstraints[option] = static_cast<NC::Window *>(ui_state_footer_window())->prompt(itsConstraints[option]);
+        itsConstraints[option] = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(itsConstraints[option]);
         w.current()->value().buffer().clear();
         constraint.resize(13, ' ');
         w.current()->value().buffer() << NC_FORMAT_BOLD << constraint << NC_FORMAT_NO_BOLD << ": ";

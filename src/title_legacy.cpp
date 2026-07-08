@@ -59,29 +59,29 @@ void drawHeader()
 	switch (Config.design)
 	{
 		case NCM_DESIGN_CLASSIC:
-			*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(0, 0)
+			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 0)
 			         << NC::TermManip::ClearToEOL
 			         << NC_FORMAT_BOLD
 			         << current_screen_title()
 			         << NC_FORMAT_NO_BOLD
-			         << NC::XY(static_cast<NC::Window *>(ui_state_header_window())->getWidth()-global_volume_state_len(), 0)
+			         << NC::XY(static_cast<NC::Window *>(ui_state_header_legacy_window())->getWidth()-global_volume_state_len(), 0)
 			         << Config.volume_color
 			         << global_volume_state_cstr()
 			         << NC::FormattedColor::End<>(Config.volume_color);
 			break;
 		case NCM_DESIGN_ALTERNATIVE:
 			std::string title = current_screen_title();
-			*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(0, 3)
+			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 3)
 			         << NC::TermManip::ClearToEOL
 			         << Config.alternative_ui_separator_color;
-			mvwhline(static_cast<NC::Window *>(ui_state_header_window())->raw(), 2, 0, 0, COLS);
-			mvwhline(static_cast<NC::Window *>(ui_state_header_window())->raw(), 4, 0, 0, COLS);
-			*static_cast<NC::Window *>(ui_state_header_window()) << NC::FormattedColor::End<>(Config.alternative_ui_separator_color)
+			mvwhline(static_cast<NC::Window *>(ui_state_header_legacy_window())->raw(), 2, 0, 0, COLS);
+			mvwhline(static_cast<NC::Window *>(ui_state_header_legacy_window())->raw(), 4, 0, 0, COLS);
+			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::FormattedColor::End<>(Config.alternative_ui_separator_color)
 			         << NC::XY((COLS-Utf8::width(title))/2, 3)
 			         << NC_FORMAT_BOLD
 			         << title
 			         << NC_FORMAT_NO_BOLD;
 			break;
 	}
-	static_cast<NC::Window *>(ui_state_header_window())->refresh();
+	static_cast<NC::Window *>(ui_state_header_legacy_window())->refresh();
 }

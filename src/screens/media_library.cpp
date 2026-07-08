@@ -1017,7 +1017,7 @@ void MediaLibrary::locateSong(const MPD::Song &s)
 	if (screenLegacyCurrent() != this)
 		switchTo();
 	Statusbar::put() << "Jumping to song...";
-	static_cast<NC::Window *>(ui_state_footer_window())->refresh();
+	static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
 
 	if (!hasTwoColumns)
 	{
