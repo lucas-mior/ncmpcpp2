@@ -3,6 +3,8 @@
 #include "actions_legacy_runtime.h"
 #include "global.h"
 #include "screens/native_c_screens.h"
+#include "settings.h"
+#include "ui_state.h"
 
 /*
  * Temporary app runtime bridge.
@@ -32,29 +34,78 @@ ncmpcpp_legacy_destroy_screen(void) {
 
 void
 ncmpcpp_legacy_set_statusbar_visibility_baseline(bool visible) {
-    actions_legacy_runtime_set_statusbar_visibility_baseline(visible);
+    ui_state_set_statusbar_visibility_baseline(visible);
     return;
 }
 
 void
 ncmpcpp_legacy_set_windows_dimensions(void) {
-    actions_legacy_runtime_set_windows_dimensions();
+    int64 main_start_y;
+    int64 main_height;
+    int64 header_height;
+    int64 footer_height;
+    int64 footer_start_y;
+
+    ui_state_set_screen_size(COLS, LINES);
+
+    if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+        main_start_y = 5;
+        main_height = LINES - 7;
+    } else {
+        main_start_y = 2;
+        main_height = LINES - 4;
+    }
+
+    if (main_height < 0) {
+        main_height = 0;
+    }
+
+    if (!Config.header_visibility) {
+        main_start_y -= 2;
+        main_height += 2;
+    }
+
+    if (!Config.statusbar_visibility) {
+        main_height += 1;
+    }
+
+    if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+        if (Config.header_visibility) {
+            header_height = 5;
+        } else {
+            header_height = 3;
+        }
+    } else {
+        header_height = 2;
+    }
+
+    if (Config.statusbar_visibility) {
+        footer_height = 2;
+    } else {
+        footer_height = 1;
+    }
+    footer_start_y = LINES - footer_height;
+
+    ui_state_set_main_geometry(main_start_y, main_height);
+    ui_state_set_header_height(header_height);
+    ui_state_set_footer_height(footer_height);
+    ui_state_set_footer_start_y(footer_start_y);
     return;
 }
 
 int64
 ncmpcpp_legacy_header_height(void) {
-    return actions_legacy_runtime_header_height();
+    return ui_state_header_height();
 }
 
 int64
 ncmpcpp_legacy_footer_height(void) {
-    return actions_legacy_runtime_footer_height();
+    return ui_state_footer_height();
 }
 
 int64
 ncmpcpp_legacy_footer_start_y(void) {
-    return actions_legacy_runtime_footer_start_y();
+    return ui_state_footer_start_y();
 }
 
 void *
