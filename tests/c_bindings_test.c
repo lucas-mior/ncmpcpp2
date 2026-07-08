@@ -42,6 +42,8 @@ typedef struct TestRuntimeState {
     int32 console_len;
 
     enum ScreenType current_screen;
+    enum NcmActionType blocked_action;
+    bool block_action;
 } TestRuntimeState;
 
 static void fail(char *file, int32 line, char *condition);
@@ -70,6 +72,7 @@ static void test_command_lookup(void);
 static void test_binding_file_parsing(void);
 static void test_chained_action_execution(void);
 static void test_runtime_action_execution(void);
+static void test_runtime_can_execute_preflight(void);
 static void test_binding_action_formatting(void);
 static void test_read_paths(void);
 static void test_key_formatting(void);
@@ -142,8 +145,12 @@ record_action(NcmBindingAction *action, void *user) {
 
 static bool
 runtime_can_run_action(enum NcmActionType type, void *user) {
-    (void)type;
-    (void)user;
+    TestRuntimeState *state;
+
+    state = user;
+    if (state->block_action && (state->blocked_action == type)) {
+        return false;
+    }
     return true;
 }
 
@@ -421,6 +428,35 @@ test_runtime_action_execution(void) {
 }
 
 static void
+test_runtime_can_execute_preflight(void) {
+    TestRuntimeState state;
+    NcmBinding binding;
+    NcmBindingRuntime runtime;
+
+    ncm_binding_init(&binding);
+    append_action(&binding, NCM_ACTION_QUIT);
+    append_action(&binding, NCM_ACTION_STOP);
+
+    state = (TestRuntimeState){0};
+    runtime = runtime_make(&state);
+    REQUIRE(ncm_binding_can_execute_runtime(&binding, &runtime));
+    REQUIRE(ncm_binding_execute_runtime(&binding, &runtime));
+    REQUIRE_INT(state.ran_len, 2);
+    REQUIRE_INT(state.ran[0], NCM_ACTION_QUIT);
+    REQUIRE_INT(state.ran[1], NCM_ACTION_STOP);
+
+    state = (TestRuntimeState){0};
+    state.block_action = true;
+    state.blocked_action = NCM_ACTION_STOP;
+    runtime = runtime_make(&state);
+    REQUIRE(!ncm_binding_can_execute_runtime(&binding, &runtime));
+    REQUIRE_INT(state.ran_len, 0);
+
+    ncm_binding_destroy(&binding);
+    return;
+}
+
+static void
 test_binding_action_formatting(void) {
     NcmBindingsConfiguration bindings;
     NcmBindingSlice slice;
@@ -530,6 +566,7 @@ main(void) {
     test_binding_file_parsing();
     test_chained_action_execution();
     test_runtime_action_execution();
+    test_runtime_can_execute_preflight();
     test_binding_action_formatting();
     test_read_paths();
     test_key_formatting();

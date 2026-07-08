@@ -116,6 +116,8 @@ bool ncm_binding_action_can_run(NcmBindingAction *action,
                                 NcmBindingRuntime *runtime);
 bool ncm_binding_action_run(NcmBindingAction *action,
                             NcmBindingRuntime *runtime);
+bool ncm_binding_can_execute_runtime(NcmBinding *binding,
+                                     NcmBindingRuntime *runtime);
 bool ncm_binding_execute_runtime(NcmBinding *binding,
                                  NcmBindingRuntime *runtime);
 bool ncm_binding_has_runnable_action(NcmBinding *binding,
@@ -136,6 +138,7 @@ bool ncm_binding_runtime_run_external_console_command(
 void ncm_binding_runtime_init(NcmBindingRuntime *runtime,
                               NcmActionRuntime *action_runtime);
 NcmBindingRuntime *ncm_binding_default_runtime(void);
+bool ncm_binding_can_execute_default(NcmBinding *binding);
 bool ncm_binding_execute_default(NcmBinding *binding);
 bool ncm_binding_has_runnable_action_default(NcmBinding *binding,
                                              enum NcmActionType type);
