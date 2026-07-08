@@ -17,6 +17,7 @@ static void tag_editor_switch_to(NcScreen *screen);
 static void tag_editor_resize(NcScreen *screen);
 static char *tag_editor_title(NcScreen *screen);
 static void tag_editor_update(NcScreen *screen);
+static void tag_editor_mouse_callback(NcScreen *screen, MEVENT event);
 static bool tag_editor_is_lockable(NcScreen *screen);
 static bool tag_editor_is_mergable(NcScreen *screen);
 static void tag_editor_destroy_callback(NcScreen *screen);
@@ -67,6 +68,7 @@ static NcScreenCallbacks tag_editor_callbacks = {
     .resize = tag_editor_resize,
     .title = tag_editor_title,
     .update = tag_editor_update,
+    .mouse_button_pressed = tag_editor_mouse_callback,
     .is_lockable = tag_editor_is_lockable,
     .is_mergable = tag_editor_is_mergable,
     .destroy = tag_editor_destroy_callback,
@@ -118,6 +120,7 @@ native_tag_editor_screen_init(NativeTagEditorScreen *screen,
     nc_window_init(&screen->parser_helper_window, start_x, main_start_y,
                    width, main_height, STRLIT_ARGS("Preview"), color,
                    border);
+    screen->bridge = (NativeTagEditorBridge){0};
     ncm_buffer_init(&screen->current_dir);
     ncm_buffer_init(&screen->highlighted_dir);
     ncm_buffer_init(&screen->directory_search_constraint);
@@ -182,6 +185,16 @@ native_tag_editor_screen_base(NativeTagEditorScreen *screen) {
         return NULL;
     }
     return &screen->screen;
+}
+
+void
+native_tag_editor_screen_set_bridge(NativeTagEditorScreen *screen,
+                                    NativeTagEditorBridge bridge) {
+    if (screen == NULL) {
+        return;
+    }
+    screen->bridge = bridge;
+    return;
 }
 
 NcEditorPairMenu *
@@ -811,8 +824,13 @@ tag_editor_from_screen(NcScreen *screen) {
 
 static NcWindow *
 tag_editor_active_window(NcScreen *screen) {
-    return native_tag_editor_screen_active_window(tag_editor_from_screen(
-                                                     screen));
+    NativeTagEditorScreen *editor;
+
+    editor = tag_editor_from_screen(screen);
+    if (editor->bridge.active_window != NULL) {
+        return editor->bridge.active_window(editor->bridge.user);
+    }
+    return native_tag_editor_screen_active_window(editor);
 }
 
 static void
@@ -820,6 +838,10 @@ tag_editor_refresh(NcScreen *screen) {
     NativeTagEditorScreen *editor;
 
     editor = tag_editor_from_screen(screen);
+    if (editor->bridge.refresh != NULL) {
+        editor->bridge.refresh(editor->bridge.user);
+        return;
+    }
     tag_editor_refresh_window(screen);
     nc_window_display(&editor->tag_types_window);
     nc_window_display(&editor->tags_window);
@@ -833,6 +855,10 @@ tag_editor_refresh_window(NcScreen *screen) {
     NcWindow *window;
 
     editor = tag_editor_from_screen(screen);
+    if (editor->bridge.refresh_window != NULL) {
+        editor->bridge.refresh_window(editor->bridge.user);
+        return;
+    }
     menu = native_tag_editor_screen_active_menu(editor);
     window = native_tag_editor_screen_active_window(editor);
     nc_menu_prepare_refresh(menu, editor->main_height, NULL, NULL);
@@ -848,6 +874,10 @@ tag_editor_scroll(NcScreen *screen, enum NcScroll where) {
     NcMenu *menu;
 
     editor = tag_editor_from_screen(screen);
+    if (editor->bridge.scroll != NULL) {
+        editor->bridge.scroll(editor->bridge.user, where);
+        return;
+    }
     menu = native_tag_editor_screen_active_menu(editor);
     nc_menu_scroll_selectable(menu, editor->main_height, where);
     return;
@@ -855,7 +885,12 @@ tag_editor_scroll(NcScreen *screen, enum NcScroll where) {
 
 static void
 tag_editor_switch_to(NcScreen *screen) {
-    (void)screen;
+    NativeTagEditorScreen *editor;
+
+    editor = tag_editor_from_screen(screen);
+    if (editor->bridge.switch_to != NULL) {
+        editor->bridge.switch_to(editor->bridge.user);
+    }
     return;
 }
 
@@ -865,6 +900,11 @@ tag_editor_resize(NcScreen *screen) {
     NcScreenResizeParams params;
 
     editor = tag_editor_from_screen(screen);
+    if (editor->bridge.resize != NULL) {
+        editor->bridge.resize(editor->bridge.user);
+        nc_screen_clear_resize_request(screen);
+        return;
+    }
     params = nc_screen_resize_params(screen);
     native_tag_editor_screen_set_geometry(editor, params.x_offset,
                                           params.width,
@@ -876,13 +916,36 @@ tag_editor_resize(NcScreen *screen) {
 
 static char *
 tag_editor_title(NcScreen *screen) {
-    (void)screen;
+    NativeTagEditorScreen *editor;
+
+    editor = tag_editor_from_screen(screen);
+    if (editor->bridge.title != NULL) {
+        return editor->bridge.title(editor->bridge.user);
+    }
     return (char *)"Tag editor";
 }
 
 static void
 tag_editor_update(NcScreen *screen) {
+    NativeTagEditorScreen *editor;
+
+    editor = tag_editor_from_screen(screen);
+    if (editor->bridge.update != NULL) {
+        editor->bridge.update(editor->bridge.user);
+    }
     nc_screen_clear_update_request(screen);
+    return;
+}
+
+
+static void
+tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
+    NativeTagEditorScreen *editor;
+
+    editor = tag_editor_from_screen(screen);
+    if (editor->bridge.mouse_button_pressed != NULL) {
+        editor->bridge.mouse_button_pressed(editor->bridge.user, event);
+    }
     return;
 }
 
