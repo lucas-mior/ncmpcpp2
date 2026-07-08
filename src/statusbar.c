@@ -26,7 +26,7 @@ statusbar_cstring_len(char *string) {
 
 static NcWindow *
 statusbar_footer_window(void) {
-    return (NcWindow *)ui_state_footer_window();
+    return ui_state_footer_window();
 }
 
 void

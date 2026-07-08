@@ -324,7 +324,7 @@ inline void TinyTagEditor::runAction()
 		Statusbar::ScopedLock slock;
 		size_t pos = option-8;
 		Statusbar::put() << NC_FORMAT_BOLD << ncm_song_info_tags[pos].name << ": " << NC_FORMAT_NO_BOLD;
-		itsEdited.setTags(ncm_song_info_tags[pos].field, static_cast<NC::Window *>(ui_state_footer_window())->prompt(
+		itsEdited.setTags(ncm_song_info_tags[pos].field, static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(
 			itsEdited.getTags(ncm_song_info_tags[pos].get)));
 		w.at(option).value().clear();
 		w.at(option).value() << NC_FORMAT_BOLD << ncm_song_info_tags[pos].name << ':' << NC_FORMAT_NO_BOLD << ' ';
@@ -342,7 +342,7 @@ inline void TinyTagEditor::runAction()
 			extension = filename.substr(dot);
 			filename = filename.substr(0, dot);
 		}
-		std::string new_name = static_cast<NC::Window *>(ui_state_footer_window())->prompt(filename);
+		std::string new_name = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(filename);
 		if (!new_name.empty())
 		{
 			itsEdited.setNewName(new_name + extension);

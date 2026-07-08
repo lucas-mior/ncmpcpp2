@@ -766,7 +766,7 @@ inline void TagEditor::runAction()
 			{
 				Statusbar::ScopedLock slock;
 				Statusbar::put() << "Pattern: ";
-				new_pattern = static_cast<NC::Window *>(ui_state_footer_window())->prompt(Config.pattern);
+				new_pattern = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(Config.pattern);
 			}
 			Config.pattern = new_pattern;
 			FParser->at(0).value() = "Pattern: ";
@@ -903,7 +903,7 @@ inline void TagEditor::runAction()
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << NC_FORMAT_BOLD << TagTypes->current()->value() << NC_FORMAT_NO_BOLD << ": ";
-			std::string new_tag = static_cast<NC::Window *>(ui_state_footer_window())->prompt(Tags->current()->value().getTags(getter));
+			std::string new_tag = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(Tags->current()->value().getTags(getter));
 			for (auto it = EditedSongs.begin(); it != EditedSongs.end(); ++it)
 				(*it)->setTags(field, new_tag);
 		}
@@ -911,7 +911,7 @@ inline void TagEditor::runAction()
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << NC_FORMAT_BOLD << TagTypes->current()->value() << NC_FORMAT_NO_BOLD << ": ";
-			std::string new_tag = static_cast<NC::Window *>(ui_state_footer_window())->prompt(Tags->current()->value().getTags(getter));
+			std::string new_tag = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(Tags->current()->value().getTags(getter));
 			if (new_tag != Tags->current()->value().getTags(getter))
 				Tags->current()->value().setTags(field, new_tag);
 			Tags->scroll(NC_SCROLL_DOWN);
@@ -935,7 +935,7 @@ inline void TagEditor::runAction()
 				std::string extension = old_name.substr(last_dot);
 				old_name = old_name.substr(0, last_dot);
 				Statusbar::put() << NC_FORMAT_BOLD << "New filename: " << NC_FORMAT_NO_BOLD;
-				std::string new_name = static_cast<NC::Window *>(ui_state_footer_window())->prompt(old_name);
+				std::string new_name = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(old_name);
 				if (!new_name.empty())
 					s.setNewName(new_name + extension);
 				Tags->scroll(NC_SCROLL_DOWN);

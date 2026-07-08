@@ -289,7 +289,7 @@ void SelectedItemsAdder::addToNewPlaylist() const
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Save playlist as: ";
-		playlist = static_cast<NC::Window *>(ui_state_footer_window())->prompt();
+		playlist = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
 	}
 	addToExistingPlaylist(playlist);
 }
