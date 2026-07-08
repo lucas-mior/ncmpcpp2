@@ -9,7 +9,6 @@ MANDIR ?= $(PREFIX)/share/man
 DESTDIR ?=
 
 PKG_CONFIG ?= pkg-config
-PYTHON ?= python3
 CC ?= cc
 CXX ?= c++
 AR ?= ar
@@ -43,74 +42,24 @@ THREAD_FLAGS := -pthread
 OBJ_DIR := $(BUILD_DIR)/obj
 TOOLS_STAMP := $(BUILD_DIR)/.tools-ok
 CONFIG_H := $(BUILD_DIR)/config.h
-AUTOTOOLS_PRUNE_LIST := REMOVE_AUTOTOOLS_FILES.txt
 BINARY := $(BUILD_DIR)/ncmpcpp
 CBASE_LIB := $(BUILD_DIR)/libcbase.a
 NCMPCPP_C_LIB := $(BUILD_DIR)/libncmpcpp_c.a
 NCMPCPP_APP_C_LIB := $(BUILD_DIR)/libncmpcpp_app_c.a
-NO_CXX_SCAN := tools/no-cxx-scan.py
 
 CBASE_SRCS := cbase/cbase.c
 NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
 APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
-REMOVED_CXX_SRCS := \
-	src/actions.cpp \
-	src/bindings.cpp \
-	src/configuration.cpp \
-	src/curl_handle.cpp \
-	src/charset.cpp \
-	src/curses/formatted_color.cpp \
-	src/curses/scrollpad.cpp \
-	src/curses/window.cpp \
-	src/display.cpp \
-	src/format.cpp \
-	src/settings.cpp \
-	src/title.cpp \
-	src/statusbar.cpp \
-	src/status.cpp \
-	src/lastfm_service.cpp \
-	src/lyrics_fetcher.cpp \
-	src/enums.cpp \
-	src/global.cpp \
-	src/helpers.cpp \
-	src/macro_utilities.cpp \
-	src/ncmpcpp.cpp \
-	src/mutable_song.cpp \
-	src/screens/help.cpp \
-	src/screens/help_bridge.cpp \
-	src/screens/outputs.cpp \
-	src/screens/outputs_bridge.cpp \
-	src/screens/playlist.cpp \
-	src/screens/browser.cpp \
-	src/screens/search_engine.cpp \
-	src/screens/playlist_editor.cpp \
-	src/screens/lastfm.cpp \
-	src/screens/lyrics.cpp \
-	src/screens/media_library.cpp \
-	src/screens/sel_items_adder.cpp \
-	src/screens/sort_playlist.cpp \
-	src/screens/visualizer.cpp \
-	src/screens/tag_editor.cpp \
-	src/screens/tiny_tag_editor.cpp \
-	src/screens/server_info.cpp \
-	src/screens/server_info_bridge.cpp \
-	src/screens/song_info.cpp \
-	src/screens/song_info_bridge.cpp \
-	src/screens/native_c_screens.cpp \
-	src/screens/screen.cpp \
-	src/screens/screen_legacy.cpp \
-	src/screens/screen_type.cpp \
-	src/song.cpp \
-	src/song_list.cpp \
-	src/tags.cpp \
-	src/utility/comparators.cpp \
-	src/utility/html.cpp \
-	src/utility/option_parser.cpp \
-	src/utility/sample_buffer.cpp \
-	src/utility/string.cpp \
-	src/utility/utf8.cpp
-APP_CXX_SRCS := $(filter-out $(REMOVED_CXX_SRCS),\
-	$(shell find src -type f -name '*.cpp' | sort))
+APP_CXX_SRCS := \
+	src/actions_legacy.cpp \
+	src/bindings_legacy.cpp \
+	src/configuration_legacy.cpp \
+	src/helpers_legacy.cpp \
+	src/mpdpp.cpp \
+	src/settings_legacy.cpp \
+	src/status_legacy.cpp \
+	src/statusbar_legacy.cpp \
+	src/title_legacy.cpp
 TEST_SRCS := $(sort $(wildcard tests/*_test.c))
 
 CBASE_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(CBASE_SRCS))
@@ -126,7 +75,7 @@ DEPS := \
 	$(APP_CXX_OBJS:.o=.d) \
 	$(TEST_OBJS:.o=.d)
 
-.PHONY: all check install clean prune-autotools cxx-report cxx-count no-cxx help FORCE
+.PHONY: all check install clean help FORCE
 .DELETE_ON_ERROR:
 .SECONDARY: $(CBASE_OBJS) $(NCMPCPP_C_OBJS) $(APP_C_OBJS) $(APP_CXX_OBJS) $(TEST_OBJS)
 
@@ -245,35 +194,6 @@ $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LI
 		$(THREAD_FLAGS)
 
 
-cxx-report:
-	@printf '%s\n' 'C++ sources still built by the root Makefile:'
-	@if test -n "$(strip $(APP_CXX_SRCS))"; then \
-		for src in $(APP_CXX_SRCS); do \
-			printf '%s\n' "$$src"; \
-		done; \
-	else \
-		printf '%s\n' '  none'; \
-	fi
-	@printf '\n%s\n' 'C++ sources present but not built by the root Makefile:'
-	@tmp_all=$$(mktemp); \
-	tmp_built=$$(mktemp); \
-	find . -type f -name '*.cpp' | sed 's#^./##' | sort >"$$tmp_all"; \
-	for src in $(APP_CXX_SRCS); do \
-		printf '%s\n' "$$src"; \
-	done | sort >"$$tmp_built"; \
-	other_cxx=$$(comm -23 "$$tmp_all" "$$tmp_built"); \
-	rm -f "$$tmp_all" "$$tmp_built"; \
-	if test -n "$$other_cxx"; then \
-		printf '%s\n' "$$other_cxx"; \
-	else \
-		printf '%s\n' '  none'; \
-	fi
-
-cxx-count:
-	@set -- $(APP_CXX_SRCS); printf 'built_cpp=%s\n' "$$#"
-	@find . -type f -name '*.cpp' | wc -l | tr -d ' ' | sed 's/^/total_cpp=/'
-
-
 check: $(TEST_BINS)
 	@set -e; \
 	for test in $(TEST_BINS); do \
@@ -293,28 +213,11 @@ install: $(BINARY)
 clean:
 	rm -rf '$(BUILD_DIR)'
 
-prune-autotools:
-	@test -f '$(AUTOTOOLS_PRUNE_LIST)' || { \
-		printf 'missing %s\n' '$(AUTOTOOLS_PRUNE_LIST)' >&2; \
-		exit 1; \
-	}
-	@while IFS= read -r path; do \
-		case $$path in ''|'#'*) continue ;; esac; \
-		printf 'RM  %s\n' "$$path"; \
-		rm -rf -- "$$path"; \
-	done < '$(AUTOTOOLS_PRUNE_LIST)'
-
-no-cxx:
-	@$(PYTHON) $(NO_CXX_SCAN) src extras
-
 help:
-	@printf '%s\n' 'usage: make [all|check|install|clean|prune-autotools|cxx-report|cxx-count|no-cxx|help]'
-	@printf '%s\n' ''
-	@printf '%s\n' 'Only the project root Makefile is supported during migration.'
+	@printf '%s\n' 'usage: make [all|check|install|clean|help]'
 	@printf '%s\n' ''
 	@printf '%s\n' 'Common variables:'
 	@printf '%s\n' '  CC, CXX, AR        compiler and archive commands'
-	@printf '%s\n' '  PYTHON             Python command for migration checks'
 	@printf '%s\n' '  CFLAGS, CXXFLAGS   extra compiler flags'
 	@printf '%s\n' '  CPPFLAGS, LDFLAGS  extra preprocessor and linker flags'
 	@printf '%s\n' '  LDLIBS             extra libraries, default: -lm'
