@@ -60,6 +60,7 @@ typedef struct NativePlaylistScreen {
     bool reload_remaining;
     bool registered;
     bool syncing;
+    bool highlighting_requested;
 } NativePlaylistScreen;
 
 void nc_playlist_screen_init(NcPlaylistScreen *screen,
@@ -126,6 +127,9 @@ void native_playlist_screen_sync(NativePlaylistScreen *screen);
 void native_playlist_screen_set_highlighting(NativePlaylistScreen *screen,
                                              bool enabled);
 bool native_playlist_screen_highlighting(NativePlaylistScreen *screen);
+void native_playlist_screen_request_highlighting(NativePlaylistScreen *screen);
+bool native_playlist_screen_consume_highlighting_request(
+    NativePlaylistScreen *screen);
 void native_playlist_screen_clear(NativePlaylistScreen *screen);
 bool native_playlist_screen_add_song_copy(NativePlaylistScreen *screen,
                                           NcmSong *song);
