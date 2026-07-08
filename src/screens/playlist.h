@@ -662,6 +662,11 @@ inline void Playlist::syncNative()
             native_menu,
             static_cast<int64>(w.choice()),
             nc_playlist_screen_height(native_playlist_screen_playlist(native)));
+    if (native_playlist_screen_consume_highlighting_request(native))
+    {
+        w.setHighlighting(true);
+        m_timer = global_timer;
+    }
     native_playlist_screen_set_highlighting(native, w.isHighlighted());
     native_playlist_screen_reload_total_length(native);
     native_playlist_screen_reload_remaining(native);

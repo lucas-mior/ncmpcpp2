@@ -6,6 +6,8 @@
 #include "global.h"
 #include "screens/native_c_screens.h"
 #include "settings.h"
+#include "status.h"
+#include "statusbar.h"
 #include "ui_state.h"
 
 /*
@@ -16,6 +18,51 @@
  * legacy runtime helpers.  As those dependencies are ported, replace the
  * forwarding calls here with direct C implementations.
  */
+
+static void
+app_legacy_bridge_noidle_status_update(int32 flags, void *user) {
+    NcmError error;
+
+    (void)user;
+    ncm_error_clear(&error);
+    (void)ncm_status_update(&global_mpd, flags, &error);
+    return;
+}
+
+static char *
+app_legacy_bridge_mpd_error_message(NcmError *error) {
+    char *message;
+
+    if ((error != NULL) && (error->message[0] != '\0')) {
+        return error->message;
+    }
+
+    message = ncm_mpd_client_error_message(&global_mpd);
+    if ((message != NULL) && (message[0] != '\0')) {
+        return message;
+    }
+
+    return (char *)"MPD command failed";
+}
+
+static void
+app_legacy_bridge_report_mpd_error(NcmError *error) {
+    NcmStringFormatArg arg;
+    char *message;
+
+    message = app_legacy_bridge_mpd_error_message(error);
+    arg = ncm_string_format_arg_cstring(message);
+
+    if ((ncm_mpd_client_error_code(&global_mpd) == MPD_ERROR_SERVER)
+        || ((error != NULL) && (error->code == MPD_ERROR_SERVER))) {
+        ncm_statusbar_format((int32)Config.message_delay_time,
+                             STRLIT_ARGS("MPD: %1%"), &arg, 1);
+    } else {
+        ncm_statusbar_format((int32)Config.message_delay_time,
+                             STRLIT_ARGS("ncmpcpp: %1%"), &arg, 1);
+    }
+    return;
+}
 
 bool
 ncmpcpp_legacy_configure(int32 argc, char **argv) {
@@ -174,7 +221,11 @@ ncmpcpp_legacy_playlist_switch_to(void) {
 
 void
 ncmpcpp_legacy_playlist_enable_highlighting_if_current(void) {
-    actions_legacy_runtime_playlist_enable_highlighting_if_current();
+    if (native_c_screen_playlist_is_current()) {
+        native_playlist_screen_request_highlighting(
+            native_c_screen_playlist());
+        native_playlist_screen_sync(native_c_screen_playlist());
+    }
     return;
 }
 
@@ -195,7 +246,8 @@ ncmpcpp_legacy_current_screen_type(void) {
 
 void
 ncmpcpp_legacy_set_noidle_status_callback(void) {
-    actions_legacy_runtime_set_noidle_status_callback();
+    ncm_mpd_client_set_noidle_callback(
+        &global_mpd, app_legacy_bridge_noidle_status_update, NULL);
     return;
 }
 
@@ -206,12 +258,32 @@ ncmpcpp_legacy_mpd_connected(void) {
 
 void
 ncmpcpp_legacy_connect_or_report(void) {
-    actions_legacy_runtime_connect_or_report();
+    NcmError error;
+
+    ncm_error_clear(&error);
+    if (!ncm_mpd_client_connect(&global_mpd, &error)) {
+        app_legacy_bridge_report_mpd_error(&error);
+        return;
+    }
+
+    if (ncm_mpd_client_version(&global_mpd) < 16) {
+        ncm_mpd_client_disconnect(&global_mpd);
+        ncm_error_set(&error, MPD_ERROR_STATE,
+                      STRLIT_ARGS("MPD < 0.16.0 is not supported"));
+        app_legacy_bridge_report_mpd_error(&error);
+    }
     return;
 }
 
 void
 ncmpcpp_legacy_status_clear(void) {
+    ncm_status_clear();
+
+    /*
+     * Keep the legacy status state reset while update_environment still calls
+     * the C++ Status::update path.  This extra reset can be removed when the
+     * update_environment bridge is fully C-owned.
+     */
     actions_legacy_runtime_status_clear();
     return;
 }
