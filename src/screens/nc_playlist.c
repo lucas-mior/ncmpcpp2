@@ -281,6 +281,7 @@ native_playlist_screen_init(NativePlaylistScreen *screen, int64 start_x,
     screen->reload_remaining = true;
     screen->registered = false;
     screen->syncing = false;
+    screen->highlighting_requested = false;
     nc_playlist_screen_init(&screen->screen, callbacks, screen,
                             nc_song_menu_base(&screen->songs), start_x,
                             width, main_start_y, main_height);
@@ -477,6 +478,29 @@ native_playlist_screen_highlighting(NativePlaylistScreen *screen) {
         return false;
     }
     return nc_menu_highlight_enabled(native_playlist_screen_menu(screen));
+}
+
+void
+native_playlist_screen_request_highlighting(NativePlaylistScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    screen->highlighting_requested = true;
+    native_playlist_screen_set_highlighting(screen, true);
+    return;
+}
+
+bool
+native_playlist_screen_consume_highlighting_request(
+    NativePlaylistScreen *screen) {
+    if (screen == NULL) {
+        return false;
+    }
+    if (!screen->highlighting_requested) {
+        return false;
+    }
+    screen->highlighting_requested = false;
+    return true;
 }
 
 void
