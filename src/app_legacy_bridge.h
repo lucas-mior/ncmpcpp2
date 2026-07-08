@@ -22,8 +22,8 @@ int64 ncmpcpp_legacy_footer_height(void);
 int64 ncmpcpp_legacy_footer_start_y(void);
 
 void *ncmpcpp_legacy_window_create(int64 start_x, int64 start_y,
-                                   int64 width, int64 height,
-                                   NcColor color);
+                                    int64 width, int64 height,
+                                    NcColor color);
 void ncmpcpp_legacy_window_display(void *window);
 void ncmpcpp_legacy_window_destroy(void *window);
 void ncmpcpp_legacy_window_set_main_hook(void *window);

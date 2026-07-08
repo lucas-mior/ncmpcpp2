@@ -36,15 +36,8 @@ NcWindow *actions_legacy_runtime_window_native(void *window);
 
 void actions_legacy_runtime_initialize_screens(void);
 void actions_legacy_runtime_resize_screen(bool reload_main_window);
-void actions_legacy_runtime_playlist_switch_to(void);
 void actions_legacy_runtime_playlist_enable_highlighting_if_current(void);
-bool actions_legacy_runtime_switch_to_screen_type(
-    enum ScreenType screen_type);
-bool actions_legacy_runtime_lock_current_screen(void);
-enum ScreenType actions_legacy_runtime_current_screen_type(void);
-
 void actions_legacy_runtime_set_noidle_status_callback(void);
-bool actions_legacy_runtime_mpd_connected(void);
 void actions_legacy_runtime_connect_or_report(void);
 void actions_legacy_runtime_status_clear(void);
 bool actions_legacy_runtime_update_environment(bool update_timer,
