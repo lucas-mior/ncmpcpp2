@@ -470,6 +470,15 @@ void Visualizer::DrawFrequencySpectrum(const int16_t *buf, ssize_t samples, size
 
 	const size_t win_width = w.getWidth();
 
+	if (win_width == 0 || height == 0)
+		return;
+
+	if (m_dft_freqspace.size() != win_width)
+		GenFreqSpace();
+
+	if (m_dft_freqspace.empty())
+		return;
+
 	size_t cur_bin = 0;
 	while (cur_bin < m_fftw_results && Bin2Hz(cur_bin) < m_dft_freqspace[0])
 		++cur_bin;
@@ -516,6 +525,9 @@ void Visualizer::DrawFrequencySpectrum(const int16_t *buf, ssize_t samples, size
 
 		m_bar_heights.emplace_back(x, bar_height);
 	}
+
+	if (m_bar_heights.empty())
+		return;
 
 	const auto visualizer_chars = Utf8::split(Config.visualizer_chars);
 	size_t h_idx = 0;
@@ -640,7 +652,7 @@ double Visualizer::InterpolateLinear(size_t x, size_t h_idx)
 	double dh = 0;
 	if (h_idx == 0) {
 		// no data points on the left, linear extrapolation
-		if (h_idx < m_bar_heights.size()) {
+		if (m_bar_heights.size() > 1) {
 			const double x_next2 = m_bar_heights[h_idx+1].first;
 			const double h_next2 = m_bar_heights[h_idx+1].second;
 			dh = (h_next2 - h_next) / (x_next2 - x_next);

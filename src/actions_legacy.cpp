@@ -2610,16 +2610,21 @@ void NextScreen::run()
 {
 	if (Config.screen_switcher_previous)
 	{
-		if (auto tababble = dynamic_cast<Tabbable *>(screenLegacyCurrent()))
+		BaseScreen *current = screenLegacyCurrent();
+
+		if (auto tababble = dynamic_cast<Tabbable *>(current))
 			tababble->switchToPreviousScreen();
+		else if (current == nullptr)
+			(void)app_controller_switch_to_screen(
+				app_controller_previous_screen());
 	}
 	else if (!Config.screen_sequence.empty())
 	{
 		auto screen = nextScreenTypeInSequence(
 			Config.screen_sequence.begin(),
 			Config.screen_sequence.end(),
-			screenLegacyCurrent()->type());
-		toScreen(*screen)->switchTo();
+			native_c_screens_current_type());
+		(void)native_c_screens_switch_to_type(*screen);
 	}
 }
 
@@ -2627,16 +2632,21 @@ void PreviousScreen::run()
 {
 	if (Config.screen_switcher_previous)
 	{
-		if (auto tababble = dynamic_cast<Tabbable *>(screenLegacyCurrent()))
+		BaseScreen *current = screenLegacyCurrent();
+
+		if (auto tababble = dynamic_cast<Tabbable *>(current))
 			tababble->switchToPreviousScreen();
+		else if (current == nullptr)
+			(void)app_controller_switch_to_screen(
+				app_controller_previous_screen());
 	}
 	else if (!Config.screen_sequence.empty())
 	{
 		auto screen = nextScreenTypeInSequence(
 			Config.screen_sequence.rbegin(),
 			Config.screen_sequence.rend(),
-			screenLegacyCurrent()->type());
-		toScreen(*screen)->switchTo();
+			native_c_screens_current_type());
+		(void)native_c_screens_switch_to_type(*screen);
 	}
 }
 
@@ -3031,7 +3041,7 @@ void scrollTagDownRun(NC::List *list, const SongList *songs, enum NcmSongGetter 
 
 void seek(SearchDirection sd)
 {
-		
+
 	if (!Status::State::totalTime())
 	{
 		Statusbar::print("Unknown item length");

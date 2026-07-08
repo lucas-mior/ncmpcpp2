@@ -121,6 +121,7 @@ native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
     ncm_regex_init(&screen->playlist_filter_regex);
     ncm_regex_init(&screen->content_filter_regex);
     screen->timer.ns = 0;
+    screen->bridge = (NativePlaylistEditorBridge){0};
     screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
     screen->playlists_update_requested = true;
     screen->content_update_requested = true;
@@ -600,6 +601,16 @@ native_playlist_editor_screen_load_current_playlist(
                                         error);
 }
 
+void
+native_playlist_editor_screen_set_bridge(
+    NativePlaylistEditorScreen *screen, NativePlaylistEditorBridge bridge) {
+    if (screen == NULL) {
+        return;
+    }
+    screen->bridge = bridge;
+    return;
+}
+
 static NativePlaylistEditorScreen *
 playlist_editor_from_screen(NcScreen *screen) {
     return nc_screen_user(screen);
@@ -627,8 +638,13 @@ playlist_editor_callbacks(void) {
 
 static NcWindow *
 playlist_editor_active_window_callback(NcScreen *screen) {
-    return native_playlist_editor_screen_active_window(
-        playlist_editor_from_screen(screen));
+    NativePlaylistEditorScreen *editor;
+
+    editor = playlist_editor_from_screen(screen);
+    if (editor->bridge.active_window != NULL) {
+        return editor->bridge.active_window(editor->bridge.user);
+    }
+    return native_playlist_editor_screen_active_window(editor);
 }
 
 static void
@@ -636,6 +652,10 @@ playlist_editor_refresh_callback(NcScreen *screen) {
     NativePlaylistEditorScreen *editor;
 
     editor = playlist_editor_from_screen(screen);
+    if (editor->bridge.refresh != NULL) {
+        editor->bridge.refresh(editor->bridge.user);
+        return;
+    }
     playlist_editor_refresh_window(editor, &editor->playlists_window,
                                    nc_playlist_entry_menu_base(
                                        &editor->playlists));
@@ -651,6 +671,10 @@ playlist_editor_refresh_window_callback(NcScreen *screen) {
     NcMenu *menu;
 
     editor = playlist_editor_from_screen(screen);
+    if (editor->bridge.refresh_window != NULL) {
+        editor->bridge.refresh_window(editor->bridge.user);
+        return;
+    }
     window = native_playlist_editor_screen_active_window(editor);
     menu = native_playlist_editor_screen_active_menu(editor);
     playlist_editor_refresh_window(editor, window, menu);
@@ -663,6 +687,10 @@ playlist_editor_scroll_callback(NcScreen *screen, enum NcScroll where) {
     NcMenu *menu;
 
     editor = playlist_editor_from_screen(screen);
+    if (editor->bridge.scroll != NULL) {
+        editor->bridge.scroll(editor->bridge.user, where);
+        return;
+    }
     menu = native_playlist_editor_screen_active_menu(editor);
     nc_menu_scroll_selectable(menu, editor->main_height, where);
     return;
@@ -670,7 +698,12 @@ playlist_editor_scroll_callback(NcScreen *screen, enum NcScroll where) {
 
 static void
 playlist_editor_switch_to_callback(NcScreen *screen) {
-    (void)screen;
+    NativePlaylistEditorScreen *editor;
+
+    editor = playlist_editor_from_screen(screen);
+    if (editor->bridge.switch_to != NULL) {
+        editor->bridge.switch_to(editor->bridge.user);
+    }
     return;
 }
 
@@ -685,24 +718,43 @@ playlist_editor_resize_callback(NcScreen *screen) {
                                                params.width,
                                                editor->main_start_y,
                                                editor->main_height);
+    if (editor->bridge.resize != NULL) {
+        editor->bridge.resize(editor->bridge.user);
+    }
     nc_screen_clear_resize_request(screen);
     return;
 }
 
 static int32
 playlist_editor_timeout_callback(NcScreen *screen) {
-    (void)screen;
+    NativePlaylistEditorScreen *editor;
+
+    editor = playlist_editor_from_screen(screen);
+    if (editor->bridge.window_timeout != NULL) {
+        return editor->bridge.window_timeout(editor->bridge.user);
+    }
     return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
 }
 
 static char *
 playlist_editor_title_callback(NcScreen *screen) {
-    (void)screen;
+    NativePlaylistEditorScreen *editor;
+
+    editor = playlist_editor_from_screen(screen);
+    if (editor->bridge.title != NULL) {
+        return editor->bridge.title(editor->bridge.user);
+    }
     return (char *)"Playlist editor";
 }
 
 static void
 playlist_editor_update_callback(NcScreen *screen) {
+    NativePlaylistEditorScreen *editor;
+
+    editor = playlist_editor_from_screen(screen);
+    if (editor->bridge.update != NULL) {
+        editor->bridge.update(editor->bridge.user);
+    }
     nc_screen_clear_update_request(screen);
     return;
 }
@@ -715,6 +767,10 @@ playlist_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     int32 y;
 
     editor = playlist_editor_from_screen(screen);
+    if (editor->bridge.mouse_button_pressed != NULL) {
+        editor->bridge.mouse_button_pressed(editor->bridge.user, event);
+        return;
+    }
     window = &editor->playlists_window;
     x = event.x;
     y = event.y;
