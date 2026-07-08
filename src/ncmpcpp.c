@@ -232,12 +232,6 @@ main(int argc, char **argv) {
         app_destroy_state();
         exit(EXIT_SUCCESS);
     }
-    ncm_bindings_configuration_destroy(&Bindings);
-    ncm_bindings_configuration_init(&Bindings);
-    if (!configure(argc, argv)) {
-        app_destroy_state();
-        exit(EXIT_SUCCESS);
-    }
 
     atexit(app_at_exit);
     if (!app_redirect_stderr()) {
