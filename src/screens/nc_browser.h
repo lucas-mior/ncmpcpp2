@@ -15,10 +15,24 @@
 extern "C" {
 #endif
 
+typedef struct NativeBrowserBridge {
+    NcWindow *(*active_window)(void *user);
+    void (*refresh)(void *user);
+    void (*refresh_window)(void *user);
+    void (*scroll)(void *user, enum NcScroll where);
+    void (*switch_to)(void *user);
+    void (*resize)(void *user);
+    char *(*title)(void *user);
+    void (*update)(void *user);
+    void (*mouse_button_pressed)(void *user, MEVENT event);
+    void *user;
+} NativeBrowserBridge;
+
 typedef struct NativeBrowserScreen {
     NcScreen screen;
     NcBrowserEntryMenu entries;
     NcWindow window;
+    NativeBrowserBridge bridge;
     NcmBuffer current_directory;
     NcmBuffer search_constraint;
     NcmRegex filter_regex;
@@ -87,6 +101,8 @@ bool native_browser_screen_search(NativeBrowserScreen *screen,
                                   bool forward, bool wrap,
                                   bool skip_current, NcmError *error);
 bool native_browser_screen_item_is_parent(NcmMpdItem *item);
+void native_browser_screen_set_bridge(NativeBrowserScreen *screen,
+                                      NativeBrowserBridge bridge);
 
 #if defined(__cplusplus)
 }
