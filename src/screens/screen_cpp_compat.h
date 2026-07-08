@@ -314,7 +314,7 @@ inline BaseScreen *legacy_owner(NcScreen *screen)
     if (owner != legacy_owner_map().end())
         return owner->second;
 
-    return static_cast<BaseScreen *>(nc_screen_user(screen));
+    return nullptr;
 }
 
 inline BaseScreen *previous_legacy_screen()
@@ -378,6 +378,7 @@ inline BaseScreen::BaseScreen()
 
 inline BaseScreen::~BaseScreen()
 {
+    screen_compat::bind_legacy_owner(&m_native_screen, nullptr);
     if (app_controller_is_screen_registered(&m_native_screen))
     {
         app_controller_unregister_screen(&m_native_screen);
@@ -389,6 +390,7 @@ inline void BaseScreen::registerNativeScreen()
     NcScreen *screen = nativeScreen();
 
     nc_screen_set_type(screen, screen_type_to_native_type(type()));
+    screen_compat::bind_legacy_owner(screen, this);
     if (!app_controller_is_screen_registered(screen))
     {
         bool success = app_controller_register_screen(screen);
