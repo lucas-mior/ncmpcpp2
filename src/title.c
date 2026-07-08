@@ -3,18 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "app_legacy_bridge.h"
 #include "global.h"
 #include "settings.h"
 #include "ui_state.h"
-
-#if defined(__GNUC__)
-__attribute__((weak))
-#endif
-NcWindow *
-ncmpcpp_legacy_window_native(void *window) {
-    return (NcWindow *)window;
-}
 
 static int32
 title_cstring_len(char *string) {
@@ -56,7 +47,7 @@ ncm_title_draw_header(char *title, int32 title_len) {
         return;
     }
 
-    window = ncmpcpp_legacy_window_native(ui_state_header_window());
+    window = ui_state_header_window();
     if ((window == NULL) || (window->window == NULL)) {
         return;
     }

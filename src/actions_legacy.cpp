@@ -291,11 +291,11 @@ void resizeScreen(bool reload_main_window)
 	app_controller_resize_visible_screens();
 
 	if (Config.header_visibility || Config.design == NCM_DESIGN_ALTERNATIVE)
-		static_cast<NC::Window *>(ui_state_header_window())->resize(COLS, HeaderHeight);
+		static_cast<NC::Window *>(ui_state_header_legacy_window())->resize(COLS, HeaderHeight);
 
 	FooterStartY = LINES-(Config.statusbar_visibility ? 2 : 1);
-	static_cast<NC::Window *>(ui_state_footer_window())->moveTo(0, FooterStartY);
-	static_cast<NC::Window *>(ui_state_footer_window())->resize(COLS, Config.statusbar_visibility ? 2 : 1);
+	static_cast<NC::Window *>(ui_state_footer_legacy_window())->moveTo(0, FooterStartY);
+	static_cast<NC::Window *>(ui_state_footer_legacy_window())->resize(COLS, Config.statusbar_visibility ? 2 : 1);
 
 	app_controller_refresh_visible_screens();
 
@@ -306,7 +306,7 @@ void resizeScreen(bool reload_main_window)
 	// NcmpcppStatusChanges.StatusFlags
 	Status::Changes::flags();
 	drawHeader();
-	static_cast<NC::Window *>(ui_state_footer_window())->refresh();
+	static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
 	refresh();
 }
 
@@ -455,7 +455,7 @@ void MouseEvent::run()
 {
 
 	m_old_mouse_event = m_mouse_event;
-	m_mouse_event = static_cast<NC::Window *>(ui_state_footer_window())->getMouseEvent();
+	m_mouse_event = static_cast<NC::Window *>(ui_state_footer_legacy_window())->getMouseEvent();
 
 	//Statusbar::printf("(%1%, %2%, %3%)", m_mouse_event.bstate, m_mouse_event.x, m_mouse_event.y);
 
@@ -906,7 +906,7 @@ void SavePlaylist::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Save playlist as: ";
-		playlist_name = static_cast<NC::Window *>(ui_state_footer_window())->prompt();
+		playlist_name = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
 	}
 	try
 	{
@@ -949,11 +949,11 @@ void ExecuteCommand::run()
 	std::string cmd_name;
 	{
 		Statusbar::ScopedLock slock;
-		NC::Window::ScopedPromptHook helper(*static_cast<NC::Window *>(ui_state_footer_window()),
+		NC::Window::ScopedPromptHook helper(*static_cast<NC::Window *>(ui_state_footer_legacy_window()),
 			Statusbar::Helpers::TryExecuteImmediateCommand()
 		);
 		Statusbar::put() << NC_FORMAT_BOLD << ":" << NC_FORMAT_NO_BOLD;
-		cmd_name = static_cast<NC::Window *>(ui_state_footer_window())->prompt();
+		cmd_name = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
 	}
 
 	auto cmd = ncm_bindings_configuration_find_command(
@@ -1100,7 +1100,7 @@ void Add::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << (screenLegacyCurrent() == myPlaylistEditor ? "Add to playlist: " : "Add: ");
-		path = static_cast<NC::Window *>(ui_state_footer_window())->prompt();
+		path = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
 	}
 
 	// confirm when one wants to add the whole database
@@ -1109,7 +1109,7 @@ void Add::run()
 			return;
 
 	Statusbar::put() << "Adding...";
-	static_cast<NC::Window *>(ui_state_footer_window())->refresh();
+	static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
 	if (screenLegacyCurrent() == myPlaylistEditor)
 		Mpd.AddToPlaylist(currentStoredPlaylistPath(), path);
 	else
@@ -1144,11 +1144,11 @@ void Load::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Load playlist: ";
-		path = static_cast<NC::Window *>(ui_state_footer_window())->prompt();
+		path = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
 	}
 
 	Statusbar::put() << "Loading...";
-	static_cast<NC::Window *>(ui_state_footer_window())->refresh();
+	static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
 	Mpd.LoadPlaylist(path);
 }
 
@@ -1447,7 +1447,7 @@ void SetCrossfade::run()
 
 	Statusbar::ScopedLock slock;
 	Statusbar::put() << "Set crossfade to: ";
-	auto crossfade = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_window())->prompt());
+	auto crossfade = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt());
 	lowerBoundCheck(crossfade, 0u);
 	Config.crossfade_time = crossfade;
 	Mpd.SetCrossfade(crossfade);
@@ -1465,7 +1465,7 @@ void SetVolume::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Set volume to: ";
-		volume = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_window())->prompt());
+		volume = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt());
 		boundsCheck(volume, 0u, 100u);
 		Mpd.SetVolume(volume);
 	}
@@ -1537,7 +1537,7 @@ void EditLibraryTag::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << NC_FORMAT_BOLD << ncm_tag_type_name(Config.media_lib_primary_tag) << NC_FORMAT_NO_BOLD << ": ";
-		new_tag = static_cast<NC::Window *>(ui_state_footer_window())->prompt(myLibrary->Tags.current()->value().tag());
+		new_tag = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(myLibrary->Tags.current()->value().tag());
 	}
 	if (!new_tag.empty() && new_tag != myLibrary->Tags.current()->value().tag())
 	{
@@ -1595,7 +1595,7 @@ void EditLibraryAlbum::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << NC_FORMAT_BOLD << "Album: " << NC_FORMAT_NO_BOLD;
-		new_album = static_cast<NC::Window *>(ui_state_footer_window())->prompt(myLibrary->Albums.current()->value().entry().album());
+		new_album = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(myLibrary->Albums.current()->value().entry().album());
 	}
 	if (!new_album.empty() && new_album != myLibrary->Albums.current()->value().entry().album())
 	{
@@ -1658,7 +1658,7 @@ void EditDirectoryName::run()
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << NC_FORMAT_BOLD << "Directory: " << NC_FORMAT_NO_BOLD;
-			new_dir = static_cast<NC::Window *>(ui_state_footer_window())->prompt(old_dir);
+			new_dir = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(old_dir);
 		}
 		if (!new_dir.empty() && new_dir != old_dir)
 		{
@@ -1685,7 +1685,7 @@ void EditDirectoryName::run()
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << NC_FORMAT_BOLD << "Directory: " << NC_FORMAT_NO_BOLD;
-			new_dir = static_cast<NC::Window *>(ui_state_footer_window())->prompt(old_dir);
+			new_dir = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(old_dir);
 		}
 		if (!new_dir.empty() && new_dir != old_dir)
 		{
@@ -1726,7 +1726,7 @@ void EditPlaylistName::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << NC_FORMAT_BOLD << "Playlist: " << NC_FORMAT_NO_BOLD;
-		new_name = static_cast<NC::Window *>(ui_state_footer_window())->prompt(old_name);
+		new_name = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(old_name);
 	}
 	if (!new_name.empty() && new_name != old_name)
 	{
@@ -1801,7 +1801,7 @@ void ToggleScreenLock::run()
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << "% of the locked screen's width to be reserved (20-80): ";
-			part = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_window())->prompt(std::to_string(part)));
+			part = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(std::to_string(part)));
 		}
 		boundsCheck(part, 20u, 80u);
 		Config.locked_screen_width_part = part/100.0;
@@ -1843,7 +1843,7 @@ void JumpToPositionInSong::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Position to go (in %/h:m:ss/m:ss/seconds(s)): ";
-		spos = static_cast<NC::Window *>(ui_state_footer_window())->prompt();
+		spos = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
 	}
 
 	std::regex rx;
@@ -2138,10 +2138,10 @@ void ApplyFilter::run()
 		ScopedValue<bool> disabled_autocenter_mode(Config.autocenter_mode, false);
 		Statusbar::ScopedLock slock;
 		NC::Window::ScopedPromptHook helper(
-			*static_cast<NC::Window *>(ui_state_footer_window()),
+			*static_cast<NC::Window *>(ui_state_footer_legacy_window()),
 			Statusbar::Helpers::ApplyFilterImmediately(m_filterable));
 		Statusbar::put() << "Apply filter: ";
-		filter = static_cast<NC::Window *>(ui_state_footer_window())->prompt(filter);
+		filter = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(filter);
 	}
 	catch (NC::PromptAborted &)
 	{
@@ -2175,7 +2175,7 @@ void Find::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Find: ";
-		token = static_cast<NC::Window *>(ui_state_footer_window())->prompt();
+		token = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
 	}
 
 	Statusbar::print("Searching...");
@@ -2343,7 +2343,7 @@ void AddRandomItems::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Number of random " << tag_type_str << "s: ";
-		number = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_window())->prompt());
+		number = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt());
 	}
 	if (number > 0)
 	{
@@ -2498,7 +2498,7 @@ void SetSelectedItemsPriority::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Set priority [0-255]: ";
-		prio = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_window())->prompt());
+		prio = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt());
 		boundsCheck(prio, 0u, 255u);
 	}
 	myPlaylist->setSelectedItemsPriority(prio);
@@ -3055,7 +3055,7 @@ void seek(SearchDirection sd)
 	unsigned songpos = Status::State::elapsedTime();
 	auto t = global_timer;
 
-	NC::Window::ScopedTimeout stimeout{*static_cast<NC::Window *>(ui_state_footer_window()), BaseScreen::defaultWindowTimeout};
+	NC::Window::ScopedTimeout stimeout{*static_cast<NC::Window *>(ui_state_footer_legacy_window()), BaseScreen::defaultWindowTimeout};
 
 	// Accept single action of a given type or action chain for which all actions
 	// can be run and one of them is of the given type. This will still not work
@@ -3081,7 +3081,7 @@ void seek(SearchDirection sd)
 		                 ? static_cast<unsigned>(elapsed_seconds/2)+Config.seek_time
 		                 : Config.seek_time;
 
-		NcKey input = ncm_read_key(static_cast<NC::Window *>(ui_state_footer_window())->nativeWindow());
+		NcKey input = ncm_read_key(static_cast<NC::Window *>(ui_state_footer_legacy_window())->nativeWindow());
 
 		switch (sd)
 		{
@@ -3116,7 +3116,7 @@ void seek(SearchDirection sd)
 				tracklength += "/";
 				tracklength += showSongTime(Status::State::totalTime());
 				tracklength += "]";
-				*static_cast<NC::Window *>(ui_state_footer_window()) << NC::XY(static_cast<NC::Window *>(ui_state_footer_window())->getWidth()-tracklength.length(), 1)
+				*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(static_cast<NC::Window *>(ui_state_footer_legacy_window())->getWidth()-tracklength.length(), 1)
 				         << Config.statusbar_time_color
 				         << tracklength
 				         << NC::FormattedColor::End<>(Config.statusbar_time_color);
@@ -3131,16 +3131,16 @@ void seek(SearchDirection sd)
 					tracklength = showSongTime(songpos);
 				tracklength += "/";
 				tracklength += showSongTime(Status::State::totalTime());
-				*static_cast<NC::Window *>(ui_state_header_window()) << NC::XY(0, 0)
+				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 0)
 				         << Config.statusbar_time_color
 				         << tracklength
 				         << NC::FormattedColor::End<>(Config.statusbar_time_color)
 				         << " ";
-				static_cast<NC::Window *>(ui_state_header_window())->refresh();
+				static_cast<NC::Window *>(ui_state_header_legacy_window())->refresh();
 				break;
 		}
 		Progressbar::draw(songpos, Status::State::totalTime());
-		static_cast<NC::Window *>(ui_state_footer_window())->refresh();
+		static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
 
 		auto k = ncm_bindings_configuration_get(&Bindings, input);
 		if (hasRunnableAction(k, Actions::Type::SeekBackward))
@@ -3167,10 +3167,10 @@ void findItem(const SearchDirection direction)
 		ScopedValue<bool> disabled_autocenter_mode(Config.autocenter_mode, false);
 		Statusbar::ScopedLock slock;
 		NC::Window::ScopedPromptHook prompt_hook(
-			*static_cast<NC::Window *>(ui_state_footer_window()),
+			*static_cast<NC::Window *>(ui_state_footer_legacy_window()),
 			Statusbar::Helpers::FindImmediately(w, direction));
 		Statusbar::put() << stringFormat("Find %1%: ", direction);
-		constraint = static_cast<NC::Window *>(ui_state_footer_window())->prompt(constraint);
+		constraint = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(constraint);
 	}
 	catch (NC::PromptAborted &)
 	{

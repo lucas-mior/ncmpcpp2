@@ -1,32 +1,56 @@
 #include "ui_state.h"
 
-static void *header_window;
-static void *footer_window;
+static NcWindow *header_window;
+static NcWindow *footer_window;
+static void *header_legacy_window;
+static void *footer_legacy_window;
 static int64 screen_width;
 static int64 screen_height;
 static int64 main_start_y;
 static int64 main_height;
 
 void
-ui_state_set_header_window(void *window) {
+ui_state_set_header_window(NcWindow *window) {
     header_window = window;
     return;
 }
 
-void *
+NcWindow *
 ui_state_header_window(void) {
     return header_window;
 }
 
 void
-ui_state_set_footer_window(void *window) {
+ui_state_set_footer_window(NcWindow *window) {
     footer_window = window;
     return;
 }
 
-void *
+NcWindow *
 ui_state_footer_window(void) {
     return footer_window;
+}
+
+void
+ui_state_set_header_legacy_window(void *window) {
+    header_legacy_window = window;
+    return;
+}
+
+void *
+ui_state_header_legacy_window(void) {
+    return header_legacy_window;
+}
+
+void
+ui_state_set_footer_legacy_window(void *window) {
+    footer_legacy_window = window;
+    return;
+}
+
+void *
+ui_state_footer_legacy_window(void) {
+    return footer_legacy_window;
 }
 
 void

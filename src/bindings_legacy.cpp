@@ -40,7 +40,7 @@ bool legacy_current_screen_is(ScreenType screen_type, void *)
 
 void legacy_push_key(NcKey key, void *)
 {
-    static_cast<NC::Window *>(ui_state_footer_window())->pushChar(key);
+    static_cast<NC::Window *>(ui_state_footer_legacy_window())->pushChar(key);
 }
 
 bool legacy_run_external_command(char *command, int32 command_len, void *)
