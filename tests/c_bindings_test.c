@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "app_binding_migration.h"
 #include "bindings.h"
 #include "c/ncm_base.h"
 #include "c/ncm_error.h"
@@ -54,6 +55,9 @@ static void require_string(char *file, int32 line, char *name,
                            char *expected, int32 expected_len);
 static void write_file(char *path, char *data, int32 data_len);
 static void append_action(NcmBinding *binding, enum NcmActionType type);
+static void append_action_kind(NcmBinding *binding,
+                               enum NcmBindingActionKind kind,
+                               enum NcmActionType type);
 static bool record_action(NcmBindingAction *action, void *user);
 static bool runtime_can_run_action(enum NcmActionType type, void *user);
 static bool runtime_run_action(enum NcmActionType type, void *user);
@@ -73,6 +77,7 @@ static void test_binding_file_parsing(void);
 static void test_chained_action_execution(void);
 static void test_runtime_action_execution(void);
 static void test_runtime_can_execute_preflight(void);
+static void test_app_binding_migration_c_safe_actions(void);
 static void test_binding_action_formatting(void);
 static void test_read_paths(void);
 static void test_key_formatting(void);
@@ -121,10 +126,17 @@ write_file(char *path, char *data, int32 data_len) {
 
 static void
 append_action(NcmBinding *binding, enum NcmActionType type) {
+    append_action_kind(binding, NCM_BINDING_ACTION_NORMAL, type);
+    return;
+}
+
+static void
+append_action_kind(NcmBinding *binding, enum NcmBindingActionKind kind,
+                   enum NcmActionType type) {
     NcmBindingAction action;
 
     ncm_binding_action_init(&action);
-    action.kind = NCM_BINDING_ACTION_NORMAL;
+    action.kind = kind;
     action.type = type;
     REQUIRE(ncm_binding_append_action(binding, &action));
     ncm_binding_action_destroy(&action);
@@ -457,6 +469,52 @@ test_runtime_can_execute_preflight(void) {
 }
 
 static void
+test_app_binding_migration_c_safe_actions(void) {
+    NcmBinding binding;
+
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_QUIT));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_PLAY));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_PAUSE));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_STOP));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_NEXT));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_PREVIOUS));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_VOLUME_UP));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_VOLUME_DOWN));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_TOGGLE_REPEAT));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_TOGGLE_RANDOM));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_TOGGLE_SINGLE));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_TOGGLE_CONSUME));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_SEEK_FORWARD));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_SEEK_BACKWARD));
+
+    REQUIRE(!app_binding_migration_action_is_c_safe(
+        NCM_ACTION_SHOW_MEDIA_LIBRARY));
+    REQUIRE(!app_binding_migration_action_is_c_safe(NCM_ACTION_MOUSE_EVENT));
+    REQUIRE(!app_binding_migration_action_is_c_safe(NCM_ACTION_SCROLL_UP));
+
+    ncm_binding_init(&binding);
+    append_action(&binding, NCM_ACTION_QUIT);
+    append_action(&binding, NCM_ACTION_PLAY);
+    REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
+    ncm_binding_destroy(&binding);
+
+    ncm_binding_init(&binding);
+    append_action(&binding, NCM_ACTION_QUIT);
+    append_action(&binding, NCM_ACTION_SHOW_MEDIA_LIBRARY);
+    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
+    ncm_binding_destroy(&binding);
+
+    ncm_binding_init(&binding);
+    append_action_kind(&binding, NCM_BINDING_ACTION_REQUIRE_SCREEN,
+                       NCM_ACTION_DUMMY);
+    append_action(&binding, NCM_ACTION_QUIT);
+    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
+    ncm_binding_destroy(&binding);
+
+    return;
+}
+
+static void
 test_binding_action_formatting(void) {
     NcmBindingsConfiguration bindings;
     NcmBindingSlice slice;
@@ -567,6 +625,7 @@ main(void) {
     test_chained_action_execution();
     test_runtime_action_execution();
     test_runtime_can_execute_preflight();
+    test_app_binding_migration_c_safe_actions();
     test_binding_action_formatting();
     test_read_paths();
     test_key_formatting();
