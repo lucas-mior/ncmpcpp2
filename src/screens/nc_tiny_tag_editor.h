@@ -13,10 +13,25 @@
 extern "C" {
 #endif
 
+
+typedef struct NativeTinyTagEditorBridge {
+    NcWindow *(*active_window)(void *user);
+    void (*refresh)(void *user);
+    void (*refresh_window)(void *user);
+    void (*scroll)(void *user, enum NcScroll where);
+    void (*switch_to)(void *user);
+    void (*resize)(void *user);
+    char *(*title)(void *user);
+    void (*update)(void *user);
+    void (*mouse_button_pressed)(void *user, MEVENT event);
+    void *user;
+} NativeTinyTagEditorBridge;
+
 typedef struct NativeTinyTagEditorScreen {
     NcScreen screen;
     NcEditorBufferMenu rows;
     NcWindow window;
+    NativeTinyTagEditorBridge bridge;
     NcmMutableSong edited;
     NcScreen *previous_screen;
 
@@ -36,6 +51,9 @@ void native_tiny_tag_editor_screen_destroy(
     NativeTinyTagEditorScreen *screen);
 NcScreen *native_tiny_tag_editor_screen_base(
     NativeTinyTagEditorScreen *screen);
+
+void native_tiny_tag_editor_screen_set_bridge(
+    NativeTinyTagEditorScreen *screen, NativeTinyTagEditorBridge bridge);
 NcEditorBufferMenu *native_tiny_tag_editor_screen_rows(
     NativeTinyTagEditorScreen *screen);
 NcmMutableSong *native_tiny_tag_editor_screen_edited(
