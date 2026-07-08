@@ -16,13 +16,6 @@ void actions_legacy_runtime_init_screen(bool enable_colors,
                                         bool enable_mouse);
 void actions_legacy_runtime_destroy_screen(void);
 
-void actions_legacy_runtime_set_statusbar_visibility_baseline(
-    bool visible);
-void actions_legacy_runtime_set_windows_dimensions(void);
-int64 actions_legacy_runtime_header_height(void);
-int64 actions_legacy_runtime_footer_height(void);
-int64 actions_legacy_runtime_footer_start_y(void);
-
 void *actions_legacy_runtime_window_create(int64 start_x,
                                            int64 start_y,
                                            int64 width,
