@@ -400,6 +400,22 @@ ncm_binding_action_run(NcmBindingAction *action,
 }
 
 bool
+ncm_binding_can_execute_runtime(NcmBinding *binding,
+                                NcmBindingRuntime *runtime) {
+    if (binding == NULL) {
+        return false;
+    }
+
+    for (int32 i = 0; i < binding->actions_len; i += 1) {
+        if (!ncm_binding_action_can_run(binding->actions + i, runtime)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool
 ncm_binding_execute_runtime(NcmBinding *binding,
                             NcmBindingRuntime *runtime) {
     if (binding == NULL) {
@@ -534,6 +550,12 @@ ncm_binding_default_runtime(void) {
         initialized = true;
     }
     return &runtime;
+}
+
+bool
+ncm_binding_can_execute_default(NcmBinding *binding) {
+    return ncm_binding_can_execute_runtime(binding,
+                                           ncm_binding_default_runtime());
 }
 
 bool
