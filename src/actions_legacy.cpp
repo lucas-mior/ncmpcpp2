@@ -49,7 +49,7 @@
 #include "utility/scoped_value.h"
 
 #include "curses/menu_impl.h"
-#include "bindings_legacy.h"
+#include "macro_utilities.h"
 #include "screens/browser.h"
 #include "screens/native_c_screens.h"
 #include "screens/media_library.h"
@@ -114,6 +114,81 @@ void scrollTagDownRun(NC::List *list, const SongList *songs, enum NcmSongGetter 
 void seek(SearchDirection sd);
 void findItem(const SearchDirection direction);
 void listsChangeFinisher();
+
+NcmActionType toNcmActionType(Actions::Type type)
+{
+	return static_cast<NcmActionType>(type);
+}
+
+bool legacyCanRunAction(NcmActionType type, void *)
+{
+	Actions::BaseAction *action = Actions::runtimeAction(type);
+	if (action == nullptr)
+		return false;
+	return action->canBeRun();
+}
+
+bool legacyRunAction(NcmActionType type, void *)
+{
+	Actions::BaseAction *action = Actions::runtimeAction(type);
+	if (action == nullptr)
+		return false;
+	return action->execute();
+}
+
+bool legacyCurrentScreenIs(ScreenType screen_type, void *)
+{
+	return screenLegacyCurrent()->type() == screen_type;
+}
+
+void legacyPushKey(NcKey key, void *)
+{
+	static_cast<NC::Window *>(ui_state_footer_legacy_window())->pushChar(key);
+}
+
+bool legacyRunExternalCommand(char *command, int32 command_len, void *)
+{
+	std::string text;
+
+	text.assign(command, static_cast<size_t>(command_len));
+	runExternalCommand(text, true);
+	return true;
+}
+
+bool legacyRunExternalConsoleCommand(char *command, int32 command_len, void *)
+{
+	std::string text;
+
+	text.assign(command, static_cast<size_t>(command_len));
+	runExternalConsoleCommand(text);
+	return true;
+}
+
+NcmBindingRuntime *bindingsLegacyRuntime()
+{
+	static NcmBindingRuntime runtime = {
+		legacyCanRunAction,
+		legacyRunAction,
+		legacyCurrentScreenIs,
+		legacyPushKey,
+		legacyRunExternalCommand,
+		legacyRunExternalConsoleCommand,
+		nullptr,
+	};
+
+	return &runtime;
+}
+
+bool bindingsLegacyExecute(NcmBinding *binding)
+{
+	return ncm_binding_execute_runtime(binding, bindingsLegacyRuntime());
+}
+
+bool bindingsLegacyHasRunnableAction(NcmBinding *binding, Actions::Type type)
+{
+	return ncm_binding_has_runnable_action(binding, toNcmActionType(type),
+	                                       bindingsLegacyRuntime());
+}
 
 template <typename Iterator>
 bool findSelectedRangeAndPrintInfoIfNot(Iterator &first, Iterator &last)
@@ -897,7 +972,7 @@ void ExecuteCommand::run()
 	if (cmd)
 	{
 		Statusbar::printf(1, "Executing %1%...", cmd_name);
-		bool res = bindings_legacy_execute(&cmd->binding);
+		bool res = bindingsLegacyExecute(&cmd->binding);
 		Statusbar::printf("Execution of command \"%1%\" %2%.",
 			cmd_name, res ? "successful" : "unsuccessful"
 		);
@@ -3000,7 +3075,7 @@ void seek(SearchDirection sd)
 	                            Actions::Type type) {
 		for (int32 i = 0; i < bindings.len; i += 1)
 		{
-			if (bindings_legacy_has_runnable_action(bindings.data + i, type))
+			if (bindingsLegacyHasRunnableAction(bindings.data + i, type))
 				return true;
 		}
 		return false;
@@ -3289,7 +3364,7 @@ bool actions_legacy_runtime_execute_binding(NcmBinding *binding)
 {
 	try
 	{
-		return bindings_legacy_execute(binding);
+		return bindingsLegacyExecute(binding);
 	}
 	catch (ConversionError &e)
 	{
