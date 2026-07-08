@@ -427,8 +427,8 @@ Use src/bindings.h and src/bindings.c as the C binding configuration owner.
 Rules:
     - Store runtime bindings as typed action descriptors, not C++ action
       objects.
-    - Keep bindings_legacy.h/.cpp only while the C++ Actions runtime still owns
-      action execution.
+    - Keep legacy binding runtime shims inside actions_legacy.cpp only while
+      the C++ Actions runtime still owns action execution.
     - Do not add new std::unordered_map or std::vector storage to bindings.
 
 Bindings input and key formatting
