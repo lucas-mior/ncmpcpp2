@@ -1,6 +1,8 @@
 #include "app_legacy_bridge.h"
 
 #include "actions_legacy_runtime.h"
+#include "bindings.h"
+#include "configuration.h"
 #include "global.h"
 #include "screens/native_c_screens.h"
 #include "settings.h"
@@ -17,7 +19,13 @@
 
 bool
 ncmpcpp_legacy_configure(int32 argc, char **argv) {
-    return actions_legacy_runtime_configure(argc, argv);
+    if (!actions_legacy_runtime_configure(argc, argv)) {
+        return false;
+    }
+
+    ncm_bindings_configuration_destroy(&Bindings);
+    ncm_bindings_configuration_init(&Bindings);
+    return configure(argc, argv);
 }
 
 void
