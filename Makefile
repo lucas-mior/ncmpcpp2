@@ -52,7 +52,6 @@ NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
 APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
 APP_CXX_SRCS := \
 	src/actions_legacy.cpp \
-	src/bindings_legacy.cpp \
 	src/configuration_legacy.cpp \
 	src/helpers_legacy.cpp \
 	src/mpdpp.cpp \
