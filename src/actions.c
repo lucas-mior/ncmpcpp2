@@ -14,8 +14,10 @@
 #include "status.h"
 #include "statusbar.h"
 
+#include "c/ncm_base.h"
 #include "cbase/base_macros.h"
 
+static void action_runtime_mpd_noidle_callback(int32 flags, void *user);
 static int32 ncm_action_name_len(char *name);
 static bool ncm_action_name_equals(char *left, int32 left_len,
                                    char *right);
@@ -1543,6 +1545,14 @@ action_runtime_switch_to_next_screen(bool reverse) {
     }
 
     return action_runtime_switch_to_screen(sequence->items[next_index]);
+}
+
+static void
+action_runtime_mpd_noidle_callback(int32 flags, void *user) {
+    (void)flags;
+    (void)user;
+    ncm_statusbar_mpd_idle_callback();
+    return;
 }
 
 static bool

@@ -455,7 +455,8 @@ void MouseEvent::run()
 {
 
 	m_old_mouse_event = m_mouse_event;
-	m_mouse_event = static_cast<NC::Window *>(ui_state_footer_legacy_window())->getMouseEvent();
+	if (NcWindow *footer_window = ui_state_footer_window())
+		m_mouse_event = *nc_window_mouse_event(footer_window);
 
 	//Statusbar::printf("(%1%, %2%, %3%)", m_mouse_event.bstate, m_mouse_event.x, m_mouse_event.y);
 
@@ -3344,41 +3345,16 @@ void actions_legacy_runtime_resize_screen(bool reload_main_window)
 	}
 }
 
-void actions_legacy_runtime_playlist_switch_to(void)
-{
-	(void)native_c_screens_switch_to_type(NCM_SCREEN_TYPE_PLAYLIST);
-}
-
 void actions_legacy_runtime_playlist_enable_highlighting_if_current(void)
 {
 	if (screenLegacyCurrent() == myPlaylist)
 		myPlaylist->enableHighlighting();
 }
 
-bool actions_legacy_runtime_switch_to_screen_type(enum ScreenType screen_type)
-{
-	return native_c_screens_switch_to_type(screen_type);
-}
-
-bool actions_legacy_runtime_lock_current_screen(void)
-{
-	return native_c_screens_lock_current();
-}
-
-enum ScreenType actions_legacy_runtime_current_screen_type(void)
-{
-	return native_c_screens_current_type();
-}
-
 void actions_legacy_runtime_set_noidle_status_callback(void)
 {
 	ncm_mpd_client_set_noidle_callback(
 	    &global_mpd, legacy_noidle_status_update, nullptr);
-}
-
-bool actions_legacy_runtime_mpd_connected(void)
-{
-	return ncm_mpd_client_connected(&global_mpd);
 }
 
 void actions_legacy_runtime_connect_or_report(void)
