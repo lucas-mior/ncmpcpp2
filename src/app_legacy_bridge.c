@@ -22,13 +22,14 @@ ncmpcpp_legacy_configure(int32 argc, char **argv) {
 
 void
 ncmpcpp_legacy_init_screen(bool enable_colors, bool enable_mouse) {
-    actions_legacy_runtime_init_screen(enable_colors, enable_mouse);
+    nc_init_screen(enable_colors, enable_mouse);
+    actions_legacy_runtime_init_readline();
     return;
 }
 
 void
 ncmpcpp_legacy_destroy_screen(void) {
-    actions_legacy_runtime_destroy_screen();
+    nc_destroy_screen();
     return;
 }
 

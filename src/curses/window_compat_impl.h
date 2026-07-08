@@ -259,10 +259,8 @@ inline enum NcFormat reverseFormat(enum NcFormat format)
 }
 
 
-inline void initScreen(bool enable_colors, bool enable_mouse)
+inline void initReadline()
 {
-	nc_init_screen(enable_colors, enable_mouse);
-
 	// initialize readline (needed, otherwise we get segmentation
 	// fault on SIGWINCH). also, initialize first as doing this
 	// later erases keys bound with rl_bind_key for some users.
@@ -290,6 +288,12 @@ inline void initScreen(bool enable_colors, bool enable_mouse)
 	rl_getc_function = rl::read_key;
 	rl_redisplay_function = rl::display_string;
 	rl_startup_hook = rl::add_base;
+}
+
+inline void initScreen(bool enable_colors, bool enable_mouse)
+{
+	nc_init_screen(enable_colors, enable_mouse);
+	initReadline();
 }
 
 inline int colorCount()

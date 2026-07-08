@@ -3210,14 +3210,9 @@ bool actions_legacy_runtime_configure(int32 argc, char **argv)
 	return configure(argc, argv);
 }
 
-void actions_legacy_runtime_init_screen(bool enable_colors, bool enable_mouse)
+void actions_legacy_runtime_init_readline(void)
 {
-	NC::initScreen(enable_colors, enable_mouse);
-}
-
-void actions_legacy_runtime_destroy_screen(void)
-{
-	NC::destroyScreen();
+	NC::initReadline();
 }
 
 void *actions_legacy_runtime_window_create(int64 start_x, int64 start_y,
