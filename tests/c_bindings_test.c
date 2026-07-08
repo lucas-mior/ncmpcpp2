@@ -480,10 +480,15 @@ test_app_binding_migration_c_safe_actions(void) {
     REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_PREVIOUS));
     REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_VOLUME_UP));
     REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_VOLUME_DOWN));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_REPLAY_SONG));
     REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_TOGGLE_REPEAT));
     REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_TOGGLE_RANDOM));
     REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_TOGGLE_SINGLE));
     REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_TOGGLE_CONSUME));
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_TOGGLE_CROSSFADE));
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_UPDATE_DATABASE));
     REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_SEEK_FORWARD));
     REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_SEEK_BACKWARD));
 
@@ -491,10 +496,19 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_SHOW_MEDIA_LIBRARY));
     REQUIRE(!app_binding_migration_action_is_c_safe(NCM_ACTION_MOUSE_EVENT));
     REQUIRE(!app_binding_migration_action_is_c_safe(NCM_ACTION_SCROLL_UP));
+    REQUIRE(!app_binding_migration_action_is_c_safe(NCM_ACTION_SHUFFLE));
+    REQUIRE(!app_binding_migration_action_is_c_safe(
+        NCM_ACTION_CLEAR_MAIN_PLAYLIST));
+    REQUIRE(!app_binding_migration_action_is_c_safe(
+        NCM_ACTION_CROP_MAIN_PLAYLIST));
+    REQUIRE(!app_binding_migration_action_is_c_safe(
+        NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE));
 
     ncm_binding_init(&binding);
     append_action(&binding, NCM_ACTION_QUIT);
     append_action(&binding, NCM_ACTION_PLAY);
+    append_action(&binding, NCM_ACTION_UPDATE_DATABASE);
+    append_action(&binding, NCM_ACTION_TOGGLE_CROSSFADE);
     REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
     ncm_binding_destroy(&binding);
 

@@ -7,10 +7,13 @@ app_binding_migration_action_is_c_safe(enum NcmActionType type) {
     case NCM_ACTION_QUIT:
     case NCM_ACTION_VOLUME_UP:
     case NCM_ACTION_VOLUME_DOWN:
+    case NCM_ACTION_REPLAY_SONG:
     case NCM_ACTION_TOGGLE_REPEAT:
     case NCM_ACTION_TOGGLE_RANDOM:
     case NCM_ACTION_TOGGLE_SINGLE:
     case NCM_ACTION_TOGGLE_CONSUME:
+    case NCM_ACTION_TOGGLE_CROSSFADE:
+    case NCM_ACTION_UPDATE_DATABASE:
     case NCM_ACTION_NEXT:
     case NCM_ACTION_PREVIOUS:
     case NCM_ACTION_PAUSE:
