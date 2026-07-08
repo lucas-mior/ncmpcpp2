@@ -3497,3 +3497,26 @@ bool ncmpcpp_legacy_exit_requested(void)
 }
 
 }
+
+/*
+ * Secondary screen compatibility implementations.
+ *
+ * These screens are registered through their native NcScreen handles, but the
+ * unported action/status code still needs the legacy C++ facades.  Keep the
+ * facades in this remaining legacy translation unit while the individual
+ * screen .cpp files are removed from the active build.
+ */
+#define to_cpp_scroll lastfm_legacy_to_cpp_scroll
+#define to_nc_scroll lastfm_legacy_to_nc_scroll
+#include "screens/lastfm.cpp"
+#undef to_nc_scroll
+#undef to_cpp_scroll
+#define to_cpp_scroll lyrics_legacy_to_cpp_scroll
+#define to_nc_scroll lyrics_legacy_to_nc_scroll
+#include "screens/lyrics.cpp"
+#undef to_nc_scroll
+#undef to_cpp_scroll
+#include "screens/media_library.cpp"
+#include "screens/sel_items_adder.cpp"
+#include "screens/sort_playlist.cpp"
+#include "screens/visualizer.cpp"
