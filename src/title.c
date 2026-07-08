@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "app_legacy_bridge.h"
 #include "global.h"
 #include "settings.h"
 #include "ui_state.h"
@@ -47,8 +48,8 @@ ncm_title_draw_header(char *title, int32 title_len) {
         return;
     }
 
-    window = (NcWindow *)ui_state_header_window();
-    if (window == NULL) {
+    window = ncmpcpp_legacy_window_native(ui_state_header_window());
+    if ((window == NULL) || (window->window == NULL)) {
         return;
     }
 

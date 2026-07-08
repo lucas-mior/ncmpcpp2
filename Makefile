@@ -83,6 +83,7 @@ REMOVED_CXX_SRCS := \
 	src/screens/playlist.cpp \
 	src/screens/browser.cpp \
 	src/screens/search_engine.cpp \
+	src/screens/playlist_editor.cpp \
 	src/screens/server_info.cpp \
 	src/screens/server_info_bridge.cpp \
 	src/screens/song_info.cpp \
