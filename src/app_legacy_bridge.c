@@ -19,6 +19,141 @@
  * forwarding calls here with direct C implementations.
  */
 
+
+static bool
+app_legacy_bridge_action_needs_legacy_screen(enum NcmActionType type) {
+    switch (type) {
+    case NCM_ACTION_UPDATE_ENVIRONMENT:
+    case NCM_ACTION_MOUSE_EVENT:
+    case NCM_ACTION_SCROLL_UP:
+    case NCM_ACTION_SCROLL_DOWN:
+    case NCM_ACTION_SCROLL_UP_ARTIST:
+    case NCM_ACTION_SCROLL_UP_ALBUM:
+    case NCM_ACTION_SCROLL_DOWN_ARTIST:
+    case NCM_ACTION_SCROLL_DOWN_ALBUM:
+    case NCM_ACTION_PAGE_UP:
+    case NCM_ACTION_PAGE_DOWN:
+    case NCM_ACTION_MOVE_HOME:
+    case NCM_ACTION_MOVE_END:
+    case NCM_ACTION_TOGGLE_INTERFACE:
+    case NCM_ACTION_JUMP_TO_PARENT_DIRECTORY:
+    case NCM_ACTION_PREVIOUS_COLUMN:
+    case NCM_ACTION_NEXT_COLUMN:
+    case NCM_ACTION_MASTER_SCREEN:
+    case NCM_ACTION_SLAVE_SCREEN:
+    case NCM_ACTION_ADD_ITEM_TO_PLAYLIST:
+    case NCM_ACTION_PLAY_ITEM:
+    case NCM_ACTION_DELETE_PLAYLIST_ITEMS:
+    case NCM_ACTION_DELETE_STORED_PLAYLIST:
+    case NCM_ACTION_DELETE_BROWSER_ITEMS:
+    case NCM_ACTION_MOVE_SORT_ORDER_UP:
+    case NCM_ACTION_MOVE_SORT_ORDER_DOWN:
+    case NCM_ACTION_MOVE_SELECTED_ITEMS_UP:
+    case NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN:
+    case NCM_ACTION_MOVE_SELECTED_ITEMS_TO:
+    case NCM_ACTION_ADD:
+    case NCM_ACTION_LOAD:
+    case NCM_ACTION_TOGGLE_DISPLAY_MODE:
+    case NCM_ACTION_UPDATE_DATABASE:
+    case NCM_ACTION_JUMP_TO_PLAYING_SONG:
+    case NCM_ACTION_SAVE_TAG_CHANGES:
+    case NCM_ACTION_ENTER_DIRECTORY:
+    case NCM_ACTION_EDIT_SONG:
+    case NCM_ACTION_EDIT_LIBRARY_TAG:
+    case NCM_ACTION_EDIT_LIBRARY_ALBUM:
+    case NCM_ACTION_EDIT_DIRECTORY_NAME:
+    case NCM_ACTION_EDIT_PLAYLIST_NAME:
+    case NCM_ACTION_EDIT_LYRICS:
+    case NCM_ACTION_JUMP_TO_BROWSER:
+    case NCM_ACTION_JUMP_TO_MEDIA_LIBRARY:
+    case NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR:
+    case NCM_ACTION_TOGGLE_SCREEN_LOCK:
+    case NCM_ACTION_JUMP_TO_TAG_EDITOR:
+    case NCM_ACTION_JUMP_TO_POSITION_IN_SONG:
+    case NCM_ACTION_SELECT_ITEM:
+    case NCM_ACTION_SELECT_RANGE:
+    case NCM_ACTION_REVERSE_SELECTION:
+    case NCM_ACTION_REMOVE_SELECTION:
+    case NCM_ACTION_SELECT_ALBUM:
+    case NCM_ACTION_SELECT_FOUND_ITEMS:
+    case NCM_ACTION_ADD_SELECTED_ITEMS:
+    case NCM_ACTION_CROP_MAIN_PLAYLIST:
+    case NCM_ACTION_CROP_PLAYLIST:
+    case NCM_ACTION_CLEAR_MAIN_PLAYLIST:
+    case NCM_ACTION_CLEAR_PLAYLIST:
+    case NCM_ACTION_SORT_PLAYLIST:
+    case NCM_ACTION_REVERSE_PLAYLIST:
+    case NCM_ACTION_APPLY_FILTER:
+    case NCM_ACTION_FIND:
+    case NCM_ACTION_FIND_ITEM_FORWARD:
+    case NCM_ACTION_FIND_ITEM_BACKWARD:
+    case NCM_ACTION_NEXT_FOUND_ITEM:
+    case NCM_ACTION_PREVIOUS_FOUND_ITEM:
+    case NCM_ACTION_TOGGLE_FIND_MODE:
+    case NCM_ACTION_TOGGLE_BROWSER_SORT_MODE:
+    case NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE:
+    case NCM_ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE:
+    case NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND:
+    case NCM_ACTION_REFETCH_LYRICS:
+    case NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY:
+    case NCM_ACTION_TOGGLE_OUTPUT:
+    case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
+    case NCM_ACTION_SHOW_SONG_INFO:
+    case NCM_ACTION_SHOW_ARTIST_INFO:
+    case NCM_ACTION_SHOW_LYRICS:
+    case NCM_ACTION_NEXT_SCREEN:
+    case NCM_ACTION_PREVIOUS_SCREEN:
+    case NCM_ACTION_SHOW_HELP:
+    case NCM_ACTION_SHOW_PLAYLIST:
+    case NCM_ACTION_SHOW_BROWSER:
+    case NCM_ACTION_CHANGE_BROWSE_MODE:
+    case NCM_ACTION_SHOW_SEARCH_ENGINE:
+    case NCM_ACTION_RESET_SEARCH_ENGINE:
+    case NCM_ACTION_SHOW_MEDIA_LIBRARY:
+    case NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE:
+    case NCM_ACTION_SHOW_PLAYLIST_EDITOR:
+    case NCM_ACTION_SHOW_TAG_EDITOR:
+    case NCM_ACTION_SHOW_OUTPUTS:
+    case NCM_ACTION_SHOW_VISUALIZER:
+    case NCM_ACTION_SHOW_SERVER_INFO:
+        return true;
+    default:
+        return false;
+    }
+}
+
+static bool
+app_legacy_bridge_binding_needs_legacy_screen(NcmBinding *binding) {
+    if (binding == NULL) {
+        return true;
+    }
+
+    for (int32 i = 0; i < binding->actions_len; i += 1) {
+        NcmBindingAction *action;
+
+        action = binding->actions + i;
+        if ((action->kind == NCM_BINDING_ACTION_NORMAL)
+            || (action->kind == NCM_BINDING_ACTION_REQUIRE_RUNNABLE)) {
+            if (app_legacy_bridge_action_needs_legacy_screen(action->type)) {
+                return true;
+            }
+        }
+        if (action->kind == NCM_BINDING_ACTION_REQUIRE_SCREEN) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool
+app_legacy_bridge_can_execute_binding_in_c(NcmBinding *binding) {
+    if (app_legacy_bridge_binding_needs_legacy_screen(binding)) {
+        return false;
+    }
+    return ncm_binding_can_execute_default(binding);
+}
+
 static void
 app_legacy_bridge_noidle_status_update(int32 flags, void *user) {
     NcmError error;
@@ -299,6 +434,10 @@ ncmpcpp_legacy_update_environment(bool update_timer,
 
 bool
 ncmpcpp_legacy_execute_binding(NcmBinding *binding) {
+    if (app_legacy_bridge_can_execute_binding_in_c(binding)) {
+        return ncm_binding_execute_default(binding);
+    }
+
     return actions_legacy_runtime_execute_binding(binding);
 }
 
