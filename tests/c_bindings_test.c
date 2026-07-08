@@ -509,6 +509,62 @@ test_app_binding_migration_c_safe_actions(void) {
                        NCM_ACTION_DUMMY);
     append_action(&binding, NCM_ACTION_QUIT);
     REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
+    REQUIRE(!app_binding_migration_binding_is_hybrid_safe(&binding));
+    REQUIRE(!app_binding_migration_binding_is_plain_action_sequence(
+        &binding));
+    ncm_binding_destroy(&binding);
+
+    ncm_binding_init(&binding);
+    append_action(&binding, NCM_ACTION_QUIT);
+    append_action(&binding, NCM_ACTION_SHOW_MEDIA_LIBRARY);
+    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
+    REQUIRE(!app_binding_migration_binding_is_hybrid_safe(&binding));
+    REQUIRE(app_binding_migration_binding_is_plain_action_sequence(
+        &binding));
+    ncm_binding_destroy(&binding);
+
+    ncm_binding_init(&binding);
+    append_action_kind(&binding, NCM_BINDING_ACTION_PUSH_CHARACTERS,
+                       NCM_ACTION_DUMMY);
+    append_action(&binding, NCM_ACTION_QUIT);
+    REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
+    REQUIRE(app_binding_migration_binding_is_hybrid_safe(&binding));
+    REQUIRE(!app_binding_migration_binding_is_plain_action_sequence(
+        &binding));
+    ncm_binding_destroy(&binding);
+
+    ncm_binding_init(&binding);
+    append_action(&binding, NCM_ACTION_QUIT);
+    append_action_kind(&binding, NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND,
+                       NCM_ACTION_DUMMY);
+    append_action_kind(&binding,
+                       NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND,
+                       NCM_ACTION_DUMMY);
+    REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
+    REQUIRE(app_binding_migration_binding_is_hybrid_safe(&binding));
+    ncm_binding_destroy(&binding);
+
+    ncm_binding_init(&binding);
+    append_action_kind(&binding, NCM_BINDING_ACTION_REQUIRE_RUNNABLE,
+                       NCM_ACTION_QUIT);
+    append_action(&binding, NCM_ACTION_PAUSE);
+    REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
+    REQUIRE(app_binding_migration_binding_is_hybrid_safe(&binding));
+    ncm_binding_destroy(&binding);
+
+    ncm_binding_init(&binding);
+    append_action(&binding, NCM_ACTION_QUIT);
+    append_action(&binding, NCM_ACTION_SAVE_PLAYLIST);
+    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
+    REQUIRE(app_binding_migration_binding_is_hybrid_safe(&binding));
+    ncm_binding_destroy(&binding);
+
+    ncm_binding_init(&binding);
+    append_action_kind(&binding, NCM_BINDING_ACTION_REQUIRE_RUNNABLE,
+                       NCM_ACTION_SHOW_MEDIA_LIBRARY);
+    append_action(&binding, NCM_ACTION_QUIT);
+    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
+    REQUIRE(!app_binding_migration_binding_is_hybrid_safe(&binding));
     ncm_binding_destroy(&binding);
 
     return;
