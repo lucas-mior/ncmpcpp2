@@ -1600,12 +1600,40 @@ action_runtime_volume(int32 change) {
     return true;
 }
 
+static char *
+action_runtime_update_database_path(void) {
+    NcmStringView view;
+
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+        view = native_browser_screen_current_directory(
+            native_c_screen_browser());
+        if (view.data != NULL) {
+            return view.data;
+        }
+        return (char *)"";
+    }
+
+#if defined(HAVE_TAGLIB_H)
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
+        if (native_tag_editor_screen_current_dir(
+                native_c_screen_tag_editor(), &view)) {
+            return view.data;
+        }
+    }
+#endif
+
+    return (char *)"/";
+}
+
 static bool
 action_runtime_update_database(void) {
     NcmError error;
+    char *path;
+
+    path = action_runtime_update_database_path();
 
     ncm_error_clear(&error);
-    if (!ncm_mpd_client_update_directory(&global_mpd, NULL, NULL,
+    if (!ncm_mpd_client_update_directory(&global_mpd, path, NULL,
                                          &error)) {
         return action_runtime_mpd_error(&error);
     }
