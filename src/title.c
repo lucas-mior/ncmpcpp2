@@ -8,6 +8,14 @@
 #include "settings.h"
 #include "ui_state.h"
 
+#if defined(__GNUC__)
+__attribute__((weak))
+#endif
+NcWindow *
+ncmpcpp_legacy_window_native(void *window) {
+    return (NcWindow *)window;
+}
+
 static int32
 title_cstring_len(char *string) {
     if (string == NULL) {
