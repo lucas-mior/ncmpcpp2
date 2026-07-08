@@ -29,6 +29,47 @@ app_legacy_bridge_can_execute_binding_in_c(NcmBinding *binding) {
     return ncm_binding_can_execute_default(binding);
 }
 
+static bool
+app_legacy_bridge_execute_binding_action_hybrid(
+    NcmBindingAction *action) {
+    NcmBindingRuntime *runtime;
+
+    runtime = ncm_binding_default_runtime();
+    switch (action->kind) {
+    case NCM_BINDING_ACTION_NORMAL:
+        if (app_binding_migration_action_is_c_safe(action->type)) {
+            return ncm_action_runtime_run(NULL, action->type);
+        }
+        return actions_legacy_runtime_execute_action(action->type);
+    case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
+        return ncm_binding_action_can_run(action, runtime);
+    case NCM_BINDING_ACTION_PUSH_CHARACTERS:
+    case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
+    case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
+        return ncm_binding_action_run(action, runtime);
+    case NCM_BINDING_ACTION_REQUIRE_SCREEN:
+        return false;
+    }
+
+    return false;
+}
+
+static bool
+app_legacy_bridge_execute_binding_hybrid(NcmBinding *binding) {
+    if (!app_binding_migration_binding_is_hybrid_safe(binding)) {
+        return false;
+    }
+
+    for (int32 i = 0; i < binding->actions_len; i += 1) {
+        if (!app_legacy_bridge_execute_binding_action_hybrid(
+                binding->actions + i)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 static void
 app_legacy_bridge_noidle_status_update(int32 flags, void *user) {
     NcmError error;
@@ -312,15 +353,19 @@ ncmpcpp_legacy_execute_binding(NcmBinding *binding) {
     if (app_legacy_bridge_can_execute_binding_in_c(binding)) {
         return ncm_binding_execute_default(binding);
     }
+    if (app_binding_migration_binding_is_hybrid_safe(binding)) {
+        return app_legacy_bridge_execute_binding_hybrid(binding);
+    }
 
     return actions_legacy_runtime_execute_binding(binding);
 }
 
 bool
 ncmpcpp_legacy_execute_action(enum NcmActionType type) {
-    if (ncm_action_runtime_run(NULL, type)) {
-        return true;
+    if (app_binding_migration_action_is_c_safe(type)) {
+        return ncm_action_runtime_run(NULL, type);
     }
+
     return actions_legacy_runtime_execute_action(type);
 }
 
