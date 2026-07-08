@@ -12,6 +12,8 @@ static void native_search_switch_to(NcScreen *screen);
 static void native_search_resize(NcScreen *screen);
 static char *native_search_title(NcScreen *screen);
 static void native_search_update(NcScreen *screen);
+static void native_search_mouse_button_pressed(NcScreen *screen,
+                                               MEVENT event);
 static bool native_search_is_lockable(NcScreen *screen);
 static bool native_search_is_mergable(NcScreen *screen);
 static void native_search_destroy_callback(NcScreen *screen);
@@ -30,6 +32,7 @@ static NcScreenCallbacks native_search_callbacks = {
     .resize = native_search_resize,
     .title = native_search_title,
     .update = native_search_update,
+    .mouse_button_pressed = native_search_mouse_button_pressed,
     .is_lockable = native_search_is_lockable,
     .is_mergable = native_search_is_mergable,
     .destroy = native_search_destroy_callback,
@@ -49,6 +52,7 @@ native_search_engine_screen_init(NativeSearchEngineScreen *screen,
     ncm_buffer_init(&screen->search_constraint);
     ncm_regex_init(&screen->filter_regex);
 
+    screen->bridge = (NativeSearchEngineBridge){0};
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
@@ -135,6 +139,20 @@ native_search_engine_screen_reset(NativeSearchEngineScreen *screen) {
 bool
 native_search_engine_screen_add_song_copy(NativeSearchEngineScreen *screen,
                                           NcmSong *song) {
+    return native_search_engine_screen_add_song_copy_with_flags(
+        screen, song, NC_MENU_ITEM_SELECTABLE);
+}
+
+bool
+native_search_engine_screen_add_buffer(NativeSearchEngineScreen *screen,
+                                       NcBuffer *buffer) {
+    return native_search_engine_screen_add_buffer_with_flags(
+        screen, buffer, NC_MENU_ITEM_SELECTABLE);
+}
+
+bool
+native_search_engine_screen_add_song_copy_with_flags(
+    NativeSearchEngineScreen *screen, NcmSong *song, uint32 flags) {
     NcSearchRow row;
 
     if (screen == NULL || song == NULL) {
@@ -146,14 +164,14 @@ native_search_engine_screen_add_song_copy(NativeSearchEngineScreen *screen,
         nc_search_row_destroy(&row);
         return false;
     }
-    nc_search_row_menu_add(&screen->rows, &row);
+    nc_search_row_menu_add_with_flags(&screen->rows, &row, flags);
     nc_search_row_destroy(&row);
     return true;
 }
 
 bool
-native_search_engine_screen_add_buffer(NativeSearchEngineScreen *screen,
-                                       NcBuffer *buffer) {
+native_search_engine_screen_add_buffer_with_flags(
+    NativeSearchEngineScreen *screen, NcBuffer *buffer, uint32 flags) {
     NcSearchRow row;
 
     if (screen == NULL || buffer == NULL) {
@@ -162,7 +180,7 @@ native_search_engine_screen_add_buffer(NativeSearchEngineScreen *screen,
     nc_search_row_init(&row);
     row.is_song = false;
     nc_buffer_copy(&row.buffer, buffer);
-    nc_search_row_menu_add(&screen->rows, &row);
+    nc_search_row_menu_add_with_flags(&screen->rows, &row, flags);
     nc_search_row_destroy(&row);
     return true;
 }
@@ -359,6 +377,16 @@ native_search_engine_screen_search(NativeSearchEngineScreen *screen,
     return result;
 }
 
+void
+native_search_engine_screen_set_bridge(NativeSearchEngineScreen *screen,
+                                       NativeSearchEngineBridge bridge) {
+    if (screen == NULL) {
+        return;
+    }
+    screen->bridge = bridge;
+    return;
+}
+
 static NativeSearchEngineScreen *
 native_search_from_screen(NcScreen *screen) {
     return nc_screen_user(screen);
@@ -366,7 +394,13 @@ native_search_from_screen(NcScreen *screen) {
 
 static NcWindow *
 native_search_active_window(NcScreen *screen) {
-    return &native_search_from_screen(screen)->window;
+    NativeSearchEngineScreen *search;
+
+    search = native_search_from_screen(screen);
+    if (search->bridge.active_window != NULL) {
+        return search->bridge.active_window(search->bridge.user);
+    }
+    return &search->window;
 }
 
 static void
@@ -374,6 +408,10 @@ native_search_refresh(NcScreen *screen) {
     NativeSearchEngineScreen *search;
 
     search = native_search_from_screen(screen);
+    if (search->bridge.refresh != NULL) {
+        search->bridge.refresh(search->bridge.user);
+        return;
+    }
     nc_menu_prepare_refresh(native_search_engine_screen_menu(search),
                             search->main_height, NULL, NULL);
     return;
@@ -381,6 +419,13 @@ native_search_refresh(NcScreen *screen) {
 
 static void
 native_search_refresh_window(NcScreen *screen) {
+    NativeSearchEngineScreen *search;
+
+    search = native_search_from_screen(screen);
+    if (search->bridge.refresh_window != NULL) {
+        search->bridge.refresh_window(search->bridge.user);
+        return;
+    }
     native_search_refresh(screen);
     return;
 }
@@ -390,6 +435,10 @@ native_search_scroll(NcScreen *screen, enum NcScroll where) {
     NativeSearchEngineScreen *search;
 
     search = native_search_from_screen(screen);
+    if (search->bridge.scroll != NULL) {
+        search->bridge.scroll(search->bridge.user, where);
+        return;
+    }
     nc_menu_scroll_selectable(native_search_engine_screen_menu(search),
                               search->main_height, where);
     return;
@@ -397,7 +446,12 @@ native_search_scroll(NcScreen *screen, enum NcScroll where) {
 
 static void
 native_search_switch_to(NcScreen *screen) {
-    (void)screen;
+    NativeSearchEngineScreen *search;
+
+    search = native_search_from_screen(screen);
+    if (search->bridge.switch_to != NULL) {
+        search->bridge.switch_to(search->bridge.user);
+    }
     return;
 }
 
@@ -410,19 +464,44 @@ native_search_resize(NcScreen *screen) {
                                              search->width,
                                              search->main_start_y,
                                              search->main_height);
+    if (search->bridge.resize != NULL) {
+        search->bridge.resize(search->bridge.user);
+    }
     nc_screen_clear_resize_request(screen);
     return;
 }
 
 static char *
 native_search_title(NcScreen *screen) {
-    (void)screen;
+    NativeSearchEngineScreen *search;
+
+    search = native_search_from_screen(screen);
+    if (search->bridge.title != NULL) {
+        return search->bridge.title(search->bridge.user);
+    }
     return (char *)"Search engine";
 }
 
 static void
 native_search_update(NcScreen *screen) {
+    NativeSearchEngineScreen *search;
+
+    search = native_search_from_screen(screen);
+    if (search->bridge.update != NULL) {
+        search->bridge.update(search->bridge.user);
+    }
     nc_screen_clear_update_request(screen);
+    return;
+}
+
+static void
+native_search_mouse_button_pressed(NcScreen *screen, MEVENT event) {
+    NativeSearchEngineScreen *search;
+
+    search = native_search_from_screen(screen);
+    if (search->bridge.mouse_button_pressed != NULL) {
+        search->bridge.mouse_button_pressed(search->bridge.user, event);
+    }
     return;
 }
 

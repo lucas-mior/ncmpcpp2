@@ -16,10 +16,24 @@ extern "C" {
 
 #define NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT 11
 
+typedef struct NativeSearchEngineBridge {
+    NcWindow *(*active_window)(void *user);
+    void (*refresh)(void *user);
+    void (*refresh_window)(void *user);
+    void (*scroll)(void *user, enum NcScroll where);
+    void (*switch_to)(void *user);
+    void (*resize)(void *user);
+    char *(*title)(void *user);
+    void (*update)(void *user);
+    void (*mouse_button_pressed)(void *user, MEVENT event);
+    void *user;
+} NativeSearchEngineBridge;
+
 typedef struct NativeSearchEngineScreen {
     NcScreen screen;
     NcSearchRowMenu rows;
     NcWindow window;
+    NativeSearchEngineBridge bridge;
     NcmBuffer constraints[NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT];
     NcmBuffer search_constraint;
     NcmRegex filter_regex;
@@ -56,6 +70,10 @@ bool native_search_engine_screen_add_song_copy(
     NativeSearchEngineScreen *screen, NcmSong *song);
 bool native_search_engine_screen_add_buffer(
     NativeSearchEngineScreen *screen, NcBuffer *buffer);
+bool native_search_engine_screen_add_song_copy_with_flags(
+    NativeSearchEngineScreen *screen, NcmSong *song, uint32 flags);
+bool native_search_engine_screen_add_buffer_with_flags(
+    NativeSearchEngineScreen *screen, NcBuffer *buffer, uint32 flags);
 bool native_search_engine_screen_set_constraint(
     NativeSearchEngineScreen *screen, int32 idx, char *data, int32 data_len);
 NcmStringView native_search_engine_screen_constraint(
@@ -76,6 +94,8 @@ bool native_search_engine_screen_search(NativeSearchEngineScreen *screen,
                                         bool forward, bool wrap,
                                         bool skip_current,
                                         NcmError *error);
+void native_search_engine_screen_set_bridge(
+    NativeSearchEngineScreen *screen, NativeSearchEngineBridge bridge);
 
 #if defined(__cplusplus)
 }
