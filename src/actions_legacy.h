@@ -176,12 +176,7 @@ bool confirmAction(const std::string &description);
 
 bool isMPDMusicDirSet();
 
-extern bool OriginalStatusbarVisibility;
 extern bool ExitMainLoop;
-
-extern size_t HeaderHeight;
-extern size_t FooterHeight;
-extern size_t FooterStartY;
 
 struct BaseAction
 {

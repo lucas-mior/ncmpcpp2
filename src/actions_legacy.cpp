@@ -182,12 +182,7 @@ Iterator nextScreenTypeInSequence(Iterator first, Iterator last, ScreenType type
 
 namespace Actions {
 
-bool OriginalStatusbarVisibility;
 bool ExitMainLoop = false;
-
-size_t HeaderHeight;
-size_t FooterHeight;
-size_t FooterStartY;
 
 void initializeScreens()
 {
@@ -274,28 +269,22 @@ void resizeScreen(bool reload_main_window)
 		getch();
 	}
 
-	ui_state_set_screen_size(COLS, LINES);
-
-	std::size_t main_height = static_cast<std::size_t>(std::max(
-	    LINES-(Config.design == NCM_DESIGN_ALTERNATIVE ? 7 : 4),
-	    0));
-
-	if (!Config.header_visibility)
-		main_height += 2;
-	if (!Config.statusbar_visibility)
-		main_height += 1;
-	ui_state_set_main_height(main_height);
+	ncmpcpp_legacy_set_windows_dimensions();
 
 	setResizeFlags();
 
 	app_controller_resize_visible_screens();
 
 	if (Config.header_visibility || Config.design == NCM_DESIGN_ALTERNATIVE)
-		static_cast<NC::Window *>(ui_state_header_legacy_window())->resize(COLS, HeaderHeight);
+	{
+		static_cast<NC::Window *>(ui_state_header_legacy_window())->resize(
+		    COLS, static_cast<size_t>(ncmpcpp_legacy_header_height()));
+	}
 
-	FooterStartY = LINES-(Config.statusbar_visibility ? 2 : 1);
-	static_cast<NC::Window *>(ui_state_footer_legacy_window())->moveTo(0, FooterStartY);
-	static_cast<NC::Window *>(ui_state_footer_legacy_window())->resize(COLS, Config.statusbar_visibility ? 2 : 1);
+	static_cast<NC::Window *>(ui_state_footer_legacy_window())->moveTo(
+	    0, static_cast<size_t>(ncmpcpp_legacy_footer_start_y()));
+	static_cast<NC::Window *>(ui_state_footer_legacy_window())->resize(
+	    COLS, static_cast<size_t>(ncmpcpp_legacy_footer_height()));
 
 	app_controller_refresh_visible_screens();
 
@@ -312,25 +301,7 @@ void resizeScreen(bool reload_main_window)
 
 void setWindowsDimensions()
 {
-	ui_state_set_screen_size(COLS, LINES);
-
-	std::size_t main_start_y = Config.design == NCM_DESIGN_ALTERNATIVE ? 5 : 2;
-	std::size_t main_height = static_cast<std::size_t>(std::max(
-	    LINES-(Config.design == NCM_DESIGN_ALTERNATIVE ? 7 : 4),
-	    0));
-
-	if (!Config.header_visibility)
-	{
-		main_start_y -= 2;
-		main_height += 2;
-	}
-	if (!Config.statusbar_visibility)
-		main_height += 1;
-	ui_state_set_main_geometry(main_start_y, main_height);
-
-	HeaderHeight = Config.design == NCM_DESIGN_ALTERNATIVE ? (Config.header_visibility ? 5 : 3) : 2;
-	FooterStartY = LINES-(Config.statusbar_visibility ? 2 : 1);
-	FooterHeight = Config.statusbar_visibility ? 2 : 1;
+	ncmpcpp_legacy_set_windows_dimensions();
 }
 
 bool confirmAction(const std::string &description)
@@ -578,10 +549,11 @@ void ToggleInterface::run()
 			break;
 		case NCM_DESIGN_ALTERNATIVE:
 			Config.design = NCM_DESIGN_CLASSIC;
-			Config.statusbar_visibility = OriginalStatusbarVisibility;
+			Config.statusbar_visibility =
+			    ui_state_statusbar_visibility_baseline();
 			break;
 	}
-	setWindowsDimensions();
+	ncmpcpp_legacy_set_windows_dimensions();
 	resizeScreen(false);
 	// unlock progressbar
 	Progressbar::ScopedLock();
@@ -3246,31 +3218,6 @@ void actions_legacy_runtime_init_screen(bool enable_colors, bool enable_mouse)
 void actions_legacy_runtime_destroy_screen(void)
 {
 	NC::destroyScreen();
-}
-
-void actions_legacy_runtime_set_statusbar_visibility_baseline(bool visible)
-{
-	Actions::OriginalStatusbarVisibility = visible;
-}
-
-void actions_legacy_runtime_set_windows_dimensions(void)
-{
-	Actions::setWindowsDimensions();
-}
-
-int64 actions_legacy_runtime_header_height(void)
-{
-	return static_cast<int64>(Actions::HeaderHeight);
-}
-
-int64 actions_legacy_runtime_footer_height(void)
-{
-	return static_cast<int64>(Actions::FooterHeight);
-}
-
-int64 actions_legacy_runtime_footer_start_y(void)
-{
-	return static_cast<int64>(Actions::FooterStartY);
 }
 
 void *actions_legacy_runtime_window_create(int64 start_x, int64 start_y,

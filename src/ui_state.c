@@ -8,6 +8,10 @@ static int64 screen_width;
 static int64 screen_height;
 static int64 main_start_y;
 static int64 main_height;
+static int64 header_height;
+static int64 footer_height;
+static int64 footer_start_y;
+static bool statusbar_visibility_baseline;
 
 void
 ui_state_set_header_window(NcWindow *window) {
@@ -97,4 +101,48 @@ ui_state_set_main_height(int64 value) {
 int64
 ui_state_main_height(void) {
     return main_height;
+}
+
+void
+ui_state_set_header_height(int64 value) {
+    header_height = value;
+    return;
+}
+
+int64
+ui_state_header_height(void) {
+    return header_height;
+}
+
+void
+ui_state_set_footer_height(int64 value) {
+    footer_height = value;
+    return;
+}
+
+int64
+ui_state_footer_height(void) {
+    return footer_height;
+}
+
+void
+ui_state_set_footer_start_y(int64 value) {
+    footer_start_y = value;
+    return;
+}
+
+int64
+ui_state_footer_start_y(void) {
+    return footer_start_y;
+}
+
+void
+ui_state_set_statusbar_visibility_baseline(bool value) {
+    statusbar_visibility_baseline = value;
+    return;
+}
+
+bool
+ui_state_statusbar_visibility_baseline(void) {
+    return statusbar_visibility_baseline;
 }
