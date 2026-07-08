@@ -30,6 +30,7 @@
 #include <string>
 
 #include "actions_legacy.h"
+#include "actions_legacy_runtime.h"
 #include "app_legacy_bridge.h"
 #include "charset.h"
 #include "config.h"
@@ -3231,47 +3232,47 @@ void listsChangeFinisher()
 
 extern "C" {
 
-bool ncmpcpp_legacy_configure(int32 argc, char **argv)
+bool actions_legacy_runtime_configure(int32 argc, char **argv)
 {
 	return configure(argc, argv);
 }
 
-void ncmpcpp_legacy_init_screen(bool enable_colors, bool enable_mouse)
+void actions_legacy_runtime_init_screen(bool enable_colors, bool enable_mouse)
 {
 	NC::initScreen(enable_colors, enable_mouse);
 }
 
-void ncmpcpp_legacy_destroy_screen(void)
+void actions_legacy_runtime_destroy_screen(void)
 {
 	NC::destroyScreen();
 }
 
-void ncmpcpp_legacy_set_statusbar_visibility_baseline(bool visible)
+void actions_legacy_runtime_set_statusbar_visibility_baseline(bool visible)
 {
 	Actions::OriginalStatusbarVisibility = visible;
 }
 
-void ncmpcpp_legacy_set_windows_dimensions(void)
+void actions_legacy_runtime_set_windows_dimensions(void)
 {
 	Actions::setWindowsDimensions();
 }
 
-int64 ncmpcpp_legacy_header_height(void)
+int64 actions_legacy_runtime_header_height(void)
 {
 	return static_cast<int64>(Actions::HeaderHeight);
 }
 
-int64 ncmpcpp_legacy_footer_height(void)
+int64 actions_legacy_runtime_footer_height(void)
 {
 	return static_cast<int64>(Actions::FooterHeight);
 }
 
-int64 ncmpcpp_legacy_footer_start_y(void)
+int64 actions_legacy_runtime_footer_start_y(void)
 {
 	return static_cast<int64>(Actions::FooterStartY);
 }
 
-void *ncmpcpp_legacy_window_create(int64 start_x, int64 start_y,
+void *actions_legacy_runtime_window_create(int64 start_x, int64 start_y,
                                    int64 width, int64 height,
                                    NcColor color)
 {
@@ -3284,19 +3285,19 @@ void *ncmpcpp_legacy_window_create(int64 start_x, int64 start_y,
 	                      window_color, NC::Border());
 }
 
-void ncmpcpp_legacy_window_display(void *window)
+void actions_legacy_runtime_window_display(void *window)
 {
 	if (window == nullptr)
 		return;
 	static_cast<NC::Window *>(window)->display();
 }
 
-void ncmpcpp_legacy_window_destroy(void *window)
+void actions_legacy_runtime_window_destroy(void *window)
 {
 	delete static_cast<NC::Window *>(window);
 }
 
-void ncmpcpp_legacy_window_set_main_hook(void *window)
+void actions_legacy_runtime_window_set_main_hook(void *window)
 {
 	if (window == nullptr)
 		return;
@@ -3304,26 +3305,26 @@ void ncmpcpp_legacy_window_set_main_hook(void *window)
 	    Statusbar::Helpers::mainHook);
 }
 
-void ncmpcpp_legacy_window_clear_fd_callbacks(void *window)
+void actions_legacy_runtime_window_clear_fd_callbacks(void *window)
 {
 	if (window == nullptr)
 		return;
 	static_cast<NC::Window *>(window)->clearFDCallbacksList();
 }
 
-NcWindow *ncmpcpp_legacy_window_native(void *window)
+NcWindow *actions_legacy_runtime_window_native(void *window)
 {
 	if (window == nullptr)
 		return nullptr;
 	return static_cast<NC::Window *>(window)->nativeWindow();
 }
 
-void ncmpcpp_legacy_initialize_screens(void)
+void actions_legacy_runtime_initialize_screens(void)
 {
 	Actions::initializeScreens();
 }
 
-void ncmpcpp_legacy_resize_screen(bool reload_main_window)
+void actions_legacy_runtime_resize_screen(bool reload_main_window)
 {
 	try
 	{
@@ -3343,44 +3344,44 @@ void ncmpcpp_legacy_resize_screen(bool reload_main_window)
 	}
 }
 
-void ncmpcpp_legacy_playlist_switch_to(void)
+void actions_legacy_runtime_playlist_switch_to(void)
 {
 	(void)native_c_screens_switch_to_type(NCM_SCREEN_TYPE_PLAYLIST);
 }
 
-void ncmpcpp_legacy_playlist_enable_highlighting_if_current(void)
+void actions_legacy_runtime_playlist_enable_highlighting_if_current(void)
 {
 	if (screenLegacyCurrent() == myPlaylist)
 		myPlaylist->enableHighlighting();
 }
 
-bool ncmpcpp_legacy_switch_to_screen_type(enum ScreenType screen_type)
+bool actions_legacy_runtime_switch_to_screen_type(enum ScreenType screen_type)
 {
 	return native_c_screens_switch_to_type(screen_type);
 }
 
-bool ncmpcpp_legacy_lock_current_screen(void)
+bool actions_legacy_runtime_lock_current_screen(void)
 {
 	return native_c_screens_lock_current();
 }
 
-enum ScreenType ncmpcpp_legacy_current_screen_type(void)
+enum ScreenType actions_legacy_runtime_current_screen_type(void)
 {
 	return native_c_screens_current_type();
 }
 
-void ncmpcpp_legacy_set_noidle_status_callback(void)
+void actions_legacy_runtime_set_noidle_status_callback(void)
 {
 	ncm_mpd_client_set_noidle_callback(
 	    &global_mpd, legacy_noidle_status_update, nullptr);
 }
 
-bool ncmpcpp_legacy_mpd_connected(void)
+bool actions_legacy_runtime_mpd_connected(void)
 {
 	return ncm_mpd_client_connected(&global_mpd);
 }
 
-void ncmpcpp_legacy_connect_or_report(void)
+void actions_legacy_runtime_connect_or_report(void)
 {
 	NcmError error{};
 
@@ -3401,12 +3402,12 @@ void ncmpcpp_legacy_connect_or_report(void)
 	}
 }
 
-void ncmpcpp_legacy_status_clear(void)
+void actions_legacy_runtime_status_clear(void)
 {
 	Status::clear();
 }
 
-bool ncmpcpp_legacy_update_environment(bool update_timer,
+bool actions_legacy_runtime_update_environment(bool update_timer,
                                         bool refresh_window,
                                         bool mpd_sync)
 {
@@ -3437,7 +3438,7 @@ bool ncmpcpp_legacy_update_environment(bool update_timer,
 	return false;
 }
 
-bool ncmpcpp_legacy_execute_binding(NcmBinding *binding)
+bool actions_legacy_runtime_execute_binding(NcmBinding *binding)
 {
 	try
 	{
@@ -3470,7 +3471,7 @@ bool ncmpcpp_legacy_execute_binding(NcmBinding *binding)
 	return false;
 }
 
-bool ncmpcpp_legacy_execute_action(enum NcmActionType type)
+bool actions_legacy_runtime_execute_action(enum NcmActionType type)
 {
 	try
 	{
@@ -3491,7 +3492,7 @@ bool ncmpcpp_legacy_execute_action(enum NcmActionType type)
 	return false;
 }
 
-bool ncmpcpp_legacy_exit_requested(void)
+bool actions_legacy_runtime_exit_requested(void)
 {
 	return Actions::ExitMainLoop;
 }
