@@ -1,18 +1,23 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
+#include <pthread.h>
 
 #include <mpd/tag.h>
 
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
+#include "lastfm_service.h"
 #include "lyrics_fetcher.h"
 #include "screens/nc_lastfm.h"
 #include "screens/nc_lyrics.h"
 #include "screens/nc_visualizer.h"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
+#define TEST_LASTFM_MAX_CALLS 4
 
 typedef struct TestLyricsIo {
     CURLcode code;
@@ -20,12 +25,53 @@ typedef struct TestLyricsIo {
     int32 response_len;
 } TestLyricsIo;
 
+typedef struct TestLastfmIo {
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+    NcmBuffer urls[TEST_LASTFM_MAX_CALLS];
+    char *responses[TEST_LASTFM_MAX_CALLS];
+    int32 response_lens[TEST_LASTFM_MAX_CALLS];
+    CURLcode codes[TEST_LASTFM_MAX_CALLS];
+    int32 calls;
+    bool block[TEST_LASTFM_MAX_CALLS];
+    bool release[TEST_LASTFM_MAX_CALLS];
+} TestLastfmIo;
+
 static CURLcode test_perform(NcmBuffer *data, char *url, int32 url_len,
                              char *referer, int32 referer_len,
                              bool follow_redirect, int32 timeout_seconds,
                              void *user);
 static CURLcode test_escape(NcmBuffer *out, char *string, int32 string_len,
                             void *user);
+static CURLcode test_lastfm_perform(NcmBuffer *data, char *url,
+                                    int32 url_len, char *referer,
+                                    int32 referer_len,
+                                    bool follow_redirect,
+                                    int32 timeout_seconds, void *user);
+static CURLcode test_lastfm_escape(NcmBuffer *out, char *string,
+                                   int32 string_len, void *user);
+static void test_lastfm_io_init(TestLastfmIo *io);
+static void test_lastfm_io_destroy(TestLastfmIo *io);
+static void test_lastfm_io_wait_calls(TestLastfmIo *io, int32 calls);
+static void test_lastfm_io_release(TestLastfmIo *io, int32 index);
+static int32 test_lastfm_io_calls(TestLastfmIo *io);
+static bool test_buffer_contains(NcmBuffer *buffer, char *needle,
+                                 int32 needle_len);
+static int32 test_find_literal(char *data, int32 data_len,
+                               char *needle, int32 needle_len);
+static bool test_buffer_has_format(NcBuffer *buffer, int32 position,
+                                   enum NcFormat format);
+static bool test_buffer_has_formatted_color(NcBuffer *buffer,
+                                            int32 position);
+static bool test_buffer_has_color(NcBuffer *buffer, int32 position,
+                                  NcColor color);
+static void test_wait_for_lastfm_completed(NativeLastfmScreen *screen,
+                                           int32 completed);
+static void test_lastfm_service_parsing_with_fake_io(void);
+static void test_lastfm_duplicate_artist_requests(void);
+static void test_lastfm_stale_result_suppression(void);
+static void test_lastfm_success_rendering_properties(void);
+static void test_lastfm_error_rendering_properties(void);
 static void test_lastfm_screen_result_storage(void);
 static void test_lyrics_filename_and_fetcher_toggle(void);
 static void test_lyrics_background_queue_cleanup(void);
@@ -63,6 +109,496 @@ test_escape(NcmBuffer *out, char *string, int32 string_len, void *user) {
         }
     }
     return CURLE_OK;
+}
+
+static CURLcode
+test_lastfm_perform(NcmBuffer *data, char *url, int32 url_len,
+                    char *referer, int32 referer_len,
+                    bool follow_redirect, int32 timeout_seconds,
+                    void *user) {
+    TestLastfmIo *io;
+    char *response;
+    int32 response_len;
+    int32 index;
+    CURLcode code;
+
+    (void)referer;
+    (void)referer_len;
+    (void)follow_redirect;
+    (void)timeout_seconds;
+    io = user;
+    ncm_buffer_clear(data);
+
+    pthread_mutex_lock(&io->mutex);
+    index = io->calls;
+    assert(index < TEST_LASTFM_MAX_CALLS);
+    io->calls += 1;
+    ncm_buffer_clear(&io->urls[index]);
+    ncm_buffer_append(&io->urls[index], url, url_len);
+    pthread_cond_broadcast(&io->cond);
+    while (io->block[index] && !io->release[index]) {
+        pthread_cond_wait(&io->cond, &io->mutex);
+    }
+    code = io->codes[index];
+    response = io->responses[index];
+    response_len = io->response_lens[index];
+    pthread_mutex_unlock(&io->mutex);
+
+    if ((code == CURLE_OK) && (response != NULL)) {
+        ncm_buffer_append(data, response, response_len);
+    }
+    return code;
+}
+
+static CURLcode
+test_lastfm_escape(NcmBuffer *out, char *string, int32 string_len,
+                   void *user) {
+    (void)user;
+    ncm_buffer_clear(out);
+    for (int32 i = 0; i < string_len; i += 1) {
+        if (string[i] == ' ') {
+            ncm_buffer_append_byte(out, '+');
+        } else {
+            ncm_buffer_append_byte(out, string[i]);
+        }
+    }
+    return CURLE_OK;
+}
+
+static void
+test_lastfm_io_init(TestLastfmIo *io) {
+    *io = (TestLastfmIo){0};
+    pthread_mutex_init(&io->mutex, NULL);
+    pthread_cond_init(&io->cond, NULL);
+    for (int32 i = 0; i < TEST_LASTFM_MAX_CALLS; i += 1) {
+        ncm_buffer_init(&io->urls[i]);
+        io->codes[i] = CURLE_OK;
+    }
+    return;
+}
+
+static void
+test_lastfm_io_destroy(TestLastfmIo *io) {
+    for (int32 i = 0; i < TEST_LASTFM_MAX_CALLS; i += 1) {
+        ncm_buffer_destroy(&io->urls[i]);
+    }
+    pthread_cond_destroy(&io->cond);
+    pthread_mutex_destroy(&io->mutex);
+    return;
+}
+
+static void
+test_lastfm_io_wait_calls(TestLastfmIo *io, int32 calls) {
+    struct timespec delay = {
+        .tv_sec = 0,
+        .tv_nsec = 1000000,
+    };
+
+    for (int32 i = 0; i < 5000; i += 1) {
+        if (test_lastfm_io_calls(io) >= calls) {
+            return;
+        }
+        nanosleep(&delay, NULL);
+    }
+    assert(false);
+    return;
+}
+
+static void
+test_lastfm_io_release(TestLastfmIo *io, int32 index) {
+    pthread_mutex_lock(&io->mutex);
+    assert((index >= 0) && (index < TEST_LASTFM_MAX_CALLS));
+    io->release[index] = true;
+    pthread_cond_broadcast(&io->cond);
+    pthread_mutex_unlock(&io->mutex);
+    return;
+}
+
+static int32
+test_lastfm_io_calls(TestLastfmIo *io) {
+    int32 result;
+
+    pthread_mutex_lock(&io->mutex);
+    result = io->calls;
+    pthread_mutex_unlock(&io->mutex);
+    return result;
+}
+
+static bool
+test_buffer_contains(NcmBuffer *buffer, char *needle, int32 needle_len) {
+    return test_find_literal(buffer->data, buffer->len,
+                             needle, needle_len) >= 0;
+}
+
+static int32
+test_find_literal(char *data, int32 data_len,
+                  char *needle, int32 needle_len) {
+    if ((data == NULL) || (needle == NULL) || (needle_len <= 0)) {
+        return -1;
+    }
+    for (int32 i = 0; i + needle_len <= data_len; i += 1) {
+        if (ncm_string_starts_with(data + i, data_len - i,
+                                   needle, needle_len)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static bool
+test_buffer_has_format(NcBuffer *buffer, int32 position,
+                       enum NcFormat format) {
+    NcBufferProperty *properties;
+    int32 count;
+
+    properties = nc_buffer_properties(buffer);
+    count = nc_buffer_property_count(buffer);
+    for (int32 i = 0; i < count; i += 1) {
+        if ((properties[i].type == NC_BUFFER_PROPERTY_FORMAT)
+            && (properties[i].position == position)
+            && (properties[i].value.format == format)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool
+test_buffer_has_formatted_color(NcBuffer *buffer, int32 position) {
+    NcBufferProperty *properties;
+    int32 count;
+
+    properties = nc_buffer_properties(buffer);
+    count = nc_buffer_property_count(buffer);
+    for (int32 i = 0; i < count; i += 1) {
+        if ((properties[i].type == NC_BUFFER_PROPERTY_FORMATTED_COLOR)
+            && (properties[i].position == position)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool
+test_buffer_has_color(NcBuffer *buffer, int32 position, NcColor color) {
+    NcBufferProperty *properties;
+    int32 count;
+
+    properties = nc_buffer_properties(buffer);
+    count = nc_buffer_property_count(buffer);
+    for (int32 i = 0; i < count; i += 1) {
+        if ((properties[i].type == NC_BUFFER_PROPERTY_COLOR)
+            && (properties[i].position == position)
+            && nc_color_equal(properties[i].value.color, color)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void
+test_wait_for_lastfm_completed(NativeLastfmScreen *screen,
+                               int32 completed) {
+    struct timespec delay = {
+        .tv_sec = 0,
+        .tv_nsec = 1000000,
+    };
+
+    for (int32 i = 0; i < 5000; i += 1) {
+        if (native_lastfm_screen_completed_jobs(screen) >= completed) {
+            return;
+        }
+        nanosleep(&delay, NULL);
+    }
+    assert(false);
+    return;
+}
+
+static void
+test_lastfm_service_parsing_with_fake_io(void) {
+    char *xml =
+        "<lfm status=\"ok\"><artist>"
+        "<url>https://last.fm/music/Test+Artist</url>"
+        "<bio><content> Bio &amp; <b>stuff</b>. </content></bio>"
+        "<similar><artist><name>Similar A</name>"
+        "<url>https://last.fm/music/Similar+A</url>"
+        "</artist></similar>"
+        "<tags><tag><name>Rock &amp; Roll</name>"
+        "<url>https://last.fm/tag/rock</url></tag></tags>"
+        "</artist></lfm>";
+    char *expected =
+        "Bio & stuff.\n\nSimilar artists:\n"
+        "\n * Similar A (https://last.fm/music/Similar+A)"
+        "\n\nSimilar tags:\n"
+        "\n * Rock & Roll (https://last.fm/tag/rock)"
+        "\n\nhttps://last.fm/music/Test+Artist";
+    TestLastfmIo io;
+    NcmLastfmService service;
+    NcmLastfmResult result;
+
+    test_lastfm_io_init(&io);
+    io.responses[0] = xml;
+    io.response_lens[0] = (int32)strlen(xml);
+    ncm_lastfm_service_set_io_for_tests(test_lastfm_perform,
+                                        test_lastfm_escape,
+                                        &io);
+
+    ncm_lastfm_service_init(&service);
+    ncm_lastfm_result_init(&result);
+    assert(ncm_lastfm_artist_info_init(&service,
+                                       LIT_ARGS("Test Artist"),
+                                       LIT_ARGS("pt BR")));
+    assert(ncm_lastfm_service_fetch(&service, &result));
+    assert(result.success);
+    assert(ncm_string_equal(result.text, result.text_len,
+                            expected, (int32)strlen(expected)));
+    assert(test_buffer_contains(&io.urls[0],
+                                LIT_ARGS("artist=Test+Artist")));
+    assert(test_buffer_contains(&io.urls[0], LIT_ARGS("lang=pt+BR")));
+
+    ncm_lastfm_result_destroy(&result);
+    ncm_lastfm_service_destroy(&service);
+    ncm_lastfm_service_set_io_for_tests(NULL, NULL, NULL);
+    test_lastfm_io_destroy(&io);
+    return;
+}
+
+static void
+test_lastfm_duplicate_artist_requests(void) {
+    char *xml =
+        "<lfm status=\"ok\"><artist>"
+        "<url>https://last.fm/music/Dup</url>"
+        "<bio><content>Duplicate bio</content></bio>"
+        "</artist></lfm>";
+    NativeLastfmScreen screen = {0};
+    TestLastfmIo io;
+    NcmError error = {0};
+
+    test_lastfm_io_init(&io);
+    io.responses[0] = xml;
+    io.response_lens[0] = (int32)strlen(xml);
+    io.block[0] = true;
+    ncm_lastfm_service_set_io_for_tests(test_lastfm_perform,
+                                        test_lastfm_escape,
+                                        &io);
+
+    native_lastfm_screen_init(&screen, 0, 80, 0, 24,
+                              nc_color_default(), nc_border_none(), 1);
+    assert(native_lastfm_screen_queue_artist_info(&screen,
+                                                  LIT_ARGS("Dup"),
+                                                  LIT_ARGS(""),
+                                                  &error));
+    test_lastfm_io_wait_calls(&io, 1);
+    assert(native_lastfm_screen_has_service(&screen));
+    assert(ncm_string_equal(native_lastfm_screen_title(&screen),
+                            native_lastfm_screen_title_len(&screen),
+                            LIT_ARGS("Artist info")));
+    assert(native_lastfm_screen_queue_artist_info(&screen,
+                                                  LIT_ARGS("Dup"),
+                                                  LIT_ARGS(""),
+                                                  &error));
+    assert(test_lastfm_io_calls(&io) == 1);
+
+    test_lastfm_io_release(&io, 0);
+    test_wait_for_lastfm_completed(&screen, 1);
+    assert(native_lastfm_screen_dispatch_jobs(&screen) == 1);
+    assert(native_lastfm_screen_result(&screen)->success);
+    assert(ncm_string_equal(native_lastfm_screen_result(&screen)->text,
+                            native_lastfm_screen_result(&screen)->text_len,
+                            LIT_ARGS("Duplicate bio\n\n"
+                                     "https://last.fm/music/Dup")));
+
+    native_lastfm_screen_destroy(&screen);
+    ncm_lastfm_service_set_io_for_tests(NULL, NULL, NULL);
+    test_lastfm_io_destroy(&io);
+    return;
+}
+
+static void
+test_lastfm_stale_result_suppression(void) {
+    char *one_xml =
+        "<lfm status=\"ok\"><artist>"
+        "<url>https://last.fm/music/One</url>"
+        "<bio><content>One bio</content></bio>"
+        "</artist></lfm>";
+    char *two_xml =
+        "<lfm status=\"ok\"><artist>"
+        "<url>https://last.fm/music/Two</url>"
+        "<bio><content>Two bio</content></bio>"
+        "</artist></lfm>";
+    NativeLastfmScreen screen = {0};
+    TestLastfmIo io;
+    NcmError error = {0};
+
+    test_lastfm_io_init(&io);
+    io.responses[0] = one_xml;
+    io.response_lens[0] = (int32)strlen(one_xml);
+    io.responses[1] = two_xml;
+    io.response_lens[1] = (int32)strlen(two_xml);
+    io.block[0] = true;
+    io.block[1] = true;
+    ncm_lastfm_service_set_io_for_tests(test_lastfm_perform,
+                                        test_lastfm_escape,
+                                        &io);
+
+    native_lastfm_screen_init(&screen, 0, 80, 0, 24,
+                              nc_color_default(), nc_border_none(), 1);
+    assert(native_lastfm_screen_queue_artist_info(&screen,
+                                                  LIT_ARGS("One"),
+                                                  LIT_ARGS(""),
+                                                  &error));
+    test_lastfm_io_wait_calls(&io, 1);
+    assert(native_lastfm_screen_queue_artist_info(&screen,
+                                                  LIT_ARGS("Two"),
+                                                  LIT_ARGS(""),
+                                                  &error));
+    test_lastfm_io_release(&io, 0);
+    test_wait_for_lastfm_completed(&screen, 1);
+    test_lastfm_io_wait_calls(&io, 2);
+    assert(native_lastfm_screen_dispatch_jobs(&screen) == 1);
+    assert(!native_lastfm_screen_result(&screen)->success);
+
+    test_lastfm_io_release(&io, 1);
+    test_wait_for_lastfm_completed(&screen, 1);
+    assert(native_lastfm_screen_dispatch_jobs(&screen) == 1);
+    assert(native_lastfm_screen_result(&screen)->success);
+    assert(ncm_string_equal(native_lastfm_screen_result(&screen)->text,
+                            native_lastfm_screen_result(&screen)->text_len,
+                            LIT_ARGS("Two bio\n\n"
+                                     "https://last.fm/music/Two")));
+
+    native_lastfm_screen_destroy(&screen);
+    ncm_lastfm_service_set_io_for_tests(NULL, NULL, NULL);
+    test_lastfm_io_destroy(&io);
+    return;
+}
+
+static void
+test_lastfm_success_rendering_properties(void) {
+    char *xml =
+        "<lfm status=\"ok\"><artist>"
+        "<url>https://last.fm/music/Render</url>"
+        "<bio><content>Render bio</content></bio>"
+        "<similar><artist><name>Other</name>"
+        "<url>https://last.fm/music/Other</url></artist></similar>"
+        "<tags><tag><name>Tag</name>"
+        "<url>https://last.fm/tag/tag</url></tag></tags>"
+        "</artist></lfm>";
+    char *artist_heading = "\n\nSimilar artists:\n";
+    char *tag_heading = "\n\nSimilar tags:\n";
+    char *bullet = "\n * ";
+    NativeLastfmScreen screen = {0};
+    TestLastfmIo io;
+    NcmError error = {0};
+    int32 artist_pos;
+    int32 tag_pos;
+    int32 first_bullet_pos;
+    int32 second_bullet_pos;
+
+    test_lastfm_io_init(&io);
+    io.responses[0] = xml;
+    io.response_lens[0] = (int32)strlen(xml);
+    ncm_lastfm_service_set_io_for_tests(test_lastfm_perform,
+                                        test_lastfm_escape,
+                                        &io);
+
+    native_lastfm_screen_init(&screen, 0, 80, 0, 24,
+                              nc_color_default(), nc_border_none(), 1);
+    assert(native_lastfm_screen_queue_artist_info(&screen,
+                                                  LIT_ARGS("Render"),
+                                                  LIT_ARGS(""),
+                                                  &error));
+    test_wait_for_lastfm_completed(&screen, 1);
+    assert(native_lastfm_screen_dispatch_jobs(&screen) == 1);
+    assert(native_lastfm_screen_result(&screen)->success);
+    assert(ncm_string_equal(screen.buffer.data, screen.buffer.len,
+                            native_lastfm_screen_result(&screen)->text,
+                            native_lastfm_screen_result(&screen)->text_len));
+
+    artist_pos = test_find_literal(screen.buffer.data, screen.buffer.len,
+                                   artist_heading,
+                                   (int32)strlen(artist_heading));
+    tag_pos = test_find_literal(screen.buffer.data, screen.buffer.len,
+                                tag_heading,
+                                (int32)strlen(tag_heading));
+    first_bullet_pos = test_find_literal(screen.buffer.data,
+                                         screen.buffer.len,
+                                         bullet,
+                                         (int32)strlen(bullet));
+
+    assert(artist_pos >= 0);
+    assert(tag_pos >= 0);
+    assert(first_bullet_pos >= 0);
+
+    second_bullet_pos = test_find_literal(screen.buffer.data
+                                          + first_bullet_pos + 1,
+                                          screen.buffer.len
+                                          - first_bullet_pos - 1,
+                                          bullet,
+                                          (int32)strlen(bullet));
+    second_bullet_pos += first_bullet_pos + 1;
+    assert(second_bullet_pos > first_bullet_pos);
+    assert(test_buffer_has_format(&screen.buffer,
+                                  artist_pos,
+                                  NC_FORMAT_BOLD));
+    assert(test_buffer_has_format(&screen.buffer,
+                                  artist_pos
+                                  + (int32)strlen(artist_heading),
+                                  NC_FORMAT_NO_BOLD));
+    assert(test_buffer_has_format(&screen.buffer,
+                                  tag_pos,
+                                  NC_FORMAT_BOLD));
+    assert(test_buffer_has_format(&screen.buffer,
+                                  tag_pos + (int32)strlen(tag_heading),
+                                  NC_FORMAT_NO_BOLD));
+    assert(test_buffer_has_formatted_color(&screen.buffer,
+                                           first_bullet_pos));
+    assert(test_buffer_has_formatted_color(&screen.buffer,
+                                           second_bullet_pos));
+
+    native_lastfm_screen_destroy(&screen);
+    ncm_lastfm_service_set_io_for_tests(NULL, NULL, NULL);
+    test_lastfm_io_destroy(&io);
+    return;
+}
+
+static void
+test_lastfm_error_rendering_properties(void) {
+    char *xml = "<lfm status=\"failed\"><error>bad</error></lfm>";
+    NativeLastfmScreen screen = {0};
+    TestLastfmIo io;
+    NcmError error = {0};
+    NcColor red;
+
+    test_lastfm_io_init(&io);
+    io.responses[0] = xml;
+    io.response_lens[0] = (int32)strlen(xml);
+    ncm_lastfm_service_set_io_for_tests(test_lastfm_perform,
+                                        test_lastfm_escape,
+                                        &io);
+
+    native_lastfm_screen_init(&screen, 0, 80, 0, 24,
+                              nc_color_default(), nc_border_none(), 1);
+    assert(native_lastfm_screen_queue_artist_info(&screen,
+                                                  LIT_ARGS("Broken"),
+                                                  LIT_ARGS(""),
+                                                  &error));
+    test_wait_for_lastfm_completed(&screen, 1);
+    assert(native_lastfm_screen_dispatch_jobs(&screen) == 1);
+    assert(!native_lastfm_screen_result(&screen)->success);
+    assert(ncm_string_equal(screen.buffer.data, screen.buffer.len,
+                            LIT_ARGS(" Invalid response")));
+
+    red = nc_color_make(COLOR_RED, NC_COLOR_CURRENT, false, false);
+    assert(test_buffer_has_color(&screen.buffer, 1, red));
+    assert(test_buffer_has_color(&screen.buffer,
+                                 screen.buffer.len,
+                                 nc_color_end()));
+
+    native_lastfm_screen_destroy(&screen);
+    ncm_lastfm_service_set_io_for_tests(NULL, NULL, NULL);
+    test_lastfm_io_destroy(&io);
+    return;
 }
 
 static void
@@ -200,7 +736,12 @@ main(void) {
     io.response = (char *)"lyrics";
     io.response_len = STRLIT_LEN("lyrics");
     ncm_lyrics_fetcher_set_io_for_tests(test_perform, test_escape, &io);
+    test_lastfm_service_parsing_with_fake_io();
     test_lastfm_screen_result_storage();
+    test_lastfm_duplicate_artist_requests();
+    test_lastfm_stale_result_suppression();
+    test_lastfm_success_rendering_properties();
+    test_lastfm_error_rendering_properties();
     test_lyrics_filename_and_fetcher_toggle();
     test_lyrics_background_queue_cleanup();
     test_visualizer_sample_buffers();
