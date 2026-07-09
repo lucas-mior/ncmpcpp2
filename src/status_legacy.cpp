@@ -23,6 +23,7 @@
 #include <netinet/in.h>
 
 #include "curses/menu_impl.h"
+#include "curses/nc_cyclic_buffer.h"
 #include "screens/browser.h"
 #include "charset.h"
 #include "format_impl.h"
@@ -63,9 +64,9 @@ std::string songTimeString(unsigned length)
 
 NcmTimePoint past;
 
-size_t playing_song_scroll_begin = 0;
-size_t first_line_scroll_begin = 0;
-size_t second_line_scroll_begin = 0;
+int64 playing_song_scroll_begin = 0;
+int64 first_line_scroll_begin = 0;
+int64 second_line_scroll_begin = 0;
 
 bool m_status_initialized;
 
@@ -668,17 +669,23 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 					tracklength += songTimeString(m_elapsed_time);
 				tracklength += "]";
 				NC::Buffer np_song;
+				NC::Window *footer_window =
+					static_cast<NC::Window *>(ui_state_footer_legacy_window());
+				char separator[] = " ** ";
+
 				Format::print(Config.song_status_format, np_song, &np);
-				*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(0, 1)
+				*footer_window << NC::XY(0, 1)
 				         << NC::TermManip::ClearToEOL
 				         << Config.player_state_color
 				         << ps
 				         << NC::FormattedColor::End<>(Config.player_state_color)
 				         << " ";
-				writeCyclicBuffer(
-					np_song, *static_cast<NC::Window *>(ui_state_footer_legacy_window()), playing_song_scroll_begin,
-					static_cast<NC::Window *>(ui_state_footer_legacy_window())->getWidth()-ps.length()-tracklength.length()-2, " ** ");
-				*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(static_cast<NC::Window *>(ui_state_footer_legacy_window())->getWidth()-tracklength.length(), 1)
+				nc_cyclic_buffer_write(
+					np_song.cBuffer(), footer_window->nativeWindow(),
+					&playing_song_scroll_begin,
+					footer_window->getWidth()-ps.length()-tracklength.length()-2,
+					separator, sizeof(separator) - 1);
+				*footer_window << NC::XY(footer_window->getWidth()-tracklength.length(), 1)
 				         << Config.statusbar_time_color
 				         << tracklength
 				         << NC::FormattedColor::End<>(Config.statusbar_time_color);
@@ -729,8 +736,15 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 
 			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(first_start, 0);
 
-			writeCyclicBuffer(first, *static_cast<NC::Window *>(ui_state_header_legacy_window()), first_line_scroll_begin,
-			                  COLS-tracklength.length()-global_volume_state_len()-1, " ** ");
+			char separator[] = " ** ";
+			NC::Window *header_window =
+				static_cast<NC::Window *>(ui_state_header_legacy_window());
+
+			nc_cyclic_buffer_write(
+				first.cBuffer(), header_window->nativeWindow(),
+				&first_line_scroll_begin,
+				COLS-tracklength.length()-global_volume_state_len()-1,
+				separator, sizeof(separator) - 1);
 
 			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 1)
 			         << NC::TermManip::ClearToEOL
@@ -739,8 +753,10 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 			         << NC::FormattedColor::End<>(Config.player_state_color)
 			         << NC::XY(second_start, 1);
 
-			writeCyclicBuffer(second, *static_cast<NC::Window *>(ui_state_header_legacy_window()), second_line_scroll_begin,
-			                  COLS-ps.length()-8-2, " ** ");
+			nc_cyclic_buffer_write(
+				second.cBuffer(), header_window->nativeWindow(),
+				&second_line_scroll_begin, COLS-ps.length()-8-2,
+				separator, sizeof(separator) - 1);
 
 			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(static_cast<NC::Window *>(ui_state_header_legacy_window())->getWidth()-global_volume_state_len(), 0)
 			         << Config.volume_color

@@ -5,6 +5,8 @@
 
 #include "c/ncm_defs.h"
 #include "c/ncm_error.h"
+#include "c/ncm_enums.h"
+#include "c/ncm_song.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -172,6 +174,11 @@ bool ncm_action_runtime_can_run(NcmActionRuntime *runtime,
                                 enum NcmActionType type);
 bool ncm_action_runtime_run(NcmActionRuntime *runtime,
                             enum NcmActionType type);
+bool ncm_action_add_song_to_playlist_with_mode(
+    NcmSong *song, bool play, int32 position,
+    enum SpaceAddMode space_add_mode);
+bool ncm_action_add_song_to_playlist(NcmSong *song, bool play,
+                                     int32 position);
 
 typedef struct NcmActionDef {
     char *name;

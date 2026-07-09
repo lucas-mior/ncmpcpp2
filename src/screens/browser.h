@@ -35,6 +35,7 @@
 #include "app_controller.h"
 #include "charset.h"
 #include "configuration_legacy.h"
+#include "curses/nc_cyclic_buffer.h"
 #include "format_impl.h"
 #include "global.h"
 #include "helpers.h"
@@ -57,7 +58,6 @@
 #include "c/ncm_tags.h"
 
 
-std::string Scroller(const std::string &str, size_t &pos, size_t width);
 bool addSongToPlaylist(const MPD::Song &s, bool play, int position);
 
 struct BrowserWindow: NC::Menu<MPD::Item>, SongList
@@ -487,14 +487,29 @@ inline void Browser::resize()
 
 inline std::string Browser::title()
 {
+    NcmBuffer scroll_buffer;
+    int64 scroll_beginning;
     std::string result = "Browse: ";
     size_t width = COLS-Utf8::width(result);
+    char separator[] = " ** ";
 
     if (Config.design == NCM_DESIGN_ALTERNATIVE)
         width -= 2;
     else
         width -= static_cast<size_t>(global_volume_state_len());
-    result += Scroller(m_current_directory, m_scroll_beginning, width);
+
+    ncm_buffer_init(&scroll_buffer);
+    scroll_beginning = static_cast<int64>(m_scroll_beginning);
+    nc_cyclic_text_write(&scroll_buffer, m_current_directory.data(),
+                         static_cast<int32>(m_current_directory.size()),
+                         &scroll_beginning, static_cast<int32>(width),
+                         separator, sizeof(separator) - 1,
+                         Config.header_text_scrolling);
+    m_scroll_beginning = static_cast<size_t>(scroll_beginning);
+    if (scroll_buffer.len > 0)
+        result.append(scroll_buffer.data,
+                      static_cast<size_t>(scroll_buffer.len));
+    ncm_buffer_destroy(&scroll_buffer);
     return result;
 }
 

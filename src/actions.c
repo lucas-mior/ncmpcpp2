@@ -1574,6 +1574,107 @@ action_runtime_mpd_simple(
     return true;
 }
 
+bool
+ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
+                                          int32 position,
+                                          enum SpaceAddMode space_add_mode) {
+    NativePlaylistScreen *playlist;
+    NcSongMenu *songs;
+    NcmSong *match;
+    NcmSong *item;
+    NcmError error;
+    NcmBuffer formatted;
+    NcmBuffer message;
+    int64 count;
+    int32 id;
+    bool ok;
+
+    if (song == NULL) {
+        return false;
+    }
+    if (!ncm_mpd_client_connected(&global_mpd)) {
+        return false;
+    }
+
+    playlist = native_c_screen_playlist();
+    count = native_playlist_screen_song_count(playlist);
+    songs = native_playlist_screen_song_menu(playlist);
+    match = NULL;
+    if ((space_add_mode == NCM_SPACE_ADD_MODE_ADD_REMOVE) && songs) {
+        for (int64 i = 0; i < count; i += 1) {
+            item = nc_song_menu_item_at(songs, NC_MENU_ITEMS_ALL, i);
+            if (item && ncm_song_equal(item, song)) {
+                match = item;
+                break;
+            }
+        }
+    }
+
+    ncm_error_clear(&error);
+    if (match) {
+        if (play) {
+            ok = ncm_mpd_client_play_id(&global_mpd,
+                                        (int32)ncm_song_id(match),
+                                        &error);
+        } else {
+            ok = ncm_mpd_client_start_command_list(&global_mpd, &error);
+            for (int64 i = count; ok && (i > 0); i -= 1) {
+                item = nc_song_menu_item_at(songs, NC_MENU_ITEMS_ALL,
+                                            i - 1);
+                if ((item == NULL) || !ncm_song_equal(item, song)) {
+                    continue;
+                }
+                ok = ncm_mpd_client_delete(&global_mpd,
+                                           ncm_song_position(item),
+                                           &error);
+            }
+            if (ok) {
+                ok = ncm_mpd_client_commit_command_list(&global_mpd,
+                                                        &error);
+            }
+            if (!ok && global_mpd.command_list_active) {
+                global_mpd.command_list_active = false;
+            }
+        }
+        if (!ok) {
+            return action_runtime_mpd_error(&error);
+        }
+        (void)ncm_status_update(&global_mpd, -1, &error);
+        return true;
+    }
+
+    id = -1;
+    if (!ncm_mpd_client_add_song_value(&global_mpd, song, position,
+                                       &id, &error)) {
+        return action_runtime_mpd_error(&error);
+    }
+
+    formatted = ncm_format_render_string(&Config.song_status_format, song);
+    ncm_buffer_init(&message);
+    ncm_buffer_append(&message, STRLIT_ARGS("Added to playlist: "));
+    ncm_buffer_append(&message, formatted.data, formatted.len);
+    ncm_statusbar_print((int32)Config.message_delay_time,
+                        message.data, message.len);
+    ncm_buffer_destroy(&message);
+    ncm_buffer_destroy(&formatted);
+
+    if (play && (id >= 0)) {
+        if (!ncm_mpd_client_play_id(&global_mpd, id, &error)) {
+            return action_runtime_mpd_error(&error);
+        }
+    }
+
+    (void)ncm_status_update(&global_mpd, -1, &error);
+    return true;
+}
+
+bool
+ncm_action_add_song_to_playlist(NcmSong *song, bool play,
+                                int32 position) {
+    return ncm_action_add_song_to_playlist_with_mode(
+        song, play, position, Config.space_add_mode);
+}
+
 static bool
 action_runtime_mpd_toggle(
     bool (*func)(NcmMpdClient *client, bool mode, NcmError *error),
@@ -1923,10 +2024,8 @@ action_runtime_song_positions(NcmSongArray *songs, uint32 **positions,
 static bool
 action_runtime_add_selected_songs(bool play) {
     NcmSongArray songs;
-    NcmError error;
-    int32 first_id;
-    int32 id;
     bool success;
+    bool first;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
         return false;
@@ -1939,30 +2038,15 @@ action_runtime_add_selected_songs(bool play) {
         return false;
     }
 
-    first_id = -1;
-    ncm_error_clear(&error);
-    for (int32 i = 0; i < songs.len; i += 1) {
-        id = -1;
-        if (!ncm_mpd_client_add_song_value(&global_mpd, &songs.items[i],
-                                           -1, &id, &error)) {
-            ncm_song_array_destroy(&songs);
-            return action_runtime_mpd_error(&error);
-        }
-        if (first_id < 0) {
-            first_id = id;
-        }
+    first = true;
+    for (int32 i = 0; success && (i < songs.len); i += 1) {
+        success = ncm_action_add_song_to_playlist(&songs.items[i],
+                                                  play && first, -1);
+        first = false;
     }
 
-    if (play && (first_id >= 0)) {
-        if (!ncm_mpd_client_play_id(&global_mpd, first_id, &error)) {
-            ncm_song_array_destroy(&songs);
-            return action_runtime_mpd_error(&error);
-        }
-    }
-
-    (void)ncm_status_update(&global_mpd, -1, &error);
     ncm_song_array_destroy(&songs);
-    return true;
+    return success;
 }
 
 static bool
