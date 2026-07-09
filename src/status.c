@@ -43,8 +43,8 @@ static bool status_hooks_set;
 static NcmStatusHooks status_hooks;
 static bool status_ui_hooks_set;
 static NcmStatusUiHooks status_ui_hooks;
-static void (*status_initialize_hook)(void *user);
-static void *status_initialize_hook_user;
+static bool status_init_hooks_set;
+static NcmStatusInitHooks status_init_hooks;
 static void (*status_notification_observer)(void *user);
 static void *status_notification_observer_user;
 static NcmTimePoint status_past;
@@ -57,6 +57,7 @@ typedef struct StatusTimeoutContext {
 } StatusTimeoutContext;
 
 static void status_update_timeout_from_screen(NcScreen *screen, void *user);
+static void status_run_init_hooks(void);
 static void status_refresh_footer(NcmStatusHooks *hooks);
 static void status_elapsed_time_changed(NcmStatusHooks *hooks, bool update);
 static int32 status_full_event_mask(void);
@@ -155,9 +156,14 @@ ncm_status_set_ui_hooks(NcmStatusUiHooks *hooks) {
 }
 
 void
-ncm_status_set_initialize_hook(void (*callback)(void *user), void *user) {
-    status_initialize_hook = callback;
-    status_initialize_hook_user = user;
+ncm_status_set_init_hooks(NcmStatusInitHooks *hooks) {
+    if (hooks == NULL) {
+        status_init_hooks_set = false;
+        return;
+    }
+
+    status_init_hooks = *hooks;
+    status_init_hooks_set = true;
     return;
 }
 
@@ -256,12 +262,8 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
 
     if ((client != NULL) && ncm_mpd_client_connected(client)) {
         if (!status_initialized) {
-            if (status_initialize_hook != NULL) {
-                status_initialize_hook(status_initialize_hook_user);
-                hooks = status_active_hooks(NULL);
-            } else {
-                (void)ncm_status_update_full(client, hooks, error);
-            }
+            (void)ncm_status_initialize_connection(client, error);
+            hooks = status_active_hooks(NULL);
         }
 
         if ((status_player_state == NCM_STATUS_PLAYER_PLAY)
@@ -285,6 +287,39 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
         if (footer != NULL) {
             nc_window_set_timeout(footer, timeout_context.timeout);
         }
+    }
+    return;
+}
+
+static void
+status_run_init_hooks(void) {
+    NcmStatusInitHooks *hooks;
+
+    if (!status_init_hooks_set) {
+        return;
+    }
+
+    hooks = &status_init_hooks;
+    if (hooks->jump_to_now_playing != NULL) {
+        hooks->jump_to_now_playing(hooks->user);
+    }
+    if (hooks->set_tcp_nodelay != NULL) {
+        hooks->set_tcp_nodelay(hooks->user);
+    }
+    if (hooks->load_browser_supported_extensions != NULL) {
+        hooks->load_browser_supported_extensions(hooks->user);
+    }
+    if (hooks->fetch_outputs != NULL) {
+        hooks->fetch_outputs(hooks->user);
+    }
+    if (hooks->setup_visualizer_datasource != NULL) {
+        hooks->setup_visualizer_datasource(hooks->user);
+    }
+    if (hooks->register_mpd_fd_callback != NULL) {
+        hooks->register_mpd_fd_callback(hooks->user);
+    }
+    if (hooks->show_connected_message != NULL) {
+        hooks->show_connected_message(hooks->user);
     }
     return;
 }
@@ -520,6 +555,35 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
 
     ncm_error_clear(error);
     return true;
+}
+
+bool
+ncm_status_initialize_from_mpd_status(NcmMpdStatus *mpd_status,
+                                      NcmStatusHooks *hooks,
+                                      NcmError *error) {
+    if (!ncm_status_apply_mpd_status(mpd_status, status_full_event_mask(),
+                                     hooks, error)) {
+        return false;
+    }
+
+    status_run_init_hooks();
+    return true;
+}
+
+bool
+ncm_status_initialize_connection(NcmMpdClient *client, NcmError *error) {
+    NcmMpdStatus mpd_status;
+
+    if (client == NULL) {
+        ncm_error_set(error, -1, STRLIT_ARGS("MPD client is NULL"));
+        return false;
+    }
+
+    if (!ncm_mpd_client_get_status(client, &mpd_status, error)) {
+        return false;
+    }
+
+    return ncm_status_initialize_from_mpd_status(&mpd_status, NULL, error);
 }
 
 bool

@@ -37,6 +37,8 @@ typedef struct StatusHookProbe {
     int32 ui_player_stopped_calls;
     int32 ui_song_id_calls;
     int32 ui_current_song_calls;
+    int32 init_calls;
+    int32 init_order[8];
 
     uint32 previous_playlist_version;
     uint32 ui_previous_playlist_version;
@@ -49,9 +51,11 @@ static void require_int(char *file, int32 line, char *name,
                         int32 actual, int32 expected);
 static void require_uint(char *file, int32 line, char *name,
                          uint32 actual, uint32 expected);
+static void status_record_init_call(StatusHookProbe *probe, int32 id);
 static NcmMpdStatus status_make(void);
 static NcmStatusHooks status_hooks_make(StatusHookProbe *probe);
 static NcmStatusUiHooks status_ui_hooks_make(StatusHookProbe *probe);
+static NcmStatusInitHooks status_init_hooks_make(StatusHookProbe *probe);
 static void status_hook_playlist(uint32 previous_version, void *user);
 static void status_hook_stored_playlists(void *user);
 static void status_hook_database(void *user);
@@ -71,6 +75,13 @@ static void status_hook_ui_player_state(enum NcmStatusPlayerState state,
 static void status_hook_ui_player_stopped(void *user);
 static void status_hook_ui_song_id(int32 song_id, void *user);
 static void status_hook_ui_current_song(NcmSong *song, void *user);
+static void status_hook_init_jump_to_now_playing(void *user);
+static void status_hook_init_set_tcp_nodelay(void *user);
+static void status_hook_init_load_browser_supported_extensions(void *user);
+static void status_hook_init_fetch_outputs(void *user);
+static void status_hook_init_setup_visualizer_datasource(void *user);
+static void status_hook_init_register_mpd_fd_callback(void *user);
+static void status_hook_init_show_connected_message(void *user);
 static void status_hook_notification(void *user);
 static void test_initial_options_do_not_notify(void);
 static void test_option_changes_update_state_and_hooks(void);
@@ -82,6 +93,7 @@ static void test_registered_hooks_use_c_ported_fallbacks(void);
 static void test_player_and_song_id_c_fallbacks_use_ui_hooks(void);
 static void test_database_and_stored_playlist_c_fallbacks_use_ui_hooks(void);
 static void test_playlist_c_fallback_uses_ui_hook(void);
+static void test_connection_initialization_runs_init_hooks(void);
 
 int
 main(void) {
@@ -95,6 +107,7 @@ main(void) {
     test_player_and_song_id_c_fallbacks_use_ui_hooks();
     test_database_and_stored_playlist_c_fallbacks_use_ui_hooks();
     test_playlist_c_fallback_uses_ui_hook();
+    test_connection_initialization_runs_init_hooks();
     return EXIT_SUCCESS;
 }
 
@@ -124,6 +137,13 @@ require_uint(char *file, int32 line, char *name,
                 file, line, name, expected, actual);
         exit(EXIT_FAILURE);
     }
+    return;
+}
+
+static void
+status_record_init_call(StatusHookProbe *probe, int32 id) {
+    probe->init_order[probe->init_calls] = id;
+    probe->init_calls += 1;
     return;
 }
 
@@ -173,6 +193,25 @@ status_ui_hooks_make(StatusHookProbe *probe) {
         .player_stopped = status_hook_ui_player_stopped,
         .song_id_changed = status_hook_ui_song_id,
         .current_song_changed = status_hook_ui_current_song,
+    };
+
+    return hooks;
+}
+
+static NcmStatusInitHooks
+status_init_hooks_make(StatusHookProbe *probe) {
+    NcmStatusInitHooks hooks = {
+        .user = probe,
+        .jump_to_now_playing = status_hook_init_jump_to_now_playing,
+        .set_tcp_nodelay = status_hook_init_set_tcp_nodelay,
+        .load_browser_supported_extensions =
+            status_hook_init_load_browser_supported_extensions,
+        .fetch_outputs = status_hook_init_fetch_outputs,
+        .setup_visualizer_datasource =
+            status_hook_init_setup_visualizer_datasource,
+        .register_mpd_fd_callback =
+            status_hook_init_register_mpd_fd_callback,
+        .show_connected_message = status_hook_init_show_connected_message,
     };
 
     return hooks;
@@ -345,6 +384,48 @@ status_hook_ui_current_song(NcmSong *song, void *user) {
     (void)song;
     probe = user;
     probe->ui_current_song_calls += 1;
+    return;
+}
+
+static void
+status_hook_init_jump_to_now_playing(void *user) {
+    status_record_init_call(user, 1);
+    return;
+}
+
+static void
+status_hook_init_set_tcp_nodelay(void *user) {
+    status_record_init_call(user, 2);
+    return;
+}
+
+static void
+status_hook_init_load_browser_supported_extensions(void *user) {
+    status_record_init_call(user, 3);
+    return;
+}
+
+static void
+status_hook_init_fetch_outputs(void *user) {
+    status_record_init_call(user, 4);
+    return;
+}
+
+static void
+status_hook_init_setup_visualizer_datasource(void *user) {
+    status_record_init_call(user, 5);
+    return;
+}
+
+static void
+status_hook_init_register_mpd_fd_callback(void *user) {
+    status_record_init_call(user, 6);
+    return;
+}
+
+static void
+status_hook_init_show_connected_message(void *user) {
+    status_record_init_call(user, 7);
     return;
 }
 
@@ -688,5 +769,42 @@ test_playlist_c_fallback_uses_ui_hook(void) {
 
     ncm_status_set_hooks(NULL);
     ncm_status_set_ui_hooks(NULL);
+    return;
+}
+
+static void
+test_connection_initialization_runs_init_hooks(void) {
+    StatusHookProbe probe = {0};
+    NcmStatusHooks hooks;
+    NcmStatusInitHooks init_hooks;
+    NcmMpdStatus status;
+
+    ncm_status_clear();
+    hooks = status_hooks_make(&probe);
+    init_hooks = status_init_hooks_make(&probe);
+    ncm_status_set_init_hooks(&init_hooks);
+    ncm_status_set_notification_observer(status_hook_notification, &probe);
+
+    status = status_make();
+    status.repeat = true;
+    status.random = true;
+    status.single = true;
+    status.consume = true;
+    status.crossfade = 3;
+    REQUIRE(ncm_status_initialize_from_mpd_status(&status, &hooks, NULL));
+
+    REQUIRE_INT(probe.flags_calls, 1);
+    REQUIRE_INT(probe.notifications, 0);
+    REQUIRE_INT(probe.init_calls, 7);
+    REQUIRE_INT(probe.init_order[0], 1);
+    REQUIRE_INT(probe.init_order[1], 2);
+    REQUIRE_INT(probe.init_order[2], 3);
+    REQUIRE_INT(probe.init_order[3], 4);
+    REQUIRE_INT(probe.init_order[4], 5);
+    REQUIRE_INT(probe.init_order[5], 6);
+    REQUIRE_INT(probe.init_order[6], 7);
+
+    ncm_status_set_init_hooks(NULL);
+    ncm_status_set_notification_observer(NULL, NULL);
     return;
 }
