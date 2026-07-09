@@ -379,7 +379,7 @@ native_lyrics_screen_load_file(NativeLyricsScreen *screen,
     first = true;
     while (fgets(line, (int32)SIZEOF(line), file) != NULL) {
         line_len = (int32)strlen(line);
-        ncm_string_remove_chars(line, &line_len, STRLIT_ARGS("\r"));
+        ncm_string_remove_chars(line, &line_len, STRLIT_ARGS("\r\n"));
         if (!first) {
             nc_buffer_append_char(&screen->display, '\n');
         }
