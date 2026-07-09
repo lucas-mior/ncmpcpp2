@@ -16,6 +16,7 @@
 #include "ui_state.h"
 
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 #define NCM_BINDINGS_ERROR_PARSE 1
 #define NCM_BINDINGS_ERROR_MEMORY 2
@@ -123,7 +124,7 @@ ncm_string_equal(char *left, int32 left_len, char *right,
     if (left_len == 0) {
         return true;
     }
-    return memcmp(left, right, (size_t)left_len) == 0;
+    return cbase_memcmp(left, right, left_len) == 0;
 }
 
 static int32
@@ -132,9 +133,9 @@ ncm_trim_start(char *string, int32 string_len) {
 
     result = 0;
     while (result < string_len) {
-        unsigned char c;
+        uint8 c;
 
-        c = (unsigned char)string[result];
+        c = (uint8)string[result];
         if (!isspace(c)) {
             break;
         }
@@ -146,9 +147,9 @@ ncm_trim_start(char *string, int32 string_len) {
 static int32
 ncm_trim_end(char *string, int32 string_len) {
     while (string_len > 0) {
-        unsigned char c;
+        uint8 c;
 
-        c = (unsigned char)string[string_len - 1];
+        c = (uint8)string[string_len - 1];
         if (!isspace(c)) {
             break;
         }
@@ -813,7 +814,7 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
         mbstate_t state;
         int64 converted;
 
-        memset(&state, 0, sizeof(state));
+        memset64(&state, 0, sizeof(state));
         converted = (int64)mbrtowc(&wc, string, (size_t)string_len, &state);
         if ((converted == string_len) && (wc != 0)) {
             result = (NcKey)wc;
@@ -919,7 +920,7 @@ ncm_parse_action_line(char *line, int32 line_len,
     line_len = ncm_trim_end(line, line_len);
     name_len = 0;
     while ((name_len < line_len)
-           && !isspace((unsigned char)line[name_len])) {
+           && !isspace((uint8)line[name_len])) {
         name_len += 1;
     }
 
@@ -978,7 +979,7 @@ ncm_parse_action_line(char *line, int32 line_len,
         result->keys_len = argument.len;
         result->keys = ncm_malloc(result->keys_cap*SIZEOF(*result->keys));
         for (int32 i = 0; i < argument.len; i += 1) {
-            result->keys[i] = (NcKey)(unsigned char)argument.data[i];
+            result->keys[i] = (NcKey)(uint8)argument.data[i];
         }
         return true;
     }
@@ -1078,7 +1079,7 @@ ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings,
         if (name_len < min_len) {
             min_len = name_len;
         }
-        cmp = memcmp(bindings->commands[mid].name, name, (size_t)min_len);
+        cmp = cbase_memcmp(bindings->commands[mid].name, name, min_len);
         if (cmp == 0) {
             if (bindings->commands[mid].name_len < name_len) {
                 cmp = -1;
@@ -1376,7 +1377,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
     char *path_copy;
     int32 path_cap;
     char *line;
-    size_t line_cap;
+    int64 line_cap;
     int32 in_progress;
     int32 line_no;
     bool ok;
@@ -1515,7 +1516,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
                                        &key_name_cap);
             key_name_len = enclosed.len;
             in_progress = IN_PROGRESS_KEY;
-        } else if (isspace((unsigned char)line[0])) {
+        } else if (isspace((uint8)line[0])) {
             NcmBindingAction action;
             int32 action_start;
             int32 action_len;

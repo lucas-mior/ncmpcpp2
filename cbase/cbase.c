@@ -142,3 +142,11 @@ cbase_memmove(void *dest, void *source, int64 n) {
     memmove64(dest, source, n);
     return;
 }
+
+int
+cbase_memcmp(void *left, void *right, int64 n) {
+    int result;
+
+    result = memcmp64(left, right, n);
+    return result;
+}
