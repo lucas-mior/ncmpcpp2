@@ -32,6 +32,7 @@ static int64 menu_item_index(NcMenu *menu, enum NcMenuItemSource source,
 static bool menu_remove_array_slot(NcMenu *menu,
                                    enum NcMenuItemSource source,
                                    int64 pos, bool destroy_item);
+static void menu_clamp_navigation(NcMenu *menu);
 static void menu_set_flags_for_item(NcMenu *menu, void *item,
                                     uint32 flags);
 
@@ -383,6 +384,7 @@ nc_menu_set_action_callbacks(NcMenu *menu,
 void
 nc_menu_sync_item_count(NcMenu *menu) {
     menu->item_count = menu_array_count(menu, menu->active_items);
+    menu_clamp_navigation(menu);
     return;
 }
 
@@ -392,6 +394,7 @@ nc_menu_set_item_count(NcMenu *menu, int64 item_count) {
         item_count = 0;
     }
     menu->item_count = item_count;
+    menu_clamp_navigation(menu);
     return;
 }
 
@@ -797,6 +800,7 @@ nc_menu_clear_items(NcMenu *menu) {
     ARRAY_FREE(menu->filtered_item_flags);
     menu->active_items = active_items;
     menu->item_count = 0;
+    menu_clamp_navigation(menu);
     return;
 }
 
@@ -1270,6 +1274,29 @@ menu_remove_array_slot(NcMenu *menu, enum NcMenuItemSource source,
     }
     nc_menu_sync_item_count(menu);
     return true;
+}
+
+static void
+menu_clamp_navigation(NcMenu *menu) {
+    if (menu->item_count <= 0) {
+        menu->highlight = 0;
+        menu->beginning = 0;
+        return;
+    }
+
+    if (menu->highlight < 0) {
+        menu->highlight = 0;
+    }
+    if (menu->highlight >= menu->item_count) {
+        menu->highlight = menu->item_count - 1;
+    }
+    if (menu->beginning < 0) {
+        menu->beginning = 0;
+    }
+    if (menu->beginning >= menu->item_count) {
+        menu->beginning = menu->item_count - 1;
+    }
+    return;
 }
 
 static void
