@@ -31,7 +31,7 @@
 #include "screens/playlist.h"
 #include "screens/sel_items_adder.h"
 #include "settings_legacy.h"
-#include "statusbar_legacy.h"
+#include "statusbar.h"
 #include "statusbar.h"
 #include "status_legacy.h"
 #include "utility/comparators.h"

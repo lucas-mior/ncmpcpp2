@@ -43,7 +43,6 @@
 #include "screen_actions.h"
 #include "mpdpp.h"
 #include "helpers_legacy.h"
-#include "statusbar_legacy.h"
 #include "statusbar.h"
 #include "status.h"
 #include "status_legacy.h"
@@ -1092,33 +1091,7 @@ void Play::run()
 
 void ExecuteCommand::run()
 {
-
-	std::string cmd_name;
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::Helpers::TryExecuteImmediateCommand helper;
-
-		Statusbar::put() << NC_FORMAT_BOLD << ":" << NC_FORMAT_NO_BOLD;
-		if (!promptString(
-		        cmd_name, std::string(),
-		        promptHook<Statusbar::Helpers::TryExecuteImmediateCommand>,
-		        &helper))
-			return;
-	}
-
-	auto cmd = ncm_bindings_configuration_find_command(
-		&Bindings, const_cast<char *>(cmd_name.data()),
-		static_cast<int32>(cmd_name.size()));
-	if (cmd)
-	{
-		Statusbar::printf(1, "Executing %1%...", cmd_name);
-		bool res = bindingsLegacyExecute(&cmd->binding);
-		Statusbar::printf("Execution of command \"%1%\" %2%.",
-			cmd_name, res ? "successful" : "unsuccessful"
-		);
-	}
-	else
-		Statusbar::printf("No command named \"%1%\"", cmd_name);
+	ncm_action_runtime_run(nullptr, NCM_ACTION_EXECUTE_COMMAND);
 }
 
 bool MoveSortOrderUp::canBeRun()

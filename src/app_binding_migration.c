@@ -21,6 +21,10 @@ app_binding_migration_action_is_c_safe(enum NcmActionType type) {
     case NCM_ACTION_STOP:
     case NCM_ACTION_SEEK_FORWARD:
     case NCM_ACTION_SEEK_BACKWARD:
+    case NCM_ACTION_EXECUTE_COMMAND:
+    case NCM_ACTION_APPLY_FILTER:
+    case NCM_ACTION_FIND_ITEM_FORWARD:
+    case NCM_ACTION_FIND_ITEM_BACKWARD:
         return true;
     default:
         return false;
@@ -114,10 +118,7 @@ app_binding_migration_action_forces_legacy_binding(
     case NCM_ACTION_CLEAR_PLAYLIST:
     case NCM_ACTION_SORT_PLAYLIST:
     case NCM_ACTION_REVERSE_PLAYLIST:
-    case NCM_ACTION_APPLY_FILTER:
     case NCM_ACTION_FIND:
-    case NCM_ACTION_FIND_ITEM_FORWARD:
-    case NCM_ACTION_FIND_ITEM_BACKWARD:
     case NCM_ACTION_NEXT_FOUND_ITEM:
     case NCM_ACTION_PREVIOUS_FOUND_ITEM:
     case NCM_ACTION_TOGGLE_FIND_MODE:

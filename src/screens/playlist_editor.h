@@ -50,7 +50,7 @@
 #include "screens/tag_editor.h"
 #include "song_list.h"
 #include "status_legacy.h"
-#include "statusbar_legacy.h"
+#include "statusbar.h"
 #include "title_legacy.h"
 #include "ui_state.h"
 #include "utility/comparators.h"

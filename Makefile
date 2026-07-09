@@ -55,8 +55,7 @@ APP_CXX_SRCS := \
 	src/configuration_legacy.cpp \
 	src/mpdpp.cpp \
 	src/settings_legacy.cpp \
-	src/status_legacy.cpp \
-	src/statusbar_legacy.cpp
+	src/status_legacy.cpp
 TEST_SRCS := $(sort $(wildcard tests/*_test.c))
 
 CBASE_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(CBASE_SRCS))

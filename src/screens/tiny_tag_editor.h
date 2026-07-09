@@ -47,7 +47,7 @@
 #include "screens/search_engine.h"
 #include "screens/song_info.h"
 #include "screens/tag_editor.h"
-#include "statusbar_legacy.h"
+#include "statusbar.h"
 #include "tags.h"
 #include "title_legacy.h"
 #include "ui_state.h"

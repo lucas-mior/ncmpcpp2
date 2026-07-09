@@ -24,6 +24,7 @@ static void statusbar_progressbar_split(NcmStringView items[3]);
 static void statusbar_set_active_footer_line_locked(bool locked);
 static void statusbar_redraw_after_unlock(void);
 static void statusbar_redraw_after_stop_unlock(void);
+static void statusbar_update_from_idle_flags(int32 flags);
 
 static int32
 statusbar_cstring_len(char *string) {
@@ -382,12 +383,33 @@ ncm_statusbar_format(int32 delay_seconds,
     return;
 }
 
-void
-ncm_statusbar_mpd_idle_callback(void) {
+static void
+statusbar_update_from_idle_flags(int32 flags) {
     NcmError error;
 
     ncm_error_clear(&error);
-    (void)ncm_status_update(&global_mpd, -1, &error);
+    (void)ncm_status_update(&global_mpd, flags, &error);
+    return;
+}
+
+void
+ncm_statusbar_mpd_noidle_callback(int32 flags, void *user) {
+    (void)user;
+    statusbar_update_from_idle_flags(flags);
+    return;
+}
+
+void
+ncm_statusbar_mpd_idle_callback(void) {
+    NcmError error;
+    int32 flags;
+
+    ncm_error_clear(&error);
+    flags = 0;
+    if (!ncm_mpd_client_noidle(&global_mpd, &flags, &error)) {
+        return;
+    }
+    statusbar_update_from_idle_flags(flags);
     return;
 }
 
@@ -402,6 +424,12 @@ ncm_statusbar_main_hook(char *string, int32 string_len) {
     return true;
 }
 
+
+int32
+ncm_statusbar_message_delay_time(void) {
+    return (int32)Config.message_delay_time;
+}
+
 bool
 ncm_statusbar_prompt_return_one_of(NcWindow *window,
                                    char *values,
@@ -414,7 +442,9 @@ ncm_statusbar_prompt_return_one_of(NcWindow *window,
     }
 
     for (;;) {
-        nc_window_refresh(window);
+        if (nc_window_raw(window) != NULL) {
+            nc_window_refresh(window);
+        }
         key = ncm_read_key(window);
         if ((key == NC_KEY_CTRL_C) || (key == NC_KEY_CTRL_G)) {
             return false;

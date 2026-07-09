@@ -57,7 +57,7 @@
 #include "screens/screen_cpp_switcher.h"
 #include "screens/song_info.h"
 #include "settings_legacy.h"
-#include "statusbar_legacy.h"
+#include "statusbar.h"
 #include "tags.h"
 #include "title_legacy.h"
 #include "ui_state.h"
