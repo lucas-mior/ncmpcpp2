@@ -68,6 +68,7 @@ static bool native_lastfm_find_match_callback(int32 start, int32 len,
                                               void *user);
 static void native_lastfm_mouse_scroll(NativeLastfmScreen *screen,
                                        enum NcScroll where);
+static void native_lastfm_display(NativeLastfmScreen *screen);
 static void native_lastfm_flush(NativeLastfmScreen *screen);
 
 void
@@ -448,13 +449,13 @@ lastfm_active_window_callback(NcScreen *screen) {
 
 static void
 lastfm_refresh_callback(NcScreen *screen) {
-    nc_window_display(native_lastfm_screen_window(lastfm_from_screen(screen)));
+    native_lastfm_display(lastfm_from_screen(screen));
     return;
 }
 
 static void
 lastfm_refresh_window_callback(NcScreen *screen) {
-    nc_window_display(native_lastfm_screen_window(lastfm_from_screen(screen)));
+    native_lastfm_display(lastfm_from_screen(screen));
     return;
 }
 
@@ -754,8 +755,15 @@ native_lastfm_mouse_scroll(NativeLastfmScreen *screen,
 }
 
 static void
+native_lastfm_display(NativeLastfmScreen *screen) {
+    nc_window_refresh_border(&screen->window);
+    nc_scrollpad_refresh(&screen->scrollpad, &screen->window);
+    return;
+}
+
+static void
 native_lastfm_flush(NativeLastfmScreen *screen) {
     nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
-    nc_scrollpad_refresh(&screen->scrollpad, &screen->window);
+    native_lastfm_display(screen);
     return;
 }
