@@ -29,7 +29,12 @@ typedef struct NativeMediaLibraryScreen {
     NcWindow tags_window;
     NcWindow albums_window;
     NcWindow songs_window;
-    NcmBuffer search_constraint;
+    NcmBuffer tag_filter_constraint;
+    NcmBuffer album_filter_constraint;
+    NcmBuffer song_filter_constraint;
+    NcmBuffer tag_search_constraint;
+    NcmBuffer album_search_constraint;
+    NcmBuffer song_search_constraint;
     NcmRegex tag_filter_regex;
     NcmRegex album_filter_regex;
     NcmRegex song_filter_regex;
@@ -101,6 +106,9 @@ bool native_media_library_screen_apply_filter(
     NcmError *error);
 void native_media_library_screen_clear_filter(
     NativeMediaLibraryScreen *screen);
+bool native_media_library_screen_search(
+    NativeMediaLibraryScreen *screen, char *pattern, int32 pattern_len,
+    bool forward, bool wrap, bool skip_current, NcmError *error);
 void native_media_library_screen_request_tags_update(
     NativeMediaLibraryScreen *screen);
 void native_media_library_screen_request_albums_update(

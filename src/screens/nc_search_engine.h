@@ -35,6 +35,7 @@ typedef struct NativeSearchEngineScreen {
     NcWindow window;
     NativeSearchEngineBridge bridge;
     NcmBuffer constraints[NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT];
+    NcmBuffer filter_constraint;
     NcmBuffer search_constraint;
     NcmRegex filter_regex;
 
@@ -80,6 +81,8 @@ NcmStringView native_search_engine_screen_constraint(
     NativeSearchEngineScreen *screen, int32 idx);
 bool native_search_engine_screen_build_query(
     NativeSearchEngineScreen *screen, NcmBuffer *query);
+bool native_search_engine_screen_allows_search(
+    NativeSearchEngineScreen *screen);
 bool native_search_engine_screen_current_song(
     NativeSearchEngineScreen *screen, NcmSong *song);
 bool native_search_engine_screen_selected_songs(

@@ -49,6 +49,7 @@ native_search_engine_screen_init(NativeSearchEngineScreen *screen,
     for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
         ncm_buffer_init(&screen->constraints[i]);
     }
+    ncm_buffer_init(&screen->filter_constraint);
     ncm_buffer_init(&screen->search_constraint);
     ncm_regex_init(&screen->filter_regex);
 
@@ -74,6 +75,7 @@ native_search_engine_screen_destroy(NativeSearchEngineScreen *screen) {
         return;
     }
     ncm_regex_destroy(&screen->filter_regex);
+    ncm_buffer_destroy(&screen->filter_constraint);
     ncm_buffer_destroy(&screen->search_constraint);
     for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
         ncm_buffer_destroy(&screen->constraints[i]);
@@ -233,6 +235,28 @@ native_search_engine_screen_build_query(NativeSearchEngineScreen *screen,
 }
 
 bool
+native_search_engine_screen_allows_search(
+    NativeSearchEngineScreen *screen) {
+    NcMenu *menu;
+    NcSearchRow *row;
+    int64 count;
+
+    if (screen == NULL) {
+        return false;
+    }
+    menu = native_search_engine_screen_menu(screen);
+    count = nc_menu_item_count(menu);
+    if (count <= 0) {
+        return false;
+    }
+    row = nc_menu_active_item_at(menu, count - 1);
+    if (row == NULL) {
+        return false;
+    }
+    return row->is_song;
+}
+
+bool
 native_search_engine_screen_current_song(NativeSearchEngineScreen *screen,
                                          NcmSong *song) {
     NcSearchRow *row;
@@ -286,7 +310,7 @@ native_search_engine_screen_apply_filter(NativeSearchEngineScreen *screen,
                            NCM_REGEX_LITERAL_CASE_INSENSITIVE, error)) {
         return false;
     }
-    if (!ncm_buffer_set(&screen->search_constraint, pattern, pattern_len)) {
+    if (!ncm_buffer_set(&screen->filter_constraint, pattern, pattern_len)) {
         return false;
     }
     callbacks.filter = native_search_filter_row;
@@ -307,7 +331,7 @@ native_search_engine_screen_clear_filter(NativeSearchEngineScreen *screen) {
     }
     ncm_regex_destroy(&screen->filter_regex);
     ncm_regex_init(&screen->filter_regex);
-    ncm_buffer_clear(&screen->search_constraint);
+    ncm_buffer_clear(&screen->filter_constraint);
     screen->filter_enabled = false;
     nc_menu_set_display_callbacks(native_search_engine_screen_menu(screen),
                                   callbacks);

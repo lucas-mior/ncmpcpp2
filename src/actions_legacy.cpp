@@ -40,10 +40,12 @@
 #include "global.h"
 #include "ui_state.h"
 #include "screens/screen_cpp_legacy.h"
+#include "screen_actions.h"
 #include "mpdpp.h"
 #include "helpers_legacy.h"
 #include "statusbar_legacy.h"
 #include "statusbar.h"
+#include "status.h"
 #include "status_legacy.h"
 #include "utility/comparators.h"
 #include "utility/conversion.h"
@@ -131,6 +133,29 @@ int32 promptTextLen(char *text)
 bool statusbarMainPromptHook(char *text, void *)
 {
 	return ncm_statusbar_main_hook(text, promptTextLen(text));
+}
+
+bool applyFilterPromptHook(char *text, void *)
+{
+	NcmError error = {};
+
+	ncm_status_trace(&global_mpd, true, false, &error);
+	ncm_error_clear(&error);
+	(void)current_screen_apply_filter(text, promptTextLen(text), &error);
+	return true;
+}
+
+bool findItemPromptHook(char *text, void *data)
+{
+	NcmError error = {};
+	SearchDirection *direction = static_cast<SearchDirection *>(data);
+
+	ncm_status_trace(&global_mpd, true, false, &error);
+	ncm_error_clear(&error);
+	(void)current_screen_search(
+		*direction, text, promptTextLen(text), Config.wrapped_search,
+		false, &error);
+	return true;
 }
 
 bool promptString(std::string &result,
@@ -2254,33 +2279,40 @@ void ReversePlaylist::run()
 
 bool ApplyFilter::canBeRun()
 {
-	m_filterable = dynamic_cast<Filterable *>(screenLegacyCurrent());
-	return m_filterable != nullptr
-		&& m_filterable->allowsFiltering();
+	return current_screen_allows_filter();
 }
 
 void ApplyFilter::run()
 {
+	NcmStringView filter_view;
+	std::string filter;
 
-	std::string filter = m_filterable->currentFilter();
+	filter_view = current_screen_current_filter();
+	if (filter_view.data != nullptr && filter_view.len > 0)
+		filter.assign(filter_view.data,
+		              static_cast<size_t>(filter_view.len));
 	if (!filter.empty())
 	{
-		m_filterable->applyFilter(filter);
-		app_controller_refresh_current_window();
+		NcmError error = {};
+
+		(void)current_screen_apply_filter(
+			const_cast<char *>(filter.data()),
+			static_cast<int32>(filter.size()), &error);
 	}
 
 	{
 		ScopedValue<bool> disabled_autocenter_mode(Config.autocenter_mode, false);
 		Statusbar::ScopedLock slock;
-		Statusbar::Helpers::ApplyFilterImmediately helper(m_filterable);
 
 		Statusbar::put() << "Apply filter: ";
-		if (!promptString(
-		        filter, filter,
-		        promptHook<Statusbar::Helpers::ApplyFilterImmediately>,
-		        &helper, false))
+		if (!promptString(filter, filter, applyFilterPromptHook,
+		                  nullptr, false))
 		{
-			m_filterable->applyFilter(filter);
+			NcmError error = {};
+
+			(void)current_screen_apply_filter(
+				const_cast<char *>(filter.data()),
+				static_cast<int32>(filter.size()), &error);
 			Statusbar::print("Action cancelled");
 			return;
 		}
@@ -2327,8 +2359,7 @@ void Find::run()
 
 bool FindItemBackward::canBeRun()
 {
-	auto w = dynamic_cast<Searchable *>(screenLegacyCurrent());
-	return w && w->allowsSearching();
+	return current_screen_allows_search();
 }
 
 void FindItemForward::run()
@@ -2339,8 +2370,7 @@ void FindItemForward::run()
 
 bool FindItemForward::canBeRun()
 {
-	auto w = dynamic_cast<Searchable *>(screenLegacyCurrent());
-	return w && w->allowsSearching();
+	return current_screen_allows_search();
 }
 
 void FindItemBackward::run()
@@ -3308,25 +3338,24 @@ void seek(SearchDirection sd)
 
 void findItem(const SearchDirection direction)
 {
-
-	Searchable *w = dynamic_cast<Searchable *>(screenLegacyCurrent());
-	assert(w != nullptr);
-	assert(w->allowsSearching());
-
+	SearchDirection prompt_direction = direction;
 	std::string constraint;
+
+	assert(current_screen_allows_search());
+
 	{
 		ScopedValue<bool> disabled_autocenter_mode(Config.autocenter_mode, false);
 		Statusbar::ScopedLock slock;
-		Statusbar::Helpers::FindImmediately helper(w, direction);
 
 		Statusbar::put() << stringFormat("Find %1%: ", direction);
-		if (!promptString(
-		        constraint, constraint,
-		        promptHook<Statusbar::Helpers::FindImmediately>,
-		        &helper, false))
+		if (!promptString(constraint, constraint, findItemPromptHook,
+		                  &prompt_direction, false))
 		{
-			w->setSearchConstraint(constraint);
-			w->search(direction, Config.wrapped_search, false);
+			NcmError error = {};
+
+			(void)current_screen_search(
+				direction, nullptr, 0, Config.wrapped_search,
+				false, &error);
 			Statusbar::print("Action cancelled");
 			return;
 		}
@@ -3335,7 +3364,7 @@ void findItem(const SearchDirection direction)
 	if (constraint.empty())
 	{
 		Statusbar::printf("Constraint unset");
-		w->clearSearchConstraint();
+		current_screen_clear_search_constraint();
 	}
 	else
 		Statusbar::printf("Using constraint \"%1%\"", constraint);

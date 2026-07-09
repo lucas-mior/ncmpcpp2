@@ -146,6 +146,9 @@ bool native_tag_editor_screen_apply_tag_filter(
     NativeTagEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, NcmError *error);
 void native_tag_editor_screen_clear_filters(NativeTagEditorScreen *screen);
+bool native_tag_editor_screen_search(
+    NativeTagEditorScreen *screen, char *pattern, int32 pattern_len,
+    bool forward, bool wrap, bool skip_current, NcmError *error);
 bool native_tag_editor_screen_prepare_parser_rows(
     NativeTagEditorScreen *screen, enum NativeTagEditorParserMode mode,
     char *pattern, int32 pattern_len);

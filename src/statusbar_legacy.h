@@ -21,9 +21,11 @@
 #ifndef NCMPCPP_STATUSBAR_LEGACY_H
 #define NCMPCPP_STATUSBAR_LEGACY_H
 
+#include <string>
+#include <utility>
+
 #include "curses/window.h"
 #include "settings_legacy.h"
-#include "interfaces.h"
 #include "utility/string_format.h"
 
 namespace Progressbar {
@@ -64,31 +66,6 @@ namespace Helpers {
 
 /// called when statusbar window detects incoming idle notification
 void mpd();
-
-struct ApplyFilterImmediately
-{
-	ApplyFilterImmediately(Filterable *w)
-		: m_w(w)
-	{ }
-
-	bool operator()(const char *s);
-
-private:
-	Filterable *m_w;
-};
-
-struct FindImmediately
-{
-	FindImmediately(Searchable *w, SearchDirection direction)
-		: m_w(w), m_direction(direction)
-	{ }
-
-	bool operator()(const char *s);
-
-private:
-	Searchable *m_w;
-	const SearchDirection m_direction;
-};
 
 struct TryExecuteImmediateCommand
 {
