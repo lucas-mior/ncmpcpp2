@@ -111,15 +111,3 @@
 8. Convert search/list/directory/queue/playback/playlist command-list operations one group at a time and remove the matching `MPD::Connection` method dependencies after each group.
 9. Verify all converted call sites compile without `mpdpp.h`, and add tests around MPD item conversion, command-list construction, and error propagation where fake-client coverage exists.
 10. Delete `src/mpdpp.cpp` and `src/mpdpp.h`, then remove `src/mpdpp.cpp` from `APP_CXX_SRCS`.
-
-## ./src/settings_legacy.cpp
-1. Treat `src/settings.c`, `src/settings.h`, and `src/settings_types.c` as the existing C replacement for the legacy `Configuration::read()` implementation and global `Config` storage.
-2. Verify every option from `doc/config` is represented in the C `Configuration` struct, initialized with the same default, and parsed by the C option table.
-3. Verify C parsing parity for booleans, numbers, colors, formatted colors, ratios, screen lists, columns, tag types, lyrics fetchers, paths, and deprecated aliases.
-4. Port any missing `generate_columns` and `columns_to_format` behavior into C or remove the need for it by ensuring all converted display code uses C `ColumnArray` and `NcmFormatAst` directly.
-5. Replace `settings_legacy.h` includes in converted screens and display/status/title compatibility headers with `settings.h`.
-6. Remove `std::string`/C++ container dependencies from any setting consumers by using `Config` C strings, `NcmBuffer`, `ColumnArray`, and C arrays.
-7. Verify settings that affect converted screens are consumed by C code: media-library ratios/sort flags, lyrics directories/fetchers, last.fm language, visualizer data/chars/colors, mouse support, and editor configuration.
-8. Add or update tests for settings defaults, parsing failures, deprecated settings, path expansion, column parsing, screen-list parsing, and lyrics-fetcher parsing.
-9. Remove legacy setting conversion shims once no C++ module reads from the legacy configuration namespace/class.
-10. Delete `src/settings_legacy.cpp` and `src/settings_legacy.h`, then remove `src/settings_legacy.cpp` from `APP_CXX_SRCS`.
