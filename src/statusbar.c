@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "bindings.h"
+#include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
 #include "global.h"
 #include "settings.h"
@@ -14,6 +15,12 @@ static bool statusbar_block_update;
 static bool statusbar_allow_unlock = true;
 static NcmTimePoint statusbar_lock_time;
 static int64 statusbar_lock_delay_seconds = -1;
+
+static void statusbar_apply_formatted_color(NcWindow *window,
+                                            NcFormattedColor *color);
+static void statusbar_apply_formatted_color_end(NcWindow *window,
+                                                NcFormattedColor *color);
+static void statusbar_progressbar_split(NcmStringView items[3]);
 
 static int32
 statusbar_cstring_len(char *string) {
@@ -27,6 +34,68 @@ statusbar_cstring_len(char *string) {
 static NcWindow *
 statusbar_footer_window(void) {
     return ui_state_footer_window();
+}
+
+static void
+statusbar_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
+    enum NcFormat *formats;
+    int32 count;
+
+    if (color == NULL) {
+        return;
+    }
+
+    nc_window_push_color(window, color->color);
+    formats = nc_formatted_color_formats(color);
+    count = nc_formatted_color_format_count(color);
+    for (int32 i = 0; i < count; i += 1) {
+        nc_window_apply_format(window, formats[i]);
+    }
+    return;
+}
+
+static void
+statusbar_apply_formatted_color_end(NcWindow *window,
+                                    NcFormattedColor *color) {
+    enum NcFormat *formats;
+    int32 count;
+
+    if (color == NULL) {
+        return;
+    }
+
+    if (!nc_color_is_default(color->color)) {
+        nc_window_push_color(window, nc_color_end());
+    }
+    formats = nc_formatted_color_formats(color);
+    count = nc_formatted_color_format_count(color);
+    for (int32 i = count - 1; i >= 0; i -= 1) {
+        nc_window_apply_format(window, nc_format_reverse(formats[i]));
+    }
+    return;
+}
+
+static void
+statusbar_progressbar_split(NcmStringView items[3]) {
+    int32 byte;
+
+    byte = 0;
+    for (int32 i = 0; i < 3; i += 1) {
+        int32 next;
+
+        items[i].data = (char *)"";
+        items[i].len = 0;
+        if (byte >= Config.progressbar.len) {
+            continue;
+        }
+
+        next = ncm_utf8_next_position(Config.progressbar.data,
+                                      Config.progressbar.len, byte);
+        items[i].data = Config.progressbar.data + byte;
+        items[i].len = next - byte;
+        byte = next;
+    }
+    return;
 }
 
 void
@@ -53,32 +122,60 @@ ncm_progressbar_is_unlocked(void) {
 
 void
 ncm_progressbar_draw(uint32 elapsed, uint32 time) {
+    NcmStringView progressbar[3];
     NcWindow *window;
-    int64 width;
-    uint32 filled;
+    int32 width;
+    int32 filled;
+    uint64 howlong;
 
     window = statusbar_footer_window();
     if (window == NULL) {
         return;
     }
 
-    width = nc_window_width(window);
+    width = (int32)nc_window_width(window);
     if (width <= 0) {
         return;
     }
 
-    filled = 0;
+    howlong = 0;
     if (time != 0) {
-        filled = (uint32)(((uint64)width*elapsed) / time);
+        howlong = ((uint64)width*elapsed) / time;
     }
-    if (filled > (uint32)width) {
-        filled = (uint32)width;
+    if (howlong > (uint64)width) {
+        filled = width;
+    } else {
+        filled = (int32)howlong;
     }
 
+    statusbar_progressbar_split(progressbar);
     nc_window_go_to_xy(window, 0, 0);
-    nc_window_apply_term_manip(window, NC_TERM_CLEAR_TO_EOL);
-    for (uint32 i = 0; i < filled; i += 1) {
-        nc_window_print_char(window, '#');
+    statusbar_apply_formatted_color(window, &Config.progressbar_color);
+    if ((progressbar[2].len > 0) && (progressbar[2].data[0] != '\0')) {
+        for (int32 i = 0; i < width; i += 1) {
+            nc_window_print_data(window, progressbar[2].data,
+                                 progressbar[2].len);
+        }
+        nc_window_go_to_xy(window, 0, 0);
+    } else {
+        mvwhline(nc_window_raw(window), 0, 0, 0, width);
+        nc_window_go_to_xy(window, 0, 0);
+    }
+    statusbar_apply_formatted_color_end(window, &Config.progressbar_color);
+
+    if (time != 0) {
+        statusbar_apply_formatted_color(window,
+                                        &Config.progressbar_elapsed_color);
+        for (int32 i = 0; i < filled; i += 1) {
+            nc_window_print_data(window, progressbar[0].data,
+                                 progressbar[0].len);
+        }
+        if (howlong < (uint64)width) {
+            nc_window_print_data(window, progressbar[1].data,
+                                 progressbar[1].len);
+        }
+        statusbar_apply_formatted_color_end(
+            window, &Config.progressbar_elapsed_color);
     }
     nc_window_go_to_xy(window, 0, 0);
     return;
