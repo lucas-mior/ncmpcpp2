@@ -84,6 +84,7 @@ static bool native_lyrics_find_match_callback(int32 start, int32 len,
                                               void *user);
 static void native_lyrics_mouse_scroll(NativeLyricsScreen *screen,
                                        enum NcScroll where);
+static void native_lyrics_display(NativeLyricsScreen *screen);
 
 void
 nc_lyrics_screen_init(NcLyricsScreen *screen,
@@ -502,7 +503,7 @@ native_lyrics_screen_update(NativeLyricsScreen *screen) {
         nc_scrollpad_flush(&screen->scrollpad,
                            &screen->window,
                            &screen->display);
-        nc_scrollpad_refresh(&screen->scrollpad, &screen->window);
+        native_lyrics_display(screen);
     }
     return;
 }
@@ -657,7 +658,7 @@ native_lyrics_screen_find(NativeLyricsScreen *screen,
                                        pattern_len, error);
     nc_scrollpad_flush(&screen->scrollpad, &screen->window,
                        &screen->display);
-    nc_scrollpad_refresh(&screen->scrollpad, &screen->window);
+    native_lyrics_display(screen);
     return result;
 }
 
@@ -688,13 +689,13 @@ lyrics_active_window_callback(NcScreen *screen) {
 
 static void
 lyrics_refresh_callback(NcScreen *screen) {
-    nc_window_display(native_lyrics_screen_window(lyrics_from_screen(screen)));
+    native_lyrics_display(lyrics_from_screen(screen));
     return;
 }
 
 static void
 lyrics_refresh_window_callback(NcScreen *screen) {
-    nc_window_display(native_lyrics_screen_window(lyrics_from_screen(screen)));
+    native_lyrics_display(lyrics_from_screen(screen));
     return;
 }
 
@@ -1134,6 +1135,13 @@ native_lyrics_mouse_scroll(NativeLyricsScreen *screen,
     for (uint32 i = 0; i < Config.lines_scrolled; i += 1) {
         nc_scrollpad_scroll(&screen->scrollpad, &screen->window, where);
     }
+    return;
+}
+
+static void
+native_lyrics_display(NativeLyricsScreen *screen) {
+    nc_window_refresh_border(&screen->window);
+    nc_scrollpad_refresh(&screen->scrollpad, &screen->window);
     return;
 }
 
