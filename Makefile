@@ -186,6 +186,7 @@ $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LI
 		$(NCMPCPP_C_LIB) \
 		$(CBASE_LIB) \
 		-Wl,--end-group \
+		$(READLINE_LIBS) \
 		$(PKG_LIBS) \
 		$(LDLIBS) \
 		$(THREAD_FLAGS)
