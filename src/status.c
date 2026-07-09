@@ -70,6 +70,8 @@ static int32 status_player_state_string(char *buffer, int32 buffer_cap);
 static void status_draw_song_title(NcmSong *song);
 static void status_draw_player_state_label(char *state, int32 state_len);
 static bool status_current_song_for_change(NcmSong *song);
+static void status_call_ui_stored_playlists_changed(void);
+static void status_call_ui_database_changed(void);
 static void status_call_ui_player_state_changed(void);
 static void status_call_ui_player_stopped(void);
 static void status_call_ui_song_id_changed(int32 song_id);
@@ -738,11 +740,13 @@ ncm_status_changes_playlist(uint32 previous_version) {
 
 void
 ncm_status_changes_stored_playlists(void) {
+    status_call_ui_stored_playlists_changed();
     return;
 }
 
 void
 ncm_status_changes_database(void) {
+    status_call_ui_database_changed();
     return;
 }
 
@@ -922,6 +926,23 @@ status_draw_song_title(NcmSong *song) {
     title = ncm_format_render_string(&Config.song_window_title_format, song);
     ncm_window_title_set(title.data, title.len);
     ncm_buffer_destroy(&title);
+    return;
+}
+
+static void
+status_call_ui_stored_playlists_changed(void) {
+    if (status_ui_hooks_set
+        && (status_ui_hooks.stored_playlists_changed != NULL)) {
+        status_ui_hooks.stored_playlists_changed(status_ui_hooks.user);
+    }
+    return;
+}
+
+static void
+status_call_ui_database_changed(void) {
+    if (status_ui_hooks_set && (status_ui_hooks.database_changed != NULL)) {
+        status_ui_hooks.database_changed(status_ui_hooks.user);
+    }
     return;
 }
 
