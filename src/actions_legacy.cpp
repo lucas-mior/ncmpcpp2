@@ -342,7 +342,12 @@ bool legacyRunAction(NcmActionType type, void *)
 
 bool legacyCurrentScreenIs(ScreenType screen_type, void *)
 {
-	return screenLegacyCurrent()->type() == screen_type;
+	BaseScreen *current;
+
+	current = screenLegacyCurrent();
+	if (current == nullptr)
+		return false;
+	return current->type() == screen_type;
 }
 
 void legacyPushKey(NcKey key, void *)
@@ -812,9 +817,14 @@ void ToggleInterface::run()
 
 bool JumpToParentDirectory::canBeRun()
 {
-	return (screenLegacyCurrent() == myBrowser)
+	BaseScreen *current;
+
+	current = screenLegacyCurrent();
+	if (current == nullptr)
+		return false;
+	return (current == myBrowser)
 #	ifdef HAVE_TAGLIB_H
-	    || (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs)
+	    || (current->activeWindow() == myTagEditor->Dirs)
 #	endif // HAVE_TAGLIB_H
 	;
 }
