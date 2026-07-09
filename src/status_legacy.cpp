@@ -41,6 +41,8 @@
 #include "screens/sel_items_adder.h"
 #include "settings_legacy.h"
 #include "status_legacy.h"
+#include "status.h"
+#include "statusbar.h"
 #include "statusbar_legacy.h"
 #include "screens/tag_editor.h"
 #include "screens/visualizer.h"
@@ -86,6 +88,29 @@ unsigned m_playlist_version;
 unsigned m_playlist_length;
 unsigned m_total_time;
 int m_volume;
+
+enum NcmStatusPlayerState legacy_player_state_to_c(MPD::PlayerState state)
+{
+	switch (state)
+	{
+		case MPD::psUnknown:
+			return NCM_STATUS_PLAYER_UNKNOWN;
+		case MPD::psStop:
+			return NCM_STATUS_PLAYER_STOP;
+		case MPD::psPlay:
+			return NCM_STATUS_PLAYER_PLAY;
+		case MPD::psPause:
+			return NCM_STATUS_PLAYER_PAUSE;
+	}
+	throw std::logic_error("unreachable");
+}
+
+void syncCStatusState()
+{
+	ncm_status_state_sync_from_legacy(
+	    legacy_player_state_to_c(m_player_state), m_elapsed_time,
+	    m_total_time);
+}
 
 void drawTitle(const MPD::Song &np)
 {
@@ -248,7 +273,7 @@ void Status::trace(bool update_timer, bool update_window_timeout)
 		}
 
 		applyToVisibleScreens(nc_screen_update);
-		Statusbar::tryRedraw();
+		ncm_statusbar_try_redraw();
 
 		Mpd.idle();
 	}
@@ -274,6 +299,7 @@ void Status::update(int event)
 	m_playlist_length = st.playlistLength();
 	m_total_time = st.totalTime();
 	m_volume = st.volume();
+	syncCStatusState();
 
 	if (event & MPD_IDLE_DATABASE)
 		Changes::database();
@@ -531,8 +557,8 @@ void Status::Changes::playerState()
 		}
 		case MPD::psStop:
 			windowTitle("ncmpcpp " VERSION);
-			if (Progressbar::isUnlocked())
-				Progressbar::draw(0, 0);
+			if (ncm_progressbar_is_unlocked())
+				ncm_progressbar_draw(0, 0);
 			myPlaylist->reloadRemaining();
 			if (Config.design == NCM_DESIGN_ALTERNATIVE)
 			{
@@ -556,7 +582,7 @@ void Status::Changes::playerState()
 		*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 1) << NC_FORMAT_BOLD << state << NC_FORMAT_NO_BOLD;
 		static_cast<NC::Window *>(ui_state_header_legacy_window())->refresh();
 	}
-	else if (Statusbar::isUnlocked() && Config.statusbar_visibility)
+	else if (ncm_statusbar_is_unlocked() && Config.statusbar_visibility)
 	{
 		*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(0, 1);
 		if (state.empty())
@@ -622,11 +648,11 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 	if (m_player_state == MPD::psStop || np.empty())
 	{
 		// MPD is not playing, clear statusbar and exit.
-		if (Statusbar::isUnlocked() && Config.statusbar_visibility)
+		if (ncm_statusbar_is_unlocked() && Config.statusbar_visibility)
 			*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(0, 1)
 			         << NC::TermManip::ClearToEOL;
-		if (Progressbar::isUnlocked())
-			Progressbar::draw(0, 0);
+		if (ncm_progressbar_is_unlocked())
+			ncm_progressbar_draw(0, 0);
 		return;
 	}
 
@@ -636,6 +662,7 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 		m_elapsed_time = st.elapsedTime();
 		m_kbps = st.kbps();
 	}
+	syncCStatusState();
 
 	std::string ps = playerStateToString(m_player_state);
 	std::string tracklength;
@@ -644,7 +671,7 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 	switch (Config.design)
 	{
 		case NCM_DESIGN_CLASSIC:
-			if (Statusbar::isUnlocked() && Config.statusbar_visibility)
+			if (ncm_statusbar_is_unlocked() && Config.statusbar_visibility)
 			{
 				if (Config.display_bitrate && m_kbps)
 				{
@@ -765,8 +792,8 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 
 			flags();
 	}
-	if (Progressbar::isUnlocked())
-		Progressbar::draw(m_elapsed_time, m_total_time);
+	if (ncm_progressbar_is_unlocked())
+		ncm_progressbar_draw(m_elapsed_time, m_total_time);
 }
 
 void Status::Changes::flags()

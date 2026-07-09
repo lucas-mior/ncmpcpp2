@@ -414,6 +414,7 @@ ncm_statusbar_prompt_return_one_of(NcWindow *window,
     }
 
     for (;;) {
+        nc_window_refresh(window);
         key = ncm_read_key(window);
         if ((key == NC_KEY_CTRL_C) || (key == NC_KEY_CTRL_G)) {
             return false;

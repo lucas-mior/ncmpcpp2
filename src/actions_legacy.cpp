@@ -43,6 +43,7 @@
 #include "mpdpp.h"
 #include "helpers_legacy.h"
 #include "statusbar_legacy.h"
+#include "statusbar.h"
 #include "status_legacy.h"
 #include "utility/comparators.h"
 #include "utility/conversion.h"
@@ -3178,7 +3179,7 @@ void seek(SearchDirection sd)
 				static_cast<NC::Window *>(ui_state_header_legacy_window())->refresh();
 				break;
 		}
-		Progressbar::draw(songpos, Status::State::totalTime());
+		ncm_progressbar_draw(songpos, Status::State::totalTime());
 		static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
 
 		auto k = ncm_bindings_configuration_get(&Bindings, input);
@@ -3310,8 +3311,13 @@ void actions_legacy_runtime_window_set_main_hook(void *window)
 {
 	if (window == nullptr)
 		return;
-	static_cast<NC::Window *>(window)->setPromptHook(
-	    Statusbar::Helpers::mainHook);
+	static_cast<NC::Window *>(window)->setPromptHook([](const char *s) {
+		int32 s_len = 0;
+
+		if (s != nullptr)
+			s_len = static_cast<int32>(std::strlen(s));
+		return ncm_statusbar_main_hook(const_cast<char *>(s), s_len);
+	});
 }
 
 void actions_legacy_runtime_window_clear_fd_callbacks(void *window)
