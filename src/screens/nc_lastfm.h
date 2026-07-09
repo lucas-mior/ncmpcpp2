@@ -77,6 +77,8 @@ int32 native_lastfm_screen_title_len(NativeLastfmScreen *screen);
 bool native_lastfm_screen_take_refresh_request(NativeLastfmScreen *screen);
 int32 native_lastfm_screen_pending_jobs(NativeLastfmScreen *screen);
 int32 native_lastfm_screen_completed_jobs(NativeLastfmScreen *screen);
+bool native_lastfm_buffer_find(NcBuffer *buffer, char *pattern,
+                                int32 pattern_len, NcmError *error);
 bool native_lastfm_screen_find(NativeLastfmScreen *screen,
                                char *pattern, int32 pattern_len,
                                NcmError *error);
