@@ -455,7 +455,7 @@ template <typename T> void ShowTime(T &buf, size_t length, bool short_names)
 	const unsigned HOUR = 60*MINUTE;
 	const unsigned DAY = 24*HOUR;
 	const unsigned YEAR = 365*DAY;
-	
+
 	unsigned years = length/YEAR;
 	if (years)
 	{
@@ -530,8 +530,5 @@ bool addSongToPlaylist(const MPD::Song &s, bool play, int position = -1);
 
 const MPD::Song *currentSong(const BaseScreen *screen);
 
-std::string Scroller(const std::string &str, size_t &pos, size_t width);
-void writeCyclicBuffer(const NC::Buffer &buf, NC::Window &w, size_t &start_pos,
-                       size_t width, const std::string &separator);
 
 #endif // NCMPCPP_HELPERS_LEGACY_H

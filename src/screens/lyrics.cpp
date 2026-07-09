@@ -30,6 +30,7 @@
 #include <thread>
 
 #include "curses/scrollpad.h"
+#include "curses/nc_cyclic_buffer.h"
 #include "screens/browser.h"
 #include "charset.h"
 #include "curl_handle.h"
@@ -405,7 +406,7 @@ void Lyrics::scrollCallback(NcScreen *screen, enum NcScroll where)
 void Lyrics::switchToCallback(NcScreen *screen)
 {
 	Lyrics *lyrics = fromScreen(screen);
-	
+
 	if (screenLegacySwitchChanged())
 	{
 		SwitchTo::finishNativeSwitch(lyrics);
@@ -449,18 +450,28 @@ char *Lyrics::titleCallback(NcScreen *screen)
 	result = "Lyrics";
 	if (!lyrics->m_song.empty())
 	{
+		NcmBuffer scroll_buffer;
+		int64 scroll_begin;
+		std::string song_title;
+		char separator[] = " ** ";
+
 		result += ": ";
-		size_t scroll_begin = static_cast<size_t>(
-			nc_lyrics_screen_scroll_begin(&lyrics->m_screen));
-		result += Scroller(
-			Format::stringify<char>(Format::parse("{%a - %t}|{%f}"),
-			                       &lyrics->m_song),
-			scroll_begin,
+		scroll_begin = nc_lyrics_screen_scroll_begin(&lyrics->m_screen);
+		song_title = Format::stringify<char>(
+			Format::parse("{%a - %t}|{%f}"), &lyrics->m_song);
+		ncm_buffer_init(&scroll_buffer);
+		nc_cyclic_text_write(
+			&scroll_buffer, song_title.data(),
+			static_cast<int32>(song_title.size()), &scroll_begin,
 			COLS - Utf8::width(result) - (Config.design == NCM_DESIGN_ALTERNATIVE
 			                          ? 2
-			                          : global_volume_state_len()));
-		nc_lyrics_screen_set_scroll_begin(&lyrics->m_screen,
-		                                  static_cast<int64>(scroll_begin));
+			                          : global_volume_state_len()),
+			separator, sizeof(separator) - 1, Config.header_text_scrolling);
+		if (scroll_buffer.len > 0)
+			result.append(scroll_buffer.data,
+			              static_cast<size_t>(scroll_buffer.len));
+		ncm_buffer_destroy(&scroll_buffer);
+		nc_lyrics_screen_set_scroll_begin(&lyrics->m_screen, scroll_begin);
 	}
 	return const_cast<char *>(result.c_str());
 }
