@@ -153,6 +153,7 @@ private:
     static void nativeResizeCallback(void *user);
     static char *nativeTitleCallback(void *user);
     static void nativeUpdateCallback(void *user);
+    static void nativeClearDirectoriesCallback(void *user);
     static void nativeMouseButtonPressedCallback(void *user, MEVENT event);
 	void SetDimensions(size_t, size_t);
 	
@@ -337,6 +338,7 @@ inline TagEditor::TagEditor()
         bridge.resize = nativeResizeCallback;
         bridge.title = nativeTitleCallback;
         bridge.update = nativeUpdateCallback;
+        bridge.clear_directories = nativeClearDirectoriesCallback;
         bridge.mouse_button_pressed = nativeMouseButtonPressedCallback;
         bridge.user = this;
         native_tag_editor_screen_set_bridge(native_c_screen_tag_editor(),
@@ -1255,6 +1257,15 @@ inline void TagEditor::nativeUpdateCallback(void *user)
     if (editor == nullptr)
         return;
     editor->update();
+}
+
+inline void TagEditor::nativeClearDirectoriesCallback(void *user)
+{
+    TagEditor *editor = static_cast<TagEditor *>(user);
+
+    if (editor == nullptr)
+        return;
+    editor->Dirs->clear();
 }
 
 inline void TagEditor::nativeMouseButtonPressedCallback(void *user,

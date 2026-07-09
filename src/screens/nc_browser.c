@@ -456,6 +456,19 @@ native_browser_screen_item_is_parent(NcmMpdItem *item) {
 }
 
 void
+native_browser_screen_request_update(NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    if (screen->bridge.request_update != NULL) {
+        screen->bridge.request_update(screen->bridge.user);
+        return;
+    }
+    nc_screen_request_update(&screen->screen);
+    return;
+}
+
+void
 native_browser_screen_set_bridge(NativeBrowserScreen *screen,
                                  NativeBrowserBridge bridge) {
     if (screen == NULL) {

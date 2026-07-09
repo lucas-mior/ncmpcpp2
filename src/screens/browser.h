@@ -162,6 +162,7 @@ private:
     static void nativeResizeCallback(void *user);
     static char *nativeTitleCallback(void *user);
     static void nativeUpdateCallback(void *user);
+    static void nativeRequestUpdateCallback(void *user);
     static void nativeMouseButtonPressedCallback(void *user, MEVENT event);
 
     std::string itemToString(const MPD::Item &item);
@@ -436,6 +437,7 @@ inline Browser::Browser()
         bridge.resize = nativeResizeCallback;
         bridge.title = nativeTitleCallback;
         bridge.update = nativeUpdateCallback;
+        bridge.request_update = nativeRequestUpdateCallback;
         bridge.mouse_button_pressed = nativeMouseButtonPressedCallback;
         bridge.user = this;
         native_browser_screen_set_bridge(native_c_screen_browser(), bridge);
@@ -1104,6 +1106,15 @@ inline void Browser::nativeUpdateCallback(void *user)
     if (browser == nullptr)
         return;
     browser->update();
+}
+
+inline void Browser::nativeRequestUpdateCallback(void *user)
+{
+    Browser *browser = static_cast<Browser *>(user);
+
+    if (browser == nullptr)
+        return;
+    browser->requestUpdate();
 }
 
 inline void Browser::nativeMouseButtonPressedCallback(void *user,

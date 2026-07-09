@@ -184,29 +184,6 @@ void legacy_status_ui_playlist_changed(uint32 previous_version, void *user)
 		myPlaylistEditor->Content.refresh();
 }
 
-void legacy_status_ui_stored_playlists_changed(void *user)
-{
-	(void)user;
-	syncLegacyStatusPrimaryStateFromC();
-	myPlaylistEditor->requestPlaylistsUpdate();
-	myPlaylistEditor->requestContentUpdate();
-	if (!myBrowser->isLocal() && myBrowser->inRootDirectory())
-		myBrowser->requestUpdate();
-}
-
-void legacy_status_ui_database_changed(void *user)
-{
-	(void)user;
-	syncLegacyStatusPrimaryStateFromC();
-	myBrowser->requestUpdate();
-#	ifdef HAVE_TAGLIB_H
-	myTagEditor->Dirs->clear();
-#	endif // HAVE_TAGLIB_H
-	myLibrary->requestTagsUpdate();
-	myLibrary->requestAlbumsUpdate();
-	myLibrary->requestSongsUpdate();
-}
-
 void legacy_status_refresh_footer(void *user)
 {
 	(void)user;
@@ -305,8 +282,8 @@ extern "C" void ncm_status_register_legacy_hooks(void)
 	NcmStatusUiHooks ui_hooks = {
 		nullptr,
 		legacy_status_ui_playlist_changed,
-		legacy_status_ui_stored_playlists_changed,
-		legacy_status_ui_database_changed,
+		nullptr,
+		nullptr,
 		nullptr,
 		nullptr,
 		nullptr,
