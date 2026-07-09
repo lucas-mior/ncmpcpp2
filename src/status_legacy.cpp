@@ -135,11 +135,53 @@ void syncLegacyStatusStateFromC()
 	syncLegacyStatusFlagsFromC();
 }
 
-void legacy_status_playlist_changed(uint32 previous_version, void *user)
+void legacy_status_ui_playlist_changed(uint32 previous_version, void *user)
 {
 	(void)user;
 	syncLegacyStatusPrimaryStateFromC();
-	Status::Changes::playlist(previous_version);
+
+	{
+		ScopedUnfilteredMenu<MPD::Song> sunfilter(ReapplyFilter::Yes, myPlaylist->main());
+
+		if (m_playlist_length < myPlaylist->main().size())
+		{
+			auto it = myPlaylist->main().begin()+m_playlist_length;
+			auto end = myPlaylist->main().end();
+			for (; it != end; ++it)
+				myPlaylist->unregisterSong(it->value());
+			myPlaylist->main().resizeList(m_playlist_length);
+		}
+
+		MPD::SongIterator s = Mpd.GetPlaylistChanges(previous_version), end;
+		for (; s != end; ++s)
+		{
+			size_t pos = s->getPosition();
+			myPlaylist->registerSong(*s);
+			if (pos < myPlaylist->main().size())
+			{
+				// if song's already in playlist, replace it with a new one
+				MPD::Song &old_s = myPlaylist->main()[pos].value();
+				myPlaylist->unregisterSong(old_s);
+				old_s = std::move(*s);
+			}
+			else // otherwise just add it to playlist
+				myPlaylist->main().addItem(std::move(*s));
+		}
+	}
+
+	myPlaylist->reloadTotalLength();
+	myPlaylist->reloadRemaining();
+
+	// When we're in multi-column screens, it might happen that songs visible on
+	// the screen are added, but they will not be immediately marked as such
+	// because the window that contains them is not the active one at the moment,
+	// so we need to refresh them manually.
+	if (isVisible(myLibrary)
+	    && !myLibrary->isActiveWindow(myLibrary->Songs))
+		myLibrary->Songs.refresh();
+	if (isVisible(myPlaylistEditor)
+	    && !myPlaylistEditor->isActiveWindow(myPlaylistEditor->Content))
+		myPlaylistEditor->Content.refresh();
 }
 
 void legacy_status_ui_stored_playlists_changed(void *user)
@@ -269,7 +311,7 @@ void registerLegacyStatusHooks()
 {
 	NcmStatusHooks hooks = {
 		nullptr,
-		legacy_status_playlist_changed,
+		nullptr,
 		nullptr,
 		nullptr,
 		nullptr,
@@ -283,6 +325,7 @@ void registerLegacyStatusHooks()
 	};
 	NcmStatusUiHooks ui_hooks = {
 		nullptr,
+		legacy_status_ui_playlist_changed,
 		legacy_status_ui_stored_playlists_changed,
 		legacy_status_ui_database_changed,
 		legacy_status_ui_player_state_changed,
@@ -508,48 +551,7 @@ int Status::State::volume()
 
 void Status::Changes::playlist(unsigned previous_version)
 {
-	{
-		ScopedUnfilteredMenu<MPD::Song> sunfilter(ReapplyFilter::Yes, myPlaylist->main());
-
-		if (m_playlist_length < myPlaylist->main().size())
-		{
-			auto it = myPlaylist->main().begin()+m_playlist_length;
-			auto end = myPlaylist->main().end();
-			for (; it != end; ++it)
-				myPlaylist->unregisterSong(it->value());
-			myPlaylist->main().resizeList(m_playlist_length);
-		}
-
-		MPD::SongIterator s = Mpd.GetPlaylistChanges(previous_version), end;
-		for (; s != end; ++s)
-		{
-			size_t pos = s->getPosition();
-			myPlaylist->registerSong(*s);
-			if (pos < myPlaylist->main().size())
-			{
-				// if song's already in playlist, replace it with a new one
-				MPD::Song &old_s = myPlaylist->main()[pos].value();
-				myPlaylist->unregisterSong(old_s);
-				old_s = std::move(*s);
-			}
-			else // otherwise just add it to playlist
-				myPlaylist->main().addItem(std::move(*s));
-		}
-	}
-
-	myPlaylist->reloadTotalLength();
-	myPlaylist->reloadRemaining();
-
-	// When we're in multi-column screens, it might happen that songs visible on
-	// the screen are added, but they will not be immediately marked as such
-	// because the window that contains them is not the active one at the moment,
-	// so we need to refresh them manually.
-	if (isVisible(myLibrary)
-	    && !myLibrary->isActiveWindow(myLibrary->Songs))
-		myLibrary->Songs.refresh();
-	if (isVisible(myPlaylistEditor)
-	    && !myPlaylistEditor->isActiveWindow(myPlaylistEditor->Content))
-		myPlaylistEditor->Content.refresh();
+	ncm_status_changes_playlist(previous_version);
 }
 
 void Status::Changes::storedPlaylists()

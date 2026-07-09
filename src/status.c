@@ -70,6 +70,7 @@ static int32 status_player_state_string(char *buffer, int32 buffer_cap);
 static void status_draw_song_title(NcmSong *song);
 static void status_draw_player_state_label(char *state, int32 state_len);
 static bool status_current_song_for_change(NcmSong *song);
+static void status_call_ui_playlist_changed(uint32 previous_version);
 static void status_call_ui_stored_playlists_changed(void);
 static void status_call_ui_database_changed(void);
 static void status_call_ui_player_state_changed(void);
@@ -734,7 +735,7 @@ ncm_status_state_sync_from_legacy(bool initialized,
 
 void
 ncm_status_changes_playlist(uint32 previous_version) {
-    (void)previous_version;
+    status_call_ui_playlist_changed(previous_version);
     return;
 }
 
@@ -926,6 +927,15 @@ status_draw_song_title(NcmSong *song) {
     title = ncm_format_render_string(&Config.song_window_title_format, song);
     ncm_window_title_set(title.data, title.len);
     ncm_buffer_destroy(&title);
+    return;
+}
+
+static void
+status_call_ui_playlist_changed(uint32 previous_version) {
+    if (status_ui_hooks_set && (status_ui_hooks.playlist_changed != NULL)) {
+        status_ui_hooks.playlist_changed(previous_version,
+                                         status_ui_hooks.user);
+    }
     return;
 }
 
