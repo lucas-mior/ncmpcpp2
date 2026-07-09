@@ -61,6 +61,7 @@ static void test_playlist_hook_gets_previous_version(void);
 static void test_player_hooks_and_song_id_change(void);
 static void test_elapsed_time_state_updates_without_windows(void);
 static void test_output_database_and_stored_playlist_hooks(void);
+static void test_registered_hooks_use_c_ported_fallbacks(void);
 
 int
 main(void) {
@@ -70,6 +71,7 @@ main(void) {
     test_player_hooks_and_song_id_change();
     test_elapsed_time_state_updates_without_windows();
     test_output_database_and_stored_playlist_hooks();
+    test_registered_hooks_use_c_ported_fallbacks();
     return EXIT_SUCCESS;
 }
 
@@ -425,5 +427,51 @@ test_output_database_and_stored_playlist_hooks(void) {
     REQUIRE_INT(probe.stored_playlist_calls, 1);
     REQUIRE_INT(probe.mixer_calls, 1);
     REQUIRE_INT(probe.refresh_visible_screens_calls, 1);
+    return;
+}
+
+
+static void
+test_registered_hooks_use_c_ported_fallbacks(void) {
+    StatusHookProbe probe = {0};
+    NcmStatusHooks hooks;
+    NcmMpdStatus status;
+    int32 event;
+
+    ncm_status_clear();
+    hooks = status_hooks_make(&probe);
+    hooks.elapsed_time_changed = NULL;
+    hooks.flags_changed = NULL;
+    hooks.mixer_changed = NULL;
+    hooks.outputs_changed = NULL;
+    ncm_status_set_hooks(&hooks);
+
+    status = status_make();
+    status.state = MPD_STATE_PLAY;
+    status.elapsed_time = 10;
+    status.kbit_rate = 192;
+    status.repeat = true;
+    status.random = true;
+    status.single = true;
+    status.consume = true;
+    status.crossfade = 4;
+    status.volume = 55;
+    event = MPD_IDLE_OPTIONS | MPD_IDLE_MIXER | MPD_IDLE_OUTPUT;
+
+    REQUIRE(ncm_status_apply_mpd_status(&status, event, NULL, NULL));
+    REQUIRE_INT(probe.flags_calls, 0);
+    REQUIRE_INT(probe.mixer_calls, 0);
+    REQUIRE_INT(probe.outputs_calls, 0);
+    REQUIRE(ncm_status_state_repeat());
+    REQUIRE(ncm_status_state_random());
+    REQUIRE(ncm_status_state_single());
+    REQUIRE(ncm_status_state_consume());
+    REQUIRE(ncm_status_state_crossfade());
+    REQUIRE_INT(ncm_status_state_volume(), 55);
+
+    ncm_status_changes_elapsed_time(true);
+    REQUIRE_UINT(ncm_status_state_elapsed_time(), 11);
+
+    ncm_status_set_hooks(NULL);
     return;
 }
