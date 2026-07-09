@@ -2,7 +2,14 @@
 
 #include "config.h"
 
+#include <mpd/client.h>
 #include <mpd/status.h>
+
+#if defined(HAVE_NETINET_IN_H) && defined(HAVE_NETINET_TCP_H)
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#endif
 
 #include "cbase/base_macros.h"
 #include "global.h"
@@ -62,9 +69,52 @@ typedef struct StatusTimeoutContext {
     int32 timeout;
 } StatusTimeoutContext;
 
+#if defined(__GNUC__)
+extern bool actions_legacy_runtime_playlist_highlight_mpd_position(
+    int32 position) __attribute__((weak));
+extern void actions_legacy_runtime_browser_fetch_supported_extensions(void)
+    __attribute__((weak));
+extern void actions_legacy_runtime_visualizer_setup_datasource(void)
+    __attribute__((weak));
+extern void actions_legacy_runtime_request_exit(void)
+    __attribute__((weak));
+#else
+static bool
+actions_legacy_runtime_playlist_highlight_mpd_position(int32 position) {
+    (void)position;
+    return false;
+}
+
+static void
+actions_legacy_runtime_browser_fetch_supported_extensions(void) {
+    return;
+}
+
+static void
+actions_legacy_runtime_visualizer_setup_datasource(void) {
+    return;
+}
+
+static void
+actions_legacy_runtime_request_exit(void) {
+    return;
+}
+#endif
+
 static void status_update_timeout_from_screen(NcScreen *screen, void *user);
 static void status_run_init_hooks(void);
+static void status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks);
+static void status_run_init_set_tcp_nodelay(NcmStatusInitHooks *hooks);
+static void status_run_init_load_browser_supported_extensions(
+    NcmStatusInitHooks *hooks);
+static void status_run_init_fetch_outputs(NcmStatusInitHooks *hooks);
+static void status_run_init_setup_visualizer_datasource(
+    NcmStatusInitHooks *hooks);
+static void status_run_init_register_mpd_fd_callback(
+    NcmStatusInitHooks *hooks);
+static void status_run_init_show_connected_message(NcmStatusInitHooks *hooks);
 static void status_refresh_footer(NcmStatusHooks *hooks);
+static void status_refresh_visible_screens(NcmStatusHooks *hooks);
 static void status_elapsed_time_changed(NcmStatusHooks *hooks, bool update);
 static int32 status_full_event_mask(void);
 static void status_apply_formatted_color(NcWindow *window,
@@ -108,6 +158,11 @@ static void status_update_elapsed_from_mpd(void);
 static void status_buffer_append_char(NcmBuffer *buffer, char ch);
 static void status_buffer_append_uint32(NcmBuffer *buffer, uint32 value);
 static void status_tracklength_buffer(NcmBuffer *buffer);
+static int32 status_cstring_len(char *string);
+static void status_print_client_error(char *message, int32 message_len);
+static void status_print_server_error(char *message, int32 message_len);
+static void status_request_legacy_exit(void);
+static void status_prompt_mpd_password(NcmMpdClient *client);
 
 static enum NcmStatusPlayerState
 status_player_state_from_mpd(enum mpd_state state) {
@@ -239,6 +294,17 @@ status_refresh_footer(NcmStatusHooks *hooks) {
 }
 
 static void
+status_refresh_visible_screens(NcmStatusHooks *hooks) {
+    if ((hooks != NULL) && (hooks->refresh_visible_screens != NULL)) {
+        hooks->refresh_visible_screens(hooks->user);
+        return;
+    }
+
+    app_controller_refresh_visible_screens();
+    return;
+}
+
+static void
 status_elapsed_time_changed(NcmStatusHooks *hooks, bool update) {
     if ((hooks != NULL) && (hooks->elapsed_time_changed != NULL)) {
         hooks->elapsed_time_changed(update, hooks->user);
@@ -249,35 +315,172 @@ status_elapsed_time_changed(NcmStatusHooks *hooks, bool update) {
     return;
 }
 
-void
-ncm_status_handle_client_error(NcmMpdClient *client) {
-    char *message;
+static int32
+status_cstring_len(char *string) {
+    if (string == NULL) {
+        return 0;
+    }
+
+    return (int32)strlen((char *)string);
+}
+
+static void
+status_print_client_error(char *message, int32 message_len) {
     NcmStringFormatArg arg;
 
-    if ((client != NULL) && !ncm_mpd_client_error_clearable(client)) {
+    if (message == NULL) {
+        message = (char *)"";
+    }
+    if (message_len < 0) {
+        message_len = status_cstring_len(message);
+    }
+
+    arg = ncm_string_format_arg_string(message, message_len);
+    ncm_statusbar_format((int32)Config.message_delay_time,
+                         STRLIT_ARGS("ncmpcpp: %1%"), &arg, 1);
+    return;
+}
+
+static void
+status_print_server_error(char *message, int32 message_len) {
+    NcmStringFormatArg arg;
+
+    if (message == NULL) {
+        message = (char *)"";
+    }
+    if (message_len < 0) {
+        message_len = status_cstring_len(message);
+    }
+
+    arg = ncm_string_format_arg_string(message, message_len);
+    ncm_statusbar_format((int32)Config.message_delay_time,
+                         STRLIT_ARGS("MPD: %1%"), &arg, 1);
+    return;
+}
+
+static void
+status_request_legacy_exit(void) {
+#if defined(__GNUC__)
+    if (actions_legacy_runtime_request_exit == NULL) {
+        return;
+    }
+#endif
+
+    actions_legacy_runtime_request_exit();
+    return;
+}
+
+static void
+status_prompt_mpd_password(NcmMpdClient *client) {
+    enum NcPromptStatus prompt_status;
+    NcmError error;
+    NcPrompt prompt;
+    NcWindow *window;
+    char *password;
+    bool password_allocated;
+
+    if (client == NULL) {
+        return;
+    }
+
+    window = ncm_statusbar_put();
+    if (window == NULL) {
+        return;
+    }
+
+    nc_window_print_cstring(window, (char *)"Password: ");
+    memset(&prompt, 0, SIZEOF(prompt));
+    prompt.initial_text = (char *)"";
+    prompt.width = -1;
+    prompt.encrypted = true;
+    prompt.remember = false;
+
+    password = NULL;
+    prompt_status = nc_window_prompt(window, &prompt, &password);
+    if (prompt_status != NC_PROMPT_ACCEPTED) {
+        nc_window_prompt_result_destroy(password);
+        status_request_legacy_exit();
+        return;
+    }
+
+    password_allocated = password != NULL;
+    if (password == NULL) {
+        password = (char *)"";
+    }
+
+    ncm_error_clear(&error);
+    if (!ncm_mpd_client_set_password(client, password, -1, &error)) {
+        status_print_client_error(error.message, -1);
+        if (password_allocated) {
+            nc_window_prompt_result_destroy(password);
+        }
+        return;
+    }
+    if (password_allocated) {
+        nc_window_prompt_result_destroy(password);
+    }
+
+    if (!ncm_mpd_client_send_password(client, &error)) {
+        if (ncm_mpd_client_error_code(client) == MPD_ERROR_SERVER) {
+            status_print_server_error(ncm_mpd_client_error_message(client),
+                                      -1);
+        } else {
+            ncm_status_handle_client_error(client);
+        }
+        return;
+    }
+
+    ncm_statusbar_print((int32)Config.message_delay_time,
+                        STRLIT_ARGS("Password accepted"));
+    return;
+}
+
+void
+ncm_status_handle_client_error_value(NcmMpdClient *client,
+                                     char *message,
+                                     int32 message_len,
+                                     bool clearable) {
+    if ((client != NULL) && !clearable) {
         ncm_mpd_client_disconnect(client);
     }
 
-    if (client != NULL) {
-        message = ncm_mpd_client_error_message(client);
-        arg = ncm_string_format_arg_cstring(message);
-        ncm_statusbar_format((int32)Config.message_delay_time,
-                             STRLIT_ARGS("ncmpcpp: %1%"), &arg, 1);
+    status_print_client_error(message, message_len);
+    return;
+}
+
+void
+ncm_status_handle_server_error_value(NcmMpdClient *client,
+                                     int32 code,
+                                     char *message,
+                                     int32 message_len) {
+    status_print_server_error(message, message_len);
+    if (code == MPD_SERVER_ERROR_PERMISSION) {
+        status_prompt_mpd_password(client);
     }
     return;
 }
 
 void
-ncm_status_handle_server_error(NcmMpdClient *client) {
-    char *message;
-    NcmStringFormatArg arg;
-
-    if (client != NULL) {
-        message = ncm_mpd_client_error_message(client);
-        arg = ncm_string_format_arg_cstring(message);
-        ncm_statusbar_format((int32)Config.message_delay_time,
-                             STRLIT_ARGS("MPD: %1%"), &arg, 1);
+ncm_status_handle_client_error(NcmMpdClient *client) {
+    if (client == NULL) {
+        return;
     }
+
+    ncm_status_handle_client_error_value(
+        client, ncm_mpd_client_error_message(client), -1,
+        ncm_mpd_client_error_clearable(client));
+    return;
+}
+
+void
+ncm_status_handle_server_error(NcmMpdClient *client) {
+    if (client == NULL) {
+        return;
+    }
+
+    ncm_status_handle_server_error_value(
+        client, (int32)ncm_mpd_client_server_error_code(client),
+        ncm_mpd_client_error_message(client), -1);
     return;
 }
 
@@ -329,32 +532,169 @@ static void
 status_run_init_hooks(void) {
     NcmStatusInitHooks *hooks;
 
-    if (!status_init_hooks_set) {
+    hooks = NULL;
+    if (status_init_hooks_set) {
+        hooks = &status_init_hooks;
+    }
+
+    status_run_init_jump_to_now_playing(hooks);
+    status_run_init_set_tcp_nodelay(hooks);
+    status_run_init_load_browser_supported_extensions(hooks);
+    status_run_init_fetch_outputs(hooks);
+    status_run_init_setup_visualizer_datasource(hooks);
+    status_run_init_register_mpd_fd_callback(hooks);
+    status_run_init_show_connected_message(hooks);
+    return;
+}
+
+static void
+status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks) {
+    int32 position;
+    bool highlighted;
+    NcScreen *playlist_screen;
+
+    if ((hooks != NULL) && (hooks->jump_to_now_playing != NULL)) {
+        hooks->jump_to_now_playing(hooks->user);
         return;
     }
 
-    hooks = &status_init_hooks;
-    if (hooks->jump_to_now_playing != NULL) {
-        hooks->jump_to_now_playing(hooks->user);
+    if (!Config.jump_to_now_playing_song_at_start) {
+        return;
     }
-    if (hooks->set_tcp_nodelay != NULL) {
+
+    position = status_current_song_pos;
+    if (position < 0) {
+        return;
+    }
+
+    highlighted = false;
+#if defined(__GNUC__)
+    if (actions_legacy_runtime_playlist_highlight_mpd_position != NULL) {
+        highlighted =
+            actions_legacy_runtime_playlist_highlight_mpd_position(position);
+    } else
+#endif
+    {
+        highlighted = native_playlist_screen_locate_position(
+            native_c_screen_playlist(), (uint32)position);
+    }
+
+    playlist_screen = native_c_screen_playlist_native();
+    if (highlighted && app_controller_is_screen_visible(playlist_screen)) {
+        nc_screen_refresh(playlist_screen);
+    }
+    return;
+}
+
+static void
+status_run_init_set_tcp_nodelay(NcmStatusInitHooks *hooks) {
+#if defined(HAVE_NETINET_IN_H) && defined(HAVE_NETINET_TCP_H)
+    int32 fd;
+    int32 flag;
+#endif
+
+    if ((hooks != NULL) && (hooks->set_tcp_nodelay != NULL)) {
         hooks->set_tcp_nodelay(hooks->user);
+        return;
     }
-    if (hooks->load_browser_supported_extensions != NULL) {
+
+#if defined(HAVE_NETINET_IN_H) && defined(HAVE_NETINET_TCP_H)
+    fd = ncm_mpd_client_fd(&global_mpd);
+    if (fd < 0) {
+        return;
+    }
+
+    flag = 1;
+    (void)setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &flag,
+                     (socklen_t)sizeof(flag));
+#endif
+    return;
+}
+
+static void
+status_run_init_load_browser_supported_extensions(
+    NcmStatusInitHooks *hooks) {
+    if ((hooks != NULL)
+        && (hooks->load_browser_supported_extensions != NULL)) {
         hooks->load_browser_supported_extensions(hooks->user);
+        return;
     }
-    if (hooks->fetch_outputs != NULL) {
+
+#if defined(__GNUC__)
+    if (actions_legacy_runtime_browser_fetch_supported_extensions == NULL) {
+        return;
+    }
+#endif
+    actions_legacy_runtime_browser_fetch_supported_extensions();
+    return;
+}
+
+static void
+status_run_init_fetch_outputs(NcmStatusInitHooks *hooks) {
+    if ((hooks != NULL) && (hooks->fetch_outputs != NULL)) {
         hooks->fetch_outputs(hooks->user);
+        return;
     }
-    if (hooks->setup_visualizer_datasource != NULL) {
+
+#if defined(ENABLE_OUTPUTS)
+    native_c_screen_outputs_fetch_list();
+#endif
+    return;
+}
+
+static void
+status_run_init_setup_visualizer_datasource(NcmStatusInitHooks *hooks) {
+    if ((hooks != NULL)
+        && (hooks->setup_visualizer_datasource != NULL)) {
         hooks->setup_visualizer_datasource(hooks->user);
+        return;
     }
-    if (hooks->register_mpd_fd_callback != NULL) {
+
+#if defined(__GNUC__)
+    if (actions_legacy_runtime_visualizer_setup_datasource == NULL) {
+        return;
+    }
+#endif
+    actions_legacy_runtime_visualizer_setup_datasource();
+    return;
+}
+
+static void
+status_run_init_register_mpd_fd_callback(NcmStatusInitHooks *hooks) {
+    NcWindow *footer;
+    int32 fd;
+
+    if ((hooks != NULL) && (hooks->register_mpd_fd_callback != NULL)) {
         hooks->register_mpd_fd_callback(hooks->user);
+        return;
     }
-    if (hooks->show_connected_message != NULL) {
+
+    footer = ui_state_footer_window();
+    fd = ncm_mpd_client_fd(&global_mpd);
+    if ((footer == NULL) || (fd < 0)) {
+        return;
+    }
+
+    nc_window_add_fd_callback(footer, fd, ncm_statusbar_mpd_idle_callback);
+    return;
+}
+
+static void
+status_run_init_show_connected_message(NcmStatusInitHooks *hooks) {
+    NcmStringFormatArg arg;
+
+    if ((hooks != NULL) && (hooks->show_connected_message != NULL)) {
         hooks->show_connected_message(hooks->user);
+        return;
     }
+
+    if (!Config.connected_message_on_startup) {
+        return;
+    }
+
+    arg = ncm_string_format_arg_cstring(ncm_mpd_client_hostname(&global_mpd));
+    ncm_statusbar_format((int32)Config.message_delay_time,
+                         STRLIT_ARGS("Connected to %1%"), &arg, 1);
     return;
 }
 
@@ -573,18 +913,13 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     status_initialized = true;
 
     if ((event & MPD_IDLE_PLAYER) != 0) {
-        if ((active_hooks != NULL) && (active_hooks->refresh_footer != NULL)) {
-            active_hooks->refresh_footer(active_hooks->user);
-        }
+        status_refresh_footer(active_hooks);
     }
 
     if ((event & (MPD_IDLE_PLAYLIST
                   |MPD_IDLE_DATABASE
                   |MPD_IDLE_PLAYER)) != 0) {
-        if ((active_hooks != NULL)
-            && (active_hooks->refresh_visible_screens != NULL)) {
-            active_hooks->refresh_visible_screens(active_hooks->user);
-        }
+        status_refresh_visible_screens(active_hooks);
     }
 
     ncm_error_clear(error);

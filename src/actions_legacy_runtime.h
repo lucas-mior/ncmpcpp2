@@ -27,11 +27,15 @@ NcWindow *actions_legacy_runtime_window_native(void *window);
 
 void actions_legacy_runtime_initialize_screens(void);
 void actions_legacy_runtime_resize_screen(bool reload_main_window);
+bool actions_legacy_runtime_playlist_highlight_mpd_position(int32 position);
+void actions_legacy_runtime_browser_fetch_supported_extensions(void);
+void actions_legacy_runtime_visualizer_setup_datasource(void);
 bool actions_legacy_runtime_update_environment(bool update_timer,
                                                 bool refresh_window,
                                                 bool mpd_sync);
 bool actions_legacy_runtime_execute_binding(NcmBinding *binding);
 bool actions_legacy_runtime_execute_action(enum NcmActionType type);
+void actions_legacy_runtime_request_exit(void);
 bool actions_legacy_runtime_exit_requested(void);
 
 NCM_EXTERN_C_END

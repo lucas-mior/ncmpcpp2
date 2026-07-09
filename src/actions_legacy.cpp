@@ -45,8 +45,6 @@
 #include "helpers_legacy.h"
 #include "statusbar.h"
 #include "status.h"
-#include "status_legacy.h"
-#include "status_legacy_bridge.h"
 #include "utility/comparators.h"
 #include "utility/conversion.h"
 #include "utility/scoped_value.h"
@@ -130,6 +128,19 @@ int32 promptTextLen(char *text)
 	return static_cast<int32>(std::strlen(text));
 }
 
+void handleClientError(MPD::ClientError &e)
+{
+	ncm_status_handle_client_error_value(
+	    &global_mpd, const_cast<char *>(e.what()), -1, e.clearable());
+}
+
+void handleServerError(MPD::ServerError &e)
+{
+	ncm_status_handle_server_error_value(
+	    &global_mpd, static_cast<int32>(e.code()),
+	    const_cast<char *>(e.what()), -1);
+}
+
 void requestMediaLibraryDatabaseUpdate(void *)
 {
 	if (myLibrary == nullptr)
@@ -152,11 +163,43 @@ void refreshPlaylistRelatedInactiveColumns(void *)
 		myPlaylistEditor->Content.refresh();
 }
 
+bool highlightPlaylistMpdPosition(int32 position)
+{
+	if (myPlaylist == nullptr || position < 0)
+		return false;
+
+	auto &menu = myPlaylist->main();
+	if (!menu.isFiltered())
+	{
+		auto first = menu.begin();
+		auto last = menu.end();
+		auto it = std::find_if(first, last, [position](const auto &item) {
+			return item.value().getPosition() == position;
+		});
+		if (it == last)
+			return false;
+		menu.highlight(it - first);
+		return true;
+	}
+
+	auto first = menu.beginV();
+	auto last = menu.endV();
+	auto it = std::find_if(first, last, [position](const auto &song) {
+		return song.getPosition() == position;
+	});
+	if (it == last)
+	{
+		Statusbar::print("Song is filtered out");
+		return false;
+	}
+	menu.highlight(it - first);
+	return true;
+}
+
 void traceStatus(bool update_timer, bool update_window_timeout)
 {
 	NcmError error = {};
 
-	ncm_status_register_legacy_hooks();
 	ncm_status_set_database_update_observer(
 	    requestMediaLibraryDatabaseUpdate, nullptr);
 	ncm_status_set_playlist_update_observer(
@@ -3502,16 +3545,39 @@ void actions_legacy_runtime_resize_screen(bool reload_main_window)
 	}
 	catch (MPD::ClientError &e)
 	{
-		Status::handleClientError(e);
+		handleClientError(e);
 	}
 	catch (MPD::ServerError &e)
 	{
-		Status::handleServerError(e);
+		handleServerError(e);
 	}
 	catch (std::exception &e)
 	{
 		Statusbar::printf("Unexpected error: %1%", e.what());
 	}
+}
+
+bool actions_legacy_runtime_playlist_highlight_mpd_position(int32 position)
+{
+	return highlightPlaylistMpdPosition(position);
+}
+
+void actions_legacy_runtime_browser_fetch_supported_extensions(void)
+{
+	if (myBrowser == nullptr)
+		return;
+	myBrowser->fetchSupportedExtensions();
+}
+
+void actions_legacy_runtime_visualizer_setup_datasource(void)
+{
+#ifdef ENABLE_VISUALIZER
+	if (myVisualizer == nullptr)
+		return;
+	myVisualizer->CloseDataSource();
+	myVisualizer->OpenDataSource();
+	myVisualizer->FindOutputID();
+#endif // ENABLE_VISUALIZER
 }
 
 bool actions_legacy_runtime_update_environment(bool update_timer,
@@ -3532,11 +3598,11 @@ bool actions_legacy_runtime_update_environment(bool update_timer,
 	}
 	catch (MPD::ClientError &e)
 	{
-		Status::handleClientError(e);
+		handleClientError(e);
 	}
 	catch (MPD::ServerError &e)
 	{
-		Status::handleServerError(e);
+		handleServerError(e);
 	}
 	catch (std::exception &e)
 	{
@@ -3565,11 +3631,11 @@ bool actions_legacy_runtime_execute_binding(NcmBinding *binding)
 	}
 	catch (MPD::ClientError &e)
 	{
-		Status::handleClientError(e);
+		handleClientError(e);
 	}
 	catch (MPD::ServerError &e)
 	{
-		Status::handleServerError(e);
+		handleServerError(e);
 	}
 	catch (std::exception &e)
 	{
@@ -3586,17 +3652,22 @@ bool actions_legacy_runtime_execute_action(enum NcmActionType type)
 	}
 	catch (MPD::ClientError &e)
 	{
-		Status::handleClientError(e);
+		handleClientError(e);
 	}
 	catch (MPD::ServerError &e)
 	{
-		Status::handleServerError(e);
+		handleServerError(e);
 	}
 	catch (std::exception &e)
 	{
 		Statusbar::printf("Unexpected error: %1%", e.what());
 	}
 	return false;
+}
+
+void actions_legacy_runtime_request_exit(void)
+{
+	Actions::ExitMainLoop = true;
 }
 
 bool actions_legacy_runtime_exit_requested(void)
