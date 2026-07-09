@@ -20,6 +20,9 @@ typedef void NativePlaylistSync(void *user);
 typedef NcWindow *NativePlaylistWindowCallback(void *user);
 typedef void NativePlaylistVoidCallback(void *user);
 typedef void NativePlaylistSongCallback(NcmSong *song, void *user);
+typedef bool NativePlaylistUpdateBeginCallback(uint32 playlist_length,
+                                               void *user);
+typedef bool NativePlaylistUpdateSongCallback(NcmSong *song, void *user);
 
 typedef struct NativePlaylistBridge {
     NativePlaylistWindowCallback *active_window;
@@ -28,6 +31,9 @@ typedef struct NativePlaylistBridge {
     NativePlaylistVoidCallback *resize;
     NativePlaylistSongCallback *register_song;
     NativePlaylistSongCallback *unregister_song;
+    NativePlaylistUpdateBeginCallback *begin_update;
+    NativePlaylistUpdateSongCallback *update_song;
+    NativePlaylistVoidCallback *end_update;
     void *user;
 } NativePlaylistBridge;
 

@@ -26,6 +26,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "app_controller.h"
@@ -116,6 +117,10 @@ private:
     static void nativeResizeCallback(void *user);
     static void nativeRegisterSongCallback(NcmSong *song, void *user);
     static void nativeUnregisterSongCallback(NcmSong *song, void *user);
+    static bool nativeBeginUpdateCallback(uint32 playlist_length,
+                                          void *user);
+    static bool nativeUpdateSongCallback(NcmSong *song, void *user);
+    static void nativeEndUpdateCallback(void *user);
     std::string getTotalLength();
     std::string songToString(const MPD::Song &s);
     bool playlistEntryMatcher(const Regex::Regex &rx,
@@ -136,6 +141,7 @@ private:
 
     bool m_reload_total_length;
     bool m_reload_remaining;
+    bool m_native_update_was_filtered;
 };
 
 inline Playlist *myPlaylist = nullptr;
@@ -147,6 +153,7 @@ inline Playlist::Playlist()
 , m_timer()
 , m_reload_total_length(false)
 , m_reload_remaining(false)
+, m_native_update_was_filtered(false)
 {
     w = NC::Menu<MPD::Song>(0,
                             static_cast<size_t>(ui_state_main_start_y()),
@@ -200,6 +207,9 @@ inline Playlist::Playlist()
         bridge.resize = nativeResizeCallback;
         bridge.register_song = nativeRegisterSongCallback;
         bridge.unregister_song = nativeUnregisterSongCallback;
+        bridge.begin_update = nativeBeginUpdateCallback;
+        bridge.update_song = nativeUpdateSongCallback;
+        bridge.end_update = nativeEndUpdateCallback;
         bridge.user = this;
         native_playlist_screen_set_bridge(native_c_screen_playlist(),
                                           bridge);
@@ -661,6 +671,71 @@ inline void Playlist::nativeUnregisterSongCallback(NcmSong *song, void *user)
     catch (...)
     {
     }
+}
+
+inline bool Playlist::nativeBeginUpdateCallback(uint32 playlist_length,
+                                                void *user)
+{
+    Playlist *playlist = static_cast<Playlist *>(user);
+
+    if (playlist == nullptr)
+        return false;
+
+    try
+    {
+        playlist->m_native_update_was_filtered = playlist->w.isFiltered();
+        if (playlist->m_native_update_was_filtered)
+            playlist->w.showAllItems();
+
+        if (playlist_length < playlist->w.size())
+            playlist->w.resizeList(static_cast<size_t>(playlist_length));
+        return true;
+    }
+    catch (...)
+    {
+        if (playlist->m_native_update_was_filtered)
+            playlist->w.showFilteredItems();
+        playlist->m_native_update_was_filtered = false;
+        return false;
+    }
+}
+
+inline bool Playlist::nativeUpdateSongCallback(NcmSong *song, void *user)
+{
+    Playlist *playlist = static_cast<Playlist *>(user);
+
+    if (playlist == nullptr || song == nullptr)
+        return false;
+
+    try
+    {
+        MPD::Song legacy_song(song);
+        size_t pos = static_cast<size_t>(legacy_song.getPosition());
+
+        if (pos < playlist->w.size())
+            playlist->w.at(pos).value() = std::move(legacy_song);
+        else
+            playlist->w.addItem(std::move(legacy_song));
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+inline void Playlist::nativeEndUpdateCallback(void *user)
+{
+    Playlist *playlist = static_cast<Playlist *>(user);
+
+    if (playlist == nullptr)
+        return;
+
+    if (playlist->m_native_update_was_filtered)
+        playlist->w.showFilteredItems();
+    playlist->m_native_update_was_filtered = false;
+    playlist->reloadTotalLength();
+    playlist->reloadRemaining();
 }
 
 inline void Playlist::syncNativeCallback(void *user)
