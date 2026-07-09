@@ -43,7 +43,6 @@
 #include "status_legacy.h"
 #include "status.h"
 #include "statusbar.h"
-#include "statusbar.h"
 #include "screens/tag_editor.h"
 #include "screens/visualizer.h"
 #include "title_legacy.h"
@@ -105,11 +104,151 @@ enum NcmStatusPlayerState legacy_player_state_to_c(MPD::PlayerState state)
 	throw std::logic_error("unreachable");
 }
 
+MPD::PlayerState c_player_state_to_legacy(enum NcmStatusPlayerState state)
+{
+	switch (state)
+	{
+		case NCM_STATUS_PLAYER_UNKNOWN:
+			return MPD::psUnknown;
+		case NCM_STATUS_PLAYER_STOP:
+			return MPD::psStop;
+		case NCM_STATUS_PLAYER_PLAY:
+			return MPD::psPlay;
+		case NCM_STATUS_PLAYER_PAUSE:
+			return MPD::psPause;
+	}
+	throw std::logic_error("unreachable");
+}
+
 void syncCStatusState()
 {
 	ncm_status_state_sync_from_legacy(
 	    legacy_player_state_to_c(m_player_state), m_elapsed_time,
 	    m_total_time);
+}
+
+void syncLegacyStatusPrimaryStateFromC()
+{
+	m_current_song_id = ncm_status_state_current_song_id();
+	m_current_song_pos = ncm_status_state_current_song_position();
+	m_elapsed_time = ncm_status_state_elapsed_time();
+	m_kbps = ncm_status_state_kbps();
+	m_player_state = c_player_state_to_legacy(ncm_status_state_player());
+	m_playlist_version = ncm_status_state_playlist_version();
+	m_playlist_length = ncm_status_state_playlist_length();
+	m_total_time = ncm_status_state_total_time();
+	m_volume = ncm_status_state_volume();
+}
+
+void syncLegacyStatusFlagsFromC()
+{
+	m_consume = ncm_status_state_consume() ? 'c' : 0;
+	m_crossfade = ncm_status_state_crossfade() ? 'x' : 0;
+	m_db_updating = ncm_status_state_database_updating() ? 'U' : 0;
+	m_repeat = ncm_status_state_repeat() ? 'r' : 0;
+	m_random = ncm_status_state_random() ? 'z' : 0;
+	m_single = ncm_status_state_single() ? 's' : 0;
+}
+
+void syncLegacyStatusStateFromC()
+{
+	syncLegacyStatusPrimaryStateFromC();
+	syncLegacyStatusFlagsFromC();
+}
+
+void legacy_status_playlist_changed(uint32 previous_version, void *user)
+{
+	(void)user;
+	syncLegacyStatusPrimaryStateFromC();
+	Status::Changes::playlist(previous_version);
+}
+
+void legacy_status_stored_playlists_changed(void *user)
+{
+	(void)user;
+	syncLegacyStatusPrimaryStateFromC();
+	Status::Changes::storedPlaylists();
+}
+
+void legacy_status_database_changed(void *user)
+{
+	(void)user;
+	syncLegacyStatusPrimaryStateFromC();
+	Status::Changes::database();
+}
+
+void legacy_status_player_state_changed(void *user)
+{
+	(void)user;
+	syncLegacyStatusPrimaryStateFromC();
+	Status::Changes::playerState();
+}
+
+void legacy_status_song_id_changed(int32 song_id, void *user)
+{
+	(void)user;
+	syncLegacyStatusPrimaryStateFromC();
+	Status::Changes::songID(song_id);
+	m_current_song_id = song_id;
+}
+
+void legacy_status_elapsed_time_changed(bool update_elapsed, void *user)
+{
+	(void)user;
+	Status::Changes::elapsedTime(update_elapsed);
+}
+
+void legacy_status_flags_changed(void *user)
+{
+	(void)user;
+	syncLegacyStatusStateFromC();
+	Status::Changes::flags();
+}
+
+void legacy_status_mixer_changed(void *user)
+{
+	(void)user;
+	syncLegacyStatusPrimaryStateFromC();
+	Status::Changes::mixer();
+}
+
+void legacy_status_outputs_changed(void *user)
+{
+	(void)user;
+	syncLegacyStatusPrimaryStateFromC();
+	Status::Changes::outputs();
+}
+
+void legacy_status_refresh_footer(void *user)
+{
+	(void)user;
+	static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
+}
+
+void legacy_status_refresh_visible_screens(void *user)
+{
+	(void)user;
+	applyToVisibleScreens(nc_screen_refresh_window);
+}
+
+void registerLegacyStatusHooks()
+{
+	NcmStatusHooks hooks = {
+		nullptr,
+		legacy_status_playlist_changed,
+		legacy_status_stored_playlists_changed,
+		legacy_status_database_changed,
+		legacy_status_player_state_changed,
+		legacy_status_song_id_changed,
+		legacy_status_elapsed_time_changed,
+		legacy_status_flags_changed,
+		legacy_status_mixer_changed,
+		legacy_status_outputs_changed,
+		legacy_status_refresh_footer,
+		legacy_status_refresh_visible_screens,
+	};
+
+	ncm_status_set_hooks(&hooks);
 }
 
 void drawTitle(const MPD::Song &np)
@@ -177,6 +316,7 @@ extern "C" void ncm_statusbar_legacy_mpd_callback(void)
 void initialize_status()
 {
 	// get full info about new connection
+	registerLegacyStatusHooks();
 	Status::update(-1);
 
 	if (Config.jump_to_now_playing_song_at_start)
