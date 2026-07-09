@@ -594,12 +594,24 @@ native_lastfm_job_run(void *user, NcmError *error) {
 static void
 native_lastfm_job_complete(bool success, NcmError *error, void *user) {
     NativeLastfmJob *job;
+    NativeLastfmScreen *screen;
 
     (void)success;
     (void)error;
     job = user;
-    native_lastfm_copy_result(job->screen, &job->result);
-    native_lastfm_render_result(job->screen);
+    if (job == NULL) {
+        return;
+    }
+
+    screen = job->screen;
+    if ((screen == NULL)
+        || !screen->has_service
+        || !ncm_lastfm_service_equal(&job->service, &screen->service)) {
+        return;
+    }
+
+    native_lastfm_copy_result(screen, &job->result);
+    native_lastfm_render_result(screen);
     return;
 }
 
