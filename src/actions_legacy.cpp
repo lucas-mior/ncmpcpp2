@@ -159,6 +159,7 @@ void nativeLyricsPrintConsumerMessage()
 {
 	NcmBuffer message;
 
+	native_lyrics_screen_dispatch_jobs(native_c_screen_lyrics());
 	ncm_buffer_init(&message);
 	if (native_lyrics_screen_try_take_consumer_message(
 	        native_c_screen_lyrics(), &message))
