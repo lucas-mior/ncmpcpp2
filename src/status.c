@@ -256,6 +256,16 @@ ncm_status_state_volume(void) {
 }
 
 void
+ncm_status_state_sync_from_legacy(enum NcmStatusPlayerState player,
+                                  uint32 elapsed_time,
+                                  uint32 total_time) {
+    status_player_state = player;
+    status_elapsed_time = elapsed_time;
+    status_total_time = total_time;
+    return;
+}
+
+void
 ncm_status_changes_playlist(uint32 previous_version) {
     status_playlist_version = previous_version;
     return;
