@@ -58,6 +58,14 @@ typedef struct NcmStatusInitHooks {
 
 void ncm_status_handle_client_error(NcmMpdClient *client);
 void ncm_status_handle_server_error(NcmMpdClient *client);
+void ncm_status_handle_client_error_value(NcmMpdClient *client,
+                                          char *message,
+                                          int32 message_len,
+                                          bool clearable);
+void ncm_status_handle_server_error_value(NcmMpdClient *client,
+                                          int32 code,
+                                          char *message,
+                                          int32 message_len);
 void ncm_status_trace(NcmMpdClient *client, bool update_timer,
                       bool update_window_timeout, NcmError *error);
 void ncm_status_set_hooks(NcmStatusHooks *hooks);

@@ -44,7 +44,6 @@
 #include "screens/screen_cpp_compat.h"
 #include "settings_legacy.h"
 #include "song_list.h"
-#include "status_legacy.h"
 #include "statusbar.h"
 #include "title_legacy.h"
 #include "ui_state.h"

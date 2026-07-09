@@ -22,6 +22,7 @@
 #define NCMPCPP_HELPERS_LEGACY_H
 
 #include "helpers.h"
+#include "global.h"
 
 #include "interfaces.h"
 #include "mpdpp.h"
@@ -29,7 +30,7 @@
 #include "screens/screen_cpp_compat.h"
 #include "settings_legacy.h"
 #include "song_list.h"
-#include "status_legacy.h"
+#include "status.h"
 #include "utility/string.h"
 #include "utility/utf8.h"
 
@@ -410,7 +411,9 @@ bool addSongsToPlaylist(Iterator first, Iterator last, bool play, int position)
 		}
 		catch (MPD::ServerError &e)
 		{
-			Status::handleServerError(e);
+			ncm_status_handle_server_error_value(
+			    &global_mpd, static_cast<int32>(e.code()),
+			    const_cast<char *>(e.what()), -1);
 			result = false;
 			return -1;
 		}
