@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "c/ncm_base.h"
+#include "c/ncm_regex.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
 #include "settings.h"
@@ -14,12 +15,17 @@
 
 #define NATIVE_LASTFM_DEFAULT_TITLE "Last.fm"
 #define NATIVE_LASTFM_FETCHING "Fetching information..."
+#define NATIVE_LASTFM_PROPERTY_ID ((uint64)-2)
 
 typedef struct NativeLastfmJob {
     NativeLastfmScreen *screen;
     NcmLastfmService service;
     NcmLastfmResult result;
 } NativeLastfmJob;
+
+typedef struct NativeLastfmFindState {
+    NcBuffer *buffer;
+} NativeLastfmFindState;
 
 static NcWindow *lastfm_active_window_callback(NcScreen *screen);
 static void lastfm_refresh_callback(NcScreen *screen);
@@ -48,6 +54,17 @@ static void native_lastfm_job_destroy(void *user);
 static void native_lastfm_copy_result(NativeLastfmScreen *screen,
                                       NcmLastfmResult *result);
 static void native_lastfm_render_result(NativeLastfmScreen *screen);
+static void native_lastfm_apply_literal_format(NcBuffer *buffer,
+                                               char *needle,
+                                               int32 needle_len,
+                                               enum NcFormat start_format,
+                                               enum NcFormat end_format);
+static void native_lastfm_apply_literal_color2(NcBuffer *buffer,
+                                               char *needle,
+                                               int32 needle_len);
+static bool native_lastfm_find_match_callback(int32 start, int32 len,
+                                              void *user);
+static void native_lastfm_flush(NativeLastfmScreen *screen);
 
 void
 nc_lastfm_screen_init(NcLastfmScreen *screen,
@@ -361,6 +378,47 @@ native_lastfm_screen_completed_jobs(NativeLastfmScreen *screen) {
     return ncm_job_queue_completed_count(&screen->jobs);
 }
 
+bool
+native_lastfm_screen_find(NativeLastfmScreen *screen,
+                          char *pattern, int32 pattern_len,
+                          NcmError *error) {
+    NativeLastfmFindState state;
+    NcmRegex regex;
+    char *data;
+    bool result;
+
+    if (screen == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing Last.fm screen"));
+        return false;
+    }
+
+    nc_buffer_remove_properties(&screen->buffer, NATIVE_LASTFM_PROPERTY_ID);
+    if ((pattern == NULL) || (pattern_len <= 0)) {
+        native_lastfm_flush(screen);
+        ncm_error_clear(error);
+        return true;
+    }
+
+    ncm_regex_init(&regex);
+    if (!ncm_regex_compile(&regex, pattern, pattern_len, Config.regex_type,
+                           error)) {
+        ncm_regex_destroy(&regex);
+        native_lastfm_flush(screen);
+        return false;
+    }
+
+    state.buffer = &screen->buffer;
+    data = nc_buffer_data(&screen->buffer);
+    result = ncm_regex_for_each_match(&regex,
+                                      data,
+                                      screen->buffer.len,
+                                      native_lastfm_find_match_callback,
+                                      &state);
+    ncm_regex_destroy(&regex);
+    native_lastfm_flush(screen);
+    return result;
+}
+
 static NativeLastfmScreen *
 lastfm_from_screen(NcScreen *screen) {
     return nc_screen_user(screen);
@@ -554,6 +612,17 @@ native_lastfm_render_result(NativeLastfmScreen *screen) {
         nc_buffer_append_data(&screen->buffer,
                               screen->result.text,
                               screen->result.text_len);
+        if (ncm_lastfm_service_type(&screen->service)
+            == NCM_LASTFM_SERVICE_ARTIST_INFO) {
+            native_lastfm_apply_literal_format(
+                &screen->buffer, STRLIT_ARGS("\n\nSimilar artists:\n"),
+                NC_FORMAT_BOLD, NC_FORMAT_NO_BOLD);
+            native_lastfm_apply_literal_format(
+                &screen->buffer, STRLIT_ARGS("\n\nSimilar tags:\n"),
+                NC_FORMAT_BOLD, NC_FORMAT_NO_BOLD);
+            native_lastfm_apply_literal_color2(&screen->buffer,
+                                               STRLIT_ARGS("\n * "));
+        }
     } else {
         nc_buffer_append_cstring(&screen->buffer,
                                  (char *)"Last.fm request failed");
@@ -565,5 +634,71 @@ native_lastfm_render_result(NativeLastfmScreen *screen) {
         }
     }
     screen->refresh_window = true;
+    return;
+}
+
+static void
+native_lastfm_apply_literal_format(NcBuffer *buffer,
+                                   char *needle, int32 needle_len,
+                                   enum NcFormat start_format,
+                                   enum NcFormat end_format) {
+    char *data;
+    int32 len;
+
+    data = buffer->data;
+    len = buffer->len;
+    for (int32 i = 0; i + needle_len <= len; i += 1) {
+        if (ncm_string_starts_with(data + i, len - i,
+                                   needle, needle_len)) {
+            nc_buffer_add_format(buffer, i, start_format,
+                                 NATIVE_LASTFM_PROPERTY_ID);
+            nc_buffer_add_format(buffer, i + needle_len, end_format,
+                                 NATIVE_LASTFM_PROPERTY_ID);
+        }
+    }
+    return;
+}
+
+static void
+native_lastfm_apply_literal_color2(NcBuffer *buffer,
+                                  char *needle, int32 needle_len) {
+    char *data;
+    int32 len;
+
+    data = buffer->data;
+    len = buffer->len;
+    for (int32 i = 0; i + needle_len <= len; i += 1) {
+        if (ncm_string_starts_with(data + i, len - i,
+                                   needle, needle_len)) {
+            nc_buffer_add_formatted_color(buffer, i, &Config.color2,
+                                          NATIVE_LASTFM_PROPERTY_ID);
+            nc_buffer_add_formatted_color_end(buffer, i + needle_len,
+                                              &Config.color2,
+                                              NATIVE_LASTFM_PROPERTY_ID);
+        }
+    }
+    return;
+}
+
+static bool
+native_lastfm_find_match_callback(int32 start, int32 len, void *user) {
+    NativeLastfmFindState *state;
+
+    if (len <= 0) {
+        return true;
+    }
+
+    state = user;
+    nc_buffer_add_format(state->buffer, start, NC_FORMAT_REVERSE,
+                         NATIVE_LASTFM_PROPERTY_ID);
+    nc_buffer_add_format(state->buffer, start + len, NC_FORMAT_NO_REVERSE,
+                         NATIVE_LASTFM_PROPERTY_ID);
+    return true;
+}
+
+static void
+native_lastfm_flush(NativeLastfmScreen *screen) {
+    nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
+    nc_scrollpad_refresh(&screen->scrollpad, &screen->window);
     return;
 }
