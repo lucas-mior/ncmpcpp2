@@ -29,11 +29,6 @@ namespace Status {
 void handleClientError(MPD::ClientError &e);
 void handleServerError(MPD::ServerError &e);
 
-void trace(bool update_timer, bool update_window_timeout);
-inline void trace() { trace(true, false); }
-void update(int event);
-void clear();
-
 
 }
 

@@ -27,7 +27,6 @@ NcWindow *actions_legacy_runtime_window_native(void *window);
 
 void actions_legacy_runtime_initialize_screens(void);
 void actions_legacy_runtime_resize_screen(bool reload_main_window);
-void actions_legacy_runtime_status_clear(void);
 bool actions_legacy_runtime_update_environment(bool update_timer,
                                                 bool refresh_window,
                                                 bool mpd_sync);
