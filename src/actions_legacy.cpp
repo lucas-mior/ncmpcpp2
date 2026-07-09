@@ -114,6 +114,77 @@ bool currentSongFromNative(MPD::Song &song)
 
 std::vector<std::shared_ptr<Actions::BaseAction>> AvailableActions;
 
+template <typename Helper>
+bool promptHook(char *text, void *data)
+{
+	Helper *helper = static_cast<Helper *>(data);
+	return (*helper)(text);
+}
+
+int32 promptTextLen(char *text)
+{
+	if (text == nullptr)
+		return 0;
+	return static_cast<int32>(std::strlen(text));
+}
+
+bool statusbarMainPromptHook(char *text, void *)
+{
+	return ncm_statusbar_main_hook(text, promptTextLen(text));
+}
+
+bool promptString(std::string &result,
+                  const std::string &initial = std::string(),
+                  NcPromptHook hook = nullptr,
+                  void *hook_user_data = nullptr,
+                  bool print_aborted = true)
+{
+	char *input = nullptr;
+	NcPrompt prompt = {};
+
+	prompt.initial_text = const_cast<char *>(initial.c_str());
+	prompt.width = -1;
+	if (hook == nullptr)
+	{
+		prompt.hook = statusbarMainPromptHook;
+		prompt.hook_user_data = nullptr;
+	}
+	else
+	{
+		prompt.hook = hook;
+		prompt.hook_user_data = hook_user_data;
+	}
+	prompt.encrypted = false;
+	prompt.remember = true;
+
+	if (nc_window_prompt(ui_state_footer_window(), &prompt, &input)
+	    != NC_PROMPT_ACCEPTED)
+	{
+		nc_window_prompt_result_destroy(input);
+		if (print_aborted)
+			Statusbar::printf("Action aborted");
+		return false;
+	}
+
+	if (input != nullptr)
+		result = input;
+	else
+		result.clear();
+	nc_window_prompt_result_destroy(input);
+	return true;
+}
+
+bool promptOneOf(char *values, int32 values_len, char &result,
+                 bool print_aborted = true)
+{
+	if (ncm_statusbar_prompt_return_one_of(
+	        ui_state_footer_window(), values, values_len, &result))
+		return true;
+	if (print_aborted)
+		Statusbar::printf("Action aborted");
+	return false;
+}
+
 char *itemTypeName(MPD::Item::Type type)
 {
 	switch (type)
@@ -381,7 +452,13 @@ bool confirmAction(const std::string &description)
 	<< " [" << NC_FORMAT_BOLD << 'y' << NC_FORMAT_NO_BOLD
 	<< '/' << NC_FORMAT_BOLD << 'n' << NC_FORMAT_NO_BOLD
 	<< "] ";
-	char answer = Statusbar::Helpers::promptReturnOneOf({'y', 'n'});
+	char answer;
+	char values[] = {'y', 'n'};
+	if (!promptOneOf(values, static_cast<int32>(sizeof(values)), answer, false))
+	{
+		Statusbar::print("Action cancelled");
+		return false;
+	}
 	if (answer == 'n')
 	{
 		Statusbar::print("Action cancelled");
@@ -950,7 +1027,8 @@ void SavePlaylist::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Save playlist as: ";
-		playlist_name = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
+		if (!promptString(playlist_name))
+				return;
 	}
 	try
 	{
@@ -993,11 +1071,14 @@ void ExecuteCommand::run()
 	std::string cmd_name;
 	{
 		Statusbar::ScopedLock slock;
-		NC::Window::ScopedPromptHook helper(*static_cast<NC::Window *>(ui_state_footer_legacy_window()),
-			Statusbar::Helpers::TryExecuteImmediateCommand()
-		);
+		Statusbar::Helpers::TryExecuteImmediateCommand helper;
+
 		Statusbar::put() << NC_FORMAT_BOLD << ":" << NC_FORMAT_NO_BOLD;
-		cmd_name = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
+		if (!promptString(
+		        cmd_name, std::string(),
+		        promptHook<Statusbar::Helpers::TryExecuteImmediateCommand>,
+		        &helper))
+			return;
 	}
 
 	auto cmd = ncm_bindings_configuration_find_command(
@@ -1144,7 +1225,8 @@ void Add::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << (screenLegacyCurrent() == myPlaylistEditor ? "Add to playlist: " : "Add: ");
-		path = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
+		if (!promptString(path))
+				return;
 	}
 
 	// confirm when one wants to add the whole database
@@ -1188,7 +1270,8 @@ void Load::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Load playlist: ";
-		path = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
+		if (!promptString(path))
+				return;
 	}
 
 	Statusbar::put() << "Loading...";
@@ -1491,7 +1574,10 @@ void SetCrossfade::run()
 
 	Statusbar::ScopedLock slock;
 	Statusbar::put() << "Set crossfade to: ";
-	auto crossfade = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt());
+	std::string input;
+	if (!promptString(input))
+		return;
+	auto crossfade = fromString<unsigned>(input);
 	lowerBoundCheck(crossfade, 0u);
 	Config.crossfade_time = crossfade;
 	Mpd.SetCrossfade(crossfade);
@@ -1509,7 +1595,10 @@ void SetVolume::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Set volume to: ";
-		volume = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt());
+		std::string input;
+		if (!promptString(input))
+			return;
+		volume = fromString<unsigned>(input);
 		boundsCheck(volume, 0u, 100u);
 		Mpd.SetVolume(volume);
 	}
@@ -1580,7 +1669,8 @@ void EditLibraryTag::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << NC_FORMAT_BOLD << ncm_tag_type_name(Config.media_lib_primary_tag) << NC_FORMAT_NO_BOLD << ": ";
-		new_tag = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(myLibrary->Tags.current()->value().tag());
+		if (!promptString(new_tag, myLibrary->Tags.current()->value().tag()))
+				return;
 	}
 	if (!new_tag.empty() && new_tag != myLibrary->Tags.current()->value().tag())
 	{
@@ -1638,7 +1728,9 @@ void EditLibraryAlbum::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << NC_FORMAT_BOLD << "Album: " << NC_FORMAT_NO_BOLD;
-		new_album = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(myLibrary->Albums.current()->value().entry().album());
+		if (!promptString(new_album,
+			                  myLibrary->Albums.current()->value().entry().album()))
+				return;
 	}
 	if (!new_album.empty() && new_album != myLibrary->Albums.current()->value().entry().album())
 	{
@@ -1701,7 +1793,8 @@ void EditDirectoryName::run()
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << NC_FORMAT_BOLD << "Directory: " << NC_FORMAT_NO_BOLD;
-			new_dir = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(old_dir);
+			if (!promptString(new_dir, old_dir))
+					return;
 		}
 		if (!new_dir.empty() && new_dir != old_dir)
 		{
@@ -1728,7 +1821,8 @@ void EditDirectoryName::run()
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << NC_FORMAT_BOLD << "Directory: " << NC_FORMAT_NO_BOLD;
-			new_dir = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(old_dir);
+			if (!promptString(new_dir, old_dir))
+					return;
 		}
 		if (!new_dir.empty() && new_dir != old_dir)
 		{
@@ -1769,7 +1863,8 @@ void EditPlaylistName::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << NC_FORMAT_BOLD << "Playlist: " << NC_FORMAT_NO_BOLD;
-		new_name = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(old_name);
+		if (!promptString(new_name, old_name))
+				return;
 	}
 	if (!new_name.empty() && new_name != old_name)
 	{
@@ -1842,7 +1937,10 @@ void ToggleScreenLock::run()
 		{
 			Statusbar::ScopedLock slock;
 			Statusbar::put() << "% of the locked screen's width to be reserved (20-80): ";
-			part = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(std::to_string(part)));
+			std::string input;
+			if (!promptString(input, std::to_string(part)))
+				return;
+			part = fromString<unsigned>(input);
 		}
 		boundsCheck(part, 20u, 80u);
 		Config.locked_screen_width_part = part/100.0;
@@ -1883,7 +1981,8 @@ void JumpToPositionInSong::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Position to go (in %/h:m:ss/m:ss/seconds(s)): ";
-		spos = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
+		if (!promptString(spos))
+				return;
 	}
 
 	std::regex rx;
@@ -2170,21 +2269,21 @@ void ApplyFilter::run()
 		app_controller_refresh_current_window();
 	}
 
-	try
 	{
 		ScopedValue<bool> disabled_autocenter_mode(Config.autocenter_mode, false);
 		Statusbar::ScopedLock slock;
-		NC::Window::ScopedPromptHook helper(
-			*static_cast<NC::Window *>(ui_state_footer_legacy_window()),
-			Statusbar::Helpers::ApplyFilterImmediately(m_filterable));
+		Statusbar::Helpers::ApplyFilterImmediately helper(m_filterable);
+
 		Statusbar::put() << "Apply filter: ";
-		filter = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(filter);
-	}
-	catch (NC::PromptAborted &)
-	{
-		m_filterable->applyFilter(filter);
-		Statusbar::print("Action cancelled");
-		return;
+		if (!promptString(
+		        filter, filter,
+		        promptHook<Statusbar::Helpers::ApplyFilterImmediately>,
+		        &helper, false))
+		{
+			m_filterable->applyFilter(filter);
+			Statusbar::print("Action cancelled");
+			return;
+		}
 	}
 
 	if (filter.empty())
@@ -2212,7 +2311,8 @@ void Find::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Find: ";
-		token = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
+		if (!promptString(token))
+				return;
 	}
 
 	Statusbar::print("Searching...");
@@ -2294,7 +2394,9 @@ void ToggleReplayGainMode::run()
 		<< "/" << NC_FORMAT_BOLD << 't' << NC_FORMAT_NO_BOLD << "rack"
 		<< "/" << NC_FORMAT_BOLD << 'a' << NC_FORMAT_NO_BOLD << "lbum"
 		<< "] ";
-		rgm = Statusbar::Helpers::promptReturnOneOf({'t', 'a', 'o'});
+		char values[] = {'t', 'a', 'o'};
+		if (!promptOneOf(values, static_cast<int32>(sizeof(values)), rgm))
+			return;
 	}
 	switch (rgm)
 	{
@@ -2363,7 +2465,9 @@ void AddRandomItems::run()
 		<< "/" << "album" << NC_FORMAT_BOLD << 'A' << NC_FORMAT_NO_BOLD << "rtists"
 		<< "/" << "al" << NC_FORMAT_BOLD << 'b' << NC_FORMAT_NO_BOLD << "ums"
 		<< "] ";
-		rnd_type = Statusbar::Helpers::promptReturnOneOf({'s', 'a', 'A', 'b'});
+		char values[] = {'s', 'a', 'A', 'b'};
+		if (!promptOneOf(values, static_cast<int32>(sizeof(values)), rnd_type))
+			return;
 	}
 
 	mpd_tag_type tag_type = MPD_TAG_ARTIST;
@@ -2380,7 +2484,10 @@ void AddRandomItems::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Number of random " << tag_type_str << "s: ";
-		number = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt());
+		std::string input;
+		if (!promptString(input))
+			return;
+		number = fromString<unsigned>(input);
 	}
 	if (number > 0)
 	{
@@ -2454,7 +2561,9 @@ void ToggleLibraryTagType::run()
 		<< "/" << NC_FORMAT_BOLD << 'c' << NC_FORMAT_NO_BOLD << "omposer"
 		<< "/" << NC_FORMAT_BOLD << 'p' << NC_FORMAT_NO_BOLD << "erformer"
 		<< "] ";
-		tag_type = Statusbar::Helpers::promptReturnOneOf({'a', 'A', 'y', 'g', 'c', 'p'});
+		char values[] = {'a', 'A', 'y', 'g', 'c', 'p'};
+		if (!promptOneOf(values, static_cast<int32>(sizeof(values)), tag_type))
+			return;
 	}
 	mpd_tag_type new_tagitem = ncm_char_to_tag_type(tag_type);
 	if (new_tagitem != Config.media_lib_primary_tag)
@@ -2535,7 +2644,10 @@ void SetSelectedItemsPriority::run()
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Set priority [0-255]: ";
-		prio = fromString<unsigned>(static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt());
+		std::string input;
+		if (!promptString(input))
+			return;
+		prio = fromString<unsigned>(input);
 		boundsCheck(prio, 0u, 255u);
 	}
 	myPlaylist->setSelectedItemsPriority(prio);
@@ -3202,22 +3314,22 @@ void findItem(const SearchDirection direction)
 	assert(w->allowsSearching());
 
 	std::string constraint;
-	try
 	{
 		ScopedValue<bool> disabled_autocenter_mode(Config.autocenter_mode, false);
 		Statusbar::ScopedLock slock;
-		NC::Window::ScopedPromptHook prompt_hook(
-			*static_cast<NC::Window *>(ui_state_footer_legacy_window()),
-			Statusbar::Helpers::FindImmediately(w, direction));
+		Statusbar::Helpers::FindImmediately helper(w, direction);
+
 		Statusbar::put() << stringFormat("Find %1%: ", direction);
-		constraint = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(constraint);
-	}
-	catch (NC::PromptAborted &)
-	{
-		w->setSearchConstraint(constraint);
-		w->search(direction, Config.wrapped_search, false);
-		Statusbar::print("Action cancelled");
-		return;
+		if (!promptString(
+		        constraint, constraint,
+		        promptHook<Statusbar::Helpers::FindImmediately>,
+		        &helper, false))
+		{
+			w->setSearchConstraint(constraint);
+			w->search(direction, Config.wrapped_search, false);
+			Statusbar::print("Action cancelled");
+			return;
+		}
 	}
 
 	if (constraint.empty())

@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include <algorithm>
+#include <cstring>
 
 #include "curses/menu_impl.h"
 #include "screens/browser.h"
@@ -31,6 +32,7 @@
 #include "screens/sel_items_adder.h"
 #include "settings_legacy.h"
 #include "statusbar_legacy.h"
+#include "statusbar.h"
 #include "status_legacy.h"
 #include "utility/comparators.h"
 #include "screens/screen_cpp_switcher.h"
@@ -40,6 +42,45 @@
 SelectedItemsAdder *mySelectedItemsAdder;
 
 namespace {
+
+int32 selectedItemsPromptTextLen(char *text)
+{
+	if (text == nullptr)
+		return 0;
+	return static_cast<int32>(std::strlen(text));
+}
+
+bool selectedItemsStatusbarPromptHook(char *text, void *)
+{
+	return ncm_statusbar_main_hook(text, selectedItemsPromptTextLen(text));
+}
+
+bool selectedItemsPromptString(std::string &result)
+{
+	char *input = nullptr;
+	NcPrompt prompt = {};
+
+	prompt.initial_text = const_cast<char *>("");
+	prompt.width = -1;
+	prompt.hook = selectedItemsStatusbarPromptHook;
+	prompt.encrypted = false;
+	prompt.remember = true;
+
+	if (nc_window_prompt(ui_state_footer_window(), &prompt, &input)
+	    != NC_PROMPT_ACCEPTED)
+	{
+		nc_window_prompt_result_destroy(input);
+		Statusbar::printf("Action aborted");
+		return false;
+	}
+
+	if (input != nullptr)
+		result = input;
+	else
+		result.clear();
+	nc_window_prompt_result_destroy(input);
+	return true;
+}
 
 void DisplayComponent(SelectedItemsAdder::Component &menu)
 {
@@ -289,7 +330,8 @@ void SelectedItemsAdder::addToNewPlaylist() const
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << "Save playlist as: ";
-		playlist = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt();
+		if (!selectedItemsPromptString(playlist))
+			return;
 	}
 	addToExistingPlaylist(playlist);
 }

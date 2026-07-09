@@ -65,29 +65,6 @@ namespace Helpers {
 /// called when statusbar window detects incoming idle notification
 void mpd();
 
-/// called each time user types another character while inside Window::getString
-bool mainHook(const char *);
-
-/// prompt and return one of the characters specified in the vector
-char promptReturnOneOf(const std::vector<char> &values);
-
-struct ImmediatelyReturnOneOf
-{
-	ImmediatelyReturnOneOf(std::vector<std::string> arg)
-	: m_values(std::move(arg))
-	{ }
-
-	bool operator()(const char *s) const;
-
-	template <typename StringT>
-	bool isOneOf(StringT &&s) const {
-		return std::find(m_values.begin(), m_values.end(), std::forward<StringT>(s)) != m_values.end();
-	}
-
-private:
-	std::vector<std::string> m_values;
-};
-
 struct ApplyFilterImmediately
 {
 	ApplyFilterImmediately(Filterable *w)
