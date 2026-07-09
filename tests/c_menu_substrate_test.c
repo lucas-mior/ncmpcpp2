@@ -22,12 +22,14 @@ static bool test_filter(NcMenu *menu, void *item, void *user);
 static void test_generic_row_flags(void);
 static void test_filter_keeps_row_flags(void);
 static void test_row_ownership_helpers(void);
+static void test_navigation_clamped_after_shrink(void);
 
 int
 main(void) {
     test_generic_row_flags();
     test_filter_keeps_row_flags();
     test_row_ownership_helpers();
+    test_navigation_clamped_after_shrink();
     return 0;
 }
 
@@ -208,5 +210,45 @@ test_row_ownership_helpers(void) {
     nc_menu_destroy(&menu);
     assert(state.copies == 4);
     assert(state.destroys == 4);
+    return;
+}
+
+static void
+test_navigation_clamped_after_shrink(void) {
+    NcMenu menu;
+    TestMenuState state = {0};
+    TestMenuItem item;
+
+    nc_menu_init(&menu);
+    nc_menu_set_item_callbacks(&menu, test_item_callbacks(&state));
+
+    item.value = 1;
+    nc_menu_add_item(&menu, &item);
+    item.value = 2;
+    nc_menu_add_item(&menu, &item);
+    item.value = 3;
+    nc_menu_add_item(&menu, &item);
+
+    nc_menu_highlight_position(&menu, 2, 1);
+    assert(nc_menu_highlight(&menu) == 2);
+    assert(nc_menu_beginning(&menu) == 2);
+
+    nc_menu_resize_all_items(&menu, 2);
+    assert(nc_menu_item_count(&menu) == 2);
+    assert(nc_menu_highlight(&menu) == 1);
+    assert(nc_menu_beginning(&menu) == 1);
+
+    assert(nc_menu_remove_item(&menu, NC_MENU_ITEMS_ALL, 1));
+    assert(nc_menu_item_count(&menu) == 1);
+    assert(nc_menu_highlight(&menu) == 0);
+    assert(nc_menu_beginning(&menu) == 0);
+
+    nc_menu_clear_items(&menu);
+    assert(nc_menu_item_count(&menu) == 0);
+    assert(nc_menu_highlight(&menu) == 0);
+    assert(nc_menu_beginning(&menu) == 0);
+
+    nc_menu_destroy(&menu);
+    assert(state.destroys == 3);
     return;
 }
