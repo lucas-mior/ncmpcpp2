@@ -34,25 +34,6 @@ inline void trace() { trace(true, false); }
 void update(int event);
 void clear();
 
-namespace State {
-
-// flags
-bool consume();
-bool crossfade();
-bool repeat();
-bool random();
-bool single();
-
-// misc
-int currentSongID();
-int currentSongPosition();
-unsigned playlistLength();
-unsigned elapsedTime();
-MPD::PlayerState player();
-unsigned totalTime();
-int volume();
-
-}
 
 }
 

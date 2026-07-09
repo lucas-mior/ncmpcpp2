@@ -33,7 +33,7 @@
 #include "settings_legacy.h"
 #include "statusbar.h"
 #include "statusbar.h"
-#include "status_legacy.h"
+#include "status.h"
 #include "utility/comparators.h"
 #include "screens/screen_cpp_switcher.h"
 #include "screens/screen_cpp_legacy.h"
@@ -360,9 +360,9 @@ void SelectedItemsAdder::addAtTheBeginningOfPlaylist() const
 
 void SelectedItemsAdder::addAfterCurrentSong() const
 {
-	if (Status::State::player() == MPD::psStop)
+	if (ncm_status_state_player() == NCM_STATUS_PLAYER_STOP)
 		return;
-	size_t pos = Status::State::currentSongPosition();
+	size_t pos = ncm_status_state_current_song_position();
 	++pos;
 	bool success = addSongsToPlaylist(m_selected_items.begin(), m_selected_items.end(), false, pos);
 	exitSuccessfully(success);
@@ -370,10 +370,10 @@ void SelectedItemsAdder::addAfterCurrentSong() const
 
 void SelectedItemsAdder::addAfterCurrentAlbum() const
 {
-	if (Status::State::player() == MPD::psStop)
+	if (ncm_status_state_player() == NCM_STATUS_PLAYER_STOP)
 		return;
 	auto &pl = myPlaylist->main();
-	size_t pos = Status::State::currentSongPosition();
+	size_t pos = ncm_status_state_current_song_position();
 	std::string album =  pl[pos].value().getAlbum();
 	while (pos < pl.size() && pl[pos].value().getAlbum() == album)
 		++pos;

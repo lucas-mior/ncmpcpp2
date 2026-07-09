@@ -331,8 +331,8 @@ ncmpcpp_legacy_status_clear(void) {
     ncm_status_clear();
 
     /*
-     * Keep the legacy status state reset while status hooks still read legacy
-     * Status::State values.
+     * Keep the legacy status state reset while status hooks still read
+     * mirrored legacy status values.
      */
     actions_legacy_runtime_status_clear();
     return;

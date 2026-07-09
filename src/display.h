@@ -32,7 +32,7 @@
 #include "format.h"
 #include "global.h"
 #include "helpers_legacy.h"
-#include "status_legacy.h"
+#include "status.h"
 #include "interfaces.h"
 #include "curses/menu.h"
 #include "mutable_song.h"
@@ -119,9 +119,9 @@ void setProperties(NC::Menu<T> &menu, const MPD::Song &s,
 	}
 
 	int song_pos = s.getPosition();
-	is_now_playing = Status::State::player() != MPD::psStop
+	is_now_playing = ncm_status_state_player() != NCM_STATUS_PLAYER_STOP
 		&& myPlaylist->isActiveWindow(menu)
-		&& song_pos == Status::State::currentSongPosition();
+		&& song_pos == ncm_status_state_current_song_position();
 	if (is_now_playing)
 		menu << Config.now_playing_prefix;
 
