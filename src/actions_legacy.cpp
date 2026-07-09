@@ -1881,7 +1881,9 @@ void EnterDirectory::run()
 bool EditSong::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	return isMPDMusicDirSet() && currentSongFromNative(m_song);
+	return !native_c_screen_lyrics_is_current()
+	    && isMPDMusicDirSet()
+	    && currentSongFromNative(m_song);
 #	else
 	return false;
 #	endif // HAVE_TAGLIB_H
@@ -1898,7 +1900,11 @@ void EditSong::run()
 bool EditLibraryTag::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	return screenLegacyCurrent()->isActiveWindow(myLibrary->Tags)
+	BaseScreen *current;
+
+	current = screenLegacyCurrent();
+	return current != nullptr
+	    && current->isActiveWindow(myLibrary->Tags)
 	    && !myLibrary->Tags.empty()
 	    && isMPDMusicDirSet();
 #	else
@@ -1957,7 +1963,11 @@ void EditLibraryTag::run()
 bool EditLibraryAlbum::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	return screenLegacyCurrent()->isActiveWindow(myLibrary->Albums)
+	BaseScreen *current;
+
+	current = screenLegacyCurrent();
+	return current != nullptr
+	    && current->isActiveWindow(myLibrary->Albums)
 	    && !myLibrary->Albums.empty()
 		&& isMPDMusicDirSet();
 #	else
@@ -2018,15 +2028,19 @@ void EditLibraryAlbum::run()
 
 bool EditDirectoryName::canBeRun()
 {
-	return  ((screenLegacyCurrent() == myBrowser
+	BaseScreen *current;
+
+	current = screenLegacyCurrent();
+	return  current != nullptr
+	    && (((current == myBrowser
 	      && !myBrowser->main().empty()
 	      && myBrowser->main().current()->value().type() == MPD::Item::Type::Directory)
 #	ifdef HAVE_TAGLIB_H
-	    ||   (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs
+	    ||   (current->activeWindow() == myTagEditor->Dirs
 	      && !myTagEditor->Dirs->empty()
 	      && myTagEditor->Dirs->choice() > 0)
 #	endif // HAVE_TAGLIB_H
-	) &&     isMPDMusicDirSet();
+		) &&     isMPDMusicDirSet());
 }
 
 void EditDirectoryName::run()
@@ -2091,11 +2105,15 @@ void EditDirectoryName::run()
 
 bool EditPlaylistName::canBeRun()
 {
-	return   (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists)
+	BaseScreen *current;
+
+	current = screenLegacyCurrent();
+	return   current != nullptr
+	    &&  ((current->isActiveWindow(myPlaylistEditor->Playlists)
 	      && !myPlaylistEditor->Playlists.empty())
-	    ||   (screenLegacyCurrent() == myBrowser
+	    ||   (current == myBrowser
 	      && !myBrowser->main().empty()
-		  && myBrowser->main().current()->value().type() == MPD::Item::Type::Playlist);
+		  && myBrowser->main().current()->value().type() == MPD::Item::Type::Playlist));
 }
 
 void EditPlaylistName::run()
