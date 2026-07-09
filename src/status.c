@@ -43,6 +43,7 @@ typedef struct StatusTimeoutContext {
 static void status_update_timeout_from_screen(NcScreen *screen, void *user);
 static void status_refresh_footer(NcmStatusHooks *hooks);
 static void status_elapsed_time_changed(NcmStatusHooks *hooks, bool update);
+static int32 status_full_event_mask(void);
 
 static enum NcmStatusPlayerState
 status_player_state_from_mpd(enum mpd_state state) {
@@ -70,6 +71,18 @@ status_active_hooks(NcmStatusHooks *hooks) {
     }
 
     return NULL;
+}
+
+static int32
+status_full_event_mask(void) {
+    return MPD_IDLE_DATABASE
+           |MPD_IDLE_STORED_PLAYLIST
+           |MPD_IDLE_PLAYLIST
+           |MPD_IDLE_PLAYER
+           |MPD_IDLE_MIXER
+           |MPD_IDLE_OUTPUT
+           |MPD_IDLE_UPDATE
+           |MPD_IDLE_OPTIONS;
 }
 
 void
@@ -190,7 +203,7 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
                 status_initialize_hook(status_initialize_hook_user);
                 hooks = status_active_hooks(NULL);
             } else {
-                (void)ncm_status_update(client, -1, error);
+                (void)ncm_status_update_full(client, hooks, error);
             }
         }
 
@@ -466,6 +479,25 @@ ncm_status_update(NcmMpdClient *client, int32 event, NcmError *error) {
     }
 
     return ncm_status_apply_mpd_status(&mpd_status, event, NULL, error);
+}
+
+bool
+ncm_status_update_full(NcmMpdClient *client, NcmStatusHooks *hooks,
+                       NcmError *error) {
+    NcmMpdStatus mpd_status;
+
+    if (client == NULL) {
+        ncm_error_set(error, -1, STRLIT_ARGS("MPD client is NULL"));
+        return false;
+    }
+
+    if (!ncm_mpd_client_get_status(client, &mpd_status, error)) {
+        return false;
+    }
+
+    return ncm_status_apply_mpd_status(&mpd_status,
+                                       status_full_event_mask(),
+                                       hooks, error);
 }
 
 bool

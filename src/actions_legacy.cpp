@@ -577,9 +577,10 @@ void UpdateEnvironment::run(bool update_timer, bool refresh_window, bool mpd_syn
 	// We want to synchronize with MPD during execution of an action chain.
 	if (mpd_sync)
 	{
-		int flags = Mpd.noidle();
-		if (flags)
-			Status::update(flags);
+		NcmError error;
+
+		ncm_error_clear(&error);
+		(void)ncm_status_update_from_noidle(&global_mpd, nullptr, &error);
 	}
 }
 

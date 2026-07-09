@@ -331,9 +331,8 @@ ncmpcpp_legacy_status_clear(void) {
     ncm_status_clear();
 
     /*
-     * Keep the legacy status state reset while update_environment still calls
-     * the C++ Status::update path.  This extra reset can be removed when the
-     * update_environment bridge is fully C-owned.
+     * Keep the legacy status state reset while status hooks still read legacy
+     * Status::State values.
      */
     actions_legacy_runtime_status_clear();
     return;

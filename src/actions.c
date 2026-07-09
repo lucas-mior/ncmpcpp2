@@ -1605,7 +1605,7 @@ action_runtime_mpd_simple(
     if (!func(&global_mpd, &error)) {
         return action_runtime_mpd_error(&error);
     }
-    (void)ncm_status_update(&global_mpd, -1, &error);
+    (void)ncm_status_update_full(&global_mpd, NULL, &error);
     return true;
 }
 
@@ -1674,7 +1674,7 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
         if (!ok) {
             return action_runtime_mpd_error(&error);
         }
-        (void)ncm_status_update(&global_mpd, -1, &error);
+        (void)ncm_status_update_full(&global_mpd, NULL, &error);
         return true;
     }
 
@@ -1699,7 +1699,7 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
         }
     }
 
-    (void)ncm_status_update(&global_mpd, -1, &error);
+    (void)ncm_status_update_full(&global_mpd, NULL, &error);
     return true;
 }
 
@@ -1720,7 +1720,7 @@ action_runtime_mpd_toggle(
     if (!func(&global_mpd, !current, &error)) {
         return action_runtime_mpd_error(&error);
     }
-    (void)ncm_status_update(&global_mpd, -1, &error);
+    (void)ncm_status_update_full(&global_mpd, NULL, &error);
     return true;
 }
 
@@ -1732,7 +1732,7 @@ action_runtime_volume(int32 change) {
     if (!ncm_mpd_client_change_volume(&global_mpd, change, &error)) {
         return action_runtime_mpd_error(&error);
     }
-    (void)ncm_status_update(&global_mpd, -1, &error);
+    (void)ncm_status_update_full(&global_mpd, NULL, &error);
     return true;
 }
 
@@ -1807,26 +1807,20 @@ action_runtime_toggle_crossfade(void) {
     if (!ncm_mpd_client_set_crossfade(&global_mpd, seconds, &error)) {
         return action_runtime_mpd_error(&error);
     }
-    (void)ncm_status_update(&global_mpd, -1, &error);
+    (void)ncm_status_update_full(&global_mpd, NULL, &error);
     return true;
 }
 
 static bool
 action_runtime_update_environment(void) {
     NcmError error;
-    int32 flags;
 
     ncm_error_clear(&error);
     ncm_status_trace(&global_mpd, true, true, &error);
     app_controller_refresh_current_window();
 
-    flags = 0;
     if (ncm_mpd_client_connected(&global_mpd)) {
-        if (ncm_mpd_client_noidle(&global_mpd, &flags, &error)) {
-            if (flags != 0) {
-                (void)ncm_status_update(&global_mpd, flags, &error);
-            }
-        }
+        (void)ncm_status_update_from_noidle(&global_mpd, NULL, &error);
     }
     return true;
 }
@@ -2499,7 +2493,7 @@ action_runtime_delete_playlist_items(void) {
 
     ncm_free(positions, (uint64)count*SIZEOF(*positions));
     ncm_song_array_destroy(&songs);
-    (void)ncm_status_update(&global_mpd, -1, &error);
+    (void)ncm_status_update_full(&global_mpd, NULL, &error);
     return true;
 }
 
@@ -2574,7 +2568,7 @@ action_runtime_clear_playlist(bool main_playlist) {
         if (!ncm_mpd_client_clear_queue(&global_mpd, &error)) {
             return action_runtime_mpd_error(&error);
         }
-        (void)ncm_status_update(&global_mpd, -1, &error);
+        (void)ncm_status_update_full(&global_mpd, NULL, &error);
         return true;
     }
 
@@ -2643,7 +2637,7 @@ action_runtime_crop_playlist(bool main_playlist) {
                 return action_runtime_mpd_error(&error);
             }
         }
-        (void)ncm_status_update(&global_mpd, -1, &error);
+        (void)ncm_status_update_full(&global_mpd, NULL, &error);
         ncm_song_array_destroy(&songs);
         return true;
     }
@@ -2707,7 +2701,7 @@ action_runtime_move_main_playlist_items(NcmSongArray *songs,
     }
 
     ncm_free(positions, (uint64)count*SIZEOF(*positions));
-    (void)ncm_status_update(&global_mpd, -1, &error);
+    (void)ncm_status_update_full(&global_mpd, NULL, &error);
     return true;
 }
 
@@ -2865,7 +2859,7 @@ action_runtime_reverse_playlist(void) {
         last -= 1;
     }
 
-    (void)ncm_status_update(&global_mpd, -1, &error);
+    (void)ncm_status_update_full(&global_mpd, NULL, &error);
     return true;
 }
 
@@ -2893,7 +2887,7 @@ action_runtime_shuffle_playlist(void) {
                                       &error)) {
         return action_runtime_mpd_error(&error);
     }
-    (void)ncm_status_update(&global_mpd, -1, &error);
+    (void)ncm_status_update_full(&global_mpd, NULL, &error);
     return true;
 }
 
@@ -3048,7 +3042,7 @@ action_runtime_seek_relative(bool forward) {
                                  target, &error)) {
         return action_runtime_mpd_error(&error);
     }
-    (void)ncm_status_update(&global_mpd, -1, &error);
+    (void)ncm_status_update_full(&global_mpd, NULL, &error);
     return true;
 }
 
