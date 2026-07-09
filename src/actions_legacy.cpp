@@ -91,6 +91,24 @@ bool currentSongFromNative(MPD::Song &song)
 	return success;
 }
 
+bool currentMediaLibraryArtistTag(std::string &artist)
+{
+	BaseScreen *current;
+
+	current = screenLegacyCurrent();
+	if (current == nullptr || myLibrary == nullptr)
+		return false;
+	if (!current->isActiveWindow(myLibrary->Tags))
+		return false;
+	if (myLibrary->Tags.empty())
+		return false;
+	if (Config.media_lib_primary_tag != MPD_TAG_ARTIST)
+		return false;
+
+	artist = myLibrary->Tags.current()->value().tag();
+	return true;
+}
+
 std::vector<std::shared_ptr<Actions::BaseAction>> AvailableActions;
 
 template <typename Helper>
@@ -2771,41 +2789,31 @@ void ShowSongInfo::run()
 
 bool ShowArtistInfo::canBeRun()
 {
-	BaseScreen *current;
 	MPD::Song song;
+	std::string artist;
 
 	if (native_c_screen_lastfm_is_current())
 		return true;
+	if (currentMediaLibraryArtistTag(artist))
+		return true;
 
-	current = screenLegacyCurrent();
-	return (current != nullptr
-	        && current->isActiveWindow(myLibrary->Tags)
-	        && !myLibrary->Tags.empty()
-	        && Config.media_lib_primary_tag == MPD_TAG_ARTIST)
-		|| currentSongFromNative(song);
+	return currentSongFromNative(song);
 }
 
 void ShowArtistInfo::run()
 {
-	BaseScreen *current;
 	std::string artist;
 
 	if (native_c_screen_lastfm_is_current())
 	{
-		(void)app_controller_switch_to_screen(app_controller_previous_screen());
+		native_c_screen_lastfm_switch_to();
 		return;
 	}
 
-	current = screenLegacyCurrent();
-	if (current != nullptr && current->isActiveWindow(myLibrary->Tags))
-	{
-		assert(!myLibrary->Tags.empty());
-		assert(Config.media_lib_primary_tag == MPD_TAG_ARTIST);
-		artist = myLibrary->Tags.current()->value().tag();
-	}
-	else
+	if (!currentMediaLibraryArtistTag(artist))
 	{
 		MPD::Song song;
+
 		if (!currentSongFromNative(song))
 			return;
 		artist = song.getArtist();
