@@ -379,22 +379,20 @@ native_lastfm_screen_completed_jobs(NativeLastfmScreen *screen) {
 }
 
 bool
-native_lastfm_screen_find(NativeLastfmScreen *screen,
-                          char *pattern, int32 pattern_len,
-                          NcmError *error) {
+native_lastfm_buffer_find(NcBuffer *buffer, char *pattern,
+                          int32 pattern_len, NcmError *error) {
     NativeLastfmFindState state;
     NcmRegex regex;
     char *data;
     bool result;
 
-    if (screen == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing Last.fm screen"));
+    if (buffer == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing Last.fm buffer"));
         return false;
     }
 
-    nc_buffer_remove_properties(&screen->buffer, NATIVE_LASTFM_PROPERTY_ID);
+    nc_buffer_remove_properties(buffer, NATIVE_LASTFM_PROPERTY_ID);
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        native_lastfm_flush(screen);
         ncm_error_clear(error);
         return true;
     }
@@ -403,18 +401,33 @@ native_lastfm_screen_find(NativeLastfmScreen *screen,
     if (!ncm_regex_compile(&regex, pattern, pattern_len, Config.regex_type,
                            error)) {
         ncm_regex_destroy(&regex);
-        native_lastfm_flush(screen);
         return false;
     }
 
-    state.buffer = &screen->buffer;
-    data = nc_buffer_data(&screen->buffer);
+    state.buffer = buffer;
+    data = nc_buffer_data(buffer);
     result = ncm_regex_for_each_match(&regex,
                                       data,
-                                      screen->buffer.len,
+                                      buffer->len,
                                       native_lastfm_find_match_callback,
                                       &state);
     ncm_regex_destroy(&regex);
+    return result;
+}
+
+bool
+native_lastfm_screen_find(NativeLastfmScreen *screen,
+                          char *pattern, int32 pattern_len,
+                          NcmError *error) {
+    bool result;
+
+    if (screen == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing Last.fm screen"));
+        return false;
+    }
+
+    result = native_lastfm_buffer_find(&screen->buffer, pattern, pattern_len,
+                                       error);
     native_lastfm_flush(screen);
     return result;
 }
