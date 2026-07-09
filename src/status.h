@@ -15,10 +15,28 @@ enum NcmStatusPlayerState {
     NCM_STATUS_PLAYER_PAUSE,
 };
 
+typedef struct NcmStatusHooks {
+    void *user;
+
+    void (*playlist_changed)(uint32 previous_version, void *user);
+    void (*stored_playlists_changed)(void *user);
+    void (*database_changed)(void *user);
+    void (*player_state_changed)(void *user);
+    void (*song_id_changed)(int32 song_id, void *user);
+    void (*elapsed_time_changed)(bool update_elapsed, void *user);
+    void (*flags_changed)(void *user);
+    void (*mixer_changed)(void *user);
+    void (*outputs_changed)(void *user);
+    void (*refresh_footer)(void *user);
+    void (*refresh_visible_screens)(void *user);
+} NcmStatusHooks;
+
 void ncm_status_handle_client_error(NcmMpdClient *client);
 void ncm_status_handle_server_error(NcmMpdClient *client);
 void ncm_status_trace(NcmMpdClient *client, bool update_timer,
                       bool update_window_timeout, NcmError *error);
+bool ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
+                                 NcmStatusHooks *hooks, NcmError *error);
 bool ncm_status_update(NcmMpdClient *client, int32 event, NcmError *error);
 void ncm_status_clear(void);
 
@@ -31,9 +49,12 @@ int32 ncm_status_state_current_song_id(void);
 int32 ncm_status_state_current_song_position(void);
 uint32 ncm_status_state_playlist_length(void);
 uint32 ncm_status_state_elapsed_time(void);
+uint32 ncm_status_state_kbps(void);
 enum NcmStatusPlayerState ncm_status_state_player(void);
+uint32 ncm_status_state_playlist_version(void);
 uint32 ncm_status_state_total_time(void);
 int32 ncm_status_state_volume(void);
+bool ncm_status_state_database_updating(void);
 void ncm_status_state_sync_from_legacy(enum NcmStatusPlayerState player,
                                        uint32 elapsed_time,
                                        uint32 total_time);
