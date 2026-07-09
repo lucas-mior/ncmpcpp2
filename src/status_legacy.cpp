@@ -207,88 +207,6 @@ void legacy_status_ui_database_changed(void *user)
 	myLibrary->requestSongsUpdate();
 }
 
-void legacy_status_ui_player_state_changed(
-	enum NcmStatusPlayerState state, void *user)
-{
-	(void)state;
-	(void)user;
-	syncLegacyStatusPrimaryStateFromC();
-	if (!Config.execute_on_player_state_change.empty())
-	{
-		auto stateToEnv = [](MPD::PlayerState st) -> const char * {
-			switch (st)
-			{
-			case MPD::psPlay:    return "play";
-			case MPD::psStop:    return "stop";
-			case MPD::psPause:   return "pause";
-			case MPD::psUnknown: return "unknown";
-			}
-			throw std::logic_error("unreachable");
-		};
-		setenv("MPD_PLAYER_STATE", stateToEnv(m_player_state), 1);
-		// Since we're setting a MPD_PLAYER_STATE, we need to block.
-		runExternalCommand(Config.execute_on_player_state_change, true);
-		unsetenv("MPD_PLAYER_STATE");
-	}
-	switch (m_player_state)
-	{
-		case MPD::psPlay:
-		case MPD::psStop:
-			myPlaylist->reloadRemaining();
-			break;
-		case MPD::psPause:
-		case MPD::psUnknown:
-			break;
-	}
-}
-
-void legacy_status_ui_player_stopped(void *user)
-{
-	(void)user;
-#	ifdef ENABLE_VISUALIZER
-	if (isVisible(myVisualizer))
-		myVisualizer->Clear();
-#	endif // ENABLE_VISUALIZER
-}
-
-void legacy_status_ui_song_id_changed(int32 song_id, void *user)
-{
-	(void)user;
-	syncLegacyStatusPrimaryStateFromC();
-	myPlaylist->reloadRemaining();
-#	ifdef ENABLE_VISUALIZER
-	myVisualizer->ResetAutoScaleMultiplier();
-#	endif // ENABLE_VISUALIZER
-	m_current_song_id = song_id;
-}
-
-void legacy_status_ui_current_song_changed(NcmSong *song, void *user)
-{
-	(void)user;
-	MPD::Song s(song);
-
-	if (s.empty())
-		return;
-
-	if (!Config.execute_on_song_change.empty())
-	{
-		// We need to block to allow sending output to the terminal so a script
-		// can e.g. set the album art.
-		runExternalCommand(Config.execute_on_song_change, true);
-	}
-
-	if (Config.fetch_lyrics_in_background)
-		myLyrics->fetchInBackground(s, false);
-
-	if (Config.autocenter_mode)
-		myPlaylist->locateSong(s);
-
-	if (Config.now_playing_lyrics
-	    && isVisible(myLyrics)
-	    && myLyrics->previousScreen() == myPlaylist)
-		myLyrics->fetch(s);
-}
-
 void legacy_status_refresh_footer(void *user)
 {
 	(void)user;
@@ -389,10 +307,10 @@ extern "C" void ncm_status_register_legacy_hooks(void)
 		legacy_status_ui_playlist_changed,
 		legacy_status_ui_stored_playlists_changed,
 		legacy_status_ui_database_changed,
-		legacy_status_ui_player_state_changed,
-		legacy_status_ui_player_stopped,
-		legacy_status_ui_song_id_changed,
-		legacy_status_ui_current_song_changed,
+		nullptr,
+		nullptr,
+		nullptr,
+		nullptr,
 	};
 	NcmStatusInitHooks init_hooks = {
 		nullptr,
