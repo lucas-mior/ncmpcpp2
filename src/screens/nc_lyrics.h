@@ -126,6 +126,11 @@ NcmSong *native_lyrics_screen_song(NativeLyricsScreen *screen);
 NcmLyricsResult *native_lyrics_screen_result(NativeLyricsScreen *screen);
 NcmBuffer *native_lyrics_screen_filename(NativeLyricsScreen *screen);
 NcBuffer *native_lyrics_screen_display(NativeLyricsScreen *screen);
+bool native_lyrics_buffer_find(NcBuffer *buffer, char *pattern,
+                               int32 pattern_len, NcmError *error);
+bool native_lyrics_screen_find(NativeLyricsScreen *screen,
+                               char *pattern, int32 pattern_len,
+                               NcmError *error);
 int32 native_lyrics_screen_pending_jobs(NativeLyricsScreen *screen);
 int32 native_lyrics_screen_completed_jobs(NativeLyricsScreen *screen);
 int32 native_lyrics_screen_queued_count(NativeLyricsScreen *screen);
