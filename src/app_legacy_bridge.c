@@ -8,6 +8,7 @@
 #include "screens/native_c_screens.h"
 #include "settings.h"
 #include "status.h"
+#include "status_legacy_bridge.h"
 #include "statusbar.h"
 #include "ui_state.h"
 
@@ -328,13 +329,7 @@ ncmpcpp_legacy_connect_or_report(void) {
 
 void
 ncmpcpp_legacy_status_clear(void) {
-    ncm_status_clear();
-
-    /*
-     * Keep the legacy status state reset while status hooks still read
-     * mirrored legacy status values.
-     */
-    actions_legacy_runtime_status_clear();
+    ncm_status_legacy_clear();
     return;
 }
 

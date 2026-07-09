@@ -41,6 +41,7 @@
 #include "screens/sel_items_adder.h"
 #include "settings_legacy.h"
 #include "status_legacy.h"
+#include "status_legacy_bridge.h"
 #include "status.h"
 #include "statusbar.h"
 #include "screens/tag_editor.h"
@@ -307,7 +308,7 @@ void legacy_status_initialize(void *user)
 	initialize_status();
 }
 
-void registerLegacyStatusHooks()
+extern "C" void ncm_status_register_legacy_hooks(void)
 {
 	NcmStatusHooks hooks = {
 		nullptr,
@@ -344,6 +345,7 @@ extern "C" void ncm_statusbar_legacy_mpd_callback(void)
 	NcmError error;
 
 	ncm_error_clear(&error);
+	ncm_status_register_legacy_hooks();
 	(void)ncm_status_update_from_noidle(&global_mpd, nullptr, &error);
 }
 
@@ -353,7 +355,7 @@ void initialize_status()
 	NcmError error;
 
 	ncm_error_clear(&error);
-	registerLegacyStatusHooks();
+	ncm_status_register_legacy_hooks();
 	(void)ncm_status_update_full(&global_mpd, nullptr, &error);
 	syncLegacyStatusStateFromC();
 
@@ -437,34 +439,7 @@ void Status::handleServerError(MPD::ServerError &e)
 
 /*************************************************************************/
 
-void Status::trace(bool update_timer, bool update_window_timeout)
-{
-	NcmError error;
-
-	ncm_error_clear(&error);
-	registerLegacyStatusHooks();
-	ncm_status_trace(&global_mpd, update_timer, update_window_timeout, &error);
-}
-
-void Status::update(int event)
-{
-	NcmError error;
-
-	ncm_error_clear(&error);
-	registerLegacyStatusHooks();
-	if (event == -1)
-	{
-		(void)ncm_status_update_full(&global_mpd, nullptr, &error);
-	}
-	else
-	{
-		(void)ncm_status_update(&global_mpd, event, &error);
-	}
-	syncLegacyStatusStateFromC();
-	m_status_initialized = true;
-}
-
-void Status::clear()
+extern "C" void ncm_status_legacy_clear(void)
 {
 	// reset local variables
 	m_status_initialized = false;
