@@ -359,7 +359,7 @@ void initialize_status()
 
 	if (Config.jump_to_now_playing_song_at_start)
 	{
-		int curr_pos = Status::State::currentSongPosition();
+		int curr_pos = ncm_status_state_current_song_position();
 		if  (curr_pos >= 0)
 		{
 			myPlaylist->main().highlight(curr_pos);
@@ -485,67 +485,6 @@ void Status::clear()
 	ncm_status_clear();
 }
 
-/*************************************************************************/
-
-bool Status::State::consume()
-{
-	return ncm_status_state_consume();
-}
-
-bool Status::State::crossfade()
-{
-	return ncm_status_state_crossfade();
-}
-
-bool Status::State::repeat()
-{
-	return ncm_status_state_repeat();
-}
-
-bool Status::State::random()
-{
-	return ncm_status_state_random();
-}
-
-bool Status::State::single()
-{
-	return ncm_status_state_single();
-}
-
-int Status::State::currentSongID()
-{
-	return ncm_status_state_current_song_id();
-}
-
-int Status::State::currentSongPosition()
-{
-	return ncm_status_state_current_song_position();
-}
-
-unsigned Status::State::playlistLength()
-{
-	return ncm_status_state_playlist_length();
-}
-
-unsigned Status::State::elapsedTime()
-{
-	return ncm_status_state_elapsed_time();
-}
-
-MPD::PlayerState Status::State::player()
-{
-	return c_player_state_to_legacy(ncm_status_state_player());
-}
-
-unsigned Status::State::totalTime()
-{
-	return ncm_status_state_total_time();
-}
-
-int Status::State::volume()
-{
-	return ncm_status_state_volume();
-}
 
 /*************************************************************************/
 

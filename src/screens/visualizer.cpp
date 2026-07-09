@@ -38,11 +38,10 @@
 #include "global.h"
 #include "ui_state.h"
 #include "settings_legacy.h"
-#include "status_legacy.h"
+#include "status.h"
 #include "statusbar.h"
 #include "title_legacy.h"
 #include "screens/screen_cpp_switcher.h"
-#include "status_legacy.h"
 #include "c/ncm_enums.h"
 #include "c/ncm_mpd_client.h"
 #include "utility/utf8.h"
@@ -255,7 +254,7 @@ void Visualizer::update()
 
 int Visualizer::windowTimeout()
 {
-	if (m_source_fd >= 0 && Status::State::player() == MPD::psPlay)
+	if (m_source_fd >= 0 && ncm_status_state_player() == NCM_STATUS_PLAYER_PLAY)
 		return 1000/Config.visualizer_fps;
 	else
 		return Screen<WindowType>::windowTimeout();
