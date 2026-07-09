@@ -43,7 +43,7 @@
 #include "status_legacy.h"
 #include "status.h"
 #include "statusbar.h"
-#include "statusbar_legacy.h"
+#include "statusbar.h"
 #include "screens/tag_editor.h"
 #include "screens/visualizer.h"
 #include "title_legacy.h"
@@ -167,6 +167,11 @@ std::string playerStateToString(MPD::PlayerState ps)
 			break;
 	}
 	return result;
+}
+
+extern "C" void ncm_statusbar_legacy_mpd_callback(void)
+{
+	Status::update(Mpd.noidle());
 }
 
 void initialize_status()

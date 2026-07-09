@@ -39,7 +39,7 @@
 #include "ui_state.h"
 #include "settings_legacy.h"
 #include "status_legacy.h"
-#include "statusbar_legacy.h"
+#include "statusbar.h"
 #include "title_legacy.h"
 #include "screens/screen_cpp_switcher.h"
 #include "status_legacy.h"

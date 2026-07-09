@@ -3,7 +3,9 @@
 #include <string.h>
 
 #include "actions.h"
+#include "bindings.h"
 #include "c/ncm_error.h"
+#include "c/ncm_base.h"
 #include "cbase/base_macros.h"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
@@ -41,6 +43,7 @@ static void test_disabled_action_checks(void);
 static void test_action_execution_paths(void);
 static void test_custom_table_lookup(void);
 static void test_action_callback_installation(void);
+static void test_immediate_command_prompt_stop(void);
 
 static void
 fail(char *file, int32 line, char *condition) {
@@ -237,6 +240,45 @@ test_custom_table_lookup(void) {
     return;
 }
 
+static void
+test_command_set(NcmCommand *command, char *name, int32 name_len,
+                 bool immediate) {
+    ncm_command_init(command);
+    command->name = ncm_malloc(name_len + 1);
+    ncm_memcpy(command->name, name, name_len);
+    command->name[name_len] = '\0';
+    command->name_len = name_len;
+    command->name_cap = name_len + 1;
+    command->immediate = immediate;
+    return;
+}
+
+static void
+test_immediate_command_prompt_stop(void) {
+    NcmBuffer previous;
+
+    ncm_bindings_configuration_init(&Bindings);
+    Bindings.commands = ncm_malloc(2*SIZEOF(*Bindings.commands));
+    Bindings.commands_len = 2;
+    Bindings.commands_cap = 2;
+    test_command_set(Bindings.commands + 0, LIT_ARGS("later"), false);
+    test_command_set(Bindings.commands + 1, LIT_ARGS("now"), true);
+
+    ncm_buffer_init(&previous);
+    REQUIRE(!ncm_action_immediate_command_prompt_should_stop(
+        &previous, LIT_ARGS("later")));
+    REQUIRE_STRING(previous.data, "later");
+    REQUIRE(!ncm_action_immediate_command_prompt_should_stop(
+        &previous, LIT_ARGS("later")));
+    REQUIRE(ncm_action_immediate_command_prompt_should_stop(
+        &previous, LIT_ARGS("now")));
+    REQUIRE_STRING(previous.data, "now");
+
+    ncm_buffer_destroy(&previous);
+    ncm_bindings_configuration_destroy(&Bindings);
+    return;
+}
+
 int
 main(void) {
     test_action_name_lookup();
@@ -245,5 +287,6 @@ main(void) {
     test_action_execution_paths();
     test_custom_table_lookup();
     test_action_callback_installation();
+    test_immediate_command_prompt_stop();
     exit(EXIT_SUCCESS);
 }

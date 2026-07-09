@@ -33,13 +33,118 @@ void ncm_statusbar_format(int32 delay_seconds,
                           int32 format_len,
                           NcmStringFormatArg *args,
                           int32 args_len);
+void ncm_statusbar_mpd_noidle_callback(int32 flags, void *user);
 void ncm_statusbar_mpd_idle_callback(void);
 bool ncm_statusbar_main_hook(char *string, int32 string_len);
 bool ncm_statusbar_prompt_return_one_of(NcWindow *window,
                                          char *values,
                                          int32 values_len,
                                          char *result);
+int32 ncm_statusbar_message_delay_time(void);
 
 NCM_EXTERN_C_END
+
+#if defined(__cplusplus)
+
+#include <string>
+#include <utility>
+
+#include "curses/window.h"
+#include "ui_state.h"
+#include "utility/string_format.h"
+
+namespace Progressbar {
+
+struct ScopedLock {
+    ScopedLock() noexcept {
+        ncm_progressbar_scoped_lock_init(nullptr);
+    }
+
+    ~ScopedLock() noexcept {
+        ncm_progressbar_scoped_lock_destroy(nullptr);
+    }
+};
+
+inline bool
+isUnlocked() {
+    return ncm_progressbar_is_unlocked();
+}
+
+inline void
+draw(unsigned elapsed, unsigned time) {
+    ncm_progressbar_draw(elapsed, time);
+}
+
+}
+
+namespace Statusbar {
+
+struct ScopedLock {
+    ScopedLock() noexcept {
+        ncm_statusbar_scoped_lock_init(nullptr);
+    }
+
+    ~ScopedLock() noexcept {
+        ncm_statusbar_scoped_lock_destroy(nullptr);
+    }
+};
+
+inline bool
+isUnlocked() {
+    return ncm_statusbar_is_unlocked();
+}
+
+inline void
+tryRedraw() {
+    ncm_statusbar_try_redraw();
+}
+
+inline NC::Window &
+put() {
+    ncm_statusbar_put();
+    return *static_cast<NC::Window *>(ui_state_footer_legacy_window());
+}
+
+extern "C" void ncm_statusbar_legacy_mpd_callback(void);
+
+namespace Helpers {
+
+inline void
+mpd() {
+    ncm_statusbar_legacy_mpd_callback();
+}
+
+}
+
+inline void
+print(int delay, const std::string &message) {
+    ncm_statusbar_print(delay, const_cast<char *>(message.data()),
+                        static_cast<int32>(message.size()));
+}
+
+inline void
+print(const std::string &message) {
+    print(ncm_statusbar_message_delay_time(), message);
+}
+
+template <typename FormatT, typename... Args>
+void
+printf(FormatT &&fmt, Args&&... args) {
+    print(ncm_statusbar_message_delay_time(),
+          stringFormat(std::forward<FormatT>(fmt),
+                       std::forward<Args>(args)...));
+}
+
+template <typename FormatT, typename... Args>
+void
+printf(int delay, FormatT &&fmt, Args&&... args) {
+    print(delay,
+          stringFormat(std::forward<FormatT>(fmt),
+                       std::forward<Args>(args)...));
+}
+
+}
+
+#endif
 
 #endif /* NCMPCPP_STATUSBAR_H */

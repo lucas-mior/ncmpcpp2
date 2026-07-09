@@ -44,7 +44,7 @@
 #include "screens/playlist.h"
 #include "settings_legacy.h"
 #include "song.h"
-#include "statusbar_legacy.h"
+#include "statusbar.h"
 #include "title_legacy.h"
 #include "screens/screen_cpp_switcher.h"
 #include "screens/screen_cpp_legacy.h"
