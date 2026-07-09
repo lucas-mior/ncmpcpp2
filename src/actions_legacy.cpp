@@ -453,12 +453,12 @@ void resizeScreen(bool reload_main_window)
 
 	app_controller_refresh_visible_screens();
 
-	Status::Changes::elapsedTime(false);
-	Status::Changes::playerState();
+	ncm_status_changes_elapsed_time(false);
+	ncm_status_changes_player_state();
 	// Note: routines for drawing separator if alternative user
 	// interface is active and header is hidden are placed in
 	// NcmpcppStatusChanges.StatusFlags
-	Status::Changes::flags();
+	ncm_status_changes_flags();
 	drawHeader();
 	static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
 	refresh();
@@ -729,8 +729,8 @@ void ToggleInterface::run()
 	resizeScreen(false);
 	// unlock progressbar
 	Progressbar::ScopedLock();
-	Status::Changes::mixer();
-	Status::Changes::elapsedTime(false);
+	ncm_status_changes_mixer();
+	ncm_status_changes_elapsed_time(false);
 	Statusbar::printf("User interface: %1%", Config.design);
 }
 

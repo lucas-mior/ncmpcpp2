@@ -54,20 +54,6 @@ int volume();
 
 }
 
-namespace Changes {
-
-void playlist(unsigned previous_version);
-void storedPlaylists();
-void database();
-void playerState();
-void songID(int song_id);
-void elapsedTime(bool update_elapsed);
-void flags();
-void mixer();
-void outputs();
-
-}
-
 }
 
 #endif // NCMPCPP_STATUS_CHECKER_LEGACY_H
