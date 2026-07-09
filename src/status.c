@@ -49,6 +49,8 @@ static bool status_init_hooks_set;
 static NcmStatusInitHooks status_init_hooks;
 static void (*status_notification_observer)(void *user);
 static void *status_notification_observer_user;
+static void (*status_database_update_observer)(void *user);
+static void *status_database_update_observer_user;
 static NcmTimePoint status_past;
 static int64 status_playing_song_scroll_begin;
 static int64 status_first_line_scroll_begin;
@@ -76,6 +78,8 @@ static bool status_current_song_for_change(NcmSong *song);
 static void status_call_ui_playlist_changed(uint32 previous_version);
 static void status_call_ui_stored_playlists_changed(void);
 static void status_call_ui_database_changed(void);
+static void status_request_stored_playlists_update(void);
+static void status_request_database_update(void);
 static void status_call_ui_player_state_changed(void);
 static void status_call_ui_player_stopped(void);
 static void status_call_ui_song_id_changed(int32 song_id);
@@ -183,6 +187,14 @@ ncm_status_set_notification_observer(void (*callback)(void *user),
                                      void *user) {
     status_notification_observer = callback;
     status_notification_observer_user = user;
+    return;
+}
+
+void
+ncm_status_set_database_update_observer(void (*callback)(void *user),
+                                        void *user) {
+    status_database_update_observer = callback;
+    status_database_update_observer_user = user;
     return;
 }
 
@@ -816,12 +828,14 @@ ncm_status_changes_playlist(uint32 previous_version) {
 
 void
 ncm_status_changes_stored_playlists(void) {
+    status_request_stored_playlists_update();
     status_call_ui_stored_playlists_changed();
     return;
 }
 
 void
 ncm_status_changes_database(void) {
+    status_request_database_update();
     status_call_ui_database_changed();
     return;
 }
@@ -1031,6 +1045,41 @@ static void
 status_call_ui_database_changed(void) {
     if (status_ui_hooks_set && (status_ui_hooks.database_changed != NULL)) {
         status_ui_hooks.database_changed(status_ui_hooks.user);
+    }
+    return;
+}
+
+static void
+status_request_stored_playlists_update(void) {
+    NativeBrowserScreen *browser;
+    NativePlaylistEditorScreen *editor;
+
+    editor = native_c_screen_playlist_editor();
+    native_playlist_editor_screen_request_playlists_update(editor);
+    native_playlist_editor_screen_request_content_update(editor);
+
+    browser = native_c_screen_browser();
+    if ((browser != NULL) && !native_browser_screen_is_local(browser)
+        && native_browser_screen_in_root_directory(browser)) {
+        native_browser_screen_request_update(browser);
+    }
+    return;
+}
+
+static void
+status_request_database_update(void) {
+    native_browser_screen_request_update(native_c_screen_browser());
+#if defined(HAVE_TAGLIB_H)
+    native_tag_editor_screen_clear_directories(native_c_screen_tag_editor());
+#endif
+    native_media_library_screen_request_tags_update(
+        native_c_screen_media_library());
+    native_media_library_screen_request_albums_update(
+        native_c_screen_media_library());
+    native_media_library_screen_request_songs_update(
+        native_c_screen_media_library());
+    if (status_database_update_observer != NULL) {
+        status_database_update_observer(status_database_update_observer_user);
     }
     return;
 }

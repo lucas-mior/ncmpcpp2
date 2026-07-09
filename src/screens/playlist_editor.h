@@ -137,6 +137,8 @@ private:
     static int32 nativeWindowTimeoutCallback(void *user);
     static char *nativeTitleCallback(void *user);
     static void nativeUpdateCallback(void *user);
+    static void nativeRequestPlaylistsUpdateCallback(void *user);
+    static void nativeRequestContentUpdateCallback(void *user);
     static void nativeMouseButtonPressedCallback(void *user, MEVENT event);
 
     bool m_playlists_update_requested;
@@ -279,6 +281,8 @@ inline PlaylistEditor::PlaylistEditor()
         bridge.window_timeout = nativeWindowTimeoutCallback;
         bridge.title = nativeTitleCallback;
         bridge.update = nativeUpdateCallback;
+        bridge.request_playlists_update = nativeRequestPlaylistsUpdateCallback;
+        bridge.request_content_update = nativeRequestContentUpdateCallback;
         bridge.mouse_button_pressed = nativeMouseButtonPressedCallback;
         bridge.user = this;
         native_playlist_editor_screen_set_bridge(
@@ -946,6 +950,24 @@ inline void PlaylistEditor::nativeUpdateCallback(void *user)
     if (editor == nullptr)
         return;
     editor->update();
+}
+
+inline void PlaylistEditor::nativeRequestPlaylistsUpdateCallback(void *user)
+{
+    PlaylistEditor *editor = static_cast<PlaylistEditor *>(user);
+
+    if (editor == nullptr)
+        return;
+    editor->requestPlaylistsUpdate();
+}
+
+inline void PlaylistEditor::nativeRequestContentUpdateCallback(void *user)
+{
+    PlaylistEditor *editor = static_cast<PlaylistEditor *>(user);
+
+    if (editor == nullptr)
+        return;
+    editor->requestContentUpdate();
 }
 
 inline void PlaylistEditor::nativeMouseButtonPressedCallback(void *user,

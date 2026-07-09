@@ -130,11 +130,22 @@ int32 promptTextLen(char *text)
 	return static_cast<int32>(std::strlen(text));
 }
 
+void requestMediaLibraryDatabaseUpdate(void *)
+{
+	if (myLibrary == nullptr)
+		return;
+	myLibrary->requestTagsUpdate();
+	myLibrary->requestAlbumsUpdate();
+	myLibrary->requestSongsUpdate();
+}
+
 void traceStatus(bool update_timer, bool update_window_timeout)
 {
 	NcmError error = {};
 
 	ncm_status_register_legacy_hooks();
+	ncm_status_set_database_update_observer(
+	    requestMediaLibraryDatabaseUpdate, nullptr);
 	ncm_error_clear(&error);
 	ncm_status_trace(&global_mpd, update_timer, update_window_timeout, &error);
 }
@@ -368,6 +379,8 @@ void initializeScreens()
 	myBrowser = new Browser;
 	mySearcher = new SearchEngine;
 	myLibrary = new MediaLibrary;
+	ncm_status_set_database_update_observer(
+	    requestMediaLibraryDatabaseUpdate, nullptr);
 	myPlaylistEditor = new PlaylistEditor;
 	myLyrics = new Lyrics;
 	mySelectedItemsAdder = new SelectedItemsAdder;

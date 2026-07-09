@@ -48,6 +48,8 @@ typedef struct NativePlaylistEditorBridge {
     int32 (*window_timeout)(void *user);
     char *(*title)(void *user);
     void (*update)(void *user);
+    void (*request_playlists_update)(void *user);
+    void (*request_content_update)(void *user);
     void (*mouse_button_pressed)(void *user, MEVENT event);
     void *user;
 } NativePlaylistEditorBridge;

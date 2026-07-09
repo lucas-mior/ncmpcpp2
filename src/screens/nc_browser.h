@@ -24,6 +24,7 @@ typedef struct NativeBrowserBridge {
     void (*resize)(void *user);
     char *(*title)(void *user);
     void (*update)(void *user);
+    void (*request_update)(void *user);
     void (*mouse_button_pressed)(void *user, MEVENT event);
     void *user;
 } NativeBrowserBridge;
@@ -101,6 +102,7 @@ bool native_browser_screen_search(NativeBrowserScreen *screen,
                                   char *pattern, int32 pattern_len,
                                   bool forward, bool wrap,
                                   bool skip_current, NcmError *error);
+void native_browser_screen_request_update(NativeBrowserScreen *screen);
 bool native_browser_screen_item_is_parent(NcmMpdItem *item);
 void native_browser_screen_set_bridge(NativeBrowserScreen *screen,
                                       NativeBrowserBridge bridge);
