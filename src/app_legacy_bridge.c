@@ -8,7 +8,6 @@
 #include "screens/native_c_screens.h"
 #include "settings.h"
 #include "status.h"
-#include "status_legacy_bridge.h"
 #include "statusbar.h"
 #include "ui_state.h"
 
@@ -329,7 +328,7 @@ ncmpcpp_legacy_connect_or_report(void) {
 
 void
 ncmpcpp_legacy_status_clear(void) {
-    ncm_status_legacy_clear();
+    ncm_status_clear();
     return;
 }
 

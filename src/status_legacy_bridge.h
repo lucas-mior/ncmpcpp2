@@ -6,7 +6,6 @@
 NCM_EXTERN_C_BEGIN
 
 void ncm_status_register_legacy_hooks(void);
-void ncm_status_legacy_clear(void);
 
 NCM_EXTERN_C_END
 
