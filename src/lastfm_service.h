@@ -5,6 +5,8 @@
 
 #include <stdbool.h>
 
+#include <curl/curl.h>
+
 #include "c/ncm_defs.h"
 
 NCM_EXTERN_C_BEGIN
@@ -20,6 +22,20 @@ typedef struct NcmLastfmResult {
     int32 text_cap;
     bool success;
 } NcmLastfmResult;
+
+typedef CURLcode (*NcmLastfmCurlPerformFn)(NcmBuffer *data,
+                                           char *url,
+                                           int32 url_len,
+                                           char *referer,
+                                           int32 referer_len,
+                                           bool follow_redirect,
+                                           int32 timeout_seconds,
+                                           void *user);
+
+typedef CURLcode (*NcmLastfmCurlEscapeFn)(NcmBuffer *out,
+                                          char *string,
+                                          int32 string_len,
+                                          void *user);
 
 typedef struct NcmLastfmService {
     char *artist;
@@ -53,6 +69,10 @@ enum NcmLastfmServiceType ncm_lastfm_service_type(
     NcmLastfmService *service);
 bool ncm_lastfm_service_fetch(NcmLastfmService *service,
                               NcmLastfmResult *result);
+
+void ncm_lastfm_service_set_io_for_tests(NcmLastfmCurlPerformFn perform,
+                                         NcmLastfmCurlEscapeFn escape,
+                                         void *user);
 
 NCM_EXTERN_C_END
 
