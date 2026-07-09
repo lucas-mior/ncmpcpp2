@@ -35,14 +35,6 @@
 
 enum ReapplyFilter { Yes, No };
 
-inline std::string showSongTime(unsigned length)
-{
-	char buffer[64];
-
-	ncm_song_show_time(length, buffer, static_cast<int32>(sizeof(buffer)));
-	return buffer;
-}
-
 template <typename ItemT>
 struct ScopedUnfilteredMenu
 {
@@ -532,20 +524,11 @@ void setHighlightInactiveColumnFixes(NC::Menu<T> &m)
 	m.setHighlightSuffix(Config.current_item_inactive_column_suffix);
 }
 
-inline const char *withErrors(bool success)
-{
-	return success ? "" : " " "(with errors)";
-}
-
 void deleteSelectedSongsFromPlaylist(NC::Menu<MPD::Song> &playlist);
 
 bool addSongToPlaylist(const MPD::Song &s, bool play, int position = -1);
 
 const MPD::Song *currentSong(const BaseScreen *screen);
-
-std::string timeFormat(const char *format, time_t t);
-
-std::string Timestamp(time_t t);
 
 std::string Scroller(const std::string &str, size_t &pos, size_t width);
 void writeCyclicBuffer(const NC::Buffer &buf, NC::Window &w, size_t &start_pos,

@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 #include <algorithm>
-#include <time.h>
 
 #include "c/ncm_enums.h"
 #include "helpers_legacy.h"
@@ -112,23 +111,6 @@ bool addSongToPlaylist(const MPD::Song &s, bool play, int position)
 			Mpd.PlayID(id);
 		result = true;
 	}
-	return result;
-}
-
-std::string timeFormat(const char *format, time_t t)
-{
-	char result[32];
-	tm tinfo;
-	localtime_r(&t, &tinfo);
-	strftime(result, sizeof(result), format, &tinfo);
-	return result;
-}
-
-std::string Timestamp(time_t t)
-{
-	char result[32];
-	tm info;
-	result[strftime(result, 31, "%x %X", localtime_r(&t, &info))] = 0;
 	return result;
 }
 
