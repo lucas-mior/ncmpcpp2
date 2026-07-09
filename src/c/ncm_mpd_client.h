@@ -89,6 +89,9 @@ bool ncm_mpd_client_shuffle_range(NcmMpdClient *client, uint32 start,
                                   uint32 end, NcmError *error);
 bool ncm_mpd_client_clear_queue(NcmMpdClient *client, NcmError *error);
 
+bool ncm_mpd_client_get_queue(NcmMpdClient *client,
+                              NcmMpdSongList *songs,
+                              NcmError *error);
 bool ncm_mpd_client_get_queue_changes(NcmMpdClient *client, uint32 version,
                                       NcmMpdSongList *songs,
                                       NcmError *error);

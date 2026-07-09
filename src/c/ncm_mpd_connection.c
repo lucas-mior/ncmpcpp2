@@ -2251,6 +2251,20 @@ ncm_mpd_connection_get_song(NcmMpdConnection *connection,
 }
 
 bool
+ncm_mpd_connection_get_queue(NcmMpdConnection *connection,
+                             NcmMpdSongList *songs) {
+    if (!ncm_mpd_connection_require_connected(connection)) {
+        return false;
+    }
+
+    if (!mpd_send_list_queue_meta(connection->mpd)) {
+        return ncm_mpd_connection_check_error(connection);
+    }
+
+    return ncm_mpd_connection_recv_song_list(connection, songs);
+}
+
+bool
 ncm_mpd_connection_get_queue_changes(NcmMpdConnection *connection,
                                      uint32 version,
                                      NcmMpdSongList *songs) {
