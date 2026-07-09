@@ -87,6 +87,7 @@ void ncm_status_changes_stored_playlists(void);
 void ncm_status_changes_database(void);
 void ncm_status_changes_player_state(void);
 void ncm_status_changes_song_id(int32 song_id);
+void ncm_status_changes_reset_song_scroll(void);
 void ncm_status_changes_elapsed_time(bool update_elapsed);
 void ncm_status_changes_flags(void);
 void ncm_status_changes_mixer(void);

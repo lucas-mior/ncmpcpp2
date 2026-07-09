@@ -53,21 +53,6 @@
 
 namespace {
 
-std::string songTimeString(unsigned length)
-{
-	char buffer[64];
-	int32 len;
-
-	len = ncm_helpers_show_song_time(
-		length, buffer, static_cast<int32>(sizeof(buffer)));
-	return std::string(buffer, static_cast<size_t>(len));
-}
-
-
-int64 playing_song_scroll_begin = 0;
-int64 first_line_scroll_begin = 0;
-int64 second_line_scroll_begin = 0;
-
 void initialize_status();
 
 bool m_status_initialized;
@@ -119,17 +104,6 @@ MPD::PlayerState c_player_state_to_legacy(enum NcmStatusPlayerState state)
 			return MPD::psPause;
 	}
 	throw std::logic_error("unreachable");
-}
-
-void syncCStatusState()
-{
-	ncm_status_state_sync_from_legacy(
-	    m_status_initialized, m_consume != 0, m_crossfade != 0,
-	    m_db_updating != 0, m_repeat != 0, m_random != 0,
-	    m_single != 0, m_current_song_id, m_current_song_pos,
-	    m_elapsed_time, m_kbps,
-	    legacy_player_state_to_c(m_player_state), m_playlist_version,
-	    m_playlist_length, m_total_time, m_volume);
 }
 
 void syncLegacyStatusPrimaryStateFromC()
@@ -197,33 +171,6 @@ void legacy_status_song_id_changed(int32 song_id, void *user)
 	m_current_song_id = song_id;
 }
 
-void legacy_status_elapsed_time_changed(bool update_elapsed, void *user)
-{
-	(void)user;
-	Status::Changes::elapsedTime(update_elapsed);
-}
-
-void legacy_status_flags_changed(void *user)
-{
-	(void)user;
-	syncLegacyStatusStateFromC();
-	Status::Changes::flags();
-}
-
-void legacy_status_mixer_changed(void *user)
-{
-	(void)user;
-	syncLegacyStatusPrimaryStateFromC();
-	Status::Changes::mixer();
-}
-
-void legacy_status_outputs_changed(void *user)
-{
-	(void)user;
-	syncLegacyStatusPrimaryStateFromC();
-	Status::Changes::outputs();
-}
-
 void legacy_status_refresh_footer(void *user)
 {
 	(void)user;
@@ -251,10 +198,10 @@ void registerLegacyStatusHooks()
 		legacy_status_database_changed,
 		legacy_status_player_state_changed,
 		legacy_status_song_id_changed,
-		legacy_status_elapsed_time_changed,
-		legacy_status_flags_changed,
-		legacy_status_mixer_changed,
-		legacy_status_outputs_changed,
+		nullptr,
+		nullptr,
+		nullptr,
+		nullptr,
 		legacy_status_refresh_footer,
 		legacy_status_refresh_visible_screens,
 	};
@@ -470,62 +417,62 @@ void Status::clear()
 
 bool Status::State::consume()
 {
-	return m_consume != 0;
+	return ncm_status_state_consume();
 }
 
 bool Status::State::crossfade()
 {
-	return m_crossfade != 0;
+	return ncm_status_state_crossfade();
 }
 
 bool Status::State::repeat()
 {
-	return m_repeat != 0;
+	return ncm_status_state_repeat();
 }
 
 bool Status::State::random()
 {
-	return m_random != 0;
+	return ncm_status_state_random();
 }
 
 bool Status::State::single()
 {
-	return m_single != 0;
+	return ncm_status_state_single();
 }
 
 int Status::State::currentSongID()
 {
-	return m_current_song_id;
+	return ncm_status_state_current_song_id();
 }
 
 int Status::State::currentSongPosition()
 {
-	return m_current_song_pos;
+	return ncm_status_state_current_song_position();
 }
 
 unsigned Status::State::playlistLength()
 {
-	return m_playlist_length;
+	return ncm_status_state_playlist_length();
 }
 
 unsigned Status::State::elapsedTime()
 {
-	return m_elapsed_time;
+	return ncm_status_state_elapsed_time();
 }
 
 MPD::PlayerState Status::State::player()
 {
-	return m_player_state;
+	return c_player_state_to_legacy(ncm_status_state_player());
 }
 
 unsigned Status::State::totalTime()
 {
-	return m_total_time;
+	return ncm_status_state_total_time();
 }
 
 int Status::State::volume()
 {
-	return m_volume;
+	return ncm_status_state_volume();
 }
 
 /*************************************************************************/
@@ -670,9 +617,7 @@ void Status::Changes::songID(int song_id)
 {
 	// update information about current song
 	myPlaylist->reloadRemaining();
-	playing_song_scroll_begin = 0;
-	first_line_scroll_begin = 0;
-	second_line_scroll_begin = 0;
+	ncm_status_changes_reset_song_scroll();
 #	ifdef ENABLE_VISUALIZER
 	myVisualizer->ResetAutoScaleMultiplier();
 #	endif // ENABLE_VISUALIZER
@@ -714,258 +659,24 @@ void Status::Changes::songID(int song_id)
 
 void Status::Changes::elapsedTime(bool update_elapsed)
 {
-	auto np = myPlaylist->nowPlayingSong();
-	if (m_player_state == MPD::psStop || np.empty())
-	{
-		// MPD is not playing, clear statusbar and exit.
-		if (ncm_statusbar_is_unlocked() && Config.statusbar_visibility)
-			*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(0, 1)
-			         << NC::TermManip::ClearToEOL;
-		if (ncm_progressbar_is_unlocked())
-			ncm_progressbar_draw(0, 0);
-		return;
-	}
-
-	if (update_elapsed)
-	{
-		auto st = Mpd.getStatus();
-		m_elapsed_time = st.elapsedTime();
-		m_kbps = st.kbps();
-	}
-	syncCStatusState();
-
-	std::string ps = playerStateToString(m_player_state);
-	std::string tracklength;
-
-	drawTitle(np);
-	switch (Config.design)
-	{
-		case NCM_DESIGN_CLASSIC:
-			if (ncm_statusbar_is_unlocked() && Config.statusbar_visibility)
-			{
-				if (Config.display_bitrate && m_kbps)
-				{
-					tracklength += "(";
-					tracklength += std::to_string(m_kbps);
-					tracklength += " kbps) ";
-				}
-				tracklength += "[";
-				if (m_total_time)
-				{
-					if (Config.display_remaining_time)
-					{
-						tracklength += "-";
-						tracklength += songTimeString(m_total_time-m_elapsed_time);
-					}
-					else
-						tracklength += songTimeString(m_elapsed_time);
-					tracklength += "/";
-					tracklength += songTimeString(m_total_time);
-				}
-				else
-					tracklength += songTimeString(m_elapsed_time);
-				tracklength += "]";
-				NC::Buffer np_song;
-				NC::Window *footer_window =
-					static_cast<NC::Window *>(ui_state_footer_legacy_window());
-				char separator[] = " ** ";
-
-				Format::print(Config.song_status_format, np_song, &np);
-				*footer_window << NC::XY(0, 1)
-				         << NC::TermManip::ClearToEOL
-				         << Config.player_state_color
-				         << ps
-				         << NC::FormattedColor::End<>(Config.player_state_color)
-				         << " ";
-				nc_cyclic_buffer_write(
-					np_song.cBuffer(), footer_window->nativeWindow(),
-					&playing_song_scroll_begin,
-					footer_window->getWidth()-ps.length()-tracklength.length()-2,
-					separator, sizeof(separator) - 1);
-				*footer_window << NC::XY(footer_window->getWidth()-tracklength.length(), 1)
-				         << Config.statusbar_time_color
-				         << tracklength
-				         << NC::FormattedColor::End<>(Config.statusbar_time_color);
-			}
-			break;
-		case NCM_DESIGN_ALTERNATIVE:
-			if (Config.display_remaining_time)
-			{
-				tracklength = "-";
-				tracklength += songTimeString(m_total_time-m_elapsed_time);
-			}
-			else
-				tracklength = songTimeString(m_elapsed_time);
-			if (m_total_time)
-			{
-				tracklength += "/";
-				tracklength += songTimeString(m_total_time);
-			}
-			// bitrate here doesn't look good, but it can be moved somewhere else later
-			if (Config.display_bitrate && m_kbps)
-			{
-				tracklength += " (";
-				tracklength += std::to_string(m_kbps);
-				tracklength += " kbps)";
-			}
-
-			NC::Buffer first, second;
-			Format::print(Config.new_header_first_line, first, &np);
-			Format::print(Config.new_header_second_line, second, &np);
-
-			size_t first_len = Utf8::width(first.str());
-			size_t first_margin = std::max(tracklength.length()+1,
-			                            static_cast<size_t>(global_volume_state_len()))*2;
-			size_t first_start = first_len < COLS-first_margin
-			                                 ? (COLS-first_len)/2
-			                                 : tracklength.length()+1;
-			size_t second_len = Utf8::width(second.str());
-			size_t second_margin = (std::max(ps.length(), size_t(8))+1)*2;
-			size_t second_start = second_len < COLS-second_margin
-			                                   ? (COLS-second_len)/2
-			                                   : ps.length()+1;
-			if (!global_seeking_in_progress)
-				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 0)
-				         << NC::TermManip::ClearToEOL
-				         << Config.statusbar_time_color
-				         << tracklength
-				         << NC::FormattedColor::End<>(Config.statusbar_time_color);
-
-			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(first_start, 0);
-
-			char separator[] = " ** ";
-			NC::Window *header_window =
-				static_cast<NC::Window *>(ui_state_header_legacy_window());
-
-			nc_cyclic_buffer_write(
-				first.cBuffer(), header_window->nativeWindow(),
-				&first_line_scroll_begin,
-				COLS-tracklength.length()-global_volume_state_len()-1,
-				separator, sizeof(separator) - 1);
-
-			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 1)
-			         << NC::TermManip::ClearToEOL
-			         << Config.player_state_color
-			         << ps
-			         << NC::FormattedColor::End<>(Config.player_state_color)
-			         << NC::XY(second_start, 1);
-
-			nc_cyclic_buffer_write(
-				second.cBuffer(), header_window->nativeWindow(),
-				&second_line_scroll_begin, COLS-ps.length()-8-2,
-				separator, sizeof(separator) - 1);
-
-			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(static_cast<NC::Window *>(ui_state_header_legacy_window())->getWidth()-global_volume_state_len(), 0)
-			         << Config.volume_color
-			         << global_volume_state_cstr()
-			         << NC::FormattedColor::End<>(Config.volume_color);
-
-			flags();
-	}
-	if (ncm_progressbar_is_unlocked())
-		ncm_progressbar_draw(m_elapsed_time, m_total_time);
+	ncm_status_changes_elapsed_time(update_elapsed);
 }
+
 
 void Status::Changes::flags()
 {
-	if (!Config.header_visibility && Config.design == NCM_DESIGN_CLASSIC)
-		return;
-
-	std::string switch_state;
-	switch (Config.design)
-	{
-		case NCM_DESIGN_CLASSIC:
-			if (m_repeat)
-				switch_state += m_repeat;
-			if (m_random)
-				switch_state += m_random;
-			if (m_single)
-				switch_state += m_single;
-			if (m_consume)
-				switch_state += m_consume;
-			if (m_crossfade)
-				switch_state += m_crossfade;
-			if (m_db_updating)
-				switch_state += m_db_updating;
-
-			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << Config.state_line_color;
-			mvwhline(static_cast<NC::Window *>(ui_state_header_legacy_window())->raw(), 1, 0, 0, COLS);
-			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::FormattedColor::End<>(Config.state_line_color);
-
-			if (!switch_state.empty())
-				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(COLS-switch_state.length()-3, 1)
-				         << Config.state_line_color
-				         << "["
-				         << NC::FormattedColor::End<>(Config.state_line_color)
-								 << Config.state_flags_color
-								 << switch_state
-				         << NC::FormattedColor::End<>(Config.state_flags_color)
-				         << Config.state_line_color
-								 << "]"
-				         << NC::FormattedColor::End<>(Config.state_line_color);
-
-			break;
-		case NCM_DESIGN_ALTERNATIVE:
-			switch_state += '[';
-			switch_state += m_repeat ? m_repeat : '-';
-			switch_state += m_random ? m_random : '-';
-			switch_state += m_single ? m_single : '-';
-			switch_state += m_consume ? m_consume : '-';
-			switch_state += m_crossfade ? m_crossfade : '-';
-			switch_state += m_db_updating ? m_db_updating : '-';
-			switch_state += ']';
-			*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(COLS-switch_state.length(), 1)
-			         << Config.state_flags_color
-			         << switch_state
-			         << NC::FormattedColor::End<>(Config.state_flags_color);
-			if (!Config.header_visibility) // in this case also draw separator
-			{
-				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << Config.alternative_ui_separator_color;
-				mvwhline(static_cast<NC::Window *>(ui_state_header_legacy_window())->raw(), 2, 0, 0, COLS);
-				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::FormattedColor::End<>(Config.alternative_ui_separator_color);
-			}
-			break;
-	}
-	static_cast<NC::Window *>(ui_state_header_legacy_window())->refresh();
+	ncm_status_changes_flags();
 }
+
 
 void Status::Changes::mixer()
 {
-	if (!Config.display_volume_level
-	    || (!Config.header_visibility && Config.design == NCM_DESIGN_CLASSIC))
-		return;
-
-	switch (Config.design)
-	{
-		case NCM_DESIGN_CLASSIC:
-			global_volume_state_set((char *)" Volume: ",
-			                        STRLIT_LEN(" Volume: "));
-			break;
-		case NCM_DESIGN_ALTERNATIVE:
-			global_volume_state_set((char *)" Vol: ",
-			                        STRLIT_LEN(" Vol: "));
-			break;
-	}
-	if (m_volume < 0)
-		global_volume_state_append((char *)"n/a", STRLIT_LEN("n/a"));
-	else
-	{
-		std::string volume = std::to_string(m_volume);
-		global_volume_state_append(const_cast<char *>(volume.data()),
-		                           static_cast<int32>(volume.length()));
-		global_volume_state_append((char *)"%", STRLIT_LEN("%"));
-	}
-	*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(static_cast<NC::Window *>(ui_state_header_legacy_window())->getWidth()-global_volume_state_len(), 0)
-	         << Config.volume_color
-	         << global_volume_state_cstr()
-	         << NC::FormattedColor::End<>(Config.volume_color);
-	static_cast<NC::Window *>(ui_state_header_legacy_window())->refresh();
+	ncm_status_changes_mixer();
 }
+
 
 void Status::Changes::outputs()
 {
-#	ifdef ENABLE_OUTPUTS
-	native_c_screen_outputs_fetch_list();
-	native_c_screen_outputs_refresh_if_visible();
-#	endif // ENABLE_OUTPUTS
+	ncm_status_changes_outputs();
 }
+
