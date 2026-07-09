@@ -1267,6 +1267,7 @@ static bool action_runtime_volume(int32 change);
 static bool action_runtime_update_database(void);
 static bool action_runtime_replay_song(void);
 static bool action_runtime_update_environment(void);
+static void action_runtime_dispatch_lyrics_jobs(void);
 static bool action_runtime_execute_command(void);
 static bool action_runtime_execute_binding(NcmBinding *binding);
 static bool action_runtime_apply_filter(void);
@@ -1318,6 +1319,7 @@ static bool action_runtime_toggle_replay_gain_mode(void);
 static bool action_runtime_save_tag_changes(void);
 static bool action_runtime_edit_current_song(void);
 static bool action_runtime_fetch_lyrics_background(void);
+static bool action_runtime_toggle_lyrics_fetcher(void);
 static bool action_runtime_refetch_lyrics(void);
 static bool action_runtime_show_lyrics(void);
 static bool action_runtime_show_artist_info(void);
@@ -1864,12 +1866,29 @@ action_runtime_update_environment(void) {
 
     ncm_error_clear(&error);
     ncm_status_trace(&global_mpd, true, true, &error);
+    action_runtime_dispatch_lyrics_jobs();
     app_controller_refresh_current_window();
 
     if (ncm_mpd_client_connected(&global_mpd)) {
         (void)ncm_status_update_from_noidle(&global_mpd, NULL, &error);
     }
     return true;
+}
+
+static void
+action_runtime_dispatch_lyrics_jobs(void) {
+    NcmBuffer message;
+
+    native_lyrics_screen_dispatch_jobs(native_c_screen_lyrics());
+    ncm_buffer_init(&message);
+    if (native_lyrics_screen_try_take_consumer_message(
+            native_c_screen_lyrics(), &message)) {
+        ncm_statusbar_print((int32)Config.message_delay_time,
+                            message.data,
+                            message.len);
+    }
+    ncm_buffer_destroy(&message);
+    return;
 }
 
 
@@ -3317,6 +3336,29 @@ action_runtime_edit_current_song(void) {
 }
 
 static bool
+action_runtime_toggle_lyrics_fetcher(void) {
+    NcmLyricsFetcherDef *fetcher;
+    NcmStringFormatArg arg;
+
+    fetcher = native_lyrics_screen_toggle_fetcher(
+        native_c_screen_lyrics(), &Config.lyrics_fetchers);
+    if (fetcher == NULL) {
+        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                    (char *)"Using all lyrics fetchers");
+        return true;
+    }
+
+    arg = ncm_string_format_arg_string(
+        ncm_lyrics_fetcher_name(fetcher),
+        ncm_lyrics_fetcher_name_len(fetcher));
+    ncm_statusbar_format((int32)Config.message_delay_time,
+                         STRLIT_ARGS("Using lyrics fetcher: %1%"),
+                         &arg,
+                         1);
+    return true;
+}
+
+static bool
 action_runtime_fetch_lyrics_background(void) {
     NcmSongArray songs;
     NcmError error;
@@ -3773,11 +3815,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         Config.now_playing_lyrics = !Config.now_playing_lyrics;
         return true;
     case NCM_ACTION_TOGGLE_LYRICS_FETCHER:
-        Config.lyrics_db += 1;
-        if (Config.lyrics_db >= (uint32)Config.lyrics_fetchers.fetchers.len) {
-            Config.lyrics_db = 0;
-        }
-        return true;
+        return action_runtime_toggle_lyrics_fetcher();
     case NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND:
         Config.fetch_lyrics_in_background =
             !Config.fetch_lyrics_in_background;
