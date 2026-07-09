@@ -63,11 +63,12 @@ std::string songTimeString(unsigned length)
 	return std::string(buffer, static_cast<size_t>(len));
 }
 
-NcmTimePoint past;
 
 int64 playing_song_scroll_begin = 0;
 int64 first_line_scroll_begin = 0;
 int64 second_line_scroll_begin = 0;
+
+void initialize_status();
 
 bool m_status_initialized;
 
@@ -235,6 +236,12 @@ void legacy_status_refresh_visible_screens(void *user)
 	applyToVisibleScreens(nc_screen_refresh_window);
 }
 
+void legacy_status_initialize(void *user)
+{
+	(void)user;
+	initialize_status();
+}
+
 void registerLegacyStatusHooks()
 {
 	NcmStatusHooks hooks = {
@@ -253,6 +260,7 @@ void registerLegacyStatusHooks()
 	};
 
 	ncm_status_set_hooks(&hooks);
+	ncm_status_set_initialize_hook(legacy_status_initialize, nullptr);
 }
 
 void drawTitle(const MPD::Song &np)
@@ -408,37 +416,11 @@ void Status::handleServerError(MPD::ServerError &e)
 
 void Status::trace(bool update_timer, bool update_window_timeout)
 {
-	if (update_timer)
-		global_timer_update(nullptr);
-	if (Mpd.Connected())
-	{
-		if (!m_status_initialized)
-			initialize_status();
+	NcmError error;
 
-		if (m_player_state == MPD::psPlay
-		&&  global_timer_elapsed_ms(past) > 1000)
-		{
-			// update elapsed time/bitrate of the current song
-			Status::Changes::elapsedTime(true);
-			static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
-			past = global_timer;
-		}
-
-		applyToVisibleScreens(nc_screen_update);
-		ncm_statusbar_try_redraw();
-
-		Mpd.idle();
-	}
-	// Update timeout after MPD as it may depend on its status.
-	if (update_window_timeout)
-	{
-		// set appropriate window timeout
-		int nc_wtimeout = std::numeric_limits<int>::max();
-		applyToVisibleScreens([&nc_wtimeout](NcScreen *s) {
-			nc_wtimeout = std::min(nc_wtimeout, nc_screen_window_timeout(s));
-		});
-		static_cast<NC::Window *>(ui_state_footer_legacy_window())->setTimeout(nc_wtimeout);
-	}
+	ncm_error_clear(&error);
+	registerLegacyStatusHooks();
+	ncm_status_trace(&global_mpd, update_timer, update_window_timeout, &error);
 }
 
 void Status::update(int event)

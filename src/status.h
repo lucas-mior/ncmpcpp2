@@ -36,6 +36,8 @@ void ncm_status_handle_server_error(NcmMpdClient *client);
 void ncm_status_trace(NcmMpdClient *client, bool update_timer,
                       bool update_window_timeout, NcmError *error);
 void ncm_status_set_hooks(NcmStatusHooks *hooks);
+void ncm_status_set_initialize_hook(void (*callback)(void *user),
+                                    void *user);
 bool ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                                  NcmStatusHooks *hooks, NcmError *error);
 bool ncm_status_update(NcmMpdClient *client, int32 event, NcmError *error);
