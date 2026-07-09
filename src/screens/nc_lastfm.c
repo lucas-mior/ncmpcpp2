@@ -66,6 +66,8 @@ static void native_lastfm_apply_literal_color2(NcBuffer *buffer,
                                                int32 needle_len);
 static bool native_lastfm_find_match_callback(int32 start, int32 len,
                                               void *user);
+static void native_lastfm_mouse_scroll(NativeLastfmScreen *screen,
+                                       enum NcScroll where);
 static void native_lastfm_flush(NativeLastfmScreen *screen);
 
 void
@@ -508,8 +510,14 @@ lastfm_update_callback(NcScreen *screen) {
 
 static void
 lastfm_mouse_button_pressed_callback(NcScreen *screen, MEVENT event) {
-    (void)screen;
-    (void)event;
+    NativeLastfmScreen *lastfm;
+
+    lastfm = lastfm_from_screen(screen);
+    if (event.bstate & BUTTON5_PRESSED) {
+        native_lastfm_mouse_scroll(lastfm, NC_SCROLL_DOWN);
+    } else if (event.bstate & BUTTON4_PRESSED) {
+        native_lastfm_mouse_scroll(lastfm, NC_SCROLL_UP);
+    }
     return;
 }
 
@@ -722,6 +730,15 @@ native_lastfm_find_match_callback(int32 start, int32 len, void *user) {
     nc_buffer_add_format(state->buffer, start + len, NC_FORMAT_NO_REVERSE,
                          NATIVE_LASTFM_PROPERTY_ID);
     return true;
+}
+
+static void
+native_lastfm_mouse_scroll(NativeLastfmScreen *screen,
+                           enum NcScroll where) {
+    for (uint32 i = 0; i < Config.lines_scrolled; i += 1) {
+        nc_scrollpad_scroll(&screen->scrollpad, &screen->window, where);
+    }
+    return;
 }
 
 static void
