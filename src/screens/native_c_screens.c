@@ -301,9 +301,23 @@ native_c_screen_lastfm_set_resize(void) {
 
 void
 native_c_screen_lastfm_switch_to(void) {
-    (void)nc_screen_switcher_switch_to(native_c_screen_lastfm_native(),
-                                       nc_screen_has_to_be_resized(
-                                           native_c_screen_lastfm_native()));
+    NcScreen *screen;
+    NcScreen *previous;
+
+    native_c_screen_lastfm_register();
+    screen = native_c_screen_lastfm_native();
+    if (nc_screen_switcher_is_current(screen)) {
+        previous = nc_screen_switcher_previous();
+        if ((previous != NULL)
+            && app_controller_is_screen_registered(previous)) {
+            (void)nc_screen_switcher_switch_to(
+                previous, nc_screen_has_to_be_resized(previous));
+        }
+        return;
+    }
+
+    (void)nc_screen_switcher_switch_to(screen,
+                                       nc_screen_has_to_be_resized(screen));
     return;
 }
 
