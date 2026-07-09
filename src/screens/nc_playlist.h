@@ -19,12 +19,15 @@ extern "C" {
 typedef void NativePlaylistSync(void *user);
 typedef NcWindow *NativePlaylistWindowCallback(void *user);
 typedef void NativePlaylistVoidCallback(void *user);
+typedef void NativePlaylistSongCallback(NcmSong *song, void *user);
 
 typedef struct NativePlaylistBridge {
     NativePlaylistWindowCallback *active_window;
     NativePlaylistVoidCallback *refresh;
     NativePlaylistVoidCallback *refresh_window;
     NativePlaylistVoidCallback *resize;
+    NativePlaylistSongCallback *register_song;
+    NativePlaylistSongCallback *unregister_song;
     void *user;
 } NativePlaylistBridge;
 
@@ -143,6 +146,7 @@ bool native_playlist_screen_load_song_list(NativePlaylistScreen *screen,
 bool native_playlist_screen_reload_from_mpd(NativePlaylistScreen *screen,
                                             NcmMpdClient *client,
                                             uint32 version,
+                                            uint32 playlist_length,
                                             NcmError *error);
 int64 native_playlist_screen_song_count(NativePlaylistScreen *screen);
 bool native_playlist_screen_empty(NativePlaylistScreen *screen);
