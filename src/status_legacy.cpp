@@ -156,19 +156,86 @@ void legacy_status_database_changed(void *user)
 	Status::Changes::database();
 }
 
-void legacy_status_player_state_changed(void *user)
+void legacy_status_ui_player_state_changed(
+	enum NcmStatusPlayerState state, void *user)
 {
+	(void)state;
 	(void)user;
 	syncLegacyStatusPrimaryStateFromC();
-	Status::Changes::playerState();
+	if (!Config.execute_on_player_state_change.empty())
+	{
+		auto stateToEnv = [](MPD::PlayerState st) -> const char * {
+			switch (st)
+			{
+			case MPD::psPlay:    return "play";
+			case MPD::psStop:    return "stop";
+			case MPD::psPause:   return "pause";
+			case MPD::psUnknown: return "unknown";
+			}
+			throw std::logic_error("unreachable");
+		};
+		setenv("MPD_PLAYER_STATE", stateToEnv(m_player_state), 1);
+		// Since we're setting a MPD_PLAYER_STATE, we need to block.
+		runExternalCommand(Config.execute_on_player_state_change, true);
+		unsetenv("MPD_PLAYER_STATE");
+	}
+	switch (m_player_state)
+	{
+		case MPD::psPlay:
+		case MPD::psStop:
+			myPlaylist->reloadRemaining();
+			break;
+		case MPD::psPause:
+		case MPD::psUnknown:
+			break;
+	}
 }
 
-void legacy_status_song_id_changed(int32 song_id, void *user)
+void legacy_status_ui_player_stopped(void *user)
+{
+	(void)user;
+#	ifdef ENABLE_VISUALIZER
+	if (isVisible(myVisualizer))
+		myVisualizer->Clear();
+#	endif // ENABLE_VISUALIZER
+}
+
+void legacy_status_ui_song_id_changed(int32 song_id, void *user)
 {
 	(void)user;
 	syncLegacyStatusPrimaryStateFromC();
-	Status::Changes::songID(song_id);
+	myPlaylist->reloadRemaining();
+#	ifdef ENABLE_VISUALIZER
+	myVisualizer->ResetAutoScaleMultiplier();
+#	endif // ENABLE_VISUALIZER
 	m_current_song_id = song_id;
+}
+
+void legacy_status_ui_current_song_changed(NcmSong *song, void *user)
+{
+	(void)user;
+	MPD::Song s(song);
+
+	if (s.empty())
+		return;
+
+	if (!Config.execute_on_song_change.empty())
+	{
+		// We need to block to allow sending output to the terminal so a script
+		// can e.g. set the album art.
+		runExternalCommand(Config.execute_on_song_change, true);
+	}
+
+	if (Config.fetch_lyrics_in_background)
+		myLyrics->fetchInBackground(s, false);
+
+	if (Config.autocenter_mode)
+		myPlaylist->locateSong(s);
+
+	if (Config.now_playing_lyrics
+	    && isVisible(myLyrics)
+	    && myLyrics->previousScreen() == myPlaylist)
+		myLyrics->fetch(s);
 }
 
 void legacy_status_refresh_footer(void *user)
@@ -196,8 +263,8 @@ void registerLegacyStatusHooks()
 		legacy_status_playlist_changed,
 		legacy_status_stored_playlists_changed,
 		legacy_status_database_changed,
-		legacy_status_player_state_changed,
-		legacy_status_song_id_changed,
+		nullptr,
+		nullptr,
 		nullptr,
 		nullptr,
 		nullptr,
@@ -205,66 +272,17 @@ void registerLegacyStatusHooks()
 		legacy_status_refresh_footer,
 		legacy_status_refresh_visible_screens,
 	};
+	NcmStatusUiHooks ui_hooks = {
+		nullptr,
+		legacy_status_ui_player_state_changed,
+		legacy_status_ui_player_stopped,
+		legacy_status_ui_song_id_changed,
+		legacy_status_ui_current_song_changed,
+	};
 
 	ncm_status_set_hooks(&hooks);
+	ncm_status_set_ui_hooks(&ui_hooks);
 	ncm_status_set_initialize_hook(legacy_status_initialize, nullptr);
-}
-
-void drawTitle(const MPD::Song &np)
-{
-	assert(!np.empty());
-	windowTitle(Format::stringify<char>(Config.song_window_title_format, &np));
-}
-
-std::string playerStateToString(MPD::PlayerState ps)
-{
-	std::string result;
-	switch (ps)
-	{
-		case MPD::psUnknown:
-			switch (Config.design)
-			{
-				case NCM_DESIGN_ALTERNATIVE:
-					result = "[unknown]";
-					break;
-				case NCM_DESIGN_CLASSIC:
-					break;
-			}
-			break;
-		case MPD::psPlay:
-			switch (Config.design)
-			{
-				case NCM_DESIGN_ALTERNATIVE:
-					result = "[playing]";
-					break;
-				case NCM_DESIGN_CLASSIC:
-					result = "Playing:";
-					break;
-			}
-			break;
-		case MPD::psPause:
-			switch (Config.design)
-			{
-				case NCM_DESIGN_ALTERNATIVE:
-					result = "[paused]";
-					break;
-				case NCM_DESIGN_CLASSIC:
-					result = "Paused:";
-					break;
-			}
-			break;
-		case MPD::psStop:
-			switch (Config.design)
-			{
-				case NCM_DESIGN_ALTERNATIVE:
-					result = "[stopped]";
-					break;
-				case NCM_DESIGN_CLASSIC:
-					break;
-			}
-			break;
-	}
-	return result;
 }
 
 extern "C" void ncm_statusbar_legacy_mpd_callback(void)
@@ -544,117 +562,12 @@ void Status::Changes::database()
 
 void Status::Changes::playerState()
 {
-	if (!Config.execute_on_player_state_change.empty())
-	{
-		auto stateToEnv = [](MPD::PlayerState st) -> const char * {
-			switch (st)
-			{
-			case MPD::psPlay:    return "play";
-			case MPD::psStop:    return "stop";
-			case MPD::psPause:   return "pause";
-			case MPD::psUnknown: return "unknown";
-			}
-			throw std::logic_error("unreachable");
-		};
-		setenv("MPD_PLAYER_STATE", stateToEnv(m_player_state), 1);
-		// Since we're setting a MPD_PLAYER_STATE, we need to block.
-		runExternalCommand(Config.execute_on_player_state_change, true);
-		unsetenv("MPD_PLAYER_STATE");
-	}
-
-	switch (m_player_state)
-	{
-		case MPD::psPlay:
-		{
-			auto np = myPlaylist->nowPlayingSong();
-			if (!np.empty())
-				drawTitle(np);
-			myPlaylist->reloadRemaining();
-			break;
-		}
-		case MPD::psStop:
-			windowTitle("ncmpcpp " VERSION);
-			if (ncm_progressbar_is_unlocked())
-				ncm_progressbar_draw(0, 0);
-			myPlaylist->reloadRemaining();
-			if (Config.design == NCM_DESIGN_ALTERNATIVE)
-			{
-				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 0) << NC::TermManip::ClearToEOL;
-				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 1) << NC::TermManip::ClearToEOL;
-				mixer();
-				flags();
-			}
-#			ifdef ENABLE_VISUALIZER
-			if (isVisible(myVisualizer))
-				myVisualizer->Clear();
-#			endif // ENABLE_VISUALIZER
-			break;
-		default:
-			break;
-	}
-
-	std::string state = playerStateToString(m_player_state);
-	if (Config.design == NCM_DESIGN_ALTERNATIVE)
-	{
-		*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 1) << NC_FORMAT_BOLD << state << NC_FORMAT_NO_BOLD;
-		static_cast<NC::Window *>(ui_state_header_legacy_window())->refresh();
-	}
-	else if (ncm_statusbar_is_unlocked() && Config.statusbar_visibility)
-	{
-		*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(0, 1);
-		if (state.empty())
-			*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::TermManip::ClearToEOL;
-		else
-			*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC_FORMAT_BOLD << state << NC_FORMAT_NO_BOLD;
-	}
-
-	// needed for immediate display after starting
-	// player from stopped state or seeking
-	elapsedTime(false);
+	ncm_status_changes_player_state();
 }
 
 void Status::Changes::songID(int song_id)
 {
-	// update information about current song
-	myPlaylist->reloadRemaining();
-	ncm_status_changes_reset_song_scroll();
-#	ifdef ENABLE_VISUALIZER
-	myVisualizer->ResetAutoScaleMultiplier();
-#	endif // ENABLE_VISUALIZER
-	if (m_player_state != MPD::psStop)
-	{
-		auto &pl = myPlaylist->main();
-
-		// try to find the song with new id in the playlist
-		auto it = std::find_if(pl.beginV(), pl.endV(), [song_id](const MPD::Song &s) {
-			return s.getID() == unsigned(song_id);
-		});
-		// if it's not there (playlist may be outdated), fetch it
-		const auto &s = it != pl.endV() ? *it : Mpd.GetCurrentSong();
-		if (!s.empty())
-		{
-			if (!Config.execute_on_song_change.empty())
-			{
-				// We need to block to allow sending output to the terminal so a script
-				// can e.g. set the album art.
-				runExternalCommand(Config.execute_on_song_change, true);
-			}
-
-			if (Config.fetch_lyrics_in_background)
-				myLyrics->fetchInBackground(s, false);
-
-			drawTitle(s);
-
-			if (Config.autocenter_mode)
-				myPlaylist->locateSong(s);
-
-			if (Config.now_playing_lyrics
-			    && isVisible(myLyrics)
-			    && myLyrics->previousScreen() == myPlaylist)
-				myLyrics->fetch(s);
-		}
-	}
-	elapsedTime(false);
+	ncm_status_changes_song_id(song_id);
 }
 
 void Status::Changes::elapsedTime(bool update_elapsed)
