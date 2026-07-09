@@ -16,6 +16,7 @@
 #define NATIVE_LASTFM_DEFAULT_TITLE "Last.fm"
 #define NATIVE_LASTFM_FETCHING "Fetching information..."
 #define NATIVE_LASTFM_PROPERTY_ID ((uint64)-2)
+#define NATIVE_LASTFM_DEFAULT_PROPERTY_ID ((uint64)-1)
 
 typedef struct NativeLastfmJob {
     NativeLastfmScreen *screen;
@@ -54,6 +55,7 @@ static void native_lastfm_job_destroy(void *user);
 static void native_lastfm_copy_result(NativeLastfmScreen *screen,
                                       NcmLastfmResult *result);
 static void native_lastfm_render_result(NativeLastfmScreen *screen);
+static void native_lastfm_render_failure(NativeLastfmScreen *screen);
 static void native_lastfm_apply_literal_format(NcBuffer *buffer,
                                                char *needle,
                                                int32 needle_len,
@@ -637,16 +639,29 @@ native_lastfm_render_result(NativeLastfmScreen *screen) {
                                                STRLIT_ARGS("\n * "));
         }
     } else {
-        nc_buffer_append_cstring(&screen->buffer,
-                                 (char *)"Last.fm request failed");
-        if (screen->result.text_len > 0) {
-            nc_buffer_append_cstring(&screen->buffer, (char *)": ");
-            nc_buffer_append_data(&screen->buffer,
-                                  screen->result.text,
-                                  screen->result.text_len);
-        }
+        native_lastfm_render_failure(screen);
     }
     screen->refresh_window = true;
+    return;
+}
+
+static void
+native_lastfm_render_failure(NativeLastfmScreen *screen) {
+    NcColor red;
+
+    red = nc_color_make(COLOR_RED, NC_COLOR_CURRENT, false, false);
+    nc_buffer_append_char(&screen->buffer, ' ');
+    nc_buffer_add_color(&screen->buffer,
+                        nc_buffer_len(&screen->buffer),
+                        red,
+                        NATIVE_LASTFM_DEFAULT_PROPERTY_ID);
+    nc_buffer_append_data(&screen->buffer,
+                          screen->result.text,
+                          screen->result.text_len);
+    nc_buffer_add_color(&screen->buffer,
+                        nc_buffer_len(&screen->buffer),
+                        nc_color_end(),
+                        NATIVE_LASTFM_DEFAULT_PROPERTY_ID);
     return;
 }
 
