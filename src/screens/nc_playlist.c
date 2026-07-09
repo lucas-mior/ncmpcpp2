@@ -678,7 +678,6 @@ native_playlist_screen_now_playing_song(NativePlaylistScreen *screen,
         return false;
     }
 
-    native_playlist_sync_if_needed(screen);
     menu = native_playlist_screen_song_menu(screen);
     base = nc_song_menu_base(menu);
     count = nc_menu_all_item_count(base);
