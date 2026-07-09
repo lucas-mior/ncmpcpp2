@@ -61,6 +61,13 @@ static NativeLyricsJob *native_lyrics_job_create(NativeLyricsScreen *screen,
                                                  NcmLyricsFetcherDef *fetcher,
                                                  bool notify,
                                                  bool background);
+static bool native_lyrics_job_fetch_one(NativeLyricsJob *job,
+                                        NcmLyricsFetcherDef *fetcher,
+                                        NcmBuffer *artist,
+                                        NcmBuffer *title);
+static bool native_lyrics_job_fetch(NativeLyricsJob *job,
+                                    NcmBuffer *artist,
+                                    NcmBuffer *title);
 static bool native_lyrics_job_run(void *user, NcmError *error);
 static void native_lyrics_job_complete(bool success, NcmError *error,
                                        void *user);
@@ -874,10 +881,49 @@ native_lyrics_job_create(NativeLyricsScreen *screen,
 }
 
 static bool
+native_lyrics_job_fetch_one(NativeLyricsJob *job,
+                            NcmLyricsFetcherDef *fetcher,
+                            NcmBuffer *artist,
+                            NcmBuffer *title) {
+    if (fetcher == NULL) {
+        return false;
+    }
+    return ncm_lyrics_fetcher_fetch(fetcher,
+                                    &job->result,
+                                    artist->data,
+                                    artist->len,
+                                    title->data,
+                                    title->len,
+                                    &job->song);
+}
+
+static bool
+native_lyrics_job_fetch(NativeLyricsJob *job,
+                        NcmBuffer *artist,
+                        NcmBuffer *title) {
+    if (job->fetcher != NULL) {
+        return native_lyrics_job_fetch_one(job,
+                                           job->fetcher,
+                                           artist,
+                                           title);
+    }
+
+    for (int32 i = 0; i < Config.lyrics_fetchers.fetchers.len; i += 1) {
+        if (native_lyrics_job_fetch_one(
+                job, &Config.lyrics_fetchers.fetchers.items[i],
+                artist, title)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool
 native_lyrics_job_run(void *user, NcmError *error) {
     NativeLyricsJob *job;
     NcmBuffer artist;
     NcmBuffer title;
+    bool success;
 
     job = user;
     ncm_buffer_init(&artist);
@@ -888,19 +934,13 @@ native_lyrics_job_run(void *user, NcmError *error) {
         ncm_buffer_destroy(&artist);
         return false;
     }
-    (void)ncm_lyrics_fetcher_fetch(job->fetcher,
-                                   &job->result,
-                                   artist.data,
-                                   artist.len,
-                                   title.data,
-                                   title.len,
-                                   &job->song);
+    success = native_lyrics_job_fetch(job, &artist, &title);
     ncm_buffer_destroy(&title);
     ncm_buffer_destroy(&artist);
-    if (!job->result.success) {
+    if (!success || !job->result.success) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("lyrics not found"));
     }
-    return job->result.success;
+    return success && job->result.success;
 }
 
 static void

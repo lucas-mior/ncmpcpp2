@@ -9,6 +9,7 @@
 #include "settings.h"
 #include "statusbar.h"
 #include "app_controller.h"
+#include "c/ncm_macro_utilities.h"
 #include "c/ncm_format.h"
 #include "c/ncm_utf8.h"
 #include "curses/nc_buffer.h"
@@ -20,6 +21,7 @@
 
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 static bool status_initialized;
@@ -78,6 +80,15 @@ static void status_call_ui_player_state_changed(void);
 static void status_call_ui_player_stopped(void);
 static void status_call_ui_song_id_changed(int32 song_id);
 static void status_call_ui_current_song_changed(NcmSong *song);
+static char *status_player_state_env(void);
+static void status_run_player_state_command(void);
+static void status_run_song_change_command(void);
+static void status_reset_visualizer_autoscale(void);
+static void status_clear_visible_visualizer(void);
+static void status_fetch_background_lyrics(NcmSong *song);
+static void status_autocenter_playlist(NcmSong *song);
+static void status_fetch_now_playing_lyrics(NcmSong *song);
+static void status_handle_current_song_changed(NcmSong *song);
 static void status_draw_classic_elapsed_time(NcWindow *footer,
                                              NcmSong *song,
                                              char *player_state,
@@ -822,6 +833,7 @@ ncm_status_changes_player_state(void) {
     int32 player_state_len;
     NcWindow *header;
 
+    status_run_player_state_command();
     status_call_ui_player_state_changed();
 
     switch (status_player_state) {
@@ -853,6 +865,7 @@ ncm_status_changes_player_state(void) {
             ncm_status_changes_flags();
         }
         status_call_ui_player_stopped();
+        status_clear_visible_visualizer();
         break;
     case NCM_STATUS_PLAYER_PAUSE:
     case NCM_STATUS_PLAYER_UNKNOWN:
@@ -880,11 +893,13 @@ ncm_status_changes_song_id(int32 song_id) {
 
     native_playlist_screen_reload_remaining(native_c_screen_playlist());
     ncm_status_changes_reset_song_scroll();
+    status_reset_visualizer_autoscale();
     status_call_ui_song_id_changed(song_id);
 
     if (status_player_state != NCM_STATUS_PLAYER_STOP) {
         ncm_song_init(&song);
         if (status_current_song_for_change(&song)) {
+            status_handle_current_song_changed(&song);
             status_call_ui_current_song_changed(&song);
             status_draw_song_title(&song);
         }
@@ -1055,6 +1070,141 @@ status_call_ui_current_song_changed(NcmSong *song) {
         && (status_ui_hooks.current_song_changed != NULL)) {
         status_ui_hooks.current_song_changed(song, status_ui_hooks.user);
     }
+    return;
+}
+
+static char *
+status_player_state_env(void) {
+    switch (status_player_state) {
+    case NCM_STATUS_PLAYER_PLAY:
+        return (char *)"play";
+    case NCM_STATUS_PLAYER_STOP:
+        return (char *)"stop";
+    case NCM_STATUS_PLAYER_PAUSE:
+        return (char *)"pause";
+    case NCM_STATUS_PLAYER_UNKNOWN:
+        return (char *)"unknown";
+    }
+
+    return (char *)"unknown";
+}
+
+static void
+status_run_player_state_command(void) {
+    NcmError error;
+
+    if (Config.execute_on_player_state_change_len <= 0) {
+        return;
+    }
+
+    (void)setenv("MPD_PLAYER_STATE", status_player_state_env(), 1);
+    ncm_error_clear(&error);
+    (void)ncm_macro_run_external_command(
+        Config.execute_on_player_state_change,
+        Config.execute_on_player_state_change_len,
+        true,
+        &error);
+    ncm_error_clear(&error);
+    (void)unsetenv("MPD_PLAYER_STATE");
+    return;
+}
+
+static void
+status_run_song_change_command(void) {
+    NcmError error;
+
+    if (Config.execute_on_song_change_len <= 0) {
+        return;
+    }
+
+    ncm_error_clear(&error);
+    (void)ncm_macro_run_external_command(Config.execute_on_song_change,
+                                         Config.execute_on_song_change_len,
+                                         true,
+                                         &error);
+    ncm_error_clear(&error);
+    return;
+}
+
+static void
+status_reset_visualizer_autoscale(void) {
+#if defined(ENABLE_VISUALIZER)
+    native_visualizer_screen_reset_auto_scale_multiplier(
+        native_c_screen_visualizer());
+#endif
+    return;
+}
+
+static void
+status_clear_visible_visualizer(void) {
+#if defined(ENABLE_VISUALIZER)
+    NcScreen *visualizer;
+
+    visualizer = native_c_screen_visualizer_native();
+    if (app_controller_is_screen_visible(visualizer)) {
+        native_visualizer_screen_clear(native_c_screen_visualizer());
+    }
+#endif
+    return;
+}
+
+static void
+status_fetch_background_lyrics(NcmSong *song) {
+    NcmError error;
+
+    if (!Config.fetch_lyrics_in_background) {
+        return;
+    }
+
+    ncm_error_clear(&error);
+    (void)native_lyrics_screen_fetch_in_background(
+        native_c_screen_lyrics(), song, false, &error);
+    ncm_error_clear(&error);
+    return;
+}
+
+static void
+status_autocenter_playlist(NcmSong *song) {
+    if (!Config.autocenter_mode) {
+        return;
+    }
+
+    (void)native_playlist_screen_locate_position(
+        native_c_screen_playlist(), ncm_song_position(song));
+    return;
+}
+
+static void
+status_fetch_now_playing_lyrics(NcmSong *song) {
+    NcmError error;
+
+    if (!Config.now_playing_lyrics) {
+        return;
+    }
+    if (!app_controller_is_screen_visible(native_c_screen_lyrics_native())) {
+        return;
+    }
+    if (app_controller_previous_screen() != native_c_screen_playlist_native()) {
+        return;
+    }
+
+    ncm_error_clear(&error);
+    (void)native_lyrics_screen_fetch(native_c_screen_lyrics(), song,
+                                     NULL, &error);
+    ncm_error_clear(&error);
+    return;
+}
+
+static void
+status_handle_current_song_changed(NcmSong *song) {
+    if ((song == NULL) || ncm_song_empty(song)) {
+        return;
+    }
+
+    status_run_song_change_command();
+    status_fetch_background_lyrics(song);
+    status_autocenter_playlist(song);
+    status_fetch_now_playing_lyrics(song);
     return;
 }
 
