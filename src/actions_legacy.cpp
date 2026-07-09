@@ -137,33 +137,22 @@ bool nativeLyricsBuildFilename(NativeLyricsScreen *lyrics, NcmSong *song,
 
 bool nativeLyricsLoadOrFetch(MPD::Song &song)
 {
-	NativeLyricsScreen *lyrics;
-	NcmLyricsFetcherDef *fetcher;
 	NcmError error;
-	NcmBuffer *filename;
-	NcBuffer *display;
+	bool success;
 
-	lyrics = native_c_screen_lyrics();
 	ncm_error_clear(&error);
-	if (!nativeLyricsBuildFilename(lyrics, song.cSong(), &error))
-		return false;
+	success = native_lyrics_screen_fetch(
+		native_c_screen_lyrics(), song.cSong(), nullptr, &error);
+	ncm_error_clear(&error);
+	return success;
+}
 
-	filename = native_lyrics_screen_filename(lyrics);
-	display = native_lyrics_screen_display(lyrics);
-	nc_buffer_clear(display);
-	nc_scrollpad_reset(&lyrics->scrollpad);
-	nc_lyrics_screen_reset_scroll_begin(native_c_screen_lyrics_typed());
-	if (native_lyrics_screen_load_file(
-	        lyrics, filename->data, filename->len, &error))
-	{
-		ncm_song_copy(&lyrics->song, song.cSong());
-		lyrics->has_song = true;
-		ncm_error_clear(&error);
-		return true;
-	}
+bool nativeLyricsIsCurrentSong(MPD::Song &song)
+{
+	NcmSong *current_song;
 
-	fetcher = lyrics->fetcher;
-	return native_lyrics_screen_fetch(lyrics, song.cSong(), fetcher, &error);
+	current_song = native_lyrics_screen_song(native_c_screen_lyrics());
+	return current_song != nullptr && ncm_song_equal(current_song, song.cSong());
 }
 
 void nativeLyricsPrintConsumerMessage()
@@ -236,8 +225,9 @@ bool nativeLyricsEditCurrent()
 		if (!native_lyrics_screen_load_file(
 		        lyrics, filename->data, filename->len, &error))
 		{
+			lyrics->has_song = false;
 			(void)native_lyrics_screen_fetch(
-				lyrics, song, lyrics->fetcher, &error);
+				lyrics, song, nullptr, &error);
 		}
 	}
 	else
@@ -3059,7 +3049,7 @@ bool ShowLyrics::canBeRun()
 
 void ShowLyrics::run()
 {
-	if (m_has_song)
+	if (m_has_song && !nativeLyricsIsCurrentSong(m_song))
 		(void)nativeLyricsLoadOrFetch(m_song);
 	native_c_screen_lyrics_switch_to();
 }
