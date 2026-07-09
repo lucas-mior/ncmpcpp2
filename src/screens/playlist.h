@@ -52,7 +52,7 @@ void SongsInColumns(NC::Menu<MPD::Song> &menu, const SongList &list);
 }
 
 #include "status_legacy.h"
-#include "statusbar_legacy.h"
+#include "statusbar.h"
 #include "ui_state.h"
 
 struct Playlist: Screen<SongMenu>, Filterable, HasSongs, Searchable, Tabbable

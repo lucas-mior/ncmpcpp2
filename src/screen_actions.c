@@ -217,6 +217,18 @@ current_screen_apply_filter(char *pattern, int32 pattern_len,
     return result;
 }
 
+
+NcmStringView
+current_screen_current_search_constraint(void) {
+    NcmBuffer *buffer;
+
+    buffer = current_screen_search_buffer();
+    if (buffer == NULL) {
+        return ncm_string_view_make(NULL, 0);
+    }
+    return ncm_string_view_make(buffer->data, buffer->len);
+}
+
 bool
 current_screen_allows_search(void) {
     if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)) {

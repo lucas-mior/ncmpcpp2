@@ -33,7 +33,7 @@
 #include "screens/playlist.h"
 #include "screens/media_library.h"
 #include "status_legacy.h"
-#include "statusbar_legacy.h"
+#include "statusbar.h"
 #include "format_impl.h"
 #include "helpers/song_iterator_maker.h"
 #include "utility/string.h"

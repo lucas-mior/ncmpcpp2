@@ -1,18 +1,27 @@
 #include "actions.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "app_controller.h"
+#include "bindings.h"
 #include "global.h"
 #include "helpers.h"
 #include "settings.h"
 #include "screens/native_c_screens.h"
 #include "screens/screen_type.h"
+#include "screen_actions.h"
 #include "status.h"
 #include "statusbar.h"
+#include "ui_state.h"
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
+
+#if defined(__GNUC__)
+extern bool ncmpcpp_legacy_execute_binding(NcmBinding *binding)
+    __attribute__((weak));
+#endif
 
 static void action_runtime_mpd_noidle_callback(int32 flags, void *user);
 static int32 ncm_action_name_len(char *name);
@@ -1219,6 +1228,14 @@ ncm_action_run(enum NcmActionType type, void *user) {
 static NcmActionRuntime action_global_runtime;
 static bool action_global_runtime_initialized;
 
+typedef struct ActionRuntimeCommandPrompt {
+    NcmBuffer previous;
+} ActionRuntimeCommandPrompt;
+
+typedef struct ActionRuntimeSearchPrompt {
+    enum SearchDirection direction;
+} ActionRuntimeSearchPrompt;
+
 static NcmActionRuntime *action_runtime_or_global(
     NcmActionRuntime *runtime);
 static int32 action_runtime_call_hook(NcmActionRuntimeHook hook,
@@ -1243,6 +1260,26 @@ static bool action_runtime_volume(int32 change);
 static bool action_runtime_update_database(void);
 static bool action_runtime_replay_song(void);
 static bool action_runtime_update_environment(void);
+static bool action_runtime_execute_command(void);
+static bool action_runtime_execute_binding(NcmBinding *binding);
+static bool action_runtime_apply_filter(void);
+static bool action_runtime_find_item(enum SearchDirection direction);
+static bool action_runtime_command_prompt_hook(char *text, void *user);
+static bool action_runtime_filter_prompt_hook(char *text, void *user);
+static bool action_runtime_search_prompt_hook(char *text, void *user);
+static bool action_runtime_prompt_result(NcmBuffer *result,
+                                         NcPrompt *prompt);
+static bool action_runtime_prompt_string(char *prefix, int32 prefix_len,
+                                         char *initial_text,
+                                         bool remember,
+                                         NcPromptHook hook,
+                                         void *hook_user,
+                                         NcmBuffer *result);
+static int32 action_runtime_cstring_len(char *string);
+static void action_runtime_print_format_string(char *format,
+                                               int32 format_len,
+                                               char *text,
+                                               int32 text_len);
 static bool action_runtime_toggle_crossfade(void);
 static NcMenu *action_runtime_current_menu(void);
 static bool action_runtime_menu_has_items(void);
@@ -1546,9 +1583,7 @@ action_runtime_switch_to_next_screen(bool reverse) {
 
 static void
 action_runtime_mpd_noidle_callback(int32 flags, void *user) {
-    (void)flags;
-    (void)user;
-    ncm_statusbar_mpd_idle_callback();
+    ncm_statusbar_mpd_noidle_callback(flags, user);
     return;
 }
 
@@ -1796,6 +1831,374 @@ action_runtime_update_environment(void) {
     return true;
 }
 
+
+static int32
+action_runtime_cstring_len(char *string) {
+    int32 len;
+
+    len = 0;
+    if (string == NULL) {
+        return 0;
+    }
+    while (string[len] != '\0') {
+        len += 1;
+    }
+    return len;
+}
+
+static void
+action_runtime_print_format_string(char *format, int32 format_len,
+                                   char *text, int32 text_len) {
+    NcmStringFormatArg arg;
+
+    arg = ncm_string_format_arg_string(text, text_len);
+    ncm_statusbar_format((int32)Config.message_delay_time, format,
+                         format_len, &arg, 1);
+    return;
+}
+
+bool
+ncm_action_immediate_command_prompt_should_stop(NcmBuffer *previous,
+                                                char *text,
+                                                int32 text_len) {
+    NcmCommand *command;
+
+    if (previous == NULL) {
+        return false;
+    }
+    if (text == NULL) {
+        text = (char *)"";
+        text_len = 0;
+    }
+
+    if ((previous->len == text_len)
+        && ((text_len == 0)
+            || (memcmp(previous->data, text, (size_t)text_len) == 0))) {
+        return false;
+    }
+
+    if (!ncm_buffer_set(previous, text, text_len)) {
+        return false;
+    }
+
+    command = ncm_bindings_configuration_find_command(&Bindings, text,
+                                                      text_len);
+    if ((command != NULL) && command->immediate) {
+        return true;
+    }
+    return false;
+}
+
+static bool
+action_runtime_command_prompt_hook(char *text, void *user) {
+    ActionRuntimeCommandPrompt *state;
+    int32 text_len;
+
+    state = user;
+    text_len = action_runtime_cstring_len(text);
+    if (!ncm_statusbar_main_hook(text, text_len)) {
+        return false;
+    }
+    if (ncm_action_immediate_command_prompt_should_stop(
+            &state->previous, text, text_len)) {
+        return false;
+    }
+    return true;
+}
+
+static bool
+action_runtime_filter_prompt_hook(char *text, void *user) {
+    NcmError error;
+    int32 text_len;
+
+    (void)user;
+    text_len = action_runtime_cstring_len(text);
+    if (!ncm_statusbar_main_hook(text, text_len)) {
+        return false;
+    }
+
+    ncm_error_clear(&error);
+    (void)current_screen_apply_filter(text, text_len, &error);
+    return true;
+}
+
+static bool
+action_runtime_search_prompt_hook(char *text, void *user) {
+    ActionRuntimeSearchPrompt *state;
+    NcmError error;
+    int32 text_len;
+
+    state = user;
+    text_len = action_runtime_cstring_len(text);
+    if (!ncm_statusbar_main_hook(text, text_len)) {
+        return false;
+    }
+
+    ncm_error_clear(&error);
+    (void)current_screen_search(state->direction, text, text_len,
+                                Config.wrapped_search, false, &error);
+    return true;
+}
+
+static bool
+action_runtime_prompt_result(NcmBuffer *result, NcPrompt *prompt) {
+    enum NcPromptStatus status;
+    NcWindow *window;
+    char *text;
+    int32 text_len;
+    bool ok;
+
+    if (result == NULL) {
+        return false;
+    }
+
+    window = ui_state_footer_window();
+    if (window == NULL) {
+        return false;
+    }
+
+    text = NULL;
+    status = nc_window_prompt(window, prompt, &text);
+    if ((status != NC_PROMPT_ACCEPTED) || (text == NULL)) {
+        nc_window_prompt_result_destroy(text);
+        return false;
+    }
+
+    text_len = action_runtime_cstring_len(text);
+    ok = ncm_buffer_set(result, text, text_len);
+    nc_window_prompt_result_destroy(text);
+    return ok;
+}
+
+static bool
+action_runtime_prompt_string(char *prefix, int32 prefix_len,
+                             char *initial_text, bool remember,
+                             NcPromptHook hook, void *hook_user,
+                             NcmBuffer *result) {
+    NcmStatusbarScopedLock lock;
+    NcPrompt prompt;
+    NcWindow *window;
+    bool ok;
+
+    if (initial_text == NULL) {
+        initial_text = (char *)"";
+    }
+
+    ok = false;
+    ncm_statusbar_scoped_lock_init(&lock);
+    window = ncm_statusbar_put();
+    if (window != NULL) {
+        nc_window_print_data(window, prefix, prefix_len);
+        prompt = (NcPrompt){0};
+        prompt.initial_text = initial_text;
+        prompt.width = -1;
+        prompt.hook = hook;
+        prompt.hook_user_data = hook_user;
+        prompt.encrypted = false;
+        prompt.remember = remember;
+        ok = action_runtime_prompt_result(result, &prompt);
+    }
+    ncm_statusbar_scoped_lock_destroy(&lock);
+    return ok;
+}
+
+static bool
+action_runtime_execute_binding(NcmBinding *binding) {
+#if defined(__GNUC__)
+    if (ncmpcpp_legacy_execute_binding != NULL) {
+        return ncmpcpp_legacy_execute_binding(binding);
+    }
+#endif
+    return ncm_binding_execute_default(binding);
+}
+
+static bool
+action_runtime_execute_command(void) {
+    ActionRuntimeCommandPrompt state;
+    NcmBuffer command_name;
+    NcmCommand *command;
+    bool prompted;
+    bool result;
+
+    ncm_buffer_init(&state.previous);
+    ncm_buffer_init(&command_name);
+    prompted = action_runtime_prompt_string(STRLIT_ARGS(":"),
+                                            (char *)"", true,
+                                            action_runtime_command_prompt_hook,
+                                            &state, &command_name);
+    if (!prompted && (state.previous.len > 0)) {
+        ncm_buffer_copy(&command_name, &state.previous);
+        prompted = true;
+    }
+    ncm_buffer_destroy(&state.previous);
+
+    if (!prompted) {
+        ncm_buffer_destroy(&command_name);
+        return true;
+    }
+
+    command = ncm_bindings_configuration_find_command(
+        &Bindings, command_name.data, command_name.len);
+    if (command == NULL) {
+        action_runtime_print_format_string(STRLIT_ARGS(
+            "No command named \"%1%\""),
+            command_name.data, command_name.len);
+        ncm_buffer_destroy(&command_name);
+        return true;
+    }
+
+    action_runtime_print_format_string(STRLIT_ARGS("Executing %1%..."),
+                                       command_name.data, command_name.len);
+    result = action_runtime_execute_binding(&command->binding);
+    if (result) {
+        action_runtime_print_format_string(STRLIT_ARGS(
+            "Execution of command \"%1%\" successful."),
+            command_name.data, command_name.len);
+    } else {
+        action_runtime_print_format_string(STRLIT_ARGS(
+            "Execution of command \"%1%\" unsuccessful."),
+            command_name.data, command_name.len);
+    }
+
+    ncm_buffer_destroy(&command_name);
+    return result;
+}
+
+static bool
+action_runtime_apply_filter(void) {
+    NcmStringView current_filter;
+    NcmBuffer filter;
+    NcmBuffer previous_filter;
+    NcmError error;
+    bool old_autocenter_mode;
+    bool prompted;
+
+    if (!current_screen_allows_filter()) {
+        return false;
+    }
+
+    ncm_buffer_init(&filter);
+    ncm_buffer_init(&previous_filter);
+    current_filter = current_screen_current_filter();
+    if ((current_filter.data != NULL) && (current_filter.len > 0)) {
+        ncm_buffer_set(&filter, current_filter.data, current_filter.len);
+        ncm_buffer_copy(&previous_filter, &filter);
+        ncm_error_clear(&error);
+        (void)current_screen_apply_filter(filter.data, filter.len, &error);
+    }
+
+    old_autocenter_mode = Config.autocenter_mode;
+    Config.autocenter_mode = false;
+    prompted = action_runtime_prompt_string(STRLIT_ARGS("Apply filter: "),
+                                            filter.data, false,
+                                            action_runtime_filter_prompt_hook,
+                                            NULL, &filter);
+    Config.autocenter_mode = old_autocenter_mode;
+
+    if (!prompted) {
+        ncm_error_clear(&error);
+        (void)current_screen_apply_filter(previous_filter.data,
+                                          previous_filter.len, &error);
+        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                    (char *)"Action cancelled");
+        ncm_buffer_destroy(&previous_filter);
+        ncm_buffer_destroy(&filter);
+        return true;
+    }
+
+    ncm_error_clear(&error);
+    (void)current_screen_apply_filter(filter.data, filter.len, &error);
+    if (filter.len == 0) {
+        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                    (char *)"Filtering disabled");
+    } else {
+        action_runtime_print_format_string(STRLIT_ARGS(
+            "Using filter \"%1%\""), filter.data, filter.len);
+    }
+
+    ncm_buffer_destroy(&previous_filter);
+    ncm_buffer_destroy(&filter);
+    return true;
+}
+
+static bool
+action_runtime_find_item(enum SearchDirection direction) {
+    ActionRuntimeSearchPrompt state;
+    NcmStringView current_constraint;
+    NcmBuffer constraint;
+    NcmBuffer previous_constraint;
+    NcmError error;
+    bool old_autocenter_mode;
+    bool prompted;
+    char prompt[64];
+    int32 prompt_len;
+
+    if (!current_screen_allows_search()) {
+        return false;
+    }
+
+    state.direction = direction;
+    ncm_buffer_init(&constraint);
+    ncm_buffer_init(&previous_constraint);
+    current_constraint = current_screen_current_search_constraint();
+    if ((current_constraint.data != NULL) && (current_constraint.len > 0)) {
+        ncm_buffer_set(&constraint, current_constraint.data,
+                       current_constraint.len);
+        ncm_buffer_copy(&previous_constraint, &constraint);
+    }
+
+    prompt_len = snprintf(prompt, (size_t)SIZEOF(prompt), "Find %s: ",
+                          ncm_search_direction_str(direction));
+    if (prompt_len < 0) {
+        prompt_len = 0;
+    }
+    if (prompt_len >= (int32)SIZEOF(prompt)) {
+        prompt_len = (int32)SIZEOF(prompt) - 1;
+    }
+
+    old_autocenter_mode = Config.autocenter_mode;
+    Config.autocenter_mode = false;
+    prompted = action_runtime_prompt_string(prompt, prompt_len,
+                                            constraint.data, false,
+                                            action_runtime_search_prompt_hook,
+                                            &state, &constraint);
+    Config.autocenter_mode = old_autocenter_mode;
+
+    if (!prompted) {
+        if (previous_constraint.len == 0) {
+            current_screen_clear_search_constraint();
+        } else {
+            ncm_error_clear(&error);
+            (void)current_screen_search(direction, previous_constraint.data,
+                                        previous_constraint.len,
+                                        Config.wrapped_search, false,
+                                        &error);
+        }
+        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                    (char *)"Action cancelled");
+        ncm_buffer_destroy(&previous_constraint);
+        ncm_buffer_destroy(&constraint);
+        return true;
+    }
+
+    if (constraint.len == 0) {
+        current_screen_clear_search_constraint();
+        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                    (char *)"Constraint unset");
+    } else {
+        ncm_error_clear(&error);
+        (void)current_screen_search(direction, constraint.data,
+                                    constraint.len, Config.wrapped_search,
+                                    false, &error);
+        action_runtime_print_format_string(STRLIT_ARGS(
+            "Using constraint \"%1%\""),
+            constraint.data, constraint.len);
+    }
+
+    ncm_buffer_destroy(&previous_constraint);
+    ncm_buffer_destroy(&constraint);
+    return true;
+}
 
 static NcMenu *
 action_runtime_current_menu(void) {
@@ -3177,9 +3580,15 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE:
         return action_runtime_current_screen_is(
             NCM_SCREEN_TYPE_MEDIA_LIBRARY);
+    case NCM_ACTION_EXECUTE_COMMAND:
+        return true;
+    case NCM_ACTION_APPLY_FILTER:
+        return current_screen_allows_filter();
+    case NCM_ACTION_FIND_ITEM_FORWARD:
+    case NCM_ACTION_FIND_ITEM_BACKWARD:
+        return current_screen_allows_search();
     case NCM_ACTION_RUN_ACTION:
     case NCM_ACTION_DELETE_BROWSER_ITEMS:
-    case NCM_ACTION_EXECUTE_COMMAND:
     case NCM_ACTION_SAVE_PLAYLIST:
     case NCM_ACTION_MOVE_SELECTED_ITEMS_TO:
     case NCM_ACTION_START_SEARCHING:
@@ -3193,10 +3602,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_JUMP_TO_POSITION_IN_SONG:
     case NCM_ACTION_SELECT_ALBUM:
     case NCM_ACTION_SELECT_FOUND_ITEMS:
-    case NCM_ACTION_APPLY_FILTER:
     case NCM_ACTION_FIND:
-    case NCM_ACTION_FIND_ITEM_FORWARD:
-    case NCM_ACTION_FIND_ITEM_BACKWARD:
     case NCM_ACTION_NEXT_FOUND_ITEM:
     case NCM_ACTION_PREVIOUS_FOUND_ITEM:
     case NCM_ACTION_TOGGLE_FIND_MODE:
@@ -3524,9 +3930,16 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_SHOW_TAG_EDITOR:
         return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_TAG_EDITOR);
 #endif
+    case NCM_ACTION_EXECUTE_COMMAND:
+        return action_runtime_execute_command();
+    case NCM_ACTION_APPLY_FILTER:
+        return action_runtime_apply_filter();
+    case NCM_ACTION_FIND_ITEM_FORWARD:
+        return action_runtime_find_item(NCM_SEARCH_DIRECTION_FORWARD);
+    case NCM_ACTION_FIND_ITEM_BACKWARD:
+        return action_runtime_find_item(NCM_SEARCH_DIRECTION_BACKWARD);
     case NCM_ACTION_RUN_ACTION:
     case NCM_ACTION_DELETE_BROWSER_ITEMS:
-    case NCM_ACTION_EXECUTE_COMMAND:
     case NCM_ACTION_SAVE_PLAYLIST:
     case NCM_ACTION_MOVE_SELECTED_ITEMS_TO:
     case NCM_ACTION_START_SEARCHING:
@@ -3540,10 +3953,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_JUMP_TO_POSITION_IN_SONG:
     case NCM_ACTION_SELECT_ALBUM:
     case NCM_ACTION_SELECT_FOUND_ITEMS:
-    case NCM_ACTION_APPLY_FILTER:
     case NCM_ACTION_FIND:
-    case NCM_ACTION_FIND_ITEM_FORWARD:
-    case NCM_ACTION_FIND_ITEM_BACKWARD:
     case NCM_ACTION_NEXT_FOUND_ITEM:
     case NCM_ACTION_PREVIOUS_FOUND_ITEM:
     case NCM_ACTION_TOGGLE_FIND_MODE:

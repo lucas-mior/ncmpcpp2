@@ -212,6 +212,8 @@ bool ncm_action_set_callbacks(enum NcmActionType type,
                               NcmActionRunFn run);
 bool ncm_action_can_run(enum NcmActionType type, void *user);
 bool ncm_action_run(enum NcmActionType type, void *user);
+bool ncm_action_immediate_command_prompt_should_stop(
+    NcmBuffer *previous, char *text, int32 text_len);
 
 #if defined(__cplusplus)
 }

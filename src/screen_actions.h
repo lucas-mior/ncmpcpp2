@@ -16,6 +16,7 @@ NcmStringView current_screen_current_filter(void);
 bool current_screen_apply_filter(char *pattern, int32 pattern_len,
                                  NcmError *error);
 bool current_screen_allows_search(void);
+NcmStringView current_screen_current_search_constraint(void);
 bool current_screen_search(enum SearchDirection direction,
                            char *pattern, int32 pattern_len,
                            bool wrap, bool skip_current,
