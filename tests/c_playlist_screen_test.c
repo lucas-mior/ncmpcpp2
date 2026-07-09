@@ -13,6 +13,7 @@ static void test_playlist_selection_range(void);
 static void test_playlist_current_song_lookup(void);
 static void test_playlist_sparse_now_playing_lookup(void);
 static void test_playlist_now_playing_lookup_does_not_sync(void);
+static void test_playlist_storage_ignores_display_menu(void);
 static void test_playlist_filter_reapplication(void);
 
 int
@@ -22,6 +23,7 @@ main(void) {
     test_playlist_current_song_lookup();
     test_playlist_sparse_now_playing_lookup();
     test_playlist_now_playing_lookup_does_not_sync();
+    test_playlist_storage_ignores_display_menu();
     test_playlist_filter_reapplication();
     return EXIT_SUCCESS;
 }
@@ -187,6 +189,38 @@ test_playlist_now_playing_lookup_does_not_sync(void) {
 
     ncm_song_destroy(&song);
     ncm_song_destroy(&found);
+    nc_song_menu_destroy(&screen.songs);
+    return;
+}
+
+
+static void
+test_playlist_storage_ignores_display_menu(void) {
+    NativePlaylistScreen screen = {0};
+    NcScreenCallbacks callbacks = {0};
+    NcSongMenu display;
+    NcmSong found;
+    NcmSong song;
+
+    nc_song_menu_init(&screen.songs);
+    nc_song_menu_init(&display);
+    ncm_song_init(&found);
+    ncm_song_init(&song);
+    nc_playlist_screen_init(&screen.screen, callbacks, &screen,
+                            nc_song_menu_base(&screen.songs), 0, 80, 0, 10);
+    native_playlist_screen_set_display_menu(&screen,
+                                            nc_song_menu_base(&display));
+
+    assert(ncm_song_set_uri(&song, LIT_ARGS("storage.flac")));
+    ncm_song_set_position(&song, 7);
+    assert(native_playlist_screen_add_song_copy(&screen, &song));
+    assert(native_playlist_screen_song_count(&screen) == 1);
+    assert(nc_menu_all_item_count(nc_song_menu_base(&display)) == 0);
+    assert(native_playlist_screen_now_playing_song(&screen, 7, &found));
+
+    ncm_song_destroy(&song);
+    ncm_song_destroy(&found);
+    nc_song_menu_destroy(&display);
     nc_song_menu_destroy(&screen.songs);
     return;
 }

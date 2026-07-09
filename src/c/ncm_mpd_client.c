@@ -701,6 +701,21 @@ NCM_CLIENT_LIST_CALL(ncm_mpd_client_get_tag_types,
 #undef NCM_CLIENT_LIST_CALL
 
 bool
+ncm_mpd_client_get_queue(NcmMpdClient *client,
+                         NcmMpdSongList *songs, NcmError *error) {
+    if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
+        return false;
+    }
+    if (!ncm_mpd_connection_get_queue(&client->connection, songs)) {
+        ncm_mpd_client_copy_connection_error(client, error);
+        return false;
+    }
+
+    ncm_error_clear(error);
+    return true;
+}
+
+bool
 ncm_mpd_client_get_queue_changes(NcmMpdClient *client, uint32 version,
                                  NcmMpdSongList *songs, NcmError *error) {
     if (!ncm_mpd_client_prechecks_no_commands(client, error)) {

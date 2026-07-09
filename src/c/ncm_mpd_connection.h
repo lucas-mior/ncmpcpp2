@@ -261,6 +261,8 @@ bool ncm_mpd_connection_get_current_song(NcmMpdConnection *connection,
 bool ncm_mpd_connection_get_song(NcmMpdConnection *connection,
                                  char *path,
                                  NcmSong *song);
+bool ncm_mpd_connection_get_queue(NcmMpdConnection *connection,
+                                  NcmMpdSongList *songs);
 bool ncm_mpd_connection_get_queue_changes(NcmMpdConnection *connection,
                                           uint32 version,
                                           NcmMpdSongList *songs);
