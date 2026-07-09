@@ -45,6 +45,7 @@
 #include "charset.h"
 #include "curses/menu_impl.h"
 #include "format_impl.h"
+#include "actions.h"
 #include "global.h"
 #include "helpers/song_iterator_maker.h"
 #include "helpers_legacy.h"
@@ -1007,7 +1008,8 @@ inline bool TagEditor::itemAvailable()
 
 inline bool TagEditor::addItemToPlaylist(bool play)
 {
-	return addSongToPlaylist(*Tags->currentV(), play);
+	return ncm_action_add_song_to_playlist(
+		Tags->currentV()->cSong(), play, -1);
 }
 
 inline std::vector<MPD::Song> TagEditor::getSelectedSongs()

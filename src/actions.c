@@ -1915,6 +1915,11 @@ action_runtime_has_selected_songs(void) {
     return result;
 }
 
+bool
+ncm_action_current_song(NcmSong *song) {
+    return action_runtime_current_song(song);
+}
+
 static bool
 action_runtime_current_song(NcmSong *song) {
     NcmSong *lyrics_song;
@@ -2047,6 +2052,11 @@ action_runtime_add_selected_songs(bool play) {
 
     ncm_song_array_destroy(&songs);
     return success;
+}
+
+bool
+ncm_action_delete_playlist_items(void) {
+    return action_runtime_delete_playlist_items();
 }
 
 static bool
@@ -2182,6 +2192,11 @@ action_runtime_clear_playlist(bool main_playlist) {
     }
     native_playlist_editor_screen_request_content_update(screen);
     return true;
+}
+
+bool
+ncm_action_crop_main_playlist(void) {
+    return action_runtime_crop_playlist(true);
 }
 
 static bool

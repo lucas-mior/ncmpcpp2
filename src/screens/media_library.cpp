@@ -23,6 +23,7 @@
 #include <cassert>
 
 #include "charset.h"
+#include "actions.h"
 #include "display.h"
 #include "helpers_legacy.h"
 #include "global.h"
@@ -717,7 +718,8 @@ bool MediaLibrary::addItemToPlaylist(bool play)
 {
 	bool result = false;
 	if (isActiveWindow(Songs))
-		result = addSongToPlaylist(Songs.current()->value(), play);
+		result = ncm_action_add_song_to_playlist(
+			Songs.current()->value().cSong(), play, -1);
 	else
 	{
 		if (isActiveWindow(Tags)

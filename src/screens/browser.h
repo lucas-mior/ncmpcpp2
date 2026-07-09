@@ -37,6 +37,7 @@
 #include "configuration_legacy.h"
 #include "curses/nc_cyclic_buffer.h"
 #include "format_impl.h"
+#include "actions.h"
 #include "global.h"
 #include "helpers.h"
 #include "interfaces.h"
@@ -57,8 +58,6 @@
 
 #include "c/ncm_tags.h"
 
-
-bool addSongToPlaylist(const MPD::Song &s, bool play, int position);
 
 struct BrowserWindow: NC::Menu<MPD::Item>, SongList
 {
@@ -325,7 +324,7 @@ inline bool addSongsToPlaylist(std::vector<MPD::Song> &songs, bool play)
 
     for (auto &song : songs)
     {
-        if (!addSongToPlaylist(song, play && first, -1))
+        if (!ncm_action_add_song_to_playlist(song.cSong(), play && first, -1))
             success = false;
         first = false;
     }
@@ -727,7 +726,8 @@ inline bool Browser::addItemToPlaylist(bool play)
         break;
     }
     case MPD::Item::Type::Song:
-        success = addSongToPlaylist(item.song(), play, -1);
+        success = ncm_action_add_song_to_playlist(
+            item.song().cSong(), play, -1);
         break;
     case MPD::Item::Type::Playlist:
         success = Mpd.LoadPlaylist(item.playlist().path());

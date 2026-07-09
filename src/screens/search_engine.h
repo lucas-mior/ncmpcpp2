@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 
+#include "actions.h"
 #include "app_controller.h"
 #include "curses/menu_impl.h"
 #include "format_impl.h"
@@ -547,7 +548,8 @@ inline void SearchEngine::runAction()
         reset();
     }
     else
-        addSongToPlaylist(w.current()->value().song(), true);
+        ncm_action_add_song_to_playlist(
+            w.current()->value().song().cSong(), true, -1);
     syncNative();
 }
 
@@ -558,7 +560,8 @@ inline bool SearchEngine::itemAvailable()
 
 inline bool SearchEngine::addItemToPlaylist(bool play)
 {
-    return addSongToPlaylist(w.current()->value().song(), play);
+    return ncm_action_add_song_to_playlist(
+        w.current()->value().song().cSong(), play, -1);
 }
 
 inline std::vector<MPD::Song> SearchEngine::getSelectedSongs()

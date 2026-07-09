@@ -524,11 +524,5 @@ void setHighlightInactiveColumnFixes(NC::Menu<T> &m)
 	m.setHighlightSuffix(Config.current_item_inactive_column_suffix);
 }
 
-void deleteSelectedSongsFromPlaylist(NC::Menu<MPD::Song> &playlist);
-
-bool addSongToPlaylist(const MPD::Song &s, bool play, int position = -1);
-
-const MPD::Song *currentSong(const BaseScreen *screen);
-
 
 #endif // NCMPCPP_HELPERS_LEGACY_H
