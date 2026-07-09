@@ -123,8 +123,12 @@ MPD::PlayerState c_player_state_to_legacy(enum NcmStatusPlayerState state)
 void syncCStatusState()
 {
 	ncm_status_state_sync_from_legacy(
-	    legacy_player_state_to_c(m_player_state), m_elapsed_time,
-	    m_total_time);
+	    m_status_initialized, m_consume != 0, m_crossfade != 0,
+	    m_db_updating != 0, m_repeat != 0, m_random != 0,
+	    m_single != 0, m_current_song_id, m_current_song_pos,
+	    m_elapsed_time, m_kbps,
+	    legacy_player_state_to_c(m_player_state), m_playlist_version,
+	    m_playlist_length, m_total_time, m_volume);
 }
 
 void syncLegacyStatusPrimaryStateFromC()
@@ -310,7 +314,10 @@ std::string playerStateToString(MPD::PlayerState ps)
 
 extern "C" void ncm_statusbar_legacy_mpd_callback(void)
 {
-	Status::update(Mpd.noidle());
+	NcmError error;
+
+	ncm_error_clear(&error);
+	(void)ncm_status_update_from_noidle(&global_mpd, nullptr, &error);
 }
 
 void initialize_status()
@@ -513,6 +520,7 @@ void Status::update(int event)
 		Changes::flags();
 	}
 	m_status_initialized = true;
+	syncCStatusState();
 
 	if (event & MPD_IDLE_PLAYER)
 		static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
