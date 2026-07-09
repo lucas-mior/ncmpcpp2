@@ -67,6 +67,8 @@ void ncm_status_set_notification_observer(void (*callback)(void *user),
                                           void *user);
 void ncm_status_set_database_update_observer(void (*callback)(void *user),
                                              void *user);
+void ncm_status_set_playlist_update_observer(void (*callback)(void *user),
+                                             void *user);
 bool ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                                  NcmStatusHooks *hooks, NcmError *error);
 bool ncm_status_update(NcmMpdClient *client, int32 event, NcmError *error);

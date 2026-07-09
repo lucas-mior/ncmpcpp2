@@ -139,6 +139,19 @@ void requestMediaLibraryDatabaseUpdate(void *)
 	myLibrary->requestSongsUpdate();
 }
 
+void refreshPlaylistRelatedInactiveColumns(void *)
+{
+	if (myLibrary != nullptr
+	    && isVisible(myLibrary)
+	    && !myLibrary->isActiveWindow(myLibrary->Songs))
+		myLibrary->Songs.refresh();
+
+	if (myPlaylistEditor != nullptr
+	    && isVisible(myPlaylistEditor)
+	    && !myPlaylistEditor->isActiveWindow(myPlaylistEditor->Content))
+		myPlaylistEditor->Content.refresh();
+}
+
 void traceStatus(bool update_timer, bool update_window_timeout)
 {
 	NcmError error = {};
@@ -146,6 +159,8 @@ void traceStatus(bool update_timer, bool update_window_timeout)
 	ncm_status_register_legacy_hooks();
 	ncm_status_set_database_update_observer(
 	    requestMediaLibraryDatabaseUpdate, nullptr);
+	ncm_status_set_playlist_update_observer(
+	    refreshPlaylistRelatedInactiveColumns, nullptr);
 	ncm_error_clear(&error);
 	ncm_status_trace(&global_mpd, update_timer, update_window_timeout, &error);
 }
@@ -382,6 +397,8 @@ void initializeScreens()
 	ncm_status_set_database_update_observer(
 	    requestMediaLibraryDatabaseUpdate, nullptr);
 	myPlaylistEditor = new PlaylistEditor;
+	ncm_status_set_playlist_update_observer(
+	    refreshPlaylistRelatedInactiveColumns, nullptr);
 	myLyrics = new Lyrics;
 	mySelectedItemsAdder = new SelectedItemsAdder;
 	mySortPlaylistDialog = new SortPlaylistDialog;
