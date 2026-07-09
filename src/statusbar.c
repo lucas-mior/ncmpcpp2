@@ -21,6 +21,9 @@ static void statusbar_apply_formatted_color(NcWindow *window,
 static void statusbar_apply_formatted_color_end(NcWindow *window,
                                                 NcFormattedColor *color);
 static void statusbar_progressbar_split(NcmStringView items[3]);
+static void statusbar_set_active_footer_line_locked(bool locked);
+static void statusbar_redraw_after_unlock(void);
+static void statusbar_redraw_after_stop_unlock(void);
 
 static int32
 statusbar_cstring_len(char *string) {
@@ -34,6 +37,81 @@ statusbar_cstring_len(char *string) {
 static NcWindow *
 statusbar_footer_window(void) {
     return ui_state_footer_window();
+}
+
+static void
+statusbar_set_active_footer_line_locked(bool locked) {
+    if (Config.statusbar_visibility) {
+        statusbar_block_update = locked;
+    } else {
+        progressbar_block_update = locked;
+    }
+    return;
+}
+
+static void
+statusbar_redraw_after_stop_unlock(void) {
+    NcWindow *window;
+
+    if (ncm_status_state_player() != NCM_STATUS_PLAYER_STOP) {
+        return;
+    }
+
+    window = statusbar_footer_window();
+    if (window == NULL) {
+        return;
+    }
+
+    switch (Config.design) {
+    case NCM_DESIGN_CLASSIC:
+        (void)ncm_statusbar_put();
+        break;
+    case NCM_DESIGN_ALTERNATIVE:
+        ncm_progressbar_draw(ncm_status_state_elapsed_time(),
+                             ncm_status_state_total_time());
+        break;
+    case NCM_DESIGN_LAST:
+        break;
+    }
+    nc_window_refresh(window);
+    return;
+}
+
+static void
+statusbar_redraw_after_unlock(void) {
+    NcWindow *window;
+
+    if (statusbar_block_update || progressbar_block_update) {
+        return;
+    }
+
+    window = statusbar_footer_window();
+    if (window == NULL) {
+        return;
+    }
+
+    switch (Config.design) {
+    case NCM_DESIGN_CLASSIC:
+        switch (ncm_status_state_player()) {
+        case NCM_STATUS_PLAYER_UNKNOWN:
+        case NCM_STATUS_PLAYER_STOP:
+            (void)ncm_statusbar_put();
+            break;
+        case NCM_STATUS_PLAYER_PLAY:
+        case NCM_STATUS_PLAYER_PAUSE:
+            ncm_status_changes_elapsed_time(false);
+            break;
+        }
+        break;
+    case NCM_DESIGN_ALTERNATIVE:
+        ncm_progressbar_draw(ncm_status_state_elapsed_time(),
+                             ncm_status_state_total_time());
+        break;
+    case NCM_DESIGN_LAST:
+        break;
+    }
+    nc_window_refresh(window);
+    return;
 }
 
 static void
@@ -202,12 +280,9 @@ ncm_statusbar_scoped_lock_destroy(NcmStatusbarScopedLock *lock) {
     (void)lock;
     statusbar_allow_unlock = true;
     if (statusbar_lock_delay_seconds < 0) {
-        if (Config.statusbar_visibility) {
-            statusbar_block_update = false;
-        } else {
-            progressbar_block_update = false;
-        }
+        statusbar_set_active_footer_line_locked(false);
     }
+    statusbar_redraw_after_stop_unlock();
     return;
 }
 
@@ -222,11 +297,8 @@ ncm_statusbar_try_redraw(void) {
         && (global_timer_elapsed_seconds(statusbar_lock_time)
             > statusbar_lock_delay_seconds)) {
         statusbar_lock_delay_seconds = -1;
-        if (Config.statusbar_visibility) {
-            statusbar_block_update = !statusbar_allow_unlock;
-        } else {
-            progressbar_block_update = !statusbar_allow_unlock;
-        }
+        statusbar_set_active_footer_line_locked(!statusbar_allow_unlock);
+        statusbar_redraw_after_unlock();
     }
     return;
 }
@@ -265,7 +337,7 @@ ncm_statusbar_print(int32 delay_seconds, char *message, int32 message_len) {
         return;
     }
 
-    if (delay_seconds > 0) {
+    if (delay_seconds != 0) {
         statusbar_lock_time = global_timer;
         statusbar_lock_delay_seconds = delay_seconds;
         if (Config.statusbar_visibility) {
