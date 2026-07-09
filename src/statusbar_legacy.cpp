@@ -59,30 +59,37 @@ bool Progressbar::isUnlocked()
 
 void Progressbar::draw(unsigned int elapsed, unsigned int time)
 {
-	unsigned pb_width = static_cast<NC::Window *>(ui_state_footer_legacy_window())->getWidth();
+	NC::Window *window =
+		static_cast<NC::Window *>(ui_state_footer_legacy_window());
+	unsigned pb_width = window->getWidth();
 	unsigned howlong = time ? pb_width*elapsed/time : 0;
 	const auto progressbar = Utf8::split(Config.progressbar);
-	*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << Config.progressbar_color;
+
+	window->goToXY(0, 0);
+	*window << Config.progressbar_color;
 	if (!progressbar[2].empty() && progressbar[2][0] != '\0')
 	{
-		static_cast<NC::Window *>(ui_state_footer_legacy_window())->goToXY(0, 0);
 		for (unsigned i = 0; i < pb_width; ++i)
-			*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << progressbar[2];
-		static_cast<NC::Window *>(ui_state_footer_legacy_window())->goToXY(0, 0);
+			*window << progressbar[2];
+		window->goToXY(0, 0);
 	}
 	else
-		mvwhline(static_cast<NC::Window *>(ui_state_footer_legacy_window())->raw(), 0, 0, 0, pb_width);
-	*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::FormattedColor::End<>(Config.progressbar_color);
+	{
+		mvwhline(window->raw(), 0, 0, 0, pb_width);
+		window->goToXY(0, 0);
+	}
+	*window << NC::FormattedColor::End<>(Config.progressbar_color);
 	if (time)
 	{
-		*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << Config.progressbar_elapsed_color;
-		pb_width = std::min(size_t(howlong), static_cast<NC::Window *>(ui_state_footer_legacy_window())->getWidth());
+		*window << Config.progressbar_elapsed_color;
+		pb_width = std::min(size_t(howlong), window->getWidth());
 		for (unsigned i = 0; i < pb_width; ++i)
-			*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << progressbar[0];
-		if (howlong < static_cast<NC::Window *>(ui_state_footer_legacy_window())->getWidth())
-			*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << progressbar[1];
-		*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::FormattedColor::End<>(Config.progressbar_elapsed_color);
+			*window << progressbar[0];
+		if (howlong < window->getWidth())
+			*window << progressbar[1];
+		*window << NC::FormattedColor::End<>(Config.progressbar_elapsed_color);
 	}
+	window->goToXY(0, 0);
 }
 
 Statusbar::ScopedLock::ScopedLock() noexcept
@@ -167,26 +174,34 @@ void Statusbar::tryRedraw()
 
 NC::Window &Statusbar::put()
 {
-	*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(0, Config.statusbar_visibility ? 1 : 0) << NC::TermManip::ClearToEOL;
-	return *static_cast<NC::Window *>(ui_state_footer_legacy_window());
+	NC::Window *window =
+		static_cast<NC::Window *>(ui_state_footer_legacy_window());
+	int y = Config.statusbar_visibility ? 1 : 0;
+
+	window->goToXY(0, y);
+	*window << NC::TermManip::ClearToEOL;
+	window->goToXY(0, y);
+	return *window;
 }
 
 void Statusbar::print(int delay, const std::string &message)
 {
 	if (statusbar_allow_unlock)
 	{
-        if(delay)
-        {
-            statusbar_lock_time = global_timer;
-            statusbar_lock_delay_seconds = delay;
-            if (Config.statusbar_visibility)
-                statusbar_block_update = true;
-            else
-                progressbar_block_update = true;
-            static_cast<NC::Window *>(ui_state_footer_legacy_window())->goToXY(0, Config.statusbar_visibility);
-            *static_cast<NC::Window *>(ui_state_footer_legacy_window()) << message << NC::TermManip::ClearToEOL;
-        }
-		static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
+		NC::Window &window = put();
+
+		if (delay)
+		{
+			statusbar_lock_time = global_timer;
+			statusbar_lock_delay_seconds = delay;
+			if (Config.statusbar_visibility)
+				statusbar_block_update = true;
+			else
+				progressbar_block_update = true;
+		}
+		window << message << NC::TermManip::ClearToEOL;
+		window.goToXY(0, Config.statusbar_visibility ? 1 : 0);
+		window.refresh();
 	}
 }
 
