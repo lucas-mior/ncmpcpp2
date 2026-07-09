@@ -34,6 +34,8 @@ typedef struct NcmStatusHooks {
 typedef struct NcmStatusUiHooks {
     void *user;
 
+    void (*stored_playlists_changed)(void *user);
+    void (*database_changed)(void *user);
     void (*player_state_changed)(enum NcmStatusPlayerState state,
                                  void *user);
     void (*player_stopped)(void *user);

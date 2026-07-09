@@ -142,18 +142,27 @@ void legacy_status_playlist_changed(uint32 previous_version, void *user)
 	Status::Changes::playlist(previous_version);
 }
 
-void legacy_status_stored_playlists_changed(void *user)
+void legacy_status_ui_stored_playlists_changed(void *user)
 {
 	(void)user;
 	syncLegacyStatusPrimaryStateFromC();
-	Status::Changes::storedPlaylists();
+	myPlaylistEditor->requestPlaylistsUpdate();
+	myPlaylistEditor->requestContentUpdate();
+	if (!myBrowser->isLocal() && myBrowser->inRootDirectory())
+		myBrowser->requestUpdate();
 }
 
-void legacy_status_database_changed(void *user)
+void legacy_status_ui_database_changed(void *user)
 {
 	(void)user;
 	syncLegacyStatusPrimaryStateFromC();
-	Status::Changes::database();
+	myBrowser->requestUpdate();
+#	ifdef HAVE_TAGLIB_H
+	myTagEditor->Dirs->clear();
+#	endif // HAVE_TAGLIB_H
+	myLibrary->requestTagsUpdate();
+	myLibrary->requestAlbumsUpdate();
+	myLibrary->requestSongsUpdate();
 }
 
 void legacy_status_ui_player_state_changed(
@@ -261,8 +270,8 @@ void registerLegacyStatusHooks()
 	NcmStatusHooks hooks = {
 		nullptr,
 		legacy_status_playlist_changed,
-		legacy_status_stored_playlists_changed,
-		legacy_status_database_changed,
+		nullptr,
+		nullptr,
 		nullptr,
 		nullptr,
 		nullptr,
@@ -274,6 +283,8 @@ void registerLegacyStatusHooks()
 	};
 	NcmStatusUiHooks ui_hooks = {
 		nullptr,
+		legacy_status_ui_stored_playlists_changed,
+		legacy_status_ui_database_changed,
 		legacy_status_ui_player_state_changed,
 		legacy_status_ui_player_stopped,
 		legacy_status_ui_song_id_changed,
@@ -543,21 +554,12 @@ void Status::Changes::playlist(unsigned previous_version)
 
 void Status::Changes::storedPlaylists()
 {
-	myPlaylistEditor->requestPlaylistsUpdate();
-	myPlaylistEditor->requestContentUpdate();
-	if (!myBrowser->isLocal() && myBrowser->inRootDirectory())
-		myBrowser->requestUpdate();
+	ncm_status_changes_stored_playlists();
 }
 
 void Status::Changes::database()
 {
-	myBrowser->requestUpdate();
-#	ifdef HAVE_TAGLIB_H
-	myTagEditor->Dirs->clear();
-#	endif // HAVE_TAGLIB_H
-	myLibrary->requestTagsUpdate();
-	myLibrary->requestAlbumsUpdate();
-	myLibrary->requestSongsUpdate();
+	ncm_status_changes_database();
 }
 
 void Status::Changes::playerState()
