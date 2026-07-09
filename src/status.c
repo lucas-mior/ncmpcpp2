@@ -939,7 +939,8 @@ status_draw_classic_elapsed_time(NcWindow *footer, NcmSong *song,
     ncm_buffer_init(&tracklength);
     status_tracklength_buffer(&tracklength);
     ncm_format_render_buffer(&Config.song_status_format, song,
-                             &rendered_song, &rendered_song, 0);
+                             &rendered_song, &rendered_song,
+                             NCM_FORMAT_FLAG_ALL);
 
     nc_window_go_to_xy(footer, 0, 1);
     nc_window_apply_term_manip(footer, NC_TERM_CLEAR_TO_EOL);
@@ -999,9 +1000,9 @@ status_draw_alternative_elapsed_time(NcWindow *header, NcmSong *song,
     status_tracklength_buffer(&tracklength);
 
     ncm_format_render_buffer(&Config.new_header_first_line, song,
-                             &first, &first, 0);
+                             &first, &first, NCM_FORMAT_FLAG_ALL);
     ncm_format_render_buffer(&Config.new_header_second_line, song,
-                             &second, &second, 0);
+                             &second, &second, NCM_FORMAT_FLAG_ALL);
 
     first_len = ncm_utf8_width(first.data, first.len);
     first_margin = tracklength.len + 1;
