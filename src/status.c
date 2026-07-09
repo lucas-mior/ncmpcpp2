@@ -32,6 +32,8 @@ static bool status_hooks_set;
 static NcmStatusHooks status_hooks;
 static void (*status_initialize_hook)(void *user);
 static void *status_initialize_hook_user;
+static void (*status_notification_observer)(void *user);
+static void *status_notification_observer_user;
 static NcmTimePoint status_past;
 
 typedef struct StatusTimeoutContext {
@@ -86,6 +88,14 @@ void
 ncm_status_set_initialize_hook(void (*callback)(void *user), void *user) {
     status_initialize_hook = callback;
     status_initialize_hook_user = user;
+    return;
+}
+
+void
+ncm_status_set_notification_observer(void (*callback)(void *user),
+                                     void *user) {
+    status_notification_observer = callback;
+    status_notification_observer_user = user;
     return;
 }
 
@@ -210,9 +220,18 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
 }
 
 static void
+status_notify_statusbar(void) {
+    if (status_notification_observer != NULL) {
+        status_notification_observer(status_notification_observer_user);
+    }
+    return;
+}
+
+static void
 statusbar_format_cstring(char *format, int32 format_len, char *value) {
     NcmStringFormatArg arg;
 
+    status_notify_statusbar();
     arg = ncm_string_format_arg_cstring(value);
     ncm_statusbar_format((int32)Config.message_delay_time,
                          format, format_len, &arg, 1);
@@ -394,6 +413,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         if (new_crossfade != status_crossfade) {
             status_crossfade = new_crossfade;
             if (status_initialized) {
+                status_notify_statusbar();
                 arg = ncm_string_format_arg_u64(
                     (uint64)mpd_status->crossfade);
                 ncm_statusbar_format(
