@@ -134,6 +134,22 @@ enum NcScroll {
     NC_SCROLL_END,
 };
 
+enum NcPromptStatus {
+    NC_PROMPT_ACCEPTED,
+    NC_PROMPT_ABORTED,
+};
+
+typedef bool (*NcPromptHook)(char *text, void *user_data);
+
+typedef struct NcPrompt {
+    char *initial_text;
+    int64 width;
+    NcPromptHook hook;
+    void *hook_user_data;
+    bool encrypted;
+    bool remember;
+} NcPrompt;
+
 typedef struct NcWindow {
     WINDOW *window;
     char *title;
@@ -183,6 +199,7 @@ int32 nc_key_name(NcKey key, char *buffer, int32 buffer_len);
 
 void nc_mouse_enable(void);
 void nc_mouse_disable(void);
+void nc_init_readline(void);
 void nc_init_screen(bool enable_colors, bool enable_mouse);
 int32 nc_color_count(void);
 void nc_pause_screen(void);
@@ -234,6 +251,9 @@ void nc_window_clear_fd_callbacks(NcWindow *window);
 bool nc_window_fd_callbacks_empty(NcWindow *window);
 NcKey nc_window_read_key(NcWindow *window);
 void nc_window_push_key(NcWindow *window, NcKey ch);
+enum NcPromptStatus nc_window_prompt(NcWindow *window, NcPrompt *prompt,
+                                      char **result);
+void nc_window_prompt_result_destroy(char *result);
 
 void nc_window_scroll(NcWindow *window, enum NcScroll where);
 void nc_window_apply_term_manip(NcWindow *window, enum NcTermManip tm);

@@ -3,20 +3,47 @@
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/select.h>
 #include <sys/time.h>
 #include <termios.h>
 #include <unistd.h>
 
+#if defined(HAVE_READLINE_HISTORY_H)
+#include <readline/history.h>
+#endif
+
+#if defined(HAVE_READLINE_H)
+#include <readline.h>
+#elif defined(HAVE_READLINE_READLINE_H)
+#include <readline/readline.h>
+#else
+#error "readline is not available"
+#endif
+
 #include "cbase/array.h"
 #include "cbase/base_macros.h"
 #include "cbase/cbase.h"
+#include "c/ncm_utf8.h"
 
 static int32 max_color;
 static int32 color_pair_counter;
 static int32 *color_pair_map;
 static bool mouse_support_enabled;
 static struct termios orig_termios;
+
+static struct NcReadlineState {
+    NcWindow *window;
+    char *initial_text;
+    NcPromptHook hook;
+    void *hook_user_data;
+    int32 start_x;
+    int32 start_y;
+    int32 width;
+    bool encrypted;
+    bool aborted;
+    bool initialized;
+} nc_readline_state;
 
 static void nc_window_assign_title(NcWindow *window,
                                    char *title, int32 title_len);
@@ -39,6 +66,17 @@ static void nc_window_increase_format(NcWindow *window, int32 *counter,
                                       void (*set)(NcWindow *, bool));
 static void nc_window_decrease_format(NcWindow *window, int32 *counter,
                                       void (*set)(NcWindow *, bool));
+
+static int32 nc_prompt_abort(int32 count, int32 key);
+static int32 nc_prompt_add_initial_text(void);
+static char **nc_prompt_attempt_completion(const char *text,
+                                           int start, int end);
+static int32 nc_prompt_read_key(FILE *file);
+static void nc_prompt_display_string(void);
+static void nc_prompt_print_data(char *string, int32 string_len);
+static void nc_prompt_print_mask(char *string, int32 string_len);
+static void nc_prompt_print_visible_suffix(char *string, int32 string_len);
+static bool nc_prompt_run_hook(char *line);
 
 NcColor
 nc_color_make(int16 foreground, int16 background,
@@ -318,6 +356,27 @@ nc_mouse_disable(void) {
 }
 
 void
+nc_init_readline(void) {
+    if (nc_readline_state.initialized) {
+        return;
+    }
+
+    rl_initialize();
+    rl_attempted_completion_function = nc_prompt_attempt_completion;
+    rl_bind_key('\3', nc_prompt_abort);
+    rl_bind_key('\7', nc_prompt_abort);
+    rl_prep_term_function = NULL;
+    rl_deprep_term_function = NULL;
+    rl_catch_signals = 0;
+    rl_catch_sigwinch = 0;
+    rl_getc_function = nc_prompt_read_key;
+    rl_redisplay_function = nc_prompt_display_string;
+    rl_startup_hook = nc_prompt_add_initial_text;
+    nc_readline_state.initialized = true;
+    return;
+}
+
+void
 nc_init_screen(bool enable_colors, bool enable_mouse) {
     tcgetattr(STDIN_FILENO, &orig_termios);
     initscr();
@@ -349,6 +408,7 @@ nc_init_screen(bool enable_colors, bool enable_mouse) {
 
     mouse_support_enabled = enable_mouse;
     nc_mouse_enable();
+    nc_init_readline();
     return;
 }
 
@@ -867,6 +927,104 @@ nc_window_push_key(NcWindow *window, NcKey ch) {
     return;
 }
 
+enum NcPromptStatus
+nc_window_prompt(NcWindow *window, NcPrompt *prompt, char **result) {
+    enum NcPromptStatus status;
+    char *input;
+    int64 requested_width;
+    int64 available_width;
+    int64 prompt_width;
+
+    if (result == NULL) {
+        return NC_PROMPT_ABORTED;
+    }
+    *result = NULL;
+    if (window == NULL) {
+        return NC_PROMPT_ABORTED;
+    }
+
+    nc_init_readline();
+
+    nc_readline_state.window = window;
+    nc_readline_state.initial_text = (char *)"";
+    nc_readline_state.hook = NULL;
+    nc_readline_state.hook_user_data = NULL;
+    nc_readline_state.encrypted = false;
+    nc_readline_state.aborted = false;
+
+    if (prompt) {
+        if (prompt->initial_text) {
+            nc_readline_state.initial_text = prompt->initial_text;
+        }
+        nc_readline_state.hook = prompt->hook;
+        nc_readline_state.hook_user_data = prompt->hook_user_data;
+        nc_readline_state.encrypted = prompt->encrypted;
+        requested_width = prompt->width;
+    } else {
+        requested_width = -1;
+    }
+
+    getyx(window->window, nc_readline_state.start_y,
+          nc_readline_state.start_x);
+    available_width = window->width - nc_readline_state.start_x - 1;
+    if (available_width < 0) {
+        available_width = 0;
+    }
+    if (requested_width <= 0) {
+        prompt_width = available_width;
+    } else {
+        prompt_width = requested_width - 1;
+        if (prompt_width > available_width) {
+            prompt_width = available_width;
+        }
+    }
+    nc_readline_state.width = nc_i32(prompt_width);
+
+    curs_set(1);
+    nc_mouse_disable();
+    nc_window_set_escape_terminal_sequences(window, false);
+    input = readline(NULL);
+    nc_window_set_escape_terminal_sequences(window, true);
+    nc_mouse_enable();
+    curs_set(0);
+
+    if (input) {
+        bool remember;
+
+        remember = true;
+        if (prompt) {
+            remember = prompt->remember;
+        }
+#if defined(HAVE_READLINE_HISTORY_H)
+        if (remember && !nc_readline_state.encrypted && (input[0] != '\0')) {
+            add_history(input);
+        }
+#endif
+        *result = input;
+    }
+
+    if (nc_readline_state.aborted) {
+        status = NC_PROMPT_ABORTED;
+    } else {
+        status = NC_PROMPT_ACCEPTED;
+    }
+
+    nc_readline_state.window = NULL;
+    nc_readline_state.initial_text = NULL;
+    nc_readline_state.hook = NULL;
+    nc_readline_state.hook_user_data = NULL;
+    nc_readline_state.encrypted = false;
+    nc_readline_state.aborted = false;
+
+    return status;
+}
+
+void
+nc_window_prompt_result_destroy(char *result) {
+    free(result);
+    return;
+}
+
 void
 nc_window_scroll(NcWindow *window, enum NcScroll where) {
     idlok(window->window, 1);
@@ -1048,6 +1206,163 @@ void
 nc_window_print_double(NcWindow *window, double value) {
     wprintw(window->window, "%f", value);
     return;
+}
+
+static int32
+nc_prompt_abort(int32 count, int32 key) {
+    (void)count;
+    (void)key;
+    nc_readline_state.aborted = true;
+    rl_done = 1;
+    return 0;
+}
+
+static int32
+nc_prompt_add_initial_text(void) {
+    if (nc_readline_state.initial_text) {
+        rl_insert_text(nc_readline_state.initial_text);
+    }
+    return 0;
+}
+
+static char **
+nc_prompt_attempt_completion(const char *text, int start, int end) {
+    (void)text;
+    (void)start;
+    (void)end;
+    rl_attempted_completion_over = 1;
+    return NULL;
+}
+
+static int32
+nc_prompt_read_key(FILE *file) {
+    NcWindow *window;
+    NcKey key;
+    int32 x;
+
+    (void)file;
+    window = nc_readline_state.window;
+    if (window == NULL) {
+        return EOF;
+    }
+
+    do {
+        x = nc_window_get_x(window);
+        if (!nc_prompt_run_hook(rl_line_buffer)) {
+            if (!RL_ISSTATE(RL_STATE_DISPATCHING)) {
+                rl_done = 1;
+                return EOF;
+            }
+        }
+        nc_window_go_to_xy(window, x, nc_readline_state.start_y);
+        nc_window_refresh(window);
+        key = nc_window_read_key(window);
+        if (!nc_window_fd_callbacks_empty(window)) {
+            nc_window_go_to_xy(window, x, nc_readline_state.start_y);
+            nc_window_refresh(window);
+        }
+    } while (key == NC_KEY_NONE);
+
+    return (int32)key;
+}
+
+static void
+nc_prompt_display_string(void) {
+    NcWindow *window;
+    char *before_cursor;
+    char *after_cursor;
+    int32 before_len;
+    int32 after_len;
+    int32 cursor_pos;
+    int32 x;
+    int32 y;
+
+    window = nc_readline_state.window;
+    if (window == NULL) {
+        return;
+    }
+
+    before_cursor = rl_line_buffer;
+    before_len = rl_point;
+    after_cursor = rl_line_buffer + rl_point;
+    after_len = rl_end - rl_point;
+    cursor_pos = ncm_utf8_width(before_cursor, before_len);
+    x = nc_readline_state.start_x;
+    y = nc_readline_state.start_y;
+
+    mvwhline(window->window, y, x, ' ', nc_readline_state.width + 1);
+    nc_window_go_to_xy(window, x, y);
+    if (cursor_pos <= nc_readline_state.width) {
+        int32 printed_width;
+        int32 byte;
+
+        nc_prompt_print_data(before_cursor, before_len);
+        printed_width = cursor_pos;
+        byte = 0;
+        while (byte < after_len) {
+            int32 next_byte;
+            int32 char_width;
+
+            next_byte = ncm_utf8_next_position(after_cursor, after_len, byte);
+            char_width = ncm_utf8_width(after_cursor + byte,
+                                        next_byte - byte);
+            if (printed_width + char_width > nc_readline_state.width) {
+                break;
+            }
+            printed_width += char_width;
+            nc_prompt_print_data(after_cursor + byte, next_byte - byte);
+            byte = next_byte;
+        }
+    } else {
+        int32 suffix_position;
+
+        suffix_position = ncm_utf8_suffix_width_position(
+            before_cursor, before_len, nc_readline_state.width);
+        cursor_pos = ncm_utf8_width(before_cursor + suffix_position,
+                                    before_len - suffix_position);
+        nc_prompt_print_visible_suffix(before_cursor + suffix_position,
+                                       before_len - suffix_position);
+    }
+    nc_window_go_to_xy(window, x + cursor_pos, y);
+    return;
+}
+
+static void
+nc_prompt_print_data(char *string, int32 string_len) {
+    if (nc_readline_state.encrypted) {
+        nc_prompt_print_mask(string, string_len);
+    } else {
+        nc_window_print_data(nc_readline_state.window, string, string_len);
+    }
+    return;
+}
+
+static void
+nc_prompt_print_mask(char *string, int32 string_len) {
+    int32 characters;
+
+    characters = ncm_utf8_characters(string, string_len);
+    for (int32 i = 0; i < characters; i += 1) {
+        nc_window_print_char(nc_readline_state.window, '*');
+    }
+    return;
+}
+
+static void
+nc_prompt_print_visible_suffix(char *string, int32 string_len) {
+    nc_prompt_print_data(string, string_len);
+    return;
+}
+
+static bool
+nc_prompt_run_hook(char *line) {
+    if (line == NULL) {
+        line = (char *)"";
+    }
+    if (!nc_readline_state.hook) {
+        return true;
+    }
+    return nc_readline_state.hook(line, nc_readline_state.hook_user_data);
 }
 
 static void

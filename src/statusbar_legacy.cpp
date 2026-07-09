@@ -18,9 +18,6 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-
-#include <cstring>
-
 #include "global.h"
 #include "app_controller.h"
 #include "ui_state.h"
@@ -31,19 +28,6 @@
 #include "bindings.h"
 #include "screens/playlist.h"
 #include "utility/utf8.h"
-
-
-namespace {
-
-int32
-statusbar_legacy_cstring_len(const char *string)
-{
-	if (string == nullptr)
-		return 0;
-	return static_cast<int32>(std::strlen(string));
-}
-
-}
 
 Progressbar::ScopedLock::ScopedLock() noexcept
 {
@@ -107,31 +91,6 @@ void Statusbar::Helpers::mpd()
 	Status::update(Mpd.noidle());
 }
 
-bool Statusbar::Helpers::mainHook(const char *s)
-{
-	return ncm_statusbar_main_hook(const_cast<char *>(s),
-	                               statusbar_legacy_cstring_len(s));
-}
-
-char Statusbar::Helpers::promptReturnOneOf(const std::vector<char> &values)
-{
-	char result;
-
-	if (values.empty())
-		throw std::logic_error("empty vector of acceptable input");
-	if (!ncm_statusbar_prompt_return_one_of(
-	        ui_state_footer_window(), const_cast<char *>(values.data()),
-	        static_cast<int32>(values.size()), &result))
-		throw NC::PromptAborted();
-	return result;
-}
-
-
-bool Statusbar::Helpers::ImmediatelyReturnOneOf::operator()(const char *s) const
-{
-	Status::trace();
-	return !isOneOf(s);
-}
 
 bool Statusbar::Helpers::ApplyFilterImmediately::operator()(const char *s)
 {

@@ -55,6 +55,7 @@
 #include "ui_state.h"
 #include "utility/comparators.h"
 #include "utility/string.h"
+#include "utility/utf8.h"
 
 #include "c/ncm_tags.h"
 
