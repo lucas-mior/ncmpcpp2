@@ -80,6 +80,7 @@ ncm_progressbar_draw(uint32 elapsed, uint32 time) {
     for (uint32 i = 0; i < filled; i += 1) {
         nc_window_print_char(window, '#');
     }
+    nc_window_go_to_xy(window, 0, 0);
     return;
 }
 
@@ -149,6 +150,7 @@ ncm_statusbar_put(void) {
     }
     nc_window_go_to_xy(window, 0, y);
     nc_window_apply_term_manip(window, NC_TERM_CLEAR_TO_EOL);
+    nc_window_go_to_xy(window, 0, y);
     return window;
 }
 
@@ -181,8 +183,10 @@ ncm_statusbar_print(int32 delay_seconds, char *message, int32 message_len) {
         y = 1;
     }
     nc_window_go_to_xy(window, 0, y);
+    nc_window_apply_term_manip(window, NC_TERM_CLEAR_TO_EOL);
     nc_window_print_data(window, message, message_len);
     nc_window_apply_term_manip(window, NC_TERM_CLEAR_TO_EOL);
+    nc_window_go_to_xy(window, 0, y);
     nc_window_refresh(window);
     return;
 }
