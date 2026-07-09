@@ -51,7 +51,7 @@ void Songs(NC::Menu<MPD::Song> &menu, const SongList &list,
 void SongsInColumns(NC::Menu<MPD::Song> &menu, const SongList &list);
 }
 
-#include "status_legacy.h"
+#include "status.h"
 #include "statusbar.h"
 #include "ui_state.h"
 
@@ -429,12 +429,12 @@ inline std::vector<MPD::Song> Playlist::getSelectedSongs()
 inline MPD::Song Playlist::nowPlayingSong()
 {
     MPD::Song s;
-    if (Status::State::player() != MPD::psUnknown)
+    if (ncm_status_state_player() != NCM_STATUS_PLAYER_UNKNOWN)
     {
         bool was_filtered = w.isFiltered();
         if (was_filtered)
             w.showAllItems();
-        auto sp = Status::State::currentSongPosition();
+        auto sp = ncm_status_state_current_song_position();
         if (sp >= 0 && size_t(sp) < w.size())
             s = w.at(sp).value();
         if (was_filtered)
@@ -487,7 +487,7 @@ inline std::string Playlist::getTotalLength()
     }
     if (Config.playlist_show_remaining_time && m_reload_remaining)
     {
-        int current_position = Status::State::currentSongPosition();
+        int current_position = ncm_status_state_current_song_position();
         bool was_filtered = w.isFiltered();
 
         if (was_filtered)

@@ -607,14 +607,14 @@ void MouseEvent::run()
 	&&  m_mouse_event.y == LINES-(Config.statusbar_visibility ? 2 : 1)
 	   ) // progressbar
 	{
-		if (Status::State::player() == MPD::psStop)
+		if (ncm_status_state_player() == NCM_STATUS_PLAYER_STOP)
 			return;
-		Mpd.Seek(Status::State::currentSongPosition(),
-			Status::State::totalTime()*m_mouse_event.x/double(COLS));
+		Mpd.Seek(ncm_status_state_current_song_position(),
+			ncm_status_state_total_time()*m_mouse_event.x/double(COLS));
 	}
 	else if (m_mouse_event.bstate & BUTTON1_PRESSED
 	     &&  (Config.statusbar_visibility || Config.design == NCM_DESIGN_ALTERNATIVE)
-	     &&  Status::State::player() != MPD::psStop
+	     &&  ncm_status_state_player() != NCM_STATUS_PLAYER_STOP
 	     &&  m_mouse_event.y == (Config.design == NCM_DESIGN_ALTERNATIVE ? 1 : LINES-1)
 			 &&  m_mouse_event.x < 9
 		) // playing/paused
@@ -831,7 +831,7 @@ void SlaveScreen::run()
 
 bool VolumeUp::canBeRun()
 {
-	return Status::State::volume() >= 0;
+	return ncm_status_state_volume() >= 0;
 }
 
 void VolumeUp::run()
@@ -841,7 +841,7 @@ void VolumeUp::run()
 
 bool VolumeDown::canBeRun()
 {
-	return Status::State::volume() >= 0;
+	return ncm_status_state_volume() >= 0;
 }
 
 void VolumeDown::run()
@@ -1017,12 +1017,12 @@ void DeleteStoredPlaylist::run()
 
 bool ReplaySong::canBeRun()
 {
-	return Status::State::currentSongPosition() >= 0;
+	return ncm_status_state_current_song_position() >= 0;
 }
 
 void ReplaySong::run()
 {
-	Mpd.Play(Status::State::currentSongPosition());
+	Mpd.Play(ncm_status_state_current_song_position());
 }
 
 void PreviousSong::run()
@@ -1037,7 +1037,7 @@ void NextSong::run()
 
 bool Pause::canBeRun()
 {
-	return Status::State::player() != MPD::psStop;
+	return ncm_status_state_player() != NCM_STATUS_PLAYER_STOP;
 }
 
 void Pause::run()
@@ -1280,7 +1280,7 @@ void Load::run()
 
 bool SeekForward::canBeRun()
 {
-	return Status::State::player() != MPD::psStop && Status::State::totalTime() > 0;
+	return ncm_status_state_player() != NCM_STATUS_PLAYER_STOP && ncm_status_state_total_time() > 0;
 }
 
 void SeekForward::run()
@@ -1290,7 +1290,7 @@ void SeekForward::run()
 
 bool SeekBackward::canBeRun()
 {
-	return Status::State::player() != MPD::psStop && Status::State::totalTime() > 0;
+	return ncm_status_state_player() != NCM_STATUS_PLAYER_STOP && ncm_status_state_total_time() > 0;
 }
 
 void SeekBackward::run()
@@ -1486,7 +1486,7 @@ void JumpToPlayingSong::run()
 
 void ToggleRepeat::run()
 {
-	Mpd.SetRepeat(!Status::State::repeat());
+	Mpd.SetRepeat(!ncm_status_state_repeat());
 }
 
 bool Shuffle::canBeRun()
@@ -1510,7 +1510,7 @@ void Shuffle::run()
 
 void ToggleRandom::run()
 {
-	Mpd.SetRandom(!Status::State::random());
+	Mpd.SetRandom(!ncm_status_state_random());
 }
 
 bool StartSearching::canBeRun()
@@ -1555,17 +1555,17 @@ void SaveTagChanges::run()
 
 void ToggleSingle::run()
 {
-	Mpd.SetSingle(!Status::State::single());
+	Mpd.SetSingle(!ncm_status_state_single());
 }
 
 void ToggleConsume::run()
 {
-	Mpd.SetConsume(!Status::State::consume());
+	Mpd.SetConsume(!ncm_status_state_consume());
 }
 
 void ToggleCrossfade::run()
 {
-	Mpd.SetCrossfade(Status::State::crossfade() ? 0 : Config.crossfade_time);
+	Mpd.SetCrossfade(ncm_status_state_crossfade() ? 0 : Config.crossfade_time);
 }
 
 void SetCrossfade::run()
@@ -1584,7 +1584,7 @@ void SetCrossfade::run()
 
 bool SetVolume::canBeRun()
 {
-	return Status::State::volume() >= 0;
+	return ncm_status_state_volume() >= 0;
 }
 
 void SetVolume::run()
@@ -1968,7 +1968,7 @@ void JumpToTagEditor::run()
 
 bool JumpToPositionInSong::canBeRun()
 {
-	return Status::State::player() != MPD::psStop && Status::State::totalTime() > 0;
+	return ncm_status_state_player() != NCM_STATUS_PLAYER_STOP && ncm_status_state_total_time() > 0;
 }
 
 void JumpToPositionInSong::run()
@@ -3199,7 +3199,7 @@ void scrollTagDownRun(NC::List *list, const SongList *songs, enum NcmSongGetter 
 void seek(SearchDirection sd)
 {
 
-	if (!Status::State::totalTime())
+	if (!ncm_status_state_total_time())
 	{
 		Statusbar::print("Unknown item length");
 		return;
@@ -3208,7 +3208,7 @@ void seek(SearchDirection sd)
 	Progressbar::ScopedLock progressbar_lock;
 	Statusbar::ScopedLock statusbar_lock;
 
-	unsigned songpos = Status::State::elapsedTime();
+	unsigned songpos = ncm_status_state_elapsed_time();
 	auto t = global_timer;
 
 	NC::Window::ScopedTimeout stimeout{*static_cast<NC::Window *>(ui_state_footer_legacy_window()), BaseScreen::defaultWindowTimeout};
@@ -3251,8 +3251,8 @@ void seek(SearchDirection sd)
 			}
 			break;
 		case NCM_SEARCH_DIRECTION_FORWARD:
-			if (songpos < Status::State::totalTime())
-				songpos = std::min(songpos + howmuch, Status::State::totalTime());
+			if (songpos < ncm_status_state_total_time())
+				songpos = std::min(songpos + howmuch, ncm_status_state_total_time());
 			break;
 		};
 
@@ -3265,12 +3265,12 @@ void seek(SearchDirection sd)
 				if (Config.display_remaining_time)
 				{
 					tracklength += "-";
-					tracklength += songTimeString(Status::State::totalTime()-songpos);
+					tracklength += songTimeString(ncm_status_state_total_time()-songpos);
 				}
 				else
 					tracklength += songTimeString(songpos);
 				tracklength += "/";
-				tracklength += songTimeString(Status::State::totalTime());
+				tracklength += songTimeString(ncm_status_state_total_time());
 				tracklength += "]";
 				*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(static_cast<NC::Window *>(ui_state_footer_legacy_window())->getWidth()-tracklength.length(), 1)
 				         << Config.statusbar_time_color
@@ -3281,12 +3281,12 @@ void seek(SearchDirection sd)
 				if (Config.display_remaining_time)
 				{
 					tracklength = "-";
-					tracklength += songTimeString(Status::State::totalTime()-songpos);
+					tracklength += songTimeString(ncm_status_state_total_time()-songpos);
 				}
 				else
 					tracklength = songTimeString(songpos);
 				tracklength += "/";
-				tracklength += songTimeString(Status::State::totalTime());
+				tracklength += songTimeString(ncm_status_state_total_time());
 				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 0)
 				         << Config.statusbar_time_color
 				         << tracklength
@@ -3295,7 +3295,7 @@ void seek(SearchDirection sd)
 				static_cast<NC::Window *>(ui_state_header_legacy_window())->refresh();
 				break;
 		}
-		ncm_progressbar_draw(songpos, Status::State::totalTime());
+		ncm_progressbar_draw(songpos, ncm_status_state_total_time());
 		static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
 
 		auto k = ncm_bindings_configuration_get(&Bindings, input);
@@ -3307,7 +3307,7 @@ void seek(SearchDirection sd)
 			break;
 	}
 	global_seeking_in_progress = false;
-	Mpd.Seek(Status::State::currentSongPosition(), songpos);
+	Mpd.Seek(ncm_status_state_current_song_position(), songpos);
 }
 
 void findItem(const SearchDirection direction)

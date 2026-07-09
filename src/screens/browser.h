@@ -49,7 +49,7 @@
 #include "screens/screen_cpp_legacy.h"
 #include "settings_legacy.h"
 #include "song_list.h"
-#include "status_legacy.h"
+#include "status.h"
 #include "statusbar.h"
 #include "title_legacy.h"
 #include "ui_state.h"
@@ -694,7 +694,7 @@ inline bool Browser::addItemToPlaylist(bool play)
     auto tryToPlay = [] {
         try
         {
-            Mpd.Play(Status::State::playlistLength());
+            Mpd.Play(ncm_status_state_playlist_length());
         }
         catch (MPD::ServerError &e)
         {
