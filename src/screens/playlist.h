@@ -114,6 +114,8 @@ private:
     static void nativeRefreshCallback(void *user);
     static void nativeRefreshWindowCallback(void *user);
     static void nativeResizeCallback(void *user);
+    static void nativeRegisterSongCallback(NcmSong *song, void *user);
+    static void nativeUnregisterSongCallback(NcmSong *song, void *user);
     std::string getTotalLength();
     std::string songToString(const MPD::Song &s);
     bool playlistEntryMatcher(const Regex::Regex &rx,
@@ -196,6 +198,8 @@ inline Playlist::Playlist()
         bridge.refresh = nativeRefreshCallback;
         bridge.refresh_window = nativeRefreshWindowCallback;
         bridge.resize = nativeResizeCallback;
+        bridge.register_song = nativeRegisterSongCallback;
+        bridge.unregister_song = nativeUnregisterSongCallback;
         bridge.user = this;
         native_playlist_screen_set_bridge(native_c_screen_playlist(),
                                           bridge);
@@ -624,6 +628,41 @@ inline void Playlist::nativeResizeCallback(void *user)
     playlist->resizeNativeWindow();
 }
 
+inline void Playlist::nativeRegisterSongCallback(NcmSong *song, void *user)
+{
+    Playlist *playlist = static_cast<Playlist *>(user);
+
+    if (playlist == nullptr || song == nullptr)
+        return;
+
+    try
+    {
+        playlist->registerSong(MPD::Song(song));
+    }
+    catch (...)
+    {
+    }
+}
+
+inline void Playlist::nativeUnregisterSongCallback(NcmSong *song, void *user)
+{
+    Playlist *playlist = static_cast<Playlist *>(user);
+
+    if (playlist == nullptr || song == nullptr)
+        return;
+
+    try
+    {
+        MPD::Song legacy_song(song);
+
+        if (playlist->checkForSong(legacy_song))
+            playlist->unregisterSong(legacy_song);
+    }
+    catch (...)
+    {
+    }
+}
+
 inline void Playlist::syncNativeCallback(void *user)
 {
     Playlist *playlist = static_cast<Playlist *>(user);
@@ -640,12 +679,12 @@ inline void Playlist::syncNative()
     bool was_filtered;
 
     native = native_c_screen_playlist();
-    native_menu = native_playlist_screen_menu(native);
+    native_menu = nc_song_menu_base(native_playlist_screen_song_menu(native));
     was_filtered = w.isFiltered();
     if (was_filtered)
         w.showAllItems();
 
-    native_playlist_screen_clear(native);
+    nc_menu_clear_items(native_menu);
     for (auto it = w.begin(); it != w.end(); ++it)
     {
         uint32 flags = NC_MENU_ITEM_SELECTABLE;

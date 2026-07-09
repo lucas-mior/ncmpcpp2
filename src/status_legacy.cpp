@@ -18,6 +18,7 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
+#include <algorithm>
 #include <string>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
@@ -135,55 +136,6 @@ void syncLegacyStatusStateFromC()
 	syncLegacyStatusFlagsFromC();
 }
 
-void legacy_status_ui_playlist_changed(uint32 previous_version, void *user)
-{
-	(void)user;
-	syncLegacyStatusPrimaryStateFromC();
-
-	{
-		ScopedUnfilteredMenu<MPD::Song> sunfilter(ReapplyFilter::Yes, myPlaylist->main());
-
-		if (m_playlist_length < myPlaylist->main().size())
-		{
-			auto it = myPlaylist->main().begin()+m_playlist_length;
-			auto end = myPlaylist->main().end();
-			for (; it != end; ++it)
-				myPlaylist->unregisterSong(it->value());
-			myPlaylist->main().resizeList(m_playlist_length);
-		}
-
-		MPD::SongIterator s = Mpd.GetPlaylistChanges(previous_version), end;
-		for (; s != end; ++s)
-		{
-			size_t pos = s->getPosition();
-			myPlaylist->registerSong(*s);
-			if (pos < myPlaylist->main().size())
-			{
-				// if song's already in playlist, replace it with a new one
-				MPD::Song &old_s = myPlaylist->main()[pos].value();
-				myPlaylist->unregisterSong(old_s);
-				old_s = std::move(*s);
-			}
-			else // otherwise just add it to playlist
-				myPlaylist->main().addItem(std::move(*s));
-		}
-	}
-
-	myPlaylist->reloadTotalLength();
-	myPlaylist->reloadRemaining();
-
-	// When we're in multi-column screens, it might happen that songs visible on
-	// the screen are added, but they will not be immediately marked as such
-	// because the window that contains them is not the active one at the moment,
-	// so we need to refresh them manually.
-	if (isVisible(myLibrary)
-	    && !myLibrary->isActiveWindow(myLibrary->Songs))
-		myLibrary->Songs.refresh();
-	if (isVisible(myPlaylistEditor)
-	    && !myPlaylistEditor->isActiveWindow(myPlaylistEditor->Content))
-		myPlaylistEditor->Content.refresh();
-}
-
 void legacy_status_refresh_footer(void *user)
 {
 	(void)user;
@@ -196,6 +148,39 @@ void legacy_status_refresh_visible_screens(void *user)
 	applyToVisibleScreens(nc_screen_refresh_window);
 }
 
+bool legacy_playlist_highlight_mpd_position(int position)
+{
+	if (myPlaylist == nullptr || position < 0)
+		return false;
+
+	auto &menu = myPlaylist->main();
+	if (!menu.isFiltered())
+	{
+		auto first = menu.begin();
+		auto last = menu.end();
+		auto it = std::find_if(first, last, [position](const auto &item) {
+			return item.value().getPosition() == position;
+		});
+		if (it == last)
+			return false;
+		menu.highlight(it - first);
+		return true;
+	}
+
+	auto first = menu.beginV();
+	auto last = menu.endV();
+	auto it = std::find_if(first, last, [position](const auto &song) {
+		return song.getPosition() == position;
+	});
+	if (it == last)
+	{
+		Statusbar::print("Song is filtered out");
+		return false;
+	}
+	menu.highlight(it - first);
+	return true;
+}
+
 void legacy_status_init_jump_to_now_playing(void *user)
 {
 	(void)user;
@@ -203,12 +188,9 @@ void legacy_status_init_jump_to_now_playing(void *user)
 	if (Config.jump_to_now_playing_song_at_start)
 	{
 		int curr_pos = ncm_status_state_current_song_position();
-		if  (curr_pos >= 0)
-		{
-			myPlaylist->main().highlight(curr_pos);
-			if (isVisible(myPlaylist))
-				myPlaylist->refresh();
-		}
+		if (legacy_playlist_highlight_mpd_position(curr_pos)
+		    && isVisible(myPlaylist))
+			myPlaylist->refresh();
 	}
 }
 
@@ -281,7 +263,7 @@ extern "C" void ncm_status_register_legacy_hooks(void)
 	};
 	NcmStatusUiHooks ui_hooks = {
 		nullptr,
-		legacy_status_ui_playlist_changed,
+		nullptr,
 		nullptr,
 		nullptr,
 		nullptr,

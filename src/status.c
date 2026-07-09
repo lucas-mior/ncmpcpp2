@@ -51,6 +51,8 @@ static void (*status_notification_observer)(void *user);
 static void *status_notification_observer_user;
 static void (*status_database_update_observer)(void *user);
 static void *status_database_update_observer_user;
+static void (*status_playlist_update_observer)(void *user);
+static void *status_playlist_update_observer_user;
 static NcmTimePoint status_past;
 static int64 status_playing_song_scroll_begin;
 static int64 status_first_line_scroll_begin;
@@ -76,6 +78,7 @@ static void status_draw_song_title(NcmSong *song);
 static void status_draw_player_state_label(char *state, int32 state_len);
 static bool status_current_song_for_change(NcmSong *song);
 static void status_call_ui_playlist_changed(uint32 previous_version);
+static void status_request_playlist_update(uint32 previous_version);
 static void status_call_ui_stored_playlists_changed(void);
 static void status_call_ui_database_changed(void);
 static void status_request_stored_playlists_update(void);
@@ -195,6 +198,14 @@ ncm_status_set_database_update_observer(void (*callback)(void *user),
                                         void *user) {
     status_database_update_observer = callback;
     status_database_update_observer_user = user;
+    return;
+}
+
+void
+ncm_status_set_playlist_update_observer(void (*callback)(void *user),
+                                        void *user) {
+    status_playlist_update_observer = callback;
+    status_playlist_update_observer_user = user;
     return;
 }
 
@@ -822,6 +833,7 @@ ncm_status_state_sync_from_legacy(bool initialized,
 
 void
 ncm_status_changes_playlist(uint32 previous_version) {
+    status_request_playlist_update(previous_version);
     status_call_ui_playlist_changed(previous_version);
     return;
 }
@@ -1029,6 +1041,23 @@ status_call_ui_playlist_changed(uint32 previous_version) {
         status_ui_hooks.playlist_changed(previous_version,
                                          status_ui_hooks.user);
     }
+    return;
+}
+
+static void
+status_request_playlist_update(uint32 previous_version) {
+    NcmError error;
+
+    ncm_error_clear(&error);
+    if (!native_playlist_screen_reload_from_mpd(
+            native_c_screen_playlist(), &global_mpd, previous_version,
+            status_playlist_length, &error)) {
+        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                    error.message);
+    } else if (status_playlist_update_observer != NULL) {
+        status_playlist_update_observer(status_playlist_update_observer_user);
+    }
+    ncm_error_clear(&error);
     return;
 }
 

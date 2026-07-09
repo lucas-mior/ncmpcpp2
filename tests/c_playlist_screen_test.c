@@ -11,6 +11,7 @@ static bool uri_contains_filter(NcMenu *menu, void *item, void *user);
 static void test_playlist_row_ownership(void);
 static void test_playlist_selection_range(void);
 static void test_playlist_current_song_lookup(void);
+static void test_playlist_sparse_now_playing_lookup(void);
 static void test_playlist_filter_reapplication(void);
 
 int
@@ -18,6 +19,7 @@ main(void) {
     test_playlist_row_ownership();
     test_playlist_selection_range();
     test_playlist_current_song_lookup();
+    test_playlist_sparse_now_playing_lookup();
     test_playlist_filter_reapplication();
     return EXIT_SUCCESS;
 }
@@ -118,6 +120,36 @@ test_playlist_current_song_lookup(void) {
 
     ncm_song_destroy(&song);
     nc_song_menu_destroy(&songs);
+    return;
+}
+
+static void
+test_playlist_sparse_now_playing_lookup(void) {
+    NativePlaylistScreen screen = {0};
+    NcmSong found;
+    NcmSong song;
+    NcmStringView view;
+    uint32 sparse_position;
+
+    sparse_position = 8314;
+    nc_song_menu_init(&screen.songs);
+    ncm_song_init(&found);
+    ncm_song_init(&song);
+
+    assert(ncm_song_set_uri(&song, LIT_ARGS("sparse.flac")));
+    ncm_song_set_position(&song, sparse_position);
+    nc_song_menu_add(&screen.songs, &song);
+
+    assert(native_playlist_screen_now_playing_song(
+        &screen, (int32)sparse_position, &found));
+    assert(ncm_song_position(&found) == sparse_position);
+    assert(ncm_song_uri_view(&found, 0, &view));
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("sparse.flac")));
+    assert(!native_playlist_screen_now_playing_song(&screen, 1, &found));
+
+    ncm_song_destroy(&song);
+    ncm_song_destroy(&found);
+    nc_song_menu_destroy(&screen.songs);
     return;
 }
 
