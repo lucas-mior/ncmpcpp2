@@ -34,7 +34,6 @@
 #include "screens/browser.h"
 #include "screens/native_c_screens.h"
 #include "screens/media_library.h"
-#include "screens/lastfm.h"
 #include "screens/lyrics.h"
 #include "screens/playlist.h"
 #include "screens/playlist_editor.h"
@@ -425,8 +424,6 @@ void initializeScreens()
 	myLyrics = new Lyrics;
 	mySelectedItemsAdder = new SelectedItemsAdder;
 	mySortPlaylistDialog = new SortPlaylistDialog;
-	myLastfm = new Lastfm;
-
 #	ifdef HAVE_TAGLIB_H
 	myTinyTagEditor = new TinyTagEditor;
 	myTagEditor = new TagEditor;
@@ -446,7 +443,6 @@ void initializeScreens()
 	mySelectedItemsAdder->registerNativeScreen();
 
 	mySortPlaylistDialog->registerNativeScreen();
-	myLastfm->registerNativeScreen();
 
 #	ifdef HAVE_TAGLIB_H
 	myTinyTagEditor->registerNativeScreen();
@@ -471,7 +467,6 @@ void setResizeFlags()
 	myLyrics->hasToBeResized = 1;
 	mySelectedItemsAdder->hasToBeResized = 1;
 	mySortPlaylistDialog->hasToBeResized = 1;
-	myLastfm->hasToBeResized = 1;
 
 #	ifdef HAVE_TAGLIB_H
 	myTinyTagEditor->hasToBeResized = 1;
@@ -2369,8 +2364,8 @@ void ApplyFilter::run()
 bool Find::canBeRun()
 {
 	return native_c_screen_help_is_current()
-		|| screenLegacyCurrent() == myLyrics
-		|| screenLegacyCurrent() == myLastfm;
+		|| native_c_screen_lastfm_is_current()
+		|| screenLegacyCurrent() == myLyrics;
 }
 
 void Find::run()
@@ -2385,6 +2380,23 @@ void Find::run()
 	}
 
 	Statusbar::print("Searching...");
+	if (native_c_screen_lastfm_is_current())
+	{
+		NcmError error = {};
+		bool found;
+
+		found = native_lastfm_screen_find(
+			native_c_screen_lastfm(),
+			const_cast<char *>(token.data()),
+			static_cast<int32>(token.size()),
+			&error);
+		if (token.empty() || found)
+			Statusbar::print("Done");
+		else
+			Statusbar::print("No matching patterns found");
+		return;
+	}
+
 	auto s = static_cast<Screen<NC::Scrollpad> *>(screenLegacyCurrent());
 	s->main().removeProperties();
 	if (token.empty() || s->main().setProperties(NC_FORMAT_REVERSE, token, NC_FORMAT_NO_REVERSE, Config.regex_type))
@@ -2759,25 +2771,33 @@ void ShowSongInfo::run()
 
 bool ShowArtistInfo::canBeRun()
 {
+	BaseScreen *current;
 	MPD::Song song;
 
-	return screenLegacyCurrent() == myLastfm
-		|| (screenLegacyCurrent()->isActiveWindow(myLibrary->Tags)
-		    && !myLibrary->Tags.empty()
-		    && Config.media_lib_primary_tag == MPD_TAG_ARTIST)
+	if (native_c_screen_lastfm_is_current())
+		return true;
+
+	current = screenLegacyCurrent();
+	return (current != nullptr
+	        && current->isActiveWindow(myLibrary->Tags)
+	        && !myLibrary->Tags.empty()
+	        && Config.media_lib_primary_tag == MPD_TAG_ARTIST)
 		|| currentSongFromNative(song);
 }
 
 void ShowArtistInfo::run()
 {
-	if (screenLegacyCurrent() == myLastfm)
+	BaseScreen *current;
+	std::string artist;
+
+	if (native_c_screen_lastfm_is_current())
 	{
-		myLastfm->switchTo();
+		(void)app_controller_switch_to_screen(app_controller_previous_screen());
 		return;
 	}
 
-	std::string artist;
-	if (screenLegacyCurrent()->isActiveWindow(myLibrary->Tags))
+	current = screenLegacyCurrent();
+	if (current != nullptr && current->isActiveWindow(myLibrary->Tags))
 	{
 		assert(!myLibrary->Tags.empty());
 		assert(Config.media_lib_primary_tag == MPD_TAG_ARTIST);
@@ -2793,9 +2813,17 @@ void ShowArtistInfo::run()
 
 	if (!artist.empty())
 	{
-		myLastfm->queueArtistInfo(artist, Config.lastfm_preferred_language);
-		if (!isVisible(myLastfm))
-			myLastfm->switchTo();
+		NcmError error = {};
+
+		(void)native_lastfm_screen_queue_artist_info(
+			native_c_screen_lastfm(),
+			const_cast<char *>(artist.data()),
+			static_cast<int32>(artist.size()),
+			const_cast<char *>(Config.lastfm_preferred_language.data()),
+			static_cast<int32>(Config.lastfm_preferred_language.size()),
+			&error);
+		if (!app_controller_is_screen_visible(native_c_screen_lastfm_native()))
+			native_c_screen_lastfm_switch_to();
 	}
 }
 
@@ -3665,11 +3693,6 @@ bool actions_legacy_runtime_exit_requested(void)
  * facades in this remaining legacy translation unit while the individual
  * screen .cpp files are removed from the active build.
  */
-#define to_cpp_scroll lastfm_legacy_to_cpp_scroll
-#define to_nc_scroll lastfm_legacy_to_nc_scroll
-#include "screens/lastfm.cpp"
-#undef to_nc_scroll
-#undef to_cpp_scroll
 #define to_cpp_scroll lyrics_legacy_to_cpp_scroll
 #define to_nc_scroll lyrics_legacy_to_nc_scroll
 #include "screens/lyrics.cpp"
