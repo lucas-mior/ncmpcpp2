@@ -29,12 +29,12 @@
 #include "utility/conversion.h"
 #include "utility/scoped_value.h"
 
+#include "cbase/base_macros.h"
 #include "curses/menu_impl.h"
 #include "macro_utilities.h"
 #include "screens/browser.h"
 #include "screens/native_c_screens.h"
 #include "screens/media_library.h"
-#include "screens/lyrics.h"
 #include "screens/playlist.h"
 #include "screens/playlist_editor.h"
 #include "screens/sort_playlist.h"
@@ -43,6 +43,9 @@
 #include "utility/readline.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
+#include "c/ncm_base.h"
+#include "c/ncm_error.h"
+#include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
 #include "screens/tag_editor.h"
 #include "screens/tiny_tag_editor.h"
@@ -106,6 +109,153 @@ bool currentMediaLibraryArtistTag(std::string &artist)
 		return false;
 
 	artist = myLibrary->Tags.current()->value().tag();
+	return true;
+}
+
+bool nativeLyricsBuildFilename(NativeLyricsScreen *lyrics, NcmSong *song,
+                               NcmError *error)
+{
+	if (!native_lyrics_screen_build_filename(
+	        lyrics,
+	        song,
+	        const_cast<char *>(Config.mpd_music_dir.data()),
+	        static_cast<int32>(Config.mpd_music_dir.size()),
+	        const_cast<char *>(Config.lyrics_directory.data()),
+	        static_cast<int32>(Config.lyrics_directory.size()),
+	        Config.store_lyrics_in_song_dir,
+	        Config.generate_win32_compatible_filenames))
+	{
+		ncm_error_set(error, EINVAL,
+		              const_cast<char *>("failed to build lyrics filename"),
+		              STRLIT_LEN("failed to build lyrics filename"));
+		return false;
+	}
+
+	ncm_error_clear(error);
+	return true;
+}
+
+bool nativeLyricsLoadOrFetch(MPD::Song &song)
+{
+	NativeLyricsScreen *lyrics;
+	NcmLyricsFetcherDef *fetcher;
+	NcmError error;
+	NcmBuffer *filename;
+	NcBuffer *display;
+
+	lyrics = native_c_screen_lyrics();
+	ncm_error_clear(&error);
+	if (!nativeLyricsBuildFilename(lyrics, song.cSong(), &error))
+		return false;
+
+	filename = native_lyrics_screen_filename(lyrics);
+	display = native_lyrics_screen_display(lyrics);
+	nc_buffer_clear(display);
+	nc_scrollpad_reset(&lyrics->scrollpad);
+	nc_lyrics_screen_reset_scroll_begin(native_c_screen_lyrics_typed());
+	if (native_lyrics_screen_load_file(
+	        lyrics, filename->data, filename->len, &error))
+	{
+		ncm_song_copy(&lyrics->song, song.cSong());
+		lyrics->has_song = true;
+		ncm_error_clear(&error);
+		return true;
+	}
+
+	fetcher = lyrics->fetcher;
+	return native_lyrics_screen_fetch(lyrics, song.cSong(), fetcher, &error);
+}
+
+void nativeLyricsPrintConsumerMessage()
+{
+	NcmBuffer message;
+
+	ncm_buffer_init(&message);
+	if (native_lyrics_screen_try_take_consumer_message(
+	        native_c_screen_lyrics(), &message))
+		Statusbar::print(std::string(message.data, message.len));
+	ncm_buffer_destroy(&message);
+}
+
+void nativeLyricsPrintFetcher()
+{
+	NcmLyricsFetcherDef *fetcher;
+
+	fetcher = native_lyrics_screen_toggle_fetcher(
+		native_c_screen_lyrics(), &Config.lyrics_fetchers);
+	if (fetcher != nullptr)
+		Statusbar::printf("Using lyrics fetcher: %s",
+		                  ncm_lyrics_fetcher_name(fetcher));
+	else
+		Statusbar::print("Using all lyrics fetchers");
+}
+
+bool nativeLyricsEditCurrent()
+{
+	NativeLyricsScreen *lyrics;
+	NcmSong *song;
+	NcmBuffer *filename;
+	NcmBuffer escaped;
+	NcmBuffer command;
+	NcmError error;
+
+	if (Config.external_editor.empty())
+	{
+		Statusbar::print(
+			"external_editor variable has to be set in configuration file");
+		return false;
+	}
+
+	lyrics = native_c_screen_lyrics();
+	song = native_lyrics_screen_song(lyrics);
+	if (song == nullptr)
+		return false;
+
+	ncm_error_clear(&error);
+	if (!nativeLyricsBuildFilename(lyrics, song, &error))
+		return false;
+
+	Statusbar::print("Opening lyrics in external editor...");
+	filename = native_lyrics_screen_filename(lyrics);
+	ncm_buffer_init(&escaped);
+	ncm_buffer_init(&command);
+	ncm_string_append_shell_escaped_single_quotes(
+		&escaped, filename->data, filename->len);
+	ncm_buffer_append(&command,
+	                  const_cast<char *>(Config.external_editor.data()),
+	                  static_cast<int32>(Config.external_editor.size()));
+	ncm_buffer_append(&command, const_cast<char *>(" \'"),
+	                  STRLIT_LEN(" \'"));
+	ncm_buffer_append(&command, escaped.data, escaped.len);
+	ncm_buffer_append_byte(&command, '\'');
+	ncm_buffer_append_byte(&command, '\0');
+
+	if (Config.use_console_editor)
+	{
+		runExternalConsoleCommand(command.data);
+		if (!native_lyrics_screen_load_file(
+		        lyrics, filename->data, filename->len, &error))
+		{
+			(void)native_lyrics_screen_fetch(
+				lyrics, song, lyrics->fetcher, &error);
+		}
+	}
+	else
+		runExternalCommand(command.data, false);
+
+	ncm_buffer_destroy(&command);
+	ncm_buffer_destroy(&escaped);
+	return true;
+}
+
+bool nativeLyricsRefetchCurrent()
+{
+	NcmError error;
+
+	ncm_error_clear(&error);
+	native_lyrics_screen_refetch_current(native_c_screen_lyrics(), &error);
+	if (ncm_error_is_set(&error))
+		return false;
 	return true;
 }
 
@@ -444,7 +594,6 @@ void initializeScreens()
 	myPlaylistEditor = new PlaylistEditor;
 	ncm_status_set_playlist_update_observer(
 	    refreshPlaylistRelatedInactiveColumns, nullptr);
-	myLyrics = new Lyrics;
 	mySelectedItemsAdder = new SelectedItemsAdder;
 	mySortPlaylistDialog = new SortPlaylistDialog;
 #	ifdef HAVE_TAGLIB_H
@@ -462,7 +611,7 @@ void initializeScreens()
 	mySearcher->registerNativeScreen();
 	myLibrary->registerNativeScreen();
 	myPlaylistEditor->registerNativeScreen();
-	myLyrics->registerNativeScreen();
+	native_c_screen_lyrics_register();
 	mySelectedItemsAdder->registerNativeScreen();
 
 	mySortPlaylistDialog->registerNativeScreen();
@@ -487,7 +636,7 @@ void setResizeFlags()
 	mySearcher->hasToBeResized = 1;
 	myLibrary->hasToBeResized = 1;
 	myPlaylistEditor->hasToBeResized = 1;
-	myLyrics->hasToBeResized = 1;
+	native_c_screen_lyrics_set_resize();
 	mySelectedItemsAdder->hasToBeResized = 1;
 	mySortPlaylistDialog->hasToBeResized = 1;
 
@@ -640,11 +789,12 @@ void UpdateEnvironment::run(bool update_timer, bool refresh_window, bool mpd_syn
 	traceStatus(update_timer, true);
 
 	// show lyrics consumer notification if appropriate
-	if (auto message = myLyrics->tryTakeConsumerMessage())
-		Statusbar::print(*message);
+	nativeLyricsPrintConsumerMessage();
 
 	// header stuff
-	if ((screenLegacyCurrent() == myPlaylist || screenLegacyCurrent() == myBrowser || screenLegacyCurrent() == myLyrics)
+	if ((screenLegacyCurrent() == myPlaylist
+	     || screenLegacyCurrent() == myBrowser
+	     || native_c_screen_lyrics_is_current())
 	&&  (global_timer_elapsed_ms(m_past) > 500)
 	)
 	{
@@ -1491,7 +1641,7 @@ void ToggleSeparatorsBetweenAlbums::run()
 
 bool ToggleLyricsUpdateOnSongChange::canBeRun()
 {
-	return screenLegacyCurrent() == myLyrics;
+	return native_c_screen_lyrics_is_current();
 }
 
 void ToggleLyricsUpdateOnSongChange::run()
@@ -1504,7 +1654,7 @@ void ToggleLyricsUpdateOnSongChange::run()
 
 void ToggleLyricsFetcher::run()
 {
-	myLyrics->toggleFetcher();
+	nativeLyricsPrintFetcher();
 }
 
 void ToggleFetchingLyricsInBackground::run()
@@ -1971,12 +2121,12 @@ void EditPlaylistName::run()
 
 bool EditLyrics::canBeRun()
 {
-	return screenLegacyCurrent() == myLyrics;
+	return native_c_screen_lyrics_is_current();
 }
 
 void EditLyrics::run()
 {
-	myLyrics->edit();
+	(void)nativeLyricsEditCurrent();
 }
 
 bool JumpToBrowser::canBeRun()
@@ -2403,7 +2553,7 @@ bool Find::canBeRun()
 {
 	return native_c_screen_help_is_current()
 		|| native_c_screen_lastfm_is_current()
-		|| screenLegacyCurrent() == myLyrics;
+		|| native_c_screen_lyrics_is_current();
 }
 
 void Find::run()
@@ -2425,6 +2575,23 @@ void Find::run()
 
 		found = native_lastfm_screen_find(
 			native_c_screen_lastfm(),
+			const_cast<char *>(token.data()),
+			static_cast<int32>(token.size()),
+			&error);
+		if (token.empty() || found)
+			Statusbar::print("Done");
+		else
+			Statusbar::print("No matching patterns found");
+		return;
+	}
+
+	if (native_c_screen_lyrics_is_current())
+	{
+		NcmError error = {};
+		bool found;
+
+		found = native_lyrics_screen_find(
+			native_c_screen_lyrics(),
 			const_cast<char *>(token.data()),
 			static_cast<int32>(token.size()),
 			&error);
@@ -2729,19 +2896,24 @@ bool FetchLyricsInBackground::canBeRun()
 void FetchLyricsInBackground::run()
 {
 	auto songs = m_hs->getSelectedSongs();
+	NcmError error = {};
+
 	for (const auto &s : songs)
-		myLyrics->fetchInBackground(s, true);
+	{
+		(void)native_lyrics_screen_fetch_in_background(
+			native_c_screen_lyrics(), s.cSong(), true, &error);
+	}
 	Statusbar::print("Selected songs queued for lyrics fetching");
 }
 
 bool RefetchLyrics::canBeRun()
 {
-	return screenLegacyCurrent() == myLyrics;
+	return native_c_screen_lyrics_is_current();
 }
 
 void RefetchLyrics::run()
 {
-	myLyrics->refetchCurrent();
+	(void)nativeLyricsRefetchCurrent();
 }
 
 bool SetSelectedItemsPriority::canBeRun()
@@ -2857,24 +3029,21 @@ void ShowArtistInfo::run()
 
 bool ShowLyrics::canBeRun()
 {
-	if (screenLegacyCurrent() == myLyrics)
+	if (native_c_screen_lyrics_is_current())
 	{
 		m_has_song = false;
 		return true;
 	}
-	else
-	{
-		m_has_song = currentSongFromNative(m_song);
-		return m_has_song;
-	}
+
+	m_has_song = currentSongFromNative(m_song);
+	return m_has_song;
 }
 
 void ShowLyrics::run()
 {
 	if (m_has_song)
-		myLyrics->fetch(m_song);
-	if (screenLegacyCurrent() == myLyrics || !isVisible(myLyrics))
-		myLyrics->switchTo();
+		(void)nativeLyricsLoadOrFetch(m_song);
+	native_c_screen_lyrics_switch_to();
 }
 
 void Quit::run()
@@ -3721,11 +3890,6 @@ bool actions_legacy_runtime_exit_requested(void)
  * facades in this remaining legacy translation unit while the individual
  * screen .cpp files are removed from the active build.
  */
-#define to_cpp_scroll lyrics_legacy_to_cpp_scroll
-#define to_nc_scroll lyrics_legacy_to_nc_scroll
-#include "screens/lyrics.cpp"
-#undef to_nc_scroll
-#undef to_cpp_scroll
 #include "screens/media_library.cpp"
 #include "screens/sel_items_adder.cpp"
 #include "screens/sort_playlist.cpp"
