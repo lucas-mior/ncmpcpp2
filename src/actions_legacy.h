@@ -1059,7 +1059,6 @@ private:
 	virtual bool canBeRun() override;
 	virtual void run() override;
 
-	Filterable *m_filterable;
 };
 
 struct Find: BaseAction

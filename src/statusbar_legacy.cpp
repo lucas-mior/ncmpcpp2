@@ -19,15 +19,12 @@
  ***************************************************************************/
 
 #include "global.h"
-#include "app_controller.h"
 #include "ui_state.h"
 #include "settings_legacy.h"
 #include "status_legacy.h"
 #include "statusbar_legacy.h"
 #include "statusbar.h"
 #include "bindings.h"
-#include "screens/playlist.h"
-#include "utility/utf8.h"
 
 Progressbar::ScopedLock::ScopedLock() noexcept
 {
@@ -91,43 +88,6 @@ void Statusbar::Helpers::mpd()
 	Status::update(Mpd.noidle());
 }
 
-
-bool Statusbar::Helpers::ApplyFilterImmediately::operator()(const char *s)
-{
-	Status::trace();
-	try {
-		if (m_w->allowsFiltering() && m_w->currentFilter() != s)
-		{
-			m_w->applyFilter(s);
-			NcScreen *current_screen = app_controller_current_screen();
-
-			if (current_screen == myPlaylist->nativeScreen())
-				myPlaylist->enableHighlighting();
-			if (current_screen != nullptr)
-				nc_screen_refresh_window(current_screen);
-		}
-	} catch (Regex::Error &) { }
-	return true;
-}
-
-bool Statusbar::Helpers::FindImmediately::operator()(const char *s)
-{
-	Status::trace();
-	try {
-		if (m_w->allowsSearching() && m_w->searchConstraint() != s)
-		{
-			m_w->setSearchConstraint(s);
-			m_w->search(m_direction, Config.wrapped_search, false);
-			NcScreen *current_screen = app_controller_current_screen();
-
-			if (current_screen == myPlaylist->nativeScreen())
-				myPlaylist->enableHighlighting();
-			if (current_screen != nullptr)
-				nc_screen_refresh_window(current_screen);
-		}
-	} catch (Regex::Error &) { }
-	return true;
-}
 
 bool Statusbar::Helpers::TryExecuteImmediateCommand::operator()(const char *s)
 {

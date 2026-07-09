@@ -246,6 +246,14 @@ static bool native_playlist_append_position(NcMenu *menu, int64 pos,
                                             NcmSongArray *songs);
 static bool native_playlist_set_one_priority(NcmSong *song, int32 idx,
                                              void *user);
+static bool native_playlist_filter_song(NcMenu *menu, void *item,
+                                        void *user);
+static bool native_playlist_song_matches(NativePlaylistScreen *screen,
+                                         NcmSong *song, NcmRegex *regex);
+static bool native_playlist_search_menu(NativePlaylistScreen *screen,
+                                        NcMenu *menu, NcmRegex *regex,
+                                        bool forward, bool wrap,
+                                        bool skip_current);
 
 typedef struct NativePlaylistPriorityContext {
     NcmMpdClient *client;
@@ -265,7 +273,9 @@ native_playlist_screen_init(NativePlaylistScreen *screen, int64 start_x,
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, (char *)"", 0, color, border);
     ncm_buffer_init(&screen->title_cache);
+    ncm_buffer_init(&screen->filter_constraint);
     ncm_buffer_init(&screen->search_constraint);
+    ncm_regex_init(&screen->filter_regex);
     screen->total_length = 0;
     screen->remaining_time = 0;
     screen->scroll_begin = 0;
@@ -314,7 +324,9 @@ native_playlist_screen_destroy(NativePlaylistScreen *screen) {
     nc_window_destroy(&screen->window);
     nc_song_menu_destroy(&screen->songs);
     ncm_buffer_destroy(&screen->title_cache);
+    ncm_buffer_destroy(&screen->filter_constraint);
     ncm_buffer_destroy(&screen->search_constraint);
+    ncm_regex_destroy(&screen->filter_regex);
     return;
 }
 
@@ -721,6 +733,77 @@ native_playlist_screen_select_current_if_none_selected(
     return nc_menu_set_current_selected(menu, true);
 }
 
+bool
+native_playlist_screen_apply_filter(NativePlaylistScreen *screen,
+                                    char *pattern, int32 pattern_len,
+                                    NcmError *error) {
+    NcMenuDisplayCallbacks callbacks;
+
+    if (screen == NULL) {
+        return false;
+    }
+    native_playlist_sync_if_needed(screen);
+    if (pattern == NULL || pattern_len <= 0) {
+        native_playlist_screen_clear_filter(screen);
+        return true;
+    }
+    if (!ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
+                           Config.regex_type, error)) {
+        return false;
+    }
+    if (!ncm_buffer_set(&screen->filter_constraint, pattern, pattern_len)) {
+        return false;
+    }
+    callbacks = native_playlist_display_callbacks();
+    callbacks.filter = native_playlist_filter_song;
+    callbacks.user = screen;
+    nc_menu_set_display_callbacks(native_playlist_screen_menu(screen),
+                                  callbacks);
+    nc_menu_apply_filter(native_playlist_screen_menu(screen));
+    return true;
+}
+
+void
+native_playlist_screen_clear_filter(NativePlaylistScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    native_playlist_sync_if_needed(screen);
+    ncm_regex_destroy(&screen->filter_regex);
+    ncm_regex_init(&screen->filter_regex);
+    ncm_buffer_clear(&screen->filter_constraint);
+    nc_menu_set_display_callbacks(native_playlist_screen_menu(screen),
+                                  native_playlist_display_callbacks());
+    nc_menu_show_all_items(native_playlist_screen_menu(screen));
+    return;
+}
+
+bool
+native_playlist_screen_search(NativePlaylistScreen *screen,
+                              char *pattern, int32 pattern_len,
+                              bool forward, bool wrap,
+                              bool skip_current, NcmError *error) {
+    NcmRegex regex;
+    bool result;
+
+    if (screen == NULL || pattern == NULL || pattern_len <= 0) {
+        return false;
+    }
+
+    native_playlist_sync_if_needed(screen);
+    ncm_regex_init(&regex);
+    if (!ncm_regex_compile(&regex, pattern, pattern_len,
+                           Config.regex_type, error)) {
+        ncm_regex_destroy(&regex);
+        return false;
+    }
+    result = native_playlist_search_menu(
+        screen, native_playlist_screen_menu(screen), &regex, forward,
+        wrap, skip_current);
+    ncm_regex_destroy(&regex);
+    return result;
+}
+
 void
 native_playlist_screen_reverse_selection(NativePlaylistScreen *screen) {
     if (screen == NULL) {
@@ -953,6 +1036,90 @@ native_playlist_destroy_callback(NcScreen *screen) {
     playlist = native_playlist_from_screen(screen);
     native_playlist_screen_destroy(playlist);
     return;
+}
+
+static bool
+native_playlist_filter_song(NcMenu *menu, void *item, void *user) {
+    NativePlaylistScreen *screen;
+
+    (void)menu;
+    screen = user;
+    return native_playlist_song_matches(screen, item,
+                                        &screen->filter_regex);
+}
+
+static bool
+native_playlist_song_matches(NativePlaylistScreen *screen,
+                             NcmSong *song, NcmRegex *regex) {
+    NcBuffer buffer;
+    NcmFormatAst *format;
+    bool result;
+
+    (void)screen;
+    if (song == NULL) {
+        return false;
+    }
+
+    nc_buffer_init(&buffer);
+    if (Config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
+        format = &Config.song_columns_mode_format;
+    } else {
+        format = &Config.song_list_format;
+    }
+    ncm_display_song_row(&buffer, format, song, 0);
+    result = ncm_regex_search(regex, buffer.data, buffer.len);
+    nc_buffer_destroy(&buffer);
+    return result;
+}
+
+static bool
+native_playlist_search_menu(NativePlaylistScreen *screen,
+                            NcMenu *menu, NcmRegex *regex,
+                            bool forward, bool wrap,
+                            bool skip_current) {
+    int64 count;
+    int64 start;
+
+    if (menu == NULL) {
+        return false;
+    }
+    count = nc_menu_item_count(menu);
+    start = nc_menu_highlight(menu);
+    if (skip_current) {
+        if (forward) {
+            start += 1;
+        } else {
+            start -= 1;
+        }
+    }
+
+    for (int64 i = 0; i < count; i += 1) {
+        int64 pos;
+
+        if (forward) {
+            pos = start + i;
+        } else {
+            pos = start - i;
+        }
+        if (wrap) {
+            while (pos < 0) {
+                pos += count;
+            }
+            while (pos >= count) {
+                pos -= count;
+            }
+        }
+        if (pos < 0 || pos >= count) {
+            continue;
+        }
+        if (native_playlist_song_matches(screen,
+                                         nc_menu_active_item_at(menu, pos),
+                                         regex)) {
+            return nc_menu_goto_selectable(menu, pos);
+        }
+    }
+
+    return false;
 }
 
 static NcMenuDisplayCallbacks

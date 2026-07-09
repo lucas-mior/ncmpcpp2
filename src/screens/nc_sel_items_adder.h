@@ -113,6 +113,10 @@ bool native_selected_items_adder_screen_apply_search(
     int32 pattern_len, uint32 regex_flags, NcmError *error);
 void native_selected_items_adder_screen_clear_search(
     NativeSelectedItemsAdderScreen *screen);
+bool native_selected_items_adder_screen_search(
+    NativeSelectedItemsAdderScreen *screen, char *pattern,
+    int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,
+    bool skip_current, NcmError *error);
 NativeSelectedItemsAdderAction *native_selected_items_adder_screen_last_action(
     NativeSelectedItemsAdderScreen *screen);
 

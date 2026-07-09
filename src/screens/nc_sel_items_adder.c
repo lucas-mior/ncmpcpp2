@@ -21,6 +21,7 @@ static bool adder_lockable_callback(NcScreen *screen);
 static bool adder_mergable_callback(NcScreen *screen);
 static void adder_destroy_callback(NcScreen *screen);
 static bool adder_filter_callback(NcMenu *menu, void *item, void *user);
+static bool adder_row_matches(NcEditorActionRow *row, NcmRegex *regex);
 static bool adder_action_row_set(NcEditorActionRow *row, char *label,
                                  int32 label_len, void (*run)(void *),
                                  void *user);
@@ -420,6 +421,68 @@ native_selected_items_adder_screen_clear_search(
     return;
 }
 
+bool
+native_selected_items_adder_screen_search(
+    NativeSelectedItemsAdderScreen *screen, char *pattern,
+    int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,
+    bool skip_current, NcmError *error) {
+    NcmRegex regex;
+    NcMenu *menu;
+    int64 count;
+    int64 start;
+
+    if (screen == NULL || pattern == NULL || pattern_len <= 0) {
+        return false;
+    }
+
+    ncm_regex_init(&regex);
+    if (!ncm_regex_compile(&regex, pattern, pattern_len, regex_flags,
+                           error)) {
+        ncm_regex_destroy(&regex);
+        return false;
+    }
+
+    menu = native_selected_items_adder_screen_active_menu(screen);
+    count = nc_menu_item_count(menu);
+    start = nc_menu_highlight(menu);
+    if (skip_current) {
+        if (forward) {
+            start += 1;
+        } else {
+            start -= 1;
+        }
+    }
+
+    for (int64 i = 0; i < count; i += 1) {
+        int64 pos;
+
+        if (forward) {
+            pos = start + i;
+        } else {
+            pos = start - i;
+        }
+        if (wrap) {
+            while (pos < 0) {
+                pos += count;
+            }
+            while (pos >= count) {
+                pos -= count;
+            }
+        }
+        if (pos < 0 || pos >= count) {
+            continue;
+        }
+        if (adder_row_matches(nc_menu_active_item_at(menu, pos),
+                              &regex)) {
+            ncm_regex_destroy(&regex);
+            return nc_menu_goto_selectable(menu, pos);
+        }
+    }
+
+    ncm_regex_destroy(&regex);
+    return false;
+}
+
 NativeSelectedItemsAdderAction *
 native_selected_items_adder_screen_last_action(
     NativeSelectedItemsAdderScreen *screen) {
@@ -569,19 +632,21 @@ adder_destroy_callback(NcScreen *screen) {
 static bool
 adder_filter_callback(NcMenu *menu, void *item, void *user) {
     NativeSelectedItemsAdderScreen *screen;
-    NcEditorActionRow *row;
 
     (void)menu;
     screen = user;
-    row = item;
     if (!screen->search_enabled) {
         return true;
     }
+    return adder_row_matches(item, &screen->search_regex);
+}
+
+static bool
+adder_row_matches(NcEditorActionRow *row, NcmRegex *regex) {
     if (row == NULL || row->label == NULL) {
         return false;
     }
-    return ncm_regex_search(&screen->search_regex, row->label,
-                            row->label_len);
+    return ncm_regex_search(regex, row->label, row->label_len);
 }
 
 static bool
