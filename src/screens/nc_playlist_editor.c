@@ -116,6 +116,8 @@ native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
     nc_window_init(&screen->content_window, start_x + width / 2,
                    main_start_y, width - width / 2, main_height,
                    STRLIT_ARGS("Content"), color, border);
+    ncm_buffer_init(&screen->playlist_filter_constraint);
+    ncm_buffer_init(&screen->content_filter_constraint);
     ncm_buffer_init(&screen->playlist_search_constraint);
     ncm_buffer_init(&screen->content_search_constraint);
     ncm_regex_init(&screen->playlist_filter_regex);
@@ -147,6 +149,8 @@ native_playlist_editor_screen_destroy(NativePlaylistEditorScreen *screen) {
     nc_song_menu_destroy(&screen->content);
     nc_window_destroy(&screen->playlists_window);
     nc_window_destroy(&screen->content_window);
+    ncm_buffer_destroy(&screen->playlist_filter_constraint);
+    ncm_buffer_destroy(&screen->content_filter_constraint);
     ncm_buffer_destroy(&screen->playlist_search_constraint);
     ncm_buffer_destroy(&screen->content_search_constraint);
     ncm_regex_destroy(&screen->playlist_filter_regex);
@@ -446,11 +450,11 @@ native_playlist_editor_screen_apply_active_filter(
     menu = native_playlist_editor_screen_active_menu(screen);
     if (screen->active_column == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT) {
         regex = &screen->content_filter_regex;
-        constraint = &screen->content_search_constraint;
+        constraint = &screen->content_filter_constraint;
         enabled = &screen->content_filter_enabled;
     } else {
         regex = &screen->playlist_filter_regex;
-        constraint = &screen->playlist_search_constraint;
+        constraint = &screen->playlist_filter_constraint;
         enabled = &screen->playlist_filter_enabled;
     }
 
@@ -481,10 +485,10 @@ native_playlist_editor_screen_clear_active_filter(
     menu = native_playlist_editor_screen_active_menu(screen);
     if (screen->active_column == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT) {
         screen->content_filter_enabled = false;
-        ncm_buffer_clear(&screen->content_search_constraint);
+        ncm_buffer_clear(&screen->content_filter_constraint);
     } else {
         screen->playlist_filter_enabled = false;
-        ncm_buffer_clear(&screen->playlist_search_constraint);
+        ncm_buffer_clear(&screen->playlist_filter_constraint);
     }
     nc_menu_show_all_items(menu);
     return;

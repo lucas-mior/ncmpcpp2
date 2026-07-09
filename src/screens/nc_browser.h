@@ -34,6 +34,7 @@ typedef struct NativeBrowserScreen {
     NcWindow window;
     NativeBrowserBridge bridge;
     NcmBuffer current_directory;
+    NcmBuffer filter_constraint;
     NcmBuffer search_constraint;
     NcmRegex filter_regex;
 

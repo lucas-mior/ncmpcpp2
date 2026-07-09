@@ -6,6 +6,7 @@
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_time.h"
 #include "c/ncm_song_list.h"
+#include "c/ncm_regex.h"
 #include "curses/nc_app_menus.h"
 #include "curses/nc_menu.h"
 #include "curses/nc_window.h"
@@ -45,7 +46,9 @@ typedef struct NativePlaylistScreen {
     NcSongMenu songs;
     NcWindow window;
     NcmBuffer title_cache;
+    NcmBuffer filter_constraint;
     NcmBuffer search_constraint;
+    NcmRegex filter_regex;
 
     uint64 total_length;
     uint64 remaining_time;
@@ -154,6 +157,14 @@ bool native_playlist_screen_selected_songs(NativePlaylistScreen *screen,
                                            NcmSongArray *songs);
 bool native_playlist_screen_select_current_if_none_selected(
     NativePlaylistScreen *screen);
+bool native_playlist_screen_apply_filter(NativePlaylistScreen *screen,
+                                         char *pattern, int32 pattern_len,
+                                         NcmError *error);
+void native_playlist_screen_clear_filter(NativePlaylistScreen *screen);
+bool native_playlist_screen_search(NativePlaylistScreen *screen,
+                                   char *pattern, int32 pattern_len,
+                                   bool forward, bool wrap,
+                                   bool skip_current, NcmError *error);
 void native_playlist_screen_reverse_selection(NativePlaylistScreen *screen);
 void native_playlist_screen_clear_selection(NativePlaylistScreen *screen);
 bool native_playlist_screen_set_selected_priority(NativePlaylistScreen *screen,

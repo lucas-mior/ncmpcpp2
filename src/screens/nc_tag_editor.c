@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "app_controller.h"
+#include "settings.h"
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
@@ -45,6 +46,13 @@ static bool tag_editor_tag_matches(NativeTagEditorScreen *screen,
                                    NcmMutableSong *song);
 static bool tag_editor_directory_matches(NativeTagEditorScreen *screen,
                                          NcMenuStringPair *pair);
+static bool tag_editor_tag_matches_regex(NcmMutableSong *song,
+                                         NcmRegex *regex);
+static bool tag_editor_directory_matches_regex(NcMenuStringPair *pair,
+                                               NcmRegex *regex);
+static bool tag_editor_active_item_matches(NativeTagEditorScreen *screen,
+                                           NcMenu *menu, int64 pos,
+                                           NcmRegex *regex);
 static bool tag_editor_append_parser_row(NativeTagEditorScreen *screen,
                                          char *data, int32 data_len,
                                          uint32 flags);
@@ -624,6 +632,70 @@ native_tag_editor_screen_clear_filters(NativeTagEditorScreen *screen) {
 }
 
 bool
+native_tag_editor_screen_search(NativeTagEditorScreen *screen,
+                                char *pattern, int32 pattern_len,
+                                bool forward, bool wrap,
+                                bool skip_current, NcmError *error) {
+    NcmRegex regex;
+    NcMenu *menu;
+    int64 count;
+    int64 start;
+
+    if (screen == NULL || pattern == NULL || pattern_len <= 0) {
+        return false;
+    }
+    if (screen->active_column == NATIVE_TAG_EDITOR_COLUMN_TAG_TYPES) {
+        return false;
+    }
+
+    ncm_regex_init(&regex);
+    if (!ncm_regex_compile(&regex, pattern, pattern_len,
+                           Config.regex_type, error)) {
+        ncm_regex_destroy(&regex);
+        return false;
+    }
+
+    menu = native_tag_editor_screen_active_menu(screen);
+    count = nc_menu_item_count(menu);
+    start = nc_menu_highlight(menu);
+    if (skip_current) {
+        if (forward) {
+            start += 1;
+        } else {
+            start -= 1;
+        }
+    }
+
+    for (int64 i = 0; i < count; i += 1) {
+        int64 pos;
+
+        if (forward) {
+            pos = start + i;
+        } else {
+            pos = start - i;
+        }
+        if (wrap) {
+            while (pos < 0) {
+                pos += count;
+            }
+            while (pos >= count) {
+                pos -= count;
+            }
+        }
+        if (pos < 0 || pos >= count) {
+            continue;
+        }
+        if (tag_editor_active_item_matches(screen, menu, pos, &regex)) {
+            ncm_regex_destroy(&regex);
+            return nc_menu_goto_selectable(menu, pos);
+        }
+    }
+
+    ncm_regex_destroy(&regex);
+    return false;
+}
+
+bool
 native_tag_editor_screen_prepare_parser_rows(
     NativeTagEditorScreen *screen, enum NativeTagEditorParserMode mode,
     char *pattern, int32 pattern_len) {
@@ -1168,14 +1240,31 @@ tag_editor_tag_matches(NativeTagEditorScreen *screen, NcmMutableSong *song) {
     if (!screen->tag_filter_enabled) {
         return true;
     }
+    return tag_editor_tag_matches_regex(song, &screen->tag_filter_regex);
+}
+
+static bool
+tag_editor_directory_matches(NativeTagEditorScreen *screen,
+                             NcMenuStringPair *pair) {
+    if (!screen->directory_filter_enabled) {
+        return true;
+    }
+    return tag_editor_directory_matches_regex(
+        pair, &screen->directory_filter_regex);
+}
+
+static bool
+tag_editor_tag_matches_regex(NcmMutableSong *song, NcmRegex *regex) {
+    if (song == NULL) {
+        return false;
+    }
     for (uint32 field = 0; field < NCM_TAGS_FIELD_LAST; field += 1) {
         NcmBuffer buffer;
         bool found;
 
         buffer = ncm_mutable_song_tags_buffer(song, (enum NcmTagsField)field,
                                               STRLIT_ARGS(" "), false);
-        found = ncm_regex_search(&screen->tag_filter_regex, buffer.data,
-                                 buffer.len);
+        found = ncm_regex_search(regex, buffer.data, buffer.len);
         ncm_buffer_destroy(&buffer);
         if (found) {
             return true;
@@ -1185,11 +1274,8 @@ tag_editor_tag_matches(NativeTagEditorScreen *screen, NcmMutableSong *song) {
 }
 
 static bool
-tag_editor_directory_matches(NativeTagEditorScreen *screen,
-                             NcMenuStringPair *pair) {
-    if (!screen->directory_filter_enabled) {
-        return true;
-    }
+tag_editor_directory_matches_regex(NcMenuStringPair *pair,
+                                   NcmRegex *regex) {
     if (pair == NULL || pair->first == NULL) {
         return false;
     }
@@ -1199,8 +1285,22 @@ tag_editor_directory_matches(NativeTagEditorScreen *screen,
     if (ncm_string_equal(pair->first, pair->first_len, STRLIT_ARGS(".."))) {
         return false;
     }
-    return ncm_regex_search(&screen->directory_filter_regex, pair->first,
-                            pair->first_len);
+    return ncm_regex_search(regex, pair->first, pair->first_len);
+}
+
+static bool
+tag_editor_active_item_matches(NativeTagEditorScreen *screen,
+                               NcMenu *menu, int64 pos, NcmRegex *regex) {
+    if (screen->active_column == NATIVE_TAG_EDITOR_COLUMN_TAGS) {
+        return tag_editor_tag_matches_regex(nc_menu_active_item_at(menu,
+                                                                   pos),
+                                            regex);
+    }
+    if (screen->active_column == NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES) {
+        return tag_editor_directory_matches_regex(
+            nc_menu_active_item_at(menu, pos), regex);
+    }
+    return false;
 }
 
 static bool
