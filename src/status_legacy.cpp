@@ -331,8 +331,12 @@ extern "C" void ncm_statusbar_legacy_mpd_callback(void)
 void initialize_status()
 {
 	// get full info about new connection
+	NcmError error;
+
+	ncm_error_clear(&error);
 	registerLegacyStatusHooks();
-	Status::update(-1);
+	(void)ncm_status_update_full(&global_mpd, nullptr, &error);
+	syncLegacyStatusStateFromC();
 
 	if (Config.jump_to_now_playing_song_at_start)
 	{
@@ -425,90 +429,20 @@ void Status::trace(bool update_timer, bool update_window_timeout)
 
 void Status::update(int event)
 {
-	auto st = Mpd.getStatus();
-	m_current_song_pos = st.currentSongPosition();
-	m_elapsed_time = st.elapsedTime();
-	m_kbps = st.kbps();
-	m_player_state = st.playerState();
-	m_playlist_length = st.playlistLength();
-	m_total_time = st.totalTime();
-	m_volume = st.volume();
-	syncCStatusState();
+	NcmError error;
 
-	if (event & MPD_IDLE_DATABASE)
-		Changes::database();
-	if (event & MPD_IDLE_STORED_PLAYLIST)
-		Changes::storedPlaylists();
-	if (event & MPD_IDLE_PLAYLIST)
+	ncm_error_clear(&error);
+	registerLegacyStatusHooks();
+	if (event == -1)
 	{
-		Changes::playlist(m_playlist_version);
-		m_playlist_version = st.playlistVersion();
+		(void)ncm_status_update_full(&global_mpd, nullptr, &error);
 	}
-	if (event & MPD_IDLE_PLAYER)
+	else
 	{
-		Changes::playerState();
-		if (m_current_song_id != st.currentSongID())
-		{
-			Changes::songID(st.currentSongID());
-			m_current_song_id = st.currentSongID();
-		}
+		(void)ncm_status_update(&global_mpd, event, &error);
 	}
-	if (event & MPD_IDLE_MIXER)
-		Changes::mixer();
-	if (event & MPD_IDLE_OUTPUT)
-		Changes::outputs();
-	if (event & (MPD_IDLE_UPDATE | MPD_IDLE_OPTIONS))
-	{
-		if (event & MPD_IDLE_UPDATE)
-		{
-			m_db_updating = st.updateID() ? 'U' : 0;
-			if (m_status_initialized)
-				Statusbar::printf("Database update %1%", m_db_updating ? "started" : "finished");
-		}
-		if (event & MPD_IDLE_OPTIONS)
-		{
-			if (('r' == m_repeat) != st.repeat())
-			{
-				m_repeat = st.repeat() ? 'r' : 0;
-				if (m_status_initialized)
-					Statusbar::printf("Repeat mode is %1%", !m_repeat ? "off" : "on");
-			}
-			if (('z' == m_random) != st.random())
-			{
-				m_random = st.random() ? 'z' : 0;
-				if (m_status_initialized)
-					Statusbar::printf("Random mode is %1%", !m_random ? "off" : "on");
-			}
-			if (('s' == m_single) != st.single())
-			{
-				m_single = st.single() ? 's' : 0;
-				if (m_status_initialized)
-					Statusbar::printf("Single mode is %1%", !m_single ? "off" : "on");
-			}
-			if (('c' == m_consume) != st.consume())
-			{
-				m_consume = st.consume() ? 'c' : 0;
-				if (m_status_initialized)
-					Statusbar::printf("Consume mode is %1%", !m_consume ? "off" : "on");
-			}
-			if (('x' == m_crossfade) != (st.crossfade() != 0))
-			{
-				int crossfade = st.crossfade();
-				m_crossfade = crossfade ? 'x' : 0;
-				if (m_status_initialized)
-					Statusbar::printf("Crossfade set to %1% seconds", crossfade);
-			}
-		}
-		Changes::flags();
-	}
+	syncLegacyStatusStateFromC();
 	m_status_initialized = true;
-	syncCStatusState();
-
-	if (event & MPD_IDLE_PLAYER)
-		static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
-
-	if (event & (MPD_IDLE_PLAYLIST | MPD_IDLE_DATABASE | MPD_IDLE_PLAYER))
-		applyToVisibleScreens(nc_screen_refresh_window);
 }
 
 void Status::clear()
@@ -529,6 +463,7 @@ void Status::clear()
 	m_playlist_version = 0;
 	m_total_time = 0;
 	m_volume = -1;
+	ncm_status_clear();
 }
 
 /*************************************************************************/
