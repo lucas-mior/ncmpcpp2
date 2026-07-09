@@ -1692,14 +1692,19 @@ void SetVolume::run()
 
 bool EnterDirectory::canBeRun()
 {
+	BaseScreen *current;
 	bool result = false;
-	if (screenLegacyCurrent() == myBrowser && !myBrowser->main().empty())
+
+	current = screenLegacyCurrent();
+	if (current == nullptr)
+		return false;
+	if (current == myBrowser && !myBrowser->main().empty())
 	{
 		result = myBrowser->main().current()->value().type()
 			== MPD::Item::Type::Directory;
 	}
 #ifdef HAVE_TAGLIB_H
-	else if (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs)
+	else if (current->activeWindow() == myTagEditor->Dirs)
 		result = true;
 #endif // HAVE_TAGLIB_H
 	return result;
@@ -1707,10 +1712,15 @@ bool EnterDirectory::canBeRun()
 
 void EnterDirectory::run()
 {
-	if (screenLegacyCurrent() == myBrowser)
+	BaseScreen *current;
+
+	current = screenLegacyCurrent();
+	if (current == nullptr)
+		return;
+	if (current == myBrowser)
 		myBrowser->enterDirectory();
 #ifdef HAVE_TAGLIB_H
-	else if (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs)
+	else if (current->activeWindow() == myTagEditor->Dirs)
 	{
 		if (!myTagEditor->enterDirectory())
 			Statusbar::print("No subdirectories found");
