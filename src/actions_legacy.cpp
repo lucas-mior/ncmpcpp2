@@ -46,6 +46,7 @@
 #include "statusbar.h"
 #include "status.h"
 #include "status_legacy.h"
+#include "status_legacy_bridge.h"
 #include "utility/comparators.h"
 #include "utility/conversion.h"
 #include "utility/scoped_value.h"
@@ -129,6 +130,15 @@ int32 promptTextLen(char *text)
 	return static_cast<int32>(std::strlen(text));
 }
 
+void traceStatus(bool update_timer, bool update_window_timeout)
+{
+	NcmError error = {};
+
+	ncm_status_register_legacy_hooks();
+	ncm_error_clear(&error);
+	ncm_status_trace(&global_mpd, update_timer, update_window_timeout, &error);
+}
+
 bool statusbarMainPromptHook(char *text, void *)
 {
 	return ncm_statusbar_main_hook(text, promptTextLen(text));
@@ -138,7 +148,7 @@ bool applyFilterPromptHook(char *text, void *)
 {
 	NcmError error = {};
 
-	ncm_status_trace(&global_mpd, true, false, &error);
+	traceStatus(true, false);
 	ncm_error_clear(&error);
 	(void)current_screen_apply_filter(text, promptTextLen(text), &error);
 	return true;
@@ -149,7 +159,7 @@ bool findItemPromptHook(char *text, void *data)
 	NcmError error = {};
 	SearchDirection *direction = static_cast<SearchDirection *>(data);
 
-	ncm_status_trace(&global_mpd, true, false, &error);
+	traceStatus(true, false);
 	ncm_error_clear(&error);
 	(void)current_screen_search(
 		*direction, text, promptTextLen(text), Config.wrapped_search,
@@ -556,7 +566,7 @@ void UpdateEnvironment::run(bool update_timer, bool refresh_window, bool mpd_syn
 {
 
 	// update timer, status if necessary etc.
-	Status::trace(update_timer, true);
+	traceStatus(update_timer, true);
 
 	// show lyrics consumer notification if appropriate
 	if (auto message = myLyrics->tryTakeConsumerMessage())
@@ -3230,7 +3240,7 @@ void seek(SearchDirection sd)
 	global_seeking_in_progress = true;
 	while (true)
 	{
-	Status::trace();
+		traceStatus(true, false);
 
 		int64 elapsed_seconds = global_timer_elapsed_seconds(t);
 		unsigned howmuch = Config.incremental_seeking
@@ -3472,11 +3482,6 @@ void actions_legacy_runtime_resize_screen(bool reload_main_window)
 	{
 		Statusbar::printf("Unexpected error: %1%", e.what());
 	}
-}
-
-void actions_legacy_runtime_status_clear(void)
-{
-	Status::clear();
 }
 
 bool actions_legacy_runtime_update_environment(bool update_timer,
