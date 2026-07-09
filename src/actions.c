@@ -1,5 +1,6 @@
 #include "actions.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -1251,6 +1252,12 @@ static bool action_runtime_current_screen_is(enum ScreenType type);
 static bool action_runtime_switch_to_screen(enum ScreenType type);
 static bool action_runtime_switch_to_next_screen(bool reverse);
 static bool action_runtime_mpd_error(NcmError *error);
+static bool action_runtime_queue_find_song(NcmMpdSongList *queue,
+                                           NcmSong *song,
+                                           NcmSong **match);
+static bool action_runtime_queue_remove_song(NcmMpdSongList *queue,
+                                             NcmSong *song,
+                                             NcmError *error);
 static bool action_runtime_mpd_simple(
     bool (*func)(NcmMpdClient *client, NcmError *error));
 static bool action_runtime_mpd_toggle(
@@ -1597,6 +1604,70 @@ action_runtime_mpd_error(NcmError *error) {
 }
 
 static bool
+action_runtime_queue_find_song(NcmMpdSongList *queue,
+                               NcmSong *song,
+                               NcmSong **match) {
+    NcmSong *item;
+
+    if (match != NULL) {
+        *match = NULL;
+    }
+    if (queue == NULL) {
+        return false;
+    }
+    if (song == NULL) {
+        return false;
+    }
+
+    for (int32 i = 0; i < queue->count; i += 1) {
+        item = &queue->items[i];
+        if (ncm_song_equal(item, song)) {
+            if (match != NULL) {
+                *match = item;
+            }
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool
+action_runtime_queue_remove_song(NcmMpdSongList *queue,
+                                 NcmSong *song,
+                                 NcmError *error) {
+    NcmSong *item;
+    bool ok;
+
+    if (queue == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD queue"));
+        return false;
+    }
+    if (song == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD song"));
+        return false;
+    }
+
+    ok = ncm_mpd_client_start_command_list(&global_mpd, error);
+    for (int32 i = queue->count; ok && (i > 0); i -= 1) {
+        item = &queue->items[i - 1];
+        if (!ncm_song_equal(item, song)) {
+            continue;
+        }
+        ok = ncm_mpd_client_delete(&global_mpd, ncm_song_position(item),
+                                   error);
+    }
+    if (ok) {
+        ok = ncm_mpd_client_commit_command_list(&global_mpd, error);
+    }
+    if (!ok && global_mpd.command_list_active) {
+        global_mpd.command_list_active = false;
+    }
+
+    return ok;
+}
+
+static bool
 action_runtime_mpd_simple(
     bool (*func)(NcmMpdClient *client, NcmError *error)) {
     NcmError error;
@@ -1613,14 +1684,11 @@ bool
 ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
                                           int32 position,
                                           enum SpaceAddMode space_add_mode) {
-    NativePlaylistScreen *playlist;
-    NcSongMenu *songs;
+    NcmMpdSongList queue;
     NcmSong *match;
-    NcmSong *item;
     NcmError error;
     NcmBuffer formatted;
     NcmBuffer message;
-    int64 count;
     int32 id;
     bool ok;
 
@@ -1631,52 +1699,31 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
         return false;
     }
 
-    playlist = native_c_screen_playlist();
-    count = native_playlist_screen_song_count(playlist);
-    songs = native_playlist_screen_song_menu(playlist);
-    match = NULL;
-    if ((space_add_mode == NCM_SPACE_ADD_MODE_ADD_REMOVE) && songs) {
-        for (int64 i = 0; i < count; i += 1) {
-            item = nc_song_menu_item_at(songs, NC_MENU_ITEMS_ALL, i);
-            if (item && ncm_song_equal(item, song)) {
-                match = item;
-                break;
-            }
-        }
-    }
-
     ncm_error_clear(&error);
-    if (match) {
-        if (play) {
-            ok = ncm_mpd_client_play_id(&global_mpd,
-                                        (int32)ncm_song_id(match),
-                                        &error);
-        } else {
-            ok = ncm_mpd_client_start_command_list(&global_mpd, &error);
-            for (int64 i = count; ok && (i > 0); i -= 1) {
-                item = nc_song_menu_item_at(songs, NC_MENU_ITEMS_ALL,
-                                            i - 1);
-                if ((item == NULL) || !ncm_song_equal(item, song)) {
-                    continue;
-                }
-                ok = ncm_mpd_client_delete(&global_mpd,
-                                           ncm_song_position(item),
-                                           &error);
-            }
-            if (ok) {
-                ok = ncm_mpd_client_commit_command_list(&global_mpd,
-                                                        &error);
-            }
-            if (!ok && global_mpd.command_list_active) {
-                global_mpd.command_list_active = false;
-            }
-        }
-        if (!ok) {
+    ncm_mpd_song_list_init(&queue);
+    match = NULL;
+    if (space_add_mode == NCM_SPACE_ADD_MODE_ADD_REMOVE) {
+        if (!ncm_mpd_client_get_queue(&global_mpd, &queue, &error)) {
+            ncm_mpd_song_list_destroy(&queue);
             return action_runtime_mpd_error(&error);
         }
-        (void)ncm_status_update_full(&global_mpd, NULL, &error);
-        return true;
+        if (action_runtime_queue_find_song(&queue, song, &match)) {
+            if (play) {
+                ok = ncm_mpd_client_play_id(&global_mpd,
+                                            (int32)ncm_song_id(match),
+                                            &error);
+            } else {
+                ok = action_runtime_queue_remove_song(&queue, song, &error);
+            }
+            ncm_mpd_song_list_destroy(&queue);
+            if (!ok) {
+                return action_runtime_mpd_error(&error);
+            }
+            (void)ncm_status_update_full(&global_mpd, NULL, &error);
+            return true;
+        }
     }
+    ncm_mpd_song_list_destroy(&queue);
 
     id = -1;
     if (!ncm_mpd_client_add_song_value(&global_mpd, song, position,
