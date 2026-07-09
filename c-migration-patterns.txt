@@ -604,7 +604,9 @@ Rules:
 - `src/status.c`, `src/statusbar.c`, and `src/title.c` contain the C-side state,
   statusbar, and terminal-title helpers.
 - The old C++ runtime implementation remains temporarily in
-  `src/status_legacy.cpp`, `src/statusbar_legacy.cpp`, and `src/title_legacy.cpp`
-  for screens that still depend on the legacy C++ window/menu layer.
+  `src/status_legacy.cpp` and `src/statusbar_legacy.cpp` for screens that
+  still depend on the legacy C++ window/menu layer.
+- `src/title_legacy.h` is now only a thin C++ compatibility header over the
+  pure-C `src/title.c` implementation.
 - Remaining C++ callers must include the matching `_legacy.h` header instead of
   the pure-C header.
