@@ -31,11 +31,22 @@ typedef struct NcmStatusHooks {
     void (*refresh_visible_screens)(void *user);
 } NcmStatusHooks;
 
+typedef struct NcmStatusUiHooks {
+    void *user;
+
+    void (*player_state_changed)(enum NcmStatusPlayerState state,
+                                 void *user);
+    void (*player_stopped)(void *user);
+    void (*song_id_changed)(int32 song_id, void *user);
+    void (*current_song_changed)(NcmSong *song, void *user);
+} NcmStatusUiHooks;
+
 void ncm_status_handle_client_error(NcmMpdClient *client);
 void ncm_status_handle_server_error(NcmMpdClient *client);
 void ncm_status_trace(NcmMpdClient *client, bool update_timer,
                       bool update_window_timeout, NcmError *error);
 void ncm_status_set_hooks(NcmStatusHooks *hooks);
+void ncm_status_set_ui_hooks(NcmStatusUiHooks *hooks);
 void ncm_status_set_initialize_hook(void (*callback)(void *user),
                                     void *user);
 void ncm_status_set_notification_observer(void (*callback)(void *user),
