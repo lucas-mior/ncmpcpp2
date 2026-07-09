@@ -402,14 +402,9 @@ ncm_statusbar_mpd_noidle_callback(int32 flags, void *user) {
 void
 ncm_statusbar_mpd_idle_callback(void) {
     NcmError error;
-    int32 flags;
 
     ncm_error_clear(&error);
-    flags = 0;
-    if (!ncm_mpd_client_noidle(&global_mpd, &flags, &error)) {
-        return;
-    }
-    statusbar_update_from_idle_flags(flags);
+    (void)ncm_status_update_from_noidle(&global_mpd, NULL, &error);
     return;
 }
 

@@ -184,6 +184,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
 
     if ((event & MPD_IDLE_PLAYLIST) != 0) {
         previous_playlist_version = status_playlist_version;
+        status_playlist_version = mpd_status->queue_version;
         if ((active_hooks != NULL)
             && (active_hooks->playlist_changed != NULL)) {
             active_hooks->playlist_changed(previous_playlist_version,
@@ -191,7 +192,6 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         } else {
             ncm_status_changes_playlist(previous_playlist_version);
         }
-        status_playlist_version = mpd_status->queue_version;
     }
 
     if ((event & MPD_IDLE_PLAYER) != 0) {
@@ -357,6 +357,30 @@ ncm_status_update(NcmMpdClient *client, int32 event, NcmError *error) {
     return ncm_status_apply_mpd_status(&mpd_status, event, NULL, error);
 }
 
+bool
+ncm_status_update_from_noidle(NcmMpdClient *client,
+                              NcmStatusHooks *hooks,
+                              NcmError *error) {
+    NcmMpdStatus mpd_status;
+    int32 flags;
+
+    if (client == NULL) {
+        ncm_error_set(error, -1, STRLIT_ARGS("MPD client is NULL"));
+        return false;
+    }
+
+    flags = 0;
+    if (!ncm_mpd_client_noidle(client, &flags, error)) {
+        return false;
+    }
+
+    if (!ncm_mpd_client_get_status(client, &mpd_status, error)) {
+        return false;
+    }
+
+    return ncm_status_apply_mpd_status(&mpd_status, flags, hooks, error);
+}
+
 void
 ncm_status_clear(void) {
     status_initialized = false;
@@ -454,18 +478,64 @@ ncm_status_state_database_updating(void) {
 }
 
 void
-ncm_status_state_sync_from_legacy(enum NcmStatusPlayerState player,
+ncm_status_state_sync_from_legacy(bool initialized,
+                                  bool consume,
+                                  bool crossfade,
+                                  bool database_updating,
+                                  bool repeat,
+                                  bool random,
+                                  bool single,
+                                  int32 current_song_id,
+                                  int32 current_song_pos,
                                   uint32 elapsed_time,
-                                  uint32 total_time) {
-    status_player_state = player;
+                                  uint32 kbps,
+                                  enum NcmStatusPlayerState player,
+                                  uint32 playlist_version,
+                                  uint32 playlist_length,
+                                  uint32 total_time,
+                                  int32 volume) {
+    status_initialized = initialized;
+    status_consume = 0;
+    status_crossfade = 0;
+    status_db_updating = 0;
+    status_repeat = 0;
+    status_random = 0;
+    status_single = 0;
+
+    if (consume) {
+        status_consume = 'c';
+    }
+    if (crossfade) {
+        status_crossfade = 'x';
+    }
+    if (database_updating) {
+        status_db_updating = 'U';
+    }
+    if (repeat) {
+        status_repeat = 'r';
+    }
+    if (random) {
+        status_random = 'z';
+    }
+    if (single) {
+        status_single = 's';
+    }
+
+    status_current_song_id = current_song_id;
+    status_current_song_pos = current_song_pos;
     status_elapsed_time = elapsed_time;
+    status_kbps = kbps;
+    status_player_state = player;
+    status_playlist_version = playlist_version;
+    status_playlist_length = playlist_length;
     status_total_time = total_time;
+    status_volume = volume;
     return;
 }
 
 void
 ncm_status_changes_playlist(uint32 previous_version) {
-    status_playlist_version = previous_version;
+    (void)previous_version;
     return;
 }
 
