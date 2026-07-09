@@ -6,6 +6,10 @@
 #include "global.h"
 #include "settings.h"
 #include "statusbar.h"
+#include "app_controller.h"
+#include "ui_state.h"
+
+#include <limits.h>
 
 static bool status_initialized;
 static char status_consume;
@@ -26,6 +30,17 @@ static int32 status_volume;
 
 static bool status_hooks_set;
 static NcmStatusHooks status_hooks;
+static void (*status_initialize_hook)(void *user);
+static void *status_initialize_hook_user;
+static NcmTimePoint status_past;
+
+typedef struct StatusTimeoutContext {
+    int32 timeout;
+} StatusTimeoutContext;
+
+static void status_update_timeout_from_screen(NcScreen *screen, void *user);
+static void status_refresh_footer(NcmStatusHooks *hooks);
+static void status_elapsed_time_changed(NcmStatusHooks *hooks, bool update);
 
 static enum NcmStatusPlayerState
 status_player_state_from_mpd(enum mpd_state state) {
@@ -68,6 +83,53 @@ ncm_status_set_hooks(NcmStatusHooks *hooks) {
 }
 
 void
+ncm_status_set_initialize_hook(void (*callback)(void *user), void *user) {
+    status_initialize_hook = callback;
+    status_initialize_hook_user = user;
+    return;
+}
+
+static void
+status_update_timeout_from_screen(NcScreen *screen, void *user) {
+    StatusTimeoutContext *context;
+    int32 timeout;
+
+    context = user;
+    timeout = nc_screen_window_timeout(screen);
+    if (timeout < context->timeout) {
+        context->timeout = timeout;
+    }
+    return;
+}
+
+static void
+status_refresh_footer(NcmStatusHooks *hooks) {
+    NcWindow *footer;
+
+    if ((hooks != NULL) && (hooks->refresh_footer != NULL)) {
+        hooks->refresh_footer(hooks->user);
+        return;
+    }
+
+    footer = ui_state_footer_window();
+    if (footer != NULL) {
+        nc_window_refresh(footer);
+    }
+    return;
+}
+
+static void
+status_elapsed_time_changed(NcmStatusHooks *hooks, bool update) {
+    if ((hooks != NULL) && (hooks->elapsed_time_changed != NULL)) {
+        hooks->elapsed_time_changed(update, hooks->user);
+        return;
+    }
+
+    ncm_status_changes_elapsed_time(update);
+    return;
+}
+
+void
 ncm_status_handle_client_error(NcmMpdClient *client) {
     char *message;
     NcmStringFormatArg arg;
@@ -102,7 +164,11 @@ ncm_status_handle_server_error(NcmMpdClient *client) {
 void
 ncm_status_trace(NcmMpdClient *client, bool update_timer,
                  bool update_window_timeout, NcmError *error) {
-    (void)update_window_timeout;
+    StatusTimeoutContext timeout_context;
+    NcmStatusHooks *hooks;
+    NcWindow *footer;
+
+    hooks = status_active_hooks(NULL);
 
     if (update_timer) {
         (void)global_timer_update(error);
@@ -110,10 +176,35 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
 
     if ((client != NULL) && ncm_mpd_client_connected(client)) {
         if (!status_initialized) {
-            (void)ncm_status_update(client, -1, error);
+            if (status_initialize_hook != NULL) {
+                status_initialize_hook(status_initialize_hook_user);
+                hooks = status_active_hooks(NULL);
+            } else {
+                (void)ncm_status_update(client, -1, error);
+            }
         }
+
+        if ((status_player_state == NCM_STATUS_PLAYER_PLAY)
+            && (global_timer_elapsed_ms(status_past) > 1000)) {
+            status_elapsed_time_changed(hooks, true);
+            status_refresh_footer(hooks);
+            status_past = global_timer;
+        }
+
+        app_controller_update_visible_screens();
         ncm_statusbar_try_redraw();
         (void)ncm_mpd_client_idle(client, error);
+    }
+
+    if (update_window_timeout) {
+        timeout_context.timeout = INT_MAX;
+        app_controller_each_visible_screen(status_update_timeout_from_screen,
+                                           &timeout_context);
+
+        footer = ui_state_footer_window();
+        if (footer != NULL) {
+            nc_window_set_timeout(footer, timeout_context.timeout);
+        }
     }
     return;
 }
