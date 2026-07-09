@@ -19,12 +19,15 @@
  ***************************************************************************/
 
 
+#include <cstring>
+
 #include "global.h"
 #include "app_controller.h"
 #include "ui_state.h"
 #include "settings_legacy.h"
 #include "status_legacy.h"
 #include "statusbar_legacy.h"
+#include "statusbar.h"
 #include "bindings.h"
 #include "screens/playlist.h"
 #include "utility/utf8.h"
@@ -32,205 +35,97 @@
 
 namespace {
 
-bool progressbar_block_update = false;
-
-NcmTimePoint statusbar_lock_time;
-int64 statusbar_lock_delay_seconds = -1;
-
-bool statusbar_block_update = false;
-bool statusbar_allow_unlock = true;
+int32
+statusbar_legacy_cstring_len(const char *string)
+{
+	if (string == nullptr)
+		return 0;
+	return static_cast<int32>(std::strlen(string));
+}
 
 }
 
 Progressbar::ScopedLock::ScopedLock() noexcept
 {
-	progressbar_block_update = true;
+	ncm_progressbar_scoped_lock_init(nullptr);
 }
 
 Progressbar::ScopedLock::~ScopedLock() noexcept
 {
-	progressbar_block_update = false;
+	ncm_progressbar_scoped_lock_destroy(nullptr);
 }
 
 bool Progressbar::isUnlocked()
 {
-	return !progressbar_block_update;
+	return ncm_progressbar_is_unlocked();
 }
 
 void Progressbar::draw(unsigned int elapsed, unsigned int time)
 {
-	NC::Window *window =
-		static_cast<NC::Window *>(ui_state_footer_legacy_window());
-	unsigned pb_width = window->getWidth();
-	unsigned howlong = time ? pb_width*elapsed/time : 0;
-	const auto progressbar = Utf8::split(Config.progressbar);
-
-	window->goToXY(0, 0);
-	*window << Config.progressbar_color;
-	if (!progressbar[2].empty() && progressbar[2][0] != '\0')
-	{
-		for (unsigned i = 0; i < pb_width; ++i)
-			*window << progressbar[2];
-		window->goToXY(0, 0);
-	}
-	else
-	{
-		mvwhline(window->raw(), 0, 0, 0, pb_width);
-		window->goToXY(0, 0);
-	}
-	*window << NC::FormattedColor::End<>(Config.progressbar_color);
-	if (time)
-	{
-		*window << Config.progressbar_elapsed_color;
-		pb_width = std::min(size_t(howlong), window->getWidth());
-		for (unsigned i = 0; i < pb_width; ++i)
-			*window << progressbar[0];
-		if (howlong < window->getWidth())
-			*window << progressbar[1];
-		*window << NC::FormattedColor::End<>(Config.progressbar_elapsed_color);
-	}
-	window->goToXY(0, 0);
+	ncm_progressbar_draw(elapsed, time);
 }
+
 
 Statusbar::ScopedLock::ScopedLock() noexcept
 {
-	// lock
-	if (Config.statusbar_visibility)
-		statusbar_block_update = true;
-	else
-		progressbar_block_update = true;
-	statusbar_allow_unlock = false;
+	ncm_statusbar_scoped_lock_init(nullptr);
 }
 
 Statusbar::ScopedLock::~ScopedLock() noexcept
 {
-	// unlock
-	statusbar_allow_unlock = true;
-	if (statusbar_lock_delay_seconds < 0)
-	{
-		if (Config.statusbar_visibility)
-			statusbar_block_update = false;
-		else
-			progressbar_block_update = false;
-	}
-	if (Status::State::player() == MPD::psStop)
-	{
-		switch (Config.design)
-		{
-			case NCM_DESIGN_CLASSIC:
-				put(); // clear statusbar
-				break;
-			case NCM_DESIGN_ALTERNATIVE:
-				Progressbar::draw(Status::State::elapsedTime(), Status::State::totalTime());
-				break;
-		}
-		static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
-	}
+	ncm_statusbar_scoped_lock_destroy(nullptr);
 }
+
 
 bool Statusbar::isUnlocked()
 {
-	return !statusbar_block_update;
+	return ncm_statusbar_is_unlocked();
 }
 
 void Statusbar::tryRedraw()
 {
-	if (statusbar_lock_delay_seconds > 0
-	&&  global_timer_elapsed_seconds(statusbar_lock_time)
-	    > statusbar_lock_delay_seconds)
-	{
-		statusbar_lock_delay_seconds = -1;
-		
-		if (Config.statusbar_visibility)
-			statusbar_block_update = !statusbar_allow_unlock;
-		else
-			progressbar_block_update = !statusbar_allow_unlock;
-		
-		if (!statusbar_block_update && !progressbar_block_update)
-		{
-			switch (Config.design)
-			{
-				case NCM_DESIGN_CLASSIC:
-					switch (Status::State::player())
-					{
-						case MPD::psUnknown:
-						case MPD::psStop:
-							put(); // clear statusbar
-							break;
-						case MPD::psPlay:
-						case MPD::psPause:
-							Status::Changes::elapsedTime(false);
-						break;
-					}
-					break;
-				case NCM_DESIGN_ALTERNATIVE:
-					Progressbar::draw(Status::State::elapsedTime(), Status::State::totalTime());
-					break;
-			}
-			static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
-		}
-	}
+	ncm_statusbar_try_redraw();
 }
+
 
 NC::Window &Statusbar::put()
 {
-	NC::Window *window =
-		static_cast<NC::Window *>(ui_state_footer_legacy_window());
-	int y = Config.statusbar_visibility ? 1 : 0;
-
-	window->goToXY(0, y);
-	*window << NC::TermManip::ClearToEOL;
-	window->goToXY(0, y);
-	return *window;
+	ncm_statusbar_put();
+	return *static_cast<NC::Window *>(ui_state_footer_legacy_window());
 }
+
 
 void Statusbar::print(int delay, const std::string &message)
 {
-	if (statusbar_allow_unlock)
-	{
-		NC::Window &window = put();
-
-		if (delay)
-		{
-			statusbar_lock_time = global_timer;
-			statusbar_lock_delay_seconds = delay;
-			if (Config.statusbar_visibility)
-				statusbar_block_update = true;
-			else
-				progressbar_block_update = true;
-		}
-		window << message << NC::TermManip::ClearToEOL;
-		window.goToXY(0, Config.statusbar_visibility ? 1 : 0);
-		window.refresh();
-	}
+	ncm_statusbar_print(delay, const_cast<char *>(message.data()),
+	                    static_cast<int32>(message.size()));
 }
+
 
 void Statusbar::Helpers::mpd()
 {
 	Status::update(Mpd.noidle());
 }
 
-bool Statusbar::Helpers::mainHook(const char *)
+bool Statusbar::Helpers::mainHook(const char *s)
 {
-	Status::trace();
-	return true;
+	return ncm_statusbar_main_hook(const_cast<char *>(s),
+	                               statusbar_legacy_cstring_len(s));
 }
 
 char Statusbar::Helpers::promptReturnOneOf(const std::vector<char> &values)
 {
+	char result;
+
 	if (values.empty())
 		throw std::logic_error("empty vector of acceptable input");
-	NcKey result;
-	do
-	{
-		static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
-		result = ncm_read_key(static_cast<NC::Window *>(ui_state_footer_legacy_window())->nativeWindow());
-		if (result == NC_KEY_CTRL_C || result == NC_KEY_CTRL_G)
-			throw NC::PromptAborted();
-	}
-	while (std::find(values.begin(), values.end(), result) == values.end());
+	if (!ncm_statusbar_prompt_return_one_of(
+	        ui_state_footer_window(), const_cast<char *>(values.data()),
+	        static_cast<int32>(values.size()), &result))
+		throw NC::PromptAborted();
 	return result;
 }
+
 
 bool Statusbar::Helpers::ImmediatelyReturnOneOf::operator()(const char *s) const
 {

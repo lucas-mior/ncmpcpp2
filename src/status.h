@@ -34,6 +34,9 @@ uint32 ncm_status_state_elapsed_time(void);
 enum NcmStatusPlayerState ncm_status_state_player(void);
 uint32 ncm_status_state_total_time(void);
 int32 ncm_status_state_volume(void);
+void ncm_status_state_sync_from_legacy(enum NcmStatusPlayerState player,
+                                       uint32 elapsed_time,
+                                       uint32 total_time);
 
 void ncm_status_changes_playlist(uint32 previous_version);
 void ncm_status_changes_stored_playlists(void);
