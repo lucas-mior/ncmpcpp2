@@ -17,6 +17,8 @@
 #include "ui_state.h"
 
 #include "c/ncm_base.h"
+#include "c/ncm_macro_utilities.h"
+#include "c/ncm_string.h"
 #include "cbase/base_macros.h"
 
 #if defined(__GNUC__)
@@ -1319,6 +1321,7 @@ static bool action_runtime_toggle_replay_gain_mode(void);
 static bool action_runtime_save_tag_changes(void);
 static bool action_runtime_edit_current_song(void);
 static bool action_runtime_fetch_lyrics_background(void);
+static bool action_runtime_edit_lyrics(void);
 static bool action_runtime_toggle_lyrics_fetcher(void);
 static bool action_runtime_refetch_lyrics(void);
 static bool action_runtime_show_lyrics(void);
@@ -3359,6 +3362,88 @@ action_runtime_toggle_lyrics_fetcher(void) {
 }
 
 static bool
+action_runtime_edit_lyrics(void) {
+    NativeLyricsScreen *lyrics;
+    NcmSong *song;
+    NcmBuffer *filename;
+    NcmBuffer escaped;
+    NcmBuffer command;
+    NcmError error;
+    bool success;
+
+    if (Config.external_editor_len <= 0) {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"external_editor variable has to be set in "
+                    "configuration file");
+        return false;
+    }
+
+    lyrics = native_c_screen_lyrics();
+    song = native_lyrics_screen_song(lyrics);
+    if (song == NULL) {
+        return false;
+    }
+
+    if (!native_lyrics_screen_build_filename(
+            lyrics, song, Config.mpd_music_dir, Config.mpd_music_dir_len,
+            Config.lyrics_directory, Config.lyrics_directory_len,
+            Config.store_lyrics_in_song_dir,
+            Config.generate_win32_compatible_filenames)) {
+        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                    (char *)"failed to build lyrics "
+                                            "filename");
+        return false;
+    }
+
+    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                (char *)"Opening lyrics in external "
+                                        "editor...");
+    filename = native_lyrics_screen_filename(lyrics);
+    ncm_buffer_init(&escaped);
+    ncm_buffer_init(&command);
+    ncm_string_append_shell_escaped_single_quotes(&escaped,
+                                                  filename->data,
+                                                  filename->len);
+    ncm_buffer_append(&command, Config.external_editor,
+                      Config.external_editor_len);
+    ncm_buffer_append(&command, STRLIT_ARGS(" '"));
+    ncm_buffer_append(&command, escaped.data, escaped.len);
+    ncm_buffer_append_byte(&command, '\'');
+
+    ncm_error_clear(&error);
+    if (Config.use_console_editor) {
+        success = ncm_macro_run_external_console_command(command.data,
+                                                         command.len,
+                                                         &error);
+        if (!success) {
+            ncm_buffer_destroy(&command);
+            ncm_buffer_destroy(&escaped);
+            return action_runtime_mpd_error(&error);
+        }
+
+        if (!native_lyrics_screen_load_file(lyrics, filename->data,
+                                            filename->len, &error)) {
+            lyrics->has_song = false;
+            success = native_lyrics_screen_fetch(lyrics, song, NULL,
+                                                 &error);
+        }
+    } else {
+        success = ncm_macro_run_external_command(command.data,
+                                                 command.len, false,
+                                                 &error);
+    }
+
+    ncm_buffer_destroy(&command);
+    ncm_buffer_destroy(&escaped);
+    if (!success) {
+        return action_runtime_mpd_error(&error);
+    }
+    ncm_error_clear(&error);
+    return true;
+}
+
+static bool
 action_runtime_fetch_lyrics_background(void) {
     NcmSongArray songs;
     NcmError error;
@@ -3636,6 +3721,8 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             NCM_SCREEN_TYPE_MEDIA_LIBRARY);
     case NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND:
         return action_runtime_has_selected_songs();
+    case NCM_ACTION_EDIT_LYRICS:
+        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_LYRICS);
     case NCM_ACTION_REFETCH_LYRICS:
         return action_runtime_current_screen_is(NCM_SCREEN_TYPE_LYRICS);
     case NCM_ACTION_SHOW_ARTIST_INFO:
@@ -3681,7 +3768,6 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_EDIT_LIBRARY_ALBUM:
     case NCM_ACTION_EDIT_DIRECTORY_NAME:
     case NCM_ACTION_EDIT_PLAYLIST_NAME:
-    case NCM_ACTION_EDIT_LYRICS:
     case NCM_ACTION_JUMP_TO_POSITION_IN_SONG:
     case NCM_ACTION_SELECT_ALBUM:
     case NCM_ACTION_SELECT_FOUND_ITEMS:
@@ -3954,6 +4040,8 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         return action_runtime_toggle_media_library_sort_mode();
     case NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND:
         return action_runtime_fetch_lyrics_background();
+    case NCM_ACTION_EDIT_LYRICS:
+        return action_runtime_edit_lyrics();
     case NCM_ACTION_REFETCH_LYRICS:
         return action_runtime_refetch_lyrics();
     case NCM_ACTION_SHOW_ARTIST_INFO:
@@ -4028,7 +4116,6 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_EDIT_LIBRARY_ALBUM:
     case NCM_ACTION_EDIT_DIRECTORY_NAME:
     case NCM_ACTION_EDIT_PLAYLIST_NAME:
-    case NCM_ACTION_EDIT_LYRICS:
     case NCM_ACTION_JUMP_TO_POSITION_IN_SONG:
     case NCM_ACTION_SELECT_ALBUM:
     case NCM_ACTION_SELECT_FOUND_ITEMS:
