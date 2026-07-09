@@ -357,7 +357,8 @@ void SelectedItemsAdder::cancel()
 
 void SelectedItemsAdder::exitSuccessfully(bool success) const
 {
-	Statusbar::printf("Selected items added%1%", withErrors(success));
+	Statusbar::printf("Selected items added%1%",
+	                  ncm_helpers_with_errors(success));
 	switchToPreviousScreen();
 }
 

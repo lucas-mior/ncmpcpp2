@@ -79,6 +79,16 @@ namespace ph = std::placeholders;
 
 namespace {
 
+std::string songTimeString(unsigned length)
+{
+	char buffer[64];
+	int32 len;
+
+	len = ncm_helpers_show_song_time(
+		length, buffer, static_cast<int32>(sizeof(buffer)));
+	return std::string(buffer, static_cast<size_t>(len));
+}
+
 std::vector<std::shared_ptr<Actions::BaseAction>> AvailableActions;
 
 char *itemTypeName(MPD::Item::Type type)
@@ -3119,12 +3129,12 @@ void seek(SearchDirection sd)
 				if (Config.display_remaining_time)
 				{
 					tracklength += "-";
-					tracklength += showSongTime(Status::State::totalTime()-songpos);
+					tracklength += songTimeString(Status::State::totalTime()-songpos);
 				}
 				else
-					tracklength += showSongTime(songpos);
+					tracklength += songTimeString(songpos);
 				tracklength += "/";
-				tracklength += showSongTime(Status::State::totalTime());
+				tracklength += songTimeString(Status::State::totalTime());
 				tracklength += "]";
 				*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(static_cast<NC::Window *>(ui_state_footer_legacy_window())->getWidth()-tracklength.length(), 1)
 				         << Config.statusbar_time_color
@@ -3135,12 +3145,12 @@ void seek(SearchDirection sd)
 				if (Config.display_remaining_time)
 				{
 					tracklength = "-";
-					tracklength += showSongTime(Status::State::totalTime()-songpos);
+					tracklength += songTimeString(Status::State::totalTime()-songpos);
 				}
 				else
-					tracklength = showSongTime(songpos);
+					tracklength = songTimeString(songpos);
 				tracklength += "/";
-				tracklength += showSongTime(Status::State::totalTime());
+				tracklength += songTimeString(Status::State::totalTime());
 				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 0)
 				         << Config.statusbar_time_color
 				         << tracklength

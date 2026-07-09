@@ -733,7 +733,8 @@ bool MediaLibrary::addItemToPlaylist(bool play)
 			std::string tag_type = lowercaseAscii(
 				ncm_tag_type_name(Config.media_lib_primary_tag));
 			Statusbar::printf("Songs with %1% \"%2%\" added%3%",
-				tag_type, Tags.current()->value().tag(), withErrors(result));
+				tag_type, Tags.current()->value().tag(),
+				ncm_helpers_with_errors(result));
 		}
 		else if (isActiveWindow(Albums))
 		{
@@ -743,7 +744,8 @@ bool MediaLibrary::addItemToPlaylist(bool play)
 			std::sort(list.begin(), list.end(), SortSongs());
 			result = addSongsToPlaylist(list.begin(), list.end(), play, -1);
 			Statusbar::printf("Songs from album \"%1%\" added%2%",
-				Albums.current()->value().entry().album(), withErrors(result));
+				Albums.current()->value().entry().album(),
+				ncm_helpers_with_errors(result));
 		}
 	}
 	return result;
