@@ -522,18 +522,28 @@ native_playlist_editor_screen_search_active(
 void
 native_playlist_editor_screen_request_playlists_update(
     NativePlaylistEditorScreen *screen) {
-    if (screen != NULL) {
-        screen->playlists_update_requested = true;
+    if (screen == NULL) {
+        return;
     }
+    screen->playlists_update_requested = true;
+    if (screen->bridge.request_playlists_update != NULL) {
+        screen->bridge.request_playlists_update(screen->bridge.user);
+    }
+    nc_screen_request_update(&screen->screen);
     return;
 }
 
 void
 native_playlist_editor_screen_request_content_update(
     NativePlaylistEditorScreen *screen) {
-    if (screen != NULL) {
-        screen->content_update_requested = true;
+    if (screen == NULL) {
+        return;
     }
+    screen->content_update_requested = true;
+    if (screen->bridge.request_content_update != NULL) {
+        screen->bridge.request_content_update(screen->bridge.user);
+    }
+    nc_screen_request_update(&screen->screen);
     return;
 }
 

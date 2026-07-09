@@ -291,6 +291,20 @@ native_tag_editor_screen_clear(NativeTagEditorScreen *screen) {
     return;
 }
 
+void
+native_tag_editor_screen_clear_directories(
+    NativeTagEditorScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    if (screen->bridge.clear_directories != NULL) {
+        screen->bridge.clear_directories(screen->bridge.user);
+        return;
+    }
+    nc_menu_clear_items(nc_editor_pair_menu_base(&screen->directories));
+    return;
+}
+
 bool
 native_tag_editor_screen_set_current_dir(NativeTagEditorScreen *screen,
                                          char *dir, int32 dir_len) {

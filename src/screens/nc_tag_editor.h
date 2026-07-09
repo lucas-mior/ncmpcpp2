@@ -36,6 +36,7 @@ typedef struct NativeTagEditorBridge {
     void (*resize)(void *user);
     char *(*title)(void *user);
     void (*update)(void *user);
+    void (*clear_directories)(void *user);
     void (*mouse_button_pressed)(void *user, MEVENT event);
     void *user;
 } NativeTagEditorBridge;
@@ -104,6 +105,8 @@ void native_tag_editor_screen_set_geometry(NativeTagEditorScreen *screen,
                                            int64 main_start_y,
                                            int64 main_height);
 void native_tag_editor_screen_clear(NativeTagEditorScreen *screen);
+void native_tag_editor_screen_clear_directories(
+    NativeTagEditorScreen *screen);
 bool native_tag_editor_screen_set_current_dir(NativeTagEditorScreen *screen,
                                               char *dir, int32 dir_len);
 bool native_tag_editor_screen_current_dir(NativeTagEditorScreen *screen,
