@@ -39,6 +39,7 @@ static void test_native_screen_callbacks(void);
 static void test_screen_switcher_helpers(void);
 static void test_native_bridge_screen_api(void);
 static void test_native_screen_switch_path(void);
+static void test_native_lastfm_register_and_switching(void);
 
 int
 main(void) {
@@ -46,6 +47,7 @@ main(void) {
     test_screen_switcher_helpers();
     test_native_bridge_screen_api();
     test_native_screen_switch_path();
+    test_native_lastfm_register_and_switching();
     return 0;
 }
 
@@ -306,5 +308,28 @@ test_native_screen_switch_path(void) {
     assert(native_c_screens_current_type() == NCM_SCREEN_TYPE_BROWSER);
     assert(native_c_screen_browser_is_current());
     assert(nc_screen_switcher_current() == native_c_screen_browser_native());
+    return;
+}
+
+static void
+test_native_lastfm_register_and_switching(void) {
+    app_controller_init();
+    ui_state_set_screen_size(100, 30);
+    Config.lines_scrolled = 3;
+
+    native_c_screen_browser_register();
+    assert(native_c_screens_switch_to_type(NCM_SCREEN_TYPE_BROWSER));
+    assert(native_c_screen_browser_is_current());
+
+    native_c_screen_lastfm_switch_to();
+    assert(app_controller_is_screen_registered(
+        native_c_screen_lastfm_native()));
+    assert(native_c_screens_is_registered_type(NCM_SCREEN_TYPE_LASTFM));
+    assert(native_c_screen_lastfm_is_current());
+    assert(native_c_screens_current_type() == NCM_SCREEN_TYPE_LASTFM);
+    assert(nc_screen_switcher_previous() == native_c_screen_browser_native());
+
+    native_c_screen_lastfm_switch_to();
+    assert(native_c_screen_browser_is_current());
     return;
 }

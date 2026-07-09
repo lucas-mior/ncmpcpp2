@@ -14,9 +14,20 @@
     "d94e5b6e26469a2d1ffae8ef20131b79&method="
 #define LASTFM_INVALID_RESPONSE "Invalid response"
 
+static NcmLastfmCurlPerformFn lastfm_test_perform;
+static NcmLastfmCurlEscapeFn lastfm_test_escape;
+static void *lastfm_test_user;
+
 static bool lastfm_string_set(char **data, int32 *len, int32 *cap,
                               char *source, int32 source_len);
 static void lastfm_string_destroy(char **data, int32 *len, int32 *cap);
+static CURLcode lastfm_curl_perform(NcmBuffer *data, char *url,
+                                    int32 url_len, char *referer,
+                                    int32 referer_len,
+                                    bool follow_redirect,
+                                    int32 timeout_seconds);
+static CURLcode lastfm_curl_escape(NcmBuffer *out, char *string,
+                                   int32 string_len);
 static void lastfm_append_escaped(NcmBuffer *buffer, char *string,
                                   int32 string_len);
 static bool lastfm_action_failed(char *data, int32 data_len);
@@ -211,12 +222,44 @@ ncm_lastfm_service_fetch(NcmLastfmService *service,
     return true;
 }
 
+void
+ncm_lastfm_service_set_io_for_tests(NcmLastfmCurlPerformFn perform,
+                                    NcmLastfmCurlEscapeFn escape,
+                                    void *user) {
+    lastfm_test_perform = perform;
+    lastfm_test_escape = escape;
+    lastfm_test_user = user;
+    return;
+}
+
+static CURLcode
+lastfm_curl_perform(NcmBuffer *data, char *url, int32 url_len,
+                    char *referer, int32 referer_len,
+                    bool follow_redirect, int32 timeout_seconds) {
+    if (lastfm_test_perform != NULL) {
+        return lastfm_test_perform(data, url, url_len, referer, referer_len,
+                                   follow_redirect, timeout_seconds,
+                                   lastfm_test_user);
+    }
+    return ncm_curl_perform(data, url, url_len, referer, referer_len,
+                            follow_redirect, timeout_seconds);
+}
+
+static CURLcode
+lastfm_curl_escape(NcmBuffer *out, char *string, int32 string_len) {
+    if (lastfm_test_escape != NULL) {
+        return lastfm_test_escape(out, string, string_len,
+                                  lastfm_test_user);
+    }
+    return ncm_curl_escape(out, string, string_len);
+}
+
 static void
 lastfm_append_escaped(NcmBuffer *buffer, char *string, int32 string_len) {
     NcmBuffer escaped;
 
     ncm_buffer_init(&escaped);
-    if (ncm_curl_escape(&escaped, string, string_len) == CURLE_OK) {
+    if (lastfm_curl_escape(&escaped, string, string_len) == CURLE_OK) {
         ncm_buffer_append(buffer, escaped.data, escaped.len);
     }
     ncm_buffer_destroy(&escaped);
@@ -449,7 +492,8 @@ lastfm_fetch_artist_info(NcmLastfmService *service,
         lastfm_append_escaped(&url, service->lang, service->lang_len);
     }
 
-    code = ncm_curl_perform(&data, url.data, url.len, NULL, 0, false, 10);
+    code = lastfm_curl_perform(&data, url.data, url.len, NULL, 0,
+                               false, 10);
     if (code != CURLE_OK) {
         char *message = (char *)curl_easy_strerror(code);
         ncm_lastfm_result_set(result, false, message, (int32)strlen(message));
