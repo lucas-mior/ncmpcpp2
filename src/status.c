@@ -24,6 +24,9 @@ static uint32 status_playlist_length;
 static uint32 status_total_time;
 static int32 status_volume;
 
+static bool status_hooks_set;
+static NcmStatusHooks status_hooks;
+
 static enum NcmStatusPlayerState
 status_player_state_from_mpd(enum mpd_state state) {
     switch (state) {
@@ -37,6 +40,31 @@ status_player_state_from_mpd(enum mpd_state state) {
     default:
         return NCM_STATUS_PLAYER_UNKNOWN;
     }
+}
+
+static NcmStatusHooks *
+status_active_hooks(NcmStatusHooks *hooks) {
+    if (hooks != NULL) {
+        return hooks;
+    }
+
+    if (status_hooks_set) {
+        return &status_hooks;
+    }
+
+    return NULL;
+}
+
+void
+ncm_status_set_hooks(NcmStatusHooks *hooks) {
+    if (hooks == NULL) {
+        status_hooks_set = false;
+        return;
+    }
+
+    status_hooks = *hooks;
+    status_hooks_set = true;
+    return;
 }
 
 void
@@ -119,11 +147,14 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     char new_random;
     char new_repeat;
     char new_single;
+    NcmStatusHooks *active_hooks;
 
     if (mpd_status == NULL) {
         ncm_error_set(error, -1, STRLIT_ARGS("MPD status is NULL"));
         return false;
     }
+
+    active_hooks = status_active_hooks(hooks);
 
     status_current_song_pos = mpd_status->song_pos;
     status_elapsed_time = mpd_status->elapsed_time;
@@ -134,16 +165,18 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     status_volume = mpd_status->volume;
 
     if ((event & MPD_IDLE_DATABASE) != 0) {
-        if ((hooks != NULL) && (hooks->database_changed != NULL)) {
-            hooks->database_changed(hooks->user);
+        if ((active_hooks != NULL)
+            && (active_hooks->database_changed != NULL)) {
+            active_hooks->database_changed(active_hooks->user);
         } else {
             ncm_status_changes_database();
         }
     }
 
     if ((event & MPD_IDLE_STORED_PLAYLIST) != 0) {
-        if ((hooks != NULL) && (hooks->stored_playlists_changed != NULL)) {
-            hooks->stored_playlists_changed(hooks->user);
+        if ((active_hooks != NULL)
+            && (active_hooks->stored_playlists_changed != NULL)) {
+            active_hooks->stored_playlists_changed(active_hooks->user);
         } else {
             ncm_status_changes_stored_playlists();
         }
@@ -151,8 +184,10 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
 
     if ((event & MPD_IDLE_PLAYLIST) != 0) {
         previous_playlist_version = status_playlist_version;
-        if ((hooks != NULL) && (hooks->playlist_changed != NULL)) {
-            hooks->playlist_changed(previous_playlist_version, hooks->user);
+        if ((active_hooks != NULL)
+            && (active_hooks->playlist_changed != NULL)) {
+            active_hooks->playlist_changed(previous_playlist_version,
+                                           active_hooks->user);
         } else {
             ncm_status_changes_playlist(previous_playlist_version);
         }
@@ -160,15 +195,18 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     }
 
     if ((event & MPD_IDLE_PLAYER) != 0) {
-        if ((hooks != NULL) && (hooks->player_state_changed != NULL)) {
-            hooks->player_state_changed(hooks->user);
+        if ((active_hooks != NULL)
+            && (active_hooks->player_state_changed != NULL)) {
+            active_hooks->player_state_changed(active_hooks->user);
         } else {
             ncm_status_changes_player_state();
         }
 
         if (status_current_song_id != mpd_status->song_id) {
-            if ((hooks != NULL) && (hooks->song_id_changed != NULL)) {
-                hooks->song_id_changed(mpd_status->song_id, hooks->user);
+            if ((active_hooks != NULL)
+                && (active_hooks->song_id_changed != NULL)) {
+                active_hooks->song_id_changed(mpd_status->song_id,
+                                              active_hooks->user);
             } else {
                 ncm_status_changes_song_id(mpd_status->song_id);
             }
@@ -177,16 +215,16 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     }
 
     if ((event & MPD_IDLE_MIXER) != 0) {
-        if ((hooks != NULL) && (hooks->mixer_changed != NULL)) {
-            hooks->mixer_changed(hooks->user);
+        if ((active_hooks != NULL) && (active_hooks->mixer_changed != NULL)) {
+            active_hooks->mixer_changed(active_hooks->user);
         } else {
             ncm_status_changes_mixer();
         }
     }
 
     if ((event & MPD_IDLE_OUTPUT) != 0) {
-        if ((hooks != NULL) && (hooks->outputs_changed != NULL)) {
-            hooks->outputs_changed(hooks->user);
+        if ((active_hooks != NULL) && (active_hooks->outputs_changed != NULL)) {
+            active_hooks->outputs_changed(active_hooks->user);
         } else {
             ncm_status_changes_outputs();
         }
@@ -275,8 +313,8 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     }
 
     if ((event & (MPD_IDLE_UPDATE | MPD_IDLE_OPTIONS)) != 0) {
-        if ((hooks != NULL) && (hooks->flags_changed != NULL)) {
-            hooks->flags_changed(hooks->user);
+        if ((active_hooks != NULL) && (active_hooks->flags_changed != NULL)) {
+            active_hooks->flags_changed(active_hooks->user);
         } else {
             ncm_status_changes_flags();
         }
@@ -285,16 +323,17 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     status_initialized = true;
 
     if ((event & MPD_IDLE_PLAYER) != 0) {
-        if ((hooks != NULL) && (hooks->refresh_footer != NULL)) {
-            hooks->refresh_footer(hooks->user);
+        if ((active_hooks != NULL) && (active_hooks->refresh_footer != NULL)) {
+            active_hooks->refresh_footer(active_hooks->user);
         }
     }
 
     if ((event & (MPD_IDLE_PLAYLIST
                   |MPD_IDLE_DATABASE
                   |MPD_IDLE_PLAYER)) != 0) {
-        if ((hooks != NULL) && (hooks->refresh_visible_screens != NULL)) {
-            hooks->refresh_visible_screens(hooks->user);
+        if ((active_hooks != NULL)
+            && (active_hooks->refresh_visible_screens != NULL)) {
+            active_hooks->refresh_visible_screens(active_hooks->user);
         }
     }
 
