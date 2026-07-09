@@ -39,21 +39,6 @@ status_player_state_from_mpd(enum mpd_state state) {
     }
 }
 
-static char *
-status_player_state_name(enum NcmStatusPlayerState state) {
-    switch (state) {
-    case NCM_STATUS_PLAYER_STOP:
-        return (char *)"stop";
-    case NCM_STATUS_PLAYER_PLAY:
-        return (char *)"play";
-    case NCM_STATUS_PLAYER_PAUSE:
-        return (char *)"pause";
-    case NCM_STATUS_PLAYER_UNKNOWN:
-    default:
-        return (char *)"unknown";
-    }
-}
-
 void
 ncm_status_handle_client_error(NcmMpdClient *client) {
     char *message;
@@ -105,6 +90,218 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
     return;
 }
 
+static void
+statusbar_format_cstring(char *format, int32 format_len, char *value) {
+    NcmStringFormatArg arg;
+
+    arg = ncm_string_format_arg_cstring(value);
+    ncm_statusbar_format((int32)Config.message_delay_time,
+                         format, format_len, &arg, 1);
+    return;
+}
+
+static char *
+status_on_off(char status) {
+    if (status == 0) {
+        return (char *)"off";
+    }
+
+    return (char *)"on";
+}
+
+bool
+ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
+                            NcmStatusHooks *hooks, NcmError *error) {
+    NcmStringFormatArg arg;
+    uint32 previous_playlist_version;
+    char new_consume;
+    char new_crossfade;
+    char new_random;
+    char new_repeat;
+    char new_single;
+
+    if (mpd_status == NULL) {
+        ncm_error_set(error, -1, STRLIT_ARGS("MPD status is NULL"));
+        return false;
+    }
+
+    status_current_song_pos = mpd_status->song_pos;
+    status_elapsed_time = mpd_status->elapsed_time;
+    status_kbps = mpd_status->kbit_rate;
+    status_player_state = status_player_state_from_mpd(mpd_status->state);
+    status_playlist_length = mpd_status->queue_length;
+    status_total_time = mpd_status->total_time;
+    status_volume = mpd_status->volume;
+
+    if ((event & MPD_IDLE_DATABASE) != 0) {
+        if ((hooks != NULL) && (hooks->database_changed != NULL)) {
+            hooks->database_changed(hooks->user);
+        } else {
+            ncm_status_changes_database();
+        }
+    }
+
+    if ((event & MPD_IDLE_STORED_PLAYLIST) != 0) {
+        if ((hooks != NULL) && (hooks->stored_playlists_changed != NULL)) {
+            hooks->stored_playlists_changed(hooks->user);
+        } else {
+            ncm_status_changes_stored_playlists();
+        }
+    }
+
+    if ((event & MPD_IDLE_PLAYLIST) != 0) {
+        previous_playlist_version = status_playlist_version;
+        if ((hooks != NULL) && (hooks->playlist_changed != NULL)) {
+            hooks->playlist_changed(previous_playlist_version, hooks->user);
+        } else {
+            ncm_status_changes_playlist(previous_playlist_version);
+        }
+        status_playlist_version = mpd_status->queue_version;
+    }
+
+    if ((event & MPD_IDLE_PLAYER) != 0) {
+        if ((hooks != NULL) && (hooks->player_state_changed != NULL)) {
+            hooks->player_state_changed(hooks->user);
+        } else {
+            ncm_status_changes_player_state();
+        }
+
+        if (status_current_song_id != mpd_status->song_id) {
+            if ((hooks != NULL) && (hooks->song_id_changed != NULL)) {
+                hooks->song_id_changed(mpd_status->song_id, hooks->user);
+            } else {
+                ncm_status_changes_song_id(mpd_status->song_id);
+            }
+            status_current_song_id = mpd_status->song_id;
+        }
+    }
+
+    if ((event & MPD_IDLE_MIXER) != 0) {
+        if ((hooks != NULL) && (hooks->mixer_changed != NULL)) {
+            hooks->mixer_changed(hooks->user);
+        } else {
+            ncm_status_changes_mixer();
+        }
+    }
+
+    if ((event & MPD_IDLE_OUTPUT) != 0) {
+        if ((hooks != NULL) && (hooks->outputs_changed != NULL)) {
+            hooks->outputs_changed(hooks->user);
+        } else {
+            ncm_status_changes_outputs();
+        }
+    }
+
+    if ((event & MPD_IDLE_UPDATE) != 0) {
+        status_db_updating = 0;
+        if (mpd_status->update_id != 0) {
+            status_db_updating = 'U';
+        }
+
+        if (status_initialized) {
+            if (status_db_updating) {
+                statusbar_format_cstring(STRLIT_ARGS("Database update %1%"),
+                                         (char *)"started");
+            } else {
+                statusbar_format_cstring(STRLIT_ARGS("Database update %1%"),
+                                         (char *)"finished");
+            }
+        }
+    }
+
+    if ((event & MPD_IDLE_OPTIONS) != 0) {
+        new_repeat = 0;
+        if (mpd_status->repeat) {
+            new_repeat = 'r';
+        }
+        if (new_repeat != status_repeat) {
+            status_repeat = new_repeat;
+            if (status_initialized) {
+                statusbar_format_cstring(STRLIT_ARGS("Repeat mode is %1%"),
+                                         status_on_off(status_repeat));
+            }
+        }
+
+        new_random = 0;
+        if (mpd_status->random) {
+            new_random = 'z';
+        }
+        if (new_random != status_random) {
+            status_random = new_random;
+            if (status_initialized) {
+                statusbar_format_cstring(STRLIT_ARGS("Random mode is %1%"),
+                                         status_on_off(status_random));
+            }
+        }
+
+        new_single = 0;
+        if (mpd_status->single) {
+            new_single = 's';
+        }
+        if (new_single != status_single) {
+            status_single = new_single;
+            if (status_initialized) {
+                statusbar_format_cstring(STRLIT_ARGS("Single mode is %1%"),
+                                         status_on_off(status_single));
+            }
+        }
+
+        new_consume = 0;
+        if (mpd_status->consume) {
+            new_consume = 'c';
+        }
+        if (new_consume != status_consume) {
+            status_consume = new_consume;
+            if (status_initialized) {
+                statusbar_format_cstring(STRLIT_ARGS("Consume mode is %1%"),
+                                         status_on_off(status_consume));
+            }
+        }
+
+        new_crossfade = 0;
+        if (mpd_status->crossfade != 0) {
+            new_crossfade = 'x';
+        }
+        if (new_crossfade != status_crossfade) {
+            status_crossfade = new_crossfade;
+            if (status_initialized) {
+                arg = ncm_string_format_arg_u64(
+                    (uint64)mpd_status->crossfade);
+                ncm_statusbar_format(
+                    (int32)Config.message_delay_time,
+                    STRLIT_ARGS("Crossfade set to %1% seconds"), &arg, 1);
+            }
+        }
+    }
+
+    if ((event & (MPD_IDLE_UPDATE | MPD_IDLE_OPTIONS)) != 0) {
+        if ((hooks != NULL) && (hooks->flags_changed != NULL)) {
+            hooks->flags_changed(hooks->user);
+        } else {
+            ncm_status_changes_flags();
+        }
+    }
+
+    status_initialized = true;
+
+    if ((event & MPD_IDLE_PLAYER) != 0) {
+        if ((hooks != NULL) && (hooks->refresh_footer != NULL)) {
+            hooks->refresh_footer(hooks->user);
+        }
+    }
+
+    if ((event & (MPD_IDLE_PLAYLIST
+                  |MPD_IDLE_DATABASE
+                  |MPD_IDLE_PLAYER)) != 0) {
+        if ((hooks != NULL) && (hooks->refresh_visible_screens != NULL)) {
+            hooks->refresh_visible_screens(hooks->user);
+        }
+    }
+
+    ncm_error_clear(error);
+    return true;
+}
+
 bool
 ncm_status_update(NcmMpdClient *client, int32 event, NcmError *error) {
     NcmMpdStatus mpd_status;
@@ -118,60 +315,7 @@ ncm_status_update(NcmMpdClient *client, int32 event, NcmError *error) {
         return false;
     }
 
-    status_current_song_pos = mpd_status.song_pos;
-    status_elapsed_time = mpd_status.elapsed_time;
-    status_kbps = mpd_status.kbit_rate;
-    status_player_state = status_player_state_from_mpd(mpd_status.state);
-    status_playlist_length = mpd_status.queue_length;
-    status_total_time = mpd_status.total_time;
-    status_volume = mpd_status.volume;
-
-    if ((event & MPD_IDLE_UPDATE) != 0) {
-        status_db_updating = 0;
-        if (mpd_status.update_id != 0) {
-            status_db_updating = 'U';
-        }
-    }
-
-    if ((event & MPD_IDLE_OPTIONS) != 0) {
-        status_repeat = 0;
-        if (mpd_status.repeat) {
-            status_repeat = 'r';
-        }
-        status_random = 0;
-        if (mpd_status.random) {
-            status_random = 'z';
-        }
-        status_single = 0;
-        if (mpd_status.single) {
-            status_single = 's';
-        }
-        status_consume = 0;
-        if (mpd_status.consume) {
-            status_consume = 'c';
-        }
-        status_crossfade = 0;
-        if (mpd_status.crossfade != 0) {
-            status_crossfade = 'x';
-        }
-    }
-
-    if ((event & MPD_IDLE_PLAYLIST) != 0) {
-        status_playlist_version = mpd_status.queue_version;
-    }
-
-    if ((event & MPD_IDLE_PLAYER) != 0) {
-        status_current_song_id = mpd_status.song_id;
-    }
-
-    if ((event & MPD_IDLE_PLAYER) != 0) {
-        ncm_statusbar_print_cstring(
-            (int32)Config.message_delay_time,
-            status_player_state_name(status_player_state));
-    }
-
-    status_initialized = true;
-    return true;
+    return ncm_status_apply_mpd_status(&mpd_status, event, NULL, error);
 }
 
 void
@@ -240,9 +384,19 @@ ncm_status_state_elapsed_time(void) {
     return status_elapsed_time;
 }
 
+uint32
+ncm_status_state_kbps(void) {
+    return status_kbps;
+}
+
 enum NcmStatusPlayerState
 ncm_status_state_player(void) {
     return status_player_state;
+}
+
+uint32
+ncm_status_state_playlist_version(void) {
+    return status_playlist_version;
 }
 
 uint32
@@ -253,6 +407,11 @@ ncm_status_state_total_time(void) {
 int32
 ncm_status_state_volume(void) {
     return status_volume;
+}
+
+bool
+ncm_status_state_database_updating(void) {
+    return status_db_updating != 0;
 }
 
 void
