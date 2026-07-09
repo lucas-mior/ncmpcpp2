@@ -410,16 +410,6 @@ extern "C" void ncm_status_register_legacy_hooks(void)
 	ncm_status_set_init_hooks(&init_hooks);
 }
 
-extern "C" void ncm_statusbar_legacy_mpd_callback(void)
-{
-	NcmError error;
-
-	ncm_error_clear(&error);
-	ncm_status_register_legacy_hooks();
-	(void)ncm_status_update_from_noidle(&global_mpd, nullptr, &error);
-}
-
-
 }
 
 /*************************************************************************/
@@ -462,30 +452,6 @@ void Status::handleServerError(MPD::ServerError &e)
 		}
 	}
 }
-
-/*************************************************************************/
-
-extern "C" void ncm_status_legacy_clear(void)
-{
-	// reset local variables
-	m_status_initialized = false;
-	m_repeat = 0;
-	m_random = 0;
-	m_single = 0;
-	m_consume = 0;
-	m_crossfade = 0;
-	m_db_updating = 0;
-	m_current_song_id = -1;
-	m_current_song_pos = -1;
-	m_kbps = 0;
-	m_player_state = MPD::psUnknown;
-	m_playlist_length = 0;
-	m_playlist_version = 0;
-	m_total_time = 0;
-	m_volume = -1;
-	ncm_status_clear();
-}
-
 
 /*************************************************************************/
 

@@ -105,13 +105,11 @@ put() {
     return *static_cast<NC::Window *>(ui_state_footer_legacy_window());
 }
 
-extern "C" void ncm_statusbar_legacy_mpd_callback(void);
-
 namespace Helpers {
 
 inline void
 mpd() {
-    ncm_statusbar_legacy_mpd_callback();
+    ncm_statusbar_mpd_idle_callback();
 }
 
 }
