@@ -41,6 +41,8 @@ static int32 status_volume;
 
 static bool status_hooks_set;
 static NcmStatusHooks status_hooks;
+static bool status_ui_hooks_set;
+static NcmStatusUiHooks status_ui_hooks;
 static void (*status_initialize_hook)(void *user);
 static void *status_initialize_hook_user;
 static void (*status_notification_observer)(void *user);
@@ -66,6 +68,12 @@ static int32 status_song_time_string(uint32 length, char *buffer,
                                      int32 buffer_cap);
 static int32 status_player_state_string(char *buffer, int32 buffer_cap);
 static void status_draw_song_title(NcmSong *song);
+static void status_draw_player_state_label(char *state, int32 state_len);
+static bool status_current_song_for_change(NcmSong *song);
+static void status_call_ui_player_state_changed(void);
+static void status_call_ui_player_stopped(void);
+static void status_call_ui_song_id_changed(int32 song_id);
+static void status_call_ui_current_song_changed(NcmSong *song);
 static void status_draw_classic_elapsed_time(NcWindow *footer,
                                              NcmSong *song,
                                              char *player_state,
@@ -128,6 +136,18 @@ ncm_status_set_hooks(NcmStatusHooks *hooks) {
 
     status_hooks = *hooks;
     status_hooks_set = true;
+    return;
+}
+
+void
+ncm_status_set_ui_hooks(NcmStatusUiHooks *hooks) {
+    if (hooks == NULL) {
+        status_ui_hooks_set = false;
+        return;
+    }
+
+    status_ui_hooks = *hooks;
+    status_ui_hooks_set = true;
     return;
 }
 
@@ -728,6 +748,52 @@ ncm_status_changes_database(void) {
 
 void
 ncm_status_changes_player_state(void) {
+    NcmSong song;
+    char player_state[32];
+    int32 player_state_len;
+    NcWindow *header;
+
+    status_call_ui_player_state_changed();
+
+    switch (status_player_state) {
+    case NCM_STATUS_PLAYER_PLAY:
+        ncm_song_init(&song);
+        if (native_playlist_screen_now_playing_song(
+                native_c_screen_playlist(), status_current_song_pos,
+                &song)) {
+            status_draw_song_title(&song);
+        }
+        ncm_song_destroy(&song);
+        native_playlist_screen_reload_remaining(native_c_screen_playlist());
+        break;
+    case NCM_STATUS_PLAYER_STOP:
+        ncm_window_title_set(STRLIT_ARGS("ncmpcpp " VERSION));
+        if (ncm_progressbar_is_unlocked()) {
+            ncm_progressbar_draw(0, 0);
+        }
+        native_playlist_screen_reload_remaining(native_c_screen_playlist());
+        if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+            header = ui_state_header_window();
+            if (header != NULL) {
+                nc_window_go_to_xy(header, 0, 0);
+                nc_window_apply_term_manip(header, NC_TERM_CLEAR_TO_EOL);
+                nc_window_go_to_xy(header, 0, 1);
+                nc_window_apply_term_manip(header, NC_TERM_CLEAR_TO_EOL);
+            }
+            ncm_status_changes_mixer();
+            ncm_status_changes_flags();
+        }
+        status_call_ui_player_stopped();
+        break;
+    case NCM_STATUS_PLAYER_PAUSE:
+    case NCM_STATUS_PLAYER_UNKNOWN:
+        break;
+    }
+
+    player_state_len = status_player_state_string(
+        player_state, (int32)sizeof(player_state));
+    status_draw_player_state_label(player_state, player_state_len);
+    ncm_status_changes_elapsed_time(false);
     return;
 }
 
@@ -741,8 +807,23 @@ ncm_status_changes_reset_song_scroll(void) {
 
 void
 ncm_status_changes_song_id(int32 song_id) {
+    NcmSong song;
+
+    native_playlist_screen_reload_remaining(native_c_screen_playlist());
     ncm_status_changes_reset_song_scroll();
+    status_call_ui_song_id_changed(song_id);
+
+    if (status_player_state != NCM_STATUS_PLAYER_STOP) {
+        ncm_song_init(&song);
+        if (status_current_song_for_change(&song)) {
+            status_call_ui_current_song_changed(&song);
+            status_draw_song_title(&song);
+        }
+        ncm_song_destroy(&song);
+    }
+
     status_current_song_id = song_id;
+    ncm_status_changes_elapsed_time(false);
     return;
 }
 
@@ -842,6 +923,106 @@ status_draw_song_title(NcmSong *song) {
     ncm_window_title_set(title.data, title.len);
     ncm_buffer_destroy(&title);
     return;
+}
+
+static void
+status_call_ui_player_state_changed(void) {
+    if (status_ui_hooks_set
+        && (status_ui_hooks.player_state_changed != NULL)) {
+        status_ui_hooks.player_state_changed(status_player_state,
+                                             status_ui_hooks.user);
+    }
+    return;
+}
+
+static void
+status_call_ui_player_stopped(void) {
+    if (status_ui_hooks_set && (status_ui_hooks.player_stopped != NULL)) {
+        status_ui_hooks.player_stopped(status_ui_hooks.user);
+    }
+    return;
+}
+
+static void
+status_call_ui_song_id_changed(int32 song_id) {
+    if (status_ui_hooks_set && (status_ui_hooks.song_id_changed != NULL)) {
+        status_ui_hooks.song_id_changed(song_id, status_ui_hooks.user);
+    }
+    return;
+}
+
+static void
+status_call_ui_current_song_changed(NcmSong *song) {
+    if ((song == NULL) || ncm_song_empty(song)) {
+        return;
+    }
+    if (status_ui_hooks_set
+        && (status_ui_hooks.current_song_changed != NULL)) {
+        status_ui_hooks.current_song_changed(song, status_ui_hooks.user);
+    }
+    return;
+}
+
+static void
+status_draw_player_state_label(char *state, int32 state_len) {
+    NcWindow *window;
+
+    switch (Config.design) {
+    case NCM_DESIGN_ALTERNATIVE:
+        window = ui_state_header_window();
+        if (window == NULL) {
+            return;
+        }
+        nc_window_go_to_xy(window, 0, 1);
+        nc_window_apply_format(window, NC_FORMAT_BOLD);
+        nc_window_print_data(window, state, state_len);
+        nc_window_apply_format(window, NC_FORMAT_NO_BOLD);
+        nc_window_refresh(window);
+        break;
+    case NCM_DESIGN_CLASSIC:
+        window = ui_state_footer_window();
+        if ((window == NULL) || !ncm_statusbar_is_unlocked()
+            || !Config.statusbar_visibility) {
+            return;
+        }
+        nc_window_go_to_xy(window, 0, 1);
+        if (state_len == 0) {
+            nc_window_apply_term_manip(window, NC_TERM_CLEAR_TO_EOL);
+        } else {
+            nc_window_apply_format(window, NC_FORMAT_BOLD);
+            nc_window_print_data(window, state, state_len);
+            nc_window_apply_format(window, NC_FORMAT_NO_BOLD);
+        }
+        break;
+    case NCM_DESIGN_LAST:
+        break;
+    }
+    return;
+}
+
+static bool
+status_current_song_for_change(NcmSong *song) {
+    NcmError error;
+
+    if (song == NULL) {
+        return false;
+    }
+
+    if (native_playlist_screen_now_playing_song(native_c_screen_playlist(),
+                                                status_current_song_pos,
+                                                song)) {
+        return true;
+    }
+
+    if (!ncm_mpd_client_connected(&global_mpd)) {
+        return false;
+    }
+
+    ncm_error_clear(&error);
+    if (!ncm_mpd_client_get_current_song(&global_mpd, song, &error)) {
+        return false;
+    }
+    return !ncm_song_empty(song);
 }
 
 static void

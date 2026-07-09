@@ -30,6 +30,10 @@ typedef struct StatusHookProbe {
     int32 refresh_footer_calls;
     int32 refresh_visible_screens_calls;
     int32 notifications;
+    int32 ui_player_state_calls;
+    int32 ui_player_stopped_calls;
+    int32 ui_song_id_calls;
+    int32 ui_current_song_calls;
 
     uint32 previous_playlist_version;
     int32 song_id;
@@ -43,6 +47,7 @@ static void require_uint(char *file, int32 line, char *name,
                          uint32 actual, uint32 expected);
 static NcmMpdStatus status_make(void);
 static NcmStatusHooks status_hooks_make(StatusHookProbe *probe);
+static NcmStatusUiHooks status_ui_hooks_make(StatusHookProbe *probe);
 static void status_hook_playlist(uint32 previous_version, void *user);
 static void status_hook_stored_playlists(void *user);
 static void status_hook_database(void *user);
@@ -54,6 +59,11 @@ static void status_hook_mixer(void *user);
 static void status_hook_outputs(void *user);
 static void status_hook_refresh_footer(void *user);
 static void status_hook_refresh_visible_screens(void *user);
+static void status_hook_ui_player_state(enum NcmStatusPlayerState state,
+                                        void *user);
+static void status_hook_ui_player_stopped(void *user);
+static void status_hook_ui_song_id(int32 song_id, void *user);
+static void status_hook_ui_current_song(NcmSong *song, void *user);
 static void status_hook_notification(void *user);
 static void test_initial_options_do_not_notify(void);
 static void test_option_changes_update_state_and_hooks(void);
@@ -62,6 +72,7 @@ static void test_player_hooks_and_song_id_change(void);
 static void test_elapsed_time_state_updates_without_windows(void);
 static void test_output_database_and_stored_playlist_hooks(void);
 static void test_registered_hooks_use_c_ported_fallbacks(void);
+static void test_player_and_song_id_c_fallbacks_use_ui_hooks(void);
 
 int
 main(void) {
@@ -72,6 +83,7 @@ main(void) {
     test_elapsed_time_state_updates_without_windows();
     test_output_database_and_stored_playlist_hooks();
     test_registered_hooks_use_c_ported_fallbacks();
+    test_player_and_song_id_c_fallbacks_use_ui_hooks();
     return EXIT_SUCCESS;
 }
 
@@ -134,6 +146,19 @@ status_hooks_make(StatusHookProbe *probe) {
         .outputs_changed = status_hook_outputs,
         .refresh_footer = status_hook_refresh_footer,
         .refresh_visible_screens = status_hook_refresh_visible_screens,
+    };
+
+    return hooks;
+}
+
+static NcmStatusUiHooks
+status_ui_hooks_make(StatusHookProbe *probe) {
+    NcmStatusUiHooks hooks = {
+        .user = probe,
+        .player_state_changed = status_hook_ui_player_state,
+        .player_stopped = status_hook_ui_player_stopped,
+        .song_id_changed = status_hook_ui_song_id,
+        .current_song_changed = status_hook_ui_current_song,
     };
 
     return hooks;
@@ -238,6 +263,45 @@ status_hook_refresh_visible_screens(void *user) {
 
     probe = user;
     probe->refresh_visible_screens_calls += 1;
+    return;
+}
+
+static void
+status_hook_ui_player_state(enum NcmStatusPlayerState state, void *user) {
+    StatusHookProbe *probe;
+
+    (void)state;
+    probe = user;
+    probe->ui_player_state_calls += 1;
+    return;
+}
+
+static void
+status_hook_ui_player_stopped(void *user) {
+    StatusHookProbe *probe;
+
+    probe = user;
+    probe->ui_player_stopped_calls += 1;
+    return;
+}
+
+static void
+status_hook_ui_song_id(int32 song_id, void *user) {
+    StatusHookProbe *probe;
+
+    (void)song_id;
+    probe = user;
+    probe->ui_song_id_calls += 1;
+    return;
+}
+
+static void
+status_hook_ui_current_song(NcmSong *song, void *user) {
+    StatusHookProbe *probe;
+
+    (void)song;
+    probe = user;
+    probe->ui_current_song_calls += 1;
     return;
 }
 
@@ -430,7 +494,6 @@ test_output_database_and_stored_playlist_hooks(void) {
     return;
 }
 
-
 static void
 test_registered_hooks_use_c_ported_fallbacks(void) {
     StatusHookProbe probe = {0};
@@ -473,5 +536,50 @@ test_registered_hooks_use_c_ported_fallbacks(void) {
     REQUIRE_UINT(ncm_status_state_elapsed_time(), 11);
 
     ncm_status_set_hooks(NULL);
+    return;
+}
+
+static void
+test_player_and_song_id_c_fallbacks_use_ui_hooks(void) {
+    StatusHookProbe probe = {0};
+    NcmStatusHooks hooks;
+    NcmStatusUiHooks ui_hooks;
+    NcmMpdStatus status;
+
+    ncm_status_clear();
+    hooks = status_hooks_make(&probe);
+    hooks.player_state_changed = NULL;
+    hooks.song_id_changed = NULL;
+    ui_hooks = status_ui_hooks_make(&probe);
+    ncm_status_set_hooks(&hooks);
+    ncm_status_set_ui_hooks(&ui_hooks);
+
+    status = status_make();
+    status.state = MPD_STATE_PLAY;
+    status.song_pos = -1;
+    status.song_id = 91;
+    REQUIRE(ncm_status_apply_mpd_status(&status, MPD_IDLE_PLAYER,
+                                        NULL, NULL));
+    REQUIRE_INT(probe.player_state_calls, 0);
+    REQUIRE_INT(probe.song_id_calls, 0);
+    REQUIRE_INT(probe.ui_player_state_calls, 1);
+    REQUIRE_INT(probe.ui_song_id_calls, 1);
+    REQUIRE_INT(probe.ui_player_stopped_calls, 0);
+    REQUIRE_INT(ncm_status_state_current_song_id(), 91);
+
+    probe = (StatusHookProbe){0};
+    status.state = MPD_STATE_STOP;
+    status.song_id = 92;
+    REQUIRE(ncm_status_apply_mpd_status(&status, MPD_IDLE_PLAYER,
+                                        NULL, NULL));
+    REQUIRE_INT(probe.player_state_calls, 0);
+    REQUIRE_INT(probe.song_id_calls, 0);
+    REQUIRE_INT(probe.ui_player_state_calls, 1);
+    REQUIRE_INT(probe.ui_song_id_calls, 1);
+    REQUIRE_INT(probe.ui_player_stopped_calls, 1);
+    REQUIRE_INT(ncm_status_state_current_song_id(), 92);
+
+    ncm_status_set_hooks(NULL);
+    ncm_status_set_ui_hooks(NULL);
     return;
 }
