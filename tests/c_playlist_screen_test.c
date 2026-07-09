@@ -12,6 +12,7 @@ static void test_playlist_row_ownership(void);
 static void test_playlist_selection_range(void);
 static void test_playlist_current_song_lookup(void);
 static void test_playlist_sparse_now_playing_lookup(void);
+static void test_playlist_now_playing_lookup_does_not_sync(void);
 static void test_playlist_filter_reapplication(void);
 
 int
@@ -20,6 +21,7 @@ main(void) {
     test_playlist_selection_range();
     test_playlist_current_song_lookup();
     test_playlist_sparse_now_playing_lookup();
+    test_playlist_now_playing_lookup_does_not_sync();
     test_playlist_filter_reapplication();
     return EXIT_SUCCESS;
 }
@@ -146,6 +148,42 @@ test_playlist_sparse_now_playing_lookup(void) {
     assert(ncm_song_uri_view(&found, 0, &view));
     assert(ncm_string_equal(view.data, view.len, LIT_ARGS("sparse.flac")));
     assert(!native_playlist_screen_now_playing_song(&screen, 1, &found));
+
+    ncm_song_destroy(&song);
+    ncm_song_destroy(&found);
+    nc_song_menu_destroy(&screen.songs);
+    return;
+}
+
+static void
+test_playlist_now_playing_sync_callback(void *user) {
+    bool *called;
+
+    called = user;
+    *called = true;
+    return;
+}
+
+static void
+test_playlist_now_playing_lookup_does_not_sync(void) {
+    NativePlaylistScreen screen = {0};
+    NcmSong found;
+    NcmSong song;
+    bool sync_called;
+
+    sync_called = false;
+    nc_song_menu_init(&screen.songs);
+    ncm_song_init(&found);
+    ncm_song_init(&song);
+
+    assert(ncm_song_set_uri(&song, LIT_ARGS("current.flac")));
+    ncm_song_set_position(&song, 42);
+    nc_song_menu_add(&screen.songs, &song);
+    native_playlist_screen_set_sync_callback(
+        &screen, test_playlist_now_playing_sync_callback, &sync_called);
+
+    assert(native_playlist_screen_now_playing_song(&screen, 42, &found));
+    assert(!sync_called);
 
     ncm_song_destroy(&song);
     ncm_song_destroy(&found);
