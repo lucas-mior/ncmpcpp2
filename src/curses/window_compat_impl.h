@@ -22,133 +22,10 @@
  ***************************************************************************/
 
 #include <algorithm>
-#include <cstring>
-#include <cstdio>
 #include <cstdlib>
 #include <utility>
 #include <iostream>
-#include <sys/select.h>
-#include <termios.h>
-#include <unistd.h>
-
-#include "utility/readline.h"
-#include "utility/string.h"
-#include "utility/utf8.h"
 #include <cassert>
-
-namespace {
-
-namespace rl {
-
-bool aborted;
-
-NC::Window *w;
-size_t start_x;
-size_t start_y;
-size_t width;
-bool encrypted;
-const char *base;
-
-int read_key(FILE *)
-{
-	size_t x;
-	bool done;
-	int result;
-	do
-	{
-		x = w->getX();
-		if (w->runPromptHook(rl_line_buffer, &done))
-		{
-			// Do not end if readline is in one of its commands, e.g. searching
-			// through history, as it doesn't actually make readline exit and it
-			// becomes stuck in a loop.
-			if (!RL_ISSTATE(RL_STATE_DISPATCHING) && done)
-			{
-				rl_done = 1;
-				return EOF;
-			}
-			w->goToXY(x, start_y);
-		}
-		w->refresh();
-		result = w->readKey();
-		if (!w->FDCallbacksListEmpty())
-		{
-			w->goToXY(x, start_y);
-			w->refresh();
-		}
-	}
-	while (result == ERR);
-	return result;
-}
-
-void display_string()
-{
-	auto print_string = [](const std::string &s) {
-		if (encrypted)
-			*w << std::string(Utf8::characters(s), '*');
-		else
-			*w << s;
-	};
-
-	std::string before_cursor(rl_line_buffer, rl_point);
-	std::string after_cursor(rl_line_buffer+rl_point, rl_end-rl_point);
-	int pos = Utf8::width(before_cursor);
-
-	// clear the area for the string
-	mvwhline(w->raw(), start_y, start_x, ' ', width+1);
-
-	w->goToXY(start_x, start_y);
-	if (size_t(pos) <= width)
-	{
-		// if the current position in the string is not bigger than allowed
-		// width, print the part of the string before cursor position...
-
-		print_string(before_cursor);
-
-		// ...and then print the rest char-by-char until there is no more area
-		size_t cpos = pos;
-		for (const auto &c : Utf8::split(after_cursor))
-		{
-			size_t n = Utf8::width(c);
-			if (cpos+n > width)
-				break;
-			cpos += n;
-			print_string(c);
-		}
-	}
-	else
-	{
-		// if the current position in the string is bigger than allowed
-		// width, we always keep the cursor at the end of the line (it
-		// would be nice to have more flexible scrolling, but for now
-		// let's stick to that) by cutting the beginning of the part
-		// of the string before the cursor until it fits the area.
-
-		auto chars = Utf8::split(before_cursor);
-		std::string tail;
-		pos = 0;
-		for (auto it = chars.rbegin(); it != chars.rend(); ++it)
-		{
-			size_t n = Utf8::width(*it);
-			if (size_t(pos)+n > width)
-				break;
-			pos += n;
-			tail.insert(0, *it);
-		}
-		print_string(tail);
-	}
-	w->goToXY(start_x+pos, start_y);
-}
-
-int add_base()
-{
-	rl_insert_text(base);
-	return 0;
-}
-
-}
-
-}
 
 namespace NC {
 
@@ -261,34 +138,9 @@ inline enum NcFormat reverseFormat(enum NcFormat format)
 
 inline void initReadline()
 {
-	// initialize readline (needed, otherwise we get segmentation
-	// fault on SIGWINCH). also, initialize first as doing this
-	// later erases keys bound with rl_bind_key for some users.
-	rl_initialize();
-	// disable autocompletion
-	rl_attempted_completion_function = [](const char *, int, int) -> char ** {
-		rl_attempted_completion_over = 1;
-		return nullptr;
-	};
-	auto abort_prompt = [](int, int) -> int {
-		rl::aborted = true;
-		rl_done = 1;
-		return 0;
-	};
-	// if ctrl-c or ctrl-g is pressed, abort the prompt
-	rl_bind_key('\3', abort_prompt);
-	rl_bind_key('\7', abort_prompt);
-	// do not change the state of the terminal
-	rl_prep_term_function = nullptr;
-	rl_deprep_term_function = nullptr;
-	// do not catch signals
-	rl_catch_signals = 0;
-	rl_catch_sigwinch = 0;
-	// overwrite readline callbacks
-	rl_getc_function = rl::read_key;
-	rl_redisplay_function = rl::display_string;
-	rl_startup_hook = rl::add_base;
+	nc_init_readline();
 }
+
 
 inline void initScreen(bool enable_colors, bool enable_mouse)
 {
@@ -558,38 +410,46 @@ inline void Window::pushChar(NcKey ch)
 	nc_window_push_key(&m_impl, ch);
 }
 
+inline bool windowPromptHook(char *arg, void *data)
+{
+	Window *window = static_cast<Window *>(data);
+	bool done = false;
+
+	if (!window->runPromptHook(arg, &done))
+		return true;
+	return !done;
+}
+
 inline std::string Window::prompt(const std::string &base, size_t width, bool encrypted)
 {
 	std::string result;
+	char *input = nullptr;
+	NcPrompt prompt = {};
 
-	rl::aborted = false;
-	rl::w = this;
-	getyx(m_window, rl::start_y, rl::start_x);
-	rl::width = std::min(m_width-rl::start_x-1, width-1);
-	rl::encrypted = encrypted;
-	rl::base = base.c_str();
+	prompt.initial_text = const_cast<char *>(base.c_str());
+	if (width == static_cast<size_t>(-1))
+		prompt.width = -1;
+	else
+		prompt.width = static_cast<int64>(width);
+	prompt.hook = windowPromptHook;
+	prompt.hook_user_data = this;
+	prompt.encrypted = encrypted;
+	prompt.remember = !encrypted;
 
-	curs_set(1);
-	nc_mouse_disable();
-	nc_window_set_escape_terminal_sequences(&m_impl, false);
-	char *input = readline(nullptr);
-	nc_window_set_escape_terminal_sequences(&m_impl, true);
-	nc_mouse_enable();
-	curs_set(0);
-	if (input != nullptr)
+	if (nc_window_prompt(&m_impl, &prompt, &input) == NC_PROMPT_ACCEPTED)
 	{
-#ifdef HAVE_READLINE_HISTORY_H
-		if (!encrypted && input[0] != 0)
-			add_history(input);
-#endif // HAVE_READLINE_HISTORY_H
-		result = input;
-		free(input);
+		if (input != nullptr)
+			result = input;
+		nc_window_prompt_result_destroy(input);
+		return result;
 	}
 
-	if (rl::aborted)
-		throw PromptAborted(std::move(result));
-
-	return result;
+	if (input != nullptr)
+	{
+		result = input;
+		nc_window_prompt_result_destroy(input);
+	}
+	throw PromptAborted(std::move(result));
 }
 
 inline void Window::goToXY(int x, int y)
