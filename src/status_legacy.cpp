@@ -51,6 +51,16 @@
 
 namespace {
 
+std::string songTimeString(unsigned length)
+{
+	char buffer[64];
+	int32 len;
+
+	len = ncm_helpers_show_song_time(
+		length, buffer, static_cast<int32>(sizeof(buffer)));
+	return std::string(buffer, static_cast<size_t>(len));
+}
+
 NcmTimePoint past;
 
 size_t playing_song_scroll_begin = 0;
@@ -647,15 +657,15 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 					if (Config.display_remaining_time)
 					{
 						tracklength += "-";
-						tracklength += showSongTime(m_total_time-m_elapsed_time);
+						tracklength += songTimeString(m_total_time-m_elapsed_time);
 					}
 					else
-						tracklength += showSongTime(m_elapsed_time);
+						tracklength += songTimeString(m_elapsed_time);
 					tracklength += "/";
-					tracklength += showSongTime(m_total_time);
+					tracklength += songTimeString(m_total_time);
 				}
 				else
-					tracklength += showSongTime(m_elapsed_time);
+					tracklength += songTimeString(m_elapsed_time);
 				tracklength += "]";
 				NC::Buffer np_song;
 				Format::print(Config.song_status_format, np_song, &np);
@@ -678,14 +688,14 @@ void Status::Changes::elapsedTime(bool update_elapsed)
 			if (Config.display_remaining_time)
 			{
 				tracklength = "-";
-				tracklength += showSongTime(m_total_time-m_elapsed_time);
+				tracklength += songTimeString(m_total_time-m_elapsed_time);
 			}
 			else
-				tracklength = showSongTime(m_elapsed_time);
+				tracklength = songTimeString(m_elapsed_time);
 			if (m_total_time)
 			{
 				tracklength += "/";
-				tracklength += showSongTime(m_total_time);
+				tracklength += songTimeString(m_total_time);
 			}
 			// bitrate here doesn't look good, but it can be moved somewhere else later
 			if (Config.display_bitrate && m_kbps)

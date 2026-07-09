@@ -37,6 +37,7 @@
 #include "configuration_legacy.h"
 #include "format_impl.h"
 #include "global.h"
+#include "helpers.h"
 #include "interfaces.h"
 #include "mpdpp.h"
 #include "regex_filter.h"
@@ -57,7 +58,6 @@
 
 
 std::string Scroller(const std::string &str, size_t &pos, size_t width);
-std::string timeFormat(const char *format, time_t t);
 bool addSongToPlaylist(const MPD::Song &s, bool play, int position);
 
 struct BrowserWindow: NC::Menu<MPD::Item>, SongList
@@ -184,11 +184,6 @@ namespace browser_compat {
 
 inline std::set<std::string> lm_supported_extensions;
 
-inline const char *withErrors(bool success)
-{
-    return success ? "" : " " "(with errors)";
-}
-
 inline std::string realPath(bool local_browser, std::string path)
 {
     if (!local_browser)
@@ -245,8 +240,18 @@ inline MPD::Song getLocalSong(const std::filesystem::directory_entry &entry,
     if (read_tags)
     {
 #ifdef HAVE_TAGLIB_H
-        auto last_modified = timeFormat("%Y-%m-%dT%H:%M:%SZ",
-                                        lastWriteTime(entry.path()));
+        char last_modified_format[] = "%Y-%m-%dT%H:%M:%SZ";
+        NcmBuffer last_modified_buffer;
+        std::string last_modified;
+
+        ncm_buffer_init(&last_modified_buffer);
+        if (ncm_helpers_time_format(&last_modified_buffer,
+                                    last_modified_format,
+                                    lastWriteTime(entry.path()))) {
+            last_modified.assign(last_modified_buffer.data,
+                                 last_modified_buffer.len);
+        }
+        ncm_buffer_destroy(&last_modified_buffer);
         ncm_tags_set_attribute(
             s,
             const_cast<char *>("Last-Modified"),
@@ -703,7 +708,7 @@ inline bool Browser::addItemToPlaylist(bool play)
         }
         Statusbar::printf("Directory \"%1%\" added%2%",
                           item.directory().path(),
-                          browser_compat::withErrors(success));
+                          ncm_helpers_with_errors(success));
         break;
     }
     case MPD::Item::Type::Song:
