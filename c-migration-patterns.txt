@@ -564,7 +564,7 @@ The shared helpers entry point is now a C API.
     src/helpers.h                   -> pure C helpers API
     src/helpers.cpp                 -> src/helpers.c
     old C++ helper templates        -> src/helpers_legacy.h while screens move
-    old C++ helper runtime bodies   -> src/helpers_legacy.cpp while screens move
+    old C++ helper runtime bodies   -> deleted; moved to C action/curses APIs
 
 Concrete C replacements:
 

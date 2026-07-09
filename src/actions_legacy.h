@@ -807,7 +807,7 @@ private:
 	virtual void run() override;
 
 #ifdef HAVE_TAGLIB_H
-	const MPD::Song *m_song;
+	MPD::Song m_song;
 #endif // HAVE_TAGLIB_H
 };
 
@@ -864,7 +864,7 @@ private:
 	virtual bool canBeRun() override;
 	virtual void run() override;
 
-	const MPD::Song *m_song;
+	MPD::Song m_song;
 };
 
 struct JumpToMediaLibrary: BaseAction
@@ -875,7 +875,7 @@ private:
 	virtual bool canBeRun() override;
 	virtual void run() override;
 
-	const MPD::Song *m_song;
+	MPD::Song m_song;
 };
 
 struct JumpToPlaylistEditor: BaseAction
@@ -904,7 +904,7 @@ private:
 	virtual void run() override;
 
 #ifdef HAVE_TAGLIB_H
-	const MPD::Song *m_song;
+	MPD::Song m_song;
 #endif // HAVE_TAGLIB_H
 };
 
@@ -1259,7 +1259,8 @@ private:
 	virtual bool canBeRun() override;
 	virtual void run() override;
 
-	const MPD::Song *m_song;
+	MPD::Song m_song;
+	bool m_has_song;
 };
 
 struct Quit: BaseAction

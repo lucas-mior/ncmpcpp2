@@ -89,6 +89,28 @@ std::string songTimeString(unsigned length)
 	return std::string(buffer, static_cast<size_t>(len));
 }
 
+bool currentSongFromNative(MPD::Song &song)
+{
+	NcmSong native_song;
+	bool success;
+
+	ncm_song_init(&native_song);
+	success = ncm_action_current_song(&native_song);
+	if (success)
+	{
+		try
+		{
+			song = MPD::Song(&native_song);
+		}
+		catch (...)
+		{
+			success = false;
+		}
+	}
+	ncm_song_destroy(&native_song);
+	return success;
+}
+
 std::vector<std::shared_ptr<Actions::BaseAction>> AvailableActions;
 
 char *itemTypeName(MPD::Item::Type type)
@@ -755,17 +777,18 @@ void PlayItem::run()
 
 bool DeletePlaylistItems::canBeRun()
 {
-	return (screenLegacyCurrent() == myPlaylist && !myPlaylist->main().empty())
-	    || (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content) && !myPlaylistEditor->Content.empty());
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_DELETE_PLAYLIST_ITEMS)
+	    || (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content)
+	        && !myPlaylistEditor->Content.empty());
 }
 
 void DeletePlaylistItems::run()
 {
-	if (screenLegacyCurrent() == myPlaylist)
+	if (ncm_action_runtime_can_run(nullptr, NCM_ACTION_DELETE_PLAYLIST_ITEMS))
 	{
 		Statusbar::print("Deleting items...");
-		deleteSelectedSongsFromPlaylist(myPlaylist->main());
-		Statusbar::print("Item(s) deleted");
+		if (ncm_action_delete_playlist_items())
+			Statusbar::print("Item(s) deleted");
 	}
 	else if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content))
 	{
@@ -1523,8 +1546,7 @@ void EnterDirectory::run()
 bool EditSong::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	m_song = currentSong(screenLegacyCurrent());
-	return m_song != nullptr && isMPDMusicDirSet();
+	return isMPDMusicDirSet() && currentSongFromNative(m_song);
 #	else
 	return false;
 #	endif // HAVE_TAGLIB_H
@@ -1533,7 +1555,7 @@ bool EditSong::canBeRun()
 void EditSong::run()
 {
 #	ifdef HAVE_TAGLIB_H
-	myTinyTagEditor->SetEdited(*m_song);
+	myTinyTagEditor->SetEdited(m_song);
 	myTinyTagEditor->switchTo();
 #	endif // HAVE_TAGLIB_H
 }
@@ -1768,24 +1790,22 @@ void EditLyrics::run()
 
 bool JumpToBrowser::canBeRun()
 {
-	m_song = currentSong(screenLegacyCurrent());
-	return m_song != nullptr;
+	return currentSongFromNative(m_song);
 }
 
 void JumpToBrowser::run()
 {
-	myBrowser->locateSong(*m_song);
+	myBrowser->locateSong(m_song);
 }
 
 bool JumpToMediaLibrary::canBeRun()
 {
-	m_song = currentSong(screenLegacyCurrent());
-	return m_song != nullptr;
+	return currentSongFromNative(m_song);
 }
 
 void JumpToMediaLibrary::run()
 {
-	myLibrary->locateSong(*m_song);
+	myLibrary->locateSong(m_song);
 }
 
 bool JumpToPlaylistEditor::canBeRun()
@@ -1835,8 +1855,7 @@ void ToggleScreenLock::run()
 bool JumpToTagEditor::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	m_song = currentSong(screenLegacyCurrent());
-	return m_song != nullptr && isMPDMusicDirSet();
+	return isMPDMusicDirSet() && currentSongFromNative(m_song);
 #	else
 	return false;
 #	endif // HAVE_TAGLIB_H
@@ -1845,7 +1864,7 @@ bool JumpToTagEditor::canBeRun()
 void JumpToTagEditor::run()
 {
 #	ifdef HAVE_TAGLIB_H
-	myTagEditor->LocateSong(*m_song);
+	myTagEditor->LocateSong(m_song);
 #	endif // HAVE_TAGLIB_H
 }
 
@@ -2036,18 +2055,15 @@ void AddSelectedItems::run()
 
 void CropMainPlaylist::run()
 {
-	auto &w = myPlaylist->main();
 	// cropping doesn't make sense in this case
-	if (w.size() <= 1)
+	if (myPlaylist->main().size() <= 1)
 		return;
 	if (Config.ask_before_clearing_playlists)
 		if (!confirmAction("Do you really want to crop main playlist?"))
 			return;
 	Statusbar::print("Cropping playlist...");
-	selectCurrentIfNoneSelected(w);
-	reverseSelectionHelper(w.begin(), w.end());
-	deleteSelectedSongsFromPlaylist(w);
-	Statusbar::print("Playlist cropped");
+	if (ncm_action_crop_main_playlist())
+		Statusbar::print("Playlist cropped");
 }
 
 bool CropPlaylist::canBeRun()
@@ -2563,11 +2579,13 @@ void ShowSongInfo::run()
 
 bool ShowArtistInfo::canBeRun()
 {
+	MPD::Song song;
+
 	return screenLegacyCurrent() == myLastfm
 		|| (screenLegacyCurrent()->isActiveWindow(myLibrary->Tags)
 		    && !myLibrary->Tags.empty()
 		    && Config.media_lib_primary_tag == MPD_TAG_ARTIST)
-		|| currentSong(screenLegacyCurrent());
+		|| currentSongFromNative(song);
 }
 
 void ShowArtistInfo::run()
@@ -2587,9 +2605,10 @@ void ShowArtistInfo::run()
 	}
 	else
 	{
-		auto s = currentSong(screenLegacyCurrent());
-		assert(s);
-		artist = s->getArtist();
+		MPD::Song song;
+		if (!currentSongFromNative(song))
+			return;
+		artist = song.getArtist();
 	}
 
 	if (!artist.empty())
@@ -2604,20 +2623,20 @@ bool ShowLyrics::canBeRun()
 {
 	if (screenLegacyCurrent() == myLyrics)
 	{
-		m_song = nullptr;
+		m_has_song = false;
 		return true;
 	}
 	else
 	{
-		m_song = currentSong(screenLegacyCurrent());
-		return m_song != nullptr;
+		m_has_song = currentSongFromNative(m_song);
+		return m_has_song;
 	}
 }
 
 void ShowLyrics::run()
 {
-	if (m_song != nullptr)
-		myLyrics->fetch(*m_song);
+	if (m_has_song)
+		myLyrics->fetch(m_song);
 	if (screenLegacyCurrent() == myLyrics || !isVisible(myLyrics))
 		myLyrics->switchTo();
 }

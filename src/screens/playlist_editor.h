@@ -32,6 +32,7 @@
 #include <utility>
 #include <vector>
 
+#include "actions.h"
 #include "charset.h"
 #include "curses/menu_impl.h"
 #include "format.h"
@@ -650,7 +651,8 @@ inline bool PlaylistEditor::addItemToPlaylist(bool play)
             Statusbar::printf("Playlist \"%1%\" loaded", playlist.path());
     }
     else if (isActiveWindow(Content))
-        success = addSongToPlaylist(Content.current()->value(), play);
+        success = ncm_action_add_song_to_playlist(
+            Content.current()->value().cSong(), play, -1);
     return success;
 }
 
