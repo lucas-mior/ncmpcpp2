@@ -54,7 +54,6 @@
 
 namespace {
 
-void initialize_status();
 
 bool m_status_initialized;
 
@@ -302,10 +301,71 @@ void legacy_status_refresh_visible_screens(void *user)
 	applyToVisibleScreens(nc_screen_refresh_window);
 }
 
-void legacy_status_initialize(void *user)
+void legacy_status_init_jump_to_now_playing(void *user)
 {
 	(void)user;
-	initialize_status();
+	syncLegacyStatusStateFromC();
+	if (Config.jump_to_now_playing_song_at_start)
+	{
+		int curr_pos = ncm_status_state_current_song_position();
+		if  (curr_pos >= 0)
+		{
+			myPlaylist->main().highlight(curr_pos);
+			if (isVisible(myPlaylist))
+				myPlaylist->refresh();
+		}
+	}
+}
+
+void legacy_status_init_set_tcp_nodelay(void *user)
+{
+	(void)user;
+	// Set TCP_NODELAY on the tcp socket as we are using write-write-read pattern
+	// a lot (noidle - write, command - write, then read the result of command),
+	// which kills the performance.
+	int flag = 1;
+	setsockopt(Mpd.GetFD(), IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag));
+}
+
+void legacy_status_init_load_browser_supported_extensions(void *user)
+{
+	(void)user;
+	myBrowser->fetchSupportedExtensions();
+}
+
+void legacy_status_init_fetch_outputs(void *user)
+{
+	(void)user;
+#	ifdef ENABLE_OUTPUTS
+	native_c_screen_outputs_fetch_list();
+#	endif // ENABLE_OUTPUTS
+}
+
+void legacy_status_init_setup_visualizer_datasource(void *user)
+{
+	(void)user;
+#	ifdef ENABLE_VISUALIZER
+	myVisualizer->CloseDataSource();
+	myVisualizer->OpenDataSource();
+	myVisualizer->FindOutputID();
+#	endif // ENABLE_VISUALIZER
+}
+
+void legacy_status_init_register_mpd_fd_callback(void *user)
+{
+	(void)user;
+	m_status_initialized = true;
+	nc_window_add_fd_callback(ui_state_footer_window(), Mpd.GetFD(),
+	                          Statusbar::Helpers::mpd);
+}
+
+void legacy_status_init_show_connected_message(void *user)
+{
+	(void)user;
+	if (Config.connected_message_on_startup)
+	{
+		Statusbar::printf("Connected to %1%", Mpd.GetHostname());
+	}
 }
 
 extern "C" void ncm_status_register_legacy_hooks(void)
@@ -334,10 +394,20 @@ extern "C" void ncm_status_register_legacy_hooks(void)
 		legacy_status_ui_song_id_changed,
 		legacy_status_ui_current_song_changed,
 	};
+	NcmStatusInitHooks init_hooks = {
+		nullptr,
+		legacy_status_init_jump_to_now_playing,
+		legacy_status_init_set_tcp_nodelay,
+		legacy_status_init_load_browser_supported_extensions,
+		legacy_status_init_fetch_outputs,
+		legacy_status_init_setup_visualizer_datasource,
+		legacy_status_init_register_mpd_fd_callback,
+		legacy_status_init_show_connected_message,
+	};
 
 	ncm_status_set_hooks(&hooks);
 	ncm_status_set_ui_hooks(&ui_hooks);
-	ncm_status_set_initialize_hook(legacy_status_initialize, nullptr);
+	ncm_status_set_init_hooks(&init_hooks);
 }
 
 extern "C" void ncm_statusbar_legacy_mpd_callback(void)
@@ -349,50 +419,6 @@ extern "C" void ncm_statusbar_legacy_mpd_callback(void)
 	(void)ncm_status_update_from_noidle(&global_mpd, nullptr, &error);
 }
 
-void initialize_status()
-{
-	// get full info about new connection
-	NcmError error;
-
-	ncm_error_clear(&error);
-	ncm_status_register_legacy_hooks();
-	(void)ncm_status_update_full(&global_mpd, nullptr, &error);
-	syncLegacyStatusStateFromC();
-
-	if (Config.jump_to_now_playing_song_at_start)
-	{
-		int curr_pos = ncm_status_state_current_song_position();
-		if  (curr_pos >= 0)
-		{
-			myPlaylist->main().highlight(curr_pos);
-			if (isVisible(myPlaylist))
-				myPlaylist->refresh();
-		}
-	}
-
-	// Set TCP_NODELAY on the tcp socket as we are using write-write-read pattern
-	// a lot (noidle - write, command - write, then read the result of command),
-	// which kills the performance.
-	int flag = 1;
-	setsockopt(Mpd.GetFD(), IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(flag));
-
-	myBrowser->fetchSupportedExtensions();
-#	ifdef ENABLE_OUTPUTS
-	native_c_screen_outputs_fetch_list();
-#	endif // ENABLE_OUTPUTS
-#	ifdef ENABLE_VISUALIZER
-	myVisualizer->CloseDataSource();
-	myVisualizer->OpenDataSource();
-	myVisualizer->FindOutputID();
-#	endif // ENABLE_VISUALIZER
-
-	m_status_initialized = true;
-	static_cast<NC::Window *>(ui_state_footer_legacy_window())->addFDCallback(Mpd.GetFD(), Statusbar::Helpers::mpd);
-	if (Config.connected_message_on_startup)
-	{
-		Statusbar::printf("Connected to %1%", Mpd.GetHostname());
-	}
-}
 
 }
 

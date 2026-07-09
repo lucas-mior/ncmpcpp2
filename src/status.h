@@ -44,19 +44,34 @@ typedef struct NcmStatusUiHooks {
     void (*current_song_changed)(NcmSong *song, void *user);
 } NcmStatusUiHooks;
 
+typedef struct NcmStatusInitHooks {
+    void *user;
+
+    void (*jump_to_now_playing)(void *user);
+    void (*set_tcp_nodelay)(void *user);
+    void (*load_browser_supported_extensions)(void *user);
+    void (*fetch_outputs)(void *user);
+    void (*setup_visualizer_datasource)(void *user);
+    void (*register_mpd_fd_callback)(void *user);
+    void (*show_connected_message)(void *user);
+} NcmStatusInitHooks;
+
 void ncm_status_handle_client_error(NcmMpdClient *client);
 void ncm_status_handle_server_error(NcmMpdClient *client);
 void ncm_status_trace(NcmMpdClient *client, bool update_timer,
                       bool update_window_timeout, NcmError *error);
 void ncm_status_set_hooks(NcmStatusHooks *hooks);
 void ncm_status_set_ui_hooks(NcmStatusUiHooks *hooks);
-void ncm_status_set_initialize_hook(void (*callback)(void *user),
-                                    void *user);
+void ncm_status_set_init_hooks(NcmStatusInitHooks *hooks);
 void ncm_status_set_notification_observer(void (*callback)(void *user),
                                           void *user);
 bool ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                                  NcmStatusHooks *hooks, NcmError *error);
 bool ncm_status_update(NcmMpdClient *client, int32 event, NcmError *error);
+bool ncm_status_initialize_from_mpd_status(NcmMpdStatus *mpd_status,
+                                           NcmStatusHooks *hooks,
+                                           NcmError *error);
+bool ncm_status_initialize_connection(NcmMpdClient *client, NcmError *error);
 bool ncm_status_update_full(NcmMpdClient *client, NcmStatusHooks *hooks,
                             NcmError *error);
 bool ncm_status_update_from_noidle(NcmMpdClient *client,
