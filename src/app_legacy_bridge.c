@@ -6,6 +6,7 @@
 #include "global.h"
 #include "screens/native_c_screens.h"
 #include "settings.h"
+#include "settings_legacy_runtime.h"
 #include "status.h"
 #include "statusbar.h"
 #include "ui_state.h"
@@ -19,6 +20,11 @@
  * forwarding calls here with direct C implementations.
  */
 
+
+bool
+ncmpcpp_legacy_sync_configuration(void) {
+    return settings_legacy_runtime_sync_configuration();
+}
 
 static bool
 app_legacy_bridge_can_execute_binding_in_c(NcmBinding *binding) {

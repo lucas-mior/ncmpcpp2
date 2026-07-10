@@ -52,7 +52,6 @@ NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
 APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
 APP_CXX_SRCS := \
 	src/actions_legacy.cpp \
-	src/configuration_legacy.cpp \
 	src/mpdpp.cpp \
 	src/settings_legacy.cpp
 C_TEST_SRCS := $(sort $(wildcard tests/*_test.c))
@@ -65,7 +64,6 @@ APP_CXX_OBJS := $(patsubst %.cpp,$(OBJ_DIR)/%.cpp.o,$(APP_CXX_SRCS))
 C_TEST_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(C_TEST_SRCS))
 CXX_TEST_OBJS := $(patsubst %.cpp,$(OBJ_DIR)/%.cpp.o,$(CXX_TEST_SRCS))
 CXX_TEST_SUPPORT_OBJS := \
-	$(OBJ_DIR)/src/configuration_legacy.cpp.o \
 	$(OBJ_DIR)/src/settings_legacy.cpp.o
 C_TEST_BINS := $(patsubst tests/%.c,$(BUILD_DIR)/tests/%,$(C_TEST_SRCS))
 CXX_TEST_BINS := $(patsubst tests/%.cpp,$(BUILD_DIR)/tests/%,$(CXX_TEST_SRCS))

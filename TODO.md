@@ -162,52 +162,6 @@ Main goal: remove C++ from the project while preserving all current behavior.
    `actions_legacy.cpp`; then delete the C++ source/header after valgrind or
    sanitizer runs show no descriptor, buffer, or FFTW leaks.
 
-## `./src/configuration_legacy.cpp`
-
-1. **Build a differential configuration specification.** Compare every legacy
-   command-line option, default, validation rule, help/version output, XDG and
-   `~/.ncmpcpp` path candidate, MPD environment variable, CLI override,
-   directory-creation rule, current-song formatter option, test-fetcher mode,
-   quiet mode, and exit condition against `configuration.c`.
-2. **Add exhaustive C parser tests before changing startup.** Extend
-   `tests/c_configuration_test.c` with every short and long option, combined
-   arguments, missing/invalid values, duplicate path options, environment/CLI
-   precedence, XDG unset/empty cases, legacy path fallback, `~` expansion,
-   unreadable files, directory creation failures, exact diagnostics, and modes
-   that intentionally print and exit.
-3. **Remove the startup double-configuration pass.** Change
-   `ncmpcpp_legacy_configure()`/`ncmpcpp.c` to call `configure()` exactly once,
-   initialize and destroy `Config` and `Bindings` in one documented order, and
-   remove the current sequence that first invokes
-   `actions_legacy_runtime_configure()` and then resets bindings and runs the C
-   parser again.
-4. **Migrate every C++ path-expansion caller.** Replace the `std::string`
-   overload in `configuration_legacy.h`, including calls from
-   `settings_legacy.cpp` and `screens/browser.h`, with the owned C
-   `expand_home(char **, int32 *, NcmError *)` API or a purpose-built C buffer
-   helper. Handle allocation failure and preserve the caller’s previous value
-   when expansion fails.
-5. **Make C configuration the sole settings/bindings loader.** Route discovered
-   config paths through `configuration_read()` and binding paths through
-   `ncm_bindings_configuration_read_paths()`, preserve “first existing file”
-   and explicit-file error semantics, and eliminate conversions into
-   `ConfigurationLegacy`, C++ option-parser structures, or C++ vectors.
-6. **Port remaining one-shot CLI behavior to direct C services.** Ensure
-   current-song printing uses `NcmFormatAst`/`NcmSong`, fetcher tests use the C
-   lyrics registry, MPD connection validation reports `NcmError`, and help,
-   version, screen-selection, host, port, password, timeout, and quiet options
-   produce the same observable behavior and exit status as the legacy path.
-7. **Cut all bridge and build references.** Remove
-   `actions_legacy_runtime_configure()`, the C++ `configure(int, char **)`
-   declaration, `configuration_legacy.h` includes, and
-   `src/configuration_legacy.cpp` from `APP_CXX_SRCS`. Run CLI integration tests
-   in isolated HOME/XDG directories in addition to `make all` and `make check`.
-8. **Delete the legacy implementation.** Delete
-   `configuration_legacy.cpp` and `configuration_legacy.h`, scan for legacy
-   symbols and duplicate configuration passes, and verify startup, all
-   print-and-exit modes, config/bindings discovery, and MPD connection setup
-   using only the C implementation.
-
 ## `./src/mpdpp.cpp`
 
 1. **Create a method-by-method MPD parity table.** Map every `MPD::Connection`,
