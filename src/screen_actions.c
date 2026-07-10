@@ -6,10 +6,23 @@
 
 #include "c/ncm_base.h"
 
+#if defined(__GNUC__)
+extern bool actions_legacy_runtime_search_current_screen(
+    enum SearchDirection direction, char *pattern, int32 pattern_len,
+    bool wrap, bool skip_current, bool *handled,
+    NcmError *error) __attribute__((weak));
+extern void actions_legacy_runtime_clear_current_search(void)
+    __attribute__((weak));
+#endif
+
 static NcScreen *current_screen(void);
 static bool current_screen_is(int32 type);
 static NcmBuffer *current_screen_filter_buffer(void);
 static NcmBuffer *current_screen_search_buffer(void);
+static bool current_screen_search_legacy(
+    enum SearchDirection direction, char *pattern, int32 pattern_len,
+    bool wrap, bool skip_current, bool *handled, NcmError *error);
+static void current_screen_clear_legacy_search(void);
 static bool current_screen_set_search_constraint(char *pattern,
                                                  int32 pattern_len);
 static bool current_screen_search_direction_forward(
@@ -105,6 +118,43 @@ current_screen_search_buffer(void) {
 }
 
 static bool
+current_screen_search_legacy(enum SearchDirection direction,
+                             char *pattern, int32 pattern_len,
+                             bool wrap, bool skip_current,
+                             bool *handled, NcmError *error) {
+    if (handled == NULL) {
+        return false;
+    }
+    *handled = false;
+#if defined(__GNUC__)
+    if (actions_legacy_runtime_search_current_screen == NULL) {
+        return false;
+    }
+    return actions_legacy_runtime_search_current_screen(
+        direction, pattern, pattern_len, wrap, skip_current,
+        handled, error);
+#else
+    (void)direction;
+    (void)pattern;
+    (void)pattern_len;
+    (void)wrap;
+    (void)skip_current;
+    (void)error;
+    return false;
+#endif
+}
+
+static void
+current_screen_clear_legacy_search(void) {
+#if defined(__GNUC__)
+    if (actions_legacy_runtime_clear_current_search != NULL) {
+        actions_legacy_runtime_clear_current_search();
+    }
+#endif
+    return;
+}
+
+static bool
 current_screen_set_search_constraint(char *pattern, int32 pattern_len) {
     NcmBuffer *buffer;
 
@@ -132,6 +182,7 @@ static void
 current_screen_clear_current_search_constraint(void) {
     NcmBuffer *buffer;
 
+    current_screen_clear_legacy_search();
     if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
         native_media_library_screen_clear_search(
             native_c_screen_media_library());
@@ -257,43 +308,54 @@ current_screen_search(enum SearchDirection direction,
     attempted = false;
     forward = current_screen_search_direction_forward(direction);
     found = false;
-    if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST)) {
-        attempted = true;
-        found = native_playlist_screen_search(
-            native_c_screen_playlist(), pattern, pattern_len, forward,
-            wrap, skip_current, error);
-    } else if (current_screen_is(NC_SCREEN_TYPE_BROWSER)) {
-        attempted = true;
-        found = native_browser_screen_search(
-            native_c_screen_browser(), pattern, pattern_len, forward,
-            wrap, skip_current, error);
-    } else if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
-        attempted = true;
-        found = native_playlist_editor_screen_search_active(
-            native_c_screen_playlist_editor(), pattern, pattern_len,
-            Config.regex_type, forward, wrap, skip_current, error);
-    } else if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)) {
-        attempted = true;
-        found = native_search_engine_screen_search(
-            native_c_screen_search_engine(), pattern, pattern_len, forward,
-            wrap, skip_current, error);
-    } else if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
-        attempted = true;
-        found = native_media_library_screen_search(
-            native_c_screen_media_library(), pattern, pattern_len, forward,
-            wrap, skip_current, error);
-    } else if (current_screen_is(NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER)) {
-        attempted = true;
-        found = native_selected_items_adder_screen_search(
-            native_c_screen_selected_items_adder(), pattern, pattern_len,
-            Config.regex_type, forward, wrap, skip_current, error);
+    /*
+     * Legacy-backed screens render their C++ menu. Search that menu before
+     * falling back to a native-only screen.
+     */
+    found = current_screen_search_legacy(
+        direction, pattern, pattern_len, wrap, skip_current,
+        &attempted, error);
+    if (!attempted) {
+        if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST)) {
+            attempted = true;
+            found = native_playlist_screen_search(
+                native_c_screen_playlist(), pattern, pattern_len, forward,
+                wrap, skip_current, error);
+        } else if (current_screen_is(NC_SCREEN_TYPE_BROWSER)) {
+            attempted = true;
+            found = native_browser_screen_search(
+                native_c_screen_browser(), pattern, pattern_len, forward,
+                wrap, skip_current, error);
+        } else if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
+            attempted = true;
+            found = native_playlist_editor_screen_search_active(
+                native_c_screen_playlist_editor(), pattern, pattern_len,
+                Config.regex_type, forward, wrap, skip_current, error);
+        } else if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)) {
+            attempted = true;
+            found = native_search_engine_screen_search(
+                native_c_screen_search_engine(), pattern, pattern_len,
+                forward, wrap, skip_current, error);
+        } else if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
+            attempted = true;
+            found = native_media_library_screen_search(
+                native_c_screen_media_library(), pattern, pattern_len,
+                forward, wrap, skip_current, error);
+        } else if (current_screen_is(
+                       NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER)) {
+            attempted = true;
+            found = native_selected_items_adder_screen_search(
+                native_c_screen_selected_items_adder(), pattern,
+                pattern_len, Config.regex_type, forward, wrap,
+                skip_current, error);
 #if defined(HAVE_TAGLIB_H)
-    } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
-        attempted = true;
-        found = native_tag_editor_screen_search(
-            native_c_screen_tag_editor(), pattern, pattern_len, forward,
-            wrap, skip_current, error);
+        } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
+            attempted = true;
+            found = native_tag_editor_screen_search(
+                native_c_screen_tag_editor(), pattern, pattern_len,
+                forward, wrap, skip_current, error);
 #endif
+        }
     }
 
     if (attempted && !current_screen_search_error(error)) {

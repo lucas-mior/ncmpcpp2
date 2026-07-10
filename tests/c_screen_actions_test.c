@@ -1,0 +1,146 @@
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "app_controller.h"
+#include "screen_actions.h"
+#include "settings.h"
+#include "ui_state.h"
+#include "c/ncm_base.h"
+#include "c/ncm_error.h"
+#include "screens/native_c_screens.h"
+
+#define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
+
+typedef struct LegacySearchFixture {
+    int32 search_calls;
+    int32 clear_calls;
+    enum SearchDirection direction;
+    NcmBuffer pattern;
+    bool wrap;
+    bool skip_current;
+} LegacySearchFixture;
+
+static LegacySearchFixture fixture;
+
+static bool current_screen_is_browser(void);
+static void test_legacy_screen_search_bridge(void);
+static void test_native_screen_search_fallback(void);
+
+bool
+actions_legacy_runtime_search_current_screen(
+    enum SearchDirection direction, char *pattern, int32 pattern_len,
+    bool wrap, bool skip_current, bool *handled, NcmError *error) {
+    (void)error;
+    if (!current_screen_is_browser()) {
+        *handled = false;
+        return false;
+    }
+
+    fixture.search_calls += 1;
+    fixture.direction = direction;
+    fixture.wrap = wrap;
+    fixture.skip_current = skip_current;
+    ncm_buffer_set(&fixture.pattern, pattern, pattern_len);
+    *handled = true;
+    return true;
+}
+
+void
+actions_legacy_runtime_clear_current_search(void) {
+    if (current_screen_is_browser()) {
+        fixture.clear_calls += 1;
+    }
+    return;
+}
+
+int
+main(void) {
+    ncm_buffer_init(&fixture.pattern);
+    test_legacy_screen_search_bridge();
+    test_native_screen_search_fallback();
+    ncm_buffer_destroy(&fixture.pattern);
+    exit(EXIT_SUCCESS);
+}
+
+static bool
+current_screen_is_browser(void) {
+    NcScreen *screen;
+
+    screen = app_controller_current_screen();
+    if (screen == NULL) {
+        return false;
+    }
+    return nc_screen_type(screen) == NC_SCREEN_TYPE_BROWSER;
+}
+
+static void
+test_legacy_screen_search_bridge(void) {
+    NcmStringView constraint;
+    NcmError error;
+
+    app_controller_init();
+    ui_state_set_screen_size(100, 30);
+    ui_state_set_main_geometry(2, 26);
+    native_c_screen_browser_register();
+    assert(app_controller_switch_to_screen(
+        native_c_screen_browser_native()));
+
+    ncm_error_clear(&error);
+    assert(current_screen_search(
+        NCM_SEARCH_DIRECTION_BACKWARD, LIT_ARGS("needle"),
+        true, true, &error));
+    assert(!ncm_error_is_set(&error));
+    assert(fixture.search_calls == 1);
+    assert(fixture.direction == NCM_SEARCH_DIRECTION_BACKWARD);
+    assert(fixture.wrap);
+    assert(fixture.skip_current);
+    assert(ncm_string_equal(fixture.pattern.data,
+                            fixture.pattern.len,
+                            LIT_ARGS("needle")));
+
+    constraint = current_screen_current_search_constraint();
+    assert(ncm_string_equal(constraint.data, constraint.len,
+                            LIT_ARGS("needle")));
+
+    current_screen_clear_search_constraint();
+    assert(fixture.clear_calls == 1);
+    constraint = current_screen_current_search_constraint();
+    assert(constraint.len == 0);
+    return;
+}
+
+static void
+test_native_screen_search_fallback(void) {
+    NativeMediaLibraryScreen *library;
+    NcMenu *menu;
+    NcmError error;
+
+    app_controller_init();
+    Config.media_lib_primary_tag = MPD_TAG_ARTIST;
+    Config.regex_type = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
+    library = native_c_screen_media_library();
+    native_media_library_screen_clear(library);
+    assert(native_media_library_screen_set_mode(
+        library, NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS));
+    assert(native_media_library_screen_set_active_column(
+        library, NATIVE_MEDIA_LIBRARY_COLUMN_TAGS));
+    assert(native_media_library_screen_add_tag(
+        library, LIT_ARGS("Alpha"), 0));
+    assert(native_media_library_screen_add_tag(
+        library, LIT_ARGS("Needle"), 0));
+    native_c_screen_media_library_register();
+    assert(app_controller_switch_to_screen(
+        native_c_screen_media_library_native()));
+
+    menu = native_media_library_screen_active_menu(library);
+    assert(nc_menu_highlight(menu) == 0);
+    ncm_error_clear(&error);
+    assert(current_screen_search(
+        NCM_SEARCH_DIRECTION_FORWARD, LIT_ARGS("Needle"),
+        true, false, &error));
+    assert(!ncm_error_is_set(&error));
+    assert(nc_menu_highlight(menu) == 1);
+    assert(fixture.search_calls == 1);
+    return;
+}
