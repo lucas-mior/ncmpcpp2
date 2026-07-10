@@ -55,16 +55,8 @@ current_screen_filter_buffer(void) {
         return &native_c_screen_search_engine()->filter_constraint;
     }
     if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
-        NativeMediaLibraryScreen *screen;
-
-        screen = native_c_screen_media_library();
-        if (screen->active_column == NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS) {
-            return &screen->album_filter_constraint;
-        }
-        if (screen->active_column == NATIVE_MEDIA_LIBRARY_COLUMN_SONGS) {
-            return &screen->song_filter_constraint;
-        }
-        return &screen->tag_filter_constraint;
+        return native_media_library_screen_active_filter_constraint(
+            native_c_screen_media_library());
     }
     return NULL;
 }
@@ -90,16 +82,8 @@ current_screen_search_buffer(void) {
         return &native_c_screen_search_engine()->search_constraint;
     }
     if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
-        NativeMediaLibraryScreen *screen;
-
-        screen = native_c_screen_media_library();
-        if (screen->active_column == NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS) {
-            return &screen->album_search_constraint;
-        }
-        if (screen->active_column == NATIVE_MEDIA_LIBRARY_COLUMN_SONGS) {
-            return &screen->song_search_constraint;
-        }
-        return &screen->tag_search_constraint;
+        return native_media_library_screen_active_search_constraint(
+            native_c_screen_media_library());
     }
     if (current_screen_is(NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER)) {
         return &native_c_screen_selected_items_adder()->search_constraint;
@@ -148,6 +132,11 @@ static void
 current_screen_clear_current_search_constraint(void) {
     NcmBuffer *buffer;
 
+    if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
+        native_media_library_screen_clear_search(
+            native_c_screen_media_library());
+        return;
+    }
     buffer = current_screen_search_buffer();
     if (buffer != NULL) {
         ncm_buffer_clear(buffer);

@@ -3151,7 +3151,7 @@ action_runtime_jump_to_playing_song(void) {
                                                   &song, &error);
         if (success) {
             success = native_media_library_screen_locate_song(
-                native_c_screen_media_library(), &song);
+                native_c_screen_media_library(), &song, &error);
         }
         ncm_song_destroy(&song);
         if (!success) {
@@ -3246,12 +3246,7 @@ action_runtime_toggle_media_library_sort_mode(void) {
     if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
         return false;
     }
-    Config.media_library_sort_by_mtime = !Config.media_library_sort_by_mtime;
-    native_media_library_screen_request_tags_update(
-        native_c_screen_media_library());
-    native_media_library_screen_request_albums_update(
-        native_c_screen_media_library());
-    native_media_library_screen_request_songs_update(
+    (void)native_media_library_screen_toggle_sort_mode(
         native_c_screen_media_library());
     return true;
 }
@@ -3264,11 +3259,7 @@ action_runtime_toggle_media_library_columns(void) {
         return false;
     }
     screen = native_c_screen_media_library();
-    if (native_media_library_screen_columns(screen) == 2) {
-        native_media_library_screen_set_columns(screen, 3);
-    } else {
-        native_media_library_screen_set_columns(screen, 2);
-    }
+    (void)native_media_library_screen_toggle_mode(screen);
     app_controller_request_current_screen_resize();
     return true;
 }
