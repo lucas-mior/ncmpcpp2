@@ -58,6 +58,15 @@ nc_screen_scroll(NcScreen *screen, enum NcScroll where) {
     if (screen->callbacks.scroll) {
         screen->callbacks.scroll(screen, where);
     }
+    nc_screen_finish_list_change(screen);
+    return;
+}
+
+void
+nc_screen_finish_list_change(NcScreen *screen) {
+    if (screen->callbacks.list_change_finished) {
+        screen->callbacks.list_change_finished(screen);
+    }
     return;
 }
 
