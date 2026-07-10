@@ -412,9 +412,10 @@ sort_dialog_refresh_callback(NcScreen *screen) {
 
     dialog = sort_dialog_from_screen(screen);
     menu = nc_editor_sort_menu_base(&dialog->rows);
-    nc_menu_prepare_refresh(menu, dialog->height, NULL, NULL);
+    nc_menu_prepare_refresh(menu, dialog->window.height, NULL, NULL);
     nc_window_display(&dialog->window);
-    nc_menu_refresh(menu, &dialog->window, dialog->width, dialog->height);
+    nc_menu_refresh(menu, &dialog->window, dialog->window.width,
+                    dialog->window.height);
     return;
 }
 
@@ -424,7 +425,7 @@ sort_dialog_scroll_callback(NcScreen *screen, enum NcScroll where) {
 
     dialog = sort_dialog_from_screen(screen);
     nc_menu_scroll_selectable(nc_editor_sort_menu_base(&dialog->rows),
-                              dialog->height, where);
+                              dialog->window.height, where);
     return;
 }
 

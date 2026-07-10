@@ -33,6 +33,8 @@ static struct TestState {
     bool mpd_connected;
     char drawn_label[256];
     int32 draw_count;
+    int64 refresh_width;
+    int64 refresh_height;
 } test_state;
 
 static void test_state_reset(void);
@@ -43,6 +45,8 @@ static void test_clear_selection(NativePlaylistScreen *playlist);
 static void test_dialog_highlight_configuration(
     NativeSortPlaylistDialog *dialog);
 static void test_dialog_rows_render_labels(
+    NativeSortPlaylistDialog *dialog);
+static void test_dialog_uses_content_dimensions(
     NativeSortPlaylistDialog *dialog);
 static void test_dialog_entry_and_cancel(NativePlaylistScreen *playlist,
                                          NativeSortPlaylistDialog *dialog,
@@ -109,14 +113,24 @@ __wrap_nc_window_init(NcWindow *window, int64 start_x, int64 start_y,
                       int64 width, int64 height, char *title,
                       int32 title_len, NcColor color, NcBorder border) {
     (void)title;
-    (void)title_len;
     (void)color;
-    (void)border;
     *window = (NcWindow){0};
     window->start_x = start_x;
     window->start_y = start_y;
     window->width = width;
     window->height = height;
+    window->title_len = title_len;
+    window->border = border;
+    if (window->border.enabled) {
+        window->start_x += 1;
+        window->start_y += 1;
+        window->width -= 2;
+        window->height -= 2;
+    }
+    if (window->title_len > 0) {
+        window->start_y += 2;
+        window->height -= 2;
+    }
     return;
 }
 
@@ -130,6 +144,13 @@ void
 __wrap_nc_window_resize(NcWindow *window, int64 width, int64 height) {
     window->width = width;
     window->height = height;
+    if (window->border.enabled) {
+        window->width -= 2;
+        window->height -= 2;
+    }
+    if (window->title_len > 0) {
+        window->height -= 2;
+    }
     return;
 }
 
@@ -172,8 +193,8 @@ __wrap_nc_menu_refresh(NcMenu *menu, NcWindow *window,
                        int64 width, int64 height) {
     (void)menu;
     (void)window;
-    (void)width;
-    (void)height;
+    test_state.refresh_width = width;
+    test_state.refresh_height = height;
     return;
 }
 
@@ -209,6 +230,7 @@ main(void) {
                             0, 100, 2, 30);
     color.is_default = true;
     border.color = color;
+    border.enabled = true;
     nc_buffer_init(&Config.current_item_prefix);
     nc_buffer_init(&Config.current_item_suffix);
     nc_buffer_append_cstring(&Config.current_item_prefix, (char *)">");
@@ -223,6 +245,7 @@ main(void) {
         native_sort_playlist_dialog_base(&dialog)));
     test_dialog_highlight_configuration(&dialog);
     test_dialog_rows_render_labels(&dialog);
+    test_dialog_uses_content_dimensions(&dialog);
 
     test_add_song(&playlist, STRLIT_ARGS("zero.flac"), 10);
     test_add_song(&playlist, STRLIT_ARGS("one.flac"), 11);
@@ -330,6 +353,28 @@ test_dialog_rows_render_labels(NativeSortPlaylistDialog *dialog) {
         menu->display_callbacks.user);
     assert(test_state.draw_count == 2);
     assert(strcmp(test_state.drawn_label, "Sort") == 0);
+    return;
+}
+
+static void
+test_dialog_uses_content_dimensions(NativeSortPlaylistDialog *dialog) {
+    NcMenu *menu;
+
+    test_state_reset();
+    menu = nc_editor_sort_menu_base(
+        native_sort_playlist_dialog_menu(dialog));
+    nc_screen_refresh(native_sort_playlist_dialog_base(dialog));
+    assert(test_state.refresh_width == dialog->window.width);
+    assert(test_state.refresh_height == dialog->window.height);
+    assert(dialog->window.height == 13);
+
+    nc_menu_reset(menu);
+    for (int32 i = 0; i < 12; i += 1) {
+        nc_screen_scroll(native_sort_playlist_dialog_base(dialog),
+                         NC_SCROLL_DOWN);
+    }
+    assert(nc_menu_highlight(menu) == nc_menu_item_count(menu) - 1);
+    assert(nc_menu_beginning(menu) > 0);
     return;
 }
 
