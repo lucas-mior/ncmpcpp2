@@ -3513,13 +3513,28 @@ void findItem(const SearchDirection direction)
 
 void listsChangeFinisher()
 {
-	if (screenLegacyCurrent() == myPlaylistEditor
+	if (screenLegacyCurrent() == myLibrary
+	||  screenLegacyCurrent() == myPlaylistEditor
 #	ifdef HAVE_TAGLIB_H
 	||  screenLegacyCurrent() == myTagEditor
 #	endif // HAVE_TAGLIB_H
 	   )
 	{
-		if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists))
+		if (screenLegacyCurrent()->activeWindow() == &myLibrary->Tags)
+		{
+			myLibrary->Albums.clear();
+			myLibrary->Albums.refresh();
+			myLibrary->Songs.clear();
+			myLibrary->Songs.refresh();
+			myLibrary->updateTimer();
+		}
+		else if (screenLegacyCurrent()->activeWindow() == &myLibrary->Albums)
+		{
+			myLibrary->Songs.clear();
+			myLibrary->Songs.refresh();
+			myLibrary->updateTimer();
+		}
+		else if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists))
 		{
 			myPlaylistEditor->Content.clear();
 			myPlaylistEditor->Content.refresh();
