@@ -244,6 +244,8 @@ void native_media_library_screen_request_songs_update(
     NativeMediaLibraryScreen *screen);
 void native_media_library_screen_clear_update_requests(
     NativeMediaLibraryScreen *screen);
+bool native_media_library_screen_update(
+    NativeMediaLibraryScreen *screen, NcmError *error);
 
 bool native_media_library_screen_list_tags(
     NativeMediaLibraryScreen *screen, enum mpd_tag_type tag_type,
