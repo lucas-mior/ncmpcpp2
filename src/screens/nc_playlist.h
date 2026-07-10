@@ -165,6 +165,9 @@ bool native_playlist_screen_locate_position(NativePlaylistScreen *screen,
                                             uint32 position);
 bool native_playlist_screen_selected_songs(NativePlaylistScreen *screen,
                                            NcmSongArray *songs);
+bool native_playlist_screen_copy_sort_range(
+    NativePlaylistScreen *screen, NcmSongArray *songs,
+    uint32 *start_position, NcmError *error);
 bool native_playlist_screen_select_current_if_none_selected(
     NativePlaylistScreen *screen);
 bool native_playlist_screen_apply_filter(NativePlaylistScreen *screen,

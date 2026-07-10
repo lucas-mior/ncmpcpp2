@@ -1526,8 +1526,7 @@ action_runtime_switch_to_screen(enum ScreenType type) {
         return true;
     case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
         native_c_screen_sort_playlist_dialog_register();
-        native_c_screen_sort_playlist_dialog_switch_to();
-        return true;
+        return native_c_screen_sort_playlist_dialog_switch_to();
 #if defined(HAVE_TAGLIB_H)
     case NCM_SCREEN_TYPE_TAG_EDITOR:
         native_c_screen_tag_editor_register();
