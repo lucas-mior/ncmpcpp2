@@ -3647,10 +3647,17 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_MOUSE_EVENT:
         return Config.mouse_support;
     case NCM_ACTION_SHOW_MEDIA_LIBRARY:
-        return !action_runtime_current_screen_is(
-                   NCM_SCREEN_TYPE_MEDIA_LIBRARY)
-            && !action_runtime_current_screen_is(
-                NCM_SCREEN_TYPE_TINY_TAG_EDITOR);
+        if (action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
+            return false;
+        }
+#if defined(HAVE_TAGLIB_H)
+        if (action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+            return false;
+        }
+#endif
+        return true;
     case NCM_ACTION_JUMP_TO_PARENT_DIRECTORY:
         return action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER);
     case NCM_ACTION_PREVIOUS_COLUMN:

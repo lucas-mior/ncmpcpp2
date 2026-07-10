@@ -3888,11 +3888,8 @@ bool actions_legacy_runtime_exit_requested(void)
 /*
  * Secondary screen compatibility implementations.
  *
- * The media-library facade is no longer instantiated or registered.  It stays
- * in this translation unit only until the final removal step deletes its C++
- * implementation.  The other facades remain needed by legacy actions.
+ * These facades remain needed by legacy actions.
  */
-#include "screens/media_library.cpp"
 #include "screens/sel_items_adder.cpp"
 #include "screens/sort_playlist.cpp"
 #include "screens/visualizer.cpp"
