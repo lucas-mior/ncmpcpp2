@@ -25,20 +25,6 @@ Main goal: remove C++ from the project while preserving all current behavior.
 
 ## `./src/screens/media_library.cpp`
 
-4. **Port the exact MPD query pipeline for every mode.** In three-column name
-   sort, load primary tags with `ncm_mpd_client_get_list()`; in three-column
-   mtime sort, recursively load the database and aggregate all primary-tag
-   values; and load albums by an exact search for the highlighted tag. In
-   two-column and album-only modes, recursively load the database and aggregate
-   `(tag, album, date)` or `(empty tag, album, date)` keys, preserving the
-   legacy rule that album-only aggregation still iterates songs through their
-   primary-tag values. Load songs with exact primary-tag, album, and optional
-   date constraints, omitting album/date for the all-tracks row and omitting
-   the primary-tag constraint only in album-only mode. Convert the C++
-   exception fallbacks into explicit C error paths: failed recursive two-column
-   loading advances to the next column mode, failed mtime tag loading switches
-   back to name sorting, request flags remain pending, and the original MPD
-   error is reported without retaining partial rows.
 5. **Port the delayed update and dependent-column state machine.** Make
    `native_library_update()` process only the requested or due level, rebuild
    menus through temporary arrays, swap them in only after successful fetches,
