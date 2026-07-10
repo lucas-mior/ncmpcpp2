@@ -132,6 +132,12 @@ cbase_free(void *pointer, int64 size) {
 }
 
 void
+cbase_memset(void *buffer, int value, int64 n) {
+    memset64(buffer, value, n);
+    return;
+}
+
+void
 cbase_memcpy(void *dest, void *source, int64 n) {
     memcpy64(dest, source, n);
     return;
