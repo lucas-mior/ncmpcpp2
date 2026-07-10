@@ -14,6 +14,7 @@
 #include "c/ncm_fs.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_option_parser.h"
+#include "c/ncm_path.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
 
@@ -61,7 +62,6 @@ static void require_parse_failure(int32 argc, char **argv,
 static void make_path(NcmBuffer *path, char *left, char *right);
 static void write_file(char *path, int32 path_len, char *data,
                        int32 data_len);
-static char *copy_string(char *string, int32 string_len);
 static void test_option_parser(void);
 static void test_expand_home(void);
 static void test_command_line_short_options(void);
@@ -231,16 +231,6 @@ write_file(char *path, int32 path_len, char *data, int32 data_len) {
     REQUIRE(fclose(file) == 0);
     ncm_buffer_destroy(&path_buffer);
     return;
-}
-
-static char *
-copy_string(char *string, int32 string_len) {
-    char *copy;
-
-    copy = ncm_malloc(string_len + 1);
-    ncm_memcpy(copy, string, string_len);
-    copy[string_len] = '\0';
-    return copy;
 }
 
 static void
@@ -524,44 +514,56 @@ static void
 test_expand_home(void) {
     char template[] = "/tmp/ncmpcpp-home-XXXXXX";
     char *home;
-    char *path;
-    int32 path_len;
+    NcmBuffer path;
+    NcmBuffer expected;
     NcmError error;
 
     home = mkdtemp(template);
     REQUIRE(home != NULL);
     REQUIRE(setenv("HOME", home, 1) == 0);
 
+    ncm_buffer_init(&path);
+    ncm_buffer_init(&expected);
+    ncm_buffer_append(&path, LIT_ARGS("~/.ncmpcpp/config"));
     ncm_error_clear(&error);
-    path = copy_string(LIT_ARGS("~/.ncmpcpp/config"));
-    path_len = STRLIT_LEN("~/.ncmpcpp/config");
-    REQUIRE(expand_home(&path, &path_len, &error));
-    REQUIRE(ncm_string_starts_with(path, path_len,
+    REQUIRE(ncm_path_expand_home(&path, &error));
+    REQUIRE(ncm_string_starts_with(path.data, path.len,
                                    home, (int32)strlen(home)));
-    ncm_free(path, path_len + 1);
+
+    ncm_buffer_clear(&path);
+    ncm_buffer_append(&path, LIT_ARGS("user@~/music"));
+    ncm_error_clear(&error);
+    REQUIRE(ncm_path_expand_home(&path, &error));
+    ncm_buffer_append(&expected, LIT_ARGS("user@"));
+    ncm_buffer_append(&expected, home, (int32)strlen(home));
+    ncm_buffer_append(&expected, LIT_ARGS("/music"));
+    REQUIRE(ncm_string_equal(path.data, path.len,
+                             expected.data, expected.len));
 
     REQUIRE(unsetenv("HOME") == 0);
+    ncm_buffer_clear(&path);
+    ncm_buffer_append(&path, LIT_ARGS("/tmp/config"));
     ncm_error_clear(&error);
-    path = copy_string(LIT_ARGS("/tmp/config"));
-    path_len = STRLIT_LEN("/tmp/config");
-    REQUIRE(expand_home(&path, &path_len, &error));
-    REQUIRE_STRING(path, path_len, "/tmp/config");
-    ncm_free(path, path_len + 1);
+    REQUIRE(ncm_path_expand_home(&path, &error));
+    REQUIRE_STRING(path.data, path.len, "/tmp/config");
 
+    ncm_buffer_clear(&path);
+    ncm_buffer_append(&path, LIT_ARGS("~/.ncmpcpp/config"));
     ncm_error_clear(&error);
-    path = copy_string(LIT_ARGS("~/.ncmpcpp/config"));
-    path_len = STRLIT_LEN("~/.ncmpcpp/config");
-    REQUIRE(!expand_home(&path, &path_len, &error));
+    REQUIRE(!ncm_path_expand_home(&path, &error));
     REQUIRE_CONTAINS(error.message, "HOME environment variable is not set");
-    ncm_free(path, path_len + 1);
 
     REQUIRE(setenv("HOME", "", 1) == 0);
     ncm_error_clear(&error);
-    path = copy_string(LIT_ARGS("~/.ncmpcpp/config"));
-    path_len = STRLIT_LEN("~/.ncmpcpp/config");
-    REQUIRE(!expand_home(&path, &path_len, &error));
+    REQUIRE(!ncm_path_expand_home(&path, &error));
     REQUIRE_CONTAINS(error.message, "HOME environment variable is not set");
-    ncm_free(path, path_len + 1);
+
+    ncm_error_clear(&error);
+    REQUIRE(!ncm_path_expand_home(NULL, &error));
+    REQUIRE_CONTAINS(error.message, "missing path buffer");
+
+    ncm_buffer_destroy(&expected);
+    ncm_buffer_destroy(&path);
     return;
 }
 

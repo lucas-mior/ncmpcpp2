@@ -12,7 +12,6 @@
 
 NCM_EXTERN_C_BEGIN
 
-bool actions_legacy_runtime_configure(int32 argc, char **argv);
 void actions_legacy_runtime_init_readline(void);
 
 void *actions_legacy_runtime_window_create(int64 start_x,

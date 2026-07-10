@@ -14,7 +14,6 @@
 #include "app_legacy_bridge.h"
 #include "charset.h"
 #include "config.h"
-#include "configuration_legacy.h"
 #include "display.h"
 #include "app_controller.h"
 #include "global.h"
@@ -3677,11 +3676,6 @@ void listsChangeFinisher()
 
 
 extern "C" {
-
-bool actions_legacy_runtime_configure(int32 argc, char **argv)
-{
-	return configure(argc, argv);
-}
 
 void actions_legacy_runtime_init_readline(void)
 {

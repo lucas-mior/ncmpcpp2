@@ -11,7 +11,6 @@
 
 NCM_EXTERN_C_BEGIN
 
-bool ncmpcpp_legacy_configure(int32 argc, char **argv);
 void ncmpcpp_legacy_init_screen(bool enable_colors, bool enable_mouse);
 void ncmpcpp_legacy_destroy_screen(void);
 

@@ -40,10 +40,10 @@ bool ncm_configuration_options_parse(NcmConfigurationOptions *options,
 bool ncm_configuration_options_apply(NcmConfigurationOptions *options,
                                      NcmError *error);
 
-bool expand_home(char **path, int32 *path_len, NcmError *error);
 bool configuration_discover_default_paths(NcmBufferArray *config_paths,
                                           NcmBufferArray *bindings_paths,
                                           NcmError *error);
+bool configuration_is_quiet(void);
 bool configure(int32 argc, char **argv);
 
 #if defined(__cplusplus)

@@ -10,6 +10,7 @@
 #include "app_legacy_bridge.h"
 #include "bindings.h"
 #include "configuration.h"
+#include "configuration_legacy.h"
 #include "global.h"
 #include "settings.h"
 #include "title.h"
@@ -228,9 +229,13 @@ main(int argc, char **argv) {
     app_init_state();
     setlocale(LC_ALL, "");
 
-    if (!ncmpcpp_legacy_configure(argc, argv)) {
+    if (!configure(argc, argv)) {
         app_destroy_state();
         exit(EXIT_SUCCESS);
+    }
+    if (!configuration_legacy_sync()) {
+        app_destroy_state();
+        exit(EXIT_FAILURE);
     }
 
     atexit(app_at_exit);

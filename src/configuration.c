@@ -11,6 +11,7 @@
 #include "c/ncm_format.h"
 #include "c/ncm_fs.h"
 #include "c/ncm_mpd_client.h"
+#include "c/ncm_path.h"
 #include "c/ncm_song.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
@@ -26,6 +27,7 @@
 #endif
 
 static char current_song_default_format[] = "{{{(%l) }{{%a - }%t}}|{%f}}";
+static bool configuration_quiet;
 
 
 static bool command_line_options_append_path(NcmBufferArray *paths,
@@ -40,7 +42,6 @@ static bool configuration_append_legacy_file(NcmBufferArray *paths,
                                              int32 filename_len);
 static bool configuration_copy_string(NcmBuffer *buffer, char *string,
                                       int32 string_len);
-static bool configuration_expand_buffer(NcmBuffer *buffer, NcmError *error);
 static bool configuration_require_value(int32 argc, char **argv, int32 *i,
                                         char *option, int32 option_len,
                                         char **value, int32 *value_len,
@@ -224,87 +225,6 @@ static bool
 configuration_copy_string(NcmBuffer *buffer, char *string, int32 string_len) {
     ncm_buffer_clear(buffer);
     ncm_buffer_append(buffer, string, string_len);
-    return true;
-}
-
-bool
-expand_home(char **path, int32 *path_len, NcmError *error) {
-    char *home;
-    char *old_path;
-    char *new_path;
-    int32 old_len;
-    int32 home_len;
-    int32 tilde;
-    int32 new_len;
-
-    if ((path == NULL) || (path_len == NULL)) {
-        ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing path expansion output"));
-        return false;
-    }
-    old_path = *path;
-    old_len = *path_len;
-    if (old_path == NULL) {
-        ncm_error_clear(error);
-        return true;
-    }
-
-    tilde = -1;
-    for (int32 i = 0; i < old_len; i += 1) {
-        if ((old_path[i] == '~') && ((i == 0) || (old_path[i - 1] == '@'))) {
-            tilde = i;
-            break;
-        }
-    }
-    if (tilde < 0) {
-        ncm_error_clear(error);
-        return true;
-    }
-
-    home = getenv("HOME");
-    if ((home == NULL) || (home[0] == '\0')) {
-        ncm_error_set(error, ENOENT,
-                      STRLIT_ARGS("HOME environment variable is not set"));
-        return false;
-    }
-
-    home_len = (int32)strlen(home);
-    new_len = old_len - 1 + home_len;
-    new_path = ncm_malloc(new_len + 1);
-    ncm_memcpy(new_path, old_path, tilde);
-    ncm_memcpy(new_path + tilde, home, home_len);
-    ncm_memcpy(new_path + tilde + home_len, old_path + tilde + 1,
-               old_len - tilde);
-
-    ncm_free(old_path, old_len + 1);
-    *path = new_path;
-    *path_len = new_len;
-    ncm_error_clear(error);
-    return true;
-}
-
-static bool
-configuration_expand_buffer(NcmBuffer *buffer, NcmError *error) {
-    char *path;
-    int32 path_len;
-
-    path = ncm_buffer_steal(buffer, &path_len, NULL);
-    if (path == NULL) {
-        path = ncm_malloc(1);
-        path[0] = '\0';
-        path_len = 0;
-    }
-    if (!expand_home(&path, &path_len, error)) {
-        if (path != NULL) {
-            ncm_free(path, path_len + 1);
-        }
-        ncm_buffer_init(buffer);
-        return false;
-    }
-
-    ncm_buffer_init(buffer);
-    ncm_buffer_append(buffer, path, path_len);
-    ncm_free(path, path_len + 1);
     return true;
 }
 
@@ -801,8 +721,7 @@ configuration_read_settings(NcmConfigurationOptions *options, NcmError *error) {
     bool result;
 
     for (int32 i = 0; i < options->config_paths.len; i += 1) {
-        if (!configuration_expand_buffer(&options->config_paths.items[i],
-                                         error)) {
+        if (!ncm_path_expand_home(&options->config_paths.items[i], error)) {
             return false;
         }
     }
@@ -837,7 +756,7 @@ configuration_read_bindings(NcmConfigurationOptions *options,
         NcmBuffer *path;
 
         path = &options->bindings_paths.items[i];
-        if (!configuration_expand_buffer(path, error)) {
+        if (!ncm_path_expand_home(path, error)) {
             return false;
         }
         if (!ncm_bindings_configuration_read(&Bindings, path->data,
@@ -1076,6 +995,11 @@ configuration_test_lyrics_fetchers(NcmError *error) {
     return ok;
 }
 
+bool
+configuration_is_quiet(void) {
+    return configuration_quiet;
+}
+
 static void
 configuration_print_error(char *context, NcmError *error) {
     if ((error != NULL) && (error->message[0] != '\0')) {
@@ -1092,6 +1016,7 @@ configure(int32 argc, char **argv) {
     NcmError error;
     bool result;
 
+    configuration_quiet = false;
     ncm_error_clear(&error);
     ncm_configuration_options_init(&options);
     if (!ncm_configuration_options_parse(&options, argc, argv, &error)) {
@@ -1100,6 +1025,8 @@ configure(int32 argc, char **argv) {
         ncm_configuration_options_destroy(&options);
         exit(EXIT_FAILURE);
     }
+
+    configuration_quiet = options.quiet;
 
     if (options.help) {
         configuration_print_usage(argv[0]);
