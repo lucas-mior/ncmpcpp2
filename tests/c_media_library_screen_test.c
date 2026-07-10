@@ -113,6 +113,8 @@ test_media_library_state_contract(void) {
     NativeMediaLibraryColumnState *albums_state;
     NcmTimePoint timer;
     NcmError error;
+    char *value;
+    int32 value_len;
     bool old_data_fetching_delay;
     bool old_sort_by_mtime;
     bool old_titles_visibility;
@@ -161,10 +163,19 @@ test_media_library_state_contract(void) {
     assert(native_media_library_screen_add_tag(
         &screen, LIT_ARGS("Artist B"), 0));
     assert(native_media_library_screen_current_tag(&screen));
+    assert(native_media_library_screen_current_primary_tag_value(
+        &screen, &value, &value_len));
+    assert(ncm_string_equal(value, value_len, LIT_ARGS("Artist A")));
     assert(native_media_library_screen_add_album(
         &screen, LIT_ARGS("Artist A"), LIT_ARGS("Album A"),
         LIT_ARGS("2026"), 0, false));
     assert(native_media_library_screen_current_album(&screen));
+    assert(native_media_library_screen_current_album_value(
+        &screen, &value, &value_len));
+    assert(ncm_string_equal(value, value_len, LIT_ARGS("Album A")));
+    assert(native_media_library_screen_current_album_date(
+        &screen, &value, &value_len));
+    assert(ncm_string_equal(value, value_len, LIT_ARGS("2026")));
     assert(native_media_library_screen_apply_filter(
         &screen, LIT_ARGS("Artist A"), &error));
     assert(tags_state->filter_enabled);
@@ -189,6 +200,24 @@ test_media_library_state_contract(void) {
     assert(!native_media_library_screen_sort_by_mtime(&screen));
     assert(native_media_library_screen_toggle_sort_mode(&screen));
     assert(native_media_library_screen_sort_by_mtime(&screen));
+
+    native_media_library_screen_clear_update_requests(&screen);
+    assert(native_media_library_screen_set_primary_tag_type(
+        &screen, MPD_TAG_GENRE));
+    assert(Config.media_lib_primary_tag == MPD_TAG_GENRE);
+    assert(nc_menu_all_item_count(
+        nc_media_library_tag_menu_base(&screen.tags)) == 0);
+    assert(nc_menu_all_item_count(
+        nc_media_library_album_menu_base(&screen.albums)) == 0);
+    assert(screen.tags_update_request);
+    assert(!screen.albums_update_request);
+    assert(!screen.songs_update_request);
+
+    native_media_library_screen_clear_update_requests(&screen);
+    native_media_library_screen_request_database_update(&screen);
+    assert(screen.tags_update_request);
+    assert(screen.albums_update_request);
+    assert(screen.songs_update_request);
 
     native_media_library_screen_destroy(&screen);
     Config.data_fetching_delay = old_data_fetching_delay;
@@ -1813,6 +1842,8 @@ static void
 test_media_library_mode_transitions(void) {
     NativeMediaLibraryScreen screen;
     NativeMediaLibraryHooks hooks = {0};
+    char *value;
+    int32 value_len;
 
     native_media_library_screen_init(&screen, hooks, 0, 90, 0, 24,
                                      nc_color_default(),
@@ -1837,9 +1868,17 @@ test_media_library_mode_transitions(void) {
            == NATIVE_MEDIA_LIBRARY_MODE_TWO_COLUMNS);
     assert(!native_media_library_screen_set_active_column(
         &screen, NATIVE_MEDIA_LIBRARY_COLUMN_TAGS));
-    assert(native_media_library_screen_toggle_mode(&screen)
+    assert(native_media_library_screen_add_album(
+        &screen, LIT_ARGS("Artist B"), LIT_ARGS("Album B"),
+        LIT_ARGS("2025"), 0, false));
+    assert(native_media_library_screen_current_primary_tag_value(
+        &screen, &value, &value_len));
+    assert(ncm_string_equal(value, value_len, LIT_ARGS("Artist B")));
+    assert(native_media_library_screen_toggle_columns_mode(&screen)
            == NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY);
-    assert(native_media_library_screen_toggle_mode(&screen)
+    assert(!native_media_library_screen_current_primary_tag_value(
+        &screen, &value, &value_len));
+    assert(native_media_library_screen_toggle_columns_mode(&screen)
            == NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS);
     assert(native_media_library_screen_set_active_column(
         &screen, NATIVE_MEDIA_LIBRARY_COLUMN_TAGS));
@@ -1927,6 +1966,7 @@ test_media_library_selected_songs(void) {
     NativeMediaLibraryHooks hooks;
     NcmMpdSongList search_results;
     NcmSong song;
+    NcmSong current_copy;
     NcmSongArray selected;
     NcmError error;
     bool old_split_by_date;
@@ -1939,6 +1979,7 @@ test_media_library_selected_songs(void) {
 
     ncm_mpd_song_list_init(&search_results);
     ncm_song_init(&song);
+    ncm_song_init(&current_copy);
     ncm_song_array_init(&selected);
     assert(test_append_pipeline_song(
         &search_results, LIT_ARGS("tag-b.flac"),
@@ -1983,6 +2024,17 @@ test_media_library_selected_songs(void) {
                             LIT_ARGS("Album A")));
     ncm_song_array_clear(&selected);
 
+    assert(native_media_library_screen_current_album_songs(
+        &screen, &selected, &error));
+    assert(selected.len == 2);
+    assert(fixture.search_songs_calls == 3);
+    assert(fixture.last_match_primary_tag);
+    assert(fixture.last_match_album);
+    assert(ncm_string_equal(fixture.last_primary_value,
+                            fixture.last_primary_value_len,
+                            LIT_ARGS("Artist A")));
+    ncm_song_array_clear(&selected);
+
     assert(native_media_library_screen_set_mode(
         &screen, NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY));
     assert(native_media_library_screen_add_album(
@@ -2007,6 +2059,10 @@ test_media_library_selected_songs(void) {
             native_media_library_screen_songs(&screen)),
         1));
     assert(native_media_library_screen_visible_song_count(&screen) == 2);
+    assert(native_media_library_screen_current_selected_song(
+        &screen, &current_copy));
+    assert(ncm_string_equal(current_copy.uri, current_copy.uri_len,
+                            LIT_ARGS("second.flac")));
     assert(native_media_library_screen_selected_songs_checked(
         &screen, &selected, &error));
     assert(selected.len == 1);
@@ -2020,6 +2076,7 @@ test_media_library_selected_songs(void) {
     assert(selected.len == 1);
 
     ncm_song_array_destroy(&selected);
+    ncm_song_destroy(&current_copy);
     ncm_song_destroy(&song);
     native_media_library_screen_destroy(&screen);
     ncm_mpd_song_list_destroy(&search_results);

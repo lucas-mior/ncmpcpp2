@@ -168,6 +168,12 @@ NcMediaLibraryTagRow *native_media_library_screen_current_tag(
     NativeMediaLibraryScreen *screen);
 NcMediaLibraryAlbumRow *native_media_library_screen_current_album(
     NativeMediaLibraryScreen *screen);
+bool native_media_library_screen_current_primary_tag_value(
+    NativeMediaLibraryScreen *screen, char **value, int32 *value_len);
+bool native_media_library_screen_current_album_value(
+    NativeMediaLibraryScreen *screen, char **album, int32 *album_len);
+bool native_media_library_screen_current_album_date(
+    NativeMediaLibraryScreen *screen, char **date, int32 *date_len);
 int64 native_media_library_screen_visible_song_count(
     NativeMediaLibraryScreen *screen);
 NcmSong *native_media_library_screen_visible_song_at(
@@ -205,6 +211,14 @@ bool native_media_library_screen_sort_by_mtime(
     NativeMediaLibraryScreen *screen);
 bool native_media_library_screen_toggle_sort_mode(
     NativeMediaLibraryScreen *screen);
+bool native_media_library_screen_set_primary_tag_type(
+    NativeMediaLibraryScreen *screen, enum mpd_tag_type tag_type);
+enum NativeMediaLibraryMode native_media_library_screen_toggle_columns_mode(
+    NativeMediaLibraryScreen *screen);
+void native_media_library_screen_request_database_update(
+    NativeMediaLibraryScreen *screen);
+bool native_media_library_screen_refresh_inactive_songs(
+    NativeMediaLibraryScreen *screen);
 
 bool native_media_library_screen_previous_column_available(
     NativeMediaLibraryScreen *screen);
@@ -228,9 +242,13 @@ bool native_media_library_screen_group_tags_from_songs(
     enum mpd_tag_type tag_type);
 bool native_media_library_screen_current_song(
     NativeMediaLibraryScreen *screen, NcmSong *song);
+bool native_media_library_screen_current_selected_song(
+    NativeMediaLibraryScreen *screen, NcmSong *song);
 bool native_media_library_screen_selected_songs(
     NativeMediaLibraryScreen *screen, NcmSongArray *songs);
 bool native_media_library_screen_selected_songs_checked(
+    NativeMediaLibraryScreen *screen, NcmSongArray *songs, NcmError *error);
+bool native_media_library_screen_current_album_songs(
     NativeMediaLibraryScreen *screen, NcmSongArray *songs, NcmError *error);
 bool native_media_library_screen_apply_filter(
     NativeMediaLibraryScreen *screen, char *pattern, int32 pattern_len,
