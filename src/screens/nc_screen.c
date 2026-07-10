@@ -71,6 +71,25 @@ nc_screen_finish_list_change(NcScreen *screen) {
 }
 
 bool
+nc_screen_can_run_current(NcScreen *screen) {
+    if (screen == NULL || screen->callbacks.run_current == NULL) {
+        return false;
+    }
+    if (screen->callbacks.can_run_current == NULL) {
+        return true;
+    }
+    return screen->callbacks.can_run_current(screen);
+}
+
+bool
+nc_screen_run_current(NcScreen *screen) {
+    if (!nc_screen_can_run_current(screen)) {
+        return false;
+    }
+    return screen->callbacks.run_current(screen);
+}
+
+bool
 nc_screen_is_active_window(NcScreen *screen, NcWindow *window) {
     if (screen == NULL || window == NULL) {
         return false;

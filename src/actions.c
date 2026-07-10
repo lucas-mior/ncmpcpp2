@@ -3696,6 +3696,9 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_REPLAY_SONG:
         return ncm_mpd_client_connected(&global_mpd)
             && (ncm_status_state_current_song_position() >= 0);
+    case NCM_ACTION_RUN_ACTION:
+        return nc_screen_can_run_current(
+            app_controller_current_screen());
     case NCM_ACTION_MOVE_SORT_ORDER_UP:
     case NCM_ACTION_MOVE_SORT_ORDER_DOWN:
         return action_runtime_current_screen_is(
@@ -3781,6 +3784,10 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             && action_runtime_current_screen_is(
                    NCM_SCREEN_TYPE_PLAYLIST_EDITOR);
     case NCM_ACTION_SORT_PLAYLIST:
+        return ncm_mpd_client_connected(&global_mpd)
+            && action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST)
+            && native_playlist_screen_has_sortable_range(
+                   native_c_screen_playlist());
     case NCM_ACTION_REVERSE_PLAYLIST:
         return ncm_mpd_client_connected(&global_mpd)
             && action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST)
@@ -3831,7 +3838,6 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_FIND_ITEM_FORWARD:
     case NCM_ACTION_FIND_ITEM_BACKWARD:
         return current_screen_allows_search();
-    case NCM_ACTION_RUN_ACTION:
     case NCM_ACTION_DELETE_BROWSER_ITEMS:
     case NCM_ACTION_SAVE_PLAYLIST:
     case NCM_ACTION_MOVE_SELECTED_ITEMS_TO:
@@ -3928,6 +3934,8 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         return action_runtime_delete_playlist_items();
     case NCM_ACTION_DELETE_STORED_PLAYLIST:
         return action_runtime_delete_stored_playlist_items();
+    case NCM_ACTION_RUN_ACTION:
+        return nc_screen_run_current(app_controller_current_screen());
     case NCM_ACTION_MOVE_SORT_ORDER_UP:
         return native_sort_playlist_dialog_move_current_up(
             native_c_screen_sort_playlist_dialog());
@@ -4179,7 +4187,6 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         return action_runtime_find_item(NCM_SEARCH_DIRECTION_FORWARD);
     case NCM_ACTION_FIND_ITEM_BACKWARD:
         return action_runtime_find_item(NCM_SEARCH_DIRECTION_BACKWARD);
-    case NCM_ACTION_RUN_ACTION:
     case NCM_ACTION_DELETE_BROWSER_ITEMS:
     case NCM_ACTION_SAVE_PLAYLIST:
     case NCM_ACTION_MOVE_SELECTED_ITEMS_TO:
