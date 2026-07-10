@@ -217,6 +217,8 @@ static bool native_library_songs_pending(
     NativeMediaLibraryScreen *screen);
 static bool native_library_fetch_delay_elapsed(
     NativeMediaLibraryScreen *screen);
+static bool native_library_update_due(
+    NativeMediaLibraryScreen *screen);
 static void native_library_set_conversion_error(NcmError *error,
                                                  char *message,
                                                  int32 message_len);
@@ -2852,6 +2854,25 @@ native_library_fetch_delay_elapsed(NativeMediaLibraryScreen *screen) {
            > screen->fetching_delay_ms;
 }
 
+static bool
+native_library_update_due(NativeMediaLibraryScreen *screen) {
+    if (native_library_tags_pending(screen)) {
+        return true;
+    }
+    if (native_library_albums_pending(screen)
+        && ((screen->mode != NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS)
+            || screen->albums_update_request
+            || native_library_fetch_delay_elapsed(screen))) {
+        return true;
+    }
+    if (native_library_songs_pending(screen)
+        && (screen->songs_update_request
+            || native_library_fetch_delay_elapsed(screen))) {
+        return true;
+    }
+    return false;
+}
+
 static void
 native_library_set_conversion_error(NcmError *error, char *message,
                                     int32 message_len) {
@@ -3789,13 +3810,20 @@ static void
 native_library_update(NcScreen *screen) {
     NativeMediaLibraryScreen *library;
     NcmError error;
+    bool update_due;
 
     library = native_library_from_screen(screen);
+    update_due = native_library_update_due(library);
     ncm_error_clear(&error);
-    if (!native_media_library_screen_update(library, &error)
-        && ncm_error_is_set(&error)) {
-        ncm_statusbar_print_cstring(
-            (int32)Config.message_delay_time, error.message);
+    if (!native_media_library_screen_update(library, &error)) {
+        if (ncm_error_is_set(&error)) {
+            ncm_statusbar_print_cstring(
+                (int32)Config.message_delay_time, error.message);
+        }
+        return;
+    }
+    if (update_due) {
+        native_library_refresh(screen);
     }
     return;
 }
