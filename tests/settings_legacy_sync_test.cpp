@@ -5,9 +5,9 @@
 #include <string>
 
 #include "c/ncm_base.h"
-#include "configuration_legacy.h"
 #include "settings.h"
 #include "settings_legacy.h"
+#include "settings_legacy_runtime.h"
 #include "song.h"
 
 #undef Config
@@ -666,7 +666,8 @@ void verifyGlobalSyncWrapper()
 	          &::Config.ncmpcpp_directory_len,
 	          &::Config.ncmpcpp_directory_cap,
 	          "global-ncmpcpp-directory");
-	check(configuration_legacy_sync(), "global compatibility sync");
+	check(settings_legacy_runtime_sync_configuration(),
+	      "global compatibility sync");
 	check(ConfigLegacy.ncmpcpp_directory == "global-ncmpcpp-directory",
 	      "global compatibility source");
 	configuration_destroy(&::Config);
