@@ -3241,34 +3241,37 @@ action_runtime_toggle_browser_sort_mode(void) {
 
 static bool
 action_runtime_toggle_library_tag_type(void) {
+    NativeMediaLibraryScreen *screen;
+    enum mpd_tag_type tag_type;
+
     if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
         return false;
     }
 
     switch (Config.media_lib_primary_tag) {
     case MPD_TAG_ARTIST:
-        Config.media_lib_primary_tag = MPD_TAG_ALBUM_ARTIST;
+        tag_type = MPD_TAG_ALBUM_ARTIST;
         break;
     case MPD_TAG_ALBUM_ARTIST:
-        Config.media_lib_primary_tag = MPD_TAG_DATE;
+        tag_type = MPD_TAG_DATE;
         break;
     case MPD_TAG_DATE:
-        Config.media_lib_primary_tag = MPD_TAG_GENRE;
+        tag_type = MPD_TAG_GENRE;
         break;
     case MPD_TAG_GENRE:
-        Config.media_lib_primary_tag = MPD_TAG_COMPOSER;
+        tag_type = MPD_TAG_COMPOSER;
         break;
     case MPD_TAG_COMPOSER:
-        Config.media_lib_primary_tag = MPD_TAG_PERFORMER;
+        tag_type = MPD_TAG_PERFORMER;
         break;
     default:
-        Config.media_lib_primary_tag = MPD_TAG_ARTIST;
+        tag_type = MPD_TAG_ARTIST;
         break;
     }
 
-    native_media_library_screen_request_tags_update(
-        native_c_screen_media_library());
-    return true;
+    screen = native_c_screen_media_library();
+    return native_media_library_screen_set_primary_tag_type(screen,
+                                                             tag_type);
 }
 
 static bool
