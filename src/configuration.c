@@ -34,12 +34,10 @@ static bool configuration_append_buffer_path(NcmBufferArray *paths,
                                              NcmBuffer *path);
 static bool configuration_append_default_file(NcmBufferArray *paths,
                                               char *filename,
-                                              int32 filename_len,
-                                              NcmError *error);
+                                              int32 filename_len);
 static bool configuration_append_legacy_file(NcmBufferArray *paths,
                                              char *filename,
-                                             int32 filename_len,
-                                             NcmError *error);
+                                             int32 filename_len);
 static bool configuration_copy_string(NcmBuffer *buffer, char *string,
                                       int32 string_len);
 static bool configuration_expand_buffer(NcmBuffer *buffer, NcmError *error);
@@ -61,8 +59,7 @@ static bool configuration_parse_short_option(NcmConfigurationOptions *options,
 static bool configuration_parse_long_option(NcmConfigurationOptions *options,
                                             int32 argc, char **argv,
                                             int32 *i, NcmError *error);
-static void configuration_print_usage(char *program,
-                                      NcmConfigurationOptions *options);
+static void configuration_print_usage(char *program);
 static void configuration_print_version(void);
 static bool configuration_make_string_views(NcmStringViewArray *views,
                                             NcmBufferArray *buffers);
@@ -140,7 +137,8 @@ configuration_append_buffer_path(NcmBufferArray *paths, NcmBuffer *path) {
 
 static bool
 configuration_append_default_file(NcmBufferArray *paths, char *filename,
-                                  int32 filename_len, NcmError *error) {
+                                  int32 filename_len) {
+    char *xdg_config_home;
     NcmBuffer directory;
     NcmBuffer path;
     bool result;
@@ -148,11 +146,15 @@ configuration_append_default_file(NcmBufferArray *paths, char *filename,
     ncm_buffer_init(&directory);
     ncm_buffer_init(&path);
 
-    result = ncm_fs_user_config_dir(&directory, STRLIT_ARGS("ncmpcpp"),
-                                    error);
-    if (result && !ncm_fs_exists(directory.data, directory.len)) {
-        result = ncm_fs_mkdir_all(directory.data, directory.len, error);
+    xdg_config_home = getenv("XDG_CONFIG_HOME");
+    if ((xdg_config_home != NULL) && (xdg_config_home[0] != '\0')) {
+        ncm_buffer_append(&directory, xdg_config_home,
+                          (int32)strlen(xdg_config_home));
+    } else {
+        ncm_buffer_append(&directory, STRLIT_ARGS("~/.config"));
     }
+    result = ncm_fs_join(&directory, directory.data, directory.len,
+                         STRLIT_ARGS("ncmpcpp"));
     if (result) {
         result = ncm_fs_join(&path, directory.data, directory.len,
                              filename, filename_len);
@@ -168,7 +170,7 @@ configuration_append_default_file(NcmBufferArray *paths, char *filename,
 
 static bool
 configuration_append_legacy_file(NcmBufferArray *paths, char *filename,
-                                 int32 filename_len, NcmError *error) {
+                                 int32 filename_len) {
     NcmBuffer directory;
     NcmBuffer path;
     bool result;
@@ -177,18 +179,9 @@ configuration_append_legacy_file(NcmBufferArray *paths, char *filename,
     ncm_buffer_init(&path);
 
     ncm_buffer_append(&directory, STRLIT_ARGS("~/.ncmpcpp"));
-    result = configuration_expand_buffer(&directory, error);
-    if (result && !ncm_fs_exists(directory.data, directory.len)) {
-        ncm_buffer_destroy(&path);
-        ncm_buffer_destroy(&directory);
-        ncm_error_clear(error);
-        return true;
-    }
+    result = ncm_fs_join(&path, directory.data, directory.len,
+                         filename, filename_len);
     if (result) {
-        result = ncm_fs_join(&path, directory.data, directory.len,
-                             filename, filename_len);
-    }
-    if (result && ncm_fs_exists(path.data, path.len)) {
         result = configuration_append_buffer_path(paths, &path);
     }
 
@@ -210,20 +203,20 @@ configuration_discover_default_paths(NcmBufferArray *config_paths,
     }
 
     result = configuration_append_default_file(config_paths,
-                                               STRLIT_ARGS("config"),
-                                               error);
+                                               STRLIT_ARGS("config"));
     result = result
              && configuration_append_legacy_file(config_paths,
-                                                 STRLIT_ARGS("config"),
-                                                 error);
+                                                 STRLIT_ARGS("config"));
     result = result
              && configuration_append_default_file(bindings_paths,
-                                                 STRLIT_ARGS("bindings"),
-                                                 error);
+                                                  STRLIT_ARGS("bindings"));
     result = result
              && configuration_append_legacy_file(bindings_paths,
-                                                 STRLIT_ARGS("bindings"),
-                                                 error);
+                                                  STRLIT_ARGS("bindings"));
+    if (!result) {
+        ncm_error_set(error, ENOMEM,
+                      STRLIT_ARGS("failed to build default paths"));
+    }
     return result;
 }
 
@@ -269,7 +262,7 @@ expand_home(char **path, int32 *path_len, NcmError *error) {
     }
 
     home = getenv("HOME");
-    if (home == NULL) {
+    if ((home == NULL) || (home[0] == '\0')) {
         ncm_error_set(error, ENOENT,
                       STRLIT_ARGS("HOME environment variable is not set"));
         return false;
@@ -693,32 +686,50 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options,
 }
 
 static void
-configuration_print_usage(char *program, NcmConfigurationOptions *options) {
+configuration_print_usage(char *program) {
+    NcmBufferArray config_paths;
+    NcmBufferArray bindings_paths;
+    NcmError error;
+
+    ncm_buffer_array_init(&config_paths);
+    ncm_buffer_array_init(&bindings_paths);
+    ncm_error_clear(&error);
+    if (!configuration_discover_default_paths(&config_paths,
+                                              &bindings_paths,
+                                              &error)) {
+        configuration_print_error("Failed to build default paths", &error);
+        ncm_buffer_array_destroy(&bindings_paths);
+        ncm_buffer_array_destroy(&config_paths);
+        return;
+    }
+
     printf("Usage: %s [options]...\n", program);
     printf("Options:\n");
     printf("  -h, --host HOST              connect to server at host\n");
     printf("  -p, --port PORT              connect to server at port\n");
-    printf("      --current-song[=FORMAT]  print current song and exit\n");
+    printf("      --current-song[=FORMAT]  print current song using given ");
+    printf("format and exit\n");
     printf("  -c, --config PATH            specify configuration file(s)\n");
     printf("                               default: ");
-    for (int32 i = 0; i < options->config_paths.len; i += 1) {
+    for (int32 i = 0; i < config_paths.len; i += 1) {
         NcmBuffer *path;
 
-        path = &options->config_paths.items[i];
+        path = &config_paths.items[i];
         if (i > 0) {
             printf(" AND ");
         }
         printf("%.*s", path->len, path->data);
     }
     printf("\n");
-    printf("      --ignore-config-errors   ignore invalid config options\n");
-    printf("      --test-lyrics-fetchers   check lyrics fetchers\n");
+    printf("      --ignore-config-errors   ignore unknown and invalid ");
+    printf("options in configuration files\n");
+    printf("      --test-lyrics-fetchers   check if lyrics fetchers work\n");
     printf("  -b, --bindings PATH          specify bindings file(s)\n");
     printf("                               default: ");
-    for (int32 i = 0; i < options->bindings_paths.len; i += 1) {
+    for (int32 i = 0; i < bindings_paths.len; i += 1) {
         NcmBuffer *path;
 
-        path = &options->bindings_paths.items[i];
+        path = &bindings_paths.items[i];
         if (i > 0) {
             printf(" AND ");
         }
@@ -731,6 +742,9 @@ configuration_print_usage(char *program, NcmConfigurationOptions *options) {
     printf("  -v, --version                display version information\n");
     printf("  -q, --quiet                  suppress logs and excess output\n");
     printf("\n");
+
+    ncm_buffer_array_destroy(&bindings_paths);
+    ncm_buffer_array_destroy(&config_paths);
     return;
 }
 
@@ -801,7 +815,8 @@ configuration_read_settings(NcmConfigurationOptions *options, NcmError *error) {
 
     configuration_clear(&Config);
     result = configuration_read(&Config, &config_views,
-                                options->ignore_config_errors, error);
+                                options->ignore_config_errors,
+                                options->quiet, error);
     ncm_string_view_array_destroy(&config_views);
     if (!result) {
         if (!ncm_error_is_set(error)) {
@@ -1087,7 +1102,7 @@ configure(int32 argc, char **argv) {
     }
 
     if (options.help) {
-        configuration_print_usage(argv[0], &options);
+        configuration_print_usage(argv[0]);
         ncm_configuration_options_destroy(&options);
         return false;
     }
