@@ -491,9 +491,17 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_UPDATE_DATABASE));
     REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_SEEK_FORWARD));
     REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_SEEK_BACKWARD));
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_JUMP_TO_MEDIA_LIBRARY));
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE));
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_SHOW_MEDIA_LIBRARY));
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE));
 
     REQUIRE(!app_binding_migration_action_is_c_safe(
-        NCM_ACTION_SHOW_MEDIA_LIBRARY));
+        NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE));
     REQUIRE(!app_binding_migration_action_is_c_safe(NCM_ACTION_MOUSE_EVENT));
     REQUIRE(!app_binding_migration_action_is_c_safe(NCM_ACTION_SCROLL_UP));
     REQUIRE(!app_binding_migration_action_is_c_safe(NCM_ACTION_SHUFFLE));
@@ -515,7 +523,7 @@ test_app_binding_migration_c_safe_actions(void) {
     ncm_binding_init(&binding);
     append_action(&binding, NCM_ACTION_QUIT);
     append_action(&binding, NCM_ACTION_SHOW_MEDIA_LIBRARY);
-    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
+    REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
     ncm_binding_destroy(&binding);
 
     ncm_binding_init(&binding);
@@ -530,7 +538,7 @@ test_app_binding_migration_c_safe_actions(void) {
 
     ncm_binding_init(&binding);
     append_action(&binding, NCM_ACTION_QUIT);
-    append_action(&binding, NCM_ACTION_SHOW_MEDIA_LIBRARY);
+    append_action(&binding, NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE);
     REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
     REQUIRE(!app_binding_migration_binding_is_hybrid_safe(&binding));
     REQUIRE(app_binding_migration_binding_is_plain_action_sequence(
@@ -575,7 +583,7 @@ test_app_binding_migration_c_safe_actions(void) {
 
     ncm_binding_init(&binding);
     append_action_kind(&binding, NCM_BINDING_ACTION_REQUIRE_RUNNABLE,
-                       NCM_ACTION_SHOW_MEDIA_LIBRARY);
+                       NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE);
     append_action(&binding, NCM_ACTION_QUIT);
     REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
     REQUIRE(!app_binding_migration_binding_is_hybrid_safe(&binding));
