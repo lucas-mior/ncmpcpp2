@@ -12,6 +12,7 @@
 #endif
 
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 #include "global.h"
 #include "settings.h"
 #include "statusbar.h"
@@ -389,7 +390,7 @@ status_prompt_mpd_password(NcmMpdClient *client) {
     }
 
     nc_window_print_cstring(window, (char *)"Password: ");
-    memset(&prompt, 0, SIZEOF(prompt));
+    cbase_memset(&prompt, 0, SIZEOF(prompt));
     prompt.initial_text = (char *)"";
     prompt.width = -1;
     prompt.encrypted = true;
