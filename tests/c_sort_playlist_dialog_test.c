@@ -4,9 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "actions.h"
 #include "app_controller.h"
+#include "global.h"
 #include "c/ncm_playlist_sort.h"
 #include "cbase/base_macros.h"
+#include "screens/native_c_screens.h"
 #include "screens/nc_playlist.h"
 #include "screens/nc_sort_playlist.h"
 #include "settings.h"
@@ -27,6 +30,7 @@ static struct TestState {
     bool captured_ignore_leading_the;
     bool sort_success;
     bool refresh_success;
+    bool mpd_connected;
 } test_state;
 
 static void test_state_reset(void);
@@ -46,6 +50,13 @@ static void test_dialog_sort_errors(NativePlaylistScreen *playlist,
 static void test_dialog_rejects_invalid_entry(
     NativePlaylistScreen *playlist, NativeSortPlaylistDialog *dialog,
     NcmMpdClient *client);
+static void test_action_routing(void);
+
+bool
+__wrap_ncm_mpd_client_connected(NcmMpdClient *client) {
+    (void)client;
+    return test_state.mpd_connected;
+}
 
 bool
 __wrap_ncm_playlist_sort_range(
@@ -200,7 +211,12 @@ main(void) {
     test_dialog_rejects_invalid_entry(&playlist, &dialog, &client);
 
     native_sort_playlist_dialog_destroy(&dialog);
+    assert(app_controller_unregister_screen(
+        native_playlist_screen_base(&playlist)));
     nc_song_menu_destroy(&playlist.songs);
+
+    app_controller_init();
+    test_action_routing();
     exit(EXIT_SUCCESS);
 }
 
@@ -404,5 +420,92 @@ test_dialog_rejects_invalid_entry(
     assert(app_controller_current_screen()
            == native_playlist_screen_base(playlist));
     test_clear_selection(playlist);
+    return;
+}
+
+static void
+test_action_routing(void) {
+    enum NcmSongGetter getters[16];
+    NativePlaylistScreen *playlist;
+    NativeSortPlaylistDialog *dialog;
+    NcMenu *menu;
+    int32 getter_count;
+
+    test_state_reset();
+    playlist = native_c_screen_playlist();
+    dialog = native_c_screen_sort_playlist_dialog();
+    native_c_screen_playlist_register();
+    native_c_screen_sort_playlist_dialog_register();
+
+    test_add_song(playlist, STRLIT_ARGS("zero.flac"), 20);
+    test_add_song(playlist, STRLIT_ARGS("one.flac"), 21);
+    test_add_song(playlist, STRLIT_ARGS("two.flac"), 22);
+    assert(app_controller_switch_to_screen(
+        native_playlist_screen_base(playlist)));
+
+    assert(native_playlist_screen_has_sortable_range(playlist));
+    assert(!ncm_action_runtime_can_run(NULL, NCM_ACTION_SORT_PLAYLIST));
+    test_state.mpd_connected = true;
+    assert(!ncm_action_runtime_can_run(NULL, NCM_ACTION_RUN_ACTION));
+    assert(ncm_action_runtime_can_run(NULL, NCM_ACTION_SORT_PLAYLIST));
+    assert(ncm_action_runtime_run(NULL, NCM_ACTION_SORT_PLAYLIST));
+    assert(app_controller_current_screen()
+           == native_sort_playlist_dialog_base(dialog));
+
+    menu = nc_editor_sort_menu_base(
+        native_sort_playlist_dialog_menu(dialog));
+    nc_menu_highlight_position(menu, 0, nc_menu_item_count(menu));
+    assert(ncm_action_runtime_can_run(NULL, NCM_ACTION_RUN_ACTION));
+    assert(ncm_action_runtime_run(NULL, NCM_ACTION_RUN_ACTION));
+    assert(app_controller_current_screen()
+           == native_sort_playlist_dialog_base(dialog));
+    assert(test_state.message_count == 1);
+
+    nc_menu_highlight_position(menu, 1, nc_menu_item_count(menu));
+    assert(ncm_action_runtime_can_run(
+        NULL, NCM_ACTION_MOVE_SORT_ORDER_UP));
+    assert(ncm_action_runtime_run(NULL, NCM_ACTION_MOVE_SORT_ORDER_UP));
+    getter_count = native_sort_playlist_dialog_get_order(
+        dialog, getters, NCM_ARRAY_LEN(getters));
+    assert(getter_count == 11);
+    assert(getters[0] == NCM_SONG_GETTER_ALBUM_ARTIST);
+    assert(ncm_action_runtime_can_run(
+        NULL, NCM_ACTION_MOVE_SORT_ORDER_DOWN));
+    assert(ncm_action_runtime_run(NULL, NCM_ACTION_MOVE_SORT_ORDER_DOWN));
+    getter_count = native_sort_playlist_dialog_get_order(
+        dialog, getters, NCM_ARRAY_LEN(getters));
+    assert(getter_count == 11);
+    assert(getters[0] == NCM_SONG_GETTER_ARTIST);
+
+    nc_menu_highlight_position(menu, nc_menu_item_count(menu) - 1,
+                               nc_menu_item_count(menu));
+    assert(ncm_action_runtime_run(NULL, NCM_ACTION_RUN_ACTION));
+    assert(app_controller_current_screen()
+           == native_playlist_screen_base(playlist));
+    assert(test_state.sort_calls == 0);
+    assert(test_state.refresh_calls == 0);
+
+    assert(ncm_action_runtime_run(NULL, NCM_ACTION_SORT_PLAYLIST));
+    menu = nc_editor_sort_menu_base(
+        native_sort_playlist_dialog_menu(dialog));
+    nc_menu_highlight_position(menu, nc_menu_item_count(menu) - 2,
+                               nc_menu_item_count(menu));
+    assert(ncm_action_runtime_can_run(NULL, NCM_ACTION_RUN_ACTION));
+    assert(ncm_action_runtime_run(NULL, NCM_ACTION_RUN_ACTION));
+    assert(app_controller_current_screen()
+           == native_playlist_screen_base(playlist));
+    assert(test_state.sort_calls == 1);
+    assert(test_state.refresh_calls == 1);
+
+    test_select(playlist, 0);
+    test_select(playlist, 2);
+    assert(!native_playlist_screen_has_sortable_range(playlist));
+    assert(!ncm_action_runtime_can_run(NULL, NCM_ACTION_SORT_PLAYLIST));
+    assert(!ncm_action_runtime_run(NULL, NCM_ACTION_SORT_PLAYLIST));
+    assert(app_controller_current_screen()
+           == native_playlist_screen_base(playlist));
+
+    native_sort_playlist_dialog_destroy(dialog);
+    native_playlist_screen_destroy(playlist);
     return;
 }
