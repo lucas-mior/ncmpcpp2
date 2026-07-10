@@ -25,17 +25,6 @@ Main goal: remove C++ from the project while preserving all current behavior.
 
 ## `./src/screens/media_library.cpp`
 
-3. **Build and test the native grouping and ordering primitives before MPD I/O.**
-   Add pure C helpers that populate tag, album, and song arrays from
-   `NcmMpdStringList`/`NcmMpdSongList`, enumerate every value of the configured
-   primary tag, split albums by date only when configured, create the separator
-   and all-tracks row only for multiple albums, and preserve empty tag/album
-   display cases. Implement locale-aware tag/album comparators honoring
-   `Config.ignore_leading_the`, descending mtime sorting, and song comparison by
-   date, album, disc, track number, then rendered library text. Match the
-   legacy duplicate-mtime rules explicitly—maximum mtime in three-column
-   aggregation and last encountered mtime in the two-column recursive
-   aggregation—unless that behavior is changed separately with its own test.
 4. **Port the exact MPD query pipeline for every mode.** In three-column name
    sort, load primary tags with `ncm_mpd_client_get_list()`; in three-column
    mtime sort, recursively load the database and aggregate all primary-tag
