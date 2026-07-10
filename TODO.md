@@ -25,18 +25,6 @@ Main goal: remove C++ from the project while preserving all current behavior.
 
 ## `./src/screens/media_library.cpp`
 
-5. **Port the delayed update and dependent-column state machine.** Make
-   `native_library_update()` process only the requested or due level, rebuild
-   menus through temporary arrays, swap them in only after successful fetches,
-   preserve highlights by tag/album/song identity, and reapply each column’s
-   existing filter after replacement. When a tag highlight changes, clear
-   albums and songs and restart the timer; when an album highlight changes,
-   clear songs and restart the timer. Fetch empty dependent columns only after
-   250 ms when `Config.data_fetching_delay` is enabled and immediately
-   otherwise, return a 250-ms window timeout while albums or songs are pending,
-   and clear each update flag only after that level succeeds. Move this
-   list-change finalization into a native API/callback so it no longer depends
-   on `actions_legacy.cpp::listsChangeFinisher()`.
 6. **Finish navigation, filtering, searching, mouse handling, and song actions.**
    Make previous/next-column availability depend on the actual visible mode and
    a nonempty destination menu rather than enum arithmetic; preserve active and
