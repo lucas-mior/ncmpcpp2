@@ -31,6 +31,18 @@ enum NativeMediaLibraryColumn {
     NATIVE_MEDIA_LIBRARY_COLUMN_LAST,
 };
 
+typedef struct NativeMediaLibraryAlbumItem {
+    NcMediaLibraryAlbumRow row;
+    uint32 menu_flags;
+} NativeMediaLibraryAlbumItem;
+
+NCM_ARRAY_DECLARE(native_media_library_tag_array,
+                  NativeMediaLibraryTagArray,
+                  NcMediaLibraryTagRow)
+NCM_ARRAY_DECLARE(native_media_library_album_array,
+                  NativeMediaLibraryAlbumArray,
+                  NativeMediaLibraryAlbumItem)
+
 typedef struct NativeMediaLibrarySongQuery {
     char *primary_value;
     char *album;
@@ -164,6 +176,18 @@ void native_media_library_screen_format_album_row(
     NcmBuffer *output);
 void native_media_library_screen_format_song_row(
     NativeMediaLibraryScreen *screen, NcmSong *song, NcBuffer *output);
+
+bool native_media_library_tags_from_strings(
+    NativeMediaLibraryTagArray *tags, NcmMpdStringList *strings);
+bool native_media_library_tags_from_songs(
+    NativeMediaLibraryTagArray *tags, NcmMpdSongList *songs,
+    enum mpd_tag_type primary_tag);
+bool native_media_library_albums_from_songs(
+    NativeMediaLibraryAlbumArray *albums, NcmMpdSongList *songs,
+    enum NativeMediaLibraryMode mode, enum mpd_tag_type primary_tag,
+    char *selected_tag, int32 selected_tag_len);
+bool native_media_library_songs_from_list(
+    NcmSongArray *songs, NcmMpdSongList *source);
 
 NcmTimePoint native_media_library_screen_update_timer(
     NativeMediaLibraryScreen *screen);

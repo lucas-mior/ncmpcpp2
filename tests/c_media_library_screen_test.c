@@ -23,6 +23,9 @@ typedef struct MediaLibraryHookFixture {
 static void test_media_library_state_contract(void);
 static void test_media_library_layout_and_rendering(void);
 static void test_media_library_tag_grouping(void);
+static void test_media_library_tag_primitives(void);
+static void test_media_library_album_primitives(void);
+static void test_media_library_song_ordering(void);
 static void test_media_library_mode_transitions(void);
 static void test_media_library_selected_songs(void);
 static void test_media_library_hooks(void);
@@ -39,12 +42,20 @@ static bool test_add_songs(void *user, NcmSongArray *songs, bool play,
 static void test_destroy_hooks(void *user);
 static bool test_append_song(NcmMpdSongList *songs, char *uri,
                              int32 uri_len);
+static bool test_set_library_song(
+    NcmSong *song, char *uri, int32 uri_len,
+    char *album, int32 album_len, char *date, int32 date_len,
+    char *disc, int32 disc_len, char *track, int32 track_len,
+    char *title, int32 title_len, time_t mtime);
 
 int
 main(void) {
     test_media_library_state_contract();
     test_media_library_layout_and_rendering();
     test_media_library_tag_grouping();
+    test_media_library_tag_primitives();
+    test_media_library_album_primitives();
+    test_media_library_song_ordering();
     test_media_library_mode_transitions();
     test_media_library_selected_songs();
     test_media_library_hooks();
@@ -463,6 +474,365 @@ test_media_library_tag_grouping(void) {
 }
 
 static void
+test_media_library_tag_primitives(void) {
+    NativeMediaLibraryTagArray tags;
+    NcmMpdStringList strings;
+    NcmMpdSongList songs;
+    NcmSong song;
+    bool old_ignore_leading_the;
+    bool old_sort_by_mtime;
+
+    old_ignore_leading_the = Config.ignore_leading_the;
+    old_sort_by_mtime = Config.media_library_sort_by_mtime;
+    Config.ignore_leading_the = true;
+    Config.media_library_sort_by_mtime = false;
+
+    native_media_library_tag_array_init(&tags);
+    ncm_mpd_string_list_init(&strings);
+    ncm_mpd_song_list_init(&songs);
+    ncm_song_init(&song);
+
+    assert(ncm_mpd_string_list_append(
+        &strings, LIT_ARGS("The Zebra")));
+    assert(ncm_mpd_string_list_append(&strings, LIT_ARGS("Yellow")));
+    assert(ncm_mpd_string_list_append(&strings, LIT_ARGS("")));
+    assert(ncm_mpd_string_list_append(&strings, LIT_ARGS("Yellow")));
+    assert(native_media_library_tags_from_strings(&tags, &strings));
+    assert(tags.len == 3);
+    assert(tags.items[0].tag_len == 0);
+    assert(ncm_string_equal(tags.items[1].tag, tags.items[1].tag_len,
+                            LIT_ARGS("Yellow")));
+    assert(ncm_string_equal(tags.items[2].tag, tags.items[2].tag_len,
+                            LIT_ARGS("The Zebra")));
+
+    assert(ncm_song_set_uri(&song, LIT_ARGS("first.flac")));
+    assert(ncm_song_add_tag(&song, MPD_TAG_ARTIST,
+                            LIT_ARGS("First")));
+    assert(ncm_song_add_tag(&song, MPD_TAG_ARTIST,
+                            LIT_ARGS("Second")));
+    ncm_song_set_mtime(&song, 10);
+    assert(ncm_mpd_song_list_append_copy(&songs, &song));
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+
+    assert(ncm_song_set_uri(&song, LIT_ARGS("second.flac")));
+    assert(ncm_song_add_tag(&song, MPD_TAG_ARTIST,
+                            LIT_ARGS("First")));
+    ncm_song_set_mtime(&song, 20);
+    assert(ncm_mpd_song_list_append_copy(&songs, &song));
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+
+    assert(ncm_song_set_uri(&song, LIT_ARGS("empty.flac")));
+    assert(ncm_song_add_tag(&song, MPD_TAG_ARTIST, LIT_ARGS("")));
+    ncm_song_set_mtime(&song, 15);
+    assert(ncm_mpd_song_list_append_copy(&songs, &song));
+
+    Config.media_library_sort_by_mtime = true;
+    assert(native_media_library_tags_from_songs(
+        &tags, &songs, MPD_TAG_ARTIST));
+    assert(tags.len == 3);
+    assert(ncm_string_equal(tags.items[0].tag, tags.items[0].tag_len,
+                            LIT_ARGS("First")));
+    assert(tags.items[0].mtime == 20);
+    assert(tags.items[1].tag_len == 0);
+    assert(tags.items[1].mtime == 15);
+    assert(ncm_string_equal(tags.items[2].tag, tags.items[2].tag_len,
+                            LIT_ARGS("Second")));
+    assert(tags.items[2].mtime == 10);
+
+    ncm_song_destroy(&song);
+    ncm_mpd_song_list_destroy(&songs);
+    ncm_mpd_string_list_destroy(&strings);
+    native_media_library_tag_array_destroy(&tags);
+    Config.ignore_leading_the = old_ignore_leading_the;
+    Config.media_library_sort_by_mtime = old_sort_by_mtime;
+    return;
+}
+
+static void
+test_media_library_album_primitives(void) {
+    NativeMediaLibraryAlbumArray albums;
+    NcmMpdSongList three_column_songs;
+    NcmMpdSongList two_column_songs;
+    NcmSong song;
+    NcMediaLibraryAlbumRow *row;
+    bool old_ignore_leading_the;
+    bool old_sort_by_mtime;
+    bool old_split_by_date;
+
+    old_ignore_leading_the = Config.ignore_leading_the;
+    old_sort_by_mtime = Config.media_library_sort_by_mtime;
+    old_split_by_date = Config.media_library_albums_split_by_date;
+    Config.ignore_leading_the = true;
+    Config.media_library_sort_by_mtime = false;
+    Config.media_library_albums_split_by_date = false;
+
+    native_media_library_album_array_init(&albums);
+    ncm_mpd_song_list_init(&three_column_songs);
+    ncm_mpd_song_list_init(&two_column_songs);
+    ncm_song_init(&song);
+
+    assert(test_set_library_song(
+        &song, LIT_ARGS("one.flac"), LIT_ARGS("The Zebra"),
+        LIT_ARGS("2020"), NULL, 0, NULL, 0, NULL, 0, 100));
+    assert(ncm_mpd_song_list_append_copy(&three_column_songs, &song));
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+    assert(test_set_library_song(
+        &song, LIT_ARGS("two.flac"), LIT_ARGS("The Zebra"),
+        LIT_ARGS("2020"), NULL, 0, NULL, 0, NULL, 0, 200));
+    assert(ncm_mpd_song_list_append_copy(&three_column_songs, &song));
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+    assert(test_set_library_song(
+        &song, LIT_ARGS("three.flac"), LIT_ARGS("The Zebra"),
+        LIT_ARGS("2021"), NULL, 0, NULL, 0, NULL, 0, 150));
+    assert(ncm_mpd_song_list_append_copy(&three_column_songs, &song));
+
+    assert(native_media_library_albums_from_songs(
+        &albums, &three_column_songs,
+        NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS, MPD_TAG_ARTIST,
+        LIT_ARGS("Artist")));
+    assert(albums.len == 1);
+    row = &albums.items[0].row;
+    assert(ncm_string_equal(row->album, row->album_len,
+                            LIT_ARGS("The Zebra")));
+    assert(row->date_len == 0);
+    assert(row->mtime == 200);
+    assert(!row->all_tracks_entry);
+
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+    assert(test_set_library_song(
+        &song, LIT_ARGS("yellow.flac"), LIT_ARGS("Yellow"),
+        LIT_ARGS("2020"), NULL, 0, NULL, 0, NULL, 0, 50));
+    assert(ncm_mpd_song_list_append_copy(&three_column_songs, &song));
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+    assert(test_set_library_song(
+        &song, LIT_ARGS("empty-album.flac"), LIT_ARGS(""),
+        LIT_ARGS("2020"), NULL, 0, NULL, 0, NULL, 0, 60));
+    assert(ncm_mpd_song_list_append_copy(&three_column_songs, &song));
+
+    Config.media_library_albums_split_by_date = true;
+    assert(native_media_library_albums_from_songs(
+        &albums, &three_column_songs,
+        NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS, MPD_TAG_ARTIST,
+        LIT_ARGS("Artist")));
+    assert(albums.len == 6);
+    assert(albums.items[0].row.album_len == 0);
+    assert(ncm_string_equal(albums.items[1].row.album,
+                            albums.items[1].row.album_len,
+                            LIT_ARGS("Yellow")));
+    assert(ncm_string_equal(albums.items[2].row.album,
+                            albums.items[2].row.album_len,
+                            LIT_ARGS("The Zebra")));
+    assert(albums.items[2].row.mtime == 200);
+    assert(ncm_string_equal(albums.items[3].row.date,
+                            albums.items[3].row.date_len,
+                            LIT_ARGS("2021")));
+    assert(albums.items[4].menu_flags == NC_MENU_ITEM_SEPARATOR);
+    assert(albums.items[5].row.all_tracks_entry);
+    assert(ncm_string_equal(albums.items[5].row.tag,
+                            albums.items[5].row.tag_len,
+                            LIT_ARGS("Artist")));
+
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+    assert(test_set_library_song(
+        &song, LIT_ARGS("recursive-one.flac"), LIT_ARGS("Album"),
+        LIT_ARGS("2020"), NULL, 0, NULL, 0, NULL, 0, 300));
+    assert(ncm_song_add_tag(&song, MPD_TAG_ARTIST,
+                            LIT_ARGS("The Zebra")));
+    assert(ncm_song_add_tag(&song, MPD_TAG_ARTIST,
+                            LIT_ARGS("Second")));
+    assert(ncm_mpd_song_list_append_copy(&two_column_songs, &song));
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+    assert(test_set_library_song(
+        &song, LIT_ARGS("recursive-two.flac"), LIT_ARGS("Album"),
+        LIT_ARGS("2020"), NULL, 0, NULL, 0, NULL, 0, 100));
+    assert(ncm_song_add_tag(&song, MPD_TAG_ARTIST,
+                            LIT_ARGS("The Zebra")));
+    assert(ncm_mpd_song_list_append_copy(&two_column_songs, &song));
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+    assert(test_set_library_song(
+        &song, LIT_ARGS("recursive-empty.flac"), LIT_ARGS(""),
+        LIT_ARGS("2020"), NULL, 0, NULL, 0, NULL, 0, 50));
+    assert(ncm_song_add_tag(&song, MPD_TAG_ARTIST, LIT_ARGS("")));
+    assert(ncm_mpd_song_list_append_copy(&two_column_songs, &song));
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+    assert(test_set_library_song(
+        &song, LIT_ARGS("recursive-ignored.flac"),
+        LIT_ARGS("Ignored"), LIT_ARGS("2020"),
+        NULL, 0, NULL, 0, NULL, 0, 999));
+    assert(ncm_mpd_song_list_append_copy(&two_column_songs, &song));
+
+    Config.media_library_sort_by_mtime = false;
+    assert(native_media_library_albums_from_songs(
+        &albums, &two_column_songs,
+        NATIVE_MEDIA_LIBRARY_MODE_TWO_COLUMNS, MPD_TAG_ARTIST,
+        NULL, 0));
+    assert(albums.len == 3);
+    assert(albums.items[0].row.tag_len == 0);
+    assert(ncm_string_equal(albums.items[1].row.tag,
+                            albums.items[1].row.tag_len,
+                            LIT_ARGS("Second")));
+    assert(ncm_string_equal(albums.items[2].row.tag,
+                            albums.items[2].row.tag_len,
+                            LIT_ARGS("The Zebra")));
+    assert(albums.items[2].row.mtime == 100);
+
+    Config.media_library_sort_by_mtime = true;
+    assert(native_media_library_albums_from_songs(
+        &albums, &two_column_songs,
+        NATIVE_MEDIA_LIBRARY_MODE_TWO_COLUMNS, MPD_TAG_ARTIST,
+        NULL, 0));
+    assert(albums.len == 3);
+    assert(ncm_string_equal(albums.items[0].row.tag,
+                            albums.items[0].row.tag_len,
+                            LIT_ARGS("Second")));
+    assert(albums.items[0].row.mtime == 300);
+    assert(albums.items[1].row.mtime == 100);
+    assert(albums.items[2].row.mtime == 50);
+
+    Config.media_library_sort_by_mtime = false;
+    assert(native_media_library_albums_from_songs(
+        &albums, &two_column_songs,
+        NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY, MPD_TAG_ARTIST,
+        NULL, 0));
+    assert(albums.len == 2);
+    assert(albums.items[0].row.tag_len == 0);
+    assert(albums.items[0].row.album_len == 0);
+    assert(albums.items[1].row.tag_len == 0);
+    assert(ncm_string_equal(albums.items[1].row.album,
+                            albums.items[1].row.album_len,
+                            LIT_ARGS("Album")));
+    assert(albums.items[1].row.mtime == 100);
+
+    ncm_song_destroy(&song);
+    ncm_mpd_song_list_destroy(&two_column_songs);
+    ncm_mpd_song_list_destroy(&three_column_songs);
+    native_media_library_album_array_destroy(&albums);
+    Config.ignore_leading_the = old_ignore_leading_the;
+    Config.media_library_sort_by_mtime = old_sort_by_mtime;
+    Config.media_library_albums_split_by_date = old_split_by_date;
+    return;
+}
+
+static void
+test_media_library_song_ordering(void) {
+    NcmMpdSongList source;
+    NcmSongArray songs;
+    NcmSong song;
+    NcmFormatAst old_song_format;
+    enum NcmSongGetter title_getter;
+    char *old_tags_separator;
+    int32 old_tags_separator_len;
+    int32 old_tags_separator_cap;
+    bool old_ignore_leading_the;
+    bool old_show_duplicate_tags;
+
+    old_song_format = Config.song_library_format;
+    old_tags_separator = Config.tags_separator;
+    old_tags_separator_len = Config.tags_separator_len;
+    old_tags_separator_cap = Config.tags_separator_cap;
+    old_ignore_leading_the = Config.ignore_leading_the;
+    old_show_duplicate_tags = Config.show_duplicate_tags;
+
+    ncm_format_ast_init(&Config.song_library_format);
+    title_getter = NCM_SONG_GETTER_TITLE;
+    assert(ncm_format_ast_append_first_of_getters(
+        &Config.song_library_format, &title_getter, 1));
+    Config.tags_separator = (char *)" | ";
+    Config.tags_separator_len = STRLIT_LEN(" | ");
+    Config.tags_separator_cap = 0;
+    Config.ignore_leading_the = false;
+    Config.show_duplicate_tags = true;
+
+    ncm_mpd_song_list_init(&source);
+    ncm_song_array_init(&songs);
+    ncm_song_init(&song);
+
+    assert(test_set_library_song(
+        &song, LIT_ARGS("six.flac"), LIT_ARGS("B"),
+        LIT_ARGS("2020"), LIT_ARGS("1"), LIT_ARGS("1"),
+        LIT_ARGS("Alpha"), 0));
+    assert(ncm_mpd_song_list_append_copy(&source, &song));
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+    assert(test_set_library_song(
+        &song, LIT_ARGS("five.flac"), LIT_ARGS("A"),
+        LIT_ARGS("2020"), LIT_ARGS("2"), LIT_ARGS("1"),
+        LIT_ARGS("Alpha"), 0));
+    assert(ncm_mpd_song_list_append_copy(&source, &song));
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+    assert(test_set_library_song(
+        &song, LIT_ARGS("four.flac"), LIT_ARGS("A"),
+        LIT_ARGS("2020"), LIT_ARGS("1"), LIT_ARGS("2"),
+        LIT_ARGS("Alpha"), 0));
+    assert(ncm_mpd_song_list_append_copy(&source, &song));
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+    assert(test_set_library_song(
+        &song, LIT_ARGS("three.flac"), LIT_ARGS("A"),
+        LIT_ARGS("2020"), LIT_ARGS("1"), LIT_ARGS("1"),
+        LIT_ARGS("Beta"), 0));
+    assert(ncm_mpd_song_list_append_copy(&source, &song));
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+    assert(test_set_library_song(
+        &song, LIT_ARGS("two.flac"), LIT_ARGS("A"),
+        LIT_ARGS("2020"), LIT_ARGS("1"), LIT_ARGS("1"),
+        LIT_ARGS("Alpha"), 0));
+    assert(ncm_mpd_song_list_append_copy(&source, &song));
+    ncm_song_destroy(&song);
+    ncm_song_init(&song);
+    assert(test_set_library_song(
+        &song, LIT_ARGS("one.flac"), LIT_ARGS("Z"),
+        LIT_ARGS("2019"), LIT_ARGS("1"), LIT_ARGS("1"),
+        LIT_ARGS("Zulu"), 0));
+    assert(ncm_mpd_song_list_append_copy(&source, &song));
+
+    assert(native_media_library_songs_from_list(&songs, &source));
+    assert(songs.len == 6);
+    assert(ncm_string_equal(songs.items[0].uri,
+                            songs.items[0].uri_len,
+                            LIT_ARGS("one.flac")));
+    assert(ncm_string_equal(songs.items[1].uri,
+                            songs.items[1].uri_len,
+                            LIT_ARGS("two.flac")));
+    assert(ncm_string_equal(songs.items[2].uri,
+                            songs.items[2].uri_len,
+                            LIT_ARGS("three.flac")));
+    assert(ncm_string_equal(songs.items[3].uri,
+                            songs.items[3].uri_len,
+                            LIT_ARGS("four.flac")));
+    assert(ncm_string_equal(songs.items[4].uri,
+                            songs.items[4].uri_len,
+                            LIT_ARGS("five.flac")));
+    assert(ncm_string_equal(songs.items[5].uri,
+                            songs.items[5].uri_len,
+                            LIT_ARGS("six.flac")));
+
+    ncm_song_destroy(&song);
+    ncm_song_array_destroy(&songs);
+    ncm_mpd_song_list_destroy(&source);
+    ncm_format_ast_destroy(&Config.song_library_format);
+    Config.song_library_format = old_song_format;
+    Config.tags_separator = old_tags_separator;
+    Config.tags_separator_len = old_tags_separator_len;
+    Config.tags_separator_cap = old_tags_separator_cap;
+    Config.ignore_leading_the = old_ignore_leading_the;
+    Config.show_duplicate_tags = old_show_duplicate_tags;
+    return;
+}
+
+static void
 test_media_library_mode_transitions(void) {
     NativeMediaLibraryScreen screen;
     NativeMediaLibraryHooks hooks = {0};
@@ -678,6 +1048,39 @@ test_destroy_hooks(void *user) {
     fixture = user;
     fixture->destroy_calls += 1;
     return;
+}
+
+static bool
+test_set_library_song(
+    NcmSong *song, char *uri, int32 uri_len,
+    char *album, int32 album_len, char *date, int32 date_len,
+    char *disc, int32 disc_len, char *track, int32 track_len,
+    char *title, int32 title_len, time_t mtime) {
+    if (!ncm_song_set_uri(song, uri, uri_len)) {
+        return false;
+    }
+    if ((album != NULL)
+        && !ncm_song_add_tag(song, MPD_TAG_ALBUM, album, album_len)) {
+        return false;
+    }
+    if ((date != NULL)
+        && !ncm_song_add_tag(song, MPD_TAG_DATE, date, date_len)) {
+        return false;
+    }
+    if ((disc != NULL)
+        && !ncm_song_add_tag(song, MPD_TAG_DISC, disc, disc_len)) {
+        return false;
+    }
+    if ((track != NULL)
+        && !ncm_song_add_tag(song, MPD_TAG_TRACK, track, track_len)) {
+        return false;
+    }
+    if ((title != NULL)
+        && !ncm_song_add_tag(song, MPD_TAG_TITLE, title, title_len)) {
+        return false;
+    }
+    ncm_song_set_mtime(song, mtime);
+    return true;
 }
 
 static bool
