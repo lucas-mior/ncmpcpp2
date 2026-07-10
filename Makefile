@@ -68,6 +68,13 @@ CXX_TEST_SUPPORT_OBJS := \
 C_TEST_BINS := $(patsubst tests/%.c,$(BUILD_DIR)/tests/%,$(C_TEST_SRCS))
 CXX_TEST_BINS := $(patsubst tests/%.cpp,$(BUILD_DIR)/tests/%,$(CXX_TEST_SRCS))
 TEST_BINS := $(C_TEST_BINS) $(CXX_TEST_BINS)
+
+PLAYLIST_SORT_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=ncm_mpd_client_start_command_list \
+	-Wl,--wrap=ncm_mpd_client_swap \
+	-Wl,--wrap=ncm_mpd_client_commit_command_list
+$(BUILD_DIR)/tests/c_playlist_sort_test: \
+	LDFLAGS += $(PLAYLIST_SORT_TEST_WRAP_FLAGS)
 DEPS := \
 	$(CBASE_OBJS:.o=.d) \
 	$(NCMPCPP_C_OBJS:.o=.d) \
