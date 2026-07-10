@@ -2,7 +2,7 @@
 #define NCMPCPP_SETTINGS_LEGACY_H
 
 #include <optional>
-#include <cassert>
+#include <string>
 #include <vector>
 #include <mpd/client.h>
 
@@ -14,9 +14,9 @@
 #include "screens/screen_type.h"
 #include "utility/regex.h"
 
-struct Column
+struct LegacyColumn
 {
-	Column() : stretch_limit(-1), right_alignment(0), display_empty_tag(1) { }
+	LegacyColumn() : stretch_limit(-1), right_alignment(0), display_empty_tag(1) { }
 
 	std::string name;
 	std::string type;
@@ -28,20 +28,21 @@ struct Column
 	bool display_empty_tag;
 };
 
-struct Configuration
+struct LegacyConfiguration
 {
-	Configuration()
+	LegacyConfiguration()
 	: playlist_disable_highlight_delay_seconds(0)
 	{
 		ncm_lyrics_fetcher_registry_init(&lyrics_fetchers);
 	}
 
-	~Configuration()
+	~LegacyConfiguration()
 	{
 		ncm_lyrics_fetcher_registry_destroy(&lyrics_fetchers);
 	}
 
-	bool read(const std::vector<std::string> &config_paths, bool ignore_errors);
+	LegacyConfiguration(const LegacyConfiguration &) = delete;
+	LegacyConfiguration &operator=(const LegacyConfiguration &) = delete;
 
 	std::string ncmpcpp_directory;
 	std::string lyrics_directory;
@@ -85,7 +86,7 @@ struct Configuration
 	std::vector<size_t> media_library_column_width_ratio_two;
 	std::vector<size_t> media_library_column_width_ratio_three;
 
-	std::vector<Column> columns;
+	std::vector<LegacyColumn> columns;
 
 	DisplayMode playlist_display_mode;
 	DisplayMode browser_display_mode;
@@ -210,7 +211,11 @@ struct Configuration
 	NcmLyricsFetcherRegistry lyrics_fetchers;
 };
 
-extern Configuration ConfigLegacy;
+struct Configuration;
+
+void settings_legacy_sync_from_c(const Configuration *source);
+
+extern LegacyConfiguration ConfigLegacy;
 
 #define Config ConfigLegacy
 
