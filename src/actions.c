@@ -1314,6 +1314,7 @@ static bool action_runtime_enter_directory(void);
 static bool action_runtime_jump_to_parent_directory(void);
 static bool action_runtime_seek_relative(bool forward);
 static bool action_runtime_jump_to_playing_song(void);
+static bool action_runtime_jump_to_media_library(void);
 static bool action_runtime_toggle_display_mode(void);
 static bool action_runtime_toggle_browser_sort_mode(void);
 static bool action_runtime_toggle_library_tag_type(void);
@@ -3163,6 +3164,35 @@ action_runtime_jump_to_playing_song(void) {
 }
 
 static bool
+action_runtime_jump_to_media_library(void) {
+    NcmSong song;
+    NcmError error;
+    bool success;
+
+    ncm_song_init(&song);
+    success = action_runtime_current_song(&song);
+    if (!success) {
+        ncm_song_destroy(&song);
+        return false;
+    }
+
+    success = action_runtime_switch_to_screen(
+        NCM_SCREEN_TYPE_MEDIA_LIBRARY);
+    if (success) {
+        ncm_statusbar_print_cstring(
+            0, (char *)"Jumping to song...");
+        ncm_error_clear(&error);
+        success = native_media_library_screen_locate_song(
+            native_c_screen_media_library(), &song, &error);
+        if (!success) {
+            (void)action_runtime_mpd_error(&error);
+        }
+    }
+    ncm_song_destroy(&song);
+    return success;
+}
+
+static bool
 action_runtime_toggle_display_mode(void) {
     enum DisplayMode *mode;
 
@@ -3243,11 +3273,22 @@ action_runtime_toggle_library_tag_type(void) {
 
 static bool
 action_runtime_toggle_media_library_sort_mode(void) {
+    bool sort_by_mtime;
+
     if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
         return false;
     }
-    (void)native_media_library_screen_toggle_sort_mode(
+    sort_by_mtime = native_media_library_screen_toggle_sort_mode(
         native_c_screen_media_library());
+    if (sort_by_mtime) {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Sorting library by: modification time");
+    } else {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Sorting library by: name");
+    }
     return true;
 }
 
@@ -3590,7 +3631,6 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_SHOW_PLAYLIST:
     case NCM_ACTION_SHOW_BROWSER:
     case NCM_ACTION_SHOW_SEARCH_ENGINE:
-    case NCM_ACTION_SHOW_MEDIA_LIBRARY:
     case NCM_ACTION_SHOW_PLAYLIST_EDITOR:
     case NCM_ACTION_SHOW_SERVER_INFO:
     case NCM_ACTION_SHOW_SONG_INFO:
@@ -3606,6 +3646,11 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return true;
     case NCM_ACTION_MOUSE_EVENT:
         return Config.mouse_support;
+    case NCM_ACTION_SHOW_MEDIA_LIBRARY:
+        return !action_runtime_current_screen_is(
+                   NCM_SCREEN_TYPE_MEDIA_LIBRARY)
+            && !action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_TINY_TAG_EDITOR);
     case NCM_ACTION_JUMP_TO_PARENT_DIRECTORY:
         return action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER);
     case NCM_ACTION_PREVIOUS_COLUMN:
@@ -3700,9 +3745,10 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return false;
 #endif
     case NCM_ACTION_JUMP_TO_BROWSER:
-    case NCM_ACTION_JUMP_TO_MEDIA_LIBRARY:
     case NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR:
         return true;
+    case NCM_ACTION_JUMP_TO_MEDIA_LIBRARY:
+        return action_runtime_has_current_song();
     case NCM_ACTION_JUMP_TO_TAG_EDITOR:
 #if defined(HAVE_TAGLIB_H)
         return true;
@@ -3960,7 +4006,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_JUMP_TO_BROWSER:
         return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_BROWSER);
     case NCM_ACTION_JUMP_TO_MEDIA_LIBRARY:
-        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_MEDIA_LIBRARY);
+        return action_runtime_jump_to_media_library();
     case NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR:
         return action_runtime_switch_to_screen(
             NCM_SCREEN_TYPE_PLAYLIST_EDITOR);

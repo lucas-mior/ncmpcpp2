@@ -40,6 +40,7 @@ static void test_screen_switcher_helpers(void);
 static void test_native_bridge_screen_api(void);
 static void test_native_screen_switch_path(void);
 static void test_native_lastfm_register_and_switching(void);
+static void test_native_media_library_registration(void);
 
 int
 main(void) {
@@ -48,6 +49,7 @@ main(void) {
     test_native_bridge_screen_api();
     test_native_screen_switch_path();
     test_native_lastfm_register_and_switching();
+    test_native_media_library_registration();
     return 0;
 }
 
@@ -331,5 +333,26 @@ test_native_lastfm_register_and_switching(void) {
 
     native_c_screen_lastfm_switch_to();
     assert(native_c_screen_browser_is_current());
+    return;
+}
+
+static void
+test_native_media_library_registration(void) {
+    NcScreen *registered;
+
+    app_controller_init();
+    ui_state_set_screen_size(100, 30);
+
+    native_c_screens_register_native_only();
+    registered = app_controller_find_screen_type(
+        NC_SCREEN_TYPE_MEDIA_LIBRARY);
+    assert(registered == native_c_screen_media_library_native());
+    assert(native_c_screens_is_registered_type(
+        NCM_SCREEN_TYPE_MEDIA_LIBRARY));
+
+    native_c_screen_media_library_switch_to();
+    assert(native_c_screen_media_library_is_current());
+    assert(app_controller_current_screen()
+           == native_c_screen_media_library_native());
     return;
 }
