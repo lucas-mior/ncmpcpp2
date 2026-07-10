@@ -111,7 +111,7 @@ NcScreen *native_c_screen_selected_items_adder_native(void);
 void native_c_screen_sort_playlist_dialog_init(void);
 void native_c_screen_sort_playlist_dialog_register(void);
 void native_c_screen_sort_playlist_dialog_set_resize(void);
-void native_c_screen_sort_playlist_dialog_switch_to(void);
+bool native_c_screen_sort_playlist_dialog_switch_to(void);
 bool native_c_screen_sort_playlist_dialog_is_current(void);
 NativeSortPlaylistDialog *native_c_screen_sort_playlist_dialog(void);
 NcScreen *native_c_screen_sort_playlist_dialog_native(void);

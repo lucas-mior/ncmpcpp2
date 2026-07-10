@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "c/ncm_app_arrays.h"
+#include "c/ncm_error.h"
 #include "curses/nc_app_menus.h"
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
@@ -12,19 +13,27 @@
 extern "C" {
 #endif
 
+typedef struct NcmMpdClient NcmMpdClient;
+typedef struct NativePlaylistScreen NativePlaylistScreen;
+
 typedef struct NativeSortPlaylistDialog {
     NcScreen screen;
     NcEditorSortMenu rows;
     NcWindow window;
+    NcmSongArray songs;
+
+    NativePlaylistScreen *playlist;
+    NcScreen *previous_screen;
+    NcmMpdClient *client;
 
     int64 start_x;
     int64 start_y;
     int64 width;
     int64 height;
+    uint32 start_position;
 
-    bool sort_requested;
-    bool cancel_requested;
-    bool registered;
+    bool ignore_leading_the;
+    bool ready;
 } NativeSortPlaylistDialog;
 
 void native_sort_playlist_dialog_init(NativeSortPlaylistDialog *dialog,
@@ -46,6 +55,9 @@ bool native_sort_playlist_dialog_add_row(NativeSortPlaylistDialog *dialog,
                                          enum NcmSongGetter getter,
                                          void (*run)(void *user),
                                          void *user);
+bool native_sort_playlist_dialog_open(
+    NativeSortPlaylistDialog *dialog, NativePlaylistScreen *playlist,
+    NcmMpdClient *client, bool ignore_leading_the, NcmError *error);
 bool native_sort_playlist_dialog_move_current_up(
     NativeSortPlaylistDialog *dialog);
 bool native_sort_playlist_dialog_move_current_down(
@@ -55,12 +67,6 @@ bool native_sort_playlist_dialog_run_current(
 int32 native_sort_playlist_dialog_get_order(
     NativeSortPlaylistDialog *dialog, enum NcmSongGetter *getters,
     int32 getters_cap);
-bool native_sort_playlist_dialog_sort_requested(
-    NativeSortPlaylistDialog *dialog);
-bool native_sort_playlist_dialog_cancel_requested(
-    NativeSortPlaylistDialog *dialog);
-void native_sort_playlist_dialog_clear_requests(
-    NativeSortPlaylistDialog *dialog);
 
 #if defined(__cplusplus)
 }

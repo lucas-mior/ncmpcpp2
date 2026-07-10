@@ -1,5 +1,7 @@
 #include "screens/nc_playlist.h"
 
+#include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stddef.h>
 
@@ -766,6 +768,120 @@ native_playlist_screen_selected_songs(NativePlaylistScreen *screen,
     }
     return native_playlist_append_position(menu, nc_menu_highlight(menu),
                                            songs);
+}
+
+bool
+native_playlist_screen_copy_sort_range(
+    NativePlaylistScreen *screen, NcmSongArray *songs,
+    uint32 *start_position, NcmError *error) {
+    NcmSongArray replacement;
+    NcMenu *menu;
+    NcmSong *song;
+    int64 first;
+    int64 last;
+    uint32 range_start;
+
+    if (screen == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing playlist screen"));
+        return false;
+    }
+    if (songs == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing song array"));
+        return false;
+    }
+    if (start_position == NULL) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing playlist range position"));
+        return false;
+    }
+
+    native_playlist_sync_if_needed(screen);
+    menu = native_playlist_storage_menu(screen);
+    last = nc_menu_all_item_count(menu);
+    if (last <= 0) {
+        ncm_error_set(error, ENOENT, STRLIT_ARGS("playlist is empty"));
+        return false;
+    }
+
+    first = last;
+    for (int64 i = 0; i < last; i += 1) {
+        uint32 flags;
+
+        flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
+        if (flags & NC_MENU_ITEM_SELECTED) {
+            first = i;
+            break;
+        }
+    }
+    if (first == last) {
+        first = 0;
+    } else {
+        int64 selected_last;
+
+        selected_last = first + 1;
+        for (int64 i = first + 1; i < last; i += 1) {
+            uint32 flags;
+
+            flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
+            if (flags & NC_MENU_ITEM_SELECTED) {
+                selected_last = i + 1;
+            }
+        }
+        for (int64 i = first; i < selected_last; i += 1) {
+            uint32 flags;
+
+            flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
+            if (!(flags & NC_MENU_ITEM_SELECTED)) {
+                ncm_error_set(
+                    error, EINVAL,
+                    STRLIT_ARGS("selected songs are not contiguous"));
+                return false;
+            }
+        }
+        last = selected_last;
+    }
+
+    song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, first);
+    if (song == NULL) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing playlist range song"));
+        return false;
+    }
+    range_start = ncm_song_position(song);
+
+    ncm_song_array_init(&replacement);
+    for (int64 i = first; i < last; i += 1) {
+        uint64 expected_position;
+
+        song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i);
+        if (song == NULL) {
+            ncm_error_set(error, EINVAL,
+                          STRLIT_ARGS("missing playlist range song"));
+            ncm_song_array_destroy(&replacement);
+            return false;
+        }
+        expected_position = (uint64)range_start + (uint64)(i - first);
+        if ((expected_position > UINT32_MAX)
+            || (ncm_song_position(song) != (uint32)expected_position)) {
+            ncm_error_set(
+                error, EINVAL,
+                STRLIT_ARGS("playlist range positions are not contiguous"));
+            ncm_song_array_destroy(&replacement);
+            return false;
+        }
+        if (!ncm_song_array_append_copy(&replacement, song)) {
+            ncm_error_set(error, ENOMEM,
+                          STRLIT_ARGS("could not copy playlist range"));
+            ncm_song_array_destroy(&replacement);
+            return false;
+        }
+    }
+
+    ncm_song_array_destroy(songs);
+    *songs = replacement;
+    *start_position = range_start;
+    ncm_error_clear(error);
+    return true;
 }
 
 bool
