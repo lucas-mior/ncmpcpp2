@@ -1931,8 +1931,7 @@ apply_regular_expressions(Configuration *config, char *value,
         config->regex_type = NCM_REGEX_BASIC_CASE_INSENSITIVE;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("extended"))
-        || ncm_string_equal(value, value_len, STRLIT_ARGS("perl"))) {
+    if (ncm_string_equal(value, value_len, STRLIT_ARGS("extended"))) {
         config->regex_type = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
         return true;
     }
@@ -2543,7 +2542,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
         SETTINGS_OPTION("display_bitrate", "no", apply_display_bitrate),
         SETTINGS_OPTION("display_remaining_time", "no",
                         apply_display_remaining_time),
-        SETTINGS_OPTION("regular_expressions", "perl",
+        SETTINGS_OPTION("regular_expressions", "extended",
                         apply_regular_expressions),
         SETTINGS_OPTION("ignore_leading_the", "no",
                         apply_ignore_leading_the),
