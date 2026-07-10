@@ -45,7 +45,6 @@
 #include "utility/string_format.h"
 #include "c/ncm_base.h"
 #include "c/ncm_error.h"
-#include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
 #include "screens/tag_editor.h"
 #include "screens/tiny_tag_editor.h"
@@ -112,48 +111,6 @@ bool currentMediaLibraryArtistTag(std::string &artist)
 	return true;
 }
 
-bool nativeLyricsBuildFilename(NativeLyricsScreen *lyrics, NcmSong *song,
-                               NcmError *error)
-{
-	if (!native_lyrics_screen_build_filename(
-	        lyrics,
-	        song,
-	        const_cast<char *>(Config.mpd_music_dir.data()),
-	        static_cast<int32>(Config.mpd_music_dir.size()),
-	        const_cast<char *>(Config.lyrics_directory.data()),
-	        static_cast<int32>(Config.lyrics_directory.size()),
-	        Config.store_lyrics_in_song_dir,
-	        Config.generate_win32_compatible_filenames))
-	{
-		ncm_error_set(error, EINVAL,
-		              const_cast<char *>("failed to build lyrics filename"),
-		              STRLIT_LEN("failed to build lyrics filename"));
-		return false;
-	}
-
-	ncm_error_clear(error);
-	return true;
-}
-
-bool nativeLyricsLoadOrFetch(MPD::Song &song)
-{
-	NcmError error;
-	bool success;
-
-	ncm_error_clear(&error);
-	success = native_lyrics_screen_fetch(
-		native_c_screen_lyrics(), song.cSong(), nullptr, &error);
-	ncm_error_clear(&error);
-	return success;
-}
-
-bool nativeLyricsIsCurrentSong(MPD::Song &song)
-{
-	NcmSong *current_song;
-
-	current_song = native_lyrics_screen_song(native_c_screen_lyrics());
-	return current_song != nullptr && ncm_song_equal(current_song, song.cSong());
-}
 
 void nativeLyricsPrintConsumerMessage()
 {
@@ -178,76 +135,6 @@ void nativeLyricsPrintFetcher()
 		                  ncm_lyrics_fetcher_name(fetcher));
 	else
 		Statusbar::print("Using all lyrics fetchers");
-}
-
-bool nativeLyricsEditCurrent()
-{
-	NativeLyricsScreen *lyrics;
-	NcmSong *song;
-	NcmBuffer *filename;
-	NcmBuffer escaped;
-	NcmBuffer command;
-	NcmError error;
-
-	if (Config.external_editor.empty())
-	{
-		Statusbar::print(
-			"external_editor variable has to be set in configuration file");
-		return false;
-	}
-
-	lyrics = native_c_screen_lyrics();
-	song = native_lyrics_screen_song(lyrics);
-	if (song == nullptr)
-		return false;
-
-	ncm_error_clear(&error);
-	if (!nativeLyricsBuildFilename(lyrics, song, &error))
-		return false;
-
-	Statusbar::print("Opening lyrics in external editor...");
-	filename = native_lyrics_screen_filename(lyrics);
-	ncm_buffer_init(&escaped);
-	ncm_buffer_init(&command);
-	ncm_string_append_shell_escaped_single_quotes(
-		&escaped, filename->data, filename->len);
-	ncm_buffer_append(&command,
-	                  const_cast<char *>(Config.external_editor.data()),
-	                  static_cast<int32>(Config.external_editor.size()));
-	ncm_buffer_append(&command, const_cast<char *>(" \'"),
-	                  STRLIT_LEN(" \'"));
-	ncm_buffer_append(&command, escaped.data, escaped.len);
-	ncm_buffer_append_byte(&command, '\'');
-	ncm_buffer_append_byte(&command, '\0');
-
-	if (Config.use_console_editor)
-	{
-		runExternalConsoleCommand(command.data);
-		if (!native_lyrics_screen_load_file(
-		        lyrics, filename->data, filename->len, &error))
-		{
-			lyrics->has_song = false;
-			(void)native_lyrics_screen_fetch(
-				lyrics, song, nullptr, &error);
-		}
-	}
-	else
-		runExternalCommand(command.data, false);
-
-	ncm_buffer_destroy(&command);
-	ncm_buffer_destroy(&escaped);
-	return true;
-}
-
-bool nativeLyricsRefetchCurrent()
-{
-	NcmError error;
-
-	ncm_error_clear(&error);
-	native_lyrics_screen_refetch_current(native_c_screen_lyrics(), &error);
-	if (ncm_error_is_set(&error))
-		return false;
-	return true;
 }
 
 std::vector<std::shared_ptr<Actions::BaseAction>> AvailableActions;
@@ -2130,12 +2017,12 @@ void EditPlaylistName::run()
 
 bool EditLyrics::canBeRun()
 {
-	return native_c_screen_lyrics_is_current();
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_EDIT_LYRICS);
 }
 
 void EditLyrics::run()
 {
-	(void)nativeLyricsEditCurrent();
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_EDIT_LYRICS);
 }
 
 bool JumpToBrowser::canBeRun()
@@ -2898,31 +2785,23 @@ void ToggleMediaLibrarySortMode::run()
 
 bool FetchLyricsInBackground::canBeRun()
 {
-	m_hs = dynamic_cast<HasSongs *>(screenLegacyCurrent());
-	return m_hs != nullptr && m_hs->itemAvailable();
+	return ncm_action_runtime_can_run(nullptr,
+	                                  NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND);
 }
 
 void FetchLyricsInBackground::run()
 {
-	auto songs = m_hs->getSelectedSongs();
-	NcmError error = {};
-
-	for (const auto &s : songs)
-	{
-		(void)native_lyrics_screen_fetch_in_background(
-			native_c_screen_lyrics(), s.cSong(), true, &error);
-	}
-	Statusbar::print("Selected songs queued for lyrics fetching");
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND);
 }
 
 bool RefetchLyrics::canBeRun()
 {
-	return native_c_screen_lyrics_is_current();
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_REFETCH_LYRICS);
 }
 
 void RefetchLyrics::run()
 {
-	(void)nativeLyricsRefetchCurrent();
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_REFETCH_LYRICS);
 }
 
 bool SetSelectedItemsPriority::canBeRun()
@@ -3038,21 +2917,12 @@ void ShowArtistInfo::run()
 
 bool ShowLyrics::canBeRun()
 {
-	if (native_c_screen_lyrics_is_current())
-	{
-		m_has_song = false;
-		return true;
-	}
-
-	m_has_song = currentSongFromNative(m_song);
-	return m_has_song;
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SHOW_LYRICS);
 }
 
 void ShowLyrics::run()
 {
-	if (m_has_song && !nativeLyricsIsCurrentSong(m_song))
-		(void)nativeLyricsLoadOrFetch(m_song);
-	native_c_screen_lyrics_switch_to();
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHOW_LYRICS);
 }
 
 void Quit::run()
