@@ -51,7 +51,7 @@ public:
 	using Syntax = std::regex_constants::syntax_option_type;
 
 	Flags()
-		: m_syntax(std::regex_constants::ECMAScript)
+		: m_syntax(std::regex_constants::extended)
 		, m_literal(false)
 	{ }
 
@@ -122,11 +122,6 @@ inline Flags basicCaseInsensitive()
 inline Flags extendedCaseInsensitive()
 {
 	return Flags(std::regex_constants::extended | std::regex_constants::icase);
-}
-
-inline Flags perlCaseInsensitive()
-{
-	return Flags(std::regex_constants::ECMAScript | std::regex_constants::icase);
 }
 
 template <typename StringT>
