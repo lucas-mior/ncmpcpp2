@@ -791,11 +791,14 @@ native_c_screen_search_engine_native(void) {
 
 void
 native_c_screen_media_library_init(void) {
+    NativeMediaLibraryHooks hooks;
+
     if (media_library_screen_initialized) {
         return;
     }
 
-    native_media_library_screen_init(&media_library_screen,
+    hooks = native_media_library_mpd_hooks(&global_mpd);
+    native_media_library_screen_init(&media_library_screen, hooks,
                                      0,
                                      ui_state_screen_width(),
                                      ui_state_main_start_y(),

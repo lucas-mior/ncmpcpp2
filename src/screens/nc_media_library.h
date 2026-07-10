@@ -15,11 +15,59 @@
 extern "C" {
 #endif
 
+#define NATIVE_MEDIA_LIBRARY_FETCH_DELAY_MS 250
+
+enum NativeMediaLibraryMode {
+    NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS,
+    NATIVE_MEDIA_LIBRARY_MODE_TWO_COLUMNS,
+    NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY,
+    NATIVE_MEDIA_LIBRARY_MODE_LAST,
+};
+
 enum NativeMediaLibraryColumn {
     NATIVE_MEDIA_LIBRARY_COLUMN_TAGS,
     NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS,
     NATIVE_MEDIA_LIBRARY_COLUMN_SONGS,
+    NATIVE_MEDIA_LIBRARY_COLUMN_LAST,
 };
+
+typedef struct NativeMediaLibrarySongQuery {
+    char *primary_value;
+    char *album;
+    char *date;
+
+    int32 primary_value_len;
+    int32 album_len;
+    int32 date_len;
+
+    enum mpd_tag_type primary_tag;
+    bool match_primary_tag;
+    bool match_album;
+    bool match_date;
+} NativeMediaLibrarySongQuery;
+
+typedef struct NativeMediaLibraryColumnState {
+    NcmBuffer filter_constraint;
+    NcmBuffer search_constraint;
+    NcmRegex filter_regex;
+    NcmRegex search_regex;
+    bool filter_enabled;
+    bool search_enabled;
+} NativeMediaLibraryColumnState;
+
+typedef struct NativeMediaLibraryHooks {
+    bool (*list_tags)(void *user, enum mpd_tag_type tag_type,
+                      NcmMpdStringList *tags, NcmError *error);
+    bool (*list_all_songs)(void *user, NcmMpdSongList *songs,
+                           NcmError *error);
+    bool (*search_songs)(void *user,
+                         NativeMediaLibrarySongQuery *query,
+                         NcmMpdSongList *songs, NcmError *error);
+    bool (*add_songs)(void *user, NcmSongArray *songs, bool play,
+                      NcmError *error);
+    void (*destroy)(void *user);
+    void *user;
+} NativeMediaLibraryHooks;
 
 typedef struct NativeMediaLibraryScreen {
     NcScreen screen;
@@ -29,32 +77,36 @@ typedef struct NativeMediaLibraryScreen {
     NcWindow tags_window;
     NcWindow albums_window;
     NcWindow songs_window;
-    NcmBuffer tag_filter_constraint;
-    NcmBuffer album_filter_constraint;
-    NcmBuffer song_filter_constraint;
-    NcmBuffer tag_search_constraint;
-    NcmBuffer album_search_constraint;
-    NcmBuffer song_search_constraint;
-    NcmRegex tag_filter_regex;
-    NcmRegex album_filter_regex;
-    NcmRegex song_filter_regex;
-    NcmTimePoint timer;
+    NativeMediaLibraryHooks hooks;
+
+    NativeMediaLibraryColumnState column_state[
+        NATIVE_MEDIA_LIBRARY_COLUMN_LAST];
+    NcmBuffer tags_title;
+    NcmBuffer albums_title;
+    NcmBuffer songs_title;
+    NcmTimePoint update_timer;
 
     int64 start_x;
     int64 width;
     int64 main_start_y;
     int64 main_height;
-    int64 columns;
-    int64 active_column;
+    int64 fetching_delay_ms;
+    int32 window_timeout_ms;
+
+    enum NativeMediaLibraryMode mode;
+    enum NativeMediaLibraryColumn active_column;
 
     bool tags_update_request;
     bool albums_update_request;
     bool songs_update_request;
-    bool filter_enabled;
+    bool sort_by_mtime;
     bool registered;
 } NativeMediaLibraryScreen;
 
+NativeMediaLibraryHooks native_media_library_mpd_hooks(
+    NcmMpdClient *client);
 void native_media_library_screen_init(NativeMediaLibraryScreen *screen,
+                                      NativeMediaLibraryHooks hooks,
                                       int64 start_x, int64 width,
                                       int64 main_start_y,
                                       int64 main_height, NcColor color,
@@ -74,9 +126,47 @@ NcWindow *native_media_library_screen_active_window(
 void native_media_library_screen_set_geometry(
     NativeMediaLibraryScreen *screen, int64 start_x, int64 width,
     int64 main_start_y, int64 main_height);
-int64 native_media_library_screen_columns(NativeMediaLibraryScreen *screen);
-void native_media_library_screen_set_columns(NativeMediaLibraryScreen *screen,
-                                             int64 columns);
+
+enum NativeMediaLibraryMode native_media_library_screen_mode(
+    NativeMediaLibraryScreen *screen);
+bool native_media_library_screen_set_mode(
+    NativeMediaLibraryScreen *screen, enum NativeMediaLibraryMode mode);
+enum NativeMediaLibraryMode native_media_library_screen_toggle_mode(
+    NativeMediaLibraryScreen *screen);
+enum NativeMediaLibraryColumn native_media_library_screen_active_column(
+    NativeMediaLibraryScreen *screen);
+bool native_media_library_screen_set_active_column(
+    NativeMediaLibraryScreen *screen,
+    enum NativeMediaLibraryColumn column);
+NativeMediaLibraryColumnState *native_media_library_screen_column_state(
+    NativeMediaLibraryScreen *screen,
+    enum NativeMediaLibraryColumn column);
+NcmBuffer *native_media_library_screen_active_filter_constraint(
+    NativeMediaLibraryScreen *screen);
+NcmBuffer *native_media_library_screen_active_search_constraint(
+    NativeMediaLibraryScreen *screen);
+NcMediaLibraryTagRow *native_media_library_screen_current_tag(
+    NativeMediaLibraryScreen *screen);
+NcMediaLibraryAlbumRow *native_media_library_screen_current_album(
+    NativeMediaLibraryScreen *screen);
+int64 native_media_library_screen_visible_song_count(
+    NativeMediaLibraryScreen *screen);
+NcmSong *native_media_library_screen_visible_song_at(
+    NativeMediaLibraryScreen *screen, int64 pos);
+
+NcmTimePoint native_media_library_screen_update_timer(
+    NativeMediaLibraryScreen *screen);
+void native_media_library_screen_set_update_timer(
+    NativeMediaLibraryScreen *screen, NcmTimePoint timer);
+int64 native_media_library_screen_fetching_delay_ms(
+    NativeMediaLibraryScreen *screen);
+int32 native_media_library_screen_window_timeout_ms(
+    NativeMediaLibraryScreen *screen);
+bool native_media_library_screen_sort_by_mtime(
+    NativeMediaLibraryScreen *screen);
+bool native_media_library_screen_toggle_sort_mode(
+    NativeMediaLibraryScreen *screen);
+
 bool native_media_library_screen_previous_column_available(
     NativeMediaLibraryScreen *screen);
 bool native_media_library_screen_next_column_available(
@@ -109,6 +199,8 @@ void native_media_library_screen_clear_filter(
 bool native_media_library_screen_search(
     NativeMediaLibraryScreen *screen, char *pattern, int32 pattern_len,
     bool forward, bool wrap, bool skip_current, NcmError *error);
+void native_media_library_screen_clear_search(
+    NativeMediaLibraryScreen *screen);
 void native_media_library_screen_request_tags_update(
     NativeMediaLibraryScreen *screen);
 void native_media_library_screen_request_albums_update(
@@ -117,8 +209,24 @@ void native_media_library_screen_request_songs_update(
     NativeMediaLibraryScreen *screen);
 void native_media_library_screen_clear_update_requests(
     NativeMediaLibraryScreen *screen);
-bool native_media_library_screen_locate_song(NativeMediaLibraryScreen *screen,
-                                             NcmSong *song);
+
+bool native_media_library_screen_list_tags(
+    NativeMediaLibraryScreen *screen, enum mpd_tag_type tag_type,
+    NcmMpdStringList *tags, NcmError *error);
+bool native_media_library_screen_list_all_songs(
+    NativeMediaLibraryScreen *screen, NcmMpdSongList *songs,
+    NcmError *error);
+bool native_media_library_screen_search_songs(
+    NativeMediaLibraryScreen *screen,
+    NativeMediaLibrarySongQuery *query, NcmMpdSongList *songs,
+    NcmError *error);
+bool native_media_library_screen_add_songs(
+    NativeMediaLibraryScreen *screen, NcmSongArray *songs, bool play,
+    NcmError *error);
+bool native_media_library_screen_add_item_to_playlist(
+    NativeMediaLibraryScreen *screen, bool play, NcmError *error);
+bool native_media_library_screen_locate_song(
+    NativeMediaLibraryScreen *screen, NcmSong *song, NcmError *error);
 
 #if defined(__cplusplus)
 }
