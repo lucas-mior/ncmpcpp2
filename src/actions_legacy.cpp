@@ -34,7 +34,6 @@
 #include "macro_utilities.h"
 #include "screens/browser.h"
 #include "screens/native_c_screens.h"
-#include "screens/media_library.h"
 #include "screens/playlist.h"
 #include "screens/playlist_editor.h"
 #include "screens/sort_playlist.h"
@@ -95,20 +94,82 @@ bool currentSongFromNative(MPD::Song &song)
 
 bool currentMediaLibraryArtistTag(std::string &artist)
 {
-	BaseScreen *current;
+	NativeMediaLibraryScreen *library;
+	char *tag;
+	int32 tag_len;
 
-	current = screenLegacyCurrent();
-	if (current == nullptr || myLibrary == nullptr)
+	if (!native_c_screen_media_library_is_current())
 		return false;
-	if (!current->isActiveWindow(myLibrary->Tags))
-		return false;
-	if (myLibrary->Tags.empty())
+	library = native_c_screen_media_library();
+	if (native_media_library_screen_active_column(library)
+	    != NATIVE_MEDIA_LIBRARY_COLUMN_TAGS)
 		return false;
 	if (Config.media_lib_primary_tag != MPD_TAG_ARTIST)
 		return false;
+	if (!native_media_library_screen_current_primary_tag_value(
+	        library, &tag, &tag_len))
+		return false;
 
-	artist = myLibrary->Tags.current()->value().tag();
+	artist.assign(tag, static_cast<size_t>(tag_len));
 	return true;
+}
+
+bool currentMediaLibraryTag(std::string &tag)
+{
+	NativeMediaLibraryScreen *library;
+	char *value;
+	int32 value_len;
+
+	if (!native_c_screen_media_library_is_current())
+		return false;
+	library = native_c_screen_media_library();
+	if (native_media_library_screen_active_column(library)
+	    != NATIVE_MEDIA_LIBRARY_COLUMN_TAGS)
+		return false;
+	if (!native_media_library_screen_current_primary_tag_value(
+	        library, &value, &value_len))
+		return false;
+	tag.assign(value, static_cast<size_t>(value_len));
+	return true;
+}
+
+bool currentMediaLibraryAlbum(std::string &album)
+{
+	NativeMediaLibraryScreen *library;
+	char *value;
+	int32 value_len;
+
+	if (!native_c_screen_media_library_is_current())
+		return false;
+	library = native_c_screen_media_library();
+	if (native_media_library_screen_active_column(library)
+	    != NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS)
+		return false;
+	if (!native_media_library_screen_current_album_value(
+	        library, &value, &value_len))
+		return false;
+	album.assign(value, static_cast<size_t>(value_len));
+	return true;
+}
+
+bool locateNativeMediaLibrarySong(MPD::Song &song, bool switch_to)
+{
+	NcmError error;
+	bool success;
+
+	if (switch_to)
+	{
+		native_c_screen_media_library_register();
+		native_c_screen_media_library_switch_to();
+	}
+	Statusbar::put() << "Jumping to song...";
+	static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
+	ncm_error_clear(&error);
+	success = native_media_library_screen_locate_song(
+	    native_c_screen_media_library(), song.cSong(), &error);
+	if (!success && ncm_error_is_set(&error))
+		Statusbar::print(error.message);
+	return success;
 }
 
 
@@ -168,19 +229,16 @@ void handleServerError(MPD::ServerError &e)
 
 void requestMediaLibraryDatabaseUpdate(void *)
 {
-	if (myLibrary == nullptr)
-		return;
-	myLibrary->requestTagsUpdate();
-	myLibrary->requestAlbumsUpdate();
-	myLibrary->requestSongsUpdate();
+	native_media_library_screen_request_database_update(
+	    native_c_screen_media_library());
 }
 
 void refreshPlaylistRelatedInactiveColumns(void *)
 {
-	if (myLibrary != nullptr
-	    && isVisible(myLibrary)
-	    && !myLibrary->isActiveWindow(myLibrary->Songs))
-		myLibrary->Songs.refresh();
+	if (app_controller_is_screen_visible(
+	        native_c_screen_media_library_native()))
+		native_media_library_screen_refresh_inactive_songs(
+		    native_c_screen_media_library());
 
 	if (myPlaylistEditor != nullptr
 	    && isVisible(myPlaylistEditor)
@@ -466,7 +524,6 @@ void initializeScreens()
 	myPlaylist = new Playlist;
 	myBrowser = new Browser;
 	mySearcher = new SearchEngine;
-	myLibrary = new MediaLibrary;
 	ncm_status_set_database_update_observer(
 	    requestMediaLibraryDatabaseUpdate, nullptr);
 	myPlaylistEditor = new PlaylistEditor;
@@ -487,7 +544,6 @@ void initializeScreens()
 	myPlaylist->registerNativeScreen();
 	myBrowser->registerNativeScreen();
 	mySearcher->registerNativeScreen();
-	myLibrary->registerNativeScreen();
 	myPlaylistEditor->registerNativeScreen();
 	native_c_screen_lyrics_register();
 	mySelectedItemsAdder->registerNativeScreen();
@@ -512,7 +568,6 @@ void setResizeFlags()
 	myPlaylist->hasToBeResized = 1;
 	myBrowser->hasToBeResized = 1;
 	mySearcher->hasToBeResized = 1;
-	myLibrary->hasToBeResized = 1;
 	myPlaylistEditor->hasToBeResized = 1;
 	native_c_screen_lyrics_set_resize();
 	mySelectedItemsAdder->hasToBeResized = 1;
@@ -1575,7 +1630,7 @@ bool JumpToPlayingSong::canBeRun()
 		&& (screenLegacyCurrent() == myPlaylist
 		    || screenLegacyCurrent() == myPlaylistEditor
 		    || screenLegacyCurrent() == myBrowser
-		    || screenLegacyCurrent() == myLibrary);
+		    || native_c_screen_media_library_is_current());
 }
 
 void JumpToPlayingSong::run()
@@ -1592,9 +1647,9 @@ void JumpToPlayingSong::run()
 	{
 		myBrowser->locateSong(m_song);
 	}
-	else if (screenLegacyCurrent() == myLibrary)
+	else if (native_c_screen_media_library_is_current())
 	{
-		myLibrary->locateSong(m_song);
+		(void)locateNativeMediaLibrarySong(m_song, false);
 	}
 }
 
@@ -1778,13 +1833,9 @@ void EditSong::run()
 bool EditLibraryTag::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	BaseScreen *current;
+	std::string tag;
 
-	current = screenLegacyCurrent();
-	return current != nullptr
-	    && current->isActiveWindow(myLibrary->Tags)
-	    && !myLibrary->Tags.empty()
-	    && isMPDMusicDirSet();
+	return currentMediaLibraryTag(tag) && isMPDMusicDirSet();
 #	else
 	return false;
 #	endif // HAVE_TAGLIB_H
@@ -1794,18 +1845,21 @@ void EditLibraryTag::run()
 {
 #	ifdef HAVE_TAGLIB_H
 
+	std::string current_tag;
 	std::string new_tag;
+	if (!currentMediaLibraryTag(current_tag))
+		return;
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << NC_FORMAT_BOLD << ncm_tag_type_name(Config.media_lib_primary_tag) << NC_FORMAT_NO_BOLD << ": ";
-		if (!promptString(new_tag, myLibrary->Tags.current()->value().tag()))
+		if (!promptString(new_tag, current_tag))
 				return;
 	}
-	if (!new_tag.empty() && new_tag != myLibrary->Tags.current()->value().tag())
+	if (!new_tag.empty() && new_tag != current_tag)
 	{
 		Statusbar::print("Updating tags...");
 		Mpd.StartSearch(true);
-		Mpd.AddSearch(Config.media_lib_primary_tag, myLibrary->Tags.current()->value().tag());
+		Mpd.AddSearch(Config.media_lib_primary_tag, current_tag);
 		enum NcmTagsField field = ncm_tags_field_from_tag_type(Config.media_lib_primary_tag);
 		assert(field != NCM_TAGS_FIELD_LAST);
 		bool success = true;
@@ -1841,13 +1895,9 @@ void EditLibraryTag::run()
 bool EditLibraryAlbum::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	BaseScreen *current;
+	std::string album;
 
-	current = screenLegacyCurrent();
-	return current != nullptr
-	    && current->isActiveWindow(myLibrary->Albums)
-	    && !myLibrary->Albums.empty()
-		&& isMPDMusicDirSet();
+	return currentMediaLibraryAlbum(album) && isMPDMusicDirSet();
 #	else
 	return false;
 #	endif // HAVE_TAGLIB_H
@@ -1857,29 +1907,53 @@ void EditLibraryAlbum::run()
 {
 #	ifdef HAVE_TAGLIB_H
 		// FIXME: merge this and EditLibraryTag. also, prompt on failure if user wants to continue
+	std::string current_album;
 	std::string new_album;
+	if (!currentMediaLibraryAlbum(current_album))
+		return;
 	{
 		Statusbar::ScopedLock slock;
 		Statusbar::put() << NC_FORMAT_BOLD << "Album: " << NC_FORMAT_NO_BOLD;
-		if (!promptString(new_album,
-			                  myLibrary->Albums.current()->value().entry().album()))
+		if (!promptString(new_album, current_album))
 				return;
 	}
-	if (!new_album.empty() && new_album != myLibrary->Albums.current()->value().entry().album())
+	if (!new_album.empty() && new_album != current_album)
 	{
-		bool success = 1;
-		Statusbar::print("Updating tags...");
-		for (size_t i = 0;  i < myLibrary->Songs.size(); ++i)
+		NcmError error;
+		NcmSongArray songs;
+		bool success;
+		std::string shared_directory;
+
+		ncm_song_array_init(&songs);
+		ncm_error_clear(&error);
+		success = native_media_library_screen_copy_visible_songs(
+		    native_c_screen_media_library(), &songs, &error);
+		if (!success)
 		{
-			Statusbar::printf("Updating tags in \"%1%\"...", myLibrary->Songs[i].value().getName());
-			std::string path = Config.mpd_music_dir + myLibrary->Songs[i].value().getURI();
+			if (ncm_error_is_set(&error))
+				Statusbar::print(error.message);
+			ncm_song_array_destroy(&songs);
+			return;
+		}
+		Statusbar::print("Updating tags...");
+		for (int32 i = 0; i < songs.len; i += 1)
+		{
+			MPD::Song song(&songs.items[i]);
+			std::string directory = song.getDirectory();
+
+			Statusbar::printf("Updating tags in \"%1%\"...", song.getName());
+			std::string path = Config.mpd_music_dir + song.getURI();
+			if (shared_directory.empty())
+				shared_directory = directory;
+			else
+				shared_directory = getSharedDirectory(shared_directory, directory);
 			NcmTaglibFile file;
 			ncm_taglib_file_init(&file);
 			if (!ncm_taglib_file_open(&file, const_cast<char *>(path.c_str())))
 			{
 				const char msg[] = "Error while opening file \"%1%\"";
-				Statusbar::printf(msg, Utf8::shorten(myLibrary->Songs[i].value().getURI(), COLS-const_strlen(msg)));
-				success = 0;
+				Statusbar::printf(msg, Utf8::shorten(song.getURI(), COLS-const_strlen(msg)));
+				success = false;
 				break;
 			}
 			ncm_taglib_clear_property(&file, const_cast<char *>("ALBUM"));
@@ -1888,18 +1962,19 @@ void EditLibraryAlbum::run()
 			if (!ncm_taglib_file_save(&file))
 			{
 				const char msg[] = "Error while writing tags in \"%1%\"";
-				Statusbar::printf(msg, Utf8::shorten(myLibrary->Songs[i].value().getURI(), COLS-const_strlen(msg)));
+				Statusbar::printf(msg, Utf8::shorten(song.getURI(), COLS-const_strlen(msg)));
 				ncm_taglib_file_close(&file);
-				success = 0;
+				success = false;
 				break;
 			}
 			ncm_taglib_file_close(&file);
 		}
-		if (success)
+		if (success && !shared_directory.empty())
 		{
-			Mpd.UpdateDirectory(getSharedDirectory(myLibrary->Songs.beginV(), myLibrary->Songs.endV()));
+			Mpd.UpdateDirectory(shared_directory);
 			Statusbar::print("Tags updated successfully");
 		}
+		ncm_song_array_destroy(&songs);
 	}
 #	endif // HAVE_TAGLIB_H
 }
@@ -2042,7 +2117,7 @@ bool JumpToMediaLibrary::canBeRun()
 
 void JumpToMediaLibrary::run()
 {
-	myLibrary->locateSong(m_song);
+	(void)locateNativeMediaLibrarySong(m_song, true);
 }
 
 bool JumpToPlaylistEditor::canBeRun()
@@ -2723,8 +2798,16 @@ void ToggleBrowserSortMode::run()
 
 bool ToggleLibraryTagType::canBeRun()
 {
-	return (screenLegacyCurrent()->isActiveWindow(myLibrary->Tags))
-	    || (myLibrary->columns() == 2 && screenLegacyCurrent()->isActiveWindow(myLibrary->Albums));
+	NativeMediaLibraryScreen *library;
+	enum NativeMediaLibraryColumn column;
+
+	if (!native_c_screen_media_library_is_current())
+		return false;
+	library = native_c_screen_media_library();
+	column = native_media_library_screen_active_column(library);
+	return column == NATIVE_MEDIA_LIBRARY_COLUMN_TAGS
+	    || (native_media_library_screen_column_count(library) == 2
+	        && column == NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS);
 }
 
 void ToggleLibraryTagType::run()
@@ -2748,39 +2831,27 @@ void ToggleLibraryTagType::run()
 	mpd_tag_type new_tagitem = ncm_char_to_tag_type(tag_type);
 	if (new_tagitem != Config.media_lib_primary_tag)
 	{
-		Config.media_lib_primary_tag = new_tagitem;
-		std::string item_type = ncm_tag_type_name(Config.media_lib_primary_tag);
-		myLibrary->Tags.setTitle(Config.titles_visibility ? item_type + "s" : "");
-		myLibrary->Tags.reset();
+		native_media_library_screen_set_primary_tag_type(
+		    native_c_screen_media_library(), new_tagitem);
+		std::string item_type = ncm_tag_type_name(new_tagitem);
 		item_type = lowercaseAscii(item_type);
-		std::string and_mtime = Config.media_library_sort_by_mtime ?
-		                        " and mtime" :
-		                        "";
-		if (myLibrary->columns() == 2)
-		{
-			myLibrary->Songs.clear();
-			myLibrary->Albums.reset();
-			myLibrary->Albums.clear();
-			myLibrary->Albums.setTitle(Config.titles_visibility ? "Albums (sorted by " + item_type + and_mtime + ")" : "");
-			myLibrary->Albums.display();
-		}
-		else
-		{
-			myLibrary->Tags.clear();
-			myLibrary->Tags.display();
-		}
 		Statusbar::printf("Switched to the list of %1%s", item_type);
 	}
 }
 
 bool ToggleMediaLibrarySortMode::canBeRun()
 {
-	return screenLegacyCurrent() == myLibrary;
+	return native_c_screen_media_library_is_current();
 }
 
 void ToggleMediaLibrarySortMode::run()
 {
-	myLibrary->toggleSortMode();
+	bool sort_by_mtime;
+
+	sort_by_mtime = native_media_library_screen_toggle_sort_mode(
+	    native_c_screen_media_library());
+	Statusbar::printf("Sorting library by: %1%",
+	                  sort_by_mtime ? "modification time" : "name");
 }
 
 bool FetchLyricsInBackground::canBeRun()
@@ -3052,7 +3123,7 @@ void ResetSearchEngine::run()
 
 bool ShowMediaLibrary::canBeRun()
 {
-	return screenLegacyCurrent() != myLibrary
+	return !native_c_screen_media_library_is_current()
 #	ifdef HAVE_TAGLIB_H
 	    && screenLegacyCurrent() != myTinyTagEditor
 #	endif // HAVE_TAGLIB_H
@@ -3061,18 +3132,20 @@ bool ShowMediaLibrary::canBeRun()
 
 void ShowMediaLibrary::run()
 {
-	myLibrary->switchTo();
+	native_c_screen_media_library_register();
+	native_c_screen_media_library_switch_to();
 }
 
 bool ToggleMediaLibraryColumnsMode::canBeRun()
 {
-	return screenLegacyCurrent() == myLibrary;
+	return native_c_screen_media_library_is_current();
 }
 
 void ToggleMediaLibraryColumnsMode::run()
 {
-	myLibrary->toggleColumnsMode();
-	myLibrary->refresh();
+	native_media_library_screen_toggle_columns_mode(
+	    native_c_screen_media_library());
+	nc_screen_refresh(native_c_screen_media_library_native());
 }
 
 bool ShowPlaylistEditor::canBeRun()
@@ -3513,28 +3586,20 @@ void findItem(const SearchDirection direction)
 
 void listsChangeFinisher()
 {
-	if (screenLegacyCurrent() == myLibrary
-	||  screenLegacyCurrent() == myPlaylistEditor
+	if (native_c_screen_media_library_is_current())
+	{
+		native_media_library_screen_finish_list_change(
+		    native_c_screen_media_library());
+		return;
+	}
+
+	if (screenLegacyCurrent() == myPlaylistEditor
 #	ifdef HAVE_TAGLIB_H
 	||  screenLegacyCurrent() == myTagEditor
 #	endif // HAVE_TAGLIB_H
 	   )
 	{
-		if (screenLegacyCurrent()->activeWindow() == &myLibrary->Tags)
-		{
-			myLibrary->Albums.clear();
-			myLibrary->Albums.refresh();
-			myLibrary->Songs.clear();
-			myLibrary->Songs.refresh();
-			myLibrary->updateTimer();
-		}
-		else if (screenLegacyCurrent()->activeWindow() == &myLibrary->Albums)
-		{
-			myLibrary->Songs.clear();
-			myLibrary->Songs.refresh();
-			myLibrary->updateTimer();
-		}
-		else if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists))
+		if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists))
 		{
 			myPlaylistEditor->Content.clear();
 			myPlaylistEditor->Content.refresh();
@@ -3764,10 +3829,9 @@ bool actions_legacy_runtime_exit_requested(void)
 /*
  * Secondary screen compatibility implementations.
  *
- * These screens are registered through their native NcScreen handles, but the
- * unported action/status code still needs the legacy C++ facades.  Keep the
- * facades in this remaining legacy translation unit while the individual
- * screen .cpp files are removed from the active build.
+ * The media-library facade is no longer instantiated or registered.  It stays
+ * in this translation unit only until the final removal step deletes its C++
+ * implementation.  The other facades remain needed by legacy actions.
  */
 #include "screens/media_library.cpp"
 #include "screens/sel_items_adder.cpp"
