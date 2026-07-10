@@ -1191,7 +1191,6 @@ private:
 	virtual bool canBeRun() override;
 	virtual void run() override;
 
-	HasSongs *m_hs;
 };
 
 struct RefetchLyrics: BaseAction
@@ -1258,8 +1257,6 @@ private:
 	virtual bool canBeRun() override;
 	virtual void run() override;
 
-	MPD::Song m_song;
-	bool m_has_song;
 };
 
 struct Quit: BaseAction
