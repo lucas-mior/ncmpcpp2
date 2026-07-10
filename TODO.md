@@ -25,53 +25,105 @@ Main goal: remove C++ from the project while preserving all current behavior.
 
 ## `./src/screens/media_library.cpp`
 
-1. **Create a behavior-parity checklist for the legacy and native screens.**
-   Map every `MediaLibrary` method and state transition to
-   `NativeMediaLibraryScreen`, including three-column, two-column, and
-   album-only modes; delayed fetching; filtering; searching; mouse handling;
-   selection; locking; merging; sorting; and locating the current song. Record
-   every missing behavior before changing callers.
-2. **Extend the native screen state and layout model.** Add explicit column-mode
-   and album-only state, the configured two- and three-column width ratios,
-   per-column titles, active-column restoration, fetch-delay timing, and the
-   legacy window timeout. Replace the equal-third layout in
-   `native_library_layout()` with the exact ratio and separator calculations
-   used by the legacy screen, including locked-screen resize parameters.
-3. **Implement the complete MPD-backed tag and album loading pipeline.** Use
-   `NcmMpdClient`, `NcmMpdSongList`, and the typed C menu rows to fetch the
-   recursive library, collect all values of `Config.media_lib_primary_tag`,
-   merge duplicate tag/album/date keys, preserve the newest modification time,
-   create the “All tracks” album row, and reproduce the fallback from a failed
-   two-column fetch to the supported column mode.
-4. **Implement song loading, ordering, and display parity.** Build exact MPD
-   searches for the active tag/album/date, support albums split by date, sort
-   songs by date, album, disc, track number, and formatted fallback text, and
-   sort tags/albums either by locale-aware name or descending modification
-   time. Render empty tags, album/date labels, song formats, selected markers,
-   inactive-column highlights, titles, separators, and “No albums found.”
-5. **Port the update and delayed-fetch state machine.** Make
-   `native_library_update()` consume tag, album, and song update requests,
-   preserve valid highlights across repopulation, clear dependent columns when
-   the parent selection changes, reapply filters after a refresh, and honor
-   `Config.data_fetching_delay` through `NcmTimePoint` instead of immediately
-   clearing request flags.
-6. **Complete all user operations and action integration.** Implement add/play
-   for the current or selected songs, full selected-song extraction, mouse
-   column switching, previous/next-column behavior in every mode,
-   `toggleColumnsMode`, `toggleSortMode`, and `locateSong` so it can fetch and
-   select the required tag and album before selecting the song. Wire the C
-   action runtime and status messages directly to these APIs.
-7. **Add parity and regression tests.** Expand
-   `tests/c_media_library_screen_test.c` with fake MPD responses for duplicate
-   tags, multi-valued tags, empty tags, all-tracks rows, date splitting, name
-   and mtime sorts, all column modes, delayed updates, filter/search
-   reapplication, selection, add/play, locate-song, MPD errors, and geometry.
-   Add a curses smoke test for rendering and mouse/keyboard transitions.
-8. **Remove the C++ facade.** Replace every `MediaLibrary`, `myLibrary`,
-   `media_library.h`, and `screens/media_library.cpp` reference with the native
-   C screen API; remove the textual include at the end of
-   `actions_legacy.cpp`; then delete the C++ source and obsolete header after
-   symbol/include scans, `make all`, and `make check` show no regression.
+1. **Replace the placeholder native contract with the complete C state model.**
+   In `nc_media_library.h`, replace the ambiguous `columns` integer with an
+   explicit three-column, two-column, and album-only mode enum while keeping
+   tags, albums, and songs as distinct active-column values. Add the legacy
+   250-ms fetch-delay/window-timeout state, per-column filter and search state,
+   title buffers, and a C-only hook table whose production implementation uses
+   `NcmMpdClient` and whose test implementation can return deterministic lists
+   and errors. Expose typed accessors for the current tag, current album, mode,
+   visible song rows, update timer, sort toggle, mode toggle, and locate/add
+   operations needed by callers that currently dereference `myLibrary`.
+2. **Implement exact mode, geometry, menu, and rendering behavior.** Configure
+   all three C menus with cyclic scrolling, centered cursor, selected
+   prefix/suffix, and active versus inactive-column highlight prefixes. Make
+   the mode cycle exactly three-column -> two-column -> album-only ->
+   three-column, hide the tags window in both two-column modes, and calculate
+   widths from `media_library_column_width_ratio_three` or
+   `media_library_column_width_ratio_two` after obtaining locked-screen-aware
+   resize parameters. Add row draw callbacks for locale-converted tags,
+   `Config.empty_tag`, the exact album/date/primary-tag text, “All tracks,” and
+   `Config.song_library_format`; refresh every visible menu, draw the proper
+   separators, maintain the legacy dynamic titles, and render “No albums
+   found.” when appropriate.
+3. **Build and test the native grouping and ordering primitives before MPD I/O.**
+   Add pure C helpers that populate tag, album, and song arrays from
+   `NcmMpdStringList`/`NcmMpdSongList`, enumerate every value of the configured
+   primary tag, split albums by date only when configured, create the separator
+   and all-tracks row only for multiple albums, and preserve empty tag/album
+   display cases. Implement locale-aware tag/album comparators honoring
+   `Config.ignore_leading_the`, descending mtime sorting, and song comparison by
+   date, album, disc, track number, then rendered library text. Match the
+   legacy duplicate-mtime rules explicitly—maximum mtime in three-column
+   aggregation and last encountered mtime in the two-column recursive
+   aggregation—unless that behavior is changed separately with its own test.
+4. **Port the exact MPD query pipeline for every mode.** In three-column name
+   sort, load primary tags with `ncm_mpd_client_get_list()`; in three-column
+   mtime sort, recursively load the database and aggregate all primary-tag
+   values; and load albums by an exact search for the highlighted tag. In
+   two-column and album-only modes, recursively load the database and aggregate
+   `(tag, album, date)` or `(empty tag, album, date)` keys, preserving the
+   legacy rule that album-only aggregation still iterates songs through their
+   primary-tag values. Load songs with exact primary-tag, album, and optional
+   date constraints, omitting album/date for the all-tracks row and omitting
+   the primary-tag constraint only in album-only mode. Convert the C++
+   exception fallbacks into explicit C error paths: failed recursive two-column
+   loading advances to the next column mode, failed mtime tag loading switches
+   back to name sorting, request flags remain pending, and the original MPD
+   error is reported without retaining partial rows.
+5. **Port the delayed update and dependent-column state machine.** Make
+   `native_library_update()` process only the requested or due level, rebuild
+   menus through temporary arrays, swap them in only after successful fetches,
+   preserve highlights by tag/album/song identity, and reapply each column’s
+   existing filter after replacement. When a tag highlight changes, clear
+   albums and songs and restart the timer; when an album highlight changes,
+   clear songs and restart the timer. Fetch empty dependent columns only after
+   250 ms when `Config.data_fetching_delay` is enabled and immediately
+   otherwise, return a 250-ms window timeout while albums or songs are pending,
+   and clear each update flag only after that level succeeds. Move this
+   list-change finalization into a native API/callback so it no longer depends
+   on `actions_legacy.cpp::listsChangeFinisher()`.
+6. **Finish navigation, filtering, searching, mouse handling, and song actions.**
+   Make previous/next-column availability depend on the actual visible mode and
+   a nonempty destination menu rather than enum arithmetic; preserve active and
+   inactive highlighting while moving between columns. Implement the native
+   mouse callback with the legacy left-click selection, right-click add/play,
+   column switching, scrolling, and dependent-list clearing behavior. Replace
+   the current URI-only song matching and literal filter regex with
+   `Config.regex_type` matching against the same rendered tag/album/song text
+   used on screen; keep separators and “All tracks” during filtering but skip
+   them during search. Expand selected-song extraction and add/play so tags,
+   selected albums, all-tracks, and selected song rows issue the same searches,
+   ordering, playlist insertion, playback, and status messages as the C++
+   implementation.
+7. **Port robust locate-song behavior and migrate every external consumer.**
+   Reimplement `locateSong` in C with the database-song and missing-primary-tag
+   checks, screen switch and progress message, filter clearing, on-demand
+   fetches, insertion of tags/albums omitted by limited MPD servers, date-less
+   retry for Spotify-style entries, invalid-row cleanup, exact song selection,
+   and fallback to the previous nonempty column. Then replace all direct
+   `myLibrary` uses in `actions_legacy.cpp` and `status_legacy.cpp`: screen
+   construction/registration and resize flags, database update observers,
+   inactive song-column refresh, artist lookup, edit-library-tag and
+   edit-library-album inputs/song iteration, jump/show/playing-song actions,
+   tag-type/sort/mode actions, and list-change cleanup. Register
+   `native_c_screen_media_library()` directly and remove the duplicate legacy
+   observer once the C status path is authoritative.
+8. **Prove parity, cut over the build, and delete the facade.** Expand
+   `tests/c_media_library_screen_test.c` with deterministic hook fixtures for
+   all three modes, exact generated MPD queries, multi-valued and empty tags,
+   duplicate mtime behavior, date splitting, all-tracks separators, every sort,
+   delayed fetches, request/error fallback, highlight/filter preservation,
+   rendered-string search, mouse transitions, selected songs from every
+   column, add/play, missing-server entries, and locate-song empty-result
+   recovery; add a curses smoke test for geometry, titles, separators, and
+   active/inactive highlights. After the native screen is the registered
+   implementation and no caller references `MediaLibrary`, `myLibrary`, or its
+   nested row types, remove the textual `#include "screens/media_library.cpp"`
+   from `actions_legacy.cpp`, delete `media_library.cpp` and
+   `media_library.h`, scan for stale symbols/includes, and require `make all`
+   plus `make check` to pass.
 
 ## `./src/screens/sel_items_adder.cpp`
 
