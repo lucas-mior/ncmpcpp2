@@ -568,8 +568,6 @@ void initializeScreens()
 	native_c_screen_lyrics_register();
 	mySelectedItemsAdder->registerNativeScreen();
 
-	mySortPlaylistDialog->registerNativeScreen();
-
 #	ifdef HAVE_TAGLIB_H
 	myTinyTagEditor->registerNativeScreen();
 	myTagEditor->registerNativeScreen();
@@ -591,7 +589,6 @@ void setResizeFlags()
 	myPlaylistEditor->hasToBeResized = 1;
 	native_c_screen_lyrics_set_resize();
 	mySelectedItemsAdder->hasToBeResized = 1;
-	mySortPlaylistDialog->hasToBeResized = 1;
 
 #	ifdef HAVE_TAGLIB_H
 	myTinyTagEditor->hasToBeResized = 1;

@@ -694,9 +694,24 @@ native_c_screen_sort_playlist_dialog_init(void) {
 
 void
 native_c_screen_sort_playlist_dialog_register(void) {
+    NcScreen *registered;
+    NcScreen *screen;
+    bool success;
+
     native_c_screen_sort_playlist_dialog_init();
-    assert(native_register_screen(
-        native_c_screen_sort_playlist_dialog_native()));
+    screen = native_c_screen_sort_playlist_dialog_native();
+    registered = app_controller_find_screen_type(
+        NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
+    if ((registered != NULL) && (registered != screen)) {
+        success = app_controller_unregister_screen(registered);
+        assert(success);
+        if (!success) {
+            return;
+        }
+    }
+    success = native_register_screen(screen);
+    assert(success);
+    (void)success;
     return;
 }
 

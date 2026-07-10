@@ -50,6 +50,7 @@ static void test_dialog_sort_errors(NativePlaylistScreen *playlist,
 static void test_dialog_rejects_invalid_entry(
     NativePlaylistScreen *playlist, NativeSortPlaylistDialog *dialog,
     NcmMpdClient *client);
+static void test_replaces_legacy_registration(void);
 static void test_action_routing(void);
 
 bool
@@ -215,6 +216,8 @@ main(void) {
         native_playlist_screen_base(&playlist)));
     nc_song_menu_destroy(&playlist.songs);
 
+    app_controller_init();
+    test_replaces_legacy_registration();
     app_controller_init();
     test_action_routing();
     exit(EXIT_SUCCESS);
@@ -420,6 +423,29 @@ test_dialog_rejects_invalid_entry(
     assert(app_controller_current_screen()
            == native_playlist_screen_base(playlist));
     test_clear_selection(playlist);
+    return;
+}
+
+static void
+test_replaces_legacy_registration(void) {
+    NcScreen legacy_screen;
+    NcScreenCallbacks callbacks = {0};
+    NcScreen *native_screen;
+
+    nc_screen_init(&legacy_screen, callbacks, NULL,
+                   NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
+    assert(app_controller_register_screen(&legacy_screen));
+    assert(app_controller_find_screen_type(
+               NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG)
+           == &legacy_screen);
+
+    native_c_screen_sort_playlist_dialog_register();
+    native_screen = native_c_screen_sort_playlist_dialog_native();
+    assert(app_controller_find_screen_type(
+               NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG)
+           == native_screen);
+    assert(!app_controller_is_screen_registered(&legacy_screen));
+    assert(app_controller_is_screen_registered(native_screen));
     return;
 }
 
