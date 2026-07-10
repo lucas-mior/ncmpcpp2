@@ -2,9 +2,10 @@
 #include <cassert>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <fstream>
+#include <new>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -14,7 +15,10 @@
 #include "bindings.h"
 #include "configuration_legacy.h"
 #include "config.h"
+#include "settings.h"
 #include "settings_legacy.h"
+
+#undef Config
 #include "utility/string.h"
 
 using std::cerr;
@@ -46,6 +50,36 @@ struct CommandLineOptions
 	bool version = false;
 	bool quiet = false;
 };
+
+
+void readConfigurationPaths(const std::vector<std::string> &paths,
+                            bool ignore_errors, bool quiet)
+{
+	NcmStringViewArray c_paths;
+	NcmError error;
+
+	ncm_string_view_array_init(&c_paths);
+	for (const auto &path : paths)
+	{
+		auto view = ncm_string_view_array_append(&c_paths);
+		if (view == nullptr)
+		{
+			ncm_string_view_array_destroy(&c_paths);
+			throw std::bad_alloc();
+		}
+		view->data = const_cast<char *>(path.data());
+		view->len = static_cast<int32>(path.size());
+	}
+
+	ncm_error_clear(&error);
+	bool result = configuration_read(
+		&::Config, &c_paths, ignore_errors, quiet, &error);
+	ncm_string_view_array_destroy(&c_paths);
+	if (!result)
+		throw std::runtime_error(error.message);
+
+	settings_legacy_sync_from_c(&::Config);
+}
 
 bool readBindingPaths(const std::vector<std::string> &paths)
 {
@@ -489,8 +523,8 @@ bool configure(int argc, char **argv)
 
 		// read configuration
 		std::for_each(options.config_paths.begin(), options.config_paths.end(), expand_home);
-		if (Config.read(options.config_paths, options.ignore_config_errors) == false)
-			exit(1);
+		readConfigurationPaths(
+			options.config_paths, options.ignore_config_errors, options.quiet);
 
 		// read bindings
 		std::for_each(options.bindings_paths.begin(), options.bindings_paths.end(), expand_home);
@@ -499,8 +533,8 @@ bool configure(int argc, char **argv)
 		ncm_bindings_configuration_generate_defaults(&Bindings);
 
 		// create directories
-		std::filesystem::create_directories(Config.ncmpcpp_directory);
-		std::filesystem::create_directory(Config.lyrics_directory);
+		std::filesystem::create_directories(ConfigLegacy.ncmpcpp_directory);
+		std::filesystem::create_directory(ConfigLegacy.lyrics_directory);
 
 		// MPD connection options and --current-song are applied by the C
 		// configuration path after this legacy pass completes.
@@ -508,8 +542,8 @@ bool configure(int argc, char **argv)
 		// custom startup screen
 		if (options.screen)
 		{
-			Config.startup_screen_type = stringtoStartupScreenType(options.screen_name);
-			if (Config.startup_screen_type == NCM_SCREEN_TYPE_UNKNOWN)
+			ConfigLegacy.startup_screen_type = stringtoStartupScreenType(options.screen_name);
+			if (ConfigLegacy.startup_screen_type == NCM_SCREEN_TYPE_UNKNOWN)
 			{
 				std::cerr << "Unknown screen: " << options.screen_name << "\n";
 				exit(1);
@@ -519,8 +553,8 @@ bool configure(int argc, char **argv)
 		// custom startup slave screen
 		if (options.slave_screen)
 		{
-			Config.startup_slave_screen_type = stringtoStartupScreenType(options.slave_screen_name);
-			if (Config.startup_slave_screen_type == NCM_SCREEN_TYPE_UNKNOWN)
+			ConfigLegacy.startup_slave_screen_type = stringtoStartupScreenType(options.slave_screen_name);
+			if (ConfigLegacy.startup_slave_screen_type == NCM_SCREEN_TYPE_UNKNOWN)
 			{
 				std::cerr << "Unknown slave screen: " << options.slave_screen_name << "\n";
 				exit(1);

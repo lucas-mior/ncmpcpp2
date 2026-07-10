@@ -55,24 +55,29 @@ APP_CXX_SRCS := \
 	src/configuration_legacy.cpp \
 	src/mpdpp.cpp \
 	src/settings_legacy.cpp
-TEST_SRCS := $(sort $(wildcard tests/*_test.c))
+C_TEST_SRCS := $(sort $(wildcard tests/*_test.c))
+CXX_TEST_SRCS := $(sort $(wildcard tests/*_test.cpp))
 
 CBASE_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(CBASE_SRCS))
 NCMPCPP_C_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(NCMPCPP_C_SRCS))
 APP_C_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(APP_C_SRCS))
 APP_CXX_OBJS := $(patsubst %.cpp,$(OBJ_DIR)/%.cpp.o,$(APP_CXX_SRCS))
-TEST_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(TEST_SRCS))
-TEST_BINS := $(patsubst tests/%.c,$(BUILD_DIR)/tests/%,$(TEST_SRCS))
+C_TEST_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(C_TEST_SRCS))
+CXX_TEST_OBJS := $(patsubst %.cpp,$(OBJ_DIR)/%.cpp.o,$(CXX_TEST_SRCS))
+C_TEST_BINS := $(patsubst tests/%.c,$(BUILD_DIR)/tests/%,$(C_TEST_SRCS))
+CXX_TEST_BINS := $(patsubst tests/%.cpp,$(BUILD_DIR)/tests/%,$(CXX_TEST_SRCS))
+TEST_BINS := $(C_TEST_BINS) $(CXX_TEST_BINS)
 DEPS := \
 	$(CBASE_OBJS:.o=.d) \
 	$(NCMPCPP_C_OBJS:.o=.d) \
 	$(APP_C_OBJS:.o=.d) \
 	$(APP_CXX_OBJS:.o=.d) \
-	$(TEST_OBJS:.o=.d)
+	$(C_TEST_OBJS:.o=.d) \
+	$(CXX_TEST_OBJS:.o=.d)
 
 .PHONY: all check install clean help FORCE
 .DELETE_ON_ERROR:
-.SECONDARY: $(CBASE_OBJS) $(NCMPCPP_C_OBJS) $(APP_C_OBJS) $(APP_CXX_OBJS) $(TEST_OBJS)
+.SECONDARY: $(CBASE_OBJS) $(NCMPCPP_C_OBJS) $(APP_C_OBJS) $(APP_CXX_OBJS) $(C_TEST_OBJS) $(CXX_TEST_OBJS)
 
 all: $(BINARY)
 
@@ -174,11 +179,27 @@ $(BINARY): $(APP_C_OBJS) $(APP_CXX_OBJS) $(NCMPCPP_C_LIB) $(CBASE_LIB)
 		$(LDLIBS) \
 		$(THREAD_FLAGS)
 
-$(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LIB) $(CBASE_LIB)
+$(C_TEST_BINS): $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LIB) $(CBASE_LIB)
 	@mkdir -p $(@D)
 	@printf 'LD  %s\n' '$@'
 	@$(CC) $(LDFLAGS) -o $@ \
 		$< \
+		-Wl,--start-group \
+		$(NCMPCPP_APP_C_LIB) \
+		$(NCMPCPP_C_LIB) \
+		$(CBASE_LIB) \
+		-Wl,--end-group \
+		$(READLINE_LIBS) \
+		$(PKG_LIBS) \
+		$(LDLIBS) \
+		$(THREAD_FLAGS)
+
+$(CXX_TEST_BINS): $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.cpp.o $(OBJ_DIR)/src/settings_legacy.cpp.o $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LIB) $(CBASE_LIB)
+	@mkdir -p $(@D)
+	@printf 'LD  %s\n' '$@'
+	@$(CXX) $(LDFLAGS) -o $@ \
+		$< \
+		$(OBJ_DIR)/src/settings_legacy.cpp.o \
 		-Wl,--start-group \
 		$(NCMPCPP_APP_C_LIB) \
 		$(NCMPCPP_C_LIB) \

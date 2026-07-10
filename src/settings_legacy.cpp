@@ -1,565 +1,337 @@
-#include <cstring>
-#include <fstream>
-#include <sstream>
+#include <cstddef>
+#include <new>
 #include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 
-#include "configuration_legacy.h"
-#include "format_impl.h"
-#include "helpers_legacy.h"
+#include "settings.h"
 #include "settings_legacy.h"
-#include "utility/conversion.h"
-#include "utility/option_parser.h"
+#include "song.h"
 
-namespace ph = std::placeholders;
+#undef Config
 
-Configuration ConfigLegacy;
+LegacyConfiguration ConfigLegacy;
 
 namespace {
 
-std::vector<Column> generate_columns(const std::string &format)
+std::string stringFromC(const char *data, int32 length)
 {
-	std::vector<Column> result;
-	std::string width;
-	size_t pos = 0;
-	while (!(width = getEnclosedString(format, '(', ')', &pos)).empty())
-	{
-		Column col;
-		auto scolor = getEnclosedString(format, '[', ']', &pos);
-		if (scolor.empty())
-			col.color = NC::Color::Default;
-		else
-			col.color = parse_value<NC::Color>(scolor);
+	if (data == nullptr || length <= 0)
+		return std::string();
+	return std::string(data, static_cast<size_t>(length));
+}
 
-		if (*width.rbegin() == 'f')
-		{
-			col.fixed = true;
-			width.resize(width.size()-1);
-		}
-		else
-			col.fixed = false;
+std::string stringFromBuffer(const NcmBuffer &buffer)
+{
+	return stringFromC(buffer.data, buffer.len);
+}
 
-		auto tag_type = getEnclosedString(format, '{', '}', &pos);
-		// alternative name
-		size_t tag_type_colon_pos = tag_type.find(':');
-		if (tag_type_colon_pos != std::string::npos)
-		{
-			col.name = tag_type.substr(tag_type_colon_pos+1);
-			tag_type.resize(tag_type_colon_pos);
-		}
-
-		if (!tag_type.empty())
-		{
-			size_t i = -1;
-
-			// extract tag types in format a|b|c etc.
-			do
-				col.type += tag_type[(++i)++]; // nice one.
-			while (tag_type[i] == '|');
-
-			// apply attributes
-			for (; i < tag_type.length(); ++i)
-			{
-				switch (tag_type[i])
-				{
-					case 'r':
-						col.right_alignment = 1;
-						break;
-					case 'E':
-						col.display_empty_tag = 0;
-						break;
-				}
-			}
-		}
-		else // empty column
-			col.display_empty_tag = 0;
-
-		col.width = parse_value<int>(width);
-		result.push_back(col);
-	}
-
-	// calculate which column is the last one to have relative width and stretch it accordingly
-	if (!result.empty())
-	{
-		int stretch_limit = 0;
-		auto it = result.rbegin();
-		for (; it != result.rend(); ++it)
-		{
-			if (it->fixed)
-				stretch_limit += it->width;
-			else
-				break;
-		}
-		// if it's false, all columns are fixed
-		if (it != result.rend())
-			it->stretch_limit = stretch_limit;
-	}
-
+Format::AST<char> copyFormat(const NcmFormatAst &source)
+{
+	Format::AST<char> result;
+	if (!ncm_format_ast_copy(
+	        result.cAst(), const_cast<NcmFormatAst *>(&source)))
+		throw std::bad_alloc();
 	return result;
 }
 
-Format::AST<char> columns_to_format(const std::vector<Column> &columns)
-{
-	std::vector<std::string> types;
-
-	for (const auto &column : columns)
-		types.push_back(column.type);
-	return Format::makeColumnsFormat(types);
-}
-
-void add_slash_at_the_end(std::string &s)
-{
-	if (s.empty() || *s.rbegin() != '/')
-	{
-		s.resize(s.size()+1);
-		*s.rbegin() = '/';
-	}
-}
-
-std::string adjust_directory(std::string s)
-{
-	add_slash_at_the_end(s);
-	expand_home(s);
-	return s;
-}
-
-std::string adjust_path(std::string s)
-{
-	expand_home(s);
-	return s;
-}
-
-NC::Buffer buffer(const std::string &v)
+NC::Buffer copyBuffer(const NcBuffer &source)
 {
 	NC::Buffer result;
-	Format::print(
-		Format::parse(v, Format::Flags::Color | Format::Flags::Format),
-		result,
-		nullptr);
+	nc_buffer_destroy(result.cBuffer());
+	nc_buffer_copy(result.cBuffer(), const_cast<NcBuffer *>(&source));
 	return result;
 }
 
-NC::Buffer buffer_wlength(const NC::Buffer *target,
-                          size_t &wlength,
-                          const std::string &v)
+std::vector<size_t> copyRatio(const NcmInt32Array &source)
 {
-	// Compatibility layer between highlight color and new highlight prefix and
-	// suffix. Basically, for older configurations if highlight color is provided,
-	// we don't want to override it with default prefix and suffix.
-	if (target == nullptr || target->empty())
+	std::vector<size_t> result;
+	result.reserve(static_cast<size_t>(source.len));
+	for (int32 i = 0; i < source.len; i += 1)
 	{
-		NC::Buffer result = buffer(v);
-		wlength = Utf8::width(result.str());
-		return result;
+		if (source.items[i] < 0)
+			throw std::logic_error("negative column width ratio");
+		result.push_back(static_cast<size_t>(source.items[i]));
 	}
-	else
-		return *target;
+	return result;
 }
 
-void deprecated(const char *option, const char *version_removal,
-                const std::string &advice)
+std::vector<LegacyColumn> copyColumns(const ColumnArray &source)
 {
-	std::cerr << "WARNING: Variable '" << option
-	          << "' is deprecated and will be removed in "
-	          << version_removal;
-	if (!advice.empty())
-		std::cerr << " (" << advice << ")";
-	std::cerr << ".\n";
+	std::vector<LegacyColumn> result;
+	result.reserve(static_cast<size_t>(source.len));
+	for (int32 i = 0; i < source.len; i += 1)
+	{
+		const Column &item = source.items[i];
+		LegacyColumn column;
+		column.name = stringFromC(item.name, item.name_len);
+		column.type = stringFromC(item.type, item.type_len);
+		column.width = item.width;
+		column.stretch_limit = item.stretch_limit;
+		column.color = NC::fromNcColor(item.color);
+		column.fixed = item.fixed;
+		column.right_alignment = item.right_alignment;
+		column.display_empty_tag = item.display_empty_tag;
+		result.push_back(std::move(column));
+	}
+	return result;
 }
 
-}
-
-bool Configuration::read(const std::vector<std::string> &config_paths, bool ignore_errors)
+std::vector<NC::FormattedColor> copyFormattedColors(
+	const NcmFormattedColorArray &source)
 {
-	option_parser p;
-	// keep the same order of variables as in configuration file
-	p.add("ncmpcpp_directory", &ncmpcpp_directory, "~/.config/ncmpcpp/", adjust_directory);
-	p.add("lyrics_directory", &lyrics_directory, "~/.lyrics/", adjust_directory);
-	p.add<void>("mpd_host", nullptr, "localhost", [](std::string host) {
-			(void)host;
-		});
-	p.add<void>("mpd_port", nullptr, "6600", [](std::string port) {
-			(void)parse_value<unsigned>(port);
-		});
-	p.add<void>("mpd_password", nullptr, "", [](std::string password) {
-			(void)password;
-		});
-	p.add("mpd_music_dir", &mpd_music_dir, "~/music", adjust_directory);
-	p.add("mpd_connection_timeout", &mpd_connection_timeout, "5");
-	p.add("mpd_crossfade_time", &crossfade_time, "5");
-	p.add("random_exclude_pattern", &random_exclude_pattern, "");
-	p.add("visualizer_data_source", &visualizer_data_source, "/tmp/mpd.fifo", adjust_path);
-	p.add("visualizer_output_name", &visualizer_output_name, "Visualizer feed");
-	p.add("visualizer_in_stereo", &visualizer_in_stereo, "yes", yes_no);
-	p.add("visualizer_type", &visualizer_type,
-#ifdef HAVE_FFTW3_H
-	      "spectrum"
-#else
-	      "ellipse"
-#endif
-		);
-	p.add("visualizer_look", &visualizer_chars, "●▮", [](std::string s) {
-			auto result = std::move(s);
-			boundsCheck<size_t>(Utf8::characters(result), 2, 2);
-			return result;
-	});
-	p.add("visualizer_fps", &visualizer_fps,
-			"60", [](std::string v) {
-			uint32_t result = parse_value<uint32_t>(v);
-			boundsCheck<uint32_t>(result, 30, 1000);
-			return result;
-			});
-	p.add("visualizer_autoscale", &visualizer_autoscale, "no", yes_no);
-	p.add("visualizer_spectrum_smooth_look", &visualizer_spectrum_smooth_look, "yes", yes_no);
-	p.add("visualizer_spectrum_smooth_look_legacy_chars", &visualizer_spectrum_smooth_look_legacy_chars, "yes", yes_no);
-	p.add("visualizer_spectrum_dft_size", &visualizer_spectrum_dft_size,
-			"2", [](std::string v) {
-			auto result = parse_value<size_t>(v);
-			boundsCheck<size_t>(result, 1, 5);
-			return result;
-			});
-	p.add("visualizer_spectrum_gain", &visualizer_spectrum_gain,
-			"10", [](std::string v) {
-			auto result = parse_value<double>(v);
-			boundsCheck<double>(result, 0, 100);
-			return result;
-			});
-	p.add("visualizer_spectrum_hz_min", &visualizer_spectrum_hz_min,
-			"20", [](std::string v) {
-			auto result = parse_value<double>(v);
-			lowerBoundCheck<double>(result, 1);
-			return result;
-			});
-	p.add("visualizer_spectrum_hz_max", &visualizer_spectrum_hz_max,
-			"20000", [](std::string v) {
-			auto result = parse_value<double>(v);
-			lowerBoundCheck<double>(result, Config.visualizer_spectrum_hz_min+1);
-			return result;
-			});
-	p.add("visualizer_spectrum_log_scale_x", &visualizer_spectrum_log_scale_x, "yes", yes_no);
-	p.add("visualizer_spectrum_log_scale_y", &visualizer_spectrum_log_scale_y, "yes", yes_no);
-	p.add("visualizer_color", &visualizer_colors,
-	      "blue, cyan, green, yellow, magenta, red", list_of<NC::FormattedColor>);
-	p.add("system_encoding", &system_encoding, "", [](std::string) {
-			return std::string();
-		});
-	p.add("playlist_disable_highlight_delay",
-      &playlist_disable_highlight_delay_seconds, "5");
-	p.add("message_delay_time", &message_delay_time, "5");
-	p.add("song_list_format", &song_list_format,
-	      "{%a - }{%t}|{$8%f$9}$R{$3%l$9}", [](std::string v) {
-		      return Format::parse(v);
-	      });
-	p.add("song_status_format", &song_status_format,
-	      "{{%a{ \"%b\"{ (%y)}} - }{%t}}|{%f}", [](std::string v) {
-		      auto flags = Format::Flags::All ^ Format::Flags::OutputSwitch;
-		      return Format::parse(v, flags);
-	});
-	p.add("song_library_format", &song_library_format,
-	      "{%n - }{%t}|{%f}", [](std::string v) {
-		      return Format::parse(v);
-	      });
-	p.add("alternative_header_first_line_format", &new_header_first_line,
-	      "$b$1$aqqu$/a$9 {%t}|{%f} $1$atqq$/a$9$/b", [](std::string v) {
-		      return Format::parse(std::move(v),
-		                           Format::Flags::All ^ Format::Flags::OutputSwitch);
-	});
-	p.add("alternative_header_second_line_format", &new_header_second_line,
-	      "{{$4$b%a$/b$9}{ - $7%b$9}{ ($4%y$9)}}|{%D}", [](std::string v) {
-		      return Format::parse(std::move(v),
-		                           Format::Flags::All ^ Format::Flags::OutputSwitch);
-	});
-	p.add("current_item_prefix", &current_item_prefix, "$(yellow)$r",
-	      std::bind(buffer_wlength,
-	                &current_item_prefix,
-	                std::ref(current_item_prefix_length),
-	                ph::_1));
-	p.add("current_item_suffix", &current_item_suffix, "$/r$(end)",
-	      std::bind(buffer_wlength,
-	                &current_item_suffix,
-	                std::ref(current_item_suffix_length),
-	                ph::_1));
-	p.add("current_item_inactive_column_prefix", &current_item_inactive_column_prefix,
-	      "$(white)$r",
-	      std::bind(buffer_wlength,
-	                &current_item_inactive_column_prefix,
-	                std::ref(current_item_inactive_column_prefix_length),
-	                ph::_1));
-	p.add("current_item_inactive_column_suffix", &current_item_inactive_column_suffix,
-	      "$/r$(end)",
-	      std::bind(buffer_wlength,
-	                &current_item_inactive_column_suffix,
-	                std::ref(current_item_inactive_column_suffix_length),
-	                ph::_1));
-	p.add("now_playing_prefix", &now_playing_prefix, "$b",
-	      std::bind(buffer_wlength,
-	                nullptr,
-	                std::ref(now_playing_prefix_length),
-	                ph::_1));
-	p.add("now_playing_suffix", &now_playing_suffix, "$/b",
-	      std::bind(buffer_wlength,
-	                nullptr,
-	                std::ref(now_playing_suffix_length),
-	                ph::_1));
-	p.add("browser_playlist_prefix", &browser_playlist_prefix, "$2playlist$9 ", buffer);
-	p.add("selected_item_prefix", &selected_item_prefix, "$6",
-	      std::bind(buffer_wlength,
-	                nullptr,
-	                std::ref(selected_item_prefix_length),
-	                ph::_1));
-	p.add("selected_item_suffix", &selected_item_suffix, "$9",
-	      std::bind(buffer_wlength,
-	                nullptr,
-	                std::ref(selected_item_suffix_length),
-	                ph::_1));
-	p.add("modified_item_prefix", &modified_item_prefix, "$3>$9 ", buffer);
-	p.add("song_window_title_format", &song_window_title_format,
-	      "{%a - }{%t}|{%f}", [](std::string v) {
-		      return Format::parse(v, Format::Flags::Tag);
-	      });
-	p.add("browser_sort_mode", &browser_sort_mode, "type", [](std::string v) {
-		if (v == "noop")
+	std::vector<NC::FormattedColor> result;
+	result.reserve(static_cast<size_t>(source.len));
+	for (int32 i = 0; i < source.len; i += 1)
+	{
+		result.emplace_back(
+			const_cast<NcFormattedColor *>(&source.items[i]));
+	}
+	return result;
+}
+
+NC::Border copyBorder(const NcBorder &source)
+{
+	if (!source.enabled)
+		return NC::Border();
+	return NC::Border(NC::fromNcColor(source.color));
+}
+
+Regex::Flags copyRegexFlags(uint32 flags)
+{
+	switch (flags)
+	{
+		case NCM_REGEX_LITERAL_CASE_INSENSITIVE:
+			return Regex::literalCaseInsensitive();
+		case NCM_REGEX_BASIC_CASE_INSENSITIVE:
+			return Regex::basicCaseInsensitive();
+		case NCM_REGEX_EXTENDED_CASE_INSENSITIVE:
+			return Regex::extendedCaseInsensitive();
+		default:
+			throw std::logic_error("unsupported regular expression flags");
+	}
+}
+
+std::vector<ScreenType> copyScreenSequence(const ScreenTypeArray &source)
+{
+	if (source.len <= 0)
+		return std::vector<ScreenType>();
+	return std::vector<ScreenType>(
+		source.items, source.items + source.len);
+}
+
+void copyLyricsFetchers(NcmLyricsFetcherRegistry &destination,
+                        const NcmLyricsFetcherRegistry &source)
+{
+	NcmLyricsFetcherRegistry result;
+	ncm_lyrics_fetcher_registry_init(&result);
+	try
+	{
+		for (int32 i = 0; i < source.fetchers.len; i += 1)
 		{
-			deprecated("browser_sort_mode = 'noop'",
-			           "0.10",
-			           "use 'none' instead");
-			v = "none";
+			auto item = ncm_lyrics_fetcher_registry_append(&result);
+			if (item == nullptr)
+				throw std::bad_alloc();
+			if (!ncm_lyrics_fetcher_def_copy(
+			        item, const_cast<NcmLyricsFetcherDef *>(
+			                  &source.fetchers.items[i])))
+			{
+				result.fetchers.len -= 1;
+				ncm_lyrics_fetcher_def_destroy(item);
+				throw std::bad_alloc();
+			}
 		}
-		return parse_value<SortMode>(v);
-	});
-	p.add("browser_sort_format", &browser_sort_format,
-	      "{%a - }{%t}|{%f} {%l}", [](std::string v) {
-		      return Format::parse(v, Format::Flags::Tag);
-	      });
-	p.add("song_columns_list_format", &song_columns_mode_format,
-	      "(20)[]{a} (6f)[green]{NE} (50)[white]{t|f:Title} (20)[cyan]{b} (7f)[magenta]{l}",
-	      [this](std::string v) {
-		      columns = generate_columns(v);
-		      return columns_to_format(columns);
-	      });
-	p.add("execute_on_song_change", &execute_on_song_change, "", adjust_path);
-	p.add("execute_on_player_state_change", &execute_on_player_state_change,
-	      "", adjust_path);
-	p.add("playlist_show_mpd_host", &playlist_show_mpd_host, "no", yes_no);
-	p.add("playlist_show_remaining_time", &playlist_show_remaining_time, "no", yes_no);
-	p.add("playlist_shorten_total_times", &playlist_shorten_total_times, "no", yes_no);
-	p.add("playlist_separate_albums", &playlist_separate_albums, "no", yes_no);
-	p.add("playlist_display_mode", &playlist_display_mode, "columns");
-	p.add("browser_display_mode", &browser_display_mode, "classic");
-	p.add("search_engine_display_mode", &search_engine_display_mode, "classic");
-	p.add("playlist_editor_display_mode", &playlist_editor_display_mode, "classic");
-	p.add("discard_colors_if_item_is_selected", &discard_colors_if_item_is_selected,
-	      "yes", yes_no);
-	p.add("show_duplicate_tags", &MPD::Song::ShowDuplicateTags, "yes", yes_no);
-	p.add("incremental_seeking", &incremental_seeking, "yes", yes_no);
-	p.add("seek_time", &seek_time, "1");
-	p.add("volume_change_step", &volume_change_step, "2");
-	p.add("autocenter_mode", &autocenter_mode, "no", yes_no);
-	p.add("centered_cursor", &centered_cursor, "no", yes_no);
-	p.add("progressbar_look", &progressbar, "=>", [](std::string v) {
-			auto result = std::move(v);
-			boundsCheck<size_t>(Utf8::characters(result), 2, 3);
-			// If two characters were specified, fill \0 as the third one.
-			Utf8::resize(result, 3);
-			return result;
-	});
-	p.add("default_place_to_search_in", &search_in_db, "database", [](std::string v) {
-			if (v == "database")
-				return true;
-			else if (v == "playlist")
-				return false;
-			else
-				invalid_value(v);
-	});
-	p.add("user_interface", &design, "classic");
-	p.add("data_fetching_delay", &data_fetching_delay, "yes", yes_no);
-	p.add("media_library_hide_album_dates", &media_lib_hide_album_dates, "no", yes_no);
-	p.add("media_library_primary_tag", &media_lib_primary_tag, "artist", [](std::string v) {
-			if (v == "artist")
-				return MPD_TAG_ARTIST;
-			else if (v == "album_artist")
-				return MPD_TAG_ALBUM_ARTIST;
-			else if (v == "date")
-				return MPD_TAG_DATE;
-			else if (v == "genre")
-				return MPD_TAG_GENRE;
-			else if (v == "composer")
-				return MPD_TAG_COMPOSER;
-			else if (v == "performer")
-				return MPD_TAG_PERFORMER;
-			else
-				invalid_value(v);
-		});
-	p.add("media_library_albums_split_by_date", &media_library_albums_split_by_date, "yes", yes_no);
-	p.add("default_find_mode", &wrapped_search, "wrapped", [](std::string v) {
-			if (v == "wrapped")
-				return true;
-			else if (v == "normal")
-				return false;
-			else
-				invalid_value(v);
-		});
-	p.add("default_tag_editor_pattern", &pattern, "%n - %t");
-	p.add("header_visibility", &header_visibility, "yes", yes_no);
-	p.add("statusbar_visibility", &statusbar_visibility, "yes", yes_no);
-	p.add("connected_message_on_startup", &connected_message_on_startup, "yes", yes_no);
-	p.add("titles_visibility", &titles_visibility, "yes", yes_no);
-	p.add("header_text_scrolling", &header_text_scrolling, "yes", yes_no);
-	p.add("cyclic_scrolling", &use_cyclic_scrolling, "no", yes_no);
-	p.add<void>("lyrics_fetchers", nullptr,
-#ifdef HAVE_TAGLIB_H
-	      "tags, "
-#endif
-	      "tekstowo, plyrics, justsomelyrics, jahlyrics, zeneszoveg, internet", [this](std::string v) {
-		      auto names = list_of<std::string>(v, [](std::string s) { return s; });
+	}
+	catch (...)
+	{
+		ncm_lyrics_fetcher_registry_destroy(&result);
+		throw;
+	}
 
-		      ncm_lyrics_fetcher_registry_clear(&lyrics_fetchers);
-		      for (auto &name : names)
-		      {
-		      	  if (!ncm_lyrics_fetcher_registry_append_name(
-		      	          &lyrics_fetchers, name.data(), static_cast<int32>(name.size())))
-		      	  {
-		      	      std::clog << "Unknown lyrics fetcher: " << name << "\n";
-		      	  }
-		      }
-		      if (lyrics_fetchers.fetchers.len == 0)
-		      	  invalid_value(v);
-	      });
-	p.add("follow_now_playing_lyrics", &now_playing_lyrics, "no", yes_no);
-	p.add("fetch_lyrics_for_current_song_in_background", &fetch_lyrics_in_background,
-	      "no", yes_no);
-	p.add("store_lyrics_in_song_dir", &store_lyrics_in_song_dir, "no", yes_no);
-	p.add("generate_win32_compatible_filenames", &generate_win32_compatible_filenames,
-	      "yes", yes_no);
-	p.add("allow_for_physical_item_deletion", &allow_for_physical_item_deletion,
-	      "no", yes_no);
-	p.add("lastfm_preferred_language", &lastfm_preferred_language, "en");
-	p.add("space_add_mode", &space_add_mode, "add_remove");
-	p.add("show_hidden_files_in_local_browser", &local_browser_show_hidden_files,
-	      "no", yes_no);
-	p.add<void>(
-		"screen_switcher_mode", nullptr, "playlist, browser",
-		[this](std::string v) {
-			if (v == "previous")
-				screen_switcher_previous = true;
-			else
-			{
-				screen_switcher_previous = false;
-				screen_sequence = list_of<ScreenType>(v, [](std::string s) {
-						auto screen = stringtoStartupScreenType(s);
-						if (screen == NCM_SCREEN_TYPE_UNKNOWN)
-							invalid_value(s);
-						return screen;
-					});
-			}
-		});
-	p.add("startup_screen", &startup_screen_type, "playlist", [](std::string v) {
-			auto screen = stringtoStartupScreenType(v);
-			if (screen == NCM_SCREEN_TYPE_UNKNOWN)
-				invalid_value(v);
-			return screen;
-		});
-	p.add("startup_slave_screen", &startup_slave_screen_type, "", [](std::string v) {
-			std::optional<ScreenType> screen;
-			if (!v.empty())
-			{
-				screen = stringtoStartupScreenType(v);
-				if (screen == NCM_SCREEN_TYPE_UNKNOWN)
-					invalid_value(v);
-			}
-			return screen;
-		});
-	p.add("startup_slave_screen_focus", &startup_slave_screen_focus, "no", yes_no);
-	p.add("locked_screen_width_part", &locked_screen_width_part,
-	      "50", [](std::string v) {
-		      return parse_value<double>(v) / 100;
-	      });
-	p.add("ask_for_locked_screen_width_part", &ask_for_locked_screen_width_part,
-	      "yes", yes_no);
-	p.add("media_library_column_width_ratio_two", &media_library_column_width_ratio_two,
-			"1:1", std::bind(parse_ratio, ph::_1, 2));
-	p.add("media_library_column_width_ratio_three", &media_library_column_width_ratio_three,
-			"1:1:1", std::bind(parse_ratio, ph::_1, 3));
-	p.add("playlist_editor_column_width_ratio", &playlist_editor_column_width_ratio,
-			"1:2", std::bind(parse_ratio, ph::_1, 2));
-	p.add("jump_to_now_playing_song_at_start", &jump_to_now_playing_song_at_start,
-	      "yes", yes_no);
-	p.add("ask_before_clearing_playlists", &ask_before_clearing_playlists,
-	      "yes", yes_no);
-	p.add("ask_before_shuffling_playlists", &ask_before_shuffling_playlists,
-	      "yes", yes_no);
-	p.add("display_volume_level", &display_volume_level, "yes", yes_no);
-	p.add("display_bitrate", &display_bitrate, "no", yes_no);
-	p.add("display_remaining_time", &display_remaining_time, "no", yes_no);
-	p.add("regular_expressions", &regex_type, "extended", [](std::string v) {
-			if (v == "none")
-				return Regex::literalCaseInsensitive();
-			else if (v == "basic")
-				return Regex::basicCaseInsensitive();
+	ncm_lyrics_fetcher_registry_destroy(&destination);
+	destination = result;
+}
 
-			else if (v == "extended")
-				return Regex::extendedCaseInsensitive();
-			else
-				invalid_value(v);
-	});
-	p.add("ignore_leading_the", &ignore_leading_the, "no", yes_no);
-	p.add("block_search_constraints_change_if_items_found",
-	      &block_search_constraints_change, "yes", yes_no);
-	p.add("mouse_support", &mouse_support, "yes", yes_no);
-	p.add("mouse_list_scroll_whole_page", &mouse_list_scroll_whole_page, "no", yes_no);
-	p.add("lines_scrolled", &lines_scrolled, "5");
-	p.add("empty_tag_marker", &empty_tag, "<empty>");
-	p.add("tags_separator", &MPD::Song::TagsSeparator, " | ");
-	p.add("tag_editor_extended_numeration", &tag_editor_extended_numeration, "no", yes_no);
-	p.add("media_library_sort_by_mtime", &media_library_sort_by_mtime, "no", yes_no);
-	p.add("enable_window_title", &set_window_title, "yes", [](std::string v) {
-			// Consider this variable only if TERM variable is available and we're not
-			// in emacs terminal nor tty (through any wrapper like screen).
-			auto term = getenv("TERM");
-			if (term != nullptr
-			    && strstr(term, "linux") == nullptr
-			    && strncmp(term, "eterm", const_strlen("eterm")))
-				return yes_no(v);
-			else
-			{
-				std::clog << "Terminal doesn't support window title, skipping 'enable_window_title'.\n";
-				return false;
-			}
-		});
-	p.add("search_engine_default_search_mode", &search_engine_default_search_mode,
-	      "1", [](std::string v) {
-		      auto mode = parse_value<unsigned>(v);
-		      boundsCheck<unsigned>(mode, 1, 3);
-		      return --mode;
-	      });
-	p.add("external_editor", &external_editor, "nano", adjust_path);
-	p.add("use_console_editor", &use_console_editor, "yes", yes_no);
-	p.add("colors_enabled", &colors_enabled, "yes", yes_no);
-	p.add("empty_tag_color", &empty_tags_color, "cyan");
-	p.add("header_window_color", &header_color, "default");
-	p.add("volume_color", &volume_color, "default");
-	p.add("state_line_color", &state_line_color, "default");
-	p.add("state_flags_color", &state_flags_color, "default:b");
-	p.add("main_window_color", &main_color, "yellow");
-	p.add("color1", &color1, "white");
-	p.add("color2", &color2, "green");
-	p.add("progressbar_color", &progressbar_color, "black:b");
-	p.add("progressbar_elapsed_color", &progressbar_elapsed_color, "green:b");
-	p.add("statusbar_color", &statusbar_color, "default");
-	p.add("statusbar_time_color", &statusbar_time_color, "default:b");
-	p.add("player_state_color", &player_state_color, "default:b");
-	p.add("alternative_ui_separator_color", &alternative_ui_separator_color, "black:b");
-	p.add("window_border_color", &window_border, "green", parse_value<NC::Color>);
-	p.add("active_window_border", &active_window_border, "red",
-	      parse_value<NC::Color>);
+}
 
-	return std::all_of(
-		config_paths.begin(),
-		config_paths.end(),
-		[&](const std::string &config_path) {
-			std::ifstream f(config_path);
-			if (f.is_open())
-				std::clog << "Reading configuration from " << config_path << "...\n";
-			return p.run(f, ignore_errors);
-		}
-	) && p.initialize_undefined(ignore_errors);
+void settings_legacy_sync_from_c(const Configuration *source)
+{
+	if (source == nullptr)
+		throw std::invalid_argument("missing C configuration");
+
+	ConfigLegacy.ncmpcpp_directory = stringFromC(source->ncmpcpp_directory, source->ncmpcpp_directory_len);
+	ConfigLegacy.lyrics_directory = stringFromC(source->lyrics_directory, source->lyrics_directory_len);
+	ConfigLegacy.mpd_music_dir = stringFromC(source->mpd_music_dir, source->mpd_music_dir_len);
+	ConfigLegacy.visualizer_fifo_path = stringFromC(source->visualizer_fifo_path, source->visualizer_fifo_path_len);
+	ConfigLegacy.visualizer_data_source = stringFromC(source->visualizer_data_source, source->visualizer_data_source_len);
+	ConfigLegacy.visualizer_output_name = stringFromC(source->visualizer_output_name, source->visualizer_output_name_len);
+	ConfigLegacy.empty_tag = stringFromC(source->empty_tag, source->empty_tag_len);
+	ConfigLegacy.external_editor = stringFromC(source->external_editor, source->external_editor_len);
+	ConfigLegacy.system_encoding = stringFromC(source->system_encoding, source->system_encoding_len);
+	ConfigLegacy.execute_on_song_change = stringFromC(source->execute_on_song_change, source->execute_on_song_change_len);
+	ConfigLegacy.execute_on_player_state_change = stringFromC(source->execute_on_player_state_change, source->execute_on_player_state_change_len);
+	ConfigLegacy.lastfm_preferred_language = stringFromC(source->lastfm_preferred_language, source->lastfm_preferred_language_len);
+	ConfigLegacy.pattern = stringFromC(source->pattern, source->pattern_len);
+	ConfigLegacy.random_exclude_pattern = stringFromC(source->random_exclude_pattern, source->random_exclude_pattern_len);
+	ConfigLegacy.progressbar = stringFromBuffer(source->progressbar);
+	ConfigLegacy.visualizer_chars = stringFromBuffer(source->visualizer_chars);
+
+	ConfigLegacy.song_list_format = copyFormat(source->song_list_format);
+	ConfigLegacy.song_window_title_format = copyFormat(source->song_window_title_format);
+	ConfigLegacy.song_library_format = copyFormat(source->song_library_format);
+	ConfigLegacy.song_columns_mode_format = copyFormat(source->song_columns_mode_format);
+	ConfigLegacy.browser_sort_format = copyFormat(source->browser_sort_format);
+	ConfigLegacy.song_status_format = copyFormat(source->song_status_format);
+	ConfigLegacy.new_header_first_line = copyFormat(source->new_header_first_line);
+	ConfigLegacy.new_header_second_line = copyFormat(source->new_header_second_line);
+
+	ConfigLegacy.playlist_editor_column_width_ratio = copyRatio(source->playlist_editor_column_width_ratio);
+	ConfigLegacy.media_library_column_width_ratio_two = copyRatio(source->media_library_column_width_ratio_two);
+	ConfigLegacy.media_library_column_width_ratio_three = copyRatio(source->media_library_column_width_ratio_three);
+	ConfigLegacy.columns = copyColumns(source->columns);
+
+	ConfigLegacy.playlist_display_mode = source->playlist_display_mode;
+	ConfigLegacy.browser_display_mode = source->browser_display_mode;
+	ConfigLegacy.search_engine_display_mode = source->search_engine_display_mode;
+	ConfigLegacy.playlist_editor_display_mode = source->playlist_editor_display_mode;
+	ConfigLegacy.visualizer_type = source->visualizer_type;
+	ConfigLegacy.design = source->design;
+	ConfigLegacy.space_add_mode = source->space_add_mode;
+	ConfigLegacy.media_lib_primary_tag = source->media_lib_primary_tag;
+	ConfigLegacy.browser_sort_mode = source->browser_sort_mode;
+	ConfigLegacy.startup_screen_type = source->startup_screen_type;
+
+	ConfigLegacy.browser_playlist_prefix = copyBuffer(source->browser_playlist_prefix);
+	ConfigLegacy.selected_item_prefix = copyBuffer(source->selected_item_prefix);
+	ConfigLegacy.selected_item_suffix = copyBuffer(source->selected_item_suffix);
+	ConfigLegacy.now_playing_prefix = copyBuffer(source->now_playing_prefix);
+	ConfigLegacy.now_playing_suffix = copyBuffer(source->now_playing_suffix);
+	ConfigLegacy.modified_item_prefix = copyBuffer(source->modified_item_prefix);
+	ConfigLegacy.current_item_prefix = copyBuffer(source->current_item_prefix);
+	ConfigLegacy.current_item_suffix = copyBuffer(source->current_item_suffix);
+	ConfigLegacy.current_item_inactive_column_prefix = copyBuffer(source->current_item_inactive_column_prefix);
+	ConfigLegacy.current_item_inactive_column_suffix = copyBuffer(source->current_item_inactive_column_suffix);
+
+	ConfigLegacy.header_color = NC::fromNcColor(source->header_color);
+	ConfigLegacy.main_color = NC::fromNcColor(source->main_color);
+	ConfigLegacy.statusbar_color = NC::fromNcColor(source->statusbar_color);
+
+	ConfigLegacy.color1 = NC::FormattedColor(
+		const_cast<NcFormattedColor *>(&source->color1));
+	ConfigLegacy.color2 = NC::FormattedColor(
+		const_cast<NcFormattedColor *>(&source->color2));
+	ConfigLegacy.empty_tags_color = NC::FormattedColor(
+		const_cast<NcFormattedColor *>(&source->empty_tags_color));
+	ConfigLegacy.volume_color = NC::FormattedColor(
+		const_cast<NcFormattedColor *>(&source->volume_color));
+	ConfigLegacy.state_line_color = NC::FormattedColor(
+		const_cast<NcFormattedColor *>(&source->state_line_color));
+	ConfigLegacy.state_flags_color = NC::FormattedColor(
+		const_cast<NcFormattedColor *>(&source->state_flags_color));
+	ConfigLegacy.progressbar_color = NC::FormattedColor(
+		const_cast<NcFormattedColor *>(&source->progressbar_color));
+	ConfigLegacy.progressbar_elapsed_color = NC::FormattedColor(
+		const_cast<NcFormattedColor *>(&source->progressbar_elapsed_color));
+	ConfigLegacy.player_state_color = NC::FormattedColor(
+		const_cast<NcFormattedColor *>(&source->player_state_color));
+	ConfigLegacy.statusbar_time_color = NC::FormattedColor(
+		const_cast<NcFormattedColor *>(&source->statusbar_time_color));
+	ConfigLegacy.alternative_ui_separator_color = NC::FormattedColor(
+		const_cast<NcFormattedColor *>(&source->alternative_ui_separator_color));
+	ConfigLegacy.visualizer_colors =
+		copyFormattedColors(source->visualizer_colors);
+	ConfigLegacy.window_border = copyBorder(source->window_border);
+	ConfigLegacy.active_window_border = copyBorder(
+		source->active_window_border);
+
+	ConfigLegacy.visualizer_autoscale = source->visualizer_autoscale;
+	ConfigLegacy.visualizer_spectrum_smooth_look = source->visualizer_spectrum_smooth_look;
+	ConfigLegacy.visualizer_spectrum_smooth_look_legacy_chars = source->visualizer_spectrum_smooth_look_legacy_chars;
+	ConfigLegacy.visualizer_spectrum_log_scale_x = source->visualizer_spectrum_log_scale_x;
+	ConfigLegacy.visualizer_spectrum_log_scale_y = source->visualizer_spectrum_log_scale_y;
+	ConfigLegacy.colors_enabled = source->colors_enabled;
+	ConfigLegacy.playlist_show_mpd_host = source->playlist_show_mpd_host;
+	ConfigLegacy.playlist_show_remaining_time = source->playlist_show_remaining_time;
+	ConfigLegacy.playlist_shorten_total_times = source->playlist_shorten_total_times;
+	ConfigLegacy.playlist_separate_albums = source->playlist_separate_albums;
+	ConfigLegacy.set_window_title = source->set_window_title;
+	ConfigLegacy.header_visibility = source->header_visibility;
+	ConfigLegacy.header_text_scrolling = source->header_text_scrolling;
+	ConfigLegacy.statusbar_visibility = source->statusbar_visibility;
+	ConfigLegacy.connected_message_on_startup = source->connected_message_on_startup;
+	ConfigLegacy.titles_visibility = source->titles_visibility;
+	ConfigLegacy.centered_cursor = source->centered_cursor;
+	ConfigLegacy.screen_switcher_previous = source->screen_switcher_previous;
+	ConfigLegacy.autocenter_mode = source->autocenter_mode;
+	ConfigLegacy.wrapped_search = source->wrapped_search;
+	ConfigLegacy.incremental_seeking = source->incremental_seeking;
+	ConfigLegacy.now_playing_lyrics = source->now_playing_lyrics;
+	ConfigLegacy.fetch_lyrics_in_background = source->fetch_lyrics_in_background;
+	ConfigLegacy.local_browser_show_hidden_files = source->local_browser_show_hidden_files;
+	ConfigLegacy.search_in_db = source->search_in_db;
+	ConfigLegacy.jump_to_now_playing_song_at_start = source->jump_to_now_playing_song_at_start;
+	ConfigLegacy.display_volume_level = source->display_volume_level;
+	ConfigLegacy.display_bitrate = source->display_bitrate;
+	ConfigLegacy.display_remaining_time = source->display_remaining_time;
+	ConfigLegacy.ignore_leading_the = source->ignore_leading_the;
+	ConfigLegacy.block_search_constraints_change = source->block_search_constraints_change;
+	ConfigLegacy.use_console_editor = source->use_console_editor;
+	ConfigLegacy.use_cyclic_scrolling = source->use_cyclic_scrolling;
+	ConfigLegacy.ask_before_clearing_playlists = source->ask_before_clearing_playlists;
+	ConfigLegacy.ask_before_shuffling_playlists = source->ask_before_shuffling_playlists;
+	ConfigLegacy.mouse_support = source->mouse_support;
+	ConfigLegacy.mouse_list_scroll_whole_page = source->mouse_list_scroll_whole_page;
+	ConfigLegacy.visualizer_in_stereo = source->visualizer_in_stereo;
+	ConfigLegacy.data_fetching_delay = source->data_fetching_delay;
+	ConfigLegacy.media_library_sort_by_mtime = source->media_library_sort_by_mtime;
+	ConfigLegacy.media_lib_hide_album_dates = source->media_lib_hide_album_dates;
+	ConfigLegacy.tag_editor_extended_numeration = source->tag_editor_extended_numeration;
+	ConfigLegacy.discard_colors_if_item_is_selected = source->discard_colors_if_item_is_selected;
+	ConfigLegacy.store_lyrics_in_song_dir = source->store_lyrics_in_song_dir;
+	ConfigLegacy.generate_win32_compatible_filenames = source->generate_win32_compatible_filenames;
+	ConfigLegacy.ask_for_locked_screen_width_part = source->ask_for_locked_screen_width_part;
+	ConfigLegacy.allow_for_physical_item_deletion = source->allow_for_physical_item_deletion;
+	ConfigLegacy.media_library_albums_split_by_date = source->media_library_albums_split_by_date;
+	ConfigLegacy.startup_slave_screen_focus = source->startup_slave_screen_focus;
+
+	ConfigLegacy.mpd_connection_timeout = source->mpd_connection_timeout;
+	ConfigLegacy.crossfade_time = source->crossfade_time;
+	ConfigLegacy.seek_time = source->seek_time;
+	ConfigLegacy.volume_change_step = source->volume_change_step;
+	ConfigLegacy.message_delay_time = source->message_delay_time;
+	ConfigLegacy.lyrics_db = source->lyrics_db;
+	ConfigLegacy.lines_scrolled = source->lines_scrolled;
+	ConfigLegacy.search_engine_default_search_mode = source->search_engine_default_search_mode;
+	ConfigLegacy.playlist_disable_highlight_delay_seconds = source->playlist_disable_highlight_delay_seconds;
+	ConfigLegacy.visualizer_spectrum_dft_size = source->visualizer_spectrum_dft_size;
+
+	ConfigLegacy.visualizer_spectrum_gain = source->visualizer_spectrum_gain;
+	ConfigLegacy.visualizer_spectrum_hz_min = source->visualizer_spectrum_hz_min;
+	ConfigLegacy.visualizer_spectrum_hz_max = source->visualizer_spectrum_hz_max;
+	ConfigLegacy.locked_screen_width_part = source->locked_screen_width_part;
+
+	ConfigLegacy.selected_item_prefix_length = static_cast<size_t>(source->selected_item_prefix_length);
+	ConfigLegacy.selected_item_suffix_length = static_cast<size_t>(source->selected_item_suffix_length);
+	ConfigLegacy.now_playing_prefix_length = static_cast<size_t>(source->now_playing_prefix_length);
+	ConfigLegacy.now_playing_suffix_length = static_cast<size_t>(source->now_playing_suffix_length);
+	ConfigLegacy.current_item_prefix_length = static_cast<size_t>(source->current_item_prefix_length);
+	ConfigLegacy.current_item_suffix_length = static_cast<size_t>(source->current_item_suffix_length);
+	ConfigLegacy.current_item_inactive_column_prefix_length = static_cast<size_t>(source->current_item_inactive_column_prefix_length);
+	ConfigLegacy.current_item_inactive_column_suffix_length = static_cast<size_t>(source->current_item_inactive_column_suffix_length);
+	ConfigLegacy.visualizer_fps = static_cast<size_t>(source->visualizer_fps);
+	ConfigLegacy.regex_type = copyRegexFlags(source->regex_type);
+	ConfigLegacy.screen_sequence = copyScreenSequence(
+		source->screen_sequence);
+	if (source->has_startup_slave_screen_type)
+		ConfigLegacy.startup_slave_screen_type =
+			source->startup_slave_screen_type;
+	else
+		ConfigLegacy.startup_slave_screen_type.reset();
+	copyLyricsFetchers(ConfigLegacy.lyrics_fetchers,
+	                  source->lyrics_fetchers);
+
+	MPD::Song::TagsSeparator = stringFromC(
+		source->tags_separator, source->tags_separator_len);
+	MPD::Song::ShowDuplicateTags = source->show_duplicate_tags;
 }
