@@ -97,6 +97,8 @@ typedef struct NativeMediaLibraryScreen {
     NcmBuffer albums_title;
     NcmBuffer songs_title;
     NcmTimePoint update_timer;
+    NcMediaLibraryTagRow observed_tag;
+    NcMediaLibraryAlbumRow observed_album;
 
     int64 start_x;
     int64 width;
@@ -112,6 +114,8 @@ typedef struct NativeMediaLibraryScreen {
     bool albums_update_request;
     bool songs_update_request;
     bool sort_by_mtime;
+    bool observed_tag_valid;
+    bool observed_album_valid;
     bool registered;
 } NativeMediaLibraryScreen;
 
@@ -243,6 +247,8 @@ void native_media_library_screen_request_albums_update(
 void native_media_library_screen_request_songs_update(
     NativeMediaLibraryScreen *screen);
 void native_media_library_screen_clear_update_requests(
+    NativeMediaLibraryScreen *screen);
+void native_media_library_screen_finish_list_change(
     NativeMediaLibraryScreen *screen);
 bool native_media_library_screen_update(
     NativeMediaLibraryScreen *screen, NcmError *error);

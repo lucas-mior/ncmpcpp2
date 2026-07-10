@@ -45,6 +45,7 @@ typedef struct NcScreenCallbacks {
     void (*refresh)(NcScreen *screen);
     void (*refresh_window)(NcScreen *screen);
     void (*scroll)(NcScreen *screen, enum NcScroll where);
+    void (*list_change_finished)(NcScreen *screen);
     void (*switch_to)(NcScreen *screen);
     void (*resize)(NcScreen *screen);
     int32 (*window_timeout)(NcScreen *screen);
@@ -79,6 +80,7 @@ NcWindow *nc_screen_active_window(NcScreen *screen);
 void nc_screen_refresh(NcScreen *screen);
 void nc_screen_refresh_window(NcScreen *screen);
 void nc_screen_scroll(NcScreen *screen, enum NcScroll where);
+void nc_screen_finish_list_change(NcScreen *screen);
 bool nc_screen_is_active_window(NcScreen *screen, NcWindow *window);
 void nc_screen_switch_to(NcScreen *screen);
 void nc_screen_resize(NcScreen *screen);
