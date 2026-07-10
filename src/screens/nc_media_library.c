@@ -518,6 +518,18 @@ native_media_library_screen_mode(NativeMediaLibraryScreen *screen) {
     return screen->mode;
 }
 
+int32
+native_media_library_screen_column_count(
+    NativeMediaLibraryScreen *screen) {
+    if (screen == NULL) {
+        return 0;
+    }
+    if (screen->mode == NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS) {
+        return 3;
+    }
+    return 2;
+}
+
 bool
 native_media_library_screen_set_mode(NativeMediaLibraryScreen *screen,
                                      enum NativeMediaLibraryMode mode) {
@@ -577,6 +589,18 @@ native_media_library_screen_active_column(NativeMediaLibraryScreen *screen) {
         return NATIVE_MEDIA_LIBRARY_COLUMN_TAGS;
     }
     return screen->active_column;
+}
+
+bool
+native_media_library_screen_item_available(
+    NativeMediaLibraryScreen *screen) {
+    NcMenu *menu;
+
+    menu = native_media_library_screen_active_menu(screen);
+    if (menu == NULL) {
+        return false;
+    }
+    return !nc_menu_empty(menu);
 }
 
 bool
@@ -739,6 +763,18 @@ native_media_library_screen_current_album_date(
     *date = row->date;
     *date_len = row->date_len;
     return true;
+}
+
+bool
+native_media_library_screen_current_album_is_all_tracks(
+    NativeMediaLibraryScreen *screen) {
+    NcMediaLibraryAlbumRow *row;
+
+    row = native_media_library_screen_current_album(screen);
+    if (row == NULL) {
+        return false;
+    }
+    return row->all_tracks_entry;
 }
 
 int64
@@ -1878,6 +1914,30 @@ native_media_library_screen_selected_songs_checked(
 }
 
 bool
+native_media_library_screen_current_tag_songs(
+    NativeMediaLibraryScreen *screen, NcmSongArray *songs,
+    NcmError *error) {
+    NativeMediaLibrarySongQuery query = {0};
+    NcMediaLibraryTagRow *tag;
+
+    if ((screen == NULL) || (songs == NULL)) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing media-library songs"));
+        return false;
+    }
+
+    tag = native_media_library_screen_current_tag(screen);
+    if (tag == NULL) {
+        ncm_error_set(error, ENOENT,
+                      STRLIT_ARGS("no selected media-library tag"));
+        return false;
+    }
+
+    native_library_query_from_tag(screen, tag, &query);
+    return native_library_append_query_songs(screen, &query, songs, error);
+}
+
+bool
 native_media_library_screen_current_album_songs(
     NativeMediaLibraryScreen *screen, NcmSongArray *songs,
     NcmError *error) {
@@ -1899,6 +1959,30 @@ native_media_library_screen_current_album_songs(
 
     native_library_query_from_album(screen, album, &query);
     return native_library_append_query_songs(screen, &query, songs, error);
+}
+
+bool
+native_media_library_screen_copy_visible_songs(
+    NativeMediaLibraryScreen *screen, NcmSongArray *songs,
+    NcmError *error) {
+    NcMenu *menu;
+
+    if ((screen == NULL) || (songs == NULL)) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing media-library songs"));
+        return false;
+    }
+
+    menu = nc_media_library_song_menu_base(&screen->songs);
+    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        if (!native_library_copy_song_at(screen, songs, i)) {
+            native_library_set_conversion_error(
+                error,
+                STRLIT_ARGS("failed to copy media-library songs"));
+            return false;
+        }
+    }
+    return true;
 }
 
 bool
