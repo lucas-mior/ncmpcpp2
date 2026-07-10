@@ -80,6 +80,9 @@ static bool native_library_collect_visible_song_rows(
 static bool native_library_collect_selected_songs(
     NativeMediaLibraryScreen *screen, NcmSongArray *songs,
     NcmError *error);
+static bool native_library_collect_current_item_songs(
+    NativeMediaLibraryScreen *screen, NcmSongArray *songs,
+    NcmError *error);
 static void native_library_print_add_status(
     NativeMediaLibraryScreen *screen, NcmSongArray *songs, bool result);
 static void native_library_print_add_error(NcmError *error);
@@ -3289,8 +3292,7 @@ native_media_library_screen_add_item_to_playlist(
     }
 
     ncm_song_array_init(&songs);
-    result = native_media_library_screen_selected_songs_checked(
-        screen, &songs, error);
+    result = native_library_collect_current_item_songs(screen, &songs, error);
     if (result && (songs.len <= 0)) {
         ncm_error_set(error, ENOENT, STRLIT_ARGS("no selected songs"));
         result = false;
@@ -4081,6 +4083,39 @@ native_library_collect_selected_songs(
         return native_library_collect_album_songs(screen, songs, error);
     }
     return native_library_collect_visible_song_rows(screen, songs);
+}
+
+static bool
+native_library_collect_current_item_songs(
+    NativeMediaLibraryScreen *screen, NcmSongArray *songs,
+    NcmError *error) {
+    NativeMediaLibrarySongQuery query = {0};
+    NcMediaLibraryTagRow *tag;
+    NcMediaLibraryAlbumRow *album;
+    NcMenu *menu;
+
+    if (screen->active_column == NATIVE_MEDIA_LIBRARY_COLUMN_TAGS) {
+        tag = native_media_library_screen_current_tag(screen);
+        if (tag == NULL) {
+            return true;
+        }
+        native_library_query_from_tag(screen, tag, &query);
+        return native_library_append_query_songs(screen, &query, songs,
+                                                 error);
+    }
+
+    if (screen->active_column == NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS) {
+        album = native_media_library_screen_current_album(screen);
+        if (album == NULL) {
+            return true;
+        }
+        native_library_query_from_album(screen, album, &query);
+        return native_library_append_query_songs(screen, &query, songs,
+                                                 error);
+    }
+
+    menu = nc_media_library_song_menu_base(&screen->songs);
+    return native_library_copy_song_at(screen, songs, nc_menu_highlight(menu));
 }
 
 static NativeMediaLibraryColumnState *
