@@ -2334,6 +2334,7 @@ test_media_library_selected_songs(void) {
     fixture.add_songs_calls = 0;
     fixture.added_song_count = 0;
     fixture.added_uri_len = 0;
+    assert(native_media_library_screen_item_available(&screen));
     assert(native_media_library_screen_add_item_to_playlist(
         &screen, true, &error));
     assert(fixture.add_songs_calls == 1);

@@ -172,6 +172,27 @@ bool locateNativeMediaLibrarySong(MPD::Song &song, bool switch_to)
 	return success;
 }
 
+bool nativeMediaLibraryItemAvailable()
+{
+	if (!native_c_screen_media_library_is_current())
+		return false;
+	return native_media_library_screen_item_available(
+	    native_c_screen_media_library());
+}
+
+bool addNativeMediaLibraryItemToPlaylist(bool play)
+{
+	NcmError error;
+	bool success;
+
+	ncm_error_clear(&error);
+	success = native_media_library_screen_add_item_to_playlist(
+	    native_c_screen_media_library(), play, &error);
+	if (!success && ncm_error_is_set(&error))
+		Statusbar::print(error.message);
+	return success;
+}
+
 
 void nativeLyricsPrintConsumerMessage()
 {
@@ -1040,13 +1061,22 @@ void VolumeDown::run()
 
 bool AddItemToPlaylist::canBeRun()
 {
+	if (native_c_screen_media_library_is_current())
+		return nativeMediaLibraryItemAvailable();
+
 	m_hs = dynamic_cast<HasSongs *>(screenLegacyCurrent());
 	return m_hs != nullptr && m_hs->itemAvailable();
 }
 
 void AddItemToPlaylist::run()
 {
-	bool success = m_hs->addItemToPlaylist(false);
+	bool success;
+
+	if (native_c_screen_media_library_is_current())
+		success = addNativeMediaLibraryItemToPlaylist(false);
+	else
+		success = m_hs->addItemToPlaylist(false);
+
 	if (success)
 	{
 		app_controller_scroll_current_screen(NC_SCROLL_DOWN);
@@ -1056,13 +1086,22 @@ void AddItemToPlaylist::run()
 
 bool PlayItem::canBeRun()
 {
+	if (native_c_screen_media_library_is_current())
+		return nativeMediaLibraryItemAvailable();
+
 	m_hs = dynamic_cast<HasSongs *>(screenLegacyCurrent());
 	return m_hs != nullptr && m_hs->itemAvailable();
 }
 
 void PlayItem::run()
 {
-	bool success = m_hs->addItemToPlaylist(true);
+	bool success;
+
+	if (native_c_screen_media_library_is_current())
+		success = addNativeMediaLibraryItemToPlaylist(true);
+	else
+		success = m_hs->addItemToPlaylist(true);
+
 	if (success)
 		listsChangeFinisher();
 }
