@@ -25,6 +25,8 @@
 
 Configuration Config;
 
+static bool settings_quiet;
+
 typedef bool (*SettingsApplyFn)(Configuration *config, char *value,
                                 int32 value_len, NcmError *error);
 
@@ -98,7 +100,7 @@ static SettingsOption *settings_find_option(SettingsOption *options,
 static bool settings_read_file(Configuration *config, SettingsOption *options,
                                int32 option_count, char *path,
                                int32 path_len, bool ignore_errors,
-                               NcmError *error);
+                               bool quiet, NcmError *error);
 static bool settings_initialize_defaults(Configuration *config,
                                          SettingsOption *options,
                                          int32 option_count,
@@ -1948,9 +1950,11 @@ apply_enable_window_title(Configuration *config, char *value,
     if ((term == NULL) || (strstr(term, "linux") != NULL)
         || (strncmp(term, "eterm", STRLIT_LEN("eterm")) == 0)) {
         config->set_window_title = false;
-        fprintf(stderr,
-                "Terminal doesn't support window title, skipping "
-                "'enable_window_title'.\n");
+        if (!settings_quiet) {
+            fprintf(stderr,
+                    "Terminal doesn't support window title, skipping "
+                    "'enable_window_title'.\n");
+        }
         return true;
     }
     return settings_parse_bool(value, value_len,
@@ -2222,7 +2226,7 @@ settings_apply_option(Configuration *config, SettingsOption *option,
 static bool
 settings_read_file(Configuration *config, SettingsOption *options,
                    int32 option_count, char *path, int32 path_len,
-                   bool ignore_errors, NcmError *error) {
+                   bool ignore_errors, bool quiet, NcmError *error) {
     FILE *file;
     NcmBuffer path_buffer;
     char line[SETTINGS_LINE_CAP];
@@ -2254,8 +2258,10 @@ settings_read_file(Configuration *config, SettingsOption *options,
         return settings_report_or_ignore(error, ignore_errors);
     }
 
-    fprintf(stderr, "Reading configuration from %s...\n",
-            path_buffer.data);
+    if (!quiet) {
+        fprintf(stderr, "Reading configuration from %s...\n",
+                path_buffer.data);
+    }
     while (fgets(line, (int32)SIZEOF(line), file) != NULL) {
         int32 line_len;
         NcmOptionLine parsed;
@@ -2326,7 +2332,7 @@ settings_initialize_defaults(Configuration *config, SettingsOption *options,
 
 bool
 configuration_read(Configuration *config, NcmStringViewArray *config_paths,
-                   bool ignore_errors, NcmError *error) {
+                   bool ignore_errors, bool quiet, NcmError *error) {
     SettingsOption options[] = {
         SETTINGS_OPTION("ncmpcpp_directory", "~/.config/ncmpcpp/",
                         apply_ncmpcpp_directory),
@@ -2599,6 +2605,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
     int32 option_count;
 
     configuration_clear(config);
+    settings_quiet = quiet;
     option_count = (int32)LENGTH(options);
     if (config_paths != NULL) {
         for (int32 i = 0; i < config_paths->len; i += 1) {
@@ -2607,7 +2614,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
             path = config_paths->items[i];
             if (!settings_read_file(config, options, option_count,
                                     path.data, path.len,
-                                    ignore_errors, error)) {
+                                    ignore_errors, quiet, error)) {
                 return false;
             }
         }
