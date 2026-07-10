@@ -138,6 +138,9 @@ enum NativeMediaLibraryColumn native_media_library_screen_active_column(
 bool native_media_library_screen_set_active_column(
     NativeMediaLibraryScreen *screen,
     enum NativeMediaLibraryColumn column);
+bool native_media_library_screen_column_visible(
+    NativeMediaLibraryScreen *screen,
+    enum NativeMediaLibraryColumn column);
 NativeMediaLibraryColumnState *native_media_library_screen_column_state(
     NativeMediaLibraryScreen *screen,
     enum NativeMediaLibraryColumn column);
@@ -153,6 +156,14 @@ int64 native_media_library_screen_visible_song_count(
     NativeMediaLibraryScreen *screen);
 NcmSong *native_media_library_screen_visible_song_at(
     NativeMediaLibraryScreen *screen, int64 pos);
+void native_media_library_screen_format_tag_row(
+    NativeMediaLibraryScreen *screen, NcMediaLibraryTagRow *row,
+    NcmBuffer *output);
+void native_media_library_screen_format_album_row(
+    NativeMediaLibraryScreen *screen, NcMediaLibraryAlbumRow *row,
+    NcmBuffer *output);
+void native_media_library_screen_format_song_row(
+    NativeMediaLibraryScreen *screen, NcmSong *song, NcBuffer *output);
 
 NcmTimePoint native_media_library_screen_update_timer(
     NativeMediaLibraryScreen *screen);
