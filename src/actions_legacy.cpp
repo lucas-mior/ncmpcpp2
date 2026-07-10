@@ -948,6 +948,10 @@ void RunAction::run()
 
 bool PreviousColumn::canBeRun()
 {
+	if (native_c_screen_media_library_is_current())
+		return native_media_library_screen_previous_column_available(
+		    native_c_screen_media_library());
+
 	m_hc = dynamic_cast<HasColumns *>(screenLegacyCurrent());
 	return m_hc != nullptr
 		&& m_hc->previousColumnAvailable();
@@ -955,11 +959,21 @@ bool PreviousColumn::canBeRun()
 
 void PreviousColumn::run()
 {
+	if (native_c_screen_media_library_is_current())
+	{
+		native_media_library_screen_previous_column(
+		    native_c_screen_media_library());
+		return;
+	}
 	m_hc->previousColumn();
 }
 
 bool NextColumn::canBeRun()
 {
+	if (native_c_screen_media_library_is_current())
+		return native_media_library_screen_next_column_available(
+		    native_c_screen_media_library());
+
 	m_hc = dynamic_cast<HasColumns *>(screenLegacyCurrent());
 	return m_hc != nullptr
 		&& m_hc->nextColumnAvailable();
@@ -967,6 +981,12 @@ bool NextColumn::canBeRun()
 
 void NextColumn::run()
 {
+	if (native_c_screen_media_library_is_current())
+	{
+		native_media_library_screen_next_column(
+		    native_c_screen_media_library());
+		return;
+	}
 	m_hc->nextColumn();
 }
 

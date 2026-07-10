@@ -1720,6 +1720,19 @@ test_media_library_delayed_update_state_machine(void) {
     assert(native_media_library_screen_update(&screen, &error));
     assert(fixture.search_songs_calls == 2);
     assert(native_media_library_screen_visible_song_count(&screen) == 1);
+    assert(native_media_library_screen_next_column_available(&screen));
+    native_media_library_screen_next_column(&screen);
+    assert(native_media_library_screen_active_column(&screen)
+           == NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS);
+    assert(native_media_library_screen_next_column_available(&screen));
+    native_media_library_screen_next_column(&screen);
+    assert(native_media_library_screen_active_column(&screen)
+           == NATIVE_MEDIA_LIBRARY_COLUMN_SONGS);
+    assert(native_media_library_screen_previous_column_available(&screen));
+    native_media_library_screen_previous_column(&screen);
+    native_media_library_screen_previous_column(&screen);
+    assert(native_media_library_screen_active_column(&screen)
+           == NATIVE_MEDIA_LIBRARY_COLUMN_TAGS);
     assert(nc_screen_window_timeout(
                native_media_library_screen_base(&screen))
            == NC_SCREEN_DEFAULT_WINDOW_TIMEOUT);
