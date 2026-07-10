@@ -40,6 +40,8 @@ static void test_add_song(NativePlaylistScreen *playlist, char *uri,
                           int32 uri_len, uint32 position);
 static void test_select(NativePlaylistScreen *playlist, int64 position);
 static void test_clear_selection(NativePlaylistScreen *playlist);
+static void test_dialog_highlight_configuration(
+    NativeSortPlaylistDialog *dialog);
 static void test_dialog_rows_render_labels(
     NativeSortPlaylistDialog *dialog);
 static void test_dialog_entry_and_cancel(NativePlaylistScreen *playlist,
@@ -207,12 +209,19 @@ main(void) {
                             0, 100, 2, 30);
     color.is_default = true;
     border.color = color;
+    nc_buffer_init(&Config.current_item_prefix);
+    nc_buffer_init(&Config.current_item_suffix);
+    nc_buffer_append_cstring(&Config.current_item_prefix, (char *)">");
+    nc_buffer_append_cstring(&Config.current_item_suffix, (char *)"<");
+    Config.use_cyclic_scrolling = true;
+    Config.centered_cursor = true;
     native_sort_playlist_dialog_init(&dialog, 0, 0, 30, 17,
                                      color, border);
     assert(app_controller_register_screen(
         native_playlist_screen_base(&playlist)));
     assert(app_controller_register_screen(
         native_sort_playlist_dialog_base(&dialog)));
+    test_dialog_highlight_configuration(&dialog);
     test_dialog_rows_render_labels(&dialog);
 
     test_add_song(&playlist, STRLIT_ARGS("zero.flac"), 10);
@@ -237,6 +246,8 @@ main(void) {
     test_replaces_legacy_registration();
     app_controller_init();
     test_action_routing();
+    nc_buffer_destroy(&Config.current_item_prefix);
+    nc_buffer_destroy(&Config.current_item_suffix);
     exit(EXIT_SUCCESS);
 }
 
@@ -271,6 +282,24 @@ test_select(NativePlaylistScreen *playlist, int64 position) {
 static void
 test_clear_selection(NativePlaylistScreen *playlist) {
     nc_menu_clear_selection(native_playlist_screen_menu(playlist));
+    return;
+}
+
+static void
+test_dialog_highlight_configuration(
+    NativeSortPlaylistDialog *dialog) {
+    NcMenu *menu;
+
+    menu = nc_editor_sort_menu_base(
+        native_sort_playlist_dialog_menu(dialog));
+    assert(nc_buffer_equal(&menu->highlight_prefix,
+                           &Config.current_item_prefix));
+    assert(nc_buffer_equal(&menu->highlight_suffix,
+                           &Config.current_item_suffix));
+    assert(menu->highlight_enabled);
+    assert(menu->cyclic_scroll_enabled);
+    assert(menu->autocenter_cursor);
+    assert(nc_menu_highlight(menu) == 0);
     return;
 }
 
@@ -527,6 +556,12 @@ test_action_routing(void) {
 
     menu = nc_editor_sort_menu_base(
         native_sort_playlist_dialog_menu(dialog));
+    assert(nc_menu_highlight(menu) == 0);
+    assert(ncm_action_runtime_can_run(NULL, NCM_ACTION_SCROLL_DOWN));
+    assert(ncm_action_runtime_run(NULL, NCM_ACTION_SCROLL_DOWN));
+    assert(nc_menu_highlight(menu) == 1);
+    assert(ncm_action_runtime_run(NULL, NCM_ACTION_SCROLL_UP));
+    assert(nc_menu_highlight(menu) == 0);
     nc_menu_highlight_position(menu, 0, nc_menu_item_count(menu));
     assert(ncm_action_runtime_can_run(NULL, NCM_ACTION_RUN_ACTION));
     assert(ncm_action_runtime_run(NULL, NCM_ACTION_RUN_ACTION));
