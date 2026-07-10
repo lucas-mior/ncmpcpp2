@@ -814,7 +814,7 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
         mbstate_t state;
         int64 converted;
 
-        memset64(&state, 0, sizeof(state));
+        cbase_memset(&state, 0, SIZEOF(state));
         converted = (int64)mbrtowc(&wc, string, (size_t)string_len, &state);
         if ((converted == string_len) && (wc != 0)) {
             result = (NcKey)wc;
