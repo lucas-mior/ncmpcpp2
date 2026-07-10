@@ -2383,6 +2383,17 @@ action_runtime_has_selected_songs(void) {
     return result;
 }
 
+static bool
+action_runtime_has_current_song(void) {
+    NcmSong song;
+    bool result;
+
+    ncm_song_init(&song);
+    result = action_runtime_current_song(&song);
+    ncm_song_destroy(&song);
+    return result;
+}
+
 bool
 ncm_action_current_song(NcmSong *song) {
     return action_runtime_current_song(song);
@@ -3471,6 +3482,9 @@ action_runtime_fetch_lyrics_background(void) {
     }
 
     ncm_song_array_destroy(&songs);
+    ncm_statusbar_print_cstring(
+        (int32)Config.message_delay_time,
+        (char *)"Selected songs queued for lyrics fetching");
     return true;
 }
 
@@ -3486,15 +3500,23 @@ action_runtime_refetch_lyrics(void) {
 static bool
 action_runtime_show_lyrics(void) {
     NcmSong song;
+    NcmSong *lyrics_song;
     NcmError error;
     bool success;
+
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_LYRICS)) {
+        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_LYRICS);
+    }
 
     ncm_song_init(&song);
     success = action_runtime_current_song(&song);
     if (success) {
-        ncm_error_clear(&error);
-        success = native_lyrics_screen_fetch(native_c_screen_lyrics(),
-                                             &song, NULL, &error);
+        lyrics_song = native_lyrics_screen_song(native_c_screen_lyrics());
+        if ((lyrics_song == NULL) || !ncm_song_equal(lyrics_song, &song)) {
+            ncm_error_clear(&error);
+            success = native_lyrics_screen_fetch(native_c_screen_lyrics(),
+                                                 &song, NULL, &error);
+        }
     }
     ncm_song_destroy(&song);
     if (!success) {
@@ -3730,8 +3752,10 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_REFETCH_LYRICS:
         return action_runtime_current_screen_is(NCM_SCREEN_TYPE_LYRICS);
     case NCM_ACTION_SHOW_ARTIST_INFO:
+        return action_runtime_has_current_song();
     case NCM_ACTION_SHOW_LYRICS:
-        return action_runtime_has_selected_songs();
+        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_LYRICS)
+            || action_runtime_has_current_song();
 #if defined(ENABLE_OUTPUTS)
     case NCM_ACTION_SHOW_OUTPUTS:
     case NCM_ACTION_TOGGLE_OUTPUT:
