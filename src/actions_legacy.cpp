@@ -3819,6 +3819,50 @@ bool actions_legacy_runtime_update_environment(bool update_timer,
 	return false;
 }
 
+bool actions_legacy_runtime_search_current_screen(
+    enum SearchDirection direction, char *pattern, int32 pattern_len,
+    bool wrap, bool skip_current, bool *handled, NcmError *error)
+{
+	Searchable *searchable;
+
+	if (handled == nullptr)
+		return false;
+	*handled = false;
+	searchable = dynamic_cast<Searchable *>(screenLegacyCurrent());
+	if (searchable == nullptr)
+		return false;
+
+	*handled = true;
+	try
+	{
+		if (pattern == nullptr || pattern_len <= 0)
+		{
+			searchable->clearSearchConstraint();
+			return false;
+		}
+		searchable->setSearchConstraint(std::string(
+			pattern, static_cast<size_t>(pattern_len)));
+		return searchable->search(direction, wrap, skip_current);
+	}
+	catch (std::exception &e)
+	{
+		ncm_error_set(error, EINVAL, const_cast<char *>(e.what()),
+		              static_cast<int32>(std::strlen(e.what())));
+	}
+	return false;
+}
+
+void actions_legacy_runtime_clear_current_search(void)
+{
+	Searchable *searchable;
+
+	searchable = dynamic_cast<Searchable *>(screenLegacyCurrent());
+	if (searchable == nullptr)
+		return;
+
+	searchable->clearSearchConstraint();
+}
+
 bool actions_legacy_runtime_execute_binding(NcmBinding *binding)
 {
 	try

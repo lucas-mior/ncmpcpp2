@@ -6,6 +6,7 @@
 #include "actions.h"
 #include "bindings.h"
 #include "c/ncm_defs.h"
+#include "c/ncm_error.h"
 #include "curses/nc_window.h"
 #include "screens/screen_type.h"
 
@@ -33,6 +34,10 @@ void actions_legacy_runtime_visualizer_setup_datasource(void);
 bool actions_legacy_runtime_update_environment(bool update_timer,
                                                 bool refresh_window,
                                                 bool mpd_sync);
+bool actions_legacy_runtime_search_current_screen(
+    enum SearchDirection direction, char *pattern, int32 pattern_len,
+    bool wrap, bool skip_current, bool *handled, NcmError *error);
+void actions_legacy_runtime_clear_current_search(void);
 bool actions_legacy_runtime_execute_binding(NcmBinding *binding);
 bool actions_legacy_runtime_execute_action(enum NcmActionType type);
 void actions_legacy_runtime_request_exit(void);
