@@ -5,6 +5,7 @@
 #include <string>
 
 #include "c/ncm_base.h"
+#include "configuration_legacy.h"
 #include "settings.h"
 #include "settings_legacy.h"
 #include "song.h"
@@ -658,6 +659,19 @@ void verifySync(const Configuration *source)
 	check(!MPD::Song::ShowDuplicateTags, "show duplicate tags");
 }
 
+void verifyGlobalSyncWrapper()
+{
+	configuration_init(&::Config);
+	setString(&::Config.ncmpcpp_directory,
+	          &::Config.ncmpcpp_directory_len,
+	          &::Config.ncmpcpp_directory_cap,
+	          "global-ncmpcpp-directory");
+	check(configuration_legacy_sync(), "global compatibility sync");
+	check(ConfigLegacy.ncmpcpp_directory == "global-ncmpcpp-directory",
+	      "global compatibility source");
+	configuration_destroy(&::Config);
+}
+
 void verifyDeepCopies(Configuration *source)
 {
 	source->ncmpcpp_directory[0] = 'X';
@@ -703,5 +717,6 @@ int main()
 	verifyDeepCopies(&source);
 
 	configuration_destroy(&source);
+	verifyGlobalSyncWrapper();
 	return EXIT_SUCCESS;
 }

@@ -1,10 +1,14 @@
-#ifndef NCMPCPP_CONFIGURATION_LEGACY_H
+#if !defined(NCMPCPP_CONFIGURATION_LEGACY_H)
 #define NCMPCPP_CONFIGURATION_LEGACY_H
 
-#include <string>
+#include <stdbool.h>
 
-void expand_home(std::string &path);
+#include "c/ncm_defs.h"
 
-bool configure(int argc, char **argv);
+NCM_EXTERN_C_BEGIN
+
+bool configuration_legacy_sync(void);
+
+NCM_EXTERN_C_END
 
 #endif /* NCMPCPP_CONFIGURATION_LEGACY_H */

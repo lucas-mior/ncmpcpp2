@@ -3,7 +3,6 @@
 #include "actions_legacy_runtime.h"
 #include "app_binding_migration.h"
 #include "bindings.h"
-#include "configuration.h"
 #include "global.h"
 #include "screens/native_c_screens.h"
 #include "settings.h"
@@ -113,17 +112,6 @@ app_legacy_bridge_report_mpd_error(NcmError *error) {
                              STRLIT_ARGS("ncmpcpp: %1%"), &arg, 1);
     }
     return;
-}
-
-bool
-ncmpcpp_legacy_configure(int32 argc, char **argv) {
-    if (!actions_legacy_runtime_configure(argc, argv)) {
-        return false;
-    }
-
-    ncm_bindings_configuration_destroy(&Bindings);
-    ncm_bindings_configuration_init(&Bindings);
-    return configure(argc, argv);
 }
 
 void

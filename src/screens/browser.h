@@ -14,7 +14,6 @@
 
 #include "app_controller.h"
 #include "charset.h"
-#include "configuration_legacy.h"
 #include "curses/nc_cyclic_buffer.h"
 #include "format_impl.h"
 #include "actions.h"
@@ -37,6 +36,8 @@
 #include "utility/string.h"
 #include "utility/utf8.h"
 
+#include "c/ncm_base.h"
+#include "c/ncm_path.h"
 #include "c/ncm_tags.h"
 
 
@@ -164,6 +165,34 @@ inline Browser *myBrowser = nullptr;
 namespace browser_compat {
 
 inline std::set<std::string> lm_supported_extensions;
+
+inline std::string expandHome(std::string path)
+{
+    NcmBuffer buffer;
+    NcmError error;
+
+    ncm_buffer_init(&buffer);
+    ncm_buffer_append(&buffer, path.data(), static_cast<int32>(path.size()));
+    ncm_error_clear(&error);
+    if (!ncm_path_expand_home(&buffer, &error))
+    {
+        ncm_buffer_destroy(&buffer);
+        throw std::runtime_error(error.message);
+    }
+
+    try
+    {
+        path.assign(buffer.data == nullptr ? "" : buffer.data,
+                    static_cast<size_t>(buffer.len));
+    }
+    catch (...)
+    {
+        ncm_buffer_destroy(&buffer);
+        throw;
+    }
+    ncm_buffer_destroy(&buffer);
+    return path;
+}
 
 inline std::string realPath(bool local_browser, std::string path)
 {
@@ -911,8 +940,7 @@ inline void Browser::changeBrowseMode()
                       m_local_browser ? "local filesystem" : "MPD database");
     if (m_local_browser)
     {
-        m_current_directory = "~";
-        expand_home(m_current_directory);
+        m_current_directory = browser_compat::expandHome("~");
     }
     else
         m_current_directory = "/";
