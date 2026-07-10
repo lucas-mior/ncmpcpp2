@@ -249,6 +249,7 @@ test_media_library_layout_and_rendering(void) {
     NcBuffer old_inactive_prefix;
     NcBuffer old_inactive_suffix;
     NcmFormatAst old_song_format;
+    enum NcmSongGetter title_getter;
     NcmBuffer text;
     NcBuffer song_text;
     NcmSong song;
@@ -330,8 +331,9 @@ test_media_library_layout_and_rendering(void) {
         &Config.current_item_inactive_column_suffix,
         LIT_ARGS("</inactive>"));
     ncm_format_ast_init(&Config.song_library_format);
-    assert(ncm_format_ast_append_text(&Config.song_library_format,
-                                      LIT_ARGS("library row")));
+    title_getter = NCM_SONG_GETTER_TITLE;
+    assert(ncm_format_ast_append_first_of_getters(
+        &Config.song_library_format, &title_getter, 1));
 
     Config.empty_tag = (char *)"<empty>";
     Config.empty_tag_len = STRLIT_LEN("<empty>");
@@ -462,6 +464,8 @@ test_media_library_layout_and_rendering(void) {
     ncm_song_init(&song);
     nc_buffer_init(&song_text);
     assert(ncm_song_set_uri(&song, LIT_ARGS("song.flac")));
+    assert(ncm_song_add_tag(&song, MPD_TAG_TITLE,
+                            LIT_ARGS("library row")));
     native_media_library_screen_format_song_row(&screen, &song,
                                                  &song_text);
     assert(ncm_string_equal(song_text.data, song_text.len,

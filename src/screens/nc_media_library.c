@@ -891,7 +891,8 @@ native_media_library_screen_format_song_row(
     if (song == NULL) {
         return;
     }
-    ncm_display_song_row(output, &Config.song_library_format, song, 0);
+    ncm_display_song_row(output, &Config.song_library_format, song,
+                         NCM_FORMAT_FLAG_ALL);
     return;
 }
 
