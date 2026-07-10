@@ -211,8 +211,8 @@ void showSongsInColumns(NC::Menu<T> &menu, const MPD::Song &s,
 	int y = menu.getY();
 	int remained_width = menu_width;
 
-	std::vector<Column>::const_iterator it;
-	std::vector<Column>::const_iterator last = Config.columns.end() - 1;
+	std::vector<LegacyColumn>::const_iterator it;
+	std::vector<LegacyColumn>::const_iterator last = Config.columns.end() - 1;
 	for (it = Config.columns.begin(); it != Config.columns.end(); ++it)
 	{
 		int x = menu.getX();
@@ -277,8 +277,8 @@ inline std::string Columns(size_t list_width)
 
 	int width;
 	int remained_width = list_width;
-	std::vector<Column>::const_iterator it;
-	std::vector<Column>::const_iterator last = Config.columns.end() - 1;
+	std::vector<LegacyColumn>::const_iterator it;
+	std::vector<LegacyColumn>::const_iterator last = Config.columns.end() - 1;
 	for (it = Config.columns.begin(); it != Config.columns.end(); ++it)
 	{
 		if (it->stretch_limit >= 0)
