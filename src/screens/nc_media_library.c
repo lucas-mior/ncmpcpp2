@@ -219,6 +219,28 @@ static void native_library_set_conversion_error(NcmError *error,
                                                  int32 message_len);
 static void native_library_request_all_updates(
     NativeMediaLibraryScreen *screen);
+static void native_library_clear_column_filter(
+    NativeMediaLibraryScreen *screen,
+    enum NativeMediaLibraryColumn column);
+static void native_library_sort_tag_menu(NcMediaLibraryTagMenu *menu);
+static void native_library_sort_album_menu(NcMediaLibraryAlbumMenu *menu);
+static bool native_library_move_to_tag(
+    NativeMediaLibraryScreen *screen, char *tag, int32 tag_len);
+static bool native_library_move_to_album(
+    NativeMediaLibraryScreen *screen, char *tag, int32 tag_len,
+    char *album, int32 album_len, char *date, int32 date_len,
+    bool consider_date);
+static bool native_library_move_to_song(
+    NativeMediaLibraryScreen *screen, NcmSong *song);
+static bool native_library_insert_locate_tag(
+    NativeMediaLibraryScreen *screen, char *tag, int32 tag_len,
+    time_t mtime);
+static bool native_library_insert_locate_album(
+    NativeMediaLibraryScreen *screen, char *tag, int32 tag_len,
+    char *album, int32 album_len, char *date, int32 date_len,
+    time_t mtime);
+static bool native_library_locate_song_requirements(
+    NcmSong *song, NcmStringView *primary_value, NcmError *error);
 
 static NcScreenCallbacks native_library_callbacks = {
     .active_window = native_library_active_window,
@@ -2608,6 +2630,327 @@ native_library_request_all_updates(NativeMediaLibraryScreen *screen) {
 }
 
 static void
+native_library_clear_column_filter(NativeMediaLibraryScreen *screen,
+                                   enum NativeMediaLibraryColumn column) {
+    NativeMediaLibraryColumnState *state;
+    NcMenuDisplayCallbacks callbacks;
+    NcMenu *menu;
+
+    if (screen == NULL) {
+        return;
+    }
+
+    state = native_media_library_screen_column_state(screen, column);
+    menu = native_library_column_menu(screen, column);
+    if ((state == NULL) || (menu == NULL)) {
+        return;
+    }
+
+    ncm_regex_destroy(&state->filter_regex);
+    ncm_regex_init(&state->filter_regex);
+    ncm_buffer_clear(&state->filter_constraint);
+    callbacks = native_library_display_callbacks(screen, column, false);
+    nc_menu_set_display_callbacks(menu, callbacks);
+    nc_menu_show_all_items(menu);
+    state->filter_enabled = false;
+    return;
+}
+
+static void
+native_library_sort_tag_menu(NcMediaLibraryTagMenu *menu) {
+    NcMenu *base;
+
+    if (menu == NULL) {
+        return;
+    }
+
+    base = nc_media_library_tag_menu_base(menu);
+    for (int64 i = 1; i < nc_menu_all_item_count(base); i += 1) {
+        int64 j;
+
+        j = i;
+        while (j > 0) {
+            NcMediaLibraryTagRow *left;
+            NcMediaLibraryTagRow *right;
+
+            left = nc_media_library_tag_menu_item_at(
+                menu, NC_MENU_ITEMS_ALL, j);
+            right = nc_media_library_tag_menu_item_at(
+                menu, NC_MENU_ITEMS_ALL, j - 1);
+            if ((left == NULL) || (right == NULL)
+                || (native_library_compare_tag_rows(left, right) >= 0)) {
+                break;
+            }
+            nc_menu_swap_item_slots(base, NC_MENU_ITEMS_ALL, j, j - 1);
+            j -= 1;
+        }
+    }
+    nc_menu_show_all_items(base);
+    return;
+}
+
+static void
+native_library_sort_album_menu(NcMediaLibraryAlbumMenu *menu) {
+    NcMenu *base;
+
+    if (menu == NULL) {
+        return;
+    }
+
+    base = nc_media_library_album_menu_base(menu);
+    for (int64 i = 1; i < nc_menu_all_item_count(base); i += 1) {
+        int64 j;
+
+        j = i;
+        while (j > 0) {
+            NativeMediaLibraryAlbumItem left;
+            NativeMediaLibraryAlbumItem right;
+            NcMediaLibraryAlbumRow *left_row;
+            NcMediaLibraryAlbumRow *right_row;
+            int32 left_rank;
+            int32 right_rank;
+
+            left_row = nc_media_library_album_menu_item_at(
+                menu, NC_MENU_ITEMS_ALL, j);
+            right_row = nc_media_library_album_menu_item_at(
+                menu, NC_MENU_ITEMS_ALL, j - 1);
+            if ((left_row == NULL) || (right_row == NULL)) {
+                break;
+            }
+
+            left.row = *left_row;
+            left.menu_flags = nc_menu_item_flags_at(
+                base, NC_MENU_ITEMS_ALL, j);
+            right.row = *right_row;
+            right.menu_flags = nc_menu_item_flags_at(
+                base, NC_MENU_ITEMS_ALL, j - 1);
+
+            left_rank = 0;
+            right_rank = 0;
+            if (left.menu_flags & NC_MENU_ITEM_SEPARATOR) {
+                left_rank = 1;
+            }
+            if (right.menu_flags & NC_MENU_ITEM_SEPARATOR) {
+                right_rank = 1;
+            }
+            if (left.row.all_tracks_entry) {
+                left_rank = 2;
+            }
+            if (right.row.all_tracks_entry) {
+                right_rank = 2;
+            }
+            if (left_rank > right_rank) {
+                break;
+            }
+            if (left_rank < right_rank) {
+                nc_menu_swap_item_slots(base, NC_MENU_ITEMS_ALL, j, j - 1);
+                j -= 1;
+                continue;
+            }
+            if (left_rank != 0) {
+                break;
+            }
+            if (native_library_compare_album_items(&left, &right) >= 0) {
+                break;
+            }
+            nc_menu_swap_item_slots(base, NC_MENU_ITEMS_ALL, j, j - 1);
+            j -= 1;
+        }
+    }
+    nc_menu_show_all_items(base);
+    return;
+}
+
+static bool
+native_library_move_to_tag(NativeMediaLibraryScreen *screen,
+                           char *tag, int32 tag_len) {
+    NcMenu *menu;
+
+    if ((screen == NULL) || (tag_len < 0)
+        || ((tag == NULL) && (tag_len > 0))) {
+        return false;
+    }
+
+    menu = nc_media_library_tag_menu_base(&screen->tags);
+    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        NcMediaLibraryTagRow *row;
+
+        row = nc_menu_active_item_at(menu, i);
+        if ((row != NULL)
+            && ncm_string_equal(row->tag, row->tag_len, tag, tag_len)) {
+            return nc_menu_goto_selectable(menu, i);
+        }
+    }
+    return false;
+}
+
+static bool
+native_library_move_to_album(NativeMediaLibraryScreen *screen,
+                             char *tag, int32 tag_len,
+                             char *album, int32 album_len,
+                             char *date, int32 date_len,
+                             bool consider_date) {
+    NcMenu *menu;
+
+    if ((screen == NULL) || (tag_len < 0) || (album_len < 0)
+        || (date_len < 0) || ((tag == NULL) && (tag_len > 0))
+        || ((album == NULL) && (album_len > 0))
+        || ((date == NULL) && (date_len > 0))) {
+        return false;
+    }
+
+    menu = nc_media_library_album_menu_base(&screen->albums);
+    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        NcMediaLibraryAlbumRow *row;
+        bool tag_matches;
+        bool date_matches;
+
+        if (nc_menu_position_is_separator(menu, i)) {
+            continue;
+        }
+
+        row = nc_menu_active_item_at(menu, i);
+        if (row == NULL) {
+            continue;
+        }
+
+        tag_matches = (screen->mode == NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY)
+                      || (screen->mode
+                          == NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS)
+                      || ncm_string_equal(row->tag, row->tag_len,
+                                          tag, tag_len);
+        if (!tag_matches) {
+            continue;
+        }
+        if (!ncm_string_equal(row->album, row->album_len,
+                              album, album_len)) {
+            continue;
+        }
+
+        date_matches = !consider_date
+                       || !Config.media_library_albums_split_by_date
+                       || ncm_string_equal(row->date, row->date_len,
+                                           date, date_len);
+        if (date_matches) {
+            return nc_menu_goto_selectable(menu, i);
+        }
+    }
+
+    if (consider_date) {
+        return native_library_move_to_album(
+            screen, tag, tag_len, album, album_len, date, date_len, false);
+    }
+    return false;
+}
+
+static bool
+native_library_move_to_song(NativeMediaLibraryScreen *screen,
+                            NcmSong *song) {
+    NcMenu *menu;
+
+    if ((screen == NULL) || (song == NULL)) {
+        return false;
+    }
+
+    menu = nc_media_library_song_menu_base(&screen->songs);
+    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        NcmSong *candidate;
+
+        candidate = nc_menu_active_item_at(menu, i);
+        if ((candidate != NULL) && ncm_song_equal(candidate, song)) {
+            return nc_menu_goto_selectable(menu, i);
+        }
+    }
+    return false;
+}
+
+static bool
+native_library_insert_locate_tag(NativeMediaLibraryScreen *screen,
+                                 char *tag, int32 tag_len, time_t mtime) {
+    NcMediaLibraryTagRow row;
+    bool result;
+
+    if ((screen == NULL) || (tag_len < 0)
+        || ((tag == NULL) && (tag_len > 0))) {
+        return false;
+    }
+
+    nc_media_library_tag_row_init(&row);
+    result = native_library_set_owned_string(&row.tag, &row.tag_len,
+                                             &row.tag_cap, tag, tag_len);
+    if (result) {
+        row.mtime = mtime;
+        nc_media_library_tag_menu_add(&screen->tags, &row);
+        native_library_sort_tag_menu(&screen->tags);
+    }
+    nc_media_library_tag_row_destroy(&row);
+    return result;
+}
+
+static bool
+native_library_insert_locate_album(NativeMediaLibraryScreen *screen,
+                                   char *tag, int32 tag_len,
+                                   char *album, int32 album_len,
+                                   char *date, int32 date_len,
+                                   time_t mtime) {
+    NcMediaLibraryAlbumRow row;
+    bool result;
+
+    if ((screen == NULL) || (tag_len < 0) || (album_len < 0)
+        || (date_len < 0) || ((tag == NULL) && (tag_len > 0))
+        || ((album == NULL) && (album_len > 0))
+        || ((date == NULL) && (date_len > 0))) {
+        return false;
+    }
+
+    nc_media_library_album_row_init(&row);
+    result = native_library_set_owned_string(&row.tag, &row.tag_len,
+                                             &row.tag_cap, tag, tag_len);
+    if (result) {
+        result = native_library_set_owned_string(
+            &row.album, &row.album_len, &row.album_cap,
+            album, album_len);
+    }
+    if (result) {
+        result = native_library_set_owned_string(
+            &row.date, &row.date_len, &row.date_cap, date, date_len);
+    }
+    if (result) {
+        row.mtime = mtime;
+        row.all_tracks_entry = false;
+        nc_media_library_album_menu_add_with_flags(
+            &screen->albums, &row, NC_MENU_ITEM_SELECTABLE);
+        native_library_sort_album_menu(&screen->albums);
+    }
+    nc_media_library_album_row_destroy(&row);
+    return result;
+}
+
+static bool
+native_library_locate_song_requirements(NcmSong *song,
+                                        NcmStringView *primary_value,
+                                        NcmError *error) {
+    if ((song == NULL) || (primary_value == NULL)) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing locate-song argument"));
+        return false;
+    }
+    if (!ncm_song_tag_view(song, Config.media_lib_primary_tag,
+                           0, primary_value)
+        || (primary_value->len <= 0)) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("song has no primary tag"));
+        return false;
+    }
+    if (!ncm_song_is_from_database(song)) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("song is not from the database"));
+        return false;
+    }
+    return true;
+}
+
+static void
 native_library_print_add_status(NativeMediaLibraryScreen *screen,
                                 NcmSongArray *songs, bool result) {
     NcMediaLibraryAlbumRow *album;
@@ -2807,28 +3150,141 @@ native_media_library_screen_add_item_to_playlist(
 bool
 native_media_library_screen_locate_song(NativeMediaLibraryScreen *screen,
                                         NcmSong *song, NcmError *error) {
-    NcMenu *menu;
-    NcmSong *candidate;
+    NcmStringView primary_value;
+    NcmStringView album;
+    NcmStringView date;
+    char *album_date;
+    char *album_tag;
+    int32 album_date_len;
+    int32 album_tag_len;
+    NcMenu *tags_menu;
+    NcMenu *albums_menu;
+    NcMenu *songs_menu;
 
     if ((screen == NULL) || (song == NULL)) {
         ncm_error_set(error, EINVAL,
                       STRLIT_ARGS("missing locate-song argument"));
         return false;
     }
-    menu = nc_media_library_song_menu_base(&screen->songs);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        candidate = nc_menu_active_item_at(menu, i);
-        if (candidate && ncm_song_equal(candidate, song)) {
-            if (nc_menu_goto_selectable(menu, i)) {
-                ncm_error_clear(error);
-                return true;
+    ncm_error_clear(error);
+    if (!native_library_locate_song_requirements(
+            song, &primary_value, error)) {
+        return false;
+    }
+
+    native_library_song_first_tag(song, MPD_TAG_ALBUM, &album);
+    native_library_song_first_tag(song, MPD_TAG_DATE, &date);
+    album_date = date.data;
+    album_date_len = date.len;
+    if (!Config.media_library_albums_split_by_date) {
+        album_date = NULL;
+        album_date_len = 0;
+    }
+
+    tags_menu = nc_media_library_tag_menu_base(&screen->tags);
+    albums_menu = nc_media_library_album_menu_base(&screen->albums);
+    songs_menu = nc_media_library_song_menu_base(&screen->songs);
+    if (screen->mode == NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS) {
+        native_library_clear_column_filter(
+            screen, NATIVE_MEDIA_LIBRARY_COLUMN_TAGS);
+        if (nc_menu_empty(tags_menu)) {
+            native_media_library_screen_request_tags_update(screen);
+            if (!native_media_library_screen_update(screen, error)) {
+                return false;
             }
-            break;
+        }
+        if (!native_library_move_to_tag(screen, primary_value.data,
+                                        primary_value.len)) {
+            if (!native_library_insert_locate_tag(
+                    screen, primary_value.data, primary_value.len,
+                    song->last_modified)) {
+                ncm_error_set(error, ENOMEM,
+                              STRLIT_ARGS("failed to insert locate tag"));
+                return false;
+            }
+            if (!native_library_move_to_tag(screen, primary_value.data,
+                                            primary_value.len)) {
+                ncm_error_set(error, ENOENT,
+                              STRLIT_ARGS("song tag is not in library"));
+                return false;
+            }
+        }
+        nc_screen_finish_list_change(&screen->screen);
+    }
+
+    native_library_clear_column_filter(
+        screen, NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS);
+    if (nc_menu_empty(albums_menu)) {
+        native_media_library_screen_request_albums_update(screen);
+        if (!native_media_library_screen_update(screen, error)) {
+            return false;
         }
     }
-    ncm_error_set(error, ENOENT,
-                  STRLIT_ARGS("song is not visible in media library"));
-    return false;
+
+    if ((screen->mode == NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS)
+        && nc_menu_empty(albums_menu)) {
+        native_media_library_screen_set_active_column(
+            screen, NATIVE_MEDIA_LIBRARY_COLUMN_TAGS);
+        ncm_error_set(error, ENOENT,
+                      STRLIT_ARGS("song album is not in library"));
+        return false;
+    }
+
+    album_tag = primary_value.data;
+    album_tag_len = primary_value.len;
+    if (screen->mode == NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY) {
+        album_tag = NULL;
+        album_tag_len = 0;
+    }
+
+    if (!native_library_move_to_album(
+            screen, primary_value.data, primary_value.len,
+            album.data, album.len, date.data, date.len, true)) {
+        if (!native_library_insert_locate_album(
+                screen, album_tag, album_tag_len, album.data, album.len,
+                album_date, album_date_len, song->last_modified)) {
+            ncm_error_set(error, ENOMEM,
+                          STRLIT_ARGS("failed to insert locate album"));
+            return false;
+        }
+        if (!native_library_move_to_album(
+                screen, primary_value.data, primary_value.len,
+                album.data, album.len, date.data, date.len, true)) {
+            ncm_error_set(error, ENOENT,
+                          STRLIT_ARGS("song album is not in library"));
+            return false;
+        }
+    }
+    native_media_library_screen_set_active_column(
+        screen, NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS);
+    nc_screen_finish_list_change(&screen->screen);
+
+    native_library_clear_column_filter(
+        screen, NATIVE_MEDIA_LIBRARY_COLUMN_SONGS);
+    native_media_library_screen_request_songs_update(screen);
+    if (!native_media_library_screen_update(screen, error)) {
+        return false;
+    }
+    if (nc_menu_empty(songs_menu)) {
+        nc_menu_clear_items(albums_menu);
+        native_media_library_screen_set_active_column(
+            screen, NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS);
+        ncm_error_set(error, ENOENT,
+                      STRLIT_ARGS("song is not visible in media library"));
+        return false;
+    }
+    if (!native_library_move_to_song(screen, song)) {
+        native_media_library_screen_set_active_column(
+            screen, NATIVE_MEDIA_LIBRARY_COLUMN_SONGS);
+        ncm_error_set(error, ENOENT,
+                      STRLIT_ARGS("song is not visible in media library"));
+        return false;
+    }
+
+    native_media_library_screen_set_active_column(
+        screen, NATIVE_MEDIA_LIBRARY_COLUMN_SONGS);
+    ncm_error_clear(error);
+    return true;
 }
 
 static NativeMediaLibraryScreen *
