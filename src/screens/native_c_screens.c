@@ -706,13 +706,21 @@ native_c_screen_sort_playlist_dialog_set_resize(void) {
     return;
 }
 
-void
+bool
 native_c_screen_sort_playlist_dialog_switch_to(void) {
-    (void)nc_screen_switcher_switch_to(
-        native_c_screen_sort_playlist_dialog_native(),
-        nc_screen_has_to_be_resized(
-            native_c_screen_sort_playlist_dialog_native()));
-    return;
+    NcmError error;
+    bool success;
+
+    ncm_error_clear(&error);
+    success = native_sort_playlist_dialog_open(
+        native_c_screen_sort_playlist_dialog(),
+        native_c_screen_playlist(), &global_mpd,
+        Config.ignore_leading_the, &error);
+    if (!success && ncm_error_is_set(&error)) {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time, error.message);
+    }
+    return success;
 }
 
 bool

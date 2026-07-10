@@ -75,6 +75,19 @@ PLAYLIST_SORT_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=ncm_mpd_client_commit_command_list
 $(BUILD_DIR)/tests/c_playlist_sort_test: \
 	LDFLAGS += $(PLAYLIST_SORT_TEST_WRAP_FLAGS)
+SORT_PLAYLIST_DIALOG_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=ncm_playlist_sort_range \
+	-Wl,--wrap=ncm_status_update_full \
+	-Wl,--wrap=ncm_statusbar_print_cstring \
+	-Wl,--wrap=nc_window_init \
+	-Wl,--wrap=nc_window_destroy \
+	-Wl,--wrap=nc_window_resize \
+	-Wl,--wrap=nc_window_move_to \
+	-Wl,--wrap=nc_window_display \
+	-Wl,--wrap=nc_window_has_coords \
+	-Wl,--wrap=nc_menu_refresh
+$(BUILD_DIR)/tests/c_sort_playlist_dialog_test: \
+	LDFLAGS += $(SORT_PLAYLIST_DIALOG_TEST_WRAP_FLAGS)
 DEPS := \
 	$(CBASE_OBJS:.o=.d) \
 	$(NCMPCPP_C_OBJS:.o=.d) \
