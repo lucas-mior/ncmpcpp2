@@ -25,19 +25,6 @@ Main goal: remove C++ from the project while preserving all current behavior.
 
 ## `./src/screens/media_library.cpp`
 
-6. **Finish navigation, filtering, searching, mouse handling, and song actions.**
-   Make previous/next-column availability depend on the actual visible mode and
-   a nonempty destination menu rather than enum arithmetic; preserve active and
-   inactive highlighting while moving between columns. Implement the native
-   mouse callback with the legacy left-click selection, right-click add/play,
-   column switching, scrolling, and dependent-list clearing behavior. Replace
-   the current URI-only song matching and literal filter regex with
-   `Config.regex_type` matching against the same rendered tag/album/song text
-   used on screen; keep separators and “All tracks” during filtering but skip
-   them during search. Expand selected-song extraction and add/play so tags,
-   selected albums, all-tracks, and selected song rows issue the same searches,
-   ordering, playlist insertion, playback, and status messages as the C++
-   implementation.
 7. **Port robust locate-song behavior and migrate every external consumer.**
    Reimplement `locateSong` in C with the database-song and missing-primary-tag
    checks, screen switch and progress message, filter clearing, on-demand
