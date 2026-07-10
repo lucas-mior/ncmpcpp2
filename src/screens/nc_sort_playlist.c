@@ -18,6 +18,9 @@ static NativeSortPlaylistDialog *sort_dialog_from_screen(NcScreen *screen);
 static NcScreenCallbacks sort_dialog_callbacks(void);
 static NcWindow *sort_dialog_active_window_callback(NcScreen *screen);
 static void sort_dialog_refresh_callback(NcScreen *screen);
+static void sort_dialog_draw_row(NcMenu *menu, NcWindow *window,
+                                 void *item, int64 pos,
+                                 void *user);
 static void sort_dialog_scroll_callback(NcScreen *screen,
                                         enum NcScroll where);
 static bool sort_dialog_can_run_current_callback(NcScreen *screen);
@@ -45,10 +48,15 @@ native_sort_playlist_dialog_init(NativeSortPlaylistDialog *dialog,
                                  int64 start_x, int64 start_y,
                                  int64 width, int64 height,
                                  NcColor color, NcBorder border) {
+    NcMenuDisplayCallbacks display_callbacks = {0};
     NcScreenCallbacks callbacks;
 
     callbacks = sort_dialog_callbacks();
     nc_editor_sort_menu_init(&dialog->rows);
+    display_callbacks.draw = sort_dialog_draw_row;
+    nc_menu_set_display_callbacks(
+        nc_editor_sort_menu_base(&dialog->rows),
+        display_callbacks);
     nc_window_init(&dialog->window, start_x, start_y, width, height,
                    STRLIT_ARGS("Sort songs by..."), color, border);
     ncm_song_array_init(&dialog->songs);
@@ -373,6 +381,24 @@ sort_dialog_callbacks(void) {
 static NcWindow *
 sort_dialog_active_window_callback(NcScreen *screen) {
     return &sort_dialog_from_screen(screen)->window;
+}
+
+static void
+sort_dialog_draw_row(NcMenu *menu, NcWindow *window, void *item,
+                     int64 pos, void *user) {
+    NcEditorSortRow *row;
+
+    (void)menu;
+    (void)pos;
+    (void)user;
+    row = item;
+    if (row == NULL || row->action.label == NULL
+        || row->action.label_len <= 0) {
+        return;
+    }
+    nc_window_print_data(window, row->action.label,
+                         row->action.label_len);
+    return;
 }
 
 static void

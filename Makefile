@@ -85,6 +85,7 @@ SORT_PLAYLIST_DIALOG_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_window_resize \
 	-Wl,--wrap=nc_window_move_to \
 	-Wl,--wrap=nc_window_display \
+	-Wl,--wrap=nc_window_print_data \
 	-Wl,--wrap=nc_window_has_coords \
 	-Wl,--wrap=nc_menu_refresh
 $(BUILD_DIR)/tests/c_sort_playlist_dialog_test: \

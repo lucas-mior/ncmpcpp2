@@ -31,6 +31,8 @@ static struct TestState {
     bool sort_success;
     bool refresh_success;
     bool mpd_connected;
+    char drawn_label[256];
+    int32 draw_count;
 } test_state;
 
 static void test_state_reset(void);
@@ -38,6 +40,8 @@ static void test_add_song(NativePlaylistScreen *playlist, char *uri,
                           int32 uri_len, uint32 position);
 static void test_select(NativePlaylistScreen *playlist, int64 position);
 static void test_clear_selection(NativePlaylistScreen *playlist);
+static void test_dialog_rows_render_labels(
+    NativeSortPlaylistDialog *dialog);
 static void test_dialog_entry_and_cancel(NativePlaylistScreen *playlist,
                                          NativeSortPlaylistDialog *dialog,
                                          NcmMpdClient *client);
@@ -141,6 +145,18 @@ __wrap_nc_window_display(NcWindow *window) {
     return;
 }
 
+void
+__wrap_nc_window_print_data(NcWindow *window, char *string,
+                            int32 string_len) {
+    (void)window;
+    assert(string_len >= 0);
+    assert(string_len < (int32)sizeof(test_state.drawn_label));
+    ncm_memcpy(test_state.drawn_label, string, string_len);
+    test_state.drawn_label[string_len] = '\0';
+    test_state.draw_count += 1;
+    return;
+}
+
 bool
 __wrap_nc_window_has_coords(NcWindow *window, int32 *x, int32 *y) {
     (void)window;
@@ -197,6 +213,7 @@ main(void) {
         native_playlist_screen_base(&playlist)));
     assert(app_controller_register_screen(
         native_sort_playlist_dialog_base(&dialog)));
+    test_dialog_rows_render_labels(&dialog);
 
     test_add_song(&playlist, STRLIT_ARGS("zero.flac"), 10);
     test_add_song(&playlist, STRLIT_ARGS("one.flac"), 11);
@@ -254,6 +271,36 @@ test_select(NativePlaylistScreen *playlist, int64 position) {
 static void
 test_clear_selection(NativePlaylistScreen *playlist) {
     nc_menu_clear_selection(native_playlist_screen_menu(playlist));
+    return;
+}
+
+static void
+test_dialog_rows_render_labels(NativeSortPlaylistDialog *dialog) {
+    NcEditorSortRow *row;
+    NcMenu *menu;
+
+    test_state_reset();
+    menu = nc_editor_sort_menu_base(
+        native_sort_playlist_dialog_menu(dialog));
+    assert(menu->display_callbacks.draw != NULL);
+
+    row = nc_editor_sort_menu_item_at(
+        native_sort_playlist_dialog_menu(dialog), NC_MENU_ITEMS_ALL, 0);
+    assert(row != NULL);
+    menu->display_callbacks.draw(
+        menu, &dialog->window, row, 0, menu->display_callbacks.user);
+    assert(test_state.draw_count == 1);
+    assert(strcmp(test_state.drawn_label, "Artist") == 0);
+
+    row = nc_editor_sort_menu_item_at(
+        native_sort_playlist_dialog_menu(dialog), NC_MENU_ITEMS_ALL,
+        nc_menu_all_item_count(menu) - 2);
+    assert(row != NULL);
+    menu->display_callbacks.draw(
+        menu, &dialog->window, row, nc_menu_all_item_count(menu) - 2,
+        menu->display_callbacks.user);
+    assert(test_state.draw_count == 2);
+    assert(strcmp(test_state.drawn_label, "Sort") == 0);
     return;
 }
 
