@@ -76,6 +76,7 @@ PLAYLIST_SORT_TEST_WRAP_FLAGS := \
 $(BUILD_DIR)/tests/c_playlist_sort_test: \
 	LDFLAGS += $(PLAYLIST_SORT_TEST_WRAP_FLAGS)
 SORT_PLAYLIST_DIALOG_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=ncm_mpd_client_connected \
 	-Wl,--wrap=ncm_playlist_sort_range \
 	-Wl,--wrap=ncm_status_update_full \
 	-Wl,--wrap=ncm_statusbar_print_cstring \

@@ -20,6 +20,8 @@ static NcWindow *sort_dialog_active_window_callback(NcScreen *screen);
 static void sort_dialog_refresh_callback(NcScreen *screen);
 static void sort_dialog_scroll_callback(NcScreen *screen,
                                         enum NcScroll where);
+static bool sort_dialog_can_run_current_callback(NcScreen *screen);
+static bool sort_dialog_run_current_callback(NcScreen *screen);
 static void sort_dialog_switch_to_callback(NcScreen *screen);
 static void sort_dialog_resize_callback(NcScreen *screen);
 static int32 sort_dialog_timeout_callback(NcScreen *screen);
@@ -301,7 +303,7 @@ bool
 native_sort_playlist_dialog_run_current(NativeSortPlaylistDialog *dialog) {
     NcEditorSortRow *row;
 
-    if (dialog == NULL) {
+    if (dialog == NULL || !dialog->ready) {
         return false;
     }
     row = nc_editor_sort_menu_current(&dialog->rows);
@@ -354,6 +356,8 @@ sort_dialog_callbacks(void) {
     callbacks.refresh = sort_dialog_refresh_callback;
     callbacks.refresh_window = sort_dialog_refresh_callback;
     callbacks.scroll = sort_dialog_scroll_callback;
+    callbacks.can_run_current = sort_dialog_can_run_current_callback;
+    callbacks.run_current = sort_dialog_run_current_callback;
     callbacks.switch_to = sort_dialog_switch_to_callback;
     callbacks.resize = sort_dialog_resize_callback;
     callbacks.window_timeout = sort_dialog_timeout_callback;
@@ -392,6 +396,25 @@ sort_dialog_scroll_callback(NcScreen *screen, enum NcScroll where) {
     nc_menu_scroll_selectable(nc_editor_sort_menu_base(&dialog->rows),
                               dialog->height, where);
     return;
+}
+
+static bool
+sort_dialog_can_run_current_callback(NcScreen *screen) {
+    NativeSortPlaylistDialog *dialog;
+    NcEditorSortRow *row;
+
+    dialog = sort_dialog_from_screen(screen);
+    if (dialog == NULL || !dialog->ready) {
+        return false;
+    }
+    row = nc_editor_sort_menu_current(&dialog->rows);
+    return (row != NULL) && (row->action.run != NULL);
+}
+
+static bool
+sort_dialog_run_current_callback(NcScreen *screen) {
+    return native_sort_playlist_dialog_run_current(
+        sort_dialog_from_screen(screen));
 }
 
 static void
