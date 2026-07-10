@@ -331,8 +331,8 @@ NC::Menu<T> instantiations.
     NC::Menu<NcmPlaylist>            -> NcPlaylistEntryMenu
     NC::Menu<MPD::MutableSong>       -> NcTagRowMenu
     NC::Menu<SEItem>                 -> NcSearchRowMenu
-    NC::Menu<MediaLibrary::PrimaryTag> -> NcMediaLibraryTagMenu
-    NC::Menu<MediaLibrary::AlbumEntry> -> NcMediaLibraryAlbumMenu
+    Legacy primary-tag menu             -> NcMediaLibraryTagMenu
+    Legacy album-entry menu             -> NcMediaLibraryAlbumMenu
     NC::Menu<std::string>            -> NcEditorStringMenu
     NC::Menu<std::pair<string,string>> -> NcEditorPairMenu
     NC::Menu<RunnableItem<...>>      -> NcEditorActionMenu or NcEditorSortMenu
