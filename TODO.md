@@ -25,16 +25,6 @@ Main goal: remove C++ from the project while preserving all current behavior.
 
 ## `./src/screens/media_library.cpp`
 
-1. **Replace the placeholder native contract with the complete C state model.**
-   In `nc_media_library.h`, replace the ambiguous `columns` integer with an
-   explicit three-column, two-column, and album-only mode enum while keeping
-   tags, albums, and songs as distinct active-column values. Add the legacy
-   250-ms fetch-delay/window-timeout state, per-column filter and search state,
-   title buffers, and a C-only hook table whose production implementation uses
-   `NcmMpdClient` and whose test implementation can return deterministic lists
-   and errors. Expose typed accessors for the current tag, current album, mode,
-   visible song rows, update timer, sort toggle, mode toggle, and locate/add
-   operations needed by callers that currently dereference `myLibrary`.
 2. **Implement exact mode, geometry, menu, and rendering behavior.** Configure
    all three C menus with cyclic scrolling, centered cursor, selected
    prefix/suffix, and active versus inactive-column highlight prefixes. Make
