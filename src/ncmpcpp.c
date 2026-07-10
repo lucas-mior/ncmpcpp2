@@ -10,7 +10,6 @@
 #include "app_legacy_bridge.h"
 #include "bindings.h"
 #include "configuration.h"
-#include "configuration_legacy.h"
 #include "global.h"
 #include "settings.h"
 #include "title.h"
@@ -221,7 +220,7 @@ app_exit_requested(void) {
 }
 
 int
-main(int argc, char **argv) {
+main(int32 argc, char **argv) {
     bool key_pressed;
     NcKey input;
     NcmTimePoint connect_attempt;
@@ -233,7 +232,7 @@ main(int argc, char **argv) {
         app_destroy_state();
         exit(EXIT_SUCCESS);
     }
-    if (!configuration_legacy_sync()) {
+    if (!ncmpcpp_legacy_sync_configuration()) {
         app_destroy_state();
         exit(EXIT_FAILURE);
     }

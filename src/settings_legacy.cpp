@@ -1,12 +1,16 @@
 #include <cstddef>
+#include <exception>
+#include <iostream>
 #include <new>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "configuration.h"
 #include "settings.h"
 #include "settings_legacy.h"
+#include "settings_legacy_runtime.h"
 #include "song.h"
 
 #undef Config
@@ -334,4 +338,26 @@ void settings_legacy_sync_from_c(const Configuration *source)
 	MPD::Song::TagsSeparator = stringFromC(
 		source->tags_separator, source->tags_separator_len);
 	MPD::Song::ShowDuplicateTags = source->show_duplicate_tags;
+}
+
+extern "C" bool settings_legacy_runtime_sync_configuration(void)
+{
+	try
+	{
+		if (configuration_is_quiet())
+			std::clog.rdbuf(nullptr);
+		settings_legacy_sync_from_c(&::Config);
+	}
+	catch (const std::exception &error)
+	{
+		std::cerr << "Error while synchronizing legacy configuration: "
+		          << error.what() << "\n";
+		return false;
+	}
+	catch (...)
+	{
+		std::cerr << "Error while synchronizing legacy configuration\n";
+		return false;
+	}
+	return true;
 }
