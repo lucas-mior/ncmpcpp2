@@ -271,7 +271,8 @@ void configuration_destroy(Configuration *config);
 void configuration_clear(Configuration *config);
 bool configuration_read(Configuration *config,
                         NcmStringViewArray *config_paths,
-                        bool ignore_errors, NcmError *error);
+                        bool ignore_errors, bool quiet,
+                        NcmError *error);
 
 extern Configuration Config;
 
