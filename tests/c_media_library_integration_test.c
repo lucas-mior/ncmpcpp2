@@ -66,10 +66,24 @@ test_registered_native_media_library_actions(void) {
     assert(app_controller_find_screen_type(NC_SCREEN_TYPE_MEDIA_LIBRARY)
            == native_media_library_screen_base(library));
 
-    library->tags_update_request = false;
+    assert(native_media_library_screen_add_album(
+        library, LIT_ARGS("Artist"), LIT_ARGS("Album"),
+        LIT_ARGS("2026"), 0, false));
+    ncm_song_init(&song);
+    assert(ncm_song_set_uri(&song, LIT_ARGS("album/song.flac")));
+    assert(native_media_library_screen_add_song_copy(library, &song));
+    ncm_song_destroy(&song);
+    assert(native_media_library_screen_current_album(library));
+    assert(native_media_library_screen_visible_song_count(library) == 1);
+
+    native_media_library_screen_clear_update_requests(library);
     assert(ncm_action_runtime_run(
         NULL, NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE));
     assert(Config.media_lib_primary_tag == MPD_TAG_ALBUM_ARTIST);
-    assert(library->tags_update_request);
+    assert(native_media_library_screen_current_album(library) == NULL);
+    assert(native_media_library_screen_visible_song_count(library) == 0);
+    assert(!library->tags_update_request);
+    assert(library->albums_update_request);
+    assert(library->songs_update_request);
     return;
 }
