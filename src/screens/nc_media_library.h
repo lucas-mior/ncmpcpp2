@@ -230,6 +230,8 @@ bool native_media_library_screen_current_song(
     NativeMediaLibraryScreen *screen, NcmSong *song);
 bool native_media_library_screen_selected_songs(
     NativeMediaLibraryScreen *screen, NcmSongArray *songs);
+bool native_media_library_screen_selected_songs_checked(
+    NativeMediaLibraryScreen *screen, NcmSongArray *songs, NcmError *error);
 bool native_media_library_screen_apply_filter(
     NativeMediaLibraryScreen *screen, char *pattern, int32 pattern_len,
     NcmError *error);
