@@ -145,11 +145,15 @@ void native_media_library_screen_set_geometry(
 
 enum NativeMediaLibraryMode native_media_library_screen_mode(
     NativeMediaLibraryScreen *screen);
+int32 native_media_library_screen_column_count(
+    NativeMediaLibraryScreen *screen);
 bool native_media_library_screen_set_mode(
     NativeMediaLibraryScreen *screen, enum NativeMediaLibraryMode mode);
 enum NativeMediaLibraryMode native_media_library_screen_toggle_mode(
     NativeMediaLibraryScreen *screen);
 enum NativeMediaLibraryColumn native_media_library_screen_active_column(
+    NativeMediaLibraryScreen *screen);
+bool native_media_library_screen_item_available(
     NativeMediaLibraryScreen *screen);
 bool native_media_library_screen_set_active_column(
     NativeMediaLibraryScreen *screen,
@@ -174,6 +178,8 @@ bool native_media_library_screen_current_album_value(
     NativeMediaLibraryScreen *screen, char **album, int32 *album_len);
 bool native_media_library_screen_current_album_date(
     NativeMediaLibraryScreen *screen, char **date, int32 *date_len);
+bool native_media_library_screen_current_album_is_all_tracks(
+    NativeMediaLibraryScreen *screen);
 int64 native_media_library_screen_visible_song_count(
     NativeMediaLibraryScreen *screen);
 NcmSong *native_media_library_screen_visible_song_at(
@@ -248,8 +254,14 @@ bool native_media_library_screen_selected_songs(
     NativeMediaLibraryScreen *screen, NcmSongArray *songs);
 bool native_media_library_screen_selected_songs_checked(
     NativeMediaLibraryScreen *screen, NcmSongArray *songs, NcmError *error);
+bool native_media_library_screen_current_tag_songs(
+    NativeMediaLibraryScreen *screen, NcmSongArray *songs,
+    NcmError *error);
 bool native_media_library_screen_current_album_songs(
     NativeMediaLibraryScreen *screen, NcmSongArray *songs, NcmError *error);
+bool native_media_library_screen_copy_visible_songs(
+    NativeMediaLibraryScreen *screen, NcmSongArray *songs,
+    NcmError *error);
 bool native_media_library_screen_apply_filter(
     NativeMediaLibraryScreen *screen, char *pattern, int32 pattern_len,
     NcmError *error);

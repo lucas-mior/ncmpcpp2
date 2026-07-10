@@ -201,7 +201,7 @@ install: $(BINARY)
 	install -d '$(DESTDIR)$(BINDIR)'
 	install -m 755 '$(BINARY)' '$(DESTDIR)$(BINDIR)/ncmpcpp'
 	install -d '$(DESTDIR)$(DOCDIR)'
-	install -m 644 AUTHORS CHANGELOG.md COPYING '$(DESTDIR)$(DOCDIR)'
+	install -m 644 AUTHORS COPYING '$(DESTDIR)$(DOCDIR)'
 	install -m 644 doc/bindings doc/config '$(DESTDIR)$(DOCDIR)'
 	install -d '$(DESTDIR)$(MANDIR)/man1'
 	install -m 644 doc/ncmpcpp.1 '$(DESTDIR)$(MANDIR)/man1/ncmpcpp.1'
