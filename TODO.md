@@ -25,18 +25,6 @@ Main goal: remove C++ from the project while preserving all current behavior.
 
 ## `./src/screens/media_library.cpp`
 
-2. **Implement exact mode, geometry, menu, and rendering behavior.** Configure
-   all three C menus with cyclic scrolling, centered cursor, selected
-   prefix/suffix, and active versus inactive-column highlight prefixes. Make
-   the mode cycle exactly three-column -> two-column -> album-only ->
-   three-column, hide the tags window in both two-column modes, and calculate
-   widths from `media_library_column_width_ratio_three` or
-   `media_library_column_width_ratio_two` after obtaining locked-screen-aware
-   resize parameters. Add row draw callbacks for locale-converted tags,
-   `Config.empty_tag`, the exact album/date/primary-tag text, “All tracks,” and
-   `Config.song_library_format`; refresh every visible menu, draw the proper
-   separators, maintain the legacy dynamic titles, and render “No albums
-   found.” when appropriate.
 3. **Build and test the native grouping and ordering primitives before MPD I/O.**
    Add pure C helpers that populate tag, album, and song arrays from
    `NcmMpdStringList`/`NcmMpdSongList`, enumerate every value of the configured

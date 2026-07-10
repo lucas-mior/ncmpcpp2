@@ -21,6 +21,7 @@ typedef struct MediaLibraryHookFixture {
 } MediaLibraryHookFixture;
 
 static void test_media_library_state_contract(void);
+static void test_media_library_layout_and_rendering(void);
 static void test_media_library_tag_grouping(void);
 static void test_media_library_mode_transitions(void);
 static void test_media_library_selected_songs(void);
@@ -42,6 +43,7 @@ static bool test_append_song(NcmMpdSongList *songs, char *uri,
 int
 main(void) {
     test_media_library_state_contract();
+    test_media_library_layout_and_rendering();
     test_media_library_tag_grouping();
     test_media_library_mode_transitions();
     test_media_library_selected_songs();
@@ -140,6 +142,276 @@ test_media_library_state_contract(void) {
     Config.titles_visibility = old_titles_visibility;
     Config.media_lib_primary_tag = old_primary_tag;
     Config.regex_type = old_regex_type;
+    return;
+}
+
+static void
+test_media_library_layout_and_rendering(void) {
+    NativeMediaLibraryScreen screen;
+    NativeMediaLibraryHooks hooks = {0};
+    NcMediaLibraryTagRow tag = {0};
+    NcMediaLibraryAlbumRow album = {0};
+    NcmInt32Array old_three_ratios;
+    NcmInt32Array old_two_ratios;
+    NcBuffer old_selected_prefix;
+    NcBuffer old_selected_suffix;
+    NcBuffer old_current_prefix;
+    NcBuffer old_current_suffix;
+    NcBuffer old_inactive_prefix;
+    NcBuffer old_inactive_suffix;
+    NcmFormatAst old_song_format;
+    NcmBuffer text;
+    NcBuffer song_text;
+    NcmSong song;
+    NcMenu *tags;
+    NcMenu *albums;
+    NcMenu *songs;
+    int32 *ratio;
+    char *old_empty_tag;
+    int32 old_empty_tag_len;
+    int32 old_empty_tag_cap;
+    bool old_titles_visibility;
+    bool old_centered_cursor;
+    bool old_cyclic_scrolling;
+    bool old_sort_by_mtime;
+    bool old_hide_album_dates;
+    enum mpd_tag_type old_primary_tag;
+
+    old_three_ratios = Config.media_library_column_width_ratio_three;
+    old_two_ratios = Config.media_library_column_width_ratio_two;
+    old_selected_prefix = Config.selected_item_prefix;
+    old_selected_suffix = Config.selected_item_suffix;
+    old_current_prefix = Config.current_item_prefix;
+    old_current_suffix = Config.current_item_suffix;
+    old_inactive_prefix = Config.current_item_inactive_column_prefix;
+    old_inactive_suffix = Config.current_item_inactive_column_suffix;
+    old_song_format = Config.song_library_format;
+    old_empty_tag = Config.empty_tag;
+    old_empty_tag_len = Config.empty_tag_len;
+    old_empty_tag_cap = Config.empty_tag_cap;
+    old_titles_visibility = Config.titles_visibility;
+    old_centered_cursor = Config.centered_cursor;
+    old_cyclic_scrolling = Config.use_cyclic_scrolling;
+    old_sort_by_mtime = Config.media_library_sort_by_mtime;
+    old_hide_album_dates = Config.media_lib_hide_album_dates;
+    old_primary_tag = Config.media_lib_primary_tag;
+
+    ncm_int32_array_init(
+        &Config.media_library_column_width_ratio_three);
+    ratio = ncm_int32_array_append(
+        &Config.media_library_column_width_ratio_three);
+    assert(ratio);
+    *ratio = 2;
+    ratio = ncm_int32_array_append(
+        &Config.media_library_column_width_ratio_three);
+    assert(ratio);
+    *ratio = 3;
+    ratio = ncm_int32_array_append(
+        &Config.media_library_column_width_ratio_three);
+    assert(ratio);
+    *ratio = 5;
+    ncm_int32_array_init(&Config.media_library_column_width_ratio_two);
+    ratio = ncm_int32_array_append(
+        &Config.media_library_column_width_ratio_two);
+    assert(ratio);
+    *ratio = 3;
+    ratio = ncm_int32_array_append(
+        &Config.media_library_column_width_ratio_two);
+    assert(ratio);
+    *ratio = 7;
+
+    nc_buffer_init(&Config.selected_item_prefix);
+    nc_buffer_append_data(&Config.selected_item_prefix,
+                          LIT_ARGS("<selected>"));
+    nc_buffer_init(&Config.selected_item_suffix);
+    nc_buffer_append_data(&Config.selected_item_suffix,
+                          LIT_ARGS("</selected>"));
+    nc_buffer_init(&Config.current_item_prefix);
+    nc_buffer_append_data(&Config.current_item_prefix,
+                          LIT_ARGS("<active>"));
+    nc_buffer_init(&Config.current_item_suffix);
+    nc_buffer_append_data(&Config.current_item_suffix,
+                          LIT_ARGS("</active>"));
+    nc_buffer_init(&Config.current_item_inactive_column_prefix);
+    nc_buffer_append_data(
+        &Config.current_item_inactive_column_prefix,
+        LIT_ARGS("<inactive>"));
+    nc_buffer_init(&Config.current_item_inactive_column_suffix);
+    nc_buffer_append_data(
+        &Config.current_item_inactive_column_suffix,
+        LIT_ARGS("</inactive>"));
+    ncm_format_ast_init(&Config.song_library_format);
+    assert(ncm_format_ast_append_text(&Config.song_library_format,
+                                      LIT_ARGS("library row")));
+
+    Config.empty_tag = (char *)"<empty>";
+    Config.empty_tag_len = STRLIT_LEN("<empty>");
+    Config.empty_tag_cap = 0;
+    Config.titles_visibility = true;
+    Config.centered_cursor = true;
+    Config.use_cyclic_scrolling = true;
+    Config.media_library_sort_by_mtime = false;
+    Config.media_lib_hide_album_dates = false;
+    Config.media_lib_primary_tag = MPD_TAG_ARTIST;
+
+    native_media_library_screen_init(&screen, hooks, 7, 100, 3, 20,
+                                     nc_color_default(),
+                                     nc_border_none());
+    tags = nc_media_library_tag_menu_base(&screen.tags);
+    albums = nc_media_library_album_menu_base(&screen.albums);
+    songs = nc_media_library_song_menu_base(&screen.songs);
+
+    assert(tags->cyclic_scroll_enabled);
+    assert(albums->cyclic_scroll_enabled);
+    assert(songs->cyclic_scroll_enabled);
+    assert(tags->autocenter_cursor);
+    assert(albums->autocenter_cursor);
+    assert(songs->autocenter_cursor);
+    assert(nc_buffer_equal(&tags->selected_prefix,
+                           &Config.selected_item_prefix));
+    assert(nc_buffer_equal(&albums->selected_suffix,
+                           &Config.selected_item_suffix));
+    assert(nc_buffer_equal(&songs->selected_prefix,
+                           &Config.selected_item_prefix));
+    assert(nc_buffer_equal(&tags->highlight_prefix,
+                           &Config.current_item_prefix));
+    assert(nc_buffer_equal(
+        &albums->highlight_prefix,
+        &Config.current_item_inactive_column_prefix));
+    assert(nc_buffer_equal(
+        &songs->highlight_suffix,
+        &Config.current_item_inactive_column_suffix));
+    assert(tags->display_callbacks.draw);
+    assert(albums->display_callbacks.draw);
+    assert(songs->display_callbacks.draw);
+
+    assert(nc_window_start_x(&screen.tags_window) == 7);
+    assert(nc_window_width(&screen.tags_window) == 19);
+    assert(nc_window_start_x(&screen.albums_window) == 27);
+    assert(nc_window_width(&screen.albums_window) == 30);
+    assert(nc_window_start_x(&screen.songs_window) == 58);
+    assert(nc_window_width(&screen.songs_window) == 49);
+    assert(native_media_library_screen_column_visible(
+        &screen, NATIVE_MEDIA_LIBRARY_COLUMN_TAGS));
+    assert(ncm_string_equal(screen.albums_title.data,
+                            screen.albums_title.len,
+                            LIT_ARGS("Albums")));
+
+    assert(native_media_library_screen_set_mode(
+        &screen, NATIVE_MEDIA_LIBRARY_MODE_TWO_COLUMNS));
+    assert(!native_media_library_screen_column_visible(
+        &screen, NATIVE_MEDIA_LIBRARY_COLUMN_TAGS));
+    assert(nc_window_start_x(&screen.albums_window) == 7);
+    assert(nc_window_width(&screen.albums_window) == 30);
+    assert(nc_window_start_x(&screen.songs_window) == 38);
+    assert(nc_window_width(&screen.songs_window) == 69);
+    assert(ncm_string_equal(
+        screen.albums_title.data, screen.albums_title.len,
+        LIT_ARGS("Albums (sorted by artist)")));
+    assert(nc_buffer_equal(&albums->highlight_prefix,
+                           &Config.current_item_prefix));
+    assert(nc_buffer_equal(
+        &tags->highlight_prefix,
+        &Config.current_item_inactive_column_prefix));
+
+    assert(native_media_library_screen_toggle_sort_mode(&screen));
+    assert(ncm_string_equal(
+        screen.albums_title.data, screen.albums_title.len,
+        LIT_ARGS("Albums (sorted by artist and mtime)")));
+    assert(native_media_library_screen_set_mode(
+        &screen, NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY));
+    assert(ncm_string_equal(
+        screen.albums_title.data, screen.albums_title.len,
+        LIT_ARGS("Albums (sorted by mtime)")));
+    assert(!native_media_library_screen_toggle_sort_mode(&screen));
+    assert(ncm_string_equal(screen.albums_title.data,
+                            screen.albums_title.len,
+                            LIT_ARGS("Albums")));
+
+    ncm_buffer_init(&text);
+    tag.tag = (char *)"Artist";
+    tag.tag_len = STRLIT_LEN("Artist");
+    native_media_library_screen_format_tag_row(&screen, &tag, &text);
+    assert(ncm_string_equal(text.data, text.len, LIT_ARGS("Artist")));
+    tag.tag = NULL;
+    tag.tag_len = 0;
+    native_media_library_screen_format_tag_row(&screen, &tag, &text);
+    assert(ncm_string_equal(text.data, text.len, LIT_ARGS("<empty>")));
+
+    album.tag = (char *)"Artist";
+    album.tag_len = STRLIT_LEN("Artist");
+    album.album = (char *)"Album";
+    album.album_len = STRLIT_LEN("Album");
+    album.date = (char *)"2026";
+    album.date_len = STRLIT_LEN("2026");
+    native_media_library_screen_format_album_row(&screen, &album,
+                                                  &text);
+    assert(ncm_string_equal(text.data, text.len,
+                            LIT_ARGS("(2026) Album")));
+    assert(native_media_library_screen_set_mode(
+        &screen, NATIVE_MEDIA_LIBRARY_MODE_TWO_COLUMNS));
+    native_media_library_screen_format_album_row(&screen, &album,
+                                                  &text);
+    assert(ncm_string_equal(
+        text.data, text.len, LIT_ARGS("Artist - (2026) Album")));
+    album.tag = NULL;
+    album.tag_len = 0;
+    album.album = NULL;
+    album.album_len = 0;
+    native_media_library_screen_format_album_row(&screen, &album,
+                                                  &text);
+    assert(ncm_string_equal(
+        text.data, text.len,
+        LIT_ARGS("<empty> - (2026) <no album>")));
+    album.all_tracks_entry = true;
+    native_media_library_screen_format_album_row(&screen, &album,
+                                                  &text);
+    assert(ncm_string_equal(text.data, text.len,
+                            LIT_ARGS("All tracks")));
+    album.all_tracks_entry = false;
+
+    ncm_song_init(&song);
+    nc_buffer_init(&song_text);
+    assert(ncm_song_set_uri(&song, LIT_ARGS("song.flac")));
+    native_media_library_screen_format_song_row(&screen, &song,
+                                                 &song_text);
+    assert(ncm_string_equal(song_text.data, song_text.len,
+                            LIT_ARGS("library row")));
+
+    nc_buffer_destroy(&song_text);
+    ncm_song_destroy(&song);
+    ncm_buffer_destroy(&text);
+    native_media_library_screen_destroy(&screen);
+
+    ncm_int32_array_destroy(
+        &Config.media_library_column_width_ratio_three);
+    ncm_int32_array_destroy(&Config.media_library_column_width_ratio_two);
+    nc_buffer_destroy(&Config.selected_item_prefix);
+    nc_buffer_destroy(&Config.selected_item_suffix);
+    nc_buffer_destroy(&Config.current_item_prefix);
+    nc_buffer_destroy(&Config.current_item_suffix);
+    nc_buffer_destroy(&Config.current_item_inactive_column_prefix);
+    nc_buffer_destroy(&Config.current_item_inactive_column_suffix);
+    ncm_format_ast_destroy(&Config.song_library_format);
+
+    Config.media_library_column_width_ratio_three = old_three_ratios;
+    Config.media_library_column_width_ratio_two = old_two_ratios;
+    Config.selected_item_prefix = old_selected_prefix;
+    Config.selected_item_suffix = old_selected_suffix;
+    Config.current_item_prefix = old_current_prefix;
+    Config.current_item_suffix = old_current_suffix;
+    Config.current_item_inactive_column_prefix = old_inactive_prefix;
+    Config.current_item_inactive_column_suffix = old_inactive_suffix;
+    Config.song_library_format = old_song_format;
+    Config.empty_tag = old_empty_tag;
+    Config.empty_tag_len = old_empty_tag_len;
+    Config.empty_tag_cap = old_empty_tag_cap;
+    Config.titles_visibility = old_titles_visibility;
+    Config.centered_cursor = old_centered_cursor;
+    Config.use_cyclic_scrolling = old_cyclic_scrolling;
+    Config.media_library_sort_by_mtime = old_sort_by_mtime;
+    Config.media_lib_hide_album_dates = old_hide_album_dates;
+    Config.media_lib_primary_tag = old_primary_tag;
     return;
 }
 
