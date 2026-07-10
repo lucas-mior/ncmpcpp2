@@ -490,7 +490,7 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 	p.add("display_volume_level", &display_volume_level, "yes", yes_no);
 	p.add("display_bitrate", &display_bitrate, "no", yes_no);
 	p.add("display_remaining_time", &display_remaining_time, "no", yes_no);
-	p.add("regular_expressions", &regex_type, "perl", [](std::string v) {
+	p.add("regular_expressions", &regex_type, "extended", [](std::string v) {
 			if (v == "none")
 				return Regex::literalCaseInsensitive();
 			else if (v == "basic")
@@ -498,8 +498,6 @@ bool Configuration::read(const std::vector<std::string> &config_paths, bool igno
 
 			else if (v == "extended")
 				return Regex::extendedCaseInsensitive();
-			else if (v == "perl")
-				return Regex::perlCaseInsensitive();
 			else
 				invalid_value(v);
 	});

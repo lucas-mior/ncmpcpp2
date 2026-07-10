@@ -46,6 +46,7 @@ static void test_command_line_parsing(void);
 static void test_config_path_discovery(void);
 static void test_config_defaults(void);
 static void test_config_file_parsing(void);
+static void test_regular_expression_flavors(void);
 static void test_configuration_options_apply(void);
 static void test_invalid_config_value(void);
 
@@ -317,6 +318,8 @@ test_config_defaults(void) {
                                    config.mpd_music_dir_len,
                                    home, (int32)strlen(home)));
     REQUIRE(config.lyrics_fetchers.fetchers.len > 0);
+    REQUIRE_INT((int32)config.regex_type,
+                (int32)NCM_REGEX_EXTENDED_CASE_INSENSITIVE);
 
     global_state_destroy();
     configuration_destroy(&config);
@@ -366,6 +369,86 @@ test_config_file_parsing(void) {
     global_state_destroy();
     configuration_destroy(&config);
     ncm_string_view_array_destroy(&paths);
+    ncm_buffer_destroy(&path);
+    return;
+}
+
+
+static void
+test_regular_expression_flavors(void) {
+    char *values[] = {
+        (char *)"none",
+        (char *)"basic",
+        (char *)"extended",
+    };
+    uint32 expected[] = {
+        NCM_REGEX_LITERAL_CASE_INSENSITIVE,
+        NCM_REGEX_BASIC_CASE_INSENSITIVE,
+        NCM_REGEX_EXTENDED_CASE_INSENSITIVE,
+    };
+    char template[] = "/tmp/ncmpcpp-regex-flavors-XXXXXX";
+    char *root;
+    NcmBuffer path;
+    NcmBuffer data;
+    NcmStringViewArray paths;
+    NcmStringView *view;
+    Configuration config;
+    NcmError error;
+
+    root = mkdtemp(template);
+    REQUIRE(root != NULL);
+    REQUIRE(setenv("HOME", root, 1) == 0);
+    ncm_buffer_init(&path);
+    ncm_buffer_init(&data);
+    configuration_init(&config);
+    global_state_init();
+    make_path(&path, root, "config");
+
+    for (int32 i = 0; i < NCM_ARRAY_LEN(values); i += 1) {
+        ncm_buffer_clear(&data);
+        ncm_buffer_append(&data,
+                          STRLIT_ARGS("regular_expressions = "));
+        ncm_buffer_append(&data, values[i],
+                          (int32)strlen(values[i]));
+        ncm_buffer_append(&data, STRLIT_ARGS("\n"));
+        write_file(path.data, path.len, data.data, data.len);
+
+        ncm_string_view_array_init(&paths);
+        view = ncm_string_view_array_append(&paths);
+        REQUIRE(view != NULL);
+        view->data = path.data;
+        view->len = path.len;
+        ncm_error_clear(&error);
+
+        REQUIRE(configuration_read(&config, &paths, false, &error));
+        REQUIRE_INT((int32)config.regex_type, (int32)expected[i]);
+
+        configuration_clear(&config);
+        ncm_string_view_array_destroy(&paths);
+    }
+
+    ncm_buffer_clear(&data);
+    ncm_buffer_append(&data,
+                      STRLIT_ARGS("regular_expressions = perl\n"));
+    write_file(path.data, path.len, data.data, data.len);
+
+    ncm_string_view_array_init(&paths);
+    view = ncm_string_view_array_append(&paths);
+    REQUIRE(view != NULL);
+    view->data = path.data;
+    view->len = path.len;
+    ncm_error_clear(&error);
+
+    REQUIRE(!configuration_read(&config, &paths, false, &error));
+    REQUIRE(ncm_error_is_set(&error));
+    REQUIRE(ncm_string_starts_with(
+        error.message, (int32)strlen(error.message),
+        LIT_ARGS("error while processing option \"regular_expressions\"")));
+
+    global_state_destroy();
+    configuration_destroy(&config);
+    ncm_string_view_array_destroy(&paths);
+    ncm_buffer_destroy(&data);
     ncm_buffer_destroy(&path);
     return;
 }
@@ -499,6 +582,7 @@ main(void) {
     test_config_path_discovery();
     test_config_defaults();
     test_config_file_parsing();
+    test_regular_expression_flavors();
     test_configuration_options_apply();
     test_invalid_config_value();
     return EXIT_SUCCESS;
