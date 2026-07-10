@@ -64,6 +64,9 @@ APP_C_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(APP_C_SRCS))
 APP_CXX_OBJS := $(patsubst %.cpp,$(OBJ_DIR)/%.cpp.o,$(APP_CXX_SRCS))
 C_TEST_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(C_TEST_SRCS))
 CXX_TEST_OBJS := $(patsubst %.cpp,$(OBJ_DIR)/%.cpp.o,$(CXX_TEST_SRCS))
+CXX_TEST_SUPPORT_OBJS := \
+	$(OBJ_DIR)/src/configuration_legacy.cpp.o \
+	$(OBJ_DIR)/src/settings_legacy.cpp.o
 C_TEST_BINS := $(patsubst tests/%.c,$(BUILD_DIR)/tests/%,$(C_TEST_SRCS))
 CXX_TEST_BINS := $(patsubst tests/%.cpp,$(BUILD_DIR)/tests/%,$(CXX_TEST_SRCS))
 TEST_BINS := $(C_TEST_BINS) $(CXX_TEST_BINS)
@@ -194,12 +197,12 @@ $(C_TEST_BINS): $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(
 		$(LDLIBS) \
 		$(THREAD_FLAGS)
 
-$(CXX_TEST_BINS): $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.cpp.o $(OBJ_DIR)/src/settings_legacy.cpp.o $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LIB) $(CBASE_LIB)
+$(CXX_TEST_BINS): $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.cpp.o $(CXX_TEST_SUPPORT_OBJS) $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LIB) $(CBASE_LIB)
 	@mkdir -p $(@D)
 	@printf 'LD  %s\n' '$@'
 	@$(CXX) $(LDFLAGS) -o $@ \
 		$< \
-		$(OBJ_DIR)/src/settings_legacy.cpp.o \
+		$(CXX_TEST_SUPPORT_OBJS) \
 		-Wl,--start-group \
 		$(NCMPCPP_APP_C_LIB) \
 		$(NCMPCPP_C_LIB) \
