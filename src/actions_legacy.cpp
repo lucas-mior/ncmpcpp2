@@ -35,7 +35,6 @@
 #include "screens/native_c_screens.h"
 #include "screens/playlist.h"
 #include "screens/playlist_editor.h"
-#include "screens/sort_playlist.h"
 #include "screens/search_engine.h"
 #include "screens/sel_items_adder.h"
 #include "utility/readline.h"
@@ -550,7 +549,6 @@ void initializeScreens()
 	ncm_status_set_playlist_update_observer(
 	    refreshPlaylistRelatedInactiveColumns, nullptr);
 	mySelectedItemsAdder = new SelectedItemsAdder;
-	mySortPlaylistDialog = new SortPlaylistDialog;
 #	ifdef HAVE_TAGLIB_H
 	myTinyTagEditor = new TinyTagEditor;
 	myTagEditor = new TagEditor;
@@ -1321,22 +1319,24 @@ void ExecuteCommand::run()
 
 bool MoveSortOrderUp::canBeRun()
 {
-	return screenLegacyCurrent() == mySortPlaylistDialog;
+	return ncm_action_runtime_can_run(
+		nullptr, NCM_ACTION_MOVE_SORT_ORDER_UP);
 }
 
 void MoveSortOrderUp::run()
 {
-	mySortPlaylistDialog->moveSortOrderUp();
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_MOVE_SORT_ORDER_UP);
 }
 
 bool MoveSortOrderDown::canBeRun()
 {
-	return screenLegacyCurrent() == mySortPlaylistDialog;
+	return ncm_action_runtime_can_run(
+		nullptr, NCM_ACTION_MOVE_SORT_ORDER_DOWN);
 }
 
 void MoveSortOrderDown::run()
 {
-	mySortPlaylistDialog->moveSortOrderDown();
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_MOVE_SORT_ORDER_DOWN);
 }
 
 bool MoveSelectedItemsUp::canBeRun()
@@ -2490,15 +2490,12 @@ void ClearPlaylist::run()
 
 bool SortPlaylist::canBeRun()
 {
-	if (screenLegacyCurrent() != myPlaylist)
-		return false;
-	auto first = myPlaylist->main().begin(), last = myPlaylist->main().end();
-	return findSelectedRangeAndPrintInfoIfNot(first, last);
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SORT_PLAYLIST);
 }
 
 void SortPlaylist::run()
 {
-	mySortPlaylistDialog->switchTo();
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SORT_PLAYLIST);
 }
 
 bool ReversePlaylist::canBeRun()
@@ -3926,5 +3923,4 @@ bool actions_legacy_runtime_exit_requested(void)
  * These facades remain needed by legacy actions.
  */
 #include "screens/sel_items_adder.cpp"
-#include "screens/sort_playlist.cpp"
 #include "screens/visualizer.cpp"

@@ -70,50 +70,6 @@ Main goal: remove C++ from the project while preserving all current behavior.
    `actions_legacy.cpp`; then delete the C++ source and obsolete header after
    all callers and tests use only C types.
 
-## `./src/screens/sort_playlist.cpp`
-
-1. **Extract an exact sorting specification.** Preserve the eleven configurable
-   sort keys and terminator row, row-reordering rules, selected-range behavior,
-   locale comparison, `Config.ignore_leading_the`, per-key tag lookup, and the
-   original queue position as the final deterministic tie-breaker.
-2. **Add a C sort-operation API separate from the dialog UI.** Define a request
-   containing the selected queue range and ordered `NcmSongGetter` keys, and a
-   result containing the target song order or swap operations. Obtain the range
-   and a copied `NcmSongArray` from `NativePlaylistScreen` without exposing menu
-   internals or retaining borrowed song pointers across MPD operations.
-3. **Implement the comparator and stable in-memory order.** Use the project’s C
-   locale/string comparison helpers and `ncm_song_getter_buffer()` for
-   every selected key, stop at `NCM_SONG_GETTER_NONE`, and compare original
-   queue positions last. Use a deterministic C sorting algorithm whose result
-   can be tested independently; do not port the recursive C++ lambda or depend
-   on random pivots.
-4. **Translate the target order into valid MPD queue operations.** Build a
-   position map for the selected range, generate swaps or moves that transform
-   the current range without disturbing songs outside it, update the local map
-   after every operation, and verify that duplicate/equal songs are identified
-   by queue identity or original position rather than tag equality.
-5. **Execute the sort atomically through the C MPD client.** Start a command
-   list, queue each `ncm_mpd_client_swap()`/move operation with absolute queue
-   positions, commit it, surface the first `NcmError`, and request a playlist
-   refresh after success or failure so the UI cannot retain a stale local
-   order. Preserve “Sorting...” and “Range sorted” status behavior.
-6. **Connect the native dialog to the operation.** Make the Sort row execute the
-   C sorting API, make Cancel return without MPD traffic, make
-   `NCM_ACTION_RUN_ACTION`, `NCM_ACTION_MOVE_SORT_ORDER_UP`, and
-   `NCM_ACTION_MOVE_SORT_ORDER_DOWN` operate on the native dialog, and restore
-   the previous playlist screen after either terminal action.
-7. **Test both ordering and MPD commands.** Extend
-   `tests/c_playlist_management_dialogs_test.c` with every key, reordered keys,
-   stable ties, leading-article handling, full and selected ranges, empty and
-   one-song ranges, duplicates, absolute offsets, exact generated command
-   sequences, command-list errors, cancel behavior, and screen restoration.
-8. **Remove the C++ facade.** Replace `SortPlaylistDialog`,
-   `mySortPlaylistDialog`, and `sort_playlist.h` callers with
-   `NativeSortPlaylistDialog`, remove the textual source include from
-   `actions_legacy.cpp`, and delete the C++ source/header only after no
-   `sort_requested` flag is left without a consumer and the real queue-sort
-   path is tested end to end.
-
 ## `./src/screens/visualizer.cpp`
 
 1. **Create a visualizer parity matrix and expand native state.** Account for
