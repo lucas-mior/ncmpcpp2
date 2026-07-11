@@ -44,6 +44,11 @@ typedef struct NativeVisualizerDataSourceHooks {
     void (*close_source)(void *user, int32 fd);
     bool (*get_outputs)(void *user, struct NcmMpdOutputList *outputs,
                         struct NcmError *error);
+    bool (*disable_output)(void *user, uint32 id,
+                           struct NcmError *error);
+    bool (*enable_output)(void *user, uint32 id,
+                          struct NcmError *error);
+    void (*sleep_microseconds)(void *user, int32 microseconds);
     void *user;
 } NativeVisualizerDataSourceHooks;
 

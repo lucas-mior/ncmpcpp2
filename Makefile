@@ -141,6 +141,26 @@ VISUALIZER_DRAWING_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_window_print_data
 $(BUILD_DIR)/tests/c_visualizer_drawing_test: \
 	LDFLAGS += $(VISUALIZER_DRAWING_TEST_WRAP_FLAGS)
+VISUALIZER_CALLBACKS_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=nc_window_init \
+	-Wl,--wrap=nc_window_destroy \
+	-Wl,--wrap=nc_window_width \
+	-Wl,--wrap=nc_window_height \
+	-Wl,--wrap=nc_window_resize \
+	-Wl,--wrap=nc_window_move_to \
+	-Wl,--wrap=nc_window_clear \
+	-Wl,--wrap=nc_window_refresh \
+	-Wl,--wrap=nc_window_go_to_xy \
+	-Wl,--wrap=nc_window_push_color \
+	-Wl,--wrap=nc_window_apply_format \
+	-Wl,--wrap=nc_window_print_data \
+	-Wl,--wrap=nc_screen_switcher_get_resize_params \
+	-Wl,--wrap=ui_state_main_start_y \
+	-Wl,--wrap=ui_state_main_height \
+	-Wl,--wrap=ncm_title_draw_header \
+	-Wl,--wrap=ncm_status_state_player
+$(BUILD_DIR)/tests/c_visualizer_callbacks_test: \
+	LDFLAGS += $(VISUALIZER_CALLBACKS_TEST_WRAP_FLAGS)
 DEPS := \
 	$(CBASE_OBJS:.o=.d) \
 	$(NCMPCPP_C_OBJS:.o=.d) \
