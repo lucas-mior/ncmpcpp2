@@ -1,13 +1,22 @@
 #include "screens/nc_visualizer.h"
 
+#include <errno.h>
+#include <fcntl.h>
 #include <math.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
 #include <string.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 #include "c/ncm_base.h"
+#include "c/ncm_mpd_client.h"
+#include "c/ncm_string.h"
 #include "cbase/base_macros.h"
 #include "cbase/cbase.h"
 #include "screens/screen_switcher.h"
+#include "statusbar.h"
 #include "title.h"
 #include "ui_state.h"
 
@@ -46,6 +55,18 @@ static void visualizer_destroy_callback(NcScreen *screen);
 static NcScreenCallbacks native_visualizer_callbacks(void);
 static NativeVisualizerScreen *visualizer_from_screen(NcScreen *screen);
 static int32 native_visualizer_next_type(int32 type);
+static int32 visualizer_system_open_fifo(void *user, char *location,
+                                         int32 location_len);
+static int32 visualizer_system_open_udp(void *user, char *location,
+                                        int32 location_len, char *port,
+                                        int32 port_len);
+static int64 visualizer_system_read_source(void *user, int32 fd,
+                                           void *buffer,
+                                           int64 buffer_size);
+static void visualizer_system_close_source(void *user, int32 fd);
+static bool visualizer_system_get_outputs(void *user,
+                                          NcmMpdOutputList *outputs,
+                                          NcmError *error);
 
 static NcScreenCallbacks
 native_visualizer_callbacks(void) {
@@ -67,6 +88,221 @@ native_visualizer_callbacks(void) {
     return callbacks;
 }
 
+NativeVisualizerDataSourceHooks
+native_visualizer_data_source_system_hooks(NcmMpdClient *client) {
+    NativeVisualizerDataSourceHooks hooks = {0};
+
+    hooks.open_fifo = visualizer_system_open_fifo;
+    hooks.open_udp = visualizer_system_open_udp;
+    hooks.read_source = visualizer_system_read_source;
+    hooks.close_source = visualizer_system_close_source;
+    hooks.get_outputs = visualizer_system_get_outputs;
+    hooks.user = client;
+    return hooks;
+}
+
+void
+native_visualizer_screen_init_data_source(
+    NativeVisualizerScreen *screen, char *source_location,
+    int32 source_location_len) {
+    int32 colon;
+
+    if (screen == NULL) {
+        return;
+    }
+    if ((source_location == NULL) || (source_location_len <= 0)) {
+        source_location = NULL;
+        source_location_len = 0;
+    }
+
+    colon = -1;
+    for (int32 i = source_location_len - 1; i >= 0; i -= 1) {
+        if (source_location[i] == ':') {
+            colon = i;
+            break;
+        }
+    }
+
+    ncm_buffer_clear(&screen->source_location);
+    ncm_buffer_clear(&screen->source_port);
+    if ((source_location_len > 0) && (source_location[0] != '/')
+        && (colon >= 0)) {
+        ncm_buffer_set(&screen->source_location, source_location, colon);
+        ncm_buffer_set(&screen->source_port,
+                       source_location + colon + 1,
+                       source_location_len - colon - 1);
+    } else {
+        ncm_buffer_set(&screen->source_location,
+                       source_location,
+                       source_location_len);
+    }
+    return;
+}
+
+bool
+native_visualizer_screen_open_data_source(
+    NativeVisualizerScreen *screen) {
+    char *location;
+    char *port;
+    int32 fd;
+
+    if (screen == NULL) {
+        return false;
+    }
+    if (screen->source_fd >= 0) {
+        return true;
+    }
+
+    location = screen->source_location.data;
+    if (location == NULL) {
+        location = (char *)"";
+    }
+    port = screen->source_port.data;
+    if (port == NULL) {
+        port = (char *)"";
+    }
+
+    fd = -1;
+    if (screen->source_port.len > 0) {
+        if (screen->data_source_hooks.open_udp == NULL) {
+            return false;
+        }
+        fd = screen->data_source_hooks.open_udp(
+            screen->data_source_hooks.user,
+            location,
+            screen->source_location.len,
+            port,
+            screen->source_port.len);
+    } else {
+        if (screen->data_source_hooks.open_fifo == NULL) {
+            return false;
+        }
+        fd = screen->data_source_hooks.open_fifo(
+            screen->data_source_hooks.user,
+            location,
+            screen->source_location.len);
+    }
+
+    screen->source_fd = fd;
+    return fd >= 0;
+}
+
+void
+native_visualizer_screen_close_data_source(
+    NativeVisualizerScreen *screen) {
+    int32 fd;
+
+    if ((screen == NULL) || (screen->source_fd < 0)) {
+        return;
+    }
+
+    fd = screen->source_fd;
+    screen->source_fd = -1;
+    if (screen->data_source_hooks.close_source) {
+        screen->data_source_hooks.close_source(
+            screen->data_source_hooks.user, fd);
+    }
+    return;
+}
+
+int64
+native_visualizer_screen_drain_data_source(
+    NativeVisualizerScreen *screen) {
+    int64 buffer_size;
+    int64 bytes_read;
+    int64 total_read;
+
+    if ((screen == NULL) || (screen->source_fd < 0)
+        || (screen->data_source_hooks.read_source == NULL)) {
+        return 0;
+    }
+    if (screen->incoming_samples.data == NULL) {
+        return 0;
+    }
+
+    buffer_size = ncm_sample_buffer_capacity(&screen->incoming_samples)
+                  *SIZEOF(*screen->incoming_samples.data);
+    if (buffer_size <= 0) {
+        return 0;
+    }
+
+    total_read = 0;
+    do {
+        bytes_read = screen->data_source_hooks.read_source(
+            screen->data_source_hooks.user,
+            screen->source_fd,
+            screen->incoming_samples.data,
+            buffer_size);
+        if (bytes_read > 0) {
+            total_read += bytes_read;
+        }
+    } while (bytes_read > 0);
+    return total_read;
+}
+
+bool
+native_visualizer_screen_find_output_id(
+    NativeVisualizerScreen *screen) {
+    NcmMpdOutputList outputs;
+    NcmError error;
+    bool found;
+
+    if (screen == NULL) {
+        return false;
+    }
+
+    screen->output_id = -1;
+    if ((screen->output_name.len <= 0) || (screen->source_port.len > 0)) {
+        return true;
+    }
+    if (screen->data_source_hooks.get_outputs == NULL) {
+        return false;
+    }
+
+    ncm_error_clear(&error);
+    ncm_mpd_output_list_init(&outputs);
+    if (!screen->data_source_hooks.get_outputs(
+            screen->data_source_hooks.user, &outputs, &error)) {
+        NcmStringFormatArg arg;
+
+        arg = ncm_string_format_arg_cstring(error.message);
+        ncm_statusbar_format(ncm_statusbar_message_delay_time(),
+                             STRLIT_ARGS("Could not fetch outputs: %1"),
+                             &arg,
+                             1);
+        ncm_mpd_output_list_destroy(&outputs);
+        return false;
+    }
+
+    found = false;
+    for (int32 i = 0; i < outputs.count; i += 1) {
+        NcmMpdOutput *output;
+
+        output = outputs.items + i;
+        if (ncm_string_equal(screen->output_name.data,
+                             screen->output_name.len,
+                             output->name,
+                             output->name_len)) {
+            screen->output_id = (int32)output->id;
+            found = true;
+            break;
+        }
+    }
+    ncm_mpd_output_list_destroy(&outputs);
+
+    if (!found) {
+        NcmStringFormatArg arg;
+
+        arg = ncm_string_format_arg_string(screen->output_name.data,
+                                            screen->output_name.len);
+        ncm_statusbar_format(ncm_statusbar_message_delay_time(),
+                             STRLIT_ARGS("There is no output named \"%1\""),
+                             &arg,
+                             1);
+    }
+    return found;
+}
+
 void
 native_visualizer_screen_init(NativeVisualizerScreen *screen,
                               int64 start_x, int64 start_y,
@@ -74,7 +310,9 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
                               NcColor color, NcBorder border,
                               NativeVisualizerScreenConfig *config) {
     char *source_location;
+    char *output_name;
     int32 source_location_len;
+    int32 output_name_len;
     int32 incoming_cap;
     int32 rendered_cap;
     int32 fps;
@@ -84,11 +322,15 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     double spectrum_hz_min;
     double spectrum_hz_max;
 #endif
+    NativeVisualizerDataSourceHooks data_source_hooks;
     bool stereo;
 
     source_location = NULL;
+    output_name = NULL;
     source_location_len = 0;
+    output_name_len = 0;
     fps = NATIVE_VISUALIZER_DEFAULT_FPS;
+    data_source_hooks = native_visualizer_data_source_system_hooks(NULL);
 #if defined(HAVE_FFTW3_H)
     spectrum_dft_size = NATIVE_VISUALIZER_DEFAULT_DFT_SIZE;
     spectrum_gain = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_GAIN;
@@ -98,8 +340,17 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     stereo = false;
     if (config != NULL) {
         source_location = config->source_location;
+        output_name = config->output_name;
         source_location_len = config->source_location_len;
+        output_name_len = config->output_name_len;
         fps = config->fps;
+        if (config->data_source_hooks.open_fifo
+            || config->data_source_hooks.open_udp
+            || config->data_source_hooks.read_source
+            || config->data_source_hooks.close_source
+            || config->data_source_hooks.get_outputs) {
+            data_source_hooks = config->data_source_hooks;
+        }
 #if defined(HAVE_FFTW3_H)
         spectrum_dft_size = config->spectrum_dft_size;
         spectrum_gain = config->spectrum_gain;
@@ -111,6 +362,10 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     if ((source_location == NULL) || (source_location_len < 0)) {
         source_location = NULL;
         source_location_len = 0;
+    }
+    if ((output_name == NULL) || (output_name_len < 0)) {
+        output_name = NULL;
+        output_name_len = 0;
     }
     if (fps <= 0) {
         fps = NATIVE_VISUALIZER_DEFAULT_FPS;
@@ -136,9 +391,12 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
                    border);
     ncm_buffer_init(&screen->source_location);
     ncm_buffer_init(&screen->source_port);
-    ncm_buffer_set(&screen->source_location,
-                   source_location,
-                   source_location_len);
+    ncm_buffer_init(&screen->output_name);
+    native_visualizer_screen_init_data_source(screen,
+                                              source_location,
+                                              source_location_len);
+    ncm_buffer_set(&screen->output_name, output_name, output_name_len);
+    screen->data_source_hooks = data_source_hooks;
 
     ncm_sample_buffer_init(&screen->incoming_samples);
     ncm_sample_buffer_init(&screen->buffered_samples);
@@ -247,10 +505,7 @@ native_visualizer_screen_destroy(NativeVisualizerScreen *screen) {
         return;
     }
 
-    if (screen->source_fd >= 0) {
-        close(screen->source_fd);
-        screen->source_fd = -1;
-    }
+    native_visualizer_screen_close_data_source(screen);
 
 #if defined(HAVE_FFTW3_H)
     if (screen->fft.plan != NULL) {
@@ -299,6 +554,7 @@ native_visualizer_screen_destroy(NativeVisualizerScreen *screen) {
     ncm_sample_buffer_destroy(&screen->rendered_samples);
     ncm_sample_buffer_destroy(&screen->buffered_samples);
     ncm_sample_buffer_destroy(&screen->incoming_samples);
+    ncm_buffer_destroy(&screen->output_name);
     ncm_buffer_destroy(&screen->source_port);
     ncm_buffer_destroy(&screen->source_location);
     nc_window_destroy(&screen->window);
@@ -335,6 +591,7 @@ native_visualizer_screen_clear(NativeVisualizerScreen *screen) {
     ncm_sample_buffer_clear(&screen->left_channel);
     ncm_sample_buffer_clear(&screen->right_channel);
     nc_window_clear(&screen->window);
+    native_visualizer_screen_drain_data_source(screen);
     return;
 }
 
@@ -511,6 +768,117 @@ native_visualizer_clamp_sample(int64 sample) {
         return NATIVE_VISUALIZER_MAX_SAMPLE;
     }
     return (int16)sample;
+}
+
+static int32
+visualizer_system_open_fifo(void *user, char *location,
+                            int32 location_len) {
+    int32 fd;
+
+    (void)user;
+    fd = open(location, O_RDONLY | O_NONBLOCK);
+    if (fd < 0) {
+        NcmStringFormatArg args[2];
+
+        args[0] = ncm_string_format_arg_string(location, location_len);
+        args[1] = ncm_string_format_arg_cstring(strerror(errno));
+        ncm_statusbar_format(
+            ncm_statusbar_message_delay_time(),
+            STRLIT_ARGS("Couldn't open \"%1\" for reading PCM data: %2"),
+            args,
+            2);
+    }
+    return fd;
+}
+
+static int32
+visualizer_system_open_udp(void *user, char *location,
+                           int32 location_len, char *port,
+                           int32 port_len) {
+    struct addrinfo hints = {0};
+    struct addrinfo *addresses;
+    struct addrinfo *address;
+    int32 error_code;
+    int32 fd;
+
+    (void)user;
+    hints.ai_family = PF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_protocol = IPPROTO_UDP;
+
+    addresses = NULL;
+    error_code = getaddrinfo(location, port, &hints, &addresses);
+    if (error_code != 0) {
+        NcmStringFormatArg args[3];
+
+        args[0] = ncm_string_format_arg_string(location, location_len);
+        args[1] = ncm_string_format_arg_string(port, port_len);
+        args[2] = ncm_string_format_arg_cstring(
+            (char *)gai_strerror(error_code));
+        ncm_statusbar_format(
+            ncm_statusbar_message_delay_time(),
+            STRLIT_ARGS("Couldn't resolve \"%1:%2\": %3"),
+            args,
+            3);
+        return -1;
+    }
+
+    fd = -1;
+    for (address = addresses; address; address = address->ai_next) {
+        int32 socket_flags;
+
+        fd = socket(address->ai_family,
+                    address->ai_socktype,
+                    address->ai_protocol);
+        if (fd < 0) {
+            fprintf(stderr, "Creation of socket failed: %s\n",
+                    strerror(errno));
+            continue;
+        }
+
+        socket_flags = fcntl(fd, F_GETFL, 0);
+        fcntl(fd, F_SETFL, socket_flags | O_NONBLOCK);
+        error_code = bind(fd, address->ai_addr, address->ai_addrlen);
+        if (error_code < 0) {
+            fprintf(stderr, "Binding a socket failed: %s\n",
+                    strerror(errno));
+            close(fd);
+            fd = -1;
+            continue;
+        }
+        break;
+    }
+
+    freeaddrinfo(addresses);
+    return fd;
+}
+
+static int64
+visualizer_system_read_source(void *user, int32 fd, void *buffer,
+                              int64 buffer_size) {
+    (void)user;
+    return (int64)read(fd, buffer, (size_t)buffer_size);
+}
+
+static void
+visualizer_system_close_source(void *user, int32 fd) {
+    (void)user;
+    close(fd);
+    return;
+}
+
+static bool
+visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
+                              NcmError *error) {
+    NcmMpdClient *client;
+
+    client = user;
+    if (client == NULL) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("MPD client is not configured"));
+        return false;
+    }
+    return ncm_mpd_client_get_outputs(client, outputs, error);
 }
 
 static NativeVisualizerScreen *

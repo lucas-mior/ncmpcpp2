@@ -28,10 +28,28 @@ enum NativeVisualizerType {
     NATIVE_VISUALIZER_TYPE_LAST,
 };
 
+struct NcmError;
+struct NcmMpdClient;
+struct NcmMpdOutputList;
+
+typedef struct NativeVisualizerDataSourceHooks {
+    int32 (*open_fifo)(void *user, char *location, int32 location_len);
+    int32 (*open_udp)(void *user, char *location, int32 location_len,
+                      char *port, int32 port_len);
+    int64 (*read_source)(void *user, int32 fd, void *buffer,
+                         int64 buffer_size);
+    void (*close_source)(void *user, int32 fd);
+    bool (*get_outputs)(void *user, struct NcmMpdOutputList *outputs,
+                        struct NcmError *error);
+    void *user;
+} NativeVisualizerDataSourceHooks;
+
 typedef struct NativeVisualizerScreenConfig {
     char *source_location;
-    int32 source_location_len;
+    char *output_name;
 
+    int32 source_location_len;
+    int32 output_name_len;
     int32 fps;
     uint32 spectrum_dft_size;
 
@@ -39,6 +57,7 @@ typedef struct NativeVisualizerScreenConfig {
     double spectrum_hz_min;
     double spectrum_hz_max;
 
+    NativeVisualizerDataSourceHooks data_source_hooks;
     bool stereo;
 } NativeVisualizerScreenConfig;
 
@@ -81,6 +100,8 @@ typedef struct NativeVisualizerScreen {
 
     NcmBuffer source_location;
     NcmBuffer source_port;
+    NcmBuffer output_name;
+    NativeVisualizerDataSourceHooks data_source_hooks;
 
     NcmSampleBuffer incoming_samples;
     NcmSampleBuffer buffered_samples;
@@ -114,6 +135,19 @@ void native_visualizer_screen_init(NativeVisualizerScreen *screen,
                                    NcColor color, NcBorder border,
                                    NativeVisualizerScreenConfig *config);
 void native_visualizer_screen_destroy(NativeVisualizerScreen *screen);
+NativeVisualizerDataSourceHooks native_visualizer_data_source_system_hooks(
+    struct NcmMpdClient *client);
+void native_visualizer_screen_init_data_source(
+    NativeVisualizerScreen *screen, char *source_location,
+    int32 source_location_len);
+bool native_visualizer_screen_open_data_source(
+    NativeVisualizerScreen *screen);
+void native_visualizer_screen_close_data_source(
+    NativeVisualizerScreen *screen);
+int64 native_visualizer_screen_drain_data_source(
+    NativeVisualizerScreen *screen);
+bool native_visualizer_screen_find_output_id(
+    NativeVisualizerScreen *screen);
 NcScreen *native_visualizer_screen_base(NativeVisualizerScreen *screen);
 NcWindow *native_visualizer_screen_window(NativeVisualizerScreen *screen);
 void native_visualizer_screen_set_geometry(NativeVisualizerScreen *screen,

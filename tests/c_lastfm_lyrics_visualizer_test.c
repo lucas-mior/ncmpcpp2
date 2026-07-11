@@ -11,6 +11,7 @@
 #include <mpd/tag.h>
 
 #include "c/ncm_base.h"
+#include "c/ncm_mpd_connection.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
 #include "lastfm_service.h"
@@ -39,6 +40,23 @@ typedef struct TestLastfmIo {
     bool block[TEST_LASTFM_MAX_CALLS];
     bool release[TEST_LASTFM_MAX_CALLS];
 } TestLastfmIo;
+
+typedef struct TestVisualizerDataSourceIo {
+    NcmBuffer open_location;
+    NcmBuffer open_port;
+    int64 read_results[8];
+    int32 read_results_len;
+    int32 read_result_index;
+    int32 fifo_fd;
+    int32 udp_fd;
+    int32 fifo_open_calls;
+    int32 udp_open_calls;
+    int32 read_calls;
+    int32 close_calls;
+    int32 close_fd;
+    int32 get_outputs_calls;
+    bool get_outputs_ok;
+} TestVisualizerDataSourceIo;
 
 static CURLcode test_perform(NcmBuffer *data, char *url, int32 url_len,
                              char *referer, int32 referer_len,
@@ -80,6 +98,25 @@ static void test_lyrics_filename_and_fetcher_toggle(void);
 static void test_lyrics_background_queue_cleanup(void);
 static void test_visualizer_sample_buffers(void);
 static void test_visualizer_resource_lifecycle(void);
+static void test_visualizer_data_source_parsing(void);
+static void test_visualizer_data_source_hooks(void);
+static void test_visualizer_find_output_id(void);
+static void test_visualizer_io_init(TestVisualizerDataSourceIo *io);
+static void test_visualizer_io_destroy(TestVisualizerDataSourceIo *io);
+static NativeVisualizerDataSourceHooks test_visualizer_hooks(
+    TestVisualizerDataSourceIo *io);
+static int32 test_visualizer_open_fifo(void *user, char *location,
+                                       int32 location_len);
+static int32 test_visualizer_open_udp(void *user, char *location,
+                                      int32 location_len, char *port,
+                                      int32 port_len);
+static int64 test_visualizer_read_source(void *user, int32 fd,
+                                         void *buffer,
+                                         int64 buffer_size);
+static void test_visualizer_close_source(void *user, int32 fd);
+static bool test_visualizer_get_outputs(void *user,
+                                        NcmMpdOutputList *outputs,
+                                        NcmError *error);
 
 static CURLcode
 test_perform(NcmBuffer *data, char *url, int32 url_len,
@@ -693,6 +730,287 @@ test_lyrics_background_queue_cleanup(void) {
 }
 
 static void
+test_visualizer_io_init(TestVisualizerDataSourceIo *io) {
+    ncm_buffer_init(&io->open_location);
+    ncm_buffer_init(&io->open_port);
+    io->read_results_len = 0;
+    io->read_result_index = 0;
+    io->fifo_fd = 71;
+    io->udp_fd = 72;
+    io->fifo_open_calls = 0;
+    io->udp_open_calls = 0;
+    io->read_calls = 0;
+    io->close_calls = 0;
+    io->close_fd = -1;
+    io->get_outputs_calls = 0;
+    io->get_outputs_ok = true;
+    return;
+}
+
+static void
+test_visualizer_io_destroy(TestVisualizerDataSourceIo *io) {
+    ncm_buffer_destroy(&io->open_port);
+    ncm_buffer_destroy(&io->open_location);
+    return;
+}
+
+static NativeVisualizerDataSourceHooks
+test_visualizer_hooks(TestVisualizerDataSourceIo *io) {
+    NativeVisualizerDataSourceHooks hooks = {0};
+
+    hooks.open_fifo = test_visualizer_open_fifo;
+    hooks.open_udp = test_visualizer_open_udp;
+    hooks.read_source = test_visualizer_read_source;
+    hooks.close_source = test_visualizer_close_source;
+    hooks.get_outputs = test_visualizer_get_outputs;
+    hooks.user = io;
+    return hooks;
+}
+
+static int32
+test_visualizer_open_fifo(void *user, char *location,
+                          int32 location_len) {
+    TestVisualizerDataSourceIo *io;
+
+    io = user;
+    io->fifo_open_calls += 1;
+    ncm_buffer_set(&io->open_location, location, location_len);
+    ncm_buffer_clear(&io->open_port);
+    return io->fifo_fd;
+}
+
+static int32
+test_visualizer_open_udp(void *user, char *location,
+                         int32 location_len, char *port,
+                         int32 port_len) {
+    TestVisualizerDataSourceIo *io;
+
+    io = user;
+    io->udp_open_calls += 1;
+    ncm_buffer_set(&io->open_location, location, location_len);
+    ncm_buffer_set(&io->open_port, port, port_len);
+    return io->udp_fd;
+}
+
+static int64
+test_visualizer_read_source(void *user, int32 fd, void *buffer,
+                            int64 buffer_size) {
+    TestVisualizerDataSourceIo *io;
+    int64 result;
+
+    (void)fd;
+    (void)buffer;
+    (void)buffer_size;
+    io = user;
+    io->read_calls += 1;
+    result = 0;
+    if (io->read_result_index < io->read_results_len) {
+        result = io->read_results[io->read_result_index];
+        io->read_result_index += 1;
+    }
+    return result;
+}
+
+static void
+test_visualizer_close_source(void *user, int32 fd) {
+    TestVisualizerDataSourceIo *io;
+
+    io = user;
+    io->close_calls += 1;
+    io->close_fd = fd;
+    return;
+}
+
+static bool
+test_visualizer_get_outputs(void *user, NcmMpdOutputList *outputs,
+                            NcmError *error) {
+    TestVisualizerDataSourceIo *io;
+    NcmMpdOutput output;
+
+    io = user;
+    io->get_outputs_calls += 1;
+    ncm_error_clear(error);
+    if (!io->get_outputs_ok) {
+        ncm_error_set(error, 1, LIT_ARGS("test output error"));
+        return false;
+    }
+
+    ncm_mpd_output_init(&output);
+    assert(ncm_mpd_output_set(&output, 3,
+                              LIT_ARGS("Speakers"), true));
+    assert(ncm_mpd_output_list_append_copy(outputs, &output));
+    assert(ncm_mpd_output_set(&output, 42,
+                              LIT_ARGS("Visualizer feed"), true));
+    assert(ncm_mpd_output_list_append_copy(outputs, &output));
+    ncm_mpd_output_destroy(&output);
+    return true;
+}
+
+static void
+test_visualizer_data_source_parsing(void) {
+    TestVisualizerDataSourceIo io;
+    NativeVisualizerScreen screen = {0};
+    NativeVisualizerScreenConfig config = {
+        .source_location = (char *)"127.0.0.1:5555",
+        .output_name = (char *)"Visualizer feed",
+        .source_location_len = STRLIT_LEN("127.0.0.1:5555"),
+        .output_name_len = STRLIT_LEN("Visualizer feed"),
+        .fps = 30,
+        .spectrum_dft_size = 2,
+        .spectrum_gain = 10.0,
+        .spectrum_hz_min = 20.0,
+        .spectrum_hz_max = 20000.0,
+        .stereo = false,
+    };
+
+    test_visualizer_io_init(&io);
+    config.data_source_hooks = test_visualizer_hooks(&io);
+    native_visualizer_screen_init(&screen, 0, 0, 80, 24,
+                                  nc_color_default(), nc_border_none(),
+                                  &config);
+    assert(ncm_string_equal(screen.source_location.data,
+                            screen.source_location.len,
+                            LIT_ARGS("127.0.0.1")));
+    assert(ncm_string_equal(screen.source_port.data,
+                            screen.source_port.len,
+                            LIT_ARGS("5555")));
+
+    native_visualizer_screen_init_data_source(
+        &screen, LIT_ARGS("/tmp/mpd:visualizer"));
+    assert(ncm_string_equal(screen.source_location.data,
+                            screen.source_location.len,
+                            LIT_ARGS("/tmp/mpd:visualizer")));
+    assert(screen.source_port.len == 0);
+
+    native_visualizer_screen_init_data_source(
+        &screen, LIT_ARGS("localhost:"));
+    assert(ncm_string_equal(screen.source_location.data,
+                            screen.source_location.len,
+                            LIT_ARGS("localhost")));
+    assert(screen.source_port.len == 0);
+
+    native_visualizer_screen_destroy(&screen);
+    test_visualizer_io_destroy(&io);
+    return;
+}
+
+static void
+test_visualizer_data_source_hooks(void) {
+    TestVisualizerDataSourceIo io;
+    NativeVisualizerScreen screen = {0};
+    NativeVisualizerScreenConfig config = {
+        .source_location = (char *)"localhost:5555",
+        .source_location_len = STRLIT_LEN("localhost:5555"),
+        .fps = 30,
+        .spectrum_dft_size = 2,
+        .spectrum_gain = 10.0,
+        .spectrum_hz_min = 20.0,
+        .spectrum_hz_max = 20000.0,
+        .stereo = false,
+    };
+
+    test_visualizer_io_init(&io);
+    config.data_source_hooks = test_visualizer_hooks(&io);
+    native_visualizer_screen_init(&screen, 0, 0, 80, 24,
+                                  nc_color_default(), nc_border_none(),
+                                  &config);
+
+    assert(native_visualizer_screen_open_data_source(&screen));
+    assert(screen.source_fd == io.udp_fd);
+    assert(io.udp_open_calls == 1);
+    assert(io.fifo_open_calls == 0);
+    assert(ncm_string_equal(io.open_location.data,
+                            io.open_location.len,
+                            LIT_ARGS("localhost")));
+    assert(ncm_string_equal(io.open_port.data,
+                            io.open_port.len,
+                            LIT_ARGS("5555")));
+    assert(native_visualizer_screen_open_data_source(&screen));
+    assert(io.udp_open_calls == 1);
+
+    io.read_results[0] = 8;
+    io.read_results[1] = 4;
+    io.read_results[2] = -1;
+    io.read_results_len = 3;
+    io.read_result_index = 0;
+    assert(native_visualizer_screen_drain_data_source(&screen) == 12);
+    assert(io.read_calls == 3);
+
+    native_visualizer_screen_close_data_source(&screen);
+    assert(screen.source_fd == -1);
+    assert(io.close_calls == 1);
+    assert(io.close_fd == io.udp_fd);
+    native_visualizer_screen_close_data_source(&screen);
+    assert(io.close_calls == 1);
+
+    native_visualizer_screen_init_data_source(
+        &screen, LIT_ARGS("/tmp/mpd.fifo"));
+    assert(native_visualizer_screen_open_data_source(&screen));
+    assert(screen.source_fd == io.fifo_fd);
+    assert(io.fifo_open_calls == 1);
+    assert(ncm_string_equal(io.open_location.data,
+                            io.open_location.len,
+                            LIT_ARGS("/tmp/mpd.fifo")));
+    assert(io.open_port.len == 0);
+
+    io.read_results[0] = 6;
+    io.read_results[1] = 0;
+    io.read_results_len = 2;
+    io.read_result_index = 0;
+    native_visualizer_screen_clear(&screen);
+    assert(io.read_calls == 5);
+
+    native_visualizer_screen_destroy(&screen);
+    assert(io.close_calls == 2);
+    assert(io.close_fd == io.fifo_fd);
+    test_visualizer_io_destroy(&io);
+    return;
+}
+
+static void
+test_visualizer_find_output_id(void) {
+    char output_name[] = "Visualizer feed";
+    TestVisualizerDataSourceIo io;
+    NativeVisualizerScreen screen = {0};
+    NativeVisualizerScreenConfig config = {
+        .source_location = (char *)"/tmp/mpd.fifo",
+        .output_name = output_name,
+        .source_location_len = STRLIT_LEN("/tmp/mpd.fifo"),
+        .output_name_len = STRLIT_LEN("Visualizer feed"),
+        .fps = 30,
+        .spectrum_dft_size = 2,
+        .spectrum_gain = 10.0,
+        .spectrum_hz_min = 20.0,
+        .spectrum_hz_max = 20000.0,
+        .stereo = false,
+    };
+
+    test_visualizer_io_init(&io);
+    config.data_source_hooks = test_visualizer_hooks(&io);
+    native_visualizer_screen_init(&screen, 0, 0, 80, 24,
+                                  nc_color_default(), nc_border_none(),
+                                  &config);
+    output_name[0] = 'X';
+
+    assert(native_visualizer_screen_find_output_id(&screen));
+    assert(screen.output_id == 42);
+    assert(io.get_outputs_calls == 1);
+    assert(ncm_string_equal(screen.output_name.data,
+                            screen.output_name.len,
+                            LIT_ARGS("Visualizer feed")));
+
+    native_visualizer_screen_init_data_source(
+        &screen, LIT_ARGS("127.0.0.1:5555"));
+    assert(native_visualizer_screen_find_output_id(&screen));
+    assert(screen.output_id == -1);
+    assert(io.get_outputs_calls == 1);
+
+    native_visualizer_screen_destroy(&screen);
+    test_visualizer_io_destroy(&io);
+    return;
+}
+
+static void
 test_visualizer_sample_buffers(void) {
     NativeVisualizerScreen screen = {0};
     int16 samples[8] = {
@@ -746,10 +1064,13 @@ test_visualizer_sample_buffers(void) {
 static void
 test_visualizer_resource_lifecycle(void) {
     char source_location[] = "127.0.0.1:5555";
+    char output_name[] = "Visualizer feed";
     NativeVisualizerScreen screen = {0};
     NativeVisualizerScreenConfig config = {
         .source_location = source_location,
+        .output_name = output_name,
         .source_location_len = STRLIT_LEN("127.0.0.1:5555"),
+        .output_name_len = STRLIT_LEN("Visualizer feed"),
         .fps = 60,
         .spectrum_dft_size = 3,
         .spectrum_gain = 15.0,
@@ -767,14 +1088,20 @@ test_visualizer_resource_lifecycle(void) {
                                   &config);
     screen.source_fd = source_fd;
     source_location[0] = 'X';
+    output_name[0] = 'X';
 
     assert(screen.output_id == -1);
     assert(!screen.reset_output);
-    assert(screen.source_location.len == STRLIT_LEN("127.0.0.1:5555"));
+    assert(screen.source_location.len == STRLIT_LEN("127.0.0.1"));
     assert(ncm_string_equal(screen.source_location.data,
                             screen.source_location.len,
-                            LIT_ARGS("127.0.0.1:5555")));
-    assert(screen.source_port.len == 0);
+                            LIT_ARGS("127.0.0.1")));
+    assert(ncm_string_equal(screen.source_port.data,
+                            screen.source_port.len,
+                            LIT_ARGS("5555")));
+    assert(ncm_string_equal(screen.output_name.data,
+                            screen.output_name.len,
+                            LIT_ARGS("Visualizer feed")));
     assert(ncm_sample_buffer_capacity(&screen.incoming_samples) == 44100);
     assert(ncm_sample_buffer_capacity(&screen.buffered_samples) == 44100);
     assert(ncm_sample_buffer_capacity(&screen.rendered_samples) >= 40960);
@@ -797,6 +1124,7 @@ test_visualizer_resource_lifecycle(void) {
     assert(screen.source_fd == -1);
     assert(screen.source_location.data == NULL);
     assert(screen.source_port.data == NULL);
+    assert(screen.output_name.data == NULL);
     assert(screen.incoming_samples.data == NULL);
     assert(screen.rendered_samples.data == NULL);
 #if defined(HAVE_FFTW3_H)
@@ -828,6 +1156,9 @@ main(void) {
     test_lastfm_error_rendering_properties();
     test_lyrics_filename_and_fetcher_toggle();
     test_lyrics_background_queue_cleanup();
+    test_visualizer_data_source_parsing();
+    test_visualizer_data_source_hooks();
+    test_visualizer_find_output_id();
     test_visualizer_sample_buffers();
     test_visualizer_resource_lifecycle();
     ncm_lyrics_fetcher_set_io_for_tests(NULL, NULL, NULL);
