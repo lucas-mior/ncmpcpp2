@@ -1,10 +1,13 @@
 #include <assert.h>
+#include <errno.h>
 #include <stdlib.h>
 
+#include "app_controller.h"
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
+#include "screens/nc_playlist.h"
 #include "screens/nc_playlist_editor.h"
 #include "screens/nc_sel_items_adder.h"
 #include "screens/nc_sort_playlist.h"
@@ -96,33 +99,62 @@ static void
 test_selected_items_transfer_and_actions(void) {
     NativeSelectedItemsAdderScreen screen;
     NativeSelectedItemsAdderAction *action;
+    NativePlaylistScreen playlist = {0};
+    NcmMpdClient client = {0};
     NcmMpdPlaylistList playlists;
-    NcmPlaylist playlist;
+    NcmPlaylist stored_playlist;
     NcmSongArray songs;
     NcmSong song;
+    NcmError error;
+    NcScreen previous;
+    NcScreenCallbacks callbacks = {0};
     NcMenu *menu;
 
+    app_controller_init();
+    nc_screen_init(&previous, callbacks, NULL, NC_SCREEN_TYPE_BROWSER);
     native_selected_items_adder_screen_init(&screen, 0, 0, 40, 10,
                                             nc_color_default(),
                                             nc_border_none());
     ncm_mpd_playlist_list_init(&playlists);
-    ncm_playlist_init(&playlist);
+    ncm_playlist_init(&stored_playlist);
     ncm_song_array_init(&songs);
     ncm_song_init(&song);
 
+    assert(app_controller_register_screen(&previous));
+    assert(app_controller_register_screen(
+        native_selected_items_adder_screen_base(&screen)));
+    assert(app_controller_switch_to_screen(&previous));
+
     assert(ncm_song_set_uri(&song, LIT_ARGS("first.flac")));
     assert(ncm_song_array_append_copy(&songs, &song));
-    assert(native_selected_items_adder_screen_set_selected_songs(&screen,
-                                                                 &songs));
+    assert(ncm_playlist_set(&stored_playlist, LIT_ARGS("favorites"), 0));
+    assert(ncm_mpd_playlist_list_append_copy(&playlists, &stored_playlist));
+    native_selected_items_adder_screen_populate_playlist_selector(
+        &screen, &playlists, false);
+
+    ncm_error_clear(&error);
+    assert(native_selected_items_adder_screen_open(
+        &screen, &songs, &playlist, &client, &error));
+    assert(app_controller_current_screen()
+           == native_selected_items_adder_screen_base(&screen));
+    assert(screen.ready);
+    assert(screen.previous_screen == &previous);
+    assert(screen.playlist == &playlist);
+    assert(screen.client == &client);
+
+    ncm_error_clear(&error);
+    assert(!native_selected_items_adder_screen_open(
+        &screen, &songs, &playlist, &client, &error));
+    assert(error.code == EBUSY);
+    assert(app_controller_current_screen()
+           == native_selected_items_adder_screen_base(&screen));
+    assert(screen.ready);
+
     ncm_song_array_clear(&songs);
     assert(native_selected_items_adder_screen_selected_songs(&screen,
                                                              &songs));
     assert(songs.len == 1);
 
-    assert(ncm_playlist_set(&playlist, LIT_ARGS("favorites"), 0));
-    assert(ncm_mpd_playlist_list_append_copy(&playlists, &playlist));
-    native_selected_items_adder_screen_populate_playlist_selector(
-        &screen, &playlists, false);
     menu = nc_editor_action_menu_base(
         native_selected_items_adder_screen_playlist_menu(&screen));
     assert(nc_menu_item_count(menu) >= 4);
@@ -134,10 +166,35 @@ test_selected_items_transfer_and_actions(void) {
     assert(ncm_string_equal(action->playlist, action->playlist_len,
                             LIT_ARGS("favorites")));
 
+    nc_menu_highlight_position(menu, nc_menu_item_count(menu) - 1,
+                               nc_menu_item_count(menu));
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(app_controller_current_screen() == &previous);
+    assert(!screen.ready);
+    assert(screen.selected_songs.len == 0);
+    assert(screen.previous_screen == NULL);
+    assert(screen.playlist == NULL);
+    assert(screen.client == NULL);
+
+    ncm_error_clear(&error);
+    assert(native_selected_items_adder_screen_open(
+        &screen, &songs, &playlist, &client, &error));
+    action = native_selected_items_adder_screen_last_action(&screen);
+    assert(action->target == NATIVE_SELECTED_ITEMS_ADDER_TARGET_NONE);
+    menu = nc_editor_action_menu_base(
+        native_selected_items_adder_screen_playlist_menu(&screen));
+    nc_menu_highlight_position(menu, nc_menu_item_count(menu) - 1,
+                               nc_menu_item_count(menu));
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(app_controller_current_screen() == &previous);
+    assert(!screen.ready);
+    assert(screen.selected_songs.len == 0);
+
     ncm_song_destroy(&song);
     ncm_song_array_destroy(&songs);
-    ncm_playlist_destroy(&playlist);
+    ncm_playlist_destroy(&stored_playlist);
     ncm_mpd_playlist_list_destroy(&playlists);
     native_selected_items_adder_screen_destroy(&screen);
+    assert(app_controller_unregister_screen(&previous));
     return;
 }
