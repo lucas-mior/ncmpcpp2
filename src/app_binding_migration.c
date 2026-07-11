@@ -23,6 +23,7 @@ app_binding_migration_action_is_c_safe(enum NcmActionType type) {
     case NCM_ACTION_SEEK_BACKWARD:
     case NCM_ACTION_EXECUTE_COMMAND:
     case NCM_ACTION_RUN_ACTION:
+    case NCM_ACTION_ADD_SELECTED_ITEMS:
     case NCM_ACTION_MOVE_SORT_ORDER_UP:
     case NCM_ACTION_MOVE_SORT_ORDER_DOWN:
     case NCM_ACTION_SORT_PLAYLIST:
@@ -145,7 +146,6 @@ app_binding_migration_action_forces_legacy_binding(
     case NCM_ACTION_REMOVE_SELECTION:
     case NCM_ACTION_SELECT_ALBUM:
     case NCM_ACTION_SELECT_FOUND_ITEMS:
-    case NCM_ACTION_ADD_SELECTED_ITEMS:
     case NCM_ACTION_CROP_PLAYLIST:
     case NCM_ACTION_CLEAR_PLAYLIST:
     case NCM_ACTION_REVERSE_PLAYLIST:

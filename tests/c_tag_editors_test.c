@@ -10,6 +10,7 @@
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 
 static void test_mutable_song_tag_changes(void);
+static void test_selected_songs(void);
 static void test_parser_row_generation(void);
 static void test_filename_parser(void);
 static void test_tiny_editor_field_updates(void);
@@ -18,6 +19,7 @@ static void test_save_failure_keeps_state_destroyable(void);
 int
 main(void) {
     test_mutable_song_tag_changes();
+    test_selected_songs();
     test_parser_row_generation();
     test_filename_parser();
     test_tiny_editor_field_updates();
@@ -52,6 +54,69 @@ test_mutable_song_tag_changes(void) {
 
     ncm_mutable_song_destroy(&current);
     ncm_mutable_song_destroy(&song);
+    native_tag_editor_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_selected_songs(void) {
+    NativeTagEditorScreen screen;
+    NcmMutableSong first;
+    NcmMutableSong second;
+    NcmSongArray songs;
+    NcmStringView value;
+    NcMenu *menu;
+
+    native_tag_editor_screen_init(&screen, 0, 90, 0, 24,
+                                  nc_color_default(), nc_border_none());
+    ncm_mutable_song_init(&first);
+    ncm_mutable_song_init(&second);
+    ncm_song_array_init(&songs);
+
+    assert(ncm_mutable_song_set_uri(&first, LIT_ARGS("one.flac")));
+    assert(ncm_mutable_song_set_original_tag(
+        &first, NCM_TAGS_FIELD_ARTIST, 0, LIT_ARGS("Original one")));
+    assert(ncm_mutable_song_set_tag(
+        &first, NCM_TAGS_FIELD_ARTIST, 0, LIT_ARGS("Edited one")));
+    assert(ncm_mutable_song_set_uri(&second, LIT_ARGS("two.flac")));
+    ncm_mutable_song_set_duration(&second, 321);
+    ncm_mutable_song_set_mtime(&second, 1234);
+    assert(ncm_mutable_song_set_original_tag(
+        &second, NCM_TAGS_FIELD_ARTIST, 0, LIT_ARGS("Original two")));
+    assert(native_tag_editor_screen_add_mutable_song(&screen, &first));
+    assert(native_tag_editor_screen_add_mutable_song(&screen, &second));
+
+    assert(!native_tag_editor_screen_selected_songs(&screen, &songs));
+    assert(songs.len == 0);
+
+    native_tag_editor_screen_next_column(&screen);
+    native_tag_editor_screen_next_column(&screen);
+    menu = nc_tag_row_menu_base(native_tag_editor_screen_tags(&screen));
+    assert(nc_menu_set_position_selected(menu, 1, true));
+    assert(native_tag_editor_screen_selected_songs(&screen, &songs));
+    assert(songs.len == 1);
+    assert(ncm_song_uri_view(&songs.items[0], 0, &value));
+    assert(ncm_string_equal(value.data, value.len, LIT_ARGS("two.flac")));
+    assert(ncm_song_tag_view(&songs.items[0], MPD_TAG_ARTIST, 0, &value));
+    assert(ncm_string_equal(value.data, value.len,
+                            LIT_ARGS("Original two")));
+    assert(ncm_song_duration(&songs.items[0]) == 321);
+    assert(ncm_song_mtime(&songs.items[0]) == 1234);
+
+    nc_menu_clear_selection(menu);
+    nc_menu_highlight_position(
+        menu, 0, nc_menu_item_count(menu));
+    assert(native_tag_editor_screen_selected_songs(&screen, &songs));
+    assert(songs.len == 1);
+    assert(ncm_song_uri_view(&songs.items[0], 0, &value));
+    assert(ncm_string_equal(value.data, value.len, LIT_ARGS("one.flac")));
+    assert(ncm_song_tag_view(&songs.items[0], MPD_TAG_ARTIST, 0, &value));
+    assert(ncm_string_equal(value.data, value.len,
+                            LIT_ARGS("Original one")));
+
+    ncm_song_array_destroy(&songs);
+    ncm_mutable_song_destroy(&second);
+    ncm_mutable_song_destroy(&first);
     native_tag_editor_screen_destroy(&screen);
     return;
 }
