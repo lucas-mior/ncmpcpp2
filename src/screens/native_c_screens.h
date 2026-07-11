@@ -104,6 +104,8 @@ void native_c_screen_selected_items_adder_init(void);
 void native_c_screen_selected_items_adder_register(void);
 void native_c_screen_selected_items_adder_set_resize(void);
 void native_c_screen_selected_items_adder_switch_to(void);
+bool native_c_screen_selected_items_adder_open(
+    NcmSongArray *songs, NcmError *error);
 bool native_c_screen_selected_items_adder_is_current(void);
 NativeSelectedItemsAdderScreen *native_c_screen_selected_items_adder(void);
 NcScreen *native_c_screen_selected_items_adder_native(void);

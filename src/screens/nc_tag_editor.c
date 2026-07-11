@@ -26,9 +26,8 @@ static void tag_editor_layout(NativeTagEditorScreen *screen);
 static bool tag_editor_directory_filter(NcMenu *menu, void *item,
                                         void *user);
 static bool tag_editor_tag_filter(NcMenu *menu, void *item, void *user);
-static bool tag_editor_copy_selected_song_at(NativeTagEditorScreen *screen,
-                                             NcmMutableSongArray *songs,
-                                             int64 pos);
+static bool tag_editor_copy_selected_song_at(
+    NativeTagEditorScreen *screen, NcmSongArray *songs, int64 pos);
 static bool tag_editor_for_each_target(NativeTagEditorScreen *screen,
                                        bool (*cb)(NcmMutableSong *song,
                                                   void *user),
@@ -435,27 +434,34 @@ native_tag_editor_screen_current_song(NativeTagEditorScreen *screen,
 
 bool
 native_tag_editor_screen_selected_songs(NativeTagEditorScreen *screen,
-                                        NcmMutableSongArray *songs) {
+                                        NcmSongArray *songs) {
     NcMenu *menu;
     bool has_selected;
 
     if (screen == NULL || songs == NULL) {
         return false;
     }
+    ncm_song_array_clear(songs);
+    if (screen->active_column != NATIVE_TAG_EDITOR_COLUMN_TAGS) {
+        return false;
+    }
+
     menu = nc_tag_row_menu_base(&screen->tags);
     has_selected = nc_menu_has_selected(menu);
-    ncm_mutable_song_array_clear(songs);
+    if (!has_selected) {
+        if (nc_menu_empty(menu)) {
+            return true;
+        }
+        return tag_editor_copy_selected_song_at(
+            screen, songs, nc_menu_highlight(menu));
+    }
+
     for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        if (has_selected && !nc_menu_position_is_selected(menu, i)) {
+        if (!nc_menu_position_is_selected(menu, i)) {
             continue;
         }
         if (!tag_editor_copy_selected_song_at(screen, songs, i)) {
-            return false;
-        }
-    }
-    if ((songs->len == 0) && !nc_menu_empty(menu)) {
-        if (!tag_editor_copy_selected_song_at(screen, songs,
-                                             nc_menu_highlight(menu))) {
+            ncm_song_array_clear(songs);
             return false;
         }
     }
@@ -1110,14 +1116,43 @@ tag_editor_tag_filter(NcMenu *menu, void *item, void *user) {
 
 static bool
 tag_editor_copy_selected_song_at(NativeTagEditorScreen *screen,
-                                  NcmMutableSongArray *songs, int64 pos) {
-    NcmMutableSong *song;
+                                 NcmSongArray *songs, int64 pos) {
+    NcmMutableSong *source;
+    NcmSong song;
 
-    song = nc_menu_active_item_at(nc_tag_row_menu_base(&screen->tags), pos);
-    if (song == NULL) {
+    source = nc_menu_active_item_at(
+        nc_tag_row_menu_base(&screen->tags), pos);
+    if ((source == NULL) || (source->uri == NULL)
+        || (source->uri_len <= 0)) {
         return false;
     }
-    return ncm_mutable_song_array_append_copy(songs, song);
+
+    ncm_song_init(&song);
+    if (!ncm_song_set_uri(&song, source->uri, source->uri_len)) {
+        ncm_song_destroy(&song);
+        return false;
+    }
+    ncm_song_set_duration(&song, source->duration);
+    ncm_song_set_mtime(&song, source->mtime);
+    for (int32 i = 0; i < source->tags_len; i += 1) {
+        NcmMutableSongTag *tag;
+        enum mpd_tag_type type;
+
+        tag = &source->tags[i];
+        type = ncm_tags_field_to_tag_type(tag->field);
+        if ((type == MPD_TAG_UNKNOWN) || (tag->original == NULL)
+            || (tag->original_len <= 0)) {
+            continue;
+        }
+        if (!ncm_song_add_tag(&song, type, tag->original,
+                              tag->original_len)) {
+            ncm_song_destroy(&song);
+            return false;
+        }
+    }
+    ncm_song_array_append_move(songs, &song);
+    ncm_song_destroy(&song);
+    return true;
 }
 
 static bool

@@ -2348,6 +2348,11 @@ action_runtime_selected_songs(NcmSongArray *songs) {
     case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
         return native_media_library_screen_selected_songs(
             native_c_screen_media_library(), songs);
+#if defined(HAVE_TAGLIB_H)
+    case NCM_SCREEN_TYPE_TAG_EDITOR:
+        return native_tag_editor_screen_selected_songs(
+            native_c_screen_tag_editor(), songs);
+#endif
     case NCM_SCREEN_TYPE_HELP:
     case NCM_SCREEN_TYPE_LASTFM:
     case NCM_SCREEN_TYPE_LYRICS:
@@ -2359,7 +2364,6 @@ action_runtime_selected_songs(NcmSongArray *songs) {
     case NCM_SCREEN_TYPE_SERVER_INFO:
     case NCM_SCREEN_TYPE_SONG_INFO:
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR:
     case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
 #endif
 #if defined(ENABLE_VISUALIZER)
@@ -4068,23 +4072,24 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         return true;
     case NCM_ACTION_ADD_SELECTED_ITEMS:
     {
-        NativeSelectedItemsAdderScreen *screen;
         NcmSongArray songs;
+        NcmError error;
         bool success;
 
         ncm_song_array_init(&songs);
         success = action_runtime_selected_songs(&songs) && (songs.len > 0);
-        screen = native_c_screen_selected_items_adder();
-        if (success) {
-            success = native_selected_items_adder_screen_set_selected_songs(
-                screen, &songs);
-        }
-        ncm_song_array_destroy(&songs);
         if (!success) {
+            ncm_song_array_destroy(&songs);
             return false;
         }
-        return action_runtime_switch_to_screen(
-            NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
+
+        ncm_error_clear(&error);
+        success = native_c_screen_selected_items_adder_open(&songs, &error);
+        ncm_song_array_destroy(&songs);
+        if (!success) {
+            return action_runtime_mpd_error(&error);
+        }
+        return true;
     }
     case NCM_ACTION_CROP_MAIN_PLAYLIST:
         return action_runtime_crop_playlist(true);

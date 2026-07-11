@@ -118,6 +118,15 @@ PLAYLIST_MANAGEMENT_DIALOGS_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_menu_refresh
 $(BUILD_DIR)/tests/c_playlist_management_dialogs_test: \
 	LDFLAGS += $(PLAYLIST_MANAGEMENT_DIALOGS_TEST_WRAP_FLAGS)
+SELECTED_ITEMS_ACTION_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=native_c_screens_current_type \
+	-Wl,--wrap=native_c_screen_playlist \
+	-Wl,--wrap=native_playlist_screen_selected_songs \
+	-Wl,--wrap=native_c_screen_tag_editor \
+	-Wl,--wrap=native_tag_editor_screen_selected_songs \
+	-Wl,--wrap=native_c_screen_selected_items_adder_open
+$(BUILD_DIR)/tests/c_selected_items_adder_action_test: \
+	LDFLAGS += $(SELECTED_ITEMS_ACTION_TEST_WRAP_FLAGS)
 DEPS := \
 	$(CBASE_OBJS:.o=.d) \
 	$(NCMPCPP_C_OBJS:.o=.d) \
