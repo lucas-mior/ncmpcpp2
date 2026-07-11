@@ -21,32 +21,6 @@ enum NativeSelectedItemsAdderMenu {
     NATIVE_SELECTED_ITEMS_ADDER_MENU_POSITIONS,
 };
 
-enum NativeSelectedItemsAdderTarget {
-    NATIVE_SELECTED_ITEMS_ADDER_TARGET_NONE,
-    NATIVE_SELECTED_ITEMS_ADDER_TARGET_CURRENT_PLAYLIST,
-    NATIVE_SELECTED_ITEMS_ADDER_TARGET_NEW_PLAYLIST,
-    NATIVE_SELECTED_ITEMS_ADDER_TARGET_EXISTING_PLAYLIST,
-    NATIVE_SELECTED_ITEMS_ADDER_TARGET_CANCEL,
-};
-
-enum NativeSelectedItemsAdderPosition {
-    NATIVE_SELECTED_ITEMS_ADDER_POSITION_NONE,
-    NATIVE_SELECTED_ITEMS_ADDER_POSITION_END,
-    NATIVE_SELECTED_ITEMS_ADDER_POSITION_BEGINNING,
-    NATIVE_SELECTED_ITEMS_ADDER_POSITION_AFTER_CURRENT_SONG,
-    NATIVE_SELECTED_ITEMS_ADDER_POSITION_AFTER_CURRENT_ALBUM,
-    NATIVE_SELECTED_ITEMS_ADDER_POSITION_AFTER_HIGHLIGHTED,
-    NATIVE_SELECTED_ITEMS_ADDER_POSITION_CANCEL,
-};
-
-typedef struct NativeSelectedItemsAdderAction {
-    enum NativeSelectedItemsAdderTarget target;
-    enum NativeSelectedItemsAdderPosition position;
-    char *playlist;
-    int32 playlist_len;
-    int32 playlist_cap;
-} NativeSelectedItemsAdderAction;
-
 typedef struct NativeSelectedItemsAdderScreen {
     NcScreen screen;
     NcEditorActionMenu playlist_selector;
@@ -56,8 +30,6 @@ typedef struct NativeSelectedItemsAdderScreen {
     NcmSongArray selected_songs;
     NcmRegex search_regex;
     NcmBuffer search_constraint;
-    NativeSelectedItemsAdderAction last_action;
-
     NativePlaylistScreen *playlist;
     NcScreen *previous_screen;
     NcmMpdClient *client;
@@ -73,16 +45,6 @@ typedef struct NativeSelectedItemsAdderScreen {
     bool registered;
     bool ready;
 } NativeSelectedItemsAdderScreen;
-
-void native_selected_items_adder_action_init(
-    NativeSelectedItemsAdderAction *action);
-void native_selected_items_adder_action_destroy(
-    NativeSelectedItemsAdderAction *action);
-bool native_selected_items_adder_action_set(
-    NativeSelectedItemsAdderAction *action,
-    enum NativeSelectedItemsAdderTarget target,
-    enum NativeSelectedItemsAdderPosition position, char *playlist,
-    int32 playlist_len);
 
 void native_selected_items_adder_screen_init(
     NativeSelectedItemsAdderScreen *screen, int64 start_x, int64 start_y,
@@ -129,8 +91,6 @@ bool native_selected_items_adder_screen_search(
     NativeSelectedItemsAdderScreen *screen, char *pattern,
     int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,
     bool skip_current, NcmError *error);
-NativeSelectedItemsAdderAction *native_selected_items_adder_screen_last_action(
-    NativeSelectedItemsAdderScreen *screen);
 
 #if defined(__cplusplus)
 }

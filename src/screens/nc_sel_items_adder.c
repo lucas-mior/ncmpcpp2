@@ -47,8 +47,7 @@ static bool adder_action_set_playlist(char **dest, int32 *dest_len,
 static int32 adder_cstring_len(char *string);
 static bool adder_statusbar_prompt_hook(char *text, void *user);
 static bool adder_add_to_stored_playlist(
-    NativeSelectedItemsAdderScreen *screen,
-    enum NativeSelectedItemsAdderTarget target, char *playlist,
+    NativeSelectedItemsAdderScreen *screen, char *playlist,
     int32 playlist_len);
 static bool adder_try_add_current_song(
     NativeSelectedItemsAdderScreen *screen, NcmSong *song,
@@ -91,73 +90,6 @@ static ExistingPlaylistAction *existing_playlist_action_create(
     int32 playlist_len);
 
 void
-native_selected_items_adder_action_init(
-    NativeSelectedItemsAdderAction *action) {
-    action->target = NATIVE_SELECTED_ITEMS_ADDER_TARGET_NONE;
-    action->position = NATIVE_SELECTED_ITEMS_ADDER_POSITION_NONE;
-    action->playlist = NULL;
-    action->playlist_len = 0;
-    action->playlist_cap = 0;
-    return;
-}
-
-void
-native_selected_items_adder_action_destroy(
-    NativeSelectedItemsAdderAction *action) {
-    if (action == NULL) {
-        return;
-    }
-    if (action->playlist != NULL) {
-        ncm_free(action->playlist, action->playlist_cap);
-    }
-    native_selected_items_adder_action_init(action);
-    return;
-}
-
-bool
-native_selected_items_adder_action_set(
-    NativeSelectedItemsAdderAction *action,
-    enum NativeSelectedItemsAdderTarget target,
-    enum NativeSelectedItemsAdderPosition position, char *playlist,
-    int32 playlist_len) {
-    char *source;
-    int32 source_len;
-    int32 source_cap;
-
-    if (action == NULL) {
-        return false;
-    }
-
-    source = playlist;
-    source_len = playlist_len;
-    source_cap = 0;
-    if (playlist == action->playlist && playlist != NULL) {
-        if (!adder_action_set_playlist(&source, &source_len, &source_cap,
-                                       playlist, playlist_len)) {
-            return false;
-        }
-    }
-
-    native_selected_items_adder_action_destroy(action);
-    action->target = target;
-    action->position = position;
-    if (!adder_action_set_playlist(&action->playlist,
-                                   &action->playlist_len,
-                                   &action->playlist_cap,
-                                   source, source_len)) {
-        if (source_cap > 0) {
-            ncm_free(source, source_cap);
-        }
-        native_selected_items_adder_action_destroy(action);
-        return false;
-    }
-    if (source_cap > 0) {
-        ncm_free(source, source_cap);
-    }
-    return true;
-}
-
-void
 native_selected_items_adder_screen_init(
     NativeSelectedItemsAdderScreen *screen, int64 start_x, int64 start_y,
     int64 width, int64 height, NcColor color, NcBorder border) {
@@ -189,7 +121,6 @@ native_selected_items_adder_screen_init(
     ncm_song_array_init(&screen->selected_songs);
     ncm_regex_init(&screen->search_regex);
     ncm_buffer_init(&screen->search_constraint);
-    native_selected_items_adder_action_init(&screen->last_action);
     screen->playlist = NULL;
     screen->previous_screen = NULL;
     screen->client = NULL;
@@ -244,7 +175,6 @@ native_selected_items_adder_screen_destroy(
     ncm_song_array_destroy(&screen->selected_songs);
     ncm_regex_destroy(&screen->search_regex);
     ncm_buffer_destroy(&screen->search_constraint);
-    native_selected_items_adder_action_destroy(&screen->last_action);
     screen->playlist = NULL;
     screen->previous_screen = NULL;
     screen->client = NULL;
@@ -354,7 +284,6 @@ native_selected_items_adder_screen_open(
         return false;
     }
 
-    native_selected_items_adder_action_destroy(&screen->last_action);
     nc_menu_reset(nc_editor_action_menu_base(&screen->playlist_selector));
     nc_menu_reset(nc_editor_action_menu_base(&screen->position_selector));
     screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
@@ -687,15 +616,6 @@ native_selected_items_adder_screen_search(
     return false;
 }
 
-NativeSelectedItemsAdderAction *
-native_selected_items_adder_screen_last_action(
-    NativeSelectedItemsAdderScreen *screen) {
-    if (screen == NULL) {
-        return NULL;
-    }
-    return &screen->last_action;
-}
-
 static NativeSelectedItemsAdderScreen *
 adder_from_screen(NcScreen *screen) {
     return nc_screen_user(screen);
@@ -999,8 +919,7 @@ adder_statusbar_prompt_hook(char *text, void *user) {
 
 static bool
 adder_add_to_stored_playlist(
-    NativeSelectedItemsAdderScreen *screen,
-    enum NativeSelectedItemsAdderTarget target, char *playlist,
+    NativeSelectedItemsAdderScreen *screen, char *playlist,
     int32 playlist_len) {
     NcmStringFormatArg arg;
     NcmError error;
@@ -1009,10 +928,6 @@ adder_add_to_stored_playlist(
         return false;
     }
 
-    (void)native_selected_items_adder_action_set(
-        &screen->last_action, target,
-        NATIVE_SELECTED_ITEMS_ADDER_POSITION_NONE, playlist,
-        playlist_len);
     ncm_error_clear(&error);
     if (!native_selected_items_adder_screen_add_to_existing_playlist(
             screen, screen->client, playlist, &error)) {
@@ -1152,10 +1067,6 @@ adder_action_current_playlist(void *user) {
     NativeSelectedItemsAdderScreen *screen;
 
     screen = user;
-    (void)native_selected_items_adder_action_set(
-        &screen->last_action,
-        NATIVE_SELECTED_ITEMS_ADDER_TARGET_CURRENT_PLAYLIST,
-        NATIVE_SELECTED_ITEMS_ADDER_POSITION_NONE, NULL, 0);
     native_selected_items_adder_screen_choose_current_playlist(screen);
     return;
 }
@@ -1172,10 +1083,6 @@ adder_action_new_playlist(void *user) {
     int32 playlist_len;
 
     screen = user;
-    (void)native_selected_items_adder_action_set(
-        &screen->last_action,
-        NATIVE_SELECTED_ITEMS_ADDER_TARGET_NEW_PLAYLIST,
-        NATIVE_SELECTED_ITEMS_ADDER_POSITION_NONE, NULL, 0);
     input = NULL;
     prompt_status = NC_PROMPT_ABORTED;
     ncm_statusbar_scoped_lock_init(&lock);
@@ -1207,9 +1114,7 @@ adder_action_new_playlist(void *user) {
         playlist = (char *)"";
     }
     playlist_len = adder_cstring_len(playlist);
-    (void)adder_add_to_stored_playlist(
-        screen, NATIVE_SELECTED_ITEMS_ADDER_TARGET_NEW_PLAYLIST,
-        playlist, playlist_len);
+    (void)adder_add_to_stored_playlist(screen, playlist, playlist_len);
     nc_window_prompt_result_destroy(input);
     return;
 }
@@ -1219,10 +1124,6 @@ adder_action_cancel_target(void *user) {
     NativeSelectedItemsAdderScreen *screen;
 
     screen = user;
-    (void)native_selected_items_adder_action_set(
-        &screen->last_action,
-        NATIVE_SELECTED_ITEMS_ADDER_TARGET_CANCEL,
-        NATIVE_SELECTED_ITEMS_ADDER_POSITION_CANCEL, NULL, 0);
     adder_finish(screen);
     return;
 }
@@ -1232,10 +1133,6 @@ adder_action_position_end(void *user) {
     NativeSelectedItemsAdderScreen *screen;
 
     screen = user;
-    (void)native_selected_items_adder_action_set(
-        &screen->last_action, screen->last_action.target,
-        NATIVE_SELECTED_ITEMS_ADDER_POSITION_END,
-        screen->last_action.playlist, screen->last_action.playlist_len);
     (void)adder_add_to_current_playlist(screen, -1);
     return;
 }
@@ -1245,10 +1142,6 @@ adder_action_position_beginning(void *user) {
     NativeSelectedItemsAdderScreen *screen;
 
     screen = user;
-    (void)native_selected_items_adder_action_set(
-        &screen->last_action, screen->last_action.target,
-        NATIVE_SELECTED_ITEMS_ADDER_POSITION_BEGINNING,
-        screen->last_action.playlist, screen->last_action.playlist_len);
     (void)adder_add_to_current_playlist(screen, 0);
     return;
 }
@@ -1259,10 +1152,6 @@ adder_action_position_current_song(void *user) {
     int32 position;
 
     screen = user;
-    (void)native_selected_items_adder_action_set(
-        &screen->last_action, screen->last_action.target,
-        NATIVE_SELECTED_ITEMS_ADDER_POSITION_AFTER_CURRENT_SONG,
-        screen->last_action.playlist, screen->last_action.playlist_len);
     if (ncm_status_state_player() == NCM_STATUS_PLAYER_STOP) {
         return;
     }
@@ -1285,10 +1174,6 @@ adder_action_position_current_album(void *user) {
     int32 position;
 
     screen = user;
-    (void)native_selected_items_adder_action_set(
-        &screen->last_action, screen->last_action.target,
-        NATIVE_SELECTED_ITEMS_ADDER_POSITION_AFTER_CURRENT_ALBUM,
-        screen->last_action.playlist, screen->last_action.playlist_len);
     if (ncm_status_state_player() == NCM_STATUS_PLAYER_STOP) {
         return;
     }
@@ -1341,10 +1226,6 @@ adder_action_position_highlighted(void *user) {
     int32 position;
 
     screen = user;
-    (void)native_selected_items_adder_action_set(
-        &screen->last_action, screen->last_action.target,
-        NATIVE_SELECTED_ITEMS_ADDER_POSITION_AFTER_HIGHLIGHTED,
-        screen->last_action.playlist, screen->last_action.playlist_len);
 
     ncm_song_init(&song);
     if (!native_playlist_screen_current_song(screen->playlist, &song)) {
@@ -1369,10 +1250,6 @@ adder_action_position_cancel(void *user) {
 
     screen = user;
     screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
-    (void)native_selected_items_adder_action_set(
-        &screen->last_action, screen->last_action.target,
-        NATIVE_SELECTED_ITEMS_ADDER_POSITION_CANCEL,
-        screen->last_action.playlist, screen->last_action.playlist_len);
     return;
 }
 
@@ -1382,9 +1259,7 @@ adder_action_existing_playlist(void *user) {
 
     action = user;
     (void)adder_add_to_stored_playlist(
-        action->screen,
-        NATIVE_SELECTED_ITEMS_ADDER_TARGET_EXISTING_PLAYLIST,
-        action->playlist, action->playlist_len);
+        action->screen, action->playlist, action->playlist_len);
     return;
 }
 
