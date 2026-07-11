@@ -423,9 +423,27 @@ native_c_screen_lyrics_native(void) {
 void
 native_c_screen_visualizer_init(void) {
 #if defined(ENABLE_VISUALIZER)
+    NativeVisualizerScreenConfig visualizer_config;
+
     if (visualizer_screen_initialized) {
         return;
     }
+
+    visualizer_config.source_location = Config.visualizer_data_source;
+    visualizer_config.source_location_len =
+        Config.visualizer_data_source_len;
+    if (Config.visualizer_fifo_path_len > 0) {
+        visualizer_config.source_location = Config.visualizer_fifo_path;
+        visualizer_config.source_location_len =
+            Config.visualizer_fifo_path_len;
+    }
+    visualizer_config.fps = (int32)Config.visualizer_fps;
+    visualizer_config.spectrum_dft_size =
+        Config.visualizer_spectrum_dft_size;
+    visualizer_config.spectrum_gain = Config.visualizer_spectrum_gain;
+    visualizer_config.spectrum_hz_min = Config.visualizer_spectrum_hz_min;
+    visualizer_config.spectrum_hz_max = Config.visualizer_spectrum_hz_max;
+    visualizer_config.stereo = Config.visualizer_in_stereo;
 
     native_visualizer_screen_init(&visualizer_screen,
                                   0,
@@ -434,8 +452,7 @@ native_c_screen_visualizer_init(void) {
                                   ui_state_main_height(),
                                   Config.main_color,
                                   native_no_border(),
-                                  Config.visualizer_fps,
-                                  Config.visualizer_in_stereo);
+                                  &visualizer_config);
     visualizer_screen_initialized = true;
 #endif
     return;
