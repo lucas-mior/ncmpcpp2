@@ -127,6 +127,20 @@ SELECTED_ITEMS_ACTION_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=native_c_screen_selected_items_adder_open
 $(BUILD_DIR)/tests/c_selected_items_adder_action_test: \
 	LDFLAGS += $(SELECTED_ITEMS_ACTION_TEST_WRAP_FLAGS)
+VISUALIZER_DRAWING_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=nc_window_init \
+	-Wl,--wrap=nc_window_destroy \
+	-Wl,--wrap=nc_window_width \
+	-Wl,--wrap=nc_window_height \
+	-Wl,--wrap=nc_window_resize \
+	-Wl,--wrap=nc_window_move_to \
+	-Wl,--wrap=nc_window_clear \
+	-Wl,--wrap=nc_window_go_to_xy \
+	-Wl,--wrap=nc_window_push_color \
+	-Wl,--wrap=nc_window_apply_format \
+	-Wl,--wrap=nc_window_print_data
+$(BUILD_DIR)/tests/c_visualizer_drawing_test: \
+	LDFLAGS += $(VISUALIZER_DRAWING_TEST_WRAP_FLAGS)
 DEPS := \
 	$(CBASE_OBJS:.o=.d) \
 	$(NCMPCPP_C_OBJS:.o=.d) \

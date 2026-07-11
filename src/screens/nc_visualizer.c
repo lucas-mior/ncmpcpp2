@@ -13,6 +13,7 @@
 #include "c/ncm_base.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
+#include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
 #include "cbase/cbase.h"
 #include "screens/screen_switcher.h"
@@ -35,6 +36,58 @@
 #define NATIVE_VISUALIZER_BAR_HEIGHTS_CAP 100
 #define NATIVE_VISUALIZER_MIN_SAMPLE (-32768)
 #define NATIVE_VISUALIZER_MAX_SAMPLE 32767
+#define NATIVE_VISUALIZER_DEFAULT_CHARS "●▮"
+
+#if defined(HAVE_FFTW3_H)
+#define NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT 8
+
+static char *visualizer_smooth_chars[NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT] = {
+    (char *)"▁",
+    (char *)"▂",
+    (char *)"▃",
+    (char *)"▄",
+    (char *)"▅",
+    (char *)"▆",
+    (char *)"▇",
+    (char *)"█",
+};
+
+static int32 visualizer_smooth_char_lens[
+    NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT] = {
+    STRLIT_LEN("▁"),
+    STRLIT_LEN("▂"),
+    STRLIT_LEN("▃"),
+    STRLIT_LEN("▄"),
+    STRLIT_LEN("▅"),
+    STRLIT_LEN("▆"),
+    STRLIT_LEN("▇"),
+    STRLIT_LEN("█"),
+};
+
+static char *visualizer_smooth_flipped_chars[
+    NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT] = {
+    (char *)"▔",
+    (char *)"🮂",
+    (char *)"🮃",
+    (char *)"🮄",
+    (char *)"🬎",
+    (char *)"🮅",
+    (char *)"🮆",
+    (char *)"█",
+};
+
+static int32 visualizer_smooth_flipped_char_lens[
+    NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT] = {
+    STRLIT_LEN("▔"),
+    STRLIT_LEN("🮂"),
+    STRLIT_LEN("🮃"),
+    STRLIT_LEN("🮄"),
+    STRLIT_LEN("🬎"),
+    STRLIT_LEN("🮅"),
+    STRLIT_LEN("🮆"),
+    STRLIT_LEN("█"),
+};
+#endif
 
 static NcWindow *visualizer_active_window_callback(NcScreen *screen);
 static void visualizer_refresh_callback(NcScreen *screen);
@@ -66,6 +119,58 @@ static void visualizer_system_close_source(void *user, int32 fd);
 static bool visualizer_system_get_outputs(void *user,
                                           NcmMpdOutputList *outputs,
                                           NcmError *error);
+static void visualizer_copy_characters(NativeVisualizerScreen *screen,
+                                       char *characters,
+                                       int32 characters_len);
+static void visualizer_copy_colors(NativeVisualizerScreen *screen,
+                                   NcFormattedColor *colors,
+                                   int32 colors_len);
+static void visualizer_destroy_colors(NativeVisualizerScreen *screen);
+static NcFormattedColor *visualizer_color(NativeVisualizerScreen *screen,
+                                          double number, double max,
+                                          bool wrap);
+static void visualizer_draw_character(NativeVisualizerScreen *screen,
+                                      int32 x, int32 y,
+                                      NcFormattedColor *color,
+                                      bool reverse, char *character,
+                                      int32 character_len);
+static void visualizer_draw_wave(NativeVisualizerScreen *screen,
+                                 int16 *samples, int32 samples_len,
+                                 int32 y_offset, int32 height);
+static void visualizer_draw_wave_filled(NativeVisualizerScreen *screen,
+                                        int16 *samples,
+                                        int32 samples_len,
+                                        int32 y_offset, int32 height);
+static void visualizer_draw_ellipse(NativeVisualizerScreen *screen,
+                                    int16 *samples, int32 samples_len,
+                                    int32 height);
+static void visualizer_draw_ellipse_stereo(
+    NativeVisualizerScreen *screen, int16 *left, int16 *right,
+    int32 samples_len, int32 half_height);
+#if defined(HAVE_FFTW3_H)
+static void visualizer_fft_init(NativeVisualizerScreen *screen,
+                                uint32 dft_size, double gain,
+                                double hz_min, double hz_max);
+static void visualizer_fft_destroy(NativeVisualizerScreen *screen);
+static void visualizer_fft_reserve_frequency_space(
+    NativeVisualizerScreen *screen, int32 capacity);
+static void visualizer_fft_reserve_bar_heights(
+    NativeVisualizerScreen *screen, int32 capacity);
+static void visualizer_generate_frequency_space(
+    NativeVisualizerScreen *screen);
+static void visualizer_apply_fft_window(NativeVisualizerScreen *screen,
+                                        int16 *samples,
+                                        int32 samples_len);
+static double visualizer_bin_to_hz(NativeVisualizerScreen *screen,
+                                   int32 bin);
+static double visualizer_interpolate_cubic(
+    NativeVisualizerScreen *screen, int32 x, int32 height_index);
+static double visualizer_interpolate_linear(
+    NativeVisualizerScreen *screen, int32 x, int32 height_index);
+static void visualizer_draw_frequency(NativeVisualizerScreen *screen,
+                                      int16 *samples, int32 samples_len,
+                                      int32 y_offset, int32 height);
+#endif
 
 static NcScreenCallbacks
 native_visualizer_callbacks(void) {
@@ -99,6 +204,284 @@ native_visualizer_data_source_system_hooks(NcmMpdClient *client) {
     hooks.user = client;
     return hooks;
 }
+
+static void
+visualizer_copy_characters(NativeVisualizerScreen *screen,
+                           char *characters, int32 characters_len) {
+    int32 next;
+
+    ncm_buffer_set(&screen->visualizer_chars, characters, characters_len);
+    next = ncm_utf8_next_position(screen->visualizer_chars.data,
+                                  screen->visualizer_chars.len, 0);
+    screen->point_char_offset = 0;
+    screen->point_char_len = next;
+    screen->bar_char_offset = next;
+    screen->bar_char_len = screen->visualizer_chars.len - next;
+    return;
+}
+
+static void
+visualizer_destroy_colors(NativeVisualizerScreen *screen) {
+    if (screen->visualizer_colors != NULL) {
+        for (int32 i = 0; i < screen->visualizer_colors_len; i += 1) {
+            nc_formatted_color_destroy(&screen->visualizer_colors[i]);
+        }
+        ncm_free(screen->visualizer_colors,
+                 screen->visualizer_colors_cap
+                 *SIZEOF(*screen->visualizer_colors));
+    }
+    screen->visualizer_colors = NULL;
+    screen->visualizer_colors_len = 0;
+    screen->visualizer_colors_cap = 0;
+    return;
+}
+
+static void
+visualizer_copy_colors(NativeVisualizerScreen *screen,
+                       NcFormattedColor *colors, int32 colors_len) {
+    visualizer_destroy_colors(screen);
+    if ((colors == NULL) || (colors_len <= 0)) {
+        screen->visualizer_colors_cap = 1;
+        screen->visualizer_colors = ncm_malloc(
+            SIZEOF(*screen->visualizer_colors));
+        nc_formatted_color_init(&screen->visualizer_colors[0]);
+        screen->visualizer_colors_len = 1;
+        return;
+    }
+
+    screen->visualizer_colors_cap = colors_len;
+    screen->visualizer_colors = ncm_malloc(
+        colors_len*SIZEOF(*screen->visualizer_colors));
+    for (int32 i = 0; i < colors_len; i += 1) {
+        nc_formatted_color_copy(&screen->visualizer_colors[i],
+                                &colors[i]);
+    }
+    screen->visualizer_colors_len = colors_len;
+    return;
+}
+
+static NcFormattedColor *
+visualizer_color(NativeVisualizerScreen *screen, double number,
+                 double max, bool wrap) {
+    int64 index;
+
+    if ((screen->visualizer_colors == NULL)
+        || (screen->visualizer_colors_len <= 0)) {
+        return NULL;
+    }
+    if ((max <= 0.0) || !isfinite(number) || !isfinite(max)) {
+        return &screen->visualizer_colors[0];
+    }
+    if (number < 0.0) {
+        number = -number;
+    }
+
+    index = (int64)(number*(double)screen->visualizer_colors_len/max);
+    if (wrap) {
+        index %= screen->visualizer_colors_len;
+    } else if (index >= screen->visualizer_colors_len) {
+        index = screen->visualizer_colors_len - 1;
+    }
+    if (index < 0) {
+        index = 0;
+    }
+    return &screen->visualizer_colors[index];
+}
+
+static void
+visualizer_draw_character(NativeVisualizerScreen *screen,
+                          int32 x, int32 y, NcFormattedColor *color,
+                          bool reverse, char *character,
+                          int32 character_len) {
+    enum NcFormat *formats;
+    int32 count;
+    int64 width;
+    int64 height;
+
+    width = nc_window_width(&screen->window);
+    height = nc_window_height(&screen->window);
+    if ((x < 0) || (y < 0) || (x >= width) || (y >= height)
+        || (character == NULL) || (character_len <= 0)) {
+        return;
+    }
+
+    nc_window_go_to_xy(&screen->window, x, y);
+    formats = NULL;
+    count = 0;
+    if (color != NULL) {
+        nc_window_push_color(&screen->window, color->color);
+        formats = nc_formatted_color_formats(color);
+        count = nc_formatted_color_format_count(color);
+        for (int32 i = 0; i < count; i += 1) {
+            nc_window_apply_format(&screen->window, formats[i]);
+        }
+    }
+    if (reverse) {
+        nc_window_apply_format(&screen->window, NC_FORMAT_REVERSE);
+    }
+
+    nc_window_print_data(&screen->window, character, character_len);
+
+    if (reverse) {
+        nc_window_apply_format(&screen->window, NC_FORMAT_NO_REVERSE);
+    }
+    if (color != NULL) {
+        for (int32 i = count - 1; i >= 0; i -= 1) {
+            nc_window_apply_format(&screen->window,
+                                   nc_format_reverse(formats[i]));
+        }
+        if (!nc_color_is_default(color->color)) {
+            nc_window_push_color(&screen->window, nc_color_end());
+        }
+    }
+    return;
+}
+
+#if defined(HAVE_FFTW3_H)
+static void
+visualizer_fft_init(NativeVisualizerScreen *screen, uint32 dft_size,
+                    double gain, double hz_min, double hz_max) {
+    NativeVisualizerFftState *fft;
+
+    fft = &screen->fft;
+    *fft = (NativeVisualizerFftState){0};
+    fft->dft_nonzero_size = NATIVE_VISUALIZER_DFT_BASE_SIZE
+                            *(2*(int32)dft_size
+                              + NATIVE_VISUALIZER_DFT_PADDING);
+    fft->dft_total_size = NATIVE_VISUALIZER_DFT_TOTAL_SIZE;
+    fft->results_len = fft->dft_total_size / 2 + 1;
+    fft->dynamic_range = 100.0 - gain;
+    fft->hz_min = hz_min;
+    fft->hz_max = hz_max;
+    fft->gain = gain;
+
+    fft->frequency_magnitudes_len = fft->results_len;
+    fft->frequency_magnitudes_cap = fft->results_len;
+    fft->dft_frequency_space_cap = NATIVE_VISUALIZER_FREQ_SPACE_CAP;
+    fft->bar_heights_cap = NATIVE_VISUALIZER_BAR_HEIGHTS_CAP;
+    fft->frequency_magnitudes = ncm_malloc(
+        fft->frequency_magnitudes_cap
+        *SIZEOF(*fft->frequency_magnitudes));
+    fft->dft_frequency_space = ncm_malloc(
+        fft->dft_frequency_space_cap
+        *SIZEOF(*fft->dft_frequency_space));
+    fft->bar_heights = ncm_malloc(
+        fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
+    cbase_memset(fft->frequency_magnitudes, 0,
+                 fft->frequency_magnitudes_cap
+                 *SIZEOF(*fft->frequency_magnitudes));
+
+    fft->input = fftw_malloc(
+        (size_t)(fft->dft_total_size*SIZEOF(*fft->input)));
+    fft->output = fftw_malloc(
+        (size_t)(fft->results_len*SIZEOF(*fft->output)));
+    if ((fft->input == NULL) || (fft->output == NULL)) {
+        visualizer_fft_destroy(screen);
+        return;
+    }
+    cbase_memset(fft->input, 0,
+                 fft->dft_total_size*SIZEOF(*fft->input));
+    fft->plan = fftw_plan_dft_r2c_1d(fft->dft_total_size,
+                                     fft->input, fft->output,
+                                     FFTW_ESTIMATE);
+    if (fft->plan == NULL) {
+        visualizer_fft_destroy(screen);
+    }
+    return;
+}
+
+static void
+visualizer_fft_destroy(NativeVisualizerScreen *screen) {
+    NativeVisualizerFftState *fft;
+
+    fft = &screen->fft;
+    if (fft->plan != NULL) {
+        fftw_destroy_plan(fft->plan);
+    }
+    if (fft->output != NULL) {
+        fftw_free(fft->output);
+    }
+    if (fft->input != NULL) {
+        fftw_free(fft->input);
+    }
+    if (fft->bar_heights != NULL) {
+        ncm_free(fft->bar_heights,
+                 fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
+    }
+    if (fft->dft_frequency_space != NULL) {
+        ncm_free(fft->dft_frequency_space,
+                 fft->dft_frequency_space_cap
+                 *SIZEOF(*fft->dft_frequency_space));
+    }
+    if (fft->frequency_magnitudes != NULL) {
+        ncm_free(fft->frequency_magnitudes,
+                 fft->frequency_magnitudes_cap
+                 *SIZEOF(*fft->frequency_magnitudes));
+    }
+    *fft = (NativeVisualizerFftState){0};
+    return;
+}
+
+static void
+visualizer_fft_reserve_frequency_space(NativeVisualizerScreen *screen,
+                                       int32 capacity) {
+    NativeVisualizerFftState *fft;
+    int32 old_cap;
+    int32 new_cap;
+
+    fft = &screen->fft;
+    if (capacity <= fft->dft_frequency_space_cap) {
+        return;
+    }
+    old_cap = fft->dft_frequency_space_cap;
+    new_cap = old_cap;
+    if (new_cap <= 0) {
+        new_cap = NATIVE_VISUALIZER_FREQ_SPACE_CAP;
+    }
+    while (new_cap < capacity) {
+        if (new_cap > INT32_MAX / 2) {
+            new_cap = capacity;
+            break;
+        }
+        new_cap *= 2;
+    }
+    fft->dft_frequency_space = ncm_realloc_array(
+        fft->dft_frequency_space, old_cap, new_cap,
+        SIZEOF(*fft->dft_frequency_space));
+    fft->dft_frequency_space_cap = new_cap;
+    return;
+}
+
+static void
+visualizer_fft_reserve_bar_heights(NativeVisualizerScreen *screen,
+                                   int32 capacity) {
+    NativeVisualizerFftState *fft;
+    int32 old_cap;
+    int32 new_cap;
+
+    fft = &screen->fft;
+    if (capacity <= fft->bar_heights_cap) {
+        return;
+    }
+    old_cap = fft->bar_heights_cap;
+    new_cap = old_cap;
+    if (new_cap <= 0) {
+        new_cap = NATIVE_VISUALIZER_BAR_HEIGHTS_CAP;
+    }
+    while (new_cap < capacity) {
+        if (new_cap > INT32_MAX / 2) {
+            new_cap = capacity;
+            break;
+        }
+        new_cap *= 2;
+    }
+    fft->bar_heights = ncm_realloc_array(
+        fft->bar_heights, old_cap, new_cap,
+        SIZEOF(*fft->bar_heights));
+    fft->bar_heights_cap = new_cap;
+    return;
+}
+#endif
 
 void
 native_visualizer_screen_init_data_source(
@@ -310,8 +693,12 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
                               NativeVisualizerScreenConfig *config) {
     char *source_location;
     char *output_name;
+    char *visualizer_chars;
+    NcFormattedColor *visualizer_colors;
     int32 source_location_len;
     int32 output_name_len;
+    int32 visualizer_chars_len;
+    int32 visualizer_colors_len;
     int32 fps;
 #if defined(HAVE_FFTW3_H)
     uint32 spectrum_dft_size;
@@ -323,11 +710,19 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     enum NativeVisualizerType visualization_type;
     bool autoscale;
     bool stereo;
+    bool spectrum_smooth_look;
+    bool spectrum_smooth_look_legacy_chars;
+    bool spectrum_log_scale_x;
+    bool spectrum_log_scale_y;
 
     source_location = NULL;
     output_name = NULL;
+    visualizer_chars = (char *)NATIVE_VISUALIZER_DEFAULT_CHARS;
+    visualizer_colors = NULL;
     source_location_len = 0;
     output_name_len = 0;
+    visualizer_chars_len = STRLIT_LEN(NATIVE_VISUALIZER_DEFAULT_CHARS);
+    visualizer_colors_len = 0;
     fps = NATIVE_VISUALIZER_DEFAULT_FPS;
     data_source_hooks = native_visualizer_data_source_system_hooks(NULL);
 #if defined(HAVE_FFTW3_H)
@@ -339,11 +734,19 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     visualization_type = NATIVE_VISUALIZER_WAVE;
     autoscale = false;
     stereo = false;
+    spectrum_smooth_look = true;
+    spectrum_smooth_look_legacy_chars = true;
+    spectrum_log_scale_x = true;
+    spectrum_log_scale_y = true;
     if (config != NULL) {
         source_location = config->source_location;
         output_name = config->output_name;
+        visualizer_chars = config->visualizer_chars;
+        visualizer_colors = config->visualizer_colors;
         source_location_len = config->source_location_len;
         output_name_len = config->output_name_len;
+        visualizer_chars_len = config->visualizer_chars_len;
+        visualizer_colors_len = config->visualizer_colors_len;
         fps = config->fps;
         if (config->data_source_hooks.open_fifo
             || config->data_source_hooks.open_udp
@@ -361,6 +764,11 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
         visualization_type = config->visualization_type;
         autoscale = config->autoscale;
         stereo = config->stereo;
+        spectrum_smooth_look = config->spectrum_smooth_look;
+        spectrum_smooth_look_legacy_chars =
+            config->spectrum_smooth_look_legacy_chars;
+        spectrum_log_scale_x = config->spectrum_log_scale_x;
+        spectrum_log_scale_y = config->spectrum_log_scale_y;
     }
     if ((source_location == NULL) || (source_location_len < 0)) {
         source_location = NULL;
@@ -369,6 +777,17 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     if ((output_name == NULL) || (output_name_len < 0)) {
         output_name = NULL;
         output_name_len = 0;
+    }
+    if ((visualizer_chars == NULL)
+        || (visualizer_chars_len <= 0)
+        || (ncm_utf8_characters(visualizer_chars,
+                                visualizer_chars_len) != 2)) {
+        visualizer_chars = (char *)NATIVE_VISUALIZER_DEFAULT_CHARS;
+        visualizer_chars_len = STRLIT_LEN(NATIVE_VISUALIZER_DEFAULT_CHARS);
+    }
+    if ((visualizer_colors == NULL) || (visualizer_colors_len < 0)) {
+        visualizer_colors = NULL;
+        visualizer_colors_len = 0;
     }
     if (fps <= 0) {
         fps = NATIVE_VISUALIZER_DEFAULT_FPS;
@@ -399,10 +818,18 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     ncm_buffer_init(&screen->source_location);
     ncm_buffer_init(&screen->source_port);
     ncm_buffer_init(&screen->output_name);
+    ncm_buffer_init(&screen->visualizer_chars);
+    screen->visualizer_colors = NULL;
+    screen->visualizer_colors_len = 0;
+    screen->visualizer_colors_cap = 0;
     native_visualizer_screen_init_data_source(screen,
                                               source_location,
                                               source_location_len);
     ncm_buffer_set(&screen->output_name, output_name, output_name_len);
+    visualizer_copy_characters(screen, visualizer_chars,
+                               visualizer_chars_len);
+    visualizer_copy_colors(screen, visualizer_colors,
+                           visualizer_colors_len);
     screen->data_source_hooks = data_source_hooks;
 
     ncm_sample_buffer_init(&screen->incoming_samples);
@@ -412,64 +839,8 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     ncm_sample_buffer_init(&screen->right_channel);
 
 #if defined(HAVE_FFTW3_H)
-    screen->fft.input = NULL;
-    screen->fft.output = NULL;
-    screen->fft.plan = NULL;
-    screen->fft.frequency_magnitudes = NULL;
-    screen->fft.dft_frequency_space = NULL;
-    screen->fft.bar_heights = NULL;
-
-    screen->fft.dft_nonzero_size = NATIVE_VISUALIZER_DFT_BASE_SIZE
-                                   *(2*(int32)spectrum_dft_size
-                                     + NATIVE_VISUALIZER_DFT_PADDING);
-    screen->fft.dft_total_size = NATIVE_VISUALIZER_DFT_TOTAL_SIZE;
-    screen->fft.results_len = screen->fft.dft_total_size / 2 + 1;
-    screen->fft.dynamic_range = 100.0 - spectrum_gain;
-    screen->fft.hz_min = spectrum_hz_min;
-    screen->fft.hz_max = spectrum_hz_max;
-    screen->fft.gain = spectrum_gain;
-
-    screen->fft.frequency_magnitudes_len = screen->fft.results_len;
-    screen->fft.frequency_magnitudes_cap = screen->fft.results_len;
-    screen->fft.dft_frequency_space_len = 0;
-    screen->fft.dft_frequency_space_cap =
-        NATIVE_VISUALIZER_FREQ_SPACE_CAP;
-    screen->fft.bar_heights_len = 0;
-    screen->fft.bar_heights_cap = NATIVE_VISUALIZER_BAR_HEIGHTS_CAP;
-
-    screen->fft.frequency_magnitudes = ncm_malloc(
-        screen->fft.frequency_magnitudes_cap
-        *SIZEOF(*screen->fft.frequency_magnitudes));
-    cbase_memset(screen->fft.frequency_magnitudes,
-                 0,
-                 screen->fft.frequency_magnitudes_cap
-                 *SIZEOF(*screen->fft.frequency_magnitudes));
-    screen->fft.dft_frequency_space = ncm_malloc(
-        screen->fft.dft_frequency_space_cap
-        *SIZEOF(*screen->fft.dft_frequency_space));
-    screen->fft.bar_heights = ncm_malloc(
-        screen->fft.bar_heights_cap
-        *SIZEOF(*screen->fft.bar_heights));
-
-    screen->fft.input = fftw_malloc(
-        (size_t)(screen->fft.dft_total_size
-                 *SIZEOF(*screen->fft.input)));
-    screen->fft.output = fftw_malloc(
-        (size_t)(screen->fft.results_len
-                 *SIZEOF(*screen->fft.output)));
-    if (screen->fft.input != NULL) {
-        cbase_memset(screen->fft.input,
-                     0,
-                     screen->fft.dft_total_size
-                     *SIZEOF(*screen->fft.input));
-    }
-    if ((screen->fft.input != NULL) && (screen->fft.output != NULL)) {
-        screen->fft.plan = fftw_plan_dft_r2c_1d(
-            screen->fft.dft_total_size,
-            screen->fft.input,
-            screen->fft.output,
-            FFTW_ESTIMATE);
-    }
+    visualizer_fft_init(screen, spectrum_dft_size, spectrum_gain,
+                        spectrum_hz_min, spectrum_hz_max);
 #endif
 
     screen->auto_scale_multiplier = 1.0;
@@ -484,6 +855,11 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     screen->reset_output = false;
     screen->autoscale = autoscale;
     screen->stereo = stereo;
+    screen->spectrum_smooth_look = spectrum_smooth_look;
+    screen->spectrum_smooth_look_legacy_chars =
+        spectrum_smooth_look_legacy_chars;
+    screen->spectrum_log_scale_x = spectrum_log_scale_x;
+    screen->spectrum_log_scale_y = spectrum_log_scale_y;
     screen->initialized = true;
     native_visualizer_screen_init_visualization(screen);
     return;
@@ -498,45 +874,7 @@ native_visualizer_screen_destroy(NativeVisualizerScreen *screen) {
     native_visualizer_screen_close_data_source(screen);
 
 #if defined(HAVE_FFTW3_H)
-    if (screen->fft.plan != NULL) {
-        fftw_destroy_plan(screen->fft.plan);
-        screen->fft.plan = NULL;
-    }
-    if (screen->fft.output != NULL) {
-        fftw_free(screen->fft.output);
-        screen->fft.output = NULL;
-    }
-    if (screen->fft.input != NULL) {
-        fftw_free(screen->fft.input);
-        screen->fft.input = NULL;
-    }
-    if (screen->fft.bar_heights != NULL) {
-        ncm_free(screen->fft.bar_heights,
-                 screen->fft.bar_heights_cap
-                 *SIZEOF(*screen->fft.bar_heights));
-        screen->fft.bar_heights = NULL;
-    }
-    if (screen->fft.dft_frequency_space != NULL) {
-        ncm_free(screen->fft.dft_frequency_space,
-                 screen->fft.dft_frequency_space_cap
-                 *SIZEOF(*screen->fft.dft_frequency_space));
-        screen->fft.dft_frequency_space = NULL;
-    }
-    if (screen->fft.frequency_magnitudes != NULL) {
-        ncm_free(screen->fft.frequency_magnitudes,
-                 screen->fft.frequency_magnitudes_cap
-                 *SIZEOF(*screen->fft.frequency_magnitudes));
-        screen->fft.frequency_magnitudes = NULL;
-    }
-    screen->fft.results_len = 0;
-    screen->fft.dft_nonzero_size = 0;
-    screen->fft.dft_total_size = 0;
-    screen->fft.frequency_magnitudes_len = 0;
-    screen->fft.frequency_magnitudes_cap = 0;
-    screen->fft.dft_frequency_space_len = 0;
-    screen->fft.dft_frequency_space_cap = 0;
-    screen->fft.bar_heights_len = 0;
-    screen->fft.bar_heights_cap = 0;
+    visualizer_fft_destroy(screen);
 #endif
 
     ncm_sample_buffer_destroy(&screen->right_channel);
@@ -544,6 +882,8 @@ native_visualizer_screen_destroy(NativeVisualizerScreen *screen) {
     ncm_sample_buffer_destroy(&screen->rendered_samples);
     ncm_sample_buffer_destroy(&screen->buffered_samples);
     ncm_sample_buffer_destroy(&screen->incoming_samples);
+    visualizer_destroy_colors(screen);
+    ncm_buffer_destroy(&screen->visualizer_chars);
     ncm_buffer_destroy(&screen->output_name);
     ncm_buffer_destroy(&screen->source_port);
     ncm_buffer_destroy(&screen->source_location);
@@ -895,6 +1235,763 @@ native_visualizer_clamp_sample(int64 sample) {
         return NATIVE_VISUALIZER_MAX_SAMPLE;
     }
     return (int16)sample;
+}
+
+static void
+visualizer_draw_wave(NativeVisualizerScreen *screen, int16 *samples,
+                     int32 samples_len, int32 y_offset, int32 height) {
+    char *character;
+    int32 character_len;
+    int32 width;
+    int32 half_height;
+    int32 base_y;
+    int32 samples_per_column;
+    int32 previous_y;
+
+    width = (int32)nc_window_width(&screen->window);
+    if ((samples == NULL) || (samples_len <= 0)
+        || (width <= 0) || (height <= 0)) {
+        return;
+    }
+    samples_per_column = samples_len / width;
+    if (samples_per_column <= 0) {
+        return;
+    }
+
+    character = screen->visualizer_chars.data + screen->point_char_offset;
+    character_len = screen->point_char_len;
+    half_height = height / 2;
+    base_y = y_offset + half_height;
+    previous_y = 0;
+    for (int32 x = 0; x < width; x += 1) {
+        int64 sum;
+        int32 point_y;
+        int32 half;
+
+        sum = 0;
+        for (int32 j = 0; j < samples_per_column; j += 1) {
+            sum += samples[x*samples_per_column + j];
+        }
+        point_y = (int32)(sum / samples_per_column);
+        point_y = (int32)((double)point_y*(double)height/65536.0);
+        visualizer_draw_character(
+            screen, x, base_y + point_y,
+            visualizer_color(screen, point_y, half_height, false),
+            false, character, character_len);
+
+        if ((x > 0)
+            && (((previous_y - point_y) > 1)
+                || ((point_y - previous_y) > 1))) {
+            half = (previous_y + point_y) / 2;
+            if (previous_y < point_y) {
+                for (int32 y = previous_y; y < point_y; y += 1) {
+                    visualizer_draw_character(
+                        screen, x - (y < half), base_y + y,
+                        visualizer_color(screen, y, half_height, false),
+                        false, character, character_len);
+                }
+            } else {
+                for (int32 y = previous_y; y > point_y; y -= 1) {
+                    visualizer_draw_character(
+                        screen, x - (y > half), base_y + y,
+                        visualizer_color(screen, y, half_height, false),
+                        false, character, character_len);
+                }
+            }
+        }
+        previous_y = point_y;
+    }
+    return;
+}
+
+static void
+visualizer_draw_wave_filled(NativeVisualizerScreen *screen,
+                            int16 *samples, int32 samples_len,
+                            int32 y_offset, int32 height) {
+    char *character;
+    int32 character_len;
+    int32 width;
+    int32 samples_per_column;
+    bool flipped;
+
+    width = (int32)nc_window_width(&screen->window);
+    if ((samples == NULL) || (samples_len <= 0)
+        || (width <= 0) || (height <= 0)) {
+        return;
+    }
+    samples_per_column = samples_len / width;
+    if (samples_per_column <= 0) {
+        return;
+    }
+
+    character = screen->visualizer_chars.data + screen->bar_char_offset;
+    character_len = screen->bar_char_len;
+    flipped = y_offset > 0;
+    for (int32 x = 0; x < width; x += 1) {
+        int64 sum;
+        int64 magnitude;
+        int32 point_y;
+
+        sum = 0;
+        for (int32 j = 0; j < samples_per_column; j += 1) {
+            sum += samples[x*samples_per_column + j];
+        }
+        magnitude = sum / samples_per_column;
+        if (magnitude < 0) {
+            magnitude = -magnitude;
+        }
+        point_y = (int32)((double)magnitude*(double)height/32768.0);
+        if (point_y > height) {
+            point_y = height;
+        }
+
+        for (int32 j = 0; j < point_y; j += 1) {
+            int32 y;
+
+            if (flipped) {
+                y = y_offset + j;
+            } else {
+                y = y_offset + height - j - 1;
+            }
+            visualizer_draw_character(
+                screen, x, y,
+                visualizer_color(screen, j, height, false),
+                false, character, character_len);
+        }
+    }
+    return;
+}
+
+static void
+visualizer_draw_ellipse(NativeVisualizerScreen *screen, int16 *samples,
+                        int32 samples_len, int32 height) {
+    char *character;
+    int32 character_len;
+    int32 width;
+    int32 half_width;
+    int32 half_height;
+    double angle_multiplier;
+
+    width = (int32)nc_window_width(&screen->window);
+    if ((samples == NULL) || (samples_len <= 0)
+        || (width <= 0) || (height <= 0)) {
+        return;
+    }
+
+    character = screen->visualizer_chars.data + screen->point_char_offset;
+    character_len = screen->point_char_len;
+    half_width = width / 2;
+    half_height = height / 2;
+    angle_multiplier = 2.0*NATIVE_VISUALIZER_PI/(double)samples_len;
+    for (int32 i = 0; i < samples_len; i += 1) {
+        double angle;
+        double max_radius;
+        double radius;
+        int32 x;
+        int32 y;
+
+        angle = (double)i*angle_multiplier;
+        x = (int32)((double)half_width*cos(angle));
+        y = (int32)((double)half_height*sin(angle));
+        max_radius = sqrt((double)x*(double)x + (double)y*(double)y);
+        radius = fabs((double)samples[i])/32768.0;
+        x = (int32)((double)x*radius);
+        y = (int32)((double)y*radius);
+        visualizer_draw_character(
+            screen, half_width + x, half_height + y,
+            visualizer_color(screen,
+                             sqrt((double)x*(double)x
+                                  + (double)y*(double)y),
+                             max_radius, false),
+            false, character, character_len);
+    }
+    return;
+}
+
+static void
+visualizer_draw_ellipse_stereo(NativeVisualizerScreen *screen,
+                               int16 *left, int16 *right,
+                               int32 samples_len, int32 half_height) {
+    char *character;
+    int32 character_len;
+    int32 width;
+    int32 height;
+    int32 left_half_width;
+    int32 right_half_width;
+    int32 top_half_height;
+    int32 bottom_half_height;
+    int32 radius;
+
+    width = (int32)nc_window_width(&screen->window);
+    height = (int32)nc_window_height(&screen->window);
+    if ((left == NULL) || (right == NULL) || (samples_len <= 0)
+        || (width <= 0) || (height <= 0)) {
+        return;
+    }
+
+    character = screen->visualizer_chars.data + screen->point_char_offset;
+    character_len = screen->point_char_len;
+    left_half_width = width / 2;
+    right_half_width = width - left_half_width;
+    top_half_height = half_height;
+    bottom_half_height = height - half_height;
+    radius = 2*screen->visualizer_colors_len;
+    for (int32 i = 0; i < samples_len; i += 1) {
+        double distance;
+        int32 x;
+        int32 y;
+
+        if (left[i] < 0) {
+            x = (int32)((double)left[i]/32768.0
+                        *(double)left_half_width);
+        } else {
+            x = (int32)((double)left[i]/32768.0
+                        *(double)right_half_width);
+        }
+        if (right[i] < 0) {
+            y = (int32)((double)right[i]/32768.0
+                        *(double)top_half_height);
+        } else {
+            y = (int32)((double)right[i]/32768.0
+                        *(double)bottom_half_height);
+        }
+        distance = sqrt((double)x*(double)x
+                        + 4.0*(double)y*(double)y);
+        visualizer_draw_character(
+            screen, left_half_width + x, top_half_height + y,
+            visualizer_color(screen, distance, radius, true),
+            false, character, character_len);
+    }
+    return;
+}
+
+#if defined(HAVE_FFTW3_H)
+static void
+visualizer_generate_frequency_space(NativeVisualizerScreen *screen) {
+    NativeVisualizerFftState *fft;
+    double left_bins_value;
+    double scale;
+    int32 left_bins;
+    int32 width;
+
+    fft = &screen->fft;
+    width = (int32)nc_window_width(&screen->window);
+    fft->dft_frequency_space_len = 0;
+    if ((width <= 0) || (fft->hz_min <= 0.0)
+        || (fft->hz_max <= fft->hz_min)) {
+        return;
+    }
+    visualizer_fft_reserve_frequency_space(screen, width);
+
+    if (screen->spectrum_log_scale_x) {
+        double min_log;
+        double max_log;
+        double denominator;
+
+        min_log = log10(fft->hz_min);
+        max_log = log10(fft->hz_max);
+        denominator = min_log - max_log;
+        if (denominator == 0.0) {
+            return;
+        }
+        left_bins_value = (min_log - (double)width*min_log)
+                          /denominator;
+        if (left_bins_value < 0.0) {
+            left_bins_value = 0.0;
+        }
+        left_bins = (int32)left_bins_value;
+        denominator = (double)left_bins + (double)width - 1.0;
+        if (denominator <= 0.0) {
+            fft->dft_frequency_space[0] = fft->hz_min;
+            fft->dft_frequency_space_len = 1;
+            return;
+        }
+        scale = max_log/denominator;
+        for (int32 i = 0; i < width; i += 1) {
+            fft->dft_frequency_space[i] = pow(
+                10.0, (double)(left_bins + i)*scale);
+        }
+    } else {
+        double denominator;
+
+        denominator = fft->hz_min - fft->hz_max;
+        if (denominator == 0.0) {
+            return;
+        }
+        left_bins_value = (fft->hz_min
+                           - (double)width*fft->hz_min)
+                          /denominator;
+        if (left_bins_value < 0.0) {
+            left_bins_value = 0.0;
+        }
+        left_bins = (int32)left_bins_value;
+        denominator = (double)left_bins + (double)width - 1.0;
+        if (denominator <= 0.0) {
+            fft->dft_frequency_space[0] = fft->hz_min;
+            fft->dft_frequency_space_len = 1;
+            return;
+        }
+        scale = fft->hz_max/denominator;
+        for (int32 i = 0; i < width; i += 1) {
+            fft->dft_frequency_space[i] =
+                (double)(left_bins + i)*scale;
+        }
+    }
+    fft->dft_frequency_space_len = width;
+    return;
+}
+
+static void
+visualizer_apply_fft_window(NativeVisualizerScreen *screen,
+                            int16 *samples, int32 samples_len) {
+    NativeVisualizerFftState *fft;
+    double alpha;
+    double a0;
+    double a1;
+    double a2;
+    int32 used_samples;
+
+    fft = &screen->fft;
+    cbase_memset(fft->input, 0,
+                 fft->dft_total_size*SIZEOF(*fft->input));
+    used_samples = samples_len;
+    if (used_samples > fft->dft_nonzero_size) {
+        used_samples = fft->dft_nonzero_size;
+    }
+    if (used_samples > fft->dft_total_size) {
+        used_samples = fft->dft_total_size;
+    }
+    if (used_samples <= 0) {
+        return;
+    }
+
+    alpha = 0.16;
+    a0 = (1.0 - alpha)/2.0;
+    a1 = 0.5;
+    a2 = alpha/2.0;
+    for (int32 i = 0; i < used_samples; i += 1) {
+        double window;
+        double denominator;
+
+        denominator = (double)(fft->dft_nonzero_size - 1);
+        if (denominator <= 0.0) {
+            denominator = 1.0;
+        }
+        window = a0
+                 - a1*cos(2.0*NATIVE_VISUALIZER_PI*(double)i
+                          /denominator)
+                 + a2*cos(4.0*NATIVE_VISUALIZER_PI*(double)i
+                          /denominator);
+        fft->input[i] = window*(double)samples[i]
+                        /(double)NATIVE_VISUALIZER_MAX_SAMPLE;
+    }
+    return;
+}
+
+static double
+visualizer_bin_to_hz(NativeVisualizerScreen *screen, int32 bin) {
+    return (double)bin*(double)screen->sample_rate
+           /(double)screen->fft.dft_total_size;
+}
+
+static double
+visualizer_interpolate_cubic(NativeVisualizerScreen *screen,
+                             int32 x, int32 height_index) {
+    NativeVisualizerFftState *fft;
+    double x_next;
+    double h_next;
+    double delta;
+
+    fft = &screen->fft;
+    x_next = fft->bar_heights[height_index].column;
+    h_next = fft->bar_heights[height_index].height;
+    delta = 0.0;
+    if (height_index == 0) {
+        if (height_index < fft->bar_heights_len - 1) {
+            double x_next2;
+            double h_next2;
+
+            x_next2 = fft->bar_heights[height_index + 1].column;
+            h_next2 = fft->bar_heights[height_index + 1].height;
+            if (x_next2 != x_next) {
+                delta = (h_next2 - h_next)/(x_next2 - x_next);
+            }
+        }
+        return h_next - delta*(x_next - x);
+    }
+    if (height_index == 1) {
+        double x_previous;
+        double h_previous;
+
+        x_previous = fft->bar_heights[height_index - 1].column;
+        h_previous = fft->bar_heights[height_index - 1].height;
+        if (x_next != x_previous) {
+            delta = (h_next - h_previous)/(x_next - x_previous);
+        }
+        return h_next - delta*(x_next - x);
+    }
+    if (height_index < fft->bar_heights_len - 1) {
+        double x_previous2;
+        double h_previous2;
+        double x_previous;
+        double h_previous;
+        double x_next2;
+        double h_next2;
+        double m0;
+        double m1;
+        double t;
+        double h00;
+        double h10;
+        double h01;
+        double h11;
+
+        x_previous2 = fft->bar_heights[height_index - 2].column;
+        h_previous2 = fft->bar_heights[height_index - 2].height;
+        x_previous = fft->bar_heights[height_index - 1].column;
+        h_previous = fft->bar_heights[height_index - 1].height;
+        x_next2 = fft->bar_heights[height_index + 1].column;
+        h_next2 = fft->bar_heights[height_index + 1].height;
+        if ((x_previous == x_previous2) || (x_next2 == x_next)
+            || (x_next == x_previous)) {
+            return h_next;
+        }
+
+        m0 = (h_previous - h_previous2)/(x_previous - x_previous2);
+        m1 = (h_next2 - h_next)/(x_next2 - x_next);
+        t = ((double)x - x_previous)/(x_next - x_previous);
+        h00 = 2.0*t*t*t - 3.0*t*t + 1.0;
+        h10 = t*t*t - 2.0*t*t + t;
+        h01 = -2.0*t*t*t + 3.0*t*t;
+        h11 = t*t*t - t*t;
+        return h00*h_previous
+               + h10*(x_next - x_previous)*m0
+               + h01*h_next
+               + h11*(x_next - x_previous)*m1;
+    }
+    return h_next;
+}
+
+static double
+visualizer_interpolate_linear(NativeVisualizerScreen *screen,
+                              int32 x, int32 height_index) {
+    NativeVisualizerFftState *fft;
+    double x_next;
+    double h_next;
+    double delta;
+
+    fft = &screen->fft;
+    x_next = fft->bar_heights[height_index].column;
+    h_next = fft->bar_heights[height_index].height;
+    delta = 0.0;
+    if (height_index == 0) {
+        if (fft->bar_heights_len > 1) {
+            double x_next2;
+            double h_next2;
+
+            x_next2 = fft->bar_heights[height_index + 1].column;
+            h_next2 = fft->bar_heights[height_index + 1].height;
+            if (x_next2 != x_next) {
+                delta = (h_next2 - h_next)/(x_next2 - x_next);
+            }
+        }
+        return h_next - delta*(x_next - x);
+    }
+    if (height_index < fft->bar_heights_len) {
+        double x_previous;
+        double h_previous;
+        double slope;
+
+        x_previous = fft->bar_heights[height_index - 1].column;
+        h_previous = fft->bar_heights[height_index - 1].height;
+        if (x_next == x_previous) {
+            return h_next;
+        }
+        slope = (h_next - h_previous)/(x_next - x_previous);
+        return h_previous + slope*((double)x - x_previous);
+    }
+    return h_next;
+}
+
+static void
+visualizer_draw_frequency(NativeVisualizerScreen *screen,
+                          int16 *samples, int32 samples_len,
+                          int32 y_offset, int32 height) {
+    NativeVisualizerFftState *fft;
+    int32 width;
+    int32 current_bin;
+    bool flipped;
+
+    fft = &screen->fft;
+    width = (int32)nc_window_width(&screen->window);
+    if ((samples == NULL) || (samples_len <= 0)
+        || (width <= 0) || (height <= 0) || (fft->plan == NULL)
+        || (fft->input == NULL) || (fft->output == NULL)) {
+        return;
+    }
+
+    flipped = y_offset > 0;
+    visualizer_apply_fft_window(screen, samples, samples_len);
+    fftw_execute(fft->plan);
+    for (int32 i = 0; i < fft->results_len; i += 1) {
+        double real;
+        double imaginary;
+
+        real = fft->output[i][0];
+        imaginary = fft->output[i][1];
+        fft->frequency_magnitudes[i] =
+            sqrt(real*real + imaginary*imaginary)
+            /(double)fft->dft_nonzero_size;
+    }
+
+    if (fft->dft_frequency_space_len != width) {
+        visualizer_generate_frequency_space(screen);
+    }
+    if (fft->dft_frequency_space_len <= 0) {
+        return;
+    }
+    visualizer_fft_reserve_bar_heights(screen, width);
+    fft->bar_heights_len = 0;
+
+    current_bin = 0;
+    while ((current_bin < fft->results_len)
+           && (visualizer_bin_to_hz(screen, current_bin)
+               < fft->dft_frequency_space[0])) {
+        current_bin += 1;
+    }
+    for (int32 x = 0; x < width; x += 1) {
+        double bar_height;
+        int32 count;
+
+        bar_height = 0.0;
+        count = 0;
+        while ((current_bin < fft->results_len)
+               && (visualizer_bin_to_hz(screen, current_bin)
+                   < fft->dft_frequency_space[x])) {
+            if ((x == 0)
+                || (visualizer_bin_to_hz(screen, current_bin)
+                    >= fft->dft_frequency_space[x - 1])) {
+                bar_height += fft->frequency_magnitudes[current_bin];
+                count += 1;
+            }
+            current_bin += 1;
+        }
+        if (count <= 0) {
+            continue;
+        }
+
+        bar_height /= count;
+        if (screen->spectrum_log_scale_y) {
+            double dynamic_range;
+
+            dynamic_range = fft->dynamic_range;
+            if (dynamic_range == 0.0) {
+                dynamic_range = 1.0;
+            }
+            if (bar_height > 0.0) {
+                bar_height = (20.0*log10(bar_height)
+                              + dynamic_range + fft->gain)
+                             /dynamic_range;
+            } else {
+                bar_height = 0.0;
+            }
+        } else {
+            bar_height *= pow(10.0, 1.8 + fft->gain/20.0);
+            bar_height *= log2(2.0 + x)*80.0/(double)width;
+            if (bar_height > 0.0) {
+                bar_height = pow(bar_height, 0.65);
+            }
+        }
+        if (bar_height > 0.0) {
+            bar_height *= height;
+        } else {
+            bar_height = 0.0;
+        }
+        if (bar_height > height) {
+            bar_height = height;
+        }
+
+        fft->bar_heights[fft->bar_heights_len].column = x;
+        fft->bar_heights[fft->bar_heights_len].height = bar_height;
+        fft->bar_heights_len += 1;
+    }
+    if (fft->bar_heights_len <= 0) {
+        return;
+    }
+
+    {
+        int32 height_index;
+
+        height_index = 0;
+        for (int32 x = 0; x < width; x += 1) {
+            double h;
+            int32 data_column;
+
+            data_column = fft->bar_heights[height_index].column;
+            if (x == data_column) {
+                h = fft->bar_heights[height_index].height;
+                if (height_index < fft->bar_heights_len - 1) {
+                    height_index += 1;
+                }
+            } else if (screen->spectrum_log_scale_x) {
+                h = visualizer_interpolate_cubic(screen, x,
+                                                  height_index);
+            } else {
+                h = visualizer_interpolate_linear(screen, x,
+                                                   height_index);
+                if (h > height) {
+                    h = height;
+                }
+            }
+            if (h < 0.0) {
+                h = 0.0;
+            }
+            if (h > height) {
+                h = height;
+            }
+
+            for (int32 j = 0; (double)j < h; j += 1) {
+                NcFormattedColor *color;
+                char *character;
+                int32 character_len;
+                int32 y;
+                bool reverse;
+
+                if (flipped) {
+                    y = y_offset + j;
+                } else {
+                    y = y_offset + height - j - 1;
+                }
+                color = visualizer_color(screen, j, height, false);
+                character = screen->visualizer_chars.data
+                            + screen->bar_char_offset;
+                character_len = screen->bar_char_len;
+                reverse = false;
+                if (screen->spectrum_smooth_look) {
+                    int32 index;
+
+                    index = (int32)((int64)(
+                        NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT*h)
+                        %NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT);
+                    if (((double)j < h - 1.0)
+                        || (index
+                            == NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT - 1)) {
+                        index = NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT - 1;
+                        character = visualizer_smooth_chars[index];
+                        character_len = visualizer_smooth_char_lens[index];
+                    } else if (flipped) {
+                        if (screen->spectrum_smooth_look_legacy_chars) {
+                            character =
+                                visualizer_smooth_flipped_chars[index];
+                            character_len =
+                                visualizer_smooth_flipped_char_lens[index];
+                        } else {
+                            index = NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT
+                                    - index - 2;
+                            character = visualizer_smooth_chars[index];
+                            character_len =
+                                visualizer_smooth_char_lens[index];
+                            reverse = true;
+                        }
+                    } else {
+                        character = visualizer_smooth_chars[index];
+                        character_len = visualizer_smooth_char_lens[index];
+                    }
+                }
+                visualizer_draw_character(screen, x, y, color, reverse,
+                                          character, character_len);
+            }
+        }
+    }
+    return;
+}
+#endif
+
+bool
+native_visualizer_screen_draw(NativeVisualizerScreen *screen,
+                              int16 *samples, int32 samples_len) {
+    int32 height;
+    int32 half_height;
+
+    if ((screen == NULL) || !screen->initialized
+        || (samples == NULL) || (samples_len <= 0)) {
+        return false;
+    }
+    height = (int32)nc_window_height(&screen->window);
+    if ((nc_window_width(&screen->window) <= 0) || (height <= 0)) {
+        return false;
+    }
+
+    nc_window_clear(&screen->window);
+    if (screen->stereo) {
+        int32 channel_samples;
+
+        channel_samples = native_visualizer_screen_split_stereo(
+            screen, samples, samples_len);
+        if (channel_samples <= 0) {
+            return false;
+        }
+        half_height = height / 2;
+        switch (screen->visualization_type) {
+        case NATIVE_VISUALIZER_WAVE:
+            visualizer_draw_wave(screen, screen->left_channel.data,
+                                 channel_samples, 0, half_height);
+            visualizer_draw_wave(screen, screen->right_channel.data,
+                                 channel_samples, half_height,
+                                 height - half_height);
+            break;
+        case NATIVE_VISUALIZER_WAVE_FILLED:
+            visualizer_draw_wave_filled(
+                screen, screen->left_channel.data, channel_samples,
+                0, half_height);
+            visualizer_draw_wave_filled(
+                screen, screen->right_channel.data, channel_samples,
+                half_height, height - half_height);
+            break;
+#if defined(HAVE_FFTW3_H)
+        case NATIVE_VISUALIZER_FREQUENCY:
+            visualizer_draw_frequency(
+                screen, screen->left_channel.data, channel_samples,
+                0, half_height);
+            visualizer_draw_frequency(
+                screen, screen->right_channel.data, channel_samples,
+                half_height, height - half_height);
+            break;
+#endif
+        case NATIVE_VISUALIZER_ELLIPSE:
+            visualizer_draw_ellipse_stereo(
+                screen, screen->left_channel.data,
+                screen->right_channel.data, channel_samples,
+                half_height);
+            break;
+        case NATIVE_VISUALIZER_TYPE_LAST:
+        default:
+            return false;
+        }
+        return true;
+    }
+
+    switch (screen->visualization_type) {
+    case NATIVE_VISUALIZER_WAVE:
+        visualizer_draw_wave(screen, samples, samples_len, 0, height);
+        break;
+    case NATIVE_VISUALIZER_WAVE_FILLED:
+        visualizer_draw_wave_filled(screen, samples, samples_len,
+                                    0, height);
+        break;
+#if defined(HAVE_FFTW3_H)
+    case NATIVE_VISUALIZER_FREQUENCY:
+        visualizer_draw_frequency(screen, samples, samples_len,
+                                  0, height);
+        break;
+#endif
+    case NATIVE_VISUALIZER_ELLIPSE:
+        visualizer_draw_ellipse(screen, samples, samples_len, height);
+        break;
+    case NATIVE_VISUALIZER_TYPE_LAST:
+    default:
+        return false;
+    }
+    return true;
 }
 
 static int32
