@@ -17,11 +17,12 @@
 #include "cbase/base_macros.h"
 #include "cbase/cbase.h"
 #include "screens/screen_switcher.h"
+#include "status.h"
 #include "statusbar.h"
 #include "title.h"
 #include "ui_state.h"
 
-#define NATIVE_VISUALIZER_TITLE "Visualizer"
+#define NATIVE_VISUALIZER_TITLE "Music visualizer"
 #define NATIVE_VISUALIZER_DEFAULT_RATE 44100
 #define NATIVE_VISUALIZER_DEFAULT_FPS 30
 #define NATIVE_VISUALIZER_DEFAULT_DFT_SIZE 2
@@ -119,6 +120,15 @@ static void visualizer_system_close_source(void *user, int32 fd);
 static bool visualizer_system_get_outputs(void *user,
                                           NcmMpdOutputList *outputs,
                                           NcmError *error);
+static bool visualizer_system_disable_output(void *user, uint32 id,
+                                             NcmError *error);
+static bool visualizer_system_enable_output(void *user, uint32 id,
+                                            NcmError *error);
+static void visualizer_system_sleep_microseconds(void *user,
+                                                 int32 microseconds);
+static bool visualizer_reset_output(NativeVisualizerScreen *screen);
+static int32 visualizer_read_samples(NativeVisualizerScreen *screen);
+static void visualizer_prepare_drawing(NativeVisualizerScreen *screen);
 static void visualizer_copy_characters(NativeVisualizerScreen *screen,
                                        char *characters,
                                        int32 characters_len);
@@ -201,6 +211,9 @@ native_visualizer_data_source_system_hooks(NcmMpdClient *client) {
     hooks.read_source = visualizer_system_read_source;
     hooks.close_source = visualizer_system_close_source;
     hooks.get_outputs = visualizer_system_get_outputs;
+    hooks.disable_output = visualizer_system_disable_output;
+    hooks.enable_output = visualizer_system_enable_output;
+    hooks.sleep_microseconds = visualizer_system_sleep_microseconds;
     hooks.user = client;
     return hooks;
 }
@@ -752,7 +765,10 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
             || config->data_source_hooks.open_udp
             || config->data_source_hooks.read_source
             || config->data_source_hooks.close_source
-            || config->data_source_hooks.get_outputs) {
+            || config->data_source_hooks.get_outputs
+            || config->data_source_hooks.disable_output
+            || config->data_source_hooks.enable_output
+            || config->data_source_hooks.sleep_microseconds) {
             data_source_hooks = config->data_source_hooks;
         }
 #if defined(HAVE_FFTW3_H)
@@ -2105,6 +2121,151 @@ visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
     return ncm_mpd_client_get_outputs(client, outputs, error);
 }
 
+static bool
+visualizer_system_disable_output(void *user, uint32 id,
+                                 NcmError *error) {
+    NcmMpdClient *client;
+
+    client = user;
+    if (client == NULL) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("MPD client is not configured"));
+        return false;
+    }
+    return ncm_mpd_client_disable_output(client, id, error);
+}
+
+static bool
+visualizer_system_enable_output(void *user, uint32 id,
+                                NcmError *error) {
+    NcmMpdClient *client;
+
+    client = user;
+    if (client == NULL) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("MPD client is not configured"));
+        return false;
+    }
+    return ncm_mpd_client_enable_output(client, id, error);
+}
+
+static void
+visualizer_system_sleep_microseconds(void *user, int32 microseconds) {
+    (void)user;
+    if (microseconds > 0) {
+        usleep((useconds_t)microseconds);
+    }
+    return;
+}
+
+static bool
+visualizer_reset_output(NativeVisualizerScreen *screen) {
+    NcmError error;
+
+    if (!screen->reset_output || (screen->output_id < 0)) {
+        return true;
+    }
+    if ((screen->data_source_hooks.disable_output == NULL)
+        || (screen->data_source_hooks.enable_output == NULL)) {
+        return false;
+    }
+
+    ncm_error_clear(&error);
+    if (!screen->data_source_hooks.disable_output(
+            screen->data_source_hooks.user,
+            (uint32)screen->output_id,
+            &error)) {
+        NcmStringFormatArg arg;
+
+        arg = ncm_string_format_arg_cstring(error.message);
+        ncm_statusbar_format(
+            ncm_statusbar_message_delay_time(),
+            STRLIT_ARGS("Could not disable visualizer output: %1"),
+            &arg,
+            1);
+        return false;
+    }
+    if (screen->data_source_hooks.sleep_microseconds != NULL) {
+        screen->data_source_hooks.sleep_microseconds(
+            screen->data_source_hooks.user, 50000);
+    }
+
+    ncm_error_clear(&error);
+    if (!screen->data_source_hooks.enable_output(
+            screen->data_source_hooks.user,
+            (uint32)screen->output_id,
+            &error)) {
+        NcmStringFormatArg arg;
+
+        arg = ncm_string_format_arg_cstring(error.message);
+        ncm_statusbar_format(
+            ncm_statusbar_message_delay_time(),
+            STRLIT_ARGS("Could not enable visualizer output: %1"),
+            &arg,
+            1);
+        return false;
+    }
+
+    screen->reset_output = false;
+    return true;
+}
+
+static int32
+visualizer_read_samples(NativeVisualizerScreen *screen) {
+    int64 buffer_size;
+    int64 bytes_read;
+    int32 samples_read;
+
+    if ((screen->data_source_hooks.read_source == NULL)
+        || (screen->incoming_samples.data == NULL)) {
+        return 0;
+    }
+    buffer_size = screen->incoming_samples.cap
+                  *SIZEOF(*screen->incoming_samples.data);
+    if (buffer_size <= 0) {
+        return 0;
+    }
+
+    bytes_read = screen->data_source_hooks.read_source(
+        screen->data_source_hooks.user,
+        screen->source_fd,
+        screen->incoming_samples.data,
+        buffer_size);
+    if (bytes_read <= 0) {
+        return 0;
+    }
+    if (bytes_read > buffer_size) {
+        bytes_read = buffer_size;
+    }
+
+    samples_read = (int32)(bytes_read
+                           / SIZEOF(*screen->incoming_samples.data));
+    if (samples_read <= 0) {
+        return 0;
+    }
+    if (!native_visualizer_screen_push_samples(
+            screen, screen->incoming_samples.data, samples_read)) {
+        return 0;
+    }
+    return samples_read;
+}
+
+static void
+visualizer_prepare_drawing(NativeVisualizerScreen *screen) {
+#if defined(HAVE_FFTW3_H)
+    int64 width;
+
+    width = nc_window_width(&screen->window);
+    if ((width > 0) && (width <= INT32_MAX)) {
+        visualizer_generate_frequency_space(screen);
+        visualizer_fft_reserve_bar_heights(screen, (int32)width);
+    }
+#else
+    (void)screen;
+#endif
+    return;
+}
+
 static NativeVisualizerScreen *
 visualizer_from_screen(NcScreen *screen) {
     return nc_screen_user(screen);
@@ -2138,8 +2299,13 @@ visualizer_scroll_callback(NcScreen *screen, enum NcScroll where) {
 
 static void
 visualizer_switch_to_callback(NcScreen *screen) {
-    ncm_title_draw_header(nc_screen_title(screen),
-                          (int32)strlen(nc_screen_title(screen)));
+    NativeVisualizerScreen *visualizer;
+
+    visualizer = visualizer_from_screen(screen);
+    native_visualizer_screen_clear(visualizer);
+    visualizer->reset_output = true;
+    ncm_title_draw_header(STRLIT_ARGS(NATIVE_VISUALIZER_TITLE));
+    visualizer_prepare_drawing(visualizer);
     return;
 }
 
@@ -2156,6 +2322,7 @@ visualizer_resize_callback(NcScreen *screen) {
                                           ui_state_main_start_y(),
                                           width,
                                           ui_state_main_height());
+    visualizer_prepare_drawing(visualizer);
     nc_screen_clear_resize_request(screen);
     return;
 }
@@ -2165,10 +2332,12 @@ visualizer_window_timeout_callback(NcScreen *screen) {
     NativeVisualizerScreen *visualizer;
 
     visualizer = visualizer_from_screen(screen);
-    if (visualizer->fps <= 0) {
-        return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
+    if ((visualizer->source_fd >= 0)
+        && (visualizer->fps > 0)
+        && (ncm_status_state_player() == NCM_STATUS_PLAYER_PLAY)) {
+        return 1000 / visualizer->fps;
     }
-    return 1000 / visualizer->fps;
+    return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
 }
 
 static char *
@@ -2179,8 +2348,33 @@ visualizer_title_callback(NcScreen *screen) {
 
 static void
 visualizer_update_callback(NcScreen *screen) {
-    nc_window_refresh(native_visualizer_screen_window(
-        visualizer_from_screen(screen)));
+    NativeVisualizerScreen *visualizer;
+    int32 new_samples;
+
+    visualizer = visualizer_from_screen(screen);
+    if (visualizer->source_fd < 0) {
+        return;
+    }
+    if (!visualizer_reset_output(visualizer)) {
+        return;
+    }
+
+    visualizer_read_samples(visualizer);
+    new_samples = native_visualizer_screen_take_render_samples(
+        visualizer,
+        visualizer->rendered_samples.data,
+        visualizer->rendered_samples.cap);
+    if (new_samples <= 0) {
+        return;
+    }
+
+    if (!native_visualizer_screen_draw(
+            visualizer,
+            visualizer->rendered_samples.data,
+            visualizer->rendered_samples.cap)) {
+        return;
+    }
+    nc_window_refresh(&visualizer->window);
     return;
 }
 
@@ -2194,7 +2388,7 @@ visualizer_mouse_button_pressed_callback(NcScreen *screen, MEVENT event) {
 static bool
 visualizer_is_lockable_callback(NcScreen *screen) {
     (void)screen;
-    return false;
+    return true;
 }
 
 static bool
