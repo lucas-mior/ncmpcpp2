@@ -1283,6 +1283,7 @@ native_c_screens_register_native_only(void) {
     native_c_screen_help_register();
     native_c_screen_lastfm_register();
     native_c_screen_media_library_register();
+    native_c_screen_selected_items_adder_register();
     native_c_screen_song_info_register();
     native_c_screen_server_info_register();
 #if defined(ENABLE_OUTPUTS)
