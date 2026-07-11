@@ -113,6 +113,8 @@ void native_selected_items_adder_screen_populate_position_selector(
     NativeSelectedItemsAdderScreen *screen);
 bool native_selected_items_adder_screen_run_current(
     NativeSelectedItemsAdderScreen *screen);
+bool native_selected_items_adder_screen_return_to_previous(
+    NativeSelectedItemsAdderScreen *screen);
 void native_selected_items_adder_screen_choose_current_playlist(
     NativeSelectedItemsAdderScreen *screen);
 bool native_selected_items_adder_screen_add_to_existing_playlist(

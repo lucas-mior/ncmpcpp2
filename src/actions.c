@@ -1276,6 +1276,7 @@ static bool action_runtime_execute_command(void);
 static bool action_runtime_execute_binding(NcmBinding *binding);
 static bool action_runtime_apply_filter(void);
 static bool action_runtime_find_item(enum SearchDirection direction);
+static bool action_runtime_repeat_search(enum SearchDirection direction);
 static bool action_runtime_command_prompt_hook(char *text, void *user);
 static bool action_runtime_filter_prompt_hook(char *text, void *user);
 static bool action_runtime_search_prompt_hook(char *text, void *user);
@@ -1473,6 +1474,14 @@ action_runtime_current_screen_is(enum ScreenType type) {
 
 static bool
 action_runtime_switch_to_screen(enum ScreenType type) {
+    if ((type != NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER)
+        && action_runtime_current_screen_is(
+            NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER)
+        && !native_selected_items_adder_screen_return_to_previous(
+            native_c_screen_selected_items_adder())) {
+        return false;
+    }
+
     switch (type) {
     case NCM_SCREEN_TYPE_BROWSER:
         native_c_screen_browser_register();
@@ -1555,8 +1564,16 @@ static bool
 action_runtime_switch_to_next_screen(bool reverse) {
     ScreenTypeArray *sequence;
     NcScreen *current;
+    bool selected_items_adder;
     int32 current_index;
     int32 next_index;
+
+    selected_items_adder = action_runtime_current_screen_is(
+        NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
+    if (selected_items_adder && Config.screen_switcher_previous) {
+        return native_selected_items_adder_screen_return_to_previous(
+            native_c_screen_selected_items_adder());
+    }
 
     sequence = &Config.screen_sequence;
     if (sequence->len <= 0) {
@@ -1577,10 +1594,12 @@ action_runtime_switch_to_next_screen(bool reverse) {
         }
     }
     if (current_index < 0) {
-        current_index = 0;
-    }
-
-    if (reverse) {
+        if (reverse) {
+            next_index = sequence->len - 1;
+        } else {
+            next_index = 0;
+        }
+    } else if (reverse) {
         next_index = current_index - 1;
         if (next_index < 0) {
             next_index = sequence->len - 1;
@@ -2262,6 +2281,30 @@ action_runtime_find_item(enum SearchDirection direction) {
 
     ncm_buffer_destroy(&previous_constraint);
     ncm_buffer_destroy(&constraint);
+    return true;
+}
+
+static bool
+action_runtime_repeat_search(enum SearchDirection direction) {
+    NcmStringView constraint;
+    NcmError error;
+
+    if (!current_screen_allows_search()) {
+        return false;
+    }
+
+    constraint = current_screen_current_search_constraint();
+    if ((constraint.data == NULL) || (constraint.len <= 0)) {
+        return true;
+    }
+
+    ncm_error_clear(&error);
+    (void)current_screen_search(direction, constraint.data,
+                                constraint.len, Config.wrapped_search,
+                                true, &error);
+    if (ncm_error_is_set(&error)) {
+        return action_runtime_mpd_error(&error);
+    }
     return true;
 }
 
@@ -3841,7 +3884,11 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return current_screen_allows_filter();
     case NCM_ACTION_FIND_ITEM_FORWARD:
     case NCM_ACTION_FIND_ITEM_BACKWARD:
+    case NCM_ACTION_NEXT_FOUND_ITEM:
+    case NCM_ACTION_PREVIOUS_FOUND_ITEM:
         return current_screen_allows_search();
+    case NCM_ACTION_TOGGLE_FIND_MODE:
+        return true;
     case NCM_ACTION_DELETE_BROWSER_ITEMS:
     case NCM_ACTION_SAVE_PLAYLIST:
     case NCM_ACTION_MOVE_SELECTED_ITEMS_TO:
@@ -3856,9 +3903,6 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_SELECT_ALBUM:
     case NCM_ACTION_SELECT_FOUND_ITEMS:
     case NCM_ACTION_FIND:
-    case NCM_ACTION_NEXT_FOUND_ITEM:
-    case NCM_ACTION_PREVIOUS_FOUND_ITEM:
-    case NCM_ACTION_TOGGLE_FIND_MODE:
     case NCM_ACTION_ADD_RANDOM_ITEMS:
     case NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY:
         return false;
@@ -4192,6 +4236,22 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         return action_runtime_find_item(NCM_SEARCH_DIRECTION_FORWARD);
     case NCM_ACTION_FIND_ITEM_BACKWARD:
         return action_runtime_find_item(NCM_SEARCH_DIRECTION_BACKWARD);
+    case NCM_ACTION_NEXT_FOUND_ITEM:
+        return action_runtime_repeat_search(NCM_SEARCH_DIRECTION_FORWARD);
+    case NCM_ACTION_PREVIOUS_FOUND_ITEM:
+        return action_runtime_repeat_search(NCM_SEARCH_DIRECTION_BACKWARD);
+    case NCM_ACTION_TOGGLE_FIND_MODE:
+        Config.wrapped_search = !Config.wrapped_search;
+        if (Config.wrapped_search) {
+            ncm_statusbar_print_cstring(
+                (int32)Config.message_delay_time,
+                (char *)"Search mode: Wrapped");
+        } else {
+            ncm_statusbar_print_cstring(
+                (int32)Config.message_delay_time,
+                (char *)"Search mode: Normal");
+        }
+        return true;
     case NCM_ACTION_DELETE_BROWSER_ITEMS:
     case NCM_ACTION_SAVE_PLAYLIST:
     case NCM_ACTION_MOVE_SELECTED_ITEMS_TO:
@@ -4206,9 +4266,6 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_SELECT_ALBUM:
     case NCM_ACTION_SELECT_FOUND_ITEMS:
     case NCM_ACTION_FIND:
-    case NCM_ACTION_NEXT_FOUND_ITEM:
-    case NCM_ACTION_PREVIOUS_FOUND_ITEM:
-    case NCM_ACTION_TOGGLE_FIND_MODE:
     case NCM_ACTION_ADD_RANDOM_ITEMS:
     case NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY:
         return false;

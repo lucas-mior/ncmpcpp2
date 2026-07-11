@@ -1,5 +1,6 @@
 #include "screen_actions.h"
 
+#include "app_binding_migration.h"
 #include "app_controller.h"
 #include "settings.h"
 #include "screens/native_c_screens.h"
@@ -126,6 +127,10 @@ current_screen_search_legacy(enum SearchDirection direction,
         return false;
     }
     *handled = false;
+    if (app_binding_migration_screen_is_c_only(
+            native_c_screens_current_type())) {
+        return false;
+    }
 #if defined(__GNUC__)
     if (actions_legacy_runtime_search_current_screen == NULL) {
         return false;
@@ -146,6 +151,10 @@ current_screen_search_legacy(enum SearchDirection direction,
 
 static void
 current_screen_clear_legacy_search(void) {
+    if (app_binding_migration_screen_is_c_only(
+            native_c_screens_current_type())) {
+        return;
+    }
 #if defined(__GNUC__)
     if (actions_legacy_runtime_clear_current_search != NULL) {
         actions_legacy_runtime_clear_current_search();

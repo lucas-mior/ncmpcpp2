@@ -42,7 +42,8 @@ app_binding_migration_action_is_c_safe(enum NcmActionType type) {
 
 bool
 app_binding_migration_screen_is_c_only(enum ScreenType type) {
-    return type == NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG;
+    return type == NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER
+        || type == NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG;
 }
 
 bool
@@ -55,14 +56,38 @@ app_binding_migration_action_is_c_safe_for_screen(
         return false;
     }
 
-    switch (type) {
-    case NCM_ACTION_SCROLL_UP:
-    case NCM_ACTION_SCROLL_DOWN:
-    case NCM_ACTION_PAGE_UP:
-    case NCM_ACTION_PAGE_DOWN:
-    case NCM_ACTION_MOVE_HOME:
-    case NCM_ACTION_MOVE_END:
-        return true;
+    switch (screen_type) {
+    case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
+        switch (type) {
+        case NCM_ACTION_MOUSE_EVENT:
+        case NCM_ACTION_SCROLL_UP:
+        case NCM_ACTION_SCROLL_DOWN:
+        case NCM_ACTION_PAGE_UP:
+        case NCM_ACTION_PAGE_DOWN:
+        case NCM_ACTION_MOVE_HOME:
+        case NCM_ACTION_MOVE_END:
+        case NCM_ACTION_ADD:
+        case NCM_ACTION_NEXT_FOUND_ITEM:
+        case NCM_ACTION_PREVIOUS_FOUND_ITEM:
+        case NCM_ACTION_TOGGLE_FIND_MODE:
+        case NCM_ACTION_NEXT_SCREEN:
+        case NCM_ACTION_PREVIOUS_SCREEN:
+            return true;
+        default:
+            return false;
+        }
+    case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
+        switch (type) {
+        case NCM_ACTION_SCROLL_UP:
+        case NCM_ACTION_SCROLL_DOWN:
+        case NCM_ACTION_PAGE_UP:
+        case NCM_ACTION_PAGE_DOWN:
+        case NCM_ACTION_MOVE_HOME:
+        case NCM_ACTION_MOVE_END:
+            return true;
+        default:
+            return false;
+        }
     default:
         return false;
     }

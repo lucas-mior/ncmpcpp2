@@ -25,6 +25,8 @@ static void adder_refresh_callback(NcScreen *screen);
 static void adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
                            int64 pos, void *user);
 static void adder_scroll_callback(NcScreen *screen, enum NcScroll where);
+static bool adder_can_run_current_callback(NcScreen *screen);
+static bool adder_run_current_callback(NcScreen *screen);
 static void adder_switch_to_callback(NcScreen *screen);
 static void adder_resize_callback(NcScreen *screen);
 static int32 adder_timeout_callback(NcScreen *screen);
@@ -522,6 +524,18 @@ native_selected_items_adder_screen_run_current(
     return true;
 }
 
+bool
+native_selected_items_adder_screen_return_to_previous(
+    NativeSelectedItemsAdderScreen *screen) {
+    if ((screen == NULL) || !screen->ready
+        || (screen->previous_screen == NULL)) {
+        return false;
+    }
+
+    adder_finish(screen);
+    return true;
+}
+
 void
 native_selected_items_adder_screen_choose_current_playlist(
     NativeSelectedItemsAdderScreen *screen) {
@@ -695,6 +709,8 @@ adder_callbacks(void) {
     callbacks.refresh = adder_refresh_callback;
     callbacks.refresh_window = adder_refresh_callback;
     callbacks.scroll = adder_scroll_callback;
+    callbacks.can_run_current = adder_can_run_current_callback;
+    callbacks.run_current = adder_run_current_callback;
     callbacks.switch_to = adder_switch_to_callback;
     callbacks.resize = adder_resize_callback;
     callbacks.window_timeout = adder_timeout_callback;
@@ -774,6 +790,26 @@ adder_scroll_callback(NcScreen *screen, enum NcScroll where) {
     return;
 }
 
+static bool
+adder_can_run_current_callback(NcScreen *screen) {
+    NativeSelectedItemsAdderScreen *adder;
+    NcEditorActionRow *row;
+
+    adder = adder_from_screen(screen);
+    if ((adder == NULL) || !adder->ready) {
+        return false;
+    }
+    row = nc_menu_current_item(
+        native_selected_items_adder_screen_active_menu(adder));
+    return (row != NULL) && (row->run != NULL);
+}
+
+static bool
+adder_run_current_callback(NcScreen *screen) {
+    return native_selected_items_adder_screen_run_current(
+        adder_from_screen(screen));
+}
+
 static void
 adder_switch_to_callback(NcScreen *screen) {
     (void)screen;
@@ -824,6 +860,8 @@ static void
 adder_mouse_callback(NcScreen *screen, MEVENT event) {
     NativeSelectedItemsAdderScreen *adder;
     NcWindow *window;
+    enum NcScroll where;
+    int64 count;
     int32 x;
     int32 y;
 
@@ -840,6 +878,27 @@ adder_mouse_callback(NcScreen *screen, MEVENT event) {
         if (event.bstate & BUTTON3_PRESSED) {
             (void)native_selected_items_adder_screen_run_current(adder);
         }
+        return;
+    }
+
+    count = Config.lines_scrolled;
+    if (event.bstate & BUTTON5_PRESSED) {
+        where = NC_SCROLL_DOWN;
+    } else if (event.bstate & BUTTON4_PRESSED) {
+        where = NC_SCROLL_UP;
+    } else {
+        return;
+    }
+    if (Config.mouse_list_scroll_whole_page) {
+        count = 1;
+        if (where == NC_SCROLL_DOWN) {
+            where = NC_SCROLL_PAGE_DOWN;
+        } else {
+            where = NC_SCROLL_PAGE_UP;
+        }
+    }
+    for (int64 i = 0; i < count; i += 1) {
+        adder_scroll_callback(screen, where);
     }
     return;
 }
