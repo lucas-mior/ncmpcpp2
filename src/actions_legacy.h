@@ -987,15 +987,6 @@ private:
 	Searchable *m_searchable;
 };
 
-struct AddSelectedItems: BaseAction
-{
-	AddSelectedItems(): BaseAction(Type::AddSelectedItems, "add_selected_items") { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
 struct CropMainPlaylist: BaseAction
 {
 	CropMainPlaylist(): BaseAction(Type::CropMainPlaylist, "crop_main_playlist") { }

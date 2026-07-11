@@ -11,6 +11,7 @@
 
 #include "actions_legacy.h"
 #include "actions_legacy_runtime.h"
+#include "app_binding_migration.h"
 #include "app_legacy_bridge.h"
 #include "charset.h"
 #include "config.h"
@@ -36,7 +37,6 @@
 #include "screens/playlist.h"
 #include "screens/playlist_editor.h"
 #include "screens/search_engine.h"
-#include "screens/sel_items_adder.h"
 #include "utility/readline.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
@@ -431,6 +431,9 @@ NcmActionType toNcmActionType(Actions::Type type)
 
 bool legacyCanRunAction(NcmActionType type, void *)
 {
+	if (app_binding_migration_action_is_c_safe(type))
+		return ncm_action_runtime_can_run(nullptr, type);
+
 	Actions::BaseAction *action = Actions::runtimeAction(type);
 	if (action == nullptr)
 		return false;
@@ -439,6 +442,9 @@ bool legacyCanRunAction(NcmActionType type, void *)
 
 bool legacyRunAction(NcmActionType type, void *)
 {
+	if (app_binding_migration_action_is_c_safe(type))
+		return ncm_action_runtime_run(nullptr, type);
+
 	Actions::BaseAction *action = Actions::runtimeAction(type);
 	if (action == nullptr)
 		return false;
@@ -548,7 +554,6 @@ void initializeScreens()
 	myPlaylistEditor = new PlaylistEditor;
 	ncm_status_set_playlist_update_observer(
 	    refreshPlaylistRelatedInactiveColumns, nullptr);
-	mySelectedItemsAdder = new SelectedItemsAdder;
 #	ifdef HAVE_TAGLIB_H
 	myTinyTagEditor = new TinyTagEditor;
 	myTagEditor = new TagEditor;
@@ -564,7 +569,6 @@ void initializeScreens()
 	mySearcher->registerNativeScreen();
 	myPlaylistEditor->registerNativeScreen();
 	native_c_screen_lyrics_register();
-	mySelectedItemsAdder->registerNativeScreen();
 
 #	ifdef HAVE_TAGLIB_H
 	myTinyTagEditor->registerNativeScreen();
@@ -586,7 +590,6 @@ void setResizeFlags()
 	mySearcher->hasToBeResized = 1;
 	myPlaylistEditor->hasToBeResized = 1;
 	native_c_screen_lyrics_set_resize();
-	mySelectedItemsAdder->hasToBeResized = 1;
 
 #	ifdef HAVE_TAGLIB_H
 	myTinyTagEditor->hasToBeResized = 1;
@@ -694,6 +697,9 @@ BaseAction *runtimeAction(enum NcmActionType type)
 	auto index = static_cast<size_t>(type);
 	if (index >= AvailableActions.size() || AvailableActions[index] == nullptr)
 	{
+		if (app_binding_migration_action_is_c_safe(type))
+			return nullptr;
+
 		std::cerr << "fatal: action not implemented: "
 		          << definition->name << std::endl;
 		std::exit(EXIT_FAILURE);
@@ -2414,16 +2420,6 @@ void SelectFoundItems::run()
 	m_list->highlight(current_pos);
 }
 
-bool AddSelectedItems::canBeRun()
-{
-	return screenLegacyCurrent() != mySelectedItemsAdder;
-}
-
-void AddSelectedItems::run()
-{
-	mySelectedItemsAdder->switchTo();
-}
-
 void CropMainPlaylist::run()
 {
 	// cropping doesn't make sense in this case
@@ -3376,7 +3372,6 @@ void populateActions()
 	insert_action(new Actions::RemoveSelection());
 	insert_action(new Actions::SelectAlbum());
 	insert_action(new Actions::SelectFoundItems());
-	insert_action(new Actions::AddSelectedItems());
 	insert_action(new Actions::CropMainPlaylist());
 	insert_action(new Actions::CropPlaylist());
 	insert_action(new Actions::ClearMainPlaylist());
@@ -3433,10 +3428,13 @@ void populateActions()
 
 	for (int32 i = 0; i < NCM_ACTION_LAST; i += 1)
 	{
-		if (AvailableActions[static_cast<size_t>(i)] == nullptr)
+		auto type = static_cast<NcmActionType>(i);
+
+		if (AvailableActions[static_cast<size_t>(i)] == nullptr
+		    && !app_binding_migration_action_is_c_safe(type))
 		{
 			std::cerr << "fatal: undefined action: "
-			          << ncm_action_type_name(static_cast<NcmActionType>(i))
+			          << ncm_action_type_name(type)
 			          << std::endl;
 			std::exit(EXIT_FAILURE);
 		}
@@ -3886,6 +3884,9 @@ bool actions_legacy_runtime_execute_binding(NcmBinding *binding)
 
 bool actions_legacy_runtime_execute_action(enum NcmActionType type)
 {
+	if (app_binding_migration_action_is_c_safe(type))
+		return ncm_action_runtime_run(nullptr, type);
+
 	try
 	{
 		return Actions::execute(type);
@@ -3918,9 +3919,8 @@ bool actions_legacy_runtime_exit_requested(void)
 }
 
 /*
- * Secondary screen compatibility implementations.
+ * Secondary screen compatibility implementation.
  *
- * These facades remain needed by legacy actions.
+ * This facade remains needed by legacy actions.
  */
-#include "screens/sel_items_adder.cpp"
 #include "screens/visualizer.cpp"
