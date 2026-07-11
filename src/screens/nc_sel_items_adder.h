@@ -14,6 +14,8 @@
 extern "C" {
 #endif
 
+typedef struct NativePlaylistScreen NativePlaylistScreen;
+
 enum NativeSelectedItemsAdderMenu {
     NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS,
     NATIVE_SELECTED_ITEMS_ADDER_MENU_POSITIONS,
@@ -56,6 +58,10 @@ typedef struct NativeSelectedItemsAdderScreen {
     NcmBuffer search_constraint;
     NativeSelectedItemsAdderAction last_action;
 
+    NativePlaylistScreen *playlist;
+    NcScreen *previous_screen;
+    NcmMpdClient *client;
+
     int64 playlist_width;
     int64 playlist_height;
     int64 position_width;
@@ -65,6 +71,7 @@ typedef struct NativeSelectedItemsAdderScreen {
     bool local_browser;
     bool search_enabled;
     bool registered;
+    bool ready;
 } NativeSelectedItemsAdderScreen;
 
 void native_selected_items_adder_action_init(
@@ -92,6 +99,9 @@ NcMenu *native_selected_items_adder_screen_active_menu(
     NativeSelectedItemsAdderScreen *screen);
 NcWindow *native_selected_items_adder_screen_active_window(
     NativeSelectedItemsAdderScreen *screen);
+bool native_selected_items_adder_screen_open(
+    NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs,
+    NativePlaylistScreen *playlist, NcmMpdClient *client, NcmError *error);
 bool native_selected_items_adder_screen_set_selected_songs(
     NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs);
 bool native_selected_items_adder_screen_selected_songs(
