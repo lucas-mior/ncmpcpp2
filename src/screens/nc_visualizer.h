@@ -23,7 +23,9 @@ extern "C" {
 enum NativeVisualizerType {
     NATIVE_VISUALIZER_WAVE,
     NATIVE_VISUALIZER_WAVE_FILLED,
+#if defined(HAVE_FFTW3_H)
     NATIVE_VISUALIZER_FREQUENCY,
+#endif
     NATIVE_VISUALIZER_ELLIPSE,
     NATIVE_VISUALIZER_TYPE_LAST,
 };
@@ -58,6 +60,8 @@ typedef struct NativeVisualizerScreenConfig {
     double spectrum_hz_max;
 
     NativeVisualizerDataSourceHooks data_source_hooks;
+    enum NativeVisualizerType visualization_type;
+    bool autoscale;
     bool stereo;
 } NativeVisualizerScreenConfig;
 
@@ -125,6 +129,7 @@ typedef struct NativeVisualizerScreen {
     int32 sample_consumption_rate_dn_ctr;
 
     bool reset_output;
+    bool autoscale;
     bool stereo;
     bool initialized;
 } NativeVisualizerScreen;
@@ -153,6 +158,8 @@ NcWindow *native_visualizer_screen_window(NativeVisualizerScreen *screen);
 void native_visualizer_screen_set_geometry(NativeVisualizerScreen *screen,
                                            int64 start_x, int64 start_y,
                                            int64 width, int64 height);
+void native_visualizer_screen_init_visualization(
+    NativeVisualizerScreen *screen);
 void native_visualizer_screen_clear(NativeVisualizerScreen *screen);
 void native_visualizer_screen_reset_auto_scale_multiplier(
     NativeVisualizerScreen *screen);

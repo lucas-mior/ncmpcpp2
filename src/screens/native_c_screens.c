@@ -447,6 +447,9 @@ native_c_screen_visualizer_init(void) {
     visualizer_config.spectrum_hz_max = Config.visualizer_spectrum_hz_max;
     visualizer_config.data_source_hooks =
         native_visualizer_data_source_system_hooks(&global_mpd);
+    visualizer_config.visualization_type =
+        (enum NativeVisualizerType)Config.visualizer_type;
+    visualizer_config.autoscale = Config.visualizer_autoscale;
     visualizer_config.stereo = Config.visualizer_in_stereo;
 
     native_visualizer_screen_init(&visualizer_screen,
