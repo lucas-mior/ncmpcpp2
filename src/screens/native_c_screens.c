@@ -439,6 +439,10 @@ native_c_screen_visualizer_init(void) {
     }
     visualizer_config.output_name = Config.visualizer_output_name;
     visualizer_config.output_name_len = Config.visualizer_output_name_len;
+    visualizer_config.visualizer_chars = Config.visualizer_chars.data;
+    visualizer_config.visualizer_chars_len = Config.visualizer_chars.len;
+    visualizer_config.visualizer_colors = Config.visualizer_colors.items;
+    visualizer_config.visualizer_colors_len = Config.visualizer_colors.len;
     visualizer_config.fps = (int32)Config.visualizer_fps;
     visualizer_config.spectrum_dft_size =
         Config.visualizer_spectrum_dft_size;
@@ -451,6 +455,14 @@ native_c_screen_visualizer_init(void) {
         (enum NativeVisualizerType)Config.visualizer_type;
     visualizer_config.autoscale = Config.visualizer_autoscale;
     visualizer_config.stereo = Config.visualizer_in_stereo;
+    visualizer_config.spectrum_smooth_look =
+        Config.visualizer_spectrum_smooth_look;
+    visualizer_config.spectrum_smooth_look_legacy_chars =
+        Config.visualizer_spectrum_smooth_look_legacy_chars;
+    visualizer_config.spectrum_log_scale_x =
+        Config.visualizer_spectrum_log_scale_x;
+    visualizer_config.spectrum_log_scale_y =
+        Config.visualizer_spectrum_log_scale_y;
 
     native_visualizer_screen_init(&visualizer_screen,
                                   0,

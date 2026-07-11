@@ -11,6 +11,7 @@
 
 #include "c/ncm_defs.h"
 #include "c/ncm_sample_buffer.h"
+#include "curses/nc_formatted_color.h"
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
@@ -49,9 +50,13 @@ typedef struct NativeVisualizerDataSourceHooks {
 typedef struct NativeVisualizerScreenConfig {
     char *source_location;
     char *output_name;
+    char *visualizer_chars;
+    NcFormattedColor *visualizer_colors;
 
     int32 source_location_len;
     int32 output_name_len;
+    int32 visualizer_chars_len;
+    int32 visualizer_colors_len;
     int32 fps;
     uint32 spectrum_dft_size;
 
@@ -63,6 +68,10 @@ typedef struct NativeVisualizerScreenConfig {
     enum NativeVisualizerType visualization_type;
     bool autoscale;
     bool stereo;
+    bool spectrum_smooth_look;
+    bool spectrum_smooth_look_legacy_chars;
+    bool spectrum_log_scale_x;
+    bool spectrum_log_scale_y;
 } NativeVisualizerScreenConfig;
 
 #if defined(HAVE_FFTW3_H)
@@ -105,6 +114,8 @@ typedef struct NativeVisualizerScreen {
     NcmBuffer source_location;
     NcmBuffer source_port;
     NcmBuffer output_name;
+    NcmBuffer visualizer_chars;
+    NcFormattedColor *visualizer_colors;
     NativeVisualizerDataSourceHooks data_source_hooks;
 
     NcmSampleBuffer incoming_samples;
@@ -127,10 +138,20 @@ typedef struct NativeVisualizerScreen {
     int32 sample_consumption_rate;
     int32 sample_consumption_rate_up_ctr;
     int32 sample_consumption_rate_dn_ctr;
+    int32 visualizer_colors_len;
+    int32 visualizer_colors_cap;
+    int32 point_char_offset;
+    int32 point_char_len;
+    int32 bar_char_offset;
+    int32 bar_char_len;
 
     bool reset_output;
     bool autoscale;
     bool stereo;
+    bool spectrum_smooth_look;
+    bool spectrum_smooth_look_legacy_chars;
+    bool spectrum_log_scale_x;
+    bool spectrum_log_scale_y;
     bool initialized;
 } NativeVisualizerScreen;
 
@@ -189,6 +210,8 @@ int16 *native_visualizer_screen_right_data(NativeVisualizerScreen *screen);
 void native_visualizer_screen_apply_auto_scale(NativeVisualizerScreen *screen,
                                                int16 *samples,
                                                int32 samples_len);
+bool native_visualizer_screen_draw(NativeVisualizerScreen *screen,
+                                   int16 *samples, int32 samples_len);
 int16 native_visualizer_clamp_sample(int64 sample);
 
 #if defined(__cplusplus)
