@@ -1021,6 +1021,7 @@ inline void Browser::syncNative()
         native,
         const_cast<char *>(m_current_directory.c_str()),
         static_cast<int32>(m_current_directory.size()));
+    native_browser_screen_set_local(native, m_local_browser);
 
     if (was_filtered)
         w.showFilteredItems();
