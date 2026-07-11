@@ -24,6 +24,7 @@ static void test_state_init(void);
 static void test_state_destroy(void);
 static void test_state_set_song(char *uri, int32 uri_len);
 static void test_add_selected_items_binding_is_c_safe(void);
+static void test_selected_items_adder_screen_is_c_only(void);
 static void test_playlist_action_opens_native_dialog(void);
 static void test_tag_editor_action_opens_native_dialog(void);
 static void test_empty_selection_does_not_open_dialog(void);
@@ -32,6 +33,7 @@ int
 main(void) {
     test_state_init();
     test_add_selected_items_binding_is_c_safe();
+    test_selected_items_adder_screen_is_c_only();
     test_playlist_action_opens_native_dialog();
     test_tag_editor_action_opens_native_dialog();
     test_empty_selection_does_not_open_dialog();
@@ -126,8 +128,57 @@ test_add_selected_items_binding_is_c_safe(void) {
         NCM_ACTION_ADD_SELECTED_ITEMS));
     assert(app_binding_migration_binding_is_c_safe(&binding));
     assert(app_binding_migration_binding_is_hybrid_safe(&binding));
-    assert(!app_binding_migration_screen_is_c_only(
+    assert(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER));
+    return;
+}
+
+static void
+test_selected_items_adder_screen_is_c_only(void) {
+    enum NcmActionType types[] = {
+        NCM_ACTION_MOUSE_EVENT,
+        NCM_ACTION_SCROLL_UP,
+        NCM_ACTION_SCROLL_DOWN,
+        NCM_ACTION_PAGE_UP,
+        NCM_ACTION_PAGE_DOWN,
+        NCM_ACTION_MOVE_HOME,
+        NCM_ACTION_MOVE_END,
+        NCM_ACTION_ADD,
+        NCM_ACTION_NEXT_FOUND_ITEM,
+        NCM_ACTION_PREVIOUS_FOUND_ITEM,
+        NCM_ACTION_TOGGLE_FIND_MODE,
+        NCM_ACTION_NEXT_SCREEN,
+        NCM_ACTION_PREVIOUS_SCREEN,
+    };
+    NcmBindingAction action = {
+        .kind = NCM_BINDING_ACTION_NORMAL,
+    };
+    NcmBinding binding = {
+        .actions = &action,
+        .actions_len = 1,
+        .actions_cap = 1,
+    };
+
+    assert(app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER));
+    for (int32 i = 0; i < LENGTH(types); i += 1) {
+        action.type = types[i];
+        assert(app_binding_migration_action_is_c_safe_for_screen(
+            action.type, NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER));
+        assert(app_binding_migration_binding_is_c_safe_for_screen(
+            &binding, NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER));
+        assert(!app_binding_migration_action_is_c_safe_for_screen(
+            action.type, NCM_SCREEN_TYPE_PLAYLIST));
+    }
+
+    action.type = NCM_ACTION_RUN_ACTION;
+    assert(app_binding_migration_action_is_c_safe_for_screen(
+        action.type, NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER));
+    action.type = NCM_ACTION_MOVE_SELECTED_ITEMS_TO;
+    assert(!app_binding_migration_action_is_c_safe_for_screen(
+        action.type, NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER));
+    assert(!app_binding_migration_binding_is_c_safe_for_screen(
+        &binding, NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER));
     return;
 }
 
