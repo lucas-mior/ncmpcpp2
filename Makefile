@@ -90,6 +90,18 @@ SORT_PLAYLIST_DIALOG_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_menu_refresh
 $(BUILD_DIR)/tests/c_sort_playlist_dialog_test: \
 	LDFLAGS += $(SORT_PLAYLIST_DIALOG_TEST_WRAP_FLAGS)
+PLAYLIST_MANAGEMENT_DIALOGS_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=ncm_mpd_client_get_playlists \
+	-Wl,--wrap=ncm_statusbar_format \
+	-Wl,--wrap=nc_window_init \
+	-Wl,--wrap=nc_window_destroy \
+	-Wl,--wrap=nc_window_resize \
+	-Wl,--wrap=nc_window_move_to \
+	-Wl,--wrap=nc_window_display \
+	-Wl,--wrap=nc_window_print_data \
+	-Wl,--wrap=nc_menu_refresh
+$(BUILD_DIR)/tests/c_playlist_management_dialogs_test: \
+	LDFLAGS += $(PLAYLIST_MANAGEMENT_DIALOGS_TEST_WRAP_FLAGS)
 DEPS := \
 	$(CBASE_OBJS:.o=.d) \
 	$(NCMPCPP_C_OBJS:.o=.d) \
