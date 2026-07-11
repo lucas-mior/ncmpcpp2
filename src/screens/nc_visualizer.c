@@ -22,7 +22,6 @@
 
 #define NATIVE_VISUALIZER_TITLE "Visualizer"
 #define NATIVE_VISUALIZER_DEFAULT_RATE 44100
-#define NATIVE_VISUALIZER_DEFAULT_CAP 32768
 #define NATIVE_VISUALIZER_DEFAULT_FPS 30
 #define NATIVE_VISUALIZER_DEFAULT_DFT_SIZE 2
 #define NATIVE_VISUALIZER_MAX_DFT_SIZE 5
@@ -313,8 +312,6 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     char *output_name;
     int32 source_location_len;
     int32 output_name_len;
-    int32 incoming_cap;
-    int32 rendered_cap;
     int32 fps;
 #if defined(HAVE_FFTW3_H)
     uint32 spectrum_dft_size;
@@ -323,6 +320,8 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     double spectrum_hz_max;
 #endif
     NativeVisualizerDataSourceHooks data_source_hooks;
+    enum NativeVisualizerType visualization_type;
+    bool autoscale;
     bool stereo;
 
     source_location = NULL;
@@ -337,6 +336,8 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     spectrum_hz_min = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MIN;
     spectrum_hz_max = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MAX;
 #endif
+    visualization_type = NATIVE_VISUALIZER_WAVE;
+    autoscale = false;
     stereo = false;
     if (config != NULL) {
         source_location = config->source_location;
@@ -357,6 +358,8 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
         spectrum_hz_min = config->spectrum_hz_min;
         spectrum_hz_max = config->spectrum_hz_max;
 #endif
+        visualization_type = config->visualization_type;
+        autoscale = config->autoscale;
         stereo = config->stereo;
     }
     if ((source_location == NULL) || (source_location_len < 0)) {
@@ -369,6 +372,10 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     }
     if (fps <= 0) {
         fps = NATIVE_VISUALIZER_DEFAULT_FPS;
+    }
+    if ((visualization_type < 0)
+        || (visualization_type >= NATIVE_VISUALIZER_TYPE_LAST)) {
+        visualization_type = NATIVE_VISUALIZER_WAVE;
     }
 #if defined(HAVE_FFTW3_H)
     if ((spectrum_dft_size == 0)
@@ -404,11 +411,6 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     ncm_sample_buffer_init(&screen->left_channel);
     ncm_sample_buffer_init(&screen->right_channel);
 
-    incoming_cap = NATIVE_VISUALIZER_DEFAULT_RATE / 2;
-    if (stereo) {
-        incoming_cap *= 2;
-    }
-    rendered_cap = NATIVE_VISUALIZER_DEFAULT_CAP;
 #if defined(HAVE_FFTW3_H)
     screen->fft.input = NULL;
     screen->fft.output = NULL;
@@ -439,9 +441,9 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
         screen->fft.frequency_magnitudes_cap
         *SIZEOF(*screen->fft.frequency_magnitudes));
     cbase_memset(screen->fft.frequency_magnitudes,
-             0,
-             screen->fft.frequency_magnitudes_cap
-             *SIZEOF(*screen->fft.frequency_magnitudes));
+                 0,
+                 screen->fft.frequency_magnitudes_cap
+                 *SIZEOF(*screen->fft.frequency_magnitudes));
     screen->fft.dft_frequency_space = ncm_malloc(
         screen->fft.dft_frequency_space_cap
         *SIZEOF(*screen->fft.dft_frequency_space));
@@ -457,9 +459,9 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
                  *SIZEOF(*screen->fft.output)));
     if (screen->fft.input != NULL) {
         cbase_memset(screen->fft.input,
-                 0,
-                 screen->fft.dft_total_size
-                 *SIZEOF(*screen->fft.input));
+                     0,
+                     screen->fft.dft_total_size
+                     *SIZEOF(*screen->fft.input));
     }
     if ((screen->fft.input != NULL) && (screen->fft.output != NULL)) {
         screen->fft.plan = fftw_plan_dft_r2c_1d(
@@ -468,34 +470,22 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
             screen->fft.output,
             FFTW_ESTIMATE);
     }
-
-    if (stereo) {
-        if (screen->fft.dft_nonzero_size*2 > rendered_cap) {
-            rendered_cap = screen->fft.dft_nonzero_size*2;
-        }
-    } else if (screen->fft.dft_nonzero_size > rendered_cap) {
-        rendered_cap = screen->fft.dft_nonzero_size;
-    }
 #endif
 
-    ncm_sample_buffer_resize(&screen->incoming_samples, incoming_cap);
-    ncm_sample_buffer_resize(&screen->buffered_samples, incoming_cap);
-    ncm_sample_buffer_resize(&screen->rendered_samples, rendered_cap);
-    ncm_sample_buffer_resize(&screen->left_channel, rendered_cap / 2);
-    ncm_sample_buffer_resize(&screen->right_channel, rendered_cap / 2);
-
     screen->auto_scale_multiplier = 1.0;
-    screen->visualization_type = NATIVE_VISUALIZER_WAVE;
+    screen->visualization_type = visualization_type;
     screen->source_fd = -1;
     screen->output_id = -1;
     screen->fps = fps;
     screen->sample_rate = NATIVE_VISUALIZER_DEFAULT_RATE;
-    screen->sample_consumption_rate = 0;
+    screen->sample_consumption_rate = 5;
     screen->sample_consumption_rate_up_ctr = 0;
     screen->sample_consumption_rate_dn_ctr = 0;
     screen->reset_output = false;
+    screen->autoscale = autoscale;
     screen->stereo = stereo;
     screen->initialized = true;
+    native_visualizer_screen_init_visualization(screen);
     return;
 }
 
@@ -581,6 +571,88 @@ native_visualizer_screen_set_geometry(NativeVisualizerScreen *screen,
                                       int64 width, int64 height) {
     nc_window_resize(&screen->window, width, height);
     nc_window_move_to(&screen->window, start_x, start_y);
+    native_visualizer_screen_init_visualization(screen);
+    return;
+}
+
+void
+native_visualizer_screen_init_visualization(
+    NativeVisualizerScreen *screen) {
+    double samples_per_column;
+    int64 rendered_samples;
+    int64 incoming_samples;
+    int64 width;
+    int32 rendered_cap;
+    int32 incoming_cap;
+    int32 channel_cap;
+
+    if ((screen == NULL) || !screen->initialized) {
+        return;
+    }
+
+    width = nc_window_width(&screen->window);
+    if (width <= 0) {
+        width = 1;
+    }
+
+    rendered_samples = 0;
+    switch (screen->visualization_type) {
+    case NATIVE_VISUALIZER_WAVE:
+    case NATIVE_VISUALIZER_WAVE_FILLED:
+        samples_per_column = ceil(
+            (double)screen->sample_rate / (double)screen->fps
+            / (double)width);
+        rendered_samples = (int64)samples_per_column*width*10;
+        break;
+#if defined(HAVE_FFTW3_H)
+    case NATIVE_VISUALIZER_FREQUENCY:
+        rendered_samples = screen->fft.dft_nonzero_size;
+        break;
+#endif
+    case NATIVE_VISUALIZER_ELLIPSE:
+        rendered_samples = screen->sample_rate / 30;
+        break;
+    case NATIVE_VISUALIZER_TYPE_LAST:
+    default:
+        screen->visualization_type = NATIVE_VISUALIZER_WAVE;
+        samples_per_column = ceil(
+            (double)screen->sample_rate / (double)screen->fps
+            / (double)width);
+        rendered_samples = (int64)samples_per_column*width*10;
+        break;
+    }
+
+    incoming_samples = screen->sample_rate / 2;
+    if (screen->stereo) {
+        rendered_samples *= 2;
+        incoming_samples *= 2;
+    }
+    if (rendered_samples < 1) {
+        rendered_samples = 1;
+    }
+    if (incoming_samples < 1) {
+        incoming_samples = 1;
+    }
+    if ((rendered_samples > INT32_MAX)
+        || (incoming_samples > INT32_MAX)) {
+        return;
+    }
+
+    rendered_cap = (int32)rendered_samples;
+    incoming_cap = (int32)incoming_samples;
+    channel_cap = 0;
+    if (screen->stereo) {
+        channel_cap = rendered_cap / 2;
+    }
+
+    ncm_sample_buffer_resize(&screen->incoming_samples, incoming_cap);
+    ncm_sample_buffer_resize(&screen->buffered_samples, incoming_cap);
+    ncm_sample_buffer_resize(&screen->rendered_samples, rendered_cap);
+    ncm_sample_buffer_resize(&screen->left_channel, channel_cap);
+    ncm_sample_buffer_resize(&screen->right_channel, channel_cap);
+    cbase_memset(screen->rendered_samples.data,
+                 0,
+                 rendered_cap*SIZEOF(*screen->rendered_samples.data));
     return;
 }
 
@@ -590,6 +662,12 @@ native_visualizer_screen_clear(NativeVisualizerScreen *screen) {
     ncm_sample_buffer_clear(&screen->rendered_samples);
     ncm_sample_buffer_clear(&screen->left_channel);
     ncm_sample_buffer_clear(&screen->right_channel);
+    if (screen->rendered_samples.cap > 0) {
+        cbase_memset(screen->rendered_samples.data,
+                     0,
+                     screen->rendered_samples.cap
+                     *SIZEOF(*screen->rendered_samples.data));
+    }
     nc_window_clear(&screen->window);
     native_visualizer_screen_drain_data_source(screen);
     return;
@@ -599,9 +677,6 @@ void
 native_visualizer_screen_reset_auto_scale_multiplier(
     NativeVisualizerScreen *screen) {
     screen->auto_scale_multiplier = 1.0;
-    screen->sample_consumption_rate = 0;
-    screen->sample_consumption_rate_up_ctr = 0;
-    screen->sample_consumption_rate_dn_ctr = 0;
     return;
 }
 
@@ -612,6 +687,7 @@ native_visualizer_screen_set_type(NativeVisualizerScreen *screen,
         type = NATIVE_VISUALIZER_WAVE;
     }
     screen->visualization_type = type;
+    native_visualizer_screen_init_visualization(screen);
     return;
 }
 
@@ -619,7 +695,7 @@ void
 native_visualizer_screen_toggle_type(NativeVisualizerScreen *screen) {
     screen->visualization_type = native_visualizer_next_type(
         screen->visualization_type);
-    native_visualizer_screen_clear(screen);
+    native_visualizer_screen_init_visualization(screen);
     return;
 }
 
@@ -632,6 +708,7 @@ void
 native_visualizer_screen_set_stereo(NativeVisualizerScreen *screen,
                                     bool stereo) {
     screen->stereo = stereo;
+    native_visualizer_screen_init_visualization(screen);
     return;
 }
 
@@ -639,9 +716,10 @@ void
 native_visualizer_screen_set_fps(NativeVisualizerScreen *screen,
                                  int32 fps) {
     if (fps <= 0) {
-        fps = 30;
+        fps = NATIVE_VISUALIZER_DEFAULT_FPS;
     }
     screen->fps = fps;
+    native_visualizer_screen_init_visualization(screen);
     return;
 }
 
@@ -650,14 +728,22 @@ native_visualizer_screen_requested_samples(NativeVisualizerScreen *screen) {
     double rate;
     int32 result;
 
+    if ((screen == NULL) || (screen->fps <= 0)) {
+        return 0;
+    }
+
     rate = (double)screen->sample_rate / (double)screen->fps;
     rate *= pow(1.1, (double)screen->sample_consumption_rate);
+    if (screen->stereo) {
+        rate *= 2.0;
+    }
+    if (!isfinite(rate) || (rate >= (double)INT32_MAX)) {
+        return INT32_MAX;
+    }
+
     result = (int32)rate;
     if (result < 1) {
         result = 1;
-    }
-    if (screen->stereo) {
-        result *= 2;
     }
     return result;
 }
@@ -666,6 +752,16 @@ bool
 native_visualizer_screen_push_samples(NativeVisualizerScreen *screen,
                                       int16 *samples,
                                       int32 samples_len) {
+    if (screen == NULL) {
+        return false;
+    }
+    if (samples_len <= 0) {
+        return true;
+    }
+    if (samples == NULL) {
+        return false;
+    }
+
     native_visualizer_screen_apply_auto_scale(screen, samples, samples_len);
     return ncm_sample_buffer_put(&screen->buffered_samples,
                                  samples,
@@ -678,11 +774,19 @@ native_visualizer_screen_take_render_samples(NativeVisualizerScreen *screen,
     int32 requested;
     int32 result;
 
+    if ((screen == NULL) || (dest == NULL) || (dest_len <= 0)) {
+        return 0;
+    }
+
     requested = native_visualizer_screen_requested_samples(screen);
     result = ncm_sample_buffer_get_clamped(&screen->buffered_samples,
                                            requested,
                                            dest,
                                            dest_len);
+    if (result <= 0) {
+        return 0;
+    }
+
     if (ncm_sample_buffer_size(&screen->buffered_samples) > 0) {
         screen->sample_consumption_rate_up_ctr += 1;
         if (screen->sample_consumption_rate_up_ctr > 8) {
@@ -704,6 +808,10 @@ int32
 native_visualizer_screen_split_stereo(NativeVisualizerScreen *screen,
                                       int16 *samples, int32 samples_len) {
     int32 pairs;
+
+    if ((screen == NULL) || (samples == NULL) || (samples_len <= 1)) {
+        return 0;
+    }
 
     ncm_sample_buffer_clear(&screen->left_channel);
     ncm_sample_buffer_clear(&screen->right_channel);
@@ -747,13 +855,32 @@ void
 native_visualizer_screen_apply_auto_scale(NativeVisualizerScreen *screen,
                                           int16 *samples,
                                           int32 samples_len) {
+    double scale;
     int64 scaled;
+
+    if ((screen == NULL) || !screen->autoscale
+        || (samples == NULL) || (samples_len <= 0)) {
+        return;
+    }
+
+    screen->auto_scale_multiplier += 1.0 / (double)screen->fps;
+    for (int32 i = 0; i < samples_len; i += 1) {
+        if (samples[i] == 0) {
+            continue;
+        }
+        scale = fabs((double)NATIVE_VISUALIZER_MIN_SAMPLE
+                     / (double)samples[i]);
+        if (scale < screen->auto_scale_multiplier) {
+            screen->auto_scale_multiplier = scale;
+        }
+    }
 
     if (screen->auto_scale_multiplier > 50.0) {
         return;
     }
     for (int32 i = 0; i < samples_len; i += 1) {
-        scaled = (int64)((double)samples[i]*screen->auto_scale_multiplier);
+        scaled = (int64)((double)samples[i]
+                         *screen->auto_scale_multiplier);
         samples[i] = native_visualizer_clamp_sample(scaled);
     }
     return;
