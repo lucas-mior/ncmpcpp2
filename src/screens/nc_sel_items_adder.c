@@ -1,5 +1,7 @@
 #include "screens/nc_sel_items_adder.h"
 
+#include <errno.h>
+
 #include "app_controller.h"
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
@@ -43,6 +45,7 @@ static bool adder_add_action_row(NcEditorActionMenu *menu, char *label,
                                  void *user);
 static void adder_clear_playlist_selector(
     NativeSelectedItemsAdderScreen *screen);
+static void adder_finish(NativeSelectedItemsAdderScreen *screen);
 
 typedef struct ExistingPlaylistAction {
     NativeSelectedItemsAdderScreen *screen;
@@ -143,6 +146,9 @@ native_selected_items_adder_screen_init(
     ncm_regex_init(&screen->search_regex);
     ncm_buffer_init(&screen->search_constraint);
     native_selected_items_adder_action_init(&screen->last_action);
+    screen->playlist = NULL;
+    screen->previous_screen = NULL;
+    screen->client = NULL;
     screen->playlist_width = width;
     screen->playlist_height = height;
     screen->position_width = width;
@@ -151,6 +157,7 @@ native_selected_items_adder_screen_init(
     screen->local_browser = false;
     screen->search_enabled = false;
     screen->registered = false;
+    screen->ready = false;
     nc_screen_init(&screen->screen, callbacks, screen,
                    NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
     display_callbacks.filter = adder_filter_callback;
@@ -193,7 +200,11 @@ native_selected_items_adder_screen_destroy(
     ncm_regex_destroy(&screen->search_regex);
     ncm_buffer_destroy(&screen->search_constraint);
     native_selected_items_adder_action_destroy(&screen->last_action);
+    screen->playlist = NULL;
+    screen->previous_screen = NULL;
+    screen->client = NULL;
     screen->registered = false;
+    screen->ready = false;
     return;
 }
 
@@ -246,6 +257,86 @@ native_selected_items_adder_screen_active_window(
         return &screen->position_window;
     }
     return &screen->playlist_window;
+}
+
+bool
+native_selected_items_adder_screen_open(
+    NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs,
+    NativePlaylistScreen *playlist, NcmMpdClient *client, NcmError *error) {
+    NcmSongArray selected_songs;
+    NcScreen *current;
+
+    if (screen == NULL) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing selected items dialog"));
+        return false;
+    }
+    if ((songs == NULL) || (songs->len <= 0)) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("no selected songs"));
+        return false;
+    }
+    if (playlist == NULL) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing native playlist"));
+        return false;
+    }
+    if (client == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
+        return false;
+    }
+    if (screen->ready) {
+        ncm_error_set(error, EBUSY,
+                      STRLIT_ARGS("selected items dialog is already open"));
+        return false;
+    }
+
+    current = nc_screen_switcher_current();
+    if ((current == NULL)
+        || (current == native_selected_items_adder_screen_base(screen))) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing previous screen"));
+        return false;
+    }
+
+    ncm_song_array_init(&selected_songs);
+    if (!ncm_song_array_copy(&selected_songs, songs)) {
+        ncm_song_array_destroy(&selected_songs);
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("failed to copy selected songs"));
+        return false;
+    }
+
+    native_selected_items_adder_action_destroy(&screen->last_action);
+    nc_menu_reset(nc_editor_action_menu_base(&screen->playlist_selector));
+    nc_menu_reset(nc_editor_action_menu_base(&screen->position_selector));
+    screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
+    screen->search_enabled = false;
+    ncm_buffer_clear(&screen->search_constraint);
+    nc_menu_show_all_items(
+        nc_editor_action_menu_base(&screen->playlist_selector));
+    nc_menu_show_all_items(
+        nc_editor_action_menu_base(&screen->position_selector));
+
+    ncm_song_array_move(&screen->selected_songs, &selected_songs);
+    screen->playlist = playlist;
+    screen->previous_screen = current;
+    screen->client = client;
+    screen->ready = true;
+
+    if (!nc_screen_switcher_switch_to(
+            native_selected_items_adder_screen_base(screen), false)) {
+        ncm_song_array_clear(&screen->selected_songs);
+        screen->playlist = NULL;
+        screen->previous_screen = NULL;
+        screen->client = NULL;
+        screen->ready = false;
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("selected items dialog is not registered"));
+        return false;
+    }
+
+    ncm_error_clear(error);
+    return true;
 }
 
 bool
@@ -571,12 +662,11 @@ adder_timeout_callback(NcScreen *screen) {
 
 static char *
 adder_title_callback(NcScreen *screen) {
-    NcScreen *previous;
+    NativeSelectedItemsAdderScreen *adder;
 
-    (void)screen;
-    previous = nc_screen_switcher_previous();
-    if (previous != NULL) {
-        return nc_screen_title(previous);
+    adder = adder_from_screen(screen);
+    if ((adder != NULL) && (adder->previous_screen != NULL)) {
+        return nc_screen_title(adder->previous_screen);
     }
     return (char *)"Add selected items";
 }
@@ -718,6 +808,7 @@ adder_action_cancel_target(void *user) {
         &screen->last_action,
         NATIVE_SELECTED_ITEMS_ADDER_TARGET_CANCEL,
         NATIVE_SELECTED_ITEMS_ADDER_POSITION_CANCEL, NULL, 0);
+    adder_finish(screen);
     return;
 }
 
@@ -883,5 +974,34 @@ adder_clear_playlist_selector(NativeSelectedItemsAdderScreen *screen) {
         }
     }
     nc_menu_clear_items(menu);
+    return;
+}
+
+static void
+adder_finish(NativeSelectedItemsAdderScreen *screen) {
+    NcScreen *previous;
+
+    if (screen == NULL) {
+        return;
+    }
+
+    previous = screen->previous_screen;
+    screen->ready = false;
+    if (previous != NULL) {
+        (void)nc_screen_switcher_switch_to(
+            previous, nc_screen_has_to_be_resized(previous));
+    }
+
+    ncm_song_array_clear(&screen->selected_songs);
+    screen->playlist = NULL;
+    screen->previous_screen = NULL;
+    screen->client = NULL;
+    screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
+    screen->search_enabled = false;
+    ncm_buffer_clear(&screen->search_constraint);
+    nc_menu_show_all_items(
+        nc_editor_action_menu_base(&screen->playlist_selector));
+    nc_menu_show_all_items(
+        nc_editor_action_menu_base(&screen->position_selector));
     return;
 }
