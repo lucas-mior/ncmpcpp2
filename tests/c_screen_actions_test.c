@@ -13,6 +13,8 @@
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 
 typedef struct LegacySearchFixture {
+    int32 search_hook_calls;
+    int32 clear_hook_calls;
     int32 search_calls;
     int32 clear_calls;
     enum SearchDirection direction;
@@ -26,12 +28,14 @@ static LegacySearchFixture fixture;
 static bool current_screen_is_browser(void);
 static void test_legacy_screen_search_bridge(void);
 static void test_native_screen_search_fallback(void);
+static void test_c_only_screen_skips_legacy_search(void);
 
 bool
 actions_legacy_runtime_search_current_screen(
     enum SearchDirection direction, char *pattern, int32 pattern_len,
     bool wrap, bool skip_current, bool *handled, NcmError *error) {
     (void)error;
+    fixture.search_hook_calls += 1;
     if (!current_screen_is_browser()) {
         *handled = false;
         return false;
@@ -48,6 +52,7 @@ actions_legacy_runtime_search_current_screen(
 
 void
 actions_legacy_runtime_clear_current_search(void) {
+    fixture.clear_hook_calls += 1;
     if (current_screen_is_browser()) {
         fixture.clear_calls += 1;
     }
@@ -59,6 +64,7 @@ main(void) {
     ncm_buffer_init(&fixture.pattern);
     test_legacy_screen_search_bridge();
     test_native_screen_search_fallback();
+    test_c_only_screen_skips_legacy_search();
     ncm_buffer_destroy(&fixture.pattern);
     exit(EXIT_SUCCESS);
 }
@@ -91,6 +97,7 @@ test_legacy_screen_search_bridge(void) {
         NCM_SEARCH_DIRECTION_BACKWARD, LIT_ARGS("needle"),
         true, true, &error));
     assert(!ncm_error_is_set(&error));
+    assert(fixture.search_hook_calls == 1);
     assert(fixture.search_calls == 1);
     assert(fixture.direction == NCM_SEARCH_DIRECTION_BACKWARD);
     assert(fixture.wrap);
@@ -104,6 +111,7 @@ test_legacy_screen_search_bridge(void) {
                             LIT_ARGS("needle")));
 
     current_screen_clear_search_constraint();
+    assert(fixture.clear_hook_calls == 1);
     assert(fixture.clear_calls == 1);
     constraint = current_screen_current_search_constraint();
     assert(constraint.len == 0);
@@ -142,5 +150,45 @@ test_native_screen_search_fallback(void) {
     assert(!ncm_error_is_set(&error));
     assert(nc_menu_highlight(menu) == 1);
     assert(fixture.search_calls == 1);
+    return;
+}
+
+static void
+test_c_only_screen_skips_legacy_search(void) {
+    NativeSelectedItemsAdderScreen *screen;
+    NcmStringView constraint;
+    NcMenu *menu;
+    NcmError error;
+    int32 clear_hook_calls;
+    int32 search_hook_calls;
+
+    app_controller_init();
+    Config.regex_type = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
+    screen = native_c_screen_selected_items_adder();
+    native_selected_items_adder_screen_populate_position_selector(screen);
+    screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_POSITIONS;
+    native_c_screen_selected_items_adder_register();
+    assert(app_controller_switch_to_screen(
+        native_c_screen_selected_items_adder_native()));
+
+    menu = native_selected_items_adder_screen_active_menu(screen);
+    assert(nc_menu_highlight(menu) == 0);
+    search_hook_calls = fixture.search_hook_calls;
+    ncm_error_clear(&error);
+    assert(current_screen_search(
+        NCM_SEARCH_DIRECTION_FORWARD, LIT_ARGS("current album"),
+        true, false, &error));
+    assert(!ncm_error_is_set(&error));
+    assert(fixture.search_hook_calls == search_hook_calls);
+    assert(nc_menu_highlight(menu) == 3);
+
+    constraint = current_screen_current_search_constraint();
+    assert(ncm_string_equal(constraint.data, constraint.len,
+                            LIT_ARGS("current album")));
+    clear_hook_calls = fixture.clear_hook_calls;
+    current_screen_clear_search_constraint();
+    assert(fixture.clear_hook_calls == clear_hook_calls);
+    constraint = current_screen_current_search_constraint();
+    assert(constraint.len == 0);
     return;
 }

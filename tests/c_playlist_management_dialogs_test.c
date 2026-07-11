@@ -1139,7 +1139,10 @@ test_selected_items_transfer_and_actions(void) {
     assert(!nc_menu_is_filtered(position_menu));
 
     nc_menu_highlight_position(menu, 0, nc_menu_item_count(menu));
-    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(nc_screen_can_run_current(
+        native_selected_items_adder_screen_base(&screen)));
+    assert(nc_screen_run_current(
+        native_selected_items_adder_screen_base(&screen)));
     action = native_selected_items_adder_screen_last_action(&screen);
     assert(action->target
            == NATIVE_SELECTED_ITEMS_ADDER_TARGET_CURRENT_PLAYLIST);
@@ -1178,7 +1181,10 @@ test_selected_items_transfer_and_actions(void) {
     assert(native_selected_items_adder_screen_run_current(&screen));
     assert(screen.active_menu
            == NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS);
-    test_cancel_adder(&screen);
+    assert(native_selected_items_adder_screen_return_to_previous(
+        &screen));
+    assert(!native_selected_items_adder_screen_return_to_previous(
+        &screen));
     assert(app_controller_current_screen()
            == native_browser_screen_base(&browser));
     assert(!screen.ready);
