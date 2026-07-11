@@ -92,7 +92,16 @@ $(BUILD_DIR)/tests/c_sort_playlist_dialog_test: \
 	LDFLAGS += $(SORT_PLAYLIST_DIALOG_TEST_WRAP_FLAGS)
 PLAYLIST_MANAGEMENT_DIALOGS_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=ncm_mpd_client_get_playlists \
+	-Wl,--wrap=ncm_mpd_client_start_command_list \
+	-Wl,--wrap=ncm_mpd_client_add_song_to_playlist \
+	-Wl,--wrap=ncm_mpd_client_commit_command_list \
+	-Wl,--wrap=ncm_statusbar_scoped_lock_init \
+	-Wl,--wrap=ncm_statusbar_scoped_lock_destroy \
+	-Wl,--wrap=ncm_statusbar_put \
+	-Wl,--wrap=ncm_statusbar_print_cstring \
 	-Wl,--wrap=ncm_statusbar_format \
+	-Wl,--wrap=nc_window_prompt \
+	-Wl,--wrap=nc_window_prompt_result_destroy \
 	-Wl,--wrap=nc_window_init \
 	-Wl,--wrap=nc_window_destroy \
 	-Wl,--wrap=nc_window_resize \

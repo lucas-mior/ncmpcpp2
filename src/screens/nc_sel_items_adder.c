@@ -38,6 +38,12 @@ static bool adder_action_row_set(NcEditorActionRow *row, char *label,
 static bool adder_action_set_playlist(char **dest, int32 *dest_len,
                                       int32 *dest_cap, char *source,
                                       int32 source_len);
+static int32 adder_cstring_len(char *string);
+static bool adder_statusbar_prompt_hook(char *text, void *user);
+static bool adder_add_to_stored_playlist(
+    NativeSelectedItemsAdderScreen *screen,
+    enum NativeSelectedItemsAdderTarget target, char *playlist,
+    int32 playlist_len);
 static void adder_action_current_playlist(void *user);
 static void adder_action_new_playlist(void *user);
 static void adder_action_cancel_target(void *user);
@@ -524,8 +530,24 @@ native_selected_items_adder_screen_add_to_existing_playlist(
     bool ok;
 
     if (screen == NULL) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing selected items dialog"));
         return false;
     }
+    if (client == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
+        return false;
+    }
+    if (playlist == NULL) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing stored playlist"));
+        return false;
+    }
+    if (screen->selected_songs.len <= 0) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("no selected songs"));
+        return false;
+    }
+
     ok = ncm_mpd_client_start_command_list(client, error);
     for (int32 i = 0; ok && i < screen->selected_songs.len; i += 1) {
         ok = ncm_mpd_client_add_song_to_playlist(
@@ -533,6 +555,9 @@ native_selected_items_adder_screen_add_to_existing_playlist(
     }
     if (ok) {
         ok = ncm_mpd_client_commit_command_list(client, error);
+    }
+    if (!ok && client->command_list_active) {
+        client->command_list_active = false;
     }
     return ok;
 }
@@ -882,6 +907,66 @@ adder_action_set_playlist(char **dest, int32 *dest_len, int32 *dest_cap,
     return true;
 }
 
+static int32
+adder_cstring_len(char *string) {
+    int32 len;
+
+    if (string == NULL) {
+        return 0;
+    }
+
+    len = 0;
+    while (string[len] != '\0') {
+        len += 1;
+    }
+    return len;
+}
+
+static bool
+adder_statusbar_prompt_hook(char *text, void *user) {
+    (void)user;
+    return ncm_statusbar_main_hook(text, adder_cstring_len(text));
+}
+
+static bool
+adder_add_to_stored_playlist(
+    NativeSelectedItemsAdderScreen *screen,
+    enum NativeSelectedItemsAdderTarget target, char *playlist,
+    int32 playlist_len) {
+    NcmStringFormatArg arg;
+    NcmError error;
+
+    if ((screen == NULL) || !screen->ready || (screen->client == NULL)) {
+        return false;
+    }
+
+    (void)native_selected_items_adder_action_set(
+        &screen->last_action, target,
+        NATIVE_SELECTED_ITEMS_ADDER_POSITION_NONE, playlist,
+        playlist_len);
+    ncm_error_clear(&error);
+    if (!native_selected_items_adder_screen_add_to_existing_playlist(
+            screen, screen->client, playlist, &error)) {
+        if (error.message[0] != '\0') {
+            ncm_statusbar_print_cstring(
+                (int32)Config.message_delay_time, error.message);
+        } else {
+            ncm_statusbar_print_cstring(
+                (int32)Config.message_delay_time,
+                (char *)"Could not add selected items");
+        }
+        return false;
+    }
+
+    arg = ncm_string_format_arg_string(playlist, playlist_len);
+    ncm_statusbar_format(
+        (int32)Config.message_delay_time,
+        STRLIT_ARGS("Selected item(s) added to playlist \"%1\""),
+        &arg, 1);
+    adder_finish(screen);
+    return true;
+}
+
 static void
 adder_action_current_playlist(void *user) {
     NativeSelectedItemsAdderScreen *screen;
@@ -898,12 +983,54 @@ adder_action_current_playlist(void *user) {
 static void
 adder_action_new_playlist(void *user) {
     NativeSelectedItemsAdderScreen *screen;
+    NcmStatusbarScopedLock lock;
+    enum NcPromptStatus prompt_status;
+    NcPrompt prompt;
+    NcWindow *window;
+    char *input;
+    char *playlist;
+    int32 playlist_len;
 
     screen = user;
     (void)native_selected_items_adder_action_set(
         &screen->last_action,
         NATIVE_SELECTED_ITEMS_ADDER_TARGET_NEW_PLAYLIST,
         NATIVE_SELECTED_ITEMS_ADDER_POSITION_NONE, NULL, 0);
+    input = NULL;
+    prompt_status = NC_PROMPT_ABORTED;
+    ncm_statusbar_scoped_lock_init(&lock);
+    window = ncm_statusbar_put();
+    if (window) {
+        nc_window_print_data(window,
+                             STRLIT_ARGS("Save playlist as: "));
+        prompt = (NcPrompt){0};
+        prompt.initial_text = (char *)"";
+        prompt.width = -1;
+        prompt.hook = adder_statusbar_prompt_hook;
+        prompt.hook_user_data = NULL;
+        prompt.encrypted = false;
+        prompt.remember = true;
+        prompt_status = nc_window_prompt(window, &prompt, &input);
+    }
+    ncm_statusbar_scoped_lock_destroy(&lock);
+
+    if (prompt_status != NC_PROMPT_ACCEPTED) {
+        nc_window_prompt_result_destroy(input);
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Action aborted");
+        return;
+    }
+
+    playlist = input;
+    if (playlist == NULL) {
+        playlist = (char *)"";
+    }
+    playlist_len = adder_cstring_len(playlist);
+    (void)adder_add_to_stored_playlist(
+        screen, NATIVE_SELECTED_ITEMS_ADDER_TARGET_NEW_PLAYLIST,
+        playlist, playlist_len);
+    nc_window_prompt_result_destroy(input);
     return;
 }
 
@@ -998,10 +1125,9 @@ adder_action_existing_playlist(void *user) {
     ExistingPlaylistAction *action;
 
     action = user;
-    (void)native_selected_items_adder_action_set(
-        &action->screen->last_action,
+    (void)adder_add_to_stored_playlist(
+        action->screen,
         NATIVE_SELECTED_ITEMS_ADDER_TARGET_EXISTING_PLAYLIST,
-        NATIVE_SELECTED_ITEMS_ADDER_POSITION_NONE,
         action->playlist, action->playlist_len);
     return;
 }
