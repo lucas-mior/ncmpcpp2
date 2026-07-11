@@ -17,24 +17,51 @@
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 #define TEST_EVENT_CAP 8
+#define TEST_TEXT_CAP 256
+#define TEST_STORED_SONG_CAP 4
 
 static struct TestState {
     NcmMpdPlaylistList playlists;
+    NcWindow status_window;
     NcWindow *displayed_windows[TEST_EVENT_CAP];
     NcWindow *refreshed_windows[TEST_EVENT_CAP];
     NcMenu *refreshed_menus[TEST_EVENT_CAP];
-    char status_error[256];
-    char drawn_label[256];
+    char added_playlists[TEST_STORED_SONG_CAP][TEST_TEXT_CAP];
+    char added_uris[TEST_STORED_SONG_CAP][TEST_TEXT_CAP];
+    char status_error[TEST_TEXT_CAP];
+    char status_playlist[TEST_TEXT_CAP];
+    char printed_status[TEST_TEXT_CAP];
+    char prompt_prefix[TEST_TEXT_CAP];
+    char prompt_input[TEST_TEXT_CAP];
+    char drawn_label[TEST_TEXT_CAP];
     int32 fetch_calls;
     int32 status_error_len;
+    int32 status_playlist_len;
+    int32 printed_status_len;
+    int32 prompt_prefix_len;
+    int32 prompt_input_len;
     int32 drawn_label_len;
     int32 status_calls;
+    int32 status_success_calls;
+    int32 status_print_calls;
     int32 display_calls;
     int32 refresh_calls;
     int32 draw_calls;
     int32 previous_resize_calls;
     int32 previous_refresh_calls;
+    int32 command_start_calls;
+    int32 command_add_calls;
+    int32 command_commit_calls;
+    int32 command_add_failure_at;
+    int32 status_lock_calls;
+    int32 status_unlock_calls;
+    int32 status_put_calls;
+    int32 prompt_calls;
+    int32 prompt_destroy_calls;
+    enum NcPromptStatus prompt_status;
     bool fetch_success;
+    bool command_start_success;
+    bool command_commit_success;
 } test_state;
 
 static void test_playlist_editor_command_preparation(void);
@@ -43,7 +70,13 @@ static void test_selected_items_transfer_and_actions(void);
 static void test_state_init(void);
 static void test_state_destroy(void);
 static void test_state_reset_events(void);
+static void test_state_reset_stored_playlist_events(void);
+static void test_state_set_prompt(enum NcPromptStatus status,
+                                  char *input, int32 input_len);
 static void test_state_add_playlist(char *name, int32 name_len);
+static int32 test_cstring_len(char *string);
+static void test_copy_text(char *dest, int32 *dest_len,
+                           char *source, int32 source_len);
 static NcEditorActionRow *test_adder_row(
     NativeSelectedItemsAdderScreen *screen, int64 pos);
 static void test_assert_adder_label(
@@ -75,24 +108,168 @@ __wrap_ncm_mpd_client_get_playlists(NcmMpdClient *client,
     return true;
 }
 
+bool
+__wrap_ncm_mpd_client_start_command_list(NcmMpdClient *client,
+                                         NcmError *error) {
+    test_state.command_start_calls += 1;
+    if (!test_state.command_start_success) {
+        client->command_list_active = true;
+        ncm_error_set(error, EIO, STRLIT_ARGS("command start failure"));
+        return false;
+    }
+
+    client->command_list_active = true;
+    ncm_error_clear(error);
+    return true;
+}
+
+bool
+__wrap_ncm_mpd_client_add_song_to_playlist(NcmMpdClient *client,
+                                           char *playlist,
+                                           NcmSong *song,
+                                           NcmError *error) {
+    int32 call;
+    int32 playlist_len;
+
+    assert(client->command_list_active);
+    assert(song != NULL);
+    assert(song->uri != NULL);
+    call = test_state.command_add_calls;
+    assert(call < TEST_STORED_SONG_CAP);
+    playlist_len = test_cstring_len(playlist);
+    test_copy_text(test_state.added_playlists[call], NULL,
+                   playlist, playlist_len);
+    test_copy_text(test_state.added_uris[call], NULL,
+                   song->uri, song->uri_len);
+    test_state.command_add_calls += 1;
+    if (call == test_state.command_add_failure_at) {
+        ncm_error_set(error, EIO, STRLIT_ARGS("command add failure"));
+        return false;
+    }
+
+    ncm_error_clear(error);
+    return true;
+}
+
+bool
+__wrap_ncm_mpd_client_commit_command_list(NcmMpdClient *client,
+                                          NcmError *error) {
+    assert(client->command_list_active);
+    test_state.command_commit_calls += 1;
+    if (!test_state.command_commit_success) {
+        ncm_error_set(error, EIO, STRLIT_ARGS("command commit failure"));
+        return false;
+    }
+
+    client->command_list_active = false;
+    ncm_error_clear(error);
+    return true;
+}
+
+void
+__wrap_ncm_statusbar_scoped_lock_init(NcmStatusbarScopedLock *lock) {
+    if (lock) {
+        *lock = (NcmStatusbarScopedLock){0};
+    }
+    test_state.status_lock_calls += 1;
+    return;
+}
+
+void
+__wrap_ncm_statusbar_scoped_lock_destroy(NcmStatusbarScopedLock *lock) {
+    (void)lock;
+    test_state.status_unlock_calls += 1;
+    return;
+}
+
+NcWindow *
+__wrap_ncm_statusbar_put(void) {
+    test_state.status_put_calls += 1;
+    return &test_state.status_window;
+}
+
+void
+__wrap_ncm_statusbar_print_cstring(int32 delay_seconds, char *message) {
+    int32 message_len;
+
+    assert(delay_seconds == (int32)Config.message_delay_time);
+    message_len = test_cstring_len(message);
+    test_copy_text(test_state.printed_status,
+                   &test_state.printed_status_len,
+                   message, message_len);
+    test_state.status_print_calls += 1;
+    return;
+}
+
 void
 __wrap_ncm_statusbar_format(int32 delay_seconds, char *format,
                             int32 format_len, NcmStringFormatArg *args,
                             int32 args_len) {
     NcmStringView message;
 
-    (void)delay_seconds;
-    assert(ncm_string_equal(format, format_len,
-                            STRLIT_ARGS("Could not fetch playlists: %1")));
+    assert(delay_seconds == (int32)Config.message_delay_time);
     assert(args != NULL);
     assert(args_len == 1);
     assert(args[0].type == NCM_STRING_FORMAT_ARG_STRING);
     message = args[0].value.string;
-    assert(message.len < (int32)SIZEOF(test_state.status_error));
-    ncm_memcpy(test_state.status_error, message.data, message.len);
-    test_state.status_error[message.len] = '\0';
-    test_state.status_error_len = message.len;
-    test_state.status_calls += 1;
+    if (ncm_string_equal(
+            format, format_len,
+            STRLIT_ARGS("Could not fetch playlists: %1"))) {
+        test_copy_text(test_state.status_error,
+                       &test_state.status_error_len,
+                       message.data, message.len);
+        test_state.status_calls += 1;
+    } else {
+        assert(ncm_string_equal(
+            format, format_len,
+            STRLIT_ARGS(
+                "Selected item(s) added to playlist \"%1\"")));
+        test_copy_text(test_state.status_playlist,
+                       &test_state.status_playlist_len,
+                       message.data, message.len);
+        test_state.status_success_calls += 1;
+    }
+    return;
+}
+
+enum NcPromptStatus
+__wrap_nc_window_prompt(NcWindow *window, NcPrompt *prompt,
+                        char **result) {
+    assert(window == &test_state.status_window);
+    assert(prompt != NULL);
+    assert(result != NULL);
+    assert(ncm_string_equal(prompt->initial_text,
+                            test_cstring_len(prompt->initial_text),
+                            STRLIT_ARGS("")));
+    assert(prompt->width == -1);
+    assert(prompt->hook != NULL);
+    assert(prompt->hook_user_data == NULL);
+    assert(!prompt->encrypted);
+    assert(prompt->remember);
+
+    test_state.prompt_calls += 1;
+    *result = NULL;
+    if (test_state.prompt_status == NC_PROMPT_ACCEPTED) {
+        *result = ncm_malloc(test_state.prompt_input_len + 1);
+        if (test_state.prompt_input_len > 0) {
+            ncm_memcpy(*result, test_state.prompt_input,
+                       test_state.prompt_input_len);
+        }
+        (*result)[test_state.prompt_input_len] = '\0';
+    }
+    return test_state.prompt_status;
+}
+
+void
+__wrap_nc_window_prompt_result_destroy(char *result) {
+    int32 result_len;
+
+    test_state.prompt_destroy_calls += 1;
+    if (result == NULL) {
+        return;
+    }
+    result_len = test_cstring_len(result);
+    ncm_free(result, result_len + 1);
     return;
 }
 
@@ -171,8 +348,13 @@ __wrap_nc_window_display(NcWindow *window) {
 void
 __wrap_nc_window_print_data(NcWindow *window, char *string,
                             int32 string_len) {
-    (void)window;
     assert(string_len >= 0);
+    if (window == &test_state.status_window) {
+        test_copy_text(test_state.prompt_prefix,
+                       &test_state.prompt_prefix_len,
+                       string, string_len);
+        return;
+    }
     assert(string_len < (int32)SIZEOF(test_state.drawn_label));
     ncm_memcpy(test_state.drawn_label, string, string_len);
     test_state.drawn_label[string_len] = '\0';
@@ -211,6 +393,10 @@ test_state_init(void) {
     test_state = (struct TestState){0};
     ncm_mpd_playlist_list_init(&test_state.playlists);
     test_state.fetch_success = true;
+    test_state.command_start_success = true;
+    test_state.command_commit_success = true;
+    test_state.command_add_failure_at = -1;
+    test_state.prompt_status = NC_PROMPT_ABORTED;
     return;
 }
 
@@ -228,15 +414,98 @@ test_state_reset_events(void) {
         test_state.refreshed_menus[i] = NULL;
     }
     test_state.status_error[0] = '\0';
+    test_state.status_playlist[0] = '\0';
+    test_state.printed_status[0] = '\0';
+    test_state.prompt_prefix[0] = '\0';
     test_state.drawn_label[0] = '\0';
     test_state.status_error_len = 0;
+    test_state.status_playlist_len = 0;
+    test_state.printed_status_len = 0;
+    test_state.prompt_prefix_len = 0;
     test_state.drawn_label_len = 0;
     test_state.status_calls = 0;
+    test_state.status_success_calls = 0;
+    test_state.status_print_calls = 0;
     test_state.display_calls = 0;
     test_state.refresh_calls = 0;
     test_state.draw_calls = 0;
     test_state.previous_resize_calls = 0;
     test_state.previous_refresh_calls = 0;
+    return;
+}
+
+static void
+test_state_reset_stored_playlist_events(void) {
+    for (int32 i = 0; i < TEST_STORED_SONG_CAP; i += 1) {
+        test_state.added_playlists[i][0] = '\0';
+        test_state.added_uris[i][0] = '\0';
+    }
+    test_state.status_playlist[0] = '\0';
+    test_state.printed_status[0] = '\0';
+    test_state.prompt_prefix[0] = '\0';
+    test_state.status_playlist_len = 0;
+    test_state.printed_status_len = 0;
+    test_state.prompt_prefix_len = 0;
+    test_state.status_success_calls = 0;
+    test_state.status_print_calls = 0;
+    test_state.command_start_calls = 0;
+    test_state.command_add_calls = 0;
+    test_state.command_commit_calls = 0;
+    test_state.command_add_failure_at = -1;
+    test_state.status_lock_calls = 0;
+    test_state.status_unlock_calls = 0;
+    test_state.status_put_calls = 0;
+    test_state.prompt_calls = 0;
+    test_state.prompt_destroy_calls = 0;
+    test_state.command_start_success = true;
+    test_state.command_commit_success = true;
+    test_state.prompt_status = NC_PROMPT_ABORTED;
+    return;
+}
+
+static void
+test_state_set_prompt(enum NcPromptStatus status, char *input,
+                      int32 input_len) {
+    assert(input_len >= 0);
+    assert(input_len < (int32)SIZEOF(test_state.prompt_input));
+    test_state.prompt_status = status;
+    test_state.prompt_input_len = input_len;
+    if (input_len > 0) {
+        assert(input != NULL);
+        ncm_memcpy(test_state.prompt_input, input, input_len);
+    }
+    test_state.prompt_input[input_len] = '\0';
+    return;
+}
+
+static int32
+test_cstring_len(char *string) {
+    int32 len;
+
+    if (string == NULL) {
+        return 0;
+    }
+    len = 0;
+    while (string[len] != '\0') {
+        len += 1;
+    }
+    return len;
+}
+
+static void
+test_copy_text(char *dest, int32 *dest_len, char *source,
+               int32 source_len) {
+    assert(dest != NULL);
+    assert(source_len >= 0);
+    assert(source_len < TEST_TEXT_CAP);
+    if (source_len > 0) {
+        assert(source != NULL);
+        ncm_memcpy(dest, source, source_len);
+    }
+    dest[source_len] = '\0';
+    if (dest_len) {
+        *dest_len = source_len;
+    }
     return;
 }
 
@@ -376,6 +645,7 @@ test_selected_items_transfer_and_actions(void) {
     NcmSongArray copied_songs;
     NcmSongArray songs;
     NcmSong song;
+    NcmSong second_song;
     NcmError error;
     NcMenu *menu;
     NcMenu *position_menu;
@@ -406,6 +676,7 @@ test_selected_items_transfer_and_actions(void) {
     ncm_song_array_init(&copied_songs);
     ncm_song_array_init(&songs);
     ncm_song_init(&song);
+    ncm_song_init(&second_song);
 
     assert(app_controller_register_screen(
         native_browser_screen_base(&browser)));
@@ -499,15 +770,12 @@ test_selected_items_transfer_and_actions(void) {
     assert(!nc_menu_is_filtered(menu));
     assert(!nc_menu_is_filtered(position_menu));
 
-    nc_menu_highlight_position(menu, 3, nc_menu_item_count(menu));
+    nc_menu_highlight_position(menu, 0, nc_menu_item_count(menu));
     assert(native_selected_items_adder_screen_run_current(&screen));
     action = native_selected_items_adder_screen_last_action(&screen);
     assert(action->target
-           == NATIVE_SELECTED_ITEMS_ADDER_TARGET_EXISTING_PLAYLIST);
-    assert(ncm_string_equal(action->playlist, action->playlist_len,
-                            LIT_ARGS("The Aardvarks")));
+           == NATIVE_SELECTED_ITEMS_ADDER_TARGET_CURRENT_PLAYLIST);
 
-    native_selected_items_adder_screen_choose_current_playlist(&screen);
     test_state_reset_events();
     nc_screen_refresh(native_selected_items_adder_screen_base(&screen));
     assert(test_state.display_calls == 2);
@@ -588,6 +856,166 @@ test_selected_items_transfer_and_actions(void) {
     test_assert_adder_label(&screen, 3, LIT_ARGS("Cancel"));
     test_cancel_adder(&screen);
 
+    test_state.fetch_success = true;
+    assert(ncm_song_set_uri(&second_song, LIT_ARGS("second.flac")));
+    assert(ncm_song_array_append_copy(&songs, &second_song));
+    ncm_error_clear(&error);
+    assert(native_selected_items_adder_screen_open(
+        &screen, &songs, &playlist, &client, &error));
+    menu = nc_editor_action_menu_base(
+        native_selected_items_adder_screen_playlist_menu(&screen));
+    nc_menu_highlight_position(menu, 3, nc_menu_item_count(menu));
+
+    test_state_reset_stored_playlist_events();
+    test_state.command_start_success = false;
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.command_start_calls == 1);
+    assert(test_state.command_add_calls == 0);
+    assert(test_state.command_commit_calls == 0);
+    assert(!client.command_list_active);
+    assert(test_state.status_print_calls == 1);
+    assert(ncm_string_equal(test_state.printed_status,
+                            test_state.printed_status_len,
+                            LIT_ARGS("command start failure")));
+    assert(screen.ready);
+    assert(app_controller_current_screen()
+           == native_selected_items_adder_screen_base(&screen));
+
+    test_state_reset_stored_playlist_events();
+    test_state.command_add_failure_at = 1;
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.command_start_calls == 1);
+    assert(test_state.command_add_calls == 2);
+    assert(test_state.command_commit_calls == 0);
+    assert(!client.command_list_active);
+    assert(ncm_string_equal(test_state.added_playlists[0],
+                            test_cstring_len(
+                                test_state.added_playlists[0]),
+                            LIT_ARGS("The Aardvarks")));
+    assert(ncm_string_equal(test_state.added_uris[0],
+                            test_cstring_len(test_state.added_uris[0]),
+                            LIT_ARGS("first.flac")));
+    assert(ncm_string_equal(test_state.added_uris[1],
+                            test_cstring_len(test_state.added_uris[1]),
+                            LIT_ARGS("second.flac")));
+    assert(test_state.status_print_calls == 1);
+    assert(ncm_string_equal(test_state.printed_status,
+                            test_state.printed_status_len,
+                            LIT_ARGS("command add failure")));
+    assert(screen.ready);
+
+    test_state_reset_stored_playlist_events();
+    test_state.command_commit_success = false;
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.command_start_calls == 1);
+    assert(test_state.command_add_calls == 2);
+    assert(test_state.command_commit_calls == 1);
+    assert(!client.command_list_active);
+    assert(test_state.status_print_calls == 1);
+    assert(ncm_string_equal(test_state.printed_status,
+                            test_state.printed_status_len,
+                            LIT_ARGS("command commit failure")));
+    assert(screen.ready);
+
+    test_state_reset_stored_playlist_events();
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.command_start_calls == 1);
+    assert(test_state.command_add_calls == 2);
+    assert(test_state.command_commit_calls == 1);
+    assert(!client.command_list_active);
+    assert(test_state.status_success_calls == 1);
+    assert(ncm_string_equal(test_state.status_playlist,
+                            test_state.status_playlist_len,
+                            LIT_ARGS("The Aardvarks")));
+    assert(!screen.ready);
+    assert(app_controller_current_screen()
+           == native_browser_screen_base(&browser));
+    action = native_selected_items_adder_screen_last_action(&screen);
+    assert(action->target
+           == NATIVE_SELECTED_ITEMS_ADDER_TARGET_EXISTING_PLAYLIST);
+    assert(ncm_string_equal(action->playlist, action->playlist_len,
+                            LIT_ARGS("The Aardvarks")));
+
+    ncm_error_clear(&error);
+    assert(native_selected_items_adder_screen_open(
+        &screen, &songs, &playlist, &client, &error));
+    menu = nc_editor_action_menu_base(
+        native_selected_items_adder_screen_playlist_menu(&screen));
+    nc_menu_highlight_position(menu, 1, nc_menu_item_count(menu));
+
+    test_state_reset_stored_playlist_events();
+    test_state_set_prompt(NC_PROMPT_ABORTED, NULL, 0);
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.status_lock_calls == 1);
+    assert(test_state.status_unlock_calls == 1);
+    assert(test_state.status_put_calls == 1);
+    assert(test_state.prompt_calls == 1);
+    assert(test_state.prompt_destroy_calls == 1);
+    assert(ncm_string_equal(test_state.prompt_prefix,
+                            test_state.prompt_prefix_len,
+                            LIT_ARGS("Save playlist as: ")));
+    assert(test_state.command_start_calls == 0);
+    assert(test_state.status_print_calls == 1);
+    assert(ncm_string_equal(test_state.printed_status,
+                            test_state.printed_status_len,
+                            LIT_ARGS("Action aborted")));
+    assert(screen.ready);
+    assert(app_controller_current_screen()
+           == native_selected_items_adder_screen_base(&screen));
+    action = native_selected_items_adder_screen_last_action(&screen);
+    assert(action->target
+           == NATIVE_SELECTED_ITEMS_ADDER_TARGET_NEW_PLAYLIST);
+    assert(action->playlist == NULL);
+
+    test_state_reset_stored_playlist_events();
+    test_state_set_prompt(NC_PROMPT_ACCEPTED,
+                          LIT_ARGS("Road Trip"));
+    test_state.command_add_failure_at = 1;
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.status_lock_calls == 1);
+    assert(test_state.status_unlock_calls == 1);
+    assert(test_state.prompt_calls == 1);
+    assert(test_state.prompt_destroy_calls == 1);
+    assert(test_state.command_start_calls == 1);
+    assert(test_state.command_add_calls == 2);
+    assert(test_state.command_commit_calls == 0);
+    assert(!client.command_list_active);
+    assert(test_state.status_print_calls == 1);
+    assert(ncm_string_equal(test_state.printed_status,
+                            test_state.printed_status_len,
+                            LIT_ARGS("command add failure")));
+    assert(screen.ready);
+    action = native_selected_items_adder_screen_last_action(&screen);
+    assert(action->target
+           == NATIVE_SELECTED_ITEMS_ADDER_TARGET_NEW_PLAYLIST);
+    assert(ncm_string_equal(action->playlist, action->playlist_len,
+                            LIT_ARGS("Road Trip")));
+
+    test_state_reset_stored_playlist_events();
+    test_state_set_prompt(NC_PROMPT_ACCEPTED,
+                          LIT_ARGS("Road Trip"));
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.status_lock_calls == 1);
+    assert(test_state.status_unlock_calls == 1);
+    assert(test_state.prompt_calls == 1);
+    assert(test_state.prompt_destroy_calls == 1);
+    assert(test_state.command_start_calls == 1);
+    assert(test_state.command_add_calls == 2);
+    assert(test_state.command_commit_calls == 1);
+    assert(!client.command_list_active);
+    assert(ncm_string_equal(test_state.added_playlists[0],
+                            test_cstring_len(
+                                test_state.added_playlists[0]),
+                            LIT_ARGS("Road Trip")));
+    assert(test_state.status_success_calls == 1);
+    assert(ncm_string_equal(test_state.status_playlist,
+                            test_state.status_playlist_len,
+                            LIT_ARGS("Road Trip")));
+    assert(!screen.ready);
+    assert(app_controller_current_screen()
+           == native_browser_screen_base(&browser));
+
+    ncm_song_destroy(&second_song);
     ncm_song_destroy(&song);
     ncm_song_array_destroy(&songs);
     ncm_song_array_destroy(&copied_songs);
