@@ -123,7 +123,7 @@ bool native_tag_editor_screen_add_mutable_song(
 bool native_tag_editor_screen_current_song(NativeTagEditorScreen *screen,
                                            NcmMutableSong *song);
 bool native_tag_editor_screen_selected_songs(NativeTagEditorScreen *screen,
-                                             NcmMutableSongArray *songs);
+                                             NcmSongArray *songs);
 bool native_tag_editor_screen_previous_column_available(
     NativeTagEditorScreen *screen);
 bool native_tag_editor_screen_next_column_available(

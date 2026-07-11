@@ -638,9 +638,24 @@ native_c_screen_selected_items_adder_init(void) {
 
 void
 native_c_screen_selected_items_adder_register(void) {
+    NcScreen *registered;
+    NcScreen *screen;
+    bool success;
+
     native_c_screen_selected_items_adder_init();
-    assert(native_register_screen(
-        native_c_screen_selected_items_adder_native()));
+    screen = native_c_screen_selected_items_adder_native();
+    registered = app_controller_find_screen_type(
+        NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
+    if ((registered != NULL) && (registered != screen)) {
+        success = app_controller_unregister_screen(registered);
+        assert(success);
+        if (!success) {
+            return;
+        }
+    }
+    success = native_register_screen(screen);
+    assert(success);
+    (void)success;
     return;
 }
 
@@ -657,6 +672,15 @@ native_c_screen_selected_items_adder_switch_to(void) {
         nc_screen_has_to_be_resized(
             native_c_screen_selected_items_adder_native()));
     return;
+}
+
+bool
+native_c_screen_selected_items_adder_open(NcmSongArray *songs,
+                                          NcmError *error) {
+    native_c_screen_selected_items_adder_register();
+    return native_selected_items_adder_screen_open(
+        native_c_screen_selected_items_adder(), songs,
+        native_c_screen_playlist(), &global_mpd, error);
 }
 
 bool
