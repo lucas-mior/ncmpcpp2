@@ -97,6 +97,9 @@ static void test_lastfm_screen_result_storage(void);
 static void test_lyrics_filename_and_fetcher_toggle(void);
 static void test_lyrics_background_queue_cleanup(void);
 static void test_visualizer_sample_buffers(void);
+static void test_visualizer_rendering_state(void);
+static void test_visualizer_auto_scale(void);
+static void test_visualizer_sample_consumption(void);
 static void test_visualizer_resource_lifecycle(void);
 static void test_visualizer_data_source_parsing(void);
 static void test_visualizer_data_source_hooks(void);
@@ -1062,6 +1065,198 @@ test_visualizer_sample_buffers(void) {
 }
 
 static void
+test_visualizer_rendering_state(void) {
+    NativeVisualizerScreen screen = {0};
+    NativeVisualizerScreenConfig config = {
+        .source_location = (char *)"/tmp/test-visualizer.fifo",
+        .source_location_len = STRLIT_LEN("/tmp/test-visualizer.fifo"),
+        .fps = 30,
+        .spectrum_dft_size = 2,
+        .spectrum_gain = 10.0,
+        .spectrum_hz_min = 20.0,
+        .spectrum_hz_max = 20000.0,
+        .visualization_type = NATIVE_VISUALIZER_WAVE,
+        .stereo = false,
+    };
+
+    native_visualizer_screen_init(&screen, 0, 0, 80, 24,
+                                  nc_color_default(), nc_border_none(),
+                                  &config);
+    assert(screen.sample_consumption_rate == 5);
+    assert(ncm_sample_buffer_capacity(&screen.incoming_samples) == 22050);
+    assert(ncm_sample_buffer_capacity(&screen.buffered_samples) == 22050);
+    assert(ncm_sample_buffer_capacity(&screen.rendered_samples) == 15200);
+    assert(ncm_sample_buffer_capacity(&screen.left_channel) == 0);
+    assert(ncm_sample_buffer_capacity(&screen.right_channel) == 0);
+    assert(native_visualizer_screen_requested_samples(&screen) == 2367);
+
+    native_visualizer_screen_set_stereo(&screen, true);
+    assert(ncm_sample_buffer_capacity(&screen.incoming_samples) == 44100);
+    assert(ncm_sample_buffer_capacity(&screen.buffered_samples) == 44100);
+    assert(ncm_sample_buffer_capacity(&screen.rendered_samples) == 30400);
+    assert(ncm_sample_buffer_capacity(&screen.left_channel) == 15200);
+    assert(ncm_sample_buffer_capacity(&screen.right_channel) == 15200);
+    assert(native_visualizer_screen_requested_samples(&screen) == 4734);
+
+    native_visualizer_screen_set_fps(&screen, 60);
+    assert(ncm_sample_buffer_capacity(&screen.rendered_samples) == 16000);
+    assert(native_visualizer_screen_requested_samples(&screen) == 2367);
+
+    screen.window.width = 81;
+    native_visualizer_screen_init_visualization(&screen);
+    assert(ncm_sample_buffer_capacity(&screen.rendered_samples) == 16200);
+
+    native_visualizer_screen_set_type(&screen,
+                                      NATIVE_VISUALIZER_ELLIPSE);
+    assert(ncm_sample_buffer_capacity(&screen.rendered_samples) == 2940);
+#if defined(HAVE_FFTW3_H)
+    native_visualizer_screen_set_type(&screen,
+                                      NATIVE_VISUALIZER_FREQUENCY);
+    assert(ncm_sample_buffer_capacity(&screen.rendered_samples)
+           == screen.fft.dft_nonzero_size*2);
+#endif
+
+    native_visualizer_screen_set_type(&screen, NATIVE_VISUALIZER_WAVE);
+    native_visualizer_screen_toggle_type(&screen);
+    assert(native_visualizer_screen_type(&screen)
+           == NATIVE_VISUALIZER_WAVE_FILLED);
+    native_visualizer_screen_toggle_type(&screen);
+#if defined(HAVE_FFTW3_H)
+    assert(native_visualizer_screen_type(&screen)
+           == NATIVE_VISUALIZER_FREQUENCY);
+    native_visualizer_screen_toggle_type(&screen);
+#endif
+    assert(native_visualizer_screen_type(&screen)
+           == NATIVE_VISUALIZER_ELLIPSE);
+    native_visualizer_screen_toggle_type(&screen);
+    assert(native_visualizer_screen_type(&screen)
+           == NATIVE_VISUALIZER_WAVE);
+
+    native_visualizer_screen_set_type(
+        &screen, NATIVE_VISUALIZER_TYPE_LAST);
+    assert(native_visualizer_screen_type(&screen)
+           == NATIVE_VISUALIZER_WAVE);
+    native_visualizer_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_visualizer_auto_scale(void) {
+    NativeVisualizerScreen screen = {0};
+    int16 samples[3] = {
+        1000,
+        -2000,
+        0,
+    };
+    int16 loud_samples[2] = {
+        -32768,
+        32767,
+    };
+    int16 silent_sample = 0;
+    int16 disabled_sample = 1234;
+    NativeVisualizerScreenConfig config = {
+        .source_location = (char *)"/tmp/test-visualizer.fifo",
+        .source_location_len = STRLIT_LEN("/tmp/test-visualizer.fifo"),
+        .fps = 10,
+        .spectrum_dft_size = 2,
+        .spectrum_gain = 10.0,
+        .spectrum_hz_min = 20.0,
+        .spectrum_hz_max = 20000.0,
+        .visualization_type = NATIVE_VISUALIZER_WAVE,
+        .autoscale = true,
+        .stereo = false,
+    };
+
+    native_visualizer_screen_init(&screen, 0, 0, 80, 24,
+                                  nc_color_default(), nc_border_none(),
+                                  &config);
+    assert(native_visualizer_screen_push_samples(&screen, samples, 3));
+    assert(screen.auto_scale_multiplier > 1.09);
+    assert(screen.auto_scale_multiplier < 1.11);
+    assert(samples[0] == 1100);
+    assert(samples[1] == -2200);
+    assert(samples[2] == 0);
+
+    screen.auto_scale_multiplier = 2.0;
+    native_visualizer_screen_apply_auto_scale(&screen, loud_samples, 2);
+    assert(screen.auto_scale_multiplier == 1.0);
+    assert(loud_samples[0] == -32768);
+    assert(loud_samples[1] == 32767);
+
+    screen.auto_scale_multiplier = 50.0;
+    native_visualizer_screen_apply_auto_scale(&screen, &silent_sample, 1);
+    assert(screen.auto_scale_multiplier > 50.0);
+    assert(silent_sample == 0);
+
+    screen.sample_consumption_rate = 7;
+    native_visualizer_screen_reset_auto_scale_multiplier(&screen);
+    assert(screen.auto_scale_multiplier == 1.0);
+    assert(screen.sample_consumption_rate == 7);
+
+    screen.autoscale = false;
+    native_visualizer_screen_apply_auto_scale(&screen, &disabled_sample, 1);
+    assert(disabled_sample == 1234);
+    assert(screen.auto_scale_multiplier == 1.0);
+    native_visualizer_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_visualizer_sample_consumption(void) {
+    NativeVisualizerScreen screen = {0};
+    int16 samples[3000] = {0};
+    int16 one_sample = 0;
+    int16 dest = 0;
+    NativeVisualizerScreenConfig config = {
+        .source_location = (char *)"/tmp/test-visualizer.fifo",
+        .source_location_len = STRLIT_LEN("/tmp/test-visualizer.fifo"),
+        .fps = 30,
+        .spectrum_dft_size = 2,
+        .spectrum_gain = 10.0,
+        .spectrum_hz_min = 20.0,
+        .spectrum_hz_max = 20000.0,
+        .visualization_type = NATIVE_VISUALIZER_WAVE,
+        .stereo = false,
+    };
+
+    native_visualizer_screen_init(&screen, 0, 0, 80, 24,
+                                  nc_color_default(), nc_border_none(),
+                                  &config);
+    for (int32 i = 0; i < 9; i += 1) {
+        assert(native_visualizer_screen_push_samples(&screen,
+                                                     samples,
+                                                     3000));
+        assert(native_visualizer_screen_take_render_samples(
+                   &screen, &dest, 1) > 0);
+    }
+    assert(screen.sample_consumption_rate == 6);
+    assert(screen.sample_consumption_rate_up_ctr == 0);
+
+    ncm_sample_buffer_clear(&screen.buffered_samples);
+    screen.sample_consumption_rate_up_ctr = 3;
+    screen.sample_consumption_rate_dn_ctr = 2;
+    assert(native_visualizer_screen_take_render_samples(
+               &screen, &dest, 1) == 0);
+    assert(screen.sample_consumption_rate == 6);
+    assert(screen.sample_consumption_rate_up_ctr == 3);
+    assert(screen.sample_consumption_rate_dn_ctr == 2);
+
+    screen.sample_consumption_rate_up_ctr = 0;
+    screen.sample_consumption_rate_dn_ctr = 0;
+    for (int32 i = 0; i < 5; i += 1) {
+        assert(native_visualizer_screen_push_samples(&screen,
+                                                     &one_sample,
+                                                     1));
+        assert(native_visualizer_screen_take_render_samples(
+                   &screen, &dest, 1) == 1);
+    }
+    assert(screen.sample_consumption_rate == 5);
+    assert(screen.sample_consumption_rate_dn_ctr == 0);
+    native_visualizer_screen_destroy(&screen);
+    return;
+}
+
+static void
 test_visualizer_resource_lifecycle(void) {
     char source_location[] = "127.0.0.1:5555";
     char output_name[] = "Visualizer feed";
@@ -1104,7 +1299,9 @@ test_visualizer_resource_lifecycle(void) {
                             LIT_ARGS("Visualizer feed")));
     assert(ncm_sample_buffer_capacity(&screen.incoming_samples) == 44100);
     assert(ncm_sample_buffer_capacity(&screen.buffered_samples) == 44100);
-    assert(ncm_sample_buffer_capacity(&screen.rendered_samples) >= 40960);
+    assert(ncm_sample_buffer_capacity(&screen.rendered_samples) == 16000);
+    assert(screen.sample_consumption_rate == 5);
+    assert(!screen.autoscale);
 #if defined(HAVE_FFTW3_H)
     assert(screen.fft.dft_nonzero_size == 20480);
     assert(screen.fft.dft_total_size == 32768);
@@ -1160,6 +1357,9 @@ main(void) {
     test_visualizer_data_source_hooks();
     test_visualizer_find_output_id();
     test_visualizer_sample_buffers();
+    test_visualizer_rendering_state();
+    test_visualizer_auto_scale();
+    test_visualizer_sample_consumption();
     test_visualizer_resource_lifecycle();
     ncm_lyrics_fetcher_set_io_for_tests(NULL, NULL, NULL);
     return EXIT_SUCCESS;
