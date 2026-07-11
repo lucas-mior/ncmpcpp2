@@ -476,8 +476,8 @@ Keep src/c/*.h headers as C contracts only.
 
     NcmPlaylist C++ constructors/operators -> MPD::Playlist wrapper or
                                              explicit ncm_playlist_* calls
-    ncm_playlist_cpp_path() in src/c       -> src/ncm_playlist_legacy.h
-                                             during the mixed C++ phase
+    ncm_playlist_cpp_path() compatibility -> explicit
+                                             ncm_playlist_path_view() calls
     NcmMpdItem C++ constructors/operators  -> explicit ncm_mpd_item_init(),
                                              ncm_mpd_item_copy(),
                                              ncm_mpd_item_move(), and
