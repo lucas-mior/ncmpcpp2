@@ -2,9 +2,11 @@
 
 #include <math.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 #include "screens/screen_switcher.h"
 #include "title.h"
 #include "ui_state.h"
@@ -12,6 +14,17 @@
 #define NATIVE_VISUALIZER_TITLE "Visualizer"
 #define NATIVE_VISUALIZER_DEFAULT_RATE 44100
 #define NATIVE_VISUALIZER_DEFAULT_CAP 32768
+#define NATIVE_VISUALIZER_DEFAULT_FPS 30
+#define NATIVE_VISUALIZER_DEFAULT_DFT_SIZE 2
+#define NATIVE_VISUALIZER_MAX_DFT_SIZE 5
+#define NATIVE_VISUALIZER_DEFAULT_SPECTRUM_GAIN 10.0
+#define NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MIN 20.0
+#define NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MAX 20000.0
+#define NATIVE_VISUALIZER_DFT_TOTAL_SIZE (1 << 15)
+#define NATIVE_VISUALIZER_DFT_BASE_SIZE 2048
+#define NATIVE_VISUALIZER_DFT_PADDING 4
+#define NATIVE_VISUALIZER_FREQ_SPACE_CAP 500
+#define NATIVE_VISUALIZER_BAR_HEIGHTS_CAP 100
 #define NATIVE_VISUALIZER_MIN_SAMPLE (-32768)
 #define NATIVE_VISUALIZER_MAX_SAMPLE 32767
 
@@ -59,7 +72,56 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
                               int64 start_x, int64 start_y,
                               int64 width, int64 height,
                               NcColor color, NcBorder border,
-                              int32 fps, bool stereo) {
+                              NativeVisualizerScreenConfig *config) {
+    char *source_location;
+    int32 source_location_len;
+    int32 incoming_cap;
+    int32 rendered_cap;
+    int32 fps;
+#if defined(HAVE_FFTW3_H)
+    uint32 spectrum_dft_size;
+    double spectrum_gain;
+    double spectrum_hz_min;
+    double spectrum_hz_max;
+#endif
+    bool stereo;
+
+    source_location = NULL;
+    source_location_len = 0;
+    fps = NATIVE_VISUALIZER_DEFAULT_FPS;
+#if defined(HAVE_FFTW3_H)
+    spectrum_dft_size = NATIVE_VISUALIZER_DEFAULT_DFT_SIZE;
+    spectrum_gain = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_GAIN;
+    spectrum_hz_min = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MIN;
+    spectrum_hz_max = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MAX;
+#endif
+    stereo = false;
+    if (config != NULL) {
+        source_location = config->source_location;
+        source_location_len = config->source_location_len;
+        fps = config->fps;
+#if defined(HAVE_FFTW3_H)
+        spectrum_dft_size = config->spectrum_dft_size;
+        spectrum_gain = config->spectrum_gain;
+        spectrum_hz_min = config->spectrum_hz_min;
+        spectrum_hz_max = config->spectrum_hz_max;
+#endif
+        stereo = config->stereo;
+    }
+    if ((source_location == NULL) || (source_location_len < 0)) {
+        source_location = NULL;
+        source_location_len = 0;
+    }
+    if (fps <= 0) {
+        fps = NATIVE_VISUALIZER_DEFAULT_FPS;
+    }
+#if defined(HAVE_FFTW3_H)
+    if ((spectrum_dft_size == 0)
+        || (spectrum_dft_size > NATIVE_VISUALIZER_MAX_DFT_SIZE)) {
+        spectrum_dft_size = NATIVE_VISUALIZER_DEFAULT_DFT_SIZE;
+    }
+#endif
+
     nc_screen_init(&screen->screen,
                    native_visualizer_callbacks(),
                    screen,
@@ -72,28 +134,108 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
                    STRLIT_ARGS(""),
                    color,
                    border);
+    ncm_buffer_init(&screen->source_location);
+    ncm_buffer_init(&screen->source_port);
+    ncm_buffer_set(&screen->source_location,
+                   source_location,
+                   source_location_len);
+
+    ncm_sample_buffer_init(&screen->incoming_samples);
     ncm_sample_buffer_init(&screen->buffered_samples);
     ncm_sample_buffer_init(&screen->rendered_samples);
     ncm_sample_buffer_init(&screen->left_channel);
     ncm_sample_buffer_init(&screen->right_channel);
-    ncm_sample_buffer_resize(&screen->buffered_samples,
-                             NATIVE_VISUALIZER_DEFAULT_CAP);
-    ncm_sample_buffer_resize(&screen->rendered_samples,
-                             NATIVE_VISUALIZER_DEFAULT_CAP);
-    ncm_sample_buffer_resize(&screen->left_channel,
-                             NATIVE_VISUALIZER_DEFAULT_CAP / 2);
-    ncm_sample_buffer_resize(&screen->right_channel,
-                             NATIVE_VISUALIZER_DEFAULT_CAP / 2);
+
+    incoming_cap = NATIVE_VISUALIZER_DEFAULT_RATE / 2;
+    if (stereo) {
+        incoming_cap *= 2;
+    }
+    rendered_cap = NATIVE_VISUALIZER_DEFAULT_CAP;
+#if defined(HAVE_FFTW3_H)
+    screen->fft.input = NULL;
+    screen->fft.output = NULL;
+    screen->fft.plan = NULL;
+    screen->fft.frequency_magnitudes = NULL;
+    screen->fft.dft_frequency_space = NULL;
+    screen->fft.bar_heights = NULL;
+
+    screen->fft.dft_nonzero_size = NATIVE_VISUALIZER_DFT_BASE_SIZE
+                                   *(2*(int32)spectrum_dft_size
+                                     + NATIVE_VISUALIZER_DFT_PADDING);
+    screen->fft.dft_total_size = NATIVE_VISUALIZER_DFT_TOTAL_SIZE;
+    screen->fft.results_len = screen->fft.dft_total_size / 2 + 1;
+    screen->fft.dynamic_range = 100.0 - spectrum_gain;
+    screen->fft.hz_min = spectrum_hz_min;
+    screen->fft.hz_max = spectrum_hz_max;
+    screen->fft.gain = spectrum_gain;
+
+    screen->fft.frequency_magnitudes_len = screen->fft.results_len;
+    screen->fft.frequency_magnitudes_cap = screen->fft.results_len;
+    screen->fft.dft_frequency_space_len = 0;
+    screen->fft.dft_frequency_space_cap =
+        NATIVE_VISUALIZER_FREQ_SPACE_CAP;
+    screen->fft.bar_heights_len = 0;
+    screen->fft.bar_heights_cap = NATIVE_VISUALIZER_BAR_HEIGHTS_CAP;
+
+    screen->fft.frequency_magnitudes = ncm_malloc(
+        screen->fft.frequency_magnitudes_cap
+        *SIZEOF(*screen->fft.frequency_magnitudes));
+    cbase_memset(screen->fft.frequency_magnitudes,
+             0,
+             screen->fft.frequency_magnitudes_cap
+             *SIZEOF(*screen->fft.frequency_magnitudes));
+    screen->fft.dft_frequency_space = ncm_malloc(
+        screen->fft.dft_frequency_space_cap
+        *SIZEOF(*screen->fft.dft_frequency_space));
+    screen->fft.bar_heights = ncm_malloc(
+        screen->fft.bar_heights_cap
+        *SIZEOF(*screen->fft.bar_heights));
+
+    screen->fft.input = fftw_malloc(
+        (size_t)(screen->fft.dft_total_size
+                 *SIZEOF(*screen->fft.input)));
+    screen->fft.output = fftw_malloc(
+        (size_t)(screen->fft.results_len
+                 *SIZEOF(*screen->fft.output)));
+    if (screen->fft.input != NULL) {
+        cbase_memset(screen->fft.input,
+                 0,
+                 screen->fft.dft_total_size
+                 *SIZEOF(*screen->fft.input));
+    }
+    if ((screen->fft.input != NULL) && (screen->fft.output != NULL)) {
+        screen->fft.plan = fftw_plan_dft_r2c_1d(
+            screen->fft.dft_total_size,
+            screen->fft.input,
+            screen->fft.output,
+            FFTW_ESTIMATE);
+    }
+
+    if (stereo) {
+        if (screen->fft.dft_nonzero_size*2 > rendered_cap) {
+            rendered_cap = screen->fft.dft_nonzero_size*2;
+        }
+    } else if (screen->fft.dft_nonzero_size > rendered_cap) {
+        rendered_cap = screen->fft.dft_nonzero_size;
+    }
+#endif
+
+    ncm_sample_buffer_resize(&screen->incoming_samples, incoming_cap);
+    ncm_sample_buffer_resize(&screen->buffered_samples, incoming_cap);
+    ncm_sample_buffer_resize(&screen->rendered_samples, rendered_cap);
+    ncm_sample_buffer_resize(&screen->left_channel, rendered_cap / 2);
+    ncm_sample_buffer_resize(&screen->right_channel, rendered_cap / 2);
+
     screen->auto_scale_multiplier = 1.0;
     screen->visualization_type = NATIVE_VISUALIZER_WAVE;
+    screen->source_fd = -1;
+    screen->output_id = -1;
     screen->fps = fps;
-    if (screen->fps <= 0) {
-        screen->fps = 30;
-    }
     screen->sample_rate = NATIVE_VISUALIZER_DEFAULT_RATE;
     screen->sample_consumption_rate = 0;
     screen->sample_consumption_rate_up_ctr = 0;
     screen->sample_consumption_rate_dn_ctr = 0;
+    screen->reset_output = false;
     screen->stereo = stereo;
     screen->initialized = true;
     return;
@@ -101,15 +243,68 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
 
 void
 native_visualizer_screen_destroy(NativeVisualizerScreen *screen) {
-    if (!screen->initialized) {
+    if ((screen == NULL) || !screen->initialized) {
         return;
     }
+
+    if (screen->source_fd >= 0) {
+        close(screen->source_fd);
+        screen->source_fd = -1;
+    }
+
+#if defined(HAVE_FFTW3_H)
+    if (screen->fft.plan != NULL) {
+        fftw_destroy_plan(screen->fft.plan);
+        screen->fft.plan = NULL;
+    }
+    if (screen->fft.output != NULL) {
+        fftw_free(screen->fft.output);
+        screen->fft.output = NULL;
+    }
+    if (screen->fft.input != NULL) {
+        fftw_free(screen->fft.input);
+        screen->fft.input = NULL;
+    }
+    if (screen->fft.bar_heights != NULL) {
+        ncm_free(screen->fft.bar_heights,
+                 screen->fft.bar_heights_cap
+                 *SIZEOF(*screen->fft.bar_heights));
+        screen->fft.bar_heights = NULL;
+    }
+    if (screen->fft.dft_frequency_space != NULL) {
+        ncm_free(screen->fft.dft_frequency_space,
+                 screen->fft.dft_frequency_space_cap
+                 *SIZEOF(*screen->fft.dft_frequency_space));
+        screen->fft.dft_frequency_space = NULL;
+    }
+    if (screen->fft.frequency_magnitudes != NULL) {
+        ncm_free(screen->fft.frequency_magnitudes,
+                 screen->fft.frequency_magnitudes_cap
+                 *SIZEOF(*screen->fft.frequency_magnitudes));
+        screen->fft.frequency_magnitudes = NULL;
+    }
+    screen->fft.results_len = 0;
+    screen->fft.dft_nonzero_size = 0;
+    screen->fft.dft_total_size = 0;
+    screen->fft.frequency_magnitudes_len = 0;
+    screen->fft.frequency_magnitudes_cap = 0;
+    screen->fft.dft_frequency_space_len = 0;
+    screen->fft.dft_frequency_space_cap = 0;
+    screen->fft.bar_heights_len = 0;
+    screen->fft.bar_heights_cap = 0;
+#endif
 
     ncm_sample_buffer_destroy(&screen->right_channel);
     ncm_sample_buffer_destroy(&screen->left_channel);
     ncm_sample_buffer_destroy(&screen->rendered_samples);
     ncm_sample_buffer_destroy(&screen->buffered_samples);
+    ncm_sample_buffer_destroy(&screen->incoming_samples);
+    ncm_buffer_destroy(&screen->source_port);
+    ncm_buffer_destroy(&screen->source_location);
     nc_window_destroy(&screen->window);
+
+    screen->output_id = -1;
+    screen->reset_output = false;
     screen->initialized = false;
     return;
 }

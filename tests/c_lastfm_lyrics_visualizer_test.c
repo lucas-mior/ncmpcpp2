@@ -1,7 +1,10 @@
 #include <assert.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <pthread.h>
 
@@ -76,6 +79,7 @@ static void test_lastfm_screen_result_storage(void);
 static void test_lyrics_filename_and_fetcher_toggle(void);
 static void test_lyrics_background_queue_cleanup(void);
 static void test_visualizer_sample_buffers(void);
+static void test_visualizer_resource_lifecycle(void);
 
 static CURLcode
 test_perform(NcmBuffer *data, char *url, int32 url_len,
@@ -704,9 +708,20 @@ test_visualizer_sample_buffers(void) {
     int16 dest[8] = {0};
     int32 count;
 
+    NativeVisualizerScreenConfig config = {
+        .source_location = (char *)"/tmp/test-visualizer.fifo",
+        .source_location_len = STRLIT_LEN("/tmp/test-visualizer.fifo"),
+        .fps = 30,
+        .spectrum_dft_size = 2,
+        .spectrum_gain = 10.0,
+        .spectrum_hz_min = 20.0,
+        .spectrum_hz_max = 20000.0,
+        .stereo = true,
+    };
+
     native_visualizer_screen_init(&screen, 0, 0, 80, 24,
                                   nc_color_default(), nc_border_none(),
-                                  30, true);
+                                  &config);
     assert(native_visualizer_clamp_sample(50000) == 32767);
     assert(native_visualizer_clamp_sample(-50000) == -32768);
     assert(native_visualizer_screen_requested_samples(&screen) > 0);
@@ -728,6 +743,75 @@ test_visualizer_sample_buffers(void) {
     return;
 }
 
+static void
+test_visualizer_resource_lifecycle(void) {
+    char source_location[] = "127.0.0.1:5555";
+    NativeVisualizerScreen screen = {0};
+    NativeVisualizerScreenConfig config = {
+        .source_location = source_location,
+        .source_location_len = STRLIT_LEN("127.0.0.1:5555"),
+        .fps = 60,
+        .spectrum_dft_size = 3,
+        .spectrum_gain = 15.0,
+        .spectrum_hz_min = 30.0,
+        .spectrum_hz_max = 18000.0,
+        .stereo = true,
+    };
+    int32 descriptors[2];
+    int32 source_fd;
+
+    assert(pipe(descriptors) == 0);
+    source_fd = descriptors[0];
+    native_visualizer_screen_init(&screen, 0, 0, 80, 24,
+                                  nc_color_default(), nc_border_none(),
+                                  &config);
+    screen.source_fd = source_fd;
+    source_location[0] = 'X';
+
+    assert(screen.output_id == -1);
+    assert(!screen.reset_output);
+    assert(screen.source_location.len == STRLIT_LEN("127.0.0.1:5555"));
+    assert(ncm_string_equal(screen.source_location.data,
+                            screen.source_location.len,
+                            LIT_ARGS("127.0.0.1:5555")));
+    assert(screen.source_port.len == 0);
+    assert(ncm_sample_buffer_capacity(&screen.incoming_samples) == 44100);
+    assert(ncm_sample_buffer_capacity(&screen.buffered_samples) == 44100);
+    assert(ncm_sample_buffer_capacity(&screen.rendered_samples) >= 40960);
+#if defined(HAVE_FFTW3_H)
+    assert(screen.fft.dft_nonzero_size == 20480);
+    assert(screen.fft.dft_total_size == 32768);
+    assert(screen.fft.results_len == 16385);
+    assert(screen.fft.input != NULL);
+    assert(screen.fft.output != NULL);
+    assert(screen.fft.plan != NULL);
+    assert(screen.fft.frequency_magnitudes != NULL);
+    assert(screen.fft.dft_frequency_space != NULL);
+    assert(screen.fft.bar_heights != NULL);
+#endif
+
+    native_visualizer_screen_destroy(&screen);
+    errno = 0;
+    assert(fcntl(source_fd, F_GETFD) == -1);
+    assert(errno == EBADF);
+    assert(screen.source_fd == -1);
+    assert(screen.source_location.data == NULL);
+    assert(screen.source_port.data == NULL);
+    assert(screen.incoming_samples.data == NULL);
+    assert(screen.rendered_samples.data == NULL);
+#if defined(HAVE_FFTW3_H)
+    assert(screen.fft.plan == NULL);
+    assert(screen.fft.input == NULL);
+    assert(screen.fft.output == NULL);
+    assert(screen.fft.frequency_magnitudes == NULL);
+    assert(screen.fft.dft_frequency_space == NULL);
+    assert(screen.fft.bar_heights == NULL);
+#endif
+    native_visualizer_screen_destroy(&screen);
+    close(descriptors[1]);
+    return;
+}
+
 int
 main(void) {
     TestLyricsIo io;
@@ -745,6 +829,7 @@ main(void) {
     test_lyrics_filename_and_fetcher_toggle();
     test_lyrics_background_queue_cleanup();
     test_visualizer_sample_buffers();
+    test_visualizer_resource_lifecycle();
     ncm_lyrics_fetcher_set_io_for_tests(NULL, NULL, NULL);
     return EXIT_SUCCESS;
 }
