@@ -1,6 +1,7 @@
 #include "screens/nc_sel_items_adder.h"
 
 #include <errno.h>
+#include <stdint.h>
 
 #include "app_controller.h"
 #include "c/ncm_base.h"
@@ -8,9 +9,12 @@
 #include "c/ncm_comparators.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
+#include "helpers.h"
 #include "screens/nc_browser.h"
+#include "screens/nc_playlist.h"
 #include "screens/screen_switcher.h"
 #include "settings.h"
+#include "status.h"
 #include "statusbar.h"
 #include "ui_state.h"
 
@@ -44,6 +48,12 @@ static bool adder_add_to_stored_playlist(
     NativeSelectedItemsAdderScreen *screen,
     enum NativeSelectedItemsAdderTarget target, char *playlist,
     int32 playlist_len);
+static bool adder_try_add_current_song(
+    NativeSelectedItemsAdderScreen *screen, NcmSong *song,
+    int32 position, bool *added, bool *success);
+static bool adder_add_to_current_playlist(
+    NativeSelectedItemsAdderScreen *screen, int32 position);
+static void adder_song_album_view(NcmSong *song, NcmStringView *album);
 static void adder_action_current_playlist(void *user);
 static void adder_action_new_playlist(void *user);
 static void adder_action_cancel_target(void *user);
@@ -967,6 +977,117 @@ adder_add_to_stored_playlist(
     return true;
 }
 
+static bool
+adder_try_add_current_song(
+    NativeSelectedItemsAdderScreen *screen, NcmSong *song,
+    int32 position, bool *added, bool *success) {
+    NcmError error;
+
+    *added = false;
+    ncm_error_clear(&error);
+    if (ncm_mpd_client_add_song_value(screen->client, song, position,
+                                      NULL, &error)) {
+        *added = true;
+        return true;
+    }
+
+    if (error.code == MPD_ERROR_SERVER) {
+        ncm_status_handle_server_error_value(
+            screen->client,
+            (int32)ncm_mpd_client_server_error_code(screen->client),
+            error.message, adder_cstring_len(error.message));
+        *success = false;
+        return true;
+    }
+
+    if (error.message[0] != '\0') {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time, error.message);
+    } else {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Could not add selected item");
+    }
+    return false;
+}
+
+static bool
+adder_add_to_current_playlist(
+    NativeSelectedItemsAdderScreen *screen, int32 position) {
+    NcmBuffer message;
+    char *suffix;
+    bool added;
+    bool success;
+    int32 first;
+    int32 insert_position;
+
+    if ((screen == NULL) || !screen->ready || (screen->client == NULL)
+        || (screen->selected_songs.len <= 0) || (position < -1)) {
+        return false;
+    }
+    if (position == INT32_MAX) {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Playlist position is too large");
+        return false;
+    }
+
+    success = true;
+    first = 0;
+    while (first < screen->selected_songs.len) {
+        if (!adder_try_add_current_song(
+                screen, &screen->selected_songs.items[first],
+                position, &added, &success)) {
+            return false;
+        }
+        if (added) {
+            break;
+        }
+        first += 1;
+    }
+
+    if (first < screen->selected_songs.len) {
+        if (position == -1) {
+            for (int32 i = first + 1;
+                 i < screen->selected_songs.len; i += 1) {
+                if (!adder_try_add_current_song(
+                        screen, &screen->selected_songs.items[i], -1,
+                        &added, &success)) {
+                    return false;
+                }
+            }
+        } else {
+            insert_position = position + 1;
+            for (int32 i = screen->selected_songs.len - 1;
+                 i > first; i -= 1) {
+                if (!adder_try_add_current_song(
+                        screen, &screen->selected_songs.items[i],
+                        insert_position, &added, &success)) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    ncm_buffer_init(&message);
+    ncm_buffer_append(&message, STRLIT_ARGS("Selected items added"));
+    suffix = ncm_helpers_with_errors(success);
+    ncm_buffer_append(&message, suffix, adder_cstring_len(suffix));
+    ncm_statusbar_print((int32)Config.message_delay_time,
+                        message.data, message.len);
+    ncm_buffer_destroy(&message);
+    adder_finish(screen);
+    return true;
+}
+
+static void
+adder_song_album_view(NcmSong *song, NcmStringView *album) {
+    if (!ncm_song_tag_view(song, MPD_TAG_ALBUM, 0, album)) {
+        ncm_string_view_set(album, (char *)"", 0);
+    }
+    return;
+}
+
 static void
 adder_action_current_playlist(void *user) {
     NativeSelectedItemsAdderScreen *screen;
@@ -1056,6 +1177,7 @@ adder_action_position_end(void *user) {
         &screen->last_action, screen->last_action.target,
         NATIVE_SELECTED_ITEMS_ADDER_POSITION_END,
         screen->last_action.playlist, screen->last_action.playlist_len);
+    (void)adder_add_to_current_playlist(screen, -1);
     return;
 }
 
@@ -1068,42 +1190,117 @@ adder_action_position_beginning(void *user) {
         &screen->last_action, screen->last_action.target,
         NATIVE_SELECTED_ITEMS_ADDER_POSITION_BEGINNING,
         screen->last_action.playlist, screen->last_action.playlist_len);
+    (void)adder_add_to_current_playlist(screen, 0);
     return;
 }
 
 static void
 adder_action_position_current_song(void *user) {
     NativeSelectedItemsAdderScreen *screen;
+    int32 position;
 
     screen = user;
     (void)native_selected_items_adder_action_set(
         &screen->last_action, screen->last_action.target,
         NATIVE_SELECTED_ITEMS_ADDER_POSITION_AFTER_CURRENT_SONG,
         screen->last_action.playlist, screen->last_action.playlist_len);
+    if (ncm_status_state_player() == NCM_STATUS_PLAYER_STOP) {
+        return;
+    }
+
+    position = ncm_status_state_current_song_position();
+    if ((position < 0) || (position == INT32_MAX)) {
+        return;
+    }
+    (void)adder_add_to_current_playlist(screen, position + 1);
     return;
 }
 
 static void
 adder_action_position_current_album(void *user) {
     NativeSelectedItemsAdderScreen *screen;
+    NcmSong current;
+    NcmSong next;
+    NcmStringView album;
+    NcmStringView next_album;
+    int32 position;
 
     screen = user;
     (void)native_selected_items_adder_action_set(
         &screen->last_action, screen->last_action.target,
         NATIVE_SELECTED_ITEMS_ADDER_POSITION_AFTER_CURRENT_ALBUM,
         screen->last_action.playlist, screen->last_action.playlist_len);
+    if (ncm_status_state_player() == NCM_STATUS_PLAYER_STOP) {
+        return;
+    }
+
+    position = ncm_status_state_current_song_position();
+    if ((position < 0) || (position == INT32_MAX)) {
+        return;
+    }
+
+    ncm_song_init(&current);
+    if (!native_playlist_screen_now_playing_song(
+            screen->playlist, position, &current)) {
+        ncm_song_destroy(&current);
+        return;
+    }
+    adder_song_album_view(&current, &album);
+    position += 1;
+
+    while (true) {
+        ncm_song_init(&next);
+        if (!native_playlist_screen_now_playing_song(
+                screen->playlist, position, &next)) {
+            ncm_song_destroy(&next);
+            break;
+        }
+        adder_song_album_view(&next, &next_album);
+        if (!ncm_string_equal(album.data, album.len,
+                              next_album.data, next_album.len)) {
+            ncm_song_destroy(&next);
+            break;
+        }
+        ncm_song_destroy(&next);
+        if (position == INT32_MAX) {
+            ncm_song_destroy(&current);
+            return;
+        }
+        position += 1;
+    }
+
+    ncm_song_destroy(&current);
+    (void)adder_add_to_current_playlist(screen, position);
     return;
 }
 
 static void
 adder_action_position_highlighted(void *user) {
     NativeSelectedItemsAdderScreen *screen;
+    NcmSong song;
+    uint32 song_position;
+    int32 position;
 
     screen = user;
     (void)native_selected_items_adder_action_set(
         &screen->last_action, screen->last_action.target,
         NATIVE_SELECTED_ITEMS_ADDER_POSITION_AFTER_HIGHLIGHTED,
         screen->last_action.playlist, screen->last_action.playlist_len);
+
+    ncm_song_init(&song);
+    if (!native_playlist_screen_current_song(screen->playlist, &song)) {
+        ncm_song_destroy(&song);
+        return;
+    }
+    song_position = ncm_song_position(&song);
+    if (song_position >= (uint32)INT32_MAX) {
+        ncm_song_destroy(&song);
+        return;
+    }
+    position = (int32)song_position;
+    ncm_song_destroy(&song);
+
+    (void)adder_add_to_current_playlist(screen, position + 1);
     return;
 }
 

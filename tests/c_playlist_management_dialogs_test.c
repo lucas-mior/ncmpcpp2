@@ -12,6 +12,7 @@
 #include "screens/nc_sel_items_adder.h"
 #include "screens/nc_sort_playlist.h"
 #include "settings.h"
+#include "status.h"
 #include "statusbar.h"
 #include "ui_state.h"
 
@@ -19,18 +20,25 @@
 #define TEST_EVENT_CAP 8
 #define TEST_TEXT_CAP 256
 #define TEST_STORED_SONG_CAP 4
+#define TEST_QUEUE_SONG_CAP 8
 
 static struct TestState {
     NcmMpdPlaylistList playlists;
+    NcmSongArray queue_songs;
+    NcmSong highlighted_song;
     NcWindow status_window;
     NcWindow *displayed_windows[TEST_EVENT_CAP];
     NcWindow *refreshed_windows[TEST_EVENT_CAP];
     NcMenu *refreshed_menus[TEST_EVENT_CAP];
     char added_playlists[TEST_STORED_SONG_CAP][TEST_TEXT_CAP];
     char added_uris[TEST_STORED_SONG_CAP][TEST_TEXT_CAP];
+    char queue_added_uris[TEST_QUEUE_SONG_CAP][TEST_TEXT_CAP];
+    int32 queue_added_positions[TEST_QUEUE_SONG_CAP];
     char status_error[TEST_TEXT_CAP];
     char status_playlist[TEST_TEXT_CAP];
     char printed_status[TEST_TEXT_CAP];
+    char queue_status[TEST_TEXT_CAP];
+    char server_error[TEST_TEXT_CAP];
     char prompt_prefix[TEST_TEXT_CAP];
     char prompt_input[TEST_TEXT_CAP];
     char drawn_label[TEST_TEXT_CAP];
@@ -38,6 +46,8 @@ static struct TestState {
     int32 status_error_len;
     int32 status_playlist_len;
     int32 printed_status_len;
+    int32 queue_status_len;
+    int32 server_error_len;
     int32 prompt_prefix_len;
     int32 prompt_input_len;
     int32 drawn_label_len;
@@ -53,6 +63,11 @@ static struct TestState {
     int32 command_add_calls;
     int32 command_commit_calls;
     int32 command_add_failure_at;
+    int32 queue_add_calls;
+    int32 server_error_calls;
+    int32 current_song_position;
+    uint32 queue_add_failure_mask;
+    enum NcmStatusPlayerState player_state;
     int32 status_lock_calls;
     int32 status_unlock_calls;
     int32 status_put_calls;
@@ -62,18 +77,24 @@ static struct TestState {
     bool fetch_success;
     bool command_start_success;
     bool command_commit_success;
+    bool highlighted_available;
 } test_state;
 
 static void test_playlist_editor_command_preparation(void);
 static void test_sort_playlist_row_movement(void);
 static void test_selected_items_transfer_and_actions(void);
+static void test_selected_items_current_playlist_actions(void);
 static void test_state_init(void);
 static void test_state_destroy(void);
 static void test_state_reset_events(void);
 static void test_state_reset_stored_playlist_events(void);
+static void test_state_reset_current_playlist_events(void);
 static void test_state_set_prompt(enum NcPromptStatus status,
                                   char *input, int32 input_len);
 static void test_state_add_playlist(char *name, int32 name_len);
+static void test_state_add_queue_song(char *uri, int32 uri_len,
+                                      uint32 position, char *album,
+                                      int32 album_len);
 static int32 test_cstring_len(char *string);
 static void test_copy_text(char *dest, int32 *dest_len,
                            char *source, int32 source_len);
@@ -83,6 +104,11 @@ static void test_assert_adder_label(
     NativeSelectedItemsAdderScreen *screen, int64 pos,
     char *label, int32 label_len);
 static void test_cancel_adder(NativeSelectedItemsAdderScreen *screen);
+static void test_open_current_playlist(
+    NativeSelectedItemsAdderScreen *screen, NativePlaylistScreen *playlist,
+    NcmMpdClient *client, NcmSongArray *songs);
+static void test_assert_queue_add(int32 call, char *uri, int32 uri_len,
+                                  int32 position);
 static void test_previous_resize(void *user);
 static void test_previous_refresh(void *user);
 
@@ -152,6 +178,79 @@ __wrap_ncm_mpd_client_add_song_to_playlist(NcmMpdClient *client,
 }
 
 bool
+__wrap_ncm_mpd_client_add_song_value(NcmMpdClient *client,
+                                     NcmSong *song, int32 position,
+                                     int32 *id, NcmError *error) {
+    int32 call;
+
+    (void)client;
+    (void)id;
+    assert(song);
+    assert(song->uri);
+    call = test_state.queue_add_calls;
+    assert(call < TEST_QUEUE_SONG_CAP);
+    test_copy_text(test_state.queue_added_uris[call], NULL,
+                   song->uri, song->uri_len);
+    test_state.queue_added_positions[call] = position;
+    test_state.queue_add_calls += 1;
+
+    if (test_state.queue_add_failure_mask & (1u << call)) {
+        ncm_error_set(error, MPD_ERROR_SERVER,
+                      STRLIT_ARGS("queue add failure"));
+        return false;
+    }
+
+    ncm_error_clear(error);
+    return true;
+}
+
+enum NcmStatusPlayerState
+__wrap_ncm_status_state_player(void) {
+    return test_state.player_state;
+}
+
+int32
+__wrap_ncm_status_state_current_song_position(void) {
+    return test_state.current_song_position;
+}
+
+bool
+__wrap_native_playlist_screen_current_song(NativePlaylistScreen *screen,
+                                            NcmSong *song) {
+    (void)screen;
+    if (!test_state.highlighted_available) {
+        return false;
+    }
+    return ncm_song_copy(song, &test_state.highlighted_song);
+}
+
+bool
+__wrap_native_playlist_screen_now_playing_song(
+    NativePlaylistScreen *screen, int32 position, NcmSong *song) {
+    (void)screen;
+    for (int32 i = 0; i < test_state.queue_songs.len; i += 1) {
+        if (ncm_song_position(&test_state.queue_songs.items[i])
+            == (uint32)position) {
+            return ncm_song_copy(
+                song, &test_state.queue_songs.items[i]);
+        }
+    }
+    return false;
+}
+
+void
+__wrap_ncm_status_handle_server_error_value(
+    NcmMpdClient *client, int32 code, char *message,
+    int32 message_len) {
+    (void)client;
+    (void)code;
+    test_copy_text(test_state.server_error,
+                   &test_state.server_error_len, message, message_len);
+    test_state.server_error_calls += 1;
+    return;
+}
+
+bool
 __wrap_ncm_mpd_client_commit_command_list(NcmMpdClient *client,
                                           NcmError *error) {
     assert(client->command_list_active);
@@ -186,6 +285,15 @@ NcWindow *
 __wrap_ncm_statusbar_put(void) {
     test_state.status_put_calls += 1;
     return &test_state.status_window;
+}
+
+void
+__wrap_ncm_statusbar_print(int32 delay_seconds, char *message,
+                           int32 message_len) {
+    assert(delay_seconds == (int32)Config.message_delay_time);
+    test_copy_text(test_state.queue_status,
+                   &test_state.queue_status_len, message, message_len);
+    return;
 }
 
 void
@@ -384,6 +492,7 @@ main(void) {
     test_playlist_editor_command_preparation();
     test_sort_playlist_row_movement();
     test_selected_items_transfer_and_actions();
+    test_selected_items_current_playlist_actions();
     test_state_destroy();
     return EXIT_SUCCESS;
 }
@@ -392,16 +501,21 @@ static void
 test_state_init(void) {
     test_state = (struct TestState){0};
     ncm_mpd_playlist_list_init(&test_state.playlists);
+    ncm_song_array_init(&test_state.queue_songs);
+    ncm_song_init(&test_state.highlighted_song);
     test_state.fetch_success = true;
     test_state.command_start_success = true;
     test_state.command_commit_success = true;
     test_state.command_add_failure_at = -1;
     test_state.prompt_status = NC_PROMPT_ABORTED;
+    test_state.player_state = NCM_STATUS_PLAYER_PLAY;
     return;
 }
 
 static void
 test_state_destroy(void) {
+    ncm_song_destroy(&test_state.highlighted_song);
+    ncm_song_array_destroy(&test_state.queue_songs);
     ncm_mpd_playlist_list_destroy(&test_state.playlists);
     return;
 }
@@ -464,6 +578,25 @@ test_state_reset_stored_playlist_events(void) {
 }
 
 static void
+test_state_reset_current_playlist_events(void) {
+    for (int32 i = 0; i < TEST_QUEUE_SONG_CAP; i += 1) {
+        test_state.queue_added_uris[i][0] = '\0';
+        test_state.queue_added_positions[i] = 0;
+    }
+    test_state.queue_status[0] = '\0';
+    test_state.server_error[0] = '\0';
+    test_state.queue_status_len = 0;
+    test_state.server_error_len = 0;
+    test_state.queue_add_calls = 0;
+    test_state.server_error_calls = 0;
+    test_state.queue_add_failure_mask = 0;
+    test_state.current_song_position = 0;
+    test_state.player_state = NCM_STATUS_PLAYER_PLAY;
+    test_state.highlighted_available = false;
+    return;
+}
+
+static void
 test_state_set_prompt(enum NcPromptStatus status, char *input,
                       int32 input_len) {
     assert(input_len >= 0);
@@ -518,6 +651,22 @@ test_state_add_playlist(char *name, int32 name_len) {
     assert(ncm_mpd_playlist_list_append_copy(&test_state.playlists,
                                              &playlist));
     ncm_playlist_destroy(&playlist);
+    return;
+}
+
+static void
+test_state_add_queue_song(char *uri, int32 uri_len, uint32 position,
+                          char *album, int32 album_len) {
+    NcmSong song;
+
+    ncm_song_init(&song);
+    assert(ncm_song_set_uri(&song, uri, uri_len));
+    ncm_song_set_position(&song, position);
+    if (album) {
+        assert(ncm_song_add_tag(&song, MPD_TAG_ALBUM, album, album_len));
+    }
+    assert(ncm_song_array_append_copy(&test_state.queue_songs, &song));
+    ncm_song_destroy(&song);
     return;
 }
 
@@ -621,6 +770,38 @@ test_cancel_adder(NativeSelectedItemsAdderScreen *screen) {
 }
 
 static void
+test_open_current_playlist(
+    NativeSelectedItemsAdderScreen *screen, NativePlaylistScreen *playlist,
+    NcmMpdClient *client, NcmSongArray *songs) {
+    NcmError error;
+    NcMenu *menu;
+
+    ncm_error_clear(&error);
+    assert(native_selected_items_adder_screen_open(
+        screen, songs, playlist, client, &error));
+    menu = nc_editor_action_menu_base(
+        native_selected_items_adder_screen_playlist_menu(screen));
+    nc_menu_highlight_position(menu, 0, nc_menu_item_count(menu));
+    assert(native_selected_items_adder_screen_run_current(screen));
+    assert(screen->active_menu
+           == NATIVE_SELECTED_ITEMS_ADDER_MENU_POSITIONS);
+    return;
+}
+
+static void
+test_assert_queue_add(int32 call, char *uri, int32 uri_len,
+                      int32 position) {
+    assert(call >= 0);
+    assert(call < test_state.queue_add_calls);
+    assert(ncm_string_equal(test_state.queue_added_uris[call],
+                            test_cstring_len(
+                                test_state.queue_added_uris[call]),
+                            uri, uri_len));
+    assert(test_state.queue_added_positions[call] == position);
+    return;
+}
+
+static void
 test_previous_resize(void *user) {
     (void)user;
     test_state.previous_resize_calls += 1;
@@ -631,6 +812,193 @@ static void
 test_previous_refresh(void *user) {
     (void)user;
     test_state.previous_refresh_calls += 1;
+    return;
+}
+
+static void
+test_selected_items_current_playlist_actions(void) {
+    NativeSelectedItemsAdderScreen screen;
+    NativeSelectedItemsAdderAction *action;
+    NativeBrowserScreen browser;
+    NativePlaylistScreen playlist = {0};
+    NcmMpdClient client = {0};
+    NcmSongArray songs;
+    NcmSong song;
+    NcMenu *menu;
+
+    app_controller_init();
+    nc_buffer_init(&Config.current_item_prefix);
+    nc_buffer_init(&Config.current_item_suffix);
+    Config.use_cyclic_scrolling = true;
+    Config.centered_cursor = true;
+    Config.ignore_leading_the = false;
+    Config.message_delay_time = 5;
+    ui_state_set_screen_size(100, 40);
+    ui_state_set_main_geometry(2, 30);
+
+    native_browser_screen_init(&browser, 0, 100, 2, 30,
+                               nc_color_default(), nc_border_none());
+    native_browser_screen_set_local(&browser, false);
+    native_selected_items_adder_screen_init(&screen, 0, 0, 40, 10,
+                                            nc_color_default(),
+                                            nc_border_none());
+    ncm_song_array_init(&songs);
+    ncm_song_init(&song);
+    assert(ncm_song_set_uri(&song, LIT_ARGS("first.flac")));
+    assert(ncm_song_array_append_copy(&songs, &song));
+    assert(ncm_song_set_uri(&song, LIT_ARGS("second.flac")));
+    assert(ncm_song_array_append_copy(&songs, &song));
+    assert(ncm_song_set_uri(&song, LIT_ARGS("third.flac")));
+    assert(ncm_song_array_append_copy(&songs, &song));
+    ncm_song_destroy(&song);
+
+    assert(app_controller_register_screen(
+        native_browser_screen_base(&browser)));
+    assert(app_controller_register_screen(
+        native_selected_items_adder_screen_base(&screen)));
+    assert(app_controller_switch_to_screen(
+        native_browser_screen_base(&browser)));
+
+    test_open_current_playlist(&screen, &playlist, &client, &songs);
+    menu = nc_editor_action_menu_base(
+        native_selected_items_adder_screen_position_menu(&screen));
+    nc_menu_highlight_position(menu, 0, nc_menu_item_count(menu));
+    test_state_reset_current_playlist_events();
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.queue_add_calls == 3);
+    test_assert_queue_add(0, LIT_ARGS("first.flac"), -1);
+    test_assert_queue_add(1, LIT_ARGS("second.flac"), -1);
+    test_assert_queue_add(2, LIT_ARGS("third.flac"), -1);
+    assert(ncm_string_equal(test_state.queue_status,
+                            test_state.queue_status_len,
+                            LIT_ARGS("Selected items added")));
+    assert(!screen.ready);
+    action = native_selected_items_adder_screen_last_action(&screen);
+    assert(action->position == NATIVE_SELECTED_ITEMS_ADDER_POSITION_END);
+
+    test_open_current_playlist(&screen, &playlist, &client, &songs);
+    menu = nc_editor_action_menu_base(
+        native_selected_items_adder_screen_position_menu(&screen));
+    nc_menu_highlight_position(menu, 1, nc_menu_item_count(menu));
+    test_state_reset_current_playlist_events();
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.queue_add_calls == 3);
+    test_assert_queue_add(0, LIT_ARGS("first.flac"), 0);
+    test_assert_queue_add(1, LIT_ARGS("third.flac"), 1);
+    test_assert_queue_add(2, LIT_ARGS("second.flac"), 1);
+    assert(!screen.ready);
+
+    test_open_current_playlist(&screen, &playlist, &client, &songs);
+    menu = nc_editor_action_menu_base(
+        native_selected_items_adder_screen_position_menu(&screen));
+    nc_menu_highlight_position(menu, 0, nc_menu_item_count(menu));
+    test_state_reset_current_playlist_events();
+    test_state.queue_add_failure_mask = (1u << 0)|(1u << 2);
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.queue_add_calls == 3);
+    assert(test_state.server_error_calls == 2);
+    assert(ncm_string_equal(test_state.server_error,
+                            test_state.server_error_len,
+                            LIT_ARGS("queue add failure")));
+    assert(ncm_string_equal(
+        test_state.queue_status, test_state.queue_status_len,
+        LIT_ARGS("Selected items added (with errors)")));
+    assert(!screen.ready);
+
+    test_open_current_playlist(&screen, &playlist, &client, &songs);
+    menu = nc_editor_action_menu_base(
+        native_selected_items_adder_screen_position_menu(&screen));
+    nc_menu_highlight_position(menu, 2, nc_menu_item_count(menu));
+    test_state_reset_current_playlist_events();
+    test_state.player_state = NCM_STATUS_PLAYER_STOP;
+    test_state.current_song_position = 4;
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.queue_add_calls == 0);
+    assert(screen.ready);
+    assert(screen.active_menu
+           == NATIVE_SELECTED_ITEMS_ADDER_MENU_POSITIONS);
+
+    test_state_reset_current_playlist_events();
+    test_state.current_song_position = 4;
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.queue_add_calls == 3);
+    test_assert_queue_add(0, LIT_ARGS("first.flac"), 5);
+    test_assert_queue_add(1, LIT_ARGS("third.flac"), 6);
+    test_assert_queue_add(2, LIT_ARGS("second.flac"), 6);
+    assert(!screen.ready);
+
+    ncm_song_array_clear(&test_state.queue_songs);
+    test_state_add_queue_song(LIT_ARGS("playing.flac"), 3,
+                              LIT_ARGS("Alpha"));
+    test_state_add_queue_song(LIT_ARGS("next.flac"), 4,
+                              LIT_ARGS("Alpha"));
+    test_state_add_queue_song(LIT_ARGS("other.flac"), 5,
+                              LIT_ARGS("Beta"));
+    test_open_current_playlist(&screen, &playlist, &client, &songs);
+    menu = nc_editor_action_menu_base(
+        native_selected_items_adder_screen_position_menu(&screen));
+    nc_menu_highlight_position(menu, 3, nc_menu_item_count(menu));
+    test_state_reset_current_playlist_events();
+    test_state.player_state = NCM_STATUS_PLAYER_STOP;
+    test_state.current_song_position = 3;
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.queue_add_calls == 0);
+    assert(screen.ready);
+
+    test_state_reset_current_playlist_events();
+    test_state.current_song_position = 3;
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.queue_add_calls == 3);
+    test_assert_queue_add(0, LIT_ARGS("first.flac"), 5);
+    test_assert_queue_add(1, LIT_ARGS("third.flac"), 6);
+    test_assert_queue_add(2, LIT_ARGS("second.flac"), 6);
+    assert(!screen.ready);
+
+    ncm_song_array_clear(&test_state.queue_songs);
+    test_state_add_queue_song(LIT_ARGS("untagged.flac"), 7, NULL, 0);
+    test_state_add_queue_song(LIT_ARGS("also-untagged.flac"), 8,
+                              NULL, 0);
+    test_state_add_queue_song(LIT_ARGS("tagged.flac"), 9,
+                              LIT_ARGS("Beta"));
+    test_open_current_playlist(&screen, &playlist, &client, &songs);
+    menu = nc_editor_action_menu_base(
+        native_selected_items_adder_screen_position_menu(&screen));
+    nc_menu_highlight_position(menu, 3, nc_menu_item_count(menu));
+    test_state_reset_current_playlist_events();
+    test_state.current_song_position = 7;
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.queue_add_calls == 3);
+    test_assert_queue_add(0, LIT_ARGS("first.flac"), 9);
+    test_assert_queue_add(1, LIT_ARGS("third.flac"), 10);
+    test_assert_queue_add(2, LIT_ARGS("second.flac"), 10);
+    assert(!screen.ready);
+
+    test_open_current_playlist(&screen, &playlist, &client, &songs);
+    menu = nc_editor_action_menu_base(
+        native_selected_items_adder_screen_position_menu(&screen));
+    nc_menu_highlight_position(menu, 4, nc_menu_item_count(menu));
+    test_state_reset_current_playlist_events();
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.queue_add_calls == 0);
+    assert(screen.ready);
+
+    test_state_reset_current_playlist_events();
+    test_state.highlighted_available = true;
+    ncm_song_set_position(&test_state.highlighted_song, 8);
+    assert(native_selected_items_adder_screen_run_current(&screen));
+    assert(test_state.queue_add_calls == 3);
+    test_assert_queue_add(0, LIT_ARGS("first.flac"), 9);
+    test_assert_queue_add(1, LIT_ARGS("third.flac"), 10);
+    test_assert_queue_add(2, LIT_ARGS("second.flac"), 10);
+    assert(!screen.ready);
+
+    ncm_song_array_destroy(&songs);
+    native_selected_items_adder_screen_destroy(&screen);
+    assert(app_controller_unregister_screen(
+        native_browser_screen_base(&browser)));
+    native_browser_screen_destroy(&browser);
+    nc_buffer_destroy(&Config.current_item_prefix);
+    nc_buffer_destroy(&Config.current_item_suffix);
     return;
 }
 
