@@ -4,14 +4,22 @@
 
 #include "app_controller.h"
 #include "c/ncm_base.h"
+#include "c/ncm_charset.h"
+#include "c/ncm_comparators.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
+#include "screens/nc_browser.h"
 #include "screens/screen_switcher.h"
+#include "settings.h"
+#include "statusbar.h"
+#include "ui_state.h"
 
 static NativeSelectedItemsAdderScreen *adder_from_screen(NcScreen *screen);
 static NcScreenCallbacks adder_callbacks(void);
 static NcWindow *adder_active_window_callback(NcScreen *screen);
 static void adder_refresh_callback(NcScreen *screen);
+static void adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
+                           int64 pos, void *user);
 static void adder_scroll_callback(NcScreen *screen, enum NcScroll where);
 static void adder_switch_to_callback(NcScreen *screen);
 static void adder_resize_callback(NcScreen *screen);
@@ -45,6 +53,10 @@ static bool adder_add_action_row(NcEditorActionMenu *menu, char *label,
                                  void *user);
 static void adder_clear_playlist_selector(
     NativeSelectedItemsAdderScreen *screen);
+static bool adder_previous_is_local_browser(NcScreen *previous);
+static void adder_sort_playlist_rows(NativeSelectedItemsAdderScreen *screen,
+                                     int64 begin, int64 end);
+static void adder_apply_geometry(NativeSelectedItemsAdderScreen *screen);
 static void adder_finish(NativeSelectedItemsAdderScreen *screen);
 
 typedef struct ExistingPlaylistAction {
@@ -133,10 +145,24 @@ native_selected_items_adder_screen_init(
     int64 width, int64 height, NcColor color, NcBorder border) {
     NcScreenCallbacks callbacks;
     NcMenuDisplayCallbacks display_callbacks = {0};
+    NcMenu *playlist_menu;
+    NcMenu *position_menu;
 
     callbacks = adder_callbacks();
     nc_editor_action_menu_init(&screen->playlist_selector);
     nc_editor_action_menu_init(&screen->position_selector);
+    playlist_menu = nc_editor_action_menu_base(&screen->playlist_selector);
+    position_menu = nc_editor_action_menu_base(&screen->position_selector);
+    nc_menu_set_highlight_prefix(playlist_menu, &Config.current_item_prefix);
+    nc_menu_set_highlight_suffix(playlist_menu, &Config.current_item_suffix);
+    nc_menu_set_cyclic_scrolling(playlist_menu,
+                                 Config.use_cyclic_scrolling);
+    nc_menu_set_centered_cursor(playlist_menu, Config.centered_cursor);
+    nc_menu_set_highlight_prefix(position_menu, &Config.current_item_prefix);
+    nc_menu_set_highlight_suffix(position_menu, &Config.current_item_suffix);
+    nc_menu_set_cyclic_scrolling(position_menu,
+                                 Config.use_cyclic_scrolling);
+    nc_menu_set_centered_cursor(position_menu, Config.centered_cursor);
     nc_window_init(&screen->playlist_window, start_x, start_y, width,
                    height, STRLIT_ARGS("Add selected item(s) to..."),
                    color, border);
@@ -160,6 +186,7 @@ native_selected_items_adder_screen_init(
     screen->ready = false;
     nc_screen_init(&screen->screen, callbacks, screen,
                    NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
+    display_callbacks.draw = adder_draw_row;
     display_callbacks.filter = adder_filter_callback;
     display_callbacks.user = screen;
     nc_menu_set_display_callbacks(nc_editor_action_menu_base(
@@ -263,8 +290,11 @@ bool
 native_selected_items_adder_screen_open(
     NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs,
     NativePlaylistScreen *playlist, NcmMpdClient *client, NcmError *error) {
+    NcmMpdPlaylistList playlists;
     NcmSongArray selected_songs;
+    NcmError playlist_error;
     NcScreen *current;
+    bool local_browser;
 
     if (screen == NULL) {
         ncm_error_set(error, EINVAL,
@@ -317,6 +347,26 @@ native_selected_items_adder_screen_open(
     nc_menu_show_all_items(
         nc_editor_action_menu_base(&screen->position_selector));
 
+    local_browser = adder_previous_is_local_browser(current);
+    ncm_mpd_playlist_list_init(&playlists);
+    if (!local_browser) {
+        ncm_error_clear(&playlist_error);
+        if (!ncm_mpd_client_get_playlists(client, &playlists,
+                                          &playlist_error)) {
+            NcmStringFormatArg arg;
+
+            ncm_mpd_playlist_list_clear(&playlists);
+            arg = ncm_string_format_arg_cstring(playlist_error.message);
+            ncm_statusbar_format(
+                (int32)Config.message_delay_time,
+                STRLIT_ARGS("Could not fetch playlists: %1"), &arg, 1);
+        }
+    }
+    native_selected_items_adder_screen_populate_playlist_selector(
+        screen, &playlists, local_browser);
+    ncm_mpd_playlist_list_destroy(&playlists);
+    adder_apply_geometry(screen);
+
     ncm_song_array_move(&screen->selected_songs, &selected_songs);
     screen->playlist = playlist;
     screen->previous_screen = current;
@@ -362,11 +412,15 @@ native_selected_items_adder_screen_populate_playlist_selector(
     NativeSelectedItemsAdderScreen *screen, NcmMpdPlaylistList *playlists,
     bool local_browser) {
     NcEditorActionMenu *menu;
+    NcMenu *base;
+    int64 stored_begin;
+    int64 stored_end;
 
     if (screen == NULL) {
         return;
     }
     menu = &screen->playlist_selector;
+    base = nc_editor_action_menu_base(menu);
     adder_clear_playlist_selector(screen);
     screen->local_browser = local_browser;
     (void)adder_add_action_row(menu, STRLIT_ARGS("Current playlist"),
@@ -376,7 +430,8 @@ native_selected_items_adder_screen_populate_playlist_selector(
                                    adder_action_new_playlist, screen);
     }
     nc_editor_action_menu_add_separator(menu);
-    if (!local_browser && playlists != NULL) {
+    stored_begin = nc_menu_all_item_count(base);
+    if (!local_browser && (playlists != NULL)) {
         for (int32 i = 0; i < playlists->count; i += 1) {
             ExistingPlaylistAction *action;
             NcmPlaylist *playlist;
@@ -394,10 +449,15 @@ native_selected_items_adder_screen_populate_playlist_selector(
                 existing_playlist_action_destroy(action);
             }
         }
+    }
+    stored_end = nc_menu_all_item_count(base);
+    adder_sort_playlist_rows(screen, stored_begin, stored_end);
+    if (stored_end > stored_begin) {
         nc_editor_action_menu_add_separator(menu);
     }
     (void)adder_add_action_row(menu, STRLIT_ARGS("Cancel"),
                                adder_action_cancel_target, screen);
+    nc_menu_reset(base);
     screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
     return;
 }
@@ -494,8 +554,10 @@ native_selected_items_adder_screen_apply_search(
     }
     ncm_buffer_set(&screen->search_constraint, pattern, pattern_len);
     screen->search_enabled = true;
-    nc_menu_apply_filter(native_selected_items_adder_screen_active_menu(
-                             screen));
+    nc_menu_apply_filter(
+        nc_editor_action_menu_base(&screen->playlist_selector));
+    nc_menu_apply_filter(
+        nc_editor_action_menu_base(&screen->position_selector));
     return true;
 }
 
@@ -507,8 +569,10 @@ native_selected_items_adder_screen_clear_search(
     }
     screen->search_enabled = false;
     ncm_buffer_clear(&screen->search_constraint);
-    nc_menu_show_all_items(native_selected_items_adder_screen_active_menu(
-                               screen));
+    nc_menu_show_all_items(
+        nc_editor_action_menu_base(&screen->playlist_selector));
+    nc_menu_show_all_items(
+        nc_editor_action_menu_base(&screen->position_selector));
     return;
 }
 
@@ -615,14 +679,47 @@ adder_active_window_callback(NcScreen *screen) {
 }
 
 static void
+adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
+               int64 pos, void *user) {
+    NcEditorActionRow *row;
+    NcmBuffer converted;
+
+    (void)menu;
+    (void)pos;
+    (void)user;
+    row = item;
+    if ((row == NULL) || (row->label == NULL)
+        || (row->label_len <= 0)) {
+        return;
+    }
+
+    converted = ncm_charset_utf8_to_locale(row->label, row->label_len);
+    nc_window_print_data(window, converted.data, converted.len);
+    ncm_buffer_destroy(&converted);
+    return;
+}
+
+static void
 adder_refresh_callback(NcScreen *screen) {
     NativeSelectedItemsAdderScreen *adder;
-    NcWindow *window;
     NcMenu *menu;
+    NcWindow *window;
 
     adder = adder_from_screen(screen);
-    window = native_selected_items_adder_screen_active_window(adder);
+    if (adder->active_menu
+        == NATIVE_SELECTED_ITEMS_ADDER_MENU_POSITIONS) {
+        menu = nc_editor_action_menu_base(&adder->playlist_selector);
+        nc_menu_prepare_refresh(menu,
+                                nc_window_height(&adder->playlist_window),
+                                NULL, NULL);
+        nc_window_display(&adder->playlist_window);
+        nc_menu_refresh(menu, &adder->playlist_window,
+                        nc_window_width(&adder->playlist_window),
+                        nc_window_height(&adder->playlist_window));
+    }
+
     menu = native_selected_items_adder_screen_active_menu(adder);
+    window = native_selected_items_adder_screen_active_window(adder);
     nc_menu_prepare_refresh(menu, nc_window_height(window), NULL, NULL);
     nc_window_display(window);
     nc_menu_refresh(menu, window, nc_window_width(window),
@@ -650,6 +747,17 @@ adder_switch_to_callback(NcScreen *screen) {
 
 static void
 adder_resize_callback(NcScreen *screen) {
+    NativeSelectedItemsAdderScreen *adder;
+    NcScreen *previous;
+
+    adder = adder_from_screen(screen);
+    adder_apply_geometry(adder);
+    previous = adder->previous_screen;
+    if ((previous != NULL)
+        && nc_screen_has_to_be_resized(previous)) {
+        nc_screen_resize(previous);
+        nc_screen_refresh(previous);
+    }
     nc_screen_clear_resize_request(screen);
     return;
 }
@@ -974,6 +1082,111 @@ adder_clear_playlist_selector(NativeSelectedItemsAdderScreen *screen) {
         }
     }
     nc_menu_clear_items(menu);
+    return;
+}
+
+static bool
+adder_previous_is_local_browser(NcScreen *previous) {
+    NativeBrowserScreen *browser;
+
+    if ((previous == NULL)
+        || (nc_screen_type(previous) != NC_SCREEN_TYPE_BROWSER)) {
+        return false;
+    }
+    if (nc_screen_user(previous) != (void *)previous) {
+        return false;
+    }
+
+    browser = nc_screen_user(previous);
+    return native_browser_screen_is_local(browser);
+}
+
+static void
+adder_sort_playlist_rows(NativeSelectedItemsAdderScreen *screen,
+                         int64 begin, int64 end) {
+    NcMenu *menu;
+
+    menu = nc_editor_action_menu_base(&screen->playlist_selector);
+    for (int64 i = begin; i < end; i += 1) {
+        int64 smallest;
+
+        smallest = i;
+        for (int64 j = i + 1; j < end; j += 1) {
+            NcEditorActionRow *left;
+            NcEditorActionRow *right;
+
+            left = nc_editor_action_menu_item_at(
+                &screen->playlist_selector, NC_MENU_ITEMS_ALL, smallest);
+            right = nc_editor_action_menu_item_at(
+                &screen->playlist_selector, NC_MENU_ITEMS_ALL, j);
+            if ((left != NULL) && (right != NULL)
+                && (ncm_compare_locale_strings(
+                        right->label, right->label_len,
+                        left->label, left->label_len,
+                        Config.ignore_leading_the) < 0)) {
+                smallest = j;
+            }
+        }
+        if (smallest != i) {
+            nc_menu_swap_item_slots(menu, NC_MENU_ITEMS_ALL, i, smallest);
+        }
+    }
+    return;
+}
+
+static void
+adder_apply_geometry(NativeSelectedItemsAdderScreen *screen) {
+    int64 main_height;
+    int64 main_start_y;
+    int64 screen_height;
+    int64 screen_width;
+    int64 playlist_start_x;
+    int64 playlist_start_y;
+    int64 position_start_x;
+    int64 position_start_y;
+
+    screen_width = ui_state_screen_width();
+    screen_height = ui_state_screen_height();
+    main_start_y = ui_state_main_start_y();
+    main_height = ui_state_main_height();
+    if (screen_width < 0) {
+        screen_width = 0;
+    }
+    if (screen_height < 0) {
+        screen_height = 0;
+    }
+    if (main_height < 0) {
+        main_height = 0;
+    }
+
+    screen->playlist_width = screen_width*6/10;
+    screen->playlist_height = screen_height*66/100;
+    if (screen->playlist_height > main_height) {
+        screen->playlist_height = main_height;
+    }
+    screen->position_width = screen_width;
+    if (screen->position_width > 35) {
+        screen->position_width = 35;
+    }
+    screen->position_height = main_height;
+    if (screen->position_height > 11) {
+        screen->position_height = 11;
+    }
+
+    playlist_start_x = (screen_width - screen->playlist_width)/2;
+    playlist_start_y = main_start_y
+                       +(main_height - screen->playlist_height)/2;
+    position_start_x = (screen_width - screen->position_width)/2;
+    position_start_y = main_start_y
+                       +(main_height - screen->position_height)/2;
+    nc_window_resize(&screen->playlist_window, screen->playlist_width,
+                     screen->playlist_height);
+    nc_window_move_to(&screen->playlist_window, playlist_start_x,
+                      playlist_start_y);
+    nc_window_resize(&screen->position_window, screen->position_width,
+                     screen->position_height);
+    nc_window_move_to(&screen->position_window, position_start_x,
+                      position_start_y);
     return;
 }
 
