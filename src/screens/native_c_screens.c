@@ -1322,6 +1322,9 @@ native_c_screens_register_native_only(void) {
     native_c_screen_selected_items_adder_register();
     native_c_screen_song_info_register();
     native_c_screen_server_info_register();
+#if defined(ENABLE_VISUALIZER)
+    native_c_screen_visualizer_register();
+#endif
 #if defined(ENABLE_OUTPUTS)
     native_c_screen_outputs_register();
 #endif

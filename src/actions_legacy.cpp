@@ -45,7 +45,6 @@
 #include "c/ncm_type_conversions.h"
 #include "screens/tag_editor.h"
 #include "screens/tiny_tag_editor.h"
-#include "screens/visualizer.h"
 #include "title_legacy.h"
 #include "tags.h"
 
@@ -559,10 +558,6 @@ void initializeScreens()
 	myTagEditor = new TagEditor;
 #	endif // HAVE_TAGLIB_H
 
-#	ifdef ENABLE_VISUALIZER
-	myVisualizer = new Visualizer;
-#	endif // ENABLE_VISUALIZER
-
 	native_c_screens_register_native_only();
 	myPlaylist->registerNativeScreen();
 	myBrowser->registerNativeScreen();
@@ -574,12 +569,6 @@ void initializeScreens()
 	myTinyTagEditor->registerNativeScreen();
 	myTagEditor->registerNativeScreen();
 #	endif // HAVE_TAGLIB_H
-
-#	ifdef ENABLE_VISUALIZER
-	myVisualizer->registerNativeScreen();
-#	endif // ENABLE_VISUALIZER
-
-
 }
 
 void setResizeFlags()
@@ -595,12 +584,6 @@ void setResizeFlags()
 	myTinyTagEditor->hasToBeResized = 1;
 	myTagEditor->hasToBeResized = 1;
 #	endif // HAVE_TAGLIB_H
-
-#	ifdef ENABLE_VISUALIZER
-	myVisualizer->hasToBeResized = 1;
-#	endif // ENABLE_VISUALIZER
-
-
 }
 
 void resizeScreen(bool reload_main_window)
@@ -2967,18 +2950,14 @@ void ToggleOutput::run()
 
 bool ToggleVisualizationType::canBeRun()
 {
-#	ifdef ENABLE_VISUALIZER
-	return screenLegacyCurrent() == myVisualizer;
-#	else
-	return false;
-#	endif // ENABLE_VISUALIZER
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_TOGGLE_VISUALIZATION_TYPE);
 }
 
 void ToggleVisualizationType::run()
 {
-#	ifdef ENABLE_VISUALIZER
-	myVisualizer->ToggleVisualizationType();
-#	endif // ENABLE_VISUALIZER
+	(void)ncm_action_runtime_run(
+	    nullptr, NCM_ACTION_TOGGLE_VISUALIZATION_TYPE);
 }
 
 void ShowSongInfo::run()
@@ -3250,24 +3229,13 @@ void ShowOutputs::run()
 
 bool ShowVisualizer::canBeRun()
 {
-#	ifdef ENABLE_VISUALIZER
-	return screenLegacyCurrent() != myVisualizer
-#	ifdef HAVE_TAGLIB_H
-	    && screenLegacyCurrent() != myTinyTagEditor
-#	endif // HAVE_TAGLIB_H
-	;
-#	else
-	return false;
-#	endif // ENABLE_VISUALIZER
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SHOW_VISUALIZER);
 }
 
 void ShowVisualizer::run()
 {
-#	ifdef ENABLE_VISUALIZER
-	myVisualizer->switchTo();
-#	endif // ENABLE_VISUALIZER
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHOW_VISUALIZER);
 }
-
 
 #ifdef HAVE_TAGLIB_H
 bool ShowServerInfo::canBeRun()
@@ -3906,10 +3874,3 @@ bool actions_legacy_runtime_exit_requested(void)
 }
 
 }
-
-/*
- * Secondary screen compatibility implementation.
- *
- * This facade remains needed by legacy actions.
- */
-#include "screens/visualizer.cpp"
