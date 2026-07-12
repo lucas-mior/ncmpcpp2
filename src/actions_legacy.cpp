@@ -3763,17 +3763,6 @@ void actions_legacy_runtime_browser_fetch_supported_extensions(void)
 	myBrowser->fetchSupportedExtensions();
 }
 
-void actions_legacy_runtime_visualizer_setup_datasource(void)
-{
-#ifdef ENABLE_VISUALIZER
-	if (myVisualizer == nullptr)
-		return;
-	myVisualizer->CloseDataSource();
-	myVisualizer->OpenDataSource();
-	myVisualizer->FindOutputID();
-#endif // ENABLE_VISUALIZER
-}
-
 bool actions_legacy_runtime_update_environment(bool update_timer,
                                         bool refresh_window,
                                         bool mpd_sync)
