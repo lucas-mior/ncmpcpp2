@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "status.h"
+#include "screens/nc_visualizer.h"
 
 #define REQUIRE(COND) do {                                                \
     if (!(COND)) {                                                        \
@@ -39,6 +40,12 @@ typedef struct StatusHookProbe {
     int32 ui_current_song_calls;
     int32 init_calls;
     int32 init_order[8];
+    int32 visualizer_screen_calls;
+    int32 visualizer_close_calls;
+    int32 visualizer_open_calls;
+    int32 visualizer_find_calls;
+    int32 visualizer_calls;
+    int32 visualizer_call_order[3];
 
     uint32 previous_playlist_version;
     uint32 ui_previous_playlist_version;
@@ -46,12 +53,16 @@ typedef struct StatusHookProbe {
     bool elapsed_update;
 } StatusHookProbe;
 
+static StatusHookProbe *status_visualizer_probe;
+static NativeVisualizerScreen status_visualizer_screen;
+
 static void fail(char *file, int32 line, char *condition);
 static void require_int(char *file, int32 line, char *name,
                         int32 actual, int32 expected);
 static void require_uint(char *file, int32 line, char *name,
                          uint32 actual, uint32 expected);
 static void status_record_init_call(StatusHookProbe *probe, int32 id);
+static void status_record_visualizer_call(StatusHookProbe *probe, int32 id);
 static NcmMpdStatus status_make(void);
 static NcmStatusHooks status_hooks_make(StatusHookProbe *probe);
 static NcmStatusUiHooks status_ui_hooks_make(StatusHookProbe *probe);
@@ -94,6 +105,22 @@ static void test_player_and_song_id_c_fallbacks_use_ui_hooks(void);
 static void test_database_and_stored_playlist_c_fallbacks_use_ui_hooks(void);
 static void test_playlist_c_fallback_uses_ui_hook(void);
 static void test_connection_initialization_runs_init_hooks(void);
+static void test_connection_initialization_uses_c_visualizer_fallback(void);
+
+NativeVisualizerScreen *__real_native_c_screen_visualizer(void);
+void __real_native_visualizer_screen_close_data_source(
+    NativeVisualizerScreen *screen);
+bool __real_native_visualizer_screen_open_data_source(
+    NativeVisualizerScreen *screen);
+bool __real_native_visualizer_screen_find_output_id(
+    NativeVisualizerScreen *screen);
+NativeVisualizerScreen *__wrap_native_c_screen_visualizer(void);
+void __wrap_native_visualizer_screen_close_data_source(
+    NativeVisualizerScreen *screen);
+bool __wrap_native_visualizer_screen_open_data_source(
+    NativeVisualizerScreen *screen);
+bool __wrap_native_visualizer_screen_find_output_id(
+    NativeVisualizerScreen *screen);
 
 int
 main(void) {
@@ -108,6 +135,7 @@ main(void) {
     test_database_and_stored_playlist_c_fallbacks_use_ui_hooks();
     test_playlist_c_fallback_uses_ui_hook();
     test_connection_initialization_runs_init_hooks();
+    test_connection_initialization_uses_c_visualizer_fallback();
     return EXIT_SUCCESS;
 }
 
@@ -145,6 +173,64 @@ status_record_init_call(StatusHookProbe *probe, int32 id) {
     probe->init_order[probe->init_calls] = id;
     probe->init_calls += 1;
     return;
+}
+
+static void
+status_record_visualizer_call(StatusHookProbe *probe, int32 id) {
+    REQUIRE(probe->visualizer_calls < 3);
+    probe->visualizer_call_order[probe->visualizer_calls] = id;
+    probe->visualizer_calls += 1;
+    return;
+}
+
+NativeVisualizerScreen *
+__wrap_native_c_screen_visualizer(void) {
+    if (status_visualizer_probe == NULL) {
+        return __real_native_c_screen_visualizer();
+    }
+
+    status_visualizer_probe->visualizer_screen_calls += 1;
+    return &status_visualizer_screen;
+}
+
+void
+__wrap_native_visualizer_screen_close_data_source(
+    NativeVisualizerScreen *screen) {
+    if (status_visualizer_probe == NULL) {
+        __real_native_visualizer_screen_close_data_source(screen);
+        return;
+    }
+
+    REQUIRE(screen == &status_visualizer_screen);
+    status_visualizer_probe->visualizer_close_calls += 1;
+    status_record_visualizer_call(status_visualizer_probe, 1);
+    return;
+}
+
+bool
+__wrap_native_visualizer_screen_open_data_source(
+    NativeVisualizerScreen *screen) {
+    if (status_visualizer_probe == NULL) {
+        return __real_native_visualizer_screen_open_data_source(screen);
+    }
+
+    REQUIRE(screen == &status_visualizer_screen);
+    status_visualizer_probe->visualizer_open_calls += 1;
+    status_record_visualizer_call(status_visualizer_probe, 2);
+    return true;
+}
+
+bool
+__wrap_native_visualizer_screen_find_output_id(
+    NativeVisualizerScreen *screen) {
+    if (status_visualizer_probe == NULL) {
+        return __real_native_visualizer_screen_find_output_id(screen);
+    }
+
+    REQUIRE(screen == &status_visualizer_screen);
+    status_visualizer_probe->visualizer_find_calls += 1;
+    status_record_visualizer_call(status_visualizer_probe, 3);
+    return true;
 }
 
 static NcmMpdStatus
@@ -806,5 +892,43 @@ test_connection_initialization_runs_init_hooks(void) {
 
     ncm_status_set_init_hooks(NULL);
     ncm_status_set_notification_observer(NULL, NULL);
+    return;
+}
+
+static void
+test_connection_initialization_uses_c_visualizer_fallback(void) {
+    StatusHookProbe probe = {0};
+    NcmStatusHooks hooks;
+    NcmStatusInitHooks init_hooks;
+    NcmMpdStatus status;
+
+    ncm_status_clear();
+    hooks = status_hooks_make(&probe);
+    init_hooks = status_init_hooks_make(&probe);
+    init_hooks.setup_visualizer_datasource = NULL;
+    ncm_status_set_init_hooks(&init_hooks);
+    status_visualizer_probe = &probe;
+
+    status = status_make();
+    REQUIRE(ncm_status_initialize_from_mpd_status(&status, &hooks, NULL));
+
+    REQUIRE_INT(probe.init_calls, 6);
+    REQUIRE_INT(probe.init_order[0], 1);
+    REQUIRE_INT(probe.init_order[1], 2);
+    REQUIRE_INT(probe.init_order[2], 3);
+    REQUIRE_INT(probe.init_order[3], 4);
+    REQUIRE_INT(probe.init_order[4], 6);
+    REQUIRE_INT(probe.init_order[5], 7);
+    REQUIRE_INT(probe.visualizer_screen_calls, 1);
+    REQUIRE_INT(probe.visualizer_close_calls, 1);
+    REQUIRE_INT(probe.visualizer_open_calls, 1);
+    REQUIRE_INT(probe.visualizer_find_calls, 1);
+    REQUIRE_INT(probe.visualizer_calls, 3);
+    REQUIRE_INT(probe.visualizer_call_order[0], 1);
+    REQUIRE_INT(probe.visualizer_call_order[1], 2);
+    REQUIRE_INT(probe.visualizer_call_order[2], 3);
+
+    status_visualizer_probe = NULL;
+    ncm_status_set_init_hooks(NULL);
     return;
 }
