@@ -34,6 +34,8 @@ app_binding_migration_action_is_c_safe(enum NcmActionType type) {
     case NCM_ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE:
     case NCM_ACTION_SHOW_MEDIA_LIBRARY:
     case NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE:
+    case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
+    case NCM_ACTION_SHOW_VISUALIZER:
         return true;
     default:
         return false;
@@ -43,7 +45,8 @@ app_binding_migration_action_is_c_safe(enum NcmActionType type) {
 bool
 app_binding_migration_screen_is_c_only(enum ScreenType type) {
     return type == NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER
-        || type == NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG;
+        || type == NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG
+        || type == NCM_SCREEN_TYPE_VISUALIZER;
 }
 
 bool
@@ -84,6 +87,30 @@ app_binding_migration_action_is_c_safe_for_screen(
         case NCM_ACTION_PAGE_DOWN:
         case NCM_ACTION_MOVE_HOME:
         case NCM_ACTION_MOVE_END:
+            return true;
+        default:
+            return false;
+        }
+    case NCM_SCREEN_TYPE_VISUALIZER:
+        switch (type) {
+        case NCM_ACTION_MOUSE_EVENT:
+        case NCM_ACTION_MASTER_SCREEN:
+        case NCM_ACTION_SLAVE_SCREEN:
+        case NCM_ACTION_TOGGLE_SCREEN_LOCK:
+        case NCM_ACTION_NEXT_SCREEN:
+        case NCM_ACTION_PREVIOUS_SCREEN:
+        case NCM_ACTION_SHOW_HELP:
+        case NCM_ACTION_SHOW_PLAYLIST:
+        case NCM_ACTION_SHOW_BROWSER:
+        case NCM_ACTION_SHOW_SEARCH_ENGINE:
+        case NCM_ACTION_SHOW_MEDIA_LIBRARY:
+        case NCM_ACTION_SHOW_PLAYLIST_EDITOR:
+        case NCM_ACTION_SHOW_TAG_EDITOR:
+        case NCM_ACTION_SHOW_OUTPUTS:
+        case NCM_ACTION_SHOW_SERVER_INFO:
+        case NCM_ACTION_SHOW_SONG_INFO:
+        case NCM_ACTION_SHOW_ARTIST_INFO:
+        case NCM_ACTION_SHOW_LYRICS:
             return true;
         default:
             return false;
@@ -184,7 +211,6 @@ app_binding_migration_action_forces_legacy_binding(
     case NCM_ACTION_REFETCH_LYRICS:
     case NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY:
     case NCM_ACTION_TOGGLE_OUTPUT:
-    case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
     case NCM_ACTION_SHOW_SONG_INFO:
     case NCM_ACTION_SHOW_ARTIST_INFO:
     case NCM_ACTION_SHOW_LYRICS:
@@ -199,7 +225,6 @@ app_binding_migration_action_forces_legacy_binding(
     case NCM_ACTION_SHOW_PLAYLIST_EDITOR:
     case NCM_ACTION_SHOW_TAG_EDITOR:
     case NCM_ACTION_SHOW_OUTPUTS:
-    case NCM_ACTION_SHOW_VISUALIZER:
     case NCM_ACTION_SHOW_SERVER_INFO:
         return true;
     default:
