@@ -161,6 +161,13 @@ VISUALIZER_CALLBACKS_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=ncm_status_state_player
 $(BUILD_DIR)/tests/c_visualizer_callbacks_test: \
 	LDFLAGS += $(VISUALIZER_CALLBACKS_TEST_WRAP_FLAGS)
+STATUS_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=native_c_screen_visualizer \
+	-Wl,--wrap=native_visualizer_screen_close_data_source \
+	-Wl,--wrap=native_visualizer_screen_open_data_source \
+	-Wl,--wrap=native_visualizer_screen_find_output_id
+$(BUILD_DIR)/tests/c_status_test: \
+	LDFLAGS += $(STATUS_TEST_WRAP_FLAGS)
 DEPS := \
 	$(CBASE_OBJS:.o=.d) \
 	$(NCMPCPP_C_OBJS:.o=.d) \

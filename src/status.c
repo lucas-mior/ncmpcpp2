@@ -75,8 +75,6 @@ extern bool actions_legacy_runtime_playlist_highlight_mpd_position(
     int32 position) __attribute__((weak));
 extern void actions_legacy_runtime_browser_fetch_supported_extensions(void)
     __attribute__((weak));
-extern void actions_legacy_runtime_visualizer_setup_datasource(void)
-    __attribute__((weak));
 extern void actions_legacy_runtime_request_exit(void)
     __attribute__((weak));
 #else
@@ -88,11 +86,6 @@ actions_legacy_runtime_playlist_highlight_mpd_position(int32 position) {
 
 static void
 actions_legacy_runtime_browser_fetch_supported_extensions(void) {
-    return;
-}
-
-static void
-actions_legacy_runtime_visualizer_setup_datasource(void) {
     return;
 }
 
@@ -651,12 +644,14 @@ status_run_init_setup_visualizer_datasource(NcmStatusInitHooks *hooks) {
         return;
     }
 
-#if defined(__GNUC__)
-    if (actions_legacy_runtime_visualizer_setup_datasource == NULL) {
-        return;
-    }
+#if defined(ENABLE_VISUALIZER)
+    NativeVisualizerScreen *visualizer;
+
+    visualizer = native_c_screen_visualizer();
+    native_visualizer_screen_close_data_source(visualizer);
+    (void)native_visualizer_screen_open_data_source(visualizer);
+    (void)native_visualizer_screen_find_output_id(visualizer);
 #endif
-    actions_legacy_runtime_visualizer_setup_datasource();
     return;
 }
 
