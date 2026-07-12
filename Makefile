@@ -161,6 +161,36 @@ VISUALIZER_CALLBACKS_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=ncm_status_state_player
 $(BUILD_DIR)/tests/c_visualizer_callbacks_test: \
 	LDFLAGS += $(VISUALIZER_CALLBACKS_TEST_WRAP_FLAGS)
+VISUALIZER_BEHAVIOR_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=nc_window_init \
+	-Wl,--wrap=nc_window_destroy \
+	-Wl,--wrap=nc_window_width \
+	-Wl,--wrap=nc_window_height \
+	-Wl,--wrap=nc_window_resize \
+	-Wl,--wrap=nc_window_move_to \
+	-Wl,--wrap=nc_window_clear \
+	-Wl,--wrap=nc_window_refresh \
+	-Wl,--wrap=nc_window_go_to_xy \
+	-Wl,--wrap=nc_window_push_color \
+	-Wl,--wrap=nc_window_apply_format \
+	-Wl,--wrap=nc_window_print_data \
+	-Wl,--wrap=nc_screen_switcher_get_resize_params \
+	-Wl,--wrap=ui_state_main_start_y \
+	-Wl,--wrap=ui_state_main_height \
+	-Wl,--wrap=ncm_title_draw_header \
+	-Wl,--wrap=ncm_status_state_player \
+	-Wl,--wrap=ncm_statusbar_message_delay_time \
+	-Wl,--wrap=ncm_statusbar_format
+$(BUILD_DIR)/tests/c_visualizer_behavior_test: \
+	LDFLAGS += $(VISUALIZER_BEHAVIOR_TEST_WRAP_FLAGS)
+VISUALIZER_ACTIONS_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=app_controller_current_screen \
+	-Wl,--wrap=native_c_screen_visualizer_register \
+	-Wl,--wrap=native_c_screen_visualizer_switch_to \
+	-Wl,--wrap=native_c_screen_visualizer \
+	-Wl,--wrap=native_visualizer_screen_toggle_type
+$(BUILD_DIR)/tests/c_visualizer_actions_test: \
+	LDFLAGS += $(VISUALIZER_ACTIONS_TEST_WRAP_FLAGS)
 STATUS_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=native_c_screen_visualizer \
 	-Wl,--wrap=native_visualizer_screen_close_data_source \
