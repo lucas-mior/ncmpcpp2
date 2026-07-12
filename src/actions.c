@@ -1549,8 +1549,8 @@ action_runtime_switch_to_screen(enum ScreenType type) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
         native_c_screen_visualizer_register();
-        native_c_screen_visualizer_switch_to();
-        return true;
+        return native_c_screens_switch_to_type(
+            NCM_SCREEN_TYPE_VISUALIZER);
 #endif
     case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
