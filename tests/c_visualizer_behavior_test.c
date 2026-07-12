@@ -90,6 +90,7 @@ static void test_set_read_results(TestVisualizerIo *io,
                                   int64 *results, int32 results_len);
 static void test_fill_samples(TestVisualizerIo *io, int32 samples_len);
 static void test_fifo_session_behavior(void);
+static void test_switch_opens_data_source(void);
 static void test_udp_stereo_session_behavior(void);
 static void test_output_lookup_errors(void);
 static void test_output_reset_errors(void);
@@ -563,6 +564,34 @@ test_fifo_session_behavior(void) {
 }
 
 static void
+test_switch_opens_data_source(void) {
+    NativeVisualizerScreen screen = {0};
+    TestVisualizerIo io;
+    NativeVisualizerScreenConfig config;
+
+    test_io_init(&io);
+    test_reset_ui();
+    config = test_config(&io,
+                         STRLIT_ARGS("/tmp/visualizer.fifo"),
+                         STRLIT_ARGS("Visualizer feed"),
+                         false);
+    native_visualizer_screen_init(&screen, 0, 0, 20, 8,
+                                  nc_color_default(), nc_border_none(),
+                                  &config);
+
+    assert(screen.source_fd < 0);
+    assert(screen.output_id < 0);
+    nc_screen_switch_to(native_visualizer_screen_base(&screen));
+    assert(screen.source_fd == TEST_FIFO_FD);
+    assert(screen.output_id == TEST_OUTPUT_ID);
+    assert(io.open_fifo_calls == 1);
+    assert(io.get_outputs_calls == 1);
+
+    native_visualizer_screen_destroy(&screen);
+    return;
+}
+
+static void
 test_udp_stereo_session_behavior(void) {
     NativeVisualizerScreen screen = {0};
     TestVisualizerIo io;
@@ -746,6 +775,9 @@ test_open_failure_and_closed_behavior(void) {
     assert(!native_visualizer_screen_open_data_source(&screen));
     assert(screen.source_fd == -1);
     assert(io.open_fifo_calls == 1);
+    nc_screen_switch_to(native_visualizer_screen_base(&screen));
+    assert(screen.source_fd == -1);
+    assert(io.open_fifo_calls == 2);
     test_fill_samples(&io, 64);
     test_set_read_results(&io, update_results,
                           NCM_ARRAY_LEN(update_results));
@@ -812,6 +844,7 @@ test_resize_rebuilds_rendering_state(void) {
 int
 main(void) {
     test_fifo_session_behavior();
+    test_switch_opens_data_source();
     test_udp_stereo_session_behavior();
     test_output_lookup_errors();
     test_output_reset_errors();

@@ -2302,6 +2302,11 @@ visualizer_switch_to_callback(NcScreen *screen) {
     NativeVisualizerScreen *visualizer;
 
     visualizer = visualizer_from_screen(screen);
+    if (visualizer->source_fd < 0) {
+        if (native_visualizer_screen_open_data_source(visualizer)) {
+            (void)native_visualizer_screen_find_output_id(visualizer);
+        }
+    }
     native_visualizer_screen_clear(visualizer);
     visualizer->reset_output = true;
     ncm_title_draw_header(STRLIT_ARGS(NATIVE_VISUALIZER_TITLE));
