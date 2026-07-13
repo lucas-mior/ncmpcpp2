@@ -2,6 +2,7 @@
 
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
+#include "settings.h"
 
 static NativeSearchEngineScreen *native_search_from_screen(NcScreen *screen);
 static NcWindow *native_search_active_window(NcScreen *screen);
@@ -31,6 +32,20 @@ static bool native_search_insert_buffer_with_flags(
     uint32 flags);
 static void native_search_append_constraint_row(
     NativeSearchEngineScreen *screen, int32 idx);
+static bool native_search_set_buffer_row(
+    NativeSearchEngineScreen *screen, int32 pos, NcBuffer *buffer);
+static void native_search_build_constraint_row(
+    NativeSearchEngineScreen *screen, int32 idx, NcBuffer *buffer);
+static void native_search_build_search_source_row(
+    NativeSearchEngineScreen *screen, NcBuffer *buffer);
+static void native_search_build_search_mode_row(
+    NativeSearchEngineScreen *screen, NcBuffer *buffer);
+static void native_search_notify_static_row(
+    NativeSearchEngineScreen *screen, int32 row);
+static void native_search_append_format(NcBuffer *buffer,
+                                        enum NcFormat format);
+static void native_search_append_tag_value(NcBuffer *buffer,
+                                           NcmBuffer *value);
 
 static char *native_search_constraint_names[] = {
     (char *)"Any",
@@ -333,28 +348,22 @@ native_search_engine_screen_prepare_static_rows(
     nc_buffer_init(&buffer);
     native_search_engine_screen_add_buffer_with_flags(
         screen, &buffer, NC_MENU_ITEM_SEPARATOR);
-    nc_buffer_append_cstring(&buffer, (char *)"Search in: ");
-    if (screen->search_in_database) {
-        nc_buffer_append_cstring(&buffer, (char *)"Database");
-    } else {
-        nc_buffer_append_cstring(&buffer, (char *)"Current playlist");
-    }
+
+    native_search_build_search_source_row(screen, &buffer);
     native_search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
 
-    nc_buffer_clear(&buffer);
-    nc_buffer_append_cstring(&buffer, (char *)"Search mode: ");
-    nc_buffer_append_cstring(
-        &buffer,
-        native_search_engine_search_mode_name(screen->search_mode));
+    native_search_build_search_mode_row(screen, &buffer);
     native_search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
 
     nc_buffer_clear(&buffer);
     native_search_engine_screen_add_buffer_with_flags(
         screen, &buffer, NC_MENU_ITEM_SEPARATOR);
-    nc_buffer_append_cstring(&buffer, (char *)"Search");
+
+    nc_buffer_append_data(&buffer, STRLIT_ARGS("Search"));
     native_search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
+
     nc_buffer_clear(&buffer);
-    nc_buffer_append_cstring(&buffer, (char *)"Reset");
+    nc_buffer_append_data(&buffer, STRLIT_ARGS("Reset"));
     native_search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
     nc_buffer_destroy(&buffer);
 
@@ -363,7 +372,74 @@ native_search_engine_screen_prepare_static_rows(
     screen->result_rows_present = false;
     screen->result_count = 0;
     screen->constraints_locked = false;
+    native_search_notify_static_row(
+        screen, NATIVE_SEARCH_ENGINE_ALL_STATIC_ROWS);
     return;
+}
+
+bool
+native_search_engine_screen_update_constraint_row(
+    NativeSearchEngineScreen *screen, int32 idx) {
+    NcBuffer buffer;
+    bool result;
+
+    if ((screen == NULL) || !screen->prepared || (idx < 0)
+        || (idx >= NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT)) {
+        return false;
+    }
+
+    nc_buffer_init(&buffer);
+    native_search_build_constraint_row(screen, idx, &buffer);
+    result = native_search_set_buffer_row(screen, idx, &buffer);
+    nc_buffer_destroy(&buffer);
+    if (result) {
+        native_search_notify_static_row(screen, idx);
+    }
+    return result;
+}
+
+bool
+native_search_engine_screen_update_search_source_row(
+    NativeSearchEngineScreen *screen) {
+    NcBuffer buffer;
+    bool result;
+
+    if ((screen == NULL) || !screen->prepared) {
+        return false;
+    }
+
+    nc_buffer_init(&buffer);
+    native_search_build_search_source_row(screen, &buffer);
+    result = native_search_set_buffer_row(
+        screen, NATIVE_SEARCH_ENGINE_SEARCH_SOURCE_ROW, &buffer);
+    nc_buffer_destroy(&buffer);
+    if (result) {
+        native_search_notify_static_row(
+            screen, NATIVE_SEARCH_ENGINE_SEARCH_SOURCE_ROW);
+    }
+    return result;
+}
+
+bool
+native_search_engine_screen_update_search_mode_row(
+    NativeSearchEngineScreen *screen) {
+    NcBuffer buffer;
+    bool result;
+
+    if ((screen == NULL) || !screen->prepared) {
+        return false;
+    }
+
+    nc_buffer_init(&buffer);
+    native_search_build_search_mode_row(screen, &buffer);
+    result = native_search_set_buffer_row(
+        screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_ROW, &buffer);
+    nc_buffer_destroy(&buffer);
+    if (result) {
+        native_search_notify_static_row(
+            screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_ROW);
+    }
+    return result;
 }
 
 bool
@@ -449,7 +525,10 @@ native_search_engine_screen_reset(NativeSearchEngineScreen *screen) {
         ncm_buffer_clear(&screen->constraints[i]);
     }
     native_search_engine_screen_clear_filter(screen);
+    native_search_engine_screen_clear_find_constraint(screen);
     native_search_engine_screen_prepare_static_rows(screen);
+    native_search_engine_screen_status_message(
+        screen, STRLIT_ARGS("Search state reset"));
     return;
 }
 
@@ -510,7 +589,14 @@ native_search_engine_screen_set_constraint(NativeSearchEngineScreen *screen,
         || idx >= NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT) {
         return false;
     }
-    return ncm_buffer_set(&screen->constraints[idx], data, data_len);
+    if (!ncm_buffer_set(&screen->constraints[idx], data, data_len)) {
+        return false;
+    }
+    if (screen->prepared) {
+        return native_search_engine_screen_update_constraint_row(
+            screen, idx);
+    }
+    return true;
 }
 
 NcmStringView
@@ -550,6 +636,41 @@ native_search_engine_screen_build_query(NativeSearchEngineScreen *screen,
 }
 
 bool
+native_search_engine_screen_set_find_constraint(
+    NativeSearchEngineScreen *screen, char *data, int32 data_len) {
+    if ((screen == NULL) || (data_len < 0)
+        || ((data == NULL) && (data_len > 0))) {
+        return false;
+    }
+    if (!ncm_buffer_set(&screen->search_constraint, data, data_len)) {
+        return false;
+    }
+    screen->match_to_pattern = data_len > 0;
+    return true;
+}
+
+NcmStringView
+native_search_engine_screen_find_constraint(
+    NativeSearchEngineScreen *screen) {
+    if (screen == NULL) {
+        return ncm_string_view_make(NULL, 0);
+    }
+    return ncm_string_view_make(screen->search_constraint.data,
+                                screen->search_constraint.len);
+}
+
+void
+native_search_engine_screen_clear_find_constraint(
+    NativeSearchEngineScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    ncm_buffer_clear(&screen->search_constraint);
+    screen->match_to_pattern = false;
+    return;
+}
+
+bool
 native_search_engine_screen_set_search_mode(
     NativeSearchEngineScreen *screen,
     enum NativeSearchEngineSearchMode mode) {
@@ -558,6 +679,9 @@ native_search_engine_screen_set_search_mode(
         return false;
     }
     screen->search_mode = mode;
+    if (screen->prepared) {
+        return native_search_engine_screen_update_search_mode_row(screen);
+    }
     return true;
 }
 
@@ -577,6 +701,9 @@ native_search_engine_screen_set_search_source(
         return;
     }
     screen->search_in_database = search_in_database;
+    if (screen->prepared) {
+        (void)native_search_engine_screen_update_search_source_row(screen);
+    }
     return;
 }
 
@@ -1093,15 +1220,100 @@ native_search_append_constraint_row(
     NcBuffer buffer;
 
     nc_buffer_init(&buffer);
-    nc_buffer_append_cstring(&buffer, native_search_constraint_names[idx]);
-    while (nc_buffer_len(&buffer) < 13) {
-        nc_buffer_append_char(&buffer, ' ');
-    }
-    nc_buffer_append_cstring(&buffer, (char *)": ");
-    nc_buffer_append_data(&buffer, screen->constraints[idx].data,
-                          screen->constraints[idx].len);
+    native_search_build_constraint_row(screen, idx, &buffer);
     native_search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
     nc_buffer_destroy(&buffer);
+    return;
+}
+
+static bool
+native_search_set_buffer_row(
+    NativeSearchEngineScreen *screen, int32 pos, NcBuffer *buffer) {
+    NcSearchRow *row;
+
+    row = nc_search_row_menu_item_at(
+        &screen->rows, NC_MENU_ITEMS_ALL, pos);
+    if ((row == NULL) || row->is_song) {
+        return false;
+    }
+    nc_buffer_destroy(&row->buffer);
+    nc_buffer_copy(&row->buffer, buffer);
+    return true;
+}
+
+static void
+native_search_build_constraint_row(
+    NativeSearchEngineScreen *screen, int32 idx, NcBuffer *buffer) {
+    nc_buffer_clear(buffer);
+    native_search_append_format(buffer, NC_FORMAT_BOLD);
+    nc_buffer_append_cstring(buffer, native_search_constraint_names[idx]);
+    while (nc_buffer_len(buffer) < 13) {
+        nc_buffer_append_char(buffer, ' ');
+    }
+    native_search_append_format(buffer, NC_FORMAT_NO_BOLD);
+    nc_buffer_append_data(buffer, STRLIT_ARGS(": "));
+    native_search_append_tag_value(buffer, &screen->constraints[idx]);
+    return;
+}
+
+static void
+native_search_build_search_source_row(
+    NativeSearchEngineScreen *screen, NcBuffer *buffer) {
+    nc_buffer_clear(buffer);
+    native_search_append_format(buffer, NC_FORMAT_BOLD);
+    nc_buffer_append_data(buffer, STRLIT_ARGS("Search in:"));
+    native_search_append_format(buffer, NC_FORMAT_NO_BOLD);
+    nc_buffer_append_char(buffer, ' ');
+    if (screen->search_in_database) {
+        nc_buffer_append_data(buffer, STRLIT_ARGS("Database"));
+    } else {
+        nc_buffer_append_data(buffer, STRLIT_ARGS("Current playlist"));
+    }
+    return;
+}
+
+static void
+native_search_build_search_mode_row(
+    NativeSearchEngineScreen *screen, NcBuffer *buffer) {
+    nc_buffer_clear(buffer);
+    native_search_append_format(buffer, NC_FORMAT_BOLD);
+    nc_buffer_append_data(buffer, STRLIT_ARGS("Search mode:"));
+    native_search_append_format(buffer, NC_FORMAT_NO_BOLD);
+    nc_buffer_append_char(buffer, ' ');
+    nc_buffer_append_cstring(
+        buffer, native_search_engine_search_mode_name(screen->search_mode));
+    return;
+}
+
+static void
+native_search_notify_static_row(
+    NativeSearchEngineScreen *screen, int32 row) {
+    if (screen->bridge.static_row_changed != NULL) {
+        screen->bridge.static_row_changed(screen->bridge.user, row);
+    }
+    return;
+}
+
+static void
+native_search_append_format(NcBuffer *buffer, enum NcFormat format) {
+    nc_buffer_add_format(buffer, nc_buffer_len(buffer), format, 0);
+    return;
+}
+
+static void
+native_search_append_tag_value(NcBuffer *buffer, NcmBuffer *value) {
+    if (value->len > 0) {
+        nc_buffer_append_data(buffer, value->data, value->len);
+        return;
+    }
+    if ((Config.empty_tag == NULL) || (Config.empty_tag_len <= 0)) {
+        return;
+    }
+    nc_buffer_add_formatted_color(
+        buffer, nc_buffer_len(buffer), &Config.empty_tags_color, 0);
+    nc_buffer_append_data(buffer, Config.empty_tag, Config.empty_tag_len);
+    nc_buffer_add_formatted_color_end(
+        buffer, nc_buffer_len(buffer), &Config.empty_tags_color, 0);
     return;
 }
 

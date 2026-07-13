@@ -25,6 +25,7 @@ extern "C" {
 #define NATIVE_SEARCH_ENGINE_RESULT_SUMMARY_ROW 18
 #define NATIVE_SEARCH_ENGINE_RESULT_END_SEPARATOR_ROW 19
 #define NATIVE_SEARCH_ENGINE_STATIC_ROW_COUNT 20
+#define NATIVE_SEARCH_ENGINE_ALL_STATIC_ROWS (-1)
 
 enum NativeSearchEngineSearchMode {
     NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL,
@@ -69,6 +70,7 @@ typedef struct NativeSearchEngineBridge {
     void (*mouse_button_pressed)(void *user, MEVENT event);
     bool (*can_run_current)(void *user);
     bool (*run_current)(void *user);
+    void (*static_row_changed)(void *user, int32 row);
     void *user;
 } NativeSearchEngineBridge;
 
@@ -145,6 +147,12 @@ NcmStringView native_search_engine_screen_column_title(
     NativeSearchEngineScreen *screen);
 void native_search_engine_screen_prepare_static_rows(
     NativeSearchEngineScreen *screen);
+bool native_search_engine_screen_update_constraint_row(
+    NativeSearchEngineScreen *screen, int32 idx);
+bool native_search_engine_screen_update_search_source_row(
+    NativeSearchEngineScreen *screen);
+bool native_search_engine_screen_update_search_mode_row(
+    NativeSearchEngineScreen *screen);
 bool native_search_engine_screen_add_result_summary(
     NativeSearchEngineScreen *screen, int32 song_count);
 void native_search_engine_screen_set_constraints_locked(
@@ -164,6 +172,12 @@ NcmStringView native_search_engine_screen_constraint(
     NativeSearchEngineScreen *screen, int32 idx);
 bool native_search_engine_screen_build_query(
     NativeSearchEngineScreen *screen, NcmBuffer *query);
+bool native_search_engine_screen_set_find_constraint(
+    NativeSearchEngineScreen *screen, char *data, int32 data_len);
+NcmStringView native_search_engine_screen_find_constraint(
+    NativeSearchEngineScreen *screen);
+void native_search_engine_screen_clear_find_constraint(
+    NativeSearchEngineScreen *screen);
 bool native_search_engine_screen_set_search_mode(
     NativeSearchEngineScreen *screen,
     enum NativeSearchEngineSearchMode mode);
