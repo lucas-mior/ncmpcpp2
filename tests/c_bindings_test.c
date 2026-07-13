@@ -474,14 +474,24 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_MOUSE_EVENT,
         NCM_ACTION_SCROLL_UP,
         NCM_ACTION_SCROLL_DOWN,
+        NCM_ACTION_SCROLL_UP_ARTIST,
+        NCM_ACTION_SCROLL_UP_ALBUM,
+        NCM_ACTION_SCROLL_DOWN_ARTIST,
+        NCM_ACTION_SCROLL_DOWN_ALBUM,
         NCM_ACTION_PAGE_UP,
         NCM_ACTION_PAGE_DOWN,
         NCM_ACTION_MOVE_HOME,
         NCM_ACTION_MOVE_END,
+        NCM_ACTION_MASTER_SCREEN,
+        NCM_ACTION_SLAVE_SCREEN,
         NCM_ACTION_ADD_ITEM_TO_PLAYLIST,
         NCM_ACTION_PLAY_ITEM,
         NCM_ACTION_TOGGLE_DISPLAY_MODE,
         NCM_ACTION_START_SEARCHING,
+        NCM_ACTION_JUMP_TO_BROWSER,
+        NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR,
+        NCM_ACTION_JUMP_TO_TAG_EDITOR,
+        NCM_ACTION_TOGGLE_SCREEN_LOCK,
         NCM_ACTION_SELECT_ITEM,
         NCM_ACTION_SELECT_RANGE,
         NCM_ACTION_REVERSE_SELECTION,
@@ -489,7 +499,19 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_NEXT_FOUND_ITEM,
         NCM_ACTION_PREVIOUS_FOUND_ITEM,
         NCM_ACTION_TOGGLE_FIND_MODE,
-        NCM_ACTION_RESET_SEARCH_ENGINE,
+        NCM_ACTION_NEXT_SCREEN,
+        NCM_ACTION_PREVIOUS_SCREEN,
+        NCM_ACTION_SHOW_HELP,
+        NCM_ACTION_SHOW_PLAYLIST,
+        NCM_ACTION_SHOW_BROWSER,
+        NCM_ACTION_SHOW_PLAYLIST_EDITOR,
+        NCM_ACTION_SHOW_TAG_EDITOR,
+        NCM_ACTION_SHOW_OUTPUTS,
+        NCM_ACTION_SHOW_VISUALIZER,
+        NCM_ACTION_SHOW_SERVER_INFO,
+        NCM_ACTION_SHOW_SONG_INFO,
+        NCM_ACTION_SHOW_ARTIST_INFO,
+        NCM_ACTION_SHOW_LYRICS,
     };
     NcmBinding binding;
 
@@ -520,6 +542,10 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_SHOW_MEDIA_LIBRARY));
     REQUIRE(app_binding_migration_action_is_c_safe(
         NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE));
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_SHOW_SEARCH_ENGINE));
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_RESET_SEARCH_ENGINE));
     REQUIRE(app_binding_migration_action_is_c_safe(
         NCM_ACTION_RUN_ACTION));
     REQUIRE(app_binding_migration_action_is_c_safe(
@@ -559,7 +585,7 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_CROP_MAIN_PLAYLIST));
     REQUIRE(!app_binding_migration_action_is_c_safe(
         NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE));
-    REQUIRE(!app_binding_migration_screen_is_c_only(
+    REQUIRE(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_SEARCH_ENGINE));
     for (int32 i = 0; i < NCM_ARRAY_LEN(search_actions); i += 1) {
         REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
