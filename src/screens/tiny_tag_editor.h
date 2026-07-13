@@ -7,6 +7,7 @@
 
 #include <cerrno>
 #include <cstring>
+#include <exception>
 #include <string>
 
 #include "app_controller.h"
@@ -64,6 +65,8 @@ private:
     static void nativeRefreshCallback(void *user);
     static void nativeRefreshWindowCallback(void *user);
     static void nativeScrollCallback(void *user, enum NcScroll where);
+    static bool nativeActionRunnableCallback(void *user);
+    static bool nativeRunActionCallback(void *user);
     static void nativeSwitchToCallback(void *user);
     static void nativeResizeCallback(void *user);
     static char *nativeTitleCallback(void *user);
@@ -111,6 +114,8 @@ inline TinyTagEditor::TinyTagEditor()
         bridge.refresh = nativeRefreshCallback;
         bridge.refresh_window = nativeRefreshWindowCallback;
         bridge.scroll = nativeScrollCallback;
+        bridge.action_runnable = nativeActionRunnableCallback;
+        bridge.run_action = nativeRunActionCallback;
         bridge.switch_to = nativeSwitchToCallback;
         bridge.resize = nativeResizeCallback;
         bridge.title = nativeTitleCallback;
@@ -236,6 +241,38 @@ inline void TinyTagEditor::nativeScrollCallback(void *user,
     if (editor == nullptr)
         return;
     editor->scroll(where);
+}
+
+inline bool TinyTagEditor::nativeActionRunnableCallback(void *user)
+{
+    TinyTagEditor *editor = static_cast<TinyTagEditor *>(user);
+
+    if (editor == nullptr)
+        return false;
+    return editor->actionRunnable();
+}
+
+inline bool TinyTagEditor::nativeRunActionCallback(void *user)
+{
+    TinyTagEditor *editor = static_cast<TinyTagEditor *>(user);
+
+    if (editor == nullptr)
+        return false;
+    try
+    {
+        editor->runAction();
+    }
+    catch (NC::PromptAborted &)
+    {
+        Statusbar::printf("Action aborted");
+        return false;
+    }
+    catch (std::exception &error)
+    {
+        Statusbar::printf("Unexpected error: %1%", error.what());
+        return false;
+    }
+    return true;
 }
 
 inline void TinyTagEditor::nativeSwitchToCallback(void *user)

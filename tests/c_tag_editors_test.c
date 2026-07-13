@@ -9,12 +9,28 @@
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 
+typedef struct TinyEditorActionContext {
+    int32 run_count;
+    bool runnable;
+} TinyEditorActionContext;
+
+typedef struct TagEditorActionContext {
+    int32 run_count;
+    bool runnable;
+} TagEditorActionContext;
+
 static void test_mutable_song_tag_changes(void);
 static void test_selected_songs(void);
 static void test_parser_row_generation(void);
 static void test_filename_parser(void);
+static void test_tag_editor_run_action_bridge(void);
 static void test_tiny_editor_field_updates(void);
+static void test_tiny_editor_run_action_bridge(void);
 static void test_save_failure_keeps_state_destroyable(void);
+static bool tag_editor_action_runnable(void *user);
+static bool tag_editor_run_action(void *user);
+static bool tiny_editor_action_runnable(void *user);
+static bool tiny_editor_run_action(void *user);
 
 int
 main(void) {
@@ -22,7 +38,9 @@ main(void) {
     test_selected_songs();
     test_parser_row_generation();
     test_filename_parser();
+    test_tag_editor_run_action_bridge();
     test_tiny_editor_field_updates();
+    test_tiny_editor_run_action_bridge();
     test_save_failure_keeps_state_destroyable();
     return EXIT_SUCCESS;
 }
@@ -167,6 +185,50 @@ test_filename_parser(void) {
 }
 
 static void
+test_tag_editor_run_action_bridge(void) {
+    NativeTagEditorScreen screen;
+    NativeTagEditorBridge bridge = {0};
+    TagEditorActionContext context = {0};
+    NcScreen *native_screen;
+
+    native_tag_editor_screen_init(&screen, 0, 90, 0, 24,
+                                  nc_color_default(), nc_border_none());
+    native_screen = native_tag_editor_screen_base(&screen);
+    assert(!nc_screen_can_run_current(native_screen));
+
+    bridge.action_runnable = tag_editor_action_runnable;
+    bridge.run_action = tag_editor_run_action;
+    bridge.user = &context;
+    native_tag_editor_screen_set_bridge(&screen, bridge);
+
+    assert(!nc_screen_can_run_current(native_screen));
+    context.runnable = true;
+    assert(nc_screen_can_run_current(native_screen));
+    assert(nc_screen_run_current(native_screen));
+    assert(context.run_count == 1);
+
+    native_tag_editor_screen_destroy(&screen);
+    return;
+}
+
+static bool
+tag_editor_action_runnable(void *user) {
+    TagEditorActionContext *context;
+
+    context = user;
+    return context->runnable;
+}
+
+static bool
+tag_editor_run_action(void *user) {
+    TagEditorActionContext *context;
+
+    context = user;
+    context->run_count += 1;
+    return true;
+}
+
+static void
 test_tiny_editor_field_updates(void) {
     NativeTinyTagEditorScreen screen;
     NcmMutableSong song;
@@ -198,6 +260,51 @@ test_tiny_editor_field_updates(void) {
     ncm_mutable_song_destroy(&song);
     native_tiny_tag_editor_screen_destroy(&screen);
     return;
+}
+
+static void
+test_tiny_editor_run_action_bridge(void) {
+    NativeTinyTagEditorScreen screen;
+    NativeTinyTagEditorBridge bridge = {0};
+    TinyEditorActionContext context = {0};
+    NcScreen *native_screen;
+
+    native_tiny_tag_editor_screen_init(&screen, 0, 80, 0, 24,
+                                       nc_color_default(),
+                                       nc_border_none());
+    native_screen = native_tiny_tag_editor_screen_base(&screen);
+    assert(!nc_screen_can_run_current(native_screen));
+
+    bridge.action_runnable = tiny_editor_action_runnable;
+    bridge.run_action = tiny_editor_run_action;
+    bridge.user = &context;
+    native_tiny_tag_editor_screen_set_bridge(&screen, bridge);
+
+    assert(!nc_screen_can_run_current(native_screen));
+    context.runnable = true;
+    assert(nc_screen_can_run_current(native_screen));
+    assert(nc_screen_run_current(native_screen));
+    assert(context.run_count == 1);
+
+    native_tiny_tag_editor_screen_destroy(&screen);
+    return;
+}
+
+static bool
+tiny_editor_action_runnable(void *user) {
+    TinyEditorActionContext *context;
+
+    context = user;
+    return context->runnable;
+}
+
+static bool
+tiny_editor_run_action(void *user) {
+    TinyEditorActionContext *context;
+
+    context = user;
+    context->run_count += 1;
+    return true;
 }
 
 static void
