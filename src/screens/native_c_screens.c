@@ -1017,6 +1017,7 @@ native_c_screen_search_engine_init(void) {
     native_search_engine_screen_set_search_source(
         &search_engine_screen, Config.search_in_db);
 
+    hooks.client = &global_mpd;
     hooks.list_database_songs = native_search_list_database_songs;
     hooks.snapshot_playlist = native_search_snapshot_playlist;
     hooks.prompt_constraint = native_search_prompt_constraint;

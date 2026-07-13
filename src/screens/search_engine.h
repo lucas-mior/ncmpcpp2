@@ -144,8 +144,6 @@ private:
     void syncLegacyStaticRows();
     void syncLegacyRow(int32 row);
     void syncLegacyFindConstraint();
-    static bool nativeCanRunCurrentCallback(void *user);
-    static bool nativeRunCurrentCallback(void *user) noexcept;
     static void nativeStaticRowChangedCallback(void *user, int32 row);
 
     // Temporary matcher for the legacy C++ menu. The native screen owns
@@ -253,8 +251,6 @@ inline SearchEngine::SearchEngine()
     {
         NativeSearchEngineBridge bridge = {};
 
-        bridge.can_run_current = nativeCanRunCurrentCallback;
-        bridge.run_current = nativeRunCurrentCallback;
         bridge.static_row_changed = nativeStaticRowChangedCallback;
         bridge.user = this;
         native_search_engine_screen_set_bridge(native_c_screen_search_engine(),
@@ -406,84 +402,14 @@ inline void SearchEngine::applyFilter(const std::string &constraint)
 
 inline bool SearchEngine::actionRunnable()
 {
-    NcSearchRow *row;
-
-    row = nc_search_row_menu_current(
-        native_search_engine_screen_rows(
-            native_c_screen_search_engine()));
-    return row != nullptr && !row->is_song;
+    return native_search_engine_screen_can_run_current(
+        native_c_screen_search_engine());
 }
 
 inline void SearchEngine::runAction()
 {
-    NativeSearchEngineScreen *native;
-    size_t option;
-
-    native = native_c_screen_search_engine();
-    option = static_cast<size_t>(nc_menu_highlight(
-        native_search_engine_screen_menu(native)));
-    if (option < w.size())
-        w.highlight(option);
-    if (option < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT)
-    {
-        NcmStringView view;
-        Statusbar::ScopedLock slock;
-        char *name;
-        std::string constraint;
-        std::string value;
-
-        view = native_search_engine_screen_constraint(
-            native, static_cast<int32>(option));
-        value.assign(view.data == nullptr ? "" : view.data,
-                     static_cast<size_t>(view.len));
-        name = native_search_engine_constraint_name(
-            static_cast<int32>(option));
-        constraint = name;
-        Statusbar::put() << NC_FORMAT_BOLD << constraint
-                         << NC_FORMAT_NO_BOLD << ": ";
-        value = static_cast<NC::Window *>(
-            ui_state_footer_legacy_window())->prompt(value);
-        native_search_engine_screen_set_constraint(
-            native, static_cast<int32>(option),
-            const_cast<char *>(value.c_str()),
-            static_cast<int32>(value.size()));
-
-    }
-    else if (option == NATIVE_SEARCH_ENGINE_SEARCH_SOURCE_ROW)
-    {
-        bool search_in_database;
-
-        search_in_database =
-            !native_search_engine_screen_searches_database(native);
-        native_search_engine_screen_set_search_source(
-            native, search_in_database);
-        Config.search_in_db = search_in_database;
-    }
-    else if (option == NATIVE_SEARCH_ENGINE_SEARCH_MODE_ROW)
-    {
-        enum NativeSearchEngineSearchMode mode;
-        uint32 next_mode;
-
-        mode = native_search_engine_screen_search_mode(native);
-        next_mode = static_cast<uint32>(mode) + 1;
-        if (next_mode >= NATIVE_SEARCH_ENGINE_SEARCH_MODE_LAST)
-            next_mode = NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL;
-        mode = static_cast<enum NativeSearchEngineSearchMode>(next_mode);
-        native_search_engine_screen_set_search_mode(native, mode);
-    }
-    else if (option == NATIVE_SEARCH_ENGINE_SEARCH_BUTTON_ROW)
-    {
-        Search();
-        return;
-    }
-    else if (option == NATIVE_SEARCH_ENGINE_RESET_BUTTON_ROW)
-    {
-        reset();
-    }
-    else
-        ncm_action_add_song_to_playlist(
-            w.current()->value().song().cSong(), true, -1);
-    syncNative();
+    (void)native_search_engine_screen_run_current(
+        native_c_screen_search_engine());
 }
 
 inline bool SearchEngine::itemAvailable()
@@ -688,77 +614,6 @@ inline void SearchEngine::syncLegacyFindConstraint()
                   false));
 }
 
-inline bool SearchEngine::nativeCanRunCurrentCallback(void *user)
-{
-    SearchEngine *searcher = static_cast<SearchEngine *>(user);
-
-    return searcher != nullptr && searcher->actionRunnable();
-}
-
-inline bool SearchEngine::nativeRunCurrentCallback(void *user) noexcept
-{
-    SearchEngine *searcher = static_cast<SearchEngine *>(user);
-    native_search_engine_compat::RunCurrentResult result;
-
-    if (searcher == nullptr)
-        return false;
-
-    try
-    {
-        result = native_search_engine_compat::invoke_run_current<
-            NC::PromptAborted>(
-            [searcher]() { return searcher->actionRunnable(); },
-            [searcher]() { searcher->runAction(); });
-    }
-    catch (MPD::ClientError &error)
-    {
-        ncm_status_handle_client_error_value(
-            &global_mpd, const_cast<char *>(error.what()), -1,
-            error.clearable());
-        return false;
-    }
-    catch (MPD::ServerError &error)
-    {
-        ncm_status_handle_server_error_value(
-            &global_mpd, static_cast<int32>(error.code()),
-            const_cast<char *>(error.what()), -1);
-        return false;
-    }
-    catch (std::exception &error)
-    {
-        NcmStringFormatArg arg;
-
-        arg = ncm_string_format_arg_cstring(
-            const_cast<char *>(error.what()));
-        ncm_statusbar_format(
-            ncm_statusbar_message_delay_time(),
-            const_cast<char *>("Unexpected error: %1%"),
-            STRLIT_LEN("Unexpected error: %1%"), &arg, 1);
-        return false;
-    }
-    catch (...)
-    {
-        ncm_statusbar_print_cstring(
-            ncm_statusbar_message_delay_time(),
-            const_cast<char *>("Unexpected error"));
-        return false;
-    }
-
-    switch (result)
-    {
-    case native_search_engine_compat::RunCurrentResult::NotRunnable:
-        return false;
-    case native_search_engine_compat::RunCurrentResult::Completed:
-        return true;
-    case native_search_engine_compat::RunCurrentResult::Aborted:
-        ncm_statusbar_print_cstring(
-            ncm_statusbar_message_delay_time(),
-            const_cast<char *>("Action aborted"));
-        return false;
-    }
-    return false;
-}
-
 inline void SearchEngine::nativeStaticRowChangedCallback(void *user,
                                                          int32 row)
 {
@@ -767,7 +622,7 @@ inline void SearchEngine::nativeStaticRowChangedCallback(void *user,
     if (searcher == nullptr)
         return;
     if (row == NATIVE_SEARCH_ENGINE_ALL_STATIC_ROWS)
-        searcher->syncLegacyStaticRows();
+        searcher->syncLegacyFromNative();
     else
         searcher->syncLegacyRow(row);
 }

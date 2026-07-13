@@ -470,6 +470,27 @@ test_runtime_can_execute_preflight(void) {
 
 static void
 test_app_binding_migration_c_safe_actions(void) {
+    enum NcmActionType search_actions[] = {
+        NCM_ACTION_MOUSE_EVENT,
+        NCM_ACTION_SCROLL_UP,
+        NCM_ACTION_SCROLL_DOWN,
+        NCM_ACTION_PAGE_UP,
+        NCM_ACTION_PAGE_DOWN,
+        NCM_ACTION_MOVE_HOME,
+        NCM_ACTION_MOVE_END,
+        NCM_ACTION_ADD_ITEM_TO_PLAYLIST,
+        NCM_ACTION_PLAY_ITEM,
+        NCM_ACTION_TOGGLE_DISPLAY_MODE,
+        NCM_ACTION_START_SEARCHING,
+        NCM_ACTION_SELECT_ITEM,
+        NCM_ACTION_SELECT_RANGE,
+        NCM_ACTION_REVERSE_SELECTION,
+        NCM_ACTION_REMOVE_SELECTION,
+        NCM_ACTION_NEXT_FOUND_ITEM,
+        NCM_ACTION_PREVIOUS_FOUND_ITEM,
+        NCM_ACTION_TOGGLE_FIND_MODE,
+        NCM_ACTION_RESET_SEARCH_ENGINE,
+    };
     NcmBinding binding;
 
     REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_QUIT));
@@ -538,6 +559,25 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_CROP_MAIN_PLAYLIST));
     REQUIRE(!app_binding_migration_action_is_c_safe(
         NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE));
+    REQUIRE(!app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_SEARCH_ENGINE));
+    for (int32 i = 0; i < NCM_ARRAY_LEN(search_actions); i += 1) {
+        REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
+            search_actions[i], NCM_SCREEN_TYPE_SEARCH_ENGINE));
+    }
+    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_START_SEARCHING, NCM_SCREEN_TYPE_BROWSER));
+    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_SELECT_ALBUM, NCM_SCREEN_TYPE_SEARCH_ENGINE));
+
+    ncm_binding_init(&binding);
+    append_action(&binding, NCM_ACTION_START_SEARCHING);
+    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
+    REQUIRE(app_binding_migration_binding_is_c_safe_for_screen(
+        &binding, NCM_SCREEN_TYPE_SEARCH_ENGINE));
+    REQUIRE(!app_binding_migration_binding_is_c_safe_for_screen(
+        &binding, NCM_SCREEN_TYPE_BROWSER));
+    ncm_binding_destroy(&binding);
 
     ncm_binding_init(&binding);
     append_action(&binding, NCM_ACTION_QUIT);
