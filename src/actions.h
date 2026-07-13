@@ -175,6 +175,8 @@ bool ncm_action_runtime_can_run(NcmActionRuntime *runtime,
 bool ncm_action_runtime_run(NcmActionRuntime *runtime,
                             enum NcmActionType type);
 bool ncm_action_current_song(NcmSong *song);
+bool ncm_action_show_visualizer(void);
+bool ncm_action_toggle_visualization_type(void);
 bool ncm_action_delete_playlist_items(void);
 bool ncm_action_crop_main_playlist(void);
 bool ncm_action_add_song_to_playlist_with_mode(

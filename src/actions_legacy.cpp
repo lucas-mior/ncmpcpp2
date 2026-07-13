@@ -2950,14 +2950,16 @@ void ToggleOutput::run()
 
 bool ToggleVisualizationType::canBeRun()
 {
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_TOGGLE_VISUALIZATION_TYPE);
+#	ifdef ENABLE_VISUALIZER
+	return native_c_screen_visualizer_is_current();
+#	else
+	return false;
+#	endif // ENABLE_VISUALIZER
 }
 
 void ToggleVisualizationType::run()
 {
-	(void)ncm_action_runtime_run(
-	    nullptr, NCM_ACTION_TOGGLE_VISUALIZATION_TYPE);
+	(void)ncm_action_toggle_visualization_type();
 }
 
 void ShowSongInfo::run()
@@ -3229,12 +3231,20 @@ void ShowOutputs::run()
 
 bool ShowVisualizer::canBeRun()
 {
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SHOW_VISUALIZER);
+#	ifdef ENABLE_VISUALIZER
+	return !native_c_screen_visualizer_is_current()
+#	ifdef HAVE_TAGLIB_H
+	    && screenLegacyCurrent() != myTinyTagEditor
+#	endif // HAVE_TAGLIB_H
+	;
+#	else
+	return false;
+#	endif // ENABLE_VISUALIZER
 }
 
 void ShowVisualizer::run()
 {
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHOW_VISUALIZER);
+	(void)ncm_action_show_visualizer();
 }
 
 #ifdef HAVE_TAGLIB_H

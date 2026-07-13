@@ -1548,9 +1548,7 @@ action_runtime_switch_to_screen(enum ScreenType type) {
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
-        native_c_screen_visualizer_register();
-        return native_c_screens_switch_to_type(
-            NCM_SCREEN_TYPE_VISUALIZER);
+        return ncm_action_show_visualizer();
 #endif
     case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
@@ -1558,6 +1556,29 @@ action_runtime_switch_to_screen(enum ScreenType type) {
     }
 
     return false;
+}
+
+bool
+ncm_action_show_visualizer(void) {
+#if defined(ENABLE_VISUALIZER)
+    native_c_screen_visualizer_register();
+    return native_c_screens_switch_to_type(NCM_SCREEN_TYPE_VISUALIZER);
+#else
+    return false;
+#endif
+}
+
+bool
+ncm_action_toggle_visualization_type(void) {
+#if defined(ENABLE_VISUALIZER)
+    if (!native_c_screen_visualizer_is_current()) {
+        return false;
+    }
+    native_visualizer_screen_toggle_type(native_c_screen_visualizer());
+    return true;
+#else
+    return false;
+#endif
 }
 
 static bool
@@ -3863,8 +3884,11 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_ACTION_SHOW_VISUALIZER:
+        return !action_runtime_current_screen_is(
+            NCM_SCREEN_TYPE_VISUALIZER);
     case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
-        return true;
+        return action_runtime_current_screen_is(
+            NCM_SCREEN_TYPE_VISUALIZER);
 #endif
 #if defined(HAVE_TAGLIB_H)
     case NCM_ACTION_SHOW_TAG_EDITOR:
@@ -4219,10 +4243,9 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_ACTION_SHOW_VISUALIZER:
-        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_VISUALIZER);
+        return ncm_action_show_visualizer();
     case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
-        native_visualizer_screen_toggle_type(native_c_screen_visualizer());
-        return true;
+        return ncm_action_toggle_visualization_type();
 #endif
 #if defined(HAVE_TAGLIB_H)
     case NCM_ACTION_SHOW_TAG_EDITOR:
