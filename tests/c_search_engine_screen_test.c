@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <errno.h>
 #include <stdlib.h>
 
 #include "c/ncm_app_arrays.h"
@@ -8,13 +9,35 @@
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 
-typedef struct SearchHookFixture {
-    int32 calls;
-    bool search_in_database;
-    enum NativeSearchEngineSearchMode mode;
-    int32 constraint_count;
-    NcmBuffer constraint;
-} SearchHookFixture;
+#define SEARCH_TAG_CALL_CAPACITY 9
+
+typedef struct MpdSearchFixture {
+    int32 start_calls;
+    int32 any_calls;
+    int32 uri_calls;
+    int32 tag_calls;
+    int32 commit_calls;
+    bool exact_match;
+    bool fail_start;
+    bool fail_add;
+    bool fail_commit;
+    NcmBuffer any;
+    NcmBuffer uri;
+    enum mpd_tag_type tags[SEARCH_TAG_CALL_CAPACITY];
+    NcmBuffer tag_values[SEARCH_TAG_CALL_CAPACITY];
+    NcmSongArray results;
+} MpdSearchFixture;
+
+typedef struct SearchSourceFixture {
+    int32 database_calls;
+    int32 playlist_calls;
+    int32 status_calls;
+    bool fail_database;
+    bool fail_playlist;
+    NcmBuffer status;
+    NcmSongArray database;
+    NcmSongArray playlist;
+} SearchSourceFixture;
 
 typedef struct ExternalHookFixture {
     int32 database_calls;
@@ -49,6 +72,7 @@ typedef struct WindowTrace {
     char title[512];
 } WindowTrace;
 
+static MpdSearchFixture mpd_search_fixture;
 static WindowTrace window_trace;
 static int64 resize_x;
 static int64 resize_width;
@@ -89,7 +113,9 @@ static void test_search_reset_contract(void);
 static void test_search_result_row_ownership(void);
 static void test_search_selected_songs(void);
 static void test_formatted_song_filter_and_find(void);
-static void test_search_collection_hooks(void);
+static void test_database_search_execution(void);
+static void test_local_search_execution(void);
+static void test_search_execution_failures(void);
 static void test_run_current_bridge(void);
 static void test_native_display_and_column_title(void);
 static void test_native_lifecycle(void);
@@ -108,10 +134,20 @@ static void assert_song_uri(NcmSong *song, char *expected,
                             int32 expected_len);
 static int32 string_len(char *string);
 static bool format_song_title(void *user, NcmSong *song, NcmBuffer *text);
-static bool collect_results(void *user, bool search_in_database,
-                            enum NativeSearchEngineSearchMode mode,
-                            NcmBuffer *constraints, int32 constraint_count,
-                            NcmSongArray *songs, NcmError *error);
+static void init_mpd_search_fixture(void);
+static void destroy_mpd_search_fixture(void);
+static void append_test_song(NcmSongArray *songs, char *uri,
+                             int32 uri_len, char *artist,
+                             int32 artist_len, char *title,
+                             int32 title_len, char *genre,
+                             int32 genre_len);
+static bool search_list_database_songs(void *user,
+                                       NcmSongArray *songs,
+                                       NcmError *error);
+static bool search_snapshot_playlist(void *user, NcmSongArray *songs,
+                                     NcmError *error);
+static void search_status_message(void *user, char *message,
+                                  int32 message_len);
 static bool list_database_songs(void *user, NcmSongArray *songs,
                                 NcmError *error);
 static bool snapshot_playlist(void *user, NcmSongArray *songs,
@@ -129,6 +165,18 @@ static bool run_current(void *user);
 static void static_row_changed(void *user, int32 row);
 void __wrap_nc_window_set_title(NcWindow *window, char *title,
                                 int32 title_len);
+bool __wrap_ncm_mpd_client_start_search(NcmMpdClient *client,
+                                        bool exact_match,
+                                        NcmError *error);
+bool __wrap_ncm_mpd_client_add_search_tag(NcmMpdClient *client,
+                                          enum mpd_tag_type tag,
+                                          char *value, NcmError *error);
+bool __wrap_ncm_mpd_client_add_search_any(NcmMpdClient *client,
+                                          char *value, NcmError *error);
+bool __wrap_ncm_mpd_client_add_search_uri(NcmMpdClient *client,
+                                          char *value, NcmError *error);
+bool __wrap_ncm_mpd_client_commit_search_songs(
+    NcmMpdClient *client, NcmMpdSongList *songs, NcmError *error);
 
 int
 main(void) {
@@ -144,7 +192,9 @@ main(void) {
     test_search_result_row_ownership();
     test_search_selected_songs();
     test_formatted_song_filter_and_find();
-    test_search_collection_hooks();
+    test_database_search_execution();
+    test_local_search_execution();
+    test_search_execution_failures();
     test_run_current_bridge();
     test_native_display_and_column_title();
     test_native_lifecycle();
@@ -890,85 +940,532 @@ test_formatted_song_filter_and_find(void) {
     return;
 }
 
-static bool
-collect_results(void *user, bool search_in_database,
-                enum NativeSearchEngineSearchMode mode,
-                NcmBuffer *constraints, int32 constraint_count,
-                NcmSongArray *songs, NcmError *error) {
-    SearchHookFixture *fixture;
+static void
+init_mpd_search_fixture(void) {
+    mpd_search_fixture = (MpdSearchFixture){0};
+    ncm_buffer_init(&mpd_search_fixture.any);
+    ncm_buffer_init(&mpd_search_fixture.uri);
+    for (int32 i = 0; i < SEARCH_TAG_CALL_CAPACITY; i += 1) {
+        ncm_buffer_init(&mpd_search_fixture.tag_values[i]);
+    }
+    ncm_song_array_init(&mpd_search_fixture.results);
+    return;
+}
+
+static void
+destroy_mpd_search_fixture(void) {
+    ncm_song_array_destroy(&mpd_search_fixture.results);
+    for (int32 i = 0; i < SEARCH_TAG_CALL_CAPACITY; i += 1) {
+        ncm_buffer_destroy(&mpd_search_fixture.tag_values[i]);
+    }
+    ncm_buffer_destroy(&mpd_search_fixture.uri);
+    ncm_buffer_destroy(&mpd_search_fixture.any);
+    return;
+}
+
+static void
+append_test_song(NcmSongArray *songs, char *uri, int32 uri_len,
+                 char *artist, int32 artist_len, char *title,
+                 int32 title_len, char *genre, int32 genre_len) {
     NcmSong song;
 
-    (void)error;
-    fixture = user;
-    fixture->calls += 1;
-    fixture->search_in_database = search_in_database;
-    fixture->mode = mode;
-    fixture->constraint_count = constraint_count;
-    ncm_buffer_set(&fixture->constraint,
-                   constraints[3].data, constraints[3].len);
-
     ncm_song_init(&song);
-    assert(ncm_song_set_uri(&song, LIT_ARGS("result.flac")));
+    assert(ncm_song_set_uri(&song, uri, uri_len));
+    if (artist_len > 0) {
+        assert(ncm_song_add_tag(&song, MPD_TAG_ARTIST,
+                                artist, artist_len));
+    }
+    if (title_len > 0) {
+        assert(ncm_song_add_tag(&song, MPD_TAG_TITLE,
+                                title, title_len));
+    }
+    if (genre_len > 0) {
+        assert(ncm_song_add_tag(&song, MPD_TAG_GENRE,
+                                genre, genre_len));
+    }
     assert(ncm_song_array_append_copy(songs, &song));
     ncm_song_destroy(&song);
+    return;
+}
+
+static bool
+search_copy_songs(NcmSongArray *dest, NcmSongArray *source,
+                  NcmError *error) {
+    for (int32 i = 0; i < source->len; i += 1) {
+        if (!ncm_song_array_append_copy(dest, &source->items[i])) {
+            ncm_error_set(error, EIO, LIT_ARGS("copy failed"));
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool
+search_list_database_songs(void *user, NcmSongArray *songs,
+                           NcmError *error) {
+    SearchSourceFixture *fixture;
+
+    fixture = user;
+    fixture->database_calls += 1;
+    if (fixture->fail_database) {
+        ncm_error_set(error, EIO, LIT_ARGS("database list failed"));
+        return false;
+    }
+    return search_copy_songs(songs, &fixture->database, error);
+}
+
+static bool
+search_snapshot_playlist(void *user, NcmSongArray *songs,
+                         NcmError *error) {
+    SearchSourceFixture *fixture;
+
+    fixture = user;
+    fixture->playlist_calls += 1;
+    if (fixture->fail_playlist) {
+        ncm_error_set(error, EIO, LIT_ARGS("playlist snapshot failed"));
+        return false;
+    }
+    return search_copy_songs(songs, &fixture->playlist, error);
+}
+
+static void
+search_status_message(void *user, char *message, int32 message_len) {
+    SearchSourceFixture *fixture;
+
+    fixture = user;
+    fixture->status_calls += 1;
+    assert(ncm_buffer_set(&fixture->status, message, message_len));
+    return;
+}
+
+bool
+__wrap_ncm_mpd_client_start_search(NcmMpdClient *client,
+                                   bool exact_match,
+                                   NcmError *error) {
+    (void)client;
+    mpd_search_fixture.start_calls += 1;
+    mpd_search_fixture.exact_match = exact_match;
+    if (mpd_search_fixture.fail_start) {
+        ncm_error_set(error, EIO, LIT_ARGS("start search failed"));
+        return false;
+    }
+    return true;
+}
+
+bool
+__wrap_ncm_mpd_client_add_search_tag(NcmMpdClient *client,
+                                     enum mpd_tag_type tag,
+                                     char *value, NcmError *error) {
+    int32 call;
+
+    (void)client;
+    if (mpd_search_fixture.fail_add) {
+        ncm_error_set(error, EIO, LIT_ARGS("add search failed"));
+        return false;
+    }
+    call = mpd_search_fixture.tag_calls;
+    assert(call < SEARCH_TAG_CALL_CAPACITY);
+    mpd_search_fixture.tags[call] = tag;
+    assert(ncm_buffer_set(&mpd_search_fixture.tag_values[call],
+                          value, string_len(value)));
+    mpd_search_fixture.tag_calls += 1;
+    return true;
+}
+
+bool
+__wrap_ncm_mpd_client_add_search_any(NcmMpdClient *client,
+                                     char *value, NcmError *error) {
+    (void)client;
+    if (mpd_search_fixture.fail_add) {
+        ncm_error_set(error, EIO, LIT_ARGS("add search failed"));
+        return false;
+    }
+    mpd_search_fixture.any_calls += 1;
+    assert(ncm_buffer_set(&mpd_search_fixture.any,
+                          value, string_len(value)));
+    return true;
+}
+
+bool
+__wrap_ncm_mpd_client_add_search_uri(NcmMpdClient *client,
+                                     char *value, NcmError *error) {
+    (void)client;
+    if (mpd_search_fixture.fail_add) {
+        ncm_error_set(error, EIO, LIT_ARGS("add search failed"));
+        return false;
+    }
+    mpd_search_fixture.uri_calls += 1;
+    assert(ncm_buffer_set(&mpd_search_fixture.uri,
+                          value, string_len(value)));
+    return true;
+}
+
+bool
+__wrap_ncm_mpd_client_commit_search_songs(
+    NcmMpdClient *client, NcmMpdSongList *songs, NcmError *error) {
+    (void)client;
+    mpd_search_fixture.commit_calls += 1;
+    if (mpd_search_fixture.fail_commit) {
+        ncm_error_set(error, EIO, LIT_ARGS("commit search failed"));
+        return false;
+    }
+    for (int32 i = 0; i < mpd_search_fixture.results.len; i += 1) {
+        assert(ncm_mpd_song_list_append_copy(
+            songs, &mpd_search_fixture.results.items[i]));
+    }
     return true;
 }
 
 static void
-test_search_collection_hooks(void) {
+assert_search_result(NativeSearchEngineScreen *screen, int32 result,
+                     char *uri, int32 uri_len) {
+    NcSearchRow *row;
+
+    row = row_at(screen, NATIVE_SEARCH_ENGINE_STATIC_ROW_COUNT + result);
+    assert(row != NULL);
+    assert(row->is_song);
+    assert_song_uri(&row->song, uri, uri_len);
+    return;
+}
+
+static void
+test_database_search_execution(void) {
     NativeSearchEngineScreen screen;
     NativeSearchEngineHooks hooks = {0};
-    SearchHookFixture fixture;
-    NcmSongArray songs;
+    SearchSourceFixture source = {0};
+    NcmMpdClient client = {0};
     NcmError error;
-    int32 expected_calls;
+    bool old_block;
 
-    fixture = (SearchHookFixture){0};
-    ncm_buffer_init(&fixture.constraint);
+    old_block = Config.block_search_constraints_change;
+    Config.block_search_constraints_change = true;
+    ncm_buffer_init(&source.status);
+    ncm_song_array_init(&source.database);
+    ncm_song_array_init(&source.playlist);
+    init_mpd_search_fixture();
     init_screen(&screen);
-    ncm_song_array_init(&songs);
-    hooks.collect_results = collect_results;
-    hooks.user = &fixture;
+    hooks.status_message = search_status_message;
+    hooks.user = &source;
+    native_search_engine_screen_set_hooks(&screen, hooks);
+
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 0, LIT_ARGS("any")));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 1, LIT_ARGS("artist")));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 2, LIT_ARGS("album artist")));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 3, LIT_ARGS("title")));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 4, LIT_ARGS("album")));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 5, LIT_ARGS("file.flac")));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 6, LIT_ARGS("composer")));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 7, LIT_ARGS("performer")));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 8, LIT_ARGS("genre")));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 9, LIT_ARGS("date")));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 10, LIT_ARGS("comment")));
+    append_test_song(&mpd_search_fixture.results,
+                     LIT_ARGS("first.flac"), NULL, 0,
+                     NULL, 0, NULL, 0);
+    append_test_song(&mpd_search_fixture.results,
+                     LIT_ARGS("second.flac"), NULL, 0,
+                     NULL, 0, NULL, 0);
+
+    ncm_error_clear(&error);
+    assert(native_search_engine_screen_execute_search(
+        &screen, &client, &error));
+    assert(mpd_search_fixture.start_calls == 1);
+    assert(!mpd_search_fixture.exact_match);
+    assert(mpd_search_fixture.any_calls == 1);
+    assert(ncm_string_equal(mpd_search_fixture.any.data,
+                            mpd_search_fixture.any.len,
+                            LIT_ARGS("any")));
+    assert(mpd_search_fixture.uri_calls == 1);
+    assert(ncm_string_equal(mpd_search_fixture.uri.data,
+                            mpd_search_fixture.uri.len,
+                            LIT_ARGS("file.flac")));
+    assert(mpd_search_fixture.tag_calls == SEARCH_TAG_CALL_CAPACITY);
+    assert(mpd_search_fixture.tags[0] == MPD_TAG_ARTIST);
+    assert(mpd_search_fixture.tags[1] == MPD_TAG_ALBUM_ARTIST);
+    assert(mpd_search_fixture.tags[2] == MPD_TAG_TITLE);
+    assert(mpd_search_fixture.tags[3] == MPD_TAG_ALBUM);
+    assert(mpd_search_fixture.tags[4] == MPD_TAG_COMPOSER);
+    assert(mpd_search_fixture.tags[5] == MPD_TAG_PERFORMER);
+    assert(mpd_search_fixture.tags[6] == MPD_TAG_GENRE);
+    assert(mpd_search_fixture.tags[7] == MPD_TAG_DATE);
+    assert(mpd_search_fixture.tags[8] == MPD_TAG_COMMENT);
+    assert(ncm_string_equal(mpd_search_fixture.tag_values[0].data,
+                            mpd_search_fixture.tag_values[0].len,
+                            LIT_ARGS("artist")));
+    assert(ncm_string_equal(mpd_search_fixture.tag_values[1].data,
+                            mpd_search_fixture.tag_values[1].len,
+                            LIT_ARGS("album artist")));
+    assert(ncm_string_equal(mpd_search_fixture.tag_values[2].data,
+                            mpd_search_fixture.tag_values[2].len,
+                            LIT_ARGS("title")));
+    assert(ncm_string_equal(mpd_search_fixture.tag_values[3].data,
+                            mpd_search_fixture.tag_values[3].len,
+                            LIT_ARGS("album")));
+    assert(ncm_string_equal(mpd_search_fixture.tag_values[4].data,
+                            mpd_search_fixture.tag_values[4].len,
+                            LIT_ARGS("composer")));
+    assert(ncm_string_equal(mpd_search_fixture.tag_values[5].data,
+                            mpd_search_fixture.tag_values[5].len,
+                            LIT_ARGS("performer")));
+    assert(ncm_string_equal(mpd_search_fixture.tag_values[6].data,
+                            mpd_search_fixture.tag_values[6].len,
+                            LIT_ARGS("genre")));
+    assert(ncm_string_equal(mpd_search_fixture.tag_values[7].data,
+                            mpd_search_fixture.tag_values[7].len,
+                            LIT_ARGS("date")));
+    assert(ncm_string_equal(mpd_search_fixture.tag_values[8].data,
+                            mpd_search_fixture.tag_values[8].len,
+                            LIT_ARGS("comment")));
+    assert(mpd_search_fixture.commit_calls == 1);
+    assert(native_search_engine_screen_result_count(&screen) == 2);
+    assert(native_search_engine_screen_has_result_rows(&screen));
+    assert(native_search_engine_screen_constraints_locked(&screen));
+    assert_search_result(&screen, 0, LIT_ARGS("first.flac"));
+    assert_search_result(&screen, 1, LIT_ARGS("second.flac"));
+    assert_row_text(&screen, NATIVE_SEARCH_ENGINE_RESULT_SUMMARY_ROW,
+                    LIT_ARGS("Search results: Found 2 songs"));
+    assert(ncm_string_equal(source.status.data, source.status.len,
+                            LIT_ARGS("Searching finished")));
+
+    native_search_engine_screen_destroy(&screen);
+    destroy_mpd_search_fixture();
+    ncm_song_array_destroy(&source.playlist);
+    ncm_song_array_destroy(&source.database);
+    ncm_buffer_destroy(&source.status);
+
+    source = (SearchSourceFixture){0};
+    ncm_buffer_init(&source.status);
+    ncm_song_array_init(&source.database);
+    ncm_song_array_init(&source.playlist);
+    init_mpd_search_fixture();
+    init_screen(&screen);
+    hooks.status_message = search_status_message;
+    hooks.user = &source;
+    native_search_engine_screen_set_hooks(&screen, hooks);
+    assert(native_search_engine_screen_set_search_mode(
+        &screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 3, LIT_ARGS("Exact title")));
+    append_test_song(&mpd_search_fixture.results,
+                     LIT_ARGS("exact.flac"), NULL, 0,
+                     NULL, 0, NULL, 0);
+
+    ncm_error_clear(&error);
+    assert(native_search_engine_screen_execute_search(
+        &screen, &client, &error));
+    assert(mpd_search_fixture.start_calls == 1);
+    assert(mpd_search_fixture.exact_match);
+    assert(mpd_search_fixture.tag_calls == 1);
+    assert(mpd_search_fixture.tags[0] == MPD_TAG_TITLE);
+    assert(ncm_string_equal(mpd_search_fixture.tag_values[0].data,
+                            mpd_search_fixture.tag_values[0].len,
+                            LIT_ARGS("Exact title")));
+    assert_search_result(&screen, 0, LIT_ARGS("exact.flac"));
+
+    native_search_engine_screen_destroy(&screen);
+    destroy_mpd_search_fixture();
+    ncm_song_array_destroy(&source.playlist);
+    ncm_song_array_destroy(&source.database);
+    ncm_buffer_destroy(&source.status);
+    Config.block_search_constraints_change = old_block;
+    return;
+}
+
+static void
+test_local_search_execution(void) {
+    NativeSearchEngineScreen screen;
+    NativeSearchEngineHooks hooks = {0};
+    SearchSourceFixture source = {0};
+    NcmError error;
+    uint32 old_regex_type;
+    bool old_ignore_the;
+
+    old_regex_type = Config.regex_type;
+    old_ignore_the = Config.ignore_leading_the;
+    Config.regex_type = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
+    Config.ignore_leading_the = false;
+    ncm_buffer_init(&source.status);
+    ncm_song_array_init(&source.database);
+    ncm_song_array_init(&source.playlist);
+    append_test_song(&source.database, LIT_ARGS("first.flac"),
+                     LIT_ARGS("Alpha"), LIT_ARGS("Needle title"),
+                     LIT_ARGS("Rock"));
+    append_test_song(&source.database, LIT_ARGS("second.flac"),
+                     LIT_ARGS("Beta"), LIT_ARGS("Needle title"),
+                     LIT_ARGS("Rock"));
+    append_test_song(&source.database, LIT_ARGS("third.flac"),
+                     LIT_ARGS("Alpha"), LIT_ARGS("Other title"),
+                     LIT_ARGS("Rock"));
+    init_screen(&screen);
+    hooks.list_database_songs = search_list_database_songs;
+    hooks.snapshot_playlist = search_snapshot_playlist;
+    hooks.status_message = search_status_message;
+    hooks.user = &source;
+    native_search_engine_screen_set_hooks(&screen, hooks);
+    assert(native_search_engine_screen_set_search_mode(
+        &screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_REGEX));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 0, LIT_ARGS("needle")));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 1, LIT_ARGS("^Alpha$")));
+
+    ncm_error_clear(&error);
+    assert(native_search_engine_screen_execute_search(
+        &screen, NULL, &error));
+    assert(source.database_calls == 1);
+    assert(source.playlist_calls == 0);
+    assert(native_search_engine_screen_result_count(&screen) == 1);
+    assert_search_result(&screen, 0, LIT_ARGS("first.flac"));
+    native_search_engine_screen_destroy(&screen);
+
+    ncm_song_array_clear(&source.playlist);
+    source.playlist_calls = 0;
+    append_test_song(&source.playlist, LIT_ARGS("literal.flac"),
+                     LIT_ARGS("Alpha"), LIT_ARGS("Literal Needle"),
+                     LIT_ARGS("Rock"));
+    append_test_song(&source.playlist, LIT_ARGS("other.flac"),
+                     LIT_ARGS("Beta"), LIT_ARGS("Other"),
+                     LIT_ARGS("Jazz"));
+    Config.regex_type = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
+    init_screen(&screen);
+    native_search_engine_screen_set_hooks(&screen, hooks);
+    native_search_engine_screen_set_search_source(&screen, false);
+    assert(native_search_engine_screen_set_search_mode(
+        &screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 3, LIT_ARGS("needle")));
+
+    ncm_error_clear(&error);
+    assert(native_search_engine_screen_execute_search(
+        &screen, NULL, &error));
+    assert(source.playlist_calls == 1);
+    assert(native_search_engine_screen_result_count(&screen) == 1);
+    assert_search_result(&screen, 0, LIT_ARGS("literal.flac"));
+    native_search_engine_screen_destroy(&screen);
+
+    ncm_song_array_clear(&source.playlist);
+    source.playlist_calls = 0;
+    append_test_song(&source.playlist, LIT_ARGS("dir/song.flac"),
+                     LIT_ARGS("The Alpha"), LIT_ARGS("Exact"),
+                     LIT_ARGS("Rock"));
+    append_test_song(&source.playlist, LIT_ARGS("dir/other.flac"),
+                     LIT_ARGS("Beta"), LIT_ARGS("Exact"),
+                     LIT_ARGS("Rock"));
+    Config.ignore_leading_the = true;
+    init_screen(&screen);
+    native_search_engine_screen_set_hooks(&screen, hooks);
+    native_search_engine_screen_set_search_source(&screen, false);
+    assert(native_search_engine_screen_set_search_mode(
+        &screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 0, LIT_ARGS("Alpha")));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 5, LIT_ARGS("song.flac")));
+
+    ncm_error_clear(&error);
+    assert(native_search_engine_screen_execute_search(
+        &screen, NULL, &error));
+    assert(source.playlist_calls == 1);
+    assert(native_search_engine_screen_result_count(&screen) == 1);
+    assert_search_result(&screen, 0, LIT_ARGS("dir/song.flac"));
+    native_search_engine_screen_destroy(&screen);
+
+    ncm_song_array_clear(&source.playlist);
+    source.playlist_calls = 0;
+    Config.regex_type = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
+    append_test_song(&source.playlist, LIT_ARGS("one.flac"),
+                     LIT_ARGS("Alpha"), LIT_ARGS("One"),
+                     LIT_ARGS("Rock"));
+    append_test_song(&source.playlist, LIT_ARGS("two.flac"),
+                     LIT_ARGS("Beta"), LIT_ARGS("Two"),
+                     LIT_ARGS("Jazz"));
+    init_screen(&screen);
+    native_search_engine_screen_set_hooks(&screen, hooks);
+    native_search_engine_screen_set_search_source(&screen, false);
+    assert(native_search_engine_screen_set_search_mode(
+        &screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_REGEX));
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 3, LIT_ARGS("[")));
+
+    ncm_error_clear(&error);
+    assert(native_search_engine_screen_execute_search(
+        &screen, NULL, &error));
+    assert(native_search_engine_screen_result_count(&screen) == 2);
+    assert_search_result(&screen, 0, LIT_ARGS("one.flac"));
+    assert_search_result(&screen, 1, LIT_ARGS("two.flac"));
+    native_search_engine_screen_destroy(&screen);
+
+    ncm_song_array_destroy(&source.playlist);
+    ncm_song_array_destroy(&source.database);
+    ncm_buffer_destroy(&source.status);
+    Config.ignore_leading_the = old_ignore_the;
+    Config.regex_type = old_regex_type;
+    return;
+}
+
+static void
+test_search_execution_failures(void) {
+    NativeSearchEngineScreen screen;
+    NativeSearchEngineHooks hooks = {0};
+    SearchSourceFixture source = {0};
+    NcmMpdClient client = {0};
+    NcmError error;
+
+    ncm_buffer_init(&source.status);
+    ncm_song_array_init(&source.database);
+    ncm_song_array_init(&source.playlist);
+    init_mpd_search_fixture();
+    init_screen(&screen);
+    hooks.status_message = search_status_message;
+    hooks.user = &source;
     native_search_engine_screen_set_hooks(&screen, hooks);
 
     ncm_error_clear(&error);
-    assert(native_search_engine_screen_collect_results(
-        &screen, &songs, &error));
-    assert(fixture.calls == 0);
-    assert(songs.len == 0);
+    assert(native_search_engine_screen_execute_search(
+        &screen, &client, &error));
+    assert(mpd_search_fixture.start_calls == 0);
+    assert(native_search_engine_screen_result_count(&screen) == 0);
+    assert(ncm_string_equal(source.status.data, source.status.len,
+                            LIT_ARGS("No results found")));
 
     assert(native_search_engine_screen_set_constraint(
         &screen, 3, LIT_ARGS("needle")));
-    expected_calls = 0;
-    for (uint32 source = 0; source < 2; source += 1) {
-        for (uint32 mode = NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL;
-             mode < NATIVE_SEARCH_ENGINE_SEARCH_MODE_LAST; mode += 1) {
-            native_search_engine_screen_set_search_source(
-                &screen, source != 0);
-            assert(native_search_engine_screen_set_search_mode(
-                &screen, (enum NativeSearchEngineSearchMode)mode));
-            ncm_song_array_clear(&songs);
-            ncm_error_clear(&error);
-            assert(native_search_engine_screen_collect_results(
-                &screen, &songs, &error));
-            expected_calls += 1;
-            assert(fixture.calls == expected_calls);
-            assert(fixture.search_in_database == (source != 0));
-            assert(fixture.mode
-                   == (enum NativeSearchEngineSearchMode)mode);
-            assert(fixture.constraint_count
-                   == NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT);
-            assert(ncm_string_equal(fixture.constraint.data,
-                                    fixture.constraint.len,
-                                    LIT_ARGS("needle")));
-            assert(songs.len == 1);
-            assert_song_uri(&songs.items[0], LIT_ARGS("result.flac"));
-        }
-    }
+    ncm_error_clear(&error);
+    assert(native_search_engine_screen_execute_search(
+        &screen, &client, &error));
+    assert(mpd_search_fixture.commit_calls == 1);
+    assert(native_search_engine_screen_result_count(&screen) == 0);
+    assert(ncm_string_equal(source.status.data, source.status.len,
+                            LIT_ARGS("No results found")));
 
-    ncm_song_array_destroy(&songs);
+    mpd_search_fixture.fail_commit = true;
+    ncm_error_clear(&error);
+    assert(!native_search_engine_screen_execute_search(
+        &screen, &client, &error));
+    assert(error.code == EIO);
+    assert(nc_menu_item_count(
+        native_search_engine_screen_menu(&screen))
+           == NATIVE_SEARCH_ENGINE_RESET_BUTTON_ROW + 1);
+    assert(!native_search_engine_screen_has_result_rows(&screen));
+    assert(ncm_string_equal(source.status.data, source.status.len,
+                            LIT_ARGS("commit search failed")));
+
     native_search_engine_screen_destroy(&screen);
-    ncm_buffer_destroy(&fixture.constraint);
+    destroy_mpd_search_fixture();
+    ncm_song_array_destroy(&source.playlist);
+    ncm_song_array_destroy(&source.database);
+    ncm_buffer_destroy(&source.status);
     return;
 }
 

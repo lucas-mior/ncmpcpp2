@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cassert>
 #include <functional>
-#include <locale>
 #include <string>
 #include <vector>
 
@@ -20,14 +19,12 @@
 #include "regex_filter.h"
 #include "screens/native_c_screens.h"
 #include "screens/nc_search_engine.h"
-#include "screens/playlist.h"
 #include "screens/screen_cpp_compat.h"
 #include "settings_legacy.h"
 #include "song_list.h"
 #include "statusbar.h"
 #include "title_legacy.h"
 #include "ui_state.h"
-#include "utility/comparators.h"
 
 struct SEItem
 {
@@ -143,6 +140,7 @@ private:
     void Prepare();
     void Search();
     void syncNative();
+    void syncLegacyFromNative();
     void syncLegacyStaticRows();
     void syncLegacyRow(int32 row);
     void syncLegacyFindConstraint();
@@ -165,6 +163,7 @@ inline bool SEItemEntryMatcher(const Regex::Regex &rx,
                                const NC::Menu<SEItem>::Item &item,
                                bool filter);
 inline uint32 nativeFlags(const NC::Menu<SEItem>::Item &item);
+inline NC::List::Properties::Type legacyProperties(uint32 flags);
 inline bool addNativeItem(NativeSearchEngineScreen *native,
                           const NC::Menu<SEItem>::Item &item);
 
@@ -474,42 +473,8 @@ inline void SearchEngine::runAction()
     }
     else if (option == NATIVE_SEARCH_ENGINE_SEARCH_BUTTON_ROW)
     {
-        w.clearFilter();
-        Statusbar::print("Searching...");
-        if (w.size() > NATIVE_SEARCH_ENGINE_STATIC_ROW_COUNT)
-            Prepare();
         Search();
-        if (w.rbegin()->value().isSong())
-        {
-            if (Config.search_engine_display_mode == NCM_DISPLAY_MODE_COLUMNS)
-                w.setTitle(Config.titles_visibility
-                    ? Display::Columns(w.getWidth())
-                    : "");
-            size_t found = w.size()-NATIVE_SEARCH_ENGINE_STATIC_ROW_COUNT;
-            found += 3;
-            w.insertSeparator(NATIVE_SEARCH_ENGINE_RESET_BUTTON_ROW+1);
-            w.insertItem(NATIVE_SEARCH_ENGINE_RESET_BUTTON_ROW+2,
-                         SEItem(), NC::List::Properties::Inactive);
-            w.at(NATIVE_SEARCH_ENGINE_RESET_BUTTON_ROW+2).value().mkBuffer()
-                << NC_FORMAT_BOLD
-                << Config.color1
-                << "Search results: "
-                << NC::FormattedColor::End<>(Config.color1)
-                << Config.color2
-                << "Found " << found << (found > 1 ? " songs" : " song")
-                << NC::FormattedColor::End<>(Config.color2)
-                << NC_FORMAT_NO_BOLD;
-            w.insertSeparator(NATIVE_SEARCH_ENGINE_RESET_BUTTON_ROW+3);
-            Statusbar::print("Searching finished");
-            if (Config.block_search_constraints_change)
-                for (size_t i = 0;
-                     i < NATIVE_SEARCH_ENGINE_STATIC_ROW_COUNT-4; ++i)
-                    w.at(i).setInactive(true);
-            w.scroll(NC_SCROLL_DOWN);
-            w.scroll(NC_SCROLL_DOWN);
-        }
-        else
-            Statusbar::print("No results found");
+        return;
     }
     else if (option == NATIVE_SEARCH_ENGINE_RESET_BUTTON_ROW)
     {
@@ -561,169 +526,12 @@ inline void SearchEngine::reset()
 
 inline void SearchEngine::Search()
 {
-    NativeSearchEngineScreen *native;
-    enum NativeSearchEngineSearchMode mode;
-    std::string constraints[NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT];
-    bool search_in_database;
-    bool constraints_empty = 1;
+    NcmError error;
 
-    native = native_c_screen_search_engine();
-    mode = native_search_engine_screen_search_mode(native);
-    search_in_database =
-        native_search_engine_screen_searches_database(native);
-    for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; ++i)
-    {
-        NcmStringView view;
-
-        view = native_search_engine_screen_constraint(native, i);
-        constraints[i].assign(view.data == nullptr ? "" : view.data,
-                              static_cast<size_t>(view.len));
-    }
-    for (size_t i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; ++i)
-    {
-        if (!constraints[i].empty())
-        {
-            constraints_empty = 0;
-            break;
-        }
-    }
-    if (constraints_empty)
-        return;
-
-    if (search_in_database && (mode == NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL
-        || mode == NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT))
-    {
-        Mpd.StartSearch(mode == NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT);
-        if (!constraints[0].empty())
-            Mpd.AddSearchAny(constraints[0]);
-        if (!constraints[1].empty())
-            Mpd.AddSearch(MPD_TAG_ARTIST, constraints[1]);
-        if (!constraints[2].empty())
-            Mpd.AddSearch(MPD_TAG_ALBUM_ARTIST, constraints[2]);
-        if (!constraints[3].empty())
-            Mpd.AddSearch(MPD_TAG_TITLE, constraints[3]);
-        if (!constraints[4].empty())
-            Mpd.AddSearch(MPD_TAG_ALBUM, constraints[4]);
-        if (!constraints[5].empty())
-            Mpd.AddSearchURI(constraints[5]);
-        if (!constraints[6].empty())
-            Mpd.AddSearch(MPD_TAG_COMPOSER, constraints[6]);
-        if (!constraints[7].empty())
-            Mpd.AddSearch(MPD_TAG_PERFORMER, constraints[7]);
-        if (!constraints[8].empty())
-            Mpd.AddSearch(MPD_TAG_GENRE, constraints[8]);
-        if (!constraints[9].empty())
-            Mpd.AddSearch(MPD_TAG_DATE, constraints[9]);
-        if (!constraints[10].empty())
-            Mpd.AddSearch(MPD_TAG_COMMENT, constraints[10]);
-        for (MPD::SongIterator s = Mpd.CommitSearchSongs(), end; s != end; ++s)
-            w.addItem(std::move(*s));
-        return;
-    }
-
-    Regex::Regex rx[NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT];
-    if (mode != NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT)
-    {
-        for (size_t i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; ++i)
-        {
-            if (!constraints[i].empty())
-            {
-                try
-                {
-                    rx[i] = Regex::make(constraints[i], Config.regex_type);
-                }
-                catch (Regex::Error &) { }
-            }
-        }
-    }
-
-    LocaleStringComparison cmp(std::locale(), Config.ignore_leading_the);
-    auto searchSongs = [&](auto s, auto end) {
-        for (; s != end; ++s)
-        {
-            bool any_found = true, found = true;
-
-            if (mode != NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT)
-            {
-                if (!rx[0].empty())
-                    any_found =
-                           Regex::search(s->getArtist(), rx[0])
-                        || Regex::search(s->getAlbumArtist(), rx[0])
-                        || Regex::search(s->getTitle(), rx[0])
-                        || Regex::search(s->getAlbum(), rx[0])
-                        || Regex::search(s->getName(), rx[0])
-                        || Regex::search(s->getComposer(), rx[0])
-                        || Regex::search(s->getPerformer(), rx[0])
-                        || Regex::search(s->getGenre(), rx[0])
-                        || Regex::search(s->getDate(), rx[0])
-                        || Regex::search(s->getComment(), rx[0]);
-                if (found && !rx[1].empty())
-                    found = Regex::search(s->getArtist(), rx[1]);
-                if (found && !rx[2].empty())
-                    found = Regex::search(s->getAlbumArtist(), rx[2]);
-                if (found && !rx[3].empty())
-                    found = Regex::search(s->getTitle(), rx[3]);
-                if (found && !rx[4].empty())
-                    found = Regex::search(s->getAlbum(), rx[4]);
-                if (found && !rx[5].empty())
-                    found = Regex::search(s->getName(), rx[5]);
-                if (found && !rx[6].empty())
-                    found = Regex::search(s->getComposer(), rx[6]);
-                if (found && !rx[7].empty())
-                    found = Regex::search(s->getPerformer(), rx[7]);
-                if (found && !rx[8].empty())
-                    found = Regex::search(s->getGenre(), rx[8]);
-                if (found && !rx[9].empty())
-                    found = Regex::search(s->getDate(), rx[9]);
-                if (found && !rx[10].empty())
-                    found = Regex::search(s->getComment(), rx[10]);
-            }
-            else
-            {
-                if (!constraints[0].empty())
-                    any_found =
-                       !cmp(s->getArtist(), constraints[0])
-                    || !cmp(s->getAlbumArtist(), constraints[0])
-                    || !cmp(s->getTitle(), constraints[0])
-                    || !cmp(s->getAlbum(), constraints[0])
-                    || !cmp(s->getName(), constraints[0])
-                    || !cmp(s->getComposer(), constraints[0])
-                    || !cmp(s->getPerformer(), constraints[0])
-                    || !cmp(s->getGenre(), constraints[0])
-                    || !cmp(s->getDate(), constraints[0])
-                    || !cmp(s->getComment(), constraints[0]);
-
-                if (found && !constraints[1].empty())
-                    found = !cmp(s->getArtist(), constraints[1]);
-                if (found && !constraints[2].empty())
-                    found = !cmp(s->getAlbumArtist(), constraints[2]);
-                if (found && !constraints[3].empty())
-                    found = !cmp(s->getTitle(), constraints[3]);
-                if (found && !constraints[4].empty())
-                    found = !cmp(s->getAlbum(), constraints[4]);
-                if (found && !constraints[5].empty())
-                    found = !cmp(s->getName(), constraints[5]);
-                if (found && !constraints[6].empty())
-                    found = !cmp(s->getComposer(), constraints[6]);
-                if (found && !constraints[7].empty())
-                    found = !cmp(s->getPerformer(), constraints[7]);
-                if (found && !constraints[8].empty())
-                    found = !cmp(s->getGenre(), constraints[8]);
-                if (found && !constraints[9].empty())
-                    found = !cmp(s->getDate(), constraints[9]);
-                if (found && !constraints[10].empty())
-                    found = !cmp(s->getComment(), constraints[10]);
-            }
-
-            if (any_found && found)
-                w.addItem(*s);
-        }
-    };
-
-    if (search_in_database)
-        searchSongs(Mpd.GetDirectoryRecursive("/"), MPD::SongIterator());
-    else
-        searchSongs(myPlaylist->main().beginV(), myPlaylist->main().endV());
+    ncm_error_clear(&error);
+    (void)native_search_engine_screen_execute_search(
+        native_c_screen_search_engine(), &global_mpd, &error);
+    syncLegacyFromNative();
 }
 
 inline void SearchEngine::syncNative()
@@ -764,6 +572,52 @@ inline void SearchEngine::syncNative()
 
     if (was_filtered)
         w.showFilteredItems();
+}
+
+inline void SearchEngine::syncLegacyFromNative()
+{
+    NativeSearchEngineScreen *native;
+    NcMenu *native_menu;
+    int64 count;
+
+    native = native_c_screen_search_engine();
+    native_menu = native_search_engine_screen_menu(native);
+    w.clearFilter();
+    w.clear();
+    count = nc_menu_all_item_count(native_menu);
+    for (int64 i = 0; i < count; ++i)
+    {
+        NcSearchRow *row;
+        NC::List::Properties::Type properties;
+        uint32 flags;
+
+        row = nc_search_row_menu_item_at(
+            native_search_engine_screen_rows(native),
+            NC_MENU_ITEMS_ALL, i);
+        flags = nc_menu_item_flags_at(
+            native_menu, NC_MENU_ITEMS_ALL, i);
+        properties = search_engine_compat::legacyProperties(flags);
+        if (flags & NC_MENU_ITEM_SEPARATOR)
+        {
+            w.addSeparator();
+        }
+        else if (row != nullptr && row->is_song)
+        {
+            w.addItem(SEItem(MPD::Song(&row->song)), properties);
+        }
+        else if (row != nullptr)
+        {
+            SEItem item;
+
+            nc_buffer_copy(item.mkBuffer().cBuffer(), &row->buffer);
+            w.addItem(std::move(item), properties);
+        }
+    }
+    if (count > 0)
+    {
+        w.highlight(static_cast<size_t>(nc_menu_highlight(native_menu)));
+    }
+    syncLegacyFindConstraint();
 }
 
 inline void SearchEngine::syncLegacyStaticRows()
@@ -965,6 +819,21 @@ inline uint32 nativeFlags(const NC::Menu<SEItem>::Item &item)
     if (item.isSeparator())
         flags |= NC_MENU_ITEM_SEPARATOR;
     return flags;
+}
+
+inline NC::List::Properties::Type legacyProperties(uint32 flags)
+{
+    NC::List::Properties::Type properties = NC::List::Properties::None;
+
+    if (flags & NC_MENU_ITEM_SELECTABLE)
+        properties |= NC::List::Properties::Selectable;
+    if (flags & NC_MENU_ITEM_SELECTED)
+        properties |= NC::List::Properties::Selected;
+    if (flags & NC_MENU_ITEM_INACTIVE)
+        properties |= NC::List::Properties::Inactive;
+    if (flags & NC_MENU_ITEM_SEPARATOR)
+        properties |= NC::List::Properties::Separator;
+    return properties;
 }
 
 inline bool addNativeItem(NativeSearchEngineScreen *native,

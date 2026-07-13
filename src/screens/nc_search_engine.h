@@ -42,10 +42,6 @@ enum NativeSearchEnginePromptResult {
 };
 
 typedef struct NativeSearchEngineHooks {
-    bool (*collect_results)(void *user, bool search_in_database,
-                            enum NativeSearchEngineSearchMode mode,
-                            NcmBuffer *constraints, int32 constraint_count,
-                            NcmSongArray *songs, NcmError *error);
     bool (*list_database_songs)(void *user, NcmSongArray *songs,
                                 NcmError *error);
     bool (*snapshot_playlist)(void *user, NcmSongArray *songs,
@@ -205,8 +201,9 @@ void native_search_engine_screen_status_message(
 bool native_search_engine_screen_add_song(
     NativeSearchEngineScreen *screen, NcmSong *song, bool play,
     NcmError *error);
-bool native_search_engine_screen_collect_results(
-    NativeSearchEngineScreen *screen, NcmSongArray *songs, NcmError *error);
+bool native_search_engine_screen_execute_search(
+    NativeSearchEngineScreen *screen, NcmMpdClient *client,
+    NcmError *error);
 bool native_search_engine_screen_allows_search(
     NativeSearchEngineScreen *screen);
 bool native_search_engine_screen_current_song(
