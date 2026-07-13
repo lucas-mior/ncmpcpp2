@@ -32,6 +32,8 @@ typedef struct NativeTagEditorBridge {
     void (*refresh)(void *user);
     void (*refresh_window)(void *user);
     void (*scroll)(void *user, enum NcScroll where);
+    bool (*action_runnable)(void *user);
+    bool (*run_action)(void *user);
     void (*switch_to)(void *user);
     void (*resize)(void *user);
     char *(*title)(void *user);

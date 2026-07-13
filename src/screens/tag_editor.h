@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cerrno>
 #include <cstring>
+#include <exception>
 #include <fstream>
 #include <list>
 #include <sstream>
@@ -127,6 +128,8 @@ private:
     static void nativeRefreshCallback(void *user);
     static void nativeRefreshWindowCallback(void *user);
     static void nativeScrollCallback(void *user, enum NcScroll where);
+    static bool nativeActionRunnableCallback(void *user);
+    static bool nativeRunActionCallback(void *user);
     static void nativeSwitchToCallback(void *user);
     static void nativeResizeCallback(void *user);
     static char *nativeTitleCallback(void *user);
@@ -312,6 +315,8 @@ inline TagEditor::TagEditor()
         bridge.refresh = nativeRefreshCallback;
         bridge.refresh_window = nativeRefreshWindowCallback;
         bridge.scroll = nativeScrollCallback;
+        bridge.action_runnable = nativeActionRunnableCallback;
+        bridge.run_action = nativeRunActionCallback;
         bridge.switch_to = nativeSwitchToCallback;
         bridge.resize = nativeResizeCallback;
         bridge.title = nativeTitleCallback;
@@ -1197,6 +1202,38 @@ inline void TagEditor::nativeScrollCallback(void *user, enum NcScroll where)
     if (editor == nullptr || editor->w == nullptr)
         return;
     editor->w->scroll(where);
+}
+
+inline bool TagEditor::nativeActionRunnableCallback(void *user)
+{
+    TagEditor *editor = static_cast<TagEditor *>(user);
+
+    if (editor == nullptr)
+        return false;
+    return editor->actionRunnable();
+}
+
+inline bool TagEditor::nativeRunActionCallback(void *user)
+{
+    TagEditor *editor = static_cast<TagEditor *>(user);
+
+    if (editor == nullptr)
+        return false;
+    try
+    {
+        editor->runAction();
+    }
+    catch (NC::PromptAborted &)
+    {
+        Statusbar::printf("Action aborted");
+        return false;
+    }
+    catch (std::exception &error)
+    {
+        Statusbar::printf("Unexpected error: %1%", error.what());
+        return false;
+    }
+    return true;
 }
 
 inline void TagEditor::nativeSwitchToCallback(void *user)
