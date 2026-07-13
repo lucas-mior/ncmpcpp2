@@ -146,15 +146,6 @@ private:
     void syncLegacyStaticRows();
     void syncLegacyRow(int32 row);
     void syncLegacyFindConstraint();
-    void resizeNativeWindow();
-    static NcWindow *nativeActiveWindowCallback(void *user);
-    static void nativeRefreshCallback(void *user);
-    static void nativeRefreshWindowCallback(void *user);
-    static void nativeScrollCallback(void *user, enum NcScroll where);
-    static void nativeSwitchToCallback(void *user);
-    static void nativeResizeCallback(void *user);
-    static void nativeUpdateCallback(void *user);
-    static void nativeMouseButtonPressedCallback(void *user, MEVENT event);
     static bool nativeCanRunCurrentCallback(void *user);
     static bool nativeRunCurrentCallback(void *user) noexcept;
     static void nativeStaticRowChangedCallback(void *user, int32 row);
@@ -263,14 +254,6 @@ inline SearchEngine::SearchEngine()
     {
         NativeSearchEngineBridge bridge = {};
 
-        bridge.active_window = nativeActiveWindowCallback;
-        bridge.refresh = nativeRefreshCallback;
-        bridge.refresh_window = nativeRefreshWindowCallback;
-        bridge.scroll = nativeScrollCallback;
-        bridge.switch_to = nativeSwitchToCallback;
-        bridge.resize = nativeResizeCallback;
-        bridge.update = nativeUpdateCallback;
-        bridge.mouse_button_pressed = nativeMouseButtonPressedCallback;
         bridge.can_run_current = nativeCanRunCurrentCallback;
         bridge.run_current = nativeRunCurrentCallback;
         bridge.static_row_changed = nativeStaticRowChangedCallback;
@@ -294,25 +277,23 @@ inline SearchEngine::~SearchEngine()
 
 inline void SearchEngine::refresh()
 {
-    syncNative();
     nc_screen_refresh(nativeScreen());
 }
 
 inline void SearchEngine::refreshWindow()
 {
-    syncNative();
     nc_screen_refresh_window(nativeScreen());
 }
 
 inline void SearchEngine::scroll(enum NcScroll where)
 {
-    w.scroll(where);
-    syncNative();
+    nc_screen_scroll(nativeScreen(), where);
 }
 
 inline void SearchEngine::resize()
 {
     nc_screen_resize(nativeScreen());
+    hasToBeResized = false;
 }
 
 inline void SearchEngine::switchTo()
@@ -322,10 +303,9 @@ inline void SearchEngine::switchTo()
     native = native_c_screen_search_engine();
     if (!native_search_engine_screen_is_prepared(native) || w.empty())
         Prepare();
-    else
-        syncNative();
     nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-    app_controller_switch_to_screen(nativeScreen());
+    if (app_controller_switch_to_screen(nativeScreen()))
+        hasToBeResized = false;
     drawHeader();
 }
 
@@ -346,24 +326,7 @@ inline const NcScreen *SearchEngine::nativeScreen() const
 
 inline void SearchEngine::mouseButtonPressed(MEVENT me)
 {
-    if (w.empty() || !w.hasCoords(me.x, me.y) || size_t(me.y) >= w.size())
-        return;
-    if (me.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED))
-    {
-        if (!w.Goto(me.y))
-            return;
-        w.refresh();
-        if ((me.bstate & BUTTON3_PRESSED) && w.choice() < NATIVE_SEARCH_ENGINE_STATIC_ROW_COUNT)
-            runAction();
-        else if (w.choice() >= NATIVE_SEARCH_ENGINE_STATIC_ROW_COUNT)
-        {
-            bool play = me.bstate & BUTTON3_PRESSED;
-            addItemToPlaylist(play);
-        }
-        syncNative();
-    }
-    else
-        Screen<WindowType>::mouseButtonPressed(me);
+    nc_screen_mouse_button_pressed(nativeScreen(), me);
 }
 
 inline bool SearchEngine::allowsSearching()
@@ -444,7 +407,12 @@ inline void SearchEngine::applyFilter(const std::string &constraint)
 
 inline bool SearchEngine::actionRunnable()
 {
-    return !w.empty() && !w.current()->value().isSong();
+    NcSearchRow *row;
+
+    row = nc_search_row_menu_current(
+        native_search_engine_screen_rows(
+            native_c_screen_search_engine()));
+    return row != nullptr && !row->is_song;
 }
 
 inline void SearchEngine::runAction()
@@ -453,7 +421,10 @@ inline void SearchEngine::runAction()
     size_t option;
 
     native = native_c_screen_search_engine();
-    option = w.choice();
+    option = static_cast<size_t>(nc_menu_highlight(
+        native_search_engine_screen_menu(native)));
+    if (option < w.size())
+        w.highlight(option);
     if (option < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT)
     {
         NcmStringView view;
@@ -552,13 +523,24 @@ inline void SearchEngine::runAction()
 
 inline bool SearchEngine::itemAvailable()
 {
-    return !w.empty() && w.current()->value().isSong();
+    NcSearchRow *row;
+
+    row = nc_search_row_menu_current(
+        native_search_engine_screen_rows(
+            native_c_screen_search_engine()));
+    return row != nullptr && row->is_song;
 }
 
 inline bool SearchEngine::addItemToPlaylist(bool play)
 {
-    return ncm_action_add_song_to_playlist(
-        w.current()->value().song().cSong(), play, -1);
+    NcSearchRow *row;
+
+    row = nc_search_row_menu_current(
+        native_search_engine_screen_rows(
+            native_c_screen_search_engine()));
+    if (row == nullptr || !row->is_song)
+        return false;
+    return ncm_action_add_song_to_playlist(&row->song, play, -1);
 }
 
 inline std::vector<MPD::Song> SearchEngine::getSelectedSongs()
@@ -748,7 +730,6 @@ inline void SearchEngine::syncNative()
 {
     NativeSearchEngineScreen *native;
     NcMenu *native_menu;
-    const std::string *column_title;
     int32 result_count;
     bool constraints_locked;
     bool was_filtered;
@@ -779,10 +760,7 @@ inline void SearchEngine::syncNative()
     constraints_locked = !w.empty() && w.at(0).isInactive();
     native_search_engine_screen_set_constraints_locked(
         native, constraints_locked);
-    column_title = &w.getTitle();
-    native_search_engine_screen_set_column_title(
-        native, const_cast<char *>(column_title->c_str()),
-        static_cast<int32>(column_title->size()));
+    native_search_engine_screen_update_column_title(native);
 
     if (was_filtered)
         w.showFilteredItems();
@@ -854,109 +832,6 @@ inline void SearchEngine::syncLegacyFindConstraint()
                   std::placeholders::_1,
                   std::placeholders::_2,
                   false));
-}
-
-inline void SearchEngine::resizeNativeWindow()
-{
-    NativeSearchEngineScreen *native;
-    size_t x_offset;
-    size_t width;
-    std::string column_title;
-
-    native = native_c_screen_search_engine();
-    getWindowResizeParams(x_offset, width);
-    w.resize(width, static_cast<size_t>(ui_state_main_height()));
-    w.moveTo(x_offset, static_cast<size_t>(ui_state_main_start_y()));
-    switch (Config.search_engine_display_mode)
-    {
-    case NCM_DISPLAY_MODE_COLUMNS:
-        if (Config.titles_visibility)
-            column_title = Display::Columns(w.getWidth());
-        w.setTitle(column_title);
-        break;
-    case NCM_DISPLAY_MODE_CLASSIC:
-        w.setTitle("");
-        break;
-    }
-    native_search_engine_screen_set_column_title(
-        native, const_cast<char *>(column_title.c_str()),
-        static_cast<int32>(column_title.size()));
-    hasToBeResized = false;
-}
-
-inline NcWindow *SearchEngine::nativeActiveWindowCallback(void *user)
-{
-    SearchEngine *searcher = static_cast<SearchEngine *>(user);
-
-    if (searcher == nullptr)
-        return nullptr;
-    return searcher->w.nativeWindow();
-}
-
-inline void SearchEngine::nativeRefreshCallback(void *user)
-{
-    SearchEngine *searcher = static_cast<SearchEngine *>(user);
-
-    if (searcher == nullptr)
-        return;
-    searcher->w.display();
-}
-
-inline void SearchEngine::nativeRefreshWindowCallback(void *user)
-{
-    nativeRefreshCallback(user);
-}
-
-inline void SearchEngine::nativeScrollCallback(void *user, enum NcScroll where)
-{
-    SearchEngine *searcher = static_cast<SearchEngine *>(user);
-
-    if (searcher == nullptr)
-        return;
-    searcher->scroll(where);
-}
-
-inline void SearchEngine::nativeSwitchToCallback(void *user)
-{
-    SearchEngine *searcher = static_cast<SearchEngine *>(user);
-    NativeSearchEngineScreen *native;
-
-    if (searcher == nullptr)
-        return;
-    native = native_c_screen_search_engine();
-    if (!native_search_engine_screen_is_prepared(native)
-        || searcher->w.empty())
-        searcher->Prepare();
-    else
-        searcher->syncNative();
-}
-
-inline void SearchEngine::nativeResizeCallback(void *user)
-{
-    SearchEngine *searcher = static_cast<SearchEngine *>(user);
-
-    if (searcher == nullptr)
-        return;
-    searcher->resizeNativeWindow();
-}
-
-inline void SearchEngine::nativeUpdateCallback(void *user)
-{
-    SearchEngine *searcher = static_cast<SearchEngine *>(user);
-
-    if (searcher == nullptr)
-        return;
-    searcher->update();
-}
-
-inline void SearchEngine::nativeMouseButtonPressedCallback(void *user,
-                                                          MEVENT event)
-{
-    SearchEngine *searcher = static_cast<SearchEngine *>(user);
-
-    if (searcher == nullptr)
-        return;
-    searcher->mouseButtonPressed(event);
 }
 
 inline bool SearchEngine::nativeCanRunCurrentCallback(void *user)

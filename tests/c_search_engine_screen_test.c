@@ -38,6 +38,23 @@ typedef struct StaticRowFixture {
     int32 last_row;
 } StaticRowFixture;
 
+typedef struct WindowTrace {
+    int32 display_calls;
+    int32 menu_refresh_calls;
+    int32 property_calls;
+    int32 printed_len;
+    int64 refresh_width;
+    int64 refresh_height;
+    char printed[512];
+    char title[512];
+} WindowTrace;
+
+static WindowTrace window_trace;
+static int64 resize_x;
+static int64 resize_width;
+static int64 resize_main_y;
+static int64 resize_main_height;
+
 static char *constraint_rows[] = {
     (char *)"Any          : ",
     (char *)"Artist       : ",
@@ -74,6 +91,11 @@ static void test_search_selected_songs(void);
 static void test_formatted_song_filter_and_find(void);
 static void test_search_collection_hooks(void);
 static void test_run_current_bridge(void);
+static void test_native_display_and_column_title(void);
+static void test_native_lifecycle(void);
+static void test_native_mouse_behavior(void);
+static void reset_window_trace(void);
+static void assert_printed(char *expected, int32 expected_len);
 static void init_screen(NativeSearchEngineScreen *screen);
 static void add_result_songs(NativeSearchEngineScreen *screen);
 static NcSearchRow *row_at(NativeSearchEngineScreen *screen, int64 pos);
@@ -100,9 +122,13 @@ static enum NativeSearchEnginePromptResult prompt_constraint(
 static void status_message(void *user, char *message, int32 message_len);
 static bool add_song(void *user, NcmSong *song, bool play,
                      NcmError *error);
+static bool mouse_add_song(void *user, NcmSong *song, bool play,
+                           NcmError *error);
 static bool can_run_current(void *user);
 static bool run_current(void *user);
 static void static_row_changed(void *user, int32 row);
+void __wrap_nc_window_set_title(NcWindow *window, char *title,
+                                int32 title_len);
 
 int
 main(void) {
@@ -120,6 +146,9 @@ main(void) {
     test_formatted_song_filter_and_find();
     test_search_collection_hooks();
     test_run_current_bridge();
+    test_native_display_and_column_title();
+    test_native_lifecycle();
+    test_native_mouse_behavior();
     exit(EXIT_SUCCESS);
 }
 
@@ -323,6 +352,18 @@ add_song(void *user, NcmSong *song, bool play, NcmError *error) {
     fixture->play = play;
     assert(ncm_song_uri_view(song, 0, &uri));
     assert(ncm_string_equal(uri.data, uri.len, LIT_ARGS("result.flac")));
+    return true;
+}
+
+static bool
+mouse_add_song(void *user, NcmSong *song, bool play, NcmError *error) {
+    ExternalHookFixture *fixture;
+
+    (void)song;
+    (void)error;
+    fixture = user;
+    fixture->add_calls += 1;
+    fixture->play = play;
     return true;
 }
 
@@ -791,11 +832,16 @@ test_formatted_song_filter_and_find(void) {
     NativeSearchEngineScreen screen;
     NativeSearchEngineHooks hooks = {0};
     NcmSong song;
+    NcBuffer buffer;
     NcMenu *menu;
     NcSearchRow *row;
     NcmError error;
 
     init_screen(&screen);
+    nc_buffer_init(&buffer);
+    nc_buffer_append_data(&buffer, LIT_ARGS("Static row"));
+    assert(native_search_engine_screen_add_buffer(&screen, &buffer));
+    nc_buffer_destroy(&buffer);
     hooks.format_song = format_song_title;
     native_search_engine_screen_set_hooks(&screen, hooks);
     ncm_song_init(&song);
@@ -814,23 +860,30 @@ test_formatted_song_filter_and_find(void) {
     ncm_error_clear(&error);
     assert(native_search_engine_screen_apply_filter(
         &screen, LIT_ARGS("Needle"), &error));
-    assert(nc_menu_filtered_item_count(menu) == 1);
+    assert(nc_menu_filtered_item_count(menu) == 2);
     row = nc_menu_active_item_at(menu, 0);
     assert(row != NULL);
+    assert(!row->is_song);
+    row = nc_menu_active_item_at(menu, 1);
+    assert(row != NULL);
+    assert(row->is_song);
     assert_song_uri(&row->song, LIT_ARGS("other.flac"));
 
     native_search_engine_screen_clear_filter(&screen);
     ncm_error_clear(&error);
     assert(native_search_engine_screen_apply_filter(
         &screen, LIT_ARGS("needle-in-uri"), &error));
-    assert(nc_menu_filtered_item_count(menu) == 0);
+    assert(nc_menu_filtered_item_count(menu) == 1);
+    row = nc_menu_active_item_at(menu, 0);
+    assert(row != NULL);
+    assert(!row->is_song);
 
     native_search_engine_screen_clear_filter(&screen);
     nc_menu_highlight_position(menu, 0, 24);
     ncm_error_clear(&error);
     assert(native_search_engine_screen_search(
         &screen, LIT_ARGS("Needle"), true, true, false, &error));
-    assert(nc_menu_highlight(menu) == 1);
+    assert(nc_menu_highlight(menu) == 2);
 
     ncm_song_destroy(&song);
     native_search_engine_screen_destroy(&screen);
@@ -962,6 +1015,368 @@ test_run_current_bridge(void) {
     assert(nc_screen_can_run_current(base));
     assert(nc_screen_run_current(base));
     assert(fixture.calls == 1);
+
+    native_search_engine_screen_destroy(&screen);
+    return;
+}
+
+
+void
+__wrap_nc_window_init(NcWindow *window, int64 start_x, int64 start_y,
+                      int64 width, int64 height, char *title,
+                      int32 title_len, NcColor color, NcBorder border) {
+    (void)color;
+    *window = (NcWindow){0};
+    window->start_x = start_x;
+    window->start_y = start_y;
+    window->width = width;
+    window->height = height;
+    window->border = border;
+    __wrap_nc_window_set_title(window, title, title_len);
+    return;
+}
+
+void
+__wrap_nc_window_destroy(NcWindow *window) {
+    *window = (NcWindow){0};
+    return;
+}
+
+void
+__wrap_nc_window_set_title(NcWindow *window, char *title,
+                           int32 title_len) {
+    bool had_title;
+    bool has_title;
+
+    had_title = window->title_len > 0;
+    has_title = title_len > 0;
+    if (has_title && !had_title) {
+        window->start_y += 2;
+        window->height -= 2;
+    } else if (!has_title && had_title) {
+        window->start_y -= 2;
+        window->height += 2;
+    }
+
+    window_trace.title[0] = '\0';
+    if ((title != NULL) && (title_len > 0)) {
+        assert(title_len < (int32)sizeof(window_trace.title));
+        for (int32 i = 0; i < title_len; i += 1) {
+            window_trace.title[i] = title[i];
+        }
+        window_trace.title[title_len] = '\0';
+        window->title = window_trace.title;
+    } else {
+        window->title = NULL;
+    }
+    window->title_len = title_len;
+    return;
+}
+
+void
+__wrap_nc_window_move_to(NcWindow *window, int64 new_x, int64 new_y) {
+    window->start_x = new_x;
+    window->start_y = new_y;
+    return;
+}
+
+void
+__wrap_nc_window_resize(NcWindow *window, int64 width, int64 height) {
+    window->width = width;
+    window->height = height;
+    return;
+}
+
+int64
+__wrap_nc_window_width(NcWindow *window) {
+    return window->width;
+}
+
+int64
+__wrap_nc_window_height(NcWindow *window) {
+    int64 height;
+
+    height = window->height;
+    if (window->title_len > 0) {
+        height += 2;
+    }
+    return height;
+}
+
+void
+__wrap_nc_window_display(NcWindow *window) {
+    (void)window;
+    window_trace.display_calls += 1;
+    return;
+}
+
+bool
+__wrap_nc_window_has_coords(NcWindow *window, int32 *x, int32 *y) {
+    *x -= (int32)window->start_x;
+    *y -= (int32)window->start_y;
+    return (*x >= 0) && (*x < window->width)
+        && (*y >= 0) && (*y < window->height);
+}
+
+void
+__wrap_nc_window_print_char(NcWindow *window, char ch) {
+    (void)window;
+    assert(window_trace.printed_len
+           < (int32)sizeof(window_trace.printed)-1);
+    window_trace.printed[window_trace.printed_len] = ch;
+    window_trace.printed_len += 1;
+    window_trace.printed[window_trace.printed_len] = '\0';
+    return;
+}
+
+void
+__wrap_nc_buffer_apply_property(NcWindow *window,
+                                NcBufferProperty *property) {
+    (void)window;
+    (void)property;
+    window_trace.property_calls += 1;
+    return;
+}
+
+void
+__wrap_nc_menu_refresh(NcMenu *menu, NcWindow *window, int64 width,
+                       int64 height) {
+    (void)menu;
+    (void)window;
+    window_trace.menu_refresh_calls += 1;
+    window_trace.refresh_width = width;
+    window_trace.refresh_height = height;
+    return;
+}
+
+void
+__wrap_nc_screen_get_resize_params(NcScreen *screen, int64 *x_offset,
+                                   int64 *width) {
+    (void)screen;
+    *x_offset = resize_x;
+    *width = resize_width;
+    return;
+}
+
+int64
+__wrap_ui_state_main_start_y(void) {
+    return resize_main_y;
+}
+
+int64
+__wrap_ui_state_main_height(void) {
+    return resize_main_height;
+}
+
+static void
+reset_window_trace(void) {
+    window_trace = (WindowTrace){0};
+    return;
+}
+
+static void
+assert_printed(char *expected, int32 expected_len) {
+    assert(window_trace.printed_len == expected_len);
+    assert(ncm_string_equal(window_trace.printed,
+                            window_trace.printed_len,
+                            expected, expected_len));
+    return;
+}
+
+static void
+test_native_display_and_column_title(void) {
+    NativeSearchEngineScreen screen;
+    NcmFormatAst old_classic;
+    NcmFormatAst old_columns;
+    ColumnArray old_column_array;
+    Column columns[2];
+    NcSearchRow *row;
+    NcMenu *menu;
+    NcmSong song;
+    bool old_titles_visibility;
+    enum DisplayMode old_mode;
+
+    reset_window_trace();
+    old_classic = Config.song_list_format;
+    old_columns = Config.song_columns_mode_format;
+    old_column_array = Config.columns;
+    old_titles_visibility = Config.titles_visibility;
+    old_mode = Config.search_engine_display_mode;
+    ncm_format_ast_init(&Config.song_list_format);
+    ncm_format_ast_init(&Config.song_columns_mode_format);
+    assert(ncm_format_ast_append_text(&Config.song_list_format,
+                                      LIT_ARGS("classic")));
+    assert(ncm_format_ast_append_text(&Config.song_columns_mode_format,
+                                      LIT_ARGS("columns")));
+
+    init_screen(&screen);
+    ncm_song_init(&song);
+    assert(ncm_song_set_uri(&song, LIT_ARGS("song.flac")));
+    assert(native_search_engine_screen_add_song_copy(&screen, &song));
+    ncm_song_destroy(&song);
+    row = row_at(&screen, 0);
+    menu = native_search_engine_screen_menu(&screen);
+
+    reset_window_trace();
+    native_search_engine_screen_set_display_mode(
+        &screen, NCM_DISPLAY_MODE_CLASSIC);
+    menu->display_callbacks.draw(menu, &screen.window, row, 0,
+                                 menu->display_callbacks.user);
+    assert_printed(LIT_ARGS("classic"));
+
+    reset_window_trace();
+    native_search_engine_screen_set_display_mode(
+        &screen, NCM_DISPLAY_MODE_COLUMNS);
+    menu->display_callbacks.draw(menu, &screen.window, row, 0,
+                                 menu->display_callbacks.user);
+    assert_printed(LIT_ARGS("columns"));
+
+    columns[0] = (Column){0};
+    columns[0].name = (char *)"Artist";
+    columns[0].name_len = STRLIT_LEN("Artist");
+    columns[0].width = 10;
+    columns[0].stretch_limit = -1;
+    columns[0].fixed = true;
+    columns[1] = (Column){0};
+    columns[1].type = (char *)"t";
+    columns[1].type_len = STRLIT_LEN("t");
+    columns[1].width = 10;
+    columns[1].stretch_limit = -1;
+    columns[1].fixed = true;
+    Config.columns.items = columns;
+    Config.columns.len = 2;
+    Config.columns.cap = 2;
+    Config.titles_visibility = true;
+    native_search_engine_screen_set_geometry(&screen, 0, 20, 0, 24);
+    native_search_engine_screen_set_display_mode(
+        &screen, NCM_DISPLAY_MODE_COLUMNS);
+    assert(ncm_string_equal(screen.column_title.data,
+                            screen.column_title.len,
+                            LIT_ARGS("Artist    Title     ")));
+    assert(screen.window.start_y == 2);
+    assert(screen.window.height == 22);
+
+    native_search_engine_screen_set_display_mode(
+        &screen, NCM_DISPLAY_MODE_CLASSIC);
+    assert(screen.column_title.len == 0);
+    assert(screen.window.start_y == 0);
+    assert(screen.window.height == 24);
+
+    native_search_engine_screen_destroy(&screen);
+    ncm_format_ast_destroy(&Config.song_list_format);
+    ncm_format_ast_destroy(&Config.song_columns_mode_format);
+    Config.song_list_format = old_classic;
+    Config.song_columns_mode_format = old_columns;
+    Config.columns = old_column_array;
+    Config.titles_visibility = old_titles_visibility;
+    Config.search_engine_display_mode = old_mode;
+    return;
+}
+
+static void
+test_native_lifecycle(void) {
+    NativeSearchEngineScreen screen;
+    NcScreen *base;
+    NcMenu *menu;
+
+    reset_window_trace();
+    resize_x = 4;
+    resize_width = 70;
+    resize_main_y = 3;
+    resize_main_height = 18;
+    init_screen(&screen);
+    base = native_search_engine_screen_base(&screen);
+    menu = native_search_engine_screen_menu(&screen);
+
+    assert(nc_screen_active_window(base) == &screen.window);
+    assert(!native_search_engine_screen_is_prepared(&screen));
+    nc_screen_switch_to(base);
+    assert(native_search_engine_screen_is_prepared(&screen));
+
+    reset_window_trace();
+    nc_screen_refresh(base);
+    assert(window_trace.display_calls == 1);
+    assert(window_trace.menu_refresh_calls == 1);
+    assert(window_trace.refresh_width == 80);
+    assert(window_trace.refresh_height == 24);
+
+    assert(nc_menu_highlight(menu) == 0);
+    nc_screen_scroll(base, NC_SCROLL_DOWN);
+    assert(nc_menu_highlight(menu) == 1);
+
+    nc_screen_set_has_to_be_resized(base, true);
+    nc_screen_resize(base);
+    assert(!nc_screen_has_to_be_resized(base));
+    assert(screen.start_x == resize_x);
+    assert(screen.width == resize_width);
+    assert(screen.main_start_y == resize_main_y);
+    assert(screen.main_height == resize_main_height);
+
+    nc_screen_request_update(base);
+    assert(nc_screen_has_to_be_updated(base));
+    nc_screen_update(base);
+    assert(!nc_screen_has_to_be_updated(base));
+    assert(ncm_string_equal(nc_screen_title(base),
+                            STRLIT_LEN("Search engine"),
+                            LIT_ARGS("Search engine")));
+
+    native_search_engine_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_native_mouse_behavior(void) {
+    NativeSearchEngineScreen screen;
+    NativeSearchEngineHooks hooks = {0};
+    NativeSearchEngineBridge bridge = {0};
+    ExternalHookFixture external = {0};
+    RunCurrentFixture run = {0};
+    NcMenu *menu;
+    MEVENT event;
+
+    reset_window_trace();
+    init_screen(&screen);
+    native_search_engine_screen_prepare_static_rows(&screen);
+    add_result_songs(&screen);
+    assert(native_search_engine_screen_add_result_summary(&screen, 2));
+    hooks.add_song = mouse_add_song;
+    hooks.user = &external;
+    native_search_engine_screen_set_hooks(&screen, hooks);
+    run.runnable = true;
+    bridge.can_run_current = can_run_current;
+    bridge.run_current = run_current;
+    bridge.user = &run;
+    native_search_engine_screen_set_bridge(&screen, bridge);
+    menu = native_search_engine_screen_menu(&screen);
+
+    event = (MEVENT){0};
+    event.bstate = BUTTON3_PRESSED;
+    nc_screen_mouse_button_pressed(&screen.screen, event);
+    assert(run.calls == 1);
+
+    event = (MEVENT){0};
+    event.y = NATIVE_SEARCH_ENGINE_STATIC_ROW_COUNT;
+    event.bstate = BUTTON1_PRESSED;
+    nc_screen_mouse_button_pressed(&screen.screen, event);
+    assert(external.add_calls == 1);
+    assert(!external.play);
+
+    event.bstate = BUTTON3_PRESSED;
+    nc_screen_mouse_button_pressed(&screen.screen, event);
+    assert(external.add_calls == 2);
+    assert(external.play);
+
+    nc_menu_highlight_position(menu, 0, 24);
+    native_search_engine_screen_set_mouse_config(&screen, 2, false);
+    event = (MEVENT){0};
+    event.bstate = BUTTON5_PRESSED;
+    nc_screen_mouse_button_pressed(&screen.screen, event);
+    assert(nc_menu_highlight(menu) == 2);
+
+    nc_menu_highlight_position(menu, 0, 24);
+    native_search_engine_screen_set_mouse_config(&screen, 1, true);
+    nc_screen_mouse_button_pressed(&screen.screen, event);
+    assert(nc_menu_highlight(menu) > 2);
 
     native_search_engine_screen_destroy(&screen);
     return;

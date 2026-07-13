@@ -1028,6 +1028,9 @@ native_c_screen_search_engine_init(void) {
     hooks.add_song = native_search_add_song;
     hooks.format_song = native_search_format_song;
     native_search_engine_screen_set_hooks(&search_engine_screen, hooks);
+    native_search_engine_screen_set_mouse_config(
+        &search_engine_screen, Config.lines_scrolled,
+        Config.mouse_list_scroll_whole_page);
 
     search_engine_screen_initialized = true;
     return;

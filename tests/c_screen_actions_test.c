@@ -27,9 +27,11 @@ static LegacySearchFixture fixture;
 
 static bool current_screen_uses_legacy_search(void);
 static void test_legacy_screen_search_bridge(void);
-static void test_search_engine_legacy_search_bridge(void);
+static void test_search_engine_native_search(void);
 static void test_native_screen_search_fallback(void);
 static void test_c_only_screen_skips_legacy_search(void);
+static bool format_search_song(void *user, NcmSong *song,
+                               NcmBuffer *text);
 
 bool
 actions_legacy_runtime_search_current_screen(
@@ -64,7 +66,7 @@ int
 main(void) {
     ncm_buffer_init(&fixture.pattern);
     test_legacy_screen_search_bridge();
-    test_search_engine_legacy_search_bridge();
+    test_search_engine_native_search();
     test_native_screen_search_fallback();
     test_c_only_screen_skips_legacy_search();
     ncm_buffer_destroy(&fixture.pattern);
@@ -122,12 +124,13 @@ test_legacy_screen_search_bridge(void) {
 }
 
 static void
-test_search_engine_legacy_search_bridge(void) {
+test_search_engine_native_search(void) {
+    NativeSearchEngineScreen *search;
+    NativeSearchEngineHooks hooks = {0};
     NcmStringView constraint;
+    NcmSong song;
     NcmError error;
-    int32 clear_calls;
     int32 clear_hook_calls;
-    int32 search_calls;
     int32 search_hook_calls;
 
     app_controller_init();
@@ -137,34 +140,45 @@ test_search_engine_legacy_search_bridge(void) {
     assert(app_controller_switch_to_screen(
         native_c_screen_search_engine_native()));
 
+    search = native_c_screen_search_engine();
+    hooks.format_song = format_search_song;
+    native_search_engine_screen_set_hooks(search, hooks);
+    ncm_song_init(&song);
+    assert(ncm_song_set_uri(&song, LIT_ARGS("result.flac")));
+    assert(ncm_song_add_tag(&song, MPD_TAG_TITLE,
+                            LIT_ARGS("result title")));
+    assert(native_search_engine_screen_add_song_copy(search, &song));
+    ncm_song_destroy(&song);
+
     search_hook_calls = fixture.search_hook_calls;
-    search_calls = fixture.search_calls;
     ncm_error_clear(&error);
     assert(current_screen_search(
         NCM_SEARCH_DIRECTION_FORWARD, LIT_ARGS("result title"),
         false, false, &error));
     assert(!ncm_error_is_set(&error));
-    assert(fixture.search_hook_calls == search_hook_calls + 1);
-    assert(fixture.search_calls == search_calls + 1);
-    assert(fixture.direction == NCM_SEARCH_DIRECTION_FORWARD);
-    assert(!fixture.wrap);
-    assert(!fixture.skip_current);
-    assert(ncm_string_equal(fixture.pattern.data,
-                            fixture.pattern.len,
-                            LIT_ARGS("result title")));
+    assert(fixture.search_hook_calls == search_hook_calls);
 
     constraint = current_screen_current_search_constraint();
     assert(ncm_string_equal(constraint.data, constraint.len,
                             LIT_ARGS("result title")));
 
     clear_hook_calls = fixture.clear_hook_calls;
-    clear_calls = fixture.clear_calls;
     current_screen_clear_search_constraint();
-    assert(fixture.clear_hook_calls == clear_hook_calls + 1);
-    assert(fixture.clear_calls == clear_calls + 1);
+    assert(fixture.clear_hook_calls == clear_hook_calls);
     constraint = current_screen_current_search_constraint();
     assert(constraint.len == 0);
     return;
+}
+
+static bool
+format_search_song(void *user, NcmSong *song, NcmBuffer *text) {
+    NcmStringView view;
+
+    (void)user;
+    if (!ncm_song_tag_view(song, MPD_TAG_TITLE, 0, &view)) {
+        return false;
+    }
+    return ncm_buffer_set(text, view.data, view.len);
 }
 
 static void
