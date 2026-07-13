@@ -1,23 +1,10 @@
 #if !defined(SRC_CURSES_WINDOW_COMPAT_IMPL_H)
 #define SRC_CURSES_WINDOW_COMPAT_IMPL_H
 
-#include <algorithm>
-#include <cstdlib>
 #include <utility>
-#include <iostream>
-#include <cassert>
 
 namespace NC {
 
-
-inline std::string keyToString(NcKey key)
-{
-	char buffer[64];
-
-	if (nc_key_name(key, buffer, sizeof(buffer)) < 0)
-		return std::to_string(key);
-	return buffer;
-}
 
 inline const short Color::transparent = -1;
 inline const short Color::current = -2;
@@ -39,77 +26,6 @@ inline int Color::pairNumber() const
 		nc_color_make(foreground(), background(), isDefault(), isEnd()));
 }
 
-inline std::istream &operator>>(std::istream &is, Color &c)
-{
-	const short invalid_color_value = -1337;
-	auto get_single_color = [](const std::string &s, bool background) {
-		short result = invalid_color_value;
-		if (s == "black")
-			result = COLOR_BLACK;
-		else if (s == "red")
-			result = COLOR_RED;
-		else if (s == "green")
-			result = COLOR_GREEN;
-		else if (s == "yellow")
-			result = COLOR_YELLOW;
-		else if (s == "blue")
-			result = COLOR_BLUE;
-		else if (s == "magenta")
-			result = COLOR_MAGENTA;
-		else if (s == "cyan")
-			result = COLOR_CYAN;
-		else if (s == "white")
-			result = COLOR_WHITE;
-		else if (background && s == "transparent")
-			result = NC::Color::transparent;
-		else if (background && s == "current")
-			result = NC::Color::current;
-		else if (std::all_of(s.begin(), s.end(), isdigit))
-		{
-			result = atoi(s.c_str());
-			if (result < (background ? 0 : 1) || result > 256)
-				result = invalid_color_value;
-			else
-				--result;
-		}
-		return result;
-	};
-
-	auto get_color = [](std::istream &is_) {
-		std::string result;
-		while (!is_.eof() && isalnum(is_.peek()))
-			result.push_back(is_.get());
-		return result;
-	};
-
-	std::string sc = get_color(is);
-
-	if (sc == "default")
-		c = Color::Default;
-	else if (sc == "end")
-		c = Color::End;
-	else
-	{
-		short fg = get_single_color(sc, false);
-		if (fg == invalid_color_value)
-			is.setstate(std::ios::failbit);
-		// Check if there is background color
-		else if (!is.eof() && is.peek() == '_')
-		{
-			is.get();
-			sc = get_color(is);
-			short bg = get_single_color(sc, true);
-			if (bg == invalid_color_value)
-				is.setstate(std::ios::failbit);
-			else
-				c = Color(fg, bg);
-		}
-		else
-			c = Color(fg, NC::Color::current);
-	}
-	return is;
-}
-
 inline enum NcFormat reverseFormat(enum NcFormat format)
 {
 	return nc_format_reverse(format);
@@ -122,17 +38,6 @@ inline void initReadline()
 }
 
 
-inline void initScreen(bool enable_colors, bool enable_mouse)
-{
-	nc_init_screen(enable_colors, enable_mouse);
-	initReadline();
-}
-
-inline int colorCount()
-{
-	return nc_color_count();
-}
-
 inline void pauseScreen()
 {
 	nc_pause_screen();
@@ -141,11 +46,6 @@ inline void pauseScreen()
 inline void unpauseScreen()
 {
 	nc_unpause_screen();
-}
-
-inline void destroyScreen()
-{
-	nc_destroy_screen();
 }
 
 inline Window::Window()
@@ -286,18 +186,6 @@ const inline NcWindow *Window::nativeWindow() const
 	return cWindow();
 }
 
-inline void Window::setColor(Color c)
-{
-	nc_window_set_color(&m_impl, toNcColor(c));
-	syncFromC();
-}
-
-inline void Window::setBaseColor(const Color &color)
-{
-	nc_window_set_base_color(&m_impl, toNcColor(color));
-	syncFromC();
-}
-
 inline void Window::setBorder(Border border)
 {
 	nc_window_set_border(&m_impl, toNcBorder(border));
@@ -312,21 +200,9 @@ inline void Window::setTitle(const std::string &new_title)
 	syncFromC();
 }
 
-inline void Window::recreate(size_t width, size_t height)
-{
-	nc_window_recreate(&m_impl, width, height);
-	syncFromC();
-}
-
 inline void Window::moveTo(size_t new_x, size_t new_y)
 {
 	nc_window_move_to(&m_impl, new_x, new_y);
-	syncFromC();
-}
-
-inline void Window::adjustDimensions(size_t width, size_t height)
-{
-	nc_window_adjust_dimensions(&m_impl, width, height);
 	syncFromC();
 }
 
@@ -365,24 +241,9 @@ inline void Window::setTimeout(int timeout)
 	syncFromC();
 }
 
-inline void Window::addFDCallback(int fd, void (*callback)())
-{
-	nc_window_add_fd_callback(&m_impl, fd, callback);
-}
-
 inline void Window::clearFDCallbacksList()
 {
 	nc_window_clear_fd_callbacks(&m_impl);
-}
-
-inline bool Window::FDCallbacksListEmpty() const
-{
-	return nc_window_fd_callbacks_empty(const_cast<NcWindow *>(&m_impl));
-}
-
-inline NcKey Window::readKey()
-{
-	return nc_window_read_key(&m_impl);
 }
 
 inline void Window::pushChar(NcKey ch)
@@ -478,44 +339,9 @@ inline size_t Window::getWidth() const
 	return nc_window_width(const_cast<NcWindow *>(&m_impl));
 }
 
-inline size_t Window::getHeight() const
-{
-	return nc_window_height(const_cast<NcWindow *>(&m_impl));
-}
-
-inline size_t Window::getStartX() const
-{
-	return nc_window_start_x(const_cast<NcWindow *>(&m_impl));
-}
-
-inline size_t Window::getStarty() const
-{
-	return nc_window_start_y(const_cast<NcWindow *>(&m_impl));
-}
-
-inline const std::string &Window::getTitle() const
-{
-	return m_title;
-}
-
-inline const Color &Window::getColor() const
-{
-	return m_color;
-}
-
-inline const Border &Window::getBorder() const
-{
-	return m_border;
-}
-
 inline int Window::getTimeout() const
 {
 	return m_window_timeout;
-}
-
-inline const MEVENT &Window::getMouseEvent()
-{
-	return *nc_window_mouse_event(&m_impl);
 }
 
 inline void Window::scroll(enum NcScroll where)

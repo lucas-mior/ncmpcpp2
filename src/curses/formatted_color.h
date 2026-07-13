@@ -71,8 +71,6 @@ Color fromNcColor(NcColor color);
 NcFormat toNcFormat(enum NcFormat format);
 enum NcFormat fromNcFormat(NcFormat format);
 
-std::istream &operator>>(std::istream &is, FormattedColor &fc);
-
 template <typename OutputStreamT>
 OutputStreamT &operator<<(OutputStreamT &os, const FormattedColor &fc)
 {

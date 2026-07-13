@@ -2,10 +2,7 @@
 #define NCMPCPP_UTILITY_STRING_H
 
 #include <cstdint>
-#include <limits>
-#include <locale>
 #include <string>
-#include <vector>
 
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
@@ -15,26 +12,6 @@ template <size_t N> size_t const_strlen(const char (&)[N]) {
 }
 
 // Similar helpers usually support std::string, but we want a more general version.
-template <typename StringT, typename CollectionT>
-StringT join(const CollectionT &collection, const StringT &separator)
-{
-	StringT result;
-	auto first = std::begin(collection), last = std::end(collection);
-	if (first != last)
-	{
-		while (true)
-		{
-			result += *first;
-			++first;
-			if (first != last)
-				result += separator;
-			else
-				break;
-		}
-	}
-	return result;
-}
-
 namespace ncmpcpp_utility_detail {
 
 inline int32 string_size(const std::string &s)
@@ -54,15 +31,6 @@ inline std::string take_buffer(NcmBuffer &buffer)
 		result.assign(buffer.data, static_cast<size_t>(buffer.len));
 	ncm_buffer_destroy(&buffer);
 	return result;
-}
-
-inline int32 start_position(const std::string &s, size_t *pos)
-{
-	if (pos == nullptr)
-		return 0;
-	if (*pos > static_cast<size_t>(std::numeric_limits<int32>::max()))
-		return string_size(s);
-	return static_cast<int32>(*pos);
 }
 
 }
@@ -101,24 +69,6 @@ inline std::string lowercaseAscii(std::string s)
 	return s;
 }
 
-inline std::string getEnclosedString(const std::string &s,
-                                     char a, char b, size_t *pos)
-{
-	int32 c_pos;
-	NcmBuffer buffer = ncm_string_get_enclosed(
-		ncmpcpp_utility_detail::string_data(s),
-		ncmpcpp_utility_detail::string_size(s),
-		a, b, ncmpcpp_utility_detail::start_position(s, pos), &c_pos);
-	if (pos != nullptr)
-	{
-		if (c_pos < 0)
-			*pos = std::string::npos;
-		else
-			*pos = static_cast<size_t>(c_pos);
-	}
-	return ncmpcpp_utility_detail::take_buffer(buffer);
-}
-
 inline void removeInvalidCharsFromFilename(std::string &filename,
                                            bool win32_compatible)
 {
@@ -126,16 +76,6 @@ inline void removeInvalidCharsFromFilename(std::string &filename,
 	ncm_string_remove_invalid_filename_chars(
 		filename.data(), &filename_len, win32_compatible);
 	filename.resize(static_cast<size_t>(filename_len));
-}
-
-inline void escapeSingleQuotes(std::string &filename)
-{
-	NcmBuffer buffer;
-
-	ncm_buffer_init(&buffer);
-	ncm_string_append_shell_escaped_single_quotes(
-		&buffer, filename.data(), ncmpcpp_utility_detail::string_size(filename));
-	filename = ncmpcpp_utility_detail::take_buffer(buffer);
 }
 
 #endif // NCMPCPP_UTILITY_STRING_H

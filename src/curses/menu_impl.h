@@ -153,24 +153,6 @@ void Menu<ItemT>::addSeparator()
 }
 
 template <typename ItemT>
-void Menu<ItemT>::insertItem(size_t pos, ItemT item, Properties::Type properties)
-{
-	Item menu_item(std::move(item), properties);
-
-	nc_menu_insert_item(&m_menu, static_cast<int64>(pos), &menu_item);
-	syncMenuSize();
-}
-
-template <typename ItemT>
-void Menu<ItemT>::insertSeparator(size_t pos)
-{
-	Item item = Item::mkSeparator();
-
-	nc_menu_insert_item(&m_menu, static_cast<int64>(pos), &item);
-	syncMenuSize();
-}
-
-template <typename ItemT>
 bool Menu<ItemT>::Goto(size_t y)
 {
 	syncMenuSize();

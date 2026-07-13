@@ -245,7 +245,6 @@ inline void TinyTagEditor::nativeSwitchToCallback(void *user)
     if (editor == nullptr)
         return;
     screen_compat::set_tab_previous_screen(editor);
-    syncLegacyScreenPointers();
 }
 
 inline void TinyTagEditor::nativeResizeCallback(void *user)
