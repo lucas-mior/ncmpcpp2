@@ -1,6 +1,9 @@
 #include "screens/nc_search_engine.h"
 
+#include <errno.h>
+
 #include "c/ncm_base.h"
+#include "c/ncm_comparators.h"
 #include "c/ncm_display.h"
 #include "c/ncm_string.h"
 #include "c/ncm_utf8.h"
@@ -80,6 +83,27 @@ static void native_search_mouse_scroll(NativeSearchEngineScreen *screen,
                                        enum NcScroll where);
 static void native_search_print_error(NativeSearchEngineScreen *screen,
                                       NcmError *error);
+static bool native_search_has_constraints(NativeSearchEngineScreen *screen);
+static bool native_search_collect_database_results(
+    NativeSearchEngineScreen *screen, NcmMpdClient *client,
+    NcmSongArray *songs, NcmError *error);
+static bool native_search_add_database_constraints(
+    NativeSearchEngineScreen *screen, NcmMpdClient *client,
+    NcmError *error);
+static bool native_search_collect_local_results(
+    NativeSearchEngineScreen *screen, NcmSongArray *source,
+    NcmSongArray *songs, NcmError *error);
+static bool native_search_song_matches(
+    NativeSearchEngineScreen *screen, NcmSong *song, NcmRegex *regexes);
+static bool native_search_song_field_matches(
+    NativeSearchEngineScreen *screen, NcmSong *song, int32 field,
+    NcmRegex *regex);
+static bool native_search_song_any_matches(
+    NativeSearchEngineScreen *screen, NcmSong *song, NcmRegex *regex);
+static bool native_search_song_field_view(NcmSong *song, int32 field,
+                                          NcmStringView *view);
+static bool native_search_append_result_rows(
+    NativeSearchEngineScreen *screen, NcmSongArray *songs);
 static int32 native_search_cstring_len(char *string);
 
 static char *native_search_constraint_names[] = {
@@ -115,6 +139,8 @@ static char *native_search_mode_names[] = {
     (char *)"Match if tag contains searched phrase (regexes supported)",
     (char *)"Match only if both values are the same",
 };
+
+static char native_search_empty_string[] = "";
 
 static NcScreenCallbacks native_search_callbacks = {
     .active_window = native_search_active_window,
@@ -989,31 +1015,91 @@ native_search_engine_screen_add_song(
 }
 
 bool
-native_search_engine_screen_collect_results(
-    NativeSearchEngineScreen *screen, NcmSongArray *songs, NcmError *error) {
-    bool has_constraint;
+native_search_engine_screen_execute_search(
+    NativeSearchEngineScreen *screen, NcmMpdClient *client,
+    NcmError *error) {
+    NcmSongArray source;
+    NcmSongArray songs;
+    bool result;
 
-    if (screen == NULL || songs == NULL) {
+    if (screen == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing search screen"));
         return false;
     }
 
-    has_constraint = false;
-    for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
-        if (screen->constraints[i].len > 0) {
-            has_constraint = true;
-            break;
+    ncm_song_array_init(&source);
+    ncm_song_array_init(&songs);
+    ncm_error_clear(error);
+    native_search_engine_screen_clear_filter(screen);
+    native_search_engine_screen_prepare_static_rows(screen);
+    native_search_engine_screen_status_message(
+        screen, STRLIT_ARGS("Searching..."));
+
+    result = true;
+    if (!native_search_has_constraints(screen)) {
+        native_search_engine_screen_status_message(
+            screen, STRLIT_ARGS("No results found"));
+        goto cleanup;
+    }
+
+    if (screen->search_in_database
+        && ((screen->search_mode
+             == NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL)
+            || (screen->search_mode
+                == NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT))) {
+        result = native_search_collect_database_results(
+            screen, client, &songs, error);
+    } else {
+        if (screen->search_in_database) {
+            result = native_search_engine_screen_list_database_songs(
+                screen, &source, error);
+        } else {
+            result = native_search_engine_screen_snapshot_playlist(
+                screen, &source, error);
+        }
+        if (result) {
+            result = native_search_collect_local_results(
+                screen, &source, &songs, error);
         }
     }
-    if (!has_constraint) {
-        return true;
+
+    if (!result) {
+        native_search_engine_screen_prepare_static_rows(screen);
+        native_search_print_error(screen, error);
+        goto cleanup;
     }
-    if (screen->hooks.collect_results == NULL) {
-        return false;
+
+    if (songs.len <= 0) {
+        native_search_engine_screen_status_message(
+            screen, STRLIT_ARGS("No results found"));
+        goto cleanup;
     }
-    return screen->hooks.collect_results(
-        screen->hooks.user, screen->search_in_database,
-        screen->search_mode, screen->constraints,
-        NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT, songs, error);
+
+    if (!native_search_append_result_rows(screen, &songs)) {
+        ncm_error_set(error, EIO,
+                      STRLIT_ARGS("failed to build search results"));
+        native_search_engine_screen_prepare_static_rows(screen);
+        native_search_print_error(screen, error);
+        result = false;
+        goto cleanup;
+    }
+
+    native_search_engine_screen_set_constraints_locked(
+        screen, Config.block_search_constraints_change);
+    nc_menu_scroll_selectable(
+        native_search_engine_screen_menu(screen),
+        nc_window_height(&screen->window), NC_SCROLL_DOWN);
+    nc_menu_scroll_selectable(
+        native_search_engine_screen_menu(screen),
+        nc_window_height(&screen->window), NC_SCROLL_DOWN);
+    native_search_engine_screen_update_column_title(screen);
+    native_search_engine_screen_status_message(
+        screen, STRLIT_ARGS("Searching finished"));
+
+cleanup:
+    ncm_song_array_destroy(&songs);
+    ncm_song_array_destroy(&source);
+    return result;
 }
 
 bool
@@ -1976,6 +2062,322 @@ native_search_mouse_scroll(NativeSearchEngineScreen *screen,
                                   effective);
     }
     return;
+}
+
+static bool
+native_search_has_constraints(NativeSearchEngineScreen *screen) {
+    if (screen == NULL) {
+        return false;
+    }
+
+    for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+        if (screen->constraints[i].len > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool
+native_search_collect_database_results(
+    NativeSearchEngineScreen *screen, NcmMpdClient *client,
+    NcmSongArray *songs, NcmError *error) {
+    NcmMpdSongList result;
+    bool exact_match;
+    bool ok;
+
+    if ((screen == NULL) || (client == NULL) || (songs == NULL)) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing database search state"));
+        return false;
+    }
+
+    exact_match = screen->search_mode
+        == NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT;
+    ncm_mpd_song_list_init(&result);
+    ok = ncm_mpd_client_start_search(client, exact_match, error);
+    if (ok) {
+        ok = native_search_add_database_constraints(
+            screen, client, error);
+    }
+    if (ok) {
+        ok = ncm_mpd_client_commit_search_songs(
+            client, &result, error);
+    }
+    if (ok) {
+        ok = ncm_mpd_song_list_to_song_array(&result, songs);
+        if (!ok) {
+            ncm_error_set(error, EIO,
+                          STRLIT_ARGS("failed to copy search results"));
+        }
+    }
+    ncm_mpd_song_list_destroy(&result);
+    return ok;
+}
+
+static bool
+native_search_add_database_constraints(
+    NativeSearchEngineScreen *screen, NcmMpdClient *client,
+    NcmError *error) {
+    NcmBuffer *constraint;
+
+    constraint = &screen->constraints[0];
+    if ((constraint->len > 0)
+        && !ncm_mpd_client_add_search_any(
+            client, constraint->data, error)) {
+        return false;
+    }
+
+    for (int32 i = 1; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+        enum mpd_tag_type tag;
+
+        constraint = &screen->constraints[i];
+        if (constraint->len <= 0) {
+            continue;
+        }
+        if (i == 5) {
+            if (!ncm_mpd_client_add_search_uri(
+                    client, constraint->data, error)) {
+                return false;
+            }
+            continue;
+        }
+
+        switch (i) {
+        case 1:
+            tag = MPD_TAG_ARTIST;
+            break;
+        case 2:
+            tag = MPD_TAG_ALBUM_ARTIST;
+            break;
+        case 3:
+            tag = MPD_TAG_TITLE;
+            break;
+        case 4:
+            tag = MPD_TAG_ALBUM;
+            break;
+        case 6:
+            tag = MPD_TAG_COMPOSER;
+            break;
+        case 7:
+            tag = MPD_TAG_PERFORMER;
+            break;
+        case 8:
+            tag = MPD_TAG_GENRE;
+            break;
+        case 9:
+            tag = MPD_TAG_DATE;
+            break;
+        case 10:
+            tag = MPD_TAG_COMMENT;
+            break;
+        default:
+            ncm_error_set(error, EINVAL,
+                          STRLIT_ARGS("invalid search constraint"));
+            return false;
+        }
+        if (!ncm_mpd_client_add_search_tag(
+                client, tag, constraint->data, error)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool
+native_search_collect_local_results(
+    NativeSearchEngineScreen *screen, NcmSongArray *source,
+    NcmSongArray *songs, NcmError *error) {
+    NcmRegex regexes[NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT];
+    NcmError regex_error;
+    bool exact_match;
+    bool ok;
+
+    if ((screen == NULL) || (source == NULL) || (songs == NULL)) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing local search state"));
+        return false;
+    }
+
+    exact_match = screen->search_mode
+        == NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT;
+    for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+        ncm_regex_init(&regexes[i]);
+    }
+
+    if (!exact_match) {
+        for (int32 i = 0;
+             i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+            if (screen->constraints[i].len <= 0) {
+                continue;
+            }
+            ncm_error_clear(&regex_error);
+            (void)ncm_regex_compile(
+                &regexes[i], screen->constraints[i].data,
+                screen->constraints[i].len, Config.regex_type,
+                &regex_error);
+        }
+    }
+
+    ok = true;
+    for (int32 i = 0; i < source->len; i += 1) {
+        if (!native_search_song_matches(
+                screen, &source->items[i], regexes)) {
+            continue;
+        }
+        if (!ncm_song_array_append_copy(songs, &source->items[i])) {
+            ncm_error_set(error, EIO,
+                          STRLIT_ARGS("failed to copy matching song"));
+            ok = false;
+            break;
+        }
+    }
+
+    for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+        ncm_regex_destroy(&regexes[i]);
+    }
+    if (ok) {
+        ncm_error_clear(error);
+    }
+    return ok;
+}
+
+static bool
+native_search_song_matches(
+    NativeSearchEngineScreen *screen, NcmSong *song, NcmRegex *regexes) {
+    if ((screen == NULL) || (song == NULL) || (regexes == NULL)) {
+        return false;
+    }
+
+    if ((screen->constraints[0].len > 0)
+        && !native_search_song_any_matches(screen, song, &regexes[0])) {
+        return false;
+    }
+    for (int32 i = 1; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+        if (screen->constraints[i].len <= 0) {
+            continue;
+        }
+        if (!native_search_song_field_matches(
+                screen, song, i, &regexes[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool
+native_search_song_field_matches(
+    NativeSearchEngineScreen *screen, NcmSong *song, int32 field,
+    NcmRegex *regex) {
+    NcmStringView value;
+    NcmBuffer *constraint;
+
+    constraint = &screen->constraints[field];
+    if (!native_search_song_field_view(song, field, &value)) {
+        value = ncm_string_view_make(native_search_empty_string, 0);
+    }
+    if (screen->search_mode == NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT) {
+        return ncm_compare_locale_strings(
+                   value.data, value.len, constraint->data,
+                   constraint->len, Config.ignore_leading_the) == 0;
+    }
+    if ((regex == NULL) || !regex->compiled) {
+        return true;
+    }
+    return ncm_regex_search(regex, value.data, value.len);
+}
+
+static bool
+native_search_song_any_matches(
+    NativeSearchEngineScreen *screen, NcmSong *song, NcmRegex *regex) {
+    NcmStringView value;
+    NcmBuffer *constraint;
+
+    constraint = &screen->constraints[0];
+    if ((screen->search_mode != NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT)
+        && ((regex == NULL) || !regex->compiled)) {
+        return true;
+    }
+
+    for (int32 i = 1; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+        if (!native_search_song_field_view(song, i, &value)) {
+            value = ncm_string_view_make(native_search_empty_string, 0);
+        }
+        if (screen->search_mode
+            == NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT) {
+            if (ncm_compare_locale_strings(
+                    value.data, value.len, constraint->data,
+                    constraint->len, Config.ignore_leading_the) == 0) {
+                return true;
+            }
+        } else if (ncm_regex_search(regex, value.data, value.len)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool
+native_search_song_field_view(NcmSong *song, int32 field,
+                              NcmStringView *view) {
+    enum mpd_tag_type tag;
+
+    if ((song == NULL) || (view == NULL)) {
+        return false;
+    }
+    if (field == 5) {
+        return ncm_song_name_view(song, 0, view);
+    }
+
+    switch (field) {
+    case 1:
+        tag = MPD_TAG_ARTIST;
+        break;
+    case 2:
+        tag = MPD_TAG_ALBUM_ARTIST;
+        break;
+    case 3:
+        tag = MPD_TAG_TITLE;
+        break;
+    case 4:
+        tag = MPD_TAG_ALBUM;
+        break;
+    case 6:
+        tag = MPD_TAG_COMPOSER;
+        break;
+    case 7:
+        tag = MPD_TAG_PERFORMER;
+        break;
+    case 8:
+        tag = MPD_TAG_GENRE;
+        break;
+    case 9:
+        tag = MPD_TAG_DATE;
+        break;
+    case 10:
+        tag = MPD_TAG_COMMENT;
+        break;
+    default:
+        return false;
+    }
+    return ncm_song_tag_view(song, tag, 0, view);
+}
+
+static bool
+native_search_append_result_rows(
+    NativeSearchEngineScreen *screen, NcmSongArray *songs) {
+    if ((screen == NULL) || (songs == NULL) || (songs->len <= 0)) {
+        return false;
+    }
+
+    for (int32 i = 0; i < songs->len; i += 1) {
+        if (!native_search_engine_screen_add_song_copy(
+                screen, &songs->items[i])) {
+            return false;
+        }
+    }
+    return native_search_engine_screen_add_result_summary(
+        screen, songs->len);
 }
 
 static void

@@ -1,6 +1,7 @@
 #include "screens/native_c_screens.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -848,6 +849,10 @@ native_search_list_database_songs(
         &global_mpd, (char *)"/", &source, error);
     if (result) {
         result = ncm_mpd_song_list_to_song_array(&source, songs);
+        if (!result) {
+            ncm_error_set(error, EIO,
+                          STRLIT_ARGS("failed to copy database songs"));
+        }
     }
     ncm_mpd_song_list_destroy(&source);
     return result;
@@ -880,6 +885,8 @@ native_search_snapshot_playlist(
             continue;
         }
         if (!ncm_song_array_append_copy(songs, song)) {
+            ncm_error_set(error, EIO,
+                          STRLIT_ARGS("failed to copy playlist songs"));
             return false;
         }
     }

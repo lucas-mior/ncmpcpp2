@@ -84,7 +84,12 @@ SEARCH_ENGINE_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_menu_refresh \
 	-Wl,--wrap=nc_screen_get_resize_params \
 	-Wl,--wrap=ui_state_main_start_y \
-	-Wl,--wrap=ui_state_main_height
+	-Wl,--wrap=ui_state_main_height \
+	-Wl,--wrap=ncm_mpd_client_start_search \
+	-Wl,--wrap=ncm_mpd_client_add_search_tag \
+	-Wl,--wrap=ncm_mpd_client_add_search_any \
+	-Wl,--wrap=ncm_mpd_client_add_search_uri \
+	-Wl,--wrap=ncm_mpd_client_commit_search_songs
 $(BUILD_DIR)/tests/c_search_engine_screen_test: \
 	LDFLAGS += $(SEARCH_ENGINE_SCREEN_TEST_WRAP_FLAGS)
 PLAYLIST_SORT_TEST_WRAP_FLAGS := \
