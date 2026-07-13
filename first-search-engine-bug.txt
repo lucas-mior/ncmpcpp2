@@ -1,0 +1,20 @@
+edcc8e8ef04f27cb004683a89e7a2b3d81e20ace is the first 'bad' commit
+commit edcc8e8ef04f27cb004683a89e7a2b3d81e20ace
+Author: lucas-mior <lucas.mior@tutamail.com>
+Date:   Fri Jul 10 20:16:23 2026 -0300
+
+    sort playlist.cpp 3/3
+
+ Makefile                            |   1 +
+ src/actions.c                       |  11 +++++++++--
+ src/app_binding_migration.c         |   8 ++++----
+ src/screens/nc_playlist.c           |  76 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------
+ src/screens/nc_playlist.h           |   2 ++
+ src/screens/nc_screen.c             |  19 +++++++++++++++++++
+ src/screens/nc_screen.h             |   4 ++++
+ src/screens/nc_sort_playlist.c      |  25 ++++++++++++++++++++++++-
+ tests/c_bindings_test.c             |  19 +++++++++++++++++++
+ tests/c_sort_action_binding_test.c  |  39 +++++++++++++++++++++++++++++++++++++++
+ tests/c_sort_playlist_dialog_test.c | 103 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 11 files changed, 284 insertions(+), 23 deletions(-)
+ create mode 100644 tests/c_sort_action_binding_test.c
