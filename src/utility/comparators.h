@@ -8,7 +8,7 @@
 
 #include "c/ncm_comparators.h"
 #include "curses/menu.h"
-#include "format_impl.h"
+#include "format.h"
 #include "mpdpp.h"
 #include "settings_legacy.h"
 

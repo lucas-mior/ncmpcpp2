@@ -16,7 +16,6 @@
 #include "charset.h"
 #include "curses/menu_impl.h"
 #include "format.h"
-#include "format_impl.h"
 #include "global.h"
 #include "helpers/song_iterator_maker.h"
 #include "helpers_legacy.h"

@@ -24,7 +24,7 @@
 #include "c/ncm_type_conversions.h"
 #include "charset.h"
 #include "curses/menu_impl.h"
-#include "format_impl.h"
+#include "format.h"
 #include "actions.h"
 #include "global.h"
 #include "helpers/song_iterator_maker.h"

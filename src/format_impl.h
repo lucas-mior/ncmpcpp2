@@ -1,6 +1,0 @@
-#ifndef NCMPCPP_HAVE_FORMAT_IMPL_H
-#define NCMPCPP_HAVE_FORMAT_IMPL_H
-
-#include "format.h"
-
-#endif // NCMPCPP_HAVE_FORMAT_IMPL_H
