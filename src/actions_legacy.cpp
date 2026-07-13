@@ -1574,19 +1574,9 @@ void ToggleDisplayMode::run()
 				break;
 		}
 		Statusbar::printf("Search engine display mode: %1%", Config.search_engine_display_mode);
-		NativeSearchEngineScreen *native = native_c_screen_search_engine();
-		if (native_search_engine_screen_has_result_rows(native))
-		{
-			std::string title =
-				   Config.search_engine_display_mode == NCM_DISPLAY_MODE_COLUMNS
-				&& Config.titles_visibility
-				? Display::Columns(mySearcher->main().getWidth())
-				: "";
-			mySearcher->main().setTitle(title);
-			native_search_engine_screen_set_column_title(
-				native, const_cast<char *>(title.c_str()),
-				static_cast<int32>(title.size()));
-		}
+		native_search_engine_screen_set_display_mode(
+			native_c_screen_search_engine(),
+			Config.search_engine_display_mode);
 	}
 	else if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content))
 	{
@@ -1741,10 +1731,13 @@ bool StartSearching::canBeRun()
 
 void StartSearching::run()
 {
-	mySearcher->main().highlight(NATIVE_SEARCH_ENGINE_SEARCH_BUTTON_ROW);
-	mySearcher->main().setHighlighting(0);
-	mySearcher->main().refresh();
-	mySearcher->main().setHighlighting(1);
+	NativeSearchEngineScreen *native = native_c_screen_search_engine();
+	NcMenu *menu = native_search_engine_screen_menu(native);
+	NcWindow *window = native_search_engine_screen_window(native);
+
+	nc_menu_highlight_position(
+		menu, NATIVE_SEARCH_ENGINE_SEARCH_BUTTON_ROW,
+		nc_window_height(window));
 	mySearcher->runAction();
 }
 

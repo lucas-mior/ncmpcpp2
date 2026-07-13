@@ -127,7 +127,8 @@ current_screen_search_legacy(enum SearchDirection direction,
         return false;
     }
     *handled = false;
-    if (app_binding_migration_screen_is_c_only(
+    if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)
+        || app_binding_migration_screen_is_c_only(
             native_c_screens_current_type())) {
         return false;
     }
@@ -151,7 +152,8 @@ current_screen_search_legacy(enum SearchDirection direction,
 
 static void
 current_screen_clear_legacy_search(void) {
-    if (app_binding_migration_screen_is_c_only(
+    if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)
+        || app_binding_migration_screen_is_c_only(
             native_c_screens_current_type())) {
         return;
     }
