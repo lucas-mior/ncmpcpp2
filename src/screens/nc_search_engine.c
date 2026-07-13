@@ -14,6 +14,8 @@ static char *native_search_title(NcScreen *screen);
 static void native_search_update(NcScreen *screen);
 static void native_search_mouse_button_pressed(NcScreen *screen,
                                                MEVENT event);
+static bool native_search_can_run_current(NcScreen *screen);
+static bool native_search_run_current(NcScreen *screen);
 static bool native_search_is_lockable(NcScreen *screen);
 static bool native_search_is_mergable(NcScreen *screen);
 static void native_search_destroy_callback(NcScreen *screen);
@@ -62,6 +64,8 @@ static NcScreenCallbacks native_search_callbacks = {
     .title = native_search_title,
     .update = native_search_update,
     .mouse_button_pressed = native_search_mouse_button_pressed,
+    .can_run_current = native_search_can_run_current,
+    .run_current = native_search_run_current,
     .is_lockable = native_search_is_lockable,
     .is_mergable = native_search_is_mergable,
     .destroy = native_search_destroy_callback,
@@ -757,6 +761,28 @@ native_search_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         search->bridge.mouse_button_pressed(search->bridge.user, event);
     }
     return;
+}
+
+static bool
+native_search_can_run_current(NcScreen *screen) {
+    NativeSearchEngineScreen *search;
+
+    search = native_search_from_screen(screen);
+    if (search->bridge.can_run_current == NULL) {
+        return false;
+    }
+    return search->bridge.can_run_current(search->bridge.user);
+}
+
+static bool
+native_search_run_current(NcScreen *screen) {
+    NativeSearchEngineScreen *search;
+
+    search = native_search_from_screen(screen);
+    if (search->bridge.run_current == NULL) {
+        return false;
+    }
+    return search->bridge.run_current(search->bridge.user);
 }
 
 static bool
