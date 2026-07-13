@@ -1093,6 +1093,8 @@ native_search_engine_screen_execute_search(
         native_search_engine_screen_menu(screen),
         nc_window_height(&screen->window), NC_SCROLL_DOWN);
     native_search_engine_screen_update_column_title(screen);
+    native_search_notify_static_row(
+        screen, NATIVE_SEARCH_ENGINE_ALL_STATIC_ROWS);
     native_search_engine_screen_status_message(
         screen, STRLIT_ARGS("Searching finished"));
 
@@ -1100,6 +1102,134 @@ cleanup:
     ncm_song_array_destroy(&songs);
     ncm_song_array_destroy(&source);
     return result;
+}
+
+bool
+native_search_engine_screen_can_run_current(
+    NativeSearchEngineScreen *screen) {
+    NcMenu *menu;
+    NcSearchRow *row;
+    int64 pos;
+
+    if ((screen == NULL) || !screen->prepared) {
+        return false;
+    }
+
+    menu = native_search_engine_screen_menu(screen);
+    if (nc_menu_empty(menu)) {
+        return false;
+    }
+    pos = nc_menu_highlight(menu);
+    if (nc_menu_position_is_separator(menu, pos)
+        || nc_menu_position_is_inactive(menu, pos)) {
+        return false;
+    }
+
+    row = nc_search_row_menu_current(&screen->rows);
+    return (row != NULL) && !row->is_song;
+}
+
+bool
+native_search_engine_screen_run_current(
+    NativeSearchEngineScreen *screen) {
+    enum NativeSearchEnginePromptResult prompt_status;
+    enum NativeSearchEngineSearchMode mode;
+    NcmBuffer value;
+    NcmError error;
+    NcMenu *menu;
+    int64 pos;
+    uint32 next_mode;
+    bool success;
+
+    if (!native_search_engine_screen_can_run_current(screen)) {
+        return false;
+    }
+
+    menu = native_search_engine_screen_menu(screen);
+    pos = nc_menu_highlight(menu);
+    if (pos < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT) {
+        ncm_buffer_init(&value);
+        prompt_status = native_search_engine_screen_prompt_constraint(
+            screen, (int32)pos, &value);
+        if (prompt_status == NATIVE_SEARCH_ENGINE_PROMPT_ACCEPTED) {
+            success = native_search_engine_screen_set_constraint(
+                screen, (int32)pos, value.data, value.len);
+            ncm_buffer_destroy(&value);
+            return success;
+        }
+        ncm_buffer_destroy(&value);
+        if (prompt_status == NATIVE_SEARCH_ENGINE_PROMPT_ABORTED) {
+            native_search_engine_screen_status_message(
+                screen, STRLIT_ARGS("Action aborted"));
+        } else {
+            native_search_engine_screen_status_message(
+                screen, STRLIT_ARGS("Unable to read search constraint"));
+        }
+        return false;
+    }
+
+    if (pos == NATIVE_SEARCH_ENGINE_SEARCH_SOURCE_ROW) {
+        screen->search_in_database = !screen->search_in_database;
+        Config.search_in_db = screen->search_in_database;
+        return native_search_engine_screen_update_search_source_row(
+            screen);
+    }
+    if (pos == NATIVE_SEARCH_ENGINE_SEARCH_MODE_ROW) {
+        next_mode = (uint32)screen->search_mode + 1;
+        if (next_mode >= NATIVE_SEARCH_ENGINE_SEARCH_MODE_LAST) {
+            next_mode = NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL;
+        }
+        mode = (enum NativeSearchEngineSearchMode)next_mode;
+        return native_search_engine_screen_set_search_mode(screen, mode);
+    }
+    if (pos == NATIVE_SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
+        ncm_error_clear(&error);
+        return native_search_engine_screen_start_searching(
+            screen, screen->hooks.client, &error);
+    }
+    if (pos == NATIVE_SEARCH_ENGINE_RESET_BUTTON_ROW) {
+        native_search_engine_screen_reset(screen);
+        return true;
+    }
+    return false;
+}
+
+bool
+native_search_engine_screen_start_searching(
+    NativeSearchEngineScreen *screen, NcmMpdClient *client,
+    NcmError *error) {
+    NcMenu *menu;
+
+    if ((screen == NULL) || screen->constraints_locked) {
+        return false;
+    }
+    if (!screen->prepared) {
+        native_search_engine_screen_prepare_static_rows(screen);
+    }
+
+    menu = native_search_engine_screen_menu(screen);
+    nc_menu_highlight_position(
+        menu, NATIVE_SEARCH_ENGINE_SEARCH_BUTTON_ROW,
+        nc_window_height(&screen->window));
+    return native_search_engine_screen_execute_search(screen, client, error);
+}
+
+enum DisplayMode
+native_search_engine_screen_toggle_display_mode(
+    NativeSearchEngineScreen *screen) {
+    enum DisplayMode mode;
+
+    if (screen == NULL) {
+        return Config.search_engine_display_mode;
+    }
+    mode = Config.search_engine_display_mode;
+    if (mode == NCM_DISPLAY_MODE_CLASSIC) {
+        mode = NCM_DISPLAY_MODE_COLUMNS;
+    } else {
+        mode = NCM_DISPLAY_MODE_CLASSIC;
+    }
+    native_search_engine_screen_set_display_mode(screen, mode);
+    return mode;
 }
 
 bool
@@ -1426,24 +1556,14 @@ native_search_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 
 static bool
 native_search_can_run_current(NcScreen *screen) {
-    NativeSearchEngineScreen *search;
-
-    search = native_search_from_screen(screen);
-    if (search->bridge.can_run_current == NULL) {
-        return false;
-    }
-    return search->bridge.can_run_current(search->bridge.user);
+    return native_search_engine_screen_can_run_current(
+        native_search_from_screen(screen));
 }
 
 static bool
 native_search_run_current(NcScreen *screen) {
-    NativeSearchEngineScreen *search;
-
-    search = native_search_from_screen(screen);
-    if (search->bridge.run_current == NULL) {
-        return false;
-    }
-    return search->bridge.run_current(search->bridge.user);
+    return native_search_engine_screen_run_current(
+        native_search_from_screen(screen));
 }
 
 static bool

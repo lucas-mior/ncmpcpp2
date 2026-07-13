@@ -53,6 +53,32 @@ app_binding_migration_action_is_c_safe_for_screen(
     if (app_binding_migration_action_is_c_safe(type)) {
         return true;
     }
+    if (screen_type == NCM_SCREEN_TYPE_SEARCH_ENGINE) {
+        switch (type) {
+        case NCM_ACTION_MOUSE_EVENT:
+        case NCM_ACTION_SCROLL_UP:
+        case NCM_ACTION_SCROLL_DOWN:
+        case NCM_ACTION_PAGE_UP:
+        case NCM_ACTION_PAGE_DOWN:
+        case NCM_ACTION_MOVE_HOME:
+        case NCM_ACTION_MOVE_END:
+        case NCM_ACTION_ADD_ITEM_TO_PLAYLIST:
+        case NCM_ACTION_PLAY_ITEM:
+        case NCM_ACTION_TOGGLE_DISPLAY_MODE:
+        case NCM_ACTION_START_SEARCHING:
+        case NCM_ACTION_SELECT_ITEM:
+        case NCM_ACTION_SELECT_RANGE:
+        case NCM_ACTION_REVERSE_SELECTION:
+        case NCM_ACTION_REMOVE_SELECTION:
+        case NCM_ACTION_NEXT_FOUND_ITEM:
+        case NCM_ACTION_PREVIOUS_FOUND_ITEM:
+        case NCM_ACTION_TOGGLE_FIND_MODE:
+        case NCM_ACTION_RESET_SEARCH_ENGINE:
+            return true;
+        default:
+            return false;
+        }
+    }
     if (!app_binding_migration_screen_is_c_only(screen_type)) {
         return false;
     }
@@ -278,7 +304,8 @@ app_binding_migration_binding_is_c_safe(NcmBinding *binding) {
 bool
 app_binding_migration_binding_is_c_safe_for_screen(
     NcmBinding *binding, enum ScreenType screen_type) {
-    if (!app_binding_migration_screen_is_c_only(screen_type)) {
+    if ((screen_type != NCM_SCREEN_TYPE_SEARCH_ENGINE)
+        && !app_binding_migration_screen_is_c_only(screen_type)) {
         return app_binding_migration_binding_is_c_safe(binding);
     }
     if (binding == NULL || binding->actions_len <= 0) {

@@ -3263,6 +3263,26 @@ static bool
 action_runtime_toggle_display_mode(void) {
     enum DisplayMode *mode;
 
+    if (action_runtime_current_screen_is(
+            NCM_SCREEN_TYPE_SEARCH_ENGINE)) {
+        NativeSearchEngineScreen *screen;
+        NcmStringFormatArg arg;
+        enum DisplayMode search_mode;
+
+        screen = native_c_screen_search_engine();
+        search_mode = native_search_engine_screen_toggle_display_mode(
+            screen);
+        arg = ncm_string_format_arg_cstring(
+            ncm_display_mode_str(search_mode));
+        ncm_statusbar_format(
+            (int32)Config.message_delay_time,
+            STRLIT_ARGS("Search engine display mode: %1%"),
+            &arg, 1);
+        app_controller_request_current_screen_resize();
+        app_controller_refresh_current_screen();
+        return true;
+    }
+
     mode = NULL;
     switch (native_c_screens_current_type()) {
     case NCM_SCREEN_TYPE_BROWSER:
@@ -3273,9 +3293,6 @@ action_runtime_toggle_display_mode(void) {
         break;
     case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
         mode = &Config.playlist_editor_display_mode;
-        break;
-    case NCM_SCREEN_TYPE_SEARCH_ENGINE:
-        mode = &Config.search_engine_display_mode;
         break;
     default:
         break;
@@ -3913,10 +3930,14 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return current_screen_allows_search();
     case NCM_ACTION_TOGGLE_FIND_MODE:
         return true;
+    case NCM_ACTION_START_SEARCHING:
+        return action_runtime_current_screen_is(
+                   NCM_SCREEN_TYPE_SEARCH_ENGINE)
+            && !native_search_engine_screen_constraints_locked(
+                   native_c_screen_search_engine());
     case NCM_ACTION_DELETE_BROWSER_ITEMS:
     case NCM_ACTION_SAVE_PLAYLIST:
     case NCM_ACTION_MOVE_SELECTED_ITEMS_TO:
-    case NCM_ACTION_START_SEARCHING:
     case NCM_ACTION_SET_CROSSFADE:
     case NCM_ACTION_SET_VOLUME:
     case NCM_ACTION_EDIT_LIBRARY_TAG:
@@ -4275,10 +4296,16 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
                 (char *)"Search mode: Normal");
         }
         return true;
+    case NCM_ACTION_START_SEARCHING: {
+        NcmError error;
+
+        ncm_error_clear(&error);
+        return native_search_engine_screen_start_searching(
+            native_c_screen_search_engine(), &global_mpd, &error);
+    }
     case NCM_ACTION_DELETE_BROWSER_ITEMS:
     case NCM_ACTION_SAVE_PLAYLIST:
     case NCM_ACTION_MOVE_SELECTED_ITEMS_TO:
-    case NCM_ACTION_START_SEARCHING:
     case NCM_ACTION_SET_CROSSFADE:
     case NCM_ACTION_SET_VOLUME:
     case NCM_ACTION_EDIT_LIBRARY_TAG:
