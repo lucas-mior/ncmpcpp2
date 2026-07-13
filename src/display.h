@@ -17,7 +17,6 @@
 #include "curses/menu.h"
 #include "mutable_song.h"
 #include "screens/playlist.h"
-#include "screens/search_engine.h"
 #include "screens/song_info.h"
 #include "screens/tag_editor.h"
 #include "settings_legacy.h"
@@ -396,26 +395,6 @@ inline void Items(NC::Menu<MPD::Item> &menu, const SongList &list)
 			     << Charset::utf8ToLocale(getBasename(item.playlist().path()));
 			break;
 	}
-}
-
-inline void SEItems(NC::Menu<SEItem> &menu, const SongList &list)
-{
-	const SEItem &si = menu.drawn()->value();
-	if (si.isSong())
-	{
-		switch (Config.search_engine_display_mode)
-		{
-			case NCM_DISPLAY_MODE_CLASSIC:
-				Detail::showSongs(menu, si.song(), list,
-				                  Config.song_list_format);
-				break;
-			case NCM_DISPLAY_MODE_COLUMNS:
-				Detail::showSongsInColumns(menu, si.song(), list);
-				break;
-		}
-	}
-	else
-		menu << si.buffer();
 }
 
 }

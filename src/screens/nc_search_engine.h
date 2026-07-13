@@ -26,7 +26,6 @@ extern "C" {
 #define NATIVE_SEARCH_ENGINE_RESULT_SUMMARY_ROW 18
 #define NATIVE_SEARCH_ENGINE_RESULT_END_SEPARATOR_ROW 19
 #define NATIVE_SEARCH_ENGINE_STATIC_ROW_COUNT 20
-#define NATIVE_SEARCH_ENGINE_ALL_STATIC_ROWS (-1)
 
 enum NativeSearchEngineSearchMode {
     NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL,
@@ -57,16 +56,10 @@ typedef struct NativeSearchEngineHooks {
     void *user;
 } NativeSearchEngineHooks;
 
-typedef struct NativeSearchEngineBridge {
-    void (*static_row_changed)(void *user, int32 row);
-    void *user;
-} NativeSearchEngineBridge;
-
 typedef struct NativeSearchEngineScreen {
     NcScreen screen;
     NcSearchRowMenu rows;
     NcWindow window;
-    NativeSearchEngineBridge bridge;
     NativeSearchEngineHooks hooks;
     NcmBuffer constraints[NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT];
     NcmBuffer filter_constraint;
@@ -228,34 +221,7 @@ bool native_search_engine_screen_search(NativeSearchEngineScreen *screen,
                                         bool forward, bool wrap,
                                         bool skip_current,
                                         NcmError *error);
-void native_search_engine_screen_set_bridge(
-    NativeSearchEngineScreen *screen, NativeSearchEngineBridge bridge);
-
 #if defined(__cplusplus)
-}
-
-namespace native_search_engine_compat {
-
-enum class RunCurrentResult {
-    NotRunnable,
-    Completed,
-    Aborted,
-};
-
-template <typename AbortException, typename Runnable, typename Run>
-RunCurrentResult
-invoke_run_current(Runnable runnable, Run run) {
-    try {
-        if (!runnable()) {
-            return RunCurrentResult::NotRunnable;
-        }
-        run();
-    } catch (AbortException &) {
-        return RunCurrentResult::Aborted;
-    }
-    return RunCurrentResult::Completed;
-}
-
 }
 #endif
 
