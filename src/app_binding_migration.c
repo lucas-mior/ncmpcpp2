@@ -34,8 +34,6 @@ app_binding_migration_action_is_c_safe(enum NcmActionType type) {
     case NCM_ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE:
     case NCM_ACTION_SHOW_MEDIA_LIBRARY:
     case NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE:
-    case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
-    case NCM_ACTION_SHOW_VISUALIZER:
         return true;
     default:
         return false;
@@ -93,6 +91,8 @@ app_binding_migration_action_is_c_safe_for_screen(
         }
     case NCM_SCREEN_TYPE_VISUALIZER:
         switch (type) {
+        case NCM_ACTION_SHOW_VISUALIZER:
+        case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
         case NCM_ACTION_MOUSE_EVENT:
         case NCM_ACTION_MASTER_SCREEN:
         case NCM_ACTION_SLAVE_SCREEN:
@@ -211,6 +211,7 @@ app_binding_migration_action_forces_legacy_binding(
     case NCM_ACTION_REFETCH_LYRICS:
     case NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY:
     case NCM_ACTION_TOGGLE_OUTPUT:
+    case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
     case NCM_ACTION_SHOW_SONG_INFO:
     case NCM_ACTION_SHOW_ARTIST_INFO:
     case NCM_ACTION_SHOW_LYRICS:
@@ -225,6 +226,7 @@ app_binding_migration_action_forces_legacy_binding(
     case NCM_ACTION_SHOW_PLAYLIST_EDITOR:
     case NCM_ACTION_SHOW_TAG_EDITOR:
     case NCM_ACTION_SHOW_OUTPUTS:
+    case NCM_ACTION_SHOW_VISUALIZER:
     case NCM_ACTION_SHOW_SERVER_INFO:
         return true;
     default:

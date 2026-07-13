@@ -186,6 +186,7 @@ $(BUILD_DIR)/tests/c_visualizer_behavior_test: \
 VISUALIZER_ACTIONS_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=app_controller_current_screen \
 	-Wl,--wrap=native_c_screen_visualizer_register \
+	-Wl,--wrap=native_c_screen_visualizer_is_current \
 	-Wl,--wrap=native_c_screens_switch_to_type \
 	-Wl,--wrap=native_c_screen_visualizer \
 	-Wl,--wrap=native_visualizer_screen_toggle_type
