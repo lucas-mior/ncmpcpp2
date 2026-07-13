@@ -507,11 +507,16 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_MOVE_SORT_ORDER_DOWN));
     REQUIRE(app_binding_migration_action_is_c_safe(
         NCM_ACTION_SORT_PLAYLIST));
-    REQUIRE(app_binding_migration_action_is_c_safe(
+    REQUIRE(!app_binding_migration_action_is_c_safe(
         NCM_ACTION_SHOW_VISUALIZER));
-    REQUIRE(app_binding_migration_action_is_c_safe(
+    REQUIRE(!app_binding_migration_action_is_c_safe(
         NCM_ACTION_TOGGLE_VISUALIZATION_TYPE));
     REQUIRE(app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_VISUALIZER));
+    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_SHOW_VISUALIZER, NCM_SCREEN_TYPE_VISUALIZER));
+    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_TOGGLE_VISUALIZATION_TYPE,
         NCM_SCREEN_TYPE_VISUALIZER));
     REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
         NCM_ACTION_SHOW_PLAYLIST, NCM_SCREEN_TYPE_VISUALIZER));
@@ -550,8 +555,10 @@ test_app_binding_migration_c_safe_actions(void) {
 
     ncm_binding_init(&binding);
     append_action(&binding, NCM_ACTION_SHOW_VISUALIZER);
-    REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
-    REQUIRE(app_binding_migration_binding_is_hybrid_safe(&binding));
+    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
+    REQUIRE(!app_binding_migration_binding_is_hybrid_safe(&binding));
+    REQUIRE(app_binding_migration_binding_is_c_safe_for_screen(
+        &binding, NCM_SCREEN_TYPE_VISUALIZER));
     ncm_binding_destroy(&binding);
 
     ncm_binding_init(&binding);
