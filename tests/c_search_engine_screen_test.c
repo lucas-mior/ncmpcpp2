@@ -1188,11 +1188,13 @@ test_native_display_and_column_title(void) {
     NativeSearchEngineScreen screen;
     NcmFormatAst old_classic;
     NcmFormatAst old_columns;
+    NcmError error;
     ColumnArray old_column_array;
     Column columns[2];
     NcSearchRow *row;
     NcMenu *menu;
     NcmSong song;
+    NcmBuffer formatted;
     bool old_titles_visibility;
     enum DisplayMode old_mode;
 
@@ -1204,14 +1206,40 @@ test_native_display_and_column_title(void) {
     old_mode = Config.search_engine_display_mode;
     ncm_format_ast_init(&Config.song_list_format);
     ncm_format_ast_init(&Config.song_columns_mode_format);
-    assert(ncm_format_ast_append_text(&Config.song_list_format,
-                                      LIT_ARGS("classic")));
-    assert(ncm_format_ast_append_text(&Config.song_columns_mode_format,
-                                      LIT_ARGS("columns")));
+    ncm_error_clear(&error);
+    assert(ncm_format_parse(&Config.song_list_format,
+                            LIT_ARGS("classic:{%a - }%t"),
+                            NCM_FORMAT_FLAG_ALL, &error));
+    assert(ncm_format_parse(&Config.song_columns_mode_format,
+                            LIT_ARGS("%a"),
+                            NCM_FORMAT_FLAG_ALL, &error));
+
+    columns[0] = (Column){0};
+    columns[0].name = (char *)"Artist";
+    columns[0].name_len = STRLIT_LEN("Artist");
+    columns[0].type = (char *)"a";
+    columns[0].type_len = STRLIT_LEN("a");
+    columns[0].width = 10;
+    columns[0].stretch_limit = -1;
+    columns[0].color = nc_color_default();
+    columns[0].fixed = true;
+    columns[1] = (Column){0};
+    columns[1].type = (char *)"t";
+    columns[1].type_len = STRLIT_LEN("t");
+    columns[1].width = 10;
+    columns[1].stretch_limit = -1;
+    columns[1].color = nc_color_default();
+    columns[1].fixed = true;
+    Config.columns.items = columns;
+    Config.columns.len = 2;
+    Config.columns.cap = 2;
 
     init_screen(&screen);
+    native_search_engine_screen_set_geometry(&screen, 0, 20, 0, 24);
     ncm_song_init(&song);
     assert(ncm_song_set_uri(&song, LIT_ARGS("song.flac")));
+    assert(ncm_song_add_tag(&song, MPD_TAG_ARTIST, LIT_ARGS("Band")));
+    assert(ncm_song_add_tag(&song, MPD_TAG_TITLE, LIT_ARGS("Track")));
     assert(native_search_engine_screen_add_song_copy(&screen, &song));
     ncm_song_destroy(&song);
     row = row_at(&screen, 0);
@@ -1222,30 +1250,22 @@ test_native_display_and_column_title(void) {
         &screen, NCM_DISPLAY_MODE_CLASSIC);
     menu->display_callbacks.draw(menu, &screen.window, row, 0,
                                  menu->display_callbacks.user);
-    assert_printed(LIT_ARGS("classic"));
+    assert_printed(LIT_ARGS("classic:Band - Track"));
 
     reset_window_trace();
     native_search_engine_screen_set_display_mode(
         &screen, NCM_DISPLAY_MODE_COLUMNS);
     menu->display_callbacks.draw(menu, &screen.window, row, 0,
                                  menu->display_callbacks.user);
-    assert_printed(LIT_ARGS("columns"));
+    assert_printed(LIT_ARGS("Band      Track     "));
 
-    columns[0] = (Column){0};
-    columns[0].name = (char *)"Artist";
-    columns[0].name_len = STRLIT_LEN("Artist");
-    columns[0].width = 10;
-    columns[0].stretch_limit = -1;
-    columns[0].fixed = true;
-    columns[1] = (Column){0};
-    columns[1].type = (char *)"t";
-    columns[1].type_len = STRLIT_LEN("t");
-    columns[1].width = 10;
-    columns[1].stretch_limit = -1;
-    columns[1].fixed = true;
-    Config.columns.items = columns;
-    Config.columns.len = 2;
-    Config.columns.cap = 2;
+    ncm_buffer_init(&formatted);
+    assert(native_search_engine_screen_format_song_text(
+        &screen, &row->song, &formatted));
+    assert(ncm_string_equal(formatted.data, formatted.len,
+                            LIT_ARGS("Band      Track     ")));
+    ncm_buffer_destroy(&formatted);
+
     Config.titles_visibility = true;
     native_search_engine_screen_set_geometry(&screen, 0, 20, 0, 24);
     native_search_engine_screen_set_display_mode(

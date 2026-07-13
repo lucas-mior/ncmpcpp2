@@ -143,6 +143,8 @@ bool native_search_engine_screen_set_column_title(
     NativeSearchEngineScreen *screen, char *title, int32 title_len);
 NcmStringView native_search_engine_screen_column_title(
     NativeSearchEngineScreen *screen);
+bool native_search_engine_screen_format_song_text(
+    NativeSearchEngineScreen *screen, NcmSong *song, NcmBuffer *text);
 void native_search_engine_screen_update_column_title(
     NativeSearchEngineScreen *screen);
 void native_search_engine_screen_prepare_static_rows(
