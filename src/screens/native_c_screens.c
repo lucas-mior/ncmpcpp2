@@ -8,6 +8,7 @@
 #include "app_controller.h"
 #include "bindings.h"
 #include "c/ncm_base.h"
+#include "c/ncm_display.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
 #include "global.h"
@@ -104,6 +105,20 @@ static NcBorder native_no_border(void);
 static int32 native_cstring_len(char *string);
 static void native_draw_screen_header(NcScreen *screen);
 static bool native_register_screen(NcScreen *screen);
+static bool native_search_list_database_songs(
+    void *user, NcmSongArray *songs, NcmError *error);
+static bool native_search_snapshot_playlist(
+    void *user, NcmSongArray *songs, NcmError *error);
+static bool native_search_prompt_hook(char *text, void *user);
+static enum NativeSearchEnginePromptResult native_search_prompt_constraint(
+    void *user, char *label, int32 label_len, NcmBuffer *initial,
+    NcmBuffer *result);
+static void native_search_status_message(
+    void *user, char *message, int32 message_len);
+static bool native_search_add_song(
+    void *user, NcmSong *song, bool play, NcmError *error);
+static bool native_search_format_song(
+    void *user, NcmSong *song, NcmBuffer *text);
 static void native_resize_main_area(NcScreen *base, int64 *x, int64 *width);
 static void native_append_cstring(NcBuffer *buffer, char *string);
 static void native_append_data(NcBuffer *buffer, char *string, int32 len);
@@ -816,8 +831,173 @@ native_c_screen_sort_playlist_dialog_native(void) {
     return native_sort_playlist_dialog_base(&sort_playlist_dialog);
 }
 
+static bool
+native_search_list_database_songs(
+    void *user, NcmSongArray *songs, NcmError *error) {
+    NcmMpdSongList source;
+    bool result;
+
+    (void)user;
+    if (songs == NULL) {
+        return false;
+    }
+
+    ncm_song_array_clear(songs);
+    ncm_mpd_song_list_init(&source);
+    result = ncm_mpd_client_get_directory_recursive(
+        &global_mpd, (char *)"/", &source, error);
+    if (result) {
+        result = ncm_mpd_song_list_to_song_array(&source, songs);
+    }
+    ncm_mpd_song_list_destroy(&source);
+    return result;
+}
+
+static bool
+native_search_snapshot_playlist(
+    void *user, NcmSongArray *songs, NcmError *error) {
+    NativePlaylistScreen *playlist;
+    NcSongMenu *song_menu;
+    NcMenu *menu;
+    NcmSong *song;
+    int64 count;
+
+    (void)user;
+    (void)error;
+    if (songs == NULL) {
+        return false;
+    }
+
+    ncm_song_array_clear(songs);
+    playlist = native_c_screen_playlist();
+    native_playlist_screen_sync(playlist);
+    song_menu = native_playlist_screen_song_menu(playlist);
+    menu = nc_song_menu_base(song_menu);
+    count = nc_menu_all_item_count(menu);
+    for (int64 i = 0; i < count; i += 1) {
+        song = nc_song_menu_item_at(song_menu, NC_MENU_ITEMS_ALL, i);
+        if (song == NULL) {
+            continue;
+        }
+        if (!ncm_song_array_append_copy(songs, song)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool
+native_search_prompt_hook(char *text, void *user) {
+    (void)user;
+    return ncm_statusbar_main_hook(text, native_cstring_len(text));
+}
+
+static enum NativeSearchEnginePromptResult
+native_search_prompt_constraint(
+    void *user, char *label, int32 label_len, NcmBuffer *initial,
+    NcmBuffer *result) {
+    NcmStatusbarScopedLock lock;
+    enum NcPromptStatus status;
+    NcPrompt prompt = {0};
+    NcWindow *window;
+    char *input;
+    char *initial_text;
+    int32 input_len;
+    bool copied;
+
+    (void)user;
+    if ((label == NULL) || (label_len < 0) || (initial == NULL)
+        || (result == NULL)) {
+        return NATIVE_SEARCH_ENGINE_PROMPT_ERROR;
+    }
+
+    input = NULL;
+    initial_text = initial->data;
+    if (initial_text == NULL) {
+        initial_text = (char *)"";
+    }
+
+    ncm_statusbar_scoped_lock_init(&lock);
+    window = ncm_statusbar_put();
+    if (window == NULL) {
+        ncm_statusbar_scoped_lock_destroy(&lock);
+        return NATIVE_SEARCH_ENGINE_PROMPT_ERROR;
+    }
+    nc_window_print_data(window, label, label_len);
+    nc_window_print_data(window, STRLIT_ARGS(": "));
+
+    prompt.initial_text = initial_text;
+    prompt.width = -1;
+    prompt.hook = native_search_prompt_hook;
+    prompt.hook_user_data = NULL;
+    prompt.encrypted = false;
+    prompt.remember = true;
+    status = nc_window_prompt(window, &prompt, &input);
+    ncm_statusbar_scoped_lock_destroy(&lock);
+
+    if ((status != NC_PROMPT_ACCEPTED) || (input == NULL)) {
+        nc_window_prompt_result_destroy(input);
+        if (status == NC_PROMPT_ABORTED) {
+            return NATIVE_SEARCH_ENGINE_PROMPT_ABORTED;
+        }
+        return NATIVE_SEARCH_ENGINE_PROMPT_ERROR;
+    }
+
+    input_len = native_cstring_len(input);
+    copied = ncm_buffer_set(result, input, input_len);
+    nc_window_prompt_result_destroy(input);
+    if (!copied) {
+        return NATIVE_SEARCH_ENGINE_PROMPT_ERROR;
+    }
+    return NATIVE_SEARCH_ENGINE_PROMPT_ACCEPTED;
+}
+
+static void
+native_search_status_message(
+    void *user, char *message, int32 message_len) {
+    (void)user;
+    ncm_statusbar_print((int32)Config.message_delay_time,
+                        message, message_len);
+    return;
+}
+
+static bool
+native_search_add_song(
+    void *user, NcmSong *song, bool play, NcmError *error) {
+    (void)user;
+    (void)error;
+    return ncm_action_add_song_to_playlist(song, play, -1);
+}
+
+static bool
+native_search_format_song(
+    void *user, NcmSong *song, NcmBuffer *text) {
+    NcBuffer formatted;
+    NcmFormatAst *format;
+    bool result;
+
+    (void)user;
+    if ((song == NULL) || (text == NULL)) {
+        return false;
+    }
+
+    nc_buffer_init(&formatted);
+    if (Config.search_engine_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
+        format = &Config.song_columns_mode_format;
+    } else {
+        format = &Config.song_list_format;
+    }
+    ncm_display_song_row(&formatted, format, song, 0);
+    result = ncm_buffer_set(text, formatted.data, formatted.len);
+    nc_buffer_destroy(&formatted);
+    return result;
+}
+
 void
 native_c_screen_search_engine_init(void) {
+    NativeSearchEngineHooks hooks = {0};
+    enum NativeSearchEngineSearchMode mode;
+
     if (search_engine_screen_initialized) {
         return;
     }
@@ -829,6 +1009,26 @@ native_c_screen_search_engine_init(void) {
                                      ui_state_main_height(),
                                      Config.main_color,
                                      native_no_border());
+
+    mode = NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL;
+    if (Config.search_engine_default_search_mode
+        < NATIVE_SEARCH_ENGINE_SEARCH_MODE_LAST) {
+        mode = (enum NativeSearchEngineSearchMode)
+            Config.search_engine_default_search_mode;
+    }
+    (void)native_search_engine_screen_set_search_mode(
+        &search_engine_screen, mode);
+    native_search_engine_screen_set_search_source(
+        &search_engine_screen, Config.search_in_db);
+
+    hooks.list_database_songs = native_search_list_database_songs;
+    hooks.snapshot_playlist = native_search_snapshot_playlist;
+    hooks.prompt_constraint = native_search_prompt_constraint;
+    hooks.status_message = native_search_status_message;
+    hooks.add_song = native_search_add_song;
+    hooks.format_song = native_search_format_song;
+    native_search_engine_screen_set_hooks(&search_engine_screen, hooks);
+
     search_engine_screen_initialized = true;
     return;
 }
