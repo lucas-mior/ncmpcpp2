@@ -11,6 +11,7 @@
 #include "helpers.h"
 #include "settings.h"
 #include "screens/native_c_screens.h"
+#include "screens/nc_search_engine.h"
 #include "screens/screen_type.h"
 #include "screen_actions.h"
 #include "status.h"

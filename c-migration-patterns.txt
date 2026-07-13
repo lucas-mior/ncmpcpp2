@@ -330,7 +330,7 @@ NC::Menu<T> instantiations.
     NC::Menu<NcOutputsItem>          -> NcOutputMenu
     NC::Menu<NcmPlaylist>            -> NcPlaylistEntryMenu
     NC::Menu<MPD::MutableSong>       -> NcTagRowMenu
-    NC::Menu<SEItem>                 -> NcSearchRowMenu
+    Legacy Search Engine item menu    -> NcSearchRowMenu
     Legacy primary-tag menu             -> NcMediaLibraryTagMenu
     Legacy album-entry menu             -> NcMediaLibraryAlbumMenu
     NC::Menu<std::string>            -> NcEditorStringMenu

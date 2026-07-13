@@ -9,6 +9,7 @@
 #include "c/ncm_base.h"
 #include "c/ncm_error.h"
 #include "screens/native_c_screens.h"
+#include "screens/nc_search_engine.h"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 

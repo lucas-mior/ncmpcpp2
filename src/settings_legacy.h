@@ -90,7 +90,6 @@ struct LegacyConfiguration
 
 	DisplayMode playlist_display_mode;
 	DisplayMode browser_display_mode;
-	DisplayMode search_engine_display_mode;
 	DisplayMode playlist_editor_display_mode;
 
 	NC::Buffer browser_playlist_prefix;
@@ -151,13 +150,11 @@ struct LegacyConfiguration
 	bool now_playing_lyrics;
 	bool fetch_lyrics_in_background;
 	bool local_browser_show_hidden_files;
-	bool search_in_db;
 	bool jump_to_now_playing_song_at_start;
 	bool display_volume_level;
 	bool display_bitrate;
 	bool display_remaining_time;
 	bool ignore_leading_the;
-	bool block_search_constraints_change;
 	bool use_console_editor;
 	bool use_cyclic_scrolling;
 	bool ask_before_clearing_playlists;
@@ -184,7 +181,6 @@ struct LegacyConfiguration
 	unsigned message_delay_time;
 	unsigned lyrics_db;
 	unsigned lines_scrolled;
-	unsigned search_engine_default_search_mode;
 
 	Regex::Flags regex_type;
 

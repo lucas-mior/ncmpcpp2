@@ -4,6 +4,7 @@
 #include "app_controller.h"
 #include "settings.h"
 #include "screens/native_c_screens.h"
+#include "screens/nc_search_engine.h"
 
 #include "c/ncm_base.h"
 

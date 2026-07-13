@@ -1,4 +1,5 @@
 #include "screens/native_c_screens.h"
+#include "screens/nc_search_engine.h"
 
 #include <assert.h>
 #include <errno.h>

@@ -197,7 +197,6 @@ void settings_legacy_sync_from_c(const Configuration *source)
 
 	ConfigLegacy.playlist_display_mode = source->playlist_display_mode;
 	ConfigLegacy.browser_display_mode = source->browser_display_mode;
-	ConfigLegacy.search_engine_display_mode = source->search_engine_display_mode;
 	ConfigLegacy.playlist_editor_display_mode = source->playlist_editor_display_mode;
 	ConfigLegacy.visualizer_type = source->visualizer_type;
 	ConfigLegacy.design = source->design;
@@ -273,13 +272,11 @@ void settings_legacy_sync_from_c(const Configuration *source)
 	ConfigLegacy.now_playing_lyrics = source->now_playing_lyrics;
 	ConfigLegacy.fetch_lyrics_in_background = source->fetch_lyrics_in_background;
 	ConfigLegacy.local_browser_show_hidden_files = source->local_browser_show_hidden_files;
-	ConfigLegacy.search_in_db = source->search_in_db;
 	ConfigLegacy.jump_to_now_playing_song_at_start = source->jump_to_now_playing_song_at_start;
 	ConfigLegacy.display_volume_level = source->display_volume_level;
 	ConfigLegacy.display_bitrate = source->display_bitrate;
 	ConfigLegacy.display_remaining_time = source->display_remaining_time;
 	ConfigLegacy.ignore_leading_the = source->ignore_leading_the;
-	ConfigLegacy.block_search_constraints_change = source->block_search_constraints_change;
 	ConfigLegacy.use_console_editor = source->use_console_editor;
 	ConfigLegacy.use_cyclic_scrolling = source->use_cyclic_scrolling;
 	ConfigLegacy.ask_before_clearing_playlists = source->ask_before_clearing_playlists;
@@ -306,7 +303,6 @@ void settings_legacy_sync_from_c(const Configuration *source)
 	ConfigLegacy.message_delay_time = source->message_delay_time;
 	ConfigLegacy.lyrics_db = source->lyrics_db;
 	ConfigLegacy.lines_scrolled = source->lines_scrolled;
-	ConfigLegacy.search_engine_default_search_mode = source->search_engine_default_search_mode;
 	ConfigLegacy.playlist_disable_highlight_delay_seconds = source->playlist_disable_highlight_delay_seconds;
 	ConfigLegacy.visualizer_spectrum_dft_size = source->visualizer_spectrum_dft_size;
 

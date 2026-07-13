@@ -138,7 +138,6 @@ void populateSource(Configuration *source)
 
 	source->playlist_display_mode = NCM_DISPLAY_MODE_COLUMNS;
 	source->browser_display_mode = NCM_DISPLAY_MODE_COLUMNS;
-	source->search_engine_display_mode = NCM_DISPLAY_MODE_COLUMNS;
 	source->playlist_editor_display_mode = NCM_DISPLAY_MODE_COLUMNS;
 	source->visualizer_type = NCM_VISUALIZER_TYPE_WAVE_FILLED;
 	source->design = NCM_DESIGN_ALTERNATIVE;
@@ -242,13 +241,11 @@ void populateSource(Configuration *source)
 	source->now_playing_lyrics = true;
 	source->fetch_lyrics_in_background = true;
 	source->local_browser_show_hidden_files = true;
-	source->search_in_db = true;
 	source->jump_to_now_playing_song_at_start = true;
 	source->display_volume_level = true;
 	source->display_bitrate = true;
 	source->display_remaining_time = true;
 	source->ignore_leading_the = true;
-	source->block_search_constraints_change = true;
 	source->use_console_editor = true;
 	source->use_cyclic_scrolling = true;
 	source->ask_before_clearing_playlists = true;
@@ -277,7 +274,6 @@ void populateSource(Configuration *source)
 	source->message_delay_time = 45;
 	source->lyrics_db = 46;
 	source->lines_scrolled = 47;
-	source->search_engine_default_search_mode = 48;
 	source->playlist_disable_highlight_delay_seconds = 49;
 	source->visualizer_spectrum_dft_size = 50;
 	source->visualizer_spectrum_gain = 1.25;
@@ -488,7 +484,6 @@ void verifySync(const Configuration *source)
 
 	check(ConfigLegacy.playlist_display_mode == source->playlist_display_mode, "playlist_display_mode");
 	check(ConfigLegacy.browser_display_mode == source->browser_display_mode, "browser_display_mode");
-	check(ConfigLegacy.search_engine_display_mode == source->search_engine_display_mode, "search_engine_display_mode");
 	check(ConfigLegacy.playlist_editor_display_mode == source->playlist_editor_display_mode, "playlist_editor_display_mode");
 	check(ConfigLegacy.visualizer_type == source->visualizer_type, "visualizer_type");
 	check(ConfigLegacy.design == source->design, "design");
@@ -586,13 +581,11 @@ void verifySync(const Configuration *source)
 	check(ConfigLegacy.now_playing_lyrics == source->now_playing_lyrics, "now_playing_lyrics");
 	check(ConfigLegacy.fetch_lyrics_in_background == source->fetch_lyrics_in_background, "fetch_lyrics_in_background");
 	check(ConfigLegacy.local_browser_show_hidden_files == source->local_browser_show_hidden_files, "local_browser_show_hidden_files");
-	check(ConfigLegacy.search_in_db == source->search_in_db, "search_in_db");
 	check(ConfigLegacy.jump_to_now_playing_song_at_start == source->jump_to_now_playing_song_at_start, "jump_to_now_playing_song_at_start");
 	check(ConfigLegacy.display_volume_level == source->display_volume_level, "display_volume_level");
 	check(ConfigLegacy.display_bitrate == source->display_bitrate, "display_bitrate");
 	check(ConfigLegacy.display_remaining_time == source->display_remaining_time, "display_remaining_time");
 	check(ConfigLegacy.ignore_leading_the == source->ignore_leading_the, "ignore_leading_the");
-	check(ConfigLegacy.block_search_constraints_change == source->block_search_constraints_change, "block_search_constraints_change");
 	check(ConfigLegacy.use_console_editor == source->use_console_editor, "use_console_editor");
 	check(ConfigLegacy.use_cyclic_scrolling == source->use_cyclic_scrolling, "use_cyclic_scrolling");
 	check(ConfigLegacy.ask_before_clearing_playlists == source->ask_before_clearing_playlists, "ask_before_clearing_playlists");
@@ -619,7 +612,6 @@ void verifySync(const Configuration *source)
 	check(ConfigLegacy.message_delay_time == source->message_delay_time, "message_delay_time");
 	check(ConfigLegacy.lyrics_db == source->lyrics_db, "lyrics_db");
 	check(ConfigLegacy.lines_scrolled == source->lines_scrolled, "lines_scrolled");
-	check(ConfigLegacy.search_engine_default_search_mode == source->search_engine_default_search_mode, "search_engine_default_search_mode");
 	check(ConfigLegacy.playlist_disable_highlight_delay_seconds == source->playlist_disable_highlight_delay_seconds, "playlist_disable_highlight_delay_seconds");
 	check(ConfigLegacy.visualizer_spectrum_dft_size == source->visualizer_spectrum_dft_size, "visualizer_spectrum_dft_size");
 
