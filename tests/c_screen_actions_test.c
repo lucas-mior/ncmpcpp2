@@ -25,8 +25,9 @@ typedef struct LegacySearchFixture {
 
 static LegacySearchFixture fixture;
 
-static bool current_screen_is_browser(void);
+static bool current_screen_uses_legacy_search(void);
 static void test_legacy_screen_search_bridge(void);
+static void test_search_engine_legacy_search_bridge(void);
 static void test_native_screen_search_fallback(void);
 static void test_c_only_screen_skips_legacy_search(void);
 
@@ -36,7 +37,7 @@ actions_legacy_runtime_search_current_screen(
     bool wrap, bool skip_current, bool *handled, NcmError *error) {
     (void)error;
     fixture.search_hook_calls += 1;
-    if (!current_screen_is_browser()) {
+    if (!current_screen_uses_legacy_search()) {
         *handled = false;
         return false;
     }
@@ -53,7 +54,7 @@ actions_legacy_runtime_search_current_screen(
 void
 actions_legacy_runtime_clear_current_search(void) {
     fixture.clear_hook_calls += 1;
-    if (current_screen_is_browser()) {
+    if (current_screen_uses_legacy_search()) {
         fixture.clear_calls += 1;
     }
     return;
@@ -63,6 +64,7 @@ int
 main(void) {
     ncm_buffer_init(&fixture.pattern);
     test_legacy_screen_search_bridge();
+    test_search_engine_legacy_search_bridge();
     test_native_screen_search_fallback();
     test_c_only_screen_skips_legacy_search();
     ncm_buffer_destroy(&fixture.pattern);
@@ -70,14 +72,15 @@ main(void) {
 }
 
 static bool
-current_screen_is_browser(void) {
+current_screen_uses_legacy_search(void) {
     NcScreen *screen;
 
     screen = app_controller_current_screen();
     if (screen == NULL) {
         return false;
     }
-    return nc_screen_type(screen) == NC_SCREEN_TYPE_BROWSER;
+    return nc_screen_type(screen) == NC_SCREEN_TYPE_BROWSER
+        || nc_screen_type(screen) == NC_SCREEN_TYPE_SEARCH_ENGINE;
 }
 
 static void
@@ -119,10 +122,57 @@ test_legacy_screen_search_bridge(void) {
 }
 
 static void
+test_search_engine_legacy_search_bridge(void) {
+    NcmStringView constraint;
+    NcmError error;
+    int32 clear_calls;
+    int32 clear_hook_calls;
+    int32 search_calls;
+    int32 search_hook_calls;
+
+    app_controller_init();
+    ui_state_set_screen_size(100, 30);
+    ui_state_set_main_geometry(2, 26);
+    native_c_screen_search_engine_register();
+    assert(app_controller_switch_to_screen(
+        native_c_screen_search_engine_native()));
+
+    search_hook_calls = fixture.search_hook_calls;
+    search_calls = fixture.search_calls;
+    ncm_error_clear(&error);
+    assert(current_screen_search(
+        NCM_SEARCH_DIRECTION_FORWARD, LIT_ARGS("result title"),
+        false, false, &error));
+    assert(!ncm_error_is_set(&error));
+    assert(fixture.search_hook_calls == search_hook_calls + 1);
+    assert(fixture.search_calls == search_calls + 1);
+    assert(fixture.direction == NCM_SEARCH_DIRECTION_FORWARD);
+    assert(!fixture.wrap);
+    assert(!fixture.skip_current);
+    assert(ncm_string_equal(fixture.pattern.data,
+                            fixture.pattern.len,
+                            LIT_ARGS("result title")));
+
+    constraint = current_screen_current_search_constraint();
+    assert(ncm_string_equal(constraint.data, constraint.len,
+                            LIT_ARGS("result title")));
+
+    clear_hook_calls = fixture.clear_hook_calls;
+    clear_calls = fixture.clear_calls;
+    current_screen_clear_search_constraint();
+    assert(fixture.clear_hook_calls == clear_hook_calls + 1);
+    assert(fixture.clear_calls == clear_calls + 1);
+    constraint = current_screen_current_search_constraint();
+    assert(constraint.len == 0);
+    return;
+}
+
+static void
 test_native_screen_search_fallback(void) {
     NativeMediaLibraryScreen *library;
     NcMenu *menu;
     NcmError error;
+    int32 search_calls;
 
     app_controller_init();
     Config.media_lib_primary_tag = MPD_TAG_ARTIST;
@@ -143,13 +193,14 @@ test_native_screen_search_fallback(void) {
 
     menu = native_media_library_screen_active_menu(library);
     assert(nc_menu_highlight(menu) == 0);
+    search_calls = fixture.search_calls;
     ncm_error_clear(&error);
     assert(current_screen_search(
         NCM_SEARCH_DIRECTION_FORWARD, LIT_ARGS("Needle"),
         true, false, &error));
     assert(!ncm_error_is_set(&error));
     assert(nc_menu_highlight(menu) == 1);
-    assert(fixture.search_calls == 1);
+    assert(fixture.search_calls == search_calls);
     return;
 }
 

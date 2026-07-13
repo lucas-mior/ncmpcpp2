@@ -38,6 +38,7 @@ static bool can_run_true(void *user);
 static bool can_run_false(void *user);
 static bool run_record(void *user);
 static void test_action_name_lookup(void);
+static void test_search_engine_action_lookup(void);
 static void test_duplicate_action_detection(void);
 static void test_disabled_action_checks(void);
 static void test_action_execution_paths(void);
@@ -132,6 +133,28 @@ test_action_name_lookup(void) {
     REQUIRE_INT(type, NCM_ACTION_PAUSE);
     REQUIRE(!ncm_action_type_parse(LIT_ARGS("not_an_action"), &type));
     REQUIRE(ncm_action_get(NCM_ACTION_MACRO_UTILITY) == NULL);
+    return;
+}
+
+static void
+test_search_engine_action_lookup(void) {
+    NcmActionDef *action;
+
+    action = ncm_action_find(LIT_ARGS("show_search_engine"));
+    REQUIRE(action != NULL);
+    REQUIRE_INT(action->type, NCM_ACTION_SHOW_SEARCH_ENGINE);
+
+    action = ncm_action_find(LIT_ARGS("reset_search_engine"));
+    REQUIRE(action != NULL);
+    REQUIRE_INT(action->type, NCM_ACTION_RESET_SEARCH_ENGINE);
+
+    action = ncm_action_find(LIT_ARGS("start_searching"));
+    REQUIRE(action != NULL);
+    REQUIRE_INT(action->type, NCM_ACTION_START_SEARCHING);
+
+    action = ncm_action_find(LIT_ARGS("toggle_display_mode"));
+    REQUIRE(action != NULL);
+    REQUIRE_INT(action->type, NCM_ACTION_TOGGLE_DISPLAY_MODE);
     return;
 }
 
@@ -282,6 +305,7 @@ test_immediate_command_prompt_stop(void) {
 int
 main(void) {
     test_action_name_lookup();
+    test_search_engine_action_lookup();
     test_duplicate_action_detection();
     test_disabled_action_checks();
     test_action_execution_paths();
