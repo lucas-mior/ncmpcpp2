@@ -345,7 +345,6 @@ struct Connection
 	
 	void Play();
 	void Play(int);
-	void PlayID(int);
 	void Pause(bool);
 	void Toggle();
 	void Stop();
@@ -376,8 +375,6 @@ struct Connection
 	void SetReplayGainMode(ReplayGainMode);
 	
 	
-	int AddSong(const std::string &, int = -1); // returns id of added song
-	int AddSong(NcmSong *, int = -1); // returns id of added song
 	bool AddRandomTag(mpd_tag_type, size_t, NcmRandom *rng);
 	bool AddRandomSongs(size_t number, const std::string &random_exclude_pattern, NcmRandom *rng);
 	bool Add(const std::string &path);

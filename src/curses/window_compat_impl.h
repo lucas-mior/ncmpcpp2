@@ -6,18 +6,7 @@
 namespace NC {
 
 
-inline const short Color::transparent = -1;
-inline const short Color::current = -2;
-
 inline Color Color::Default(0, 0, true, false);
-inline Color Color::Black(COLOR_BLACK, Color::current);
-inline Color Color::Red(COLOR_RED, Color::current);
-inline Color Color::Green(COLOR_GREEN, Color::current);
-inline Color Color::Yellow(COLOR_YELLOW, Color::current);
-inline Color Color::Blue(COLOR_BLUE, Color::current);
-inline Color Color::Magenta(COLOR_MAGENTA, Color::current);
-inline Color Color::Cyan(COLOR_CYAN, Color::current);
-inline Color Color::White(COLOR_WHITE, Color::current);
 inline Color Color::End(0, 0, false, true);
 
 inline int Color::pairNumber() const

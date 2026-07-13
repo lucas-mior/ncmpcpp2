@@ -1,6 +1,5 @@
 #include <cassert>
 #include <cerrno>
-#include <chrono>
 #include <cstring>
 #include <cstdlib>
 #include <filesystem>
@@ -20,14 +19,12 @@
 #include "global.h"
 #include "ui_state.h"
 #include "screens/screen_cpp_legacy.h"
-#include "screen_actions.h"
 #include "mpdpp.h"
 #include "helpers_legacy.h"
 #include "statusbar.h"
 #include "status.h"
 #include "utility/comparators.h"
 #include "utility/conversion.h"
-#include "utility/scoped_value.h"
 
 #include "cbase/base_macros.h"
 #include "curses/menu_impl.h"
@@ -55,16 +52,6 @@
 namespace ph = std::placeholders;
 
 namespace {
-
-std::string songTimeString(unsigned length)
-{
-	char buffer[64];
-	int32 len;
-
-	len = ncm_helpers_show_song_time(
-		length, buffer, static_cast<int32>(sizeof(buffer)));
-	return std::string(buffer, static_cast<size_t>(len));
-}
 
 bool currentSongFromNative(MPD::Song &song)
 {
@@ -313,29 +300,6 @@ bool statusbarMainPromptHook(char *text, void *)
 	return ncm_statusbar_main_hook(text, promptTextLen(text));
 }
 
-bool applyFilterPromptHook(char *text, void *)
-{
-	NcmError error = {};
-
-	traceStatus(true, false);
-	ncm_error_clear(&error);
-	(void)current_screen_apply_filter(text, promptTextLen(text), &error);
-	return true;
-}
-
-bool findItemPromptHook(char *text, void *data)
-{
-	NcmError error = {};
-	SearchDirection *direction = static_cast<SearchDirection *>(data);
-
-	traceStatus(true, false);
-	ncm_error_clear(&error);
-	(void)current_screen_search(
-		*direction, text, promptTextLen(text), Config.wrapped_search,
-		false, &error);
-	return true;
-}
-
 bool promptString(std::string &result,
                   const std::string &initial = std::string(),
                   NcPromptHook hook = nullptr,
@@ -418,14 +382,7 @@ bool scrollTagCanBeRun(NC::List *&list, const SongList *&songs);
 void scrollTagUpRun(NC::List *list, const SongList *songs, enum NcmSongGetter getter);
 void scrollTagDownRun(NC::List *list, const SongList *songs, enum NcmSongGetter getter);
 
-void seek(SearchDirection sd);
-void findItem(const SearchDirection direction);
 void listsChangeFinisher();
-
-NcmActionType toNcmActionType(Actions::Type type)
-{
-	return static_cast<NcmActionType>(type);
-}
 
 bool actionHasNoLegacyImplementation(NcmActionType type)
 {
@@ -505,12 +462,6 @@ NcmBindingRuntime *bindingsLegacyRuntime()
 bool bindingsLegacyExecute(NcmBinding *binding)
 {
 	return ncm_binding_execute_runtime(binding, bindingsLegacyRuntime());
-}
-
-bool bindingsLegacyHasRunnableAction(NcmBinding *binding, Actions::Type type)
-{
-	return ncm_binding_has_runnable_action(binding, toNcmActionType(type),
-	                                       bindingsLegacyRuntime());
 }
 
 template <typename Iterator>
@@ -918,18 +869,6 @@ void JumpToParentDirectory::run()
 #	endif // HAVE_TAGLIB_H
 }
 
-bool RunAction::canBeRun()
-{
-	m_ha = dynamic_cast<HasActions *>(screenLegacyCurrent());
-	return m_ha != nullptr
-		&& m_ha->actionRunnable();
-}
-
-void RunAction::run()
-{
-	m_ha->runAction();
-}
-
 bool PreviousColumn::canBeRun()
 {
 	if (native_c_screen_media_library_is_current())
@@ -1204,36 +1143,6 @@ void DeleteStoredPlaylist::run()
 	myPlaylistEditor->requestPlaylistsUpdate();
 }
 
-bool ReplaySong::canBeRun()
-{
-	return ncm_status_state_current_song_position() >= 0;
-}
-
-void ReplaySong::run()
-{
-	Mpd.Play(ncm_status_state_current_song_position());
-}
-
-void PreviousSong::run()
-{
-	Mpd.Prev();
-}
-
-void NextSong::run()
-{
-	Mpd.Next();
-}
-
-bool Pause::canBeRun()
-{
-	return ncm_status_state_player() != NCM_STATUS_PLAYER_STOP;
-}
-
-void Pause::run()
-{
-	Mpd.Toggle();
-}
-
 void SavePlaylist::run()
 {
 
@@ -1267,43 +1176,6 @@ void SavePlaylist::run()
 			return;
 		}
 	}
-}
-
-void Stop::run()
-{
-	Mpd.Stop();
-}
-
-void Play::run()
-{
-	Mpd.Play();
-}
-
-void ExecuteCommand::run()
-{
-	ncm_action_runtime_run(nullptr, NCM_ACTION_EXECUTE_COMMAND);
-}
-
-bool MoveSortOrderUp::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-		nullptr, NCM_ACTION_MOVE_SORT_ORDER_UP);
-}
-
-void MoveSortOrderUp::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_MOVE_SORT_ORDER_UP);
-}
-
-bool MoveSortOrderDown::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-		nullptr, NCM_ACTION_MOVE_SORT_ORDER_DOWN);
-}
-
-void MoveSortOrderDown::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_MOVE_SORT_ORDER_DOWN);
 }
 
 bool MoveSelectedItemsUp::canBeRun()
@@ -1469,26 +1341,6 @@ void Load::run()
 	Mpd.LoadPlaylist(path);
 }
 
-bool SeekForward::canBeRun()
-{
-	return ncm_status_state_player() != NCM_STATUS_PLAYER_STOP && ncm_status_state_total_time() > 0;
-}
-
-void SeekForward::run()
-{
-	seek(NCM_SEARCH_DIRECTION_FORWARD);
-}
-
-bool SeekBackward::canBeRun()
-{
-	return ncm_status_state_player() != NCM_STATUS_PLAYER_STOP && ncm_status_state_total_time() > 0;
-}
-
-void SeekBackward::run()
-{
-	seek(NCM_SEARCH_DIRECTION_BACKWARD);
-}
-
 bool ToggleDisplayMode::canBeRun()
 {
 	return screenLegacyCurrent() == myPlaylist
@@ -1612,18 +1464,6 @@ void TogglePlayingSongCentering::run()
 	}
 }
 
-void UpdateDatabase::run()
-{
-	if (screenLegacyCurrent() == myBrowser)
-		Mpd.UpdateDirectory(myBrowser->currentDirectory());
-#	ifdef HAVE_TAGLIB_H
-	else if (screenLegacyCurrent() == myTagEditor)
-		Mpd.UpdateDirectory(myTagEditor->CurrentDir());
-#	endif // HAVE_TAGLIB_H
-	else
-		Mpd.UpdateDirectory("/");
-}
-
 bool JumpToPlayingSong::canBeRun()
 {
 	m_song = myPlaylist->nowPlayingSong();
@@ -1654,11 +1494,6 @@ void JumpToPlayingSong::run()
 	}
 }
 
-void ToggleRepeat::run()
-{
-	Mpd.SetRepeat(!ncm_status_state_repeat());
-}
-
 bool Shuffle::canBeRun()
 {
 	if (screenLegacyCurrent() != myPlaylist)
@@ -1676,11 +1511,6 @@ void Shuffle::run()
 	auto begin = myPlaylist->main().begin();
 	Mpd.ShuffleRange(m_begin-begin, m_end-begin);
 	Statusbar::print("Range shuffled");
-}
-
-void ToggleRandom::run()
-{
-	Mpd.SetRandom(!ncm_status_state_random());
 }
 
 bool SaveTagChanges::canBeRun()
@@ -1707,21 +1537,6 @@ void SaveTagChanges::run()
 		myTagEditor->runAction();
 	}
 #	endif // HAVE_TAGLIB_H
-}
-
-void ToggleSingle::run()
-{
-	Mpd.SetSingle(!ncm_status_state_single());
-}
-
-void ToggleConsume::run()
-{
-	Mpd.SetConsume(!ncm_status_state_consume());
-}
-
-void ToggleCrossfade::run()
-{
-	Mpd.SetCrossfade(ncm_status_state_crossfade() ? 0 : Config.crossfade_time);
 }
 
 void SetCrossfade::run()
@@ -2097,16 +1912,6 @@ void JumpToBrowser::run()
 	myBrowser->locateSong(m_song);
 }
 
-bool JumpToMediaLibrary::canBeRun()
-{
-	return currentSongFromNative(m_song);
-}
-
-void JumpToMediaLibrary::run()
-{
-	(void)locateNativeMediaLibrarySong(m_song, true);
-}
-
 bool JumpToPlaylistEditor::canBeRun()
 {
 	return screenLegacyCurrent() == myBrowser
@@ -2410,16 +2215,6 @@ void ClearPlaylist::run()
 	Statusbar::printf("Playlist \"%1%\" cleared", playlist);
 }
 
-bool SortPlaylist::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SORT_PLAYLIST);
-}
-
-void SortPlaylist::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SORT_PLAYLIST);
-}
-
 bool ReversePlaylist::canBeRun()
 {
 	if (screenLegacyCurrent() != myPlaylist)
@@ -2440,58 +2235,6 @@ void ReversePlaylist::run()
 		Mpd.Swap(m_begin->value().getPosition(), m_end->value().getPosition());
 	Mpd.CommitCommandsList();
 	Statusbar::print("Range reversed");
-}
-
-bool ApplyFilter::canBeRun()
-{
-	return current_screen_allows_filter();
-}
-
-void ApplyFilter::run()
-{
-	NcmStringView filter_view;
-	std::string filter;
-
-	filter_view = current_screen_current_filter();
-	if (filter_view.data != nullptr && filter_view.len > 0)
-		filter.assign(filter_view.data,
-		              static_cast<size_t>(filter_view.len));
-	if (!filter.empty())
-	{
-		NcmError error = {};
-
-		(void)current_screen_apply_filter(
-			const_cast<char *>(filter.data()),
-			static_cast<int32>(filter.size()), &error);
-	}
-
-	{
-		ScopedValue<bool> disabled_autocenter_mode(Config.autocenter_mode, false);
-		Statusbar::ScopedLock slock;
-
-		Statusbar::put() << "Apply filter: ";
-		if (!promptString(filter, filter, applyFilterPromptHook,
-		                  nullptr, false))
-		{
-			NcmError error = {};
-
-			(void)current_screen_apply_filter(
-				const_cast<char *>(filter.data()),
-				static_cast<int32>(filter.size()), &error);
-			Statusbar::print("Action cancelled");
-			return;
-		}
-	}
-
-	if (filter.empty())
-		Statusbar::printf("Filtering disabled");
-	else
-		Statusbar::printf("Using filter \"%1%\"", filter);
-
-	if (screenLegacyCurrent() == myPlaylist)
-		myPlaylist->reloadTotalLength();
-
-	listsChangeFinisher();
 }
 
 bool Find::canBeRun()
@@ -2554,28 +2297,6 @@ void Find::run()
 	else
 		Statusbar::print("No matching patterns found");
 	s->main().flush();
-}
-
-bool FindItemBackward::canBeRun()
-{
-	return current_screen_allows_search();
-}
-
-void FindItemForward::run()
-{
-	findItem(NCM_SEARCH_DIRECTION_FORWARD);
-	listsChangeFinisher();
-}
-
-bool FindItemForward::canBeRun()
-{
-	return current_screen_allows_search();
-}
-
-void FindItemBackward::run()
-{
-	findItem(NCM_SEARCH_DIRECTION_BACKWARD);
-	listsChangeFinisher();
 }
 
 bool NextFoundItem::canBeRun()
@@ -2813,21 +2534,6 @@ void ToggleLibraryTagType::run()
 	}
 }
 
-bool ToggleMediaLibrarySortMode::canBeRun()
-{
-	return native_c_screen_media_library_is_current();
-}
-
-void ToggleMediaLibrarySortMode::run()
-{
-	bool sort_by_mtime;
-
-	sort_by_mtime = native_media_library_screen_toggle_sort_mode(
-	    native_c_screen_media_library());
-	Statusbar::printf("Sorting library by: %1%",
-	                  sort_by_mtime ? "modification time" : "name");
-}
-
 bool FetchLyricsInBackground::canBeRun()
 {
 	return ncm_action_runtime_can_run(nullptr,
@@ -2968,11 +2674,6 @@ void ShowLyrics::run()
 	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHOW_LYRICS);
 }
 
-void Quit::run()
-{
-	ExitMainLoop = true;
-}
-
 void NextScreen::run()
 {
 	if (Config.screen_switcher_previous)
@@ -3069,33 +2770,6 @@ void ChangeBrowseMode::run()
 	myBrowser->changeBrowseMode();
 }
 
-bool ShowMediaLibrary::canBeRun()
-{
-	return !native_c_screen_media_library_is_current()
-#	ifdef HAVE_TAGLIB_H
-	    && screenLegacyCurrent() != myTinyTagEditor
-#	endif // HAVE_TAGLIB_H
-	;
-}
-
-void ShowMediaLibrary::run()
-{
-	native_c_screen_media_library_register();
-	native_c_screen_media_library_switch_to();
-}
-
-bool ToggleMediaLibraryColumnsMode::canBeRun()
-{
-	return native_c_screen_media_library_is_current();
-}
-
-void ToggleMediaLibraryColumnsMode::run()
-{
-	native_media_library_screen_toggle_columns_mode(
-	    native_c_screen_media_library());
-	nc_screen_refresh(native_c_screen_media_library_native());
-}
-
 bool ShowPlaylistEditor::canBeRun()
 {
 	return screenLegacyCurrent() != myPlaylistEditor
@@ -3188,7 +2862,6 @@ void populateActions()
 	auto insert_action = [](Actions::BaseAction *a) {
 		AvailableActions.at(static_cast<size_t>(a->type())).reset(a);
 	};
-	insert_action(new Actions::Dummy());
 	insert_action(new Actions::UpdateEnvironment());
 	insert_action(new Actions::MouseEvent());
 	insert_action(new Actions::ScrollUp());
@@ -3203,7 +2876,6 @@ void populateActions()
 	insert_action(new Actions::MoveEnd());
 	insert_action(new Actions::ToggleInterface());
 	insert_action(new Actions::JumpToParentDirectory());
-	insert_action(new Actions::RunAction());
 	insert_action(new Actions::SelectItem());
 	insert_action(new Actions::SelectRange());
 	insert_action(new Actions::PreviousColumn());
@@ -3216,39 +2888,22 @@ void populateActions()
 	insert_action(new Actions::DeletePlaylistItems());
 	insert_action(new Actions::DeleteStoredPlaylist());
 	insert_action(new Actions::DeleteBrowserItems());
-	insert_action(new Actions::ReplaySong());
-	insert_action(new Actions::PreviousSong());
-	insert_action(new Actions::NextSong());
-	insert_action(new Actions::Pause());
-	insert_action(new Actions::Stop());
-	insert_action(new Actions::Play());
-	insert_action(new Actions::ExecuteCommand());
 	insert_action(new Actions::SavePlaylist());
-	insert_action(new Actions::MoveSortOrderUp());
-	insert_action(new Actions::MoveSortOrderDown());
 	insert_action(new Actions::MoveSelectedItemsUp());
 	insert_action(new Actions::MoveSelectedItemsDown());
 	insert_action(new Actions::MoveSelectedItemsTo());
 	insert_action(new Actions::Add());
 	insert_action(new Actions::Load());
 	insert_action(new Actions::PlayItem());
-	insert_action(new Actions::SeekForward());
-	insert_action(new Actions::SeekBackward());
 	insert_action(new Actions::ToggleDisplayMode());
 	insert_action(new Actions::ToggleSeparatorsBetweenAlbums());
 	insert_action(new Actions::ToggleLyricsUpdateOnSongChange());
 	insert_action(new Actions::ToggleLyricsFetcher());
 	insert_action(new Actions::ToggleFetchingLyricsInBackground());
 	insert_action(new Actions::TogglePlayingSongCentering());
-	insert_action(new Actions::UpdateDatabase());
 	insert_action(new Actions::JumpToPlayingSong());
-	insert_action(new Actions::ToggleRepeat());
 	insert_action(new Actions::Shuffle());
-	insert_action(new Actions::ToggleRandom());
 	insert_action(new Actions::SaveTagChanges());
-	insert_action(new Actions::ToggleSingle());
-	insert_action(new Actions::ToggleConsume());
-	insert_action(new Actions::ToggleCrossfade());
 	insert_action(new Actions::SetCrossfade());
 	insert_action(new Actions::SetVolume());
 	insert_action(new Actions::EnterDirectory());
@@ -3259,7 +2914,6 @@ void populateActions()
 	insert_action(new Actions::EditPlaylistName());
 	insert_action(new Actions::EditLyrics());
 	insert_action(new Actions::JumpToBrowser());
-	insert_action(new Actions::JumpToMediaLibrary());
 	insert_action(new Actions::JumpToPlaylistEditor());
 	insert_action(new Actions::ToggleScreenLock());
 	insert_action(new Actions::JumpToTagEditor());
@@ -3272,12 +2926,8 @@ void populateActions()
 	insert_action(new Actions::CropPlaylist());
 	insert_action(new Actions::ClearMainPlaylist());
 	insert_action(new Actions::ClearPlaylist());
-	insert_action(new Actions::SortPlaylist());
 	insert_action(new Actions::ReversePlaylist());
-	insert_action(new Actions::ApplyFilter());
 	insert_action(new Actions::Find());
-	insert_action(new Actions::FindItemForward());
-	insert_action(new Actions::FindItemBackward());
 	insert_action(new Actions::NextFoundItem());
 	insert_action(new Actions::PreviousFoundItem());
 	insert_action(new Actions::ToggleFindMode());
@@ -3288,7 +2938,6 @@ void populateActions()
 	insert_action(new Actions::AddRandomItems());
 	insert_action(new Actions::ToggleBrowserSortMode());
 	insert_action(new Actions::ToggleLibraryTagType());
-	insert_action(new Actions::ToggleMediaLibrarySortMode());
 	insert_action(new Actions::FetchLyricsInBackground());
 	insert_action(new Actions::RefetchLyrics());
 	insert_action(new Actions::SetSelectedItemsPriority());
@@ -3297,15 +2946,12 @@ void populateActions()
 	insert_action(new Actions::ShowSongInfo());
 	insert_action(new Actions::ShowArtistInfo());
 	insert_action(new Actions::ShowLyrics());
-	insert_action(new Actions::Quit());
 	insert_action(new Actions::NextScreen());
 	insert_action(new Actions::PreviousScreen());
 	insert_action(new Actions::ShowHelp());
 	insert_action(new Actions::ShowPlaylist());
 	insert_action(new Actions::ShowBrowser());
 	insert_action(new Actions::ChangeBrowseMode());
-	insert_action(new Actions::ShowMediaLibrary());
-	insert_action(new Actions::ToggleMediaLibraryColumnsMode());
 	insert_action(new Actions::ShowPlaylistEditor());
 	insert_action(new Actions::ShowTagEditor());
 	insert_action(new Actions::ShowOutputs());
@@ -3379,154 +3025,6 @@ void scrollTagDownRun(NC::List *list, const SongList *songs, enum NcmSongGetter 
 		}
 		list->highlight(it-front);
 	}
-}
-
-void seek(SearchDirection sd)
-{
-
-	if (!ncm_status_state_total_time())
-	{
-		Statusbar::print("Unknown item length");
-		return;
-	}
-
-	Progressbar::ScopedLock progressbar_lock;
-	Statusbar::ScopedLock statusbar_lock;
-
-	unsigned songpos = ncm_status_state_elapsed_time();
-	auto t = global_timer;
-
-	NC::Window::ScopedTimeout stimeout{*static_cast<NC::Window *>(ui_state_footer_legacy_window()), BaseScreen::defaultWindowTimeout};
-
-	// Accept single action of a given type or action chain for which all actions
-	// can be run and one of them is of the given type. This will still not work
-	// in some contrived cases, but allows for more flexibility than accepting
-	// single actions only.
-	auto hasRunnableAction = [](NcmBindingSlice bindings,
-	                            Actions::Type type) {
-		for (int32 i = 0; i < bindings.len; i += 1)
-		{
-			if (bindingsLegacyHasRunnableAction(bindings.data + i, type))
-				return true;
-		}
-		return false;
-	};
-
-	global_seeking_in_progress = true;
-	while (true)
-	{
-		traceStatus(true, false);
-
-		int64 elapsed_seconds = global_timer_elapsed_seconds(t);
-		unsigned howmuch = Config.incremental_seeking
-		                 ? static_cast<unsigned>(elapsed_seconds/2)+Config.seek_time
-		                 : Config.seek_time;
-
-		NcKey input = ncm_read_key(static_cast<NC::Window *>(ui_state_footer_legacy_window())->nativeWindow());
-
-		switch (sd)
-		{
-		case NCM_SEARCH_DIRECTION_BACKWARD:
-			if (songpos > 0)
-			{
-				if (songpos < howmuch)
-					songpos = 0;
-				else
-					songpos -= howmuch;
-			}
-			break;
-		case NCM_SEARCH_DIRECTION_FORWARD:
-			if (songpos < ncm_status_state_total_time())
-				songpos = std::min(songpos + howmuch, ncm_status_state_total_time());
-			break;
-		};
-
-		std::string tracklength;
-		// FIXME: merge this with the code in status.cpp
-		switch (Config.design)
-		{
-			case NCM_DESIGN_CLASSIC:
-				tracklength = " [";
-				if (Config.display_remaining_time)
-				{
-					tracklength += "-";
-					tracklength += songTimeString(ncm_status_state_total_time()-songpos);
-				}
-				else
-					tracklength += songTimeString(songpos);
-				tracklength += "/";
-				tracklength += songTimeString(ncm_status_state_total_time());
-				tracklength += "]";
-				*static_cast<NC::Window *>(ui_state_footer_legacy_window()) << NC::XY(static_cast<NC::Window *>(ui_state_footer_legacy_window())->getWidth()-tracklength.length(), 1)
-				         << Config.statusbar_time_color
-				         << tracklength
-				         << NC::FormattedColor::End<>(Config.statusbar_time_color);
-				break;
-			case NCM_DESIGN_ALTERNATIVE:
-				if (Config.display_remaining_time)
-				{
-					tracklength = "-";
-					tracklength += songTimeString(ncm_status_state_total_time()-songpos);
-				}
-				else
-					tracklength = songTimeString(songpos);
-				tracklength += "/";
-				tracklength += songTimeString(ncm_status_state_total_time());
-				*static_cast<NC::Window *>(ui_state_header_legacy_window()) << NC::XY(0, 0)
-				         << Config.statusbar_time_color
-				         << tracklength
-				         << NC::FormattedColor::End<>(Config.statusbar_time_color)
-				         << " ";
-				static_cast<NC::Window *>(ui_state_header_legacy_window())->refresh();
-				break;
-		}
-		ncm_progressbar_draw(songpos, ncm_status_state_total_time());
-		static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
-
-		auto k = ncm_bindings_configuration_get(&Bindings, input);
-		if (hasRunnableAction(k, Actions::Type::SeekBackward))
-			sd = NCM_SEARCH_DIRECTION_BACKWARD;
-		else if (hasRunnableAction(k, Actions::Type::SeekForward))
-			sd = NCM_SEARCH_DIRECTION_FORWARD;
-		else
-			break;
-	}
-	global_seeking_in_progress = false;
-	Mpd.Seek(ncm_status_state_current_song_position(), songpos);
-}
-
-void findItem(const SearchDirection direction)
-{
-	SearchDirection prompt_direction = direction;
-	std::string constraint;
-
-	assert(current_screen_allows_search());
-
-	{
-		ScopedValue<bool> disabled_autocenter_mode(Config.autocenter_mode, false);
-		Statusbar::ScopedLock slock;
-
-		Statusbar::put() << stringFormat("Find %1%: ", direction);
-		if (!promptString(constraint, constraint, findItemPromptHook,
-		                  &prompt_direction, false))
-		{
-			NcmError error = {};
-
-			(void)current_screen_search(
-				direction, nullptr, 0, Config.wrapped_search,
-				false, &error);
-			Statusbar::print("Action cancelled");
-			return;
-		}
-	}
-
-	if (constraint.empty())
-	{
-		Statusbar::printf("Constraint unset");
-		current_screen_clear_search_constraint();
-	}
-	else
-		Statusbar::printf("Using constraint \"%1%\"", constraint);
 }
 
 void listsChangeFinisher()

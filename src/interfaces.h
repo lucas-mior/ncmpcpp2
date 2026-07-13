@@ -57,9 +57,6 @@ struct Tabbable
 	void setPreviousScreen(BaseScreen *screen) {
 		m_previous_screen = screen;
 	}
-	BaseScreen *previousScreen() const {
-		return m_previous_screen;
-	}
 	
 private:
 	BaseScreen *m_previous_screen;
