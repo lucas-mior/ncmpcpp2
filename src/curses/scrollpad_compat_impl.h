@@ -3,8 +3,6 @@
 
 #include <iostream>
 
-#include "utility/storage_kind.h"
-
 namespace {
 
 template <typename BeginT, typename EndT>
@@ -69,11 +67,6 @@ inline void Scrollpad::clear()
 	syncFromC();
 }
 
-inline const std::string &Scrollpad::buffer()
-{
-	return m_buffer.str();
-}
-
 inline void Scrollpad::flush()
 {
 	nc_scrollpad_flush(&m_scrollpad, cWindow(), m_buffer.cBuffer());
@@ -85,27 +78,10 @@ inline void Scrollpad::reset()
 	nc_scrollpad_reset(&m_scrollpad);
 }
 
-inline bool Scrollpad::setProperties(const Color &begin, const std::string &s,
-                              const Color &end, Regex::Flags flags, size_t id)
-{
-	return regexSearch(m_buffer, begin, s, end, flags, id);
-}
-
 inline bool Scrollpad::setProperties(enum NcFormat begin, const std::string &s,
                               enum NcFormat end, Regex::Flags flags, size_t id)
 {
 	return regexSearch(m_buffer, begin, s, end, flags, id);
-}
-
-inline bool Scrollpad::setProperties(const FormattedColor &fc, const std::string &s,
-                              Regex::Flags flags, size_t id)
-{
-	return regexSearch(m_buffer,
-	                   fc,
-	                   s,
-	                   FormattedColor::End<StorageKind::Value>(fc),
-	                   flags,
-	                   id);
 }
 
 inline void Scrollpad::removeProperties(size_t id)

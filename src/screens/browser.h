@@ -309,7 +309,7 @@ inline void getLocalDirectoryRecursively(std::vector<MPD::Song> &songs,
     if (Config.browser_sort_mode != NCM_SORT_MODE_NONE)
     {
         std::stable_sort(songs.begin()+sort_offset, songs.end(),
-                         LocaleBasedSorting(std::locale(),
+                         LocaleBasedSorting(
                                             Config.ignore_leading_the));
     }
 }
@@ -905,7 +905,7 @@ inline void Browser::getDirectory(std::string directory)
     {
         std::stable_sort(
             w.begin() + (is_root ? 0 : 1), w.end(),
-            LocaleBasedItemSorting(std::locale(), Config.ignore_leading_the,
+            LocaleBasedItemSorting(Config.ignore_leading_the,
                                    Config.browser_sort_mode));
     }
 

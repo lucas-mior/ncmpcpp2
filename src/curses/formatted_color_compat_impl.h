@@ -1,8 +1,6 @@
 #if !defined(SRC_CURSES_FORMATTED_COLOR_COMPAT_IMPL_H)
 #define SRC_CURSES_FORMATTED_COLOR_COMPAT_IMPL_H
 
-#include <istream>
-
 namespace {
 
 void verifyFormats(const NC::FormattedColor::Formats &formats)
@@ -134,45 +132,5 @@ inline enum NcFormat NC::fromNcFormat(NcFormat format)
 	return format;
 }
 
-
-inline std::istream &NC::operator>>(std::istream &is, NC::FormattedColor &fc)
-{
-	NC::Color c;
-	is >> c;
-	if (!is.eof() && is.peek() == ':')
-	{
-		is.get();
-		NC::FormattedColor::Formats formats;
-		while (!is.eof() && isalpha(is.peek()))
-		{
-			char flag = is.get();
-			switch (flag)
-			{
-			case 'b':
-				formats.push_back(NC_FORMAT_BOLD);
-				break;
-			case 'u':
-				formats.push_back(NC_FORMAT_UNDERLINE);
-				break;
-			case 'r':
-				formats.push_back(NC_FORMAT_REVERSE);
-				break;
-			case 'a':
-				formats.push_back(NC_FORMAT_ALT_CHARSET);
-				break;
-			case 'i':
-				formats.push_back(NC_FORMAT_ITALIC);
-				break;
-			default:
-				is.setstate(std::ios::failbit);
-				break;
-			}
-		}
-		fc = NC::FormattedColor(c, std::move(formats));
-	}
-	else
-		fc = NC::FormattedColor(c, {});
-	return is;
-}
 
 #endif /* SRC_CURSES_FORMATTED_COLOR_COMPAT_IMPL_H */

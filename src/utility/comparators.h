@@ -1,8 +1,6 @@
 #ifndef NCMPCPP_UTILITY_COMPARATORS_H
 #define NCMPCPP_UTILITY_COMPARATORS_H
 
-#include <cstring>
-#include <locale>
 #include <stdexcept>
 #include <string>
 
@@ -14,23 +12,18 @@
 
 class LocaleStringComparison
 {
-	std::locale m_locale;
 	bool m_ignore_the;
 
 public:
-	LocaleStringComparison(const std::locale &loc, bool ignore_the)
-	: m_locale(loc), m_ignore_the(ignore_the) { }
+	LocaleStringComparison(bool ignore_the)
+	: m_ignore_the(ignore_the) { }
 
-	int operator()(const char *a, const char *b) const {
-		return compare(a, strlen(a), b, strlen(b));
-	}
 	int operator()(const std::string &a, const std::string &b) const {
 		return compare(a.c_str(), a.length(), b.c_str(), b.length());
 	}
 
 	int compare(const char *a, size_t a_len,
 	            const char *b, size_t b_len) const {
-		(void)m_locale;
 		return ncm_compare_locale_strings(
 			const_cast<char *>(a), static_cast<int32>(a_len),
 			const_cast<char *>(b), static_cast<int32>(b_len),
@@ -43,7 +36,7 @@ class LocaleBasedSorting
 	LocaleStringComparison m_cmp;
 
 public:
-	LocaleBasedSorting(const std::locale &loc, bool ignore_the) : m_cmp(loc, ignore_the) { }
+	LocaleBasedSorting(bool ignore_the) : m_cmp(ignore_the) { }
 
 	bool operator()(const std::string &a, const std::string &b) const {
 		return m_cmp(a, b) < 0;
@@ -69,8 +62,8 @@ class LocaleBasedItemSorting
 	SortMode m_sort_mode;
 
 public:
-	LocaleBasedItemSorting(const std::locale &loc, bool ignore_the, SortMode mode)
-	: m_cmp(loc, ignore_the), m_sort_mode(mode) { }
+	LocaleBasedItemSorting(bool ignore_the, SortMode mode)
+	: m_cmp(ignore_the), m_sort_mode(mode) { }
 
 	bool operator()(const MPD::Item &a, const MPD::Item &b) const {
 		bool result = false;

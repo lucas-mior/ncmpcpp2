@@ -12,7 +12,6 @@
 #include "song_list.h"
 #include "status.h"
 #include "utility/string.h"
-#include "utility/utf8.h"
 
 enum ReapplyFilter { Yes, No };
 
@@ -378,101 +377,6 @@ std::string getSharedDirectory(Iterator first, Iterator last)
 			break;
 	}
 	return result;
-}
-
-template <typename Iterator>
-bool addSongsToPlaylist(Iterator first, Iterator last, bool play, int position)
-{
-	bool result = true;
-	auto addSongNoError = [&](Iterator it) -> int {
-		try
-		{
-			return Mpd.AddSong(it->cSong(), position);
-		}
-		catch (MPD::ServerError &e)
-		{
-			ncm_status_handle_server_error_value(
-			    &global_mpd, static_cast<int32>(e.code()),
-			    const_cast<char *>(e.what()), -1);
-			result = false;
-			return -1;
-		}
-	};
-
-	if (last-first >= 1)
-	{
-		int id;
-		while (true)
-		{
-			id = addSongNoError(first);
-			if (id >= 0)
-				break;
-			++first;
-			if (first == last)
-				return result;
-		}
-
-		if (position == -1)
-		{
-			++first;
-			for(; first != last; ++first)
-				addSongNoError(first);
-		}
-		else
-		{
-			++position;
-			--last;
-			for (; first != last; --last)
-				addSongNoError(last);
-		}
-		if (play)
-			Mpd.PlayID(id);
-	}
-
-	return result;
-}
-
-template <typename T> void ShowTime(T &buf, size_t length, bool short_names)
-{
-	const unsigned MINUTE = 60;
-	const unsigned HOUR = 60*MINUTE;
-	const unsigned DAY = 24*HOUR;
-	const unsigned YEAR = 365*DAY;
-
-	unsigned years = length/YEAR;
-	if (years)
-	{
-		buf << years << (short_names ? "y" : (years == 1 ? " year" : " years"));
-		length -= years*YEAR;
-		if (length)
-			buf << ", ";
-	}
-	unsigned days = length/DAY;
-	if (days)
-	{
-		buf << days << (short_names ? "d" : (days == 1 ? " day" : " days"));
-		length -= days*DAY;
-		if (length)
-			buf << ", ";
-	}
-	unsigned hours = length/HOUR;
-	if (hours)
-	{
-		buf << hours << (short_names ? "h" : (hours == 1 ? " hour" : " hours"));
-		length -= hours*HOUR;
-		if (length)
-			buf << ", ";
-	}
-	unsigned minutes = length/MINUTE;
-	if (minutes)
-	{
-		buf << minutes << (short_names ? "m" : (minutes == 1 ? " minute" : " minutes"));
-		length -= minutes*MINUTE;
-		if (length)
-			buf << ", ";
-	}
-	if (length)
-		buf << length << (short_names ? "s" : (length == 1 ? " second" : " seconds"));
 }
 
 template <typename BufferT>

@@ -23,8 +23,6 @@
 /// wrappers over original curses library.
 namespace NC {
 
-std::string keyToString(NcKey key);
-
 /// Thrown if Ctrl-C or Ctrl-G is pressed during the call to Window::getString()
 /// @see Window::getString()
 struct PromptAborted : std::exception
@@ -86,8 +84,6 @@ private:
 	std::tuple<short, short, bool, bool> m_impl;
 };
 
-std::istream &operator>>(std::istream &is, Color &f);
-
 typedef std::optional<Color> Border;
 
 /// Terminal manipulation functions
@@ -95,25 +91,14 @@ enum class TermManip { ClearToEOL };
 
 enum NcFormat reverseFormat(enum NcFormat fmt);
 
-/// Initializes curses screen and sets some additional attributes
-/// @param enable_colors enables colors
-void initScreen(bool enable_colors, bool enable_mouse);
-
 /// Initializes readline callbacks used by legacy prompts.
 void initReadline();
-
-// Get the maximum supported color index (but only once initScreen() has been
-// successfully called). This might be less than the advertised COLORS.
-int colorCount();
 
 /// Pauses the screen (e.g. for running an external command)
 void pauseScreen();
 
 /// Unpauses the screen
 void unpauseScreen();
-
-/// Destroys the screen
-void destroyScreen();
 
 /// Struct used for going to given coordinates
 /// @see Window::operator<<()
@@ -131,23 +116,6 @@ struct Window
 	// inside Window::getString() function
 	/// @see Window::getString()
 	typedef std::function<bool(const char *)> PromptHook;
-
-	/// Sets helper to a specific value for the current scope
-	struct ScopedPromptHook
-	{
-		template <typename HelperT>
-		ScopedPromptHook(Window &w, HelperT &&helper) noexcept
-		: m_w(w), m_hook(std::move(w.m_prompt_hook)) {
-			m_w.m_prompt_hook = std::forward<HelperT>(helper);
-		}
-		~ScopedPromptHook() noexcept {
-			m_w.m_prompt_hook = std::move(m_hook);
-		}
-
-	private:
-		Window &m_w;
-		PromptHook m_hook;
-	};
 
 	struct ScopedTimeout
 	{
@@ -195,30 +163,9 @@ struct Window
 	/// @return window's width
 	size_t getWidth() const;
 	
-	/// @return window's height
-	size_t getHeight() const;
-	
-	/// @return X position of left upper window's corner
-	size_t getStartX() const;
-	
-	/// @return Y position of left upper window's corner
-	size_t getStarty() const;
-	
-	/// @return window's title
-	const std::string &getTitle() const;
-	
-	/// @return current window's color
-	const Color &getColor() const;
-	
-	/// @return current window's border
-	const Border &getBorder() const;
-	
 	/// @return current window's timeout
 	int getTimeout() const;
 	
-	/// @return current mouse event if readKey() returned KEY_MOUSE
-	const MEVENT &getMouseEvent();
-
 	/// Reads the string from standard input using readline library.
 	/// @param base base string that has to be edited
 	/// @param length max length of the string, unlimited by default
@@ -265,11 +212,6 @@ struct Window
 	/// @return true if helper was run, false otherwise
 	bool runPromptHook(const char *arg, bool *done) const;
 
-	/// Sets window's base color
-	/// @param fg foregound base color
-	/// @param bg background base color
-	void setBaseColor(const Color &color);
-	
 	/// Sets window's border
 	/// @param border new window's border
 	void setBorder(Border border);
@@ -306,23 +248,8 @@ struct Window
 	/// Cleares the window
 	virtual void clear();
 	
-	/// Adds given file descriptor to the list that will be polled in
-	/// readKey() along with stdin and callback that will be invoked
-	/// when there is data waiting for reading in it
-	/// @param fd file descriptor
-	/// @param callback callback
-	void addFDCallback(int fd, void (*callback)());
-	
 	/// Clears list of file descriptors and their callbacks
 	void clearFDCallbacksList();
-	
-	/// Checks if list of file descriptors is empty
-	/// @return true if list is empty, false otherwise
-	bool FDCallbacksListEmpty() const;
-	
-	/// Reads key from standard input (or takes it from input queue)
-	/// and writes it into read_key variable
-	NcKey readKey();
 	
 	/// Push single character into input queue, so it can get consumed by ReadKey
 	void pushChar(NcKey ch);
@@ -345,29 +272,6 @@ struct Window
 	NcWindow *nativeWindow();
 	const NcWindow *nativeWindow() const;
 protected:
-	/// Sets colors of window (interal use only)
-	/// @param fg foregound color
-	/// @param bg background color
-	///
-	void setColor(Color c);
-	
-	/// Changes dimensions of window, called from resize()
-	/// @param width new window's width
-	/// @param height new window's height
-	/// @see resize()
-	///
-	void adjustDimensions(size_t width, size_t height);
-	
-	/// Deletes old window and creates new. It's called by resize(),
-	/// SetBorder() or setTitle() since internally windows are
-	/// handled as curses pads and change in size requires to delete
-	/// them and create again, there is no way to change size of pad.
-	/// @see SetBorder()
-	/// @see setTitle()
-	/// @see resize()
-	///
-	virtual void recreate(size_t width, size_t height);
-
 	NcWindow *cWindow();
 	const NcWindow *cWindow() const;
 	void syncFromC();

@@ -16,7 +16,6 @@ struct ConversionError
 	const std::string &value() { return m_source_value; }
 	
 private:
-	std::string m_target_type;
 	std::string m_source_value;
 };
 
@@ -36,13 +35,6 @@ struct OutOfBounds : std::exception
 	{
 		throw OutOfBounds(stringFormat(
 			"value is out of bounds ([%1%, ->) expected, %2% given)", lbound, value));
-	}
-	
-	template <typename Type>
-	[[noreturn]] static void raiseUpper(const Type &value, const Type &ubound)
-	{
-		throw OutOfBounds(stringFormat(
-			"value is out of bounds ((<-, %1%] expected, %2% given)", ubound, value));
 	}
 	
 	virtual const char *what() const noexcept override { return m_error_message.c_str(); }
@@ -94,13 +86,6 @@ void lowerBoundCheck(const Type &value, const Type &lbound)
 {
 	if (value < lbound)
 		OutOfBounds::raiseLower(value, lbound);
-}
-
-template <typename Type>
-void upperBoundCheck(const Type &value, const Type &ubound)
-{
-	if (value > ubound)
-		OutOfBounds::raiseUpper(value, ubound);
 }
 
 #endif // NCMPCPP_UTILITY_CONVERSION_H

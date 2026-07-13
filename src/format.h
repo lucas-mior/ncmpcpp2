@@ -2,11 +2,9 @@
 #define NCMPCPP_HAVE_FORMAT_H
 
 #include <memory>
-#include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "c/ncm_format.h"
 #include "curses/formatted_color.h"
@@ -24,43 +22,6 @@ const unsigned OutputSwitch = NCM_FORMAT_FLAG_OUTPUT_SWITCH;
 const unsigned Tag = NCM_FORMAT_FLAG_TAG;
 const unsigned All = NCM_FORMAT_FLAG_ALL;
 }
-
-struct OutputSwitch { };
-
-struct SongTag
-{
-	SongTag(enum NcmSongGetter getter_, unsigned delimiter_ = 0)
-	: m_getter(getter_), m_delimiter(delimiter_)
-	{ }
-
-	enum NcmSongGetter getter() const { return m_getter; }
-	unsigned delimiter() const { return m_delimiter; }
-
-private:
-	enum NcmSongGetter m_getter;
-	unsigned m_delimiter;
-};
-
-inline bool operator==(const SongTag &lhs, const SongTag &rhs)
-{
-	return lhs.getter() == rhs.getter()
-	    && lhs.delimiter() == rhs.delimiter();
-}
-
-inline bool operator!=(const SongTag &lhs, const SongTag &rhs)
-{
-	return !(lhs == rhs);
-}
-
-template <typename CharT>
-using TagVector = std::vector<
-	std::pair<
-		std::optional<SongTag>,
-		std::basic_string<CharT>
-		>
-	>;
-
-enum class Result { Empty, Missing, Ok };
 
 template <typename CharT>
 class AST
@@ -210,11 +171,6 @@ inline NcmSong *songImpl(const MPD::Song *song)
 
 }
 
-template <typename CharT, typename VisitorT>
-void visit(VisitorT &, const AST<CharT> &)
-{
-}
-
 template <typename CharT, typename ItemT>
 void print(const AST<CharT> &ast, NC::Menu<ItemT> &menu,
            const MPD::Song *song, NC::BasicBuffer<CharT> *buffer,
@@ -259,12 +215,6 @@ std::basic_string<CharT> stringify(const AST<CharT> &ast,
 	return Detail::takeBuffer(result);
 }
 
-template <typename CharT>
-TagVector<CharT> flatten(const AST<CharT> &, const MPD::Song &)
-{
-	return TagVector<CharT>();
-}
-
 inline AST<char> parse(const std::string &s, const unsigned flags = Flags::All)
 {
 	NcmFormatAst ast;
@@ -278,29 +228,6 @@ inline AST<char> parse(const std::string &s, const unsigned flags = Flags::All)
 		std::string message(error.message);
 		ncm_format_ast_destroy(&ast);
 		throw std::runtime_error(message);
-	}
-	return AST<char>(&ast);
-}
-
-inline AST<char> makeColumnsFormat(const std::vector<std::string> &columns)
-{
-	NcmFormatAst ast;
-
-	ncm_format_ast_init(&ast);
-	for (auto column = columns.begin(); column != columns.end(); ++column)
-	{
-		enum NcmSongGetter getters[32];
-		int32 getters_len = 0;
-
-		for (char type : *column)
-		{
-			enum NcmSongGetter getter = ncm_song_getter_from_char(type);
-			if (getter != NCM_SONG_GETTER_NONE && getters_len < 32)
-				getters[getters_len++] = getter;
-		}
-		ncm_format_ast_append_first_of_getters(&ast, getters, getters_len);
-		if (column + 1 != columns.end())
-			ncm_format_ast_append_text(&ast, const_cast<char *>(" "), 1);
 	}
 	return AST<char>(&ast);
 }

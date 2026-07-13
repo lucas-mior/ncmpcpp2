@@ -65,16 +65,6 @@ struct ScopedLock {
     }
 };
 
-inline bool
-isUnlocked() {
-    return ncm_progressbar_is_unlocked();
-}
-
-inline void
-draw(unsigned elapsed, unsigned time) {
-    ncm_progressbar_draw(elapsed, time);
-}
-
 }
 
 namespace Statusbar {
@@ -89,29 +79,10 @@ struct ScopedLock {
     }
 };
 
-inline bool
-isUnlocked() {
-    return ncm_statusbar_is_unlocked();
-}
-
-inline void
-tryRedraw() {
-    ncm_statusbar_try_redraw();
-}
-
 inline NC::Window &
 put() {
     ncm_statusbar_put();
     return *static_cast<NC::Window *>(ui_state_footer_legacy_window());
-}
-
-namespace Helpers {
-
-inline void
-mpd() {
-    ncm_statusbar_mpd_idle_callback();
-}
-
 }
 
 inline void
@@ -129,14 +100,6 @@ template <typename FormatT, typename... Args>
 void
 printf(FormatT &&fmt, Args&&... args) {
     print(ncm_statusbar_message_delay_time(),
-          stringFormat(std::forward<FormatT>(fmt),
-                       std::forward<Args>(args)...));
-}
-
-template <typename FormatT, typename... Args>
-void
-printf(int delay, FormatT &&fmt, Args&&... args) {
-    print(delay,
           stringFormat(std::forward<FormatT>(fmt),
                        std::forward<Args>(args)...));
 }

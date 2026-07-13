@@ -5,9 +5,28 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include <type_traits>
 #include <utility>
 
-#include "utility/functional.h"
+// convert string to appropriate type
+template <typename TargetT, typename SourceT>
+struct convertString
+{
+	static std::basic_string<TargetT> apply(const std::basic_string<SourceT> &s)
+	{
+		static_assert(std::is_same_v<TargetT, SourceT>,
+		              "non-UTF-8 string conversions are not supported");
+		return s;
+	}
+};
+template <typename TargetT>
+struct convertString<TargetT, TargetT>
+{
+	static const std::basic_string<TargetT> &apply(const std::basic_string<TargetT> &s)
+	{
+		return s;
+	}
+};
 
 namespace {
 
@@ -53,10 +72,6 @@ public:
 	Flags()
 		: m_syntax(std::regex_constants::extended)
 		, m_literal(false)
-	{ }
-
-	Flags(int)
-		: Flags()
 	{ }
 
 	Flags(Syntax syntax, bool literal = false)

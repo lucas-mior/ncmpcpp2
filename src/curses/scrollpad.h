@@ -23,16 +23,10 @@ struct Scrollpad: public Window
 	virtual void resize(size_t new_width, size_t new_height) override;
 	virtual void clear() override;
 	
-	const std::string &buffer();
-	
 	void flush();
 	void reset();
 	
-	bool setProperties(const Color &begin, const std::string &s, const Color &end,
-	                   Regex::Flags flags, size_t id = -2);
 	bool setProperties(enum NcFormat begin, const std::string &s, enum NcFormat end,
-	                   Regex::Flags flags, size_t id = -2);
-	bool setProperties(const FormattedColor &fc, const std::string &s,
 	                   Regex::Flags flags, size_t id = -2);
 	void removeProperties(size_t id = -2);
 	

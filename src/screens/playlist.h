@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -76,7 +75,6 @@ struct Playlist: Screen<SongMenu>, Filterable, HasSongs, Searchable, Tabbable
 
     MPD::Song nowPlayingSong();
     void locateSong(const MPD::Song &s);
-    void enableHighlighting();
     void setSelectedItemsPriority(int prio);
 
     bool checkForSong(const MPD::Song &s);
@@ -100,7 +98,6 @@ private:
                                           void *user);
     static bool nativeUpdateSongCallback(NcmSong *song, void *user);
     static void nativeEndUpdateCallback(void *user);
-    std::string getTotalLength();
     std::string songToString(const MPD::Song &s);
     bool playlistEntryMatcher(const Regex::Regex &rx,
                               const MPD::Song &s);
@@ -453,76 +450,6 @@ inline void Playlist::locateSong(const MPD::Song &s)
             Statusbar::print("Song is filtered out");
     }
     syncNative();
-}
-
-inline void Playlist::enableHighlighting()
-{
-    w.setHighlighting(true);
-    m_timer = global_timer;
-    syncNative();
-}
-
-inline std::string Playlist::getTotalLength()
-{
-    std::ostringstream result;
-
-    if (m_reload_total_length)
-    {
-        bool was_filtered = w.isFiltered();
-        if (was_filtered)
-            w.showAllItems();
-        m_total_length = 0;
-        for (const auto &s : w)
-            m_total_length += s.value().getDuration();
-        if (was_filtered)
-            w.showFilteredItems();
-        m_reload_total_length = false;
-    }
-    if (Config.playlist_show_remaining_time && m_reload_remaining)
-    {
-        int current_position = ncm_status_state_current_song_position();
-        bool was_filtered = w.isFiltered();
-
-        if (was_filtered)
-            w.showAllItems();
-        m_remaining_time = 0;
-        if (current_position >= 0)
-        {
-            for (size_t i = static_cast<size_t>(current_position);
-                 i < w.size(); ++i)
-                m_remaining_time += w[i].value().getDuration();
-        }
-        if (was_filtered)
-            w.showFilteredItems();
-        m_reload_remaining = false;
-    }
-
-    result << '(' << w.size() << (w.size() == 1 ? " item" : " items");
-
-    if (w.isFiltered())
-    {
-        bool was_filtered = w.isFiltered();
-        if (was_filtered)
-            w.showAllItems();
-        result << " (out of " << w.size() << ")";
-        if (was_filtered)
-            w.showFilteredItems();
-    }
-
-    if (m_total_length)
-    {
-        result << ", length: ";
-        result << MPD::Song::ShowTime(m_total_length);
-    }
-    if (Config.playlist_show_remaining_time
-        && m_remaining_time
-        && w.size() > 1)
-    {
-        result << ", remaining: ";
-        result << MPD::Song::ShowTime(m_remaining_time);
-    }
-    result << ')';
-    return result.str();
 }
 
 inline void Playlist::setSelectedItemsPriority(int prio)

@@ -69,26 +69,15 @@ struct Song
 	virtual std::string getName(unsigned idx = 0) const;
 	virtual std::string getDirectory(unsigned idx = 0) const;
 	virtual std::string getArtist(unsigned idx = 0) const;
-	virtual std::string getTitle(unsigned idx = 0) const;
 	virtual std::string getAlbum(unsigned idx = 0) const;
 	virtual std::string getAlbumArtist(unsigned idx = 0) const;
-	virtual std::string getTrack(unsigned idx = 0) const;
-	virtual std::string getTrackNumber(unsigned idx = 0) const;
-	virtual std::string getDate(unsigned idx = 0) const;
-	virtual std::string getGenre(unsigned idx = 0) const;
-	virtual std::string getComposer(unsigned idx = 0) const;
-	virtual std::string getPerformer(unsigned idx = 0) const;
-	virtual std::string getDisc(unsigned idx = 0) const;
-	virtual std::string getComment(unsigned idx = 0) const;
 	virtual std::string getLength(unsigned idx = 0) const;
-	virtual std::string getPriority(unsigned idx = 0) const;
 
 	virtual std::string getTags(enum NcmSongGetter getter) const;
 
 	virtual unsigned getDuration() const;
 	virtual unsigned getPosition() const;
 	virtual unsigned getID() const;
-	virtual unsigned getPrio() const;
 	virtual time_t getMTime() const;
 
 	virtual bool isFromDatabase() const;
@@ -106,15 +95,6 @@ struct Song
 	bool operator!=(const Song &rhs) const
 	{
 		return !(operator==(rhs));
-	}
-
-	const char *c_uri() const
-	{
-		NcmStringView uri;
-		if (ncm_song_uri_view(const_cast<NcmSong *>(&m_song), 0, &uri))
-			return uri.data;
-		else
-			return "";
 	}
 
 	NcmSong *cSong()
@@ -264,12 +244,6 @@ inline std::string Song::getArtist(unsigned idx) const
 	return get(NCM_SONG_GETTER_ARTIST, idx);
 }
 
-inline std::string Song::getTitle(unsigned idx) const
-{
-	assert(!empty());
-	return get(NCM_SONG_GETTER_TITLE, idx);
-}
-
 inline std::string Song::getAlbum(unsigned idx) const
 {
 	assert(!empty());
@@ -282,64 +256,10 @@ inline std::string Song::getAlbumArtist(unsigned idx) const
 	return get(NCM_SONG_GETTER_ALBUM_ARTIST, idx);
 }
 
-inline std::string Song::getTrack(unsigned idx) const
-{
-	assert(!empty());
-	return get(NCM_SONG_GETTER_TRACK, idx);
-}
-
-inline std::string Song::getTrackNumber(unsigned idx) const
-{
-	assert(!empty());
-	return get(NCM_SONG_GETTER_TRACK_NUMBER, idx);
-}
-
-inline std::string Song::getDate(unsigned idx) const
-{
-	assert(!empty());
-	return get(NCM_SONG_GETTER_DATE, idx);
-}
-
-inline std::string Song::getGenre(unsigned idx) const
-{
-	assert(!empty());
-	return get(NCM_SONG_GETTER_GENRE, idx);
-}
-
-inline std::string Song::getComposer(unsigned idx) const
-{
-	assert(!empty());
-	return get(NCM_SONG_GETTER_COMPOSER, idx);
-}
-
-inline std::string Song::getPerformer(unsigned idx) const
-{
-	assert(!empty());
-	return get(NCM_SONG_GETTER_PERFORMER, idx);
-}
-
-inline std::string Song::getDisc(unsigned idx) const
-{
-	assert(!empty());
-	return get(NCM_SONG_GETTER_DISC, idx);
-}
-
-inline std::string Song::getComment(unsigned idx) const
-{
-	assert(!empty());
-	return get(NCM_SONG_GETTER_COMMENT, idx);
-}
-
 inline std::string Song::getLength(unsigned idx) const
 {
 	assert(!empty());
 	return get(NCM_SONG_GETTER_LENGTH, idx);
-}
-
-inline std::string Song::getPriority(unsigned idx) const
-{
-	assert(!empty());
-	return get(NCM_SONG_GETTER_PRIORITY, idx);
 }
 
 inline std::string Song::getTags(enum NcmSongGetter getter) const
@@ -367,12 +287,6 @@ inline unsigned Song::getID() const
 {
 	assert(!empty());
 	return ncm_song_id(const_cast<NcmSong *>(&m_song));
-}
-
-inline unsigned Song::getPrio() const
-{
-	assert(!empty());
-	return ncm_song_priority(const_cast<NcmSong *>(&m_song));
 }
 
 inline time_t Song::getMTime() const
