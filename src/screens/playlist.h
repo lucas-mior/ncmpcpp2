@@ -20,7 +20,6 @@
 #include "screens/native_c_screens.h"
 #include "screens/nc_playlist.h"
 #include "screens/screen_cpp_compat.h"
-#include "screens/screen_cpp_switcher.h"
 #include "settings_legacy.h"
 #include "song.h"
 #include "song_list.h"
