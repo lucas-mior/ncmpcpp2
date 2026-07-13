@@ -69,6 +69,24 @@ C_TEST_BINS := $(patsubst tests/%.c,$(BUILD_DIR)/tests/%,$(C_TEST_SRCS))
 CXX_TEST_BINS := $(patsubst tests/%.cpp,$(BUILD_DIR)/tests/%,$(CXX_TEST_SRCS))
 TEST_BINS := $(C_TEST_BINS) $(CXX_TEST_BINS)
 
+SEARCH_ENGINE_SCREEN_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=nc_window_init \
+	-Wl,--wrap=nc_window_destroy \
+	-Wl,--wrap=nc_window_set_title \
+	-Wl,--wrap=nc_window_move_to \
+	-Wl,--wrap=nc_window_resize \
+	-Wl,--wrap=nc_window_width \
+	-Wl,--wrap=nc_window_height \
+	-Wl,--wrap=nc_window_display \
+	-Wl,--wrap=nc_window_has_coords \
+	-Wl,--wrap=nc_window_print_char \
+	-Wl,--wrap=nc_buffer_apply_property \
+	-Wl,--wrap=nc_menu_refresh \
+	-Wl,--wrap=nc_screen_get_resize_params \
+	-Wl,--wrap=ui_state_main_start_y \
+	-Wl,--wrap=ui_state_main_height
+$(BUILD_DIR)/tests/c_search_engine_screen_test: \
+	LDFLAGS += $(SEARCH_ENGINE_SCREEN_TEST_WRAP_FLAGS)
 PLAYLIST_SORT_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=ncm_mpd_client_start_command_list \
 	-Wl,--wrap=ncm_mpd_client_swap \

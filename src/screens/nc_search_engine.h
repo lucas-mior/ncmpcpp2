@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "c/ncm_app_arrays.h"
+#include "c/ncm_enums.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_regex.h"
 #include "curses/nc_app_menus.h"
@@ -60,14 +61,6 @@ typedef struct NativeSearchEngineHooks {
 } NativeSearchEngineHooks;
 
 typedef struct NativeSearchEngineBridge {
-    NcWindow *(*active_window)(void *user);
-    void (*refresh)(void *user);
-    void (*refresh_window)(void *user);
-    void (*scroll)(void *user, enum NcScroll where);
-    void (*switch_to)(void *user);
-    void (*resize)(void *user);
-    void (*update)(void *user);
-    void (*mouse_button_pressed)(void *user, MEVENT event);
     bool (*can_run_current)(void *user);
     bool (*run_current)(void *user);
     void (*static_row_changed)(void *user, int32 row);
@@ -120,6 +113,11 @@ NcWindow *native_search_engine_screen_window(NativeSearchEngineScreen *screen);
 void native_search_engine_screen_set_geometry(
     NativeSearchEngineScreen *screen, int64 start_x, int64 width,
     int64 main_start_y, int64 main_height);
+void native_search_engine_screen_set_mouse_config(
+    NativeSearchEngineScreen *screen, int64 lines_scrolled,
+    bool whole_page);
+void native_search_engine_screen_set_display_mode(
+    NativeSearchEngineScreen *screen, enum DisplayMode mode);
 void native_search_engine_screen_clear(NativeSearchEngineScreen *screen);
 char *native_search_engine_constraint_name(int32 idx);
 char *native_search_engine_search_mode_name(
@@ -144,6 +142,8 @@ NcmStringView native_search_engine_screen_title(
 bool native_search_engine_screen_set_column_title(
     NativeSearchEngineScreen *screen, char *title, int32 title_len);
 NcmStringView native_search_engine_screen_column_title(
+    NativeSearchEngineScreen *screen);
+void native_search_engine_screen_update_column_title(
     NativeSearchEngineScreen *screen);
 void native_search_engine_screen_prepare_static_rows(
     NativeSearchEngineScreen *screen);
