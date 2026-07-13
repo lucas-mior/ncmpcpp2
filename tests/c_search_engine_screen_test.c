@@ -15,6 +15,18 @@ typedef struct SearchHookFixture {
     NcmBuffer constraint;
 } SearchHookFixture;
 
+typedef struct ExternalHookFixture {
+    int32 database_calls;
+    int32 playlist_calls;
+    int32 prompt_calls;
+    int32 status_calls;
+    int32 add_calls;
+    bool play;
+    NcmBuffer prompt_label;
+    NcmBuffer prompt_initial;
+    NcmBuffer status;
+} ExternalHookFixture;
+
 typedef struct RunCurrentFixture {
     int32 calls;
     bool runnable;
@@ -43,6 +55,8 @@ static char *search_mode_rows[] = {
 };
 
 static void test_search_query_construction(void);
+static void test_owned_screen_state(void);
+static void test_external_operation_hooks(void);
 static void test_static_row_layout(void);
 static void test_search_modes_and_sources(void);
 static void test_search_result_row_layout(void);
@@ -66,12 +80,24 @@ static bool collect_results(void *user, bool search_in_database,
                             enum NativeSearchEngineSearchMode mode,
                             NcmBuffer *constraints, int32 constraint_count,
                             NcmSongArray *songs, NcmError *error);
+static bool list_database_songs(void *user, NcmSongArray *songs,
+                                NcmError *error);
+static bool snapshot_playlist(void *user, NcmSongArray *songs,
+                              NcmError *error);
+static enum NativeSearchEnginePromptResult prompt_constraint(
+    void *user, char *label, int32 label_len, NcmBuffer *initial,
+    NcmBuffer *result);
+static void status_message(void *user, char *message, int32 message_len);
+static bool add_song(void *user, NcmSong *song, bool play,
+                     NcmError *error);
 static bool can_run_current(void *user);
 static bool run_current(void *user);
 
 int
 main(void) {
     test_search_query_construction();
+    test_owned_screen_state();
+    test_external_operation_hooks();
     test_static_row_layout();
     test_search_modes_and_sources();
     test_search_result_row_layout();
@@ -143,6 +169,208 @@ assert_song_uri(NcmSong *song, char *expected, int32 expected_len) {
     assert(ncm_song_uri_view(song, 0, &view));
     assert(ncm_string_equal(view.data, view.len,
                             expected, expected_len));
+    return;
+}
+
+static void
+test_owned_screen_state(void) {
+    NativeSearchEngineScreen screen;
+    NcmStringView view;
+
+    init_screen(&screen);
+    assert(!native_search_engine_screen_is_prepared(&screen));
+    assert(!native_search_engine_screen_has_result_rows(&screen));
+    assert(native_search_engine_screen_result_count(&screen) == 0);
+    assert(!native_search_engine_screen_constraints_locked(&screen));
+
+    view = native_search_engine_screen_title(&screen);
+    assert(ncm_string_equal(view.data, view.len,
+                            LIT_ARGS("Search engine")));
+    assert(native_search_engine_screen_set_title(
+        &screen, LIT_ARGS("Search results")));
+    view = native_search_engine_screen_title(&screen);
+    assert(ncm_string_equal(view.data, view.len,
+                            LIT_ARGS("Search results")));
+    assert(native_search_engine_screen_set_column_title(
+        &screen, LIT_ARGS("Artist | Album | Title")));
+    view = native_search_engine_screen_column_title(&screen);
+    assert(ncm_string_equal(view.data, view.len,
+                            LIT_ARGS("Artist | Album | Title")));
+
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 3, LIT_ARGS("needle")));
+    assert(native_search_engine_screen_set_search_mode(
+        &screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_REGEX));
+    native_search_engine_screen_set_search_source(&screen, false);
+    native_search_engine_screen_prepare_static_rows(&screen);
+    assert(native_search_engine_screen_is_prepared(&screen));
+
+    add_result_songs(&screen);
+    assert(native_search_engine_screen_add_result_summary(&screen, 2));
+    assert(native_search_engine_screen_has_result_rows(&screen));
+    assert(native_search_engine_screen_result_count(&screen) == 2);
+    native_search_engine_screen_set_constraints_locked(&screen, true);
+    assert(native_search_engine_screen_constraints_locked(&screen));
+
+    native_search_engine_screen_clear(&screen);
+    assert(!native_search_engine_screen_is_prepared(&screen));
+    assert(!native_search_engine_screen_has_result_rows(&screen));
+    assert(native_search_engine_screen_result_count(&screen) == 0);
+    assert(!native_search_engine_screen_constraints_locked(&screen));
+    assert(native_search_engine_screen_search_mode(&screen)
+           == NATIVE_SEARCH_ENGINE_SEARCH_MODE_REGEX);
+    assert(!native_search_engine_screen_searches_database(&screen));
+    view = native_search_engine_screen_constraint(&screen, 3);
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("needle")));
+
+    native_search_engine_screen_destroy(&screen);
+    return;
+}
+
+static bool
+list_database_songs(void *user, NcmSongArray *songs, NcmError *error) {
+    ExternalHookFixture *fixture;
+    NcmSong song;
+
+    (void)error;
+    fixture = user;
+    fixture->database_calls += 1;
+    ncm_song_init(&song);
+    assert(ncm_song_set_uri(&song, LIT_ARGS("database.flac")));
+    assert(ncm_song_array_append_copy(songs, &song));
+    ncm_song_destroy(&song);
+    return true;
+}
+
+static bool
+snapshot_playlist(void *user, NcmSongArray *songs, NcmError *error) {
+    ExternalHookFixture *fixture;
+    NcmSong song;
+
+    (void)error;
+    fixture = user;
+    fixture->playlist_calls += 1;
+    ncm_song_init(&song);
+    assert(ncm_song_set_uri(&song, LIT_ARGS("playlist.flac")));
+    assert(ncm_song_array_append_copy(songs, &song));
+    ncm_song_destroy(&song);
+    return true;
+}
+
+static enum NativeSearchEnginePromptResult
+prompt_constraint(void *user, char *label, int32 label_len,
+                  NcmBuffer *initial, NcmBuffer *result) {
+    ExternalHookFixture *fixture;
+
+    fixture = user;
+    fixture->prompt_calls += 1;
+    assert(ncm_buffer_set(&fixture->prompt_label, label, label_len));
+    assert(ncm_buffer_set(&fixture->prompt_initial,
+                          initial->data, initial->len));
+    assert(ncm_buffer_set(result, LIT_ARGS("new title")));
+    return NATIVE_SEARCH_ENGINE_PROMPT_ACCEPTED;
+}
+
+static void
+status_message(void *user, char *message, int32 message_len) {
+    ExternalHookFixture *fixture;
+
+    fixture = user;
+    fixture->status_calls += 1;
+    assert(ncm_buffer_set(&fixture->status, message, message_len));
+    return;
+}
+
+static bool
+add_song(void *user, NcmSong *song, bool play, NcmError *error) {
+    ExternalHookFixture *fixture;
+    NcmStringView uri;
+
+    (void)error;
+    fixture = user;
+    fixture->add_calls += 1;
+    fixture->play = play;
+    assert(ncm_song_uri_view(song, 0, &uri));
+    assert(ncm_string_equal(uri.data, uri.len, LIT_ARGS("result.flac")));
+    return true;
+}
+
+static void
+test_external_operation_hooks(void) {
+    NativeSearchEngineScreen screen;
+    NativeSearchEngineHooks hooks = {0};
+    ExternalHookFixture fixture = {0};
+    NcmSongArray songs;
+    NcmBuffer prompt_result;
+    NcmSong song;
+    NcmError error;
+
+    ncm_buffer_init(&fixture.prompt_label);
+    ncm_buffer_init(&fixture.prompt_initial);
+    ncm_buffer_init(&fixture.status);
+    init_screen(&screen);
+    ncm_song_array_init(&songs);
+    ncm_buffer_init(&prompt_result);
+    ncm_song_init(&song);
+
+    hooks.list_database_songs = list_database_songs;
+    hooks.snapshot_playlist = snapshot_playlist;
+    hooks.prompt_constraint = prompt_constraint;
+    hooks.status_message = status_message;
+    hooks.add_song = add_song;
+    hooks.user = &fixture;
+    native_search_engine_screen_set_hooks(&screen, hooks);
+    assert(native_search_engine_screen_set_constraint(
+        &screen, 3, LIT_ARGS("old title")));
+
+    ncm_error_clear(&error);
+    assert(native_search_engine_screen_list_database_songs(
+        &screen, &songs, &error));
+    assert(fixture.database_calls == 1);
+    assert(songs.len == 1);
+    assert_song_uri(&songs.items[0], LIT_ARGS("database.flac"));
+
+    ncm_song_array_clear(&songs);
+    ncm_error_clear(&error);
+    assert(native_search_engine_screen_snapshot_playlist(
+        &screen, &songs, &error));
+    assert(fixture.playlist_calls == 1);
+    assert(songs.len == 1);
+    assert_song_uri(&songs.items[0], LIT_ARGS("playlist.flac"));
+
+    assert(native_search_engine_screen_prompt_constraint(
+        &screen, 3, &prompt_result)
+           == NATIVE_SEARCH_ENGINE_PROMPT_ACCEPTED);
+    assert(fixture.prompt_calls == 1);
+    assert(ncm_string_equal(fixture.prompt_label.data,
+                            fixture.prompt_label.len,
+                            LIT_ARGS("Title")));
+    assert(ncm_string_equal(fixture.prompt_initial.data,
+                            fixture.prompt_initial.len,
+                            LIT_ARGS("old title")));
+    assert(ncm_string_equal(prompt_result.data, prompt_result.len,
+                            LIT_ARGS("new title")));
+
+    native_search_engine_screen_status_message(
+        &screen, LIT_ARGS("Searching..."));
+    assert(fixture.status_calls == 1);
+    assert(ncm_string_equal(fixture.status.data, fixture.status.len,
+                            LIT_ARGS("Searching...")));
+
+    assert(ncm_song_set_uri(&song, LIT_ARGS("result.flac")));
+    ncm_error_clear(&error);
+    assert(native_search_engine_screen_add_song(
+        &screen, &song, true, &error));
+    assert(fixture.add_calls == 1);
+    assert(fixture.play);
+
+    ncm_song_destroy(&song);
+    ncm_buffer_destroy(&prompt_result);
+    ncm_song_array_destroy(&songs);
+    native_search_engine_screen_destroy(&screen);
+    ncm_buffer_destroy(&fixture.status);
+    ncm_buffer_destroy(&fixture.prompt_initial);
+    ncm_buffer_destroy(&fixture.prompt_label);
     return;
 }
 
@@ -252,6 +480,8 @@ test_search_result_row_layout(void) {
     native_search_engine_screen_prepare_static_rows(&screen);
     add_result_songs(&screen);
     assert(native_search_engine_screen_add_result_summary(&screen, 2));
+    assert(native_search_engine_screen_has_result_rows(&screen));
+    assert(native_search_engine_screen_result_count(&screen) == 2);
     menu = native_search_engine_screen_menu(&screen);
 
     assert(nc_menu_all_item_count(menu)
@@ -297,6 +527,7 @@ test_blocked_constraint_flags(void) {
         menu, NATIVE_SEARCH_ENGINE_SECOND_SEPARATOR_ROW));
 
     native_search_engine_screen_set_constraints_locked(&screen, false);
+    assert(!native_search_engine_screen_constraints_locked(&screen));
     for (int32 i = 0; i <= NATIVE_SEARCH_ENGINE_SEARCH_BUTTON_ROW; i += 1) {
         assert(!nc_menu_position_is_inactive(menu, i));
     }
@@ -336,6 +567,10 @@ test_search_reset_contract(void) {
     assert(nc_menu_highlight(native_search_engine_screen_menu(&screen)) == 0);
     assert(nc_menu_beginning(native_search_engine_screen_menu(&screen)) == 0);
     assert(!screen.filter_enabled);
+    assert(native_search_engine_screen_is_prepared(&screen));
+    assert(!native_search_engine_screen_has_result_rows(&screen));
+    assert(native_search_engine_screen_result_count(&screen) == 0);
+    assert(!native_search_engine_screen_constraints_locked(&screen));
     assert(screen.filter_constraint.len == 0);
     assert(native_search_engine_screen_search_mode(&screen)
            == NATIVE_SEARCH_ENGINE_SEARCH_MODE_REGEX);
