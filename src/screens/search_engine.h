@@ -143,6 +143,9 @@ private:
     void Prepare();
     void Search();
     void syncNative();
+    void syncLegacyStaticRows();
+    void syncLegacyRow(int32 row);
+    void syncLegacyFindConstraint();
     void resizeNativeWindow();
     static NcWindow *nativeActiveWindowCallback(void *user);
     static void nativeRefreshCallback(void *user);
@@ -154,6 +157,7 @@ private:
     static void nativeMouseButtonPressedCallback(void *user, MEVENT event);
     static bool nativeCanRunCurrentCallback(void *user);
     static bool nativeRunCurrentCallback(void *user) noexcept;
+    static void nativeStaticRowChangedCallback(void *user, int32 row);
 
     // Temporary matcher for the legacy C++ menu. The native screen owns
     // the persisted search constraint.
@@ -269,6 +273,7 @@ inline SearchEngine::SearchEngine()
         bridge.mouse_button_pressed = nativeMouseButtonPressedCallback;
         bridge.can_run_current = nativeCanRunCurrentCallback;
         bridge.run_current = nativeRunCurrentCallback;
+        bridge.static_row_changed = nativeStaticRowChangedCallback;
         bridge.user = this;
         native_search_engine_screen_set_bridge(native_c_screen_search_engine(),
                                                bridge);
@@ -317,7 +322,8 @@ inline void SearchEngine::switchTo()
     native = native_c_screen_search_engine();
     if (!native_search_engine_screen_is_prepared(native) || w.empty())
         Prepare();
-    syncNative();
+    else
+        syncNative();
     nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
     app_controller_switch_to_screen(nativeScreen());
     drawHeader();
@@ -373,6 +379,12 @@ inline const std::string &SearchEngine::searchConstraint()
 
 inline void SearchEngine::setSearchConstraint(const std::string &constraint)
 {
+    NativeSearchEngineScreen *native;
+
+    native = native_c_screen_search_engine();
+    native_search_engine_screen_set_find_constraint(
+        native, const_cast<char *>(constraint.c_str()),
+        static_cast<int32>(constraint.size()));
     m_search_predicate = Regex::ItemFilter<SEItem>(
         constraint,
         Config.regex_type,
@@ -384,6 +396,8 @@ inline void SearchEngine::setSearchConstraint(const std::string &constraint)
 
 inline void SearchEngine::clearSearchConstraint()
 {
+    native_search_engine_screen_clear_find_constraint(
+        native_c_screen_search_engine());
     m_search_predicate.clear();
 }
 
@@ -440,10 +454,6 @@ inline void SearchEngine::runAction()
 
     native = native_c_screen_search_engine();
     option = w.choice();
-    if (option > NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT
-        && option < NATIVE_SEARCH_ENGINE_SEARCH_BUTTON_ROW)
-        w.current()->value().buffer().clear();
-
     if (option < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT)
     {
         NcmStringView view;
@@ -468,11 +478,6 @@ inline void SearchEngine::runAction()
             const_cast<char *>(value.c_str()),
             static_cast<int32>(value.size()));
 
-        w.current()->value().buffer().clear();
-        constraint.resize(13, ' ');
-        w.current()->value().buffer()
-            << NC_FORMAT_BOLD << constraint << NC_FORMAT_NO_BOLD << ": ";
-        ShowTag(w.current()->value().buffer(), value);
     }
     else if (option == NATIVE_SEARCH_ENGINE_SEARCH_SOURCE_ROW)
     {
@@ -483,9 +488,6 @@ inline void SearchEngine::runAction()
         native_search_engine_screen_set_search_source(
             native, search_in_database);
         Config.search_in_db = search_in_database;
-        w.current()->value().buffer()
-            << NC_FORMAT_BOLD << "Search in:" << NC_FORMAT_NO_BOLD << ' '
-            << (search_in_database ? "Database" : "Current playlist");
     }
     else if (option == NATIVE_SEARCH_ENGINE_SEARCH_MODE_ROW)
     {
@@ -498,9 +500,6 @@ inline void SearchEngine::runAction()
             next_mode = NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL;
         mode = static_cast<enum NativeSearchEngineSearchMode>(next_mode);
         native_search_engine_screen_set_search_mode(native, mode);
-        w.current()->value().buffer()
-            << NC_FORMAT_BOLD << "Search mode:" << NC_FORMAT_NO_BOLD << ' '
-            << native_search_engine_search_mode_name(mode);
     }
     else if (option == NATIVE_SEARCH_ENGINE_SEARCH_BUTTON_ROW)
     {
@@ -569,65 +568,13 @@ inline std::vector<MPD::Song> SearchEngine::getSelectedSongs()
 
 inline void SearchEngine::Prepare()
 {
-    NativeSearchEngineScreen *native;
-
-    native = native_c_screen_search_engine();
-    w.setTitle("");
-    w.clear();
-    w.resizeList(NATIVE_SEARCH_ENGINE_STATIC_ROW_COUNT-3);
-
-    for (auto &item : w)
-        item.setSelectable(false);
-
-    w.at(NATIVE_SEARCH_ENGINE_FIRST_SEPARATOR_ROW).setSeparator(true);
-    w.at(NATIVE_SEARCH_ENGINE_SECOND_SEPARATOR_ROW).setSeparator(true);
-
-    for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; ++i)
-    {
-        NcmStringView view;
-        char *name;
-        std::string constraint;
-        std::string value;
-
-        name = native_search_engine_constraint_name(i);
-        constraint = name;
-        constraint.resize(13, ' ');
-        view = native_search_engine_screen_constraint(native, i);
-        value.assign(view.data == nullptr ? "" : view.data,
-                     static_cast<size_t>(view.len));
-        w[static_cast<size_t>(i)].value().mkBuffer()
-            << NC_FORMAT_BOLD << constraint << NC_FORMAT_NO_BOLD << ": ";
-        ShowTag(w[static_cast<size_t>(i)].value().buffer(), value);
-    }
-
-    w.at(NATIVE_SEARCH_ENGINE_SEARCH_SOURCE_ROW).value().mkBuffer()
-        << NC_FORMAT_BOLD << "Search in:" << NC_FORMAT_NO_BOLD << ' '
-        << (native_search_engine_screen_searches_database(native)
-            ? "Database"
-            : "Current playlist");
-    w.at(NATIVE_SEARCH_ENGINE_SEARCH_MODE_ROW).value().mkBuffer()
-        << NC_FORMAT_BOLD << "Search mode:" << NC_FORMAT_NO_BOLD << ' '
-        << native_search_engine_search_mode_name(
-            native_search_engine_screen_search_mode(native));
-
-    w.at(NATIVE_SEARCH_ENGINE_SEARCH_BUTTON_ROW).value().mkBuffer()
-        << "Search";
-    w.at(NATIVE_SEARCH_ENGINE_RESET_BUTTON_ROW).value().mkBuffer()
-        << "Reset";
-    syncNative();
+    native_search_engine_screen_prepare_static_rows(
+        native_c_screen_search_engine());
 }
 
 inline void SearchEngine::reset()
 {
-    NativeSearchEngineScreen *native;
-
-    native = native_c_screen_search_engine();
-    native_search_engine_screen_reset(native);
-    w.clearFilter();
-    w.reset();
-    Prepare();
-    Statusbar::print("Search state reset");
-    syncNative();
+    native_search_engine_screen_reset(native_c_screen_search_engine());
 }
 
 inline void SearchEngine::Search()
@@ -841,6 +788,74 @@ inline void SearchEngine::syncNative()
         w.showFilteredItems();
 }
 
+inline void SearchEngine::syncLegacyStaticRows()
+{
+    w.clearFilter();
+    w.clear();
+    w.resizeList(NATIVE_SEARCH_ENGINE_RESET_BUTTON_ROW+1);
+    for (int32 i = 0; i <= NATIVE_SEARCH_ENGINE_RESET_BUTTON_ROW; ++i)
+        syncLegacyRow(i);
+    w.setTitle("");
+    w.reset();
+    syncLegacyFindConstraint();
+}
+
+inline void SearchEngine::syncLegacyRow(int32 row)
+{
+    NativeSearchEngineScreen *native;
+    NcSearchRow *native_row;
+    uint32 flags;
+    auto *legacy_row = static_cast<SearchEngineWindow::Item *>(nullptr);
+
+    if (row < 0 || static_cast<size_t>(row) >= w.size())
+        return;
+
+    native = native_c_screen_search_engine();
+    native_row = nc_search_row_menu_item_at(
+        native_search_engine_screen_rows(native), NC_MENU_ITEMS_ALL, row);
+    if (native_row == nullptr || native_row->is_song)
+        return;
+
+    legacy_row = &w.at(static_cast<size_t>(row));
+    flags = nc_menu_item_flags_at(
+        native_search_engine_screen_menu(native), NC_MENU_ITEMS_ALL, row);
+    if (!(flags & NC_MENU_ITEM_SEPARATOR))
+    {
+        NC::Buffer &buffer = legacy_row->value().mkBuffer();
+
+        nc_buffer_destroy(buffer.cBuffer());
+        nc_buffer_copy(buffer.cBuffer(), &native_row->buffer);
+    }
+    legacy_row->setSelectable(flags & NC_MENU_ITEM_SELECTABLE);
+    legacy_row->setSelected(flags & NC_MENU_ITEM_SELECTED);
+    legacy_row->setInactive(flags & NC_MENU_ITEM_INACTIVE);
+    legacy_row->setSeparator(flags & NC_MENU_ITEM_SEPARATOR);
+}
+
+inline void SearchEngine::syncLegacyFindConstraint()
+{
+    NativeSearchEngineScreen *native;
+    NcmStringView view;
+    std::string constraint;
+
+    native = native_c_screen_search_engine();
+    view = native_search_engine_screen_find_constraint(native);
+    constraint.assign(view.data == nullptr ? "" : view.data,
+                      static_cast<size_t>(view.len));
+    if (constraint.empty())
+    {
+        m_search_predicate.clear();
+        return;
+    }
+    m_search_predicate = Regex::ItemFilter<SEItem>(
+        constraint,
+        Config.regex_type,
+        std::bind(search_engine_compat::SEItemEntryMatcher,
+                  std::placeholders::_1,
+                  std::placeholders::_2,
+                  false));
+}
+
 inline void SearchEngine::resizeNativeWindow()
 {
     NativeSearchEngineScreen *native;
@@ -912,7 +927,8 @@ inline void SearchEngine::nativeSwitchToCallback(void *user)
     if (!native_search_engine_screen_is_prepared(native)
         || searcher->w.empty())
         searcher->Prepare();
-    searcher->syncNative();
+    else
+        searcher->syncNative();
 }
 
 inline void SearchEngine::nativeResizeCallback(void *user)
@@ -1012,6 +1028,19 @@ inline bool SearchEngine::nativeRunCurrentCallback(void *user) noexcept
         return false;
     }
     return false;
+}
+
+inline void SearchEngine::nativeStaticRowChangedCallback(void *user,
+                                                         int32 row)
+{
+    SearchEngine *searcher = static_cast<SearchEngine *>(user);
+
+    if (searcher == nullptr)
+        return;
+    if (row == NATIVE_SEARCH_ENGINE_ALL_STATIC_ROWS)
+        searcher->syncLegacyStaticRows();
+    else
+        searcher->syncLegacyRow(row);
 }
 
 namespace search_engine_compat {
