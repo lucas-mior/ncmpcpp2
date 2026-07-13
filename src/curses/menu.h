@@ -101,19 +101,9 @@ inline List::Properties::Type operator|(List::Properties::Type lhs, List::Proper
 {
 	return List::Properties::Type(unsigned(lhs) | unsigned(rhs));
 }
-inline List::Properties::Type &operator|=(List::Properties::Type &lhs, List::Properties::Type rhs)
-{
-	lhs = lhs | rhs;
-	return lhs;
-}
 inline List::Properties::Type operator&(List::Properties::Type lhs, List::Properties::Type rhs)
 {
 	return List::Properties::Type(unsigned(lhs) & unsigned(rhs));
-}
-inline List::Properties::Type &operator&=(List::Properties::Type &lhs, List::Properties::Type rhs)
-{
-	lhs = lhs & rhs;
-	return lhs;
 }
 
 // for range-based for loop
@@ -391,8 +381,6 @@ struct Menu: Window, List
 	typedef Utility::TransformIterator<
 		typename Item::template ExtractValue<Const::Yes>,
 		ConstIterator> ConstValueIterator;
-	typedef std::reverse_iterator<ValueIterator> ReverseValueIterator;
-	typedef std::reverse_iterator<ConstValueIterator> ConstReverseValueIterator;
 	
 	typedef Utility::TransformIterator<
 		typename Item::template ExtractProperties<Const::No>,
@@ -441,13 +429,6 @@ struct Menu: Window, List
 	
 	/// Adds separator to list
 	void addSeparator();
-	
-	/// Inserts a new option to the list at given position
-	void insertItem(size_t pos, ItemT item, Properties::Type properties = Properties::Selectable);
-	
-	/// Inserts separator to list at given position
-	/// @param pos initial position of inserted separator
-	void insertSeparator(size_t pos);
 	
 	/// Moves the highlighted position to the given line of window
 	/// @param y Y position of menu window to be highlighted
@@ -609,18 +590,6 @@ struct Menu: Window, List
 	ConstValueIterator currentV() const {
 		return ConstValueIterator(current());
 	}
-	ReverseValueIterator rcurrentV() {
-		if (empty())
-			return rendV();
-		else
-			return ReverseValueIterator(++currentV());
-	}
-	ConstReverseValueIterator rcurrentV() const {
-		if (empty())
-			return rendV();
-		else
-			return ConstReverseValueIterator(++currentV());
-	}
 	
 	Iterator begin() { return Iterator(&m_menu, activeItemSource(), 0); }
 	ConstIterator begin() const {
@@ -646,10 +615,6 @@ struct Menu: Window, List
 	ValueIterator endV() { return ValueIterator(end()); }
 	ConstValueIterator endV() const { return ConstValueIterator(end()); }
 	
-	ReverseValueIterator rbeginV() { return ReverseValueIterator(endV()); }
-	ConstReverseIterator rbeginV() const { return ConstReverseValueIterator(endV()); }
-	ReverseValueIterator rendV() { return ReverseValueIterator(beginV()); }
-	ConstReverseValueIterator rendV() const { return ConstReverseValueIterator(beginV()); }
 	
 	virtual List::Iterator currentP() override {
 		return List::Iterator(PropertiesIterator(current()));

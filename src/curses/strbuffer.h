@@ -256,25 +256,7 @@ public:
 		return *this;
 	}
 
-	// static variadic initializer. used instead of a proper constructor because
-	// it's too polymorphic and would end up invoked as a copy/move constructor.
-	template <typename... Args>
-	static BasicBuffer init(Args&&... args)
-	{
-		BasicBuffer result;
-		result.construct(std::forward<Args>(args)...);
-		return result;
-	}
-
 private:
-	void construct() { }
-	template <typename ArgT, typename... Args>
-	void construct(ArgT &&arg, Args&&... args)
-	{
-		*this << std::forward<ArgT>(arg);
-		construct(std::forward<Args>(args)...);
-	}
-
 	void invalidateStringCache()
 	{
 		m_string_cache_valid = false;

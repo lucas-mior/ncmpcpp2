@@ -33,16 +33,8 @@ struct MutableSong : public Song
 	virtual std::string get(enum NcmSongGetter getter,
 	                        unsigned idx = 0) const override;
 	virtual std::string getArtist(unsigned idx = 0) const override;
-	virtual std::string getTitle(unsigned idx = 0) const override;
 	virtual std::string getAlbum(unsigned idx = 0) const override;
 	virtual std::string getAlbumArtist(unsigned idx = 0) const override;
-	virtual std::string getTrack(unsigned idx = 0) const override;
-	virtual std::string getDate(unsigned idx = 0) const override;
-	virtual std::string getGenre(unsigned idx = 0) const override;
-	virtual std::string getComposer(unsigned idx = 0) const override;
-	virtual std::string getPerformer(unsigned idx = 0) const override;
-	virtual std::string getDisc(unsigned idx = 0) const override;
-	virtual std::string getComment(unsigned idx = 0) const override;
 	virtual std::string getTags(enum NcmSongGetter getter) const override;
 
 	std::string get(enum NcmTagsField field, unsigned idx = 0) const;
@@ -50,25 +42,13 @@ struct MutableSong : public Song
 	         unsigned idx = 0);
 	void setTags(enum NcmTagsField field, const std::string &value);
 
-	void setArtist(const std::string &value, unsigned idx = 0);
-	void setTitle(const std::string &value, unsigned idx = 0);
-	void setAlbum(const std::string &value, unsigned idx = 0);
-	void setAlbumArtist(const std::string &value, unsigned idx = 0);
 	void setTrack(const std::string &value, unsigned idx = 0);
-	void setDate(const std::string &value, unsigned idx = 0);
-	void setGenre(const std::string &value, unsigned idx = 0);
-	void setComposer(const std::string &value, unsigned idx = 0);
-	void setPerformer(const std::string &value, unsigned idx = 0);
-	void setDisc(const std::string &value, unsigned idx = 0);
-	void setComment(const std::string &value, unsigned idx = 0);
 
 	std::string getNewName() const;
 	void setNewName(const std::string &value);
 
 	virtual unsigned getDuration() const override;
 	virtual time_t getMTime() const override;
-	void setDuration(unsigned duration);
-	void setMTime(time_t mtime);
 
 	bool isModified() const;
 	void clearModifications();
@@ -182,11 +162,6 @@ inline std::string MutableSong::getArtist(unsigned idx) const
 	return get(NCM_TAGS_FIELD_ARTIST, idx);
 }
 
-inline std::string MutableSong::getTitle(unsigned idx) const
-{
-	return get(NCM_TAGS_FIELD_TITLE, idx);
-}
-
 inline std::string MutableSong::getAlbum(unsigned idx) const
 {
 	return get(NCM_TAGS_FIELD_ALBUM, idx);
@@ -197,96 +172,9 @@ inline std::string MutableSong::getAlbumArtist(unsigned idx) const
 	return get(NCM_TAGS_FIELD_ALBUM_ARTIST, idx);
 }
 
-inline std::string MutableSong::getTrack(unsigned idx) const
-{
-	return get(NCM_TAGS_FIELD_TRACK, idx);
-}
-
-inline std::string MutableSong::getDate(unsigned idx) const
-{
-	return get(NCM_TAGS_FIELD_DATE, idx);
-}
-
-inline std::string MutableSong::getGenre(unsigned idx) const
-{
-	return get(NCM_TAGS_FIELD_GENRE, idx);
-}
-
-inline std::string MutableSong::getComposer(unsigned idx) const
-{
-	return get(NCM_TAGS_FIELD_COMPOSER, idx);
-}
-
-inline std::string MutableSong::getPerformer(unsigned idx) const
-{
-	return get(NCM_TAGS_FIELD_PERFORMER, idx);
-}
-
-inline std::string MutableSong::getDisc(unsigned idx) const
-{
-	return get(NCM_TAGS_FIELD_DISC, idx);
-}
-
-inline std::string MutableSong::getComment(unsigned idx) const
-{
-	return get(NCM_TAGS_FIELD_COMMENT, idx);
-}
-
-inline void MutableSong::setArtist(const std::string &value, unsigned idx)
-{
-	set(NCM_TAGS_FIELD_ARTIST, value, idx);
-}
-
-inline void MutableSong::setTitle(const std::string &value, unsigned idx)
-{
-	set(NCM_TAGS_FIELD_TITLE, value, idx);
-}
-
-inline void MutableSong::setAlbum(const std::string &value, unsigned idx)
-{
-	set(NCM_TAGS_FIELD_ALBUM, value, idx);
-}
-
-inline void MutableSong::setAlbumArtist(const std::string &value,
-                                        unsigned idx)
-{
-	set(NCM_TAGS_FIELD_ALBUM_ARTIST, value, idx);
-}
-
 inline void MutableSong::setTrack(const std::string &value, unsigned idx)
 {
 	set(NCM_TAGS_FIELD_TRACK, value, idx);
-}
-
-inline void MutableSong::setDate(const std::string &value, unsigned idx)
-{
-	set(NCM_TAGS_FIELD_DATE, value, idx);
-}
-
-inline void MutableSong::setGenre(const std::string &value, unsigned idx)
-{
-	set(NCM_TAGS_FIELD_GENRE, value, idx);
-}
-
-inline void MutableSong::setComposer(const std::string &value, unsigned idx)
-{
-	set(NCM_TAGS_FIELD_COMPOSER, value, idx);
-}
-
-inline void MutableSong::setPerformer(const std::string &value,
-                                      unsigned idx)
-{
-	set(NCM_TAGS_FIELD_PERFORMER, value, idx);
-}
-
-inline void MutableSong::setDisc(const std::string &value, unsigned idx)
-{
-	set(NCM_TAGS_FIELD_DISC, value, idx);
-}
-
-inline void MutableSong::setComment(const std::string &value, unsigned idx)
-{
-	set(NCM_TAGS_FIELD_COMMENT, value, idx);
 }
 
 inline std::string MutableSong::getTags(enum NcmSongGetter getter) const
@@ -343,16 +231,6 @@ inline time_t MutableSong::getMTime() const
 		return static_cast<time_t>(mtime);
 	else
 		return Song::getMTime();
-}
-
-inline void MutableSong::setDuration(unsigned int duration)
-{
-	ncm_mutable_song_set_duration(&m_mutable, static_cast<uint32>(duration));
-}
-
-inline void MutableSong::setMTime(time_t mtime)
-{
-	ncm_mutable_song_set_mtime(&m_mutable, static_cast<int64>(mtime));
 }
 
 inline bool MutableSong::isModified() const

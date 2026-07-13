@@ -629,11 +629,6 @@ void resizeScreen(bool reload_main_window)
 	refresh();
 }
 
-void setWindowsDimensions()
-{
-	ncmpcpp_legacy_set_windows_dimensions();
-}
-
 bool confirmAction(const std::string &description)
 {
 	Statusbar::ScopedLock slock;
@@ -693,23 +688,6 @@ BaseAction *runtimeAction(enum NcmActionType type)
 	return AvailableActions[index].get();
 }
 
-BaseAction *runtimeActionByName(char *name, int32 name_len)
-{
-	NcmActionDef *definition = ncm_action_find(name, name_len);
-	if (definition == nullptr)
-	{
-		Statusbar::printf("Unknown action: %1%", std::string(name, name_len));
-		return nullptr;
-	}
-	return runtimeAction(definition->type);
-}
-
-bool canRun(enum NcmActionType type)
-{
-	BaseAction *action = runtimeAction(type);
-	return action != nullptr && action->canBeRun();
-}
-
 bool execute(enum NcmActionType type)
 {
 	BaseAction *action = runtimeAction(type);
@@ -717,7 +695,7 @@ bool execute(enum NcmActionType type)
 }
 
 UpdateEnvironment::UpdateEnvironment()
-: BaseAction(Type::UpdateEnvironment, "update_environment")
+: BaseAction(Type::UpdateEnvironment)
 , m_past()
 { }
 
@@ -1005,7 +983,6 @@ void MasterScreen::run()
 {
 	if (app_controller_show_locked_screen())
 	{
-		syncLegacyScreenPointers();
 		drawHeader();
 	}
 }
@@ -1019,7 +996,6 @@ void SlaveScreen::run()
 {
 	if (app_controller_show_inactive_screen())
 	{
-		syncLegacyScreenPointers();
 		drawHeader();
 	}
 }
@@ -2789,7 +2765,7 @@ void ToggleBrowserSortMode::run()
 		size_t sort_offset = myBrowser->inRootDirectory() ? 0 : 1;
 		std::stable_sort(
 			myBrowser->main().begin()+sort_offset, myBrowser->main().end(),
-			LocaleBasedItemSorting(std::locale(), Config.ignore_leading_the,
+			LocaleBasedItemSorting(Config.ignore_leading_the,
 			                       Config.browser_sort_mode));
 	}
 }

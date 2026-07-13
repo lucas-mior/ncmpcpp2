@@ -53,47 +53,6 @@ private:
 	FilterFunction m_filter;
 };
 
-template <typename T> struct ItemFilter
-{
-	typedef NC::Menu<T> MenuT;
-	typedef typename NC::Menu<T>::Item Item;
-	typedef std::function<bool(const Regex &, const Item &)> FilterFunction;
-	
-	ItemFilter() { }
-
-	template <typename FilterT>
-	ItemFilter(const std::string &constraint_,
-	           Flags flags,
-	           FilterT &&filter)
-		: m_rx(make(constraint_, flags))
-		, m_constraint(constraint_)
-		, m_filter(std::forward<FilterT>(filter))
-	{ }
-	
-	void clear()
-	{
-		m_filter = nullptr;
-	}
-
-	const std::string &constraint() const {
-		return m_constraint;
-	}
-
-	bool operator()(const Item &item) {
-		return m_filter(m_rx, item);
-	}
-	
-	bool defined() const
-	{
-		return m_filter.operator bool();
-	}
-
-private:
-	Regex m_rx;
-	std::string m_constraint;
-	FilterFunction m_filter;
-};
-
 }
 
 #endif // NCMPCPP_REGEX_FILTER_H

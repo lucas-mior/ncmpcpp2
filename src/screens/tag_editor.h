@@ -41,7 +41,6 @@
 #include "title_legacy.h"
 #include "ui_state.h"
 #include "utility/comparators.h"
-#include "utility/functional.h"
 #include "utility/string.h"
 #include "utility/utf8.h"
 
@@ -440,7 +439,7 @@ inline void TagEditor::update()
 				Dirs->highlight(Dirs->size()-1);
 		};
 		std::sort(Dirs->beginV()+1, Dirs->endV(),
-			LocaleBasedSorting(std::locale(), Config.ignore_leading_the));
+			LocaleBasedSorting(Config.ignore_leading_the));
 		Dirs->display();
 	}
 
@@ -451,7 +450,7 @@ inline void TagEditor::update()
 		for (; s != end; ++s)
 			Tags->addItem(std::move(*s));
 		std::sort(Tags->beginV(), Tags->endV(),
-			LocaleBasedSorting(std::locale(), Config.ignore_leading_the));
+			LocaleBasedSorting(Config.ignore_leading_the));
 		Tags->refresh();
 	}
 
@@ -1207,7 +1206,6 @@ inline void TagEditor::nativeSwitchToCallback(void *user)
     if (editor == nullptr)
         return;
     screen_compat::set_tab_previous_screen(editor);
-    syncLegacyScreenPointers();
 }
 
 inline void TagEditor::nativeResizeCallback(void *user)

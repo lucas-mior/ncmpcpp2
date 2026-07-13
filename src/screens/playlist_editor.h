@@ -5,7 +5,6 @@
 #include <cassert>
 #include <functional>
 #include <iterator>
-#include <locale>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -33,7 +32,6 @@
 #include "title_legacy.h"
 #include "ui_state.h"
 #include "utility/comparators.h"
-#include "utility/functional.h"
 #include "utility/string_format.h"
 
 namespace Display {
@@ -398,7 +396,7 @@ inline void PlaylistEditor::update()
             if (idx < Playlists.size())
                 Playlists.resizeList(idx);
             std::sort(Playlists.beginV(), Playlists.endV(),
-                      LocaleBasedSorting(std::locale(),
+                      LocaleBasedSorting(
                                          Config.ignore_leading_the));
         }
     }

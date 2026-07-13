@@ -3,7 +3,6 @@
 
 #include <cassert>
 #include <cstddef>
-#include <functional>
 #include <string>
 #include <unordered_map>
 
@@ -132,9 +131,6 @@ private:
 	static bool nativeIsMergableCallback(NcScreen *screen);
 };
 
-void applyToVisibleScreens(std::function<void(NcScreen *)> f);
-void applyToVisibleWindows(std::function<void(BaseScreen *)> f);
-void syncLegacyScreenPointers();
 bool isVisible(BaseScreen *screen);
 
 /// Class that all screens should derive from. It provides basic interface
@@ -450,7 +446,6 @@ inline void BaseScreen::nativeSwitchToCallback(NcScreen *screen)
         return;
     if (nc_screen_switcher_finish_switch(screen))
         screen_compat::set_tab_previous_screen(owner);
-    syncLegacyScreenPointers();
 }
 
 inline void BaseScreen::nativeResizeCallback(NcScreen *screen)
@@ -552,39 +547,12 @@ inline bool BaseScreen::lock()
     assert(app_controller_locked_screen() == nullptr);
     if (!app_controller_lock_current_screen())
         return false;
-    syncLegacyScreenPointers();
     return true;
 }
 
 inline void BaseScreen::unlock()
 {
     app_controller_unlock_screen();
-    syncLegacyScreenPointers();
-}
-
-inline void applyToVisibleScreens(std::function<void(NcScreen *)> f)
-{
-    app_controller_each_visible_screen(
-        [](NcScreen *screen, void *user) {
-            auto *callback = static_cast<
-                std::function<void(NcScreen *)> *>(user);
-            (*callback)(screen);
-        },
-        &f);
-}
-
-inline void applyToVisibleWindows(std::function<void(BaseScreen *)> f)
-{
-    applyToVisibleScreens([&f](NcScreen *screen) {
-        BaseScreen *owner = screen_compat::legacy_owner(screen);
-
-        if (owner != nullptr)
-            f(owner);
-    });
-}
-
-inline void syncLegacyScreenPointers()
-{
 }
 
 inline bool isVisible(BaseScreen *screen)
