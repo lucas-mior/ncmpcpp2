@@ -157,6 +157,8 @@ private:
     static char *nativeTitleCallback(void *user);
     static void nativeUpdateCallback(void *user);
     static void nativeMouseButtonPressedCallback(void *user, MEVENT event);
+    static bool nativeCanRunCurrentCallback(void *user);
+    static bool nativeRunCurrentCallback(void *user) noexcept;
 
     Regex::ItemFilter<SEItem> m_search_predicate;
 
@@ -298,6 +300,8 @@ inline SearchEngine::SearchEngine()
         bridge.title = nativeTitleCallback;
         bridge.update = nativeUpdateCallback;
         bridge.mouse_button_pressed = nativeMouseButtonPressedCallback;
+        bridge.can_run_current = nativeCanRunCurrentCallback;
+        bridge.run_current = nativeRunCurrentCallback;
         bridge.user = this;
         native_search_engine_screen_set_bridge(native_c_screen_search_engine(),
                                                bridge);
@@ -867,6 +871,77 @@ inline void SearchEngine::nativeMouseButtonPressedCallback(void *user,
     if (searcher == nullptr)
         return;
     searcher->mouseButtonPressed(event);
+}
+
+inline bool SearchEngine::nativeCanRunCurrentCallback(void *user)
+{
+    SearchEngine *searcher = static_cast<SearchEngine *>(user);
+
+    return searcher != nullptr && searcher->actionRunnable();
+}
+
+inline bool SearchEngine::nativeRunCurrentCallback(void *user) noexcept
+{
+    SearchEngine *searcher = static_cast<SearchEngine *>(user);
+    native_search_engine_compat::RunCurrentResult result;
+
+    if (searcher == nullptr)
+        return false;
+
+    try
+    {
+        result = native_search_engine_compat::invoke_run_current<
+            NC::PromptAborted>(
+            [searcher]() { return searcher->actionRunnable(); },
+            [searcher]() { searcher->runAction(); });
+    }
+    catch (MPD::ClientError &error)
+    {
+        ncm_status_handle_client_error_value(
+            &global_mpd, const_cast<char *>(error.what()), -1,
+            error.clearable());
+        return false;
+    }
+    catch (MPD::ServerError &error)
+    {
+        ncm_status_handle_server_error_value(
+            &global_mpd, static_cast<int32>(error.code()),
+            const_cast<char *>(error.what()), -1);
+        return false;
+    }
+    catch (std::exception &error)
+    {
+        NcmStringFormatArg arg;
+
+        arg = ncm_string_format_arg_cstring(
+            const_cast<char *>(error.what()));
+        ncm_statusbar_format(
+            ncm_statusbar_message_delay_time(),
+            const_cast<char *>("Unexpected error: %1%"),
+            STRLIT_LEN("Unexpected error: %1%"), &arg, 1);
+        return false;
+    }
+    catch (...)
+    {
+        ncm_statusbar_print_cstring(
+            ncm_statusbar_message_delay_time(),
+            const_cast<char *>("Unexpected error"));
+        return false;
+    }
+
+    switch (result)
+    {
+    case native_search_engine_compat::RunCurrentResult::NotRunnable:
+        return false;
+    case native_search_engine_compat::RunCurrentResult::Completed:
+        return true;
+    case native_search_engine_compat::RunCurrentResult::Aborted:
+        ncm_statusbar_print_cstring(
+            ncm_statusbar_message_delay_time(),
+            const_cast<char *>("Action aborted"));
+        return false;
+    }
+    return false;
 }
 
 namespace search_engine_compat {

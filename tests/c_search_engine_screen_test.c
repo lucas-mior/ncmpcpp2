@@ -15,6 +15,11 @@ typedef struct SearchHookFixture {
     NcmBuffer constraint;
 } SearchHookFixture;
 
+typedef struct RunCurrentFixture {
+    int32 calls;
+    bool runnable;
+} RunCurrentFixture;
+
 static char *constraint_rows[] = {
     (char *)"Any          : ",
     (char *)"Artist       : ",
@@ -47,6 +52,7 @@ static void test_search_result_row_ownership(void);
 static void test_search_selected_songs(void);
 static void test_formatted_song_filter_and_find(void);
 static void test_search_collection_hooks(void);
+static void test_run_current_bridge(void);
 static void init_screen(NativeSearchEngineScreen *screen);
 static void add_result_songs(NativeSearchEngineScreen *screen);
 static NcSearchRow *row_at(NativeSearchEngineScreen *screen, int64 pos);
@@ -60,6 +66,8 @@ static bool collect_results(void *user, bool search_in_database,
                             enum NativeSearchEngineSearchMode mode,
                             NcmBuffer *constraints, int32 constraint_count,
                             NcmSongArray *songs, NcmError *error);
+static bool can_run_current(void *user);
+static bool run_current(void *user);
 
 int
 main(void) {
@@ -73,6 +81,7 @@ main(void) {
     test_search_selected_songs();
     test_formatted_song_filter_and_find();
     test_search_collection_hooks();
+    test_run_current_bridge();
     exit(EXIT_SUCCESS);
 }
 
@@ -545,5 +554,53 @@ test_search_collection_hooks(void) {
     ncm_song_array_destroy(&songs);
     native_search_engine_screen_destroy(&screen);
     ncm_buffer_destroy(&fixture.constraint);
+    return;
+}
+
+static bool
+can_run_current(void *user) {
+    RunCurrentFixture *fixture;
+
+    fixture = user;
+    return fixture->runnable;
+}
+
+static bool
+run_current(void *user) {
+    RunCurrentFixture *fixture;
+
+    fixture = user;
+    fixture->calls += 1;
+    return true;
+}
+
+static void
+test_run_current_bridge(void) {
+    NativeSearchEngineScreen screen;
+    NativeSearchEngineBridge bridge = {0};
+    RunCurrentFixture fixture = {0};
+    NcScreen *base;
+
+    init_screen(&screen);
+    base = native_search_engine_screen_base(&screen);
+
+    assert(!nc_screen_can_run_current(base));
+    assert(!nc_screen_run_current(base));
+
+    bridge.can_run_current = can_run_current;
+    bridge.run_current = run_current;
+    bridge.user = &fixture;
+    native_search_engine_screen_set_bridge(&screen, bridge);
+
+    assert(!nc_screen_can_run_current(base));
+    assert(!nc_screen_run_current(base));
+    assert(fixture.calls == 0);
+
+    fixture.runnable = true;
+    assert(nc_screen_can_run_current(base));
+    assert(nc_screen_run_current(base));
+    assert(fixture.calls == 1);
+
+    native_search_engine_screen_destroy(&screen);
     return;
 }

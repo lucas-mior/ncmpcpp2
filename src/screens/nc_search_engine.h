@@ -52,6 +52,8 @@ typedef struct NativeSearchEngineBridge {
     char *(*title)(void *user);
     void (*update)(void *user);
     void (*mouse_button_pressed)(void *user, MEVENT event);
+    bool (*can_run_current)(void *user);
+    bool (*run_current)(void *user);
     void *user;
 } NativeSearchEngineBridge;
 
@@ -150,6 +152,30 @@ void native_search_engine_screen_set_bridge(
     NativeSearchEngineScreen *screen, NativeSearchEngineBridge bridge);
 
 #if defined(__cplusplus)
+}
+
+namespace native_search_engine_compat {
+
+enum class RunCurrentResult {
+    NotRunnable,
+    Completed,
+    Aborted,
+};
+
+template <typename AbortException, typename Runnable, typename Run>
+RunCurrentResult
+invoke_run_current(Runnable runnable, Run run) {
+    try {
+        if (!runnable()) {
+            return RunCurrentResult::NotRunnable;
+        }
+        run();
+    } catch (AbortException &) {
+        return RunCurrentResult::Aborted;
+    }
+    return RunCurrentResult::Completed;
+}
+
 }
 #endif
 
