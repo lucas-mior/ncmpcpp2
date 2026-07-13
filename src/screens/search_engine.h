@@ -152,8 +152,6 @@ private:
 
 };
 
-inline SearchEngine *mySearcher = nullptr;
-
 namespace search_engine_compat {
 
 inline std::string SEItemToString(const SEItem &ei);

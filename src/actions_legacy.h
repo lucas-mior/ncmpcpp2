@@ -729,15 +729,6 @@ private:
 	virtual void run() override;
 };
 
-struct StartSearching: BaseAction
-{
-	StartSearching(): BaseAction(Type::StartSearching, "start_searching") { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
 struct SaveTagChanges: BaseAction
 {
 	SaveTagChanges(): BaseAction(Type::SaveTagChanges, "save_tag_changes") { }
@@ -1304,24 +1295,6 @@ private:
 struct ChangeBrowseMode: BaseAction
 {
 	ChangeBrowseMode(): BaseAction(Type::ChangeBrowseMode, "change_browse_mode") { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct ShowSearchEngine: BaseAction
-{
-	ShowSearchEngine(): BaseAction(Type::ShowSearchEngine, "show_search_engine") { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct ResetSearchEngine: BaseAction
-{
-	ResetSearchEngine(): BaseAction(Type::ResetSearchEngine, "reset_search_engine") { }
 	
 private:
 	virtual bool canBeRun() override;
