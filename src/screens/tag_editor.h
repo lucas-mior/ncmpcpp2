@@ -34,7 +34,6 @@
 #include "screens/nc_tag_editor.h"
 #include "screens/playlist.h"
 #include "screens/screen_cpp_legacy.h"
-#include "screens/screen_cpp_switcher.h"
 #include "screens/song_info.h"
 #include "settings_legacy.h"
 #include "statusbar.h"
