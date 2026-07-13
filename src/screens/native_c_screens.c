@@ -972,25 +972,14 @@ native_search_add_song(
 static bool
 native_search_format_song(
     void *user, NcmSong *song, NcmBuffer *text) {
-    NcBuffer formatted;
-    NcmFormatAst *format;
-    bool result;
+    NativeSearchEngineScreen *screen;
 
-    (void)user;
-    if ((song == NULL) || (text == NULL)) {
+    screen = user;
+    if ((screen == NULL) || (song == NULL) || (text == NULL)) {
         return false;
     }
-
-    nc_buffer_init(&formatted);
-    if (Config.search_engine_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
-        format = &Config.song_columns_mode_format;
-    } else {
-        format = &Config.song_list_format;
-    }
-    ncm_display_song_row(&formatted, format, song, 0);
-    result = ncm_buffer_set(text, formatted.data, formatted.len);
-    nc_buffer_destroy(&formatted);
-    return result;
+    return native_search_engine_screen_format_song_text(
+        screen, song, text);
 }
 
 void
@@ -1027,6 +1016,7 @@ native_c_screen_search_engine_init(void) {
     hooks.status_message = native_search_status_message;
     hooks.add_song = native_search_add_song;
     hooks.format_song = native_search_format_song;
+    hooks.user = &search_engine_screen;
     native_search_engine_screen_set_hooks(&search_engine_screen, hooks);
     native_search_engine_screen_set_mouse_config(
         &search_engine_screen, Config.lines_scrolled,
