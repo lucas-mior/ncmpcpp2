@@ -44,9 +44,6 @@ struct Color
 	friend struct Window;
 	friend NcColor toNcColor(Color color);
 
-	static const short transparent;
-	static const short current;
-
 	Color() : m_impl(0, 0, true, false) { }
 	Color(short foreground_value, short background_value,
 			 bool is_default = false, bool is_end = false)
@@ -66,20 +63,11 @@ struct Color
 	int pairNumber() const;
 
 	static Color Default;
-	static Color Black;
-	static Color Red;
-	static Color Green;
-	static Color Yellow;
-	static Color Blue;
-	static Color Magenta;
-	static Color Cyan;
-	static Color White;
 	static Color End;
 
 private:
 	short foreground() const { return std::get<0>(m_impl); }
 	short background() const { return std::get<1>(m_impl); }
-	bool currentBackground() const { return background() == current; }
 
 	std::tuple<short, short, bool, bool> m_impl;
 };

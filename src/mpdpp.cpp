@@ -179,22 +179,6 @@ std::vector<std::string> stringVectorFromList(NcmMpdStringList *list)
 
 
 
-template <typename ObjectT, typename SourceT>
-std::function<bool(typename MPD::Iterator<ObjectT>::State &)>
-defaultFetcher(SourceT *(fetcher)(mpd_connection *))
-{
-	return [fetcher](typename MPD::Iterator<ObjectT>::State &state) {
-		auto src = fetcher(state.connection());
-		if (src != nullptr)
-		{
-			state.setObject(src);
-			return true;
-		}
-		else
-			return false;
-	};
-}
-
 }
 
 namespace MPD {
@@ -676,12 +660,6 @@ void Connection::Play(int pos)
 	throwIfFailed(ncm_mpd_client_play_pos(&global_mpd, pos, &error), error);
 }
 
-void Connection::PlayID(int id)
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_play_id(&global_mpd, id, &error), error);
-}
-
 void Connection::Pause(bool state)
 {
 	NcmError error{};
@@ -847,22 +825,6 @@ void Connection::SetReplayGainMode(ReplayGainMode mode)
 
 	throwIfFailed(ncm_mpd_client_set_replay_gain_mode(
 		&global_mpd, replayGainModeFromLegacy(mode), &error), error);
-}
-
-int Connection::AddSong(const std::string &path, int pos)
-{
-	NcmError error{};
-	int32 id = -1;
-
-	throwIfFailed(ncm_mpd_client_add_song(
-		&global_mpd, const_cast<char *>(path.c_str()), pos, &id, &error),
-		error);
-	return id;
-}
-
-int Connection::AddSong(NcmSong *s, int pos)
-{
-	return AddSong(songUriString(s, true), pos);
 }
 
 bool Connection::AddRandomTag(mpd_tag_type tag, size_t number, NcmRandom *rng)

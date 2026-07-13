@@ -107,8 +107,6 @@ struct Song
 		return const_cast<NcmSong *>(&m_song);
 	}
 
-	static std::string ShowTime(unsigned length);
-
 	inline static std::string TagsSeparator = " | ";
 
 	inline static bool ShowDuplicateTags = true;
@@ -310,15 +308,6 @@ inline bool Song::isStream() const
 inline bool Song::empty() const
 {
 	return ncm_song_empty(const_cast<NcmSong *>(&m_song));
-}
-
-inline std::string Song::ShowTime(unsigned length)
-{
-	char buffer[32];
-	int len;
-
-	len = ncm_song_show_time(length, buffer, sizeof(buffer));
-	return std::string(buffer, len);
 }
 
 }

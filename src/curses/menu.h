@@ -807,13 +807,6 @@ private:
 				static_cast<int64>(pos)));
 	}
 
-	Item &allItemAt(size_t pos)
-	{
-		return *static_cast<Item *>(
-			nc_menu_item_at(&m_menu, NC_MENU_ITEMS_ALL,
-			                static_cast<int64>(pos)));
-	}
-
 	bool isHighlightable(size_t pos)
 	{
 		return !activeItemAt(pos).isSeparator()
