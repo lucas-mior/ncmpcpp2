@@ -36,7 +36,6 @@
 #include "screens/native_c_screens.h"
 #include "screens/playlist.h"
 #include "screens/playlist_editor.h"
-#include "screens/search_engine.h"
 #include "utility/readline.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
@@ -428,6 +427,11 @@ NcmActionType toNcmActionType(Actions::Type type)
 	return static_cast<NcmActionType>(type);
 }
 
+bool actionHasNoLegacyImplementation(NcmActionType type)
+{
+	return type == NCM_ACTION_START_SEARCHING;
+}
+
 bool legacyCanRunAction(NcmActionType type, void *)
 {
 	if (app_binding_migration_action_is_c_safe(type))
@@ -547,7 +551,6 @@ void initializeScreens()
 
 	myPlaylist = new Playlist;
 	myBrowser = new Browser;
-	mySearcher = new SearchEngine;
 	ncm_status_set_database_update_observer(
 	    requestMediaLibraryDatabaseUpdate, nullptr);
 	myPlaylistEditor = new PlaylistEditor;
@@ -561,7 +564,6 @@ void initializeScreens()
 	native_c_screens_register_native_only();
 	myPlaylist->registerNativeScreen();
 	myBrowser->registerNativeScreen();
-	mySearcher->registerNativeScreen();
 	myPlaylistEditor->registerNativeScreen();
 	native_c_screen_lyrics_register();
 
@@ -576,7 +578,6 @@ void setResizeFlags()
 	native_c_screens_request_registered_resize();
 	myPlaylist->hasToBeResized = 1;
 	myBrowser->hasToBeResized = 1;
-	mySearcher->hasToBeResized = 1;
 	myPlaylistEditor->hasToBeResized = 1;
 	native_c_screen_lyrics_set_resize();
 
@@ -680,7 +681,8 @@ BaseAction *runtimeAction(enum NcmActionType type)
 	auto index = static_cast<size_t>(type);
 	if (index >= AvailableActions.size() || AvailableActions[index] == nullptr)
 	{
-		if (app_binding_migration_action_is_c_safe(type))
+		if (app_binding_migration_action_is_c_safe(type)
+		    || actionHasNoLegacyImplementation(type))
 			return nullptr;
 
 		std::cerr << "fatal: action not implemented: "
@@ -1515,7 +1517,6 @@ bool ToggleDisplayMode::canBeRun()
 {
 	return screenLegacyCurrent() == myPlaylist
 	    || screenLegacyCurrent() == myBrowser
-	    || screenLegacyCurrent() == mySearcher
 	    || screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content);
 }
 
@@ -1561,22 +1562,6 @@ void ToggleDisplayMode::run()
 				break;
 		}
 		Statusbar::printf("Browser display mode: %1%", Config.browser_display_mode);
-	}
-	else if (screenLegacyCurrent() == mySearcher)
-	{
-		switch (Config.search_engine_display_mode)
-		{
-			case NCM_DISPLAY_MODE_CLASSIC:
-				Config.search_engine_display_mode = NCM_DISPLAY_MODE_COLUMNS;
-				break;
-			case NCM_DISPLAY_MODE_COLUMNS:
-				Config.search_engine_display_mode = NCM_DISPLAY_MODE_CLASSIC;
-				break;
-		}
-		Statusbar::printf("Search engine display mode: %1%", Config.search_engine_display_mode);
-		native_search_engine_screen_set_display_mode(
-			native_c_screen_search_engine(),
-			Config.search_engine_display_mode);
 	}
 	else if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content))
 	{
@@ -1720,25 +1705,6 @@ void Shuffle::run()
 void ToggleRandom::run()
 {
 	Mpd.SetRandom(!ncm_status_state_random());
-}
-
-bool StartSearching::canBeRun()
-{
-	return screenLegacyCurrent() == mySearcher
-	    && !native_search_engine_screen_constraints_locked(
-	        native_c_screen_search_engine());
-}
-
-void StartSearching::run()
-{
-	NativeSearchEngineScreen *native = native_c_screen_search_engine();
-	NcMenu *menu = native_search_engine_screen_menu(native);
-	NcWindow *window = native_search_engine_screen_window(native);
-
-	nc_menu_highlight_position(
-		menu, NATIVE_SEARCH_ENGINE_SEARCH_BUTTON_ROW,
-		nc_window_height(window));
-	mySearcher->runAction();
 }
 
 bool SaveTagChanges::canBeRun()
@@ -3127,30 +3093,6 @@ void ChangeBrowseMode::run()
 	myBrowser->changeBrowseMode();
 }
 
-bool ShowSearchEngine::canBeRun()
-{
-	return screenLegacyCurrent() != mySearcher
-#	ifdef HAVE_TAGLIB_H
-	    && screenLegacyCurrent() != myTinyTagEditor
-#	endif // HAVE_TAGLIB_H
-	;
-}
-
-void ShowSearchEngine::run()
-{
-	mySearcher->switchTo();
-}
-
-bool ResetSearchEngine::canBeRun()
-{
-	return screenLegacyCurrent() == mySearcher;
-}
-
-void ResetSearchEngine::run()
-{
-	mySearcher->reset();
-}
-
 bool ShowMediaLibrary::canBeRun()
 {
 	return !native_c_screen_media_library_is_current()
@@ -3327,7 +3269,6 @@ void populateActions()
 	insert_action(new Actions::ToggleRepeat());
 	insert_action(new Actions::Shuffle());
 	insert_action(new Actions::ToggleRandom());
-	insert_action(new Actions::StartSearching());
 	insert_action(new Actions::SaveTagChanges());
 	insert_action(new Actions::ToggleSingle());
 	insert_action(new Actions::ToggleConsume());
@@ -3387,8 +3328,6 @@ void populateActions()
 	insert_action(new Actions::ShowPlaylist());
 	insert_action(new Actions::ShowBrowser());
 	insert_action(new Actions::ChangeBrowseMode());
-	insert_action(new Actions::ShowSearchEngine());
-	insert_action(new Actions::ResetSearchEngine());
 	insert_action(new Actions::ShowMediaLibrary());
 	insert_action(new Actions::ToggleMediaLibraryColumnsMode());
 	insert_action(new Actions::ShowPlaylistEditor());
@@ -3410,7 +3349,8 @@ void populateActions()
 		auto type = static_cast<NcmActionType>(i);
 
 		if (AvailableActions[static_cast<size_t>(i)] == nullptr
-		    && !app_binding_migration_action_is_c_safe(type))
+		    && !app_binding_migration_action_is_c_safe(type)
+		    && !actionHasNoLegacyImplementation(type))
 		{
 			std::cerr << "fatal: undefined action: "
 			          << ncm_action_type_name(type)

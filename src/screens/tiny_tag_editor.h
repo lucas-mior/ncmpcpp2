@@ -24,7 +24,6 @@
 #include "screens/screen_cpp_compat.h"
 #include "screens/screen_cpp_legacy.h"
 #include "screens/screen_cpp_switcher.h"
-#include "screens/search_engine.h"
 #include "screens/song_info.h"
 #include "screens/tag_editor.h"
 #include "statusbar.h"

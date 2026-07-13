@@ -356,6 +356,12 @@ test_native_only_registration(void) {
     assert(native_c_screens_is_registered_type(
         NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER));
 
+    registered = app_controller_find_screen_type(
+        NC_SCREEN_TYPE_SEARCH_ENGINE);
+    assert(registered == native_c_screen_search_engine_native());
+    assert(native_c_screens_is_registered_type(
+        NCM_SCREEN_TYPE_SEARCH_ENGINE));
+
 #if defined(ENABLE_VISUALIZER)
     registered = app_controller_find_screen_type(
         NC_SCREEN_TYPE_VISUALIZER);
@@ -368,5 +374,10 @@ test_native_only_registration(void) {
     assert(native_c_screen_media_library_is_current());
     assert(app_controller_current_screen()
            == native_c_screen_media_library_native());
+
+    native_c_screen_search_engine_switch_to();
+    assert(native_c_screen_search_engine_is_current());
+    assert(app_controller_current_screen()
+           == native_c_screen_search_engine_native());
     return;
 }
