@@ -14,7 +14,6 @@
 #include "screens/nc_playlist_editor.h"
 #include "screens/nc_sel_items_adder.h"
 #include "screens/nc_sort_playlist.h"
-#include "screens/nc_search_engine.h"
 #include "screens/nc_tag_editor.h"
 #include "screens/nc_tiny_tag_editor.h"
 #include "screens/nc_visualizer.h"
@@ -27,6 +26,7 @@ NCM_EXTERN_C_BEGIN
 
 typedef struct NativeHelpScreen NativeHelpScreen;
 typedef struct NativeOutputsScreen NativeOutputsScreen;
+typedef struct NativeSearchEngineScreen NativeSearchEngineScreen;
 typedef struct NativeServerInfoScreen NativeServerInfoScreen;
 typedef struct NativeSongInfoScreen NativeSongInfoScreen;
 

@@ -52,11 +52,6 @@ typedef struct ExternalHookFixture {
     NcmBuffer status;
 } ExternalHookFixture;
 
-typedef struct StaticRowFixture {
-    int32 calls;
-    int32 last_row;
-} StaticRowFixture;
-
 typedef struct WindowTrace {
     int32 display_calls;
     int32 menu_refresh_calls;
@@ -156,7 +151,6 @@ static bool add_song(void *user, NcmSong *song, bool play,
                      NcmError *error);
 static bool mouse_add_song(void *user, NcmSong *song, bool play,
                            NcmError *error);
-static void static_row_changed(void *user, int32 row);
 void __wrap_nc_window_set_title(NcWindow *window, char *title,
                                 int32 title_len);
 bool __wrap_ncm_mpd_client_start_search(NcmMpdClient *client,
@@ -602,31 +596,13 @@ test_search_modes_and_sources(void) {
 }
 
 static void
-static_row_changed(void *user, int32 row) {
-    StaticRowFixture *fixture;
-
-    fixture = user;
-    fixture->calls += 1;
-    fixture->last_row = row;
-    return;
-}
-
-static void
 test_static_row_updates(void) {
     NativeSearchEngineScreen screen;
-    NativeSearchEngineBridge bridge = {0};
-    StaticRowFixture fixture = {0};
     NcMenu *menu;
     int64 item_count;
 
     init_screen(&screen);
-    bridge.static_row_changed = static_row_changed;
-    bridge.user = &fixture;
-    native_search_engine_screen_set_bridge(&screen, bridge);
-
     native_search_engine_screen_prepare_static_rows(&screen);
-    assert(fixture.calls == 1);
-    assert(fixture.last_row == NATIVE_SEARCH_ENGINE_ALL_STATIC_ROWS);
     add_result_songs(&screen);
     assert(native_search_engine_screen_add_result_summary(&screen, 2));
     menu = native_search_engine_screen_menu(&screen);
@@ -637,8 +613,6 @@ test_static_row_updates(void) {
 
     assert(native_search_engine_screen_set_constraint(
         &screen, 3, LIT_ARGS("updated title")));
-    assert(fixture.calls == 2);
-    assert(fixture.last_row == 3);
     assert_row_text(&screen, 3, LIT_ARGS("Title        : updated title"));
     assert(nc_menu_all_item_count(menu) == item_count);
     assert(nc_menu_highlight(menu)
@@ -646,16 +620,12 @@ test_static_row_updates(void) {
     assert(native_search_engine_screen_has_result_rows(&screen));
 
     native_search_engine_screen_set_search_source(&screen, false);
-    assert(fixture.calls == 3);
-    assert(fixture.last_row == NATIVE_SEARCH_ENGINE_SEARCH_SOURCE_ROW);
     assert_row_text(&screen, NATIVE_SEARCH_ENGINE_SEARCH_SOURCE_ROW,
                     LIT_ARGS("Search in: Current playlist"));
     assert(nc_menu_all_item_count(menu) == item_count);
 
     assert(native_search_engine_screen_set_search_mode(
         &screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT));
-    assert(fixture.calls == 4);
-    assert(fixture.last_row == NATIVE_SEARCH_ENGINE_SEARCH_MODE_ROW);
     assert_row_text(&screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_ROW,
                     search_mode_rows[NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT],
                     string_len(search_mode_rows[
@@ -1817,6 +1787,7 @@ test_native_display_and_column_title(void) {
     Config.columns.items = columns;
     Config.columns.len = 2;
     Config.columns.cap = 2;
+    Config.titles_visibility = false;
 
     init_screen(&screen);
     native_search_engine_screen_set_geometry(&screen, 0, 20, 0, 24);
@@ -1842,6 +1813,9 @@ test_native_display_and_column_title(void) {
     menu->display_callbacks.draw(menu, &screen.window, row, 0,
                                  menu->display_callbacks.user);
     assert_printed(LIT_ARGS("Band      Track     "));
+    assert(screen.column_title.len == 0);
+    assert(screen.window.start_y == 0);
+    assert(screen.window.height == 24);
 
     ncm_buffer_init(&formatted);
     assert(native_search_engine_screen_format_song_text(
@@ -1893,6 +1867,8 @@ test_native_lifecycle(void) {
     menu = native_search_engine_screen_menu(&screen);
 
     assert(nc_screen_active_window(base) == &screen.window);
+    assert(nc_screen_is_lockable(base));
+    assert(nc_screen_is_mergable(base));
     assert(!native_search_engine_screen_is_prepared(&screen));
     nc_screen_switch_to(base);
     assert(native_search_engine_screen_is_prepared(&screen));
