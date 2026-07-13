@@ -204,14 +204,6 @@ private:
 BaseAction *runtimeAction(enum NcmActionType type);
 bool execute(enum NcmActionType type);
 
-struct Dummy: BaseAction
-{
-	Dummy(): BaseAction(Type::Dummy) { }
-	
-private:
-	virtual void run() override { }
-};
-
 struct UpdateEnvironment: BaseAction
 {
 	UpdateEnvironment();
@@ -353,17 +345,6 @@ private:
 	virtual void run() override;
 };
 
-struct RunAction: BaseAction
-{
-	RunAction(): BaseAction(Type::RunAction) { }
-
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	HasActions *m_ha;
-};
-
 struct PreviousColumn: BaseAction
 {
 	PreviousColumn(): BaseAction(Type::PreviousColumn) { }
@@ -471,87 +452,11 @@ private:
 	virtual void run() override;
 };
 
-struct ReplaySong: BaseAction
-{
-	ReplaySong(): BaseAction(Type::ReplaySong) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct PreviousSong: BaseAction
-{
-	PreviousSong(): BaseAction(Type::Previous) { }
-	
-private:
-	virtual void run() override;
-};
-
-struct NextSong: BaseAction
-{
-	NextSong(): BaseAction(Type::Next) { }
-	
-private:
-	virtual void run() override;
-};
-
-struct Pause: BaseAction
-{
-	Pause(): BaseAction(Type::Pause) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct Stop: BaseAction
-{
-	Stop(): BaseAction(Type::Stop) { }
-	
-private:
-	virtual void run() override;
-};
-
-struct Play: BaseAction
-{
-	Play(): BaseAction(Type::Play) { }
-	
-private:
-	virtual void run() override;
-};
-
-struct ExecuteCommand: BaseAction
-{
-	ExecuteCommand(): BaseAction(Type::ExecuteCommand) { }
-	
-private:
-	virtual void run() override;
-};
-
 struct SavePlaylist: BaseAction
 {
 	SavePlaylist(): BaseAction(Type::SavePlaylist) { }
 	
 private:
-	virtual void run() override;
-};
-
-struct MoveSortOrderUp: BaseAction
-{
-	MoveSortOrderUp(): BaseAction(Type::MoveSortOrderUp) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct MoveSortOrderDown: BaseAction
-{
-	MoveSortOrderDown(): BaseAction(Type::MoveSortOrderDown) { }
-	
-private:
-	virtual bool canBeRun() override;
 	virtual void run() override;
 };
 
@@ -594,24 +499,6 @@ private:
 struct Load: BaseAction
 {
 	Load(): BaseAction(Type::Load) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct SeekForward: BaseAction
-{
-	SeekForward(): BaseAction(Type::SeekForward) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct SeekBackward: BaseAction
-{
-	SeekBackward(): BaseAction(Type::SeekBackward) { }
 	
 private:
 	virtual bool canBeRun() override;
@@ -673,14 +560,6 @@ private:
 	virtual void run() override;
 };
 
-struct UpdateDatabase: BaseAction
-{
-	UpdateDatabase(): BaseAction(Type::UpdateDatabase) { }
-	
-private:
-	virtual void run() override;
-};
-
 struct JumpToPlayingSong: BaseAction
 {
 	JumpToPlayingSong(): BaseAction(Type::JumpToPlayingSong) { }
@@ -690,14 +569,6 @@ private:
 	virtual void run() override;
 
 	MPD::Song m_song;
-};
-
-struct ToggleRepeat: BaseAction
-{
-	ToggleRepeat(): BaseAction(Type::ToggleRepeat) { }
-	
-private:
-	virtual void run() override;
 };
 
 struct Shuffle: BaseAction
@@ -712,44 +583,12 @@ private:
 	NC::Menu<MPD::Song>::ConstIterator m_end;
 };
 
-struct ToggleRandom: BaseAction
-{
-	ToggleRandom(): BaseAction(Type::ToggleRandom) { }
-	
-private:
-	virtual void run() override;
-};
-
 struct SaveTagChanges: BaseAction
 {
 	SaveTagChanges(): BaseAction(Type::SaveTagChanges) { }
 	
 private:
 	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct ToggleSingle: BaseAction
-{
-	ToggleSingle(): BaseAction(Type::ToggleSingle) { }
-	
-private:
-	virtual void run() override;
-};
-
-struct ToggleConsume: BaseAction
-{
-	ToggleConsume(): BaseAction(Type::ToggleConsume) { }
-	
-private:
-	virtual void run() override;
-};
-
-struct ToggleCrossfade: BaseAction
-{
-	ToggleCrossfade(): BaseAction(Type::ToggleCrossfade) { }
-	
-private:
 	virtual void run() override;
 };
 
@@ -841,17 +680,6 @@ private:
 struct JumpToBrowser: BaseAction
 {
 	JumpToBrowser(): BaseAction(Type::JumpToBrowser) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	MPD::Song m_song;
-};
-
-struct JumpToMediaLibrary: BaseAction
-{
-	JumpToMediaLibrary(): BaseAction(Type::JumpToMediaLibrary) { }
 	
 private:
 	virtual bool canBeRun() override;
@@ -1003,15 +831,6 @@ private:
 	virtual void run() override;
 };
 
-struct SortPlaylist: BaseAction
-{
-	SortPlaylist(): BaseAction(Type::SortPlaylist) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
 struct ReversePlaylist: BaseAction
 {
 	ReversePlaylist(): BaseAction(Type::ReversePlaylist) { }
@@ -1024,37 +843,9 @@ private:
 	NC::Menu<MPD::Song>::ConstIterator m_end;
 };
 
-struct ApplyFilter: public BaseAction
-{
-	ApplyFilter(): BaseAction(Type::ApplyFilter) { }
-
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-};
-
 struct Find: BaseAction
 {
 	Find(): BaseAction(Type::Find) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct FindItemForward: BaseAction
-{
-	FindItemForward(): BaseAction(Type::FindItemForward) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct FindItemBackward: BaseAction
-{
-	FindItemBackward(): BaseAction(Type::FindItemBackward) { }
 	
 private:
 	virtual bool canBeRun() override;
@@ -1145,16 +936,6 @@ private:
 	virtual void run() override;
 };
 
-struct ToggleMediaLibrarySortMode: BaseAction
-{
-	ToggleMediaLibrarySortMode()
-	: BaseAction(Type::ToggleMediaLibrarySortMode) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
 struct FetchLyricsInBackground: BaseAction
 {
 	FetchLyricsInBackground()
@@ -1232,14 +1013,6 @@ private:
 
 };
 
-struct Quit: BaseAction
-{
-	Quit(): BaseAction(Type::Quit) { }
-	
-private:
-	virtual void run() override;
-};
-
 struct NextScreen: BaseAction
 {
 	NextScreen(): BaseAction(Type::NextScreen) { }
@@ -1286,25 +1059,6 @@ private:
 struct ChangeBrowseMode: BaseAction
 {
 	ChangeBrowseMode(): BaseAction(Type::ChangeBrowseMode) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct ShowMediaLibrary: BaseAction
-{
-	ShowMediaLibrary(): BaseAction(Type::ShowMediaLibrary) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct ToggleMediaLibraryColumnsMode: BaseAction
-{
-	ToggleMediaLibraryColumnsMode()
-	: BaseAction(Type::ToggleMediaLibraryColumnsMode) { }
 	
 private:
 	virtual bool canBeRun() override;
