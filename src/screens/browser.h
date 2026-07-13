@@ -15,7 +15,7 @@
 #include "app_controller.h"
 #include "charset.h"
 #include "curses/nc_cyclic_buffer.h"
-#include "format_impl.h"
+#include "format.h"
 #include "actions.h"
 #include "global.h"
 #include "helpers.h"
