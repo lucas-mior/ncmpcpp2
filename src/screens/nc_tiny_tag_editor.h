@@ -40,6 +40,9 @@ typedef struct NativeTinyTagEditorBridge {
     NcWindow *(*active_window)(void *user);
     bool (*can_run_current)(void *user);
     bool (*run_current)(void *user);
+    bool (*prepared_song)(
+        void *user, NcmSong *song, NcmTaglibAudioProperties *properties,
+        bool extended_tags_supported);
     void (*refresh)(void *user);
     void (*refresh_window)(void *user);
     void (*scroll)(void *user, enum NcScroll where);
@@ -50,6 +53,15 @@ typedef struct NativeTinyTagEditorBridge {
     void (*mouse_button_pressed)(void *user, MEVENT event);
     void *user;
 } NativeTinyTagEditorBridge;
+
+enum NativeTinyTagEditorOpenResult {
+    NATIVE_TINY_TAG_EDITOR_OPEN_SUCCESS,
+    NATIVE_TINY_TAG_EDITOR_OPEN_INVALID_ARGUMENT,
+    NATIVE_TINY_TAG_EDITOR_OPEN_STREAM,
+    NATIVE_TINY_TAG_EDITOR_OPEN_MISSING_MUSIC_DIRECTORY,
+    NATIVE_TINY_TAG_EDITOR_OPEN_UNREADABLE_FILE,
+    NATIVE_TINY_TAG_EDITOR_OPEN_PREPARE_FAILED,
+};
 
 enum NativeTinyTagEditorPromptResult {
     NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR,
@@ -62,6 +74,13 @@ typedef struct NativeTinyTagEditorHooks {
         void *user, char *label, int32 label_len, NcmStringView initial,
         NcmBuffer *result);
     void (*status_message)(void *user, char *message, int32 message_len);
+    bool (*taglib_open)(void *user, NcmTaglibFile *file, char *path,
+                        int32 path_len);
+    bool (*taglib_audio_properties)(
+        void *user, NcmTaglibFile *file,
+        NcmTaglibAudioProperties *properties);
+    bool (*taglib_extended_set_supported)(void *user, NcmTaglibFile *file);
+    void (*taglib_close)(void *user, NcmTaglibFile *file);
     bool (*write_song)(void *user, NcmMutableSong *song, char *music_dir);
     void (*update_directory)(void *user, char *directory,
                              int32 directory_len);
@@ -110,6 +129,11 @@ void native_tiny_tag_editor_screen_set_geometry(
     int64 main_start_y, int64 main_height);
 bool native_tiny_tag_editor_screen_set_edited_song(
     NativeTinyTagEditorScreen *screen, NcmSong *song);
+enum NativeTinyTagEditorOpenResult
+native_tiny_tag_editor_screen_open_song(
+    NativeTinyTagEditorScreen *screen, NcmSong *song,
+    char *music_dir, int32 music_dir_len, char *tag_separator,
+    int32 tag_separator_len, bool show_duplicate_tags, NcmBuffer *path);
 bool native_tiny_tag_editor_screen_set_edited_mutable_song(
     NativeTinyTagEditorScreen *screen, NcmMutableSong *song);
 bool native_tiny_tag_editor_screen_reload_rows(

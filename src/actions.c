@@ -21,6 +21,7 @@
 #include "c/ncm_base.h"
 #include "c/ncm_macro_utilities.h"
 #include "c/ncm_string.h"
+#include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
 #include "cbase/cbase.h"
 
@@ -3446,6 +3447,75 @@ action_runtime_save_tag_changes(void) {
     return false;
 }
 
+bool
+ncm_action_edit_song(NcmSong *song) {
+#if defined(HAVE_TAGLIB_H)
+    enum NativeTinyTagEditorOpenResult open_result;
+    NcmStringFormatArg arg;
+    NcmBuffer path;
+    int32 path_len;
+    int32 path_width;
+    bool success;
+
+    if (song == NULL) {
+        return false;
+    }
+    if (Config.mpd_music_dir_len <= 0) {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Proper mpd_music_dir variable has to be set in "
+                    "configuration file");
+        return false;
+    }
+
+    ncm_buffer_init(&path);
+    open_result = native_tiny_tag_editor_screen_open_song(
+        native_c_screen_tiny_tag_editor(), song, Config.mpd_music_dir,
+        Config.mpd_music_dir_len, Config.tags_separator,
+        Config.tags_separator_len, Config.show_duplicate_tags, &path);
+    success = false;
+    switch (open_result) {
+    case NATIVE_TINY_TAG_EDITOR_OPEN_SUCCESS:
+        success = action_runtime_switch_to_screen(
+            NCM_SCREEN_TYPE_TINY_TAG_EDITOR);
+        break;
+    case NATIVE_TINY_TAG_EDITOR_OPEN_STREAM:
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Streams can't be edited");
+        break;
+    case NATIVE_TINY_TAG_EDITOR_OPEN_MISSING_MUSIC_DIRECTORY:
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Proper mpd_music_dir variable has to be set in "
+                    "configuration file");
+        break;
+    case NATIVE_TINY_TAG_EDITOR_OPEN_UNREADABLE_FILE:
+        path_width = COLS - STRLIT_LEN("Couldn't read file \"%1%\"");
+        if (path_width < 0) {
+            path_width = 0;
+        }
+        path_len = ncm_utf8_cut_width(path.data, path.len, path_width);
+        arg = ncm_string_format_arg_string(path.data, path_len);
+        ncm_statusbar_format(
+            (int32)Config.message_delay_time,
+            STRLIT_ARGS("Couldn't read file \"%1%\""), &arg, 1);
+        break;
+    case NATIVE_TINY_TAG_EDITOR_OPEN_INVALID_ARGUMENT:
+    case NATIVE_TINY_TAG_EDITOR_OPEN_PREPARE_FAILED:
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Couldn't prepare tiny tag editor");
+        break;
+    }
+    ncm_buffer_destroy(&path);
+    return success;
+#else
+    (void)song;
+    return false;
+#endif
+}
+
 static bool
 action_runtime_edit_current_song(void) {
 #if defined(HAVE_TAGLIB_H)
@@ -3458,14 +3528,10 @@ action_runtime_edit_current_song(void) {
     ncm_song_init(&song);
     success = action_runtime_current_song(&song);
     if (success) {
-        success = native_tiny_tag_editor_screen_set_edited_song(
-            native_c_screen_tiny_tag_editor(), &song);
+        success = ncm_action_edit_song(&song);
     }
     ncm_song_destroy(&song);
-    if (!success) {
-        return false;
-    }
-    return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_TINY_TAG_EDITOR);
+    return success;
 #else
     return false;
 #endif
