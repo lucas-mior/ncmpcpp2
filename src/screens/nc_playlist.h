@@ -56,6 +56,7 @@ typedef struct NativePlaylistScreen {
     NcSongMenu songs;
     NcWindow window;
     NcmBuffer title_cache;
+    NcmBuffer column_title;
     NcmBuffer filter_constraint;
     NcmBuffer search_constraint;
     NcmRegex filter_regex;
@@ -122,6 +123,8 @@ NcPlaylistScreen *native_playlist_screen_playlist(NativePlaylistScreen *screen);
 NcSongMenu *native_playlist_screen_song_menu(NativePlaylistScreen *screen);
 NcMenu *native_playlist_screen_menu(NativePlaylistScreen *screen);
 NcWindow *native_playlist_screen_window(NativePlaylistScreen *screen);
+void native_playlist_screen_update_column_title(
+    NativePlaylistScreen *screen);
 void native_playlist_screen_set_geometry(NativePlaylistScreen *screen,
                                          int64 start_x, int64 width,
                                          int64 main_start_y,
@@ -157,6 +160,8 @@ bool native_playlist_screen_reload_from_mpd(NativePlaylistScreen *screen,
                                             NcmError *error);
 int64 native_playlist_screen_song_count(NativePlaylistScreen *screen);
 bool native_playlist_screen_empty(NativePlaylistScreen *screen);
+bool native_playlist_screen_contains_song(NativePlaylistScreen *screen,
+                                          NcmSong *song);
 bool native_playlist_screen_current_song(NativePlaylistScreen *screen,
                                          NcmSong *song);
 bool native_playlist_screen_update_current_mutable_song(
