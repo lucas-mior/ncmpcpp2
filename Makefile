@@ -100,6 +100,7 @@ PLAYLIST_ACTIONS_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=ncm_mpd_client_shuffle_range \
 	-Wl,--wrap=ncm_mpd_client_clear_queue \
 	-Wl,--wrap=ncm_mpd_client_add_song_value \
+	-Wl,--wrap=ncm_mpd_client_play_id \
 	-Wl,--wrap=ncm_mpd_client_set_priority_song \
 	-Wl,--wrap=ncm_mpd_client_set_crossfade \
 	-Wl,--wrap=ncm_mpd_client_set_volume \

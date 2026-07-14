@@ -59,6 +59,8 @@ typedef struct PlaylistActionTestState {
     int32 shuffle_calls;
     int32 clear_calls;
     int32 add_calls;
+    int32 play_id_calls;
+    int32 played_id;
     int32 priority_calls;
     int32 crossfade_calls;
     int32 volume_calls;
@@ -94,6 +96,7 @@ static NcMenu *playlist_menu(void);
 static void select_position(int64 position);
 static void highlight_position(int64 position);
 static void test_move_selected_items_up_down(void);
+static void test_play_item_does_not_append_playlist_song(void);
 static void test_move_selected_items_to(void);
 static void test_filtered_move_is_rejected(void);
 static void test_shuffle_confirmation(void);
@@ -114,6 +117,7 @@ int
 main(void) {
     test_state_init();
     test_move_selected_items_up_down();
+    test_play_item_does_not_append_playlist_song();
     test_move_selected_items_to();
     test_filtered_move_is_rejected();
     test_shuffle_confirmation();
@@ -174,6 +178,8 @@ test_state_reset(void) {
     test_state.shuffle_calls = 0;
     test_state.clear_calls = 0;
     test_state.add_calls = 0;
+    test_state.play_id_calls = 0;
+    test_state.played_id = -1;
     test_state.priority_calls = 0;
     test_state.crossfade_calls = 0;
     test_state.volume_calls = 0;
@@ -204,12 +210,27 @@ test_state_reset(void) {
     Config.ask_before_clearing_playlists = false;
     Config.ask_before_shuffling_playlists = false;
     Config.autocenter_mode = false;
+    Config.space_add_mode = NCM_SPACE_ADD_MODE_ADD_REMOVE;
     Config.crossfade_time = 5;
     Config.random_exclude_pattern = (char *)"";
     Config.random_exclude_pattern_len = 0;
     for (uint32 i = 0; i < 6; i += 1) {
         add_song(i);
     }
+    return;
+}
+
+static void
+test_play_item_does_not_append_playlist_song(void) {
+    test_state_reset();
+    Config.space_add_mode = NCM_SPACE_ADD_MODE_ALWAYS_ADD;
+    highlight_position(3);
+
+    assert(ncm_action_runtime_can_run(NULL, NCM_ACTION_PLAY_ITEM));
+    assert(ncm_action_runtime_run(NULL, NCM_ACTION_PLAY_ITEM));
+    assert(test_state.add_calls == 0);
+    assert(test_state.play_id_calls == 1);
+    assert(test_state.played_id == 13);
     return;
 }
 
@@ -808,6 +829,16 @@ __wrap_ncm_mpd_client_add_song_value(NcmMpdClient *client,
     test_state.added_positions[test_state.add_calls] =
         ncm_song_position(song);
     test_state.add_calls += 1;
+    ncm_error_clear(error);
+    return true;
+}
+
+bool
+__wrap_ncm_mpd_client_play_id(NcmMpdClient *client, int32 id,
+                              NcmError *error) {
+    (void)client;
+    test_state.play_id_calls += 1;
+    test_state.played_id = id;
     ncm_error_clear(error);
     return true;
 }
