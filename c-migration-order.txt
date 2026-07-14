@@ -1,0 +1,9 @@
+1. Playlist: remove src/screens/playlist.h.
+2. Playlist editor: cut over to nc_playlist_editor.c.
+3. Tag editor: cut over to nc_tag_editor.c.
+4. Browser: finish missing native functionality, especially local-filesystem browsing and deletion, then remove browser.h.
+5. Actions: move the remaining screen-specific and prompt actions out of actions_legacy.cpp, then delete it.
+6. Settings bridge: delete settings_legacy.cpp, settings_legacy.h, and settings_legacy_sync_test.cpp.
+7. MPD C++ wrapper: delete mpdpp.cpp, mpdpp.h, and the remaining MPD::Song compatibility types.
+8. Compatibility headers: remove the obsolete curses, utility, interface, formatting, and display C++ headers.
+9. Change the final application link from the C++ linker to the C linker and remove C++ build rules.
