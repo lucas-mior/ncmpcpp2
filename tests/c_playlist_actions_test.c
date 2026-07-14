@@ -676,6 +676,11 @@ test_add_random_items(void) {
     return;
 }
 
+NcScreen *
+__wrap_app_controller_current_screen(void) {
+    return native_playlist_screen_base(&test_state.screen);
+}
+
 enum ScreenType
 __wrap_native_c_screens_current_type(void) {
     return test_state.current_type;
