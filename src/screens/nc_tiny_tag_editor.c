@@ -11,6 +11,8 @@
 
 static NativeTinyTagEditorScreen *tiny_editor_from_screen(NcScreen *screen);
 static NcWindow *tiny_editor_active_window(NcScreen *screen);
+static bool tiny_editor_can_run_current(NcScreen *screen);
+static bool tiny_editor_run_current(NcScreen *screen);
 static void tiny_editor_refresh(NcScreen *screen);
 static void tiny_editor_refresh_window(NcScreen *screen);
 static void tiny_editor_scroll(NcScreen *screen, enum NcScroll where);
@@ -42,6 +44,8 @@ static int32 tiny_editor_channels_to_string(int32 channels,
 
 static NcScreenCallbacks tiny_editor_callbacks = {
     .active_window = tiny_editor_active_window,
+    .can_run_current = tiny_editor_can_run_current,
+    .run_current = tiny_editor_run_current,
     .refresh = tiny_editor_refresh,
     .refresh_window = tiny_editor_refresh_window,
     .scroll = tiny_editor_scroll,
@@ -431,6 +435,29 @@ tiny_editor_active_window(NcScreen *screen) {
         return editor->bridge.active_window(editor->bridge.user);
     }
     return &editor->window;
+}
+
+static bool
+tiny_editor_can_run_current(NcScreen *screen) {
+    NativeTinyTagEditorScreen *editor;
+
+    editor = tiny_editor_from_screen(screen);
+    if (editor->bridge.can_run_current == NULL
+        || editor->bridge.run_current == NULL) {
+        return false;
+    }
+    return editor->bridge.can_run_current(editor->bridge.user);
+}
+
+static bool
+tiny_editor_run_current(NcScreen *screen) {
+    NativeTinyTagEditorScreen *editor;
+
+    editor = tiny_editor_from_screen(screen);
+    if (editor->bridge.run_current == NULL) {
+        return false;
+    }
+    return editor->bridge.run_current(editor->bridge.user);
 }
 
 static void
