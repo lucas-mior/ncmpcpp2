@@ -98,8 +98,10 @@ void setProperties(NC::Menu<T> &menu, const MPD::Song &s,
 	}
 
 	NativePlaylistScreen *playlist = native_c_screen_playlist();
+	NcPlaylistScreen *playlist_screen
+		= native_playlist_screen_playlist(playlist);
 	bool is_playlist_menu = menu.nativeMenu()
-		== native_playlist_screen_menu(playlist);
+		== nc_playlist_screen_menu(playlist_screen);
 	int song_pos = s.getPosition();
 	is_now_playing = ncm_status_state_player() != NCM_STATUS_PLAYER_STOP
 		&& is_playlist_menu
