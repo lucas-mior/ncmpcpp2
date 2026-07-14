@@ -23,7 +23,6 @@
 #include "regex_filter.h"
 #include "screens/native_c_screens.h"
 #include "screens/nc_playlist_editor.h"
-#include "screens/playlist.h"
 #include "screens/screen_cpp_compat.h"
 #include "screens/tag_editor.h"
 #include "song_list.h"
