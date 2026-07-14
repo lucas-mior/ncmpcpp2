@@ -554,12 +554,14 @@ test_native_display_and_column_title(void) {
     add_song(&screen, LIT_ARGS("song.flac"), 0, 40);
     menu = native_playlist_screen_menu(&screen);
     song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, 0);
+    assert(ncm_song_add_tag(song, MPD_TAG_ARTIST, LIT_ARGS("Artist")));
+    assert(ncm_song_add_tag(song, MPD_TAG_TITLE, LIT_ARGS("Title")));
     reset_window_trace();
     menu->display_callbacks.draw(menu, &screen.window, song, 0,
                                  menu->display_callbacks.user);
     assert(ncm_string_equal(window_trace.printed,
                             window_trace.printed_len,
-                            LIT_ARGS("columns:song.flac")));
+                            LIT_ARGS("Artist    Title     ")));
 
     Config.playlist_display_mode = NCM_DISPLAY_MODE_CLASSIC;
     native_playlist_screen_update_column_title(&screen);

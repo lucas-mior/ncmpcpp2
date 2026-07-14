@@ -1655,6 +1655,7 @@ native_c_screens_register_native_only(void) {
 #if defined(ENABLE_OUTPUTS)
     native_c_screen_outputs_register();
 #endif
+    native_c_screen_playlist_register();
     return;
 }
 

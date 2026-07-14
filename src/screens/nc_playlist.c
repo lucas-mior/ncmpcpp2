@@ -12,6 +12,7 @@
 #include "c/ncm_base.h"
 #include "c/ncm_display.h"
 #include "c/ncm_type_conversions.h"
+#include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
 
 static void playlist_scroll_lines(NcPlaylistScreen *screen,
@@ -1406,7 +1407,6 @@ static bool
 native_playlist_song_matches(NativePlaylistScreen *screen,
                              NcmSong *song, NcmRegex *regex) {
     NcBuffer buffer;
-    NcmFormatAst *format;
     bool result;
 
     (void)screen;
@@ -1416,11 +1416,19 @@ native_playlist_song_matches(NativePlaylistScreen *screen,
 
     nc_buffer_init(&buffer);
     if (Config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
-        format = &Config.song_columns_mode_format;
+        int32 list_width;
+
+        if (screen->screen.width > INT32_MAX) {
+            list_width = INT32_MAX;
+        } else {
+            list_width = (int32)screen->screen.width;
+        }
+        ncm_display_song_columns(&buffer, song, Config.columns.items,
+                                 Config.columns.len, list_width, false);
     } else {
-        format = &Config.song_list_format;
+        ncm_display_song_row(&buffer, &Config.song_list_format, song,
+                             NCM_FORMAT_FLAG_ALL);
     }
-    ncm_display_song_row(&buffer, format, song, NCM_FORMAT_FLAG_ALL);
     result = ncm_regex_search(regex, buffer.data, buffer.len);
     nc_buffer_destroy(&buffer);
     return result;
@@ -1496,22 +1504,43 @@ static void
 native_playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
                           int64 pos, void *user) {
     NcBuffer buffer;
-    NcmFormatAst *format;
 
-    (void)menu;
-    (void)pos;
     (void)user;
-    if (item == NULL) {
+    if ((menu == NULL) || (window == NULL) || (item == NULL)) {
         return;
     }
 
     nc_buffer_init(&buffer);
     if (Config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
-        format = &Config.song_columns_mode_format;
+        int64 available_width;
+        int32 list_width;
+        bool use_colors;
+
+        available_width = nc_window_width(window) - nc_window_get_x(window);
+        if (nc_menu_position_is_selected(menu, pos)) {
+            available_width -= ncm_utf8_width(
+                menu->selected_suffix.data, menu->selected_suffix.len);
+        }
+        if (menu->highlight_enabled && (pos == menu->highlight)) {
+            available_width -= ncm_utf8_width(
+                menu->highlight_suffix.data, menu->highlight_suffix.len);
+        }
+        if (available_width < 0) {
+            available_width = 0;
+        }
+        if (available_width > INT32_MAX) {
+            list_width = INT32_MAX;
+        } else {
+            list_width = (int32)available_width;
+        }
+        use_colors = !Config.discard_colors_if_item_is_selected
+                     || !nc_menu_position_is_selected(menu, pos);
+        ncm_display_song_columns(&buffer, item, Config.columns.items,
+                                 Config.columns.len, list_width, use_colors);
     } else {
-        format = &Config.song_list_format;
+        ncm_display_song_row(&buffer, &Config.song_list_format, item,
+                             NCM_FORMAT_FLAG_ALL);
     }
-    ncm_display_song_row(&buffer, format, item, NCM_FORMAT_FLAG_ALL);
     native_playlist_print_buffer(window, &buffer);
     nc_buffer_destroy(&buffer);
     return;

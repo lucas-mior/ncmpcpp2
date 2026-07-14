@@ -30,7 +30,6 @@
 #include "macro_utilities.h"
 #include "screens/browser.h"
 #include "screens/native_c_screens.h"
-#include "screens/playlist.h"
 #include "screens/playlist_editor.h"
 #include "utility/readline.h"
 #include "utility/string.h"
@@ -479,7 +478,6 @@ void initializeScreens()
 	app_controller_init();
 	native_c_screens_init_all();
 
-	myPlaylist = new Playlist;
 	myBrowser = new Browser;
 	ncm_status_set_database_update_observer(
 	    requestMediaLibraryDatabaseUpdate, nullptr);
@@ -491,7 +489,6 @@ void initializeScreens()
 #	endif // HAVE_TAGLIB_H
 
 	native_c_screens_register_native_only();
-	myPlaylist->registerNativeScreen();
 	myBrowser->registerNativeScreen();
 	myPlaylistEditor->registerNativeScreen();
 	native_c_screen_lyrics_register();
@@ -504,7 +501,6 @@ void initializeScreens()
 void setResizeFlags()
 {
 	native_c_screens_request_registered_resize();
-	myPlaylist->hasToBeResized = 1;
 	myBrowser->hasToBeResized = 1;
 	myPlaylistEditor->hasToBeResized = 1;
 	native_c_screen_lyrics_set_resize();

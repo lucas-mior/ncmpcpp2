@@ -487,6 +487,58 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_PREVIOUS_SCREEN,
     };
 #endif
+    enum NcmActionType playlist_actions[] = {
+        NCM_ACTION_UPDATE_ENVIRONMENT,
+        NCM_ACTION_MOUSE_EVENT,
+        NCM_ACTION_SCROLL_UP,
+        NCM_ACTION_SCROLL_DOWN,
+        NCM_ACTION_SCROLL_UP_ARTIST,
+        NCM_ACTION_SCROLL_DOWN_ARTIST,
+        NCM_ACTION_PAGE_UP,
+        NCM_ACTION_PAGE_DOWN,
+        NCM_ACTION_MOVE_HOME,
+        NCM_ACTION_MOVE_END,
+        NCM_ACTION_TOGGLE_INTERFACE,
+        NCM_ACTION_ADD_ITEM_TO_PLAYLIST,
+        NCM_ACTION_PLAY_ITEM,
+        NCM_ACTION_DELETE_PLAYLIST_ITEMS,
+        NCM_ACTION_SAVE_PLAYLIST,
+        NCM_ACTION_MOVE_SELECTED_ITEMS_UP,
+        NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN,
+        NCM_ACTION_MOVE_SELECTED_ITEMS_TO,
+        NCM_ACTION_TOGGLE_DISPLAY_MODE,
+        NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING,
+        NCM_ACTION_JUMP_TO_PLAYING_SONG,
+        NCM_ACTION_SHUFFLE,
+        NCM_ACTION_SET_CROSSFADE,
+        NCM_ACTION_SET_VOLUME,
+        NCM_ACTION_JUMP_TO_POSITION_IN_SONG,
+        NCM_ACTION_SELECT_ITEM,
+        NCM_ACTION_SELECT_RANGE,
+        NCM_ACTION_REVERSE_SELECTION,
+        NCM_ACTION_REMOVE_SELECTION,
+        NCM_ACTION_SELECT_ALBUM,
+        NCM_ACTION_SELECT_FOUND_ITEMS,
+        NCM_ACTION_CROP_MAIN_PLAYLIST,
+        NCM_ACTION_CLEAR_MAIN_PLAYLIST,
+        NCM_ACTION_REVERSE_PLAYLIST,
+        NCM_ACTION_NEXT_FOUND_ITEM,
+        NCM_ACTION_PREVIOUS_FOUND_ITEM,
+        NCM_ACTION_TOGGLE_FIND_MODE,
+        NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE,
+        NCM_ACTION_ADD_RANDOM_ITEMS,
+        NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND,
+        NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY,
+        NCM_ACTION_SHOW_SONG_INFO,
+        NCM_ACTION_SHOW_ARTIST_INFO,
+        NCM_ACTION_SHOW_LYRICS,
+        NCM_ACTION_NEXT_SCREEN,
+        NCM_ACTION_PREVIOUS_SCREEN,
+        NCM_ACTION_SHOW_HELP,
+        NCM_ACTION_SHOW_BROWSER,
+        NCM_ACTION_SHOW_PLAYLIST_EDITOR,
+        NCM_ACTION_SHOW_SERVER_INFO,
+    };
     enum NcmActionType search_actions[] = {
         NCM_ACTION_MOUSE_EVENT,
         NCM_ACTION_SCROLL_UP,
@@ -576,6 +628,18 @@ test_app_binding_migration_c_safe_actions(void) {
     REQUIRE(!app_binding_migration_action_is_c_safe(
         NCM_ACTION_TOGGLE_VISUALIZATION_TYPE));
     REQUIRE(app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_PLAYLIST));
+    for (int32 i = 0; i < NCM_ARRAY_LEN(playlist_actions); i += 1) {
+        REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
+            playlist_actions[i], NCM_SCREEN_TYPE_PLAYLIST));
+    }
+    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_LOAD, NCM_SCREEN_TYPE_PLAYLIST));
+    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_START_SEARCHING, NCM_SCREEN_TYPE_PLAYLIST));
+    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_TOGGLE_OUTPUT, NCM_SCREEN_TYPE_PLAYLIST));
+    REQUIRE(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_VISUALIZER));
     REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
         NCM_ACTION_SHOW_VISUALIZER, NCM_SCREEN_TYPE_VISUALIZER));
@@ -632,6 +696,17 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_START_SEARCHING, NCM_SCREEN_TYPE_BROWSER));
     REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
         NCM_ACTION_SELECT_ALBUM, NCM_SCREEN_TYPE_SEARCH_ENGINE));
+
+    ncm_binding_init(&binding);
+    append_action(&binding, NCM_ACTION_SELECT_ITEM);
+    append_action(&binding, NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN);
+    append_action(&binding, NCM_ACTION_CLEAR_MAIN_PLAYLIST);
+    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
+    REQUIRE(app_binding_migration_binding_is_c_safe_for_screen(
+        &binding, NCM_SCREEN_TYPE_PLAYLIST));
+    REQUIRE(!app_binding_migration_binding_is_c_safe_for_screen(
+        &binding, NCM_SCREEN_TYPE_BROWSER));
+    ncm_binding_destroy(&binding);
 
     ncm_binding_init(&binding);
     append_action(&binding, NCM_ACTION_START_SEARCHING);
