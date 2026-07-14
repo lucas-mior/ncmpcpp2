@@ -5,7 +5,6 @@
 #include <filesystem>
 #include <algorithm>
 #include <iostream>
-#include <regex>
 #include <string>
 
 #include "actions_legacy.h"
@@ -59,6 +58,35 @@ bool currentSongFromNative(MPD::Song &song)
 
 	ncm_song_init(&native_song);
 	success = ncm_action_current_song(&native_song);
+	if (success)
+	{
+		try
+		{
+			song = MPD::Song(&native_song);
+		}
+		catch (...)
+		{
+			success = false;
+		}
+	}
+	ncm_song_destroy(&native_song);
+	return success;
+}
+
+bool playingSongFromNative(MPD::Song &song)
+{
+	NcmSong native_song;
+	int32 position;
+	bool success;
+
+	position = ncm_status_state_current_song_position();
+	if (position < 0)
+		return false;
+
+	ncm_song_init(&native_song);
+	native_playlist_screen_sync(native_c_screen_playlist());
+	success = native_playlist_screen_now_playing_song(
+	    native_c_screen_playlist(), position, &native_song);
 	if (success)
 	{
 		try
@@ -132,26 +160,6 @@ bool currentMediaLibraryAlbum(std::string &album)
 		return false;
 	album.assign(value, static_cast<size_t>(value_len));
 	return true;
-}
-
-bool locateNativeMediaLibrarySong(MPD::Song &song, bool switch_to)
-{
-	NcmError error;
-	bool success;
-
-	if (switch_to)
-	{
-		native_c_screen_media_library_register();
-		native_c_screen_media_library_switch_to();
-	}
-	Statusbar::put() << "Jumping to song...";
-	static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
-	ncm_error_clear(&error);
-	success = native_media_library_screen_locate_song(
-	    native_c_screen_media_library(), song.cSong(), &error);
-	if (!success && ncm_error_is_set(&error))
-		Statusbar::print(error.message);
-	return success;
 }
 
 bool nativeMediaLibraryItemAvailable()
@@ -251,34 +259,15 @@ void refreshPlaylistRelatedInactiveColumns(void *)
 
 bool highlightPlaylistMpdPosition(int32 position)
 {
-	if (myPlaylist == nullptr || position < 0)
+	if (position < 0)
 		return false;
 
-	auto &menu = myPlaylist->main();
-	if (!menu.isFiltered())
-	{
-		auto first = menu.begin();
-		auto last = menu.end();
-		auto it = std::find_if(first, last, [position](const auto &item) {
-			return item.value().getPosition() == position;
-		});
-		if (it == last)
-			return false;
-		menu.highlight(it - first);
-		return true;
-	}
-
-	auto first = menu.beginV();
-	auto last = menu.endV();
-	auto it = std::find_if(first, last, [position](const auto &song) {
-		return song.getPosition() == position;
-	});
-	if (it == last)
+	if (!native_playlist_screen_locate_position(
+	        native_c_screen_playlist(), static_cast<uint32>(position)))
 	{
 		Statusbar::print("Song is filtered out");
 		return false;
 	}
-	menu.highlight(it - first);
 	return true;
 }
 
@@ -461,15 +450,6 @@ NcmBindingRuntime *bindingsLegacyRuntime()
 bool bindingsLegacyExecute(NcmBinding *binding)
 {
 	return ncm_binding_execute_runtime(binding, bindingsLegacyRuntime());
-}
-
-template <typename Iterator>
-bool findSelectedRangeAndPrintInfoIfNot(Iterator &first, Iterator &last)
-{
-	bool success = findSelectedRange(first, last);
-	if (!success)
-		Statusbar::print("No range selected");
-	return success;
 }
 
 template <typename Iterator>
@@ -656,7 +636,7 @@ void UpdateEnvironment::run(bool update_timer, bool refresh_window, bool mpd_syn
 	nativeLyricsPrintConsumerMessage();
 
 	// header stuff
-	if ((screenLegacyCurrent() == myPlaylist
+	if ((native_c_screen_playlist_is_current()
 	     || screenLegacyCurrent() == myBrowser
 	     || native_c_screen_lyrics_is_current())
 	&&  (global_timer_elapsed_ms(m_past) > 500)
@@ -1176,23 +1156,24 @@ void SavePlaylist::run()
 
 bool MoveSelectedItemsUp::canBeRun()
 {
-	return ((screenLegacyCurrent() == myPlaylist
-	    &&  !myPlaylist->main().empty())
-	 ||    (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content)
-	    &&  !myPlaylistEditor->Content.empty()));
+	BaseScreen *current;
+
+	if (native_c_screen_playlist_is_current())
+		return ncm_action_runtime_can_run(
+		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_UP);
+	current = screenLegacyCurrent();
+	return current != nullptr
+	    && current->isActiveWindow(myPlaylistEditor->Content)
+	    && !myPlaylistEditor->Content.empty();
 }
 
 void MoveSelectedItemsUp::run()
 {
 	const char *filteredMsg = "Moving items up is disabled in filtered playlist";
-	if (screenLegacyCurrent() == myPlaylist)
+	if (native_c_screen_playlist_is_current())
 	{
-		if (myPlaylist->main().isFiltered())
-			Statusbar::print(filteredMsg);
-		else
-			moveSelectedItemsUp(
-				myPlaylist->main(),
-				[](auto &, unsigned from, unsigned to) { Mpd.Move(from, to); });
+		(void)ncm_action_runtime_run(
+		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_UP);
 	}
 	else if (screenLegacyCurrent() == myPlaylistEditor)
 	{
@@ -1212,23 +1193,24 @@ void MoveSelectedItemsUp::run()
 
 bool MoveSelectedItemsDown::canBeRun()
 {
-	return ((screenLegacyCurrent() == myPlaylist
-	    &&  !myPlaylist->main().empty())
-	 ||    (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content)
-	    &&  !myPlaylistEditor->Content.empty()));
+	BaseScreen *current;
+
+	if (native_c_screen_playlist_is_current())
+		return ncm_action_runtime_can_run(
+		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN);
+	current = screenLegacyCurrent();
+	return current != nullptr
+	    && current->isActiveWindow(myPlaylistEditor->Content)
+	    && !myPlaylistEditor->Content.empty();
 }
 
 void MoveSelectedItemsDown::run()
 {
 	const char *filteredMsg = "Moving items down is disabled in filtered playlist";
-	if (screenLegacyCurrent() == myPlaylist)
+	if (native_c_screen_playlist_is_current())
 	{
-		if (myPlaylist->main().isFiltered())
-			Statusbar::print(filteredMsg);
-		else
-			moveSelectedItemsDown(
-				myPlaylist->main(),
-				[](auto &, unsigned from, unsigned to) { Mpd.Move(from, to); });
+		(void)ncm_action_runtime_run(
+		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN);
 	}
 	else if (screenLegacyCurrent() == myPlaylistEditor)
 	{
@@ -1248,16 +1230,22 @@ void MoveSelectedItemsDown::run()
 
 bool MoveSelectedItemsTo::canBeRun()
 {
-	return screenLegacyCurrent() == myPlaylist
-	    || screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content);
+	BaseScreen *current;
+
+	if (native_c_screen_playlist_is_current())
+		return ncm_action_runtime_can_run(
+		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_TO);
+	current = screenLegacyCurrent();
+	return current != nullptr
+	    && current->isActiveWindow(myPlaylistEditor->Content);
 }
 
 void MoveSelectedItemsTo::run()
 {
-	if (screenLegacyCurrent() == myPlaylist)
+	if (native_c_screen_playlist_is_current())
 	{
-		if (!myPlaylist->main().empty())
-			moveSelectedItemsTo(myPlaylist->main(), [](auto &, unsigned from, unsigned to) { Mpd.Move(from, to); });
+		(void)ncm_action_runtime_run(
+		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_TO);
 	}
 	else
 	{
@@ -1339,35 +1327,23 @@ void Load::run()
 
 bool ToggleDisplayMode::canBeRun()
 {
-	return screenLegacyCurrent() == myPlaylist
-	    || screenLegacyCurrent() == myBrowser
-	    || screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content);
+	BaseScreen *current;
+
+	if (native_c_screen_playlist_is_current())
+		return ncm_action_runtime_can_run(
+		    nullptr, NCM_ACTION_TOGGLE_DISPLAY_MODE);
+	current = screenLegacyCurrent();
+	return current == myBrowser
+	    || (current != nullptr
+	        && current->isActiveWindow(myPlaylistEditor->Content));
 }
 
 void ToggleDisplayMode::run()
 {
-	if (screenLegacyCurrent() == myPlaylist)
+	if (native_c_screen_playlist_is_current())
 	{
-		switch (Config.playlist_display_mode)
-		{
-			case NCM_DISPLAY_MODE_CLASSIC:
-				Config.playlist_display_mode = NCM_DISPLAY_MODE_COLUMNS;
-				myPlaylist->main().setItemDisplayer(std::bind(
-					Display::SongsInColumns, ph::_1, std::cref(myPlaylist->main())
-				));
-				if (Config.titles_visibility)
-					myPlaylist->main().setTitle(Display::Columns(myPlaylist->main().getWidth()));
-				else
-					myPlaylist->main().setTitle("");
-				break;
-			case NCM_DISPLAY_MODE_COLUMNS:
-				Config.playlist_display_mode = NCM_DISPLAY_MODE_CLASSIC;
-				myPlaylist->main().setItemDisplayer(std::bind(
-					Display::Songs, ph::_1, std::cref(myPlaylist->main()), std::cref(Config.song_list_format)
-				));
-				myPlaylist->main().setTitle("");
-		}
-		Statusbar::printf("Playlist display mode: %1%", Config.playlist_display_mode);
+		(void)ncm_action_runtime_run(
+		    nullptr, NCM_ACTION_TOGGLE_DISPLAY_MODE);
 	}
 	else if (screenLegacyCurrent() == myBrowser)
 	{
@@ -1448,33 +1424,31 @@ void ToggleFetchingLyricsInBackground::run()
 
 void TogglePlayingSongCentering::run()
 {
-	Config.autocenter_mode = !Config.autocenter_mode;
-	Statusbar::printf("Centering playing song: %1%",
-		Config.autocenter_mode ? "on" : "off"
-	);
-	if (Config.autocenter_mode)
-	{
-		auto s = myPlaylist->nowPlayingSong();
-		if (!s.empty())
-			myPlaylist->locateSong(s);
-	}
+	(void)ncm_action_runtime_run(
+	    nullptr, NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING);
 }
 
 bool JumpToPlayingSong::canBeRun()
 {
-	m_song = myPlaylist->nowPlayingSong();
-	return !m_song.empty()
-		&& (screenLegacyCurrent() == myPlaylist
-		    || screenLegacyCurrent() == myPlaylistEditor
-		    || screenLegacyCurrent() == myBrowser
-		    || native_c_screen_media_library_is_current());
+	BaseScreen *current;
+
+	if (native_c_screen_playlist_is_current()
+	    || native_c_screen_media_library_is_current())
+		return ncm_action_runtime_can_run(
+		    nullptr, NCM_ACTION_JUMP_TO_PLAYING_SONG);
+
+	current = screenLegacyCurrent();
+	return (current == myPlaylistEditor || current == myBrowser)
+	    && playingSongFromNative(m_song);
 }
 
 void JumpToPlayingSong::run()
 {
-	if (screenLegacyCurrent() == myPlaylist)
+	if (native_c_screen_playlist_is_current()
+	    || native_c_screen_media_library_is_current())
 	{
-		myPlaylist->locateSong(m_song);
+		(void)ncm_action_runtime_run(
+		    nullptr, NCM_ACTION_JUMP_TO_PLAYING_SONG);
 	}
 	else if (screenLegacyCurrent() == myPlaylistEditor)
 	{
@@ -1484,29 +1458,16 @@ void JumpToPlayingSong::run()
 	{
 		myBrowser->locateSong(m_song);
 	}
-	else if (native_c_screen_media_library_is_current())
-	{
-		(void)locateNativeMediaLibrarySong(m_song, false);
-	}
 }
 
 bool Shuffle::canBeRun()
 {
-	if (screenLegacyCurrent() != myPlaylist)
-		return false;
-	m_begin = myPlaylist->main().begin();
-	m_end = myPlaylist->main().end();
-	return findSelectedRangeAndPrintInfoIfNot(m_begin, m_end);
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SHUFFLE);
 }
 
 void Shuffle::run()
 {
-	if (Config.ask_before_shuffling_playlists)
-		if (!confirmAction("Do you really want to shuffle selected range?"))
-			return;
-	auto begin = myPlaylist->main().begin();
-	Mpd.ShuffleRange(m_begin-begin, m_end-begin);
-	Statusbar::print("Range shuffled");
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHUFFLE);
 }
 
 bool SaveTagChanges::canBeRun()
@@ -1975,58 +1936,14 @@ void JumpToTagEditor::run()
 
 bool JumpToPositionInSong::canBeRun()
 {
-	return ncm_status_state_player() != NCM_STATUS_PLAYER_STOP && ncm_status_state_total_time() > 0;
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_JUMP_TO_POSITION_IN_SONG);
 }
 
 void JumpToPositionInSong::run()
 {
-
-	const MPD::Song s = myPlaylist->nowPlayingSong();
-
-	std::string spos;
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << "Position to go (in %/h:m:ss/m:ss/seconds(s)): ";
-		if (!promptString(spos))
-				return;
-	}
-
-	std::regex rx;
-	std::smatch what;
-	// mm:ss
-	if (std::regex_match(spos, what, rx.assign("([0-9]+):([0-9]{2})")))
-	{
-		auto mins = fromString<unsigned>(what[1]);
-		auto secs = fromString<unsigned>(what[2]);
-		boundsCheck(secs, 0u, 60u);
-		Mpd.Seek(s.getPosition(), mins * 60 + secs);
-	}
-	// position in seconds
-	else if (std::regex_match(spos, what, rx.assign("([0-9]+)s")))
-	{
-		auto secs = fromString<unsigned>(what[1]);
-		Mpd.Seek(s.getPosition(), secs);
-	}
-	// position in%
-	else if (std::regex_match(spos, what, rx.assign("([0-9]+)[%]{0,1}")))
-	{
-		auto percent = fromString<unsigned>(what[1]);
-		boundsCheck(percent, 0u, 100u);
-		int secs = (percent * s.getDuration()) / 100.0;
-		Mpd.Seek(s.getPosition(), secs);
-	}
-	// position in hh:mm:ss
-	else if (std::regex_match(spos, what, rx.assign("([0-9]+):([0-9]{2}):([0-9]{2})")))
-	{
-		auto hours = fromString<unsigned>(what[1]);
-		auto mins  = fromString<unsigned>(what[2]);
-		auto secs  = fromString<unsigned>(what[3]);
-		boundsCheck(mins, 0u, 60u);
-		boundsCheck(secs, 0u, 60u);
-		Mpd.Seek(s.getPosition(), hours * 3600 + mins * 60 + secs);
-	}
-	else
-		Statusbar::print("Invalid format ([h]:[mm]:[ss], [m]:[ss], [s]s, [%]%, [%] accepted)");
+	(void)ncm_action_runtime_run(
+	    nullptr, NCM_ACTION_JUMP_TO_POSITION_IN_SONG);
 }
 
 bool SelectItem::canBeRun()
@@ -2151,15 +2068,7 @@ void SelectFoundItems::run()
 
 void CropMainPlaylist::run()
 {
-	// cropping doesn't make sense in this case
-	if (myPlaylist->main().size() <= 1)
-		return;
-	if (Config.ask_before_clearing_playlists)
-		if (!confirmAction("Do you really want to crop main playlist?"))
-			return;
-	Statusbar::print("Cropping playlist...");
-	if (ncm_action_crop_main_playlist())
-		Statusbar::print("Playlist cropped");
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_CROP_MAIN_PLAYLIST);
 }
 
 bool CropPlaylist::canBeRun()
@@ -2187,12 +2096,7 @@ void CropPlaylist::run()
 
 void ClearMainPlaylist::run()
 {
-	if (!myPlaylist->main().empty() && Config.ask_before_clearing_playlists)
-		if (!confirmAction("Do you really want to clear main playlist?"))
-			return;
-	Mpd.ClearMainPlaylist();
-	Statusbar::print("Playlist cleared");
-	myPlaylist->main().reset();
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_CLEAR_MAIN_PLAYLIST);
 }
 
 bool ClearPlaylist::canBeRun()
@@ -2215,24 +2119,12 @@ void ClearPlaylist::run()
 
 bool ReversePlaylist::canBeRun()
 {
-	if (screenLegacyCurrent() != myPlaylist)
-		return false;
-	m_begin = myPlaylist->main().begin();
-	m_end = myPlaylist->main().end();
-	if (m_begin == m_end)
-		return false;
-	else
-		return findSelectedRangeAndPrintInfoIfNot(m_begin, m_end);
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_REVERSE_PLAYLIST);
 }
 
 void ReversePlaylist::run()
 {
-	Statusbar::print("Reversing range...");
-	Mpd.StartCommandsList();
-	for (--m_end; m_begin < m_end; ++m_begin, --m_end)
-		Mpd.Swap(m_begin->value().getPosition(), m_end->value().getPosition());
-	Mpd.CommitCommandsList();
-	Statusbar::print("Range reversed");
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_REVERSE_PLAYLIST);
 }
 
 bool Find::canBeRun()
@@ -2555,28 +2447,14 @@ void RefetchLyrics::run()
 
 bool SetSelectedItemsPriority::canBeRun()
 {
-	if (Mpd.Version() < 17)
-	{
-		Statusbar::print("Priorities are supported in MPD >= 0.17.0");
-		return false;
-	}
-	return screenLegacyCurrent() == myPlaylist && !myPlaylist->main().empty();
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY);
 }
 
 void SetSelectedItemsPriority::run()
 {
-
-	unsigned prio;
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << "Set priority [0-255]: ";
-		std::string input;
-		if (!promptString(input))
-			return;
-		prio = fromString<unsigned>(input);
-		boundsCheck(prio, 0u, 255u);
-	}
-	myPlaylist->setSelectedItemsPriority(prio);
+	(void)ncm_action_runtime_run(
+	    nullptr, NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY);
 }
 
 bool ToggleOutput::canBeRun()
@@ -2732,7 +2610,7 @@ void ShowHelp::run()
 
 bool ShowPlaylist::canBeRun()
 {
-	return screenLegacyCurrent() != myPlaylist
+	return !native_c_screen_playlist_is_current()
 #	ifdef HAVE_TAGLIB_H
 	    && !native_c_screen_tiny_tag_editor_is_current()
 #	endif // HAVE_TAGLIB_H
@@ -2741,7 +2619,7 @@ bool ShowPlaylist::canBeRun()
 
 void ShowPlaylist::run()
 {
-	myPlaylist->switchTo();
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHOW_PLAYLIST);
 }
 
 bool ShowBrowser::canBeRun()
