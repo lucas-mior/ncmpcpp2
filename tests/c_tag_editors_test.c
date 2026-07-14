@@ -14,6 +14,21 @@
 _Static_assert(NATIVE_TINY_TAG_EDITOR_ROW_COUNT == 24,
                "tiny tag editor row count changed");
 
+typedef struct TinyEditorTaglibFixture {
+    NcmBuffer path;
+    NcmTaglibAudioProperties properties;
+    int32 open_calls;
+    int32 audio_calls;
+    int32 extended_calls;
+    int32 close_calls;
+    int32 prepared_calls;
+    bool open_result;
+    bool audio_result;
+    bool extended_result;
+    bool prepared_result;
+    bool prepared_extended;
+} TinyEditorTaglibFixture;
+
 typedef struct TinyEditorWriteFixture {
     char *music_dir;
     int32 calls;
@@ -107,9 +122,13 @@ static void test_tiny_editor_field_updates(void);
 static void test_tiny_editor_filename_stem(void);
 static void test_tiny_editor_save_results(void);
 static void test_tiny_editor_run_current_bridge(void);
+static void test_tiny_editor_open_song(void);
+static void test_tiny_editor_open_failures(void);
 
 static void init_tiny_editor_song(NcmMutableSong *song, char *name,
                                   int32 name_len);
+static void init_tiny_editor_native_song(NcmSong *song, char *uri,
+                                         int32 uri_len);
 static NcMenu *tiny_editor_menu(NativeTinyTagEditorScreen *screen);
 static NcBuffer *tiny_editor_row(NativeTinyTagEditorScreen *screen,
                                  int64 row);
@@ -123,6 +142,17 @@ static bool tiny_editor_write_song(void *user, NcmMutableSong *song,
                                    char *music_dir);
 static bool tiny_editor_can_run_current(void *user);
 static bool tiny_editor_run_current(void *user);
+static bool tiny_editor_taglib_open(void *user, NcmTaglibFile *file,
+                                    char *path, int32 path_len);
+static bool tiny_editor_taglib_audio_properties(
+    void *user, NcmTaglibFile *file,
+    NcmTaglibAudioProperties *properties);
+static bool tiny_editor_taglib_extended_set_supported(
+    void *user, NcmTaglibFile *file);
+static void tiny_editor_taglib_close(void *user, NcmTaglibFile *file);
+static bool tiny_editor_prepared_song(
+    void *user, NcmSong *song, NcmTaglibAudioProperties *properties,
+    bool extended_tags_supported);
 
 int
 main(void) {
@@ -137,6 +167,8 @@ main(void) {
     test_tiny_editor_filename_stem();
     test_tiny_editor_save_results();
     test_tiny_editor_run_current_bridge();
+    test_tiny_editor_open_song();
+    test_tiny_editor_open_failures();
     return EXIT_SUCCESS;
 }
 
@@ -621,6 +653,180 @@ test_tiny_editor_run_current_bridge(void) {
 }
 
 static void
+test_tiny_editor_open_song(void) {
+    NativeTinyTagEditorScreen screen;
+    NativeTinyTagEditorHooks hooks = {0};
+    NativeTinyTagEditorBridge bridge = {0};
+    TinyEditorTaglibFixture fixture = {0};
+    NcmMutableSong *edited;
+    NcmBuffer path;
+    NcmSong song;
+    enum NativeTinyTagEditorOpenResult result;
+
+    ncm_buffer_init(&fixture.path);
+    fixture.properties.length = 245;
+    fixture.properties.bitrate = 320;
+    fixture.properties.sample_rate = 48000;
+    fixture.properties.channels = 2;
+    fixture.open_result = true;
+    fixture.audio_result = true;
+    fixture.extended_result = false;
+    fixture.prepared_result = true;
+
+    native_tiny_tag_editor_screen_init(&screen, 0, 80, 0, 24,
+                                       nc_color_default(),
+                                       nc_border_none());
+    hooks.taglib_open = tiny_editor_taglib_open;
+    hooks.taglib_audio_properties = tiny_editor_taglib_audio_properties;
+    hooks.taglib_extended_set_supported =
+        tiny_editor_taglib_extended_set_supported;
+    hooks.taglib_close = tiny_editor_taglib_close;
+    hooks.user = &fixture;
+    native_tiny_tag_editor_screen_set_hooks(&screen, hooks);
+    bridge.prepared_song = tiny_editor_prepared_song;
+    bridge.user = &fixture;
+    native_tiny_tag_editor_screen_set_bridge(&screen, bridge);
+
+    init_tiny_editor_native_song(&song, LIT_ARGS("album/song.flac"));
+    ncm_buffer_init(&path);
+    result = native_tiny_tag_editor_screen_open_song(
+        &screen, &song, LIT_ARGS("/music/"), LIT_ARGS(" | "), true,
+        &path);
+    assert(result == NATIVE_TINY_TAG_EDITOR_OPEN_SUCCESS);
+    assert(ncm_string_equal(path.data, path.len,
+                            LIT_ARGS("/music/album/song.flac")));
+    assert(ncm_string_equal(fixture.path.data, fixture.path.len,
+                            path.data, path.len));
+    assert(fixture.open_calls == 1);
+    assert(fixture.audio_calls == 1);
+    assert(fixture.extended_calls == 1);
+    assert(fixture.close_calls == 1);
+    assert(fixture.prepared_calls == 1);
+    assert(!fixture.prepared_extended);
+    edited = native_tiny_tag_editor_screen_edited(&screen);
+    assert(edited != NULL);
+    assert(ncm_mutable_song_duration(edited) == 245);
+    assert(ncm_mutable_song_mtime(edited) == 1234);
+    assert_tiny_editor_row_text(
+        &screen, NATIVE_TINY_TAG_EDITOR_BITRATE_INFO_ROW,
+        LIT_ARGS("Bitrate: 320 kbps"));
+    assert_tiny_editor_row_text(
+        &screen, NATIVE_TINY_TAG_EDITOR_SAMPLE_RATE_INFO_ROW,
+        LIT_ARGS("Sample rate: 48000 Hz"));
+    assert(nc_menu_item_flags_at(
+        tiny_editor_menu(&screen), NC_MENU_ITEMS_ALL,
+        NATIVE_TINY_TAG_EDITOR_TAG_ROW(NCM_TAGS_FIELD_ALBUM_ARTIST))
+        & NC_MENU_ITEM_INACTIVE);
+
+    ncm_song_destroy(&song);
+    ncm_buffer_destroy(&path);
+    native_tiny_tag_editor_screen_destroy(&screen);
+    ncm_buffer_destroy(&fixture.path);
+    return;
+}
+
+static void
+test_tiny_editor_open_failures(void) {
+    NativeTinyTagEditorScreen screen;
+    NativeTinyTagEditorHooks hooks = {0};
+    NativeTinyTagEditorBridge bridge = {0};
+    TinyEditorTaglibFixture fixture = {0};
+    NcmBuffer path;
+    NcmSong song;
+    enum NativeTinyTagEditorOpenResult result;
+
+    ncm_buffer_init(&fixture.path);
+    fixture.open_result = true;
+    fixture.audio_result = true;
+    fixture.extended_result = true;
+    fixture.prepared_result = true;
+    native_tiny_tag_editor_screen_init(&screen, 0, 80, 0, 24,
+                                       nc_color_default(),
+                                       nc_border_none());
+    hooks.taglib_open = tiny_editor_taglib_open;
+    hooks.taglib_audio_properties = tiny_editor_taglib_audio_properties;
+    hooks.taglib_extended_set_supported =
+        tiny_editor_taglib_extended_set_supported;
+    hooks.taglib_close = tiny_editor_taglib_close;
+    hooks.user = &fixture;
+    native_tiny_tag_editor_screen_set_hooks(&screen, hooks);
+    bridge.prepared_song = tiny_editor_prepared_song;
+    bridge.user = &fixture;
+    native_tiny_tag_editor_screen_set_bridge(&screen, bridge);
+    ncm_buffer_init(&path);
+
+    init_tiny_editor_native_song(&song,
+                                 LIT_ARGS("https://example/song.flac"));
+    result = native_tiny_tag_editor_screen_open_song(
+        &screen, &song, LIT_ARGS("/music/"), LIT_ARGS(" | "), true,
+        &path);
+    assert(result == NATIVE_TINY_TAG_EDITOR_OPEN_STREAM);
+    assert(path.len == 0);
+    assert(fixture.open_calls == 0);
+    ncm_song_destroy(&song);
+
+    init_tiny_editor_native_song(&song, LIT_ARGS("album/song.flac"));
+    result = native_tiny_tag_editor_screen_open_song(
+        &screen, &song, NULL, 0, LIT_ARGS(" | "), true, &path);
+    assert(result
+           == NATIVE_TINY_TAG_EDITOR_OPEN_MISSING_MUSIC_DIRECTORY);
+    assert(path.len == 0);
+    assert(fixture.open_calls == 0);
+
+    fixture.open_result = false;
+    result = native_tiny_tag_editor_screen_open_song(
+        &screen, &song, LIT_ARGS("/music/"), LIT_ARGS(" | "), true,
+        &path);
+    assert(result == NATIVE_TINY_TAG_EDITOR_OPEN_UNREADABLE_FILE);
+    assert(ncm_string_equal(path.data, path.len,
+                            LIT_ARGS("/music/album/song.flac")));
+    assert(fixture.open_calls == 1);
+    assert(fixture.audio_calls == 0);
+    assert(fixture.extended_calls == 0);
+    assert(fixture.close_calls == 1);
+    assert(native_tiny_tag_editor_screen_edited(&screen) == NULL);
+
+    fixture.open_result = true;
+    fixture.prepared_result = false;
+    result = native_tiny_tag_editor_screen_open_song(
+        &screen, &song, LIT_ARGS("/music/"), LIT_ARGS(" | "), true,
+        &path);
+    assert(result == NATIVE_TINY_TAG_EDITOR_OPEN_PREPARE_FAILED);
+    assert(fixture.open_calls == 2);
+    assert(fixture.audio_calls == 1);
+    assert(fixture.extended_calls == 1);
+    assert(fixture.close_calls == 2);
+    assert(fixture.prepared_calls == 1);
+    assert(native_tiny_tag_editor_screen_edited(&screen) == NULL);
+    assert(nc_menu_empty(tiny_editor_menu(&screen)));
+    ncm_song_destroy(&song);
+
+    ncm_song_init(&song);
+    fixture.prepared_result = true;
+    result = native_tiny_tag_editor_screen_open_song(
+        &screen, &song, LIT_ARGS("/music/"), LIT_ARGS(" | "), true,
+        &path);
+    assert(result == NATIVE_TINY_TAG_EDITOR_OPEN_PREPARE_FAILED);
+    assert(fixture.open_calls == 2);
+    ncm_song_destroy(&song);
+
+    init_tiny_editor_native_song(&song, LIT_ARGS("/tmp/song.flac"));
+    result = native_tiny_tag_editor_screen_open_song(
+        &screen, &song, NULL, 0, NULL, 0, true, &path);
+    assert(result == NATIVE_TINY_TAG_EDITOR_OPEN_SUCCESS);
+    assert(ncm_string_equal(path.data, path.len,
+                            LIT_ARGS("/tmp/song.flac")));
+    assert(fixture.open_calls == 3);
+    assert(fixture.close_calls == 3);
+    ncm_song_destroy(&song);
+
+    ncm_buffer_destroy(&path);
+    native_tiny_tag_editor_screen_destroy(&screen);
+    ncm_buffer_destroy(&fixture.path);
+    return;
+}
+
+static void
 init_tiny_editor_song(NcmMutableSong *song, char *name, int32 name_len) {
     ncm_mutable_song_init(song);
     assert(ncm_mutable_song_set_uri(song, LIT_ARGS("album/song.flac")));
@@ -633,6 +839,18 @@ init_tiny_editor_song(NcmMutableSong *song, char *name, int32 name_len) {
             song, (enum NcmTagsField)field, 0,
             tiny_tag_values[field].data, tiny_tag_values[field].len));
     }
+    return;
+}
+
+static void
+init_tiny_editor_native_song(NcmSong *song, char *uri,
+                             int32 uri_len) {
+    ncm_song_init(song);
+    assert(ncm_song_set_uri(song, uri, uri_len));
+    assert(ncm_song_add_tag(song, MPD_TAG_TITLE,
+                            LIT_ARGS("Song title")));
+    ncm_song_set_duration(song, 245);
+    ncm_song_set_mtime(song, 1234);
     return;
 }
 
@@ -683,6 +901,70 @@ assert_tiny_editor_tag_row_text(NativeTinyTagEditorScreen *screen,
         expected.data, expected.len);
     ncm_buffer_destroy(&expected);
     return;
+}
+
+static bool
+tiny_editor_taglib_open(void *user, NcmTaglibFile *file, char *path,
+                        int32 path_len) {
+    TinyEditorTaglibFixture *fixture;
+
+    fixture = user;
+    fixture->open_calls += 1;
+    assert(ncm_buffer_set(&fixture->path, path, path_len));
+    if (fixture->open_result) {
+        file->handle = fixture;
+    }
+    return fixture->open_result;
+}
+
+static bool
+tiny_editor_taglib_audio_properties(
+    void *user, NcmTaglibFile *file,
+    NcmTaglibAudioProperties *properties) {
+    TinyEditorTaglibFixture *fixture;
+
+    fixture = user;
+    fixture->audio_calls += 1;
+    assert(file->handle == fixture);
+    if (fixture->audio_result) {
+        *properties = fixture->properties;
+    }
+    return fixture->audio_result;
+}
+
+static bool
+tiny_editor_taglib_extended_set_supported(
+    void *user, NcmTaglibFile *file) {
+    TinyEditorTaglibFixture *fixture;
+
+    fixture = user;
+    fixture->extended_calls += 1;
+    assert(file->handle == fixture);
+    return fixture->extended_result;
+}
+
+static void
+tiny_editor_taglib_close(void *user, NcmTaglibFile *file) {
+    TinyEditorTaglibFixture *fixture;
+
+    fixture = user;
+    fixture->close_calls += 1;
+    file->handle = NULL;
+    return;
+}
+
+static bool
+tiny_editor_prepared_song(
+    void *user, NcmSong *song, NcmTaglibAudioProperties *properties,
+    bool extended_tags_supported) {
+    TinyEditorTaglibFixture *fixture;
+
+    fixture = user;
+    fixture->prepared_calls += 1;
+    fixture->prepared_extended = extended_tags_supported;
+    assert(song != NULL);
+    assert(properties->bitrate == fixture->properties.bitrate);
+    return fixture->prepared_result;
 }
 
 static bool

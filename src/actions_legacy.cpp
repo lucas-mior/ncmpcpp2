@@ -1627,8 +1627,7 @@ bool EditSong::canBeRun()
 void EditSong::run()
 {
 #	ifdef HAVE_TAGLIB_H
-	myTinyTagEditor->SetEdited(m_song);
-	myTinyTagEditor->switchTo();
+	(void)ncm_action_edit_song(m_song.cSong());
 #	endif // HAVE_TAGLIB_H
 }
 
