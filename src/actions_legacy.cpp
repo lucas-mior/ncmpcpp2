@@ -1528,8 +1528,9 @@ void SaveTagChanges::run()
 #	ifdef HAVE_TAGLIB_H
 	if (screenLegacyCurrent() == myTinyTagEditor)
 	{
-		myTinyTagEditor->main().highlight(myTinyTagEditor->main().size()-2); // Save
-		myTinyTagEditor->runAction();
+		(void)native_tiny_tag_editor_screen_run_row(
+			native_c_screen_tiny_tag_editor(),
+			NATIVE_TINY_TAG_EDITOR_SAVE_ROW);
 	}
 	else if (screenLegacyCurrent()->activeWindow() == myTagEditor->TagTypes)
 	{

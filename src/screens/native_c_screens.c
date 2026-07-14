@@ -1187,8 +1187,88 @@ native_c_screen_tag_editor_native(void) {
     return native_tag_editor_screen_base(&tag_editor_screen);
 }
 
+static bool
+native_tiny_tag_editor_prompt_hook(char *text, void *user) {
+    (void)user;
+    return ncm_statusbar_main_hook(text, native_cstring_len(text));
+}
+
+static enum NativeTinyTagEditorPromptResult
+native_tiny_tag_editor_prompt(
+    void *user, char *label, int32 label_len, NcmStringView initial,
+    NcmBuffer *result) {
+    NcmStatusbarScopedLock lock;
+    enum NcPromptStatus status;
+    NcPrompt prompt = {0};
+    NcWindow *window;
+    char *input;
+    char *initial_text;
+    int32 input_len;
+    bool copied;
+
+    (void)user;
+    if ((label == NULL) || (label_len < 0) || (initial.len < 0)
+        || (result == NULL)
+        || ((initial.data == NULL) && (initial.len > 0))) {
+        return NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
+    }
+
+    input = NULL;
+    initial_text = initial.data;
+    if (initial_text == NULL) {
+        initial_text = (char *)"";
+    }
+
+    ncm_statusbar_scoped_lock_init(&lock);
+    window = ncm_statusbar_put();
+    if (window == NULL) {
+        ncm_statusbar_scoped_lock_destroy(&lock);
+        return NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
+    }
+    nc_window_apply_format(window, NC_FORMAT_BOLD);
+    nc_window_print_data(window, label, label_len);
+    nc_window_print_data(window, STRLIT_ARGS(": "));
+    nc_window_apply_format(window, NC_FORMAT_NO_BOLD);
+
+    prompt.initial_text = initial_text;
+    prompt.width = -1;
+    prompt.hook = native_tiny_tag_editor_prompt_hook;
+    prompt.hook_user_data = NULL;
+    prompt.encrypted = false;
+    prompt.remember = true;
+    status = nc_window_prompt(window, &prompt, &input);
+    ncm_statusbar_scoped_lock_destroy(&lock);
+
+    if ((status != NC_PROMPT_ACCEPTED) || (input == NULL)) {
+        nc_window_prompt_result_destroy(input);
+        if (status == NC_PROMPT_ABORTED) {
+            return NATIVE_TINY_TAG_EDITOR_PROMPT_ABORTED;
+        }
+        return NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
+    }
+
+    input_len = native_cstring_len(input);
+    copied = ncm_buffer_set(result, input, input_len);
+    nc_window_prompt_result_destroy(input);
+    if (!copied) {
+        return NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
+    }
+    return NATIVE_TINY_TAG_EDITOR_PROMPT_ACCEPTED;
+}
+
+static void
+native_tiny_tag_editor_status_message(
+    void *user, char *message, int32 message_len) {
+    (void)user;
+    ncm_statusbar_print((int32)Config.message_delay_time,
+                        message, message_len);
+    return;
+}
+
 void
 native_c_screen_tiny_tag_editor_init(void) {
+    NativeTinyTagEditorHooks hooks = {0};
+
     if (tiny_tag_editor_screen_initialized) {
         return;
     }
@@ -1199,6 +1279,10 @@ native_c_screen_tiny_tag_editor_init(void) {
                                        ui_state_main_height(),
                                        Config.main_color,
                                        native_no_border());
+    hooks.prompt = native_tiny_tag_editor_prompt;
+    hooks.status_message = native_tiny_tag_editor_status_message;
+    native_tiny_tag_editor_screen_set_hooks(
+        &tiny_tag_editor_screen, hooks);
     tiny_tag_editor_screen_initialized = true;
     return;
 }

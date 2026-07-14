@@ -38,8 +38,8 @@ enum NativeTinyTagEditorRow {
 
 typedef struct NativeTinyTagEditorBridge {
     NcWindow *(*active_window)(void *user);
-    bool (*can_run_current)(void *user);
-    bool (*run_current)(void *user);
+    int64 (*current_row)(void *user);
+    void (*row_changed)(void *user, NcmMutableSong *song, int64 row);
     bool (*prepared_song)(
         void *user, NcmSong *song, NcmTaglibAudioProperties *properties,
         bool extended_tags_supported);
@@ -97,6 +97,8 @@ typedef struct NativeTinyTagEditorScreen {
     NativeTinyTagEditorBridge bridge;
     NativeTinyTagEditorHooks hooks;
     NcmMutableSong edited;
+    NcmBuffer music_dir;
+    NcmBuffer tag_separator;
     NcScreen *previous_screen;
 
     int64 start_x;
@@ -105,6 +107,7 @@ typedef struct NativeTinyTagEditorScreen {
     int64 main_height;
 
     bool has_edited;
+    bool show_duplicate_tags;
     bool registered;
 } NativeTinyTagEditorScreen;
 
@@ -150,6 +153,10 @@ bool native_tiny_tag_editor_screen_set_filename_stem(
     NativeTinyTagEditorScreen *screen, char *stem, int32 stem_len);
 bool native_tiny_tag_editor_screen_save(
     NativeTinyTagEditorScreen *screen, char *music_dir);
+bool native_tiny_tag_editor_screen_run_row(
+    NativeTinyTagEditorScreen *screen, int64 row);
+bool native_tiny_tag_editor_screen_run_current(
+    NativeTinyTagEditorScreen *screen);
 bool native_tiny_tag_editor_screen_action_runnable(
     NativeTinyTagEditorScreen *screen);
 
