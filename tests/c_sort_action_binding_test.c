@@ -33,7 +33,7 @@ test_sort_actions_are_c_safe(void) {
 }
 
 static void
-test_navigation_is_c_safe_only_on_native_dialog(void) {
+test_navigation_is_c_safe_on_native_screens(void) {
     enum NcmActionType types[] = {
         NCM_ACTION_SCROLL_UP,
         NCM_ACTION_SCROLL_DOWN,
@@ -51,7 +51,7 @@ test_navigation_is_c_safe_only_on_native_dialog(void) {
 
     assert(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG));
-    assert(!app_binding_migration_screen_is_c_only(
+    assert(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_PLAYLIST));
 
     for (int32 i = 0; i < LENGTH(types); i += 1) {
@@ -60,14 +60,14 @@ test_navigation_is_c_safe_only_on_native_dialog(void) {
         assert(!app_binding_migration_action_is_c_safe(types[i]));
         assert(app_binding_migration_action_is_c_safe_for_screen(
             types[i], NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG));
-        assert(!app_binding_migration_action_is_c_safe_for_screen(
+        assert(app_binding_migration_action_is_c_safe_for_screen(
             types[i], NCM_SCREEN_TYPE_PLAYLIST));
     }
 
     assert(!app_binding_migration_binding_is_c_safe(&binding));
     assert(app_binding_migration_binding_is_c_safe_for_screen(
         &binding, NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG));
-    assert(!app_binding_migration_binding_is_c_safe_for_screen(
+    assert(app_binding_migration_binding_is_c_safe_for_screen(
         &binding, NCM_SCREEN_TYPE_PLAYLIST));
     return;
 }
@@ -94,7 +94,7 @@ test_legacy_action_is_blocked_on_native_dialog(void) {
 int
 main(void) {
     test_sort_actions_are_c_safe();
-    test_navigation_is_c_safe_only_on_native_dialog();
+    test_navigation_is_c_safe_on_native_screens();
     test_legacy_action_is_blocked_on_native_dialog();
     exit(EXIT_SUCCESS);
 }
