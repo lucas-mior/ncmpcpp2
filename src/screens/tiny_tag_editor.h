@@ -7,6 +7,7 @@
 
 #include <cerrno>
 #include <cstring>
+#include <exception>
 #include <string>
 
 #include "app_controller.h"
@@ -61,6 +62,8 @@ struct TinyTagEditor: Screen<NC::Menu<NC::Buffer>>, HasActions
 	
 private:
     static NcWindow *nativeActiveWindowCallback(void *user);
+    static bool nativeCanRunCurrentCallback(void *user);
+    static bool nativeRunCurrentCallback(void *user);
     static void nativeRefreshCallback(void *user);
     static void nativeRefreshWindowCallback(void *user);
     static void nativeScrollCallback(void *user, enum NcScroll where);
@@ -108,6 +111,8 @@ inline TinyTagEditor::TinyTagEditor()
         NativeTinyTagEditorBridge bridge = {};
 
         bridge.active_window = nativeActiveWindowCallback;
+        bridge.can_run_current = nativeCanRunCurrentCallback;
+        bridge.run_current = nativeRunCurrentCallback;
         bridge.refresh = nativeRefreshCallback;
         bridge.refresh_window = nativeRefreshWindowCallback;
         bridge.scroll = nativeScrollCallback;
@@ -208,6 +213,37 @@ inline NcWindow *TinyTagEditor::nativeActiveWindowCallback(void *user)
     if (editor == nullptr)
         return nullptr;
     return editor->w.nativeWindow();
+}
+
+inline bool TinyTagEditor::nativeCanRunCurrentCallback(void *user)
+{
+    TinyTagEditor *editor = static_cast<TinyTagEditor *>(user);
+
+    if (editor == nullptr)
+        return false;
+    return editor->actionRunnable();
+}
+
+inline bool TinyTagEditor::nativeRunCurrentCallback(void *user)
+{
+    TinyTagEditor *editor = static_cast<TinyTagEditor *>(user);
+
+    if (editor == nullptr)
+        return false;
+    try
+    {
+        editor->runAction();
+        return true;
+    }
+    catch (NC::PromptAborted &)
+    {
+        Statusbar::printf("Action aborted");
+    }
+    catch (std::exception &e)
+    {
+        Statusbar::printf("Unexpected error: %1%", e.what());
+    }
+    return false;
 }
 
 inline void TinyTagEditor::nativeRefreshCallback(void *user)
