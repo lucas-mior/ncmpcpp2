@@ -1306,6 +1306,8 @@ static bool action_runtime_set_crossfade(void);
 static bool action_runtime_set_volume(void);
 static bool action_runtime_add_random_items(void);
 static NcMenu *action_runtime_current_menu(void);
+static enum NcMenuItemSource action_runtime_menu_item_source(
+    NcMenu *menu);
 static bool action_runtime_menu_has_items(void);
 static bool action_runtime_selected_songs(NcmSongArray *songs);
 static bool action_runtime_has_selected_songs(void);
@@ -2738,6 +2740,14 @@ action_runtime_repeat_search(enum SearchDirection direction) {
     return true;
 }
 
+static enum NcMenuItemSource
+action_runtime_menu_item_source(NcMenu *menu) {
+    if ((menu != NULL) && nc_menu_is_filtered(menu)) {
+        return NC_MENU_ITEMS_FILTERED;
+    }
+    return NC_MENU_ITEMS_ALL;
+}
+
 static NcMenu *
 action_runtime_current_menu(void) {
     switch (native_c_screens_current_type()) {
@@ -3499,6 +3509,7 @@ action_runtime_move_selected_items_to(void) {
 static bool
 action_runtime_playlist_range(NcMenu *menu, uint32 *first,
                               uint32 *last) {
+    enum NcMenuItemSource source;
     int64 range_first;
     int64 range_last;
     NcmSong *song;
@@ -3506,7 +3517,8 @@ action_runtime_playlist_range(NcMenu *menu, uint32 *first,
     if ((menu == NULL) || (first == NULL) || (last == NULL)) {
         return false;
     }
-    if (!ncm_menu_find_full_selected_range(menu, NC_MENU_ITEMS_FILTERED,
+    source = action_runtime_menu_item_source(menu);
+    if (!ncm_menu_find_full_selected_range(menu, source,
                                            &range_first, &range_last)) {
         return false;
     }
@@ -3529,6 +3541,7 @@ action_runtime_playlist_range(NcMenu *menu, uint32 *first,
 
 static bool
 action_runtime_reverse_playlist(void) {
+    enum NcMenuItemSource source;
     NcMenu *menu;
     NcmSong *left;
     NcmSong *right;
@@ -3546,7 +3559,8 @@ action_runtime_reverse_playlist(void) {
 
     native_playlist_screen_sync(native_c_screen_playlist());
     menu = action_runtime_current_menu();
-    if (!ncm_menu_find_full_selected_range(menu, NC_MENU_ITEMS_FILTERED,
+    source = action_runtime_menu_item_source(menu);
+    if (!ncm_menu_find_full_selected_range(menu, source,
                                            &first, &last)) {
         return false;
     }
@@ -4817,6 +4831,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
                    native_c_screen_playlist());
     case NCM_ACTION_REVERSE_PLAYLIST:
     {
+        NcMenu *menu;
         int64 first;
         int64 last;
 
@@ -4826,11 +4841,12 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             return false;
         }
         native_playlist_screen_sync(native_c_screen_playlist());
-        if (!action_runtime_menu_has_items()) {
+        menu = action_runtime_current_menu();
+        if ((menu == NULL) || nc_menu_empty(menu)) {
             return false;
         }
         return ncm_menu_find_full_selected_range(
-            action_runtime_current_menu(), NC_MENU_ITEMS_FILTERED,
+            menu, action_runtime_menu_item_source(menu),
             &first, &last);
     }
     case NCM_ACTION_TOGGLE_BROWSER_SORT_MODE:
@@ -5163,9 +5179,17 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         return nc_menu_select_range(menu, first, current, true);
     }
     case NCM_ACTION_REVERSE_SELECTION:
-        ncm_menu_reverse_selection(action_runtime_current_menu(),
-                                   NC_MENU_ITEMS_FILTERED);
+    {
+        NcMenu *menu;
+
+        menu = action_runtime_current_menu();
+        if (menu == NULL) {
+            return false;
+        }
+        ncm_menu_reverse_selection(
+            menu, action_runtime_menu_item_source(menu));
         return true;
+    }
     case NCM_ACTION_REMOVE_SELECTION:
         nc_menu_clear_selection(action_runtime_current_menu());
         return true;

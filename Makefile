@@ -86,6 +86,7 @@ PLAYLIST_SCREEN_TEST_WRAP_FLAGS := \
 $(BUILD_DIR)/tests/c_playlist_screen_test: \
 	LDFLAGS += $(PLAYLIST_SCREEN_TEST_WRAP_FLAGS)
 PLAYLIST_ACTIONS_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=app_controller_current_screen \
 	-Wl,--wrap=native_c_screens_current_type \
 	-Wl,--wrap=native_c_screen_playlist \
 	-Wl,--wrap=current_screen_current_search_constraint \
