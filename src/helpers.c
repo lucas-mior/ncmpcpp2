@@ -460,10 +460,15 @@ menu_item_count(NcMenu *menu, enum NcMenuItemSource source) {
 static bool
 menu_position_is_selected(NcMenu *menu, enum NcMenuItemSource source,
                           int64 pos) {
+    uint32 flags;
     void *item;
 
     if (menu == NULL) {
         return false;
+    }
+    flags = nc_menu_item_flags_at(menu, source, pos);
+    if (flags & NC_MENU_ITEM_SELECTED) {
+        return true;
     }
     item = nc_menu_item_at(menu, source, pos);
     if (item == NULL) {
@@ -481,22 +486,28 @@ menu_position_is_selected(NcMenu *menu, enum NcMenuItemSource source,
 static bool
 menu_set_position_selected(NcMenu *menu, enum NcMenuItemSource source,
                            int64 pos, bool selected) {
+    uint32 flags;
     void *item;
 
     if (menu == NULL) {
-        return false;
-    }
-    if (menu->action_callbacks.set_selected == NULL) {
         return false;
     }
     item = nc_menu_item_at(menu, source, pos);
     if (item == NULL) {
         return false;
     }
+    if (menu->action_callbacks.set_selected != NULL) {
+        menu->action_callbacks.set_selected(
+            item, selected, menu->action_callbacks.user);
+    }
 
-    menu->action_callbacks.set_selected(item, selected,
-                                        menu->action_callbacks.user);
-    return true;
+    flags = nc_menu_item_flags_at(menu, source, pos);
+    if (selected) {
+        flags |= NC_MENU_ITEM_SELECTED;
+    } else {
+        flags &= ~NC_MENU_ITEM_SELECTED;
+    }
+    return nc_menu_set_item_flags_at(menu, source, pos, flags);
 }
 
 bool
