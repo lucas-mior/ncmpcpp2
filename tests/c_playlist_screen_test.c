@@ -5,6 +5,7 @@
 #include "c/ncm_string.h"
 #include "global.h"
 #include "settings.h"
+#include "status.h"
 #include "curses/nc_app_menus.h"
 #include "screens/nc_playlist.h"
 
@@ -13,6 +14,7 @@
 typedef struct PlaylistWindowTrace {
     char title[256];
     char printed[512];
+    enum NcFormat formats[16];
 
     int32 title_len;
     int32 printed_len;
@@ -20,6 +22,7 @@ typedef struct PlaylistWindowTrace {
     int32 menu_refresh_calls;
     int32 play_calls;
     int32 played_id;
+    int32 format_count;
 } PlaylistWindowTrace;
 
 typedef struct PlaylistMpdFixture {
@@ -39,6 +42,8 @@ typedef struct PlaylistFormatFixture {
 
 static PlaylistWindowTrace window_trace;
 static PlaylistMpdFixture mpd_fixture;
+static enum NcmStatusPlayerState player_state = NCM_STATUS_PLAYER_STOP;
+static int32 current_song_position = -1;
 
 static void reset_window_trace(void);
 static void init_screen(NativePlaylistScreen *screen);
@@ -59,6 +64,7 @@ static void test_bridge_free_mpd_updates_and_membership(void);
 static void test_native_storage_is_authoritative(void);
 static void test_locate_updates_active_display_menu(void);
 static void test_native_display_and_column_title(void);
+static void test_native_now_playing_formatting(void);
 static void test_native_highlight_timeout(void);
 static void test_native_activation_and_mouse(void);
 static void test_playlist_updates_current_mutable_song(void);
@@ -78,6 +84,7 @@ main(void) {
     test_native_storage_is_authoritative();
     test_locate_updates_active_display_menu();
     test_native_display_and_column_title();
+    test_native_now_playing_formatting();
     test_native_highlight_timeout();
     test_native_activation_and_mouse();
     test_playlist_updates_current_mutable_song();
@@ -589,6 +596,64 @@ test_native_display_and_column_title(void) {
 }
 
 static void
+test_native_now_playing_formatting(void) {
+    NativePlaylistScreen screen;
+    PlaylistFormatFixture formats;
+    NcBuffer old_prefix;
+    NcBuffer old_suffix;
+    NcMenu *menu;
+    NcmSong *song;
+
+    begin_formats(&formats);
+    old_prefix = Config.now_playing_prefix;
+    old_suffix = Config.now_playing_suffix;
+    nc_buffer_init(&Config.now_playing_prefix);
+    nc_buffer_init(&Config.now_playing_suffix);
+    nc_buffer_add_format(&Config.now_playing_prefix, 0,
+                         NC_FORMAT_UNDERLINE, 1);
+    nc_buffer_add_format(&Config.now_playing_suffix, 0,
+                         NC_FORMAT_NO_UNDERLINE, 1);
+
+    init_screen(&screen);
+    add_song(&screen, LIT_ARGS("playing.flac"), 4, 88);
+    menu = native_playlist_screen_menu(&screen);
+    song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, 0);
+    assert(song != NULL);
+
+    player_state = NCM_STATUS_PLAYER_PLAY;
+    current_song_position = 4;
+    reset_window_trace();
+    menu->display_callbacks.draw(menu, &screen.window, song, 0,
+                                 menu->display_callbacks.user);
+    assert(window_trace.format_count == 2);
+    assert(window_trace.formats[0] == NC_FORMAT_UNDERLINE);
+    assert(window_trace.formats[1] == NC_FORMAT_NO_UNDERLINE);
+
+    current_song_position = 5;
+    reset_window_trace();
+    menu->display_callbacks.draw(menu, &screen.window, song, 0,
+                                 menu->display_callbacks.user);
+    assert(window_trace.format_count == 0);
+
+    player_state = NCM_STATUS_PLAYER_STOP;
+    current_song_position = 4;
+    reset_window_trace();
+    menu->display_callbacks.draw(menu, &screen.window, song, 0,
+                                 menu->display_callbacks.user);
+    assert(window_trace.format_count == 0);
+
+    native_playlist_screen_destroy(&screen);
+    nc_buffer_destroy(&Config.now_playing_prefix);
+    nc_buffer_destroy(&Config.now_playing_suffix);
+    Config.now_playing_prefix = old_prefix;
+    Config.now_playing_suffix = old_suffix;
+    player_state = NCM_STATUS_PLAYER_STOP;
+    current_song_position = -1;
+    end_formats(&formats);
+    return;
+}
+
+static void
 test_native_highlight_timeout(void) {
     NativePlaylistScreen screen;
     uint32 old_delay;
@@ -809,7 +874,16 @@ void
 __wrap_nc_buffer_apply_property(NcWindow *window,
                                 NcBufferProperty *property) {
     (void)window;
-    (void)property;
+    if (property->type != NC_BUFFER_PROPERTY_FORMAT) {
+        return;
+    }
+
+    assert(window_trace.format_count
+           < (SIZEOF(window_trace.formats)
+              /SIZEOF(window_trace.formats[0])));
+    window_trace.formats[window_trace.format_count] =
+        property->value.format;
+    window_trace.format_count += 1;
     return;
 }
 
@@ -822,6 +896,16 @@ __wrap_nc_menu_refresh(NcMenu *menu, NcWindow *window, int64 width,
     (void)height;
     window_trace.menu_refresh_calls += 1;
     return;
+}
+
+enum NcmStatusPlayerState
+__wrap_ncm_status_state_player(void) {
+    return player_state;
+}
+
+int32
+__wrap_ncm_status_state_current_song_position(void) {
+    return current_song_position;
 }
 
 bool

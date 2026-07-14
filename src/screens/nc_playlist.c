@@ -8,6 +8,7 @@
 #include "app_controller.h"
 #include "global.h"
 #include "settings.h"
+#include "status.h"
 #include "statusbar.h"
 #include "c/ncm_base.h"
 #include "c/ncm_display.h"
@@ -240,6 +241,7 @@ static void native_playlist_draw_song(NcMenu *menu, NcWindow *window,
 static void native_playlist_activate_song(NcMenu *menu, void *item,
                                           int64 pos, void *user);
 static void native_playlist_print_buffer(NcWindow *window, NcBuffer *buffer);
+static bool native_playlist_song_is_now_playing(NcmSong *song);
 static void native_playlist_sync_if_needed(NativePlaylistScreen *screen);
 static NcMenu *native_playlist_storage_menu(NativePlaylistScreen *screen);
 static bool native_playlist_build_mutable_song(
@@ -1504,10 +1506,16 @@ static void
 native_playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
                           int64 pos, void *user) {
     NcBuffer buffer;
+    bool is_now_playing;
 
     (void)user;
     if ((menu == NULL) || (window == NULL) || (item == NULL)) {
         return;
+    }
+
+    is_now_playing = native_playlist_song_is_now_playing(item);
+    if (is_now_playing) {
+        native_playlist_print_buffer(window, &Config.now_playing_prefix);
     }
 
     nc_buffer_init(&buffer);
@@ -1517,6 +1525,11 @@ native_playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
         bool use_colors;
 
         available_width = nc_window_width(window) - nc_window_get_x(window);
+        if (is_now_playing) {
+            available_width -= ncm_utf8_width(
+                Config.now_playing_suffix.data,
+                Config.now_playing_suffix.len);
+        }
         if (nc_menu_position_is_selected(menu, pos)) {
             available_width -= ncm_utf8_width(
                 menu->selected_suffix.data, menu->selected_suffix.len);
@@ -1543,6 +1556,10 @@ native_playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
     }
     native_playlist_print_buffer(window, &buffer);
     nc_buffer_destroy(&buffer);
+
+    if (is_now_playing) {
+        native_playlist_print_buffer(window, &Config.now_playing_suffix);
+    }
     return;
 }
 
@@ -1562,6 +1579,22 @@ native_playlist_activate_song(NcMenu *menu, void *item, int64 pos,
         ncm_statusbar_print_cstring(1, error.message);
     }
     return;
+}
+
+static bool
+native_playlist_song_is_now_playing(NcmSong *song) {
+    int32 current_position;
+
+    if ((song == NULL)
+        || (ncm_status_state_player() == NCM_STATUS_PLAYER_STOP)) {
+        return false;
+    }
+
+    current_position = ncm_status_state_current_song_position();
+    if (current_position < 0) {
+        return false;
+    }
+    return ncm_song_position(song) == (uint32)current_position;
 }
 
 static void
