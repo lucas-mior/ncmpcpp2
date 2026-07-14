@@ -4687,9 +4687,17 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return ncm_mpd_client_connected(&global_mpd)
             && (ncm_status_state_volume() >= 0);
     case NCM_ACTION_ADD_ITEM_TO_PLAYLIST:
-    case NCM_ACTION_PLAY_ITEM:
         return ncm_mpd_client_connected(&global_mpd)
             && action_runtime_has_selected_songs();
+    case NCM_ACTION_PLAY_ITEM:
+        if (!ncm_mpd_client_connected(&global_mpd)) {
+            return false;
+        }
+        if (action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_PLAYLIST)) {
+            return action_runtime_has_current_song();
+        }
+        return action_runtime_has_selected_songs();
     case NCM_ACTION_DELETE_PLAYLIST_ITEMS:
         return ncm_mpd_client_connected(&global_mpd)
             && action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST)
@@ -5026,6 +5034,12 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_ADD_ITEM_TO_PLAYLIST:
         return action_runtime_add_selected_songs(false);
     case NCM_ACTION_PLAY_ITEM:
+        if (action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_PLAYLIST)) {
+            return nc_playlist_screen_activate_current(
+                native_playlist_screen_playlist(
+                    native_c_screen_playlist()));
+        }
         return action_runtime_add_selected_songs(true);
     case NCM_ACTION_DELETE_PLAYLIST_ITEMS:
         return action_runtime_delete_playlist_items();
