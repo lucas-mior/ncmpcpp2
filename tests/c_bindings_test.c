@@ -470,6 +470,23 @@ test_runtime_can_execute_preflight(void) {
 
 static void
 test_app_binding_migration_c_safe_actions(void) {
+#if defined(HAVE_TAGLIB_H)
+    enum NcmActionType tiny_editor_actions[] = {
+        NCM_ACTION_QUIT,
+        NCM_ACTION_PLAY,
+        NCM_ACTION_RUN_ACTION,
+        NCM_ACTION_MOUSE_EVENT,
+        NCM_ACTION_SCROLL_UP,
+        NCM_ACTION_SCROLL_DOWN,
+        NCM_ACTION_PAGE_UP,
+        NCM_ACTION_PAGE_DOWN,
+        NCM_ACTION_MOVE_HOME,
+        NCM_ACTION_MOVE_END,
+        NCM_ACTION_SAVE_TAG_CHANGES,
+        NCM_ACTION_NEXT_SCREEN,
+        NCM_ACTION_PREVIOUS_SCREEN,
+    };
+#endif
     enum NcmActionType search_actions[] = {
         NCM_ACTION_MOUSE_EVENT,
         NCM_ACTION_SCROLL_UP,
@@ -573,6 +590,26 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_TOGGLE_SCREEN_LOCK, NCM_SCREEN_TYPE_VISUALIZER));
     REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
         NCM_ACTION_DELETE_BROWSER_ITEMS, NCM_SCREEN_TYPE_VISUALIZER));
+
+#if defined(HAVE_TAGLIB_H)
+    REQUIRE(app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
+    for (int32 i = 0; i < NCM_ARRAY_LEN(tiny_editor_actions); i += 1) {
+        REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
+            tiny_editor_actions[i], NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
+    }
+    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_SHOW_HELP, NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
+    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_SHOW_SEARCH_ENGINE,
+        NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
+    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_SHOW_MEDIA_LIBRARY,
+        NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
+    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_JUMP_TO_MEDIA_LIBRARY,
+        NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
+#endif
 
     REQUIRE(!app_binding_migration_action_is_c_safe(
         NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE));

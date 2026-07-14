@@ -9,6 +9,10 @@
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
 #include "cbase/base_macros.h"
+#include "screens/screen_switcher.h"
+#include "settings.h"
+#include "title.h"
+#include "ui_state.h"
 
 static NativeTinyTagEditorScreen *tiny_editor_from_screen(NcScreen *screen);
 static NcWindow *tiny_editor_active_window(NcScreen *screen);
@@ -25,6 +29,9 @@ static void tiny_editor_mouse_callback(NcScreen *screen, MEVENT event);
 static bool tiny_editor_is_lockable(NcScreen *screen);
 static bool tiny_editor_is_mergable(NcScreen *screen);
 static void tiny_editor_destroy_callback(NcScreen *screen);
+static void tiny_editor_draw_row(NcMenu *menu, NcWindow *window,
+                                 void *item, int64 pos, void *user);
+static void tiny_editor_print_buffer(NcWindow *window, NcBuffer *buffer);
 static bool tiny_editor_add_row(NativeTinyTagEditorScreen *screen,
                                 NcBuffer *buffer, uint32 flags);
 static int32 tiny_editor_cstring_len(char *string);
@@ -77,10 +84,19 @@ void
 native_tiny_tag_editor_screen_init(
     NativeTinyTagEditorScreen *screen, int64 start_x, int64 width,
     int64 main_start_y, int64 main_height, NcColor color, NcBorder border) {
+    NcMenuDisplayCallbacks display_callbacks = {0};
+    NcMenu *menu;
+
     nc_editor_buffer_menu_init(&screen->rows);
+    menu = nc_editor_buffer_menu_base(&screen->rows);
+    display_callbacks.draw = tiny_editor_draw_row;
+    nc_menu_set_display_callbacks(menu, display_callbacks);
+    nc_menu_set_highlight_prefix(menu, &Config.current_item_prefix);
+    nc_menu_set_highlight_suffix(menu, &Config.current_item_suffix);
+    nc_menu_set_cyclic_scrolling(menu, Config.use_cyclic_scrolling);
+    nc_menu_set_centered_cursor(menu, Config.centered_cursor);
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, NULL, 0, color, border);
-    screen->bridge = (NativeTinyTagEditorBridge){0};
     screen->hooks = (NativeTinyTagEditorHooks){0};
     ncm_mutable_song_init(&screen->edited);
     ncm_buffer_init(&screen->music_dir);
@@ -123,16 +139,6 @@ native_tiny_tag_editor_screen_base(NativeTinyTagEditorScreen *screen) {
         return NULL;
     }
     return &screen->screen;
-}
-
-void
-native_tiny_tag_editor_screen_set_bridge(
-    NativeTinyTagEditorScreen *screen, NativeTinyTagEditorBridge bridge) {
-    if (screen == NULL) {
-        return;
-    }
-    screen->bridge = bridge;
-    return;
 }
 
 void
@@ -287,15 +293,6 @@ native_tiny_tag_editor_screen_open_song(
         nc_menu_clear_items(nc_editor_buffer_menu_base(&screen->rows));
         return NATIVE_TINY_TAG_EDITOR_OPEN_PREPARE_FAILED;
     }
-    if ((screen->bridge.prepared_song != NULL)
-        && !screen->bridge.prepared_song(
-            screen->bridge.user, song, &properties,
-            extended_tags_supported)) {
-        screen->has_edited = false;
-        nc_menu_clear_items(nc_editor_buffer_menu_base(&screen->rows));
-        return NATIVE_TINY_TAG_EDITOR_OPEN_PREPARE_FAILED;
-    }
-
     return NATIVE_TINY_TAG_EDITOR_OPEN_SUCCESS;
 }
 
@@ -360,7 +357,6 @@ native_tiny_tag_editor_screen_reload_rows(
         return false;
     }
     nc_buffer_clear(&row);
-    duration_len = 0;
     if (ncm_mutable_song_duration(&screen->edited) > 0) {
         duration_len = ncm_song_show_time(
             ncm_mutable_song_duration(&screen->edited), duration_buffer,
@@ -718,9 +714,6 @@ tiny_editor_active_window(NcScreen *screen) {
     NativeTinyTagEditorScreen *editor;
 
     editor = tiny_editor_from_screen(screen);
-    if (editor->bridge.active_window != NULL) {
-        return editor->bridge.active_window(editor->bridge.user);
-    }
     return &editor->window;
 }
 
@@ -742,10 +735,6 @@ tiny_editor_refresh(NcScreen *screen) {
     NcMenu *menu;
 
     editor = tiny_editor_from_screen(screen);
-    if (editor->bridge.refresh != NULL) {
-        editor->bridge.refresh(editor->bridge.user);
-        return;
-    }
     menu = nc_editor_buffer_menu_base(&editor->rows);
     nc_menu_prepare_refresh(menu, editor->main_height, NULL, NULL);
     nc_window_display(&editor->window);
@@ -754,16 +743,8 @@ tiny_editor_refresh(NcScreen *screen) {
     return;
 }
 
-
 static void
 tiny_editor_refresh_window(NcScreen *screen) {
-    NativeTinyTagEditorScreen *editor;
-
-    editor = tiny_editor_from_screen(screen);
-    if (editor->bridge.refresh_window != NULL) {
-        editor->bridge.refresh_window(editor->bridge.user);
-        return;
-    }
     tiny_editor_refresh(screen);
     return;
 }
@@ -773,10 +754,6 @@ tiny_editor_scroll(NcScreen *screen, enum NcScroll where) {
     NativeTinyTagEditorScreen *editor;
 
     editor = tiny_editor_from_screen(screen);
-    if (editor->bridge.scroll != NULL) {
-        editor->bridge.scroll(editor->bridge.user, where);
-        return;
-    }
     nc_menu_scroll_selectable(nc_editor_buffer_menu_base(&editor->rows),
                               editor->main_height, where);
     return;
@@ -788,63 +765,123 @@ tiny_editor_switch_to(NcScreen *screen) {
 
     editor = tiny_editor_from_screen(screen);
     editor->previous_screen = app_controller_previous_screen();
-    if (editor->bridge.switch_to != NULL) {
-        editor->bridge.switch_to(editor->bridge.user);
-    }
+    ncm_title_draw_header(STRLIT_ARGS("Tiny tag editor"));
     return;
 }
 
 static void
 tiny_editor_resize(NcScreen *screen) {
     NativeTinyTagEditorScreen *editor;
-    NcScreenResizeParams params;
+    int64 start_x;
+    int64 width;
 
     editor = tiny_editor_from_screen(screen);
-    if (editor->bridge.resize != NULL) {
-        editor->bridge.resize(editor->bridge.user);
-        nc_screen_clear_resize_request(screen);
-        return;
-    }
-    params = nc_screen_resize_params(screen);
-    native_tiny_tag_editor_screen_set_geometry(editor, params.x_offset,
-                                               params.width,
-                                               editor->main_start_y,
-                                               editor->main_height);
+    nc_screen_switcher_get_resize_params(
+        screen, &start_x, &width, true);
+    native_tiny_tag_editor_screen_set_geometry(
+        editor, start_x, width, ui_state_main_start_y(),
+        ui_state_main_height());
     nc_screen_clear_resize_request(screen);
     return;
 }
 
 static char *
 tiny_editor_title(NcScreen *screen) {
-    NativeTinyTagEditorScreen *editor;
-
-    editor = tiny_editor_from_screen(screen);
-    if (editor->bridge.title != NULL) {
-        return editor->bridge.title(editor->bridge.user);
-    }
+    (void)screen;
     return (char *)"Tiny tag editor";
 }
 
 static void
 tiny_editor_update(NcScreen *screen) {
-    NativeTinyTagEditorScreen *editor;
-
-    editor = tiny_editor_from_screen(screen);
-    if (editor->bridge.update != NULL) {
-        editor->bridge.update(editor->bridge.user);
-    }
     nc_screen_clear_update_request(screen);
     return;
 }
 
-
 static void
 tiny_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     NativeTinyTagEditorScreen *editor;
+    NcMenu *menu;
+    enum NcScroll where;
+    int64 count;
+    int32 x;
+    int32 y;
 
     editor = tiny_editor_from_screen(screen);
-    if (editor->bridge.mouse_button_pressed != NULL) {
-        editor->bridge.mouse_button_pressed(editor->bridge.user, event);
+    x = event.x;
+    y = event.y;
+    if (!nc_window_has_coords(&editor->window, &x, &y)) {
+        return;
+    }
+
+    menu = nc_editor_buffer_menu_base(&editor->rows);
+    if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
+        if (!nc_menu_goto_selectable(menu, y)) {
+            return;
+        }
+        if (event.bstate & BUTTON3_PRESSED) {
+            tiny_editor_refresh_window(screen);
+            (void)native_tiny_tag_editor_screen_run_current(editor);
+        }
+        return;
+    }
+
+    count = Config.lines_scrolled;
+    if (event.bstate & BUTTON5_PRESSED) {
+        where = NC_SCROLL_DOWN;
+    } else if (event.bstate & BUTTON4_PRESSED) {
+        where = NC_SCROLL_UP;
+    } else {
+        return;
+    }
+    if (Config.mouse_list_scroll_whole_page) {
+        count = 1;
+        if (where == NC_SCROLL_DOWN) {
+            where = NC_SCROLL_PAGE_DOWN;
+        } else {
+            where = NC_SCROLL_PAGE_UP;
+        }
+    }
+    for (int64 i = 0; i < count; i += 1) {
+        tiny_editor_scroll(screen, where);
+    }
+    return;
+}
+
+static void
+tiny_editor_draw_row(NcMenu *menu, NcWindow *window, void *item,
+                     int64 pos, void *user) {
+    NcBuffer *buffer;
+
+    (void)menu;
+    (void)pos;
+    (void)user;
+    buffer = item;
+    if ((window == NULL) || (buffer == NULL)) {
+        return;
+    }
+    tiny_editor_print_buffer(window, buffer);
+    return;
+}
+
+static void
+tiny_editor_print_buffer(NcWindow *window, NcBuffer *buffer) {
+    NcBufferProperty *properties;
+    int32 property_count;
+    int32 property_index;
+
+    properties = nc_buffer_properties(buffer);
+    property_count = nc_buffer_property_count(buffer);
+    property_index = 0;
+    for (int32 i = 0;; i += 1) {
+        while ((property_index < property_count)
+               && (properties[property_index].position == i)) {
+            nc_buffer_apply_property(window, &properties[property_index]);
+            property_index += 1;
+        }
+        if (i >= nc_buffer_len(buffer)) {
+            break;
+        }
+        nc_window_print_char(window, nc_buffer_data(buffer)[i]);
     }
     return;
 }
@@ -893,9 +930,6 @@ tiny_editor_cstring_len(char *string) {
 
 static int64
 tiny_editor_current_row(NativeTinyTagEditorScreen *screen) {
-    if (screen->bridge.current_row != NULL) {
-        return screen->bridge.current_row(screen->bridge.user);
-    }
     return nc_menu_highlight(nc_editor_buffer_menu_base(&screen->rows));
 }
 
@@ -927,10 +961,6 @@ tiny_editor_replace_tag_row(
     result = nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL, row_index,
                                   &row);
     nc_buffer_destroy(&row);
-    if (result && (screen->bridge.row_changed != NULL)) {
-        screen->bridge.row_changed(screen->bridge.user, &screen->edited,
-                                   row_index);
-    }
     return result;
 }
 
@@ -954,11 +984,6 @@ tiny_editor_replace_filename_row(
         menu, NC_MENU_ITEMS_ALL,
         NATIVE_TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW, &row);
     nc_buffer_destroy(&row);
-    if (result && (screen->bridge.row_changed != NULL)) {
-        screen->bridge.row_changed(
-            screen->bridge.user, &screen->edited,
-            NATIVE_TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW);
-    }
     return result;
 }
 
