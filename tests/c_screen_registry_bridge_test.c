@@ -390,6 +390,15 @@ test_native_only_registration(void) {
         NCM_SCREEN_TYPE_MEDIA_LIBRARY));
 
     registered = app_controller_find_screen_type(
+        NC_SCREEN_TYPE_PLAYLIST);
+    assert(registered == native_c_screen_playlist_native());
+    assert(native_c_screens_is_registered_type(
+        NCM_SCREEN_TYPE_PLAYLIST));
+    native_c_screen_playlist_register();
+    assert(app_controller_find_screen_type(NC_SCREEN_TYPE_PLAYLIST)
+           == registered);
+
+    registered = app_controller_find_screen_type(
         NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
     assert(registered == native_c_screen_selected_items_adder_native());
     assert(native_c_screens_is_registered_type(
@@ -422,9 +431,25 @@ test_native_only_registration(void) {
     assert(app_controller_current_screen()
            == native_c_screen_media_library_native());
 
+    native_c_screen_playlist_switch_to();
+    assert(native_c_screen_playlist_is_current());
+    assert(app_controller_current_screen()
+           == native_c_screen_playlist_native());
+    assert(app_controller_previous_screen()
+           == native_c_screen_media_library_native());
+
+    nc_screen_clear_resize_request(native_c_screen_playlist_native());
+    assert(!nc_screen_has_to_be_resized(
+        native_c_screen_playlist_native()));
+    native_c_screens_request_registered_resize();
+    assert(nc_screen_has_to_be_resized(
+        native_c_screen_playlist_native()));
+
     native_c_screen_search_engine_switch_to();
     assert(native_c_screen_search_engine_is_current());
     assert(app_controller_current_screen()
            == native_c_screen_search_engine_native());
+    assert(app_controller_previous_screen()
+           == native_c_screen_playlist_native());
     return;
 }

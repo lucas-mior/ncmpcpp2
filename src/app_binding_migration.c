@@ -44,7 +44,8 @@ app_binding_migration_action_is_c_safe(enum NcmActionType type) {
 
 bool
 app_binding_migration_screen_is_c_only(enum ScreenType type) {
-    return type == NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER
+    return type == NCM_SCREEN_TYPE_PLAYLIST
+        || type == NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER
         || type == NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG
         || type == NCM_SCREEN_TYPE_SEARCH_ENGINE
 #if defined(HAVE_TAGLIB_H)
@@ -76,6 +77,85 @@ app_binding_migration_action_is_c_safe_for_screen(
     }
 
     switch (screen_type) {
+    case NCM_SCREEN_TYPE_PLAYLIST:
+        switch (type) {
+        case NCM_ACTION_UPDATE_ENVIRONMENT:
+        case NCM_ACTION_MOUSE_EVENT:
+        case NCM_ACTION_SCROLL_UP:
+        case NCM_ACTION_SCROLL_DOWN:
+        case NCM_ACTION_SCROLL_UP_ARTIST:
+        case NCM_ACTION_SCROLL_UP_ALBUM:
+        case NCM_ACTION_SCROLL_DOWN_ARTIST:
+        case NCM_ACTION_SCROLL_DOWN_ALBUM:
+        case NCM_ACTION_PAGE_UP:
+        case NCM_ACTION_PAGE_DOWN:
+        case NCM_ACTION_MOVE_HOME:
+        case NCM_ACTION_MOVE_END:
+        case NCM_ACTION_TOGGLE_INTERFACE:
+        case NCM_ACTION_PREVIOUS_COLUMN:
+        case NCM_ACTION_NEXT_COLUMN:
+        case NCM_ACTION_MASTER_SCREEN:
+        case NCM_ACTION_SLAVE_SCREEN:
+        case NCM_ACTION_ADD_ITEM_TO_PLAYLIST:
+        case NCM_ACTION_PLAY_ITEM:
+        case NCM_ACTION_DELETE_PLAYLIST_ITEMS:
+        case NCM_ACTION_SAVE_PLAYLIST:
+        case NCM_ACTION_MOVE_SELECTED_ITEMS_UP:
+        case NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN:
+        case NCM_ACTION_MOVE_SELECTED_ITEMS_TO:
+        case NCM_ACTION_ADD:
+        case NCM_ACTION_TOGGLE_DISPLAY_MODE:
+        case NCM_ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS:
+        case NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE:
+        case NCM_ACTION_TOGGLE_LYRICS_FETCHER:
+        case NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND:
+        case NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING:
+        case NCM_ACTION_JUMP_TO_PLAYING_SONG:
+        case NCM_ACTION_SHUFFLE:
+        case NCM_ACTION_SET_CROSSFADE:
+        case NCM_ACTION_SET_VOLUME:
+        case NCM_ACTION_EDIT_SONG:
+        case NCM_ACTION_JUMP_TO_BROWSER:
+        case NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR:
+        case NCM_ACTION_TOGGLE_SCREEN_LOCK:
+        case NCM_ACTION_JUMP_TO_TAG_EDITOR:
+        case NCM_ACTION_JUMP_TO_POSITION_IN_SONG:
+        case NCM_ACTION_SELECT_ITEM:
+        case NCM_ACTION_SELECT_RANGE:
+        case NCM_ACTION_REVERSE_SELECTION:
+        case NCM_ACTION_REMOVE_SELECTION:
+        case NCM_ACTION_SELECT_ALBUM:
+        case NCM_ACTION_SELECT_FOUND_ITEMS:
+        case NCM_ACTION_CROP_MAIN_PLAYLIST:
+        case NCM_ACTION_CLEAR_MAIN_PLAYLIST:
+        case NCM_ACTION_REVERSE_PLAYLIST:
+        case NCM_ACTION_NEXT_FOUND_ITEM:
+        case NCM_ACTION_PREVIOUS_FOUND_ITEM:
+        case NCM_ACTION_TOGGLE_FIND_MODE:
+        case NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE:
+        case NCM_ACTION_TOGGLE_ADD_MODE:
+        case NCM_ACTION_TOGGLE_MOUSE:
+        case NCM_ACTION_TOGGLE_BITRATE_VISIBILITY:
+        case NCM_ACTION_ADD_RANDOM_ITEMS:
+        case NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND:
+        case NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY:
+        case NCM_ACTION_SHOW_SONG_INFO:
+        case NCM_ACTION_SHOW_ARTIST_INFO:
+        case NCM_ACTION_SHOW_LYRICS:
+        case NCM_ACTION_NEXT_SCREEN:
+        case NCM_ACTION_PREVIOUS_SCREEN:
+        case NCM_ACTION_SHOW_HELP:
+        case NCM_ACTION_SHOW_PLAYLIST:
+        case NCM_ACTION_SHOW_BROWSER:
+        case NCM_ACTION_SHOW_PLAYLIST_EDITOR:
+        case NCM_ACTION_SHOW_TAG_EDITOR:
+        case NCM_ACTION_SHOW_OUTPUTS:
+        case NCM_ACTION_SHOW_VISUALIZER:
+        case NCM_ACTION_SHOW_SERVER_INFO:
+            return true;
+        default:
+            return false;
+        }
     case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
         switch (type) {
         case NCM_ACTION_MOUSE_EVENT:
