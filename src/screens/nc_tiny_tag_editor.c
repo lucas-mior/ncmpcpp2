@@ -35,6 +35,10 @@ static bool tiny_editor_replace_tag_row(
     NativeTinyTagEditorScreen *screen, enum NcmTagsField field);
 static bool tiny_editor_replace_filename_row(
     NativeTinyTagEditorScreen *screen);
+static bool tiny_editor_write_song(
+    NativeTinyTagEditorScreen *screen, char *music_dir);
+static void tiny_editor_complete_save(
+    NativeTinyTagEditorScreen *screen);
 static bool tiny_editor_finish(NativeTinyTagEditorScreen *screen);
 static void tiny_editor_buffer_key_value(NcBuffer *buffer, char *key,
                                          int32 key_len, char *value,
@@ -526,18 +530,10 @@ native_tiny_tag_editor_screen_set_filename_stem(
 bool
 native_tiny_tag_editor_screen_save(NativeTinyTagEditorScreen *screen,
                                    char *music_dir) {
-    if (screen == NULL || !screen->has_edited) {
+    if (!tiny_editor_write_song(screen, music_dir)) {
         return false;
     }
-    if (screen->hooks.write_song != NULL) {
-        if (!screen->hooks.write_song(screen->hooks.user, &screen->edited,
-                                      music_dir)) {
-            return false;
-        }
-    } else if (!ncm_mutable_song_write(&screen->edited, music_dir)) {
-        return false;
-    }
-    ncm_mutable_song_clear_modifications(&screen->edited);
+    tiny_editor_complete_save(screen);
     return true;
 }
 
@@ -657,11 +653,11 @@ native_tiny_tag_editor_screen_run_row(
     if (row == NATIVE_TINY_TAG_EDITOR_SAVE_ROW) {
         tiny_editor_status_message(
             screen, STRLIT_ARGS("Updating tags..."));
-        saved = native_tiny_tag_editor_screen_save(
-            screen, screen->music_dir.data);
+        saved = tiny_editor_write_song(screen, screen->music_dir.data);
         if (saved) {
             tiny_editor_status_message(
                 screen, STRLIT_ARGS("Tags updated"));
+            tiny_editor_complete_save(screen);
         } else {
             error_len = snprintf(
                 error_buffer, (size_t)SIZEOF(error_buffer),
@@ -964,6 +960,45 @@ tiny_editor_replace_filename_row(
             NATIVE_TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW);
     }
     return result;
+}
+
+static bool
+tiny_editor_write_song(NativeTinyTagEditorScreen *screen,
+                       char *music_dir) {
+    if (screen == NULL || !screen->has_edited) {
+        return false;
+    }
+    if (screen->hooks.write_song) {
+        return screen->hooks.write_song(
+            screen->hooks.user, &screen->edited, music_dir);
+    }
+    return ncm_mutable_song_write(&screen->edited, music_dir);
+}
+
+static void
+tiny_editor_complete_save(NativeTinyTagEditorScreen *screen) {
+    int32 previous_type;
+
+    if (screen->edited.is_from_database) {
+        if (screen->hooks.update_directory) {
+            screen->hooks.update_directory(
+                screen->hooks.user, screen->edited.directory,
+                screen->edited.directory_len);
+        }
+    } else if (screen->previous_screen) {
+        previous_type = nc_screen_type(screen->previous_screen);
+        if ((previous_type == NC_SCREEN_TYPE_PLAYLIST)
+            && screen->hooks.update_playlist_song) {
+            screen->hooks.update_playlist_song(
+                screen->hooks.user, &screen->edited);
+        } else if ((previous_type == NC_SCREEN_TYPE_BROWSER)
+                   && screen->hooks.request_browser_update) {
+            screen->hooks.request_browser_update(screen->hooks.user);
+        }
+    }
+
+    ncm_mutable_song_clear_modifications(&screen->edited);
+    return;
 }
 
 static bool
