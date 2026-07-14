@@ -59,10 +59,10 @@ static void end_formats(PlaylistFormatFixture *fixture);
 static void test_playlist_row_ownership(void);
 static void test_playlist_selection_range(void);
 static void test_native_initialization(void);
-static void test_bridge_free_load_filter_search_selection(void);
-static void test_bridge_free_mpd_updates_and_membership(void);
-static void test_native_storage_is_authoritative(void);
-static void test_locate_updates_active_display_menu(void);
+static void test_native_load_filter_search_selection(void);
+static void test_native_mpd_updates_and_membership(void);
+static void test_native_menu_is_authoritative(void);
+static void test_locate_updates_filtered_native_menu(void);
 static void test_native_display_and_column_title(void);
 static void test_native_now_playing_formatting(void);
 static void test_native_highlight_timeout(void);
@@ -79,10 +79,10 @@ main(void) {
     test_playlist_row_ownership();
     test_playlist_selection_range();
     test_native_initialization();
-    test_bridge_free_load_filter_search_selection();
-    test_bridge_free_mpd_updates_and_membership();
-    test_native_storage_is_authoritative();
-    test_locate_updates_active_display_menu();
+    test_native_load_filter_search_selection();
+    test_native_mpd_updates_and_membership();
+    test_native_menu_is_authoritative();
+    test_locate_updates_filtered_native_menu();
     test_native_display_and_column_title();
     test_native_now_playing_formatting();
     test_native_highlight_timeout();
@@ -267,10 +267,6 @@ test_native_initialization(void) {
     assert(menu->action_callbacks.activate != NULL);
     assert(screen.screen.lines_scrolled == 7);
     assert(screen.screen.mouse_list_scroll_whole_page);
-    assert(screen.sync == NULL);
-    assert(screen.bridge.active_window == NULL);
-    assert(screen.bridge.refresh == NULL);
-    assert(screen.bridge.update_song == NULL);
 
     native_playlist_screen_destroy(&screen);
     Config.centered_cursor = old_centered;
@@ -281,7 +277,7 @@ test_native_initialization(void) {
 }
 
 static void
-test_bridge_free_load_filter_search_selection(void) {
+test_native_load_filter_search_selection(void) {
     NativePlaylistScreen screen;
     PlaylistFormatFixture formats;
     NcmMpdSongList songs;
@@ -350,15 +346,13 @@ test_bridge_free_load_filter_search_selection(void) {
 }
 
 static void
-test_bridge_free_mpd_updates_and_membership(void) {
+test_native_mpd_updates_and_membership(void) {
     NativePlaylistScreen screen;
     NcmMpdClient client = {0};
     NcmError error;
-    NcSongMenu display;
     NcSongMenu external;
     NcmSong duplicate;
     NcmSong *stored;
-    NcMenu *display_menu;
     NcMenu *external_menu;
     NcMenu *menu;
 
@@ -370,11 +364,8 @@ test_bridge_free_mpd_updates_and_membership(void) {
     append_song(&mpd_fixture.queue, LIT_ARGS("duplicate.flac"), 1, 21);
 
     init_screen(&screen);
-    nc_song_menu_init(&display);
     nc_song_menu_init(&external);
-    display_menu = nc_song_menu_base(&display);
     external_menu = nc_song_menu_base(&external);
-    native_playlist_screen_set_display_menu(&screen, display_menu);
     menu = native_playlist_screen_menu(&screen);
     ncm_error_clear(&error);
     assert(native_playlist_screen_reload_from_mpd(
@@ -387,7 +378,7 @@ test_bridge_free_mpd_updates_and_membership(void) {
     assert(ncm_song_set_uri(&duplicate, LIT_ARGS("duplicate.flac")));
     assert(native_playlist_screen_contains_song(&screen, &duplicate));
     assert(!display_should_mark_playlist_song(
-        &screen, display_menu, &duplicate));
+        &screen, menu, &duplicate));
     assert(display_should_mark_playlist_song(
         &screen, external_menu, &duplicate));
     assert(nc_menu_set_position_selected(menu, 1, true));
@@ -417,87 +408,63 @@ test_bridge_free_mpd_updates_and_membership(void) {
         &screen, external_menu, &duplicate));
 
     ncm_song_destroy(&duplicate);
-    native_playlist_screen_set_display_menu(&screen, NULL);
     nc_song_menu_destroy(&external);
-    nc_song_menu_destroy(&display);
     native_playlist_screen_destroy(&screen);
     return;
 }
 
 static void
-test_native_storage_is_authoritative(void) {
+test_native_menu_is_authoritative(void) {
     NativePlaylistScreen screen;
-    NcSongMenu display;
     NcmSong found;
     NcmSong song;
+    NcMenu *menu;
 
     init_screen(&screen);
-    nc_song_menu_init(&display);
     ncm_song_init(&found);
     ncm_song_init(&song);
-    native_playlist_screen_set_display_menu(
-        &screen, nc_song_menu_base(&display));
+    menu = native_playlist_screen_menu(&screen);
 
     assert(ncm_song_set_uri(&song, LIT_ARGS("storage.flac")));
     ncm_song_set_position(&song, 7);
     assert(native_playlist_screen_add_song_copy(&screen, &song));
     assert(native_playlist_screen_song_count(&screen) == 1);
-    assert(nc_menu_all_item_count(nc_song_menu_base(&display)) == 0);
+    assert(screen.screen.menu == menu);
+    assert(nc_menu_all_item_count(menu) == 1);
     assert(native_playlist_screen_now_playing_song(&screen, 7, &found));
     assert_song_uri(&found, LIT_ARGS("storage.flac"));
 
     ncm_song_destroy(&song);
     ncm_song_destroy(&found);
     native_playlist_screen_destroy(&screen);
-    nc_song_menu_destroy(&display);
     return;
 }
 
 static void
-test_locate_updates_active_display_menu(void) {
+test_locate_updates_filtered_native_menu(void) {
     NativePlaylistScreen screen;
     NcmMpdSongList songs;
-    NcSongMenu display;
-    NcMenu *display_menu;
-    NcMenu *storage_menu;
+    NcMenu *menu;
     NcmSong *song;
 
     init_screen(&screen);
     ncm_mpd_song_list_init(&songs);
-    nc_song_menu_init(&display);
     append_song(&songs, LIT_ARGS("zero.flac"), 0, 40);
     append_song(&songs, LIT_ARGS("one.flac"), 1, 41);
     append_song(&songs, LIT_ARGS("two.flac"), 2, 42);
     assert(native_playlist_screen_load_song_list(&screen, &songs));
 
-    storage_menu = native_playlist_screen_menu(&screen);
-    display_menu = nc_song_menu_base(&display);
-    for (int64 i = 0; i < nc_menu_all_item_count(storage_menu); i += 1) {
-        song = nc_menu_item_at(storage_menu, NC_MENU_ITEMS_ALL, i);
-        nc_song_menu_add(&display, song);
-    }
-    native_playlist_screen_set_display_menu(&screen, display_menu);
-
-    nc_menu_clear_filtered_items(storage_menu);
-    song = nc_menu_item_at(storage_menu, NC_MENU_ITEMS_ALL, 0);
-    nc_menu_add_filtered_item_ref(storage_menu, song);
-    song = nc_menu_item_at(storage_menu, NC_MENU_ITEMS_ALL, 2);
-    nc_menu_add_filtered_item_ref(storage_menu, song);
-    nc_menu_show_filtered_items(storage_menu);
-
-    nc_menu_clear_filtered_items(display_menu);
-    song = nc_menu_item_at(display_menu, NC_MENU_ITEMS_ALL, 0);
-    nc_menu_add_filtered_item_ref(display_menu, song);
-    song = nc_menu_item_at(display_menu, NC_MENU_ITEMS_ALL, 2);
-    nc_menu_add_filtered_item_ref(display_menu, song);
-    nc_menu_show_filtered_items(display_menu);
+    menu = native_playlist_screen_menu(&screen);
+    nc_menu_clear_filtered_items(menu);
+    song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, 0);
+    nc_menu_add_filtered_item_ref(menu, song);
+    song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, 2);
+    nc_menu_add_filtered_item_ref(menu, song);
+    nc_menu_show_filtered_items(menu);
 
     assert(native_playlist_screen_locate_position(&screen, 2));
-    assert(nc_menu_highlight(storage_menu) == 1);
-    assert(nc_menu_highlight(display_menu) == 1);
+    assert(nc_menu_highlight(menu) == 1);
 
-    native_playlist_screen_set_display_menu(&screen, NULL);
-    nc_song_menu_destroy(&display);
     ncm_mpd_song_list_destroy(&songs);
     native_playlist_screen_destroy(&screen);
     return;
@@ -714,12 +681,22 @@ test_native_activation_and_mouse(void) {
 static void
 test_playlist_updates_current_mutable_song(void) {
     NativePlaylistScreen screen;
+    PlaylistFormatFixture formats;
     NcmMutableSong edited;
+    NcmError error;
     NcmSong result;
     NcmSong song;
     NcmStringView view;
+    NcMenu *menu;
 
+    begin_formats(&formats);
+    ncm_format_ast_destroy(&Config.song_list_format);
+    ncm_format_ast_init(&Config.song_list_format);
+    ncm_error_clear(&error);
+    assert(ncm_format_parse(&Config.song_list_format, LIT_ARGS("%t"),
+                            NCM_FORMAT_FLAG_ALL, &error));
     init_screen(&screen);
+    menu = native_playlist_screen_menu(&screen);
     ncm_mutable_song_init(&edited);
     ncm_song_init(&result);
     ncm_song_init(&song);
@@ -740,9 +717,14 @@ test_playlist_updates_current_mutable_song(void) {
         &edited, NCM_TAGS_FIELD_TITLE, 0, LIT_ARGS("New title")));
     assert(ncm_mutable_song_set_new_name(
         &edited, LIT_ARGS("renamed.flac")));
+    assert(native_playlist_screen_apply_filter(
+        &screen, LIT_ARGS("Old title"), &error));
+    assert(nc_menu_item_count(menu) == 1);
 
     assert(native_playlist_screen_update_current_mutable_song(
         &screen, &edited));
+    assert(nc_menu_item_count(menu) == 0);
+    native_playlist_screen_clear_filter(&screen);
     assert(native_playlist_screen_current_song(&screen, &result));
     assert_song_uri(&result, LIT_ARGS("/music/renamed.flac"));
     assert(ncm_song_tag_view(&result, MPD_TAG_TITLE, 0, &view));
@@ -760,6 +742,7 @@ test_playlist_updates_current_mutable_song(void) {
     ncm_song_destroy(&result);
     ncm_mutable_song_destroy(&edited);
     native_playlist_screen_destroy(&screen);
+    end_formats(&formats);
     return;
 }
 

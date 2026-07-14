@@ -273,7 +273,6 @@ ncmpcpp_legacy_playlist_enable_highlighting_if_current(void) {
     if (native_c_screen_playlist_is_current()) {
         native_playlist_screen_request_highlighting(
             native_c_screen_playlist());
-        native_playlist_screen_sync(native_c_screen_playlist());
     }
     return;
 }
