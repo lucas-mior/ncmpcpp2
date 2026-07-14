@@ -72,10 +72,6 @@ static void native_search_append_format(NcBuffer *buffer,
 static void native_search_append_tag_value(NcBuffer *buffer,
                                            NcmBuffer *value);
 static void native_search_print_buffer(NcWindow *window, NcBuffer *buffer);
-static void native_search_append_column_name(NcmBuffer *buffer,
-                                             Column *column);
-static char *native_search_column_type_name(char type, int32 *name_len);
-static void native_search_append_spaces(NcmBuffer *buffer, int32 count);
 static void native_search_append_nc_spaces(NcBuffer *buffer, int32 count);
 static void native_search_mouse_scroll(NativeSearchEngineScreen *screen,
                                        enum NcScroll where);
@@ -479,10 +475,7 @@ native_search_engine_screen_format_song_text(
 void
 native_search_engine_screen_update_column_title(
     NativeSearchEngineScreen *screen) {
-    NcmBuffer name;
-    Column *last;
     int32 list_width;
-    int32 remained_width;
 
     if (screen == NULL) {
         return;
@@ -501,51 +494,9 @@ native_search_engine_screen_update_column_title(
         nc_window_set_title(&screen->window, NULL, 0);
         return;
     }
-    remained_width = list_width;
-    last = &Config.columns.items[Config.columns.len - 1];
-    ncm_buffer_init(&name);
-    for (int32 i = 0; i < Config.columns.len; i += 1) {
-        Column *column;
-        int32 cut_len;
-        int32 name_width;
-        int32 padding;
-        int32 width;
 
-        column = &Config.columns.items[i];
-        width = native_search_column_width(
-            column, list_width, remained_width);
-        if (width == 0) {
-            continue;
-        }
-        if (column != last) {
-            width -= 1;
-        }
-        if (((remained_width - width) < 0) || (width < 0)) {
-            break;
-        }
-
-        ncm_buffer_clear(&name);
-        native_search_append_column_name(&name, column);
-        cut_len = ncm_utf8_cut_width(name.data, name.len, width);
-        name_width = ncm_utf8_width(name.data, cut_len);
-        padding = width - name_width;
-        if (padding < 0) {
-            padding = 0;
-        }
-        if (column->right_alignment) {
-            native_search_append_spaces(&screen->column_title, padding);
-            ncm_buffer_append(&screen->column_title, name.data, cut_len);
-        } else {
-            ncm_buffer_append(&screen->column_title, name.data, cut_len);
-            native_search_append_spaces(&screen->column_title, padding);
-        }
-
-        if (column != last) {
-            remained_width -= width + 1;
-            ncm_buffer_append_byte(&screen->column_title, ' ');
-        }
-    }
-    ncm_buffer_destroy(&name);
+    ncm_display_column_title(&screen->column_title, Config.columns.items,
+                             Config.columns.len, list_width);
     nc_window_set_title(&screen->window,
                         screen->column_title.data,
                         screen->column_title.len);
@@ -2023,95 +1974,6 @@ native_search_print_buffer(NcWindow *window, NcBuffer *buffer) {
     return;
 }
 
-static void
-native_search_append_column_name(NcmBuffer *buffer, Column *column) {
-    char *name;
-    int32 name_len;
-
-    if ((column->name != NULL) && (column->name_len > 0)) {
-        ncm_buffer_append(buffer, column->name, column->name_len);
-        return;
-    }
-
-    for (int32 i = 0; i < column->type_len; i += 1) {
-        if (i > 0) {
-            ncm_buffer_append_byte(buffer, '/');
-        }
-        name = native_search_column_type_name(column->type[i], &name_len);
-        ncm_buffer_append(buffer, name, name_len);
-    }
-    return;
-}
-
-static char *
-native_search_column_type_name(char type, int32 *name_len) {
-    char *name;
-
-    switch (type) {
-    case 'l':
-        name = (char *)"Time";
-        break;
-    case 'f':
-        name = (char *)"Filename";
-        break;
-    case 'D':
-        name = (char *)"Directory";
-        break;
-    case 'F':
-        name = (char *)"Filepath";
-        break;
-    case 'a':
-        name = (char *)"Artist";
-        break;
-    case 'A':
-        name = (char *)"Album Artist";
-        break;
-    case 't':
-        name = (char *)"Title";
-        break;
-    case 'b':
-        name = (char *)"Album";
-        break;
-    case 'y':
-        name = (char *)"Date";
-        break;
-    case 'n':
-    case 'N':
-        name = (char *)"Track";
-        break;
-    case 'g':
-        name = (char *)"Genre";
-        break;
-    case 'c':
-        name = (char *)"Composer";
-        break;
-    case 'p':
-        name = (char *)"Performer";
-        break;
-    case 'd':
-        name = (char *)"Disc";
-        break;
-    case 'C':
-        name = (char *)"Comment";
-        break;
-    case 'P':
-        name = (char *)"Priority";
-        break;
-    default:
-        name = (char *)"?";
-        break;
-    }
-    *name_len = native_search_cstring_len(name);
-    return name;
-}
-
-static void
-native_search_append_spaces(NcmBuffer *buffer, int32 count) {
-    for (int32 i = 0; i < count; i += 1) {
-        ncm_buffer_append_byte(buffer, ' ');
-    }
-    return;
-}
 
 static void
 native_search_append_nc_spaces(NcBuffer *buffer, int32 count) {

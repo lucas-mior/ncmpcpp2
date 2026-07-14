@@ -295,6 +295,7 @@ native_playlist_screen_init(NativePlaylistScreen *screen, int64 start_x,
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, (char *)"", 0, color, border);
     ncm_buffer_init(&screen->title_cache);
+    ncm_buffer_init(&screen->column_title);
     ncm_buffer_init(&screen->filter_constraint);
     ncm_buffer_init(&screen->search_constraint);
     ncm_regex_init(&screen->filter_regex);
@@ -310,6 +311,9 @@ native_playlist_screen_init(NativePlaylistScreen *screen, int64 start_x,
     screen->bridge.resize = NULL;
     screen->bridge.register_song = NULL;
     screen->bridge.unregister_song = NULL;
+    screen->bridge.begin_update = NULL;
+    screen->bridge.update_song = NULL;
+    screen->bridge.end_update = NULL;
     screen->bridge.user = NULL;
     screen->reload_total_length = true;
     screen->reload_remaining = true;
@@ -335,6 +339,10 @@ native_playlist_screen_init(NativePlaylistScreen *screen, int64 start_x,
                                  Config.use_cyclic_scrolling);
     nc_menu_set_centered_cursor(native_playlist_screen_menu(screen),
                                 Config.centered_cursor);
+    native_playlist_screen_set_mouse_config(
+        screen, Config.lines_scrolled,
+        Config.mouse_list_scroll_whole_page);
+    native_playlist_screen_update_column_title(screen);
     return;
 }
 
@@ -348,6 +356,7 @@ native_playlist_screen_destroy(NativePlaylistScreen *screen) {
     nc_window_destroy(&screen->window);
     nc_song_menu_destroy(&screen->songs);
     ncm_buffer_destroy(&screen->title_cache);
+    ncm_buffer_destroy(&screen->column_title);
     ncm_buffer_destroy(&screen->filter_constraint);
     ncm_buffer_destroy(&screen->search_constraint);
     ncm_regex_destroy(&screen->filter_regex);
@@ -426,6 +435,39 @@ native_playlist_screen_window(NativePlaylistScreen *screen) {
 }
 
 void
+native_playlist_screen_update_column_title(NativePlaylistScreen *screen) {
+    int32 list_width;
+
+    if (screen == NULL) {
+        return;
+    }
+
+    ncm_buffer_clear(&screen->column_title);
+    if ((Config.playlist_display_mode != NCM_DISPLAY_MODE_COLUMNS)
+        || !Config.titles_visibility || (Config.columns.items == NULL)
+        || (Config.columns.len <= 0) || (screen->screen.main_height <= 2)) {
+        nc_window_set_title(&screen->window, NULL, 0);
+        return;
+    }
+
+    if (screen->screen.width > INT32_MAX) {
+        list_width = INT32_MAX;
+    } else {
+        list_width = (int32)screen->screen.width;
+    }
+    if (list_width <= 0) {
+        nc_window_set_title(&screen->window, NULL, 0);
+        return;
+    }
+
+    ncm_display_column_title(&screen->column_title, Config.columns.items,
+                             Config.columns.len, list_width);
+    nc_window_set_title(&screen->window, screen->column_title.data,
+                        screen->column_title.len);
+    return;
+}
+
+void
 native_playlist_screen_set_geometry(NativePlaylistScreen *screen,
                                     int64 start_x, int64 width,
                                     int64 main_start_y, int64 main_height) {
@@ -436,6 +478,7 @@ native_playlist_screen_set_geometry(NativePlaylistScreen *screen,
                                     main_start_y, main_height);
     nc_window_resize(&screen->window, width, main_height);
     nc_window_move_to(&screen->window, start_x, main_start_y);
+    native_playlist_screen_update_column_title(screen);
     return;
 }
 
@@ -498,11 +541,17 @@ native_playlist_screen_sync(NativePlaylistScreen *screen) {
 void
 native_playlist_screen_set_highlighting(NativePlaylistScreen *screen,
                                         bool enabled) {
+    bool was_enabled;
+
     if (screen == NULL) {
         return;
     }
+
+    was_enabled = native_playlist_screen_highlighting(screen);
     nc_menu_set_highlighting(native_playlist_screen_menu(screen), enabled);
-    if (enabled) {
+    if (enabled && !was_enabled) {
+        screen->highlight_timer = global_timer;
+    } else if (!enabled) {
         screen->highlight_timer.ns = 0;
     }
     return;
@@ -523,6 +572,7 @@ native_playlist_screen_request_highlighting(NativePlaylistScreen *screen) {
     }
     screen->highlighting_requested = true;
     native_playlist_screen_set_highlighting(screen, true);
+    screen->highlight_timer = global_timer;
     return;
 }
 
@@ -660,6 +710,33 @@ native_playlist_screen_song_count(NativePlaylistScreen *screen) {
 bool
 native_playlist_screen_empty(NativePlaylistScreen *screen) {
     return native_playlist_screen_song_count(screen) == 0;
+}
+
+bool
+native_playlist_screen_contains_song(NativePlaylistScreen *screen,
+                                     NcmSong *song) {
+    NcMenu *menu;
+    int64 count;
+    uint64 hash;
+
+    if ((screen == NULL) || (song == NULL)) {
+        return false;
+    }
+
+    native_playlist_sync_if_needed(screen);
+    menu = native_playlist_storage_menu(screen);
+    count = nc_menu_all_item_count(menu);
+    hash = ncm_song_hash(song);
+    for (int64 i = 0; i < count; i += 1) {
+        NcmSong *stored;
+
+        stored = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i);
+        if ((ncm_song_hash(stored) == hash)
+            && ncm_song_equal(stored, song)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool
@@ -1257,7 +1334,23 @@ native_playlist_title(NcScreen *screen) {
 
 static void
 native_playlist_update(NcScreen *screen) {
-    (void)screen;
+    NativePlaylistScreen *playlist;
+    uint32 delay;
+
+    playlist = native_playlist_from_screen(screen);
+    if (!native_playlist_screen_highlighting(playlist)) {
+        return;
+    }
+
+    delay = Config.playlist_disable_highlight_delay_seconds;
+    if ((delay == 0)
+        || (global_timer_elapsed_seconds(playlist->highlight_timer)
+            <= (int64)delay)) {
+        return;
+    }
+
+    native_playlist_screen_set_highlighting(playlist, false);
+    nc_screen_refresh(screen);
     return;
 }
 
@@ -1320,7 +1413,7 @@ native_playlist_song_matches(NativePlaylistScreen *screen,
     } else {
         format = &Config.song_list_format;
     }
-    ncm_display_song_row(&buffer, format, song, 0);
+    ncm_display_song_row(&buffer, format, song, NCM_FORMAT_FLAG_ALL);
     result = ncm_regex_search(regex, buffer.data, buffer.len);
     nc_buffer_destroy(&buffer);
     return result;
@@ -1411,7 +1504,7 @@ native_playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
     } else {
         format = &Config.song_list_format;
     }
-    ncm_display_song_row(&buffer, format, item, 0);
+    ncm_display_song_row(&buffer, format, item, NCM_FORMAT_FLAG_ALL);
     native_playlist_print_buffer(window, &buffer);
     nc_buffer_destroy(&buffer);
     return;

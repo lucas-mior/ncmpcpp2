@@ -3264,6 +3264,7 @@ action_runtime_jump_to_media_library(void) {
 static bool
 action_runtime_toggle_display_mode(void) {
     enum DisplayMode *mode;
+    enum ScreenType screen_type;
 
     if (action_runtime_current_screen_is(
             NCM_SCREEN_TYPE_SEARCH_ENGINE)) {
@@ -3286,7 +3287,8 @@ action_runtime_toggle_display_mode(void) {
     }
 
     mode = NULL;
-    switch (native_c_screens_current_type()) {
+    screen_type = native_c_screens_current_type();
+    switch (screen_type) {
     case NCM_SCREEN_TYPE_BROWSER:
         mode = &Config.browser_display_mode;
         break;
@@ -3308,7 +3310,14 @@ action_runtime_toggle_display_mode(void) {
     } else {
         *mode = NCM_DISPLAY_MODE_CLASSIC;
     }
+    if (screen_type == NCM_SCREEN_TYPE_PLAYLIST) {
+        native_playlist_screen_update_column_title(
+            native_c_screen_playlist());
+    }
     app_controller_request_current_screen_resize();
+    if (screen_type == NCM_SCREEN_TYPE_PLAYLIST) {
+        app_controller_refresh_current_screen();
+    }
     return true;
 }
 
