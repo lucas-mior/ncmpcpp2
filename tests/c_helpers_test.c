@@ -253,6 +253,54 @@ test_menu_selection_helpers(void) {
 }
 
 static void
+test_native_menu_selection_helpers(void) {
+    NcMenu menu;
+    IntRow row;
+    int64 first;
+    int64 last;
+
+    nc_menu_init(&menu);
+    nc_menu_set_item_callbacks(
+        &menu,
+        (NcMenuItemCallbacks){
+            .item_size = SIZEOF(IntRow),
+            .copy = copy_int_row,
+        }
+    );
+
+    row = (IntRow){
+        .value = 10,
+    };
+    nc_menu_add_item(&menu, &row);
+    row = (IntRow){
+        .value = 20,
+    };
+    nc_menu_add_item(&menu, &row);
+    row = (IntRow){
+        .value = 30,
+    };
+    nc_menu_add_item(&menu, &row);
+    nc_menu_sync_item_count(&menu);
+
+    assert(nc_menu_set_position_selected(&menu, 1, true));
+    assert(nc_menu_set_position_selected(&menu, 2, true));
+    assert(ncm_menu_has_selected_item(&menu, NC_MENU_ITEMS_ALL));
+    assert(ncm_menu_find_full_selected_range(&menu, NC_MENU_ITEMS_ALL,
+                                              &first, &last));
+    assert(first == 1);
+    assert(last == 3);
+
+    ncm_menu_reverse_selection(&menu, NC_MENU_ITEMS_ALL);
+    assert(ncm_menu_find_selected_range(&menu, NC_MENU_ITEMS_ALL,
+                                        &first, &last));
+    assert(first == 0);
+    assert(last == 1);
+
+    nc_menu_destroy(&menu);
+    return;
+}
+
+static void
 test_format_helpers(void) {
     NcmBuffer buffer;
     char song_time[32];
@@ -274,6 +322,7 @@ main(void) {
     test_song_list_iteration_helpers();
     test_mpd_song_list_iteration_helpers();
     test_menu_selection_helpers();
+    test_native_menu_selection_helpers();
     test_format_helpers();
     return 0;
 }
