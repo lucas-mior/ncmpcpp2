@@ -1285,7 +1285,8 @@ static bool action_runtime_command_prompt_hook(char *text, void *user);
 static bool action_runtime_filter_prompt_hook(char *text, void *user);
 static bool action_runtime_search_prompt_hook(char *text, void *user);
 static bool action_runtime_prompt_result(NcmBuffer *result,
-                                         NcPrompt *prompt);
+                                         NcPrompt *prompt,
+                                         NcWindow *window);
 static bool action_runtime_prompt_string(char *prefix, int32 prefix_len,
                                          char *initial_text,
                                          bool remember,
@@ -2266,9 +2267,9 @@ action_runtime_search_prompt_hook(char *text, void *user) {
 }
 
 static bool
-action_runtime_prompt_result(NcmBuffer *result, NcPrompt *prompt) {
+action_runtime_prompt_result(NcmBuffer *result, NcPrompt *prompt,
+                             NcWindow *window) {
     enum NcPromptStatus status;
-    NcWindow *window;
     char *text;
     int32 text_len;
     bool ok;
@@ -2277,7 +2278,6 @@ action_runtime_prompt_result(NcmBuffer *result, NcPrompt *prompt) {
         return false;
     }
 
-    window = ui_state_footer_window();
     if (window == NULL) {
         return false;
     }
@@ -2321,7 +2321,7 @@ action_runtime_prompt_string(char *prefix, int32 prefix_len,
         prompt.hook_user_data = hook_user;
         prompt.encrypted = false;
         prompt.remember = remember;
-        ok = action_runtime_prompt_result(result, &prompt);
+        ok = action_runtime_prompt_result(result, &prompt, window);
     }
     ncm_statusbar_scoped_lock_destroy(&lock);
     return ok;
