@@ -7,7 +7,13 @@
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 
+typedef struct PlaylistMutableUpdateFixture {
+    NcmBuffer uri;
+    int32 calls;
+} PlaylistMutableUpdateFixture;
+
 static bool uri_contains_filter(NcMenu *menu, void *item, void *user);
+static bool playlist_mutable_update_song(NcmSong *song, void *user);
 static void test_playlist_row_ownership(void);
 static void test_playlist_selection_range(void);
 static void test_playlist_current_song_lookup(void);
@@ -15,6 +21,7 @@ static void test_playlist_sparse_now_playing_lookup(void);
 static void test_playlist_now_playing_lookup_does_not_sync(void);
 static void test_playlist_storage_ignores_display_menu(void);
 static void test_playlist_filter_reapplication(void);
+static void test_playlist_updates_current_mutable_song(void);
 
 int
 main(void) {
@@ -25,6 +32,7 @@ main(void) {
     test_playlist_now_playing_lookup_does_not_sync();
     test_playlist_storage_ignores_display_menu();
     test_playlist_filter_reapplication();
+    test_playlist_updates_current_mutable_song();
     return EXIT_SUCCESS;
 }
 
@@ -45,6 +53,19 @@ uri_contains_filter(NcMenu *menu, void *item, void *user) {
     }
     return ncm_string_equal(uri.data, needle.len, needle.data,
                             needle.len);
+}
+
+static bool
+playlist_mutable_update_song(NcmSong *song, void *user) {
+    PlaylistMutableUpdateFixture *fixture;
+    NcmStringView uri;
+
+    fixture = user;
+    assert(song != NULL);
+    assert(ncm_song_uri_view(song, 0, &uri));
+    assert(ncm_buffer_set(&fixture->uri, uri.data, uri.len));
+    fixture->calls += 1;
+    return true;
 }
 
 static void
@@ -256,5 +277,73 @@ test_playlist_filter_reapplication(void) {
 
     ncm_song_destroy(&song);
     nc_song_menu_destroy(&songs);
+    return;
+}
+
+static void
+test_playlist_updates_current_mutable_song(void) {
+    NativePlaylistScreen screen = {0};
+    NativePlaylistBridge bridge = {0};
+    NcScreenCallbacks callbacks = {0};
+    PlaylistMutableUpdateFixture fixture;
+    NcmMutableSong edited;
+    NcmSong result;
+    NcmSong song;
+    NcmStringView view;
+
+    ncm_buffer_init(&fixture.uri);
+    fixture.calls = 0;
+    nc_song_menu_init(&screen.songs);
+    ncm_mutable_song_init(&edited);
+    ncm_song_init(&result);
+    ncm_song_init(&song);
+    nc_playlist_screen_init(&screen.screen, callbacks, &screen,
+                            nc_song_menu_base(&screen.songs), 0, 80, 0, 10);
+    bridge.update_song = playlist_mutable_update_song;
+    bridge.user = &fixture;
+    native_playlist_screen_set_bridge(&screen, bridge);
+
+    assert(ncm_song_set_uri(&song, LIT_ARGS("/music/song.flac")));
+    assert(ncm_song_add_tag(&song, MPD_TAG_TITLE,
+                            LIT_ARGS("Old title")));
+    assert(ncm_song_add_tag(&song, MPD_TAG_NAME,
+                            LIT_ARGS("Preserved name")));
+    ncm_song_set_duration(&song, 321);
+    ncm_song_set_position(&song, 7);
+    ncm_song_set_id(&song, 19);
+    ncm_song_set_priority(&song, 4);
+    ncm_song_set_mtime(&song, 1234);
+    assert(native_playlist_screen_add_song_copy(&screen, &song));
+    assert(ncm_mutable_song_load_originals_from_song(&edited, &song));
+    assert(ncm_mutable_song_set_tag(
+        &edited, NCM_TAGS_FIELD_TITLE, 0, LIT_ARGS("New title")));
+    assert(ncm_mutable_song_set_new_name(
+        &edited, LIT_ARGS("renamed.flac")));
+
+    assert(native_playlist_screen_update_current_mutable_song(
+        &screen, &edited));
+    assert(fixture.calls == 1);
+    assert(ncm_string_equal(fixture.uri.data, fixture.uri.len,
+                            LIT_ARGS("/music/renamed.flac")));
+    assert(native_playlist_screen_current_song(&screen, &result));
+    assert(ncm_song_uri_view(&result, 0, &view));
+    assert(ncm_string_equal(view.data, view.len,
+                            LIT_ARGS("/music/renamed.flac")));
+    assert(ncm_song_tag_view(&result, MPD_TAG_TITLE, 0, &view));
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("New title")));
+    assert(ncm_song_tag_view(&result, MPD_TAG_NAME, 0, &view));
+    assert(ncm_string_equal(view.data, view.len,
+                            LIT_ARGS("Preserved name")));
+    assert(ncm_song_duration(&result) == 321);
+    assert(ncm_song_position(&result) == 7);
+    assert(ncm_song_id(&result) == 19);
+    assert(ncm_song_priority(&result) == 4);
+    assert(ncm_song_mtime(&result) == 1234);
+
+    ncm_song_destroy(&song);
+    ncm_song_destroy(&result);
+    ncm_mutable_song_destroy(&edited);
+    nc_song_menu_destroy(&screen.songs);
+    ncm_buffer_destroy(&fixture.uri);
     return;
 }

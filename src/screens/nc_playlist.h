@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+#include "c/ncm_mutable_song.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_time.h"
 #include "c/ncm_song_list.h"
@@ -158,6 +159,8 @@ int64 native_playlist_screen_song_count(NativePlaylistScreen *screen);
 bool native_playlist_screen_empty(NativePlaylistScreen *screen);
 bool native_playlist_screen_current_song(NativePlaylistScreen *screen,
                                          NcmSong *song);
+bool native_playlist_screen_update_current_mutable_song(
+    NativePlaylistScreen *screen, NcmMutableSong *song);
 bool native_playlist_screen_now_playing_song(NativePlaylistScreen *screen,
                                              int32 position,
                                              NcmSong *song);
