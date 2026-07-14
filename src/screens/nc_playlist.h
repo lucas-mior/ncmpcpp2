@@ -17,27 +17,6 @@
 extern "C" {
 #endif
 
-typedef void NativePlaylistSync(void *user);
-typedef NcWindow *NativePlaylistWindowCallback(void *user);
-typedef void NativePlaylistVoidCallback(void *user);
-typedef void NativePlaylistSongCallback(NcmSong *song, void *user);
-typedef bool NativePlaylistUpdateBeginCallback(uint32 playlist_length,
-                                               void *user);
-typedef bool NativePlaylistUpdateSongCallback(NcmSong *song, void *user);
-
-typedef struct NativePlaylistBridge {
-    NativePlaylistWindowCallback *active_window;
-    NativePlaylistVoidCallback *refresh;
-    NativePlaylistVoidCallback *refresh_window;
-    NativePlaylistVoidCallback *resize;
-    NativePlaylistSongCallback *register_song;
-    NativePlaylistSongCallback *unregister_song;
-    NativePlaylistUpdateBeginCallback *begin_update;
-    NativePlaylistUpdateSongCallback *update_song;
-    NativePlaylistVoidCallback *end_update;
-    void *user;
-} NativePlaylistBridge;
-
 typedef struct NcPlaylistScreen {
     NcScreen screen;
     NcMenu *menu;
@@ -66,14 +45,9 @@ typedef struct NativePlaylistScreen {
     int64 scroll_begin;
     NcmTimePoint highlight_timer;
 
-    NativePlaylistSync *sync;
-    void *sync_user;
-    NativePlaylistBridge bridge;
-
     bool reload_total_length;
     bool reload_remaining;
     bool registered;
-    bool syncing;
     bool highlighting_requested;
 } NativePlaylistScreen;
 
@@ -132,14 +106,6 @@ void native_playlist_screen_set_geometry(NativePlaylistScreen *screen,
 void native_playlist_screen_set_mouse_config(NativePlaylistScreen *screen,
                                              int64 lines_scrolled,
                                              bool scroll_whole_page);
-void native_playlist_screen_set_sync_callback(NativePlaylistScreen *screen,
-                                              NativePlaylistSync *sync,
-                                              void *user);
-void native_playlist_screen_set_bridge(NativePlaylistScreen *screen,
-                                       NativePlaylistBridge bridge);
-void native_playlist_screen_set_display_menu(NativePlaylistScreen *screen,
-                                             NcMenu *menu);
-void native_playlist_screen_sync(NativePlaylistScreen *screen);
 void native_playlist_screen_set_highlighting(NativePlaylistScreen *screen,
                                              bool enabled);
 bool native_playlist_screen_highlighting(NativePlaylistScreen *screen);

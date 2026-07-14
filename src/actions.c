@@ -3134,7 +3134,6 @@ action_runtime_clear_playlist(bool main_playlist) {
 
     ncm_error_clear(&error);
     if (main_playlist) {
-        native_playlist_screen_sync(native_c_screen_playlist());
         if (!native_playlist_screen_empty(native_c_screen_playlist())
             && Config.ask_before_clearing_playlists
             && !action_runtime_confirm(
@@ -3190,7 +3189,6 @@ action_runtime_crop_playlist(bool main_playlist) {
     ncm_song_array_init(&songs);
     success = false;
     if (main_playlist) {
-        native_playlist_screen_sync(native_c_screen_playlist());
         if (native_playlist_screen_song_count(
                 native_c_screen_playlist()) <= 1) {
             ncm_song_array_destroy(&songs);
@@ -3381,9 +3379,6 @@ action_runtime_move_selected_items(bool down) {
         && (screen_type != NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
         return false;
     }
-    if (screen_type == NCM_SCREEN_TYPE_PLAYLIST) {
-        native_playlist_screen_sync(native_c_screen_playlist());
-    }
     menu = action_runtime_current_menu();
     if ((menu != NULL) && nc_menu_is_filtered(menu)) {
         ncm_statusbar_print_cstring(
@@ -3432,7 +3427,6 @@ action_runtime_move_selected_items_to(void) {
     }
 
     screen = native_c_screen_playlist();
-    native_playlist_screen_sync(screen);
     menu = native_playlist_screen_menu(screen);
     if ((menu == NULL) || !nc_menu_has_selected(menu)) {
         return false;
@@ -3557,7 +3551,6 @@ action_runtime_reverse_playlist(void) {
         return false;
     }
 
-    native_playlist_screen_sync(native_c_screen_playlist());
     menu = action_runtime_current_menu();
     source = action_runtime_menu_item_source(menu);
     if (!ncm_menu_find_full_selected_range(menu, source,
@@ -3616,7 +3609,6 @@ action_runtime_shuffle_playlist(void) {
         return false;
     }
 
-    native_playlist_screen_sync(native_c_screen_playlist());
     menu = action_runtime_current_menu();
     if (!action_runtime_playlist_range(menu, &first, &last)) {
         return false;
@@ -3755,7 +3747,6 @@ action_runtime_select_album(void) {
     }
 
     screen = native_c_screen_playlist();
-    native_playlist_screen_sync(screen);
     menu = native_playlist_screen_menu(screen);
     if ((menu == NULL) || nc_menu_empty(menu)) {
         return false;
@@ -3831,7 +3822,6 @@ action_runtime_select_found_items(void) {
     }
 
     screen = native_c_screen_playlist();
-    native_playlist_screen_sync(screen);
     menu = native_playlist_screen_menu(screen);
     if ((menu == NULL) || nc_menu_empty(menu)) {
         return false;
@@ -4730,7 +4720,6 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
                 NCM_SCREEN_TYPE_PLAYLIST)) {
             return false;
         }
-        native_playlist_screen_sync(native_c_screen_playlist());
         return nc_menu_has_selected(native_playlist_screen_menu(
             native_c_screen_playlist()));
     case NCM_ACTION_ADD:
@@ -4772,7 +4761,6 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
                 NCM_SCREEN_TYPE_PLAYLIST)) {
             return false;
         }
-        native_playlist_screen_sync(native_c_screen_playlist());
         return action_runtime_playlist_range(action_runtime_current_menu(),
                                              &first, &last);
     }
@@ -4823,7 +4811,6 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
                 NCM_SCREEN_TYPE_PLAYLIST)) {
             return false;
         }
-        native_playlist_screen_sync(native_c_screen_playlist());
         return (native_playlist_screen_song_count(
                     native_c_screen_playlist()) > 1)
             && action_runtime_has_selected_songs();
@@ -4848,7 +4835,6 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
                 NCM_SCREEN_TYPE_PLAYLIST)) {
             return false;
         }
-        native_playlist_screen_sync(native_c_screen_playlist());
         menu = action_runtime_current_menu();
         if ((menu == NULL) || nc_menu_empty(menu)) {
             return false;
@@ -4930,7 +4916,6 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
                 NCM_SCREEN_TYPE_PLAYLIST)) {
             return false;
         }
-        native_playlist_screen_sync(native_c_screen_playlist());
         constraint = current_screen_current_search_constraint();
         return action_runtime_menu_has_items()
             && (constraint.data != NULL) && (constraint.len > 0);
@@ -4940,7 +4925,6 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
                 NCM_SCREEN_TYPE_PLAYLIST)) {
             return false;
         }
-        native_playlist_screen_sync(native_c_screen_playlist());
         return action_runtime_menu_has_items();
     case NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY:
         if (!ncm_mpd_client_connected(&global_mpd)
