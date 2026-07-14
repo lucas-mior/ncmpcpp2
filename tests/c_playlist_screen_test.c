@@ -140,7 +140,8 @@ display_should_mark_playlist_song(NativePlaylistScreen *screen,
                                   NcMenu *source, NcmSong *song) {
     bool is_playlist_menu;
 
-    is_playlist_menu = source == native_playlist_screen_menu(screen);
+    is_playlist_menu = source == nc_playlist_screen_menu(
+        native_playlist_screen_playlist(screen));
     return !is_playlist_menu
         && native_playlist_screen_contains_song(screen, song);
 }
@@ -344,9 +345,11 @@ test_bridge_free_mpd_updates_and_membership(void) {
     NativePlaylistScreen screen;
     NcmMpdClient client = {0};
     NcmError error;
+    NcSongMenu display;
     NcSongMenu external;
     NcmSong duplicate;
     NcmSong *stored;
+    NcMenu *display_menu;
     NcMenu *external_menu;
     NcMenu *menu;
 
@@ -358,8 +361,11 @@ test_bridge_free_mpd_updates_and_membership(void) {
     append_song(&mpd_fixture.queue, LIT_ARGS("duplicate.flac"), 1, 21);
 
     init_screen(&screen);
+    nc_song_menu_init(&display);
     nc_song_menu_init(&external);
+    display_menu = nc_song_menu_base(&display);
     external_menu = nc_song_menu_base(&external);
+    native_playlist_screen_set_display_menu(&screen, display_menu);
     menu = native_playlist_screen_menu(&screen);
     ncm_error_clear(&error);
     assert(native_playlist_screen_reload_from_mpd(
@@ -372,7 +378,7 @@ test_bridge_free_mpd_updates_and_membership(void) {
     assert(ncm_song_set_uri(&duplicate, LIT_ARGS("duplicate.flac")));
     assert(native_playlist_screen_contains_song(&screen, &duplicate));
     assert(!display_should_mark_playlist_song(
-        &screen, menu, &duplicate));
+        &screen, display_menu, &duplicate));
     assert(display_should_mark_playlist_song(
         &screen, external_menu, &duplicate));
     assert(nc_menu_set_position_selected(menu, 1, true));
@@ -402,7 +408,9 @@ test_bridge_free_mpd_updates_and_membership(void) {
         &screen, external_menu, &duplicate));
 
     ncm_song_destroy(&duplicate);
+    native_playlist_screen_set_display_menu(&screen, NULL);
     nc_song_menu_destroy(&external);
+    nc_song_menu_destroy(&display);
     native_playlist_screen_destroy(&screen);
     return;
 }
