@@ -38,6 +38,8 @@ enum NativeTinyTagEditorRow {
 
 typedef struct NativeTinyTagEditorBridge {
     NcWindow *(*active_window)(void *user);
+    bool (*can_run_current)(void *user);
+    bool (*run_current)(void *user);
     void (*refresh)(void *user);
     void (*refresh_window)(void *user);
     void (*scroll)(void *user, enum NcScroll where);

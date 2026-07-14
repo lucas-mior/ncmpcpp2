@@ -20,6 +20,13 @@ typedef struct TinyEditorWriteFixture {
     bool result;
 } TinyEditorWriteFixture;
 
+typedef struct TinyEditorActionFixture {
+    int32 can_run_calls;
+    int32 run_calls;
+    bool can_run_result;
+    bool run_result;
+} TinyEditorActionFixture;
+
 static NcmStringView tiny_tag_names[NCM_TAGS_FIELD_LAST] = {
     { .data = (char *)"Title", .len = STRLIT_LEN("Title") },
     { .data = (char *)"Artist", .len = STRLIT_LEN("Artist") },
@@ -99,6 +106,7 @@ static void test_tiny_editor_rejects_streams(void);
 static void test_tiny_editor_field_updates(void);
 static void test_tiny_editor_filename_stem(void);
 static void test_tiny_editor_save_results(void);
+static void test_tiny_editor_run_current_bridge(void);
 
 static void init_tiny_editor_song(NcmMutableSong *song, char *name,
                                   int32 name_len);
@@ -113,6 +121,8 @@ static void assert_tiny_editor_tag_row_text(
     NcmStringView value);
 static bool tiny_editor_write_song(void *user, NcmMutableSong *song,
                                    char *music_dir);
+static bool tiny_editor_can_run_current(void *user);
+static bool tiny_editor_run_current(void *user);
 
 int
 main(void) {
@@ -126,6 +136,7 @@ main(void) {
     test_tiny_editor_field_updates();
     test_tiny_editor_filename_stem();
     test_tiny_editor_save_results();
+    test_tiny_editor_run_current_bridge();
     return EXIT_SUCCESS;
 }
 
@@ -567,6 +578,49 @@ test_tiny_editor_save_results(void) {
 }
 
 static void
+test_tiny_editor_run_current_bridge(void) {
+    NativeTinyTagEditorScreen screen;
+    NativeTinyTagEditorBridge bridge = {0};
+    TinyEditorActionFixture fixture = {0};
+    NcScreen *base;
+
+    native_tiny_tag_editor_screen_init(&screen, 0, 80, 0, 24,
+                                       nc_color_default(),
+                                       nc_border_none());
+    base = native_tiny_tag_editor_screen_base(&screen);
+    assert(!nc_screen_can_run_current(base));
+    assert(!nc_screen_run_current(base));
+
+    fixture.can_run_result = false;
+    fixture.run_result = true;
+    bridge.can_run_current = tiny_editor_can_run_current;
+    bridge.run_current = tiny_editor_run_current;
+    bridge.user = &fixture;
+    native_tiny_tag_editor_screen_set_bridge(&screen, bridge);
+
+    assert(!nc_screen_can_run_current(base));
+    assert(fixture.can_run_calls == 1);
+    assert(!nc_screen_run_current(base));
+    assert(fixture.can_run_calls == 2);
+    assert(fixture.run_calls == 0);
+
+    fixture.can_run_result = true;
+    assert(nc_screen_can_run_current(base));
+    assert(fixture.can_run_calls == 3);
+    assert(nc_screen_run_current(base));
+    assert(fixture.can_run_calls == 4);
+    assert(fixture.run_calls == 1);
+
+    fixture.run_result = false;
+    assert(!nc_screen_run_current(base));
+    assert(fixture.can_run_calls == 5);
+    assert(fixture.run_calls == 2);
+
+    native_tiny_tag_editor_screen_destroy(&screen);
+    return;
+}
+
+static void
 init_tiny_editor_song(NcmMutableSong *song, char *name, int32 name_len) {
     ncm_mutable_song_init(song);
     assert(ncm_mutable_song_set_uri(song, LIT_ARGS("album/song.flac")));
@@ -629,6 +683,24 @@ assert_tiny_editor_tag_row_text(NativeTinyTagEditorScreen *screen,
         expected.data, expected.len);
     ncm_buffer_destroy(&expected);
     return;
+}
+
+static bool
+tiny_editor_can_run_current(void *user) {
+    TinyEditorActionFixture *fixture;
+
+    fixture = user;
+    fixture->can_run_calls += 1;
+    return fixture->can_run_result;
+}
+
+static bool
+tiny_editor_run_current(void *user) {
+    TinyEditorActionFixture *fixture;
+
+    fixture = user;
+    fixture->run_calls += 1;
+    return fixture->run_result;
 }
 
 static bool
