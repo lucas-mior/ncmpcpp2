@@ -160,17 +160,117 @@ native_tiny_tag_editor_screen_set_geometry(
 bool
 native_tiny_tag_editor_screen_set_edited_song(
     NativeTinyTagEditorScreen *screen, NcmSong *song) {
+    NcmMutableSong edited;
+
     if (screen == NULL || song == NULL) {
         return false;
     }
     if (ncm_song_is_stream(song)) {
         return false;
     }
-    if (!ncm_mutable_song_load_originals_from_song(&screen->edited, song)) {
+
+    ncm_mutable_song_init(&edited);
+    if (!ncm_mutable_song_load_originals_from_song(&edited, song)) {
+        ncm_mutable_song_destroy(&edited);
         return false;
     }
+    ncm_mutable_song_set_duration(&edited, ncm_song_duration(song));
+    ncm_mutable_song_set_mtime(&edited, (int64)ncm_song_mtime(song));
+    ncm_mutable_song_move(&screen->edited, &edited);
     screen->has_edited = true;
     return true;
+}
+
+enum NativeTinyTagEditorOpenResult
+native_tiny_tag_editor_screen_open_song(
+    NativeTinyTagEditorScreen *screen, NcmSong *song,
+    char *music_dir, int32 music_dir_len, char *tag_separator,
+    int32 tag_separator_len, bool show_duplicate_tags, NcmBuffer *path) {
+    NcmTaglibAudioProperties properties = {0};
+    NcmTaglibFile file;
+    bool extended_tags_supported;
+    bool opened;
+    bool rows_loaded;
+
+    if (path != NULL) {
+        ncm_buffer_clear(path);
+    }
+    if ((screen == NULL) || (song == NULL) || (path == NULL)
+        || (music_dir_len < 0) || (tag_separator_len < 0)
+        || ((music_dir_len > 0) && (music_dir == NULL))
+        || ((tag_separator_len > 0) && (tag_separator == NULL))) {
+        return NATIVE_TINY_TAG_EDITOR_OPEN_INVALID_ARGUMENT;
+    }
+    if (ncm_song_is_stream(song)) {
+        return NATIVE_TINY_TAG_EDITOR_OPEN_STREAM;
+    }
+    if (ncm_song_is_from_database(song) && music_dir_len <= 0) {
+        return NATIVE_TINY_TAG_EDITOR_OPEN_MISSING_MUSIC_DIRECTORY;
+    }
+    if (!native_tiny_tag_editor_screen_set_edited_song(screen, song)) {
+        return NATIVE_TINY_TAG_EDITOR_OPEN_PREPARE_FAILED;
+    }
+
+    if (screen->edited.is_from_database) {
+        ncm_buffer_append(path, music_dir, music_dir_len);
+    }
+    ncm_buffer_append(path, screen->edited.uri, screen->edited.uri_len);
+
+    ncm_taglib_file_init(&file);
+    if (screen->hooks.taglib_open != NULL) {
+        opened = screen->hooks.taglib_open(
+            screen->hooks.user, &file, path->data, path->len);
+    } else {
+        opened = ncm_taglib_file_open(&file, path->data);
+    }
+    if (!opened) {
+        if (screen->hooks.taglib_close != NULL) {
+            screen->hooks.taglib_close(screen->hooks.user, &file);
+        } else {
+            ncm_taglib_file_close(&file);
+        }
+        screen->has_edited = false;
+        nc_menu_clear_items(nc_editor_buffer_menu_base(&screen->rows));
+        return NATIVE_TINY_TAG_EDITOR_OPEN_UNREADABLE_FILE;
+    }
+
+    if (screen->hooks.taglib_audio_properties != NULL) {
+        (void)screen->hooks.taglib_audio_properties(
+            screen->hooks.user, &file, &properties);
+    } else {
+        (void)ncm_taglib_file_audio_properties(&file, &properties);
+    }
+    if (screen->hooks.taglib_extended_set_supported != NULL) {
+        extended_tags_supported =
+            screen->hooks.taglib_extended_set_supported(
+                screen->hooks.user, &file);
+    } else {
+        extended_tags_supported = ncm_taglib_extended_set_supported(&file);
+    }
+
+    rows_loaded = native_tiny_tag_editor_screen_reload_rows(
+        screen, &properties, extended_tags_supported, tag_separator,
+        tag_separator_len, show_duplicate_tags);
+    if (screen->hooks.taglib_close != NULL) {
+        screen->hooks.taglib_close(screen->hooks.user, &file);
+    } else {
+        ncm_taglib_file_close(&file);
+    }
+    if (!rows_loaded) {
+        screen->has_edited = false;
+        nc_menu_clear_items(nc_editor_buffer_menu_base(&screen->rows));
+        return NATIVE_TINY_TAG_EDITOR_OPEN_PREPARE_FAILED;
+    }
+    if ((screen->bridge.prepared_song != NULL)
+        && !screen->bridge.prepared_song(
+            screen->bridge.user, song, &properties,
+            extended_tags_supported)) {
+        screen->has_edited = false;
+        nc_menu_clear_items(nc_editor_buffer_menu_base(&screen->rows));
+        return NATIVE_TINY_TAG_EDITOR_OPEN_PREPARE_FAILED;
+    }
+
+    return NATIVE_TINY_TAG_EDITOR_OPEN_SUCCESS;
 }
 
 bool

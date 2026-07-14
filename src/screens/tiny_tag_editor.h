@@ -11,9 +11,7 @@
 #include <string>
 
 #include "app_controller.h"
-#include "c/ncm_taglib.h"
 #include "c/ncm_type_conversions.h"
-#include "charset.h"
 #include "global.h"
 #include "helpers_legacy.h"
 #include "interfaces.h"
@@ -57,13 +55,14 @@ struct TinyTagEditor: Screen<NC::Menu<NC::Buffer>>, HasActions
 	virtual bool actionRunnable() override;
 	virtual void runAction() override;
 
-	// private members
-	void SetEdited(const MPD::Song &);
-	
 private:
     static NcWindow *nativeActiveWindowCallback(void *user);
     static bool nativeCanRunCurrentCallback(void *user);
     static bool nativeRunCurrentCallback(void *user);
+    static bool nativePreparedSongCallback(
+        void *user, NcmSong *song,
+        NcmTaglibAudioProperties *properties,
+        bool extended_tags_supported);
     static void nativeRefreshCallback(void *user);
     static void nativeRefreshWindowCallback(void *user);
     static void nativeScrollCallback(void *user, enum NcScroll where);
@@ -72,7 +71,6 @@ private:
     static char *nativeTitleCallback(void *user);
     static void nativeUpdateCallback(void *user);
     static void nativeMouseButtonPressedCallback(void *user, MEVENT event);
-	bool getTags();
 	MPD::MutableSong itsEdited;
 	BaseScreen *m_previous_screen;
     std::string m_title_cache;
@@ -113,6 +111,7 @@ inline TinyTagEditor::TinyTagEditor()
         bridge.active_window = nativeActiveWindowCallback;
         bridge.can_run_current = nativeCanRunCurrentCallback;
         bridge.run_current = nativeRunCurrentCallback;
+        bridge.prepared_song = nativePreparedSongCallback;
         bridge.refresh = nativeRefreshCallback;
         bridge.refresh_window = nativeRefreshWindowCallback;
         bridge.scroll = nativeScrollCallback;
@@ -160,27 +159,10 @@ inline void TinyTagEditor::resize()
 
 inline void TinyTagEditor::switchTo()
 {
-		if (itsEdited.isStream())
-	{
-		Statusbar::print("Streams can't be edited");
-	}
-	else if (getTags())
-	{
-		m_previous_screen = screenLegacyCurrent();
-        nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
-        app_controller_switch_to_screen(nativeScreen());
-		drawHeader();
-	}
-	else
-	{
-		std::string full_path;
-		if (itsEdited.isFromDatabase())
-			full_path += Config.mpd_music_dir;
-		full_path += itsEdited.getURI();
-		
-		const char msg[] = "Couldn't read file \"%1%\"";
-		Statusbar::printf(msg, Utf8::shorten(full_path, COLS-const_strlen(msg)));
-	}
+    native_c_screen_tiny_tag_editor_register();
+    nc_screen_set_has_to_be_resized(nativeScreen(), hasToBeResized);
+    native_c_screen_tiny_tag_editor_switch_to();
+    drawHeader();
 }
 
 inline std::string TinyTagEditor::title()
@@ -246,6 +228,110 @@ inline bool TinyTagEditor::nativeRunCurrentCallback(void *user)
     return false;
 }
 
+inline bool TinyTagEditor::nativePreparedSongCallback(
+    void *user, NcmSong *song, NcmTaglibAudioProperties *properties,
+    bool extended_tags_supported)
+{
+    TinyTagEditor *editor = static_cast<TinyTagEditor *>(user);
+
+    if (editor == nullptr || song == nullptr || properties == nullptr)
+        return false;
+    try
+    {
+        editor->itsEdited = MPD::MutableSong(MPD::Song(song));
+
+        editor->w.clear();
+        editor->w.reset();
+        editor->w.resizeList(NATIVE_TINY_TAG_EDITOR_ROW_COUNT);
+
+        for (size_t i = 0;
+             i < NATIVE_TINY_TAG_EDITOR_FIRST_SEPARATOR_ROW;
+             ++i)
+            editor->w[i].setInactive(true);
+
+        editor->w[NATIVE_TINY_TAG_EDITOR_FIRST_SEPARATOR_ROW]
+            .setSeparator(true);
+        editor->w[NATIVE_TINY_TAG_EDITOR_SECOND_SEPARATOR_ROW]
+            .setSeparator(true);
+        editor->w[NATIVE_TINY_TAG_EDITOR_THIRD_SEPARATOR_ROW]
+            .setSeparator(true);
+
+        if (!extended_tags_supported)
+        {
+            editor->w[NATIVE_TINY_TAG_EDITOR_TAG_ROW(
+                NCM_TAGS_FIELD_ALBUM_ARTIST)].setInactive(true);
+            editor->w[NATIVE_TINY_TAG_EDITOR_TAG_ROW(
+                NCM_TAGS_FIELD_COMPOSER)].setInactive(true);
+            editor->w[NATIVE_TINY_TAG_EDITOR_TAG_ROW(
+                NCM_TAGS_FIELD_PERFORMER)].setInactive(true);
+            editor->w[NATIVE_TINY_TAG_EDITOR_TAG_ROW(
+                NCM_TAGS_FIELD_DISC)].setInactive(true);
+        }
+
+        editor->w.highlight(NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW);
+
+        auto print_key_value = [](NC::Buffer &buf, const char *key,
+                                  const auto &value) {
+            buf << NC_FORMAT_BOLD
+                << Config.color1
+                << key
+                << ":"
+                << NC::FormattedColor::End<>(Config.color1)
+                << NC_FORMAT_NO_BOLD
+                << " "
+                << Config.color2
+                << value
+                << NC::FormattedColor::End<>(Config.color2);
+        };
+
+        print_key_value(
+            editor->w[NATIVE_TINY_TAG_EDITOR_FILE_NAME_INFO_ROW].value(),
+            "Filename", editor->itsEdited.getName());
+        print_key_value(
+            editor->w[NATIVE_TINY_TAG_EDITOR_DIRECTORY_INFO_ROW].value(),
+            "Directory", ShowTag(editor->itsEdited.getDirectory()));
+        print_key_value(
+            editor->w[NATIVE_TINY_TAG_EDITOR_LENGTH_INFO_ROW].value(),
+            "Length", editor->itsEdited.getLength());
+        print_key_value(
+            editor->w[NATIVE_TINY_TAG_EDITOR_BITRATE_INFO_ROW].value(),
+            "Bitrate", std::to_string(properties->bitrate) + " kbps");
+        print_key_value(
+            editor->w[NATIVE_TINY_TAG_EDITOR_SAMPLE_RATE_INFO_ROW].value(),
+            "Sample rate",
+            std::to_string(properties->sample_rate) + " Hz");
+        print_key_value(
+            editor->w[NATIVE_TINY_TAG_EDITOR_CHANNELS_INFO_ROW].value(),
+            "Channels", tinyTagEditorChannelsString(properties->channels));
+
+        unsigned pos = NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW;
+        for (const NcmSongInfoMetadata *m = ncm_song_info_tags;
+             m->name; ++m, ++pos)
+        {
+            editor->w[pos].value() << NC_FORMAT_BOLD
+                                   << m->name
+                                   << ":"
+                                   << NC_FORMAT_NO_BOLD
+                                   << " ";
+            ShowTag(editor->w[pos].value(), editor->itsEdited.getTags(m->get));
+        }
+
+        editor->w[NATIVE_TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW].value()
+            << NC_FORMAT_BOLD
+            << "Filename:"
+            << NC_FORMAT_NO_BOLD
+            << " "
+            << editor->itsEdited.getName();
+        editor->w[NATIVE_TINY_TAG_EDITOR_SAVE_ROW].value() << "Save";
+        editor->w[NATIVE_TINY_TAG_EDITOR_CANCEL_ROW].value() << "Cancel";
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
 inline void TinyTagEditor::nativeRefreshCallback(void *user)
 {
     TinyTagEditor *editor = static_cast<TinyTagEditor *>(user);
@@ -280,7 +366,9 @@ inline void TinyTagEditor::nativeSwitchToCallback(void *user)
 
     if (editor == nullptr)
         return;
+    editor->m_previous_screen = screen_compat::previous_legacy_screen();
     screen_compat::set_tab_previous_screen(editor);
+    drawHeader();
 }
 
 inline void TinyTagEditor::nativeResizeCallback(void *user)
@@ -388,122 +476,6 @@ inline void TinyTagEditor::runAction()
 }
 
 /**********************************************************************/
-
-inline void TinyTagEditor::SetEdited(const MPD::Song &s)
-{
-	if (auto ms = dynamic_cast<const MPD::MutableSong *>(&s))
-		itsEdited = *ms;
-	else
-		itsEdited = s;
-}
-
-inline bool TinyTagEditor::getTags()
-{
-	std::string path_to_file;
-	if (itsEdited.isFromDatabase())
-		path_to_file += Config.mpd_music_dir;
-	path_to_file += itsEdited.getURI();
-	
-	NcmTaglibFile file;
-	NcmTaglibAudioProperties properties;
-	ncm_taglib_file_init(&file);
-	if (!ncm_taglib_file_open(&file, const_cast<char *>(path_to_file.c_str())))
-		return false;
-	ncm_taglib_file_audio_properties(&file, &properties);
-	
-	std::string ext = itsEdited.getURI();
-	ext = lowercaseAscii(ext.substr(ext.rfind(".")+1));
-	
-	w.clear();
-	w.reset();
-	
-	w.resizeList(NATIVE_TINY_TAG_EDITOR_ROW_COUNT);
-	
-	for (size_t i = 0;
-	     i < NATIVE_TINY_TAG_EDITOR_FIRST_SEPARATOR_ROW;
-	     ++i)
-		w[i].setInactive(true);
-	
-	w[NATIVE_TINY_TAG_EDITOR_FIRST_SEPARATOR_ROW].setSeparator(true);
-	w[NATIVE_TINY_TAG_EDITOR_SECOND_SEPARATOR_ROW].setSeparator(true);
-	w[NATIVE_TINY_TAG_EDITOR_THIRD_SEPARATOR_ROW].setSeparator(true);
-	
-	if (!ncm_taglib_extended_set_supported(&file))
-	{
-		w[NATIVE_TINY_TAG_EDITOR_TAG_ROW(
-			NCM_TAGS_FIELD_ALBUM_ARTIST)].setInactive(true);
-		w[NATIVE_TINY_TAG_EDITOR_TAG_ROW(
-			NCM_TAGS_FIELD_COMPOSER)].setInactive(true);
-		w[NATIVE_TINY_TAG_EDITOR_TAG_ROW(
-			NCM_TAGS_FIELD_PERFORMER)].setInactive(true);
-		w[NATIVE_TINY_TAG_EDITOR_TAG_ROW(
-			NCM_TAGS_FIELD_DISC)].setInactive(true);
-	}
-	
-	ncm_taglib_file_close(&file);
-	w.highlight(NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW);
-
-	auto print_key_value = [](NC::Buffer &buf, const char *key, const auto &value) {
-		buf << NC_FORMAT_BOLD
-		    << Config.color1
-		    << key
-		    << ":"
-		    << NC::FormattedColor::End<>(Config.color1)
-		    << NC_FORMAT_NO_BOLD
-		    << " "
-		    << Config.color2
-		    << value
-		    << NC::FormattedColor::End<>(Config.color2);
-	};
-
-	print_key_value(
-		w[NATIVE_TINY_TAG_EDITOR_FILE_NAME_INFO_ROW].value(),
-		"Filename",
-		itsEdited.getName());
-	print_key_value(
-		w[NATIVE_TINY_TAG_EDITOR_DIRECTORY_INFO_ROW].value(),
-		"Directory",
-		ShowTag(itsEdited.getDirectory()));
-	print_key_value(
-		w[NATIVE_TINY_TAG_EDITOR_LENGTH_INFO_ROW].value(),
-		"Length",
-		itsEdited.getLength());
-	print_key_value(
-		w[NATIVE_TINY_TAG_EDITOR_BITRATE_INFO_ROW].value(),
-		"Bitrate",
-		std::to_string(properties.bitrate) + " kbps");
-	print_key_value(
-		w[NATIVE_TINY_TAG_EDITOR_SAMPLE_RATE_INFO_ROW].value(),
-		"Sample rate",
-		std::to_string(properties.sample_rate) + " Hz");
-	print_key_value(
-		w[NATIVE_TINY_TAG_EDITOR_CHANNELS_INFO_ROW].value(),
-		"Channels",
-		tinyTagEditorChannelsString(properties.channels));
-	
-	unsigned pos = NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW;
-	for (const NcmSongInfoMetadata *m = ncm_song_info_tags; m->name; ++m, ++pos)
-	{
-		w[pos].value() << NC_FORMAT_BOLD
-		                  << m->name
-		                  << ":"
-		                  << NC_FORMAT_NO_BOLD
-		                  << " ";
-		ShowTag(w[pos].value(), itsEdited.getTags(m->get));
-	}
-	
-	w[NATIVE_TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW].value()
-	                 << NC_FORMAT_BOLD
-	                 << "Filename:"
-	                 << NC_FORMAT_NO_BOLD
-	                 << " "
-	                 << itsEdited.getName();
-	
-	w[NATIVE_TINY_TAG_EDITOR_SAVE_ROW].value() << "Save";
-	w[NATIVE_TINY_TAG_EDITOR_CANCEL_ROW].value() << "Cancel";
-	return true;
-}
-
 
 #endif // HAVE_TAGLIB_H
 
