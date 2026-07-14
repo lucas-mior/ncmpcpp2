@@ -578,9 +578,6 @@ struct Shuffle: BaseAction
 private:
 	virtual bool canBeRun() override;
 	virtual void run() override;
-
-	NC::Menu<MPD::Song>::ConstIterator m_begin;
-	NC::Menu<MPD::Song>::ConstIterator m_end;
 };
 
 struct SaveTagChanges: BaseAction
@@ -838,9 +835,6 @@ struct ReversePlaylist: BaseAction
 private:
 	virtual bool canBeRun() override;
 	virtual void run() override;
-
-	NC::Menu<MPD::Song>::ConstIterator m_begin;
-	NC::Menu<MPD::Song>::ConstIterator m_end;
 };
 
 struct Find: BaseAction

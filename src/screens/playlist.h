@@ -501,9 +501,15 @@ inline void Playlist::resizeNativeWindow()
     switch (Config.playlist_display_mode)
     {
     case NCM_DISPLAY_MODE_CLASSIC:
+        w.setItemDisplayer([this](NC::Menu<MPD::Song> &menu) {
+            Display::Songs(menu, w, Config.song_list_format);
+        });
         w.setTitle("");
         break;
     case NCM_DISPLAY_MODE_COLUMNS:
+        w.setItemDisplayer([this](NC::Menu<MPD::Song> &menu) {
+            Display::SongsInColumns(menu, w);
+        });
         if (Config.titles_visibility)
             w.setTitle(Display::Columns(w.getWidth()));
         else
@@ -657,13 +663,20 @@ inline void Playlist::syncNative()
 {
     NativePlaylistScreen *native;
     NcMenu *native_menu;
+    std::vector<uint32> filtered_positions;
+    size_t active_highlight;
     bool was_filtered;
 
     native = native_c_screen_playlist();
     native_menu = nc_song_menu_base(native_playlist_screen_song_menu(native));
+    active_highlight = w.choice();
     was_filtered = w.isFiltered();
     if (was_filtered)
+    {
+        for (auto it = w.beginV(); it != w.endV(); ++it)
+            filtered_positions.push_back(it->getPosition());
         w.showAllItems();
+    }
 
     nc_menu_clear_items(native_menu);
     for (auto it = w.begin(); it != w.end(); ++it)
@@ -677,10 +690,32 @@ inline void Playlist::syncNative()
             flags |= NC_MENU_ITEM_SEPARATOR;
         nc_menu_add_item_with_flags(native_menu, it->value().cSong(), flags);
     }
-    if (!w.empty())
+
+    if (was_filtered)
+    {
+        int64 count = nc_menu_all_item_count(native_menu);
+
+        nc_menu_clear_filtered_items(native_menu);
+        for (uint32 position : filtered_positions)
+        {
+            NcmSong *song;
+
+            if (position >= static_cast<uint32>(count))
+                continue;
+            song = static_cast<NcmSong *>(nc_menu_item_at(
+                native_menu, NC_MENU_ITEMS_ALL, position));
+            if (song != nullptr && ncm_song_position(song) == position)
+                nc_menu_add_filtered_item_ref(native_menu, song);
+        }
+        nc_menu_show_filtered_items(native_menu);
+    }
+    else
+        nc_menu_show_all_items(native_menu);
+
+    if (nc_menu_item_count(native_menu) > 0)
         nc_menu_highlight_position(
             native_menu,
-            static_cast<int64>(w.choice()),
+            static_cast<int64>(active_highlight),
             nc_playlist_screen_height(native_playlist_screen_playlist(native)));
     if (native_playlist_screen_consume_highlighting_request(native))
     {
