@@ -876,7 +876,6 @@ native_search_snapshot_playlist(
 
     ncm_song_array_clear(songs);
     playlist = native_c_screen_playlist();
-    native_playlist_screen_sync(playlist);
     song_menu = native_playlist_screen_song_menu(playlist);
     menu = nc_song_menu_base(song_menu);
     count = nc_menu_all_item_count(menu);

@@ -83,7 +83,6 @@ bool playingSongFromNative(MPD::Song &song)
 		return false;
 
 	ncm_song_init(&native_song);
-	native_playlist_screen_sync(native_c_screen_playlist());
 	success = native_playlist_screen_now_playing_song(
 	    native_c_screen_playlist(), position, &native_song);
 	if (success)
