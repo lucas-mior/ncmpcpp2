@@ -69,6 +69,22 @@ C_TEST_BINS := $(patsubst tests/%.c,$(BUILD_DIR)/tests/%,$(C_TEST_SRCS))
 CXX_TEST_BINS := $(patsubst tests/%.cpp,$(BUILD_DIR)/tests/%,$(CXX_TEST_SRCS))
 TEST_BINS := $(C_TEST_BINS) $(CXX_TEST_BINS)
 
+PLAYLIST_SCREEN_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=nc_window_init \
+	-Wl,--wrap=nc_window_destroy \
+	-Wl,--wrap=nc_window_set_title \
+	-Wl,--wrap=nc_window_move_to \
+	-Wl,--wrap=nc_window_resize \
+	-Wl,--wrap=nc_window_display \
+	-Wl,--wrap=nc_window_has_coords \
+	-Wl,--wrap=nc_window_print_char \
+	-Wl,--wrap=nc_buffer_apply_property \
+	-Wl,--wrap=nc_menu_refresh \
+	-Wl,--wrap=ncm_mpd_client_get_queue \
+	-Wl,--wrap=ncm_mpd_client_get_queue_changes \
+	-Wl,--wrap=ncm_mpd_client_play_id
+$(BUILD_DIR)/tests/c_playlist_screen_test: \
+	LDFLAGS += $(PLAYLIST_SCREEN_TEST_WRAP_FLAGS)
 SEARCH_ENGINE_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_window_init \
 	-Wl,--wrap=nc_window_destroy \

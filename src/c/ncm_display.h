@@ -13,8 +13,13 @@
 extern "C" {
 #endif
 
+struct Column;
+
 void ncm_display_song_row(NcBuffer *buffer, NcmFormatAst *format,
                           NcmSong *song, uint32 flags);
+void ncm_display_column_title(NcmBuffer *buffer,
+                              struct Column *columns,
+                              int32 column_count, int32 list_width);
 void ncm_display_directory_row(NcBuffer *buffer, NcmDirectory *directory);
 void ncm_display_playlist_row(NcBuffer *buffer, NcmPlaylist *playlist,
                               char *prefix, int32 prefix_len);
