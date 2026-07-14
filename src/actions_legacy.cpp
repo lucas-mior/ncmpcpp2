@@ -40,7 +40,6 @@
 #include "c/ncm_error.h"
 #include "c/ncm_type_conversions.h"
 #include "screens/tag_editor.h"
-#include "screens/tiny_tag_editor.h"
 #include "title_legacy.h"
 #include "tags.h"
 
@@ -508,7 +507,6 @@ void initializeScreens()
 	ncm_status_set_playlist_update_observer(
 	    refreshPlaylistRelatedInactiveColumns, nullptr);
 #	ifdef HAVE_TAGLIB_H
-	myTinyTagEditor = new TinyTagEditor;
 	myTagEditor = new TagEditor;
 #	endif // HAVE_TAGLIB_H
 
@@ -519,7 +517,6 @@ void initializeScreens()
 	native_c_screen_lyrics_register();
 
 #	ifdef HAVE_TAGLIB_H
-	myTinyTagEditor->registerNativeScreen();
 	myTagEditor->registerNativeScreen();
 #	endif // HAVE_TAGLIB_H
 }
@@ -533,7 +530,6 @@ void setResizeFlags()
 	native_c_screen_lyrics_set_resize();
 
 #	ifdef HAVE_TAGLIB_H
-	myTinyTagEditor->hasToBeResized = 1;
 	myTagEditor->hasToBeResized = 1;
 #	endif // HAVE_TAGLIB_H
 }
@@ -1516,8 +1512,9 @@ void Shuffle::run()
 bool SaveTagChanges::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	return screenLegacyCurrent() == myTinyTagEditor
-	    || screenLegacyCurrent()->activeWindow() == myTagEditor->TagTypes;
+	return native_c_screen_tiny_tag_editor_is_current()
+	    || (screenLegacyCurrent() != nullptr
+	        && screenLegacyCurrent()->activeWindow() == myTagEditor->TagTypes);
 #	else
 	return false;
 #	endif // HAVE_TAGLIB_H
@@ -1526,13 +1523,14 @@ bool SaveTagChanges::canBeRun()
 void SaveTagChanges::run()
 {
 #	ifdef HAVE_TAGLIB_H
-	if (screenLegacyCurrent() == myTinyTagEditor)
+	if (native_c_screen_tiny_tag_editor_is_current())
 	{
 		(void)native_tiny_tag_editor_screen_run_row(
 			native_c_screen_tiny_tag_editor(),
 			NATIVE_TINY_TAG_EDITOR_SAVE_ROW);
 	}
-	else if (screenLegacyCurrent()->activeWindow() == myTagEditor->TagTypes)
+	else if (screenLegacyCurrent() != nullptr
+	         && screenLegacyCurrent()->activeWindow() == myTagEditor->TagTypes)
 	{
 		myTagEditor->TagTypes->highlight(myTagEditor->TagTypes->size()-1); // Save
 		myTagEditor->runAction();
@@ -2722,7 +2720,7 @@ bool ShowHelp::canBeRun()
 {
 	return !native_c_screen_help_is_current()
 #	ifdef HAVE_TAGLIB_H
-	    && screenLegacyCurrent() != myTinyTagEditor
+	    && !native_c_screen_tiny_tag_editor_is_current()
 #	endif // HAVE_TAGLIB_H
 	;
 }
@@ -2736,7 +2734,7 @@ bool ShowPlaylist::canBeRun()
 {
 	return screenLegacyCurrent() != myPlaylist
 #	ifdef HAVE_TAGLIB_H
-	    && screenLegacyCurrent() != myTinyTagEditor
+	    && !native_c_screen_tiny_tag_editor_is_current()
 #	endif // HAVE_TAGLIB_H
 	;
 }
@@ -2750,7 +2748,7 @@ bool ShowBrowser::canBeRun()
 {
 	return screenLegacyCurrent() != myBrowser
 #	ifdef HAVE_TAGLIB_H
-	    && screenLegacyCurrent() != myTinyTagEditor
+	    && !native_c_screen_tiny_tag_editor_is_current()
 #	endif // HAVE_TAGLIB_H
 	;
 }
@@ -2774,7 +2772,7 @@ bool ShowPlaylistEditor::canBeRun()
 {
 	return screenLegacyCurrent() != myPlaylistEditor
 #	ifdef HAVE_TAGLIB_H
-	    && screenLegacyCurrent() != myTinyTagEditor
+	    && !native_c_screen_tiny_tag_editor_is_current()
 #	endif // HAVE_TAGLIB_H
 	;
 }
@@ -2788,7 +2786,7 @@ bool ShowTagEditor::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
 	return screenLegacyCurrent() != myTagEditor
-	    && screenLegacyCurrent() != myTinyTagEditor;
+	    && !native_c_screen_tiny_tag_editor_is_current();
 #	else
 	return false;
 #	endif // HAVE_TAGLIB_H
@@ -2807,7 +2805,7 @@ bool ShowOutputs::canBeRun()
 #	ifdef ENABLE_OUTPUTS
 	return !native_c_screen_outputs_is_current()
 #	ifdef HAVE_TAGLIB_H
-	    && screenLegacyCurrent() != myTinyTagEditor
+	    && !native_c_screen_tiny_tag_editor_is_current()
 #	endif // HAVE_TAGLIB_H
 	;
 #	else
@@ -2827,7 +2825,7 @@ bool ShowVisualizer::canBeRun()
 #	ifdef ENABLE_VISUALIZER
 	return !native_c_screen_visualizer_is_current()
 #	ifdef HAVE_TAGLIB_H
-	    && screenLegacyCurrent() != myTinyTagEditor
+	    && !native_c_screen_tiny_tag_editor_is_current()
 #	endif // HAVE_TAGLIB_H
 	;
 #	else
@@ -2843,7 +2841,7 @@ void ShowVisualizer::run()
 #ifdef HAVE_TAGLIB_H
 bool ShowServerInfo::canBeRun()
 {
-	return screenLegacyCurrent() != myTinyTagEditor;
+	return !native_c_screen_tiny_tag_editor_is_current();
 }
 #endif // HAVE_TAGLIB_H
 

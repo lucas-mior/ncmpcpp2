@@ -40,6 +40,9 @@ static void test_screen_switcher_helpers(void);
 static void test_native_bridge_screen_api(void);
 static void test_native_screen_switch_path(void);
 static void test_native_lastfm_register_and_switching(void);
+#if defined(HAVE_TAGLIB_H)
+static void test_native_tiny_editor_resize_path(void);
+#endif
 static void test_native_only_registration(void);
 
 int
@@ -49,6 +52,9 @@ main(void) {
     test_native_bridge_screen_api();
     test_native_screen_switch_path();
     test_native_lastfm_register_and_switching();
+#if defined(HAVE_TAGLIB_H)
+    test_native_tiny_editor_resize_path();
+#endif
     test_native_only_registration();
     return 0;
 }
@@ -336,6 +342,39 @@ test_native_lastfm_register_and_switching(void) {
     return;
 }
 
+#if defined(HAVE_TAGLIB_H)
+static void
+test_native_tiny_editor_resize_path(void) {
+    NativeTinyTagEditorScreen *editor;
+    NcScreen locked;
+    NcScreen *tiny;
+    TestScreenState locked_state = {0};
+
+    app_controller_init();
+    ui_state_set_screen_size(100, 30);
+    Config.locked_screen_width_part = 0.40;
+
+    locked_state.lockable = true;
+    locked_state.mergable = true;
+    nc_screen_init(&locked, test_callbacks(), &locked_state,
+                   NC_SCREEN_TYPE_HELP);
+    assert(app_controller_register_screen(&locked));
+    native_c_screen_tiny_tag_editor_register();
+
+    assert(nc_screen_switcher_switch_to(&locked, true));
+    assert(app_controller_lock_current_screen());
+    tiny = native_c_screen_tiny_tag_editor_native();
+    assert(nc_screen_switcher_switch_to(tiny, true));
+
+    editor = native_c_screen_tiny_tag_editor();
+    assert(editor->start_x == 41);
+    assert(editor->width == 59);
+    assert(editor->main_start_y == ui_state_main_start_y());
+    assert(editor->main_height == ui_state_main_height());
+    return;
+}
+#endif
+
 static void
 test_native_only_registration(void) {
     NcScreen *registered;
@@ -361,6 +400,14 @@ test_native_only_registration(void) {
     assert(registered == native_c_screen_search_engine_native());
     assert(native_c_screens_is_registered_type(
         NCM_SCREEN_TYPE_SEARCH_ENGINE));
+
+#if defined(HAVE_TAGLIB_H)
+    registered = app_controller_find_screen_type(
+        NC_SCREEN_TYPE_TINY_TAG_EDITOR);
+    assert(registered == native_c_screen_tiny_tag_editor_native());
+    assert(native_c_screens_is_registered_type(
+        NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
+#endif
 
 #if defined(ENABLE_VISUALIZER)
     registered = app_controller_find_screen_type(

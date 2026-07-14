@@ -1338,6 +1338,7 @@ native_c_screen_tiny_tag_editor_set_resize(void) {
 
 void
 native_c_screen_tiny_tag_editor_switch_to(void) {
+    native_c_screen_tiny_tag_editor_register();
     (void)nc_screen_switcher_switch_to(
         native_c_screen_tiny_tag_editor_native(),
         nc_screen_has_to_be_resized(
@@ -1647,6 +1648,9 @@ native_c_screens_register_native_only(void) {
     native_c_screen_server_info_register();
 #if defined(ENABLE_VISUALIZER)
     native_c_screen_visualizer_register();
+#endif
+#if defined(HAVE_TAGLIB_H)
+    native_c_screen_tiny_tag_editor_register();
 #endif
 #if defined(ENABLE_OUTPUTS)
     native_c_screen_outputs_register();
