@@ -57,6 +57,7 @@ static void test_native_initialization(void);
 static void test_bridge_free_load_filter_search_selection(void);
 static void test_bridge_free_mpd_updates_and_membership(void);
 static void test_native_storage_is_authoritative(void);
+static void test_locate_updates_active_display_menu(void);
 static void test_native_display_and_column_title(void);
 static void test_native_highlight_timeout(void);
 static void test_native_activation_and_mouse(void);
@@ -75,6 +76,7 @@ main(void) {
     test_bridge_free_load_filter_search_selection();
     test_bridge_free_mpd_updates_and_membership();
     test_native_storage_is_authoritative();
+    test_locate_updates_active_display_menu();
     test_native_display_and_column_title();
     test_native_highlight_timeout();
     test_native_activation_and_mouse();
@@ -441,6 +443,56 @@ test_native_storage_is_authoritative(void) {
     ncm_song_destroy(&found);
     native_playlist_screen_destroy(&screen);
     nc_song_menu_destroy(&display);
+    return;
+}
+
+static void
+test_locate_updates_active_display_menu(void) {
+    NativePlaylistScreen screen;
+    NcmMpdSongList songs;
+    NcSongMenu display;
+    NcMenu *display_menu;
+    NcMenu *storage_menu;
+    NcmSong *song;
+
+    init_screen(&screen);
+    ncm_mpd_song_list_init(&songs);
+    nc_song_menu_init(&display);
+    append_song(&songs, LIT_ARGS("zero.flac"), 0, 40);
+    append_song(&songs, LIT_ARGS("one.flac"), 1, 41);
+    append_song(&songs, LIT_ARGS("two.flac"), 2, 42);
+    assert(native_playlist_screen_load_song_list(&screen, &songs));
+
+    storage_menu = native_playlist_screen_menu(&screen);
+    display_menu = nc_song_menu_base(&display);
+    for (int64 i = 0; i < nc_menu_all_item_count(storage_menu); i += 1) {
+        song = nc_menu_item_at(storage_menu, NC_MENU_ITEMS_ALL, i);
+        nc_song_menu_add(&display, song);
+    }
+    native_playlist_screen_set_display_menu(&screen, display_menu);
+
+    nc_menu_clear_filtered_items(storage_menu);
+    song = nc_menu_item_at(storage_menu, NC_MENU_ITEMS_ALL, 0);
+    nc_menu_add_filtered_item_ref(storage_menu, song);
+    song = nc_menu_item_at(storage_menu, NC_MENU_ITEMS_ALL, 2);
+    nc_menu_add_filtered_item_ref(storage_menu, song);
+    nc_menu_show_filtered_items(storage_menu);
+
+    nc_menu_clear_filtered_items(display_menu);
+    song = nc_menu_item_at(display_menu, NC_MENU_ITEMS_ALL, 0);
+    nc_menu_add_filtered_item_ref(display_menu, song);
+    song = nc_menu_item_at(display_menu, NC_MENU_ITEMS_ALL, 2);
+    nc_menu_add_filtered_item_ref(display_menu, song);
+    nc_menu_show_filtered_items(display_menu);
+
+    assert(native_playlist_screen_locate_position(&screen, 2));
+    assert(nc_menu_highlight(storage_menu) == 1);
+    assert(nc_menu_highlight(display_menu) == 1);
+
+    native_playlist_screen_set_display_menu(&screen, NULL);
+    nc_song_menu_destroy(&display);
+    ncm_mpd_song_list_destroy(&songs);
+    native_playlist_screen_destroy(&screen);
     return;
 }
 

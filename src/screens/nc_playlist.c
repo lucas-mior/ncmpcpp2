@@ -845,20 +845,27 @@ native_playlist_screen_now_playing_song(NativePlaylistScreen *screen,
 bool
 native_playlist_screen_locate_position(NativePlaylistScreen *screen,
                                        uint32 position) {
+    NcMenu *display_menu;
     NcMenu *menu;
     NcmSong *song;
+    int64 height;
 
     if (screen == NULL) {
         return false;
     }
 
+    native_playlist_sync_if_needed(screen);
     menu = native_playlist_storage_menu(screen);
+    display_menu = nc_playlist_screen_menu(&screen->screen);
+    height = nc_playlist_screen_height(&screen->screen);
     for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
         song = nc_menu_active_item_at(menu, i);
         if ((song != NULL) && (ncm_song_position(song) == position)) {
-            nc_menu_highlight_position(menu, i,
-                                       nc_playlist_screen_height(
-                                           &screen->screen));
+            nc_menu_highlight_position(menu, i, height);
+            if ((display_menu != NULL) && (display_menu != menu)
+                && (i < nc_menu_item_count(display_menu))) {
+                nc_menu_highlight_position(display_menu, i, height);
+            }
             return true;
         }
     }
