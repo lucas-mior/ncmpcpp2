@@ -47,12 +47,27 @@ app_binding_migration_screen_is_c_only(enum ScreenType type) {
     return type == NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER
         || type == NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG
         || type == NCM_SCREEN_TYPE_SEARCH_ENGINE
+#if defined(HAVE_TAGLIB_H)
+        || type == NCM_SCREEN_TYPE_TINY_TAG_EDITOR
+#endif
         || type == NCM_SCREEN_TYPE_VISUALIZER;
 }
 
 bool
 app_binding_migration_action_is_c_safe_for_screen(
     enum NcmActionType type, enum ScreenType screen_type) {
+#if defined(HAVE_TAGLIB_H)
+    if (screen_type == NCM_SCREEN_TYPE_TINY_TAG_EDITOR) {
+        switch (type) {
+        case NCM_ACTION_JUMP_TO_MEDIA_LIBRARY:
+        case NCM_ACTION_SHOW_MEDIA_LIBRARY:
+        case NCM_ACTION_SHOW_SEARCH_ENGINE:
+            return false;
+        default:
+            break;
+        }
+    }
+#endif
     if (app_binding_migration_action_is_c_safe(type)) {
         return true;
     }
@@ -139,6 +154,24 @@ app_binding_migration_action_is_c_safe_for_screen(
         default:
             return false;
         }
+#if defined(HAVE_TAGLIB_H)
+    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+        switch (type) {
+        case NCM_ACTION_MOUSE_EVENT:
+        case NCM_ACTION_SCROLL_UP:
+        case NCM_ACTION_SCROLL_DOWN:
+        case NCM_ACTION_PAGE_UP:
+        case NCM_ACTION_PAGE_DOWN:
+        case NCM_ACTION_MOVE_HOME:
+        case NCM_ACTION_MOVE_END:
+        case NCM_ACTION_SAVE_TAG_CHANGES:
+        case NCM_ACTION_NEXT_SCREEN:
+        case NCM_ACTION_PREVIOUS_SCREEN:
+            return true;
+        default:
+            return false;
+        }
+#endif
     case NCM_SCREEN_TYPE_VISUALIZER:
         switch (type) {
         case NCM_ACTION_SHOW_VISUALIZER:
