@@ -1,12 +1,17 @@
 #ifndef NCMPCPP_HELPERS_LEGACY_H
 #define NCMPCPP_HELPERS_LEGACY_H
 
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <string>
+#include <vector>
+
 #include "helpers.h"
 #include "global.h"
 
 #include "interfaces.h"
 #include "mpdpp.h"
-#include "screens/playlist.h"
 #include "screens/screen_cpp_compat.h"
 #include "settings_legacy.h"
 #include "song_list.h"

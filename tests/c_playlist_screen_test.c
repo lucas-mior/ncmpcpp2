@@ -47,6 +47,8 @@ static void append_song(NcmMpdSongList *songs, char *uri, int32 uri_len,
 static void add_song(NativePlaylistScreen *screen, char *uri,
                      int32 uri_len, uint32 position, uint32 id);
 static void assert_song_uri(NcmSong *song, char *uri, int32 uri_len);
+static bool display_should_mark_playlist_song(
+    NativePlaylistScreen *screen, NcMenu *source, NcmSong *song);
 static void begin_formats(PlaylistFormatFixture *fixture);
 static void end_formats(PlaylistFormatFixture *fixture);
 static void test_playlist_row_ownership(void);
@@ -131,6 +133,16 @@ assert_song_uri(NcmSong *song, char *uri, int32 uri_len) {
     assert(ncm_song_uri_view(song, 0, &view));
     assert(ncm_string_equal(view.data, view.len, uri, uri_len));
     return;
+}
+
+static bool
+display_should_mark_playlist_song(NativePlaylistScreen *screen,
+                                  NcMenu *source, NcmSong *song) {
+    bool is_playlist_menu;
+
+    is_playlist_menu = source == native_playlist_screen_menu(screen);
+    return !is_playlist_menu
+        && native_playlist_screen_contains_song(screen, song);
 }
 
 static void
@@ -332,8 +344,10 @@ test_bridge_free_mpd_updates_and_membership(void) {
     NativePlaylistScreen screen;
     NcmMpdClient client = {0};
     NcmError error;
+    NcSongMenu external;
     NcmSong duplicate;
     NcmSong *stored;
+    NcMenu *external_menu;
     NcMenu *menu;
 
     ncm_mpd_song_list_clear(&mpd_fixture.queue);
@@ -344,6 +358,8 @@ test_bridge_free_mpd_updates_and_membership(void) {
     append_song(&mpd_fixture.queue, LIT_ARGS("duplicate.flac"), 1, 21);
 
     init_screen(&screen);
+    nc_song_menu_init(&external);
+    external_menu = nc_song_menu_base(&external);
     menu = native_playlist_screen_menu(&screen);
     ncm_error_clear(&error);
     assert(native_playlist_screen_reload_from_mpd(
@@ -355,6 +371,10 @@ test_bridge_free_mpd_updates_and_membership(void) {
     ncm_song_init(&duplicate);
     assert(ncm_song_set_uri(&duplicate, LIT_ARGS("duplicate.flac")));
     assert(native_playlist_screen_contains_song(&screen, &duplicate));
+    assert(!display_should_mark_playlist_song(
+        &screen, menu, &duplicate));
+    assert(display_should_mark_playlist_song(
+        &screen, external_menu, &duplicate));
     assert(nc_menu_set_position_selected(menu, 1, true));
 
     append_song(&mpd_fixture.changes,
@@ -372,12 +392,17 @@ test_bridge_free_mpd_updates_and_membership(void) {
         &screen, &client, 2, 1, &error));
     assert(native_playlist_screen_song_count(&screen) == 1);
     assert(native_playlist_screen_contains_song(&screen, &duplicate));
+    assert(display_should_mark_playlist_song(
+        &screen, external_menu, &duplicate));
     assert(native_playlist_screen_reload_from_mpd(
         &screen, &client, 3, 0, &error));
     assert(native_playlist_screen_empty(&screen));
     assert(!native_playlist_screen_contains_song(&screen, &duplicate));
+    assert(!display_should_mark_playlist_song(
+        &screen, external_menu, &duplicate));
 
     ncm_song_destroy(&duplicate);
+    nc_song_menu_destroy(&external);
     native_playlist_screen_destroy(&screen);
     return;
 }
