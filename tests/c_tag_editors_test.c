@@ -40,6 +40,9 @@ typedef struct TinyEditorActionFixture {
     NcmBuffer prompt_label;
     NcmBuffer prompt_initial;
     NcmBuffer prompt_response;
+    NcmBuffer updated_directory;
+    NcmBuffer playlist_title;
+    NcmBuffer playlist_new_name;
     NcmBuffer status_messages[4];
     NcScreen *switched_screen;
     char *music_dir;
@@ -50,8 +53,14 @@ typedef struct TinyEditorActionFixture {
     int32 row_changed_calls;
     int32 switch_calls;
     int32 write_calls;
+    int32 update_directory_calls;
+    int32 update_playlist_calls;
+    int32 browser_update_calls;
+    int32 status_calls_at_side_effect;
+    int32 switch_calls_at_side_effect;
     enum NativeTinyTagEditorPromptResult prompt_result;
     bool write_result;
+    bool modified_at_side_effect;
 } TinyEditorActionFixture;
 
 static NcmStringView tiny_tag_names[NCM_TAGS_FIELD_LAST] = {
@@ -136,6 +145,7 @@ static void test_tiny_editor_save_results(void);
 static void test_tiny_editor_run_tag_action(void);
 static void test_tiny_editor_run_filename_action(void);
 static void test_tiny_editor_run_save_and_cancel_actions(void);
+static void test_tiny_editor_save_side_effects(void);
 static void test_tiny_editor_open_song(void);
 static void test_tiny_editor_open_failures(void);
 
@@ -169,6 +179,11 @@ static void tiny_editor_row_changed(
 static void tiny_editor_switch_to_screen(void *user, NcScreen *screen);
 static bool tiny_editor_action_write_song(
     void *user, NcmMutableSong *song, char *music_dir);
+static void tiny_editor_update_directory(
+    void *user, char *directory, int32 directory_len);
+static void tiny_editor_update_playlist_song(
+    void *user, NcmMutableSong *song);
+static void tiny_editor_request_browser_update(void *user);
 static bool tiny_editor_taglib_open(void *user, NcmTaglibFile *file,
                                     char *path, int32 path_len);
 static bool tiny_editor_taglib_audio_properties(
@@ -196,6 +211,7 @@ main(void) {
     test_tiny_editor_run_tag_action();
     test_tiny_editor_run_filename_action();
     test_tiny_editor_run_save_and_cancel_actions();
+    test_tiny_editor_save_side_effects();
     test_tiny_editor_open_song();
     test_tiny_editor_open_failures();
     return EXIT_SUCCESS;
@@ -802,8 +818,10 @@ test_tiny_editor_run_save_and_cancel_actions(void) {
         &screen, &properties, true, LIT_ARGS(" | "), true));
     assert(ncm_buffer_set(&screen.music_dir, LIT_ARGS("/music")));
     screen.previous_screen = &previous;
+    ncm_mutable_song_set_from_database(&screen.edited, true);
     hooks.status_message = tiny_editor_status_message;
     hooks.write_song = tiny_editor_action_write_song;
+    hooks.update_directory = tiny_editor_update_directory;
     hooks.switch_to_screen = tiny_editor_switch_to_screen;
     hooks.user = &fixture;
     native_tiny_tag_editor_screen_set_hooks(&screen, hooks);
@@ -823,10 +841,17 @@ test_tiny_editor_run_save_and_cancel_actions(void) {
                             LIT_ARGS("Tags updated")));
     assert(fixture.switch_calls == 1);
     assert(fixture.switched_screen == &previous);
+    assert(fixture.update_directory_calls == 1);
+    assert(ncm_string_equal(fixture.updated_directory.data,
+                            fixture.updated_directory.len,
+                            LIT_ARGS("album")));
+    assert(fixture.status_calls_at_side_effect == 2);
+    assert(fixture.switch_calls_at_side_effect == 0);
     assert(!ncm_mutable_song_is_modified(
         native_tiny_tag_editor_screen_edited(&screen)));
 
     fixture.write_result = false;
+    ncm_mutable_song_set_from_database(&screen.edited, false);
     errno = EACCES;
     assert(native_tiny_tag_editor_screen_set_tag_value(
         &screen, NCM_TAGS_FIELD_TITLE, LIT_ARGS("Unsaved"), NULL, 0));
@@ -843,6 +868,9 @@ test_tiny_editor_run_save_and_cancel_actions(void) {
         fixture.status_messages[3].len,
         LIT_ARGS("Error while writing tags: ")));
     assert(fixture.switch_calls == 2);
+    assert(fixture.update_directory_calls == 1);
+    assert(fixture.update_playlist_calls == 0);
+    assert(fixture.browser_update_calls == 0);
     assert(ncm_mutable_song_is_modified(
         native_tiny_tag_editor_screen_edited(&screen)));
 
@@ -850,6 +878,96 @@ test_tiny_editor_run_save_and_cancel_actions(void) {
         &screen, NATIVE_TINY_TAG_EDITOR_CANCEL_ROW));
     assert(fixture.write_calls == 2);
     assert(fixture.switch_calls == 3);
+
+    screen.previous_screen = NULL;
+    assert(native_tiny_tag_editor_screen_run_row(
+        &screen, NATIVE_TINY_TAG_EDITOR_CANCEL_ROW));
+    assert(fixture.write_calls == 2);
+    assert(fixture.switch_calls == 3);
+
+    ncm_mutable_song_destroy(&song);
+    native_tiny_tag_editor_screen_destroy(&screen);
+    tiny_editor_action_fixture_destroy(&fixture);
+    return;
+}
+
+static void
+test_tiny_editor_save_side_effects(void) {
+    NativeTinyTagEditorScreen screen;
+    NativeTinyTagEditorHooks hooks = {0};
+    TinyEditorActionFixture fixture;
+    NcmMutableSong song;
+    NcScreen previous = {0};
+
+    tiny_editor_action_fixture_init(&fixture);
+    fixture.write_result = true;
+    native_tiny_tag_editor_screen_init(&screen, 0, 80, 0, 24,
+                                       nc_color_default(),
+                                       nc_border_none());
+    init_tiny_editor_song(&song, LIT_ARGS("song.flac"));
+    assert(native_tiny_tag_editor_screen_set_edited_mutable_song(
+        &screen, &song));
+    assert(ncm_buffer_set(&screen.music_dir, LIT_ARGS("/music")));
+    hooks.write_song = tiny_editor_action_write_song;
+    hooks.update_directory = tiny_editor_update_directory;
+    hooks.update_playlist_song = tiny_editor_update_playlist_song;
+    hooks.request_browser_update = tiny_editor_request_browser_update;
+    hooks.user = &fixture;
+    native_tiny_tag_editor_screen_set_hooks(&screen, hooks);
+
+    previous.type = NC_SCREEN_TYPE_PLAYLIST;
+    screen.previous_screen = &previous;
+    assert(native_tiny_tag_editor_screen_set_tag_value(
+        &screen, NCM_TAGS_FIELD_TITLE,
+        LIT_ARGS("Playlist title"), NULL, 0));
+    assert(native_tiny_tag_editor_screen_set_filename(
+        &screen, LIT_ARGS("renamed.flac")));
+    assert(native_tiny_tag_editor_screen_save(
+        &screen, screen.music_dir.data));
+    assert(fixture.update_directory_calls == 0);
+    assert(fixture.update_playlist_calls == 1);
+    assert(fixture.browser_update_calls == 0);
+    assert(fixture.modified_at_side_effect);
+    assert(ncm_string_equal(fixture.playlist_title.data,
+                            fixture.playlist_title.len,
+                            LIT_ARGS("Playlist title")));
+    assert(ncm_string_equal(fixture.playlist_new_name.data,
+                            fixture.playlist_new_name.len,
+                            LIT_ARGS("renamed.flac")));
+
+    previous.type = NC_SCREEN_TYPE_BROWSER;
+    assert(native_tiny_tag_editor_screen_set_tag_value(
+        &screen, NCM_TAGS_FIELD_TITLE,
+        LIT_ARGS("Browser title"), NULL, 0));
+    assert(native_tiny_tag_editor_screen_save(
+        &screen, screen.music_dir.data));
+    assert(fixture.update_directory_calls == 0);
+    assert(fixture.update_playlist_calls == 1);
+    assert(fixture.browser_update_calls == 1);
+
+    screen.previous_screen = NULL;
+    assert(native_tiny_tag_editor_screen_set_tag_value(
+        &screen, NCM_TAGS_FIELD_TITLE,
+        LIT_ARGS("No previous screen"), NULL, 0));
+    assert(native_tiny_tag_editor_screen_save(
+        &screen, screen.music_dir.data));
+    assert(fixture.update_directory_calls == 0);
+    assert(fixture.update_playlist_calls == 1);
+    assert(fixture.browser_update_calls == 1);
+
+    fixture.write_result = false;
+    previous.type = NC_SCREEN_TYPE_BROWSER;
+    screen.previous_screen = &previous;
+    assert(native_tiny_tag_editor_screen_set_tag_value(
+        &screen, NCM_TAGS_FIELD_TITLE,
+        LIT_ARGS("Write failed"), NULL, 0));
+    assert(!native_tiny_tag_editor_screen_save(
+        &screen, screen.music_dir.data));
+    assert(fixture.update_directory_calls == 0);
+    assert(fixture.update_playlist_calls == 1);
+    assert(fixture.browser_update_calls == 1);
+    assert(ncm_mutable_song_is_modified(
+        native_tiny_tag_editor_screen_edited(&screen)));
 
     ncm_mutable_song_destroy(&song);
     native_tiny_tag_editor_screen_destroy(&screen);
@@ -1177,6 +1295,9 @@ tiny_editor_action_fixture_init(TinyEditorActionFixture *fixture) {
     ncm_buffer_init(&fixture->prompt_label);
     ncm_buffer_init(&fixture->prompt_initial);
     ncm_buffer_init(&fixture->prompt_response);
+    ncm_buffer_init(&fixture->updated_directory);
+    ncm_buffer_init(&fixture->playlist_title);
+    ncm_buffer_init(&fixture->playlist_new_name);
     for (int32 i = 0; i < 4; i += 1) {
         ncm_buffer_init(&fixture->status_messages[i]);
     }
@@ -1189,8 +1310,14 @@ tiny_editor_action_fixture_init(TinyEditorActionFixture *fixture) {
     fixture->row_changed_calls = 0;
     fixture->switch_calls = 0;
     fixture->write_calls = 0;
+    fixture->update_directory_calls = 0;
+    fixture->update_playlist_calls = 0;
+    fixture->browser_update_calls = 0;
+    fixture->status_calls_at_side_effect = -1;
+    fixture->switch_calls_at_side_effect = -1;
     fixture->prompt_result = NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
     fixture->write_result = false;
+    fixture->modified_at_side_effect = false;
     return;
 }
 
@@ -1199,6 +1326,9 @@ tiny_editor_action_fixture_destroy(TinyEditorActionFixture *fixture) {
     ncm_buffer_destroy(&fixture->prompt_label);
     ncm_buffer_destroy(&fixture->prompt_initial);
     ncm_buffer_destroy(&fixture->prompt_response);
+    ncm_buffer_destroy(&fixture->updated_directory);
+    ncm_buffer_destroy(&fixture->playlist_title);
+    ncm_buffer_destroy(&fixture->playlist_new_name);
     for (int32 i = 0; i < 4; i += 1) {
         ncm_buffer_destroy(&fixture->status_messages[i]);
     }
@@ -1277,6 +1407,57 @@ tiny_editor_action_write_song(
     fixture->music_dir = music_dir;
     fixture->write_calls += 1;
     return fixture->write_result;
+}
+
+static void
+tiny_editor_update_directory(
+    void *user, char *directory, int32 directory_len) {
+    TinyEditorActionFixture *fixture;
+
+    fixture = user;
+    assert(ncm_buffer_set(&fixture->updated_directory,
+                          directory, directory_len));
+    fixture->update_directory_calls += 1;
+    fixture->status_calls_at_side_effect = fixture->status_calls;
+    fixture->switch_calls_at_side_effect = fixture->switch_calls;
+    fixture->modified_at_side_effect = true;
+    return;
+}
+
+static void
+tiny_editor_update_playlist_song(
+    void *user, NcmMutableSong *song) {
+    TinyEditorActionFixture *fixture;
+    NcmStringView new_name;
+    NcmStringView title;
+
+    fixture = user;
+    assert(song != NULL);
+    assert(ncm_mutable_song_get_tag(
+        song, NCM_TAGS_FIELD_TITLE, 0, &title));
+    assert(ncm_buffer_set(&fixture->playlist_title,
+                          title.data, title.len));
+    ncm_buffer_clear(&fixture->playlist_new_name);
+    if (ncm_mutable_song_get_new_name(song, &new_name)) {
+        assert(ncm_buffer_set(&fixture->playlist_new_name,
+                              new_name.data, new_name.len));
+    }
+    fixture->update_playlist_calls += 1;
+    fixture->status_calls_at_side_effect = fixture->status_calls;
+    fixture->switch_calls_at_side_effect = fixture->switch_calls;
+    fixture->modified_at_side_effect = ncm_mutable_song_is_modified(song);
+    return;
+}
+
+static void
+tiny_editor_request_browser_update(void *user) {
+    TinyEditorActionFixture *fixture;
+
+    fixture = user;
+    fixture->browser_update_calls += 1;
+    fixture->status_calls_at_side_effect = fixture->status_calls;
+    fixture->switch_calls_at_side_effect = fixture->switch_calls;
+    return;
 }
 
 static bool

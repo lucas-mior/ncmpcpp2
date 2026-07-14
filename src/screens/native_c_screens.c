@@ -1265,6 +1265,37 @@ native_tiny_tag_editor_status_message(
     return;
 }
 
+static void
+native_tiny_tag_editor_update_directory(
+    void *user, char *directory, int32 directory_len) {
+    NcmError error = {0};
+
+    (void)user;
+    (void)directory_len;
+    if (!ncm_mpd_client_update_directory(
+            &global_mpd, directory, NULL, &error)) {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time, error.message);
+    }
+    return;
+}
+
+static void
+native_tiny_tag_editor_update_playlist_song(
+    void *user, NcmMutableSong *song) {
+    (void)user;
+    (void)native_playlist_screen_update_current_mutable_song(
+        native_c_screen_playlist(), song);
+    return;
+}
+
+static void
+native_tiny_tag_editor_request_browser_update(void *user) {
+    (void)user;
+    native_browser_screen_request_update(native_c_screen_browser());
+    return;
+}
+
 void
 native_c_screen_tiny_tag_editor_init(void) {
     NativeTinyTagEditorHooks hooks = {0};
@@ -1281,6 +1312,11 @@ native_c_screen_tiny_tag_editor_init(void) {
                                        native_no_border());
     hooks.prompt = native_tiny_tag_editor_prompt;
     hooks.status_message = native_tiny_tag_editor_status_message;
+    hooks.update_directory = native_tiny_tag_editor_update_directory;
+    hooks.update_playlist_song =
+        native_tiny_tag_editor_update_playlist_song;
+    hooks.request_browser_update =
+        native_tiny_tag_editor_request_browser_update;
     native_tiny_tag_editor_screen_set_hooks(
         &tiny_tag_editor_screen, hooks);
     tiny_tag_editor_screen_initialized = true;
