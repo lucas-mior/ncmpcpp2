@@ -16,7 +16,7 @@
 #include "interfaces.h"
 #include "curses/menu.h"
 #include "mutable_song.h"
-#include "screens/playlist.h"
+#include "screens/native_c_screens.h"
 #include "screens/song_info.h"
 #include "screens/tag_editor.h"
 #include "settings_legacy.h"
@@ -97,15 +97,18 @@ void setProperties(NC::Menu<T> &menu, const MPD::Song &s,
 		        NC_KEY_SPACE, menu.getWidth());
 	}
 
+	NativePlaylistScreen *playlist = native_c_screen_playlist();
+	bool is_playlist_menu = menu.nativeMenu()
+		== native_playlist_screen_menu(playlist);
 	int song_pos = s.getPosition();
 	is_now_playing = ncm_status_state_player() != NCM_STATUS_PLAYER_STOP
-		&& myPlaylist->isActiveWindow(menu)
+		&& is_playlist_menu
 		&& song_pos == ncm_status_state_current_song_position();
 	if (is_now_playing)
 		menu << Config.now_playing_prefix;
 
-	is_in_playlist = !myPlaylist->isActiveWindow(menu)
-		&& myPlaylist->checkForSong(s);
+	is_in_playlist = !is_playlist_menu
+		&& native_playlist_screen_contains_song(playlist, s.cSong());
 	if (is_in_playlist)
 		menu << NC_FORMAT_BOLD;
 

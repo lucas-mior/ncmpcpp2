@@ -9,10 +9,12 @@
 #include <cerrno>
 #include <cstring>
 #include <exception>
+#include <functional>
 #include <fstream>
 #include <list>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "interfaces.h"
@@ -33,7 +35,6 @@
 #include "mpdpp.h"
 #include "screens/native_c_screens.h"
 #include "screens/nc_tag_editor.h"
-#include "screens/playlist.h"
 #include "screens/screen_cpp_legacy.h"
 #include "screens/song_info.h"
 #include "settings_legacy.h"
