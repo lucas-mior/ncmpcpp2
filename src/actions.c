@@ -3440,8 +3440,9 @@ action_runtime_save_tag_changes(void) {
             native_c_screen_tag_editor(), Config.mpd_music_dir);
     }
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
-        return native_tiny_tag_editor_screen_save(
-            native_c_screen_tiny_tag_editor(), Config.mpd_music_dir);
+        return native_tiny_tag_editor_screen_run_row(
+            native_c_screen_tiny_tag_editor(),
+            NATIVE_TINY_TAG_EDITOR_SAVE_ROW);
     }
 #endif
     return false;

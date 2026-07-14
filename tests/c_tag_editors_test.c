@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -36,10 +37,21 @@ typedef struct TinyEditorWriteFixture {
 } TinyEditorWriteFixture;
 
 typedef struct TinyEditorActionFixture {
-    int32 can_run_calls;
-    int32 run_calls;
-    bool can_run_result;
-    bool run_result;
+    NcmBuffer prompt_label;
+    NcmBuffer prompt_initial;
+    NcmBuffer prompt_response;
+    NcmBuffer status_messages[4];
+    NcScreen *switched_screen;
+    char *music_dir;
+    int64 current_row;
+    int64 changed_row;
+    int32 prompt_calls;
+    int32 status_calls;
+    int32 row_changed_calls;
+    int32 switch_calls;
+    int32 write_calls;
+    enum NativeTinyTagEditorPromptResult prompt_result;
+    bool write_result;
 } TinyEditorActionFixture;
 
 static NcmStringView tiny_tag_names[NCM_TAGS_FIELD_LAST] = {
@@ -121,7 +133,9 @@ static void test_tiny_editor_rejects_streams(void);
 static void test_tiny_editor_field_updates(void);
 static void test_tiny_editor_filename_stem(void);
 static void test_tiny_editor_save_results(void);
-static void test_tiny_editor_run_current_bridge(void);
+static void test_tiny_editor_run_tag_action(void);
+static void test_tiny_editor_run_filename_action(void);
+static void test_tiny_editor_run_save_and_cancel_actions(void);
 static void test_tiny_editor_open_song(void);
 static void test_tiny_editor_open_failures(void);
 
@@ -140,8 +154,21 @@ static void assert_tiny_editor_tag_row_text(
     NcmStringView value);
 static bool tiny_editor_write_song(void *user, NcmMutableSong *song,
                                    char *music_dir);
-static bool tiny_editor_can_run_current(void *user);
-static bool tiny_editor_run_current(void *user);
+static void tiny_editor_action_fixture_init(
+    TinyEditorActionFixture *fixture);
+static void tiny_editor_action_fixture_destroy(
+    TinyEditorActionFixture *fixture);
+static enum NativeTinyTagEditorPromptResult tiny_editor_prompt(
+    void *user, char *label, int32 label_len, NcmStringView initial,
+    NcmBuffer *result);
+static void tiny_editor_status_message(
+    void *user, char *message, int32 message_len);
+static int64 tiny_editor_current_row(void *user);
+static void tiny_editor_row_changed(
+    void *user, NcmMutableSong *song, int64 row);
+static void tiny_editor_switch_to_screen(void *user, NcScreen *screen);
+static bool tiny_editor_action_write_song(
+    void *user, NcmMutableSong *song, char *music_dir);
 static bool tiny_editor_taglib_open(void *user, NcmTaglibFile *file,
                                     char *path, int32 path_len);
 static bool tiny_editor_taglib_audio_properties(
@@ -166,7 +193,9 @@ main(void) {
     test_tiny_editor_field_updates();
     test_tiny_editor_filename_stem();
     test_tiny_editor_save_results();
-    test_tiny_editor_run_current_bridge();
+    test_tiny_editor_run_tag_action();
+    test_tiny_editor_run_filename_action();
+    test_tiny_editor_run_save_and_cancel_actions();
     test_tiny_editor_open_song();
     test_tiny_editor_open_failures();
     return EXIT_SUCCESS;
@@ -610,45 +639,221 @@ test_tiny_editor_save_results(void) {
 }
 
 static void
-test_tiny_editor_run_current_bridge(void) {
+test_tiny_editor_run_tag_action(void) {
     NativeTinyTagEditorScreen screen;
+    NativeTinyTagEditorHooks hooks = {0};
     NativeTinyTagEditorBridge bridge = {0};
-    TinyEditorActionFixture fixture = {0};
+    TinyEditorActionFixture fixture;
+    NcmTaglibAudioProperties properties = {0};
+    NcmMutableSong song;
+    NcmStringView value;
     NcScreen *base;
+
+    tiny_editor_action_fixture_init(&fixture);
+    fixture.current_row = NATIVE_TINY_TAG_EDITOR_TAG_ROW(
+        NCM_TAGS_FIELD_TITLE);
+    fixture.prompt_result = NATIVE_TINY_TAG_EDITOR_PROMPT_ACCEPTED;
+    assert(ncm_buffer_set(&fixture.prompt_response,
+                          LIT_ARGS("New title")));
 
     native_tiny_tag_editor_screen_init(&screen, 0, 80, 0, 24,
                                        nc_color_default(),
                                        nc_border_none());
-    base = native_tiny_tag_editor_screen_base(&screen);
-    assert(!nc_screen_can_run_current(base));
-    assert(!nc_screen_run_current(base));
-
-    fixture.can_run_result = false;
-    fixture.run_result = true;
-    bridge.can_run_current = tiny_editor_can_run_current;
-    bridge.run_current = tiny_editor_run_current;
+    init_tiny_editor_song(&song, LIT_ARGS("song.flac"));
+    assert(native_tiny_tag_editor_screen_set_edited_mutable_song(
+        &screen, &song));
+    assert(native_tiny_tag_editor_screen_reload_rows(
+        &screen, &properties, true, LIT_ARGS(" | "), true));
+    hooks.prompt = tiny_editor_prompt;
+    hooks.status_message = tiny_editor_status_message;
+    hooks.user = &fixture;
+    native_tiny_tag_editor_screen_set_hooks(&screen, hooks);
+    bridge.current_row = tiny_editor_current_row;
+    bridge.row_changed = tiny_editor_row_changed;
     bridge.user = &fixture;
     native_tiny_tag_editor_screen_set_bridge(&screen, bridge);
 
-    assert(!nc_screen_can_run_current(base));
-    assert(fixture.can_run_calls == 1);
-    assert(!nc_screen_run_current(base));
-    assert(fixture.can_run_calls == 2);
-    assert(fixture.run_calls == 0);
-
-    fixture.can_run_result = true;
+    base = native_tiny_tag_editor_screen_base(&screen);
     assert(nc_screen_can_run_current(base));
-    assert(fixture.can_run_calls == 3);
     assert(nc_screen_run_current(base));
-    assert(fixture.can_run_calls == 4);
-    assert(fixture.run_calls == 1);
+    assert(fixture.prompt_calls == 1);
+    assert(ncm_string_equal(fixture.prompt_label.data,
+                            fixture.prompt_label.len,
+                            LIT_ARGS("Title")));
+    assert(ncm_string_equal(fixture.prompt_initial.data,
+                            fixture.prompt_initial.len,
+                            LIT_ARGS("Title value")));
+    assert(fixture.row_changed_calls == 1);
+    assert(fixture.changed_row == fixture.current_row);
+    assert(ncm_mutable_song_get_tag(
+        native_tiny_tag_editor_screen_edited(&screen),
+        NCM_TAGS_FIELD_TITLE, 0, &value));
+    assert(ncm_string_equal(value.data, value.len,
+                            LIT_ARGS("New title")));
+    assert_tiny_editor_row_text(
+        &screen, fixture.current_row, LIT_ARGS("Title: New title"));
 
-    fixture.run_result = false;
+    fixture.current_row = NATIVE_TINY_TAG_EDITOR_TAG_ROW(
+        NCM_TAGS_FIELD_ARTIST);
+    fixture.prompt_result = NATIVE_TINY_TAG_EDITOR_PROMPT_ABORTED;
     assert(!nc_screen_run_current(base));
-    assert(fixture.can_run_calls == 5);
-    assert(fixture.run_calls == 2);
+    assert(fixture.prompt_calls == 2);
+    assert(fixture.row_changed_calls == 1);
+    assert(fixture.status_calls == 1);
+    assert(ncm_string_equal(fixture.status_messages[0].data,
+                            fixture.status_messages[0].len,
+                            LIT_ARGS("Action aborted")));
+    assert(ncm_mutable_song_get_tag(
+        native_tiny_tag_editor_screen_edited(&screen),
+        NCM_TAGS_FIELD_ARTIST, 0, &value));
+    assert(ncm_string_equal(value.data, value.len,
+                            LIT_ARGS("Artist value")));
 
+    fixture.current_row = NATIVE_TINY_TAG_EDITOR_FIRST_SEPARATOR_ROW;
+    assert(!nc_screen_can_run_current(base));
+    assert(!nc_screen_run_current(base));
+
+    ncm_mutable_song_destroy(&song);
     native_tiny_tag_editor_screen_destroy(&screen);
+    tiny_editor_action_fixture_destroy(&fixture);
+    return;
+}
+
+static void
+test_tiny_editor_run_filename_action(void) {
+    NativeTinyTagEditorScreen screen;
+    NativeTinyTagEditorHooks hooks = {0};
+    NativeTinyTagEditorBridge bridge = {0};
+    TinyEditorActionFixture fixture;
+    NcmTaglibAudioProperties properties = {0};
+    NcmMutableSong song;
+    NcmStringView name;
+
+    tiny_editor_action_fixture_init(&fixture);
+    fixture.current_row = NATIVE_TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW;
+    fixture.prompt_result = NATIVE_TINY_TAG_EDITOR_PROMPT_ACCEPTED;
+    assert(ncm_buffer_set(&fixture.prompt_response,
+                          LIT_ARGS("renamed")));
+
+    native_tiny_tag_editor_screen_init(&screen, 0, 80, 0, 24,
+                                       nc_color_default(),
+                                       nc_border_none());
+    init_tiny_editor_song(&song, LIT_ARGS("song.flac"));
+    assert(native_tiny_tag_editor_screen_set_edited_mutable_song(
+        &screen, &song));
+    assert(native_tiny_tag_editor_screen_reload_rows(
+        &screen, &properties, true, LIT_ARGS(" | "), true));
+    hooks.prompt = tiny_editor_prompt;
+    hooks.user = &fixture;
+    native_tiny_tag_editor_screen_set_hooks(&screen, hooks);
+    bridge.current_row = tiny_editor_current_row;
+    bridge.row_changed = tiny_editor_row_changed;
+    bridge.user = &fixture;
+    native_tiny_tag_editor_screen_set_bridge(&screen, bridge);
+
+    assert(native_tiny_tag_editor_screen_run_current(&screen));
+    assert(ncm_string_equal(fixture.prompt_label.data,
+                            fixture.prompt_label.len,
+                            LIT_ARGS("Filename")));
+    assert(ncm_string_equal(fixture.prompt_initial.data,
+                            fixture.prompt_initial.len,
+                            LIT_ARGS("song")));
+    assert(ncm_mutable_song_get_new_name(
+        native_tiny_tag_editor_screen_edited(&screen), &name));
+    assert(ncm_string_equal(name.data, name.len,
+                            LIT_ARGS("renamed.flac")));
+    assert_tiny_editor_row_text(
+        &screen, NATIVE_TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW,
+        LIT_ARGS("Filename: renamed.flac"));
+    assert(fixture.row_changed_calls == 1);
+
+    ncm_buffer_clear(&fixture.prompt_response);
+    assert(native_tiny_tag_editor_screen_run_current(&screen));
+    assert(fixture.row_changed_calls == 1);
+    assert(ncm_mutable_song_get_new_name(
+        native_tiny_tag_editor_screen_edited(&screen), &name));
+    assert(ncm_string_equal(name.data, name.len,
+                            LIT_ARGS("renamed.flac")));
+
+    ncm_mutable_song_destroy(&song);
+    native_tiny_tag_editor_screen_destroy(&screen);
+    tiny_editor_action_fixture_destroy(&fixture);
+    return;
+}
+
+static void
+test_tiny_editor_run_save_and_cancel_actions(void) {
+    NativeTinyTagEditorScreen screen;
+    NativeTinyTagEditorHooks hooks = {0};
+    TinyEditorActionFixture fixture;
+    NcmTaglibAudioProperties properties = {0};
+    NcmMutableSong song;
+    NcScreen previous = {0};
+
+    tiny_editor_action_fixture_init(&fixture);
+    fixture.write_result = true;
+    native_tiny_tag_editor_screen_init(&screen, 0, 80, 0, 24,
+                                       nc_color_default(),
+                                       nc_border_none());
+    init_tiny_editor_song(&song, LIT_ARGS("song.flac"));
+    assert(native_tiny_tag_editor_screen_set_edited_mutable_song(
+        &screen, &song));
+    assert(native_tiny_tag_editor_screen_reload_rows(
+        &screen, &properties, true, LIT_ARGS(" | "), true));
+    assert(ncm_buffer_set(&screen.music_dir, LIT_ARGS("/music")));
+    screen.previous_screen = &previous;
+    hooks.status_message = tiny_editor_status_message;
+    hooks.write_song = tiny_editor_action_write_song;
+    hooks.switch_to_screen = tiny_editor_switch_to_screen;
+    hooks.user = &fixture;
+    native_tiny_tag_editor_screen_set_hooks(&screen, hooks);
+
+    assert(native_tiny_tag_editor_screen_set_tag_value(
+        &screen, NCM_TAGS_FIELD_TITLE, LIT_ARGS("Changed"), NULL, 0));
+    assert(native_tiny_tag_editor_screen_run_row(
+        &screen, NATIVE_TINY_TAG_EDITOR_SAVE_ROW));
+    assert(fixture.write_calls == 1);
+    assert(fixture.music_dir == screen.music_dir.data);
+    assert(fixture.status_calls == 2);
+    assert(ncm_string_equal(fixture.status_messages[0].data,
+                            fixture.status_messages[0].len,
+                            LIT_ARGS("Updating tags...")));
+    assert(ncm_string_equal(fixture.status_messages[1].data,
+                            fixture.status_messages[1].len,
+                            LIT_ARGS("Tags updated")));
+    assert(fixture.switch_calls == 1);
+    assert(fixture.switched_screen == &previous);
+    assert(!ncm_mutable_song_is_modified(
+        native_tiny_tag_editor_screen_edited(&screen)));
+
+    fixture.write_result = false;
+    errno = EACCES;
+    assert(native_tiny_tag_editor_screen_set_tag_value(
+        &screen, NCM_TAGS_FIELD_TITLE, LIT_ARGS("Unsaved"), NULL, 0));
+    assert(native_tiny_tag_editor_screen_run_row(
+        &screen, NATIVE_TINY_TAG_EDITOR_SAVE_ROW));
+    assert(fixture.write_calls == 2);
+    assert(fixture.status_calls == 4);
+    assert(ncm_string_equal(
+        fixture.status_messages[2].data,
+        fixture.status_messages[2].len,
+        LIT_ARGS("Updating tags...")));
+    assert(ncm_string_starts_with(
+        fixture.status_messages[3].data,
+        fixture.status_messages[3].len,
+        LIT_ARGS("Error while writing tags: ")));
+    assert(fixture.switch_calls == 2);
+    assert(ncm_mutable_song_is_modified(
+        native_tiny_tag_editor_screen_edited(&screen)));
+
+    assert(native_tiny_tag_editor_screen_run_row(
+        &screen, NATIVE_TINY_TAG_EDITOR_CANCEL_ROW));
+    assert(fixture.write_calls == 2);
+    assert(fixture.switch_calls == 3);
+
+    ncm_mutable_song_destroy(&song);
+    native_tiny_tag_editor_screen_destroy(&screen);
+    tiny_editor_action_fixture_destroy(&fixture);
     return;
 }
 
@@ -967,22 +1172,111 @@ tiny_editor_prepared_song(
     return fixture->prepared_result;
 }
 
-static bool
-tiny_editor_can_run_current(void *user) {
+static void
+tiny_editor_action_fixture_init(TinyEditorActionFixture *fixture) {
+    ncm_buffer_init(&fixture->prompt_label);
+    ncm_buffer_init(&fixture->prompt_initial);
+    ncm_buffer_init(&fixture->prompt_response);
+    for (int32 i = 0; i < 4; i += 1) {
+        ncm_buffer_init(&fixture->status_messages[i]);
+    }
+    fixture->switched_screen = NULL;
+    fixture->music_dir = NULL;
+    fixture->current_row = -1;
+    fixture->changed_row = -1;
+    fixture->prompt_calls = 0;
+    fixture->status_calls = 0;
+    fixture->row_changed_calls = 0;
+    fixture->switch_calls = 0;
+    fixture->write_calls = 0;
+    fixture->prompt_result = NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
+    fixture->write_result = false;
+    return;
+}
+
+static void
+tiny_editor_action_fixture_destroy(TinyEditorActionFixture *fixture) {
+    ncm_buffer_destroy(&fixture->prompt_label);
+    ncm_buffer_destroy(&fixture->prompt_initial);
+    ncm_buffer_destroy(&fixture->prompt_response);
+    for (int32 i = 0; i < 4; i += 1) {
+        ncm_buffer_destroy(&fixture->status_messages[i]);
+    }
+    return;
+}
+
+static enum NativeTinyTagEditorPromptResult
+tiny_editor_prompt(
+    void *user, char *label, int32 label_len, NcmStringView initial,
+    NcmBuffer *result) {
     TinyEditorActionFixture *fixture;
 
     fixture = user;
-    fixture->can_run_calls += 1;
-    return fixture->can_run_result;
+    fixture->prompt_calls += 1;
+    assert(ncm_buffer_set(&fixture->prompt_label, label, label_len));
+    assert(ncm_buffer_set(&fixture->prompt_initial,
+                          initial.data, initial.len));
+    if (fixture->prompt_result
+        == NATIVE_TINY_TAG_EDITOR_PROMPT_ACCEPTED) {
+        assert(ncm_buffer_copy(result, &fixture->prompt_response));
+    }
+    return fixture->prompt_result;
+}
+
+static void
+tiny_editor_status_message(
+    void *user, char *message, int32 message_len) {
+    TinyEditorActionFixture *fixture;
+
+    fixture = user;
+    assert(fixture->status_calls < 4);
+    assert(ncm_buffer_set(
+        &fixture->status_messages[fixture->status_calls],
+        message, message_len));
+    fixture->status_calls += 1;
+    return;
+}
+
+static int64
+tiny_editor_current_row(void *user) {
+    TinyEditorActionFixture *fixture;
+
+    fixture = user;
+    return fixture->current_row;
+}
+
+static void
+tiny_editor_row_changed(
+    void *user, NcmMutableSong *song, int64 row) {
+    TinyEditorActionFixture *fixture;
+
+    fixture = user;
+    assert(song != NULL);
+    fixture->changed_row = row;
+    fixture->row_changed_calls += 1;
+    return;
+}
+
+static void
+tiny_editor_switch_to_screen(void *user, NcScreen *screen) {
+    TinyEditorActionFixture *fixture;
+
+    fixture = user;
+    fixture->switched_screen = screen;
+    fixture->switch_calls += 1;
+    return;
 }
 
 static bool
-tiny_editor_run_current(void *user) {
+tiny_editor_action_write_song(
+    void *user, NcmMutableSong *song, char *music_dir) {
     TinyEditorActionFixture *fixture;
 
     fixture = user;
-    fixture->run_calls += 1;
-    return fixture->run_result;
+    assert(song != NULL);
+    fixture->music_dir = music_dir;
+    fixture->write_calls += 1;
+    return fixture->write_result;
 }
 
 static bool

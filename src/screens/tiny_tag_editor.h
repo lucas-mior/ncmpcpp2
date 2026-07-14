@@ -5,32 +5,23 @@
 
 #ifdef HAVE_TAGLIB_H
 
-#include <cerrno>
-#include <cstring>
-#include <exception>
 #include <string>
 
 #include "app_controller.h"
 #include "c/ncm_type_conversions.h"
 #include "global.h"
 #include "helpers_legacy.h"
-#include "interfaces.h"
 #include "mutable_song.h"
-#include "screens/browser.h"
 #include "screens/native_c_screens.h"
 #include "screens/nc_tiny_tag_editor.h"
-#include "screens/playlist.h"
 #include "screens/screen_cpp_compat.h"
 #include "screens/screen_cpp_legacy.h"
 #include "screens/song_info.h"
-#include "screens/tag_editor.h"
-#include "statusbar.h"
-#include "tags.h"
 #include "title_legacy.h"
 #include "ui_state.h"
 #include "utility/string.h"
 
-struct TinyTagEditor: Screen<NC::Menu<NC::Buffer>>, HasActions
+struct TinyTagEditor: Screen<NC::Menu<NC::Buffer>>
 {
 	TinyTagEditor();
     virtual ~TinyTagEditor();
@@ -51,14 +42,11 @@ struct TinyTagEditor: Screen<NC::Menu<NC::Buffer>>, HasActions
 	virtual bool isLockable() override { return false; }
 	virtual bool isMergable() override { return true; }
 
-	// HasActions implementation
-	virtual bool actionRunnable() override;
-	virtual void runAction() override;
-
 private:
     static NcWindow *nativeActiveWindowCallback(void *user);
-    static bool nativeCanRunCurrentCallback(void *user);
-    static bool nativeRunCurrentCallback(void *user);
+    static int64 nativeCurrentRowCallback(void *user);
+    static void nativeRowChangedCallback(
+        void *user, NcmMutableSong *song, int64 row);
     static bool nativePreparedSongCallback(
         void *user, NcmSong *song,
         NcmTaglibAudioProperties *properties,
@@ -72,7 +60,6 @@ private:
     static void nativeUpdateCallback(void *user);
     static void nativeMouseButtonPressedCallback(void *user, MEVENT event);
 	MPD::MutableSong itsEdited;
-	BaseScreen *m_previous_screen;
     std::string m_title_cache;
 };
 
@@ -94,7 +81,6 @@ std::string tinyTagEditorChannelsString(int channels)
 
 inline TinyTagEditor::TinyTagEditor()
 : Screen(NC::Menu<NC::Buffer>(0, static_cast<size_t>(ui_state_main_start_y()), COLS, static_cast<size_t>(ui_state_main_height()), "", Config.main_color, NC::Border()))
-, m_previous_screen(nullptr)
 {
 	w.setHighlightPrefix(Config.current_item_prefix);
 	w.setHighlightSuffix(Config.current_item_suffix);
@@ -109,8 +95,8 @@ inline TinyTagEditor::TinyTagEditor()
         NativeTinyTagEditorBridge bridge = {};
 
         bridge.active_window = nativeActiveWindowCallback;
-        bridge.can_run_current = nativeCanRunCurrentCallback;
-        bridge.run_current = nativeRunCurrentCallback;
+        bridge.current_row = nativeCurrentRowCallback;
+        bridge.row_changed = nativeRowChangedCallback;
         bridge.prepared_song = nativePreparedSongCallback;
         bridge.refresh = nativeRefreshCallback;
         bridge.refresh_window = nativeRefreshWindowCallback;
@@ -181,7 +167,7 @@ inline void TinyTagEditor::mouseButtonPressed(MEVENT me)
 		if (me.bstate & BUTTON3_PRESSED)
 		{
 			w.refresh();
-			runAction();
+			(void)nc_screen_run_current(nativeScreen());
 		}
 	}
 	else
@@ -197,35 +183,60 @@ inline NcWindow *TinyTagEditor::nativeActiveWindowCallback(void *user)
     return editor->w.nativeWindow();
 }
 
-inline bool TinyTagEditor::nativeCanRunCurrentCallback(void *user)
+inline int64 TinyTagEditor::nativeCurrentRowCallback(void *user)
 {
     TinyTagEditor *editor = static_cast<TinyTagEditor *>(user);
 
-    if (editor == nullptr)
-        return false;
-    return editor->actionRunnable();
+    if (editor == nullptr || editor->w.empty())
+        return -1;
+    return static_cast<int64>(editor->w.choice());
 }
 
-inline bool TinyTagEditor::nativeRunCurrentCallback(void *user)
+inline void TinyTagEditor::nativeRowChangedCallback(
+    void *user, NcmMutableSong *song, int64 row)
 {
     TinyTagEditor *editor = static_cast<TinyTagEditor *>(user);
 
-    if (editor == nullptr)
-        return false;
+    if (editor == nullptr || song == nullptr)
+        return;
     try
     {
-        editor->runAction();
-        return true;
+        if (!ncm_mutable_song_copy(editor->itsEdited.cMutableSong(), song))
+            return;
+        if (row >= NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW
+            && row <= NATIVE_TINY_TAG_EDITOR_LAST_TAG_ROW)
+        {
+            size_t pos = static_cast<size_t>(
+                row - NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW);
+            editor->w.at(static_cast<size_t>(row)).value().clear();
+            editor->w.at(static_cast<size_t>(row)).value()
+                << NC_FORMAT_BOLD
+                << ncm_song_info_tags[pos].name
+                << ':'
+                << NC_FORMAT_NO_BOLD
+                << ' ';
+            ShowTag(editor->w.at(static_cast<size_t>(row)).value(),
+                    editor->itsEdited.getTags(
+                        ncm_song_info_tags[pos].get));
+        }
+        else if (row == NATIVE_TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW)
+        {
+            std::string name = editor->itsEdited.getNewName();
+
+            if (name.empty())
+                name = editor->itsEdited.getName();
+            editor->w.at(static_cast<size_t>(row)).value().clear();
+            editor->w.at(static_cast<size_t>(row)).value()
+                << NC_FORMAT_BOLD
+                << "Filename:"
+                << NC_FORMAT_NO_BOLD
+                << ' '
+                << name;
+        }
     }
-    catch (NC::PromptAborted &)
+    catch (...)
     {
-        Statusbar::printf("Action aborted");
     }
-    catch (std::exception &e)
-    {
-        Statusbar::printf("Unexpected error: %1%", e.what());
-    }
-    return false;
 }
 
 inline bool TinyTagEditor::nativePreparedSongCallback(
@@ -366,7 +377,6 @@ inline void TinyTagEditor::nativeSwitchToCallback(void *user)
 
     if (editor == nullptr)
         return;
-    editor->m_previous_screen = screen_compat::previous_legacy_screen();
     screen_compat::set_tab_previous_screen(editor);
     drawHeader();
 }
@@ -409,71 +419,6 @@ inline void TinyTagEditor::nativeMouseButtonPressedCallback(void *user,
     editor->mouseButtonPressed(event);
 }
 
-
-/**********************************************************************/
-
-inline bool TinyTagEditor::actionRunnable()
-{
-	return !w.empty();
-}
-
-inline void TinyTagEditor::runAction()
-{
-	size_t option = w.choice();
-	if (option < NATIVE_TINY_TAG_EDITOR_SECOND_SEPARATOR_ROW)
-	{
-		Statusbar::ScopedLock slock;
-		size_t pos = option-NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW;
-		Statusbar::put() << NC_FORMAT_BOLD << ncm_song_info_tags[pos].name << ": " << NC_FORMAT_NO_BOLD;
-		itsEdited.setTags(ncm_song_info_tags[pos].field, static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(
-			itsEdited.getTags(ncm_song_info_tags[pos].get)));
-		w.at(option).value().clear();
-		w.at(option).value() << NC_FORMAT_BOLD << ncm_song_info_tags[pos].name << ':' << NC_FORMAT_NO_BOLD << ' ';
-		ShowTag(w.at(option).value(), itsEdited.getTags(ncm_song_info_tags[pos].get));
-	}
-	else if (option == NATIVE_TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW)
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << NC_FORMAT_BOLD << "Filename: " << NC_FORMAT_NO_BOLD;
-		std::string filename = itsEdited.getNewName().empty() ? itsEdited.getName() : itsEdited.getNewName();
-		size_t dot = filename.rfind(".");
-		std::string extension;
-		if (dot != std::string::npos)
-		{
-			extension = filename.substr(dot);
-			filename = filename.substr(0, dot);
-		}
-		std::string new_name = static_cast<NC::Window *>(ui_state_footer_legacy_window())->prompt(filename);
-		if (!new_name.empty())
-		{
-			itsEdited.setNewName(new_name + extension);
-			w.at(option).value().clear();
-			w.at(option).value() << NC_FORMAT_BOLD << "Filename:" << NC_FORMAT_NO_BOLD << ' ' << (itsEdited.getNewName().empty() ? itsEdited.getName() : itsEdited.getNewName());
-		}
-	}
-
-	if (option == NATIVE_TINY_TAG_EDITOR_SAVE_ROW)
-	{
-		Statusbar::print("Updating tags...");
-		if (ncm_tags_write_mutable_song(itsEdited))
-		{
-			Statusbar::print("Tags updated");
-			if (itsEdited.isFromDatabase())
-				Mpd.UpdateDirectory(itsEdited.getDirectory());
-			else
-			{
-				if (m_previous_screen == myPlaylist)
-					myPlaylist->main().current()->value() = itsEdited;
-				else if (m_previous_screen == myBrowser)
-					myBrowser->requestUpdate();
-			}
-		}
-		else
-			Statusbar::printf("Error while writing tags: %1%", strerror(errno));
-	}
-	if (option > NATIVE_TINY_TAG_EDITOR_THIRD_SEPARATOR_ROW)
-		m_previous_screen->switchTo();
-}
 
 /**********************************************************************/
 
