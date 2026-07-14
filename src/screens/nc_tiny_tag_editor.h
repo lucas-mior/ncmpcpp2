@@ -13,14 +13,34 @@
 extern "C" {
 #endif
 
+#define NATIVE_TINY_TAG_EDITOR_TAG_ROW(FIELD) \
+    (NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW + (FIELD))
+
+enum NativeTinyTagEditorRow {
+    NATIVE_TINY_TAG_EDITOR_FILE_NAME_INFO_ROW,
+    NATIVE_TINY_TAG_EDITOR_DIRECTORY_INFO_ROW,
+    NATIVE_TINY_TAG_EDITOR_UNUSED_INFO_ROW,
+    NATIVE_TINY_TAG_EDITOR_LENGTH_INFO_ROW,
+    NATIVE_TINY_TAG_EDITOR_BITRATE_INFO_ROW,
+    NATIVE_TINY_TAG_EDITOR_SAMPLE_RATE_INFO_ROW,
+    NATIVE_TINY_TAG_EDITOR_CHANNELS_INFO_ROW,
+    NATIVE_TINY_TAG_EDITOR_FIRST_SEPARATOR_ROW,
+    NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW,
+    NATIVE_TINY_TAG_EDITOR_LAST_TAG_ROW =
+        NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW + NCM_TAGS_FIELD_LAST - 1,
+    NATIVE_TINY_TAG_EDITOR_SECOND_SEPARATOR_ROW,
+    NATIVE_TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW,
+    NATIVE_TINY_TAG_EDITOR_THIRD_SEPARATOR_ROW,
+    NATIVE_TINY_TAG_EDITOR_SAVE_ROW,
+    NATIVE_TINY_TAG_EDITOR_CANCEL_ROW,
+    NATIVE_TINY_TAG_EDITOR_ROW_COUNT,
+};
 
 typedef struct NativeTinyTagEditorBridge {
     NcWindow *(*active_window)(void *user);
     void (*refresh)(void *user);
     void (*refresh_window)(void *user);
     void (*scroll)(void *user, enum NcScroll where);
-    bool (*action_runnable)(void *user);
-    bool (*run_action)(void *user);
     void (*switch_to)(void *user);
     void (*resize)(void *user);
     char *(*title)(void *user);
@@ -29,11 +49,32 @@ typedef struct NativeTinyTagEditorBridge {
     void *user;
 } NativeTinyTagEditorBridge;
 
+enum NativeTinyTagEditorPromptResult {
+    NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR,
+    NATIVE_TINY_TAG_EDITOR_PROMPT_ABORTED,
+    NATIVE_TINY_TAG_EDITOR_PROMPT_ACCEPTED,
+};
+
+typedef struct NativeTinyTagEditorHooks {
+    enum NativeTinyTagEditorPromptResult (*prompt)(
+        void *user, char *label, int32 label_len, NcmStringView initial,
+        NcmBuffer *result);
+    void (*status_message)(void *user, char *message, int32 message_len);
+    bool (*write_song)(void *user, NcmMutableSong *song, char *music_dir);
+    void (*update_directory)(void *user, char *directory,
+                             int32 directory_len);
+    void (*update_playlist_song)(void *user, NcmMutableSong *song);
+    void (*request_browser_update)(void *user);
+    void (*switch_to_screen)(void *user, NcScreen *screen);
+    void *user;
+} NativeTinyTagEditorHooks;
+
 typedef struct NativeTinyTagEditorScreen {
     NcScreen screen;
     NcEditorBufferMenu rows;
     NcWindow window;
     NativeTinyTagEditorBridge bridge;
+    NativeTinyTagEditorHooks hooks;
     NcmMutableSong edited;
     NcScreen *previous_screen;
 
@@ -56,6 +97,8 @@ NcScreen *native_tiny_tag_editor_screen_base(
 
 void native_tiny_tag_editor_screen_set_bridge(
     NativeTinyTagEditorScreen *screen, NativeTinyTagEditorBridge bridge);
+void native_tiny_tag_editor_screen_set_hooks(
+    NativeTinyTagEditorScreen *screen, NativeTinyTagEditorHooks hooks);
 NcEditorBufferMenu *native_tiny_tag_editor_screen_rows(
     NativeTinyTagEditorScreen *screen);
 NcmMutableSong *native_tiny_tag_editor_screen_edited(
@@ -70,12 +113,15 @@ bool native_tiny_tag_editor_screen_set_edited_mutable_song(
 bool native_tiny_tag_editor_screen_reload_rows(
     NativeTinyTagEditorScreen *screen,
     NcmTaglibAudioProperties *properties,
-    bool extended_tags_supported);
+    bool extended_tags_supported, char *tag_separator,
+    int32 tag_separator_len, bool show_duplicate_tags);
 bool native_tiny_tag_editor_screen_set_tag_value(
     NativeTinyTagEditorScreen *screen, enum NcmTagsField field,
     char *value, int32 value_len, char *separator, int32 separator_len);
 bool native_tiny_tag_editor_screen_set_filename(
     NativeTinyTagEditorScreen *screen, char *name, int32 name_len);
+bool native_tiny_tag_editor_screen_set_filename_stem(
+    NativeTinyTagEditorScreen *screen, char *stem, int32 stem_len);
 bool native_tiny_tag_editor_screen_save(
     NativeTinyTagEditorScreen *screen, char *music_dir);
 bool native_tiny_tag_editor_screen_action_runnable(
