@@ -36,7 +36,6 @@
 #include "c/ncm_base.h"
 #include "c/ncm_error.h"
 #include "c/ncm_type_conversions.h"
-#include "screens/tag_editor.h"
 #include "title_legacy.h"
 #include "tags.h"
 
@@ -801,7 +800,8 @@ bool JumpToParentDirectory::canBeRun()
 
 #	ifdef HAVE_TAGLIB_H
 	if (native_c_screen_tag_editor_is_current())
-		return true;
+		return ncm_action_runtime_can_run(
+		    nullptr, NCM_ACTION_JUMP_TO_PARENT_DIRECTORY);
 #	endif // HAVE_TAGLIB_H
 	current = screenLegacyCurrent();
 	if (current == nullptr)
@@ -814,8 +814,8 @@ void JumpToParentDirectory::run()
 #	ifdef HAVE_TAGLIB_H
 	if (native_c_screen_tag_editor_is_current())
 	{
-		(void)native_tag_editor_screen_go_to_parent(
-		    native_c_screen_tag_editor());
+		(void)ncm_action_runtime_run(
+		    nullptr, NCM_ACTION_JUMP_TO_PARENT_DIRECTORY);
 		return;
 	}
 #	endif // HAVE_TAGLIB_H
@@ -1374,7 +1374,8 @@ bool EnterDirectory::canBeRun()
 
 #ifdef HAVE_TAGLIB_H
 	if (native_c_screen_tag_editor_is_current())
-		return true;
+		return ncm_action_runtime_can_run(
+		    nullptr, NCM_ACTION_ENTER_DIRECTORY);
 #endif // HAVE_TAGLIB_H
 	current = screenLegacyCurrent();
 	if (current == nullptr)
@@ -2450,23 +2451,12 @@ void ShowPlaylistEditor::run()
 
 bool ShowTagEditor::canBeRun()
 {
-#	ifdef HAVE_TAGLIB_H
-	return !native_c_screen_tag_editor_is_current()
-	    && !native_c_screen_tiny_tag_editor_is_current();
-#	else
-	return false;
-#	endif // HAVE_TAGLIB_H
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SHOW_TAG_EDITOR);
 }
 
 void ShowTagEditor::run()
 {
-#	ifdef HAVE_TAGLIB_H
-	if (isMPDMusicDirSet())
-	{
-		native_c_screen_tag_editor_register();
-		native_c_screen_tag_editor_switch_to();
-	}
-#	endif // HAVE_TAGLIB_H
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHOW_TAG_EDITOR);
 }
 
 bool ShowOutputs::canBeRun()
