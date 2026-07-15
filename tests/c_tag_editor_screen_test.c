@@ -138,6 +138,10 @@ static void test_tag_filter_uses_selected_rendered_field(void);
 static void test_tag_search_uses_modified_and_filename_rows(void);
 static void test_invalid_regex_preserves_previous_constraints(void);
 static void test_tag_type_column_is_not_searchable(void);
+static void test_tag_editor_selected_songs_use_active_tags_column(void);
+static void test_tag_editor_selection_helpers(void);
+static void test_tag_editor_active_menu_selection_actions(void);
+static void test_tag_editor_enter_directory_invalidates_tags(void);
 
 int
 main(void) {
@@ -172,6 +176,10 @@ main(void) {
     test_tag_search_uses_modified_and_filename_rows();
     test_invalid_regex_preserves_previous_constraints();
     test_tag_type_column_is_not_searchable();
+    test_tag_editor_selected_songs_use_active_tags_column();
+    test_tag_editor_selection_helpers();
+    test_tag_editor_active_menu_selection_actions();
+    test_tag_editor_enter_directory_invalidates_tags();
 
     destroy_mpd_trace();
     exit(EXIT_SUCCESS);
@@ -639,6 +647,7 @@ test_menu_configuration_and_highlights(void) {
     assert_tag_editor_menu_config(parser_rows, &parser_rows->highlight_prefix,
                                   &parser_rows->highlight_suffix);
 
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
     native_tag_editor_screen_next_column(&screen);
     assert_tag_editor_menu_config(directories,
                                   &Config.current_item_inactive_column_prefix,
@@ -1231,6 +1240,7 @@ test_native_directory_and_tag_type_rendering(void) {
     nc_screen_refresh_window(native_tag_editor_screen_base(&screen));
     assert_printed_equals("Álpha\nbad\xff\n", 12);
 
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
     native_tag_editor_screen_next_column(&screen);
     tag_types = nc_editor_string_menu_base(&screen.tag_types);
     assert(nc_menu_goto_selectable(tag_types, 12));
@@ -1617,6 +1627,7 @@ test_tag_type_column_is_not_searchable(void) {
 
     init_screen(&screen);
     ncm_error_clear(&error);
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
     native_tag_editor_screen_next_column(&screen);
     assert(screen.active_column == NATIVE_TAG_EDITOR_COLUMN_TAG_TYPES);
     assert(!native_tag_editor_screen_search(
@@ -1624,6 +1635,154 @@ test_tag_type_column_is_not_searchable(void) {
                &error));
     assert(!screen.directory_search_enabled);
     assert(!screen.tag_search_enabled);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_selected_songs_use_active_tags_column(void) {
+    NativeTagEditorScreen screen;
+    NcmSongArray songs;
+    NcMenu *tags;
+
+    init_screen(&screen);
+    ncm_song_array_init(&songs);
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
+    append_song(&screen, STRLIT_ARGS("two.flac"), STRLIT_ARGS("Beta"));
+
+    assert(!native_tag_editor_screen_selected_songs(&screen, &songs));
+    assert(songs.len == 0);
+    native_tag_editor_screen_next_column(&screen);
+    assert(!native_tag_editor_screen_selected_songs(&screen, &songs));
+    assert(songs.len == 0);
+    native_tag_editor_screen_next_column(&screen);
+
+    assert(native_tag_editor_screen_selected_songs(&screen, &songs));
+    assert(songs.len == 1);
+    assert_song_uri(&songs.items[0], STRLIT_ARGS("one.flac"));
+    ncm_song_array_clear(&songs);
+
+    tags = nc_tag_row_menu_base(&screen.tags);
+    assert(nc_menu_set_position_selected(tags, 1, true));
+    assert(native_tag_editor_screen_selected_songs(&screen, &songs));
+    assert(songs.len == 1);
+    assert_song_uri(&songs.items[0], STRLIT_ARGS("two.flac"));
+
+    ncm_song_array_destroy(&songs);
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_selection_helpers(void) {
+    NativeTagEditorScreen screen;
+    NcmStringView view;
+    NcmMutableSong song;
+    enum NcmTagsField field;
+    NcMenu *tag_types;
+    NcMenu *tags;
+
+    init_screen(&screen);
+    ncm_mutable_song_init(&song);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    assert(native_tag_editor_screen_current_directory_path(&screen, &view));
+    assert(ncm_string_equal(view.data, view.len, STRLIT_ARGS("/Alpha")));
+    assert(native_tag_editor_screen_active_menu_empty(&screen) == false);
+
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
+    assert(native_tag_editor_screen_next_column_available(&screen));
+    native_tag_editor_screen_next_column(&screen);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    assert(native_tag_editor_screen_current_tag_field(&screen, &field));
+    assert(field == NCM_TAGS_FIELD_TITLE);
+    assert(native_tag_editor_screen_current_tag_type_editable(&screen));
+    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
+    assert(nc_menu_goto_selectable(tag_types, 1));
+    assert(native_tag_editor_screen_current_tag_field(&screen, &field));
+    assert(field == NCM_TAGS_FIELD_ARTIST);
+
+    native_tag_editor_screen_next_column(&screen);
+    tags = nc_tag_row_menu_base(&screen.tags);
+    assert(native_tag_editor_screen_current_tag_song(&screen, &song));
+    assert(ncm_string_equal(song.uri, song.uri_len, STRLIT_ARGS("one.flac")));
+    assert(native_tag_editor_screen_selected_tag_song_count(&screen) == 0);
+    assert(nc_menu_set_current_selected(tags, true));
+    assert(native_tag_editor_screen_selected_tag_song_count(&screen) == 1);
+    assert(!native_tag_editor_screen_active_menu_empty(&screen));
+
+    ncm_mutable_song_destroy(&song);
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_active_menu_selection_actions(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *directories;
+    NcMenu *tag_types;
+    NcMenu *tags;
+
+    init_screen(&screen);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
+    append_song(&screen, STRLIT_ARGS("two.flac"), STRLIT_ARGS("Beta"));
+
+    directories = nc_editor_pair_menu_base(&screen.directories);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    tags = nc_tag_row_menu_base(&screen.tags);
+
+    assert(nc_menu_toggle_current_selected(
+               native_tag_editor_screen_active_menu(&screen)));
+    assert(nc_menu_selected_count(directories) == 1);
+    assert(nc_menu_selected_count(tag_types) == 0);
+    assert(nc_menu_selected_count(tags) == 0);
+
+    native_tag_editor_screen_next_column(&screen);
+    assert(nc_menu_toggle_current_selected(
+               native_tag_editor_screen_active_menu(&screen)));
+    assert(nc_menu_selected_count(directories) == 1);
+    assert(nc_menu_selected_count(tag_types) == 1);
+    assert(nc_menu_selected_count(tags) == 0);
+
+    native_tag_editor_screen_next_column(&screen);
+    assert(nc_menu_toggle_current_selected(
+               native_tag_editor_screen_active_menu(&screen)));
+    assert(nc_menu_selected_count(directories) == 1);
+    assert(nc_menu_selected_count(tag_types) == 1);
+    assert(nc_menu_selected_count(tags) == 1);
+    nc_menu_clear_selection(native_tag_editor_screen_active_menu(&screen));
+    assert(nc_menu_selected_count(directories) == 1);
+    assert(nc_menu_selected_count(tag_types) == 1);
+    assert(nc_menu_selected_count(tags) == 0);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_enter_directory_invalidates_tags(void) {
+    NativeTagEditorScreen screen;
+    NcmStringView view;
+    NcMenu *tags;
+
+    init_screen(&screen);
+    assert(native_tag_editor_screen_set_current_dir(
+               &screen, STRLIT_ARGS("/")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
+    tags = nc_tag_row_menu_base(&screen.tags);
+    assert(nc_menu_set_current_selected(tags, true));
+
+    assert(native_tag_editor_screen_enter_directory(&screen));
+    assert(native_tag_editor_screen_current_dir(&screen, &view));
+    assert(ncm_string_equal(view.data, view.len, STRLIT_ARGS("/Alpha")));
+    assert(nc_menu_empty(tags));
+    assert(native_tag_editor_screen_selected_tag_song_count(&screen) == 0);
+    assert(screen.tags_update_requested);
 
     destroy_screen(&screen);
     return;
