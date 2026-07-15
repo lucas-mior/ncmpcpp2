@@ -927,12 +927,8 @@ append_content_item(NativePlaylistEditorScreen *screen, int64 pos,
                     NcmSongArray *songs) {
     NcmSong *song;
 
-    song = nc_song_menu_item_at(&screen->content, NC_MENU_ITEMS_FILTERED,
-                                pos);
-    if (song == NULL) {
-        song = nc_song_menu_item_at(&screen->content, NC_MENU_ITEMS_ALL,
-                                    pos);
-    }
+    song = nc_menu_active_item_at(nc_song_menu_base(&screen->content),
+                                  pos);
     if (song == NULL) {
         return false;
     }
