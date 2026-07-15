@@ -16,7 +16,7 @@
 #include "curses/menu_impl.h"
 #include "format.h"
 #include "global.h"
-#include "helpers/song_iterator_maker.h"
+#include "song_list.h"
 #include "helpers_legacy.h"
 #include "interfaces.h"
 #include "mpdpp.h"
