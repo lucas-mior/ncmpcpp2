@@ -3993,33 +3993,29 @@ tag_editor_capitalize_song_callback(NcmMutableSong *song, void *user) {
 
         field = ncm_song_info_tags[field_idx].field;
         for (int32 i = 0; ; i += 1) {
-            NcmBuffer buffer;
+            NcmStringView view;
             NcmBuffer converted;
             int32 converted_len;
 
-            buffer = ncm_mutable_song_get_tag_buffer(song, field, i);
-            if (buffer.len == 0) {
-                ncm_buffer_destroy(&buffer);
+            if (!ncm_mutable_song_get_tag(song, field, i, &view)) {
                 break;
             }
 
             ncm_buffer_init(&converted);
             converted_len = ncm_utf8_capitalize_first_letters(
-                buffer.data, buffer.len, NULL, 0);
+                view.data, view.len, NULL, 0);
             ncm_buffer_reserve(&converted, converted_len);
             converted.len = ncm_utf8_capitalize_first_letters(
-                buffer.data, buffer.len, converted.data, converted_len);
+                view.data, view.len, converted.data, converted_len);
             if (converted.data != NULL) {
                 converted.data[converted.len] = '\0';
             }
             if (!ncm_mutable_song_set_tag(song, field, i, converted.data,
                                           converted.len)) {
                 ncm_buffer_destroy(&converted);
-                ncm_buffer_destroy(&buffer);
                 return false;
             }
             ncm_buffer_destroy(&converted);
-            ncm_buffer_destroy(&buffer);
         }
     }
     return true;
@@ -4034,13 +4030,14 @@ tag_editor_lower_song_callback(NcmMutableSong *song, void *user) {
 
         field = ncm_song_info_tags[field_idx].field;
         for (int32 i = 0; ; i += 1) {
+            NcmStringView view;
             NcmBuffer buffer;
 
-            buffer = ncm_mutable_song_get_tag_buffer(song, field, i);
-            if (buffer.len == 0) {
-                ncm_buffer_destroy(&buffer);
+            if (!ncm_mutable_song_get_tag(song, field, i, &view)) {
                 break;
             }
+            ncm_buffer_init(&buffer);
+            ncm_buffer_append(&buffer, view.data, view.len);
             tag_editor_lower_ascii_buffer(&buffer);
             if (!ncm_mutable_song_set_tag(song, field, i, buffer.data,
                                           buffer.len)) {
