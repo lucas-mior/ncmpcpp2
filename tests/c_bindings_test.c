@@ -470,6 +470,32 @@ test_runtime_can_execute_preflight(void) {
 static void
 test_app_binding_migration_c_safe_actions(void) {
 #if defined(HAVE_TAGLIB_H)
+    enum NcmActionType tag_editor_actions[] = {
+        NCM_ACTION_UPDATE_ENVIRONMENT,
+        NCM_ACTION_MOUSE_EVENT,
+        NCM_ACTION_SCROLL_UP,
+        NCM_ACTION_SCROLL_DOWN,
+        NCM_ACTION_PAGE_UP,
+        NCM_ACTION_PAGE_DOWN,
+        NCM_ACTION_MOVE_HOME,
+        NCM_ACTION_MOVE_END,
+        NCM_ACTION_JUMP_TO_PARENT_DIRECTORY,
+        NCM_ACTION_PREVIOUS_COLUMN,
+        NCM_ACTION_NEXT_COLUMN,
+        NCM_ACTION_SAVE_TAG_CHANGES,
+        NCM_ACTION_ENTER_DIRECTORY,
+        NCM_ACTION_SELECT_ITEM,
+        NCM_ACTION_SELECT_RANGE,
+        NCM_ACTION_REVERSE_SELECTION,
+        NCM_ACTION_REMOVE_SELECTION,
+        NCM_ACTION_APPLY_FILTER,
+        NCM_ACTION_FIND_ITEM_FORWARD,
+        NCM_ACTION_FIND_ITEM_BACKWARD,
+        NCM_ACTION_NEXT_FOUND_ITEM,
+        NCM_ACTION_PREVIOUS_FOUND_ITEM,
+        NCM_ACTION_TOGGLE_FIND_MODE,
+        NCM_ACTION_SHOW_TAG_EDITOR,
+    };
     enum NcmActionType tiny_editor_actions[] = {
         NCM_ACTION_QUIT,
         NCM_ACTION_PLAY,
@@ -722,6 +748,15 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_DELETE_BROWSER_ITEMS, NCM_SCREEN_TYPE_VISUALIZER));
 
 #if defined(HAVE_TAGLIB_H)
+    REQUIRE(!app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_TAG_EDITOR));
+    for (int32 i = 0; i < NCM_ARRAY_LEN(tag_editor_actions); i += 1) {
+        REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
+            tag_editor_actions[i], NCM_SCREEN_TYPE_TAG_EDITOR));
+    }
+    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_DELETE_BROWSER_ITEMS, NCM_SCREEN_TYPE_TAG_EDITOR));
+
     REQUIRE(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
     for (int32 i = 0; i < NCM_ARRAY_LEN(tiny_editor_actions); i += 1) {
@@ -762,6 +797,19 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_START_SEARCHING, NCM_SCREEN_TYPE_BROWSER));
     REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
         NCM_ACTION_SELECT_ALBUM, NCM_SCREEN_TYPE_SEARCH_ENGINE));
+
+#if defined(HAVE_TAGLIB_H)
+    ncm_binding_init(&binding);
+    append_action_kind(&binding, NCM_BINDING_ACTION_REQUIRE_RUNNABLE,
+                       NCM_ACTION_ENTER_DIRECTORY);
+    append_action(&binding, NCM_ACTION_ENTER_DIRECTORY);
+    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
+    REQUIRE(app_binding_migration_binding_is_c_safe_for_screen(
+        &binding, NCM_SCREEN_TYPE_TAG_EDITOR));
+    REQUIRE(!app_binding_migration_binding_is_c_safe_for_screen(
+        &binding, NCM_SCREEN_TYPE_BROWSER));
+    ncm_binding_destroy(&binding);
+#endif
 
     ncm_binding_init(&binding);
     append_action(&binding, NCM_ACTION_SELECT_ITEM);

@@ -778,8 +778,8 @@ test_bridge_callback_contract(void) {
     native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
     base = native_tag_editor_screen_base(&screen);
 
-    assert(nc_screen_active_window(base) == &bridge_trace.active_window);
-    assert(bridge_trace.active_window_calls == 1);
+    assert(nc_screen_active_window(base) == &screen.directories_window);
+    assert(bridge_trace.active_window_calls == 0);
 
     nc_screen_refresh(base);
     assert(bridge_trace.sync_calls == 0);
@@ -792,8 +792,7 @@ test_bridge_callback_contract(void) {
     assert(window_trace.refresh_calls == 4);
 
     nc_screen_scroll(base, NC_SCROLL_PAGE_DOWN);
-    assert(bridge_trace.scroll_calls == 1);
-    assert(bridge_trace.scroll_where == NC_SCROLL_PAGE_DOWN);
+    assert(bridge_trace.scroll_calls == 0);
 
     assert(nc_screen_can_run_current(base));
     assert(bridge_trace.action_runnable_calls == 1);

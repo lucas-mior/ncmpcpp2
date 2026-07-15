@@ -1119,9 +1119,6 @@ tag_editor_active_window(NcScreen *screen) {
     NativeTagEditorScreen *editor;
 
     editor = tag_editor_from_screen(screen);
-    if (editor->bridge.active_window != NULL) {
-        return editor->bridge.active_window(editor->bridge.user);
-    }
     return native_tag_editor_screen_active_window(editor);
 }
 
@@ -1165,10 +1162,6 @@ tag_editor_scroll(NcScreen *screen, enum NcScroll where) {
     NcMenu *menu;
 
     editor = tag_editor_from_screen(screen);
-    if (editor->bridge.scroll != NULL) {
-        editor->bridge.scroll(editor->bridge.user, where);
-        return;
-    }
     menu = native_tag_editor_screen_active_menu(editor);
     nc_menu_scroll_selectable(menu, nc_window_height(
                                   native_tag_editor_screen_active_window(
