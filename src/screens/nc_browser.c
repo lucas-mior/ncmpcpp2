@@ -26,6 +26,8 @@ static bool native_browser_item_is_song(NcmMpdItem *item);
 static bool native_browser_copy_selected_song(NativeBrowserScreen *screen,
                                               NcmSongArray *songs,
                                               int64 pos);
+static bool native_browser_string_views_equal(NcmStringView left,
+                                              NcmStringView right);
 
 static NcScreenCallbacks native_browser_callbacks = {
     .active_window = native_browser_active_window,
@@ -51,8 +53,15 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, NULL, 0, color, border);
     ncm_buffer_init(&screen->current_directory);
+    ncm_buffer_init(&screen->last_highlighted_directory);
+    ncm_buffer_init(&screen->title_text);
+    ncm_buffer_init(&screen->column_title_text);
     ncm_buffer_init(&screen->filter_constraint);
     ncm_buffer_init(&screen->search_constraint);
+    ncm_buffer_init(&screen->item_text_buffer);
+    ncm_buffer_init(&screen->path_buffer);
+    ncm_buffer_init(&screen->scratch_buffer);
+    ncm_buffer_array_init(&screen->supported_extensions);
     ncm_regex_init(&screen->filter_regex);
 
     screen->bridge = (NativeBrowserBridge){0};
@@ -61,8 +70,11 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     screen->main_start_y = main_start_y;
     screen->main_height = main_height;
     screen->lines_scrolled = 1;
+    screen->title_scroll_beginning = 0;
+    screen->active_display_mode = NCM_DISPLAY_MODE_CLASSIC;
     screen->mouse_list_scroll_whole_page = false;
     screen->redraw_header = true;
+    screen->update_requested = true;
     screen->local_browser = false;
     screen->filter_enabled = false;
     screen->registered = false;
@@ -78,8 +90,15 @@ native_browser_screen_destroy(NativeBrowserScreen *screen) {
         return;
     }
     ncm_regex_destroy(&screen->filter_regex);
+    ncm_buffer_array_destroy(&screen->supported_extensions);
+    ncm_buffer_destroy(&screen->scratch_buffer);
+    ncm_buffer_destroy(&screen->path_buffer);
+    ncm_buffer_destroy(&screen->item_text_buffer);
     ncm_buffer_destroy(&screen->filter_constraint);
     ncm_buffer_destroy(&screen->search_constraint);
+    ncm_buffer_destroy(&screen->column_title_text);
+    ncm_buffer_destroy(&screen->title_text);
+    ncm_buffer_destroy(&screen->last_highlighted_directory);
     ncm_buffer_destroy(&screen->current_directory);
     nc_window_destroy(&screen->window);
     nc_browser_entry_menu_destroy(&screen->entries);
@@ -201,8 +220,29 @@ bool
 native_browser_screen_set_current_directory(NativeBrowserScreen *screen,
                                             char *directory,
                                             int32 directory_len) {
+    NcmStringView current;
+    NcmStringView replacement;
+
     if (screen == NULL) {
         return false;
+    }
+    if (directory_len < 0) {
+        return false;
+    }
+    if ((directory == NULL) && (directory_len > 0)) {
+        return false;
+    }
+
+    current = ncm_string_view_make(screen->current_directory.data,
+                                   screen->current_directory.len);
+    replacement = ncm_string_view_make(directory, directory_len);
+    if (!native_browser_string_views_equal(current, replacement)) {
+        if (!ncm_buffer_set(&screen->last_highlighted_directory,
+                            current.data, current.len)) {
+            return false;
+        }
+        screen->title_scroll_beginning = 0;
+        screen->redraw_header = true;
     }
     return ncm_buffer_set(&screen->current_directory, directory,
                           directory_len);
@@ -215,6 +255,184 @@ native_browser_screen_current_directory(NativeBrowserScreen *screen) {
     }
     return ncm_string_view_make(screen->current_directory.data,
                                 screen->current_directory.len);
+}
+
+bool
+native_browser_screen_set_last_highlighted_directory(
+    NativeBrowserScreen *screen, char *directory, int32 directory_len) {
+    if (screen == NULL) {
+        return false;
+    }
+    return ncm_buffer_set(&screen->last_highlighted_directory, directory,
+                          directory_len);
+}
+
+NcmStringView
+native_browser_screen_last_highlighted_directory(
+    NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return ncm_string_view_make(NULL, 0);
+    }
+    return ncm_string_view_make(screen->last_highlighted_directory.data,
+                                screen->last_highlighted_directory.len);
+}
+
+void
+native_browser_screen_clear_last_highlighted_directory(
+    NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    ncm_buffer_clear(&screen->last_highlighted_directory);
+    return;
+}
+
+bool
+native_browser_screen_set_title_text(NativeBrowserScreen *screen,
+                                     char *title, int32 title_len) {
+    if (screen == NULL) {
+        return false;
+    }
+    return ncm_buffer_set(&screen->title_text, title, title_len);
+}
+
+NcmStringView
+native_browser_screen_title_text(NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return ncm_string_view_make(NULL, 0);
+    }
+    return ncm_string_view_make(screen->title_text.data,
+                                screen->title_text.len);
+}
+
+bool
+native_browser_screen_set_column_title_text(NativeBrowserScreen *screen,
+                                            char *title,
+                                            int32 title_len) {
+    if (screen == NULL) {
+        return false;
+    }
+    return ncm_buffer_set(&screen->column_title_text, title, title_len);
+}
+
+NcmStringView
+native_browser_screen_column_title_text(NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return ncm_string_view_make(NULL, 0);
+    }
+    return ncm_string_view_make(screen->column_title_text.data,
+                                screen->column_title_text.len);
+}
+
+void
+native_browser_screen_set_display_mode(NativeBrowserScreen *screen,
+                                        enum DisplayMode mode) {
+    if (screen == NULL) {
+        return;
+    }
+    if ((mode != NCM_DISPLAY_MODE_CLASSIC)
+        && (mode != NCM_DISPLAY_MODE_COLUMNS)) {
+        return;
+    }
+    screen->active_display_mode = mode;
+    return;
+}
+
+enum DisplayMode
+native_browser_screen_display_mode(NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return NCM_DISPLAY_MODE_CLASSIC;
+    }
+    return screen->active_display_mode;
+}
+
+void
+native_browser_screen_clear_supported_extensions(
+    NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    ncm_buffer_array_clear(&screen->supported_extensions);
+    return;
+}
+
+bool
+native_browser_screen_add_supported_extension(NativeBrowserScreen *screen,
+                                              char *extension,
+                                              int32 extension_len) {
+    NcmBuffer buffer;
+    bool result;
+
+    if (screen == NULL) {
+        return false;
+    }
+
+    ncm_buffer_init(&buffer);
+    result = ncm_buffer_set(&buffer, extension, extension_len)
+             && ncm_buffer_array_append_copy(
+                 &screen->supported_extensions, &buffer);
+    ncm_buffer_destroy(&buffer);
+    return result;
+}
+
+bool
+native_browser_screen_has_supported_extension(NativeBrowserScreen *screen,
+                                              char *extension,
+                                              int32 extension_len) {
+    NcmBufferArray *extensions;
+
+    if (screen == NULL) {
+        return false;
+    }
+    extensions = &screen->supported_extensions;
+    for (int32 i = 0; i < extensions->len; i += 1) {
+        NcmBuffer *item;
+
+        item = &extensions->items[i];
+        if (ncm_string_equal(item->data, item->len, extension,
+                             extension_len)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+NcmBufferArray *
+native_browser_screen_supported_extensions(
+    NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return NULL;
+    }
+    return &screen->supported_extensions;
+}
+
+void
+native_browser_screen_clear_temp_buffers(NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    ncm_buffer_clear(&screen->item_text_buffer);
+    ncm_buffer_clear(&screen->path_buffer);
+    ncm_buffer_clear(&screen->scratch_buffer);
+    return;
+}
+
+bool
+native_browser_screen_update_requested(NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return false;
+    }
+    return screen->update_requested;
+}
+
+void
+native_browser_screen_clear_update_request(NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    screen->update_requested = false;
+    nc_screen_clear_update_request(&screen->screen);
+    return;
 }
 
 bool
@@ -322,12 +540,19 @@ native_browser_screen_go_to_parent(NativeBrowserScreen *screen) {
     if (screen->current_directory.len <= 0) {
         return false;
     }
+    if (!ncm_buffer_set(&screen->last_highlighted_directory,
+                        screen->current_directory.data,
+                        screen->current_directory.len)) {
+        return false;
+    }
     parent_len = ncm_string_parent_directory_len(
         screen->current_directory.data, screen->current_directory.len);
     screen->current_directory.len = parent_len;
     if (screen->current_directory.data != NULL) {
         screen->current_directory.data[parent_len] = '\0';
     }
+    screen->title_scroll_beginning = 0;
+    screen->redraw_header = true;
     return true;
 }
 
@@ -460,6 +685,7 @@ native_browser_screen_request_update(NativeBrowserScreen *screen) {
     if (screen == NULL) {
         return;
     }
+    screen->update_requested = true;
     if (screen->bridge.request_update != NULL) {
         screen->bridge.request_update(screen->bridge.user);
         return;
@@ -570,6 +796,9 @@ native_browser_title(NcScreen *screen) {
     if (browser->bridge.title != NULL) {
         return browser->bridge.title(browser->bridge.user);
     }
+    if (browser->title_text.len > 0) {
+        return browser->title_text.data;
+    }
     return (char *)"Browser";
 }
 
@@ -580,10 +809,10 @@ native_browser_update(NcScreen *screen) {
     browser = native_browser_from_screen(screen);
     if (browser->bridge.update != NULL) {
         browser->bridge.update(browser->bridge.user);
-        nc_screen_clear_update_request(screen);
+        native_browser_screen_clear_update_request(browser);
         return;
     }
-    nc_screen_clear_update_request(screen);
+    native_browser_screen_clear_update_request(browser);
     return;
 }
 
@@ -683,3 +912,8 @@ native_browser_copy_selected_song(NativeBrowserScreen *screen,
     return ncm_song_array_append_copy(songs, ncm_mpd_item_song(item));
 }
 
+static bool
+native_browser_string_views_equal(NcmStringView left,
+                                  NcmStringView right) {
+    return ncm_string_equal(left.data, left.len, right.data, right.len);
+}
