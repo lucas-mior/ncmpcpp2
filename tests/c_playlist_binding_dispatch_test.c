@@ -1,8 +1,10 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "actions_legacy_runtime.h"
 #include "app_legacy_bridge.h"
 #include "bindings.h"
+#include "settings_legacy_runtime.h"
 
 typedef struct TestState {
     enum NcmActionType can_run_types[8];
@@ -11,6 +13,7 @@ typedef struct TestState {
     int32 run_count;
     int32 legacy_binding_count;
     int32 legacy_action_count;
+    int32 unrelated_legacy_count;
 } TestState;
 
 static TestState test_state;
@@ -58,6 +61,96 @@ __wrap_actions_legacy_runtime_execute_action(enum NcmActionType type) {
     return true;
 }
 
+bool
+settings_legacy_runtime_sync_configuration(void) {
+    test_state.unrelated_legacy_count += 1;
+    return false;
+}
+
+void
+actions_legacy_runtime_init_readline(void) {
+    test_state.unrelated_legacy_count += 1;
+    return;
+}
+
+void *
+actions_legacy_runtime_window_create(int64 start_x, int64 start_y,
+                                     int64 width, int64 height,
+                                     NcColor color) {
+    (void)start_x;
+    (void)start_y;
+    (void)width;
+    (void)height;
+    (void)color;
+    test_state.unrelated_legacy_count += 1;
+    return NULL;
+}
+
+void
+actions_legacy_runtime_window_display(void *window) {
+    (void)window;
+    test_state.unrelated_legacy_count += 1;
+    return;
+}
+
+void
+actions_legacy_runtime_window_destroy(void *window) {
+    (void)window;
+    test_state.unrelated_legacy_count += 1;
+    return;
+}
+
+void
+actions_legacy_runtime_window_set_main_hook(void *window) {
+    (void)window;
+    test_state.unrelated_legacy_count += 1;
+    return;
+}
+
+void
+actions_legacy_runtime_window_clear_fd_callbacks(void *window) {
+    (void)window;
+    test_state.unrelated_legacy_count += 1;
+    return;
+}
+
+NcWindow *
+actions_legacy_runtime_window_native(void *window) {
+    (void)window;
+    test_state.unrelated_legacy_count += 1;
+    return NULL;
+}
+
+void
+actions_legacy_runtime_initialize_screens(void) {
+    test_state.unrelated_legacy_count += 1;
+    return;
+}
+
+void
+actions_legacy_runtime_resize_screen(bool reload_main_window) {
+    (void)reload_main_window;
+    test_state.unrelated_legacy_count += 1;
+    return;
+}
+
+bool
+actions_legacy_runtime_update_environment(bool update_timer,
+                                          bool refresh_window,
+                                          bool mpd_sync) {
+    (void)update_timer;
+    (void)refresh_window;
+    (void)mpd_sync;
+    test_state.unrelated_legacy_count += 1;
+    return false;
+}
+
+bool
+actions_legacy_runtime_exit_requested(void) {
+    test_state.unrelated_legacy_count += 1;
+    return false;
+}
+
 static void
 test_state_reset(void) {
     test_state = (TestState){0};
@@ -99,6 +192,7 @@ test_playlist_binding_uses_c_runtime(void) {
     assert(test_state.run_types[1] == NCM_ACTION_QUIT);
     assert(test_state.legacy_binding_count == 0);
     assert(test_state.legacy_action_count == 0);
+    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -112,6 +206,7 @@ test_playlist_action_uses_c_runtime(void) {
     assert(test_state.run_types[0] == NCM_ACTION_PLAY_ITEM);
     assert(test_state.legacy_binding_count == 0);
     assert(test_state.legacy_action_count == 0);
+    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -131,6 +226,7 @@ test_non_whitelisted_binding_is_blocked(void) {
     assert(test_state.run_count == 0);
     assert(test_state.legacy_binding_count == 0);
     assert(test_state.legacy_action_count == 0);
+    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -144,6 +240,7 @@ test_non_whitelisted_action_is_blocked(void) {
     assert(test_state.run_count == 0);
     assert(test_state.legacy_binding_count == 0);
     assert(test_state.legacy_action_count == 0);
+    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
