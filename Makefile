@@ -113,6 +113,24 @@ PLAYLIST_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=ncm_mpd_client_load_playlist
 $(BUILD_DIR)/tests/c_playlist_editor_screen_test: \
 	LDFLAGS += $(PLAYLIST_EDITOR_SCREEN_TEST_WRAP_FLAGS)
+SCREEN_REGISTRY_BRIDGE_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=nc_window_init \
+	-Wl,--wrap=nc_window_destroy \
+	-Wl,--wrap=nc_window_move_to \
+	-Wl,--wrap=nc_window_resize \
+	-Wl,--wrap=nc_window_set_title \
+	-Wl,--wrap=nc_screen_draw_vertical_separator
+$(BUILD_DIR)/tests/c_screen_registry_bridge_test: \
+	LDFLAGS += $(SCREEN_REGISTRY_BRIDGE_TEST_WRAP_FLAGS)
+TAG_EDITOR_NATIVE_REGISTRATION_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=nc_window_init \
+	-Wl,--wrap=nc_window_destroy \
+	-Wl,--wrap=nc_window_move_to \
+	-Wl,--wrap=nc_window_resize \
+	-Wl,--wrap=nc_window_set_title \
+	-Wl,--wrap=nc_screen_draw_vertical_separator
+$(BUILD_DIR)/tests/tag_editor_native_registration_test: \
+	LDFLAGS += $(TAG_EDITOR_NATIVE_REGISTRATION_TEST_WRAP_FLAGS)
 TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_window_init \
 	-Wl,--wrap=nc_window_destroy \

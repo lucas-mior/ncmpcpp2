@@ -487,17 +487,9 @@ void initializeScreens()
 	    requestMediaLibraryDatabaseUpdate, nullptr);
 	ncm_status_set_playlist_update_observer(
 	    refreshPlaylistRelatedInactiveColumns, nullptr);
-#	ifdef HAVE_TAGLIB_H
-	myTagEditor = new TagEditor;
-#	endif // HAVE_TAGLIB_H
-
 	native_c_screens_register_native_only();
 	myBrowser->registerNativeScreen();
 	native_c_screen_lyrics_register();
-
-#	ifdef HAVE_TAGLIB_H
-	myTagEditor->registerNativeScreen();
-#	endif // HAVE_TAGLIB_H
 }
 
 void setResizeFlags()
@@ -506,9 +498,6 @@ void setResizeFlags()
 	myBrowser->hasToBeResized = 1;
 	native_c_screen_lyrics_set_resize();
 
-#	ifdef HAVE_TAGLIB_H
-	myTagEditor->hasToBeResized = 1;
-#	endif // HAVE_TAGLIB_H
 }
 
 void resizeScreen(bool reload_main_window)
@@ -810,18 +799,26 @@ bool JumpToParentDirectory::canBeRun()
 {
 	BaseScreen *current;
 
+#	ifdef HAVE_TAGLIB_H
+	if (native_c_screen_tag_editor_is_current())
+		return true;
+#	endif // HAVE_TAGLIB_H
 	current = screenLegacyCurrent();
 	if (current == nullptr)
 		return false;
-	return (current == myBrowser)
-#	ifdef HAVE_TAGLIB_H
-	    || (current->activeWindow() == myTagEditor->Dirs)
-#	endif // HAVE_TAGLIB_H
-	;
+	return current == myBrowser;
 }
 
 void JumpToParentDirectory::run()
 {
+#	ifdef HAVE_TAGLIB_H
+	if (native_c_screen_tag_editor_is_current())
+	{
+		(void)native_tag_editor_screen_go_to_parent(
+		    native_c_screen_tag_editor());
+		return;
+	}
+#	endif // HAVE_TAGLIB_H
 	if (screenLegacyCurrent() == myBrowser)
 	{
 		if (!myBrowser->inRootDirectory())
@@ -830,16 +827,6 @@ void JumpToParentDirectory::run()
 			myBrowser->enterDirectory();
 		}
 	}
-#	ifdef HAVE_TAGLIB_H
-	else if (screenLegacyCurrent() == myTagEditor)
-	{
-		if (myTagEditor->CurrentDir() != "/")
-		{
-			myTagEditor->Dirs->reset();
-			myTagEditor->enterDirectory();
-		}
-	}
-#	endif // HAVE_TAGLIB_H
 }
 
 bool PreviousColumn::canBeRun()
@@ -1336,31 +1323,12 @@ void Shuffle::run()
 
 bool SaveTagChanges::canBeRun()
 {
-#	ifdef HAVE_TAGLIB_H
-	return native_c_screen_tiny_tag_editor_is_current()
-	    || (screenLegacyCurrent() != nullptr
-	        && screenLegacyCurrent()->activeWindow() == myTagEditor->TagTypes);
-#	else
-	return false;
-#	endif // HAVE_TAGLIB_H
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SAVE_TAG_CHANGES);
 }
 
 void SaveTagChanges::run()
 {
-#	ifdef HAVE_TAGLIB_H
-	if (native_c_screen_tiny_tag_editor_is_current())
-	{
-		(void)native_tiny_tag_editor_screen_run_row(
-			native_c_screen_tiny_tag_editor(),
-			NATIVE_TINY_TAG_EDITOR_SAVE_ROW);
-	}
-	else if (screenLegacyCurrent() != nullptr
-	         && screenLegacyCurrent()->activeWindow() == myTagEditor->TagTypes)
-	{
-		myTagEditor->TagTypes->highlight(myTagEditor->TagTypes->size()-1); // Save
-		myTagEditor->runAction();
-	}
-#	endif // HAVE_TAGLIB_H
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SAVE_TAG_CHANGES);
 }
 
 void SetCrossfade::run()
@@ -1404,6 +1372,10 @@ bool EnterDirectory::canBeRun()
 	BaseScreen *current;
 	bool result = false;
 
+#ifdef HAVE_TAGLIB_H
+	if (native_c_screen_tag_editor_is_current())
+		return true;
+#endif // HAVE_TAGLIB_H
 	current = screenLegacyCurrent();
 	if (current == nullptr)
 		return false;
@@ -1412,10 +1384,6 @@ bool EnterDirectory::canBeRun()
 		result = myBrowser->main().current()->value().type()
 			== MPD::Item::Type::Directory;
 	}
-#ifdef HAVE_TAGLIB_H
-	else if (current->activeWindow() == myTagEditor->Dirs)
-		result = true;
-#endif // HAVE_TAGLIB_H
 	return result;
 }
 
@@ -1423,18 +1391,18 @@ void EnterDirectory::run()
 {
 	BaseScreen *current;
 
+#ifdef HAVE_TAGLIB_H
+	if (native_c_screen_tag_editor_is_current())
+	{
+		(void)ncm_action_runtime_run(nullptr, NCM_ACTION_ENTER_DIRECTORY);
+		return;
+	}
+#endif // HAVE_TAGLIB_H
 	current = screenLegacyCurrent();
 	if (current == nullptr)
 		return;
 	if (current == myBrowser)
 		myBrowser->enterDirectory();
-#ifdef HAVE_TAGLIB_H
-	else if (current->activeWindow() == myTagEditor->Dirs)
-	{
-		if (!myTagEditor->enterDirectory())
-			Statusbar::print("No subdirectories found");
-	}
-#endif // HAVE_TAGLIB_H
 }
 
 bool EditSong::canBeRun()
@@ -2483,7 +2451,7 @@ void ShowPlaylistEditor::run()
 bool ShowTagEditor::canBeRun()
 {
 #	ifdef HAVE_TAGLIB_H
-	return screenLegacyCurrent() != myTagEditor
+	return !native_c_screen_tag_editor_is_current()
 	    && !native_c_screen_tiny_tag_editor_is_current();
 #	else
 	return false;
@@ -2494,7 +2462,10 @@ void ShowTagEditor::run()
 {
 #	ifdef HAVE_TAGLIB_H
 	if (isMPDMusicDirSet())
-		myTagEditor->switchTo();
+	{
+		native_c_screen_tag_editor_register();
+		native_c_screen_tag_editor_switch_to();
+	}
 #	endif // HAVE_TAGLIB_H
 }
 
