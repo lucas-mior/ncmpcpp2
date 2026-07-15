@@ -204,6 +204,8 @@ native_c_screen_browser_init(void) {
     native_browser_screen_set_mouse_config(
         &browser_screen, Config.lines_scrolled,
         Config.mouse_list_scroll_whole_page);
+    native_browser_screen_set_display_mode(
+        &browser_screen, Config.browser_display_mode);
     browser_screen_initialized = true;
     return;
 }
