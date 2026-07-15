@@ -32,6 +32,7 @@ static void test_search_engine_native_search(void);
 static void test_native_screen_search_fallback(void);
 static void test_c_only_screen_skips_legacy_search(void);
 static void test_playlist_editor_skips_legacy_search(void);
+static void test_tag_editor_skips_legacy_search(void);
 static bool format_search_song(void *user, NcmSong *song,
                                NcmBuffer *text);
 
@@ -72,6 +73,7 @@ main(void) {
     test_native_screen_search_fallback();
     test_c_only_screen_skips_legacy_search();
     test_playlist_editor_skips_legacy_search();
+    test_tag_editor_skips_legacy_search();
     ncm_buffer_destroy(&fixture.pattern);
     exit(EXIT_SUCCESS);
 }
@@ -308,6 +310,59 @@ test_playlist_editor_skips_legacy_search(void) {
     current_screen_clear_search_constraint();
     assert(fixture.clear_hook_calls == clear_hook_calls);
     assert(!screen->playlist_search_enabled);
+    constraint = current_screen_current_search_constraint();
+    assert(constraint.len == 0);
+    return;
+}
+
+static void
+test_tag_editor_skips_legacy_search(void) {
+    NativeTagEditorScreen *screen;
+    NcmMutableSong song;
+    NcmStringView constraint;
+    NcmError error;
+    int32 clear_hook_calls;
+    int32 search_hook_calls;
+
+    app_controller_init();
+    ui_state_set_screen_size(100, 30);
+    ui_state_set_main_geometry(2, 26);
+    Config.regex_type = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
+    screen = native_c_screen_tag_editor();
+    native_tag_editor_screen_clear(screen);
+
+    ncm_mutable_song_init(&song);
+    assert(ncm_mutable_song_set_uri(&song, LIT_ARGS("song.flac")));
+    assert(ncm_mutable_song_set_name(&song, LIT_ARGS("song.flac")));
+    assert(ncm_mutable_song_set_original_tag(
+               &song, NCM_TAGS_FIELD_ARTIST, 0, LIT_ARGS("Needle")));
+    assert(native_tag_editor_screen_add_mutable_song(screen, &song));
+    ncm_mutable_song_destroy(&song);
+
+    native_tag_editor_screen_next_column(screen);
+    assert(nc_menu_goto_selectable(nc_editor_string_menu_base(
+               &screen->tag_types), 1));
+    native_tag_editor_screen_next_column(screen);
+    native_c_screen_tag_editor_register();
+    assert(app_controller_switch_to_screen(
+        native_c_screen_tag_editor_native()));
+
+    search_hook_calls = fixture.search_hook_calls;
+    ncm_error_clear(&error);
+    assert(current_screen_search(
+        NCM_SEARCH_DIRECTION_FORWARD, LIT_ARGS("Needle"),
+        true, false, &error));
+    assert(!ncm_error_is_set(&error));
+    assert(fixture.search_hook_calls == search_hook_calls);
+
+    constraint = current_screen_current_search_constraint();
+    assert(ncm_string_equal(constraint.data, constraint.len,
+                            LIT_ARGS("Needle")));
+
+    clear_hook_calls = fixture.clear_hook_calls;
+    current_screen_clear_search_constraint();
+    assert(fixture.clear_hook_calls == clear_hook_calls);
+    assert(!screen->tag_search_enabled);
     constraint = current_screen_current_search_constraint();
     assert(constraint.len == 0);
     return;

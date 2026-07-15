@@ -84,6 +84,10 @@ static void destroy_screen(NativeTagEditorScreen *screen);
 static NativeTagEditorBridge bridge_callbacks(void);
 static void append_song(NativeTagEditorScreen *screen, char *uri,
                         int32 uri_len, char *artist, int32 artist_len);
+static void append_song_with_title(NativeTagEditorScreen *screen, char *uri,
+                                   int32 uri_len, char *artist,
+                                   int32 artist_len, char *title,
+                                   int32 title_len);
 static void append_directory(NcmDirectoryArray *directories, char *path,
                              int32 path_len);
 static void append_mpd_song(NcmMpdSongList *songs, char *uri,
@@ -129,6 +133,11 @@ static void test_native_tag_rendering_for_filename_rows(void);
 static void test_native_refresh_does_not_delegate_rendering(void);
 static void test_native_update_fetches_directories_and_songs(void);
 static void test_native_update_reports_fetch_failures(void);
+static void test_directory_filter_keeps_control_rows(void);
+static void test_tag_filter_uses_selected_rendered_field(void);
+static void test_tag_search_uses_modified_and_filename_rows(void);
+static void test_invalid_regex_preserves_previous_constraints(void);
+static void test_tag_type_column_is_not_searchable(void);
 
 int
 main(void) {
@@ -158,6 +167,11 @@ main(void) {
     test_native_refresh_does_not_delegate_rendering();
     test_native_update_fetches_directories_and_songs();
     test_native_update_reports_fetch_failures();
+    test_directory_filter_keeps_control_rows();
+    test_tag_filter_uses_selected_rendered_field();
+    test_tag_search_uses_modified_and_filename_rows();
+    test_invalid_regex_preserves_previous_constraints();
+    test_tag_type_column_is_not_searchable();
 
     destroy_mpd_trace();
     exit(EXIT_SUCCESS);
@@ -220,6 +234,24 @@ append_song(NativeTagEditorScreen *screen, char *uri, int32 uri_len,
     assert(ncm_mutable_song_set_name(&song, uri, uri_len));
     assert(ncm_mutable_song_set_original_tag(
                &song, NCM_TAGS_FIELD_ARTIST, 0, artist, artist_len));
+    assert(native_tag_editor_screen_add_mutable_song(screen, &song));
+    ncm_mutable_song_destroy(&song);
+    return;
+}
+
+static void
+append_song_with_title(NativeTagEditorScreen *screen, char *uri,
+                       int32 uri_len, char *artist, int32 artist_len,
+                       char *title, int32 title_len) {
+    NcmMutableSong song;
+
+    ncm_mutable_song_init(&song);
+    assert(ncm_mutable_song_set_uri(&song, uri, uri_len));
+    assert(ncm_mutable_song_set_name(&song, uri, uri_len));
+    assert(ncm_mutable_song_set_original_tag(
+               &song, NCM_TAGS_FIELD_ARTIST, 0, artist, artist_len));
+    assert(ncm_mutable_song_set_original_tag(
+               &song, NCM_TAGS_FIELD_TITLE, 0, title, title_len));
     assert(native_tag_editor_screen_add_mutable_song(screen, &song));
     ncm_mutable_song_destroy(&song);
     return;
@@ -695,6 +727,8 @@ test_native_resize_preserves_state(void) {
                &screen, STRLIT_ARGS("Alpha"), true, true, false, &error));
     native_tag_editor_screen_clear_filters(&screen);
     native_tag_editor_screen_next_column(&screen);
+    assert(nc_menu_goto_selectable(nc_editor_string_menu_base(
+               &screen.tag_types), 1));
     native_tag_editor_screen_next_column(&screen);
     assert(native_tag_editor_screen_apply_tag_filter(
                &screen, STRLIT_ARGS("Beta"), Config.regex_type, &error));
@@ -884,13 +918,21 @@ test_directory_filter_and_search_contract(void) {
     assert(nc_menu_item_count(menu) == 4);
     assert(native_tag_editor_screen_apply_directory_filter(
                &screen, STRLIT_ARGS("Alpha"), Config.regex_type, &error));
-    assert(nc_menu_item_count(menu) == 1);
+    assert(nc_menu_item_count(menu) == 3);
     pair = nc_menu_active_item_at(menu, 0);
+    assert_menu_string_pair(pair, STRLIT_ARGS("."),
+                            STRLIT_ARGS("/"));
+    pair = nc_menu_active_item_at(menu, 1);
+    assert_menu_string_pair(pair, STRLIT_ARGS(".."),
+                            STRLIT_ARGS("/parent"));
+    pair = nc_menu_active_item_at(menu, 2);
     assert_menu_string_pair(pair, STRLIT_ARGS("Alpha"),
                             STRLIT_ARGS("/Alpha"));
+    assert(nc_menu_goto_selectable(menu, 2));
 
     native_tag_editor_screen_clear_filters(&screen);
     assert(nc_menu_item_count(menu) == 4);
+    assert(nc_menu_highlight(menu) == 2);
     assert(screen.directory_filter_constraint.len == 0);
     assert(screen.directory_search_constraint.len == 0);
 
@@ -915,6 +957,8 @@ test_tag_filter_search_and_selection_contract(void) {
     append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
     append_song(&screen, STRLIT_ARGS("two.flac"), STRLIT_ARGS("Beta"));
     native_tag_editor_screen_next_column(&screen);
+    assert(nc_menu_goto_selectable(nc_editor_string_menu_base(
+               &screen.tag_types), 1));
     native_tag_editor_screen_next_column(&screen);
 
     menu = nc_tag_row_menu_base(native_tag_editor_screen_tags(&screen));
@@ -1148,6 +1192,8 @@ test_separate_filter_and_search_state(void) {
     append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
     append_song(&screen, STRLIT_ARGS("two.flac"), STRLIT_ARGS("Beta"));
     native_tag_editor_screen_next_column(&screen);
+    assert(nc_menu_goto_selectable(nc_editor_string_menu_base(
+               &screen.tag_types), 1));
     native_tag_editor_screen_next_column(&screen);
     assert(native_tag_editor_screen_apply_tag_filter(
                &screen, STRLIT_ARGS("Alpha"), Config.regex_type, &error));
@@ -1397,6 +1443,187 @@ test_native_update_reports_fetch_failures(void) {
                             STRLIT_ARGS("Could not fetch songs: "
                                         "songs failure")));
     assert(!screen.tags_update_requested);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_directory_filter_keeps_control_rows(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *menu;
+    NcMenuStringPair *pair;
+    NcmError error;
+
+    init_screen(&screen);
+    ncm_error_clear(&error);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("."), STRLIT_ARGS("/")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS(".."), STRLIT_ARGS("/parent")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Beta"), STRLIT_ARGS("/Beta")));
+
+    menu = nc_editor_pair_menu_base(&screen.directories);
+    assert(native_tag_editor_screen_apply_directory_filter(
+               &screen, STRLIT_ARGS("Alpha"), Config.regex_type, &error));
+    assert(nc_menu_item_count(menu) == 3);
+    pair = nc_menu_active_item_at(menu, 0);
+    assert_menu_string_pair(pair, STRLIT_ARGS("."), STRLIT_ARGS("/"));
+    pair = nc_menu_active_item_at(menu, 1);
+    assert_menu_string_pair(pair, STRLIT_ARGS(".."),
+                            STRLIT_ARGS("/parent"));
+    pair = nc_menu_active_item_at(menu, 2);
+    assert_menu_string_pair(pair, STRLIT_ARGS("Alpha"),
+                            STRLIT_ARGS("/Alpha"));
+
+    native_tag_editor_screen_clear_filters(&screen);
+    assert(nc_menu_goto_selectable(menu, 0));
+    assert(!native_tag_editor_screen_search(
+               &screen, STRLIT_ARGS("."), true, true, false, &error));
+    assert(nc_menu_highlight(menu) == 0);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_filter_uses_selected_rendered_field(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tag_types;
+    NcMenu *tags;
+    NcmError error;
+
+    init_screen(&screen);
+    ncm_error_clear(&error);
+    append_song_with_title(&screen, STRLIT_ARGS("one.flac"),
+                           STRLIT_ARGS("Alpha"),
+                           STRLIT_ARGS("Needle title"));
+    append_song_with_title(&screen, STRLIT_ARGS("two.flac"),
+                           STRLIT_ARGS("Beta"),
+                           STRLIT_ARGS("Other title"));
+    native_tag_editor_screen_next_column(&screen);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    assert(nc_menu_goto_selectable(tag_types, 1));
+    native_tag_editor_screen_next_column(&screen);
+    tags = nc_tag_row_menu_base(&screen.tags);
+
+    assert(native_tag_editor_screen_apply_tag_filter(
+               &screen, STRLIT_ARGS("Needle title"), Config.regex_type,
+               &error));
+    assert(nc_menu_item_count(tags) == 0);
+
+    native_tag_editor_screen_clear_filters(&screen);
+    native_tag_editor_screen_previous_column(&screen);
+    assert(nc_menu_goto_selectable(tag_types, 0));
+    native_tag_editor_screen_next_column(&screen);
+    assert(native_tag_editor_screen_apply_tag_filter(
+               &screen, STRLIT_ARGS("Needle title"), Config.regex_type,
+               &error));
+    assert(nc_menu_item_count(tags) == 1);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_search_uses_modified_and_filename_rows(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tag_types;
+    NcMenu *tags;
+    NcmMutableSong *song;
+    NcmError error;
+
+    init_screen(&screen);
+    ncm_error_clear(&error);
+    append_song(&screen, STRLIT_ARGS("old.flac"), STRLIT_ARGS("Alpha"));
+    append_song(&screen, STRLIT_ARGS("second.flac"), STRLIT_ARGS("Beta"));
+    tags = nc_tag_row_menu_base(&screen.tags);
+    song = nc_menu_active_item_at(tags, 0);
+    assert(song != NULL);
+    assert(ncm_mutable_song_set_tag(
+               song, NCM_TAGS_FIELD_ARTIST, 0, STRLIT_ARGS("Changed")));
+    assert(ncm_mutable_song_set_new_name(song, STRLIT_ARGS("new.flac")));
+
+    native_tag_editor_screen_next_column(&screen);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    assert(nc_menu_goto_selectable(tag_types, 1));
+    native_tag_editor_screen_next_column(&screen);
+    assert(native_tag_editor_screen_search(
+               &screen, STRLIT_ARGS("Changed"), true, true, false,
+               &error));
+    assert(nc_menu_highlight(tags) == 0);
+    assert(!native_tag_editor_screen_search(
+               &screen, STRLIT_ARGS("Alpha"), true, true, false,
+               &error));
+
+    native_tag_editor_screen_previous_column(&screen);
+    assert(nc_menu_goto_selectable(tag_types, 12));
+    native_tag_editor_screen_next_column(&screen);
+    assert(native_tag_editor_screen_search(
+               &screen, STRLIT_ARGS("old.flac -> new.flac"), true,
+               true, false, &error));
+    assert(nc_menu_highlight(tags) == 0);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_invalid_regex_preserves_previous_constraints(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tag_types;
+    NcmError error;
+
+    init_screen(&screen);
+    ncm_error_clear(&error);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    assert(native_tag_editor_screen_apply_directory_filter(
+               &screen, STRLIT_ARGS("Alpha"), NCM_REGEX_EXTENDED, &error));
+    assert(!native_tag_editor_screen_apply_directory_filter(
+               &screen, STRLIT_ARGS("("), NCM_REGEX_EXTENDED, &error));
+    assert(screen.directory_filter_enabled);
+    assert(ncm_string_equal(screen.directory_filter_constraint.data,
+                            screen.directory_filter_constraint.len,
+                            STRLIT_ARGS("Alpha")));
+
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Beta"));
+    native_tag_editor_screen_next_column(&screen);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    assert(nc_menu_goto_selectable(tag_types, 1));
+    native_tag_editor_screen_next_column(&screen);
+    Config.regex_type = NCM_REGEX_EXTENDED;
+    assert(native_tag_editor_screen_search(
+               &screen, STRLIT_ARGS("Beta"), true, true, false, &error));
+    assert(!native_tag_editor_screen_search(
+               &screen, STRLIT_ARGS("("), true, true, false, &error));
+    assert(screen.tag_search_enabled);
+    assert(ncm_string_equal(screen.tag_search_constraint.data,
+                            screen.tag_search_constraint.len,
+                            STRLIT_ARGS("Beta")));
+    Config.regex_type = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_type_column_is_not_searchable(void) {
+    NativeTagEditorScreen screen;
+    NcmError error;
+
+    init_screen(&screen);
+    ncm_error_clear(&error);
+    native_tag_editor_screen_next_column(&screen);
+    assert(screen.active_column == NATIVE_TAG_EDITOR_COLUMN_TAG_TYPES);
+    assert(!native_tag_editor_screen_search(
+               &screen, STRLIT_ARGS("Artist"), true, true, false,
+               &error));
+    assert(!screen.directory_search_enabled);
+    assert(!screen.tag_search_enabled);
 
     destroy_screen(&screen);
     return;
