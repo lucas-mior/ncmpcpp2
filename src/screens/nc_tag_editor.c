@@ -21,6 +21,17 @@
 #include "screens/song_info.h"
 #include "title.h"
 
+enum TagEditorTagTypeAction {
+    TAG_EDITOR_TAG_TYPE_ACTION_NONE,
+    TAG_EDITOR_TAG_TYPE_ACTION_FIELD,
+    TAG_EDITOR_TAG_TYPE_ACTION_NUMBER_TRACKS,
+    TAG_EDITOR_TAG_TYPE_ACTION_FILENAME,
+    TAG_EDITOR_TAG_TYPE_ACTION_CAPITALIZE,
+    TAG_EDITOR_TAG_TYPE_ACTION_LOWER,
+    TAG_EDITOR_TAG_TYPE_ACTION_RESET,
+    TAG_EDITOR_TAG_TYPE_ACTION_SAVE,
+};
+
 static NativeTagEditorScreen *tag_editor_from_screen(NcScreen *screen);
 static NcWindow *tag_editor_active_window(NcScreen *screen);
 static void tag_editor_refresh(NcScreen *screen);
@@ -181,7 +192,6 @@ static bool tag_editor_tag_search_text(NativeTagEditorScreen *screen,
 static bool tag_editor_tag_search_field(NativeTagEditorScreen *screen,
                                         enum NcmTagsField *field);
 static bool tag_editor_tag_type_choice_is_editable(int64 choice);
-static bool tag_editor_tag_type_choice_is_actionable(int64 choice);
 static bool tag_editor_mutable_song_to_song(NcmMutableSong *source,
                                             NcmSong *dest);
 static bool tag_editor_directory_matches_regex(NcMenuStringPair *pair,
@@ -203,6 +213,29 @@ static void tag_editor_lower_ascii_buffer(NcmBuffer *buffer);
 static bool tag_editor_next_mask_tag(char *mask, int32 mask_len,
                                      int32 start, int32 *percent_pos,
                                      char *tag_char);
+static enum TagEditorTagTypeAction tag_editor_current_tag_type_action(
+    NativeTagEditorScreen *screen, enum NcmTagsField *field);
+static bool tag_editor_run_directory_current(NativeTagEditorScreen *screen);
+static bool tag_editor_run_tag_type_current(NativeTagEditorScreen *screen);
+static bool tag_editor_run_tag_current(NativeTagEditorScreen *screen);
+static bool tag_editor_run_parser_choice_current(
+    NativeTagEditorScreen *screen);
+static bool tag_editor_run_parser_action_current(
+    NativeTagEditorScreen *screen);
+static bool tag_editor_prompt_tag_value(NativeTagEditorScreen *screen,
+                                        enum NcmTagsField field,
+                                        bool all_targets);
+static bool tag_editor_prompt_current_filename(
+    NativeTagEditorScreen *screen);
+static bool tag_editor_set_song_filename_stem(NcmMutableSong *song,
+                                              char *stem,
+                                              int32 stem_len);
+static void tag_editor_status_message(NativeTagEditorScreen *screen,
+                                      char *message, int32 message_len);
+static bool tag_editor_confirm(NativeTagEditorScreen *screen,
+                               char *message, int32 message_len);
+static bool tag_editor_strings_equal(char *left, int32 left_len,
+                                     char *right, int32 right_len);
 
 static NcScreenCallbacks tag_editor_callbacks = {
     .active_window = tag_editor_active_window,
@@ -642,18 +675,13 @@ native_tag_editor_screen_current_tag_type_editable(
 bool
 native_tag_editor_screen_current_tag_type_actionable(
     NativeTagEditorScreen *screen) {
-    NcMenu *menu;
-    int64 choice;
+    enum NcmTagsField field;
 
     if (screen == NULL) {
         return false;
     }
-    menu = nc_editor_string_menu_base(&screen->tag_types);
-    choice = nc_menu_highlight(menu);
-    if (!tag_editor_tag_type_choice_is_actionable(choice)) {
-        return false;
-    }
-    return nc_menu_position_is_selectable(menu, choice);
+    return tag_editor_current_tag_type_action(screen, &field)
+           != TAG_EDITOR_TAG_TYPE_ACTION_NONE;
 }
 
 bool
@@ -1558,9 +1586,57 @@ tag_editor_scroll(NcScreen *screen, enum NcScroll where) {
 static bool
 tag_editor_can_run_current(NcScreen *screen) {
     NativeTagEditorScreen *editor;
+    NcMenu *menu;
+    enum NcmTagsField field;
 
     editor = tag_editor_from_screen(screen);
     if (editor == NULL) {
+        return false;
+    }
+
+    switch (editor->active_focus) {
+    case NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES:
+    case NATIVE_TAG_EDITOR_FOCUS_PARSER_CHOICE:
+        menu = native_tag_editor_screen_active_menu(editor);
+        return (menu != NULL) && nc_menu_current_is_selectable(menu);
+    case NATIVE_TAG_EDITOR_FOCUS_PARSER_ACTIONS:
+        menu = native_tag_editor_screen_active_menu(editor);
+        if ((menu == NULL) || !nc_menu_current_is_selectable(menu)) {
+            return false;
+        }
+        switch (nc_menu_highlight(menu)) {
+        case 1:
+        case 2:
+        case 4:
+            return true;
+        default:
+            return false;
+        }
+    case NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES:
+        if (nc_menu_empty(nc_tag_row_menu_base(&editor->tags))) {
+            return false;
+        }
+        return tag_editor_current_tag_type_action(editor, &field)
+               != TAG_EDITOR_TAG_TYPE_ACTION_NONE;
+    case NATIVE_TAG_EDITOR_FOCUS_TAGS:
+        if (nc_menu_empty(nc_tag_row_menu_base(&editor->tags))) {
+            return false;
+        }
+        switch (tag_editor_current_tag_type_action(editor, &field)) {
+        case TAG_EDITOR_TAG_TYPE_ACTION_FIELD:
+        case TAG_EDITOR_TAG_TYPE_ACTION_FILENAME:
+            return true;
+        case TAG_EDITOR_TAG_TYPE_ACTION_NONE:
+        case TAG_EDITOR_TAG_TYPE_ACTION_NUMBER_TRACKS:
+        case TAG_EDITOR_TAG_TYPE_ACTION_CAPITALIZE:
+        case TAG_EDITOR_TAG_TYPE_ACTION_LOWER:
+        case TAG_EDITOR_TAG_TYPE_ACTION_RESET:
+        case TAG_EDITOR_TAG_TYPE_ACTION_SAVE:
+            return false;
+        }
+        return false;
+    case NATIVE_TAG_EDITOR_FOCUS_PARSER_LEGEND:
+    case NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW:
         return false;
     }
     return false;
@@ -1572,6 +1648,22 @@ tag_editor_run_current(NcScreen *screen) {
 
     editor = tag_editor_from_screen(screen);
     if (editor == NULL) {
+        return false;
+    }
+
+    switch (editor->active_focus) {
+    case NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES:
+        return tag_editor_run_directory_current(editor);
+    case NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES:
+        return tag_editor_run_tag_type_current(editor);
+    case NATIVE_TAG_EDITOR_FOCUS_TAGS:
+        return tag_editor_run_tag_current(editor);
+    case NATIVE_TAG_EDITOR_FOCUS_PARSER_CHOICE:
+        return tag_editor_run_parser_choice_current(editor);
+    case NATIVE_TAG_EDITOR_FOCUS_PARSER_ACTIONS:
+        return tag_editor_run_parser_action_current(editor);
+    case NATIVE_TAG_EDITOR_FOCUS_PARSER_LEGEND:
+    case NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW:
         return false;
     }
     return false;
@@ -1964,6 +2056,308 @@ tag_editor_mouse_move_to_parser_focus(NativeTagEditorScreen *screen,
         return true;
     }
     return false;
+}
+
+static bool
+tag_editor_run_directory_current(NativeTagEditorScreen *screen) {
+    NcmDirectoryArray directories;
+    NcmError error;
+    NcmStringView path;
+    bool has_subdirectories;
+
+    if (screen == NULL) {
+        return false;
+    }
+    if (!native_tag_editor_screen_current_directory_path(screen, &path)) {
+        return false;
+    }
+
+    ncm_error_clear(&error);
+    ncm_directory_array_init(&directories);
+    has_subdirectories = ncm_mpd_client_get_directory_list(
+        &global_mpd, path.data, &directories, &error)
+        && (directories.len > 0);
+    ncm_directory_array_destroy(&directories);
+    if (!has_subdirectories) {
+        tag_editor_status_message(screen,
+                                  STRLIT_ARGS("No subdirectories found"));
+        return false;
+    }
+    return native_tag_editor_screen_enter_directory(screen);
+}
+
+static bool
+tag_editor_run_tag_type_current(NativeTagEditorScreen *screen) {
+    enum TagEditorTagTypeAction action;
+    enum NcmTagsField field;
+
+    action = tag_editor_current_tag_type_action(screen, &field);
+    switch (action) {
+    case TAG_EDITOR_TAG_TYPE_ACTION_FIELD:
+        return tag_editor_prompt_tag_value(screen, field, true);
+    case TAG_EDITOR_TAG_TYPE_ACTION_NUMBER_TRACKS:
+        if (!tag_editor_confirm(screen, STRLIT_ARGS("Number tracks?"))) {
+            return false;
+        }
+        if (!native_tag_editor_screen_number_tracks(
+                screen, Config.tag_editor_extended_numeration)) {
+            return false;
+        }
+        tag_editor_status_message(screen, STRLIT_ARGS("Tracks numbered"));
+        return true;
+    case TAG_EDITOR_TAG_TYPE_ACTION_FILENAME:
+        native_tag_editor_screen_show_parser_dialog(screen);
+        return true;
+    case TAG_EDITOR_TAG_TYPE_ACTION_CAPITALIZE:
+        tag_editor_status_message(screen, STRLIT_ARGS("Processing..."));
+        native_tag_editor_screen_capitalize_first_letters(screen);
+        tag_editor_status_message(screen, STRLIT_ARGS("Done"));
+        return true;
+    case TAG_EDITOR_TAG_TYPE_ACTION_LOWER:
+        tag_editor_status_message(screen, STRLIT_ARGS("Processing..."));
+        native_tag_editor_screen_lower_all_letters(screen);
+        tag_editor_status_message(screen, STRLIT_ARGS("Done"));
+        return true;
+    case TAG_EDITOR_TAG_TYPE_ACTION_RESET:
+        native_tag_editor_screen_clear_modifications(screen);
+        tag_editor_status_message(screen, STRLIT_ARGS("Changes reset"));
+        return true;
+    case TAG_EDITOR_TAG_TYPE_ACTION_SAVE:
+        return native_tag_editor_screen_save_modified(
+            screen, Config.mpd_music_dir);
+    case TAG_EDITOR_TAG_TYPE_ACTION_NONE:
+        return false;
+    }
+    return false;
+}
+
+static bool
+tag_editor_run_tag_current(NativeTagEditorScreen *screen) {
+    enum TagEditorTagTypeAction action;
+    enum NcmTagsField field;
+    NcMenu *tags;
+    bool result;
+
+    action = tag_editor_current_tag_type_action(screen, &field);
+    if (action == TAG_EDITOR_TAG_TYPE_ACTION_FIELD) {
+        result = tag_editor_prompt_tag_value(screen, field, false);
+    } else if (action == TAG_EDITOR_TAG_TYPE_ACTION_FILENAME) {
+        result = tag_editor_prompt_current_filename(screen);
+    } else {
+        return false;
+    }
+
+    if (result) {
+        tags = nc_tag_row_menu_base(&screen->tags);
+        nc_menu_scroll_selectable(tags, nc_window_height(&screen->tags_window),
+                                  NC_SCROLL_DOWN);
+    }
+    return result;
+}
+
+static bool
+tag_editor_run_parser_choice_current(NativeTagEditorScreen *screen) {
+    NcMenu *menu;
+    int64 choice;
+
+    menu = nc_editor_string_menu_base(&screen->parser_dialog);
+    if (!nc_menu_current_is_selectable(menu)) {
+        return false;
+    }
+    choice = nc_menu_highlight(menu);
+    if (choice == 0) {
+        native_tag_editor_screen_show_parser_actions(
+            screen, NATIVE_TAG_EDITOR_PARSER_TAGS_FROM_FILENAME);
+        return true;
+    }
+    if (choice == 1) {
+        native_tag_editor_screen_show_parser_actions(
+            screen, NATIVE_TAG_EDITOR_PARSER_RENAME_FILES);
+        return true;
+    }
+    if (choice == 2) {
+        native_tag_editor_screen_close_parser(screen);
+        return true;
+    }
+    return false;
+}
+
+static bool
+tag_editor_run_parser_action_current(NativeTagEditorScreen *screen) {
+    NcMenu *menu;
+    int64 choice;
+
+    menu = nc_editor_string_menu_base(&screen->parser_actions);
+    if (!nc_menu_current_is_selectable(menu)) {
+        return false;
+    }
+    choice = nc_menu_highlight(menu);
+    if (choice == 1) {
+        native_tag_editor_screen_show_parser_preview(screen);
+        return true;
+    }
+    if (choice == 2) {
+        native_tag_editor_screen_show_parser_legend(screen);
+        return true;
+    }
+    if (choice == 4) {
+        native_tag_editor_screen_close_parser(screen);
+        return true;
+    }
+    return false;
+}
+
+static bool
+tag_editor_prompt_tag_value(NativeTagEditorScreen *screen,
+                            enum NcmTagsField field, bool all_targets) {
+    NcmMutableSong *song;
+    NcmBuffer initial;
+    NcmBuffer input;
+    char *label;
+    int32 label_len;
+    enum NativeTagEditorPromptResult prompt_result;
+    bool result;
+
+    if ((screen == NULL) || (field == NCM_TAGS_FIELD_LAST)) {
+        return false;
+    }
+    song = nc_tag_row_menu_current(&screen->tags);
+    if (song == NULL) {
+        return false;
+    }
+
+    label = ncm_tags_field_name(field);
+    label_len = (int32)strlen(label);
+    initial = ncm_mutable_song_tags_buffer(
+        song, field, Config.tags_separator, Config.tags_separator_len,
+        Config.show_duplicate_tags);
+    ncm_buffer_init(&input);
+    if (screen->hooks.prompt == NULL) {
+        prompt_result = NATIVE_TAG_EDITOR_PROMPT_ERROR;
+    } else {
+        NcmStringView initial_view;
+
+        ncm_string_view_set(&initial_view, initial.data, initial.len);
+        prompt_result = screen->hooks.prompt(
+            screen->hooks.user, label, label_len, initial_view, &input);
+    }
+    ncm_buffer_destroy(&initial);
+
+    if (prompt_result == NATIVE_TAG_EDITOR_PROMPT_ABORTED) {
+        tag_editor_status_message(screen, STRLIT_ARGS("Action aborted"));
+        ncm_buffer_destroy(&input);
+        return false;
+    }
+    if (prompt_result != NATIVE_TAG_EDITOR_PROMPT_ACCEPTED) {
+        ncm_buffer_destroy(&input);
+        return false;
+    }
+
+    if (all_targets) {
+        result = native_tag_editor_screen_apply_tag_to_selection(
+            screen, field, input.data, input.len, Config.tags_separator,
+            Config.tags_separator_len);
+    } else {
+        result = ncm_mutable_song_set_tags(
+            song, field, input.data, input.len, Config.tags_separator,
+            Config.tags_separator_len);
+    }
+    ncm_buffer_destroy(&input);
+    return result;
+}
+
+static bool
+tag_editor_prompt_current_filename(NativeTagEditorScreen *screen) {
+    NcmMutableSong *song;
+    NcmStringView current_name;
+    NcmStringView initial;
+    NcmBuffer input;
+    enum NativeTagEditorPromptResult prompt_result;
+    int32 dot;
+    bool result;
+
+    if (screen == NULL) {
+        return false;
+    }
+    song = nc_tag_row_menu_current(&screen->tags);
+    if (song == NULL) {
+        return false;
+    }
+
+    if (!ncm_mutable_song_get_new_name(song, &current_name)) {
+        current_name.data = song->name;
+        current_name.len = song->name_len;
+    }
+    initial = current_name;
+    dot = -1;
+    for (int32 i = 0; i < current_name.len; i += 1) {
+        if (current_name.data[i] == '.') {
+            dot = i;
+        }
+    }
+    if (dot >= 0) {
+        initial.len = dot;
+    }
+
+    ncm_buffer_init(&input);
+    if (screen->hooks.prompt == NULL) {
+        prompt_result = NATIVE_TAG_EDITOR_PROMPT_ERROR;
+    } else {
+        prompt_result = screen->hooks.prompt(
+            screen->hooks.user, STRLIT_ARGS("New filename"), initial,
+            &input);
+    }
+    if (prompt_result == NATIVE_TAG_EDITOR_PROMPT_ABORTED) {
+        tag_editor_status_message(screen, STRLIT_ARGS("Action aborted"));
+        ncm_buffer_destroy(&input);
+        return false;
+    }
+    if (prompt_result != NATIVE_TAG_EDITOR_PROMPT_ACCEPTED) {
+        ncm_buffer_destroy(&input);
+        return false;
+    }
+    if (input.len <= 0) {
+        ncm_buffer_destroy(&input);
+        return true;
+    }
+    result = tag_editor_set_song_filename_stem(song, input.data, input.len);
+    ncm_buffer_destroy(&input);
+    return result;
+}
+
+static bool
+tag_editor_set_song_filename_stem(NcmMutableSong *song, char *stem,
+                                  int32 stem_len) {
+    NcmStringView current_name;
+    NcmBuffer new_name;
+    int32 dot;
+    bool result;
+
+    if ((song == NULL) || (stem == NULL) || (stem_len <= 0)) {
+        return false;
+    }
+    if (!ncm_mutable_song_get_new_name(song, &current_name)) {
+        current_name.data = song->name;
+        current_name.len = song->name_len;
+    }
+
+    dot = -1;
+    for (int32 i = 0; i < current_name.len; i += 1) {
+        if (current_name.data[i] == '.') {
+            dot = i;
+        }
+    }
+
+    ncm_buffer_init(&new_name);
+    ncm_buffer_append(&new_name, stem, stem_len);
+    if (dot >= 0) {
+        ncm_buffer_append(&new_name, current_name.data + dot,
+                          current_name.len - dot);
+    }
+    result = ncm_mutable_song_set_new_name(song, new_name.data,
+                                           new_name.len);
+    ncm_buffer_destroy(&new_name);
+    return result;
 }
 
 static bool
@@ -3607,17 +4001,91 @@ tag_editor_tag_type_choice_is_editable(int64 choice) {
     return ((choice >= 0) && (choice < 11)) || (choice == 12);
 }
 
+static enum TagEditorTagTypeAction
+tag_editor_current_tag_type_action(NativeTagEditorScreen *screen,
+                                   enum NcmTagsField *field) {
+    NcMenu *menu;
+    NcMenuString *row;
+    int64 choice;
+
+    if (field != NULL) {
+        *field = NCM_TAGS_FIELD_LAST;
+    }
+    if (screen == NULL) {
+        return TAG_EDITOR_TAG_TYPE_ACTION_NONE;
+    }
+
+    menu = nc_editor_string_menu_base(&screen->tag_types);
+    choice = nc_menu_highlight(menu);
+    row = nc_menu_current_item(menu);
+    if ((row == NULL) || !nc_menu_current_is_selectable(menu)) {
+        return TAG_EDITOR_TAG_TYPE_ACTION_NONE;
+    }
+
+    if ((choice >= 0) && (choice < 11)) {
+        if (field != NULL) {
+            *field = ncm_song_info_tags[choice].field;
+        }
+        if ((ncm_song_info_tags[choice].field == NCM_TAGS_FIELD_TRACK)
+            && (screen->active_focus
+                == NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES)) {
+            return TAG_EDITOR_TAG_TYPE_ACTION_NUMBER_TRACKS;
+        }
+        return TAG_EDITOR_TAG_TYPE_ACTION_FIELD;
+    }
+    if (tag_editor_strings_equal(row->data, row->len,
+                                 STRLIT_ARGS("Filename"))) {
+        return TAG_EDITOR_TAG_TYPE_ACTION_FILENAME;
+    }
+    if (tag_editor_strings_equal(row->data, row->len,
+                                 STRLIT_ARGS("Capitalize First Letters"))) {
+        return TAG_EDITOR_TAG_TYPE_ACTION_CAPITALIZE;
+    }
+    if (tag_editor_strings_equal(row->data, row->len,
+                                 STRLIT_ARGS("lower all letters"))) {
+        return TAG_EDITOR_TAG_TYPE_ACTION_LOWER;
+    }
+    if (tag_editor_strings_equal(row->data, row->len,
+                                 STRLIT_ARGS("Reset"))) {
+        return TAG_EDITOR_TAG_TYPE_ACTION_RESET;
+    }
+    if (tag_editor_strings_equal(row->data, row->len,
+                                 STRLIT_ARGS("Save"))) {
+        return TAG_EDITOR_TAG_TYPE_ACTION_SAVE;
+    }
+    return TAG_EDITOR_TAG_TYPE_ACTION_NONE;
+}
+
+static void
+tag_editor_status_message(NativeTagEditorScreen *screen,
+                          char *message, int32 message_len) {
+    if ((screen == NULL) || (message == NULL) || (message_len < 0)) {
+        return;
+    }
+    if (screen->hooks.status_message != NULL) {
+        screen->hooks.status_message(screen->hooks.user, message,
+                                     message_len);
+    }
+    return;
+}
+
 static bool
-tag_editor_tag_type_choice_is_actionable(int64 choice) {
-    if (tag_editor_tag_type_choice_is_editable(choice)) {
-        return true;
+tag_editor_confirm(NativeTagEditorScreen *screen, char *message,
+                   int32 message_len) {
+    if ((screen == NULL) || (message == NULL) || (message_len < 0)
+        || (screen->hooks.confirm == NULL)) {
+        return false;
     }
-    if (Config.titles_visibility) {
-        return (choice == 16) || (choice == 17) || (choice == 19)
-               || (choice == 20);
+    return screen->hooks.confirm(screen->hooks.user, message, message_len);
+}
+
+static bool
+tag_editor_strings_equal(char *left, int32 left_len,
+                         char *right, int32 right_len) {
+    if ((left == NULL) || (right == NULL) || (left_len != right_len)) {
+        return false;
     }
-    return (choice == 14) || (choice == 15) || (choice == 17)
-           || (choice == 18);
+    return ncm_string_equal(left, left_len, right, right_len);
 }
 
 static bool
