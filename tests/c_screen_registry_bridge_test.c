@@ -503,6 +503,6 @@ test_native_only_registration(void) {
     assert(app_controller_current_screen()
            == native_c_screen_search_engine_native());
     assert(app_controller_previous_screen()
-           == native_c_screen_playlist_native());
+           == native_c_screen_playlist_editor_native());
     return;
 }
