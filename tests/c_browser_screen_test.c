@@ -18,6 +18,7 @@
 static void test_browser_path_navigation(void);
 static void test_browser_parent_directory_compat(void);
 static void test_browser_mpd_reload(void);
+static void test_browser_native_update_reloads_mpd(void);
 static void test_browser_selected_songs(void);
 static void test_browser_filter_and_search(void);
 static void test_browser_local_mode(void);
@@ -110,6 +111,7 @@ main(void) {
     test_browser_path_navigation();
     test_browser_parent_directory_compat();
     test_browser_mpd_reload();
+    test_browser_native_update_reloads_mpd();
     test_browser_selected_songs();
     test_browser_filter_and_search();
     test_browser_local_mode();
@@ -278,6 +280,32 @@ test_browser_mpd_reload(void) {
     assert(ncm_string_equal(view.data, view.len, LIT_ARGS("gone")));
     assert(nc_menu_all_item_count(menu) == 2);
     assert(nc_menu_highlight(menu) == 1);
+
+    native_browser_screen_destroy(&screen);
+    browser_format_fixture_end(&fixture);
+    return;
+}
+
+static void
+test_browser_native_update_reloads_mpd(void) {
+    NativeBrowserScreen screen;
+    BrowserFormatFixture fixture;
+    NcMenu *menu;
+
+    browser_format_fixture_begin(&fixture);
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    menu = native_browser_screen_menu(&screen);
+
+    browser_mpd_trace_reset(BROWSER_MPD_TRACE_ROOT);
+    assert(native_browser_screen_update_requested(&screen));
+    nc_screen_update(native_browser_screen_base(&screen));
+    assert(mpd_trace.calls == 1);
+    assert(nc_menu_all_item_count(menu) == 1);
+    assert(!native_browser_screen_update_requested(&screen));
+
+    nc_screen_update(native_browser_screen_base(&screen));
+    assert(mpd_trace.calls == 1);
 
     native_browser_screen_destroy(&screen);
     browser_format_fixture_end(&fixture);
@@ -1201,6 +1229,11 @@ test_browser_filter_search_formatting_parity(void) {
     ncm_mpd_item_init(&item);
     ncm_directory_init(&directory);
     ncm_song_init(&song);
+
+    ncm_error_clear(&error);
+    assert(ncm_format_parse(&Config.song_list_format,
+                            LIT_ARGS("classic:%t"),
+                            NCM_FORMAT_FLAG_ALL, &error));
 
     assert(ncm_directory_set(&directory, LIT_ARGS(".."), 0));
     assert(ncm_mpd_item_set_directory(&item, &directory));
