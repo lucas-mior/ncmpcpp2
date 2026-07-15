@@ -40,8 +40,6 @@ static void native_browser_draw_item(NcMenu *menu, NcWindow *window,
                                      void *item, int64 pos, void *user);
 static void native_browser_print_buffer(NcWindow *window, NcBuffer *buffer);
 static int32 native_browser_i32_width(int64 width);
-static void native_browser_sync_window_title(NativeBrowserScreen *screen);
-static void native_browser_draw_header(NativeBrowserScreen *screen);
 static void native_browser_mouse_scroll(NativeBrowserScreen *screen,
                                         enum NcScroll where);
 static bool native_browser_filter_item(NcMenu *menu, void *item,
@@ -107,7 +105,7 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     screen->main_height = main_height;
     screen->lines_scrolled = 1;
     screen->title_scroll_beginning = 0;
-    screen->active_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+    screen->active_display_mode = Config.browser_display_mode;
     screen->mouse_list_scroll_whole_page = false;
     screen->redraw_header = true;
     screen->update_requested = true;
@@ -115,6 +113,8 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     screen->filter_enabled = false;
     screen->registered = false;
 
+    native_browser_screen_update_title_text(screen);
+    native_browser_screen_update_column_title(screen);
     native_browser_install_menu_callbacks(screen);
     nc_screen_init(&screen->screen, native_browser_callbacks, screen,
                    NC_SCREEN_TYPE_BROWSER);
@@ -173,6 +173,7 @@ native_browser_screen_set_geometry(NativeBrowserScreen *screen,
     screen->main_height = main_height;
     nc_window_move_to(&screen->window, start_x, main_start_y);
     nc_window_resize(&screen->window, width, main_height);
+    native_browser_screen_update_column_title(screen);
     return;
 }
 
@@ -342,6 +343,56 @@ native_browser_screen_title_text(NativeBrowserScreen *screen) {
                                 screen->title_text.len);
 }
 
+void
+native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
+    NcmBuffer scroll_buffer;
+    NcmStringView directory;
+    int64 scroll_beginning;
+    int32 scroll_width;
+    int32 screen_width;
+    char separator[] = " ** ";
+
+    if (screen == NULL) {
+        return;
+    }
+
+    ncm_buffer_clear(&screen->title_text);
+    ncm_buffer_append(&screen->title_text, STRLIT_ARGS("Browse: "));
+
+    directory = native_browser_screen_current_directory(screen);
+    if (directory.len <= 0) {
+        directory = ncm_string_view_make((char *)"/", 1);
+    }
+
+    screen_width = (int32)ui_state_screen_width();
+    if (screen_width <= 0) {
+        screen_width = native_browser_i32_width(screen->width);
+    }
+
+    scroll_width = screen_width - ncm_utf8_width(screen->title_text.data,
+                                                 screen->title_text.len);
+    if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+        scroll_width -= 2;
+    } else {
+        scroll_width -= global_volume_state_len();
+    }
+    if (scroll_width < 0) {
+        scroll_width = 0;
+    }
+
+    ncm_buffer_init(&scroll_buffer);
+    scroll_beginning = screen->title_scroll_beginning;
+    nc_cyclic_text_write(&scroll_buffer, directory.data, directory.len,
+                         &scroll_beginning, scroll_width, separator,
+                         (int32)SIZEOF(separator) - 1,
+                         Config.header_text_scrolling);
+    ncm_buffer_append(&screen->title_text, scroll_buffer.data,
+                      scroll_buffer.len);
+    screen->title_scroll_beginning = scroll_beginning;
+    ncm_buffer_destroy(&scroll_buffer);
+    return;
+}
+
 bool
 native_browser_screen_set_column_title_text(NativeBrowserScreen *screen,
                                             char *title,
@@ -362,6 +413,48 @@ native_browser_screen_column_title_text(NativeBrowserScreen *screen) {
 }
 
 void
+native_browser_screen_update_column_title(NativeBrowserScreen *screen) {
+    int32 width;
+
+    if (screen == NULL) {
+        return;
+    }
+
+    ncm_buffer_clear(&screen->column_title_text);
+    if ((screen->active_display_mode != NCM_DISPLAY_MODE_COLUMNS)
+        || !Config.titles_visibility || (Config.columns.items == NULL)
+        || (Config.columns.len <= 0) || (screen->main_height <= 2)) {
+        nc_window_set_title(&screen->window, NULL, 0);
+        return;
+    }
+
+    width = native_browser_i32_width(screen->width);
+    if (width <= 0) {
+        nc_window_set_title(&screen->window, NULL, 0);
+        return;
+    }
+
+    ncm_display_column_title(&screen->column_title_text,
+                             Config.columns.items,
+                             Config.columns.len, width);
+    nc_window_set_title(&screen->window, screen->column_title_text.data,
+                        screen->column_title_text.len);
+    return;
+}
+
+void
+native_browser_screen_draw_header(NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+
+    native_browser_screen_update_title_text(screen);
+    ncm_title_draw_header(screen->title_text.data, screen->title_text.len);
+    screen->redraw_header = false;
+    return;
+}
+
+void
 native_browser_screen_set_display_mode(NativeBrowserScreen *screen,
                                         enum DisplayMode mode) {
     if (screen == NULL) {
@@ -371,8 +464,12 @@ native_browser_screen_set_display_mode(NativeBrowserScreen *screen,
         && (mode != NCM_DISPLAY_MODE_COLUMNS)) {
         return;
     }
+    if (screen->active_display_mode == mode) {
+        return;
+    }
     screen->active_display_mode = mode;
     screen->redraw_header = true;
+    native_browser_screen_update_column_title(screen);
     return;
 }
 
@@ -791,7 +888,7 @@ native_browser_refresh(NcScreen *screen) {
     NativeBrowserScreen *browser;
 
     browser = native_browser_from_screen(screen);
-    native_browser_sync_window_title(browser);
+    native_browser_screen_update_column_title(browser);
     nc_menu_refresh(native_browser_screen_menu(browser), &browser->window,
                     browser->width, browser->main_height);
     return;
@@ -820,7 +917,7 @@ native_browser_switch_to(NcScreen *screen) {
     browser = native_browser_from_screen(screen);
     (void)nc_screen_switcher_finish_switch(screen);
     browser->redraw_header = true;
-    native_browser_draw_header(browser);
+    native_browser_screen_draw_header(browser);
     return;
 }
 
@@ -837,7 +934,6 @@ native_browser_resize(NcScreen *screen) {
     native_browser_screen_set_geometry(browser, x, width,
                                        ui_state_main_start_y(),
                                        ui_state_main_height());
-    native_browser_sync_window_title(browser);
     browser->redraw_header = true;
     nc_screen_clear_resize_request(screen);
     return;
@@ -846,47 +942,9 @@ native_browser_resize(NcScreen *screen) {
 static char *
 native_browser_title(NcScreen *screen) {
     NativeBrowserScreen *browser;
-    NcmBuffer scroll_buffer;
-    NcmStringView directory;
-    int64 scroll_beginning;
-    int32 scroll_width;
-    int32 screen_width;
-    char separator[] = " ** ";
 
     browser = native_browser_from_screen(screen);
-    ncm_buffer_clear(&browser->title_text);
-    ncm_buffer_append(&browser->title_text, STRLIT_ARGS("Browse: "));
-
-    directory = native_browser_screen_current_directory(browser);
-    if (directory.len <= 0) {
-        directory = ncm_string_view_make((char *)"/", 1);
-    }
-
-    screen_width = (int32)ui_state_screen_width();
-    if (screen_width <= 0) {
-        screen_width = native_browser_i32_width(browser->width);
-    }
-    scroll_width = screen_width - ncm_utf8_width(browser->title_text.data,
-                                                 browser->title_text.len);
-    if (Config.design == NCM_DESIGN_ALTERNATIVE) {
-        scroll_width -= 2;
-    } else {
-        scroll_width -= global_volume_state_len();
-    }
-    if (scroll_width < 0) {
-        scroll_width = 0;
-    }
-
-    ncm_buffer_init(&scroll_buffer);
-    scroll_beginning = browser->title_scroll_beginning;
-    nc_cyclic_text_write(&scroll_buffer, directory.data, directory.len,
-                         &scroll_beginning, scroll_width, separator,
-                         (int32)SIZEOF(separator) - 1,
-                         Config.header_text_scrolling);
-    ncm_buffer_append(&browser->title_text, scroll_buffer.data,
-                      scroll_buffer.len);
-    browser->title_scroll_beginning = scroll_beginning;
-    ncm_buffer_destroy(&scroll_buffer);
+    native_browser_screen_update_title_text(browser);
     return browser->title_text.data;
 }
 
@@ -897,7 +955,7 @@ native_browser_update(NcScreen *screen) {
     browser = native_browser_from_screen(screen);
     native_browser_screen_clear_update_request(browser);
     if (browser->redraw_header) {
-        native_browser_draw_header(browser);
+        native_browser_screen_draw_header(browser);
     }
     return;
 }
@@ -1085,50 +1143,6 @@ native_browser_i32_width(int64 width) {
         return INT32_MAX;
     }
     return (int32)width;
-}
-
-static void
-native_browser_sync_window_title(NativeBrowserScreen *screen) {
-    int32 width;
-
-    if (screen == NULL) {
-        return;
-    }
-
-    if ((screen->active_display_mode == NCM_DISPLAY_MODE_COLUMNS)
-        && Config.titles_visibility) {
-        width = native_browser_i32_width(screen->width);
-        ncm_display_column_title(&screen->column_title_text,
-                                 Config.columns.items, Config.columns.len,
-                                 width);
-        nc_window_set_title(&screen->window, screen->column_title_text.data,
-                            screen->column_title_text.len);
-    } else {
-        ncm_buffer_clear(&screen->column_title_text);
-        nc_window_set_title(&screen->window, NULL, 0);
-    }
-    return;
-}
-
-static void
-native_browser_draw_header(NativeBrowserScreen *screen) {
-    char *title;
-    int32 len;
-
-    if (screen == NULL) {
-        return;
-    }
-
-    title = native_browser_title(&screen->screen);
-    len = 0;
-    if (title != NULL) {
-        while (title[len] != '\0') {
-            len += 1;
-        }
-    }
-    ncm_title_draw_header(title, len);
-    screen->redraw_header = false;
-    return;
 }
 
 static void
