@@ -604,22 +604,6 @@ void throwIfFailed(bool ok, const NcmError &error)
 		throwClientError(error);
 }
 
-std::string songUriString(NcmSong *song, bool add_file_prefix)
-{
-	NcmStringView uri;
-	std::string result;
-
-	if (song == nullptr)
-		throw std::runtime_error("missing song");
-	if (!ncm_song_uri_view(song, 0, &uri))
-		throw std::runtime_error("song has no URI");
-	if (add_file_prefix && !ncm_song_is_from_database(song))
-		result = "file://";
-	result.append(uri.data, static_cast<size_t>(uri.len));
-	return result;
-}
-
-
 }
 
 Connection::Connection()
@@ -632,11 +616,6 @@ const std::string &Connection::GetHostname()
 {
 	m_host = ncm_mpd_client_hostname(&global_mpd);
 	return m_host;
-}
-
-unsigned Connection::Version() const
-{
-	return ncm_mpd_client_version(&global_mpd);
 }
 
 void Connection::UpdateDirectory(const std::string &path)
@@ -660,46 +639,10 @@ void Connection::Play(int pos)
 	throwIfFailed(ncm_mpd_client_play_pos(&global_mpd, pos, &error), error);
 }
 
-void Connection::Pause(bool state)
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_pause(&global_mpd, state, &error), error);
-}
-
 void Connection::Toggle()
 {
 	NcmError error{};
 	throwIfFailed(ncm_mpd_client_toggle_pause(&global_mpd, &error), error);
-}
-
-void Connection::Stop()
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_stop(&global_mpd, &error), error);
-}
-
-void Connection::Next()
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_next(&global_mpd, &error), error);
-}
-
-void Connection::Prev()
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_previous(&global_mpd, &error), error);
-}
-
-void Connection::Move(unsigned from, unsigned to)
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_move(&global_mpd, from, to, &error), error);
-}
-
-void Connection::Swap(unsigned from, unsigned to)
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_swap(&global_mpd, from, to, &error), error);
 }
 
 void Connection::Seek(unsigned pos, unsigned where)
@@ -707,25 +650,6 @@ void Connection::Seek(unsigned pos, unsigned where)
 	NcmError error{};
 	throwIfFailed(ncm_mpd_client_seek_pos(&global_mpd, pos, where, &error),
 	              error);
-}
-
-void Connection::Shuffle()
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_shuffle(&global_mpd, &error), error);
-}
-
-void Connection::ShuffleRange(unsigned start, unsigned end)
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_shuffle_range(
-		&global_mpd, start, end, &error), error);
-}
-
-void Connection::ClearMainPlaylist()
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_clear_queue(&global_mpd, &error), error);
 }
 
 SongIterator Connection::GetPlaylistContent(const std::string &path)
@@ -758,34 +682,6 @@ StringIterator Connection::GetSupportedExtensions()
 	throwIfFailed(ncm_mpd_client_get_supported_extensions(
 		&global_mpd, strings.get(), &error), error);
 	return StringIterator(stringVectorFromList(strings.get()));
-}
-
-void Connection::SetRepeat(bool mode)
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_set_repeat(&global_mpd, mode, &error),
-	              error);
-}
-
-void Connection::SetRandom(bool mode)
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_set_random(&global_mpd, mode, &error),
-	              error);
-}
-
-void Connection::SetSingle(bool mode)
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_set_single(&global_mpd, mode, &error),
-	              error);
-}
-
-void Connection::SetConsume(bool mode)
-{
-	NcmError error{};
-	throwIfFailed(ncm_mpd_client_set_consume(&global_mpd, mode, &error),
-	              error);
 }
 
 void Connection::SetCrossfade(unsigned seconds)
@@ -914,11 +810,6 @@ void Connection::ClearPlaylist(const std::string &playlist)
 	NcmError error{};
 	throwIfFailed(ncm_mpd_client_clear_playlist(
 		&global_mpd, const_cast<char *>(playlist.c_str()), &error), error);
-}
-
-void Connection::AddToPlaylist(const std::string &path, NcmSong *s)
-{
-	AddToPlaylist(path, songUriString(s, false));
 }
 
 void Connection::AddToPlaylist(const std::string &path,
