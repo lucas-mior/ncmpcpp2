@@ -278,6 +278,7 @@ app_binding_migration_tag_editor_action_is_c_safe(
     case NCM_ACTION_PLAY_ITEM:
     case NCM_ACTION_SAVE_TAG_CHANGES:
     case NCM_ACTION_ENTER_DIRECTORY:
+    case NCM_ACTION_EDIT_DIRECTORY_NAME:
     case NCM_ACTION_EDIT_SONG:
     case NCM_ACTION_JUMP_TO_BROWSER:
     case NCM_ACTION_JUMP_TO_MEDIA_LIBRARY:
@@ -371,6 +372,10 @@ app_binding_migration_action_is_c_safe(enum NcmActionType type) {
     case NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE:
     case NCM_ACTION_SHOW_SEARCH_ENGINE:
     case NCM_ACTION_SHOW_PLAYLIST_EDITOR:
+#if defined(HAVE_TAGLIB_H)
+    case NCM_ACTION_JUMP_TO_TAG_EDITOR:
+    case NCM_ACTION_SHOW_TAG_EDITOR:
+#endif
     case NCM_ACTION_RESET_SEARCH_ENGINE:
         return true;
     default:
@@ -386,6 +391,7 @@ app_binding_migration_screen_is_c_only(enum ScreenType type) {
         || type == NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG
         || type == NCM_SCREEN_TYPE_SEARCH_ENGINE
 #if defined(HAVE_TAGLIB_H)
+        || type == NCM_SCREEN_TYPE_TAG_EDITOR
         || type == NCM_SCREEN_TYPE_TINY_TAG_EDITOR
 #endif
         || type == NCM_SCREEN_TYPE_VISUALIZER;
