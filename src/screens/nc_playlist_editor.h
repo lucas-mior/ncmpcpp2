@@ -156,8 +156,18 @@ bool native_playlist_editor_screen_reload_content_from_mpd(
     NcmError *error);
 bool native_playlist_editor_screen_current_playlist(
     NativePlaylistEditorScreen *screen, NcmPlaylist *playlist);
+bool native_playlist_editor_screen_current_playlist_path(
+    NativePlaylistEditorScreen *screen, char **path, int32 *path_len);
 bool native_playlist_editor_screen_current_song(
     NativePlaylistEditorScreen *screen, NcmSong *song);
+bool native_playlist_editor_screen_current_content_song(
+    NativePlaylistEditorScreen *screen, NcmSong *song);
+int64 native_playlist_editor_screen_selected_playlist_count(
+    NativePlaylistEditorScreen *screen);
+int64 native_playlist_editor_screen_selected_content_count(
+    NativePlaylistEditorScreen *screen);
+bool native_playlist_editor_screen_active_menu_empty(
+    NativePlaylistEditorScreen *screen);
 bool native_playlist_editor_screen_selected_songs(
     NativePlaylistEditorScreen *screen, NcmSongArray *songs);
 bool native_playlist_editor_screen_apply_active_filter(
