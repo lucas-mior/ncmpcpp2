@@ -84,7 +84,7 @@ static bool playlist_editor_content_fetch_due(
     NativePlaylistEditorScreen *screen);
 static void playlist_editor_report_error(char *context, int32 context_len,
                                          NcmError *error);
-static void playlist_editor_update_from_mpd(
+static bool playlist_editor_update_from_mpd(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client);
 static void playlist_editor_observe_current_playlist(
     NativePlaylistEditorScreen *screen);
@@ -899,11 +899,15 @@ playlist_editor_title_callback(NcScreen *screen) {
 static void
 playlist_editor_update_callback(NcScreen *screen) {
     NativePlaylistEditorScreen *editor;
+    bool changed;
 
     editor = playlist_editor_from_screen(screen);
     playlist_editor_finish_playlist_change(editor);
-    playlist_editor_update_from_mpd(editor, &global_mpd);
+    changed = playlist_editor_update_from_mpd(editor, &global_mpd);
     nc_screen_clear_update_request(screen);
+    if (changed && app_controller_is_screen_visible(screen)) {
+        nc_screen_refresh(screen);
+    }
     return;
 }
 
@@ -1547,15 +1551,18 @@ playlist_editor_report_error(char *context, int32 context_len,
     return;
 }
 
-static void
+static bool
 playlist_editor_update_from_mpd(NativePlaylistEditorScreen *screen,
                                 NcmMpdClient *client) {
     NcmError error;
+    bool changed;
     bool ok;
 
     if (screen == NULL) {
-        return;
+        return false;
     }
+
+    changed = false;
 
     ncm_error_clear(&error);
     if (screen->playlists_update_requested
@@ -1568,14 +1575,15 @@ playlist_editor_update_from_mpd(NativePlaylistEditorScreen *screen,
                 STRLIT_ARGS("Could not fetch playlists"), &error);
             ncm_error_clear(&error);
             playlist_editor_update_titles(screen, true);
-            return;
+            return changed;
         }
+        changed = true;
     }
 
     playlist_editor_finish_playlist_change(screen);
     if (!playlist_editor_content_fetch_due(screen)) {
         playlist_editor_update_titles(screen, true);
-        return;
+        return changed;
     }
 
     ncm_error_clear(&error);
@@ -1587,10 +1595,11 @@ playlist_editor_update_from_mpd(NativePlaylistEditorScreen *screen,
             STRLIT_ARGS("Could not fetch playlist content"), &error);
         ncm_error_clear(&error);
         playlist_editor_update_titles(screen, true);
-        return;
+        return changed;
     }
+    changed = true;
     playlist_editor_update_titles(screen, true);
-    return;
+    return changed;
 }
 
 static void
