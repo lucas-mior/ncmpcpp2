@@ -118,6 +118,7 @@ TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_window_destroy \
 	-Wl,--wrap=nc_window_move_to \
 	-Wl,--wrap=nc_window_resize \
+	-Wl,--wrap=nc_window_set_title \
 	-Wl,--wrap=nc_window_display \
 	-Wl,--wrap=nc_menu_refresh
 $(BUILD_DIR)/tests/c_tag_editor_screen_test: \

@@ -58,12 +58,25 @@ typedef struct NativeTagEditorScreen {
     NcWindow parser_helper_window;
     NativeTagEditorBridge bridge;
     NcmBuffer current_dir;
+    NcmBuffer displayed_dir;
+    NcmBuffer observed_dir;
     NcmBuffer highlighted_dir;
+    NcmBuffer directories_title;
+    NcmBuffer tag_types_title;
+    NcmBuffer tags_title;
+    NcmBuffer parser_dialog_title;
+    NcmBuffer parser_title;
+    NcmBuffer parser_helper_title;
+    NcmBuffer directory_filter_constraint;
+    NcmBuffer tag_filter_constraint;
     NcmBuffer directory_search_constraint;
     NcmBuffer tag_search_constraint;
     NcmBuffer pattern;
+
     NcmRegex directory_filter_regex;
     NcmRegex tag_filter_regex;
+    NcmRegex directory_search_regex;
+    NcmRegex tag_search_regex;
 
     int64 start_x;
     int64 width;
@@ -75,11 +88,21 @@ typedef struct NativeTagEditorScreen {
     int64 right_start_x;
     int64 right_width;
     int64 active_column;
+    int64 last_directory_highlight;
+    int64 last_known_directory_count;
+    int64 last_known_tag_count;
+    int32 window_timeout_ms;
 
     enum NativeTagEditorParserMode parser_mode;
+    bool directories_update_requested;
+    bool tags_update_requested;
     bool directory_filter_enabled;
     bool tag_filter_enabled;
+    bool directory_search_enabled;
+    bool tag_search_enabled;
     bool parser_preview_enabled;
+    bool displayed_dir_valid;
+    bool observed_dir_valid;
     bool registered;
 } NativeTagEditorScreen;
 
@@ -109,6 +132,14 @@ void native_tag_editor_screen_set_geometry(NativeTagEditorScreen *screen,
 void native_tag_editor_screen_clear(NativeTagEditorScreen *screen);
 void native_tag_editor_screen_clear_directories(
     NativeTagEditorScreen *screen);
+void native_tag_editor_screen_clear_stale_tags(
+    NativeTagEditorScreen *screen);
+void native_tag_editor_screen_finish_directory_change(
+    NativeTagEditorScreen *screen);
+bool native_tag_editor_screen_displayed_dir(NativeTagEditorScreen *screen,
+                                            NcmStringView *view);
+bool native_tag_editor_screen_observed_dir(NativeTagEditorScreen *screen,
+                                           NcmStringView *view);
 bool native_tag_editor_screen_set_current_dir(NativeTagEditorScreen *screen,
                                               char *dir, int32 dir_len);
 bool native_tag_editor_screen_current_dir(NativeTagEditorScreen *screen,
