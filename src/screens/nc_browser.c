@@ -3,6 +3,7 @@
 #include "c/ncm_base.h"
 #include "c/ncm_display.h"
 #include "c/ncm_fs.h"
+#include "c/ncm_path.h"
 #include "c/ncm_string.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
@@ -54,8 +55,9 @@ static void native_browser_sync_display_mode(NativeBrowserScreen *screen);
 static int64 native_browser_render_width(NativeBrowserScreen *screen,
                                          int64 available_width,
                                          bool selected, bool highlighted);
-static bool native_browser_item_matches(NcmMpdItem *item, NcmRegex *regex);
-static bool native_browser_item_label(NcmMpdItem *item, NcmStringView *view);
+static bool native_browser_item_matches(NativeBrowserScreen *screen,
+                                        NcmMpdItem *item,
+                                        NcmRegex *regex, bool filter);
 static bool native_browser_item_is_song(NcmMpdItem *item);
 static bool native_browser_copy_selected_song(NativeBrowserScreen *screen,
                                               NcmSongArray *songs,
@@ -776,8 +778,9 @@ native_browser_screen_search(NativeBrowserScreen *screen,
         if (pos < 0 || pos >= count) {
             continue;
         }
-        if (native_browser_item_matches(nc_menu_active_item_at(menu, pos),
-                                        &regex)) {
+        if (native_browser_item_matches(screen,
+                                        nc_menu_active_item_at(menu, pos),
+                                        &regex, false)) {
             result = nc_menu_goto_selectable(menu, pos);
             break;
         }
@@ -827,6 +830,62 @@ native_browser_screen_render_item(NativeBrowserScreen *screen,
         ncm_display_playlist_row(buffer, ncm_mpd_item_playlist(item),
                                  Config.browser_playlist_prefix.data,
                                  Config.browser_playlist_prefix.len);
+        break;
+    case NCM_MPD_ITEM_UNKNOWN:
+        break;
+    }
+    return true;
+}
+
+bool
+native_browser_screen_item_to_string(NativeBrowserScreen *screen,
+                                     NcmMpdItem *item,
+                                     NcmBuffer *buffer) {
+    NcmStringView path;
+    NcmBuffer rendered;
+    int32 basename;
+
+    if ((screen == NULL) || (item == NULL) || (buffer == NULL)) {
+        return false;
+    }
+
+    native_browser_sync_display_mode(screen);
+    ncm_buffer_clear(buffer);
+    switch (ncm_mpd_item_kind(item)) {
+    case NCM_MPD_ITEM_DIRECTORY:
+        if (!ncm_directory_path_view(ncm_mpd_item_directory(item), &path)) {
+            return false;
+        }
+        basename = ncm_path_basename_start(path.data, path.len);
+        ncm_buffer_append_byte(buffer, '[');
+        ncm_buffer_append(buffer, path.data + basename,
+                          path.len - basename);
+        ncm_buffer_append_byte(buffer, ']');
+        break;
+    case NCM_MPD_ITEM_SONG:
+        if (screen->active_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
+            rendered = ncm_format_render_string(
+                &Config.song_columns_mode_format,
+                ncm_mpd_item_song(item));
+        } else {
+            rendered = ncm_format_render_string(
+                &Config.song_list_format, ncm_mpd_item_song(item));
+        }
+        ncm_buffer_move(buffer, &rendered);
+        ncm_buffer_destroy(&rendered);
+        break;
+    case NCM_MPD_ITEM_PLAYLIST:
+        if ((Config.browser_playlist_prefix.data != NULL)
+            && (Config.browser_playlist_prefix.len > 0)) {
+            ncm_buffer_append(buffer, Config.browser_playlist_prefix.data,
+                              Config.browser_playlist_prefix.len);
+        }
+        if (!ncm_playlist_path_view(ncm_mpd_item_playlist(item), &path)) {
+            return false;
+        }
+        basename = ncm_path_basename_start(path.data, path.len);
+        ncm_buffer_append(buffer, path.data + basename,
+                          path.len - basename);
         break;
     case NCM_MPD_ITEM_UNKNOWN:
         break;
@@ -1164,7 +1223,8 @@ native_browser_filter_item(NcMenu *menu, void *item, void *user) {
     if ((screen == NULL) || !screen->filter_enabled) {
         return true;
     }
-    return native_browser_item_matches(item, &screen->filter_regex);
+    return native_browser_item_matches(screen, item, &screen->filter_regex,
+                                       true);
 }
 
 static void
@@ -1241,39 +1301,20 @@ native_browser_render_width(NativeBrowserScreen *screen,
 }
 
 static bool
-native_browser_item_matches(NcmMpdItem *item, NcmRegex *regex) {
-    NcmStringView view;
-
-    if (!native_browser_item_label(item, &view)) {
+native_browser_item_matches(NativeBrowserScreen *screen, NcmMpdItem *item,
+                            NcmRegex *regex, bool filter) {
+    if ((screen == NULL) || (regex == NULL)) {
         return false;
     }
-    return ncm_regex_search(regex, view.data, view.len);
-}
-
-static bool
-native_browser_item_label(NcmMpdItem *item, NcmStringView *view) {
-    NcmDirectory *directory;
-    NcmPlaylist *playlist;
-    NcmSong *song;
-
-    if (item == NULL || view == NULL) {
+    if (native_browser_screen_item_is_parent(item)) {
+        return filter;
+    }
+    if (!native_browser_screen_item_to_string(screen, item,
+                                              &screen->item_text_buffer)) {
         return false;
     }
-
-    switch (ncm_mpd_item_kind(item)) {
-    case NCM_MPD_ITEM_SONG:
-        song = ncm_mpd_item_song(item);
-        return ncm_song_uri_view(song, 0, view);
-    case NCM_MPD_ITEM_DIRECTORY:
-        directory = ncm_mpd_item_directory(item);
-        return ncm_directory_path_view(directory, view);
-    case NCM_MPD_ITEM_PLAYLIST:
-        playlist = ncm_mpd_item_playlist(item);
-        return ncm_playlist_path_view(playlist, view);
-    default:
-        break;
-    }
-    return false;
+    return ncm_regex_search(regex, screen->item_text_buffer.data,
+                            screen->item_text_buffer.len);
 }
 
 static bool

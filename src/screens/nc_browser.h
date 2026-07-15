@@ -153,6 +153,9 @@ bool native_browser_screen_render_item(NativeBrowserScreen *screen,
                                        int64 available_width,
                                        bool selected,
                                        bool highlighted);
+bool native_browser_screen_item_to_string(NativeBrowserScreen *screen,
+                                          NcmMpdItem *item,
+                                          NcmBuffer *buffer);
 void native_browser_screen_request_update(NativeBrowserScreen *screen);
 bool native_browser_screen_item_is_parent(NcmMpdItem *item);
 void native_browser_screen_set_bridge(NativeBrowserScreen *screen,
