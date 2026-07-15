@@ -2416,7 +2416,7 @@ test_tag_editor_capitalizes_utf8_words(void) {
                                   STRLIT_ARGS("Featuring Friend"));
     assert_mutable_song_tag_value(
         song, NCM_TAGS_FIELD_ALBUM, 0,
-        STRLIT_ARGS("Rock'n'roll - Already OK; Mañana"));
+        STRLIT_ARGS("Rock'n'roll - Already OK; MañAna"));
     assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_COMMENT, 0,
                                   STRLIT_ARGS(""));
 
