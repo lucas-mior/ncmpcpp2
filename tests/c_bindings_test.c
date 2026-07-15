@@ -484,6 +484,7 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_NEXT_COLUMN,
         NCM_ACTION_SAVE_TAG_CHANGES,
         NCM_ACTION_ENTER_DIRECTORY,
+        NCM_ACTION_EDIT_DIRECTORY_NAME,
         NCM_ACTION_SELECT_ITEM,
         NCM_ACTION_SELECT_RANGE,
         NCM_ACTION_REVERSE_SELECTION,
@@ -696,6 +697,12 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE));
     REQUIRE(app_binding_migration_action_is_c_safe(
         NCM_ACTION_SHOW_SEARCH_ENGINE));
+#if defined(HAVE_TAGLIB_H)
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_JUMP_TO_TAG_EDITOR));
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_SHOW_TAG_EDITOR));
+#endif
     REQUIRE(app_binding_migration_action_is_c_safe(
         NCM_ACTION_RESET_SEARCH_ENGINE));
     REQUIRE(app_binding_migration_action_is_c_safe(
@@ -748,7 +755,7 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_DELETE_BROWSER_ITEMS, NCM_SCREEN_TYPE_VISUALIZER));
 
 #if defined(HAVE_TAGLIB_H)
-    REQUIRE(!app_binding_migration_screen_is_c_only(
+    REQUIRE(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_TAG_EDITOR));
     for (int32 i = 0; i < NCM_ARRAY_LEN(tag_editor_actions); i += 1) {
         REQUIRE(app_binding_migration_action_is_c_safe_for_screen(

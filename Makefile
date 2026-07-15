@@ -214,6 +214,14 @@ PLAYLIST_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=actions_legacy_runtime_execute_action
 $(BUILD_DIR)/tests/c_playlist_editor_binding_dispatch_test: \
 	LDFLAGS += $(PLAYLIST_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS)
+TAG_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=native_c_screens_current_type \
+	-Wl,--wrap=ncm_action_runtime_can_run \
+	-Wl,--wrap=ncm_action_runtime_run \
+	-Wl,--wrap=actions_legacy_runtime_execute_binding \
+	-Wl,--wrap=actions_legacy_runtime_execute_action
+$(BUILD_DIR)/tests/c_tag_editor_binding_dispatch_test: \
+	LDFLAGS += $(TAG_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS)
 SEARCH_ENGINE_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_window_init \
 	-Wl,--wrap=nc_window_destroy \
