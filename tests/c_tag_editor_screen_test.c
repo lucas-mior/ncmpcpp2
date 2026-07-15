@@ -49,6 +49,8 @@ static void destroy_screen(NativeTagEditorScreen *screen);
 static NativeTagEditorBridge bridge_callbacks(void);
 static void append_song(NativeTagEditorScreen *screen, char *uri,
                         int32 uri_len, char *artist, int32 artist_len);
+static void append_directory(NcmDirectoryArray *directories, char *path,
+                             int32 path_len);
 static void assert_menu_string_pair(NcMenuStringPair *pair,
                                     char *first, int32 first_len,
                                     char *second, int32 second_len);
@@ -60,6 +62,10 @@ static void test_directory_filter_and_search_contract(void);
 static void test_tag_filter_search_and_selection_contract(void);
 static void test_parser_menu_contract(void);
 static void test_native_refresh_fallback_contract(void);
+static void test_native_state_ownership_without_bridge(void);
+static void test_directory_reload_preserves_current_row(void);
+static void test_directory_change_clears_stale_tags(void);
+static void test_separate_filter_and_search_state(void);
 
 int
 main(void) {
@@ -75,6 +81,10 @@ main(void) {
     test_tag_filter_search_and_selection_contract();
     test_parser_menu_contract();
     test_native_refresh_fallback_contract();
+    test_native_state_ownership_without_bridge();
+    test_directory_reload_preserves_current_row();
+    test_directory_change_clears_stale_tags();
+    test_separate_filter_and_search_state();
 
     exit(EXIT_SUCCESS);
 }
@@ -120,6 +130,18 @@ append_song(NativeTagEditorScreen *screen, char *uri, int32 uri_len,
                &song, NCM_TAGS_FIELD_ARTIST, 0, artist, artist_len));
     assert(native_tag_editor_screen_add_mutable_song(screen, &song));
     ncm_mutable_song_destroy(&song);
+    return;
+}
+
+static void
+append_directory(NcmDirectoryArray *directories, char *path,
+                 int32 path_len) {
+    NcmDirectory directory;
+
+    ncm_directory_init(&directory);
+    assert(ncm_directory_set(&directory, path, path_len, 0));
+    assert(ncm_directory_array_append_copy(directories, &directory));
+    ncm_directory_destroy(&directory);
     return;
 }
 
@@ -431,6 +453,7 @@ test_directory_filter_and_search_contract(void) {
 
     native_tag_editor_screen_clear_filters(&screen);
     assert(nc_menu_item_count(menu) == 4);
+    assert(screen.directory_filter_constraint.len == 0);
     assert(screen.directory_search_constraint.len == 0);
 
     assert(native_tag_editor_screen_search(
@@ -532,6 +555,179 @@ test_native_refresh_fallback_contract(void) {
     return;
 }
 
+static void
+test_native_state_ownership_without_bridge(void) {
+    NativeTagEditorScreen screen;
+    NcmStringView current_dir;
+
+    init_screen(&screen);
+
+    assert(screen.bridge.user == NULL);
+    assert(native_tag_editor_screen_current_dir(&screen, &current_dir));
+    assert(ncm_string_equal(current_dir.data, current_dir.len,
+                            STRLIT_ARGS("/")));
+    assert(ncm_string_equal(screen.directories_title.data,
+                            screen.directories_title.len,
+                            STRLIT_ARGS("Directories")));
+    assert(ncm_string_equal(screen.tag_types_title.data,
+                            screen.tag_types_title.len,
+                            STRLIT_ARGS("Tag types")));
+    assert(ncm_string_equal(screen.tags_title.data, screen.tags_title.len,
+                            STRLIT_ARGS("Tags")));
+    assert(ncm_string_equal(screen.parser_title.data,
+                            screen.parser_title.len,
+                            STRLIT_ARGS("Pattern")));
+    assert(ncm_string_equal(screen.parser_helper_title.data,
+                            screen.parser_helper_title.len,
+                            STRLIT_ARGS("Preview")));
+    assert(screen.last_known_directory_count == 0);
+    assert(screen.last_known_tag_count == 0);
+    assert(!screen.directory_filter_enabled);
+    assert(!screen.tag_filter_enabled);
+    assert(!screen.directory_search_enabled);
+    assert(!screen.tag_search_enabled);
+    assert(!screen.displayed_dir_valid);
+    assert(!screen.observed_dir_valid);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_directory_reload_preserves_current_row(void) {
+    NativeTagEditorScreen screen;
+    NcmDirectoryArray directories;
+    NcMenu *menu;
+    NcMenuStringPair *pair;
+
+    init_screen(&screen);
+    ncm_directory_array_init(&directories);
+    append_directory(&directories, STRLIT_ARGS("/Alpha"));
+    append_directory(&directories, STRLIT_ARGS("/Beta"));
+    append_directory(&directories, STRLIT_ARGS("/Gamma"));
+    assert(native_tag_editor_screen_load_directories(&screen,
+                                                     &directories));
+
+    menu = nc_editor_pair_menu_base(&screen.directories);
+    assert(nc_menu_goto_selectable(menu, 1));
+    pair = nc_menu_active_item_at(menu, 1);
+    assert_menu_string_pair(pair, STRLIT_ARGS("Beta"),
+                            STRLIT_ARGS("/Beta"));
+
+    ncm_directory_array_clear(&directories);
+    append_directory(&directories, STRLIT_ARGS("/Gamma"));
+    append_directory(&directories, STRLIT_ARGS("/Beta"));
+    append_directory(&directories, STRLIT_ARGS("/Alpha"));
+    assert(native_tag_editor_screen_load_directories(&screen,
+                                                     &directories));
+    assert(nc_menu_highlight(menu) == 1);
+    pair = nc_menu_active_item_at(menu, 1);
+    assert_menu_string_pair(pair, STRLIT_ARGS("Beta"),
+                            STRLIT_ARGS("/Beta"));
+    assert(screen.last_known_directory_count == 3);
+    assert(!screen.directories_update_requested);
+
+    ncm_directory_array_destroy(&directories);
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_directory_change_clears_stale_tags(void) {
+    NativeTagEditorScreen screen;
+    NcmSongArray songs;
+    NcmSong song;
+    NcMenu *directory_menu;
+    NcMenu *tag_menu;
+    NcmStringView displayed;
+    NcmStringView observed;
+
+    init_screen(&screen);
+    ncm_song_array_init(&songs);
+    ncm_song_init(&song);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Beta"), STRLIT_ARGS("/Beta")));
+    assert(ncm_song_set_uri(&song, STRLIT_ARGS("alpha.flac")));
+    assert(ncm_song_array_append_copy(&songs, &song));
+    assert(native_tag_editor_screen_load_songs(&screen, &songs));
+
+    tag_menu = nc_tag_row_menu_base(&screen.tags);
+    assert(nc_menu_item_count(tag_menu) == 1);
+    assert(native_tag_editor_screen_displayed_dir(&screen, &displayed));
+    assert(ncm_string_equal(displayed.data, displayed.len,
+                            STRLIT_ARGS("/Alpha")));
+
+    directory_menu = nc_editor_pair_menu_base(&screen.directories);
+    assert(nc_menu_goto_selectable(directory_menu, 1));
+    native_tag_editor_screen_finish_directory_change(&screen);
+    assert(nc_menu_item_count(tag_menu) == 0);
+    assert(!native_tag_editor_screen_displayed_dir(&screen, &displayed));
+    assert(native_tag_editor_screen_observed_dir(&screen, &observed));
+    assert(ncm_string_equal(observed.data, observed.len,
+                            STRLIT_ARGS("/Beta")));
+    assert(screen.tags_update_requested);
+    assert(screen.last_known_tag_count == 0);
+
+    ncm_song_destroy(&song);
+    ncm_song_array_destroy(&songs);
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_separate_filter_and_search_state(void) {
+    NativeTagEditorScreen screen;
+    NcmError error;
+
+    init_screen(&screen);
+    ncm_error_clear(&error);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Beta"), STRLIT_ARGS("/Beta")));
+    assert(native_tag_editor_screen_apply_directory_filter(
+               &screen, STRLIT_ARGS("Alpha"), Config.regex_type, &error));
+    assert(screen.directory_filter_enabled);
+    assert(ncm_string_equal(screen.directory_filter_constraint.data,
+                            screen.directory_filter_constraint.len,
+                            STRLIT_ARGS("Alpha")));
+    assert(screen.directory_search_constraint.len == 0);
+
+    native_tag_editor_screen_clear_filters(&screen);
+    assert(native_tag_editor_screen_search(
+               &screen, STRLIT_ARGS("Beta"), true, true, false, &error));
+    assert(screen.directory_search_enabled);
+    assert(ncm_string_equal(screen.directory_search_constraint.data,
+                            screen.directory_search_constraint.len,
+                            STRLIT_ARGS("Beta")));
+    assert(screen.directory_filter_constraint.len == 0);
+
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
+    append_song(&screen, STRLIT_ARGS("two.flac"), STRLIT_ARGS("Beta"));
+    native_tag_editor_screen_next_column(&screen);
+    native_tag_editor_screen_next_column(&screen);
+    assert(native_tag_editor_screen_apply_tag_filter(
+               &screen, STRLIT_ARGS("Alpha"), Config.regex_type, &error));
+    assert(ncm_string_equal(screen.tag_filter_constraint.data,
+                            screen.tag_filter_constraint.len,
+                            STRLIT_ARGS("Alpha")));
+    native_tag_editor_screen_clear_filters(&screen);
+    assert(native_tag_editor_screen_search(
+               &screen, STRLIT_ARGS("Beta"), true, true, false, &error));
+    assert(screen.tag_search_enabled);
+    assert(ncm_string_equal(screen.tag_search_constraint.data,
+                            screen.tag_search_constraint.len,
+                            STRLIT_ARGS("Beta")));
+    assert(ncm_string_equal(screen.directory_search_constraint.data,
+                            screen.directory_search_constraint.len,
+                            STRLIT_ARGS("Beta")));
+
+    destroy_screen(&screen);
+    return;
+}
+
 void
 __wrap_nc_window_init(NcWindow *window, int64 start_x, int64 start_y,
                       int64 width, int64 height, char *title,
@@ -566,6 +762,14 @@ void
 __wrap_nc_window_resize(NcWindow *window, int64 width, int64 height) {
     window->width = width;
     window->height = height;
+    return;
+}
+
+void
+__wrap_nc_window_set_title(NcWindow *window, char *title,
+                           int32 title_len) {
+    window->title = title;
+    window->title_len = title_len;
     return;
 }
 
