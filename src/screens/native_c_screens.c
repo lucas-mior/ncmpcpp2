@@ -101,6 +101,12 @@ static bool playlist_screen_initialized;
 static struct NativeServerInfoScreen server_info_screen;
 static struct NativeSongInfoScreen song_info_screen;
 
+enum NativePromptResult {
+    NATIVE_PROMPT_RESULT_ERROR,
+    NATIVE_PROMPT_RESULT_ABORTED,
+    NATIVE_PROMPT_RESULT_ACCEPTED,
+};
+
 static enum ScreenType native_screen_type_from_native_type(int32 type);
 static void native_request_registered_resize(int32 type);
 static NcBorder native_no_border(void);
@@ -115,6 +121,20 @@ static bool native_search_prompt_hook(char *text, void *user);
 static enum NativeSearchEnginePromptResult native_search_prompt_constraint(
     void *user, char *label, int32 label_len, NcmBuffer *initial,
     NcmBuffer *result);
+static bool native_statusbar_prompt_hook(char *text, void *user);
+static enum NativePromptResult native_prompt_buffer(
+    char *label, int32 label_len, NcmStringView initial,
+    NcmBuffer *result, bool bold_label);
+static enum NativeTagEditorPromptResult native_tag_editor_prompt(
+    void *user, char *label, int32 label_len, NcmStringView initial,
+    NcmBuffer *result);
+static bool native_tag_editor_confirm(
+    void *user, char *message, int32 message_len);
+static void native_tag_editor_status_message(
+    void *user, char *message, int32 message_len);
+static void native_tag_editor_update_directory(
+    void *user, char *directory, int32 directory_len);
+static NativeTagEditorHooks native_tag_editor_hooks(void);
 static void native_search_status_message(
     void *user, char *message, int32 message_len);
 static bool native_search_add_song(
@@ -1134,6 +1154,8 @@ native_c_screen_media_library_native(void) {
 
 void
 native_c_screen_tag_editor_init(void) {
+    NativeTagEditorHooks hooks;
+
     if (tag_editor_screen_initialized) {
         return;
     }
@@ -1144,6 +1166,8 @@ native_c_screen_tag_editor_init(void) {
                                   ui_state_main_height(),
                                   Config.main_color,
                                   native_no_border());
+    hooks = native_tag_editor_hooks();
+    native_tag_editor_screen_set_hooks(&tag_editor_screen, hooks);
     tag_editor_screen_initialized = true;
     return;
 }
@@ -1187,15 +1211,15 @@ native_c_screen_tag_editor_native(void) {
 }
 
 static bool
-native_tiny_tag_editor_prompt_hook(char *text, void *user) {
+native_statusbar_prompt_hook(char *text, void *user) {
     (void)user;
     return ncm_statusbar_main_hook(text, native_cstring_len(text));
 }
 
-static enum NativeTinyTagEditorPromptResult
-native_tiny_tag_editor_prompt(
-    void *user, char *label, int32 label_len, NcmStringView initial,
-    NcmBuffer *result) {
+static enum NativePromptResult
+native_prompt_buffer(char *label, int32 label_len,
+                     NcmStringView initial, NcmBuffer *result,
+                     bool bold_label) {
     NcmStatusbarScopedLock lock;
     enum NcPromptStatus status;
     NcPrompt prompt = {0};
@@ -1205,11 +1229,10 @@ native_tiny_tag_editor_prompt(
     int32 input_len;
     bool copied;
 
-    (void)user;
     if ((label == NULL) || (label_len < 0) || (initial.len < 0)
         || (result == NULL)
         || ((initial.data == NULL) && (initial.len > 0))) {
-        return NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
+        return NATIVE_PROMPT_RESULT_ERROR;
     }
 
     input = NULL;
@@ -1222,16 +1245,20 @@ native_tiny_tag_editor_prompt(
     window = ncm_statusbar_put();
     if (window == NULL) {
         ncm_statusbar_scoped_lock_destroy(&lock);
-        return NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
+        return NATIVE_PROMPT_RESULT_ERROR;
     }
-    nc_window_apply_format(window, NC_FORMAT_BOLD);
+    if (bold_label) {
+        nc_window_apply_format(window, NC_FORMAT_BOLD);
+    }
     nc_window_print_data(window, label, label_len);
     nc_window_print_data(window, STRLIT_ARGS(": "));
-    nc_window_apply_format(window, NC_FORMAT_NO_BOLD);
+    if (bold_label) {
+        nc_window_apply_format(window, NC_FORMAT_NO_BOLD);
+    }
 
     prompt.initial_text = initial_text;
     prompt.width = -1;
-    prompt.hook = native_tiny_tag_editor_prompt_hook;
+    prompt.hook = native_statusbar_prompt_hook;
     prompt.hook_user_data = NULL;
     prompt.encrypted = false;
     prompt.remember = true;
@@ -1241,18 +1268,126 @@ native_tiny_tag_editor_prompt(
     if ((status != NC_PROMPT_ACCEPTED) || (input == NULL)) {
         nc_window_prompt_result_destroy(input);
         if (status == NC_PROMPT_ABORTED) {
-            return NATIVE_TINY_TAG_EDITOR_PROMPT_ABORTED;
+            return NATIVE_PROMPT_RESULT_ABORTED;
         }
-        return NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
+        return NATIVE_PROMPT_RESULT_ERROR;
     }
 
     input_len = native_cstring_len(input);
     copied = ncm_buffer_set(result, input, input_len);
     nc_window_prompt_result_destroy(input);
     if (!copied) {
-        return NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
+        return NATIVE_PROMPT_RESULT_ERROR;
     }
-    return NATIVE_TINY_TAG_EDITOR_PROMPT_ACCEPTED;
+    return NATIVE_PROMPT_RESULT_ACCEPTED;
+}
+
+static enum NativeTagEditorPromptResult
+native_tag_editor_prompt(
+    void *user, char *label, int32 label_len, NcmStringView initial,
+    NcmBuffer *result) {
+    enum NativePromptResult prompt_result;
+
+    (void)user;
+    prompt_result = native_prompt_buffer(label, label_len, initial,
+                                         result, true);
+    if (prompt_result == NATIVE_PROMPT_RESULT_ACCEPTED) {
+        return NATIVE_TAG_EDITOR_PROMPT_ACCEPTED;
+    }
+    if (prompt_result == NATIVE_PROMPT_RESULT_ABORTED) {
+        return NATIVE_TAG_EDITOR_PROMPT_ABORTED;
+    }
+    return NATIVE_TAG_EDITOR_PROMPT_ERROR;
+}
+
+static bool
+native_tag_editor_confirm(
+    void *user, char *message, int32 message_len) {
+    NcmStatusbarScopedLock lock;
+    NcWindow *window;
+    char values[2];
+    char answer;
+    bool prompted;
+
+    (void)user;
+    if ((message == NULL) || (message_len < 0)) {
+        return false;
+    }
+
+    values[0] = 'y';
+    values[1] = 'n';
+    answer = 'n';
+    prompted = false;
+
+    ncm_statusbar_scoped_lock_init(&lock);
+    window = ncm_statusbar_put();
+    if (window != NULL) {
+        nc_window_print_data(window, message, message_len);
+        nc_window_print_data(window, STRLIT_ARGS(" [y/n] "));
+        prompted = ncm_statusbar_prompt_return_one_of(
+            window, values, NCM_ARRAY_LEN(values), &answer);
+    }
+    ncm_statusbar_scoped_lock_destroy(&lock);
+
+    if (!prompted || (answer != 'y')) {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time, "Action cancelled");
+        return false;
+    }
+    return true;
+}
+
+static void
+native_tag_editor_status_message(
+    void *user, char *message, int32 message_len) {
+    (void)user;
+    ncm_statusbar_print((int32)Config.message_delay_time,
+                        message, message_len);
+    return;
+}
+
+static void
+native_tag_editor_update_directory(
+    void *user, char *directory, int32 directory_len) {
+    NcmError error = {0};
+
+    (void)user;
+    (void)directory_len;
+    if (!ncm_mpd_client_update_directory(
+            &global_mpd, directory, NULL, &error)) {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time, error.message);
+    }
+    return;
+}
+
+static NativeTagEditorHooks
+native_tag_editor_hooks(void) {
+    NativeTagEditorHooks hooks = {0};
+
+    hooks.prompt = native_tag_editor_prompt;
+    hooks.confirm = native_tag_editor_confirm;
+    hooks.status_message = native_tag_editor_status_message;
+    hooks.update_directory = native_tag_editor_update_directory;
+    return hooks;
+}
+
+static enum NativeTinyTagEditorPromptResult
+native_tiny_tag_editor_prompt(
+    void *user, char *label, int32 label_len, NcmStringView initial,
+    NcmBuffer *result) {
+    enum NativePromptResult prompt_result;
+
+    (void)user;
+    prompt_result = native_prompt_buffer(label, label_len, initial,
+                                         result, true);
+    if (prompt_result == NATIVE_PROMPT_RESULT_ACCEPTED) {
+        return NATIVE_TINY_TAG_EDITOR_PROMPT_ACCEPTED;
+    }
+    if (prompt_result == NATIVE_PROMPT_RESULT_ABORTED) {
+        return NATIVE_TINY_TAG_EDITOR_PROMPT_ABORTED;
+    }
+    return NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
 }
 
 static void
