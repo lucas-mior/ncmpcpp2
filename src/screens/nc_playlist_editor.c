@@ -44,7 +44,14 @@ static void playlist_editor_print_buffer(NcWindow *window,
 static int32 playlist_editor_content_list_width(NcMenu *menu,
                                                 NcWindow *window,
                                                 int64 pos);
-static bool song_matches_regex(NcmRegex *regex, NcmSong *song);
+static bool playlist_editor_playlist_matches_regex(NcmRegex *regex,
+                                                   NcmPlaylist *playlist);
+static bool playlist_editor_content_matches_regex(
+    NativePlaylistEditorScreen *screen, NcmRegex *regex, NcmSong *song);
+static bool playlist_editor_format_content_search_text(
+    NativePlaylistEditorScreen *screen, NcmSong *song, NcBuffer *buffer);
+static bool playlist_editor_search_text_matches(NcmRegex *regex,
+                                                char *data, int32 len);
 static void playlist_editor_initialize_buffers(
     NativePlaylistEditorScreen *screen);
 static void playlist_editor_destroy_buffers(
@@ -106,11 +113,12 @@ static bool append_selected_content(NativePlaylistEditorScreen *screen,
                                     NcmSongArray *songs);
 static bool append_content_item(NativePlaylistEditorScreen *screen,
                                 int64 pos, NcmSongArray *songs);
-static bool playlist_editor_search_menu(NcMenu *menu, NcmRegex *regex,
-                                        bool forward, bool wrap,
-                                        bool skip_current);
-static bool playlist_editor_search_item(NcMenu *menu, NcmRegex *regex,
-                                        int64 pos);
+static bool playlist_editor_search_menu(
+    NativePlaylistEditorScreen *screen, NcMenu *menu, NcmRegex *regex,
+    bool forward, bool wrap, bool skip_current);
+static bool playlist_editor_search_item(
+    NativePlaylistEditorScreen *screen, NcMenu *menu, NcmRegex *regex,
+    int64 pos);
 static void playlist_editor_set_display_callbacks(
     NativePlaylistEditorScreen *screen);
 static bool command_set_string(char **dest, int32 *dest_len,
@@ -621,13 +629,33 @@ native_playlist_editor_screen_clear_active_filter(
     }
     menu = native_playlist_editor_screen_active_menu(screen);
     if (screen->active_column == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT) {
+        NcmSong song;
+        bool has_song;
+
+        ncm_song_init(&song);
+        has_song = playlist_editor_store_current_song(screen, &song);
         screen->content_filter_enabled = false;
         ncm_buffer_clear(&screen->content_filter_constraint);
+        nc_menu_show_all_items(menu);
+        if (has_song) {
+            playlist_editor_restore_content_song(screen, &song);
+        }
+        ncm_song_destroy(&song);
     } else {
+        NcmBuffer path;
+        bool has_path;
+
+        ncm_buffer_init(&path);
+        has_path = playlist_editor_store_current_playlist_path(screen,
+                                                               &path);
         screen->playlist_filter_enabled = false;
         ncm_buffer_clear(&screen->playlist_filter_constraint);
+        nc_menu_show_all_items(menu);
+        if (has_path) {
+            playlist_editor_restore_playlist_path(screen, &path);
+        }
+        ncm_buffer_destroy(&path);
     }
-    nc_menu_show_all_items(menu);
     playlist_editor_update_titles(screen, true);
     return;
 }
@@ -666,7 +694,7 @@ native_playlist_editor_screen_search_active(
     ncm_buffer_set(constraint, pattern, pattern_len);
     *enabled = true;
     menu = native_playlist_editor_screen_active_menu(screen);
-    return playlist_editor_search_menu(menu, regex, forward, wrap,
+    return playlist_editor_search_menu(screen, menu, regex, forward, wrap,
                                        skip_current);
 }
 
@@ -974,8 +1002,8 @@ playlist_filter_callback(NcMenu *menu, void *item, void *user) {
     if (playlist == NULL || playlist->path == NULL) {
         return false;
     }
-    return ncm_regex_search(&editor->playlist_filter_regex,
-                            playlist->path, playlist->path_len);
+    return playlist_editor_playlist_matches_regex(
+        &editor->playlist_filter_regex, playlist);
 }
 
 static bool
@@ -987,7 +1015,8 @@ content_filter_callback(NcMenu *menu, void *item, void *user) {
     if (!editor->content_filter_enabled) {
         return true;
     }
-    return song_matches_regex(&editor->content_filter_regex, item);
+    return playlist_editor_content_matches_regex(
+        editor, &editor->content_filter_regex, item);
 }
 
 static void
@@ -1098,23 +1127,62 @@ playlist_editor_content_list_width(NcMenu *menu, NcWindow *window,
 }
 
 static bool
-song_matches_regex(NcmRegex *regex, NcmSong *song) {
-    NcmStringView view;
+playlist_editor_playlist_matches_regex(NcmRegex *regex,
+                                       NcmPlaylist *playlist) {
+    if ((playlist == NULL) || (playlist->path == NULL)) {
+        return false;
+    }
+    return playlist_editor_search_text_matches(regex, playlist->path,
+                                               playlist->path_len);
+}
+
+static bool
+playlist_editor_content_matches_regex(NativePlaylistEditorScreen *screen,
+                                      NcmRegex *regex, NcmSong *song) {
+    NcBuffer buffer;
+    bool result;
 
     if (song == NULL) {
         return false;
     }
-    if (ncm_song_uri_view(song, 0, &view)
-        && ncm_regex_search(regex, view.data, view.len)) {
-        return true;
+
+    nc_buffer_init(&buffer);
+    result = playlist_editor_format_content_search_text(screen, song,
+                                                        &buffer);
+    if (result) {
+        result = playlist_editor_search_text_matches(regex, buffer.data,
+                                                     buffer.len);
     }
-    for (int32 i = 0; i < song->tags_len; i += 1) {
-        if (ncm_regex_search(regex, song->tags[i].value,
-                             song->tags[i].value_len)) {
-            return true;
-        }
+    nc_buffer_destroy(&buffer);
+    return result;
+}
+
+static bool
+playlist_editor_format_content_search_text(
+    NativePlaylistEditorScreen *screen, NcmSong *song, NcBuffer *buffer) {
+    (void)screen;
+    if ((song == NULL) || (buffer == NULL)) {
+        return false;
     }
-    return false;
+
+    if (Config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
+        ncm_display_song_row(buffer, &Config.song_columns_mode_format,
+                             song, NCM_FORMAT_FLAG_ALL);
+    } else {
+        ncm_display_song_row(buffer, &Config.song_list_format, song,
+                             NCM_FORMAT_FLAG_ALL);
+    }
+    return true;
+}
+
+static bool
+playlist_editor_search_text_matches(NcmRegex *regex, char *data,
+                                    int32 len) {
+    if (data == NULL) {
+        data = (char *)"";
+        len = 0;
+    }
+    return ncm_regex_search(regex, data, len);
 }
 
 static void
@@ -1779,7 +1847,8 @@ append_content_item(NativePlaylistEditorScreen *screen, int64 pos,
 }
 
 static bool
-playlist_editor_search_menu(NcMenu *menu, NcmRegex *regex, bool forward,
+playlist_editor_search_menu(NativePlaylistEditorScreen *screen,
+                            NcMenu *menu, NcmRegex *regex, bool forward,
                             bool wrap, bool skip_current) {
     int64 count;
     int64 start;
@@ -1816,7 +1885,7 @@ playlist_editor_search_menu(NcMenu *menu, NcmRegex *regex, bool forward,
         } else if (pos < 0 || pos >= count) {
             break;
         }
-        if (playlist_editor_search_item(menu, regex, pos)) {
+        if (playlist_editor_search_item(screen, menu, regex, pos)) {
             nc_menu_highlight_position(menu, pos, count);
             return true;
         }
@@ -1825,7 +1894,8 @@ playlist_editor_search_menu(NcMenu *menu, NcmRegex *regex, bool forward,
 }
 
 static bool
-playlist_editor_search_item(NcMenu *menu, NcmRegex *regex, int64 pos) {
+playlist_editor_search_item(NativePlaylistEditorScreen *screen,
+                            NcMenu *menu, NcmRegex *regex, int64 pos) {
     void *item;
 
     item = nc_menu_active_item_at(menu, pos);
@@ -1836,13 +1906,9 @@ playlist_editor_search_item(NcMenu *menu, NcmRegex *regex, int64 pos) {
         NcmPlaylist *playlist;
 
         playlist = item;
-        if (playlist->path == NULL) {
-            return false;
-        }
-        return ncm_regex_search(regex, playlist->path,
-                                playlist->path_len);
+        return playlist_editor_playlist_matches_regex(regex, playlist);
     }
-    return song_matches_regex(regex, item);
+    return playlist_editor_content_matches_regex(screen, regex, item);
 }
 
 static void

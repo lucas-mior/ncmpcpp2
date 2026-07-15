@@ -129,6 +129,7 @@ current_screen_search_legacy(enum SearchDirection direction,
     }
     *handled = false;
     if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)
+        || current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)
         || app_binding_migration_screen_is_c_only(
             native_c_screens_current_type())) {
         return false;
@@ -154,6 +155,7 @@ current_screen_search_legacy(enum SearchDirection direction,
 static void
 current_screen_clear_legacy_search(void) {
     if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)
+        || current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)
         || app_binding_migration_screen_is_c_only(
             native_c_screens_current_type())) {
         return;
@@ -198,6 +200,20 @@ current_screen_clear_current_search_constraint(void) {
     if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
         native_media_library_screen_clear_search(
             native_c_screen_media_library());
+        return;
+    }
+    if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
+        NativePlaylistEditorScreen *screen;
+
+        screen = native_c_screen_playlist_editor();
+        if (screen->active_column
+            == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT) {
+            screen->content_search_enabled = false;
+            ncm_buffer_clear(&screen->content_search_constraint);
+        } else {
+            screen->playlist_search_enabled = false;
+            ncm_buffer_clear(&screen->playlist_search_constraint);
+        }
         return;
     }
     buffer = current_screen_search_buffer();
