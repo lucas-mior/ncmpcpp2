@@ -6,11 +6,20 @@
 #include "screens/nc_browser.h"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
+#define BROWSER_PARITY_TEST_PENDING(NAME) browser_parity_test_pending(#NAME)
 
 static void test_browser_path_navigation(void);
 static void test_browser_selected_songs(void);
 static void test_browser_filter_and_search(void);
 static void test_browser_local_mode(void);
+static void test_browser_local_browsing_parity(void);
+static void test_browser_directory_expansion_parity(void);
+static void test_browser_playlist_expansion_parity(void);
+static void test_browser_deletion_parity(void);
+static void test_browser_filter_search_formatting_parity(void);
+static void test_browser_sort_modes_parity(void);
+static void test_browser_jump_to_playing_song_parity(void);
+static void browser_parity_test_pending(char *name);
 
 int
 main(void) {
@@ -18,6 +27,13 @@ main(void) {
     test_browser_selected_songs();
     test_browser_filter_and_search();
     test_browser_local_mode();
+    test_browser_local_browsing_parity();
+    test_browser_directory_expansion_parity();
+    test_browser_playlist_expansion_parity();
+    test_browser_deletion_parity();
+    test_browser_filter_search_formatting_parity();
+    test_browser_sort_modes_parity();
+    test_browser_jump_to_playing_song_parity();
     return EXIT_SUCCESS;
 }
 
@@ -132,5 +148,53 @@ test_browser_local_mode(void) {
     native_browser_screen_set_local(&screen, true);
     assert(native_browser_screen_is_local(&screen));
     native_browser_screen_destroy(&screen);
+    return;
+}
+
+static void
+browser_parity_test_pending(char *name) {
+    (void)name;
+    return;
+}
+
+static void
+test_browser_local_browsing_parity(void) {
+    BROWSER_PARITY_TEST_PENDING(browser_local_browsing_parity);
+    return;
+}
+
+static void
+test_browser_directory_expansion_parity(void) {
+    BROWSER_PARITY_TEST_PENDING(browser_directory_expansion_parity);
+    return;
+}
+
+static void
+test_browser_playlist_expansion_parity(void) {
+    BROWSER_PARITY_TEST_PENDING(browser_playlist_expansion_parity);
+    return;
+}
+
+static void
+test_browser_deletion_parity(void) {
+    BROWSER_PARITY_TEST_PENDING(browser_deletion_parity);
+    return;
+}
+
+static void
+test_browser_filter_search_formatting_parity(void) {
+    BROWSER_PARITY_TEST_PENDING(browser_filter_search_formatting_parity);
+    return;
+}
+
+static void
+test_browser_sort_modes_parity(void) {
+    BROWSER_PARITY_TEST_PENDING(browser_sort_modes_parity);
+    return;
+}
+
+static void
+test_browser_jump_to_playing_song_parity(void) {
+    BROWSER_PARITY_TEST_PENDING(browser_jump_to_playing_song_parity);
     return;
 }
