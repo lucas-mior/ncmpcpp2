@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_format.h"
@@ -39,14 +40,32 @@ static void browser_parity_test_pending(char *name);
 typedef struct BrowserFormatFixture {
     NcmFormatAst old_song_list_format;
     NcmFormatAst old_song_columns_mode_format;
+    NcmFormatAst old_browser_sort_format;
     ColumnArray old_columns;
     NcBuffer old_browser_playlist_prefix;
     enum DisplayMode old_browser_display_mode;
+    enum SortMode old_browser_sort_mode;
     bool old_discard_colors_if_item_is_selected;
+    bool old_ignore_leading_the;
 } BrowserFormatFixture;
 
 static void browser_format_fixture_begin(BrowserFormatFixture *fixture);
 static void browser_format_fixture_end(BrowserFormatFixture *fixture);
+static void browser_test_add_directory(NativeBrowserScreen *screen,
+                                       char *path, int32 path_len,
+                                       time_t mtime);
+static void browser_test_add_playlist(NativeBrowserScreen *screen,
+                                      char *path, int32 path_len,
+                                      time_t mtime);
+static void browser_test_add_song(NativeBrowserScreen *screen,
+                                  char *uri, int32 uri_len,
+                                  char *name, int32 name_len,
+                                  char *artist, int32 artist_len,
+                                  time_t mtime);
+static void browser_test_assert_item_path(NativeBrowserScreen *screen,
+                                          int64 pos,
+                                          enum NcmMpdItemKind kind,
+                                          char *path, int32 path_len);
 static NcWindow *test_bridge_active_window(void *user);
 static void test_bridge_refresh(void *user);
 static void test_bridge_refresh_window(void *user);
@@ -912,14 +931,18 @@ browser_format_fixture_begin(BrowserFormatFixture *fixture) {
 
     fixture->old_song_list_format = Config.song_list_format;
     fixture->old_song_columns_mode_format = Config.song_columns_mode_format;
+    fixture->old_browser_sort_format = Config.browser_sort_format;
     fixture->old_columns = Config.columns;
     fixture->old_browser_playlist_prefix = Config.browser_playlist_prefix;
     fixture->old_browser_display_mode = Config.browser_display_mode;
+    fixture->old_browser_sort_mode = Config.browser_sort_mode;
     fixture->old_discard_colors_if_item_is_selected =
         Config.discard_colors_if_item_is_selected;
+    fixture->old_ignore_leading_the = Config.ignore_leading_the;
 
     ncm_format_ast_init(&Config.song_list_format);
     ncm_format_ast_init(&Config.song_columns_mode_format);
+    ncm_format_ast_init(&Config.browser_sort_format);
     nc_buffer_init(&Config.browser_playlist_prefix);
     nc_buffer_append_data(&Config.browser_playlist_prefix,
                           LIT_ARGS("PL:"));
@@ -930,8 +953,13 @@ browser_format_fixture_begin(BrowserFormatFixture *fixture) {
     assert(ncm_format_parse(&Config.song_columns_mode_format,
                             LIT_ARGS("columns:%a-%t"),
                             NCM_FORMAT_FLAG_ALL, &error));
+    assert(ncm_format_parse(&Config.browser_sort_format,
+                            LIT_ARGS("custom:%a"),
+                            NCM_FORMAT_FLAG_ALL, &error));
     Config.browser_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+    Config.browser_sort_mode = NCM_SORT_MODE_TYPE;
     Config.discard_colors_if_item_is_selected = true;
+    Config.ignore_leading_the = false;
     return;
 }
 
@@ -939,16 +967,102 @@ static void
 browser_format_fixture_end(BrowserFormatFixture *fixture) {
     ncm_format_ast_destroy(&Config.song_list_format);
     ncm_format_ast_destroy(&Config.song_columns_mode_format);
+    ncm_format_ast_destroy(&Config.browser_sort_format);
     nc_buffer_destroy(&Config.browser_playlist_prefix);
 
     Config.song_list_format = fixture->old_song_list_format;
     Config.song_columns_mode_format =
         fixture->old_song_columns_mode_format;
+    Config.browser_sort_format = fixture->old_browser_sort_format;
     Config.columns = fixture->old_columns;
     Config.browser_playlist_prefix = fixture->old_browser_playlist_prefix;
     Config.browser_display_mode = fixture->old_browser_display_mode;
+    Config.browser_sort_mode = fixture->old_browser_sort_mode;
     Config.discard_colors_if_item_is_selected =
         fixture->old_discard_colors_if_item_is_selected;
+    Config.ignore_leading_the = fixture->old_ignore_leading_the;
+    return;
+}
+
+static void
+browser_test_add_directory(NativeBrowserScreen *screen, char *path,
+                           int32 path_len, time_t mtime) {
+    NcmDirectory directory;
+    NcmMpdItem item;
+
+    ncm_directory_init(&directory);
+    ncm_mpd_item_init(&item);
+    assert(ncm_directory_set(&directory, path, path_len, mtime));
+    assert(ncm_mpd_item_set_directory(&item, &directory));
+    assert(native_browser_screen_add_item_copy(screen, &item));
+    ncm_mpd_item_destroy(&item);
+    ncm_directory_destroy(&directory);
+    return;
+}
+
+static void
+browser_test_add_playlist(NativeBrowserScreen *screen, char *path,
+                          int32 path_len, time_t mtime) {
+    NcmPlaylist playlist;
+    NcmMpdItem item;
+
+    ncm_playlist_init(&playlist);
+    ncm_mpd_item_init(&item);
+    assert(ncm_playlist_set(&playlist, path, path_len, mtime));
+    assert(ncm_mpd_item_set_playlist(&item, &playlist));
+    assert(native_browser_screen_add_item_copy(screen, &item));
+    ncm_mpd_item_destroy(&item);
+    ncm_playlist_destroy(&playlist);
+    return;
+}
+
+static void
+browser_test_add_song(NativeBrowserScreen *screen, char *uri,
+                      int32 uri_len, char *name, int32 name_len,
+                      char *artist, int32 artist_len, time_t mtime) {
+    NcmSong song;
+    NcmMpdItem item;
+
+    ncm_song_init(&song);
+    ncm_mpd_item_init(&item);
+    assert(ncm_song_set_uri(&song, uri, uri_len));
+    assert(ncm_song_add_tag(&song, MPD_TAG_NAME, name, name_len));
+    assert(ncm_song_add_tag(&song, MPD_TAG_ARTIST, artist, artist_len));
+    ncm_song_set_mtime(&song, mtime);
+    assert(ncm_mpd_item_set_song(&item, &song));
+    assert(native_browser_screen_add_item_copy(screen, &item));
+    ncm_mpd_item_destroy(&item);
+    ncm_song_destroy(&song);
+    return;
+}
+
+static void
+browser_test_assert_item_path(NativeBrowserScreen *screen, int64 pos,
+                              enum NcmMpdItemKind kind, char *path,
+                              int32 path_len) {
+    NcmStringView view;
+    NcmMpdItem *item;
+
+    item = nc_menu_item_at(native_browser_screen_menu(screen),
+                           NC_MENU_ITEMS_ALL, pos);
+    assert(ncm_mpd_item_kind(item) == kind);
+    ncm_string_view_clear(&view);
+    switch (kind) {
+    case NCM_MPD_ITEM_DIRECTORY:
+        assert(ncm_directory_path_view(ncm_mpd_item_directory(item),
+                                       &view));
+        break;
+    case NCM_MPD_ITEM_SONG:
+        assert(ncm_song_uri_view(ncm_mpd_item_song(item), 0, &view));
+        break;
+    case NCM_MPD_ITEM_PLAYLIST:
+        assert(ncm_playlist_path_view(ncm_mpd_item_playlist(item),
+                                      &view));
+        break;
+    case NCM_MPD_ITEM_UNKNOWN:
+        break;
+    }
+    assert(ncm_string_equal(view.data, view.len, path, path_len));
     return;
 }
 
@@ -1100,7 +1214,79 @@ test_browser_filter_search_formatting_parity(void) {
 
 static void
 test_browser_sort_modes_parity(void) {
-    BROWSER_PARITY_TEST_PENDING(browser_sort_modes_parity);
+    NativeBrowserScreen screen;
+    BrowserFormatFixture fixture;
+
+    browser_format_fixture_begin(&fixture);
+    native_browser_screen_init(&screen, 0, 80, 0, 24, nc_color_default(),
+                               nc_border_none());
+
+    assert(native_browser_screen_set_current_directory(
+        &screen, LIT_ARGS("artists")));
+    browser_test_add_directory(&screen, LIT_ARGS("artists/.."), 0);
+    browser_test_add_playlist(&screen, LIT_ARGS("lists/Zed"), 0);
+    browser_test_add_song(&screen, LIT_ARGS("songs/B.flac"),
+                          LIT_ARGS("Beta"), LIT_ARGS("Alpha"), 2);
+    browser_test_add_directory(&screen, LIT_ARGS("artists/Alpha"), 5);
+    browser_test_add_song(&screen, LIT_ARGS("songs/A.flac"),
+                          LIT_ARGS("Alpha"), LIT_ARGS("Zulu"), 10);
+    browser_test_add_playlist(&screen, LIT_ARGS("lists/Alpha"), 9);
+
+    Config.browser_sort_mode = NCM_SORT_MODE_TYPE;
+    assert(native_browser_screen_sort(&screen));
+    browser_test_assert_item_path(&screen, 0, NCM_MPD_ITEM_DIRECTORY,
+                                  LIT_ARGS("artists/.."));
+    browser_test_assert_item_path(&screen, 1, NCM_MPD_ITEM_DIRECTORY,
+                                  LIT_ARGS("artists/Alpha"));
+    browser_test_assert_item_path(&screen, 2, NCM_MPD_ITEM_SONG,
+                                  LIT_ARGS("songs/B.flac"));
+    browser_test_assert_item_path(&screen, 3, NCM_MPD_ITEM_SONG,
+                                  LIT_ARGS("songs/A.flac"));
+    browser_test_assert_item_path(&screen, 4, NCM_MPD_ITEM_PLAYLIST,
+                                  LIT_ARGS("lists/Zed"));
+    browser_test_assert_item_path(&screen, 5, NCM_MPD_ITEM_PLAYLIST,
+                                  LIT_ARGS("lists/Alpha"));
+
+    Config.browser_sort_mode = NCM_SORT_MODE_NAME;
+    assert(native_browser_screen_sort(&screen));
+    browser_test_assert_item_path(&screen, 0, NCM_MPD_ITEM_DIRECTORY,
+                                  LIT_ARGS("artists/.."));
+    browser_test_assert_item_path(&screen, 2, NCM_MPD_ITEM_SONG,
+                                  LIT_ARGS("songs/A.flac"));
+    browser_test_assert_item_path(&screen, 3, NCM_MPD_ITEM_SONG,
+                                  LIT_ARGS("songs/B.flac"));
+    browser_test_assert_item_path(&screen, 4, NCM_MPD_ITEM_PLAYLIST,
+                                  LIT_ARGS("lists/Alpha"));
+    browser_test_assert_item_path(&screen, 5, NCM_MPD_ITEM_PLAYLIST,
+                                  LIT_ARGS("lists/Zed"));
+
+    Config.browser_sort_mode = NCM_SORT_MODE_MODIFICATION_TIME;
+    assert(native_browser_screen_sort(&screen));
+    browser_test_assert_item_path(&screen, 2, NCM_MPD_ITEM_SONG,
+                                  LIT_ARGS("songs/A.flac"));
+    browser_test_assert_item_path(&screen, 3, NCM_MPD_ITEM_SONG,
+                                  LIT_ARGS("songs/B.flac"));
+    browser_test_assert_item_path(&screen, 4, NCM_MPD_ITEM_PLAYLIST,
+                                  LIT_ARGS("lists/Alpha"));
+    browser_test_assert_item_path(&screen, 5, NCM_MPD_ITEM_PLAYLIST,
+                                  LIT_ARGS("lists/Zed"));
+
+    Config.browser_sort_mode = NCM_SORT_MODE_CUSTOM_FORMAT;
+    assert(native_browser_screen_sort(&screen));
+    browser_test_assert_item_path(&screen, 2, NCM_MPD_ITEM_SONG,
+                                  LIT_ARGS("songs/B.flac"));
+    browser_test_assert_item_path(&screen, 3, NCM_MPD_ITEM_SONG,
+                                  LIT_ARGS("songs/A.flac"));
+
+    Config.browser_sort_mode = NCM_SORT_MODE_NONE;
+    assert(native_browser_screen_sort(&screen));
+    browser_test_assert_item_path(&screen, 2, NCM_MPD_ITEM_SONG,
+                                  LIT_ARGS("songs/B.flac"));
+    browser_test_assert_item_path(&screen, 3, NCM_MPD_ITEM_SONG,
+                                  LIT_ARGS("songs/A.flac"));
+
+    native_browser_screen_destroy(&screen);
+    browser_format_fixture_end(&fixture);
     return;
 }
 
