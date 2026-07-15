@@ -12,11 +12,16 @@
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 
 typedef struct TagEditorWindowTrace {
+    char printed[4096];
     int64 separator_x[4];
 
+    int32 printed_len;
     int32 display_calls;
     int32 refresh_calls;
     int32 separator_calls;
+    int32 print_data_calls;
+    int32 print_char_calls;
+    int32 property_calls;
 } TagEditorWindowTrace;
 
 typedef struct TagEditorBridgeTrace {
@@ -26,6 +31,7 @@ typedef struct TagEditorBridgeTrace {
     enum NcScroll scroll_where;
 
     int32 active_window_calls;
+    int32 sync_calls;
     int32 refresh_calls;
     int32 refresh_window_calls;
     int32 scroll_calls;
@@ -45,6 +51,8 @@ typedef struct TagEditorBridgeTrace {
 static TagEditorWindowTrace window_trace;
 static TagEditorBridgeTrace bridge_trace;
 
+void __wrap_nc_window_print_char(NcWindow *window, char ch);
+
 static void reset_window_trace(void);
 static void reset_bridge_trace(void);
 static void init_screen(NativeTagEditorScreen *screen);
@@ -62,6 +70,18 @@ static void set_test_buffer(NcBuffer *buffer, char *data, int32 data_len);
 static void assert_tag_editor_menu_config(NcMenu *menu,
                                           NcBuffer *highlight_prefix,
                                           NcBuffer *highlight_suffix);
+static void assert_printed_equals(char *expected, int32 expected_len);
+static void assert_printed_contains(char *needle, int32 needle_len);
+static void set_rendering_config(NcBuffer *old_modified_prefix,
+                                 char **old_empty_tag,
+                                 int32 *old_empty_tag_len,
+                                 char **old_tags_separator,
+                                 int32 *old_tags_separator_len);
+static void restore_rendering_config(NcBuffer *old_modified_prefix,
+                                     char *old_empty_tag,
+                                     int32 old_empty_tag_len,
+                                     char *old_tags_separator,
+                                     int32 old_tags_separator_len);
 static void test_initial_state_and_geometry(void);
 static void test_menu_configuration_and_highlights(void);
 static void test_title_visibility_configuration(void);
@@ -77,6 +97,10 @@ static void test_native_state_ownership_without_bridge(void);
 static void test_directory_reload_preserves_current_row(void);
 static void test_directory_change_clears_stale_tags(void);
 static void test_separate_filter_and_search_state(void);
+static void test_native_directory_and_tag_type_rendering(void);
+static void test_native_tag_rendering_for_tag_fields(void);
+static void test_native_tag_rendering_for_filename_rows(void);
+static void test_native_refresh_does_not_delegate_rendering(void);
 
 int
 main(void) {
@@ -100,6 +124,10 @@ main(void) {
     test_directory_reload_preserves_current_row();
     test_directory_change_clears_stale_tags();
     test_separate_filter_and_search_state();
+    test_native_directory_and_tag_type_rendering();
+    test_native_tag_rendering_for_tag_fields();
+    test_native_tag_rendering_for_filename_rows();
+    test_native_refresh_does_not_delegate_rendering();
 
     exit(EXIT_SUCCESS);
 }
@@ -202,6 +230,61 @@ assert_song_uri(NcmSong *song, char *uri, int32 uri_len) {
     return;
 }
 
+static void
+assert_printed_equals(char *expected, int32 expected_len) {
+    assert(window_trace.printed_len == expected_len);
+    assert(ncm_string_equal(window_trace.printed, window_trace.printed_len,
+                            expected, expected_len));
+    return;
+}
+
+static void
+assert_printed_contains(char *needle, int32 needle_len) {
+    bool found;
+
+    found = false;
+    for (int32 i = 0; i + needle_len <= window_trace.printed_len; i += 1) {
+        if (ncm_string_equal(window_trace.printed + i, needle_len,
+                             needle, needle_len)) {
+            found = true;
+            break;
+        }
+    }
+    assert(found);
+    return;
+}
+
+static void
+set_rendering_config(NcBuffer *old_modified_prefix, char **old_empty_tag,
+                     int32 *old_empty_tag_len, char **old_tags_separator,
+                     int32 *old_tags_separator_len) {
+    *old_modified_prefix = Config.modified_item_prefix;
+    *old_empty_tag = Config.empty_tag;
+    *old_empty_tag_len = Config.empty_tag_len;
+    *old_tags_separator = Config.tags_separator;
+    *old_tags_separator_len = Config.tags_separator_len;
+
+    set_test_buffer(&Config.modified_item_prefix, LIT_ARGS("modified: "));
+    Config.empty_tag = (char *)"<empty>";
+    Config.empty_tag_len = STRLIT_LEN("<empty>");
+    Config.tags_separator = (char *)" | ";
+    Config.tags_separator_len = STRLIT_LEN(" | ");
+    return;
+}
+
+static void
+restore_rendering_config(NcBuffer *old_modified_prefix, char *old_empty_tag,
+                         int32 old_empty_tag_len, char *old_tags_separator,
+                         int32 old_tags_separator_len) {
+    nc_buffer_destroy(&Config.modified_item_prefix);
+    Config.modified_item_prefix = *old_modified_prefix;
+    Config.empty_tag = old_empty_tag;
+    Config.empty_tag_len = old_empty_tag_len;
+    Config.tags_separator = old_tags_separator;
+    Config.tags_separator_len = old_tags_separator_len;
+    return;
+}
+
 static NcWindow *
 bridge_active_window(void *user) {
     TagEditorBridgeTrace *trace;
@@ -209,6 +292,15 @@ bridge_active_window(void *user) {
     trace = user;
     trace->active_window_calls += 1;
     return &trace->active_window;
+}
+
+static void
+bridge_sync(void *user) {
+    TagEditorBridgeTrace *trace;
+
+    trace = user;
+    trace->sync_calls += 1;
+    return;
 }
 
 static void
@@ -318,6 +410,7 @@ bridge_callbacks(void) {
 
     bridge = (NativeTagEditorBridge){0};
     bridge.active_window = bridge_active_window;
+    bridge.sync = bridge_sync;
     bridge.refresh = bridge_refresh;
     bridge.refresh_window = bridge_refresh_window;
     bridge.scroll = bridge_scroll;
@@ -629,11 +722,14 @@ test_bridge_callback_contract(void) {
     assert(bridge_trace.active_window_calls == 1);
 
     nc_screen_refresh(base);
-    assert(bridge_trace.refresh_calls == 1);
-    assert(window_trace.display_calls == 0);
+    assert(bridge_trace.sync_calls == 1);
+    assert(bridge_trace.refresh_calls == 0);
+    assert(window_trace.display_calls == 3);
 
     nc_screen_refresh_window(base);
-    assert(bridge_trace.refresh_window_calls == 1);
+    assert(bridge_trace.sync_calls == 2);
+    assert(bridge_trace.refresh_window_calls == 0);
+    assert(window_trace.refresh_calls == 4);
 
     nc_screen_scroll(base, NC_SCROLL_PAGE_DOWN);
     assert(bridge_trace.scroll_calls == 1);
@@ -663,6 +759,7 @@ test_bridge_callback_contract(void) {
     assert(nc_screen_has_to_be_updated(base));
     nc_screen_update(base);
     assert(bridge_trace.update_calls == 1);
+    assert(bridge_trace.sync_calls == 3);
     assert(!nc_screen_has_to_be_updated(base));
 
     native_tag_editor_screen_clear_directories(&screen);
@@ -1010,6 +1107,134 @@ test_separate_filter_and_search_state(void) {
     return;
 }
 
+
+static void
+test_native_directory_and_tag_type_rendering(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tag_types;
+
+    init_screen(&screen);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Álpha"), STRLIT_ARGS("/Álpha")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, "bad\xff", 4, STRLIT_ARGS("/bad")));
+
+    reset_window_trace();
+    nc_screen_refresh_window(native_tag_editor_screen_base(&screen));
+    assert_printed_equals("Álpha\nbad\xff\n", 12);
+
+    native_tag_editor_screen_next_column(&screen);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    assert(nc_menu_goto_selectable(tag_types, 12));
+    reset_window_trace();
+    nc_screen_refresh_window(native_tag_editor_screen_base(&screen));
+    assert_printed_contains(STRLIT_ARGS("Filename"));
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_native_tag_rendering_for_tag_fields(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tag_types;
+    NcBuffer old_modified_prefix;
+    char *old_empty_tag;
+    char *old_tags_separator;
+    int32 old_empty_tag_len;
+    int32 old_tags_separator_len;
+
+    set_rendering_config(&old_modified_prefix, &old_empty_tag,
+                         &old_empty_tag_len, &old_tags_separator,
+                         &old_tags_separator_len);
+    init_screen(&screen);
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS(""));
+    append_song(&screen, STRLIT_ARGS("two.flac"), STRLIT_ARGS("Beta"));
+    assert(native_tag_editor_screen_apply_tag_to_selection(
+               &screen, NCM_TAGS_FIELD_ARTIST, STRLIT_ARGS("Changed"),
+               Config.tags_separator, Config.tags_separator_len));
+    native_tag_editor_screen_next_column(&screen);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    assert(nc_menu_goto_selectable(tag_types, 1));
+    native_tag_editor_screen_next_column(&screen);
+
+    reset_window_trace();
+    nc_screen_refresh_window(native_tag_editor_screen_base(&screen));
+    assert_printed_equals("modified: Changed\nmodified: Changed\n", 36);
+    assert(window_trace.property_calls == 0);
+
+    destroy_screen(&screen);
+    restore_rendering_config(&old_modified_prefix, old_empty_tag,
+                             old_empty_tag_len, old_tags_separator,
+                             old_tags_separator_len);
+    return;
+}
+
+static void
+test_native_tag_rendering_for_filename_rows(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tag_types;
+    NcmMutableSong *song;
+    NcBuffer old_modified_prefix;
+    char *old_empty_tag;
+    char *old_tags_separator;
+    int32 old_empty_tag_len;
+    int32 old_tags_separator_len;
+
+    set_rendering_config(&old_modified_prefix, &old_empty_tag,
+                         &old_empty_tag_len, &old_tags_separator,
+                         &old_tags_separator_len);
+    init_screen(&screen);
+    append_song(&screen, STRLIT_ARGS("old.flac"), STRLIT_ARGS("Artist"));
+    song = nc_tag_row_menu_current(&screen.tags);
+    assert(song != NULL);
+    assert(ncm_mutable_song_set_new_name(song, STRLIT_ARGS("new.flac")));
+
+    native_tag_editor_screen_next_column(&screen);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    assert(nc_menu_goto_selectable(tag_types, 12));
+    native_tag_editor_screen_next_column(&screen);
+
+    reset_window_trace();
+    nc_screen_refresh_window(native_tag_editor_screen_base(&screen));
+    assert_printed_equals("modified: old.flac -> new.flac\n", 31);
+    assert(window_trace.property_calls == 2);
+
+    destroy_screen(&screen);
+    restore_rendering_config(&old_modified_prefix, old_empty_tag,
+                             old_empty_tag_len, old_tags_separator,
+                             old_tags_separator_len);
+    return;
+}
+
+static void
+test_native_refresh_does_not_delegate_rendering(void) {
+    NativeTagEditorScreen screen;
+
+    init_screen(&screen);
+    reset_bridge_trace();
+    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+
+    reset_window_trace();
+    nc_screen_refresh(native_tag_editor_screen_base(&screen));
+    assert(bridge_trace.sync_calls == 1);
+    assert(bridge_trace.refresh_calls == 0);
+    assert(window_trace.display_calls == 3);
+    assert(window_trace.refresh_calls == 3);
+    assert(window_trace.printed_len > 0);
+
+    reset_window_trace();
+    nc_screen_refresh_window(native_tag_editor_screen_base(&screen));
+    assert(bridge_trace.sync_calls == 2);
+    assert(bridge_trace.refresh_window_calls == 0);
+    assert(window_trace.refresh_calls == 1);
+
+    destroy_screen(&screen);
+    return;
+}
+
 void
 __wrap_nc_window_init(NcWindow *window, int64 start_x, int64 start_y,
                       int64 width, int64 height, char *title,
@@ -1065,11 +1290,68 @@ __wrap_nc_window_display(NcWindow *window) {
 void
 __wrap_nc_menu_refresh(NcMenu *menu, NcWindow *window, int64 width,
                        int64 height) {
-    (void)menu;
-    (void)window;
+    int64 count;
+
     (void)width;
-    (void)height;
     window_trace.refresh_calls += 1;
+    if (menu == NULL || window == NULL) {
+        return;
+    }
+    count = nc_menu_item_count(menu);
+    if (count > height) {
+        count = height;
+    }
+    for (int64 i = 0; i < count; i += 1) {
+        void *item;
+
+        if (nc_menu_position_is_separator(menu, i)) {
+            continue;
+        }
+        item = nc_menu_active_item_at(menu, i);
+        if (menu->display_callbacks.draw != NULL) {
+            menu->display_callbacks.draw(menu, window, item, i,
+                                         menu->display_callbacks.user);
+            __wrap_nc_window_print_char(window, '\n');
+        }
+    }
+    return;
+}
+
+void
+__wrap_nc_window_print_data(NcWindow *window, char *string,
+                            int32 string_len) {
+    (void)window;
+    window_trace.print_data_calls += 1;
+    if ((string == NULL) || (string_len <= 0)) {
+        return;
+    }
+    assert(window_trace.printed_len + string_len
+           < (int32)SIZEOF(window_trace.printed));
+    ncm_memcpy(window_trace.printed + window_trace.printed_len, string,
+               string_len);
+    window_trace.printed_len += string_len;
+    window_trace.printed[window_trace.printed_len] = '\0';
+    return;
+}
+
+void
+__wrap_nc_window_print_char(NcWindow *window, char ch) {
+    (void)window;
+    window_trace.print_char_calls += 1;
+    assert(window_trace.printed_len + 1
+           < (int32)SIZEOF(window_trace.printed));
+    window_trace.printed[window_trace.printed_len] = ch;
+    window_trace.printed_len += 1;
+    window_trace.printed[window_trace.printed_len] = '\0';
+    return;
+}
+
+void
+__wrap_nc_buffer_apply_property(NcWindow *window,
+                                NcBufferProperty *property) {
+    (void)window;
+    (void)property;
+    window_trace.property_calls += 1;
     return;
 }
 

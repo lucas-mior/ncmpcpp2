@@ -120,6 +120,9 @@ TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_window_resize \
 	-Wl,--wrap=nc_window_set_title \
 	-Wl,--wrap=nc_window_display \
+	-Wl,--wrap=nc_window_print_data \
+	-Wl,--wrap=nc_window_print_char \
+	-Wl,--wrap=nc_buffer_apply_property \
 	-Wl,--wrap=nc_menu_refresh \
 	-Wl,--wrap=nc_screen_draw_vertical_separator
 $(BUILD_DIR)/tests/c_tag_editor_screen_test: \

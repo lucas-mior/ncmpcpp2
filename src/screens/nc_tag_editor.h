@@ -29,6 +29,7 @@ enum NativeTagEditorParserMode {
 
 typedef struct NativeTagEditorBridge {
     NcWindow *(*active_window)(void *user);
+    void (*sync)(void *user);
     void (*refresh)(void *user);
     void (*refresh_window)(void *user);
     void (*scroll)(void *user, enum NcScroll where);
