@@ -123,12 +123,21 @@ static bool
 app_binding_migration_playlist_editor_action_is_c_safe(
     enum NcmActionType type) {
     switch (type) {
+    case NCM_ACTION_MOUSE_EVENT:
+    case NCM_ACTION_SCROLL_UP:
+    case NCM_ACTION_SCROLL_DOWN:
+    case NCM_ACTION_PAGE_UP:
+    case NCM_ACTION_PAGE_DOWN:
+    case NCM_ACTION_MOVE_HOME:
+    case NCM_ACTION_MOVE_END:
     case NCM_ACTION_PREVIOUS_COLUMN:
     case NCM_ACTION_NEXT_COLUMN:
     case NCM_ACTION_SELECT_ITEM:
     case NCM_ACTION_SELECT_RANGE:
     case NCM_ACTION_REVERSE_SELECTION:
     case NCM_ACTION_REMOVE_SELECTION:
+    case NCM_ACTION_NEXT_FOUND_ITEM:
+    case NCM_ACTION_PREVIOUS_FOUND_ITEM:
         return true;
     default:
         break;
