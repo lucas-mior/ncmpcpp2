@@ -815,22 +815,31 @@ inline void PlaylistEditor::syncNative()
     if (content_filtered)
         Content.showAllItems();
 
-    nc_menu_clear_items(native_playlists);
-    for (auto it = Playlists.begin(); it != Playlists.end(); ++it)
-        playlist_editor_compat::addNativePlaylist(native, *it);
-    if (!Playlists.empty())
-        nc_menu_highlight_position(
-            native_playlists,
-            static_cast<int64>(Playlists.choice()),
-            nc_window_height(&native->playlists_window));
+    if (native->playlists_update_requested
+        || (!Playlists.empty() && nc_menu_empty(native_playlists)))
+    {
+        nc_menu_clear_items(native_playlists);
+        for (auto it = Playlists.begin(); it != Playlists.end(); ++it)
+            playlist_editor_compat::addNativePlaylist(native, *it);
+        if (!Playlists.empty())
+            nc_menu_highlight_position(
+                native_playlists,
+                static_cast<int64>(Playlists.choice()),
+                nc_window_height(&native->playlists_window));
+    }
 
-    nc_menu_clear_items(native_content);
-    for (auto it = Content.begin(); it != Content.end(); ++it)
-        playlist_editor_compat::addNativeSong(native, *it);
-    if (!Content.empty())
-        nc_menu_highlight_position(native_content,
-                                   static_cast<int64>(Content.choice()),
-                                   nc_window_height(&native->content_window));
+    if (native->content_update_requested
+        || (!Content.empty() && nc_menu_empty(native_content)))
+    {
+        nc_menu_clear_items(native_content);
+        for (auto it = Content.begin(); it != Content.end(); ++it)
+            playlist_editor_compat::addNativeSong(native, *it);
+        if (!Content.empty())
+            nc_menu_highlight_position(
+                native_content,
+                static_cast<int64>(Content.choice()),
+                nc_window_height(&native->content_window));
+    }
 
     if (w == &Content)
         native->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT;
