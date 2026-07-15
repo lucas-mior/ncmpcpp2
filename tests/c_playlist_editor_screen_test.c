@@ -1097,12 +1097,15 @@ test_playlist_filter_clear_restores_current_row(void) {
 static void
 test_selected_song_contract(void) {
     NativePlaylistEditorScreen screen;
+    PlaylistEditorFormatFixture formats;
     NcmMpdPlaylistList playlists;
     NcmMpdSongList content;
     NcmSongArray selected;
     NcmError error;
     NcMenu *menu;
+    Column columns[2];
 
+    begin_render_formats(&formats, columns);
     init_screen(&screen);
     ncm_mpd_playlist_list_init(&playlists);
     ncm_mpd_song_list_init(&content);
@@ -1156,6 +1159,7 @@ test_selected_song_contract(void) {
     ncm_mpd_song_list_destroy(&content);
     ncm_mpd_playlist_list_destroy(&playlists);
     native_playlist_editor_screen_destroy(&screen);
+    end_render_formats(&formats);
     return;
 }
 
