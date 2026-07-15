@@ -12,8 +12,11 @@
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 
 typedef struct TagEditorWindowTrace {
+    int64 separator_x[4];
+
     int32 display_calls;
     int32 refresh_calls;
+    int32 separator_calls;
 } TagEditorWindowTrace;
 
 typedef struct TagEditorBridgeTrace {
@@ -55,7 +58,15 @@ static void assert_menu_string_pair(NcMenuStringPair *pair,
                                     char *first, int32 first_len,
                                     char *second, int32 second_len);
 static void assert_song_uri(NcmSong *song, char *uri, int32 uri_len);
+static void set_test_buffer(NcBuffer *buffer, char *data, int32 data_len);
+static void assert_tag_editor_menu_config(NcMenu *menu,
+                                          NcBuffer *highlight_prefix,
+                                          NcBuffer *highlight_suffix);
 static void test_initial_state_and_geometry(void);
+static void test_menu_configuration_and_highlights(void);
+static void test_title_visibility_configuration(void);
+static void test_native_resize_preserves_state(void);
+static void test_small_geometry_bounds(void);
 static void test_bridge_callback_contract(void);
 static void test_bridge_run_action_guard(void);
 static void test_directory_filter_and_search_contract(void);
@@ -75,6 +86,10 @@ main(void) {
     Config.regex_type = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
 
     test_initial_state_and_geometry();
+    test_menu_configuration_and_highlights();
+    test_title_visibility_configuration();
+    test_native_resize_preserves_state();
+    test_small_geometry_bounds();
     test_bridge_callback_contract();
     test_bridge_run_action_guard();
     test_directory_filter_and_search_contract();
@@ -154,6 +169,27 @@ assert_menu_string_pair(NcMenuStringPair *pair, char *first,
                             first, first_len));
     assert(ncm_string_equal(pair->second, pair->second_len,
                             second, second_len));
+    return;
+}
+
+static void
+set_test_buffer(NcBuffer *buffer, char *data, int32 data_len) {
+    nc_buffer_init(buffer);
+    nc_buffer_append_data(buffer, data, data_len);
+    return;
+}
+
+static void
+assert_tag_editor_menu_config(NcMenu *menu, NcBuffer *highlight_prefix,
+                              NcBuffer *highlight_suffix) {
+    assert(menu->cyclic_scroll_enabled == Config.use_cyclic_scrolling);
+    assert(menu->autocenter_cursor == Config.centered_cursor);
+    assert(nc_buffer_equal(&menu->selected_prefix,
+                           &Config.selected_item_prefix));
+    assert(nc_buffer_equal(&menu->selected_suffix,
+                           &Config.selected_item_suffix));
+    assert(nc_buffer_equal(&menu->highlight_prefix, highlight_prefix));
+    assert(nc_buffer_equal(&menu->highlight_suffix, highlight_suffix));
     return;
 }
 
@@ -320,6 +356,31 @@ test_initial_state_and_geometry(void) {
     assert(screen.middle_width == 26);
     assert(screen.right_start_x == 67);
     assert(screen.right_width == 35);
+    assert(screen.parser_dialog_start_x == 37);
+    assert(screen.parser_dialog_start_y == 10);
+    assert(screen.parser_dialog_width == 30);
+    assert(screen.parser_dialog_height == 5);
+    assert(screen.parser_start_x == 7);
+    assert(screen.parser_start_y == 3);
+    assert(screen.parser_width == 90);
+    assert(screen.parser_width_one == 45);
+    assert(screen.parser_width_two == 45);
+    assert(screen.parser_height == 20);
+    assert(screen.parser_helper_start_x == 52);
+    assert(screen.directories_window.start_x == 2);
+    assert(screen.directories_window.width == 37);
+    assert(screen.tag_types_window.start_x == 40);
+    assert(screen.tag_types_window.width == 26);
+    assert(screen.tags_window.start_x == 67);
+    assert(screen.tags_window.width == 35);
+    assert(screen.parser_dialog_window.start_x == 37);
+    assert(screen.parser_dialog_window.start_y == 10);
+    assert(screen.parser_dialog_window.width == 30);
+    assert(screen.parser_dialog_window.height == 5);
+    assert(screen.parser_window.start_x == 7);
+    assert(screen.parser_window.width == 45);
+    assert(screen.parser_helper_window.start_x == 52);
+    assert(screen.parser_helper_window.width == 45);
 
     assert(nc_screen_is_lockable(native_tag_editor_screen_base(&screen)));
     assert(nc_screen_is_mergable(native_tag_editor_screen_base(&screen)));
@@ -330,6 +391,224 @@ test_initial_state_and_geometry(void) {
 
     assert(nc_menu_item_count(nc_editor_string_menu_base(
                native_tag_editor_screen_parser_rows(&screen))) == 3);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_menu_configuration_and_highlights(void) {
+    NativeTagEditorScreen screen;
+    NcBuffer old_selected_prefix;
+    NcBuffer old_selected_suffix;
+    NcBuffer old_current_prefix;
+    NcBuffer old_current_suffix;
+    NcBuffer old_inactive_prefix;
+    NcBuffer old_inactive_suffix;
+    bool old_cyclic_scrolling;
+    bool old_centered_cursor;
+    NcMenu *directories;
+    NcMenu *tag_types;
+    NcMenu *tags;
+    NcMenu *parser_dialog;
+    NcMenu *parser_rows;
+
+    old_selected_prefix = Config.selected_item_prefix;
+    old_selected_suffix = Config.selected_item_suffix;
+    old_current_prefix = Config.current_item_prefix;
+    old_current_suffix = Config.current_item_suffix;
+    old_inactive_prefix = Config.current_item_inactive_column_prefix;
+    old_inactive_suffix = Config.current_item_inactive_column_suffix;
+    old_cyclic_scrolling = Config.use_cyclic_scrolling;
+    old_centered_cursor = Config.centered_cursor;
+
+    set_test_buffer(&Config.selected_item_prefix, LIT_ARGS("<sel>"));
+    set_test_buffer(&Config.selected_item_suffix, LIT_ARGS("</sel>"));
+    set_test_buffer(&Config.current_item_prefix, LIT_ARGS("<cur>"));
+    set_test_buffer(&Config.current_item_suffix, LIT_ARGS("</cur>"));
+    set_test_buffer(&Config.current_item_inactive_column_prefix,
+                    LIT_ARGS("<inactive>"));
+    set_test_buffer(&Config.current_item_inactive_column_suffix,
+                    LIT_ARGS("</inactive>"));
+    Config.use_cyclic_scrolling = true;
+    Config.centered_cursor = true;
+
+    init_screen(&screen);
+    directories = nc_editor_pair_menu_base(&screen.directories);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    tags = nc_tag_row_menu_base(&screen.tags);
+    parser_dialog = nc_editor_string_menu_base(&screen.parser_dialog);
+    parser_rows = nc_editor_string_menu_base(&screen.parser_rows);
+
+    assert_tag_editor_menu_config(directories, &Config.current_item_prefix,
+                                  &Config.current_item_suffix);
+    assert_tag_editor_menu_config(tag_types,
+                                  &Config.current_item_inactive_column_prefix,
+                                  &Config.current_item_inactive_column_suffix);
+    assert_tag_editor_menu_config(tags,
+                                  &Config.current_item_inactive_column_prefix,
+                                  &Config.current_item_inactive_column_suffix);
+    assert_tag_editor_menu_config(parser_dialog,
+                                  &parser_dialog->highlight_prefix,
+                                  &parser_dialog->highlight_suffix);
+    assert_tag_editor_menu_config(parser_rows, &parser_rows->highlight_prefix,
+                                  &parser_rows->highlight_suffix);
+
+    native_tag_editor_screen_next_column(&screen);
+    assert_tag_editor_menu_config(directories,
+                                  &Config.current_item_inactive_column_prefix,
+                                  &Config.current_item_inactive_column_suffix);
+    assert_tag_editor_menu_config(tag_types, &Config.current_item_prefix,
+                                  &Config.current_item_suffix);
+    assert_tag_editor_menu_config(tags,
+                                  &Config.current_item_inactive_column_prefix,
+                                  &Config.current_item_inactive_column_suffix);
+
+    native_tag_editor_screen_next_column(&screen);
+    assert_tag_editor_menu_config(tags, &Config.current_item_prefix,
+                                  &Config.current_item_suffix);
+
+    destroy_screen(&screen);
+    nc_buffer_destroy(&Config.selected_item_prefix);
+    nc_buffer_destroy(&Config.selected_item_suffix);
+    nc_buffer_destroy(&Config.current_item_prefix);
+    nc_buffer_destroy(&Config.current_item_suffix);
+    nc_buffer_destroy(&Config.current_item_inactive_column_prefix);
+    nc_buffer_destroy(&Config.current_item_inactive_column_suffix);
+    Config.selected_item_prefix = old_selected_prefix;
+    Config.selected_item_suffix = old_selected_suffix;
+    Config.current_item_prefix = old_current_prefix;
+    Config.current_item_suffix = old_current_suffix;
+    Config.current_item_inactive_column_prefix = old_inactive_prefix;
+    Config.current_item_inactive_column_suffix = old_inactive_suffix;
+    Config.use_cyclic_scrolling = old_cyclic_scrolling;
+    Config.centered_cursor = old_centered_cursor;
+    return;
+}
+
+static void
+test_title_visibility_configuration(void) {
+    NativeTagEditorScreen screen;
+    bool old_visibility;
+
+    old_visibility = Config.titles_visibility;
+    Config.titles_visibility = false;
+    init_screen(&screen);
+
+    assert(screen.directories_title.len == 0);
+    assert(screen.tag_types_title.len == 0);
+    assert(screen.tags_title.len == 0);
+    assert(screen.parser_title.len == 0);
+    assert(screen.parser_helper_title.len == 0);
+    assert(screen.directories_window.title_len == 0);
+    assert(screen.tag_types_window.title_len == 0);
+    assert(screen.tags_window.title_len == 0);
+
+    Config.titles_visibility = true;
+    native_tag_editor_screen_set_geometry(&screen, 2, 100, 3, 20);
+    assert(ncm_string_equal(screen.directories_window.title,
+                            screen.directories_window.title_len,
+                            STRLIT_ARGS("Directories")));
+    assert(ncm_string_equal(screen.tag_types_window.title,
+                            screen.tag_types_window.title_len,
+                            STRLIT_ARGS("Tag types")));
+    assert(ncm_string_equal(screen.tags_window.title,
+                            screen.tags_window.title_len,
+                            STRLIT_ARGS("Tags")));
+
+    destroy_screen(&screen);
+    Config.titles_visibility = old_visibility;
+    return;
+}
+
+static void
+test_native_resize_preserves_state(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *directories;
+    NcMenu *tags;
+    NcmError error;
+
+    init_screen(&screen);
+    ncm_error_clear(&error);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Beta"), STRLIT_ARGS("/Beta")));
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
+    append_song(&screen, STRLIT_ARGS("two.flac"), STRLIT_ARGS("Beta"));
+    assert(native_tag_editor_screen_apply_directory_filter(
+               &screen, STRLIT_ARGS("Alpha"), Config.regex_type, &error));
+    assert(native_tag_editor_screen_search(
+               &screen, STRLIT_ARGS("Alpha"), true, true, false, &error));
+    native_tag_editor_screen_clear_filters(&screen);
+    native_tag_editor_screen_next_column(&screen);
+    native_tag_editor_screen_next_column(&screen);
+    assert(native_tag_editor_screen_apply_tag_filter(
+               &screen, STRLIT_ARGS("Beta"), Config.regex_type, &error));
+    screen.parser_mode = NATIVE_TAG_EDITOR_PARSER_RENAME_FILES;
+
+    directories = nc_editor_pair_menu_base(&screen.directories);
+    tags = nc_tag_row_menu_base(&screen.tags);
+    assert(nc_menu_goto_selectable(directories, 1));
+    assert(nc_menu_goto_selectable(tags, 0));
+    directories->beginning = 1;
+    tags->beginning = 0;
+
+    native_tag_editor_screen_set_geometry(&screen, 4, 80, 5, 15);
+
+    assert(screen.active_column == NATIVE_TAG_EDITOR_COLUMN_TAGS);
+    assert(screen.parser_mode == NATIVE_TAG_EDITOR_PARSER_RENAME_FILES);
+    assert(nc_menu_highlight(directories) == 1);
+    assert(nc_menu_highlight(tags) == 0);
+    assert(directories->beginning == 1);
+    assert(tags->beginning == 0);
+    assert(screen.directory_filter_constraint.len == 0);
+    assert(ncm_string_equal(screen.directory_search_constraint.data,
+                            screen.directory_search_constraint.len,
+                            STRLIT_ARGS("Alpha")));
+    assert(ncm_string_equal(screen.tag_filter_constraint.data,
+                            screen.tag_filter_constraint.len,
+                            STRLIT_ARGS("Beta")));
+
+    assert(screen.left_width == 27);
+    assert(screen.middle_start_x == 32);
+    assert(screen.middle_width == 26);
+    assert(screen.right_start_x == 59);
+    assert(screen.right_width == 25);
+    assert(screen.parser_dialog_start_x == 29);
+    assert(screen.parser_dialog_start_y == 10);
+    assert(screen.parser_start_x == 8);
+    assert(screen.parser_start_y == 5);
+    assert(screen.parser_width == 72);
+    assert(screen.parser_width_one == 36);
+    assert(screen.parser_width_two == 36);
+    assert(screen.parser_helper_start_x == 44);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_small_geometry_bounds(void) {
+    NativeTagEditorScreen screen;
+
+    init_screen(&screen);
+    native_tag_editor_screen_set_geometry(&screen, 0, 2, 0, 0);
+
+    assert(screen.width == 2);
+    assert(screen.main_height == 1);
+    assert(screen.left_width >= 0);
+    assert(screen.middle_width >= 1);
+    assert(screen.right_width >= 1);
+    assert(screen.parser_dialog_width >= 1);
+    assert(screen.parser_dialog_height >= 1);
+    assert(screen.parser_width >= 1);
+    assert(screen.parser_width_one >= 1);
+    assert(screen.parser_width_two >= 1);
+    assert(screen.parser_height >= 1);
+    assert(screen.directories_window.height == 1);
+    assert(screen.tag_types_window.height == 1);
+    assert(screen.tags_window.height == 1);
 
     destroy_screen(&screen);
     return;
@@ -549,7 +828,10 @@ test_native_refresh_fallback_contract(void) {
     reset_window_trace();
     nc_screen_refresh(native_tag_editor_screen_base(&screen));
     assert(window_trace.display_calls == 3);
-    assert(window_trace.refresh_calls == 1);
+    assert(window_trace.refresh_calls == 3);
+    assert(window_trace.separator_calls == 2);
+    assert(window_trace.separator_x[0] == 39);
+    assert(window_trace.separator_x[1] == 66);
 
     destroy_screen(&screen);
     return;
@@ -788,5 +1070,14 @@ __wrap_nc_menu_refresh(NcMenu *menu, NcWindow *window, int64 width,
     (void)width;
     (void)height;
     window_trace.refresh_calls += 1;
+    return;
+}
+
+void
+__wrap_nc_screen_draw_vertical_separator(int64 x) {
+    if (window_trace.separator_calls < LENGTH(window_trace.separator_x)) {
+        window_trace.separator_x[window_trace.separator_calls] = x;
+    }
+    window_trace.separator_calls += 1;
     return;
 }
