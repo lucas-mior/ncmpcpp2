@@ -1,7 +1,9 @@
 #include <assert.h>
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "app_controller.h"
 #include "c/ncm_base.h"
@@ -48,12 +50,14 @@ typedef struct TagEditorMpdTrace {
 typedef struct TagEditorHookTrace {
     char prompt_label[64];
     char prompt_initial[64];
+    char prompt_response[128];
     char status_message[128];
     char update_directory[128];
     char confirm_message[128];
 
     int32 prompt_label_len;
     int32 prompt_initial_len;
+    int32 prompt_response_len;
     int32 status_message_len;
     int32 update_directory_len;
     int32 confirm_message_len;
@@ -106,6 +110,8 @@ static void assert_tag_editor_menu_config(NcMenu *menu,
                                           NcBuffer *highlight_suffix);
 static void assert_printed_equals(char *expected, int32 expected_len);
 static void assert_printed_contains(char *needle, int32 needle_len);
+static void tag_editor_copy_trace_string(
+    char *dst, int32 dst_cap, int32 *dst_len, char *src, int32 src_len);
 static void set_rendering_config(NcBuffer *old_modified_prefix,
                                  char **old_empty_tag,
                                  int32 *old_empty_tag_len,
@@ -163,6 +169,9 @@ static void test_tag_editor_selected_extended_numbering_uses_targets(void);
 static void test_tag_editor_capitalizes_utf8_words(void);
 static void test_tag_editor_generate_filename_honors_config(void);
 static void test_tag_editor_action_rows_ignore_title_visibility(void);
+static void test_tag_editor_parser_pattern_history_workflow(void);
+static void test_tag_editor_parser_tag_preview_and_proceed(void);
+static void test_tag_editor_parser_rename_preview_and_reject_empty(void);
 
 int
 main(void) {
@@ -218,6 +227,9 @@ main(void) {
     test_tag_editor_capitalizes_utf8_words();
     test_tag_editor_generate_filename_honors_config();
     test_tag_editor_action_rows_ignore_title_visibility();
+    test_tag_editor_parser_pattern_history_workflow();
+    test_tag_editor_parser_tag_preview_and_proceed();
+    test_tag_editor_parser_rename_preview_and_reject_empty();
 
     destroy_mpd_trace();
     exit(EXIT_SUCCESS);
@@ -252,6 +264,11 @@ reset_hook_trace(void) {
     hook_trace = (TagEditorHookTrace){0};
     hook_trace.prompt_result = NATIVE_TAG_EDITOR_PROMPT_ACCEPTED;
     hook_trace.confirm_result = true;
+    tag_editor_copy_trace_string(
+        hook_trace.prompt_response,
+        NCM_ARRAY_LEN(hook_trace.prompt_response),
+        &hook_trace.prompt_response_len,
+        STRLIT_ARGS("accepted value"));
     return;
 }
 
@@ -474,7 +491,8 @@ tag_editor_test_prompt_hook(
         trace->prompt_initial, NCM_ARRAY_LEN(trace->prompt_initial),
         &trace->prompt_initial_len, initial.data, initial.len);
     if (trace->prompt_result == NATIVE_TAG_EDITOR_PROMPT_ACCEPTED) {
-        assert(ncm_buffer_set(result, STRLIT_ARGS("accepted value")));
+        assert(ncm_buffer_set(result, trace->prompt_response,
+                              trace->prompt_response_len));
     }
     return trace->prompt_result;
 }
@@ -1083,7 +1101,7 @@ test_tag_editor_run_current_parser_rows(void) {
     assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_LEGEND);
 
     native_tag_editor_screen_previous_column(&screen);
-    assert(nc_menu_goto_selectable(actions, 4));
+    assert(nc_menu_goto_selectable(actions, 5));
     assert(nc_screen_run_current(base));
     assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES);
 
@@ -1244,8 +1262,8 @@ test_parser_menu_contract(void) {
     actions = nc_editor_string_menu_base(
         native_tag_editor_screen_parser_actions(&screen));
     assert(nc_menu_item_count(dialog) == 3);
-    assert(nc_menu_item_count(rows) == 8);
-    assert(nc_menu_item_count(actions) == 5);
+    assert(nc_menu_item_count(rows) == 9);
+    assert(nc_menu_item_count(actions) == 6);
 
     row = nc_menu_active_item_at(dialog, 0);
     assert(ncm_string_equal(row->data, row->len,
@@ -1256,18 +1274,20 @@ test_parser_menu_contract(void) {
     row = nc_menu_active_item_at(dialog, 2);
     assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Cancel")));
     row = nc_menu_active_item_at(rows, 3);
-    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Pattern")));
+    assert(ncm_string_equal(row->data, row->len,
+                            STRLIT_ARGS("Pattern: %a - %t")));
     row = nc_menu_active_item_at(rows, 4);
     assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Preview")));
     row = nc_menu_active_item_at(rows, 5);
     assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Legend")));
-    row = nc_menu_active_item_at(rows, 6);
-    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Proceed")));
     row = nc_menu_active_item_at(rows, 7);
+    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Proceed")));
+    row = nc_menu_active_item_at(rows, 8);
     assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Cancel")));
     row = nc_menu_active_item_at(actions, 0);
-    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Pattern")));
-    row = nc_menu_active_item_at(actions, 4);
+    assert(ncm_string_equal(row->data, row->len,
+                            STRLIT_ARGS("Pattern: %a - %t")));
+    row = nc_menu_active_item_at(actions, 5);
     assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Cancel")));
 
     destroy_screen(&screen);
@@ -2299,10 +2319,11 @@ test_tag_editor_parser_mouse_rows(void) {
     event = (MEVENT){0};
     event.x = (int32)screen.parser_window.start_x + 1;
     event.y = (int32)screen.parser_window.start_y + 4;
-    event.bstate = BUTTON3_PRESSED;
+    event.bstate = BUTTON1_PRESSED;
     nc_screen_mouse_button_pressed(native_tag_editor_screen_base(&screen),
                                    event);
 
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_ACTIONS);
     assert(nc_menu_highlight(parser_actions) == 4);
 
     destroy_screen(&screen);
@@ -2593,6 +2614,205 @@ __wrap_nc_screen_draw_vertical_separator(int64 x) {
         window_trace.separator_x[window_trace.separator_calls] = x;
     }
     window_trace.separator_calls += 1;
+    return;
+}
+
+
+static void
+test_tag_editor_parser_pattern_history_workflow(void) {
+    NativeTagEditorScreen screen;
+    NcScreen *base;
+    NcMenu *actions;
+    NcMenuString *row;
+    char template[] = "/tmp/ncm-tag-editor-XXXXXX";
+    char patterns_path[256];
+    char first_line[256];
+    char *old_dir;
+    char *old_pattern;
+    int32 old_dir_len;
+    int32 old_pattern_len;
+    int32 old_pattern_cap;
+    FILE *file;
+
+    assert(mkdtemp(template) != NULL);
+    snprintf(patterns_path, (size_t)SIZEOF(patterns_path),
+             "%s/patterns.list", template);
+    file = fopen(patterns_path, "w");
+    assert(file != NULL);
+    fputs("%a - %t\n\n%t\n%a - %t\n", file);
+    fclose(file);
+
+    old_dir = Config.ncmpcpp_directory;
+    old_dir_len = Config.ncmpcpp_directory_len;
+    old_pattern = Config.pattern;
+    old_pattern_len = Config.pattern_len;
+    old_pattern_cap = Config.pattern_cap;
+    Config.ncmpcpp_directory = template;
+    Config.ncmpcpp_directory_len = (int32)strlen(template);
+    Config.pattern = NULL;
+    Config.pattern_len = 0;
+    Config.pattern_cap = 0;
+
+    reset_hook_trace();
+    tag_editor_copy_trace_string(
+        hook_trace.prompt_response,
+        NCM_ARRAY_LEN(hook_trace.prompt_response),
+        &hook_trace.prompt_response_len, STRLIT_ARGS("%t"));
+    init_screen(&screen);
+    native_tag_editor_screen_set_hooks(&screen, tag_editor_test_hooks());
+    append_song_with_title(&screen, STRLIT_ARGS("one.flac"),
+                           STRLIT_ARGS("Artist"), STRLIT_ARGS("Title"));
+    native_tag_editor_screen_show_parser_actions(
+        &screen, NATIVE_TAG_EDITOR_PARSER_RENAME_FILES);
+    base = native_tag_editor_screen_base(&screen);
+    actions = nc_editor_string_menu_base(&screen.parser_actions);
+
+    assert(screen.recent_patterns_loaded);
+    assert(screen.recent_patterns.len == 2);
+    row = nc_menu_active_item_at(actions, 0);
+    assert(ncm_string_equal(row->data, row->len,
+                            STRLIT_ARGS("Pattern: %a - %t")));
+    row = nc_menu_active_item_at(actions, 9);
+    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("%a - %t")));
+    row = nc_menu_active_item_at(actions, 10);
+    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("%t")));
+
+    assert(nc_menu_goto_selectable(actions, 0));
+    assert(nc_screen_run_current(base));
+    row = nc_menu_active_item_at(actions, 0);
+    assert(ncm_string_equal(row->data, row->len,
+                            STRLIT_ARGS("Pattern: %t")));
+    assert(ncm_string_equal(Config.pattern, Config.pattern_len,
+                            STRLIT_ARGS("%t")));
+
+    assert(nc_menu_goto_selectable(actions, 4));
+    assert(nc_screen_run_current(base));
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES);
+
+    file = fopen(patterns_path, "r");
+    assert(file != NULL);
+    assert(fgets(first_line, (int32)SIZEOF(first_line), file) != NULL);
+    fclose(file);
+    assert(ncm_string_equal(first_line, STRLIT_LEN("%t"),
+                            STRLIT_ARGS("%t")));
+
+    destroy_screen(&screen);
+    if ((Config.pattern != NULL) && (Config.pattern_cap > 0)) {
+        ncm_free(Config.pattern, Config.pattern_cap);
+    }
+    Config.pattern = old_pattern;
+    Config.pattern_len = old_pattern_len;
+    Config.pattern_cap = old_pattern_cap;
+    Config.ncmpcpp_directory = old_dir;
+    Config.ncmpcpp_directory_len = old_dir_len;
+    remove(patterns_path);
+    rmdir(template);
+    return;
+}
+
+static void
+test_tag_editor_parser_tag_preview_and_proceed(void) {
+    NativeTagEditorScreen screen;
+    NcScreen *base;
+    NcMenu *actions;
+    NcmMutableSong *song;
+
+    reset_hook_trace();
+    init_screen(&screen);
+    native_tag_editor_screen_set_hooks(&screen, tag_editor_test_hooks());
+    append_song(&screen, STRLIT_ARGS("Artist - Title.flac"),
+                STRLIT_ARGS("Old"));
+    assert(native_tag_editor_screen_prepare_parser_rows(
+               &screen, NATIVE_TAG_EDITOR_PARSER_TAGS_FROM_FILENAME,
+               STRLIT_ARGS("%a - %t")));
+    native_tag_editor_screen_show_parser_actions(
+        &screen, NATIVE_TAG_EDITOR_PARSER_TAGS_FROM_FILENAME);
+    base = native_tag_editor_screen_base(&screen);
+    actions = nc_editor_string_menu_base(&screen.parser_actions);
+
+    assert(nc_menu_goto_selectable(actions, 1));
+    assert(nc_screen_run_current(base));
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW);
+    assert(ncm_string_equal(hook_trace.status_message,
+                            hook_trace.status_message_len,
+                            STRLIT_ARGS("Operation finished")));
+    assert(ncm_string_equal(screen.parser_preview.data,
+                            STRLIT_LEN("Artist - Title.flac:\n"),
+                            STRLIT_ARGS("Artist - Title.flac:\n")));
+    song = nc_tag_row_menu_current(&screen.tags);
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_ARTIST, 0,
+                                  STRLIT_ARGS("Old"));
+    assert_mutable_song_tag_missing(song, NCM_TAGS_FIELD_TITLE, 0);
+
+    native_tag_editor_screen_previous_column(&screen);
+    assert(nc_menu_goto_selectable(actions, 4));
+    assert(nc_screen_run_current(base));
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES);
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_ARTIST, 0,
+                                  STRLIT_ARGS("Artist"));
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TITLE, 0,
+                                  STRLIT_ARGS("Title"));
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_parser_rename_preview_and_reject_empty(void) {
+    NativeTagEditorScreen screen;
+    NcScreen *base;
+    NcMenu *actions;
+    NcmMutableSong *song;
+    NcmStringView view;
+    NcmBuffer *recent;
+
+    reset_hook_trace();
+    init_screen(&screen);
+    native_tag_editor_screen_set_hooks(&screen, tag_editor_test_hooks());
+    append_song_with_title(&screen, STRLIT_ARGS("old.flac"),
+                           STRLIT_ARGS("Artist"), STRLIT_ARGS("Title"));
+    assert(native_tag_editor_screen_prepare_parser_rows(
+               &screen, NATIVE_TAG_EDITOR_PARSER_RENAME_FILES,
+               STRLIT_ARGS("%t")));
+    recent = ncm_buffer_array_append(&screen.recent_patterns);
+    assert(recent != NULL);
+    assert(ncm_buffer_set(recent, STRLIT_ARGS("%a - %t")));
+    screen.recent_patterns_loaded = true;
+    native_tag_editor_screen_show_parser_actions(
+        &screen, NATIVE_TAG_EDITOR_PARSER_RENAME_FILES);
+    base = native_tag_editor_screen_base(&screen);
+    actions = nc_editor_string_menu_base(&screen.parser_actions);
+    song = nc_tag_row_menu_current(&screen.tags);
+
+    assert(nc_menu_goto_selectable(actions, 1));
+    assert(nc_screen_run_current(base));
+    assert(ncm_mutable_song_get_new_name(song, &view) == false);
+    assert(ncm_string_equal(screen.parser_preview.data,
+                            STRLIT_LEN("old.flac -> Title.flac"),
+                            STRLIT_ARGS("old.flac -> Title.flac")));
+
+    native_tag_editor_screen_previous_column(&screen);
+    assert(nc_menu_goto_selectable(actions, 4));
+    assert(nc_screen_run_current(base));
+    assert(ncm_mutable_song_get_new_name(song, &view));
+    assert(ncm_string_equal(view.data, view.len,
+                            STRLIT_ARGS("Title.flac")));
+
+    native_tag_editor_screen_show_parser_actions(
+        &screen, NATIVE_TAG_EDITOR_PARSER_RENAME_FILES);
+    assert(native_tag_editor_screen_prepare_parser_rows(
+               &screen, NATIVE_TAG_EDITOR_PARSER_RENAME_FILES,
+               STRLIT_ARGS("%b")));
+    actions = nc_editor_string_menu_base(&screen.parser_actions);
+    assert(nc_menu_goto_selectable(actions, 4));
+    assert(!nc_screen_run_current(base));
+    assert(ncm_string_equal(hook_trace.status_message,
+                            hook_trace.status_message_len,
+                            STRLIT_ARGS(
+                                "File \"old.flac\" would have an empty "
+                                "name")));
+
+    destroy_screen(&screen);
     return;
 }
 
