@@ -183,6 +183,8 @@ void native_playlist_editor_screen_request_playlists_update(
     NativePlaylistEditorScreen *screen);
 void native_playlist_editor_screen_request_content_update(
     NativePlaylistEditorScreen *screen);
+void native_playlist_editor_screen_finish_list_change(
+    NativePlaylistEditorScreen *screen);
 bool native_playlist_editor_screen_prepare_playlist_command(
     NativePlaylistEditorScreen *screen,
     enum NativePlaylistEditorCommandType type, char *target,
