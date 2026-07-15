@@ -113,6 +113,7 @@ static void test_selected_song_contract(void);
 static void test_mpd_reload_and_current_items(void);
 static void test_update_callback_uses_native_mpd_logic(void);
 static void test_delayed_update_and_empty_content_cache(void);
+static void test_native_scroll_fetches_new_playlist_content(void);
 static void test_update_error_reporting_and_flags(void);
 static void test_playlist_commands(void);
 static void test_native_rendering_callbacks(void);
@@ -138,6 +139,7 @@ main(void) {
     test_mpd_reload_and_current_items();
     test_update_callback_uses_native_mpd_logic();
     test_delayed_update_and_empty_content_cache();
+    test_native_scroll_fetches_new_playlist_content();
     test_update_error_reporting_and_flags();
     test_playlist_commands();
     test_native_rendering_callbacks();
@@ -1125,6 +1127,55 @@ test_delayed_update_and_empty_content_cache(void) {
 }
 
 static void
+test_native_scroll_fetches_new_playlist_content(void) {
+    NativePlaylistEditorScreen screen;
+    PlaylistEditorBridgeFixture fixture = {0};
+    NativePlaylistEditorBridge bridge;
+    NcMenu *content;
+    bool old_data_fetching_delay;
+
+    old_data_fetching_delay = Config.data_fetching_delay;
+    Config.data_fetching_delay = false;
+
+    ncm_mpd_playlist_list_clear(&mpd_fixture.playlists);
+    ncm_mpd_song_list_clear(&mpd_fixture.content);
+    append_playlist(&mpd_fixture.playlists, LIT_ARGS("First"));
+    append_playlist(&mpd_fixture.playlists, LIT_ARGS("Second"));
+    append_song(&mpd_fixture.content, LIT_ARGS("selected.flac"),
+                LIT_ARGS("Selected"));
+    reset_mpd_calls();
+
+    bridge = make_bridge(&fixture);
+    init_screen(&screen);
+    native_playlist_editor_screen_set_bridge(&screen, bridge);
+    nc_screen_update(native_playlist_editor_screen_base(&screen));
+    assert(mpd_fixture.get_content_calls == 1);
+    assert(ncm_string_equal(mpd_fixture.content_path,
+                            cstring_len(mpd_fixture.content_path),
+                            LIT_ARGS("First")));
+
+    nc_screen_scroll(native_playlist_editor_screen_base(&screen),
+                     NC_SCROLL_DOWN);
+    content = nc_song_menu_base(&screen.content);
+    assert(fixture.scroll_calls == 0);
+    assert(nc_menu_all_item_count(content) == 0);
+    assert(screen.content_update_requested);
+
+    nc_screen_update(native_playlist_editor_screen_base(&screen));
+    assert(mpd_fixture.get_content_calls == 2);
+    assert(ncm_string_equal(mpd_fixture.content_path,
+                            cstring_len(mpd_fixture.content_path),
+                            LIT_ARGS("Second")));
+    assert(nc_menu_all_item_count(content) == 1);
+
+    native_playlist_editor_screen_set_bridge(
+        &screen, (NativePlaylistEditorBridge){0});
+    native_playlist_editor_screen_destroy(&screen);
+    Config.data_fetching_delay = old_data_fetching_delay;
+    return;
+}
+
+static void
 test_update_error_reporting_and_flags(void) {
     NativePlaylistEditorScreen screen;
     bool old_data_fetching_delay;
@@ -1353,14 +1404,14 @@ test_bridge_delegation(void) {
     native_playlist_editor_screen_set_bridge(&screen, bridge);
     base = native_playlist_editor_screen_base(&screen);
 
-    assert(nc_screen_active_window(base) == &fixture.window);
+    assert(nc_screen_active_window(base) == &screen.playlists_window);
     nc_screen_refresh(base);
     nc_screen_refresh_window(base);
     nc_screen_scroll(base, NC_SCROLL_PAGE_DOWN);
     nc_screen_switch_to(base);
     nc_screen_request_resize(base);
     nc_screen_resize(base);
-    assert(nc_screen_window_timeout(base) == 250);
+    assert(nc_screen_window_timeout(base) == NC_SCREEN_DEFAULT_WINDOW_TIMEOUT);
     assert(nc_screen_title(base) == fixture.title);
 
     reset_mpd_calls();
@@ -1376,18 +1427,14 @@ test_bridge_delegation(void) {
 
     assert(fixture.refresh_calls == 0);
     assert(fixture.refresh_window_calls == 0);
-    assert(fixture.scroll_calls == 1);
-    assert(fixture.last_scroll == NC_SCROLL_PAGE_DOWN);
-    assert(fixture.switch_calls == 1);
+    assert(fixture.scroll_calls == 0);
+    assert(fixture.switch_calls == 0);
     assert(fixture.resize_calls == 1);
     assert(fixture.playlist_update_calls == 0);
     assert(fixture.content_update_calls == 0);
     assert(fixture.update_calls == 0);
     assert(mpd_fixture.get_playlists_calls == 1);
-    assert(fixture.mouse_calls == 1);
-    assert(fixture.last_event.x == event.x);
-    assert(fixture.last_event.y == event.y);
-    assert(fixture.last_event.bstate == event.bstate);
+    assert(fixture.mouse_calls == 0);
     assert(!nc_screen_has_to_be_updated(base));
     assert(!nc_screen_has_to_be_resized(base));
 
