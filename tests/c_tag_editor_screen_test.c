@@ -741,15 +741,15 @@ test_native_resize_preserves_state(void) {
     assert(native_tag_editor_screen_add_directory(
                &screen, STRLIT_ARGS("Beta"), STRLIT_ARGS("/Beta")));
     append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
-    append_song(&screen, STRLIT_ARGS("two.flac"), STRLIT_ARGS("Beta"));
+    append_song_with_title(&screen, STRLIT_ARGS("two.flac"),
+                           STRLIT_ARGS("Beta Artist"),
+                           STRLIT_ARGS("Beta"));
     assert(native_tag_editor_screen_apply_directory_filter(
                &screen, STRLIT_ARGS("Alpha"), Config.regex_type, &error));
     assert(native_tag_editor_screen_search(
                &screen, STRLIT_ARGS("Alpha"), true, true, false, &error));
     native_tag_editor_screen_clear_filters(&screen);
     native_tag_editor_screen_next_column(&screen);
-    assert(nc_menu_goto_selectable(nc_editor_string_menu_base(
-               &screen.tag_types), 1));
     native_tag_editor_screen_next_column(&screen);
     assert(native_tag_editor_screen_apply_tag_filter(
                &screen, STRLIT_ARGS("Beta"), Config.regex_type, &error));
