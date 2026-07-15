@@ -4768,6 +4768,7 @@ action_runtime_toggle_browser_sort_mode(void) {
     if (Config.browser_sort_mode >= NCM_SORT_MODE_LAST) {
         Config.browser_sort_mode = NCM_SORT_MODE_TYPE;
     }
+    (void)native_browser_screen_sort(native_c_screen_browser());
     app_controller_request_current_screen_update();
     return true;
 }
