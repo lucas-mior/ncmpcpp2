@@ -4,6 +4,7 @@
 
 #include "app_controller.h"
 #include "settings.h"
+#include "ui_state.h"
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
@@ -25,6 +26,13 @@ static bool tag_editor_is_lockable(NcScreen *screen);
 static bool tag_editor_is_mergable(NcScreen *screen);
 static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_layout(NativeTagEditorScreen *screen);
+static int64 tag_editor_min_int64(int64 left, int64 right);
+static int64 tag_editor_separator_width(NativeTagEditorScreen *screen);
+static void tag_editor_configure_menus(NativeTagEditorScreen *screen);
+static void tag_editor_update_menu_highlights(
+    NativeTagEditorScreen *screen);
+static void tag_editor_refresh_menu(NcWindow *window, NcMenu *menu);
+static void tag_editor_draw_separators(NativeTagEditorScreen *screen);
 static void tag_editor_initialize_buffers(NativeTagEditorScreen *screen);
 static void tag_editor_destroy_buffers(NativeTagEditorScreen *screen);
 static void tag_editor_initialize_regexes(NativeTagEditorScreen *screen);
@@ -180,6 +188,7 @@ native_tag_editor_screen_init(NativeTagEditorScreen *screen,
     (void)native_tag_editor_screen_set_current_dir(screen,
                                                    STRLIT_ARGS("/"));
     tag_editor_layout(screen);
+    tag_editor_configure_menus(screen);
     tag_editor_observe_current_directory(screen);
     nc_screen_init(&screen->screen, tag_editor_callbacks, screen,
                    NC_SCREEN_TYPE_TAG_EDITOR);
@@ -303,6 +312,8 @@ native_tag_editor_screen_set_geometry(NativeTagEditorScreen *screen,
     screen->main_start_y = main_start_y;
     screen->main_height = main_height;
     tag_editor_layout(screen);
+    tag_editor_configure_menus(screen);
+    tag_editor_update_titles(screen, true);
     return;
 }
 
@@ -618,6 +629,7 @@ native_tag_editor_screen_previous_column(NativeTagEditorScreen *screen) {
         return;
     }
     screen->active_column -= 1;
+    tag_editor_update_menu_highlights(screen);
     return;
 }
 
@@ -627,6 +639,7 @@ native_tag_editor_screen_next_column(NativeTagEditorScreen *screen) {
         return;
     }
     screen->active_column += 1;
+    tag_editor_update_menu_highlights(screen);
     return;
 }
 
@@ -1073,9 +1086,17 @@ tag_editor_refresh(NcScreen *screen) {
         editor->bridge.refresh(editor->bridge.user);
         return;
     }
-    tag_editor_refresh_window(screen);
-    nc_window_display(&editor->tag_types_window);
-    nc_window_display(&editor->tags_window);
+    tag_editor_update_titles(editor, true);
+    tag_editor_update_menu_highlights(editor);
+    tag_editor_refresh_menu(&editor->directories_window,
+                            nc_editor_pair_menu_base(
+                                &editor->directories));
+    tag_editor_draw_separators(editor);
+    tag_editor_refresh_menu(&editor->tag_types_window,
+                            nc_editor_string_menu_base(
+                                &editor->tag_types));
+    tag_editor_refresh_menu(&editor->tags_window,
+                            nc_tag_row_menu_base(&editor->tags));
     return;
 }
 
@@ -1090,12 +1111,11 @@ tag_editor_refresh_window(NcScreen *screen) {
         editor->bridge.refresh_window(editor->bridge.user);
         return;
     }
+    tag_editor_update_titles(editor, true);
+    tag_editor_update_menu_highlights(editor);
     menu = native_tag_editor_screen_active_menu(editor);
     window = native_tag_editor_screen_active_window(editor);
-    nc_menu_prepare_refresh(menu, editor->main_height, NULL, NULL);
-    nc_window_display(window);
-    nc_menu_refresh(menu, window, nc_window_width(window),
-                    nc_window_height(window));
+    tag_editor_refresh_menu(window, menu);
     return;
 }
 
@@ -1110,8 +1130,11 @@ tag_editor_scroll(NcScreen *screen, enum NcScroll where) {
         return;
     }
     menu = native_tag_editor_screen_active_menu(editor);
-    nc_menu_scroll_selectable(menu, editor->main_height, where);
+    nc_menu_scroll_selectable(menu, nc_window_height(
+                                  native_tag_editor_screen_active_window(
+                                      editor)), where);
     native_tag_editor_screen_finish_directory_change(editor);
+    tag_editor_update_menu_highlights(editor);
     return;
 }
 
@@ -1469,21 +1492,108 @@ tag_editor_restore_current_directory(NativeTagEditorScreen *screen,
 
 static void
 tag_editor_layout(NativeTagEditorScreen *screen) {
-    int64 middle_width;
+    int64 separator_width;
+    int64 parser_dialog_x_space;
+    int64 parser_dialog_y_space;
+    int64 parser_x_space;
+    int64 parser_y_space;
+    int64 screen_height;
 
-    middle_width = 26;
-    if (screen->width < middle_width + 2) {
-        middle_width = screen->width;
+    if (screen == NULL) {
+        return;
     }
-    screen->left_width = (screen->width - middle_width)/2;
-    screen->middle_start_x = screen->start_x + screen->left_width + 1;
-    screen->middle_width = middle_width;
-    screen->right_start_x = screen->middle_start_x + middle_width + 1;
+    if (screen->width < 1) {
+        screen->width = 1;
+    }
+    if (screen->main_height < 1) {
+        screen->main_height = 1;
+    }
+
+    separator_width = tag_editor_separator_width(screen);
+    screen->middle_width = tag_editor_min_int64(26,
+                                                screen->width
+                                                - 2*separator_width);
+    if (screen->middle_width < 1) {
+        screen->middle_width = 1;
+    }
+    screen->left_width = (screen->width - screen->middle_width)/2;
+    if (screen->left_width < 1) {
+        screen->left_width = 1;
+    }
+    if ((screen->left_width + screen->middle_width
+         + 2*separator_width) > screen->width) {
+        screen->left_width = screen->width - screen->middle_width
+                             - 2*separator_width;
+    }
+    if (screen->left_width < 0) {
+        screen->left_width = 0;
+    }
+    screen->middle_start_x = screen->start_x + screen->left_width
+                             + separator_width;
+    screen->right_start_x = screen->middle_start_x + screen->middle_width
+                            + separator_width;
     screen->right_width = screen->width - screen->left_width
-                          - middle_width - 2;
-    if (screen->right_width < 0) {
-        screen->right_width = 0;
+                          - screen->middle_width - 2*separator_width;
+    if (screen->right_width < 1) {
+        screen->right_width = 1;
     }
+
+    screen->parser_dialog_width = tag_editor_min_int64(30, screen->width);
+    screen->parser_dialog_height = tag_editor_min_int64(5,
+                                                        screen->main_height);
+    if (screen->parser_dialog_width < 1) {
+        screen->parser_dialog_width = 1;
+    }
+    if (screen->parser_dialog_height < 1) {
+        screen->parser_dialog_height = 1;
+    }
+
+    screen->parser_width = screen->width*9/10;
+    if (screen->parser_width < 1) {
+        screen->parser_width = 1;
+    }
+    screen_height = ui_state_screen_height();
+    screen->parser_height = tag_editor_min_int64(screen_height*8/10,
+                                                 screen->main_height);
+    if (screen->parser_height < 1) {
+        screen->parser_height = 1;
+    }
+    screen->parser_width_one = screen->parser_width/2;
+    if (screen->parser_width_one < 1) {
+        screen->parser_width_one = 1;
+    }
+    screen->parser_width_two = screen->parser_width
+                               - screen->parser_width_one;
+    if (screen->parser_width_two < 1) {
+        screen->parser_width_two = 1;
+    }
+
+    parser_dialog_x_space = screen->width - screen->parser_dialog_width;
+    parser_dialog_y_space = screen->main_height
+                            - screen->parser_dialog_height;
+    parser_x_space = screen->width - screen->parser_width;
+    parser_y_space = screen->main_height - screen->parser_height;
+    if (parser_dialog_x_space < 0) {
+        parser_dialog_x_space = 0;
+    }
+    if (parser_dialog_y_space < 0) {
+        parser_dialog_y_space = 0;
+    }
+    if (parser_x_space < 0) {
+        parser_x_space = 0;
+    }
+    if (parser_y_space < 0) {
+        parser_y_space = 0;
+    }
+
+    screen->parser_dialog_start_x = screen->start_x
+                                    + parser_dialog_x_space/2;
+    screen->parser_dialog_start_y = screen->main_start_y
+                                    + parser_dialog_y_space/2;
+    screen->parser_start_x = screen->start_x + parser_x_space/2;
+    screen->parser_start_y = screen->main_start_y + parser_y_space/2;
+    screen->parser_helper_start_x = screen->parser_start_x
+                                    + screen->parser_width_one;
 
     nc_window_move_to(&screen->directories_window, screen->start_x,
                       screen->main_start_y);
@@ -1497,6 +1607,127 @@ tag_editor_layout(NativeTagEditorScreen *screen) {
                       screen->main_start_y);
     nc_window_resize(&screen->tags_window, screen->right_width,
                      screen->main_height);
+
+    nc_window_move_to(&screen->parser_dialog_window,
+                      screen->parser_dialog_start_x,
+                      screen->parser_dialog_start_y);
+    nc_window_resize(&screen->parser_dialog_window,
+                     screen->parser_dialog_width,
+                     screen->parser_dialog_height);
+    nc_window_move_to(&screen->parser_window, screen->parser_start_x,
+                      screen->parser_start_y);
+    nc_window_resize(&screen->parser_window, screen->parser_width_one,
+                     screen->parser_height);
+    nc_window_move_to(&screen->parser_helper_window,
+                      screen->parser_helper_start_x,
+                      screen->parser_start_y);
+    nc_window_resize(&screen->parser_helper_window,
+                     screen->parser_width_two, screen->parser_height);
+    return;
+}
+
+static int64
+tag_editor_min_int64(int64 left, int64 right) {
+    if (left < right) {
+        return left;
+    }
+    return right;
+}
+
+static int64
+tag_editor_separator_width(NativeTagEditorScreen *screen) {
+    if (screen == NULL) {
+        return 0;
+    }
+    if (screen->width >= 5) {
+        return 1;
+    }
+    return 0;
+}
+
+static void
+tag_editor_configure_menu(NcMenu *menu) {
+    if (menu == NULL) {
+        return;
+    }
+    nc_menu_set_selected_prefix(menu, &Config.selected_item_prefix);
+    nc_menu_set_selected_suffix(menu, &Config.selected_item_suffix);
+    nc_menu_set_cyclic_scrolling(menu, Config.use_cyclic_scrolling);
+    nc_menu_set_centered_cursor(menu, Config.centered_cursor);
+    return;
+}
+
+static void
+tag_editor_configure_menus(NativeTagEditorScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    tag_editor_configure_menu(nc_editor_pair_menu_base(
+                                  &screen->directories));
+    tag_editor_configure_menu(nc_editor_string_menu_base(
+                                  &screen->tag_types));
+    tag_editor_configure_menu(nc_tag_row_menu_base(&screen->tags));
+    tag_editor_configure_menu(nc_editor_string_menu_base(
+                                  &screen->parser_dialog));
+    tag_editor_configure_menu(nc_editor_string_menu_base(
+                                  &screen->parser_rows));
+    tag_editor_update_menu_highlights(screen);
+    return;
+}
+
+static void
+tag_editor_update_menu_highlights(
+    NativeTagEditorScreen *screen) {
+    NcMenu *directories;
+    NcMenu *tag_types;
+    NcMenu *tags;
+    NcMenu *active;
+
+    if (screen == NULL) {
+        return;
+    }
+    directories = nc_editor_pair_menu_base(&screen->directories);
+    tag_types = nc_editor_string_menu_base(&screen->tag_types);
+    tags = nc_tag_row_menu_base(&screen->tags);
+
+    nc_menu_set_highlight_prefix(
+        directories, &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(
+        directories, &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlight_prefix(
+        tag_types, &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(
+        tag_types, &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlight_prefix(
+        tags, &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(
+        tags, &Config.current_item_inactive_column_suffix);
+
+    active = native_tag_editor_screen_active_menu(screen);
+    nc_menu_set_highlight_prefix(active, &Config.current_item_prefix);
+    nc_menu_set_highlight_suffix(active, &Config.current_item_suffix);
+    return;
+}
+
+static void
+tag_editor_refresh_menu(NcWindow *window, NcMenu *menu) {
+    if (window == NULL || menu == NULL) {
+        return;
+    }
+    nc_menu_prepare_refresh(menu, nc_window_height(window), NULL, NULL);
+    nc_window_display(window);
+    nc_menu_refresh(menu, window, nc_window_width(window),
+                    nc_window_height(window));
+    return;
+}
+
+static void
+tag_editor_draw_separators(NativeTagEditorScreen *screen) {
+    if (tag_editor_separator_width(screen) <= 0) {
+        return;
+    }
+    nc_screen_draw_vertical_separator(screen->middle_start_x - 1);
+    nc_screen_draw_vertical_separator(screen->right_start_x - 1);
     return;
 }
 
