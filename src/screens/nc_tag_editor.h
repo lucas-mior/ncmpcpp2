@@ -156,6 +156,21 @@ bool native_tag_editor_screen_set_current_dir(NativeTagEditorScreen *screen,
                                               char *dir, int32 dir_len);
 bool native_tag_editor_screen_current_dir(NativeTagEditorScreen *screen,
                                           NcmStringView *view);
+bool native_tag_editor_screen_current_directory_path(
+    NativeTagEditorScreen *screen, NcmStringView *view);
+bool native_tag_editor_screen_current_tag_field(
+    NativeTagEditorScreen *screen, enum NcmTagsField *field);
+bool native_tag_editor_screen_current_tag_song(
+    NativeTagEditorScreen *screen, NcmMutableSong *song);
+int64 native_tag_editor_screen_selected_tag_song_count(
+    NativeTagEditorScreen *screen);
+bool native_tag_editor_screen_active_menu_empty(
+    NativeTagEditorScreen *screen);
+bool native_tag_editor_screen_current_tag_type_editable(
+    NativeTagEditorScreen *screen);
+bool native_tag_editor_screen_current_tag_type_actionable(
+    NativeTagEditorScreen *screen);
+bool native_tag_editor_screen_enter_directory(NativeTagEditorScreen *screen);
 bool native_tag_editor_screen_add_directory(NativeTagEditorScreen *screen,
                                             char *label, int32 label_len,
                                             char *path, int32 path_len);
