@@ -2653,10 +2653,6 @@ tag_editor_mutable_song_to_song(NcmMutableSong *source,
         type = ncm_tags_field_to_tag_type(tag->field);
         value = tag->original;
         value_len = tag->original_len;
-        if (tag->modified) {
-            value = tag->value;
-            value_len = tag->value_len;
-        }
         if ((type == MPD_TAG_UNKNOWN) || (value == NULL)
             || (value_len <= 0)) {
             continue;
