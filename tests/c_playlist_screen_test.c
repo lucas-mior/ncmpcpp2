@@ -60,6 +60,7 @@ static void test_playlist_row_ownership(void);
 static void test_playlist_selection_range(void);
 static void test_native_initialization(void);
 static void test_native_load_filter_search_selection(void);
+static void test_native_large_playlist(void);
 static void test_native_mpd_updates_and_membership(void);
 static void test_native_menu_is_authoritative(void);
 static void test_locate_updates_filtered_native_menu(void);
@@ -80,6 +81,7 @@ main(void) {
     test_playlist_selection_range();
     test_native_initialization();
     test_native_load_filter_search_selection();
+    test_native_large_playlist();
     test_native_mpd_updates_and_membership();
     test_native_menu_is_authoritative();
     test_locate_updates_filtered_native_menu();
@@ -346,6 +348,30 @@ test_native_load_filter_search_selection(void) {
 }
 
 static void
+test_native_large_playlist(void) {
+    NativePlaylistScreen screen;
+    NcmMpdSongList songs;
+    NcMenu *menu;
+
+    init_screen(&screen);
+    ncm_mpd_song_list_init(&songs);
+    for (int32 i = 0; i < 2048; i += 1) {
+        append_song(&songs, LIT_ARGS("large.flac"),
+                    (uint32)i, (uint32)(i + 1));
+    }
+
+    assert(native_playlist_screen_load_song_list(&screen, &songs));
+    assert(native_playlist_screen_song_count(&screen) == 2048);
+    assert(native_playlist_screen_locate_position(&screen, 2047));
+    menu = native_playlist_screen_menu(&screen);
+    assert(nc_menu_highlight(menu) == 2047);
+
+    ncm_mpd_song_list_destroy(&songs);
+    native_playlist_screen_destroy(&screen);
+    return;
+}
+
+static void
 test_native_mpd_updates_and_membership(void) {
     NativePlaylistScreen screen;
     NcmMpdClient client = {0};
@@ -554,6 +580,12 @@ test_native_display_and_column_title(void) {
     assert(screen.column_title.len > 0);
     assert(screen.window.start_y == 2);
     assert(screen.window.height == 22);
+
+    Config.titles_visibility = false;
+    native_playlist_screen_set_geometry(&screen, 0, 20, 0, 24);
+    assert(screen.column_title.len == 0);
+    assert(screen.window.start_y == 0);
+    assert(screen.window.height == 24);
 
     native_playlist_screen_destroy(&screen);
     Config.columns = old_columns;

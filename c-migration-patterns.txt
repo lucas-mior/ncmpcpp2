@@ -610,3 +610,30 @@ Rules:
   pure-C `src/title.c` implementation.
 - Remaining C++ callers must include the matching `_legacy.h` header instead of
   the pure-C header.
+
+Native playlist migration completed
+===================================
+
+The main playlist is now a native C screen implemented by
+`src/screens/nc_playlist.c` and `src/screens/nc_playlist.h`.
+
+Completed boundary:
+    - `src/screens/playlist.h` has been deleted.
+    - The playlist no longer has a C++ owner or synchronization bridge.
+    - Native playlist registration and resize use `native_c_screens.*`.
+    - Playlist state, selection, filtering, search, rendering, and MPD updates
+      are owned by `NativePlaylistScreen` and its `NcSongMenu`.
+    - Playlist actions run through `ncm_action_runtime_run()`.
+    - `NCM_SCREEN_TYPE_PLAYLIST` is classified as a C-only screen.
+    - Playlist binding dispatch uses an explicit per-screen action whitelist.
+
+Rules for future playlist changes:
+    - Do not add a replacement C++ playlist compatibility header.
+    - Do not add playlist branches to `actions_legacy.cpp`.
+    - Do not expose a second display menu or synchronize playlist rows between
+      native and legacy menu implementations.
+    - Add new playlist actions to the native action runtime first, then add the
+      action explicitly to the playlist whitelist only when it is valid on the
+      playlist screen.
+    - Keep tests that verify playlist bindings never enter the legacy action
+      runtime.
