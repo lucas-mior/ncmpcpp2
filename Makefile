@@ -106,6 +106,7 @@ PLAYLIST_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=ncm_action_add_song_to_playlist \
 	-Wl,--wrap=ncm_mpd_client_get_playlists \
 	-Wl,--wrap=ncm_mpd_client_get_playlist_content \
+	-Wl,--wrap=ncm_mpd_client_get_playlist_content_no_info \
 	-Wl,--wrap=ncm_mpd_client_save_playlist \
 	-Wl,--wrap=ncm_mpd_client_rename_playlist \
 	-Wl,--wrap=ncm_mpd_client_delete_playlist \

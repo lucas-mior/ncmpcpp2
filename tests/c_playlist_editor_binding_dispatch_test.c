@@ -29,6 +29,7 @@ static void test_playlist_editor_selection_binding_uses_c_runtime(void);
 static void test_playlist_editor_selection_action_uses_c_runtime(void);
 static void test_playlist_editor_scroll_binding_uses_c_runtime(void);
 static void test_playlist_editor_search_movement_uses_c_runtime(void);
+static void test_playlist_editor_jump_to_playing_uses_c_runtime(void);
 
 enum ScreenType
 __wrap_native_c_screens_current_type(void) {
@@ -340,6 +341,20 @@ test_playlist_editor_search_movement_uses_c_runtime(void) {
 }
 
 static void
+test_playlist_editor_jump_to_playing_uses_c_runtime(void) {
+    test_state_reset();
+
+    assert(ncmpcpp_legacy_execute_action(NCM_ACTION_JUMP_TO_PLAYING_SONG));
+    assert(test_state.can_run_count == 0);
+    assert(test_state.run_count == 1);
+    assert(test_state.run_types[0] == NCM_ACTION_JUMP_TO_PLAYING_SONG);
+    assert(test_state.legacy_binding_count == 0);
+    assert(test_state.legacy_action_count == 0);
+    assert(test_state.unrelated_legacy_count == 0);
+    return;
+}
+
+static void
 test_migrated_action_uses_c_runtime(void) {
     test_state_reset();
 
@@ -363,5 +378,6 @@ main(void) {
     test_playlist_editor_selection_action_uses_c_runtime();
     test_playlist_editor_scroll_binding_uses_c_runtime();
     test_playlist_editor_search_movement_uses_c_runtime();
+    test_playlist_editor_jump_to_playing_uses_c_runtime();
     exit(EXIT_SUCCESS);
 }

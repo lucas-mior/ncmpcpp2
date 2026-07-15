@@ -154,6 +154,12 @@ bool native_playlist_editor_screen_load_content(
 bool native_playlist_editor_screen_reload_content_from_mpd(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client,
     NcmError *error);
+bool native_playlist_editor_screen_locate_playlist(
+    NativePlaylistEditorScreen *screen, NcmMpdClient *client,
+    char *path, int32 path_len, NcmError *error);
+bool native_playlist_editor_screen_locate_song(
+    NativePlaylistEditorScreen *screen, NcmMpdClient *client,
+    NcmSong *song, NcmError *error);
 bool native_playlist_editor_screen_current_playlist(
     NativePlaylistEditorScreen *screen, NcmPlaylist *playlist);
 bool native_playlist_editor_screen_current_playlist_path(

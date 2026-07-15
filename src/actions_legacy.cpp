@@ -100,6 +100,23 @@ bool playingSongFromNative(MPD::Song &song)
 	return success;
 }
 
+bool locatePlaylistInNativePlaylistEditor(const MPD::Playlist &playlist)
+{
+	NcmError error;
+	std::string path;
+	bool success;
+
+	path = playlist.path();
+	ncm_error_clear(&error);
+	success = native_playlist_editor_screen_locate_playlist(
+	    native_c_screen_playlist_editor(), &global_mpd,
+	    const_cast<char *>(path.c_str()), static_cast<int32>(path.size()),
+	    &error);
+	if (!success && ncm_error_is_set(&error))
+		Statusbar::print(error.message);
+	return success;
+}
+
 bool currentMediaLibraryArtistTag(std::string &artist)
 {
 	NativeMediaLibraryScreen *library;
@@ -1427,26 +1444,23 @@ bool JumpToPlayingSong::canBeRun()
 	BaseScreen *current;
 
 	if (native_c_screen_playlist_is_current()
-	    || native_c_screen_media_library_is_current())
+	    || native_c_screen_media_library_is_current()
+	    || native_c_screen_playlist_editor_is_current())
 		return ncm_action_runtime_can_run(
 		    nullptr, NCM_ACTION_JUMP_TO_PLAYING_SONG);
 
 	current = screenLegacyCurrent();
-	return (current == myPlaylistEditor || current == myBrowser)
-	    && playingSongFromNative(m_song);
+	return current == myBrowser && playingSongFromNative(m_song);
 }
 
 void JumpToPlayingSong::run()
 {
 	if (native_c_screen_playlist_is_current()
-	    || native_c_screen_media_library_is_current())
+	    || native_c_screen_media_library_is_current()
+	    || native_c_screen_playlist_editor_is_current())
 	{
 		(void)ncm_action_runtime_run(
 		    nullptr, NCM_ACTION_JUMP_TO_PLAYING_SONG);
-	}
-	else if (screenLegacyCurrent() == myPlaylistEditor)
-	{
-		myPlaylistEditor->locateSong(m_song);
 	}
 	else if (screenLegacyCurrent() == myBrowser)
 	{
@@ -1873,8 +1887,8 @@ bool JumpToPlaylistEditor::canBeRun()
 
 void JumpToPlaylistEditor::run()
 {
-	myPlaylistEditor->locatePlaylist(
-		myBrowser->main().current()->value().playlist());
+	(void)locatePlaylistInNativePlaylistEditor(
+	    myBrowser->main().current()->value().playlist());
 }
 
 void ToggleScreenLock::run()
