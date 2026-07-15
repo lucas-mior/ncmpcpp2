@@ -96,6 +96,7 @@ PLAYLIST_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_window_display \
 	-Wl,--wrap=nc_window_has_coords \
 	-Wl,--wrap=nc_menu_refresh \
+	-Wl,--wrap=nc_screen_draw_vertical_separator \
 	-Wl,--wrap=ncm_mpd_client_get_playlists \
 	-Wl,--wrap=ncm_mpd_client_get_playlist_content \
 	-Wl,--wrap=ncm_mpd_client_save_playlist \
