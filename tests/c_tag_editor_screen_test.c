@@ -83,16 +83,32 @@ typedef struct TagEditorSaveTrace {
     int32 error;
 } TagEditorSaveTrace;
 
+typedef struct TagEditorRenameTrace {
+    char old_path[256];
+    char new_path[256];
+
+    int32 old_path_len;
+    int32 new_path_len;
+    int32 calls;
+    int32 error;
+    bool result;
+} TagEditorRenameTrace;
+
 static TagEditorWindowTrace window_trace;
 static TagEditorHookTrace hook_trace;
 static TagEditorMpdTrace mpd_trace;
 static TagEditorSaveTrace save_trace;
+static TagEditorRenameTrace rename_trace;
 
 void __wrap_nc_window_print_char(NcWindow *window, char ch);
 bool __wrap_ncm_mutable_song_write(NcmMutableSong *song, char *music_dir);
+bool __wrap_ncm_fs_rename(char *old_path, int32 old_path_len,
+                          char *new_path, int32 new_path_len,
+                          NcmError *error);
 
 static void reset_window_trace(void);
 static void reset_save_trace(void);
+static void reset_rename_trace(void);
 static void reset_hook_trace(void);
 static void reset_mpd_trace(void);
 static void destroy_mpd_trace(void);
@@ -201,6 +217,10 @@ static void test_tag_editor_save_partial_failure(void);
 static void test_tag_editor_save_no_modifications(void);
 static void test_tag_editor_save_selected_subset(void);
 static void test_tag_editor_save_action_availability(void);
+static void test_tag_editor_locate_song_root_and_nested_paths(void);
+static void test_tag_editor_locate_song_missing_and_failed(void);
+static void test_tag_editor_rename_directory_root_and_nested(void);
+static void test_tag_editor_rename_directory_failure(void);
 static void test_tag_editor_generate_filename_honors_config(void);
 static void test_tag_editor_action_rows_ignore_title_visibility(void);
 static void test_tag_editor_parser_pattern_history_workflow(void);
@@ -268,6 +288,10 @@ main(void) {
     test_tag_editor_save_no_modifications();
     test_tag_editor_save_selected_subset();
     test_tag_editor_save_action_availability();
+    test_tag_editor_locate_song_root_and_nested_paths();
+    test_tag_editor_locate_song_missing_and_failed();
+    test_tag_editor_rename_directory_root_and_nested();
+    test_tag_editor_rename_directory_failure();
     test_tag_editor_generate_filename_honors_config();
     test_tag_editor_action_rows_ignore_title_visibility();
     test_tag_editor_parser_pattern_history_workflow();
@@ -289,6 +313,14 @@ reset_save_trace(void) {
     save_trace = (TagEditorSaveTrace){0};
     save_trace.fail_on_call = -1;
     save_trace.error = EIO;
+    return;
+}
+
+static void
+reset_rename_trace(void) {
+    rename_trace = (TagEditorRenameTrace){0};
+    rename_trace.result = true;
+    rename_trace.error = EIO;
     return;
 }
 
@@ -327,6 +359,7 @@ static void
 init_screen(NativeTagEditorScreen *screen) {
     reset_window_trace();
     reset_save_trace();
+    reset_rename_trace();
     native_tag_editor_screen_init(screen, 2, 100, 3, 20,
                                   nc_color_default(), nc_border_none());
     return;
@@ -2891,6 +2924,222 @@ test_tag_editor_save_action_availability(void) {
 }
 
 static void
+test_tag_editor_locate_song_root_and_nested_paths(void) {
+    NativeTagEditorScreen screen;
+    NcmSong song;
+    NcMenuStringPair *directory;
+    NcmMutableSong *tag_song;
+
+    reset_mpd_trace();
+    append_directory(&mpd_trace.directories, STRLIT_ARGS("Album"));
+    append_mpd_song(&mpd_trace.songs, STRLIT_ARGS("Album/one.flac"));
+    init_screen(&screen);
+    ncm_song_init(&song);
+    assert(ncm_song_set_uri(&song, STRLIT_ARGS("Album/one.flac")));
+    assert(native_tag_editor_screen_locate_song(&screen, &song));
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_TAGS);
+    assert(ncm_string_equal(screen.current_dir.data, screen.current_dir.len,
+                            STRLIT_ARGS("/")));
+    directory = nc_menu_active_item_at(
+        nc_editor_pair_menu_base(&screen.directories),
+        nc_menu_highlight(nc_editor_pair_menu_base(&screen.directories)));
+    assert_menu_string_pair(directory, STRLIT_ARGS("Album"),
+                            STRLIT_ARGS("Album"));
+    tag_song = nc_menu_active_item_at(
+        nc_tag_row_menu_base(&screen.tags),
+        nc_menu_highlight(nc_tag_row_menu_base(&screen.tags)));
+    assert(tag_song != NULL);
+    assert(ncm_string_equal(tag_song->uri, tag_song->uri_len,
+                            STRLIT_ARGS("Album/one.flac")));
+    ncm_song_destroy(&song);
+    destroy_screen(&screen);
+
+    reset_mpd_trace();
+    append_directory(&mpd_trace.directories,
+                     STRLIT_ARGS("Parent/Child"));
+    append_directory(&mpd_trace.directories,
+                     STRLIT_ARGS("Parent/Other"));
+    append_mpd_song(&mpd_trace.songs,
+                    STRLIT_ARGS("Parent/Child/two.flac"));
+    init_screen(&screen);
+    ncm_song_init(&song);
+    assert(ncm_song_set_uri(&song,
+                            STRLIT_ARGS("Parent/Child/two.flac")));
+    assert(native_tag_editor_screen_locate_song(&screen, &song));
+    assert(ncm_string_equal(screen.current_dir.data, screen.current_dir.len,
+                            STRLIT_ARGS("Parent")));
+    directory = nc_menu_active_item_at(
+        nc_editor_pair_menu_base(&screen.directories),
+        nc_menu_highlight(nc_editor_pair_menu_base(&screen.directories)));
+    assert_menu_string_pair(directory, STRLIT_ARGS("Child"),
+                            STRLIT_ARGS("Parent/Child"));
+    tag_song = nc_menu_active_item_at(
+        nc_tag_row_menu_base(&screen.tags),
+        nc_menu_highlight(nc_tag_row_menu_base(&screen.tags)));
+    assert(tag_song != NULL);
+    assert(ncm_string_equal(tag_song->uri, tag_song->uri_len,
+                            STRLIT_ARGS("Parent/Child/two.flac")));
+    ncm_song_destroy(&song);
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_locate_song_missing_and_failed(void) {
+    NativeTagEditorScreen screen;
+    NcmSong song;
+
+    reset_mpd_trace();
+    init_screen(&screen);
+    ncm_song_init(&song);
+    assert(ncm_song_set_uri(&song, STRLIT_ARGS("song.flac")));
+    assert(!native_tag_editor_screen_locate_song(&screen, &song));
+    assert(mpd_trace.get_directory_list_calls == 0);
+    ncm_song_destroy(&song);
+    destroy_screen(&screen);
+
+    reset_mpd_trace();
+    append_directory(&mpd_trace.directories, STRLIT_ARGS("Other"));
+    init_screen(&screen);
+    ncm_song_init(&song);
+    assert(ncm_song_set_uri(&song, STRLIT_ARGS("Album/song.flac")));
+    assert(!native_tag_editor_screen_locate_song(&screen, &song));
+    assert(mpd_trace.get_directory_list_calls == 1);
+    assert(mpd_trace.get_songs_calls == 0);
+    ncm_song_destroy(&song);
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_rename_directory_root_and_nested(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *directories;
+
+    reset_hook_trace();
+    init_screen(&screen);
+    native_tag_editor_screen_set_hooks(&screen, tag_editor_test_hooks());
+    assert(native_tag_editor_screen_set_current_dir(
+               &screen, STRLIT_ARGS("/")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("."), STRLIT_ARGS("/")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("Alpha")));
+    screen.directories_update_requested = false;
+    directories = nc_editor_pair_menu_base(&screen.directories);
+    assert(!native_tag_editor_screen_rename_directory_available(
+               &screen, STRLIT_ARGS("/music")));
+    assert(nc_menu_goto_selectable(directories, 1));
+    assert(native_tag_editor_screen_rename_directory_available(
+               &screen, STRLIT_ARGS("/music")));
+    tag_editor_copy_trace_string(
+        hook_trace.prompt_response,
+        NCM_ARRAY_LEN(hook_trace.prompt_response),
+        &hook_trace.prompt_response_len, STRLIT_ARGS("Beta"));
+    assert(native_tag_editor_screen_rename_current_directory(
+               &screen, STRLIT_ARGS("/music")));
+    assert(rename_trace.calls == 1);
+    assert(ncm_string_equal(rename_trace.old_path,
+                            rename_trace.old_path_len,
+                            STRLIT_ARGS("/music/Alpha")));
+    assert(ncm_string_equal(rename_trace.new_path,
+                            rename_trace.new_path_len,
+                            STRLIT_ARGS("/music/Beta")));
+    assert(hook_trace.update_directory_calls == 1);
+    assert(ncm_string_equal(hook_trace.update_directory,
+                            hook_trace.update_directory_len,
+                            STRLIT_ARGS("/")));
+    assert(screen.directories_update_requested);
+    assert(ncm_string_equal(screen.highlighted_dir.data,
+                            screen.highlighted_dir.len,
+                            STRLIT_ARGS("/Beta")));
+
+    reset_mpd_trace();
+    append_directory(&mpd_trace.directories, STRLIT_ARGS("/Beta"));
+    nc_screen_request_update(native_tag_editor_screen_base(&screen));
+    nc_screen_update(native_tag_editor_screen_base(&screen));
+    directories = nc_editor_pair_menu_base(&screen.directories);
+    assert(!screen.directories_update_requested);
+    assert(nc_menu_item_count(directories) == 2);
+    assert_menu_string_pair(nc_menu_active_item_at(directories, 1),
+                            STRLIT_ARGS("Beta"), STRLIT_ARGS("/Beta"));
+    destroy_screen(&screen);
+
+    reset_hook_trace();
+    init_screen(&screen);
+    native_tag_editor_screen_set_hooks(&screen, tag_editor_test_hooks());
+    assert(native_tag_editor_screen_set_current_dir(
+               &screen, STRLIT_ARGS("Parent")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS(".."), STRLIT_ARGS("/")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Child"),
+               STRLIT_ARGS("Parent/Child")));
+    directories = nc_editor_pair_menu_base(&screen.directories);
+    assert(!native_tag_editor_screen_rename_directory_available(
+               &screen, STRLIT_ARGS("/music")));
+    assert(nc_menu_goto_selectable(directories, 1));
+    tag_editor_copy_trace_string(
+        hook_trace.prompt_response,
+        NCM_ARRAY_LEN(hook_trace.prompt_response),
+        &hook_trace.prompt_response_len, STRLIT_ARGS("Renamed"));
+    assert(native_tag_editor_screen_rename_current_directory(
+               &screen, STRLIT_ARGS("/music")));
+    assert(rename_trace.calls == 1);
+    assert(ncm_string_equal(rename_trace.old_path,
+                            rename_trace.old_path_len,
+                            STRLIT_ARGS("/music/Parent/Child")));
+    assert(ncm_string_equal(rename_trace.new_path,
+                            rename_trace.new_path_len,
+                            STRLIT_ARGS("/music/Parent/Renamed")));
+    assert(hook_trace.update_directory_calls == 1);
+    assert(ncm_string_equal(hook_trace.update_directory,
+                            hook_trace.update_directory_len,
+                            STRLIT_ARGS("Parent")));
+    assert(screen.directories_update_requested);
+    assert(ncm_string_equal(screen.highlighted_dir.data,
+                            screen.highlighted_dir.len,
+                            STRLIT_ARGS("Parent/Renamed")));
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_rename_directory_failure(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *directories;
+
+    reset_hook_trace();
+    init_screen(&screen);
+    native_tag_editor_screen_set_hooks(&screen, tag_editor_test_hooks());
+    rename_trace.result = false;
+    rename_trace.error = EACCES;
+    assert(native_tag_editor_screen_set_current_dir(
+               &screen, STRLIT_ARGS("/")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("Alpha")));
+    screen.directories_update_requested = false;
+    directories = nc_editor_pair_menu_base(&screen.directories);
+    assert(nc_menu_goto_selectable(directories, 0));
+    tag_editor_copy_trace_string(
+        hook_trace.prompt_response,
+        NCM_ARRAY_LEN(hook_trace.prompt_response),
+        &hook_trace.prompt_response_len, STRLIT_ARGS("Beta"));
+
+    assert(!native_tag_editor_screen_rename_current_directory(
+                &screen, STRLIT_ARGS("/music")));
+    assert(rename_trace.calls == 1);
+    assert(hook_trace.update_directory_calls == 0);
+    assert(!screen.directories_update_requested);
+    assert(hook_trace.status_message_calls == 1);
+    assert(strstr(hook_trace.status_message,
+                  "Couldn't rename \"Alpha\"") != NULL);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
 test_tag_editor_generate_filename_honors_config(void) {
     NcmMutableSong song;
     NcmBuffer filename;
@@ -3330,6 +3579,25 @@ __wrap_ncm_mutable_song_write(NcmMutableSong *song, char *music_dir) {
         errno = save_trace.error;
         return false;
     }
+    return true;
+}
+
+bool
+__wrap_ncm_fs_rename(char *old_path, int32 old_path_len,
+                     char *new_path, int32 new_path_len,
+                     NcmError *error) {
+    rename_trace.calls += 1;
+    tag_editor_copy_trace_string(
+        rename_trace.old_path, NCM_ARRAY_LEN(rename_trace.old_path),
+        &rename_trace.old_path_len, old_path, old_path_len);
+    tag_editor_copy_trace_string(
+        rename_trace.new_path, NCM_ARRAY_LEN(rename_trace.new_path),
+        &rename_trace.new_path_len, new_path, new_path_len);
+    if (!rename_trace.result) {
+        ncm_error_set(error, rename_trace.error, STRLIT_ARGS("rename failed"));
+        return false;
+    }
+    ncm_error_clear(error);
     return true;
 }
 

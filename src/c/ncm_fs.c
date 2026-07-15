@@ -266,6 +266,37 @@ ncm_fs_unlink(char *path, int32 path_len, NcmError *error) {
     return true;
 }
 
+
+bool
+ncm_fs_rename(char *old_path, int32 old_path_len, char *new_path,
+              int32 new_path_len, NcmError *error) {
+    char *old_copy;
+    char *new_copy;
+
+    old_copy = NULL;
+    new_copy = NULL;
+    if (!ncm_fs_path_copy(old_path, old_path_len, &old_copy, error)) {
+        return false;
+    }
+    if (!ncm_fs_path_copy(new_path, new_path_len, &new_copy, error)) {
+        ncm_free(old_copy, old_path_len + 1);
+        return false;
+    }
+
+    if (rename(old_copy, new_copy) != 0) {
+        ncm_fs_set_errno_error(error, errno, (char *)"rename",
+                               old_path, old_path_len);
+        ncm_free(new_copy, new_path_len + 1);
+        ncm_free(old_copy, old_path_len + 1);
+        return false;
+    }
+
+    ncm_free(new_copy, new_path_len + 1);
+    ncm_free(old_copy, old_path_len + 1);
+    ncm_error_clear(error);
+    return true;
+}
+
 bool
 ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *error) {
     char *copy;

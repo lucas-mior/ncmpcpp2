@@ -164,6 +164,21 @@ static bool tag_editor_current_directory_path(NativeTagEditorScreen *screen,
                                               int32 *path_len);
 static bool tag_editor_directory_has_subdirectories(
     NativeTagEditorScreen *screen, char *path, int32 path_len);
+static bool tag_editor_directory_is_control(char *label, int32 label_len);
+static bool tag_editor_highlight_directory_path(
+    NativeTagEditorScreen *screen, char *path, int32 path_len);
+static bool tag_editor_highlight_song_uri(
+    NativeTagEditorScreen *screen, char *uri, int32 uri_len);
+static bool tag_editor_current_directory_pair(
+    NativeTagEditorScreen *screen, NcMenuStringPair **pair);
+static bool tag_editor_build_renamed_directory(
+    NativeTagEditorScreen *screen, char *name, int32 name_len,
+    NcmBuffer *result);
+static void tag_editor_status_directory_renamed(
+    NativeTagEditorScreen *screen, char *name, int32 name_len);
+static void tag_editor_status_directory_rename_error(
+    NativeTagEditorScreen *screen, char *name, int32 name_len,
+    NcmError *error);
 static bool tag_editor_has_modified_songs(NativeTagEditorScreen *screen);
 static void tag_editor_preserve_current_directory(
     NativeTagEditorScreen *screen, NcmBuffer *path);
@@ -832,6 +847,172 @@ native_tag_editor_screen_go_to_parent(NativeTagEditorScreen *screen) {
     screen->observed_dir_valid = false;
     tag_editor_update_titles(screen, true);
     return true;
+}
+
+bool
+native_tag_editor_screen_locate_song(NativeTagEditorScreen *screen,
+                                     NcmSong *song) {
+    NcmStringView directory;
+    NcmStringView uri;
+    NcmBuffer parent;
+    NcmError error;
+    int32 parent_len;
+    bool ok;
+
+    if ((screen == NULL) || (song == NULL)) {
+        return false;
+    }
+    if (!ncm_song_uri_view(song, 0, &uri) || (uri.len <= 0)) {
+        return false;
+    }
+    if (!ncm_string_contains_char(uri.data, uri.len, '/')) {
+        return false;
+    }
+    if (!ncm_song_directory_view(song, 0, &directory)
+        || (directory.len <= 0)) {
+        return false;
+    }
+
+    ncm_buffer_init(&parent);
+    parent_len = ncm_string_parent_directory_len(directory.data,
+                                                directory.len);
+    if (parent_len <= 0) {
+        ok = ncm_buffer_set(&parent, STRLIT_ARGS("/"));
+    } else {
+        ok = ncm_buffer_set(&parent, directory.data, parent_len);
+    }
+    if (!ok) {
+        ncm_buffer_destroy(&parent);
+        return false;
+    }
+
+    ok = native_tag_editor_screen_set_current_dir(screen, parent.data,
+                                                 parent.len)
+         && ncm_buffer_set(&screen->highlighted_dir, directory.data,
+                           directory.len);
+    if (ok) {
+        nc_menu_clear_items(nc_editor_pair_menu_base(&screen->directories));
+        ncm_error_clear(&error);
+        ok = tag_editor_reload_directories_from_mpd(screen, &global_mpd,
+                                                    &error);
+    }
+    if (ok) {
+        ok = tag_editor_highlight_directory_path(screen, directory.data,
+                                                directory.len);
+    }
+    if (ok) {
+        native_tag_editor_screen_clear_stale_tags(screen);
+        ncm_error_clear(&error);
+        ok = tag_editor_reload_songs_from_mpd(screen, &global_mpd, &error);
+    }
+    if (ok) {
+        nc_menu_reset(nc_editor_string_menu_base(&screen->tag_types));
+        tag_editor_set_focus(screen, NATIVE_TAG_EDITOR_FOCUS_TAGS);
+        ok = tag_editor_highlight_song_uri(screen, uri.data, uri.len);
+    }
+
+    ncm_buffer_destroy(&parent);
+    tag_editor_update_titles(screen, true);
+    return ok;
+}
+
+bool
+native_tag_editor_screen_rename_directory_available(
+    NativeTagEditorScreen *screen, char *music_dir, int32 music_dir_len) {
+    NcMenuStringPair *pair;
+
+    if ((screen == NULL) || (music_dir == NULL) || (music_dir_len <= 0)) {
+        return false;
+    }
+    if (screen->active_focus != NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES) {
+        return false;
+    }
+    if (!tag_editor_current_directory_pair(screen, &pair)) {
+        return false;
+    }
+    if (tag_editor_directory_is_control(pair->first, pair->first_len)) {
+        return false;
+    }
+    return true;
+}
+
+bool
+native_tag_editor_screen_rename_current_directory(
+    NativeTagEditorScreen *screen, char *music_dir, int32 music_dir_len) {
+    NcMenuStringPair *pair;
+    NcmStringView initial;
+    NcmBuffer name;
+    NcmBuffer old_path;
+    NcmBuffer new_path;
+    NcmBuffer new_relative;
+    NcmError error;
+    enum NativeTagEditorPromptResult result;
+    bool ok;
+
+    if (!native_tag_editor_screen_rename_directory_available(
+            screen, music_dir, music_dir_len)) {
+        return false;
+    }
+    if ((screen->hooks.prompt == NULL) || !tag_editor_current_directory_pair(
+            screen, &pair)) {
+        return false;
+    }
+
+    ncm_string_view_set(&initial, pair->first, pair->first_len);
+    ncm_buffer_init(&name);
+    result = screen->hooks.prompt(
+        screen->hooks.user, STRLIT_ARGS("Directory: "), initial, &name);
+    if (result == NATIVE_TAG_EDITOR_PROMPT_ABORTED) {
+        ncm_buffer_destroy(&name);
+        return true;
+    }
+    if (result != NATIVE_TAG_EDITOR_PROMPT_ACCEPTED) {
+        ncm_buffer_destroy(&name);
+        return false;
+    }
+    if ((name.len <= 0)
+        || ncm_string_equal(name.data, name.len, pair->first,
+                            pair->first_len)) {
+        ncm_buffer_destroy(&name);
+        return true;
+    }
+
+    ncm_buffer_init(&old_path);
+    ncm_buffer_init(&new_path);
+    ncm_buffer_init(&new_relative);
+    ok = ncm_fs_join(&old_path, music_dir, music_dir_len,
+                     pair->second, pair->second_len)
+         && tag_editor_build_renamed_directory(screen, name.data,
+                                               name.len, &new_relative)
+         && ncm_fs_join(&new_path, music_dir, music_dir_len,
+                        new_relative.data, new_relative.len);
+    if (ok) {
+        ncm_error_clear(&error);
+        ok = ncm_fs_rename(old_path.data, old_path.len,
+                           new_path.data, new_path.len, &error);
+        if (!ok) {
+            tag_editor_status_directory_rename_error(
+                screen, pair->first, pair->first_len, &error);
+        }
+    }
+    if (ok) {
+        tag_editor_status_directory_renamed(screen, name.data, name.len);
+        if (screen->hooks.update_directory != NULL) {
+            screen->hooks.update_directory(
+                screen->hooks.user, screen->current_dir.data,
+                screen->current_dir.len);
+        }
+        (void)ncm_buffer_set(&screen->highlighted_dir,
+                             new_relative.data, new_relative.len);
+        screen->directories_update_requested = true;
+        tag_editor_update_titles(screen, true);
+    }
+
+    ncm_buffer_destroy(&new_relative);
+    ncm_buffer_destroy(&new_path);
+    ncm_buffer_destroy(&old_path);
+    ncm_buffer_destroy(&name);
+    return ok;
 }
 
 bool
@@ -2942,6 +3123,132 @@ tag_editor_directory_has_subdirectories(
     ncm_error_clear(&error);
     ncm_directory_array_destroy(&directories);
     return result;
+}
+
+static bool
+tag_editor_directory_is_control(char *label, int32 label_len) {
+    return ncm_string_equal(label, label_len, STRLIT_ARGS("."))
+           || ncm_string_equal(label, label_len, STRLIT_ARGS(".."));
+}
+
+static bool
+tag_editor_highlight_directory_path(NativeTagEditorScreen *screen,
+                                    char *path, int32 path_len) {
+    NcMenu *menu;
+
+    if ((screen == NULL) || (path == NULL) || (path_len <= 0)) {
+        return false;
+    }
+    menu = nc_editor_pair_menu_base(&screen->directories);
+    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        NcMenuStringPair *pair;
+
+        pair = nc_menu_active_item_at(menu, i);
+        if ((pair == NULL) || (pair->second == NULL)) {
+            continue;
+        }
+        if (ncm_string_equal(pair->second, pair->second_len,
+                             path, path_len)) {
+            (void)nc_menu_goto_selectable(menu, i);
+            tag_editor_observe_current_directory(screen);
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool
+tag_editor_highlight_song_uri(NativeTagEditorScreen *screen, char *uri,
+                              int32 uri_len) {
+    NcMenu *menu;
+
+    if ((screen == NULL) || (uri == NULL) || (uri_len <= 0)) {
+        return false;
+    }
+    menu = nc_tag_row_menu_base(&screen->tags);
+    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        NcmMutableSong *song;
+
+        song = nc_menu_active_item_at(menu, i);
+        if ((song == NULL) || (song->uri == NULL)) {
+            continue;
+        }
+        if (ncm_string_equal(song->uri, song->uri_len, uri, uri_len)) {
+            (void)nc_menu_goto_selectable(menu, i);
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool
+tag_editor_current_directory_pair(NativeTagEditorScreen *screen,
+                                  NcMenuStringPair **pair) {
+    NcMenuStringPair *current;
+
+    if (pair != NULL) {
+        *pair = NULL;
+    }
+    if (screen == NULL) {
+        return false;
+    }
+    current = nc_editor_pair_menu_current(&screen->directories);
+    if ((current == NULL) || (current->first == NULL)
+        || (current->second == NULL)) {
+        return false;
+    }
+    if (pair != NULL) {
+        *pair = current;
+    }
+    return true;
+}
+
+static bool
+tag_editor_build_renamed_directory(NativeTagEditorScreen *screen,
+                                   char *name, int32 name_len,
+                                   NcmBuffer *result) {
+    if ((screen == NULL) || (result == NULL) || (name == NULL)
+        || (name_len <= 0)) {
+        return false;
+    }
+    return ncm_fs_join(result, screen->current_dir.data,
+                       screen->current_dir.len, name, name_len);
+}
+
+static void
+tag_editor_status_directory_renamed(NativeTagEditorScreen *screen,
+                                    char *name, int32 name_len) {
+    NcmBuffer message;
+
+    ncm_buffer_init(&message);
+    ncm_buffer_append(&message, STRLIT_ARGS("Directory renamed to \""));
+    ncm_buffer_append(&message, name, name_len);
+    ncm_buffer_append(&message, STRLIT_ARGS("\""));
+    tag_editor_status_message(screen, message.data, message.len);
+    ncm_buffer_destroy(&message);
+    return;
+}
+
+static void
+tag_editor_status_directory_rename_error(NativeTagEditorScreen *screen,
+                                         char *name, int32 name_len,
+                                         NcmError *error) {
+    NcmBuffer message;
+    int32 error_len;
+
+    ncm_buffer_init(&message);
+    ncm_buffer_append(&message, STRLIT_ARGS("Couldn't rename \""));
+    ncm_buffer_append(&message, name, name_len);
+    ncm_buffer_append(&message, STRLIT_ARGS("\": "));
+    if ((error != NULL) && ncm_error_is_set(error)) {
+        error_len = (int32)strlen(error->message);
+        ncm_buffer_append(&message, error->message, error_len);
+    } else {
+        ncm_buffer_append(&message, STRLIT_ARGS("unknown error"));
+    }
+    tag_editor_status_message(screen, message.data, message.len);
+    ncm_buffer_destroy(&message);
+    return;
 }
 
 static bool

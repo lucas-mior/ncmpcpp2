@@ -43,6 +43,9 @@ bool ncm_fs_exists(char *path, int32 path_len);
 bool ncm_fs_is_regular_file(char *path, int32 path_len);
 bool ncm_fs_is_directory(char *path, int32 path_len);
 bool ncm_fs_unlink(char *path, int32 path_len, NcmError *error);
+bool ncm_fs_rename(char *old_path, int32 old_path_len,
+                   char *new_path, int32 new_path_len,
+                   NcmError *error);
 bool ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *error);
 bool ncm_fs_directory_open(NcmFsDirectory *directory, char *path,
                            int32 path_len, NcmError *error);

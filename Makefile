@@ -129,6 +129,7 @@ TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=ncm_mpd_client_get_directory_list \
 	-Wl,--wrap=ncm_mpd_client_get_songs \
 	-Wl,--wrap=ncm_mutable_song_write \
+	-Wl,--wrap=ncm_fs_rename \
 	-Wl,--wrap=ncm_statusbar_print_cstring
 $(BUILD_DIR)/tests/c_tag_editor_screen_test: \
 	LDFLAGS += $(TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS)
