@@ -1608,22 +1608,30 @@ bool EditDirectoryName::canBeRun()
 {
 	BaseScreen *current;
 
-	current = screenLegacyCurrent();
-	return  current != nullptr
-	    && (((current == myBrowser
-	      && !myBrowser->main().empty()
-	      && myBrowser->main().current()->value().type() == MPD::Item::Type::Directory)
 #	ifdef HAVE_TAGLIB_H
-	    ||   (current->activeWindow() == myTagEditor->Dirs
-	      && !myTagEditor->Dirs->empty()
-	      && myTagEditor->Dirs->choice() > 0)
+	if (ncm_action_runtime_can_run(nullptr, NCM_ACTION_EDIT_DIRECTORY_NAME))
+		return true;
 #	endif // HAVE_TAGLIB_H
-		) &&     isMPDMusicDirSet());
+
+	current = screenLegacyCurrent();
+	return current != nullptr
+	    && current == myBrowser
+	    && !myBrowser->main().empty()
+	    && myBrowser->main().current()->value().type() == MPD::Item::Type::Directory
+	    && isMPDMusicDirSet();
 }
 
 void EditDirectoryName::run()
 {
-		if (screenLegacyCurrent() == myBrowser)
+#	ifdef HAVE_TAGLIB_H
+	if (ncm_action_runtime_can_run(nullptr, NCM_ACTION_EDIT_DIRECTORY_NAME))
+	{
+		(void)ncm_action_runtime_run(nullptr, NCM_ACTION_EDIT_DIRECTORY_NAME);
+		return;
+	}
+#	endif // HAVE_TAGLIB_H
+
+	if (screenLegacyCurrent() == myBrowser)
 	{
 		std::string old_dir = myBrowser->main().current()->value().directory().path();
 		std::string new_dir;
@@ -1651,34 +1659,7 @@ void EditDirectoryName::run()
 			myBrowser->requestUpdate();
 		}
 	}
-#	ifdef HAVE_TAGLIB_H
-	else if (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs)
-	{
-		std::string old_dir = myTagEditor->Dirs->current()->value().first, new_dir;
-		{
-			Statusbar::ScopedLock slock;
-			Statusbar::put() << NC_FORMAT_BOLD << "Directory: " << NC_FORMAT_NO_BOLD;
-			if (!promptString(new_dir, old_dir))
-					return;
-		}
-		if (!new_dir.empty() && new_dir != old_dir)
-		{
-			std::string full_old_dir = Config.mpd_music_dir + myTagEditor->CurrentDir() + "/" + old_dir;
-			std::string full_new_dir = Config.mpd_music_dir + myTagEditor->CurrentDir() + "/" + new_dir;
-			if (rename(full_old_dir.c_str(), full_new_dir.c_str()) == 0)
-			{
-				const char msg[] = "Directory renamed to \"%1%\"";
-				Statusbar::printf(msg, Utf8::shorten(new_dir, COLS-const_strlen(msg)));
-				Mpd.UpdateDirectory(myTagEditor->CurrentDir());
-			}
-			else
-			{
-				const char msg[] = "Couldn't rename \"%1%\": %2%";
-				Statusbar::printf(msg, Utf8::shorten(old_dir, COLS-const_strlen(msg)-25), strerror(errno));
-			}
-		}
-	}
-#	endif // HAVE_TAGLIB_H
+
 }
 
 bool EditPlaylistName::canBeRun()
@@ -1783,18 +1764,14 @@ void ToggleScreenLock::run()
 
 bool JumpToTagEditor::canBeRun()
 {
-#	ifdef HAVE_TAGLIB_H
-	return isMPDMusicDirSet() && currentSongFromNative(m_song);
-#	else
-	return false;
-#	endif // HAVE_TAGLIB_H
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_JUMP_TO_TAG_EDITOR);
 }
 
 void JumpToTagEditor::run()
 {
-#	ifdef HAVE_TAGLIB_H
-	myTagEditor->LocateSong(m_song);
-#	endif // HAVE_TAGLIB_H
+	(void)ncm_action_runtime_run(
+	    nullptr, NCM_ACTION_JUMP_TO_TAG_EDITOR);
 }
 
 bool JumpToPositionInSong::canBeRun()

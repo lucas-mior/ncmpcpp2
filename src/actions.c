@@ -1345,6 +1345,8 @@ static bool action_runtime_jump_to_parent_directory(void);
 static bool action_runtime_seek_relative(bool forward);
 static bool action_runtime_jump_to_playing_song(void);
 static bool action_runtime_jump_to_media_library(void);
+static bool action_runtime_jump_to_tag_editor(void);
+static bool action_runtime_edit_directory_name(void);
 static bool action_runtime_toggle_display_mode(void);
 static bool action_runtime_toggle_browser_sort_mode(void);
 static bool action_runtime_toggle_library_tag_type(void);
@@ -4571,6 +4573,54 @@ action_runtime_jump_to_media_library(void) {
 }
 
 static bool
+action_runtime_jump_to_tag_editor(void) {
+#if defined(HAVE_TAGLIB_H)
+    NcmStringView directory;
+    NcmSong song;
+    bool success;
+
+    if (Config.mpd_music_dir_len <= 0) {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Proper mpd_music_dir variable has to be set in "
+                    "configuration file");
+        return false;
+    }
+
+    ncm_song_init(&song);
+    success = action_runtime_current_song(&song);
+    if (success) {
+        success = ncm_song_directory_view(&song, 0, &directory)
+                  && (directory.len > 0);
+    }
+    if (success) {
+        success = action_runtime_switch_to_screen(
+            NCM_SCREEN_TYPE_TAG_EDITOR);
+    }
+    if (success) {
+        success = native_tag_editor_screen_locate_song(
+            native_c_screen_tag_editor(), &song);
+    }
+    ncm_song_destroy(&song);
+    return success;
+#else
+    return false;
+#endif
+}
+
+static bool
+action_runtime_edit_directory_name(void) {
+#if defined(HAVE_TAGLIB_H)
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
+        return native_tag_editor_screen_rename_current_directory(
+            native_c_screen_tag_editor(), Config.mpd_music_dir,
+            Config.mpd_music_dir_len);
+    }
+#endif
+    return false;
+}
+
+static bool
 action_runtime_edit_playlist_name(void) {
     NativePlaylistEditorScreen *screen;
     NcmPlaylist playlist;
@@ -5391,7 +5441,8 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return action_runtime_has_current_song();
     case NCM_ACTION_JUMP_TO_TAG_EDITOR:
 #if defined(HAVE_TAGLIB_H)
-        return true;
+        return (Config.mpd_music_dir_len > 0)
+            && action_runtime_has_current_song();
 #else
         return false;
 #endif
@@ -5542,10 +5593,18 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return ncm_mpd_client_connected(&global_mpd)
             && action_runtime_playlist_editor_playlists_active()
             && action_runtime_playlist_editor_has_playlists();
+    case NCM_ACTION_EDIT_DIRECTORY_NAME:
+#if defined(HAVE_TAGLIB_H)
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
+            return native_tag_editor_screen_rename_directory_available(
+                native_c_screen_tag_editor(), Config.mpd_music_dir,
+                Config.mpd_music_dir_len);
+        }
+#endif
+        return false;
     case NCM_ACTION_DELETE_BROWSER_ITEMS:
     case NCM_ACTION_EDIT_LIBRARY_TAG:
     case NCM_ACTION_EDIT_LIBRARY_ALBUM:
-    case NCM_ACTION_EDIT_DIRECTORY_NAME:
     case NCM_ACTION_FIND:
         return false;
     default:
@@ -5751,11 +5810,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         }
         return true;
     case NCM_ACTION_JUMP_TO_TAG_EDITOR:
-#if defined(HAVE_TAGLIB_H)
-        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_TAG_EDITOR);
-#else
-        return false;
-#endif
+        return action_runtime_jump_to_tag_editor();
     case NCM_ACTION_JUMP_TO_POSITION_IN_SONG:
         return action_runtime_jump_to_position_in_song();
     case NCM_ACTION_SELECT_ITEM:
@@ -5951,13 +6006,12 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_ADD_RANDOM_ITEMS:
         return action_runtime_add_random_items();
     case NCM_ACTION_EDIT_PLAYLIST_NAME:
-        return ncm_mpd_client_connected(&global_mpd)
-            && action_runtime_playlist_editor_playlists_active()
-            && action_runtime_playlist_editor_has_playlists();
+        return action_runtime_edit_playlist_name();
+    case NCM_ACTION_EDIT_DIRECTORY_NAME:
+        return action_runtime_edit_directory_name();
     case NCM_ACTION_DELETE_BROWSER_ITEMS:
     case NCM_ACTION_EDIT_LIBRARY_TAG:
     case NCM_ACTION_EDIT_LIBRARY_ALBUM:
-    case NCM_ACTION_EDIT_DIRECTORY_NAME:
     case NCM_ACTION_FIND:
         return false;
     default:
