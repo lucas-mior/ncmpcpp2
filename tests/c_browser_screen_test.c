@@ -14,6 +14,7 @@ static void test_browser_selected_songs(void);
 static void test_browser_filter_and_search(void);
 static void test_browser_local_mode(void);
 static void test_browser_owned_state(void);
+static void test_browser_native_callbacks_ignore_bridge(void);
 static void test_browser_local_browsing_parity(void);
 static void test_browser_directory_expansion_parity(void);
 static void test_browser_playlist_expansion_parity(void);
@@ -22,6 +23,18 @@ static void test_browser_filter_search_formatting_parity(void);
 static void test_browser_sort_modes_parity(void);
 static void test_browser_jump_to_playing_song_parity(void);
 static void browser_parity_test_pending(char *name);
+static NcWindow *test_bridge_active_window(void *user);
+static void test_bridge_refresh(void *user);
+static void test_bridge_refresh_window(void *user);
+static void test_bridge_scroll(void *user, enum NcScroll where);
+static void test_bridge_switch_to(void *user);
+static void test_bridge_resize(void *user);
+static char *test_bridge_title(void *user);
+static void test_bridge_update(void *user);
+static void test_bridge_request_update(void *user);
+static void test_bridge_mouse(void *user, MEVENT event);
+
+static int32 bridge_callback_calls;
 
 int
 main(void) {
@@ -30,6 +43,7 @@ main(void) {
     test_browser_filter_and_search();
     test_browser_local_mode();
     test_browser_owned_state();
+    test_browser_native_callbacks_ignore_bridge();
     test_browser_local_browsing_parity();
     test_browser_directory_expansion_parity();
     test_browser_playlist_expansion_parity();
@@ -224,6 +238,120 @@ test_browser_owned_state(void) {
     assert(screen.scratch_buffer.len == 0);
 
     native_browser_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_browser_native_callbacks_ignore_bridge(void) {
+    NativeBrowserScreen screen;
+    NativeBrowserBridge bridge = {0};
+    NcWindow *active;
+    char *title;
+    MEVENT event = {0};
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24, nc_color_default(),
+                               nc_border_none());
+    assert(native_browser_screen_set_current_directory(&screen,
+                                                       LIT_ARGS("music")));
+
+    bridge.active_window = test_bridge_active_window;
+    bridge.refresh = test_bridge_refresh;
+    bridge.refresh_window = test_bridge_refresh_window;
+    bridge.scroll = test_bridge_scroll;
+    bridge.switch_to = test_bridge_switch_to;
+    bridge.resize = test_bridge_resize;
+    bridge.title = test_bridge_title;
+    bridge.update = test_bridge_update;
+    bridge.request_update = test_bridge_request_update;
+    bridge.mouse_button_pressed = test_bridge_mouse;
+    native_browser_screen_set_bridge(&screen, bridge);
+
+    bridge_callback_calls = 0;
+    active = nc_screen_active_window(native_browser_screen_base(&screen));
+    assert(active == native_browser_screen_window(&screen));
+    nc_screen_scroll(native_browser_screen_base(&screen), NC_SCROLL_DOWN);
+    nc_screen_switch_to(native_browser_screen_base(&screen));
+    native_browser_screen_request_update(&screen);
+    nc_screen_update(native_browser_screen_base(&screen));
+    nc_screen_mouse_button_pressed(native_browser_screen_base(&screen),
+                                   event);
+    title = nc_screen_title(native_browser_screen_base(&screen));
+    assert(ncm_string_equal(title, 13, LIT_ARGS("Browse: music")));
+    assert(bridge_callback_calls == 0);
+
+    native_browser_screen_destroy(&screen);
+    return;
+}
+
+static NcWindow *
+test_bridge_active_window(void *user) {
+    (void)user;
+    bridge_callback_calls += 1;
+    return NULL;
+}
+
+static void
+test_bridge_refresh(void *user) {
+    (void)user;
+    bridge_callback_calls += 1;
+    return;
+}
+
+static void
+test_bridge_refresh_window(void *user) {
+    (void)user;
+    bridge_callback_calls += 1;
+    return;
+}
+
+static void
+test_bridge_scroll(void *user, enum NcScroll where) {
+    (void)user;
+    (void)where;
+    bridge_callback_calls += 1;
+    return;
+}
+
+static void
+test_bridge_switch_to(void *user) {
+    (void)user;
+    bridge_callback_calls += 1;
+    return;
+}
+
+static void
+test_bridge_resize(void *user) {
+    (void)user;
+    bridge_callback_calls += 1;
+    return;
+}
+
+static char *
+test_bridge_title(void *user) {
+    (void)user;
+    bridge_callback_calls += 1;
+    return (char *)"Bridge";
+}
+
+static void
+test_bridge_update(void *user) {
+    (void)user;
+    bridge_callback_calls += 1;
+    return;
+}
+
+static void
+test_bridge_request_update(void *user) {
+    (void)user;
+    bridge_callback_calls += 1;
+    return;
+}
+
+static void
+test_bridge_mouse(void *user, MEVENT event) {
+    (void)user;
+    (void)event;
+    bridge_callback_calls += 1;
     return;
 }
 
