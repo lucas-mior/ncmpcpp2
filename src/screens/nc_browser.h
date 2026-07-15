@@ -134,6 +134,7 @@ bool native_browser_screen_current_song(NativeBrowserScreen *screen,
 bool native_browser_screen_selected_songs(NativeBrowserScreen *screen,
                                           NcmSongArray *songs);
 bool native_browser_screen_enter_directory(NativeBrowserScreen *screen);
+bool native_browser_screen_activate_current(NativeBrowserScreen *screen);
 bool native_browser_screen_go_to_parent(NativeBrowserScreen *screen);
 bool native_browser_screen_apply_filter(NativeBrowserScreen *screen,
                                         char *pattern, int32 pattern_len,
