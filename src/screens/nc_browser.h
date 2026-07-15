@@ -132,6 +132,9 @@ bool native_browser_screen_in_root_directory(NativeBrowserScreen *screen);
 void native_browser_screen_set_local(NativeBrowserScreen *screen,
                                      bool local_browser);
 bool native_browser_screen_is_local(NativeBrowserScreen *screen);
+bool native_browser_screen_change_browse_mode(NativeBrowserScreen *screen,
+                                              NcmMpdClient *client,
+                                              NcmError *error);
 NcmMpdItem *native_browser_screen_current_item(NativeBrowserScreen *screen);
 bool native_browser_screen_current_song(NativeBrowserScreen *screen,
                                         NcmSong *song);
