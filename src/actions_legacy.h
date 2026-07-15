@@ -624,6 +624,7 @@ private:
 	virtual bool canBeRun() override;
 	virtual void run() override;
 
+	MPD::Song m_song;
 };
 
 struct EditLibraryTag: BaseAction
