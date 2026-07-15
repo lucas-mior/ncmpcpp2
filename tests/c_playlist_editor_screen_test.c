@@ -45,7 +45,9 @@ typedef struct PlaylistEditorMpdFixture {
 
 typedef struct PlaylistEditorFormatFixture {
     NcmFormatAst old_song_list_format;
+    NcmFormatAst old_song_columns_mode_format;
     ColumnArray old_columns;
+    enum DisplayMode old_playlist_display_mode;
     enum DisplayMode old_playlist_editor_display_mode;
     bool old_titles_visibility;
 } PlaylistEditorFormatFixture;
@@ -109,6 +111,9 @@ static void test_fetch_timer_and_timeout_state(void);
 static void test_owned_playlist_and_content_rows(void);
 static void test_column_navigation(void);
 static void test_filter_and_search_are_column_local(void);
+static void test_legacy_rendered_filter_and_search_text(void);
+static void test_invalid_regex_preserves_constraints(void);
+static void test_playlist_filter_clear_restores_current_row(void);
 static void test_selected_song_contract(void);
 static void test_mpd_reload_and_current_items(void);
 static void test_update_callback_uses_native_mpd_logic(void);
@@ -135,6 +140,9 @@ main(void) {
     test_owned_playlist_and_content_rows();
     test_column_navigation();
     test_filter_and_search_are_column_local();
+    test_legacy_rendered_filter_and_search_text();
+    test_invalid_regex_preserves_constraints();
+    test_playlist_filter_clear_restores_current_row();
     test_selected_song_contract();
     test_mpd_reload_and_current_items();
     test_update_callback_uses_native_mpd_logic();
@@ -162,15 +170,23 @@ begin_render_formats(PlaylistEditorFormatFixture *fixture,
     NcmError error;
 
     fixture->old_song_list_format = Config.song_list_format;
+    fixture->old_song_columns_mode_format =
+        Config.song_columns_mode_format;
     fixture->old_columns = Config.columns;
+    fixture->old_playlist_display_mode = Config.playlist_display_mode;
     fixture->old_playlist_editor_display_mode =
         Config.playlist_editor_display_mode;
     fixture->old_titles_visibility = Config.titles_visibility;
 
     ncm_format_ast_init(&Config.song_list_format);
+    ncm_format_ast_init(&Config.song_columns_mode_format);
     ncm_error_clear(&error);
     assert(ncm_format_parse(&Config.song_list_format,
                             LIT_ARGS("classic:%F"),
+                            NCM_FORMAT_FLAG_ALL, &error));
+    ncm_error_clear(&error);
+    assert(ncm_format_parse(&Config.song_columns_mode_format,
+                            LIT_ARGS("columns:%a"),
                             NCM_FORMAT_FLAG_ALL, &error));
 
     columns[0] = (Column){0};
@@ -197,6 +213,7 @@ begin_render_formats(PlaylistEditorFormatFixture *fixture,
     Config.columns.items = columns;
     Config.columns.len = 2;
     Config.columns.cap = 2;
+    Config.playlist_display_mode = NCM_DISPLAY_MODE_CLASSIC;
     Config.playlist_editor_display_mode = NCM_DISPLAY_MODE_CLASSIC;
     Config.titles_visibility = true;
     return;
@@ -204,9 +221,13 @@ begin_render_formats(PlaylistEditorFormatFixture *fixture,
 
 static void
 end_render_formats(PlaylistEditorFormatFixture *fixture) {
+    ncm_format_ast_destroy(&Config.song_columns_mode_format);
     ncm_format_ast_destroy(&Config.song_list_format);
     Config.song_list_format = fixture->old_song_list_format;
+    Config.song_columns_mode_format =
+        fixture->old_song_columns_mode_format;
     Config.columns = fixture->old_columns;
+    Config.playlist_display_mode = fixture->old_playlist_display_mode;
     Config.playlist_editor_display_mode =
         fixture->old_playlist_editor_display_mode;
     Config.titles_visibility = fixture->old_titles_visibility;
@@ -821,12 +842,15 @@ test_column_navigation(void) {
 static void
 test_filter_and_search_are_column_local(void) {
     NativePlaylistEditorScreen screen;
+    PlaylistEditorFormatFixture formats;
     NcmMpdPlaylistList playlists;
     NcmMpdSongList songs;
     NcmError error;
     NcMenu *playlist_menu;
     NcMenu *content_menu;
+    Column columns[2];
 
+    begin_render_formats(&formats, columns);
     init_screen(&screen);
     ncm_mpd_playlist_list_init(&playlists);
     ncm_mpd_song_list_init(&songs);
@@ -860,7 +884,7 @@ test_filter_and_search_are_column_local(void) {
         &screen, LIT_ARGS("needle"),
         NCM_REGEX_LITERAL_CASE_INSENSITIVE, &error));
     assert(screen.content_filter_enabled);
-    assert(nc_menu_item_count(content_menu) == 2);
+    assert(nc_menu_item_count(content_menu) == 1);
     assert(nc_menu_item_count(playlist_menu) == 2);
 
     nc_menu_highlight_position(content_menu, 0, 24);
@@ -868,13 +892,13 @@ test_filter_and_search_are_column_local(void) {
     assert(native_playlist_editor_screen_search_active(
         &screen, LIT_ARGS("needle-uri"),
         NCM_REGEX_LITERAL_CASE_INSENSITIVE, true, true, false, &error));
-    assert(nc_menu_highlight(content_menu) == 1);
+    assert(nc_menu_highlight(content_menu) == 0);
     assert(screen.content_search_enabled);
     assert(ncm_string_equal(screen.content_search_constraint.data,
                             screen.content_search_constraint.len,
                             LIT_ARGS("needle-uri")));
     ncm_error_clear(&error);
-    assert(native_playlist_editor_screen_search_active(
+    assert(!native_playlist_editor_screen_search_active(
         &screen, LIT_ARGS("Needle title"),
         NCM_REGEX_LITERAL_CASE_INSENSITIVE, false, true, false, &error));
     assert(nc_menu_highlight(content_menu) == 0);
@@ -892,7 +916,7 @@ test_filter_and_search_are_column_local(void) {
     assert(screen.content_filter_enabled);
     assert(screen.content_search_enabled);
     assert(nc_menu_item_count(playlist_menu) == 2);
-    assert(nc_menu_item_count(content_menu) == 2);
+    assert(nc_menu_item_count(content_menu) == 1);
     assert(nc_menu_highlight(content_menu) == 0);
 
     native_playlist_editor_screen_clear_active_filter(&screen);
@@ -900,12 +924,171 @@ test_filter_and_search_are_column_local(void) {
     assert(nc_menu_item_count(content_menu) == 3);
     assert(nc_menu_item_count(playlist_menu) == 2);
 
+    nc_menu_highlight_position(content_menu, 0, 24);
+    ncm_error_clear(&error);
+    assert(native_playlist_editor_screen_search_active(
+        &screen, LIT_ARGS("two.flac"),
+        NCM_REGEX_LITERAL_CASE_INSENSITIVE, false, true, false, &error));
+    assert(nc_menu_highlight(content_menu) == 1);
+
     native_playlist_editor_screen_previous_column(&screen);
     native_playlist_editor_screen_clear_active_filter(&screen);
     assert(!screen.playlist_filter_enabled);
     assert(nc_menu_item_count(playlist_menu) == 3);
 
     ncm_mpd_song_list_destroy(&songs);
+    ncm_mpd_playlist_list_destroy(&playlists);
+    native_playlist_editor_screen_destroy(&screen);
+    end_render_formats(&formats);
+    return;
+}
+
+static void
+test_legacy_rendered_filter_and_search_text(void) {
+    NativePlaylistEditorScreen screen;
+    PlaylistEditorFormatFixture formats;
+    NcmMpdPlaylistList playlists;
+    NcmMpdSongList songs;
+    NcmError error;
+    NcMenu *content_menu;
+    Column columns[2];
+
+    begin_render_formats(&formats, columns);
+    Config.playlist_editor_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+    init_screen(&screen);
+    ncm_mpd_playlist_list_init(&playlists);
+    ncm_mpd_song_list_init(&songs);
+    append_playlist(&playlists, LIT_ARGS("Rendered"));
+    append_song(&songs, LIT_ARGS("raw-needle.flac"),
+                LIT_ARGS("Formatted Title"));
+    assert(ncm_song_add_tag(&songs.items[0], MPD_TAG_ARTIST,
+                            LIT_ARGS("Column Artist")));
+    append_song(&songs, LIT_ARGS("other.flac"), LIT_ARGS("Other"));
+    assert(ncm_song_add_tag(&songs.items[1], MPD_TAG_ARTIST,
+                            LIT_ARGS("Other Artist")));
+    assert(native_playlist_editor_screen_load_playlists(&screen,
+                                                         &playlists));
+    assert(native_playlist_editor_screen_load_content(&screen, &songs));
+    assert(native_playlist_editor_screen_next_column_available(&screen));
+    native_playlist_editor_screen_next_column(&screen);
+    content_menu = nc_song_menu_base(&screen.content);
+
+    Config.playlist_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+    ncm_error_clear(&error);
+    assert(native_playlist_editor_screen_apply_active_filter(
+        &screen, LIT_ARGS("raw-needle"),
+        NCM_REGEX_LITERAL_CASE_INSENSITIVE, &error));
+    assert(nc_menu_item_count(content_menu) == 1);
+    native_playlist_editor_screen_clear_active_filter(&screen);
+    ncm_error_clear(&error);
+    assert(!native_playlist_editor_screen_search_active(
+        &screen, LIT_ARGS("Column Artist"),
+        NCM_REGEX_LITERAL_CASE_INSENSITIVE, true, true, false, &error));
+
+    Config.playlist_display_mode = NCM_DISPLAY_MODE_COLUMNS;
+    ncm_error_clear(&error);
+    assert(native_playlist_editor_screen_apply_active_filter(
+        &screen, LIT_ARGS("Column Artist"),
+        NCM_REGEX_LITERAL_CASE_INSENSITIVE, &error));
+    assert(nc_menu_item_count(content_menu) == 1);
+    native_playlist_editor_screen_clear_active_filter(&screen);
+    ncm_error_clear(&error);
+    assert(!native_playlist_editor_screen_search_active(
+        &screen, LIT_ARGS("raw-needle"),
+        NCM_REGEX_LITERAL_CASE_INSENSITIVE, true, true, false, &error));
+    ncm_error_clear(&error);
+    assert(native_playlist_editor_screen_search_active(
+        &screen, LIT_ARGS("Other Artist"),
+        NCM_REGEX_LITERAL_CASE_INSENSITIVE, true, true, true, &error));
+    assert(nc_menu_highlight(content_menu) == 1);
+
+    ncm_mpd_song_list_destroy(&songs);
+    ncm_mpd_playlist_list_destroy(&playlists);
+    native_playlist_editor_screen_destroy(&screen);
+    end_render_formats(&formats);
+    return;
+}
+
+static void
+test_invalid_regex_preserves_constraints(void) {
+    NativePlaylistEditorScreen screen;
+    PlaylistEditorFormatFixture formats;
+    NcmMpdPlaylistList playlists;
+    NcmMpdSongList songs;
+    NcmError error;
+    Column columns[2];
+
+    begin_render_formats(&formats, columns);
+    init_screen(&screen);
+    ncm_mpd_playlist_list_init(&playlists);
+    ncm_mpd_song_list_init(&songs);
+    append_playlist(&playlists, LIT_ARGS("Road trip"));
+    append_song(&songs, LIT_ARGS("one.flac"), LIT_ARGS("One"));
+    assert(native_playlist_editor_screen_load_playlists(&screen,
+                                                         &playlists));
+    assert(native_playlist_editor_screen_load_content(&screen, &songs));
+
+    ncm_error_clear(&error);
+    assert(native_playlist_editor_screen_apply_active_filter(
+        &screen, LIT_ARGS("Road"), NCM_REGEX_EXTENDED, &error));
+    ncm_error_clear(&error);
+    assert(!native_playlist_editor_screen_apply_active_filter(
+        &screen, LIT_ARGS("("), NCM_REGEX_EXTENDED, &error));
+    assert(ncm_error_is_set(&error));
+    assert(screen.playlist_filter_enabled);
+    assert(ncm_string_equal(screen.playlist_filter_constraint.data,
+                            screen.playlist_filter_constraint.len,
+                            LIT_ARGS("Road")));
+
+    native_playlist_editor_screen_next_column(&screen);
+    ncm_error_clear(&error);
+    assert(native_playlist_editor_screen_search_active(
+        &screen, LIT_ARGS("one"), NCM_REGEX_EXTENDED,
+        true, true, false, &error));
+    ncm_error_clear(&error);
+    assert(!native_playlist_editor_screen_search_active(
+        &screen, LIT_ARGS("("), NCM_REGEX_EXTENDED,
+        true, true, false, &error));
+    assert(ncm_error_is_set(&error));
+    assert(screen.content_search_enabled);
+    assert(ncm_string_equal(screen.content_search_constraint.data,
+                            screen.content_search_constraint.len,
+                            LIT_ARGS("one")));
+
+    ncm_mpd_song_list_destroy(&songs);
+    ncm_mpd_playlist_list_destroy(&playlists);
+    native_playlist_editor_screen_destroy(&screen);
+    end_render_formats(&formats);
+    return;
+}
+
+static void
+test_playlist_filter_clear_restores_current_row(void) {
+    NativePlaylistEditorScreen screen;
+    NcmMpdPlaylistList playlists;
+    NcMenu *playlist_menu;
+    NcmError error;
+
+    init_screen(&screen);
+    ncm_mpd_playlist_list_init(&playlists);
+    append_playlist(&playlists, LIT_ARGS("Alpha"));
+    append_playlist(&playlists, LIT_ARGS("Road trip"));
+    append_playlist(&playlists, LIT_ARGS("Study"));
+    append_playlist(&playlists, LIT_ARGS("Road archive"));
+    assert(native_playlist_editor_screen_load_playlists(&screen,
+                                                         &playlists));
+    playlist_menu = nc_playlist_entry_menu_base(&screen.playlists);
+
+    ncm_error_clear(&error);
+    assert(native_playlist_editor_screen_apply_active_filter(
+        &screen, LIT_ARGS("road"),
+        NCM_REGEX_LITERAL_CASE_INSENSITIVE, &error));
+    assert(nc_menu_item_count(playlist_menu) == 2);
+    nc_menu_highlight_position(playlist_menu, 1, 24);
+    native_playlist_editor_screen_clear_active_filter(&screen);
+    assert(nc_menu_item_count(playlist_menu) == 4);
+    assert(nc_menu_highlight(playlist_menu) == 3);
+
     ncm_mpd_playlist_list_destroy(&playlists);
     native_playlist_editor_screen_destroy(&screen);
     return;
