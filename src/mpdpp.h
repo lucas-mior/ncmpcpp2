@@ -336,7 +336,6 @@ struct Connection
 	
 	const std::string &GetHostname();
 	
-	unsigned Version() const;
 	
 	
 	
@@ -345,17 +344,8 @@ struct Connection
 	
 	void Play();
 	void Play(int);
-	void Pause(bool);
 	void Toggle();
-	void Stop();
-	void Next();
-	void Prev();
-	void Move(unsigned int from, unsigned int to);
-	void Swap(unsigned, unsigned);
 	void Seek(unsigned int pos, unsigned int where);
-	void Shuffle();
-	void ShuffleRange(unsigned start, unsigned end);
-	void ClearMainPlaylist();
 	
 	
 	SongIterator GetPlaylistContent(const std::string &name);
@@ -363,10 +353,6 @@ struct Connection
 	
 	StringIterator GetSupportedExtensions();
 	
-	void SetRepeat(bool);
-	void SetRandom(bool);
-	void SetSingle(bool);
-	void SetConsume(bool);
 	void SetCrossfade(unsigned);
 	void SetVolume(unsigned int vol);
 	void ChangeVolume(int change);
@@ -386,7 +372,6 @@ struct Connection
 	bool LoadPlaylist(const std::string &name);
 	void SavePlaylist(const std::string &);
 	void ClearPlaylist(const std::string &playlist);
-	void AddToPlaylist(const std::string &, NcmSong *);
 	void AddToPlaylist(const std::string &, const std::string &);
 	void PlaylistMove(const std::string &path, int from, int to);
 	void Rename(const std::string &from, const std::string &to);
