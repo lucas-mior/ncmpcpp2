@@ -2,6 +2,10 @@
 
 static bool app_binding_migration_playlist_action_is_c_safe(
     enum NcmActionType type);
+static bool app_binding_migration_playlist_editor_action_is_c_safe(
+    enum NcmActionType type);
+static bool app_binding_migration_screen_uses_specific_actions(
+    enum ScreenType screen_type);
 
 static bool
 app_binding_migration_playlist_action_is_c_safe(
@@ -114,6 +118,29 @@ app_binding_migration_playlist_action_is_c_safe(
     }
 }
 
+
+static bool
+app_binding_migration_playlist_editor_action_is_c_safe(
+    enum NcmActionType type) {
+    switch (type) {
+    case NCM_ACTION_PREVIOUS_COLUMN:
+    case NCM_ACTION_NEXT_COLUMN:
+        return true;
+    default:
+        break;
+    }
+    return app_binding_migration_action_is_c_safe(type);
+}
+
+static bool
+app_binding_migration_screen_uses_specific_actions(
+    enum ScreenType screen_type) {
+    if (screen_type == NCM_SCREEN_TYPE_PLAYLIST_EDITOR) {
+        return true;
+    }
+    return app_binding_migration_screen_is_c_only(screen_type);
+}
+
 bool
 app_binding_migration_action_is_c_safe(enum NcmActionType type) {
     switch (type) {
@@ -173,6 +200,9 @@ app_binding_migration_action_is_c_safe_for_screen(
     enum NcmActionType type, enum ScreenType screen_type) {
     if (screen_type == NCM_SCREEN_TYPE_PLAYLIST) {
         return app_binding_migration_playlist_action_is_c_safe(type);
+    }
+    if (screen_type == NCM_SCREEN_TYPE_PLAYLIST_EDITOR) {
+        return app_binding_migration_playlist_editor_action_is_c_safe(type);
     }
 #if defined(HAVE_TAGLIB_H)
     if (screen_type == NCM_SCREEN_TYPE_TINY_TAG_EDITOR) {
@@ -477,7 +507,7 @@ app_binding_migration_binding_is_c_safe(NcmBinding *binding) {
 bool
 app_binding_migration_binding_is_c_safe_for_screen(
     NcmBinding *binding, enum ScreenType screen_type) {
-    if (!app_binding_migration_screen_is_c_only(screen_type)) {
+    if (!app_binding_migration_screen_uses_specific_actions(screen_type)) {
         return app_binding_migration_binding_is_c_safe(binding);
     }
     if (binding == NULL || binding->actions_len <= 0) {

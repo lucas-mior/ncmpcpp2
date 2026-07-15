@@ -23,6 +23,8 @@ static NcmBinding test_binding(NcmBindingAction *actions,
                                int32 actions_len);
 static void test_migrated_binding_uses_c_runtime(void);
 static void test_migrated_action_uses_c_runtime(void);
+static void test_playlist_editor_column_binding_uses_c_runtime(void);
+static void test_playlist_editor_column_action_uses_c_runtime(void);
 
 enum ScreenType
 __wrap_native_c_screens_current_type(void) {
@@ -194,6 +196,52 @@ test_migrated_binding_uses_c_runtime(void) {
     return;
 }
 
+
+static void
+test_playlist_editor_column_binding_uses_c_runtime(void) {
+    NcmBindingAction actions[] = {
+        {
+            .kind = NCM_BINDING_ACTION_REQUIRE_RUNNABLE,
+            .type = NCM_ACTION_NEXT_COLUMN,
+        },
+        {
+            .kind = NCM_BINDING_ACTION_NORMAL,
+            .type = NCM_ACTION_NEXT_COLUMN,
+        },
+    };
+    NcmBinding binding;
+
+    test_state_reset();
+    binding = test_binding(actions, NCM_ARRAY_LEN(actions));
+
+    assert(ncmpcpp_legacy_execute_binding(&binding));
+    assert(test_state.can_run_count == 4);
+    assert(test_state.can_run_types[0] == NCM_ACTION_NEXT_COLUMN);
+    assert(test_state.can_run_types[1] == NCM_ACTION_NEXT_COLUMN);
+    assert(test_state.can_run_types[2] == NCM_ACTION_NEXT_COLUMN);
+    assert(test_state.can_run_types[3] == NCM_ACTION_NEXT_COLUMN);
+    assert(test_state.run_count == 1);
+    assert(test_state.run_types[0] == NCM_ACTION_NEXT_COLUMN);
+    assert(test_state.legacy_binding_count == 0);
+    assert(test_state.legacy_action_count == 0);
+    assert(test_state.unrelated_legacy_count == 0);
+    return;
+}
+
+static void
+test_playlist_editor_column_action_uses_c_runtime(void) {
+    test_state_reset();
+
+    assert(ncmpcpp_legacy_execute_action(NCM_ACTION_PREVIOUS_COLUMN));
+    assert(test_state.can_run_count == 0);
+    assert(test_state.run_count == 1);
+    assert(test_state.run_types[0] == NCM_ACTION_PREVIOUS_COLUMN);
+    assert(test_state.legacy_binding_count == 0);
+    assert(test_state.legacy_action_count == 0);
+    assert(test_state.unrelated_legacy_count == 0);
+    return;
+}
+
 static void
 test_migrated_action_uses_c_runtime(void) {
     test_state_reset();
@@ -212,5 +260,7 @@ int
 main(void) {
     test_migrated_binding_uses_c_runtime();
     test_migrated_action_uses_c_runtime();
+    test_playlist_editor_column_binding_uses_c_runtime();
+    test_playlist_editor_column_action_uses_c_runtime();
     exit(EXIT_SUCCESS);
 }
