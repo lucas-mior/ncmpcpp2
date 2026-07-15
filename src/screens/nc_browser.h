@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "c/ncm_app_arrays.h"
+#include "c/ncm_enums.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_mpd_item.h"
 #include "c/ncm_regex.h"
@@ -34,9 +35,17 @@ typedef struct NativeBrowserScreen {
     NcBrowserEntryMenu entries;
     NcWindow window;
     NativeBrowserBridge bridge;
+
     NcmBuffer current_directory;
+    NcmBuffer last_highlighted_directory;
+    NcmBuffer title_text;
+    NcmBuffer column_title_text;
     NcmBuffer filter_constraint;
     NcmBuffer search_constraint;
+    NcmBuffer item_text_buffer;
+    NcmBuffer path_buffer;
+    NcmBuffer scratch_buffer;
+    NcmBufferArray supported_extensions;
     NcmRegex filter_regex;
 
     int64 start_x;
@@ -44,9 +53,13 @@ typedef struct NativeBrowserScreen {
     int64 main_start_y;
     int64 main_height;
     int64 lines_scrolled;
+    int64 title_scroll_beginning;
+
+    enum DisplayMode active_display_mode;
 
     bool mouse_list_scroll_whole_page;
     bool redraw_header;
+    bool update_requested;
     bool local_browser;
     bool filter_enabled;
     bool registered;
@@ -83,6 +96,34 @@ bool native_browser_screen_set_current_directory(
     NativeBrowserScreen *screen, char *directory, int32 directory_len);
 NcmStringView native_browser_screen_current_directory(
     NativeBrowserScreen *screen);
+bool native_browser_screen_set_last_highlighted_directory(
+    NativeBrowserScreen *screen, char *directory, int32 directory_len);
+NcmStringView native_browser_screen_last_highlighted_directory(
+    NativeBrowserScreen *screen);
+void native_browser_screen_clear_last_highlighted_directory(
+    NativeBrowserScreen *screen);
+bool native_browser_screen_set_title_text(
+    NativeBrowserScreen *screen, char *title, int32 title_len);
+NcmStringView native_browser_screen_title_text(NativeBrowserScreen *screen);
+bool native_browser_screen_set_column_title_text(
+    NativeBrowserScreen *screen, char *title, int32 title_len);
+NcmStringView native_browser_screen_column_title_text(
+    NativeBrowserScreen *screen);
+void native_browser_screen_set_display_mode(NativeBrowserScreen *screen,
+                                            enum DisplayMode mode);
+enum DisplayMode native_browser_screen_display_mode(
+    NativeBrowserScreen *screen);
+void native_browser_screen_clear_supported_extensions(
+    NativeBrowserScreen *screen);
+bool native_browser_screen_add_supported_extension(
+    NativeBrowserScreen *screen, char *extension, int32 extension_len);
+bool native_browser_screen_has_supported_extension(
+    NativeBrowserScreen *screen, char *extension, int32 extension_len);
+NcmBufferArray *native_browser_screen_supported_extensions(
+    NativeBrowserScreen *screen);
+void native_browser_screen_clear_temp_buffers(NativeBrowserScreen *screen);
+bool native_browser_screen_update_requested(NativeBrowserScreen *screen);
+void native_browser_screen_clear_update_request(NativeBrowserScreen *screen);
 bool native_browser_screen_in_root_directory(NativeBrowserScreen *screen);
 void native_browser_screen_set_local(NativeBrowserScreen *screen,
                                      bool local_browser);

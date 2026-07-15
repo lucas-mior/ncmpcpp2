@@ -4739,6 +4739,10 @@ action_runtime_toggle_display_mode(void) {
     } else {
         *mode = NCM_DISPLAY_MODE_CLASSIC;
     }
+    if (screen_type == NCM_SCREEN_TYPE_BROWSER) {
+        native_browser_screen_set_display_mode(native_c_screen_browser(),
+                                               *mode);
+    }
     if (screen_type == NCM_SCREEN_TYPE_PLAYLIST) {
         native_playlist_screen_update_column_title(
             native_c_screen_playlist());

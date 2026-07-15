@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "c/ncm_app_arrays.h"
+#include "c/ncm_base.h"
 #include "c/ncm_string.h"
 #include "screens/nc_browser.h"
 
@@ -12,6 +13,7 @@ static void test_browser_path_navigation(void);
 static void test_browser_selected_songs(void);
 static void test_browser_filter_and_search(void);
 static void test_browser_local_mode(void);
+static void test_browser_owned_state(void);
 static void test_browser_local_browsing_parity(void);
 static void test_browser_directory_expansion_parity(void);
 static void test_browser_playlist_expansion_parity(void);
@@ -27,6 +29,7 @@ main(void) {
     test_browser_selected_songs();
     test_browser_filter_and_search();
     test_browser_local_mode();
+    test_browser_owned_state();
     test_browser_local_browsing_parity();
     test_browser_directory_expansion_parity();
     test_browser_playlist_expansion_parity();
@@ -147,6 +150,79 @@ test_browser_local_mode(void) {
     assert(!native_browser_screen_is_local(&screen));
     native_browser_screen_set_local(&screen, true);
     assert(native_browser_screen_is_local(&screen));
+    native_browser_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_browser_owned_state(void) {
+    NativeBrowserScreen screen;
+    NcmStringView view;
+    char *title;
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24, nc_color_default(),
+                               nc_border_none());
+
+    assert(native_browser_screen_update_requested(&screen));
+    native_browser_screen_clear_update_request(&screen);
+    assert(!native_browser_screen_update_requested(&screen));
+    native_browser_screen_request_update(&screen);
+    assert(native_browser_screen_update_requested(&screen));
+    assert(nc_screen_has_to_be_updated(native_browser_screen_base(&screen)));
+
+    assert(native_browser_screen_set_title_text(&screen,
+                                                LIT_ARGS("Browse: /")));
+    view = native_browser_screen_title_text(&screen);
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("Browse: /")));
+    title = nc_screen_title(native_browser_screen_base(&screen));
+    assert(ncm_string_equal(title, 9, LIT_ARGS("Browse: /")));
+
+    assert(native_browser_screen_set_column_title_text(
+        &screen, LIT_ARGS("Artist / Title")));
+    view = native_browser_screen_column_title_text(&screen);
+    assert(ncm_string_equal(view.data, view.len,
+                            LIT_ARGS("Artist / Title")));
+
+    native_browser_screen_set_display_mode(&screen, NCM_DISPLAY_MODE_COLUMNS);
+    assert(native_browser_screen_display_mode(&screen)
+           == NCM_DISPLAY_MODE_COLUMNS);
+    native_browser_screen_set_display_mode(&screen, NCM_DISPLAY_MODE_LAST);
+    assert(native_browser_screen_display_mode(&screen)
+           == NCM_DISPLAY_MODE_COLUMNS);
+
+    assert(native_browser_screen_add_supported_extension(&screen,
+                                                         LIT_ARGS(".flac")));
+    assert(native_browser_screen_add_supported_extension(&screen,
+                                                         LIT_ARGS(".mp3")));
+    assert(native_browser_screen_has_supported_extension(&screen,
+                                                         LIT_ARGS(".flac")));
+    assert(!native_browser_screen_has_supported_extension(&screen,
+                                                          LIT_ARGS(".ogg")));
+    assert(native_browser_screen_supported_extensions(&screen)->len == 2);
+    native_browser_screen_clear_supported_extensions(&screen);
+    assert(native_browser_screen_supported_extensions(&screen)->len == 0);
+
+    assert(native_browser_screen_set_current_directory(&screen,
+                                                       LIT_ARGS("artist")));
+    assert(native_browser_screen_set_current_directory(
+        &screen, LIT_ARGS("artist/album")));
+    view = native_browser_screen_last_highlighted_directory(&screen);
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist")));
+    assert(native_browser_screen_go_to_parent(&screen));
+    view = native_browser_screen_last_highlighted_directory(&screen);
+    assert(ncm_string_equal(view.data, view.len,
+                            LIT_ARGS("artist/album")));
+    view = native_browser_screen_current_directory(&screen);
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist")));
+
+    ncm_buffer_append(&screen.item_text_buffer, LIT_ARGS("item"));
+    ncm_buffer_append(&screen.path_buffer, LIT_ARGS("path"));
+    ncm_buffer_append(&screen.scratch_buffer, LIT_ARGS("scratch"));
+    native_browser_screen_clear_temp_buffers(&screen);
+    assert(screen.item_text_buffer.len == 0);
+    assert(screen.path_buffer.len == 0);
+    assert(screen.scratch_buffer.len == 0);
+
     native_browser_screen_destroy(&screen);
     return;
 }
