@@ -49,6 +49,8 @@ enum TagEditorTagTypeAction {
     TAG_EDITOR_TAG_TYPE_ACTION_SAVE,
 };
 
+typedef struct SaveContext SaveContext;
+
 static NativeTagEditorScreen *tag_editor_from_screen(NcScreen *screen);
 static NcWindow *tag_editor_active_window(NcScreen *screen);
 static void tag_editor_refresh(NcScreen *screen);
@@ -194,6 +196,15 @@ static bool tag_editor_capitalize_song_callback(NcmMutableSong *song,
 static bool tag_editor_lower_song_callback(NcmMutableSong *song,
                                            void *user);
 static bool tag_editor_save_song_callback(NcmMutableSong *song, void *user);
+static void tag_editor_save_status_with_name(
+    NativeTagEditorScreen *screen, char *prefix, int32 prefix_len,
+    NcmMutableSong *song, char *suffix, int32 suffix_len);
+static void tag_editor_save_status_error(NativeTagEditorScreen *screen,
+                                         NcmMutableSong *song, int32 error);
+static void tag_editor_update_modified_directory(
+    NativeTagEditorScreen *screen, NcmBuffer *directory);
+static void tag_editor_save_context_add_directory(
+    SaveContext *context, NcmMutableSong *song);
 static bool tag_editor_tag_matches(NativeTagEditorScreen *screen,
                                    NcmMutableSong *song);
 static bool tag_editor_directory_matches(NativeTagEditorScreen *screen,
@@ -315,10 +326,16 @@ typedef struct TrackNumberer {
     bool extended;
 } TrackNumberer;
 
-typedef struct SaveContext {
+struct SaveContext {
+    NativeTagEditorScreen *screen;
+    NcmBuffer shared_directory;
     char *music_dir;
+    int32 target_count;
+    int32 modified_count;
+    int32 write_count;
+    bool shared_directory_valid;
     bool ok;
-} SaveContext;
+};
 
 void
 native_tag_editor_screen_init(NativeTagEditorScreen *screen,
@@ -1096,17 +1113,46 @@ bool
 native_tag_editor_screen_save_modified(NativeTagEditorScreen *screen,
                                        char *music_dir) {
     SaveContext context;
+    bool iterated;
 
     if (screen == NULL) {
         return false;
     }
+
+    tag_editor_status_message(screen, STRLIT_ARGS("Writing changes..."));
+
+    context = (SaveContext){0};
+    context.screen = screen;
     context.music_dir = music_dir;
     context.ok = true;
-    if (!tag_editor_for_each_target(screen, tag_editor_save_song_callback,
-                                    &context)) {
+    ncm_buffer_init(&context.shared_directory);
+
+    iterated = tag_editor_for_each_target(
+        screen, tag_editor_save_song_callback, &context);
+    if (!iterated || !context.ok) {
+        ncm_buffer_destroy(&context.shared_directory);
+        native_tag_editor_screen_clear_stale_tags(screen);
         return false;
     }
-    return context.ok;
+
+    tag_editor_status_message(screen, STRLIT_ARGS("Tags updated"));
+    nc_menu_reset(nc_editor_string_menu_base(&screen->tag_types));
+    tag_editor_set_focus(screen, NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES);
+    if (context.shared_directory_valid) {
+        tag_editor_update_modified_directory(
+            screen, &context.shared_directory);
+    }
+    ncm_buffer_destroy(&context.shared_directory);
+    return context.target_count > 0;
+}
+
+bool
+native_tag_editor_screen_save_action_available(
+    NativeTagEditorScreen *screen) {
+    if (screen == NULL) {
+        return false;
+    }
+    return screen->active_focus == NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES;
 }
 
 bool
@@ -4053,17 +4099,142 @@ tag_editor_lower_song_callback(NcmMutableSong *song, void *user) {
 static bool
 tag_editor_save_song_callback(NcmMutableSong *song, void *user) {
     SaveContext *context;
+    int32 error;
 
     context = user;
+    if ((context == NULL) || (song == NULL)) {
+        return false;
+    }
+
+    context->target_count += 1;
+    tag_editor_save_context_add_directory(context, song);
     if (!ncm_mutable_song_is_modified(song)) {
         return true;
     }
+
+    context->modified_count += 1;
+    tag_editor_save_status_with_name(
+        context->screen, STRLIT_ARGS("Writing tags in \""), song,
+        STRLIT_ARGS("\"..."));
+    errno = 0;
     if (!ncm_mutable_song_write(song, context->music_dir)) {
+        error = errno;
+        if (error == 0) {
+            error = EIO;
+        }
         context->ok = false;
+        tag_editor_save_status_error(context->screen, song, error);
         return false;
     }
+
+    context->write_count += 1;
     ncm_mutable_song_clear_modifications(song);
     return true;
+}
+
+static void
+tag_editor_save_status_with_name(
+    NativeTagEditorScreen *screen, char *prefix, int32 prefix_len,
+    NcmMutableSong *song, char *suffix, int32 suffix_len) {
+    NcmBuffer message;
+
+    if ((screen == NULL) || (song == NULL)) {
+        return;
+    }
+
+    ncm_buffer_init(&message);
+    ncm_buffer_append(&message, prefix, prefix_len);
+    if (song->name != NULL) {
+        ncm_buffer_append(&message, song->name, song->name_len);
+    }
+    ncm_buffer_append(&message, suffix, suffix_len);
+    tag_editor_status_message(screen, message.data, message.len);
+    ncm_buffer_destroy(&message);
+    return;
+}
+
+static void
+tag_editor_save_status_error(NativeTagEditorScreen *screen,
+                             NcmMutableSong *song, int32 error) {
+    NcmBuffer message;
+    char *system_error;
+
+    if ((screen == NULL) || (song == NULL)) {
+        return;
+    }
+
+    system_error = strerror(error);
+    ncm_buffer_init(&message);
+    ncm_buffer_append(&message, STRLIT_ARGS(
+                          "Error while writing tags to \""));
+    if (song->name != NULL) {
+        ncm_buffer_append(&message, song->name, song->name_len);
+    }
+    ncm_buffer_append(&message, STRLIT_ARGS("\": "));
+    ncm_buffer_append(&message, system_error, (int32)strlen(system_error));
+    tag_editor_status_message(screen, message.data, message.len);
+    ncm_buffer_destroy(&message);
+    return;
+}
+
+static void
+tag_editor_update_modified_directory(
+    NativeTagEditorScreen *screen, NcmBuffer *directory) {
+    if ((screen == NULL) || (directory == NULL)) {
+        return;
+    }
+    if (screen->hooks.update_directory == NULL) {
+        return;
+    }
+    ncm_buffer_reserve(directory, 1);
+    directory->data[directory->len] = '\0';
+    screen->hooks.update_directory(screen->hooks.user, directory->data,
+                                   directory->len);
+    return;
+}
+
+static void
+tag_editor_save_context_add_directory(
+    SaveContext *context, NcmMutableSong *song) {
+    NcmBuffer shared;
+    char *directory;
+    int32 directory_len;
+
+    if ((context == NULL) || (song == NULL)) {
+        return;
+    }
+
+    directory = song->directory;
+    directory_len = song->directory_len;
+    if ((directory == NULL) && (song->uri != NULL)) {
+        directory = song->uri;
+        directory_len = ncm_string_parent_directory_len(
+            song->uri, song->uri_len);
+    }
+    if (directory == NULL) {
+        directory = (char *)"";
+        directory_len = 0;
+    }
+
+    if (!context->shared_directory_valid) {
+        ncm_buffer_set(&context->shared_directory,
+                       directory, directory_len);
+        context->shared_directory_valid = true;
+        return;
+    }
+
+    if (ncm_string_equal(context->shared_directory.data,
+                         context->shared_directory.len,
+                         directory, directory_len)) {
+        return;
+    }
+
+    shared = ncm_string_shared_directory(
+        context->shared_directory.data, context->shared_directory.len,
+        directory, directory_len);
+    ncm_buffer_destroy(&context->shared_directory);
+    context->shared_directory = shared;
+    return;
 }
 
 static bool
