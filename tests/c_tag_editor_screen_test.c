@@ -752,7 +752,7 @@ test_native_resize_preserves_state(void) {
     native_tag_editor_screen_next_column(&screen);
     native_tag_editor_screen_next_column(&screen);
     assert(native_tag_editor_screen_apply_tag_filter(
-               &screen, STRLIT_ARGS("Beta"), Config.regex_type, &error));
+               &screen, STRLIT_ARGS(".*"), Config.regex_type, &error));
     screen.parser_mode = NATIVE_TAG_EDITOR_PARSER_RENAME_FILES;
 
     directories = nc_editor_pair_menu_base(&screen.directories);
@@ -776,7 +776,7 @@ test_native_resize_preserves_state(void) {
                             STRLIT_ARGS("Alpha")));
     assert(ncm_string_equal(screen.tag_filter_constraint.data,
                             screen.tag_filter_constraint.len,
-                            STRLIT_ARGS("Beta")));
+                            STRLIT_ARGS(".*")));
 
     assert(screen.left_width == 27);
     assert(screen.middle_start_x == 32);
