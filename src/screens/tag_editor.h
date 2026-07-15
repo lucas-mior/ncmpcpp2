@@ -296,14 +296,10 @@ inline TagEditor::TagEditor()
 	w = Dirs;
 
     native_c_screen_tag_editor_init();
-    screen_compat::bind_legacy_owner(nativeScreen(), this);
 }
 
 inline TagEditor::~TagEditor()
 {
-    screen_compat::bind_legacy_owner(nativeScreen(), nullptr);
-    if (app_controller_is_screen_registered(nativeScreen()))
-        app_controller_unregister_screen(nativeScreen());
 }
 
 inline NcScreen *TagEditor::nativeScreen()
