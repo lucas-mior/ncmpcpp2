@@ -71,17 +71,13 @@ struct Song
 	virtual std::string getArtist(unsigned idx = 0) const;
 	virtual std::string getAlbum(unsigned idx = 0) const;
 	virtual std::string getAlbumArtist(unsigned idx = 0) const;
-	virtual std::string getLength(unsigned idx = 0) const;
 
 	virtual std::string getTags(enum NcmSongGetter getter) const;
 
-	virtual unsigned getDuration() const;
 	virtual unsigned getPosition() const;
-	virtual unsigned getID() const;
 	virtual time_t getMTime() const;
 
 	virtual bool isFromDatabase() const;
-	virtual bool isStream() const;
 
 	virtual bool empty() const;
 
@@ -254,12 +250,6 @@ inline std::string Song::getAlbumArtist(unsigned idx) const
 	return get(NCM_SONG_GETTER_ALBUM_ARTIST, idx);
 }
 
-inline std::string Song::getLength(unsigned idx) const
-{
-	assert(!empty());
-	return get(NCM_SONG_GETTER_LENGTH, idx);
-}
-
 inline std::string Song::getTags(enum NcmSongGetter getter) const
 {
 	assert(!empty());
@@ -269,22 +259,10 @@ inline std::string Song::getTags(enum NcmSongGetter getter) const
 		static_cast<int32>(TagsSeparator.size()), ShowDuplicateTags));
 }
 
-inline unsigned Song::getDuration() const
-{
-	assert(!empty());
-	return ncm_song_duration(const_cast<NcmSong *>(&m_song));
-}
-
 inline unsigned Song::getPosition() const
 {
 	assert(!empty());
 	return ncm_song_position(const_cast<NcmSong *>(&m_song));
-}
-
-inline unsigned Song::getID() const
-{
-	assert(!empty());
-	return ncm_song_id(const_cast<NcmSong *>(&m_song));
 }
 
 inline time_t Song::getMTime() const
@@ -297,12 +275,6 @@ inline bool Song::isFromDatabase() const
 {
 	assert(!empty());
 	return ncm_song_is_from_database(const_cast<NcmSong *>(&m_song));
-}
-
-inline bool Song::isStream() const
-{
-	assert(!empty());
-	return ncm_song_is_stream(const_cast<NcmSong *>(&m_song));
 }
 
 inline bool Song::empty() const
