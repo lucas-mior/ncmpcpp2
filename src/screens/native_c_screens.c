@@ -1655,6 +1655,7 @@ native_c_screens_register_native_only(void) {
     native_c_screen_outputs_register();
 #endif
     native_c_screen_playlist_register();
+    native_c_screen_playlist_editor_register();
     return;
 }
 

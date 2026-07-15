@@ -378,6 +378,30 @@ std::string currentStoredPlaylistPath()
 	return storedPlaylistPath(myPlaylistEditor->Playlists.current()->value());
 }
 
+bool legacyPlaylistEditorIsCurrent()
+{
+	return myPlaylistEditor != nullptr
+	    && screenLegacyCurrent() == myPlaylistEditor;
+}
+
+bool legacyPlaylistEditorContentActive()
+{
+	BaseScreen *current = screenLegacyCurrent();
+
+	return myPlaylistEditor != nullptr
+	    && current != nullptr
+	    && current->isActiveWindow(myPlaylistEditor->Content);
+}
+
+bool legacyPlaylistEditorPlaylistsActive()
+{
+	BaseScreen *current = screenLegacyCurrent();
+
+	return myPlaylistEditor != nullptr
+	    && current != nullptr
+	    && current->isActiveWindow(myPlaylistEditor->Playlists);
+}
+
 void populateActions();
 
 bool scrollTagCanBeRun(NC::List *&list, const SongList *&songs);
@@ -496,7 +520,6 @@ void initializeScreens()
 	myBrowser = new Browser;
 	ncm_status_set_database_update_observer(
 	    requestMediaLibraryDatabaseUpdate, nullptr);
-	myPlaylistEditor = new PlaylistEditor;
 	ncm_status_set_playlist_update_observer(
 	    refreshPlaylistRelatedInactiveColumns, nullptr);
 #	ifdef HAVE_TAGLIB_H
@@ -505,7 +528,6 @@ void initializeScreens()
 
 	native_c_screens_register_native_only();
 	myBrowser->registerNativeScreen();
-	myPlaylistEditor->registerNativeScreen();
 	native_c_screen_lyrics_register();
 
 #	ifdef HAVE_TAGLIB_H
@@ -517,7 +539,6 @@ void setResizeFlags()
 {
 	native_c_screens_request_registered_resize();
 	myBrowser->hasToBeResized = 1;
-	myPlaylistEditor->hasToBeResized = 1;
 	native_c_screen_lyrics_set_resize();
 
 #	ifdef HAVE_TAGLIB_H
@@ -996,7 +1017,7 @@ void PlayItem::run()
 bool DeletePlaylistItems::canBeRun()
 {
 	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_DELETE_PLAYLIST_ITEMS)
-	    || (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content)
+	    || (legacyPlaylistEditorContentActive()
 	        && !myPlaylistEditor->Content.empty());
 }
 
@@ -1008,7 +1029,7 @@ void DeletePlaylistItems::run()
 		if (ncm_action_delete_playlist_items())
 			Statusbar::print("Item(s) deleted");
 	}
-	else if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content))
+	else if (legacyPlaylistEditorContentActive())
 	{
 		std::string playlist = currentStoredPlaylistPath();
 		auto delete_fun = [playlist](auto &, unsigned pos) {
@@ -1096,7 +1117,7 @@ void DeleteBrowserItems::run()
 
 bool DeleteStoredPlaylist::canBeRun()
 {
-	return screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists);
+	return legacyPlaylistEditorPlaylistsActive();
 }
 
 void DeleteStoredPlaylist::run()
@@ -1167,14 +1188,10 @@ void SavePlaylist::run()
 
 bool MoveSelectedItemsUp::canBeRun()
 {
-	BaseScreen *current;
-
 	if (native_c_screen_playlist_is_current())
 		return ncm_action_runtime_can_run(
 		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_UP);
-	current = screenLegacyCurrent();
-	return current != nullptr
-	    && current->isActiveWindow(myPlaylistEditor->Content)
+	return legacyPlaylistEditorContentActive()
 	    && !myPlaylistEditor->Content.empty();
 }
 
@@ -1186,7 +1203,7 @@ void MoveSelectedItemsUp::run()
 		(void)ncm_action_runtime_run(
 		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_UP);
 	}
-	else if (screenLegacyCurrent() == myPlaylistEditor)
+	else if (legacyPlaylistEditorIsCurrent())
 	{
 		if (myPlaylistEditor->Content.isFiltered())
 			Statusbar::print(filteredMsg);
@@ -1204,14 +1221,10 @@ void MoveSelectedItemsUp::run()
 
 bool MoveSelectedItemsDown::canBeRun()
 {
-	BaseScreen *current;
-
 	if (native_c_screen_playlist_is_current())
 		return ncm_action_runtime_can_run(
 		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN);
-	current = screenLegacyCurrent();
-	return current != nullptr
-	    && current->isActiveWindow(myPlaylistEditor->Content)
+	return legacyPlaylistEditorContentActive()
 	    && !myPlaylistEditor->Content.empty();
 }
 
@@ -1223,7 +1236,7 @@ void MoveSelectedItemsDown::run()
 		(void)ncm_action_runtime_run(
 		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN);
 	}
-	else if (screenLegacyCurrent() == myPlaylistEditor)
+	else if (legacyPlaylistEditorIsCurrent())
 	{
 		if (myPlaylistEditor->Content.isFiltered())
 			Statusbar::print(filteredMsg);
@@ -1241,14 +1254,10 @@ void MoveSelectedItemsDown::run()
 
 bool MoveSelectedItemsTo::canBeRun()
 {
-	BaseScreen *current;
-
 	if (native_c_screen_playlist_is_current())
 		return ncm_action_runtime_can_run(
 		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_TO);
-	current = screenLegacyCurrent();
-	return current != nullptr
-	    && current->isActiveWindow(myPlaylistEditor->Content);
+	return legacyPlaylistEditorContentActive();
 }
 
 void MoveSelectedItemsTo::run()
@@ -1271,7 +1280,7 @@ void MoveSelectedItemsTo::run()
 
 bool Add::canBeRun()
 {
-	return screenLegacyCurrent() != myPlaylistEditor
+	return !legacyPlaylistEditorIsCurrent()
 	   || !myPlaylistEditor->Playlists.empty();
 }
 
@@ -1281,7 +1290,7 @@ void Add::run()
 	std::string path;
 	{
 		Statusbar::ScopedLock slock;
-		Statusbar::put() << (screenLegacyCurrent() == myPlaylistEditor ? "Add to playlist: " : "Add: ");
+		Statusbar::put() << (legacyPlaylistEditorIsCurrent() ? "Add to playlist: " : "Add: ");
 		if (!promptString(path))
 				return;
 	}
@@ -1293,7 +1302,7 @@ void Add::run()
 
 	Statusbar::put() << "Adding...";
 	static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
-	if (screenLegacyCurrent() == myPlaylistEditor)
+	if (legacyPlaylistEditorIsCurrent())
 		Mpd.AddToPlaylist(currentStoredPlaylistPath(), path);
 	else
 	{
@@ -1317,7 +1326,7 @@ void Add::run()
 
 bool Load::canBeRun()
 {
-	return screenLegacyCurrent() != myPlaylistEditor;
+	return !legacyPlaylistEditorIsCurrent();
 }
 
 void Load::run()
@@ -1345,8 +1354,7 @@ bool ToggleDisplayMode::canBeRun()
 		    nullptr, NCM_ACTION_TOGGLE_DISPLAY_MODE);
 	current = screenLegacyCurrent();
 	return current == myBrowser
-	    || (current != nullptr
-	        && current->isActiveWindow(myPlaylistEditor->Content));
+	    || legacyPlaylistEditorContentActive();
 }
 
 void ToggleDisplayMode::run()
@@ -1374,7 +1382,7 @@ void ToggleDisplayMode::run()
 		}
 		Statusbar::printf("Browser display mode: %1%", Config.browser_display_mode);
 	}
-	else if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Content))
+	else if (legacyPlaylistEditorContentActive())
 	{
 		switch (Config.playlist_editor_display_mode)
 		{
@@ -1830,18 +1838,18 @@ bool EditPlaylistName::canBeRun()
 	BaseScreen *current;
 
 	current = screenLegacyCurrent();
-	return   current != nullptr
-	    &&  ((current->isActiveWindow(myPlaylistEditor->Playlists)
-	      && !myPlaylistEditor->Playlists.empty())
-	    ||   (current == myBrowser
-	      && !myBrowser->main().empty()
-		  && myBrowser->main().current()->value().type() == MPD::Item::Type::Playlist));
+	return (legacyPlaylistEditorPlaylistsActive()
+	        && !myPlaylistEditor->Playlists.empty())
+	    || (current == myBrowser
+	        && !myBrowser->main().empty()
+		&& myBrowser->main().current()->value().type()
+		   == MPD::Item::Type::Playlist);
 }
 
 void EditPlaylistName::run()
 {
 		std::string old_name, new_name;
-	if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists))
+	if (legacyPlaylistEditorPlaylistsActive())
 		old_name = currentStoredPlaylistPath();
 	else
 		old_name = myBrowser->main().current()->value().playlist().path();
@@ -2081,7 +2089,7 @@ void CropMainPlaylist::run()
 
 bool CropPlaylist::canBeRun()
 {
-	return screenLegacyCurrent() == myPlaylistEditor;
+	return legacyPlaylistEditorIsCurrent();
 }
 
 void CropPlaylist::run()
@@ -2109,7 +2117,7 @@ void ClearMainPlaylist::run()
 
 bool ClearPlaylist::canBeRun()
 {
-	return screenLegacyCurrent() == myPlaylistEditor;
+	return legacyPlaylistEditorIsCurrent();
 }
 
 void ClearPlaylist::run()
@@ -2656,7 +2664,7 @@ void ChangeBrowseMode::run()
 
 bool ShowPlaylistEditor::canBeRun()
 {
-	return screenLegacyCurrent() != myPlaylistEditor
+	return !native_c_screen_playlist_editor_is_current()
 #	ifdef HAVE_TAGLIB_H
 	    && !native_c_screen_tiny_tag_editor_is_current()
 #	endif // HAVE_TAGLIB_H
@@ -2665,7 +2673,8 @@ bool ShowPlaylistEditor::canBeRun()
 
 void ShowPlaylistEditor::run()
 {
-	myPlaylistEditor->switchTo();
+	native_c_screen_playlist_editor_register();
+	native_c_screen_playlist_editor_switch_to();
 }
 
 bool ShowTagEditor::canBeRun()
@@ -2923,25 +2932,15 @@ void listsChangeFinisher()
 	if (native_c_screen_playlist_editor_is_current())
 		return;
 
-	if (screenLegacyCurrent() == myPlaylistEditor
 #	ifdef HAVE_TAGLIB_H
-	||  screenLegacyCurrent() == myTagEditor
-#	endif // HAVE_TAGLIB_H
-	   )
+	if (screenLegacyCurrent() == myTagEditor)
 	{
-		if (screenLegacyCurrent()->isActiveWindow(myPlaylistEditor->Playlists))
-		{
-			myPlaylistEditor->Content.clear();
-			myPlaylistEditor->Content.refresh();
-			myPlaylistEditor->updateTimer();
-		}
-#		ifdef HAVE_TAGLIB_H
-		else if (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs)
+		if (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs)
 		{
 			myTagEditor->Tags->clear();
 		}
-#		endif // HAVE_TAGLIB_H
 	}
+#	endif // HAVE_TAGLIB_H
 }
 
 }
