@@ -1,7 +1,9 @@
 #include "screens/nc_browser.h"
 
 #include "c/ncm_base.h"
+#include "c/ncm_comparators.h"
 #include "c/ncm_display.h"
+#include "c/ncm_format.h"
 #include "c/ncm_fs.h"
 #include "c/ncm_path.h"
 #include "c/ncm_string.h"
@@ -72,6 +74,19 @@ static bool native_browser_add_parent_directory_item(
     NativeBrowserScreen *screen);
 static bool native_browser_load_mpd_items(NativeBrowserScreen *screen,
                                           NcmMpdItemArray *items);
+static int32 native_browser_compare_items(NativeBrowserScreen *screen,
+                                          NcmMpdItem *left,
+                                          NcmMpdItem *right);
+static int32 native_browser_compare_item_values(
+    NativeBrowserScreen *screen, NcmMpdItem *left, NcmMpdItem *right);
+static int32 native_browser_item_sort_rank(NcmMpdItem *item);
+static int32 native_browser_compare_views(NcmStringView left,
+                                          NcmStringView right);
+static int32 native_browser_compare_times(time_t left, time_t right);
+static NcmStringView native_browser_directory_sort_view(
+    NcmMpdItem *item);
+static NcmStringView native_browser_playlist_sort_view(NcmMpdItem *item);
+static NcmStringView native_browser_song_name_sort_view(NcmMpdItem *item);
 static bool native_browser_highlight_last_directory(
     NativeBrowserScreen *screen);
 static bool native_browser_item_is_song(NcmMpdItem *item);
@@ -247,6 +262,49 @@ native_browser_screen_load_items(NativeBrowserScreen *screen,
         if (!native_browser_screen_add_item_copy(screen, &items->items[i])) {
             return false;
         }
+    }
+    return true;
+}
+
+bool
+native_browser_screen_sort(NativeBrowserScreen *screen) {
+    NcMenu *menu;
+    int64 begin;
+    int64 count;
+
+    if (screen == NULL) {
+        return false;
+    }
+    if (Config.browser_sort_mode == NCM_SORT_MODE_NONE) {
+        return true;
+    }
+
+    menu = native_browser_screen_menu(screen);
+    begin = 0;
+    count = nc_menu_all_item_count(menu);
+    if ((count > 0) && native_browser_screen_item_is_parent(
+            nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, 0))) {
+        begin = 1;
+    }
+
+    for (int64 i = begin + 1; i < count; i += 1) {
+        for (int64 j = i; j > begin; j -= 1) {
+            NcmMpdItem *left;
+            NcmMpdItem *right;
+
+            left = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, j - 1);
+            right = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, j);
+            if (native_browser_compare_items(screen, right, left) >= 0) {
+                break;
+            }
+            nc_menu_swap_item_slots(menu, NC_MENU_ITEMS_ALL, j - 1, j);
+        }
+    }
+
+    if (screen->filter_enabled) {
+        nc_menu_apply_filter(menu);
+    } else {
+        nc_menu_show_all_items(menu);
     }
     return true;
 }
@@ -1484,6 +1542,9 @@ native_browser_load_mpd_items(NativeBrowserScreen *screen,
             return false;
         }
     }
+    if (!native_browser_screen_sort(screen)) {
+        return false;
+    }
 
     if (screen->filter_enabled) {
         nc_menu_apply_filter(menu);
@@ -1531,6 +1592,167 @@ native_browser_highlight_last_directory(
         }
     }
     return false;
+}
+
+static int32
+native_browser_compare_items(NativeBrowserScreen *screen,
+                             NcmMpdItem *left, NcmMpdItem *right) {
+    int32 left_rank;
+    int32 right_rank;
+
+    left_rank = native_browser_item_sort_rank(left);
+    right_rank = native_browser_item_sort_rank(right);
+    if (left_rank < right_rank) {
+        return -1;
+    }
+    if (left_rank > right_rank) {
+        return 1;
+    }
+    return native_browser_compare_item_values(screen, left, right);
+}
+
+static int32
+native_browser_compare_item_values(NativeBrowserScreen *screen,
+                                   NcmMpdItem *left,
+                                   NcmMpdItem *right) {
+    NcmBuffer left_buffer;
+    NcmBuffer right_buffer;
+    int32 result;
+
+    (void)screen;
+    switch (Config.browser_sort_mode) {
+    case NCM_SORT_MODE_TYPE:
+        return 0;
+    case NCM_SORT_MODE_NAME:
+        switch (ncm_mpd_item_kind(left)) {
+        case NCM_MPD_ITEM_DIRECTORY:
+            return native_browser_compare_views(
+                native_browser_directory_sort_view(left),
+                native_browser_directory_sort_view(right));
+        case NCM_MPD_ITEM_SONG:
+            return native_browser_compare_views(
+                native_browser_song_name_sort_view(left),
+                native_browser_song_name_sort_view(right));
+        case NCM_MPD_ITEM_PLAYLIST:
+            return native_browser_compare_views(
+                native_browser_playlist_sort_view(left),
+                native_browser_playlist_sort_view(right));
+        case NCM_MPD_ITEM_UNKNOWN:
+            return 0;
+        }
+        break;
+    case NCM_SORT_MODE_CUSTOM_FORMAT:
+        switch (ncm_mpd_item_kind(left)) {
+        case NCM_MPD_ITEM_DIRECTORY:
+            return native_browser_compare_views(
+                native_browser_directory_sort_view(left),
+                native_browser_directory_sort_view(right));
+        case NCM_MPD_ITEM_PLAYLIST:
+            return native_browser_compare_views(
+                native_browser_playlist_sort_view(left),
+                native_browser_playlist_sort_view(right));
+        case NCM_MPD_ITEM_SONG:
+            left_buffer = ncm_format_render_string(
+                &Config.browser_sort_format, ncm_mpd_item_song(left));
+            right_buffer = ncm_format_render_string(
+                &Config.browser_sort_format, ncm_mpd_item_song(right));
+            result = native_browser_compare_views(
+                ncm_string_view_make(left_buffer.data, left_buffer.len),
+                ncm_string_view_make(right_buffer.data, right_buffer.len));
+            ncm_buffer_destroy(&right_buffer);
+            ncm_buffer_destroy(&left_buffer);
+            return result;
+        case NCM_MPD_ITEM_UNKNOWN:
+            return 0;
+        }
+        break;
+    case NCM_SORT_MODE_MODIFICATION_TIME:
+        switch (ncm_mpd_item_kind(left)) {
+        case NCM_MPD_ITEM_DIRECTORY:
+            return native_browser_compare_times(
+                ncm_directory_last_modified(
+                    ncm_mpd_item_directory(left)),
+                ncm_directory_last_modified(
+                    ncm_mpd_item_directory(right)));
+        case NCM_MPD_ITEM_PLAYLIST:
+            return native_browser_compare_times(
+                ncm_playlist_last_modified(
+                    ncm_mpd_item_playlist(left)),
+                ncm_playlist_last_modified(
+                    ncm_mpd_item_playlist(right)));
+        case NCM_MPD_ITEM_SONG:
+            return native_browser_compare_times(
+                ncm_song_mtime(ncm_mpd_item_song(left)),
+                ncm_song_mtime(ncm_mpd_item_song(right)));
+        case NCM_MPD_ITEM_UNKNOWN:
+            return 0;
+        }
+        break;
+    case NCM_SORT_MODE_NONE:
+    case NCM_SORT_MODE_LAST:
+        return 0;
+    }
+    return 0;
+}
+
+static int32
+native_browser_item_sort_rank(NcmMpdItem *item) {
+    switch (ncm_mpd_item_kind(item)) {
+    case NCM_MPD_ITEM_DIRECTORY:
+        return 0;
+    case NCM_MPD_ITEM_SONG:
+        return 1;
+    case NCM_MPD_ITEM_PLAYLIST:
+        return 2;
+    case NCM_MPD_ITEM_UNKNOWN:
+        return 3;
+    }
+    return 3;
+}
+
+static int32
+native_browser_compare_views(NcmStringView left, NcmStringView right) {
+    return ncm_compare_locale_strings(left.data, left.len, right.data,
+                                      right.len,
+                                      Config.ignore_leading_the);
+}
+
+static int32
+native_browser_compare_times(time_t left, time_t right) {
+    if (left > right) {
+        return -1;
+    }
+    if (left < right) {
+        return 1;
+    }
+    return 0;
+}
+
+static NcmStringView
+native_browser_directory_sort_view(NcmMpdItem *item) {
+    NcmStringView view;
+
+    ncm_string_view_clear(&view);
+    (void)ncm_directory_path_view(ncm_mpd_item_directory(item), &view);
+    return view;
+}
+
+static NcmStringView
+native_browser_playlist_sort_view(NcmMpdItem *item) {
+    NcmStringView view;
+
+    ncm_string_view_clear(&view);
+    (void)ncm_playlist_path_view(ncm_mpd_item_playlist(item), &view);
+    return view;
+}
+
+static NcmStringView
+native_browser_song_name_sort_view(NcmMpdItem *item) {
+    NcmStringView view;
+
+    ncm_string_view_clear(&view);
+    (void)ncm_song_name_view(ncm_mpd_item_song(item), 0, &view);
+    return view;
 }
 
 static bool

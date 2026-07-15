@@ -92,6 +92,7 @@ bool native_browser_screen_load_items(NativeBrowserScreen *screen,
 bool native_browser_screen_reload_from_mpd(NativeBrowserScreen *screen,
                                            NcmMpdClient *client,
                                            NcmError *error);
+bool native_browser_screen_sort(NativeBrowserScreen *screen);
 bool native_browser_screen_set_current_directory(
     NativeBrowserScreen *screen, char *directory, int32 directory_len);
 NcmStringView native_browser_screen_current_directory(
