@@ -962,9 +962,7 @@ native_tag_editor_screen_previous_column_available(
         return false;
     }
     if (screen->active_focus == NATIVE_TAG_EDITOR_FOCUS_TAGS) {
-        return !nc_menu_empty(nc_editor_string_menu_base(&screen->tag_types))
-               && !nc_menu_empty(nc_editor_pair_menu_base(
-                       &screen->directories));
+        return !nc_menu_empty(nc_editor_string_menu_base(&screen->tag_types));
     }
     if (screen->active_focus == NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES) {
         if (nc_menu_empty(nc_editor_pair_menu_base(&screen->directories))) {
