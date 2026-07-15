@@ -40,6 +40,26 @@ static void tag_editor_mouse_callback(NcScreen *screen, MEVENT event);
 static bool tag_editor_is_lockable(NcScreen *screen);
 static bool tag_editor_is_mergable(NcScreen *screen);
 static void tag_editor_destroy_callback(NcScreen *screen);
+static void tag_editor_mouse_scroll(NativeTagEditorScreen *screen,
+                                    enum NcScroll where);
+static void tag_editor_mouse_scroll_menu(NcMenu *menu, NcWindow *window,
+                                         enum NcScroll where);
+static bool tag_editor_mouse_select_directory(
+    NativeTagEditorScreen *screen, int32 y, bool enter);
+static bool tag_editor_mouse_select_tag_type(
+    NativeTagEditorScreen *screen, int32 y, bool run);
+static bool tag_editor_mouse_select_tag(
+    NativeTagEditorScreen *screen, int32 y, bool run);
+static bool tag_editor_mouse_select_parser_dialog(
+    NativeTagEditorScreen *screen, int32 y, bool run);
+static bool tag_editor_mouse_select_parser_row(
+    NativeTagEditorScreen *screen, int32 y, bool run);
+static bool tag_editor_run_current_action(NativeTagEditorScreen *screen);
+static bool tag_editor_mouse_move_to_column(
+    NativeTagEditorScreen *screen, enum NativeTagEditorColumn column);
+static bool tag_editor_tag_type_row_changed(NativeTagEditorScreen *screen);
+static void tag_editor_finish_tag_type_change(
+    NativeTagEditorScreen *screen, bool refresh_tags);
 static void tag_editor_layout(NativeTagEditorScreen *screen);
 static int64 tag_editor_min_int64(int64 left, int64 right);
 static int64 tag_editor_separator_width(NativeTagEditorScreen *screen);
@@ -239,6 +259,7 @@ native_tag_editor_screen_init(NativeTagEditorScreen *screen,
     screen->main_height = main_height;
     screen->active_column = NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES;
     screen->last_directory_highlight = -1;
+    screen->last_tag_type_highlight = -1;
     screen->last_known_directory_count = 0;
     screen->last_known_tag_count = 0;
     screen->window_timeout_ms = -1;
@@ -832,6 +853,7 @@ native_tag_editor_screen_previous_column(NativeTagEditorScreen *screen) {
         return;
     }
     screen->active_column -= 1;
+    tag_editor_finish_tag_type_change(screen, false);
     tag_editor_update_menu_highlights(screen);
     return;
 }
@@ -842,6 +864,7 @@ native_tag_editor_screen_next_column(NativeTagEditorScreen *screen) {
         return;
     }
     screen->active_column += 1;
+    tag_editor_finish_tag_type_change(screen, false);
     tag_editor_update_menu_highlights(screen);
     return;
 }
@@ -1070,7 +1093,11 @@ native_tag_editor_screen_search(NativeTagEditorScreen *screen,
             continue;
         }
         if (tag_editor_active_item_matches(screen, menu, pos, regex)) {
-            return nc_menu_goto_selectable(menu, pos);
+            if (!nc_menu_goto_selectable(menu, pos)) {
+                return false;
+            }
+            native_tag_editor_screen_finish_directory_change(screen);
+            return true;
         }
     }
 
@@ -1320,13 +1347,14 @@ static void
 tag_editor_scroll(NcScreen *screen, enum NcScroll where) {
     NativeTagEditorScreen *editor;
     NcMenu *menu;
+    NcWindow *window;
 
     editor = tag_editor_from_screen(screen);
     menu = native_tag_editor_screen_active_menu(editor);
-    nc_menu_scroll_selectable(menu, nc_window_height(
-                                  native_tag_editor_screen_active_window(
-                                      editor)), where);
+    window = native_tag_editor_screen_active_window(editor);
+    nc_menu_scroll_selectable(menu, nc_window_height(window), where);
     native_tag_editor_screen_finish_directory_change(editor);
+    tag_editor_finish_tag_type_change(editor, true);
     tag_editor_update_menu_highlights(editor);
     return;
 }
@@ -1417,10 +1445,342 @@ tag_editor_update(NcScreen *screen) {
 static void
 tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     NativeTagEditorScreen *editor;
+    int32 x;
+    int32 y;
 
     editor = tag_editor_from_screen(screen);
-    if (editor->bridge.mouse_button_pressed != NULL) {
-        editor->bridge.mouse_button_pressed(editor->bridge.user, event);
+    if (editor == NULL) {
+        return;
+    }
+
+    if (editor->parser_mode != NATIVE_TAG_EDITOR_PARSER_NONE) {
+        x = event.x;
+        y = event.y;
+        if (nc_window_has_coords(&editor->parser_dialog_window, &x, &y)) {
+            if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
+                (void)tag_editor_mouse_select_parser_dialog(
+                    editor, y, (event.bstate & BUTTON3_PRESSED) != 0);
+            } else if (event.bstate & BUTTON5_PRESSED) {
+                tag_editor_mouse_scroll_menu(
+                    nc_editor_string_menu_base(&editor->parser_dialog),
+                    &editor->parser_dialog_window, NC_SCROLL_DOWN);
+            } else if (event.bstate & BUTTON4_PRESSED) {
+                tag_editor_mouse_scroll_menu(
+                    nc_editor_string_menu_base(&editor->parser_dialog),
+                    &editor->parser_dialog_window, NC_SCROLL_UP);
+            }
+            nc_screen_refresh(screen);
+            return;
+        }
+
+        x = event.x;
+        y = event.y;
+        if (nc_window_has_coords(&editor->parser_window, &x, &y)) {
+            if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
+                (void)tag_editor_mouse_select_parser_row(
+                    editor, y, (event.bstate & BUTTON3_PRESSED) != 0);
+            } else if (event.bstate & BUTTON5_PRESSED) {
+                tag_editor_mouse_scroll_menu(
+                    nc_editor_string_menu_base(&editor->parser_rows),
+                    &editor->parser_window, NC_SCROLL_DOWN);
+            } else if (event.bstate & BUTTON4_PRESSED) {
+                tag_editor_mouse_scroll_menu(
+                    nc_editor_string_menu_base(&editor->parser_rows),
+                    &editor->parser_window, NC_SCROLL_UP);
+            }
+            nc_screen_refresh(screen);
+            return;
+        }
+
+        x = event.x;
+        y = event.y;
+        if (nc_window_has_coords(&editor->parser_helper_window, &x, &y)) {
+            if (event.bstate & BUTTON5_PRESSED) {
+                nc_window_scroll(&editor->parser_helper_window,
+                                 NC_SCROLL_DOWN);
+            } else if (event.bstate & BUTTON4_PRESSED) {
+                nc_window_scroll(&editor->parser_helper_window,
+                                 NC_SCROLL_UP);
+            }
+            return;
+        }
+    }
+
+    x = event.x;
+    y = event.y;
+    if (nc_window_has_coords(&editor->directories_window, &x, &y)) {
+        if (!tag_editor_mouse_move_to_column(
+                editor, NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES)) {
+            return;
+        }
+        if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
+            (void)tag_editor_mouse_select_directory(
+                editor, y, (event.bstate & BUTTON1_PRESSED) != 0);
+        } else if (event.bstate & BUTTON5_PRESSED) {
+            tag_editor_mouse_scroll(editor, NC_SCROLL_DOWN);
+        } else if (event.bstate & BUTTON4_PRESSED) {
+            tag_editor_mouse_scroll(editor, NC_SCROLL_UP);
+        }
+        native_tag_editor_screen_finish_directory_change(editor);
+        nc_screen_refresh(screen);
+        return;
+    }
+
+    x = event.x;
+    y = event.y;
+    if (nc_window_has_coords(&editor->tag_types_window, &x, &y)) {
+        if (!tag_editor_mouse_move_to_column(
+                editor, NATIVE_TAG_EDITOR_COLUMN_TAG_TYPES)) {
+            return;
+        }
+        if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
+            (void)tag_editor_mouse_select_tag_type(
+                editor, y, (event.bstate & BUTTON3_PRESSED) != 0);
+        } else if (event.bstate & BUTTON5_PRESSED) {
+            tag_editor_mouse_scroll(editor, NC_SCROLL_DOWN);
+        } else if (event.bstate & BUTTON4_PRESSED) {
+            tag_editor_mouse_scroll(editor, NC_SCROLL_UP);
+        }
+        tag_editor_finish_tag_type_change(editor, true);
+        nc_screen_refresh(screen);
+        return;
+    }
+
+    x = event.x;
+    y = event.y;
+    if (nc_window_has_coords(&editor->tags_window, &x, &y)) {
+        if (!tag_editor_mouse_move_to_column(
+                editor, NATIVE_TAG_EDITOR_COLUMN_TAGS)) {
+            return;
+        }
+        if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
+            (void)tag_editor_mouse_select_tag(
+                editor, y, (event.bstate & BUTTON3_PRESSED) != 0);
+        } else if (event.bstate & BUTTON5_PRESSED) {
+            tag_editor_mouse_scroll(editor, NC_SCROLL_DOWN);
+        } else if (event.bstate & BUTTON4_PRESSED) {
+            tag_editor_mouse_scroll(editor, NC_SCROLL_UP);
+        }
+        nc_screen_refresh(screen);
+        return;
+    }
+    return;
+}
+
+static void
+tag_editor_mouse_scroll(NativeTagEditorScreen *screen,
+                        enum NcScroll where) {
+    NcMenu *menu;
+    NcWindow *window;
+
+    if (screen == NULL) {
+        return;
+    }
+    menu = native_tag_editor_screen_active_menu(screen);
+    window = native_tag_editor_screen_active_window(screen);
+    tag_editor_mouse_scroll_menu(menu, window, where);
+    native_tag_editor_screen_finish_directory_change(screen);
+    tag_editor_finish_tag_type_change(screen, true);
+    return;
+}
+
+static void
+tag_editor_mouse_scroll_menu(NcMenu *menu, NcWindow *window,
+                             enum NcScroll where) {
+    enum NcScroll effective;
+    int64 count;
+
+    if (menu == NULL || window == NULL) {
+        return;
+    }
+    effective = where;
+    count = Config.lines_scrolled;
+    if (Config.mouse_list_scroll_whole_page) {
+        count = 1;
+        if (where == NC_SCROLL_DOWN) {
+            effective = NC_SCROLL_PAGE_DOWN;
+        } else if (where == NC_SCROLL_UP) {
+            effective = NC_SCROLL_PAGE_UP;
+        }
+    }
+    if (count < 1) {
+        count = 1;
+    }
+    for (int64 i = 0; i < count; i += 1) {
+        nc_menu_scroll_selectable(menu, nc_window_height(window),
+                                  effective);
+    }
+    return;
+}
+
+static bool
+tag_editor_mouse_select_directory(NativeTagEditorScreen *screen,
+                                  int32 y, bool enter) {
+    NcMenu *menu;
+
+    if (screen == NULL) {
+        return false;
+    }
+    menu = nc_editor_pair_menu_base(&screen->directories);
+    if ((y < 0) || (y >= nc_menu_item_count(menu))) {
+        return false;
+    }
+    if (!nc_menu_goto_selectable(menu, y)) {
+        return false;
+    }
+    native_tag_editor_screen_finish_directory_change(screen);
+    if (enter) {
+        return native_tag_editor_screen_enter_directory(screen);
+    }
+    return true;
+}
+
+static bool
+tag_editor_mouse_select_tag_type(NativeTagEditorScreen *screen,
+                                 int32 y, bool run) {
+    NcMenu *menu;
+
+    if (screen == NULL) {
+        return false;
+    }
+    menu = nc_editor_string_menu_base(&screen->tag_types);
+    if ((y < 0) || (y >= nc_menu_item_count(menu))) {
+        return false;
+    }
+    if (!nc_menu_goto_selectable(menu, y)) {
+        return false;
+    }
+    tag_editor_finish_tag_type_change(screen, true);
+    if (run) {
+        return tag_editor_run_current_action(screen);
+    }
+    return true;
+}
+
+static bool
+tag_editor_mouse_select_tag(NativeTagEditorScreen *screen,
+                            int32 y, bool run) {
+    NcMenu *menu;
+
+    if (screen == NULL) {
+        return false;
+    }
+    menu = nc_tag_row_menu_base(&screen->tags);
+    if ((y < 0) || (y >= nc_menu_item_count(menu))) {
+        return false;
+    }
+    if (!nc_menu_goto_selectable(menu, y)) {
+        return false;
+    }
+    if (run) {
+        return tag_editor_run_current_action(screen);
+    }
+    return true;
+}
+
+static bool
+tag_editor_mouse_select_parser_dialog(NativeTagEditorScreen *screen,
+                                      int32 y, bool run) {
+    NcMenu *menu;
+
+    if (screen == NULL) {
+        return false;
+    }
+    menu = nc_editor_string_menu_base(&screen->parser_dialog);
+    if ((y < 0) || (y >= nc_menu_item_count(menu))) {
+        return false;
+    }
+    if (!nc_menu_goto_selectable(menu, y)) {
+        return false;
+    }
+    if (run) {
+        return tag_editor_run_current_action(screen);
+    }
+    return true;
+}
+
+static bool
+tag_editor_mouse_select_parser_row(NativeTagEditorScreen *screen,
+                                   int32 y, bool run) {
+    NcMenu *menu;
+
+    if (screen == NULL) {
+        return false;
+    }
+    menu = nc_editor_string_menu_base(&screen->parser_rows);
+    if ((y < 0) || (y >= nc_menu_item_count(menu))) {
+        return false;
+    }
+    if (!nc_menu_goto_selectable(menu, y)) {
+        return false;
+    }
+    if (run) {
+        return tag_editor_run_current_action(screen);
+    }
+    return true;
+}
+
+static bool
+tag_editor_run_current_action(NativeTagEditorScreen *screen) {
+    if (screen == NULL) {
+        return false;
+    }
+    return nc_screen_run_current(native_tag_editor_screen_base(screen));
+}
+
+static bool
+tag_editor_mouse_move_to_column(NativeTagEditorScreen *screen,
+                                enum NativeTagEditorColumn column) {
+    if (screen == NULL) {
+        return false;
+    }
+    while (screen->active_column < column) {
+        if (!native_tag_editor_screen_next_column_available(screen)) {
+            return false;
+        }
+        native_tag_editor_screen_next_column(screen);
+    }
+    while (screen->active_column > column) {
+        if (!native_tag_editor_screen_previous_column_available(screen)) {
+            return false;
+        }
+        native_tag_editor_screen_previous_column(screen);
+    }
+    tag_editor_update_menu_highlights(screen);
+    return true;
+}
+
+static bool
+tag_editor_tag_type_row_changed(NativeTagEditorScreen *screen) {
+    NcMenu *menu;
+    int64 highlight;
+    bool changed;
+
+    if (screen == NULL) {
+        return false;
+    }
+    menu = nc_editor_string_menu_base(&screen->tag_types);
+    highlight = nc_menu_highlight(menu);
+    changed = screen->last_tag_type_highlight != highlight;
+    screen->last_tag_type_highlight = highlight;
+    return changed;
+}
+
+static void
+tag_editor_finish_tag_type_change(NativeTagEditorScreen *screen,
+                                  bool refresh_tags) {
+    if (screen == NULL) {
+        return;
+    }
+    if (screen->active_column != NATIVE_TAG_EDITOR_COLUMN_TAG_TYPES) {
+        return;
+    }
+    if (!tag_editor_tag_type_row_changed(screen)) {
+        return;
+    }
+    if (refresh_tags) {
+        tag_editor_refresh_menu(&screen->tags_window,
+                                nc_tag_row_menu_base(&screen->tags));
     }
     return;
 }

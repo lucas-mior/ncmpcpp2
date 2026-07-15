@@ -142,6 +142,12 @@ static void test_tag_editor_selected_songs_use_active_tags_column(void);
 static void test_tag_editor_selection_helpers(void);
 static void test_tag_editor_active_menu_selection_actions(void);
 static void test_tag_editor_enter_directory_invalidates_tags(void);
+static void test_tag_editor_mouse_directory_click_enters_and_clears(void);
+static void test_tag_editor_mouse_tag_type_and_tag_clicks(void);
+static void test_tag_editor_mouse_wheel_directory_change(void);
+static void test_tag_editor_tag_type_scroll_refreshes_tags(void);
+static void test_tag_editor_search_result_directory_change(void);
+static void test_tag_editor_parser_mouse_rows(void);
 
 int
 main(void) {
@@ -180,6 +186,12 @@ main(void) {
     test_tag_editor_selection_helpers();
     test_tag_editor_active_menu_selection_actions();
     test_tag_editor_enter_directory_invalidates_tags();
+    test_tag_editor_mouse_directory_click_enters_and_clears();
+    test_tag_editor_mouse_tag_type_and_tag_clicks();
+    test_tag_editor_mouse_wheel_directory_change();
+    test_tag_editor_tag_type_scroll_refreshes_tags();
+    test_tag_editor_search_result_directory_change();
+    test_tag_editor_parser_mouse_rows();
 
     destroy_mpd_trace();
     exit(EXIT_SUCCESS);
@@ -875,10 +887,7 @@ test_bridge_callback_contract(void) {
     event.y = 12;
     event.bstate = BUTTON3_PRESSED;
     nc_screen_mouse_button_pressed(base, event);
-    assert(bridge_trace.mouse_calls == 1);
-    assert(bridge_trace.mouse_event.x == 11);
-    assert(bridge_trace.mouse_event.y == 12);
-    assert(bridge_trace.mouse_event.bstate == BUTTON3_PRESSED);
+    assert(bridge_trace.mouse_calls == 0);
 
     destroy_screen(&screen);
     return;
@@ -1788,6 +1797,221 @@ test_tag_editor_enter_directory_invalidates_tags(void) {
     return;
 }
 
+static void
+test_tag_editor_mouse_directory_click_enters_and_clears(void) {
+    NativeTagEditorScreen screen;
+    NcmStringView current_dir;
+    MEVENT event;
+
+    init_screen(&screen);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Beta"), STRLIT_ARGS("/Beta")));
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Artist"));
+    reset_bridge_trace();
+    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
+
+    event = (MEVENT){0};
+    event.x = (int32)screen.directories_window.start_x + 1;
+    event.y = (int32)screen.directories_window.start_y + 1;
+    event.bstate = BUTTON1_PRESSED;
+    nc_screen_mouse_button_pressed(native_tag_editor_screen_base(&screen),
+                                   event);
+
+    assert(screen.active_column == NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES);
+    assert(native_tag_editor_screen_current_dir(&screen, &current_dir));
+    assert(ncm_string_equal(current_dir.data, current_dir.len,
+                            STRLIT_ARGS("/Beta")));
+    assert(nc_menu_empty(nc_editor_pair_menu_base(&screen.directories)));
+    assert(nc_menu_empty(nc_tag_row_menu_base(&screen.tags)));
+    assert(screen.directories_update_requested);
+    assert(screen.tags_update_requested);
+    assert(bridge_trace.mouse_calls == 0);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_mouse_tag_type_and_tag_clicks(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tag_types;
+    NcMenu *tags;
+    MEVENT event;
+
+    init_screen(&screen);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    append_song_with_title(&screen, STRLIT_ARGS("one.flac"),
+                           STRLIT_ARGS("Artist"), STRLIT_ARGS("Title"));
+    append_song_with_title(&screen, STRLIT_ARGS("two.flac"),
+                           STRLIT_ARGS("Artist"), STRLIT_ARGS("Other"));
+    reset_bridge_trace();
+    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
+
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    tags = nc_tag_row_menu_base(&screen.tags);
+
+    event = (MEVENT){0};
+    event.x = (int32)screen.tag_types_window.start_x + 1;
+    event.y = (int32)screen.tag_types_window.start_y + 1;
+    event.bstate = BUTTON3_PRESSED;
+    nc_screen_mouse_button_pressed(native_tag_editor_screen_base(&screen),
+                                   event);
+    assert(screen.active_column == NATIVE_TAG_EDITOR_COLUMN_TAG_TYPES);
+    assert(nc_menu_highlight(tag_types) == 1);
+    assert(bridge_trace.run_action_calls == 1);
+    assert(bridge_trace.mouse_calls == 0);
+    assert(nc_menu_item_count(tags) == 2);
+
+    event = (MEVENT){0};
+    event.x = (int32)screen.tags_window.start_x + 1;
+    event.y = (int32)screen.tags_window.start_y + 1;
+    event.bstate = BUTTON3_PRESSED;
+    nc_screen_mouse_button_pressed(native_tag_editor_screen_base(&screen),
+                                   event);
+    assert(screen.active_column == NATIVE_TAG_EDITOR_COLUMN_TAGS);
+    assert(nc_menu_highlight(tags) == 1);
+    assert(bridge_trace.run_action_calls == 2);
+    assert(bridge_trace.mouse_calls == 0);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_mouse_wheel_directory_change(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *directories;
+    MEVENT event;
+    NcmStringView observed;
+    uint32 old_lines_scrolled;
+    bool old_whole_page;
+
+    init_screen(&screen);
+    old_lines_scrolled = Config.lines_scrolled;
+    old_whole_page = Config.mouse_list_scroll_whole_page;
+    Config.lines_scrolled = 1;
+    Config.mouse_list_scroll_whole_page = false;
+
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Beta"), STRLIT_ARGS("/Beta")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Gamma"), STRLIT_ARGS("/Gamma")));
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Artist"));
+    directories = nc_editor_pair_menu_base(&screen.directories);
+    assert(nc_menu_highlight(directories) == 0);
+    assert(nc_menu_item_count(nc_tag_row_menu_base(&screen.tags)) == 1);
+
+    event = (MEVENT){0};
+    event.x = (int32)screen.directories_window.start_x + 1;
+    event.y = (int32)screen.directories_window.start_y;
+    event.bstate = BUTTON5_PRESSED;
+    nc_screen_mouse_button_pressed(native_tag_editor_screen_base(&screen),
+                                   event);
+
+    assert(nc_menu_highlight(directories) == 1);
+    assert(nc_menu_empty(nc_tag_row_menu_base(&screen.tags)));
+    assert(native_tag_editor_screen_observed_dir(&screen, &observed));
+    assert(ncm_string_equal(observed.data, observed.len,
+                            STRLIT_ARGS("/Beta")));
+    assert(screen.tags_update_requested);
+
+    Config.lines_scrolled = old_lines_scrolled;
+    Config.mouse_list_scroll_whole_page = old_whole_page;
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_tag_type_scroll_refreshes_tags(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tags;
+
+    init_screen(&screen);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    append_song_with_title(&screen, STRLIT_ARGS("one.flac"),
+                           STRLIT_ARGS("Artist"), STRLIT_ARGS("Title"));
+    append_song_with_title(&screen, STRLIT_ARGS("two.flac"),
+                           STRLIT_ARGS("Artist"), STRLIT_ARGS("Other"));
+    assert(native_tag_editor_screen_next_column_available(&screen));
+    native_tag_editor_screen_next_column(&screen);
+    tags = nc_tag_row_menu_base(&screen.tags);
+    assert(nc_menu_set_position_selected(tags, 1, true));
+
+    reset_window_trace();
+    nc_screen_scroll(native_tag_editor_screen_base(&screen),
+                     NC_SCROLL_DOWN);
+    assert(screen.active_column == NATIVE_TAG_EDITOR_COLUMN_TAG_TYPES);
+    assert(nc_menu_highlight(nc_editor_string_menu_base(&screen.tag_types))
+           == 1);
+    assert(nc_menu_item_count(tags) == 2);
+    assert(nc_menu_position_is_selected(tags, 1));
+    assert(window_trace.refresh_calls >= 1);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_search_result_directory_change(void) {
+    NativeTagEditorScreen screen;
+    NcmError error;
+    NcmStringView observed;
+
+    init_screen(&screen);
+    ncm_error_clear(&error);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Beta"), STRLIT_ARGS("/Beta")));
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Artist"));
+
+    assert(native_tag_editor_screen_search(&screen, STRLIT_ARGS("Beta"),
+                                           true, true, true, &error));
+    assert(nc_menu_empty(nc_tag_row_menu_base(&screen.tags)));
+    assert(native_tag_editor_screen_observed_dir(&screen, &observed));
+    assert(ncm_string_equal(observed.data, observed.len,
+                            STRLIT_ARGS("/Beta")));
+    assert(screen.tags_update_requested);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_parser_mouse_rows(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *parser_rows;
+    MEVENT event;
+
+    init_screen(&screen);
+    assert(native_tag_editor_screen_prepare_parser_rows(
+               &screen, NATIVE_TAG_EDITOR_PARSER_TAGS_FROM_FILENAME,
+               STRLIT_ARGS("%a - %t")));
+    reset_bridge_trace();
+    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
+    parser_rows = nc_editor_string_menu_base(&screen.parser_rows);
+
+    event = (MEVENT){0};
+    event.x = (int32)screen.parser_window.start_x + 1;
+    event.y = (int32)screen.parser_window.start_y + 4;
+    event.bstate = BUTTON3_PRESSED;
+    nc_screen_mouse_button_pressed(native_tag_editor_screen_base(&screen),
+                                   event);
+
+    assert(nc_menu_highlight(parser_rows) == 4);
+    assert(bridge_trace.run_action_calls == 1);
+    assert(bridge_trace.mouse_calls == 0);
+
+    destroy_screen(&screen);
+    return;
+}
+
 void
 __wrap_nc_window_init(NcWindow *window, int64 start_x, int64 start_y,
                       int64 width, int64 height, char *title,
@@ -1823,6 +2047,22 @@ __wrap_nc_window_resize(NcWindow *window, int64 width, int64 height) {
     window->width = width;
     window->height = height;
     return;
+}
+
+bool
+__wrap_nc_window_has_coords(NcWindow *window, int32 *x, int32 *y) {
+    if ((window == NULL) || (x == NULL) || (y == NULL)) {
+        return false;
+    }
+    if ((*x < window->start_x) || (*x >= window->start_x + window->width)) {
+        return false;
+    }
+    if ((*y < window->start_y) || (*y >= window->start_y + window->height)) {
+        return false;
+    }
+    *x -= (int32)window->start_x;
+    *y -= (int32)window->start_y;
+    return true;
 }
 
 void
