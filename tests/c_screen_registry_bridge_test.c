@@ -2,6 +2,7 @@
 #include <stddef.h>
 
 #include "app_controller.h"
+#include "curses/nc_window.h"
 #include "settings.h"
 #include "screens/native_c_screens.h"
 #include "screens/screen_switcher.h"
@@ -452,6 +453,12 @@ test_native_only_registration(void) {
 
 #if defined(HAVE_TAGLIB_H)
     registered = app_controller_find_screen_type(
+        NC_SCREEN_TYPE_TAG_EDITOR);
+    assert(registered == native_c_screen_tag_editor_native());
+    assert(native_c_screens_is_registered_type(
+        NCM_SCREEN_TYPE_TAG_EDITOR));
+
+    registered = app_controller_find_screen_type(
         NC_SCREEN_TYPE_TINY_TAG_EDITOR);
     assert(registered == native_c_screen_tiny_tag_editor_native());
     assert(native_c_screens_is_registered_type(
@@ -481,15 +488,24 @@ test_native_only_registration(void) {
     nc_screen_clear_resize_request(native_c_screen_playlist_native());
     nc_screen_clear_resize_request(
         native_c_screen_playlist_editor_native());
+#if defined(HAVE_TAGLIB_H)
+    nc_screen_clear_resize_request(native_c_screen_tag_editor_native());
+#endif
     assert(!nc_screen_has_to_be_resized(
         native_c_screen_playlist_native()));
     assert(!nc_screen_has_to_be_resized(
         native_c_screen_playlist_editor_native()));
+#if defined(HAVE_TAGLIB_H)
+    assert(!nc_screen_has_to_be_resized(native_c_screen_tag_editor_native()));
+#endif
     native_c_screens_request_registered_resize();
     assert(nc_screen_has_to_be_resized(
         native_c_screen_playlist_native()));
     assert(nc_screen_has_to_be_resized(
         native_c_screen_playlist_editor_native()));
+#if defined(HAVE_TAGLIB_H)
+    assert(nc_screen_has_to_be_resized(native_c_screen_tag_editor_native()));
+#endif
 
     native_c_screen_playlist_editor_switch_to();
     assert(native_c_screen_playlist_editor_is_current());
@@ -504,5 +520,55 @@ test_native_only_registration(void) {
            == native_c_screen_search_engine_native());
     assert(app_controller_previous_screen()
            == native_c_screen_playlist_editor_native());
+    return;
+}
+
+void
+__wrap_nc_window_init(NcWindow *window, int64 start_x, int64 start_y,
+                      int64 width, int64 height, char *title,
+                      int32 title_len, NcColor color, NcBorder border) {
+    (void)title;
+    nc_window_init_empty(window);
+    window->start_x = start_x;
+    window->start_y = start_y;
+    window->width = width;
+    window->height = height;
+    window->title_len = title_len;
+    window->color = color;
+    window->base_color = color;
+    window->border = border;
+    return;
+}
+
+void
+__wrap_nc_window_destroy(NcWindow *window) {
+    nc_window_init_empty(window);
+    return;
+}
+
+void
+__wrap_nc_window_move_to(NcWindow *window, int64 start_x, int64 start_y) {
+    window->start_x = start_x;
+    window->start_y = start_y;
+    return;
+}
+
+void
+__wrap_nc_window_resize(NcWindow *window, int64 width, int64 height) {
+    window->width = width;
+    window->height = height;
+    return;
+}
+
+void
+__wrap_nc_window_set_title(NcWindow *window, char *title, int32 title_len) {
+    (void)title;
+    window->title_len = title_len;
+    return;
+}
+
+void
+__wrap_nc_screen_draw_vertical_separator(int64 x) {
+    (void)x;
     return;
 }

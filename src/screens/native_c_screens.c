@@ -1784,6 +1784,7 @@ native_c_screens_register_native_only(void) {
     native_c_screen_visualizer_register();
 #endif
 #if defined(HAVE_TAGLIB_H)
+    native_c_screen_tag_editor_register();
     native_c_screen_tiny_tag_editor_register();
 #endif
 #if defined(ENABLE_OUTPUTS)
