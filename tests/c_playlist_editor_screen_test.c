@@ -64,23 +64,6 @@ typedef struct PlaylistEditorFormatFixture {
     bool old_titles_visibility;
 } PlaylistEditorFormatFixture;
 
-typedef struct PlaylistEditorBridgeFixture {
-    NcWindow window;
-    enum NcScroll last_scroll;
-    MEVENT last_event;
-    int32 refresh_calls;
-    int32 refresh_window_calls;
-    int32 scroll_calls;
-    int32 switch_calls;
-    int32 resize_calls;
-    int32 update_calls;
-    int32 playlist_update_calls;
-    int32 content_update_calls;
-    int32 mouse_calls;
-    int32 timeout;
-    char *title;
-} PlaylistEditorBridgeFixture;
-
 static PlaylistEditorWindowTrace window_trace;
 static PlaylistEditorMpdFixture mpd_fixture;
 
@@ -103,20 +86,6 @@ static void assert_array_song_uri(NcmSongArray *songs, int32 pos,
                                   char *uri, int32 uri_len);
 static int32 cstring_len(char *string);
 static void copy_cstring(char *dest, int32 dest_cap, char *source);
-static NativePlaylistEditorBridge make_bridge(
-    PlaylistEditorBridgeFixture *fixture);
-static NcWindow *bridge_active_window(void *user);
-static void bridge_refresh(void *user);
-static void bridge_refresh_window(void *user);
-static void bridge_scroll(void *user, enum NcScroll where);
-static void bridge_switch_to(void *user);
-static void bridge_resize(void *user);
-static int32 bridge_window_timeout(void *user);
-static char *bridge_title(void *user);
-static void bridge_update(void *user);
-static void bridge_request_playlists_update(void *user);
-static void bridge_request_content_update(void *user);
-static void bridge_mouse_button_pressed(void *user, MEVENT event);
 static void test_initial_state_and_geometry(void);
 static void test_layout_and_menu_configuration(void);
 static void test_fetch_timer_and_timeout_state(void);
@@ -145,7 +114,6 @@ static void test_locate_song_reports_not_found(void);
 static void test_update_error_reporting_and_flags(void);
 static void test_playlist_commands(void);
 static void test_native_rendering_callbacks(void);
-static void test_bridge_delegation(void);
 static void test_native_refresh_and_mouse_fallback(void);
 void __wrap_nc_window_set_title(NcWindow *window, char *title,
                                 int32 title_len);
@@ -185,7 +153,6 @@ main(void) {
     test_update_error_reporting_and_flags();
     test_playlist_commands();
     test_native_rendering_callbacks();
-    test_bridge_delegation();
     test_native_refresh_and_mouse_fallback();
 
     destroy_mpd_fixture();
@@ -406,133 +373,6 @@ copy_cstring(char *dest, int32 dest_cap, char *source) {
         ncm_memcpy(dest, source, source_len);
     }
     dest[source_len] = '\0';
-    return;
-}
-
-static NativePlaylistEditorBridge
-make_bridge(PlaylistEditorBridgeFixture *fixture) {
-    NativePlaylistEditorBridge bridge = {0};
-
-    bridge.active_window = bridge_active_window;
-    bridge.refresh = bridge_refresh;
-    bridge.refresh_window = bridge_refresh_window;
-    bridge.scroll = bridge_scroll;
-    bridge.switch_to = bridge_switch_to;
-    bridge.resize = bridge_resize;
-    bridge.window_timeout = bridge_window_timeout;
-    bridge.title = bridge_title;
-    bridge.update = bridge_update;
-    bridge.request_playlists_update = bridge_request_playlists_update;
-    bridge.request_content_update = bridge_request_content_update;
-    bridge.mouse_button_pressed = bridge_mouse_button_pressed;
-    bridge.user = fixture;
-    return bridge;
-}
-
-static NcWindow *
-bridge_active_window(void *user) {
-    PlaylistEditorBridgeFixture *fixture;
-
-    fixture = user;
-    return &fixture->window;
-}
-
-static void
-bridge_refresh(void *user) {
-    PlaylistEditorBridgeFixture *fixture;
-
-    fixture = user;
-    fixture->refresh_calls += 1;
-    return;
-}
-
-static void
-bridge_refresh_window(void *user) {
-    PlaylistEditorBridgeFixture *fixture;
-
-    fixture = user;
-    fixture->refresh_window_calls += 1;
-    return;
-}
-
-static void
-bridge_scroll(void *user, enum NcScroll where) {
-    PlaylistEditorBridgeFixture *fixture;
-
-    fixture = user;
-    fixture->scroll_calls += 1;
-    fixture->last_scroll = where;
-    return;
-}
-
-static void
-bridge_switch_to(void *user) {
-    PlaylistEditorBridgeFixture *fixture;
-
-    fixture = user;
-    fixture->switch_calls += 1;
-    return;
-}
-
-static void
-bridge_resize(void *user) {
-    PlaylistEditorBridgeFixture *fixture;
-
-    fixture = user;
-    fixture->resize_calls += 1;
-    return;
-}
-
-static int32
-bridge_window_timeout(void *user) {
-    PlaylistEditorBridgeFixture *fixture;
-
-    fixture = user;
-    return fixture->timeout;
-}
-
-static char *
-bridge_title(void *user) {
-    PlaylistEditorBridgeFixture *fixture;
-
-    fixture = user;
-    return fixture->title;
-}
-
-static void
-bridge_update(void *user) {
-    PlaylistEditorBridgeFixture *fixture;
-
-    fixture = user;
-    fixture->update_calls += 1;
-    return;
-}
-
-static void
-bridge_request_playlists_update(void *user) {
-    PlaylistEditorBridgeFixture *fixture;
-
-    fixture = user;
-    fixture->playlist_update_calls += 1;
-    return;
-}
-
-static void
-bridge_request_content_update(void *user) {
-    PlaylistEditorBridgeFixture *fixture;
-
-    fixture = user;
-    fixture->content_update_calls += 1;
-    return;
-}
-
-static void
-bridge_mouse_button_pressed(void *user, MEVENT event) {
-    PlaylistEditorBridgeFixture *fixture;
-
-    fixture = user;
-    fixture->mouse_calls += 1;
-    fixture->last_event = event;
     return;
 }
 
@@ -1476,8 +1316,6 @@ test_mpd_reload_and_current_items(void) {
 static void
 test_update_callback_uses_native_mpd_logic(void) {
     NativePlaylistEditorScreen screen;
-    PlaylistEditorBridgeFixture fixture = {0};
-    NativePlaylistEditorBridge bridge;
     NcMenu *playlists;
     NcMenu *content;
     NcmPlaylist *playlist;
@@ -1497,16 +1335,11 @@ test_update_callback_uses_native_mpd_logic(void) {
                 LIT_ARGS("Alpha one"));
     reset_mpd_calls();
 
-    bridge = make_bridge(&fixture);
     init_screen(&screen);
-    native_playlist_editor_screen_set_bridge(&screen, bridge);
     nc_screen_update(native_playlist_editor_screen_base(&screen));
 
     playlists = nc_playlist_entry_menu_base(&screen.playlists);
     content = nc_song_menu_base(&screen.content);
-    assert(fixture.update_calls == 0);
-    assert(fixture.playlist_update_calls == 0);
-    assert(fixture.content_update_calls == 0);
     assert(mpd_fixture.get_playlists_calls == 1);
     assert(mpd_fixture.get_content_calls == 1);
     assert(!screen.playlists_update_requested);
@@ -1521,8 +1354,6 @@ test_update_callback_uses_native_mpd_logic(void) {
                             cstring_len(mpd_fixture.content_path),
                             LIT_ARGS("Alpha")));
 
-    native_playlist_editor_screen_set_bridge(
-        &screen, (NativePlaylistEditorBridge){0});
     native_playlist_editor_screen_destroy(&screen);
     Config.ignore_leading_the = old_ignore_leading_the;
     Config.data_fetching_delay = old_data_fetching_delay;
@@ -1575,8 +1406,6 @@ test_delayed_update_and_empty_content_cache(void) {
 static void
 test_native_scroll_fetches_new_playlist_content(void) {
     NativePlaylistEditorScreen screen;
-    PlaylistEditorBridgeFixture fixture = {0};
-    NativePlaylistEditorBridge bridge;
     NcMenu *content;
     bool old_data_fetching_delay;
 
@@ -1591,9 +1420,7 @@ test_native_scroll_fetches_new_playlist_content(void) {
                 LIT_ARGS("Selected"));
     reset_mpd_calls();
 
-    bridge = make_bridge(&fixture);
     init_screen(&screen);
-    native_playlist_editor_screen_set_bridge(&screen, bridge);
     nc_screen_update(native_playlist_editor_screen_base(&screen));
     assert(mpd_fixture.get_content_calls == 1);
     assert(ncm_string_equal(mpd_fixture.content_path,
@@ -1603,7 +1430,6 @@ test_native_scroll_fetches_new_playlist_content(void) {
     nc_screen_scroll(native_playlist_editor_screen_base(&screen),
                      NC_SCROLL_DOWN);
     content = nc_song_menu_base(&screen.content);
-    assert(fixture.scroll_calls == 0);
     assert(nc_menu_all_item_count(content) == 0);
     assert(screen.content_update_requested);
 
@@ -1614,8 +1440,6 @@ test_native_scroll_fetches_new_playlist_content(void) {
                             LIT_ARGS("Second")));
     assert(nc_menu_all_item_count(content) == 1);
 
-    native_playlist_editor_screen_set_bridge(
-        &screen, (NativePlaylistEditorBridge){0});
     native_playlist_editor_screen_destroy(&screen);
     Config.data_fetching_delay = old_data_fetching_delay;
     return;
@@ -2219,61 +2043,6 @@ test_native_rendering_callbacks(void) {
     ncm_mpd_playlist_list_destroy(&playlists);
     native_playlist_editor_screen_destroy(&screen);
     end_render_formats(&formats);
-    return;
-}
-
-static void
-test_bridge_delegation(void) {
-    NativePlaylistEditorScreen screen;
-    PlaylistEditorBridgeFixture fixture = {0};
-    NativePlaylistEditorBridge bridge;
-    NcScreen *base;
-    MEVENT event = {0};
-
-    fixture.timeout = 250;
-    fixture.title = (char *)"Legacy playlist editor";
-    bridge = make_bridge(&fixture);
-    init_screen(&screen);
-    native_playlist_editor_screen_set_bridge(&screen, bridge);
-    base = native_playlist_editor_screen_base(&screen);
-
-    assert(nc_screen_active_window(base) == &screen.playlists_window);
-    nc_screen_refresh(base);
-    nc_screen_refresh_window(base);
-    nc_screen_scroll(base, NC_SCROLL_PAGE_DOWN);
-    nc_screen_switch_to(base);
-    nc_screen_request_resize(base);
-    nc_screen_resize(base);
-    assert(nc_screen_window_timeout(base) == NC_SCREEN_DEFAULT_WINDOW_TIMEOUT);
-    assert(nc_screen_title(base) == fixture.title);
-
-    reset_mpd_calls();
-    native_playlist_editor_screen_request_playlists_update(&screen);
-    native_playlist_editor_screen_request_content_update(&screen);
-    assert(nc_screen_has_to_be_updated(base));
-    nc_screen_update(base);
-
-    event.x = 9;
-    event.y = 7;
-    event.bstate = BUTTON3_PRESSED;
-    nc_screen_mouse_button_pressed(base, event);
-
-    assert(fixture.refresh_calls == 0);
-    assert(fixture.refresh_window_calls == 0);
-    assert(fixture.scroll_calls == 0);
-    assert(fixture.switch_calls == 0);
-    assert(fixture.resize_calls == 1);
-    assert(fixture.playlist_update_calls == 0);
-    assert(fixture.content_update_calls == 0);
-    assert(fixture.update_calls == 0);
-    assert(mpd_fixture.get_playlists_calls == 1);
-    assert(fixture.mouse_calls == 0);
-    assert(!nc_screen_has_to_be_updated(base));
-    assert(!nc_screen_has_to_be_resized(base));
-
-    native_playlist_editor_screen_set_bridge(
-        &screen, (NativePlaylistEditorBridge){0});
-    native_playlist_editor_screen_destroy(&screen);
     return;
 }
 

@@ -30,7 +30,6 @@
 #include "macro_utilities.h"
 #include "screens/browser.h"
 #include "screens/native_c_screens.h"
-#include "screens/playlist_editor.h"
 #include "utility/readline.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
@@ -366,40 +365,6 @@ char *itemTypeName(MPD::Item::Type type)
 			return ncm_item_type_name(NCM_ITEM_PLAYLIST);
 	}
 	return ncm_item_type_name(NCM_ITEM_UNKNOWN);
-}
-
-std::string storedPlaylistPath(const MPD::Playlist &playlist)
-{
-	return playlist.path();
-}
-
-std::string currentStoredPlaylistPath()
-{
-	return storedPlaylistPath(myPlaylistEditor->Playlists.current()->value());
-}
-
-bool legacyPlaylistEditorIsCurrent()
-{
-	return myPlaylistEditor != nullptr
-	    && screenLegacyCurrent() == myPlaylistEditor;
-}
-
-bool legacyPlaylistEditorContentActive()
-{
-	BaseScreen *current = screenLegacyCurrent();
-
-	return myPlaylistEditor != nullptr
-	    && current != nullptr
-	    && current->isActiveWindow(myPlaylistEditor->Content);
-}
-
-bool legacyPlaylistEditorPlaylistsActive()
-{
-	BaseScreen *current = screenLegacyCurrent();
-
-	return myPlaylistEditor != nullptr
-	    && current != nullptr
-	    && current->isActiveWindow(myPlaylistEditor->Playlists);
 }
 
 void populateActions();
@@ -1016,29 +981,14 @@ void PlayItem::run()
 
 bool DeletePlaylistItems::canBeRun()
 {
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_DELETE_PLAYLIST_ITEMS)
-	    || (legacyPlaylistEditorContentActive()
-	        && !myPlaylistEditor->Content.empty());
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_DELETE_PLAYLIST_ITEMS);
 }
 
 void DeletePlaylistItems::run()
 {
-	if (ncm_action_runtime_can_run(nullptr, NCM_ACTION_DELETE_PLAYLIST_ITEMS))
-	{
-		Statusbar::print("Deleting items...");
-		if (ncm_action_delete_playlist_items())
-			Statusbar::print("Item(s) deleted");
-	}
-	else if (legacyPlaylistEditorContentActive())
-	{
-		std::string playlist = currentStoredPlaylistPath();
-		auto delete_fun = [playlist](auto &, unsigned pos) {
-			Mpd.PlaylistDelete(playlist, pos);
-		};
-		Statusbar::print("Deleting items...");
-		deleteSelectedSongs(myPlaylistEditor->Content, delete_fun);
+	Statusbar::print("Deleting items...");
+	if (ncm_action_delete_playlist_items())
 		Statusbar::print("Item(s) deleted");
-	}
 }
 
 bool DeleteBrowserItems::canBeRun()
@@ -1117,38 +1067,13 @@ void DeleteBrowserItems::run()
 
 bool DeleteStoredPlaylist::canBeRun()
 {
-	return legacyPlaylistEditorPlaylistsActive();
+	return ncm_action_runtime_can_run(nullptr,
+	                                  NCM_ACTION_DELETE_STORED_PLAYLIST);
 }
 
 void DeleteStoredPlaylist::run()
 {
-	if (myPlaylistEditor->Playlists.empty())
-		return;
-	std::string question;
-	if (hasSelected(myPlaylistEditor->Playlists.begin(), myPlaylistEditor->Playlists.end()))
-		question = "Delete selected playlists?";
-	else
-	{
-		const char msg[] = "Delete playlist \"%1%\"?";
-		question = stringFormat(msg,
-			Utf8::shorten(currentStoredPlaylistPath(),
-			            COLS-const_strlen(msg)-10));
-	}
-	if (!confirmAction(question))
-		return;
-
-	auto list = getSelectedOrCurrent(
-		myPlaylistEditor->Playlists.begin(),
-		myPlaylistEditor->Playlists.end(),
-		myPlaylistEditor->Playlists.current()
-	);
-	for (const auto &item : list)
-		Mpd.DeletePlaylist(storedPlaylistPath(item->value()));
-	Statusbar::printf("%1% deleted", list.size() == 1 ? "Playlist" : "Playlists");
-	// force playlists update. this happens automatically, but only after call
-	// to Key::read, therefore when we call PlaylistEditor::Update, it won't
-	// yet see it, so let's point that it needs to update it.
-	myPlaylistEditor->requestPlaylistsUpdate();
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_DELETE_STORED_PLAYLIST);
 }
 
 void SavePlaylist::run()
@@ -1191,32 +1116,12 @@ bool MoveSelectedItemsUp::canBeRun()
 	if (native_c_screen_playlist_is_current())
 		return ncm_action_runtime_can_run(
 		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_UP);
-	return legacyPlaylistEditorContentActive()
-	    && !myPlaylistEditor->Content.empty();
+	return false;
 }
 
 void MoveSelectedItemsUp::run()
 {
-	const char *filteredMsg = "Moving items up is disabled in filtered playlist";
-	if (native_c_screen_playlist_is_current())
-	{
-		(void)ncm_action_runtime_run(
-		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_UP);
-	}
-	else if (legacyPlaylistEditorIsCurrent())
-	{
-		if (myPlaylistEditor->Content.isFiltered())
-			Statusbar::print(filteredMsg);
-		else
-		{
-			auto playlist = currentStoredPlaylistPath();
-			moveSelectedItemsUp(
-				myPlaylistEditor->Content,
-				[playlist](auto &, unsigned from, unsigned to) {
-					Mpd.PlaylistMove(playlist, from, to);
-				});
-		}
-	}
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_UP);
 }
 
 bool MoveSelectedItemsDown::canBeRun()
@@ -1224,32 +1129,12 @@ bool MoveSelectedItemsDown::canBeRun()
 	if (native_c_screen_playlist_is_current())
 		return ncm_action_runtime_can_run(
 		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN);
-	return legacyPlaylistEditorContentActive()
-	    && !myPlaylistEditor->Content.empty();
+	return false;
 }
 
 void MoveSelectedItemsDown::run()
 {
-	const char *filteredMsg = "Moving items down is disabled in filtered playlist";
-	if (native_c_screen_playlist_is_current())
-	{
-		(void)ncm_action_runtime_run(
-		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN);
-	}
-	else if (legacyPlaylistEditorIsCurrent())
-	{
-		if (myPlaylistEditor->Content.isFiltered())
-			Statusbar::print(filteredMsg);
-		else
-		{
-			auto playlist = currentStoredPlaylistPath();
-			moveSelectedItemsDown(
-				myPlaylistEditor->Content,
-				[playlist](auto &, unsigned from, unsigned to) {
-					Mpd.PlaylistMove(playlist, from, to);
-				});
-		}
-	}
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN);
 }
 
 bool MoveSelectedItemsTo::canBeRun()
@@ -1257,31 +1142,17 @@ bool MoveSelectedItemsTo::canBeRun()
 	if (native_c_screen_playlist_is_current())
 		return ncm_action_runtime_can_run(
 		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_TO);
-	return legacyPlaylistEditorContentActive();
+	return false;
 }
 
 void MoveSelectedItemsTo::run()
 {
-	if (native_c_screen_playlist_is_current())
-	{
-		(void)ncm_action_runtime_run(
-		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_TO);
-	}
-	else
-	{
-		assert(!myPlaylistEditor->Playlists.empty());
-		std::string playlist = currentStoredPlaylistPath();
-		auto move_fun = [playlist](auto &, unsigned from, unsigned to) {
-			Mpd.PlaylistMove(playlist, from, to);
-		};
-		moveSelectedItemsTo(myPlaylistEditor->Content, move_fun);
-	}
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_TO);
 }
 
 bool Add::canBeRun()
 {
-	return !legacyPlaylistEditorIsCurrent()
-	   || !myPlaylistEditor->Playlists.empty();
+	return true;
 }
 
 void Add::run()
@@ -1290,7 +1161,7 @@ void Add::run()
 	std::string path;
 	{
 		Statusbar::ScopedLock slock;
-		Statusbar::put() << (legacyPlaylistEditorIsCurrent() ? "Add to playlist: " : "Add: ");
+		Statusbar::put() << "Add: ";
 		if (!promptString(path))
 				return;
 	}
@@ -1302,31 +1173,26 @@ void Add::run()
 
 	Statusbar::put() << "Adding...";
 	static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
-	if (legacyPlaylistEditorIsCurrent())
-		Mpd.AddToPlaylist(currentStoredPlaylistPath(), path);
-	else
+	try
 	{
-		try
+		Mpd.Add(path);
+	}
+	catch (MPD::ServerError &err)
+	{
+		// If a path is not a file or directory, assume it is a playlist.
+		if (err.code() == MPD_SERVER_ERROR_NO_EXIST)
+			Mpd.LoadPlaylist(path);
+		else
 		{
-			Mpd.Add(path);
-		}
-		catch (MPD::ServerError &err)
-		{
-			// If a path is not a file or directory, assume it is a playlist.
-			if (err.code() == MPD_SERVER_ERROR_NO_EXIST)
-				Mpd.LoadPlaylist(path);
-			else
-			{
-				Statusbar::printf("Error while adding item: %1%", err.what());
-				return;
-			}
+			Statusbar::printf("Error while adding item: %1%", err.what());
+			return;
 		}
 	}
 }
 
 bool Load::canBeRun()
 {
-	return !legacyPlaylistEditorIsCurrent();
+	return true;
 }
 
 void Load::run()
@@ -1353,8 +1219,7 @@ bool ToggleDisplayMode::canBeRun()
 		return ncm_action_runtime_can_run(
 		    nullptr, NCM_ACTION_TOGGLE_DISPLAY_MODE);
 	current = screenLegacyCurrent();
-	return current == myBrowser
-	    || legacyPlaylistEditorContentActive();
+	return current == myBrowser;
 }
 
 void ToggleDisplayMode::run()
@@ -1371,7 +1236,8 @@ void ToggleDisplayMode::run()
 			case NCM_DISPLAY_MODE_CLASSIC:
 				Config.browser_display_mode = NCM_DISPLAY_MODE_COLUMNS;
 				if (Config.titles_visibility)
-					myBrowser->main().setTitle(Display::Columns(myBrowser->main().getWidth()));
+					myBrowser->main().setTitle(
+					    Display::Columns(myBrowser->main().getWidth()));
 				else
 					myBrowser->main().setTitle("");
 				break;
@@ -1380,26 +1246,8 @@ void ToggleDisplayMode::run()
 				myBrowser->main().setTitle("");
 				break;
 		}
-		Statusbar::printf("Browser display mode: %1%", Config.browser_display_mode);
-	}
-	else if (legacyPlaylistEditorContentActive())
-	{
-		switch (Config.playlist_editor_display_mode)
-		{
-			case NCM_DISPLAY_MODE_CLASSIC:
-				Config.playlist_editor_display_mode = NCM_DISPLAY_MODE_COLUMNS;
-				myPlaylistEditor->Content.setItemDisplayer(std::bind(
-					Display::SongsInColumns, ph::_1, std::cref(myPlaylistEditor->Content)
-				));
-				break;
-			case NCM_DISPLAY_MODE_COLUMNS:
-				Config.playlist_editor_display_mode = NCM_DISPLAY_MODE_CLASSIC;
-				myPlaylistEditor->Content.setItemDisplayer(std::bind(
-					Display::Songs, ph::_1, std::cref(myPlaylistEditor->Content), std::cref(Config.song_list_format)
-				));
-				break;
-		}
-		Statusbar::printf("Playlist editor display mode: %1%", Config.playlist_editor_display_mode);
+		Statusbar::printf("Browser display mode: %1%",
+		                  Config.browser_display_mode);
 	}
 }
 
@@ -1838,32 +1686,31 @@ bool EditPlaylistName::canBeRun()
 	BaseScreen *current;
 
 	current = screenLegacyCurrent();
-	return (legacyPlaylistEditorPlaylistsActive()
-	        && !myPlaylistEditor->Playlists.empty())
-	    || (current == myBrowser
-	        && !myBrowser->main().empty()
-		&& myBrowser->main().current()->value().type()
-		   == MPD::Item::Type::Playlist);
+	return current == myBrowser
+	    && !myBrowser->main().empty()
+	    && myBrowser->main().current()->value().type()
+	       == MPD::Item::Type::Playlist;
 }
 
 void EditPlaylistName::run()
 {
-		std::string old_name, new_name;
-	if (legacyPlaylistEditorPlaylistsActive())
-		old_name = currentStoredPlaylistPath();
-	else
-		old_name = myBrowser->main().current()->value().playlist().path();
+	std::string old_name, new_name;
+
+	old_name = myBrowser->main().current()->value().playlist().path();
 	{
 		Statusbar::ScopedLock slock;
-		Statusbar::put() << NC_FORMAT_BOLD << "Playlist: " << NC_FORMAT_NO_BOLD;
+		Statusbar::put() << NC_FORMAT_BOLD << "Playlist: "
+		                 << NC_FORMAT_NO_BOLD;
 		if (!promptString(new_name, old_name))
-				return;
+			return;
 	}
 	if (!new_name.empty() && new_name != old_name)
 	{
 		Mpd.Rename(old_name, new_name);
 		const char msg[] = "Playlist renamed to \"%1%\"";
-		Statusbar::printf(msg, Utf8::shorten(new_name, COLS-const_strlen(msg)));
+		Statusbar::printf(msg,
+		                  Utf8::shorten(new_name,
+		                                COLS-const_strlen(msg)));
 	}
 }
 
@@ -2089,25 +1936,12 @@ void CropMainPlaylist::run()
 
 bool CropPlaylist::canBeRun()
 {
-	return legacyPlaylistEditorIsCurrent();
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_CROP_PLAYLIST);
 }
 
 void CropPlaylist::run()
 {
-	auto &w = myPlaylistEditor->Content;
-	// cropping doesn't make sense in this case
-	if (w.size() <= 1)
-		return;
-	assert(!myPlaylistEditor->Playlists.empty());
-	std::string playlist = currentStoredPlaylistPath();
-	if (Config.ask_before_clearing_playlists
-	    && !confirmAction(stringFormat("Do you really want to crop playlist \"%1%\"?",
-	                                  playlist)))
-		return;
-	selectCurrentIfNoneSelected(w);
-	Statusbar::printf("Cropping playlist \"%1%\"...", playlist);
-	cropPlaylist(w, [playlist](auto &, unsigned pos) { Mpd.PlaylistDelete(playlist, pos); });
-	Statusbar::printf("Playlist \"%1%\" cropped", playlist);
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_CROP_PLAYLIST);
 }
 
 void ClearMainPlaylist::run()
@@ -2117,20 +1951,12 @@ void ClearMainPlaylist::run()
 
 bool ClearPlaylist::canBeRun()
 {
-	return legacyPlaylistEditorIsCurrent();
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_CLEAR_PLAYLIST);
 }
 
 void ClearPlaylist::run()
 {
-	if (myPlaylistEditor->Playlists.empty())
-		return;
-	std::string playlist = currentStoredPlaylistPath();
-	if (Config.ask_before_clearing_playlists
-	    && !confirmAction(stringFormat("Do you really want to clear playlist \"%1%\"?",
-	                                  playlist)))
-		return;
-	Mpd.ClearPlaylist(playlist);
-	Statusbar::printf("Playlist \"%1%\" cleared", playlist);
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_CLEAR_PLAYLIST);
 }
 
 bool ReversePlaylist::canBeRun()

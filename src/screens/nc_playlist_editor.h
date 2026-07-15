@@ -40,29 +40,12 @@ typedef struct NativePlaylistEditorCommand {
     int32 target_cap;
 } NativePlaylistEditorCommand;
 
-typedef struct NativePlaylistEditorBridge {
-    NcWindow *(*active_window)(void *user);
-    void (*refresh)(void *user);
-    void (*refresh_window)(void *user);
-    void (*scroll)(void *user, enum NcScroll where);
-    void (*switch_to)(void *user);
-    void (*resize)(void *user);
-    int32 (*window_timeout)(void *user);
-    char *(*title)(void *user);
-    void (*update)(void *user);
-    void (*request_playlists_update)(void *user);
-    void (*request_content_update)(void *user);
-    void (*mouse_button_pressed)(void *user, MEVENT event);
-    void *user;
-} NativePlaylistEditorBridge;
-
 typedef struct NativePlaylistEditorScreen {
     NcScreen screen;
     NcPlaylistEntryMenu playlists;
     NcSongMenu content;
     NcWindow playlists_window;
     NcWindow content_window;
-    NativePlaylistEditorBridge bridge;
     NcmBuffer playlist_filter_constraint;
     NcmBuffer content_filter_constraint;
     NcmBuffer playlist_search_constraint;
@@ -201,8 +184,6 @@ bool native_playlist_editor_command_execute(
 bool native_playlist_editor_screen_load_current_playlist(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client,
     bool *loaded, NcmError *error);
-void native_playlist_editor_screen_set_bridge(
-    NativePlaylistEditorScreen *screen, NativePlaylistEditorBridge bridge);
 
 #if defined(__cplusplus)
 }
