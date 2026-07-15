@@ -19,6 +19,8 @@ static void test_browser_path_navigation(void);
 static void test_browser_parent_directory_compat(void);
 static void test_browser_mpd_reload(void);
 static void test_browser_native_update_reloads_mpd(void);
+static void test_browser_native_update_retries_mpd(void);
+static void test_browser_native_switch_requests_reload(void);
 static void test_browser_selected_songs(void);
 static void test_browser_filter_and_search(void);
 static void test_browser_local_mode(void);
@@ -83,6 +85,7 @@ typedef enum BrowserMpdTraceMode {
     BROWSER_MPD_TRACE_ROOT,
     BROWSER_MPD_TRACE_ARTIST,
     BROWSER_MPD_TRACE_GONE,
+    BROWSER_MPD_TRACE_FAIL_ONCE,
 } BrowserMpdTraceMode;
 
 typedef struct BrowserMpdTrace {
@@ -112,6 +115,8 @@ main(void) {
     test_browser_parent_directory_compat();
     test_browser_mpd_reload();
     test_browser_native_update_reloads_mpd();
+    test_browser_native_update_retries_mpd();
+    test_browser_native_switch_requests_reload();
     test_browser_selected_songs();
     test_browser_filter_and_search();
     test_browser_local_mode();
@@ -309,6 +314,49 @@ test_browser_native_update_reloads_mpd(void) {
 
     native_browser_screen_destroy(&screen);
     browser_format_fixture_end(&fixture);
+    return;
+}
+
+static void
+test_browser_native_update_retries_mpd(void) {
+    NativeBrowserScreen screen;
+    BrowserFormatFixture fixture;
+    NcMenu *menu;
+
+    browser_format_fixture_begin(&fixture);
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    menu = native_browser_screen_menu(&screen);
+
+    browser_mpd_trace_reset(BROWSER_MPD_TRACE_FAIL_ONCE);
+    nc_screen_update(native_browser_screen_base(&screen));
+    assert(mpd_trace.calls == 1);
+    assert(nc_menu_all_item_count(menu) == 0);
+    assert(native_browser_screen_update_requested(&screen));
+
+    nc_screen_update(native_browser_screen_base(&screen));
+    assert(mpd_trace.calls == 2);
+    assert(nc_menu_all_item_count(menu) == 1);
+    assert(!native_browser_screen_update_requested(&screen));
+
+    native_browser_screen_destroy(&screen);
+    browser_format_fixture_end(&fixture);
+    return;
+}
+
+static void
+test_browser_native_switch_requests_reload(void) {
+    NativeBrowserScreen screen;
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    native_browser_screen_clear_update_request(&screen);
+    assert(!native_browser_screen_update_requested(&screen));
+
+    nc_screen_switch_to(native_browser_screen_base(&screen));
+    assert(native_browser_screen_update_requested(&screen));
+
+    native_browser_screen_destroy(&screen);
     return;
 }
 
@@ -954,6 +1002,12 @@ __wrap_ncm_mpd_client_get_directory_entries(
         && (mpd_trace.calls == 1)) {
         client->connection.server_error_code = MPD_SERVER_ERROR_NO_EXIST;
         ncm_error_set(error, EIO, STRLIT_ARGS("directory missing"));
+        return false;
+    }
+    if ((mpd_trace.mode == BROWSER_MPD_TRACE_FAIL_ONCE)
+        && (mpd_trace.calls == 1)) {
+        client->connection.server_error_code = (enum mpd_server_error)0;
+        ncm_error_set(error, EIO, STRLIT_ARGS("temporary MPD failure"));
         return false;
     }
 

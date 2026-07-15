@@ -323,7 +323,7 @@ native_browser_screen_reload_from_mpd(NativeBrowserScreen *screen,
         return false;
     }
 
-    for (;;) {
+    while (true) {
         ncm_mpd_item_array_init(&items);
         result = ncm_mpd_client_get_directory_entries(
             client, screen->current_directory.data, &items, error);
@@ -1053,6 +1053,10 @@ native_browser_switch_to(NcScreen *screen) {
 
     browser = native_browser_from_screen(screen);
     (void)nc_screen_switcher_finish_switch(screen);
+    if (nc_menu_empty(native_browser_screen_menu(browser))
+        && !native_browser_screen_is_local(browser)) {
+        native_browser_screen_request_update(browser);
+    }
     browser->redraw_header = true;
     native_browser_screen_draw_header(browser);
     return;
@@ -1092,8 +1096,9 @@ native_browser_update(NcScreen *screen) {
 
     browser = native_browser_from_screen(screen);
     if (native_browser_screen_update_requested(browser)) {
-        native_browser_screen_clear_update_request(browser);
-        if (!native_browser_screen_is_local(browser)) {
+        if (native_browser_screen_is_local(browser)) {
+            native_browser_screen_clear_update_request(browser);
+        } else {
             ncm_error_clear(&error);
             (void)native_browser_screen_reload_from_mpd(
                 browser, &global_mpd, &error);
