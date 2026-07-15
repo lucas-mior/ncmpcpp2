@@ -27,18 +27,6 @@ ncmpcpp_legacy_sync_configuration(void) {
 }
 
 static bool
-app_legacy_bridge_can_execute_binding_in_c(NcmBinding *binding) {
-    enum ScreenType screen_type;
-
-    screen_type = native_c_screens_current_type();
-    if (!app_binding_migration_binding_is_c_safe_for_screen(
-            binding, screen_type)) {
-        return false;
-    }
-    return ncm_binding_can_execute_default(binding);
-}
-
-static bool
 app_legacy_bridge_execute_binding_action_hybrid(
     NcmBindingAction *action) {
     NcmBindingRuntime *runtime;
@@ -340,11 +328,17 @@ ncmpcpp_legacy_update_environment(bool update_timer,
 
 bool
 ncmpcpp_legacy_execute_binding(NcmBinding *binding) {
-    if (app_legacy_bridge_can_execute_binding_in_c(binding)) {
+    enum ScreenType screen_type;
+
+    screen_type = native_c_screens_current_type();
+    if (app_binding_migration_binding_is_c_safe_for_screen(binding,
+                                                           screen_type)) {
+        if (!ncm_binding_can_execute_default(binding)) {
+            return false;
+        }
         return ncm_binding_execute_default(binding);
     }
-    if (app_binding_migration_screen_is_c_only(
-            native_c_screens_current_type())) {
+    if (app_binding_migration_screen_is_c_only(screen_type)) {
         return false;
     }
     if (app_binding_migration_binding_is_hybrid_safe(binding)) {
