@@ -52,6 +52,10 @@ static void native_browser_set_item_selected(void *item, bool selected,
                                              void *user);
 static bool native_browser_enter_item(NativeBrowserScreen *screen,
                                       NcmMpdItem *item);
+static void native_browser_sync_display_mode(NativeBrowserScreen *screen);
+static int64 native_browser_render_width(NativeBrowserScreen *screen,
+                                         int64 available_width,
+                                         bool selected, bool highlighted);
 static bool native_browser_item_matches(NcmMpdItem *item, NcmRegex *regex);
 static bool native_browser_item_label(NcmMpdItem *item, NcmStringView *view);
 static bool native_browser_item_is_song(NcmMpdItem *item);
@@ -687,6 +691,53 @@ native_browser_screen_search(NativeBrowserScreen *screen,
 }
 
 bool
+native_browser_screen_render_item(NativeBrowserScreen *screen,
+                                  NcBuffer *buffer, NcmMpdItem *item,
+                                  int64 available_width, bool selected,
+                                  bool highlighted) {
+    int64 render_width;
+    int32 list_width;
+    bool use_colors;
+
+    if ((screen == NULL) || (buffer == NULL) || (item == NULL)) {
+        return false;
+    }
+
+    native_browser_sync_display_mode(screen);
+    nc_buffer_clear(buffer);
+    switch (ncm_mpd_item_kind(item)) {
+    case NCM_MPD_ITEM_DIRECTORY:
+        ncm_display_directory_row(buffer, ncm_mpd_item_directory(item));
+        break;
+    case NCM_MPD_ITEM_SONG:
+        if (screen->active_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
+            render_width = native_browser_render_width(
+                screen, available_width, selected, highlighted);
+            list_width = native_browser_i32_width(render_width);
+            use_colors = !Config.discard_colors_if_item_is_selected
+                         || !selected;
+            ncm_display_song_columns(buffer, ncm_mpd_item_song(item),
+                                     Config.columns.items,
+                                     Config.columns.len, list_width,
+                                     use_colors);
+        } else {
+            ncm_display_song_row(buffer, &Config.song_list_format,
+                                 ncm_mpd_item_song(item),
+                                 NCM_FORMAT_FLAG_ALL);
+        }
+        break;
+    case NCM_MPD_ITEM_PLAYLIST:
+        ncm_display_playlist_row(buffer, ncm_mpd_item_playlist(item),
+                                 Config.browser_playlist_prefix.data,
+                                 Config.browser_playlist_prefix.len);
+        break;
+    case NCM_MPD_ITEM_UNKNOWN:
+        break;
+    }
+    return true;
+}
+
+bool
 native_browser_screen_item_is_parent(NcmMpdItem *item) {
     NcmStringView view;
 
@@ -975,43 +1026,24 @@ native_browser_draw_item(NcMenu *menu, NcWindow *window,
     NativeBrowserScreen *screen;
     NcBuffer buffer;
     int64 available_width;
-    int32 list_width;
-    bool use_colors;
+    bool highlighted;
+    bool selected;
 
     screen = user;
     if ((menu == NULL) || (window == NULL) || (item == NULL)) {
         return;
     }
 
+    available_width = nc_window_width(window) - nc_window_get_x(window);
+    selected = nc_menu_position_is_selected(menu, pos);
+    highlighted = menu->highlight_enabled && (pos == menu->highlight);
+
     nc_buffer_init(&buffer);
-    if ((screen != NULL)
-        && (screen->active_display_mode == NCM_DISPLAY_MODE_COLUMNS)
-        && (ncm_mpd_item_kind(item) == NCM_MPD_ITEM_SONG)) {
-        available_width = nc_window_width(window) - nc_window_get_x(window);
-        if (nc_menu_position_is_selected(menu, pos)) {
-            available_width -= ncm_utf8_width(
-                menu->selected_suffix.data, menu->selected_suffix.len);
-        }
-        if (menu->highlight_enabled && (pos == menu->highlight)) {
-            available_width -= ncm_utf8_width(
-                menu->highlight_suffix.data, menu->highlight_suffix.len);
-        }
-        if (available_width < 0) {
-            available_width = 0;
-        }
-        list_width = native_browser_i32_width(available_width);
-        use_colors = !Config.discard_colors_if_item_is_selected
-                     || !nc_menu_position_is_selected(menu, pos);
-        ncm_display_song_columns(&buffer, ncm_mpd_item_song(item),
-                                 Config.columns.items, Config.columns.len,
-                                 list_width, use_colors);
-    } else {
-        ncm_display_item_row(&buffer, item, &Config.song_list_format,
-                             NCM_FORMAT_FLAG_ALL,
-                             Config.browser_playlist_prefix.data,
-                             Config.browser_playlist_prefix.len);
+    if (native_browser_screen_render_item(screen, &buffer, item,
+                                          available_width, selected,
+                                          highlighted)) {
+        native_browser_print_buffer(window, &buffer);
     }
-    native_browser_print_buffer(window, &buffer);
     nc_buffer_destroy(&buffer);
     return;
 }
@@ -1160,6 +1192,38 @@ native_browser_enter_item(NativeBrowserScreen *screen, NcmMpdItem *item) {
     directory = ncm_mpd_item_directory(item);
     return native_browser_screen_set_current_directory(
         screen, directory->path, directory->path_len);
+}
+
+static void
+native_browser_sync_display_mode(NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    native_browser_screen_set_display_mode(screen, Config.browser_display_mode);
+    return;
+}
+
+static int64
+native_browser_render_width(NativeBrowserScreen *screen,
+                            int64 available_width,
+                            bool selected, bool highlighted) {
+    NcMenu *menu;
+    int64 result;
+
+    result = available_width;
+    menu = native_browser_screen_menu(screen);
+    if (selected) {
+        result -= ncm_utf8_width(menu->selected_suffix.data,
+                                 menu->selected_suffix.len);
+    }
+    if (highlighted) {
+        result -= ncm_utf8_width(menu->highlight_suffix.data,
+                                 menu->highlight_suffix.len);
+    }
+    if (result < 0) {
+        result = 0;
+    }
+    return result;
 }
 
 static bool

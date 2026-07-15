@@ -2,9 +2,11 @@
 #include <stdlib.h>
 
 #include "c/ncm_app_arrays.h"
+#include "c/ncm_format.h"
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
 #include "screens/nc_browser.h"
+#include "settings.h"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 #define BROWSER_PARITY_TEST_PENDING(NAME) browser_parity_test_pending(#NAME)
@@ -16,6 +18,7 @@ static void test_browser_local_mode(void);
 static void test_browser_owned_state(void);
 static void test_browser_native_callbacks_ignore_bridge(void);
 static void test_browser_menu_callbacks(void);
+static void test_browser_item_rendering(void);
 static void test_browser_local_browsing_parity(void);
 static void test_browser_directory_expansion_parity(void);
 static void test_browser_playlist_expansion_parity(void);
@@ -24,6 +27,17 @@ static void test_browser_filter_search_formatting_parity(void);
 static void test_browser_sort_modes_parity(void);
 static void test_browser_jump_to_playing_song_parity(void);
 static void browser_parity_test_pending(char *name);
+
+typedef struct BrowserFormatFixture {
+    NcmFormatAst old_song_list_format;
+    ColumnArray old_columns;
+    NcBuffer old_browser_playlist_prefix;
+    enum DisplayMode old_browser_display_mode;
+    bool old_discard_colors_if_item_is_selected;
+} BrowserFormatFixture;
+
+static void browser_format_fixture_begin(BrowserFormatFixture *fixture);
+static void browser_format_fixture_end(BrowserFormatFixture *fixture);
 static NcWindow *test_bridge_active_window(void *user);
 static void test_bridge_refresh(void *user);
 static void test_bridge_refresh_window(void *user);
@@ -46,6 +60,7 @@ main(void) {
     test_browser_owned_state();
     test_browser_native_callbacks_ignore_bridge();
     test_browser_menu_callbacks();
+    test_browser_item_rendering();
     test_browser_local_browsing_parity();
     test_browser_directory_expansion_parity();
     test_browser_playlist_expansion_parity();
@@ -355,6 +370,124 @@ test_browser_menu_callbacks(void) {
     ncm_directory_destroy(&directory);
     ncm_mpd_item_destroy(&item);
     native_browser_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_browser_item_rendering(void) {
+    NativeBrowserScreen screen;
+    BrowserFormatFixture fixture;
+    NcmMpdItem item;
+    NcmDirectory directory;
+    NcmPlaylist playlist;
+    NcmSong song;
+    NcBuffer buffer;
+    Column columns[2];
+
+    browser_format_fixture_begin(&fixture);
+    columns[0] = (Column){0};
+    columns[0].name = (char *)"Artist";
+    columns[0].name_len = STRLIT_LEN("Artist");
+    columns[0].type = (char *)"a";
+    columns[0].type_len = STRLIT_LEN("a");
+    columns[0].width = 10;
+    columns[0].stretch_limit = -1;
+    columns[0].fixed = true;
+    columns[1] = (Column){0};
+    columns[1].name = (char *)"Title";
+    columns[1].name_len = STRLIT_LEN("Title");
+    columns[1].type = (char *)"t";
+    columns[1].type_len = STRLIT_LEN("t");
+    columns[1].width = 10;
+    columns[1].stretch_limit = -1;
+    columns[1].fixed = true;
+    Config.columns.items = columns;
+    Config.columns.len = 2;
+    Config.columns.cap = 2;
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24, nc_color_default(),
+                               nc_border_none());
+    ncm_mpd_item_init(&item);
+    ncm_directory_init(&directory);
+    ncm_playlist_init(&playlist);
+    ncm_song_init(&song);
+    nc_buffer_init(&buffer);
+
+    assert(ncm_directory_set(&directory, LIT_ARGS("artists/Alpha"), 0));
+    assert(ncm_mpd_item_set_directory(&item, &directory));
+    assert(native_browser_screen_render_item(&screen, &buffer, &item,
+                                             80, false, false));
+    assert(ncm_string_equal(buffer.data, buffer.len, LIT_ARGS("[Alpha]")));
+
+    assert(ncm_playlist_set(&playlist, LIT_ARGS("lists/Favorites"), 0));
+    assert(ncm_mpd_item_set_playlist(&item, &playlist));
+    assert(native_browser_screen_render_item(&screen, &buffer, &item,
+                                             80, false, false));
+    assert(ncm_string_equal(buffer.data, buffer.len,
+                            LIT_ARGS("PL:Favorites")));
+
+    Config.browser_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+    assert(ncm_song_set_uri(&song, LIT_ARGS("songs/file.flac")));
+    assert(ncm_mpd_item_set_song(&item, &song));
+    assert(native_browser_screen_render_item(&screen, &buffer, &item,
+                                             80, false, false));
+    assert(ncm_string_equal(buffer.data, buffer.len,
+                            LIT_ARGS("classic:songs/file.flac")));
+
+    Config.browser_display_mode = NCM_DISPLAY_MODE_COLUMNS;
+    assert(ncm_song_add_tag(&song, MPD_TAG_ARTIST, LIT_ARGS("Artist")));
+    assert(ncm_song_add_tag(&song, MPD_TAG_TITLE, LIT_ARGS("Title")));
+    assert(ncm_mpd_item_set_song(&item, &song));
+    assert(native_browser_screen_render_item(&screen, &buffer, &item,
+                                             20, false, false));
+    assert(ncm_string_equal(buffer.data, buffer.len,
+                            LIT_ARGS("Artist    Title     ")));
+
+    nc_buffer_destroy(&buffer);
+    ncm_song_destroy(&song);
+    ncm_playlist_destroy(&playlist);
+    ncm_directory_destroy(&directory);
+    ncm_mpd_item_destroy(&item);
+    native_browser_screen_destroy(&screen);
+    browser_format_fixture_end(&fixture);
+    return;
+}
+
+static void
+browser_format_fixture_begin(BrowserFormatFixture *fixture) {
+    NcmError error;
+
+    fixture->old_song_list_format = Config.song_list_format;
+    fixture->old_columns = Config.columns;
+    fixture->old_browser_playlist_prefix = Config.browser_playlist_prefix;
+    fixture->old_browser_display_mode = Config.browser_display_mode;
+    fixture->old_discard_colors_if_item_is_selected =
+        Config.discard_colors_if_item_is_selected;
+
+    ncm_format_ast_init(&Config.song_list_format);
+    nc_buffer_init(&Config.browser_playlist_prefix);
+    nc_buffer_append_data(&Config.browser_playlist_prefix,
+                          LIT_ARGS("PL:"));
+    ncm_error_clear(&error);
+    assert(ncm_format_parse(&Config.song_list_format,
+                            LIT_ARGS("classic:%F"),
+                            NCM_FORMAT_FLAG_ALL, &error));
+    Config.browser_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+    Config.discard_colors_if_item_is_selected = true;
+    return;
+}
+
+static void
+browser_format_fixture_end(BrowserFormatFixture *fixture) {
+    ncm_format_ast_destroy(&Config.song_list_format);
+    nc_buffer_destroy(&Config.browser_playlist_prefix);
+
+    Config.song_list_format = fixture->old_song_list_format;
+    Config.columns = fixture->old_columns;
+    Config.browser_playlist_prefix = fixture->old_browser_playlist_prefix;
+    Config.browser_display_mode = fixture->old_browser_display_mode;
+    Config.discard_colors_if_item_is_selected =
+        fixture->old_discard_colors_if_item_is_selected;
     return;
 }
 
