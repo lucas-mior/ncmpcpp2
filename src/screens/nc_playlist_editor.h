@@ -86,6 +86,8 @@ typedef struct NativePlaylistEditorScreen {
     int64 left_width;
     int64 right_start_x;
     int64 right_width;
+    int64 column_ratio_left;
+    int64 column_ratio_right;
     int64 fetching_delay_ms;
     int64 last_playlist_highlight;
     int64 last_known_content_count;

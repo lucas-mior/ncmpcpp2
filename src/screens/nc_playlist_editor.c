@@ -35,6 +35,15 @@ static void playlist_editor_destroy_buffers(
     NativePlaylistEditorScreen *screen);
 static void playlist_editor_initialize_regexes(
     NativePlaylistEditorScreen *screen);
+static void playlist_editor_apply_geometry(
+    NativePlaylistEditorScreen *screen);
+static int64 playlist_editor_separator_width(int64 width);
+static void playlist_editor_configure_menus(
+    NativePlaylistEditorScreen *screen);
+static void playlist_editor_update_menu_highlights(
+    NativePlaylistEditorScreen *screen);
+static void playlist_editor_draw_separator(
+    NativePlaylistEditorScreen *screen);
 static void playlist_editor_destroy_regexes(
     NativePlaylistEditorScreen *screen);
 static void playlist_editor_update_titles(
@@ -139,6 +148,23 @@ native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
                                    int64 main_start_y, int64 main_height,
                                    NcColor color, NcBorder border) {
     NcScreenCallbacks callbacks;
+    int64 initial_left_width;
+    int64 initial_right_width;
+
+    if (width < 1) {
+        width = 1;
+    }
+    if (main_height < 1) {
+        main_height = 1;
+    }
+    initial_left_width = width / 2;
+    if (initial_left_width < 1) {
+        initial_left_width = 1;
+    }
+    initial_right_width = width - initial_left_width;
+    if (initial_right_width < 1) {
+        initial_right_width = 1;
+    }
 
     callbacks = playlist_editor_callbacks();
     nc_playlist_entry_menu_init(&screen->playlists);
@@ -148,6 +174,8 @@ native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
     screen->timer.ns = 0;
     screen->bridge = (NativePlaylistEditorBridge){0};
     screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
+    screen->column_ratio_left = 1;
+    screen->column_ratio_right = 1;
     screen->playlists_update_requested = true;
     screen->content_update_requested = true;
     screen->playlist_filter_enabled = false;
@@ -168,16 +196,19 @@ native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
     screen->registered = false;
     playlist_editor_update_titles(screen, false);
     nc_window_init(&screen->playlists_window, start_x, main_start_y,
-                   width / 2, main_height, screen->playlists_title.data,
+                   initial_left_width, main_height,
+                   screen->playlists_title.data,
                    screen->playlists_title.len, color, border);
-    nc_window_init(&screen->content_window, start_x + width / 2,
-                   main_start_y, width - width / 2, main_height,
+    nc_window_init(&screen->content_window,
+                   start_x + initial_left_width, main_start_y,
+                   initial_right_width, main_height,
                    screen->content_title.data, screen->content_title.len,
                    color, border);
     native_playlist_editor_screen_set_geometry(screen, start_x, width,
                                                main_start_y, main_height);
     nc_screen_init(&screen->screen, callbacks, screen,
                    NC_SCREEN_TYPE_PLAYLIST_EDITOR);
+    playlist_editor_configure_menus(screen);
     playlist_editor_set_filter_callbacks(screen);
     return;
 }
@@ -258,15 +289,13 @@ native_playlist_editor_screen_set_geometry(
     screen->width = width;
     screen->main_start_y = main_start_y;
     screen->main_height = main_height;
-    native_playlist_editor_screen_set_column_ratio(screen, 1, 1);
+    playlist_editor_apply_geometry(screen);
     return;
 }
 
 void
 native_playlist_editor_screen_set_column_ratio(
     NativePlaylistEditorScreen *screen, int64 left, int64 right) {
-    int64 total;
-
     if (screen == NULL) {
         return;
     }
@@ -276,24 +305,9 @@ native_playlist_editor_screen_set_column_ratio(
     if (right < 1) {
         right = 1;
     }
-    total = left + right;
-    screen->left_width = screen->width*left / total;
-    if (screen->left_width >= screen->width) {
-        screen->left_width = screen->width - 1;
-    }
-    if (screen->left_width < 1) {
-        screen->left_width = 1;
-    }
-    screen->right_start_x = screen->start_x + screen->left_width;
-    screen->right_width = screen->width - screen->left_width;
-    nc_window_resize(&screen->playlists_window, screen->left_width,
-                     screen->main_height);
-    nc_window_move_to(&screen->playlists_window, screen->start_x,
-                      screen->main_start_y);
-    nc_window_resize(&screen->content_window, screen->right_width,
-                     screen->main_height);
-    nc_window_move_to(&screen->content_window, screen->right_start_x,
-                      screen->main_start_y);
+    screen->column_ratio_left = left;
+    screen->column_ratio_right = right;
+    playlist_editor_apply_geometry(screen);
     return;
 }
 
@@ -324,6 +338,7 @@ native_playlist_editor_screen_previous_column(
     NativePlaylistEditorScreen *screen) {
     if (native_playlist_editor_screen_previous_column_available(screen)) {
         screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
+        playlist_editor_update_menu_highlights(screen);
     }
     return;
 }
@@ -333,6 +348,7 @@ native_playlist_editor_screen_next_column(
     NativePlaylistEditorScreen *screen) {
     if (native_playlist_editor_screen_next_column_available(screen)) {
         screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT;
+        playlist_editor_update_menu_highlights(screen);
     }
     return;
 }
@@ -750,9 +766,12 @@ playlist_editor_refresh_callback(NcScreen *screen) {
         editor->bridge.refresh(editor->bridge.user);
         return;
     }
+    playlist_editor_update_titles(editor, true);
+    playlist_editor_update_menu_highlights(editor);
     playlist_editor_refresh_window(editor, &editor->playlists_window,
                                    nc_playlist_entry_menu_base(
                                        &editor->playlists));
+    playlist_editor_draw_separator(editor);
     playlist_editor_refresh_window(editor, &editor->content_window,
                                    nc_song_menu_base(&editor->content));
     return;
@@ -769,6 +788,8 @@ playlist_editor_refresh_window_callback(NcScreen *screen) {
         editor->bridge.refresh_window(editor->bridge.user);
         return;
     }
+    playlist_editor_update_titles(editor, true);
+    playlist_editor_update_menu_highlights(editor);
     window = native_playlist_editor_screen_active_window(editor);
     menu = native_playlist_editor_screen_active_menu(editor);
     playlist_editor_refresh_window(editor, window, menu);
@@ -874,6 +895,7 @@ playlist_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     y = event.y;
     if (nc_window_has_coords(window, &x, &y)) {
         editor->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
+        playlist_editor_update_menu_highlights(editor);
         (void)nc_menu_goto_selectable(
             nc_playlist_entry_menu_base(&editor->playlists), y);
         playlist_editor_finish_playlist_change(editor);
@@ -884,6 +906,7 @@ playlist_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     y = event.y;
     if (nc_window_has_coords(window, &x, &y)) {
         editor->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT;
+        playlist_editor_update_menu_highlights(editor);
         (void)nc_menu_goto_selectable(nc_song_menu_base(&editor->content),
                                       y);
     }
@@ -1003,20 +1026,154 @@ playlist_editor_destroy_regexes(NativePlaylistEditorScreen *screen) {
 }
 
 static void
+playlist_editor_apply_geometry(NativePlaylistEditorScreen *screen) {
+    int64 total;
+    int64 separator_width;
+    int64 left_width;
+
+    if (screen == NULL) {
+        return;
+    }
+    if (screen->width < 1) {
+        screen->width = 1;
+    }
+    if (screen->main_height < 1) {
+        screen->main_height = 1;
+    }
+    if (screen->column_ratio_left < 1) {
+        screen->column_ratio_left = 1;
+    }
+    if (screen->column_ratio_right < 1) {
+        screen->column_ratio_right = 1;
+    }
+
+    total = screen->column_ratio_left + screen->column_ratio_right;
+    separator_width = playlist_editor_separator_width(screen->width);
+    left_width = screen->width*screen->column_ratio_left / total
+                 - separator_width;
+    if (left_width < 1) {
+        left_width = 1;
+    }
+    if ((left_width + separator_width + 1) > screen->width) {
+        left_width = screen->width - separator_width - 1;
+    }
+    if (left_width < 1) {
+        left_width = 1;
+    }
+
+    screen->left_width = left_width;
+    screen->right_start_x = screen->start_x + screen->left_width
+                            + separator_width;
+    screen->right_width = screen->width - screen->left_width
+                          - separator_width;
+    if (screen->right_width < 1) {
+        screen->right_width = 1;
+    }
+
+    nc_window_resize(&screen->playlists_window, screen->left_width,
+                     screen->main_height);
+    nc_window_move_to(&screen->playlists_window, screen->start_x,
+                      screen->main_start_y);
+    nc_window_resize(&screen->content_window, screen->right_width,
+                     screen->main_height);
+    nc_window_move_to(&screen->content_window, screen->right_start_x,
+                      screen->main_start_y);
+    return;
+}
+
+static int64
+playlist_editor_separator_width(int64 width) {
+    if (width >= 3) {
+        return 1;
+    }
+    return 0;
+}
+
+static void
+playlist_editor_configure_menus(NativePlaylistEditorScreen *screen) {
+    NcMenu *playlists;
+    NcMenu *content;
+
+    if (screen == NULL) {
+        return;
+    }
+    playlists = nc_playlist_entry_menu_base(&screen->playlists);
+    content = nc_song_menu_base(&screen->content);
+
+    nc_menu_set_selected_prefix(playlists, &Config.selected_item_prefix);
+    nc_menu_set_selected_suffix(playlists, &Config.selected_item_suffix);
+    nc_menu_set_selected_prefix(content, &Config.selected_item_prefix);
+    nc_menu_set_selected_suffix(content, &Config.selected_item_suffix);
+
+    nc_menu_set_cyclic_scrolling(playlists, Config.use_cyclic_scrolling);
+    nc_menu_set_cyclic_scrolling(content, Config.use_cyclic_scrolling);
+    nc_menu_set_centered_cursor(playlists, Config.centered_cursor);
+    nc_menu_set_centered_cursor(content, Config.centered_cursor);
+
+    playlist_editor_update_menu_highlights(screen);
+    return;
+}
+
+static void
+playlist_editor_update_menu_highlights(
+    NativePlaylistEditorScreen *screen) {
+    NcMenu *playlists;
+    NcMenu *content;
+    NcMenu *active;
+
+    if (screen == NULL) {
+        return;
+    }
+    playlists = nc_playlist_entry_menu_base(&screen->playlists);
+    content = nc_song_menu_base(&screen->content);
+
+    nc_menu_set_highlight_prefix(
+        playlists, &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(
+        playlists, &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlight_prefix(
+        content, &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(
+        content, &Config.current_item_inactive_column_suffix);
+
+    active = native_playlist_editor_screen_active_menu(screen);
+    nc_menu_set_highlight_prefix(active, &Config.current_item_prefix);
+    nc_menu_set_highlight_suffix(active, &Config.current_item_suffix);
+    return;
+}
+
+static void
+playlist_editor_draw_separator(NativePlaylistEditorScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    if (playlist_editor_separator_width(screen->width) <= 0) {
+        return;
+    }
+    nc_screen_draw_vertical_separator(screen->right_start_x - 1);
+    return;
+}
+
+static void
 playlist_editor_update_titles(NativePlaylistEditorScreen *screen,
                               bool update_windows) {
     ncm_buffer_clear(&screen->playlists_title);
     ncm_buffer_clear(&screen->content_title);
-    ncm_buffer_append(&screen->playlists_title, STRLIT_ARGS("Playlists"));
-    ncm_buffer_append(&screen->content_title, STRLIT_ARGS("Content"));
-    if (screen->last_known_content_count >= 0) {
-        ncm_buffer_append(&screen->content_title, STRLIT_ARGS(" ("));
-        playlist_editor_append_int64(&screen->content_title,
-                                     screen->last_known_content_count);
-        if (screen->last_known_content_count == 1) {
-            ncm_buffer_append(&screen->content_title, STRLIT_ARGS(" item)"));
-        } else {
-            ncm_buffer_append(&screen->content_title, STRLIT_ARGS(" items)"));
+    if (Config.titles_visibility) {
+        ncm_buffer_append(&screen->playlists_title,
+                          STRLIT_ARGS("Playlists"));
+        ncm_buffer_append(&screen->content_title, STRLIT_ARGS("Content"));
+        if (screen->last_known_content_count >= 0) {
+            ncm_buffer_append(&screen->content_title, STRLIT_ARGS(" ("));
+            playlist_editor_append_int64(&screen->content_title,
+                                         screen->last_known_content_count);
+            if (screen->last_known_content_count == 1) {
+                ncm_buffer_append(&screen->content_title,
+                                  STRLIT_ARGS(" item)"));
+            } else {
+                ncm_buffer_append(&screen->content_title,
+                                  STRLIT_ARGS(" items)"));
+            }
         }
     }
 

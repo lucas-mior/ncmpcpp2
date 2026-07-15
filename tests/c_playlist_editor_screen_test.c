@@ -14,8 +14,10 @@
 #define COMMAND_TEXT_CAPACITY 128
 
 typedef struct PlaylistEditorWindowTrace {
+    int64 last_separator_x;
     int32 display_calls;
     int32 menu_refresh_calls;
+    int32 separator_calls;
 } PlaylistEditorWindowTrace;
 
 typedef struct PlaylistEditorMpdFixture {
@@ -84,6 +86,7 @@ static void bridge_request_playlists_update(void *user);
 static void bridge_request_content_update(void *user);
 static void bridge_mouse_button_pressed(void *user, MEVENT event);
 static void test_initial_state_and_geometry(void);
+static void test_layout_and_menu_configuration(void);
 static void test_fetch_timer_and_timeout_state(void);
 static void test_owned_playlist_and_content_rows(void);
 static void test_column_navigation(void);
@@ -100,9 +103,11 @@ int
 main(void) {
     app_controller_init();
     ui_state_set_screen_size(100, 30);
+    Config.titles_visibility = true;
     init_mpd_fixture();
 
     test_initial_state_and_geometry();
+    test_layout_and_menu_configuration();
     test_fetch_timer_and_timeout_state();
     test_owned_playlist_and_content_rows();
     test_column_navigation();
@@ -390,7 +395,7 @@ test_initial_state_and_geometry(void) {
            == NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS);
     assert(screen.start_x == 0);
     assert(screen.width == 80);
-    assert(screen.left_width == 40);
+    assert(screen.left_width == 39);
     assert(screen.right_start_x == 40);
     assert(screen.right_width == 40);
     assert(screen.playlists_update_requested);
@@ -424,20 +429,149 @@ test_initial_state_and_geometry(void) {
                             LIT_ARGS("Content")));
 
     native_playlist_editor_screen_set_column_ratio(&screen, 2, 1);
-    assert(screen.left_width == 53);
+    assert(screen.left_width == 52);
     assert(screen.right_start_x == 53);
     assert(screen.right_width == 27);
+    assert(screen.column_ratio_left == 2);
+    assert(screen.column_ratio_right == 1);
 
     native_playlist_editor_screen_set_geometry(&screen, 5, 60, 3, 18);
     assert(screen.start_x == 5);
     assert(screen.width == 60);
     assert(screen.main_start_y == 3);
     assert(screen.main_height == 18);
-    assert(screen.left_width == 30);
-    assert(screen.right_start_x == 35);
-    assert(screen.right_width == 30);
+    assert(screen.left_width == 39);
+    assert(screen.right_start_x == 45);
+    assert(screen.right_width == 20);
+
+    native_playlist_editor_screen_set_geometry(&screen, 5, 2, 3, 18);
+    assert(screen.left_width == 1);
+    assert(screen.right_start_x == 6);
+    assert(screen.right_width == 1);
+
+    native_playlist_editor_screen_set_geometry(&screen, 5, 1, 3, 18);
+    assert(screen.left_width == 1);
+    assert(screen.right_width == 1);
 
     native_playlist_editor_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_layout_and_menu_configuration(void) {
+    NativePlaylistEditorScreen screen;
+    NcmMpdPlaylistList playlists;
+    NcmMpdSongList content;
+    NcMenu *playlists_menu;
+    NcMenu *content_menu;
+    NcBuffer old_selected_prefix;
+    NcBuffer old_selected_suffix;
+    NcBuffer old_current_prefix;
+    NcBuffer old_current_suffix;
+    NcBuffer old_inactive_prefix;
+    NcBuffer old_inactive_suffix;
+    bool old_titles_visibility;
+    bool old_cyclic_scrolling;
+    bool old_centered_cursor;
+
+    old_selected_prefix = Config.selected_item_prefix;
+    old_selected_suffix = Config.selected_item_suffix;
+    old_current_prefix = Config.current_item_prefix;
+    old_current_suffix = Config.current_item_suffix;
+    old_inactive_prefix = Config.current_item_inactive_column_prefix;
+    old_inactive_suffix = Config.current_item_inactive_column_suffix;
+    old_titles_visibility = Config.titles_visibility;
+    old_cyclic_scrolling = Config.use_cyclic_scrolling;
+    old_centered_cursor = Config.centered_cursor;
+
+    nc_buffer_init(&Config.selected_item_prefix);
+    nc_buffer_append_data(&Config.selected_item_prefix,
+                          LIT_ARGS("<selected>"));
+    nc_buffer_init(&Config.selected_item_suffix);
+    nc_buffer_append_data(&Config.selected_item_suffix,
+                          LIT_ARGS("</selected>"));
+    nc_buffer_init(&Config.current_item_prefix);
+    nc_buffer_append_data(&Config.current_item_prefix,
+                          LIT_ARGS("<active>"));
+    nc_buffer_init(&Config.current_item_suffix);
+    nc_buffer_append_data(&Config.current_item_suffix,
+                          LIT_ARGS("</active>"));
+    nc_buffer_init(&Config.current_item_inactive_column_prefix);
+    nc_buffer_append_data(
+        &Config.current_item_inactive_column_prefix,
+        LIT_ARGS("<inactive>"));
+    nc_buffer_init(&Config.current_item_inactive_column_suffix);
+    nc_buffer_append_data(
+        &Config.current_item_inactive_column_suffix,
+        LIT_ARGS("</inactive>"));
+    Config.titles_visibility = true;
+    Config.use_cyclic_scrolling = true;
+    Config.centered_cursor = true;
+
+    init_screen(&screen);
+    ncm_mpd_playlist_list_init(&playlists);
+    ncm_mpd_song_list_init(&content);
+    append_playlist(&playlists, LIT_ARGS("Current"));
+    append_song(&content, LIT_ARGS("one.flac"), LIT_ARGS("One"));
+    assert(native_playlist_editor_screen_load_playlists(&screen,
+                                                         &playlists));
+    assert(native_playlist_editor_screen_load_content(&screen, &content));
+    playlists_menu = nc_playlist_entry_menu_base(&screen.playlists);
+    content_menu = nc_song_menu_base(&screen.content);
+
+    assert(playlists_menu->cyclic_scroll_enabled);
+    assert(content_menu->cyclic_scroll_enabled);
+    assert(playlists_menu->autocenter_cursor);
+    assert(content_menu->autocenter_cursor);
+    assert(nc_buffer_equal(&playlists_menu->selected_prefix,
+                           &Config.selected_item_prefix));
+    assert(nc_buffer_equal(&content_menu->selected_suffix,
+                           &Config.selected_item_suffix));
+    assert(nc_buffer_equal(&playlists_menu->highlight_prefix,
+                           &Config.current_item_prefix));
+    assert(nc_buffer_equal(&playlists_menu->highlight_suffix,
+                           &Config.current_item_suffix));
+    assert(nc_buffer_equal(
+        &content_menu->highlight_prefix,
+        &Config.current_item_inactive_column_prefix));
+    assert(nc_buffer_equal(
+        &content_menu->highlight_suffix,
+        &Config.current_item_inactive_column_suffix));
+
+    native_playlist_editor_screen_next_column(&screen);
+    assert(nc_buffer_equal(
+        &playlists_menu->highlight_prefix,
+        &Config.current_item_inactive_column_prefix));
+    assert(nc_buffer_equal(&content_menu->highlight_prefix,
+                           &Config.current_item_prefix));
+
+    native_playlist_editor_screen_destroy(&screen);
+    ncm_mpd_song_list_destroy(&content);
+    ncm_mpd_playlist_list_destroy(&playlists);
+
+    Config.titles_visibility = false;
+    init_screen(&screen);
+    assert(screen.playlists_title.len == 0);
+    assert(screen.content_title.len == 0);
+    assert(screen.playlists_window.title_len == 0);
+    assert(screen.content_window.title_len == 0);
+    native_playlist_editor_screen_destroy(&screen);
+
+    nc_buffer_destroy(&Config.selected_item_prefix);
+    nc_buffer_destroy(&Config.selected_item_suffix);
+    nc_buffer_destroy(&Config.current_item_prefix);
+    nc_buffer_destroy(&Config.current_item_suffix);
+    nc_buffer_destroy(&Config.current_item_inactive_column_prefix);
+    nc_buffer_destroy(&Config.current_item_inactive_column_suffix);
+    Config.selected_item_prefix = old_selected_prefix;
+    Config.selected_item_suffix = old_selected_suffix;
+    Config.current_item_prefix = old_current_prefix;
+    Config.current_item_suffix = old_current_suffix;
+    Config.current_item_inactive_column_prefix = old_inactive_prefix;
+    Config.current_item_inactive_column_suffix = old_inactive_suffix;
+    Config.titles_visibility = old_titles_visibility;
+    Config.use_cyclic_scrolling = old_cyclic_scrolling;
+    Config.centered_cursor = old_centered_cursor;
     return;
 }
 
@@ -656,6 +790,18 @@ test_filter_and_search_are_column_local(void) {
     assert(ncm_string_equal(screen.content_search_constraint.data,
                             screen.content_search_constraint.len,
                             LIT_ARGS("Needle title")));
+
+    native_playlist_editor_screen_set_geometry(&screen, 3, 70, 2, 12);
+    assert(screen.active_column == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT);
+    assert(screen.left_width == 34);
+    assert(screen.right_start_x == 38);
+    assert(screen.right_width == 35);
+    assert(screen.playlist_filter_enabled);
+    assert(screen.content_filter_enabled);
+    assert(screen.content_search_enabled);
+    assert(nc_menu_item_count(playlist_menu) == 2);
+    assert(nc_menu_item_count(content_menu) == 2);
+    assert(nc_menu_highlight(content_menu) == 0);
 
     native_playlist_editor_screen_clear_active_filter(&screen);
     assert(!screen.content_filter_enabled);
@@ -938,9 +1084,12 @@ test_native_refresh_and_mouse_fallback(void) {
     nc_screen_refresh(native_playlist_editor_screen_base(&screen));
     assert(window_trace.display_calls == 2);
     assert(window_trace.menu_refresh_calls == 2);
+    assert(window_trace.separator_calls == 1);
+    assert(window_trace.last_separator_x == 39);
     nc_screen_refresh_window(native_playlist_editor_screen_base(&screen));
     assert(window_trace.display_calls == 3);
     assert(window_trace.menu_refresh_calls == 3);
+    assert(window_trace.separator_calls == 1);
 
     event.x = 1;
     event.y = 3;
@@ -969,6 +1118,13 @@ test_native_refresh_and_mouse_fallback(void) {
     ncm_mpd_song_list_destroy(&content);
     ncm_mpd_playlist_list_destroy(&playlists);
     native_playlist_editor_screen_destroy(&screen);
+    return;
+}
+
+void
+__wrap_nc_screen_draw_vertical_separator(int64 x) {
+    window_trace.separator_calls += 1;
+    window_trace.last_separator_x = x;
     return;
 }
 
