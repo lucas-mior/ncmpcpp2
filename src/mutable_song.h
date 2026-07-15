@@ -47,7 +47,6 @@ struct MutableSong : public Song
 	std::string getNewName() const;
 	void setNewName(const std::string &value);
 
-	virtual unsigned getDuration() const override;
 	virtual time_t getMTime() const override;
 
 	bool isModified() const;
@@ -207,18 +206,6 @@ inline void MutableSong::setNewName(const std::string &value)
 	ncm_mutable_song_set_new_name(&m_mutable,
 	                              const_cast<char *>(value.c_str()),
 	                              Detail::stringLength(value));
-}
-
-inline unsigned MutableSong::getDuration() const
-{
-	uint32 duration;
-
-	duration = ncm_mutable_song_duration(
-		const_cast<NcmMutableSong *>(&m_mutable));
-	if (duration > 0)
-		return duration;
-	else
-		return Song::getDuration();
 }
 
 inline time_t MutableSong::getMTime() const
