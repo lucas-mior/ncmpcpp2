@@ -167,6 +167,8 @@ static void test_tag_editor_search_result_directory_change(void);
 static void test_tag_editor_parser_mouse_rows(void);
 static void test_tag_editor_selected_extended_numbering_uses_targets(void);
 static void test_tag_editor_capitalizes_utf8_words(void);
+static void test_tag_editor_lowercase_ascii_parity(void);
+static void test_tag_editor_reset_ignores_selection(void);
 static void test_tag_editor_generate_filename_honors_config(void);
 static void test_tag_editor_action_rows_ignore_title_visibility(void);
 static void test_tag_editor_parser_pattern_history_workflow(void);
@@ -225,6 +227,8 @@ main(void) {
     test_tag_editor_parser_mouse_rows();
     test_tag_editor_selected_extended_numbering_uses_targets();
     test_tag_editor_capitalizes_utf8_words();
+    test_tag_editor_lowercase_ascii_parity();
+    test_tag_editor_reset_ignores_selection();
     test_tag_editor_generate_filename_honors_config();
     test_tag_editor_action_rows_ignore_title_visibility();
     test_tag_editor_parser_pattern_history_workflow();
@@ -2346,6 +2350,12 @@ test_tag_editor_selected_extended_numbering_uses_targets(void) {
     assert(song != NULL);
     assert(ncm_mutable_song_set_original_tag(
                song, NCM_TAGS_FIELD_TRACK, 1, STRLIT_ARGS("stale")));
+    assert(ncm_mutable_song_set_original_tag(
+               song, NCM_TAGS_FIELD_TRACK, 2, STRLIT_ARGS("stale2")));
+    song = nc_menu_active_item_at(tags, 1);
+    assert(song != NULL);
+    assert(ncm_mutable_song_set_original_tag(
+               song, NCM_TAGS_FIELD_TRACK, 0, STRLIT_ARGS("middle")));
 
     assert(nc_menu_set_position_selected(tags, 0, true));
     assert(nc_menu_set_position_selected(tags, 2, true));
@@ -2356,9 +2366,12 @@ test_tag_editor_selected_extended_numbering_uses_targets(void) {
                                   STRLIT_ARGS("1/2"));
     assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TRACK, 1,
                                   STRLIT_ARGS(""));
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TRACK, 2,
+                                  STRLIT_ARGS(""));
 
     song = nc_menu_active_item_at(tags, 1);
-    assert_mutable_song_tag_missing(song, NCM_TAGS_FIELD_TRACK, 0);
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TRACK, 0,
+                                  STRLIT_ARGS("middle"));
 
     song = nc_menu_active_item_at(tags, 2);
     assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TRACK, 0,
@@ -2382,8 +2395,16 @@ test_tag_editor_capitalizes_utf8_words(void) {
     song = nc_menu_active_item_at(tags, 0);
     assert(song != NULL);
     assert(ncm_mutable_song_set_original_tag(
+               song, NCM_TAGS_FIELD_ARTIST, 1,
+               STRLIT_ARGS("featuring friend")));
+    assert(ncm_mutable_song_set_original_tag(
                song, NCM_TAGS_FIELD_TITLE, 0,
                STRLIT_ARGS("first 😊 second")));
+    assert(ncm_mutable_song_set_original_tag(
+               song, NCM_TAGS_FIELD_ALBUM, 0,
+               STRLIT_ARGS("rock'n'roll - already OK; mañana")));
+    assert(ncm_mutable_song_set_original_tag(
+               song, NCM_TAGS_FIELD_COMMENT, 0, STRLIT_ARGS("")));
 
     native_tag_editor_screen_capitalize_first_letters(&screen);
 
@@ -2391,6 +2412,91 @@ test_tag_editor_capitalizes_utf8_words(void) {
                                   STRLIT_ARGS("First 😊 Second"));
     assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_ARTIST, 0,
                                   STRLIT_ARGS("Artist Name"));
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_ARTIST, 1,
+                                  STRLIT_ARGS("Featuring Friend"));
+    assert_mutable_song_tag_value(
+        song, NCM_TAGS_FIELD_ALBUM, 0,
+        STRLIT_ARGS("Rock'n'roll - Already OK; Mañana"));
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_COMMENT, 0,
+                                  STRLIT_ARGS(""));
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_lowercase_ascii_parity(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tags;
+    NcmMutableSong *song;
+
+    init_screen(&screen);
+    append_song(&screen, STRLIT_ARGS("one.flac"),
+                STRLIT_ARGS("ARTIST NAME"));
+
+    tags = nc_tag_row_menu_base(&screen.tags);
+    song = nc_menu_active_item_at(tags, 0);
+    assert(song != NULL);
+    assert(ncm_mutable_song_set_original_tag(
+               song, NCM_TAGS_FIELD_ARTIST, 1,
+               STRLIT_ARGS("SECOND Artist")));
+    assert(ncm_mutable_song_set_original_tag(
+               song, NCM_TAGS_FIELD_TITLE, 0,
+               STRLIT_ARGS("ÄBC DéJÀ VU ABC")));
+    assert(ncm_mutable_song_set_original_tag(
+               song, NCM_TAGS_FIELD_ALBUM, 0,
+               STRLIT_ARGS("ROCK'N'ROLL")));
+    assert(ncm_mutable_song_set_original_tag(
+               song, NCM_TAGS_FIELD_COMMENT, 0, STRLIT_ARGS("")));
+
+    native_tag_editor_screen_lower_all_letters(&screen);
+
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_ARTIST, 0,
+                                  STRLIT_ARGS("artist name"));
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_ARTIST, 1,
+                                  STRLIT_ARGS("second artist"));
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TITLE, 0,
+                                  STRLIT_ARGS("Äbc déjÀ vu abc"));
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_ALBUM, 0,
+                                  STRLIT_ARGS("rock'n'roll"));
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_COMMENT, 0,
+                                  STRLIT_ARGS(""));
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_reset_ignores_selection(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tags;
+    NcmMutableSong *song;
+
+    init_screen(&screen);
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Artist"));
+    append_song(&screen, STRLIT_ARGS("two.flac"), STRLIT_ARGS("Artist"));
+
+    tags = nc_tag_row_menu_base(&screen.tags);
+    song = nc_menu_active_item_at(tags, 0);
+    assert(song != NULL);
+    assert(ncm_mutable_song_set_tag(song, NCM_TAGS_FIELD_ARTIST, 0,
+                                    STRLIT_ARGS("changed selected")));
+    song = nc_menu_active_item_at(tags, 1);
+    assert(song != NULL);
+    assert(ncm_mutable_song_set_tag(song, NCM_TAGS_FIELD_ARTIST, 0,
+                                    STRLIT_ARGS("changed unselected")));
+    assert(nc_menu_set_position_selected(tags, 0, true));
+
+    native_tag_editor_screen_clear_modifications(&screen);
+
+    song = nc_menu_active_item_at(tags, 0);
+    assert(!ncm_mutable_song_is_modified(song));
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_ARTIST, 0,
+                                  STRLIT_ARGS("Artist"));
+    song = nc_menu_active_item_at(tags, 1);
+    assert(!ncm_mutable_song_is_modified(song));
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_ARTIST, 0,
+                                  STRLIT_ARGS("Artist"));
 
     destroy_screen(&screen);
     return;
