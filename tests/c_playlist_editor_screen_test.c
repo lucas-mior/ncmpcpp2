@@ -30,12 +30,16 @@ typedef struct PlaylistEditorMpdFixture {
     char content_path[COMMAND_TEXT_CAPACITY];
     char command_playlist[COMMAND_TEXT_CAPACITY];
     char command_target[COMMAND_TEXT_CAPACITY];
+    char status_message[COMMAND_TEXT_CAPACITY];
     int32 get_playlists_calls;
     int32 get_content_calls;
+    int32 status_calls;
     int32 save_calls;
     int32 rename_calls;
     int32 delete_calls;
     int32 load_calls;
+    bool get_playlists_result;
+    bool get_content_result;
     bool load_result;
 } PlaylistEditorMpdFixture;
 
@@ -107,6 +111,9 @@ static void test_column_navigation(void);
 static void test_filter_and_search_are_column_local(void);
 static void test_selected_song_contract(void);
 static void test_mpd_reload_and_current_items(void);
+static void test_update_callback_uses_native_mpd_logic(void);
+static void test_delayed_update_and_empty_content_cache(void);
+static void test_update_error_reporting_and_flags(void);
 static void test_playlist_commands(void);
 static void test_native_rendering_callbacks(void);
 static void test_bridge_delegation(void);
@@ -129,6 +136,9 @@ main(void) {
     test_filter_and_search_are_column_local();
     test_selected_song_contract();
     test_mpd_reload_and_current_items();
+    test_update_callback_uses_native_mpd_logic();
+    test_delayed_update_and_empty_content_cache();
+    test_update_error_reporting_and_flags();
     test_playlist_commands();
     test_native_rendering_callbacks();
     test_bridge_delegation();
@@ -206,6 +216,8 @@ init_mpd_fixture(void) {
     mpd_fixture = (PlaylistEditorMpdFixture){0};
     ncm_mpd_playlist_list_init(&mpd_fixture.playlists);
     ncm_mpd_song_list_init(&mpd_fixture.content);
+    mpd_fixture.get_playlists_result = true;
+    mpd_fixture.get_content_result = true;
     mpd_fixture.load_result = true;
     return;
 }
@@ -229,6 +241,11 @@ reset_mpd_calls(void) {
     mpd_fixture.rename_calls = 0;
     mpd_fixture.delete_calls = 0;
     mpd_fixture.load_calls = 0;
+    mpd_fixture.status_calls = 0;
+    mpd_fixture.status_message[0] = '\0';
+    mpd_fixture.get_playlists_result = true;
+    mpd_fixture.get_content_result = true;
+    mpd_fixture.load_result = true;
     return;
 }
 
@@ -1009,6 +1026,149 @@ test_mpd_reload_and_current_items(void) {
 }
 
 static void
+test_update_callback_uses_native_mpd_logic(void) {
+    NativePlaylistEditorScreen screen;
+    PlaylistEditorBridgeFixture fixture = {0};
+    NativePlaylistEditorBridge bridge;
+    NcMenu *playlists;
+    NcMenu *content;
+    NcmPlaylist *playlist;
+    bool old_ignore_leading_the;
+    bool old_data_fetching_delay;
+
+    old_ignore_leading_the = Config.ignore_leading_the;
+    old_data_fetching_delay = Config.data_fetching_delay;
+    Config.ignore_leading_the = true;
+    Config.data_fetching_delay = false;
+
+    ncm_mpd_playlist_list_clear(&mpd_fixture.playlists);
+    ncm_mpd_song_list_clear(&mpd_fixture.content);
+    append_playlist(&mpd_fixture.playlists, LIT_ARGS("The Beta"));
+    append_playlist(&mpd_fixture.playlists, LIT_ARGS("Alpha"));
+    append_song(&mpd_fixture.content, LIT_ARGS("alpha-one.flac"),
+                LIT_ARGS("Alpha one"));
+    reset_mpd_calls();
+
+    bridge = make_bridge(&fixture);
+    init_screen(&screen);
+    native_playlist_editor_screen_set_bridge(&screen, bridge);
+    nc_screen_update(native_playlist_editor_screen_base(&screen));
+
+    playlists = nc_playlist_entry_menu_base(&screen.playlists);
+    content = nc_song_menu_base(&screen.content);
+    assert(fixture.update_calls == 0);
+    assert(fixture.playlist_update_calls == 0);
+    assert(fixture.content_update_calls == 0);
+    assert(mpd_fixture.get_playlists_calls == 1);
+    assert(mpd_fixture.get_content_calls == 1);
+    assert(!screen.playlists_update_requested);
+    assert(!screen.content_update_requested);
+    assert(nc_menu_all_item_count(playlists) == 2);
+    assert(nc_menu_all_item_count(content) == 1);
+
+    playlist = nc_playlist_entry_menu_item_at(&screen.playlists,
+                                              NC_MENU_ITEMS_ALL, 0);
+    assert_playlist_path(playlist, LIT_ARGS("Alpha"));
+    assert(ncm_string_equal(mpd_fixture.content_path,
+                            cstring_len(mpd_fixture.content_path),
+                            LIT_ARGS("Alpha")));
+
+    native_playlist_editor_screen_set_bridge(
+        &screen, (NativePlaylistEditorBridge){0});
+    native_playlist_editor_screen_destroy(&screen);
+    Config.ignore_leading_the = old_ignore_leading_the;
+    Config.data_fetching_delay = old_data_fetching_delay;
+    return;
+}
+
+static void
+test_delayed_update_and_empty_content_cache(void) {
+    NativePlaylistEditorScreen screen;
+    NcmTimePoint old_global_timer;
+    bool old_data_fetching_delay;
+
+    old_global_timer = global_timer;
+    old_data_fetching_delay = Config.data_fetching_delay;
+    Config.data_fetching_delay = true;
+    global_timer.ns = 1000000000ll;
+
+    ncm_mpd_playlist_list_clear(&mpd_fixture.playlists);
+    ncm_mpd_song_list_clear(&mpd_fixture.content);
+    append_playlist(&mpd_fixture.playlists, LIT_ARGS("Empty"));
+    reset_mpd_calls();
+
+    init_screen(&screen);
+    nc_screen_update(native_playlist_editor_screen_base(&screen));
+    assert(mpd_fixture.get_playlists_calls == 1);
+    assert(mpd_fixture.get_content_calls == 0);
+    assert(screen.content_update_requested);
+    assert(nc_screen_window_timeout(native_playlist_editor_screen_base(
+               &screen)) == NATIVE_PLAYLIST_EDITOR_FETCH_DELAY_MS);
+
+    global_timer.ns +=
+        (NATIVE_PLAYLIST_EDITOR_FETCH_DELAY_MS + 1) * 1000000ll;
+    nc_screen_update(native_playlist_editor_screen_base(&screen));
+    assert(mpd_fixture.get_content_calls == 1);
+    assert(!screen.content_update_requested);
+    assert(screen.displayed_playlist_valid);
+    assert(screen.last_known_content_count == 0);
+    assert(nc_screen_window_timeout(native_playlist_editor_screen_base(
+               &screen)) == NC_SCREEN_DEFAULT_WINDOW_TIMEOUT);
+
+    nc_screen_update(native_playlist_editor_screen_base(&screen));
+    assert(mpd_fixture.get_content_calls == 1);
+
+    native_playlist_editor_screen_destroy(&screen);
+    Config.data_fetching_delay = old_data_fetching_delay;
+    global_timer = old_global_timer;
+    return;
+}
+
+static void
+test_update_error_reporting_and_flags(void) {
+    NativePlaylistEditorScreen screen;
+    bool old_data_fetching_delay;
+
+    old_data_fetching_delay = Config.data_fetching_delay;
+    Config.data_fetching_delay = false;
+
+    ncm_mpd_playlist_list_clear(&mpd_fixture.playlists);
+    ncm_mpd_song_list_clear(&mpd_fixture.content);
+    reset_mpd_calls();
+    mpd_fixture.get_playlists_result = false;
+
+    init_screen(&screen);
+    nc_screen_update(native_playlist_editor_screen_base(&screen));
+    assert(mpd_fixture.get_playlists_calls == 1);
+    assert(!screen.playlists_update_requested);
+    assert(screen.content_update_requested);
+    assert(mpd_fixture.status_calls == 1);
+    assert(ncm_string_equal(mpd_fixture.status_message,
+                            cstring_len(mpd_fixture.status_message),
+                            LIT_ARGS("Could not fetch playlists: "
+                                     "playlist failure")));
+    native_playlist_editor_screen_destroy(&screen);
+
+    append_playlist(&mpd_fixture.playlists, LIT_ARGS("Broken"));
+    reset_mpd_calls();
+    mpd_fixture.get_content_result = false;
+    init_screen(&screen);
+    nc_screen_update(native_playlist_editor_screen_base(&screen));
+    assert(mpd_fixture.get_playlists_calls == 1);
+    assert(mpd_fixture.get_content_calls == 1);
+    assert(!screen.content_update_requested);
+    assert(mpd_fixture.status_calls == 1);
+    assert(ncm_string_equal(mpd_fixture.status_message,
+                            cstring_len(mpd_fixture.status_message),
+                            LIT_ARGS("Could not fetch playlist content: "
+                                     "content failure")));
+    native_playlist_editor_screen_destroy(&screen);
+
+    Config.data_fetching_delay = old_data_fetching_delay;
+    return;
+}
+
+static void
 test_playlist_commands(void) {
     NativePlaylistEditorScreen screen;
     NativePlaylistEditorCommand command;
@@ -1203,6 +1363,7 @@ test_bridge_delegation(void) {
     assert(nc_screen_window_timeout(base) == 250);
     assert(nc_screen_title(base) == fixture.title);
 
+    reset_mpd_calls();
     native_playlist_editor_screen_request_playlists_update(&screen);
     native_playlist_editor_screen_request_content_update(&screen);
     assert(nc_screen_has_to_be_updated(base));
@@ -1219,9 +1380,10 @@ test_bridge_delegation(void) {
     assert(fixture.last_scroll == NC_SCROLL_PAGE_DOWN);
     assert(fixture.switch_calls == 1);
     assert(fixture.resize_calls == 1);
-    assert(fixture.playlist_update_calls == 1);
-    assert(fixture.content_update_calls == 1);
-    assert(fixture.update_calls == 1);
+    assert(fixture.playlist_update_calls == 0);
+    assert(fixture.content_update_calls == 0);
+    assert(fixture.update_calls == 0);
+    assert(mpd_fixture.get_playlists_calls == 1);
     assert(fixture.mouse_calls == 1);
     assert(fixture.last_event.x == event.x);
     assert(fixture.last_event.y == event.y);
@@ -1440,6 +1602,10 @@ __wrap_ncm_mpd_client_get_playlists(NcmMpdClient *client,
     (void)client;
     mpd_fixture.get_playlists_calls += 1;
     ncm_error_clear(error);
+    if (!mpd_fixture.get_playlists_result) {
+        ncm_error_set(error, EIO, STRLIT_ARGS("playlist failure"));
+        return false;
+    }
     return ncm_mpd_playlist_list_copy(playlists,
                                       &mpd_fixture.playlists);
 }
@@ -1453,7 +1619,20 @@ __wrap_ncm_mpd_client_get_playlist_content(
     copy_cstring(mpd_fixture.content_path,
                  NCM_ARRAY_LEN(mpd_fixture.content_path), path);
     ncm_error_clear(error);
+    if (!mpd_fixture.get_content_result) {
+        ncm_error_set(error, EIO, STRLIT_ARGS("content failure"));
+        return false;
+    }
     return ncm_mpd_song_list_copy(songs, &mpd_fixture.content);
+}
+
+void
+__wrap_ncm_statusbar_print_cstring(int32 delay_seconds, char *message) {
+    (void)delay_seconds;
+    mpd_fixture.status_calls += 1;
+    copy_cstring(mpd_fixture.status_message,
+                 NCM_ARRAY_LEN(mpd_fixture.status_message), message);
+    return;
 }
 
 bool
