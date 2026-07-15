@@ -4430,10 +4430,16 @@ action_runtime_enter_directory(void) {
 
 static bool
 action_runtime_jump_to_parent_directory(void) {
-    if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
-        return false;
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+        return native_browser_screen_go_to_parent(native_c_screen_browser());
     }
-    return native_browser_screen_go_to_parent(native_c_screen_browser());
+#if defined(HAVE_TAGLIB_H)
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
+        return native_tag_editor_screen_go_to_parent(
+            native_c_screen_tag_editor());
+    }
+#endif
+    return false;
 }
 
 static bool
@@ -5205,7 +5211,14 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
 #endif
         return true;
     case NCM_ACTION_JUMP_TO_PARENT_DIRECTORY:
-        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER);
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+            return true;
+        }
+#if defined(HAVE_TAGLIB_H)
+        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR);
+#else
+        return false;
+#endif
     case NCM_ACTION_PREVIOUS_COLUMN:
         return action_runtime_previous_column_available();
     case NCM_ACTION_NEXT_COLUMN:

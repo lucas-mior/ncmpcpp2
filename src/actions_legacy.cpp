@@ -2758,15 +2758,6 @@ void listsChangeFinisher()
 	if (native_c_screen_playlist_editor_is_current())
 		return;
 
-#	ifdef HAVE_TAGLIB_H
-	if (screenLegacyCurrent() == myTagEditor)
-	{
-		if (screenLegacyCurrent()->activeWindow() == myTagEditor->Dirs)
-		{
-			myTagEditor->Tags->clear();
-		}
-	}
-#	endif // HAVE_TAGLIB_H
 }
 
 }
