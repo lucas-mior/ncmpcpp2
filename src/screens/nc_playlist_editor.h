@@ -20,6 +20,8 @@ enum NativePlaylistEditorColumn {
     NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT,
 };
 
+#define NATIVE_PLAYLIST_EDITOR_FETCH_DELAY_MS 250
+
 enum NativePlaylistEditorCommandType {
     NATIVE_PLAYLIST_EDITOR_COMMAND_NONE,
     NATIVE_PLAYLIST_EDITOR_COMMAND_LOAD,
@@ -65,8 +67,16 @@ typedef struct NativePlaylistEditorScreen {
     NcmBuffer content_filter_constraint;
     NcmBuffer playlist_search_constraint;
     NcmBuffer content_search_constraint;
+    NcmBuffer playlists_title;
+    NcmBuffer content_title;
+    NcmBuffer displayed_playlist_path;
+    NcmBuffer observed_playlist_path;
+
     NcmRegex playlist_filter_regex;
     NcmRegex content_filter_regex;
+    NcmRegex playlist_search_regex;
+    NcmRegex content_search_regex;
+
     NcmTimePoint timer;
 
     int64 start_x;
@@ -76,12 +86,20 @@ typedef struct NativePlaylistEditorScreen {
     int64 left_width;
     int64 right_start_x;
     int64 right_width;
+    int64 fetching_delay_ms;
+    int64 last_playlist_highlight;
+    int64 last_known_content_count;
+    int32 window_timeout_ms;
     int64 active_column;
 
     bool playlists_update_requested;
     bool content_update_requested;
     bool playlist_filter_enabled;
     bool content_filter_enabled;
+    bool playlist_search_enabled;
+    bool content_search_enabled;
+    bool displayed_playlist_valid;
+    bool observed_playlist_valid;
     bool registered;
 } NativePlaylistEditorScreen;
 

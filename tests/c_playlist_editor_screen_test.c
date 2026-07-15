@@ -3,6 +3,8 @@
 #include <stdlib.h>
 
 #include "app_controller.h"
+#include "global.h"
+#include "settings.h"
 #include "c/ncm_string.h"
 #include "screens/nc_playlist_editor.h"
 #include "ui_state.h"
@@ -82,6 +84,7 @@ static void bridge_request_playlists_update(void *user);
 static void bridge_request_content_update(void *user);
 static void bridge_mouse_button_pressed(void *user, MEVENT event);
 static void test_initial_state_and_geometry(void);
+static void test_fetch_timer_and_timeout_state(void);
 static void test_owned_playlist_and_content_rows(void);
 static void test_column_navigation(void);
 static void test_filter_and_search_are_column_local(void);
@@ -100,6 +103,7 @@ main(void) {
     init_mpd_fixture();
 
     test_initial_state_and_geometry();
+    test_fetch_timer_and_timeout_state();
     test_owned_playlist_and_content_rows();
     test_column_navigation();
     test_filter_and_search_are_column_local();
@@ -391,6 +395,14 @@ test_initial_state_and_geometry(void) {
     assert(screen.right_width == 40);
     assert(screen.playlists_update_requested);
     assert(screen.content_update_requested);
+    assert(screen.fetching_delay_ms == -1);
+    assert(screen.window_timeout_ms == NC_SCREEN_DEFAULT_WINDOW_TIMEOUT);
+    assert(screen.last_playlist_highlight == -1);
+    assert(screen.last_known_content_count == -1);
+    assert(!screen.displayed_playlist_valid);
+    assert(!screen.observed_playlist_valid);
+    assert(!screen.playlist_search_enabled);
+    assert(!screen.content_search_enabled);
     assert(nc_screen_is_lockable(base));
     assert(nc_screen_is_mergable(base));
     assert(nc_screen_window_timeout(base)
@@ -398,6 +410,12 @@ test_initial_state_and_geometry(void) {
     assert(ncm_string_equal(nc_screen_title(base),
                             STRLIT_LEN("Playlist editor"),
                             LIT_ARGS("Playlist editor")));
+    assert(ncm_string_equal(screen.playlists_title.data,
+                            screen.playlists_title.len,
+                            LIT_ARGS("Playlists")));
+    assert(ncm_string_equal(screen.content_title.data,
+                            screen.content_title.len,
+                            LIT_ARGS("Content")));
     assert(ncm_string_equal(screen.playlists_window.title,
                             screen.playlists_window.title_len,
                             LIT_ARGS("Playlists")));
@@ -420,6 +438,49 @@ test_initial_state_and_geometry(void) {
     assert(screen.right_width == 30);
 
     native_playlist_editor_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_fetch_timer_and_timeout_state(void) {
+    NativePlaylistEditorScreen screen;
+    NcmMpdPlaylistList playlists;
+    NcmMpdSongList songs;
+    NcmTimePoint old_global_timer;
+    bool old_data_fetching_delay;
+
+    old_global_timer = global_timer;
+    old_data_fetching_delay = Config.data_fetching_delay;
+    global_timer.ns = 1000000000ll;
+    Config.data_fetching_delay = true;
+
+    init_screen(&screen);
+    assert(screen.fetching_delay_ms == NATIVE_PLAYLIST_EDITOR_FETCH_DELAY_MS);
+    assert(screen.window_timeout_ms == NATIVE_PLAYLIST_EDITOR_FETCH_DELAY_MS);
+    assert(nc_screen_window_timeout(native_playlist_editor_screen_base(
+               &screen)) == NATIVE_PLAYLIST_EDITOR_FETCH_DELAY_MS);
+
+    ncm_mpd_playlist_list_init(&playlists);
+    ncm_mpd_song_list_init(&songs);
+    append_playlist(&playlists, LIT_ARGS("Delayed"));
+    append_song(&songs, LIT_ARGS("delayed.flac"), LIT_ARGS("Delayed"));
+    assert(native_playlist_editor_screen_load_playlists(&screen,
+                                                         &playlists));
+    assert(native_playlist_editor_screen_load_content(&screen, &songs));
+    assert(nc_screen_window_timeout(native_playlist_editor_screen_base(
+               &screen)) == NC_SCREEN_DEFAULT_WINDOW_TIMEOUT);
+
+    global_timer.ns = 2000000000ll;
+    native_playlist_editor_screen_request_content_update(&screen);
+    assert(screen.timer.ns == global_timer.ns);
+    assert(screen.content_update_requested);
+
+    ncm_mpd_song_list_destroy(&songs);
+    ncm_mpd_playlist_list_destroy(&playlists);
+    native_playlist_editor_screen_destroy(&screen);
+
+    Config.data_fetching_delay = old_data_fetching_delay;
+    global_timer = old_global_timer;
     return;
 }
 
@@ -462,12 +523,28 @@ test_owned_playlist_and_content_rows(void) {
                     LIT_ARGS("two.flac"));
     assert(!screen.playlists_update_requested);
     assert(!screen.content_update_requested);
+    assert(screen.observed_playlist_valid);
+    assert(screen.displayed_playlist_valid);
+    assert(screen.last_playlist_highlight == 0);
+    assert(screen.last_known_content_count == 2);
+    assert(ncm_string_equal(screen.displayed_playlist_path.data,
+                            screen.displayed_playlist_path.len,
+                            LIT_ARGS("Road trip")));
+    assert(ncm_string_equal(screen.content_title.data,
+                            screen.content_title.len,
+                            LIT_ARGS("Content (2 items)")));
 
     native_playlist_editor_screen_clear(&screen);
     assert(nc_menu_all_item_count(playlist_menu) == 0);
     assert(nc_menu_all_item_count(content_menu) == 0);
     assert(screen.playlists_update_requested);
     assert(screen.content_update_requested);
+    assert(!screen.displayed_playlist_valid);
+    assert(!screen.observed_playlist_valid);
+    assert(screen.last_known_content_count == -1);
+    assert(ncm_string_equal(screen.content_title.data,
+                            screen.content_title.len,
+                            LIT_ARGS("Content")));
 
     native_playlist_editor_screen_destroy(&screen);
     return;
@@ -566,11 +643,19 @@ test_filter_and_search_are_column_local(void) {
         &screen, LIT_ARGS("needle-uri"),
         NCM_REGEX_LITERAL_CASE_INSENSITIVE, true, true, false, &error));
     assert(nc_menu_highlight(content_menu) == 1);
+    assert(screen.content_search_enabled);
+    assert(ncm_string_equal(screen.content_search_constraint.data,
+                            screen.content_search_constraint.len,
+                            LIT_ARGS("needle-uri")));
     ncm_error_clear(&error);
     assert(native_playlist_editor_screen_search_active(
         &screen, LIT_ARGS("Needle title"),
         NCM_REGEX_LITERAL_CASE_INSENSITIVE, false, true, false, &error));
     assert(nc_menu_highlight(content_menu) == 0);
+    assert(screen.content_search_enabled);
+    assert(ncm_string_equal(screen.content_search_constraint.data,
+                            screen.content_search_constraint.len,
+                            LIT_ARGS("Needle title")));
 
     native_playlist_editor_screen_clear_active_filter(&screen);
     assert(!screen.content_filter_enabled);
@@ -865,7 +950,15 @@ test_native_refresh_and_mouse_fallback(void) {
     assert(screen.active_column
            == NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS);
     assert(nc_menu_highlight(playlist_menu) == 1);
+    assert(nc_menu_all_item_count(content_menu) == 0);
+    assert(screen.content_update_requested);
+    assert(!screen.displayed_playlist_valid);
+    assert(screen.last_known_content_count == -1);
+    assert(ncm_string_equal(screen.content_title.data,
+                            screen.content_title.len,
+                            LIT_ARGS("Content")));
 
+    assert(native_playlist_editor_screen_load_content(&screen, &content));
     event.x = 41;
     event.y = 3;
     nc_screen_mouse_button_pressed(
