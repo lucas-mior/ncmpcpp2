@@ -146,6 +146,9 @@ test_buffer(void) {
 
     REQUIRE(ncm_buffer_set(&copy, LIT_ARGS("xy")));
     REQUIRE_STRING(copy.data, copy.len, "xy");
+    REQUIRE(ncm_buffer_set(&copy, copy.data, 1));
+    REQUIRE_STRING(copy.data, copy.len, "x");
+    REQUIRE(ncm_buffer_set(&copy, LIT_ARGS("xy")));
 
     ncm_buffer_move(&moved, &copy);
     REQUIRE_STRING(moved.data, moved.len, "xy");
