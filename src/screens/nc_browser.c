@@ -1,8 +1,19 @@
 #include "screens/nc_browser.h"
 
 #include "c/ncm_base.h"
+#include "c/ncm_display.h"
 #include "c/ncm_fs.h"
 #include "c/ncm_string.h"
+#include "c/ncm_utf8.h"
+#include "cbase/base_macros.h"
+#include "curses/nc_cyclic_buffer.h"
+#include "global.h"
+#include "settings.h"
+#include "screens/screen_switcher.h"
+#include "title.h"
+#include "ui_state.h"
+
+#include <limits.h>
 
 static NativeBrowserScreen *native_browser_from_screen(NcScreen *screen);
 static NcWindow *native_browser_active_window(NcScreen *screen);
@@ -18,6 +29,18 @@ static void native_browser_mouse_button_pressed(NcScreen *screen,
 static bool native_browser_is_lockable(NcScreen *screen);
 static bool native_browser_is_mergable(NcScreen *screen);
 static void native_browser_destroy_callback(NcScreen *screen);
+static NcMenuDisplayCallbacks native_browser_display_callbacks(
+    NativeBrowserScreen *screen);
+static void native_browser_apply_display_callbacks(
+    NativeBrowserScreen *screen);
+static void native_browser_draw_item(NcMenu *menu, NcWindow *window,
+                                     void *item, int64 pos, void *user);
+static void native_browser_print_buffer(NcWindow *window, NcBuffer *buffer);
+static int32 native_browser_i32_width(int64 width);
+static void native_browser_sync_window_title(NativeBrowserScreen *screen);
+static void native_browser_draw_header(NativeBrowserScreen *screen);
+static void native_browser_mouse_scroll(NativeBrowserScreen *screen,
+                                        enum NcScroll where);
 static bool native_browser_filter_item(NcMenu *menu, void *item,
                                        void *user);
 static bool native_browser_item_matches(NcmMpdItem *item, NcmRegex *regex);
@@ -79,6 +102,7 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     screen->filter_enabled = false;
     screen->registered = false;
 
+    native_browser_apply_display_callbacks(screen);
     nc_screen_init(&screen->screen, native_browser_callbacks, screen,
                    NC_SCREEN_TYPE_BROWSER);
     return;
@@ -335,6 +359,7 @@ native_browser_screen_set_display_mode(NativeBrowserScreen *screen,
         return;
     }
     screen->active_display_mode = mode;
+    screen->redraw_header = true;
     return;
 }
 
@@ -560,8 +585,6 @@ bool
 native_browser_screen_apply_filter(NativeBrowserScreen *screen,
                                    char *pattern, int32 pattern_len,
                                    NcmError *error) {
-    NcMenuDisplayCallbacks callbacks = {0};
-
     if (screen == NULL) {
         return false;
     }
@@ -576,19 +599,14 @@ native_browser_screen_apply_filter(NativeBrowserScreen *screen,
     if (!ncm_buffer_set(&screen->filter_constraint, pattern, pattern_len)) {
         return false;
     }
-    callbacks.filter = native_browser_filter_item;
-    callbacks.user = screen;
-    nc_menu_set_display_callbacks(native_browser_screen_menu(screen),
-                                  callbacks);
     screen->filter_enabled = true;
+    native_browser_apply_display_callbacks(screen);
     nc_menu_apply_filter(native_browser_screen_menu(screen));
     return true;
 }
 
 void
 native_browser_screen_clear_filter(NativeBrowserScreen *screen) {
-    NcMenuDisplayCallbacks callbacks = {0};
-
     if (screen == NULL) {
         return;
     }
@@ -596,8 +614,7 @@ native_browser_screen_clear_filter(NativeBrowserScreen *screen) {
     ncm_regex_init(&screen->filter_regex);
     ncm_buffer_clear(&screen->filter_constraint);
     screen->filter_enabled = false;
-    nc_menu_set_display_callbacks(native_browser_screen_menu(screen),
-                                  callbacks);
+    native_browser_apply_display_callbacks(screen);
     nc_menu_show_all_items(native_browser_screen_menu(screen));
     return;
 }
@@ -686,10 +703,6 @@ native_browser_screen_request_update(NativeBrowserScreen *screen) {
         return;
     }
     screen->update_requested = true;
-    if (screen->bridge.request_update != NULL) {
-        screen->bridge.request_update(screen->bridge.user);
-        return;
-    }
     nc_screen_request_update(&screen->screen);
     return;
 }
@@ -714,9 +727,6 @@ native_browser_active_window(NcScreen *screen) {
     NativeBrowserScreen *browser;
 
     browser = native_browser_from_screen(screen);
-    if (browser->bridge.active_window != NULL) {
-        return browser->bridge.active_window(browser->bridge.user);
-    }
     return &browser->window;
 }
 
@@ -725,24 +735,14 @@ native_browser_refresh(NcScreen *screen) {
     NativeBrowserScreen *browser;
 
     browser = native_browser_from_screen(screen);
-    if (browser->bridge.refresh != NULL) {
-        browser->bridge.refresh(browser->bridge.user);
-        return;
-    }
-    nc_menu_prepare_refresh(native_browser_screen_menu(browser),
-                            browser->main_height, NULL, NULL);
+    native_browser_sync_window_title(browser);
+    nc_menu_refresh(native_browser_screen_menu(browser), &browser->window,
+                    browser->width, browser->main_height);
     return;
 }
 
 static void
 native_browser_refresh_window(NcScreen *screen) {
-    NativeBrowserScreen *browser;
-
-    browser = native_browser_from_screen(screen);
-    if (browser->bridge.refresh_window != NULL) {
-        browser->bridge.refresh_window(browser->bridge.user);
-        return;
-    }
     native_browser_refresh(screen);
     return;
 }
@@ -752,10 +752,6 @@ native_browser_scroll(NcScreen *screen, enum NcScroll where) {
     NativeBrowserScreen *browser;
 
     browser = native_browser_from_screen(screen);
-    if (browser->bridge.scroll != NULL) {
-        browser->bridge.scroll(browser->bridge.user, where);
-        return;
-    }
     nc_menu_scroll_selectable(native_browser_screen_menu(browser),
                               browser->main_height, where);
     return;
@@ -766,24 +762,27 @@ native_browser_switch_to(NcScreen *screen) {
     NativeBrowserScreen *browser;
 
     browser = native_browser_from_screen(screen);
-    if (browser->bridge.switch_to != NULL) {
-        browser->bridge.switch_to(browser->bridge.user);
-    }
+    (void)nc_screen_switcher_finish_switch(screen);
+    browser->redraw_header = true;
+    native_browser_draw_header(browser);
     return;
 }
 
 static void
 native_browser_resize(NcScreen *screen) {
     NativeBrowserScreen *browser;
+    int64 x;
+    int64 width;
 
     browser = native_browser_from_screen(screen);
-    native_browser_screen_set_geometry(browser, browser->start_x,
-                                       browser->width,
-                                       browser->main_start_y,
-                                       browser->main_height);
-    if (browser->bridge.resize != NULL) {
-        browser->bridge.resize(browser->bridge.user);
-    }
+    x = browser->start_x;
+    width = browser->width;
+    nc_screen_switcher_get_resize_params(screen, &x, &width, true);
+    native_browser_screen_set_geometry(browser, x, width,
+                                       ui_state_main_start_y(),
+                                       ui_state_main_height());
+    native_browser_sync_window_title(browser);
+    browser->redraw_header = true;
     nc_screen_clear_resize_request(screen);
     return;
 }
@@ -791,15 +790,48 @@ native_browser_resize(NcScreen *screen) {
 static char *
 native_browser_title(NcScreen *screen) {
     NativeBrowserScreen *browser;
+    NcmBuffer scroll_buffer;
+    NcmStringView directory;
+    int64 scroll_beginning;
+    int32 scroll_width;
+    int32 screen_width;
+    char separator[] = " ** ";
 
     browser = native_browser_from_screen(screen);
-    if (browser->bridge.title != NULL) {
-        return browser->bridge.title(browser->bridge.user);
+    ncm_buffer_clear(&browser->title_text);
+    ncm_buffer_append(&browser->title_text, STRLIT_ARGS("Browse: "));
+
+    directory = native_browser_screen_current_directory(browser);
+    if (directory.len <= 0) {
+        directory = ncm_string_view_make((char *)"/", 1);
     }
-    if (browser->title_text.len > 0) {
-        return browser->title_text.data;
+
+    screen_width = (int32)ui_state_screen_width();
+    if (screen_width <= 0) {
+        screen_width = native_browser_i32_width(browser->width);
     }
-    return (char *)"Browser";
+    scroll_width = screen_width - ncm_utf8_width(browser->title_text.data,
+                                                 browser->title_text.len);
+    if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+        scroll_width -= 2;
+    } else {
+        scroll_width -= global_volume_state_len();
+    }
+    if (scroll_width < 0) {
+        scroll_width = 0;
+    }
+
+    ncm_buffer_init(&scroll_buffer);
+    scroll_beginning = browser->title_scroll_beginning;
+    nc_cyclic_text_write(&scroll_buffer, directory.data, directory.len,
+                         &scroll_beginning, scroll_width, separator,
+                         (int32)SIZEOF(separator) - 1,
+                         Config.header_text_scrolling);
+    ncm_buffer_append(&browser->title_text, scroll_buffer.data,
+                      scroll_buffer.len);
+    browser->title_scroll_beginning = scroll_beginning;
+    ncm_buffer_destroy(&scroll_buffer);
+    return browser->title_text.data;
 }
 
 static void
@@ -807,22 +839,61 @@ native_browser_update(NcScreen *screen) {
     NativeBrowserScreen *browser;
 
     browser = native_browser_from_screen(screen);
-    if (browser->bridge.update != NULL) {
-        browser->bridge.update(browser->bridge.user);
-        native_browser_screen_clear_update_request(browser);
-        return;
-    }
     native_browser_screen_clear_update_request(browser);
+    if (browser->redraw_header) {
+        native_browser_draw_header(browser);
+    }
     return;
 }
 
 static void
 native_browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     NativeBrowserScreen *browser;
+    NcMenu *menu;
+    NcmMpdItem *item;
+    NcWindow *window;
+    int32 x;
+    int32 y;
 
     browser = native_browser_from_screen(screen);
-    if (browser->bridge.mouse_button_pressed != NULL) {
-        browser->bridge.mouse_button_pressed(browser->bridge.user, event);
+    menu = native_browser_screen_menu(browser);
+    if (nc_menu_empty(menu)) {
+        return;
+    }
+
+    window = native_browser_screen_window(browser);
+    x = event.x;
+    y = event.y;
+    if (!nc_window_has_coords(window, &x, &y)) {
+        return;
+    }
+
+    if ((event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) != 0) {
+        if (!nc_menu_goto_selectable(menu, y)) {
+            return;
+        }
+        item = native_browser_screen_current_item(browser);
+        if ((event.bstate & BUTTON1_PRESSED)
+            && (item != NULL)
+            && (ncm_mpd_item_kind(item) == NCM_MPD_ITEM_DIRECTORY)) {
+            (void)native_browser_screen_enter_directory(browser);
+            native_browser_screen_request_update(browser);
+        }
+        return;
+    }
+
+    if ((event.bstate & BUTTON5_PRESSED) != 0) {
+        if (browser->mouse_list_scroll_whole_page) {
+            native_browser_scroll(screen, NC_SCROLL_PAGE_DOWN);
+        } else {
+            native_browser_mouse_scroll(browser, NC_SCROLL_DOWN);
+        }
+    } else if ((event.bstate & BUTTON4_PRESSED) != 0) {
+        if (browser->mouse_list_scroll_whole_page) {
+            native_browser_scroll(screen, NC_SCROLL_PAGE_UP);
+        } else {
+            native_browser_mouse_scroll(browser, NC_SCROLL_UP);
+        }
     }
     return;
 }
@@ -842,6 +913,168 @@ native_browser_is_mergable(NcScreen *screen) {
 static void
 native_browser_destroy_callback(NcScreen *screen) {
     native_browser_screen_destroy(native_browser_from_screen(screen));
+    return;
+}
+
+static NcMenuDisplayCallbacks
+native_browser_display_callbacks(NativeBrowserScreen *screen) {
+    NcMenuDisplayCallbacks callbacks = {0};
+
+    callbacks.draw = native_browser_draw_item;
+    if (screen->filter_enabled) {
+        callbacks.filter = native_browser_filter_item;
+    }
+    callbacks.user = screen;
+    return callbacks;
+}
+
+static void
+native_browser_apply_display_callbacks(NativeBrowserScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    nc_menu_set_display_callbacks(native_browser_screen_menu(screen),
+                                  native_browser_display_callbacks(screen));
+    return;
+}
+
+static void
+native_browser_draw_item(NcMenu *menu, NcWindow *window,
+                         void *item, int64 pos, void *user) {
+    NativeBrowserScreen *screen;
+    NcBuffer buffer;
+    int64 available_width;
+    int32 list_width;
+    bool use_colors;
+
+    screen = user;
+    if ((menu == NULL) || (window == NULL) || (item == NULL)) {
+        return;
+    }
+
+    nc_buffer_init(&buffer);
+    if ((screen != NULL)
+        && (screen->active_display_mode == NCM_DISPLAY_MODE_COLUMNS)
+        && (ncm_mpd_item_kind(item) == NCM_MPD_ITEM_SONG)) {
+        available_width = nc_window_width(window) - nc_window_get_x(window);
+        if (nc_menu_position_is_selected(menu, pos)) {
+            available_width -= ncm_utf8_width(
+                menu->selected_suffix.data, menu->selected_suffix.len);
+        }
+        if (menu->highlight_enabled && (pos == menu->highlight)) {
+            available_width -= ncm_utf8_width(
+                menu->highlight_suffix.data, menu->highlight_suffix.len);
+        }
+        if (available_width < 0) {
+            available_width = 0;
+        }
+        list_width = native_browser_i32_width(available_width);
+        use_colors = !Config.discard_colors_if_item_is_selected
+                     || !nc_menu_position_is_selected(menu, pos);
+        ncm_display_song_columns(&buffer, ncm_mpd_item_song(item),
+                                 Config.columns.items, Config.columns.len,
+                                 list_width, use_colors);
+    } else {
+        ncm_display_item_row(&buffer, item, &Config.song_list_format,
+                             NCM_FORMAT_FLAG_ALL,
+                             Config.browser_playlist_prefix.data,
+                             Config.browser_playlist_prefix.len);
+    }
+    native_browser_print_buffer(window, &buffer);
+    nc_buffer_destroy(&buffer);
+    return;
+}
+
+static void
+native_browser_print_buffer(NcWindow *window, NcBuffer *buffer) {
+    NcBufferProperty *properties;
+    char *data;
+    int32 property_count;
+    int32 property_index;
+    int32 len;
+
+    data = nc_buffer_data(buffer);
+    len = nc_buffer_len(buffer);
+    properties = nc_buffer_properties(buffer);
+    property_count = nc_buffer_property_count(buffer);
+    property_index = 0;
+
+    for (int32 i = 0;; i += 1) {
+        while ((property_index < property_count)
+               && (properties[property_index].position == i)) {
+            nc_buffer_apply_property(window, &properties[property_index]);
+            property_index += 1;
+        }
+        if (i >= len) {
+            break;
+        }
+        nc_window_print_char(window, data[i]);
+    }
+    return;
+}
+
+static int32
+native_browser_i32_width(int64 width) {
+    if (width <= 0) {
+        return 0;
+    }
+    if (width > INT32_MAX) {
+        return INT32_MAX;
+    }
+    return (int32)width;
+}
+
+static void
+native_browser_sync_window_title(NativeBrowserScreen *screen) {
+    int32 width;
+
+    if (screen == NULL) {
+        return;
+    }
+
+    if ((screen->active_display_mode == NCM_DISPLAY_MODE_COLUMNS)
+        && Config.titles_visibility) {
+        width = native_browser_i32_width(screen->width);
+        ncm_display_column_title(&screen->column_title_text,
+                                 Config.columns.items, Config.columns.len,
+                                 width);
+        nc_window_set_title(&screen->window, screen->column_title_text.data,
+                            screen->column_title_text.len);
+    } else {
+        ncm_buffer_clear(&screen->column_title_text);
+        nc_window_set_title(&screen->window, NULL, 0);
+    }
+    return;
+}
+
+static void
+native_browser_draw_header(NativeBrowserScreen *screen) {
+    char *title;
+    int32 len;
+
+    if (screen == NULL) {
+        return;
+    }
+
+    title = native_browser_title(&screen->screen);
+    len = 0;
+    if (title != NULL) {
+        while (title[len] != '\0') {
+            len += 1;
+        }
+    }
+    ncm_title_draw_header(title, len);
+    screen->redraw_header = false;
+    return;
+}
+
+static void
+native_browser_mouse_scroll(NativeBrowserScreen *screen,
+                            enum NcScroll where) {
+    for (int64 i = 0; i < screen->lines_scrolled; i += 1) {
+        nc_menu_scroll_selectable(native_browser_screen_menu(screen),
+                                  screen->main_height, where);
+    }
     return;
 }
 

@@ -57,8 +57,6 @@ static struct TestState {
     int32 display_calls;
     int32 refresh_calls;
     int32 draw_calls;
-    int32 previous_resize_calls;
-    int32 previous_refresh_calls;
     int32 command_start_calls;
     int32 command_add_calls;
     int32 command_commit_calls;
@@ -115,8 +113,6 @@ static void test_open_current_playlist(
     NcmMpdClient *client, NcmSongArray *songs);
 static void test_assert_queue_add(int32 call, char *uri, int32 uri_len,
                                   int32 position);
-static void test_previous_resize(void *user);
-static void test_previous_refresh(void *user);
 
 bool
 __wrap_ncm_mpd_client_get_playlists(NcmMpdClient *client,
@@ -554,8 +550,6 @@ test_state_reset_events(void) {
     test_state.display_calls = 0;
     test_state.refresh_calls = 0;
     test_state.draw_calls = 0;
-    test_state.previous_resize_calls = 0;
-    test_state.previous_refresh_calls = 0;
     return;
 }
 
@@ -846,20 +840,6 @@ test_assert_queue_add(int32 call, char *uri, int32 uri_len,
 }
 
 static void
-test_previous_resize(void *user) {
-    (void)user;
-    test_state.previous_resize_calls += 1;
-    return;
-}
-
-static void
-test_previous_refresh(void *user) {
-    (void)user;
-    test_state.previous_refresh_calls += 1;
-    return;
-}
-
-static void
 test_selected_items_current_playlist_operations(void) {
     NativeSelectedItemsAdderScreen screen;
     NativeBrowserScreen browser;
@@ -1070,7 +1050,6 @@ static void
 test_selected_items_lifecycle_and_stored_operations(void) {
     NativeSelectedItemsAdderScreen screen;
     NativeBrowserScreen browser;
-    NativeBrowserBridge bridge = {0};
     NativePlaylistScreen playlist = {0};
     NcmMpdClient client = {0};
     NcmSongArray copied_songs;
@@ -1098,9 +1077,6 @@ test_selected_items_lifecycle_and_stored_operations(void) {
 
     native_browser_screen_init(&browser, 0, 100, 2, 30,
                                nc_color_default(), nc_border_none());
-    bridge.resize = test_previous_resize;
-    bridge.refresh = test_previous_refresh;
-    native_browser_screen_set_bridge(&browser, bridge);
     native_selected_items_adder_screen_init(&screen, 0, 0, 40, 10,
                                             nc_color_default(),
                                             nc_border_none());
@@ -1215,14 +1191,22 @@ test_selected_items_lifecycle_and_stored_operations(void) {
     assert(test_state.refreshed_menus[0] == menu);
     assert(test_state.refreshed_menus[1] == position_menu);
 
+    test_state_reset_events();
     ui_state_set_screen_size(80, 25);
     ui_state_set_main_geometry(1, 20);
     nc_screen_request_resize(native_browser_screen_base(&browser));
     nc_screen_request_resize(
         native_selected_items_adder_screen_base(&screen));
     nc_screen_resize(native_selected_items_adder_screen_base(&screen));
-    assert(test_state.previous_resize_calls == 1);
-    assert(test_state.previous_refresh_calls == 1);
+    assert(!nc_screen_has_to_be_resized(native_browser_screen_base(&browser)));
+    assert(nc_window_start_x(native_browser_screen_window(&browser)) == 0);
+    assert(nc_window_start_y(native_browser_screen_window(&browser)) == 1);
+    assert(nc_window_width(native_browser_screen_window(&browser)) == 80);
+    assert(nc_window_height(native_browser_screen_window(&browser)) == 20);
+    assert(test_state.refreshed_windows[0]
+           == native_browser_screen_window(&browser));
+    assert(test_state.refreshed_menus[0]
+           == native_browser_screen_menu(&browser));
     assert(screen.playlist_width == 48);
     assert(screen.playlist_height == 16);
     assert(screen.position_width == 35);
