@@ -249,10 +249,9 @@ void refreshPlaylistRelatedInactiveColumns(void *)
 		native_media_library_screen_refresh_inactive_songs(
 		    native_c_screen_media_library());
 
-	if (myPlaylistEditor != nullptr
-	    && isVisible(myPlaylistEditor)
-	    && !myPlaylistEditor->isActiveWindow(myPlaylistEditor->Content))
-		myPlaylistEditor->Content.refresh();
+	if (app_controller_is_screen_visible(
+	        native_c_screen_playlist_editor_native()))
+		nc_screen_refresh(native_c_screen_playlist_editor_native());
 }
 
 bool highlightPlaylistMpdPosition(int32 position)
@@ -2906,6 +2905,9 @@ void listsChangeFinisher()
 		    native_c_screen_media_library());
 		return;
 	}
+
+	if (native_c_screen_playlist_editor_is_current())
+		return;
 
 	if (screenLegacyCurrent() == myPlaylistEditor
 #	ifdef HAVE_TAGLIB_H

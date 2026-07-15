@@ -801,9 +801,6 @@ playlist_editor_active_window_callback(NcScreen *screen) {
     NativePlaylistEditorScreen *editor;
 
     editor = playlist_editor_from_screen(screen);
-    if (editor->bridge.active_window != NULL) {
-        return editor->bridge.active_window(editor->bridge.user);
-    }
     return native_playlist_editor_screen_active_window(editor);
 }
 
@@ -844,10 +841,6 @@ playlist_editor_scroll_callback(NcScreen *screen, enum NcScroll where) {
     NcMenu *menu;
 
     editor = playlist_editor_from_screen(screen);
-    if (editor->bridge.scroll != NULL) {
-        editor->bridge.scroll(editor->bridge.user, where);
-        return;
-    }
     menu = native_playlist_editor_screen_active_menu(editor);
     nc_menu_scroll_selectable(menu, editor->main_height, where);
     playlist_editor_finish_playlist_change(editor);
@@ -856,12 +849,7 @@ playlist_editor_scroll_callback(NcScreen *screen, enum NcScroll where) {
 
 static void
 playlist_editor_switch_to_callback(NcScreen *screen) {
-    NativePlaylistEditorScreen *editor;
-
-    editor = playlist_editor_from_screen(screen);
-    if (editor->bridge.switch_to != NULL) {
-        editor->bridge.switch_to(editor->bridge.user);
-    }
+    (void)screen;
     return;
 }
 
@@ -888,9 +876,6 @@ playlist_editor_timeout_callback(NcScreen *screen) {
     NativePlaylistEditorScreen *editor;
 
     editor = playlist_editor_from_screen(screen);
-    if (editor->bridge.window_timeout != NULL) {
-        return editor->bridge.window_timeout(editor->bridge.user);
-    }
     if ((editor->fetching_delay_ms >= 0)
         && nc_menu_empty(nc_song_menu_base(&editor->content))
         && (nc_menu_empty(nc_playlist_entry_menu_base(&editor->playlists))
@@ -930,10 +915,6 @@ playlist_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     int32 y;
 
     editor = playlist_editor_from_screen(screen);
-    if (editor->bridge.mouse_button_pressed != NULL) {
-        editor->bridge.mouse_button_pressed(editor->bridge.user, event);
-        return;
-    }
     window = &editor->playlists_window;
     x = event.x;
     y = event.y;
