@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
 #include "app_binding_migration.h"
@@ -276,7 +275,7 @@ test_key_lookup(void) {
     ncm_error_clear(&error);
     ncm_bindings_configuration_init(&bindings);
     REQUIRE(ncm_bindings_configuration_read(&bindings, template,
-                                            (int32)strlen(template),
+                                            (int32)(SIZEOF(template) - 1),
                                             &error));
     slice = ncm_bindings_configuration_get(
         &bindings, ncm_bindings_string_to_key(LIT_ARGS("ctrl-x")));
@@ -307,7 +306,7 @@ test_command_lookup(void) {
     ncm_error_clear(&error);
     ncm_bindings_configuration_init(&bindings);
     REQUIRE(ncm_bindings_configuration_read(&bindings, template,
-                                            (int32)strlen(template),
+                                            (int32)(SIZEOF(template) - 1),
                                             &error));
     command = ncm_bindings_configuration_find_command(
         &bindings, LIT_ARGS("save-it"));
@@ -341,7 +340,7 @@ test_binding_file_parsing(void) {
     ncm_error_clear(&error);
     ncm_bindings_configuration_init(&bindings);
     REQUIRE(ncm_bindings_configuration_read(&bindings, template,
-                                            (int32)strlen(template),
+                                            (int32)(SIZEOF(template) - 1),
                                             &error));
     slice = ncm_bindings_configuration_get(
         &bindings, ncm_bindings_string_to_key(LIT_ARGS("ctrl-y")));
@@ -412,7 +411,7 @@ test_runtime_action_execution(void) {
     ncm_error_clear(&error);
     ncm_bindings_configuration_init(&bindings);
     REQUIRE(ncm_bindings_configuration_read(&bindings, template,
-                                            (int32)strlen(template),
+                                            (int32)(SIZEOF(template) - 1),
                                             &error));
     slice = ncm_bindings_configuration_get(
         &bindings, ncm_bindings_string_to_key(LIT_ARGS("ctrl-z")));
@@ -488,17 +487,43 @@ test_app_binding_migration_c_safe_actions(void) {
     };
 #endif
     enum NcmActionType playlist_actions[] = {
+        NCM_ACTION_DUMMY,
         NCM_ACTION_UPDATE_ENVIRONMENT,
         NCM_ACTION_MOUSE_EVENT,
         NCM_ACTION_SCROLL_UP,
         NCM_ACTION_SCROLL_DOWN,
         NCM_ACTION_SCROLL_UP_ARTIST,
+        NCM_ACTION_SCROLL_UP_ALBUM,
         NCM_ACTION_SCROLL_DOWN_ARTIST,
+        NCM_ACTION_SCROLL_DOWN_ALBUM,
         NCM_ACTION_PAGE_UP,
         NCM_ACTION_PAGE_DOWN,
         NCM_ACTION_MOVE_HOME,
         NCM_ACTION_MOVE_END,
         NCM_ACTION_TOGGLE_INTERFACE,
+        NCM_ACTION_PREVIOUS_COLUMN,
+        NCM_ACTION_NEXT_COLUMN,
+        NCM_ACTION_MASTER_SCREEN,
+        NCM_ACTION_SLAVE_SCREEN,
+        NCM_ACTION_QUIT,
+        NCM_ACTION_VOLUME_UP,
+        NCM_ACTION_VOLUME_DOWN,
+        NCM_ACTION_REPLAY_SONG,
+        NCM_ACTION_TOGGLE_REPEAT,
+        NCM_ACTION_TOGGLE_RANDOM,
+        NCM_ACTION_TOGGLE_SINGLE,
+        NCM_ACTION_TOGGLE_CONSUME,
+        NCM_ACTION_TOGGLE_CROSSFADE,
+        NCM_ACTION_UPDATE_DATABASE,
+        NCM_ACTION_NEXT,
+        NCM_ACTION_PREVIOUS,
+        NCM_ACTION_PAUSE,
+        NCM_ACTION_PLAY,
+        NCM_ACTION_STOP,
+        NCM_ACTION_SEEK_FORWARD,
+        NCM_ACTION_SEEK_BACKWARD,
+        NCM_ACTION_EXECUTE_COMMAND,
+        NCM_ACTION_RUN_ACTION,
         NCM_ACTION_ADD_ITEM_TO_PLAYLIST,
         NCM_ACTION_PLAY_ITEM,
         NCM_ACTION_DELETE_PLAYLIST_ITEMS,
@@ -506,12 +531,24 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_MOVE_SELECTED_ITEMS_UP,
         NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN,
         NCM_ACTION_MOVE_SELECTED_ITEMS_TO,
+        NCM_ACTION_ADD,
+        NCM_ACTION_ADD_SELECTED_ITEMS,
         NCM_ACTION_TOGGLE_DISPLAY_MODE,
+        NCM_ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS,
+        NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,
+        NCM_ACTION_TOGGLE_LYRICS_FETCHER,
+        NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND,
         NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING,
         NCM_ACTION_JUMP_TO_PLAYING_SONG,
         NCM_ACTION_SHUFFLE,
         NCM_ACTION_SET_CROSSFADE,
         NCM_ACTION_SET_VOLUME,
+        NCM_ACTION_EDIT_SONG,
+        NCM_ACTION_JUMP_TO_BROWSER,
+        NCM_ACTION_JUMP_TO_MEDIA_LIBRARY,
+        NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR,
+        NCM_ACTION_TOGGLE_SCREEN_LOCK,
+        NCM_ACTION_JUMP_TO_TAG_EDITOR,
         NCM_ACTION_JUMP_TO_POSITION_IN_SONG,
         NCM_ACTION_SELECT_ITEM,
         NCM_ACTION_SELECT_RANGE,
@@ -521,11 +558,18 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_SELECT_FOUND_ITEMS,
         NCM_ACTION_CROP_MAIN_PLAYLIST,
         NCM_ACTION_CLEAR_MAIN_PLAYLIST,
+        NCM_ACTION_SORT_PLAYLIST,
         NCM_ACTION_REVERSE_PLAYLIST,
+        NCM_ACTION_APPLY_FILTER,
+        NCM_ACTION_FIND_ITEM_FORWARD,
+        NCM_ACTION_FIND_ITEM_BACKWARD,
         NCM_ACTION_NEXT_FOUND_ITEM,
         NCM_ACTION_PREVIOUS_FOUND_ITEM,
         NCM_ACTION_TOGGLE_FIND_MODE,
         NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE,
+        NCM_ACTION_TOGGLE_ADD_MODE,
+        NCM_ACTION_TOGGLE_MOUSE,
+        NCM_ACTION_TOGGLE_BITRATE_VISIBILITY,
         NCM_ACTION_ADD_RANDOM_ITEMS,
         NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND,
         NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY,
@@ -535,9 +579,22 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_NEXT_SCREEN,
         NCM_ACTION_PREVIOUS_SCREEN,
         NCM_ACTION_SHOW_HELP,
+        NCM_ACTION_SHOW_PLAYLIST,
         NCM_ACTION_SHOW_BROWSER,
+        NCM_ACTION_SHOW_SEARCH_ENGINE,
+        NCM_ACTION_SHOW_MEDIA_LIBRARY,
         NCM_ACTION_SHOW_PLAYLIST_EDITOR,
+        NCM_ACTION_SHOW_TAG_EDITOR,
+        NCM_ACTION_SHOW_OUTPUTS,
+        NCM_ACTION_SHOW_VISUALIZER,
         NCM_ACTION_SHOW_SERVER_INFO,
+    };
+    enum NcmActionType playlist_rejected_global_actions[] = {
+        NCM_ACTION_MOVE_SORT_ORDER_UP,
+        NCM_ACTION_MOVE_SORT_ORDER_DOWN,
+        NCM_ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE,
+        NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE,
+        NCM_ACTION_RESET_SEARCH_ENGINE,
     };
     enum NcmActionType search_actions[] = {
         NCM_ACTION_MOUSE_EVENT,
@@ -632,6 +689,15 @@ test_app_binding_migration_c_safe_actions(void) {
     for (int32 i = 0; i < NCM_ARRAY_LEN(playlist_actions); i += 1) {
         REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
             playlist_actions[i], NCM_SCREEN_TYPE_PLAYLIST));
+    }
+    for (int32 i = 0;
+         i < NCM_ARRAY_LEN(playlist_rejected_global_actions);
+         i += 1) {
+        REQUIRE(app_binding_migration_action_is_c_safe(
+            playlist_rejected_global_actions[i]));
+        REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
+            playlist_rejected_global_actions[i],
+            NCM_SCREEN_TYPE_PLAYLIST));
     }
     REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
         NCM_ACTION_LOAD, NCM_SCREEN_TYPE_PLAYLIST));
@@ -844,7 +910,7 @@ test_binding_action_formatting(void) {
     ncm_error_clear(&error);
     ncm_bindings_configuration_init(&bindings);
     REQUIRE(ncm_bindings_configuration_read(&bindings, template,
-                                            (int32)strlen(template),
+                                            (int32)(SIZEOF(template) - 1),
                                             &error));
     slice = ncm_bindings_configuration_get(
         &bindings, ncm_bindings_string_to_key(LIT_ARGS("ctrl-j")));
@@ -894,8 +960,8 @@ test_read_paths(void) {
 
     paths[0] = first;
     paths[1] = second;
-    path_lens[0] = (int32)strlen(first);
-    path_lens[1] = (int32)strlen(second);
+    path_lens[0] = (int32)(SIZEOF(first) - 1);
+    path_lens[1] = (int32)(SIZEOF(second) - 1);
 
     ncm_error_clear(&error);
     ncm_bindings_configuration_init(&bindings);
