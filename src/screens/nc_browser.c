@@ -58,6 +58,14 @@ static int64 native_browser_render_width(NativeBrowserScreen *screen,
 static bool native_browser_item_matches(NativeBrowserScreen *screen,
                                         NcmMpdItem *item,
                                         NcmRegex *regex, bool filter);
+static bool native_browser_directory_is_root(char *directory,
+                                             int32 directory_len);
+static bool native_browser_path_is_parent_directory(char *directory,
+                                                    int32 directory_len);
+static bool native_browser_set_normalized_directory(
+    NativeBrowserScreen *screen, char *directory, int32 directory_len);
+static bool native_browser_set_parent_of_directory(
+    NativeBrowserScreen *screen, char *directory, int32 directory_len);
 static bool native_browser_item_is_song(NcmMpdItem *item);
 static bool native_browser_copy_selected_song(NativeBrowserScreen *screen,
                                               NcmSongArray *songs,
@@ -577,7 +585,8 @@ native_browser_screen_in_root_directory(NativeBrowserScreen *screen) {
     if (screen == NULL) {
         return true;
     }
-    return screen->current_directory.len <= 0;
+    return native_browser_directory_is_root(screen->current_directory.data,
+                                            screen->current_directory.len);
 }
 
 void
@@ -661,28 +670,14 @@ native_browser_screen_activate_current(NativeBrowserScreen *screen) {
 
 bool
 native_browser_screen_go_to_parent(NativeBrowserScreen *screen) {
-    int32 parent_len;
-
     if (screen == NULL) {
         return false;
     }
-    if (screen->current_directory.len <= 0) {
+    if (native_browser_screen_in_root_directory(screen)) {
         return false;
     }
-    if (!ncm_buffer_set(&screen->last_highlighted_directory,
-                        screen->current_directory.data,
-                        screen->current_directory.len)) {
-        return false;
-    }
-    parent_len = ncm_string_parent_directory_len(
-        screen->current_directory.data, screen->current_directory.len);
-    screen->current_directory.len = parent_len;
-    if (screen->current_directory.data != NULL) {
-        screen->current_directory.data[parent_len] = '\0';
-    }
-    screen->title_scroll_beginning = 0;
-    screen->redraw_header = true;
-    return true;
+    return native_browser_set_parent_of_directory(
+        screen, screen->current_directory.data, screen->current_directory.len);
 }
 
 bool
@@ -906,7 +901,7 @@ native_browser_screen_item_is_parent(NcmMpdItem *item) {
     if (!ncm_directory_path_view(ncm_mpd_item_directory(item), &view)) {
         return false;
     }
-    return ncm_string_equal(view.data, view.len, (char *)"..", 2);
+    return native_browser_path_is_parent_directory(view.data, view.len);
 }
 
 void
@@ -1264,7 +1259,7 @@ native_browser_enter_item(NativeBrowserScreen *screen, NcmMpdItem *item) {
     }
 
     directory = ncm_mpd_item_directory(item);
-    return native_browser_screen_set_current_directory(
+    return native_browser_set_normalized_directory(
         screen, directory->path, directory->path_len);
 }
 
@@ -1315,6 +1310,80 @@ native_browser_item_matches(NativeBrowserScreen *screen, NcmMpdItem *item,
     }
     return ncm_regex_search(regex, screen->item_text_buffer.data,
                             screen->item_text_buffer.len);
+}
+
+static bool
+native_browser_directory_is_root(char *directory, int32 directory_len) {
+    if (directory_len <= 0) {
+        return true;
+    }
+    return ncm_string_equal(directory, directory_len, STRLIT_ARGS("/"));
+}
+
+static bool
+native_browser_path_is_parent_directory(char *directory,
+                                        int32 directory_len) {
+    if (directory_len <= 0) {
+        return false;
+    }
+    if (ncm_string_equal(directory, directory_len, STRLIT_ARGS(".."))) {
+        return true;
+    }
+    return ncm_string_ends_with(directory, directory_len, STRLIT_ARGS("/.."));
+}
+
+static bool
+native_browser_set_normalized_directory(NativeBrowserScreen *screen,
+                                        char *directory,
+                                        int32 directory_len) {
+    if (screen == NULL) {
+        return false;
+    }
+    if (directory_len < 0) {
+        return false;
+    }
+    if ((directory == NULL) && (directory_len > 0)) {
+        return false;
+    }
+    if (native_browser_path_is_parent_directory(directory, directory_len)) {
+        if (ncm_string_equal(directory, directory_len, STRLIT_ARGS(".."))) {
+            return native_browser_set_parent_of_directory(
+                screen, screen->current_directory.data,
+                screen->current_directory.len);
+        }
+        return native_browser_set_parent_of_directory(
+            screen, directory, directory_len - STRLIT_LEN("/.."));
+    }
+    return native_browser_screen_set_current_directory(
+        screen, directory, directory_len);
+}
+
+static bool
+native_browser_set_parent_of_directory(NativeBrowserScreen *screen,
+                                       char *directory,
+                                       int32 directory_len) {
+    int32 parent_len;
+
+    if (screen == NULL) {
+        return false;
+    }
+    if (directory_len < 0) {
+        return false;
+    }
+    if ((directory == NULL) && (directory_len > 0)) {
+        return false;
+    }
+    if (native_browser_directory_is_root(directory, directory_len)) {
+        return false;
+    }
+
+    parent_len = ncm_string_parent_directory_len(directory, directory_len);
+    if (parent_len <= 0) {
+        return native_browser_screen_set_current_directory(
+            screen, STRLIT_ARGS("/"));
+    }
+    return native_browser_screen_set_current_directory(
+        screen, directory, parent_len);
 }
 
 static bool
