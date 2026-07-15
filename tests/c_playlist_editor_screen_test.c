@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "app_controller.h"
+#include "c/ncm_format.h"
 #include "global.h"
 #include "settings.h"
 #include "c/ncm_string.h"
@@ -14,7 +15,10 @@
 #define COMMAND_TEXT_CAPACITY 128
 
 typedef struct PlaylistEditorWindowTrace {
+    char printed[1024];
+
     int64 last_separator_x;
+    int32 printed_len;
     int32 display_calls;
     int32 menu_refresh_calls;
     int32 separator_calls;
@@ -34,6 +38,13 @@ typedef struct PlaylistEditorMpdFixture {
     int32 load_calls;
     bool load_result;
 } PlaylistEditorMpdFixture;
+
+typedef struct PlaylistEditorFormatFixture {
+    NcmFormatAst old_song_list_format;
+    ColumnArray old_columns;
+    enum DisplayMode old_playlist_editor_display_mode;
+    bool old_titles_visibility;
+} PlaylistEditorFormatFixture;
 
 typedef struct PlaylistEditorBridgeFixture {
     NcWindow window;
@@ -59,6 +70,9 @@ static void reset_window_trace(void);
 static void init_mpd_fixture(void);
 static void destroy_mpd_fixture(void);
 static void reset_mpd_calls(void);
+static void begin_render_formats(PlaylistEditorFormatFixture *fixture,
+                                 Column *columns);
+static void end_render_formats(PlaylistEditorFormatFixture *fixture);
 static void init_screen(NativePlaylistEditorScreen *screen);
 static void append_playlist(NcmMpdPlaylistList *playlists,
                             char *path, int32 path_len);
@@ -94,6 +108,7 @@ static void test_filter_and_search_are_column_local(void);
 static void test_selected_song_contract(void);
 static void test_mpd_reload_and_current_items(void);
 static void test_playlist_commands(void);
+static void test_native_rendering_callbacks(void);
 static void test_bridge_delegation(void);
 static void test_native_refresh_and_mouse_fallback(void);
 void __wrap_nc_window_set_title(NcWindow *window, char *title,
@@ -115,6 +130,7 @@ main(void) {
     test_selected_song_contract();
     test_mpd_reload_and_current_items();
     test_playlist_commands();
+    test_native_rendering_callbacks();
     test_bridge_delegation();
     test_native_refresh_and_mouse_fallback();
 
@@ -125,6 +141,63 @@ main(void) {
 static void
 reset_window_trace(void) {
     window_trace = (PlaylistEditorWindowTrace){0};
+    return;
+}
+
+static void
+begin_render_formats(PlaylistEditorFormatFixture *fixture,
+                     Column *columns) {
+    NcmError error;
+
+    fixture->old_song_list_format = Config.song_list_format;
+    fixture->old_columns = Config.columns;
+    fixture->old_playlist_editor_display_mode =
+        Config.playlist_editor_display_mode;
+    fixture->old_titles_visibility = Config.titles_visibility;
+
+    ncm_format_ast_init(&Config.song_list_format);
+    ncm_error_clear(&error);
+    assert(ncm_format_parse(&Config.song_list_format,
+                            LIT_ARGS("classic:%F"),
+                            NCM_FORMAT_FLAG_ALL, &error));
+
+    columns[0] = (Column){0};
+    columns[0].name = (char *)"Artist";
+    columns[0].name_len = STRLIT_LEN("Artist");
+    columns[0].type = (char *)"a";
+    columns[0].type_len = STRLIT_LEN("a");
+    columns[0].width = 6;
+    columns[0].stretch_limit = -1;
+    columns[0].color = nc_color_default();
+    columns[0].fixed = true;
+
+    columns[1] = (Column){0};
+    columns[1].name = (char *)"Title";
+    columns[1].name_len = STRLIT_LEN("Title");
+    columns[1].type = (char *)"t";
+    columns[1].type_len = STRLIT_LEN("t");
+    columns[1].width = 6;
+    columns[1].stretch_limit = -1;
+    columns[1].color = nc_color_default();
+    columns[1].fixed = true;
+    columns[1].display_empty_tag = true;
+
+    Config.columns.items = columns;
+    Config.columns.len = 2;
+    Config.columns.cap = 2;
+    Config.playlist_editor_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+    Config.titles_visibility = true;
+    return;
+}
+
+static void
+end_render_formats(PlaylistEditorFormatFixture *fixture) {
+    ncm_format_ast_destroy(&Config.song_list_format);
+    Config.song_list_format = fixture->old_song_list_format;
+    Config.columns = fixture->old_columns;
+    Config.playlist_editor_display_mode =
+        fixture->old_playlist_editor_display_mode;
+    Config.titles_visibility = fixture->old_titles_visibility;
     return;
 }
 
@@ -1002,6 +1075,110 @@ test_playlist_commands(void) {
 }
 
 static void
+test_native_rendering_callbacks(void) {
+    NativePlaylistEditorScreen screen;
+    PlaylistEditorFormatFixture formats;
+    NcmMpdPlaylistList playlists;
+    NcmMpdSongList content;
+    NcmError error;
+    NcMenu *playlist_menu;
+    NcMenu *content_menu;
+    NcmPlaylist *playlist;
+    NcmSong *song;
+    Column columns[2];
+    char invalid_path[] = {
+        'b', 'a', 'd', (char)0xff, '-', 'p', 'a', 't', 'h',
+    };
+
+    begin_render_formats(&formats, columns);
+    init_screen(&screen);
+    ncm_mpd_playlist_list_init(&playlists);
+    ncm_mpd_song_list_init(&content);
+    append_playlist(&playlists,
+                    LIT_ARGS("Very long road trip playlist name"));
+    append_playlist(&playlists, invalid_path, NCM_ARRAY_LEN(invalid_path));
+    append_song(&content,
+                LIT_ARGS("very-long-empty-metadata-file-name.flac"),
+                NULL, 0);
+    append_song(&content, LIT_ARGS("tagged.flac"), LIT_ARGS("TitleLong"));
+    assert(native_playlist_editor_screen_load_playlists(&screen,
+                                                         &playlists));
+    assert(native_playlist_editor_screen_load_content(&screen, &content));
+    assert(ncm_string_equal(screen.content_title.data,
+                            screen.content_title.len,
+                            LIT_ARGS("Content (2 items)")));
+
+    playlist_menu = nc_playlist_entry_menu_base(&screen.playlists);
+    content_menu = nc_song_menu_base(&screen.content);
+    assert(playlist_menu->display_callbacks.draw != NULL);
+    assert(content_menu->display_callbacks.draw != NULL);
+
+    playlist = nc_playlist_entry_menu_item_at(&screen.playlists,
+                                              NC_MENU_ITEMS_ALL, 0);
+    reset_window_trace();
+    playlist_menu->display_callbacks.draw(
+        playlist_menu, &screen.playlists_window, playlist, 0,
+        playlist_menu->display_callbacks.user);
+    assert(ncm_string_equal(window_trace.printed,
+                            window_trace.printed_len,
+                            LIT_ARGS("Very long road trip playlist name")));
+
+    playlist = nc_playlist_entry_menu_item_at(&screen.playlists,
+                                              NC_MENU_ITEMS_ALL, 1);
+    reset_window_trace();
+    playlist_menu->display_callbacks.draw(
+        playlist_menu, &screen.playlists_window, playlist, 1,
+        playlist_menu->display_callbacks.user);
+    assert(ncm_string_equal(window_trace.printed,
+                            window_trace.printed_len,
+                            invalid_path,
+                            NCM_ARRAY_LEN(invalid_path)));
+
+    song = nc_song_menu_item_at(&screen.content, NC_MENU_ITEMS_ALL, 0);
+    reset_window_trace();
+    content_menu->display_callbacks.draw(
+        content_menu, &screen.content_window, song, 0,
+        content_menu->display_callbacks.user);
+    assert(ncm_string_equal(
+        window_trace.printed, window_trace.printed_len,
+        LIT_ARGS("classic:very-long-empty-metadata-file-name.flac")));
+
+    native_playlist_editor_screen_next_column(&screen);
+    ncm_error_clear(&error);
+    assert(native_playlist_editor_screen_apply_active_filter(
+        &screen, LIT_ARGS("tagged"),
+        NCM_REGEX_LITERAL_CASE_INSENSITIVE, &error));
+    assert(nc_menu_item_count(content_menu) == 1);
+    assert(ncm_string_equal(screen.content_title.data,
+                            screen.content_title.len,
+                            LIT_ARGS("Content (1 item)")));
+
+    song = nc_song_menu_item_at(&screen.content, NC_MENU_ITEMS_ALL, 1);
+    assert(ncm_song_add_tag(song, MPD_TAG_ARTIST,
+                            LIT_ARGS("ArtistLong")));
+    Config.playlist_editor_display_mode = NCM_DISPLAY_MODE_COLUMNS;
+    screen.content_window.width = 10;
+    reset_window_trace();
+    content_menu->display_callbacks.draw(
+        content_menu, &screen.content_window, song, 0,
+        content_menu->display_callbacks.user);
+    assert(ncm_string_equal(window_trace.printed,
+                            window_trace.printed_len,
+                            LIT_ARGS("Artis ")));
+
+    native_playlist_editor_screen_clear_active_filter(&screen);
+    assert(ncm_string_equal(screen.content_title.data,
+                            screen.content_title.len,
+                            LIT_ARGS("Content (2 items)")));
+
+    ncm_mpd_song_list_destroy(&content);
+    ncm_mpd_playlist_list_destroy(&playlists);
+    native_playlist_editor_screen_destroy(&screen);
+    end_render_formats(&formats);
+    return;
+}
+
+static void
 test_bridge_delegation(void) {
     NativePlaylistEditorScreen screen;
     PlaylistEditorBridgeFixture fixture = {0};
@@ -1036,8 +1213,8 @@ test_bridge_delegation(void) {
     event.bstate = BUTTON3_PRESSED;
     nc_screen_mouse_button_pressed(base, event);
 
-    assert(fixture.refresh_calls == 1);
-    assert(fixture.refresh_window_calls == 1);
+    assert(fixture.refresh_calls == 0);
+    assert(fixture.refresh_window_calls == 0);
     assert(fixture.scroll_calls == 1);
     assert(fixture.last_scroll == NC_SCROLL_PAGE_DOWN);
     assert(fixture.switch_calls == 1);
@@ -1210,6 +1387,39 @@ __wrap_nc_window_has_coords(NcWindow *window, int32 *x, int32 *y) {
     *y -= (int32)window->start_y;
     return (*x >= 0) && (*x < window->width)
         && (*y >= 0) && (*y < window->height);
+}
+
+int32
+__wrap_nc_window_get_x(NcWindow *window) {
+    (void)window;
+    return window_trace.printed_len;
+}
+
+void
+__wrap_nc_window_print_data(NcWindow *window, char *string,
+                            int32 string_len) {
+    (void)window;
+    if ((string == NULL) || (string_len <= 0)) {
+        return;
+    }
+    assert((window_trace.printed_len + string_len)
+           < (int32)sizeof(window_trace.printed));
+    ncm_memcpy(window_trace.printed + window_trace.printed_len,
+               string, string_len);
+    window_trace.printed_len += string_len;
+    window_trace.printed[window_trace.printed_len] = '\0';
+    return;
+}
+
+void
+__wrap_nc_window_print_char(NcWindow *window, char ch) {
+    (void)window;
+    assert(window_trace.printed_len
+           < (int32)sizeof(window_trace.printed) - 1);
+    window_trace.printed[window_trace.printed_len] = ch;
+    window_trace.printed_len += 1;
+    window_trace.printed[window_trace.printed_len] = '\0';
+    return;
 }
 
 void
