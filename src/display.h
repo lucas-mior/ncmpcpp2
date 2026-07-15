@@ -18,7 +18,6 @@
 #include "mutable_song.h"
 #include "screens/native_c_screens.h"
 #include "screens/song_info.h"
-#include "screens/tag_editor.h"
 #include "settings_legacy.h"
 #include "song_list.h"
 #include "utility/string.h"
@@ -348,30 +347,6 @@ inline void Songs(NC::Menu<MPD::Song> &menu, const SongList &list,
 	Detail::showSongs(menu, menu.drawn()->value(), list, ast);
 }
 
-#if HAVE_TAGLIB_H
-inline void Tags(NC::Menu<MPD::MutableSong> &menu)
-{
-	const MPD::MutableSong &s = menu.drawn()->value();
-	if (s.isModified())
-		menu << Config.modified_item_prefix;
-	size_t i = myTagEditor->TagTypes->choice();
-	if (i < 11)
-	{
-		ShowTag(menu, Charset::utf8ToLocale(s.getTags(ncm_song_info_tags[i].get)));
-	}
-	else if (i == 12)
-	{
-		if (s.getNewName().empty())
-			menu << Charset::utf8ToLocale(s.getName());
-		else
-			menu << Charset::utf8ToLocale(s.getName())
-			     << Config.color2
-			     << " -> "
-			     << NC::FormattedColor::End<>(Config.color2)
-			     << Charset::utf8ToLocale(s.getNewName());
-	}
-}
-#endif // HAVE_TAGLIB_H
 
 inline void Items(NC::Menu<MPD::Item> &menu, const SongList &list)
 {
