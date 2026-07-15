@@ -7,13 +7,14 @@
 #include "settings_legacy_runtime.h"
 
 typedef struct TestState {
-    enum NcmActionType can_run_types[8];
-    enum NcmActionType run_types[8];
+    enum NcmActionType can_run_types[64];
+    enum NcmActionType run_types[64];
     int32 can_run_count;
     int32 run_count;
     int32 legacy_binding_count;
     int32 legacy_action_count;
     int32 unrelated_legacy_count;
+    bool can_run_result;
 } TestState;
 
 static TestState test_state;
@@ -30,6 +31,8 @@ static void test_playlist_editor_selection_action_uses_c_runtime(void);
 static void test_playlist_editor_scroll_binding_uses_c_runtime(void);
 static void test_playlist_editor_search_movement_uses_c_runtime(void);
 static void test_playlist_editor_jump_to_playing_uses_c_runtime(void);
+static void test_playlist_editor_action_parity_uses_c_runtime(void);
+static void test_playlist_editor_disabled_action_does_not_fall_back(void);
 
 enum ScreenType
 __wrap_native_c_screens_current_type(void) {
@@ -41,7 +44,7 @@ __wrap_ncm_action_runtime_can_run(NcmActionRuntime *runtime,
                                   enum NcmActionType type) {
     (void)runtime;
     test_state.can_run_types[test_state.can_run_count++] = type;
-    return true;
+    return test_state.can_run_result;
 }
 
 bool
@@ -159,6 +162,7 @@ actions_legacy_runtime_exit_requested(void) {
 static void
 test_state_reset(void) {
     test_state = (TestState){0};
+    test_state.can_run_result = true;
     return;
 }
 
@@ -355,6 +359,66 @@ test_playlist_editor_jump_to_playing_uses_c_runtime(void) {
 }
 
 static void
+test_playlist_editor_action_parity_uses_c_runtime(void) {
+    enum NcmActionType actions[] = {
+        NCM_ACTION_ADD_ITEM_TO_PLAYLIST,
+        NCM_ACTION_PLAY_ITEM,
+        NCM_ACTION_DELETE_PLAYLIST_ITEMS,
+        NCM_ACTION_DELETE_STORED_PLAYLIST,
+        NCM_ACTION_MOVE_SELECTED_ITEMS_UP,
+        NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN,
+        NCM_ACTION_MOVE_SELECTED_ITEMS_TO,
+        NCM_ACTION_ADD,
+        NCM_ACTION_LOAD,
+        NCM_ACTION_TOGGLE_DISPLAY_MODE,
+        NCM_ACTION_EDIT_PLAYLIST_NAME,
+        NCM_ACTION_CROP_PLAYLIST,
+        NCM_ACTION_CLEAR_PLAYLIST,
+        NCM_ACTION_SHOW_PLAYLIST_EDITOR,
+        NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR,
+    };
+
+    test_state_reset();
+    for (int32 i = 0; i < NCM_ARRAY_LEN(actions); i += 1) {
+        assert(ncmpcpp_legacy_execute_action(actions[i]));
+        assert(test_state.run_count == i + 1);
+        assert(test_state.run_types[i] == actions[i]);
+    }
+    assert(test_state.can_run_count == 0);
+    assert(test_state.legacy_binding_count == 0);
+    assert(test_state.legacy_action_count == 0);
+    assert(test_state.unrelated_legacy_count == 0);
+    return;
+}
+
+static void
+test_playlist_editor_disabled_action_does_not_fall_back(void) {
+    NcmBindingAction actions[] = {
+        {
+            .kind = NCM_BINDING_ACTION_REQUIRE_RUNNABLE,
+            .type = NCM_ACTION_LOAD,
+        },
+        {
+            .kind = NCM_BINDING_ACTION_NORMAL,
+            .type = NCM_ACTION_LOAD,
+        },
+    };
+    NcmBinding binding;
+
+    test_state_reset();
+    test_state.can_run_result = false;
+    binding = test_binding(actions, NCM_ARRAY_LEN(actions));
+
+    assert(!ncmpcpp_legacy_execute_binding(&binding));
+    assert(test_state.can_run_count > 0);
+    assert(test_state.run_count == 0);
+    assert(test_state.legacy_binding_count == 0);
+    assert(test_state.legacy_action_count == 0);
+    assert(test_state.unrelated_legacy_count == 0);
+    return;
+}
+
+static void
 test_migrated_action_uses_c_runtime(void) {
     test_state_reset();
 
@@ -379,5 +443,7 @@ main(void) {
     test_playlist_editor_scroll_binding_uses_c_runtime();
     test_playlist_editor_search_movement_uses_c_runtime();
     test_playlist_editor_jump_to_playing_uses_c_runtime();
+    test_playlist_editor_action_parity_uses_c_runtime();
+    test_playlist_editor_disabled_action_does_not_fall_back();
     exit(EXIT_SUCCESS);
 }
