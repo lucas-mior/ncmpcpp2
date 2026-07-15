@@ -1,5 +1,7 @@
 #include "app_binding_migration.h"
 
+static bool app_binding_migration_browser_action_is_c_safe(
+    enum NcmActionType type);
 static bool app_binding_migration_playlist_action_is_c_safe(
     enum NcmActionType type);
 static bool app_binding_migration_playlist_editor_action_is_c_safe(
@@ -8,6 +10,27 @@ static bool app_binding_migration_tag_editor_action_is_c_safe(
     enum NcmActionType type);
 static bool app_binding_migration_screen_uses_specific_actions(
     enum ScreenType screen_type);
+
+
+static bool
+app_binding_migration_browser_action_is_c_safe(
+    enum NcmActionType type) {
+    switch (type) {
+    case NCM_ACTION_SHOW_BROWSER:
+    case NCM_ACTION_ENTER_DIRECTORY:
+    case NCM_ACTION_JUMP_TO_PARENT_DIRECTORY:
+    case NCM_ACTION_TOGGLE_BROWSER_SORT_MODE:
+    case NCM_ACTION_CHANGE_BROWSE_MODE:
+    case NCM_ACTION_DELETE_BROWSER_ITEMS:
+    case NCM_ACTION_EDIT_DIRECTORY_NAME:
+    case NCM_ACTION_EDIT_PLAYLIST_NAME:
+    case NCM_ACTION_JUMP_TO_BROWSER:
+    case NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR:
+        return true;
+    default:
+        return false;
+    }
+}
 
 static bool
 app_binding_migration_playlist_action_is_c_safe(
@@ -403,14 +426,9 @@ app_binding_migration_screen_is_c_only(enum ScreenType type) {
 bool
 app_binding_migration_action_is_c_safe_for_screen(
     enum NcmActionType type, enum ScreenType screen_type) {
-    if (screen_type == NCM_SCREEN_TYPE_BROWSER) {
-        switch (type) {
-        case NCM_ACTION_ENTER_DIRECTORY:
-        case NCM_ACTION_JUMP_TO_PARENT_DIRECTORY:
-            return true;
-        default:
-            break;
-        }
+    if (screen_type == NCM_SCREEN_TYPE_BROWSER
+        && app_binding_migration_browser_action_is_c_safe(type)) {
+        return true;
     }
     if (screen_type == NCM_SCREEN_TYPE_PLAYLIST) {
         return app_binding_migration_playlist_action_is_c_safe(type);

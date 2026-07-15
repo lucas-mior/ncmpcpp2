@@ -33,7 +33,7 @@ static void assert_legacy_action(enum NcmActionType type);
 static void test_browser_navigation_binding_uses_c_runtime(void);
 static void test_browser_navigation_actions_use_c_runtime(void);
 static void test_browser_migration_action_table_matches_dispatch(void);
-static void test_browser_mixed_migration_binding_uses_legacy_runtime(void);
+static void test_browser_mixed_migration_binding_uses_c_runtime(void);
 
 enum ScreenType
 __wrap_native_c_screens_current_type(void) {
@@ -261,7 +261,7 @@ test_browser_migration_action_table_matches_dispatch(void) {
     static BrowserActionExpectation actions[] = {
         {
             .type = NCM_ACTION_SHOW_BROWSER,
-            .migrated = false,
+            .migrated = true,
         },
         {
             .type = NCM_ACTION_ENTER_DIRECTORY,
@@ -273,23 +273,31 @@ test_browser_migration_action_table_matches_dispatch(void) {
         },
         {
             .type = NCM_ACTION_TOGGLE_BROWSER_SORT_MODE,
-            .migrated = false,
+            .migrated = true,
         },
         {
             .type = NCM_ACTION_CHANGE_BROWSE_MODE,
-            .migrated = false,
+            .migrated = true,
         },
         {
             .type = NCM_ACTION_DELETE_BROWSER_ITEMS,
-            .migrated = false,
+            .migrated = true,
+        },
+        {
+            .type = NCM_ACTION_EDIT_DIRECTORY_NAME,
+            .migrated = true,
+        },
+        {
+            .type = NCM_ACTION_EDIT_PLAYLIST_NAME,
+            .migrated = true,
         },
         {
             .type = NCM_ACTION_JUMP_TO_BROWSER,
-            .migrated = false,
+            .migrated = true,
         },
         {
             .type = NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR,
-            .migrated = false,
+            .migrated = true,
         },
     };
 
@@ -304,7 +312,7 @@ test_browser_migration_action_table_matches_dispatch(void) {
 }
 
 static void
-test_browser_mixed_migration_binding_uses_legacy_runtime(void) {
+test_browser_mixed_migration_binding_uses_c_runtime(void) {
     NcmBindingAction actions[] = {
         {
             .kind = NCM_BINDING_ACTION_NORMAL,
@@ -321,11 +329,17 @@ test_browser_mixed_migration_binding_uses_legacy_runtime(void) {
     binding = test_binding(actions, NCM_ARRAY_LEN(actions));
 
     assert(ncmpcpp_legacy_execute_binding(&binding));
-    assert(test_state.can_run_count == 0);
-    assert(test_state.run_count == 0);
-    assert(test_state.legacy_binding_count == 1);
-    assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
+    assert(test_state.can_run_count == 4);
+    assert(test_state.can_run_types[0] == NCM_ACTION_ENTER_DIRECTORY);
+    assert(test_state.can_run_types[1]
+           == NCM_ACTION_TOGGLE_BROWSER_SORT_MODE);
+    assert(test_state.can_run_types[2] == NCM_ACTION_ENTER_DIRECTORY);
+    assert(test_state.can_run_types[3]
+           == NCM_ACTION_TOGGLE_BROWSER_SORT_MODE);
+    assert(test_state.run_count == 2);
+    assert(test_state.run_types[0] == NCM_ACTION_ENTER_DIRECTORY);
+    assert(test_state.run_types[1] == NCM_ACTION_TOGGLE_BROWSER_SORT_MODE);
+    assert_no_legacy_dispatch();
     return;
 }
 
@@ -334,6 +348,6 @@ main(void) {
     test_browser_navigation_binding_uses_c_runtime();
     test_browser_navigation_actions_use_c_runtime();
     test_browser_migration_action_table_matches_dispatch();
-    test_browser_mixed_migration_binding_uses_legacy_runtime();
+    test_browser_mixed_migration_binding_uses_c_runtime();
     exit(EXIT_SUCCESS);
 }
