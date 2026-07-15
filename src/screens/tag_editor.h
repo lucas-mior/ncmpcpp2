@@ -30,7 +30,7 @@
 #include "format.h"
 #include "actions.h"
 #include "global.h"
-#include "helpers/song_iterator_maker.h"
+#include "song_list.h"
 #include "helpers_legacy.h"
 #include "mpdpp.h"
 #include "screens/native_c_screens.h"
