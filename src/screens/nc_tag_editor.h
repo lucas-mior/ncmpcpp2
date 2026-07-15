@@ -101,6 +101,7 @@ typedef struct NativeTagEditorScreen {
     int64 parser_helper_start_x;
     int64 active_column;
     int64 last_directory_highlight;
+    int64 last_tag_type_highlight;
     int64 last_known_directory_count;
     int64 last_known_tag_count;
     int32 window_timeout_ms;
