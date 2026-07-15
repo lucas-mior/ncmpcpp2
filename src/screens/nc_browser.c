@@ -1088,9 +1088,17 @@ native_browser_title(NcScreen *screen) {
 static void
 native_browser_update(NcScreen *screen) {
     NativeBrowserScreen *browser;
+    NcmError error;
 
     browser = native_browser_from_screen(screen);
-    native_browser_screen_clear_update_request(browser);
+    if (native_browser_screen_update_requested(browser)) {
+        native_browser_screen_clear_update_request(browser);
+        if (!native_browser_screen_is_local(browser)) {
+            ncm_error_clear(&error);
+            (void)native_browser_screen_reload_from_mpd(
+                browser, &global_mpd, &error);
+        }
+    }
     if (browser->redraw_header) {
         native_browser_screen_draw_header(browser);
     }
