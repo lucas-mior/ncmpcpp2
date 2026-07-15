@@ -87,6 +87,23 @@ PLAYLIST_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=ncm_mpd_client_play_id
 $(BUILD_DIR)/tests/c_playlist_screen_test: \
 	LDFLAGS += $(PLAYLIST_SCREEN_TEST_WRAP_FLAGS)
+PLAYLIST_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=nc_window_init \
+	-Wl,--wrap=nc_window_destroy \
+	-Wl,--wrap=nc_window_set_title \
+	-Wl,--wrap=nc_window_move_to \
+	-Wl,--wrap=nc_window_resize \
+	-Wl,--wrap=nc_window_display \
+	-Wl,--wrap=nc_window_has_coords \
+	-Wl,--wrap=nc_menu_refresh \
+	-Wl,--wrap=ncm_mpd_client_get_playlists \
+	-Wl,--wrap=ncm_mpd_client_get_playlist_content \
+	-Wl,--wrap=ncm_mpd_client_save_playlist \
+	-Wl,--wrap=ncm_mpd_client_rename_playlist \
+	-Wl,--wrap=ncm_mpd_client_delete_playlist \
+	-Wl,--wrap=ncm_mpd_client_load_playlist
+$(BUILD_DIR)/tests/c_playlist_editor_screen_test: \
+	LDFLAGS += $(PLAYLIST_EDITOR_SCREEN_TEST_WRAP_FLAGS)
 PLAYLIST_ACTIONS_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=app_controller_current_screen \
 	-Wl,--wrap=native_c_screens_current_type \
@@ -142,6 +159,14 @@ PLAYLIST_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=actions_legacy_runtime_execute_action
 $(BUILD_DIR)/tests/c_playlist_binding_dispatch_test: \
 	LDFLAGS += $(PLAYLIST_BINDING_DISPATCH_TEST_WRAP_FLAGS)
+PLAYLIST_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=native_c_screens_current_type \
+	-Wl,--wrap=ncm_action_runtime_can_run \
+	-Wl,--wrap=ncm_action_runtime_run \
+	-Wl,--wrap=actions_legacy_runtime_execute_binding \
+	-Wl,--wrap=actions_legacy_runtime_execute_action
+$(BUILD_DIR)/tests/c_playlist_editor_binding_dispatch_test: \
+	LDFLAGS += $(PLAYLIST_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS)
 SEARCH_ENGINE_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_window_init \
 	-Wl,--wrap=nc_window_destroy \
