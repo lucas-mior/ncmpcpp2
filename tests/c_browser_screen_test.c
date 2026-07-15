@@ -1,5 +1,7 @@
 #include <assert.h>
+#include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_format.h"
@@ -14,6 +16,7 @@
 
 static void test_browser_path_navigation(void);
 static void test_browser_parent_directory_compat(void);
+static void test_browser_mpd_reload(void);
 static void test_browser_selected_songs(void);
 static void test_browser_filter_and_search(void);
 static void test_browser_local_mode(void);
@@ -55,12 +58,38 @@ static void test_bridge_update(void *user);
 static void test_bridge_request_update(void *user);
 static void test_bridge_mouse(void *user, MEVENT event);
 
+
+typedef enum BrowserMpdTraceMode {
+    BROWSER_MPD_TRACE_ROOT,
+    BROWSER_MPD_TRACE_ARTIST,
+    BROWSER_MPD_TRACE_GONE,
+} BrowserMpdTraceMode;
+
+typedef struct BrowserMpdTrace {
+    BrowserMpdTraceMode mode;
+    char paths[8][64];
+    int32 path_lens[8];
+    int32 calls;
+} BrowserMpdTrace;
+
+static void browser_mpd_trace_reset(BrowserMpdTraceMode mode);
+static void browser_mpd_trace_record_path(char *path);
+static void browser_mpd_trace_add_directory(NcmMpdItemArray *items,
+                                            char *path, int32 path_len);
+static void browser_mpd_trace_add_song(NcmMpdItemArray *items, char *path,
+                                       int32 path_len);
+bool __wrap_ncm_mpd_client_get_directory_entries(
+    NcmMpdClient *client, char *path, NcmMpdItemArray *items,
+    NcmError *error);
+
+static BrowserMpdTrace mpd_trace;
 static int32 bridge_callback_calls;
 
 int
 main(void) {
     test_browser_path_navigation();
     test_browser_parent_directory_compat();
+    test_browser_mpd_reload();
     test_browser_selected_songs();
     test_browser_filter_and_search();
     test_browser_local_mode();
@@ -157,6 +186,81 @@ test_browser_parent_directory_compat(void) {
     ncm_directory_destroy(&directory);
     ncm_mpd_item_destroy(&item);
     native_browser_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_browser_mpd_reload(void) {
+    NativeBrowserScreen screen;
+    BrowserFormatFixture fixture;
+    NcmMpdClient client = {0};
+    NcmStringView view;
+    NcmError error = {0};
+    NcMenu *menu;
+
+    browser_format_fixture_begin(&fixture);
+    native_browser_screen_init(&screen, 0, 80, 0, 24, nc_color_default(),
+                               nc_border_none());
+    menu = native_browser_screen_menu(&screen);
+
+    browser_mpd_trace_reset(BROWSER_MPD_TRACE_ROOT);
+    assert(native_browser_screen_reload_from_mpd(&screen, &client,
+                                                 &error));
+    assert(mpd_trace.calls == 1);
+    assert(ncm_string_equal(mpd_trace.paths[0], mpd_trace.path_lens[0],
+                            LIT_ARGS("/")));
+    view = native_browser_screen_current_directory(&screen);
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("/")));
+    assert(nc_menu_all_item_count(menu) == 1);
+    assert(nc_menu_item_count(menu) == 1);
+    assert(!native_browser_screen_item_is_parent(
+               nc_menu_active_item_at(menu, 0)));
+
+    browser_mpd_trace_reset(BROWSER_MPD_TRACE_ARTIST);
+    assert(native_browser_screen_set_current_directory(
+        &screen, LIT_ARGS("artist")));
+    assert(native_browser_screen_set_last_highlighted_directory(
+        &screen, LIT_ARGS("artist/album")));
+    assert(native_browser_screen_reload_from_mpd(&screen, &client,
+                                                 &error));
+    assert(nc_menu_all_item_count(menu) == 4);
+    assert(nc_menu_item_count(menu) == 4);
+    assert(native_browser_screen_item_is_parent(
+               nc_menu_active_item_at(menu, 0)));
+    assert(ncm_directory_path_view(ncm_mpd_item_directory(
+               nc_menu_active_item_at(menu, 0)), &view));
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist/..")));
+    assert(nc_menu_highlight(menu) == 1);
+
+    browser_mpd_trace_reset(BROWSER_MPD_TRACE_ARTIST);
+    assert(native_browser_screen_apply_filter(&screen, LIT_ARGS("keep"),
+                                              &error));
+    assert(native_browser_screen_reload_from_mpd(&screen, &client,
+                                                 &error));
+    assert(nc_menu_is_filtered(menu));
+    assert(nc_menu_all_item_count(menu) == 4);
+    assert(nc_menu_item_count(menu) == 2);
+    assert(native_browser_screen_item_is_parent(
+               nc_menu_active_item_at(menu, 0)));
+    native_browser_screen_clear_filter(&screen);
+
+    browser_mpd_trace_reset(BROWSER_MPD_TRACE_GONE);
+    assert(native_browser_screen_set_current_directory(
+        &screen, LIT_ARGS("gone/child")));
+    assert(native_browser_screen_reload_from_mpd(&screen, &client,
+                                                 &error));
+    assert(mpd_trace.calls == 2);
+    assert(ncm_string_equal(mpd_trace.paths[0], mpd_trace.path_lens[0],
+                            LIT_ARGS("gone/child")));
+    assert(ncm_string_equal(mpd_trace.paths[1], mpd_trace.path_lens[1],
+                            LIT_ARGS("gone")));
+    view = native_browser_screen_current_directory(&screen);
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("gone")));
+    assert(nc_menu_all_item_count(menu) == 2);
+    assert(nc_menu_highlight(menu) == 1);
+
+    native_browser_screen_destroy(&screen);
+    browser_format_fixture_end(&fixture);
     return;
 }
 
@@ -712,6 +816,94 @@ test_browser_column_title(void) {
     Config.browser_display_mode = old_mode;
     Config.titles_visibility = old_titles_visibility;
     return;
+}
+
+static void
+browser_mpd_trace_reset(BrowserMpdTraceMode mode) {
+    mpd_trace = (BrowserMpdTrace){0};
+    mpd_trace.mode = mode;
+    return;
+}
+
+static void
+browser_mpd_trace_record_path(char *path) {
+    int32 len;
+
+    assert(mpd_trace.calls < (int32)NCM_ARRAY_LEN(mpd_trace.paths));
+    len = 0;
+    if (path != NULL) {
+        len = (int32)strlen(path);
+        assert(len < (int32)SIZEOF(mpd_trace.paths[0]));
+        ncm_memcpy(mpd_trace.paths[mpd_trace.calls], path, len);
+    }
+    mpd_trace.paths[mpd_trace.calls][len] = '\0';
+    mpd_trace.path_lens[mpd_trace.calls] = len;
+    mpd_trace.calls += 1;
+    return;
+}
+
+static void
+browser_mpd_trace_add_directory(NcmMpdItemArray *items,
+                                char *path, int32 path_len) {
+    NcmDirectory directory;
+    NcmMpdItem item;
+
+    ncm_directory_init(&directory);
+    ncm_mpd_item_init(&item);
+    assert(ncm_directory_set(&directory, path, path_len, 0));
+    assert(ncm_mpd_item_set_directory(&item, &directory));
+    assert(ncm_mpd_item_array_append_copy(items, &item));
+    ncm_mpd_item_destroy(&item);
+    ncm_directory_destroy(&directory);
+    return;
+}
+
+static void
+browser_mpd_trace_add_song(NcmMpdItemArray *items, char *path,
+                           int32 path_len) {
+    NcmSong song;
+    NcmMpdItem item;
+
+    ncm_song_init(&song);
+    ncm_mpd_item_init(&item);
+    assert(ncm_song_set_uri(&song, path, path_len));
+    assert(ncm_mpd_item_set_song(&item, &song));
+    assert(ncm_mpd_item_array_append_copy(items, &item));
+    ncm_mpd_item_destroy(&item);
+    ncm_song_destroy(&song);
+    return;
+}
+
+bool
+__wrap_ncm_mpd_client_get_directory_entries(
+    NcmMpdClient *client, char *path, NcmMpdItemArray *items,
+    NcmError *error) {
+    int32 path_len;
+
+    browser_mpd_trace_record_path(path);
+    path_len = 0;
+    if (path != NULL) {
+        path_len = (int32)strlen(path);
+    }
+    if ((mpd_trace.mode == BROWSER_MPD_TRACE_GONE)
+        && (mpd_trace.calls == 1)) {
+        client->connection.server_error_code = MPD_SERVER_ERROR_NO_EXIST;
+        ncm_error_set(error, EIO, STRLIT_ARGS("directory missing"));
+        return false;
+    }
+
+    client->connection.server_error_code = (enum mpd_server_error)0;
+    ncm_error_clear(error);
+    if (ncm_string_equal(path, path_len, LIT_ARGS("/"))) {
+        browser_mpd_trace_add_directory(items, LIT_ARGS("artist"));
+    } else if (ncm_string_equal(path, path_len, LIT_ARGS("artist"))) {
+        browser_mpd_trace_add_directory(items, LIT_ARGS("artist/album"));
+        browser_mpd_trace_add_song(items, LIT_ARGS("artist/keep.flac"));
+        browser_mpd_trace_add_song(items, LIT_ARGS("artist/drop.flac"));
+    } else if (ncm_string_equal(path, path_len, LIT_ARGS("gone"))) {
+        browser_mpd_trace_add_directory(items, LIT_ARGS("gone/child"));
+    }
+    return true;
 }
 
 static void

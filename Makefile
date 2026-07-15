@@ -151,6 +151,10 @@ TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=ncm_statusbar_print_cstring
 $(BUILD_DIR)/tests/c_tag_editor_screen_test: \
 	LDFLAGS += $(TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS)
+C_BROWSER_SCREEN_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=ncm_mpd_client_get_directory_entries
+$(BUILD_DIR)/tests/c_browser_screen_test: \
+	LDFLAGS += $(C_BROWSER_SCREEN_TEST_WRAP_FLAGS)
 PLAYLIST_ACTIONS_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=app_controller_current_screen \
 	-Wl,--wrap=native_c_screens_current_type \
