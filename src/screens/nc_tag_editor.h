@@ -87,6 +87,17 @@ typedef struct NativeTagEditorScreen {
     int64 middle_width;
     int64 right_start_x;
     int64 right_width;
+    int64 parser_dialog_start_x;
+    int64 parser_dialog_start_y;
+    int64 parser_dialog_width;
+    int64 parser_dialog_height;
+    int64 parser_start_x;
+    int64 parser_start_y;
+    int64 parser_width;
+    int64 parser_width_one;
+    int64 parser_width_two;
+    int64 parser_height;
+    int64 parser_helper_start_x;
     int64 active_column;
     int64 last_directory_highlight;
     int64 last_known_directory_count;
