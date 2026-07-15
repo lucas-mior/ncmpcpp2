@@ -138,6 +138,7 @@ app_binding_migration_playlist_editor_action_is_c_safe(
     case NCM_ACTION_REMOVE_SELECTION:
     case NCM_ACTION_NEXT_FOUND_ITEM:
     case NCM_ACTION_PREVIOUS_FOUND_ITEM:
+    case NCM_ACTION_JUMP_TO_PLAYING_SONG:
         return true;
     default:
         break;
