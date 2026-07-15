@@ -4056,6 +4056,22 @@ action_runtime_jump_to_playing_song(void) {
         }
         return true;
     }
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
+        ncm_song_init(&song);
+        ncm_error_clear(&error);
+        success = ncm_mpd_client_get_current_song(&global_mpd,
+                                                  &song, &error);
+        if (success) {
+            success = native_playlist_editor_screen_locate_song(
+                native_c_screen_playlist_editor(), &global_mpd,
+                &song, &error);
+        }
+        ncm_song_destroy(&song);
+        if (!success && ncm_error_is_set(&error)) {
+            return action_runtime_mpd_error(&error);
+        }
+        return true;
+    }
     return false;
 }
 
