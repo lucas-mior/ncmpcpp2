@@ -222,6 +222,8 @@ void native_tag_editor_screen_clear_modifications(
     NativeTagEditorScreen *screen);
 bool native_tag_editor_screen_save_modified(NativeTagEditorScreen *screen,
                                             char *music_dir);
+bool native_tag_editor_screen_save_action_available(
+    NativeTagEditorScreen *screen);
 bool native_tag_editor_screen_apply_directory_filter(
     NativeTagEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, NcmError *error);

@@ -52,9 +52,11 @@ typedef struct TagEditorHookTrace {
     char prompt_initial[64];
     char prompt_response[128];
     char status_message[128];
+    char status_messages[8][128];
     char update_directory[128];
     char confirm_message[128];
 
+    int32 status_messages_len[8];
     int32 prompt_label_len;
     int32 prompt_initial_len;
     int32 prompt_response_len;
@@ -70,13 +72,27 @@ typedef struct TagEditorHookTrace {
     bool confirm_result;
 } TagEditorHookTrace;
 
+typedef struct TagEditorSaveTrace {
+    char names[8][128];
+    char music_dir[128];
+
+    int32 names_len[8];
+    int32 music_dir_len;
+    int32 calls;
+    int32 fail_on_call;
+    int32 error;
+} TagEditorSaveTrace;
+
 static TagEditorWindowTrace window_trace;
 static TagEditorHookTrace hook_trace;
 static TagEditorMpdTrace mpd_trace;
+static TagEditorSaveTrace save_trace;
 
 void __wrap_nc_window_print_char(NcWindow *window, char ch);
+bool __wrap_ncm_mutable_song_write(NcmMutableSong *song, char *music_dir);
 
 static void reset_window_trace(void);
+static void reset_save_trace(void);
 static void reset_hook_trace(void);
 static void reset_mpd_trace(void);
 static void destroy_mpd_trace(void);
@@ -89,6 +105,15 @@ static void append_song_with_title(NativeTagEditorScreen *screen, char *uri,
                                    int32 uri_len, char *artist,
                                    int32 artist_len, char *title,
                                    int32 title_len);
+static void append_song_with_directory(
+    NativeTagEditorScreen *screen, char *uri, int32 uri_len,
+    char *directory, int32 directory_len, char *artist, int32 artist_len);
+static NcmMutableSong *mutable_song_at(NativeTagEditorScreen *screen,
+                                       int64 pos);
+static void modify_song_artist(NativeTagEditorScreen *screen, int64 pos,
+                               char *artist, int32 artist_len);
+static void assert_status_message(int32 pos, char *expected,
+                                  int32 expected_len);
 static void append_directory(NcmDirectoryArray *directories, char *path,
                              int32 path_len);
 static void append_mpd_song(NcmMpdSongList *songs, char *uri,
@@ -169,6 +194,11 @@ static void test_tag_editor_selected_extended_numbering_uses_targets(void);
 static void test_tag_editor_capitalizes_utf8_words(void);
 static void test_tag_editor_lowercase_ascii_parity(void);
 static void test_tag_editor_reset_ignores_selection(void);
+static void test_tag_editor_save_success_orchestration(void);
+static void test_tag_editor_save_partial_failure(void);
+static void test_tag_editor_save_no_modifications(void);
+static void test_tag_editor_save_selected_subset(void);
+static void test_tag_editor_save_action_availability(void);
 static void test_tag_editor_generate_filename_honors_config(void);
 static void test_tag_editor_action_rows_ignore_title_visibility(void);
 static void test_tag_editor_parser_pattern_history_workflow(void);
@@ -229,6 +259,11 @@ main(void) {
     test_tag_editor_capitalizes_utf8_words();
     test_tag_editor_lowercase_ascii_parity();
     test_tag_editor_reset_ignores_selection();
+    test_tag_editor_save_success_orchestration();
+    test_tag_editor_save_partial_failure();
+    test_tag_editor_save_no_modifications();
+    test_tag_editor_save_selected_subset();
+    test_tag_editor_save_action_availability();
     test_tag_editor_generate_filename_honors_config();
     test_tag_editor_action_rows_ignore_title_visibility();
     test_tag_editor_parser_pattern_history_workflow();
@@ -242,6 +277,14 @@ main(void) {
 static void
 reset_window_trace(void) {
     window_trace = (TagEditorWindowTrace){0};
+    return;
+}
+
+static void
+reset_save_trace(void) {
+    save_trace = (TagEditorSaveTrace){0};
+    save_trace.fail_on_call = -1;
+    save_trace.error = EIO;
     return;
 }
 
@@ -279,6 +322,7 @@ reset_hook_trace(void) {
 static void
 init_screen(NativeTagEditorScreen *screen) {
     reset_window_trace();
+    reset_save_trace();
     native_tag_editor_screen_init(screen, 2, 100, 3, 20,
                                   nc_color_default(), nc_border_none());
     return;
@@ -320,6 +364,51 @@ append_song_with_title(NativeTagEditorScreen *screen, char *uri,
                &song, NCM_TAGS_FIELD_TITLE, 0, title, title_len));
     assert(native_tag_editor_screen_add_mutable_song(screen, &song));
     ncm_mutable_song_destroy(&song);
+    return;
+}
+
+static void
+append_song_with_directory(
+    NativeTagEditorScreen *screen, char *uri, int32 uri_len,
+    char *directory, int32 directory_len, char *artist, int32 artist_len) {
+    NcmMutableSong song;
+
+    ncm_mutable_song_init(&song);
+    assert(ncm_mutable_song_set_uri(&song, uri, uri_len));
+    assert(ncm_mutable_song_set_name(&song, uri, uri_len));
+    assert(ncm_mutable_song_set_directory(
+               &song, directory, directory_len));
+    assert(ncm_mutable_song_set_original_tag(
+               &song, NCM_TAGS_FIELD_ARTIST, 0, artist, artist_len));
+    assert(native_tag_editor_screen_add_mutable_song(screen, &song));
+    ncm_mutable_song_destroy(&song);
+    return;
+}
+
+static NcmMutableSong *
+mutable_song_at(NativeTagEditorScreen *screen, int64 pos) {
+    return nc_menu_active_item_at(nc_tag_row_menu_base(&screen->tags), pos);
+}
+
+static void
+modify_song_artist(NativeTagEditorScreen *screen, int64 pos,
+                   char *artist, int32 artist_len) {
+    NcmMutableSong *song;
+
+    song = mutable_song_at(screen, pos);
+    assert(song != NULL);
+    assert(ncm_mutable_song_set_tag(song, NCM_TAGS_FIELD_ARTIST, 0,
+                                    artist, artist_len));
+    return;
+}
+
+static void
+assert_status_message(int32 pos, char *expected, int32 expected_len) {
+    assert(pos >= 0);
+    assert(pos < NCM_ARRAY_LEN(hook_trace.status_messages));
+    assert(ncm_string_equal(hook_trace.status_messages[pos],
+                            hook_trace.status_messages_len[pos],
+                            expected, expected_len));
     return;
 }
 
@@ -520,6 +609,14 @@ tag_editor_test_status_hook(
     TagEditorHookTrace *trace;
 
     trace = user;
+    if (trace->status_message_calls
+        < NCM_ARRAY_LEN(trace->status_messages)) {
+        tag_editor_copy_trace_string(
+            trace->status_messages[trace->status_message_calls],
+            NCM_ARRAY_LEN(trace->status_messages[0]),
+            &trace->status_messages_len[trace->status_message_calls],
+            message, message_len);
+    }
     trace->status_message_calls += 1;
     tag_editor_copy_trace_string(
         trace->status_message, NCM_ARRAY_LEN(trace->status_message),
@@ -2503,6 +2600,189 @@ test_tag_editor_reset_ignores_selection(void) {
 }
 
 static void
+test_tag_editor_save_success_orchestration(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tags;
+
+    reset_hook_trace();
+    init_screen(&screen);
+    native_tag_editor_screen_set_hooks(&screen, tag_editor_test_hooks());
+    append_song_with_directory(&screen, STRLIT_ARGS("rock/one.flac"),
+                               STRLIT_ARGS("rock"), STRLIT_ARGS("One"));
+    append_song_with_directory(&screen, STRLIT_ARGS("rock/two.flac"),
+                               STRLIT_ARGS("rock"), STRLIT_ARGS("Two"));
+    modify_song_artist(&screen, 0, STRLIT_ARGS("Changed One"));
+    modify_song_artist(&screen, 1, STRLIT_ARGS("Changed Two"));
+    native_tag_editor_screen_next_column(&screen);
+    tags = nc_tag_row_menu_base(&screen.tags);
+    assert(nc_menu_goto_selectable(
+               nc_editor_string_menu_base(&screen.tag_types), 3));
+
+    assert(native_tag_editor_screen_save_modified(
+               &screen, (char *)"/music"));
+
+    assert(save_trace.calls == 2);
+    assert(ncm_string_equal(save_trace.music_dir, save_trace.music_dir_len,
+                            STRLIT_ARGS("/music")));
+    assert_status_message(0, STRLIT_ARGS("Writing changes..."));
+    assert_status_message(1, STRLIT_ARGS(
+                              "Writing tags in \"rock/one.flac\"..."));
+    assert_status_message(2, STRLIT_ARGS(
+                              "Writing tags in \"rock/two.flac\"..."));
+    assert_status_message(3, STRLIT_ARGS("Tags updated"));
+    assert(hook_trace.status_message_calls == 4);
+    assert(hook_trace.update_directory_calls == 1);
+    assert(ncm_string_equal(hook_trace.update_directory,
+                            hook_trace.update_directory_len,
+                            STRLIT_ARGS("rock")));
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES);
+    assert(nc_menu_highlight(nc_editor_string_menu_base(
+               &screen.tag_types)) == 0);
+    assert(!ncm_mutable_song_is_modified(mutable_song_at(&screen, 0)));
+    assert(!ncm_mutable_song_is_modified(mutable_song_at(&screen, 1)));
+    assert(nc_menu_item_count(tags) == 2);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_save_partial_failure(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tags;
+    char expected[256];
+    int32 expected_len;
+
+    reset_hook_trace();
+    init_screen(&screen);
+    native_tag_editor_screen_set_hooks(&screen, tag_editor_test_hooks());
+    append_song_with_directory(&screen, STRLIT_ARGS("rock/one.flac"),
+                               STRLIT_ARGS("rock"), STRLIT_ARGS("One"));
+    append_song_with_directory(&screen, STRLIT_ARGS("rock/two.flac"),
+                               STRLIT_ARGS("rock"), STRLIT_ARGS("Two"));
+    modify_song_artist(&screen, 0, STRLIT_ARGS("Changed One"));
+    modify_song_artist(&screen, 1, STRLIT_ARGS("Changed Two"));
+    native_tag_editor_screen_next_column(&screen);
+    save_trace.fail_on_call = 2;
+    save_trace.error = EACCES;
+    tags = nc_tag_row_menu_base(&screen.tags);
+
+    assert(!native_tag_editor_screen_save_modified(
+               &screen, (char *)"/music"));
+
+    assert(save_trace.calls == 2);
+    assert_status_message(0, STRLIT_ARGS("Writing changes..."));
+    assert_status_message(1, STRLIT_ARGS(
+                              "Writing tags in \"rock/one.flac\"..."));
+    assert_status_message(2, STRLIT_ARGS(
+                              "Writing tags in \"rock/two.flac\"..."));
+    expected_len = (int32)snprintf(
+        expected, (size_t)SIZEOF(expected),
+        "Error while writing tags to \"rock/two.flac\": %s",
+        strerror(EACCES));
+    assert(expected_len > 0);
+    assert_status_message(3, expected, expected_len);
+    assert(hook_trace.update_directory_calls == 0);
+    assert(nc_menu_item_count(tags) == 0);
+    assert(screen.tags_update_requested);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_save_no_modifications(void) {
+    NativeTagEditorScreen screen;
+
+    reset_hook_trace();
+    init_screen(&screen);
+    native_tag_editor_screen_set_hooks(&screen, tag_editor_test_hooks());
+    append_song_with_directory(&screen, STRLIT_ARGS("rock/one.flac"),
+                               STRLIT_ARGS("rock"), STRLIT_ARGS("One"));
+    native_tag_editor_screen_next_column(&screen);
+
+    assert(native_tag_editor_screen_save_modified(
+               &screen, (char *)"/music"));
+
+    assert(save_trace.calls == 0);
+    assert_status_message(0, STRLIT_ARGS("Writing changes..."));
+    assert_status_message(1, STRLIT_ARGS("Tags updated"));
+    assert(hook_trace.status_message_calls == 2);
+    assert(hook_trace.update_directory_calls == 1);
+    assert(ncm_string_equal(hook_trace.update_directory,
+                            hook_trace.update_directory_len,
+                            STRLIT_ARGS("rock")));
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_save_selected_subset(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tags;
+
+    reset_hook_trace();
+    init_screen(&screen);
+    native_tag_editor_screen_set_hooks(&screen, tag_editor_test_hooks());
+    append_song_with_directory(&screen, STRLIT_ARGS("rock/one.flac"),
+                               STRLIT_ARGS("rock"), STRLIT_ARGS("One"));
+    append_song_with_directory(&screen, STRLIT_ARGS("jazz/two.flac"),
+                               STRLIT_ARGS("jazz"), STRLIT_ARGS("Two"));
+    append_song_with_directory(&screen, STRLIT_ARGS("jazz/three.flac"),
+                               STRLIT_ARGS("jazz"), STRLIT_ARGS("Three"));
+    modify_song_artist(&screen, 0, STRLIT_ARGS("Changed One"));
+    modify_song_artist(&screen, 1, STRLIT_ARGS("Changed Two"));
+    modify_song_artist(&screen, 2, STRLIT_ARGS("Changed Three"));
+    tags = nc_tag_row_menu_base(&screen.tags);
+    assert(nc_menu_set_position_selected(tags, 1, true));
+    assert(nc_menu_set_position_selected(tags, 2, true));
+    native_tag_editor_screen_next_column(&screen);
+
+    assert(native_tag_editor_screen_save_modified(
+               &screen, (char *)"/music"));
+
+    assert(save_trace.calls == 2);
+    assert(ncm_string_equal(save_trace.names[0], save_trace.names_len[0],
+                            STRLIT_ARGS("jazz/two.flac")));
+    assert(ncm_string_equal(save_trace.names[1], save_trace.names_len[1],
+                            STRLIT_ARGS("jazz/three.flac")));
+    assert(hook_trace.update_directory_calls == 1);
+    assert(ncm_string_equal(hook_trace.update_directory,
+                            hook_trace.update_directory_len,
+                            STRLIT_ARGS("jazz")));
+    assert(ncm_mutable_song_is_modified(mutable_song_at(&screen, 0)));
+    assert(!ncm_mutable_song_is_modified(mutable_song_at(&screen, 1)));
+    assert(!ncm_mutable_song_is_modified(mutable_song_at(&screen, 2)));
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_save_action_availability(void) {
+    NativeTagEditorScreen screen;
+
+    init_screen(&screen);
+    native_tag_editor_screen_set_hooks(&screen, tag_editor_test_hooks());
+    assert(!native_tag_editor_screen_save_action_available(&screen));
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Artist"));
+    assert(!native_tag_editor_screen_save_action_available(&screen));
+    native_tag_editor_screen_next_column(&screen);
+    assert(native_tag_editor_screen_save_action_available(&screen));
+    native_tag_editor_screen_next_column(&screen);
+    assert(!native_tag_editor_screen_save_action_available(&screen));
+    native_tag_editor_screen_previous_column(&screen);
+    assert(native_tag_editor_screen_save_action_available(&screen));
+    native_tag_editor_screen_show_parser_dialog(&screen);
+    assert(!native_tag_editor_screen_save_action_available(&screen));
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
 test_tag_editor_generate_filename_honors_config(void) {
     NcmMutableSong song;
     NcmBuffer filename;
@@ -2920,6 +3200,29 @@ test_tag_editor_parser_rename_preview_and_reject_empty(void) {
 
     destroy_screen(&screen);
     return;
+}
+
+bool
+__wrap_ncm_mutable_song_write(NcmMutableSong *song, char *music_dir) {
+    assert(save_trace.calls < NCM_ARRAY_LEN(save_trace.names));
+    if (music_dir != NULL) {
+        tag_editor_copy_trace_string(
+            save_trace.music_dir, NCM_ARRAY_LEN(save_trace.music_dir),
+            &save_trace.music_dir_len, music_dir, (int32)strlen(music_dir));
+    }
+    if ((song != NULL) && (song->name != NULL)) {
+        tag_editor_copy_trace_string(
+            save_trace.names[save_trace.calls],
+            NCM_ARRAY_LEN(save_trace.names[0]),
+            &save_trace.names_len[save_trace.calls], song->name,
+            song->name_len);
+    }
+    save_trace.calls += 1;
+    if (save_trace.calls == save_trace.fail_on_call) {
+        errno = save_trace.error;
+        return false;
+    }
+    return true;
 }
 
 bool

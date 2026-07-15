@@ -4823,6 +4823,10 @@ static bool
 action_runtime_save_tag_changes(void) {
 #if defined(HAVE_TAGLIB_H)
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
+        if (!native_tag_editor_screen_save_action_available(
+                native_c_screen_tag_editor())) {
+            return false;
+        }
         return native_tag_editor_screen_save_modified(
             native_c_screen_tag_editor(), Config.mpd_music_dir);
     }
@@ -5346,9 +5350,12 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             && (ncm_status_state_current_song_position() >= 0);
     case NCM_ACTION_SAVE_TAG_CHANGES:
 #if defined(HAVE_TAGLIB_H)
-        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)
-            || action_runtime_current_screen_is(
-                   NCM_SCREEN_TYPE_TINY_TAG_EDITOR);
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
+            return native_tag_editor_screen_save_action_available(
+                native_c_screen_tag_editor());
+        }
+        return action_runtime_current_screen_is(
+            NCM_SCREEN_TYPE_TINY_TAG_EDITOR);
 #else
         return false;
 #endif
