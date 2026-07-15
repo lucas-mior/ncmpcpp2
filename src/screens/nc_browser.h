@@ -144,6 +144,12 @@ bool native_browser_screen_search(NativeBrowserScreen *screen,
                                   char *pattern, int32 pattern_len,
                                   bool forward, bool wrap,
                                   bool skip_current, NcmError *error);
+bool native_browser_screen_render_item(NativeBrowserScreen *screen,
+                                       NcBuffer *buffer,
+                                       NcmMpdItem *item,
+                                       int64 available_width,
+                                       bool selected,
+                                       bool highlighted);
 void native_browser_screen_request_update(NativeBrowserScreen *screen);
 bool native_browser_screen_item_is_parent(NcmMpdItem *item);
 void native_browser_screen_set_bridge(NativeBrowserScreen *screen,
