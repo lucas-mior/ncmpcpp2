@@ -438,17 +438,6 @@ inline Browser::Browser()
     {
         NativeBrowserBridge bridge = {};
 
-        bridge.active_window = nativeActiveWindowCallback;
-        bridge.refresh = nativeRefreshCallback;
-        bridge.refresh_window = nativeRefreshWindowCallback;
-        bridge.scroll = nativeScrollCallback;
-        bridge.switch_to = nativeSwitchToCallback;
-        bridge.resize = nativeResizeCallback;
-        bridge.title = nativeTitleCallback;
-        bridge.update = nativeUpdateCallback;
-        bridge.request_update = nativeRequestUpdateCallback;
-        bridge.mouse_button_pressed = nativeMouseButtonPressedCallback;
-        bridge.user = this;
         native_browser_screen_set_bridge(native_c_screen_browser(), bridge);
     }
     screen_compat::bind_legacy_owner(nativeScreen(), this);
