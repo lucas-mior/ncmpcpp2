@@ -162,6 +162,9 @@ static enum NativeTagEditorFocus tag_editor_current_helper_focus(
 static bool tag_editor_current_directory_path(NativeTagEditorScreen *screen,
                                               char **path,
                                               int32 *path_len);
+static bool tag_editor_directory_has_subdirectories(
+    NativeTagEditorScreen *screen, char *path, int32 path_len);
+static bool tag_editor_has_modified_songs(NativeTagEditorScreen *screen);
 static void tag_editor_preserve_current_directory(
     NativeTagEditorScreen *screen, NcmBuffer *path);
 static void tag_editor_restore_current_directory(
@@ -763,15 +766,66 @@ native_tag_editor_screen_enter_directory(NativeTagEditorScreen *screen) {
     if (!native_tag_editor_screen_current_directory_path(screen, &path)) {
         return false;
     }
-    if (!tag_editor_set_buffer(&screen->highlighted_dir,
-                               screen->current_dir.data,
-                               screen->current_dir.len)) {
+    if (!tag_editor_directory_has_subdirectories(screen, path.data,
+                                                path.len)) {
+        tag_editor_status_message(screen,
+                                  STRLIT_ARGS("No subdirectories found"));
         return false;
     }
+    ncm_buffer_clear(&screen->highlighted_dir);
     if (!native_tag_editor_screen_set_current_dir(screen, path.data,
                                                  path.len)) {
         return false;
     }
+    nc_menu_clear_items(nc_editor_pair_menu_base(&screen->directories));
+    native_tag_editor_screen_clear_stale_tags(screen);
+    screen->directories_update_requested = true;
+    screen->observed_dir_valid = false;
+    tag_editor_update_titles(screen, true);
+    return true;
+}
+
+bool
+native_tag_editor_screen_go_to_parent(NativeTagEditorScreen *screen) {
+    NcmBuffer parent;
+    int32 parent_len;
+    bool ok;
+
+    if (screen == NULL) {
+        return false;
+    }
+    if (screen->active_focus != NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES) {
+        return false;
+    }
+    if ((screen->current_dir.data == NULL)
+        || (screen->current_dir.len <= 0)
+        || ncm_string_equal(screen->current_dir.data,
+                            screen->current_dir.len, STRLIT_ARGS("/"))) {
+        return false;
+    }
+
+    ncm_buffer_init(&parent);
+    if (!tag_editor_set_buffer(&screen->highlighted_dir,
+                               screen->current_dir.data,
+                               screen->current_dir.len)) {
+        ncm_buffer_destroy(&parent);
+        return false;
+    }
+    parent_len = ncm_string_parent_directory_len(screen->current_dir.data,
+                                                screen->current_dir.len);
+    if (parent_len <= 0) {
+        ok = tag_editor_set_buffer(&parent, STRLIT_ARGS("/"));
+    } else {
+        ok = tag_editor_set_buffer(&parent, screen->current_dir.data,
+                                   parent_len);
+    }
+    if (!ok || !native_tag_editor_screen_set_current_dir(
+            screen, parent.data, parent.len)) {
+        ncm_buffer_destroy(&parent);
+        return false;
+    }
+    ncm_buffer_destroy(&parent);
+
     nc_menu_clear_items(nc_editor_pair_menu_base(&screen->directories));
     native_tag_editor_screen_clear_stale_tags(screen);
     screen->directories_update_requested = true;
@@ -1008,6 +1062,12 @@ native_tag_editor_screen_previous_column(NativeTagEditorScreen *screen) {
     if (screen->active_focus == NATIVE_TAG_EDITOR_FOCUS_TAGS) {
         tag_editor_set_focus(screen, NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES);
     } else if (screen->active_focus == NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES) {
+        if (tag_editor_has_modified_songs(screen)
+            && !tag_editor_confirm(
+                screen, STRLIT_ARGS("There are pending changes, "
+                                    "are you sure?"))) {
+            return;
+        }
         tag_editor_set_focus(screen, NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES);
     } else if (tag_editor_focus_is_parser_helper(screen->active_focus)) {
         tag_editor_set_focus(screen, NATIVE_TAG_EDITOR_FOCUS_PARSER_ACTIONS);
@@ -2194,29 +2254,6 @@ tag_editor_mouse_move_to_parser_focus(NativeTagEditorScreen *screen,
 
 static bool
 tag_editor_run_directory_current(NativeTagEditorScreen *screen) {
-    NcmDirectoryArray directories;
-    NcmError error;
-    NcmStringView path;
-    bool has_subdirectories;
-
-    if (screen == NULL) {
-        return false;
-    }
-    if (!native_tag_editor_screen_current_directory_path(screen, &path)) {
-        return false;
-    }
-
-    ncm_error_clear(&error);
-    ncm_directory_array_init(&directories);
-    has_subdirectories = ncm_mpd_client_get_directory_list(
-        &global_mpd, path.data, &directories, &error)
-        && (directories.len > 0);
-    ncm_directory_array_destroy(&directories);
-    if (!has_subdirectories) {
-        tag_editor_status_message(screen,
-                                  STRLIT_ARGS("No subdirectories found"));
-        return false;
-    }
     return native_tag_editor_screen_enter_directory(screen);
 }
 
@@ -2885,6 +2922,47 @@ tag_editor_current_directory_path(NativeTagEditorScreen *screen,
     return true;
 }
 
+static bool
+tag_editor_directory_has_subdirectories(
+    NativeTagEditorScreen *screen, char *path, int32 path_len) {
+    NcmDirectoryArray directories;
+    NcmError error;
+    bool result;
+
+    (void)screen;
+    if ((path == NULL) || (path_len <= 0)) {
+        return false;
+    }
+
+    ncm_error_clear(&error);
+    ncm_directory_array_init(&directories);
+    result = ncm_mpd_client_get_directory_list(
+        &global_mpd, path, &directories, &error)
+        && (directories.len > 0);
+    ncm_error_clear(&error);
+    ncm_directory_array_destroy(&directories);
+    return result;
+}
+
+static bool
+tag_editor_has_modified_songs(NativeTagEditorScreen *screen) {
+    NcMenu *menu;
+
+    if (screen == NULL) {
+        return false;
+    }
+    menu = nc_tag_row_menu_base(&screen->tags);
+    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        NcmMutableSong *song;
+
+        song = nc_menu_active_item_at(menu, i);
+        if ((song != NULL) && ncm_mutable_song_is_modified(song)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 static void
 tag_editor_preserve_current_directory(NativeTagEditorScreen *screen,
                                       NcmBuffer *path) {
@@ -3175,6 +3253,10 @@ tag_editor_reload_directories_from_mpd(NativeTagEditorScreen *screen,
     ncm_directory_array_init(&directories);
     ncm_buffer_init(&preserved);
     tag_editor_preserve_current_directory(screen, &preserved);
+    if ((preserved.len <= 0) && (screen->highlighted_dir.len > 0)) {
+        ncm_buffer_set(&preserved, screen->highlighted_dir.data,
+                       screen->highlighted_dir.len);
+    }
     dir = screen->current_dir.data;
     if (dir == NULL) {
         dir = (char *)"/";
@@ -3214,6 +3296,7 @@ tag_editor_reload_directories_from_mpd(NativeTagEditorScreen *screen,
             tag_editor_restore_current_directory(screen, &preserved);
         }
         tag_editor_observe_current_directory(screen);
+        ncm_buffer_clear(&screen->highlighted_dir);
         screen->directories_update_requested = false;
     }
 

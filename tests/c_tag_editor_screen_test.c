@@ -184,6 +184,8 @@ static void test_tag_editor_selected_songs_use_active_tags_column(void);
 static void test_tag_editor_selection_helpers(void);
 static void test_tag_editor_active_menu_selection_actions(void);
 static void test_tag_editor_enter_directory_invalidates_tags(void);
+static void test_tag_editor_go_to_parent_preserves_child_highlight(void);
+static void test_tag_editor_previous_column_pending_changes_confirm(void);
 static void test_tag_editor_mouse_directory_click_enters_and_clears(void);
 static void test_tag_editor_mouse_tag_type_and_tag_clicks(void);
 static void test_tag_editor_mouse_wheel_directory_change(void);
@@ -249,6 +251,8 @@ main(void) {
     test_tag_editor_selection_helpers();
     test_tag_editor_active_menu_selection_actions();
     test_tag_editor_enter_directory_invalidates_tags();
+    test_tag_editor_go_to_parent_preserves_child_highlight();
+    test_tag_editor_previous_column_pending_changes_confirm();
     test_tag_editor_mouse_directory_click_enters_and_clears();
     test_tag_editor_mouse_tag_type_and_tag_clicks();
     test_tag_editor_mouse_wheel_directory_change();
@@ -2206,6 +2210,29 @@ test_tag_editor_enter_directory_invalidates_tags(void) {
     NcmStringView view;
     NcMenu *tags;
 
+    reset_mpd_trace();
+    reset_hook_trace();
+    init_screen(&screen);
+    native_tag_editor_screen_set_hooks(&screen, tag_editor_test_hooks());
+    assert(native_tag_editor_screen_set_current_dir(
+               &screen, STRLIT_ARGS("/")));
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
+    tags = nc_tag_row_menu_base(&screen.tags);
+    assert(nc_menu_set_current_selected(tags, true));
+
+    assert(!native_tag_editor_screen_enter_directory(&screen));
+    assert(hook_trace.status_message_calls == 1);
+    assert(ncm_string_equal(hook_trace.status_message,
+                            hook_trace.status_message_len,
+                            STRLIT_ARGS("No subdirectories found")));
+    assert(native_tag_editor_screen_current_dir(&screen, &view));
+    assert(ncm_string_equal(view.data, view.len, STRLIT_ARGS("/")));
+    destroy_screen(&screen);
+
+    reset_mpd_trace();
+    append_directory(&mpd_trace.directories, STRLIT_ARGS("/Alpha/Child"));
     init_screen(&screen);
     assert(native_tag_editor_screen_set_current_dir(
                &screen, STRLIT_ARGS("/")));
@@ -2216,6 +2243,10 @@ test_tag_editor_enter_directory_invalidates_tags(void) {
     assert(nc_menu_set_current_selected(tags, true));
 
     assert(native_tag_editor_screen_enter_directory(&screen));
+    assert(mpd_trace.get_directory_list_calls == 1);
+    assert(ncm_string_equal(mpd_trace.directory_path,
+                            mpd_trace.directory_path_len,
+                            STRLIT_ARGS("/Alpha")));
     assert(native_tag_editor_screen_current_dir(&screen, &view));
     assert(ncm_string_equal(view.data, view.len, STRLIT_ARGS("/Alpha")));
     assert(nc_menu_empty(tags));
@@ -2227,11 +2258,84 @@ test_tag_editor_enter_directory_invalidates_tags(void) {
 }
 
 static void
+test_tag_editor_go_to_parent_preserves_child_highlight(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *directories;
+    NcMenuStringPair *pair;
+    NcmStringView view;
+
+    reset_mpd_trace();
+    append_directory(&mpd_trace.directories,
+                     STRLIT_ARGS("/Parent/Child"));
+    append_directory(&mpd_trace.directories,
+                     STRLIT_ARGS("/Parent/Other"));
+
+    init_screen(&screen);
+    assert(native_tag_editor_screen_set_current_dir(
+               &screen, STRLIT_ARGS("/Parent/Child")));
+    assert(native_tag_editor_screen_go_to_parent(&screen));
+    assert(native_tag_editor_screen_current_dir(&screen, &view));
+    assert(ncm_string_equal(view.data, view.len, STRLIT_ARGS("/Parent")));
+    assert(screen.directories_update_requested);
+
+    nc_screen_request_update(native_tag_editor_screen_base(&screen));
+    nc_screen_update(native_tag_editor_screen_base(&screen));
+    assert(mpd_trace.get_directory_list_calls == 1);
+    assert(ncm_string_equal(mpd_trace.directory_path,
+                            mpd_trace.directory_path_len,
+                            STRLIT_ARGS("/Parent")));
+
+    directories = nc_editor_pair_menu_base(&screen.directories);
+    pair = nc_menu_active_item_at(directories, nc_menu_highlight(directories));
+    assert_menu_string_pair(pair, STRLIT_ARGS("Child"),
+                            STRLIT_ARGS("/Parent/Child"));
+    assert(native_tag_editor_screen_observed_dir(&screen, &view));
+    assert(ncm_string_equal(view.data, view.len,
+                            STRLIT_ARGS("/Parent/Child")));
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_previous_column_pending_changes_confirm(void) {
+    NativeTagEditorScreen screen;
+
+    reset_hook_trace();
+    init_screen(&screen);
+    native_tag_editor_screen_set_hooks(&screen, tag_editor_test_hooks());
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Artist"));
+    native_tag_editor_screen_next_column(&screen);
+    modify_song_artist(&screen, 0, STRLIT_ARGS("Changed"));
+
+    hook_trace.confirm_result = false;
+    native_tag_editor_screen_previous_column(&screen);
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES);
+    assert(hook_trace.confirm_calls == 1);
+    assert(ncm_string_equal(hook_trace.confirm_message,
+                            hook_trace.confirm_message_len,
+                            STRLIT_ARGS("There are pending changes, "
+                                        "are you sure?")));
+
+    hook_trace.confirm_result = true;
+    native_tag_editor_screen_previous_column(&screen);
+    assert(hook_trace.confirm_calls == 2);
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
 test_tag_editor_mouse_directory_click_enters_and_clears(void) {
     NativeTagEditorScreen screen;
     NcmStringView current_dir;
     MEVENT event;
 
+    reset_mpd_trace();
+    append_directory(&mpd_trace.directories, STRLIT_ARGS("/Beta/Child"));
     init_screen(&screen);
     assert(native_tag_editor_screen_add_directory(
                &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
@@ -2381,6 +2485,7 @@ static void
 test_tag_editor_search_result_directory_change(void) {
     NativeTagEditorScreen screen;
     NcmError error;
+    NcmStringView current_dir;
     NcmStringView observed;
 
     init_screen(&screen);
@@ -2393,6 +2498,9 @@ test_tag_editor_search_result_directory_change(void) {
 
     assert(native_tag_editor_screen_search(&screen, STRLIT_ARGS("Beta"),
                                            true, true, true, &error));
+    assert(native_tag_editor_screen_current_dir(&screen, &current_dir));
+    assert(ncm_string_equal(current_dir.data, current_dir.len,
+                            STRLIT_ARGS("/")));
     assert(nc_menu_empty(nc_tag_row_menu_base(&screen.tags)));
     assert(native_tag_editor_screen_observed_dir(&screen, &observed));
     assert(ncm_string_equal(observed.data, observed.len,

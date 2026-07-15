@@ -191,6 +191,7 @@ bool native_tag_editor_screen_current_tag_type_editable(
 bool native_tag_editor_screen_current_tag_type_actionable(
     NativeTagEditorScreen *screen);
 bool native_tag_editor_screen_enter_directory(NativeTagEditorScreen *screen);
+bool native_tag_editor_screen_go_to_parent(NativeTagEditorScreen *screen);
 bool native_tag_editor_screen_add_directory(NativeTagEditorScreen *screen,
                                             char *label, int32 label_len,
                                             char *path, int32 path_len);
