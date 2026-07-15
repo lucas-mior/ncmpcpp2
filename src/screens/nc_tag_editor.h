@@ -78,6 +78,9 @@ typedef struct NativeTagEditorScreen {
     NcmBuffer parser_dialog_title;
     NcmBuffer parser_title;
     NcmBuffer parser_helper_title;
+    NcmBuffer parser_legend;
+    NcmBuffer parser_preview;
+    NcmBufferArray recent_patterns;
     NcmBuffer directory_filter_constraint;
     NcmBuffer tag_filter_constraint;
     NcmBuffer directory_search_constraint;
@@ -125,6 +128,7 @@ typedef struct NativeTagEditorScreen {
     bool directory_search_enabled;
     bool tag_search_enabled;
     bool parser_preview_enabled;
+    bool recent_patterns_loaded;
     bool displayed_dir_valid;
     bool observed_dir_valid;
     bool registered;
