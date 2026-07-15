@@ -25,6 +25,7 @@ static void test_browser_native_switch_requests_reload(void);
 static void test_browser_selected_songs(void);
 static void test_browser_filter_and_search(void);
 static void test_browser_local_mode(void);
+static void test_browser_change_browse_mode(void);
 static void test_browser_owned_state(void);
 static void test_browser_native_callbacks_ignore_bridge(void);
 static void test_browser_menu_callbacks(void);
@@ -122,6 +123,7 @@ main(void) {
     test_browser_selected_songs();
     test_browser_filter_and_search();
     test_browser_local_mode();
+    test_browser_change_browse_mode();
     test_browser_owned_state();
     test_browser_native_callbacks_ignore_bridge();
     test_browser_menu_callbacks();
@@ -497,6 +499,69 @@ test_browser_local_mode(void) {
     native_browser_screen_set_local(&screen, true);
     assert(native_browser_screen_is_local(&screen));
     native_browser_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_browser_change_browse_mode(void) {
+    NativeBrowserScreen screen;
+    NcmMpdClient client;
+    NcmBuffer old_home_buffer;
+    NcmStringView view;
+    NcmError error = {0};
+    char *old_home;
+    bool had_home;
+
+    ncm_mpd_client_init(&client);
+    native_browser_screen_init(&screen, 0, 80, 0, 24, nc_color_default(),
+                               nc_border_none());
+    native_browser_screen_clear_update_request(&screen);
+
+    ncm_error_clear(&error);
+    assert(!native_browser_screen_change_browse_mode(&screen, &client,
+                                                     &error));
+    assert(ncm_error_is_set(&error));
+    assert(!native_browser_screen_is_local(&screen));
+    assert(!native_browser_screen_update_requested(&screen));
+
+    ncm_error_clear(&error);
+    assert(ncm_mpd_client_set_hostname(&client, LIT_ARGS("/tmp/mpd.sock"),
+                                       &error));
+
+    ncm_buffer_init(&old_home_buffer);
+    old_home = getenv("HOME");
+    had_home = old_home != NULL;
+    if (had_home) {
+        assert(ncm_buffer_set(&old_home_buffer, old_home,
+                              (int32)strlen(old_home)));
+    }
+    assert(setenv("HOME", "/tmp/ncmpcpp-browser-home", 1) == 0);
+
+    assert(native_browser_screen_change_browse_mode(&screen, &client,
+                                                    &error));
+    assert(native_browser_screen_is_local(&screen));
+    assert(native_browser_screen_update_requested(&screen));
+    view = native_browser_screen_current_directory(&screen);
+    assert(ncm_string_equal(view.data, view.len,
+                            LIT_ARGS("/tmp/ncmpcpp-browser-home")));
+
+    native_browser_screen_clear_update_request(&screen);
+    assert(native_browser_screen_change_browse_mode(&screen, &client,
+                                                    &error));
+    assert(!native_browser_screen_is_local(&screen));
+    assert(native_browser_screen_update_requested(&screen));
+    view = native_browser_screen_current_directory(&screen);
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("/")));
+
+    if (had_home) {
+        assert(setenv("HOME", old_home_buffer.data, 1) == 0);
+    } else {
+        assert(unsetenv("HOME") == 0);
+    }
+
+    ncm_buffer_destroy(&old_home_buffer);
+    native_browser_screen_destroy(&screen);
+    ncm_mpd_client_destroy(&client);
     return;
 }
 

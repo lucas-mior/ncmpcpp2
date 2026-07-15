@@ -16,6 +16,7 @@
 #include "title.h"
 #include "ui_state.h"
 
+#include <errno.h>
 #include <limits.h>
 
 static NativeBrowserScreen *native_browser_from_screen(NcScreen *screen);
@@ -688,6 +689,56 @@ native_browser_screen_is_local(NativeBrowserScreen *screen) {
         return false;
     }
     return screen->local_browser;
+}
+
+bool
+native_browser_screen_change_browse_mode(
+    NativeBrowserScreen *screen, NcmMpdClient *client, NcmError *error) {
+    NcmBuffer directory;
+    char *hostname;
+    bool local_browser;
+    bool result;
+
+    if (screen == NULL || client == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing browser state"));
+        return false;
+    }
+
+    hostname = ncm_mpd_client_hostname(client);
+    if ((hostname == NULL) || (hostname[0] != '/')) {
+        ncm_error_set(
+            error, EINVAL,
+            STRLIT_ARGS(
+                "local browsing requires an MPD UNIX socket"));
+        return false;
+    }
+
+    ncm_buffer_init(&directory);
+    local_browser = !screen->local_browser;
+    if (local_browser) {
+        if (!ncm_buffer_set(&directory, STRLIT_ARGS("~"))) {
+            ncm_buffer_destroy(&directory);
+            return false;
+        }
+        if (!ncm_path_expand_home(&directory, error)) {
+            ncm_buffer_destroy(&directory);
+            return false;
+        }
+    } else if (!ncm_buffer_set(&directory, STRLIT_ARGS("/"))) {
+        ncm_buffer_destroy(&directory);
+        return false;
+    }
+
+    result = native_browser_screen_set_current_directory(
+        screen, directory.data, directory.len);
+    if (result) {
+        native_browser_screen_set_local(screen, local_browser);
+        native_browser_screen_clear(screen);
+        native_browser_screen_request_update(screen);
+    }
+
+    ncm_buffer_destroy(&directory);
+    return result;
 }
 
 NcmMpdItem *

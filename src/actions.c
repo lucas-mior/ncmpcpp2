@@ -1348,6 +1348,7 @@ static bool action_runtime_jump_to_media_library(void);
 static bool action_runtime_jump_to_tag_editor(void);
 static bool action_runtime_edit_directory_name(void);
 static bool action_runtime_toggle_display_mode(void);
+static bool action_runtime_change_browse_mode(void);
 static bool action_runtime_toggle_browser_sort_mode(void);
 static bool action_runtime_toggle_library_tag_type(void);
 static bool action_runtime_toggle_media_library_sort_mode(void);
@@ -4760,6 +4761,42 @@ action_runtime_toggle_display_mode(void) {
 }
 
 static bool
+action_runtime_change_browse_mode(void) {
+    NativeBrowserScreen *browser;
+    NcmError error;
+    char *message;
+
+    if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+        return false;
+    }
+
+    browser = native_c_screen_browser();
+    ncm_error_clear(&error);
+    if (!native_browser_screen_change_browse_mode(browser, &global_mpd,
+                                                  &error)) {
+        if (error.code == EINVAL) {
+            ncm_statusbar_print_cstring(
+                (int32)Config.message_delay_time,
+                (char *)"For browsing local filesystem connection to MPD "
+                "via UNIX Socket is required");
+        } else if (ncm_error_is_set(&error)) {
+            ncm_statusbar_print_cstring(
+                (int32)Config.message_delay_time, error.message);
+        }
+        return false;
+    }
+
+    if (native_browser_screen_is_local(browser)) {
+        message = (char *)"Browse mode: local filesystem";
+    } else {
+        message = (char *)"Browse mode: MPD database";
+    }
+    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                message);
+    return true;
+}
+
+static bool
 action_runtime_toggle_browser_sort_mode(void) {
     char *message;
 
@@ -5567,7 +5604,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_SHOW_BROWSER:
         return !action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER);
     case NCM_ACTION_CHANGE_BROWSE_MODE:
-        return false;
+        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER);
     case NCM_ACTION_RESET_SEARCH_ENGINE:
         return action_runtime_current_screen_is(
             NCM_SCREEN_TYPE_SEARCH_ENGINE);
@@ -5970,7 +6007,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_SHOW_BROWSER:
         return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_BROWSER);
     case NCM_ACTION_CHANGE_BROWSE_MODE:
-        return false;
+        return action_runtime_change_browse_mode();
     case NCM_ACTION_SHOW_SEARCH_ENGINE:
         return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_SEARCH_ENGINE);
     case NCM_ACTION_RESET_SEARCH_ENGINE:
