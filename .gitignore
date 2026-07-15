@@ -32,3 +32,4 @@ c_mutable_song_test
 test-driver
 *.la
 build/
+*.tar.gz

@@ -15,6 +15,7 @@ static void test_browser_filter_and_search(void);
 static void test_browser_local_mode(void);
 static void test_browser_owned_state(void);
 static void test_browser_native_callbacks_ignore_bridge(void);
+static void test_browser_menu_callbacks(void);
 static void test_browser_local_browsing_parity(void);
 static void test_browser_directory_expansion_parity(void);
 static void test_browser_playlist_expansion_parity(void);
@@ -44,6 +45,7 @@ main(void) {
     test_browser_local_mode();
     test_browser_owned_state();
     test_browser_native_callbacks_ignore_bridge();
+    test_browser_menu_callbacks();
     test_browser_local_browsing_parity();
     test_browser_directory_expansion_parity();
     test_browser_playlist_expansion_parity();
@@ -147,6 +149,9 @@ test_browser_filter_and_search(void) {
     assert(nc_menu_item_count(native_browser_screen_menu(&screen)) == 3);
     assert(native_browser_screen_search(&screen, LIT_ARGS("two"), true,
                                         true, false, &error));
+    assert(ncm_string_equal(screen.search_constraint.data,
+                            screen.search_constraint.len,
+                            LIT_ARGS("two")));
     assert(nc_menu_highlight(native_browser_screen_menu(&screen)) == 2);
 
     ncm_song_destroy(&song);
@@ -279,6 +284,76 @@ test_browser_native_callbacks_ignore_bridge(void) {
     assert(ncm_string_equal(title, 13, LIT_ARGS("Browse: music")));
     assert(bridge_callback_calls == 0);
 
+    native_browser_screen_destroy(&screen);
+    return;
+}
+
+
+static void
+test_browser_menu_callbacks(void) {
+    NativeBrowserScreen screen;
+    NcmMpdItem item;
+    NcmDirectory directory;
+    NcmSong song;
+    NcmStringView view;
+    NcMenu *menu;
+    MEVENT event = {0};
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24, nc_color_default(),
+                               nc_border_none());
+    ncm_mpd_item_init(&item);
+    ncm_directory_init(&directory);
+    ncm_song_init(&song);
+    menu = native_browser_screen_menu(&screen);
+
+    assert(menu->display_callbacks.draw != NULL);
+    assert(menu->display_callbacks.filter != NULL);
+    assert(menu->display_callbacks.user == &screen);
+    assert(menu->action_callbacks.activate != NULL);
+    assert(menu->action_callbacks.set_selected != NULL);
+    assert(menu->action_callbacks.user == &screen);
+
+    assert(ncm_directory_set(&directory, LIT_ARGS("artist"), 0));
+    assert(ncm_mpd_item_set_directory(&item, &directory));
+    assert(native_browser_screen_add_item_copy(&screen, &item));
+    assert(ncm_song_set_uri(&song, LIT_ARGS("song.flac")));
+    assert(ncm_mpd_item_set_song(&item, &song));
+    assert(native_browser_screen_add_item_copy(&screen, &item));
+
+    nc_menu_apply_filter(menu);
+    assert(nc_menu_item_count(menu) == 2);
+    nc_menu_show_all_items(menu);
+
+    native_browser_screen_clear_update_request(&screen);
+    assert(native_browser_screen_activate_current(&screen));
+    assert(native_browser_screen_update_requested(&screen));
+    view = native_browser_screen_current_directory(&screen);
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist")));
+
+    assert(native_browser_screen_set_current_directory(&screen,
+                                                       LIT_ARGS("")));
+    native_browser_screen_clear_update_request(&screen);
+    event.x = 0;
+    event.y = 0;
+    event.bstate = BUTTON1_PRESSED;
+    nc_screen_mouse_button_pressed(native_browser_screen_base(&screen),
+                                   event);
+    assert(native_browser_screen_update_requested(&screen));
+    view = native_browser_screen_current_directory(&screen);
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist")));
+
+    assert(native_browser_screen_set_current_directory(&screen,
+                                                       LIT_ARGS("")));
+    native_browser_screen_clear_update_request(&screen);
+    nc_menu_highlight_position(menu, 1, 24);
+    assert(native_browser_screen_activate_current(&screen));
+    assert(!native_browser_screen_update_requested(&screen));
+    view = native_browser_screen_current_directory(&screen);
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("")));
+
+    ncm_song_destroy(&song);
+    ncm_directory_destroy(&directory);
+    ncm_mpd_item_destroy(&item);
     native_browser_screen_destroy(&screen);
     return;
 }
