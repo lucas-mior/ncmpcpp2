@@ -123,7 +123,11 @@ static void test_native_resize_preserves_state(void);
 static void test_small_geometry_bounds(void);
 static void test_tag_editor_hooks_are_stored(void);
 static void test_tag_editor_native_callbacks_do_not_delegate(void);
-static void test_tag_editor_run_current_waits_for_native_state_machine(void);
+static void test_tag_editor_run_current_tag_type_field(void);
+static void test_tag_editor_run_current_tag_row_field_and_filename(void);
+static void test_tag_editor_run_current_number_and_transform_rows(void);
+static void test_tag_editor_run_current_parser_rows(void);
+static void test_tag_editor_run_current_directory_checks_subdirs(void);
 static void test_directory_filter_and_search_contract(void);
 static void test_tag_filter_search_and_selection_contract(void);
 static void test_parser_menu_contract(void);
@@ -174,7 +178,11 @@ main(void) {
     test_small_geometry_bounds();
     test_tag_editor_hooks_are_stored();
     test_tag_editor_native_callbacks_do_not_delegate();
-    test_tag_editor_run_current_waits_for_native_state_machine();
+    test_tag_editor_run_current_tag_type_field();
+    test_tag_editor_run_current_tag_row_field_and_filename();
+    test_tag_editor_run_current_number_and_transform_rows();
+    test_tag_editor_run_current_parser_rows();
+    test_tag_editor_run_current_directory_checks_subdirs();
     test_directory_filter_and_search_contract();
     test_tag_filter_search_and_selection_contract();
     test_parser_menu_contract();
@@ -881,28 +889,246 @@ test_tag_editor_native_callbacks_do_not_delegate(void) {
 }
 
 static void
-test_tag_editor_run_current_waits_for_native_state_machine(void) {
+test_tag_editor_run_current_tag_type_field(void) {
     NativeTagEditorScreen screen;
     NcScreen *base;
     NcMenu *tag_types;
+    NcMenu *tags;
+    NcmMutableSong *song;
+    NativeTagEditorHooks hooks;
 
     init_screen(&screen);
+    reset_hook_trace();
+    hooks = tag_editor_test_hooks();
+    native_tag_editor_screen_set_hooks(&screen, hooks);
     append_song_with_title(&screen, STRLIT_ARGS("one.flac"),
                            STRLIT_ARGS("Artist"), STRLIT_ARGS("Title"));
+    append_song_with_title(&screen, STRLIT_ARGS("two.flac"),
+                           STRLIT_ARGS("Second"), STRLIT_ARGS("Other"));
+
+    native_tag_editor_screen_next_column(&screen);
+    base = native_tag_editor_screen_base(&screen);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    tags = nc_tag_row_menu_base(&screen.tags);
+
+    assert(nc_menu_goto_selectable(tag_types, 0));
+    assert(nc_menu_set_position_selected(tags, 1, true));
+    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
+    assert(nc_screen_can_run_current(base));
+    assert(nc_screen_run_current(base));
+    assert(hook_trace.prompt_calls == 1);
+    assert(ncm_string_equal(hook_trace.prompt_label,
+                            hook_trace.prompt_label_len,
+                            STRLIT_ARGS("Title")));
+    assert(ncm_string_equal(hook_trace.prompt_initial,
+                            hook_trace.prompt_initial_len,
+                            STRLIT_ARGS("Title")));
+
+    song = nc_menu_active_item_at(tags, 0);
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TITLE, 0,
+                                  STRLIT_ARGS("Title"));
+    song = nc_menu_active_item_at(tags, 1);
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TITLE, 0,
+                                  STRLIT_ARGS("accepted value"));
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_run_current_tag_row_field_and_filename(void) {
+    NativeTagEditorScreen screen;
+    NcScreen *base;
+    NcMenu *tag_types;
+    NcMenu *tags;
+    NcmMutableSong *song;
+    NcmStringView new_name;
+    NativeTagEditorHooks hooks;
+
+    init_screen(&screen);
+    reset_hook_trace();
+    hooks = tag_editor_test_hooks();
+    native_tag_editor_screen_set_hooks(&screen, hooks);
+    append_song_with_title(&screen, STRLIT_ARGS("one.flac"),
+                           STRLIT_ARGS("Artist"), STRLIT_ARGS("Title"));
+    append_song_with_title(&screen, STRLIT_ARGS("two.mp3"),
+                           STRLIT_ARGS("Second"), STRLIT_ARGS("Other"));
+
+    native_tag_editor_screen_next_column(&screen);
+    native_tag_editor_screen_next_column(&screen);
+    base = native_tag_editor_screen_base(&screen);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    tags = nc_tag_row_menu_base(&screen.tags);
+
+    assert(nc_menu_goto_selectable(tag_types, 1));
+    assert(nc_menu_goto_selectable(tags, 0));
+    assert(nc_screen_can_run_current(base));
+    assert(nc_screen_run_current(base));
+    song = nc_menu_active_item_at(tags, 0);
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_ARTIST, 0,
+                                  STRLIT_ARGS("accepted value"));
+    assert(nc_menu_highlight(tags) == 1);
+
+    assert(nc_menu_goto_selectable(tag_types, 12));
+    assert(nc_screen_can_run_current(base));
+    assert(nc_screen_run_current(base));
+    song = nc_menu_active_item_at(tags, 1);
+    assert(ncm_mutable_song_get_new_name(song, &new_name));
+    assert(ncm_string_equal(new_name.data, new_name.len,
+                            STRLIT_ARGS("accepted value.mp3")));
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_run_current_number_and_transform_rows(void) {
+    NativeTagEditorScreen screen;
+    NcScreen *base;
+    NcMenu *tag_types;
+    NcMenu *tags;
+    NcmMutableSong *song;
+    NativeTagEditorHooks hooks;
+    bool old_extended;
+
+    old_extended = Config.tag_editor_extended_numeration;
+    Config.tag_editor_extended_numeration = true;
+
+    init_screen(&screen);
+    reset_hook_trace();
+    hooks = tag_editor_test_hooks();
+    native_tag_editor_screen_set_hooks(&screen, hooks);
+    append_song(&screen, STRLIT_ARGS("one.flac"),
+                STRLIT_ARGS("first artist"));
+    append_song(&screen, STRLIT_ARGS("two.flac"),
+                STRLIT_ARGS("second artist"));
+
+    native_tag_editor_screen_next_column(&screen);
+    base = native_tag_editor_screen_base(&screen);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    tags = nc_tag_row_menu_base(&screen.tags);
+
+    assert(nc_menu_goto_selectable(tag_types, 5));
+    assert(nc_screen_can_run_current(base));
+    assert(nc_screen_run_current(base));
+    assert(hook_trace.confirm_calls == 1);
+    assert(ncm_string_equal(hook_trace.confirm_message,
+                            hook_trace.confirm_message_len,
+                            STRLIT_ARGS("Number tracks?")));
+    song = nc_menu_active_item_at(tags, 0);
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TRACK, 0,
+                                  STRLIT_ARGS("1/2"));
+    song = nc_menu_active_item_at(tags, 1);
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TRACK, 0,
+                                  STRLIT_ARGS("2/2"));
+
+    assert(nc_menu_goto_selectable(tag_types, 16));
+    assert(nc_screen_run_current(base));
+    song = nc_menu_active_item_at(tags, 0);
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_ARTIST, 0,
+                                  STRLIT_ARGS("First Artist"));
+
+    assert(nc_menu_goto_selectable(tag_types, 17));
+    assert(nc_screen_run_current(base));
+    song = nc_menu_active_item_at(tags, 0);
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_ARTIST, 0,
+                                  STRLIT_ARGS("first artist"));
+
+    assert(nc_menu_goto_selectable(tag_types, 19));
+    assert(nc_screen_run_current(base));
+    song = nc_menu_active_item_at(tags, 0);
+    assert(!ncm_mutable_song_is_modified(song));
+
+    Config.tag_editor_extended_numeration = old_extended;
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_run_current_parser_rows(void) {
+    NativeTagEditorScreen screen;
+    NcScreen *base;
+    NcMenu *tag_types;
+    NcMenu *dialog;
+    NcMenu *actions;
+
+    init_screen(&screen);
+    append_song(&screen, STRLIT_ARGS("one.flac"),
+                STRLIT_ARGS("Artist"));
     native_tag_editor_screen_next_column(&screen);
 
     base = native_tag_editor_screen_base(&screen);
     tag_types = nc_editor_string_menu_base(&screen.tag_types);
+    assert(nc_menu_goto_selectable(tag_types, 12));
+    assert(nc_screen_can_run_current(base));
+    assert(nc_screen_run_current(base));
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_CHOICE);
 
-    assert(nc_menu_goto_selectable(tag_types, 0));
-    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
-    assert(!nc_screen_can_run_current(base));
-    assert(!nc_screen_run_current(base));
+    dialog = nc_editor_string_menu_base(&screen.parser_dialog);
+    assert(nc_menu_goto_selectable(dialog, 0));
+    assert(nc_screen_can_run_current(base));
+    assert(nc_screen_run_current(base));
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_ACTIONS);
+    assert(screen.parser_mode == NATIVE_TAG_EDITOR_PARSER_TAGS_FROM_FILENAME);
 
-    assert(nc_menu_goto_selectable(tag_types, 20));
-    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
-    assert(!nc_screen_can_run_current(base));
+    actions = nc_editor_string_menu_base(&screen.parser_actions);
+    assert(nc_menu_goto_selectable(actions, 1));
+    assert(nc_screen_can_run_current(base));
+    assert(nc_screen_run_current(base));
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW);
+
+    native_tag_editor_screen_previous_column(&screen);
+    assert(nc_menu_goto_selectable(actions, 2));
+    assert(nc_screen_run_current(base));
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_LEGEND);
+
+    native_tag_editor_screen_previous_column(&screen);
+    assert(nc_menu_goto_selectable(actions, 4));
+    assert(nc_screen_run_current(base));
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_run_current_directory_checks_subdirs(void) {
+    NativeTagEditorScreen screen;
+    NcScreen *base;
+    NcmStringView current_dir;
+    NativeTagEditorHooks hooks;
+
+    reset_mpd_trace();
+    init_screen(&screen);
+    reset_hook_trace();
+    hooks = tag_editor_test_hooks();
+    native_tag_editor_screen_set_hooks(&screen, hooks);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Empty"), STRLIT_ARGS("/Empty")));
+
+    base = native_tag_editor_screen_base(&screen);
+    assert(nc_screen_can_run_current(base));
     assert(!nc_screen_run_current(base));
+    assert(hook_trace.status_message_calls == 1);
+    assert(ncm_string_equal(hook_trace.status_message,
+                            hook_trace.status_message_len,
+                            STRLIT_ARGS("No subdirectories found")));
+    assert(native_tag_editor_screen_current_dir(&screen, &current_dir));
+    assert(ncm_string_equal(current_dir.data, current_dir.len,
+                            STRLIT_ARGS("/")));
+    destroy_screen(&screen);
+
+    reset_mpd_trace();
+    append_directory(&mpd_trace.directories, STRLIT_ARGS("/Empty/Child"));
+    init_screen(&screen);
+    assert(native_tag_editor_screen_add_directory(
+               &screen, STRLIT_ARGS("Empty"), STRLIT_ARGS("/Empty")));
+    base = native_tag_editor_screen_base(&screen);
+    assert(nc_screen_can_run_current(base));
+    assert(nc_screen_run_current(base));
+    assert(native_tag_editor_screen_current_dir(&screen, &current_dir));
+    assert(ncm_string_equal(current_dir.data, current_dir.len,
+                            STRLIT_ARGS("/Empty")));
 
     destroy_screen(&screen);
     return;
