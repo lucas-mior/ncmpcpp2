@@ -126,6 +126,7 @@ struct TagEditor: Screen<NC::Window *>, HasActions, HasColumns, HasSongs, Search
 	
 private:
     static NcWindow *nativeActiveWindowCallback(void *user);
+    static void nativeSyncCallback(void *user);
     static void nativeRefreshCallback(void *user);
     static void nativeRefreshWindowCallback(void *user);
     static void nativeScrollCallback(void *user, enum NcScroll where);
@@ -137,6 +138,7 @@ private:
     static void nativeUpdateCallback(void *user);
     static void nativeClearDirectoriesCallback(void *user);
     static void nativeMouseButtonPressedCallback(void *user, MEVENT event);
+    void syncNative();
 	void SetDimensions(size_t, size_t);
 	
 	std::vector<MPD::MutableSong *> EditedSongs;
@@ -313,6 +315,7 @@ inline TagEditor::TagEditor()
         NativeTagEditorBridge bridge = {};
 
         bridge.active_window = nativeActiveWindowCallback;
+        bridge.sync = nativeSyncCallback;
         bridge.refresh = nativeRefreshCallback;
         bridge.refresh_window = nativeRefreshWindowCallback;
         bridge.scroll = nativeScrollCallback;
@@ -405,6 +408,55 @@ inline void TagEditor::switchTo()
     app_controller_switch_to_screen(nativeScreen());
     drawHeader();
     refresh();
+}
+
+
+inline void TagEditor::syncNative()
+{
+    NativeTagEditorScreen *native = native_c_screen_tag_editor();
+    NcMenu *native_dirs = nc_editor_pair_menu_base(
+        native_tag_editor_screen_directories(native));
+    NcMenu *native_tags = nc_tag_row_menu_base(
+        native_tag_editor_screen_tags(native));
+    NcMenu *native_tag_types = nc_editor_string_menu_base(
+        native_tag_editor_screen_tag_types(native));
+
+    nc_menu_clear_items(native_dirs);
+    for (auto it = Dirs->begin(); it != Dirs->end(); ++it)
+    {
+        std::string &label = it->value().first;
+        std::string &path = it->value().second;
+        native_tag_editor_screen_add_directory(
+            native,
+            const_cast<char *>(label.c_str()),
+            static_cast<int32>(label.size()),
+            const_cast<char *>(path.c_str()),
+            static_cast<int32>(path.size()));
+    }
+    nc_menu_highlight_position(native_dirs, Dirs->choice(),
+                               native->main_height);
+
+    nc_menu_clear_items(native_tags);
+    for (auto it = Tags->begin(); it != Tags->end(); ++it)
+    {
+        int64 pos = nc_menu_all_item_count(native_tags);
+
+        native_tag_editor_screen_add_mutable_song(native,
+                                                  it->value().cMutableSong());
+        if (it->isSelected())
+            nc_menu_set_position_selected(native_tags, pos, true);
+    }
+    nc_menu_highlight_position(native_tags, Tags->choice(),
+                               native->main_height);
+
+    nc_menu_highlight_position(native_tag_types, TagTypes->choice(),
+                               native->main_height);
+    if (w == Dirs)
+        native->active_column = NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES;
+    else if (w == TagTypes)
+        native->active_column = NATIVE_TAG_EDITOR_COLUMN_TAG_TYPES;
+    else if (w == Tags)
+        native->active_column = NATIVE_TAG_EDITOR_COLUMN_TAGS;
 }
 
 inline void TagEditor::refresh()
@@ -1176,6 +1228,16 @@ inline NcWindow *TagEditor::nativeActiveWindowCallback(void *user)
     if (editor == nullptr || editor->w == nullptr)
         return nullptr;
     return editor->w->nativeWindow();
+}
+
+
+inline void TagEditor::nativeSyncCallback(void *user)
+{
+    TagEditor *editor = static_cast<TagEditor *>(user);
+
+    if (editor == nullptr)
+        return;
+    editor->syncNative();
 }
 
 inline void TagEditor::nativeRefreshCallback(void *user)
