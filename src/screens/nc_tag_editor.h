@@ -26,6 +26,15 @@ enum NativeTagEditorParserMode {
     NATIVE_TAG_EDITOR_PARSER_RENAME_FILES,
 };
 
+enum NativeTagEditorFocus {
+    NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES,
+    NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES,
+    NATIVE_TAG_EDITOR_FOCUS_TAGS,
+    NATIVE_TAG_EDITOR_FOCUS_PARSER_CHOICE,
+    NATIVE_TAG_EDITOR_FOCUS_PARSER_ACTIONS,
+    NATIVE_TAG_EDITOR_FOCUS_PARSER_LEGEND,
+    NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW,
+};
 
 enum NativeTagEditorPromptResult {
     NATIVE_TAG_EDITOR_PROMPT_ERROR,
@@ -51,6 +60,7 @@ typedef struct NativeTagEditorScreen {
     NcTagRowMenu tags;
     NcEditorStringMenu parser_dialog;
     NcEditorStringMenu parser_rows;
+    NcEditorStringMenu parser_actions;
     NcWindow directories_window;
     NcWindow tag_types_window;
     NcWindow tags_window;
@@ -107,6 +117,7 @@ typedef struct NativeTagEditorScreen {
     int32 window_timeout_ms;
 
     enum NativeTagEditorParserMode parser_mode;
+    enum NativeTagEditorFocus active_focus;
     bool directories_update_requested;
     bool tags_update_requested;
     bool directory_filter_enabled;
@@ -134,7 +145,11 @@ NcEditorPairMenu *native_tag_editor_screen_directories(
 NcEditorStringMenu *native_tag_editor_screen_tag_types(
     NativeTagEditorScreen *screen);
 NcTagRowMenu *native_tag_editor_screen_tags(NativeTagEditorScreen *screen);
+NcEditorStringMenu *native_tag_editor_screen_parser_dialog(
+    NativeTagEditorScreen *screen);
 NcEditorStringMenu *native_tag_editor_screen_parser_rows(
+    NativeTagEditorScreen *screen);
+NcEditorStringMenu *native_tag_editor_screen_parser_actions(
     NativeTagEditorScreen *screen);
 NcMenu *native_tag_editor_screen_active_menu(NativeTagEditorScreen *screen);
 NcWindow *native_tag_editor_screen_active_window(NativeTagEditorScreen *screen);
@@ -216,6 +231,16 @@ bool native_tag_editor_screen_search(
 bool native_tag_editor_screen_prepare_parser_rows(
     NativeTagEditorScreen *screen, enum NativeTagEditorParserMode mode,
     char *pattern, int32 pattern_len);
+void native_tag_editor_screen_show_parser_dialog(
+    NativeTagEditorScreen *screen);
+void native_tag_editor_screen_show_parser_actions(
+    NativeTagEditorScreen *screen, enum NativeTagEditorParserMode mode);
+void native_tag_editor_screen_show_parser_legend(
+    NativeTagEditorScreen *screen);
+void native_tag_editor_screen_show_parser_preview(
+    NativeTagEditorScreen *screen);
+void native_tag_editor_screen_close_parser(
+    NativeTagEditorScreen *screen);
 bool native_tag_editor_parse_filename(NcmMutableSong *song, char *mask,
                                       int32 mask_len, bool preview,
                                       NcmBuffer *preview_buffer);

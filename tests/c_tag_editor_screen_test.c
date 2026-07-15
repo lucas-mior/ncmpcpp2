@@ -127,6 +127,8 @@ static void test_tag_editor_run_current_waits_for_native_state_machine(void);
 static void test_directory_filter_and_search_contract(void);
 static void test_tag_filter_search_and_selection_contract(void);
 static void test_parser_menu_contract(void);
+static void test_tag_editor_parser_focus_contract(void);
+static void test_tag_editor_parser_refresh_modes(void);
 static void test_native_refresh_fallback_contract(void);
 static void test_native_state_ownership_without_bridge(void);
 static void test_directory_reload_preserves_current_row(void);
@@ -176,6 +178,8 @@ main(void) {
     test_directory_filter_and_search_contract();
     test_tag_filter_search_and_selection_contract();
     test_parser_menu_contract();
+    test_tag_editor_parser_focus_contract();
+    test_tag_editor_parser_refresh_modes();
     test_native_refresh_fallback_contract();
     test_native_state_ownership_without_bridge();
     test_directory_reload_preserves_current_row();
@@ -576,7 +580,9 @@ test_initial_state_and_geometry(void) {
                             STRLIT_ARGS("Tag editor")));
 
     assert(nc_menu_item_count(nc_editor_string_menu_base(
-               native_tag_editor_screen_parser_rows(&screen))) == 3);
+               native_tag_editor_screen_parser_dialog(&screen))) == 3);
+    assert(nc_menu_item_count(nc_editor_string_menu_base(
+               native_tag_editor_screen_parser_rows(&screen))) == 0);
 
     destroy_screen(&screen);
     return;
@@ -598,6 +604,7 @@ test_menu_configuration_and_highlights(void) {
     NcMenu *tags;
     NcMenu *parser_dialog;
     NcMenu *parser_rows;
+    NcMenu *parser_actions;
 
     old_selected_prefix = Config.selected_item_prefix;
     old_selected_suffix = Config.selected_item_suffix;
@@ -625,6 +632,7 @@ test_menu_configuration_and_highlights(void) {
     tags = nc_tag_row_menu_base(&screen.tags);
     parser_dialog = nc_editor_string_menu_base(&screen.parser_dialog);
     parser_rows = nc_editor_string_menu_base(&screen.parser_rows);
+    parser_actions = nc_editor_string_menu_base(&screen.parser_actions);
 
     assert_tag_editor_menu_config(directories, &Config.current_item_prefix,
                                   &Config.current_item_suffix);
@@ -635,10 +643,14 @@ test_menu_configuration_and_highlights(void) {
                                   &Config.current_item_inactive_column_prefix,
                                   &Config.current_item_inactive_column_suffix);
     assert_tag_editor_menu_config(parser_dialog,
-                                  &parser_dialog->highlight_prefix,
-                                  &parser_dialog->highlight_suffix);
-    assert_tag_editor_menu_config(parser_rows, &parser_rows->highlight_prefix,
-                                  &parser_rows->highlight_suffix);
+                                  &Config.current_item_inactive_column_prefix,
+                                  &Config.current_item_inactive_column_suffix);
+    assert_tag_editor_menu_config(parser_rows,
+                                  &Config.current_item_inactive_column_prefix,
+                                  &Config.current_item_inactive_column_suffix);
+    assert_tag_editor_menu_config(parser_actions,
+                                  &Config.current_item_inactive_column_prefix,
+                                  &Config.current_item_inactive_column_suffix);
 
     append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
     native_tag_editor_screen_next_column(&screen);
@@ -990,35 +1002,131 @@ test_tag_filter_search_and_selection_contract(void) {
 static void
 test_parser_menu_contract(void) {
     NativeTagEditorScreen screen;
-    NcMenu *menu;
+    NcMenu *dialog;
+    NcMenu *rows;
+    NcMenu *actions;
     NcMenuString *row;
 
     init_screen(&screen);
     assert(native_tag_editor_screen_prepare_parser_rows(
                &screen, NATIVE_TAG_EDITOR_PARSER_TAGS_FROM_FILENAME,
                STRLIT_ARGS("%a - %t")));
-    menu = nc_editor_string_menu_base(
+    dialog = nc_editor_string_menu_base(
+        native_tag_editor_screen_parser_dialog(&screen));
+    rows = nc_editor_string_menu_base(
         native_tag_editor_screen_parser_rows(&screen));
-    assert(nc_menu_item_count(menu) == 8);
+    actions = nc_editor_string_menu_base(
+        native_tag_editor_screen_parser_actions(&screen));
+    assert(nc_menu_item_count(dialog) == 3);
+    assert(nc_menu_item_count(rows) == 8);
+    assert(nc_menu_item_count(actions) == 5);
 
-    row = nc_menu_active_item_at(menu, 0);
+    row = nc_menu_active_item_at(dialog, 0);
     assert(ncm_string_equal(row->data, row->len,
                             STRLIT_ARGS("Get tags from filename")));
-    row = nc_menu_active_item_at(menu, 1);
+    row = nc_menu_active_item_at(dialog, 1);
     assert(ncm_string_equal(row->data, row->len,
                             STRLIT_ARGS("Rename files")));
-    row = nc_menu_active_item_at(menu, 2);
+    row = nc_menu_active_item_at(dialog, 2);
     assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Cancel")));
-    row = nc_menu_active_item_at(menu, 3);
+    row = nc_menu_active_item_at(rows, 3);
     assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Pattern")));
-    row = nc_menu_active_item_at(menu, 4);
+    row = nc_menu_active_item_at(rows, 4);
     assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Preview")));
-    row = nc_menu_active_item_at(menu, 5);
+    row = nc_menu_active_item_at(rows, 5);
     assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Legend")));
-    row = nc_menu_active_item_at(menu, 6);
+    row = nc_menu_active_item_at(rows, 6);
     assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Proceed")));
-    row = nc_menu_active_item_at(menu, 7);
+    row = nc_menu_active_item_at(rows, 7);
     assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Cancel")));
+    row = nc_menu_active_item_at(actions, 0);
+    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Pattern")));
+    row = nc_menu_active_item_at(actions, 4);
+    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Cancel")));
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_parser_focus_contract(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *dialog;
+    NcMenu *actions;
+
+    init_screen(&screen);
+    dialog = nc_editor_string_menu_base(&screen.parser_dialog);
+    actions = nc_editor_string_menu_base(&screen.parser_actions);
+
+    native_tag_editor_screen_show_parser_dialog(&screen);
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_CHOICE);
+    assert(native_tag_editor_screen_active_menu(&screen) == dialog);
+    assert(native_tag_editor_screen_active_window(&screen)
+           == &screen.parser_dialog_window);
+    assert(screen.active_column == NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES);
+
+    native_tag_editor_screen_show_parser_actions(
+        &screen, NATIVE_TAG_EDITOR_PARSER_TAGS_FROM_FILENAME);
+    assert(screen.parser_mode == NATIVE_TAG_EDITOR_PARSER_TAGS_FROM_FILENAME);
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_ACTIONS);
+    assert(native_tag_editor_screen_active_menu(&screen) == actions);
+    assert(native_tag_editor_screen_active_window(&screen)
+           == &screen.parser_window);
+    assert_tag_editor_menu_config(actions, &Config.current_item_prefix,
+                                  &Config.current_item_suffix);
+    assert_tag_editor_menu_config(dialog,
+                                  &Config.current_item_inactive_column_prefix,
+                                  &Config.current_item_inactive_column_suffix);
+
+    assert(native_tag_editor_screen_next_column_available(&screen));
+    native_tag_editor_screen_next_column(&screen);
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_LEGEND);
+    assert(native_tag_editor_screen_active_menu(&screen) == NULL);
+    assert(native_tag_editor_screen_active_window(&screen)
+           == &screen.parser_helper_window);
+
+    assert(native_tag_editor_screen_previous_column_available(&screen));
+    native_tag_editor_screen_previous_column(&screen);
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_ACTIONS);
+
+    native_tag_editor_screen_show_parser_preview(&screen);
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW);
+    assert(screen.parser_preview_enabled);
+    native_tag_editor_screen_close_parser(&screen);
+    assert(screen.parser_mode == NATIVE_TAG_EDITOR_PARSER_NONE);
+    assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES);
+    assert(screen.active_column == NATIVE_TAG_EDITOR_COLUMN_TAG_TYPES);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_parser_refresh_modes(void) {
+    NativeTagEditorScreen screen;
+
+    init_screen(&screen);
+
+    native_tag_editor_screen_show_parser_dialog(&screen);
+    reset_window_trace();
+    nc_screen_refresh(native_tag_editor_screen_base(&screen));
+    assert(window_trace.display_calls == 1);
+    assert(window_trace.refresh_calls == 1);
+    assert(window_trace.separator_calls == 0);
+
+    native_tag_editor_screen_show_parser_actions(
+        &screen, NATIVE_TAG_EDITOR_PARSER_RENAME_FILES);
+    reset_window_trace();
+    nc_screen_refresh(native_tag_editor_screen_base(&screen));
+    assert(window_trace.display_calls == 2);
+    assert(window_trace.refresh_calls == 1);
+    assert(window_trace.separator_calls == 0);
+
+    native_tag_editor_screen_next_column(&screen);
+    reset_window_trace();
+    nc_screen_refresh_window(native_tag_editor_screen_base(&screen));
+    assert(window_trace.display_calls == 1);
+    assert(window_trace.refresh_calls == 0);
 
     destroy_screen(&screen);
     return;
@@ -1951,14 +2059,16 @@ test_tag_editor_search_result_directory_change(void) {
 static void
 test_tag_editor_parser_mouse_rows(void) {
     NativeTagEditorScreen screen;
-    NcMenu *parser_rows;
+    NcMenu *parser_actions;
     MEVENT event;
 
     init_screen(&screen);
     assert(native_tag_editor_screen_prepare_parser_rows(
                &screen, NATIVE_TAG_EDITOR_PARSER_TAGS_FROM_FILENAME,
                STRLIT_ARGS("%a - %t")));
-    parser_rows = nc_editor_string_menu_base(&screen.parser_rows);
+    native_tag_editor_screen_show_parser_actions(
+        &screen, NATIVE_TAG_EDITOR_PARSER_TAGS_FROM_FILENAME);
+    parser_actions = nc_editor_string_menu_base(&screen.parser_actions);
 
     event = (MEVENT){0};
     event.x = (int32)screen.parser_window.start_x + 1;
@@ -1967,7 +2077,7 @@ test_tag_editor_parser_mouse_rows(void) {
     nc_screen_mouse_button_pressed(native_tag_editor_screen_base(&screen),
                                    event);
 
-    assert(nc_menu_highlight(parser_rows) == 4);
+    assert(nc_menu_highlight(parser_actions) == 4);
 
     destroy_screen(&screen);
     return;
