@@ -251,7 +251,6 @@ native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
     playlist_editor_initialize_buffers(screen);
     playlist_editor_initialize_regexes(screen);
     playlist_editor_reset_content_timer(screen);
-    screen->bridge = (NativePlaylistEditorBridge){0};
     screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
     screen->column_ratio_left = 1;
     screen->column_ratio_right = 1;
@@ -1030,16 +1029,6 @@ native_playlist_editor_screen_load_current_playlist(
                                         error);
 }
 
-void
-native_playlist_editor_screen_set_bridge(
-    NativePlaylistEditorScreen *screen, NativePlaylistEditorBridge bridge) {
-    if (screen == NULL) {
-        return;
-    }
-    screen->bridge = bridge;
-    return;
-}
-
 static NativePlaylistEditorScreen *
 playlist_editor_from_screen(NcScreen *screen) {
     return nc_screen_user(screen);
@@ -1143,9 +1132,6 @@ playlist_editor_resize_callback(NcScreen *screen) {
                                                params.width,
                                                editor->main_start_y,
                                                editor->main_height);
-    if (editor->bridge.resize != NULL) {
-        editor->bridge.resize(editor->bridge.user);
-    }
     nc_screen_clear_resize_request(screen);
     return;
 }
@@ -1169,9 +1155,6 @@ playlist_editor_title_callback(NcScreen *screen) {
     NativePlaylistEditorScreen *editor;
 
     editor = playlist_editor_from_screen(screen);
-    if (editor->bridge.title != NULL) {
-        return editor->bridge.title(editor->bridge.user);
-    }
     return (char *)"Playlist editor";
 }
 
