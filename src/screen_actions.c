@@ -73,6 +73,19 @@ current_screen_filter_buffer(void) {
         return native_media_library_screen_active_filter_constraint(
             native_c_screen_media_library());
     }
+#if defined(HAVE_TAGLIB_H)
+    if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
+        NativeTagEditorScreen *screen;
+
+        screen = native_c_screen_tag_editor();
+        if (screen->active_column == NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES) {
+            return &screen->directory_filter_constraint;
+        }
+        if (screen->active_column == NATIVE_TAG_EDITOR_COLUMN_TAGS) {
+            return &screen->tag_filter_constraint;
+        }
+    }
+#endif
     return NULL;
 }
 
@@ -130,6 +143,7 @@ current_screen_search_legacy(enum SearchDirection direction,
     *handled = false;
     if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)
         || current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)
+        || current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)
         || app_binding_migration_screen_is_c_only(
             native_c_screens_current_type())) {
         return false;
@@ -156,6 +170,7 @@ static void
 current_screen_clear_legacy_search(void) {
     if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)
         || current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)
+        || current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)
         || app_binding_migration_screen_is_c_only(
             native_c_screens_current_type())) {
         return;
@@ -216,6 +231,21 @@ current_screen_clear_current_search_constraint(void) {
         }
         return;
     }
+#if defined(HAVE_TAGLIB_H)
+    if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
+        NativeTagEditorScreen *screen;
+
+        screen = native_c_screen_tag_editor();
+        if (screen->active_column == NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES) {
+            screen->directory_search_enabled = false;
+            ncm_buffer_clear(&screen->directory_search_constraint);
+        } else if (screen->active_column == NATIVE_TAG_EDITOR_COLUMN_TAGS) {
+            screen->tag_search_enabled = false;
+            ncm_buffer_clear(&screen->tag_search_constraint);
+        }
+        return;
+    }
+#endif
     buffer = current_screen_search_buffer();
     if (buffer != NULL) {
         ncm_buffer_clear(buffer);
@@ -277,6 +307,19 @@ current_screen_apply_filter(char *pattern, int32 pattern_len,
     } else if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
         result = native_media_library_screen_apply_filter(
             native_c_screen_media_library(), pattern, pattern_len, error);
+#if defined(HAVE_TAGLIB_H)
+    } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
+        NativeTagEditorScreen *screen;
+
+        screen = native_c_screen_tag_editor();
+        if (screen->active_column == NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES) {
+            result = native_tag_editor_screen_apply_directory_filter(
+                screen, pattern, pattern_len, Config.regex_type, error);
+        } else if (screen->active_column == NATIVE_TAG_EDITOR_COLUMN_TAGS) {
+            result = native_tag_editor_screen_apply_tag_filter(
+                screen, pattern, pattern_len, Config.regex_type, error);
+        }
+#endif
     }
 
     if (result) {
