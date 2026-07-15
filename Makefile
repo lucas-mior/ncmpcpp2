@@ -113,6 +113,15 @@ PLAYLIST_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=ncm_mpd_client_load_playlist
 $(BUILD_DIR)/tests/c_playlist_editor_screen_test: \
 	LDFLAGS += $(PLAYLIST_EDITOR_SCREEN_TEST_WRAP_FLAGS)
+TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=nc_window_init \
+	-Wl,--wrap=nc_window_destroy \
+	-Wl,--wrap=nc_window_move_to \
+	-Wl,--wrap=nc_window_resize \
+	-Wl,--wrap=nc_window_display \
+	-Wl,--wrap=nc_menu_refresh
+$(BUILD_DIR)/tests/c_tag_editor_screen_test: \
+	LDFLAGS += $(TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS)
 PLAYLIST_ACTIONS_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=app_controller_current_screen \
 	-Wl,--wrap=native_c_screens_current_type \
