@@ -110,6 +110,14 @@ ncm_buffer_set(NcmBuffer *buffer, char *data, int32 data_len) {
     if ((data == NULL) && (data_len > 0)) {
         return false;
     }
+    if ((data == buffer->data) && buffer->data) {
+        if (data_len > buffer->len) {
+            return false;
+        }
+        buffer->len = data_len;
+        buffer->data[data_len] = '\0';
+        return true;
+    }
 
     ncm_buffer_clear(buffer);
     ncm_buffer_append(buffer, data, data_len);
