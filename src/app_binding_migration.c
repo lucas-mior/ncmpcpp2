@@ -4,6 +4,8 @@ static bool app_binding_migration_playlist_action_is_c_safe(
     enum NcmActionType type);
 static bool app_binding_migration_playlist_editor_action_is_c_safe(
     enum NcmActionType type);
+static bool app_binding_migration_tag_editor_action_is_c_safe(
+    enum NcmActionType type);
 static bool app_binding_migration_screen_uses_specific_actions(
     enum ScreenType screen_type);
 
@@ -229,10 +231,105 @@ app_binding_migration_playlist_editor_action_is_c_safe(
     }
 }
 
+
+static bool
+app_binding_migration_tag_editor_action_is_c_safe(
+    enum NcmActionType type) {
+    switch (type) {
+    case NCM_ACTION_DUMMY:
+    case NCM_ACTION_UPDATE_ENVIRONMENT:
+    case NCM_ACTION_MOUSE_EVENT:
+    case NCM_ACTION_SCROLL_UP:
+    case NCM_ACTION_SCROLL_DOWN:
+    case NCM_ACTION_SCROLL_UP_ARTIST:
+    case NCM_ACTION_SCROLL_UP_ALBUM:
+    case NCM_ACTION_SCROLL_DOWN_ARTIST:
+    case NCM_ACTION_SCROLL_DOWN_ALBUM:
+    case NCM_ACTION_PAGE_UP:
+    case NCM_ACTION_PAGE_DOWN:
+    case NCM_ACTION_MOVE_HOME:
+    case NCM_ACTION_MOVE_END:
+    case NCM_ACTION_TOGGLE_INTERFACE:
+    case NCM_ACTION_JUMP_TO_PARENT_DIRECTORY:
+    case NCM_ACTION_PREVIOUS_COLUMN:
+    case NCM_ACTION_NEXT_COLUMN:
+    case NCM_ACTION_MASTER_SCREEN:
+    case NCM_ACTION_SLAVE_SCREEN:
+    case NCM_ACTION_QUIT:
+    case NCM_ACTION_VOLUME_UP:
+    case NCM_ACTION_VOLUME_DOWN:
+    case NCM_ACTION_REPLAY_SONG:
+    case NCM_ACTION_TOGGLE_REPEAT:
+    case NCM_ACTION_TOGGLE_RANDOM:
+    case NCM_ACTION_TOGGLE_SINGLE:
+    case NCM_ACTION_TOGGLE_CONSUME:
+    case NCM_ACTION_TOGGLE_CROSSFADE:
+    case NCM_ACTION_UPDATE_DATABASE:
+    case NCM_ACTION_NEXT:
+    case NCM_ACTION_PREVIOUS:
+    case NCM_ACTION_PAUSE:
+    case NCM_ACTION_PLAY:
+    case NCM_ACTION_STOP:
+    case NCM_ACTION_SEEK_FORWARD:
+    case NCM_ACTION_SEEK_BACKWARD:
+    case NCM_ACTION_EXECUTE_COMMAND:
+    case NCM_ACTION_RUN_ACTION:
+    case NCM_ACTION_ADD_ITEM_TO_PLAYLIST:
+    case NCM_ACTION_PLAY_ITEM:
+    case NCM_ACTION_SAVE_TAG_CHANGES:
+    case NCM_ACTION_ENTER_DIRECTORY:
+    case NCM_ACTION_EDIT_SONG:
+    case NCM_ACTION_JUMP_TO_BROWSER:
+    case NCM_ACTION_JUMP_TO_MEDIA_LIBRARY:
+    case NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR:
+    case NCM_ACTION_TOGGLE_SCREEN_LOCK:
+    case NCM_ACTION_JUMP_TO_TAG_EDITOR:
+    case NCM_ACTION_JUMP_TO_POSITION_IN_SONG:
+    case NCM_ACTION_SELECT_ITEM:
+    case NCM_ACTION_SELECT_RANGE:
+    case NCM_ACTION_REVERSE_SELECTION:
+    case NCM_ACTION_REMOVE_SELECTION:
+    case NCM_ACTION_SELECT_FOUND_ITEMS:
+    case NCM_ACTION_ADD_SELECTED_ITEMS:
+    case NCM_ACTION_APPLY_FILTER:
+    case NCM_ACTION_FIND_ITEM_FORWARD:
+    case NCM_ACTION_FIND_ITEM_BACKWARD:
+    case NCM_ACTION_NEXT_FOUND_ITEM:
+    case NCM_ACTION_PREVIOUS_FOUND_ITEM:
+    case NCM_ACTION_TOGGLE_FIND_MODE:
+    case NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE:
+    case NCM_ACTION_TOGGLE_ADD_MODE:
+    case NCM_ACTION_TOGGLE_MOUSE:
+    case NCM_ACTION_TOGGLE_BITRATE_VISIBILITY:
+    case NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND:
+    case NCM_ACTION_SHOW_SONG_INFO:
+    case NCM_ACTION_SHOW_ARTIST_INFO:
+    case NCM_ACTION_SHOW_LYRICS:
+    case NCM_ACTION_NEXT_SCREEN:
+    case NCM_ACTION_PREVIOUS_SCREEN:
+    case NCM_ACTION_SHOW_HELP:
+    case NCM_ACTION_SHOW_PLAYLIST:
+    case NCM_ACTION_SHOW_BROWSER:
+    case NCM_ACTION_SHOW_SEARCH_ENGINE:
+    case NCM_ACTION_SHOW_MEDIA_LIBRARY:
+    case NCM_ACTION_SHOW_PLAYLIST_EDITOR:
+    case NCM_ACTION_SHOW_TAG_EDITOR:
+    case NCM_ACTION_SHOW_OUTPUTS:
+    case NCM_ACTION_SHOW_VISUALIZER:
+    case NCM_ACTION_SHOW_SERVER_INFO:
+        return true;
+    default:
+        return false;
+    }
+}
+
 static bool
 app_binding_migration_screen_uses_specific_actions(
     enum ScreenType screen_type) {
     if (screen_type == NCM_SCREEN_TYPE_PLAYLIST_EDITOR) {
+        return true;
+    }
+    if (screen_type == NCM_SCREEN_TYPE_TAG_EDITOR) {
         return true;
     }
     return app_binding_migration_screen_is_c_only(screen_type);
@@ -302,6 +399,9 @@ app_binding_migration_action_is_c_safe_for_screen(
     }
     if (screen_type == NCM_SCREEN_TYPE_PLAYLIST_EDITOR) {
         return app_binding_migration_playlist_editor_action_is_c_safe(type);
+    }
+    if (screen_type == NCM_SCREEN_TYPE_TAG_EDITOR) {
+        return app_binding_migration_tag_editor_action_is_c_safe(type);
     }
 #if defined(HAVE_TAGLIB_H)
     if (screen_type == NCM_SCREEN_TYPE_TINY_TAG_EDITOR) {
