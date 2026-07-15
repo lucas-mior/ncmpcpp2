@@ -738,9 +738,13 @@ native_browser_screen_selected_songs(NativeBrowserScreen *screen,
 
 bool
 native_browser_screen_enter_directory(NativeBrowserScreen *screen) {
-    return native_browser_enter_item(screen,
-                                     native_browser_screen_current_item(
-                                         screen));
+    if (!native_browser_enter_item(screen,
+                                   native_browser_screen_current_item(
+                                       screen))) {
+        return false;
+    }
+    native_browser_screen_request_update(screen);
+    return true;
 }
 
 bool
@@ -759,8 +763,13 @@ native_browser_screen_go_to_parent(NativeBrowserScreen *screen) {
     if (native_browser_screen_in_root_directory(screen)) {
         return false;
     }
-    return native_browser_set_parent_of_directory(
-        screen, screen->current_directory.data, screen->current_directory.len);
+    if (!native_browser_set_parent_of_directory(
+            screen, screen->current_directory.data,
+            screen->current_directory.len)) {
+        return false;
+    }
+    native_browser_screen_request_update(screen);
+    return true;
 }
 
 bool

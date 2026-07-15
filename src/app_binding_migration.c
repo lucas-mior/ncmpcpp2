@@ -327,6 +327,9 @@ app_binding_migration_tag_editor_action_is_c_safe(
 static bool
 app_binding_migration_screen_uses_specific_actions(
     enum ScreenType screen_type) {
+    if (screen_type == NCM_SCREEN_TYPE_BROWSER) {
+        return true;
+    }
     if (screen_type == NCM_SCREEN_TYPE_PLAYLIST_EDITOR) {
         return true;
     }
@@ -400,6 +403,15 @@ app_binding_migration_screen_is_c_only(enum ScreenType type) {
 bool
 app_binding_migration_action_is_c_safe_for_screen(
     enum NcmActionType type, enum ScreenType screen_type) {
+    if (screen_type == NCM_SCREEN_TYPE_BROWSER) {
+        switch (type) {
+        case NCM_ACTION_ENTER_DIRECTORY:
+        case NCM_ACTION_JUMP_TO_PARENT_DIRECTORY:
+            return true;
+        default:
+            break;
+        }
+    }
     if (screen_type == NCM_SCREEN_TYPE_PLAYLIST) {
         return app_binding_migration_playlist_action_is_c_safe(type);
     }
