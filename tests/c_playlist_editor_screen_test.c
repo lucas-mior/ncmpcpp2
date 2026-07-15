@@ -27,6 +27,9 @@ typedef struct PlaylistEditorWindowTrace {
 typedef struct PlaylistEditorMpdFixture {
     NcmMpdPlaylistList playlists;
     NcmMpdSongList content;
+    NcmMpdSongList alternate_content;
+    char alternate_content_path[COMMAND_TEXT_CAPACITY];
+    char failing_content_path[COMMAND_TEXT_CAPACITY];
     char content_path[COMMAND_TEXT_CAPACITY];
     char command_playlist[COMMAND_TEXT_CAPACITY];
     char command_target[COMMAND_TEXT_CAPACITY];
@@ -115,6 +118,11 @@ static void test_legacy_rendered_filter_and_search_text(void);
 static void test_invalid_regex_preserves_constraints(void);
 static void test_playlist_filter_clear_restores_current_row(void);
 static void test_selected_song_contract(void);
+static void test_playlist_column_selected_songs_fetches_playlists(void);
+static void test_selected_playlist_fetch_failure_clears_result(void);
+static void test_column_availability_uses_unfiltered_menus(void);
+static void test_playlist_change_clears_content_selection(void);
+static void test_native_selection_helpers(void);
 static void test_mpd_reload_and_current_items(void);
 static void test_update_callback_uses_native_mpd_logic(void);
 static void test_delayed_update_and_empty_content_cache(void);
@@ -144,6 +152,11 @@ main(void) {
     test_invalid_regex_preserves_constraints();
     test_playlist_filter_clear_restores_current_row();
     test_selected_song_contract();
+    test_playlist_column_selected_songs_fetches_playlists();
+    test_selected_playlist_fetch_failure_clears_result();
+    test_column_availability_uses_unfiltered_menus();
+    test_playlist_change_clears_content_selection();
+    test_native_selection_helpers();
     test_mpd_reload_and_current_items();
     test_update_callback_uses_native_mpd_logic();
     test_delayed_update_and_empty_content_cache();
@@ -239,6 +252,7 @@ init_mpd_fixture(void) {
     mpd_fixture = (PlaylistEditorMpdFixture){0};
     ncm_mpd_playlist_list_init(&mpd_fixture.playlists);
     ncm_mpd_song_list_init(&mpd_fixture.content);
+    ncm_mpd_song_list_init(&mpd_fixture.alternate_content);
     mpd_fixture.get_playlists_result = true;
     mpd_fixture.get_content_result = true;
     mpd_fixture.load_result = true;
@@ -247,6 +261,7 @@ init_mpd_fixture(void) {
 
 static void
 destroy_mpd_fixture(void) {
+    ncm_mpd_song_list_destroy(&mpd_fixture.alternate_content);
     ncm_mpd_song_list_destroy(&mpd_fixture.content);
     ncm_mpd_playlist_list_destroy(&mpd_fixture.playlists);
     mpd_fixture = (PlaylistEditorMpdFixture){0};
@@ -256,6 +271,8 @@ destroy_mpd_fixture(void) {
 static void
 reset_mpd_calls(void) {
     mpd_fixture.content_path[0] = '\0';
+    mpd_fixture.alternate_content_path[0] = '\0';
+    mpd_fixture.failing_content_path[0] = '\0';
     mpd_fixture.command_playlist[0] = '\0';
     mpd_fixture.command_target[0] = '\0';
     mpd_fixture.get_playlists_calls = 0;
@@ -1163,6 +1180,219 @@ test_selected_song_contract(void) {
     return;
 }
 
+
+static void
+test_playlist_column_selected_songs_fetches_playlists(void) {
+    NativePlaylistEditorScreen screen;
+    NcmMpdPlaylistList playlists;
+    NcmSongArray selected;
+    NcMenu *menu;
+
+    init_screen(&screen);
+    ncm_mpd_playlist_list_init(&playlists);
+    ncm_mpd_song_list_clear(&mpd_fixture.content);
+    ncm_mpd_song_list_clear(&mpd_fixture.alternate_content);
+    append_playlist(&playlists, LIT_ARGS("Alpha"));
+    append_playlist(&playlists, LIT_ARGS("Beta"));
+    append_song(&mpd_fixture.content, LIT_ARGS("alpha-1.flac"),
+                LIT_ARGS("Alpha 1"));
+    append_song(&mpd_fixture.content, LIT_ARGS("alpha-2.flac"),
+                LIT_ARGS("Alpha 2"));
+    append_song(&mpd_fixture.alternate_content,
+                LIT_ARGS("beta-1.flac"), LIT_ARGS("Beta 1"));
+    copy_cstring(mpd_fixture.alternate_content_path,
+                 NCM_ARRAY_LEN(mpd_fixture.alternate_content_path),
+                 (char *)"Beta");
+    assert(native_playlist_editor_screen_load_playlists(&screen,
+                                                         &playlists));
+
+    menu = nc_playlist_entry_menu_base(&screen.playlists);
+    assert(nc_menu_set_position_selected(menu, 0, true));
+    assert(nc_menu_set_position_selected(menu, 1, true));
+    assert(native_playlist_editor_screen_selected_playlist_count(
+               &screen) == 2);
+
+    reset_mpd_calls();
+    copy_cstring(mpd_fixture.alternate_content_path,
+                 NCM_ARRAY_LEN(mpd_fixture.alternate_content_path),
+                 (char *)"Beta");
+    ncm_song_array_init(&selected);
+    assert(native_playlist_editor_screen_selected_songs(&screen,
+                                                         &selected));
+    assert(mpd_fixture.get_content_calls == 2);
+    assert(selected.len == 3);
+    assert_array_song_uri(&selected, 0, LIT_ARGS("alpha-1.flac"));
+    assert_array_song_uri(&selected, 1, LIT_ARGS("alpha-2.flac"));
+    assert_array_song_uri(&selected, 2, LIT_ARGS("beta-1.flac"));
+
+    ncm_song_array_destroy(&selected);
+    ncm_mpd_playlist_list_destroy(&playlists);
+    native_playlist_editor_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_selected_playlist_fetch_failure_clears_result(void) {
+    NativePlaylistEditorScreen screen;
+    NcmMpdPlaylistList playlists;
+    NcmSongArray selected;
+    NcMenu *menu;
+
+    init_screen(&screen);
+    ncm_mpd_playlist_list_init(&playlists);
+    ncm_mpd_song_list_clear(&mpd_fixture.content);
+    ncm_mpd_song_list_clear(&mpd_fixture.alternate_content);
+    append_playlist(&playlists, LIT_ARGS("Alpha"));
+    append_playlist(&playlists, LIT_ARGS("Beta"));
+    append_song(&mpd_fixture.content, LIT_ARGS("alpha.flac"),
+                LIT_ARGS("Alpha"));
+    append_song(&mpd_fixture.alternate_content, LIT_ARGS("beta.flac"),
+                LIT_ARGS("Beta"));
+    copy_cstring(mpd_fixture.alternate_content_path,
+                 NCM_ARRAY_LEN(mpd_fixture.alternate_content_path),
+                 (char *)"Beta");
+    copy_cstring(mpd_fixture.failing_content_path,
+                 NCM_ARRAY_LEN(mpd_fixture.failing_content_path),
+                 (char *)"Beta");
+    assert(native_playlist_editor_screen_load_playlists(&screen,
+                                                         &playlists));
+    menu = nc_playlist_entry_menu_base(&screen.playlists);
+    assert(nc_menu_select_range(menu, 0, 1, true));
+
+    reset_mpd_calls();
+    copy_cstring(mpd_fixture.alternate_content_path,
+                 NCM_ARRAY_LEN(mpd_fixture.alternate_content_path),
+                 (char *)"Beta");
+    copy_cstring(mpd_fixture.failing_content_path,
+                 NCM_ARRAY_LEN(mpd_fixture.failing_content_path),
+                 (char *)"Beta");
+    ncm_song_array_init(&selected);
+    assert(!native_playlist_editor_screen_selected_songs(&screen,
+                                                          &selected));
+    assert(mpd_fixture.get_content_calls == 2);
+    assert(selected.len == 0);
+    assert(mpd_fixture.status_calls == 1);
+
+    ncm_song_array_destroy(&selected);
+    ncm_mpd_playlist_list_destroy(&playlists);
+    native_playlist_editor_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_column_availability_uses_unfiltered_menus(void) {
+    NativePlaylistEditorScreen screen;
+    PlaylistEditorFormatFixture formats;
+    NcmMpdPlaylistList playlists;
+    NcmMpdSongList content;
+    NcmError error;
+    Column columns[2];
+
+    begin_render_formats(&formats, columns);
+    init_screen(&screen);
+    ncm_mpd_playlist_list_init(&playlists);
+    ncm_mpd_song_list_init(&content);
+    append_playlist(&playlists, LIT_ARGS("Only"));
+    append_song(&content, LIT_ARGS("one.flac"), LIT_ARGS("One"));
+    assert(native_playlist_editor_screen_load_playlists(&screen,
+                                                         &playlists));
+    assert(native_playlist_editor_screen_load_content(&screen, &content));
+    assert(native_playlist_editor_screen_next_column_available(&screen));
+    native_playlist_editor_screen_next_column(&screen);
+
+    ncm_error_clear(&error);
+    assert(native_playlist_editor_screen_apply_active_filter(
+        &screen, LIT_ARGS("not present"),
+        NCM_REGEX_LITERAL_CASE_INSENSITIVE, &error));
+    assert(native_playlist_editor_screen_active_menu_empty(&screen));
+    assert(native_playlist_editor_screen_previous_column_available(
+               &screen));
+    native_playlist_editor_screen_previous_column(&screen);
+    assert(native_playlist_editor_screen_next_column_available(&screen));
+
+    ncm_mpd_song_list_destroy(&content);
+    ncm_mpd_playlist_list_destroy(&playlists);
+    native_playlist_editor_screen_destroy(&screen);
+    end_render_formats(&formats);
+    return;
+}
+
+static void
+test_playlist_change_clears_content_selection(void) {
+    NativePlaylistEditorScreen screen;
+    NcmMpdPlaylistList playlists;
+    NcmMpdSongList content;
+    NcMenu *content_menu;
+
+    init_screen(&screen);
+    ncm_mpd_playlist_list_init(&playlists);
+    ncm_mpd_song_list_init(&content);
+    append_playlist(&playlists, LIT_ARGS("First"));
+    append_playlist(&playlists, LIT_ARGS("Second"));
+    append_song(&content, LIT_ARGS("one.flac"), LIT_ARGS("One"));
+    assert(native_playlist_editor_screen_load_playlists(&screen,
+                                                         &playlists));
+    assert(native_playlist_editor_screen_load_content(&screen, &content));
+    native_playlist_editor_screen_next_column(&screen);
+    content_menu = nc_song_menu_base(&screen.content);
+    assert(nc_menu_set_position_selected(content_menu, 0, true));
+    assert(native_playlist_editor_screen_selected_content_count(
+               &screen) == 1);
+
+    native_playlist_editor_screen_previous_column(&screen);
+    nc_screen_scroll(native_playlist_editor_screen_base(&screen),
+                     NC_SCROLL_DOWN);
+    assert(nc_menu_all_item_count(content_menu) == 0);
+    assert(native_playlist_editor_screen_selected_content_count(
+               &screen) == 0);
+    assert(!native_playlist_editor_screen_next_column_available(&screen));
+
+    ncm_mpd_song_list_destroy(&content);
+    ncm_mpd_playlist_list_destroy(&playlists);
+    native_playlist_editor_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_native_selection_helpers(void) {
+    NativePlaylistEditorScreen screen;
+    NcmMpdPlaylistList playlists;
+    NcmMpdSongList content;
+    NcmSong song;
+    char *path;
+    int32 path_len;
+
+    init_screen(&screen);
+    ncm_mpd_playlist_list_init(&playlists);
+    ncm_mpd_song_list_init(&content);
+    ncm_song_init(&song);
+    append_playlist(&playlists, LIT_ARGS("Helper"));
+    append_song(&content, LIT_ARGS("helper.flac"), LIT_ARGS("Helper"));
+    assert(native_playlist_editor_screen_load_playlists(&screen,
+                                                         &playlists));
+    assert(native_playlist_editor_screen_load_content(&screen, &content));
+
+    assert(native_playlist_editor_screen_current_playlist_path(
+        &screen, &path, &path_len));
+    assert(ncm_string_equal(path, path_len, LIT_ARGS("Helper")));
+    assert(!native_playlist_editor_screen_active_menu_empty(&screen));
+    assert(native_playlist_editor_screen_selected_playlist_count(
+               &screen) == 0);
+    assert(native_playlist_editor_screen_selected_content_count(
+               &screen) == 0);
+
+    native_playlist_editor_screen_next_column(&screen);
+    assert(native_playlist_editor_screen_current_content_song(&screen,
+                                                              &song));
+    assert_song_uri(&song, LIT_ARGS("helper.flac"));
+
+    ncm_song_destroy(&song);
+    ncm_mpd_song_list_destroy(&content);
+    ncm_mpd_playlist_list_destroy(&playlists);
+    native_playlist_editor_screen_destroy(&screen);
+    return;
+}
+
 static void
 test_mpd_reload_and_current_items(void) {
     NativePlaylistEditorScreen screen;
@@ -1853,9 +2083,22 @@ __wrap_ncm_mpd_client_get_playlist_content(
     copy_cstring(mpd_fixture.content_path,
                  NCM_ARRAY_LEN(mpd_fixture.content_path), path);
     ncm_error_clear(error);
-    if (!mpd_fixture.get_content_result) {
+    if (!mpd_fixture.get_content_result
+        || ((mpd_fixture.failing_content_path[0] != '\0')
+            && ncm_string_equal(
+                path, cstring_len(path),
+                mpd_fixture.failing_content_path,
+                cstring_len(mpd_fixture.failing_content_path)))) {
         ncm_error_set(error, EIO, STRLIT_ARGS("content failure"));
         return false;
+    }
+    if ((mpd_fixture.alternate_content_path[0] != '\0')
+        && ncm_string_equal(path, cstring_len(path),
+                            mpd_fixture.alternate_content_path,
+                            cstring_len(
+                                mpd_fixture.alternate_content_path))) {
+        return ncm_mpd_song_list_copy(songs,
+                                      &mpd_fixture.alternate_content);
     }
     return ncm_mpd_song_list_copy(songs, &mpd_fixture.content);
 }

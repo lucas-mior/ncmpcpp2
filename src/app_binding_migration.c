@@ -125,6 +125,10 @@ app_binding_migration_playlist_editor_action_is_c_safe(
     switch (type) {
     case NCM_ACTION_PREVIOUS_COLUMN:
     case NCM_ACTION_NEXT_COLUMN:
+    case NCM_ACTION_SELECT_ITEM:
+    case NCM_ACTION_SELECT_RANGE:
+    case NCM_ACTION_REVERSE_SELECTION:
+    case NCM_ACTION_REMOVE_SELECTION:
         return true;
     default:
         break;
