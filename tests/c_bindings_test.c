@@ -800,6 +800,11 @@ test_app_binding_migration_c_safe_actions(void) {
         REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
             search_actions[i], NCM_SCREEN_TYPE_SEARCH_ENGINE));
     }
+    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_ENTER_DIRECTORY, NCM_SCREEN_TYPE_BROWSER));
+    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_JUMP_TO_PARENT_DIRECTORY,
+        NCM_SCREEN_TYPE_BROWSER));
     REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
         NCM_ACTION_START_SEARCHING, NCM_SCREEN_TYPE_BROWSER));
     REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
@@ -813,7 +818,7 @@ test_app_binding_migration_c_safe_actions(void) {
     REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
     REQUIRE(app_binding_migration_binding_is_c_safe_for_screen(
         &binding, NCM_SCREEN_TYPE_TAG_EDITOR));
-    REQUIRE(!app_binding_migration_binding_is_c_safe_for_screen(
+    REQUIRE(app_binding_migration_binding_is_c_safe_for_screen(
         &binding, NCM_SCREEN_TYPE_BROWSER));
     ncm_binding_destroy(&binding);
 #endif

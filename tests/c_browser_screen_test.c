@@ -19,6 +19,7 @@ static void test_browser_path_navigation(void);
 static void test_browser_parent_directory_compat(void);
 static void test_browser_mpd_reload(void);
 static void test_browser_native_update_reloads_mpd(void);
+static void test_browser_navigation_requests_reload(void);
 static void test_browser_native_update_retries_mpd(void);
 static void test_browser_native_switch_requests_reload(void);
 static void test_browser_selected_songs(void);
@@ -115,6 +116,7 @@ main(void) {
     test_browser_parent_directory_compat();
     test_browser_mpd_reload();
     test_browser_native_update_reloads_mpd();
+    test_browser_navigation_requests_reload();
     test_browser_native_update_retries_mpd();
     test_browser_native_switch_requests_reload();
     test_browser_selected_songs();
@@ -311,6 +313,54 @@ test_browser_native_update_reloads_mpd(void) {
 
     nc_screen_update(native_browser_screen_base(&screen));
     assert(mpd_trace.calls == 1);
+
+    native_browser_screen_destroy(&screen);
+    browser_format_fixture_end(&fixture);
+    return;
+}
+
+static void
+test_browser_navigation_requests_reload(void) {
+    NativeBrowserScreen screen;
+    BrowserFormatFixture fixture;
+    NcmStringView view;
+    NcMenu *menu;
+
+    browser_format_fixture_begin(&fixture);
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    menu = native_browser_screen_menu(&screen);
+
+    browser_mpd_trace_reset(BROWSER_MPD_TRACE_ROOT);
+    nc_screen_update(native_browser_screen_base(&screen));
+    assert(nc_menu_all_item_count(menu) == 1);
+    assert(!native_browser_screen_update_requested(&screen));
+
+    browser_mpd_trace_reset(BROWSER_MPD_TRACE_ARTIST);
+    assert(native_browser_screen_enter_directory(&screen));
+    assert(native_browser_screen_update_requested(&screen));
+    view = native_browser_screen_current_directory(&screen);
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist")));
+
+    nc_screen_update(native_browser_screen_base(&screen));
+    assert(mpd_trace.calls == 1);
+    assert(ncm_string_equal(mpd_trace.paths[0], mpd_trace.path_lens[0],
+                            LIT_ARGS("artist")));
+    assert(nc_menu_all_item_count(menu) == 4);
+    assert(!native_browser_screen_update_requested(&screen));
+
+    browser_mpd_trace_reset(BROWSER_MPD_TRACE_ROOT);
+    assert(native_browser_screen_go_to_parent(&screen));
+    assert(native_browser_screen_update_requested(&screen));
+    view = native_browser_screen_current_directory(&screen);
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("/")));
+
+    nc_screen_update(native_browser_screen_base(&screen));
+    assert(mpd_trace.calls == 1);
+    assert(ncm_string_equal(mpd_trace.paths[0], mpd_trace.path_lens[0],
+                            LIT_ARGS("/")));
+    assert(nc_menu_all_item_count(menu) == 1);
+    assert(!native_browser_screen_update_requested(&screen));
 
     native_browser_screen_destroy(&screen);
     browser_format_fixture_end(&fixture);
