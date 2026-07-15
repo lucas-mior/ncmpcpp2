@@ -1,8 +1,11 @@
 #include <assert.h>
+#include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "app_controller.h"
 #include "c/ncm_base.h"
+#include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
 #include "screens/nc_tag_editor.h"
@@ -23,6 +26,24 @@ typedef struct TagEditorWindowTrace {
     int32 print_char_calls;
     int32 property_calls;
 } TagEditorWindowTrace;
+
+typedef struct TagEditorMpdTrace {
+    NcmDirectoryArray directories;
+    NcmMpdSongList songs;
+    char directory_path[256];
+    char songs_path[256];
+    char status_message[256];
+
+    int32 directory_path_len;
+    int32 songs_path_len;
+    int32 status_message_len;
+    int32 get_directory_list_calls;
+    int32 get_songs_calls;
+    int32 status_calls;
+
+    bool get_directory_list_result;
+    bool get_songs_result;
+} TagEditorMpdTrace;
 
 typedef struct TagEditorBridgeTrace {
     NcWindow active_window;
@@ -50,11 +71,14 @@ typedef struct TagEditorBridgeTrace {
 
 static TagEditorWindowTrace window_trace;
 static TagEditorBridgeTrace bridge_trace;
+static TagEditorMpdTrace mpd_trace;
 
 void __wrap_nc_window_print_char(NcWindow *window, char ch);
 
 static void reset_window_trace(void);
 static void reset_bridge_trace(void);
+static void reset_mpd_trace(void);
+static void destroy_mpd_trace(void);
 static void init_screen(NativeTagEditorScreen *screen);
 static void destroy_screen(NativeTagEditorScreen *screen);
 static NativeTagEditorBridge bridge_callbacks(void);
@@ -62,6 +86,8 @@ static void append_song(NativeTagEditorScreen *screen, char *uri,
                         int32 uri_len, char *artist, int32 artist_len);
 static void append_directory(NcmDirectoryArray *directories, char *path,
                              int32 path_len);
+static void append_mpd_song(NcmMpdSongList *songs, char *uri,
+                            int32 uri_len);
 static void assert_menu_string_pair(NcMenuStringPair *pair,
                                     char *first, int32 first_len,
                                     char *second, int32 second_len);
@@ -101,6 +127,8 @@ static void test_native_directory_and_tag_type_rendering(void);
 static void test_native_tag_rendering_for_tag_fields(void);
 static void test_native_tag_rendering_for_filename_rows(void);
 static void test_native_refresh_does_not_delegate_rendering(void);
+static void test_native_update_fetches_directories_and_songs(void);
+static void test_native_update_reports_fetch_failures(void);
 
 int
 main(void) {
@@ -128,13 +156,34 @@ main(void) {
     test_native_tag_rendering_for_tag_fields();
     test_native_tag_rendering_for_filename_rows();
     test_native_refresh_does_not_delegate_rendering();
+    test_native_update_fetches_directories_and_songs();
+    test_native_update_reports_fetch_failures();
 
+    destroy_mpd_trace();
     exit(EXIT_SUCCESS);
 }
 
 static void
 reset_window_trace(void) {
     window_trace = (TagEditorWindowTrace){0};
+    return;
+}
+
+static void
+reset_mpd_trace(void) {
+    destroy_mpd_trace();
+    ncm_directory_array_init(&mpd_trace.directories);
+    ncm_mpd_song_list_init(&mpd_trace.songs);
+    mpd_trace.get_directory_list_result = true;
+    mpd_trace.get_songs_result = true;
+    return;
+}
+
+static void
+destroy_mpd_trace(void) {
+    ncm_directory_array_destroy(&mpd_trace.directories);
+    ncm_mpd_song_list_destroy(&mpd_trace.songs);
+    mpd_trace = (TagEditorMpdTrace){0};
     return;
 }
 
@@ -185,6 +234,17 @@ append_directory(NcmDirectoryArray *directories, char *path,
     assert(ncm_directory_set(&directory, path, path_len, 0));
     assert(ncm_directory_array_append_copy(directories, &directory));
     ncm_directory_destroy(&directory);
+    return;
+}
+
+static void
+append_mpd_song(NcmMpdSongList *songs, char *uri, int32 uri_len) {
+    NcmSong song;
+
+    ncm_song_init(&song);
+    assert(ncm_song_set_uri(&song, uri, uri_len));
+    assert(ncm_mpd_song_list_append_copy(songs, &song));
+    ncm_song_destroy(&song);
     return;
 }
 
@@ -722,12 +782,12 @@ test_bridge_callback_contract(void) {
     assert(bridge_trace.active_window_calls == 1);
 
     nc_screen_refresh(base);
-    assert(bridge_trace.sync_calls == 1);
+    assert(bridge_trace.sync_calls == 0);
     assert(bridge_trace.refresh_calls == 0);
     assert(window_trace.display_calls == 3);
 
     nc_screen_refresh_window(base);
-    assert(bridge_trace.sync_calls == 2);
+    assert(bridge_trace.sync_calls == 0);
     assert(bridge_trace.refresh_window_calls == 0);
     assert(window_trace.refresh_calls == 4);
 
@@ -755,11 +815,14 @@ test_bridge_callback_contract(void) {
                             STRLIT_ARGS("Legacy tag editor")));
     assert(bridge_trace.title_calls == 1);
 
+    reset_mpd_trace();
     nc_screen_request_update(base);
     assert(nc_screen_has_to_be_updated(base));
     nc_screen_update(base);
-    assert(bridge_trace.update_calls == 1);
-    assert(bridge_trace.sync_calls == 3);
+    assert(bridge_trace.update_calls == 0);
+    assert(bridge_trace.sync_calls == 0);
+    assert(mpd_trace.get_directory_list_calls == 1);
+    assert(mpd_trace.get_songs_calls == 1);
     assert(!nc_screen_has_to_be_updated(base));
 
     native_tag_editor_screen_clear_directories(&screen);
@@ -1219,7 +1282,7 @@ test_native_refresh_does_not_delegate_rendering(void) {
 
     reset_window_trace();
     nc_screen_refresh(native_tag_editor_screen_base(&screen));
-    assert(bridge_trace.sync_calls == 1);
+    assert(bridge_trace.sync_calls == 0);
     assert(bridge_trace.refresh_calls == 0);
     assert(window_trace.display_calls == 3);
     assert(window_trace.refresh_calls == 3);
@@ -1227,9 +1290,114 @@ test_native_refresh_does_not_delegate_rendering(void) {
 
     reset_window_trace();
     nc_screen_refresh_window(native_tag_editor_screen_base(&screen));
-    assert(bridge_trace.sync_calls == 2);
+    assert(bridge_trace.sync_calls == 0);
     assert(bridge_trace.refresh_window_calls == 0);
     assert(window_trace.refresh_calls == 1);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_native_update_fetches_directories_and_songs(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *directories;
+    NcMenu *tags;
+    NcMenuStringPair *pair;
+    NcmMutableSong *song;
+
+    reset_mpd_trace();
+    append_directory(&mpd_trace.directories, STRLIT_ARGS("/The Beta"));
+    append_directory(&mpd_trace.directories, STRLIT_ARGS("/Alpha"));
+    append_mpd_song(&mpd_trace.songs, STRLIT_ARGS("zeta.flac"));
+    append_mpd_song(&mpd_trace.songs, STRLIT_ARGS("alpha.flac"));
+
+    init_screen(&screen);
+    reset_bridge_trace();
+    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
+    nc_screen_request_update(native_tag_editor_screen_base(&screen));
+    nc_screen_update(native_tag_editor_screen_base(&screen));
+
+    assert(bridge_trace.update_calls == 0);
+    assert(bridge_trace.sync_calls == 0);
+    assert(mpd_trace.get_directory_list_calls == 1);
+    assert(mpd_trace.get_songs_calls == 1);
+    assert(ncm_string_equal(mpd_trace.directory_path,
+                            mpd_trace.directory_path_len,
+                            STRLIT_ARGS("/")));
+    assert(ncm_string_equal(mpd_trace.songs_path,
+                            mpd_trace.songs_path_len,
+                            STRLIT_ARGS("/")));
+
+    directories = nc_editor_pair_menu_base(&screen.directories);
+    assert(nc_menu_item_count(directories) == 3);
+    pair = nc_menu_active_item_at(directories, 0);
+    assert_menu_string_pair(pair, STRLIT_ARGS("."), STRLIT_ARGS("/"));
+    pair = nc_menu_active_item_at(directories, 1);
+    assert_menu_string_pair(pair, STRLIT_ARGS("Alpha"),
+                            STRLIT_ARGS("/Alpha"));
+    pair = nc_menu_active_item_at(directories, 2);
+    assert_menu_string_pair(pair, STRLIT_ARGS("The Beta"),
+                            STRLIT_ARGS("/The Beta"));
+    assert(!screen.directories_update_requested);
+
+    tags = nc_tag_row_menu_base(&screen.tags);
+    assert(nc_menu_item_count(tags) == 2);
+    song = nc_menu_active_item_at(tags, 0);
+    assert(song != NULL);
+    assert(ncm_string_equal(song->uri, song->uri_len,
+                            STRLIT_ARGS("alpha.flac")));
+    song = nc_menu_active_item_at(tags, 1);
+    assert(song != NULL);
+    assert(ncm_string_equal(song->uri, song->uri_len,
+                            STRLIT_ARGS("zeta.flac")));
+    assert(!screen.tags_update_requested);
+    assert(screen.displayed_dir_valid);
+    assert(ncm_string_equal(screen.displayed_dir.data,
+                            screen.displayed_dir.len,
+                            STRLIT_ARGS("/")));
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_native_update_reports_fetch_failures(void) {
+    NativeTagEditorScreen screen;
+
+    reset_mpd_trace();
+    mpd_trace.get_directory_list_result = false;
+    init_screen(&screen);
+    reset_bridge_trace();
+    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
+
+    nc_screen_request_update(native_tag_editor_screen_base(&screen));
+    nc_screen_update(native_tag_editor_screen_base(&screen));
+    assert(bridge_trace.update_calls == 0);
+    assert(mpd_trace.get_directory_list_calls == 1);
+    assert(mpd_trace.status_calls == 1);
+    assert(ncm_string_equal(mpd_trace.status_message,
+                            mpd_trace.status_message_len,
+                            STRLIT_ARGS("Could not fetch directories: "
+                                        "directory failure")));
+    assert(!screen.directories_update_requested);
+
+    destroy_screen(&screen);
+
+    reset_mpd_trace();
+    append_directory(&mpd_trace.directories, STRLIT_ARGS("/Alpha"));
+    mpd_trace.get_songs_result = false;
+    init_screen(&screen);
+    nc_screen_request_update(native_tag_editor_screen_base(&screen));
+    nc_screen_update(native_tag_editor_screen_base(&screen));
+    assert(mpd_trace.get_directory_list_calls == 1);
+    assert(mpd_trace.get_songs_calls == 1);
+    assert(mpd_trace.status_calls == 1);
+    assert(ncm_string_equal(mpd_trace.status_message,
+                            mpd_trace.status_message_len,
+                            STRLIT_ARGS("Could not fetch songs: "
+                                        "songs failure")));
+    assert(!screen.tags_update_requested);
 
     destroy_screen(&screen);
     return;
@@ -1361,5 +1529,65 @@ __wrap_nc_screen_draw_vertical_separator(int64 x) {
         window_trace.separator_x[window_trace.separator_calls] = x;
     }
     window_trace.separator_calls += 1;
+    return;
+}
+
+bool
+__wrap_ncm_mpd_client_get_directory_list(NcmMpdClient *client, char *path,
+                                         NcmDirectoryArray *directories,
+                                         NcmError *error) {
+    (void)client;
+    mpd_trace.get_directory_list_calls += 1;
+    mpd_trace.directory_path_len = 0;
+    if (path != NULL) {
+        mpd_trace.directory_path_len = (int32)strlen(path);
+        assert(mpd_trace.directory_path_len
+               < (int32)SIZEOF(mpd_trace.directory_path));
+        ncm_memcpy(mpd_trace.directory_path, path,
+                   mpd_trace.directory_path_len);
+        mpd_trace.directory_path[mpd_trace.directory_path_len] = '\0';
+    }
+    if (!mpd_trace.get_directory_list_result) {
+        ncm_error_set(error, EIO, STRLIT_ARGS("directory failure"));
+        return false;
+    }
+    assert(ncm_directory_array_copy(directories, &mpd_trace.directories));
+    return true;
+}
+
+bool
+__wrap_ncm_mpd_client_get_songs(NcmMpdClient *client, char *path,
+                                NcmMpdSongList *songs, NcmError *error) {
+    (void)client;
+    mpd_trace.get_songs_calls += 1;
+    mpd_trace.songs_path_len = 0;
+    if (path != NULL) {
+        mpd_trace.songs_path_len = (int32)strlen(path);
+        assert(mpd_trace.songs_path_len
+               < (int32)SIZEOF(mpd_trace.songs_path));
+        ncm_memcpy(mpd_trace.songs_path, path, mpd_trace.songs_path_len);
+        mpd_trace.songs_path[mpd_trace.songs_path_len] = '\0';
+    }
+    if (!mpd_trace.get_songs_result) {
+        ncm_error_set(error, EIO, STRLIT_ARGS("songs failure"));
+        return false;
+    }
+    assert(ncm_mpd_song_list_copy(songs, &mpd_trace.songs));
+    return true;
+}
+
+void
+__wrap_ncm_statusbar_print_cstring(int32 delay_seconds, char *message) {
+    (void)delay_seconds;
+    mpd_trace.status_calls += 1;
+    mpd_trace.status_message_len = 0;
+    if (message != NULL) {
+        mpd_trace.status_message_len = (int32)strlen(message);
+        assert(mpd_trace.status_message_len
+               < (int32)SIZEOF(mpd_trace.status_message));
+        ncm_memcpy(mpd_trace.status_message, message,
+                   mpd_trace.status_message_len);
+        mpd_trace.status_message[mpd_trace.status_message_len] = '\0';
+    }
     return;
 }
