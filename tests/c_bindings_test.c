@@ -513,6 +513,18 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_PREVIOUS_SCREEN,
     };
 #endif
+    enum NcmActionType browser_actions[] = {
+        NCM_ACTION_SHOW_BROWSER,
+        NCM_ACTION_ENTER_DIRECTORY,
+        NCM_ACTION_JUMP_TO_PARENT_DIRECTORY,
+        NCM_ACTION_TOGGLE_BROWSER_SORT_MODE,
+        NCM_ACTION_CHANGE_BROWSE_MODE,
+        NCM_ACTION_DELETE_BROWSER_ITEMS,
+        NCM_ACTION_EDIT_DIRECTORY_NAME,
+        NCM_ACTION_EDIT_PLAYLIST_NAME,
+        NCM_ACTION_JUMP_TO_BROWSER,
+        NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR,
+    };
     enum NcmActionType playlist_actions[] = {
         NCM_ACTION_DUMMY,
         NCM_ACTION_UPDATE_ENVIRONMENT,
@@ -717,6 +729,12 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_SHOW_VISUALIZER));
     REQUIRE(!app_binding_migration_action_is_c_safe(
         NCM_ACTION_TOGGLE_VISUALIZATION_TYPE));
+    for (int32 i = 0; i < NCM_ARRAY_LEN(browser_actions); i += 1) {
+        REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
+            browser_actions[i], NCM_SCREEN_TYPE_BROWSER));
+    }
+    REQUIRE(!app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_BROWSER));
     REQUIRE(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_PLAYLIST));
     for (int32 i = 0; i < NCM_ARRAY_LEN(playlist_actions); i += 1) {

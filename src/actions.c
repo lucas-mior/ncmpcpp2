@@ -4761,6 +4761,8 @@ action_runtime_toggle_display_mode(void) {
 
 static bool
 action_runtime_toggle_browser_sort_mode(void) {
+    char *message;
+
     if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
         return false;
     }
@@ -4768,6 +4770,29 @@ action_runtime_toggle_browser_sort_mode(void) {
     if (Config.browser_sort_mode >= NCM_SORT_MODE_LAST) {
         Config.browser_sort_mode = NCM_SORT_MODE_TYPE;
     }
+
+    switch (Config.browser_sort_mode) {
+    case NCM_SORT_MODE_TYPE:
+        message = (char *)"Sort songs by: type";
+        break;
+    case NCM_SORT_MODE_NAME:
+        message = (char *)"Sort songs by: name";
+        break;
+    case NCM_SORT_MODE_MODIFICATION_TIME:
+        message = (char *)"Sort songs by: modification time";
+        break;
+    case NCM_SORT_MODE_CUSTOM_FORMAT:
+        message = (char *)"Sort songs by: custom format";
+        break;
+    case NCM_SORT_MODE_NONE:
+        message = (char *)"Do not sort songs";
+        break;
+    case NCM_SORT_MODE_LAST:
+        message = (char *)"Sort songs by: type";
+        break;
+    }
+    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                message);
     (void)native_browser_screen_sort(native_c_screen_browser());
     app_controller_request_current_screen_update();
     return true;
@@ -5236,7 +5261,6 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_PREVIOUS_SCREEN:
     case NCM_ACTION_SHOW_HELP:
     case NCM_ACTION_SHOW_PLAYLIST:
-    case NCM_ACTION_SHOW_BROWSER:
     case NCM_ACTION_SHOW_SEARCH_ENGINE:
     case NCM_ACTION_SHOW_PLAYLIST_EDITOR:
     case NCM_ACTION_SHOW_SERVER_INFO:
@@ -5440,7 +5464,16 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return false;
 #endif
     case NCM_ACTION_JUMP_TO_BROWSER:
+        return action_runtime_has_current_song();
     case NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR:
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+            NcmMpdItem *item;
+
+            item = native_browser_screen_current_item(
+                native_c_screen_browser());
+            return (item != NULL)
+                && (ncm_mpd_item_kind(item) == NCM_MPD_ITEM_PLAYLIST);
+        }
         return true;
     case NCM_ACTION_JUMP_TO_MEDIA_LIBRARY:
         return action_runtime_has_current_song();
@@ -5531,8 +5564,10 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_SHOW_TAG_EDITOR:
         return true;
 #endif
+    case NCM_ACTION_SHOW_BROWSER:
+        return !action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER);
     case NCM_ACTION_CHANGE_BROWSE_MODE:
-        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER);
+        return false;
     case NCM_ACTION_RESET_SEARCH_ENGINE:
         return action_runtime_current_screen_is(
             NCM_SCREEN_TYPE_SEARCH_ENGINE);
@@ -5935,7 +5970,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_SHOW_BROWSER:
         return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_BROWSER);
     case NCM_ACTION_CHANGE_BROWSE_MODE:
-        return true;
+        return false;
     case NCM_ACTION_SHOW_SEARCH_ENGINE:
         return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_SEARCH_ENGINE);
     case NCM_ACTION_RESET_SEARCH_ENGINE:
