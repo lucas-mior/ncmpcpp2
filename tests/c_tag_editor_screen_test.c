@@ -45,43 +45,40 @@ typedef struct TagEditorMpdTrace {
     bool get_songs_result;
 } TagEditorMpdTrace;
 
-typedef struct TagEditorBridgeTrace {
-    NcWindow active_window;
-    char *title;
-    MEVENT mouse_event;
-    enum NcScroll scroll_where;
+typedef struct TagEditorHookTrace {
+    char prompt_label[64];
+    char prompt_initial[64];
+    char status_message[128];
+    char update_directory[128];
+    char confirm_message[128];
 
-    int32 active_window_calls;
-    int32 sync_calls;
-    int32 refresh_calls;
-    int32 refresh_window_calls;
-    int32 scroll_calls;
-    int32 action_runnable_calls;
-    int32 run_action_calls;
-    int32 switch_to_calls;
-    int32 resize_calls;
-    int32 title_calls;
-    int32 update_calls;
-    int32 clear_directories_calls;
-    int32 mouse_calls;
+    int32 prompt_label_len;
+    int32 prompt_initial_len;
+    int32 status_message_len;
+    int32 update_directory_len;
+    int32 confirm_message_len;
+    int32 prompt_calls;
+    int32 confirm_calls;
+    int32 status_message_calls;
+    int32 update_directory_calls;
 
-    bool action_runnable_result;
-    bool run_action_result;
-} TagEditorBridgeTrace;
+    enum NativeTagEditorPromptResult prompt_result;
+    bool confirm_result;
+} TagEditorHookTrace;
 
 static TagEditorWindowTrace window_trace;
-static TagEditorBridgeTrace bridge_trace;
+static TagEditorHookTrace hook_trace;
 static TagEditorMpdTrace mpd_trace;
 
 void __wrap_nc_window_print_char(NcWindow *window, char ch);
 
 static void reset_window_trace(void);
-static void reset_bridge_trace(void);
+static void reset_hook_trace(void);
 static void reset_mpd_trace(void);
 static void destroy_mpd_trace(void);
 static void init_screen(NativeTagEditorScreen *screen);
 static void destroy_screen(NativeTagEditorScreen *screen);
-static NativeTagEditorBridge bridge_callbacks(void);
+static NativeTagEditorHooks tag_editor_test_hooks(void);
 static void append_song(NativeTagEditorScreen *screen, char *uri,
                         int32 uri_len, char *artist, int32 artist_len);
 static void append_song_with_title(NativeTagEditorScreen *screen, char *uri,
@@ -96,6 +93,13 @@ static void assert_menu_string_pair(NcMenuStringPair *pair,
                                     char *first, int32 first_len,
                                     char *second, int32 second_len);
 static void assert_song_uri(NcmSong *song, char *uri, int32 uri_len);
+static void assert_mutable_song_tag_value(NcmMutableSong *song,
+                                          enum NcmTagsField field,
+                                          int32 idx, char *expected,
+                                          int32 expected_len);
+static void assert_mutable_song_tag_missing(NcmMutableSong *song,
+                                            enum NcmTagsField field,
+                                            int32 idx);
 static void set_test_buffer(NcBuffer *buffer, char *data, int32 data_len);
 static void assert_tag_editor_menu_config(NcMenu *menu,
                                           NcBuffer *highlight_prefix,
@@ -117,8 +121,9 @@ static void test_menu_configuration_and_highlights(void);
 static void test_title_visibility_configuration(void);
 static void test_native_resize_preserves_state(void);
 static void test_small_geometry_bounds(void);
-static void test_bridge_callback_contract(void);
-static void test_bridge_run_action_guard(void);
+static void test_tag_editor_hooks_are_stored(void);
+static void test_tag_editor_native_callbacks_do_not_delegate(void);
+static void test_tag_editor_run_current_waits_for_native_state_machine(void);
 static void test_directory_filter_and_search_contract(void);
 static void test_tag_filter_search_and_selection_contract(void);
 static void test_parser_menu_contract(void);
@@ -148,6 +153,10 @@ static void test_tag_editor_mouse_wheel_directory_change(void);
 static void test_tag_editor_tag_type_scroll_refreshes_tags(void);
 static void test_tag_editor_search_result_directory_change(void);
 static void test_tag_editor_parser_mouse_rows(void);
+static void test_tag_editor_selected_extended_numbering_uses_targets(void);
+static void test_tag_editor_capitalizes_utf8_words(void);
+static void test_tag_editor_generate_filename_honors_config(void);
+static void test_tag_editor_action_rows_ignore_title_visibility(void);
 
 int
 main(void) {
@@ -161,8 +170,9 @@ main(void) {
     test_title_visibility_configuration();
     test_native_resize_preserves_state();
     test_small_geometry_bounds();
-    test_bridge_callback_contract();
-    test_bridge_run_action_guard();
+    test_tag_editor_hooks_are_stored();
+    test_tag_editor_native_callbacks_do_not_delegate();
+    test_tag_editor_run_current_waits_for_native_state_machine();
     test_directory_filter_and_search_contract();
     test_tag_filter_search_and_selection_contract();
     test_parser_menu_contract();
@@ -192,6 +202,10 @@ main(void) {
     test_tag_editor_tag_type_scroll_refreshes_tags();
     test_tag_editor_search_result_directory_change();
     test_tag_editor_parser_mouse_rows();
+    test_tag_editor_selected_extended_numbering_uses_targets();
+    test_tag_editor_capitalizes_utf8_words();
+    test_tag_editor_generate_filename_honors_config();
+    test_tag_editor_action_rows_ignore_title_visibility();
 
     destroy_mpd_trace();
     exit(EXIT_SUCCESS);
@@ -222,11 +236,10 @@ destroy_mpd_trace(void) {
 }
 
 static void
-reset_bridge_trace(void) {
-    bridge_trace = (TagEditorBridgeTrace){0};
-    bridge_trace.title = (char *)"Legacy tag editor";
-    bridge_trace.action_runnable_result = true;
-    bridge_trace.run_action_result = true;
+reset_hook_trace(void) {
+    hook_trace = (TagEditorHookTrace){0};
+    hook_trace.prompt_result = NATIVE_TAG_EDITOR_PROMPT_ACCEPTED;
+    hook_trace.confirm_result = true;
     return;
 }
 
@@ -343,6 +356,26 @@ assert_song_uri(NcmSong *song, char *uri, int32 uri_len) {
 }
 
 static void
+assert_mutable_song_tag_value(NcmMutableSong *song,
+                              enum NcmTagsField field, int32 idx,
+                              char *expected, int32 expected_len) {
+    NcmStringView view;
+
+    assert(ncm_mutable_song_get_tag(song, field, idx, &view));
+    assert(ncm_string_equal(view.data, view.len, expected, expected_len));
+    return;
+}
+
+static void
+assert_mutable_song_tag_missing(NcmMutableSong *song,
+                                enum NcmTagsField field, int32 idx) {
+    NcmStringView view;
+
+    assert(!ncm_mutable_song_get_tag(song, field, idx, &view));
+    return;
+}
+
+static void
 assert_printed_equals(char *expected, int32 expected_len) {
     assert(window_trace.printed_len == expected_len);
     assert(ncm_string_equal(window_trace.printed, window_trace.printed_len,
@@ -397,145 +430,93 @@ restore_rendering_config(NcBuffer *old_modified_prefix, char *old_empty_tag,
     return;
 }
 
-static NcWindow *
-bridge_active_window(void *user) {
-    TagEditorBridgeTrace *trace;
-
-    trace = user;
-    trace->active_window_calls += 1;
-    return &trace->active_window;
-}
-
 static void
-bridge_sync(void *user) {
-    TagEditorBridgeTrace *trace;
+tag_editor_copy_trace_string(char *dst, int32 dst_cap, int32 *dst_len,
+                             char *src, int32 src_len) {
+    int32 copy_len;
 
-    trace = user;
-    trace->sync_calls += 1;
+    copy_len = src_len;
+    if (copy_len >= dst_cap) {
+        copy_len = dst_cap - 1;
+    }
+    if ((src != NULL) && (copy_len > 0)) {
+        memcpy(dst, src, (size_t)copy_len);
+    }
+    dst[copy_len] = '\0';
+    *dst_len = copy_len;
     return;
 }
 
-static void
-bridge_refresh(void *user) {
-    TagEditorBridgeTrace *trace;
+static enum NativeTagEditorPromptResult
+tag_editor_test_prompt_hook(
+    void *user, char *label, int32 label_len, NcmStringView initial,
+    NcmBuffer *result) {
+    TagEditorHookTrace *trace;
 
     trace = user;
-    trace->refresh_calls += 1;
-    return;
-}
-
-static void
-bridge_refresh_window(void *user) {
-    TagEditorBridgeTrace *trace;
-
-    trace = user;
-    trace->refresh_window_calls += 1;
-    return;
-}
-
-static void
-bridge_scroll(void *user, enum NcScroll where) {
-    TagEditorBridgeTrace *trace;
-
-    trace = user;
-    trace->scroll_calls += 1;
-    trace->scroll_where = where;
-    return;
+    trace->prompt_calls += 1;
+    tag_editor_copy_trace_string(
+        trace->prompt_label, NCM_ARRAY_LEN(trace->prompt_label),
+        &trace->prompt_label_len, label, label_len);
+    tag_editor_copy_trace_string(
+        trace->prompt_initial, NCM_ARRAY_LEN(trace->prompt_initial),
+        &trace->prompt_initial_len, initial.data, initial.len);
+    if (trace->prompt_result == NATIVE_TAG_EDITOR_PROMPT_ACCEPTED) {
+        assert(ncm_buffer_set(result, STRLIT_ARGS("accepted value")));
+    }
+    return trace->prompt_result;
 }
 
 static bool
-bridge_action_runnable(void *user) {
-    TagEditorBridgeTrace *trace;
+tag_editor_test_confirm_hook(
+    void *user, char *message, int32 message_len) {
+    TagEditorHookTrace *trace;
 
     trace = user;
-    trace->action_runnable_calls += 1;
-    return trace->action_runnable_result;
-}
-
-static bool
-bridge_run_action(void *user) {
-    TagEditorBridgeTrace *trace;
-
-    trace = user;
-    trace->run_action_calls += 1;
-    return trace->run_action_result;
+    trace->confirm_calls += 1;
+    tag_editor_copy_trace_string(
+        trace->confirm_message, NCM_ARRAY_LEN(trace->confirm_message),
+        &trace->confirm_message_len, message, message_len);
+    return trace->confirm_result;
 }
 
 static void
-bridge_switch_to(void *user) {
-    TagEditorBridgeTrace *trace;
+tag_editor_test_status_hook(
+    void *user, char *message, int32 message_len) {
+    TagEditorHookTrace *trace;
 
     trace = user;
-    trace->switch_to_calls += 1;
+    trace->status_message_calls += 1;
+    tag_editor_copy_trace_string(
+        trace->status_message, NCM_ARRAY_LEN(trace->status_message),
+        &trace->status_message_len, message, message_len);
     return;
 }
 
 static void
-bridge_resize(void *user) {
-    TagEditorBridgeTrace *trace;
+tag_editor_test_update_directory_hook(
+    void *user, char *directory, int32 directory_len) {
+    TagEditorHookTrace *trace;
 
     trace = user;
-    trace->resize_calls += 1;
+    trace->update_directory_calls += 1;
+    tag_editor_copy_trace_string(
+        trace->update_directory, NCM_ARRAY_LEN(trace->update_directory),
+        &trace->update_directory_len, directory, directory_len);
     return;
 }
 
-static char *
-bridge_title(void *user) {
-    TagEditorBridgeTrace *trace;
+static NativeTagEditorHooks
+tag_editor_test_hooks(void) {
+    NativeTagEditorHooks hooks;
 
-    trace = user;
-    trace->title_calls += 1;
-    return trace->title;
-}
-
-static void
-bridge_update(void *user) {
-    TagEditorBridgeTrace *trace;
-
-    trace = user;
-    trace->update_calls += 1;
-    return;
-}
-
-static void
-bridge_clear_directories(void *user) {
-    TagEditorBridgeTrace *trace;
-
-    trace = user;
-    trace->clear_directories_calls += 1;
-    return;
-}
-
-static void
-bridge_mouse_button_pressed(void *user, MEVENT event) {
-    TagEditorBridgeTrace *trace;
-
-    trace = user;
-    trace->mouse_calls += 1;
-    trace->mouse_event = event;
-    return;
-}
-
-static NativeTagEditorBridge
-bridge_callbacks(void) {
-    NativeTagEditorBridge bridge;
-
-    bridge = (NativeTagEditorBridge){0};
-    bridge.active_window = bridge_active_window;
-    bridge.sync = bridge_sync;
-    bridge.refresh = bridge_refresh;
-    bridge.refresh_window = bridge_refresh_window;
-    bridge.scroll = bridge_scroll;
-    bridge.action_runnable = bridge_action_runnable;
-    bridge.run_action = bridge_run_action;
-    bridge.switch_to = bridge_switch_to;
-    bridge.resize = bridge_resize;
-    bridge.title = bridge_title;
-    bridge.update = bridge_update;
-    bridge.clear_directories = bridge_clear_directories;
-    bridge.mouse_button_pressed = bridge_mouse_button_pressed;
-    bridge.user = &bridge_trace;
-    return bridge;
+    hooks = (NativeTagEditorHooks){0};
+    hooks.prompt = tag_editor_test_prompt_hook;
+    hooks.confirm = tag_editor_test_confirm_hook;
+    hooks.status_message = tag_editor_test_status_hook;
+    hooks.update_directory = tag_editor_test_update_directory_hook;
+    hooks.user = &hook_trace;
+    return hooks;
 }
 
 static void
@@ -821,91 +802,95 @@ test_small_geometry_bounds(void) {
 }
 
 static void
-test_bridge_callback_contract(void) {
+test_tag_editor_hooks_are_stored(void) {
     NativeTagEditorScreen screen;
-    NcScreen *base;
-    MEVENT event;
+    NativeTagEditorHooks hooks;
 
     init_screen(&screen);
-    reset_bridge_trace();
-    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
-    base = native_tag_editor_screen_base(&screen);
+    reset_hook_trace();
+    hooks = tag_editor_test_hooks();
+    native_tag_editor_screen_set_hooks(&screen, hooks);
 
-    assert(nc_screen_active_window(base) == &screen.directories_window);
-    assert(bridge_trace.active_window_calls == 0);
-
-    nc_screen_refresh(base);
-    assert(bridge_trace.sync_calls == 0);
-    assert(bridge_trace.refresh_calls == 0);
-    assert(window_trace.display_calls == 3);
-
-    nc_screen_refresh_window(base);
-    assert(bridge_trace.sync_calls == 0);
-    assert(bridge_trace.refresh_window_calls == 0);
-    assert(window_trace.refresh_calls == 4);
-
-    nc_screen_scroll(base, NC_SCROLL_PAGE_DOWN);
-    assert(bridge_trace.scroll_calls == 0);
-
-    assert(nc_screen_can_run_current(base));
-    assert(bridge_trace.action_runnable_calls == 1);
-    assert(nc_screen_run_current(base));
-    assert(bridge_trace.action_runnable_calls == 3);
-    assert(bridge_trace.run_action_calls == 1);
-
-    nc_screen_switch_to(base);
-    assert(bridge_trace.switch_to_calls == 1);
-
-    nc_screen_request_resize(base);
-    assert(nc_screen_has_to_be_resized(base));
-    nc_screen_resize(base);
-    assert(bridge_trace.resize_calls == 1);
-    assert(!nc_screen_has_to_be_resized(base));
-
-    assert(ncm_string_equal(nc_screen_title(base),
-                            STRLIT_LEN("Legacy tag editor"),
-                            STRLIT_ARGS("Legacy tag editor")));
-    assert(bridge_trace.title_calls == 1);
-
-    reset_mpd_trace();
-    nc_screen_request_update(base);
-    assert(nc_screen_has_to_be_updated(base));
-    nc_screen_update(base);
-    assert(bridge_trace.update_calls == 0);
-    assert(bridge_trace.sync_calls == 0);
-    assert(mpd_trace.get_directory_list_calls == 1);
-    assert(mpd_trace.get_songs_calls == 1);
-    assert(!nc_screen_has_to_be_updated(base));
-
-    native_tag_editor_screen_clear_directories(&screen);
-    assert(bridge_trace.clear_directories_calls == 1);
-
-    event = (MEVENT){0};
-    event.x = 11;
-    event.y = 12;
-    event.bstate = BUTTON3_PRESSED;
-    nc_screen_mouse_button_pressed(base, event);
-    assert(bridge_trace.mouse_calls == 0);
+    assert(screen.hooks.prompt == tag_editor_test_prompt_hook);
+    assert(screen.hooks.confirm == tag_editor_test_confirm_hook);
+    assert(screen.hooks.status_message == tag_editor_test_status_hook);
+    assert(screen.hooks.update_directory
+           == tag_editor_test_update_directory_hook);
+    assert(screen.hooks.user == &hook_trace);
 
     destroy_screen(&screen);
     return;
 }
 
 static void
-test_bridge_run_action_guard(void) {
+test_tag_editor_native_callbacks_do_not_delegate(void) {
     NativeTagEditorScreen screen;
     NcScreen *base;
+    MEVENT event;
 
     init_screen(&screen);
-    reset_bridge_trace();
-    bridge_trace.action_runnable_result = false;
-    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
     base = native_tag_editor_screen_base(&screen);
 
+    assert(nc_screen_active_window(base) == &screen.directories_window);
+
+    nc_screen_refresh(base);
+    assert(window_trace.display_calls == 3);
+
+    nc_screen_refresh_window(base);
+    assert(window_trace.refresh_calls == 4);
+
+    nc_screen_scroll(base, NC_SCROLL_PAGE_DOWN);
     assert(!nc_screen_can_run_current(base));
     assert(!nc_screen_run_current(base));
-    assert(bridge_trace.action_runnable_calls == 2);
-    assert(bridge_trace.run_action_calls == 0);
+
+    assert(ncm_string_equal(nc_screen_title(base),
+                            STRLIT_LEN("Tag editor"),
+                            STRLIT_ARGS("Tag editor")));
+
+    reset_mpd_trace();
+    nc_screen_request_update(base);
+    assert(nc_screen_has_to_be_updated(base));
+    nc_screen_update(base);
+    assert(mpd_trace.get_directory_list_calls == 1);
+    assert(mpd_trace.get_songs_calls == 1);
+    assert(!nc_screen_has_to_be_updated(base));
+
+    native_tag_editor_screen_clear_directories(&screen);
+    assert(nc_menu_empty(nc_editor_pair_menu_base(&screen.directories)));
+
+    event = (MEVENT){0};
+    event.x = 11;
+    event.y = 12;
+    event.bstate = BUTTON3_PRESSED;
+    nc_screen_mouse_button_pressed(base, event);
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_run_current_waits_for_native_state_machine(void) {
+    NativeTagEditorScreen screen;
+    NcScreen *base;
+    NcMenu *tag_types;
+
+    init_screen(&screen);
+    append_song_with_title(&screen, STRLIT_ARGS("one.flac"),
+                           STRLIT_ARGS("Artist"), STRLIT_ARGS("Title"));
+    native_tag_editor_screen_next_column(&screen);
+
+    base = native_tag_editor_screen_base(&screen);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+
+    assert(nc_menu_goto_selectable(tag_types, 0));
+    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
+    assert(!nc_screen_can_run_current(base));
+    assert(!nc_screen_run_current(base));
+
+    assert(nc_menu_goto_selectable(tag_types, 20));
+    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
+    assert(!nc_screen_can_run_current(base));
+    assert(!nc_screen_run_current(base));
 
     destroy_screen(&screen);
     return;
@@ -1063,7 +1048,11 @@ test_native_state_ownership_without_bridge(void) {
 
     init_screen(&screen);
 
-    assert(screen.bridge.user == NULL);
+    assert(screen.hooks.user == NULL);
+    assert(screen.hooks.prompt == NULL);
+    assert(screen.hooks.confirm == NULL);
+    assert(screen.hooks.status_message == NULL);
+    assert(screen.hooks.update_directory == NULL);
     assert(native_tag_editor_screen_current_dir(&screen, &current_dir));
     assert(ncm_string_equal(current_dir.data, current_dir.len,
                             STRLIT_ARGS("/")));
@@ -1337,23 +1326,17 @@ test_native_refresh_does_not_delegate_rendering(void) {
     NativeTagEditorScreen screen;
 
     init_screen(&screen);
-    reset_bridge_trace();
-    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
     assert(native_tag_editor_screen_add_directory(
                &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
 
     reset_window_trace();
     nc_screen_refresh(native_tag_editor_screen_base(&screen));
-    assert(bridge_trace.sync_calls == 0);
-    assert(bridge_trace.refresh_calls == 0);
     assert(window_trace.display_calls == 3);
     assert(window_trace.refresh_calls == 3);
     assert(window_trace.printed_len > 0);
 
     reset_window_trace();
     nc_screen_refresh_window(native_tag_editor_screen_base(&screen));
-    assert(bridge_trace.sync_calls == 0);
-    assert(bridge_trace.refresh_window_calls == 0);
     assert(window_trace.refresh_calls == 1);
 
     destroy_screen(&screen);
@@ -1375,13 +1358,9 @@ test_native_update_fetches_directories_and_songs(void) {
     append_mpd_song(&mpd_trace.songs, STRLIT_ARGS("alpha.flac"));
 
     init_screen(&screen);
-    reset_bridge_trace();
-    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
     nc_screen_request_update(native_tag_editor_screen_base(&screen));
     nc_screen_update(native_tag_editor_screen_base(&screen));
 
-    assert(bridge_trace.update_calls == 0);
-    assert(bridge_trace.sync_calls == 0);
     assert(mpd_trace.get_directory_list_calls == 1);
     assert(mpd_trace.get_songs_calls == 1);
     assert(ncm_string_equal(mpd_trace.directory_path,
@@ -1430,12 +1409,9 @@ test_native_update_reports_fetch_failures(void) {
     reset_mpd_trace();
     mpd_trace.get_directory_list_result = false;
     init_screen(&screen);
-    reset_bridge_trace();
-    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
 
     nc_screen_request_update(native_tag_editor_screen_base(&screen));
     nc_screen_update(native_tag_editor_screen_base(&screen));
-    assert(bridge_trace.update_calls == 0);
     assert(mpd_trace.get_directory_list_calls == 1);
     assert(mpd_trace.status_calls == 1);
     assert(ncm_string_equal(mpd_trace.status_message,
@@ -1807,8 +1783,6 @@ test_tag_editor_mouse_directory_click_enters_and_clears(void) {
     assert(native_tag_editor_screen_add_directory(
                &screen, STRLIT_ARGS("Beta"), STRLIT_ARGS("/Beta")));
     append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Artist"));
-    reset_bridge_trace();
-    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
 
     event = (MEVENT){0};
     event.x = (int32)screen.directories_window.start_x + 1;
@@ -1825,7 +1799,6 @@ test_tag_editor_mouse_directory_click_enters_and_clears(void) {
     assert(nc_menu_empty(nc_tag_row_menu_base(&screen.tags)));
     assert(screen.directories_update_requested);
     assert(screen.tags_update_requested);
-    assert(bridge_trace.mouse_calls == 0);
 
     destroy_screen(&screen);
     return;
@@ -1845,8 +1818,6 @@ test_tag_editor_mouse_tag_type_and_tag_clicks(void) {
                            STRLIT_ARGS("Artist"), STRLIT_ARGS("Title"));
     append_song_with_title(&screen, STRLIT_ARGS("two.flac"),
                            STRLIT_ARGS("Artist"), STRLIT_ARGS("Other"));
-    reset_bridge_trace();
-    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
 
     tag_types = nc_editor_string_menu_base(&screen.tag_types);
     tags = nc_tag_row_menu_base(&screen.tags);
@@ -1859,8 +1830,6 @@ test_tag_editor_mouse_tag_type_and_tag_clicks(void) {
                                    event);
     assert(screen.active_column == NATIVE_TAG_EDITOR_COLUMN_TAG_TYPES);
     assert(nc_menu_highlight(tag_types) == 1);
-    assert(bridge_trace.run_action_calls == 1);
-    assert(bridge_trace.mouse_calls == 0);
     assert(nc_menu_item_count(tags) == 2);
 
     event = (MEVENT){0};
@@ -1871,8 +1840,6 @@ test_tag_editor_mouse_tag_type_and_tag_clicks(void) {
                                    event);
     assert(screen.active_column == NATIVE_TAG_EDITOR_COLUMN_TAGS);
     assert(nc_menu_highlight(tags) == 1);
-    assert(bridge_trace.run_action_calls == 2);
-    assert(bridge_trace.mouse_calls == 0);
 
     destroy_screen(&screen);
     return;
@@ -1991,8 +1958,6 @@ test_tag_editor_parser_mouse_rows(void) {
     assert(native_tag_editor_screen_prepare_parser_rows(
                &screen, NATIVE_TAG_EDITOR_PARSER_TAGS_FROM_FILENAME,
                STRLIT_ARGS("%a - %t")));
-    reset_bridge_trace();
-    native_tag_editor_screen_set_bridge(&screen, bridge_callbacks());
     parser_rows = nc_editor_string_menu_base(&screen.parser_rows);
 
     event = (MEVENT){0};
@@ -2003,10 +1968,150 @@ test_tag_editor_parser_mouse_rows(void) {
                                    event);
 
     assert(nc_menu_highlight(parser_rows) == 4);
-    assert(bridge_trace.run_action_calls == 1);
-    assert(bridge_trace.mouse_calls == 0);
 
     destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_selected_extended_numbering_uses_targets(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tags;
+    NcmMutableSong *song;
+
+    init_screen(&screen);
+    append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Artist"));
+    append_song(&screen, STRLIT_ARGS("two.flac"), STRLIT_ARGS("Artist"));
+    append_song(&screen, STRLIT_ARGS("three.flac"), STRLIT_ARGS("Artist"));
+
+    tags = nc_tag_row_menu_base(&screen.tags);
+    song = nc_menu_active_item_at(tags, 0);
+    assert(song != NULL);
+    assert(ncm_mutable_song_set_original_tag(
+               song, NCM_TAGS_FIELD_TRACK, 1, STRLIT_ARGS("stale")));
+
+    assert(nc_menu_set_position_selected(tags, 0, true));
+    assert(nc_menu_set_position_selected(tags, 2, true));
+    assert(native_tag_editor_screen_number_tracks(&screen, true));
+
+    song = nc_menu_active_item_at(tags, 0);
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TRACK, 0,
+                                  STRLIT_ARGS("1/2"));
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TRACK, 1,
+                                  STRLIT_ARGS(""));
+
+    song = nc_menu_active_item_at(tags, 1);
+    assert_mutable_song_tag_missing(song, NCM_TAGS_FIELD_TRACK, 0);
+
+    song = nc_menu_active_item_at(tags, 2);
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TRACK, 0,
+                                  STRLIT_ARGS("2/2"));
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_capitalizes_utf8_words(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tags;
+    NcmMutableSong *song;
+
+    init_screen(&screen);
+    append_song(&screen, STRLIT_ARGS("one.flac"),
+                STRLIT_ARGS("artist name"));
+
+    tags = nc_tag_row_menu_base(&screen.tags);
+    song = nc_menu_active_item_at(tags, 0);
+    assert(song != NULL);
+    assert(ncm_mutable_song_set_original_tag(
+               song, NCM_TAGS_FIELD_TITLE, 0,
+               STRLIT_ARGS("first 😊 second")));
+
+    native_tag_editor_screen_capitalize_first_letters(&screen);
+
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_TITLE, 0,
+                                  STRLIT_ARGS("First 😊 Second"));
+    assert_mutable_song_tag_value(song, NCM_TAGS_FIELD_ARTIST, 0,
+                                  STRLIT_ARGS("Artist Name"));
+
+    destroy_screen(&screen);
+    return;
+}
+
+static void
+test_tag_editor_generate_filename_honors_config(void) {
+    NcmMutableSong song;
+    NcmBuffer filename;
+    bool old_win32;
+
+    old_win32 = Config.generate_win32_compatible_filenames;
+    ncm_mutable_song_init(&song);
+    ncm_buffer_init(&filename);
+
+    assert(ncm_mutable_song_set_original_tag(
+               &song, NCM_TAGS_FIELD_ARTIST, 0, STRLIT_ARGS("a:b")));
+    assert(ncm_mutable_song_set_original_tag(
+               &song, NCM_TAGS_FIELD_TITLE, 0, STRLIT_ARGS("t/u")));
+
+    Config.generate_win32_compatible_filenames = false;
+    assert(native_tag_editor_generate_filename(
+               &song, STRLIT_ARGS("%a - %t"), &filename));
+    assert(ncm_string_equal(filename.data, filename.len,
+                            STRLIT_ARGS("a:b - tu")));
+
+    ncm_buffer_clear(&filename);
+    Config.generate_win32_compatible_filenames = true;
+    assert(native_tag_editor_generate_filename(
+               &song, STRLIT_ARGS("%a - %t"), &filename));
+    assert(ncm_string_equal(filename.data, filename.len,
+                            STRLIT_ARGS("ab - tu")));
+
+    Config.generate_win32_compatible_filenames = old_win32;
+    ncm_buffer_destroy(&filename);
+    ncm_mutable_song_destroy(&song);
+    return;
+}
+
+static void
+test_tag_editor_action_rows_ignore_title_visibility(void) {
+    NativeTagEditorScreen screen;
+    NcMenu *tag_types;
+    bool old_visibility;
+
+    old_visibility = Config.titles_visibility;
+
+    Config.titles_visibility = false;
+    init_screen(&screen);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+
+    assert(nc_menu_item_count(tag_types) == 19);
+    assert(nc_menu_goto_selectable(tag_types, 14));
+    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
+    assert(nc_menu_goto_selectable(tag_types, 15));
+    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
+    assert(nc_menu_goto_selectable(tag_types, 17));
+    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
+    assert(nc_menu_goto_selectable(tag_types, 18));
+    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
+    destroy_screen(&screen);
+
+    Config.titles_visibility = true;
+    init_screen(&screen);
+    tag_types = nc_editor_string_menu_base(&screen.tag_types);
+
+    assert(nc_menu_item_count(tag_types) == 21);
+    assert(nc_menu_goto_selectable(tag_types, 16));
+    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
+    assert(nc_menu_goto_selectable(tag_types, 17));
+    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
+    assert(nc_menu_goto_selectable(tag_types, 19));
+    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
+    assert(nc_menu_goto_selectable(tag_types, 20));
+    assert(native_tag_editor_screen_current_tag_type_actionable(&screen));
+
+    destroy_screen(&screen);
+    Config.titles_visibility = old_visibility;
     return;
 }
 

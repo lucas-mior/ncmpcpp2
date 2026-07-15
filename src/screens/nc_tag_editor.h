@@ -27,22 +27,22 @@ enum NativeTagEditorParserMode {
 };
 
 
-typedef struct NativeTagEditorBridge {
-    NcWindow *(*active_window)(void *user);
-    void (*sync)(void *user);
-    void (*refresh)(void *user);
-    void (*refresh_window)(void *user);
-    void (*scroll)(void *user, enum NcScroll where);
-    bool (*action_runnable)(void *user);
-    bool (*run_action)(void *user);
-    void (*switch_to)(void *user);
-    void (*resize)(void *user);
-    char *(*title)(void *user);
-    void (*update)(void *user);
-    void (*clear_directories)(void *user);
-    void (*mouse_button_pressed)(void *user, MEVENT event);
+enum NativeTagEditorPromptResult {
+    NATIVE_TAG_EDITOR_PROMPT_ERROR,
+    NATIVE_TAG_EDITOR_PROMPT_ABORTED,
+    NATIVE_TAG_EDITOR_PROMPT_ACCEPTED,
+};
+
+typedef struct NativeTagEditorHooks {
+    enum NativeTagEditorPromptResult (*prompt)(
+        void *user, char *label, int32 label_len, NcmStringView initial,
+        NcmBuffer *result);
+    bool (*confirm)(void *user, char *message, int32 message_len);
+    void (*status_message)(void *user, char *message, int32 message_len);
+    void (*update_directory)(void *user, char *directory,
+                             int32 directory_len);
     void *user;
-} NativeTagEditorBridge;
+} NativeTagEditorHooks;
 
 typedef struct NativeTagEditorScreen {
     NcScreen screen;
@@ -57,7 +57,7 @@ typedef struct NativeTagEditorScreen {
     NcWindow parser_dialog_window;
     NcWindow parser_window;
     NcWindow parser_helper_window;
-    NativeTagEditorBridge bridge;
+    NativeTagEditorHooks hooks;
     NcmBuffer current_dir;
     NcmBuffer displayed_dir;
     NcmBuffer observed_dir;
@@ -127,8 +127,8 @@ void native_tag_editor_screen_init(NativeTagEditorScreen *screen,
 void native_tag_editor_screen_destroy(NativeTagEditorScreen *screen);
 NcScreen *native_tag_editor_screen_base(NativeTagEditorScreen *screen);
 
-void native_tag_editor_screen_set_bridge(NativeTagEditorScreen *screen,
-                                         NativeTagEditorBridge bridge);
+void native_tag_editor_screen_set_hooks(NativeTagEditorScreen *screen,
+                                        NativeTagEditorHooks hooks);
 NcEditorPairMenu *native_tag_editor_screen_directories(
     NativeTagEditorScreen *screen);
 NcEditorStringMenu *native_tag_editor_screen_tag_types(
