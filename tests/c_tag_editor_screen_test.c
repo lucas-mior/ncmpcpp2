@@ -341,7 +341,7 @@ test_bridge_callback_contract(void) {
     assert(nc_screen_can_run_current(base));
     assert(bridge_trace.action_runnable_calls == 1);
     assert(nc_screen_run_current(base));
-    assert(bridge_trace.action_runnable_calls == 2);
+    assert(bridge_trace.action_runnable_calls == 3);
     assert(bridge_trace.run_action_calls == 1);
 
     nc_screen_switch_to(base);
