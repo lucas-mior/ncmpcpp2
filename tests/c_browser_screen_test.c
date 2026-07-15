@@ -97,6 +97,7 @@ static void browser_mpd_trace_add_directory(NcmMpdItemArray *items,
                                             char *path, int32 path_len);
 static void browser_mpd_trace_add_song(NcmMpdItemArray *items, char *path,
                                        int32 path_len);
+bool __wrap_nc_window_has_coords(NcWindow *window, int32 *x, int32 *y);
 bool __wrap_ncm_mpd_client_get_directory_entries(
     NcmMpdClient *client, char *path, NcmMpdItemArray *items,
     NcmError *error);
@@ -891,6 +892,23 @@ browser_mpd_trace_add_song(NcmMpdItemArray *items, char *path,
     ncm_mpd_item_destroy(&item);
     ncm_song_destroy(&song);
     return;
+}
+
+bool
+__wrap_nc_window_has_coords(NcWindow *window, int32 *x, int32 *y) {
+    if ((window == NULL) || (x == NULL) || (y == NULL)) {
+        return false;
+    }
+    if ((*x < window->start_x) || (*x >= window->start_x + window->width)) {
+        return false;
+    }
+    if ((*y < window->start_y) || (*y >= window->start_y + window->height)) {
+        return false;
+    }
+
+    *x -= (int32)window->start_x;
+    *y -= (int32)window->start_y;
+    return true;
 }
 
 bool
