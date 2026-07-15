@@ -105,10 +105,13 @@ void native_browser_screen_clear_last_highlighted_directory(
 bool native_browser_screen_set_title_text(
     NativeBrowserScreen *screen, char *title, int32 title_len);
 NcmStringView native_browser_screen_title_text(NativeBrowserScreen *screen);
+void native_browser_screen_update_title_text(NativeBrowserScreen *screen);
 bool native_browser_screen_set_column_title_text(
     NativeBrowserScreen *screen, char *title, int32 title_len);
 NcmStringView native_browser_screen_column_title_text(
     NativeBrowserScreen *screen);
+void native_browser_screen_update_column_title(NativeBrowserScreen *screen);
+void native_browser_screen_draw_header(NativeBrowserScreen *screen);
 void native_browser_screen_set_display_mode(NativeBrowserScreen *screen,
                                             enum DisplayMode mode);
 enum DisplayMode native_browser_screen_display_mode(

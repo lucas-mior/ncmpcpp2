@@ -7,6 +7,7 @@
 #include "c/ncm_string.h"
 #include "screens/nc_browser.h"
 #include "settings.h"
+#include "ui_state.h"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 #define BROWSER_PARITY_TEST_PENDING(NAME) browser_parity_test_pending(#NAME)
@@ -19,6 +20,8 @@ static void test_browser_owned_state(void);
 static void test_browser_native_callbacks_ignore_bridge(void);
 static void test_browser_menu_callbacks(void);
 static void test_browser_item_rendering(void);
+static void test_browser_header_title(void);
+static void test_browser_column_title(void);
 static void test_browser_local_browsing_parity(void);
 static void test_browser_directory_expansion_parity(void);
 static void test_browser_playlist_expansion_parity(void);
@@ -61,6 +64,8 @@ main(void) {
     test_browser_native_callbacks_ignore_bridge();
     test_browser_menu_callbacks();
     test_browser_item_rendering();
+    test_browser_header_title();
+    test_browser_column_title();
     test_browser_local_browsing_parity();
     test_browser_directory_expansion_parity();
     test_browser_playlist_expansion_parity();
@@ -450,6 +455,150 @@ test_browser_item_rendering(void) {
     ncm_mpd_item_destroy(&item);
     native_browser_screen_destroy(&screen);
     browser_format_fixture_end(&fixture);
+    return;
+}
+
+static void
+test_browser_header_title(void) {
+    NativeBrowserScreen screen;
+    NcmStringView view;
+    char first_title[64];
+    int32 first_len;
+    bool old_scrolling;
+    enum Design old_design;
+    enum DisplayMode old_mode;
+    int64 old_width;
+    int64 old_height;
+
+    old_scrolling = Config.header_text_scrolling;
+    old_design = Config.design;
+    old_mode = Config.browser_display_mode;
+    old_width = ui_state_screen_width();
+    old_height = ui_state_screen_height();
+
+    Config.header_text_scrolling = false;
+    Config.design = NCM_DESIGN_CLASSIC;
+    Config.browser_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+    ui_state_set_screen_size(80, 24);
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24, nc_color_default(),
+                               nc_border_none());
+    view = native_browser_screen_title_text(&screen);
+    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("Browse: /")));
+
+    assert(native_browser_screen_set_current_directory(
+        &screen, LIT_ARGS("artists/alpha")));
+    native_browser_screen_update_title_text(&screen);
+    view = native_browser_screen_title_text(&screen);
+    assert(ncm_string_equal(view.data, view.len,
+                            LIT_ARGS("Browse: artists/alpha")));
+    assert(ncm_string_equal(nc_screen_title(native_browser_screen_base(
+                                &screen)), view.len,
+                            LIT_ARGS("Browse: artists/alpha")));
+
+    assert(screen.redraw_header);
+    native_browser_screen_draw_header(&screen);
+    assert(!screen.redraw_header);
+
+    Config.header_text_scrolling = true;
+    ui_state_set_screen_size(14, 24);
+    assert(native_browser_screen_set_current_directory(
+        &screen, LIT_ARGS("abcdefghijklmnopqrstuvwxyz")));
+    native_browser_screen_update_title_text(&screen);
+    view = native_browser_screen_title_text(&screen);
+    assert(view.len < STRLIT_LEN("Browse: abcdefghijklmnopqrstuvwxyz"));
+    assert(ncm_string_equal(view.data, STRLIT_LEN("Browse: "),
+                            LIT_ARGS("Browse: ")));
+
+    first_len = view.len;
+    assert(first_len < (int32)sizeof(first_title));
+    for (int32 i = 0; i < first_len; i += 1) {
+        first_title[i] = view.data[i];
+    }
+    first_title[first_len] = '\0';
+
+    native_browser_screen_update_title_text(&screen);
+    view = native_browser_screen_title_text(&screen);
+    assert((view.len != first_len)
+           || !ncm_string_equal(view.data, view.len,
+                                first_title, first_len));
+
+    native_browser_screen_destroy(&screen);
+    Config.header_text_scrolling = old_scrolling;
+    Config.design = old_design;
+    Config.browser_display_mode = old_mode;
+    ui_state_set_screen_size(old_width, old_height);
+    return;
+}
+
+static void
+test_browser_column_title(void) {
+    NativeBrowserScreen screen;
+    ColumnArray old_columns;
+    Column columns[2];
+    NcmStringView view;
+    enum DisplayMode old_mode;
+    bool old_titles_visibility;
+
+    old_columns = Config.columns;
+    old_mode = Config.browser_display_mode;
+    old_titles_visibility = Config.titles_visibility;
+
+    columns[0] = (Column){0};
+    columns[0].name = (char *)"Artist";
+    columns[0].name_len = STRLIT_LEN("Artist");
+    columns[0].type = (char *)"a";
+    columns[0].type_len = STRLIT_LEN("a");
+    columns[0].width = 10;
+    columns[0].stretch_limit = -1;
+    columns[0].fixed = true;
+    columns[1] = (Column){0};
+    columns[1].name = (char *)"Title";
+    columns[1].name_len = STRLIT_LEN("Title");
+    columns[1].type = (char *)"t";
+    columns[1].type_len = STRLIT_LEN("t");
+    columns[1].width = 10;
+    columns[1].stretch_limit = -1;
+    columns[1].fixed = true;
+    Config.columns.items = columns;
+    Config.columns.len = 2;
+    Config.columns.cap = 2;
+    Config.titles_visibility = true;
+    Config.browser_display_mode = NCM_DISPLAY_MODE_COLUMNS;
+
+    native_browser_screen_init(&screen, 0, 20, 0, 24,
+                               nc_color_default(), nc_border_none());
+    view = native_browser_screen_column_title_text(&screen);
+    assert(ncm_string_equal(view.data, view.len,
+                            LIT_ARGS("Artist    Title     ")));
+    assert(ncm_string_equal(nc_window_title(&screen.window),
+                            nc_window_title_len(&screen.window),
+                            LIT_ARGS("Artist    Title     ")));
+
+    native_browser_screen_set_display_mode(&screen,
+                                           NCM_DISPLAY_MODE_CLASSIC);
+    view = native_browser_screen_column_title_text(&screen);
+    assert(view.len == 0);
+    assert(nc_window_title_len(&screen.window) == 0);
+
+    native_browser_screen_set_display_mode(&screen,
+                                           NCM_DISPLAY_MODE_COLUMNS);
+    assert(native_browser_screen_column_title_text(&screen).len > 0);
+
+    Config.titles_visibility = false;
+    native_browser_screen_update_column_title(&screen);
+    assert(native_browser_screen_column_title_text(&screen).len == 0);
+    assert(nc_window_title_len(&screen.window) == 0);
+
+    Config.titles_visibility = true;
+    native_browser_screen_set_geometry(&screen, 0, 20, 0, 2);
+    assert(native_browser_screen_column_title_text(&screen).len == 0);
+    assert(nc_window_title_len(&screen.window) == 0);
+
+    native_browser_screen_destroy(&screen);
+    Config.columns = old_columns;
+    Config.browser_display_mode = old_mode;
+    Config.titles_visibility = old_titles_visibility;
     return;
 }
 
