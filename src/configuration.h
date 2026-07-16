@@ -6,10 +6,6 @@
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_error.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcmConfigurationOptions {
     NcmBuffer host;
     NcmBuffer current_song_format;
@@ -45,9 +41,5 @@ bool configuration_discover_default_paths(NcmBufferArray *config_paths,
                                           NcmError *error);
 bool configuration_is_quiet(void);
 bool configure(int32 argc, char **argv);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_CONFIGURATION_H */

@@ -8,8 +8,6 @@
 
 struct mpd_entity;
 
-NCM_EXTERN_C_BEGIN
-
 enum NcmMpdItemKind {
     NCM_MPD_ITEM_UNKNOWN,
     NCM_MPD_ITEM_SONG,
@@ -50,7 +48,5 @@ enum NcmMpdItemKind ncm_mpd_item_kind(NcmMpdItem *item);
 NcmSong *ncm_mpd_item_song(NcmMpdItem *item);
 NcmDirectory *ncm_mpd_item_directory(NcmMpdItem *item);
 NcmPlaylist *ncm_mpd_item_playlist(NcmMpdItem *item);
-
-NCM_EXTERN_C_END
 
 #endif /* NCM_MPD_ITEM_H */

@@ -3,10 +3,6 @@
 
 #include "c/ncm_defs.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 void ncm_string_view_init(NcmStringView *view);
 NcmStringView ncm_string_view_make(char *data, int32 len);
 void ncm_string_view_set(NcmStringView *view, char *data, int32 len);
@@ -38,9 +34,5 @@ void ncm_string_append_shell_escaped_single_quotes(NcmBuffer *buffer,
                                                    int32 string_len);
 int32 ncm_string_basename_start(char *path, int32 path_len);
 int32 ncm_string_parent_directory_len(char *path, int32 path_len);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_STRING_H */

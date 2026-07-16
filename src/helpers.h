@@ -10,8 +10,6 @@
 #include "c/ncm_song_list.h"
 #include "curses/nc_menu.h"
 
-NCM_EXTERN_C_BEGIN
-
 enum NcmReapplyFilter {
     NCM_REAPPLY_FILTER_YES,
     NCM_REAPPLY_FILTER_NO,
@@ -86,7 +84,5 @@ int64 ncm_menu_wrapped_search(NcMenu *menu, enum NcMenuItemSource source,
                               enum SearchDirection direction, bool wrap,
                               bool skip_current, NcmMenuIterFunc predicate,
                               void *user);
-
-NCM_EXTERN_C_END
 
 #endif /* NCMPCPP_HELPERS_H */

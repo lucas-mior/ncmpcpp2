@@ -5,10 +5,6 @@
 
 #include "c/ncm_base.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 #define NCM_REGEX_EXTENDED 0x01u
 #define NCM_REGEX_ICASE    0x02u
 #define NCM_REGEX_LITERAL  0x04u
@@ -38,9 +34,5 @@ bool ncm_regex_search(NcmRegex *regex, char *string, int32 string_len);
 bool ncm_regex_for_each_match(NcmRegex *regex, char *string,
                               int32 string_len,
                               NcmRegexMatchCallback callback, void *user);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_REGEX_H */

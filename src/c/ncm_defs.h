@@ -5,16 +5,6 @@
 
 #include "cbase/primitives.h"
 
-#if defined(__cplusplus)
-#define NCM_EXTERN_C_BEGIN extern "C" {
-#define NCM_EXTERN_C_END }
-#else
-#define NCM_EXTERN_C_BEGIN
-#define NCM_EXTERN_C_END
-#endif
-
-NCM_EXTERN_C_BEGIN
-
 #define NCM_ARRAY_LEN(array) ((int32)(sizeof(array) / sizeof((array)[0])))
 
 typedef struct NcmStringView {
@@ -27,7 +17,5 @@ typedef struct NcmBuffer {
     int32 len;
     int32 cap;
 } NcmBuffer;
-
-NCM_EXTERN_C_END
 
 #endif /* NCM_DEFS_H */

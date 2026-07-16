@@ -15,10 +15,6 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 #define NATIVE_VISUALIZER_PI 3.14159265358979323846
 
 enum NativeVisualizerType {
@@ -218,9 +214,5 @@ void native_visualizer_screen_apply_auto_scale(NativeVisualizerScreen *screen,
 bool native_visualizer_screen_draw(NativeVisualizerScreen *screen,
                                    int16 *samples, int32 samples_len);
 int16 native_visualizer_clamp_sample(int64 sample);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_VISUALIZER_H */

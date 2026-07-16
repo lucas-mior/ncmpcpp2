@@ -5,10 +5,6 @@
 #include "c/ncm_defs.h"
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 enum ScreenType {
     NCM_SCREEN_TYPE_BROWSER,
     NCM_SCREEN_TYPE_HELP,
@@ -42,9 +38,5 @@ bool screen_type_parse_startup(char *string, int32 string_len,
                                enum ScreenType *screen_type);
 bool screen_type_parse(char *string, int32 string_len,
                        enum ScreenType *screen_type);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_SCREEN_TYPE_H */

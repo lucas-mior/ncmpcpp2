@@ -15,10 +15,6 @@
 #define BUTTON5_PRESSED (1U << 27)
 #endif
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef uint64 NcKey;
 
 #define NC_KEY_NONE      ((NcKey)-1)
@@ -271,9 +267,5 @@ void nc_window_print_char(NcWindow *window, char ch);
 void nc_window_print_int32(NcWindow *window, int32 value);
 void nc_window_print_uint64(NcWindow *window, uint64 value);
 void nc_window_print_double(NcWindow *window, double value);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_WINDOW_H */

@@ -3,10 +3,6 @@
 
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 static inline NcWindow *
 screen_active_window(NcScreen *screen) {
     return nc_screen_active_window(screen);
@@ -106,9 +102,5 @@ static inline void *
 screen_user(NcScreen *screen) {
     return nc_screen_user(screen);
 }
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_SCREEN_H */

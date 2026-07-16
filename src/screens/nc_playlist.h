@@ -13,10 +13,6 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcPlaylistScreen {
     NcScreen screen;
     NcMenu *menu;
@@ -162,9 +158,5 @@ bool native_playlist_screen_set_selected_priority(NativePlaylistScreen *screen,
                                                   NcmError *error);
 void native_playlist_screen_reload_total_length(NativePlaylistScreen *screen);
 void native_playlist_screen_reload_remaining(NativePlaylistScreen *screen);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_PLAYLIST_H */

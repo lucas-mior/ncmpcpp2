@@ -8,10 +8,6 @@
 #include "c/ncm_enums.h"
 #include "c/ncm_song.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 enum NcmActionType {
     NCM_ACTION_MACRO_UTILITY = -1,
     NCM_ACTION_DUMMY,
@@ -218,9 +214,5 @@ bool ncm_action_can_run(enum NcmActionType type, void *user);
 bool ncm_action_run(enum NcmActionType type, void *user);
 bool ncm_action_immediate_command_prompt_should_stop(
     NcmBuffer *previous, char *text, int32 text_len);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_ACTIONS_H */

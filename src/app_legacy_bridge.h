@@ -9,8 +9,6 @@
 #include "curses/nc_window.h"
 #include "screens/screen_type.h"
 
-NCM_EXTERN_C_BEGIN
-
 void ncmpcpp_legacy_init_screen(bool enable_colors, bool enable_mouse);
 void ncmpcpp_legacy_destroy_screen(void);
 
@@ -45,7 +43,5 @@ bool ncmpcpp_legacy_update_environment(bool update_timer,
 bool ncmpcpp_legacy_execute_binding(NcmBinding *binding);
 bool ncmpcpp_legacy_execute_action(enum NcmActionType type);
 bool ncmpcpp_legacy_exit_requested(void);
-
-NCM_EXTERN_C_END
 
 #endif /* NCMPCPP_APP_LEGACY_BRIDGE_H */

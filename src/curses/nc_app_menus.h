@@ -12,10 +12,6 @@
 #include "curses/nc_menu.h"
 #include "screens/nc_outputs.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcMenuString {
     char *data;
     int32 len;
@@ -179,9 +175,5 @@ bool nc_editor_sort_row_copy(NcEditorSortRow *dest,
                              NcEditorSortRow *source);
 void nc_editor_sort_row_move(NcEditorSortRow *dest,
                              NcEditorSortRow *source);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_APP_MENUS_H */

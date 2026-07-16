@@ -10,10 +10,6 @@
 #include "lastfm_service.h"
 #include "screens/nc_scrollpad_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcLastfmScreen {
     NcScrollpadScreen scrollpad_screen;
 } NcLastfmScreen;
@@ -83,9 +79,5 @@ bool native_lastfm_buffer_find(NcBuffer *buffer, char *pattern,
 bool native_lastfm_screen_find(NativeLastfmScreen *screen,
                                char *pattern, int32 pattern_len,
                                NcmError *error);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_LASTFM_H */

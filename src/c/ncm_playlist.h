@@ -7,8 +7,6 @@
 
 struct mpd_playlist;
 
-NCM_EXTERN_C_BEGIN
-
 typedef struct NcmPlaylist {
     char *path;
     int32 path_len;
@@ -26,7 +24,5 @@ time_t ncm_playlist_last_modified(NcmPlaylist *playlist);
 bool ncm_playlist_equal(NcmPlaylist *a, NcmPlaylist *b);
 bool ncm_playlist_from_mpd_playlist(NcmPlaylist *dest,
                                     struct mpd_playlist *source);
-
-NCM_EXTERN_C_END
 
 #endif /* NCM_PLAYLIST_H */

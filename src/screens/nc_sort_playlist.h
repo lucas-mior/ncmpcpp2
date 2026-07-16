@@ -9,10 +9,6 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcmMpdClient NcmMpdClient;
 typedef struct NativePlaylistScreen NativePlaylistScreen;
 
@@ -67,9 +63,5 @@ bool native_sort_playlist_dialog_run_current(
 int32 native_sort_playlist_dialog_get_order(
     NativeSortPlaylistDialog *dialog, enum NcmSongGetter *getters,
     int32 getters_cap);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_SORT_PLAYLIST_H */

@@ -9,8 +9,6 @@
 
 #include "c/ncm_defs.h"
 
-NCM_EXTERN_C_BEGIN
-
 typedef struct NcmCurlResponseWriter {
     NcmBuffer *buffer;
 } NcmCurlResponseWriter;
@@ -24,7 +22,5 @@ CURLcode ncm_curl_perform(NcmBuffer *data, char *url, int32 url_len,
                           bool follow_redirect,
                           int32 timeout_seconds);
 CURLcode ncm_curl_escape(NcmBuffer *out, char *string, int32 string_len);
-
-NCM_EXTERN_C_END
 
 #endif /* NCMPCPP_CURL_HANDLE_H */

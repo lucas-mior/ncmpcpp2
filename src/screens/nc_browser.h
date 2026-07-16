@@ -12,10 +12,6 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NativeBrowserScreen {
     NcScreen screen;
     NcBrowserEntryMenu entries;
@@ -169,9 +165,5 @@ bool native_browser_screen_item_to_string(NativeBrowserScreen *screen,
                                           NcmBuffer *buffer);
 void native_browser_screen_request_update(NativeBrowserScreen *screen);
 bool native_browser_screen_item_is_parent(NcmMpdItem *item);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_BROWSER_H */

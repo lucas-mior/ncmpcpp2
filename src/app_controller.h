@@ -5,10 +5,6 @@
 
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 void app_controller_init(void);
 NcScreen *app_controller_current_screen(void);
 NcScreen *app_controller_previous_screen(void);
@@ -55,9 +51,5 @@ void app_controller_resize_visible_screens(void);
 void app_controller_resize_all_screens(void);
 void app_controller_scroll_current_screen(enum NcScroll where);
 void app_controller_mouse_button_pressed_current(MEVENT event);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_APP_CONTROLLER_H */

@@ -9,10 +9,6 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 #define NATIVE_TINY_TAG_EDITOR_TAG_ROW(FIELD) \
     (NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW + (FIELD))
 
@@ -138,9 +134,5 @@ bool native_tiny_tag_editor_screen_run_current(
     NativeTinyTagEditorScreen *screen);
 bool native_tiny_tag_editor_screen_action_runnable(
     NativeTinyTagEditorScreen *screen);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_TINY_TAG_EDITOR_H */

@@ -5,10 +5,6 @@
 
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 void app_state_init(void);
 NcScreen *app_state_get_screen(void);
 NcScreen *app_state_get_previous_screen(void);
@@ -47,9 +43,5 @@ void app_state_update_all_screens(void);
 void app_state_resize_current_screen(void);
 void app_state_resize_visible_screens(void);
 void app_state_resize_all_screens(void);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_APP_STATE_H */
