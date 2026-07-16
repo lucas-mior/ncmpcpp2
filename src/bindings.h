@@ -9,10 +9,6 @@
 #include "curses/nc_window.h"
 #include "screens/screen_type.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 
 enum NcmBindingActionKind {
     NCM_BINDING_ACTION_NORMAL,
@@ -175,9 +171,5 @@ void ncm_bindings_format_key(NcmBuffer *buffer, NcKey key);
 NcKey ncm_read_key(NcWindow *window);
 NcKey ncm_bindings_read_key(NcWindow *window);
 int32 ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_BINDINGS_H */

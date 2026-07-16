@@ -18,10 +18,6 @@
 #include "curses/nc_window.h"
 #include "screens/screen_type.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct Column {
     char *name;
     char *type;
@@ -275,9 +271,5 @@ bool configuration_read(Configuration *config,
                         NcmError *error);
 
 extern Configuration Config;
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_SETTINGS_H */

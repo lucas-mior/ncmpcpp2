@@ -11,10 +11,6 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 #define NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT 11
 #define NATIVE_SEARCH_ENGINE_FIRST_SEPARATOR_ROW 11
 #define NATIVE_SEARCH_ENGINE_SEARCH_SOURCE_ROW 12
@@ -221,8 +217,4 @@ bool native_search_engine_screen_search(NativeSearchEngineScreen *screen,
                                         bool forward, bool wrap,
                                         bool skip_current,
                                         NcmError *error);
-#if defined(__cplusplus)
-}
-#endif
-
 #endif /* NCMPCPP_NC_SEARCH_ENGINE_H */

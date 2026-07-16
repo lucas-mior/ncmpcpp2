@@ -9,10 +9,6 @@
 
 struct mpd_song;
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 enum NcmSongOwnership {
     NCM_SONG_BORROWED,
     NCM_SONG_OWNED,
@@ -103,9 +99,5 @@ NcmBuffer ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
                                bool show_duplicates);
 uint64 ncm_song_hash(NcmSong *song);
 bool ncm_song_equal(NcmSong *a, NcmSong *b);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_SONG_H */

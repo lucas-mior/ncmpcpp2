@@ -5,10 +5,6 @@
 
 #include "c/ncm_base.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef bool (*NcmJobRunCallback)(void *user, NcmError *error);
 typedef void (*NcmJobCompleteCallback)(bool success, NcmError *error,
                                        void *user);
@@ -49,9 +45,5 @@ void ncm_job_queue_stop(NcmJobQueue *queue);
 void ncm_job_queue_destroy(NcmJobQueue *queue);
 int32 ncm_job_queue_pending_count(NcmJobQueue *queue);
 int32 ncm_job_queue_completed_count(NcmJobQueue *queue);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_JOB_H */

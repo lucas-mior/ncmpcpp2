@@ -5,8 +5,6 @@
 
 #include "c/ncm_defs.h"
 
-NCM_EXTERN_C_BEGIN
-
 typedef struct NcmWideString {
     wchar_t *data;
     int32 len;
@@ -21,7 +19,5 @@ void ncm_wide_string_append_char(NcmWideString *string, wchar_t ch);
 bool ncm_wide_string_from_utf8(NcmWideString *out,
                                char *string, int32 string_len);
 int32 ncm_wide_string_count_utf8(char *string, int32 string_len);
-
-NCM_EXTERN_C_END
 
 #endif /* NCM_WIDE_STRING_H */

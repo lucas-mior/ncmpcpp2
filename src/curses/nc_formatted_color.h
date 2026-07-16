@@ -3,10 +3,6 @@
 
 #include "curses/nc_window.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcFormattedColor {
     enum NcFormat *formats;
     NcColor color;
@@ -29,9 +25,5 @@ int32 nc_formatted_color_format_count(NcFormattedColor *formatted_color);
 bool nc_formatted_color_equal(NcFormattedColor *left,
                               NcFormattedColor *right);
 bool nc_formatted_color_can_hold_format(enum NcFormat format);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_FORMATTED_COLOR_H */

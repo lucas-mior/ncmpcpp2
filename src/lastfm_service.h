@@ -9,8 +9,6 @@
 
 #include "c/ncm_defs.h"
 
-NCM_EXTERN_C_BEGIN
-
 enum NcmLastfmServiceType {
     NCM_LASTFM_SERVICE_NONE,
     NCM_LASTFM_SERVICE_ARTIST_INFO,
@@ -73,7 +71,5 @@ bool ncm_lastfm_service_fetch(NcmLastfmService *service,
 void ncm_lastfm_service_set_io_for_tests(NcmLastfmCurlPerformFn perform,
                                          NcmLastfmCurlEscapeFn escape,
                                          void *user);
-
-NCM_EXTERN_C_END
 
 #endif /* NCMPCPP_LASTFM_SERVICE_H */

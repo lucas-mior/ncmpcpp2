@@ -6,10 +6,6 @@
 #include "cbase/primitives.h"
 #include "curses/nc_window.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 void ui_state_set_header_window(NcWindow *window);
 NcWindow *ui_state_header_window(void);
 void ui_state_set_footer_window(NcWindow *window);
@@ -30,9 +26,5 @@ void ui_state_set_footer_start_y(int64 value);
 int64 ui_state_footer_start_y(void);
 void ui_state_set_statusbar_visibility_baseline(bool value);
 bool ui_state_statusbar_visibility_baseline(void);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_UI_STATE_H */

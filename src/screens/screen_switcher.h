@@ -5,10 +5,6 @@
 
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 NcScreen *nc_screen_switcher_current(void);
 NcScreen *nc_screen_switcher_previous(void);
 NcScreen *nc_screen_switcher_locked(void);
@@ -32,9 +28,5 @@ bool nc_screen_switcher_request_resize(NcScreen *screen);
 bool nc_screen_switcher_request_update(NcScreen *screen);
 void nc_screen_switcher_request_visible_resize(void);
 void nc_screen_switcher_request_visible_update(void);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_SCREEN_SWITCHER_H */

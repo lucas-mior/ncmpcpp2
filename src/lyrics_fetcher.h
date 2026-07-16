@@ -12,8 +12,6 @@
 #include "c/ncm_song.h"
 #include "curl_handle.h"
 
-NCM_EXTERN_C_BEGIN
-
 enum NcmLyricsFetcherType {
     NCM_LYRICS_FETCHER_UNKNOWN,
     NCM_LYRICS_FETCHER_JUSTSOMELYRICS,
@@ -118,7 +116,5 @@ void ncm_lyrics_cleanup_html(NcmBuffer *out, char *data, int32 data_len);
 void ncm_lyrics_fetcher_set_io_for_tests(NcmLyricsCurlPerformFn perform,
                                          NcmLyricsCurlEscapeFn escape,
                                          void *user);
-
-NCM_EXTERN_C_END
 
 #endif /* NCMPCPP_LYRICS_FETCHER_H */

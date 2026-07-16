@@ -22,8 +22,6 @@
 #include "screens/nc_screen.h"
 #include "screens/screen_type.h"
 
-NCM_EXTERN_C_BEGIN
-
 typedef struct NativeHelpScreen NativeHelpScreen;
 typedef struct NativeOutputsScreen NativeOutputsScreen;
 typedef struct NativeSearchEngineScreen NativeSearchEngineScreen;
@@ -179,7 +177,5 @@ void native_c_screen_outputs_refresh_if_visible(void);
 NativeOutputsScreen *native_c_screen_outputs(void);
 NcOutputsScreen *native_c_screen_outputs_typed(void);
 NcScreen *native_c_screen_outputs_native(void);
-
-NCM_EXTERN_C_END
 
 #endif /* NCMPCPP_NATIVE_C_SCREENS_H */
