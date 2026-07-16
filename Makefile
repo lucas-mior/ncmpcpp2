@@ -50,7 +50,6 @@ NCMPCPP_APP_C_LIB := $(BUILD_DIR)/libncmpcpp_app_c.a
 CBASE_SRCS := cbase/cbase.c
 NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
 APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
-APP_CXX_SRCS := src/mpdpp.cpp
 C_TEST_SRCS := $(sort $(wildcard tests/*_test.c))
 CXX_TEST_SRCS := $(sort $(wildcard tests/*_test.cpp))
 
