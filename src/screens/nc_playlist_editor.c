@@ -17,6 +17,7 @@
 #include "status.h"
 #include "statusbar.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 static NativePlaylistEditorScreen *playlist_editor_from_screen(
     NcScreen *screen);
@@ -2077,7 +2078,7 @@ playlist_editor_report_error(char *context, int32 context_len,
     if ((error != NULL) && (error->message[0] != 0)) {
         ncm_buffer_append(&message, STRLIT_ARGS(": "));
         ncm_buffer_append(&message, error->message,
-                          (int32)strlen(error->message));
+                          strlen32(error->message));
     }
     ncm_buffer_append_byte(&message, '\0');
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,

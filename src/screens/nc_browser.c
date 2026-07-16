@@ -10,6 +10,7 @@
 #include "c/ncm_tags.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 #include "curses/nc_cyclic_buffer.h"
 #include "global.h"
 #include "settings.h"
@@ -2825,7 +2826,7 @@ native_browser_supported_extensions_contains(NcmBufferArray *extensions,
         extension_len = 0;
     }
     if (extension_len < 0) {
-        extension_len = (int32)strlen(extension);
+        extension_len = strlen32(extension);
     }
 
     for (int32 i = 0; i < extensions->len; i += 1) {
@@ -2855,7 +2856,7 @@ native_browser_supported_extensions_add(NcmBufferArray *extensions,
         extension_len = 0;
     }
     if (extension_len < 0) {
-        extension_len = (int32)strlen(extension);
+        extension_len = strlen32(extension);
     }
 
     ncm_buffer_init(&buffer);

@@ -11,6 +11,7 @@
 #include "c/ncm_string.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 #include "curses/nc_cyclic_buffer.h"
 #include "global.h"
 #include "settings.h"
@@ -411,7 +412,7 @@ native_lyrics_screen_load_file(NativeLyricsScreen *screen,
     nc_buffer_clear(&screen->display);
     first = true;
     while (fgets(line, (int32)SIZEOF(line), file) != NULL) {
-        line_len = (int32)strlen(line);
+        line_len = strlen32(line);
         ncm_string_remove_chars(line, &line_len, STRLIT_ARGS("\r\n"));
         if (!first) {
             nc_buffer_append_char(&screen->display, '\n');
@@ -811,7 +812,7 @@ lyrics_switch_to_callback(NcScreen *screen) {
     if (title == NULL) {
         title = (char *)"";
     }
-    ncm_title_draw_header(title, (int32)strlen(title));
+    ncm_title_draw_header(title, strlen32(title));
     return;
 }
 

@@ -7,6 +7,7 @@
 #include "c/ncm_regex.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 #include "curl_handle.h"
 
 #define LASTFM_API_URL \
@@ -475,7 +476,7 @@ lastfm_fetch_artist_info(NcmLastfmService *service,
                                false, 10);
     if (code != CURLE_OK) {
         char *message = (char *)curl_easy_strerror(code);
-        ncm_lastfm_result_set(result, false, message, (int32)strlen(message));
+        ncm_lastfm_result_set(result, false, message, strlen32(message));
         goto cleanup;
     }
     if (lastfm_action_failed(data.data, data.len)) {

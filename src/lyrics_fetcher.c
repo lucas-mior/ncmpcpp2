@@ -12,6 +12,7 @@
 #include "c/ncm_regex.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 #define LYRICS_MSG_NOT_FOUND "Not found"
 
@@ -905,7 +906,7 @@ lyrics_fetch_direct(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                                referer_len, true, 10);
     if (code != CURLE_OK) {
         char *message = (char *)curl_easy_strerror(code);
-        ncm_lyrics_result_set(result, false, message, (int32)strlen(message));
+        ncm_lyrics_result_set(result, false, message, strlen32(message));
         ok = true;
         goto cleanup;
     }
@@ -959,7 +960,7 @@ lyrics_fetch_google(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                                google_url.data, google_url.len, false, 10);
     if (code != CURLE_OK) {
         char *message = (char *)curl_easy_strerror(code);
-        ncm_lyrics_result_set(result, false, message, (int32)strlen(message));
+        ncm_lyrics_result_set(result, false, message, strlen32(message));
         ok = true;
         goto cleanup;
     }

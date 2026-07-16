@@ -255,7 +255,7 @@ memrchr64(void *pointer, int32 value, int64 size) {
     return memrchr(pointer, value, (size_t)size);
 }
 
-INLINE int32
+int32
 strlen32(char *string) {
     int32 length;
     size_t len = strlen(string);
