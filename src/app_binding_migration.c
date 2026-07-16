@@ -728,7 +728,9 @@ app_binding_migration_action_forces_legacy_binding(
     case NCM_ACTION_NEXT_FOUND_ITEM:
     case NCM_ACTION_PREVIOUS_FOUND_ITEM:
     case NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE:
+    case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
     case NCM_ACTION_SHOW_ARTIST_INFO:
+    case NCM_ACTION_SHOW_VISUALIZER:
     case NCM_ACTION_NEXT_SCREEN:
     case NCM_ACTION_PREVIOUS_SCREEN:
         return true;
