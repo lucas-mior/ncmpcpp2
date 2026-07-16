@@ -69,19 +69,6 @@ ncm_any_iterator_deref(NcmAnyIterator *iterator) {
     return iterator->items + iterator->index*iterator->item_size;
 }
 
-void *
-ncm_any_iterator_at(NcmAnyIterator *iterator, int32 offset) {
-    NcmAnyIterator copy;
-
-    if (iterator == NULL) {
-        return NULL;
-    }
-
-    copy = *iterator;
-    ncm_any_iterator_advance(&copy, offset);
-    return ncm_any_iterator_deref(&copy);
-}
-
 void
 ncm_any_iterator_advance(NcmAnyIterator *iterator, int32 offset) {
     if (iterator == NULL) {
@@ -98,12 +85,6 @@ ncm_any_iterator_next(NcmAnyIterator *iterator) {
     return;
 }
 
-void
-ncm_any_iterator_prev(NcmAnyIterator *iterator) {
-    ncm_any_iterator_advance(iterator, -1);
-    return;
-}
-
 int32
 ncm_any_iterator_distance(NcmAnyIterator *left, NcmAnyIterator *right) {
     if (!ncm_any_iterator_same_range(left, right)) {
@@ -111,24 +92,6 @@ ncm_any_iterator_distance(NcmAnyIterator *left, NcmAnyIterator *right) {
     }
 
     return left->index - right->index;
-}
-
-bool
-ncm_any_iterator_equals(NcmAnyIterator *left, NcmAnyIterator *right) {
-    if (!ncm_any_iterator_same_range(left, right)) {
-        return false;
-    }
-
-    return left->index == right->index;
-}
-
-bool
-ncm_any_iterator_less(NcmAnyIterator *left, NcmAnyIterator *right) {
-    if (!ncm_any_iterator_same_range(left, right)) {
-        return false;
-    }
-
-    return left->index < right->index;
 }
 
 void
@@ -163,28 +126,4 @@ ncm_transform_iterator_deref(NcmTransformIterator *iterator) {
     }
 
     return iterator->transform(item, iterator->user);
-}
-
-void *
-ncm_transform_iterator_at(NcmTransformIterator *iterator, int32 offset) {
-    NcmTransformIterator copy;
-
-    if (iterator == NULL) {
-        return NULL;
-    }
-
-    copy = *iterator;
-    ncm_transform_iterator_advance(&copy, offset);
-    return ncm_transform_iterator_deref(&copy);
-}
-
-void
-ncm_transform_iterator_advance(NcmTransformIterator *iterator,
-                               int32 offset) {
-    if (iterator == NULL) {
-        return;
-    }
-
-    ncm_any_iterator_advance(&iterator->iterator, offset);
-    return;
 }

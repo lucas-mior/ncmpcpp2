@@ -22,12 +22,5 @@ void ncm_display_column_title(NcmBuffer *buffer,
 void ncm_display_directory_row(NcBuffer *buffer, NcmDirectory *directory);
 void ncm_display_playlist_row(NcBuffer *buffer, NcmPlaylist *playlist,
                               char *prefix, int32 prefix_len);
-void ncm_display_output_row(NcBuffer *buffer, NcmMpdOutput *output);
-void ncm_display_tag_row(NcBuffer *buffer, NcmMutableSong *song,
-                         enum NcmTagsField field, int32 idx);
-void ncm_display_item_row(NcBuffer *buffer, NcmMpdItem *item,
-                          NcmFormatAst *song_format, uint32 flags,
-                          char *playlist_prefix,
-                          int32 playlist_prefix_len);
 
 #endif /* NCM_DISPLAY_H */

@@ -7,6 +7,7 @@
 #include "c/ncm_error.h"
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 

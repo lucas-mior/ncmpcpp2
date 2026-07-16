@@ -38,35 +38,6 @@ ncm_search_direction_str(enum SearchDirection value) {
 }
 
 bool
-ncm_search_direction_parse(char *string, int32 string_len,
-                           enum SearchDirection *value) {
-    if (ncm_enum_equal(string, string_len, (char *)"backward")) {
-        *value = NCM_SEARCH_DIRECTION_BACKWARD;
-        return true;
-    }
-    if (ncm_enum_equal(string, string_len, (char *)"forward")) {
-        *value = NCM_SEARCH_DIRECTION_FORWARD;
-        return true;
-    }
-
-    return false;
-}
-
-char *
-ncm_space_add_mode_str(enum SpaceAddMode value) {
-    switch (value) {
-    case NCM_SPACE_ADD_MODE_ADD_REMOVE:
-        return (char *)"add_remove";
-    case NCM_SPACE_ADD_MODE_ALWAYS_ADD:
-        return (char *)"always_add";
-    case NCM_SPACE_ADD_MODE_LAST:
-        break;
-    }
-
-    return (char *)"unknown";
-}
-
-bool
 ncm_space_add_mode_parse(char *string, int32 string_len,
                          enum SpaceAddMode *value) {
     if (ncm_enum_equal(string, string_len, (char *)"add_remove")) {
@@ -79,26 +50,6 @@ ncm_space_add_mode_parse(char *string, int32 string_len,
     }
 
     return false;
-}
-
-char *
-ncm_sort_mode_str(enum SortMode value) {
-    switch (value) {
-    case NCM_SORT_MODE_TYPE:
-        return (char *)"type";
-    case NCM_SORT_MODE_NAME:
-        return (char *)"name";
-    case NCM_SORT_MODE_MODIFICATION_TIME:
-        return (char *)"mtime";
-    case NCM_SORT_MODE_CUSTOM_FORMAT:
-        return (char *)"format";
-    case NCM_SORT_MODE_NONE:
-        return (char *)"none";
-    case NCM_SORT_MODE_LAST:
-        break;
-    }
-
-    return (char *)"unknown";
 }
 
 bool
@@ -183,26 +134,6 @@ ncm_design_parse(char *string, int32 string_len, enum Design *value) {
     }
 
     return false;
-}
-
-char *
-ncm_visualizer_type_str(enum VisualizerType value) {
-    switch (value) {
-    case NCM_VISUALIZER_TYPE_WAVE:
-        return (char *)"sound wave";
-    case NCM_VISUALIZER_TYPE_WAVE_FILLED:
-        return (char *)"sound wave filled";
-#if defined(HAVE_FFTW3_H)
-    case NCM_VISUALIZER_TYPE_SPECTRUM:
-        return (char *)"frequency spectrum";
-#endif
-    case NCM_VISUALIZER_TYPE_ELLIPSE:
-        return (char *)"sound ellipse";
-    case NCM_VISUALIZER_TYPE_LAST:
-        break;
-    }
-
-    return (char *)"unknown";
 }
 
 bool

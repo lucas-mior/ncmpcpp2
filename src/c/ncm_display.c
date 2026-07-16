@@ -198,55 +198,6 @@ ncm_display_playlist_row(NcBuffer *buffer, NcmPlaylist *playlist,
     return;
 }
 
-void
-ncm_display_output_row(NcBuffer *buffer, NcmMpdOutput *output) {
-    if (output == NULL) {
-        return;
-    }
-
-    if (output->enabled) {
-        nc_buffer_append_data(buffer, STRLIT_ARGS("[x] "));
-    } else {
-        nc_buffer_append_data(buffer, STRLIT_ARGS("[ ] "));
-    }
-    nc_buffer_append_data(buffer, output->name, output->name_len);
-    return;
-}
-
-void
-ncm_display_tag_row(NcBuffer *buffer, NcmMutableSong *song,
-                    enum NcmTagsField field, int32 idx) {
-    NcmBuffer tag;
-
-    tag = ncm_mutable_song_get_tag_buffer(song, field, idx);
-    nc_buffer_append_data(buffer, tag.data, tag.len);
-    ncm_buffer_destroy(&tag);
-    return;
-}
-
-void
-ncm_display_item_row(NcBuffer *buffer, NcmMpdItem *item,
-                     NcmFormatAst *song_format, uint32 flags,
-                     char *playlist_prefix,
-                     int32 playlist_prefix_len) {
-    switch (ncm_mpd_item_kind(item)) {
-    case NCM_MPD_ITEM_DIRECTORY:
-        ncm_display_directory_row(buffer, ncm_mpd_item_directory(item));
-        break;
-    case NCM_MPD_ITEM_SONG:
-        ncm_display_song_row(buffer, song_format,
-                             ncm_mpd_item_song(item), flags);
-        break;
-    case NCM_MPD_ITEM_PLAYLIST:
-        ncm_display_playlist_row(buffer, ncm_mpd_item_playlist(item),
-                                 playlist_prefix, playlist_prefix_len);
-        break;
-    case NCM_MPD_ITEM_UNKNOWN:
-        break;
-    }
-    return;
-}
-
 static NcmBuffer
 ncm_display_column_value(NcmSong *song, Column *column) {
     NcmBuffer result;

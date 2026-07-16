@@ -19,12 +19,6 @@ static void ncm_fs_set_errno_error(NcmError *error, int32 code,
                                    int32 path_len);
 static enum NcmFsEntryType ncm_fs_mode_type(mode_t mode);
 static enum NcmFsEntryType ncm_fs_dirent_type(int32 type);
-static bool ncm_fs_append_app_name(NcmBuffer *buffer, char *app_name,
-                                   int32 app_name_len);
-static bool ncm_fs_xdg_dir(NcmBuffer *buffer, char *xdg_name,
-                           char *fallback_suffix,
-                           char *app_name, int32 app_name_len,
-                           NcmError *error);
 
 static bool
 ncm_fs_path_copy(char *path, int32 path_len, char **copy, NcmError *error) {
@@ -103,55 +97,6 @@ ncm_fs_dirent_type(int32 type) {
     return NCM_FS_ENTRY_UNKNOWN;
 }
 
-static bool
-ncm_fs_append_app_name(NcmBuffer *buffer, char *app_name,
-                       int32 app_name_len) {
-    if ((app_name == NULL) || (app_name_len <= 0)) {
-        return true;
-    }
-
-    ncm_fs_join(buffer, buffer->data, buffer->len, app_name, app_name_len);
-    return true;
-}
-
-static bool
-ncm_fs_xdg_dir(NcmBuffer *buffer, char *xdg_name, char *fallback_suffix,
-               char *app_name, int32 app_name_len, NcmError *error) {
-    char *env;
-    char *home;
-    int32 env_len;
-    int32 home_len;
-    int32 fallback_len;
-
-    if (buffer == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing output buffer"));
-        return false;
-    }
-
-    ncm_buffer_clear(buffer);
-    if ((env = getenv(xdg_name))) {
-        env_len = strlen32(env);
-        ncm_buffer_append(buffer, env, env_len);
-        ncm_fs_append_app_name(buffer, app_name, app_name_len);
-        ncm_error_clear(error);
-        return true;
-    }
-
-    if ((home = getenv("HOME")) == NULL) {
-        ncm_error_set(error, ENOENT, STRLIT_ARGS("HOME is not set"));
-        return false;
-    }
-
-    home_len = strlen32(home);
-    fallback_len = strlen32(fallback_suffix);
-    ncm_buffer_append(buffer, home, home_len);
-    ncm_fs_join(buffer, buffer->data, buffer->len,
-                fallback_suffix, fallback_len);
-    ncm_fs_append_app_name(buffer, app_name, app_name_len);
-    ncm_error_clear(error);
-    return true;
-}
-
 void
 ncm_fs_entry_init(NcmFsEntry *entry) {
     entry->name = NULL;
@@ -218,17 +163,6 @@ ncm_fs_exists(char *path, int32 path_len) {
     }
 
     return stat.exists;
-}
-
-bool
-ncm_fs_is_regular_file(char *path, int32 path_len) {
-    NcmFsStat stat;
-
-    if (!ncm_fs_stat(path, path_len, &stat, NULL)) {
-        return false;
-    }
-
-    return stat.exists && (stat.type == NCM_FS_ENTRY_FILE);
 }
 
 bool
@@ -462,20 +396,4 @@ ncm_fs_join(NcmBuffer *buffer, char *left, int32 left_len,
     ncm_buffer_append(buffer, result.data, result.len);
     ncm_buffer_destroy(&result);
     return true;
-}
-
-bool
-ncm_fs_user_config_dir(NcmBuffer *buffer, char *app_name,
-                       int32 app_name_len, NcmError *error) {
-    return ncm_fs_xdg_dir(buffer, (char *)"XDG_CONFIG_HOME",
-                          (char *)".config", app_name, app_name_len,
-                          error);
-}
-
-bool
-ncm_fs_user_cache_dir(NcmBuffer *buffer, char *app_name,
-                      int32 app_name_len, NcmError *error) {
-    return ncm_fs_xdg_dir(buffer, (char *)"XDG_CACHE_HOME",
-                          (char *)".cache", app_name, app_name_len,
-                          error);
 }

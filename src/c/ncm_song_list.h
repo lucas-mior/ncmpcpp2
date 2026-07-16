@@ -34,10 +34,6 @@ typedef bool (*NcmSongListEachFunc)(NcmSong *song, int32 idx, void *user);
 
 void ncm_song_list_item_init(NcmSongListItem *item);
 void ncm_song_list_item_destroy(NcmSongListItem *item);
-bool ncm_song_list_item_copy(NcmSongListItem *dest,
-                             NcmSongListItem *source);
-void ncm_song_list_item_move(NcmSongListItem *dest,
-                             NcmSongListItem *source);
 
 void ncm_song_list_init(NcmSongList *list);
 void ncm_song_list_destroy(NcmSongList *list);
@@ -63,8 +59,6 @@ bool ncm_song_list_each_selected_song(NcmSongList *list,
 bool ncm_song_list_select_current_song_if_none_selected(NcmSongList *list);
 void ncm_song_list_clear_selection(NcmSongList *list);
 void ncm_song_list_reverse_selectable_selection(NcmSongList *list);
-bool ncm_song_list_find_position(NcmSongList *list, uint32 position,
-                                 int32 *idx);
 bool ncm_song_list_wrapped_song_search(NcmSongList *list,
                                   NcmSongListPredicate predicate,
                                   void *user,

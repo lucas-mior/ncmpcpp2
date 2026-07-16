@@ -5,6 +5,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 #include "screens/nc_visualizer.h"
 
 #define TEST_DRAW_CAPACITY 8192

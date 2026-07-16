@@ -21,7 +21,6 @@ void ncm_taglib_init(void);
 void ncm_taglib_file_init(NcmTaglibFile *file);
 bool ncm_taglib_file_open(NcmTaglibFile *file, char *path);
 void ncm_taglib_file_close(NcmTaglibFile *file);
-bool ncm_taglib_file_is_open(NcmTaglibFile *file);
 bool ncm_taglib_file_save(NcmTaglibFile *file);
 bool ncm_taglib_file_audio_properties(NcmTaglibFile *file,
                                       NcmTaglibAudioProperties *properties);

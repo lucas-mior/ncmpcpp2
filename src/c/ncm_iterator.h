@@ -27,23 +27,15 @@ NcmAnyIterator ncm_any_iterator_end(void *items, int32 items_len,
                                     int32 item_size);
 bool ncm_any_iterator_valid(NcmAnyIterator *iterator);
 void *ncm_any_iterator_deref(NcmAnyIterator *iterator);
-void *ncm_any_iterator_at(NcmAnyIterator *iterator, int32 offset);
 void ncm_any_iterator_advance(NcmAnyIterator *iterator, int32 offset);
 void ncm_any_iterator_next(NcmAnyIterator *iterator);
-void ncm_any_iterator_prev(NcmAnyIterator *iterator);
 int32 ncm_any_iterator_distance(NcmAnyIterator *left,
                                 NcmAnyIterator *right);
-bool ncm_any_iterator_equals(NcmAnyIterator *left, NcmAnyIterator *right);
-bool ncm_any_iterator_less(NcmAnyIterator *left, NcmAnyIterator *right);
 
 void ncm_transform_iterator_init(NcmTransformIterator *iterator,
                                  NcmAnyIterator base,
                                  NcmTransformIteratorFunction transform,
                                  void *user);
 void *ncm_transform_iterator_deref(NcmTransformIterator *iterator);
-void *ncm_transform_iterator_at(NcmTransformIterator *iterator,
-                                int32 offset);
-void ncm_transform_iterator_advance(NcmTransformIterator *iterator,
-                                    int32 offset);
 
 #endif /* NCM_ITERATOR_H */
