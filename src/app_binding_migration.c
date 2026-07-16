@@ -452,6 +452,7 @@ bool
 app_binding_migration_action_is_c_safe(enum NcmActionType type) {
     switch (type) {
     case NCM_ACTION_DUMMY:
+    case NCM_ACTION_UPDATE_ENVIRONMENT:
     case NCM_ACTION_QUIT:
     case NCM_ACTION_VOLUME_UP:
     case NCM_ACTION_VOLUME_DOWN:
@@ -696,7 +697,6 @@ static bool
 app_binding_migration_action_forces_legacy_binding(
     enum NcmActionType type) {
     switch (type) {
-    case NCM_ACTION_UPDATE_ENVIRONMENT:
     case NCM_ACTION_MOUSE_EVENT:
     case NCM_ACTION_SCROLL_UP:
     case NCM_ACTION_SCROLL_DOWN:

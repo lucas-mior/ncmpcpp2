@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "app_controller.h"
+#include "app_legacy_bridge.h"
 #include "bindings.h"
 #include "curses/nc_window.h"
 #include "global.h"
@@ -1276,7 +1277,6 @@ static bool action_runtime_volume(int32 change);
 static bool action_runtime_update_database(void);
 static bool action_runtime_replay_song(void);
 static bool action_runtime_update_environment(void);
-static void action_runtime_dispatch_lyrics_jobs(void);
 static bool action_runtime_execute_command(void);
 static bool action_runtime_execute_binding(NcmBinding *binding);
 static bool action_runtime_apply_filter(void);
@@ -2148,33 +2148,7 @@ action_runtime_add_random_items(void) {
 
 static bool
 action_runtime_update_environment(void) {
-    NcmError error;
-
-    ncm_error_clear(&error);
-    ncm_status_trace(&global_mpd, true, true, &error);
-    action_runtime_dispatch_lyrics_jobs();
-    app_controller_refresh_current_window();
-
-    if (ncm_mpd_client_connected(&global_mpd)) {
-        (void)ncm_status_update_from_noidle(&global_mpd, NULL, &error);
-    }
-    return true;
-}
-
-static void
-action_runtime_dispatch_lyrics_jobs(void) {
-    NcmBuffer message;
-
-    native_lyrics_screen_dispatch_jobs(native_c_screen_lyrics());
-    ncm_buffer_init(&message);
-    if (native_lyrics_screen_try_take_consumer_message(
-            native_c_screen_lyrics(), &message)) {
-        ncm_statusbar_print((int32)Config.message_delay_time,
-                            message.data,
-                            message.len);
-    }
-    ncm_buffer_destroy(&message);
-    return;
+    return ncmpcpp_legacy_update_environment(true, true, true);
 }
 
 

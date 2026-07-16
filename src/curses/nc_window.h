@@ -200,6 +200,7 @@ int32 nc_key_name(NcKey key, char *buffer, int32 buffer_len);
 void nc_mouse_enable(void);
 void nc_mouse_disable(void);
 void nc_init_readline(void);
+void nc_resize_readline_terminal(void);
 void nc_init_screen(bool enable_colors, bool enable_mouse);
 int32 nc_color_count(void);
 void nc_pause_screen(void);

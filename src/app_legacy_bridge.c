@@ -2,6 +2,7 @@
 
 #include "actions_legacy_runtime.h"
 #include "app_binding_migration.h"
+#include "app_controller.h"
 #include "bindings.h"
 #include "c/ncm_base.h"
 #include "global.h"
@@ -10,6 +11,7 @@
 #include "settings_legacy_runtime.h"
 #include "status.h"
 #include "statusbar.h"
+#include "title.h"
 #include "cbase/base_macros.h"
 #include "ui_state.h"
 
@@ -22,6 +24,93 @@
  * forwarding calls here with direct C implementations.
  */
 
+static void app_legacy_bridge_request_media_library_database_update(
+    void *user);
+static void app_legacy_bridge_refresh_playlist_related_inactive_columns(
+    void *user);
+static void app_legacy_bridge_set_status_observers(void);
+static void app_legacy_bridge_set_resize_flags(void);
+static void app_legacy_bridge_dispatch_lyrics_jobs(void);
+static void app_legacy_bridge_refresh_header_if_due(void);
+
+static NcmTimePoint app_legacy_bridge_header_refresh_time;
+
+
+static void
+app_legacy_bridge_request_media_library_database_update(void *user) {
+    (void)user;
+    native_media_library_screen_request_database_update(
+        native_c_screen_media_library());
+    return;
+}
+
+static void
+app_legacy_bridge_refresh_playlist_related_inactive_columns(
+    void *user) {
+    (void)user;
+    if (app_controller_is_screen_visible(
+            native_c_screen_media_library_native())) {
+        native_media_library_screen_refresh_inactive_songs(
+            native_c_screen_media_library());
+    }
+
+    if (app_controller_is_screen_visible(
+            native_c_screen_playlist_editor_native())) {
+        nc_screen_refresh(native_c_screen_playlist_editor_native());
+    }
+    return;
+}
+
+static void
+app_legacy_bridge_set_status_observers(void) {
+    ncm_status_set_database_update_observer(
+        app_legacy_bridge_request_media_library_database_update, NULL);
+    ncm_status_set_playlist_update_observer(
+        app_legacy_bridge_refresh_playlist_related_inactive_columns, NULL);
+    return;
+}
+
+static void
+app_legacy_bridge_set_resize_flags(void) {
+    native_c_screens_request_registered_resize();
+    native_c_screen_lyrics_set_resize();
+    return;
+}
+
+static void
+app_legacy_bridge_dispatch_lyrics_jobs(void) {
+    NcmBuffer message;
+
+    native_lyrics_screen_dispatch_jobs(native_c_screen_lyrics());
+    ncm_buffer_init(&message);
+    if (native_lyrics_screen_try_take_consumer_message(
+            native_c_screen_lyrics(), &message)) {
+        ncm_statusbar_print((int32)Config.message_delay_time,
+                            message.data, message.len);
+    }
+    ncm_buffer_destroy(&message);
+    return;
+}
+
+static void
+app_legacy_bridge_refresh_header_if_due(void) {
+    bool current_screen_uses_header_timer;
+
+    current_screen_uses_header_timer = native_c_screen_playlist_is_current()
+        || native_c_screen_browser_is_current()
+        || native_c_screen_lyrics_is_current();
+    if (!current_screen_uses_header_timer) {
+        return;
+    }
+    if (global_timer_elapsed_ms(app_legacy_bridge_header_refresh_time)
+        <= 500) {
+        return;
+    }
+
+    ncm_title_draw_current_header();
+    app_legacy_bridge_header_refresh_time = global_timer;
+    return;
+}
 
 bool
 ncmpcpp_legacy_sync_configuration(void) {
@@ -249,13 +338,52 @@ ncmpcpp_legacy_window_clear_fd_callbacks(NcWindow *window) {
 
 void
 ncmpcpp_legacy_initialize_screens(void) {
-    actions_legacy_runtime_initialize_screens();
+    app_controller_init();
+    native_c_screens_init_all();
+    app_legacy_bridge_set_status_observers();
+    native_c_screens_register_native_only();
+    native_c_screen_lyrics_register();
     return;
 }
 
 void
 ncmpcpp_legacy_resize_screen(bool reload_main_window) {
-    actions_legacy_runtime_resize_screen(reload_main_window);
+    NcWindow *header;
+    NcWindow *footer;
+
+    if (reload_main_window) {
+        nc_resize_readline_terminal();
+        endwin();
+        refresh();
+        getch();
+    }
+
+    ncmpcpp_legacy_set_windows_dimensions();
+    app_legacy_bridge_set_resize_flags();
+    app_controller_resize_visible_screens();
+
+    header = ui_state_header_window();
+    if ((header != NULL)
+        && (Config.header_visibility
+            || (Config.design == NCM_DESIGN_ALTERNATIVE))) {
+        nc_window_resize(header, COLS, ncmpcpp_legacy_header_height());
+    }
+
+    footer = ui_state_footer_window();
+    if (footer != NULL) {
+        nc_window_move_to(footer, 0, ncmpcpp_legacy_footer_start_y());
+        nc_window_resize(footer, COLS, ncmpcpp_legacy_footer_height());
+    }
+
+    app_controller_refresh_visible_screens();
+    ncm_status_changes_elapsed_time(false);
+    ncm_status_changes_player_state();
+    ncm_status_changes_flags();
+    ncm_title_draw_current_header();
+    if (footer != NULL) {
+        nc_window_refresh(footer);
+    }
+    refresh();
     return;
 }
 
@@ -330,9 +458,23 @@ bool
 ncmpcpp_legacy_update_environment(bool update_timer,
                                   bool refresh_window,
                                   bool mpd_sync) {
-    return actions_legacy_runtime_update_environment(update_timer,
-                                                     refresh_window,
-                                                     mpd_sync);
+    NcmError error;
+
+    app_legacy_bridge_set_status_observers();
+    ncm_error_clear(&error);
+    ncm_status_trace(&global_mpd, update_timer, true, &error);
+    app_legacy_bridge_dispatch_lyrics_jobs();
+    app_legacy_bridge_refresh_header_if_due();
+
+    if (refresh_window) {
+        app_controller_refresh_current_window();
+    }
+
+    if (mpd_sync) {
+        ncm_error_clear(&error);
+        (void)ncm_status_update_from_noidle(&global_mpd, NULL, &error);
+    }
+    return true;
 }
 
 bool
