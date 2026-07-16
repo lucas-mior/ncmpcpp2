@@ -51,7 +51,6 @@ CBASE_SRCS := cbase/cbase.c
 NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
 APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
 APP_CXX_SRCS := \
-	src/actions_legacy.cpp \
 	src/mpdpp.cpp \
 	src/settings_legacy.cpp
 C_TEST_SRCS := $(sort $(wildcard tests/*_test.c))
@@ -223,29 +222,25 @@ $(BUILD_DIR)/tests/c_playlist_actions_test: \
 PLAYLIST_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=native_c_screens_current_type \
 	-Wl,--wrap=ncm_action_runtime_can_run \
-	-Wl,--wrap=ncm_action_runtime_run \
-	-Wl,--wrap=actions_legacy_runtime_execute_action
+	-Wl,--wrap=ncm_action_runtime_run
 $(BUILD_DIR)/tests/c_playlist_binding_dispatch_test: \
 	LDFLAGS += $(PLAYLIST_BINDING_DISPATCH_TEST_WRAP_FLAGS)
 PLAYLIST_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=native_c_screens_current_type \
 	-Wl,--wrap=ncm_action_runtime_can_run \
-	-Wl,--wrap=ncm_action_runtime_run \
-	-Wl,--wrap=actions_legacy_runtime_execute_action
+	-Wl,--wrap=ncm_action_runtime_run
 $(BUILD_DIR)/tests/c_playlist_editor_binding_dispatch_test: \
 	LDFLAGS += $(PLAYLIST_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS)
 BROWSER_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=native_c_screens_current_type \
 	-Wl,--wrap=ncm_action_runtime_can_run \
-	-Wl,--wrap=ncm_action_runtime_run \
-	-Wl,--wrap=actions_legacy_runtime_execute_action
+	-Wl,--wrap=ncm_action_runtime_run
 $(BUILD_DIR)/tests/c_browser_binding_dispatch_test: \
 	LDFLAGS += $(BROWSER_BINDING_DISPATCH_TEST_WRAP_FLAGS)
 TAG_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=native_c_screens_current_type \
 	-Wl,--wrap=ncm_action_runtime_can_run \
-	-Wl,--wrap=ncm_action_runtime_run \
-	-Wl,--wrap=actions_legacy_runtime_execute_action
+	-Wl,--wrap=ncm_action_runtime_run
 $(BUILD_DIR)/tests/c_tag_editor_binding_dispatch_test: \
 	LDFLAGS += $(TAG_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS)
 SEARCH_ENGINE_SCREEN_TEST_WRAP_FLAGS := \

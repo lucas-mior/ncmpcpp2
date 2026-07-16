@@ -169,6 +169,7 @@ void ncm_action_runtime_set_hooks(NcmActionRuntime *runtime,
                                   void *user);
 NcmActionRuntime *ncm_action_runtime_global(void);
 bool ncm_action_runtime_exit_requested(NcmActionRuntime *runtime);
+void ncm_action_runtime_request_exit(NcmActionRuntime *runtime);
 void ncm_action_runtime_clear_exit_request(NcmActionRuntime *runtime);
 bool ncm_action_runtime_can_run(NcmActionRuntime *runtime,
                                 enum NcmActionType type);

@@ -469,469 +469,87 @@ test_runtime_can_execute_preflight(void) {
 
 static void
 test_app_binding_migration_c_safe_actions(void) {
-#if defined(HAVE_TAGLIB_H)
-    enum NcmActionType tag_editor_actions[] = {
-        NCM_ACTION_UPDATE_ENVIRONMENT,
-        NCM_ACTION_MOUSE_EVENT,
-        NCM_ACTION_SCROLL_UP,
-        NCM_ACTION_SCROLL_DOWN,
-        NCM_ACTION_PAGE_UP,
-        NCM_ACTION_PAGE_DOWN,
-        NCM_ACTION_MOVE_HOME,
-        NCM_ACTION_MOVE_END,
-        NCM_ACTION_JUMP_TO_PARENT_DIRECTORY,
-        NCM_ACTION_PREVIOUS_COLUMN,
-        NCM_ACTION_NEXT_COLUMN,
-        NCM_ACTION_SAVE_TAG_CHANGES,
-        NCM_ACTION_ENTER_DIRECTORY,
-        NCM_ACTION_EDIT_DIRECTORY_NAME,
-        NCM_ACTION_SELECT_ITEM,
-        NCM_ACTION_SELECT_RANGE,
-        NCM_ACTION_REVERSE_SELECTION,
-        NCM_ACTION_REMOVE_SELECTION,
-        NCM_ACTION_SELECT_ALBUM,
-        NCM_ACTION_APPLY_FILTER,
-        NCM_ACTION_FIND_ITEM_FORWARD,
-        NCM_ACTION_FIND_ITEM_BACKWARD,
-        NCM_ACTION_NEXT_FOUND_ITEM,
-        NCM_ACTION_PREVIOUS_FOUND_ITEM,
-        NCM_ACTION_TOGGLE_FIND_MODE,
-        NCM_ACTION_SHOW_TAG_EDITOR,
-    };
-    enum NcmActionType tiny_editor_actions[] = {
-        NCM_ACTION_QUIT,
-        NCM_ACTION_PLAY,
-        NCM_ACTION_RUN_ACTION,
-        NCM_ACTION_MOUSE_EVENT,
-        NCM_ACTION_SCROLL_UP,
-        NCM_ACTION_SCROLL_DOWN,
-        NCM_ACTION_PAGE_UP,
-        NCM_ACTION_PAGE_DOWN,
-        NCM_ACTION_MOVE_HOME,
-        NCM_ACTION_MOVE_END,
-        NCM_ACTION_SAVE_TAG_CHANGES,
-        NCM_ACTION_NEXT_SCREEN,
-        NCM_ACTION_PREVIOUS_SCREEN,
-    };
-#endif
-    enum NcmActionType browser_actions[] = {
-        NCM_ACTION_SHOW_BROWSER,
-        NCM_ACTION_ENTER_DIRECTORY,
-        NCM_ACTION_JUMP_TO_PARENT_DIRECTORY,
-        NCM_ACTION_TOGGLE_BROWSER_SORT_MODE,
-        NCM_ACTION_CHANGE_BROWSE_MODE,
-        NCM_ACTION_DELETE_BROWSER_ITEMS,
-        NCM_ACTION_EDIT_DIRECTORY_NAME,
-        NCM_ACTION_EDIT_PLAYLIST_NAME,
-        NCM_ACTION_JUMP_TO_BROWSER,
-        NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR,
-    };
-    enum NcmActionType playlist_actions[] = {
-        NCM_ACTION_DUMMY,
-        NCM_ACTION_UPDATE_ENVIRONMENT,
-        NCM_ACTION_MOUSE_EVENT,
-        NCM_ACTION_SCROLL_UP,
-        NCM_ACTION_SCROLL_DOWN,
-        NCM_ACTION_SCROLL_UP_ARTIST,
-        NCM_ACTION_SCROLL_UP_ALBUM,
-        NCM_ACTION_SCROLL_DOWN_ARTIST,
-        NCM_ACTION_SCROLL_DOWN_ALBUM,
-        NCM_ACTION_PAGE_UP,
-        NCM_ACTION_PAGE_DOWN,
-        NCM_ACTION_MOVE_HOME,
-        NCM_ACTION_MOVE_END,
-        NCM_ACTION_TOGGLE_INTERFACE,
-        NCM_ACTION_PREVIOUS_COLUMN,
-        NCM_ACTION_NEXT_COLUMN,
-        NCM_ACTION_MASTER_SCREEN,
-        NCM_ACTION_SLAVE_SCREEN,
-        NCM_ACTION_QUIT,
-        NCM_ACTION_VOLUME_UP,
-        NCM_ACTION_VOLUME_DOWN,
-        NCM_ACTION_REPLAY_SONG,
-        NCM_ACTION_TOGGLE_REPEAT,
-        NCM_ACTION_TOGGLE_RANDOM,
-        NCM_ACTION_TOGGLE_SINGLE,
-        NCM_ACTION_TOGGLE_CONSUME,
-        NCM_ACTION_TOGGLE_CROSSFADE,
-        NCM_ACTION_UPDATE_DATABASE,
-        NCM_ACTION_NEXT,
-        NCM_ACTION_PREVIOUS,
-        NCM_ACTION_PAUSE,
-        NCM_ACTION_PLAY,
-        NCM_ACTION_STOP,
-        NCM_ACTION_SEEK_FORWARD,
-        NCM_ACTION_SEEK_BACKWARD,
-        NCM_ACTION_EXECUTE_COMMAND,
-        NCM_ACTION_RUN_ACTION,
-        NCM_ACTION_ADD_ITEM_TO_PLAYLIST,
-        NCM_ACTION_PLAY_ITEM,
-        NCM_ACTION_DELETE_PLAYLIST_ITEMS,
-        NCM_ACTION_SAVE_PLAYLIST,
-        NCM_ACTION_MOVE_SELECTED_ITEMS_UP,
-        NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN,
-        NCM_ACTION_MOVE_SELECTED_ITEMS_TO,
-        NCM_ACTION_ADD,
-        NCM_ACTION_ADD_SELECTED_ITEMS,
-        NCM_ACTION_TOGGLE_DISPLAY_MODE,
-        NCM_ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS,
-        NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,
-        NCM_ACTION_TOGGLE_LYRICS_FETCHER,
-        NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND,
-        NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING,
-        NCM_ACTION_JUMP_TO_PLAYING_SONG,
-        NCM_ACTION_SHUFFLE,
-        NCM_ACTION_SET_CROSSFADE,
-        NCM_ACTION_SET_VOLUME,
-        NCM_ACTION_EDIT_SONG,
-        NCM_ACTION_JUMP_TO_BROWSER,
-        NCM_ACTION_JUMP_TO_MEDIA_LIBRARY,
-        NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR,
-        NCM_ACTION_TOGGLE_SCREEN_LOCK,
-        NCM_ACTION_JUMP_TO_TAG_EDITOR,
-        NCM_ACTION_JUMP_TO_POSITION_IN_SONG,
-        NCM_ACTION_SELECT_ITEM,
-        NCM_ACTION_SELECT_RANGE,
-        NCM_ACTION_REVERSE_SELECTION,
-        NCM_ACTION_REMOVE_SELECTION,
-        NCM_ACTION_SELECT_ALBUM,
-        NCM_ACTION_SELECT_FOUND_ITEMS,
-        NCM_ACTION_CROP_MAIN_PLAYLIST,
-        NCM_ACTION_CLEAR_MAIN_PLAYLIST,
-        NCM_ACTION_SORT_PLAYLIST,
-        NCM_ACTION_REVERSE_PLAYLIST,
-        NCM_ACTION_APPLY_FILTER,
-        NCM_ACTION_FIND_ITEM_FORWARD,
-        NCM_ACTION_FIND_ITEM_BACKWARD,
-        NCM_ACTION_NEXT_FOUND_ITEM,
-        NCM_ACTION_PREVIOUS_FOUND_ITEM,
-        NCM_ACTION_TOGGLE_FIND_MODE,
-        NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE,
-        NCM_ACTION_TOGGLE_ADD_MODE,
-        NCM_ACTION_TOGGLE_MOUSE,
-        NCM_ACTION_TOGGLE_BITRATE_VISIBILITY,
-        NCM_ACTION_ADD_RANDOM_ITEMS,
-        NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND,
-        NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY,
-        NCM_ACTION_SHOW_SONG_INFO,
-        NCM_ACTION_SHOW_ARTIST_INFO,
-        NCM_ACTION_SHOW_LYRICS,
-        NCM_ACTION_NEXT_SCREEN,
-        NCM_ACTION_PREVIOUS_SCREEN,
-        NCM_ACTION_SHOW_HELP,
-        NCM_ACTION_SHOW_PLAYLIST,
-        NCM_ACTION_SHOW_BROWSER,
-        NCM_ACTION_SHOW_SEARCH_ENGINE,
-        NCM_ACTION_SHOW_MEDIA_LIBRARY,
-        NCM_ACTION_SHOW_PLAYLIST_EDITOR,
-        NCM_ACTION_SHOW_TAG_EDITOR,
-        NCM_ACTION_SHOW_OUTPUTS,
-        NCM_ACTION_SHOW_VISUALIZER,
-        NCM_ACTION_SHOW_SERVER_INFO,
-    };
-    enum NcmActionType playlist_rejected_global_actions[] = {
-        NCM_ACTION_MOVE_SORT_ORDER_UP,
-        NCM_ACTION_MOVE_SORT_ORDER_DOWN,
-        NCM_ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE,
-        NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE,
-        NCM_ACTION_RESET_SEARCH_ENGINE,
-    };
-    enum NcmActionType search_actions[] = {
-        NCM_ACTION_MOUSE_EVENT,
-        NCM_ACTION_SCROLL_UP,
-        NCM_ACTION_SCROLL_DOWN,
-        NCM_ACTION_SCROLL_UP_ARTIST,
-        NCM_ACTION_SCROLL_UP_ALBUM,
-        NCM_ACTION_SCROLL_DOWN_ARTIST,
-        NCM_ACTION_SCROLL_DOWN_ALBUM,
-        NCM_ACTION_PAGE_UP,
-        NCM_ACTION_PAGE_DOWN,
-        NCM_ACTION_MOVE_HOME,
-        NCM_ACTION_MOVE_END,
-        NCM_ACTION_MASTER_SCREEN,
-        NCM_ACTION_SLAVE_SCREEN,
-        NCM_ACTION_ADD_ITEM_TO_PLAYLIST,
-        NCM_ACTION_PLAY_ITEM,
-        NCM_ACTION_TOGGLE_DISPLAY_MODE,
-        NCM_ACTION_START_SEARCHING,
-        NCM_ACTION_JUMP_TO_BROWSER,
-        NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR,
-        NCM_ACTION_JUMP_TO_TAG_EDITOR,
-        NCM_ACTION_TOGGLE_SCREEN_LOCK,
-        NCM_ACTION_SELECT_ITEM,
-        NCM_ACTION_SELECT_RANGE,
-        NCM_ACTION_REVERSE_SELECTION,
-        NCM_ACTION_REMOVE_SELECTION,
-        NCM_ACTION_SELECT_ALBUM,
-        NCM_ACTION_NEXT_FOUND_ITEM,
-        NCM_ACTION_PREVIOUS_FOUND_ITEM,
-        NCM_ACTION_TOGGLE_FIND_MODE,
-        NCM_ACTION_NEXT_SCREEN,
-        NCM_ACTION_PREVIOUS_SCREEN,
-        NCM_ACTION_SHOW_HELP,
-        NCM_ACTION_SHOW_PLAYLIST,
-        NCM_ACTION_SHOW_BROWSER,
-        NCM_ACTION_SHOW_PLAYLIST_EDITOR,
-        NCM_ACTION_SHOW_TAG_EDITOR,
-        NCM_ACTION_SHOW_OUTPUTS,
-        NCM_ACTION_SHOW_VISUALIZER,
-        NCM_ACTION_SHOW_SERVER_INFO,
-        NCM_ACTION_SHOW_SONG_INFO,
-        NCM_ACTION_SHOW_ARTIST_INFO,
-        NCM_ACTION_SHOW_LYRICS,
-    };
     NcmBinding binding;
 
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_QUIT));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_DUMMY));
     REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_PLAY));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_PAUSE));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_STOP));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_NEXT));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_PREVIOUS));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_VOLUME_UP));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_VOLUME_DOWN));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_REPLAY_SONG));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_TOGGLE_REPEAT));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_TOGGLE_RANDOM));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_TOGGLE_SINGLE));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_TOGGLE_CONSUME));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_MOUSE_EVENT));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_SCROLL_UP));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_SHUFFLE));
     REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_TOGGLE_CROSSFADE));
+        NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE));
     REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_UPDATE_DATABASE));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_SEEK_FORWARD));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_SEEK_BACKWARD));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_JUMP_TO_MEDIA_LIBRARY));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_SHOW_MEDIA_LIBRARY));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_SHOW_SEARCH_ENGINE));
-#if defined(HAVE_TAGLIB_H)
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_JUMP_TO_TAG_EDITOR));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_SHOW_TAG_EDITOR));
-#endif
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_RESET_SEARCH_ENGINE));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_RUN_ACTION));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_SAVE_PLAYLIST));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_ADD));
-    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_LOAD));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_SET_CROSSFADE));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_SET_VOLUME));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_ADD_RANDOM_ITEMS));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_MOVE_SORT_ORDER_UP));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_MOVE_SORT_ORDER_DOWN));
-    REQUIRE(app_binding_migration_action_is_c_safe(
-        NCM_ACTION_SORT_PLAYLIST));
-    REQUIRE(!app_binding_migration_action_is_c_safe(
         NCM_ACTION_SHOW_VISUALIZER));
-    REQUIRE(!app_binding_migration_action_is_c_safe(
+    REQUIRE(app_binding_migration_action_is_c_safe(
         NCM_ACTION_TOGGLE_VISUALIZATION_TYPE));
-    for (int32 i = 0; i < NCM_ARRAY_LEN(browser_actions); i += 1) {
-        REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
-            browser_actions[i], NCM_SCREEN_TYPE_BROWSER));
-    }
+    REQUIRE(!app_binding_migration_action_is_c_safe(NCM_ACTION_LAST));
+
     REQUIRE(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_BROWSER));
     REQUIRE(app_binding_migration_screen_is_c_only(
-        NCM_SCREEN_TYPE_PLAYLIST));
-    for (int32 i = 0; i < NCM_ARRAY_LEN(playlist_actions); i += 1) {
-        REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
-            playlist_actions[i], NCM_SCREEN_TYPE_PLAYLIST));
-    }
-    for (int32 i = 0;
-         i < NCM_ARRAY_LEN(playlist_rejected_global_actions);
-         i += 1) {
-        REQUIRE(app_binding_migration_action_is_c_safe(
-            playlist_rejected_global_actions[i]));
-        REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
-            playlist_rejected_global_actions[i],
-            NCM_SCREEN_TYPE_PLAYLIST));
-    }
-    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_LOAD, NCM_SCREEN_TYPE_PLAYLIST));
-    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_START_SEARCHING, NCM_SCREEN_TYPE_PLAYLIST));
-    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_TOGGLE_OUTPUT, NCM_SCREEN_TYPE_PLAYLIST));
+        NCM_SCREEN_TYPE_HELP));
     REQUIRE(app_binding_migration_screen_is_c_only(
-        NCM_SCREEN_TYPE_VISUALIZER));
-    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_SHOW_VISUALIZER, NCM_SCREEN_TYPE_VISUALIZER));
-    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_TOGGLE_VISUALIZATION_TYPE,
-        NCM_SCREEN_TYPE_VISUALIZER));
-    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_SHOW_PLAYLIST, NCM_SCREEN_TYPE_VISUALIZER));
-    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_NEXT_SCREEN, NCM_SCREEN_TYPE_VISUALIZER));
-    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_TOGGLE_SCREEN_LOCK, NCM_SCREEN_TYPE_VISUALIZER));
-    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_DELETE_BROWSER_ITEMS, NCM_SCREEN_TYPE_VISUALIZER));
-
+        NCM_SCREEN_TYPE_LASTFM));
+    REQUIRE(app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_LYRICS));
+    REQUIRE(app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_MEDIA_LIBRARY));
+    REQUIRE(app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_PLAYLIST));
+    REQUIRE(app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_PLAYLIST_EDITOR));
+    REQUIRE(app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_SEARCH_ENGINE));
+    REQUIRE(app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER));
+    REQUIRE(app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_SERVER_INFO));
+    REQUIRE(app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_SONG_INFO));
+    REQUIRE(app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG));
 #if defined(HAVE_TAGLIB_H)
     REQUIRE(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_TAG_EDITOR));
-    for (int32 i = 0; i < NCM_ARRAY_LEN(tag_editor_actions); i += 1) {
-        REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
-            tag_editor_actions[i], NCM_SCREEN_TYPE_TAG_EDITOR));
-    }
-    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_DELETE_BROWSER_ITEMS, NCM_SCREEN_TYPE_TAG_EDITOR));
-
     REQUIRE(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
-    for (int32 i = 0; i < NCM_ARRAY_LEN(tiny_editor_actions); i += 1) {
-        REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
-            tiny_editor_actions[i], NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
-    }
-    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_SHOW_HELP, NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
-    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_SHOW_SEARCH_ENGINE,
-        NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
-    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_SHOW_MEDIA_LIBRARY,
-        NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
-    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_JUMP_TO_MEDIA_LIBRARY,
-        NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
 #endif
-
-    REQUIRE(!app_binding_migration_action_is_c_safe(
-        NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE));
-    REQUIRE(!app_binding_migration_action_is_c_safe(NCM_ACTION_MOUSE_EVENT));
-    REQUIRE(!app_binding_migration_action_is_c_safe(NCM_ACTION_SCROLL_UP));
-    REQUIRE(!app_binding_migration_action_is_c_safe(NCM_ACTION_SHUFFLE));
-    REQUIRE(!app_binding_migration_action_is_c_safe(
-        NCM_ACTION_CLEAR_MAIN_PLAYLIST));
-    REQUIRE(!app_binding_migration_action_is_c_safe(
-        NCM_ACTION_CROP_MAIN_PLAYLIST));
+#if defined(ENABLE_VISUALIZER)
     REQUIRE(app_binding_migration_screen_is_c_only(
-        NCM_SCREEN_TYPE_SEARCH_ENGINE));
-    for (int32 i = 0; i < NCM_ARRAY_LEN(search_actions); i += 1) {
-        REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
-            search_actions[i], NCM_SCREEN_TYPE_SEARCH_ENGINE));
-    }
-    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_ENTER_DIRECTORY, NCM_SCREEN_TYPE_BROWSER));
-    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_JUMP_TO_PARENT_DIRECTORY,
-        NCM_SCREEN_TYPE_BROWSER));
-    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_START_SEARCHING, NCM_SCREEN_TYPE_BROWSER));
-#if defined(HAVE_TAGLIB_H)
-    ncm_binding_init(&binding);
-    append_action_kind(&binding, NCM_BINDING_ACTION_REQUIRE_RUNNABLE,
-                       NCM_ACTION_ENTER_DIRECTORY);
-    append_action(&binding, NCM_ACTION_ENTER_DIRECTORY);
-    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
-    REQUIRE(app_binding_migration_binding_is_c_safe_for_screen(
-        &binding, NCM_SCREEN_TYPE_TAG_EDITOR));
-    REQUIRE(app_binding_migration_binding_is_c_safe_for_screen(
-        &binding, NCM_SCREEN_TYPE_BROWSER));
-    ncm_binding_destroy(&binding);
+        NCM_SCREEN_TYPE_VISUALIZER));
 #endif
+    REQUIRE(!app_binding_migration_screen_is_c_only(
+        NCM_SCREEN_TYPE_UNKNOWN));
+    REQUIRE(!app_binding_migration_screen_is_c_only(NCM_SCREEN_TYPE_LAST));
 
-    ncm_binding_init(&binding);
-    append_action(&binding, NCM_ACTION_SELECT_ITEM);
-    append_action(&binding, NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN);
-    append_action(&binding, NCM_ACTION_CLEAR_MAIN_PLAYLIST);
-    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
-    REQUIRE(app_binding_migration_binding_is_c_safe_for_screen(
-        &binding, NCM_SCREEN_TYPE_PLAYLIST));
-    REQUIRE(!app_binding_migration_binding_is_c_safe_for_screen(
-        &binding, NCM_SCREEN_TYPE_BROWSER));
-    ncm_binding_destroy(&binding);
-
-    ncm_binding_init(&binding);
-    append_action(&binding, NCM_ACTION_START_SEARCHING);
-    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
-    REQUIRE(app_binding_migration_binding_is_c_safe_for_screen(
-        &binding, NCM_SCREEN_TYPE_SEARCH_ENGINE));
-    REQUIRE(!app_binding_migration_binding_is_c_safe_for_screen(
-        &binding, NCM_SCREEN_TYPE_BROWSER));
-    ncm_binding_destroy(&binding);
+    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_DELETE_BROWSER_ITEMS, NCM_SCREEN_TYPE_PLAYLIST));
+    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_SHOW_VISUALIZER, NCM_SCREEN_TYPE_PLAYLIST));
+    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
+        NCM_ACTION_PLAY, NCM_SCREEN_TYPE_UNKNOWN));
 
     ncm_binding_init(&binding);
     append_action(&binding, NCM_ACTION_QUIT);
-    append_action(&binding, NCM_ACTION_PLAY);
-    append_action(&binding, NCM_ACTION_UPDATE_DATABASE);
-    append_action(&binding, NCM_ACTION_TOGGLE_CROSSFADE);
-    REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
-    ncm_binding_destroy(&binding);
-
-    ncm_binding_init(&binding);
-    append_action(&binding, NCM_ACTION_QUIT);
-    append_action(&binding, NCM_ACTION_SHOW_MEDIA_LIBRARY);
-    REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
-    ncm_binding_destroy(&binding);
-
-    ncm_binding_init(&binding);
-    append_action(&binding, NCM_ACTION_SHOW_VISUALIZER);
-    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
-    REQUIRE(!app_binding_migration_binding_is_hybrid_safe(&binding));
-    REQUIRE(app_binding_migration_binding_is_c_safe_for_screen(
-        &binding, NCM_SCREEN_TYPE_VISUALIZER));
-    ncm_binding_destroy(&binding);
-
-    ncm_binding_init(&binding);
-    append_action(&binding, NCM_ACTION_SHOW_PLAYLIST);
-    REQUIRE(app_binding_migration_binding_is_c_safe_for_screen(
-        &binding, NCM_SCREEN_TYPE_VISUALIZER));
-    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
-    ncm_binding_destroy(&binding);
-
-    ncm_binding_init(&binding);
-    append_action(&binding, NCM_ACTION_SORT_PLAYLIST);
-    append_action(&binding, NCM_ACTION_MOVE_SORT_ORDER_UP);
-    append_action(&binding, NCM_ACTION_MOVE_SORT_ORDER_DOWN);
-    append_action(&binding, NCM_ACTION_RUN_ACTION);
+    append_action(&binding, NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE);
     REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
     REQUIRE(app_binding_migration_binding_is_hybrid_safe(&binding));
     REQUIRE(app_binding_migration_binding_is_plain_action_sequence(
         &binding));
+    REQUIRE(app_binding_migration_binding_is_c_safe_for_screen(
+        &binding, NCM_SCREEN_TYPE_MEDIA_LIBRARY));
+    REQUIRE(!app_binding_migration_binding_is_c_safe_for_screen(
+        &binding, NCM_SCREEN_TYPE_UNKNOWN));
     ncm_binding_destroy(&binding);
 
     ncm_binding_init(&binding);
     append_action_kind(&binding, NCM_BINDING_ACTION_REQUIRE_SCREEN,
                        NCM_ACTION_DUMMY);
-    append_action(&binding, NCM_ACTION_QUIT);
-    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
-    REQUIRE(!app_binding_migration_binding_is_hybrid_safe(&binding));
-    REQUIRE(!app_binding_migration_binding_is_plain_action_sequence(
-        &binding));
-    ncm_binding_destroy(&binding);
-
-    ncm_binding_init(&binding);
-    append_action(&binding, NCM_ACTION_QUIT);
-    append_action(&binding, NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE);
-    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
-    REQUIRE(!app_binding_migration_binding_is_hybrid_safe(&binding));
-    REQUIRE(app_binding_migration_binding_is_plain_action_sequence(
-        &binding));
-    ncm_binding_destroy(&binding);
-
-    ncm_binding_init(&binding);
     append_action_kind(&binding, NCM_BINDING_ACTION_PUSH_CHARACTERS,
                        NCM_ACTION_DUMMY);
+    append_action_kind(&binding,
+                       NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND,
+                       NCM_ACTION_DUMMY);
     append_action(&binding, NCM_ACTION_QUIT);
     REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
     REQUIRE(app_binding_migration_binding_is_hybrid_safe(&binding));
@@ -940,37 +558,10 @@ test_app_binding_migration_c_safe_actions(void) {
     ncm_binding_destroy(&binding);
 
     ncm_binding_init(&binding);
-    append_action(&binding, NCM_ACTION_QUIT);
-    append_action_kind(&binding, NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND,
-                       NCM_ACTION_DUMMY);
-    append_action_kind(&binding,
-                       NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND,
-                       NCM_ACTION_DUMMY);
-    REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
-    REQUIRE(app_binding_migration_binding_is_hybrid_safe(&binding));
-    ncm_binding_destroy(&binding);
-
-    ncm_binding_init(&binding);
-    append_action_kind(&binding, NCM_BINDING_ACTION_REQUIRE_RUNNABLE,
-                       NCM_ACTION_QUIT);
-    append_action(&binding, NCM_ACTION_PAUSE);
-    REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
-    REQUIRE(app_binding_migration_binding_is_hybrid_safe(&binding));
-    ncm_binding_destroy(&binding);
-
-    ncm_binding_init(&binding);
-    append_action(&binding, NCM_ACTION_QUIT);
-    append_action(&binding, NCM_ACTION_SAVE_PLAYLIST);
-    REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
-    REQUIRE(app_binding_migration_binding_is_hybrid_safe(&binding));
-    ncm_binding_destroy(&binding);
-
-    ncm_binding_init(&binding);
-    append_action_kind(&binding, NCM_BINDING_ACTION_REQUIRE_RUNNABLE,
-                       NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE);
-    append_action(&binding, NCM_ACTION_QUIT);
     REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
     REQUIRE(!app_binding_migration_binding_is_hybrid_safe(&binding));
+    REQUIRE(!app_binding_migration_binding_is_plain_action_sequence(
+        &binding));
     ncm_binding_destroy(&binding);
 
     return;

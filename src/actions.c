@@ -1389,6 +1389,9 @@ static bool action_runtime_refetch_lyrics(void);
 static bool action_runtime_show_lyrics(void);
 static bool action_runtime_show_artist_info(void);
 static bool action_runtime_mouse_event(void);
+static bool action_runtime_media_library_current_artist_tag(
+    char **artist, int32 *artist_len);
+static bool action_runtime_toggle_screen_lock(void);
 
 void
 ncm_action_runtime_init(NcmActionRuntime *runtime) {
@@ -1431,6 +1434,13 @@ bool
 ncm_action_runtime_exit_requested(NcmActionRuntime *runtime) {
     runtime = action_runtime_or_global(runtime);
     return runtime->exit_requested;
+}
+
+void
+ncm_action_runtime_request_exit(NcmActionRuntime *runtime) {
+    runtime = action_runtime_or_global(runtime);
+    runtime->exit_requested = true;
+    return;
 }
 
 void
@@ -1652,6 +1662,10 @@ action_runtime_switch_to_next_screen(bool reverse) {
     if (selected_items_adder && Config.screen_switcher_previous) {
         return native_selected_items_adder_screen_return_to_previous(
             native_c_screen_selected_items_adder());
+    }
+    if (Config.screen_switcher_previous) {
+        return app_controller_switch_to_screen(
+            app_controller_previous_screen());
     }
 
     sequence = &Config.screen_sequence;
@@ -5705,8 +5719,16 @@ static bool
 action_runtime_toggle_library_tag_type(void) {
     NativeMediaLibraryScreen *screen;
     enum mpd_tag_type tag_type;
+    enum NativeMediaLibraryColumn column;
 
     if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
+        return false;
+    }
+    screen = native_c_screen_media_library();
+    column = native_media_library_screen_active_column(screen);
+    if ((column != NATIVE_MEDIA_LIBRARY_COLUMN_TAGS)
+        && ((native_media_library_screen_column_count(screen) != 2)
+            || (column != NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS))) {
         return false;
     }
 
@@ -5731,9 +5753,7 @@ action_runtime_toggle_library_tag_type(void) {
         break;
     }
 
-    screen = native_c_screen_media_library();
-    return native_media_library_screen_set_primary_tag_type(screen,
-                                                             tag_type);
+    return native_media_library_screen_set_primary_tag_type(screen, tag_type);
 }
 
 static bool
@@ -5914,6 +5934,120 @@ ncm_action_edit_song(NcmSong *song) {
     (void)song;
     return false;
 #endif
+}
+
+static bool
+action_runtime_media_library_current_artist_tag(
+    char **artist, int32 *artist_len) {
+    NativeMediaLibraryScreen *library;
+    char *value;
+    int32 value_len;
+
+    if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
+        return false;
+    }
+    if (Config.media_lib_primary_tag != MPD_TAG_ARTIST) {
+        return false;
+    }
+
+    library = native_c_screen_media_library();
+    if (native_media_library_screen_active_column(library)
+        != NATIVE_MEDIA_LIBRARY_COLUMN_TAGS) {
+        return false;
+    }
+    if (!native_media_library_screen_current_primary_tag_value(
+            library, &value, &value_len)) {
+        return false;
+    }
+
+    if (artist != NULL) {
+        *artist = value;
+    }
+    if (artist_len != NULL) {
+        *artist_len = value_len;
+    }
+    return true;
+}
+
+static bool
+action_runtime_toggle_screen_lock(void) {
+    NcmStringFormatArg args[3];
+    NcmBuffer input;
+    NcmError error;
+    NcScreen *current;
+    char initial[16];
+    uint32 part;
+    bool prompted;
+
+    if (app_controller_locked_screen() != NULL) {
+        app_controller_unlock_screen();
+        native_c_screens_request_registered_resize();
+        native_c_screen_lyrics_set_resize();
+        app_controller_resize_current_screen();
+        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                    (char *)"Screen unlocked");
+        return true;
+    }
+
+    current = app_controller_current_screen();
+    if ((current == NULL) || !nc_screen_is_lockable(current)) {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Current screen can't be locked");
+        return true;
+    }
+
+    part = (uint32)(Config.locked_screen_width_part*100);
+    if (Config.ask_for_locked_screen_width_part) {
+        ncm_buffer_init(&input);
+        snprintf(initial, (size_t)SIZEOF(initial), "%u", part);
+        prompted = action_runtime_prompt_string(
+            STRLIT_ARGS("% of the locked screen's width to be reserved "
+                        "(20-80): "), initial, true, NULL, NULL,
+            &input);
+        if (!prompted) {
+            ncm_buffer_destroy(&input);
+            ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                        (char *)"Action aborted");
+            return true;
+        }
+
+        ncm_error_clear(&error);
+        if (!ncm_parse_uint32(input.data, input.len, &part, &error)) {
+            args[0] = ncm_string_format_arg_string(input.data, input.len);
+            ncm_statusbar_format((int32)Config.message_delay_time,
+                                 STRLIT_ARGS("Invalid value: %1%"),
+                                 args, 1);
+            ncm_buffer_destroy(&input);
+            return true;
+        }
+        ncm_buffer_destroy(&input);
+    }
+
+    if ((part < 20) || (part > 80)) {
+        args[0] = ncm_string_format_arg_u64(20);
+        args[1] = ncm_string_format_arg_u64(80);
+        args[2] = ncm_string_format_arg_u64(part);
+        ncm_statusbar_format(
+            (int32)Config.message_delay_time,
+            STRLIT_ARGS("Error: value is out of bounds "
+                        "([%1%, %2%] expected, %3% given)"),
+            args, LENGTH(args));
+        return true;
+    }
+
+    Config.locked_screen_width_part = part/100.0;
+    if (app_controller_lock_current_screen()) {
+        args[0] = ncm_string_format_arg_u64(part);
+        ncm_statusbar_format((int32)Config.message_delay_time,
+                             STRLIT_ARGS("Screen locked (with %1%%% width)"),
+                             args, 1);
+    } else {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Current screen can't be locked");
+    }
+    return true;
 }
 
 #if defined(HAVE_TAGLIB_H)
@@ -6585,37 +6719,70 @@ action_runtime_show_artist_info(void) {
     NcmSong song;
     NcmStringView artist;
     NcmError error;
+    char *media_library_artist;
+    int32 media_library_artist_len;
+    bool has_artist;
     bool success;
 
-    ncm_song_init(&song);
-    success = action_runtime_current_song(&song);
-    if (success) {
-        success = ncm_song_tag_view(&song, MPD_TAG_ARTIST, 0, &artist);
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_LASTFM)) {
+        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_LASTFM);
     }
-    if (success) {
+
+    ncm_string_view_init(&artist);
+    media_library_artist = NULL;
+    media_library_artist_len = 0;
+    has_artist = false;
+    if (action_runtime_media_library_current_artist_tag(
+            &media_library_artist, &media_library_artist_len)) {
+        artist.data = media_library_artist;
+        artist.len = media_library_artist_len;
+        has_artist = true;
+    }
+
+    ncm_song_init(&song);
+    if (!has_artist) {
+        success = action_runtime_current_song(&song);
+        if (!success) {
+            ncm_song_destroy(&song);
+            return false;
+        }
+        has_artist = ncm_song_tag_view(&song, MPD_TAG_ARTIST, 0, &artist);
+    }
+
+    if (has_artist && (artist.len > 0)) {
         ncm_error_clear(&error);
         success = native_lastfm_screen_queue_artist_info(
             native_c_screen_lastfm(), artist.data, artist.len,
             Config.lastfm_preferred_language,
             Config.lastfm_preferred_language_len, &error);
+        ncm_song_destroy(&song);
+        if (!success) {
+            return false;
+        }
+        if (!app_controller_is_screen_visible(
+                native_c_screen_lastfm_native())) {
+            return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_LASTFM);
+        }
+        return true;
     }
+
     ncm_song_destroy(&song);
-    if (!success) {
-        return false;
-    }
-    return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_LASTFM);
+    return true;
 }
 
 static bool
 action_runtime_mouse_event(void) {
+    NcmError error;
     NcWindow *window;
     MEVENT *event;
+    uint32 position;
+    uint32 seconds;
 
     if (!Config.mouse_support) {
         return false;
     }
 
-    window = app_controller_active_window();
+    window = ui_state_footer_window();
     if (window == NULL) {
         return false;
     }
@@ -6624,7 +6791,43 @@ action_runtime_mouse_event(void) {
         return false;
     }
 
-    app_controller_mouse_button_pressed_current(*event);
+    if ((event->bstate & BUTTON1_PRESSED)
+        && (event->y == LINES - (Config.statusbar_visibility ? 2 : 1))) {
+        if (ncm_status_state_player() == NCM_STATUS_PLAYER_STOP) {
+            return true;
+        }
+        position = (uint32)ncm_status_state_current_song_position();
+        seconds = (uint32)(ncm_status_state_total_time()*event->x/COLS);
+        ncm_error_clear(&error);
+        if (!ncm_mpd_client_seek_pos(&global_mpd, position, seconds,
+                                     &error)) {
+            return action_runtime_mpd_error(&error);
+        }
+    } else if ((event->bstate & BUTTON1_PRESSED)
+               && (Config.statusbar_visibility
+                   || (Config.design == NCM_DESIGN_ALTERNATIVE))
+               && (ncm_status_state_player() != NCM_STATUS_PLAYER_STOP)
+               && (event->y == (Config.design == NCM_DESIGN_ALTERNATIVE
+                                ? 1 : LINES - 1))
+               && (event->x < 9)) {
+        ncm_error_clear(&error);
+        if (!ncm_mpd_client_toggle_pause(&global_mpd, &error)) {
+            return action_runtime_mpd_error(&error);
+        }
+    } else if (((event->bstate & BUTTON5_PRESSED)
+                || (event->bstate & BUTTON4_PRESSED))
+               && (Config.header_visibility
+                   || (Config.design == NCM_DESIGN_ALTERNATIVE))
+               && (event->y == 0)
+               && (event->x > COLS - global_volume_state_len())) {
+        if (event->bstate & BUTTON5_PRESSED) {
+            return ncm_action_runtime_run(NULL, NCM_ACTION_VOLUME_DOWN);
+        }
+        return ncm_action_runtime_run(NULL, NCM_ACTION_VOLUME_UP);
+    } else if (event->bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED
+                                | BUTTON4_PRESSED | BUTTON5_PRESSED)) {
+        app_controller_mouse_button_pressed_current(*event);
+    }
     return true;
 }
 
@@ -6969,6 +7172,17 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_TOGGLE_BROWSER_SORT_MODE:
         return action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER);
     case NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE:
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
+            NativeMediaLibraryScreen *library;
+            enum NativeMediaLibraryColumn column;
+
+            library = native_c_screen_media_library();
+            column = native_media_library_screen_active_column(library);
+            return (column == NATIVE_MEDIA_LIBRARY_COLUMN_TAGS)
+                || ((native_media_library_screen_column_count(library) == 2)
+                    && (column == NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS));
+        }
+        return false;
     case NCM_ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE:
         return action_runtime_current_screen_is(
             NCM_SCREEN_TYPE_MEDIA_LIBRARY);
@@ -6979,6 +7193,12 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_REFETCH_LYRICS:
         return action_runtime_current_screen_is(NCM_SCREEN_TYPE_LYRICS);
     case NCM_ACTION_SHOW_ARTIST_INFO:
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_LASTFM)) {
+            return true;
+        }
+        if (action_runtime_media_library_current_artist_tag(NULL, NULL)) {
+            return true;
+        }
         return action_runtime_has_current_song();
     case NCM_ACTION_SHOW_LYRICS:
         return action_runtime_current_screen_is(NCM_SCREEN_TYPE_LYRICS)
@@ -7322,12 +7542,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR:
         return action_runtime_jump_to_playlist_editor();
     case NCM_ACTION_TOGGLE_SCREEN_LOCK:
-        if (app_controller_locked_screen() != NULL) {
-            app_controller_unlock_screen();
-        } else {
-            (void)app_controller_lock_current_screen();
-        }
-        return true;
+        return action_runtime_toggle_screen_lock();
     case NCM_ACTION_JUMP_TO_TAG_EDITOR:
         return action_runtime_jump_to_tag_editor();
     case NCM_ACTION_JUMP_TO_POSITION_IN_SONG:

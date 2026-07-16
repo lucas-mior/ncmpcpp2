@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "actions_legacy_runtime.h"
 #include "app_legacy_bridge.h"
 #include "bindings.h"
 #include "settings_legacy_runtime.h"
@@ -56,11 +55,6 @@ __wrap_ncm_action_runtime_run(NcmActionRuntime *runtime,
     return true;
 }
 
-bool
-__wrap_actions_legacy_runtime_execute_action(enum NcmActionType type) {
-    test_state.legacy_action_types[test_state.legacy_action_count++] = type;
-    return true;
-}
 
 bool
 settings_legacy_runtime_sync_configuration(void) {
@@ -68,11 +62,6 @@ settings_legacy_runtime_sync_configuration(void) {
     return false;
 }
 
-bool
-actions_legacy_runtime_exit_requested(void) {
-    test_state.unrelated_legacy_count += 1;
-    return false;
-}
 
 static void
 test_state_reset(void) {

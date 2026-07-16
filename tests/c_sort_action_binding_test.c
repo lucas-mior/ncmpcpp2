@@ -57,14 +57,14 @@ test_navigation_is_c_safe_on_native_screens(void) {
     for (int32 i = 0; i < LENGTH(types); i += 1) {
         actions[i].kind = NCM_BINDING_ACTION_NORMAL;
         actions[i].type = types[i];
-        assert(!app_binding_migration_action_is_c_safe(types[i]));
+        assert(app_binding_migration_action_is_c_safe(types[i]));
         assert(app_binding_migration_action_is_c_safe_for_screen(
             types[i], NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG));
         assert(app_binding_migration_action_is_c_safe_for_screen(
             types[i], NCM_SCREEN_TYPE_PLAYLIST));
     }
 
-    assert(!app_binding_migration_binding_is_c_safe(&binding));
+    assert(app_binding_migration_binding_is_c_safe(&binding));
     assert(app_binding_migration_binding_is_c_safe_for_screen(
         &binding, NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG));
     assert(app_binding_migration_binding_is_c_safe_for_screen(
@@ -73,7 +73,7 @@ test_navigation_is_c_safe_on_native_screens(void) {
 }
 
 static void
-test_legacy_action_is_blocked_on_native_dialog(void) {
+test_all_actions_are_c_safe_on_native_dialog(void) {
     NcmBindingAction action = {
         .kind = NCM_BINDING_ACTION_NORMAL,
         .type = NCM_ACTION_MOVE_SELECTED_ITEMS_TO,
@@ -84,9 +84,9 @@ test_legacy_action_is_blocked_on_native_dialog(void) {
         .actions_cap = 1,
     };
 
-    assert(!app_binding_migration_action_is_c_safe_for_screen(
+    assert(app_binding_migration_action_is_c_safe_for_screen(
         action.type, NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG));
-    assert(!app_binding_migration_binding_is_c_safe_for_screen(
+    assert(app_binding_migration_binding_is_c_safe_for_screen(
         &binding, NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG));
     return;
 }
@@ -95,6 +95,6 @@ int
 main(void) {
     test_sort_actions_are_c_safe();
     test_navigation_is_c_safe_on_native_screens();
-    test_legacy_action_is_blocked_on_native_dialog();
+    test_all_actions_are_c_safe_on_native_dialog();
     exit(EXIT_SUCCESS);
 }

@@ -173,9 +173,9 @@ test_selected_items_adder_screen_is_c_only(void) {
     assert(app_binding_migration_action_is_c_safe_for_screen(
         action.type, NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER));
     action.type = NCM_ACTION_MOVE_SELECTED_ITEMS_TO;
-    assert(!app_binding_migration_action_is_c_safe_for_screen(
+    assert(app_binding_migration_action_is_c_safe_for_screen(
         action.type, NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER));
-    assert(!app_binding_migration_binding_is_c_safe_for_screen(
+    assert(app_binding_migration_binding_is_c_safe_for_screen(
         &binding, NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER));
     return;
 }
