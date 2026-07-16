@@ -19,6 +19,7 @@ void cbase_memset(void *buffer, int value, int64 n);
 void cbase_memcpy(void *dest, void *source, int64 n);
 void cbase_memmove(void *dest, void *source, int64 n);
 int cbase_memcmp(void *left, void *right, int64 n);
+int32 strlen32(char *string);
 
 void cbase_string_lowercase_ascii(char *string, int32 string_len);
 int32 cbase_string_last_index_of(char *string, int32 string_len, char needle);

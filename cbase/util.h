@@ -15,7 +15,7 @@ static int32 random_ascii_string(char *buffer, int32 capacity, int32 min_len);
 static void fatal(int status);
 
 static void memset64(void *buffer, int value, int64 size);
-static int32 strlen32(char *string);
+int32 strlen32(char *string);
 static char *xstrdup(char *string);
 static void *xmmap_commit(int64 *size);
 static void xmunmap(void *p, int64 size);

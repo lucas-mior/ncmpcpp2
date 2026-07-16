@@ -10,6 +10,7 @@
 
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 static bool ncm_fs_path_copy(char *path, int32 path_len, char **copy,
                              NcmError *error);
@@ -129,7 +130,7 @@ ncm_fs_xdg_dir(NcmBuffer *buffer, char *xdg_name, char *fallback_suffix,
 
     ncm_buffer_clear(buffer);
     if ((env = getenv(xdg_name))) {
-        env_len = (int32)strlen(env);
+        env_len = strlen32(env);
         ncm_buffer_append(buffer, env, env_len);
         ncm_fs_append_app_name(buffer, app_name, app_name_len);
         ncm_error_clear(error);
@@ -141,8 +142,8 @@ ncm_fs_xdg_dir(NcmBuffer *buffer, char *xdg_name, char *fallback_suffix,
         return false;
     }
 
-    home_len = (int32)strlen(home);
-    fallback_len = (int32)strlen(fallback_suffix);
+    home_len = strlen32(home);
+    fallback_len = strlen32(fallback_suffix);
     ncm_buffer_append(buffer, home, home_len);
     ncm_fs_join(buffer, buffer->data, buffer->len,
                 fallback_suffix, fallback_len);
@@ -392,7 +393,7 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
             continue;
         }
 
-        name_len = (int32)strlen(dirent->d_name);
+        name_len = strlen32(dirent->d_name);
         entry->name = ncm_malloc(name_len + 1);
         entry->name_len = name_len;
         entry->type = ncm_fs_dirent_type(dirent->d_type);

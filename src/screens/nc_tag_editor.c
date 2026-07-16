@@ -19,6 +19,7 @@
 #include "c/ncm_utf8.h"
 #include "c/ncm_type_conversions.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 #include "screens/screen_switcher.h"
 #include "screens/song_info.h"
 #include "title.h"
@@ -2610,7 +2611,7 @@ tag_editor_prompt_tag_value(NativeTagEditorScreen *screen,
     }
 
     label = ncm_tags_field_name(field);
-    label_len = (int32)strlen(label);
+    label_len = strlen32(label);
     initial = ncm_mutable_song_tags_buffer(
         song, field, Config.tags_separator, Config.tags_separator_len,
         Config.show_duplicate_tags);
@@ -3241,7 +3242,7 @@ tag_editor_status_directory_rename_error(NativeTagEditorScreen *screen,
     ncm_buffer_append(&message, name, name_len);
     ncm_buffer_append(&message, STRLIT_ARGS("\": "));
     if ((error != NULL) && ncm_error_is_set(error)) {
-        error_len = (int32)strlen(error->message);
+        error_len = strlen32(error->message);
         ncm_buffer_append(&message, error->message, error_len);
     } else {
         ncm_buffer_append(&message, STRLIT_ARGS("unknown error"));
@@ -3485,7 +3486,7 @@ tag_editor_report_error(char *context, int32 context_len,
     if ((error != NULL) && (error->message[0] != 0)) {
         ncm_buffer_append(&message, STRLIT_ARGS(": "));
         ncm_buffer_append(&message, error->message,
-                          (int32)strlen(error->message));
+                          strlen32(error->message));
     }
     ncm_buffer_append_byte(&message, '\0');
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
@@ -4559,7 +4560,7 @@ tag_editor_save_status_error(NativeTagEditorScreen *screen,
         ncm_buffer_append(&message, song->name, song->name_len);
     }
     ncm_buffer_append(&message, STRLIT_ARGS("\": "));
-    ncm_buffer_append(&message, system_error, (int32)strlen(system_error));
+    ncm_buffer_append(&message, system_error, strlen32(system_error));
     tag_editor_status_message(screen, message.data, message.len);
     ncm_buffer_destroy(&message);
     return;
