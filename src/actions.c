@@ -1350,6 +1350,7 @@ static bool action_runtime_enter_directory(void);
 static bool action_runtime_jump_to_parent_directory(void);
 static bool action_runtime_seek_relative(bool forward);
 static bool action_runtime_jump_to_playing_song(void);
+static bool action_runtime_jump_to_browser(void);
 static bool action_runtime_jump_to_media_library(void);
 static bool action_runtime_jump_to_tag_editor(void);
 static bool action_runtime_edit_directory_name(void);
@@ -4682,6 +4683,35 @@ action_runtime_jump_to_playing_song(void) {
 }
 
 static bool
+action_runtime_jump_to_browser(void) {
+    NcmSong song;
+    NcmError error;
+    bool success;
+
+    ncm_song_init(&song);
+    success = action_runtime_current_song(&song);
+    if (!success) {
+        ncm_song_destroy(&song);
+        return false;
+    }
+
+    if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+        success = action_runtime_switch_to_screen(NCM_SCREEN_TYPE_BROWSER);
+    }
+    if (success) {
+        ncm_error_clear(&error);
+        success = native_browser_screen_locate_song(
+            native_c_screen_browser(), &song, &global_mpd, &error);
+        if (!success) {
+            (void)action_runtime_mpd_error(&error);
+        }
+    }
+
+    ncm_song_destroy(&song);
+    return success;
+}
+
+static bool
 action_runtime_jump_to_media_library(void) {
     NcmSong song;
     NcmError error;
@@ -6107,7 +6137,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_EDIT_SONG:
         return action_runtime_edit_current_song();
     case NCM_ACTION_JUMP_TO_BROWSER:
-        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_BROWSER);
+        return action_runtime_jump_to_browser();
     case NCM_ACTION_JUMP_TO_MEDIA_LIBRARY:
         return action_runtime_jump_to_media_library();
     case NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR:
