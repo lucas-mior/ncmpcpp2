@@ -27,15 +27,10 @@
 #include "screens/native_c_screens.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
-#include "utility/utf8.h"
 #include "c/ncm_base.h"
 #include "c/ncm_error.h"
 #include "c/ncm_type_conversions.h"
-#include "tags.h"
 
-#ifdef HAVE_TAGLIB_H
-# include "c/ncm_taglib.h"
-#endif // HAVE_TAGLIB_H
 
 
 namespace ph = std::placeholders;
@@ -85,46 +80,6 @@ bool currentMediaLibraryArtistTag(std::string &artist)
 	artist.assign(tag, static_cast<size_t>(tag_len));
 	return true;
 }
-
-bool currentMediaLibraryTag(std::string &tag)
-{
-	NativeMediaLibraryScreen *library;
-	char *value;
-	int32 value_len;
-
-	if (!native_c_screen_media_library_is_current())
-		return false;
-	library = native_c_screen_media_library();
-	if (native_media_library_screen_active_column(library)
-	    != NATIVE_MEDIA_LIBRARY_COLUMN_TAGS)
-		return false;
-	if (!native_media_library_screen_current_primary_tag_value(
-	        library, &value, &value_len))
-		return false;
-	tag.assign(value, static_cast<size_t>(value_len));
-	return true;
-}
-
-bool currentMediaLibraryAlbum(std::string &album)
-{
-	NativeMediaLibraryScreen *library;
-	char *value;
-	int32 value_len;
-
-	if (!native_c_screen_media_library_is_current())
-		return false;
-	library = native_c_screen_media_library();
-	if (native_media_library_screen_active_column(library)
-	    != NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS)
-		return false;
-	if (!native_media_library_screen_current_album_value(
-	        library, &value, &value_len))
-		return false;
-	album.assign(value, static_cast<size_t>(value_len));
-	return true;
-}
-
-
 
 std::vector<std::shared_ptr<Actions::BaseAction>> AvailableActions;
 
@@ -412,175 +367,6 @@ void MouseEvent::run()
 
 
 
-bool EditSong::canBeRun()
-{
-#	ifdef HAVE_TAGLIB_H
-	return !native_c_screen_lyrics_is_current()
-	    && isMPDMusicDirSet()
-	    && currentSongFromNative(m_song);
-#	else
-	return false;
-#	endif // HAVE_TAGLIB_H
-}
-
-void EditSong::run()
-{
-#	ifdef HAVE_TAGLIB_H
-	(void)ncm_action_edit_song(m_song.cSong());
-#	endif // HAVE_TAGLIB_H
-}
-
-bool EditLibraryTag::canBeRun()
-{
-#	ifdef HAVE_TAGLIB_H
-	std::string tag;
-
-	return currentMediaLibraryTag(tag) && isMPDMusicDirSet();
-#	else
-	return false;
-#	endif // HAVE_TAGLIB_H
-}
-
-void EditLibraryTag::run()
-{
-#	ifdef HAVE_TAGLIB_H
-
-	std::string current_tag;
-	std::string new_tag;
-	if (!currentMediaLibraryTag(current_tag))
-		return;
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << NC_FORMAT_BOLD << ncm_tag_type_name(Config.media_lib_primary_tag) << NC_FORMAT_NO_BOLD << ": ";
-		if (!promptString(new_tag, current_tag))
-				return;
-	}
-	if (!new_tag.empty() && new_tag != current_tag)
-	{
-		Statusbar::print("Updating tags...");
-		Mpd.StartSearch(true);
-		Mpd.AddSearch(Config.media_lib_primary_tag, current_tag);
-		enum NcmTagsField field = ncm_tags_field_from_tag_type(Config.media_lib_primary_tag);
-		assert(field != NCM_TAGS_FIELD_LAST);
-		bool success = true;
-		std::string dir_to_update;
-		for (MPD::SongIterator s = Mpd.CommitSearchSongs(), end; s != end; ++s)
-		{
-			MPD::MutableSong ms = std::move(*s);
-			ms.setTags(field, new_tag);
-			Statusbar::printf("Updating tags in \"%1%\"...", ms.getName());
-			std::string path = Config.mpd_music_dir + ms.getURI();
-			if (!ncm_tags_write_mutable_song(ms))
-			{
-				success = false;
-				Statusbar::printf("Error while writing tags to \"%1%\": %2%",
-				                  ms.getName(), strerror(errno));
-				s.finish();
-				break;
-			}
-			if (dir_to_update.empty())
-				dir_to_update = ms.getURI();
-			else
-				dir_to_update = getSharedDirectory(dir_to_update, ms.getURI());
-		};
-		if (success)
-		{
-			Mpd.UpdateDirectory(dir_to_update);
-			Statusbar::print("Tags updated successfully");
-		}
-	}
-#	endif // HAVE_TAGLIB_H
-}
-
-bool EditLibraryAlbum::canBeRun()
-{
-#	ifdef HAVE_TAGLIB_H
-	std::string album;
-
-	return currentMediaLibraryAlbum(album) && isMPDMusicDirSet();
-#	else
-	return false;
-#	endif // HAVE_TAGLIB_H
-}
-
-void EditLibraryAlbum::run()
-{
-#	ifdef HAVE_TAGLIB_H
-		// FIXME: merge this and EditLibraryTag. also, prompt on failure if user wants to continue
-	std::string current_album;
-	std::string new_album;
-	if (!currentMediaLibraryAlbum(current_album))
-		return;
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << NC_FORMAT_BOLD << "Album: " << NC_FORMAT_NO_BOLD;
-		if (!promptString(new_album, current_album))
-				return;
-	}
-	if (!new_album.empty() && new_album != current_album)
-	{
-		NcmError error;
-		NcmSongArray songs;
-		bool success;
-		std::string shared_directory;
-
-		ncm_song_array_init(&songs);
-		ncm_error_clear(&error);
-		success = native_media_library_screen_copy_visible_songs(
-		    native_c_screen_media_library(), &songs, &error);
-		if (!success)
-		{
-			if (ncm_error_is_set(&error))
-				Statusbar::print(error.message);
-			ncm_song_array_destroy(&songs);
-			return;
-		}
-		Statusbar::print("Updating tags...");
-		for (int32 i = 0; i < songs.len; i += 1)
-		{
-			MPD::Song song(&songs.items[i]);
-			std::string directory = song.getDirectory();
-
-			Statusbar::printf("Updating tags in \"%1%\"...", song.getName());
-			std::string path = Config.mpd_music_dir + song.getURI();
-			if (shared_directory.empty())
-				shared_directory = directory;
-			else
-				shared_directory = getSharedDirectory(shared_directory, directory);
-			NcmTaglibFile file;
-			ncm_taglib_file_init(&file);
-			if (!ncm_taglib_file_open(&file, const_cast<char *>(path.c_str())))
-			{
-				const char msg[] = "Error while opening file \"%1%\"";
-				Statusbar::printf(msg, Utf8::shorten(song.getURI(), COLS-const_strlen(msg)));
-				success = false;
-				break;
-			}
-			ncm_taglib_clear_property(&file, const_cast<char *>("ALBUM"));
-			ncm_taglib_append_property(&file, const_cast<char *>("ALBUM"),
-			                           const_cast<char *>(new_album.c_str()));
-			if (!ncm_taglib_file_save(&file))
-			{
-				const char msg[] = "Error while writing tags in \"%1%\"";
-				Statusbar::printf(msg, Utf8::shorten(song.getURI(), COLS-const_strlen(msg)));
-				ncm_taglib_file_close(&file);
-				success = false;
-				break;
-			}
-			ncm_taglib_file_close(&file);
-		}
-		if (success && !shared_directory.empty())
-		{
-			Mpd.UpdateDirectory(shared_directory);
-			Statusbar::print("Tags updated successfully");
-		}
-		ncm_song_array_destroy(&songs);
-	}
-#	endif // HAVE_TAGLIB_H
-}
-
-
-
 void ToggleScreenLock::run()
 {
 		const char *msg_unlockable_screen = "Current screen can't be locked";
@@ -771,9 +557,6 @@ void populateActions()
 		AvailableActions.at(static_cast<size_t>(a->type())).reset(a);
 	};
 	insert_action(new Actions::MouseEvent());
-	insert_action(new Actions::EditSong());
-	insert_action(new Actions::EditLibraryTag());
-	insert_action(new Actions::EditLibraryAlbum());
 	insert_action(new Actions::ToggleScreenLock());
 	insert_action(new Actions::ToggleLibraryTagType());
 	insert_action(new Actions::ShowArtistInfo());
