@@ -5,6 +5,7 @@
 #include "bindings.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 #include "global.h"
 #include "settings.h"
 #include "status.h"
@@ -32,7 +33,7 @@ statusbar_cstring_len(char *string) {
         return 0;
     }
 
-    return (int32)strlen((const char *)string);
+    return strlen32(string);
 }
 
 static NcWindow *

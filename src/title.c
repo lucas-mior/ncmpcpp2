@@ -5,6 +5,7 @@
 
 #include "app_controller.h"
 #include "c/ncm_utf8.h"
+#include "cbase/cbase.h"
 #include "global.h"
 #include "settings.h"
 #include "ui_state.h"
@@ -28,7 +29,7 @@ title_cstring_len(char *string) {
         return 0;
     }
 
-    return (int32)strlen((const char *)string);
+    return strlen32(string);
 }
 
 static char *

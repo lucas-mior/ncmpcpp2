@@ -10,6 +10,7 @@
 
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 static void ncm_process_set_errno_error(NcmError *error, int32 code,
                                         char *operation);
@@ -99,7 +100,7 @@ static bool
 ncm_process_command_add_cstring(NcmProcessCommand *command, char *arg) {
     int32 arg_len;
 
-    arg_len = (int32)strlen(arg);
+    arg_len = strlen32(arg);
     return ncm_process_command_add_arg(command, arg, arg_len);
 }
 
@@ -321,7 +322,7 @@ ncm_process_run_editor(char *editor, int32 editor_len,
             fallback_editor = (char *)"vi";
         }
         editor = fallback_editor;
-        editor_len = (int32)strlen(editor);
+        editor_len = strlen32(editor);
     }
 
     ncm_buffer_init(&command);

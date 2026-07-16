@@ -7,6 +7,7 @@
 #include "c/ncm_regex.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 #include "settings.h"
 #include "screens/screen_switcher.h"
 #include "statusbar.h"
@@ -312,7 +313,7 @@ native_lastfm_screen_queue_artist_info(NativeLastfmScreen *screen,
     screen->has_service = true;
     (void)native_lastfm_set_title(screen,
                                   ncm_lastfm_service_name(&screen->service),
-                                  (int32)strlen(
+                                  strlen32(
                                       ncm_lastfm_service_name(
                                           &screen->service)));
     nc_buffer_clear(&screen->buffer);
@@ -479,7 +480,7 @@ lastfm_scroll_callback(NcScreen *screen, enum NcScroll where) {
 static void
 lastfm_switch_to_callback(NcScreen *screen) {
     ncm_title_draw_header(nc_screen_title(screen),
-                          (int32)strlen(nc_screen_title(screen)));
+                          strlen32(nc_screen_title(screen)));
     return;
 }
 

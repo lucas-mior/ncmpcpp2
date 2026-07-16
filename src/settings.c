@@ -19,6 +19,7 @@
 #include "c/ncm_type_conversions.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 #include "global.h"
 
 #define SETTINGS_LINE_CAP 16384
@@ -561,7 +562,7 @@ settings_expand_home(NcmBuffer *buffer, char *value, int32 value_len) {
         ncm_buffer_append(buffer, value, value_len);
         return true;
     }
-    home_len = (int32)strlen(home);
+    home_len = strlen32(home);
     ncm_buffer_append(buffer, home, home_len);
     if (value_len == 1) {
         return true;
@@ -2135,7 +2136,7 @@ settings_set_option_error(NcmError *error, bool default_value,
     detail_len = STRLIT_LEN("invalid value");
     if (ncm_error_is_set(cause)) {
         detail = cause->message;
-        detail_len = (int32)strlen(cause->message);
+        detail_len = strlen32(cause->message);
     }
 
     len = snprintf(message, (size_t)SIZEOF(message),
@@ -2267,7 +2268,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
         NcmOptionLine parsed;
         SettingsOption *option;
 
-        line_len = (int32)strlen(line);
+        line_len = strlen32(line);
         while ((line_len > 0)
                && ((line[line_len - 1] == '\n')
                    || (line[line_len - 1] == '\r'))) {

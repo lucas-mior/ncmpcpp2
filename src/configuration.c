@@ -15,6 +15,7 @@
 #include "c/ncm_song.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 #include "config.h"
 #include "global.h"
 #include "bindings.h"
@@ -91,7 +92,7 @@ ncm_configuration_options_init(NcmConfigurationOptions *options) {
     ncm_buffer_append(&options->host, STRLIT_ARGS("localhost"));
     ncm_buffer_append(&options->current_song_format,
                       current_song_default_format,
-                      (int32)strlen(current_song_default_format));
+                      strlen32(current_song_default_format));
     options->port = 6600;
 
     options->host_provided = false;
@@ -150,7 +151,7 @@ configuration_append_default_file(NcmBufferArray *paths, char *filename,
     xdg_config_home = getenv("XDG_CONFIG_HOME");
     if ((xdg_config_home != NULL) && (xdg_config_home[0] != '\0')) {
         ncm_buffer_append(&directory, xdg_config_home,
-                          (int32)strlen(xdg_config_home));
+                          strlen32(xdg_config_home));
     } else {
         ncm_buffer_append(&directory, STRLIT_ARGS("~/.config"));
     }
@@ -246,7 +247,7 @@ configuration_require_value(int32 argc, char **argv, int32 *i,
 
     *i += 1;
     *value = argv[*i];
-    *value_len = (int32)strlen(*value);
+    *value_len = strlen32(*value);
     return true;
 }
 
@@ -324,7 +325,7 @@ configuration_parse_short_option(NcmConfigurationOptions *options,
     int32 value_len;
 
     arg = argv[*i];
-    arg_len = (int32)strlen(arg);
+    arg_len = strlen32(arg);
     all_flags = true;
     for (int32 j = 1; j < arg_len; j += 1) {
         if (!configuration_is_flag_short_option(arg[j])) {
@@ -409,7 +410,7 @@ configuration_parse_long_option(NcmConfigurationOptions *options,
     int32 equals;
 
     arg = argv[*i];
-    arg_len = (int32)strlen(arg);
+    arg_len = strlen32(arg);
     equals = ncm_string_find_char(arg, arg_len, '=');
     name = arg + 2;
     if (equals >= 0) {
@@ -466,10 +467,10 @@ configuration_parse_long_option(NcmConfigurationOptions *options,
         } else if ((*i + 1 < argc)
                    && !configuration_looks_like_option(
                           argv[*i + 1],
-                          (int32)strlen(argv[*i + 1]))) {
+                          strlen32(argv[*i + 1]))) {
             *i += 1;
             configuration_copy_string(&options->current_song_format,
-                                      argv[*i], (int32)strlen(argv[*i]));
+                                      argv[*i], strlen32(argv[*i]));
         }
     } else if (ncm_string_equal(name, name_len, STRLIT_ARGS("config"))) {
         REQUIRE_LONG_VALUE();
@@ -531,7 +532,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options,
         int32 arg_len;
 
         arg = argv[i];
-        arg_len = (int32)strlen(arg);
+        arg_len = strlen32(arg);
         if (ncm_string_equal(arg, arg_len, STRLIT_ARGS("--"))) {
             if (i + 1 < argc) {
                 char message[192];
@@ -794,12 +795,12 @@ configuration_apply_mpd_environment(NcmError *error) {
     env_port = getenv("MPD_PORT");
     if (env_host != NULL) {
         if (!ncm_mpd_client_set_hostname(&global_mpd, env_host,
-                                         (int32)strlen(env_host), error)) {
+                                         strlen32(env_host), error)) {
             return false;
         }
     }
     if (env_port != NULL) {
-        if (!ncm_parse_uint32(env_port, (int32)strlen(env_port),
+        if (!ncm_parse_uint32(env_port, strlen32(env_port),
                                 &port, error)) {
             return false;
         }
