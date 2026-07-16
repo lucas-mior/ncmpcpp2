@@ -39,23 +39,6 @@ nc_scrollpad_init(NcScrollpad *scrollpad, int64 height) {
     return;
 }
 
-int64
-nc_scrollpad_beginning(NcScrollpad *scrollpad) {
-    return scrollpad->beginning;
-}
-
-int64
-nc_scrollpad_real_height(NcScrollpad *scrollpad) {
-    return scrollpad->real_height;
-}
-
-void
-nc_scrollpad_set_real_height(NcScrollpad *scrollpad,
-                             int64 real_height) {
-    scrollpad->real_height = real_height;
-    return;
-}
-
 void
 nc_scrollpad_refresh(NcScrollpad *scrollpad, NcWindow *window) {
     int32 start_y;
@@ -133,13 +116,6 @@ nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
 }
 
 void
-nc_scrollpad_clear(NcScrollpad *scrollpad, NcWindow *window) {
-    scrollpad->real_height = window->height;
-    nc_window_clear(window);
-    return;
-}
-
-void
 nc_scrollpad_prepare_flush(NcScrollpad *scrollpad, NcWindow *window,
                            int64 generated_height) {
     scrollpad->real_height = generated_height;
@@ -193,7 +169,6 @@ static int64
 nc_scrollpad_max_beginning(NcScrollpad *scrollpad, NcWindow *window) {
     return scrollpad->real_height - window->height;
 }
-
 
 static void
 nc_scrollpad_load_properties(NcScrollpadWriteState *state) {

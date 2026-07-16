@@ -47,10 +47,6 @@ static struct NcReadlineState {
 
 static void nc_window_assign_title(NcWindow *window,
                                    char *title, int32 title_len);
-static void nc_window_copy_colors(NcColor **dest, NcColor *source);
-static void nc_window_copy_keys(NcKey **dest, NcKey *source);
-static void nc_window_copy_fd_callbacks(NcFdCallback **dest,
-                                        NcFdCallback *source);
 static int32 nc_i32(int64 value);
 static bool nc_window_has_title(NcWindow *window);
 static NcKey nc_window_get_input_char(NcWindow *window, int32 key);
@@ -99,18 +95,6 @@ nc_color_default(void) {
 NcColor
 nc_color_end(void) {
     return nc_color_make(0, 0, false, true);
-}
-
-NcColor
-nc_color_transparent(void) {
-    return nc_color_make(NC_COLOR_TRANSPARENT, NC_COLOR_TRANSPARENT,
-                         false, false);
-}
-
-NcColor
-nc_color_current(void) {
-    return nc_color_make(NC_COLOR_TRANSPARENT, NC_COLOR_CURRENT,
-                         false, false);
 }
 
 bool
@@ -495,48 +479,6 @@ nc_window_init(NcWindow *window, int64 start_x, int64 start_y,
 }
 
 void
-nc_window_copy(NcWindow *dest, NcWindow *source) {
-    *dest = *source;
-    if (source->window != NULL) {
-        dest->window = dupwin(source->window);
-    }
-
-    dest->title = NULL;
-    dest->title_len = 0;
-    dest->title_cap = 0;
-    nc_window_assign_title(dest, source->title, source->title_len);
-
-    dest->color_stack = NULL;
-    dest->input_queue = NULL;
-    dest->fd_callbacks = NULL;
-    nc_window_copy_colors(&dest->color_stack, source->color_stack);
-    nc_window_copy_keys(&dest->input_queue, source->input_queue);
-    nc_window_copy_fd_callbacks(&dest->fd_callbacks, source->fd_callbacks);
-
-    if (dest->window != NULL) {
-        nc_window_set_color(dest, dest->color);
-    }
-    return;
-}
-
-void
-nc_window_move(NcWindow *dest, NcWindow *source) {
-    *dest = *source;
-    nc_window_init_empty(source);
-    return;
-}
-
-void
-nc_window_swap(NcWindow *left, NcWindow *right) {
-    NcWindow temp;
-
-    temp = *left;
-    *left = *right;
-    *right = temp;
-    return;
-}
-
-void
 nc_window_destroy(NcWindow *window) {
     if (window->window != NULL) {
         delwin(window->window);
@@ -604,11 +546,6 @@ nc_window_start_y(NcWindow *window) {
     return start_y;
 }
 
-int32
-nc_window_timeout(NcWindow *window) {
-    return window->window_timeout;
-}
-
 char *
 nc_window_title(NcWindow *window) {
     return window->title;
@@ -617,21 +554,6 @@ nc_window_title(NcWindow *window) {
 int32
 nc_window_title_len(NcWindow *window) {
     return window->title_len;
-}
-
-NcColor
-nc_window_color(NcWindow *window) {
-    return window->color;
-}
-
-NcColor
-nc_window_base_color(NcWindow *window) {
-    return window->base_color;
-}
-
-NcBorder
-nc_window_border(NcWindow *window) {
-    return window->border;
 }
 
 MEVENT *
@@ -1196,24 +1118,6 @@ nc_window_print_char(NcWindow *window, char ch) {
     return;
 }
 
-void
-nc_window_print_int32(NcWindow *window, int32 value) {
-    wprintw(window->window, "%d", value);
-    return;
-}
-
-void
-nc_window_print_uint64(NcWindow *window, uint64 value) {
-    wprintw(window->window, "%llu", (ullong)value);
-    return;
-}
-
-void
-nc_window_print_double(NcWindow *window, double value) {
-    wprintw(window->window, "%f", value);
-    return;
-}
-
 static int32
 nc_prompt_abort(int32 count, int32 key) {
     (void)count;
@@ -1391,30 +1295,6 @@ nc_window_assign_title(NcWindow *window, char *title, int32 title_len) {
     }
     window->title[title_len] = '\0';
     window->title_len = title_len;
-    return;
-}
-
-static void
-nc_window_copy_colors(NcColor **dest, NcColor *source) {
-    for (int32 i = 0; i < ARRAY_LEN(source); i += 1) {
-        ARRAY_PUSH(*dest, source[i]);
-    }
-    return;
-}
-
-static void
-nc_window_copy_keys(NcKey **dest, NcKey *source) {
-    for (int32 i = 0; i < ARRAY_LEN(source); i += 1) {
-        ARRAY_PUSH(*dest, source[i]);
-    }
-    return;
-}
-
-static void
-nc_window_copy_fd_callbacks(NcFdCallback **dest, NcFdCallback *source) {
-    for (int32 i = 0; i < ARRAY_LEN(source); i += 1) {
-        ARRAY_PUSH(*dest, source[i]);
-    }
     return;
 }
 

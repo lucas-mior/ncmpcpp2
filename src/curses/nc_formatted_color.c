@@ -43,22 +43,10 @@ nc_formatted_color_destroy(NcFormattedColor *formatted_color) {
 }
 
 void
-nc_formatted_color_clear(NcFormattedColor *formatted_color) {
-    formatted_color->color = nc_color_default();
-    ARRAY_CLEAR(formatted_color->formats);
-    return;
-}
-
-void
 nc_formatted_color_add_format(NcFormattedColor *formatted_color,
                               enum NcFormat format) {
     ARRAY_PUSH(formatted_color->formats, format);
     return;
-}
-
-NcColor
-nc_formatted_color_color(NcFormattedColor *formatted_color) {
-    return formatted_color->color;
 }
 
 enum NcFormat *
@@ -94,24 +82,4 @@ nc_formatted_color_equal(NcFormattedColor *left,
     }
 
     return true;
-}
-
-bool
-nc_formatted_color_can_hold_format(enum NcFormat format) {
-    switch (format) {
-    case NC_FORMAT_BOLD:
-    case NC_FORMAT_UNDERLINE:
-    case NC_FORMAT_REVERSE:
-    case NC_FORMAT_ALT_CHARSET:
-    case NC_FORMAT_ITALIC:
-        return true;
-    case NC_FORMAT_NO_BOLD:
-    case NC_FORMAT_NO_UNDERLINE:
-    case NC_FORMAT_NO_REVERSE:
-    case NC_FORMAT_NO_ALT_CHARSET:
-    case NC_FORMAT_NO_ITALIC:
-        return false;
-    }
-
-    return false;
 }
