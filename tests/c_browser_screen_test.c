@@ -26,6 +26,9 @@ static void test_browser_navigation_requests_reload(void);
 static void test_browser_native_update_retries_mpd(void);
 static void test_browser_native_switch_requests_reload(void);
 static void test_browser_selected_songs(void);
+static void test_browser_selected_mpd_directory_recursion(void);
+static void test_browser_selected_local_directory_recursion(void);
+static void test_browser_selected_filtered_current(void);
 static void test_browser_filter_and_search(void);
 static void test_browser_local_mode(void);
 static void test_browser_change_browse_mode(void);
@@ -100,6 +103,7 @@ typedef enum BrowserMpdTraceMode {
     BROWSER_MPD_TRACE_ARTIST,
     BROWSER_MPD_TRACE_GONE,
     BROWSER_MPD_TRACE_FAIL_ONCE,
+    BROWSER_MPD_TRACE_RECURSIVE,
 } BrowserMpdTraceMode;
 
 typedef struct BrowserMpdTrace {
@@ -115,9 +119,18 @@ static void browser_mpd_trace_add_directory(NcmMpdItemArray *items,
                                             char *path, int32 path_len);
 static void browser_mpd_trace_add_song(NcmMpdItemArray *items, char *path,
                                        int32 path_len);
+static void browser_mpd_trace_append_song(NcmMpdSongList *songs,
+                                          char *path, int32 path_len);
+static void browser_test_assert_song_uri(NcmSongArray *songs, int32 pos,
+                                         char *uri, int32 uri_len);
+static bool browser_test_song_array_has_uri(NcmSongArray *songs,
+                                            char *uri, int32 uri_len);
 bool __wrap_nc_window_has_coords(NcWindow *window, int32 *x, int32 *y);
 bool __wrap_ncm_mpd_client_get_directory_entries(
     NcmMpdClient *client, char *path, NcmMpdItemArray *items,
+    NcmError *error);
+bool __wrap_ncm_mpd_client_get_directory_recursive(
+    NcmMpdClient *client, char *path, NcmMpdSongList *songs,
     NcmError *error);
 bool __wrap_ncm_mpd_client_get_supported_extensions(
     NcmMpdClient *client, NcmMpdStringList *strings, NcmError *error);
@@ -136,6 +149,9 @@ main(void) {
     test_browser_native_update_retries_mpd();
     test_browser_native_switch_requests_reload();
     test_browser_selected_songs();
+    test_browser_selected_mpd_directory_recursion();
+    test_browser_selected_local_directory_recursion();
+    test_browser_selected_filtered_current();
     test_browser_filter_and_search();
     test_browser_local_mode();
     test_browser_change_browse_mode();
@@ -432,34 +448,189 @@ static void
 test_browser_selected_songs(void) {
     NativeBrowserScreen screen;
     NcmMpdItem item;
+    NcmPlaylist playlist;
     NcmSong song;
     NcmSongArray songs;
-    NcmStringView view;
+    NcMenu *menu;
 
     native_browser_screen_init(&screen, 0, 80, 0, 24, nc_color_default(),
                                nc_border_none());
     ncm_mpd_item_init(&item);
+    ncm_playlist_init(&playlist);
     ncm_song_init(&song);
     ncm_song_array_init(&songs);
+    menu = native_browser_screen_menu(&screen);
 
     assert(ncm_song_set_uri(&song, LIT_ARGS("one.flac")));
     assert(ncm_mpd_item_set_song(&item, &song));
     assert(native_browser_screen_add_item_copy(&screen, &item));
+    assert(ncm_playlist_set(&playlist, LIT_ARGS("lists/favorites"), 0));
+    assert(ncm_mpd_item_set_playlist(&item, &playlist));
+    assert(native_browser_screen_add_item_copy(&screen, &item));
     assert(ncm_song_set_uri(&song, LIT_ARGS("two.flac")));
     assert(ncm_mpd_item_set_song(&item, &song));
     assert(native_browser_screen_add_item_copy(&screen, &item));
-    assert(nc_menu_set_position_selected(native_browser_screen_menu(&screen),
-                                         1, true));
 
+    nc_menu_highlight_position(menu, 0, 24);
     assert(native_browser_screen_selected_songs(&screen, &songs));
     assert(songs.len == 1);
-    assert(ncm_song_uri_view(&songs.items[0], 0, &view));
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("two.flac")));
+    browser_test_assert_song_uri(&songs, 0, LIT_ARGS("one.flac"));
+
+    ncm_song_array_clear(&songs);
+    nc_menu_highlight_position(menu, 1, 24);
+    assert(native_browser_screen_selected_songs(&screen, &songs));
+    assert(songs.len == 0);
+
+    assert(nc_menu_set_position_selected(menu, 1, true));
+    assert(nc_menu_set_position_selected(menu, 2, true));
+    assert(native_browser_screen_selected_songs(&screen, &songs));
+    assert(songs.len == 1);
+    browser_test_assert_song_uri(&songs, 0, LIT_ARGS("two.flac"));
 
     ncm_song_array_destroy(&songs);
     ncm_song_destroy(&song);
+    ncm_playlist_destroy(&playlist);
     ncm_mpd_item_destroy(&item);
     native_browser_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_browser_selected_mpd_directory_recursion(void) {
+    NativeBrowserScreen screen;
+    NcmSongArray songs;
+    NcMenu *menu;
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24, nc_color_default(),
+                               nc_border_none());
+    ncm_song_array_init(&songs);
+    menu = native_browser_screen_menu(&screen);
+
+    browser_test_add_directory(&screen, LIT_ARGS("artist"), 0);
+    assert(nc_menu_set_position_selected(menu, 0, true));
+
+    browser_mpd_trace_reset(BROWSER_MPD_TRACE_RECURSIVE);
+    assert(native_browser_screen_selected_songs(&screen, &songs));
+    assert(mpd_trace.calls == 1);
+    assert(ncm_string_equal(mpd_trace.paths[0], mpd_trace.path_lens[0],
+                            LIT_ARGS("artist")));
+    assert(songs.len == 2);
+    browser_test_assert_song_uri(&songs, 0, LIT_ARGS("artist/a.flac"));
+    browser_test_assert_song_uri(&songs, 1,
+                                 LIT_ARGS("artist/album/b.flac"));
+
+    ncm_song_array_destroy(&songs);
+    native_browser_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_browser_selected_local_directory_recursion(void) {
+    NativeBrowserScreen screen;
+    BrowserFormatFixture fixture;
+    NcmBuffer path;
+    NcmSongArray songs;
+    char root[128];
+    int32 root_len;
+    bool old_show_hidden;
+
+    browser_format_fixture_begin(&fixture);
+    old_show_hidden = Config.local_browser_show_hidden_files;
+    native_browser_screen_init(&screen, 0, 80, 0, 24, nc_color_default(),
+                               nc_border_none());
+    ncm_buffer_init(&path);
+    ncm_song_array_init(&songs);
+
+    root_len = snprintf(root, SIZEOF(root),
+                        "/tmp/ncmpcpp-browser-selected-%ld",
+                        (long)getpid());
+    assert(ncm_fs_mkdir_all(root, root_len, NULL));
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album"));
+    assert(ncm_fs_mkdir_all(path.data, path.len, NULL));
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album/a.flac"));
+    browser_test_write_file(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album/skip.txt"));
+    browser_test_write_file(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album/Sub"));
+    assert(ncm_fs_mkdir_all(path.data, path.len, NULL));
+    browser_test_make_path(&path, root, root_len,
+                           LIT_ARGS("Album/Sub/b.mp3"));
+    browser_test_write_file(path.data);
+    browser_test_make_path(&path, root, root_len,
+                           LIT_ARGS("Album/Sub/.hidden.flac"));
+    browser_test_write_file(path.data);
+
+    native_browser_screen_set_local(&screen, true);
+    Config.local_browser_show_hidden_files = false;
+    assert(native_browser_screen_add_supported_extension(&screen,
+                                                         LIT_ARGS(".flac")));
+    assert(native_browser_screen_add_supported_extension(&screen,
+                                                         LIT_ARGS(".mp3")));
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album"));
+    browser_test_add_directory(&screen, path.data, path.len, 0);
+    assert(nc_menu_set_position_selected(native_browser_screen_menu(&screen),
+                                         0, true));
+
+    assert(native_browser_screen_selected_songs(&screen, &songs));
+    assert(songs.len == 2);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album/a.flac"));
+    assert(browser_test_song_array_has_uri(&songs, path.data, path.len));
+    browser_test_make_path(&path, root, root_len,
+                           LIT_ARGS("Album/Sub/b.mp3"));
+    assert(browser_test_song_array_has_uri(&songs, path.data, path.len));
+
+    browser_test_make_path(&path, root, root_len,
+                           LIT_ARGS("Album/Sub/.hidden.flac"));
+    browser_test_remove_path(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album/Sub/b.mp3"));
+    browser_test_remove_path(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album/Sub"));
+    browser_test_remove_path(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album/skip.txt"));
+    browser_test_remove_path(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album/a.flac"));
+    browser_test_remove_path(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album"));
+    browser_test_remove_path(path.data);
+    browser_test_remove_path(root);
+
+    Config.local_browser_show_hidden_files = old_show_hidden;
+    ncm_song_array_destroy(&songs);
+    ncm_buffer_destroy(&path);
+    native_browser_screen_destroy(&screen);
+    browser_format_fixture_end(&fixture);
+    return;
+}
+
+static void
+test_browser_selected_filtered_current(void) {
+    NativeBrowserScreen screen;
+    BrowserFormatFixture fixture;
+    NcmSongArray songs;
+    NcmError error = {0};
+
+    browser_format_fixture_begin(&fixture);
+    native_browser_screen_init(&screen, 0, 80, 0, 24, nc_color_default(),
+                               nc_border_none());
+    ncm_song_array_init(&songs);
+
+    browser_test_add_song(&screen, LIT_ARGS("drop.flac"),
+                          LIT_ARGS("Drop"), LIT_ARGS("Artist"), 0);
+    browser_test_add_song(&screen, LIT_ARGS("keep.flac"),
+                          LIT_ARGS("Keep"), LIT_ARGS("Artist"), 0);
+    assert(nc_menu_set_position_selected(native_browser_screen_menu(&screen),
+                                         0, true));
+    assert(native_browser_screen_apply_filter(&screen, LIT_ARGS("keep"),
+                                              &error));
+    assert(nc_menu_item_count(native_browser_screen_menu(&screen)) == 1);
+
+    assert(native_browser_screen_selected_songs(&screen, &songs));
+    assert(songs.len == 1);
+    browser_test_assert_song_uri(&songs, 0, LIT_ARGS("keep.flac"));
+
+    ncm_song_array_destroy(&songs);
+    native_browser_screen_destroy(&screen);
+    browser_format_fixture_end(&fixture);
     return;
 }
 
@@ -1135,6 +1306,18 @@ browser_mpd_trace_add_song(NcmMpdItemArray *items, char *path,
     return;
 }
 
+static void
+browser_mpd_trace_append_song(NcmMpdSongList *songs, char *path,
+                              int32 path_len) {
+    NcmSong song;
+
+    ncm_song_init(&song);
+    assert(ncm_song_set_uri(&song, path, path_len));
+    assert(ncm_mpd_song_list_append_copy(songs, &song));
+    ncm_song_destroy(&song);
+    return;
+}
+
 bool
 __wrap_nc_window_has_coords(NcWindow *window, int32 *x, int32 *y) {
     if ((window == NULL) || (x == NULL) || (y == NULL)) {
@@ -1187,6 +1370,29 @@ __wrap_ncm_mpd_client_get_directory_entries(
     } else if (ncm_string_equal(path, path_len, LIT_ARGS("gone"))) {
         browser_mpd_trace_add_directory(items, LIT_ARGS("gone/child"));
     }
+    return true;
+}
+
+bool
+__wrap_ncm_mpd_client_get_directory_recursive(
+    NcmMpdClient *client, char *path, NcmMpdSongList *songs,
+    NcmError *error) {
+    int32 path_len;
+
+    (void)client;
+    browser_mpd_trace_record_path(path);
+    path_len = 0;
+    if (path != NULL) {
+        path_len = (int32)strlen(path);
+    }
+
+    if ((mpd_trace.mode == BROWSER_MPD_TRACE_RECURSIVE)
+        && ncm_string_equal(path, path_len, LIT_ARGS("artist"))) {
+        browser_mpd_trace_append_song(songs, LIT_ARGS("artist/a.flac"));
+        browser_mpd_trace_append_song(songs,
+                                      LIT_ARGS("artist/album/b.flac"));
+    }
+    ncm_error_clear(error);
     return true;
 }
 
@@ -1343,6 +1549,38 @@ browser_test_assert_item_path(NativeBrowserScreen *screen, int64 pos,
     }
     assert(ncm_string_equal(view.data, view.len, path, path_len));
     return;
+}
+
+static void
+browser_test_assert_song_uri(NcmSongArray *songs, int32 pos, char *uri,
+                             int32 uri_len) {
+    NcmStringView view;
+
+    assert(songs != NULL);
+    assert(pos >= 0);
+    assert(pos < songs->len);
+    assert(ncm_song_uri_view(&songs->items[pos], 0, &view));
+    assert(ncm_string_equal(view.data, view.len, uri, uri_len));
+    return;
+}
+
+static bool
+browser_test_song_array_has_uri(NcmSongArray *songs, char *uri,
+                                int32 uri_len) {
+    NcmStringView view;
+
+    if (songs == NULL) {
+        return false;
+    }
+    for (int32 i = 0; i < songs->len; i += 1) {
+        if (!ncm_song_uri_view(&songs->items[i], 0, &view)) {
+            continue;
+        }
+        if (ncm_string_equal(view.data, view.len, uri, uri_len)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 static bool

@@ -98,6 +98,18 @@ static bool native_browser_stat_local_path(char *path, int32 path_len,
 static enum NcmFsEntryType native_browser_local_mode_type(mode_t mode);
 static bool native_browser_local_path_has_supported_extension(
     NativeBrowserScreen *screen, char *path, int32 path_len);
+static bool native_browser_make_local_song(NcmSong *song, char *path,
+                                           int32 path_len, time_t mtime);
+static bool native_browser_collect_item_songs(
+    NativeBrowserScreen *screen, NcmSongArray *songs, NcmMpdItem *item);
+static bool native_browser_collect_mpd_directory_songs(
+    NcmSongArray *songs, char *path, int32 path_len);
+static bool native_browser_collect_local_directory_songs(
+    NativeBrowserScreen *screen, NcmSongArray *songs, char *path,
+    int32 path_len, NcmError *error);
+static bool native_browser_collect_local_entry_songs(
+    NativeBrowserScreen *screen, NcmSongArray *songs,
+    NcmFsDirectory *directory, NcmFsEntry *entry, NcmError *error);
 static bool native_browser_supported_extensions_contains(
     NcmBufferArray *extensions, char *extension, int32 extension_len);
 static bool native_browser_supported_extensions_add(
@@ -118,9 +130,6 @@ static NcmStringView native_browser_song_name_sort_view(NcmMpdItem *item);
 static bool native_browser_highlight_last_directory(
     NativeBrowserScreen *screen);
 static bool native_browser_item_is_song(NcmMpdItem *item);
-static bool native_browser_copy_selected_song(NativeBrowserScreen *screen,
-                                              NcmSongArray *songs,
-                                              int64 pos);
 static bool native_browser_string_views_equal(NcmStringView left,
                                               NcmStringView right);
 
@@ -825,17 +834,31 @@ native_browser_screen_selected_songs(NativeBrowserScreen *screen,
     NcMenu *menu;
     bool any_selected;
 
-    if (screen == NULL || songs == NULL) {
+    if (songs == NULL) {
+        return false;
+    }
+    ncm_song_array_clear(songs);
+    if (screen == NULL) {
         return false;
     }
 
     menu = native_browser_screen_menu(screen);
+    if (nc_menu_empty(menu)) {
+        return true;
+    }
+
     any_selected = nc_menu_has_selected(menu);
+    if (!any_selected) {
+        return native_browser_collect_item_songs(
+            screen, songs, nc_menu_current_item(menu));
+    }
+
     for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        if (any_selected && !nc_menu_position_is_selected(menu, i)) {
+        if (!nc_menu_position_is_selected(menu, i)) {
             continue;
         }
-        if (!native_browser_copy_selected_song(screen, songs, i)) {
+        if (!native_browser_collect_item_songs(
+                screen, songs, nc_menu_active_item_at(menu, i))) {
             return false;
         }
     }
@@ -1794,38 +1817,14 @@ native_browser_add_local_directory_item(NativeBrowserScreen *screen,
 static bool
 native_browser_add_local_song_item(NativeBrowserScreen *screen,
                                    NcmBuffer *path, time_t mtime) {
-#if defined(HAVE_TAGLIB_H)
-    struct mpd_pair pair;
-    struct mpd_song *mpd_song;
-#endif
     NcmSong song;
     NcmMpdItem item;
     bool result;
 
     ncm_song_init(&song);
     ncm_mpd_item_init(&item);
-    result = ncm_song_set_uri(&song, path->data, path->len);
-    if (result) {
-        ncm_song_set_mtime(&song, mtime);
-    }
-
-#if defined(HAVE_TAGLIB_H)
-    if (result) {
-        pair.name = "file";
-        pair.value = path->data;
-        mpd_song = mpd_song_begin(&pair);
-        if (mpd_song != NULL) {
-            if (ncm_tags_read_song(mpd_song)) {
-                result = ncm_song_from_mpd_song(&song, mpd_song);
-                if (result) {
-                    ncm_song_set_mtime(&song, mtime);
-                }
-            }
-            mpd_song_free(mpd_song);
-        }
-    }
-#endif
-
+    result = native_browser_make_local_song(&song, path->data, path->len,
+                                            mtime);
     if (result) {
         result = ncm_mpd_item_set_song(&item, &song);
     }
@@ -1955,6 +1954,182 @@ native_browser_local_path_has_supported_extension(
     }
     return native_browser_screen_has_supported_extension(
         screen, path + extension - 1, path_len - extension + 1);
+}
+
+static bool
+native_browser_make_local_song(NcmSong *song, char *path, int32 path_len,
+                               time_t mtime) {
+#if defined(HAVE_TAGLIB_H)
+    struct mpd_pair pair;
+    struct mpd_song *mpd_song;
+#endif
+    bool result;
+
+    if (song == NULL || path == NULL || path_len < 0) {
+        return false;
+    }
+
+    result = ncm_song_set_uri(song, path, path_len);
+    if (result) {
+        ncm_song_set_mtime(song, mtime);
+    }
+
+#if defined(HAVE_TAGLIB_H)
+    if (result) {
+        pair.name = "file";
+        pair.value = path;
+        mpd_song = mpd_song_begin(&pair);
+        if (mpd_song != NULL) {
+            if (ncm_tags_read_song(mpd_song)) {
+                result = ncm_song_from_mpd_song(song, mpd_song);
+                if (result) {
+                    ncm_song_set_mtime(song, mtime);
+                }
+            }
+            mpd_song_free(mpd_song);
+        }
+    }
+#endif
+
+    return result;
+}
+
+static bool
+native_browser_collect_item_songs(NativeBrowserScreen *screen,
+                                  NcmSongArray *songs, NcmMpdItem *item) {
+    NcmStringView path;
+
+    if (screen == NULL || songs == NULL || item == NULL) {
+        return false;
+    }
+
+    switch (ncm_mpd_item_kind(item)) {
+    case NCM_MPD_ITEM_DIRECTORY:
+        if (!ncm_directory_path_view(ncm_mpd_item_directory(item), &path)) {
+            return false;
+        }
+        if (screen->local_browser) {
+            NcmError error;
+
+            ncm_error_clear(&error);
+            return native_browser_collect_local_directory_songs(
+                screen, songs, path.data, path.len, &error);
+        }
+        return native_browser_collect_mpd_directory_songs(
+            songs, path.data, path.len);
+    case NCM_MPD_ITEM_SONG:
+        return ncm_song_array_append_copy(songs,
+                                          ncm_mpd_item_song(item));
+    case NCM_MPD_ITEM_PLAYLIST:
+    case NCM_MPD_ITEM_UNKNOWN:
+        return true;
+    }
+    return true;
+}
+
+static bool
+native_browser_collect_mpd_directory_songs(
+    NcmSongArray *songs, char *path, int32 path_len) {
+    NcmMpdSongList source;
+    NcmError error;
+    char *directory;
+    bool result;
+
+    if (songs == NULL || path == NULL || path_len < 0) {
+        return false;
+    }
+
+    ncm_mpd_song_list_init(&source);
+    ncm_error_clear(&error);
+    directory = path;
+    if (path_len <= 0) {
+        directory = (char *)"/";
+    }
+    result = ncm_mpd_client_get_directory_recursive(
+        &global_mpd, directory, &source, &error);
+    for (int32 i = 0; result && (i < source.count); i += 1) {
+        if (!ncm_song_array_append_copy(songs, &source.items[i])) {
+            result = false;
+        }
+    }
+    ncm_mpd_song_list_destroy(&source);
+    return result;
+}
+
+static bool
+native_browser_collect_local_directory_songs(
+    NativeBrowserScreen *screen, NcmSongArray *songs, char *path,
+    int32 path_len, NcmError *error) {
+    NcmFsDirectory directory;
+    NcmFsEntry entry;
+    bool result;
+
+    if (screen == NULL || songs == NULL || path == NULL || path_len < 0) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing local directory"));
+        return false;
+    }
+
+    if (!ncm_fs_directory_open(&directory, path, path_len, error)) {
+        return false;
+    }
+
+    result = true;
+    ncm_fs_entry_init(&entry);
+    while (result && ncm_fs_directory_read(&directory, &entry, error)) {
+        result = native_browser_collect_local_entry_songs(
+            screen, songs, &directory, &entry, error);
+    }
+    if (ncm_error_is_set(error)) {
+        result = false;
+    }
+    ncm_fs_entry_destroy(&entry);
+    ncm_fs_directory_close(&directory);
+    return result;
+}
+
+static bool
+native_browser_collect_local_entry_songs(
+    NativeBrowserScreen *screen, NcmSongArray *songs,
+    NcmFsDirectory *directory, NcmFsEntry *entry, NcmError *error) {
+    NcmBuffer path;
+    NcmFsStat stat;
+    NcmSong song;
+    bool result;
+
+    if ((screen == NULL) || (songs == NULL) || (directory == NULL)
+        || (entry == NULL)) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing local entry"));
+        return false;
+    }
+    if (!Config.local_browser_show_hidden_files
+        && (entry->name_len > 0) && (entry->name[0] == '.')) {
+        return true;
+    }
+
+    ncm_buffer_init(&path);
+    if (!ncm_fs_join(&path, directory->path, directory->path_len,
+                     entry->name, entry->name_len)) {
+        ncm_buffer_destroy(&path);
+        return false;
+    }
+
+    result = native_browser_stat_local_path(path.data, path.len,
+                                            &stat, error);
+    if (result && stat.exists && (stat.type == NCM_FS_ENTRY_DIRECTORY)) {
+        result = native_browser_collect_local_directory_songs(
+            screen, songs, path.data, path.len, error);
+    } else if (result && stat.exists && (stat.type == NCM_FS_ENTRY_FILE)
+               && native_browser_local_path_has_supported_extension(
+                   screen, path.data, path.len)) {
+        ncm_song_init(&song);
+        result = native_browser_make_local_song(&song, path.data, path.len,
+                                                (time_t)stat.mtime)
+                 && ncm_song_array_append_copy(songs, &song);
+        ncm_song_destroy(&song);
+    }
+
+    ncm_buffer_destroy(&path);
+    return result;
 }
 
 static bool
