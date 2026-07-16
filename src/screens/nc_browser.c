@@ -123,6 +123,16 @@ static bool native_browser_delete_song_item(NativeBrowserScreen *screen,
 static bool native_browser_delete_playlist_item(
     NativeBrowserScreen *screen, NcmMpdClient *client,
     NcmMpdItem *item, NcmError *error);
+static bool native_browser_current_directory_item_path(
+    NativeBrowserScreen *screen, NcmStringView *path, NcmError *error);
+static bool native_browser_current_playlist_item_path(
+    NativeBrowserScreen *screen, NcmStringView *path, NcmError *error);
+static bool native_browser_rename_real_paths(
+    NativeBrowserScreen *screen, NcmStringView old_path,
+    NcmStringView new_path, NcmError *error);
+static bool native_browser_update_renamed_directory(
+    NcmMpdClient *client, NcmStringView old_path, NcmStringView new_path,
+    NcmError *error);
 static bool native_browser_real_path(NativeBrowserScreen *screen,
                                      NcmStringView path,
                                      NcmBuffer *real_path,
@@ -951,6 +961,116 @@ native_browser_screen_delete_items(NativeBrowserScreen *screen,
                 client, directory, NULL, error)) {
             return false;
         }
+    }
+
+    native_browser_screen_request_update(screen);
+    ncm_error_clear(error);
+    return true;
+}
+
+bool
+native_browser_screen_current_directory_path(NativeBrowserScreen *screen,
+                                             NcmStringView *path) {
+    NcmError error;
+
+    ncm_error_clear(&error);
+    return native_browser_current_directory_item_path(screen, path, &error);
+}
+
+bool
+native_browser_screen_current_playlist_path(NativeBrowserScreen *screen,
+                                            NcmStringView *path) {
+    NcmError error;
+
+    ncm_error_clear(&error);
+    return native_browser_current_playlist_item_path(screen, path, &error);
+}
+
+bool
+native_browser_screen_rename_directory_available(
+    NativeBrowserScreen *screen) {
+    NcmStringView path;
+    NcmError error;
+
+    ncm_error_clear(&error);
+    return native_browser_current_directory_item_path(screen, &path, &error)
+        && (screen->local_browser || (Config.mpd_music_dir_len > 0));
+}
+
+bool
+native_browser_screen_rename_playlist_available(
+    NativeBrowserScreen *screen) {
+    NcmStringView path;
+    NcmError error;
+
+    ncm_error_clear(&error);
+    return native_browser_current_playlist_item_path(screen, &path, &error);
+}
+
+bool
+native_browser_screen_rename_current_directory(
+    NativeBrowserScreen *screen, char *new_path, int32 new_path_len,
+    NcmMpdClient *client, NcmError *error) {
+    NcmStringView old_path;
+    NcmStringView new_path_view;
+
+    if ((new_path == NULL) || (new_path_len <= 0)) {
+        ncm_error_clear(error);
+        return true;
+    }
+    if (!native_browser_current_directory_item_path(screen, &old_path,
+                                                    error)) {
+        return false;
+    }
+    if (ncm_string_equal(old_path.data, old_path.len,
+                         new_path, new_path_len)) {
+        ncm_error_clear(error);
+        return true;
+    }
+
+    new_path_view = ncm_string_view_make(new_path, new_path_len);
+    if (!native_browser_rename_real_paths(screen, old_path, new_path_view,
+                                          error)) {
+        return false;
+    }
+    if (!screen->local_browser
+        && !native_browser_update_renamed_directory(
+            client, old_path, new_path_view, error)) {
+        return false;
+    }
+
+    native_browser_screen_request_update(screen);
+    ncm_error_clear(error);
+    return true;
+}
+
+bool
+native_browser_screen_rename_current_playlist(
+    NativeBrowserScreen *screen, char *new_path, int32 new_path_len,
+    NcmMpdClient *client, NcmError *error) {
+    NcmStringView old_path;
+
+    if ((new_path == NULL) || (new_path_len <= 0)) {
+        ncm_error_clear(error);
+        return true;
+    }
+    if (client == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
+        return false;
+    }
+    if (!native_browser_current_playlist_item_path(screen, &old_path,
+                                                   error)) {
+        return false;
+    }
+    if (ncm_string_equal(old_path.data, old_path.len,
+                         new_path, new_path_len)) {
+        ncm_error_clear(error);
+        return true;
+    }
+
+    if (!ncm_mpd_client_rename_playlist(client, old_path.data, new_path,
+                                        error)) {
+        return false;
     }
 
     native_browser_screen_request_update(screen);
@@ -2324,6 +2444,128 @@ native_browser_delete_playlist_item(NativeBrowserScreen *screen,
     result = native_browser_real_path(screen, path, &real_path, error)
              && ncm_fs_unlink(real_path.data, real_path.len, error);
     ncm_buffer_destroy(&real_path);
+    return result;
+}
+
+static bool
+native_browser_current_directory_item_path(NativeBrowserScreen *screen,
+                                           NcmStringView *path,
+                                           NcmError *error) {
+    NcmMpdItem *item;
+
+    if (path == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing path output"));
+        return false;
+    }
+    ncm_string_view_clear(path);
+    if (screen == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing browser state"));
+        return false;
+    }
+
+    item = native_browser_screen_current_item(screen);
+    if (item == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing browser item"));
+        return false;
+    }
+    if (native_browser_screen_item_is_parent(item)) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("cannot rename parent directory"));
+        return false;
+    }
+    if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_DIRECTORY) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("browser item is not a directory"));
+        return false;
+    }
+    if (!ncm_directory_path_view(ncm_mpd_item_directory(item), path)) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing directory path"));
+        return false;
+    }
+    ncm_error_clear(error);
+    return true;
+}
+
+static bool
+native_browser_current_playlist_item_path(NativeBrowserScreen *screen,
+                                          NcmStringView *path,
+                                          NcmError *error) {
+    NcmMpdItem *item;
+
+    if (path == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing path output"));
+        return false;
+    }
+    ncm_string_view_clear(path);
+    if (screen == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing browser state"));
+        return false;
+    }
+
+    item = native_browser_screen_current_item(screen);
+    if (item == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing browser item"));
+        return false;
+    }
+    if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_PLAYLIST) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("browser item is not a playlist"));
+        return false;
+    }
+    if (!ncm_playlist_path_view(ncm_mpd_item_playlist(item), path)) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing playlist path"));
+        return false;
+    }
+    ncm_error_clear(error);
+    return true;
+}
+
+static bool
+native_browser_rename_real_paths(NativeBrowserScreen *screen,
+                                 NcmStringView old_path,
+                                 NcmStringView new_path,
+                                 NcmError *error) {
+    NcmBuffer old_real_path;
+    NcmBuffer new_real_path;
+    bool result;
+
+    ncm_buffer_init(&old_real_path);
+    ncm_buffer_init(&new_real_path);
+    result = native_browser_real_path(screen, old_path, &old_real_path,
+                                      error)
+             && native_browser_real_path(screen, new_path, &new_real_path,
+                                         error)
+             && ncm_fs_rename(old_real_path.data, old_real_path.len,
+                              new_real_path.data, new_real_path.len,
+                              error);
+    ncm_buffer_destroy(&new_real_path);
+    ncm_buffer_destroy(&old_real_path);
+    return result;
+}
+
+static bool
+native_browser_update_renamed_directory(NcmMpdClient *client,
+                                        NcmStringView old_path,
+                                        NcmStringView new_path,
+                                        NcmError *error) {
+    NcmBuffer shared;
+    char *directory;
+    bool result;
+
+    if (client == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
+        return false;
+    }
+
+    shared = ncm_string_shared_directory(old_path.data, old_path.len,
+                                         new_path.data, new_path.len);
+    directory = shared.data;
+    if (shared.len <= 0) {
+        directory = (char *)"/";
+    }
+    result = ncm_mpd_client_update_directory(client, directory, NULL,
+                                             error);
+    ncm_buffer_destroy(&shared);
     return result;
 }
 
