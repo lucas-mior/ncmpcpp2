@@ -18,7 +18,7 @@
 #if defined(__GNUC__)
 extern bool settings_legacy_runtime_sync_configuration(void)
     __attribute__((weak));
-extern bool actions_legacy_runtime_execute_binding(NcmBinding *binding)
+extern bool actions_legacy_runtime_can_run_action(enum NcmActionType type)
     __attribute__((weak));
 extern bool actions_legacy_runtime_execute_action(enum NcmActionType type)
     __attribute__((weak));
@@ -44,7 +44,14 @@ static void app_legacy_bridge_set_resize_flags(void);
 static void app_legacy_bridge_dispatch_lyrics_jobs(void);
 static void app_legacy_bridge_refresh_header_if_due(void);
 static bool app_legacy_bridge_sync_legacy_configuration(void);
-static bool app_legacy_bridge_execute_legacy_binding(NcmBinding *binding);
+static bool app_legacy_bridge_action_is_c_safe_for_current_screen(
+    enum NcmActionType type);
+static int32 app_legacy_bridge_action_can_run_hook(
+    enum NcmActionType type, void *user);
+static int32 app_legacy_bridge_action_run_hook(
+    enum NcmActionType type, void *user);
+static void app_legacy_bridge_install_action_hooks(void);
+static bool app_legacy_bridge_can_run_legacy_action(enum NcmActionType type);
 static bool app_legacy_bridge_execute_legacy_action(enum NcmActionType type);
 static bool app_legacy_bridge_legacy_exit_requested(void);
 
@@ -138,13 +145,23 @@ app_legacy_bridge_sync_legacy_configuration(void) {
 }
 
 static bool
-app_legacy_bridge_execute_legacy_binding(NcmBinding *binding) {
+app_legacy_bridge_action_is_c_safe_for_current_screen(
+    enum NcmActionType type) {
+    enum ScreenType screen_type;
+
+    screen_type = native_c_screens_current_type();
+    return app_binding_migration_action_is_c_safe_for_screen(
+        type, screen_type);
+}
+
+static bool
+app_legacy_bridge_can_run_legacy_action(enum NcmActionType type) {
 #if defined(__GNUC__)
-    if (actions_legacy_runtime_execute_binding == NULL) {
+    if (actions_legacy_runtime_can_run_action == NULL) {
         return false;
     }
 #endif
-    return actions_legacy_runtime_execute_binding(binding);
+    return actions_legacy_runtime_can_run_action(type);
 }
 
 static bool
@@ -155,6 +172,55 @@ app_legacy_bridge_execute_legacy_action(enum NcmActionType type) {
     }
 #endif
     return actions_legacy_runtime_execute_action(type);
+}
+
+static int32
+app_legacy_bridge_action_can_run_hook(enum NcmActionType type,
+                                      void *user) {
+    enum ScreenType screen_type;
+
+    (void)user;
+    if (app_legacy_bridge_action_is_c_safe_for_current_screen(type)) {
+        return NCM_ACTION_RUNTIME_DEFER;
+    }
+
+    screen_type = native_c_screens_current_type();
+    if (app_binding_migration_screen_is_c_only(screen_type)) {
+        return NCM_ACTION_RUNTIME_DENY;
+    }
+
+    if (app_legacy_bridge_can_run_legacy_action(type)) {
+        return NCM_ACTION_RUNTIME_ALLOW;
+    }
+    return NCM_ACTION_RUNTIME_DENY;
+}
+
+static int32
+app_legacy_bridge_action_run_hook(enum NcmActionType type, void *user) {
+    enum ScreenType screen_type;
+
+    (void)user;
+    if (app_legacy_bridge_action_is_c_safe_for_current_screen(type)) {
+        return NCM_ACTION_RUNTIME_DEFER;
+    }
+
+    screen_type = native_c_screens_current_type();
+    if (app_binding_migration_screen_is_c_only(screen_type)) {
+        return NCM_ACTION_RUNTIME_DENY;
+    }
+
+    if (app_legacy_bridge_execute_legacy_action(type)) {
+        return NCM_ACTION_RUNTIME_ALLOW;
+    }
+    return NCM_ACTION_RUNTIME_DENY;
+}
+
+static void
+app_legacy_bridge_install_action_hooks(void) {
+    ncm_action_runtime_set_hooks(ncm_action_runtime_global(),
+                                 app_legacy_bridge_action_can_run_hook,
+                                 app_legacy_bridge_action_run_hook, NULL);
+    return;
 }
 
 static bool
@@ -170,47 +236,6 @@ app_legacy_bridge_legacy_exit_requested(void) {
 bool
 ncmpcpp_legacy_sync_configuration(void) {
     return app_legacy_bridge_sync_legacy_configuration();
-}
-
-static bool
-app_legacy_bridge_execute_binding_action_hybrid(
-    NcmBindingAction *action) {
-    NcmBindingRuntime *runtime;
-
-    runtime = ncm_binding_default_runtime();
-    switch (action->kind) {
-    case NCM_BINDING_ACTION_NORMAL:
-        if (app_binding_migration_action_is_c_safe(action->type)) {
-            return ncm_action_runtime_run(NULL, action->type);
-        }
-        return app_legacy_bridge_execute_legacy_action(action->type);
-    case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
-        return ncm_binding_action_can_run(action, runtime);
-    case NCM_BINDING_ACTION_PUSH_CHARACTERS:
-    case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
-    case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
-        return ncm_binding_action_run(action, runtime);
-    case NCM_BINDING_ACTION_REQUIRE_SCREEN:
-        return false;
-    }
-
-    return false;
-}
-
-static bool
-app_legacy_bridge_execute_binding_hybrid(NcmBinding *binding) {
-    if (!app_binding_migration_binding_is_hybrid_safe(binding)) {
-        return false;
-    }
-
-    for (int32 i = 0; i < binding->actions_len; i += 1) {
-        if (!app_legacy_bridge_execute_binding_action_hybrid(
-                binding->actions + i)) {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 static void
@@ -393,6 +418,7 @@ ncmpcpp_legacy_window_clear_fd_callbacks(NcWindow *window) {
 
 void
 ncmpcpp_legacy_initialize_screens(void) {
+    app_legacy_bridge_install_action_hooks();
     app_controller_init();
     native_c_screens_init_all();
     app_legacy_bridge_set_status_observers();
@@ -536,38 +562,31 @@ bool
 ncmpcpp_legacy_execute_binding(NcmBinding *binding) {
     enum ScreenType screen_type;
 
+    app_legacy_bridge_install_action_hooks();
     screen_type = native_c_screens_current_type();
-    if (app_binding_migration_binding_is_c_safe_for_screen(binding,
-                                                           screen_type)) {
-        if (!ncm_binding_can_execute_default(binding)) {
-            return false;
-        }
-        return ncm_binding_execute_default(binding);
-    }
-    if (app_binding_migration_screen_is_c_only(screen_type)) {
+    if (app_binding_migration_screen_is_c_only(screen_type)
+        && !app_binding_migration_binding_is_c_safe_for_screen(
+            binding, screen_type)) {
         return false;
     }
-    if (app_binding_migration_binding_is_hybrid_safe(binding)) {
-        return app_legacy_bridge_execute_binding_hybrid(binding);
+    if (!ncm_binding_can_execute_default(binding)) {
+        return false;
     }
-
-    return app_legacy_bridge_execute_legacy_binding(binding);
+    return ncm_binding_execute_default(binding);
 }
 
 bool
 ncmpcpp_legacy_execute_action(enum NcmActionType type) {
     enum ScreenType screen_type;
 
+    app_legacy_bridge_install_action_hooks();
     screen_type = native_c_screens_current_type();
-    if (app_binding_migration_action_is_c_safe_for_screen(
+    if (app_binding_migration_screen_is_c_only(screen_type)
+        && !app_binding_migration_action_is_c_safe_for_screen(
             type, screen_type)) {
-        return ncm_action_runtime_run(NULL, type);
-    }
-    if (app_binding_migration_screen_is_c_only(screen_type)) {
         return false;
     }
-
-    return app_legacy_bridge_execute_legacy_action(type);
+    return ncm_action_runtime_run(NULL, type);
 }
 
 bool

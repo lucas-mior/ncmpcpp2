@@ -24,7 +24,6 @@
 
 #include "cbase/base_macros.h"
 #include "curses/menu_impl.h"
-#include "macro_utilities.h"
 #include "screens/native_c_screens.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
@@ -286,81 +285,6 @@ void listsChangeFinisher();
 bool actionHasNoLegacyImplementation(NcmActionType type)
 {
 	return type == NCM_ACTION_START_SEARCHING;
-}
-
-bool legacyCanRunAction(NcmActionType type, void *)
-{
-	if (app_binding_migration_action_is_c_safe(type))
-		return ncm_action_runtime_can_run(nullptr, type);
-
-	Actions::BaseAction *action = Actions::runtimeAction(type);
-	if (action == nullptr)
-		return false;
-	return action->canBeRun();
-}
-
-bool legacyRunAction(NcmActionType type, void *)
-{
-	if (app_binding_migration_action_is_c_safe(type))
-		return ncm_action_runtime_run(nullptr, type);
-
-	Actions::BaseAction *action = Actions::runtimeAction(type);
-	if (action == nullptr)
-		return false;
-	return action->execute();
-}
-
-bool legacyCurrentScreenIs(ScreenType screen_type, void *)
-{
-	BaseScreen *current;
-
-	current = screenLegacyCurrent();
-	if (current == nullptr)
-		return false;
-	return current->type() == screen_type;
-}
-
-void legacyPushKey(NcKey key, void *)
-{
-	nc_window_push_key(ui_state_footer_window(), key);
-}
-
-bool legacyRunExternalCommand(char *command, int32 command_len, void *)
-{
-	std::string text;
-
-	text.assign(command, static_cast<size_t>(command_len));
-	runExternalCommand(text, true);
-	return true;
-}
-
-bool legacyRunExternalConsoleCommand(char *command, int32 command_len, void *)
-{
-	std::string text;
-
-	text.assign(command, static_cast<size_t>(command_len));
-	runExternalConsoleCommand(text);
-	return true;
-}
-
-NcmBindingRuntime *bindingsLegacyRuntime()
-{
-	static NcmBindingRuntime runtime = {
-		legacyCanRunAction,
-		legacyRunAction,
-		legacyCurrentScreenIs,
-		legacyPushKey,
-		legacyRunExternalCommand,
-		legacyRunExternalConsoleCommand,
-		nullptr,
-	};
-
-	return &runtime;
-}
-
-bool bindingsLegacyExecute(NcmBinding *binding)
-{
-	return ncm_binding_execute_runtime(binding, bindingsLegacyRuntime());
 }
 
 template <typename Iterator>
@@ -2296,11 +2220,19 @@ void actions_legacy_runtime_clear_current_search(void)
 	searchable->clearSearchConstraint();
 }
 
-bool actions_legacy_runtime_execute_binding(NcmBinding *binding)
+bool actions_legacy_runtime_can_run_action(enum NcmActionType type)
 {
+	if (app_binding_migration_action_is_c_safe(type))
+		return ncm_action_runtime_can_run(nullptr, type);
+
 	try
 	{
-		return bindingsLegacyExecute(binding);
+		Actions::BaseAction *action;
+
+		action = Actions::runtimeAction(type);
+		if (action == nullptr)
+			return false;
+		return action->canBeRun();
 	}
 	catch (ConversionError &e)
 	{

@@ -515,11 +515,15 @@ ncm_binding_runtime_run_external_console_command(char *command,
                                                  int32 command_len,
                                                  void *user) {
     NcmError error;
+    bool result;
 
     (void)user;
     ncm_error_clear(&error);
-    return ncm_macro_run_external_console_command(command, command_len,
-                                                  &error);
+    nc_pause_screen();
+    result = ncm_macro_run_external_console_command(command, command_len,
+                                                    &error);
+    nc_unpause_screen();
+    return result;
 }
 
 void
