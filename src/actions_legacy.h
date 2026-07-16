@@ -672,9 +672,9 @@ private:
 	virtual void run() override;
 };
 
-struct JumpToBrowser: BaseAction
+struct JumpToBrowserAction: BaseAction
 {
-	JumpToBrowser(): BaseAction(Type::JumpToBrowser) { }
+	JumpToBrowserAction(): BaseAction(Type::JumpToBrowser) { }
 	
 private:
 	virtual bool canBeRun() override;
@@ -1036,9 +1036,9 @@ private:
 	virtual void run() override;
 };
 
-struct ShowBrowser: BaseAction
+struct ShowBrowserAction: BaseAction
 {
-	ShowBrowser(): BaseAction(Type::ShowBrowser) { }
+	ShowBrowserAction(): BaseAction(Type::ShowBrowser) { }
 	
 private:
 	virtual bool canBeRun() override;

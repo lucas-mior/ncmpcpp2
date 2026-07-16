@@ -210,7 +210,6 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     ncm_buffer_array_init(&screen->supported_extensions);
     ncm_regex_init(&screen->filter_regex);
 
-    screen->bridge = (NativeBrowserBridge){0};
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
@@ -1405,16 +1404,6 @@ native_browser_screen_request_update(NativeBrowserScreen *screen) {
     }
     screen->update_requested = true;
     nc_screen_request_update(&screen->screen);
-    return;
-}
-
-void
-native_browser_screen_set_bridge(NativeBrowserScreen *screen,
-                                 NativeBrowserBridge bridge) {
-    if (screen == NULL) {
-        return;
-    }
-    screen->bridge = bridge;
     return;
 }
 

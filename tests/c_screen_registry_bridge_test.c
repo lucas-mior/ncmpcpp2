@@ -415,6 +415,11 @@ test_native_only_registration(void) {
     ui_state_set_screen_size(100, 30);
 
     native_c_screens_register_native_only();
+    registered = app_controller_find_screen_type(NC_SCREEN_TYPE_BROWSER);
+    assert(registered == native_c_screen_browser_native());
+    assert(native_c_screens_is_registered_type(
+        NCM_SCREEN_TYPE_BROWSER));
+
     registered = app_controller_find_screen_type(
         NC_SCREEN_TYPE_MEDIA_LIBRARY);
     assert(registered == native_c_screen_media_library_native());
