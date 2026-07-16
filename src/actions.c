@@ -17,6 +17,7 @@
 #include "screen_actions.h"
 #include "status.h"
 #include "statusbar.h"
+#include "title.h"
 #include "ui_state.h"
 
 #include "c/ncm_base.h"
@@ -3330,6 +3331,8 @@ action_runtime_delete_main_playlist_items(void) {
         return false;
     }
 
+    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                (char *)"Deleting items...");
     action_runtime_sort_positions(positions, count, true);
     ncm_error_clear(&error);
     for (int32 i = 0; i < count; i += 1) {
@@ -3343,6 +3346,8 @@ action_runtime_delete_main_playlist_items(void) {
     ncm_free(positions, (uint64)count*SIZEOF(*positions));
     ncm_song_array_destroy(&songs);
     (void)ncm_status_update_full(&global_mpd, NULL, &error);
+    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                (char *)"Item(s) deleted");
     return true;
 }
 
@@ -5551,11 +5556,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_QUIT:
     case NCM_ACTION_NEXT_SCREEN:
     case NCM_ACTION_PREVIOUS_SCREEN:
-    case NCM_ACTION_SHOW_HELP:
-    case NCM_ACTION_SHOW_PLAYLIST:
     case NCM_ACTION_SHOW_SEARCH_ENGINE:
-    case NCM_ACTION_SHOW_PLAYLIST_EDITOR:
-    case NCM_ACTION_SHOW_SERVER_INFO:
     case NCM_ACTION_SHOW_SONG_INFO:
     case NCM_ACTION_TOGGLE_SCREEN_LOCK:
     case NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING:
@@ -5566,6 +5567,48 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND:
     case NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE:
     case NCM_ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS:
+        return true;
+    case NCM_ACTION_SHOW_HELP:
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_HELP)) {
+            return false;
+        }
+#if defined(HAVE_TAGLIB_H)
+        if (action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+            return false;
+        }
+#endif
+        return true;
+    case NCM_ACTION_SHOW_PLAYLIST:
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST)) {
+            return false;
+        }
+#if defined(HAVE_TAGLIB_H)
+        if (action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+            return false;
+        }
+#endif
+        return true;
+    case NCM_ACTION_SHOW_PLAYLIST_EDITOR:
+        if (action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
+            return false;
+        }
+#if defined(HAVE_TAGLIB_H)
+        if (action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+            return false;
+        }
+#endif
+        return true;
+    case NCM_ACTION_SHOW_SERVER_INFO:
+#if defined(HAVE_TAGLIB_H)
+        if (action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+            return false;
+        }
+#endif
         return true;
     case NCM_ACTION_MOUSE_EVENT:
         return Config.mouse_support;
@@ -5841,13 +5884,31 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             || action_runtime_has_current_song();
 #if defined(ENABLE_OUTPUTS)
     case NCM_ACTION_SHOW_OUTPUTS:
-    case NCM_ACTION_TOGGLE_OUTPUT:
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_OUTPUTS)) {
+            return false;
+        }
+#if defined(HAVE_TAGLIB_H)
+        if (action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+            return false;
+        }
+#endif
         return true;
+    case NCM_ACTION_TOGGLE_OUTPUT:
+        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_OUTPUTS);
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_ACTION_SHOW_VISUALIZER:
-        return !action_runtime_current_screen_is(
-            NCM_SCREEN_TYPE_VISUALIZER);
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_VISUALIZER)) {
+            return false;
+        }
+#if defined(HAVE_TAGLIB_H)
+        if (action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+            return false;
+        }
+#endif
+        return true;
     case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
         return action_runtime_current_screen_is(
             NCM_SCREEN_TYPE_VISUALIZER);
@@ -6008,9 +6069,17 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_NEXT_COLUMN:
         return action_runtime_next_column();
     case NCM_ACTION_MASTER_SCREEN:
-        return app_controller_show_locked_screen();
+        if (!app_controller_show_locked_screen()) {
+            return false;
+        }
+        ncm_title_draw_current_header();
+        return true;
     case NCM_ACTION_SLAVE_SCREEN:
-        return app_controller_show_inactive_screen();
+        if (!app_controller_show_inactive_screen()) {
+            return false;
+        }
+        ncm_title_draw_current_header();
+        return true;
     case NCM_ACTION_PLAY:
         return action_runtime_mpd_simple(ncm_mpd_client_play);
     case NCM_ACTION_PAUSE:
