@@ -25,7 +25,6 @@
 #include <string>
 #include "actions.h"
 #include "curses/window.h"
-#include "mpdpp.h"
 
 namespace Actions {
 
@@ -210,37 +209,6 @@ private:
 	
 	MEVENT m_mouse_event;
 	MEVENT m_old_mouse_event;
-};
-
-
-
-struct EditSong: BaseAction
-{
-	EditSong(): BaseAction(Type::EditSong) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	MPD::Song m_song;
-};
-
-struct EditLibraryTag: BaseAction
-{
-	EditLibraryTag(): BaseAction(Type::EditLibraryTag) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct EditLibraryAlbum: BaseAction
-{
-	EditLibraryAlbum(): BaseAction(Type::EditLibraryAlbum) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
 };
 
 

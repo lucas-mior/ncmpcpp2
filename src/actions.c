@@ -23,10 +23,15 @@
 #include "c/ncm_base.h"
 #include "c/ncm_conversion.h"
 #include "c/ncm_macro_utilities.h"
+#include "c/ncm_mutable_song.h"
 #include "c/ncm_path.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
 #include "c/ncm_utf8.h"
+
+#if defined(HAVE_TAGLIB_H)
+#include "c/ncm_taglib.h"
+#endif
 #include "cbase/base_macros.h"
 #include "cbase/cbase.h"
 
@@ -5911,13 +5916,482 @@ ncm_action_edit_song(NcmSong *song) {
 #endif
 }
 
+#if defined(HAVE_TAGLIB_H)
+static bool
+action_runtime_mpd_music_dir_is_set(void) {
+    if (Config.mpd_music_dir_len > 0) {
+        return true;
+    }
+
+    ncm_statusbar_print_cstring(
+        (int32)Config.message_delay_time,
+        (char *)"Proper mpd_music_dir variable has to be set in "
+                "configuration file");
+    return false;
+}
+
+static bool
+action_runtime_media_library_current_tag(char **tag, int32 *tag_len) {
+    NativeMediaLibraryScreen *library;
+
+    if ((tag == NULL) || (tag_len == NULL)) {
+        return false;
+    }
+    if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
+        return false;
+    }
+
+    library = native_c_screen_media_library();
+    if (native_media_library_screen_active_column(library)
+        != NATIVE_MEDIA_LIBRARY_COLUMN_TAGS) {
+        return false;
+    }
+    return native_media_library_screen_current_primary_tag_value(
+        library, tag, tag_len);
+}
+
+static bool
+action_runtime_media_library_current_album(char **album, int32 *album_len) {
+    NativeMediaLibraryScreen *library;
+
+    if ((album == NULL) || (album_len == NULL)) {
+        return false;
+    }
+    if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
+        return false;
+    }
+
+    library = native_c_screen_media_library();
+    if (native_media_library_screen_active_column(library)
+        != NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS) {
+        return false;
+    }
+    return native_media_library_screen_current_album_value(
+        library, album, album_len);
+}
+
+static bool
+action_runtime_can_edit_library_tag(void) {
+    char *tag;
+    int32 tag_len;
+
+    return (Config.mpd_music_dir_len > 0)
+        && action_runtime_media_library_current_tag(&tag, &tag_len);
+}
+
+static bool
+action_runtime_can_edit_library_album(void) {
+    char *album;
+    int32 album_len;
+
+    return (Config.mpd_music_dir_len > 0)
+        && action_runtime_media_library_current_album(&album, &album_len);
+}
+
+static bool
+action_runtime_song_uri_view(NcmSong *song, NcmStringView *uri) {
+    ncm_string_view_init(uri);
+    return ncm_song_uri_view(song, 0, uri);
+}
+
+static bool
+action_runtime_song_name_or_uri_view(NcmSong *song, NcmStringView *view) {
+    ncm_string_view_init(view);
+    if (ncm_song_name_view(song, 0, view)) {
+        return true;
+    }
+    return action_runtime_song_uri_view(song, view);
+}
+
+static bool
+action_runtime_song_file_path(NcmSong *song, NcmBuffer *path) {
+    NcmStringView uri;
+
+    ncm_buffer_clear(path);
+    if (!action_runtime_song_uri_view(song, &uri)) {
+        return false;
+    }
+
+    ncm_buffer_append(path, Config.mpd_music_dir,
+                      Config.mpd_music_dir_len);
+    ncm_buffer_append(path, uri.data, uri.len);
+    return true;
+}
+
+static bool
+action_runtime_shared_directory_update(NcmBuffer *shared_directory,
+                                       bool *valid,
+                                       char *directory,
+                                       int32 directory_len) {
+    NcmBuffer shared;
+
+    if ((shared_directory == NULL) || (valid == NULL)) {
+        return false;
+    }
+    if (directory == NULL) {
+        directory = (char *)"";
+        directory_len = 0;
+    }
+
+    if (!*valid) {
+        *valid = true;
+        return ncm_buffer_set(shared_directory, directory, directory_len);
+    }
+
+    shared = ncm_string_shared_directory(shared_directory->data,
+                                         shared_directory->len,
+                                         directory,
+                                         directory_len);
+    ncm_buffer_destroy(shared_directory);
+    *shared_directory = shared;
+    return true;
+}
+
+static void
+action_runtime_print_updating_song(NcmSong *song) {
+    NcmStringView name;
+    NcmStringFormatArg arg;
+
+    if (!action_runtime_song_name_or_uri_view(song, &name)) {
+        return;
+    }
+
+    arg = ncm_string_format_arg_string(name.data, name.len);
+    ncm_statusbar_format(0, STRLIT_ARGS("Updating tags in \"%1%\"..."),
+                         &arg, 1);
+    return;
+}
+
+static void
+action_runtime_print_song_write_error(NcmSong *song) {
+    NcmStringView name;
+    NcmStringFormatArg args[2];
+
+    if (!action_runtime_song_name_or_uri_view(song, &name)) {
+        return;
+    }
+
+    args[0] = ncm_string_format_arg_string(name.data, name.len);
+    args[1] = ncm_string_format_arg_cstring(strerror(errno));
+    ncm_statusbar_format(
+        (int32)Config.message_delay_time,
+        STRLIT_ARGS("Error while writing tags to \"%1%\": %2%"),
+        args, NCM_ARRAY_LEN(args));
+    return;
+}
+
+static void
+action_runtime_print_album_file_error(char *format, int32 format_len,
+                                      NcmSong *song) {
+    NcmStringView uri;
+    NcmStringFormatArg arg;
+    int32 width;
+    int32 uri_len;
+
+    if (!action_runtime_song_uri_view(song, &uri)) {
+        return;
+    }
+
+    width = COLS - format_len;
+    if (width < 0) {
+        width = 0;
+    }
+    uri_len = ncm_utf8_cut_width(uri.data, uri.len, width);
+    arg = ncm_string_format_arg_string(uri.data, uri_len);
+    ncm_statusbar_format((int32)Config.message_delay_time,
+                         format, format_len, &arg, 1);
+    return;
+}
+
+static bool
+action_runtime_update_tag_directory(NcmBuffer *shared_directory,
+                                    bool valid) {
+    NcmError error;
+    char *directory;
+
+    if (!valid) {
+        return true;
+    }
+
+    directory = shared_directory->data;
+    if (directory == NULL) {
+        directory = (char *)"";
+    }
+
+    ncm_error_clear(&error);
+    if (!ncm_mpd_client_update_directory(&global_mpd, directory, NULL,
+                                         &error)) {
+        return action_runtime_mpd_error(&error);
+    }
+    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                (char *)"Tags updated successfully");
+    return true;
+}
+
+static bool
+action_runtime_edit_library_tag(void) {
+    enum NcmTagsField field;
+    NcmMpdSongList songs;
+    NcmMutableSong mutable_song;
+    NcmStringView uri;
+    NcmBuffer current_tag;
+    NcmBuffer prompt;
+    NcmBuffer new_tag;
+    NcmBuffer shared_directory;
+    NcmError error;
+    char *tag;
+    int32 tag_len;
+    bool shared_directory_valid;
+    bool prompted;
+    bool success;
+
+    if (!action_runtime_mpd_music_dir_is_set()) {
+        return false;
+    }
+    if (!action_runtime_media_library_current_tag(&tag, &tag_len)) {
+        return false;
+    }
+
+    ncm_buffer_init(&current_tag);
+    ncm_buffer_init(&prompt);
+    ncm_buffer_init(&new_tag);
+    ncm_buffer_init(&shared_directory);
+    ncm_mpd_song_list_init(&songs);
+    success = false;
+    shared_directory_valid = false;
+
+    if (!ncm_buffer_set(&current_tag, tag, tag_len)) {
+        goto cleanup;
+    }
+    ncm_buffer_append(&prompt,
+                      ncm_tag_type_name(Config.media_lib_primary_tag),
+                      action_runtime_cstring_len(
+                          ncm_tag_type_name(Config.media_lib_primary_tag)));
+    ncm_buffer_append(&prompt, STRLIT_ARGS(": "));
+    prompted = action_runtime_prompt_string(prompt.data, prompt.len,
+                                            current_tag.data, false,
+                                            NULL, NULL, &new_tag);
+    if (!prompted) {
+        success = true;
+        goto cleanup;
+    }
+    if ((new_tag.len <= 0)
+        || ncm_string_equal(new_tag.data, new_tag.len,
+                            current_tag.data, current_tag.len)) {
+        success = true;
+        goto cleanup;
+    }
+
+    field = ncm_tags_field_from_tag_type(Config.media_lib_primary_tag);
+    if (field == NCM_TAGS_FIELD_LAST) {
+        goto cleanup;
+    }
+
+    ncm_statusbar_print_cstring(0, (char *)"Updating tags...");
+    ncm_error_clear(&error);
+    if (!ncm_mpd_client_start_search(&global_mpd, true, &error)
+        || !ncm_mpd_client_add_search_tag(
+            &global_mpd, Config.media_lib_primary_tag,
+            current_tag.data, &error)
+        || !ncm_mpd_client_commit_search_songs(
+            &global_mpd, &songs, &error)) {
+        success = action_runtime_mpd_error(&error);
+        goto cleanup;
+    }
+
+    success = true;
+    for (int32 i = 0; i < ncm_mpd_song_list_count(&songs); i += 1) {
+        NcmSong *song;
+
+        song = ncm_mpd_song_list_at(&songs, i);
+        ncm_mutable_song_init(&mutable_song);
+        if (!ncm_mutable_song_load_originals_from_song(
+                &mutable_song, song)
+            || !ncm_mutable_song_set_tags(
+                &mutable_song, field, new_tag.data, new_tag.len,
+                Config.tags_separator, Config.tags_separator_len)) {
+            ncm_mutable_song_destroy(&mutable_song);
+            success = false;
+            break;
+        }
+
+        action_runtime_print_updating_song(song);
+        if (!ncm_mutable_song_write(&mutable_song,
+                                    Config.mpd_music_dir)) {
+            action_runtime_print_song_write_error(song);
+            ncm_mutable_song_destroy(&mutable_song);
+            success = false;
+            break;
+        }
+
+        if (action_runtime_song_uri_view(song, &uri)) {
+            success = action_runtime_shared_directory_update(
+                &shared_directory, &shared_directory_valid,
+                uri.data, uri.len);
+        }
+        ncm_mutable_song_destroy(&mutable_song);
+        if (!success) {
+            break;
+        }
+    }
+
+    if (success) {
+        success = action_runtime_update_tag_directory(
+            &shared_directory, shared_directory_valid);
+    }
+
+cleanup:
+    ncm_mpd_song_list_destroy(&songs);
+    ncm_buffer_destroy(&shared_directory);
+    ncm_buffer_destroy(&new_tag);
+    ncm_buffer_destroy(&prompt);
+    ncm_buffer_destroy(&current_tag);
+    return success;
+}
+
+static bool
+action_runtime_edit_library_album(void) {
+    NcmSongArray songs;
+    NcmBuffer current_album;
+    NcmBuffer new_album;
+    NcmBuffer path;
+    NcmBuffer shared_directory;
+    NcmError error;
+    char *album;
+    int32 album_len;
+    bool shared_directory_valid;
+    bool prompted;
+    bool success;
+
+    if (!action_runtime_mpd_music_dir_is_set()) {
+        return false;
+    }
+    if (!action_runtime_media_library_current_album(&album, &album_len)) {
+        return false;
+    }
+
+    ncm_song_array_init(&songs);
+    ncm_buffer_init(&current_album);
+    ncm_buffer_init(&new_album);
+    ncm_buffer_init(&path);
+    ncm_buffer_init(&shared_directory);
+    ncm_error_clear(&error);
+    success = false;
+    shared_directory_valid = false;
+
+    if (!ncm_buffer_set(&current_album, album, album_len)) {
+        goto cleanup;
+    }
+    prompted = action_runtime_prompt_string(STRLIT_ARGS("Album: "),
+                                            current_album.data, false,
+                                            NULL, NULL, &new_album);
+    if (!prompted) {
+        success = true;
+        goto cleanup;
+    }
+    if ((new_album.len <= 0)
+        || ncm_string_equal(new_album.data, new_album.len,
+                            current_album.data, current_album.len)) {
+        success = true;
+        goto cleanup;
+    }
+
+    if (!native_media_library_screen_copy_visible_songs(
+            native_c_screen_media_library(), &songs, &error)) {
+        if (ncm_error_is_set(&error)) {
+            ncm_statusbar_print_cstring(
+                (int32)Config.message_delay_time, error.message);
+        }
+        goto cleanup;
+    }
+
+    ncm_statusbar_print_cstring(0, (char *)"Updating tags...");
+    success = true;
+    for (int32 i = 0; i < songs.len; i += 1) {
+        NcmSong *song;
+        NcmStringView directory;
+        NcmTaglibFile file;
+
+        song = &songs.items[i];
+        action_runtime_print_updating_song(song);
+        if (!action_runtime_song_file_path(song, &path)) {
+            success = false;
+            break;
+        }
+        if (ncm_song_directory_view(song, 0, &directory)) {
+            success = action_runtime_shared_directory_update(
+                &shared_directory, &shared_directory_valid,
+                directory.data, directory.len);
+            if (!success) {
+                break;
+            }
+        }
+
+        ncm_taglib_file_init(&file);
+        if (!ncm_taglib_file_open(&file, path.data)) {
+            action_runtime_print_album_file_error(
+                STRLIT_ARGS("Error while opening file \"%1%\""), song);
+            success = false;
+            break;
+        }
+        ncm_taglib_clear_property(&file, (char *)"ALBUM");
+        ncm_taglib_append_property(&file, (char *)"ALBUM",
+                                   new_album.data);
+        if (!ncm_taglib_file_save(&file)) {
+            action_runtime_print_album_file_error(
+                STRLIT_ARGS("Error while writing tags in \"%1%\""), song);
+            ncm_taglib_file_close(&file);
+            success = false;
+            break;
+        }
+        ncm_taglib_file_close(&file);
+    }
+
+    if (success) {
+        success = action_runtime_update_tag_directory(
+            &shared_directory, shared_directory_valid);
+    }
+
+cleanup:
+    ncm_buffer_destroy(&shared_directory);
+    ncm_buffer_destroy(&path);
+    ncm_buffer_destroy(&new_album);
+    ncm_buffer_destroy(&current_album);
+    ncm_song_array_destroy(&songs);
+    return success;
+}
+#else
+static bool
+action_runtime_can_edit_library_tag(void) {
+    return false;
+}
+
+static bool
+action_runtime_can_edit_library_album(void) {
+    return false;
+}
+
+static bool
+action_runtime_edit_library_tag(void) {
+    return false;
+}
+
+static bool
+action_runtime_edit_library_album(void) {
+    return false;
+}
+#endif
+
 static bool
 action_runtime_edit_current_song(void) {
 #if defined(HAVE_TAGLIB_H)
     NcmSong song;
     bool success;
 
-    if (!action_runtime_has_selected_songs()) {
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_LYRICS)) {
+        return false;
+    }
+    if (!action_runtime_has_current_song()) {
         return false;
     }
     ncm_song_init(&song);
@@ -6417,7 +6891,9 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             ;
     case NCM_ACTION_EDIT_SONG:
 #if defined(HAVE_TAGLIB_H)
-        return action_runtime_has_selected_songs();
+        return !action_runtime_current_screen_is(NCM_SCREEN_TYPE_LYRICS)
+            && (Config.mpd_music_dir_len > 0)
+            && action_runtime_has_current_song();
 #else
         return false;
 #endif
@@ -6641,8 +7117,17 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         }
         return action_runtime_menu_has_items();
     case NCM_ACTION_EDIT_LIBRARY_TAG:
-    case NCM_ACTION_EDIT_LIBRARY_ALBUM:
+#if defined(HAVE_TAGLIB_H)
+        return action_runtime_can_edit_library_tag();
+#else
         return false;
+#endif
+    case NCM_ACTION_EDIT_LIBRARY_ALBUM:
+#if defined(HAVE_TAGLIB_H)
+        return action_runtime_can_edit_library_album();
+#else
+        return false;
+#endif
     default:
         return false;
     }
@@ -7053,8 +7538,9 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_DELETE_BROWSER_ITEMS:
         return action_runtime_delete_browser_items();
     case NCM_ACTION_EDIT_LIBRARY_TAG:
+        return action_runtime_edit_library_tag();
     case NCM_ACTION_EDIT_LIBRARY_ALBUM:
-        return false;
+        return action_runtime_edit_library_album();
     default:
         return false;
     }
