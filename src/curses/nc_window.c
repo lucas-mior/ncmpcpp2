@@ -377,6 +377,12 @@ nc_init_readline(void) {
 }
 
 void
+nc_resize_readline_terminal(void) {
+    rl_resize_terminal();
+    return;
+}
+
+void
 nc_init_screen(bool enable_colors, bool enable_mouse) {
     tcgetattr(STDIN_FILENO, &orig_termios);
     initscr();

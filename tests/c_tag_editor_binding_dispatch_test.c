@@ -75,30 +75,6 @@ settings_legacy_runtime_sync_configuration(void) {
     return false;
 }
 
-void
-actions_legacy_runtime_initialize_screens(void) {
-    test_state.unrelated_legacy_count += 1;
-    return;
-}
-
-void
-actions_legacy_runtime_resize_screen(bool reload_main_window) {
-    (void)reload_main_window;
-    test_state.unrelated_legacy_count += 1;
-    return;
-}
-
-bool
-actions_legacy_runtime_update_environment(bool update_timer,
-                                          bool refresh_window,
-                                          bool mpd_sync) {
-    (void)update_timer;
-    (void)refresh_window;
-    (void)mpd_sync;
-    test_state.unrelated_legacy_count += 1;
-    return false;
-}
-
 bool
 actions_legacy_runtime_exit_requested(void) {
     test_state.unrelated_legacy_count += 1;
