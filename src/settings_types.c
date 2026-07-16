@@ -23,9 +23,6 @@ static void settings_string_destroy(char **data, int32 *len, int32 *cap);
 static bool settings_string_copy(char **dest_data, int32 *dest_len,
                                  int32 *dest_cap, char *source_data,
                                  int32 source_len);
-static void settings_string_move(char **dest_data, int32 *dest_len,
-                                 int32 *dest_cap, char **source_data,
-                                 int32 *source_len, int32 *source_cap);
 static void configuration_init_strings(Configuration *config);
 static void configuration_destroy_strings(Configuration *config);
 static void configuration_init_buffers(Configuration *config);
@@ -77,20 +74,6 @@ settings_string_copy(char **dest_data, int32 *dest_len, int32 *dest_cap,
     *dest_len = source_len;
     *dest_cap = new_cap;
     return true;
-}
-
-static void
-settings_string_move(char **dest_data, int32 *dest_len, int32 *dest_cap,
-                     char **source_data, int32 *source_len,
-                     int32 *source_cap) {
-    settings_string_destroy(dest_data, dest_len, dest_cap);
-    *dest_data = *source_data;
-    *dest_len = *source_len;
-    *dest_cap = *source_cap;
-    *source_data = NULL;
-    *source_len = 0;
-    *source_cap = 0;
-    return;
 }
 
 void
