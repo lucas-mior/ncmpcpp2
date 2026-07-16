@@ -1,6 +1,10 @@
 #include "screens/nc_help.h"
 
+#include <errno.h>
+
+#include "c/ncm_regex.h"
 #include "cbase/base_macros.h"
+#include "settings.h"
 
 
 static NcHelpScreen *nc_help_from_screen(NcScreen *screen);
@@ -20,6 +24,7 @@ static bool nc_help_is_mergable(NcScreen *screen);
 static void nc_help_destroy_callback(NcScreen *screen);
 static void nc_help_display(NcHelpScreen *help);
 static void nc_help_mouse_scroll(NcHelpScreen *help, enum NcScroll where);
+static bool nc_help_find_match_callback(int32 start, int32 len, void *user);
 
 void
 nc_help_screen_init(NcHelpScreen *screen,
@@ -39,6 +44,7 @@ nc_help_screen_init(NcHelpScreen *screen,
                              0,
                              0);
     nc_buffer_init(&screen->buffer);
+    ncm_buffer_init(&screen->search_constraint);
     nc_help_screen_set_geometry(screen,
                                 start_x,
                                 width,
@@ -59,6 +65,7 @@ nc_help_screen_init(NcHelpScreen *screen,
 
 void
 nc_help_screen_destroy(NcHelpScreen *screen) {
+    ncm_buffer_destroy(&screen->search_constraint);
     nc_buffer_destroy(&screen->buffer);
     nc_window_destroy(&screen->window);
     nc_scrollpad_init_empty(&screen->scrollpad);
@@ -97,6 +104,67 @@ nc_help_screen_reload(NcHelpScreen *screen) {
                        &screen->window,
                        &screen->buffer);
     return true;
+}
+
+bool
+nc_help_screen_find(NcHelpScreen *screen, char *pattern,
+                    int32 pattern_len, NcmError *error) {
+    NcmRegex regex;
+    char *data;
+    bool result;
+
+    if (screen == NULL) {
+        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing help screen"));
+        return false;
+    }
+
+    nc_buffer_remove_properties(&screen->buffer, 0);
+    if ((pattern == NULL) || (pattern_len <= 0)) {
+        ncm_buffer_clear(&screen->search_constraint);
+        nc_scrollpad_flush(&screen->scrollpad,
+                           &screen->window,
+                           &screen->buffer);
+        ncm_error_clear(error);
+        return true;
+    }
+
+    ncm_regex_init(&regex);
+    if (!ncm_regex_compile(&regex, pattern, pattern_len, Config.regex_type,
+                           error)) {
+        ncm_regex_destroy(&regex);
+        return false;
+    }
+
+    if (!ncm_buffer_set(&screen->search_constraint, pattern, pattern_len)) {
+        ncm_regex_destroy(&regex);
+        ncm_error_set(error, ENOMEM, STRLIT_ARGS("failed to save search"));
+        return false;
+    }
+
+    data = nc_buffer_data(&screen->buffer);
+    result = ncm_regex_for_each_match(&regex,
+                                      data,
+                                      screen->buffer.len,
+                                      nc_help_find_match_callback,
+                                      screen);
+    ncm_regex_destroy(&regex);
+    nc_scrollpad_flush(&screen->scrollpad,
+                       &screen->window,
+                       &screen->buffer);
+    return result;
+}
+
+void
+nc_help_screen_clear_search(NcHelpScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    ncm_buffer_clear(&screen->search_constraint);
+    nc_buffer_remove_properties(&screen->buffer, 0);
+    nc_scrollpad_flush(&screen->scrollpad,
+                       &screen->window,
+                       &screen->buffer);
+    return;
 }
 
 NcScreen *
@@ -283,4 +351,19 @@ nc_help_mouse_scroll(NcHelpScreen *help, enum NcScroll where) {
         nc_scrollpad_scroll(&help->scrollpad, &help->window, where);
     }
     return;
+}
+
+static bool
+nc_help_find_match_callback(int32 start, int32 len, void *user) {
+    NcHelpScreen *screen;
+
+    if (len <= 0) {
+        return true;
+    }
+
+    screen = user;
+    nc_buffer_add_format(&screen->buffer, start, NC_FORMAT_REVERSE, 0);
+    nc_buffer_add_format(&screen->buffer, start + len,
+                         NC_FORMAT_NO_REVERSE, 0);
+    return true;
 }

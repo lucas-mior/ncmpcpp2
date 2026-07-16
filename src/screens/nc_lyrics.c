@@ -283,6 +283,7 @@ native_lyrics_screen_init(NativeLyricsScreen *screen,
     nc_scrollpad_init(&screen->scrollpad,
                       nc_lyrics_screen_height(&screen->screen));
     nc_buffer_init(&screen->display);
+    ncm_buffer_init(&screen->search_constraint);
     ncm_buffer_init(&screen->title);
     ncm_song_init(&screen->song);
     ncm_buffer_init(&screen->filename);
@@ -318,6 +319,7 @@ native_lyrics_screen_destroy(NativeLyricsScreen *screen) {
     ncm_buffer_destroy(&screen->filename);
     ncm_song_destroy(&screen->song);
     ncm_buffer_destroy(&screen->title);
+    ncm_buffer_destroy(&screen->search_constraint);
     nc_buffer_destroy(&screen->display);
     nc_window_destroy(&screen->window);
     screen->queued_songs = NULL;
@@ -742,6 +744,12 @@ native_lyrics_screen_find(NativeLyricsScreen *screen,
 
     result = native_lyrics_buffer_find(&screen->display, pattern,
                                        pattern_len, error);
+    if ((pattern == NULL) || (pattern_len <= 0)) {
+        ncm_buffer_clear(&screen->search_constraint);
+    } else if (!ncm_error_is_set(error)) {
+        (void)ncm_buffer_set(&screen->search_constraint, pattern,
+                             pattern_len);
+    }
     nc_scrollpad_flush(&screen->scrollpad, &screen->window,
                        &screen->display);
     native_lyrics_display(screen);

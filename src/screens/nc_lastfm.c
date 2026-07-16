@@ -173,6 +173,7 @@ native_lastfm_screen_init(NativeLastfmScreen *screen,
     nc_scrollpad_init(&screen->scrollpad,
                       nc_lastfm_screen_height(&screen->screen));
     nc_buffer_init(&screen->buffer);
+    ncm_buffer_init(&screen->search_constraint);
     ncm_lastfm_service_init(&screen->service);
     ncm_lastfm_result_init(&screen->result);
     ncm_job_queue_init(&screen->jobs);
@@ -200,6 +201,7 @@ native_lastfm_screen_destroy(NativeLastfmScreen *screen) {
     if (screen->title != NULL) {
         ncm_free(screen->title, screen->title_cap);
     }
+    ncm_buffer_destroy(&screen->search_constraint);
     nc_buffer_destroy(&screen->buffer);
     nc_window_destroy(&screen->window);
     screen->title = NULL;
@@ -433,6 +435,12 @@ native_lastfm_screen_find(NativeLastfmScreen *screen,
 
     result = native_lastfm_buffer_find(&screen->buffer, pattern, pattern_len,
                                        error);
+    if ((pattern == NULL) || (pattern_len <= 0)) {
+        ncm_buffer_clear(&screen->search_constraint);
+    } else if (!ncm_error_is_set(error)) {
+        (void)ncm_buffer_set(&screen->search_constraint, pattern,
+                             pattern_len);
+    }
     native_lastfm_flush(screen);
     return result;
 }

@@ -34,6 +34,7 @@ typedef struct NativeLyricsScreen {
     NcWindow window;
     NcScrollpad scrollpad;
     NcBuffer display;
+    NcmBuffer search_constraint;
 
     NcmBuffer title;
     NcmSong song;

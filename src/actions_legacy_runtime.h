@@ -11,10 +11,6 @@
 NCM_EXTERN_C_BEGIN
 
 bool actions_legacy_runtime_playlist_highlight_mpd_position(int32 position);
-bool actions_legacy_runtime_search_current_screen(
-    enum SearchDirection direction, char *pattern, int32 pattern_len,
-    bool wrap, bool skip_current, bool *handled, NcmError *error);
-void actions_legacy_runtime_clear_current_search(void);
 bool actions_legacy_runtime_can_run_action(enum NcmActionType type);
 bool actions_legacy_runtime_execute_action(enum NcmActionType type);
 void actions_legacy_runtime_request_exit(void);
