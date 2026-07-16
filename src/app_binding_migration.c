@@ -6,6 +6,8 @@ static bool app_binding_migration_playlist_action_is_c_safe(
     enum NcmActionType type);
 static bool app_binding_migration_playlist_editor_action_is_c_safe(
     enum NcmActionType type);
+static bool app_binding_migration_media_library_action_is_c_safe(
+    enum NcmActionType type);
 static bool app_binding_migration_tag_editor_action_is_c_safe(
     enum NcmActionType type);
 static bool app_binding_migration_screen_uses_specific_actions(
@@ -80,6 +82,7 @@ app_binding_migration_browser_action_is_c_safe(
     case NCM_ACTION_SELECT_RANGE:
     case NCM_ACTION_REVERSE_SELECTION:
     case NCM_ACTION_REMOVE_SELECTION:
+    case NCM_ACTION_SELECT_ALBUM:
     case NCM_ACTION_SELECT_FOUND_ITEMS:
     case NCM_ACTION_APPLY_FILTER:
     case NCM_ACTION_FIND_ITEM_FORWARD:
@@ -346,6 +349,30 @@ app_binding_migration_playlist_editor_action_is_c_safe(
 
 
 static bool
+app_binding_migration_media_library_action_is_c_safe(
+    enum NcmActionType type) {
+    switch (type) {
+    case NCM_ACTION_SCROLL_UP_ARTIST:
+    case NCM_ACTION_SCROLL_UP_ALBUM:
+    case NCM_ACTION_SCROLL_DOWN_ARTIST:
+    case NCM_ACTION_SCROLL_DOWN_ALBUM:
+    case NCM_ACTION_PREVIOUS_COLUMN:
+    case NCM_ACTION_NEXT_COLUMN:
+    case NCM_ACTION_ADD_ITEM_TO_PLAYLIST:
+    case NCM_ACTION_PLAY_ITEM:
+    case NCM_ACTION_SELECT_ITEM:
+    case NCM_ACTION_SELECT_RANGE:
+    case NCM_ACTION_REVERSE_SELECTION:
+    case NCM_ACTION_REMOVE_SELECTION:
+    case NCM_ACTION_SELECT_ALBUM:
+    case NCM_ACTION_SELECT_FOUND_ITEMS:
+        return true;
+    default:
+        return false;
+    }
+}
+
+static bool
 app_binding_migration_tag_editor_action_is_c_safe(
     enum NcmActionType type) {
     switch (type) {
@@ -409,6 +436,7 @@ app_binding_migration_tag_editor_action_is_c_safe(
     case NCM_ACTION_SELECT_RANGE:
     case NCM_ACTION_REVERSE_SELECTION:
     case NCM_ACTION_REMOVE_SELECTION:
+    case NCM_ACTION_SELECT_ALBUM:
     case NCM_ACTION_SELECT_FOUND_ITEMS:
     case NCM_ACTION_ADD_SELECTED_ITEMS:
     case NCM_ACTION_APPLY_FILTER:
@@ -450,6 +478,9 @@ app_binding_migration_screen_uses_specific_actions(
         return true;
     }
     if (screen_type == NCM_SCREEN_TYPE_PLAYLIST_EDITOR) {
+        return true;
+    }
+    if (screen_type == NCM_SCREEN_TYPE_MEDIA_LIBRARY) {
         return true;
     }
     if (screen_type == NCM_SCREEN_TYPE_TAG_EDITOR) {
@@ -550,6 +581,10 @@ app_binding_migration_action_is_c_safe_for_screen(
     if (screen_type == NCM_SCREEN_TYPE_PLAYLIST_EDITOR) {
         return app_binding_migration_playlist_editor_action_is_c_safe(type);
     }
+    if (screen_type == NCM_SCREEN_TYPE_MEDIA_LIBRARY
+        && app_binding_migration_media_library_action_is_c_safe(type)) {
+        return true;
+    }
     if (screen_type == NCM_SCREEN_TYPE_TAG_EDITOR) {
         return app_binding_migration_tag_editor_action_is_c_safe(type);
     }
@@ -631,6 +666,7 @@ app_binding_migration_action_is_c_safe_for_screen(
         case NCM_ACTION_SELECT_RANGE:
         case NCM_ACTION_REVERSE_SELECTION:
         case NCM_ACTION_REMOVE_SELECTION:
+        case NCM_ACTION_SELECT_ALBUM:
         case NCM_ACTION_NEXT_FOUND_ITEM:
         case NCM_ACTION_PREVIOUS_FOUND_ITEM:
         case NCM_ACTION_TOGGLE_FIND_MODE:
@@ -724,25 +760,11 @@ app_binding_migration_action_forces_legacy_binding(
     enum NcmActionType type) {
     switch (type) {
     case NCM_ACTION_MOUSE_EVENT:
-    case NCM_ACTION_SCROLL_UP_ARTIST:
-    case NCM_ACTION_SCROLL_UP_ALBUM:
-    case NCM_ACTION_SCROLL_DOWN_ARTIST:
-    case NCM_ACTION_SCROLL_DOWN_ALBUM:
-    case NCM_ACTION_PREVIOUS_COLUMN:
-    case NCM_ACTION_NEXT_COLUMN:
-    case NCM_ACTION_ADD_ITEM_TO_PLAYLIST:
-    case NCM_ACTION_PLAY_ITEM:
     case NCM_ACTION_START_SEARCHING:
     case NCM_ACTION_EDIT_SONG:
     case NCM_ACTION_EDIT_LIBRARY_TAG:
     case NCM_ACTION_EDIT_LIBRARY_ALBUM:
     case NCM_ACTION_TOGGLE_SCREEN_LOCK:
-    case NCM_ACTION_SELECT_ITEM:
-    case NCM_ACTION_SELECT_RANGE:
-    case NCM_ACTION_REVERSE_SELECTION:
-    case NCM_ACTION_REMOVE_SELECTION:
-    case NCM_ACTION_SELECT_ALBUM:
-    case NCM_ACTION_SELECT_FOUND_ITEMS:
     case NCM_ACTION_FIND:
     case NCM_ACTION_NEXT_FOUND_ITEM:
     case NCM_ACTION_PREVIOUS_FOUND_ITEM:

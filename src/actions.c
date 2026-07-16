@@ -1314,6 +1314,13 @@ static NcMenu *action_runtime_current_menu(void);
 static enum NcMenuItemSource action_runtime_menu_item_source(
     NcMenu *menu);
 static bool action_runtime_menu_has_items(void);
+static bool action_runtime_menu_has_selectable_item(void);
+static bool action_runtime_menu_has_selection(void);
+static bool action_runtime_scroll_by_tag(enum NcmSongGetter getter,
+                                         bool down);
+static bool action_runtime_tag_scroll_available(
+    enum NcmSongGetter getter);
+static bool action_runtime_add_item_to_playlist(bool play);
 static bool action_runtime_selected_songs(NcmSongArray *songs);
 static bool action_runtime_has_selected_songs(void);
 static bool action_runtime_current_song(NcmSong *song);
@@ -2950,6 +2957,295 @@ action_runtime_menu_has_items(void) {
 }
 
 static bool
+action_runtime_menu_has_selectable_item(void) {
+    NcMenu *menu;
+
+    menu = action_runtime_current_menu();
+    if (menu == NULL) {
+        return false;
+    }
+    return nc_menu_current_is_selectable(menu);
+}
+
+static bool
+action_runtime_menu_has_selection(void) {
+    NcMenu *menu;
+
+    menu = action_runtime_current_menu();
+    if (menu == NULL) {
+        return false;
+    }
+    return nc_menu_has_selected(menu);
+}
+
+static int64
+action_runtime_current_menu_height(void) {
+    NcWindow *window;
+
+    switch (native_c_screens_current_type()) {
+    case NCM_SCREEN_TYPE_BROWSER:
+        window = native_browser_screen_window(native_c_screen_browser());
+        break;
+    case NCM_SCREEN_TYPE_PLAYLIST:
+        window = native_playlist_screen_window(native_c_screen_playlist());
+        break;
+    case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
+        window = native_playlist_editor_screen_active_window(
+            native_c_screen_playlist_editor());
+        break;
+    case NCM_SCREEN_TYPE_SEARCH_ENGINE:
+        window = native_search_engine_screen_window(
+            native_c_screen_search_engine());
+        break;
+    case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
+        window = native_media_library_screen_active_window(
+            native_c_screen_media_library());
+        break;
+#if defined(HAVE_TAGLIB_H)
+    case NCM_SCREEN_TYPE_TAG_EDITOR:
+        window = native_tag_editor_screen_active_window(
+            native_c_screen_tag_editor());
+        break;
+#endif
+    default:
+        window = NULL;
+        break;
+    }
+
+    if (window == NULL) {
+        return ui_state_main_height();
+    }
+    return nc_window_height(window);
+}
+
+static NcMenu *
+action_runtime_current_tag_scroll_menu(void) {
+    NativePlaylistEditorScreen *playlist_editor;
+    NativeMediaLibraryScreen *media_library;
+
+    switch (native_c_screens_current_type()) {
+    case NCM_SCREEN_TYPE_BROWSER:
+        return native_browser_screen_menu(native_c_screen_browser());
+    case NCM_SCREEN_TYPE_PLAYLIST:
+        return native_playlist_screen_menu(native_c_screen_playlist());
+    case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
+        playlist_editor = native_c_screen_playlist_editor();
+        if (!action_runtime_playlist_editor_content_active()) {
+            return NULL;
+        }
+        return nc_song_menu_base(
+            native_playlist_editor_screen_content(playlist_editor));
+    case NCM_SCREEN_TYPE_SEARCH_ENGINE:
+        return native_search_engine_screen_menu(
+            native_c_screen_search_engine());
+    case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
+        media_library = native_c_screen_media_library();
+        if (native_media_library_screen_active_column(media_library)
+            != NATIVE_MEDIA_LIBRARY_COLUMN_SONGS) {
+            return NULL;
+        }
+        return native_media_library_screen_active_menu(media_library);
+#if defined(HAVE_TAGLIB_H)
+    case NCM_SCREEN_TYPE_TAG_EDITOR:
+        if (native_c_screen_tag_editor()->active_focus
+            != NATIVE_TAG_EDITOR_FOCUS_TAGS) {
+            return NULL;
+        }
+        return native_tag_editor_screen_active_menu(
+            native_c_screen_tag_editor());
+#endif
+    default:
+        break;
+    }
+    return NULL;
+}
+
+static NcmBuffer
+action_runtime_song_tag_buffer(NcmSong *song, enum NcmSongGetter getter) {
+    if (song == NULL) {
+        NcmBuffer empty;
+
+        ncm_buffer_init(&empty);
+        return empty;
+    }
+    return ncm_song_tags_buffer(
+        song, getter, Config.tags_separator, Config.tags_separator_len,
+        Config.show_duplicate_tags);
+}
+
+static bool
+action_runtime_song_tag_at(int64 pos, enum NcmSongGetter getter,
+                           NcmBuffer *tag) {
+    NcmMpdItem *item;
+    NcSearchRow *row;
+    NcMenu *menu;
+    NcmSong *song;
+
+    if (tag == NULL) {
+        return false;
+    }
+
+    switch (native_c_screens_current_type()) {
+    case NCM_SCREEN_TYPE_BROWSER:
+        menu = native_browser_screen_menu(native_c_screen_browser());
+        item = nc_menu_active_item_at(menu, pos);
+        if ((item == NULL)
+            || (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_SONG)) {
+            return false;
+        }
+        *tag = action_runtime_song_tag_buffer(
+            ncm_mpd_item_song(item), getter);
+        return true;
+    case NCM_SCREEN_TYPE_PLAYLIST:
+        menu = native_playlist_screen_menu(native_c_screen_playlist());
+        song = nc_menu_active_item_at(menu, pos);
+        if (song == NULL) {
+            return false;
+        }
+        *tag = action_runtime_song_tag_buffer(song, getter);
+        return true;
+    case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
+        if (!action_runtime_playlist_editor_content_active()) {
+            return false;
+        }
+        menu = nc_song_menu_base(native_playlist_editor_screen_content(
+            native_c_screen_playlist_editor()));
+        song = nc_menu_active_item_at(menu, pos);
+        if (song == NULL) {
+            return false;
+        }
+        *tag = action_runtime_song_tag_buffer(song, getter);
+        return true;
+    case NCM_SCREEN_TYPE_SEARCH_ENGINE:
+        menu = native_search_engine_screen_menu(
+            native_c_screen_search_engine());
+        row = nc_menu_active_item_at(menu, pos);
+        if ((row == NULL) || !row->is_song) {
+            return false;
+        }
+        *tag = action_runtime_song_tag_buffer(&row->song, getter);
+        return true;
+    case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
+        if (native_media_library_screen_active_column(
+                native_c_screen_media_library())
+            != NATIVE_MEDIA_LIBRARY_COLUMN_SONGS) {
+            return false;
+        }
+        menu = native_media_library_screen_active_menu(
+            native_c_screen_media_library());
+        song = nc_menu_active_item_at(menu, pos);
+        if (song == NULL) {
+            return false;
+        }
+        *tag = action_runtime_song_tag_buffer(song, getter);
+        return true;
+#if defined(HAVE_TAGLIB_H)
+    case NCM_SCREEN_TYPE_TAG_EDITOR:
+    {
+        NcmMutableSong *mutable_song;
+        enum NcmTagsField field;
+
+        if (native_c_screen_tag_editor()->active_focus
+            != NATIVE_TAG_EDITOR_FOCUS_TAGS) {
+            return false;
+        }
+        field = ncm_song_getter_to_tags_field(getter);
+        if (field == NCM_TAGS_FIELD_LAST) {
+            return false;
+        }
+        menu = native_tag_editor_screen_active_menu(
+            native_c_screen_tag_editor());
+        mutable_song = nc_menu_active_item_at(menu, pos);
+        if (mutable_song == NULL) {
+            return false;
+        }
+        *tag = ncm_mutable_song_tags_buffer(
+            mutable_song, field, Config.tags_separator,
+            Config.tags_separator_len, Config.show_duplicate_tags);
+        return true;
+    }
+#endif
+    default:
+        break;
+    }
+    return false;
+}
+
+static bool
+action_runtime_tag_scroll_available(enum NcmSongGetter getter) {
+    NcmBuffer tag;
+    NcMenu *menu;
+    bool available;
+
+    menu = action_runtime_current_tag_scroll_menu();
+    if ((menu == NULL) || nc_menu_empty(menu)) {
+        return false;
+    }
+
+    ncm_buffer_init(&tag);
+    available = action_runtime_song_tag_at(nc_menu_highlight(menu),
+                                           getter, &tag);
+    ncm_buffer_destroy(&tag);
+    return available;
+}
+
+static bool
+action_runtime_scroll_by_tag(enum NcmSongGetter getter, bool down) {
+    NcmBuffer current_tag;
+    NcmBuffer other_tag;
+    NcMenu *menu;
+    int64 current;
+    int64 target;
+    int64 count;
+    int64 step;
+    bool same;
+
+    menu = action_runtime_current_tag_scroll_menu();
+    if ((menu == NULL) || nc_menu_empty(menu)) {
+        return false;
+    }
+
+    current = nc_menu_highlight(menu);
+    if (!action_runtime_song_tag_at(current, getter, &current_tag)) {
+        return false;
+    }
+
+    target = current;
+    count = nc_menu_item_count(menu);
+    if (down) {
+        step = 1;
+    } else {
+        step = -1;
+    }
+
+    while (true) {
+        int64 next;
+
+        next = target + step;
+        if ((next < 0) || (next >= count)) {
+            break;
+        }
+        if (!action_runtime_song_tag_at(next, getter, &other_tag)) {
+            target = next;
+            break;
+        }
+        same = ncm_string_equal(current_tag.data, current_tag.len,
+                                other_tag.data, other_tag.len);
+        ncm_buffer_destroy(&other_tag);
+        target = next;
+        if (!same) {
+            break;
+        }
+    }
+
+    ncm_buffer_destroy(&current_tag);
+    nc_menu_highlight_position(menu, target,
+                               action_runtime_current_menu_height());
+    nc_screen_finish_list_change(app_controller_current_screen());
+    return true;
+}
+
+static bool
 action_runtime_selected_songs(NcmSongArray *songs) {
     if (songs == NULL) {
         return false;
@@ -3262,6 +3558,34 @@ action_runtime_add_selected_songs(bool play) {
 
     ncm_song_array_destroy(&songs);
     return success;
+}
+
+static bool
+action_runtime_add_item_to_playlist(bool play) {
+    NcmError error;
+    bool success;
+
+    if (!ncm_mpd_client_connected(&global_mpd)) {
+        return false;
+    }
+
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
+        ncm_error_clear(&error);
+        success = native_media_library_screen_add_item_to_playlist(
+            native_c_screen_media_library(), play, &error);
+        if (!success && ncm_error_is_set(&error)) {
+            ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                        error.message);
+            return false;
+        }
+        return success;
+    }
+
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
+        return action_runtime_add_playlist_editor_item(play);
+    }
+
+    return action_runtime_add_selected_songs(play);
 }
 
 static bool
@@ -4561,43 +4885,29 @@ action_runtime_jump_to_position_in_song(void) {
 
 static bool
 action_runtime_select_album(void) {
-    NativePlaylistScreen *screen;
     NcmBuffer album;
     NcmBuffer candidate;
-    NcmSong *song;
     NcMenu *menu;
     int64 current;
     int64 count;
-    int64 position;
     bool equal;
 
-    if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST)) {
-        return false;
-    }
-
-    screen = native_c_screen_playlist();
-    menu = native_playlist_screen_menu(screen);
+    menu = action_runtime_current_tag_scroll_menu();
     if ((menu == NULL) || nc_menu_empty(menu)) {
         return false;
     }
 
     current = nc_menu_highlight(menu);
-    song = nc_menu_active_item_at(menu, current);
-    if (song == NULL) {
+    if (!action_runtime_song_tag_at(current, NCM_SONG_GETTER_ALBUM,
+                                    &album)) {
         return false;
     }
 
-    album = ncm_song_tags_buffer(
-        song, NCM_SONG_GETTER_ALBUM, Config.tags_separator,
-        Config.tags_separator_len, Config.show_duplicate_tags);
-    for (position = current; position >= 0; position -= 1) {
-        song = nc_menu_active_item_at(menu, position);
-        if (song == NULL) {
+    for (int64 position = current; position >= 0; position -= 1) {
+        if (!action_runtime_song_tag_at(position, NCM_SONG_GETTER_ALBUM,
+                                        &candidate)) {
             break;
         }
-        candidate = ncm_song_tags_buffer(
-            song, NCM_SONG_GETTER_ALBUM, Config.tags_separator,
-            Config.tags_separator_len, Config.show_duplicate_tags);
         equal = ncm_string_equal(album.data, album.len,
                                  candidate.data, candidate.len);
         ncm_buffer_destroy(&candidate);
@@ -4608,14 +4918,11 @@ action_runtime_select_album(void) {
     }
 
     count = nc_menu_item_count(menu);
-    for (position = current + 1; position < count; position += 1) {
-        song = nc_menu_active_item_at(menu, position);
-        if (song == NULL) {
+    for (int64 position = current + 1; position < count; position += 1) {
+        if (!action_runtime_song_tag_at(position, NCM_SONG_GETTER_ALBUM,
+                                        &candidate)) {
             break;
         }
-        candidate = ncm_song_tags_buffer(
-            song, NCM_SONG_GETTER_ALBUM, Config.tags_separator,
-            Config.tags_separator_len, Config.show_duplicate_tags);
         equal = ncm_string_equal(album.data, album.len,
                                  candidate.data, candidate.len);
         ncm_buffer_destroy(&candidate);
@@ -4634,7 +4941,6 @@ action_runtime_select_album(void) {
 
 static bool
 action_runtime_select_found_items(void) {
-    NativePlaylistScreen *screen;
     NcmStringView constraint;
     NcMenu *menu;
     NcmError error;
@@ -4642,7 +4948,7 @@ action_runtime_select_found_items(void) {
     int64 height;
     bool found;
 
-    if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST)) {
+    if (!current_screen_allows_search()) {
         return false;
     }
     constraint = current_screen_current_search_constraint();
@@ -4650,15 +4956,13 @@ action_runtime_select_found_items(void) {
         return false;
     }
 
-    screen = native_c_screen_playlist();
-    menu = native_playlist_screen_menu(screen);
+    menu = action_runtime_current_menu();
     if ((menu == NULL) || nc_menu_empty(menu)) {
         return false;
     }
 
     original = nc_menu_highlight(menu);
-    height = nc_playlist_screen_height(
-        native_playlist_screen_playlist(screen));
+    height = action_runtime_current_menu_height();
     nc_menu_highlight_position(menu, 0, height);
     ncm_error_clear(&error);
     found = current_screen_search(NCM_SEARCH_DIRECTION_FORWARD,
@@ -4690,6 +4994,7 @@ action_runtime_select_found_items(void) {
                                     (char *)"Found items selected");
     }
     nc_menu_highlight_position(menu, original, height);
+    nc_screen_finish_list_change(app_controller_current_screen());
     return true;
 }
 
@@ -5812,10 +6117,6 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_UPDATE_ENVIRONMENT:
     case NCM_ACTION_SCROLL_UP:
     case NCM_ACTION_SCROLL_DOWN:
-    case NCM_ACTION_SCROLL_UP_ARTIST:
-    case NCM_ACTION_SCROLL_UP_ALBUM:
-    case NCM_ACTION_SCROLL_DOWN_ARTIST:
-    case NCM_ACTION_SCROLL_DOWN_ALBUM:
     case NCM_ACTION_PAGE_UP:
     case NCM_ACTION_PAGE_DOWN:
     case NCM_ACTION_MOVE_HOME:
@@ -5835,6 +6136,12 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND:
     case NCM_ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS:
         return true;
+    case NCM_ACTION_SCROLL_UP_ARTIST:
+    case NCM_ACTION_SCROLL_DOWN_ARTIST:
+        return action_runtime_tag_scroll_available(NCM_SONG_GETTER_ARTIST);
+    case NCM_ACTION_SCROLL_UP_ALBUM:
+    case NCM_ACTION_SCROLL_DOWN_ALBUM:
+        return action_runtime_tag_scroll_available(NCM_SONG_GETTER_ALBUM);
     case NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE:
         return native_c_screen_lyrics_is_current();
     case NCM_ACTION_SHOW_HELP:
@@ -5926,6 +6233,11 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             return false;
         }
         if (action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
+            return native_media_library_screen_item_available(
+                native_c_screen_media_library());
+        }
+        if (action_runtime_current_screen_is(
                 NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
             return action_runtime_playlist_editor_has_playlists();
         }
@@ -5937,6 +6249,11 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         if (action_runtime_current_screen_is(
                 NCM_SCREEN_TYPE_PLAYLIST)) {
             return action_runtime_has_current_song();
+        }
+        if (action_runtime_current_screen_is(
+                NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
+            return native_media_library_screen_item_available(
+                native_c_screen_media_library());
         }
         if (action_runtime_current_screen_is(
                 NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
@@ -6079,10 +6396,12 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return false;
 #endif
     case NCM_ACTION_SELECT_ITEM:
+        return action_runtime_menu_has_selectable_item();
     case NCM_ACTION_SELECT_RANGE:
+        return action_runtime_menu_has_selection();
     case NCM_ACTION_REVERSE_SELECTION:
     case NCM_ACTION_REMOVE_SELECTION:
-        return action_runtime_menu_has_items();
+        return action_runtime_current_menu() != NULL;
     case NCM_ACTION_ADD_SELECTED_ITEMS:
         return action_runtime_has_selected_songs();
     case NCM_ACTION_CROP_MAIN_PLAYLIST:
@@ -6213,8 +6532,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     {
         NcmStringView constraint;
 
-        if (!action_runtime_current_screen_is(
-                NCM_SCREEN_TYPE_PLAYLIST)) {
+        if (!current_screen_allows_search()) {
             return false;
         }
         constraint = current_screen_current_search_constraint();
@@ -6222,11 +6540,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             && (constraint.data != NULL) && (constraint.len > 0);
     }
     case NCM_ACTION_SELECT_ALBUM:
-        if (!action_runtime_current_screen_is(
-                NCM_SCREEN_TYPE_PLAYLIST)) {
-            return false;
-        }
-        return action_runtime_menu_has_items();
+        return action_runtime_tag_scroll_available(NCM_SONG_GETTER_ALBUM);
     case NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY:
         if (!ncm_mpd_client_connected(&global_mpd)
             || !action_runtime_current_screen_is(
@@ -6295,15 +6609,19 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_MOUSE_EVENT:
         return action_runtime_mouse_event();
     case NCM_ACTION_SCROLL_UP:
-    case NCM_ACTION_SCROLL_UP_ARTIST:
-    case NCM_ACTION_SCROLL_UP_ALBUM:
         app_controller_scroll_current_screen(NC_SCROLL_UP);
         return true;
+    case NCM_ACTION_SCROLL_UP_ARTIST:
+        return action_runtime_scroll_by_tag(NCM_SONG_GETTER_ARTIST, false);
+    case NCM_ACTION_SCROLL_UP_ALBUM:
+        return action_runtime_scroll_by_tag(NCM_SONG_GETTER_ALBUM, false);
     case NCM_ACTION_SCROLL_DOWN:
-    case NCM_ACTION_SCROLL_DOWN_ARTIST:
-    case NCM_ACTION_SCROLL_DOWN_ALBUM:
         app_controller_scroll_current_screen(NC_SCROLL_DOWN);
         return true;
+    case NCM_ACTION_SCROLL_DOWN_ARTIST:
+        return action_runtime_scroll_by_tag(NCM_SONG_GETTER_ARTIST, true);
+    case NCM_ACTION_SCROLL_DOWN_ALBUM:
+        return action_runtime_scroll_by_tag(NCM_SONG_GETTER_ALBUM, true);
     case NCM_ACTION_PAGE_UP:
         app_controller_scroll_current_screen(NC_SCROLL_PAGE_UP);
         return true;
@@ -6353,7 +6671,12 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_VOLUME_DOWN:
         return action_runtime_volume(-((int32)Config.volume_change_step));
     case NCM_ACTION_ADD_ITEM_TO_PLAYLIST:
-        return action_runtime_add_selected_songs(false);
+        if (!action_runtime_add_item_to_playlist(false)) {
+            return false;
+        }
+        app_controller_scroll_current_screen(NC_SCROLL_DOWN);
+        nc_screen_finish_list_change(app_controller_current_screen());
+        return true;
     case NCM_ACTION_PLAY_ITEM:
         if (action_runtime_current_screen_is(
                 NCM_SCREEN_TYPE_PLAYLIST)) {
@@ -6361,7 +6684,11 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
                 native_playlist_screen_playlist(
                     native_c_screen_playlist()));
         }
-        return action_runtime_add_selected_songs(true);
+        if (!action_runtime_add_item_to_playlist(true)) {
+            return false;
+        }
+        nc_screen_finish_list_change(app_controller_current_screen());
+        return true;
     case NCM_ACTION_DELETE_PLAYLIST_ITEMS:
         return action_runtime_delete_playlist_items();
     case NCM_ACTION_DELETE_STORED_PLAYLIST:
@@ -6474,20 +6801,26 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         return nc_menu_toggle_current_selected(action_runtime_current_menu());
     case NCM_ACTION_SELECT_RANGE:
     {
+        enum NcMenuItemSource source;
         NcMenu *menu;
         int64 first;
-        int64 current;
+        int64 last;
 
         menu = action_runtime_current_menu();
         if (menu == NULL) {
             return false;
         }
-        first = nc_menu_first_selected_position(menu);
-        current = nc_menu_highlight(menu);
-        if (first < 0) {
-            return nc_menu_toggle_current_selected(menu);
+        source = action_runtime_menu_item_source(menu);
+        if (!ncm_menu_find_selected_range(menu, source, &first, &last)) {
+            return false;
         }
-        return nc_menu_select_range(menu, first, current, true);
+        for (int64 i = first; i < last; i += 1) {
+            (void)nc_menu_set_position_selected(menu, i, true);
+        }
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Range selected");
+        return true;
     }
     case NCM_ACTION_REVERSE_SELECTION:
     {
@@ -6499,10 +6832,16 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         }
         ncm_menu_reverse_selection(
             menu, action_runtime_menu_item_source(menu));
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Selection reversed");
         return true;
     }
     case NCM_ACTION_REMOVE_SELECTION:
         nc_menu_clear_selection(action_runtime_current_menu());
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Selection removed");
         return true;
     case NCM_ACTION_ADD_SELECTED_ITEMS:
     {

@@ -25,10 +25,6 @@
 #include <string>
 #include "actions.h"
 #include "curses/window.h"
-#include "interfaces.h"
-
-// forward declarations
-struct SongList;
 
 namespace Actions {
 
@@ -217,126 +213,6 @@ private:
 
 
 
-struct ScrollUpArtist: BaseAction
-{
-	ScrollUpArtist(): BaseAction(Type::ScrollUpArtist) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	NC::List *m_list;
-	const SongList *m_songs;
-};
-
-struct ScrollUpAlbum: BaseAction
-{
-	ScrollUpAlbum(): BaseAction(Type::ScrollUpAlbum) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	NC::List *m_list;
-	const SongList *m_songs;
-};
-
-struct ScrollDownArtist: BaseAction
-{
-	ScrollDownArtist(): BaseAction(Type::ScrollDownArtist) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	NC::List *m_list;
-	const SongList *m_songs;
-};
-
-struct ScrollDownAlbum: BaseAction
-{
-	ScrollDownAlbum(): BaseAction(Type::ScrollDownAlbum) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	NC::List *m_list;
-	const SongList *m_songs;
-};
-
-
-
-
-
-
-
-struct PreviousColumn: BaseAction
-{
-	PreviousColumn(): BaseAction(Type::PreviousColumn) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	HasColumns *m_hc;
-};
-
-struct NextColumn: BaseAction
-{
-	NextColumn(): BaseAction(Type::NextColumn) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	HasColumns *m_hc;
-};
-
-
-
-
-
-struct AddItemToPlaylist: BaseAction
-{
-	AddItemToPlaylist(): BaseAction(Type::AddItemToPlaylist) { }
-
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	HasSongs *m_hs;
-};
-
-struct PlayItem: BaseAction
-{
-	PlayItem(): BaseAction(Type::PlayItem) { }
-
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	HasSongs *m_hs;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 struct EditSong: BaseAction
 {
 	EditSong(): BaseAction(Type::EditSong) { }
@@ -368,9 +244,6 @@ private:
 
 
 
-
-
-
 struct ToggleScreenLock: BaseAction
 {
 	ToggleScreenLock(): BaseAction(Type::ToggleScreenLock) { }
@@ -378,81 +251,6 @@ struct ToggleScreenLock: BaseAction
 private:
 	virtual void run() override;
 };
-
-
-
-struct SelectItem: BaseAction
-{
-	SelectItem(): BaseAction(Type::SelectItem) { }
-
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	NC::List *m_list;
-};
-
-struct SelectRange: BaseAction
-{
-	SelectRange(): BaseAction(Type::SelectRange) { }
-
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	NC::List *m_list;
-	NC::List::Iterator m_begin;
-	NC::List::Iterator m_end;
-};
-
-struct ReverseSelection: BaseAction
-{
-	ReverseSelection(): BaseAction(Type::ReverseSelection) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	NC::List *m_list;
-};
-
-struct RemoveSelection: BaseAction
-{
-	RemoveSelection(): BaseAction(Type::RemoveSelection) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	NC::List *m_list;
-};
-
-struct SelectAlbum: BaseAction
-{
-	SelectAlbum(): BaseAction(Type::SelectAlbum) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	NC::List *m_list;
-	SongList *m_songs;
-};
-
-struct SelectFoundItems: BaseAction
-{
-	SelectFoundItems(): BaseAction(Type::SelectFoundItems) { }
-
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-
-	NC::List *m_list;
-	Searchable *m_searchable;
-};
-
-
-
 
 
 
@@ -485,9 +283,6 @@ private:
 
 
 
-
-
-
 struct ToggleLibraryTagType: BaseAction
 {
 	ToggleLibraryTagType(): BaseAction(Type::ToggleLibraryTagType) { }
@@ -496,10 +291,6 @@ private:
 	virtual bool canBeRun() override;
 	virtual void run() override;
 };
-
-
-
-
 
 
 
@@ -528,14 +319,6 @@ struct PreviousScreen: BaseAction
 private:
 	virtual void run() override;
 };
-
-
-
-
-
-
-
-
 
 
 
