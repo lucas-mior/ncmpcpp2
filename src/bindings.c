@@ -433,33 +433,6 @@ ncm_binding_execute_runtime(NcmBinding *binding,
 }
 
 bool
-ncm_binding_has_runnable_action(NcmBinding *binding,
-                                enum NcmActionType type,
-                                NcmBindingRuntime *runtime) {
-    bool success;
-
-    if (binding == NULL) {
-        return false;
-    }
-
-    success = false;
-    for (int32 i = 0; i < binding->actions_len; i += 1) {
-        NcmBindingAction *action;
-
-        action = binding->actions + i;
-        if (!ncm_binding_action_can_run(action, runtime)) {
-            return false;
-        }
-        if ((action->kind == NCM_BINDING_ACTION_NORMAL)
-            && (action->type == type)) {
-            success = true;
-        }
-    }
-
-    return success;
-}
-
-bool
 ncm_binding_runtime_can_run_action(enum NcmActionType type,
                                    void *user) {
     return ncm_action_runtime_can_run(user, type);
@@ -567,13 +540,6 @@ bool
 ncm_binding_execute_default(NcmBinding *binding) {
     return ncm_binding_execute_runtime(binding,
                                        ncm_binding_default_runtime());
-}
-
-bool
-ncm_binding_has_runnable_action_default(NcmBinding *binding,
-                                        enum NcmActionType type) {
-    return ncm_binding_has_runnable_action(binding, type,
-                                           ncm_binding_default_runtime());
 }
 
 bool
@@ -883,11 +849,6 @@ ncm_read_key(NcWindow *window) {
     }
     ncm_buffer_destroy(&tmp);
     return result;
-}
-
-NcKey
-ncm_bindings_read_key(NcWindow *window) {
-    return ncm_read_key(window);
 }
 
 int32

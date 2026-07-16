@@ -66,42 +66,6 @@ song_list_item_count(NcmSongList *list) {
 }
 
 bool
-ncm_song_list_each_item(NcmSongList *list, NcmSongListIterFunc func,
-                        void *user) {
-    if (func == NULL) {
-        return false;
-    }
-    if (list == NULL) {
-        return true;
-    }
-
-    for (int32 i = 0; i < list->len; i += 1) {
-        if (!func(&list->items[i], i, user)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool
-ncm_song_list_each_item_reverse(NcmSongList *list,
-                                NcmSongListIterFunc func, void *user) {
-    if (func == NULL) {
-        return false;
-    }
-    if (list == NULL) {
-        return true;
-    }
-
-    for (int32 i = list->len - 1; i >= 0; i -= 1) {
-        if (!func(&list->items[i], i, user)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool
 ncm_song_list_each_selected(NcmSongList *list, NcmSongListIterFunc func,
                             void *user) {
     NcmSongListItem *item;
@@ -119,39 +83,6 @@ ncm_song_list_each_selected(NcmSongList *list, NcmSongListIterFunc func,
             if (!func(item, i, user)) {
                 return false;
             }
-        }
-    }
-    return true;
-}
-
-bool
-ncm_song_list_each_selected_or_current(NcmSongList *list,
-                                       NcmSongListIterFunc func,
-                                       void *user) {
-    NcmSongListItem *item;
-    bool found;
-
-    if (func == NULL) {
-        return false;
-    }
-    if (list == NULL) {
-        return true;
-    }
-
-    found = false;
-    for (int32 i = 0; i < list->len; i += 1) {
-        item = &list->items[i];
-        if (ncm_song_list_item_is_selected(item)) {
-            found = true;
-            if (!func(item, i, user)) {
-                return false;
-            }
-        }
-    }
-    if (!found) {
-        item = ncm_song_list_current(list);
-        if (item) {
-            return func(item, list->current, user);
         }
     }
     return true;
@@ -361,25 +292,6 @@ ncm_mpd_song_list_each_song(NcmMpdSongList *list,
     return true;
 }
 
-bool
-ncm_mpd_song_list_each_song_reverse(NcmMpdSongList *list,
-                                    NcmMpdSongListIterFunc func,
-                                    void *user) {
-    if (func == NULL) {
-        return false;
-    }
-    if (list == NULL) {
-        return true;
-    }
-
-    for (int32 i = list->count - 1; i >= 0; i -= 1) {
-        if (!func(&list->items[i], i, user)) {
-            return false;
-        }
-    }
-    return true;
-}
-
 int32
 ncm_mpd_song_list_wrapped_search(NcmMpdSongList *list, int32 current,
                                  enum SearchDirection direction,
@@ -511,44 +423,6 @@ menu_set_position_selected(NcMenu *menu, enum NcMenuItemSource source,
 }
 
 bool
-ncm_menu_each_item(NcMenu *menu, enum NcMenuItemSource source,
-                   NcmMenuIterFunc func, void *user) {
-    int64 count;
-    void *item;
-
-    if (func == NULL) {
-        return false;
-    }
-    count = menu_item_count(menu, source);
-    for (int64 i = 0; i < count; i += 1) {
-        item = nc_menu_item_at(menu, source, i);
-        if (!func(item, i, user)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool
-ncm_menu_each_item_reverse(NcMenu *menu, enum NcMenuItemSource source,
-                           NcmMenuIterFunc func, void *user) {
-    int64 count;
-    void *item;
-
-    if (func == NULL) {
-        return false;
-    }
-    count = menu_item_count(menu, source);
-    for (int64 i = count - 1; i >= 0; i -= 1) {
-        item = nc_menu_item_at(menu, source, i);
-        if (!func(item, i, user)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool
 ncm_menu_each_selected(NcMenu *menu, enum NcMenuItemSource source,
                        NcmMenuIterFunc func, void *user) {
     int64 count;
@@ -567,24 +441,6 @@ ncm_menu_each_selected(NcMenu *menu, enum NcMenuItemSource source,
         }
     }
     return true;
-}
-
-bool
-ncm_menu_each_selected_or_current(NcMenu *menu, enum NcMenuItemSource source,
-                                  NcmMenuIterFunc func, void *user) {
-    void *item;
-
-    if (func == NULL) {
-        return false;
-    }
-    if (ncm_menu_has_selected_item(menu, source)) {
-        return ncm_menu_each_selected(menu, source, func, user);
-    }
-    item = nc_menu_current_item(menu);
-    if (item == NULL) {
-        return true;
-    }
-    return func(item, nc_menu_highlight(menu), user);
 }
 
 bool

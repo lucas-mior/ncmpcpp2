@@ -8,22 +8,13 @@ static NcmArrayItemCallbacks settings_no_callbacks = {0};
 
 static void settings_formatted_color_array_init_item(void *item);
 static void settings_formatted_color_array_destroy_item(void *item);
-static bool settings_formatted_color_array_copy_item(void *dest,
-                                                     void *source);
-static void settings_formatted_color_array_move_item(void *dest,
-                                                     void *source);
 
 static NcmArrayItemCallbacks settings_formatted_color_callbacks = {
     .init = settings_formatted_color_array_init_item,
     .destroy = settings_formatted_color_array_destroy_item,
-    .copy = settings_formatted_color_array_copy_item,
-    .move = settings_formatted_color_array_move_item,
 };
 
 static void settings_string_destroy(char **data, int32 *len, int32 *cap);
-static bool settings_string_copy(char **dest_data, int32 *dest_len,
-                                 int32 *dest_cap, char *source_data,
-                                 int32 source_len);
 static void configuration_init_strings(Configuration *config);
 static void configuration_destroy_strings(Configuration *config);
 static void configuration_init_buffers(Configuration *config);
@@ -35,14 +26,29 @@ static void configuration_destroy_colors(Configuration *config);
 static void configuration_init_arrays(Configuration *config);
 static void configuration_destroy_arrays(Configuration *config);
 
-NCM_ARRAY_DEFINE(ncm_int32_array,
-                 NcmInt32Array,
-                 int32,
-                 &settings_no_callbacks)
-NCM_ARRAY_DEFINE(ncm_formatted_color_array,
-                 NcmFormattedColorArray,
-                 NcFormattedColor,
-                 &settings_formatted_color_callbacks)
+NCM_ARRAY_DEFINE_INIT(ncm_int32_array, NcmInt32Array)
+NCM_ARRAY_DEFINE_CLEAR(ncm_int32_array,
+                       NcmInt32Array,
+                       &settings_no_callbacks)
+NCM_ARRAY_DEFINE_DESTROY(ncm_int32_array, NcmInt32Array)
+NCM_ARRAY_DEFINE_RESERVE(ncm_int32_array, NcmInt32Array)
+NCM_ARRAY_DEFINE_APPEND(ncm_int32_array,
+                        NcmInt32Array,
+                        int32,
+                        &settings_no_callbacks)
+
+NCM_ARRAY_DEFINE_INIT(ncm_formatted_color_array, NcmFormattedColorArray)
+NCM_ARRAY_DEFINE_CLEAR(ncm_formatted_color_array,
+                       NcmFormattedColorArray,
+                       &settings_formatted_color_callbacks)
+NCM_ARRAY_DEFINE_DESTROY(ncm_formatted_color_array,
+                         NcmFormattedColorArray)
+NCM_ARRAY_DEFINE_RESERVE(ncm_formatted_color_array,
+                         NcmFormattedColorArray)
+NCM_ARRAY_DEFINE_APPEND(ncm_formatted_color_array,
+                        NcmFormattedColorArray,
+                        NcFormattedColor,
+                        &settings_formatted_color_callbacks)
 
 static void
 settings_string_destroy(char **data, int32 *len, int32 *cap) {
@@ -53,28 +59,6 @@ settings_string_destroy(char **data, int32 *len, int32 *cap) {
     *len = 0;
     *cap = 0;
     return;
-}
-
-static bool
-settings_string_copy(char **dest_data, int32 *dest_len, int32 *dest_cap,
-                     char *source_data, int32 source_len) {
-    char *new_data;
-    int32 new_cap;
-
-    settings_string_destroy(dest_data, dest_len, dest_cap);
-    if (source_data == NULL || source_len <= 0) {
-        return true;
-    }
-
-    new_cap = source_len + 1;
-    new_data = cbase_malloc(new_cap);
-    cbase_memcpy(new_data, source_data, source_len);
-    new_data[source_len] = '\0';
-
-    *dest_data = new_data;
-    *dest_len = source_len;
-    *dest_cap = new_cap;
-    return true;
 }
 
 void
@@ -104,50 +88,6 @@ column_destroy(Column *column) {
     settings_string_destroy(&column->type, &column->type_len,
                             &column->type_cap);
     column_init(column);
-    return;
-}
-
-bool
-column_copy(Column *dest, Column *source) {
-    Column tmp;
-
-    if (dest == NULL || source == NULL) {
-        return false;
-    }
-
-    column_init(&tmp);
-    if (!settings_string_copy(&tmp.name, &tmp.name_len, &tmp.name_cap,
-                              source->name, source->name_len)) {
-        column_destroy(&tmp);
-        return false;
-    }
-    if (!settings_string_copy(&tmp.type, &tmp.type_len, &tmp.type_cap,
-                              source->type, source->type_len)) {
-        column_destroy(&tmp);
-        return false;
-    }
-
-    tmp.width = source->width;
-    tmp.stretch_limit = source->stretch_limit;
-    tmp.color = source->color;
-    tmp.fixed = source->fixed;
-    tmp.right_alignment = source->right_alignment;
-    tmp.display_empty_tag = source->display_empty_tag;
-
-    column_destroy(dest);
-    *dest = tmp;
-    return true;
-}
-
-void
-column_move(Column *dest, Column *source) {
-    if (dest == NULL || source == NULL) {
-        return;
-    }
-
-    column_destroy(dest);
-    *dest = *source;
-    column_init(source);
     return;
 }
 
@@ -229,23 +169,6 @@ column_array_append(ColumnArray *array) {
     array->len += 1;
     column_init(column);
     return column;
-}
-
-bool
-column_array_append_copy(ColumnArray *array, Column *column) {
-    Column *dest;
-
-    dest = column_array_append(array);
-    if (dest == NULL) {
-        return false;
-    }
-    if (!column_copy(dest, column)) {
-        array->len -= 1;
-        column_destroy(dest);
-        return false;
-    }
-
-    return true;
 }
 
 void
@@ -332,20 +255,6 @@ settings_formatted_color_array_init_item(void *item) {
 static void
 settings_formatted_color_array_destroy_item(void *item) {
     nc_formatted_color_destroy(item);
-    return;
-}
-
-static bool
-settings_formatted_color_array_copy_item(void *dest, void *source) {
-    nc_formatted_color_copy(dest, source);
-    return true;
-}
-
-static void
-settings_formatted_color_array_move_item(void *dest, void *source) {
-    nc_formatted_color_destroy(dest);
-    *(NcFormattedColor *)dest = *(NcFormattedColor *)source;
-    nc_formatted_color_init(source);
     return;
 }
 

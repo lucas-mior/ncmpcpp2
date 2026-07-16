@@ -57,21 +57,9 @@ ui_state_set_main_geometry(int64 start_y, int64 height) {
     return;
 }
 
-void
-ui_state_set_main_start_y(int64 value) {
-    main_start_y = value;
-    return;
-}
-
 int64
 ui_state_main_start_y(void) {
     return main_start_y;
-}
-
-void
-ui_state_set_main_height(int64 value) {
-    main_height = value;
-    return;
 }
 
 int64

@@ -159,24 +159,16 @@ typedef struct NcmActionRuntime {
 } NcmActionRuntime;
 
 void ncm_action_runtime_init(NcmActionRuntime *runtime);
-void ncm_action_runtime_set_hooks(NcmActionRuntime *runtime,
-                                  NcmActionRuntimeHook can_run_hook,
-                                  NcmActionRuntimeHook run_hook,
-                                  void *user);
 NcmActionRuntime *ncm_action_runtime_global(void);
 bool ncm_action_runtime_exit_requested(NcmActionRuntime *runtime);
 void ncm_action_runtime_request_exit(NcmActionRuntime *runtime);
-void ncm_action_runtime_clear_exit_request(NcmActionRuntime *runtime);
 bool ncm_action_runtime_can_run(NcmActionRuntime *runtime,
                                 enum NcmActionType type);
 bool ncm_action_runtime_run(NcmActionRuntime *runtime,
                             enum NcmActionType type);
-bool ncm_action_current_song(NcmSong *song);
 bool ncm_action_edit_song(NcmSong *song);
 bool ncm_action_show_visualizer(void);
 bool ncm_action_toggle_visualization_type(void);
-bool ncm_action_delete_playlist_items(void);
-bool ncm_action_crop_main_playlist(void);
 bool ncm_action_add_song_to_playlist_with_mode(
     NcmSong *song, bool play, int32 position,
     enum SpaceAddMode space_add_mode);
@@ -192,7 +184,6 @@ typedef struct NcmActionDef {
 } NcmActionDef;
 
 int32 ncm_action_count(void);
-NcmActionDef *ncm_action_table(void);
 bool ncm_action_table_validate(NcmActionDef *defs, int32 defs_len,
                                NcmError *error);
 NcmActionDef *ncm_action_table_get(NcmActionDef *defs, int32 defs_len,

@@ -27,8 +27,6 @@ static bool lyrics_string_set(char **data, int32 *len, int32 *cap,
 static void lyrics_string_destroy(char **data, int32 *len, int32 *cap);
 static void lyrics_fetcher_array_init_item(void *item);
 static void lyrics_fetcher_array_destroy_item(void *item);
-static bool lyrics_fetcher_array_copy_item(void *dest, void *source);
-static void lyrics_fetcher_array_move_item(void *dest, void *source);
 static bool lyrics_name_to_type(char *name, int32 name_len,
                                 enum NcmLyricsFetcherType *type);
 static char *lyrics_type_name(enum NcmLyricsFetcherType type, int32 *len);
@@ -83,14 +81,18 @@ static void lyrics_append_clean_lines(NcmBuffer *out, char *data,
 static NcmArrayItemCallbacks lyrics_fetcher_callbacks = {
     .init = lyrics_fetcher_array_init_item,
     .destroy = lyrics_fetcher_array_destroy_item,
-    .copy = lyrics_fetcher_array_copy_item,
-    .move = lyrics_fetcher_array_move_item,
 };
 
-NCM_ARRAY_DEFINE(ncm_lyrics_fetcher_array,
-                 NcmLyricsFetcherArray,
-                 NcmLyricsFetcherDef,
-                 &lyrics_fetcher_callbacks)
+NCM_ARRAY_DEFINE_INIT(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
+NCM_ARRAY_DEFINE_CLEAR(ncm_lyrics_fetcher_array,
+                       NcmLyricsFetcherArray,
+                       &lyrics_fetcher_callbacks)
+NCM_ARRAY_DEFINE_DESTROY(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
+NCM_ARRAY_DEFINE_RESERVE(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
+NCM_ARRAY_DEFINE_APPEND(ncm_lyrics_fetcher_array,
+                        NcmLyricsFetcherArray,
+                        NcmLyricsFetcherDef,
+                        &lyrics_fetcher_callbacks)
 
 static bool
 lyrics_string_set(char **data, int32 *len, int32 *cap,
@@ -200,52 +202,6 @@ ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher) {
                           &fetcher->match_regex_cap);
     fetcher->type = NCM_LYRICS_FETCHER_UNKNOWN;
     fetcher->enabled = false;
-    return;
-}
-
-bool
-ncm_lyrics_fetcher_def_copy(NcmLyricsFetcherDef *dest,
-                            NcmLyricsFetcherDef *source) {
-    NcmLyricsFetcherDef tmp;
-
-    if ((dest == NULL) || (source == NULL)) {
-        return false;
-    }
-
-    ncm_lyrics_fetcher_def_init(&tmp);
-    tmp.type = source->type;
-    tmp.enabled = source->enabled;
-    if (!lyrics_string_set(&tmp.name, &tmp.name_len, &tmp.name_cap,
-                           source->name, source->name_len)) {
-        ncm_lyrics_fetcher_def_destroy(&tmp);
-        return false;
-    }
-    if (!lyrics_string_set(&tmp.url_template, &tmp.url_template_len,
-                           &tmp.url_template_cap, source->url_template,
-                           source->url_template_len)) {
-        ncm_lyrics_fetcher_def_destroy(&tmp);
-        return false;
-    }
-    if (!lyrics_string_set(&tmp.match_regex, &tmp.match_regex_len,
-                           &tmp.match_regex_cap, source->match_regex,
-                           source->match_regex_len)) {
-        ncm_lyrics_fetcher_def_destroy(&tmp);
-        return false;
-    }
-    ncm_lyrics_fetcher_def_destroy(dest);
-    *dest = tmp;
-    return true;
-}
-
-void
-ncm_lyrics_fetcher_def_move(NcmLyricsFetcherDef *dest,
-                            NcmLyricsFetcherDef *source) {
-    if ((dest == NULL) || (source == NULL)) {
-        return;
-    }
-    ncm_lyrics_fetcher_def_destroy(dest);
-    *dest = *source;
-    ncm_lyrics_fetcher_def_init(source);
     return;
 }
 
@@ -485,17 +441,6 @@ lyrics_fetcher_array_init_item(void *item) {
 static void
 lyrics_fetcher_array_destroy_item(void *item) {
     ncm_lyrics_fetcher_def_destroy(item);
-    return;
-}
-
-static bool
-lyrics_fetcher_array_copy_item(void *dest, void *source) {
-    return ncm_lyrics_fetcher_def_copy(dest, source);
-}
-
-static void
-lyrics_fetcher_array_move_item(void *dest, void *source) {
-    ncm_lyrics_fetcher_def_move(dest, source);
     return;
 }
 

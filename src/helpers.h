@@ -28,15 +28,8 @@ bool ncm_helpers_time_format(NcmBuffer *buffer, char *format,
                              time_t value);
 bool ncm_helpers_timestamp(NcmBuffer *buffer, time_t value);
 
-bool ncm_song_list_each_item(NcmSongList *list, NcmSongListIterFunc func,
-                             void *user);
-bool ncm_song_list_each_item_reverse(NcmSongList *list,
-                                     NcmSongListIterFunc func, void *user);
 bool ncm_song_list_each_selected(NcmSongList *list,
                                  NcmSongListIterFunc func, void *user);
-bool ncm_song_list_each_selected_or_current(NcmSongList *list,
-                                            NcmSongListIterFunc func,
-                                            void *user);
 bool ncm_song_list_has_selected_item(NcmSongList *list);
 void ncm_song_list_select_current_if_none_selected(NcmSongList *list);
 void ncm_song_list_reverse_selection(NcmSongList *list);
@@ -52,9 +45,6 @@ int32 ncm_song_list_wrapped_search(NcmSongList *list, int32 current,
 
 bool ncm_mpd_song_list_each_song(NcmMpdSongList *list,
                                  NcmMpdSongListIterFunc func, void *user);
-bool ncm_mpd_song_list_each_song_reverse(NcmMpdSongList *list,
-                                         NcmMpdSongListIterFunc func,
-                                         void *user);
 int32 ncm_mpd_song_list_wrapped_search(NcmMpdSongList *list,
                                        int32 current,
                                        enum SearchDirection direction,
@@ -62,15 +52,8 @@ int32 ncm_mpd_song_list_wrapped_search(NcmMpdSongList *list,
                                        NcmMpdSongListIterFunc predicate,
                                        void *user);
 
-bool ncm_menu_each_item(NcMenu *menu, enum NcMenuItemSource source,
-                        NcmMenuIterFunc func, void *user);
-bool ncm_menu_each_item_reverse(NcMenu *menu, enum NcMenuItemSource source,
-                                NcmMenuIterFunc func, void *user);
 bool ncm_menu_each_selected(NcMenu *menu, enum NcMenuItemSource source,
                             NcmMenuIterFunc func, void *user);
-bool ncm_menu_each_selected_or_current(NcMenu *menu,
-                                       enum NcMenuItemSource source,
-                                       NcmMenuIterFunc func, void *user);
 bool ncm_menu_has_selected_item(NcMenu *menu, enum NcMenuItemSource source);
 void ncm_menu_select_current_if_none_selected(NcMenu *menu);
 void ncm_menu_reverse_selection(NcMenu *menu, enum NcMenuItemSource source);

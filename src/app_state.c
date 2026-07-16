@@ -27,11 +27,6 @@ app_state_get_locked_screen(void) {
     return nc_screen_registry_locked(&screen_registry);
 }
 
-NcScreen *
-app_state_get_inactive_screen(void) {
-    return nc_screen_registry_inactive(&screen_registry);
-}
-
 bool
 app_state_last_switch_changed_screen(void) {
     return last_switch_changed_screen;
@@ -56,15 +51,6 @@ bool
 app_state_switch_to_screen(NcScreen *screen) {
     last_switch_changed_screen = screen_registry.current_screen != screen;
     return nc_screen_registry_switch_to(&screen_registry, screen);
-}
-
-bool
-app_state_switch_to_screen_type(int32 type) {
-    NcScreen *screen;
-
-    screen = nc_screen_registry_find(&screen_registry, type);
-    last_switch_changed_screen = screen_registry.current_screen != screen;
-    return nc_screen_registry_switch_to_type(&screen_registry, type);
 }
 
 bool
@@ -148,16 +134,6 @@ app_state_screen_resize_params(NcScreen *screen,
                                             adjust_locked_screen);
 }
 
-bool
-app_state_request_screen_resize(NcScreen *screen) {
-    return nc_screen_registry_request_resize(&screen_registry, screen);
-}
-
-bool
-app_state_request_screen_update(NcScreen *screen) {
-    return nc_screen_registry_request_update(&screen_registry, screen);
-}
-
 void
 app_state_request_current_screen_resize(void) {
     nc_screen_registry_request_resize_current(&screen_registry);
@@ -167,12 +143,6 @@ app_state_request_current_screen_resize(void) {
 void
 app_state_request_visible_screens_resize(void) {
     nc_screen_registry_request_resize_visible(&screen_registry);
-    return;
-}
-
-void
-app_state_request_all_screens_resize(void) {
-    nc_screen_registry_request_resize_all(&screen_registry);
     return;
 }
 
@@ -189,32 +159,14 @@ app_state_request_visible_screens_update(void) {
 }
 
 void
-app_state_request_all_screens_update(void) {
-    nc_screen_registry_request_update_all(&screen_registry);
-    return;
-}
-
-void
 app_state_each_visible_screen(NcScreenEachCallback callback, void *user) {
     nc_screen_registry_each_visible(&screen_registry, callback, user);
     return;
 }
 
 void
-app_state_update_current_screen(void) {
-    nc_screen_registry_update_current(&screen_registry);
-    return;
-}
-
-void
 app_state_update_visible_screens(void) {
     nc_screen_registry_update_visible(&screen_registry);
-    return;
-}
-
-void
-app_state_update_all_screens(void) {
-    nc_screen_registry_update_all(&screen_registry);
     return;
 }
 
@@ -227,11 +179,5 @@ app_state_resize_current_screen(void) {
 void
 app_state_resize_visible_screens(void) {
     nc_screen_registry_resize_visible(&screen_registry);
-    return;
-}
-
-void
-app_state_resize_all_screens(void) {
-    nc_screen_registry_resize_all(&screen_registry);
     return;
 }
