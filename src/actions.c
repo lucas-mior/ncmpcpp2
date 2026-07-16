@@ -2152,6 +2152,147 @@ action_runtime_update_environment(void) {
     return ncmpcpp_legacy_update_environment(true, true, true);
 }
 
+static void
+action_runtime_print_toggle(char *format, int32 format_len,
+                            char *value) {
+    NcmStringFormatArg arg;
+
+    arg = ncm_string_format_arg_cstring(value);
+    ncm_statusbar_format((int32)Config.message_delay_time, format,
+                         format_len, &arg, 1);
+    return;
+}
+
+static bool
+action_runtime_toggle_interface(void) {
+    NcmStatusbarScopedLock lock;
+
+    switch (Config.design) {
+    case NCM_DESIGN_CLASSIC:
+        Config.design = NCM_DESIGN_ALTERNATIVE;
+        Config.statusbar_visibility = false;
+        break;
+    case NCM_DESIGN_ALTERNATIVE:
+        Config.design = NCM_DESIGN_CLASSIC;
+        Config.statusbar_visibility =
+            ui_state_statusbar_visibility_baseline();
+        break;
+    case NCM_DESIGN_LAST:
+        return false;
+    }
+
+    ncmpcpp_legacy_resize_screen(false);
+    ncm_progressbar_scoped_lock_init(&lock);
+    ncm_progressbar_scoped_lock_destroy(&lock);
+    ncm_status_changes_mixer();
+    ncm_status_changes_elapsed_time(false);
+    action_runtime_print_toggle(STRLIT_ARGS("User interface: %1%"),
+                                ncm_design_str(Config.design));
+    return true;
+}
+
+static bool
+action_runtime_toggle_separators_between_albums(void) {
+    Config.playlist_separate_albums = !Config.playlist_separate_albums;
+    app_controller_request_current_screen_resize();
+    if (Config.playlist_separate_albums) {
+        action_runtime_print_toggle(
+            STRLIT_ARGS("Separators between albums: %1%"),
+            (char *)"on");
+    } else {
+        action_runtime_print_toggle(
+            STRLIT_ARGS("Separators between albums: %1%"),
+            (char *)"off");
+    }
+    return true;
+}
+
+static bool
+action_runtime_toggle_lyrics_update_on_song_change(void) {
+    if (!native_c_screen_lyrics_is_current()) {
+        return false;
+    }
+    Config.now_playing_lyrics = !Config.now_playing_lyrics;
+    if (Config.now_playing_lyrics) {
+        action_runtime_print_toggle(
+            STRLIT_ARGS("Update lyrics if song changes: %1%"),
+            (char *)"on");
+    } else {
+        action_runtime_print_toggle(
+            STRLIT_ARGS("Update lyrics if song changes: %1%"),
+            (char *)"off");
+    }
+    return true;
+}
+
+static bool
+action_runtime_toggle_fetching_lyrics_in_background(void) {
+    Config.fetch_lyrics_in_background =
+        !Config.fetch_lyrics_in_background;
+    if (Config.fetch_lyrics_in_background) {
+        action_runtime_print_toggle(
+            STRLIT_ARGS(
+                "Fetching lyrics for playing songs in background: %1%"),
+            (char *)"on");
+    } else {
+        action_runtime_print_toggle(
+            STRLIT_ARGS(
+                "Fetching lyrics for playing songs in background: %1%"),
+            (char *)"off");
+    }
+    return true;
+}
+
+static bool
+action_runtime_toggle_add_mode(void) {
+    char *mode_desc;
+
+    mode_desc = (char *)"";
+    switch (Config.space_add_mode) {
+    case NCM_SPACE_ADD_MODE_ADD_REMOVE:
+        Config.space_add_mode = NCM_SPACE_ADD_MODE_ALWAYS_ADD;
+        mode_desc = (char *)"always add an item to playlist";
+        break;
+    case NCM_SPACE_ADD_MODE_ALWAYS_ADD:
+        Config.space_add_mode = NCM_SPACE_ADD_MODE_ADD_REMOVE;
+        mode_desc =
+            (char *)"add an item to playlist or remove if already added";
+        break;
+    case NCM_SPACE_ADD_MODE_LAST:
+        mode_desc = (char *)"";
+        break;
+    }
+    action_runtime_print_toggle(STRLIT_ARGS("Add mode: %1%"), mode_desc);
+    return true;
+}
+
+static bool
+action_runtime_toggle_mouse(void) {
+    Config.mouse_support = !Config.mouse_support;
+    if (Config.mouse_support) {
+        nc_mouse_enable();
+        action_runtime_print_toggle(STRLIT_ARGS("Mouse support %1%"),
+                                    (char *)"enabled");
+    } else {
+        nc_mouse_disable();
+        action_runtime_print_toggle(STRLIT_ARGS("Mouse support %1%"),
+                                    (char *)"disabled");
+    }
+    return true;
+}
+
+static bool
+action_runtime_toggle_bitrate_visibility(void) {
+    Config.display_bitrate = !Config.display_bitrate;
+    if (Config.display_bitrate) {
+        action_runtime_print_toggle(STRLIT_ARGS("Bitrate visibility %1%"),
+                                    (char *)"enabled");
+    } else {
+        action_runtime_print_toggle(STRLIT_ARGS("Bitrate visibility %1%"),
+                                    (char *)"disabled");
+    }
+    return true;
+}
 
 static int32
 action_runtime_cstring_len(char *string) {
@@ -5565,9 +5706,10 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_TOGGLE_ADD_MODE:
     case NCM_ACTION_TOGGLE_LYRICS_FETCHER:
     case NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND:
-    case NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE:
     case NCM_ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS:
         return true;
+    case NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE:
+        return native_c_screen_lyrics_is_current();
     case NCM_ACTION_SHOW_HELP:
         if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_HELP)) {
             return false;
@@ -6058,10 +6200,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         app_controller_scroll_current_screen(NC_SCROLL_END);
         return true;
     case NCM_ACTION_TOGGLE_INTERFACE:
-        Config.header_visibility = !Config.header_visibility;
-        Config.statusbar_visibility = !Config.statusbar_visibility;
-        app_controller_request_visible_screens_resize();
-        return true;
+        return action_runtime_toggle_interface();
     case NCM_ACTION_JUMP_TO_PARENT_DIRECTORY:
         return action_runtime_jump_to_parent_directory();
     case NCM_ACTION_PREVIOUS_COLUMN:
@@ -6154,18 +6293,13 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_TOGGLE_DISPLAY_MODE:
         return action_runtime_toggle_display_mode();
     case NCM_ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS:
-        Config.playlist_separate_albums = !Config.playlist_separate_albums;
-        app_controller_request_current_screen_resize();
-        return true;
+        return action_runtime_toggle_separators_between_albums();
     case NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE:
-        Config.now_playing_lyrics = !Config.now_playing_lyrics;
-        return true;
+        return action_runtime_toggle_lyrics_update_on_song_change();
     case NCM_ACTION_TOGGLE_LYRICS_FETCHER:
         return action_runtime_toggle_lyrics_fetcher();
     case NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND:
-        Config.fetch_lyrics_in_background =
-            !Config.fetch_lyrics_in_background;
-        return true;
+        return action_runtime_toggle_fetching_lyrics_in_background();
     case NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING:
         Config.autocenter_mode = !Config.autocenter_mode;
         if (Config.autocenter_mode) {
@@ -6308,18 +6442,11 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE:
         return action_runtime_toggle_replay_gain_mode();
     case NCM_ACTION_TOGGLE_ADD_MODE:
-        if (Config.space_add_mode == NCM_SPACE_ADD_MODE_ADD_REMOVE) {
-            Config.space_add_mode = NCM_SPACE_ADD_MODE_ALWAYS_ADD;
-        } else {
-            Config.space_add_mode = NCM_SPACE_ADD_MODE_ADD_REMOVE;
-        }
-        return true;
+        return action_runtime_toggle_add_mode();
     case NCM_ACTION_TOGGLE_MOUSE:
-        Config.mouse_support = !Config.mouse_support;
-        return true;
+        return action_runtime_toggle_mouse();
     case NCM_ACTION_TOGGLE_BITRATE_VISIBILITY:
-        Config.display_bitrate = !Config.display_bitrate;
-        return true;
+        return action_runtime_toggle_bitrate_visibility();
     case NCM_ACTION_TOGGLE_BROWSER_SORT_MODE:
         return action_runtime_toggle_browser_sort_mode();
     case NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE:
