@@ -23,8 +23,6 @@ static int32 app_saved_stderr_fd = -1;
 static FILE *app_error_log;
 static NcWindow *app_header_window;
 static NcWindow *app_footer_window;
-static void *app_legacy_header_window;
-static void *app_legacy_footer_window;
 
 static void app_signal_handler(int32 signal_number);
 static void app_init_state(void);
@@ -101,18 +99,14 @@ app_at_exit(void) {
     ncm_mpd_client_disconnect(&global_mpd);
     ncm_window_title_set_cstring((char *)"");
 
-    if (app_legacy_header_window != NULL) {
-        ncmpcpp_legacy_window_destroy(app_legacy_header_window);
-        app_legacy_header_window = NULL;
+    if (app_header_window != NULL) {
+        ncmpcpp_legacy_window_destroy(app_header_window);
         app_header_window = NULL;
-        ui_state_set_header_legacy_window(NULL);
         ui_state_set_header_window(NULL);
     }
-    if (app_legacy_footer_window != NULL) {
-        ncmpcpp_legacy_window_destroy(app_legacy_footer_window);
-        app_legacy_footer_window = NULL;
+    if (app_footer_window != NULL) {
+        ncmpcpp_legacy_window_destroy(app_footer_window);
         app_footer_window = NULL;
-        ui_state_set_footer_legacy_window(NULL);
         ui_state_set_footer_window(NULL);
     }
     ncmpcpp_legacy_destroy_screen();
@@ -134,25 +128,18 @@ app_create_windows(void) {
     ncmpcpp_legacy_set_windows_dimensions();
     ncmpcpp_legacy_initialize_screens();
 
-    app_legacy_header_window = ncmpcpp_legacy_window_create(
+    app_header_window = ncmpcpp_legacy_window_create(
         0, 0, COLS, ncmpcpp_legacy_header_height(), Config.header_color);
-    app_header_window = ncmpcpp_legacy_window_native(
-        app_legacy_header_window);
-    ui_state_set_header_legacy_window(app_legacy_header_window);
     ui_state_set_header_window(app_header_window);
     if (Config.header_visibility
         || (Config.design == NCM_DESIGN_ALTERNATIVE)) {
-        ncmpcpp_legacy_window_display(app_legacy_header_window);
+        ncmpcpp_legacy_window_display(app_header_window);
     }
 
-    app_legacy_footer_window = ncmpcpp_legacy_window_create(
+    app_footer_window = ncmpcpp_legacy_window_create(
         0, ncmpcpp_legacy_footer_start_y(), COLS,
         ncmpcpp_legacy_footer_height(), Config.statusbar_color);
-    app_footer_window = ncmpcpp_legacy_window_native(
-        app_legacy_footer_window);
-    ui_state_set_footer_legacy_window(app_legacy_footer_window);
     ui_state_set_footer_window(app_footer_window);
-    ncmpcpp_legacy_window_set_main_hook(app_legacy_footer_window);
     return;
 }
 

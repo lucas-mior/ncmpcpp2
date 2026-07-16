@@ -46,10 +46,10 @@ NCM_EXTERN_C_END
 
 #if defined(__cplusplus)
 
+#include <cstddef>
 #include <string>
 #include <utility>
 
-#include "curses/window.h"
 #include "ui_state.h"
 #include "utility/string_format.h"
 
@@ -79,10 +79,56 @@ struct ScopedLock {
     }
 };
 
-inline NC::Window &
+struct Stream {
+    explicit Stream(NcWindow *target) : window(target) { }
+
+    Stream &operator<<(enum NcFormat format) {
+        nc_window_apply_format(window, format);
+        return *this;
+    }
+
+    Stream &operator<<(char ch) {
+        nc_window_print_char(window, ch);
+        return *this;
+    }
+
+    Stream &operator<<(const char *text) {
+        nc_window_print_cstring(window, const_cast<char *>(text));
+        return *this;
+    }
+
+    Stream &operator<<(const std::string &text) {
+        nc_window_print_data(window, const_cast<char *>(text.data()),
+                             static_cast<int32>(text.size()));
+        return *this;
+    }
+
+    Stream &operator<<(int value) {
+        nc_window_print_int32(window, static_cast<int32>(value));
+        return *this;
+    }
+
+    Stream &operator<<(unsigned value) {
+        nc_window_print_uint64(window, static_cast<uint64>(value));
+        return *this;
+    }
+
+    Stream &operator<<(size_t value) {
+        nc_window_print_uint64(window, static_cast<uint64>(value));
+        return *this;
+    }
+
+    Stream &operator<<(double value) {
+        nc_window_print_double(window, value);
+        return *this;
+    }
+
+    NcWindow *window;
+};
+
+inline Stream
 put() {
-    ncm_statusbar_put();
-    return *static_cast<NC::Window *>(ui_state_footer_legacy_window());
+    return Stream(ncm_statusbar_put());
 }
 
 inline void

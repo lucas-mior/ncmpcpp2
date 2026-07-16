@@ -7,23 +7,9 @@
 #include "bindings.h"
 #include "c/ncm_defs.h"
 #include "c/ncm_error.h"
-#include "curses/nc_window.h"
 #include "screens/screen_type.h"
 
 NCM_EXTERN_C_BEGIN
-
-void actions_legacy_runtime_init_readline(void);
-
-void *actions_legacy_runtime_window_create(int64 start_x,
-                                           int64 start_y,
-                                           int64 width,
-                                           int64 height,
-                                           NcColor color);
-void actions_legacy_runtime_window_display(void *window);
-void actions_legacy_runtime_window_destroy(void *window);
-void actions_legacy_runtime_window_set_main_hook(void *window);
-void actions_legacy_runtime_window_clear_fd_callbacks(void *window);
-NcWindow *actions_legacy_runtime_window_native(void *window);
 
 void actions_legacy_runtime_initialize_screens(void);
 void actions_legacy_runtime_resize_screen(bool reload_main_window);

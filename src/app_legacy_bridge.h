@@ -22,14 +22,12 @@ int64 ncmpcpp_legacy_header_height(void);
 int64 ncmpcpp_legacy_footer_height(void);
 int64 ncmpcpp_legacy_footer_start_y(void);
 
-void *ncmpcpp_legacy_window_create(int64 start_x, int64 start_y,
-                                    int64 width, int64 height,
-                                    NcColor color);
-void ncmpcpp_legacy_window_display(void *window);
-void ncmpcpp_legacy_window_destroy(void *window);
-void ncmpcpp_legacy_window_set_main_hook(void *window);
-void ncmpcpp_legacy_window_clear_fd_callbacks(void *window);
-NcWindow *ncmpcpp_legacy_window_native(void *window);
+NcWindow *ncmpcpp_legacy_window_create(int64 start_x, int64 start_y,
+                                         int64 width, int64 height,
+                                         NcColor color);
+void ncmpcpp_legacy_window_display(NcWindow *window);
+void ncmpcpp_legacy_window_destroy(NcWindow *window);
+void ncmpcpp_legacy_window_clear_fd_callbacks(NcWindow *window);
 
 void ncmpcpp_legacy_initialize_screens(void);
 void ncmpcpp_legacy_resize_screen(bool reload_main_window);
