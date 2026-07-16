@@ -5,10 +5,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
+#include "cbase/cbase.h"
 
 typedef void (*NcmArrayItemInitCallback)(void *item);
 typedef void (*NcmArrayItemDestroyCallback)(void *item);
@@ -271,9 +268,5 @@ typedef struct NcmArrayItemCallbacks {
         array->len -= 1;                                                  \
         return;                                                           \
     }
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_ARRAY_H */

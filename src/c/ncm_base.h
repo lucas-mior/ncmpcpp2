@@ -4,10 +4,6 @@
 #include "c/ncm_defs.h"
 #include "c/ncm_error.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 void ncm_buffer_init(NcmBuffer *buffer);
 void ncm_buffer_destroy(NcmBuffer *buffer);
 void ncm_buffer_clear(NcmBuffer *buffer);
@@ -18,9 +14,5 @@ void ncm_buffer_reserve(NcmBuffer *buffer, int32 extra);
 void ncm_buffer_append(NcmBuffer *buffer, char *data, int32 data_len);
 void ncm_buffer_append_byte(NcmBuffer *buffer, char byte);
 char *ncm_buffer_steal(NcmBuffer *buffer, int32 *len, int32 *cap);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_BASE_H */

@@ -2,6 +2,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 void
 ncm_sample_buffer_init(NcmSampleBuffer *buffer) {

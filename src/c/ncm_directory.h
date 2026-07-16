@@ -7,10 +7,6 @@
 
 struct mpd_directory;
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcmDirectory {
     char *path;
     int32 path_len;
@@ -28,9 +24,5 @@ time_t ncm_directory_last_modified(NcmDirectory *directory);
 bool ncm_directory_equal(NcmDirectory *a, NcmDirectory *b);
 bool ncm_directory_from_mpd_directory(NcmDirectory *dest,
                                       struct mpd_directory *source);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_DIRECTORY_H */

@@ -3,10 +3,6 @@
 
 #include "c/ncm_base.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcmProcessCommand {
     char **argv;
     int32 *argv_lens;
@@ -35,9 +31,5 @@ bool ncm_process_run_shell(char *command, int32 command_len,
 bool ncm_process_run_editor(char *editor, int32 editor_len,
                             char *path, int32 path_len,
                             int32 *status, NcmError *error);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_PROCESS_H */

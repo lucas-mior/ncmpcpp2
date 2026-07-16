@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 static NcmLog ncm_log_global;
 static bool ncm_log_global_initialized;

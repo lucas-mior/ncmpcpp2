@@ -5,10 +5,6 @@
 #include "c/ncm_defs.h"
 #include "c/ncm_song.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 enum NcmSongListItemFlag {
     NCM_SONG_LIST_ITEM_SELECTABLE = 1 << 0,
     NCM_SONG_LIST_ITEM_SELECTED = 1 << 1,
@@ -74,9 +70,5 @@ bool ncm_song_list_wrapped_song_search(NcmSongList *list,
                                   void *user,
                                   enum NcmSongListSearchDirection direction,
                                   bool wrap, bool skip_current);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_SONG_LIST_H */

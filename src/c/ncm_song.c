@@ -8,6 +8,7 @@
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
 #include "cbase/rapidhash.h"
+#include "cbase/cbase.h"
 
 static int32 ncm_song_cstring_len(char *string);
 static bool ncm_song_needs_numeric_zero(char *tag, int32 tag_len);
