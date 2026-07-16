@@ -67,9 +67,9 @@ test_visualizer_actions_use_c_implementation(void) {
     nc_screen_init(&test_current_screen, callbacks, NULL,
                    NC_SCREEN_TYPE_VISUALIZER);
 
-    assert(!app_binding_migration_action_is_c_safe(
+    assert(app_binding_migration_action_is_c_safe(
         NCM_ACTION_SHOW_VISUALIZER));
-    assert(!app_binding_migration_action_is_c_safe(
+    assert(app_binding_migration_action_is_c_safe(
         NCM_ACTION_TOGGLE_VISUALIZATION_TYPE));
     assert(app_binding_migration_action_is_c_safe_for_screen(
         NCM_ACTION_SHOW_VISUALIZER, NCM_SCREEN_TYPE_VISUALIZER));
@@ -85,8 +85,8 @@ test_visualizer_actions_use_c_implementation(void) {
     action.type = type;
     ncm_binding_init(&binding);
     assert(ncm_binding_append_action(&binding, &action));
-    assert(!app_binding_migration_binding_is_c_safe(&binding));
-    assert(!app_binding_migration_binding_is_hybrid_safe(&binding));
+    assert(app_binding_migration_binding_is_c_safe(&binding));
+    assert(app_binding_migration_binding_is_hybrid_safe(&binding));
     assert(ncm_binding_execute_default(&binding));
     ncm_binding_action_destroy(&action);
     ncm_binding_destroy(&binding);

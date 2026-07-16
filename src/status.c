@@ -1,5 +1,6 @@
 #include "status.h"
 
+#include "actions.h"
 #include "config.h"
 
 #include <mpd/client.h>
@@ -70,24 +71,6 @@ typedef struct StatusTimeoutContext {
     int32 timeout;
 } StatusTimeoutContext;
 
-#if defined(__GNUC__)
-extern bool actions_legacy_runtime_playlist_highlight_mpd_position(
-    int32 position) __attribute__((weak));
-extern void actions_legacy_runtime_request_exit(void)
-    __attribute__((weak));
-#else
-static bool
-actions_legacy_runtime_playlist_highlight_mpd_position(int32 position) {
-    (void)position;
-    return false;
-}
-
-static void
-actions_legacy_runtime_request_exit(void) {
-    return;
-}
-#endif
-
 static void status_update_timeout_from_screen(NcScreen *screen, void *user);
 static void status_run_init_hooks(void);
 static void status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks);
@@ -148,7 +131,7 @@ static void status_tracklength_buffer(NcmBuffer *buffer);
 static int32 status_cstring_len(char *string);
 static void status_print_client_error(char *message, int32 message_len);
 static void status_print_server_error(char *message, int32 message_len);
-static void status_request_legacy_exit(void);
+static void status_request_exit(void);
 static void status_prompt_mpd_password(NcmMpdClient *client);
 
 static enum NcmStatusPlayerState
@@ -352,14 +335,8 @@ status_print_server_error(char *message, int32 message_len) {
 }
 
 static void
-status_request_legacy_exit(void) {
-#if defined(__GNUC__)
-    if (actions_legacy_runtime_request_exit == NULL) {
-        return;
-    }
-#endif
-
-    actions_legacy_runtime_request_exit();
+status_request_exit(void) {
+    ncm_action_runtime_request_exit(NULL);
     return;
 }
 
@@ -392,7 +369,7 @@ status_prompt_mpd_password(NcmMpdClient *client) {
     prompt_status = nc_window_prompt(window, &prompt, &password);
     if (prompt_status != NC_PROMPT_ACCEPTED) {
         nc_window_prompt_result_destroy(password);
-        status_request_legacy_exit();
+        status_request_exit();
         return;
     }
 
@@ -560,16 +537,11 @@ status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks) {
         return;
     }
 
-    highlighted = false;
-#if defined(__GNUC__)
-    if (actions_legacy_runtime_playlist_highlight_mpd_position != NULL) {
-        highlighted =
-            actions_legacy_runtime_playlist_highlight_mpd_position(position);
-    } else
-#endif
-    {
-        highlighted = native_playlist_screen_locate_position(
-            native_c_screen_playlist(), (uint32)position);
+    highlighted = native_playlist_screen_locate_position(
+        native_c_screen_playlist(), (uint32)position);
+    if (!highlighted) {
+        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                    (char *)"Song is filtered out");
     }
 
     playlist_screen = native_c_screen_playlist_native();

@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "actions_legacy_runtime.h"
 #include "app_legacy_bridge.h"
 #include "bindings.h"
 #include "settings_legacy_runtime.h"
@@ -27,8 +26,8 @@ static void test_tag_editor_core_binding_uses_c_runtime(void);
 static void test_tag_editor_screen_binding_uses_c_runtime(void);
 static void test_tag_editor_direct_action_uses_c_runtime(void);
 static void test_tag_editor_rename_action_uses_c_runtime(void);
-static void test_tag_editor_unsupported_binding_is_rejected(void);
-static void test_tag_editor_unsupported_action_is_rejected(void);
+static void test_tag_editor_browser_delete_binding_uses_c_runtime(void);
+static void test_tag_editor_browser_delete_action_uses_c_runtime(void);
 static void test_show_tag_editor_from_hybrid_uses_c_runtime(void);
 static void test_jump_to_tag_editor_from_hybrid_uses_c_runtime(void);
 static void test_hybrid_binding_to_tag_editor_uses_c_runtime(void);
@@ -54,12 +53,6 @@ __wrap_ncm_action_runtime_run(NcmActionRuntime *runtime,
     return true;
 }
 
-bool
-__wrap_actions_legacy_runtime_execute_action(enum NcmActionType type) {
-    (void)type;
-    test_state.legacy_action_count += 1;
-    return true;
-}
 
 bool
 settings_legacy_runtime_sync_configuration(void) {
@@ -67,11 +60,6 @@ settings_legacy_runtime_sync_configuration(void) {
     return false;
 }
 
-bool
-actions_legacy_runtime_exit_requested(void) {
-    test_state.unrelated_legacy_count += 1;
-    return false;
-}
 
 static void
 test_state_reset(enum ScreenType screen_type) {
@@ -231,7 +219,7 @@ test_tag_editor_rename_action_uses_c_runtime(void) {
 }
 
 static void
-test_tag_editor_unsupported_binding_is_rejected(void) {
+test_tag_editor_browser_delete_binding_uses_c_runtime(void) {
     NcmBindingAction action = {
         .kind = NCM_BINDING_ACTION_NORMAL,
         .type = NCM_ACTION_DELETE_BROWSER_ITEMS,
@@ -241,20 +229,22 @@ test_tag_editor_unsupported_binding_is_rejected(void) {
     test_state_reset(NCM_SCREEN_TYPE_TAG_EDITOR);
     binding = test_binding(&action, 1);
 
-    assert(!ncmpcpp_legacy_execute_binding(&binding));
-    assert(test_state.can_run_count == 0);
-    assert(test_state.run_count == 0);
+    assert(ncmpcpp_legacy_execute_binding(&binding));
+    assert(test_state.can_run_count == 2);
+    assert(test_state.run_count == 1);
+    assert(test_state.run_types[0] == NCM_ACTION_DELETE_BROWSER_ITEMS);
     assert_no_legacy_dispatch();
     return;
 }
 
 static void
-test_tag_editor_unsupported_action_is_rejected(void) {
+test_tag_editor_browser_delete_action_uses_c_runtime(void) {
     test_state_reset(NCM_SCREEN_TYPE_TAG_EDITOR);
 
-    assert(!ncmpcpp_legacy_execute_action(NCM_ACTION_DELETE_BROWSER_ITEMS));
+    assert(ncmpcpp_legacy_execute_action(NCM_ACTION_DELETE_BROWSER_ITEMS));
     assert(test_state.can_run_count == 0);
-    assert(test_state.run_count == 0);
+    assert(test_state.run_count == 1);
+    assert(test_state.run_types[0] == NCM_ACTION_DELETE_BROWSER_ITEMS);
     assert_no_legacy_dispatch();
     return;
 }
@@ -316,8 +306,8 @@ main(void) {
     test_tag_editor_screen_binding_uses_c_runtime();
     test_tag_editor_direct_action_uses_c_runtime();
     test_tag_editor_rename_action_uses_c_runtime();
-    test_tag_editor_unsupported_binding_is_rejected();
-    test_tag_editor_unsupported_action_is_rejected();
+    test_tag_editor_browser_delete_binding_uses_c_runtime();
+    test_tag_editor_browser_delete_action_uses_c_runtime();
     test_show_tag_editor_from_hybrid_uses_c_runtime();
     test_jump_to_tag_editor_from_hybrid_uses_c_runtime();
     test_hybrid_binding_to_tag_editor_uses_c_runtime();
