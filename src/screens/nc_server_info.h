@@ -30,13 +30,11 @@ void nc_server_info_screen_init(NcServerInfoScreen *screen,
                                 int64 main_start_y,
                                 int64 main_height,
                                 NcColor color, NcBorder border);
-void nc_server_info_screen_destroy(NcServerInfoScreen *screen);
 void nc_server_info_screen_set_dimensions(NcServerInfoScreen *screen,
                                           int64 cols, int64 lines,
                                           int64 main_start_y,
                                           int64 main_height);
 NcScreen *nc_server_info_screen_base(NcServerInfoScreen *screen);
-NcWindow *nc_server_info_screen_window(NcServerInfoScreen *screen);
 int64 nc_server_info_screen_width(NcServerInfoScreen *screen);
 int64 nc_server_info_screen_height(NcServerInfoScreen *screen);
 int64 nc_server_info_screen_start_x(NcServerInfoScreen *screen);

@@ -64,15 +64,6 @@ nc_help_screen_init(NcHelpScreen *screen,
 }
 
 void
-nc_help_screen_destroy(NcHelpScreen *screen) {
-    ncm_buffer_destroy(&screen->search_constraint);
-    nc_buffer_destroy(&screen->buffer);
-    nc_window_destroy(&screen->window);
-    nc_scrollpad_init_empty(&screen->scrollpad);
-    return;
-}
-
-void
 nc_help_screen_set_geometry(NcHelpScreen *screen,
                             int64 start_x, int64 width,
                             int64 main_start_y, int64 main_height) {
@@ -170,11 +161,6 @@ nc_help_screen_clear_search(NcHelpScreen *screen) {
 NcScreen *
 nc_help_screen_base(NcHelpScreen *screen) {
     return nc_scrollpad_screen_base(&screen->scrollpad_screen);
-}
-
-NcWindow *
-nc_help_screen_window(NcHelpScreen *screen) {
-    return &screen->window;
 }
 
 int64

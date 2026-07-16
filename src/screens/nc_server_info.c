@@ -57,14 +57,6 @@ nc_server_info_screen_init(NcServerInfoScreen *screen,
 }
 
 void
-nc_server_info_screen_destroy(NcServerInfoScreen *screen) {
-    nc_buffer_destroy(&screen->buffer);
-    nc_window_destroy(&screen->window);
-    nc_scrollpad_init_empty(&screen->scrollpad);
-    return;
-}
-
-void
 nc_server_info_screen_set_dimensions(NcServerInfoScreen *screen,
                                      int64 cols, int64 lines,
                                      int64 main_start_y,
@@ -84,11 +76,6 @@ nc_server_info_screen_set_dimensions(NcServerInfoScreen *screen,
 NcScreen *
 nc_server_info_screen_base(NcServerInfoScreen *screen) {
     return nc_scrollpad_screen_base(&screen->scrollpad_screen);
-}
-
-NcWindow *
-nc_server_info_screen_window(NcServerInfoScreen *screen) {
-    return &screen->window;
 }
 
 int64

@@ -108,15 +108,10 @@ char *native_search_engine_search_mode_name(
     enum NativeSearchEngineSearchMode mode);
 bool native_search_engine_screen_is_prepared(
     NativeSearchEngineScreen *screen);
-void native_search_engine_screen_set_prepared(
-    NativeSearchEngineScreen *screen, bool prepared);
 bool native_search_engine_screen_has_result_rows(
     NativeSearchEngineScreen *screen);
 int32 native_search_engine_screen_result_count(
     NativeSearchEngineScreen *screen);
-void native_search_engine_screen_set_result_state(
-    NativeSearchEngineScreen *screen, bool rows_present,
-    int32 result_count);
 bool native_search_engine_screen_constraints_locked(
     NativeSearchEngineScreen *screen);
 bool native_search_engine_screen_set_title(

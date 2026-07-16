@@ -57,14 +57,6 @@ nc_song_info_screen_init(NcSongInfoScreen *screen,
 }
 
 void
-nc_song_info_screen_destroy(NcSongInfoScreen *screen) {
-    nc_buffer_destroy(&screen->buffer);
-    nc_window_destroy(&screen->window);
-    nc_scrollpad_init_empty(&screen->scrollpad);
-    return;
-}
-
-void
 nc_song_info_screen_set_geometry(NcSongInfoScreen *screen,
                                  int64 start_x, int64 width,
                                  int64 main_start_y,
@@ -105,11 +97,6 @@ nc_song_info_screen_prepare_current(NcSongInfoScreen *screen) {
 NcScreen *
 nc_song_info_screen_base(NcSongInfoScreen *screen) {
     return nc_scrollpad_screen_base(&screen->scrollpad_screen);
-}
-
-NcWindow *
-nc_song_info_screen_window(NcSongInfoScreen *screen) {
-    return &screen->window;
 }
 
 int64

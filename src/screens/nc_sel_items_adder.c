@@ -337,15 +337,6 @@ native_selected_items_adder_screen_open(
 }
 
 bool
-native_selected_items_adder_screen_set_selected_songs(
-    NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs) {
-    if (screen == NULL) {
-        return false;
-    }
-    return ncm_song_array_copy(&screen->selected_songs, songs);
-}
-
-bool
 native_selected_items_adder_screen_selected_songs(
     NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs) {
     if (screen == NULL || songs == NULL) {

@@ -130,12 +130,8 @@ static bool native_library_mpd_add_songs(void *user,
                                          bool play, NcmError *error);
 static void native_library_tag_array_item_init(void *item);
 static void native_library_tag_array_item_destroy(void *item);
-static bool native_library_tag_array_item_copy(void *dest, void *source);
-static void native_library_tag_array_item_move(void *dest, void *source);
 static void native_library_album_array_item_init(void *item);
 static void native_library_album_array_item_destroy(void *item);
-static bool native_library_album_array_item_copy(void *dest, void *source);
-static void native_library_album_array_item_move(void *dest, void *source);
 static int32 native_library_compare_tag_rows(NcMediaLibraryTagRow *left,
                                              NcMediaLibraryTagRow *right);
 static int32 native_library_compare_album_items(
@@ -267,25 +263,50 @@ static NcScreenCallbacks native_library_callbacks = {
 static NcmArrayItemCallbacks native_library_tag_array_callbacks = {
     .init = native_library_tag_array_item_init,
     .destroy = native_library_tag_array_item_destroy,
-    .copy = native_library_tag_array_item_copy,
-    .move = native_library_tag_array_item_move,
 };
 
 static NcmArrayItemCallbacks native_library_album_array_callbacks = {
     .init = native_library_album_array_item_init,
     .destroy = native_library_album_array_item_destroy,
-    .copy = native_library_album_array_item_copy,
-    .move = native_library_album_array_item_move,
 };
 
-NCM_ARRAY_DEFINE(native_media_library_tag_array,
-                 NativeMediaLibraryTagArray,
-                 NcMediaLibraryTagRow,
-                 &native_library_tag_array_callbacks)
-NCM_ARRAY_DEFINE(native_media_library_album_array,
-                 NativeMediaLibraryAlbumArray,
-                 NativeMediaLibraryAlbumItem,
-                 &native_library_album_array_callbacks)
+NCM_ARRAY_DEFINE_INIT(native_media_library_tag_array,
+                      NativeMediaLibraryTagArray)
+NCM_ARRAY_DEFINE_CLEAR(native_media_library_tag_array,
+                       NativeMediaLibraryTagArray,
+                       &native_library_tag_array_callbacks)
+NCM_ARRAY_DEFINE_DESTROY(native_media_library_tag_array,
+                         NativeMediaLibraryTagArray)
+NCM_ARRAY_DEFINE_MOVE(native_media_library_tag_array,
+                      NativeMediaLibraryTagArray)
+NCM_ARRAY_DEFINE_RESERVE(native_media_library_tag_array,
+                         NativeMediaLibraryTagArray)
+NCM_ARRAY_DEFINE_APPEND(native_media_library_tag_array,
+                        NativeMediaLibraryTagArray,
+                        NcMediaLibraryTagRow,
+                        &native_library_tag_array_callbacks)
+NCM_ARRAY_DEFINE_REMOVE_ORDERED(native_media_library_tag_array,
+                                NativeMediaLibraryTagArray,
+                                &native_library_tag_array_callbacks)
+
+NCM_ARRAY_DEFINE_INIT(native_media_library_album_array,
+                      NativeMediaLibraryAlbumArray)
+NCM_ARRAY_DEFINE_CLEAR(native_media_library_album_array,
+                       NativeMediaLibraryAlbumArray,
+                       &native_library_album_array_callbacks)
+NCM_ARRAY_DEFINE_DESTROY(native_media_library_album_array,
+                         NativeMediaLibraryAlbumArray)
+NCM_ARRAY_DEFINE_MOVE(native_media_library_album_array,
+                      NativeMediaLibraryAlbumArray)
+NCM_ARRAY_DEFINE_RESERVE(native_media_library_album_array,
+                         NativeMediaLibraryAlbumArray)
+NCM_ARRAY_DEFINE_APPEND(native_media_library_album_array,
+                        NativeMediaLibraryAlbumArray,
+                        NativeMediaLibraryAlbumItem,
+                        &native_library_album_array_callbacks)
+NCM_ARRAY_DEFINE_REMOVE_ORDERED(native_media_library_album_array,
+                                NativeMediaLibraryAlbumArray,
+                                &native_library_album_array_callbacks)
 
 NativeMediaLibraryHooks
 native_media_library_mpd_hooks(NcmMpdClient *client) {
@@ -456,11 +477,6 @@ native_media_library_screen_base(NativeMediaLibraryScreen *screen) {
 NcMediaLibraryTagMenu *
 native_media_library_screen_tags(NativeMediaLibraryScreen *screen) {
     return &screen->tags;
-}
-
-NcMediaLibraryAlbumMenu *
-native_media_library_screen_albums(NativeMediaLibraryScreen *screen) {
-    return &screen->albums;
 }
 
 NcMediaLibrarySongMenu *
@@ -908,17 +924,6 @@ native_library_tag_array_item_destroy(void *item) {
     return;
 }
 
-static bool
-native_library_tag_array_item_copy(void *dest, void *source) {
-    return nc_media_library_tag_row_copy(dest, source);
-}
-
-static void
-native_library_tag_array_item_move(void *dest, void *source) {
-    nc_media_library_tag_row_move(dest, source);
-    return;
-}
-
 static void
 native_library_album_array_item_init(void *item) {
     NativeMediaLibraryAlbumItem *album;
@@ -936,34 +941,6 @@ native_library_album_array_item_destroy(void *item) {
     album = item;
     nc_media_library_album_row_destroy(&album->row);
     album->menu_flags = NC_MENU_ITEM_SELECTABLE;
-    return;
-}
-
-static bool
-native_library_album_array_item_copy(void *dest, void *source) {
-    NativeMediaLibraryAlbumItem *dest_album;
-    NativeMediaLibraryAlbumItem *source_album;
-
-    dest_album = dest;
-    source_album = source;
-    if (!nc_media_library_album_row_copy(&dest_album->row,
-                                         &source_album->row)) {
-        return false;
-    }
-    dest_album->menu_flags = source_album->menu_flags;
-    return true;
-}
-
-static void
-native_library_album_array_item_move(void *dest, void *source) {
-    NativeMediaLibraryAlbumItem *dest_album;
-    NativeMediaLibraryAlbumItem *source_album;
-
-    dest_album = dest;
-    source_album = source;
-    nc_media_library_album_row_move(&dest_album->row, &source_album->row);
-    dest_album->menu_flags = source_album->menu_flags;
-    source_album->menu_flags = NC_MENU_ITEM_SELECTABLE;
     return;
 }
 
