@@ -256,6 +256,11 @@ bool actionHasNoLegacyImplementation(NcmActionType type)
 		case NCM_ACTION_ADD_ITEM_TO_PLAYLIST:
 		case NCM_ACTION_PLAY_ITEM:
 		case NCM_ACTION_START_SEARCHING:
+		case NCM_ACTION_FIND:
+		case NCM_ACTION_FIND_ITEM_FORWARD:
+		case NCM_ACTION_FIND_ITEM_BACKWARD:
+		case NCM_ACTION_NEXT_FOUND_ITEM:
+		case NCM_ACTION_PREVIOUS_FOUND_ITEM:
 		case NCM_ACTION_SELECT_ITEM:
 		case NCM_ACTION_SELECT_RANGE:
 		case NCM_ACTION_REVERSE_SELECTION:
@@ -614,95 +619,6 @@ void ToggleScreenLock::run()
 
 
 
-bool Find::canBeRun()
-{
-	return native_c_screen_help_is_current()
-		|| native_c_screen_lastfm_is_current()
-		|| native_c_screen_lyrics_is_current();
-}
-
-void Find::run()
-{
-
-	std::string token;
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << "Find: ";
-		if (!promptString(token))
-				return;
-	}
-
-	Statusbar::print("Searching...");
-	if (native_c_screen_lastfm_is_current())
-	{
-		NcmError error = {};
-		bool found;
-
-		found = native_lastfm_screen_find(
-			native_c_screen_lastfm(),
-			const_cast<char *>(token.data()),
-			static_cast<int32>(token.size()),
-			&error);
-		if (token.empty() || found)
-			Statusbar::print("Done");
-		else
-			Statusbar::print("No matching patterns found");
-		return;
-	}
-
-	if (native_c_screen_lyrics_is_current())
-	{
-		NcmError error = {};
-		bool found;
-
-		found = native_lyrics_screen_find(
-			native_c_screen_lyrics(),
-			const_cast<char *>(token.data()),
-			static_cast<int32>(token.size()),
-			&error);
-		if (token.empty() || found)
-			Statusbar::print("Done");
-		else
-			Statusbar::print("No matching patterns found");
-		return;
-	}
-
-	auto s = static_cast<Screen<NC::Scrollpad> *>(screenLegacyCurrent());
-	s->main().removeProperties();
-	if (token.empty() || s->main().setProperties(NC_FORMAT_REVERSE, token, NC_FORMAT_NO_REVERSE, Config.regex_type))
-		Statusbar::print("Done");
-	else
-		Statusbar::print("No matching patterns found");
-	s->main().flush();
-}
-
-bool NextFoundItem::canBeRun()
-{
-	return dynamic_cast<Searchable *>(screenLegacyCurrent());
-}
-
-void NextFoundItem::run()
-{
-	Searchable *w = dynamic_cast<Searchable *>(screenLegacyCurrent());
-	assert(w != nullptr);
-	w->search(NCM_SEARCH_DIRECTION_FORWARD, Config.wrapped_search, true);
-	nc_screen_finish_list_change(app_controller_current_screen());
-}
-
-bool PreviousFoundItem::canBeRun()
-{
-	return dynamic_cast<Searchable *>(screenLegacyCurrent());
-}
-
-void PreviousFoundItem::run()
-{
-	Searchable *w = dynamic_cast<Searchable *>(screenLegacyCurrent());
-	assert(w != nullptr);
-	w->search(NCM_SEARCH_DIRECTION_BACKWARD, Config.wrapped_search, true);
-	nc_screen_finish_list_change(app_controller_current_screen());
-}
-
-
 bool ToggleLibraryTagType::canBeRun()
 {
 	NativeMediaLibraryScreen *library;
@@ -859,9 +775,6 @@ void populateActions()
 	insert_action(new Actions::EditLibraryTag());
 	insert_action(new Actions::EditLibraryAlbum());
 	insert_action(new Actions::ToggleScreenLock());
-	insert_action(new Actions::Find());
-	insert_action(new Actions::NextFoundItem());
-	insert_action(new Actions::PreviousFoundItem());
 	insert_action(new Actions::ToggleLibraryTagType());
 	insert_action(new Actions::ShowArtistInfo());
 	insert_action(new Actions::NextScreen());
@@ -900,50 +813,6 @@ extern "C" {
 bool actions_legacy_runtime_playlist_highlight_mpd_position(int32 position)
 {
 	return highlightPlaylistMpdPosition(position);
-}
-
-bool actions_legacy_runtime_search_current_screen(
-    enum SearchDirection direction, char *pattern, int32 pattern_len,
-    bool wrap, bool skip_current, bool *handled, NcmError *error)
-{
-	Searchable *searchable;
-
-	if (handled == nullptr)
-		return false;
-	*handled = false;
-	searchable = dynamic_cast<Searchable *>(screenLegacyCurrent());
-	if (searchable == nullptr)
-		return false;
-
-	*handled = true;
-	try
-	{
-		if (pattern == nullptr || pattern_len <= 0)
-		{
-			searchable->clearSearchConstraint();
-			return false;
-		}
-		searchable->setSearchConstraint(std::string(
-			pattern, static_cast<size_t>(pattern_len)));
-		return searchable->search(direction, wrap, skip_current);
-	}
-	catch (std::exception &e)
-	{
-		ncm_error_set(error, EINVAL, const_cast<char *>(e.what()),
-		              static_cast<int32>(std::strlen(e.what())));
-	}
-	return false;
-}
-
-void actions_legacy_runtime_clear_current_search(void)
-{
-	Searchable *searchable;
-
-	searchable = dynamic_cast<Searchable *>(screenLegacyCurrent());
-	if (searchable == nullptr)
-		return;
-
-	searchable->clearSearchConstraint();
 }
 
 bool actions_legacy_runtime_can_run_action(enum NcmActionType type)
