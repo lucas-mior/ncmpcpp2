@@ -82,14 +82,11 @@ void nc_menu_set_display_callbacks(NcMenu *menu,
 void nc_menu_set_action_callbacks(NcMenu *menu,
                                   NcMenuActionCallbacks callbacks);
 void nc_menu_sync_item_count(NcMenu *menu);
-void nc_menu_set_item_count(NcMenu *menu, int64 item_count);
 int64 nc_menu_item_count(NcMenu *menu);
 int64 nc_menu_all_item_count(NcMenu *menu);
 int64 nc_menu_filtered_item_count(NcMenu *menu);
 int64 nc_menu_beginning(NcMenu *menu);
 int64 nc_menu_highlight(NcMenu *menu);
-int64 nc_menu_drawn_position(NcMenu *menu);
-void nc_menu_set_drawn_position(NcMenu *menu, int64 drawn_position);
 bool nc_menu_highlight_enabled(NcMenu *menu);
 void nc_menu_set_highlight_prefix(NcMenu *menu, NcBuffer *buffer);
 void nc_menu_set_highlight_suffix(NcMenu *menu, NcBuffer *buffer);
@@ -119,7 +116,6 @@ void nc_menu_add_separator(NcMenu *menu);
 void nc_menu_insert_item(NcMenu *menu, int64 pos, void *item);
 void nc_menu_insert_item_with_flags(NcMenu *menu, int64 pos, void *item,
                                     uint32 flags);
-void nc_menu_insert_separator(NcMenu *menu, int64 pos);
 bool nc_menu_remove_item(NcMenu *menu, enum NcMenuItemSource source,
                          int64 pos);
 bool nc_menu_replace_item(NcMenu *menu, enum NcMenuItemSource source,
@@ -146,9 +142,6 @@ bool nc_menu_has_selected(NcMenu *menu);
 int64 nc_menu_selected_count(NcMenu *menu);
 int64 nc_menu_first_selected_position(NcMenu *menu);
 bool nc_menu_current_is_selectable(NcMenu *menu);
-bool nc_menu_current_is_selected(NcMenu *menu);
-bool nc_menu_current_is_separator(NcMenu *menu);
-bool nc_menu_current_is_inactive(NcMenu *menu);
 bool nc_menu_set_current_selected(NcMenu *menu, bool selected);
 bool nc_menu_toggle_current_selected(NcMenu *menu);
 bool nc_menu_activate_position(NcMenu *menu, int64 pos);
