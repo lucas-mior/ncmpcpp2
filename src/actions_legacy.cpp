@@ -29,6 +29,7 @@
 #include "utility/readline.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
+#include "utility/utf8.h"
 #include "c/ncm_base.h"
 #include "c/ncm_error.h"
 #include "c/ncm_type_conversions.h"
