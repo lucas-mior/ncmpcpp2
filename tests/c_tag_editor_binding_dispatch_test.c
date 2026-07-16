@@ -3,7 +3,6 @@
 
 #include "app_legacy_bridge.h"
 #include "bindings.h"
-#include "settings_legacy_runtime.h"
 
 typedef struct TestState {
     enum NcmActionType can_run_types[64];
@@ -13,7 +12,6 @@ typedef struct TestState {
     int32 can_run_count;
     int32 run_count;
     int32 legacy_action_count;
-    int32 unrelated_legacy_count;
 } TestState;
 
 static TestState test_state;
@@ -54,13 +52,6 @@ __wrap_ncm_action_runtime_run(NcmActionRuntime *runtime,
 }
 
 
-bool
-settings_legacy_runtime_sync_configuration(void) {
-    test_state.unrelated_legacy_count += 1;
-    return false;
-}
-
-
 static void
 test_state_reset(enum ScreenType screen_type) {
     test_state = (TestState){0};
@@ -82,7 +73,6 @@ test_binding(NcmBindingAction *actions, int32 actions_len) {
 static void
 assert_no_legacy_dispatch(void) {
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 

@@ -7,17 +7,11 @@
 #include "global.h"
 #include "screens/native_c_screens.h"
 #include "settings.h"
-#include "settings_legacy_runtime.h"
 #include "status.h"
 #include "statusbar.h"
 #include "title.h"
 #include "cbase/base_macros.h"
 #include "ui_state.h"
-
-#if defined(__GNUC__)
-extern bool settings_legacy_runtime_sync_configuration(void)
-    __attribute__((weak));
-#endif
 
 /*
  * App runtime bridge.
@@ -35,7 +29,6 @@ static void app_legacy_bridge_set_status_observers(void);
 static void app_legacy_bridge_set_resize_flags(void);
 static void app_legacy_bridge_dispatch_lyrics_jobs(void);
 static void app_legacy_bridge_refresh_header_if_due(void);
-static bool app_legacy_bridge_sync_legacy_configuration(void);
 
 static NcmTimePoint app_legacy_bridge_header_refresh_time;
 
@@ -114,21 +107,6 @@ app_legacy_bridge_refresh_header_if_due(void) {
     ncm_title_draw_current_header();
     app_legacy_bridge_header_refresh_time = global_timer;
     return;
-}
-
-static bool
-app_legacy_bridge_sync_legacy_configuration(void) {
-#if defined(__GNUC__)
-    if (settings_legacy_runtime_sync_configuration == NULL) {
-        return true;
-    }
-#endif
-    return settings_legacy_runtime_sync_configuration();
-}
-
-bool
-ncmpcpp_legacy_sync_configuration(void) {
-    return app_legacy_bridge_sync_legacy_configuration();
 }
 
 static void

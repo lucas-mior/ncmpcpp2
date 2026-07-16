@@ -3,7 +3,6 @@
 
 #include "app_legacy_bridge.h"
 #include "bindings.h"
-#include "settings_legacy_runtime.h"
 
 typedef struct TestState {
     enum NcmActionType can_run_types[8];
@@ -11,7 +10,6 @@ typedef struct TestState {
     int32 can_run_count;
     int32 run_count;
     int32 legacy_action_count;
-    int32 unrelated_legacy_count;
 } TestState;
 
 static TestState test_state;
@@ -50,13 +48,6 @@ __wrap_ncm_action_runtime_run(NcmActionRuntime *runtime,
     (void)runtime;
     test_state.run_types[test_state.run_count++] = type;
     return true;
-}
-
-
-bool
-settings_legacy_runtime_sync_configuration(void) {
-    test_state.unrelated_legacy_count += 1;
-    return false;
 }
 
 
@@ -100,7 +91,6 @@ test_migrated_binding_uses_c_runtime(void) {
     assert(test_state.run_types[0] == NCM_ACTION_APPLY_FILTER);
     assert(test_state.run_types[1] == NCM_ACTION_QUIT);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -131,7 +121,6 @@ test_playlist_editor_column_binding_uses_c_runtime(void) {
     assert(test_state.run_count == 1);
     assert(test_state.run_types[0] == NCM_ACTION_NEXT_COLUMN);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -144,7 +133,6 @@ test_playlist_editor_column_action_uses_c_runtime(void) {
     assert(test_state.run_count == 1);
     assert(test_state.run_types[0] == NCM_ACTION_PREVIOUS_COLUMN);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -176,7 +164,6 @@ test_playlist_editor_selection_binding_uses_c_runtime(void) {
     assert(test_state.run_types[0] == NCM_ACTION_REVERSE_SELECTION);
     assert(test_state.run_types[1] == NCM_ACTION_REMOVE_SELECTION);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -189,7 +176,6 @@ test_playlist_editor_selection_action_uses_c_runtime(void) {
     assert(test_state.run_count == 1);
     assert(test_state.run_types[0] == NCM_ACTION_SELECT_RANGE);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -220,7 +206,6 @@ test_playlist_editor_scroll_binding_uses_c_runtime(void) {
     assert(test_state.run_types[0] == NCM_ACTION_PAGE_DOWN);
     assert(test_state.run_types[1] == NCM_ACTION_MOVE_END);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -233,7 +218,6 @@ test_playlist_editor_search_movement_uses_c_runtime(void) {
     assert(test_state.run_count == 1);
     assert(test_state.run_types[0] == NCM_ACTION_NEXT_FOUND_ITEM);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -246,7 +230,6 @@ test_playlist_editor_jump_to_playing_uses_c_runtime(void) {
     assert(test_state.run_count == 1);
     assert(test_state.run_types[0] == NCM_ACTION_JUMP_TO_PLAYING_SONG);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -260,7 +243,6 @@ test_playlist_editor_load_action_uses_c_runtime(void) {
     assert(test_state.run_count == 1);
     assert(test_state.run_types[0] == NCM_ACTION_LOAD);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -284,7 +266,6 @@ test_playlist_editor_load_binding_uses_c_runtime(void) {
     assert(test_state.run_count == 1);
     assert(test_state.run_types[0] == NCM_ACTION_LOAD);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -297,7 +278,6 @@ test_migrated_action_uses_c_runtime(void) {
     assert(test_state.run_count == 1);
     assert(test_state.run_types[0] == NCM_ACTION_APPLY_FILTER);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
