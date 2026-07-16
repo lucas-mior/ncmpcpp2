@@ -3,10 +3,6 @@
 
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcScrollpadScreen {
     NcScreen base;
 
@@ -40,9 +36,5 @@ int64 nc_scrollpad_screen_start_x(NcScrollpadScreen *screen);
 int64 nc_scrollpad_screen_start_y(NcScrollpadScreen *screen);
 int64 nc_scrollpad_screen_width(NcScrollpadScreen *screen);
 int64 nc_scrollpad_screen_height(NcScrollpadScreen *screen);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_SCROLLPAD_SCREEN_H */

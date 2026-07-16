@@ -11,10 +11,6 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 enum NativePlaylistEditorColumn {
     NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS,
     NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT,
@@ -184,9 +180,5 @@ bool native_playlist_editor_command_execute(
 bool native_playlist_editor_screen_load_current_playlist(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client,
     bool *loaded, NcmError *error);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_PLAYLIST_EDITOR_H */
