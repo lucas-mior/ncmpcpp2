@@ -3323,7 +3323,7 @@ __wrap_nc_window_print_data(NcWindow *window, char *string,
     }
     assert(window_trace.printed_len + string_len
            < (int32)SIZEOF(window_trace.printed));
-    ncm_memcpy(window_trace.printed + window_trace.printed_len, string,
+    cbase_memcpy(window_trace.printed + window_trace.printed_len, string,
                string_len);
     window_trace.printed_len += string_len;
     window_trace.printed[window_trace.printed_len] = '\0';
@@ -3441,7 +3441,7 @@ test_tag_editor_parser_pattern_history_workflow(void) {
 
     destroy_screen(&screen);
     if ((Config.pattern != NULL) && (Config.pattern_cap > 0)) {
-        ncm_free(Config.pattern, Config.pattern_cap);
+        cbase_free(Config.pattern, Config.pattern_cap);
     }
     Config.pattern = old_pattern;
     Config.pattern_len = old_pattern_len;
@@ -3612,7 +3612,7 @@ __wrap_ncm_mpd_client_get_directory_list(NcmMpdClient *client, char *path,
         mpd_trace.directory_path_len = (int32)strlen(path);
         assert(mpd_trace.directory_path_len
                < (int32)SIZEOF(mpd_trace.directory_path));
-        ncm_memcpy(mpd_trace.directory_path, path,
+        cbase_memcpy(mpd_trace.directory_path, path,
                    mpd_trace.directory_path_len);
         mpd_trace.directory_path[mpd_trace.directory_path_len] = '\0';
     }
@@ -3634,7 +3634,7 @@ __wrap_ncm_mpd_client_get_songs(NcmMpdClient *client, char *path,
         mpd_trace.songs_path_len = (int32)strlen(path);
         assert(mpd_trace.songs_path_len
                < (int32)SIZEOF(mpd_trace.songs_path));
-        ncm_memcpy(mpd_trace.songs_path, path, mpd_trace.songs_path_len);
+        cbase_memcpy(mpd_trace.songs_path, path, mpd_trace.songs_path_len);
         mpd_trace.songs_path[mpd_trace.songs_path_len] = '\0';
     }
     if (!mpd_trace.get_songs_result) {
@@ -3654,7 +3654,7 @@ __wrap_ncm_statusbar_print_cstring(int32 delay_seconds, char *message) {
         mpd_trace.status_message_len = (int32)strlen(message);
         assert(mpd_trace.status_message_len
                < (int32)SIZEOF(mpd_trace.status_message));
-        ncm_memcpy(mpd_trace.status_message, message,
+        cbase_memcpy(mpd_trace.status_message, message,
                    mpd_trace.status_message_len);
         mpd_trace.status_message[mpd_trace.status_message_len] = '\0';
     }

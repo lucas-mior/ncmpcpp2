@@ -1890,7 +1890,7 @@ browser_mpd_trace_record_path(char *path) {
     if (path != NULL) {
         len = (int32)strlen(path);
         assert(len < (int32)SIZEOF(mpd_trace.paths[0]));
-        ncm_memcpy(mpd_trace.paths[mpd_trace.calls], path, len);
+        cbase_memcpy(mpd_trace.paths[mpd_trace.calls], path, len);
     }
     mpd_trace.paths[mpd_trace.calls][len] = '\0';
     mpd_trace.path_lens[mpd_trace.calls] = len;
@@ -2057,7 +2057,7 @@ __wrap_ncm_mpd_client_delete_playlist(NcmMpdClient *client, char *name,
 
         len = (int32)strlen(name);
         assert(len < (int32)SIZEOF(delete_playlist_path));
-        ncm_memcpy(delete_playlist_path, name, len + 1);
+        cbase_memcpy(delete_playlist_path, name, len + 1);
     }
 
     switch (delete_playlist_mode) {
@@ -2091,12 +2091,12 @@ __wrap_ncm_mpd_client_rename_playlist(NcmMpdClient *client,
     if (from != NULL) {
         len = (int32)strlen(from);
         assert(len < (int32)SIZEOF(rename_playlist_from));
-        ncm_memcpy(rename_playlist_from, from, len + 1);
+        cbase_memcpy(rename_playlist_from, from, len + 1);
     }
     if (to != NULL) {
         len = (int32)strlen(to);
         assert(len < (int32)SIZEOF(rename_playlist_to));
-        ncm_memcpy(rename_playlist_to, to, len + 1);
+        cbase_memcpy(rename_playlist_to, to, len + 1);
     }
     ncm_error_clear(error);
     return true;
@@ -2115,7 +2115,7 @@ __wrap_ncm_mpd_client_update_directory(NcmMpdClient *client, char *path,
     if (path != NULL) {
         len = (int32)strlen(path);
         assert(len < (int32)SIZEOF(update_directory_path));
-        ncm_memcpy(update_directory_path, path, len + 1);
+        cbase_memcpy(update_directory_path, path, len + 1);
     }
     ncm_error_clear(error);
     return true;
@@ -2174,7 +2174,7 @@ __wrap_ncm_statusbar_print(int32 delay, char *message,
     if (message_len >= (int32)SIZEOF(browser_action_status)) {
         message_len = (int32)SIZEOF(browser_action_status) - 1;
     }
-    ncm_memcpy(browser_action_status, message, message_len);
+    cbase_memcpy(browser_action_status, message, message_len);
     browser_action_status[message_len] = '\0';
     browser_action_status_calls += 1;
     return;
@@ -2204,8 +2204,8 @@ __wrap_nc_window_prompt(NcWindow *window, NcPrompt *prompt,
     (void)window;
     (void)prompt;
     len = browser_test_cstring_len(browser_action_prompt_text);
-    *result = ncm_malloc(len + 1);
-    ncm_memcpy(*result, browser_action_prompt_text, len + 1);
+    *result = cbase_malloc(len + 1);
+    cbase_memcpy(*result, browser_action_prompt_text, len + 1);
     return NC_PROMPT_ACCEPTED;
 }
 
@@ -2217,7 +2217,7 @@ __wrap_nc_window_prompt_result_destroy(char *result) {
         return;
     }
     len = browser_test_cstring_len(result);
-    ncm_free(result, len + 1);
+    cbase_free(result, len + 1);
     return;
 }
 
@@ -2486,7 +2486,7 @@ browser_action_set_prompt(char *text) {
 
     len = browser_test_cstring_len(text);
     assert(len < (int32)SIZEOF(browser_action_prompt_text));
-    ncm_memcpy(browser_action_prompt_text, text, len + 1);
+    cbase_memcpy(browser_action_prompt_text, text, len + 1);
     return;
 }
 

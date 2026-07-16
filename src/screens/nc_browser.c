@@ -2781,22 +2781,22 @@ native_browser_remove_directory(char *path, int32 path_len,
         return false;
     }
 
-    copy = ncm_malloc(path_len + 1);
-    ncm_memcpy(copy, path, path_len);
+    copy = cbase_malloc(path_len + 1);
+    cbase_memcpy(copy, path, path_len);
     copy[path_len] = '\0';
     if (rmdir(copy) != 0) {
         if (errno == ENOENT) {
-            ncm_free(copy, path_len + 1);
+            cbase_free(copy, path_len + 1);
             ncm_error_clear(error);
             return true;
         }
         native_browser_set_errno_error(error, errno, (char *)"rmdir", path,
                                        path_len);
-        ncm_free(copy, path_len + 1);
+        cbase_free(copy, path_len + 1);
         return false;
     }
 
-    ncm_free(copy, path_len + 1);
+    cbase_free(copy, path_len + 1);
     ncm_error_clear(error);
     return true;
 }

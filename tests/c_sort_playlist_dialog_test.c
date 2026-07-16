@@ -174,7 +174,7 @@ __wrap_nc_window_print_data(NcWindow *window, char *string,
     (void)window;
     assert(string_len >= 0);
     assert(string_len < (int32)sizeof(test_state.drawn_label));
-    ncm_memcpy(test_state.drawn_label, string, string_len);
+    cbase_memcpy(test_state.drawn_label, string, string_len);
     test_state.drawn_label[string_len] = '\0';
     test_state.draw_count += 1;
     return;

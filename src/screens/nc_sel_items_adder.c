@@ -869,8 +869,8 @@ adder_action_row_set(NcEditorActionRow *row, char *label,
     }
     if (label != NULL && label_len > 0) {
         row->label_cap = label_len + 1;
-        row->label = ncm_malloc(row->label_cap);
-        ncm_memcpy(row->label, label, label_len);
+        row->label = cbase_malloc(row->label_cap);
+        cbase_memcpy(row->label, label, label_len);
         row->label[label_len] = '\0';
         row->label_len = label_len;
     }
@@ -889,8 +889,8 @@ adder_action_set_playlist(char **dest, int32 *dest_len, int32 *dest_cap,
         return true;
     }
     *dest_cap = source_len + 1;
-    *dest = ncm_malloc(*dest_cap);
-    ncm_memcpy(*dest, source, source_len);
+    *dest = cbase_malloc(*dest_cap);
+    cbase_memcpy(*dest, source, source_len);
     (*dest)[source_len] = '\0';
     *dest_len = source_len;
     return true;
@@ -1296,9 +1296,9 @@ existing_playlist_action_destroy(void *user) {
         return;
     }
     if (action->playlist != NULL) {
-        ncm_free(action->playlist, action->playlist_cap);
+        cbase_free(action->playlist, action->playlist_cap);
     }
-    ncm_free(action, SIZEOF(*action));
+    cbase_free(action, SIZEOF(*action));
     return;
 }
 
@@ -1307,7 +1307,7 @@ existing_playlist_action_create(NativeSelectedItemsAdderScreen *screen,
                                 char *playlist, int32 playlist_len) {
     ExistingPlaylistAction *action;
 
-    action = ncm_malloc(SIZEOF(*action));
+    action = cbase_malloc(SIZEOF(*action));
     existing_playlist_action_init(action);
     action->screen = screen;
     if (!adder_action_set_playlist(&action->playlist,

@@ -321,7 +321,7 @@ test_frequency_drawing(void) {
                                   nc_color_default(), nc_border_none(),
                                   &config);
     samples_len = 2*screen.fft.dft_nonzero_size;
-    samples = ncm_malloc(samples_len*SIZEOF(*samples));
+    samples = cbase_malloc(samples_len*SIZEOF(*samples));
     for (int32 i = 0; i < samples_len / 2; i += 1) {
         double angle;
         int16 sample;
@@ -340,7 +340,7 @@ test_frequency_drawing(void) {
     assert(test_reverse_on_calls > 0);
     assert(test_reverse_on_calls == test_reverse_off_calls);
 
-    ncm_free(samples, samples_len*SIZEOF(*samples));
+    cbase_free(samples, samples_len*SIZEOF(*samples));
     native_visualizer_screen_destroy(&screen);
     return;
 }

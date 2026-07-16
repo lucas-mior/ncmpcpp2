@@ -198,7 +198,7 @@ runtime_run_external_command(char *command, int32 command_len,
 
     state = user;
     REQUIRE(command_len < (int32)SIZEOF(state->external));
-    ncm_memcpy(state->external, command, command_len);
+    cbase_memcpy(state->external, command, command_len);
     state->external[command_len] = '\0';
     state->external_len = command_len;
     return true;
@@ -211,7 +211,7 @@ runtime_run_external_console_command(char *command, int32 command_len,
 
     state = user;
     REQUIRE(command_len < (int32)SIZEOF(state->console));
-    ncm_memcpy(state->console, command, command_len);
+    cbase_memcpy(state->console, command, command_len);
     state->console[command_len] = '\0';
     state->console_len = command_len;
     return true;

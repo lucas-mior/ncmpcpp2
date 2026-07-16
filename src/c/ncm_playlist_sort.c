@@ -44,7 +44,7 @@ ncm_playlist_sort_plan_destroy(NcmPlaylistSortPlan *plan) {
         return;
     }
     if (plan->items) {
-        ncm_free(plan->items, plan->cap*SIZEOF(*plan->items));
+        cbase_free(plan->items, plan->cap*SIZEOF(*plan->items));
     }
 
     ncm_playlist_sort_plan_init(plan);
@@ -225,10 +225,10 @@ ncm_playlist_sort_plan_build(
         return true;
     }
 
-    order = ncm_malloc((int64)songs->len*SIZEOF(*order));
-    temporary = ncm_malloc((int64)songs->len*SIZEOF(*temporary));
-    current = ncm_malloc((int64)songs->len*SIZEOF(*current));
-    replacement.items = ncm_malloc(
+    order = cbase_malloc((int64)songs->len*SIZEOF(*order));
+    temporary = cbase_malloc((int64)songs->len*SIZEOF(*temporary));
+    current = cbase_malloc((int64)songs->len*SIZEOF(*current));
+    replacement.items = cbase_malloc(
         (int64)(songs->len - 1)*SIZEOF(*replacement.items));
     replacement.cap = songs->len - 1;
 
@@ -269,9 +269,9 @@ ncm_playlist_sort_plan_build(
         }
     }
 
-    ncm_free(current, (int64)songs->len*SIZEOF(*current));
-    ncm_free(temporary, (int64)songs->len*SIZEOF(*temporary));
-    ncm_free(order, (int64)songs->len*SIZEOF(*order));
+    cbase_free(current, (int64)songs->len*SIZEOF(*current));
+    cbase_free(temporary, (int64)songs->len*SIZEOF(*temporary));
+    cbase_free(order, (int64)songs->len*SIZEOF(*order));
     ncm_playlist_sort_plan_destroy(plan);
     *plan = replacement;
     ncm_error_clear(error);

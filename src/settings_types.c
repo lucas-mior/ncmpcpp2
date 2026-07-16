@@ -2,6 +2,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 static NcmArrayItemCallbacks settings_no_callbacks = {0};
 
@@ -46,7 +47,7 @@ NCM_ARRAY_DEFINE(ncm_formatted_color_array,
 static void
 settings_string_destroy(char **data, int32 *len, int32 *cap) {
     if (*data != NULL) {
-        ncm_free(*data, *cap);
+        cbase_free(*data, *cap);
     }
     *data = NULL;
     *len = 0;
@@ -66,8 +67,8 @@ settings_string_copy(char **dest_data, int32 *dest_len, int32 *dest_cap,
     }
 
     new_cap = source_len + 1;
-    new_data = ncm_malloc(new_cap);
-    ncm_memcpy(new_data, source_data, source_len);
+    new_data = cbase_malloc(new_cap);
+    cbase_memcpy(new_data, source_data, source_len);
     new_data[source_len] = '\0';
 
     *dest_data = new_data;
@@ -177,7 +178,7 @@ column_array_destroy(ColumnArray *array) {
     }
     column_array_clear(array);
     if (array->items) {
-        ncm_free(array->items, array->cap*SIZEOF(*array->items));
+        cbase_free(array->items, array->cap*SIZEOF(*array->items));
     }
     column_array_init(array);
     return;
@@ -210,7 +211,7 @@ column_array_reserve(ColumnArray *array, int32 extra) {
         new_cap *= 2;
     }
 
-    array->items = ncm_realloc_array(array->items, old_cap, new_cap,
+    array->items = cbase_realloc_array(array->items, old_cap, new_cap,
                                      SIZEOF(*array->items));
     array->cap = new_cap;
     return true;
@@ -270,7 +271,7 @@ screen_type_array_destroy(ScreenTypeArray *array) {
         return;
     }
     if (array->items) {
-        ncm_free(array->items, array->cap*SIZEOF(*array->items));
+        cbase_free(array->items, array->cap*SIZEOF(*array->items));
     }
     screen_type_array_init(array);
     return;
@@ -303,7 +304,7 @@ screen_type_array_reserve(ScreenTypeArray *array, int32 extra) {
         new_cap *= 2;
     }
 
-    array->items = ncm_realloc_array(array->items, old_cap, new_cap,
+    array->items = cbase_realloc_array(array->items, old_cap, new_cap,
                                      SIZEOF(*array->items));
     array->cap = new_cap;
     return true;

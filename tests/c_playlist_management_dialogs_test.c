@@ -364,9 +364,9 @@ __wrap_nc_window_prompt(NcWindow *window, NcPrompt *prompt,
     test_state.prompt_calls += 1;
     *result = NULL;
     if (test_state.prompt_status == NC_PROMPT_ACCEPTED) {
-        *result = ncm_malloc(test_state.prompt_input_len + 1);
+        *result = cbase_malloc(test_state.prompt_input_len + 1);
         if (test_state.prompt_input_len > 0) {
-            ncm_memcpy(*result, test_state.prompt_input,
+            cbase_memcpy(*result, test_state.prompt_input,
                        test_state.prompt_input_len);
         }
         (*result)[test_state.prompt_input_len] = '\0';
@@ -383,7 +383,7 @@ __wrap_nc_window_prompt_result_destroy(char *result) {
         return;
     }
     result_len = test_cstring_len(result);
-    ncm_free(result, result_len + 1);
+    cbase_free(result, result_len + 1);
     return;
 }
 
@@ -470,7 +470,7 @@ __wrap_nc_window_print_data(NcWindow *window, char *string,
         return;
     }
     assert(string_len < (int32)SIZEOF(test_state.drawn_label));
-    ncm_memcpy(test_state.drawn_label, string, string_len);
+    cbase_memcpy(test_state.drawn_label, string, string_len);
     test_state.drawn_label[string_len] = '\0';
     test_state.drawn_label_len = string_len;
     test_state.draw_calls += 1;
@@ -614,7 +614,7 @@ test_state_set_prompt(enum NcPromptStatus status, char *input,
     test_state.prompt_input_len = input_len;
     if (input_len > 0) {
         assert(input != NULL);
-        ncm_memcpy(test_state.prompt_input, input, input_len);
+        cbase_memcpy(test_state.prompt_input, input, input_len);
     }
     test_state.prompt_input[input_len] = '\0';
     return;
@@ -642,7 +642,7 @@ test_copy_text(char *dest, int32 *dest_len, char *source,
     assert(source_len < TEST_TEXT_CAP);
     if (source_len > 0) {
         assert(source != NULL);
-        ncm_memcpy(dest, source, source_len);
+        cbase_memcpy(dest, source, source_len);
     }
     dest[source_len] = '\0';
     if (dest_len) {

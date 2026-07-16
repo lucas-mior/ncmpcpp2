@@ -63,8 +63,8 @@ lastfm_string_set(char **data, int32 *len, int32 *cap,
         return true;
     }
     new_cap = source_len + 1;
-    new_data = ncm_malloc(new_cap);
-    ncm_memcpy(new_data, source, source_len);
+    new_data = cbase_malloc(new_cap);
+    cbase_memcpy(new_data, source, source_len);
     new_data[source_len] = '\0';
     *data = new_data;
     *len = source_len;
@@ -75,7 +75,7 @@ lastfm_string_set(char **data, int32 *len, int32 *cap,
 static void
 lastfm_string_destroy(char **data, int32 *len, int32 *cap) {
     if (*data != NULL) {
-        ncm_free(*data, *cap);
+        cbase_free(*data, *cap);
     }
     *data = NULL;
     *len = 0;

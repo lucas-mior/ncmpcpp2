@@ -43,8 +43,8 @@ ncm_fs_path_copy(char *path, int32 path_len, char **copy, NcmError *error) {
         return false;
     }
 
-    *copy = ncm_malloc(path_len + 1);
-    ncm_memcpy(*copy, path, path_len);
+    *copy = cbase_malloc(path_len + 1);
+    cbase_memcpy(*copy, path, path_len);
     (*copy)[path_len] = '\0';
     return true;
 }
@@ -163,7 +163,7 @@ ncm_fs_entry_init(NcmFsEntry *entry) {
 void
 ncm_fs_entry_destroy(NcmFsEntry *entry) {
     if (entry->name) {
-        ncm_free(entry->name, entry->name_len + 1);
+        cbase_free(entry->name, entry->name_len + 1);
     }
     ncm_fs_entry_init(entry);
     return;
@@ -191,12 +191,12 @@ ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat,
 
     if (lstat(path_copy, &statbuf) != 0) {
         if (errno == ENOENT) {
-            ncm_free(path_copy, path_len + 1);
+            cbase_free(path_copy, path_len + 1);
             ncm_error_clear(error);
             return true;
         }
         ncm_fs_set_errno_error(error, errno, (char *)"stat", path, path_len);
-        ncm_free(path_copy, path_len + 1);
+        cbase_free(path_copy, path_len + 1);
         return false;
     }
 
@@ -204,7 +204,7 @@ ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat,
     stat->mtime = (int64)statbuf.st_mtime;
     stat->type = ncm_fs_mode_type(statbuf.st_mode);
     stat->exists = true;
-    ncm_free(path_copy, path_len + 1);
+    cbase_free(path_copy, path_len + 1);
     ncm_error_clear(error);
     return true;
 }
@@ -252,17 +252,17 @@ ncm_fs_unlink(char *path, int32 path_len, NcmError *error) {
 
     if (unlink(path_copy) != 0) {
         if (errno == ENOENT) {
-            ncm_free(path_copy, path_len + 1);
+            cbase_free(path_copy, path_len + 1);
             ncm_error_clear(error);
             return true;
         }
         ncm_fs_set_errno_error(error, errno, (char *)"unlink", path,
                                path_len);
-        ncm_free(path_copy, path_len + 1);
+        cbase_free(path_copy, path_len + 1);
         return false;
     }
 
-    ncm_free(path_copy, path_len + 1);
+    cbase_free(path_copy, path_len + 1);
     ncm_error_clear(error);
     return true;
 }
@@ -280,20 +280,20 @@ ncm_fs_rename(char *old_path, int32 old_path_len, char *new_path,
         return false;
     }
     if (!ncm_fs_path_copy(new_path, new_path_len, &new_copy, error)) {
-        ncm_free(old_copy, old_path_len + 1);
+        cbase_free(old_copy, old_path_len + 1);
         return false;
     }
 
     if (rename(old_copy, new_copy) != 0) {
         ncm_fs_set_errno_error(error, errno, (char *)"rename",
                                old_path, old_path_len);
-        ncm_free(new_copy, new_path_len + 1);
-        ncm_free(old_copy, old_path_len + 1);
+        cbase_free(new_copy, new_path_len + 1);
+        cbase_free(old_copy, old_path_len + 1);
         return false;
     }
 
-    ncm_free(new_copy, new_path_len + 1);
-    ncm_free(old_copy, old_path_len + 1);
+    cbase_free(new_copy, new_path_len + 1);
+    cbase_free(old_copy, old_path_len + 1);
     ncm_error_clear(error);
     return true;
 }
@@ -320,7 +320,7 @@ ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *error) {
         copy[i] = '\0';
         if ((mkdir(copy, 0700) != 0) && (errno != EEXIST)) {
             ncm_fs_set_errno_error(error, errno, (char *)"mkdir", copy, i);
-            ncm_free(copy, path_len + 1);
+            cbase_free(copy, path_len + 1);
             return false;
         }
         if (i < path_len) {
@@ -328,7 +328,7 @@ ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *error) {
         }
     }
 
-    ncm_free(copy, path_len + 1);
+    cbase_free(copy, path_len + 1);
     ncm_error_clear(error);
     return true;
 }
@@ -354,7 +354,7 @@ ncm_fs_directory_open(NcmFsDirectory *directory, char *path,
     if ((dir = opendir(path_copy)) == NULL) {
         ncm_fs_set_errno_error(error, errno, (char *)"opendir", path,
                                path_len);
-        ncm_free(path_copy, path_len + 1);
+        cbase_free(path_copy, path_len + 1);
         return false;
     }
 
@@ -394,10 +394,10 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
         }
 
         name_len = strlen32(dirent->d_name);
-        entry->name = ncm_malloc(name_len + 1);
+        entry->name = cbase_malloc(name_len + 1);
         entry->name_len = name_len;
         entry->type = ncm_fs_dirent_type(dirent->d_type);
-        ncm_memcpy(entry->name, dirent->d_name, name_len + 1);
+        cbase_memcpy(entry->name, dirent->d_name, name_len + 1);
         ncm_error_clear(error);
         return true;
     }
@@ -421,7 +421,7 @@ ncm_fs_directory_close(NcmFsDirectory *directory) {
         closedir((DIR *)directory->dir);
     }
     if (directory->path) {
-        ncm_free(directory->path, directory->path_len + 1);
+        cbase_free(directory->path, directory->path_len + 1);
     }
 
     directory->dir = NULL;

@@ -251,7 +251,7 @@ set_prompt(char *text) {
 
     len = test_cstring_len(text);
     assert(len < (int32)sizeof(test_state.prompt_text));
-    ncm_memcpy(test_state.prompt_text, text, len + 1);
+    cbase_memcpy(test_state.prompt_text, text, len + 1);
     return;
 }
 
@@ -615,7 +615,7 @@ test_select_found_items(void) {
     test_state_reset();
     menu = playlist_menu();
     highlight_position(3);
-    ncm_memcpy(test_state.search_constraint, (char *)"song", 5);
+    cbase_memcpy(test_state.search_constraint, (char *)"song", 5);
     test_state.search_results[0] = 1;
     test_state.search_results[1] = 4;
     test_state.search_result_count = 2;
@@ -1024,7 +1024,7 @@ __wrap_ncm_statusbar_print(int32 delay, char *message,
     if (message_len >= (int32)sizeof(test_state.status)) {
         message_len = (int32)sizeof(test_state.status) - 1;
     }
-    ncm_memcpy(test_state.status, message, message_len);
+    cbase_memcpy(test_state.status, message, message_len);
     test_state.status[message_len] = '\0';
     test_state.status_calls += 1;
     return;
@@ -1081,8 +1081,8 @@ __wrap_nc_window_prompt(NcWindow *window, NcPrompt *prompt,
         return test_state.prompt_status;
     }
     len = test_cstring_len(test_state.prompt_text);
-    *result = ncm_malloc(len + 1);
-    ncm_memcpy(*result, test_state.prompt_text, len + 1);
+    *result = cbase_malloc(len + 1);
+    cbase_memcpy(*result, test_state.prompt_text, len + 1);
     return NC_PROMPT_ACCEPTED;
 }
 
@@ -1094,7 +1094,7 @@ __wrap_nc_window_prompt_result_destroy(char *result) {
         return;
     }
     len = test_cstring_len(result);
-    ncm_free(result, len + 1);
+    cbase_free(result, len + 1);
     return;
 }
 

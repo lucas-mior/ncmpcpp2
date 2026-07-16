@@ -33,7 +33,7 @@ ncm_directory_init(NcmDirectory *directory) {
 void
 ncm_directory_destroy(NcmDirectory *directory) {
     if (directory->path) {
-        ncm_free(directory->path, directory->path_len + 1);
+        cbase_free(directory->path, directory->path_len + 1);
     }
 
     directory->path = NULL;
@@ -58,10 +58,10 @@ ncm_directory_set(NcmDirectory *directory, char *path,
     }
 
     ncm_directory_init(&replacement);
-    replacement.path = ncm_malloc(path_len + 1);
+    replacement.path = cbase_malloc(path_len + 1);
     replacement.path_len = path_len;
     replacement.last_modified = last_modified;
-    ncm_memcpy(replacement.path, path, path_len);
+    cbase_memcpy(replacement.path, path, path_len);
     replacement.path[path_len] = '\0';
 
     ncm_directory_destroy(directory);

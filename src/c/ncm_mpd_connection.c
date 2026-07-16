@@ -149,7 +149,7 @@ ncm_mpd_song_list_push(NcmMpdSongList *list, NcmSong *song) {
             new_capacity = 8;
         }
 
-        list->items = (NcmSong *)ncm_realloc_array(
+        list->items = (NcmSong *)cbase_realloc_array(
             list->items, old_capacity, new_capacity, SIZEOF(*list->items));
         list->capacity = new_capacity;
     }
@@ -179,7 +179,7 @@ ncm_mpd_item_list_push(NcmMpdItemList *list, NcmMpdItem *item) {
             new_capacity = 8;
         }
 
-        list->items = (NcmMpdItem *)ncm_realloc_array(
+        list->items = (NcmMpdItem *)cbase_realloc_array(
             list->items, old_capacity, new_capacity, SIZEOF(*list->items));
         list->capacity = new_capacity;
     }
@@ -211,14 +211,14 @@ ncm_mpd_string_list_push(NcmMpdStringList *list, char *value) {
             new_capacity = 8;
         }
 
-        list->items = (NcmMpdString *)ncm_realloc_array(
+        list->items = (NcmMpdString *)cbase_realloc_array(
             list->items, old_capacity, new_capacity, SIZEOF(*list->items));
         list->capacity = new_capacity;
     }
 
     value_len = ncm_mpd_connection_cstring_len(value);
     string = &list->items[list->count];
-    string->value = (char *)ncm_malloc(value_len + 1);
+    string->value = (char *)cbase_malloc(value_len + 1);
     string->value_len = value_len;
     ncm_mpd_connection_cstring_copy(string->value, value_len + 1, value);
     list->count += 1;
@@ -249,7 +249,7 @@ ncm_mpd_output_list_push(NcmMpdOutputList *list,
             new_capacity = 8;
         }
 
-        list->items = (NcmMpdOutput *)ncm_realloc_array(
+        list->items = (NcmMpdOutput *)cbase_realloc_array(
             list->items, old_capacity, new_capacity, SIZEOF(*list->items));
         list->capacity = new_capacity;
     }
@@ -259,7 +259,7 @@ ncm_mpd_output_list_push(NcmMpdOutputList *list,
 
     item = &list->items[list->count];
     item->id = mpd_output_get_id(output);
-    item->name = (char *)ncm_malloc(name_len + 1);
+    item->name = (char *)cbase_malloc(name_len + 1);
     item->name_len = name_len;
     item->enabled = mpd_output_get_enabled(output);
     ncm_mpd_connection_cstring_copy(item->name, name_len + 1, name);
@@ -290,7 +290,7 @@ ncm_mpd_playlist_list_push(NcmMpdPlaylistList *list,
             new_capacity = 8;
         }
 
-        list->items = (NcmPlaylist *)ncm_realloc_array(
+        list->items = (NcmPlaylist *)cbase_realloc_array(
             list->items, old_capacity, new_capacity, SIZEOF(*list->items));
         list->capacity = new_capacity;
     }
@@ -614,7 +614,7 @@ ncm_mpd_string_destroy(NcmMpdString *string) {
     }
 
     if (string->value != NULL) {
-        ncm_free(string->value, string->value_len + 1);
+        cbase_free(string->value, string->value_len + 1);
     }
     ncm_mpd_string_init(string);
     return;
@@ -634,10 +634,10 @@ ncm_mpd_string_set(NcmMpdString *string, char *value, int32 value_len) {
     }
 
     ncm_mpd_string_destroy(string);
-    string->value = (char *)ncm_malloc(value_len + 1);
+    string->value = (char *)cbase_malloc(value_len + 1);
     string->value_len = value_len;
     if (value_len > 0) {
-        ncm_memcpy(string->value, value, value_len);
+        cbase_memcpy(string->value, value, value_len);
     }
     string->value[value_len] = '\0';
     return true;
@@ -698,7 +698,7 @@ ncm_mpd_output_destroy(NcmMpdOutput *output) {
     }
 
     if (output->name != NULL) {
-        ncm_free(output->name, output->name_len + 1);
+        cbase_free(output->name, output->name_len + 1);
     }
     ncm_mpd_output_init(output);
     return;
@@ -720,11 +720,11 @@ ncm_mpd_output_set(NcmMpdOutput *output, uint32 id, char *name,
 
     ncm_mpd_output_destroy(output);
     output->id = id;
-    output->name = (char *)ncm_malloc(name_len + 1);
+    output->name = (char *)cbase_malloc(name_len + 1);
     output->name_len = name_len;
     output->enabled = enabled;
     if (name_len > 0) {
-        ncm_memcpy(output->name, name, name_len);
+        cbase_memcpy(output->name, name, name_len);
     }
     output->name[name_len] = '\0';
     return true;
@@ -786,7 +786,7 @@ ncm_mpd_song_list_destroy(NcmMpdSongList *list) {
 
     ncm_mpd_song_list_clear(list);
     if (list->items != NULL) {
-        ncm_free(list->items, list->capacity*SIZEOF(*list->items));
+        cbase_free(list->items, list->capacity*SIZEOF(*list->items));
     }
 
     ncm_mpd_song_list_init(list);
@@ -937,7 +937,7 @@ ncm_mpd_item_list_destroy(NcmMpdItemList *list) {
 
     ncm_mpd_item_list_clear(list);
     if (list->items != NULL) {
-        ncm_free(list->items, list->capacity*SIZEOF(*list->items));
+        cbase_free(list->items, list->capacity*SIZEOF(*list->items));
     }
 
     ncm_mpd_item_list_init(list);
@@ -1118,7 +1118,7 @@ ncm_mpd_string_list_destroy(NcmMpdStringList *list) {
 
     ncm_mpd_string_list_clear(list);
     if (list->items != NULL) {
-        ncm_free(list->items, list->capacity*SIZEOF(*list->items));
+        cbase_free(list->items, list->capacity*SIZEOF(*list->items));
     }
 
     ncm_mpd_string_list_init(list);
@@ -1232,7 +1232,7 @@ ncm_mpd_string_list_append(NcmMpdStringList *list, char *value,
             new_capacity = 8;
         }
 
-        list->items = (NcmMpdString *)ncm_realloc_array(
+        list->items = (NcmMpdString *)cbase_realloc_array(
             list->items, old_capacity, new_capacity, SIZEOF(*list->items));
         list->capacity = new_capacity;
     }
@@ -1295,7 +1295,7 @@ ncm_mpd_output_list_destroy(NcmMpdOutputList *list) {
 
     ncm_mpd_output_list_clear(list);
     if (list->items != NULL) {
-        ncm_free(list->items, list->capacity*SIZEOF(*list->items));
+        cbase_free(list->items, list->capacity*SIZEOF(*list->items));
     }
 
     ncm_mpd_output_list_init(list);
@@ -1426,7 +1426,7 @@ ncm_mpd_output_list_append_move(NcmMpdOutputList *list,
             new_capacity = 8;
         }
 
-        list->items = (NcmMpdOutput *)ncm_realloc_array(
+        list->items = (NcmMpdOutput *)cbase_realloc_array(
             list->items, old_capacity, new_capacity, SIZEOF(*list->items));
         list->capacity = new_capacity;
     }
@@ -1457,7 +1457,7 @@ ncm_mpd_playlist_list_destroy(NcmMpdPlaylistList *list) {
 
     ncm_mpd_playlist_list_clear(list);
     if (list->items != NULL) {
-        ncm_free(list->items, list->capacity*SIZEOF(*list->items));
+        cbase_free(list->items, list->capacity*SIZEOF(*list->items));
     }
 
     ncm_mpd_playlist_list_init(list);
@@ -1588,7 +1588,7 @@ ncm_mpd_playlist_list_append_move(NcmMpdPlaylistList *list,
             new_capacity = 8;
         }
 
-        list->items = (NcmPlaylist *)ncm_realloc_array(
+        list->items = (NcmPlaylist *)cbase_realloc_array(
             list->items, old_capacity, new_capacity, SIZEOF(*list->items));
         list->capacity = new_capacity;
     }

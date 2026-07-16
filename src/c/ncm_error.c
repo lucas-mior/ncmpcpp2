@@ -34,7 +34,7 @@ ncm_error_set(NcmError *error, int32 code,
         len = (int32)SIZEOF(error->message) - 1;
     }
 
-    ncm_memcpy(error->message, message, len);
+    cbase_memcpy(error->message, message, len);
     error->message[len] = '\0';
     error->code = code;
     return;
