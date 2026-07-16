@@ -489,6 +489,7 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_SELECT_RANGE,
         NCM_ACTION_REVERSE_SELECTION,
         NCM_ACTION_REMOVE_SELECTION,
+        NCM_ACTION_SELECT_ALBUM,
         NCM_ACTION_APPLY_FILTER,
         NCM_ACTION_FIND_ITEM_FORWARD,
         NCM_ACTION_FIND_ITEM_BACKWARD,
@@ -661,6 +662,7 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_SELECT_RANGE,
         NCM_ACTION_REVERSE_SELECTION,
         NCM_ACTION_REMOVE_SELECTION,
+        NCM_ACTION_SELECT_ALBUM,
         NCM_ACTION_NEXT_FOUND_ITEM,
         NCM_ACTION_PREVIOUS_FOUND_ITEM,
         NCM_ACTION_TOGGLE_FIND_MODE,
@@ -835,9 +837,6 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_SCREEN_TYPE_BROWSER));
     REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
         NCM_ACTION_START_SEARCHING, NCM_SCREEN_TYPE_BROWSER));
-    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
-        NCM_ACTION_SELECT_ALBUM, NCM_SCREEN_TYPE_SEARCH_ENGINE));
-
 #if defined(HAVE_TAGLIB_H)
     ncm_binding_init(&binding);
     append_action_kind(&binding, NCM_BINDING_ACTION_REQUIRE_RUNNABLE,

@@ -124,26 +124,6 @@ bool currentMediaLibraryAlbum(std::string &album)
 	return true;
 }
 
-bool nativeMediaLibraryItemAvailable()
-{
-	if (!native_c_screen_media_library_is_current())
-		return false;
-	return native_media_library_screen_item_available(
-	    native_c_screen_media_library());
-}
-
-bool addNativeMediaLibraryItemToPlaylist(bool play)
-{
-	NcmError error;
-	bool success;
-
-	ncm_error_clear(&error);
-	success = native_media_library_screen_add_item_to_playlist(
-	    native_c_screen_media_library(), play, &error);
-	if (!success && ncm_error_is_set(&error))
-		Statusbar::print(error.message);
-	return success;
-}
 
 
 std::vector<std::shared_ptr<Actions::BaseAction>> AvailableActions;
@@ -262,16 +242,32 @@ char *itemTypeName(MPD::Item::Type type)
 
 void populateActions();
 
-bool scrollTagCanBeRun(NC::List *&list, const SongList *&songs);
-void scrollTagUpRun(NC::List *list, const SongList *songs, enum NcmSongGetter getter);
-void scrollTagDownRun(NC::List *list, const SongList *songs, enum NcmSongGetter getter);
-
-void listsChangeFinisher();
 
 bool actionHasNoLegacyImplementation(NcmActionType type)
 {
-	return type == NCM_ACTION_START_SEARCHING;
+	switch (type)
+	{
+		case NCM_ACTION_SCROLL_UP_ARTIST:
+		case NCM_ACTION_SCROLL_UP_ALBUM:
+		case NCM_ACTION_SCROLL_DOWN_ARTIST:
+		case NCM_ACTION_SCROLL_DOWN_ALBUM:
+		case NCM_ACTION_PREVIOUS_COLUMN:
+		case NCM_ACTION_NEXT_COLUMN:
+		case NCM_ACTION_ADD_ITEM_TO_PLAYLIST:
+		case NCM_ACTION_PLAY_ITEM:
+		case NCM_ACTION_START_SEARCHING:
+		case NCM_ACTION_SELECT_ITEM:
+		case NCM_ACTION_SELECT_RANGE:
+		case NCM_ACTION_REVERSE_SELECTION:
+		case NCM_ACTION_REMOVE_SELECTION:
+		case NCM_ACTION_SELECT_ALBUM:
+		case NCM_ACTION_SELECT_FOUND_ITEMS:
+			return true;
+		default:
+			return false;
+	}
 }
+
 
 template <typename Iterator>
 Iterator nextScreenTypeInSequence(Iterator first, Iterator last, ScreenType type)
@@ -408,163 +404,6 @@ void MouseEvent::run()
 	else if (m_mouse_event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED | BUTTON4_PRESSED | BUTTON5_PRESSED))
 		app_controller_mouse_button_pressed_current(m_mouse_event);
 }
-
-
-
-bool ScrollUpArtist::canBeRun()
-{
-	return scrollTagCanBeRun(m_list, m_songs);
-}
-
-void ScrollUpArtist::run()
-{
-	scrollTagUpRun(m_list, m_songs, NCM_SONG_GETTER_ARTIST);
-}
-
-bool ScrollUpAlbum::canBeRun()
-{
-	return scrollTagCanBeRun(m_list, m_songs);
-}
-
-void ScrollUpAlbum::run()
-{
-	scrollTagUpRun(m_list, m_songs, NCM_SONG_GETTER_ALBUM);
-}
-
-bool ScrollDownArtist::canBeRun()
-{
-	return scrollTagCanBeRun(m_list, m_songs);
-}
-
-void ScrollDownArtist::run()
-{
-	scrollTagDownRun(m_list, m_songs, NCM_SONG_GETTER_ARTIST);
-}
-
-bool ScrollDownAlbum::canBeRun()
-{
-	return scrollTagCanBeRun(m_list, m_songs);
-}
-
-void ScrollDownAlbum::run()
-{
-	scrollTagDownRun(m_list, m_songs, NCM_SONG_GETTER_ALBUM);
-}
-
-
-
-
-
-
-bool PreviousColumn::canBeRun()
-{
-	if (native_c_screen_media_library_is_current())
-		return native_media_library_screen_previous_column_available(
-		    native_c_screen_media_library());
-
-	m_hc = dynamic_cast<HasColumns *>(screenLegacyCurrent());
-	return m_hc != nullptr
-		&& m_hc->previousColumnAvailable();
-}
-
-void PreviousColumn::run()
-{
-	if (native_c_screen_media_library_is_current())
-	{
-		native_media_library_screen_previous_column(
-		    native_c_screen_media_library());
-		return;
-	}
-	m_hc->previousColumn();
-}
-
-bool NextColumn::canBeRun()
-{
-	if (native_c_screen_media_library_is_current())
-		return native_media_library_screen_next_column_available(
-		    native_c_screen_media_library());
-
-	m_hc = dynamic_cast<HasColumns *>(screenLegacyCurrent());
-	return m_hc != nullptr
-		&& m_hc->nextColumnAvailable();
-}
-
-void NextColumn::run()
-{
-	if (native_c_screen_media_library_is_current())
-	{
-		native_media_library_screen_next_column(
-		    native_c_screen_media_library());
-		return;
-	}
-	m_hc->nextColumn();
-}
-
-
-
-
-
-
-
-
-
-bool AddItemToPlaylist::canBeRun()
-{
-	if (native_c_screen_media_library_is_current())
-		return nativeMediaLibraryItemAvailable();
-
-	m_hs = dynamic_cast<HasSongs *>(screenLegacyCurrent());
-	return m_hs != nullptr && m_hs->itemAvailable();
-}
-
-void AddItemToPlaylist::run()
-{
-	bool success;
-
-	if (native_c_screen_media_library_is_current())
-		success = addNativeMediaLibraryItemToPlaylist(false);
-	else
-		success = m_hs->addItemToPlaylist(false);
-
-	if (success)
-	{
-		app_controller_scroll_current_screen(NC_SCROLL_DOWN);
-		listsChangeFinisher();
-	}
-}
-
-bool PlayItem::canBeRun()
-{
-	if (native_c_screen_media_library_is_current())
-		return nativeMediaLibraryItemAvailable();
-
-	m_hs = dynamic_cast<HasSongs *>(screenLegacyCurrent());
-	return m_hs != nullptr && m_hs->itemAvailable();
-}
-
-void PlayItem::run()
-{
-	bool success;
-
-	if (native_c_screen_media_library_is_current())
-		success = addNativeMediaLibraryItemToPlaylist(true);
-	else
-		success = m_hs->addItemToPlaylist(true);
-
-	if (success)
-		listsChangeFinisher();
-}
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -737,14 +576,6 @@ void EditLibraryAlbum::run()
 
 
 
-
-
-
-
-
-
-
-
 void ToggleScreenLock::run()
 {
 		const char *msg_unlockable_screen = "Current screen can't be locked";
@@ -780,135 +611,6 @@ void ToggleScreenLock::run()
 			Statusbar::print(msg_unlockable_screen);
 	}
 }
-
-
-
-
-bool SelectItem::canBeRun()
-{
-	m_list = dynamic_cast<NC::List *>(screenLegacyCurrent()->activeWindow());
-	return m_list != nullptr
-	    && !m_list->empty()
-	    && m_list->currentP()->isSelectable();
-}
-
-void SelectItem::run()
-{
-	auto current = m_list->currentP();
-	current->setSelected(!current->isSelected());
-}
-
-bool SelectRange::canBeRun()
-{
-	m_list = dynamic_cast<NC::List *>(screenLegacyCurrent()->activeWindow());
-	if (m_list == nullptr)
-		return false;
-	m_begin = m_list->beginP();
-	m_end = m_list->endP();
-	return findRange(m_begin, m_end);
-}
-
-void SelectRange::run()
-{
-	for (; m_begin != m_end; ++m_begin)
-		m_begin->setSelected(true);
-	Statusbar::print("Range selected");
-}
-
-bool ReverseSelection::canBeRun()
-{
-	m_list = dynamic_cast<NC::List *>(screenLegacyCurrent()->activeWindow());
-	return m_list != nullptr;
-}
-
-void ReverseSelection::run()
-{
-	for (auto &p : *m_list)
-		p.setSelected(!p.isSelected());
-	Statusbar::print("Selection reversed");
-}
-
-bool RemoveSelection::canBeRun()
-{
-	m_list = dynamic_cast<NC::List *>(screenLegacyCurrent()->activeWindow());
-	return m_list != nullptr;
-}
-
-void RemoveSelection::run()
-{
-	for (auto &p : *m_list)
-		p.setSelected(false);
-	Statusbar::print("Selection removed");
-}
-
-bool SelectAlbum::canBeRun()
-{
-	auto *w = screenLegacyCurrent()->activeWindow();
-	if (m_list != static_cast<void *>(w))
-		m_list = dynamic_cast<NC::List *>(w);
-	if (m_songs != static_cast<void *>(w))
-		m_songs = dynamic_cast<SongList *>(w);
-	return m_list != nullptr && !m_list->empty()
-	    && m_songs != nullptr;
-}
-
-void SelectAlbum::run()
-{
-	const auto front = m_songs->beginS(), current = m_songs->currentS(), end = m_songs->endS();
-	if (current->song() == nullptr)
-		return;
-	enum NcmSongGetter getter = NCM_SONG_GETTER_ALBUM;
-	const std::string tag = current->song()->getTags(getter);
-	// go up
-	for (auto it = current; it != front;)
-	{
-		--it;
-		if (it->song() == nullptr || it->song()->getTags(getter) != tag)
-			break;
-		it->properties().setSelected(true);
-	}
-	// go down
-	for (auto it = current;;)
-	{
-		it->properties().setSelected(true);
-		if (++it == end)
-			break;
-		if (it->song() == nullptr || it->song()->getTags(getter) != tag)
-			break;
-	}
-	Statusbar::print("Album around cursor position selected");
-}
-
-bool SelectFoundItems::canBeRun()
-{
-	m_list = dynamic_cast<NC::List *>(screenLegacyCurrent()->activeWindow());
-	if (m_list == nullptr || m_list->empty())
-		return false;
-	m_searchable = dynamic_cast<Searchable *>(screenLegacyCurrent());
-	return m_searchable != nullptr && m_searchable->allowsSearching();
-}
-
-void SelectFoundItems::run()
-{
-	auto current_pos = m_list->choice();
-	screenLegacyCurrent()->activeWindow()->scroll(NC_SCROLL_HOME);
-	bool found = m_searchable->search(NCM_SEARCH_DIRECTION_FORWARD, false, false);
-	if (found)
-	{
-		Statusbar::print("Searching for items...");
-		m_list->currentP()->setSelected(true);
-		while (m_searchable->search(NCM_SEARCH_DIRECTION_FORWARD, false, true))
-			m_list->currentP()->setSelected(true);
-		Statusbar::print("Found items selected");
-	}
-	m_list->highlight(current_pos);
-}
-
-
-
-
-
-
 
 
 
@@ -984,7 +686,7 @@ void NextFoundItem::run()
 	Searchable *w = dynamic_cast<Searchable *>(screenLegacyCurrent());
 	assert(w != nullptr);
 	w->search(NCM_SEARCH_DIRECTION_FORWARD, Config.wrapped_search, true);
-	listsChangeFinisher();
+	nc_screen_finish_list_change(app_controller_current_screen());
 }
 
 bool PreviousFoundItem::canBeRun()
@@ -997,7 +699,7 @@ void PreviousFoundItem::run()
 	Searchable *w = dynamic_cast<Searchable *>(screenLegacyCurrent());
 	assert(w != nullptr);
 	w->search(NCM_SEARCH_DIRECTION_BACKWARD, Config.wrapped_search, true);
-	listsChangeFinisher();
+	nc_screen_finish_list_change(app_controller_current_screen());
 }
 
 
@@ -1043,15 +745,6 @@ void ToggleLibraryTagType::run()
 		Statusbar::printf("Switched to the list of %1%s", item_type);
 	}
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1151,20 +844,6 @@ void PreviousScreen::run()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
 namespace {
@@ -1176,24 +855,10 @@ void populateActions()
 		AvailableActions.at(static_cast<size_t>(a->type())).reset(a);
 	};
 	insert_action(new Actions::MouseEvent());
-	insert_action(new Actions::ScrollUpArtist());
-	insert_action(new Actions::ScrollUpAlbum());
-	insert_action(new Actions::ScrollDownArtist());
-	insert_action(new Actions::ScrollDownAlbum());
-	insert_action(new Actions::SelectItem());
-	insert_action(new Actions::SelectRange());
-	insert_action(new Actions::PreviousColumn());
-	insert_action(new Actions::NextColumn());
-	insert_action(new Actions::AddItemToPlaylist());
-	insert_action(new Actions::PlayItem());
 	insert_action(new Actions::EditSong());
 	insert_action(new Actions::EditLibraryTag());
 	insert_action(new Actions::EditLibraryAlbum());
 	insert_action(new Actions::ToggleScreenLock());
-	insert_action(new Actions::ReverseSelection());
-	insert_action(new Actions::RemoveSelection());
-	insert_action(new Actions::SelectAlbum());
-	insert_action(new Actions::SelectFoundItems());
 	insert_action(new Actions::Find());
 	insert_action(new Actions::NextFoundItem());
 	insert_action(new Actions::PreviousFoundItem());
@@ -1226,64 +891,6 @@ void populateActions()
 	}
 }
 
-bool scrollTagCanBeRun(NC::List *&list, const SongList *&songs)
-{
-	auto w = screenLegacyCurrent()->activeWindow();
-	if (list != static_cast<void *>(w))
-		list = dynamic_cast<NC::List *>(w);
-	if (songs != static_cast<void *>(w))
-		songs = dynamic_cast<SongList *>(w);
-	return list != nullptr && !list->empty()
-	    && songs != nullptr;
-}
-
-void scrollTagUpRun(NC::List *list, const SongList *songs, enum NcmSongGetter getter)
-{
-	const auto front = songs->beginS();
-	auto it = songs->currentS();
-	if (it->song() != nullptr)
-	{
-		const std::string tag = it->song()->getTags(getter);
-		while (it != front)
-		{
-			--it;
-			if (it->song() == nullptr || it->song()->getTags(getter) != tag)
-				break;
-		}
-		list->highlight(it-front);
-	}
-}
-
-void scrollTagDownRun(NC::List *list, const SongList *songs, enum NcmSongGetter getter)
-{
-	const auto front = songs->beginS(), back = --songs->endS();
-	auto it = songs->currentS();
-	if (it->song() != nullptr)
-	{
-		const std::string tag = it->song()->getTags(getter);
-		while (it != back)
-		{
-			++it;
-			if (it->song() == nullptr || it->song()->getTags(getter) != tag)
-				break;
-		}
-		list->highlight(it-front);
-	}
-}
-
-void listsChangeFinisher()
-{
-	if (native_c_screen_media_library_is_current())
-	{
-		native_media_library_screen_finish_list_change(
-		    native_c_screen_media_library());
-		return;
-	}
-
-	if (native_c_screen_playlist_editor_is_current())
-		return;
-
-}
 
 }
 
