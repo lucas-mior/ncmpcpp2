@@ -25,45 +25,6 @@ ncm_song_list_item_destroy(NcmSongListItem *item) {
     return;
 }
 
-bool
-ncm_song_list_item_copy(NcmSongListItem *dest, NcmSongListItem *source) {
-    if (dest == NULL) {
-        return false;
-    }
-    if (source == NULL) {
-        return false;
-    }
-
-    ncm_song_list_item_destroy(dest);
-    ncm_song_list_item_init(dest);
-    if (!ncm_song_copy(&dest->song, &source->song)) {
-        return false;
-    }
-    dest->flags = source->flags;
-    return true;
-}
-
-void
-ncm_song_list_item_move(NcmSongListItem *dest, NcmSongListItem *source) {
-    if (dest == NULL) {
-        return;
-    }
-    if (dest == source) {
-        return;
-    }
-
-    ncm_song_list_item_destroy(dest);
-    ncm_song_list_item_init(dest);
-    if (source == NULL) {
-        return;
-    }
-
-    ncm_song_move(&dest->song, &source->song);
-    dest->flags = source->flags;
-    source->flags = NCM_SONG_LIST_ITEM_SELECTABLE;
-    return;
-}
-
 void
 ncm_song_list_init(NcmSongList *list) {
     if (list == NULL) {
@@ -349,27 +310,6 @@ ncm_song_list_reverse_selectable_selection(NcmSongList *list) {
         }
     }
     return;
-}
-
-bool
-ncm_song_list_find_position(NcmSongList *list, uint32 position,
-                            int32 *idx) {
-    if (idx != NULL) {
-        *idx = -1;
-    }
-    if (list == NULL) {
-        return false;
-    }
-
-    for (int32 i = 0; i < list->len; i += 1) {
-        if (ncm_song_position(&list->items[i].song) == position) {
-            if (idx != NULL) {
-                *idx = i;
-            }
-            return true;
-        }
-    }
-    return false;
 }
 
 bool

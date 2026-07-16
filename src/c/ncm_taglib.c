@@ -124,16 +124,6 @@ ncm_taglib_file_close(NcmTaglibFile *file) {
 }
 
 bool
-ncm_taglib_file_is_open(NcmTaglibFile *file) {
-#if defined(HAVE_TAGLIB_H)
-    return ncm_taglib_handle(file) != NULL;
-#else
-    (void)file;
-    return false;
-#endif
-}
-
-bool
 ncm_taglib_file_save(NcmTaglibFile *file) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;

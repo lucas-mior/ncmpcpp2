@@ -22,9 +22,6 @@ typedef struct NcmTagsMappedContext {
 
 static int32 ncm_tags_cstring_len(char *string);
 static void ncm_tags_view_init(NcmStringView *view);
-static void ncm_tags_view_destroy(NcmStringView *view);
-static bool ncm_tags_view_set_copy(NcmStringView *view, char *value);
-static void ncm_tags_first_property_callback(char *value, void *user);
 static void ncm_tags_forward_value_callback(char *value, void *user);
 static void ncm_tags_mapped_property_callback(char *name, char *value,
                                               void *user);
@@ -66,59 +63,6 @@ ncm_tags_view_init(NcmStringView *view) {
 
     view->data = NULL;
     view->len = 0;
-    return;
-}
-
-static void
-ncm_tags_view_destroy(NcmStringView *view) {
-    if (view == NULL) {
-        return;
-    }
-
-    if (view->data != NULL) {
-        cbase_free(view->data, view->len + 1);
-    }
-    ncm_tags_view_init(view);
-    return;
-}
-
-static bool
-ncm_tags_view_set_copy(NcmStringView *view, char *value) {
-    int32 len;
-    char *copy;
-
-    if (view == NULL) {
-        return false;
-    }
-    ncm_tags_view_destroy(view);
-
-    if (value == NULL) {
-        return true;
-    }
-
-    len = ncm_tags_cstring_len(value);
-    copy = (char *)cbase_malloc(len + 1);
-    cbase_memcpy(copy, value, len + 1);
-    view->data = copy;
-    view->len = len;
-    return true;
-}
-
-static void
-ncm_tags_first_property_callback(char *value, void *user) {
-    NcmTagsFirstPropertyContext *context;
-
-    context = (NcmTagsFirstPropertyContext *)user;
-    if (context == NULL) {
-        return;
-    }
-    if (context->found) {
-        return;
-    }
-
-    if (ncm_tags_view_set_copy(context->value, value)) {
-        context->found = true;
-    }
     return;
 }
 
@@ -301,47 +245,6 @@ ncm_tags_clear_write_aliases(NcmTaglibFile *file) {
 }
 
 void
-ncm_tags_replay_gain_info_init(NcmTagsReplayGainInfo *info) {
-    if (info == NULL) {
-        return;
-    }
-
-    ncm_tags_view_init(&info->reference_loudness);
-    ncm_tags_view_init(&info->track_gain);
-    ncm_tags_view_init(&info->track_peak);
-    ncm_tags_view_init(&info->album_gain);
-    ncm_tags_view_init(&info->album_peak);
-    return;
-}
-
-void
-ncm_tags_replay_gain_info_destroy(NcmTagsReplayGainInfo *info) {
-    if (info == NULL) {
-        return;
-    }
-
-    ncm_tags_view_destroy(&info->reference_loudness);
-    ncm_tags_view_destroy(&info->track_gain);
-    ncm_tags_view_destroy(&info->track_peak);
-    ncm_tags_view_destroy(&info->album_gain);
-    ncm_tags_view_destroy(&info->album_peak);
-    return;
-}
-
-bool
-ncm_tags_replay_gain_info_empty(NcmTagsReplayGainInfo *info) {
-    if (info == NULL) {
-        return true;
-    }
-
-    return (info->reference_loudness.len == 0)
-           && (info->track_gain.len == 0)
-           && (info->track_peak.len == 0)
-           && (info->album_gain.len == 0)
-           && (info->album_peak.len == 0);
-}
-
-void
 ncm_tags_set_attribute(struct mpd_song *song, char *name, char *value) {
     struct mpd_pair pair;
 
@@ -359,67 +262,6 @@ ncm_tags_set_attribute(struct mpd_song *song, char *name, char *value) {
     pair.value = value;
     mpd_song_feed(song, &pair);
     return;
-}
-
-bool
-ncm_tags_extended_set_supported(char *path) {
-    NcmTaglibFile file;
-    bool result;
-
-    ncm_taglib_file_init(&file);
-    if (!ncm_taglib_file_open(&file, path)) {
-        return false;
-    }
-
-    result = ncm_taglib_extended_set_supported(&file);
-    ncm_taglib_file_close(&file);
-    return result;
-}
-
-bool
-ncm_tags_read_replay_gain(char *path, NcmTagsReplayGainInfo *info) {
-    NcmTaglibFile file;
-    NcmTagsFirstPropertyContext context;
-
-    if (info == NULL) {
-        return false;
-    }
-
-    ncm_tags_replay_gain_info_destroy(info);
-    ncm_tags_replay_gain_info_init(info);
-
-    ncm_taglib_file_init(&file);
-    if (!ncm_taglib_file_open(&file, path)) {
-        return false;
-    }
-
-    context.value = &info->reference_loudness;
-    context.found = false;
-    ncm_taglib_read_property(&file, "REPLAYGAIN_REFERENCE_LOUDNESS",
-                             ncm_tags_first_property_callback, &context);
-
-    context.value = &info->track_gain;
-    context.found = false;
-    ncm_taglib_read_property(&file, "REPLAYGAIN_TRACK_GAIN",
-                             ncm_tags_first_property_callback, &context);
-
-    context.value = &info->track_peak;
-    context.found = false;
-    ncm_taglib_read_property(&file, "REPLAYGAIN_TRACK_PEAK",
-                             ncm_tags_first_property_callback, &context);
-
-    context.value = &info->album_gain;
-    context.found = false;
-    ncm_taglib_read_property(&file, "REPLAYGAIN_ALBUM_GAIN",
-                             ncm_tags_first_property_callback, &context);
-
-    context.value = &info->album_peak;
-    context.found = false;
-    ncm_taglib_read_property(&file, "REPLAYGAIN_ALBUM_PEAK",
-                             ncm_tags_first_property_callback, &context);
-
-    ncm_taglib_file_close(&file);
-    return true;
 }
 
 enum NcmTagsReadResult

@@ -399,11 +399,6 @@ ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source) {
 }
 
 bool
-ncm_song_borrow_mpd_song(NcmSong *dest, struct mpd_song *source) {
-    return ncm_song_from_mpd_song_copy(dest, source);
-}
-
-bool
 ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len) {
     char *copy;
 
@@ -771,107 +766,6 @@ ncm_song_uri_is_stream(char *uri, int32 uri_len) {
 
     return ncm_string_starts_with(uri, uri_len, STRLIT_ARGS("http://"))
            || ncm_string_starts_with(uri, uri_len, STRLIT_ARGS("https://"));
-}
-
-bool
-ncm_mpd_song_tag_view(struct mpd_song *song, enum mpd_tag_type tag,
-                      uint32 idx, NcmStringView *view) {
-    char *value;
-
-    ncm_string_view_clear(view);
-    if (song == NULL) {
-        return false;
-    }
-
-    value = (char *)mpd_song_get_tag(song, tag, idx);
-    if (value == NULL) {
-        return false;
-    }
-
-    ncm_string_view_set(view, value, ncm_song_cstring_len(value));
-    return true;
-}
-
-bool
-ncm_mpd_song_uri_view(struct mpd_song *song, uint32 idx,
-                      NcmStringView *view) {
-    char *uri;
-
-    ncm_string_view_clear(view);
-    if (song == NULL) {
-        return false;
-    }
-    if (idx > 0) {
-        return false;
-    }
-
-    uri = (char *)mpd_song_get_uri(song);
-    if (uri == NULL) {
-        return false;
-    }
-
-    ncm_string_view_set(view, uri, ncm_song_cstring_len(uri));
-    return true;
-}
-
-bool
-ncm_mpd_song_name_view(struct mpd_song *song, uint32 idx,
-                       NcmStringView *view) {
-    NcmStringView uri;
-
-    if (ncm_mpd_song_tag_view(song, MPD_TAG_NAME, idx, view)) {
-        return true;
-    }
-    if (idx > 0) {
-        return false;
-    }
-    if (!ncm_mpd_song_uri_view(song, 0, &uri)) {
-        ncm_string_view_clear(view);
-        return false;
-    }
-
-    return ncm_song_name_from_uri(uri.data, uri.len, view);
-}
-
-bool
-ncm_mpd_song_directory_view(struct mpd_song *song, uint32 idx,
-                            NcmStringView *view) {
-    NcmStringView uri;
-
-    ncm_string_view_clear(view);
-    if (idx > 0) {
-        return false;
-    }
-    if (ncm_mpd_song_is_stream(song)) {
-        return false;
-    }
-    if (!ncm_mpd_song_uri_view(song, 0, &uri)) {
-        return false;
-    }
-
-    return ncm_song_directory_from_uri(uri.data, uri.len, view);
-}
-
-bool
-ncm_mpd_song_is_from_database(struct mpd_song *song) {
-    NcmStringView uri;
-
-    if (!ncm_mpd_song_uri_view(song, 0, &uri)) {
-        return false;
-    }
-
-    return ncm_song_uri_is_from_database(uri.data, uri.len);
-}
-
-bool
-ncm_mpd_song_is_stream(struct mpd_song *song) {
-    NcmStringView uri;
-
-    if (!ncm_mpd_song_uri_view(song, 0, &uri)) {
-        return false;
-    }
-
-    return ncm_song_uri_is_stream(uri.data, uri.len);
 }
 
 int32

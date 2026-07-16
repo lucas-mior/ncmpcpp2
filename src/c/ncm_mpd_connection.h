@@ -68,8 +68,6 @@ void ncm_mpd_string_init(NcmMpdString *string);
 void ncm_mpd_string_destroy(NcmMpdString *string);
 bool ncm_mpd_string_set(NcmMpdString *string, char *value,
                         int32 value_len);
-bool ncm_mpd_string_copy(NcmMpdString *dest, NcmMpdString *source);
-void ncm_mpd_string_move(NcmMpdString *dest, NcmMpdString *source);
 void ncm_mpd_output_init(NcmMpdOutput *output);
 void ncm_mpd_output_destroy(NcmMpdOutput *output);
 bool ncm_mpd_output_set(NcmMpdOutput *output, uint32 id, char *name,
@@ -118,15 +116,9 @@ bool ncm_mpd_connection_connect(NcmMpdConnection *connection,
                                 uint32 timeout_ms);
 void ncm_mpd_connection_disconnect(NcmMpdConnection *connection);
 bool ncm_mpd_connection_is_connected(NcmMpdConnection *connection);
-struct mpd_connection *ncm_mpd_connection_mpd(
-    NcmMpdConnection *connection);
 int32 ncm_mpd_connection_fd(NcmMpdConnection *connection);
-bool ncm_mpd_connection_get_fd(NcmMpdConnection *connection, int32 *fd);
 bool ncm_mpd_connection_set_timeout(NcmMpdConnection *connection,
                                     uint32 timeout_ms);
-bool ncm_mpd_connection_idle(NcmMpdConnection *connection,
-                             enum mpd_idle events,
-                             enum mpd_idle *out_events);
 bool ncm_mpd_connection_noidle(NcmMpdConnection *connection);
 bool ncm_mpd_connection_send_idle(NcmMpdConnection *connection,
                                   enum mpd_idle events);
@@ -175,8 +167,6 @@ void ncm_mpd_song_list_destroy(NcmMpdSongList *list);
 void ncm_mpd_song_list_clear(NcmMpdSongList *list);
 bool ncm_mpd_song_list_copy(NcmMpdSongList *dest,
                             NcmMpdSongList *source);
-void ncm_mpd_song_list_move(NcmMpdSongList *dest,
-                            NcmMpdSongList *source);
 int32 ncm_mpd_song_list_count(NcmMpdSongList *list);
 NcmSong *ncm_mpd_song_list_at(NcmMpdSongList *list, int32 idx);
 bool ncm_mpd_song_list_append_copy(NcmMpdSongList *list,
@@ -189,15 +179,8 @@ bool ncm_mpd_song_list_to_song_array(NcmMpdSongList *list,
 void ncm_mpd_item_list_init(NcmMpdItemList *list);
 void ncm_mpd_item_list_destroy(NcmMpdItemList *list);
 void ncm_mpd_item_list_clear(NcmMpdItemList *list);
-bool ncm_mpd_item_list_copy(NcmMpdItemList *dest,
-                            NcmMpdItemList *source);
-void ncm_mpd_item_list_move(NcmMpdItemList *dest,
-                            NcmMpdItemList *source);
 int32 ncm_mpd_item_list_count(NcmMpdItemList *list);
-NcmMpdItem *ncm_mpd_item_list_at(NcmMpdItemList *list, int32 idx);
 bool ncm_mpd_item_list_append_copy(NcmMpdItemList *list,
-                                   NcmMpdItem *item);
-void ncm_mpd_item_list_append_move(NcmMpdItemList *list,
                                    NcmMpdItem *item);
 bool ncm_mpd_item_list_to_item_array(NcmMpdItemList *list,
                                      NcmMpdItemArray *items);
@@ -208,8 +191,6 @@ void ncm_mpd_string_list_init(NcmMpdStringList *list);
 void ncm_mpd_string_list_destroy(NcmMpdStringList *list);
 void ncm_mpd_string_list_clear(NcmMpdStringList *list);
 bool ncm_mpd_string_list_copy(NcmMpdStringList *dest,
-                              NcmMpdStringList *source);
-void ncm_mpd_string_list_move(NcmMpdStringList *dest,
                               NcmMpdStringList *source);
 int32 ncm_mpd_string_list_count(NcmMpdStringList *list);
 NcmMpdString *ncm_mpd_string_list_at(NcmMpdStringList *list,
@@ -224,8 +205,6 @@ void ncm_mpd_output_list_destroy(NcmMpdOutputList *list);
 void ncm_mpd_output_list_clear(NcmMpdOutputList *list);
 bool ncm_mpd_output_list_copy(NcmMpdOutputList *dest,
                               NcmMpdOutputList *source);
-void ncm_mpd_output_list_move(NcmMpdOutputList *dest,
-                              NcmMpdOutputList *source);
 int32 ncm_mpd_output_list_count(NcmMpdOutputList *list);
 NcmMpdOutput *ncm_mpd_output_list_at(NcmMpdOutputList *list,
                                      int32 idx);
@@ -239,11 +218,6 @@ void ncm_mpd_playlist_list_destroy(NcmMpdPlaylistList *list);
 void ncm_mpd_playlist_list_clear(NcmMpdPlaylistList *list);
 bool ncm_mpd_playlist_list_copy(NcmMpdPlaylistList *dest,
                                 NcmMpdPlaylistList *source);
-void ncm_mpd_playlist_list_move(NcmMpdPlaylistList *dest,
-                                NcmMpdPlaylistList *source);
-int32 ncm_mpd_playlist_list_count(NcmMpdPlaylistList *list);
-NcmPlaylist *ncm_mpd_playlist_list_at(NcmMpdPlaylistList *list,
-                                      int32 idx);
 bool ncm_mpd_playlist_list_append_copy(NcmMpdPlaylistList *list,
                                        NcmPlaylist *playlist);
 void ncm_mpd_playlist_list_append_move(NcmMpdPlaylistList *list,
@@ -254,9 +228,6 @@ bool ncm_mpd_playlist_list_to_playlist_array(
 
 bool ncm_mpd_connection_get_current_song(NcmMpdConnection *connection,
                                          NcmSong *song);
-bool ncm_mpd_connection_get_song(NcmMpdConnection *connection,
-                                 char *path,
-                                 NcmSong *song);
 bool ncm_mpd_connection_get_queue(NcmMpdConnection *connection,
                                   NcmMpdSongList *songs);
 bool ncm_mpd_connection_get_queue_changes(NcmMpdConnection *connection,
@@ -280,22 +251,11 @@ bool ncm_mpd_connection_get_directory_recursive(
 bool ncm_mpd_connection_get_directory_songs(NcmMpdConnection *connection,
                                             char *path,
                                             NcmMpdSongList *songs);
-bool ncm_mpd_connection_search_songs(NcmMpdConnection *connection,
-                                     bool exact_match,
-                                     enum mpd_tag_type tag,
-                                     char *value,
-                                     NcmMpdSongList *songs);
-bool ncm_mpd_connection_find_songs(NcmMpdConnection *connection,
-                                   enum mpd_tag_type tag,
-                                   char *value,
-                                   NcmMpdSongList *songs);
 bool ncm_mpd_connection_list_all_songs(NcmMpdConnection *connection,
                                        char *path,
                                        NcmMpdSongList *songs);
 bool ncm_mpd_connection_start_search_songs(NcmMpdConnection *connection,
                                            bool exact_match);
-bool ncm_mpd_connection_start_search_tags(NcmMpdConnection *connection,
-                                          enum mpd_tag_type tag);
 bool ncm_mpd_connection_add_search_tag(NcmMpdConnection *connection,
                                        enum mpd_tag_type tag,
                                        char *value);
@@ -308,14 +268,8 @@ bool ncm_mpd_connection_commit_search_songs(NcmMpdConnection *connection,
 bool ncm_mpd_connection_list_tag_values(NcmMpdConnection *connection,
                                         enum mpd_tag_type tag,
                                         NcmMpdStringList *strings);
-bool ncm_mpd_connection_commit_search_tags(NcmMpdConnection *connection,
-                                           enum mpd_tag_type tag,
-                                           NcmMpdStringList *strings);
 
 bool ncm_mpd_connection_update_database(NcmMpdConnection *connection,
-                                        char *path,
-                                        uint32 *id);
-bool ncm_mpd_connection_rescan_database(NcmMpdConnection *connection,
                                         char *path,
                                         uint32 *id);
 bool ncm_mpd_connection_get_outputs(NcmMpdConnection *connection,
@@ -324,13 +278,10 @@ bool ncm_mpd_connection_enable_output(NcmMpdConnection *connection,
                                       uint32 id);
 bool ncm_mpd_connection_disable_output(NcmMpdConnection *connection,
                                        uint32 id);
-bool ncm_mpd_connection_toggle_output(NcmMpdConnection *connection,
-                                      uint32 id);
 
 bool ncm_mpd_connection_play(NcmMpdConnection *connection);
 bool ncm_mpd_connection_play_pos(NcmMpdConnection *connection, int32 pos);
 bool ncm_mpd_connection_play_id(NcmMpdConnection *connection, int32 id);
-bool ncm_mpd_connection_pause(NcmMpdConnection *connection, bool state);
 bool ncm_mpd_connection_toggle_pause(NcmMpdConnection *connection);
 bool ncm_mpd_connection_stop(NcmMpdConnection *connection);
 bool ncm_mpd_connection_next(NcmMpdConnection *connection);
@@ -378,10 +329,6 @@ bool ncm_mpd_connection_add(NcmMpdConnection *connection,
 bool ncm_mpd_connection_delete(NcmMpdConnection *connection,
                                uint32 pos,
                                bool command_list_active);
-bool ncm_mpd_connection_delete_range(NcmMpdConnection *connection,
-                                     uint32 begin,
-                                     uint32 end,
-                                     bool command_list_active);
 bool ncm_mpd_connection_clear_playlist(NcmMpdConnection *connection,
                                        char *playlist);
 bool ncm_mpd_connection_add_to_playlist(NcmMpdConnection *connection,

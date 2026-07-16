@@ -77,11 +77,6 @@ ncm_time_elapsed_ms(NcmTimePoint start, NcmTimePoint end) {
     return ncm_time_elapsed_ns(start, end) / 1000000ll;
 }
 
-double
-ncm_time_elapsed_seconds(NcmTimePoint start, NcmTimePoint end) {
-    return (double)ncm_time_elapsed_ns(start, end) / 1000000000.0;
-}
-
 bool
 ncm_time_since_ms(NcmTimePoint start, int64 *milliseconds,
                   NcmError *error) {

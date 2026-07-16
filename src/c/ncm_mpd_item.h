@@ -39,11 +39,8 @@ bool ncm_mpd_item_from_mpd_song_copy(NcmMpdItem *item,
                                      struct mpd_song *source);
 bool ncm_mpd_item_from_mpd_song_borrow(NcmMpdItem *item,
                                        struct mpd_song *source);
-bool ncm_mpd_item_from_entity(NcmMpdItem *item, struct mpd_entity *entity);
 bool ncm_mpd_item_from_entity_copy(NcmMpdItem *item,
                                    struct mpd_entity *entity);
-bool ncm_mpd_item_from_entity_borrow(NcmMpdItem *item,
-                                     struct mpd_entity *entity);
 enum NcmMpdItemKind ncm_mpd_item_kind(NcmMpdItem *item);
 NcmSong *ncm_mpd_item_song(NcmMpdItem *item);
 NcmDirectory *ncm_mpd_item_directory(NcmMpdItem *item);

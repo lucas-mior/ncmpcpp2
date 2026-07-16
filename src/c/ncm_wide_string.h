@@ -18,6 +18,5 @@ void ncm_wide_string_reserve(NcmWideString *string, int32 extra);
 void ncm_wide_string_append_char(NcmWideString *string, wchar_t ch);
 bool ncm_wide_string_from_utf8(NcmWideString *out,
                                char *string, int32 string_len);
-int32 ncm_wide_string_count_utf8(char *string, int32 string_len);
 
 #endif /* NCM_WIDE_STRING_H */

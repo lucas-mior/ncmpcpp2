@@ -299,37 +299,3 @@ ncm_process_run_shell(char *command, int32 command_len,
     ncm_process_command_destroy(&process);
     return result;
 }
-
-bool
-ncm_process_run_editor(char *editor, int32 editor_len,
-                       char *path, int32 path_len,
-                       int32 *status, NcmError *error) {
-    NcmBuffer command;
-    char *fallback_editor;
-    bool result;
-
-    if ((path == NULL) || (path_len < 0)) {
-        ncm_process_set_text_error(error, EINVAL,
-                                   STRLIT_ARGS("invalid editor path"));
-        return false;
-    }
-
-    if ((editor == NULL) || (editor_len <= 0)) {
-        if ((fallback_editor = getenv("VISUAL")) == NULL) {
-            fallback_editor = getenv("EDITOR");
-        }
-        if (fallback_editor == NULL) {
-            fallback_editor = (char *)"vi";
-        }
-        editor = fallback_editor;
-        editor_len = strlen32(editor);
-    }
-
-    ncm_buffer_init(&command);
-    ncm_buffer_append(&command, editor, editor_len);
-    ncm_buffer_append_byte(&command, ' ');
-    ncm_string_append_shell_escaped_single_quotes(&command, path, path_len);
-    result = ncm_process_run_shell(command.data, command.len, status, error);
-    ncm_buffer_destroy(&command);
-    return result;
-}

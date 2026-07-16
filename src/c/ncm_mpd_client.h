@@ -23,7 +23,6 @@ typedef struct NcmMpdClient {
 
 void ncm_mpd_client_init(NcmMpdClient *client);
 void ncm_mpd_client_destroy(NcmMpdClient *client);
-NcmMpdConnection *ncm_mpd_client_connection(NcmMpdClient *client);
 char *ncm_mpd_client_hostname(NcmMpdClient *client);
 uint16 ncm_mpd_client_port(NcmMpdClient *client);
 uint32 ncm_mpd_client_timeout_ms(NcmMpdClient *client);
@@ -60,16 +59,12 @@ bool ncm_mpd_client_get_status(NcmMpdClient *client, NcmMpdStatus *status,
                                NcmError *error);
 bool ncm_mpd_client_update_directory(NcmMpdClient *client, char *path,
                                      uint32 *id, NcmError *error);
-bool ncm_mpd_client_rescan_directory(NcmMpdClient *client, char *path,
-                                     uint32 *id, NcmError *error);
 
 bool ncm_mpd_client_play(NcmMpdClient *client, NcmError *error);
 bool ncm_mpd_client_play_pos(NcmMpdClient *client, int32 pos,
                              NcmError *error);
 bool ncm_mpd_client_play_id(NcmMpdClient *client, int32 id,
                             NcmError *error);
-bool ncm_mpd_client_pause(NcmMpdClient *client, bool state,
-                          NcmError *error);
 bool ncm_mpd_client_toggle_pause(NcmMpdClient *client, NcmError *error);
 bool ncm_mpd_client_stop(NcmMpdClient *client, NcmError *error);
 bool ncm_mpd_client_next(NcmMpdClient *client, NcmError *error);
@@ -93,8 +88,6 @@ bool ncm_mpd_client_get_queue_changes(NcmMpdClient *client, uint32 version,
                                       NcmError *error);
 bool ncm_mpd_client_get_current_song(NcmMpdClient *client, NcmSong *song,
                                      NcmError *error);
-bool ncm_mpd_client_get_song(NcmMpdClient *client, char *path,
-                             NcmSong *song, NcmError *error);
 bool ncm_mpd_client_get_playlist_content(NcmMpdClient *client,
                                          char *path,
                                          NcmMpdSongList *songs,
@@ -161,8 +154,6 @@ bool ncm_mpd_client_add_random_songs(NcmMpdClient *client,
                                      NcmError *error);
 bool ncm_mpd_client_delete(NcmMpdClient *client, uint32 pos,
                            NcmError *error);
-bool ncm_mpd_client_delete_range(NcmMpdClient *client, uint32 begin,
-                                 uint32 end, NcmError *error);
 bool ncm_mpd_client_start_command_list(NcmMpdClient *client,
                                        NcmError *error);
 bool ncm_mpd_client_commit_command_list(NcmMpdClient *client,
@@ -191,9 +182,6 @@ bool ncm_mpd_client_rename_playlist(NcmMpdClient *client, char *from,
 
 bool ncm_mpd_client_start_search(NcmMpdClient *client, bool exact_match,
                                  NcmError *error);
-bool ncm_mpd_client_start_field_search(NcmMpdClient *client,
-                                       enum mpd_tag_type tag,
-                                       NcmError *error);
 bool ncm_mpd_client_add_search_tag(NcmMpdClient *client,
                                    enum mpd_tag_type tag,
                                    char *value, NcmError *error);
@@ -218,9 +206,6 @@ bool ncm_mpd_client_get_directory_recursive(NcmMpdClient *client,
                                             NcmError *error);
 bool ncm_mpd_client_get_songs(NcmMpdClient *client, char *path,
                               NcmMpdSongList *songs, NcmError *error);
-bool ncm_mpd_client_get_directories(NcmMpdClient *client, char *path,
-                                    NcmMpdItemList *items,
-                                    NcmError *error);
 bool ncm_mpd_client_get_directory_entries(NcmMpdClient *client,
                                           char *path,
                                           NcmMpdItemArray *items,

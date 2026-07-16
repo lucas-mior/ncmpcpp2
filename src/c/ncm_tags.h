@@ -42,13 +42,8 @@ typedef bool (*NcmTagsGetFieldCallback)(enum NcmTagsField field,
                                         int32 idx, NcmStringView *value,
                                         void *user);
 
-void ncm_tags_replay_gain_info_init(NcmTagsReplayGainInfo *info);
-void ncm_tags_replay_gain_info_destroy(NcmTagsReplayGainInfo *info);
-bool ncm_tags_replay_gain_info_empty(NcmTagsReplayGainInfo *info);
 
 void ncm_tags_set_attribute(struct mpd_song *song, char *name, char *value);
-bool ncm_tags_extended_set_supported(char *path);
-bool ncm_tags_read_replay_gain(char *path, NcmTagsReplayGainInfo *info);
 enum NcmTagsReadResult ncm_tags_read_lyrics(char *path,
                                             NcmTagsValueCallback callback,
                                             void *user);

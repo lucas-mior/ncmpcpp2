@@ -274,11 +274,6 @@ ncm_mpd_item_from_mpd_song_borrow(NcmMpdItem *item,
 }
 
 bool
-ncm_mpd_item_from_entity(NcmMpdItem *item, struct mpd_entity *entity) {
-    return ncm_mpd_item_from_entity_copy(item, entity);
-}
-
-bool
 ncm_mpd_item_from_entity_copy(NcmMpdItem *item,
                               struct mpd_entity *entity) {
     if (item == NULL) {
@@ -301,12 +296,6 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item,
     default:
         return false;
     }
-}
-
-bool
-ncm_mpd_item_from_entity_borrow(NcmMpdItem *item,
-                                struct mpd_entity *entity) {
-    return ncm_mpd_item_from_entity_copy(item, entity);
 }
 
 enum NcmMpdItemKind

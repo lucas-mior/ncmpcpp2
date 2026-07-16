@@ -28,8 +28,5 @@ void ncm_process_result_init(NcmProcessResult *result);
 void ncm_process_result_destroy(NcmProcessResult *result);
 bool ncm_process_run_shell(char *command, int32 command_len,
                            int32 *status, NcmError *error);
-bool ncm_process_run_editor(char *editor, int32 editor_len,
-                            char *path, int32 path_len,
-                            int32 *status, NcmError *error);
 
 #endif /* NCM_PROCESS_H */

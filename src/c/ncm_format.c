@@ -11,10 +11,6 @@
 
 static void ncm_format_expr_init(NcmFormatExpr *expr);
 static void ncm_format_expr_destroy(NcmFormatExpr *expr);
-static bool ncm_format_expr_copy(NcmFormatExpr *dest,
-                                 NcmFormatExpr *source);
-static bool ncm_format_expr_list_copy(NcmFormatExprList *dest,
-                                      NcmFormatExprList *source);
 static bool ncm_format_parse_bracket(NcmFormatExprList *out,
                                      char *data, int32 start, int32 end,
                                      uint32 flags, NcmError *error);
@@ -376,56 +372,6 @@ ncm_format_expr_destroy(NcmFormatExpr *expr) {
     return;
 }
 
-static bool
-ncm_format_expr_copy(NcmFormatExpr *dest, NcmFormatExpr *source) {
-    dest->type = source->type;
-    switch (source->type) {
-    case NCM_FORMAT_EXPR_TEXT:
-        ncm_buffer_init(&dest->value.text);
-        ncm_buffer_append(&dest->value.text, source->value.text.data,
-                          source->value.text.len);
-        break;
-    case NCM_FORMAT_EXPR_GROUP:
-    case NCM_FORMAT_EXPR_FIRST_OF:
-        ncm_format_expr_list_init(&dest->value.list);
-        if (!ncm_format_expr_list_copy(&dest->value.list,
-                                       &source->value.list)) {
-            return false;
-        }
-        break;
-    case NCM_FORMAT_EXPR_COLOR:
-        dest->value.color = source->value.color;
-        break;
-    case NCM_FORMAT_EXPR_FORMAT:
-        dest->value.format = source->value.format;
-        break;
-    case NCM_FORMAT_EXPR_OUTPUT_SWITCH:
-        break;
-    case NCM_FORMAT_EXPR_SONG_TAG:
-        dest->value.song_tag = source->value.song_tag;
-        break;
-    }
-    return true;
-}
-
-static bool
-ncm_format_expr_list_copy(NcmFormatExprList *dest,
-                          NcmFormatExprList *source) {
-    NcmFormatExpr *expr;
-
-    for (int32 i = 0; i < source->len; i += 1) {
-        expr = ncm_format_expr_list_append(dest);
-        if (expr == NULL) {
-            return false;
-        }
-        ncm_format_expr_destroy(expr);
-        if (!ncm_format_expr_copy(expr, &source->items[i])) {
-            return false;
-        }
-    }
-    return true;
-}
-
 void
 ncm_format_ast_init(NcmFormatAst *ast) {
     ncm_format_expr_list_init(&ast->root);
@@ -455,12 +401,6 @@ ncm_format_ast_move(NcmFormatAst *dest, NcmFormatAst *source) {
     ncm_format_ast_destroy(dest);
     ncm_format_expr_list_move(&dest->root, &source->root);
     return;
-}
-
-bool
-ncm_format_ast_copy(NcmFormatAst *dest, NcmFormatAst *source) {
-    ncm_format_ast_clear(dest);
-    return ncm_format_expr_list_copy(&dest->root, &source->root);
 }
 
 bool

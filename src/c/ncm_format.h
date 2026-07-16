@@ -80,7 +80,6 @@ void ncm_format_ast_init(NcmFormatAst *ast);
 void ncm_format_ast_destroy(NcmFormatAst *ast);
 void ncm_format_ast_clear(NcmFormatAst *ast);
 void ncm_format_ast_move(NcmFormatAst *dest, NcmFormatAst *source);
-bool ncm_format_ast_copy(NcmFormatAst *dest, NcmFormatAst *source);
 bool ncm_format_ast_append_text(NcmFormatAst *ast,
                                 char *data, int32 data_len);
 bool ncm_format_ast_append_first_of_getters(NcmFormatAst *ast,

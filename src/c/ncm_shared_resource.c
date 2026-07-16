@@ -10,7 +10,6 @@
 static void ncm_shared_resource_set_pthread_error(NcmError *error,
                                                   int32 code,
                                                   char *operation);
-static void ncm_shared_resource_zero(void *resource, int32 resource_size);
 
 static void
 ncm_shared_resource_set_pthread_error(NcmError *error, int32 code,
@@ -29,17 +28,6 @@ ncm_shared_resource_set_pthread_error(NcmError *error, int32 code,
     }
 
     ncm_error_set(error, code, message, len);
-    return;
-}
-
-static void
-ncm_shared_resource_zero(void *resource, int32 resource_size) {
-    char *bytes;
-
-    bytes = resource;
-    for (int32 i = 0; i < resource_size; i += 1) {
-        bytes[i] = 0;
-    }
     return;
 }
 
@@ -68,47 +56,6 @@ ncm_shared_resource_init_borrowed(NcmSharedResource *shared,
     if (code != 0) {
         ncm_shared_resource_set_pthread_error(error, code, "mutex init");
         return false;
-    }
-
-    shared->initialized = true;
-    ncm_error_clear(error);
-    return true;
-}
-
-bool
-ncm_shared_resource_init_owned(NcmSharedResource *shared,
-                               void *initial_value,
-                               int32 resource_size,
-                               NcmError *error) {
-    int32 code;
-
-    if (shared == NULL) {
-        ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing shared resource"));
-        return false;
-    }
-    if (resource_size <= 0) {
-        ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("invalid shared resource size"));
-        return false;
-    }
-
-    shared->resource = NULL;
-    shared->resource_size = resource_size;
-    shared->owns_resource = true;
-    shared->initialized = false;
-
-    code = pthread_mutex_init(&shared->mutex, NULL);
-    if (code != 0) {
-        ncm_shared_resource_set_pthread_error(error, code, "mutex init");
-        return false;
-    }
-
-    shared->resource = cbase_malloc(resource_size);
-    if (initial_value) {
-        cbase_memcpy(shared->resource, initial_value, resource_size);
-    } else {
-        ncm_shared_resource_zero(shared->resource, resource_size);
     }
 
     shared->initialized = true;

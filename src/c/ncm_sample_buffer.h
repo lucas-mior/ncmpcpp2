@@ -28,6 +28,5 @@ void ncm_sample_buffer_resize(NcmSampleBuffer *buffer, int32 cap);
 void ncm_sample_buffer_clear(NcmSampleBuffer *buffer);
 int32 ncm_sample_buffer_size(NcmSampleBuffer *buffer);
 int32 ncm_sample_buffer_capacity(NcmSampleBuffer *buffer);
-int16 *ncm_sample_buffer_data(NcmSampleBuffer *buffer);
 
 #endif /* NCM_SAMPLE_BUFFER_H */
