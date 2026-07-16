@@ -1307,6 +1307,8 @@ static void action_runtime_print_format_string(char *format,
 static bool action_runtime_toggle_crossfade(void);
 static bool action_runtime_set_crossfade(void);
 static bool action_runtime_set_volume(void);
+static bool action_runtime_add_prompt(void);
+static bool action_runtime_load_prompt(void);
 static bool action_runtime_add_random_items(void);
 static NcMenu *action_runtime_current_menu(void);
 static enum NcMenuItemSource action_runtime_menu_item_source(
@@ -1362,6 +1364,8 @@ static bool action_runtime_toggle_browser_sort_mode(void);
 static bool action_runtime_toggle_library_tag_type(void);
 static bool action_runtime_toggle_media_library_sort_mode(void);
 static bool action_runtime_toggle_media_library_columns(void);
+static char *action_runtime_replay_gain_mode_name(
+    enum NcmMpdReplayGainMode mode);
 static bool action_runtime_toggle_replay_gain_mode(void);
 static bool action_runtime_save_tag_changes(void);
 static bool action_runtime_edit_current_song(void);
@@ -3125,6 +3129,110 @@ action_runtime_song_positions(NcmSongArray *songs, uint32 **positions,
 
     *positions = result;
     *count = songs->len;
+    return true;
+}
+
+static bool
+action_runtime_add_prompt(void) {
+    NcmBuffer path;
+    NcmBuffer message;
+    NcmError error;
+    enum mpd_server_error server_error;
+    char *path_text;
+    bool added;
+    bool loaded;
+    bool prompted;
+    bool success;
+
+    ncm_buffer_init(&path);
+    prompted = action_runtime_prompt_string(STRLIT_ARGS("Add: "),
+                                            (char *)"", false,
+                                            NULL, NULL, &path);
+    if (!prompted) {
+        ncm_buffer_destroy(&path);
+        return true;
+    }
+
+    if ((path.len <= 0)
+        && !action_runtime_confirm(
+            STRLIT_ARGS("Are you sure you want to add the whole database?"))) {
+        ncm_buffer_destroy(&path);
+        return true;
+    }
+
+    path_text = path.data;
+    if (path_text == NULL) {
+        path_text = (char *)"";
+    }
+
+    ncm_statusbar_print_cstring(0, (char *)"Adding...");
+    added = false;
+    ncm_error_clear(&error);
+    success = ncm_mpd_client_add(&global_mpd, path_text, &added, &error);
+    server_error = ncm_mpd_client_server_error_code(&global_mpd);
+    if (!success && (server_error == MPD_SERVER_ERROR_NO_EXIST)) {
+        loaded = false;
+        ncm_error_clear(&error);
+        success = ncm_mpd_client_load_playlist(&global_mpd, path_text,
+                                               &loaded, &error);
+        ncm_buffer_destroy(&path);
+        if (!success) {
+            return action_runtime_mpd_error(&error);
+        }
+        return true;
+    }
+    ncm_buffer_destroy(&path);
+
+    if (!success && (server_error != (enum mpd_server_error)0)) {
+        ncm_buffer_init(&message);
+        ncm_buffer_append(&message, STRLIT_ARGS("Error while adding item: "));
+        if (ncm_error_is_set(&error)) {
+            ncm_buffer_append(&message, error.message,
+                              action_runtime_cstring_len(error.message));
+        }
+        ncm_statusbar_print((int32)Config.message_delay_time,
+                            message.data, message.len);
+        ncm_buffer_destroy(&message);
+        return false;
+    }
+    if (!success) {
+        return action_runtime_mpd_error(&error);
+    }
+    return true;
+}
+
+static bool
+action_runtime_load_prompt(void) {
+    NcmBuffer name;
+    NcmError error;
+    char *name_text;
+    bool loaded;
+    bool prompted;
+
+    ncm_buffer_init(&name);
+    prompted = action_runtime_prompt_string(
+        STRLIT_ARGS("Load playlist: "), (char *)"", false,
+        NULL, NULL, &name);
+    if (!prompted) {
+        ncm_buffer_destroy(&name);
+        return true;
+    }
+
+    name_text = name.data;
+    if (name_text == NULL) {
+        name_text = (char *)"";
+    }
+
+    ncm_statusbar_print_cstring(0, (char *)"Loading...");
+    loaded = false;
+    ncm_error_clear(&error);
+    if (!ncm_mpd_client_load_playlist(&global_mpd, name_text,
+                                      &loaded, &error)) {
+        ncm_buffer_destroy(&name);
+        return action_runtime_mpd_error(&error);
+    }
+
+    ncm_buffer_destroy(&name);
     return true;
 }
 
@@ -5305,6 +5413,19 @@ action_runtime_toggle_media_library_columns(void) {
     return true;
 }
 
+static char *
+action_runtime_replay_gain_mode_name(enum NcmMpdReplayGainMode mode) {
+    switch (mode) {
+    case NCM_MPD_REPLAY_GAIN_OFF:
+        return (char *)"off";
+    case NCM_MPD_REPLAY_GAIN_TRACK:
+        return (char *)"track";
+    case NCM_MPD_REPLAY_GAIN_ALBUM:
+        return (char *)"album";
+    }
+    return (char *)"unknown";
+}
+
 static bool
 action_runtime_toggle_replay_gain_mode(void) {
     NcmError error;
@@ -5340,6 +5461,12 @@ action_runtime_toggle_replay_gain_mode(void) {
     if (!ncm_mpd_client_set_replay_gain_mode(&global_mpd, mode, &error)) {
         return action_runtime_mpd_error(&error);
     }
+    ncm_error_clear(&error);
+    if (!ncm_mpd_client_get_replay_gain_mode(&global_mpd, &mode, &error)) {
+        return action_runtime_mpd_error(&error);
+    }
+    action_runtime_print_toggle(STRLIT_ARGS("Replay gain mode: %1%"),
+                                action_runtime_replay_gain_mode_name(mode));
     return true;
 }
 
@@ -5863,18 +5990,8 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
                    native_playlist_editor_screen_content(
                        native_c_screen_playlist_editor())));
     case NCM_ACTION_ADD:
-        if (action_runtime_current_screen_is(
-                NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
-            return ncm_mpd_client_connected(&global_mpd)
-                && action_runtime_playlist_editor_has_playlists();
-        }
-        return action_runtime_menu_has_items();
     case NCM_ACTION_LOAD:
-        if (action_runtime_current_screen_is(
-                NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
-            return false;
-        }
-        return action_runtime_menu_has_items();
+        return true;
     case NCM_ACTION_SEEK_FORWARD:
     case NCM_ACTION_SEEK_BACKWARD:
         return ncm_mpd_client_connected(&global_mpd)
@@ -6269,23 +6386,9 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
             return native_selected_items_adder_screen_run_current(
                 native_c_screen_selected_items_adder());
         }
-        return action_runtime_add_selected_songs(false);
+        return action_runtime_add_prompt();
     case NCM_ACTION_LOAD:
-        if (action_runtime_current_screen_is(
-                NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
-            NcmError error;
-            bool loaded;
-
-            loaded = false;
-            ncm_error_clear(&error);
-            if (!native_playlist_editor_screen_load_current_playlist(
-                    native_c_screen_playlist_editor(), &global_mpd,
-                    &loaded, &error)) {
-                return action_runtime_mpd_error(&error);
-            }
-            return loaded;
-        }
-        return false;
+        return action_runtime_load_prompt();
     case NCM_ACTION_SEEK_FORWARD:
         return action_runtime_seek_relative(true);
     case NCM_ACTION_SEEK_BACKWARD:
