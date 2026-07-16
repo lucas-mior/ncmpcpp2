@@ -443,18 +443,6 @@ ncm_status_handle_client_error(NcmMpdClient *client) {
 }
 
 void
-ncm_status_handle_server_error(NcmMpdClient *client) {
-    if (client == NULL) {
-        return;
-    }
-
-    ncm_status_handle_server_error_value(
-        client, (int32)ncm_mpd_client_server_error_code(client),
-        ncm_mpd_client_error_message(client), -1);
-    return;
-}
-
-void
 ncm_status_trace(NcmMpdClient *client, bool update_timer,
                  bool update_window_timeout, NcmError *error) {
     StatusTimeoutContext timeout_context;
@@ -1064,67 +1052,6 @@ ncm_status_state_total_time(void) {
 int32
 ncm_status_state_volume(void) {
     return status_volume;
-}
-
-bool
-ncm_status_state_database_updating(void) {
-    return status_db_updating != 0;
-}
-
-void
-ncm_status_state_sync_from_legacy(bool initialized,
-                                  bool consume,
-                                  bool crossfade,
-                                  bool database_updating,
-                                  bool repeat,
-                                  bool random,
-                                  bool single,
-                                  int32 current_song_id,
-                                  int32 current_song_pos,
-                                  uint32 elapsed_time,
-                                  uint32 kbps,
-                                  enum NcmStatusPlayerState player,
-                                  uint32 playlist_version,
-                                  uint32 playlist_length,
-                                  uint32 total_time,
-                                  int32 volume) {
-    status_initialized = initialized;
-    status_consume = 0;
-    status_crossfade = 0;
-    status_db_updating = 0;
-    status_repeat = 0;
-    status_random = 0;
-    status_single = 0;
-
-    if (consume) {
-        status_consume = 'c';
-    }
-    if (crossfade) {
-        status_crossfade = 'x';
-    }
-    if (database_updating) {
-        status_db_updating = 'U';
-    }
-    if (repeat) {
-        status_repeat = 'r';
-    }
-    if (random) {
-        status_random = 'z';
-    }
-    if (single) {
-        status_single = 's';
-    }
-
-    status_current_song_id = current_song_id;
-    status_current_song_pos = current_song_pos;
-    status_elapsed_time = elapsed_time;
-    status_kbps = kbps;
-    status_player_state = player;
-    status_playlist_version = playlist_version;
-    status_playlist_length = playlist_length;
-    status_total_time = total_time;
-    status_volume = volume;
-    return;
 }
 
 void

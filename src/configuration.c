@@ -996,11 +996,6 @@ configuration_test_lyrics_fetchers(NcmError *error) {
     return ok;
 }
 
-bool
-configuration_is_quiet(void) {
-    return configuration_quiet;
-}
-
 static void
 configuration_print_error(char *context, NcmError *error) {
     if ((error != NULL) && (error->message[0] != '\0')) {

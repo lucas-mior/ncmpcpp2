@@ -279,16 +279,6 @@ ncmpcpp_legacy_window_destroy(NcWindow *window) {
 }
 
 void
-ncmpcpp_legacy_window_clear_fd_callbacks(NcWindow *window) {
-    if (window == NULL) {
-        return;
-    }
-
-    nc_window_clear_fd_callbacks(window);
-    return;
-}
-
-void
 ncmpcpp_legacy_initialize_screens(void) {
     app_controller_init();
     native_c_screens_init_all();

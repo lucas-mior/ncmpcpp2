@@ -31,7 +31,6 @@ void ncm_statusbar_format(int32 delay_seconds,
                           int32 format_len,
                           NcmStringFormatArg *args,
                           int32 args_len);
-void ncm_statusbar_mpd_noidle_callback(int32 flags, void *user);
 void ncm_statusbar_mpd_idle_callback(void);
 bool ncm_statusbar_main_hook(char *string, int32 string_len);
 bool ncm_statusbar_prompt_return_one_of(NcWindow *window,

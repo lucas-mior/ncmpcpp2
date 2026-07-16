@@ -39,7 +39,6 @@ bool ncm_configuration_options_apply(NcmConfigurationOptions *options,
 bool configuration_discover_default_paths(NcmBufferArray *config_paths,
                                           NcmBufferArray *bindings_paths,
                                           NcmError *error);
-bool configuration_is_quiet(void);
 bool configure(int32 argc, char **argv);
 
 #endif /* NCMPCPP_CONFIGURATION_H */

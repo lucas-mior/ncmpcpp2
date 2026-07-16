@@ -116,9 +116,6 @@ bool ncm_binding_can_execute_runtime(NcmBinding *binding,
                                      NcmBindingRuntime *runtime);
 bool ncm_binding_execute_runtime(NcmBinding *binding,
                                  NcmBindingRuntime *runtime);
-bool ncm_binding_has_runnable_action(NcmBinding *binding,
-                                     enum NcmActionType type,
-                                     NcmBindingRuntime *runtime);
 bool ncm_binding_runtime_can_run_action(enum NcmActionType type,
                                         void *user);
 bool ncm_binding_runtime_run_action(enum NcmActionType type,
@@ -136,8 +133,6 @@ void ncm_binding_runtime_init(NcmBindingRuntime *runtime,
 NcmBindingRuntime *ncm_binding_default_runtime(void);
 bool ncm_binding_can_execute_default(NcmBinding *binding);
 bool ncm_binding_execute_default(NcmBinding *binding);
-bool ncm_binding_has_runnable_action_default(NcmBinding *binding,
-                                             enum NcmActionType type);
 bool ncm_binding_is_single_action_type(NcmBinding *binding,
                                        enum NcmActionType type);
 void ncm_binding_action_format(NcmBuffer *buffer,
@@ -169,7 +164,6 @@ NcmBindingSlice ncm_bindings_configuration_get(
 NcKey ncm_bindings_string_to_key(char *string, int32 string_len);
 void ncm_bindings_format_key(NcmBuffer *buffer, NcKey key);
 NcKey ncm_read_key(NcWindow *window);
-NcKey ncm_bindings_read_key(NcWindow *window);
 int32 ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len);
 
 #endif /* NCMPCPP_BINDINGS_H */

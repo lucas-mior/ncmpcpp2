@@ -55,7 +55,6 @@ typedef struct NcmStatusInitHooks {
 } NcmStatusInitHooks;
 
 void ncm_status_handle_client_error(NcmMpdClient *client);
-void ncm_status_handle_server_error(NcmMpdClient *client);
 void ncm_status_handle_client_error_value(NcmMpdClient *client,
                                           char *message,
                                           int32 message_len,
@@ -103,23 +102,6 @@ enum NcmStatusPlayerState ncm_status_state_player(void);
 uint32 ncm_status_state_playlist_version(void);
 uint32 ncm_status_state_total_time(void);
 int32 ncm_status_state_volume(void);
-bool ncm_status_state_database_updating(void);
-void ncm_status_state_sync_from_legacy(bool initialized,
-                                       bool consume,
-                                       bool crossfade,
-                                       bool database_updating,
-                                       bool repeat,
-                                       bool random,
-                                       bool single,
-                                       int32 current_song_id,
-                                       int32 current_song_pos,
-                                       uint32 elapsed_time,
-                                       uint32 kbps,
-                                       enum NcmStatusPlayerState player,
-                                       uint32 playlist_version,
-                                       uint32 playlist_length,
-                                       uint32 total_time,
-                                       int32 volume);
 
 void ncm_status_changes_playlist(uint32 previous_version);
 void ncm_status_changes_stored_playlists(void);

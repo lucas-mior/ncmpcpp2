@@ -23,7 +23,6 @@ NcWindow *ncmpcpp_legacy_window_create(int64 start_x, int64 start_y,
                                          NcColor color);
 void ncmpcpp_legacy_window_display(NcWindow *window);
 void ncmpcpp_legacy_window_destroy(NcWindow *window);
-void ncmpcpp_legacy_window_clear_fd_callbacks(NcWindow *window);
 
 void ncmpcpp_legacy_initialize_screens(void);
 void ncmpcpp_legacy_resize_screen(bool reload_main_window);
