@@ -40,7 +40,6 @@ void nc_outputs_screen_init(NcOutputsScreen *screen,
                             NcColor color, NcBorder border,
                             int64 lines_scrolled,
                             bool mouse_scroll_whole_page);
-void nc_outputs_screen_destroy(NcOutputsScreen *screen);
 void nc_outputs_screen_set_geometry(NcOutputsScreen *screen,
                                     int64 start_x, int64 width,
                                     int64 main_start_y,
@@ -58,7 +57,6 @@ void nc_outputs_screen_add_output(NcOutputsScreen *screen,
                                   bool enabled);
 bool nc_outputs_screen_toggle_current(NcOutputsScreen *screen);
 NcScreen *nc_outputs_screen_base(NcOutputsScreen *screen);
-NcWindow *nc_outputs_screen_window(NcOutputsScreen *screen);
 int64 nc_outputs_screen_start_x(NcOutputsScreen *screen);
 int64 nc_outputs_screen_start_y(NcOutputsScreen *screen);
 int64 nc_outputs_screen_width(NcOutputsScreen *screen);

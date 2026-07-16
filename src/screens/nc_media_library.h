@@ -32,12 +32,41 @@ typedef struct NativeMediaLibraryAlbumItem {
     uint32 menu_flags;
 } NativeMediaLibraryAlbumItem;
 
-NCM_ARRAY_DECLARE(native_media_library_tag_array,
-                  NativeMediaLibraryTagArray,
-                  NcMediaLibraryTagRow)
-NCM_ARRAY_DECLARE(native_media_library_album_array,
-                  NativeMediaLibraryAlbumArray,
-                  NativeMediaLibraryAlbumItem)
+NCM_ARRAY_DECLARE_TYPE(NativeMediaLibraryTagArray,
+                       NcMediaLibraryTagRow)
+NCM_ARRAY_DECLARE_INIT(native_media_library_tag_array,
+                       NativeMediaLibraryTagArray)
+NCM_ARRAY_DECLARE_CLEAR(native_media_library_tag_array,
+                        NativeMediaLibraryTagArray)
+NCM_ARRAY_DECLARE_DESTROY(native_media_library_tag_array,
+                          NativeMediaLibraryTagArray)
+NCM_ARRAY_DECLARE_MOVE(native_media_library_tag_array,
+                       NativeMediaLibraryTagArray)
+NCM_ARRAY_DECLARE_RESERVE(native_media_library_tag_array,
+                          NativeMediaLibraryTagArray)
+NCM_ARRAY_DECLARE_APPEND(native_media_library_tag_array,
+                         NativeMediaLibraryTagArray,
+                         NcMediaLibraryTagRow)
+NCM_ARRAY_DECLARE_REMOVE_ORDERED(native_media_library_tag_array,
+                                 NativeMediaLibraryTagArray)
+
+NCM_ARRAY_DECLARE_TYPE(NativeMediaLibraryAlbumArray,
+                       NativeMediaLibraryAlbumItem)
+NCM_ARRAY_DECLARE_INIT(native_media_library_album_array,
+                       NativeMediaLibraryAlbumArray)
+NCM_ARRAY_DECLARE_CLEAR(native_media_library_album_array,
+                        NativeMediaLibraryAlbumArray)
+NCM_ARRAY_DECLARE_DESTROY(native_media_library_album_array,
+                          NativeMediaLibraryAlbumArray)
+NCM_ARRAY_DECLARE_MOVE(native_media_library_album_array,
+                       NativeMediaLibraryAlbumArray)
+NCM_ARRAY_DECLARE_RESERVE(native_media_library_album_array,
+                          NativeMediaLibraryAlbumArray)
+NCM_ARRAY_DECLARE_APPEND(native_media_library_album_array,
+                         NativeMediaLibraryAlbumArray,
+                         NativeMediaLibraryAlbumItem)
+NCM_ARRAY_DECLARE_REMOVE_ORDERED(native_media_library_album_array,
+                                 NativeMediaLibraryAlbumArray)
 
 typedef struct NativeMediaLibrarySongQuery {
     char *primary_value;
@@ -126,8 +155,6 @@ void native_media_library_screen_init(NativeMediaLibraryScreen *screen,
 void native_media_library_screen_destroy(NativeMediaLibraryScreen *screen);
 NcScreen *native_media_library_screen_base(NativeMediaLibraryScreen *screen);
 NcMediaLibraryTagMenu *native_media_library_screen_tags(
-    NativeMediaLibraryScreen *screen);
-NcMediaLibraryAlbumMenu *native_media_library_screen_albums(
     NativeMediaLibraryScreen *screen);
 NcMediaLibrarySongMenu *native_media_library_screen_songs(
     NativeMediaLibraryScreen *screen);

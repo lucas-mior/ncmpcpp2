@@ -119,7 +119,6 @@ NcScreen *nc_screen_registry_current(NcScreenRegistry *registry);
 NcScreen *nc_screen_registry_previous(NcScreenRegistry *registry);
 NcScreen *nc_screen_registry_locked(NcScreenRegistry *registry);
 NcScreen *nc_screen_registry_inactive(NcScreenRegistry *registry);
-int32 nc_screen_registry_count(NcScreenRegistry *registry);
 bool nc_screen_registry_is_registered(NcScreenRegistry *registry,
                                       NcScreen *screen);
 bool nc_screen_registry_is_current(NcScreenRegistry *registry,
@@ -160,10 +159,5 @@ void nc_screen_registry_update_all(NcScreenRegistry *registry);
 void nc_screen_registry_resize_current(NcScreenRegistry *registry);
 void nc_screen_registry_resize_visible(NcScreenRegistry *registry);
 void nc_screen_registry_resize_all(NcScreenRegistry *registry);
-bool nc_screen_registry_destroy_screen(NcScreenRegistry *registry,
-                                       NcScreen *screen);
-bool nc_screen_registry_destroy_type(NcScreenRegistry *registry,
-                                     int32 type);
-void nc_screen_registry_destroy_all(NcScreenRegistry *registry);
 
 #endif /* NCMPCPP_NC_SCREEN_H */

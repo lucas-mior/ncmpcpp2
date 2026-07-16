@@ -60,8 +60,6 @@ NcWindow *native_selected_items_adder_screen_active_window(
 bool native_selected_items_adder_screen_open(
     NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs,
     NativePlaylistScreen *playlist, NcmMpdClient *client, NcmError *error);
-bool native_selected_items_adder_screen_set_selected_songs(
-    NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs);
 bool native_selected_items_adder_screen_selected_songs(
     NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs);
 void native_selected_items_adder_screen_populate_playlist_selector(

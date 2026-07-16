@@ -67,8 +67,6 @@ bool native_browser_screen_add_item_copy(NativeBrowserScreen *screen,
                                          NcmMpdItem *item);
 void native_browser_screen_add_item_move(NativeBrowserScreen *screen,
                                          NcmMpdItem *item);
-bool native_browser_screen_load_items(NativeBrowserScreen *screen,
-                                      NcmMpdItemArray *items);
 bool native_browser_screen_reload_from_mpd(NativeBrowserScreen *screen,
                                            NcmMpdClient *client,
                                            NcmError *error);
@@ -80,8 +78,6 @@ NcmStringView native_browser_screen_current_directory(
 bool native_browser_screen_set_last_highlighted_directory(
     NativeBrowserScreen *screen, char *directory, int32 directory_len);
 NcmStringView native_browser_screen_last_highlighted_directory(
-    NativeBrowserScreen *screen);
-void native_browser_screen_clear_last_highlighted_directory(
     NativeBrowserScreen *screen);
 bool native_browser_screen_set_title_text(
     NativeBrowserScreen *screen, char *title, int32 title_len);

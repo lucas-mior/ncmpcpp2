@@ -352,11 +352,6 @@ nc_screen_registry_inactive(NcScreenRegistry *registry) {
     return registry->inactive_screen;
 }
 
-int32
-nc_screen_registry_count(NcScreenRegistry *registry) {
-    return registry->screens_len;
-}
-
 bool
 nc_screen_registry_is_registered(NcScreenRegistry *registry,
                                  NcScreen *screen) {
@@ -655,45 +650,6 @@ nc_screen_registry_resize_all(NcScreenRegistry *registry) {
     for (int32 i = 0; i < registry->screens_len; i += 1) {
         nc_screen_resize(registry->screens[i]);
     }
-    return;
-}
-
-bool
-nc_screen_registry_destroy_screen(NcScreenRegistry *registry,
-                                  NcScreen *screen) {
-    if (!nc_screen_registry_unregister(registry, screen)) {
-        return false;
-    }
-    nc_screen_destroy(screen);
-    return true;
-}
-
-bool
-nc_screen_registry_destroy_type(NcScreenRegistry *registry,
-                                int32 type) {
-    NcScreen *screen;
-
-    screen = nc_screen_registry_find(registry, type);
-    if (screen == NULL) {
-        return false;
-    }
-    return nc_screen_registry_destroy_screen(registry, screen);
-}
-
-void
-nc_screen_registry_destroy_all(NcScreenRegistry *registry) {
-    while (registry->screens_len > 0) {
-        NcScreen *screen;
-
-        screen = registry->screens[registry->screens_len - 1];
-        nc_screen_registry_unregister(registry, screen);
-        nc_screen_destroy(screen);
-    }
-    registry->current_screen = NULL;
-    registry->previous_screen = NULL;
-    registry->locked_screen = NULL;
-    registry->inactive_screen = NULL;
-    registry->screens_len = 0;
     return;
 }
 

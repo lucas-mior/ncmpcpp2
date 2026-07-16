@@ -31,14 +31,12 @@ void nc_song_info_screen_init(NcSongInfoScreen *screen,
                               int64 main_start_y, int64 main_height,
                               NcColor color, NcBorder border,
                               int64 lines_scrolled);
-void nc_song_info_screen_destroy(NcSongInfoScreen *screen);
 void nc_song_info_screen_set_geometry(NcSongInfoScreen *screen,
                                       int64 start_x, int64 width,
                                       int64 main_start_y,
                                       int64 main_height);
 bool nc_song_info_screen_prepare_current(NcSongInfoScreen *screen);
 NcScreen *nc_song_info_screen_base(NcSongInfoScreen *screen);
-NcWindow *nc_song_info_screen_window(NcSongInfoScreen *screen);
 int64 nc_song_info_screen_start_x(NcSongInfoScreen *screen);
 int64 nc_song_info_screen_start_y(NcSongInfoScreen *screen);
 int64 nc_song_info_screen_width(NcSongInfoScreen *screen);

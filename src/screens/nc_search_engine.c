@@ -335,21 +335,6 @@ native_search_engine_screen_is_prepared(
     return screen->prepared;
 }
 
-void
-native_search_engine_screen_set_prepared(
-    NativeSearchEngineScreen *screen, bool prepared) {
-    if (screen == NULL) {
-        return;
-    }
-    screen->prepared = prepared;
-    if (!prepared) {
-        screen->result_rows_present = false;
-        screen->result_count = 0;
-        screen->constraints_locked = false;
-    }
-    return;
-}
-
 bool
 native_search_engine_screen_has_result_rows(
     NativeSearchEngineScreen *screen) {
@@ -366,24 +351,6 @@ native_search_engine_screen_result_count(
         return 0;
     }
     return screen->result_count;
-}
-
-void
-native_search_engine_screen_set_result_state(
-    NativeSearchEngineScreen *screen, bool rows_present,
-    int32 result_count) {
-    if (screen == NULL) {
-        return;
-    }
-    if (result_count < 0) {
-        result_count = 0;
-    }
-    if (!rows_present) {
-        result_count = 0;
-    }
-    screen->result_rows_present = rows_present;
-    screen->result_count = result_count;
-    return;
 }
 
 bool

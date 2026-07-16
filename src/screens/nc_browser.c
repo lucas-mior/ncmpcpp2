@@ -331,21 +331,6 @@ native_browser_screen_add_item_move(NativeBrowserScreen *screen,
 }
 
 bool
-native_browser_screen_load_items(NativeBrowserScreen *screen,
-                                 NcmMpdItemArray *items) {
-    if (screen == NULL || items == NULL) {
-        return false;
-    }
-    native_browser_screen_clear(screen);
-    for (int32 i = 0; i < items->len; i += 1) {
-        if (!native_browser_screen_add_item_copy(screen, &items->items[i])) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool
 native_browser_screen_sort(NativeBrowserScreen *screen) {
     NcMenu *menu;
     int64 begin;
@@ -485,16 +470,6 @@ native_browser_screen_last_highlighted_directory(
     }
     return ncm_string_view_make(screen->last_highlighted_directory.data,
                                 screen->last_highlighted_directory.len);
-}
-
-void
-native_browser_screen_clear_last_highlighted_directory(
-    NativeBrowserScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
-    ncm_buffer_clear(&screen->last_highlighted_directory);
-    return;
 }
 
 bool

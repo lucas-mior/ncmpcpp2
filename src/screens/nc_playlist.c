@@ -72,21 +72,6 @@ nc_playlist_screen_menu(NcPlaylistScreen *screen) {
 }
 
 int64
-nc_playlist_screen_start_x(NcPlaylistScreen *screen) {
-    return screen->start_x;
-}
-
-int64
-nc_playlist_screen_start_y(NcPlaylistScreen *screen) {
-    return screen->main_start_y;
-}
-
-int64
-nc_playlist_screen_width(NcPlaylistScreen *screen) {
-    return screen->width;
-}
-
-int64
 nc_playlist_screen_height(NcPlaylistScreen *screen) {
     return screen->main_height;
 }
@@ -122,41 +107,6 @@ nc_playlist_screen_activate_position(NcPlaylistScreen *screen, int64 pos) {
         return false;
     }
     return nc_menu_activate_position(screen->menu, pos);
-}
-
-bool
-nc_playlist_screen_set_current_selected(NcPlaylistScreen *screen,
-                                        bool selected) {
-    if (screen->menu == NULL) {
-        return false;
-    }
-    return nc_menu_set_current_selected(screen->menu, selected);
-}
-
-bool
-nc_playlist_screen_toggle_current_selected(NcPlaylistScreen *screen) {
-    if (screen->menu == NULL) {
-        return false;
-    }
-    return nc_menu_toggle_current_selected(screen->menu);
-}
-
-bool
-nc_playlist_screen_set_position_selected(NcPlaylistScreen *screen,
-                                         int64 pos, bool selected) {
-    if (screen->menu == NULL) {
-        return false;
-    }
-    return nc_menu_set_position_selected(screen->menu, pos, selected);
-}
-
-bool
-nc_playlist_screen_toggle_position_selected(NcPlaylistScreen *screen,
-                                            int64 pos) {
-    if (screen->menu == NULL) {
-        return false;
-    }
-    return nc_menu_toggle_position_selected(screen->menu, pos);
 }
 
 void
@@ -349,21 +299,6 @@ native_playlist_screen_destroy(NativePlaylistScreen *screen) {
 }
 
 bool
-native_playlist_screen_register(NativePlaylistScreen *screen) {
-    if (screen == NULL) {
-        return false;
-    }
-    if (screen->registered) {
-        return true;
-    }
-    if (!app_controller_register_screen(native_playlist_screen_base(screen))) {
-        return false;
-    }
-    screen->registered = true;
-    return true;
-}
-
-bool
 native_playlist_screen_unregister(NativePlaylistScreen *screen) {
     if (screen == NULL) {
         return false;
@@ -517,19 +452,6 @@ native_playlist_screen_request_highlighting(NativePlaylistScreen *screen) {
     return;
 }
 
-bool
-native_playlist_screen_consume_highlighting_request(
-    NativePlaylistScreen *screen) {
-    if (screen == NULL) {
-        return false;
-    }
-    if (!screen->highlighting_requested) {
-        return false;
-    }
-    screen->highlighting_requested = false;
-    return true;
-}
-
 void
 native_playlist_screen_clear(NativePlaylistScreen *screen) {
     if (screen == NULL) {
@@ -554,25 +476,6 @@ native_playlist_screen_add_song_copy(NativePlaylistScreen *screen,
     native_playlist_screen_reload_total_length(screen);
     native_playlist_screen_reload_remaining(screen);
     return true;
-}
-
-void
-native_playlist_screen_add_song_move(NativePlaylistScreen *screen,
-                                     NcmSong *song) {
-    NcmSong copy;
-
-    if (screen == NULL) {
-        return;
-    }
-    if (song == NULL) {
-        return;
-    }
-
-    ncm_song_init(&copy);
-    ncm_song_move(&copy, song);
-    native_playlist_screen_add_song_copy(screen, &copy);
-    ncm_song_destroy(&copy);
-    return;
 }
 
 bool
@@ -982,21 +885,6 @@ native_playlist_screen_copy_sort_range(
 }
 
 bool
-native_playlist_screen_select_current_if_none_selected(
-    NativePlaylistScreen *screen) {
-    NcMenu *menu;
-
-    if (screen == NULL) {
-        return false;
-    }
-    menu = native_playlist_storage_menu(screen);
-    if (nc_menu_has_selected(menu)) {
-        return true;
-    }
-    return nc_menu_set_current_selected(menu, true);
-}
-
-bool
 native_playlist_screen_apply_filter(NativePlaylistScreen *screen,
                                     char *pattern, int32 pattern_len,
                                     NcmError *error) {
@@ -1062,24 +950,6 @@ native_playlist_screen_search(NativePlaylistScreen *screen,
         wrap, skip_current);
     ncm_regex_destroy(&regex);
     return result;
-}
-
-void
-native_playlist_screen_reverse_selection(NativePlaylistScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
-    nc_menu_reverse_selection(native_playlist_storage_menu(screen));
-    return;
-}
-
-void
-native_playlist_screen_clear_selection(NativePlaylistScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
-    nc_menu_clear_selection(native_playlist_storage_menu(screen));
-    return;
 }
 
 bool
