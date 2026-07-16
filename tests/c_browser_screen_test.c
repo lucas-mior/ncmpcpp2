@@ -8,13 +8,16 @@
 
 #include <mpd/client.h>
 
+#include "actions.h"
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_format.h"
 #include "c/ncm_base.h"
 #include "c/ncm_fs.h"
 #include "c/ncm_string.h"
 #include "screens/nc_browser.h"
+#include "screens/native_c_screens.h"
 #include "settings.h"
+#include "statusbar.h"
 #include "ui_state.h"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
@@ -35,6 +38,10 @@ static void test_browser_delete_rejects_parent(void);
 static void test_browser_delete_rejects_disabled_config(void);
 static void test_browser_delete_playlist_uses_mpd(void);
 static void test_browser_delete_local_directory_requests_reload(void);
+static void test_browser_rename_local_directory(void);
+static void test_browser_rename_mpd_directory_updates(void);
+static void test_browser_rename_playlist_uses_mpd(void);
+static void test_browser_action_rename_prompts(void);
 static void test_browser_filter_and_search(void);
 static void test_browser_local_mode(void);
 static void test_browser_change_browse_mode(void);
@@ -92,6 +99,8 @@ static void browser_test_make_path(NcmBuffer *path, char *root,
                                    int32 name_len);
 static void browser_test_write_file(char *path);
 static void browser_test_remove_path(char *path);
+static void browser_action_set_prompt(char *text);
+static int32 browser_test_cstring_len(char *text);
 static NcWindow *test_bridge_active_window(void *user);
 static void test_bridge_refresh(void *user);
 static void test_bridge_refresh_window(void *user);
@@ -148,18 +157,46 @@ bool __wrap_ncm_mpd_client_get_supported_extensions(
     NcmMpdClient *client, NcmMpdStringList *strings, NcmError *error);
 bool __wrap_ncm_mpd_client_delete_playlist(NcmMpdClient *client,
                                            char *name, NcmError *error);
+bool __wrap_ncm_mpd_client_rename_playlist(NcmMpdClient *client,
+                                           char *from, char *to,
+                                           NcmError *error);
 bool __wrap_ncm_mpd_client_update_directory(NcmMpdClient *client,
                                             char *path, uint32 *id,
                                             NcmError *error);
+NcScreen *__wrap_app_controller_current_screen(void);
+enum ScreenType __wrap_native_c_screens_current_type(void);
+NativeBrowserScreen *__wrap_native_c_screen_browser(void);
+bool __wrap_ncm_mpd_client_connected(NcmMpdClient *client);
+void __wrap_ncm_statusbar_scoped_lock_init(NcmStatusbarScopedLock *lock);
+void __wrap_ncm_statusbar_scoped_lock_destroy(NcmStatusbarScopedLock *lock);
+NcWindow *__wrap_ncm_statusbar_put(void);
+void __wrap_ncm_statusbar_print(int32 delay, char *message,
+                                int32 message_len);
+void __wrap_ncm_statusbar_print_cstring(int32 delay, char *message);
+void __wrap_nc_window_print_data(NcWindow *window, char *data,
+                                 int32 data_len);
+enum NcPromptStatus __wrap_nc_window_prompt(NcWindow *window,
+                                            NcPrompt *prompt,
+                                            char **result);
+void __wrap_nc_window_prompt_result_destroy(char *result);
 
 static BrowserMpdTrace mpd_trace;
 static int32 bridge_callback_calls;
 static int32 supported_extensions_calls;
 static BrowserMpdDeleteMode delete_playlist_mode;
 static char delete_playlist_path[128];
+static char rename_playlist_from[128];
+static char rename_playlist_to[128];
 static char update_directory_path[128];
+static char browser_action_prompt_text[128];
+static char browser_action_status[256];
 static int32 delete_playlist_calls;
+static int32 rename_playlist_calls;
 static int32 update_directory_calls;
+static int32 browser_action_status_calls;
+static NativeBrowserScreen *browser_action_screen;
+static NcWindow browser_action_prompt_window;
+static bool browser_action_connected;
 
 int
 main(void) {
@@ -178,6 +215,10 @@ main(void) {
     test_browser_delete_rejects_disabled_config();
     test_browser_delete_playlist_uses_mpd();
     test_browser_delete_local_directory_requests_reload();
+    test_browser_rename_local_directory();
+    test_browser_rename_mpd_directory_updates();
+    test_browser_rename_playlist_uses_mpd();
+    test_browser_action_rename_prompts();
     test_browser_filter_and_search();
     test_browser_local_mode();
     test_browser_change_browse_mode();
@@ -849,6 +890,217 @@ test_browser_delete_local_directory_requests_reload(void) {
 
     ncm_buffer_destroy(&path);
     Config.allow_for_physical_item_deletion = old_allow;
+    native_browser_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_browser_rename_local_directory(void) {
+    NativeBrowserScreen screen;
+    NcmMpdClient client = {0};
+    NcmBuffer path;
+    NcmBuffer new_path;
+    NcmError error = {0};
+    char root[128];
+    int32 root_len;
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    native_browser_screen_set_local(&screen, true);
+    native_browser_screen_clear_update_request(&screen);
+    ncm_buffer_init(&path);
+    ncm_buffer_init(&new_path);
+
+    root_len = snprintf(root, SIZEOF(root),
+                        "/tmp/ncmpcpp-browser-rename-local-%lld",
+                        (llong)getpid());
+    assert(root_len > 0);
+    assert(root_len < (int32)SIZEOF(root));
+    assert(ncm_fs_mkdir_all(root, root_len, NULL));
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Old"));
+    assert(ncm_fs_mkdir_all(path.data, path.len, NULL));
+    browser_test_add_directory(&screen, path.data, path.len, 0);
+    browser_test_make_path(&new_path, root, root_len, LIT_ARGS("New"));
+
+    update_directory_calls = 0;
+    assert(native_browser_screen_rename_directory_available(&screen));
+    assert(native_browser_screen_rename_current_directory(
+        &screen, new_path.data, new_path.len, &client, &error));
+    assert(update_directory_calls == 0);
+    assert(native_browser_screen_update_requested(&screen));
+    assert(!ncm_fs_exists(path.data, path.len));
+    assert(ncm_fs_is_directory(new_path.data, new_path.len));
+
+    browser_test_remove_path(new_path.data);
+    browser_test_remove_path(root);
+    ncm_buffer_destroy(&new_path);
+    ncm_buffer_destroy(&path);
+    native_browser_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_browser_rename_mpd_directory_updates(void) {
+    NativeBrowserScreen screen;
+    NcmMpdClient client = {0};
+    NcmBuffer old_path;
+    NcmBuffer new_path;
+    NcmError error = {0};
+    char root[128];
+    int32 root_len;
+    char *old_dir;
+    int32 old_dir_len;
+    int32 old_dir_cap;
+
+    old_dir = Config.mpd_music_dir;
+    old_dir_len = Config.mpd_music_dir_len;
+    old_dir_cap = Config.mpd_music_dir_cap;
+    ncm_buffer_init(&old_path);
+    ncm_buffer_init(&new_path);
+
+    root_len = snprintf(root, SIZEOF(root),
+                        "/tmp/ncmpcpp-browser-rename-mpd-%lld",
+                        (llong)getpid());
+    assert(root_len > 0);
+    assert(root_len < (int32)SIZEOF(root));
+    assert(ncm_fs_mkdir_all(root, root_len, NULL));
+    Config.mpd_music_dir = root;
+    Config.mpd_music_dir_len = root_len;
+    Config.mpd_music_dir_cap = root_len + 1;
+
+    browser_test_make_path(&old_path, root, root_len,
+                           LIT_ARGS("Artist/Old"));
+    assert(ncm_fs_mkdir_all(old_path.data, old_path.len, NULL));
+    browser_test_make_path(&new_path, root, root_len,
+                           LIT_ARGS("Artist/New"));
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    native_browser_screen_clear_update_request(&screen);
+    browser_test_add_directory(&screen, LIT_ARGS("Artist/Old"), 0);
+
+    update_directory_calls = 0;
+    update_directory_path[0] = '\0';
+    assert(native_browser_screen_rename_directory_available(&screen));
+    assert(native_browser_screen_rename_current_directory(
+        &screen, LIT_ARGS("Artist/New"), &client, &error));
+    assert(update_directory_calls == 1);
+    assert(ncm_string_equal(update_directory_path,
+                            (int32)strlen(update_directory_path),
+                            LIT_ARGS("Artist")));
+    assert(native_browser_screen_update_requested(&screen));
+    assert(!ncm_fs_exists(old_path.data, old_path.len));
+    assert(ncm_fs_is_directory(new_path.data, new_path.len));
+
+    browser_test_remove_path(new_path.data);
+    browser_test_make_path(&old_path, root, root_len, LIT_ARGS("Artist"));
+    browser_test_remove_path(old_path.data);
+    browser_test_remove_path(root);
+    native_browser_screen_destroy(&screen);
+    ncm_buffer_destroy(&new_path);
+    ncm_buffer_destroy(&old_path);
+    Config.mpd_music_dir = old_dir;
+    Config.mpd_music_dir_len = old_dir_len;
+    Config.mpd_music_dir_cap = old_dir_cap;
+    return;
+}
+
+static void
+test_browser_rename_playlist_uses_mpd(void) {
+    NativeBrowserScreen screen;
+    NcmMpdClient client = {0};
+    NcmError error = {0};
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    native_browser_screen_clear_update_request(&screen);
+    browser_test_add_playlist(&screen, LIT_ARGS("old-list"), 0);
+
+    rename_playlist_calls = 0;
+    rename_playlist_from[0] = '\0';
+    rename_playlist_to[0] = '\0';
+    assert(native_browser_screen_rename_playlist_available(&screen));
+    assert(native_browser_screen_rename_current_playlist(
+        &screen, LIT_ARGS("new-list"), &client, &error));
+    assert(rename_playlist_calls == 1);
+    assert(ncm_string_equal(rename_playlist_from,
+                            (int32)strlen(rename_playlist_from),
+                            LIT_ARGS("old-list")));
+    assert(ncm_string_equal(rename_playlist_to,
+                            (int32)strlen(rename_playlist_to),
+                            LIT_ARGS("new-list")));
+    assert(native_browser_screen_update_requested(&screen));
+
+    native_browser_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_browser_action_rename_prompts(void) {
+    NativeBrowserScreen screen;
+    NcmBuffer old_path;
+    NcmBuffer new_path;
+    char root[128];
+    int32 root_len;
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    browser_action_screen = &screen;
+    browser_action_connected = true;
+    browser_action_status_calls = 0;
+    browser_action_status[0] = '\0';
+    ncm_buffer_init(&old_path);
+    ncm_buffer_init(&new_path);
+
+    root_len = snprintf(root, SIZEOF(root),
+                        "/tmp/ncmpcpp-browser-action-rename-%lld",
+                        (llong)getpid());
+    assert(root_len > 0);
+    assert(root_len < (int32)SIZEOF(root));
+    assert(ncm_fs_mkdir_all(root, root_len, NULL));
+    browser_test_make_path(&old_path, root, root_len, LIT_ARGS("Old"));
+    assert(ncm_fs_mkdir_all(old_path.data, old_path.len, NULL));
+    browser_test_make_path(&new_path, root, root_len, LIT_ARGS("New"));
+
+    native_browser_screen_set_local(&screen, true);
+    native_browser_screen_clear_update_request(&screen);
+    browser_test_add_directory(&screen, old_path.data, old_path.len, 0);
+    browser_action_set_prompt(new_path.data);
+
+    assert(ncm_action_runtime_can_run(NULL, NCM_ACTION_EDIT_DIRECTORY_NAME));
+    assert(ncm_action_runtime_run(NULL, NCM_ACTION_EDIT_DIRECTORY_NAME));
+    assert(native_browser_screen_update_requested(&screen));
+    assert(!ncm_fs_exists(old_path.data, old_path.len));
+    assert(ncm_fs_is_directory(new_path.data, new_path.len));
+    assert(strstr(browser_action_status,
+                  "Directory renamed to") != NULL);
+
+    native_browser_screen_clear(&screen);
+    native_browser_screen_clear_update_request(&screen);
+    rename_playlist_calls = 0;
+    browser_action_status_calls = 0;
+    browser_action_status[0] = '\0';
+    browser_test_add_playlist(&screen, LIT_ARGS("old-playlist"), 0);
+    browser_action_set_prompt((char *)"new-playlist");
+
+    assert(ncm_action_runtime_can_run(NULL, NCM_ACTION_EDIT_PLAYLIST_NAME));
+    assert(ncm_action_runtime_run(NULL, NCM_ACTION_EDIT_PLAYLIST_NAME));
+    assert(rename_playlist_calls == 1);
+    assert(ncm_string_equal(rename_playlist_from,
+                            (int32)strlen(rename_playlist_from),
+                            LIT_ARGS("old-playlist")));
+    assert(ncm_string_equal(rename_playlist_to,
+                            (int32)strlen(rename_playlist_to),
+                            LIT_ARGS("new-playlist")));
+    assert(native_browser_screen_update_requested(&screen));
+    assert(strstr(browser_action_status,
+                  "Playlist renamed to") != NULL);
+
+    browser_test_remove_path(new_path.data);
+    browser_test_remove_path(root);
+    ncm_buffer_destroy(&new_path);
+    ncm_buffer_destroy(&old_path);
+    browser_action_screen = NULL;
     native_browser_screen_destroy(&screen);
     return;
 }
@@ -1662,6 +1914,30 @@ __wrap_ncm_mpd_client_delete_playlist(NcmMpdClient *client, char *name,
 }
 
 bool
+__wrap_ncm_mpd_client_rename_playlist(NcmMpdClient *client,
+                                      char *from, char *to,
+                                      NcmError *error) {
+    int32 len;
+
+    (void)client;
+    rename_playlist_calls += 1;
+    rename_playlist_from[0] = '\0';
+    rename_playlist_to[0] = '\0';
+    if (from != NULL) {
+        len = (int32)strlen(from);
+        assert(len < (int32)SIZEOF(rename_playlist_from));
+        ncm_memcpy(rename_playlist_from, from, len + 1);
+    }
+    if (to != NULL) {
+        len = (int32)strlen(to);
+        assert(len < (int32)SIZEOF(rename_playlist_to));
+        ncm_memcpy(rename_playlist_to, to, len + 1);
+    }
+    ncm_error_clear(error);
+    return true;
+}
+
+bool
 __wrap_ncm_mpd_client_update_directory(NcmMpdClient *client, char *path,
                                        uint32 *id, NcmError *error) {
     int32 len;
@@ -1678,6 +1954,106 @@ __wrap_ncm_mpd_client_update_directory(NcmMpdClient *client, char *path,
     }
     ncm_error_clear(error);
     return true;
+}
+
+NcScreen *
+__wrap_app_controller_current_screen(void) {
+    if (browser_action_screen == NULL) {
+        return NULL;
+    }
+    return native_browser_screen_base(browser_action_screen);
+}
+
+enum ScreenType
+__wrap_native_c_screens_current_type(void) {
+    if (browser_action_screen == NULL) {
+        return NCM_SCREEN_TYPE_UNKNOWN;
+    }
+    return NCM_SCREEN_TYPE_BROWSER;
+}
+
+NativeBrowserScreen *
+__wrap_native_c_screen_browser(void) {
+    return browser_action_screen;
+}
+
+bool
+__wrap_ncm_mpd_client_connected(NcmMpdClient *client) {
+    (void)client;
+    return browser_action_connected;
+}
+
+void
+__wrap_ncm_statusbar_scoped_lock_init(NcmStatusbarScopedLock *lock) {
+    if (lock != NULL) {
+        *lock = (NcmStatusbarScopedLock){0};
+    }
+    return;
+}
+
+void
+__wrap_ncm_statusbar_scoped_lock_destroy(NcmStatusbarScopedLock *lock) {
+    (void)lock;
+    return;
+}
+
+NcWindow *
+__wrap_ncm_statusbar_put(void) {
+    return &browser_action_prompt_window;
+}
+
+void
+__wrap_ncm_statusbar_print(int32 delay, char *message,
+                           int32 message_len) {
+    (void)delay;
+    if (message_len >= (int32)SIZEOF(browser_action_status)) {
+        message_len = (int32)SIZEOF(browser_action_status) - 1;
+    }
+    ncm_memcpy(browser_action_status, message, message_len);
+    browser_action_status[message_len] = '\0';
+    browser_action_status_calls += 1;
+    return;
+}
+
+void
+__wrap_ncm_statusbar_print_cstring(int32 delay, char *message) {
+    __wrap_ncm_statusbar_print(delay, message,
+                               browser_test_cstring_len(message));
+    return;
+}
+
+void
+__wrap_nc_window_print_data(NcWindow *window, char *data,
+                            int32 data_len) {
+    (void)window;
+    (void)data;
+    (void)data_len;
+    return;
+}
+
+enum NcPromptStatus
+__wrap_nc_window_prompt(NcWindow *window, NcPrompt *prompt,
+                        char **result) {
+    int32 len;
+
+    (void)window;
+    (void)prompt;
+    len = browser_test_cstring_len(browser_action_prompt_text);
+    *result = ncm_malloc(len + 1);
+    ncm_memcpy(*result, browser_action_prompt_text, len + 1);
+    return NC_PROMPT_ACCEPTED;
+}
+
+void
+__wrap_nc_window_prompt_result_destroy(char *result) {
+    int32 len;
+
+    if (result == NULL) {
+        return;
+    }
+    len = browser_test_cstring_len(result);
+    ncm_free(result, len + 1);
+    return;
 }
 
 static void
@@ -1921,6 +2297,31 @@ browser_test_remove_path(char *path) {
         return;
     }
     assert(rmdir(path) == 0);
+    return;
+}
+
+static int32
+browser_test_cstring_len(char *text) {
+    int32 len;
+
+    if (text == NULL) {
+        return 0;
+    }
+
+    len = 0;
+    while (text[len] != '\0') {
+        len += 1;
+    }
+    return len;
+}
+
+static void
+browser_action_set_prompt(char *text) {
+    int32 len;
+
+    len = browser_test_cstring_len(text);
+    assert(len < (int32)SIZEOF(browser_action_prompt_text));
+    ncm_memcpy(browser_action_prompt_text, text, len + 1);
     return;
 }
 

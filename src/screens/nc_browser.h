@@ -145,6 +145,20 @@ bool native_browser_screen_selected_songs(NativeBrowserScreen *screen,
 bool native_browser_screen_delete_items(NativeBrowserScreen *screen,
                                         NcmMpdClient *client,
                                         NcmError *error);
+bool native_browser_screen_current_directory_path(
+    NativeBrowserScreen *screen, NcmStringView *path);
+bool native_browser_screen_current_playlist_path(
+    NativeBrowserScreen *screen, NcmStringView *path);
+bool native_browser_screen_rename_directory_available(
+    NativeBrowserScreen *screen);
+bool native_browser_screen_rename_playlist_available(
+    NativeBrowserScreen *screen);
+bool native_browser_screen_rename_current_directory(
+    NativeBrowserScreen *screen, char *new_path, int32 new_path_len,
+    NcmMpdClient *client, NcmError *error);
+bool native_browser_screen_rename_current_playlist(
+    NativeBrowserScreen *screen, char *new_path, int32 new_path_len,
+    NcmMpdClient *client, NcmError *error);
 bool native_browser_screen_enter_directory(NativeBrowserScreen *screen);
 bool native_browser_screen_activate_current(NativeBrowserScreen *screen);
 bool native_browser_screen_go_to_parent(NativeBrowserScreen *screen);

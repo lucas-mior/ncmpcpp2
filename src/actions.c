@@ -1321,6 +1321,8 @@ static bool action_runtime_delete_playlist_items(void);
 static bool action_runtime_delete_browser_items(void);
 static bool action_runtime_browser_item_name(NcmMpdItem *item,
                                             NcmBuffer *name);
+static void action_runtime_print_renamed(char *prefix, int32 prefix_len,
+                                         NcmBuffer *name);
 static bool action_runtime_delete_playlist_editor_items(void);
 static bool action_runtime_delete_stored_playlists(void);
 static bool action_runtime_clear_playlist(bool main_playlist);
@@ -3303,6 +3305,25 @@ action_runtime_browser_item_name(NcmMpdItem *item, NcmBuffer *name) {
     return true;
 }
 
+static void
+action_runtime_print_renamed(char *prefix, int32 prefix_len,
+                             NcmBuffer *name) {
+    NcmBuffer message;
+
+    if (name == NULL) {
+        return;
+    }
+
+    ncm_buffer_init(&message);
+    ncm_buffer_append(&message, prefix, prefix_len);
+    ncm_buffer_append(&message, name->data, name->len);
+    ncm_buffer_append(&message, STRLIT_ARGS("\""));
+    ncm_statusbar_print((int32)Config.message_delay_time,
+                        message.data, message.len);
+    ncm_buffer_destroy(&message);
+    return;
+}
+
 bool
 ncm_action_delete_playlist_items(void) {
     return action_runtime_delete_playlist_items();
@@ -4727,6 +4748,49 @@ action_runtime_jump_to_tag_editor(void) {
 
 static bool
 action_runtime_edit_directory_name(void) {
+    NativeBrowserScreen *browser;
+    NcmStringView path;
+    NcmBuffer name;
+    NcmError error;
+    bool prompted;
+    bool success;
+
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+        browser = native_c_screen_browser();
+        if (!native_browser_screen_current_directory_path(browser,
+                                                          &path)) {
+            return false;
+        }
+
+        ncm_buffer_init(&name);
+        prompted = action_runtime_prompt_string(
+            STRLIT_ARGS("Directory: "), path.data, false,
+            NULL, NULL, &name);
+        if (!prompted) {
+            ncm_buffer_destroy(&name);
+            return true;
+        }
+        if ((name.len <= 0)
+            || ncm_string_equal(name.data, name.len,
+                                path.data, path.len)) {
+            ncm_buffer_destroy(&name);
+            return true;
+        }
+
+        ncm_error_clear(&error);
+        success = native_browser_screen_rename_current_directory(
+            browser, name.data, name.len, &global_mpd, &error);
+        if (success) {
+            action_runtime_print_renamed(
+                STRLIT_ARGS("Directory renamed to \""), &name);
+        }
+        ncm_buffer_destroy(&name);
+        if (!success) {
+            return action_runtime_mpd_error(&error);
+        }
+        return true;
+    }
+
 #if defined(HAVE_TAGLIB_H)
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
         return native_tag_editor_screen_rename_current_directory(
@@ -4739,13 +4803,53 @@ action_runtime_edit_directory_name(void) {
 
 static bool
 action_runtime_edit_playlist_name(void) {
+    NativeBrowserScreen *browser;
     NativePlaylistEditorScreen *screen;
     NcmPlaylist playlist;
+    NcmStringView path;
     NcmBuffer name;
-    NcmBuffer message;
     NcmError error;
     bool prompted;
     bool success;
+
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+        if (!ncm_mpd_client_connected(&global_mpd)) {
+            return false;
+        }
+        browser = native_c_screen_browser();
+        if (!native_browser_screen_current_playlist_path(browser,
+                                                         &path)) {
+            return false;
+        }
+
+        ncm_buffer_init(&name);
+        prompted = action_runtime_prompt_string(
+            STRLIT_ARGS("Playlist: "), path.data, false,
+            NULL, NULL, &name);
+        if (!prompted) {
+            ncm_buffer_destroy(&name);
+            return true;
+        }
+        if ((name.len <= 0)
+            || ncm_string_equal(name.data, name.len,
+                                path.data, path.len)) {
+            ncm_buffer_destroy(&name);
+            return true;
+        }
+
+        ncm_error_clear(&error);
+        success = native_browser_screen_rename_current_playlist(
+            browser, name.data, name.len, &global_mpd, &error);
+        if (success) {
+            action_runtime_print_renamed(
+                STRLIT_ARGS("Playlist renamed to \""), &name);
+        }
+        ncm_buffer_destroy(&name);
+        if (!success) {
+            return action_runtime_mpd_error(&error);
+        }
+        return true;
+    }
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
         return false;
@@ -4788,14 +4892,8 @@ action_runtime_edit_playlist_name(void) {
                                              playlist.path,
                                              name.data, &error);
     if (success) {
-        ncm_buffer_init(&message);
-        ncm_buffer_append(&message, STRLIT_ARGS(
-            "Playlist renamed to \""));
-        ncm_buffer_append(&message, name.data, name.len);
-        ncm_buffer_append(&message, STRLIT_ARGS("\""));
-        ncm_statusbar_print((int32)Config.message_delay_time,
-                            message.data, message.len);
-        ncm_buffer_destroy(&message);
+        action_runtime_print_renamed(
+            STRLIT_ARGS("Playlist renamed to \""), &name);
         native_playlist_editor_screen_request_playlists_update(screen);
     }
     ncm_buffer_destroy(&name);
@@ -5783,10 +5881,19 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         }
         return true;
     case NCM_ACTION_EDIT_PLAYLIST_NAME:
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+            return ncm_mpd_client_connected(&global_mpd)
+                && native_browser_screen_rename_playlist_available(
+                    native_c_screen_browser());
+        }
         return ncm_mpd_client_connected(&global_mpd)
             && action_runtime_playlist_editor_playlists_active()
             && action_runtime_playlist_editor_has_playlists();
     case NCM_ACTION_EDIT_DIRECTORY_NAME:
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+            return native_browser_screen_rename_directory_available(
+                native_c_screen_browser());
+        }
 #if defined(HAVE_TAGLIB_H)
         if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
             return native_tag_editor_screen_rename_directory_available(

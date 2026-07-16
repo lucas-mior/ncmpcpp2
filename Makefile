@@ -152,11 +152,24 @@ TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
 $(BUILD_DIR)/tests/c_tag_editor_screen_test: \
 	LDFLAGS += $(TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS)
 C_BROWSER_SCREEN_TEST_WRAP_FLAGS := \
+	-Wl,--wrap=app_controller_current_screen \
+	-Wl,--wrap=native_c_screens_current_type \
+	-Wl,--wrap=native_c_screen_browser \
 	-Wl,--wrap=nc_window_has_coords \
+	-Wl,--wrap=nc_window_print_data \
+	-Wl,--wrap=nc_window_prompt \
+	-Wl,--wrap=nc_window_prompt_result_destroy \
+	-Wl,--wrap=ncm_statusbar_scoped_lock_init \
+	-Wl,--wrap=ncm_statusbar_scoped_lock_destroy \
+	-Wl,--wrap=ncm_statusbar_put \
+	-Wl,--wrap=ncm_statusbar_print \
+	-Wl,--wrap=ncm_statusbar_print_cstring \
+	-Wl,--wrap=ncm_mpd_client_connected \
 	-Wl,--wrap=ncm_mpd_client_get_directory_entries \
 	-Wl,--wrap=ncm_mpd_client_get_directory_recursive \
 	-Wl,--wrap=ncm_mpd_client_get_supported_extensions \
 	-Wl,--wrap=ncm_mpd_client_delete_playlist \
+	-Wl,--wrap=ncm_mpd_client_rename_playlist \
 	-Wl,--wrap=ncm_mpd_client_update_directory
 $(BUILD_DIR)/tests/c_browser_screen_test: \
 	LDFLAGS += $(C_BROWSER_SCREEN_TEST_WRAP_FLAGS)
