@@ -8,13 +8,6 @@
 extern "C" {
 #endif
 
-void *cbase_malloc(int64 size);
-void *cbase_realloc_array(void *old, int64 old_capacity,
-                        int64 new_capacity, int64 obj_size);
-void cbase_free(void *pointer, int64 size);
-void cbase_memcpy(void *dest, void *source, int64 n);
-void cbase_memmove(void *dest, void *source, int64 n);
-
 void ncm_buffer_init(NcmBuffer *buffer);
 void ncm_buffer_destroy(NcmBuffer *buffer);
 void ncm_buffer_clear(NcmBuffer *buffer);
