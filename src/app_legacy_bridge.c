@@ -1,6 +1,5 @@
 #include "app_legacy_bridge.h"
 
-#include "actions_legacy_runtime.h"
 #include "app_binding_migration.h"
 #include "app_controller.h"
 #include "bindings.h"
@@ -18,21 +17,14 @@
 #if defined(__GNUC__)
 extern bool settings_legacy_runtime_sync_configuration(void)
     __attribute__((weak));
-extern bool actions_legacy_runtime_can_run_action(enum NcmActionType type)
-    __attribute__((weak));
-extern bool actions_legacy_runtime_execute_action(enum NcmActionType type)
-    __attribute__((weak));
-extern bool actions_legacy_runtime_exit_requested(void)
-    __attribute__((weak));
 #endif
 
 /*
- * Temporary app runtime bridge.
+ * App runtime bridge.
  *
- * Keep the public C entry points used by ncmpcpp.c in this C module.  The
- * pieces that still depend on legacy C++ state are forwarded to the private
- * legacy runtime helpers.  As those dependencies are ported, replace the
- * forwarding calls here with direct C implementations.
+ * Keep the public C entry points used by ncmpcpp.c in this C module while the
+ * broader application startup path is still being renamed away from the old
+ * legacy naming.
  */
 
 static void app_legacy_bridge_request_media_library_database_update(
@@ -44,16 +36,6 @@ static void app_legacy_bridge_set_resize_flags(void);
 static void app_legacy_bridge_dispatch_lyrics_jobs(void);
 static void app_legacy_bridge_refresh_header_if_due(void);
 static bool app_legacy_bridge_sync_legacy_configuration(void);
-static bool app_legacy_bridge_action_is_c_safe_for_current_screen(
-    enum NcmActionType type);
-static int32 app_legacy_bridge_action_can_run_hook(
-    enum NcmActionType type, void *user);
-static int32 app_legacy_bridge_action_run_hook(
-    enum NcmActionType type, void *user);
-static void app_legacy_bridge_install_action_hooks(void);
-static bool app_legacy_bridge_can_run_legacy_action(enum NcmActionType type);
-static bool app_legacy_bridge_execute_legacy_action(enum NcmActionType type);
-static bool app_legacy_bridge_legacy_exit_requested(void);
 
 static NcmTimePoint app_legacy_bridge_header_refresh_time;
 
@@ -142,95 +124,6 @@ app_legacy_bridge_sync_legacy_configuration(void) {
     }
 #endif
     return settings_legacy_runtime_sync_configuration();
-}
-
-static bool
-app_legacy_bridge_action_is_c_safe_for_current_screen(
-    enum NcmActionType type) {
-    enum ScreenType screen_type;
-
-    screen_type = native_c_screens_current_type();
-    return app_binding_migration_action_is_c_safe_for_screen(
-        type, screen_type);
-}
-
-static bool
-app_legacy_bridge_can_run_legacy_action(enum NcmActionType type) {
-#if defined(__GNUC__)
-    if (actions_legacy_runtime_can_run_action == NULL) {
-        return false;
-    }
-#endif
-    return actions_legacy_runtime_can_run_action(type);
-}
-
-static bool
-app_legacy_bridge_execute_legacy_action(enum NcmActionType type) {
-#if defined(__GNUC__)
-    if (actions_legacy_runtime_execute_action == NULL) {
-        return false;
-    }
-#endif
-    return actions_legacy_runtime_execute_action(type);
-}
-
-static int32
-app_legacy_bridge_action_can_run_hook(enum NcmActionType type,
-                                      void *user) {
-    enum ScreenType screen_type;
-
-    (void)user;
-    if (app_legacy_bridge_action_is_c_safe_for_current_screen(type)) {
-        return NCM_ACTION_RUNTIME_DEFER;
-    }
-
-    screen_type = native_c_screens_current_type();
-    if (app_binding_migration_screen_is_c_only(screen_type)) {
-        return NCM_ACTION_RUNTIME_DENY;
-    }
-
-    if (app_legacy_bridge_can_run_legacy_action(type)) {
-        return NCM_ACTION_RUNTIME_ALLOW;
-    }
-    return NCM_ACTION_RUNTIME_DENY;
-}
-
-static int32
-app_legacy_bridge_action_run_hook(enum NcmActionType type, void *user) {
-    enum ScreenType screen_type;
-
-    (void)user;
-    if (app_legacy_bridge_action_is_c_safe_for_current_screen(type)) {
-        return NCM_ACTION_RUNTIME_DEFER;
-    }
-
-    screen_type = native_c_screens_current_type();
-    if (app_binding_migration_screen_is_c_only(screen_type)) {
-        return NCM_ACTION_RUNTIME_DENY;
-    }
-
-    if (app_legacy_bridge_execute_legacy_action(type)) {
-        return NCM_ACTION_RUNTIME_ALLOW;
-    }
-    return NCM_ACTION_RUNTIME_DENY;
-}
-
-static void
-app_legacy_bridge_install_action_hooks(void) {
-    ncm_action_runtime_set_hooks(ncm_action_runtime_global(),
-                                 app_legacy_bridge_action_can_run_hook,
-                                 app_legacy_bridge_action_run_hook, NULL);
-    return;
-}
-
-static bool
-app_legacy_bridge_legacy_exit_requested(void) {
-#if defined(__GNUC__)
-    if (actions_legacy_runtime_exit_requested == NULL) {
-        return false;
-    }
-#endif
-    return actions_legacy_runtime_exit_requested();
 }
 
 bool
@@ -418,7 +311,6 @@ ncmpcpp_legacy_window_clear_fd_callbacks(NcWindow *window) {
 
 void
 ncmpcpp_legacy_initialize_screens(void) {
-    app_legacy_bridge_install_action_hooks();
     app_controller_init();
     native_c_screens_init_all();
     app_legacy_bridge_set_status_observers();
@@ -562,7 +454,6 @@ bool
 ncmpcpp_legacy_execute_binding(NcmBinding *binding) {
     enum ScreenType screen_type;
 
-    app_legacy_bridge_install_action_hooks();
     screen_type = native_c_screens_current_type();
     if (app_binding_migration_screen_is_c_only(screen_type)
         && !app_binding_migration_binding_is_c_safe_for_screen(
@@ -579,7 +470,6 @@ bool
 ncmpcpp_legacy_execute_action(enum NcmActionType type) {
     enum ScreenType screen_type;
 
-    app_legacy_bridge_install_action_hooks();
     screen_type = native_c_screens_current_type();
     if (app_binding_migration_screen_is_c_only(screen_type)
         && !app_binding_migration_action_is_c_safe_for_screen(
@@ -591,6 +481,5 @@ ncmpcpp_legacy_execute_action(enum NcmActionType type) {
 
 bool
 ncmpcpp_legacy_exit_requested(void) {
-    return app_legacy_bridge_legacy_exit_requested()
-        || ncm_action_runtime_exit_requested(NULL);
+    return ncm_action_runtime_exit_requested(NULL);
 }
