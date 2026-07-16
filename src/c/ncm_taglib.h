@@ -3,10 +3,6 @@
 
 #include "c/ncm_defs.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcmTaglibFile {
     void *handle;
 } NcmTaglibFile;
@@ -39,9 +35,5 @@ void ncm_taglib_append_property(NcmTaglibFile *file, char *property,
                                 char *value);
 bool ncm_taglib_extended_set_supported(NcmTaglibFile *file);
 void ncm_taglib_clear_strings(void);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_TAGLIB_H */

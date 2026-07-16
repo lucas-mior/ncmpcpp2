@@ -4,10 +4,6 @@
 #include "c/ncm_error.h"
 #include "c/ncm_type_conversions.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcmMpdClient NcmMpdClient;
 typedef struct NcmSongArray NcmSongArray;
 
@@ -36,9 +32,5 @@ bool ncm_playlist_sort_range(
     enum NcmSongGetter *getters, int32 getters_len,
     bool ignore_leading_the, NcmMpdClient *client,
     NcmError *error);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_PLAYLIST_SORT_H */

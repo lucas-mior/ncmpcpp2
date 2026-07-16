@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include "c/ncm_base.h"
+#include "cbase/cbase.h"
 
 void
 ncm_scoped_value_init(NcmScopedValue *scope) {

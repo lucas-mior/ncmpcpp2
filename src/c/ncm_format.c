@@ -7,6 +7,7 @@
 #include "c/ncm_type_conversions.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 static void ncm_format_expr_init(NcmFormatExpr *expr);
 static void ncm_format_expr_destroy(NcmFormatExpr *expr);

@@ -5,10 +5,6 @@
 
 #include "cbase/primitives.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcmSampleBuffer {
     int16 *data;
     int32 len;
@@ -33,9 +29,5 @@ void ncm_sample_buffer_clear(NcmSampleBuffer *buffer);
 int32 ncm_sample_buffer_size(NcmSampleBuffer *buffer);
 int32 ncm_sample_buffer_capacity(NcmSampleBuffer *buffer);
 int16 *ncm_sample_buffer_data(NcmSampleBuffer *buffer);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_SAMPLE_BUFFER_H */

@@ -6,10 +6,6 @@
 #include "c/ncm_song_list.h"
 #include "c/ncm_random.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef void (*NcmMpdNoidleCallback)(int32 flags, void *user);
 
 typedef struct NcmMpdClient {
@@ -245,9 +241,5 @@ bool ncm_mpd_client_get_url_handlers(NcmMpdClient *client,
 bool ncm_mpd_client_get_tag_types(NcmMpdClient *client,
                                   NcmMpdStringList *strings,
                                   NcmError *error);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_MPD_CLIENT_H */

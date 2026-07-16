@@ -7,10 +7,6 @@
 #include "c/ncm_defs.h"
 #include "c/ncm_tags.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 enum NcmItemType {
     NCM_ITEM_DIRECTORY,
     NCM_ITEM_SONG,
@@ -56,9 +52,5 @@ enum NcmSongGetter ncm_tags_field_to_song_getter(enum NcmTagsField field);
 enum NcmTagsField ncm_song_getter_to_tags_field(enum NcmSongGetter getter);
 char *ncm_tags_field_name(enum NcmTagsField field);
 char *ncm_item_type_name(enum NcmItemType type);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_TYPE_CONVERSIONS_H */

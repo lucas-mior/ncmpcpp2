@@ -6,10 +6,6 @@
 #include "c/ncm_song.h"
 #include "curses/nc_buffer.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 enum NcmFormatFlags {
     NCM_FORMAT_FLAG_NONE = 0,
     NCM_FORMAT_FLAG_COLOR = 1,
@@ -102,9 +98,5 @@ void ncm_format_render_buffer(NcmFormatAst *ast, NcmSong *song,
                               uint32 flags);
 NcmBuffer ncm_format_render_string(NcmFormatAst *ast, NcmSong *song);
 NcmBuffer ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_FORMAT_H */
