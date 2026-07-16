@@ -37,9 +37,6 @@ static bool lastfm_extract_between(NcmBuffer *out, char *data,
                                    int32 data_len, char *start,
                                    int32 start_len, char *end,
                                    int32 end_len);
-static void lastfm_replace_first(NcmBuffer *out, char *data, int32 data_len,
-                                 char *from, int32 from_len,
-                                 char *to, int32 to_len);
 static void lastfm_trim_view(char **data, int32 *len);
 static void lastfm_trim_buffer(NcmBuffer *buffer);
 static void lastfm_strip_unescape_trim(NcmBuffer *out, char *data,
@@ -320,24 +317,6 @@ lastfm_extract_between(NcmBuffer *out, char *data, int32 data_len,
     }
     ncm_buffer_append(out, data + a, b - a);
     return true;
-}
-
-static void
-lastfm_replace_first(NcmBuffer *out, char *data, int32 data_len,
-                     char *from, int32 from_len, char *to, int32 to_len) {
-    int32 pos;
-
-    ncm_buffer_clear(out);
-    pos = lastfm_find(data, data_len, from, from_len, 0);
-    if (pos < 0) {
-        ncm_buffer_append(out, data, data_len);
-        return;
-    }
-    ncm_buffer_append(out, data, pos);
-    ncm_buffer_append(out, to, to_len);
-    ncm_buffer_append(out, data + pos + from_len,
-                      data_len - pos - from_len);
-    return;
 }
 
 static void
