@@ -10,15 +10,12 @@ DESTDIR ?=
 
 PKG_CONFIG ?= pkg-config
 CC ?= cc
-CXX ?= c++
 AR ?= ar
 
 CPPFLAGS ?=
 CFLAGS ?= -O0 -g3
-CXXFLAGS ?= -O0 -g3
 LDFLAGS ?=
 LDLIBS ?= -lm
-CXXSTD ?= -std=c++20
 
 PKG_DEPS := 'libmpdclient >= 2.8' ncursesw 'fftw3 >= 3' libcurl taglib_c
 PKG_CFLAGS := $(shell $(PKG_CONFIG) --cflags $(PKG_DEPS) 2>/dev/null)
@@ -51,18 +48,13 @@ CBASE_SRCS := cbase/cbase.c
 NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
 APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
 C_TEST_SRCS := $(sort $(wildcard tests/*_test.c))
-CXX_TEST_SRCS := $(sort $(wildcard tests/*_test.cpp))
 
 CBASE_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(CBASE_SRCS))
 NCMPCPP_C_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(NCMPCPP_C_SRCS))
 APP_C_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(APP_C_SRCS))
-APP_CXX_OBJS := $(patsubst %.cpp,$(OBJ_DIR)/%.cpp.o,$(APP_CXX_SRCS))
 C_TEST_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(C_TEST_SRCS))
-CXX_TEST_OBJS := $(patsubst %.cpp,$(OBJ_DIR)/%.cpp.o,$(CXX_TEST_SRCS))
-CXX_TEST_SUPPORT_OBJS :=
 C_TEST_BINS := $(patsubst tests/%.c,$(BUILD_DIR)/tests/%,$(C_TEST_SRCS))
-CXX_TEST_BINS := $(patsubst tests/%.cpp,$(BUILD_DIR)/tests/%,$(CXX_TEST_SRCS))
-TEST_BINS := $(C_TEST_BINS) $(CXX_TEST_BINS)
+TEST_BINS := $(C_TEST_BINS)
 
 PLAYLIST_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_window_init \
@@ -396,22 +388,19 @@ DEPS := \
 	$(CBASE_OBJS:.o=.d) \
 	$(NCMPCPP_C_OBJS:.o=.d) \
 	$(APP_C_OBJS:.o=.d) \
-	$(APP_CXX_OBJS:.o=.d) \
-	$(C_TEST_OBJS:.o=.d) \
-	$(CXX_TEST_OBJS:.o=.d)
+	$(C_TEST_OBJS:.o=.d)
 
-.PHONY: all check install clean help FORCE
+.PHONY: all check install clean help check-no-foreign-sources FORCE
 .DELETE_ON_ERROR:
-.SECONDARY: $(CBASE_OBJS) $(NCMPCPP_C_OBJS) $(APP_C_OBJS) $(APP_CXX_OBJS) $(C_TEST_OBJS) $(CXX_TEST_OBJS)
+.SECONDARY: $(CBASE_OBJS) $(NCMPCPP_C_OBJS) $(APP_C_OBJS) $(C_TEST_OBJS)
 
-all: $(BINARY)
+all: check-no-foreign-sources $(BINARY)
 
 $(TOOLS_STAMP): FORCE
 	@mkdir -p $(BUILD_DIR)
 	@command -v $(PKG_CONFIG) >/dev/null 2>&1 || { printf 'missing command: %s\n' '$(PKG_CONFIG)' >&2; exit 1; }
 	@$(PKG_CONFIG) --exists $(PKG_DEPS) || { printf 'missing pkg-config package(s): %s\n' "$(PKG_DEPS)" >&2; exit 1; }
 	@test -n "$(CSTD)" || { printf '%s\n' 'C compiler does not support C23 or C2x' >&2; exit 1; }
-	@printf 'int main() { return 0; }\n' | $(CXX) $(CXXSTD) -x c++ -c -o /dev/null - >/dev/null 2>&1 || { printf '%s\n' 'C++ compiler does not support C++20' >&2; exit 1; }
 	@touch $@
 
 $(CONFIG_H): | $(TOOLS_STAMP)
@@ -463,20 +452,6 @@ $(OBJ_DIR)/%.c.o: %.c $(CONFIG_H) | $(TOOLS_STAMP)
 		-c $< \
 		-o $@
 
-$(OBJ_DIR)/%.cpp.o: %.cpp $(CONFIG_H) | $(TOOLS_STAMP)
-	@mkdir -p $(@D)
-	@printf 'CXX %s\n' '$<'
-	@$(CXX) \
-		$(COMMON_CPPFLAGS) \
-		$(CXXSTD) \
-		$(WARNINGS) \
-		$(CXXFLAGS) \
-		$(THREAD_FLAGS) \
-		-MMD \
-		-MP \
-		-c $< \
-		-o $@
-
 $(CBASE_LIB): $(CBASE_OBJS)
 	@printf 'AR  %s\n' '$@'
 	@rm -f $@
@@ -492,11 +467,10 @@ $(NCMPCPP_APP_C_LIB): $(APP_C_OBJS)
 	@rm -f $@
 	@$(AR) rcs $@ $^
 
-$(BINARY): $(APP_C_OBJS) $(APP_CXX_OBJS) $(NCMPCPP_C_LIB) $(CBASE_LIB)
+$(BINARY): $(APP_C_OBJS) $(NCMPCPP_C_LIB) $(CBASE_LIB)
 	@printf 'LD  %s\n' '$@'
-	@$(CXX) $(LDFLAGS) -o $@ \
+	@$(CC) $(LDFLAGS) -o $@ \
 		$(APP_C_OBJS) \
-		$(APP_CXX_OBJS) \
 		$(NCMPCPP_C_LIB) \
 		$(CBASE_LIB) \
 		$(READLINE_LIBS) \
@@ -519,29 +493,22 @@ $(C_TEST_BINS): $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(
 		$(LDLIBS) \
 		$(THREAD_FLAGS)
 
-$(CXX_TEST_BINS): $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.cpp.o $(CXX_TEST_SUPPORT_OBJS) $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LIB) $(CBASE_LIB)
-	@mkdir -p $(@D)
-	@printf 'LD  %s\n' '$@'
-	@$(CXX) $(LDFLAGS) -o $@ \
-		$< \
-		$(CXX_TEST_SUPPORT_OBJS) \
-		-Wl,--start-group \
-		$(NCMPCPP_APP_C_LIB) \
-		$(NCMPCPP_C_LIB) \
-		$(CBASE_LIB) \
-		-Wl,--end-group \
-		$(READLINE_LIBS) \
-		$(PKG_LIBS) \
-		$(LDLIBS) \
-		$(THREAD_FLAGS)
-
-
-check: $(TEST_BINS)
+check: check-no-foreign-sources $(TEST_BINS)
 	@set -e; \
 	for test in $(TEST_BINS); do \
 		printf 'TEST %s\n' "$$test"; \
 		"$$test"; \
 	done
+
+
+check-no-foreign-sources:
+	@bad_files=$$(find src tests -type f \
+		| awk '/[.](cc|c[p]p|cxx)$$/ { print }'); \
+	if test -n "$$bad_files"; then \
+		printf '%s\n' 'Non-C source files are not allowed:' >&2; \
+		printf '%s\n' "$$bad_files" >&2; \
+		exit 1; \
+	fi
 
 install: $(BINARY)
 	install -d '$(DESTDIR)$(BINDIR)'
@@ -559,8 +526,8 @@ help:
 	@printf '%s\n' 'usage: make [all|check|install|clean|help]'
 	@printf '%s\n' ''
 	@printf '%s\n' 'Common variables:'
-	@printf '%s\n' '  CC, CXX, AR        compiler and archive commands'
-	@printf '%s\n' '  CFLAGS, CXXFLAGS   extra compiler flags'
+	@printf '%s\n' '  CC, AR             compiler and archive commands'
+	@printf '%s\n' '  CFLAGS            extra compiler flags'
 	@printf '%s\n' '  CPPFLAGS, LDFLAGS  extra preprocessor and linker flags'
 	@printf '%s\n' '  LDLIBS             extra libraries, default: -lm'
 	@printf '%s\n' '  BUILD_DIR          build output directory, default: build'
