@@ -146,19 +146,6 @@ bool addNativeMediaLibraryItemToPlaylist(bool play)
 }
 
 
-void nativeLyricsPrintFetcher()
-{
-	NcmLyricsFetcherDef *fetcher;
-
-	fetcher = native_lyrics_screen_toggle_fetcher(
-		native_c_screen_lyrics(), &Config.lyrics_fetchers);
-	if (fetcher != nullptr)
-		Statusbar::printf("Using lyrics fetcher: %s",
-		                  ncm_lyrics_fetcher_name(fetcher));
-	else
-		Statusbar::print("Using all lyrics fetchers");
-}
-
 std::vector<std::shared_ptr<Actions::BaseAction>> AvailableActions;
 
 template <typename Helper>
@@ -465,29 +452,6 @@ void ScrollDownAlbum::run()
 
 
 
-void ToggleInterface::run()
-{
-	switch (Config.design)
-	{
-		case NCM_DESIGN_CLASSIC:
-			Config.design = NCM_DESIGN_ALTERNATIVE;
-			Config.statusbar_visibility = false;
-			break;
-		case NCM_DESIGN_ALTERNATIVE:
-			Config.design = NCM_DESIGN_CLASSIC;
-			Config.statusbar_visibility =
-			    ui_state_statusbar_visibility_baseline();
-			break;
-	}
-	ncmpcpp_legacy_resize_screen(false);
-	// unlock progressbar
-	Progressbar::ScopedLock();
-	ncm_status_changes_mixer();
-	ncm_status_changes_elapsed_time(false);
-	Statusbar::printf("User interface: %1%", Config.design);
-}
-
-
 
 bool PreviousColumn::canBeRun()
 {
@@ -663,44 +627,6 @@ void Load::run()
 }
 
 
-
-bool ToggleSeparatorsBetweenAlbums::canBeRun()
-{
-	return true;
-}
-
-void ToggleSeparatorsBetweenAlbums::run()
-{
-	Config.playlist_separate_albums = !Config.playlist_separate_albums;
-	Statusbar::printf("Separators between albums: %1%",
-		Config.playlist_separate_albums ? "on" : "off"
-	);
-}
-
-bool ToggleLyricsUpdateOnSongChange::canBeRun()
-{
-	return native_c_screen_lyrics_is_current();
-}
-
-void ToggleLyricsUpdateOnSongChange::run()
-{
-	Config.now_playing_lyrics = !Config.now_playing_lyrics;
-	Statusbar::printf("Update lyrics if song changes: %1%",
-		Config.now_playing_lyrics ? "on" : "off"
-	);
-}
-
-void ToggleLyricsFetcher::run()
-{
-	nativeLyricsPrintFetcher();
-}
-
-void ToggleFetchingLyricsInBackground::run()
-{
-	Config.fetch_lyrics_in_background = !Config.fetch_lyrics_in_background;
-	Statusbar::printf("Fetching lyrics for playing songs in background: %1%",
-	                  Config.fetch_lyrics_in_background ? "on" : "off");
-}
 
 
 
@@ -1214,43 +1140,6 @@ void ToggleReplayGainMode::run()
 	Statusbar::printf("Replay gain mode: %1%", Mpd.GetReplayGainMode());
 }
 
-void ToggleAddMode::run()
-{
-	std::string mode_desc;
-	switch (Config.space_add_mode)
-	{
-		case NCM_SPACE_ADD_MODE_ADD_REMOVE:
-			Config.space_add_mode = NCM_SPACE_ADD_MODE_ALWAYS_ADD;
-			mode_desc = "always add an item to playlist";
-			break;
-		case NCM_SPACE_ADD_MODE_ALWAYS_ADD:
-			Config.space_add_mode = NCM_SPACE_ADD_MODE_ADD_REMOVE;
-			mode_desc = "add an item to playlist or remove if already added";
-			break;
-	}
-	Statusbar::printf("Add mode: %1%", mode_desc);
-}
-
-void ToggleMouse::run()
-{
-	Config.mouse_support = !Config.mouse_support;
-	if (Config.mouse_support)
-		nc_mouse_enable();
-	else
-		nc_mouse_disable();
-	Statusbar::printf("Mouse support %1%",
-		Config.mouse_support ? "enabled" : "disabled"
-	);
-}
-
-void ToggleBitrateVisibility::run()
-{
-	Config.display_bitrate = !Config.display_bitrate;
-	Statusbar::printf("Bitrate visibility %1%",
-		Config.display_bitrate ? "enabled" : "disabled"
-	);
-}
-
 void AddRandomItems::run()
 {
 		char rnd_type = 0;
@@ -1480,7 +1369,6 @@ void populateActions()
 	insert_action(new Actions::ScrollUpAlbum());
 	insert_action(new Actions::ScrollDownArtist());
 	insert_action(new Actions::ScrollDownAlbum());
-	insert_action(new Actions::ToggleInterface());
 	insert_action(new Actions::SelectItem());
 	insert_action(new Actions::SelectRange());
 	insert_action(new Actions::PreviousColumn());
@@ -1489,10 +1377,6 @@ void populateActions()
 	insert_action(new Actions::Add());
 	insert_action(new Actions::Load());
 	insert_action(new Actions::PlayItem());
-	insert_action(new Actions::ToggleSeparatorsBetweenAlbums());
-	insert_action(new Actions::ToggleLyricsUpdateOnSongChange());
-	insert_action(new Actions::ToggleLyricsFetcher());
-	insert_action(new Actions::ToggleFetchingLyricsInBackground());
 	insert_action(new Actions::SetCrossfade());
 	insert_action(new Actions::SetVolume());
 	insert_action(new Actions::EditSong());
@@ -1507,9 +1391,6 @@ void populateActions()
 	insert_action(new Actions::NextFoundItem());
 	insert_action(new Actions::PreviousFoundItem());
 	insert_action(new Actions::ToggleReplayGainMode());
-	insert_action(new Actions::ToggleAddMode());
-	insert_action(new Actions::ToggleMouse());
-	insert_action(new Actions::ToggleBitrateVisibility());
 	insert_action(new Actions::AddRandomItems());
 	insert_action(new Actions::ToggleLibraryTagType());
 	insert_action(new Actions::ShowArtistInfo());

@@ -269,13 +269,6 @@ private:
 
 
 
-struct ToggleInterface: BaseAction
-{
-	ToggleInterface(): BaseAction(Type::ToggleInterface) { }
-	
-private:
-	virtual void run() override;
-};
 
 
 struct PreviousColumn: BaseAction
@@ -352,42 +345,9 @@ private:
 };
 
 
-struct ToggleSeparatorsBetweenAlbums: BaseAction
-{
-	ToggleSeparatorsBetweenAlbums()
-	: BaseAction(Type::ToggleSeparatorsBetweenAlbums) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
 
-struct ToggleLyricsUpdateOnSongChange: BaseAction
-{
-	ToggleLyricsUpdateOnSongChange()
-	: BaseAction(Type::ToggleLyricsUpdateOnSongChange) { }
 
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
 
-struct ToggleLyricsFetcher: BaseAction
-{
-	ToggleLyricsFetcher(): BaseAction(Type::ToggleLyricsFetcher) { }
-	
-private:
-	virtual void run() override;
-};
-
-struct ToggleFetchingLyricsInBackground: BaseAction
-{
-	ToggleFetchingLyricsInBackground()
-	: BaseAction(Type::ToggleFetchingLyricsInBackground) { }
-	
-private:
-	virtual void run() override;
-};
 
 
 
@@ -567,29 +527,8 @@ private:
 	virtual void run() override;
 };
 
-struct ToggleAddMode: BaseAction
-{
-	ToggleAddMode(): BaseAction(Type::ToggleAddMode) { }
-	
-private:
-	virtual void run() override;
-};
 
-struct ToggleMouse: BaseAction
-{
-	ToggleMouse(): BaseAction(Type::ToggleMouse) { }
-	
-private:
-	virtual void run() override;
-};
 
-struct ToggleBitrateVisibility: BaseAction
-{
-	ToggleBitrateVisibility(): BaseAction(Type::ToggleBitrateVisibility) { }
-	
-private:
-	virtual void run() override;
-};
 
 struct AddRandomItems: BaseAction
 {
