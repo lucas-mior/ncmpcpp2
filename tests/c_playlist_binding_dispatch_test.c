@@ -68,60 +68,6 @@ settings_legacy_runtime_sync_configuration(void) {
 }
 
 void
-actions_legacy_runtime_init_readline(void) {
-    test_state.unrelated_legacy_count += 1;
-    return;
-}
-
-void *
-actions_legacy_runtime_window_create(int64 start_x, int64 start_y,
-                                     int64 width, int64 height,
-                                     NcColor color) {
-    (void)start_x;
-    (void)start_y;
-    (void)width;
-    (void)height;
-    (void)color;
-    test_state.unrelated_legacy_count += 1;
-    return NULL;
-}
-
-void
-actions_legacy_runtime_window_display(void *window) {
-    (void)window;
-    test_state.unrelated_legacy_count += 1;
-    return;
-}
-
-void
-actions_legacy_runtime_window_destroy(void *window) {
-    (void)window;
-    test_state.unrelated_legacy_count += 1;
-    return;
-}
-
-void
-actions_legacy_runtime_window_set_main_hook(void *window) {
-    (void)window;
-    test_state.unrelated_legacy_count += 1;
-    return;
-}
-
-void
-actions_legacy_runtime_window_clear_fd_callbacks(void *window) {
-    (void)window;
-    test_state.unrelated_legacy_count += 1;
-    return;
-}
-
-NcWindow *
-actions_legacy_runtime_window_native(void *window) {
-    (void)window;
-    test_state.unrelated_legacy_count += 1;
-    return NULL;
-}
-
-void
 actions_legacy_runtime_initialize_screens(void) {
     test_state.unrelated_legacy_count += 1;
     return;

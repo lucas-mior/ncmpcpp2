@@ -365,7 +365,7 @@ bool legacyCurrentScreenIs(ScreenType screen_type, void *)
 
 void legacyPushKey(NcKey key, void *)
 {
-	static_cast<NC::Window *>(ui_state_footer_legacy_window())->pushChar(key);
+	nc_window_push_key(ui_state_footer_window(), key);
 }
 
 bool legacyRunExternalCommand(char *command, int32 command_len, void *)
@@ -468,14 +468,14 @@ void resizeScreen(bool reload_main_window)
 
 	if (Config.header_visibility || Config.design == NCM_DESIGN_ALTERNATIVE)
 	{
-		static_cast<NC::Window *>(ui_state_header_legacy_window())->resize(
-		    COLS, static_cast<size_t>(ncmpcpp_legacy_header_height()));
+		nc_window_resize(ui_state_header_window(), COLS,
+		                 ncmpcpp_legacy_header_height());
 	}
 
-	static_cast<NC::Window *>(ui_state_footer_legacy_window())->moveTo(
-	    0, static_cast<size_t>(ncmpcpp_legacy_footer_start_y()));
-	static_cast<NC::Window *>(ui_state_footer_legacy_window())->resize(
-	    COLS, static_cast<size_t>(ncmpcpp_legacy_footer_height()));
+	nc_window_move_to(ui_state_footer_window(), 0,
+	                  ncmpcpp_legacy_footer_start_y());
+	nc_window_resize(ui_state_footer_window(), COLS,
+	                 ncmpcpp_legacy_footer_height());
 
 	app_controller_refresh_visible_screens();
 
@@ -486,7 +486,7 @@ void resizeScreen(bool reload_main_window)
 	// NcmpcppStatusChanges.StatusFlags
 	ncm_status_changes_flags();
 	drawHeader();
-	static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
+	nc_window_refresh(ui_state_footer_window());
 	refresh();
 }
 
@@ -1023,7 +1023,7 @@ void Add::run()
 			return;
 
 	Statusbar::put() << "Adding...";
-	static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
+	nc_window_refresh(ui_state_footer_window());
 	try
 	{
 		Mpd.Add(path);
@@ -1058,7 +1058,7 @@ void Load::run()
 	}
 
 	Statusbar::put() << "Loading...";
-	static_cast<NC::Window *>(ui_state_footer_legacy_window())->refresh();
+	nc_window_refresh(ui_state_footer_window());
 	Mpd.LoadPlaylist(path);
 }
 
@@ -2395,63 +2395,6 @@ void listsChangeFinisher()
 
 
 extern "C" {
-
-void actions_legacy_runtime_init_readline(void)
-{
-	NC::initReadline();
-}
-
-void *actions_legacy_runtime_window_create(int64 start_x, int64 start_y,
-                                   int64 width, int64 height,
-                                   NcColor color)
-{
-	NC::Color window_color = NC::fromNcColor(color);
-
-	return new NC::Window(static_cast<size_t>(start_x),
-	                      static_cast<size_t>(start_y),
-	                      static_cast<size_t>(width),
-	                      static_cast<size_t>(height), "",
-	                      window_color, NC::Border());
-}
-
-void actions_legacy_runtime_window_display(void *window)
-{
-	if (window == nullptr)
-		return;
-	static_cast<NC::Window *>(window)->display();
-}
-
-void actions_legacy_runtime_window_destroy(void *window)
-{
-	delete static_cast<NC::Window *>(window);
-}
-
-void actions_legacy_runtime_window_set_main_hook(void *window)
-{
-	if (window == nullptr)
-		return;
-	static_cast<NC::Window *>(window)->setPromptHook([](const char *s) {
-		int32 s_len = 0;
-
-		if (s != nullptr)
-			s_len = static_cast<int32>(std::strlen(s));
-		return ncm_statusbar_main_hook(const_cast<char *>(s), s_len);
-	});
-}
-
-void actions_legacy_runtime_window_clear_fd_callbacks(void *window)
-{
-	if (window == nullptr)
-		return;
-	static_cast<NC::Window *>(window)->clearFDCallbacksList();
-}
-
-NcWindow *actions_legacy_runtime_window_native(void *window)
-{
-	if (window == nullptr)
-		return nullptr;
-	return static_cast<NC::Window *>(window)->nativeWindow();
-}
 
 void actions_legacy_runtime_initialize_screens(void)
 {
