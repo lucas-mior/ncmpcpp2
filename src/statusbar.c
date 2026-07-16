@@ -25,7 +25,6 @@ static void statusbar_progressbar_split(NcmStringView items[3]);
 static void statusbar_set_active_footer_line_locked(bool locked);
 static void statusbar_redraw_after_unlock(void);
 static void statusbar_redraw_after_stop_unlock(void);
-static void statusbar_update_from_idle_flags(int32 flags);
 
 static int32
 statusbar_cstring_len(char *string) {
@@ -381,22 +380,6 @@ ncm_statusbar_format(int32 delay_seconds,
     ncm_string_format_apply(&buffer, format, format_len, args, args_len);
     ncm_statusbar_print(delay_seconds, buffer.data, buffer.len);
     ncm_buffer_destroy(&buffer);
-    return;
-}
-
-static void
-statusbar_update_from_idle_flags(int32 flags) {
-    NcmError error;
-
-    ncm_error_clear(&error);
-    (void)ncm_status_update(&global_mpd, flags, &error);
-    return;
-}
-
-void
-ncm_statusbar_mpd_noidle_callback(int32 flags, void *user) {
-    (void)user;
-    statusbar_update_from_idle_flags(flags);
     return;
 }
 

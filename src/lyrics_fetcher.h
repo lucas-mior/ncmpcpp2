@@ -47,9 +47,14 @@ typedef struct NcmLyricsFetcherDef {
     bool enabled;
 } NcmLyricsFetcherDef;
 
-NCM_ARRAY_DECLARE(ncm_lyrics_fetcher_array,
-                  NcmLyricsFetcherArray,
-                  NcmLyricsFetcherDef)
+NCM_ARRAY_DECLARE_TYPE(NcmLyricsFetcherArray, NcmLyricsFetcherDef)
+NCM_ARRAY_DECLARE_INIT(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
+NCM_ARRAY_DECLARE_CLEAR(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
+NCM_ARRAY_DECLARE_DESTROY(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
+NCM_ARRAY_DECLARE_RESERVE(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
+NCM_ARRAY_DECLARE_APPEND(ncm_lyrics_fetcher_array,
+                         NcmLyricsFetcherArray,
+                         NcmLyricsFetcherDef)
 
 typedef struct NcmLyricsFetcherRegistry {
     NcmLyricsFetcherArray fetchers;
@@ -77,10 +82,6 @@ bool ncm_lyrics_result_set(NcmLyricsResult *result, bool success,
 
 void ncm_lyrics_fetcher_def_init(NcmLyricsFetcherDef *fetcher);
 void ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher);
-bool ncm_lyrics_fetcher_def_copy(NcmLyricsFetcherDef *dest,
-                                 NcmLyricsFetcherDef *source);
-void ncm_lyrics_fetcher_def_move(NcmLyricsFetcherDef *dest,
-                                 NcmLyricsFetcherDef *source);
 bool ncm_lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *fetcher,
                                      char *name, int32 name_len);
 char *ncm_lyrics_fetcher_name(NcmLyricsFetcherDef *fetcher);

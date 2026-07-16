@@ -1041,11 +1041,6 @@ ncm_action_count(void) {
 }
 
 NcmActionDef *
-ncm_action_table(void) {
-    return action_defs;
-}
-
-NcmActionDef *
 ncm_action_table_get(NcmActionDef *defs, int32 defs_len,
                      enum NcmActionType type) {
     if (defs == NULL) {
@@ -1404,21 +1399,6 @@ ncm_action_runtime_init(NcmActionRuntime *runtime) {
     return;
 }
 
-void
-ncm_action_runtime_set_hooks(NcmActionRuntime *runtime,
-                             NcmActionRuntimeHook can_run_hook,
-                             NcmActionRuntimeHook run_hook,
-                             void *user) {
-    if (runtime == NULL) {
-        return;
-    }
-
-    runtime->can_run_hook = can_run_hook;
-    runtime->run_hook = run_hook;
-    runtime->user = user;
-    return;
-}
-
 NcmActionRuntime *
 ncm_action_runtime_global(void) {
     if (!action_global_runtime_initialized) {
@@ -1438,13 +1418,6 @@ void
 ncm_action_runtime_request_exit(NcmActionRuntime *runtime) {
     runtime = action_runtime_or_global(runtime);
     runtime->exit_requested = true;
-    return;
-}
-
-void
-ncm_action_runtime_clear_exit_request(NcmActionRuntime *runtime) {
-    runtime = action_runtime_or_global(runtime);
-    runtime->exit_requested = false;
     return;
 }
 
@@ -3375,11 +3348,6 @@ action_runtime_has_current_song(void) {
     return result;
 }
 
-bool
-ncm_action_current_song(NcmSong *song) {
-    return action_runtime_current_song(song);
-}
-
 static bool
 action_runtime_current_song(NcmSong *song) {
     NcmSong *lyrics_song;
@@ -3876,11 +3844,6 @@ action_runtime_print_renamed(char *prefix, int32 prefix_len,
     return;
 }
 
-bool
-ncm_action_delete_playlist_items(void) {
-    return action_runtime_delete_playlist_items();
-}
-
 static bool
 action_runtime_delete_main_playlist_items(void) {
     NcmSongArray songs;
@@ -4155,11 +4118,6 @@ action_runtime_clear_playlist(bool main_playlist) {
     }
     native_playlist_editor_screen_request_content_update(screen);
     return true;
-}
-
-bool
-ncm_action_crop_main_playlist(void) {
-    return action_runtime_crop_playlist(true);
 }
 
 static bool
