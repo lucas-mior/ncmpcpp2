@@ -159,6 +159,10 @@ bool native_browser_screen_rename_current_directory(
 bool native_browser_screen_rename_current_playlist(
     NativeBrowserScreen *screen, char *new_path, int32 new_path_len,
     NcmMpdClient *client, NcmError *error);
+bool native_browser_screen_locate_song(NativeBrowserScreen *screen,
+                                       NcmSong *song,
+                                       NcmMpdClient *client,
+                                       NcmError *error);
 bool native_browser_screen_enter_directory(NativeBrowserScreen *screen);
 bool native_browser_screen_activate_current(NativeBrowserScreen *screen);
 bool native_browser_screen_go_to_parent(NativeBrowserScreen *screen);
