@@ -255,33 +255,6 @@ private:
 
 
 
-struct Find: BaseAction
-{
-	Find(): BaseAction(Type::Find) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct NextFoundItem: BaseAction
-{
-	NextFoundItem(): BaseAction(Type::NextFoundItem) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct PreviousFoundItem: BaseAction
-{
-	PreviousFoundItem(): BaseAction(Type::PreviousFoundItem) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
 
 
 struct ToggleLibraryTagType: BaseAction

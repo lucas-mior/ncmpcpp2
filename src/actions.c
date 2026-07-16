@@ -1281,6 +1281,7 @@ static bool action_runtime_update_environment(void);
 static bool action_runtime_execute_command(void);
 static bool action_runtime_execute_binding(NcmBinding *binding);
 static bool action_runtime_apply_filter(void);
+static bool action_runtime_find(void);
 static bool action_runtime_find_item(enum SearchDirection direction);
 static bool action_runtime_repeat_search(enum SearchDirection direction);
 static bool action_runtime_command_prompt_hook(char *text, void *user);
@@ -2781,6 +2782,52 @@ action_runtime_apply_filter(void) {
 
     ncm_buffer_destroy(&previous_filter);
     ncm_buffer_destroy(&filter);
+    return true;
+}
+
+static bool
+action_runtime_find(void) {
+    NcmBuffer token;
+    NcmError error;
+    bool found;
+    bool prompted;
+
+    if (!native_c_screen_help_is_current()
+        && !native_c_screen_lastfm_is_current()
+        && !native_c_screen_lyrics_is_current()) {
+        return false;
+    }
+
+    ncm_buffer_init(&token);
+    prompted = action_runtime_prompt_string(STRLIT_ARGS("Find: "),
+                                            (char *)"", false,
+                                            NULL, NULL, &token);
+    if (!prompted) {
+        ncm_buffer_destroy(&token);
+        return true;
+    }
+
+    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                (char *)"Searching...");
+    ncm_error_clear(&error);
+    found = current_screen_search(NCM_SEARCH_DIRECTION_FORWARD,
+                                  token.data, token.len, false, false,
+                                  &error);
+    if (ncm_error_is_set(&error)) {
+        ncm_buffer_destroy(&token);
+        return action_runtime_mpd_error(&error);
+    }
+
+    if ((token.len == 0) || found) {
+        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                    (char *)"Done");
+    } else {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"No matching patterns found");
+    }
+
+    ncm_buffer_destroy(&token);
     return true;
 }
 
@@ -6509,6 +6556,10 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return true;
     case NCM_ACTION_APPLY_FILTER:
         return current_screen_allows_filter();
+    case NCM_ACTION_FIND:
+        return native_c_screen_help_is_current()
+            || native_c_screen_lastfm_is_current()
+            || native_c_screen_lyrics_is_current();
     case NCM_ACTION_FIND_ITEM_FORWARD:
     case NCM_ACTION_FIND_ITEM_BACKWARD:
     case NCM_ACTION_NEXT_FOUND_ITEM:
@@ -6591,7 +6642,6 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return action_runtime_menu_has_items();
     case NCM_ACTION_EDIT_LIBRARY_TAG:
     case NCM_ACTION_EDIT_LIBRARY_ALBUM:
-    case NCM_ACTION_FIND:
         return false;
     default:
         return false;
@@ -6959,6 +7009,8 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         return action_runtime_save_playlist();
     case NCM_ACTION_APPLY_FILTER:
         return action_runtime_apply_filter();
+    case NCM_ACTION_FIND:
+        return action_runtime_find();
     case NCM_ACTION_FIND_ITEM_FORWARD:
         return action_runtime_find_item(NCM_SEARCH_DIRECTION_FORWARD);
     case NCM_ACTION_FIND_ITEM_BACKWARD:
@@ -7002,7 +7054,6 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         return action_runtime_delete_browser_items();
     case NCM_ACTION_EDIT_LIBRARY_TAG:
     case NCM_ACTION_EDIT_LIBRARY_ALBUM:
-    case NCM_ACTION_FIND:
         return false;
     default:
         return false;
