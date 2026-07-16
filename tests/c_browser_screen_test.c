@@ -6,6 +6,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <mpd/client.h>
+
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_format.h"
 #include "c/ncm_base.h"
@@ -29,6 +31,10 @@ static void test_browser_selected_songs(void);
 static void test_browser_selected_mpd_directory_recursion(void);
 static void test_browser_selected_local_directory_recursion(void);
 static void test_browser_selected_filtered_current(void);
+static void test_browser_delete_rejects_parent(void);
+static void test_browser_delete_rejects_disabled_config(void);
+static void test_browser_delete_playlist_uses_mpd(void);
+static void test_browser_delete_local_directory_requests_reload(void);
 static void test_browser_filter_and_search(void);
 static void test_browser_local_mode(void);
 static void test_browser_change_browse_mode(void);
@@ -106,6 +112,12 @@ typedef enum BrowserMpdTraceMode {
     BROWSER_MPD_TRACE_RECURSIVE,
 } BrowserMpdTraceMode;
 
+typedef enum BrowserMpdDeleteMode {
+    BROWSER_MPD_DELETE_SUCCESS,
+    BROWSER_MPD_DELETE_NO_EXIST,
+    BROWSER_MPD_DELETE_FAIL,
+} BrowserMpdDeleteMode;
+
 typedef struct BrowserMpdTrace {
     BrowserMpdTraceMode mode;
     char paths[8][64];
@@ -134,10 +146,20 @@ bool __wrap_ncm_mpd_client_get_directory_recursive(
     NcmError *error);
 bool __wrap_ncm_mpd_client_get_supported_extensions(
     NcmMpdClient *client, NcmMpdStringList *strings, NcmError *error);
+bool __wrap_ncm_mpd_client_delete_playlist(NcmMpdClient *client,
+                                           char *name, NcmError *error);
+bool __wrap_ncm_mpd_client_update_directory(NcmMpdClient *client,
+                                            char *path, uint32 *id,
+                                            NcmError *error);
 
 static BrowserMpdTrace mpd_trace;
 static int32 bridge_callback_calls;
 static int32 supported_extensions_calls;
+static BrowserMpdDeleteMode delete_playlist_mode;
+static char delete_playlist_path[128];
+static char update_directory_path[128];
+static int32 delete_playlist_calls;
+static int32 update_directory_calls;
 
 int
 main(void) {
@@ -152,6 +174,10 @@ main(void) {
     test_browser_selected_mpd_directory_recursion();
     test_browser_selected_local_directory_recursion();
     test_browser_selected_filtered_current();
+    test_browser_delete_rejects_parent();
+    test_browser_delete_rejects_disabled_config();
+    test_browser_delete_playlist_uses_mpd();
+    test_browser_delete_local_directory_requests_reload();
     test_browser_filter_and_search();
     test_browser_local_mode();
     test_browser_change_browse_mode();
@@ -631,6 +657,199 @@ test_browser_selected_filtered_current(void) {
     ncm_song_array_destroy(&songs);
     native_browser_screen_destroy(&screen);
     browser_format_fixture_end(&fixture);
+    return;
+}
+
+static void
+test_browser_delete_rejects_parent(void) {
+    NativeBrowserScreen screen;
+    NcmMpdClient client = {0};
+    NcmError error = {0};
+    bool old_allow;
+
+    old_allow = Config.allow_for_physical_item_deletion;
+    Config.allow_for_physical_item_deletion = true;
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    native_browser_screen_clear_update_request(&screen);
+    browser_test_add_directory(&screen, LIT_ARGS("artist/.."), 0);
+
+    delete_playlist_calls = 0;
+    update_directory_calls = 0;
+    assert(!native_browser_screen_delete_items(&screen, &client, &error));
+    assert(ncm_error_is_set(&error));
+    assert(!native_browser_screen_update_requested(&screen));
+    assert(delete_playlist_calls == 0);
+    assert(update_directory_calls == 0);
+
+    Config.allow_for_physical_item_deletion = old_allow;
+    native_browser_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_browser_delete_rejects_disabled_config(void) {
+    NativeBrowserScreen screen;
+    NcmMpdClient client = {0};
+    NcmError error = {0};
+    bool old_allow;
+
+    old_allow = Config.allow_for_physical_item_deletion;
+    Config.allow_for_physical_item_deletion = false;
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    native_browser_screen_set_local(&screen, true);
+    native_browser_screen_clear_update_request(&screen);
+    browser_test_add_song(&screen, LIT_ARGS("song.flac"),
+                          LIT_ARGS("Song"), LIT_ARGS("Artist"), 0);
+
+    assert(!native_browser_screen_delete_items(&screen, &client, &error));
+    assert(ncm_error_is_set(&error));
+    assert(!native_browser_screen_update_requested(&screen));
+
+    Config.allow_for_physical_item_deletion = old_allow;
+    native_browser_screen_destroy(&screen);
+    return;
+}
+
+static void
+test_browser_delete_playlist_uses_mpd(void) {
+    NativeBrowserScreen screen;
+    NcmMpdClient client = {0};
+    NcmBuffer path;
+    NcmError error = {0};
+    char root[128];
+    char *old_dir;
+    int32 root_len;
+    int32 old_dir_len;
+    int32 old_dir_cap;
+    bool old_allow;
+
+    old_allow = Config.allow_for_physical_item_deletion;
+    old_dir = Config.mpd_music_dir;
+    old_dir_len = Config.mpd_music_dir_len;
+    old_dir_cap = Config.mpd_music_dir_cap;
+    Config.allow_for_physical_item_deletion = true;
+    ncm_buffer_init(&path);
+
+    root_len = snprintf(root, SIZEOF(root),
+                        "/tmp/ncmpcpp-browser-playlist-%lld",
+                        (llong)getpid());
+    assert(root_len > 0);
+    assert(root_len < (int32)SIZEOF(root));
+    assert(ncm_fs_mkdir_all(root, root_len, NULL));
+    Config.mpd_music_dir = root;
+    Config.mpd_music_dir_len = root_len;
+    Config.mpd_music_dir_cap = root_len + 1;
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    native_browser_screen_clear_update_request(&screen);
+    browser_test_add_playlist(&screen, LIT_ARGS("stored"), 0);
+
+    delete_playlist_mode = BROWSER_MPD_DELETE_SUCCESS;
+    delete_playlist_calls = 0;
+    update_directory_calls = 0;
+    assert(native_browser_screen_delete_items(&screen, &client, &error));
+    assert(delete_playlist_calls == 1);
+    assert(ncm_string_equal(delete_playlist_path,
+                            (int32)strlen(delete_playlist_path),
+                            LIT_ARGS("stored")));
+    assert(update_directory_calls == 1);
+    assert(ncm_string_equal(update_directory_path,
+                            (int32)strlen(update_directory_path),
+                            LIT_ARGS("/")));
+    assert(native_browser_screen_update_requested(&screen));
+    native_browser_screen_destroy(&screen);
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    native_browser_screen_clear_update_request(&screen);
+    browser_test_add_playlist(&screen, LIT_ARGS("stored-fallback"), 0);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("stored-fallback"));
+    browser_test_write_file(path.data);
+
+    delete_playlist_mode = BROWSER_MPD_DELETE_NO_EXIST;
+    delete_playlist_calls = 0;
+    update_directory_calls = 0;
+    assert(native_browser_screen_delete_items(&screen, &client, &error));
+    assert(delete_playlist_calls == 1);
+    assert(update_directory_calls == 1);
+    assert(!ncm_fs_exists(path.data, path.len));
+    assert(native_browser_screen_update_requested(&screen));
+    native_browser_screen_destroy(&screen);
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    native_browser_screen_clear_update_request(&screen);
+    browser_test_add_playlist(&screen, LIT_ARGS("stored-fail"), 0);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("stored-fail"));
+    browser_test_write_file(path.data);
+
+    delete_playlist_mode = BROWSER_MPD_DELETE_FAIL;
+    delete_playlist_calls = 0;
+    update_directory_calls = 0;
+    assert(!native_browser_screen_delete_items(&screen, &client, &error));
+    assert(delete_playlist_calls == 1);
+    assert(update_directory_calls == 0);
+    assert(ncm_fs_exists(path.data, path.len));
+    assert(!native_browser_screen_update_requested(&screen));
+    browser_test_remove_path(path.data);
+    native_browser_screen_destroy(&screen);
+
+    browser_test_remove_path(root);
+    ncm_buffer_destroy(&path);
+    Config.allow_for_physical_item_deletion = old_allow;
+    Config.mpd_music_dir = old_dir;
+    Config.mpd_music_dir_len = old_dir_len;
+    Config.mpd_music_dir_cap = old_dir_cap;
+    return;
+}
+
+static void
+test_browser_delete_local_directory_requests_reload(void) {
+    NativeBrowserScreen screen;
+    NcmMpdClient client = {0};
+    NcmBuffer path;
+    NcmError error = {0};
+    char root[128];
+    int32 root_len;
+    bool old_allow;
+
+    old_allow = Config.allow_for_physical_item_deletion;
+    Config.allow_for_physical_item_deletion = true;
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    native_browser_screen_set_local(&screen, true);
+    native_browser_screen_clear_update_request(&screen);
+    ncm_buffer_init(&path);
+
+    root_len = snprintf(root, SIZEOF(root),
+                        "/tmp/ncmpcpp-browser-delete-%lld",
+                        (llong)getpid());
+    assert(root_len > 0);
+    assert(root_len < (int32)SIZEOF(root));
+    assert(ncm_fs_mkdir_all(root, root_len, NULL));
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album/Sub"));
+    assert(ncm_fs_mkdir_all(path.data, path.len, NULL));
+    browser_test_make_path(&path, root, root_len,
+                           LIT_ARGS("Album/Sub/song.flac"));
+    browser_test_write_file(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album"));
+    browser_test_add_directory(&screen, path.data, path.len, 0);
+
+    delete_playlist_calls = 0;
+    update_directory_calls = 0;
+    assert(native_browser_screen_delete_items(&screen, &client, &error));
+    assert(native_browser_screen_update_requested(&screen));
+    assert(delete_playlist_calls == 0);
+    assert(update_directory_calls == 0);
+    assert(!ncm_fs_exists(path.data, path.len));
+    browser_test_remove_path(root);
+
+    ncm_buffer_destroy(&path);
+    Config.allow_for_physical_item_deletion = old_allow;
+    native_browser_screen_destroy(&screen);
     return;
 }
 
@@ -1406,6 +1625,57 @@ __wrap_ncm_mpd_client_get_supported_extensions(
     assert(ncm_mpd_string_list_append(strings, LIT_ARGS(".mp3")));
     assert(ncm_mpd_string_list_append(strings, LIT_ARGS("flac")));
     assert(ncm_mpd_string_list_append(strings, NULL, 0));
+    ncm_error_clear(error);
+    return true;
+}
+
+
+bool
+__wrap_ncm_mpd_client_delete_playlist(NcmMpdClient *client, char *name,
+                                      NcmError *error) {
+    delete_playlist_calls += 1;
+    delete_playlist_path[0] = '\0';
+    if (name != NULL) {
+        int32 len;
+
+        len = (int32)strlen(name);
+        assert(len < (int32)SIZEOF(delete_playlist_path));
+        ncm_memcpy(delete_playlist_path, name, len + 1);
+    }
+
+    switch (delete_playlist_mode) {
+    case BROWSER_MPD_DELETE_SUCCESS:
+        client->connection.server_error_code = (enum mpd_server_error)0;
+        ncm_error_clear(error);
+        return true;
+    case BROWSER_MPD_DELETE_NO_EXIST:
+        client->connection.server_error_code = MPD_SERVER_ERROR_NO_EXIST;
+        ncm_error_set(error, ENOENT, STRLIT_ARGS("playlist missing"));
+        return false;
+    case BROWSER_MPD_DELETE_FAIL:
+        client->connection.server_error_code =
+            (enum mpd_server_error)1234;
+        ncm_error_set(error, EIO, STRLIT_ARGS("playlist delete failed"));
+        return false;
+    }
+    return false;
+}
+
+bool
+__wrap_ncm_mpd_client_update_directory(NcmMpdClient *client, char *path,
+                                       uint32 *id, NcmError *error) {
+    int32 len;
+
+    (void)client;
+    (void)id;
+    update_directory_calls += 1;
+    update_directory_path[0] = '\0';
+    len = 0;
+    if (path != NULL) {
+        len = (int32)strlen(path);
+        assert(len < (int32)SIZEOF(update_directory_path));
+        ncm_memcpy(update_directory_path, path, len + 1);
+    }
     ncm_error_clear(error);
     return true;
 }

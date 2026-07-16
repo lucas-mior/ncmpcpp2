@@ -21,6 +21,7 @@
 #include "c/ncm_base.h"
 #include "c/ncm_conversion.h"
 #include "c/ncm_macro_utilities.h"
+#include "c/ncm_path.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
 #include "c/ncm_utf8.h"
@@ -1317,6 +1318,9 @@ static bool action_runtime_add_selected_songs(bool play);
 static bool action_runtime_add_playlist_editor_item(bool play);
 static bool action_runtime_add_raw_path_to_playlist_editor(void);
 static bool action_runtime_delete_playlist_items(void);
+static bool action_runtime_delete_browser_items(void);
+static bool action_runtime_browser_item_name(NcmMpdItem *item,
+                                            NcmBuffer *name);
 static bool action_runtime_delete_playlist_editor_items(void);
 static bool action_runtime_delete_stored_playlists(void);
 static bool action_runtime_clear_playlist(bool main_playlist);
@@ -3184,6 +3188,118 @@ action_runtime_add_raw_path_to_playlist_editor(void) {
         return action_runtime_mpd_error(&error);
     }
     native_playlist_editor_screen_request_content_update(screen);
+    return true;
+}
+
+static bool
+action_runtime_delete_browser_items(void) {
+    NativeBrowserScreen *screen;
+    NcMenu *menu;
+    NcmMpdItem *item;
+    NcmBuffer question;
+    NcmBuffer name;
+    NcmError error;
+    bool success;
+    bool has_selected;
+
+    if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+        return false;
+    }
+    screen = native_c_screen_browser();
+    menu = native_browser_screen_menu(screen);
+    if ((menu == NULL) || nc_menu_empty(menu)) {
+        return false;
+    }
+    if (!Config.allow_for_physical_item_deletion) {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Flag \"allow_for_physical_item_deletion\" needs to be "
+                    "enabled in configuration file");
+        return false;
+    }
+    if (!native_browser_screen_is_local(screen)
+        && (Config.mpd_music_dir_len <= 0)) {
+        ncm_statusbar_print_cstring(
+            (int32)Config.message_delay_time,
+            (char *)"Proper mpd_music_dir variable has to be set in "
+                    "configuration file");
+        return false;
+    }
+
+    has_selected = nc_menu_has_selected(menu);
+    ncm_buffer_init(&question);
+    ncm_buffer_init(&name);
+    if (has_selected) {
+        ncm_buffer_append(&question, STRLIT_ARGS("Delete selected items?"));
+    } else {
+        item = nc_menu_current_item(menu);
+        if (native_browser_screen_item_is_parent(item)) {
+            ncm_buffer_destroy(&name);
+            ncm_buffer_destroy(&question);
+            return true;
+        }
+        if (!action_runtime_browser_item_name(item, &name)) {
+            ncm_buffer_destroy(&name);
+            ncm_buffer_destroy(&question);
+            return false;
+        }
+        ncm_buffer_append(&question, STRLIT_ARGS("Delete \""));
+        ncm_buffer_append(&question, name.data, name.len);
+        ncm_buffer_append(&question, STRLIT_ARGS("\"?"));
+    }
+
+    success = action_runtime_confirm(question.data, question.len);
+    ncm_buffer_destroy(&name);
+    ncm_buffer_destroy(&question);
+    if (!success) {
+        return true;
+    }
+
+    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                (char *)"Deleting items...");
+    ncm_error_clear(&error);
+    if (!native_browser_screen_delete_items(screen, &global_mpd, &error)) {
+        return action_runtime_mpd_error(&error);
+    }
+    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                (char *)"Item(s) deleted");
+    return true;
+}
+
+static bool
+action_runtime_browser_item_name(NcmMpdItem *item, NcmBuffer *name) {
+    NcmStringView view;
+    int32 basename;
+
+    if (item == NULL || name == NULL) {
+        return false;
+    }
+    ncm_buffer_clear(name);
+    ncm_string_view_clear(&view);
+
+    switch (ncm_mpd_item_kind(item)) {
+    case NCM_MPD_ITEM_DIRECTORY:
+        if (!ncm_directory_path_view(ncm_mpd_item_directory(item), &view)) {
+            return false;
+        }
+        break;
+    case NCM_MPD_ITEM_SONG:
+        if (!ncm_song_name_view(ncm_mpd_item_song(item), 0, &view)
+            && !ncm_song_uri_view(ncm_mpd_item_song(item), 0, &view)) {
+            return false;
+        }
+        break;
+    case NCM_MPD_ITEM_PLAYLIST:
+        if (!ncm_playlist_path_view(ncm_mpd_item_playlist(item), &view)) {
+            return false;
+        }
+        break;
+    case NCM_MPD_ITEM_UNKNOWN:
+        return false;
+    }
+
+    basename = ncm_path_basename_start(view.data, view.len);
+    ncm_buffer_append(name, view.data + basename, view.len - basename);
     return true;
 }
 
@@ -5680,6 +5796,17 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
 #endif
         return false;
     case NCM_ACTION_DELETE_BROWSER_ITEMS:
+        if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+            return false;
+        }
+        if (!Config.allow_for_physical_item_deletion) {
+            return false;
+        }
+        if (!native_browser_screen_is_local(native_c_screen_browser())
+            && (Config.mpd_music_dir_len <= 0)) {
+            return false;
+        }
+        return action_runtime_menu_has_items();
     case NCM_ACTION_EDIT_LIBRARY_TAG:
     case NCM_ACTION_EDIT_LIBRARY_ALBUM:
     case NCM_ACTION_FIND:
@@ -6087,6 +6214,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_EDIT_DIRECTORY_NAME:
         return action_runtime_edit_directory_name();
     case NCM_ACTION_DELETE_BROWSER_ITEMS:
+        return action_runtime_delete_browser_items();
     case NCM_ACTION_EDIT_LIBRARY_TAG:
     case NCM_ACTION_EDIT_LIBRARY_ALBUM:
     case NCM_ACTION_FIND:
