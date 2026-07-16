@@ -45,6 +45,7 @@ void native_c_screen_browser_register(void);
 void native_c_screen_browser_set_resize(void);
 void native_c_screen_browser_switch_to(void);
 bool native_c_screen_browser_is_current(void);
+void native_c_screen_browser_fetch_supported_extensions(void);
 NativeBrowserScreen *native_c_screen_browser(void);
 NcScreen *native_c_screen_browser_native(void);
 

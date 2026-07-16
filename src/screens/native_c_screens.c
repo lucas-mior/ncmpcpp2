@@ -236,6 +236,20 @@ native_c_screen_browser_is_current(void) {
     return nc_screen_switcher_is_current(native_c_screen_browser_native());
 }
 
+void
+native_c_screen_browser_fetch_supported_extensions(void) {
+    NcmError error;
+
+    ncm_error_clear(&error);
+    if (!native_browser_screen_fetch_supported_extensions(
+            native_c_screen_browser(), &global_mpd, &error)
+        && ncm_error_is_set(&error)) {
+        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+                                    error.message);
+    }
+    return;
+}
+
 NativeBrowserScreen *
 native_c_screen_browser(void) {
     native_c_screen_browser_init();
