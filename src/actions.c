@@ -40,7 +40,6 @@ extern bool ncmpcpp_legacy_execute_binding(NcmBinding *binding)
     __attribute__((weak));
 #endif
 
-static void action_runtime_mpd_noidle_callback(int32 flags, void *user);
 static int32 ncm_action_name_len(char *name);
 static bool ncm_action_name_equals(char *left, int32 left_len,
                                    char *right);
@@ -1332,7 +1331,6 @@ static bool action_runtime_has_selected_songs(void);
 static bool action_runtime_current_song(NcmSong *song);
 static bool action_runtime_add_selected_songs(bool play);
 static bool action_runtime_add_playlist_editor_item(bool play);
-static bool action_runtime_add_raw_path_to_playlist_editor(void);
 static bool action_runtime_delete_playlist_items(void);
 static bool action_runtime_delete_browser_items(void);
 static bool action_runtime_browser_item_name(NcmMpdItem *item,
@@ -1705,12 +1703,6 @@ action_runtime_switch_to_next_screen(bool reverse) {
     }
 
     return action_runtime_switch_to_screen(sequence->items[next_index]);
-}
-
-static void
-action_runtime_mpd_noidle_callback(int32 flags, void *user) {
-    ncm_statusbar_mpd_noidle_callback(flags, user);
-    return;
 }
 
 static bool
@@ -3750,62 +3742,6 @@ action_runtime_add_playlist_editor_item(bool play) {
     }
 
     (void)ncm_status_update_full(&global_mpd, NULL, &error);
-    return true;
-}
-
-static bool
-action_runtime_add_raw_path_to_playlist_editor(void) {
-    NativePlaylistEditorScreen *screen;
-    NcmPlaylist playlist;
-    NcmBuffer path;
-    NcmError error;
-    bool prompted;
-    bool success;
-
-    if (!ncm_mpd_client_connected(&global_mpd)) {
-        return false;
-    }
-    if (!action_runtime_playlist_editor_has_playlists()) {
-        return false;
-    }
-
-    screen = native_c_screen_playlist_editor();
-    ncm_playlist_init(&playlist);
-    success = native_playlist_editor_screen_current_playlist(screen,
-                                                            &playlist);
-    if (!success) {
-        ncm_playlist_destroy(&playlist);
-        return false;
-    }
-
-    ncm_buffer_init(&path);
-    prompted = action_runtime_prompt_string(
-        STRLIT_ARGS("Add to playlist: "), (char *)"", false,
-        NULL, NULL, &path);
-    if (!prompted) {
-        ncm_buffer_destroy(&path);
-        ncm_playlist_destroy(&playlist);
-        return true;
-    }
-
-    if ((path.len <= 0)
-        && !action_runtime_confirm(
-            STRLIT_ARGS("Are you sure you want to add the whole database?"))) {
-        ncm_buffer_destroy(&path);
-        ncm_playlist_destroy(&playlist);
-        return true;
-    }
-
-    ncm_statusbar_print_cstring(0, (char *)"Adding...");
-    ncm_error_clear(&error);
-    success = ncm_mpd_client_add_to_playlist(&global_mpd, playlist.path,
-                                             path.data, &error);
-    ncm_buffer_destroy(&path);
-    ncm_playlist_destroy(&playlist);
-    if (!success) {
-        return action_runtime_mpd_error(&error);
-    }
-    native_playlist_editor_screen_request_content_update(screen);
     return true;
 }
 

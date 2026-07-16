@@ -3085,20 +3085,6 @@ native_browser_item_is_song(NcmMpdItem *item) {
 }
 
 static bool
-native_browser_copy_selected_song(NativeBrowserScreen *screen,
-                                  NcmSongArray *songs, int64 pos) {
-    NcmMpdItem *item;
-    NcMenu *menu;
-
-    menu = native_browser_screen_menu(screen);
-    item = nc_menu_active_item_at(menu, pos);
-    if (!native_browser_item_is_song(item)) {
-        return true;
-    }
-    return ncm_song_array_append_copy(songs, ncm_mpd_item_song(item));
-}
-
-static bool
 native_browser_string_views_equal(NcmStringView left,
                                   NcmStringView right) {
     return ncm_string_equal(left.data, left.len, right.data, right.len);
