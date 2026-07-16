@@ -13,7 +13,6 @@ typedef struct TestState {
 
     int32 can_run_count;
     int32 run_count;
-    int32 legacy_binding_count;
     int32 legacy_action_count;
     int32 unrelated_legacy_count;
 } TestState;
@@ -56,13 +55,6 @@ __wrap_ncm_action_runtime_run(NcmActionRuntime *runtime,
 }
 
 bool
-__wrap_actions_legacy_runtime_execute_binding(NcmBinding *binding) {
-    (void)binding;
-    test_state.legacy_binding_count += 1;
-    return true;
-}
-
-bool
 __wrap_actions_legacy_runtime_execute_action(enum NcmActionType type) {
     (void)type;
     test_state.legacy_action_count += 1;
@@ -101,7 +93,6 @@ test_binding(NcmBindingAction *actions, int32 actions_len) {
 
 static void
 assert_no_legacy_dispatch(void) {
-    assert(test_state.legacy_binding_count == 0);
     assert(test_state.legacy_action_count == 0);
     assert(test_state.unrelated_legacy_count == 0);
     return;
