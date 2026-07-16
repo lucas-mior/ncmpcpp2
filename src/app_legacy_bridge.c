@@ -3,12 +3,14 @@
 #include "actions_legacy_runtime.h"
 #include "app_binding_migration.h"
 #include "bindings.h"
+#include "c/ncm_base.h"
 #include "global.h"
 #include "screens/native_c_screens.h"
 #include "settings.h"
 #include "settings_legacy_runtime.h"
 #include "status.h"
 #include "statusbar.h"
+#include "cbase/base_macros.h"
 #include "ui_state.h"
 
 /*
@@ -115,7 +117,7 @@ app_legacy_bridge_report_mpd_error(NcmError *error) {
 void
 ncmpcpp_legacy_init_screen(bool enable_colors, bool enable_mouse) {
     nc_init_screen(enable_colors, enable_mouse);
-    actions_legacy_runtime_init_readline();
+    nc_init_readline();
     return;
 }
 
@@ -201,41 +203,48 @@ ncmpcpp_legacy_footer_start_y(void) {
     return ui_state_footer_start_y();
 }
 
-void *
+NcWindow *
 ncmpcpp_legacy_window_create(int64 start_x, int64 start_y,
                              int64 width, int64 height,
                              NcColor color) {
-    return actions_legacy_runtime_window_create(start_x, start_y, width,
-                                                height, color);
+    NcWindow *window;
+
+    window = ncm_malloc(SIZEOF(*window));
+    nc_window_init(window, start_x, start_y, width, height,
+                   STRLIT_ARGS(""), color, nc_border_none());
+    return window;
 }
 
 void
-ncmpcpp_legacy_window_display(void *window) {
-    actions_legacy_runtime_window_display(window);
+ncmpcpp_legacy_window_display(NcWindow *window) {
+    if (window == NULL) {
+        return;
+    }
+
+    nc_window_display(window);
+    nc_window_refresh(window);
     return;
 }
 
 void
-ncmpcpp_legacy_window_destroy(void *window) {
-    actions_legacy_runtime_window_destroy(window);
+ncmpcpp_legacy_window_destroy(NcWindow *window) {
+    if (window == NULL) {
+        return;
+    }
+
+    nc_window_destroy(window);
+    ncm_free(window, SIZEOF(*window));
     return;
 }
 
 void
-ncmpcpp_legacy_window_set_main_hook(void *window) {
-    actions_legacy_runtime_window_set_main_hook(window);
-    return;
-}
+ncmpcpp_legacy_window_clear_fd_callbacks(NcWindow *window) {
+    if (window == NULL) {
+        return;
+    }
 
-void
-ncmpcpp_legacy_window_clear_fd_callbacks(void *window) {
-    actions_legacy_runtime_window_clear_fd_callbacks(window);
+    nc_window_clear_fd_callbacks(window);
     return;
-}
-
-NcWindow *
-ncmpcpp_legacy_window_native(void *window) {
-    return actions_legacy_runtime_window_native(window);
 }
 
 void
