@@ -9,10 +9,6 @@ static void nc_menu_owned_string_destroy(char **data, int32 *len,
 static bool nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
                                       int32 *dest_cap, char *source_data,
                                       int32 source_len);
-static void nc_menu_owned_string_move(char **dest_data, int32 *dest_len,
-                                      int32 *dest_cap, char **source_data,
-                                      int32 *source_len,
-                                      int32 *source_cap);
 
 static void ncm_song_menu_item_init(void *item, void *user);
 static void ncm_song_menu_item_copy(void *dest, void *source, void *user);
@@ -29,9 +25,6 @@ static void ncm_playlist_menu_item_init(void *item, void *user);
 static void ncm_playlist_menu_item_copy(void *dest, void *source,
                                         void *user);
 static void ncm_playlist_menu_item_destroy(void *item, void *user);
-static void nc_output_menu_item_init(void *item, void *user);
-static void nc_output_menu_item_copy(void *dest, void *source, void *user);
-static void nc_output_menu_item_destroy(void *item, void *user);
 static void nc_search_row_menu_item_init(void *item, void *user);
 static void nc_search_row_menu_item_copy(void *dest, void *source,
                                          void *user);
@@ -86,12 +79,6 @@ static NcMenuItemCallbacks ncm_playlist_menu_callbacks = {
     .construct = ncm_playlist_menu_item_init,
     .copy = ncm_playlist_menu_item_copy,
     .destroy = ncm_playlist_menu_item_destroy,
-};
-static NcMenuItemCallbacks nc_output_menu_callbacks = {
-    .item_size = SIZEOF(NcOutputsItem),
-    .construct = nc_output_menu_item_init,
-    .copy = nc_output_menu_item_copy,
-    .destroy = nc_output_menu_item_destroy,
 };
 static NcMenuItemCallbacks nc_search_row_menu_callbacks = {
     .item_size = SIZEOF(NcSearchRow),
@@ -176,140 +163,241 @@ nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
     return true;
 }
 
-static void
-nc_menu_owned_string_move(char **dest_data, int32 *dest_len,
-                          int32 *dest_cap, char **source_data,
-                          int32 *source_len, int32 *source_cap) {
-    nc_menu_owned_string_destroy(dest_data, dest_len, dest_cap);
-    *dest_data = *source_data;
-    *dest_len = *source_len;
-    *dest_cap = *source_cap;
-    *source_data = NULL;
-    *source_len = 0;
-    *source_cap = 0;
-    return;
-}
-
-#define NC_TYPED_MENU_DEFINE(TYPE_NAME, PREFIX, ITEM_TYPE, CALLBACKS) \
+#define NC_TYPED_MENU_DEFINE_INIT(TYPE_NAME, PREFIX, CALLBACKS) \
     void \
     PREFIX##_init(TYPE_NAME *menu) { \
         nc_menu_init(&menu->menu); \
         nc_menu_set_item_callbacks(&menu->menu, *(CALLBACKS)); \
         return; \
-    } \
+    }
+
+#define NC_TYPED_MENU_DEFINE_DESTROY(TYPE_NAME, PREFIX) \
     void \
     PREFIX##_destroy(TYPE_NAME *menu) { \
         nc_menu_destroy(&menu->menu); \
         return; \
-    } \
+    }
+
+#define NC_TYPED_MENU_DEFINE_BASE(TYPE_NAME, PREFIX) \
     NcMenu * \
     PREFIX##_base(TYPE_NAME *menu) { \
         return &menu->menu; \
-    } \
+    }
+
+#define NC_TYPED_MENU_DEFINE_ADD(TYPE_NAME, PREFIX, ITEM_TYPE) \
     void \
     PREFIX##_add(TYPE_NAME *menu, ITEM_TYPE *item) { \
         nc_menu_add_item(&menu->menu, item); \
         return; \
-    } \
+    }
+
+#define NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(TYPE_NAME, PREFIX, ITEM_TYPE) \
     void \
     PREFIX##_add_with_flags(TYPE_NAME *menu, ITEM_TYPE *item, \
                             uint32 flags) { \
         nc_menu_add_item_with_flags(&menu->menu, item, flags); \
         return; \
-    } \
+    }
+
+#define NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(TYPE_NAME, PREFIX) \
     void \
     PREFIX##_add_separator(TYPE_NAME *menu) { \
         nc_menu_add_separator(&menu->menu); \
         return; \
-    } \
-    void \
-    PREFIX##_insert(TYPE_NAME *menu, int64 pos, ITEM_TYPE *item) { \
-        nc_menu_insert_item(&menu->menu, pos, item); \
-        return; \
-    } \
+    }
+
+#define NC_TYPED_MENU_DEFINE_INSERT_WITH_FLAGS(TYPE_NAME, PREFIX, ITEM_TYPE) \
     void \
     PREFIX##_insert_with_flags(TYPE_NAME *menu, int64 pos, \
                                ITEM_TYPE *item, uint32 flags) { \
         nc_menu_insert_item_with_flags(&menu->menu, pos, item, flags); \
         return; \
-    } \
-    bool \
-    PREFIX##_remove(TYPE_NAME *menu, enum NcMenuItemSource source, \
-                    int64 pos) { \
-        return nc_menu_remove_item(&menu->menu, source, pos); \
-    } \
+    }
+
+#define NC_TYPED_MENU_DEFINE_ITEM_AT(TYPE_NAME, PREFIX, ITEM_TYPE) \
     ITEM_TYPE * \
     PREFIX##_item_at(TYPE_NAME *menu, enum NcMenuItemSource source, \
                      int64 pos) { \
         return nc_menu_item_at(&menu->menu, source, pos); \
-    } \
+    }
+
+#define NC_TYPED_MENU_DEFINE_CURRENT(TYPE_NAME, PREFIX, ITEM_TYPE) \
     ITEM_TYPE * \
     PREFIX##_current(TYPE_NAME *menu) { \
         return nc_menu_current_item(&menu->menu); \
     }
 
-NC_TYPED_MENU_DEFINE(NcSongMenu,
-                     nc_song_menu,
-                     NcmSong,
-                     &ncm_song_menu_callbacks)
-NC_TYPED_MENU_DEFINE(NcMpdItemMenu,
-                     nc_mpd_item_menu,
-                     NcmMpdItem,
-                     &ncm_mpd_item_menu_callbacks)
-NC_TYPED_MENU_DEFINE(NcOutputMenu,
-                     nc_output_menu,
-                     NcOutputsItem,
-                     &nc_output_menu_callbacks)
-NC_TYPED_MENU_DEFINE(NcBrowserEntryMenu,
-                     nc_browser_entry_menu,
-                     NcmMpdItem,
-                     &ncm_mpd_item_menu_callbacks)
-NC_TYPED_MENU_DEFINE(NcPlaylistEntryMenu,
-                     nc_playlist_entry_menu,
-                     NcmPlaylist,
-                     &ncm_playlist_menu_callbacks)
-NC_TYPED_MENU_DEFINE(NcTagRowMenu,
-                     nc_tag_row_menu,
-                     NcmMutableSong,
-                     &ncm_mutable_song_menu_callbacks)
-NC_TYPED_MENU_DEFINE(NcSearchRowMenu,
-                     nc_search_row_menu,
-                     NcSearchRow,
-                     &nc_search_row_menu_callbacks)
-NC_TYPED_MENU_DEFINE(NcMediaLibraryTagMenu,
-                     nc_media_library_tag_menu,
-                     NcMediaLibraryTagRow,
-                     &nc_media_library_tag_menu_callbacks)
-NC_TYPED_MENU_DEFINE(NcMediaLibraryAlbumMenu,
-                     nc_media_library_album_menu,
-                     NcMediaLibraryAlbumRow,
-                     &nc_media_library_album_menu_callbacks)
-NC_TYPED_MENU_DEFINE(NcMediaLibrarySongMenu,
-                     nc_media_library_song_menu,
-                     NcmSong,
-                     &ncm_song_menu_callbacks)
-NC_TYPED_MENU_DEFINE(NcEditorStringMenu,
-                     nc_editor_string_menu,
-                     NcMenuString,
-                     &nc_menu_string_callbacks)
-NC_TYPED_MENU_DEFINE(NcEditorPairMenu,
-                     nc_editor_pair_menu,
-                     NcMenuStringPair,
-                     &nc_menu_string_pair_callbacks)
-NC_TYPED_MENU_DEFINE(NcEditorActionMenu,
-                     nc_editor_action_menu,
-                     NcEditorActionRow,
-                     &nc_editor_action_menu_callbacks)
-NC_TYPED_MENU_DEFINE(NcEditorSortMenu,
-                     nc_editor_sort_menu,
-                     NcEditorSortRow,
-                     &nc_editor_sort_menu_callbacks)
-NC_TYPED_MENU_DEFINE(NcEditorBufferMenu,
-                     nc_editor_buffer_menu,
-                     NcBuffer,
-                     &nc_buffer_menu_callbacks)
+#define NC_TYPED_MENU_DEFINE_COMMON(TYPE_NAME, PREFIX, CALLBACKS) \
+    NC_TYPED_MENU_DEFINE_INIT(TYPE_NAME, PREFIX, CALLBACKS) \
+    NC_TYPED_MENU_DEFINE_DESTROY(TYPE_NAME, PREFIX) \
+    NC_TYPED_MENU_DEFINE_BASE(TYPE_NAME, PREFIX)
 
-#undef NC_TYPED_MENU_DEFINE
+NC_TYPED_MENU_DEFINE_COMMON(NcSongMenu,
+                            nc_song_menu,
+                            &ncm_song_menu_callbacks)
+NC_TYPED_MENU_DEFINE_ADD(NcSongMenu, nc_song_menu, NcmSong)
+NC_TYPED_MENU_DEFINE_ITEM_AT(NcSongMenu, nc_song_menu, NcmSong)
+NC_TYPED_MENU_DEFINE_CURRENT(NcSongMenu, nc_song_menu, NcmSong)
+
+NC_TYPED_MENU_DEFINE_COMMON(NcBrowserEntryMenu,
+                            nc_browser_entry_menu,
+                            &ncm_mpd_item_menu_callbacks)
+NC_TYPED_MENU_DEFINE_ADD(NcBrowserEntryMenu,
+                         nc_browser_entry_menu,
+                         NcmMpdItem)
+NC_TYPED_MENU_DEFINE_CURRENT(NcBrowserEntryMenu,
+                             nc_browser_entry_menu,
+                             NcmMpdItem)
+
+NC_TYPED_MENU_DEFINE_COMMON(NcPlaylistEntryMenu,
+                            nc_playlist_entry_menu,
+                            &ncm_playlist_menu_callbacks)
+NC_TYPED_MENU_DEFINE_ADD(NcPlaylistEntryMenu,
+                         nc_playlist_entry_menu,
+                         NcmPlaylist)
+NC_TYPED_MENU_DEFINE_ITEM_AT(NcPlaylistEntryMenu,
+                             nc_playlist_entry_menu,
+                             NcmPlaylist)
+NC_TYPED_MENU_DEFINE_CURRENT(NcPlaylistEntryMenu,
+                             nc_playlist_entry_menu,
+                             NcmPlaylist)
+
+NC_TYPED_MENU_DEFINE_COMMON(NcTagRowMenu,
+                            nc_tag_row_menu,
+                            &ncm_mutable_song_menu_callbacks)
+NC_TYPED_MENU_DEFINE_ADD(NcTagRowMenu,
+                         nc_tag_row_menu,
+                         NcmMutableSong)
+NC_TYPED_MENU_DEFINE_CURRENT(NcTagRowMenu,
+                             nc_tag_row_menu,
+                             NcmMutableSong)
+
+NC_TYPED_MENU_DEFINE_COMMON(NcSearchRowMenu,
+                            nc_search_row_menu,
+                            &nc_search_row_menu_callbacks)
+NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(NcSearchRowMenu,
+                                    nc_search_row_menu,
+                                    NcSearchRow)
+NC_TYPED_MENU_DEFINE_INSERT_WITH_FLAGS(NcSearchRowMenu,
+                                       nc_search_row_menu,
+                                       NcSearchRow)
+NC_TYPED_MENU_DEFINE_ITEM_AT(NcSearchRowMenu,
+                             nc_search_row_menu,
+                             NcSearchRow)
+NC_TYPED_MENU_DEFINE_CURRENT(NcSearchRowMenu,
+                             nc_search_row_menu,
+                             NcSearchRow)
+
+NC_TYPED_MENU_DEFINE_COMMON(NcMediaLibraryTagMenu,
+                            nc_media_library_tag_menu,
+                            &nc_media_library_tag_menu_callbacks)
+NC_TYPED_MENU_DEFINE_ADD(NcMediaLibraryTagMenu,
+                         nc_media_library_tag_menu,
+                         NcMediaLibraryTagRow)
+NC_TYPED_MENU_DEFINE_ITEM_AT(NcMediaLibraryTagMenu,
+                             nc_media_library_tag_menu,
+                             NcMediaLibraryTagRow)
+NC_TYPED_MENU_DEFINE_CURRENT(NcMediaLibraryTagMenu,
+                             nc_media_library_tag_menu,
+                             NcMediaLibraryTagRow)
+
+NC_TYPED_MENU_DEFINE_COMMON(NcMediaLibraryAlbumMenu,
+                            nc_media_library_album_menu,
+                            &nc_media_library_album_menu_callbacks)
+NC_TYPED_MENU_DEFINE_ADD(NcMediaLibraryAlbumMenu,
+                         nc_media_library_album_menu,
+                         NcMediaLibraryAlbumRow)
+NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(NcMediaLibraryAlbumMenu,
+                                    nc_media_library_album_menu,
+                                    NcMediaLibraryAlbumRow)
+NC_TYPED_MENU_DEFINE_ITEM_AT(NcMediaLibraryAlbumMenu,
+                             nc_media_library_album_menu,
+                             NcMediaLibraryAlbumRow)
+NC_TYPED_MENU_DEFINE_CURRENT(NcMediaLibraryAlbumMenu,
+                             nc_media_library_album_menu,
+                             NcMediaLibraryAlbumRow)
+
+NC_TYPED_MENU_DEFINE_COMMON(NcMediaLibrarySongMenu,
+                            nc_media_library_song_menu,
+                            &ncm_song_menu_callbacks)
+NC_TYPED_MENU_DEFINE_ADD(NcMediaLibrarySongMenu,
+                         nc_media_library_song_menu,
+                         NcmSong)
+NC_TYPED_MENU_DEFINE_ITEM_AT(NcMediaLibrarySongMenu,
+                             nc_media_library_song_menu,
+                             NcmSong)
+NC_TYPED_MENU_DEFINE_CURRENT(NcMediaLibrarySongMenu,
+                             nc_media_library_song_menu,
+                             NcmSong)
+
+NC_TYPED_MENU_DEFINE_COMMON(NcEditorStringMenu,
+                            nc_editor_string_menu,
+                            &nc_menu_string_callbacks)
+NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(NcEditorStringMenu,
+                                    nc_editor_string_menu,
+                                    NcMenuString)
+NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(NcEditorStringMenu,
+                                   nc_editor_string_menu)
+
+NC_TYPED_MENU_DEFINE_COMMON(NcEditorPairMenu,
+                            nc_editor_pair_menu,
+                            &nc_menu_string_pair_callbacks)
+NC_TYPED_MENU_DEFINE_ADD(NcEditorPairMenu,
+                         nc_editor_pair_menu,
+                         NcMenuStringPair)
+NC_TYPED_MENU_DEFINE_CURRENT(NcEditorPairMenu,
+                             nc_editor_pair_menu,
+                             NcMenuStringPair)
+
+NC_TYPED_MENU_DEFINE_COMMON(NcEditorActionMenu,
+                            nc_editor_action_menu,
+                            &nc_editor_action_menu_callbacks)
+NC_TYPED_MENU_DEFINE_ADD(NcEditorActionMenu,
+                         nc_editor_action_menu,
+                         NcEditorActionRow)
+NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(NcEditorActionMenu,
+                                   nc_editor_action_menu)
+NC_TYPED_MENU_DEFINE_ITEM_AT(NcEditorActionMenu,
+                             nc_editor_action_menu,
+                             NcEditorActionRow)
+
+NC_TYPED_MENU_DEFINE_COMMON(NcEditorSortMenu,
+                            nc_editor_sort_menu,
+                            &nc_editor_sort_menu_callbacks)
+NC_TYPED_MENU_DEFINE_ADD(NcEditorSortMenu,
+                         nc_editor_sort_menu,
+                         NcEditorSortRow)
+NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(NcEditorSortMenu,
+                                   nc_editor_sort_menu)
+NC_TYPED_MENU_DEFINE_ITEM_AT(NcEditorSortMenu,
+                             nc_editor_sort_menu,
+                             NcEditorSortRow)
+NC_TYPED_MENU_DEFINE_CURRENT(NcEditorSortMenu,
+                             nc_editor_sort_menu,
+                             NcEditorSortRow)
+
+NC_TYPED_MENU_DEFINE_COMMON(NcEditorBufferMenu,
+                            nc_editor_buffer_menu,
+                            &nc_buffer_menu_callbacks)
+NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(NcEditorBufferMenu,
+                                    nc_editor_buffer_menu,
+                                    NcBuffer)
+NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(NcEditorBufferMenu,
+                                   nc_editor_buffer_menu)
+NC_TYPED_MENU_DEFINE_ITEM_AT(NcEditorBufferMenu,
+                             nc_editor_buffer_menu,
+                             NcBuffer)
+
+#undef NC_TYPED_MENU_DEFINE_INIT
+#undef NC_TYPED_MENU_DEFINE_DESTROY
+#undef NC_TYPED_MENU_DEFINE_BASE
+#undef NC_TYPED_MENU_DEFINE_ADD
+#undef NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS
+#undef NC_TYPED_MENU_DEFINE_ADD_SEPARATOR
+#undef NC_TYPED_MENU_DEFINE_INSERT_WITH_FLAGS
+#undef NC_TYPED_MENU_DEFINE_ITEM_AT
+#undef NC_TYPED_MENU_DEFINE_CURRENT
+#undef NC_TYPED_MENU_DEFINE_COMMON
 
 void
 nc_menu_string_init(NcMenuString *string) {
@@ -336,17 +424,6 @@ nc_menu_string_copy(NcMenuString *dest, NcMenuString *source) {
     }
     return nc_menu_owned_string_copy(&dest->data, &dest->len, &dest->cap,
                                      source->data, source->len);
-}
-
-void
-nc_menu_string_move(NcMenuString *dest, NcMenuString *source) {
-    if (dest == NULL || source == NULL) {
-        return;
-    }
-    nc_menu_owned_string_move(&dest->data, &dest->len, &dest->cap,
-                              &source->data, &source->len,
-                              &source->cap);
-    return;
 }
 
 bool
@@ -410,18 +487,6 @@ nc_menu_string_pair_copy(NcMenuStringPair *dest,
 }
 
 void
-nc_menu_string_pair_move(NcMenuStringPair *dest,
-                         NcMenuStringPair *source) {
-    if (dest == NULL || source == NULL) {
-        return;
-    }
-    nc_menu_string_pair_destroy(dest);
-    *dest = *source;
-    nc_menu_string_pair_init(source);
-    return;
-}
-
-void
 nc_search_row_init(NcSearchRow *row) {
     ncm_song_init(&row->song);
     nc_buffer_init(&row->buffer);
@@ -459,17 +524,6 @@ nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source) {
     nc_search_row_destroy(dest);
     *dest = tmp;
     return true;
-}
-
-void
-nc_search_row_move(NcSearchRow *dest, NcSearchRow *source) {
-    if (dest == NULL || source == NULL) {
-        return;
-    }
-    nc_search_row_destroy(dest);
-    *dest = *source;
-    nc_search_row_init(source);
-    return;
 }
 
 void
@@ -651,18 +705,6 @@ nc_editor_action_row_copy(NcEditorActionRow *dest,
 }
 
 void
-nc_editor_action_row_move(NcEditorActionRow *dest,
-                          NcEditorActionRow *source) {
-    if (dest == NULL || source == NULL) {
-        return;
-    }
-    nc_editor_action_row_destroy(dest);
-    *dest = *source;
-    nc_editor_action_row_init(source);
-    return;
-}
-
-void
 nc_editor_sort_row_init(NcEditorSortRow *row) {
     nc_editor_action_row_init(&row->action);
     row->getter = NCM_SONG_GETTER_NONE;
@@ -697,17 +739,6 @@ nc_editor_sort_row_copy(NcEditorSortRow *dest, NcEditorSortRow *source) {
     nc_editor_sort_row_destroy(dest);
     *dest = tmp;
     return true;
-}
-
-void
-nc_editor_sort_row_move(NcEditorSortRow *dest, NcEditorSortRow *source) {
-    if (dest == NULL || source == NULL) {
-        return;
-    }
-    nc_editor_sort_row_destroy(dest);
-    *dest = *source;
-    nc_editor_sort_row_init(source);
-    return;
 }
 
 static void
@@ -791,59 +822,6 @@ static void
 ncm_playlist_menu_item_destroy(void *item, void *user) {
     (void)user;
     ncm_playlist_destroy(item);
-    return;
-}
-
-static void
-nc_output_menu_item_init(void *item, void *user) {
-    NcOutputsItem *output;
-
-    (void)user;
-    output = item;
-    output->name = NULL;
-    output->name_len = 0;
-    output->id = 0;
-    output->enabled = false;
-    return;
-}
-
-static void
-nc_output_menu_item_copy(void *dest, void *source, void *user) {
-    NcOutputsItem *dest_output;
-    NcOutputsItem *source_output;
-    int32 cap;
-
-    (void)user;
-    dest_output = dest;
-    source_output = source;
-
-    cap = dest_output->name_len + 1;
-    nc_menu_owned_string_destroy(&dest_output->name,
-                                 &dest_output->name_len, &cap);
-    if (source_output->name != NULL && source_output->name_len > 0) {
-        dest_output->name_len = source_output->name_len;
-        cap = dest_output->name_len + 1;
-        dest_output->name = cbase_malloc(cap);
-        cbase_memcpy(dest_output->name, source_output->name,
-                   source_output->name_len);
-        dest_output->name[source_output->name_len] = '\0';
-    }
-    dest_output->id = source_output->id;
-    dest_output->enabled = source_output->enabled;
-    return;
-}
-
-static void
-nc_output_menu_item_destroy(void *item, void *user) {
-    NcOutputsItem *output;
-    int32 cap;
-
-    (void)user;
-    output = item;
-    cap = output->name_len + 1;
-    nc_menu_owned_string_destroy(&output->name, &output->name_len, &cap);
-    output->id = 0;
-    output->enabled = false;
     return;
 }
 

@@ -178,16 +178,6 @@ nc_buffer_append_int32(NcBuffer *buffer, int32 value) {
 }
 
 void
-nc_buffer_append_int64(NcBuffer *buffer, int64 value) {
-    char string[64];
-    int32 len;
-
-    len = snprintf(string, sizeof(string), "%lld", (llong)value);
-    nc_buffer_append_data(buffer, string, len);
-    return;
-}
-
-void
 nc_buffer_append_uint32(NcBuffer *buffer, uint32 value) {
     char string[64];
     int32 len;

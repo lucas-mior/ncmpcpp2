@@ -388,16 +388,6 @@ nc_menu_sync_item_count(NcMenu *menu) {
     return;
 }
 
-void
-nc_menu_set_item_count(NcMenu *menu, int64 item_count) {
-    if (item_count < 0) {
-        item_count = 0;
-    }
-    menu->item_count = item_count;
-    menu_clamp_navigation(menu);
-    return;
-}
-
 int64
 nc_menu_item_count(NcMenu *menu) {
     nc_menu_sync_item_count(menu);
@@ -422,17 +412,6 @@ nc_menu_beginning(NcMenu *menu) {
 int64
 nc_menu_highlight(NcMenu *menu) {
     return menu->highlight;
-}
-
-int64
-nc_menu_drawn_position(NcMenu *menu) {
-    return menu->drawn_position;
-}
-
-void
-nc_menu_set_drawn_position(NcMenu *menu, int64 drawn_position) {
-    menu->drawn_position = drawn_position;
-    return;
 }
 
 bool
@@ -737,17 +716,6 @@ nc_menu_insert_item_with_flags(NcMenu *menu, int64 pos, void *item,
     return;
 }
 
-void
-nc_menu_insert_separator(NcMenu *menu, int64 pos) {
-    void *item;
-
-    item = menu_construct_item(menu);
-    nc_menu_insert_item_with_flags(menu, pos, item,
-                                   NC_MENU_ITEM_SEPARATOR);
-    menu_destroy_item(menu, item);
-    return;
-}
-
 bool
 nc_menu_remove_item(NcMenu *menu, enum NcMenuItemSource source,
                     int64 pos) {
@@ -1040,21 +1008,6 @@ nc_menu_first_selected_position(NcMenu *menu) {
 bool
 nc_menu_current_is_selectable(NcMenu *menu) {
     return nc_menu_position_is_selectable(menu, nc_menu_highlight(menu));
-}
-
-bool
-nc_menu_current_is_selected(NcMenu *menu) {
-    return nc_menu_position_is_selected(menu, nc_menu_highlight(menu));
-}
-
-bool
-nc_menu_current_is_separator(NcMenu *menu) {
-    return nc_menu_position_is_separator(menu, nc_menu_highlight(menu));
-}
-
-bool
-nc_menu_current_is_inactive(NcMenu *menu) {
-    return nc_menu_position_is_inactive(menu, nc_menu_highlight(menu));
 }
 
 bool

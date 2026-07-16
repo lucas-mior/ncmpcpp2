@@ -180,8 +180,6 @@ NcColor nc_color_make(int16 foreground, int16 background,
                       bool is_default, bool is_end);
 NcColor nc_color_default(void);
 NcColor nc_color_end(void);
-NcColor nc_color_transparent(void);
-NcColor nc_color_current(void);
 bool nc_color_equal(NcColor left, NcColor right);
 bool nc_color_is_default(NcColor color);
 bool nc_color_is_end(NcColor color);
@@ -207,9 +205,6 @@ void nc_window_init_empty(NcWindow *window);
 void nc_window_init(NcWindow *window, int64 start_x, int64 start_y,
                     int64 width, int64 height, char *title,
                     int32 title_len, NcColor color, NcBorder border);
-void nc_window_copy(NcWindow *dest, NcWindow *source);
-void nc_window_move(NcWindow *dest, NcWindow *source);
-void nc_window_swap(NcWindow *left, NcWindow *right);
 void nc_window_destroy(NcWindow *window);
 
 WINDOW *nc_window_raw(NcWindow *window);
@@ -217,12 +212,8 @@ int64 nc_window_width(NcWindow *window);
 int64 nc_window_height(NcWindow *window);
 int64 nc_window_start_x(NcWindow *window);
 int64 nc_window_start_y(NcWindow *window);
-int32 nc_window_timeout(NcWindow *window);
 char *nc_window_title(NcWindow *window);
 int32 nc_window_title_len(NcWindow *window);
-NcColor nc_window_color(NcWindow *window);
-NcColor nc_window_base_color(NcWindow *window);
-NcBorder nc_window_border(NcWindow *window);
 MEVENT *nc_window_mouse_event(NcWindow *window);
 
 void nc_window_set_color(NcWindow *window, NcColor color);
@@ -264,8 +255,5 @@ bool nc_window_has_coords(NcWindow *window, int32 *x, int32 *y);
 void nc_window_print_cstring(NcWindow *window, char *string);
 void nc_window_print_data(NcWindow *window, char *string, int32 string_len);
 void nc_window_print_char(NcWindow *window, char ch);
-void nc_window_print_int32(NcWindow *window, int32 value);
-void nc_window_print_uint64(NcWindow *window, uint64 value);
-void nc_window_print_double(NcWindow *window, double value);
 
 #endif /* NCMPCPP_NC_WINDOW_H */

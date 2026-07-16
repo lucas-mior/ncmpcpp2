@@ -16,14 +16,11 @@ void nc_formatted_color_copy(NcFormattedColor *dest,
 void nc_formatted_color_move(NcFormattedColor *dest,
                              NcFormattedColor *source);
 void nc_formatted_color_destroy(NcFormattedColor *formatted_color);
-void nc_formatted_color_clear(NcFormattedColor *formatted_color);
 void nc_formatted_color_add_format(NcFormattedColor *formatted_color,
                                    enum NcFormat format);
-NcColor nc_formatted_color_color(NcFormattedColor *formatted_color);
 enum NcFormat *nc_formatted_color_formats(NcFormattedColor *formatted_color);
 int32 nc_formatted_color_format_count(NcFormattedColor *formatted_color);
 bool nc_formatted_color_equal(NcFormattedColor *left,
                               NcFormattedColor *right);
-bool nc_formatted_color_can_hold_format(enum NcFormat format);
 
 #endif /* NCMPCPP_NC_FORMATTED_COLOR_H */
