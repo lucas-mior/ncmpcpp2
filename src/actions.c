@@ -1351,6 +1351,7 @@ static bool action_runtime_jump_to_parent_directory(void);
 static bool action_runtime_seek_relative(bool forward);
 static bool action_runtime_jump_to_playing_song(void);
 static bool action_runtime_jump_to_browser(void);
+static bool action_runtime_jump_to_playlist_editor(void);
 static bool action_runtime_jump_to_media_library(void);
 static bool action_runtime_jump_to_tag_editor(void);
 static bool action_runtime_edit_directory_name(void);
@@ -4663,6 +4664,9 @@ action_runtime_jump_to_playing_song(void) {
         }
         return true;
     }
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+        return action_runtime_jump_to_browser();
+    }
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
         ncm_song_init(&song);
         ncm_error_clear(&error);
@@ -4709,6 +4713,39 @@ action_runtime_jump_to_browser(void) {
 
     ncm_song_destroy(&song);
     return success;
+}
+
+static bool
+action_runtime_jump_to_playlist_editor(void) {
+    NativeBrowserScreen *browser;
+    NcmStringView path;
+    NcmError error;
+    bool success;
+
+    if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
+        return action_runtime_switch_to_screen(
+            NCM_SCREEN_TYPE_PLAYLIST_EDITOR);
+    }
+
+    browser = native_c_screen_browser();
+    if (!native_browser_screen_current_playlist_path(browser, &path)) {
+        return false;
+    }
+
+    success = action_runtime_switch_to_screen(
+        NCM_SCREEN_TYPE_PLAYLIST_EDITOR);
+    if (!success) {
+        return false;
+    }
+
+    ncm_error_clear(&error);
+    success = native_playlist_editor_screen_locate_playlist(
+        native_c_screen_playlist_editor(), &global_mpd, path.data,
+        path.len, &error);
+    if (!success) {
+        return action_runtime_mpd_error(&error);
+    }
+    return true;
 }
 
 static bool
@@ -6141,8 +6178,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
     case NCM_ACTION_JUMP_TO_MEDIA_LIBRARY:
         return action_runtime_jump_to_media_library();
     case NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR:
-        return action_runtime_switch_to_screen(
-            NCM_SCREEN_TYPE_PLAYLIST_EDITOR);
+        return action_runtime_jump_to_playlist_editor();
     case NCM_ACTION_TOGGLE_SCREEN_LOCK:
         if (app_controller_locked_screen() != NULL) {
             app_controller_unlock_screen();

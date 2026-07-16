@@ -733,7 +733,7 @@ test_app_binding_migration_c_safe_actions(void) {
         REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
             browser_actions[i], NCM_SCREEN_TYPE_BROWSER));
     }
-    REQUIRE(!app_binding_migration_screen_is_c_only(
+    REQUIRE(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_BROWSER));
     REQUIRE(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_PLAYLIST));

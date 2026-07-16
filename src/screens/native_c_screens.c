@@ -1789,6 +1789,7 @@ native_c_screens_init_all(void) {
 
 void
 native_c_screens_register_native_only(void) {
+    native_c_screen_browser_register();
     native_c_screen_help_register();
     native_c_screen_lastfm_register();
     native_c_screen_media_library_register();

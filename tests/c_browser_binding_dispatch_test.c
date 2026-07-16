@@ -34,6 +34,7 @@ static void test_browser_navigation_binding_uses_c_runtime(void);
 static void test_browser_navigation_actions_use_c_runtime(void);
 static void test_browser_migration_action_table_matches_dispatch(void);
 static void test_browser_mixed_migration_binding_uses_c_runtime(void);
+static void test_browser_c_only_common_actions_use_c_runtime(void);
 
 enum ScreenType
 __wrap_native_c_screens_current_type(void) {
@@ -311,6 +312,15 @@ test_browser_migration_action_table_matches_dispatch(void) {
     return;
 }
 
+
+static void
+test_browser_c_only_common_actions_use_c_runtime(void) {
+    assert_c_action(NCM_ACTION_SELECT_ITEM);
+    assert_c_action(NCM_ACTION_APPLY_FILTER);
+    assert_c_action(NCM_ACTION_TOGGLE_DISPLAY_MODE);
+    return;
+}
+
 static void
 test_browser_mixed_migration_binding_uses_c_runtime(void) {
     NcmBindingAction actions[] = {
@@ -348,6 +358,7 @@ main(void) {
     test_browser_navigation_binding_uses_c_runtime();
     test_browser_navigation_actions_use_c_runtime();
     test_browser_migration_action_table_matches_dispatch();
+    test_browser_c_only_common_actions_use_c_runtime();
     test_browser_mixed_migration_binding_uses_c_runtime();
     exit(EXIT_SUCCESS);
 }

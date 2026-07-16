@@ -2,7 +2,6 @@
 #include <cerrno>
 #include <cstring>
 #include <cstdlib>
-#include <filesystem>
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -13,7 +12,6 @@
 #include "app_legacy_bridge.h"
 #include "charset.h"
 #include "config.h"
-#include "display.h"
 #include "app_controller.h"
 #include "global.h"
 #include "ui_state.h"
@@ -22,13 +20,11 @@
 #include "helpers_legacy.h"
 #include "statusbar.h"
 #include "status.h"
-#include "utility/comparators.h"
 #include "utility/conversion.h"
 
 #include "cbase/base_macros.h"
 #include "curses/menu_impl.h"
 #include "macro_utilities.h"
-#include "screens/browser.h"
 #include "screens/native_c_screens.h"
 #include "utility/readline.h"
 #include "utility/string.h"
@@ -67,51 +63,6 @@ bool currentSongFromNative(MPD::Song &song)
 		}
 	}
 	ncm_song_destroy(&native_song);
-	return success;
-}
-
-bool playingSongFromNative(MPD::Song &song)
-{
-	NcmSong native_song;
-	int32 position;
-	bool success;
-
-	position = ncm_status_state_current_song_position();
-	if (position < 0)
-		return false;
-
-	ncm_song_init(&native_song);
-	success = native_playlist_screen_now_playing_song(
-	    native_c_screen_playlist(), position, &native_song);
-	if (success)
-	{
-		try
-		{
-			song = MPD::Song(&native_song);
-		}
-		catch (...)
-		{
-			success = false;
-		}
-	}
-	ncm_song_destroy(&native_song);
-	return success;
-}
-
-bool locatePlaylistInNativePlaylistEditor(const MPD::Playlist &playlist)
-{
-	NcmError error;
-	std::string path;
-	bool success;
-
-	path = playlist.path();
-	ncm_error_clear(&error);
-	success = native_playlist_editor_screen_locate_playlist(
-	    native_c_screen_playlist_editor(), &global_mpd,
-	    const_cast<char *>(path.c_str()), static_cast<int32>(path.size()),
-	    &error);
-	if (!success && ncm_error_is_set(&error))
-		Statusbar::print(error.message);
 	return success;
 }
 
@@ -481,20 +432,17 @@ void initializeScreens()
 	app_controller_init();
 	native_c_screens_init_all();
 
-	myBrowser = new Browser;
 	ncm_status_set_database_update_observer(
 	    requestMediaLibraryDatabaseUpdate, nullptr);
 	ncm_status_set_playlist_update_observer(
 	    refreshPlaylistRelatedInactiveColumns, nullptr);
 	native_c_screens_register_native_only();
-	myBrowser->registerNativeScreen();
 	native_c_screen_lyrics_register();
 }
 
 void setResizeFlags()
 {
 	native_c_screens_request_registered_resize();
-	myBrowser->hasToBeResized = 1;
 	native_c_screen_lyrics_set_resize();
 
 }
@@ -622,7 +570,7 @@ void UpdateEnvironment::run(bool update_timer, bool refresh_window, bool mpd_syn
 
 	// header stuff
 	if ((native_c_screen_playlist_is_current()
-	     || screenLegacyCurrent() == myBrowser
+	     || native_c_screen_browser_is_current()
 	     || native_c_screen_lyrics_is_current())
 	&&  (global_timer_elapsed_ms(m_past) > 500)
 	)
@@ -796,37 +744,14 @@ void ToggleInterface::run()
 
 bool JumpToParentDirectory::canBeRun()
 {
-	BaseScreen *current;
-
-#	ifdef HAVE_TAGLIB_H
-	if (native_c_screen_tag_editor_is_current())
-		return ncm_action_runtime_can_run(
-		    nullptr, NCM_ACTION_JUMP_TO_PARENT_DIRECTORY);
-#	endif // HAVE_TAGLIB_H
-	current = screenLegacyCurrent();
-	if (current == nullptr)
-		return false;
-	return current == myBrowser;
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_JUMP_TO_PARENT_DIRECTORY);
 }
 
 void JumpToParentDirectory::run()
 {
-#	ifdef HAVE_TAGLIB_H
-	if (native_c_screen_tag_editor_is_current())
-	{
-		(void)ncm_action_runtime_run(
-		    nullptr, NCM_ACTION_JUMP_TO_PARENT_DIRECTORY);
-		return;
-	}
-#	endif // HAVE_TAGLIB_H
-	if (screenLegacyCurrent() == myBrowser)
-	{
-		if (!myBrowser->inRootDirectory())
-		{
-			myBrowser->main().reset();
-			myBrowser->enterDirectory();
-		}
-	}
+	(void)ncm_action_runtime_run(
+	    nullptr, NCM_ACTION_JUMP_TO_PARENT_DIRECTORY);
 }
 
 bool PreviousColumn::canBeRun()
@@ -980,76 +905,14 @@ void DeletePlaylistItems::run()
 
 bool DeleteBrowserItems::canBeRun()
 {
-	auto check_if_deletion_allowed = []() {
-		if (Config.allow_for_physical_item_deletion)
-			return true;
-		else
-		{
-			Statusbar::print("Flag \"allow_for_physical_item_deletion\" needs to be enabled in configuration file");
-			return false;
-		}
-	};
-	return screenLegacyCurrent() == myBrowser
-	    && !myBrowser->main().empty()
-	    && isMPDMusicDirSet()
-	    && check_if_deletion_allowed();
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_DELETE_BROWSER_ITEMS);
 }
 
 void DeleteBrowserItems::run()
 {
-	auto get_name = [](const MPD::Item &item) -> std::string {
-		std::string iname;
-		switch (item.type())
-		{
-			case MPD::Item::Type::Directory:
-				iname = getBasename(item.directory().path());
-				break;
-			case MPD::Item::Type::Song:
-				iname = item.song().getName();
-				break;
-			case MPD::Item::Type::Playlist:
-				iname = getBasename(item.playlist().path());
-				break;
-		}
-		return iname;
-	};
-
-	std::string question;
-	if (hasSelected(myBrowser->main().begin(), myBrowser->main().end()))
-		question = "Delete selected items?";
-	else
-	{
-		const auto &item = myBrowser->main().current()->value();
-		// parent directories are not accepted (and they
-		// can't be selected, so in other cases it's fine).
-		if (myBrowser->isParentDirectory(item))
-			return;
-		const char msg[] = "Delete \"%1%\"?";
-		question = stringFormat(msg,
-			Utf8::shorten(get_name(item), COLS-const_strlen(msg)-5)
-		);
-	}
-	if (!confirmAction(question))
-		return;
-
-	auto items = getSelectedOrCurrent(
-		myBrowser->main().begin(),
-		myBrowser->main().end(),
-		myBrowser->main().current()
-	);
-	for (const auto &item : items)
-	{
-		myBrowser->remove(item->value());
-		const char msg[] = "Deleted %1% \"%2%\"";
-		Statusbar::printf(msg,
-			itemTypeName(item->value().type()),
-			Utf8::shorten(get_name(item->value()), COLS-const_strlen(msg))
-		);
-	}
-
-	if (!myBrowser->isLocal())
-		Mpd.UpdateDirectory(myBrowser->currentDirectory());
-	myBrowser->requestUpdate();
+	(void)ncm_action_runtime_run(
+	    nullptr, NCM_ACTION_DELETE_BROWSER_ITEMS);
 }
 
 bool DeleteStoredPlaylist::canBeRun()
@@ -1200,42 +1063,14 @@ void Load::run()
 
 bool ToggleDisplayMode::canBeRun()
 {
-	BaseScreen *current;
-
-	if (native_c_screen_playlist_is_current())
-		return ncm_action_runtime_can_run(
-		    nullptr, NCM_ACTION_TOGGLE_DISPLAY_MODE);
-	current = screenLegacyCurrent();
-	return current == myBrowser;
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_TOGGLE_DISPLAY_MODE);
 }
 
 void ToggleDisplayMode::run()
 {
-	if (native_c_screen_playlist_is_current())
-	{
-		(void)ncm_action_runtime_run(
-		    nullptr, NCM_ACTION_TOGGLE_DISPLAY_MODE);
-	}
-	else if (screenLegacyCurrent() == myBrowser)
-	{
-		switch (Config.browser_display_mode)
-		{
-			case NCM_DISPLAY_MODE_CLASSIC:
-				Config.browser_display_mode = NCM_DISPLAY_MODE_COLUMNS;
-				if (Config.titles_visibility)
-					myBrowser->main().setTitle(
-					    Display::Columns(myBrowser->main().getWidth()));
-				else
-					myBrowser->main().setTitle("");
-				break;
-			case NCM_DISPLAY_MODE_COLUMNS:
-				Config.browser_display_mode = NCM_DISPLAY_MODE_CLASSIC;
-				myBrowser->main().setTitle("");
-				break;
-		}
-		Statusbar::printf("Browser display mode: %1%",
-		                  Config.browser_display_mode);
-	}
+	(void)ncm_action_runtime_run(
+	    nullptr, NCM_ACTION_TOGGLE_DISPLAY_MODE);
 }
 
 bool ToggleSeparatorsBetweenAlbums::canBeRun()
@@ -1284,31 +1119,14 @@ void TogglePlayingSongCentering::run()
 
 bool JumpToPlayingSong::canBeRun()
 {
-	BaseScreen *current;
-
-	if (native_c_screen_playlist_is_current()
-	    || native_c_screen_media_library_is_current()
-	    || native_c_screen_playlist_editor_is_current())
-		return ncm_action_runtime_can_run(
-		    nullptr, NCM_ACTION_JUMP_TO_PLAYING_SONG);
-
-	current = screenLegacyCurrent();
-	return current == myBrowser && playingSongFromNative(m_song);
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_JUMP_TO_PLAYING_SONG);
 }
 
 void JumpToPlayingSong::run()
 {
-	if (native_c_screen_playlist_is_current()
-	    || native_c_screen_media_library_is_current()
-	    || native_c_screen_playlist_editor_is_current())
-	{
-		(void)ncm_action_runtime_run(
-		    nullptr, NCM_ACTION_JUMP_TO_PLAYING_SONG);
-	}
-	else if (screenLegacyCurrent() == myBrowser)
-	{
-		myBrowser->locateSong(m_song);
-	}
+	(void)ncm_action_runtime_run(
+	    nullptr, NCM_ACTION_JUMP_TO_PLAYING_SONG);
 }
 
 bool Shuffle::canBeRun()
@@ -1369,41 +1187,13 @@ void SetVolume::run()
 
 bool EnterDirectory::canBeRun()
 {
-	BaseScreen *current;
-	bool result = false;
-
-#ifdef HAVE_TAGLIB_H
-	if (native_c_screen_tag_editor_is_current())
-		return ncm_action_runtime_can_run(
-		    nullptr, NCM_ACTION_ENTER_DIRECTORY);
-#endif // HAVE_TAGLIB_H
-	current = screenLegacyCurrent();
-	if (current == nullptr)
-		return false;
-	if (current == myBrowser && !myBrowser->main().empty())
-	{
-		result = myBrowser->main().current()->value().type()
-			== MPD::Item::Type::Directory;
-	}
-	return result;
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_ENTER_DIRECTORY);
 }
 
 void EnterDirectory::run()
 {
-	BaseScreen *current;
-
-#ifdef HAVE_TAGLIB_H
-	if (native_c_screen_tag_editor_is_current())
-	{
-		(void)ncm_action_runtime_run(nullptr, NCM_ACTION_ENTER_DIRECTORY);
-		return;
-	}
-#endif // HAVE_TAGLIB_H
-	current = screenLegacyCurrent();
-	if (current == nullptr)
-		return;
-	if (current == myBrowser)
-		myBrowser->enterDirectory();
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_ENTER_DIRECTORY);
 }
 
 bool EditSong::canBeRun()
@@ -1575,93 +1365,24 @@ void EditLibraryAlbum::run()
 
 bool EditDirectoryName::canBeRun()
 {
-	BaseScreen *current;
-
-#	ifdef HAVE_TAGLIB_H
-	if (ncm_action_runtime_can_run(nullptr, NCM_ACTION_EDIT_DIRECTORY_NAME))
-		return true;
-#	endif // HAVE_TAGLIB_H
-
-	current = screenLegacyCurrent();
-	return current != nullptr
-	    && current == myBrowser
-	    && !myBrowser->main().empty()
-	    && myBrowser->main().current()->value().type() == MPD::Item::Type::Directory
-	    && isMPDMusicDirSet();
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_EDIT_DIRECTORY_NAME);
 }
 
 void EditDirectoryName::run()
 {
-#	ifdef HAVE_TAGLIB_H
-	if (ncm_action_runtime_can_run(nullptr, NCM_ACTION_EDIT_DIRECTORY_NAME))
-	{
-		(void)ncm_action_runtime_run(nullptr, NCM_ACTION_EDIT_DIRECTORY_NAME);
-		return;
-	}
-#	endif // HAVE_TAGLIB_H
-
-	if (screenLegacyCurrent() == myBrowser)
-	{
-		std::string old_dir = myBrowser->main().current()->value().directory().path();
-		std::string new_dir;
-		{
-			Statusbar::ScopedLock slock;
-			Statusbar::put() << NC_FORMAT_BOLD << "Directory: " << NC_FORMAT_NO_BOLD;
-			if (!promptString(new_dir, old_dir))
-					return;
-		}
-		if (!new_dir.empty() && new_dir != old_dir)
-		{
-			std::string full_old_dir;
-			if (!myBrowser->isLocal())
-				full_old_dir += Config.mpd_music_dir;
-			full_old_dir += old_dir;
-			std::string full_new_dir;
-			if (!myBrowser->isLocal())
-				full_new_dir += Config.mpd_music_dir;
-			full_new_dir += new_dir;
-			std::filesystem::rename(full_old_dir, full_new_dir);
-			const char msg[] = "Directory renamed to \"%1%\"";
-			Statusbar::printf(msg, Utf8::shorten(new_dir, COLS-const_strlen(msg)));
-			if (!myBrowser->isLocal())
-				Mpd.UpdateDirectory(getSharedDirectory(old_dir, new_dir));
-			myBrowser->requestUpdate();
-		}
-	}
-
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_EDIT_DIRECTORY_NAME);
 }
 
 bool EditPlaylistName::canBeRun()
 {
-	BaseScreen *current;
-
-	current = screenLegacyCurrent();
-	return current == myBrowser
-	    && !myBrowser->main().empty()
-	    && myBrowser->main().current()->value().type()
-	       == MPD::Item::Type::Playlist;
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_EDIT_PLAYLIST_NAME);
 }
 
 void EditPlaylistName::run()
 {
-	std::string old_name, new_name;
-
-	old_name = myBrowser->main().current()->value().playlist().path();
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << NC_FORMAT_BOLD << "Playlist: "
-		                 << NC_FORMAT_NO_BOLD;
-		if (!promptString(new_name, old_name))
-			return;
-	}
-	if (!new_name.empty() && new_name != old_name)
-	{
-		Mpd.Rename(old_name, new_name);
-		const char msg[] = "Playlist renamed to \"%1%\"";
-		Statusbar::printf(msg,
-		                  Utf8::shorten(new_name,
-		                                COLS-const_strlen(msg)));
-	}
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_EDIT_PLAYLIST_NAME);
 }
 
 bool EditLyrics::canBeRun()
@@ -1674,26 +1395,26 @@ void EditLyrics::run()
 	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_EDIT_LYRICS);
 }
 
-bool JumpToBrowser::canBeRun()
+bool JumpToBrowserAction::canBeRun()
 {
-	return currentSongFromNative(m_song);
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_JUMP_TO_BROWSER);
 }
 
-void JumpToBrowser::run()
+void JumpToBrowserAction::run()
 {
-	myBrowser->locateSong(m_song);
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_JUMP_TO_BROWSER);
 }
 
 bool JumpToPlaylistEditor::canBeRun()
 {
-	return screenLegacyCurrent() == myBrowser
-	    && myBrowser->main().current()->value().type() == MPD::Item::Type::Playlist;
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR);
 }
 
 void JumpToPlaylistEditor::run()
 {
-	(void)locatePlaylistInNativePlaylistEditor(
-	    myBrowser->main().current()->value().playlist());
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR);
 }
 
 void ToggleScreenLock::run()
@@ -2132,41 +1853,14 @@ void AddRandomItems::run()
 
 bool ToggleBrowserSortMode::canBeRun()
 {
-	return screenLegacyCurrent() == myBrowser;
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_TOGGLE_BROWSER_SORT_MODE);
 }
 
 void ToggleBrowserSortMode::run()
 {
-	switch (Config.browser_sort_mode)
-	{
-		case NCM_SORT_MODE_TYPE:
-			Config.browser_sort_mode = NCM_SORT_MODE_NAME;
-			Statusbar::print("Sort songs by: name");
-			break;
-		case NCM_SORT_MODE_NAME:
-			Config.browser_sort_mode = NCM_SORT_MODE_MODIFICATION_TIME;
-			Statusbar::print("Sort songs by: modification time");
-			break;
-		case NCM_SORT_MODE_MODIFICATION_TIME:
-			Config.browser_sort_mode = NCM_SORT_MODE_CUSTOM_FORMAT;
-			Statusbar::print("Sort songs by: custom format");
-			break;
-		case NCM_SORT_MODE_CUSTOM_FORMAT:
-			Config.browser_sort_mode = NCM_SORT_MODE_NONE;
-			Statusbar::print("Do not sort songs");
-			break;
-		case NCM_SORT_MODE_NONE:
-			Config.browser_sort_mode = NCM_SORT_MODE_TYPE;
-			Statusbar::print("Sort songs by: type");
-	}
-	if (Config.browser_sort_mode != NCM_SORT_MODE_NONE)
-	{
-		size_t sort_offset = myBrowser->inRootDirectory() ? 0 : 1;
-		std::stable_sort(
-			myBrowser->main().begin()+sort_offset, myBrowser->main().end(),
-			LocaleBasedItemSorting(Config.ignore_leading_the,
-			                       Config.browser_sort_mode));
-	}
+	(void)ncm_action_runtime_run(
+	    nullptr, NCM_ACTION_TOGGLE_BROWSER_SORT_MODE);
 }
 
 bool ToggleLibraryTagType::canBeRun()
@@ -2410,28 +2104,26 @@ void ShowPlaylist::run()
 	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHOW_PLAYLIST);
 }
 
-bool ShowBrowser::canBeRun()
+bool ShowBrowserAction::canBeRun()
 {
-	return screenLegacyCurrent() != myBrowser
-#	ifdef HAVE_TAGLIB_H
-	    && !native_c_screen_tiny_tag_editor_is_current()
-#	endif // HAVE_TAGLIB_H
-	;
+	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SHOW_BROWSER);
 }
 
-void ShowBrowser::run()
+void ShowBrowserAction::run()
 {
-	myBrowser->switchTo();
+	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHOW_BROWSER);
 }
 
 bool ChangeBrowseMode::canBeRun()
 {
-	return screenLegacyCurrent() == myBrowser;
+	return ncm_action_runtime_can_run(
+	    nullptr, NCM_ACTION_CHANGE_BROWSE_MODE);
 }
 
 void ChangeBrowseMode::run()
 {
-	myBrowser->changeBrowseMode();
+	(void)ncm_action_runtime_run(
+	    nullptr, NCM_ACTION_CHANGE_BROWSE_MODE);
 }
 
 bool ShowPlaylistEditor::canBeRun()
@@ -2570,7 +2262,7 @@ void populateActions()
 	insert_action(new Actions::EditDirectoryName());
 	insert_action(new Actions::EditPlaylistName());
 	insert_action(new Actions::EditLyrics());
-	insert_action(new Actions::JumpToBrowser());
+	insert_action(new Actions::JumpToBrowserAction());
 	insert_action(new Actions::JumpToPlaylistEditor());
 	insert_action(new Actions::ToggleScreenLock());
 	insert_action(new Actions::JumpToTagEditor());
@@ -2607,7 +2299,7 @@ void populateActions()
 	insert_action(new Actions::PreviousScreen());
 	insert_action(new Actions::ShowHelp());
 	insert_action(new Actions::ShowPlaylist());
-	insert_action(new Actions::ShowBrowser());
+	insert_action(new Actions::ShowBrowserAction());
 	insert_action(new Actions::ChangeBrowseMode());
 	insert_action(new Actions::ShowPlaylistEditor());
 	insert_action(new Actions::ShowTagEditor());
@@ -2792,9 +2484,7 @@ bool actions_legacy_runtime_playlist_highlight_mpd_position(int32 position)
 
 void actions_legacy_runtime_browser_fetch_supported_extensions(void)
 {
-	if (myBrowser == nullptr)
-		return;
-	myBrowser->fetchSupportedExtensions();
+	native_c_screen_browser_fetch_supported_extensions();
 }
 
 bool actions_legacy_runtime_update_environment(bool update_timer,
