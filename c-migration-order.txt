@@ -1,5 +1,0 @@
-4. Actions: move the remaining screen-specific and prompt actions out of actions_legacy.cpp, then delete it.
-5. Settings bridge: delete settings_legacy.cpp, settings_legacy.h, and settings_legacy_sync_test.cpp.
-6. MPD C++ wrapper: delete mpdpp.cpp, mpdpp.h, and the remaining MPD::Song compatibility types.
-7. Compatibility headers: remove the obsolete curses, utility, interface, formatting, and display C++ headers.
-8. Change the final application link from the C++ linker to the C linker and remove C++ build rules.
