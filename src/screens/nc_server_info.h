@@ -5,10 +5,6 @@
 #include "curses/nc_scrollpad.h"
 #include "screens/nc_scrollpad_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcServerInfoHooks {
     void (*load_lists)(void *user);
     bool (*render)(void *user, NcBuffer *buffer);
@@ -45,9 +41,5 @@ int64 nc_server_info_screen_width(NcServerInfoScreen *screen);
 int64 nc_server_info_screen_height(NcServerInfoScreen *screen);
 int64 nc_server_info_screen_start_x(NcServerInfoScreen *screen);
 int64 nc_server_info_screen_start_y(NcServerInfoScreen *screen);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_SERVER_INFO_H */

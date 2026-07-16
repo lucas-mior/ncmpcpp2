@@ -6,10 +6,6 @@
 #include "curses/nc_scrollpad.h"
 #include "screens/nc_scrollpad_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcHelpScreen NcHelpScreen;
 
 typedef struct NcHelpHooks {
@@ -53,9 +49,5 @@ int64 nc_help_screen_start_x(NcHelpScreen *screen);
 int64 nc_help_screen_start_y(NcHelpScreen *screen);
 int64 nc_help_screen_width(NcHelpScreen *screen);
 int64 nc_help_screen_height(NcHelpScreen *screen);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_HELP_H */

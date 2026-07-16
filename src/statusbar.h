@@ -7,8 +7,6 @@
 #include "c/ncm_string_format.h"
 #include "curses/nc_window.h"
 
-NCM_EXTERN_C_BEGIN
-
 typedef struct NcmStatusbarScopedLock {
     bool locked_statusbar;
     bool locked_progressbar;
@@ -41,8 +39,6 @@ bool ncm_statusbar_prompt_return_one_of(NcWindow *window,
                                          int32 values_len,
                                          char *result);
 int32 ncm_statusbar_message_delay_time(void);
-
-NCM_EXTERN_C_END
 
 
 #endif /* NCMPCPP_STATUSBAR_H */

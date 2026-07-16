@@ -4,8 +4,6 @@
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
 
-NCM_EXTERN_C_BEGIN
-
 enum NcmStringFormatArgType {
     NCM_STRING_FORMAT_ARG_STRING,
     NCM_STRING_FORMAT_ARG_I64,
@@ -42,7 +40,5 @@ void ncm_string_format_apply(NcmBuffer *out, char *format,
 NcmBuffer ncm_string_format_make(char *format, int32 format_len,
                                  NcmStringFormatArg *args,
                                  int32 args_len);
-
-NCM_EXTERN_C_END
 
 #endif /* NCM_STRING_FORMAT_H */

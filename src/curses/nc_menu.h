@@ -7,10 +7,6 @@
 #include "curses/nc_buffer.h"
 #include "curses/nc_window.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcMenu NcMenu;
 
 typedef bool (*NcMenuHighlightableFunc)(int64 pos, void *user);
@@ -166,9 +162,5 @@ void *nc_menu_active_item_at(NcMenu *menu, int64 pos);
 void *nc_menu_current_item(NcMenu *menu);
 void nc_menu_swap_item_slots(NcMenu *menu, enum NcMenuItemSource source,
                              int64 left, int64 right);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_MENU_H */

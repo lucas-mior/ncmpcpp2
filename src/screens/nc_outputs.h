@@ -4,10 +4,6 @@
 #include "curses/nc_menu.h"
 #include "screens/nc_scrollpad_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcOutputsScreen NcOutputsScreen;
 
 typedef struct NcOutputsHooks {
@@ -67,9 +63,5 @@ int64 nc_outputs_screen_start_x(NcOutputsScreen *screen);
 int64 nc_outputs_screen_start_y(NcOutputsScreen *screen);
 int64 nc_outputs_screen_width(NcOutputsScreen *screen);
 int64 nc_outputs_screen_height(NcOutputsScreen *screen);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_OUTPUTS_H */

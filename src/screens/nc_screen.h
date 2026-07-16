@@ -6,10 +6,6 @@
 #include "cbase/primitives.h"
 #include "curses/nc_window.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 #define NC_SCREEN_DEFAULT_WINDOW_TIMEOUT 500
 #define NC_SCREEN_TYPE_UNKNOWN 0
 #define NC_SCREEN_TYPE_BROWSER 1
@@ -169,9 +165,5 @@ bool nc_screen_registry_destroy_screen(NcScreenRegistry *registry,
 bool nc_screen_registry_destroy_type(NcScreenRegistry *registry,
                                      int32 type);
 void nc_screen_registry_destroy_all(NcScreenRegistry *registry);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_SCREEN_H */

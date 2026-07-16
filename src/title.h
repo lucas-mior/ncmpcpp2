@@ -5,8 +5,6 @@
 #include "c/ncm_enums.h"
 #include "curses/nc_formatted_color.h"
 
-NCM_EXTERN_C_BEGIN
-
 void ncm_window_title_write(char *title, int32 title_len);
 void ncm_window_title_set(char *title, int32 title_len);
 void ncm_window_title_set_cstring(char *title);
@@ -17,7 +15,5 @@ void ncm_title_draw_header_with_config(char *title, int32 title_len,
                                        NcFormattedColor *separator_color);
 void ncm_title_draw_header(char *title, int32 title_len);
 void ncm_title_draw_current_header(void);
-
-NCM_EXTERN_C_END
 
 #endif /* NCMPCPP_TITLE_H */

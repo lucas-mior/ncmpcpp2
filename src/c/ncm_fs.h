@@ -5,10 +5,6 @@
 
 #include "c/ncm_base.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 enum NcmFsEntryType {
     NCM_FS_ENTRY_UNKNOWN,
     NCM_FS_ENTRY_FILE,
@@ -58,9 +54,5 @@ bool ncm_fs_user_config_dir(NcmBuffer *buffer, char *app_name,
                             int32 app_name_len, NcmError *error);
 bool ncm_fs_user_cache_dir(NcmBuffer *buffer, char *app_name,
                            int32 app_name_len, NcmError *error);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_FS_H */

@@ -6,8 +6,6 @@
 #include "c/ncm_error.h"
 #include "c/ncm_mpd_client.h"
 
-NCM_EXTERN_C_BEGIN
-
 enum NcmStatusPlayerState {
     NCM_STATUS_PLAYER_UNKNOWN,
     NCM_STATUS_PLAYER_STOP,
@@ -133,7 +131,5 @@ void ncm_status_changes_elapsed_time(bool update_elapsed);
 void ncm_status_changes_flags(void);
 void ncm_status_changes_mixer(void);
 void ncm_status_changes_outputs(void);
-
-NCM_EXTERN_C_END
 
 #endif /* NCMPCPP_STATUS_H */

@@ -11,10 +11,6 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 #define NATIVE_MEDIA_LIBRARY_FETCH_DELAY_MS 250
 
 enum NativeMediaLibraryMode {
@@ -302,9 +298,5 @@ bool native_media_library_screen_add_item_to_playlist(
     NativeMediaLibraryScreen *screen, bool play, NcmError *error);
 bool native_media_library_screen_locate_song(
     NativeMediaLibraryScreen *screen, NcmSong *song, NcmError *error);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_MEDIA_LIBRARY_H */

@@ -6,10 +6,6 @@
 
 #include "c/ncm_base.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcmLog {
     FILE *file;
     bool owns_file;
@@ -30,9 +26,5 @@ bool ncm_log_default_open(char *path, int32 path_len, NcmError *error);
 void ncm_log_message(char *message, int32 message_len);
 void ncm_log_messagef(char *format, ...)
     __attribute__((format(printf, 1, 2)));
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_LOG_H */

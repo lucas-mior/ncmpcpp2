@@ -10,10 +10,6 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NativePlaylistScreen NativePlaylistScreen;
 
 enum NativeSelectedItemsAdderMenu {
@@ -91,9 +87,5 @@ bool native_selected_items_adder_screen_search(
     NativeSelectedItemsAdderScreen *screen, char *pattern,
     int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,
     bool skip_current, NcmError *error);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_SEL_ITEMS_ADDER_H */

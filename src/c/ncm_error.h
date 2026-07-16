@@ -3,10 +3,6 @@
 
 #include "c/ncm_defs.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcmError {
     char message[256];
     int32 code;
@@ -16,9 +12,5 @@ void ncm_error_clear(NcmError *error);
 void ncm_error_set(NcmError *error, int32 code,
                    char *message, int32 message_len);
 bool ncm_error_is_set(NcmError *error);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_ERROR_H */

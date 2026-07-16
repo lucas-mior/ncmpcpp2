@@ -7,10 +7,6 @@
 #include "curses/nc_buffer.h"
 #include "curses/nc_window.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 void nc_cyclic_text_write(NcmBuffer *output, char *string,
                           int32 string_len, int64 *start_pos,
                           int32 width, char *separator,
@@ -18,9 +14,5 @@ void nc_cyclic_text_write(NcmBuffer *output, char *string,
 void nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
                             int64 *start_pos, int32 width,
                             char *separator, int32 separator_len);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_CYCLIC_BUFFER_H */

@@ -5,8 +5,6 @@
 
 #include "c/ncm_error.h"
 
-NCM_EXTERN_C_BEGIN
-
 typedef struct NcmSharedResource {
     pthread_mutex_t mutex;
     void *resource;
@@ -27,7 +25,5 @@ void *ncm_shared_resource_acquire(NcmSharedResource *shared,
                                   NcmError *error);
 void ncm_shared_resource_release(NcmSharedResource *shared,
                                  NcmError *error);
-
-NCM_EXTERN_C_END
 
 #endif /* NCM_SHARED_RESOURCE_H */

@@ -7,10 +7,6 @@
 
 struct mpd_song;
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 enum NcmTagsField {
     NCM_TAGS_FIELD_TITLE,
     NCM_TAGS_FIELD_ARTIST,
@@ -60,9 +56,5 @@ bool ncm_tags_read_song(struct mpd_song *song);
 bool ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
                     char *directory, char *new_name,
                     NcmTagsGetFieldCallback callback, void *user);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_TAGS_H */

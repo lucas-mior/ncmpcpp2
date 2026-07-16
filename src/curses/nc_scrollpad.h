@@ -4,10 +4,6 @@
 #include "curses/nc_buffer.h"
 #include "curses/nc_window.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcScrollpad {
     int64 beginning;
     int64 real_height;
@@ -30,9 +26,5 @@ void nc_scrollpad_prepare_flush(NcScrollpad *scrollpad, NcWindow *window,
 void nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window,
                         NcBuffer *buffer);
 void nc_scrollpad_reset(NcScrollpad *scrollpad);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_SCROLLPAD_H */

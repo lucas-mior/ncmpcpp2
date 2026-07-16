@@ -13,10 +13,6 @@
 #include "lyrics_fetcher.h"
 #include "screens/nc_scrollpad_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcLyricsScreen {
     NcScrollpadScreen scrollpad_screen;
 
@@ -136,9 +132,5 @@ bool native_lyrics_screen_find(NativeLyricsScreen *screen,
 int32 native_lyrics_screen_pending_jobs(NativeLyricsScreen *screen);
 int32 native_lyrics_screen_completed_jobs(NativeLyricsScreen *screen);
 int32 native_lyrics_screen_queued_count(NativeLyricsScreen *screen);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_LYRICS_H */

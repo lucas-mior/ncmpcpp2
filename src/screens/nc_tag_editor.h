@@ -10,10 +10,6 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 enum NativeTagEditorColumn {
     NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES,
     NATIVE_TAG_EDITOR_COLUMN_TAG_TYPES,
@@ -263,9 +259,5 @@ bool native_tag_editor_generate_filename(NcmMutableSong *song,
 bool native_tag_editor_song_display_value(NcmMutableSong *song,
                                           enum NcmTagsField field,
                                           NcmBuffer *buffer);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_TAG_EDITOR_H */

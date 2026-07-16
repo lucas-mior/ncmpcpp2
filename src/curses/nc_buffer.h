@@ -3,10 +3,6 @@
 
 #include "curses/nc_formatted_color.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 enum NcBufferPropertyType {
     NC_BUFFER_PROPERTY_COLOR,
     NC_BUFFER_PROPERTY_FORMAT,
@@ -67,9 +63,5 @@ void nc_buffer_add_formatted_color_end(NcBuffer *buffer, int32 position,
                                        uint64 id);
 void nc_buffer_remove_properties(NcBuffer *buffer, uint64 id);
 void nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_NC_BUFFER_H */

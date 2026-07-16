@@ -4,10 +4,6 @@
 #include "config.h"
 #include "c/ncm_defs.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 enum SearchDirection {
     NCM_SEARCH_DIRECTION_BACKWARD,
     NCM_SEARCH_DIRECTION_FORWARD,
@@ -68,9 +64,5 @@ bool ncm_design_parse(char *string, int32 string_len, enum Design *value);
 char *ncm_visualizer_type_str(enum VisualizerType value);
 bool ncm_visualizer_type_parse(char *string, int32 string_len,
                                enum VisualizerType *value);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_ENUMS_H */

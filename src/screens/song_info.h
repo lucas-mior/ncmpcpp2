@@ -6,8 +6,6 @@
 #include "c/ncm_type_conversions.h"
 #include "screens/native_c_screens.h"
 
-NCM_EXTERN_C_BEGIN
-
 typedef struct NcmSongInfoMetadata {
     char *name;
     enum NcmSongGetter get;
@@ -15,7 +13,5 @@ typedef struct NcmSongInfoMetadata {
 } NcmSongInfoMetadata;
 
 extern NcmSongInfoMetadata ncm_song_info_tags[];
-
-NCM_EXTERN_C_END
 
 #endif /* NCMPCPP_SONG_INFO_H */
