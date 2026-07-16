@@ -4,6 +4,7 @@ This is a fork of ncmpcpp. The goals are:
   + ~~Remove clock~~
   + Remove others?
 - Remove dependency on external C++ utility libraries.
+- Remove the remaining C++ implementation and build as C-only.
 - ~~Remove boost~~
 - Convert the project to C23.
 - Fix the bugs reported in original repo.
@@ -53,7 +54,6 @@ The simplest way to compile this package is:
 
   2. Install the build dependencies and their pkg-config files:
      * C23-capable C compiler
-     * C++20-capable C++ compiler
      * pkg-config
      * ncursesw
      * readline
@@ -65,7 +65,7 @@ The simplest way to compile this package is:
   3. Run `make` to compile the package. The binary is written to
      `build/ncmpcpp`.
 
-  4. Run `make check` to compile and run the C test programs.
+  4. Run `make check` to compile and run the test programs.
 
   5. Run `sudo make install` to install the program, docs, and man page.
      Use `PREFIX=/some/path make install` for a non-default prefix.
