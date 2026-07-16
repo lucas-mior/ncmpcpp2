@@ -720,6 +720,18 @@ test_app_binding_migration_c_safe_actions(void) {
     REQUIRE(app_binding_migration_action_is_c_safe(
         NCM_ACTION_RUN_ACTION));
     REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_SAVE_PLAYLIST));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_ADD));
+    REQUIRE(app_binding_migration_action_is_c_safe(NCM_ACTION_LOAD));
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_SET_CROSSFADE));
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_SET_VOLUME));
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE));
+    REQUIRE(app_binding_migration_action_is_c_safe(
+        NCM_ACTION_ADD_RANDOM_ITEMS));
+    REQUIRE(app_binding_migration_action_is_c_safe(
         NCM_ACTION_MOVE_SORT_ORDER_UP));
     REQUIRE(app_binding_migration_action_is_c_safe(
         NCM_ACTION_MOVE_SORT_ORDER_DOWN));
@@ -750,7 +762,7 @@ test_app_binding_migration_c_safe_actions(void) {
             playlist_rejected_global_actions[i],
             NCM_SCREEN_TYPE_PLAYLIST));
     }
-    REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
+    REQUIRE(app_binding_migration_action_is_c_safe_for_screen(
         NCM_ACTION_LOAD, NCM_SCREEN_TYPE_PLAYLIST));
     REQUIRE(!app_binding_migration_action_is_c_safe_for_screen(
         NCM_ACTION_START_SEARCHING, NCM_SCREEN_TYPE_PLAYLIST));
@@ -810,8 +822,6 @@ test_app_binding_migration_c_safe_actions(void) {
         NCM_ACTION_CLEAR_MAIN_PLAYLIST));
     REQUIRE(!app_binding_migration_action_is_c_safe(
         NCM_ACTION_CROP_MAIN_PLAYLIST));
-    REQUIRE(!app_binding_migration_action_is_c_safe(
-        NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE));
     REQUIRE(app_binding_migration_screen_is_c_only(
         NCM_SCREEN_TYPE_SEARCH_ENGINE));
     for (int32 i = 0; i < NCM_ARRAY_LEN(search_actions); i += 1) {
@@ -952,7 +962,7 @@ test_app_binding_migration_c_safe_actions(void) {
     ncm_binding_init(&binding);
     append_action(&binding, NCM_ACTION_QUIT);
     append_action(&binding, NCM_ACTION_SAVE_PLAYLIST);
-    REQUIRE(!app_binding_migration_binding_is_c_safe(&binding));
+    REQUIRE(app_binding_migration_binding_is_c_safe(&binding));
     REQUIRE(app_binding_migration_binding_is_hybrid_safe(&binding));
     ncm_binding_destroy(&binding);
 

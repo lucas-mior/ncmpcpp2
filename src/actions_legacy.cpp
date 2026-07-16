@@ -356,6 +356,9 @@ BaseAction *runtimeAction(enum NcmActionType type)
 
 bool execute(enum NcmActionType type)
 {
+	if (app_binding_migration_action_is_c_safe(type))
+		return ncm_action_runtime_run(nullptr, type);
+
 	BaseAction *action = runtimeAction(type);
 	return action != nullptr && action->execute();
 }
@@ -562,114 +565,6 @@ void PlayItem::run()
 
 
 
-
-
-
-bool Add::canBeRun()
-{
-	return true;
-}
-
-void Add::run()
-{
-
-	std::string path;
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << "Add: ";
-		if (!promptString(path))
-				return;
-	}
-
-	// confirm when one wants to add the whole database
-	if (path.empty())
-		if (!confirmAction("Are you sure you want to add the whole database?"))
-			return;
-
-	Statusbar::put() << "Adding...";
-	nc_window_refresh(ui_state_footer_window());
-	try
-	{
-		Mpd.Add(path);
-	}
-	catch (MPD::ServerError &err)
-	{
-		// If a path is not a file or directory, assume it is a playlist.
-		if (err.code() == MPD_SERVER_ERROR_NO_EXIST)
-			Mpd.LoadPlaylist(path);
-		else
-		{
-			Statusbar::printf("Error while adding item: %1%", err.what());
-			return;
-		}
-	}
-}
-
-bool Load::canBeRun()
-{
-	return true;
-}
-
-void Load::run()
-{
-
-	std::string path;
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << "Load playlist: ";
-		if (!promptString(path))
-				return;
-	}
-
-	Statusbar::put() << "Loading...";
-	nc_window_refresh(ui_state_footer_window());
-	Mpd.LoadPlaylist(path);
-}
-
-
-
-
-
-
-
-
-
-
-void SetCrossfade::run()
-{
-
-	Statusbar::ScopedLock slock;
-	Statusbar::put() << "Set crossfade to: ";
-	std::string input;
-	if (!promptString(input))
-		return;
-	auto crossfade = fromString<unsigned>(input);
-	lowerBoundCheck(crossfade, 0u);
-	Config.crossfade_time = crossfade;
-	Mpd.SetCrossfade(crossfade);
-}
-
-bool SetVolume::canBeRun()
-{
-	return ncm_status_state_volume() >= 0;
-}
-
-void SetVolume::run()
-{
-
-	unsigned volume;
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << "Set volume to: ";
-		std::string input;
-		if (!promptString(input))
-			return;
-		volume = fromString<unsigned>(input);
-		boundsCheck(volume, 0u, 100u);
-		Mpd.SetVolume(volume);
-	}
-	Statusbar::printf("Volume set to %1%%%", volume);
-}
 
 
 
@@ -1106,90 +1001,6 @@ void PreviousFoundItem::run()
 }
 
 
-void ToggleReplayGainMode::run()
-{
-
-	char rgm = 0;
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << "Replay gain mode? "
-		<< "[" << NC_FORMAT_BOLD << 'o' << NC_FORMAT_NO_BOLD << "ff"
-		<< "/" << NC_FORMAT_BOLD << 't' << NC_FORMAT_NO_BOLD << "rack"
-		<< "/" << NC_FORMAT_BOLD << 'a' << NC_FORMAT_NO_BOLD << "lbum"
-		<< "] ";
-		char values[] = {'t', 'a', 'o'};
-		if (!promptOneOf(values, static_cast<int32>(sizeof(values)), rgm))
-			return;
-	}
-	switch (rgm)
-	{
-		case 't':
-			Mpd.SetReplayGainMode(MPD::rgmTrack);
-			break;
-		case 'a':
-			Mpd.SetReplayGainMode(MPD::rgmAlbum);
-			break;
-		case 'o':
-			Mpd.SetReplayGainMode(MPD::rgmOff);
-			break;
-		default: // impossible
-			Statusbar::printf("Internal error: invalid replay gain mode: %1%",
-			                  rgm);
-			return;
-	}
-	Statusbar::printf("Replay gain mode: %1%", Mpd.GetReplayGainMode());
-}
-
-void AddRandomItems::run()
-{
-		char rnd_type = 0;
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << "Add random? "
-		<< "[" << NC_FORMAT_BOLD << 's' << NC_FORMAT_NO_BOLD << "ongs"
-		<< "/" << NC_FORMAT_BOLD << 'a' << NC_FORMAT_NO_BOLD << "rtists"
-		<< "/" << "album" << NC_FORMAT_BOLD << 'A' << NC_FORMAT_NO_BOLD << "rtists"
-		<< "/" << "al" << NC_FORMAT_BOLD << 'b' << NC_FORMAT_NO_BOLD << "ums"
-		<< "] ";
-		char values[] = {'s', 'a', 'A', 'b'};
-		if (!promptOneOf(values, static_cast<int32>(sizeof(values)), rnd_type))
-			return;
-	}
-
-	mpd_tag_type tag_type = MPD_TAG_ARTIST;
-	std::string tag_type_str ;
-	if (rnd_type != 's')
-	{
-		tag_type = ncm_char_to_tag_type(rnd_type);
-		tag_type_str = lowercaseAscii(ncm_tag_type_name(tag_type));
-	}
-	else
-		tag_type_str = "song";
-
-	unsigned number;
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << "Number of random " << tag_type_str << "s: ";
-		std::string input;
-		if (!promptString(input))
-			return;
-		number = fromString<unsigned>(input);
-	}
-	if (number > 0)
-	{
-		bool success;
-		if (rnd_type == 's')
-			success = Mpd.AddRandomSongs(number, Config.random_exclude_pattern,
-			                          &global_random);
-		else
-			success = Mpd.AddRandomTag(tag_type, number, &global_random);
-		if (success)
-			Statusbar::printf("%1% random %2%%3% added to playlist", number, tag_type_str, number == 1 ? "" : "s");
-	}
-}
-
-
-
 bool ToggleLibraryTagType::canBeRun()
 {
 	NativeMediaLibraryScreen *library;
@@ -1374,11 +1185,7 @@ void populateActions()
 	insert_action(new Actions::PreviousColumn());
 	insert_action(new Actions::NextColumn());
 	insert_action(new Actions::AddItemToPlaylist());
-	insert_action(new Actions::Add());
-	insert_action(new Actions::Load());
 	insert_action(new Actions::PlayItem());
-	insert_action(new Actions::SetCrossfade());
-	insert_action(new Actions::SetVolume());
 	insert_action(new Actions::EditSong());
 	insert_action(new Actions::EditLibraryTag());
 	insert_action(new Actions::EditLibraryAlbum());
@@ -1390,8 +1197,6 @@ void populateActions()
 	insert_action(new Actions::Find());
 	insert_action(new Actions::NextFoundItem());
 	insert_action(new Actions::PreviousFoundItem());
-	insert_action(new Actions::ToggleReplayGainMode());
-	insert_action(new Actions::AddRandomItems());
 	insert_action(new Actions::ToggleLibraryTagType());
 	insert_action(new Actions::ShowArtistInfo());
 	insert_action(new Actions::NextScreen());
