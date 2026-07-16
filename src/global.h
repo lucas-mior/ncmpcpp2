@@ -6,10 +6,6 @@
 #include "c/ncm_random.h"
 #include "c/ncm_time.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 extern bool global_show_messages;
 extern bool global_seeking_in_progress;
 extern NcmBuffer global_volume_state;
@@ -26,9 +22,5 @@ void global_volume_state_set(char *string, int32 string_len);
 void global_volume_state_append(char *string, int32 string_len);
 char *global_volume_state_cstr(void);
 int32 global_volume_state_len(void);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCMPCPP_GLOBAL_H */
