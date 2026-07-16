@@ -1,12 +1,15 @@
 #include <assert.h>
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_format.h"
 #include "c/ncm_base.h"
+#include "c/ncm_fs.h"
 #include "c/ncm_string.h"
 #include "screens/nc_browser.h"
 #include "settings.h"
@@ -71,6 +74,14 @@ static void browser_test_assert_item_path(NativeBrowserScreen *screen,
                                           int64 pos,
                                           enum NcmMpdItemKind kind,
                                           char *path, int32 path_len);
+static bool browser_test_has_item_path(NativeBrowserScreen *screen,
+                                       enum NcmMpdItemKind kind,
+                                       char *path, int32 path_len);
+static void browser_test_make_path(NcmBuffer *path, char *root,
+                                   int32 root_len, char *name,
+                                   int32 name_len);
+static void browser_test_write_file(char *path);
+static void browser_test_remove_path(char *path);
 static NcWindow *test_bridge_active_window(void *user);
 static void test_bridge_refresh(void *user);
 static void test_bridge_refresh_window(void *user);
@@ -1281,6 +1292,77 @@ browser_test_assert_item_path(NativeBrowserScreen *screen, int64 pos,
     return;
 }
 
+static bool
+browser_test_has_item_path(NativeBrowserScreen *screen,
+                           enum NcmMpdItemKind kind, char *path,
+                           int32 path_len) {
+    NcmStringView view;
+    NcmMpdItem *item;
+    NcMenu *menu;
+
+    menu = native_browser_screen_menu(screen);
+    for (int64 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
+        item = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i);
+        if (ncm_mpd_item_kind(item) != kind) {
+            continue;
+        }
+        ncm_string_view_clear(&view);
+        switch (kind) {
+        case NCM_MPD_ITEM_DIRECTORY:
+            if (!ncm_directory_path_view(ncm_mpd_item_directory(item),
+                                         &view)) {
+                continue;
+            }
+            break;
+        case NCM_MPD_ITEM_SONG:
+            if (!ncm_song_uri_view(ncm_mpd_item_song(item), 0, &view)) {
+                continue;
+            }
+            break;
+        case NCM_MPD_ITEM_PLAYLIST:
+            if (!ncm_playlist_path_view(ncm_mpd_item_playlist(item),
+                                        &view)) {
+                continue;
+            }
+            break;
+        case NCM_MPD_ITEM_UNKNOWN:
+            break;
+        }
+        if (ncm_string_equal(view.data, view.len, path, path_len)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void
+browser_test_make_path(NcmBuffer *path, char *root, int32 root_len,
+                       char *name, int32 name_len) {
+    ncm_buffer_clear(path);
+    assert(ncm_fs_join(path, root, root_len, name, name_len));
+    return;
+}
+
+static void
+browser_test_write_file(char *path) {
+    FILE *file;
+
+    file = fopen(path, "wb");
+    assert(file != NULL);
+    assert(fputs("test", file) >= 0);
+    assert(fclose(file) == 0);
+    return;
+}
+
+static void
+browser_test_remove_path(char *path) {
+    if (remove(path) == 0) {
+        return;
+    }
+    assert(rmdir(path) == 0);
+    return;
+}
+
 static NcWindow *
 test_bridge_active_window(void *user) {
     (void)user;
@@ -1361,7 +1443,91 @@ browser_parity_test_pending(char *name) {
 
 static void
 test_browser_local_browsing_parity(void) {
-    BROWSER_PARITY_TEST_PENDING(browser_local_browsing_parity);
+    NativeBrowserScreen screen;
+    BrowserFormatFixture fixture;
+    NcmBuffer path;
+    char root[128];
+    int32 root_len;
+    bool old_show_hidden;
+
+    browser_format_fixture_begin(&fixture);
+    old_show_hidden = Config.local_browser_show_hidden_files;
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    ncm_buffer_init(&path);
+
+    root_len = snprintf(root, SIZEOF(root),
+                         "/tmp/ncmpcpp2-browser-local-%lld",
+                         (llong)getpid());
+    assert(root_len > 0);
+    assert(root_len < (int32)SIZEOF(root));
+    assert(ncm_fs_mkdir_all(root, root_len, NULL));
+
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album"));
+    assert(ncm_fs_mkdir_all(path.data, path.len, NULL));
+    browser_test_make_path(&path, root, root_len, LIT_ARGS(".hidden-dir"));
+    assert(ncm_fs_mkdir_all(path.data, path.len, NULL));
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Track.flac"));
+    browser_test_write_file(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS(".hidden.mp3"));
+    browser_test_write_file(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("notes.txt"));
+    browser_test_write_file(path.data);
+
+    native_browser_screen_set_local(&screen, true);
+    assert(native_browser_screen_set_current_directory(&screen,
+                                                       root, root_len));
+    assert(native_browser_screen_add_supported_extension(&screen,
+                                                         LIT_ARGS(".flac")));
+    assert(native_browser_screen_add_supported_extension(&screen,
+                                                         LIT_ARGS(".mp3")));
+
+    Config.local_browser_show_hidden_files = false;
+    Config.browser_sort_mode = NCM_SORT_MODE_TYPE;
+    nc_screen_update(native_browser_screen_base(&screen));
+    assert(!native_browser_screen_update_requested(&screen));
+    assert(Config.browser_sort_mode == NCM_SORT_MODE_NAME);
+    assert(nc_menu_all_item_count(native_browser_screen_menu(&screen)) == 3);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS(".."));
+    browser_test_assert_item_path(&screen, 0, NCM_MPD_ITEM_DIRECTORY,
+                                  path.data, path.len);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album"));
+    browser_test_assert_item_path(&screen, 1, NCM_MPD_ITEM_DIRECTORY,
+                                  path.data, path.len);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Track.flac"));
+    browser_test_assert_item_path(&screen, 2, NCM_MPD_ITEM_SONG,
+                                  path.data, path.len);
+
+    Config.local_browser_show_hidden_files = true;
+    native_browser_screen_request_update(&screen);
+    nc_screen_update(native_browser_screen_base(&screen));
+    assert(nc_menu_all_item_count(native_browser_screen_menu(&screen)) == 5);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS(".hidden-dir"));
+    assert(browser_test_has_item_path(&screen, NCM_MPD_ITEM_DIRECTORY,
+                                      path.data, path.len));
+    browser_test_make_path(&path, root, root_len, LIT_ARGS(".hidden.mp3"));
+    assert(browser_test_has_item_path(&screen, NCM_MPD_ITEM_SONG,
+                                      path.data, path.len));
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("notes.txt"));
+    assert(!browser_test_has_item_path(&screen, NCM_MPD_ITEM_SONG,
+                                       path.data, path.len));
+
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("notes.txt"));
+    browser_test_remove_path(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS(".hidden.mp3"));
+    browser_test_remove_path(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Track.flac"));
+    browser_test_remove_path(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS(".hidden-dir"));
+    browser_test_remove_path(path.data);
+    browser_test_make_path(&path, root, root_len, LIT_ARGS("Album"));
+    browser_test_remove_path(path.data);
+    browser_test_remove_path(root);
+
+    Config.local_browser_show_hidden_files = old_show_hidden;
+    ncm_buffer_destroy(&path);
+    native_browser_screen_destroy(&screen);
+    browser_format_fixture_end(&fixture);
     return;
 }
 
