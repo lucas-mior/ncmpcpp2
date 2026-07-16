@@ -15,6 +15,17 @@
 #include "cbase/base_macros.h"
 #include "ui_state.h"
 
+#if defined(__GNUC__)
+extern bool settings_legacy_runtime_sync_configuration(void)
+    __attribute__((weak));
+extern bool actions_legacy_runtime_execute_binding(NcmBinding *binding)
+    __attribute__((weak));
+extern bool actions_legacy_runtime_execute_action(enum NcmActionType type)
+    __attribute__((weak));
+extern bool actions_legacy_runtime_exit_requested(void)
+    __attribute__((weak));
+#endif
+
 /*
  * Temporary app runtime bridge.
  *
@@ -32,6 +43,10 @@ static void app_legacy_bridge_set_status_observers(void);
 static void app_legacy_bridge_set_resize_flags(void);
 static void app_legacy_bridge_dispatch_lyrics_jobs(void);
 static void app_legacy_bridge_refresh_header_if_due(void);
+static bool app_legacy_bridge_sync_legacy_configuration(void);
+static bool app_legacy_bridge_execute_legacy_binding(NcmBinding *binding);
+static bool app_legacy_bridge_execute_legacy_action(enum NcmActionType type);
+static bool app_legacy_bridge_legacy_exit_requested(void);
 
 static NcmTimePoint app_legacy_bridge_header_refresh_time;
 
@@ -112,9 +127,49 @@ app_legacy_bridge_refresh_header_if_due(void) {
     return;
 }
 
+static bool
+app_legacy_bridge_sync_legacy_configuration(void) {
+#if defined(__GNUC__)
+    if (settings_legacy_runtime_sync_configuration == NULL) {
+        return true;
+    }
+#endif
+    return settings_legacy_runtime_sync_configuration();
+}
+
+static bool
+app_legacy_bridge_execute_legacy_binding(NcmBinding *binding) {
+#if defined(__GNUC__)
+    if (actions_legacy_runtime_execute_binding == NULL) {
+        return false;
+    }
+#endif
+    return actions_legacy_runtime_execute_binding(binding);
+}
+
+static bool
+app_legacy_bridge_execute_legacy_action(enum NcmActionType type) {
+#if defined(__GNUC__)
+    if (actions_legacy_runtime_execute_action == NULL) {
+        return false;
+    }
+#endif
+    return actions_legacy_runtime_execute_action(type);
+}
+
+static bool
+app_legacy_bridge_legacy_exit_requested(void) {
+#if defined(__GNUC__)
+    if (actions_legacy_runtime_exit_requested == NULL) {
+        return false;
+    }
+#endif
+    return actions_legacy_runtime_exit_requested();
+}
+
 bool
 ncmpcpp_legacy_sync_configuration(void) {
-    return settings_legacy_runtime_sync_configuration();
+    return app_legacy_bridge_sync_legacy_configuration();
 }
 
 static bool
@@ -128,7 +183,7 @@ app_legacy_bridge_execute_binding_action_hybrid(
         if (app_binding_migration_action_is_c_safe(action->type)) {
             return ncm_action_runtime_run(NULL, action->type);
         }
-        return actions_legacy_runtime_execute_action(action->type);
+        return app_legacy_bridge_execute_legacy_action(action->type);
     case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
         return ncm_binding_action_can_run(action, runtime);
     case NCM_BINDING_ACTION_PUSH_CHARACTERS:
@@ -496,7 +551,7 @@ ncmpcpp_legacy_execute_binding(NcmBinding *binding) {
         return app_legacy_bridge_execute_binding_hybrid(binding);
     }
 
-    return actions_legacy_runtime_execute_binding(binding);
+    return app_legacy_bridge_execute_legacy_binding(binding);
 }
 
 bool
@@ -512,11 +567,11 @@ ncmpcpp_legacy_execute_action(enum NcmActionType type) {
         return false;
     }
 
-    return actions_legacy_runtime_execute_action(type);
+    return app_legacy_bridge_execute_legacy_action(type);
 }
 
 bool
 ncmpcpp_legacy_exit_requested(void) {
-    return actions_legacy_runtime_exit_requested()
+    return app_legacy_bridge_legacy_exit_requested()
         || ncm_action_runtime_exit_requested(NULL);
 }
