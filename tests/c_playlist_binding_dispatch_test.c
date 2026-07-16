@@ -3,7 +3,6 @@
 
 #include "app_legacy_bridge.h"
 #include "bindings.h"
-#include "settings_legacy_runtime.h"
 
 typedef struct TestState {
     enum NcmActionType can_run_types[8];
@@ -11,7 +10,6 @@ typedef struct TestState {
     int32 can_run_count;
     int32 run_count;
     int32 legacy_action_count;
-    int32 unrelated_legacy_count;
 } TestState;
 
 static TestState test_state;
@@ -43,13 +41,6 @@ __wrap_ncm_action_runtime_run(NcmActionRuntime *runtime,
     (void)runtime;
     test_state.run_types[test_state.run_count++] = type;
     return true;
-}
-
-
-bool
-settings_legacy_runtime_sync_configuration(void) {
-    test_state.unrelated_legacy_count += 1;
-    return false;
 }
 
 
@@ -93,7 +84,6 @@ test_playlist_binding_uses_c_runtime(void) {
     assert(test_state.run_types[0] == NCM_ACTION_PLAY_ITEM);
     assert(test_state.run_types[1] == NCM_ACTION_QUIT);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -106,7 +96,6 @@ test_playlist_action_uses_c_runtime(void) {
     assert(test_state.run_count == 1);
     assert(test_state.run_types[0] == NCM_ACTION_PLAY_ITEM);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -126,7 +115,6 @@ test_reset_search_binding_uses_c_runtime(void) {
     assert(test_state.run_count == 1);
     assert(test_state.run_types[0] == NCM_ACTION_RESET_SEARCH_ENGINE);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
@@ -140,7 +128,6 @@ test_reset_search_action_uses_c_runtime(void) {
     assert(test_state.run_count == 1);
     assert(test_state.run_types[0] == NCM_ACTION_RESET_SEARCH_ENGINE);
     assert(test_state.legacy_action_count == 0);
-    assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 

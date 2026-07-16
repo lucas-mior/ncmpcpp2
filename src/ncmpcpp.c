@@ -219,11 +219,6 @@ main(int32 argc, char **argv) {
         app_destroy_state();
         exit(EXIT_SUCCESS);
     }
-    if (!ncmpcpp_legacy_sync_configuration()) {
-        app_destroy_state();
-        exit(EXIT_FAILURE);
-    }
-
     atexit(app_at_exit);
     if (!app_redirect_stderr()) {
         fprintf(stderr, "warning: could not redirect stderr: %s\n",
