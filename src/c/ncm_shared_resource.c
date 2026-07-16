@@ -5,6 +5,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 static void ncm_shared_resource_set_pthread_error(NcmError *error,
                                                   int32 code,

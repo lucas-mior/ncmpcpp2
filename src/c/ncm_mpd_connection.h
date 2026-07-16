@@ -9,10 +9,6 @@
 #include "c/ncm_playlist.h"
 #include "c/ncm_song.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcmMpdConnection {
     struct mpd_connection *mpd;
     NcmError error;
@@ -411,9 +407,5 @@ bool ncm_mpd_connection_load_playlist(NcmMpdConnection *connection,
                                       bool *loaded);
 bool ncm_mpd_connection_save_playlist(NcmMpdConnection *connection,
                                       char *playlist);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_MPD_CONNECTION_H */

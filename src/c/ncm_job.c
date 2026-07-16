@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 static void *ncm_job_queue_thread_main(void *user);
 static void ncm_job_set_errno_error(NcmError *error, int32 code,

@@ -5,10 +5,6 @@
 #include "c/ncm_song.h"
 #include "c/ncm_tags.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 typedef struct NcmMutableSongTag {
     char *original;
     char *value;
@@ -89,9 +85,5 @@ int64 ncm_mutable_song_mtime(NcmMutableSong *song);
 bool ncm_mutable_song_is_modified(NcmMutableSong *song);
 void ncm_mutable_song_clear_modifications(NcmMutableSong *song);
 bool ncm_mutable_song_write(NcmMutableSong *song, char *music_dir);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_MUTABLE_SONG_H */

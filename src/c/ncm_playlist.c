@@ -3,6 +3,7 @@
 #include <mpd/client.h>
 
 #include "c/ncm_base.h"
+#include "cbase/cbase.h"
 
 static int32 ncm_playlist_cstring_len(char *string);
 

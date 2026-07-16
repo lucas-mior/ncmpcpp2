@@ -2,6 +2,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 static void nc_menu_owned_string_destroy(char **data, int32 *len,
                                          int32 *cap);

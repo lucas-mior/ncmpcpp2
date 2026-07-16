@@ -9,10 +9,6 @@
 #include "c/ncm_sample_buffer.h"
 #include "c/ncm_song.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 NCM_ARRAY_DECLARE(ncm_string_view_array,
                   NcmStringViewArray,
                   NcmStringView)
@@ -37,9 +33,5 @@ NCM_ARRAY_DECLARE(ncm_mpd_item_array,
 NCM_ARRAY_DECLARE(ncm_sample_buffer_array,
                   NcmSampleBufferArray,
                   NcmSampleBuffer)
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_APP_ARRAYS_H */

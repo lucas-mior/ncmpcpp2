@@ -5,6 +5,7 @@
 #include "c/ncm_base.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
+#include "cbase/cbase.h"
 
 #define NCM_WIDE_REPLACEMENT_CHARACTER 0xfffdu
 

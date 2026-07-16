@@ -9,10 +9,6 @@
 #include "c/ncm_playlist.h"
 #include "curses/nc_buffer.h"
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 struct Column;
 
 void ncm_display_song_row(NcBuffer *buffer, NcmFormatAst *format,
@@ -33,9 +29,5 @@ void ncm_display_item_row(NcBuffer *buffer, NcmMpdItem *item,
                           NcmFormatAst *song_format, uint32 flags,
                           char *playlist_prefix,
                           int32 playlist_prefix_len);
-
-#if defined(__cplusplus)
-}
-#endif
 
 #endif /* NCM_DISPLAY_H */
