@@ -142,6 +142,9 @@ bool native_browser_screen_current_song(NativeBrowserScreen *screen,
                                         NcmSong *song);
 bool native_browser_screen_selected_songs(NativeBrowserScreen *screen,
                                           NcmSongArray *songs);
+bool native_browser_screen_delete_items(NativeBrowserScreen *screen,
+                                        NcmMpdClient *client,
+                                        NcmError *error);
 bool native_browser_screen_enter_directory(NativeBrowserScreen *screen);
 bool native_browser_screen_activate_current(NativeBrowserScreen *screen);
 bool native_browser_screen_go_to_parent(NativeBrowserScreen *screen);
