@@ -25,6 +25,7 @@
 #include <string>
 #include "actions.h"
 #include "curses/window.h"
+#include "mpdpp.h"
 
 namespace Actions {
 
