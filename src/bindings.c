@@ -1381,7 +1381,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
     char *path_copy;
     int32 path_cap;
     char *line;
-    int64 line_cap;
+    size_t line_cap;
     int32 in_progress;
     int32 line_no;
     bool ok;

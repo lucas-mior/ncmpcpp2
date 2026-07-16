@@ -507,7 +507,7 @@ ncm_mpd_connection_recv_string_list_tag(NcmMpdConnection *connection,
             break;
         }
 
-        ok = ncm_mpd_string_list_push(strings, pair->value);
+        ok = ncm_mpd_string_list_push(strings, (char *)pair->value);
         mpd_return_pair(connection->mpd, pair);
         if (!ok) {
             ncm_mpd_connection_set_error(
