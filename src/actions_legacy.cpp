@@ -26,7 +26,6 @@
 #include "curses/menu_impl.h"
 #include "macro_utilities.h"
 #include "screens/native_c_screens.h"
-#include "utility/readline.h"
 #include "utility/string.h"
 #include "utility/string_format.h"
 #include "utility/utf8.h"
@@ -149,18 +148,6 @@ bool addNativeMediaLibraryItemToPlaylist(bool play)
 }
 
 
-void nativeLyricsPrintConsumerMessage()
-{
-	NcmBuffer message;
-
-	native_lyrics_screen_dispatch_jobs(native_c_screen_lyrics());
-	ncm_buffer_init(&message);
-	if (native_lyrics_screen_try_take_consumer_message(
-	        native_c_screen_lyrics(), &message))
-		Statusbar::print(std::string(message.data, message.len));
-	ncm_buffer_destroy(&message);
-}
-
 void nativeLyricsPrintFetcher()
 {
 	NcmLyricsFetcherDef *fetcher;
@@ -203,24 +190,6 @@ void handleServerError(MPD::ServerError &e)
 	    const_cast<char *>(e.what()), -1);
 }
 
-void requestMediaLibraryDatabaseUpdate(void *)
-{
-	native_media_library_screen_request_database_update(
-	    native_c_screen_media_library());
-}
-
-void refreshPlaylistRelatedInactiveColumns(void *)
-{
-	if (app_controller_is_screen_visible(
-	        native_c_screen_media_library_native()))
-		native_media_library_screen_refresh_inactive_songs(
-		    native_c_screen_media_library());
-
-	if (app_controller_is_screen_visible(
-	        native_c_screen_playlist_editor_native()))
-		nc_screen_refresh(native_c_screen_playlist_editor_native());
-}
-
 bool highlightPlaylistMpdPosition(int32 position)
 {
 	if (position < 0)
@@ -233,18 +202,6 @@ bool highlightPlaylistMpdPosition(int32 position)
 		return false;
 	}
 	return true;
-}
-
-void traceStatus(bool update_timer, bool update_window_timeout)
-{
-	NcmError error = {};
-
-	ncm_status_set_database_update_observer(
-	    requestMediaLibraryDatabaseUpdate, nullptr);
-	ncm_status_set_playlist_update_observer(
-	    refreshPlaylistRelatedInactiveColumns, nullptr);
-	ncm_error_clear(&error);
-	ncm_status_trace(&global_mpd, update_timer, update_window_timeout, &error);
 }
 
 bool statusbarMainPromptHook(char *text, void *)
@@ -428,68 +385,6 @@ namespace Actions {
 
 bool ExitMainLoop = false;
 
-void initializeScreens()
-{
-	app_controller_init();
-	native_c_screens_init_all();
-
-	ncm_status_set_database_update_observer(
-	    requestMediaLibraryDatabaseUpdate, nullptr);
-	ncm_status_set_playlist_update_observer(
-	    refreshPlaylistRelatedInactiveColumns, nullptr);
-	native_c_screens_register_native_only();
-	native_c_screen_lyrics_register();
-}
-
-void setResizeFlags()
-{
-	native_c_screens_request_registered_resize();
-	native_c_screen_lyrics_set_resize();
-
-}
-
-void resizeScreen(bool reload_main_window)
-{
-	// update internal screen dimensions
-	if (reload_main_window)
-	{
-		rl_resize_terminal();
-		endwin();
-		refresh();
-		// Remove KEY_RESIZE from input queue, I'm not sure how these make it in.
-		getch();
-	}
-
-	ncmpcpp_legacy_set_windows_dimensions();
-
-	setResizeFlags();
-
-	app_controller_resize_visible_screens();
-
-	if (Config.header_visibility || Config.design == NCM_DESIGN_ALTERNATIVE)
-	{
-		nc_window_resize(ui_state_header_window(), COLS,
-		                 ncmpcpp_legacy_header_height());
-	}
-
-	nc_window_move_to(ui_state_footer_window(), 0,
-	                  ncmpcpp_legacy_footer_start_y());
-	nc_window_resize(ui_state_footer_window(), COLS,
-	                 ncmpcpp_legacy_footer_height());
-
-	app_controller_refresh_visible_screens();
-
-	ncm_status_changes_elapsed_time(false);
-	ncm_status_changes_player_state();
-	// Note: routines for drawing separator if alternative user
-	// interface is active and header is hidden are placed in
-	// NcmpcppStatusChanges.StatusFlags
-	ncm_status_changes_flags();
-	drawHeader();
-	nc_window_refresh(ui_state_footer_window());
-	refresh();
-}
-
 bool confirmAction(const std::string &description)
 {
 	Statusbar::ScopedLock slock;
@@ -553,49 +448,6 @@ bool execute(enum NcmActionType type)
 {
 	BaseAction *action = runtimeAction(type);
 	return action != nullptr && action->execute();
-}
-
-UpdateEnvironment::UpdateEnvironment()
-: BaseAction(Type::UpdateEnvironment)
-, m_past()
-{ }
-
-void UpdateEnvironment::run(bool update_timer, bool refresh_window, bool mpd_sync)
-{
-
-	// update timer, status if necessary etc.
-	traceStatus(update_timer, true);
-
-	// show lyrics consumer notification if appropriate
-	nativeLyricsPrintConsumerMessage();
-
-	// header stuff
-	if ((native_c_screen_playlist_is_current()
-	     || native_c_screen_browser_is_current()
-	     || native_c_screen_lyrics_is_current())
-	&&  (global_timer_elapsed_ms(m_past) > 500)
-	)
-	{
-		drawHeader();
-		m_past = global_timer;
-	}
-
-	if (refresh_window)
-		app_controller_refresh_current_window();
-
-	// We want to synchronize with MPD during execution of an action chain.
-	if (mpd_sync)
-	{
-		NcmError error;
-
-		ncm_error_clear(&error);
-		(void)ncm_status_update_from_noidle(&global_mpd, nullptr, &error);
-	}
-}
-
-void UpdateEnvironment::run()
-{
-	run(true, true, true);
 }
 
 bool MouseEvent::canBeRun()
@@ -734,8 +586,7 @@ void ToggleInterface::run()
 			    ui_state_statusbar_visibility_baseline();
 			break;
 	}
-	ncmpcpp_legacy_set_windows_dimensions();
-	resizeScreen(false);
+	ncmpcpp_legacy_resize_screen(false);
 	// unlock progressbar
 	Progressbar::ScopedLock();
 	ncm_status_changes_mixer();
@@ -1424,7 +1275,8 @@ void ToggleScreenLock::run()
 	if (screenLegacyLocked() != nullptr)
 	{
 		BaseScreen::unlock();
-		Actions::setResizeFlags();
+		native_c_screens_request_registered_resize();
+		native_c_screen_lyrics_set_resize();
 		app_controller_resize_current_screen();
 		Statusbar::print("Screen unlocked");
 	}
@@ -2212,7 +2064,6 @@ void populateActions()
 	auto insert_action = [](Actions::BaseAction *a) {
 		AvailableActions.at(static_cast<size_t>(a->type())).reset(a);
 	};
-	insert_action(new Actions::UpdateEnvironment());
 	insert_action(new Actions::MouseEvent());
 	insert_action(new Actions::ScrollUp());
 	insert_action(new Actions::ScrollDown());
@@ -2396,70 +2247,9 @@ void listsChangeFinisher()
 
 extern "C" {
 
-void actions_legacy_runtime_initialize_screens(void)
-{
-	Actions::initializeScreens();
-}
-
-void actions_legacy_runtime_resize_screen(bool reload_main_window)
-{
-	try
-	{
-		Actions::resizeScreen(reload_main_window);
-	}
-	catch (MPD::ClientError &e)
-	{
-		handleClientError(e);
-	}
-	catch (MPD::ServerError &e)
-	{
-		handleServerError(e);
-	}
-	catch (std::exception &e)
-	{
-		Statusbar::printf("Unexpected error: %1%", e.what());
-	}
-}
-
 bool actions_legacy_runtime_playlist_highlight_mpd_position(int32 position)
 {
 	return highlightPlaylistMpdPosition(position);
-}
-
-void actions_legacy_runtime_browser_fetch_supported_extensions(void)
-{
-	native_c_screen_browser_fetch_supported_extensions();
-}
-
-bool actions_legacy_runtime_update_environment(bool update_timer,
-                                        bool refresh_window,
-                                        bool mpd_sync)
-{
-	try
-	{
-		auto action = Actions::runtimeAction(
-		    NCM_ACTION_UPDATE_ENVIRONMENT);
-		auto update_environment = static_cast<Actions::UpdateEnvironment *>(
-		    action);
-
-		if (update_environment == nullptr)
-			return false;
-		update_environment->run(update_timer, refresh_window, mpd_sync);
-		return true;
-	}
-	catch (MPD::ClientError &e)
-	{
-		handleClientError(e);
-	}
-	catch (MPD::ServerError &e)
-	{
-		handleServerError(e);
-	}
-	catch (std::exception &e)
-	{
-		Statusbar::printf("Unexpected error: %1%", e.what());
-	}
-	return false;
 }
 
 bool actions_legacy_runtime_search_current_screen(

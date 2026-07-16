@@ -24,7 +24,6 @@
 #include <map>
 #include <string>
 #include "actions.h"
-#include "c/ncm_time.h"
 #include "curses/window.h"
 #include "interfaces.h"
 
@@ -166,10 +165,6 @@ enum class Type
 	_numberOfActions // needed to dynamically calculate size of action array
 };
 
-void initializeScreens();
-void setResizeFlags();
-void resizeScreen(bool reload_main_window);
-
 bool confirmAction(const std::string &description);
 
 bool isMPDMusicDirSet();
@@ -203,18 +198,6 @@ private:
 
 BaseAction *runtimeAction(enum NcmActionType type);
 bool execute(enum NcmActionType type);
-
-struct UpdateEnvironment: BaseAction
-{
-	UpdateEnvironment();
-
-	void run(bool update_status, bool refresh_window, bool mpd_sync);
-
-private:
-	NcmTimePoint m_past;
-
-	virtual void run() override;
-};
 
 struct MouseEvent: BaseAction
 {
