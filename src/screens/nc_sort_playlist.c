@@ -605,8 +605,8 @@ sort_dialog_label_set(NcEditorSortRow *row, char *label, int32 label_len) {
         return true;
     }
     row->action.label_cap = label_len + 1;
-    row->action.label = ncm_malloc(row->action.label_cap);
-    ncm_memcpy(row->action.label, label, label_len);
+    row->action.label = cbase_malloc(row->action.label_cap);
+    cbase_memcpy(row->action.label, label, label_len);
     row->action.label[label_len] = '\0';
     row->action.label_len = label_len;
     return true;

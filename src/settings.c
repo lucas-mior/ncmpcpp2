@@ -531,14 +531,14 @@ settings_string_set(char **data, int32 *len, int32 *cap,
         value_len = 0;
     }
     new_cap = value_len + 1;
-    new_data = ncm_malloc(new_cap);
+    new_data = cbase_malloc(new_cap);
     if (value_len > 0) {
-        ncm_memcpy(new_data, value, value_len);
+        cbase_memcpy(new_data, value, value_len);
     }
     new_data[value_len] = '\0';
 
     if (*data != NULL) {
-        ncm_free(*data, *cap);
+        cbase_free(*data, *cap);
     }
     *data = new_data;
     *len = value_len;
@@ -973,14 +973,14 @@ settings_column_append_type(Column *column, char ch) {
 
     new_len = column->type_len + 1;
     new_cap = new_len + 1;
-    new_data = ncm_malloc(new_cap);
+    new_data = cbase_malloc(new_cap);
     if (column->type_len > 0) {
-        ncm_memcpy(new_data, column->type, column->type_len);
+        cbase_memcpy(new_data, column->type, column->type_len);
     }
     new_data[column->type_len] = ch;
     new_data[new_len] = '\0';
     if (column->type != NULL) {
-        ncm_free(column->type, column->type_cap);
+        cbase_free(column->type, column->type_cap);
     }
     column->type = new_data;
     column->type_len = new_len;

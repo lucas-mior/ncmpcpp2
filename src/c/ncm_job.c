@@ -55,7 +55,7 @@ ncm_job_array_reserve(NcmJob **items, int32 *cap,
         new_cap *= 2;
     }
 
-    *items = ncm_realloc_array(*items, old_cap, new_cap, SIZEOF(**items));
+    *items = cbase_realloc_array(*items, old_cap, new_cap, SIZEOF(**items));
     *cap = new_cap;
     return true;
 }
@@ -101,7 +101,7 @@ ncm_job_queue_pop_pending_locked(NcmJobQueue *queue, NcmJob *job) {
 
     *job = queue->pending[0];
     if (queue->pending_len > 1) {
-        ncm_memmove(&queue->pending[0], &queue->pending[1],
+        cbase_memmove(&queue->pending[0], &queue->pending[1],
                     (queue->pending_len - 1)*SIZEOF(*queue->pending));
     }
     queue->pending_len -= 1;
@@ -253,7 +253,7 @@ ncm_job_queue_dispatch_completed(NcmJobQueue *queue) {
         ncm_job_destroy(&items[i]);
     }
     if (items) {
-        ncm_free(items, cap*SIZEOF(*items));
+        cbase_free(items, cap*SIZEOF(*items));
     }
 
     return len;
@@ -289,10 +289,10 @@ ncm_job_queue_destroy(NcmJobQueue *queue) {
     ncm_job_array_clear(queue->pending, queue->pending_len);
     ncm_job_array_clear(queue->completed, queue->completed_len);
     if (queue->pending) {
-        ncm_free(queue->pending, queue->pending_cap*SIZEOF(*queue->pending));
+        cbase_free(queue->pending, queue->pending_cap*SIZEOF(*queue->pending));
     }
     if (queue->completed) {
-        ncm_free(queue->completed,
+        cbase_free(queue->completed,
                  queue->completed_cap*SIZEOF(*queue->completed));
     }
     pthread_cond_destroy(&queue->cond);

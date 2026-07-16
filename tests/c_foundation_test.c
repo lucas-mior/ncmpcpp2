@@ -168,7 +168,7 @@ test_buffer(void) {
     REQUIRE_INT(buffer.len, 0);
     REQUIRE_INT(buffer.cap, 0);
 
-    ncm_free(stolen, stolen_cap);
+    cbase_free(stolen, stolen_cap);
     ncm_buffer_destroy(&moved);
     ncm_buffer_destroy(&copy);
     ncm_buffer_destroy(&buffer);

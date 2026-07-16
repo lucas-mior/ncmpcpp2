@@ -63,7 +63,7 @@ match_mpd_song_index(NcmSong *song, int32 idx, void *user) {
 static void
 copy_int_row(void *dest, void *source, void *user) {
     (void)user;
-    ncm_memcpy(dest, source, SIZEOF(IntRow));
+    cbase_memcpy(dest, source, SIZEOF(IntRow));
     return;
 }
 

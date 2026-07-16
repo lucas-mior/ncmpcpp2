@@ -4552,8 +4552,8 @@ native_library_set_owned_string(char **dest, int32 *dest_len,
         return true;
     }
     cap = source_len + 1;
-    copy = ncm_malloc(cap);
-    ncm_memcpy(copy, source, source_len);
+    copy = cbase_malloc(cap);
+    cbase_memcpy(copy, source, source_len);
     copy[source_len] = '\0';
     *dest = copy;
     *dest_len = source_len;
@@ -4564,7 +4564,7 @@ native_library_set_owned_string(char **dest, int32 *dest_len,
 static void
 native_library_free_owned_string(char **data, int32 *len, int32 *cap) {
     if (*data) {
-        ncm_free(*data, *cap);
+        cbase_free(*data, *cap);
     }
     *data = NULL;
     *len = 0;
