@@ -22,6 +22,7 @@ typedef struct LegacySearchFixture {
     NcmBuffer pattern;
     bool wrap;
     bool skip_current;
+    int32 legacy_screen_type;
 } LegacySearchFixture;
 
 static LegacySearchFixture fixture;
@@ -86,22 +87,31 @@ current_screen_uses_legacy_search(void) {
     if (screen == NULL) {
         return false;
     }
-    return nc_screen_type(screen) == NC_SCREEN_TYPE_BROWSER
-        || nc_screen_type(screen) == NC_SCREEN_TYPE_SEARCH_ENGINE;
+    return nc_screen_type(screen) == fixture.legacy_screen_type;
 }
 
 static void
 test_legacy_screen_search_bridge(void) {
+    NativeMediaLibraryScreen *library;
     NcmStringView constraint;
     NcmError error;
 
     app_controller_init();
     ui_state_set_screen_size(100, 30);
     ui_state_set_main_geometry(2, 26);
-    native_c_screen_browser_register();
+    Config.media_lib_primary_tag = MPD_TAG_ARTIST;
+    Config.regex_type = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
+    library = native_c_screen_media_library();
+    native_media_library_screen_clear(library);
+    assert(native_media_library_screen_set_mode(
+        library, NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS));
+    assert(native_media_library_screen_set_active_column(
+        library, NATIVE_MEDIA_LIBRARY_COLUMN_TAGS));
+    native_c_screen_media_library_register();
     assert(app_controller_switch_to_screen(
-        native_c_screen_browser_native()));
+        native_c_screen_media_library_native()));
 
+    fixture.legacy_screen_type = NC_SCREEN_TYPE_MEDIA_LIBRARY;
     ncm_error_clear(&error);
     assert(current_screen_search(
         NCM_SEARCH_DIRECTION_BACKWARD, LIT_ARGS("needle"),
@@ -125,6 +135,7 @@ test_legacy_screen_search_bridge(void) {
     assert(fixture.clear_calls == 1);
     constraint = current_screen_current_search_constraint();
     assert(constraint.len == 0);
+    fixture.legacy_screen_type = NC_SCREEN_TYPE_UNKNOWN;
     return;
 }
 
