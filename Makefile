@@ -224,7 +224,6 @@ PLAYLIST_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=native_c_screens_current_type \
 	-Wl,--wrap=ncm_action_runtime_can_run \
 	-Wl,--wrap=ncm_action_runtime_run \
-	-Wl,--wrap=actions_legacy_runtime_execute_binding \
 	-Wl,--wrap=actions_legacy_runtime_execute_action
 $(BUILD_DIR)/tests/c_playlist_binding_dispatch_test: \
 	LDFLAGS += $(PLAYLIST_BINDING_DISPATCH_TEST_WRAP_FLAGS)
@@ -232,7 +231,6 @@ PLAYLIST_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=native_c_screens_current_type \
 	-Wl,--wrap=ncm_action_runtime_can_run \
 	-Wl,--wrap=ncm_action_runtime_run \
-	-Wl,--wrap=actions_legacy_runtime_execute_binding \
 	-Wl,--wrap=actions_legacy_runtime_execute_action
 $(BUILD_DIR)/tests/c_playlist_editor_binding_dispatch_test: \
 	LDFLAGS += $(PLAYLIST_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS)
@@ -240,7 +238,6 @@ BROWSER_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=native_c_screens_current_type \
 	-Wl,--wrap=ncm_action_runtime_can_run \
 	-Wl,--wrap=ncm_action_runtime_run \
-	-Wl,--wrap=actions_legacy_runtime_execute_binding \
 	-Wl,--wrap=actions_legacy_runtime_execute_action
 $(BUILD_DIR)/tests/c_browser_binding_dispatch_test: \
 	LDFLAGS += $(BROWSER_BINDING_DISPATCH_TEST_WRAP_FLAGS)
@@ -248,7 +245,6 @@ TAG_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=native_c_screens_current_type \
 	-Wl,--wrap=ncm_action_runtime_can_run \
 	-Wl,--wrap=ncm_action_runtime_run \
-	-Wl,--wrap=actions_legacy_runtime_execute_binding \
 	-Wl,--wrap=actions_legacy_runtime_execute_action
 $(BUILD_DIR)/tests/c_tag_editor_binding_dispatch_test: \
 	LDFLAGS += $(TAG_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS)

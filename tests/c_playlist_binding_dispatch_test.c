@@ -11,7 +11,6 @@ typedef struct TestState {
     enum NcmActionType run_types[8];
     int32 can_run_count;
     int32 run_count;
-    int32 legacy_binding_count;
     int32 legacy_action_count;
     int32 unrelated_legacy_count;
 } TestState;
@@ -44,13 +43,6 @@ __wrap_ncm_action_runtime_run(NcmActionRuntime *runtime,
                               enum NcmActionType type) {
     (void)runtime;
     test_state.run_types[test_state.run_count++] = type;
-    return true;
-}
-
-bool
-__wrap_actions_legacy_runtime_execute_binding(NcmBinding *binding) {
-    (void)binding;
-    test_state.legacy_binding_count += 1;
     return true;
 }
 
@@ -112,7 +104,6 @@ test_playlist_binding_uses_c_runtime(void) {
     assert(test_state.run_count == 2);
     assert(test_state.run_types[0] == NCM_ACTION_PLAY_ITEM);
     assert(test_state.run_types[1] == NCM_ACTION_QUIT);
-    assert(test_state.legacy_binding_count == 0);
     assert(test_state.legacy_action_count == 0);
     assert(test_state.unrelated_legacy_count == 0);
     return;
@@ -126,7 +117,6 @@ test_playlist_action_uses_c_runtime(void) {
     assert(test_state.can_run_count == 0);
     assert(test_state.run_count == 1);
     assert(test_state.run_types[0] == NCM_ACTION_PLAY_ITEM);
-    assert(test_state.legacy_binding_count == 0);
     assert(test_state.legacy_action_count == 0);
     assert(test_state.unrelated_legacy_count == 0);
     return;
@@ -146,7 +136,6 @@ test_non_whitelisted_binding_is_blocked(void) {
     assert(!ncmpcpp_legacy_execute_binding(&binding));
     assert(test_state.can_run_count == 0);
     assert(test_state.run_count == 0);
-    assert(test_state.legacy_binding_count == 0);
     assert(test_state.legacy_action_count == 0);
     assert(test_state.unrelated_legacy_count == 0);
     return;
@@ -160,7 +149,6 @@ test_non_whitelisted_action_is_blocked(void) {
         NCM_ACTION_RESET_SEARCH_ENGINE));
     assert(test_state.can_run_count == 0);
     assert(test_state.run_count == 0);
-    assert(test_state.legacy_binding_count == 0);
     assert(test_state.legacy_action_count == 0);
     assert(test_state.unrelated_legacy_count == 0);
     return;
