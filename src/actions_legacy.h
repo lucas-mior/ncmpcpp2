@@ -326,23 +326,6 @@ private:
 
 
 
-struct Add: BaseAction
-{
-	Add(): BaseAction(Type::Add) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
-
-struct Load: BaseAction
-{
-	Load(): BaseAction(Type::Load) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
 
 
 
@@ -351,24 +334,6 @@ private:
 
 
 
-
-
-struct SetCrossfade: BaseAction
-{
-	SetCrossfade(): BaseAction(Type::SetCrossfade) { }
-	
-private:
-	virtual void run() override;
-};
-
-struct SetVolume: BaseAction
-{
-	SetVolume(): BaseAction(Type::SetVolume) { }
-	
-private:
-	virtual bool canBeRun() override;
-	virtual void run() override;
-};
 
 
 
@@ -519,24 +484,8 @@ private:
 };
 
 
-struct ToggleReplayGainMode: BaseAction
-{
-	ToggleReplayGainMode(): BaseAction(Type::ToggleReplayGainMode) { }
-	
-private:
-	virtual void run() override;
-};
 
 
-
-
-struct AddRandomItems: BaseAction
-{
-	AddRandomItems(): BaseAction(Type::AddRandomItems) { }
-	
-private:
-	virtual void run() override;
-};
 
 
 struct ToggleLibraryTagType: BaseAction

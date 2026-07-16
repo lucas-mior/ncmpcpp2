@@ -29,8 +29,8 @@ static void test_playlist_editor_selection_action_uses_c_runtime(void);
 static void test_playlist_editor_scroll_binding_uses_c_runtime(void);
 static void test_playlist_editor_search_movement_uses_c_runtime(void);
 static void test_playlist_editor_jump_to_playing_uses_c_runtime(void);
-static void test_playlist_editor_load_action_is_rejected(void);
-static void test_playlist_editor_unsupported_binding_is_rejected(void);
+static void test_playlist_editor_load_action_uses_c_runtime(void);
+static void test_playlist_editor_load_binding_uses_c_runtime(void);
 
 enum ScreenType
 __wrap_native_c_screens_current_type(void) {
@@ -264,19 +264,20 @@ test_playlist_editor_jump_to_playing_uses_c_runtime(void) {
 
 
 static void
-test_playlist_editor_load_action_is_rejected(void) {
+test_playlist_editor_load_action_uses_c_runtime(void) {
     test_state_reset();
 
-    assert(!ncmpcpp_legacy_execute_action(NCM_ACTION_LOAD));
+    assert(ncmpcpp_legacy_execute_action(NCM_ACTION_LOAD));
     assert(test_state.can_run_count == 0);
-    assert(test_state.run_count == 0);
+    assert(test_state.run_count == 1);
+    assert(test_state.run_types[0] == NCM_ACTION_LOAD);
     assert(test_state.legacy_action_count == 0);
     assert(test_state.unrelated_legacy_count == 0);
     return;
 }
 
 static void
-test_playlist_editor_unsupported_binding_is_rejected(void) {
+test_playlist_editor_load_binding_uses_c_runtime(void) {
     NcmBindingAction actions[] = {
         {
             .kind = NCM_BINDING_ACTION_NORMAL,
@@ -288,9 +289,12 @@ test_playlist_editor_unsupported_binding_is_rejected(void) {
     test_state_reset();
     binding = test_binding(actions, NCM_ARRAY_LEN(actions));
 
-    assert(!ncmpcpp_legacy_execute_binding(&binding));
-    assert(test_state.can_run_count == 0);
-    assert(test_state.run_count == 0);
+    assert(ncmpcpp_legacy_execute_binding(&binding));
+    assert(test_state.can_run_count == 2);
+    assert(test_state.can_run_types[0] == NCM_ACTION_LOAD);
+    assert(test_state.can_run_types[1] == NCM_ACTION_LOAD);
+    assert(test_state.run_count == 1);
+    assert(test_state.run_types[0] == NCM_ACTION_LOAD);
     assert(test_state.legacy_action_count == 0);
     assert(test_state.unrelated_legacy_count == 0);
     return;
@@ -320,7 +324,7 @@ main(void) {
     test_playlist_editor_scroll_binding_uses_c_runtime();
     test_playlist_editor_search_movement_uses_c_runtime();
     test_playlist_editor_jump_to_playing_uses_c_runtime();
-    test_playlist_editor_load_action_is_rejected();
-    test_playlist_editor_unsupported_binding_is_rejected();
+    test_playlist_editor_load_action_uses_c_runtime();
+    test_playlist_editor_load_binding_uses_c_runtime();
     exit(EXIT_SUCCESS);
 }
