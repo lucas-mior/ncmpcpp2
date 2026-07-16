@@ -75,13 +75,6 @@ nc_outputs_screen_init(NcOutputsScreen *screen,
 }
 
 void
-nc_outputs_screen_destroy(NcOutputsScreen *screen) {
-    nc_menu_destroy(&screen->menu);
-    nc_window_destroy(&screen->window);
-    return;
-}
-
-void
 nc_outputs_screen_set_geometry(NcOutputsScreen *screen,
                                int64 start_x, int64 width,
                                int64 main_start_y, int64 main_height) {
@@ -167,11 +160,6 @@ nc_outputs_screen_toggle_current(NcOutputsScreen *screen) {
 NcScreen *
 nc_outputs_screen_base(NcOutputsScreen *screen) {
     return nc_scrollpad_screen_base(&screen->menu_screen);
-}
-
-NcWindow *
-nc_outputs_screen_window(NcOutputsScreen *screen) {
-    return &screen->window;
 }
 
 int64

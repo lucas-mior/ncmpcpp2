@@ -142,8 +142,6 @@ void native_tag_editor_screen_set_hooks(NativeTagEditorScreen *screen,
                                         NativeTagEditorHooks hooks);
 NcEditorPairMenu *native_tag_editor_screen_directories(
     NativeTagEditorScreen *screen);
-NcEditorStringMenu *native_tag_editor_screen_tag_types(
-    NativeTagEditorScreen *screen);
 NcTagRowMenu *native_tag_editor_screen_tags(NativeTagEditorScreen *screen);
 NcEditorStringMenu *native_tag_editor_screen_parser_dialog(
     NativeTagEditorScreen *screen);

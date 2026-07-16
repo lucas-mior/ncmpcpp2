@@ -221,16 +221,6 @@ native_lyrics_queued_song_destroy(NativeLyricsQueuedSong *queued) {
     return;
 }
 
-bool
-native_lyrics_queued_song_copy(NativeLyricsQueuedSong *dest,
-                               NativeLyricsQueuedSong *source) {
-    if (!ncm_song_copy(&dest->song, &source->song)) {
-        return false;
-    }
-    dest->notify = source->notify;
-    return true;
-}
-
 void
 native_lyrics_queued_song_move(NativeLyricsQueuedSong *dest,
                                NativeLyricsQueuedSong *source) {
@@ -330,11 +320,6 @@ native_lyrics_screen_destroy(NativeLyricsScreen *screen) {
     screen->has_song = false;
     screen->initialized = false;
     return;
-}
-
-NcLyricsScreen *
-native_lyrics_screen_typed(NativeLyricsScreen *screen) {
-    return &screen->screen;
 }
 
 NcScreen *
@@ -601,12 +586,6 @@ native_lyrics_screen_stop_downloads(NativeLyricsScreen *screen) {
 }
 
 void
-native_lyrics_screen_clear_worker(NativeLyricsScreen *screen) {
-    ncm_lyrics_result_clear(&screen->result);
-    return;
-}
-
-void
 native_lyrics_screen_refetch_current(NativeLyricsScreen *screen,
                                      NcmError *error) {
     if (!screen->has_song) {
@@ -678,11 +657,6 @@ native_lyrics_screen_song(NativeLyricsScreen *screen) {
         return NULL;
     }
     return &screen->song;
-}
-
-NcmLyricsResult *
-native_lyrics_screen_result(NativeLyricsScreen *screen) {
-    return &screen->result;
 }
 
 NcmBuffer *
@@ -760,11 +734,6 @@ native_lyrics_screen_find(NativeLyricsScreen *screen,
 int32
 native_lyrics_screen_pending_jobs(NativeLyricsScreen *screen) {
     return ncm_job_queue_pending_count(&screen->jobs);
-}
-
-int32
-native_lyrics_screen_completed_jobs(NativeLyricsScreen *screen) {
-    return ncm_job_queue_completed_count(&screen->jobs);
 }
 
 int32

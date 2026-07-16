@@ -480,14 +480,6 @@ native_tag_editor_screen_directories(NativeTagEditorScreen *screen) {
     return &screen->directories;
 }
 
-NcEditorStringMenu *
-native_tag_editor_screen_tag_types(NativeTagEditorScreen *screen) {
-    if (screen == NULL) {
-        return NULL;
-    }
-    return &screen->tag_types;
-}
-
 NcTagRowMenu *
 native_tag_editor_screen_tags(NativeTagEditorScreen *screen) {
     if (screen == NULL) {

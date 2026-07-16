@@ -34,7 +34,6 @@ void nc_help_screen_init(NcHelpScreen *screen,
                          int64 main_start_y, int64 main_height,
                          NcColor color, NcBorder border,
                          int64 lines_scrolled);
-void nc_help_screen_destroy(NcHelpScreen *screen);
 void nc_help_screen_set_geometry(NcHelpScreen *screen,
                                  int64 start_x, int64 width,
                                  int64 main_start_y,
@@ -44,7 +43,6 @@ bool nc_help_screen_find(NcHelpScreen *screen, char *pattern,
                          int32 pattern_len, NcmError *error);
 void nc_help_screen_clear_search(NcHelpScreen *screen);
 NcScreen *nc_help_screen_base(NcHelpScreen *screen);
-NcWindow *nc_help_screen_window(NcHelpScreen *screen);
 int64 nc_help_screen_start_x(NcHelpScreen *screen);
 int64 nc_help_screen_start_y(NcHelpScreen *screen);
 int64 nc_help_screen_width(NcHelpScreen *screen);

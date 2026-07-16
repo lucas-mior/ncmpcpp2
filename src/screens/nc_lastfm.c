@@ -214,11 +214,6 @@ native_lastfm_screen_destroy(NativeLastfmScreen *screen) {
     return;
 }
 
-NcLastfmScreen *
-native_lastfm_screen_typed(NativeLastfmScreen *screen) {
-    return &screen->screen;
-}
-
 NcScreen *
 native_lastfm_screen_base(NativeLastfmScreen *screen) {
     return nc_lastfm_screen_base(&screen->screen);
@@ -374,11 +369,6 @@ native_lastfm_screen_take_refresh_request(NativeLastfmScreen *screen) {
     result = screen->refresh_window;
     screen->refresh_window = false;
     return result;
-}
-
-int32
-native_lastfm_screen_pending_jobs(NativeLastfmScreen *screen) {
-    return ncm_job_queue_pending_count(&screen->jobs);
 }
 
 int32
