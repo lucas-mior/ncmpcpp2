@@ -29,6 +29,7 @@ static void test_browser_selected_songs(void);
 static void test_browser_filter_and_search(void);
 static void test_browser_local_mode(void);
 static void test_browser_change_browse_mode(void);
+static void test_browser_supported_extensions_fetch(void);
 static void test_browser_owned_state(void);
 static void test_browser_native_callbacks_ignore_bridge(void);
 static void test_browser_menu_callbacks(void);
@@ -118,9 +119,12 @@ bool __wrap_nc_window_has_coords(NcWindow *window, int32 *x, int32 *y);
 bool __wrap_ncm_mpd_client_get_directory_entries(
     NcmMpdClient *client, char *path, NcmMpdItemArray *items,
     NcmError *error);
+bool __wrap_ncm_mpd_client_get_supported_extensions(
+    NcmMpdClient *client, NcmMpdStringList *strings, NcmError *error);
 
 static BrowserMpdTrace mpd_trace;
 static int32 bridge_callback_calls;
+static int32 supported_extensions_calls;
 
 int
 main(void) {
@@ -135,6 +139,7 @@ main(void) {
     test_browser_filter_and_search();
     test_browser_local_mode();
     test_browser_change_browse_mode();
+    test_browser_supported_extensions_fetch();
     test_browser_owned_state();
     test_browser_native_callbacks_ignore_bridge();
     test_browser_menu_callbacks();
@@ -552,6 +557,7 @@ test_browser_change_browse_mode(void) {
                                                     &error));
     assert(native_browser_screen_is_local(&screen));
     assert(native_browser_screen_update_requested(&screen));
+    assert(native_browser_screen_supported_extensions(&screen)->len == 3);
     view = native_browser_screen_current_directory(&screen);
     assert(ncm_string_equal(view.data, view.len,
                             LIT_ARGS("/tmp/ncmpcpp-browser-home")));
@@ -573,6 +579,37 @@ test_browser_change_browse_mode(void) {
     ncm_buffer_destroy(&old_home_buffer);
     native_browser_screen_destroy(&screen);
     ncm_mpd_client_destroy(&client);
+    return;
+}
+
+static void
+test_browser_supported_extensions_fetch(void) {
+    NativeBrowserScreen screen;
+    NcmMpdClient client = {0};
+    NcmError error = {0};
+
+    native_browser_screen_init(&screen, 0, 80, 0, 24,
+                               nc_color_default(), nc_border_none());
+    assert(native_browser_screen_add_supported_extension(&screen,
+                                                         LIT_ARGS(".old")));
+
+    supported_extensions_calls = 0;
+    ncm_error_clear(&error);
+    assert(native_browser_screen_fetch_supported_extensions(&screen,
+                                                            &client,
+                                                            &error));
+    assert(supported_extensions_calls == 1);
+    assert(native_browser_screen_supported_extensions(&screen)->len == 3);
+    assert(!native_browser_screen_has_supported_extension(&screen,
+                                                          LIT_ARGS(".old")));
+    assert(native_browser_screen_has_supported_extension(&screen,
+                                                         LIT_ARGS(".flac")));
+    assert(native_browser_screen_has_supported_extension(&screen,
+                                                         LIT_ARGS(".mp3")));
+    assert(native_browser_screen_has_supported_extension(&screen,
+                                                         LIT_ARGS(".")));
+
+    native_browser_screen_destroy(&screen);
     return;
 }
 
@@ -613,7 +650,9 @@ test_browser_owned_state(void) {
            == NCM_DISPLAY_MODE_COLUMNS);
 
     assert(native_browser_screen_add_supported_extension(&screen,
-                                                         LIT_ARGS(".flac")));
+                                                         LIT_ARGS("flac")));
+    assert(native_browser_screen_add_supported_extension(&screen,
+                                                         LIT_ARGS(".mp3")));
     assert(native_browser_screen_add_supported_extension(&screen,
                                                          LIT_ARGS(".mp3")));
     assert(native_browser_screen_has_supported_extension(&screen,
@@ -1148,6 +1187,20 @@ __wrap_ncm_mpd_client_get_directory_entries(
     } else if (ncm_string_equal(path, path_len, LIT_ARGS("gone"))) {
         browser_mpd_trace_add_directory(items, LIT_ARGS("gone/child"));
     }
+    return true;
+}
+
+bool
+__wrap_ncm_mpd_client_get_supported_extensions(
+    NcmMpdClient *client, NcmMpdStringList *strings, NcmError *error) {
+    (void)client;
+
+    supported_extensions_calls += 1;
+    assert(ncm_mpd_string_list_append(strings, LIT_ARGS("flac")));
+    assert(ncm_mpd_string_list_append(strings, LIT_ARGS(".mp3")));
+    assert(ncm_mpd_string_list_append(strings, LIT_ARGS("flac")));
+    assert(ncm_mpd_string_list_append(strings, NULL, 0));
+    ncm_error_clear(error);
     return true;
 }
 
