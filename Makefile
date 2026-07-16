@@ -38,7 +38,6 @@ THREAD_FLAGS := -pthread
 
 OBJ_DIR := $(BUILD_DIR)/obj
 TOOLS_STAMP := $(BUILD_DIR)/.tools-ok
-CONFIG_H := $(BUILD_DIR)/config.h
 BINARY := $(BUILD_DIR)/ncmpcpp
 CBASE_LIB := $(BUILD_DIR)/libcbase.a
 NCMPCPP_C_LIB := $(BUILD_DIR)/libncmpcpp_c.a
@@ -403,42 +402,7 @@ $(TOOLS_STAMP): FORCE
 	@test -n "$(CSTD)" || { printf '%s\n' 'C compiler does not support C23 or C2x' >&2; exit 1; }
 	@touch $@
 
-$(CONFIG_H): | $(TOOLS_STAMP)
-	@mkdir -p $(@D)
-	@{ \
-		printf '%s\n' '#ifndef NCMPCPP_CONFIG_H'; \
-		printf '%s\n' '#define NCMPCPP_CONFIG_H'; \
-		printf '\n'; \
-		printf '%s\n' '#define ENABLE_OUTPUTS 1'; \
-		printf '%s\n' '#define ENABLE_VISUALIZER 1'; \
-		printf '%s\n' '#define HAVE_CURL_CURL_H 1'; \
-		printf '%s\n' '#define HAVE_CURSES_H 1'; \
-		printf '%s\n' '#define HAVE_FFTW3_H 1'; \
-		printf '%s\n' '#define HAVE_LIBNCURSESW 1'; \
-		printf '%s\n' '#define HAVE_LIBREADLINE 1'; \
-		printf '%s\n' '#define HAVE_MPD_CLIENT_H 1'; \
-		printf '%s\n' '#define HAVE_NETINET_IN_H 1'; \
-		printf '%s\n' '#define HAVE_NETINET_TCP_H 1'; \
-		printf '%s\n' '#define HAVE_READLINE_HISTORY 1'; \
-		printf '%s\n' '#define HAVE_READLINE_HISTORY_H 1'; \
-		printf '%s\n' '#define HAVE_READLINE_READLINE_H 1'; \
-		printf '%s\n' '#define HAVE_TAGLIB_FILE_NEW 1'; \
-		printf '%s\n' '#define HAVE_TAGLIB_FILE_SAVE 1'; \
-		printf '%s\n' '#define HAVE_TAGLIB_H 1'; \
-		printf '%s\n' '#define HAVE_TAGLIB_PROPERTY_GET 1'; \
-		printf '%s\n' '#define HAVE_TAGLIB_PROPERTY_SET 1'; \
-		printf '%s\n' '#define HAVE_TAGLIB_PROPERTY_SET_APPEND 1'; \
-		printf '%s\n' '#define PACKAGE "$(PACKAGE)"'; \
-		printf '%s\n' '#define PACKAGE_NAME "$(PACKAGE)"'; \
-		printf '%s\n' '#define PACKAGE_STRING "$(PACKAGE) $(VERSION)"'; \
-		printf '%s\n' '#define PACKAGE_TARNAME "$(PACKAGE)"'; \
-		printf '%s\n' '#define PACKAGE_VERSION "$(VERSION)"'; \
-		printf '%s\n' '#define VERSION "$(VERSION)"'; \
-		printf '\n'; \
-		printf '%s\n' '#endif'; \
-	} >$@
-
-$(OBJ_DIR)/%.c.o: %.c $(CONFIG_H) | $(TOOLS_STAMP)
+$(OBJ_DIR)/%.c.o: %.c
 	@mkdir -p $(@D)
 	@printf 'CC  %s\n' '$<'
 	@$(CC) \
