@@ -1152,9 +1152,7 @@ playlist_editor_timeout_callback(NcScreen *screen) {
 
 static char *
 playlist_editor_title_callback(NcScreen *screen) {
-    NativePlaylistEditorScreen *editor;
-
-    editor = playlist_editor_from_screen(screen);
+    (void)screen;
     return (char *)"Playlist editor";
 }
 
