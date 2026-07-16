@@ -31,7 +31,6 @@
 #include "c/ncm_base.h"
 #include "c/ncm_error.h"
 #include "c/ncm_type_conversions.h"
-#include "title_legacy.h"
 #include "tags.h"
 
 #ifdef HAVE_TAGLIB_H
@@ -420,17 +419,7 @@ void MouseEvent::run()
 		app_controller_mouse_button_pressed_current(m_mouse_event);
 }
 
-void ScrollUp::run()
-{
-	app_controller_scroll_current_screen(NC_SCROLL_UP);
-	listsChangeFinisher();
-}
 
-void ScrollDown::run()
-{
-	app_controller_scroll_current_screen(NC_SCROLL_DOWN);
-	listsChangeFinisher();
-}
 
 bool ScrollUpArtist::canBeRun()
 {
@@ -472,29 +461,9 @@ void ScrollDownAlbum::run()
 	scrollTagDownRun(m_list, m_songs, NCM_SONG_GETTER_ALBUM);
 }
 
-void PageUp::run()
-{
-	app_controller_scroll_current_screen(NC_SCROLL_PAGE_UP);
-	listsChangeFinisher();
-}
 
-void PageDown::run()
-{
-	app_controller_scroll_current_screen(NC_SCROLL_PAGE_DOWN);
-	listsChangeFinisher();
-}
 
-void MoveHome::run()
-{
-	app_controller_scroll_current_screen(NC_SCROLL_HOME);
-	listsChangeFinisher();
-}
 
-void MoveEnd::run()
-{
-	app_controller_scroll_current_screen(NC_SCROLL_END);
-	listsChangeFinisher();
-}
 
 void ToggleInterface::run()
 {
@@ -518,17 +487,7 @@ void ToggleInterface::run()
 	Statusbar::printf("User interface: %1%", Config.design);
 }
 
-bool JumpToParentDirectory::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_JUMP_TO_PARENT_DIRECTORY);
-}
 
-void JumpToParentDirectory::run()
-{
-	(void)ncm_action_runtime_run(
-	    nullptr, NCM_ACTION_JUMP_TO_PARENT_DIRECTORY);
-}
 
 bool PreviousColumn::canBeRun()
 {
@@ -574,51 +533,13 @@ void NextColumn::run()
 	m_hc->nextColumn();
 }
 
-bool MasterScreen::canBeRun()
-{
-	return app_controller_can_show_locked_screen();
-}
 
-void MasterScreen::run()
-{
-	if (app_controller_show_locked_screen())
-	{
-		drawHeader();
-	}
-}
 
-bool SlaveScreen::canBeRun()
-{
-	return app_controller_can_show_inactive_screen();
-}
 
-void SlaveScreen::run()
-{
-	if (app_controller_show_inactive_screen())
-	{
-		drawHeader();
-	}
-}
 
-bool VolumeUp::canBeRun()
-{
-	return ncm_status_state_volume() >= 0;
-}
 
-void VolumeUp::run()
-{
-	Mpd.ChangeVolume(static_cast<int>(Config.volume_change_step));
-}
 
-bool VolumeDown::canBeRun()
-{
-	return ncm_status_state_volume() >= 0;
-}
 
-void VolumeDown::run()
-{
-	Mpd.ChangeVolume(-static_cast<int>(Config.volume_change_step));
-}
 
 bool AddItemToPlaylist::canBeRun()
 {
@@ -667,114 +588,18 @@ void PlayItem::run()
 		listsChangeFinisher();
 }
 
-bool DeletePlaylistItems::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_DELETE_PLAYLIST_ITEMS);
-}
 
-void DeletePlaylistItems::run()
-{
-	Statusbar::print("Deleting items...");
-	if (ncm_action_delete_playlist_items())
-		Statusbar::print("Item(s) deleted");
-}
 
-bool DeleteBrowserItems::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_DELETE_BROWSER_ITEMS);
-}
 
-void DeleteBrowserItems::run()
-{
-	(void)ncm_action_runtime_run(
-	    nullptr, NCM_ACTION_DELETE_BROWSER_ITEMS);
-}
 
-bool DeleteStoredPlaylist::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr,
-	                                  NCM_ACTION_DELETE_STORED_PLAYLIST);
-}
 
-void DeleteStoredPlaylist::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_DELETE_STORED_PLAYLIST);
-}
 
-void SavePlaylist::run()
-{
 
-	std::string playlist_name;
-	{
-		Statusbar::ScopedLock slock;
-		Statusbar::put() << "Save playlist as: ";
-		if (!promptString(playlist_name))
-				return;
-	}
-	try
-	{
-		Mpd.SavePlaylist(playlist_name);
-		Statusbar::printf("Playlist saved as \"%1%\"", playlist_name);
-	}
-	catch (MPD::ServerError &e)
-	{
-		if (e.code() == MPD_SERVER_ERROR_EXIST)
-		{
-			if (!confirmAction(
-				stringFormat("Playlist \"%1%\" already exists, overwrite?", playlist_name)
-			))
-				return;
-			Mpd.DeletePlaylist(playlist_name);
-			Mpd.SavePlaylist(playlist_name);
-			Statusbar::print("Playlist overwritten");
-		}
-		else
-		{
-			Statusbar::printf("Error while saving playlist: %1%", e.what());
-			return;
-		}
-	}
-}
 
-bool MoveSelectedItemsUp::canBeRun()
-{
-	if (native_c_screen_playlist_is_current())
-		return ncm_action_runtime_can_run(
-		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_UP);
-	return false;
-}
 
-void MoveSelectedItemsUp::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_UP);
-}
 
-bool MoveSelectedItemsDown::canBeRun()
-{
-	if (native_c_screen_playlist_is_current())
-		return ncm_action_runtime_can_run(
-		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN);
-	return false;
-}
 
-void MoveSelectedItemsDown::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN);
-}
 
-bool MoveSelectedItemsTo::canBeRun()
-{
-	if (native_c_screen_playlist_is_current())
-		return ncm_action_runtime_can_run(
-		    nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_TO);
-	return false;
-}
-
-void MoveSelectedItemsTo::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_MOVE_SELECTED_ITEMS_TO);
-}
 
 bool Add::canBeRun()
 {
@@ -837,17 +662,7 @@ void Load::run()
 	Mpd.LoadPlaylist(path);
 }
 
-bool ToggleDisplayMode::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_TOGGLE_DISPLAY_MODE);
-}
 
-void ToggleDisplayMode::run()
-{
-	(void)ncm_action_runtime_run(
-	    nullptr, NCM_ACTION_TOGGLE_DISPLAY_MODE);
-}
 
 bool ToggleSeparatorsBetweenAlbums::canBeRun()
 {
@@ -887,43 +702,12 @@ void ToggleFetchingLyricsInBackground::run()
 	                  Config.fetch_lyrics_in_background ? "on" : "off");
 }
 
-void TogglePlayingSongCentering::run()
-{
-	(void)ncm_action_runtime_run(
-	    nullptr, NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING);
-}
 
-bool JumpToPlayingSong::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_JUMP_TO_PLAYING_SONG);
-}
 
-void JumpToPlayingSong::run()
-{
-	(void)ncm_action_runtime_run(
-	    nullptr, NCM_ACTION_JUMP_TO_PLAYING_SONG);
-}
 
-bool Shuffle::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SHUFFLE);
-}
 
-void Shuffle::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHUFFLE);
-}
 
-bool SaveTagChanges::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SAVE_TAG_CHANGES);
-}
 
-void SaveTagChanges::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SAVE_TAG_CHANGES);
-}
 
 void SetCrossfade::run()
 {
@@ -961,16 +745,7 @@ void SetVolume::run()
 	Statusbar::printf("Volume set to %1%%%", volume);
 }
 
-bool EnterDirectory::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_ENTER_DIRECTORY);
-}
 
-void EnterDirectory::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_ENTER_DIRECTORY);
-}
 
 bool EditSong::canBeRun()
 {
@@ -1139,59 +914,15 @@ void EditLibraryAlbum::run()
 #	endif // HAVE_TAGLIB_H
 }
 
-bool EditDirectoryName::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_EDIT_DIRECTORY_NAME);
-}
 
-void EditDirectoryName::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_EDIT_DIRECTORY_NAME);
-}
 
-bool EditPlaylistName::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_EDIT_PLAYLIST_NAME);
-}
 
-void EditPlaylistName::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_EDIT_PLAYLIST_NAME);
-}
 
-bool EditLyrics::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_EDIT_LYRICS);
-}
 
-void EditLyrics::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_EDIT_LYRICS);
-}
 
-bool JumpToBrowserAction::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_JUMP_TO_BROWSER);
-}
 
-void JumpToBrowserAction::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_JUMP_TO_BROWSER);
-}
 
-bool JumpToPlaylistEditor::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR);
-}
 
-void JumpToPlaylistEditor::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR);
-}
 
 void ToggleScreenLock::run()
 {
@@ -1229,29 +960,8 @@ void ToggleScreenLock::run()
 	}
 }
 
-bool JumpToTagEditor::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_JUMP_TO_TAG_EDITOR);
-}
 
-void JumpToTagEditor::run()
-{
-	(void)ncm_action_runtime_run(
-	    nullptr, NCM_ACTION_JUMP_TO_TAG_EDITOR);
-}
 
-bool JumpToPositionInSong::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_JUMP_TO_POSITION_IN_SONG);
-}
-
-void JumpToPositionInSong::run()
-{
-	(void)ncm_action_runtime_run(
-	    nullptr, NCM_ACTION_JUMP_TO_POSITION_IN_SONG);
-}
 
 bool SelectItem::canBeRun()
 {
@@ -1373,45 +1083,13 @@ void SelectFoundItems::run()
 	m_list->highlight(current_pos);
 }
 
-void CropMainPlaylist::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_CROP_MAIN_PLAYLIST);
-}
 
-bool CropPlaylist::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_CROP_PLAYLIST);
-}
 
-void CropPlaylist::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_CROP_PLAYLIST);
-}
 
-void ClearMainPlaylist::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_CLEAR_MAIN_PLAYLIST);
-}
 
-bool ClearPlaylist::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_CLEAR_PLAYLIST);
-}
 
-void ClearPlaylist::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_CLEAR_PLAYLIST);
-}
 
-bool ReversePlaylist::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_REVERSE_PLAYLIST);
-}
 
-void ReversePlaylist::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_REVERSE_PLAYLIST);
-}
 
 bool Find::canBeRun()
 {
@@ -1501,13 +1179,6 @@ void PreviousFoundItem::run()
 	listsChangeFinisher();
 }
 
-void ToggleFindMode::run()
-{
-	Config.wrapped_search = !Config.wrapped_search;
-	Statusbar::printf("Search mode: %1%",
-		Config.wrapped_search ? "Wrapped" : "Normal"
-	);
-}
 
 void ToggleReplayGainMode::run()
 {
@@ -1628,17 +1299,7 @@ void AddRandomItems::run()
 	}
 }
 
-bool ToggleBrowserSortMode::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_TOGGLE_BROWSER_SORT_MODE);
-}
 
-void ToggleBrowserSortMode::run()
-{
-	(void)ncm_action_runtime_run(
-	    nullptr, NCM_ACTION_TOGGLE_BROWSER_SORT_MODE);
-}
 
 bool ToggleLibraryTagType::canBeRun()
 {
@@ -1683,73 +1344,16 @@ void ToggleLibraryTagType::run()
 	}
 }
 
-bool FetchLyricsInBackground::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr,
-	                                  NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND);
-}
 
-void FetchLyricsInBackground::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND);
-}
 
-bool RefetchLyrics::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_REFETCH_LYRICS);
-}
 
-void RefetchLyrics::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_REFETCH_LYRICS);
-}
 
-bool SetSelectedItemsPriority::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY);
-}
 
-void SetSelectedItemsPriority::run()
-{
-	(void)ncm_action_runtime_run(
-	    nullptr, NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY);
-}
 
-bool ToggleOutput::canBeRun()
-{
-#ifdef ENABLE_OUTPUTS
-	return native_c_screen_outputs_is_current();
-#else
-	return false;
-#endif // ENABLE_OUTPUTS
-}
 
-void ToggleOutput::run()
-{
-#ifdef ENABLE_OUTPUTS
-	native_c_screen_outputs_toggle();
-#endif // ENABLE_OUTPUTS
-}
 
-bool ToggleVisualizationType::canBeRun()
-{
-#	ifdef ENABLE_VISUALIZER
-	return native_c_screen_visualizer_is_current();
-#	else
-	return false;
-#	endif // ENABLE_VISUALIZER
-}
 
-void ToggleVisualizationType::run()
-{
-	(void)ncm_action_toggle_visualization_type();
-}
 
-void ShowSongInfo::run()
-{
-	native_c_screen_song_info_switch_to();
-}
 
 bool ShowArtistInfo::canBeRun()
 {
@@ -1799,15 +1403,7 @@ void ShowArtistInfo::run()
 	}
 }
 
-bool ShowLyrics::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SHOW_LYRICS);
-}
 
-void ShowLyrics::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHOW_LYRICS);
-}
 
 void NextScreen::run()
 {
@@ -1853,130 +1449,21 @@ void PreviousScreen::run()
 	}
 }
 
-bool ShowHelp::canBeRun()
-{
-	return !native_c_screen_help_is_current()
-#	ifdef HAVE_TAGLIB_H
-	    && !native_c_screen_tiny_tag_editor_is_current()
-#	endif // HAVE_TAGLIB_H
-	;
-}
 
-void ShowHelp::run()
-{
-	native_c_screen_help_switch_to();
-}
 
-bool ShowPlaylist::canBeRun()
-{
-	return !native_c_screen_playlist_is_current()
-#	ifdef HAVE_TAGLIB_H
-	    && !native_c_screen_tiny_tag_editor_is_current()
-#	endif // HAVE_TAGLIB_H
-	;
-}
 
-void ShowPlaylist::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHOW_PLAYLIST);
-}
 
-bool ShowBrowserAction::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SHOW_BROWSER);
-}
 
-void ShowBrowserAction::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHOW_BROWSER);
-}
 
-bool ChangeBrowseMode::canBeRun()
-{
-	return ncm_action_runtime_can_run(
-	    nullptr, NCM_ACTION_CHANGE_BROWSE_MODE);
-}
 
-void ChangeBrowseMode::run()
-{
-	(void)ncm_action_runtime_run(
-	    nullptr, NCM_ACTION_CHANGE_BROWSE_MODE);
-}
 
-bool ShowPlaylistEditor::canBeRun()
-{
-	return !native_c_screen_playlist_editor_is_current()
-#	ifdef HAVE_TAGLIB_H
-	    && !native_c_screen_tiny_tag_editor_is_current()
-#	endif // HAVE_TAGLIB_H
-	;
-}
 
-void ShowPlaylistEditor::run()
-{
-	native_c_screen_playlist_editor_register();
-	native_c_screen_playlist_editor_switch_to();
-}
 
-bool ShowTagEditor::canBeRun()
-{
-	return ncm_action_runtime_can_run(nullptr, NCM_ACTION_SHOW_TAG_EDITOR);
-}
 
-void ShowTagEditor::run()
-{
-	(void)ncm_action_runtime_run(nullptr, NCM_ACTION_SHOW_TAG_EDITOR);
-}
 
-bool ShowOutputs::canBeRun()
-{
-#	ifdef ENABLE_OUTPUTS
-	return !native_c_screen_outputs_is_current()
-#	ifdef HAVE_TAGLIB_H
-	    && !native_c_screen_tiny_tag_editor_is_current()
-#	endif // HAVE_TAGLIB_H
-	;
-#	else
-	return false;
-#	endif // ENABLE_OUTPUTS
-}
 
-void ShowOutputs::run()
-{
-#	ifdef ENABLE_OUTPUTS
-	native_c_screen_outputs_switch_to();
-#	endif // ENABLE_OUTPUTS
-}
 
-bool ShowVisualizer::canBeRun()
-{
-#	ifdef ENABLE_VISUALIZER
-	return !native_c_screen_visualizer_is_current()
-#	ifdef HAVE_TAGLIB_H
-	    && !native_c_screen_tiny_tag_editor_is_current()
-#	endif // HAVE_TAGLIB_H
-	;
-#	else
-	return false;
-#	endif // ENABLE_VISUALIZER
-}
 
-void ShowVisualizer::run()
-{
-	(void)ncm_action_show_visualizer();
-}
-
-#ifdef HAVE_TAGLIB_H
-bool ShowServerInfo::canBeRun()
-{
-	return !native_c_screen_tiny_tag_editor_is_current();
-}
-#endif // HAVE_TAGLIB_H
-
-void ShowServerInfo::run()
-{
-	native_c_screen_server_info_switch_to();
-}
 
 }
 
@@ -1989,99 +1476,45 @@ void populateActions()
 		AvailableActions.at(static_cast<size_t>(a->type())).reset(a);
 	};
 	insert_action(new Actions::MouseEvent());
-	insert_action(new Actions::ScrollUp());
-	insert_action(new Actions::ScrollDown());
 	insert_action(new Actions::ScrollUpArtist());
 	insert_action(new Actions::ScrollUpAlbum());
 	insert_action(new Actions::ScrollDownArtist());
 	insert_action(new Actions::ScrollDownAlbum());
-	insert_action(new Actions::PageUp());
-	insert_action(new Actions::PageDown());
-	insert_action(new Actions::MoveHome());
-	insert_action(new Actions::MoveEnd());
 	insert_action(new Actions::ToggleInterface());
-	insert_action(new Actions::JumpToParentDirectory());
 	insert_action(new Actions::SelectItem());
 	insert_action(new Actions::SelectRange());
 	insert_action(new Actions::PreviousColumn());
 	insert_action(new Actions::NextColumn());
-	insert_action(new Actions::MasterScreen());
-	insert_action(new Actions::SlaveScreen());
-	insert_action(new Actions::VolumeUp());
-	insert_action(new Actions::VolumeDown());
 	insert_action(new Actions::AddItemToPlaylist());
-	insert_action(new Actions::DeletePlaylistItems());
-	insert_action(new Actions::DeleteStoredPlaylist());
-	insert_action(new Actions::DeleteBrowserItems());
-	insert_action(new Actions::SavePlaylist());
-	insert_action(new Actions::MoveSelectedItemsUp());
-	insert_action(new Actions::MoveSelectedItemsDown());
-	insert_action(new Actions::MoveSelectedItemsTo());
 	insert_action(new Actions::Add());
 	insert_action(new Actions::Load());
 	insert_action(new Actions::PlayItem());
-	insert_action(new Actions::ToggleDisplayMode());
 	insert_action(new Actions::ToggleSeparatorsBetweenAlbums());
 	insert_action(new Actions::ToggleLyricsUpdateOnSongChange());
 	insert_action(new Actions::ToggleLyricsFetcher());
 	insert_action(new Actions::ToggleFetchingLyricsInBackground());
-	insert_action(new Actions::TogglePlayingSongCentering());
-	insert_action(new Actions::JumpToPlayingSong());
-	insert_action(new Actions::Shuffle());
-	insert_action(new Actions::SaveTagChanges());
 	insert_action(new Actions::SetCrossfade());
 	insert_action(new Actions::SetVolume());
-	insert_action(new Actions::EnterDirectory());
 	insert_action(new Actions::EditSong());
 	insert_action(new Actions::EditLibraryTag());
 	insert_action(new Actions::EditLibraryAlbum());
-	insert_action(new Actions::EditDirectoryName());
-	insert_action(new Actions::EditPlaylistName());
-	insert_action(new Actions::EditLyrics());
-	insert_action(new Actions::JumpToBrowserAction());
-	insert_action(new Actions::JumpToPlaylistEditor());
 	insert_action(new Actions::ToggleScreenLock());
-	insert_action(new Actions::JumpToTagEditor());
-	insert_action(new Actions::JumpToPositionInSong());
 	insert_action(new Actions::ReverseSelection());
 	insert_action(new Actions::RemoveSelection());
 	insert_action(new Actions::SelectAlbum());
 	insert_action(new Actions::SelectFoundItems());
-	insert_action(new Actions::CropMainPlaylist());
-	insert_action(new Actions::CropPlaylist());
-	insert_action(new Actions::ClearMainPlaylist());
-	insert_action(new Actions::ClearPlaylist());
-	insert_action(new Actions::ReversePlaylist());
 	insert_action(new Actions::Find());
 	insert_action(new Actions::NextFoundItem());
 	insert_action(new Actions::PreviousFoundItem());
-	insert_action(new Actions::ToggleFindMode());
 	insert_action(new Actions::ToggleReplayGainMode());
 	insert_action(new Actions::ToggleAddMode());
 	insert_action(new Actions::ToggleMouse());
 	insert_action(new Actions::ToggleBitrateVisibility());
 	insert_action(new Actions::AddRandomItems());
-	insert_action(new Actions::ToggleBrowserSortMode());
 	insert_action(new Actions::ToggleLibraryTagType());
-	insert_action(new Actions::FetchLyricsInBackground());
-	insert_action(new Actions::RefetchLyrics());
-	insert_action(new Actions::SetSelectedItemsPriority());
-	insert_action(new Actions::ToggleOutput());
-	insert_action(new Actions::ToggleVisualizationType());
-	insert_action(new Actions::ShowSongInfo());
 	insert_action(new Actions::ShowArtistInfo());
-	insert_action(new Actions::ShowLyrics());
 	insert_action(new Actions::NextScreen());
 	insert_action(new Actions::PreviousScreen());
-	insert_action(new Actions::ShowHelp());
-	insert_action(new Actions::ShowPlaylist());
-	insert_action(new Actions::ShowBrowserAction());
-	insert_action(new Actions::ChangeBrowseMode());
-	insert_action(new Actions::ShowPlaylistEditor());
-	insert_action(new Actions::ShowTagEditor());
-	insert_action(new Actions::ShowOutputs());
-	insert_action(new Actions::ShowVisualizer());
-	insert_action(new Actions::ShowServerInfo());
 	NcmError action_error;
 	ncm_error_clear(&action_error);
 	if (!ncm_action_validate(&action_error))
