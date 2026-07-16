@@ -144,7 +144,7 @@ static NcMenuItemCallbacks nc_buffer_menu_callbacks = {
 static void
 nc_menu_owned_string_destroy(char **data, int32 *len, int32 *cap) {
     if (*data != NULL) {
-        ncm_free(*data, *cap);
+        cbase_free(*data, *cap);
     }
     *data = NULL;
     *len = 0;
@@ -165,8 +165,8 @@ nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
     }
 
     cap = source_len + 1;
-    data = ncm_malloc(cap);
-    ncm_memcpy(data, source_data, source_len);
+    data = cbase_malloc(cap);
+    cbase_memcpy(data, source_data, source_len);
     data[source_len] = '\0';
 
     *dest_data = data;
@@ -822,8 +822,8 @@ nc_output_menu_item_copy(void *dest, void *source, void *user) {
     if (source_output->name != NULL && source_output->name_len > 0) {
         dest_output->name_len = source_output->name_len;
         cap = dest_output->name_len + 1;
-        dest_output->name = ncm_malloc(cap);
-        ncm_memcpy(dest_output->name, source_output->name,
+        dest_output->name = cbase_malloc(cap);
+        cbase_memcpy(dest_output->name, source_output->name,
                    source_output->name_len);
         dest_output->name[source_output->name_len] = '\0';
     }

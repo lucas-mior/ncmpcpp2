@@ -73,7 +73,7 @@ typedef struct NcmArrayItemCallbacks {
         }                                                                \
         PREFIX##_clear(array);                                            \
         if (array->items != NULL) {                                       \
-            ncm_free(array->items,                                        \
+            cbase_free(array->items,                                        \
                      array->cap*SIZEOF(*array->items));                  \
         }                                                                \
         PREFIX##_init(array);                                             \
@@ -173,7 +173,7 @@ typedef struct NcmArrayItemCallbacks {
             new_cap *= 2;                                                 \
         }                                                                \
                                                                          \
-        array->items = ncm_realloc_array(array->items, old_cap, new_cap,  \
+        array->items = cbase_realloc_array(array->items, old_cap, new_cap,  \
                                          SIZEOF(*array->items));          \
         array->cap = new_cap;                                             \
         return true;                                                      \
@@ -265,7 +265,7 @@ typedef struct NcmArrayItemCallbacks {
             callbacks->destroy(&array->items[idx]);                      \
         }                                                                \
         if (idx + 1 < array->len) {                                       \
-            ncm_memmove(&array->items[idx], &array->items[idx + 1],       \
+            cbase_memmove(&array->items[idx], &array->items[idx + 1],       \
                         (array->len - idx - 1)*SIZEOF(*array->items));    \
         }                                                                \
         array->len -= 1;                                                  \

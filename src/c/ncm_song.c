@@ -119,7 +119,7 @@ ncm_song_tag_destroy(NcmSongTag *tag) {
         return;
     }
     if (tag->value != NULL) {
-        ncm_free(tag->value, tag->value_len + 1);
+        cbase_free(tag->value, tag->value_len + 1);
     }
 
     ncm_song_tag_init(tag);
@@ -140,10 +140,10 @@ ncm_song_tag_copy(NcmSongTag *dest, NcmSongTag *source) {
     }
 
     ncm_song_tag_destroy(dest);
-    dest->value = (char *)ncm_malloc(source->value_len + 1);
+    dest->value = (char *)cbase_malloc(source->value_len + 1);
     dest->value_len = source->value_len;
     dest->type = source->type;
-    ncm_memcpy(dest->value, source->value, source->value_len);
+    cbase_memcpy(dest->value, source->value, source->value_len);
     dest->value[source->value_len] = '\0';
     return true;
 }
@@ -164,7 +164,7 @@ ncm_song_grow_tags(NcmSong *song) {
         new_cap = old_cap*2;
     }
 
-    song->tags = (NcmSongTag *)ncm_realloc_array(song->tags, old_cap,
+    song->tags = (NcmSongTag *)cbase_realloc_array(song->tags, old_cap,
                                                new_cap,
                                                SIZEOF(*song->tags));
     for (int32 i = old_cap; i < new_cap; i += 1) {
@@ -268,13 +268,13 @@ ncm_song_destroy(NcmSong *song) {
     }
 
     if (song->uri != NULL) {
-        ncm_free(song->uri, song->uri_len + 1);
+        cbase_free(song->uri, song->uri_len + 1);
     }
     for (int32 i = 0; i < song->tags_len; i += 1) {
         ncm_song_tag_destroy(&song->tags[i]);
     }
     if (song->tags != NULL) {
-        ncm_free(song->tags, song->tags_cap*SIZEOF(*song->tags));
+        cbase_free(song->tags, song->tags_cap*SIZEOF(*song->tags));
     }
 
     ncm_song_init(song);
@@ -416,12 +416,12 @@ ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len) {
         return false;
     }
 
-    copy = (char *)ncm_malloc(uri_len + 1);
-    ncm_memcpy(copy, uri, uri_len);
+    copy = (char *)cbase_malloc(uri_len + 1);
+    cbase_memcpy(copy, uri, uri_len);
     copy[uri_len] = '\0';
 
     if (song->uri != NULL) {
-        ncm_free(song->uri, song->uri_len + 1);
+        cbase_free(song->uri, song->uri_len + 1);
     }
     song->uri = copy;
     song->uri_len = uri_len;
@@ -451,10 +451,10 @@ ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
 
     tag = &song->tags[song->tags_len];
     ncm_song_tag_destroy(tag);
-    tag->value = (char *)ncm_malloc(value_len + 1);
+    tag->value = (char *)cbase_malloc(value_len + 1);
     tag->value_len = value_len;
     tag->type = type;
-    ncm_memcpy(tag->value, value, value_len);
+    cbase_memcpy(tag->value, value, value_len);
     tag->value[value_len] = '\0';
     song->tags_len += 1;
     return true;

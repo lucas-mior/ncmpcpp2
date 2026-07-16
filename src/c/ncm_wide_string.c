@@ -22,7 +22,7 @@ ncm_wide_string_destroy(NcmWideString *string) {
         return;
     }
     if (string->data) {
-        ncm_free(string->data, string->cap*SIZEOF(*string->data));
+        cbase_free(string->data, string->cap*SIZEOF(*string->data));
     }
 
     string->data = NULL;
@@ -68,7 +68,7 @@ ncm_wide_string_reserve(NcmWideString *string, int32 extra) {
         new_cap *= 2;
     }
 
-    string->data = ncm_realloc_array(string->data, old_cap, new_cap,
+    string->data = cbase_realloc_array(string->data, old_cap, new_cap,
                                      SIZEOF(*string->data));
     string->cap = new_cap;
     return;

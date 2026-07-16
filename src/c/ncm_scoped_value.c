@@ -21,11 +21,11 @@ ncm_scoped_value_begin(NcmScopedValue *scope, void *target,
     }
 
     ncm_scoped_value_discard(scope);
-    scope->saved = ncm_malloc(size);
+    scope->saved = cbase_malloc(size);
     scope->target = target;
     scope->size = size;
-    ncm_memcpy(scope->saved, target, size);
-    ncm_memcpy(target, temporary_value, size);
+    cbase_memcpy(scope->saved, target, size);
+    cbase_memcpy(target, temporary_value, size);
     return true;
 }
 
@@ -36,7 +36,7 @@ ncm_scoped_value_restore(NcmScopedValue *scope) {
         return;
     }
 
-    ncm_memcpy(scope->target, scope->saved, scope->size);
+    cbase_memcpy(scope->target, scope->saved, scope->size);
     ncm_scoped_value_discard(scope);
     return;
 }
@@ -47,7 +47,7 @@ ncm_scoped_value_discard(NcmScopedValue *scope) {
         return;
     }
     if (scope->saved) {
-        ncm_free(scope->saved, scope->size);
+        cbase_free(scope->saved, scope->size);
     }
 
     scope->target = NULL;

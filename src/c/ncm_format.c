@@ -287,7 +287,7 @@ ncm_format_expr_list_reserve(NcmFormatExprList *list, int32 extra) {
         new_cap *= 2;
     }
 
-    list->items = ncm_realloc_array(list->items, old_cap, new_cap,
+    list->items = cbase_realloc_array(list->items, old_cap, new_cap,
                                     SIZEOF(*list->items));
     list->cap = new_cap;
     return true;
@@ -320,7 +320,7 @@ ncm_format_expr_list_destroy(NcmFormatExprList *list) {
     }
     ncm_format_expr_list_clear(list);
     if (list->items != NULL) {
-        ncm_free(list->items, list->cap*SIZEOF(*list->items));
+        cbase_free(list->items, list->cap*SIZEOF(*list->items));
     }
     ncm_format_expr_list_init(list);
     return;

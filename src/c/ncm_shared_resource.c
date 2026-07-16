@@ -103,9 +103,9 @@ ncm_shared_resource_init_owned(NcmSharedResource *shared,
         return false;
     }
 
-    shared->resource = ncm_malloc(resource_size);
+    shared->resource = cbase_malloc(resource_size);
     if (initial_value) {
-        ncm_memcpy(shared->resource, initial_value, resource_size);
+        cbase_memcpy(shared->resource, initial_value, resource_size);
     } else {
         ncm_shared_resource_zero(shared->resource, resource_size);
     }
@@ -122,7 +122,7 @@ ncm_shared_resource_destroy(NcmSharedResource *shared) {
     }
 
     if (shared->owns_resource && shared->resource) {
-        ncm_free(shared->resource, shared->resource_size);
+        cbase_free(shared->resource, shared->resource_size);
     }
     if (shared->initialized) {
         pthread_mutex_destroy(&shared->mutex);

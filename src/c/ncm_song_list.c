@@ -99,7 +99,7 @@ ncm_song_list_destroy(NcmSongList *list) {
 
     ncm_song_list_clear(list);
     if (list->items != NULL) {
-        ncm_free(list->items, list->cap*SIZEOF(*list->items));
+        cbase_free(list->items, list->cap*SIZEOF(*list->items));
     }
     ncm_song_list_init(list);
     return;
@@ -132,7 +132,7 @@ ncm_song_list_reserve(NcmSongList *list, int32 extra) {
         new_cap *= 2;
     }
 
-    list->items = ncm_realloc_array(list->items, old_cap, new_cap,
+    list->items = cbase_realloc_array(list->items, old_cap, new_cap,
                                     SIZEOF(*list->items));
     for (int32 i = old_cap; i < new_cap; i += 1) {
         ncm_song_list_item_init(&list->items[i]);

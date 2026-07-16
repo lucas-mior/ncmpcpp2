@@ -5331,13 +5331,13 @@ tag_editor_set_config_pattern(char *pattern, int32 pattern_len) {
         return false;
     }
     cap = pattern_len + 1;
-    copy = ncm_malloc(cap);
+    copy = cbase_malloc(cap);
     if ((pattern != NULL) && (pattern_len > 0)) {
-        ncm_memcpy(copy, pattern, pattern_len);
+        cbase_memcpy(copy, pattern, pattern_len);
     }
     copy[pattern_len] = '\0';
     if ((Config.pattern != NULL) && (Config.pattern_cap > 0)) {
-        ncm_free(Config.pattern, Config.pattern_cap);
+        cbase_free(Config.pattern, Config.pattern_cap);
     }
     Config.pattern = copy;
     Config.pattern_len = pattern_len;

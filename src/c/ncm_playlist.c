@@ -33,7 +33,7 @@ ncm_playlist_init(NcmPlaylist *playlist) {
 void
 ncm_playlist_destroy(NcmPlaylist *playlist) {
     if (playlist->path) {
-        ncm_free(playlist->path, playlist->path_len + 1);
+        cbase_free(playlist->path, playlist->path_len + 1);
     }
 
     playlist->path = NULL;
@@ -58,10 +58,10 @@ ncm_playlist_set(NcmPlaylist *playlist, char *path,
     }
 
     ncm_playlist_init(&replacement);
-    replacement.path = ncm_malloc(path_len + 1);
+    replacement.path = cbase_malloc(path_len + 1);
     replacement.path_len = path_len;
     replacement.last_modified = last_modified;
-    ncm_memcpy(replacement.path, path, path_len);
+    cbase_memcpy(replacement.path, path, path_len);
     replacement.path[path_len] = '\0';
 
     ncm_playlist_destroy(playlist);
