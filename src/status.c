@@ -73,8 +73,6 @@ typedef struct StatusTimeoutContext {
 #if defined(__GNUC__)
 extern bool actions_legacy_runtime_playlist_highlight_mpd_position(
     int32 position) __attribute__((weak));
-extern void actions_legacy_runtime_browser_fetch_supported_extensions(void)
-    __attribute__((weak));
 extern void actions_legacy_runtime_request_exit(void)
     __attribute__((weak));
 #else
@@ -82,11 +80,6 @@ static bool
 actions_legacy_runtime_playlist_highlight_mpd_position(int32 position) {
     (void)position;
     return false;
-}
-
-static void
-actions_legacy_runtime_browser_fetch_supported_extensions(void) {
-    return;
 }
 
 static void
@@ -311,11 +304,17 @@ status_elapsed_time_changed(NcmStatusHooks *hooks, bool update) {
 
 static int32
 status_cstring_len(char *string) {
+    int32 len;
+
     if (string == NULL) {
         return 0;
     }
 
-    return (int32)strlen((char *)string);
+    len = 0;
+    while (string[len] != 0) {
+        len += 1;
+    }
+    return len;
 }
 
 static void
@@ -613,13 +612,7 @@ status_run_init_load_browser_supported_extensions(
         hooks->load_browser_supported_extensions(hooks->user);
         return;
     }
-
-#if defined(__GNUC__)
-    if (actions_legacy_runtime_browser_fetch_supported_extensions == NULL) {
-        return;
-    }
-#endif
-    actions_legacy_runtime_browser_fetch_supported_extensions();
+    native_c_screen_browser_fetch_supported_extensions();
     return;
 }
 
@@ -1345,12 +1338,12 @@ status_player_state_string(char *buffer, int32 buffer_cap) {
         break;
     }
 
-    len = (int32)strlen((char *)string);
+    len = status_cstring_len(string);
     if (len >= buffer_cap) {
         len = buffer_cap - 1;
     }
     if (len > 0) {
-        memcpy(buffer, string, (size_t)len);
+        cbase_memcpy(buffer, string, len);
     }
     buffer[len] = 0;
     return len;

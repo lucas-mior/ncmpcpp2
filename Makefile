@@ -153,7 +153,8 @@ $(BUILD_DIR)/tests/c_tag_editor_screen_test: \
 	LDFLAGS += $(TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS)
 C_BROWSER_SCREEN_TEST_WRAP_FLAGS := \
 	-Wl,--wrap=nc_window_has_coords \
-	-Wl,--wrap=ncm_mpd_client_get_directory_entries
+	-Wl,--wrap=ncm_mpd_client_get_directory_entries \
+	-Wl,--wrap=ncm_mpd_client_get_supported_extensions
 $(BUILD_DIR)/tests/c_browser_screen_test: \
 	LDFLAGS += $(C_BROWSER_SCREEN_TEST_WRAP_FLAGS)
 PLAYLIST_ACTIONS_TEST_WRAP_FLAGS := \

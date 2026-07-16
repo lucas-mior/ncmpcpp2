@@ -98,6 +98,10 @@ static bool native_browser_stat_local_path(char *path, int32 path_len,
 static enum NcmFsEntryType native_browser_local_mode_type(mode_t mode);
 static bool native_browser_local_path_has_supported_extension(
     NativeBrowserScreen *screen, char *path, int32 path_len);
+static bool native_browser_supported_extensions_contains(
+    NcmBufferArray *extensions, char *extension, int32 extension_len);
+static bool native_browser_supported_extensions_add(
+    NcmBufferArray *extensions, char *extension, int32 extension_len);
 static int32 native_browser_compare_items(NativeBrowserScreen *screen,
                                           NcmMpdItem *left,
                                           NcmMpdItem *right);
@@ -612,19 +616,11 @@ bool
 native_browser_screen_add_supported_extension(NativeBrowserScreen *screen,
                                               char *extension,
                                               int32 extension_len) {
-    NcmBuffer buffer;
-    bool result;
-
     if (screen == NULL) {
         return false;
     }
-
-    ncm_buffer_init(&buffer);
-    result = ncm_buffer_set(&buffer, extension, extension_len)
-             && ncm_buffer_array_append_copy(
-                 &screen->supported_extensions, &buffer);
-    ncm_buffer_destroy(&buffer);
-    return result;
+    return native_browser_supported_extensions_add(
+        &screen->supported_extensions, extension, extension_len);
 }
 
 bool
@@ -637,16 +633,45 @@ native_browser_screen_has_supported_extension(NativeBrowserScreen *screen,
         return false;
     }
     extensions = &screen->supported_extensions;
-    for (int32 i = 0; i < extensions->len; i += 1) {
-        NcmBuffer *item;
+    return native_browser_supported_extensions_contains(
+        extensions, extension, extension_len);
+}
 
-        item = &extensions->items[i];
-        if (ncm_string_equal(item->data, item->len, extension,
-                             extension_len)) {
-            return true;
-        }
+bool
+native_browser_screen_fetch_supported_extensions(
+    NativeBrowserScreen *screen, NcmMpdClient *client, NcmError *error) {
+    NcmMpdStringList strings;
+    NcmBufferArray extensions;
+    NcmMpdString *string;
+    bool result;
+
+    if (screen == NULL || client == NULL) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT_ARGS("missing browser extension state"));
+        return false;
     }
-    return false;
+
+    ncm_mpd_string_list_init(&strings);
+    if (!ncm_mpd_client_get_supported_extensions(client, &strings, error)) {
+        ncm_mpd_string_list_destroy(&strings);
+        return false;
+    }
+
+    result = true;
+    ncm_buffer_array_init(&extensions);
+    for (int32 i = 0; result && (i < strings.count); i += 1) {
+        string = &strings.items[i];
+        result = native_browser_supported_extensions_add(
+            &extensions, string->value, string->value_len);
+    }
+
+    if (result) {
+        ncm_buffer_array_move(&screen->supported_extensions, &extensions);
+        ncm_error_clear(error);
+    }
+    ncm_buffer_array_destroy(&extensions);
+    ncm_mpd_string_list_destroy(&strings);
+    return result;
 }
 
 NcmBufferArray *
@@ -758,6 +783,13 @@ native_browser_screen_change_browse_mode(
         native_browser_screen_set_local(screen, local_browser);
         native_browser_screen_clear(screen);
         native_browser_screen_request_update(screen);
+        if (local_browser && (screen->supported_extensions.len <= 0)) {
+            NcmError fetch_error;
+
+            ncm_error_clear(&fetch_error);
+            (void)native_browser_screen_fetch_supported_extensions(
+                screen, client, &fetch_error);
+        }
     }
 
     ncm_buffer_destroy(&directory);
@@ -1923,6 +1955,70 @@ native_browser_local_path_has_supported_extension(
     }
     return native_browser_screen_has_supported_extension(
         screen, path + extension - 1, path_len - extension + 1);
+}
+
+static bool
+native_browser_supported_extensions_contains(NcmBufferArray *extensions,
+                                             char *extension,
+                                             int32 extension_len) {
+    if (extensions == NULL) {
+        return false;
+    }
+    if (extension == NULL) {
+        extension = (char *)"";
+        extension_len = 0;
+    }
+    if (extension_len < 0) {
+        extension_len = (int32)strlen(extension);
+    }
+
+    for (int32 i = 0; i < extensions->len; i += 1) {
+        NcmBuffer *item;
+
+        item = &extensions->items[i];
+        if (ncm_string_equal(item->data, item->len, extension,
+                             extension_len)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool
+native_browser_supported_extensions_add(NcmBufferArray *extensions,
+                                        char *extension,
+                                        int32 extension_len) {
+    NcmBuffer buffer;
+    bool result;
+
+    if (extensions == NULL) {
+        return false;
+    }
+    if (extension == NULL) {
+        extension = (char *)"";
+        extension_len = 0;
+    }
+    if (extension_len < 0) {
+        extension_len = (int32)strlen(extension);
+    }
+
+    ncm_buffer_init(&buffer);
+    if ((extension_len <= 0) || (extension[0] != '.')) {
+        result = ncm_buffer_set(&buffer, STRLIT_ARGS("."));
+        if (result) {
+            ncm_buffer_append(&buffer, extension, extension_len);
+        }
+    } else {
+        result = ncm_buffer_set(&buffer, extension, extension_len);
+    }
+
+    if (result
+        && !native_browser_supported_extensions_contains(
+            extensions, buffer.data, buffer.len)) {
+        result = ncm_buffer_array_append_copy(extensions, &buffer);
+    }
+    ncm_buffer_destroy(&buffer);
+    return result;
 }
 
 static bool

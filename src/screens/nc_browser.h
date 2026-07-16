@@ -123,6 +123,8 @@ bool native_browser_screen_add_supported_extension(
     NativeBrowserScreen *screen, char *extension, int32 extension_len);
 bool native_browser_screen_has_supported_extension(
     NativeBrowserScreen *screen, char *extension, int32 extension_len);
+bool native_browser_screen_fetch_supported_extensions(
+    NativeBrowserScreen *screen, NcmMpdClient *client, NcmError *error);
 NcmBufferArray *native_browser_screen_supported_extensions(
     NativeBrowserScreen *screen);
 void native_browser_screen_clear_temp_buffers(NativeBrowserScreen *screen);
