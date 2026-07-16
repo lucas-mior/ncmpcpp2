@@ -36,7 +36,6 @@ void ncm_fs_entry_destroy(NcmFsEntry *entry);
 bool ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat,
                  NcmError *error);
 bool ncm_fs_exists(char *path, int32 path_len);
-bool ncm_fs_is_regular_file(char *path, int32 path_len);
 bool ncm_fs_is_directory(char *path, int32 path_len);
 bool ncm_fs_unlink(char *path, int32 path_len, NcmError *error);
 bool ncm_fs_rename(char *old_path, int32 old_path_len,
@@ -50,9 +49,5 @@ bool ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
 void ncm_fs_directory_close(NcmFsDirectory *directory);
 bool ncm_fs_join(NcmBuffer *buffer, char *left, int32 left_len,
                  char *right, int32 right_len);
-bool ncm_fs_user_config_dir(NcmBuffer *buffer, char *app_name,
-                            int32 app_name_len, NcmError *error);
-bool ncm_fs_user_cache_dir(NcmBuffer *buffer, char *app_name,
-                           int32 app_name_len, NcmError *error);
 
 #endif /* NCM_FS_H */

@@ -192,8 +192,3 @@ int32
 ncm_sample_buffer_capacity(NcmSampleBuffer *buffer) {
     return buffer->cap;
 }
-
-int16 *
-ncm_sample_buffer_data(NcmSampleBuffer *buffer) {
-    return buffer->data;
-}

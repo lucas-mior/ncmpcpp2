@@ -138,24 +138,6 @@ ncm_string_format_arg_u64(uint64 value) {
 }
 
 NcmStringFormatArg
-ncm_string_format_arg_f64(double value) {
-    NcmStringFormatArg result;
-
-    result.type = NCM_STRING_FORMAT_ARG_F64;
-    result.value.f64 = value;
-    return result;
-}
-
-NcmStringFormatArg
-ncm_string_format_arg_char(char value) {
-    NcmStringFormatArg result;
-
-    result.type = NCM_STRING_FORMAT_ARG_CHAR;
-    result.value.ch = value;
-    return result;
-}
-
-NcmStringFormatArg
 ncm_string_format_arg_bool(bool value) {
     NcmStringFormatArg result;
 

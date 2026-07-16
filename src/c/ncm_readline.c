@@ -16,26 +16,3 @@
 #else
 #error "readline is not available"
 #endif
-
-char *
-ncm_readline_prompt(char *prompt) {
-    return readline(prompt);
-}
-
-void
-ncm_readline_remember(char *line) {
-#if defined(HAVE_READLINE_HISTORY_H)
-    if ((line != NULL) && (line[0] != '\0')) {
-        add_history(line);
-    }
-#else
-    (void)line;
-#endif
-    return;
-}
-
-void
-ncm_readline_release(char *line) {
-    free(line);
-    return;
-}

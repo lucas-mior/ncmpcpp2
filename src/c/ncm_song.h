@@ -41,7 +41,6 @@ void ncm_song_move(NcmSong *dest, NcmSong *source);
 bool ncm_song_copy(NcmSong *dest, NcmSong *source);
 bool ncm_song_from_mpd_song(NcmSong *dest, struct mpd_song *source);
 bool ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source);
-bool ncm_song_borrow_mpd_song(NcmSong *dest, struct mpd_song *source);
 bool ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len);
 bool ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
                       char *value, int32 value_len);
@@ -75,16 +74,6 @@ bool ncm_song_directory_from_uri(char *uri, int32 uri_len,
                                   NcmStringView *view);
 bool ncm_song_uri_is_from_database(char *uri, int32 uri_len);
 bool ncm_song_uri_is_stream(char *uri, int32 uri_len);
-bool ncm_mpd_song_tag_view(struct mpd_song *song, enum mpd_tag_type tag,
-                           uint32 idx, NcmStringView *view);
-bool ncm_mpd_song_uri_view(struct mpd_song *song, uint32 idx,
-                           NcmStringView *view);
-bool ncm_mpd_song_name_view(struct mpd_song *song, uint32 idx,
-                            NcmStringView *view);
-bool ncm_mpd_song_directory_view(struct mpd_song *song, uint32 idx,
-                                 NcmStringView *view);
-bool ncm_mpd_song_is_from_database(struct mpd_song *song);
-bool ncm_mpd_song_is_stream(struct mpd_song *song);
 int32 ncm_song_numeric_tag_len(char *tag, int32 tag_len);
 int32 ncm_song_track_number_len(char *tag, int32 tag_len);
 int32 ncm_song_format_numeric_tag(char *buffer, int32 buffer_cap,

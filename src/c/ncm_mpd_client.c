@@ -175,15 +175,6 @@ ncm_mpd_client_destroy(NcmMpdClient *client) {
     return;
 }
 
-NcmMpdConnection *
-ncm_mpd_client_connection(NcmMpdClient *client) {
-    if (client == NULL) {
-        return NULL;
-    }
-
-    return &client->connection;
-}
-
 char *
 ncm_mpd_client_hostname(NcmMpdClient *client) {
     if (client == NULL) {
@@ -550,21 +541,6 @@ ncm_mpd_client_update_directory(NcmMpdClient *client, char *path,
 }
 
 bool
-ncm_mpd_client_rescan_directory(NcmMpdClient *client, char *path,
-                                uint32 *id, NcmError *error) {
-    if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
-        return false;
-    }
-    if (!ncm_mpd_connection_rescan_database(&client->connection, path, id)) {
-        ncm_mpd_client_copy_connection_error(client, error);
-        return false;
-    }
-
-    ncm_error_clear(error);
-    return true;
-}
-
-bool
 ncm_mpd_client_play_pos(NcmMpdClient *client, int32 pos, NcmError *error) {
     if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
         return false;
@@ -584,20 +560,6 @@ ncm_mpd_client_play_id(NcmMpdClient *client, int32 id, NcmError *error) {
         return false;
     }
     if (!ncm_mpd_connection_play_id(&client->connection, id)) {
-        ncm_mpd_client_copy_connection_error(client, error);
-        return false;
-    }
-
-    ncm_error_clear(error);
-    return true;
-}
-
-bool
-ncm_mpd_client_pause(NcmMpdClient *client, bool state, NcmError *error) {
-    if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
-        return false;
-    }
-    if (!ncm_mpd_connection_pause(&client->connection, state)) {
         ncm_mpd_client_copy_connection_error(client, error);
         return false;
     }
@@ -738,21 +700,6 @@ ncm_mpd_client_get_current_song(NcmMpdClient *client, NcmSong *song,
         return false;
     }
     if (!ncm_mpd_connection_get_current_song(&client->connection, song)) {
-        ncm_mpd_client_copy_connection_error(client, error);
-        return false;
-    }
-
-    ncm_error_clear(error);
-    return true;
-}
-
-bool
-ncm_mpd_client_get_song(NcmMpdClient *client, char *path,
-                        NcmSong *song, NcmError *error) {
-    if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
-        return false;
-    }
-    if (!ncm_mpd_connection_get_song(&client->connection, path, song)) {
         ncm_mpd_client_copy_connection_error(client, error);
         return false;
     }
@@ -1098,22 +1045,6 @@ ncm_mpd_client_delete(NcmMpdClient *client, uint32 pos, NcmError *error) {
 }
 
 bool
-ncm_mpd_client_delete_range(NcmMpdClient *client, uint32 begin,
-                            uint32 end, NcmError *error) {
-    if (!ncm_mpd_client_prechecks(client, error)) {
-        return false;
-    }
-    if (!ncm_mpd_connection_delete_range(&client->connection, begin, end,
-                                         client->command_list_active)) {
-        ncm_mpd_client_copy_connection_error(client, error);
-        return false;
-    }
-
-    ncm_error_clear(error);
-    return true;
-}
-
-bool
 ncm_mpd_client_start_command_list(NcmMpdClient *client, NcmError *error) {
     if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
         return false;
@@ -1314,22 +1245,6 @@ ncm_mpd_client_start_search(NcmMpdClient *client, bool exact_match,
 }
 
 bool
-ncm_mpd_client_start_field_search(NcmMpdClient *client,
-                                  enum mpd_tag_type tag,
-                                  NcmError *error) {
-    if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
-        return false;
-    }
-    if (!ncm_mpd_connection_start_search_tags(&client->connection, tag)) {
-        ncm_mpd_client_copy_connection_error(client, error);
-        return false;
-    }
-
-    ncm_error_clear(error);
-    return true;
-}
-
-bool
 ncm_mpd_client_add_search_tag(NcmMpdClient *client, enum mpd_tag_type tag,
                               char *value, NcmError *error) {
     if (!ncm_mpd_client_require_connected(client, error)) {
@@ -1455,12 +1370,6 @@ ncm_mpd_client_get_songs(NcmMpdClient *client, char *path,
 
     ncm_error_clear(error);
     return true;
-}
-
-bool
-ncm_mpd_client_get_directories(NcmMpdClient *client, char *path,
-                               NcmMpdItemList *items, NcmError *error) {
-    return ncm_mpd_client_get_directory(client, path, items, error);
 }
 
 bool

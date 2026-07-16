@@ -88,25 +88,6 @@ ncm_wide_string_append_char(NcmWideString *string, wchar_t ch) {
     return;
 }
 
-int32
-ncm_wide_string_count_utf8(char *string, int32 string_len) {
-    int32 result;
-    int32 byte;
-
-    if ((string == NULL) || (string_len <= 0)) {
-        return 0;
-    }
-
-    result = 0;
-    byte = 0;
-    while (byte < string_len) {
-        byte = ncm_utf8_next_position(string, string_len, byte);
-        result += 1;
-    }
-
-    return result;
-}
-
 bool
 ncm_wide_string_from_utf8(NcmWideString *out,
                           char *string, int32 string_len) {

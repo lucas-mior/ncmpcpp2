@@ -48,12 +48,8 @@ enum VisualizerType {
 };
 
 char *ncm_search_direction_str(enum SearchDirection value);
-bool ncm_search_direction_parse(char *string, int32 string_len,
-                                enum SearchDirection *value);
-char *ncm_space_add_mode_str(enum SpaceAddMode value);
 bool ncm_space_add_mode_parse(char *string, int32 string_len,
                               enum SpaceAddMode *value);
-char *ncm_sort_mode_str(enum SortMode value);
 bool ncm_sort_mode_parse(char *string, int32 string_len,
                          enum SortMode *value);
 char *ncm_display_mode_str(enum DisplayMode value);
@@ -61,7 +57,6 @@ bool ncm_display_mode_parse(char *string, int32 string_len,
                             enum DisplayMode *value);
 char *ncm_design_str(enum Design value);
 bool ncm_design_parse(char *string, int32 string_len, enum Design *value);
-char *ncm_visualizer_type_str(enum VisualizerType value);
 bool ncm_visualizer_type_parse(char *string, int32 string_len,
                                enum VisualizerType *value);
 
