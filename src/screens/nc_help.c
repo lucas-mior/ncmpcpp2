@@ -6,8 +6,6 @@
 #include "cbase/base_macros.h"
 #include "settings.h"
 
-
-static NcHelpScreen *nc_help_from_screen(NcScreen *screen);
 static NcScreenCallbacks nc_help_callbacks(void);
 static NcWindow *nc_help_active_window(NcScreen *screen);
 static void nc_help_refresh(NcScreen *screen);
