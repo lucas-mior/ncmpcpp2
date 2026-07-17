@@ -109,7 +109,7 @@ ncm_buffer_reserve(NcmBuffer *buffer, int32 extra) {
     }
 
     needed = buffer->len + extra + 1;
-    if (needed <= buffer->cap) {
+    if ((buffer->data != NULL) && (needed <= buffer->cap)) {
         return;
     }
 
