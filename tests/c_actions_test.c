@@ -31,7 +31,7 @@ typedef struct ActionTestState {
 static void fail(char *file, int32 line, char *condition);
 static void require_int(char *file, int32 line, char *name,
                         int32 actual, int32 expected);
-static int32 test_string_len(char *string);
+static int32 test_strlen32(char *string);
 static void require_string(char *file, int32 line, char *name,
                            char *actual, char *expected,
                            int32 expected_len);
@@ -66,7 +66,7 @@ require_int(char *file, int32 line, char *name,
 }
 
 static int32
-test_string_len(char *string) {
+test_strlen32(char *string) {
     int32 len;
 
     len = 0;
@@ -79,7 +79,7 @@ test_string_len(char *string) {
 static void
 require_string(char *file, int32 line, char *name,
                char *actual, char *expected, int32 expected_len) {
-    if ((test_string_len(actual) != expected_len)
+    if ((test_strlen32(actual) != expected_len)
         || (memcmp(actual, expected, (size_t)expected_len) != 0)) {
         fprintf(stderr, "%s:%d: %s: expected '%.*s', got '%s'\n",
                 file, line, name, expected_len, expected, actual);

@@ -6,7 +6,7 @@
 
 #include "cbase/base_macros.h"
 
-static int32 ncm_string_format_cstring_len(char *string);
+static int32 ncm_string_format_cstrlen32(char *string);
 static void ncm_string_format_append_arg(NcmBuffer *out,
                                          NcmStringFormatArg *arg);
 static void ncm_string_format_append_number(NcmBuffer *out,
@@ -14,7 +14,7 @@ static void ncm_string_format_append_number(NcmBuffer *out,
                                             NcmStringFormatArg *arg);
 
 static int32
-ncm_string_format_cstring_len(char *string) {
+ncm_string_format_cstrlen32(char *string) {
     int32 len;
 
     len = 0;
@@ -116,7 +116,7 @@ ncm_string_format_arg_string(char *data, int32 len) {
 NcmStringFormatArg
 ncm_string_format_arg_cstring(char *data) {
     return ncm_string_format_arg_string(
-        data, ncm_string_format_cstring_len(data));
+        data, ncm_string_format_cstrlen32(data));
 }
 
 NcmStringFormatArg

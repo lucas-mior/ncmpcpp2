@@ -25,7 +25,7 @@ NcmBindingsConfiguration Bindings;
 
 static void ncm_bindings_error(NcmError *error, char *format, ...)
     __attribute__((format(printf, 2, 3)));
-static int32 ncm_string_len(char *string);
+static int32 ncm_strlen32(char *string);
 static char *ncm_string_copy(char *string, int32 string_len, int32 *cap);
 static int32 ncm_trim_start(char *string, int32 string_len);
 static int32 ncm_trim_end(char *string, int32 string_len);
@@ -90,7 +90,7 @@ ncm_bindings_error(NcmError *error, char *format, ...) {
 }
 
 static int32
-ncm_string_len(char *string) {
+ncm_strlen32(char *string) {
     int32 len;
 
     len = 0;
@@ -550,7 +550,7 @@ ncm_binding_action_format(NcmBuffer *buffer,
     switch (action->kind) {
     case NCM_BINDING_ACTION_NORMAL:
         ncm_buffer_append(buffer, ncm_action_type_name(action->type),
-                          ncm_string_len(
+                          ncm_strlen32(
                               ncm_action_type_name(action->type)));
         break;
     case NCM_BINDING_ACTION_PUSH_CHARACTERS:
@@ -566,14 +566,14 @@ ncm_binding_action_format(NcmBuffer *buffer,
     case NCM_BINDING_ACTION_REQUIRE_SCREEN:
         ncm_buffer_append(buffer, STRLIT_ARGS("require_screen \""));
         ncm_buffer_append(buffer, screen_type_str(action->screen_type),
-                          ncm_string_len(
+                          ncm_strlen32(
                               screen_type_str(action->screen_type)));
         ncm_buffer_append_byte(buffer, '"');
         break;
     case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
         ncm_buffer_append(buffer, STRLIT_ARGS("require_runnable \""));
         ncm_buffer_append(buffer, ncm_action_type_name(action->type),
-                          ncm_string_len(
+                          ncm_strlen32(
                               ncm_action_type_name(action->type)));
         ncm_buffer_append_byte(buffer, '"');
         break;
@@ -1207,7 +1207,7 @@ ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
     NcKey key;
     bool result;
 
-    key = ncm_bindings_string_to_key(key_name, ncm_string_len(key_name));
+    key = ncm_bindings_string_to_key(key_name, ncm_strlen32(key_name));
     if (!ncm_bindings_not_bound(bindings, key)) {
         return true;
     }
@@ -1228,7 +1228,7 @@ ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
     NcKey key;
     bool result;
 
-    key = ncm_bindings_string_to_key(key_name, ncm_string_len(key_name));
+    key = ncm_bindings_string_to_key(key_name, ncm_strlen32(key_name));
     if (!ncm_bindings_not_bound(bindings, key)) {
         return true;
     }
@@ -1248,7 +1248,7 @@ ncm_bindings_bind_group(NcmBindingsConfiguration *bindings, char *key_name,
                         enum NcmActionType *actions, int32 actions_len) {
     NcKey key;
 
-    key = ncm_bindings_string_to_key(key_name, ncm_string_len(key_name));
+    key = ncm_bindings_string_to_key(key_name, ncm_strlen32(key_name));
     if (!ncm_bindings_not_bound(bindings, key)) {
         return true;
     }
@@ -1370,7 +1370,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
         NcmStringView enclosed;
 
         line_no += 1;
-        len = ncm_string_len(line);
+        len = ncm_strlen32(line);
         len = ncm_trim_end(line, len);
         if ((len == 0) || (line[0] == '#')) {
             continue;

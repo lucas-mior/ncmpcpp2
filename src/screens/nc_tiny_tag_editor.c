@@ -34,7 +34,7 @@ static void tiny_editor_draw_row(NcMenu *menu, NcWindow *window,
 static void tiny_editor_print_buffer(NcWindow *window, NcBuffer *buffer);
 static bool tiny_editor_add_row(NativeTinyTagEditorScreen *screen,
                                 NcBuffer *buffer, uint32 flags);
-static int32 tiny_editor_cstring_len(char *string);
+static int32 tiny_editor_cstrlen32(char *string);
 static int64 tiny_editor_current_row(NativeTinyTagEditorScreen *screen);
 static void tiny_editor_status_message(
     NativeTinyTagEditorScreen *screen, char *message, int32 message_len);
@@ -575,7 +575,7 @@ native_tiny_tag_editor_screen_run_row(
         } else {
             prompt_result = screen->hooks.prompt(
                 screen->hooks.user, field_name,
-                tiny_editor_cstring_len(field_name), initial, &input);
+                tiny_editor_cstrlen32(field_name), initial, &input);
         }
         ncm_buffer_destroy(&tag_value);
         if (prompt_result == NATIVE_TINY_TAG_EDITOR_PROMPT_ABORTED) {
@@ -915,7 +915,7 @@ tiny_editor_add_row(NativeTinyTagEditorScreen *screen, NcBuffer *buffer,
 }
 
 static int32
-tiny_editor_cstring_len(char *string) {
+tiny_editor_cstrlen32(char *string) {
     int32 len;
 
     if (string == NULL) {
@@ -1062,7 +1062,7 @@ tiny_editor_buffer_mutable_tag(
 
     name = ncm_tags_field_name(field);
     tiny_editor_buffer_key_value(
-        buffer, name, tiny_editor_cstring_len(name), NULL, 0);
+        buffer, name, tiny_editor_cstrlen32(name), NULL, 0);
     value = ncm_mutable_song_tags_buffer(
         song, field, tag_separator, tag_separator_len,
         show_duplicate_tags);
