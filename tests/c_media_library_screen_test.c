@@ -335,7 +335,7 @@ test_media_library_layout_and_rendering(void) {
     assert(ncm_format_ast_append_first_of_getters(
         &Config.song_library_format, &title_getter, 1));
 
-    Config.empty_tag = (char *)"<empty>";
+    Config.empty_tag = "<empty>";
     Config.empty_tag_len = STRLIT_LEN("<empty>");
     Config.empty_tag_cap = 0;
     Config.titles_visibility = true;
@@ -420,7 +420,7 @@ test_media_library_layout_and_rendering(void) {
                             LIT_ARGS("Albums")));
 
     ncm_buffer_init(&text);
-    tag.tag = (char *)"Artist";
+    tag.tag = "Artist";
     tag.tag_len = STRLIT_LEN("Artist");
     native_media_library_screen_format_tag_row(&screen, &tag, &text);
     assert(ncm_string_equal(text.data, text.len, LIT_ARGS("Artist")));
@@ -429,11 +429,11 @@ test_media_library_layout_and_rendering(void) {
     native_media_library_screen_format_tag_row(&screen, &tag, &text);
     assert(ncm_string_equal(text.data, text.len, LIT_ARGS("<empty>")));
 
-    album.tag = (char *)"Artist";
+    album.tag = "Artist";
     album.tag_len = STRLIT_LEN("Artist");
-    album.album = (char *)"Album";
+    album.album = "Album";
     album.album_len = STRLIT_LEN("Album");
-    album.date = (char *)"2026";
+    album.date = "2026";
     album.date_len = STRLIT_LEN("2026");
     native_media_library_screen_format_album_row(&screen, &album,
                                                   &text);
@@ -1048,7 +1048,7 @@ test_media_library_song_ordering(void) {
     title_getter = NCM_SONG_GETTER_TITLE;
     assert(ncm_format_ast_append_first_of_getters(
         &Config.song_library_format, &title_getter, 1));
-    Config.tags_separator = (char *)" | ";
+    Config.tags_separator = " | ";
     Config.tags_separator_len = STRLIT_LEN(" | ");
     Config.tags_separator_cap = 0;
     Config.ignore_leading_the = false;
@@ -2151,7 +2151,7 @@ test_media_library_filter_search_actions(void) {
     title_getter = NCM_SONG_GETTER_TITLE;
     assert(ncm_format_ast_append_first_of_getters(
         &Config.song_library_format, &title_getter, 1));
-    Config.empty_tag = (char *)"Unknown Artist";
+    Config.empty_tag = "Unknown Artist";
     Config.empty_tag_len = STRLIT_LEN("Unknown Artist");
     Config.empty_tag_cap = 0;
     Config.regex_type = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
@@ -2483,7 +2483,7 @@ test_media_library_hooks(void) {
     assert(ncm_mpd_song_list_count(&songs) == 1);
 
     query.primary_tag = MPD_TAG_ARTIST;
-    query.primary_value = (char *)"Artist A";
+    query.primary_value = "Artist A";
     query.primary_value_len = STRLIT_LEN("Artist A");
     query.match_primary_tag = true;
     assert(native_media_library_screen_search_songs(

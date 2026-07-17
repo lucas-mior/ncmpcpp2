@@ -189,9 +189,9 @@ static NativeVisualizerScreenConfig
 test_config(TestVisualizerIo *io) {
     NativeVisualizerScreenConfig config = {0};
 
-    config.source_location = (char *)"/tmp/visualizer.fifo";
+    config.source_location = "/tmp/visualizer.fifo";
     config.source_location_len = STRLIT_LEN("/tmp/visualizer.fifo");
-    config.visualizer_chars = (char *)"xo";
+    config.visualizer_chars = "xo";
     config.visualizer_chars_len = STRLIT_LEN("xo");
     config.fps = 50;
     config.spectrum_dft_size = 1;
@@ -215,7 +215,7 @@ test_open_fifo(void *user, char *location, int32 location_len) {
 
     io = user;
     assert(location_len == STRLIT_LEN("/tmp/visualizer.fifo"));
-    assert(cbase_memcmp(location, (char *)"/tmp/visualizer.fifo",
+    assert(cbase_memcmp(location, "/tmp/visualizer.fifo",
                         location_len) == 0);
     io->open_calls += 1;
     return TEST_SOURCE_FD;
@@ -345,7 +345,7 @@ test_callbacks(void) {
     assert(test_clear_calls == 1);
     assert(test_header_calls == 1);
     assert(test_header_len == STRLIT_LEN("Music visualizer"));
-    assert(cbase_memcmp(test_header, (char *)"Music visualizer",
+    assert(cbase_memcmp(test_header, "Music visualizer",
                         test_header_len) == 0);
 #if defined(HAVE_FFTW3_H)
     assert(screen.fft.dft_frequency_space_len == 20);

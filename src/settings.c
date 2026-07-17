@@ -1511,7 +1511,7 @@ apply_system_encoding(Configuration *config, char *value, int32 value_len,
     return settings_string_set(&config->system_encoding,
                                &config->system_encoding_len,
                                &config->system_encoding_cap,
-                               (char *)"", 0);
+                               "", 0);
 }
 
 static bool
@@ -1673,7 +1673,7 @@ static bool
 apply_browser_sort_mode(Configuration *config, char *value, int32 value_len,
                         NcmError *error) {
     if (ncm_string_equal(value, value_len, STRLIT_ARGS("noop"))) {
-        value = (char *)"none";
+        value = "none";
         value_len = STRLIT_LEN("none");
     }
     if (!ncm_sort_mode_parse(value, value_len,
@@ -2128,11 +2128,11 @@ settings_set_option_error(NcmError *error, bool default_value,
     int32 len;
 
     if (default_value) {
-        phase = (char *)"initializing";
+        phase = "initializing";
     } else {
-        phase = (char *)"processing";
+        phase = "processing";
     }
-    detail = (char *)"invalid value";
+    detail = "invalid value";
     detail_len = STRLIT_LEN("invalid value");
     if (ncm_error_is_set(cause)) {
         detail = cause->message;

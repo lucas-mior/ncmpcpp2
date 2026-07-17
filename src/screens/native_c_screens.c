@@ -53,21 +53,21 @@ struct NativeSongInfoScreen {
 };
 
 NcmSongInfoMetadata ncm_song_info_tags[] = {
-    {(char *)"Title", NCM_SONG_GETTER_TITLE, NCM_TAGS_FIELD_TITLE},
-    {(char *)"Artist", NCM_SONG_GETTER_ARTIST, NCM_TAGS_FIELD_ARTIST},
-    {(char *)"Album Artist",
+    {"Title", NCM_SONG_GETTER_TITLE, NCM_TAGS_FIELD_TITLE},
+    {"Artist", NCM_SONG_GETTER_ARTIST, NCM_TAGS_FIELD_ARTIST},
+    {"Album Artist",
      NCM_SONG_GETTER_ALBUM_ARTIST,
      NCM_TAGS_FIELD_ALBUM_ARTIST},
-    {(char *)"Album", NCM_SONG_GETTER_ALBUM, NCM_TAGS_FIELD_ALBUM},
-    {(char *)"Date", NCM_SONG_GETTER_DATE, NCM_TAGS_FIELD_DATE},
-    {(char *)"Track", NCM_SONG_GETTER_TRACK, NCM_TAGS_FIELD_TRACK},
-    {(char *)"Genre", NCM_SONG_GETTER_GENRE, NCM_TAGS_FIELD_GENRE},
-    {(char *)"Composer", NCM_SONG_GETTER_COMPOSER,
+    {"Album", NCM_SONG_GETTER_ALBUM, NCM_TAGS_FIELD_ALBUM},
+    {"Date", NCM_SONG_GETTER_DATE, NCM_TAGS_FIELD_DATE},
+    {"Track", NCM_SONG_GETTER_TRACK, NCM_TAGS_FIELD_TRACK},
+    {"Genre", NCM_SONG_GETTER_GENRE, NCM_TAGS_FIELD_GENRE},
+    {"Composer", NCM_SONG_GETTER_COMPOSER,
      NCM_TAGS_FIELD_COMPOSER},
-    {(char *)"Performer", NCM_SONG_GETTER_PERFORMER,
+    {"Performer", NCM_SONG_GETTER_PERFORMER,
      NCM_TAGS_FIELD_PERFORMER},
-    {(char *)"Disc", NCM_SONG_GETTER_DISC, NCM_TAGS_FIELD_DISC},
-    {(char *)"Comment", NCM_SONG_GETTER_COMMENT,
+    {"Disc", NCM_SONG_GETTER_DISC, NCM_TAGS_FIELD_DISC},
+    {"Comment", NCM_SONG_GETTER_COMMENT,
      NCM_TAGS_FIELD_COMMENT},
     {NULL, NCM_SONG_GETTER_NONE, NCM_TAGS_FIELD_LAST},
 };
@@ -793,7 +793,7 @@ native_search_list_database_songs(
     ncm_song_array_clear(songs);
     ncm_mpd_song_list_init(&source);
     result = ncm_mpd_client_get_directory_recursive(
-        &global_mpd, (char *)"/", &source, error);
+        &global_mpd, "/", &source, error);
     if (result) {
         result = ncm_mpd_song_list_to_song_array(&source, songs);
         if (!result) {
@@ -867,7 +867,7 @@ native_search_prompt_constraint(
     input = NULL;
     initial_text = initial->data;
     if (initial_text == NULL) {
-        initial_text = (char *)"";
+        initial_text = "";
     }
 
     ncm_statusbar_scoped_lock_init(&lock);
@@ -1141,7 +1141,7 @@ native_prompt_buffer(char *label, int32 label_len,
     input = NULL;
     initial_text = initial.data;
     if (initial_text == NULL) {
-        initial_text = (char *)"";
+        initial_text = "";
     }
 
     ncm_statusbar_scoped_lock_init(&lock);
@@ -2303,7 +2303,7 @@ native_server_info_resize(void *user) {
 static char *
 native_server_info_title(void *user) {
     (void)user;
-    return (char *)"Server info";
+    return "Server info";
 }
 
 static void

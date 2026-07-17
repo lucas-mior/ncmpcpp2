@@ -28,50 +28,50 @@ char *
 screen_type_str(enum ScreenType screen_type) {
     switch (screen_type) {
     case NCM_SCREEN_TYPE_BROWSER:
-        return (char *)"browser";
+        return "browser";
     case NCM_SCREEN_TYPE_HELP:
-        return (char *)"help";
+        return "help";
     case NCM_SCREEN_TYPE_LASTFM:
-        return (char *)"last_fm";
+        return "last_fm";
     case NCM_SCREEN_TYPE_LYRICS:
-        return (char *)"lyrics";
+        return "lyrics";
     case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
-        return (char *)"media_library";
+        return "media_library";
 #if defined(ENABLE_OUTPUTS)
     case NCM_SCREEN_TYPE_OUTPUTS:
-        return (char *)"outputs";
+        return "outputs";
 #endif
     case NCM_SCREEN_TYPE_PLAYLIST:
-        return (char *)"playlist";
+        return "playlist";
     case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
-        return (char *)"playlist_editor";
+        return "playlist_editor";
     case NCM_SCREEN_TYPE_SEARCH_ENGINE:
-        return (char *)"search_engine";
+        return "search_engine";
     case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
-        return (char *)"selected_items_adder";
+        return "selected_items_adder";
     case NCM_SCREEN_TYPE_SERVER_INFO:
-        return (char *)"server_info";
+        return "server_info";
     case NCM_SCREEN_TYPE_SONG_INFO:
-        return (char *)"song_info";
+        return "song_info";
     case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
-        return (char *)"sort_playlist_dialog";
+        return "sort_playlist_dialog";
 #if defined(HAVE_TAGLIB_H)
     case NCM_SCREEN_TYPE_TAG_EDITOR:
-        return (char *)"tag_editor";
+        return "tag_editor";
     case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
-        return (char *)"tiny_tag_editor";
+        return "tiny_tag_editor";
 #endif
     case NCM_SCREEN_TYPE_UNKNOWN:
-        return (char *)"unknown";
+        return "unknown";
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
-        return (char *)"visualizer";
+        return "visualizer";
 #endif
     case NCM_SCREEN_TYPE_LAST:
         break;
     }
 
-    return (char *)"unknown";
+    return "unknown";
 }
 
 int32
@@ -127,58 +127,58 @@ screen_type_to_native_type(enum ScreenType screen_type) {
 bool
 screen_type_parse_startup(char *string, int32 string_len,
                           enum ScreenType *screen_type) {
-    if (screen_type_string_equal(string, string_len, (char *)"browser")) {
+    if (screen_type_string_equal(string, string_len, "browser")) {
         *screen_type = NCM_SCREEN_TYPE_BROWSER;
         return true;
     }
-    if (screen_type_string_equal(string, string_len, (char *)"help")) {
+    if (screen_type_string_equal(string, string_len, "help")) {
         *screen_type = NCM_SCREEN_TYPE_HELP;
         return true;
     }
     if (screen_type_string_equal(string, string_len,
-                                 (char *)"media_library")) {
+                                 "media_library")) {
         *screen_type = NCM_SCREEN_TYPE_MEDIA_LIBRARY;
         return true;
     }
 #if defined(ENABLE_OUTPUTS)
-    if (screen_type_string_equal(string, string_len, (char *)"outputs")) {
+    if (screen_type_string_equal(string, string_len, "outputs")) {
         *screen_type = NCM_SCREEN_TYPE_OUTPUTS;
         return true;
     }
 #endif
-    if (screen_type_string_equal(string, string_len, (char *)"playlist")) {
+    if (screen_type_string_equal(string, string_len, "playlist")) {
         *screen_type = NCM_SCREEN_TYPE_PLAYLIST;
         return true;
     }
     if (screen_type_string_equal(string, string_len,
-                                 (char *)"playlist_editor")) {
+                                 "playlist_editor")) {
         *screen_type = NCM_SCREEN_TYPE_PLAYLIST_EDITOR;
         return true;
     }
     if (screen_type_string_equal(string, string_len,
-                                 (char *)"search_engine")) {
+                                 "search_engine")) {
         *screen_type = NCM_SCREEN_TYPE_SEARCH_ENGINE;
         return true;
     }
 #if defined(HAVE_TAGLIB_H)
     if (screen_type_string_equal(string, string_len,
-                                 (char *)"tag_editor")) {
+                                 "tag_editor")) {
         *screen_type = NCM_SCREEN_TYPE_TAG_EDITOR;
         return true;
     }
 #endif
 #if defined(ENABLE_VISUALIZER)
     if (screen_type_string_equal(string, string_len,
-                                 (char *)"visualizer")) {
+                                 "visualizer")) {
         *screen_type = NCM_SCREEN_TYPE_VISUALIZER;
         return true;
     }
 #endif
-    if (screen_type_string_equal(string, string_len, (char *)"lyrics")) {
+    if (screen_type_string_equal(string, string_len, "lyrics")) {
         *screen_type = NCM_SCREEN_TYPE_LYRICS;
         return true;
     }
-    if (screen_type_string_equal(string, string_len, (char *)"last_fm")) {
+    if (screen_type_string_equal(string, string_len, "last_fm")) {
         *screen_type = NCM_SCREEN_TYPE_LASTFM;
         return true;
     }
@@ -194,27 +194,27 @@ screen_type_parse(char *string, int32 string_len,
         return true;
     }
     if (screen_type_string_equal(string, string_len,
-                                 (char *)"selected_items_adder")) {
+                                 "selected_items_adder")) {
         *screen_type = NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER;
         return true;
     }
     if (screen_type_string_equal(string, string_len,
-                                 (char *)"server_info")) {
+                                 "server_info")) {
         *screen_type = NCM_SCREEN_TYPE_SERVER_INFO;
         return true;
     }
-    if (screen_type_string_equal(string, string_len, (char *)"song_info")) {
+    if (screen_type_string_equal(string, string_len, "song_info")) {
         *screen_type = NCM_SCREEN_TYPE_SONG_INFO;
         return true;
     }
     if (screen_type_string_equal(string, string_len,
-                                 (char *)"sort_playlist_dialog")) {
+                                 "sort_playlist_dialog")) {
         *screen_type = NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG;
         return true;
     }
 #if defined(HAVE_TAGLIB_H)
     if (screen_type_string_equal(string, string_len,
-                                 (char *)"tiny_tag_editor")) {
+                                 "tiny_tag_editor")) {
         *screen_type = NCM_SCREEN_TYPE_TINY_TAG_EDITOR;
         return true;
     }

@@ -43,14 +43,14 @@
 #define NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT 8
 
 static char *visualizer_smooth_chars[NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT] = {
-    (char *)"▁",
-    (char *)"▂",
-    (char *)"▃",
-    (char *)"▄",
-    (char *)"▅",
-    (char *)"▆",
-    (char *)"▇",
-    (char *)"█",
+    "▁",
+    "▂",
+    "▃",
+    "▄",
+    "▅",
+    "▆",
+    "▇",
+    "█",
 };
 
 static int32 visualizer_smooth_char_lens[
@@ -67,14 +67,14 @@ static int32 visualizer_smooth_char_lens[
 
 static char *visualizer_smooth_flipped_chars[
     NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT] = {
-    (char *)"▔",
-    (char *)"🮂",
-    (char *)"🮃",
-    (char *)"🮄",
-    (char *)"🬎",
-    (char *)"🮅",
-    (char *)"🮆",
-    (char *)"█",
+    "▔",
+    "🮂",
+    "🮃",
+    "🮄",
+    "🬎",
+    "🮅",
+    "🮆",
+    "█",
 };
 
 static int32 visualizer_smooth_flipped_char_lens[
@@ -550,11 +550,11 @@ native_visualizer_screen_open_data_source(
 
     location = screen->source_location.data;
     if (location == NULL) {
-        location = (char *)"";
+        location = "";
     }
     port = screen->source_port.data;
     if (port == NULL) {
-        port = (char *)"";
+        port = "";
     }
 
     fd = -1;

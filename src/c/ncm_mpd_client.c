@@ -53,10 +53,10 @@ ncm_mpd_client_set_buffer(NcmBuffer *buffer, char *string,
 static char *
 ncm_mpd_client_buffer_cstr(NcmBuffer *buffer) {
     if (buffer == NULL) {
-        return (char *)"";
+        return "";
     }
     if (buffer->data == NULL) {
-        return (char *)"";
+        return "";
     }
 
     return buffer->data;
@@ -178,7 +178,7 @@ ncm_mpd_client_destroy(NcmMpdClient *client) {
 char *
 ncm_mpd_client_hostname(NcmMpdClient *client) {
     if (client == NULL) {
-        return (char *)"";
+        return "";
     }
 
     return ncm_mpd_client_buffer_cstr(&client->host);
@@ -252,7 +252,7 @@ ncm_mpd_client_set_hostname(NcmMpdClient *client, char *host,
         return false;
     }
     if (host == NULL) {
-        host = (char *)"";
+        host = "";
         host_len = 0;
     }
     if (host_len < 0) {
@@ -463,7 +463,7 @@ ncm_mpd_client_error_clearable(NcmMpdClient *client) {
 char *
 ncm_mpd_client_error_message(NcmMpdClient *client) {
     if (client == NULL) {
-        return (char *)"";
+        return "";
     }
 
     return ncm_mpd_connection_error(&client->connection);
@@ -1537,7 +1537,7 @@ ncm_mpd_client_add_random_songs(NcmMpdClient *client,
         goto cleanup;
     }
     if (!ncm_mpd_connection_list_all_song_uris(&client->connection,
-                                               (char *)"/", &files)) {
+                                               "/", &files)) {
         ncm_mpd_client_copy_connection_error(client, error);
         goto cleanup;
     }

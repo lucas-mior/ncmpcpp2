@@ -241,7 +241,7 @@ native_playlist_screen_init(NativePlaylistScreen *screen, int64 start_x,
     callbacks = native_playlist_callbacks();
     nc_song_menu_init(&screen->songs);
     nc_window_init(&screen->window, start_x, main_start_y, width,
-                   main_height, (char *)"", 0, color, border);
+                   main_height, "", 0, color, border);
     ncm_buffer_init(&screen->title_cache);
     ncm_buffer_init(&screen->column_title);
     ncm_buffer_init(&screen->filter_constraint);

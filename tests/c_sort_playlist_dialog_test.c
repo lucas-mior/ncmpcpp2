@@ -233,8 +233,8 @@ main(void) {
     border.enabled = true;
     nc_buffer_init(&Config.current_item_prefix);
     nc_buffer_init(&Config.current_item_suffix);
-    nc_buffer_append_cstring(&Config.current_item_prefix, (char *)">");
-    nc_buffer_append_cstring(&Config.current_item_suffix, (char *)"<");
+    nc_buffer_append_cstring(&Config.current_item_prefix, ">");
+    nc_buffer_append_cstring(&Config.current_item_suffix, "<");
     Config.use_cyclic_scrolling = true;
     Config.centered_cursor = true;
     native_sort_playlist_dialog_init(&dialog, 0, 0, 30, 17,

@@ -569,9 +569,9 @@ set_rendering_config(NcBuffer *old_modified_prefix, char **old_empty_tag,
     *old_tags_separator_len = Config.tags_separator_len;
 
     set_test_buffer(&Config.modified_item_prefix, LIT_ARGS("modified: "));
-    Config.empty_tag = (char *)"<empty>";
+    Config.empty_tag = "<empty>";
     Config.empty_tag_len = STRLIT_LEN("<empty>");
-    Config.tags_separator = (char *)" | ";
+    Config.tags_separator = " | ";
     Config.tags_separator_len = STRLIT_LEN(" | ");
     return;
 }
@@ -2760,7 +2760,7 @@ test_tag_editor_save_success_orchestration(void) {
                nc_editor_string_menu_base(&screen.tag_types), 3));
 
     assert(native_tag_editor_screen_save_modified(
-               &screen, (char *)"/music"));
+               &screen, "/music"));
 
     assert(save_trace.calls == 2);
     assert(ncm_string_equal(save_trace.music_dir, save_trace.music_dir_len,
@@ -2809,7 +2809,7 @@ test_tag_editor_save_partial_failure(void) {
     tags = nc_tag_row_menu_base(&screen.tags);
 
     assert(!native_tag_editor_screen_save_modified(
-               &screen, (char *)"/music"));
+               &screen, "/music"));
 
     assert(save_trace.calls == 2);
     assert_status_message(0, STRLIT_ARGS("Writing changes..."));
@@ -2843,7 +2843,7 @@ test_tag_editor_save_no_modifications(void) {
     native_tag_editor_screen_next_column(&screen);
 
     assert(native_tag_editor_screen_save_modified(
-               &screen, (char *)"/music"));
+               &screen, "/music"));
 
     assert(save_trace.calls == 0);
     assert_status_message(0, STRLIT_ARGS("Writing changes..."));
@@ -2882,7 +2882,7 @@ test_tag_editor_save_selected_subset(void) {
     native_tag_editor_screen_next_column(&screen);
 
     assert(native_tag_editor_screen_save_modified(
-               &screen, (char *)"/music"));
+               &screen, "/music"));
 
     assert(save_trace.calls == 2);
     assert(ncm_string_equal(save_trace.names[0], save_trace.names_len[0],

@@ -233,7 +233,7 @@ test_write_callback(void) {
     ncm_mutable_song_set_tag(&song, NCM_TAGS_FIELD_ARTIST,
                              1, LIT_ARGS("B"));
 
-    REQUIRE(ncm_mutable_song_write(&song, (char *)"/music/"));
+    REQUIRE(ncm_mutable_song_write(&song, "/music/"));
     REQUIRE_INT((int32)written_field, NCM_TAGS_FIELD_ARTIST);
     REQUIRE_STRING(written_first.data, written_first.len, "A");
     REQUIRE_STRING(written_second.data, written_second.len, "B");

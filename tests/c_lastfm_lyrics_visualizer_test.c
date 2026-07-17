@@ -854,8 +854,8 @@ test_visualizer_data_source_parsing(void) {
     TestVisualizerDataSourceIo io;
     NativeVisualizerScreen screen = {0};
     NativeVisualizerScreenConfig config = {
-        .source_location = (char *)"127.0.0.1:5555",
-        .output_name = (char *)"Visualizer feed",
+        .source_location = "127.0.0.1:5555",
+        .output_name = "Visualizer feed",
         .source_location_len = STRLIT_LEN("127.0.0.1:5555"),
         .output_name_len = STRLIT_LEN("Visualizer feed"),
         .fps = 30,
@@ -902,7 +902,7 @@ test_visualizer_data_source_hooks(void) {
     TestVisualizerDataSourceIo io;
     NativeVisualizerScreen screen = {0};
     NativeVisualizerScreenConfig config = {
-        .source_location = (char *)"localhost:5555",
+        .source_location = "localhost:5555",
         .source_location_len = STRLIT_LEN("localhost:5555"),
         .fps = 30,
         .spectrum_dft_size = 2,
@@ -976,7 +976,7 @@ test_visualizer_find_output_id(void) {
     TestVisualizerDataSourceIo io;
     NativeVisualizerScreen screen = {0};
     NativeVisualizerScreenConfig config = {
-        .source_location = (char *)"/tmp/mpd.fifo",
+        .source_location = "/tmp/mpd.fifo",
         .output_name = output_name,
         .source_location_len = STRLIT_LEN("/tmp/mpd.fifo"),
         .output_name_len = STRLIT_LEN("Visualizer feed"),
@@ -1030,7 +1030,7 @@ test_visualizer_sample_buffers(void) {
     int32 count;
 
     NativeVisualizerScreenConfig config = {
-        .source_location = (char *)"/tmp/test-visualizer.fifo",
+        .source_location = "/tmp/test-visualizer.fifo",
         .source_location_len = STRLIT_LEN("/tmp/test-visualizer.fifo"),
         .fps = 30,
         .spectrum_dft_size = 2,
@@ -1068,7 +1068,7 @@ static void
 test_visualizer_rendering_state(void) {
     NativeVisualizerScreen screen = {0};
     NativeVisualizerScreenConfig config = {
-        .source_location = (char *)"/tmp/test-visualizer.fifo",
+        .source_location = "/tmp/test-visualizer.fifo",
         .source_location_len = STRLIT_LEN("/tmp/test-visualizer.fifo"),
         .fps = 30,
         .spectrum_dft_size = 2,
@@ -1155,7 +1155,7 @@ test_visualizer_auto_scale(void) {
     int16 silent_sample = 0;
     int16 disabled_sample = 1234;
     NativeVisualizerScreenConfig config = {
-        .source_location = (char *)"/tmp/test-visualizer.fifo",
+        .source_location = "/tmp/test-visualizer.fifo",
         .source_location_len = STRLIT_LEN("/tmp/test-visualizer.fifo"),
         .fps = 10,
         .spectrum_dft_size = 2,
@@ -1208,7 +1208,7 @@ test_visualizer_sample_consumption(void) {
     int16 one_sample = 0;
     int16 dest = 0;
     NativeVisualizerScreenConfig config = {
-        .source_location = (char *)"/tmp/test-visualizer.fifo",
+        .source_location = "/tmp/test-visualizer.fifo",
         .source_location_len = STRLIT_LEN("/tmp/test-visualizer.fifo"),
         .fps = 30,
         .spectrum_dft_size = 2,
@@ -1342,7 +1342,7 @@ main(void) {
     TestLyricsIo io;
 
     io.code = CURLE_OK;
-    io.response = (char *)"lyrics";
+    io.response = "lyrics";
     io.response_len = STRLIT_LEN("lyrics");
     ncm_lyrics_fetcher_set_io_for_tests(test_perform, test_escape, &io);
     test_lastfm_service_parsing_with_fake_io();

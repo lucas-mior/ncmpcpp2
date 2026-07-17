@@ -29,7 +29,7 @@ test_prompt_return_one_of_accepts_value(void) {
 
     result = '\0';
     assert(ncm_statusbar_prompt_return_one_of(&window,
-                                              (char *)"yn", 2,
+                                              "yn", 2,
                                               &result));
     assert(result == 'y');
 
@@ -47,7 +47,7 @@ test_prompt_return_one_of_aborts(void) {
 
     result = 'x';
     assert(!ncm_statusbar_prompt_return_one_of(&window,
-                                               (char *)"yn", 2,
+                                               "yn", 2,
                                                &result));
     assert(result == 'x');
 

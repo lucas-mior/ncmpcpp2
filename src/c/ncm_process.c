@@ -84,7 +84,7 @@ ncm_process_wait(pid_t child, int32 *status, NcmError *error) {
 
     while (waitpid(child, &wait_status, 0) < 0) {
         if (errno != EINTR) {
-            ncm_process_set_errno_error(error, errno, (char *)"waitpid");
+            ncm_process_set_errno_error(error, errno, "waitpid");
             return false;
         }
     }
@@ -192,7 +192,7 @@ ncm_process_run_sync(NcmProcessCommand *command, int32 *status,
 
     switch (child = fork()) {
     case -1:
-        ncm_process_set_errno_error(error, errno, (char *)"fork");
+        ncm_process_set_errno_error(error, errno, "fork");
         return false;
     case 0:
         execvp(command->argv[0], command->argv);
@@ -240,7 +240,7 @@ ncm_process_run_capture(NcmProcessCommand *command,
         return false;
     }
     if (pipe(pipefd) != 0) {
-        ncm_process_set_errno_error(error, errno, (char *)"pipe");
+        ncm_process_set_errno_error(error, errno, "pipe");
         return false;
     }
 
@@ -248,7 +248,7 @@ ncm_process_run_capture(NcmProcessCommand *command,
     case -1:
         close(pipefd[0]);
         close(pipefd[1]);
-        ncm_process_set_errno_error(error, errno, (char *)"fork");
+        ncm_process_set_errno_error(error, errno, "fork");
         return false;
     case 0:
         close(pipefd[0]);
@@ -267,7 +267,7 @@ ncm_process_run_capture(NcmProcessCommand *command,
         ncm_buffer_append(&result->output, read_buffer, (int32)bytes_read);
     }
     if (bytes_read < 0) {
-        ncm_process_set_errno_error(error, errno, (char *)"read");
+        ncm_process_set_errno_error(error, errno, "read");
         close(pipefd[0]);
         ncm_process_wait(child, &result->status, NULL);
         return false;
@@ -285,9 +285,9 @@ ncm_process_run_shell(char *command, int32 command_len,
     bool result;
 
     ncm_process_command_init(&process);
-    result = ncm_process_command_add_cstring(&process, (char *)"/bin/sh");
+    result = ncm_process_command_add_cstring(&process, "/bin/sh");
     result = result
-             && ncm_process_command_add_cstring(&process, (char *)"-c");
+             && ncm_process_command_add_cstring(&process, "-c");
     result = result
              && ncm_process_command_add_arg(&process, command, command_len);
     if (result) {

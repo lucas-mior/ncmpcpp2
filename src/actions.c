@@ -243,763 +243,763 @@ NCM_ACTION_TABLE_CALLBACKS(show_server_info, NCM_ACTION_SHOW_SERVER_INFO)
 
 static NcmActionDef action_defs[] = {
     {
-        (char *)"dummy",
+        "dummy",
         NCM_ACTION_DUMMY,
         ncm_action_can_run_dummy,
         ncm_action_run_dummy,
     },
     {
-        (char *)"update_environment",
+        "update_environment",
         NCM_ACTION_UPDATE_ENVIRONMENT,
         ncm_action_can_run_update_environment,
         ncm_action_run_update_environment,
     },
     {
-        (char *)"mouse_event",
+        "mouse_event",
         NCM_ACTION_MOUSE_EVENT,
         ncm_action_can_run_mouse_event,
         ncm_action_run_mouse_event,
     },
     {
-        (char *)"scroll_up",
+        "scroll_up",
         NCM_ACTION_SCROLL_UP,
         ncm_action_can_run_scroll_up,
         ncm_action_run_scroll_up,
     },
     {
-        (char *)"scroll_down",
+        "scroll_down",
         NCM_ACTION_SCROLL_DOWN,
         ncm_action_can_run_scroll_down,
         ncm_action_run_scroll_down,
     },
     {
-        (char *)"scroll_up_artist",
+        "scroll_up_artist",
         NCM_ACTION_SCROLL_UP_ARTIST,
         ncm_action_can_run_scroll_up_artist,
         ncm_action_run_scroll_up_artist,
     },
     {
-        (char *)"scroll_up_album",
+        "scroll_up_album",
         NCM_ACTION_SCROLL_UP_ALBUM,
         ncm_action_can_run_scroll_up_album,
         ncm_action_run_scroll_up_album,
     },
     {
-        (char *)"scroll_down_artist",
+        "scroll_down_artist",
         NCM_ACTION_SCROLL_DOWN_ARTIST,
         ncm_action_can_run_scroll_down_artist,
         ncm_action_run_scroll_down_artist,
     },
     {
-        (char *)"scroll_down_album",
+        "scroll_down_album",
         NCM_ACTION_SCROLL_DOWN_ALBUM,
         ncm_action_can_run_scroll_down_album,
         ncm_action_run_scroll_down_album,
     },
     {
-        (char *)"page_up",
+        "page_up",
         NCM_ACTION_PAGE_UP,
         ncm_action_can_run_page_up,
         ncm_action_run_page_up,
     },
     {
-        (char *)"page_down",
+        "page_down",
         NCM_ACTION_PAGE_DOWN,
         ncm_action_can_run_page_down,
         ncm_action_run_page_down,
     },
     {
-        (char *)"move_home",
+        "move_home",
         NCM_ACTION_MOVE_HOME,
         ncm_action_can_run_move_home,
         ncm_action_run_move_home,
     },
     {
-        (char *)"move_end",
+        "move_end",
         NCM_ACTION_MOVE_END,
         ncm_action_can_run_move_end,
         ncm_action_run_move_end,
     },
     {
-        (char *)"toggle_interface",
+        "toggle_interface",
         NCM_ACTION_TOGGLE_INTERFACE,
         ncm_action_can_run_toggle_interface,
         ncm_action_run_toggle_interface,
     },
     {
-        (char *)"jump_to_parent_directory",
+        "jump_to_parent_directory",
         NCM_ACTION_JUMP_TO_PARENT_DIRECTORY,
         ncm_action_can_run_jump_to_parent_directory,
         ncm_action_run_jump_to_parent_directory,
     },
     {
-        (char *)"run_action",
+        "run_action",
         NCM_ACTION_RUN_ACTION,
         ncm_action_can_run_run_action,
         ncm_action_run_run_action,
     },
     {
-        (char *)"previous_column",
+        "previous_column",
         NCM_ACTION_PREVIOUS_COLUMN,
         ncm_action_can_run_previous_column,
         ncm_action_run_previous_column,
     },
     {
-        (char *)"next_column",
+        "next_column",
         NCM_ACTION_NEXT_COLUMN,
         ncm_action_can_run_next_column,
         ncm_action_run_next_column,
     },
     {
-        (char *)"master_screen",
+        "master_screen",
         NCM_ACTION_MASTER_SCREEN,
         ncm_action_can_run_master_screen,
         ncm_action_run_master_screen,
     },
     {
-        (char *)"slave_screen",
+        "slave_screen",
         NCM_ACTION_SLAVE_SCREEN,
         ncm_action_can_run_slave_screen,
         ncm_action_run_slave_screen,
     },
     {
-        (char *)"volume_up",
+        "volume_up",
         NCM_ACTION_VOLUME_UP,
         ncm_action_can_run_volume_up,
         ncm_action_run_volume_up,
     },
     {
-        (char *)"volume_down",
+        "volume_down",
         NCM_ACTION_VOLUME_DOWN,
         ncm_action_can_run_volume_down,
         ncm_action_run_volume_down,
     },
     {
-        (char *)"add_item_to_playlist",
+        "add_item_to_playlist",
         NCM_ACTION_ADD_ITEM_TO_PLAYLIST,
         ncm_action_can_run_add_item_to_playlist,
         ncm_action_run_add_item_to_playlist,
     },
     {
-        (char *)"play_item",
+        "play_item",
         NCM_ACTION_PLAY_ITEM,
         ncm_action_can_run_play_item,
         ncm_action_run_play_item,
     },
     {
-        (char *)"delete_playlist_items",
+        "delete_playlist_items",
         NCM_ACTION_DELETE_PLAYLIST_ITEMS,
         ncm_action_can_run_delete_playlist_items,
         ncm_action_run_delete_playlist_items,
     },
     {
-        (char *)"delete_stored_playlist",
+        "delete_stored_playlist",
         NCM_ACTION_DELETE_STORED_PLAYLIST,
         ncm_action_can_run_delete_stored_playlist,
         ncm_action_run_delete_stored_playlist,
     },
     {
-        (char *)"delete_browser_items",
+        "delete_browser_items",
         NCM_ACTION_DELETE_BROWSER_ITEMS,
         ncm_action_can_run_delete_browser_items,
         ncm_action_run_delete_browser_items,
     },
     {
-        (char *)"replay_song",
+        "replay_song",
         NCM_ACTION_REPLAY_SONG,
         ncm_action_can_run_replay_song,
         ncm_action_run_replay_song,
     },
     {
-        (char *)"previous",
+        "previous",
         NCM_ACTION_PREVIOUS,
         ncm_action_can_run_previous,
         ncm_action_run_previous,
     },
     {
-        (char *)"next",
+        "next",
         NCM_ACTION_NEXT,
         ncm_action_can_run_next,
         ncm_action_run_next,
     },
     {
-        (char *)"pause",
+        "pause",
         NCM_ACTION_PAUSE,
         ncm_action_can_run_pause,
         ncm_action_run_pause,
     },
     {
-        (char *)"stop",
+        "stop",
         NCM_ACTION_STOP,
         ncm_action_can_run_stop,
         ncm_action_run_stop,
     },
     {
-        (char *)"play",
+        "play",
         NCM_ACTION_PLAY,
         ncm_action_can_run_play,
         ncm_action_run_play,
     },
     {
-        (char *)"execute_command",
+        "execute_command",
         NCM_ACTION_EXECUTE_COMMAND,
         ncm_action_can_run_execute_command,
         ncm_action_run_execute_command,
     },
     {
-        (char *)"save_playlist",
+        "save_playlist",
         NCM_ACTION_SAVE_PLAYLIST,
         ncm_action_can_run_save_playlist,
         ncm_action_run_save_playlist,
     },
     {
-        (char *)"move_sort_order_up",
+        "move_sort_order_up",
         NCM_ACTION_MOVE_SORT_ORDER_UP,
         ncm_action_can_run_move_sort_order_up,
         ncm_action_run_move_sort_order_up,
     },
     {
-        (char *)"move_sort_order_down",
+        "move_sort_order_down",
         NCM_ACTION_MOVE_SORT_ORDER_DOWN,
         ncm_action_can_run_move_sort_order_down,
         ncm_action_run_move_sort_order_down,
     },
     {
-        (char *)"move_selected_items_up",
+        "move_selected_items_up",
         NCM_ACTION_MOVE_SELECTED_ITEMS_UP,
         ncm_action_can_run_move_selected_items_up,
         ncm_action_run_move_selected_items_up,
     },
     {
-        (char *)"move_selected_items_down",
+        "move_selected_items_down",
         NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN,
         ncm_action_can_run_move_selected_items_down,
         ncm_action_run_move_selected_items_down,
     },
     {
-        (char *)"move_selected_items_to",
+        "move_selected_items_to",
         NCM_ACTION_MOVE_SELECTED_ITEMS_TO,
         ncm_action_can_run_move_selected_items_to,
         ncm_action_run_move_selected_items_to,
     },
     {
-        (char *)"add",
+        "add",
         NCM_ACTION_ADD,
         ncm_action_can_run_add,
         ncm_action_run_add,
     },
     {
-        (char *)"load",
+        "load",
         NCM_ACTION_LOAD,
         ncm_action_can_run_load,
         ncm_action_run_load,
     },
     {
-        (char *)"seek_forward",
+        "seek_forward",
         NCM_ACTION_SEEK_FORWARD,
         ncm_action_can_run_seek_forward,
         ncm_action_run_seek_forward,
     },
     {
-        (char *)"seek_backward",
+        "seek_backward",
         NCM_ACTION_SEEK_BACKWARD,
         ncm_action_can_run_seek_backward,
         ncm_action_run_seek_backward,
     },
     {
-        (char *)"toggle_display_mode",
+        "toggle_display_mode",
         NCM_ACTION_TOGGLE_DISPLAY_MODE,
         ncm_action_can_run_toggle_display_mode,
         ncm_action_run_toggle_display_mode,
     },
     {
-        (char *)"toggle_separators_between_albums",
+        "toggle_separators_between_albums",
         NCM_ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS,
         ncm_action_can_run_toggle_separators_between_albums,
         ncm_action_run_toggle_separators_between_albums,
     },
     {
-        (char *)"toggle_lyrics_update_on_song_change",
+        "toggle_lyrics_update_on_song_change",
         NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,
         ncm_action_can_run_toggle_lyrics_update_on_song_change,
         ncm_action_run_toggle_lyrics_update_on_song_change,
     },
     {
-        (char *)"toggle_lyrics_fetcher",
+        "toggle_lyrics_fetcher",
         NCM_ACTION_TOGGLE_LYRICS_FETCHER,
         ncm_action_can_run_toggle_lyrics_fetcher,
         ncm_action_run_toggle_lyrics_fetcher,
     },
     {
-        (char *)"toggle_fetching_lyrics_in_background",
+        "toggle_fetching_lyrics_in_background",
         NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND,
         ncm_action_can_run_toggle_fetching_lyrics_in_background,
         ncm_action_run_toggle_fetching_lyrics_in_background,
     },
     {
-        (char *)"toggle_playing_song_centering",
+        "toggle_playing_song_centering",
         NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING,
         ncm_action_can_run_toggle_playing_song_centering,
         ncm_action_run_toggle_playing_song_centering,
     },
     {
-        (char *)"update_database",
+        "update_database",
         NCM_ACTION_UPDATE_DATABASE,
         ncm_action_can_run_update_database,
         ncm_action_run_update_database,
     },
     {
-        (char *)"jump_to_playing_song",
+        "jump_to_playing_song",
         NCM_ACTION_JUMP_TO_PLAYING_SONG,
         ncm_action_can_run_jump_to_playing_song,
         ncm_action_run_jump_to_playing_song,
     },
     {
-        (char *)"toggle_repeat",
+        "toggle_repeat",
         NCM_ACTION_TOGGLE_REPEAT,
         ncm_action_can_run_toggle_repeat,
         ncm_action_run_toggle_repeat,
     },
     {
-        (char *)"shuffle",
+        "shuffle",
         NCM_ACTION_SHUFFLE,
         ncm_action_can_run_shuffle,
         ncm_action_run_shuffle,
     },
     {
-        (char *)"toggle_random",
+        "toggle_random",
         NCM_ACTION_TOGGLE_RANDOM,
         ncm_action_can_run_toggle_random,
         ncm_action_run_toggle_random,
     },
     {
-        (char *)"start_searching",
+        "start_searching",
         NCM_ACTION_START_SEARCHING,
         ncm_action_can_run_start_searching,
         ncm_action_run_start_searching,
     },
     {
-        (char *)"save_tag_changes",
+        "save_tag_changes",
         NCM_ACTION_SAVE_TAG_CHANGES,
         ncm_action_can_run_save_tag_changes,
         ncm_action_run_save_tag_changes,
     },
     {
-        (char *)"toggle_single",
+        "toggle_single",
         NCM_ACTION_TOGGLE_SINGLE,
         ncm_action_can_run_toggle_single,
         ncm_action_run_toggle_single,
     },
     {
-        (char *)"toggle_consume",
+        "toggle_consume",
         NCM_ACTION_TOGGLE_CONSUME,
         ncm_action_can_run_toggle_consume,
         ncm_action_run_toggle_consume,
     },
     {
-        (char *)"toggle_crossfade",
+        "toggle_crossfade",
         NCM_ACTION_TOGGLE_CROSSFADE,
         ncm_action_can_run_toggle_crossfade,
         ncm_action_run_toggle_crossfade,
     },
     {
-        (char *)"set_crossfade",
+        "set_crossfade",
         NCM_ACTION_SET_CROSSFADE,
         ncm_action_can_run_set_crossfade,
         ncm_action_run_set_crossfade,
     },
     {
-        (char *)"set_volume",
+        "set_volume",
         NCM_ACTION_SET_VOLUME,
         ncm_action_can_run_set_volume,
         ncm_action_run_set_volume,
     },
     {
-        (char *)"enter_directory",
+        "enter_directory",
         NCM_ACTION_ENTER_DIRECTORY,
         ncm_action_can_run_enter_directory,
         ncm_action_run_enter_directory,
     },
     {
-        (char *)"edit_song",
+        "edit_song",
         NCM_ACTION_EDIT_SONG,
         ncm_action_can_run_edit_song,
         ncm_action_run_edit_song,
     },
     {
-        (char *)"edit_library_tag",
+        "edit_library_tag",
         NCM_ACTION_EDIT_LIBRARY_TAG,
         ncm_action_can_run_edit_library_tag,
         ncm_action_run_edit_library_tag,
     },
     {
-        (char *)"edit_library_album",
+        "edit_library_album",
         NCM_ACTION_EDIT_LIBRARY_ALBUM,
         ncm_action_can_run_edit_library_album,
         ncm_action_run_edit_library_album,
     },
     {
-        (char *)"edit_directory_name",
+        "edit_directory_name",
         NCM_ACTION_EDIT_DIRECTORY_NAME,
         ncm_action_can_run_edit_directory_name,
         ncm_action_run_edit_directory_name,
     },
     {
-        (char *)"edit_playlist_name",
+        "edit_playlist_name",
         NCM_ACTION_EDIT_PLAYLIST_NAME,
         ncm_action_can_run_edit_playlist_name,
         ncm_action_run_edit_playlist_name,
     },
     {
-        (char *)"edit_lyrics",
+        "edit_lyrics",
         NCM_ACTION_EDIT_LYRICS,
         ncm_action_can_run_edit_lyrics,
         ncm_action_run_edit_lyrics,
     },
     {
-        (char *)"jump_to_browser",
+        "jump_to_browser",
         NCM_ACTION_JUMP_TO_BROWSER,
         ncm_action_can_run_jump_to_browser,
         ncm_action_run_jump_to_browser,
     },
     {
-        (char *)"jump_to_media_library",
+        "jump_to_media_library",
         NCM_ACTION_JUMP_TO_MEDIA_LIBRARY,
         ncm_action_can_run_jump_to_media_library,
         ncm_action_run_jump_to_media_library,
     },
     {
-        (char *)"jump_to_playlist_editor",
+        "jump_to_playlist_editor",
         NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR,
         ncm_action_can_run_jump_to_playlist_editor,
         ncm_action_run_jump_to_playlist_editor,
     },
     {
-        (char *)"toggle_screen_lock",
+        "toggle_screen_lock",
         NCM_ACTION_TOGGLE_SCREEN_LOCK,
         ncm_action_can_run_toggle_screen_lock,
         ncm_action_run_toggle_screen_lock,
     },
     {
-        (char *)"jump_to_tag_editor",
+        "jump_to_tag_editor",
         NCM_ACTION_JUMP_TO_TAG_EDITOR,
         ncm_action_can_run_jump_to_tag_editor,
         ncm_action_run_jump_to_tag_editor,
     },
     {
-        (char *)"jump_to_position_in_song",
+        "jump_to_position_in_song",
         NCM_ACTION_JUMP_TO_POSITION_IN_SONG,
         ncm_action_can_run_jump_to_position_in_song,
         ncm_action_run_jump_to_position_in_song,
     },
     {
-        (char *)"select_item",
+        "select_item",
         NCM_ACTION_SELECT_ITEM,
         ncm_action_can_run_select_item,
         ncm_action_run_select_item,
     },
     {
-        (char *)"select_range",
+        "select_range",
         NCM_ACTION_SELECT_RANGE,
         ncm_action_can_run_select_range,
         ncm_action_run_select_range,
     },
     {
-        (char *)"reverse_selection",
+        "reverse_selection",
         NCM_ACTION_REVERSE_SELECTION,
         ncm_action_can_run_reverse_selection,
         ncm_action_run_reverse_selection,
     },
     {
-        (char *)"remove_selection",
+        "remove_selection",
         NCM_ACTION_REMOVE_SELECTION,
         ncm_action_can_run_remove_selection,
         ncm_action_run_remove_selection,
     },
     {
-        (char *)"select_album",
+        "select_album",
         NCM_ACTION_SELECT_ALBUM,
         ncm_action_can_run_select_album,
         ncm_action_run_select_album,
     },
     {
-        (char *)"select_found_items",
+        "select_found_items",
         NCM_ACTION_SELECT_FOUND_ITEMS,
         ncm_action_can_run_select_found_items,
         ncm_action_run_select_found_items,
     },
     {
-        (char *)"add_selected_items",
+        "add_selected_items",
         NCM_ACTION_ADD_SELECTED_ITEMS,
         ncm_action_can_run_add_selected_items,
         ncm_action_run_add_selected_items,
     },
     {
-        (char *)"crop_main_playlist",
+        "crop_main_playlist",
         NCM_ACTION_CROP_MAIN_PLAYLIST,
         ncm_action_can_run_crop_main_playlist,
         ncm_action_run_crop_main_playlist,
     },
     {
-        (char *)"crop_playlist",
+        "crop_playlist",
         NCM_ACTION_CROP_PLAYLIST,
         ncm_action_can_run_crop_playlist,
         ncm_action_run_crop_playlist,
     },
     {
-        (char *)"clear_main_playlist",
+        "clear_main_playlist",
         NCM_ACTION_CLEAR_MAIN_PLAYLIST,
         ncm_action_can_run_clear_main_playlist,
         ncm_action_run_clear_main_playlist,
     },
     {
-        (char *)"clear_playlist",
+        "clear_playlist",
         NCM_ACTION_CLEAR_PLAYLIST,
         ncm_action_can_run_clear_playlist,
         ncm_action_run_clear_playlist,
     },
     {
-        (char *)"sort_playlist",
+        "sort_playlist",
         NCM_ACTION_SORT_PLAYLIST,
         ncm_action_can_run_sort_playlist,
         ncm_action_run_sort_playlist,
     },
     {
-        (char *)"reverse_playlist",
+        "reverse_playlist",
         NCM_ACTION_REVERSE_PLAYLIST,
         ncm_action_can_run_reverse_playlist,
         ncm_action_run_reverse_playlist,
     },
     {
-        (char *)"apply_filter",
+        "apply_filter",
         NCM_ACTION_APPLY_FILTER,
         ncm_action_can_run_apply_filter,
         ncm_action_run_apply_filter,
     },
     {
-        (char *)"find",
+        "find",
         NCM_ACTION_FIND,
         ncm_action_can_run_find,
         ncm_action_run_find,
     },
     {
-        (char *)"find_item_forward",
+        "find_item_forward",
         NCM_ACTION_FIND_ITEM_FORWARD,
         ncm_action_can_run_find_item_forward,
         ncm_action_run_find_item_forward,
     },
     {
-        (char *)"find_item_backward",
+        "find_item_backward",
         NCM_ACTION_FIND_ITEM_BACKWARD,
         ncm_action_can_run_find_item_backward,
         ncm_action_run_find_item_backward,
     },
     {
-        (char *)"next_found_item",
+        "next_found_item",
         NCM_ACTION_NEXT_FOUND_ITEM,
         ncm_action_can_run_next_found_item,
         ncm_action_run_next_found_item,
     },
     {
-        (char *)"previous_found_item",
+        "previous_found_item",
         NCM_ACTION_PREVIOUS_FOUND_ITEM,
         ncm_action_can_run_previous_found_item,
         ncm_action_run_previous_found_item,
     },
     {
-        (char *)"toggle_find_mode",
+        "toggle_find_mode",
         NCM_ACTION_TOGGLE_FIND_MODE,
         ncm_action_can_run_toggle_find_mode,
         ncm_action_run_toggle_find_mode,
     },
     {
-        (char *)"toggle_replay_gain_mode",
+        "toggle_replay_gain_mode",
         NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE,
         ncm_action_can_run_toggle_replay_gain_mode,
         ncm_action_run_toggle_replay_gain_mode,
     },
     {
-        (char *)"toggle_add_mode",
+        "toggle_add_mode",
         NCM_ACTION_TOGGLE_ADD_MODE,
         ncm_action_can_run_toggle_add_mode,
         ncm_action_run_toggle_add_mode,
     },
     {
-        (char *)"toggle_mouse",
+        "toggle_mouse",
         NCM_ACTION_TOGGLE_MOUSE,
         ncm_action_can_run_toggle_mouse,
         ncm_action_run_toggle_mouse,
     },
     {
-        (char *)"toggle_bitrate_visibility",
+        "toggle_bitrate_visibility",
         NCM_ACTION_TOGGLE_BITRATE_VISIBILITY,
         ncm_action_can_run_toggle_bitrate_visibility,
         ncm_action_run_toggle_bitrate_visibility,
     },
     {
-        (char *)"add_random_items",
+        "add_random_items",
         NCM_ACTION_ADD_RANDOM_ITEMS,
         ncm_action_can_run_add_random_items,
         ncm_action_run_add_random_items,
     },
     {
-        (char *)"toggle_browser_sort_mode",
+        "toggle_browser_sort_mode",
         NCM_ACTION_TOGGLE_BROWSER_SORT_MODE,
         ncm_action_can_run_toggle_browser_sort_mode,
         ncm_action_run_toggle_browser_sort_mode,
     },
     {
-        (char *)"toggle_library_tag_type",
+        "toggle_library_tag_type",
         NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE,
         ncm_action_can_run_toggle_library_tag_type,
         ncm_action_run_toggle_library_tag_type,
     },
     {
-        (char *)"toggle_media_library_sort_mode",
+        "toggle_media_library_sort_mode",
         NCM_ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE,
         ncm_action_can_run_toggle_media_library_sort_mode,
         ncm_action_run_toggle_media_library_sort_mode,
     },
     {
-        (char *)"fetch_lyrics_in_background",
+        "fetch_lyrics_in_background",
         NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND,
         ncm_action_can_run_fetch_lyrics_in_background,
         ncm_action_run_fetch_lyrics_in_background,
     },
     {
-        (char *)"refetch_lyrics",
+        "refetch_lyrics",
         NCM_ACTION_REFETCH_LYRICS,
         ncm_action_can_run_refetch_lyrics,
         ncm_action_run_refetch_lyrics,
     },
     {
-        (char *)"set_selected_items_priority",
+        "set_selected_items_priority",
         NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY,
         ncm_action_can_run_set_selected_items_priority,
         ncm_action_run_set_selected_items_priority,
     },
     {
-        (char *)"toggle_output",
+        "toggle_output",
         NCM_ACTION_TOGGLE_OUTPUT,
         ncm_action_can_run_toggle_output,
         ncm_action_run_toggle_output,
     },
     {
-        (char *)"toggle_visualization_type",
+        "toggle_visualization_type",
         NCM_ACTION_TOGGLE_VISUALIZATION_TYPE,
         ncm_action_can_run_toggle_visualization_type,
         ncm_action_run_toggle_visualization_type,
     },
     {
-        (char *)"show_song_info",
+        "show_song_info",
         NCM_ACTION_SHOW_SONG_INFO,
         ncm_action_can_run_show_song_info,
         ncm_action_run_show_song_info,
     },
     {
-        (char *)"show_artist_info",
+        "show_artist_info",
         NCM_ACTION_SHOW_ARTIST_INFO,
         ncm_action_can_run_show_artist_info,
         ncm_action_run_show_artist_info,
     },
     {
-        (char *)"show_lyrics",
+        "show_lyrics",
         NCM_ACTION_SHOW_LYRICS,
         ncm_action_can_run_show_lyrics,
         ncm_action_run_show_lyrics,
     },
     {
-        (char *)"quit",
+        "quit",
         NCM_ACTION_QUIT,
         ncm_action_can_run_quit,
         ncm_action_run_quit,
     },
     {
-        (char *)"next_screen",
+        "next_screen",
         NCM_ACTION_NEXT_SCREEN,
         ncm_action_can_run_next_screen,
         ncm_action_run_next_screen,
     },
     {
-        (char *)"previous_screen",
+        "previous_screen",
         NCM_ACTION_PREVIOUS_SCREEN,
         ncm_action_can_run_previous_screen,
         ncm_action_run_previous_screen,
     },
     {
-        (char *)"show_help",
+        "show_help",
         NCM_ACTION_SHOW_HELP,
         ncm_action_can_run_show_help,
         ncm_action_run_show_help,
     },
     {
-        (char *)"show_playlist",
+        "show_playlist",
         NCM_ACTION_SHOW_PLAYLIST,
         ncm_action_can_run_show_playlist,
         ncm_action_run_show_playlist,
     },
     {
-        (char *)"show_browser",
+        "show_browser",
         NCM_ACTION_SHOW_BROWSER,
         ncm_action_can_run_show_browser,
         ncm_action_run_show_browser,
     },
     {
-        (char *)"change_browse_mode",
+        "change_browse_mode",
         NCM_ACTION_CHANGE_BROWSE_MODE,
         ncm_action_can_run_change_browse_mode,
         ncm_action_run_change_browse_mode,
     },
     {
-        (char *)"show_search_engine",
+        "show_search_engine",
         NCM_ACTION_SHOW_SEARCH_ENGINE,
         ncm_action_can_run_show_search_engine,
         ncm_action_run_show_search_engine,
     },
     {
-        (char *)"reset_search_engine",
+        "reset_search_engine",
         NCM_ACTION_RESET_SEARCH_ENGINE,
         ncm_action_can_run_reset_search_engine,
         ncm_action_run_reset_search_engine,
     },
     {
-        (char *)"show_media_library",
+        "show_media_library",
         NCM_ACTION_SHOW_MEDIA_LIBRARY,
         ncm_action_can_run_show_media_library,
         ncm_action_run_show_media_library,
     },
     {
-        (char *)"toggle_media_library_columns_mode",
+        "toggle_media_library_columns_mode",
         NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE,
         ncm_action_can_run_toggle_media_library_columns_mode,
         ncm_action_run_toggle_media_library_columns_mode,
     },
     {
-        (char *)"show_playlist_editor",
+        "show_playlist_editor",
         NCM_ACTION_SHOW_PLAYLIST_EDITOR,
         ncm_action_can_run_show_playlist_editor,
         ncm_action_run_show_playlist_editor,
     },
     {
-        (char *)"show_tag_editor",
+        "show_tag_editor",
         NCM_ACTION_SHOW_TAG_EDITOR,
         ncm_action_can_run_show_tag_editor,
         ncm_action_run_show_tag_editor,
     },
     {
-        (char *)"show_outputs",
+        "show_outputs",
         NCM_ACTION_SHOW_OUTPUTS,
         ncm_action_can_run_show_outputs,
         ncm_action_run_show_outputs,
     },
     {
-        (char *)"show_visualizer",
+        "show_visualizer",
         NCM_ACTION_SHOW_VISUALIZER,
         ncm_action_can_run_show_visualizer,
         ncm_action_run_show_visualizer,
     },
     {
-        (char *)"show_server_info",
+        "show_server_info",
         NCM_ACTION_SHOW_SERVER_INFO,
         ncm_action_can_run_show_server_info,
         ncm_action_run_show_server_info,
@@ -1166,7 +1166,7 @@ ncm_action_type_name(enum NcmActionType type) {
 
     action = ncm_action_get(type);
     if (action == NULL) {
-        return (char *)"";
+        return "";
     }
     return action->name;
 }
@@ -1877,7 +1877,7 @@ action_runtime_update_database_path(void) {
         if (view.data != NULL) {
             return view.data;
         }
-        return (char *)"";
+        return "";
     }
 
 #if defined(HAVE_TAGLIB_H)
@@ -1889,7 +1889,7 @@ action_runtime_update_database_path(void) {
     }
 #endif
 
-    return (char *)"/";
+    return "/";
 }
 
 static bool
@@ -1955,7 +1955,7 @@ action_runtime_set_crossfade(void) {
 
     ncm_buffer_init(&input);
     prompted = action_runtime_prompt_string(
-        STRLIT_ARGS("Set crossfade to: "), (char *)"", false,
+        STRLIT_ARGS("Set crossfade to: "), "", false,
         NULL, NULL, &input);
     if (!prompted) {
         ncm_buffer_destroy(&input);
@@ -1967,7 +1967,7 @@ action_runtime_set_crossfade(void) {
         ncm_buffer_destroy(&input);
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Crossfade must be a non-negative number");
+            "Crossfade must be a non-negative number");
         return true;
     }
     ncm_buffer_destroy(&input);
@@ -1995,7 +1995,7 @@ action_runtime_set_volume(void) {
 
     ncm_buffer_init(&input);
     prompted = action_runtime_prompt_string(
-        STRLIT_ARGS("Set volume to: "), (char *)"", false,
+        STRLIT_ARGS("Set volume to: "), "", false,
         NULL, NULL, &input);
     if (!prompted) {
         ncm_buffer_destroy(&input);
@@ -2008,7 +2008,7 @@ action_runtime_set_volume(void) {
         ncm_buffer_destroy(&input);
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Volume must be between 0 and 100");
+            "Volume must be between 0 and 100");
         return true;
     }
     ncm_buffer_destroy(&input);
@@ -2072,7 +2072,7 @@ action_runtime_add_random_items(void) {
 
     tag_type = MPD_TAG_ARTIST;
     if (random_type == 's') {
-        source_name = (char *)"song";
+        source_name = "song";
         source_name_len = STRLIT_LEN("song");
     } else {
         tag_type = ncm_char_to_tag_type(random_type);
@@ -2092,7 +2092,7 @@ action_runtime_add_random_items(void) {
         STRLIT_ARGS("Number of random %1%s: "), args, 1);
     ncm_buffer_init(&input);
     prompted = action_runtime_prompt_string(
-        prompt.data, prompt.len, (char *)"", false,
+        prompt.data, prompt.len, "", false,
         NULL, NULL, &input);
     ncm_buffer_destroy(&prompt);
     if (!prompted) {
@@ -2106,7 +2106,7 @@ action_runtime_add_random_items(void) {
         ncm_buffer_destroy(&input);
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Random item count must be a non-negative number");
+            "Random item count must be a non-negative number");
         return true;
     }
     ncm_buffer_destroy(&input);
@@ -2129,9 +2129,9 @@ action_runtime_add_random_items(void) {
     }
 
     if (count == 1) {
-        plural = (char *)"";
+        plural = "";
     } else {
-        plural = (char *)"s";
+        plural = "s";
     }
     args[0] = ncm_string_format_arg_i64(count);
     args[1] = ncm_string_format_arg_string(source_name, source_name_len);
@@ -2194,11 +2194,11 @@ action_runtime_toggle_separators_between_albums(void) {
     if (Config.playlist_separate_albums) {
         action_runtime_print_toggle(
             STRLIT_ARGS("Separators between albums: %1%"),
-            (char *)"on");
+            "on");
     } else {
         action_runtime_print_toggle(
             STRLIT_ARGS("Separators between albums: %1%"),
-            (char *)"off");
+            "off");
     }
     return true;
 }
@@ -2212,11 +2212,11 @@ action_runtime_toggle_lyrics_update_on_song_change(void) {
     if (Config.now_playing_lyrics) {
         action_runtime_print_toggle(
             STRLIT_ARGS("Update lyrics if song changes: %1%"),
-            (char *)"on");
+            "on");
     } else {
         action_runtime_print_toggle(
             STRLIT_ARGS("Update lyrics if song changes: %1%"),
-            (char *)"off");
+            "off");
     }
     return true;
 }
@@ -2229,12 +2229,12 @@ action_runtime_toggle_fetching_lyrics_in_background(void) {
         action_runtime_print_toggle(
             STRLIT_ARGS(
                 "Fetching lyrics for playing songs in background: %1%"),
-            (char *)"on");
+            "on");
     } else {
         action_runtime_print_toggle(
             STRLIT_ARGS(
                 "Fetching lyrics for playing songs in background: %1%"),
-            (char *)"off");
+            "off");
     }
     return true;
 }
@@ -2243,19 +2243,19 @@ static bool
 action_runtime_toggle_add_mode(void) {
     char *mode_desc;
 
-    mode_desc = (char *)"";
+    mode_desc = "";
     switch (Config.space_add_mode) {
     case NCM_SPACE_ADD_MODE_ADD_REMOVE:
         Config.space_add_mode = NCM_SPACE_ADD_MODE_ALWAYS_ADD;
-        mode_desc = (char *)"always add an item to playlist";
+        mode_desc = "always add an item to playlist";
         break;
     case NCM_SPACE_ADD_MODE_ALWAYS_ADD:
         Config.space_add_mode = NCM_SPACE_ADD_MODE_ADD_REMOVE;
         mode_desc =
-            (char *)"add an item to playlist or remove if already added";
+            "add an item to playlist or remove if already added";
         break;
     case NCM_SPACE_ADD_MODE_LAST:
-        mode_desc = (char *)"";
+        mode_desc = "";
         break;
     }
     action_runtime_print_toggle(STRLIT_ARGS("Add mode: %1%"), mode_desc);
@@ -2268,11 +2268,11 @@ action_runtime_toggle_mouse(void) {
     if (Config.mouse_support) {
         nc_mouse_enable();
         action_runtime_print_toggle(STRLIT_ARGS("Mouse support %1%"),
-                                    (char *)"enabled");
+                                    "enabled");
     } else {
         nc_mouse_disable();
         action_runtime_print_toggle(STRLIT_ARGS("Mouse support %1%"),
-                                    (char *)"disabled");
+                                    "disabled");
     }
     return true;
 }
@@ -2282,10 +2282,10 @@ action_runtime_toggle_bitrate_visibility(void) {
     Config.display_bitrate = !Config.display_bitrate;
     if (Config.display_bitrate) {
         action_runtime_print_toggle(STRLIT_ARGS("Bitrate visibility %1%"),
-                                    (char *)"enabled");
+                                    "enabled");
     } else {
         action_runtime_print_toggle(STRLIT_ARGS("Bitrate visibility %1%"),
-                                    (char *)"disabled");
+                                    "disabled");
     }
     return true;
 }
@@ -2325,7 +2325,7 @@ ncm_action_immediate_command_prompt_should_stop(NcmBuffer *previous,
         return false;
     }
     if (text == NULL) {
-        text = (char *)"";
+        text = "";
         text_len = 0;
     }
 
@@ -2438,7 +2438,7 @@ action_runtime_prompt_string(char *prefix, int32 prefix_len,
     bool ok;
 
     if (initial_text == NULL) {
-        initial_text = (char *)"";
+        initial_text = "";
     }
 
     ok = false;
@@ -2484,7 +2484,7 @@ action_runtime_confirm(char *message, int32 message_len) {
 
     if (!prompted || (answer == 'n')) {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Action cancelled");
+                                    "Action cancelled");
         return false;
     }
     return true;
@@ -2606,7 +2606,7 @@ action_runtime_execute_command(void) {
     ncm_buffer_init(&state.previous);
     ncm_buffer_init(&command_name);
     prompted = action_runtime_prompt_string(STRLIT_ARGS(":"),
-                                            (char *)"", true,
+                                            "", true,
                                             action_runtime_command_prompt_hook,
                                             &state, &command_name);
     if (!prompted && (state.previous.len > 0)) {
@@ -2660,7 +2660,7 @@ action_runtime_save_playlist(void) {
 
     ncm_buffer_init(&name);
     prompted = action_runtime_prompt_string(
-        STRLIT_ARGS("Save playlist as: "), (char *)"", false,
+        STRLIT_ARGS("Save playlist as: "), "", false,
         NULL, NULL, &name);
     if (!prompted) {
         ncm_buffer_destroy(&name);
@@ -2697,7 +2697,7 @@ action_runtime_save_playlist(void) {
         if (success) {
             ncm_statusbar_print_cstring(
                 (int32)Config.message_delay_time,
-                (char *)"Playlist overwritten");
+                "Playlist overwritten");
         }
     } else if (success) {
         action_runtime_print_format_string(
@@ -2748,7 +2748,7 @@ action_runtime_apply_filter(void) {
         (void)current_screen_apply_filter(previous_filter.data,
                                           previous_filter.len, &error);
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Action cancelled");
+                                    "Action cancelled");
         ncm_buffer_destroy(&previous_filter);
         ncm_buffer_destroy(&filter);
         return true;
@@ -2758,7 +2758,7 @@ action_runtime_apply_filter(void) {
     (void)current_screen_apply_filter(filter.data, filter.len, &error);
     if (filter.len == 0) {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Filtering disabled");
+                                    "Filtering disabled");
     } else {
         action_runtime_print_format_string(STRLIT_ARGS(
             "Using filter \"%1%\""), filter.data, filter.len);
@@ -2784,7 +2784,7 @@ action_runtime_find(void) {
 
     ncm_buffer_init(&token);
     prompted = action_runtime_prompt_string(STRLIT_ARGS("Find: "),
-                                            (char *)"", false,
+                                            "", false,
                                             NULL, NULL, &token);
     if (!prompted) {
         ncm_buffer_destroy(&token);
@@ -2792,7 +2792,7 @@ action_runtime_find(void) {
     }
 
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Searching...");
+                                "Searching...");
     ncm_error_clear(&error);
     found = current_screen_search(NCM_SEARCH_DIRECTION_FORWARD,
                                   token.data, token.len, false, false,
@@ -2804,11 +2804,11 @@ action_runtime_find(void) {
 
     if ((token.len == 0) || found) {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Done");
+                                    "Done");
     } else {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"No matching patterns found");
+            "No matching patterns found");
     }
 
     ncm_buffer_destroy(&token);
@@ -2869,7 +2869,7 @@ action_runtime_find_item(enum SearchDirection direction) {
                                         &error);
         }
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Action cancelled");
+                                    "Action cancelled");
         ncm_buffer_destroy(&previous_constraint);
         ncm_buffer_destroy(&constraint);
         return true;
@@ -2878,7 +2878,7 @@ action_runtime_find_item(enum SearchDirection direction) {
     if (constraint.len == 0) {
         current_screen_clear_search_constraint();
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Constraint unset");
+                                    "Constraint unset");
     } else {
         ncm_error_clear(&error);
         (void)current_screen_search(direction, constraint.data,
@@ -3468,7 +3468,7 @@ action_runtime_add_prompt(void) {
 
     ncm_buffer_init(&path);
     prompted = action_runtime_prompt_string(STRLIT_ARGS("Add: "),
-                                            (char *)"", false,
+                                            "", false,
                                             NULL, NULL, &path);
     if (!prompted) {
         ncm_buffer_destroy(&path);
@@ -3484,10 +3484,10 @@ action_runtime_add_prompt(void) {
 
     path_text = path.data;
     if (path_text == NULL) {
-        path_text = (char *)"";
+        path_text = "";
     }
 
-    ncm_statusbar_print_cstring(0, (char *)"Adding...");
+    ncm_statusbar_print_cstring(0, "Adding...");
     added = false;
     ncm_error_clear(&error);
     success = ncm_mpd_client_add(&global_mpd, path_text, &added, &error);
@@ -3533,7 +3533,7 @@ action_runtime_load_prompt(void) {
 
     ncm_buffer_init(&name);
     prompted = action_runtime_prompt_string(
-        STRLIT_ARGS("Load playlist: "), (char *)"", false,
+        STRLIT_ARGS("Load playlist: "), "", false,
         NULL, NULL, &name);
     if (!prompted) {
         ncm_buffer_destroy(&name);
@@ -3542,10 +3542,10 @@ action_runtime_load_prompt(void) {
 
     name_text = name.data;
     if (name_text == NULL) {
-        name_text = (char *)"";
+        name_text = "";
     }
 
-    ncm_statusbar_print_cstring(0, (char *)"Loading...");
+    ncm_statusbar_print_cstring(0, "Loading...");
     loaded = false;
     ncm_error_clear(&error);
     if (!ncm_mpd_client_load_playlist(&global_mpd, name_text,
@@ -3735,7 +3735,7 @@ action_runtime_delete_browser_items(void) {
     if (!Config.allow_for_physical_item_deletion) {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Flag \"allow_for_physical_item_deletion\" needs to be "
+            "Flag \"allow_for_physical_item_deletion\" needs to be "
                     "enabled in configuration file");
         return false;
     }
@@ -3743,7 +3743,7 @@ action_runtime_delete_browser_items(void) {
         && (Config.mpd_music_dir_len <= 0)) {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Proper mpd_music_dir variable has to be set in "
+            "Proper mpd_music_dir variable has to be set in "
                     "configuration file");
         return false;
     }
@@ -3778,13 +3778,13 @@ action_runtime_delete_browser_items(void) {
     }
 
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Deleting items...");
+                                "Deleting items...");
     ncm_error_clear(&error);
     if (!native_browser_screen_delete_items(screen, &global_mpd, &error)) {
         return action_runtime_mpd_error(&error);
     }
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Item(s) deleted");
+                                "Item(s) deleted");
     return true;
 }
 
@@ -3870,7 +3870,7 @@ action_runtime_delete_main_playlist_items(void) {
     }
 
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Deleting items...");
+                                "Deleting items...");
     action_runtime_sort_positions(positions, count, true);
     ncm_error_clear(&error);
     for (int32 i = 0; i < count; i += 1) {
@@ -3885,7 +3885,7 @@ action_runtime_delete_main_playlist_items(void) {
     ncm_song_array_destroy(&songs);
     (void)ncm_status_update_full(&global_mpd, NULL, &error);
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Item(s) deleted");
+                                "Item(s) deleted");
     return true;
 }
 
@@ -3926,7 +3926,7 @@ action_runtime_delete_playlist_editor_items(void) {
     }
 
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Deleting items...");
+                                "Deleting items...");
     action_runtime_sort_positions(positions, count, true);
     ncm_error_clear(&error);
     for (int32 i = 0; i < count; i += 1) {
@@ -3944,7 +3944,7 @@ action_runtime_delete_playlist_editor_items(void) {
     ncm_song_array_destroy(&songs);
     native_playlist_editor_screen_request_content_update(screen);
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Item(s) deleted");
+                                "Item(s) deleted");
     return true;
 }
 
@@ -4032,10 +4032,10 @@ action_runtime_delete_stored_playlists(void) {
     native_playlist_editor_screen_request_playlists_update(screen);
     if (has_selected) {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Playlists deleted");
+                                    "Playlists deleted");
     } else {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Playlist deleted");
+                                    "Playlist deleted");
     }
     return true;
 }
@@ -4067,7 +4067,7 @@ action_runtime_clear_playlist(bool main_playlist) {
         native_playlist_screen_clear(native_c_screen_playlist());
         (void)ncm_status_update_full(&global_mpd, NULL, &error);
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Playlist cleared");
+                                    "Playlist cleared");
         return true;
     }
 
@@ -4174,7 +4174,7 @@ action_runtime_crop_playlist(bool main_playlist) {
     ncm_error_clear(&error);
     if (main_playlist) {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Cropping playlist...");
+                                    "Cropping playlist...");
         if (!ncm_mpd_client_clear_queue(&global_mpd, &error)) {
             ncm_song_array_destroy(&songs);
             return action_runtime_mpd_error(&error);
@@ -4190,7 +4190,7 @@ action_runtime_crop_playlist(bool main_playlist) {
         (void)ncm_status_update_full(&global_mpd, NULL, &error);
         ncm_song_array_destroy(&songs);
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Playlist cropped");
+                                    "Playlist cropped");
         return true;
     }
 
@@ -4372,7 +4372,7 @@ action_runtime_move_selected_items(bool down) {
     if ((menu != NULL) && nc_menu_is_filtered(menu)) {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Moving items is disabled in filtered playlist");
+            "Moving items is disabled in filtered playlist");
         return true;
     }
 
@@ -4518,7 +4518,7 @@ action_runtime_move_playlist_editor_items_to(void) {
     if (nc_menu_is_filtered(menu)) {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Moving items is disabled in filtered playlist");
+            "Moving items is disabled in filtered playlist");
         return true;
     }
 
@@ -4676,7 +4676,7 @@ action_runtime_reverse_playlist(void) {
 
     last -= 1;
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Reversing range...");
+                                "Reversing range...");
     ncm_error_clear(&error);
     success = ncm_mpd_client_start_command_list(&global_mpd, &error);
     while (success && (first < last)) {
@@ -4704,7 +4704,7 @@ action_runtime_reverse_playlist(void) {
 
     (void)ncm_status_update_full(&global_mpd, NULL, &error);
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Range reversed");
+                                "Range reversed");
     return true;
 }
 
@@ -4739,7 +4739,7 @@ action_runtime_shuffle_playlist(void) {
     }
     (void)ncm_status_update_full(&global_mpd, NULL, &error);
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Range shuffled");
+                                "Range shuffled");
     return true;
 }
 
@@ -4759,13 +4759,13 @@ action_runtime_set_selected_items_priority(void) {
     if (ncm_mpd_client_version(&global_mpd) < 17) {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Priorities are supported in MPD >= 0.17.0");
+            "Priorities are supported in MPD >= 0.17.0");
         return false;
     }
 
     ncm_buffer_init(&input);
     prompted = action_runtime_prompt_string(
-        STRLIT_ARGS("Set priority [0-255]: "), (char *)"", false,
+        STRLIT_ARGS("Set priority [0-255]: "), "", false,
         NULL, NULL, &input);
     if (!prompted) {
         ncm_buffer_destroy(&input);
@@ -4778,7 +4778,7 @@ action_runtime_set_selected_items_priority(void) {
         ncm_buffer_destroy(&input);
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Priority must be between 0 and 255");
+            "Priority must be between 0 and 255");
         return true;
     }
     ncm_buffer_destroy(&input);
@@ -4790,7 +4790,7 @@ action_runtime_set_selected_items_priority(void) {
         return action_runtime_mpd_error(&error);
     }
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Priority set");
+                                "Priority set");
     return true;
 }
 
@@ -4818,7 +4818,7 @@ action_runtime_jump_to_position_in_song(void) {
     ncm_buffer_init(&input);
     prompted = action_runtime_prompt_string(
         STRLIT_ARGS("Position to go (in %/h:m:ss/m:ss/seconds(s)): "),
-        (char *)"", false, NULL, NULL, &input);
+        "", false, NULL, NULL, &input);
     if (!prompted) {
         ncm_buffer_destroy(&input);
         return true;
@@ -4828,7 +4828,7 @@ action_runtime_jump_to_position_in_song(void) {
         ncm_buffer_destroy(&input);
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Invalid format ([h]:[mm]:[ss], [m]:[ss], "
+            "Invalid format ([h]:[mm]:[ss], [m]:[ss], "
                     "[s]s, [%]%, [%] accepted)");
         return true;
     }
@@ -4895,7 +4895,7 @@ action_runtime_select_album(void) {
 
     ncm_statusbar_print_cstring(
         (int32)Config.message_delay_time,
-        (char *)"Album around cursor position selected");
+        "Album around cursor position selected");
     return true;
 }
 
@@ -4935,7 +4935,7 @@ action_runtime_select_found_items(void) {
 
     if (found) {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Searching for items...");
+                                    "Searching for items...");
         (void)nc_menu_set_current_selected(menu, true);
         while (true) {
             found = current_screen_search(
@@ -4951,7 +4951,7 @@ action_runtime_select_found_items(void) {
             return action_runtime_mpd_error(&error);
         }
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Found items selected");
+                                    "Found items selected");
     }
     nc_menu_highlight_position(menu, original, height);
     nc_screen_finish_list_change(app_controller_current_screen());
@@ -5138,7 +5138,7 @@ action_runtime_jump_to_playing_song(void) {
         if (!success) {
             ncm_statusbar_print_cstring(
                 (int32)Config.message_delay_time,
-                (char *)"Song is filtered out");
+                "Song is filtered out");
         }
         return true;
     }
@@ -5258,7 +5258,7 @@ action_runtime_jump_to_media_library(void) {
         NCM_SCREEN_TYPE_MEDIA_LIBRARY);
     if (success) {
         ncm_statusbar_print_cstring(
-            0, (char *)"Jumping to song...");
+            0, "Jumping to song...");
         ncm_error_clear(&error);
         success = native_media_library_screen_locate_song(
             native_c_screen_media_library(), &song, &error);
@@ -5280,7 +5280,7 @@ action_runtime_jump_to_tag_editor(void) {
     if (Config.mpd_music_dir_len <= 0) {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Proper mpd_music_dir variable has to be set in "
+            "Proper mpd_music_dir variable has to be set in "
                     "configuration file");
         return false;
     }
@@ -5551,7 +5551,7 @@ action_runtime_change_browse_mode(void) {
         if (error.code == EINVAL) {
             ncm_statusbar_print_cstring(
                 (int32)Config.message_delay_time,
-                (char *)"For browsing local filesystem connection to MPD "
+                "For browsing local filesystem connection to MPD "
                 "via UNIX Socket is required");
         } else if (ncm_error_is_set(&error)) {
             ncm_statusbar_print_cstring(
@@ -5561,9 +5561,9 @@ action_runtime_change_browse_mode(void) {
     }
 
     if (native_browser_screen_is_local(browser)) {
-        message = (char *)"Browse mode: local filesystem";
+        message = "Browse mode: local filesystem";
     } else {
-        message = (char *)"Browse mode: MPD database";
+        message = "Browse mode: MPD database";
     }
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
                                 message);
@@ -5584,22 +5584,22 @@ action_runtime_toggle_browser_sort_mode(void) {
 
     switch (Config.browser_sort_mode) {
     case NCM_SORT_MODE_TYPE:
-        message = (char *)"Sort songs by: type";
+        message = "Sort songs by: type";
         break;
     case NCM_SORT_MODE_NAME:
-        message = (char *)"Sort songs by: name";
+        message = "Sort songs by: name";
         break;
     case NCM_SORT_MODE_MODIFICATION_TIME:
-        message = (char *)"Sort songs by: modification time";
+        message = "Sort songs by: modification time";
         break;
     case NCM_SORT_MODE_CUSTOM_FORMAT:
-        message = (char *)"Sort songs by: custom format";
+        message = "Sort songs by: custom format";
         break;
     case NCM_SORT_MODE_NONE:
-        message = (char *)"Do not sort songs";
+        message = "Do not sort songs";
         break;
     case NCM_SORT_MODE_LAST:
-        message = (char *)"Sort songs by: type";
+        message = "Sort songs by: type";
         break;
     }
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
@@ -5662,11 +5662,11 @@ action_runtime_toggle_media_library_sort_mode(void) {
     if (sort_by_mtime) {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Sorting library by: modification time");
+            "Sorting library by: modification time");
     } else {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Sorting library by: name");
+            "Sorting library by: name");
     }
     return true;
 }
@@ -5688,13 +5688,13 @@ static char *
 action_runtime_replay_gain_mode_name(enum NcmMpdReplayGainMode mode) {
     switch (mode) {
     case NCM_MPD_REPLAY_GAIN_OFF:
-        return (char *)"off";
+        return "off";
     case NCM_MPD_REPLAY_GAIN_TRACK:
-        return (char *)"track";
+        return "track";
     case NCM_MPD_REPLAY_GAIN_ALBUM:
-        return (char *)"album";
+        return "album";
     }
-    return (char *)"unknown";
+    return "unknown";
 }
 
 static bool
@@ -5777,7 +5777,7 @@ ncm_action_edit_song(NcmSong *song) {
     if (Config.mpd_music_dir_len <= 0) {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Proper mpd_music_dir variable has to be set in "
+            "Proper mpd_music_dir variable has to be set in "
                     "configuration file");
         return false;
     }
@@ -5796,12 +5796,12 @@ ncm_action_edit_song(NcmSong *song) {
     case NATIVE_TINY_TAG_EDITOR_OPEN_STREAM:
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Streams can't be edited");
+            "Streams can't be edited");
         break;
     case NATIVE_TINY_TAG_EDITOR_OPEN_MISSING_MUSIC_DIRECTORY:
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Proper mpd_music_dir variable has to be set in "
+            "Proper mpd_music_dir variable has to be set in "
                     "configuration file");
         break;
     case NATIVE_TINY_TAG_EDITOR_OPEN_UNREADABLE_FILE:
@@ -5819,7 +5819,7 @@ ncm_action_edit_song(NcmSong *song) {
     case NATIVE_TINY_TAG_EDITOR_OPEN_PREPARE_FAILED:
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Couldn't prepare tiny tag editor");
+            "Couldn't prepare tiny tag editor");
         break;
     }
     ncm_buffer_destroy(&path);
@@ -5879,7 +5879,7 @@ action_runtime_toggle_screen_lock(void) {
         native_c_screen_lyrics_set_resize();
         app_controller_resize_current_screen();
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Screen unlocked");
+                                    "Screen unlocked");
         return true;
     }
 
@@ -5887,7 +5887,7 @@ action_runtime_toggle_screen_lock(void) {
     if ((current == NULL) || !nc_screen_is_lockable(current)) {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Current screen can't be locked");
+            "Current screen can't be locked");
         return true;
     }
 
@@ -5902,7 +5902,7 @@ action_runtime_toggle_screen_lock(void) {
         if (!prompted) {
             ncm_buffer_destroy(&input);
             ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                        (char *)"Action aborted");
+                                        "Action aborted");
             return true;
         }
 
@@ -5939,7 +5939,7 @@ action_runtime_toggle_screen_lock(void) {
     } else {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Current screen can't be locked");
+            "Current screen can't be locked");
     }
     return true;
 }
@@ -5953,7 +5953,7 @@ action_runtime_mpd_music_dir_is_set(void) {
 
     ncm_statusbar_print_cstring(
         (int32)Config.message_delay_time,
-        (char *)"Proper mpd_music_dir variable has to be set in "
+        "Proper mpd_music_dir variable has to be set in "
                 "configuration file");
     return false;
 }
@@ -6057,7 +6057,7 @@ action_runtime_shared_directory_update(NcmBuffer *shared_directory,
         return false;
     }
     if (directory == NULL) {
-        directory = (char *)"";
+        directory = "";
         directory_len = 0;
     }
 
@@ -6143,7 +6143,7 @@ action_runtime_update_tag_directory(NcmBuffer *shared_directory,
 
     directory = shared_directory->data;
     if (directory == NULL) {
-        directory = (char *)"";
+        directory = "";
     }
 
     ncm_error_clear(&error);
@@ -6152,7 +6152,7 @@ action_runtime_update_tag_directory(NcmBuffer *shared_directory,
         return action_runtime_mpd_error(&error);
     }
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Tags updated successfully");
+                                "Tags updated successfully");
     return true;
 }
 
@@ -6215,7 +6215,7 @@ action_runtime_edit_library_tag(void) {
         goto cleanup;
     }
 
-    ncm_statusbar_print_cstring(0, (char *)"Updating tags...");
+    ncm_statusbar_print_cstring(0, "Updating tags...");
     ncm_error_clear(&error);
     if (!ncm_mpd_client_start_search(&global_mpd, true, &error)
         || !ncm_mpd_client_add_search_tag(
@@ -6333,7 +6333,7 @@ action_runtime_edit_library_album(void) {
         goto cleanup;
     }
 
-    ncm_statusbar_print_cstring(0, (char *)"Updating tags...");
+    ncm_statusbar_print_cstring(0, "Updating tags...");
     success = true;
     for (int32 i = 0; i < songs.len; i += 1) {
         NcmSong *song;
@@ -6362,8 +6362,8 @@ action_runtime_edit_library_album(void) {
             success = false;
             break;
         }
-        ncm_taglib_clear_property(&file, (char *)"ALBUM");
-        ncm_taglib_append_property(&file, (char *)"ALBUM",
+        ncm_taglib_clear_property(&file, "ALBUM");
+        ncm_taglib_append_property(&file, "ALBUM",
                                    new_album.data);
         if (!ncm_taglib_file_save(&file)) {
             action_runtime_print_album_file_error(
@@ -6443,7 +6443,7 @@ action_runtime_toggle_lyrics_fetcher(void) {
         native_c_screen_lyrics(), &Config.lyrics_fetchers);
     if (fetcher == NULL) {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Using all lyrics fetchers");
+                                    "Using all lyrics fetchers");
         return true;
     }
 
@@ -6470,7 +6470,7 @@ action_runtime_edit_lyrics(void) {
     if (Config.external_editor_len <= 0) {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"external_editor variable has to be set in "
+            "external_editor variable has to be set in "
                     "configuration file");
         return false;
     }
@@ -6487,13 +6487,13 @@ action_runtime_edit_lyrics(void) {
             Config.store_lyrics_in_song_dir,
             Config.generate_win32_compatible_filenames)) {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"failed to build lyrics "
+                                    "failed to build lyrics "
                                             "filename");
         return false;
     }
 
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Opening lyrics in external "
+                                "Opening lyrics in external "
                                         "editor...");
     filename = native_lyrics_screen_filename(lyrics);
     ncm_buffer_init(&escaped);
@@ -6567,7 +6567,7 @@ action_runtime_fetch_lyrics_background(void) {
     ncm_song_array_destroy(&songs);
     ncm_statusbar_print_cstring(
         (int32)Config.message_delay_time,
-        (char *)"Selected songs queued for lyrics fetching");
+        "Selected songs queued for lyrics fetching");
     return true;
 }
 
@@ -7192,7 +7192,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         if (ncm_mpd_client_version(&global_mpd) < 17) {
             ncm_statusbar_print_cstring(
                 (int32)Config.message_delay_time,
-                (char *)"Priorities are supported in MPD >= 0.17.0");
+                "Priorities are supported in MPD >= 0.17.0");
             return false;
         }
         return true;
@@ -7393,11 +7393,11 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         if (Config.autocenter_mode) {
             ncm_statusbar_print_cstring(
                 (int32)Config.message_delay_time,
-                (char *)"Centering playing song: on");
+                "Centering playing song: on");
         } else {
             ncm_statusbar_print_cstring(
                 (int32)Config.message_delay_time,
-                (char *)"Centering playing song: off");
+                "Centering playing song: off");
         }
         return true;
     case NCM_ACTION_UPDATE_DATABASE:
@@ -7463,7 +7463,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         }
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Range selected");
+            "Range selected");
         return true;
     }
     case NCM_ACTION_REVERSE_SELECTION:
@@ -7478,14 +7478,14 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
             menu, action_runtime_menu_item_source(menu));
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Selection reversed");
+            "Selection reversed");
         return true;
     }
     case NCM_ACTION_REMOVE_SELECTION:
         nc_menu_clear_selection(action_runtime_current_menu());
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Selection removed");
+            "Selection removed");
         return true;
     case NCM_ACTION_ADD_SELECTED_ITEMS:
     {
@@ -7618,11 +7618,11 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         if (Config.wrapped_search) {
             ncm_statusbar_print_cstring(
                 (int32)Config.message_delay_time,
-                (char *)"Search mode: Wrapped");
+                "Search mode: Wrapped");
         } else {
             ncm_statusbar_print_cstring(
                 (int32)Config.message_delay_time,
-                (char *)"Search mode: Normal");
+                "Search mode: Normal");
         }
         return true;
     case NCM_ACTION_START_SEARCHING: {

@@ -39,12 +39,12 @@ title_current_screen_title(void) {
 
     screen = app_controller_current_screen();
     if (screen == NULL) {
-        return (char *)"";
+        return "";
     }
 
     title = nc_screen_title(screen);
     if (title == NULL) {
-        return (char *)"";
+        return "";
     }
 
     return title;
@@ -179,7 +179,7 @@ ncm_title_draw_header_with_config(char *title, int32 title_len,
     }
 
     if (title == NULL) {
-        title = (char *)"";
+        title = "";
         title_len = 0;
     }
 

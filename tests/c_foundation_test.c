@@ -308,42 +308,42 @@ test_string(void) {
 
     shared = ncm_string_shared_directory(LIT_ARGS("/music/a"),
                                          LIT_ARGS("/music/b"));
-    require_buffer_string((char *)"shared directory", &shared,
+    require_buffer_string("shared directory", &shared,
                           LIT_ARGS("/music"));
     ncm_buffer_destroy(&shared);
 
     shared = ncm_string_shared_directory(LIT_ARGS("/a"), LIT_ARGS("/b"));
-    require_buffer_string((char *)"shared root slash", &shared,
+    require_buffer_string("shared root slash", &shared,
                           LIT_ARGS(""));
     ncm_buffer_destroy(&shared);
 
     shared = ncm_string_shared_directory(LIT_ARGS("relative/a"),
                                          LIT_ARGS("other/b"));
-    require_buffer_string((char *)"shared fallback", &shared, LIT_ARGS("/"));
+    require_buffer_string("shared fallback", &shared, LIT_ARGS("/"));
     ncm_buffer_destroy(&shared);
 
     pos = 0;
     enclosed = ncm_string_get_enclosed(LIT_ARGS("a[bc\\]d]e"),
                                        '[', ']', 0, &pos);
-    require_buffer_string((char *)"escaped enclosed", &enclosed,
+    require_buffer_string("escaped enclosed", &enclosed,
                           LIT_ARGS("bc]d"));
     REQUIRE_INT(pos, 8);
     ncm_buffer_destroy(&enclosed);
 
     enclosed = ncm_string_get_enclosed(LIT_ARGS("x[one] [two]"),
                                        '[', ']', 6, &pos);
-    require_buffer_string((char *)"enclosed after start", &enclosed,
+    require_buffer_string("enclosed after start", &enclosed,
                           LIT_ARGS("two"));
     REQUIRE_INT(pos, 12);
     ncm_buffer_destroy(&enclosed);
 
     enclosed = ncm_string_get_enclosed(LIT_ARGS("a[bc"), '[', ']', 0, &pos);
-    require_buffer_string((char *)"missing close", &enclosed, LIT_ARGS(""));
+    require_buffer_string("missing close", &enclosed, LIT_ARGS(""));
     REQUIRE_INT(pos, 4);
     ncm_buffer_destroy(&enclosed);
 
     enclosed = ncm_string_get_enclosed(LIT_ARGS("abc"), '[', ']', 0, &pos);
-    require_buffer_string((char *)"missing open", &enclosed, LIT_ARGS(""));
+    require_buffer_string("missing open", &enclosed, LIT_ARGS(""));
     REQUIRE_INT(pos, -1);
     ncm_buffer_destroy(&enclosed);
 
@@ -364,7 +364,7 @@ test_string(void) {
     ncm_buffer_init(&escaped);
     ncm_string_append_shell_escaped_single_quotes(&escaped,
                                                   LIT_ARGS("can't stop"));
-    require_buffer_string((char *)"escaped", &escaped,
+    require_buffer_string("escaped", &escaped,
                           LIT_ARGS("can'\\''t stop"));
     ncm_buffer_destroy(&escaped);
     return;
@@ -375,37 +375,37 @@ test_html(void) {
     NcmBuffer result;
 
     result = ncm_html_unescape_entities(LIT_ARGS("a&amp;b&quot;c&nbsp;d"));
-    require_buffer_string((char *)"entities", &result, LIT_ARGS("a&b\"c d"));
+    require_buffer_string("entities", &result, LIT_ARGS("a&b\"c d"));
     ncm_buffer_destroy(&result);
 
     result = ncm_html_unescape_entities(
         LIT_ARGS("&apos;&lt;&gt;&ndash;&mdash;"));
-    require_buffer_string((char *)"extra entities", &result,
+    require_buffer_string("extra entities", &result,
                           LIT_ARGS("'<>–—"));
     ncm_buffer_destroy(&result);
 
     result = ncm_html_unescape_utf8(LIT_ARGS("&#65; &#x20ac; &#bad;"));
-    require_buffer_string((char *)"numeric utf8", &result,
+    require_buffer_string("numeric utf8", &result,
                           LIT_ARGS("A € &#bad;"));
     ncm_buffer_destroy(&result);
 
     result = ncm_html_unescape_utf8(LIT_ARGS("&#x110000; &#1114112;"));
-    require_buffer_string((char *)"invalid numeric utf8", &result,
+    require_buffer_string("invalid numeric utf8", &result,
                           LIT_ARGS("&#x110000; &#1114112;"));
     ncm_buffer_destroy(&result);
 
     result = ncm_html_strip_tags(LIT_ARGS("a<p>b<br>c</p>&amp;"));
-    require_buffer_string((char *)"strip tags", &result,
+    require_buffer_string("strip tags", &result,
                           LIT_ARGS("a\nb\nc\n&"));
     ncm_buffer_destroy(&result);
 
     result = ncm_html_strip_tags(LIT_ARGS("<p class=x>a<br />b&lt;c"));
-    require_buffer_string((char *)"strip tag variants", &result,
+    require_buffer_string("strip tag variants", &result,
                           LIT_ARGS("\na\nb<c"));
     ncm_buffer_destroy(&result);
 
     result = ncm_html_strip_tags(LIT_ARGS("a <broken b\nc"));
-    require_buffer_string((char *)"malformed tag", &result,
+    require_buffer_string("malformed tag", &result,
                           LIT_ARGS("a <broken bc"));
     ncm_buffer_destroy(&result);
     return;
@@ -570,21 +570,21 @@ test_model_wrappers(void) {
     REQUIRE(!ncm_song_equal(&song, &other_song));
 
     buffer = ncm_song_getter_buffer(&song, NCM_SONG_GETTER_TRACK, 0);
-    require_buffer_string((char *)"song track", &buffer, LIT_ARGS("01"));
+    require_buffer_string("song track", &buffer, LIT_ARGS("01"));
     ncm_buffer_destroy(&buffer);
 
     buffer = ncm_song_getter_buffer(&song, NCM_SONG_GETTER_TRACK_NUMBER, 0);
-    require_buffer_string((char *)"song track number", &buffer,
+    require_buffer_string("song track number", &buffer,
                           LIT_ARGS("01"));
     ncm_buffer_destroy(&buffer);
 
     buffer = ncm_song_getter_buffer(&song, NCM_SONG_GETTER_LENGTH, 0);
-    require_buffer_string((char *)"song length", &buffer, LIT_ARGS("1:05"));
+    require_buffer_string("song length", &buffer, LIT_ARGS("1:05"));
     ncm_buffer_destroy(&buffer);
 
     buffer = ncm_song_tags_buffer(&song, NCM_SONG_GETTER_ARTIST,
                                   LIT_ARGS(" | "), false);
-    require_buffer_string((char *)"deduplicated song tags", &buffer,
+    require_buffer_string("deduplicated song tags", &buffer,
                           LIT_ARGS("Alice | Bob"));
     ncm_buffer_destroy(&buffer);
 
@@ -597,7 +597,7 @@ test_model_wrappers(void) {
     REQUIRE_STRING(view.data, view.len, "01");
     buffer = ncm_mutable_song_get_numeric_tag_buffer(
         &mutable_song, NCM_TAGS_FIELD_TRACK, 0);
-    require_buffer_string((char *)"mutable numeric track", &buffer,
+    require_buffer_string("mutable numeric track", &buffer,
                           LIT_ARGS("01"));
     ncm_buffer_destroy(&buffer);
     REQUIRE(!ncm_mutable_song_is_modified(&mutable_song));

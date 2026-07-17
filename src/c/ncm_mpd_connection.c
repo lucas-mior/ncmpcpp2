@@ -123,7 +123,7 @@ ncm_mpd_connection_require_connected(NcmMpdConnection *connection) {
     if (connection->mpd == NULL) {
         ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
                                      (enum mpd_server_error)0, false,
-                                     (char *)"No active MPD connection");
+                                     "No active MPD connection");
         return false;
     }
 
@@ -314,7 +314,7 @@ ncm_mpd_connection_mpd_directory(char *directory) {
         return NULL;
     }
     if ((directory[0] == '/') && (directory[1] == '\0')) {
-        return (char *)"";
+        return "";
     }
 
     return directory;
@@ -343,7 +343,7 @@ ncm_mpd_connection_recv_song(NcmMpdConnection *connection,
     if (!ok) {
         ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
                                      (enum mpd_server_error)0, false,
-                                     (char *)"Could not read MPD song");
+                                     "Could not read MPD song");
         return false;
     }
 
@@ -414,7 +414,7 @@ ncm_mpd_connection_recv_entity_song_list(NcmMpdConnection *connection,
                 ncm_mpd_connection_set_error(
                     connection, MPD_ERROR_STATE,
                     (enum mpd_server_error)0, false,
-                    (char *)"MPD song entity has no song");
+                    "MPD song entity has no song");
                 mpd_entity_free(entity);
                 mpd_response_finish(connection->mpd);
                 return false;
@@ -430,7 +430,7 @@ ncm_mpd_connection_recv_entity_song_list(NcmMpdConnection *connection,
                 ncm_mpd_connection_set_error(
                     connection, MPD_ERROR_STATE,
                     (enum mpd_server_error)0, false,
-                    (char *)"Could not read MPD song entity");
+                    "Could not read MPD song entity");
                 mpd_entity_free(entity);
                 mpd_response_finish(connection->mpd);
                 return false;
@@ -476,7 +476,7 @@ ncm_mpd_connection_recv_item_list(NcmMpdConnection *connection,
             ncm_mpd_connection_set_error(
                 connection, MPD_ERROR_STATE,
                 (enum mpd_server_error)0, false,
-                (char *)"Could not read MPD directory item");
+                "Could not read MPD directory item");
             mpd_response_finish(connection->mpd);
             return false;
         }
@@ -513,7 +513,7 @@ ncm_mpd_connection_recv_string_list_tag(NcmMpdConnection *connection,
             ncm_mpd_connection_set_error(
                 connection, MPD_ERROR_STATE,
                 (enum mpd_server_error)0, false,
-                (char *)"Could not read MPD tag value");
+                "Could not read MPD tag value");
             mpd_response_finish(connection->mpd);
             return false;
         }
@@ -560,14 +560,14 @@ static char *
 ncm_mpd_replay_gain_mode_name(enum NcmMpdReplayGainMode mode) {
     switch (mode) {
     case NCM_MPD_REPLAY_GAIN_OFF:
-        return (char *)"off";
+        return "off";
     case NCM_MPD_REPLAY_GAIN_TRACK:
-        return (char *)"track";
+        return "track";
     case NCM_MPD_REPLAY_GAIN_ALBUM:
-        return (char *)"album";
+        return "album";
     }
 
-    return (char *)"off";
+    return "off";
 }
 
 static bool
@@ -626,7 +626,7 @@ ncm_mpd_string_set(NcmMpdString *string, char *value, int32 value_len) {
         return false;
     }
     if (value == NULL) {
-        value = (char *)"";
+        value = "";
         value_len = 0;
     }
     if (value_len < 0) {
@@ -676,7 +676,7 @@ ncm_mpd_output_set(NcmMpdOutput *output, uint32 id, char *name,
         return false;
     }
     if (name == NULL) {
-        name = (char *)"";
+        name = "";
         name_len = 0;
     }
     if (name_len < 0) {
@@ -1080,7 +1080,7 @@ ncm_mpd_string_list_append(NcmMpdStringList *list, char *value,
         return false;
     }
     if (value == NULL) {
-        value = (char *)"";
+        value = "";
         value_len = 0;
     }
     if (value_len < 0) {
@@ -1464,7 +1464,7 @@ ncm_mpd_connection_connect(NcmMpdConnection *connection,
     if (connection->mpd == NULL) {
         ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
                                      (enum mpd_server_error)0, false,
-                                     (char *)"Could not create MPD connection");
+                                     "Could not create MPD connection");
         return false;
     }
 
@@ -1586,7 +1586,7 @@ ncm_mpd_connection_check_error(NcmMpdConnection *connection) {
     if (connection->mpd == NULL) {
         ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
                                      (enum mpd_server_error)0, false,
-                                     (char *)"No active MPD connection");
+                                     "No active MPD connection");
         return false;
     }
 
@@ -1675,7 +1675,7 @@ ncm_mpd_connection_get_stats(NcmMpdConnection *connection,
         if (ncm_mpd_connection_check_error(connection)) {
             ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
                                          (enum mpd_server_error)0, false,
-                                         (char *)"Could not get MPD stats");
+                                         "Could not get MPD stats");
         }
         return false;
     }
@@ -1711,7 +1711,7 @@ ncm_mpd_connection_get_status(NcmMpdConnection *connection,
         if (ncm_mpd_connection_check_error(connection)) {
             ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
                                          (enum mpd_server_error)0, false,
-                                         (char *)"Could not get MPD status");
+                                         "Could not get MPD status");
         }
         return false;
     }
@@ -1819,7 +1819,7 @@ ncm_mpd_connection_get_supported_extensions(NcmMpdConnection *connection,
     }
 
     return ncm_mpd_connection_recv_pair_list(connection,
-                                             (char *)"suffix", strings);
+                                             "suffix", strings);
 }
 
 bool
@@ -1852,7 +1852,7 @@ ncm_mpd_connection_get_replay_gain_mode(NcmMpdConnection *connection,
     if (!parsed) {
         ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
                                      (enum mpd_server_error)0, false,
-                                     (char *)"Unknown replay gain mode");
+                                     "Unknown replay gain mode");
         return false;
     }
 
@@ -1930,7 +1930,7 @@ ncm_mpd_connection_list_all_song_uris(NcmMpdConnection *connection,
     }
 
     return ncm_mpd_connection_recv_pair_list(connection,
-                                             (char *)"file", strings);
+                                             "file", strings);
 }
 
 bool
@@ -1945,7 +1945,7 @@ ncm_mpd_connection_get_url_handlers(NcmMpdConnection *connection,
     }
 
     return ncm_mpd_connection_recv_pair_list(connection,
-                                             (char *)"handler", strings);
+                                             "handler", strings);
 }
 
 bool
@@ -1960,7 +1960,7 @@ ncm_mpd_connection_get_tag_types(NcmMpdConnection *connection,
     }
 
     return ncm_mpd_connection_recv_pair_list(connection,
-                                             (char *)"tagtype", strings);
+                                             "tagtype", strings);
 }
 
 bool
@@ -2270,7 +2270,7 @@ ncm_mpd_connection_get_outputs(NcmMpdConnection *connection,
             ncm_mpd_connection_set_error(
                 connection, MPD_ERROR_STATE,
                 (enum mpd_server_error)0, false,
-                (char *)"Could not read MPD output");
+                "Could not read MPD output");
             mpd_response_finish(connection->mpd);
             return false;
         }

@@ -68,10 +68,10 @@ ncm_playlist_sort_compare_key(NcmPlaylistSortContext *context,
     left_data = left.data;
     right_data = right.data;
     if (left_data == NULL) {
-        left_data = (char *)"";
+        left_data = "";
     }
     if (right_data == NULL) {
-        right_data = (char *)"";
+        right_data = "";
     }
 
     result = ncm_compare_locale_strings(

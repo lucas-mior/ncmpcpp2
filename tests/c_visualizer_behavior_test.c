@@ -267,7 +267,7 @@ test_config(TestVisualizerIo *io, char *source, int32 source_len,
 
     config.source_location = source;
     config.output_name = output;
-    config.visualizer_chars = (char *)"xo";
+    config.visualizer_chars = "xo";
     config.source_location_len = source_len;
     config.output_name_len = output_len;
     config.visualizer_chars_len = STRLIT_LEN("xo");

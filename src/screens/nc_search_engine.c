@@ -96,17 +96,17 @@ static bool native_search_append_result_rows(
 static int32 native_search_cstring_len(char *string);
 
 static char *native_search_constraint_names[] = {
-    (char *)"Any",
-    (char *)"Artist",
-    (char *)"Album Artist",
-    (char *)"Title",
-    (char *)"Album",
-    (char *)"Filename",
-    (char *)"Composer",
-    (char *)"Performer",
-    (char *)"Genre",
-    (char *)"Date",
-    (char *)"Comment",
+    "Any",
+    "Artist",
+    "Album Artist",
+    "Title",
+    "Album",
+    "Filename",
+    "Composer",
+    "Performer",
+    "Genre",
+    "Date",
+    "Comment",
 };
 
 static int32 native_search_constraint_name_lengths[] = {
@@ -124,9 +124,9 @@ static int32 native_search_constraint_name_lengths[] = {
 };
 
 static char *native_search_mode_names[] = {
-    (char *)"Match if tag contains searched phrase (no regexes)",
-    (char *)"Match if tag contains searched phrase (regexes supported)",
-    (char *)"Match only if both values are the same",
+    "Match if tag contains searched phrase (no regexes)",
+    "Match if tag contains searched phrase (regexes supported)",
+    "Match only if both values are the same",
 };
 
 static char native_search_empty_string[] = "";
@@ -582,12 +582,12 @@ native_search_engine_screen_add_result_summary(
         return false;
     }
 
-    nc_buffer_append_cstring(&buffer, (char *)"Search results: Found ");
+    nc_buffer_append_cstring(&buffer, "Search results: Found ");
     nc_buffer_append_int32(&buffer, song_count);
     if (song_count == 1) {
-        nc_buffer_append_cstring(&buffer, (char *)" song");
+        nc_buffer_append_cstring(&buffer, " song");
     } else {
-        nc_buffer_append_cstring(&buffer, (char *)" songs");
+        nc_buffer_append_cstring(&buffer, " songs");
     }
     result = native_search_insert_buffer_with_flags(
         screen, NATIVE_SEARCH_ENGINE_RESULT_SUMMARY_ROW, &buffer,
@@ -747,7 +747,7 @@ native_search_engine_screen_build_query(NativeSearchEngineScreen *screen,
             continue;
         }
         if (!first) {
-            ncm_buffer_append(query, (char *)" ", 1);
+            ncm_buffer_append(query, " ", 1);
         }
         ncm_buffer_append(query, screen->constraints[i].data,
                           screen->constraints[i].len);
