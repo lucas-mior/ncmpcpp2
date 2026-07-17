@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 #include "c/ncm_base.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
@@ -108,7 +108,7 @@ ncm_wide_string_from_utf8(NcmWideString *out,
         int32 length;
         wchar_t ch;
 
-        length = ncm_utf8_decode(string + byte, string_len - byte, &rune);
+        length = utf8_decode(string + byte, string_len - byte, &rune);
         if ((uint64)rune > (uint64)WCHAR_MAX) {
             rune = NCM_WIDE_REPLACEMENT_CHARACTER;
         }

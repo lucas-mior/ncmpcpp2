@@ -16,7 +16,7 @@
 #include "c/ncm_song.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
@@ -746,28 +746,28 @@ test_utf8(void) {
     uint32 rune;
     int32 len;
 
-    len = ncm_utf8_encode(0x20acu, buffer, NCM_ARRAY_LEN(buffer));
+    len = utf8_encode(0x20acu, buffer, NCM_ARRAY_LEN(buffer));
     REQUIRE_INT(len, 3);
     REQUIRE_STRING(buffer, len, "€");
-    REQUIRE_INT(ncm_utf8_decode(buffer, len, &rune), 3);
+    REQUIRE_INT(utf8_decode(buffer, len, &rune), 3);
     REQUIRE(rune == 0x20acu);
 
-    REQUIRE_INT(ncm_utf8_characters(LIT_ARGS("a€b")), 3);
-    REQUIRE_INT(ncm_utf8_byte_position(LIT_ARGS("a€b"), 0), 0);
-    REQUIRE_INT(ncm_utf8_byte_position(LIT_ARGS("a€b"), 1), 1);
-    REQUIRE_INT(ncm_utf8_byte_position(LIT_ARGS("a€b"), 2), 4);
-    REQUIRE_INT(ncm_utf8_byte_position(LIT_ARGS("a€b"), 99), 5);
-    REQUIRE_INT(ncm_utf8_next_position(LIT_ARGS("a€b"), 0), 1);
-    REQUIRE_INT(ncm_utf8_next_position(LIT_ARGS("a€b"), 1), 4);
-    REQUIRE_INT(ncm_utf8_width(LIT_ARGS("a€b")), 3);
-    REQUIRE_INT(ncm_utf8_cut_width(LIT_ARGS("abcdef"), 3), 3);
-    REQUIRE_INT(ncm_utf8_suffix_width_position(LIT_ARGS("abcdef"), 3), 3);
-    REQUIRE_INT(ncm_utf8_suffix_width_position(LIT_ARGS("a€b"), 2), 1);
+    REQUIRE_INT(utf8_characters(LIT_ARGS("a€b")), 3);
+    REQUIRE_INT(utf8_byte_position(LIT_ARGS("a€b"), 0), 0);
+    REQUIRE_INT(utf8_byte_position(LIT_ARGS("a€b"), 1), 1);
+    REQUIRE_INT(utf8_byte_position(LIT_ARGS("a€b"), 2), 4);
+    REQUIRE_INT(utf8_byte_position(LIT_ARGS("a€b"), 99), 5);
+    REQUIRE_INT(utf8_next_position(LIT_ARGS("a€b"), 0), 1);
+    REQUIRE_INT(utf8_next_position(LIT_ARGS("a€b"), 1), 4);
+    REQUIRE_INT(utf8_width(LIT_ARGS("a€b")), 3);
+    REQUIRE_INT(utf8_cut_width(LIT_ARGS("abcdef"), 3), 3);
+    REQUIRE_INT(utf8_suffix_width_position(LIT_ARGS("abcdef"), 3), 3);
+    REQUIRE_INT(utf8_suffix_width_position(LIT_ARGS("a€b"), 2), 1);
 
-    len = ncm_utf8_capitalize_first_letters(LIT_ARGS("hello world"),
+    len = utf8_capitalize_first_letters(LIT_ARGS("hello world"),
                                             buffer, NCM_ARRAY_LEN(buffer));
     REQUIRE_STRING(buffer, len, "Hello World");
-    len = ncm_utf8_capitalize_first_letters(LIT_ARGS("rock'n'roll"),
+    len = utf8_capitalize_first_letters(LIT_ARGS("rock'n'roll"),
                                             buffer, NCM_ARRAY_LEN(buffer));
     REQUIRE_STRING(buffer, len, "Rock'n'roll");
     return;

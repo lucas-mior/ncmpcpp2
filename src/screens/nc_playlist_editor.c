@@ -12,7 +12,7 @@
 #include "c/ncm_comparators.h"
 #include "c/ncm_charset.h"
 #include "c/ncm_display.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "c/ncm_string.h"
 #include "status.h"
 #include "statusbar.h"
@@ -1369,11 +1369,11 @@ playlist_editor_content_list_width(NcMenu *menu, NcWindow *window,
 
     available_width = nc_window_width(window) - nc_window_get_x(window);
     if (nc_menu_position_is_selected(menu, pos)) {
-        available_width -= ncm_utf8_width(
+        available_width -= utf8_width(
             menu->selected_suffix.data, menu->selected_suffix.len);
     }
     if (menu->highlight_enabled && (pos == menu->highlight)) {
-        available_width -= ncm_utf8_width(
+        available_width -= utf8_width(
             menu->highlight_suffix.data, menu->highlight_suffix.len);
     }
     if (available_width < 0) {

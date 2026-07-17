@@ -17,7 +17,7 @@
 #include "c/ncm_option_parser.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 #include "global.h"
@@ -646,7 +646,7 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
         nc_buffer_destroy(buffer);
         nc_buffer_move(buffer, &tmp);
         if (width != NULL) {
-            *width = ncm_utf8_width(nc_buffer_data(buffer),
+            *width = utf8_width(nc_buffer_data(buffer),
                                     nc_buffer_len(buffer));
         }
     }
@@ -1421,7 +1421,7 @@ apply_visualizer_type(Configuration *config, char *value, int32 value_len,
 static bool
 apply_visualizer_look(Configuration *config, char *value, int32 value_len,
                       NcmError *error) {
-    if (ncm_utf8_characters(value, value_len) != 2) {
+    if (utf8_characters(value, value_len) != 2) {
         settings_invalid_value(error, value, value_len);
         return false;
     }
@@ -1746,7 +1746,7 @@ apply_progressbar_look(Configuration *config, char *value, int32 value_len,
                        NcmError *error) {
     int32 characters;
 
-    characters = ncm_utf8_characters(value, value_len);
+    characters = utf8_characters(value, value_len);
     if ((characters < 2) || (characters > 3)) {
         settings_invalid_value(error, value, value_len);
         return false;

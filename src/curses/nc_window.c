@@ -24,7 +24,7 @@
 #include "cbase/array.h"
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 
 static int32 max_color;
 static int32 color_pair_counter;
@@ -1196,7 +1196,7 @@ nc_prompt_display_string(void) {
     before_len = rl_point;
     after_cursor = rl_line_buffer + rl_point;
     after_len = rl_end - rl_point;
-    cursor_pos = ncm_utf8_width(before_cursor, before_len);
+    cursor_pos = utf8_width(before_cursor, before_len);
     x = nc_readline_state.start_x;
     y = nc_readline_state.start_y;
 
@@ -1213,8 +1213,8 @@ nc_prompt_display_string(void) {
             int32 next_byte;
             int32 char_width;
 
-            next_byte = ncm_utf8_next_position(after_cursor, after_len, byte);
-            char_width = ncm_utf8_width(after_cursor + byte,
+            next_byte = utf8_next_position(after_cursor, after_len, byte);
+            char_width = utf8_width(after_cursor + byte,
                                         next_byte - byte);
             if (printed_width + char_width > nc_readline_state.width) {
                 break;
@@ -1226,9 +1226,9 @@ nc_prompt_display_string(void) {
     } else {
         int32 suffix_position;
 
-        suffix_position = ncm_utf8_suffix_width_position(
+        suffix_position = utf8_suffix_width_position(
             before_cursor, before_len, nc_readline_state.width);
-        cursor_pos = ncm_utf8_width(before_cursor + suffix_position,
+        cursor_pos = utf8_width(before_cursor + suffix_position,
                                     before_len - suffix_position);
         nc_prompt_print_visible_suffix(before_cursor + suffix_position,
                                        before_len - suffix_position);
@@ -1251,7 +1251,7 @@ static void
 nc_prompt_print_mask(char *string, int32 string_len) {
     int32 characters;
 
-    characters = ncm_utf8_characters(string, string_len);
+    characters = utf8_characters(string, string_len);
     for (int32 i = 0; i < characters; i += 1) {
         nc_window_print_char(nc_readline_state.window, '*');
     }
