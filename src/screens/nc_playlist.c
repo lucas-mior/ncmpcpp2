@@ -13,7 +13,7 @@
 #include "c/ncm_base.h"
 #include "c/ncm_display.h"
 #include "c/ncm_type_conversions.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 
 static void playlist_scroll_lines(NcPlaylistScreen *screen,
@@ -1293,16 +1293,16 @@ native_playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
 
         available_width = nc_window_width(window) - nc_window_get_x(window);
         if (is_now_playing) {
-            available_width -= ncm_utf8_width(
+            available_width -= utf8_width(
                 Config.now_playing_suffix.data,
                 Config.now_playing_suffix.len);
         }
         if (nc_menu_position_is_selected(menu, pos)) {
-            available_width -= ncm_utf8_width(
+            available_width -= utf8_width(
                 menu->selected_suffix.data, menu->selected_suffix.len);
         }
         if (menu->highlight_enabled && (pos == menu->highlight)) {
-            available_width -= ncm_utf8_width(
+            available_width -= utf8_width(
                 menu->highlight_suffix.data, menu->highlight_suffix.len);
         }
         if (available_width < 0) {

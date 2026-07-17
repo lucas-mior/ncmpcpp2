@@ -8,7 +8,7 @@
 #include "c/ncm_path.h"
 #include "c/ncm_string.h"
 #include "c/ncm_tags.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 #include "curses/nc_cyclic_buffer.h"
@@ -516,7 +516,7 @@ native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
         screen_width = native_browser_i32_width(screen->width);
     }
 
-    scroll_width = screen_width - ncm_utf8_width(screen->title_text.data,
+    scroll_width = screen_width - utf8_width(screen->title_text.data,
                                                  screen->title_text.len);
     if (Config.design == NCM_DESIGN_ALTERNATIVE) {
         scroll_width -= 2;
@@ -1753,11 +1753,11 @@ native_browser_render_width(NativeBrowserScreen *screen,
     result = available_width;
     menu = native_browser_screen_menu(screen);
     if (selected) {
-        result -= ncm_utf8_width(menu->selected_suffix.data,
+        result -= utf8_width(menu->selected_suffix.data,
                                  menu->selected_suffix.len);
     }
     if (highlighted) {
-        result -= ncm_utf8_width(menu->highlight_suffix.data,
+        result -= utf8_width(menu->highlight_suffix.data,
                                  menu->highlight_suffix.len);
     }
     if (result < 0) {

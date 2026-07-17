@@ -4,7 +4,7 @@
 #include "c/ncm_path.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 #include "settings.h"
 
@@ -73,8 +73,8 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
         }
 
         value = ncm_display_column_value(song, column);
-        cut_len = ncm_utf8_cut_width(value.data, value.len, width);
-        value_width = ncm_utf8_width(value.data, cut_len);
+        cut_len = utf8_cut_width(value.data, value.len, width);
+        value_width = utf8_width(value.data, cut_len);
         padding = width - value_width;
         if (padding < 0) {
             padding = 0;
@@ -146,8 +146,8 @@ ncm_display_column_title(NcmBuffer *buffer, struct Column *columns,
 
         ncm_buffer_clear(&name);
         ncm_display_append_column_name(&name, column);
-        cut_len = ncm_utf8_cut_width(name.data, name.len, width);
-        name_width = ncm_utf8_width(name.data, cut_len);
+        cut_len = utf8_cut_width(name.data, name.len, width);
+        name_width = utf8_width(name.data, cut_len);
         padding = width - name_width;
         if (padding < 0) {
             padding = 0;

@@ -5,7 +5,7 @@
 
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
@@ -780,7 +780,7 @@ ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag) {
                 result.len = limit;
             }
         } else {
-            limit = ncm_utf8_cut_width(result.data, result.len,
+            limit = utf8_cut_width(result.data, result.len,
                                        (int32)tag->delimiter);
             result.len = limit;
         }

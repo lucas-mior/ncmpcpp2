@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "bindings.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 #include "global.h"
@@ -168,7 +168,7 @@ statusbar_progressbar_split(NcmStringView items[3]) {
             continue;
         }
 
-        next = ncm_utf8_next_position(Config.progressbar.data,
+        next = utf8_next_position(Config.progressbar.data,
                                       Config.progressbar.len, byte);
         items[i].data = Config.progressbar.data + byte;
         items[i].len = next - byte;

@@ -13,7 +13,7 @@
 #include "c/ncm_base.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 #include "screens/screen_switcher.h"
@@ -224,7 +224,7 @@ visualizer_copy_characters(NativeVisualizerScreen *screen,
     int32 next;
 
     ncm_buffer_set(&screen->visualizer_chars, characters, characters_len);
-    next = ncm_utf8_next_position(screen->visualizer_chars.data,
+    next = utf8_next_position(screen->visualizer_chars.data,
                                   screen->visualizer_chars.len, 0);
     screen->point_char_offset = 0;
     screen->point_char_len = next;
@@ -796,7 +796,7 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     }
     if ((visualizer_chars == NULL)
         || (visualizer_chars_len <= 0)
-        || (ncm_utf8_characters(visualizer_chars,
+        || (utf8_characters(visualizer_chars,
                                 visualizer_chars_len) != 2)) {
         visualizer_chars = (char *)NATIVE_VISUALIZER_DEFAULT_CHARS;
         visualizer_chars_len = STRLIT_LEN(NATIVE_VISUALIZER_DEFAULT_CHARS);

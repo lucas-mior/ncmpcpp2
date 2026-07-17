@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 
 static int32 nc_cyclic_normalize_start(int64 *start_pos,
                                        int32 total_characters);
@@ -62,18 +62,18 @@ nc_cyclic_text_write(NcmBuffer *output, char *string, int32 string_len,
         width = 0;
     }
 
-    string_width = ncm_utf8_width(string, string_len);
+    string_width = utf8_width(string, string_len);
     if (!scrolling_enabled || (string_width <= width)) {
         ncm_buffer_append(output, string, string_len);
         return;
     }
 
-    string_characters = ncm_utf8_characters(string, string_len);
-    separator_characters = ncm_utf8_characters(separator, separator_len);
+    string_characters = utf8_characters(string, string_len);
+    separator_characters = utf8_characters(separator, separator_len);
     start = nc_cyclic_normalize_start(
         start_pos, string_characters + separator_characters);
 
-    start_byte = ncm_utf8_byte_position(string, string_len, start);
+    start_byte = utf8_byte_position(string, string_len, start);
     written_width = 0;
     nc_cyclic_text_append(output, string, string_len, start_byte,
                           &written_width, width);
@@ -83,7 +83,7 @@ nc_cyclic_text_write(NcmBuffer *output, char *string, int32 string_len,
         int32 separator_byte;
 
         separator_start = start - string_characters;
-        separator_byte = ncm_utf8_byte_position(separator, separator_len,
+        separator_byte = utf8_byte_position(separator, separator_len,
                                                 separator_start);
         nc_cyclic_text_append(output, separator, separator_len,
                               separator_byte, &written_width, width);
@@ -128,18 +128,18 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
 
     string = nc_buffer_data(buffer);
     string_len = nc_buffer_len(buffer);
-    string_width = ncm_utf8_width(string, string_len);
+    string_width = utf8_width(string, string_len);
     if (string_width <= width) {
         nc_cyclic_buffer_write_all(buffer, window);
         return;
     }
 
-    string_characters = ncm_utf8_characters(string, string_len);
-    separator_characters = ncm_utf8_characters(separator, separator_len);
+    string_characters = utf8_characters(string, string_len);
+    separator_characters = utf8_characters(separator, separator_len);
     start = nc_cyclic_normalize_start(
         start_pos, string_characters + separator_characters);
 
-    start_byte = ncm_utf8_byte_position(string, string_len, start);
+    start_byte = utf8_byte_position(string, string_len, start);
     property_index = 0;
     written_width = 0;
     nc_cyclic_buffer_apply_properties(
@@ -155,7 +155,7 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
         int32 separator_byte;
 
         separator_start = start - string_characters;
-        separator_byte = ncm_utf8_byte_position(separator, separator_len,
+        separator_byte = utf8_byte_position(separator, separator_len,
                                                 separator_start);
         nc_cyclic_window_write_text(window, separator, separator_len,
                                     separator_byte, &written_width,
@@ -219,13 +219,13 @@ nc_cyclic_next_position(char *string, int32 string_len, int32 byte,
         return string_len;
     }
 
-    length = ncm_utf8_decode(string + byte, string_len - byte, &rune);
+    length = utf8_decode(string + byte, string_len - byte, &rune);
     result = byte + length;
     if (result > string_len) {
         result = string_len;
     }
     if (char_width) {
-        *char_width = ncm_utf8_char_width(rune);
+        *char_width = utf8_char_width(rune);
     }
 
     return result;
@@ -286,7 +286,7 @@ nc_cyclic_buffer_write_all(NcBuffer *buffer, NcWindow *window) {
         nc_cyclic_buffer_apply_properties(
             window, properties, property_count, &property_index, byte,
             true);
-        next_byte = ncm_utf8_next_position(string, string_len, byte);
+        next_byte = utf8_next_position(string, string_len, byte);
         nc_window_print_data(window, string + byte, next_byte - byte);
         byte = next_byte;
     }

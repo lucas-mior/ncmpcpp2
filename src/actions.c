@@ -27,7 +27,7 @@
 #include "c/ncm_path.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 
 #if defined(HAVE_TAGLIB_H)
 #include "c/ncm_taglib.h"
@@ -5809,7 +5809,7 @@ ncm_action_edit_song(NcmSong *song) {
         if (path_width < 0) {
             path_width = 0;
         }
-        path_len = ncm_utf8_cut_width(path.data, path.len, path_width);
+        path_len = utf8_cut_width(path.data, path.len, path_width);
         arg = ncm_string_format_arg_string(path.data, path_len);
         ncm_statusbar_format(
             (int32)Config.message_delay_time,
@@ -6124,7 +6124,7 @@ action_runtime_print_album_file_error(char *format, int32 format_len,
     if (width < 0) {
         width = 0;
     }
-    uri_len = ncm_utf8_cut_width(uri.data, uri.len, width);
+    uri_len = utf8_cut_width(uri.data, uri.len, width);
     arg = ncm_string_format_arg_string(uri.data, uri_len);
     ncm_statusbar_format((int32)Config.message_delay_time,
                          format, format_len, &arg, 1);
