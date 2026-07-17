@@ -1,3 +1,6 @@
+#if !defined(NCM_STRING_C)
+#define NCM_STRING_C
+
 #include "c/ncm_string.h"
 
 #include "cbase/base_macros.h"
@@ -290,3 +293,5 @@ int32
 ncm_string_parent_directory_len(char *path, int32 path_len) {
     return ncm_path_parent_directory_len(path, path_len);
 }
+
+#endif /* NCM_STRING_C */

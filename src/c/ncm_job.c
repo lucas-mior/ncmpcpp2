@@ -1,3 +1,6 @@
+#if !defined(NCM_JOB_C)
+#define NCM_JOB_C
+
 #include "c/ncm_job.h"
 
 #include <errno.h>
@@ -321,3 +324,5 @@ ncm_job_queue_completed_count(NcmJobQueue *queue) {
     pthread_mutex_unlock(&queue->mutex);
     return result;
 }
+
+#endif /* NCM_JOB_C */

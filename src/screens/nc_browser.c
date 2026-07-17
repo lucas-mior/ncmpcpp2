@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_BROWSER_C)
+#define NCMPCPP_NC_BROWSER_C
+
 #include "screens/nc_browser.h"
 
 #include "c/ncm_base.h"
@@ -2937,3 +2940,5 @@ native_browser_string_views_equal(NcmStringView left,
                                   NcmStringView right) {
     return STREQUAL(left.data, left.len, right.data, right.len);
 }
+
+#endif /* NCMPCPP_NC_BROWSER_C */

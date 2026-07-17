@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_APP_MENUS_C)
+#define NCMPCPP_NC_APP_MENUS_C
+
 #include "curses/nc_app_menus.h"
 
 #include "c/ncm_base.h"
@@ -963,3 +966,5 @@ nc_buffer_menu_item_destroy(void *item, void *user) {
     nc_buffer_destroy(item);
     return;
 }
+
+#endif /* NCMPCPP_NC_APP_MENUS_C */

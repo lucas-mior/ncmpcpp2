@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_SEARCH_ENGINE_C)
+#define NCMPCPP_NC_SEARCH_ENGINE_C
+
 #include "screens/nc_search_engine.h"
 
 #include <errno.h>
@@ -2022,3 +2025,5 @@ native_search_copy_song_at(NativeSearchEngineScreen *screen,
     }
     return ncm_song_array_append_copy(songs, &row->song);
 }
+
+#endif /* NCMPCPP_NC_SEARCH_ENGINE_C */

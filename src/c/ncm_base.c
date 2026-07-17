@@ -1,3 +1,6 @@
+#if !defined(NCM_BASE_C)
+#define NCM_BASE_C
+
 #include "c/ncm_base.h"
 
 #include "cbase/base_macros.h"
@@ -165,3 +168,5 @@ ncm_buffer_steal(NcmBuffer *buffer, int32 *len, int32 *cap) {
 
     return data;
 }
+
+#endif /* NCM_BASE_C */

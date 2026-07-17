@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_SONG_INFO_C)
+#define NCMPCPP_NC_SONG_INFO_C
+
 #include "screens/nc_song_info.h"
 
 #include "cbase/base_macros.h"
@@ -278,3 +281,5 @@ nc_song_info_display(NcSongInfoScreen *song_info) {
     nc_scrollpad_refresh(&song_info->scrollpad, &song_info->window);
     return;
 }
+
+#endif /* NCMPCPP_NC_SONG_INFO_C */

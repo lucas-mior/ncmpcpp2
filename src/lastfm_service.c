@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_LASTFM_SERVICE_C)
+#define NCMPCPP_LASTFM_SERVICE_C
+
 #include "lastfm_service.h"
 
 #include <string.h>
@@ -494,3 +497,5 @@ cleanup:
     ncm_buffer_destroy(&url);
     return ok;
 }
+
+#endif /* NCMPCPP_LASTFM_SERVICE_C */

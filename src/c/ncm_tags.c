@@ -1,3 +1,6 @@
+#if !defined(NCM_TAGS_C)
+#define NCM_TAGS_C
+
 #include "c/ncm_tags.h"
 
 #include <mpd/client.h>
@@ -360,3 +363,5 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
     free2(old_path, old_path_len + 1);
     return true;
 }
+
+#endif /* NCM_TAGS_C */

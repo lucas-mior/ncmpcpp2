@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_GLOBAL_C)
+#define NCMPCPP_GLOBAL_C
+
 #include "global.h"
 
 #include <stddef.h>
@@ -64,3 +67,5 @@ int32
 global_volume_state_len(void) {
     return global_volume_state.len;
 }
+
+#endif /* NCMPCPP_GLOBAL_C */

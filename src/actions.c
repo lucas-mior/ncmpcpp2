@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_ACTIONS_C)
+#define NCMPCPP_ACTIONS_C
+
 #include "actions.h"
 
 #include <errno.h>
@@ -2138,7 +2141,6 @@ static bool
 action_runtime_toggle_add_mode(void) {
     char *mode_desc;
 
-    mode_desc = "";
     switch (Config.space_add_mode) {
     case NCM_SPACE_ADD_MODE_ADD_REMOVE:
         Config.space_add_mode = NCM_SPACE_ADD_MODE_ALWAYS_ADD;
@@ -2150,8 +2152,8 @@ action_runtime_toggle_add_mode(void) {
             "add an item to playlist or remove if already added";
         break;
     case NCM_SPACE_ADD_MODE_LAST:
-        mode_desc = "";
-        break;
+    default:
+        return false;
     }
     action_runtime_print_toggle(STRLIT_ARGS("Add mode: %1%"), mode_desc);
     return true;
@@ -7670,3 +7672,5 @@ action_runtime_builtin_run(NcmActionRuntime *runtime,
         return false;
     }
 }
+
+#endif /* NCMPCPP_ACTIONS_C */

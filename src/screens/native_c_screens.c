@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NATIVE_C_SCREENS_C)
+#define NCMPCPP_NATIVE_C_SCREENS_C
+
 #include "screens/native_c_screens.h"
 #include "screens/nc_search_engine.h"
 
@@ -2354,3 +2357,5 @@ native_show_long_time(NcBuffer *buffer, uint64 seconds) {
     native_append_cstring(buffer, "s");
     return;
 }
+
+#endif /* NCMPCPP_NATIVE_C_SCREENS_C */

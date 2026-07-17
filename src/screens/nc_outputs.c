@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_OUTPUTS_C)
+#define NCMPCPP_NC_OUTPUTS_C
+
 #include "screens/nc_outputs.h"
 
 #include <stddef.h>
@@ -466,3 +469,5 @@ nc_outputs_mouse_scroll(NcOutputsScreen *outputs, MEVENT event) {
     }
     return true;
 }
+
+#endif /* NCMPCPP_NC_OUTPUTS_C */

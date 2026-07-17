@@ -1,3 +1,6 @@
+#if !defined(NCM_REGEX_C)
+#define NCM_REGEX_C
+
 #include "c/ncm_regex.h"
 
 #include <errno.h>
@@ -247,3 +250,5 @@ ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
     ncm_buffer_destroy(&buffer);
     return matched;
 }
+
+#endif /* NCM_REGEX_C */

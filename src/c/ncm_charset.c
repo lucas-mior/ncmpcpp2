@@ -1,3 +1,6 @@
+#if !defined(NCM_CHARSET_C)
+#define NCM_CHARSET_C
+
 #include "c/ncm_charset.h"
 
 static NcmBuffer
@@ -15,3 +18,5 @@ NcmBuffer
 ncm_charset_utf8_to_locale(char *string, int32 string_len) {
     return ncm_charset_copy(string, string_len);
 }
+
+#endif /* NCM_CHARSET_C */

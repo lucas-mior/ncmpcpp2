@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_SCROLLPAD_C)
+#define NCMPCPP_NC_SCROLLPAD_C
+
 #include "curses/nc_scrollpad.h"
 
 #include <assert.h>
@@ -287,3 +290,5 @@ static bool
 nc_scrollpad_is_space(char ch) {
     return iswspace((wint_t)(unsigned char)ch);
 }
+
+#endif /* NCMPCPP_NC_SCROLLPAD_C */

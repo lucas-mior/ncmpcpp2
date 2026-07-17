@@ -1,3 +1,6 @@
+#if !defined(NCM_MACRO_UTILITIES_C)
+#define NCM_MACRO_UTILITIES_C
+
 #include "c/ncm_macro_utilities.h"
 
 #include <errno.h>
@@ -56,3 +59,5 @@ ncm_macro_run_external_console_command(char *command,
     return ncm_macro_system_command(command, command_len,
                                     true, &status, error);
 }
+
+#endif /* NCM_MACRO_UTILITIES_C */

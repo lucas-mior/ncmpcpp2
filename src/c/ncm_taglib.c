@@ -1,3 +1,6 @@
+#if !defined(NCM_TAGLIB_C)
+#define NCM_TAGLIB_C
+
 #include "c/ncm_taglib.h"
 
 #include "config.h"
@@ -325,3 +328,5 @@ ncm_taglib_clear_strings(void) {
 #endif
     return;
 }
+
+#endif /* NCM_TAGLIB_C */

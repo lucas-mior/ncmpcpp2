@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_TITLE_C)
+#define NCMPCPP_TITLE_C
+
 #include "title.h"
 
 #include <stdio.h>
@@ -194,3 +197,5 @@ ncm_title_draw_current_header(void) {
     ncm_title_draw_header(title, optional_strlen32(title));
     return;
 }
+
+#endif /* NCMPCPP_TITLE_C */

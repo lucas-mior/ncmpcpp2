@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_CONFIGURATION_C)
+#define NCMPCPP_CONFIGURATION_C
+
 #include "configuration.h"
 
 #include <errno.h>
@@ -1022,3 +1025,5 @@ configure(int32 argc, char **argv) {
     ncm_configuration_options_destroy(&options);
     return true;
 }
+
+#endif /* NCMPCPP_CONFIGURATION_C */

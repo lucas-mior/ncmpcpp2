@@ -1,3 +1,6 @@
+#if !defined(NCM_COMPARATORS_C)
+#define NCM_COMPARATORS_C
+
 #include "c/ncm_comparators.h"
 
 #include <ctype.h>
@@ -128,3 +131,5 @@ ncm_compare_locale_strings(char *left, int32 left_len,
     }
     return 0;
 }
+
+#endif /* NCM_COMPARATORS_C */

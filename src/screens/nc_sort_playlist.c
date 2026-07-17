@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_SORT_PLAYLIST_C)
+#define NCMPCPP_NC_SORT_PLAYLIST_C
+
 #include "screens/nc_sort_playlist.h"
 
 #include <errno.h>
@@ -655,3 +658,5 @@ sort_dialog_finish(NativeSortPlaylistDialog *dialog) {
     dialog->ignore_leading_the = false;
     return;
 }
+
+#endif /* NCMPCPP_NC_SORT_PLAYLIST_C */

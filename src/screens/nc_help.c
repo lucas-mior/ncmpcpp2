@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_HELP_C)
+#define NCMPCPP_NC_HELP_C
+
 #include "screens/nc_help.h"
 
 #include <errno.h>
@@ -351,3 +354,5 @@ nc_help_find_match_callback(int32 start, int32 len, void *user) {
                          NC_FORMAT_NO_REVERSE, 0);
     return true;
 }
+
+#endif /* NCMPCPP_NC_HELP_C */

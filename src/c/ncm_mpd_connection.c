@@ -1,3 +1,6 @@
+#if !defined(NCM_MPD_CONNECTION_C)
+#define NCM_MPD_CONNECTION_C
+
 #include "c/ncm_mpd_connection.h"
 
 #include <stddef.h>
@@ -2235,3 +2238,5 @@ ncm_mpd_connection_save_playlist(NcmMpdConnection *connection,
     mpd_response_finish(connection->mpd);
     return ncm_mpd_connection_check_error(connection);
 }
+
+#endif /* NCM_MPD_CONNECTION_C */

@@ -1,3 +1,6 @@
+#if !defined(NCM_ENUMS_C)
+#define NCM_ENUMS_C
+
 #include "c/ncm_enums.h"
 
 #include "c/ncm_string.h"
@@ -158,3 +161,5 @@ ncm_visualizer_type_parse(char *string, int32 string_len,
 
     return false;
 }
+
+#endif /* NCM_ENUMS_C */

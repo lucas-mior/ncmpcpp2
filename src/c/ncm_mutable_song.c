@@ -1,3 +1,6 @@
+#if !defined(NCM_MUTABLE_SONG_C)
+#define NCM_MUTABLE_SONG_C
+
 #include "c/ncm_mutable_song.h"
 
 #include "c/ncm_string.h"
@@ -818,3 +821,5 @@ ncm_mutable_song_write(NcmMutableSong *song, char *music_dir) {
                           song->directory, song->new_name,
                           ncm_mutable_song_write_callback, song);
 }
+
+#endif /* NCM_MUTABLE_SONG_C */
