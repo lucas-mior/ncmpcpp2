@@ -5,25 +5,7 @@
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
-static void ncm_mutable_song_free_string(char **string, int32 *string_len);
-static bool ncm_mutable_song_set_string(char **dest, int32 *dest_len,
-                                        char *source, int32 source_len);
-static bool ncm_mutable_song_string_equal(char *a, int32 a_len,
-                                          char *b, int32 b_len);
-static NcmMutableSongTag *ncm_mutable_song_find_tag(NcmMutableSong *song,
-                                                    enum NcmTagsField field,
-                                                    int32 idx);
-static NcmMutableSongTag *ncm_mutable_song_add_tag(NcmMutableSong *song,
-                                                   enum NcmTagsField field,
-                                                   int32 idx);
-static bool ncm_mutable_song_grow_tags(NcmMutableSong *song);
 static void ncm_mutable_song_tag_init(NcmMutableSongTag *tag);
-static void ncm_mutable_song_tag_destroy(NcmMutableSongTag *tag);
-static bool ncm_mutable_song_tag_copy(NcmMutableSongTag *dest,
-                                      NcmMutableSongTag *source);
-static bool ncm_mutable_song_write_callback(enum NcmTagsField field,
-                                            int32 idx, NcmStringView *value,
-                                            void *user);
 
 static void
 ncm_mutable_song_free_string(char **string, int32 *string_len) {
