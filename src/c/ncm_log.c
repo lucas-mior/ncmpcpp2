@@ -88,7 +88,7 @@ ncm_log_open(NcmLog *log, char *path, int32 path_len, NcmError *error) {
     }
 
     if ((file = fopen(copy, "a")) == NULL) {
-        ncm_log_set_errno_error(error, errno, (char *)"open log",
+        ncm_log_set_errno_error(error, errno, "open log",
                                 path, path_len);
         cbase_free(copy, path_len + 1);
         return false;

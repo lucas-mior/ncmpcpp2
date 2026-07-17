@@ -874,7 +874,7 @@ nc_window_prompt(NcWindow *window, NcPrompt *prompt, char **result) {
     nc_init_readline();
 
     nc_readline_state.window = window;
-    nc_readline_state.initial_text = (char *)"";
+    nc_readline_state.initial_text = "";
     nc_readline_state.hook = NULL;
     nc_readline_state.hook_user_data = NULL;
     nc_readline_state.encrypted = false;
@@ -1267,7 +1267,7 @@ nc_prompt_print_visible_suffix(char *string, int32 string_len) {
 static bool
 nc_prompt_run_hook(char *line) {
     if (line == NULL) {
-        line = (char *)"";
+        line = "";
     }
     if (!nc_readline_state.hook) {
         return true;

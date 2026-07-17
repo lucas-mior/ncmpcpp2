@@ -669,7 +669,7 @@ native_playlist_editor_screen_locate_song(
     }
 
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Jumping to song...");
+                                "Jumping to song...");
     success = playlist_editor_locate_song_in_playlist_range(
         screen, client, song, playlist_pos + 1,
         nc_menu_all_item_count(playlists), error);
@@ -710,7 +710,7 @@ native_playlist_editor_screen_locate_song(
     }
 
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Song was not found in playlists");
+                                "Song was not found in playlists");
     return false;
 }
 
@@ -1154,7 +1154,7 @@ playlist_editor_timeout_callback(NcScreen *screen) {
 static char *
 playlist_editor_title_callback(NcScreen *screen) {
     (void)screen;
-    return (char *)"Playlist editor";
+    return "Playlist editor";
 }
 
 static void
@@ -1438,7 +1438,7 @@ static bool
 playlist_editor_search_text_matches(NcmRegex *regex, char *data,
                                     int32 len) {
     if (data == NULL) {
-        data = (char *)"";
+        data = "";
         len = 0;
     }
     return ncm_regex_search(regex, data, len);

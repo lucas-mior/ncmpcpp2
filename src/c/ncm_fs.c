@@ -140,7 +140,7 @@ ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat,
             ncm_error_clear(error);
             return true;
         }
-        ncm_fs_set_errno_error(error, errno, (char *)"stat", path, path_len);
+        ncm_fs_set_errno_error(error, errno, "stat", path, path_len);
         cbase_free(path_copy, path_len + 1);
         return false;
     }
@@ -190,7 +190,7 @@ ncm_fs_unlink(char *path, int32 path_len, NcmError *error) {
             ncm_error_clear(error);
             return true;
         }
-        ncm_fs_set_errno_error(error, errno, (char *)"unlink", path,
+        ncm_fs_set_errno_error(error, errno, "unlink", path,
                                path_len);
         cbase_free(path_copy, path_len + 1);
         return false;
@@ -219,7 +219,7 @@ ncm_fs_rename(char *old_path, int32 old_path_len, char *new_path,
     }
 
     if (rename(old_copy, new_copy) != 0) {
-        ncm_fs_set_errno_error(error, errno, (char *)"rename",
+        ncm_fs_set_errno_error(error, errno, "rename",
                                old_path, old_path_len);
         cbase_free(new_copy, new_path_len + 1);
         cbase_free(old_copy, old_path_len + 1);
@@ -253,7 +253,7 @@ ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *error) {
 
         copy[i] = '\0';
         if ((mkdir(copy, 0700) != 0) && (errno != EEXIST)) {
-            ncm_fs_set_errno_error(error, errno, (char *)"mkdir", copy, i);
+            ncm_fs_set_errno_error(error, errno, "mkdir", copy, i);
             cbase_free(copy, path_len + 1);
             return false;
         }
@@ -286,7 +286,7 @@ ncm_fs_directory_open(NcmFsDirectory *directory, char *path,
     }
 
     if ((dir = opendir(path_copy)) == NULL) {
-        ncm_fs_set_errno_error(error, errno, (char *)"opendir", path,
+        ncm_fs_set_errno_error(error, errno, "opendir", path,
                                path_len);
         cbase_free(path_copy, path_len + 1);
         return false;
@@ -337,7 +337,7 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
     }
 
     if (errno) {
-        ncm_fs_set_errno_error(error, errno, (char *)"readdir",
+        ncm_fs_set_errno_error(error, errno, "readdir",
                                directory->path, directory->path_len);
     } else {
         ncm_error_clear(error);

@@ -1080,7 +1080,7 @@ test_browser_action_rename_prompts(void) {
     browser_action_status_calls = 0;
     browser_action_status[0] = '\0';
     browser_test_add_playlist(&screen, LIT_ARGS("old-playlist"), 0);
-    browser_action_set_prompt((char *)"new-playlist");
+    browser_action_set_prompt("new-playlist");
 
     assert(ncm_action_runtime_can_run(NULL, NCM_ACTION_EDIT_PLAYLIST_NAME));
     assert(ncm_action_runtime_run(NULL, NCM_ACTION_EDIT_PLAYLIST_NAME));
@@ -1608,17 +1608,17 @@ test_browser_item_rendering(void) {
 
     browser_format_fixture_begin(&fixture);
     columns[0] = (Column){0};
-    columns[0].name = (char *)"Artist";
+    columns[0].name = "Artist";
     columns[0].name_len = STRLIT_LEN("Artist");
-    columns[0].type = (char *)"a";
+    columns[0].type = "a";
     columns[0].type_len = STRLIT_LEN("a");
     columns[0].width = 10;
     columns[0].stretch_limit = -1;
     columns[0].fixed = true;
     columns[1] = (Column){0};
-    columns[1].name = (char *)"Title";
+    columns[1].name = "Title";
     columns[1].name_len = STRLIT_LEN("Title");
-    columns[1].type = (char *)"t";
+    columns[1].type = "t";
     columns[1].type_len = STRLIT_LEN("t");
     columns[1].width = 10;
     columns[1].stretch_limit = -1;
@@ -1817,17 +1817,17 @@ test_browser_column_title(void) {
     old_titles_visibility = Config.titles_visibility;
 
     columns[0] = (Column){0};
-    columns[0].name = (char *)"Artist";
+    columns[0].name = "Artist";
     columns[0].name_len = STRLIT_LEN("Artist");
-    columns[0].type = (char *)"a";
+    columns[0].type = "a";
     columns[0].type_len = STRLIT_LEN("a");
     columns[0].width = 10;
     columns[0].stretch_limit = -1;
     columns[0].fixed = true;
     columns[1] = (Column){0};
-    columns[1].name = (char *)"Title";
+    columns[1].name = "Title";
     columns[1].name_len = STRLIT_LEN("Title");
-    columns[1].type = (char *)"t";
+    columns[1].type = "t";
     columns[1].type_len = STRLIT_LEN("t");
     columns[1].width = 10;
     columns[1].stretch_limit = -1;

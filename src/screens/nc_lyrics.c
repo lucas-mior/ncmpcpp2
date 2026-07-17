@@ -779,7 +779,7 @@ lyrics_switch_to_callback(NcScreen *screen) {
     nc_lyrics_screen_reset_scroll_begin(&lyrics_from_screen(screen)->screen);
     title = nc_screen_title(screen);
     if (title == NULL) {
-        title = (char *)"";
+        title = "";
     }
     ncm_title_draw_header(title, strlen32(title));
     return;
@@ -984,7 +984,7 @@ native_lyrics_report_save_error(NcmBuffer *filename, NcmError *error) {
     NcmStringFormatArg args[2];
     char *message;
 
-    message = (char *)"unknown error";
+    message = "unknown error";
     if ((error != NULL) && (error->code != 0)) {
         message = strerror(error->code);
     }
@@ -1001,7 +1001,7 @@ native_lyrics_report_unlink_error(NcmBuffer *filename, NcmError *error) {
     NcmStringFormatArg args[2];
     char *message;
 
-    message = (char *)"unknown error";
+    message = "unknown error";
     if ((error != NULL) && (error->code != 0)) {
         message = strerror(error->code);
     }
@@ -1287,7 +1287,7 @@ native_lyrics_job_complete(bool success, NcmError *error, void *user) {
             nc_buffer_destroy(&screen->display);
             nc_buffer_copy(&screen->display, &job->log);
             nc_buffer_append_cstring(&screen->display,
-                                     (char *)"\nLyrics were not found.\n");
+                                     "\nLyrics were not found.\n");
         }
         nc_lyrics_screen_request_refresh(&screen->screen);
     } else {
@@ -1344,7 +1344,7 @@ native_lyrics_append_fetching(NcBuffer *buffer,
 
     name = ncm_lyrics_fetcher_name(fetcher);
     name_len = ncm_lyrics_fetcher_name_len(fetcher);
-    nc_buffer_append_cstring(buffer, (char *)"Fetching lyrics from ");
+    nc_buffer_append_cstring(buffer, "Fetching lyrics from ");
     fetcher_position = nc_buffer_len(buffer);
     nc_buffer_add_format(buffer,
                          fetcher_position,
@@ -1355,7 +1355,7 @@ native_lyrics_append_fetching(NcBuffer *buffer,
                          nc_buffer_len(buffer),
                          NC_FORMAT_NO_BOLD,
                          NATIVE_LYRICS_PROPERTY_ID);
-    nc_buffer_append_cstring(buffer, (char *)"... ");
+    nc_buffer_append_cstring(buffer, "... ");
     return;
 }
 

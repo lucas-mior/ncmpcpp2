@@ -27,24 +27,24 @@ char *
 ncm_search_direction_str(enum SearchDirection value) {
     switch (value) {
     case NCM_SEARCH_DIRECTION_BACKWARD:
-        return (char *)"backward";
+        return "backward";
     case NCM_SEARCH_DIRECTION_FORWARD:
-        return (char *)"forward";
+        return "forward";
     case NCM_SEARCH_DIRECTION_LAST:
         break;
     }
 
-    return (char *)"unknown";
+    return "unknown";
 }
 
 bool
 ncm_space_add_mode_parse(char *string, int32 string_len,
                          enum SpaceAddMode *value) {
-    if (ncm_enum_equal(string, string_len, (char *)"add_remove")) {
+    if (ncm_enum_equal(string, string_len, "add_remove")) {
         *value = NCM_SPACE_ADD_MODE_ADD_REMOVE;
         return true;
     }
-    if (ncm_enum_equal(string, string_len, (char *)"always_add")) {
+    if (ncm_enum_equal(string, string_len, "always_add")) {
         *value = NCM_SPACE_ADD_MODE_ALWAYS_ADD;
         return true;
     }
@@ -55,23 +55,23 @@ ncm_space_add_mode_parse(char *string, int32 string_len,
 bool
 ncm_sort_mode_parse(char *string, int32 string_len,
                     enum SortMode *value) {
-    if (ncm_enum_equal(string, string_len, (char *)"type")) {
+    if (ncm_enum_equal(string, string_len, "type")) {
         *value = NCM_SORT_MODE_TYPE;
         return true;
     }
-    if (ncm_enum_equal(string, string_len, (char *)"name")) {
+    if (ncm_enum_equal(string, string_len, "name")) {
         *value = NCM_SORT_MODE_NAME;
         return true;
     }
-    if (ncm_enum_equal(string, string_len, (char *)"mtime")) {
+    if (ncm_enum_equal(string, string_len, "mtime")) {
         *value = NCM_SORT_MODE_MODIFICATION_TIME;
         return true;
     }
-    if (ncm_enum_equal(string, string_len, (char *)"format")) {
+    if (ncm_enum_equal(string, string_len, "format")) {
         *value = NCM_SORT_MODE_CUSTOM_FORMAT;
         return true;
     }
-    if (ncm_enum_equal(string, string_len, (char *)"none")) {
+    if (ncm_enum_equal(string, string_len, "none")) {
         *value = NCM_SORT_MODE_NONE;
         return true;
     }
@@ -83,24 +83,24 @@ char *
 ncm_display_mode_str(enum DisplayMode value) {
     switch (value) {
     case NCM_DISPLAY_MODE_CLASSIC:
-        return (char *)"classic";
+        return "classic";
     case NCM_DISPLAY_MODE_COLUMNS:
-        return (char *)"columns";
+        return "columns";
     case NCM_DISPLAY_MODE_LAST:
         break;
     }
 
-    return (char *)"unknown";
+    return "unknown";
 }
 
 bool
 ncm_display_mode_parse(char *string, int32 string_len,
                        enum DisplayMode *value) {
-    if (ncm_enum_equal(string, string_len, (char *)"classic")) {
+    if (ncm_enum_equal(string, string_len, "classic")) {
         *value = NCM_DISPLAY_MODE_CLASSIC;
         return true;
     }
-    if (ncm_enum_equal(string, string_len, (char *)"columns")) {
+    if (ncm_enum_equal(string, string_len, "columns")) {
         *value = NCM_DISPLAY_MODE_COLUMNS;
         return true;
     }
@@ -112,23 +112,23 @@ char *
 ncm_design_str(enum Design value) {
     switch (value) {
     case NCM_DESIGN_CLASSIC:
-        return (char *)"classic";
+        return "classic";
     case NCM_DESIGN_ALTERNATIVE:
-        return (char *)"alternative";
+        return "alternative";
     case NCM_DESIGN_LAST:
         break;
     }
 
-    return (char *)"unknown";
+    return "unknown";
 }
 
 bool
 ncm_design_parse(char *string, int32 string_len, enum Design *value) {
-    if (ncm_enum_equal(string, string_len, (char *)"classic")) {
+    if (ncm_enum_equal(string, string_len, "classic")) {
         *value = NCM_DESIGN_CLASSIC;
         return true;
     }
-    if (ncm_enum_equal(string, string_len, (char *)"alternative")) {
+    if (ncm_enum_equal(string, string_len, "alternative")) {
         *value = NCM_DESIGN_ALTERNATIVE;
         return true;
     }
@@ -139,21 +139,21 @@ ncm_design_parse(char *string, int32 string_len, enum Design *value) {
 bool
 ncm_visualizer_type_parse(char *string, int32 string_len,
                           enum VisualizerType *value) {
-    if (ncm_enum_equal(string, string_len, (char *)"wave")) {
+    if (ncm_enum_equal(string, string_len, "wave")) {
         *value = NCM_VISUALIZER_TYPE_WAVE;
         return true;
     }
-    if (ncm_enum_equal(string, string_len, (char *)"wave_filled")) {
+    if (ncm_enum_equal(string, string_len, "wave_filled")) {
         *value = NCM_VISUALIZER_TYPE_WAVE_FILLED;
         return true;
     }
 #if defined(HAVE_FFTW3_H)
-    if (ncm_enum_equal(string, string_len, (char *)"spectrum")) {
+    if (ncm_enum_equal(string, string_len, "spectrum")) {
         *value = NCM_VISUALIZER_TYPE_SPECTRUM;
         return true;
     }
 #endif
-    if (ncm_enum_equal(string, string_len, (char *)"ellipse")) {
+    if (ncm_enum_equal(string, string_len, "ellipse")) {
         *value = NCM_VISUALIZER_TYPE_ELLIPSE;
         return true;
     }

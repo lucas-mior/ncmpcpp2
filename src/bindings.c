@@ -935,7 +935,7 @@ ncm_parse_action_line(char *line, int32 line_len,
     if (ncm_string_equal(line, name_len, STRLIT_ARGS("push_characters"))) {
         if (argument.len <= 0) {
             ncm_bindings_error(error,
-                               (char *)"empty argument passed to "
+                               "empty argument passed to "
                                "push_characters");
             return false;
         }
@@ -979,7 +979,7 @@ ncm_parse_action_line(char *line, int32 line_len,
                          STRLIT_ARGS("run_external_command"))) {
         if (argument.len <= 0) {
             ncm_bindings_error(error,
-                               (char *)"empty command passed to "
+                               "empty command passed to "
                                "run_external_command");
             return false;
         }
@@ -994,7 +994,7 @@ ncm_parse_action_line(char *line, int32 line_len,
                          STRLIT_ARGS("run_external_console_command"))) {
         if (argument.len <= 0) {
             ncm_bindings_error(error,
-                               (char *)"empty command passed to "
+                               "empty command passed to "
                                "run_external_console_command");
             return false;
         }

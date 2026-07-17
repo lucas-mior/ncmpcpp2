@@ -133,7 +133,7 @@ app_legacy_bridge_mpd_error_message(NcmError *error) {
         return message;
     }
 
-    return (char *)"MPD command failed";
+    return "MPD command failed";
 }
 
 static void

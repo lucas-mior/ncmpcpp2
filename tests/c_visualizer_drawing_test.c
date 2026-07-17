@@ -155,9 +155,9 @@ static NativeVisualizerScreenConfig
 test_config(NcFormattedColor *colors, int32 colors_len) {
     NativeVisualizerScreenConfig config = {0};
 
-    config.source_location = (char *)"/tmp/test-visualizer.fifo";
+    config.source_location = "/tmp/test-visualizer.fifo";
     config.source_location_len = STRLIT_LEN("/tmp/test-visualizer.fifo");
-    config.visualizer_chars = (char *)"xo";
+    config.visualizer_chars = "xo";
     config.visualizer_chars_len = STRLIT_LEN("xo");
     config.visualizer_colors = colors;
     config.visualizer_colors_len = colors_len;
@@ -216,7 +216,7 @@ test_wave_drawing(void) {
                                          NCM_ARRAY_LEN(samples)));
     assert(test_clear_calls == 1);
     assert(test_draws_len >= 4);
-    test_assert_character((char *)"x", STRLIT_LEN("x"));
+    test_assert_character("x", STRLIT_LEN("x"));
     native_visualizer_screen_destroy(&screen);
     return;
 }
@@ -242,7 +242,7 @@ test_filled_wave_drawing(void) {
     assert(native_visualizer_screen_draw(&screen, samples,
                                          NCM_ARRAY_LEN(samples)));
     assert(test_draws_len == 12);
-    test_assert_character((char *)"o", STRLIT_LEN("o"));
+    test_assert_character("o", STRLIT_LEN("o"));
     native_visualizer_screen_destroy(&screen);
     return;
 }
@@ -268,7 +268,7 @@ test_ellipse_drawing(void) {
     assert(native_visualizer_screen_draw(&screen, samples,
                                          NCM_ARRAY_LEN(samples)));
     assert(test_draws_len == 4);
-    test_assert_character((char *)"x", STRLIT_LEN("x"));
+    test_assert_character("x", STRLIT_LEN("x"));
     native_visualizer_screen_destroy(&screen);
     return;
 }
@@ -299,7 +299,7 @@ test_stereo_ellipse_drawing(void) {
     assert(native_visualizer_screen_draw(&screen, samples,
                                          NCM_ARRAY_LEN(samples)));
     assert(test_draws_len == 4);
-    test_assert_character((char *)"x", STRLIT_LEN("x"));
+    test_assert_character("x", STRLIT_LEN("x"));
     assert(native_visualizer_screen_left_len(&screen) == 4);
     assert(native_visualizer_screen_right_len(&screen) == 4);
     native_visualizer_screen_destroy(&screen);

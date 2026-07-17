@@ -212,7 +212,7 @@ test_state_reset(void) {
     Config.autocenter_mode = false;
     Config.space_add_mode = NCM_SPACE_ADD_MODE_ADD_REMOVE;
     Config.crossfade_time = 5;
-    Config.random_exclude_pattern = (char *)"";
+    Config.random_exclude_pattern = "";
     Config.random_exclude_pattern_len = 0;
     for (uint32 i = 0; i < 6; i += 1) {
         add_song(i);
@@ -269,13 +269,13 @@ add_song(uint32 position) {
     ncm_song_set_position(&song, position);
     ncm_song_set_id(&song, position + 10);
     if (position < 2) {
-        album = (char *)"album-a";
+        album = "album-a";
         album_len = 7;
     } else if (position < 5) {
-        album = (char *)"album-b";
+        album = "album-b";
         album_len = 7;
     } else {
-        album = (char *)"album-c";
+        album = "album-c";
         album_len = 7;
     }
     assert(ncm_song_add_tag(&song, MPD_TAG_ALBUM,
@@ -500,7 +500,7 @@ static void
 test_priority_prompt(void) {
     test_state_reset();
     select_position(1);
-    set_prompt((char *)"200");
+    set_prompt("200");
 
     assert(ncm_action_runtime_can_run(
         NULL, NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY));
@@ -509,7 +509,7 @@ test_priority_prompt(void) {
     assert(test_state.priority_calls == 1);
     assert(test_state.priority == 200);
 
-    set_prompt((char *)"256");
+    set_prompt("256");
     assert(ncm_action_runtime_run(
         NULL, NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY));
     assert(test_state.priority_calls == 1);
@@ -525,26 +525,26 @@ test_priority_prompt(void) {
 static void
 test_jump_to_position_formats(void) {
     test_state_reset();
-    set_prompt((char *)"1:02");
+    set_prompt("1:02");
     assert(ncm_action_runtime_run(NULL,
                                   NCM_ACTION_JUMP_TO_POSITION_IN_SONG));
     assert(test_state.seek_calls == 1);
     assert(test_state.seek_position == 2);
     assert(test_state.seek_seconds == 62);
 
-    set_prompt((char *)"25");
+    set_prompt("25");
     assert(ncm_action_runtime_run(NULL,
                                   NCM_ACTION_JUMP_TO_POSITION_IN_SONG));
     assert(test_state.seek_calls == 2);
     assert(test_state.seek_seconds == 100);
 
-    set_prompt((char *)"1:60");
+    set_prompt("1:60");
     assert(ncm_action_runtime_run(NULL,
                                   NCM_ACTION_JUMP_TO_POSITION_IN_SONG));
     assert(test_state.seek_calls == 3);
     assert(test_state.seek_seconds == 120);
 
-    set_prompt((char *)"1:61");
+    set_prompt("1:61");
     assert(ncm_action_runtime_run(NULL,
                                   NCM_ACTION_JUMP_TO_POSITION_IN_SONG));
     assert(test_state.seek_calls == 3);
@@ -577,7 +577,7 @@ test_autocenter_locates_playing_song(void) {
 static void
 test_save_playlist_overwrite(void) {
     test_state_reset();
-    set_prompt((char *)"mix");
+    set_prompt("mix");
     test_state.save_first_fails_exists = true;
     test_state.confirm_result = true;
 
@@ -615,7 +615,7 @@ test_select_found_items(void) {
     test_state_reset();
     menu = playlist_menu();
     highlight_position(3);
-    cbase_memcpy(test_state.search_constraint, (char *)"song", 5);
+    cbase_memcpy(test_state.search_constraint, "song", 5);
     test_state.search_results[0] = 1;
     test_state.search_results[1] = 4;
     test_state.search_result_count = 2;
@@ -636,7 +636,7 @@ test_select_found_items(void) {
 static void
 test_set_crossfade(void) {
     test_state_reset();
-    set_prompt((char *)"12");
+    set_prompt("12");
 
     assert(ncm_action_runtime_can_run(NULL, NCM_ACTION_SET_CROSSFADE));
     assert(ncm_action_runtime_run(NULL, NCM_ACTION_SET_CROSSFADE));
@@ -644,7 +644,7 @@ test_set_crossfade(void) {
     assert(test_state.crossfade_seconds == 12);
     assert(Config.crossfade_time == 12);
 
-    set_prompt((char *)"invalid");
+    set_prompt("invalid");
     assert(ncm_action_runtime_run(NULL, NCM_ACTION_SET_CROSSFADE));
     assert(test_state.crossfade_calls == 1);
     assert(strstr(test_state.status, "non-negative") != NULL);
@@ -654,14 +654,14 @@ test_set_crossfade(void) {
 static void
 test_set_volume(void) {
     test_state_reset();
-    set_prompt((char *)"75");
+    set_prompt("75");
 
     assert(ncm_action_runtime_can_run(NULL, NCM_ACTION_SET_VOLUME));
     assert(ncm_action_runtime_run(NULL, NCM_ACTION_SET_VOLUME));
     assert(test_state.volume_calls == 1);
     assert(test_state.volume_value == 75);
 
-    set_prompt((char *)"101");
+    set_prompt("101");
     assert(ncm_action_runtime_run(NULL, NCM_ACTION_SET_VOLUME));
     assert(test_state.volume_calls == 1);
     assert(strstr(test_state.status, "between 0 and 100") != NULL);
@@ -675,7 +675,7 @@ static void
 test_add_random_items(void) {
     test_state_reset();
     test_state.one_of_result = 's';
-    set_prompt((char *)"3");
+    set_prompt("3");
 
     assert(ncm_action_runtime_can_run(NULL, NCM_ACTION_ADD_RANDOM_ITEMS));
     assert(ncm_action_runtime_run(NULL, NCM_ACTION_ADD_RANDOM_ITEMS));
@@ -684,14 +684,14 @@ test_add_random_items(void) {
     assert(test_state.random_count == 3);
 
     test_state.one_of_result = 'A';
-    set_prompt((char *)"2");
+    set_prompt("2");
     assert(ncm_action_runtime_run(NULL, NCM_ACTION_ADD_RANDOM_ITEMS));
     assert(test_state.random_tag_calls == 1);
     assert(test_state.random_tag == MPD_TAG_ALBUM_ARTIST);
     assert(test_state.random_count == 2);
 
     test_state.one_of_result = 'b';
-    set_prompt((char *)"0");
+    set_prompt("0");
     assert(ncm_action_runtime_run(NULL, NCM_ACTION_ADD_RANDOM_ITEMS));
     assert(test_state.random_tag_calls == 1);
     return;

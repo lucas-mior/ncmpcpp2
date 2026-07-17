@@ -191,9 +191,9 @@ begin_render_formats(PlaylistEditorFormatFixture *fixture,
                             NCM_FORMAT_FLAG_ALL, &error));
 
     columns[0] = (Column){0};
-    columns[0].name = (char *)"Artist";
+    columns[0].name = "Artist";
     columns[0].name_len = STRLIT_LEN("Artist");
-    columns[0].type = (char *)"a";
+    columns[0].type = "a";
     columns[0].type_len = STRLIT_LEN("a");
     columns[0].width = 6;
     columns[0].stretch_limit = -1;
@@ -201,9 +201,9 @@ begin_render_formats(PlaylistEditorFormatFixture *fixture,
     columns[0].fixed = true;
 
     columns[1] = (Column){0};
-    columns[1].name = (char *)"Title";
+    columns[1].name = "Title";
     columns[1].name_len = STRLIT_LEN("Title");
-    columns[1].type = (char *)"t";
+    columns[1].type = "t";
     columns[1].type_len = STRLIT_LEN("t");
     columns[1].width = 6;
     columns[1].stretch_limit = -1;
@@ -1071,7 +1071,7 @@ test_playlist_column_selected_songs_fetches_playlists(void) {
                 LIT_ARGS("beta-1.flac"), LIT_ARGS("Beta 1"));
     copy_cstring(mpd_fixture.alternate_content_path,
                  NCM_ARRAY_LEN(mpd_fixture.alternate_content_path),
-                 (char *)"Beta");
+                 "Beta");
     assert(native_playlist_editor_screen_load_playlists(&screen,
                                                          &playlists));
 
@@ -1084,7 +1084,7 @@ test_playlist_column_selected_songs_fetches_playlists(void) {
     reset_mpd_calls();
     copy_cstring(mpd_fixture.alternate_content_path,
                  NCM_ARRAY_LEN(mpd_fixture.alternate_content_path),
-                 (char *)"Beta");
+                 "Beta");
     ncm_song_array_init(&selected);
     assert(native_playlist_editor_screen_selected_songs(&screen,
                                                          &selected));
@@ -1119,10 +1119,10 @@ test_selected_playlist_fetch_failure_clears_result(void) {
                 LIT_ARGS("Beta"));
     copy_cstring(mpd_fixture.alternate_content_path,
                  NCM_ARRAY_LEN(mpd_fixture.alternate_content_path),
-                 (char *)"Beta");
+                 "Beta");
     copy_cstring(mpd_fixture.failing_content_path,
                  NCM_ARRAY_LEN(mpd_fixture.failing_content_path),
-                 (char *)"Beta");
+                 "Beta");
     assert(native_playlist_editor_screen_load_playlists(&screen,
                                                          &playlists));
     menu = nc_playlist_entry_menu_base(&screen.playlists);
@@ -1131,10 +1131,10 @@ test_selected_playlist_fetch_failure_clears_result(void) {
     reset_mpd_calls();
     copy_cstring(mpd_fixture.alternate_content_path,
                  NCM_ARRAY_LEN(mpd_fixture.alternate_content_path),
-                 (char *)"Beta");
+                 "Beta");
     copy_cstring(mpd_fixture.failing_content_path,
                  NCM_ARRAY_LEN(mpd_fixture.failing_content_path),
-                 (char *)"Beta");
+                 "Beta");
     ncm_song_array_init(&selected);
     assert(!native_playlist_editor_screen_selected_songs(&screen,
                                                           &selected));
@@ -1726,11 +1726,11 @@ test_locate_song_uses_legacy_playlist_order(void) {
                 LIT_ARGS("Target"));
     copy_cstring(mpd_fixture.alternate_content_path,
                  NCM_ARRAY_LEN(mpd_fixture.alternate_content_path),
-                 (char *)"Target");
+                 "Target");
     reset_mpd_calls();
     copy_cstring(mpd_fixture.alternate_content_path,
                  NCM_ARRAY_LEN(mpd_fixture.alternate_content_path),
-                 (char *)"Target");
+                 "Target");
 
     init_screen(&screen);
     ncm_mpd_playlist_list_init(&playlists);

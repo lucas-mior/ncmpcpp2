@@ -162,12 +162,12 @@ test_search_engine_action_lookup(void) {
 static void
 test_duplicate_action_detection(void) {
     NcmActionDef duplicate_type[] = {
-        { (char *)"one", NCM_ACTION_DUMMY, can_run_true, run_record },
-        { (char *)"two", NCM_ACTION_DUMMY, can_run_true, run_record },
+        { "one", NCM_ACTION_DUMMY, can_run_true, run_record },
+        { "two", NCM_ACTION_DUMMY, can_run_true, run_record },
     };
     NcmActionDef duplicate_name[] = {
-        { (char *)"same", NCM_ACTION_DUMMY, can_run_true, run_record },
-        { (char *)"same", NCM_ACTION_QUIT, can_run_true, run_record },
+        { "same", NCM_ACTION_DUMMY, can_run_true, run_record },
+        { "same", NCM_ACTION_QUIT, can_run_true, run_record },
     };
     NcmError error;
 
@@ -192,7 +192,7 @@ test_disabled_action_checks(void) {
 
     state = (ActionTestState){0};
     disabled = (NcmActionDef){
-        (char *)"disabled",
+        "disabled",
         NCM_ACTION_DUMMY,
         can_run_false,
         run_record,
@@ -213,7 +213,7 @@ test_action_execution_paths(void) {
 
     state = (ActionTestState){0};
     action = (NcmActionDef){
-        (char *)"record",
+        "record",
         NCM_ACTION_DUMMY,
         can_run_true,
         run_record,
@@ -244,8 +244,8 @@ test_action_callback_installation(void) {
 static void
 test_custom_table_lookup(void) {
     NcmActionDef table[] = {
-        { (char *)"quit", NCM_ACTION_QUIT, can_run_true, run_record },
-        { (char *)"show_help", NCM_ACTION_SHOW_HELP,
+        { "quit", NCM_ACTION_QUIT, can_run_true, run_record },
+        { "show_help", NCM_ACTION_SHOW_HELP,
           can_run_true, run_record },
     };
     NcmActionDef *action;

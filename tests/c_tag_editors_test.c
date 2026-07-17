@@ -58,70 +58,70 @@ typedef struct TinyEditorActionFixture {
 } TinyEditorActionFixture;
 
 static NcmStringView tiny_tag_names[NCM_TAGS_FIELD_LAST] = {
-    { .data = (char *)"Title", .len = STRLIT_LEN("Title") },
-    { .data = (char *)"Artist", .len = STRLIT_LEN("Artist") },
+    { .data = "Title", .len = STRLIT_LEN("Title") },
+    { .data = "Artist", .len = STRLIT_LEN("Artist") },
     {
-        .data = (char *)"Album Artist",
+        .data = "Album Artist",
         .len = STRLIT_LEN("Album Artist"),
     },
-    { .data = (char *)"Album", .len = STRLIT_LEN("Album") },
-    { .data = (char *)"Date", .len = STRLIT_LEN("Date") },
-    { .data = (char *)"Track", .len = STRLIT_LEN("Track") },
-    { .data = (char *)"Genre", .len = STRLIT_LEN("Genre") },
-    { .data = (char *)"Composer", .len = STRLIT_LEN("Composer") },
-    { .data = (char *)"Performer", .len = STRLIT_LEN("Performer") },
-    { .data = (char *)"Disc", .len = STRLIT_LEN("Disc") },
-    { .data = (char *)"Comment", .len = STRLIT_LEN("Comment") },
+    { .data = "Album", .len = STRLIT_LEN("Album") },
+    { .data = "Date", .len = STRLIT_LEN("Date") },
+    { .data = "Track", .len = STRLIT_LEN("Track") },
+    { .data = "Genre", .len = STRLIT_LEN("Genre") },
+    { .data = "Composer", .len = STRLIT_LEN("Composer") },
+    { .data = "Performer", .len = STRLIT_LEN("Performer") },
+    { .data = "Disc", .len = STRLIT_LEN("Disc") },
+    { .data = "Comment", .len = STRLIT_LEN("Comment") },
 };
 
 static NcmStringView tiny_tag_values[NCM_TAGS_FIELD_LAST] = {
-    { .data = (char *)"Title value", .len = STRLIT_LEN("Title value") },
-    { .data = (char *)"Artist value", .len = STRLIT_LEN("Artist value") },
+    { .data = "Title value", .len = STRLIT_LEN("Title value") },
+    { .data = "Artist value", .len = STRLIT_LEN("Artist value") },
     {
-        .data = (char *)"Album artist value",
+        .data = "Album artist value",
         .len = STRLIT_LEN("Album artist value"),
     },
-    { .data = (char *)"Album value", .len = STRLIT_LEN("Album value") },
-    { .data = (char *)"2026", .len = STRLIT_LEN("2026") },
-    { .data = (char *)"3", .len = STRLIT_LEN("3") },
-    { .data = (char *)"Genre value", .len = STRLIT_LEN("Genre value") },
+    { .data = "Album value", .len = STRLIT_LEN("Album value") },
+    { .data = "2026", .len = STRLIT_LEN("2026") },
+    { .data = "3", .len = STRLIT_LEN("3") },
+    { .data = "Genre value", .len = STRLIT_LEN("Genre value") },
     {
-        .data = (char *)"Composer value",
+        .data = "Composer value",
         .len = STRLIT_LEN("Composer value"),
     },
     {
-        .data = (char *)"Performer value",
+        .data = "Performer value",
         .len = STRLIT_LEN("Performer value"),
     },
-    { .data = (char *)"2", .len = STRLIT_LEN("2") },
+    { .data = "2", .len = STRLIT_LEN("2") },
     {
-        .data = (char *)"Comment value",
+        .data = "Comment value",
         .len = STRLIT_LEN("Comment value"),
     },
 };
 
 static NcmStringView tiny_tag_display_values[NCM_TAGS_FIELD_LAST] = {
-    { .data = (char *)"Title value", .len = STRLIT_LEN("Title value") },
-    { .data = (char *)"Artist value", .len = STRLIT_LEN("Artist value") },
+    { .data = "Title value", .len = STRLIT_LEN("Title value") },
+    { .data = "Artist value", .len = STRLIT_LEN("Artist value") },
     {
-        .data = (char *)"Album artist value",
+        .data = "Album artist value",
         .len = STRLIT_LEN("Album artist value"),
     },
-    { .data = (char *)"Album value", .len = STRLIT_LEN("Album value") },
-    { .data = (char *)"2026", .len = STRLIT_LEN("2026") },
-    { .data = (char *)"03", .len = STRLIT_LEN("03") },
-    { .data = (char *)"Genre value", .len = STRLIT_LEN("Genre value") },
+    { .data = "Album value", .len = STRLIT_LEN("Album value") },
+    { .data = "2026", .len = STRLIT_LEN("2026") },
+    { .data = "03", .len = STRLIT_LEN("03") },
+    { .data = "Genre value", .len = STRLIT_LEN("Genre value") },
     {
-        .data = (char *)"Composer value",
+        .data = "Composer value",
         .len = STRLIT_LEN("Composer value"),
     },
     {
-        .data = (char *)"Performer value",
+        .data = "Performer value",
         .len = STRLIT_LEN("Performer value"),
     },
-    { .data = (char *)"2", .len = STRLIT_LEN("2") },
+    { .data = "2", .len = STRLIT_LEN("2") },
     {
-        .data = (char *)"Comment value",
+        .data = "Comment value",
         .len = STRLIT_LEN("Comment value"),
     },
 };
@@ -612,7 +612,7 @@ test_tiny_editor_save_results(void) {
     fixture.music_dir = NULL;
     fixture.calls = 0;
     fixture.result = false;
-    music_dir = (char *)"/music";
+    music_dir = "/music";
 
     native_tiny_tag_editor_screen_init(&screen, 0, 80, 0, 24,
                                        nc_color_default(),

@@ -165,7 +165,7 @@ run_configure_capture(int32 argc, char **argv,
 
     switch (child = fork()) {
     case -1:
-        fail(__FILE__, __LINE__, (char *)"fork() >= 0");
+        fail(__FILE__, __LINE__, "fork() >= 0");
         break;
     case 0:
         if ((dup2(fileno(output), STDOUT_FILENO) < 0)
@@ -261,20 +261,20 @@ test_option_parser(void) {
 static void
 test_command_line_short_options(void) {
     char *argv[] = {
-        (char *)"ncmpcpp",
-        (char *)"-?vq",
-        (char *)"-h",
-        (char *)"short.test",
-        (char *)"-p65535",
-        (char *)"-cfirst-config",
-        (char *)"-c",
-        (char *)"second-config",
-        (char *)"-bfirst-bindings",
-        (char *)"-b",
-        (char *)"second-bindings",
-        (char *)"-sbrowser",
-        (char *)"-S",
-        (char *)"playlist",
+        "ncmpcpp",
+        "-?vq",
+        "-h",
+        "short.test",
+        "-p65535",
+        "-cfirst-config",
+        "-c",
+        "second-config",
+        "-bfirst-bindings",
+        "-b",
+        "second-bindings",
+        "-sbrowser",
+        "-S",
+        "playlist",
     };
     NcmConfigurationOptions options;
     NcmError error;
@@ -314,25 +314,25 @@ test_command_line_short_options(void) {
 static void
 test_command_line_long_options(void) {
     char *argv[] = {
-        (char *)"ncmpcpp",
-        (char *)"--host=long.test",
-        (char *)"--port",
-        (char *)"0",
-        (char *)"--current-song=%f",
-        (char *)"--config=first-config",
-        (char *)"--config",
-        (char *)"second-config",
-        (char *)"--ignore-config-errors",
-        (char *)"--test-lyrics-fetchers",
-        (char *)"--bindings=first-bindings",
-        (char *)"--bindings",
-        (char *)"second-bindings",
-        (char *)"--screen=browser",
-        (char *)"--slave-screen",
-        (char *)"playlist",
-        (char *)"--help",
-        (char *)"--version",
-        (char *)"--quiet",
+        "ncmpcpp",
+        "--host=long.test",
+        "--port",
+        "0",
+        "--current-song=%f",
+        "--config=first-config",
+        "--config",
+        "second-config",
+        "--ignore-config-errors",
+        "--test-lyrics-fetchers",
+        "--bindings=first-bindings",
+        "--bindings",
+        "second-bindings",
+        "--screen=browser",
+        "--slave-screen",
+        "playlist",
+        "--help",
+        "--version",
+        "--quiet",
     };
     NcmConfigurationOptions options;
     NcmError error;
@@ -369,24 +369,24 @@ test_command_line_long_options(void) {
 static void
 test_command_line_current_song(void) {
     char *default_argv[] = {
-        (char *)"ncmpcpp",
-        (char *)"--current-song",
-        (char *)"--quiet",
-        (char *)"-cconfig",
-        (char *)"-bbindings",
+        "ncmpcpp",
+        "--current-song",
+        "--quiet",
+        "-cconfig",
+        "-bbindings",
     };
     char *separate_argv[] = {
-        (char *)"ncmpcpp",
-        (char *)"--current-song",
-        (char *)"%a - %t",
-        (char *)"-cconfig",
-        (char *)"-bbindings",
+        "ncmpcpp",
+        "--current-song",
+        "%a - %t",
+        "-cconfig",
+        "-bbindings",
     };
     char *empty_argv[] = {
-        (char *)"ncmpcpp",
-        (char *)"--current-song=",
-        (char *)"-cconfig",
-        (char *)"-bbindings",
+        "ncmpcpp",
+        "--current-song=",
+        "-cconfig",
+        "-bbindings",
     };
     NcmConfigurationOptions options;
     NcmError error;
@@ -425,53 +425,53 @@ test_command_line_current_song(void) {
 static void
 test_command_line_errors(void) {
     char *missing_short_value[] = {
-        (char *)"ncmpcpp",
-        (char *)"-h",
+        "ncmpcpp",
+        "-h",
     };
     char *missing_long_value[] = {
-        (char *)"ncmpcpp",
-        (char *)"--config",
+        "ncmpcpp",
+        "--config",
     };
     char *invalid_port[] = {
-        (char *)"ncmpcpp",
-        (char *)"--port=bad",
+        "ncmpcpp",
+        "--port=bad",
     };
     char *negative_port[] = {
-        (char *)"ncmpcpp",
-        (char *)"--port=-1",
+        "ncmpcpp",
+        "--port=-1",
     };
     char *large_port[] = {
-        (char *)"ncmpcpp",
-        (char *)"--port=65536",
+        "ncmpcpp",
+        "--port=65536",
     };
     char *flag_with_value[] = {
-        (char *)"ncmpcpp",
-        (char *)"--quiet=yes",
+        "ncmpcpp",
+        "--quiet=yes",
     };
     char *unknown_short[] = {
-        (char *)"ncmpcpp",
-        (char *)"-x",
+        "ncmpcpp",
+        "-x",
     };
     char *unknown_long[] = {
-        (char *)"ncmpcpp",
-        (char *)"--unknown",
+        "ncmpcpp",
+        "--unknown",
     };
     char *mixed_short_bundle[] = {
-        (char *)"ncmpcpp",
-        (char *)"-qvhserver",
+        "ncmpcpp",
+        "-qvhserver",
     };
     char *positional[] = {
-        (char *)"ncmpcpp",
-        (char *)"song",
+        "ncmpcpp",
+        "song",
     };
     char *after_delimiter[] = {
-        (char *)"ncmpcpp",
-        (char *)"--",
-        (char *)"song",
+        "ncmpcpp",
+        "--",
+        "song",
     };
     char *delimiter[] = {
-        (char *)"ncmpcpp",
-        (char *)"--",
+        "ncmpcpp",
+        "--",
     };
     NcmConfigurationOptions options;
     NcmError error;
@@ -652,17 +652,17 @@ test_config_path_discovery(void) {
 static void
 test_early_exit_modes(void) {
     char *help_argv[] = {
-        (char *)"ncmpcpp",
-        (char *)"--help",
-        (char *)"--config=custom-config",
-        (char *)"--bindings=custom-bindings",
+        "ncmpcpp",
+        "--help",
+        "--config=custom-config",
+        "--bindings=custom-bindings",
     };
     char *version_argv[] = {
-        (char *)"ncmpcpp",
-        (char *)"--version",
+        "ncmpcpp",
+        "--version",
     };
     char *normal_argv[] = {
-        (char *)"ncmpcpp",
+        "ncmpcpp",
     };
     CapturedConfigureResult result;
 
@@ -703,9 +703,9 @@ test_quiet_mode(void) {
     char *normal_argv[6];
     char *quiet_argv[7];
     char *bad_argv[] = {
-        (char *)"ncmpcpp",
-        (char *)"--quiet",
-        (char *)"--port=bad",
+        "ncmpcpp",
+        "--quiet",
+        "--port=bad",
     };
     NcmBuffer config_path;
     NcmBuffer bindings_path;
@@ -739,18 +739,18 @@ test_quiet_mode(void) {
     write_file(config_path.data, config_path.len, data.data, data.len);
     write_file(bindings_path.data, bindings_path.len, LIT_ARGS("# ok\n"));
 
-    normal_argv[0] = (char *)"ncmpcpp";
-    normal_argv[1] = (char *)"--config";
+    normal_argv[0] = "ncmpcpp";
+    normal_argv[1] = "--config";
     normal_argv[2] = config_path.data;
-    normal_argv[3] = (char *)"--bindings";
+    normal_argv[3] = "--bindings";
     normal_argv[4] = bindings_path.data;
     normal_argv[5] = NULL;
 
-    quiet_argv[0] = (char *)"ncmpcpp";
-    quiet_argv[1] = (char *)"--quiet";
-    quiet_argv[2] = (char *)"--config";
+    quiet_argv[0] = "ncmpcpp";
+    quiet_argv[1] = "--quiet";
+    quiet_argv[2] = "--config";
     quiet_argv[3] = config_path.data;
-    quiet_argv[4] = (char *)"--bindings";
+    quiet_argv[4] = "--bindings";
     quiet_argv[5] = bindings_path.data;
     quiet_argv[6] = NULL;
 
@@ -869,9 +869,9 @@ test_config_file_parsing(void) {
 static void
 test_regular_expression_flavors(void) {
     char *values[] = {
-        (char *)"none",
-        (char *)"basic",
-        (char *)"extended",
+        "none",
+        "basic",
+        "extended",
     };
     uint32 expected[] = {
         NCM_REGEX_LITERAL_CASE_INSENSITIVE,
@@ -988,17 +988,17 @@ test_configuration_options_apply(void) {
     write_file(config_path.data, config_path.len, data.data, data.len);
     write_file(bindings_path.data, bindings_path.len, LIT_ARGS("# ok\n"));
 
-    argv[0] = (char *)"ncmpcpp";
-    argv[1] = (char *)"-c";
+    argv[0] = "ncmpcpp";
+    argv[1] = "-c";
     argv[2] = config_path.data;
-    argv[3] = (char *)"-b";
+    argv[3] = "-b";
     argv[4] = bindings_path.data;
-    argv[5] = (char *)"-hcli.test";
-    argv[6] = (char *)"-p";
-    argv[7] = (char *)"6620";
-    argv[8] = (char *)"--screen";
-    argv[9] = (char *)"browser";
-    argv[10] = (char *)"--slave-screen=playlist";
+    argv[5] = "-hcli.test";
+    argv[6] = "-p";
+    argv[7] = "6620";
+    argv[8] = "--screen";
+    argv[9] = "browser";
+    argv[10] = "--slave-screen=playlist";
     argv[11] = NULL;
 
     REQUIRE(ncm_configuration_options_parse(&options, 11, argv, &error));

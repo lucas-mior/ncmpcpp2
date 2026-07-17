@@ -162,7 +162,7 @@ statusbar_progressbar_split(NcmStringView items[3]) {
     for (int32 i = 0; i < 3; i += 1) {
         int32 next;
 
-        items[i].data = (char *)"";
+        items[i].data = "";
         items[i].len = 0;
         if (byte >= Config.progressbar.len) {
             continue;

@@ -71,25 +71,25 @@ static int64 resize_main_y;
 static int64 resize_main_height;
 
 static char *constraint_rows[] = {
-    (char *)"Any          : ",
-    (char *)"Artist       : ",
-    (char *)"Album Artist : ",
-    (char *)"Title        : ",
-    (char *)"Album        : ",
-    (char *)"Filename     : ",
-    (char *)"Composer     : ",
-    (char *)"Performer    : ",
-    (char *)"Genre        : ",
-    (char *)"Date         : ",
-    (char *)"Comment      : ",
+    "Any          : ",
+    "Artist       : ",
+    "Album Artist : ",
+    "Title        : ",
+    "Album        : ",
+    "Filename     : ",
+    "Composer     : ",
+    "Performer    : ",
+    "Genre        : ",
+    "Date         : ",
+    "Comment      : ",
 };
 
 static char *search_mode_rows[] = {
-    (char *)"Search mode: Match if tag contains searched phrase "
+    "Search mode: Match if tag contains searched phrase "
             "(no regexes)",
-    (char *)"Search mode: Match if tag contains searched phrase "
+    "Search mode: Match if tag contains searched phrase "
             "(regexes supported)",
-    (char *)"Search mode: Match only if both values are the same",
+    "Search mode: Match only if both values are the same",
 };
 
 static void test_search_query_construction(void);
@@ -1769,16 +1769,16 @@ test_native_display_and_column_title(void) {
                             NCM_FORMAT_FLAG_ALL, &error));
 
     columns[0] = (Column){0};
-    columns[0].name = (char *)"Artist";
+    columns[0].name = "Artist";
     columns[0].name_len = STRLIT_LEN("Artist");
-    columns[0].type = (char *)"a";
+    columns[0].type = "a";
     columns[0].type_len = STRLIT_LEN("a");
     columns[0].width = 10;
     columns[0].stretch_limit = -1;
     columns[0].color = nc_color_default();
     columns[0].fixed = true;
     columns[1] = (Column){0};
-    columns[1].type = (char *)"t";
+    columns[1].type = "t";
     columns[1].type_len = STRLIT_LEN("t");
     columns[1].width = 10;
     columns[1].stretch_limit = -1;

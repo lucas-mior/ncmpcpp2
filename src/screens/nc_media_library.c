@@ -963,10 +963,10 @@ native_library_compare_tag_rows(NcMediaLibraryTagRow *left,
     left_tag = left->tag;
     right_tag = right->tag;
     if (left_tag == NULL) {
-        left_tag = (char *)"";
+        left_tag = "";
     }
     if (right_tag == NULL) {
-        right_tag = (char *)"";
+        right_tag = "";
     }
     return ncm_compare_locale_strings(left_tag, left->tag_len,
                                       right_tag, right->tag_len,
@@ -997,10 +997,10 @@ native_library_compare_album_items(NativeMediaLibraryAlbumItem *left,
     left_data = left_row->tag;
     right_data = right_row->tag;
     if (left_data == NULL) {
-        left_data = (char *)"";
+        left_data = "";
     }
     if (right_data == NULL) {
-        right_data = (char *)"";
+        right_data = "";
     }
     result = ncm_compare_locale_strings(
         left_data, left_row->tag_len,
@@ -1013,10 +1013,10 @@ native_library_compare_album_items(NativeMediaLibraryAlbumItem *left,
     left_data = left_row->date;
     right_data = right_row->date;
     if (left_data == NULL) {
-        left_data = (char *)"";
+        left_data = "";
     }
     if (right_data == NULL) {
-        right_data = (char *)"";
+        right_data = "";
     }
     result = ncm_compare_locale_strings(
         left_data, left_row->date_len,
@@ -1029,10 +1029,10 @@ native_library_compare_album_items(NativeMediaLibraryAlbumItem *left,
     left_data = left_row->album;
     right_data = right_row->album;
     if (left_data == NULL) {
-        left_data = (char *)"";
+        left_data = "";
     }
     if (right_data == NULL) {
-        right_data = (char *)"";
+        right_data = "";
     }
     return ncm_compare_locale_strings(
         left_data, left_row->album_len,
@@ -1085,7 +1085,7 @@ native_library_compare_song_getter(NcmSong *left, NcmSong *right,
     separator = Config.tags_separator;
     separator_len = Config.tags_separator_len;
     if (separator == NULL) {
-        separator = (char *)"";
+        separator = "";
         separator_len = 0;
     }
     left_tags = ncm_song_tags_buffer(
@@ -1097,10 +1097,10 @@ native_library_compare_song_getter(NcmSong *left, NcmSong *right,
     left_data = left_tags.data;
     right_data = right_tags.data;
     if (left_data == NULL) {
-        left_data = (char *)"";
+        left_data = "";
     }
     if (right_data == NULL) {
-        right_data = (char *)"";
+        right_data = "";
     }
     result = ncm_compare_locale_strings(
         left_data, left_tags.len, right_data, right_tags.len,
@@ -3781,7 +3781,7 @@ native_library_window_timeout(NcScreen *screen) {
 static char *
 native_library_title(NcScreen *screen) {
     (void)screen;
-    return (char *)"Media library";
+    return "Media library";
 }
 
 static void
@@ -4611,7 +4611,7 @@ native_library_mpd_list_all_songs(void *user, NcmMpdSongList *songs,
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
         return false;
     }
-    return ncm_mpd_client_get_directory_recursive(client, (char *)"/",
+    return ncm_mpd_client_get_directory_recursive(client, "/",
                                                    songs, error);
 }
 

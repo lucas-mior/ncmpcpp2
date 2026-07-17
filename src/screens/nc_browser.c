@@ -508,7 +508,7 @@ native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
 
     directory = native_browser_screen_current_directory(screen);
     if (directory.len <= 0) {
-        directory = ncm_string_view_make((char *)"/", 1);
+        directory = ncm_string_view_make("/", 1);
     }
 
     screen_width = (int32)ui_state_screen_width();
@@ -937,7 +937,7 @@ native_browser_screen_delete_items(NativeBrowserScreen *screen,
         }
         directory = screen->current_directory.data;
         if (screen->current_directory.len <= 0) {
-            directory = (char *)"/";
+            directory = "/";
         }
         if (!ncm_mpd_client_update_directory(
                 client, directory, NULL, error)) {
@@ -2281,7 +2281,7 @@ native_browser_collect_mpd_directory_songs(
     ncm_error_clear(&error);
     directory = path;
     if (path_len <= 0) {
-        directory = (char *)"/";
+        directory = "/";
     }
     result = ncm_mpd_client_get_directory_recursive(
         &global_mpd, directory, &source, &error);
@@ -2659,7 +2659,7 @@ native_browser_update_renamed_directory(NcmMpdClient *client,
                                          new_path.data, new_path.len);
     directory = shared.data;
     if (shared.len <= 0) {
-        directory = (char *)"/";
+        directory = "/";
     }
     result = ncm_mpd_client_update_directory(client, directory, NULL,
                                              error);
@@ -2765,7 +2765,7 @@ native_browser_remove_directory(char *path, int32 path_len,
             ncm_error_clear(error);
             return true;
         }
-        native_browser_set_errno_error(error, errno, (char *)"rmdir", path,
+        native_browser_set_errno_error(error, errno, "rmdir", path,
                                        path_len);
         cbase_free(copy, path_len + 1);
         return false;
@@ -2797,7 +2797,7 @@ native_browser_supported_extensions_contains(NcmBufferArray *extensions,
         return false;
     }
     if (extension == NULL) {
-        extension = (char *)"";
+        extension = "";
         extension_len = 0;
     }
     if (extension_len < 0) {
@@ -2827,7 +2827,7 @@ native_browser_supported_extensions_add(NcmBufferArray *extensions,
         return false;
     }
     if (extension == NULL) {
-        extension = (char *)"";
+        extension = "";
         extension_len = 0;
     }
     if (extension_len < 0) {
