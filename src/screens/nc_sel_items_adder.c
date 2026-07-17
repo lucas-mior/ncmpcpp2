@@ -45,7 +45,7 @@ static bool adder_action_row_set(NcEditorActionRow *row, char *label,
 static bool adder_action_set_playlist(char **dest, int32 *dest_len,
                                       int32 *dest_cap, char *source,
                                       int32 source_len);
-static int32 adder_cstring_len(char *string);
+static int32 adder_cstrlen32(char *string);
 static bool adder_statusbar_prompt_hook(char *text, void *user);
 static bool adder_add_to_stored_playlist(
     NativeSelectedItemsAdderScreen *screen, char *playlist,
@@ -889,7 +889,7 @@ adder_action_set_playlist(char **dest, int32 *dest_len, int32 *dest_cap,
 }
 
 static int32
-adder_cstring_len(char *string) {
+adder_cstrlen32(char *string) {
     int32 len;
 
     if (string == NULL) {
@@ -906,7 +906,7 @@ adder_cstring_len(char *string) {
 static bool
 adder_statusbar_prompt_hook(char *text, void *user) {
     (void)user;
-    return ncm_statusbar_main_hook(text, adder_cstring_len(text));
+    return ncm_statusbar_main_hook(text, adder_cstrlen32(text));
 }
 
 static bool
@@ -961,7 +961,7 @@ adder_try_add_current_song(
         ncm_status_handle_server_error_value(
             screen->client,
             (int32)ncm_mpd_client_server_error_code(screen->client),
-            error.message, adder_cstring_len(error.message));
+            error.message, adder_cstrlen32(error.message));
         *success = false;
         return true;
     }
@@ -1038,7 +1038,7 @@ adder_add_to_current_playlist(
     ncm_buffer_init(&message);
     ncm_buffer_append(&message, STRLIT_ARGS("Selected items added"));
     suffix = ncm_helpers_with_errors(success);
-    ncm_buffer_append(&message, suffix, adder_cstring_len(suffix));
+    ncm_buffer_append(&message, suffix, adder_cstrlen32(suffix));
     ncm_statusbar_print((int32)Config.message_delay_time,
                         message.data, message.len);
     ncm_buffer_destroy(&message);
@@ -1105,7 +1105,7 @@ adder_action_new_playlist(void *user) {
     if (playlist == NULL) {
         playlist = "";
     }
-    playlist_len = adder_cstring_len(playlist);
+    playlist_len = adder_cstrlen32(playlist);
     (void)adder_add_to_stored_playlist(screen, playlist, playlist_len);
     nc_window_prompt_result_destroy(input);
     return;

@@ -110,7 +110,7 @@ enum NativePromptResult {
 static enum ScreenType native_screen_type_from_native_type(int32 type);
 static void native_request_registered_resize(int32 type);
 static NcBorder native_no_border(void);
-static int32 native_cstring_len(char *string);
+static int32 native_cstrlen32(char *string);
 static void native_draw_screen_header(NcScreen *screen);
 static bool native_register_screen(NcScreen *screen);
 static bool native_search_list_database_songs(
@@ -842,7 +842,7 @@ native_search_snapshot_playlist(
 static bool
 native_search_prompt_hook(char *text, void *user) {
     (void)user;
-    return ncm_statusbar_main_hook(text, native_cstring_len(text));
+    return ncm_statusbar_main_hook(text, native_cstrlen32(text));
 }
 
 static enum NativeSearchEnginePromptResult
@@ -896,7 +896,7 @@ native_search_prompt_constraint(
         return NATIVE_SEARCH_ENGINE_PROMPT_ERROR;
     }
 
-    input_len = native_cstring_len(input);
+    input_len = native_cstrlen32(input);
     copied = ncm_buffer_set(result, input, input_len);
     nc_window_prompt_result_destroy(input);
     if (!copied) {
@@ -1116,7 +1116,7 @@ native_c_screen_tag_editor_native(void) {
 static bool
 native_statusbar_prompt_hook(char *text, void *user) {
     (void)user;
-    return ncm_statusbar_main_hook(text, native_cstring_len(text));
+    return ncm_statusbar_main_hook(text, native_cstrlen32(text));
 }
 
 static enum NativePromptResult
@@ -1176,7 +1176,7 @@ native_prompt_buffer(char *label, int32 label_len,
         return NATIVE_PROMPT_RESULT_ERROR;
     }
 
-    input_len = native_cstring_len(input);
+    input_len = native_cstrlen32(input);
     copied = ncm_buffer_set(result, input, input_len);
     nc_window_prompt_result_destroy(input);
     if (!copied) {
@@ -1762,7 +1762,7 @@ native_no_border(void) {
 }
 
 static int32
-native_cstring_len(char *string) {
+native_cstrlen32(char *string) {
     int32 len;
 
     if (string == NULL) {
@@ -1781,7 +1781,7 @@ native_draw_screen_header(NcScreen *screen) {
     char *title;
 
     title = nc_screen_title(screen);
-    ncm_title_draw_header(title, native_cstring_len(title));
+    ncm_title_draw_header(title, native_cstrlen32(title));
     return;
 }
 

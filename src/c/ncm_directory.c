@@ -5,10 +5,10 @@
 #include "c/ncm_base.h"
 #include "cbase/util.c"
 
-static int32 ncm_directory_cstring_len(char *string);
+static int32 ncm_directory_cstrlen32(char *string);
 
 static int32
-ncm_directory_cstring_len(char *string) {
+ncm_directory_cstrlen32(char *string) {
     int32 len;
 
     if (string == NULL) {
@@ -176,7 +176,7 @@ ncm_directory_from_mpd_directory(NcmDirectory *dest,
         return false;
     }
 
-    path_len = ncm_directory_cstring_len(path);
+    path_len = ncm_directory_cstrlen32(path);
     last_modified = mpd_directory_get_last_modified(source);
     return ncm_directory_set(dest, path, path_len, last_modified);
 }

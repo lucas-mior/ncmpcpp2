@@ -93,7 +93,7 @@ static bool native_search_song_field_view(NcmSong *song, int32 field,
                                           NcmStringView *view);
 static bool native_search_append_result_rows(
     NativeSearchEngineScreen *screen, NcmSongArray *songs);
-static int32 native_search_cstring_len(char *string);
+static int32 native_search_cstrlen32(char *string);
 
 static char *native_search_constraint_names[] = {
     "Any",
@@ -2179,7 +2179,7 @@ native_search_print_error(NativeSearchEngineScreen *screen,
         || (error == NULL)) {
         return;
     }
-    len = native_search_cstring_len(error->message);
+    len = native_search_cstrlen32(error->message);
     if (len > 0) {
         screen->hooks.status_message(screen->hooks.user, error->message,
                                      len);
@@ -2188,7 +2188,7 @@ native_search_print_error(NativeSearchEngineScreen *screen,
 }
 
 static int32
-native_search_cstring_len(char *string) {
+native_search_cstrlen32(char *string) {
     int32 len;
 
     if (string == NULL) {
