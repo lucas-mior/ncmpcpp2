@@ -3,28 +3,6 @@
 #include "c/ncm_string.h"
 #include "cbase/util.c"
 
-static int32 screen_type_cstr_len(char *string);
-static bool screen_type_string_equal(char *string, int32 string_len,
-                                     char *expected);
-
-static int32
-screen_type_cstr_len(char *string) {
-    int32 result;
-
-    result = 0;
-    while (string[result] != '\0') {
-        result += 1;
-    }
-
-    return result;
-}
-
-static bool
-screen_type_string_equal(char *string, int32 string_len, char *expected) {
-    return STREQUAL(string, string_len, expected,
-                            screen_type_cstr_len(expected));
-}
-
 char *
 screen_type_str(enum ScreenType screen_type) {
     switch (screen_type) {
@@ -128,58 +106,58 @@ screen_type_to_native_type(enum ScreenType screen_type) {
 bool
 screen_type_parse_startup(char *string, int32 string_len,
                           enum ScreenType *screen_type) {
-    if (screen_type_string_equal(string, string_len, "browser")) {
+    if (STREQUAL(string, string_len, "browser")) {
         *screen_type = NCM_SCREEN_TYPE_BROWSER;
         return true;
     }
-    if (screen_type_string_equal(string, string_len, "help")) {
+    if (STREQUAL(string, string_len, "help")) {
         *screen_type = NCM_SCREEN_TYPE_HELP;
         return true;
     }
-    if (screen_type_string_equal(string, string_len,
+    if (STREQUAL(string, string_len,
                                  "media_library")) {
         *screen_type = NCM_SCREEN_TYPE_MEDIA_LIBRARY;
         return true;
     }
 #if defined(ENABLE_OUTPUTS)
-    if (screen_type_string_equal(string, string_len, "outputs")) {
+    if (STREQUAL(string, string_len, "outputs")) {
         *screen_type = NCM_SCREEN_TYPE_OUTPUTS;
         return true;
     }
 #endif
-    if (screen_type_string_equal(string, string_len, "playlist")) {
+    if (STREQUAL(string, string_len, "playlist")) {
         *screen_type = NCM_SCREEN_TYPE_PLAYLIST;
         return true;
     }
-    if (screen_type_string_equal(string, string_len,
+    if (STREQUAL(string, string_len,
                                  "playlist_editor")) {
         *screen_type = NCM_SCREEN_TYPE_PLAYLIST_EDITOR;
         return true;
     }
-    if (screen_type_string_equal(string, string_len,
+    if (STREQUAL(string, string_len,
                                  "search_engine")) {
         *screen_type = NCM_SCREEN_TYPE_SEARCH_ENGINE;
         return true;
     }
 #if defined(HAVE_TAGLIB_H)
-    if (screen_type_string_equal(string, string_len,
+    if (STREQUAL(string, string_len,
                                  "tag_editor")) {
         *screen_type = NCM_SCREEN_TYPE_TAG_EDITOR;
         return true;
     }
 #endif
 #if defined(ENABLE_VISUALIZER)
-    if (screen_type_string_equal(string, string_len,
+    if (STREQUAL(string, string_len,
                                  "visualizer")) {
         *screen_type = NCM_SCREEN_TYPE_VISUALIZER;
         return true;
     }
 #endif
-    if (screen_type_string_equal(string, string_len, "lyrics")) {
+    if (STREQUAL(string, string_len, "lyrics")) {
         *screen_type = NCM_SCREEN_TYPE_LYRICS;
         return true;
     }
-    if (screen_type_string_equal(string, string_len, "last_fm")) {
+    if (STREQUAL(string, string_len, "last_fm")) {
         *screen_type = NCM_SCREEN_TYPE_LASTFM;
         return true;
     }
@@ -194,27 +172,27 @@ screen_type_parse(char *string, int32 string_len,
     if (screen_type_parse_startup(string, string_len, screen_type)) {
         return true;
     }
-    if (screen_type_string_equal(string, string_len,
+    if (STREQUAL(string, string_len,
                                  "selected_items_adder")) {
         *screen_type = NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER;
         return true;
     }
-    if (screen_type_string_equal(string, string_len,
+    if (STREQUAL(string, string_len,
                                  "server_info")) {
         *screen_type = NCM_SCREEN_TYPE_SERVER_INFO;
         return true;
     }
-    if (screen_type_string_equal(string, string_len, "song_info")) {
+    if (STREQUAL(string, string_len, "song_info")) {
         *screen_type = NCM_SCREEN_TYPE_SONG_INFO;
         return true;
     }
-    if (screen_type_string_equal(string, string_len,
+    if (STREQUAL(string, string_len,
                                  "sort_playlist_dialog")) {
         *screen_type = NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG;
         return true;
     }
 #if defined(HAVE_TAGLIB_H)
-    if (screen_type_string_equal(string, string_len,
+    if (STREQUAL(string, string_len,
                                  "tiny_tag_editor")) {
         *screen_type = NCM_SCREEN_TYPE_TINY_TAG_EDITOR;
         return true;
