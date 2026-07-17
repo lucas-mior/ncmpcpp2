@@ -10,7 +10,6 @@ DESTDIR ?=
 
 PKG_CONFIG ?= pkg-config
 CC ?= cc
-AR ?= ar
 CLANG_ANALYZER ?= clang
 
 CPPFLAGS ?=
@@ -41,21 +40,13 @@ THREAD_FLAGS := -pthread
 OBJ_DIR := $(BUILD_DIR)/obj
 TOOLS_STAMP := $(BUILD_DIR)/.tools-ok
 BINARY := $(BUILD_DIR)/ncmpcpp
-NCMPCPP_C_LIB := $(BUILD_DIR)/libncmpcpp_c.a
-
-NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
-APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
-ANALYZER_C_SRCS := $(NCMPCPP_C_SRCS) $(APP_C_SRCS)
-
-NCMPCPP_C_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(NCMPCPP_C_SRCS))
-APP_C_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(APP_C_SRCS))
-DEPS := \
-	$(NCMPCPP_C_OBJS:.o=.d) \
-	$(APP_C_OBJS:.o=.d)
+NCMPCPP_SOURCE := src/main.c
+NCMPCPP_OBJECT := $(OBJ_DIR)/src/main.c.o
+DEPS := $(NCMPCPP_OBJECT:.o=.d)
 
 .PHONY: all check install clean help check-no-foreign-sources FORCE
 .DELETE_ON_ERROR:
-.SECONDARY: $(NCMPCPP_C_OBJS) $(APP_C_OBJS)
+.SECONDARY: $(NCMPCPP_OBJECT)
 
 all: check-no-foreign-sources $(BINARY)
 
@@ -80,16 +71,10 @@ $(OBJ_DIR)/%.c.o: %.c
 		-c $< \
 		-o $@
 
-$(NCMPCPP_C_LIB): $(NCMPCPP_C_OBJS)
-	@printf 'AR  %s\n' '$@'
-	@rm -f $@
-	@$(AR) rcs $@ $^
-
-$(BINARY): $(APP_C_OBJS) $(NCMPCPP_C_LIB)
+$(BINARY): $(NCMPCPP_OBJECT)
 	@printf 'LD  %s\n' '$@'
 	@$(CC) $(LDFLAGS) -o $@ \
-		$(APP_C_OBJS) \
-		$(NCMPCPP_C_LIB) \
+		$(NCMPCPP_OBJECT) \
 		$(READLINE_LIBS) \
 		$(PKG_LIBS) \
 		$(LDLIBS) \
@@ -122,19 +107,17 @@ check: check-no-foreign-sources
 		exit 1; \
 	}
 	@set -e; \
-	for source in $(ANALYZER_C_SRCS); do \
-		printf 'ANALYZE %s\n' "$$source"; \
-		$(CLANG_ANALYZER) \
-			$(COMMON_CPPFLAGS) \
-			$(ANALYZER_CSTD) \
-			$(WARNINGS) \
-			$(CFLAGS) \
-			$(THREAD_FLAGS) \
-			--analyze \
-			-Xanalyzer -analyzer-output=text \
-			-fno-color-diagnostics \
-			"$$source"; \
-	done
+	printf 'ANALYZE %s\n' '$(NCMPCPP_SOURCE)'; \
+	$(CLANG_ANALYZER) \
+		$(COMMON_CPPFLAGS) \
+		$(ANALYZER_CSTD) \
+		$(WARNINGS) \
+		$(CFLAGS) \
+		$(THREAD_FLAGS) \
+		--analyze \
+		-Xanalyzer -analyzer-output=text \
+		-fno-color-diagnostics \
+		$(NCMPCPP_SOURCE)
 
 install: $(BINARY)
 	install -d '$(DESTDIR)$(BINDIR)'
@@ -152,7 +135,7 @@ help:
 	@printf '%s\n' 'usage: make [all|check|install|clean|help]'
 	@printf '%s\n' ''
 	@printf '%s\n' 'Common variables:'
-	@printf '%s\n' '  CC, AR             compiler and archive commands'
+	@printf '%s\n' '  CC                 compiler command'
 	@printf '%s\n' '  CLANG_ANALYZER     clang command for make check'
 	@printf '%s\n' '  CFLAGS            extra compiler flags'
 	@printf '%s\n' '  CPPFLAGS, LDFLAGS  extra preprocessor and linker flags'
