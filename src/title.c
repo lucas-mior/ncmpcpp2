@@ -10,7 +10,7 @@
 #include "settings.h"
 #include "ui_state.h"
 
-static int32 title_cstring_len(char *string);
+static int32 title_cstrlen32(char *string);
 static char *title_current_screen_title(void);
 static void title_apply_formatted_color(NcWindow *window,
                                         NcFormattedColor *color);
@@ -24,7 +24,7 @@ static void title_draw_alternative(NcWindow *window, char *title,
                                    NcFormattedColor *separator_color);
 
 static int32
-title_cstring_len(char *string) {
+title_cstrlen32(char *string) {
     if (string == NULL) {
         return 0;
     }
@@ -157,7 +157,7 @@ ncm_window_title_set(char *title, int32 title_len) {
 
 void
 ncm_window_title_set_cstring(char *title) {
-    ncm_window_title_set(title, title_cstring_len(title));
+    ncm_window_title_set(title, title_cstrlen32(title));
     return;
 }
 
@@ -213,6 +213,6 @@ ncm_title_draw_current_header(void) {
     char *title;
 
     title = title_current_screen_title();
-    ncm_title_draw_header(title, title_cstring_len(title));
+    ncm_title_draw_header(title, title_cstrlen32(title));
     return;
 }

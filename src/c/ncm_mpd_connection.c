@@ -7,7 +7,7 @@
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
-static int32 ncm_mpd_connection_cstring_len(char *string);
+static int32 ncm_mpd_connection_cstrlen32(char *string);
 static void ncm_mpd_connection_cstring_copy(char *dst, int32 dst_cap,
                                             char *src);
 static void ncm_mpd_connection_set_error(NcmMpdConnection *connection,
@@ -52,7 +52,7 @@ static bool ncm_mpd_replay_gain_mode_parse(
     enum NcmMpdReplayGainMode *mode);
 
 static int32
-ncm_mpd_connection_cstring_len(char *string) {
+ncm_mpd_connection_cstrlen32(char *string) {
     int32 len;
 
     if (string == NULL) {
@@ -82,7 +82,7 @@ ncm_mpd_connection_cstring_copy(char *dst, int32 dst_cap,
         return;
     }
 
-    src_len = ncm_mpd_connection_cstring_len(src);
+    src_len = ncm_mpd_connection_cstrlen32(src);
     len = src_len;
     if (len >= dst_cap) {
         len = dst_cap - 1;
@@ -111,7 +111,7 @@ ncm_mpd_connection_set_error(NcmMpdConnection *connection,
     connection->server_error_code = server_code;
     connection->error_clearable = clearable;
 
-    message_len = ncm_mpd_connection_cstring_len(message);
+    message_len = ncm_mpd_connection_cstrlen32(message);
     ncm_error_set(&connection->error, (int32)code, message, message_len);
     return;
 }
@@ -217,7 +217,7 @@ ncm_mpd_string_list_push(NcmMpdStringList *list, char *value) {
         list->capacity = new_capacity;
     }
 
-    value_len = ncm_mpd_connection_cstring_len(value);
+    value_len = ncm_mpd_connection_cstrlen32(value);
     string = &list->items[list->count];
     string->value = (char *)malloc2(value_len + 1);
     string->value_len = value_len;
@@ -256,7 +256,7 @@ ncm_mpd_output_list_push(NcmMpdOutputList *list,
     }
 
     name = (char *)mpd_output_get_name(output);
-    name_len = ncm_mpd_connection_cstring_len(name);
+    name_len = ncm_mpd_connection_cstrlen32(name);
 
     item = &list->items[list->count];
     item->id = mpd_output_get_id(output);
@@ -631,7 +631,7 @@ ncm_mpd_string_set(NcmMpdString *string, char *value, int32 value_len) {
         value_len = 0;
     }
     if (value_len < 0) {
-        value_len = ncm_mpd_connection_cstring_len(value);
+        value_len = ncm_mpd_connection_cstrlen32(value);
     }
 
     ncm_mpd_string_destroy(string);
@@ -681,7 +681,7 @@ ncm_mpd_output_set(NcmMpdOutput *output, uint32 id, char *name,
         name_len = 0;
     }
     if (name_len < 0) {
-        name_len = ncm_mpd_connection_cstring_len(name);
+        name_len = ncm_mpd_connection_cstrlen32(name);
     }
 
     ncm_mpd_output_destroy(output);
@@ -1085,7 +1085,7 @@ ncm_mpd_string_list_append(NcmMpdStringList *list, char *value,
         value_len = 0;
     }
     if (value_len < 0) {
-        value_len = ncm_mpd_connection_cstring_len(value);
+        value_len = ncm_mpd_connection_cstrlen32(value);
     }
 
     if (list->count >= list->capacity) {

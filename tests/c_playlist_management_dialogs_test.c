@@ -95,7 +95,7 @@ static void test_state_add_playlist(char *name, int32 name_len);
 static void test_state_add_queue_song(char *uri, int32 uri_len,
                                       uint32 position, char *album,
                                       int32 album_len);
-static int32 test_cstring_len(char *string);
+static int32 test_cstrlen32(char *string);
 static void test_copy_text(char *dest, int32 *dest_len,
                            char *source, int32 source_len);
 static NcEditorActionRow *test_adder_row(
@@ -165,7 +165,7 @@ __wrap_ncm_mpd_client_add_song_to_playlist(NcmMpdClient *client,
     assert(song->uri != NULL);
     call = test_state.command_add_calls;
     assert(call < TEST_STORED_SONG_CAP);
-    playlist_len = test_cstring_len(playlist);
+    playlist_len = test_cstrlen32(playlist);
     test_copy_text(test_state.added_playlists[call], NULL,
                    playlist, playlist_len);
     test_copy_text(test_state.added_uris[call], NULL,
@@ -308,7 +308,7 @@ __wrap_ncm_statusbar_print_cstring(int32 delay_seconds, char *message) {
     int32 message_len;
 
     assert(delay_seconds == (int32)Config.message_delay_time);
-    message_len = test_cstring_len(message);
+    message_len = test_cstrlen32(message);
     test_copy_text(test_state.printed_status,
                    &test_state.printed_status_len,
                    message, message_len);
@@ -354,7 +354,7 @@ __wrap_nc_window_prompt(NcWindow *window, NcPrompt *prompt,
     assert(prompt != NULL);
     assert(result != NULL);
     assert(STREQUAL(prompt->initial_text,
-                            test_cstring_len(prompt->initial_text),
+                            test_cstrlen32(prompt->initial_text),
                             STRLIT_ARGS("")));
     assert(prompt->width == -1);
     assert(prompt->hook != NULL);
@@ -383,7 +383,7 @@ __wrap_nc_window_prompt_result_destroy(char *result) {
     if (result == NULL) {
         return;
     }
-    result_len = test_cstring_len(result);
+    result_len = test_cstrlen32(result);
     free2(result, result_len + 1);
     return;
 }
@@ -622,7 +622,7 @@ test_state_set_prompt(enum NcPromptStatus status, char *input,
 }
 
 static int32
-test_cstring_len(char *string) {
+test_cstrlen32(char *string) {
     int32 len;
 
     if (string == NULL) {
@@ -833,7 +833,7 @@ test_assert_queue_add(int32 call, char *uri, int32 uri_len,
     assert(call >= 0);
     assert(call < test_state.queue_add_calls);
     assert(STREQUAL(test_state.queue_added_uris[call],
-                            test_cstring_len(
+                            test_cstrlen32(
                                 test_state.queue_added_uris[call]),
                             uri, uri_len));
     assert(test_state.queue_added_positions[call] == position);
@@ -1305,14 +1305,14 @@ test_selected_items_lifecycle_and_stored_operations(void) {
     assert(test_state.command_commit_calls == 0);
     assert(!client.command_list_active);
     assert(STREQUAL(test_state.added_playlists[0],
-                            test_cstring_len(
+                            test_cstrlen32(
                                 test_state.added_playlists[0]),
                             LIT_ARGS("The Aardvarks")));
     assert(STREQUAL(test_state.added_uris[0],
-                            test_cstring_len(test_state.added_uris[0]),
+                            test_cstrlen32(test_state.added_uris[0]),
                             LIT_ARGS("first.flac")));
     assert(STREQUAL(test_state.added_uris[1],
-                            test_cstring_len(test_state.added_uris[1]),
+                            test_cstrlen32(test_state.added_uris[1]),
                             LIT_ARGS("second.flac")));
     assert(test_state.status_print_calls == 1);
     assert(STREQUAL(test_state.printed_status,
@@ -1344,14 +1344,14 @@ test_selected_items_lifecycle_and_stored_operations(void) {
                             test_state.status_playlist_len,
                             LIT_ARGS("The Aardvarks")));
     assert(STREQUAL(test_state.added_playlists[0],
-                            test_cstring_len(
+                            test_cstrlen32(
                                 test_state.added_playlists[0]),
                             LIT_ARGS("The Aardvarks")));
     assert(STREQUAL(test_state.added_uris[0],
-                            test_cstring_len(test_state.added_uris[0]),
+                            test_cstrlen32(test_state.added_uris[0]),
                             LIT_ARGS("first.flac")));
     assert(STREQUAL(test_state.added_uris[1],
-                            test_cstring_len(test_state.added_uris[1]),
+                            test_cstrlen32(test_state.added_uris[1]),
                             LIT_ARGS("second.flac")));
     test_assert_adder_closed(&screen, native_browser_screen_base(&browser));
 
@@ -1399,14 +1399,14 @@ test_selected_items_lifecycle_and_stored_operations(void) {
                             test_state.printed_status_len,
                             LIT_ARGS("command add failure")));
     assert(STREQUAL(test_state.added_playlists[0],
-                            test_cstring_len(
+                            test_cstrlen32(
                                 test_state.added_playlists[0]),
                             LIT_ARGS("Road Trip")));
     assert(STREQUAL(test_state.added_uris[0],
-                            test_cstring_len(test_state.added_uris[0]),
+                            test_cstrlen32(test_state.added_uris[0]),
                             LIT_ARGS("first.flac")));
     assert(STREQUAL(test_state.added_uris[1],
-                            test_cstring_len(test_state.added_uris[1]),
+                            test_cstrlen32(test_state.added_uris[1]),
                             LIT_ARGS("second.flac")));
     test_assert_adder_open(&screen, native_browser_screen_base(&browser));
 
@@ -1423,18 +1423,18 @@ test_selected_items_lifecycle_and_stored_operations(void) {
     assert(test_state.command_commit_calls == 1);
     assert(!client.command_list_active);
     assert(STREQUAL(test_state.added_playlists[0],
-                            test_cstring_len(
+                            test_cstrlen32(
                                 test_state.added_playlists[0]),
                             LIT_ARGS("Road Trip")));
     assert(STREQUAL(test_state.added_playlists[1],
-                            test_cstring_len(
+                            test_cstrlen32(
                                 test_state.added_playlists[1]),
                             LIT_ARGS("Road Trip")));
     assert(STREQUAL(test_state.added_uris[0],
-                            test_cstring_len(test_state.added_uris[0]),
+                            test_cstrlen32(test_state.added_uris[0]),
                             LIT_ARGS("first.flac")));
     assert(STREQUAL(test_state.added_uris[1],
-                            test_cstring_len(test_state.added_uris[1]),
+                            test_cstrlen32(test_state.added_uris[1]),
                             LIT_ARGS("second.flac")));
     assert(test_state.status_success_calls == 1);
     assert(STREQUAL(test_state.status_playlist,

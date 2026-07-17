@@ -90,7 +90,7 @@ static PlaylistActionTestState test_state;
 static void test_state_init(void);
 static void test_state_destroy(void);
 static void test_state_reset(void);
-static int32 test_cstring_len(char *text);
+static int32 test_cstrlen32(char *text);
 static void set_prompt(char *text);
 static void add_song(uint32 position);
 static NcMenu *playlist_menu(void);
@@ -236,7 +236,7 @@ test_play_item_does_not_append_playlist_song(void) {
 }
 
 static int32
-test_cstring_len(char *text) {
+test_cstrlen32(char *text) {
     int32 len;
 
     len = 0;
@@ -250,7 +250,7 @@ static void
 set_prompt(char *text) {
     int32 len;
 
-    len = test_cstring_len(text);
+    len = test_cstrlen32(text);
     assert(len < (int32)sizeof(test_state.prompt_text));
     memcpy64(test_state.prompt_text, text, len + 1);
     return;
@@ -717,7 +717,7 @@ NcmStringView
 __wrap_current_screen_current_search_constraint(void) {
     int32 len;
 
-    len = test_cstring_len(test_state.search_constraint);
+    len = test_cstrlen32(test_state.search_constraint);
     return ncm_string_view_make(test_state.search_constraint, len);
 }
 
@@ -1034,7 +1034,7 @@ __wrap_ncm_statusbar_print(int32 delay, char *message,
 void
 __wrap_ncm_statusbar_print_cstring(int32 delay, char *message) {
     __wrap_ncm_statusbar_print(delay, message,
-                               test_cstring_len(message));
+                               test_cstrlen32(message));
     return;
 }
 
@@ -1081,7 +1081,7 @@ __wrap_nc_window_prompt(NcWindow *window, NcPrompt *prompt,
     if (test_state.prompt_status != NC_PROMPT_ACCEPTED) {
         return test_state.prompt_status;
     }
-    len = test_cstring_len(test_state.prompt_text);
+    len = test_cstrlen32(test_state.prompt_text);
     *result = malloc2(len + 1);
     memcpy64(*result, test_state.prompt_text, len + 1);
     return NC_PROMPT_ACCEPTED;
@@ -1094,7 +1094,7 @@ __wrap_nc_window_prompt_result_destroy(char *result) {
     if (result == NULL) {
         return;
     }
-    len = test_cstring_len(result);
+    len = test_cstrlen32(result);
     free2(result, len + 1);
     return;
 }

@@ -128,7 +128,7 @@ static void status_update_elapsed_from_mpd(void);
 static void status_buffer_append_char(NcmBuffer *buffer, char ch);
 static void status_buffer_append_uint32(NcmBuffer *buffer, uint32 value);
 static void status_tracklength_buffer(NcmBuffer *buffer);
-static int32 status_cstring_len(char *string);
+static int32 status_cstrlen32(char *string);
 static void status_print_client_error(char *message, int32 message_len);
 static void status_print_server_error(char *message, int32 message_len);
 static void status_request_exit(void);
@@ -286,7 +286,7 @@ status_elapsed_time_changed(NcmStatusHooks *hooks, bool update) {
 }
 
 static int32
-status_cstring_len(char *string) {
+status_cstrlen32(char *string) {
     int32 len;
 
     if (string == NULL) {
@@ -308,7 +308,7 @@ status_print_client_error(char *message, int32 message_len) {
         message = "";
     }
     if (message_len < 0) {
-        message_len = status_cstring_len(message);
+        message_len = status_cstrlen32(message);
     }
 
     arg = ncm_string_format_arg_string(message, message_len);
@@ -325,7 +325,7 @@ status_print_server_error(char *message, int32 message_len) {
         message = "";
     }
     if (message_len < 0) {
-        message_len = status_cstring_len(message);
+        message_len = status_cstrlen32(message);
     }
 
     arg = ncm_string_format_arg_string(message, message_len);
@@ -1237,7 +1237,7 @@ status_player_state_string(char *buffer, int32 buffer_cap) {
         break;
     }
 
-    len = status_cstring_len(string);
+    len = status_cstrlen32(string);
     if (len >= buffer_cap) {
         len = buffer_cap - 1;
     }

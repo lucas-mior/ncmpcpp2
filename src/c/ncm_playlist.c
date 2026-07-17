@@ -5,10 +5,10 @@
 #include "c/ncm_base.h"
 #include "cbase/util.c"
 
-static int32 ncm_playlist_cstring_len(char *string);
+static int32 ncm_playlist_cstrlen32(char *string);
 
 static int32
-ncm_playlist_cstring_len(char *string) {
+ncm_playlist_cstrlen32(char *string) {
     int32 len;
 
     if (string == NULL) {
@@ -103,7 +103,7 @@ ncm_playlist_from_mpd_playlist(NcmPlaylist *dest,
         return false;
     }
 
-    path_len = ncm_playlist_cstring_len(path);
+    path_len = ncm_playlist_cstrlen32(path);
     last_modified = mpd_playlist_get_last_modified(source);
     return ncm_playlist_set(dest, path, path_len, last_modified);
 }

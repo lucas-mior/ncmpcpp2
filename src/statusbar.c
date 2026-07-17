@@ -27,7 +27,7 @@ static void statusbar_redraw_after_unlock(void);
 static void statusbar_redraw_after_stop_unlock(void);
 
 static int32
-statusbar_cstring_len(char *string) {
+statusbar_cstrlen32(char *string) {
     if (string == NULL) {
         return 0;
     }
@@ -364,7 +364,7 @@ ncm_statusbar_print(int32 delay_seconds, char *message, int32 message_len) {
 void
 ncm_statusbar_print_cstring(int32 delay_seconds, char *message) {
     ncm_statusbar_print(delay_seconds, message,
-                        statusbar_cstring_len(message));
+                        statusbar_cstrlen32(message));
     return;
 }
 

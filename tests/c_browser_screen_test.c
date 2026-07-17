@@ -105,7 +105,7 @@ static void browser_test_make_path(NcmBuffer *path, char *root,
 static void browser_test_write_file(char *path);
 static void browser_test_remove_path(char *path);
 static void browser_action_set_prompt(char *text);
-static int32 browser_test_cstring_len(char *text);
+static int32 browser_test_cstrlen32(char *text);
 
 
 typedef enum BrowserMpdTraceMode {
@@ -2184,7 +2184,7 @@ __wrap_ncm_statusbar_print(int32 delay, char *message,
 void
 __wrap_ncm_statusbar_print_cstring(int32 delay, char *message) {
     __wrap_ncm_statusbar_print(delay, message,
-                               browser_test_cstring_len(message));
+                               browser_test_cstrlen32(message));
     return;
 }
 
@@ -2204,7 +2204,7 @@ __wrap_nc_window_prompt(NcWindow *window, NcPrompt *prompt,
 
     (void)window;
     (void)prompt;
-    len = browser_test_cstring_len(browser_action_prompt_text);
+    len = browser_test_cstrlen32(browser_action_prompt_text);
     *result = malloc2(len + 1);
     memcpy64(*result, browser_action_prompt_text, len + 1);
     return NC_PROMPT_ACCEPTED;
@@ -2217,7 +2217,7 @@ __wrap_nc_window_prompt_result_destroy(char *result) {
     if (result == NULL) {
         return;
     }
-    len = browser_test_cstring_len(result);
+    len = browser_test_cstrlen32(result);
     free2(result, len + 1);
     return;
 }
@@ -2467,7 +2467,7 @@ browser_test_remove_path(char *path) {
 }
 
 static int32
-browser_test_cstring_len(char *text) {
+browser_test_cstrlen32(char *text) {
     int32 len;
 
     if (text == NULL) {
@@ -2485,7 +2485,7 @@ static void
 browser_action_set_prompt(char *text) {
     int32 len;
 
-    len = browser_test_cstring_len(text);
+    len = browser_test_cstrlen32(text);
     assert(len < (int32)SIZEOF(browser_action_prompt_text));
     memcpy64(browser_action_prompt_text, text, len + 1);
     return;

@@ -28,7 +28,7 @@ typedef struct TestMpdState {
 
 static TestMpdState test_mpd;
 
-static int32 test_cstring_len(char *string);
+static int32 test_cstrlen32(char *string);
 static void test_mpd_reset(void);
 static void test_song_set(NcmSong *song, char *uri, uint32 position,
                           char *artist, char *album, char *title,
@@ -96,7 +96,7 @@ main(void) {
 }
 
 static int32
-test_cstring_len(char *string) {
+test_cstrlen32(char *string) {
     int32 len;
 
     len = 0;
@@ -118,23 +118,23 @@ test_song_set(NcmSong *song, char *uri, uint32 position,
               char *artist, char *album, char *title,
               char *track) {
     ncm_song_init(song);
-    assert(ncm_song_set_uri(song, uri, test_cstring_len(uri)));
+    assert(ncm_song_set_uri(song, uri, test_cstrlen32(uri)));
     ncm_song_set_position(song, position);
     if (artist != NULL) {
         assert(ncm_song_add_tag(song, MPD_TAG_ARTIST, artist,
-                                test_cstring_len(artist)));
+                                test_cstrlen32(artist)));
     }
     if (album != NULL) {
         assert(ncm_song_add_tag(song, MPD_TAG_ALBUM, album,
-                                test_cstring_len(album)));
+                                test_cstrlen32(album)));
     }
     if (title != NULL) {
         assert(ncm_song_add_tag(song, MPD_TAG_TITLE, title,
-                                test_cstring_len(title)));
+                                test_cstrlen32(title)));
     }
     if (track != NULL) {
         assert(ncm_song_add_tag(song, MPD_TAG_TRACK, track,
-                                test_cstring_len(track)));
+                                test_cstrlen32(track)));
     }
     return;
 }

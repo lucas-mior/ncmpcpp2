@@ -123,7 +123,7 @@ static void assert_row_format(NativeSearchEngineScreen *screen, int64 pos,
                               enum NcFormat format);
 static void assert_song_uri(NcmSong *song, char *expected,
                             int32 expected_len);
-static int32 string_len(char *string);
+static int32 strlen32(char *string);
 static bool format_song_title(void *user, NcmSong *song, NcmBuffer *text);
 static void init_mpd_search_fixture(void);
 static void destroy_mpd_search_fixture(void);
@@ -247,17 +247,6 @@ assert_row_format(NativeSearchEngineScreen *screen, int64 pos,
     assert(properties[property].position == position);
     assert(properties[property].value.format == format);
     return;
-}
-
-static int32
-string_len(char *string) {
-    int32 len;
-
-    len = 0;
-    while (string[len] != '\0') {
-        len += 1;
-    }
-    return len;
 }
 
 static void
@@ -533,14 +522,14 @@ test_static_row_layout(void) {
 
     for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
         assert_row_text(&screen, i, constraint_rows[i],
-                        string_len(constraint_rows[i]));
+                        strlen32(constraint_rows[i]));
     }
     assert_row_text(&screen, NATIVE_SEARCH_ENGINE_SEARCH_SOURCE_ROW,
                     LIT_ARGS("Search in: Database"));
     assert_row_text(&screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_ROW,
                     search_mode_rows[
                         NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL],
-                    string_len(search_mode_rows[
+                    strlen32(search_mode_rows[
                         NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL]));
     assert_row_text(&screen, NATIVE_SEARCH_ENGINE_SEARCH_BUTTON_ROW,
                     LIT_ARGS("Search"));
@@ -580,7 +569,7 @@ test_search_modes_and_sources(void) {
                         LIT_ARGS("Search in: Database"));
         assert_row_text(&screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_ROW,
                         search_mode_rows[mode],
-                        string_len(search_mode_rows[mode]));
+                        strlen32(search_mode_rows[mode]));
 
         native_search_engine_screen_set_search_source(&screen, false);
         assert(!native_search_engine_screen_searches_database(&screen));
@@ -628,7 +617,7 @@ test_static_row_updates(void) {
         &screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT));
     assert_row_text(&screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_ROW,
                     search_mode_rows[NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT],
-                    string_len(search_mode_rows[
+                    strlen32(search_mode_rows[
                         NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT]));
     assert(nc_menu_all_item_count(menu) == item_count);
 
@@ -764,7 +753,7 @@ test_search_reset_contract(void) {
                     LIT_ARGS("Search in: Current playlist"));
     assert_row_text(&screen, NATIVE_SEARCH_ENGINE_SEARCH_MODE_ROW,
                     search_mode_rows[NATIVE_SEARCH_ENGINE_SEARCH_MODE_REGEX],
-                    string_len(search_mode_rows[
+                    strlen32(search_mode_rows[
                         NATIVE_SEARCH_ENGINE_SEARCH_MODE_REGEX]));
     for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
         assert(native_search_engine_screen_constraint(&screen, i).len == 0);
@@ -1035,7 +1024,7 @@ __wrap_ncm_mpd_client_add_search_tag(NcmMpdClient *client,
     assert(call < SEARCH_TAG_CALL_CAPACITY);
     mpd_search_fixture.tags[call] = tag;
     assert(ncm_buffer_set(&mpd_search_fixture.tag_values[call],
-                          value, string_len(value)));
+                          value, strlen32(value)));
     mpd_search_fixture.tag_calls += 1;
     return true;
 }
@@ -1050,7 +1039,7 @@ __wrap_ncm_mpd_client_add_search_any(NcmMpdClient *client,
     }
     mpd_search_fixture.any_calls += 1;
     assert(ncm_buffer_set(&mpd_search_fixture.any,
-                          value, string_len(value)));
+                          value, strlen32(value)));
     return true;
 }
 
@@ -1064,7 +1053,7 @@ __wrap_ncm_mpd_client_add_search_uri(NcmMpdClient *client,
     }
     mpd_search_fixture.uri_calls += 1;
     assert(ncm_buffer_set(&mpd_search_fixture.uri,
-                          value, string_len(value)));
+                          value, strlen32(value)));
     return true;
 }
 
