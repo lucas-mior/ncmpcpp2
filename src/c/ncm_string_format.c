@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "cbase/base_macros.h"
+#include "cbase/util.c"
 
 static int32
 ncm_string_format_cstrlen32(char *string) {
@@ -29,15 +30,15 @@ ncm_string_format_append_number(NcmBuffer *out, char *format,
 
     switch (arg->type) {
     case NCM_STRING_FORMAT_ARG_I64:
-        len = snprintf(buffer, (size_t)SIZEOF(buffer), format,
+        len = SNPRINTF(buffer, format,
                        arg->value.i64);
         break;
     case NCM_STRING_FORMAT_ARG_U64:
-        len = snprintf(buffer, (size_t)SIZEOF(buffer), format,
+        len = SNPRINTF(buffer, format,
                        arg->value.u64);
         break;
     case NCM_STRING_FORMAT_ARG_F64:
-        len = snprintf(buffer, (size_t)SIZEOF(buffer), format,
+        len = SNPRINTF(buffer, format,
                        arg->value.f64);
         break;
     default:

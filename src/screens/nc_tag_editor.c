@@ -4143,10 +4143,10 @@ tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
 
     numberer = user;
     if (numberer->extended) {
-        len = snprintf(buffer, (size_t)SIZEOF(buffer), "%d/%d",
+        len = SNPRINTF(buffer, "%d/%d",
                        numberer->current, numberer->total);
     } else {
-        len = snprintf(buffer, (size_t)SIZEOF(buffer), "%d",
+        len = SNPRINTF(buffer, "%d",
                        numberer->current);
     }
     if (len < 0) {

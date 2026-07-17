@@ -9,6 +9,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
+#include "cbase/util.c"
 
 static bool
 ncm_conversion_copy_source(NcmBuffer *buffer, char *source,
@@ -69,7 +70,7 @@ ncm_conversion_set_parse_error(NcmError *error, char *source,
     char message[256];
     int32 len;
 
-    len = snprintf(message, (size_t)SIZEOF(message),
+    len = SNPRINTF(message,
                    "conversion failed for '%.*s'", source_len, source);
     if (len < 0) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("conversion failed"));
@@ -89,7 +90,7 @@ ncm_conversion_set_u64_bounds_error(NcmError *error, uint64 value,
     char message[256];
     int32 len;
 
-    len = snprintf(message, (size_t)SIZEOF(message),
+    len = SNPRINTF(message,
                    "value is out of bounds ([%" PRIu64 ", %" PRIu64
                    "] expected, %" PRIu64 " given)",
                    lbound, ubound, value);
@@ -111,7 +112,7 @@ ncm_conversion_set_u64_upper_error(NcmError *error, uint64 value,
     char message[256];
     int32 len;
 
-    len = snprintf(message, (size_t)SIZEOF(message),
+    len = SNPRINTF(message,
                    "value is out of bounds ((<-, %" PRIu64
                    "] expected, %" PRIu64 " given)",
                    ubound, value);
@@ -133,7 +134,7 @@ ncm_conversion_set_f64_bounds_error(NcmError *error, double value,
     char message[256];
     int32 len;
 
-    len = snprintf(message, (size_t)SIZEOF(message),
+    len = SNPRINTF(message,
                    "value is out of bounds ([%g, %g] expected, %g given)",
                    lbound, ubound, value);
     if (len < 0) {
@@ -154,7 +155,7 @@ ncm_conversion_set_f64_lower_error(NcmError *error, double value,
     char message[256];
     int32 len;
 
-    len = snprintf(message, (size_t)SIZEOF(message),
+    len = SNPRINTF(message,
                    "value is out of bounds ([%g, ->) expected, %g given)",
                    lbound, value);
     if (len < 0) {

@@ -706,10 +706,10 @@ ncm_song_show_time(uint32 length, char *buffer, int32 buffer_cap) {
     seconds = length;
 
     if (hours > 0) {
-        result = snprintf(buffer, (size_t)buffer_cap, "%u:%02u:%02u",
+        result = snprintf2(buffer, buffer_cap, "%u:%02u:%02u",
                           hours, minutes, seconds);
     } else {
-        result = snprintf(buffer, (size_t)buffer_cap, "%u:%02u",
+        result = snprintf2(buffer, buffer_cap, "%u:%02u",
                           minutes, seconds);
     }
 
@@ -797,7 +797,7 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter,
         if (idx > 0) {
             return buffer;
         }
-        len = snprintf(number_buffer, (size_t)NCM_ARRAY_LEN(number_buffer),
+        len = SNPRINTF(number_buffer,
                        "%u", song->priority);
         if (len > 0) {
             if (len >= NCM_ARRAY_LEN(number_buffer)) {

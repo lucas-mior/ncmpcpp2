@@ -2718,7 +2718,7 @@ action_runtime_find_item(enum SearchDirection direction) {
         ncm_buffer_copy(&previous_constraint, &constraint);
     }
 
-    prompt_len = snprintf(prompt, (size_t)SIZEOF(prompt), "Find %s: ",
+    prompt_len = SNPRINTF(prompt, "Find %s: ",
                           ncm_search_direction_str(direction));
     if (prompt_len < 0) {
         prompt_len = 0;
@@ -5771,7 +5771,7 @@ action_runtime_toggle_screen_lock(void) {
     part = (uint32)(Config.locked_screen_width_part*100);
     if (Config.ask_for_locked_screen_width_part) {
         ncm_buffer_init(&input);
-        snprintf(initial, (size_t)SIZEOF(initial), "%u", part);
+        SNPRINTF(initial, "%u", part);
         prompted = action_runtime_prompt_string(
             STRLIT_ARGS("% of the locked screen's width to be reserved "
                         "(20-80): "), initial, true, NULL, NULL,

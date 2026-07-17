@@ -144,7 +144,7 @@ nc_buffer_append_int32(NcBuffer *buffer, int32 value) {
     char string[64];
     int32 len;
 
-    len = snprintf(string, sizeof(string), "%d", value);
+    len = SNPRINTF(string, "%d", value);
     nc_buffer_append_data(buffer, string, len);
     return;
 }
@@ -154,7 +154,7 @@ nc_buffer_append_uint32(NcBuffer *buffer, uint32 value) {
     char string[64];
     int32 len;
 
-    len = snprintf(string, sizeof(string), "%u", value);
+    len = SNPRINTF(string, "%u", value);
     nc_buffer_append_data(buffer, string, len);
     return;
 }
@@ -164,7 +164,7 @@ nc_buffer_append_uint64(NcBuffer *buffer, uint64 value) {
     char string[64];
     int32 len;
 
-    len = snprintf(string, sizeof(string), "%llu", (ullong)value);
+    len = SNPRINTF(string, "%llu", (ullong)value);
     nc_buffer_append_data(buffer, string, len);
     return;
 }
