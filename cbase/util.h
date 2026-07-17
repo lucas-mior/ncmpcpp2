@@ -15,7 +15,7 @@ static int32 random_ascii_string(char *buffer, int32 capacity, int32 min_len);
 static void fatal(int status);
 
 static void memset64(void *buffer, int value, int64 size);
-int32 strlen32(char *string);
+static int32 strlen32(char *string);
 static char *xstrdup(char *string);
 static void *xmmap_commit(int64 *size);
 static void xmunmap(void *p, int64 size);
@@ -82,10 +82,11 @@ typedef struct StrBuilder {
     int32 cap;
 } StrBuilder;
 
-void sb_reserve(StrBuilder *sb, int32 extra);
-void sb_append(StrBuilder *sb, char *s, int32 n);
-void sb_printf(StrBuilder *sb, char *fmt, ...) __attribute__((format(printf, 2, 3)));
-char *sb_steal(StrBuilder *sb, int32 *len);
+static void sb_reserve(StrBuilder *sb, int32 extra);
+static void sb_append(StrBuilder *sb, char *s, int32 n);
+static void sb_printf(StrBuilder *sb, char *fmt, ...)
+    __attribute__((format(printf, 2, 3)));
+static char *sb_steal(StrBuilder *sb, int32 *len);
 
 static void *memmem64(void *haystack, int64 hay_len,
                       void *needle, int64 needle_len);

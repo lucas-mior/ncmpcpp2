@@ -1,7 +1,7 @@
 #include "c/ncm_error.h"
 
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "c/ncm_base.h"
 
 void
@@ -35,7 +35,7 @@ ncm_error_set(NcmError *error, int32 code,
         len = (int32)SIZEOF(error->message) - 1;
     }
 
-    cbase_memcpy(error->message, message, len);
+    memcpy64(error->message, message, len);
     error->message[len] = '\0';
     error->code = code;
     return;

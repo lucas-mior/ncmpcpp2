@@ -7,7 +7,7 @@
 #include "c/ncm_regex.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "settings.h"
 #include "screens/screen_switcher.h"
 #include "statusbar.h"
@@ -200,7 +200,7 @@ native_lastfm_screen_destroy(NativeLastfmScreen *screen) {
     ncm_lastfm_service_destroy(&screen->service);
     ncm_lastfm_result_destroy(&screen->result);
     if (screen->title != NULL) {
-        cbase_free(screen->title, screen->title_cap);
+        free2(screen->title, screen->title_cap);
     }
     ncm_buffer_destroy(&screen->search_constraint);
     nc_buffer_destroy(&screen->buffer);
@@ -550,13 +550,13 @@ native_lastfm_set_title(NativeLastfmScreen *screen,
     }
     cap = title_len + 1;
     if (cap > screen->title_cap) {
-        screen->title = cbase_realloc_array(screen->title,
-                                          screen->title_cap,
-                                          cap,
-                                          SIZEOF(*screen->title));
+        screen->title = realloc2(screen->title,
+                               screen->title_cap,
+                               cap,
+                               SIZEOF(*screen->title));
         screen->title_cap = cap;
     }
-    cbase_memcpy(screen->title, title, title_len);
+    memcpy64(screen->title, title, title_len);
     screen->title[title_len] = '\0';
     screen->title_len = title_len;
     return true;
@@ -567,7 +567,7 @@ native_lastfm_job_create(NativeLastfmScreen *screen,
                          NcmLastfmService *service) {
     NativeLastfmJob *job;
 
-    job = cbase_malloc(SIZEOF(*job));
+    job = malloc2(SIZEOF(*job));
     job->screen = screen;
     ncm_lastfm_service_init(&job->service);
     ncm_lastfm_result_init(&job->result);
@@ -625,7 +625,7 @@ native_lastfm_job_destroy(void *user) {
     }
     ncm_lastfm_service_destroy(&job->service);
     ncm_lastfm_result_destroy(&job->result);
-    cbase_free(job, SIZEOF(*job));
+    free2(job, SIZEOF(*job));
     return;
 }
 

@@ -5,7 +5,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 typedef void (*NcmArrayItemInitCallback)(void *item);
 typedef void (*NcmArrayItemDestroyCallback)(void *item);
@@ -94,8 +94,8 @@ typedef struct NcmArrayItemCallbacks {
         }                                                   \
         PREFIX##_clear(array);                               \
         if (array->items != NULL) {                          \
-            cbase_free(array->items,                         \
-                       array->cap*SIZEOF(*array->items));     \
+            free2(array->items,                              \
+                  array->cap*SIZEOF(*array->items));         \
         }                                                   \
         PREFIX##_init(array);                                \
         return;                                              \
@@ -198,7 +198,7 @@ typedef struct NcmArrayItemCallbacks {
             new_cap *= 2;                                             \
         }                                                             \
                                                                       \
-        array->items = cbase_realloc_array(                            \
+        array->items = realloc2(                                      \
             array->items, old_cap, new_cap, SIZEOF(*array->items));    \
         array->cap = new_cap;                                         \
         return true;                                                  \
@@ -298,7 +298,7 @@ typedef struct NcmArrayItemCallbacks {
             callbacks->destroy(&array->items[idx]);                    \
         }                                                              \
         if (idx + 1 < array->len) {                                    \
-            cbase_memmove(                                             \
+            memmove64(                                                 \
                 &array->items[idx],                                    \
                 &array->items[idx + 1],                                \
                 (array->len - idx - 1)*SIZEOF(*array->items));         \

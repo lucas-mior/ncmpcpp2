@@ -8,6 +8,7 @@
 #include "c/ncm_comparators.h"
 #include "c/ncm_mpd_client.h"
 #include "cbase/base_macros.h"
+#include "cbase/util.c"
 
 typedef struct NcmPlaylistSortContext {
     NcmSongArray *songs;
@@ -44,7 +45,7 @@ ncm_playlist_sort_plan_destroy(NcmPlaylistSortPlan *plan) {
         return;
     }
     if (plan->items) {
-        cbase_free(plan->items, plan->cap*SIZEOF(*plan->items));
+        free2(plan->items, plan->cap*SIZEOF(*plan->items));
     }
 
     ncm_playlist_sort_plan_init(plan);
@@ -225,10 +226,10 @@ ncm_playlist_sort_plan_build(
         return true;
     }
 
-    order = cbase_malloc((int64)songs->len*SIZEOF(*order));
-    temporary = cbase_malloc((int64)songs->len*SIZEOF(*temporary));
-    current = cbase_malloc((int64)songs->len*SIZEOF(*current));
-    replacement.items = cbase_malloc(
+    order = malloc2((int64)songs->len*SIZEOF(*order));
+    temporary = malloc2((int64)songs->len*SIZEOF(*temporary));
+    current = malloc2((int64)songs->len*SIZEOF(*current));
+    replacement.items = malloc2(
         (int64)(songs->len - 1)*SIZEOF(*replacement.items));
     replacement.cap = songs->len - 1;
 
@@ -269,9 +270,9 @@ ncm_playlist_sort_plan_build(
         }
     }
 
-    cbase_free(current, (int64)songs->len*SIZEOF(*current));
-    cbase_free(temporary, (int64)songs->len*SIZEOF(*temporary));
-    cbase_free(order, (int64)songs->len*SIZEOF(*order));
+    free2(current, (int64)songs->len*SIZEOF(*current));
+    free2(temporary, (int64)songs->len*SIZEOF(*temporary));
+    free2(order, (int64)songs->len*SIZEOF(*order));
     ncm_playlist_sort_plan_destroy(plan);
     *plan = replacement;
     ncm_error_clear(error);

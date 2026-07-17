@@ -14,6 +14,7 @@
 #include "c/ncm_format.h"
 #include "c/ncm_string.h"
 #include "screens/screen_switcher.h"
+#include "cbase/util.c"
 
 static NativeMediaLibraryScreen *native_library_from_screen(NcScreen *screen);
 static NcWindow *native_library_active_window(NcScreen *screen);
@@ -4529,8 +4530,8 @@ native_library_set_owned_string(char **dest, int32 *dest_len,
         return true;
     }
     cap = source_len + 1;
-    copy = cbase_malloc(cap);
-    cbase_memcpy(copy, source, source_len);
+    copy = malloc2(cap);
+    memcpy64(copy, source, source_len);
     copy[source_len] = '\0';
     *dest = copy;
     *dest_len = source_len;
@@ -4541,7 +4542,7 @@ native_library_set_owned_string(char **dest, int32 *dest_len,
 static void
 native_library_free_owned_string(char **data, int32 *len, int32 *cap) {
     if (*data) {
-        cbase_free(*data, *cap);
+        free2(*data, *cap);
     }
     *data = NULL;
     *len = 0;

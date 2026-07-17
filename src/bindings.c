@@ -16,7 +16,7 @@
 #include "ui_state.h"
 
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 #define NCM_BINDINGS_ERROR_PARSE 1
 #define NCM_BINDINGS_ERROR_MEMORY 2
@@ -106,9 +106,9 @@ static char *
 ncm_string_copy(char *string, int32 string_len, int32 *cap) {
     char *result;
 
-    result = cbase_malloc(string_len + 1);
+    result = malloc2(string_len + 1);
     if (string_len > 0) {
-        cbase_memcpy(result, string, string_len);
+        memcpy64(result, string, string_len);
     }
     result[string_len] = '\0';
     *cap = string_len + 1;
@@ -124,7 +124,7 @@ ncm_string_equal(char *left, int32 left_len, char *right,
     if (left_len == 0) {
         return true;
     }
-    return cbase_memcmp(left, right, left_len) == 0;
+    return memcmp64(left, right, left_len) == 0;
 }
 
 static int32
@@ -204,10 +204,10 @@ ncm_binding_action_init(NcmBindingAction *action) {
 void
 ncm_binding_action_destroy(NcmBindingAction *action) {
     if (action->argument) {
-        cbase_free(action->argument, action->argument_cap);
+        free2(action->argument, action->argument_cap);
     }
     if (action->keys) {
-        cbase_free(action->keys, action->keys_cap*SIZEOF(*action->keys));
+        free2(action->keys, action->keys_cap*SIZEOF(*action->keys));
     }
     ncm_binding_action_init(action);
     return;
@@ -228,9 +228,9 @@ ncm_binding_action_copy(NcmBindingAction *dest, NcmBindingAction *source) {
     }
     if (source->keys_len > 0) {
         dest->keys_cap = source->keys_len;
-        dest->keys = cbase_malloc(dest->keys_cap*SIZEOF(*dest->keys));
-        cbase_memcpy(dest->keys, source->keys,
-                   source->keys_len*SIZEOF(*dest->keys));
+        dest->keys = malloc2(dest->keys_cap*SIZEOF(*dest->keys));
+        memcpy64(dest->keys, source->keys,
+               source->keys_len*SIZEOF(*dest->keys));
         dest->keys_len = source->keys_len;
     }
     return true;
@@ -248,8 +248,8 @@ void
 ncm_binding_destroy(NcmBinding *binding) {
     ncm_binding_clear(binding);
     if (binding->actions) {
-        cbase_free(binding->actions,
-                 binding->actions_cap*SIZEOF(*binding->actions));
+        free2(binding->actions,
+            binding->actions_cap*SIZEOF(*binding->actions));
     }
     ncm_binding_init(binding);
     return;
@@ -276,10 +276,10 @@ ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action) {
         } else {
             new_cap = binding->actions_cap*2;
         }
-        binding->actions = cbase_realloc_array(binding->actions,
-                                             binding->actions_cap,
-                                             new_cap,
-                                             SIZEOF(*binding->actions));
+        binding->actions = realloc2(binding->actions,
+                                  binding->actions_cap,
+                                  new_cap,
+                                  SIZEOF(*binding->actions));
         binding->actions_cap = new_cap;
     }
 
@@ -622,7 +622,7 @@ ncm_command_init(NcmCommand *command) {
 void
 ncm_command_destroy(NcmCommand *command) {
     if (command->name) {
-        cbase_free(command->name, command->name_cap);
+        free2(command->name, command->name_cap);
     }
     ncm_binding_destroy(&command->binding);
     ncm_command_init(command);
@@ -644,8 +644,8 @@ ncm_key_bindings_destroy(NcmKeyBindings *key_bindings) {
         ncm_binding_destroy(key_bindings->bindings + i);
     }
     if (key_bindings->bindings) {
-        cbase_free(key_bindings->bindings,
-                 key_bindings->bindings_cap*SIZEOF(*key_bindings->bindings));
+        free2(key_bindings->bindings,
+            key_bindings->bindings_cap*SIZEOF(*key_bindings->bindings));
     }
     ncm_key_bindings_init(key_bindings);
     return;
@@ -666,12 +666,12 @@ void
 ncm_bindings_configuration_destroy(NcmBindingsConfiguration *bindings) {
     ncm_bindings_configuration_clear(bindings);
     if (bindings->commands) {
-        cbase_free(bindings->commands,
-                 bindings->commands_cap*SIZEOF(*bindings->commands));
+        free2(bindings->commands,
+            bindings->commands_cap*SIZEOF(*bindings->commands));
     }
     if (bindings->keys) {
-        cbase_free(bindings->keys,
-                 bindings->keys_cap*SIZEOF(*bindings->keys));
+        free2(bindings->keys,
+            bindings->keys_cap*SIZEOF(*bindings->keys));
     }
     ncm_bindings_configuration_init(bindings);
     return;
@@ -771,7 +771,7 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
         int32 n;
         char buffer[4];
 
-        cbase_memcpy(buffer, string + 1, string_len - 1);
+        memcpy64(buffer, string + 1, string_len - 1);
         buffer[string_len - 1] = '\0';
         n = atoi(buffer);
         if ((n >= 1) && (n <= 12)) {
@@ -784,7 +784,7 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
         mbstate_t state;
         int64 converted;
 
-        cbase_memset(&state, 0, SIZEOF(state));
+        memset64(&state, 0, SIZEOF(state));
         converted = (int64)mbrtowc(&wc, string, (size_t)string_len, &state);
         if ((converted == string_len) && (wc != 0)) {
             result = (NcKey)wc;
@@ -867,7 +867,7 @@ ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len) {
     } else {
         result = key_name.len;
         if (key_name.len > 0) {
-            cbase_memcpy(buffer, key_name.data, key_name.len);
+            memcpy64(buffer, key_name.data, key_name.len);
         }
         buffer[key_name.len] = '\0';
     }
@@ -927,7 +927,7 @@ ncm_parse_action_line(char *line, int32 line_len,
         result->kind = NCM_BINDING_ACTION_PUSH_CHARACTERS;
         result->keys_cap = 1;
         result->keys_len = 1;
-        result->keys = cbase_malloc(SIZEOF(*result->keys));
+        result->keys = malloc2(SIZEOF(*result->keys));
         result->keys[0] = key;
         return true;
     }
@@ -942,7 +942,7 @@ ncm_parse_action_line(char *line, int32 line_len,
         result->kind = NCM_BINDING_ACTION_PUSH_CHARACTERS;
         result->keys_cap = argument.len;
         result->keys_len = argument.len;
-        result->keys = cbase_malloc(result->keys_cap*SIZEOF(*result->keys));
+        result->keys = malloc2(result->keys_cap*SIZEOF(*result->keys));
         for (int32 i = 0; i < argument.len; i += 1) {
             result->keys[i] = (NcKey)(uint8)argument.data[i];
         }
@@ -1044,7 +1044,7 @@ ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings,
         if (name_len < min_len) {
             min_len = name_len;
         }
-        cmp = cbase_memcmp(bindings->commands[mid].name, name, min_len);
+        cmp = memcmp64(bindings->commands[mid].name, name, min_len);
         if (cmp == 0) {
             if (bindings->commands[mid].name_len < name_len) {
                 cmp = -1;
@@ -1119,10 +1119,10 @@ ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
         } else {
             new_cap = bindings->commands_cap*2;
         }
-        bindings->commands = cbase_realloc_array(bindings->commands,
-                                               bindings->commands_cap,
-                                               new_cap,
-                                               SIZEOF(*bindings->commands));
+        bindings->commands = realloc2(bindings->commands,
+                                    bindings->commands_cap,
+                                    new_cap,
+                                    SIZEOF(*bindings->commands));
         bindings->commands_cap = new_cap;
     }
 
@@ -1137,8 +1137,8 @@ ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
     }
 
     if (at < bindings->commands_len) {
-        cbase_memmove(bindings->commands + at + 1, bindings->commands + at,
-                    (bindings->commands_len - at)*SIZEOF(*bindings->commands));
+        memmove64(bindings->commands + at + 1, bindings->commands + at,
+                (bindings->commands_len - at)*SIZEOF(*bindings->commands));
     }
     bindings->commands[at] = copy;
     bindings->commands_len += 1;
@@ -1165,15 +1165,15 @@ ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
             } else {
                 new_cap = bindings->keys_cap*2;
             }
-            bindings->keys = cbase_realloc_array(bindings->keys,
-                                               bindings->keys_cap,
-                                               new_cap,
-                                               SIZEOF(*bindings->keys));
+            bindings->keys = realloc2(bindings->keys,
+                                    bindings->keys_cap,
+                                    new_cap,
+                                    SIZEOF(*bindings->keys));
             bindings->keys_cap = new_cap;
         }
         if (at < bindings->keys_len) {
-            cbase_memmove(bindings->keys + at + 1, bindings->keys + at,
-                        (bindings->keys_len - at)*SIZEOF(*bindings->keys));
+            memmove64(bindings->keys + at + 1, bindings->keys + at,
+                    (bindings->keys_len - at)*SIZEOF(*bindings->keys));
         }
         ncm_key_bindings_init(&item);
         item.key = key;
@@ -1190,7 +1190,7 @@ ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
         } else {
             new_cap = key_bindings->bindings_cap*2;
         }
-        key_bindings->bindings = cbase_realloc_array(
+        key_bindings->bindings = realloc2(
             key_bindings->bindings, key_bindings->bindings_cap, new_cap,
             SIZEOF(*key_bindings->bindings));
         key_bindings->bindings_cap = new_cap;
@@ -1359,7 +1359,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
     path_copy = ncm_string_copy(path, path_len, &path_cap);
     file = fopen(path_copy, "r");
     if (file == NULL) {
-        cbase_free(path_copy, path_cap);
+        free2(path_copy, path_cap);
         return true;
     }
 
@@ -1419,7 +1419,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
                 break;
             }
             if (command_name) {
-                cbase_free(command_name, command_name_cap);
+                free2(command_name, command_name_cap);
             }
             command_name = ncm_string_copy(enclosed.data, enclosed.len,
                                            &command_name_cap);
@@ -1475,7 +1475,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
                 break;
             }
             if (key_name) {
-                cbase_free(key_name, key_name_cap);
+                free2(key_name, key_name_cap);
             }
             key_name = ncm_string_copy(enclosed.data, enclosed.len,
                                        &key_name_cap);
@@ -1511,14 +1511,14 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
 
     ncm_binding_destroy(&actions);
     if (command_name) {
-        cbase_free(command_name, command_name_cap);
+        free2(command_name, command_name_cap);
     }
     if (key_name) {
-        cbase_free(key_name, key_name_cap);
+        free2(key_name, key_name_cap);
     }
     free(line);
     fclose(file);
-    cbase_free(path_copy, path_cap);
+    free2(path_copy, path_cap);
     return ok;
 }
 

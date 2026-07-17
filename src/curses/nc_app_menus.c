@@ -2,7 +2,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static void nc_menu_owned_string_destroy(char **data, int32 *len,
                                          int32 *cap);
@@ -132,7 +132,7 @@ static NcMenuItemCallbacks nc_buffer_menu_callbacks = {
 static void
 nc_menu_owned_string_destroy(char **data, int32 *len, int32 *cap) {
     if (*data != NULL) {
-        cbase_free(*data, *cap);
+        free2(*data, *cap);
     }
     *data = NULL;
     *len = 0;
@@ -153,8 +153,8 @@ nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
     }
 
     cap = source_len + 1;
-    data = cbase_malloc(cap);
-    cbase_memcpy(data, source_data, source_len);
+    data = malloc2(cap);
+    memcpy64(data, source_data, source_len);
     data[source_len] = '\0';
 
     *dest_data = data;

@@ -11,7 +11,7 @@
 #include "c/ncm_string.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "curses/nc_cyclic_buffer.h"
 #include "global.h"
 #include "settings.h"
@@ -302,8 +302,8 @@ native_lyrics_screen_destroy(NativeLyricsScreen *screen) {
         native_lyrics_queued_song_destroy(&screen->queued_songs[i]);
     }
     if (screen->queued_songs != NULL) {
-        cbase_free(screen->queued_songs,
-                 screen->queued_songs_cap*SIZEOF(*screen->queued_songs));
+        free2(screen->queued_songs,
+            screen->queued_songs_cap*SIZEOF(*screen->queued_songs));
     }
     ncm_buffer_destroy(&screen->consumer_message);
     ncm_lyrics_result_destroy(&screen->result);
@@ -1108,7 +1108,7 @@ native_lyrics_queue_song(NativeLyricsScreen *screen,
         } else {
             new_cap *= 2;
         }
-        screen->queued_songs = cbase_realloc_array(
+        screen->queued_songs = realloc2(
             screen->queued_songs,
             screen->queued_songs_cap,
             new_cap,
@@ -1132,7 +1132,7 @@ native_lyrics_dequeue_song(NativeLyricsScreen *screen) {
     if (screen->queued_songs_len <= 0) {
         return NULL;
     }
-    queued = cbase_malloc(SIZEOF(*queued));
+    queued = malloc2(SIZEOF(*queued));
     native_lyrics_queued_song_init(queued);
     native_lyrics_queued_song_move(queued, &screen->queued_songs[0]);
     for (int32 i = 1; i < screen->queued_songs_len; i += 1) {
@@ -1152,7 +1152,7 @@ native_lyrics_job_create(NativeLyricsScreen *screen,
     NativeLyricsJob *job;
     bool win32_filename;
 
-    job = cbase_malloc(SIZEOF(*job));
+    job = malloc2(SIZEOF(*job));
     job->screen = screen;
     ncm_song_init(&job->song);
     ncm_song_copy(&job->song, song);
@@ -1318,7 +1318,7 @@ native_lyrics_job_destroy(void *user) {
     ncm_buffer_destroy(&job->filename);
     ncm_lyrics_result_destroy(&job->result);
     nc_buffer_destroy(&job->log);
-    cbase_free(job, SIZEOF(*job));
+    free2(job, SIZEOF(*job));
     return;
 }
 
@@ -1479,7 +1479,7 @@ native_lyrics_start_next_background(NativeLyricsScreen *screen,
 
         if (ncm_song_is_stream(&queued->song)) {
             native_lyrics_queued_song_destroy(queued);
-            cbase_free(queued, SIZEOF(*queued));
+            free2(queued, SIZEOF(*queued));
             queued = NULL;
             continue;
         }
@@ -1493,14 +1493,14 @@ native_lyrics_start_next_background(NativeLyricsScreen *screen,
                                               Config.store_lyrics_in_song_dir,
                                               win32_filename)) {
             native_lyrics_queued_song_destroy(queued);
-            cbase_free(queued, SIZEOF(*queued));
+            free2(queued, SIZEOF(*queued));
             queued = NULL;
             continue;
         }
 
         if (ncm_fs_exists(filename.data, filename.len)) {
             native_lyrics_queued_song_destroy(queued);
-            cbase_free(queued, SIZEOF(*queued));
+            free2(queued, SIZEOF(*queued));
             queued = NULL;
             continue;
         }
@@ -1511,7 +1511,7 @@ native_lyrics_start_next_background(NativeLyricsScreen *screen,
     if (!ncm_job_queue_start(&screen->jobs, error)) {
         ncm_buffer_destroy(&filename);
         native_lyrics_queued_song_destroy(queued);
-        cbase_free(queued, SIZEOF(*queued));
+        free2(queued, SIZEOF(*queued));
         return false;
     }
 
@@ -1534,13 +1534,13 @@ native_lyrics_start_next_background(NativeLyricsScreen *screen,
         native_lyrics_job_destroy(job);
         ncm_buffer_destroy(&filename);
         native_lyrics_queued_song_destroy(queued);
-        cbase_free(queued, SIZEOF(*queued));
+        free2(queued, SIZEOF(*queued));
         return false;
     }
 
     ncm_buffer_destroy(&filename);
     native_lyrics_queued_song_destroy(queued);
-    cbase_free(queued, SIZEOF(*queued));
+    free2(queued, SIZEOF(*queued));
     ncm_error_clear(error);
     return true;
 }

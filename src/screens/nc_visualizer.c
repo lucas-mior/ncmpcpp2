@@ -15,7 +15,7 @@
 #include "c/ncm_string.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "screens/screen_switcher.h"
 #include "status.h"
 #include "statusbar.h"
@@ -239,9 +239,9 @@ visualizer_destroy_colors(NativeVisualizerScreen *screen) {
         for (int32 i = 0; i < screen->visualizer_colors_len; i += 1) {
             nc_formatted_color_destroy(&screen->visualizer_colors[i]);
         }
-        cbase_free(screen->visualizer_colors,
-                 screen->visualizer_colors_cap
-                 *SIZEOF(*screen->visualizer_colors));
+        free2(screen->visualizer_colors,
+            screen->visualizer_colors_cap
+            *SIZEOF(*screen->visualizer_colors));
     }
     screen->visualizer_colors = NULL;
     screen->visualizer_colors_len = 0;
@@ -255,7 +255,7 @@ visualizer_copy_colors(NativeVisualizerScreen *screen,
     visualizer_destroy_colors(screen);
     if ((colors == NULL) || (colors_len <= 0)) {
         screen->visualizer_colors_cap = 1;
-        screen->visualizer_colors = cbase_malloc(
+        screen->visualizer_colors = malloc2(
             SIZEOF(*screen->visualizer_colors));
         nc_formatted_color_init(&screen->visualizer_colors[0]);
         screen->visualizer_colors_len = 1;
@@ -263,7 +263,7 @@ visualizer_copy_colors(NativeVisualizerScreen *screen,
     }
 
     screen->visualizer_colors_cap = colors_len;
-    screen->visualizer_colors = cbase_malloc(
+    screen->visualizer_colors = malloc2(
         colors_len*SIZEOF(*screen->visualizer_colors));
     for (int32 i = 0; i < colors_len; i += 1) {
         nc_formatted_color_copy(&screen->visualizer_colors[i],
@@ -372,17 +372,17 @@ visualizer_fft_init(NativeVisualizerScreen *screen, uint32 dft_size,
     fft->frequency_magnitudes_cap = fft->results_len;
     fft->dft_frequency_space_cap = NATIVE_VISUALIZER_FREQ_SPACE_CAP;
     fft->bar_heights_cap = NATIVE_VISUALIZER_BAR_HEIGHTS_CAP;
-    fft->frequency_magnitudes = cbase_malloc(
+    fft->frequency_magnitudes = malloc2(
         fft->frequency_magnitudes_cap
         *SIZEOF(*fft->frequency_magnitudes));
-    fft->dft_frequency_space = cbase_malloc(
+    fft->dft_frequency_space = malloc2(
         fft->dft_frequency_space_cap
         *SIZEOF(*fft->dft_frequency_space));
-    fft->bar_heights = cbase_malloc(
+    fft->bar_heights = malloc2(
         fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
-    cbase_memset(fft->frequency_magnitudes, 0,
-                 fft->frequency_magnitudes_cap
-                 *SIZEOF(*fft->frequency_magnitudes));
+    memset64(fft->frequency_magnitudes, 0,
+         fft->frequency_magnitudes_cap
+         *SIZEOF(*fft->frequency_magnitudes));
 
     fft->input = fftw_malloc(
         (size_t)(fft->dft_total_size*SIZEOF(*fft->input)));
@@ -392,8 +392,8 @@ visualizer_fft_init(NativeVisualizerScreen *screen, uint32 dft_size,
         visualizer_fft_destroy(screen);
         return;
     }
-    cbase_memset(fft->input, 0,
-                 fft->dft_total_size*SIZEOF(*fft->input));
+    memset64(fft->input, 0,
+         fft->dft_total_size*SIZEOF(*fft->input));
     fft->plan = fftw_plan_dft_r2c_1d(fft->dft_total_size,
                                      fft->input, fft->output,
                                      FFTW_ESTIMATE);
@@ -418,18 +418,18 @@ visualizer_fft_destroy(NativeVisualizerScreen *screen) {
         fftw_free(fft->input);
     }
     if (fft->bar_heights != NULL) {
-        cbase_free(fft->bar_heights,
-                 fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
+        free2(fft->bar_heights,
+            fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
     }
     if (fft->dft_frequency_space != NULL) {
-        cbase_free(fft->dft_frequency_space,
-                 fft->dft_frequency_space_cap
-                 *SIZEOF(*fft->dft_frequency_space));
+        free2(fft->dft_frequency_space,
+            fft->dft_frequency_space_cap
+            *SIZEOF(*fft->dft_frequency_space));
     }
     if (fft->frequency_magnitudes != NULL) {
-        cbase_free(fft->frequency_magnitudes,
-                 fft->frequency_magnitudes_cap
-                 *SIZEOF(*fft->frequency_magnitudes));
+        free2(fft->frequency_magnitudes,
+            fft->frequency_magnitudes_cap
+            *SIZEOF(*fft->frequency_magnitudes));
     }
     *fft = (NativeVisualizerFftState){0};
     return;
@@ -458,7 +458,7 @@ visualizer_fft_reserve_frequency_space(NativeVisualizerScreen *screen,
         }
         new_cap *= 2;
     }
-    fft->dft_frequency_space = cbase_realloc_array(
+    fft->dft_frequency_space = realloc2(
         fft->dft_frequency_space, old_cap, new_cap,
         SIZEOF(*fft->dft_frequency_space));
     fft->dft_frequency_space_cap = new_cap;
@@ -488,7 +488,7 @@ visualizer_fft_reserve_bar_heights(NativeVisualizerScreen *screen,
         }
         new_cap *= 2;
     }
-    fft->bar_heights = cbase_realloc_array(
+    fft->bar_heights = realloc2(
         fft->bar_heights, old_cap, new_cap,
         SIZEOF(*fft->bar_heights));
     fft->bar_heights_cap = new_cap;
@@ -1006,9 +1006,9 @@ native_visualizer_screen_init_visualization(
     ncm_sample_buffer_resize(&screen->rendered_samples, rendered_cap);
     ncm_sample_buffer_resize(&screen->left_channel, channel_cap);
     ncm_sample_buffer_resize(&screen->right_channel, channel_cap);
-    cbase_memset(screen->rendered_samples.data,
-                 0,
-                 rendered_cap*SIZEOF(*screen->rendered_samples.data));
+    memset64(screen->rendered_samples.data,
+         0,
+         rendered_cap*SIZEOF(*screen->rendered_samples.data));
     return;
 }
 
@@ -1019,10 +1019,10 @@ native_visualizer_screen_clear(NativeVisualizerScreen *screen) {
     ncm_sample_buffer_clear(&screen->left_channel);
     ncm_sample_buffer_clear(&screen->right_channel);
     if (screen->rendered_samples.cap > 0) {
-        cbase_memset(screen->rendered_samples.data,
-                     0,
-                     screen->rendered_samples.cap
-                     *SIZEOF(*screen->rendered_samples.data));
+        memset64(screen->rendered_samples.data,
+             0,
+             screen->rendered_samples.cap
+             *SIZEOF(*screen->rendered_samples.data));
     }
     nc_window_clear(&screen->window);
     native_visualizer_screen_drain_data_source(screen);
@@ -1568,8 +1568,8 @@ visualizer_apply_fft_window(NativeVisualizerScreen *screen,
     int32 used_samples;
 
     fft = &screen->fft;
-    cbase_memset(fft->input, 0,
-                 fft->dft_total_size*SIZEOF(*fft->input));
+    memset64(fft->input, 0,
+         fft->dft_total_size*SIZEOF(*fft->input));
     used_samples = samples_len;
     if (used_samples > fft->dft_nonzero_size) {
         used_samples = fft->dft_nonzero_size;

@@ -19,7 +19,7 @@
 #include "c/ncm_utf8.h"
 #include "c/ncm_type_conversions.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "screens/screen_switcher.h"
 #include "screens/song_info.h"
 #include "title.h"
@@ -5323,13 +5323,13 @@ tag_editor_set_config_pattern(char *pattern, int32 pattern_len) {
         return false;
     }
     cap = pattern_len + 1;
-    copy = cbase_malloc(cap);
+    copy = malloc2(cap);
     if ((pattern != NULL) && (pattern_len > 0)) {
-        cbase_memcpy(copy, pattern, pattern_len);
+        memcpy64(copy, pattern, pattern_len);
     }
     copy[pattern_len] = '\0';
     if ((Config.pattern != NULL) && (Config.pattern_cap > 0)) {
-        cbase_free(Config.pattern, Config.pattern_cap);
+        free2(Config.pattern, Config.pattern_cap);
     }
     Config.pattern = copy;
     Config.pattern_len = pattern_len;

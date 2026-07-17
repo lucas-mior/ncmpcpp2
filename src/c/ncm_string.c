@@ -1,6 +1,5 @@
 #include "c/ncm_string.h"
 
-#include "cbase/cbase.h"
 #include "cbase/base_macros.h"
 #include "c/ncm_base.h"
 #include "c/ncm_path.h"
@@ -65,7 +64,11 @@ ncm_string_view_equal(NcmStringView *left, NcmStringView *right) {
 
 void
 ncm_string_lowercase_ascii(char *string, int32 string_len) {
-    cbase_string_lowercase_ascii(string, string_len);
+    for (int32 i = 0; i < string_len; i += 1) {
+        if ((string[i] >= 'A') && (string[i] <= 'Z')) {
+            string[i] += 'a' - 'A';
+        }
+    }
     return;
 }
 

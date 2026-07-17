@@ -12,7 +12,7 @@
 #include "title.h"
 #include "cbase/base_macros.h"
 #include "ui_state.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 /*
  * App runtime bridge.
@@ -250,7 +250,7 @@ ncmpcpp_legacy_window_create(int64 start_x, int64 start_y,
                              NcColor color) {
     NcWindow *window;
 
-    window = cbase_malloc(SIZEOF(*window));
+    window = malloc2(SIZEOF(*window));
     nc_window_init(window, start_x, start_y, width, height,
                    STRLIT_ARGS(""), color, nc_border_none());
     return window;
@@ -274,7 +274,7 @@ ncmpcpp_legacy_window_destroy(NcWindow *window) {
     }
 
     nc_window_destroy(window);
-    cbase_free(window, SIZEOF(*window));
+    free2(window, SIZEOF(*window));
     return;
 }
 

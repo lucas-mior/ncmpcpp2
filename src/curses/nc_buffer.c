@@ -5,7 +5,7 @@
 
 #include "cbase/array.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static void nc_buffer_reserve(NcBuffer *buffer, int32 extra);
 static void nc_buffer_add_property(NcBuffer *buffer,
@@ -55,7 +55,7 @@ nc_buffer_destroy(NcBuffer *buffer) {
     }
     ARRAY_FREE(buffer->properties);
     if (buffer->data) {
-        cbase_free(buffer->data, buffer->cap);
+        free2(buffer->data, buffer->cap);
     }
     nc_buffer_init(buffer);
     return;
@@ -136,7 +136,7 @@ nc_buffer_append_data(NcBuffer *buffer, char *data, int32 data_len) {
     }
 
     nc_buffer_reserve(buffer, data_len);
-    cbase_memcpy(buffer->data + buffer->len, data, data_len);
+    memcpy64(buffer->data + buffer->len, data, data_len);
     buffer->len += data_len;
     buffer->data[buffer->len] = '\0';
     return;
@@ -335,8 +335,8 @@ nc_buffer_reserve(NcBuffer *buffer, int32 extra) {
         new_cap *= 2;
     }
 
-    buffer->data = cbase_realloc_array(buffer->data, old_cap, new_cap,
-                                       SIZEOF(*buffer->data));
+    buffer->data = realloc2(buffer->data, old_cap, new_cap,
+                 SIZEOF(*buffer->data));
     buffer->cap = new_cap;
     if (buffer->len == 0) {
         buffer->data[0] = '\0';

@@ -5,7 +5,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static void ncm_shared_resource_set_pthread_error(NcmError *error,
                                                   int32 code,
@@ -70,7 +70,7 @@ ncm_shared_resource_destroy(NcmSharedResource *shared) {
     }
 
     if (shared->owns_resource && shared->resource) {
-        cbase_free(shared->resource, shared->resource_size);
+        free2(shared->resource, shared->resource_size);
     }
     if (shared->initialized) {
         pthread_mutex_destroy(&shared->mutex);

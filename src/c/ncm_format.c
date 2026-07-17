@@ -7,7 +7,7 @@
 #include "c/ncm_type_conversions.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static void ncm_format_expr_init(NcmFormatExpr *expr);
 static void ncm_format_expr_destroy(NcmFormatExpr *expr);
@@ -284,8 +284,8 @@ ncm_format_expr_list_reserve(NcmFormatExprList *list, int32 extra) {
         new_cap *= 2;
     }
 
-    list->items = cbase_realloc_array(list->items, old_cap, new_cap,
-                                    SIZEOF(*list->items));
+    list->items = realloc2(list->items, old_cap, new_cap,
+                         SIZEOF(*list->items));
     list->cap = new_cap;
     return true;
 }
@@ -317,7 +317,7 @@ ncm_format_expr_list_destroy(NcmFormatExprList *list) {
     }
     ncm_format_expr_list_clear(list);
     if (list->items != NULL) {
-        cbase_free(list->items, list->cap*SIZEOF(*list->items));
+        free2(list->items, list->cap*SIZEOF(*list->items));
     }
     ncm_format_expr_list_init(list);
     return;

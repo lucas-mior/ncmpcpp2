@@ -5,7 +5,7 @@
 #include "c/ncm_base.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 #define NCM_WIDE_REPLACEMENT_CHARACTER 0xfffdu
 
@@ -23,7 +23,7 @@ ncm_wide_string_destroy(NcmWideString *string) {
         return;
     }
     if (string->data) {
-        cbase_free(string->data, string->cap*SIZEOF(*string->data));
+        free2(string->data, string->cap*SIZEOF(*string->data));
     }
 
     string->data = NULL;
@@ -69,8 +69,8 @@ ncm_wide_string_reserve(NcmWideString *string, int32 extra) {
         new_cap *= 2;
     }
 
-    string->data = cbase_realloc_array(string->data, old_cap, new_cap,
-                                     SIZEOF(*string->data));
+    string->data = realloc2(string->data, old_cap, new_cap,
+                          SIZEOF(*string->data));
     string->cap = new_cap;
     return;
 }

@@ -19,7 +19,7 @@
 #include "c/ncm_type_conversions.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "global.h"
 
 #define SETTINGS_LINE_CAP 16384
@@ -531,14 +531,14 @@ settings_string_set(char **data, int32 *len, int32 *cap,
         value_len = 0;
     }
     new_cap = value_len + 1;
-    new_data = cbase_malloc(new_cap);
+    new_data = malloc2(new_cap);
     if (value_len > 0) {
-        cbase_memcpy(new_data, value, value_len);
+        memcpy64(new_data, value, value_len);
     }
     new_data[value_len] = '\0';
 
     if (*data != NULL) {
-        cbase_free(*data, *cap);
+        free2(*data, *cap);
     }
     *data = new_data;
     *len = value_len;
@@ -973,14 +973,14 @@ settings_column_append_type(Column *column, char ch) {
 
     new_len = column->type_len + 1;
     new_cap = new_len + 1;
-    new_data = cbase_malloc(new_cap);
+    new_data = malloc2(new_cap);
     if (column->type_len > 0) {
-        cbase_memcpy(new_data, column->type, column->type_len);
+        memcpy64(new_data, column->type, column->type_len);
     }
     new_data[column->type_len] = ch;
     new_data[new_len] = '\0';
     if (column->type != NULL) {
-        cbase_free(column->type, column->type_cap);
+        free2(column->type, column->type_cap);
     }
     column->type = new_data;
     column->type_len = new_len;

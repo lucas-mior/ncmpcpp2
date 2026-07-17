@@ -5,7 +5,7 @@
 
 #include "app_controller.h"
 #include "c/ncm_utf8.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "global.h"
 #include "settings.h"
 #include "ui_state.h"
