@@ -4935,8 +4935,8 @@ tag_editor_save_recent_patterns(NativeTagEditorScreen *screen) {
 
         pattern = &screen->recent_patterns.items[i];
         if ((pattern->len > 0)
-            && (fwrite(pattern->data, 1, (size_t)pattern->len, file)
-                != (size_t)pattern->len)) {
+            && (fwrite64(pattern->data, 1, pattern->len, file)
+                != pattern->len)) {
             fclose(file);
             ncm_buffer_destroy(&path);
             return false;
