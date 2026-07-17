@@ -412,7 +412,7 @@ native_lyrics_screen_save_file(NativeLyricsScreen *screen,
 
     written = 0;
     if ((lyrics != NULL) && (lyrics_len > 0)) {
-        written = (int32)fwrite(lyrics, 1, (size_t)lyrics_len, file);
+        written = fwrite64(lyrics, 1, lyrics_len, file);
     }
     if ((written != lyrics_len) || (fclose(file) != 0)) {
         ncm_error_set(error, errno, STRLIT_ARGS("failed to save lyrics"));
