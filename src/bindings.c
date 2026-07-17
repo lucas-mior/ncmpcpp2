@@ -49,17 +49,6 @@ ncm_bindings_error(NcmError *error, char *format, ...) {
     return;
 }
 
-static int32
-ncm_strlen32(char *string) {
-    int32 len;
-
-    len = 0;
-    while (string[len] != '\0') {
-        len += 1;
-    }
-    return len;
-}
-
 static char *
 ncm_string_copy(char *string, int32 string_len, int32 *cap) {
     char *result;
@@ -1096,7 +1085,7 @@ ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
     NcKey key;
     bool result;
 
-    key = ncm_bindings_string_to_key(key_name, ncm_strlen32(key_name));
+    key = ncm_bindings_string_to_key(key_name, strlen32(key_name));
     if (!ncm_bindings_not_bound(bindings, key)) {
         return true;
     }
@@ -1117,7 +1106,7 @@ ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
     NcKey key;
     bool result;
 
-    key = ncm_bindings_string_to_key(key_name, ncm_strlen32(key_name));
+    key = ncm_bindings_string_to_key(key_name, strlen32(key_name));
     if (!ncm_bindings_not_bound(bindings, key)) {
         return true;
     }
@@ -1137,7 +1126,7 @@ ncm_bindings_bind_group(NcmBindingsConfiguration *bindings, char *key_name,
                         enum NcmActionType *actions, int32 actions_len) {
     NcKey key;
 
-    key = ncm_bindings_string_to_key(key_name, ncm_strlen32(key_name));
+    key = ncm_bindings_string_to_key(key_name, strlen32(key_name));
     if (!ncm_bindings_not_bound(bindings, key)) {
         return true;
     }
@@ -1259,7 +1248,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
         NcmStringView enclosed;
 
         line_no += 1;
-        len = ncm_strlen32(line);
+        len = strlen32(line);
         len = ncm_trim_end(line, len);
         if ((len == 0) || (line[0] == '#')) {
             continue;
