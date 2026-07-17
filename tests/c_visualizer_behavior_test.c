@@ -5,7 +5,7 @@
 #include "c/ncm_error.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "screens/nc_screen.h"
 #include "screens/nc_visualizer.h"
 #include "status.h"
@@ -217,7 +217,7 @@ __wrap_ui_state_main_height(void) {
 void
 __wrap_ncm_title_draw_header(char *title, int32 title_len) {
     assert(title_len < (int32)SIZEOF(test_header));
-    cbase_memcpy(test_header, title, title_len);
+    memcpy64(test_header, title, title_len);
     test_header[title_len] = '\0';
     test_header_len = title_len;
     test_header_calls += 1;
@@ -341,13 +341,13 @@ test_read_source(void *user, int32 fd, void *buffer,
     if (copy_bytes > buffer_size) {
         copy_bytes = buffer_size;
     }
-    cbase_memset(buffer, 0, copy_bytes);
+    memset64(buffer, 0, copy_bytes);
     sample_bytes = io->samples_len*SIZEOF(*io->samples);
     if (sample_bytes > copy_bytes) {
         sample_bytes = copy_bytes;
     }
     if (sample_bytes > 0) {
-        cbase_memcpy(buffer, io->samples, sample_bytes);
+        memcpy64(buffer, io->samples, sample_bytes);
     }
     return result;
 }

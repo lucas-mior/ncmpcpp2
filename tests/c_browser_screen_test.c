@@ -19,6 +19,7 @@
 #include "settings.h"
 #include "statusbar.h"
 #include "ui_state.h"
+#include "cbase/util.c"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 #define BROWSER_PARITY_TEST_PENDING(NAME) browser_parity_test_pending(#NAME)
@@ -1890,7 +1891,7 @@ browser_mpd_trace_record_path(char *path) {
     if (path != NULL) {
         len = (int32)strlen(path);
         assert(len < (int32)SIZEOF(mpd_trace.paths[0]));
-        cbase_memcpy(mpd_trace.paths[mpd_trace.calls], path, len);
+        memcpy64(mpd_trace.paths[mpd_trace.calls], path, len);
     }
     mpd_trace.paths[mpd_trace.calls][len] = '\0';
     mpd_trace.path_lens[mpd_trace.calls] = len;
@@ -2057,7 +2058,7 @@ __wrap_ncm_mpd_client_delete_playlist(NcmMpdClient *client, char *name,
 
         len = (int32)strlen(name);
         assert(len < (int32)SIZEOF(delete_playlist_path));
-        cbase_memcpy(delete_playlist_path, name, len + 1);
+        memcpy64(delete_playlist_path, name, len + 1);
     }
 
     switch (delete_playlist_mode) {
@@ -2091,12 +2092,12 @@ __wrap_ncm_mpd_client_rename_playlist(NcmMpdClient *client,
     if (from != NULL) {
         len = (int32)strlen(from);
         assert(len < (int32)SIZEOF(rename_playlist_from));
-        cbase_memcpy(rename_playlist_from, from, len + 1);
+        memcpy64(rename_playlist_from, from, len + 1);
     }
     if (to != NULL) {
         len = (int32)strlen(to);
         assert(len < (int32)SIZEOF(rename_playlist_to));
-        cbase_memcpy(rename_playlist_to, to, len + 1);
+        memcpy64(rename_playlist_to, to, len + 1);
     }
     ncm_error_clear(error);
     return true;
@@ -2115,7 +2116,7 @@ __wrap_ncm_mpd_client_update_directory(NcmMpdClient *client, char *path,
     if (path != NULL) {
         len = (int32)strlen(path);
         assert(len < (int32)SIZEOF(update_directory_path));
-        cbase_memcpy(update_directory_path, path, len + 1);
+        memcpy64(update_directory_path, path, len + 1);
     }
     ncm_error_clear(error);
     return true;
@@ -2174,7 +2175,7 @@ __wrap_ncm_statusbar_print(int32 delay, char *message,
     if (message_len >= (int32)SIZEOF(browser_action_status)) {
         message_len = (int32)SIZEOF(browser_action_status) - 1;
     }
-    cbase_memcpy(browser_action_status, message, message_len);
+    memcpy64(browser_action_status, message, message_len);
     browser_action_status[message_len] = '\0';
     browser_action_status_calls += 1;
     return;
@@ -2204,8 +2205,8 @@ __wrap_nc_window_prompt(NcWindow *window, NcPrompt *prompt,
     (void)window;
     (void)prompt;
     len = browser_test_cstring_len(browser_action_prompt_text);
-    *result = cbase_malloc(len + 1);
-    cbase_memcpy(*result, browser_action_prompt_text, len + 1);
+    *result = malloc2(len + 1);
+    memcpy64(*result, browser_action_prompt_text, len + 1);
     return NC_PROMPT_ACCEPTED;
 }
 
@@ -2217,7 +2218,7 @@ __wrap_nc_window_prompt_result_destroy(char *result) {
         return;
     }
     len = browser_test_cstring_len(result);
-    cbase_free(result, len + 1);
+    free2(result, len + 1);
     return;
 }
 
@@ -2486,7 +2487,7 @@ browser_action_set_prompt(char *text) {
 
     len = browser_test_cstring_len(text);
     assert(len < (int32)SIZEOF(browser_action_prompt_text));
-    cbase_memcpy(browser_action_prompt_text, text, len + 1);
+    memcpy64(browser_action_prompt_text, text, len + 1);
     return;
 }
 

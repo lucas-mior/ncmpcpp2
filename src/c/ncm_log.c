@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static void ncm_log_set_errno_error(NcmError *error, int32 code,
                                     char *operation, char *path,
@@ -48,8 +48,8 @@ ncm_log_path_copy(char *path, int32 path_len, char **copy,
         return false;
     }
 
-    *copy = cbase_malloc(path_len + 1);
-    cbase_memcpy(*copy, path, path_len);
+    *copy = malloc2(path_len + 1);
+    memcpy64(*copy, path, path_len);
     (*copy)[path_len] = '\0';
     return true;
 }
@@ -90,7 +90,7 @@ ncm_log_open(NcmLog *log, char *path, int32 path_len, NcmError *error) {
     if ((file = fopen(copy, "a")) == NULL) {
         ncm_log_set_errno_error(error, errno, "open log",
                                 path, path_len);
-        cbase_free(copy, path_len + 1);
+        free2(copy, path_len + 1);
         return false;
     }
 
@@ -99,7 +99,7 @@ ncm_log_open(NcmLog *log, char *path, int32 path_len, NcmError *error) {
     }
     log->file = file;
     log->owns_file = true;
-    cbase_free(copy, path_len + 1);
+    free2(copy, path_len + 1);
     ncm_error_clear(error);
     return true;
 }

@@ -2,6 +2,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
+#include "cbase/util.c"
 
 void
 ncm_song_list_item_init(NcmSongListItem *item) {
@@ -60,7 +61,7 @@ ncm_song_list_destroy(NcmSongList *list) {
 
     ncm_song_list_clear(list);
     if (list->items != NULL) {
-        cbase_free(list->items, list->cap*SIZEOF(*list->items));
+        free2(list->items, list->cap*SIZEOF(*list->items));
     }
     ncm_song_list_init(list);
     return;
@@ -93,8 +94,8 @@ ncm_song_list_reserve(NcmSongList *list, int32 extra) {
         new_cap *= 2;
     }
 
-    list->items = cbase_realloc_array(list->items, old_cap, new_cap,
-                                    SIZEOF(*list->items));
+    list->items = realloc2(list->items, old_cap, new_cap,
+                         SIZEOF(*list->items));
     for (int32 i = old_cap; i < new_cap; i += 1) {
         ncm_song_list_item_init(&list->items[i]);
     }

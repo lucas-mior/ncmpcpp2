@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static NcOutputsScreen *nc_outputs_from_screen(NcScreen *screen);
 static NcScreenCallbacks nc_outputs_callbacks(void);
@@ -381,10 +381,10 @@ nc_outputs_item_copy(void *dest, void *source, void *user) {
     *dest_item = *source_item;
     dest_item->name = NULL;
     if (source_item->name_len > 0) {
-        dest_item->name = cbase_malloc(source_item->name_len + 1);
-        cbase_memcpy(dest_item->name,
-                     source_item->name,
-                     source_item->name_len);
+        dest_item->name = malloc2(source_item->name_len + 1);
+        memcpy64(dest_item->name,
+             source_item->name,
+             source_item->name_len);
         dest_item->name[source_item->name_len] = '\0';
     }
     return;
@@ -397,7 +397,7 @@ nc_outputs_item_destroy(void *item, void *user) {
     (void)user;
     output = item;
     if (output->name != NULL) {
-        cbase_free(output->name, output->name_len + 1);
+        free2(output->name, output->name_len + 1);
     }
     *output = (NcOutputsItem){0};
     return;

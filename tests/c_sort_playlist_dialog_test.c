@@ -9,6 +9,7 @@
 #include "global.h"
 #include "c/ncm_playlist_sort.h"
 #include "cbase/base_macros.h"
+#include "cbase/util.c"
 #include "screens/native_c_screens.h"
 #include "screens/nc_playlist.h"
 #include "screens/nc_sort_playlist.h"
@@ -174,7 +175,7 @@ __wrap_nc_window_print_data(NcWindow *window, char *string,
     (void)window;
     assert(string_len >= 0);
     assert(string_len < (int32)sizeof(test_state.drawn_label));
-    cbase_memcpy(test_state.drawn_label, string, string_len);
+    memcpy64(test_state.drawn_label, string, string_len);
     test_state.drawn_label[string_len] = '\0';
     test_state.draw_count += 1;
     return;

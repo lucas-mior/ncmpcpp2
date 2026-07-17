@@ -10,6 +10,7 @@
 
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
+#include "cbase/util.c"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 #define TEXT(S) (char *)S
@@ -375,7 +376,7 @@ test_execute_preserves_first_error(void) {
     NcmError error;
 
     ncm_playlist_sort_plan_init(&plan);
-    plan.items = cbase_malloc(2*SIZEOF(*plan.items));
+    plan.items = malloc2(2*SIZEOF(*plan.items));
     plan.len = 2;
     plan.cap = 2;
     plan.items[0].from = 10;

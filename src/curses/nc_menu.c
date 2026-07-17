@@ -3,7 +3,7 @@
 #include <assert.h>
 
 #include "cbase/array.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static int64
 min_int64(int64 left, int64 right) {
@@ -75,7 +75,7 @@ menu_allocate_item(NcMenu *menu) {
     void *item;
 
     assert(menu->item_callbacks.item_size > 0);
-    item = cbase_malloc(menu->item_callbacks.item_size);
+    item = malloc2(menu->item_callbacks.item_size);
     return item;
 }
 
@@ -109,7 +109,7 @@ menu_destroy_item(NcMenu *menu, void *item) {
     if (menu->item_callbacks.destroy) {
         menu->item_callbacks.destroy(item, menu->item_callbacks.user);
     }
-    cbase_free(item, menu->item_callbacks.item_size);
+    free2(item, menu->item_callbacks.item_size);
     return;
 }
 
@@ -703,11 +703,11 @@ nc_menu_insert_item_with_flags(NcMenu *menu, int64 pos, void *item,
     ARRAY_PUSH(menu->all_items, NULL);
     ARRAY_PUSH(menu->all_item_flags, 0);
     if (pos < count) {
-        cbase_memmove(&menu->all_items[pos + 1], &menu->all_items[pos],
-                      (count - pos)*SIZEOF(*menu->all_items));
-        cbase_memmove(&menu->all_item_flags[pos + 1],
-                      &menu->all_item_flags[pos],
-                      (count - pos)*SIZEOF(*menu->all_item_flags));
+        memmove64(&menu->all_items[pos + 1], &menu->all_items[pos],
+              (count - pos)*SIZEOF(*menu->all_items));
+        memmove64(&menu->all_item_flags[pos + 1],
+              &menu->all_item_flags[pos],
+              (count - pos)*SIZEOF(*menu->all_item_flags));
     }
     menu->all_items[pos] = new_item;
     menu->all_item_flags[pos] = flags;
@@ -1215,10 +1215,10 @@ menu_remove_array_slot(NcMenu *menu, enum NcMenuItemSource source,
         menu_destroy_item(menu, items[pos]);
     }
     if (pos < count - 1) {
-        cbase_memmove(&items[pos], &items[pos + 1],
-                      (count - pos - 1)*SIZEOF(*items));
-        cbase_memmove(&flags[pos], &flags[pos + 1],
-                      (count - pos - 1)*SIZEOF(*flags));
+        memmove64(&items[pos], &items[pos + 1],
+              (count - pos - 1)*SIZEOF(*items));
+        memmove64(&flags[pos], &flags[pos + 1],
+              (count - pos - 1)*SIZEOF(*flags));
     }
     ARRAY_HEADER(items)->count -= 1;
     ARRAY_HEADER(flags)->count -= 1;

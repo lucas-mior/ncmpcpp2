@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static void *ncm_job_queue_thread_main(void *user);
 static void ncm_job_set_errno_error(NcmError *error, int32 code,
@@ -56,7 +56,7 @@ ncm_job_array_reserve(NcmJob **items, int32 *cap,
         new_cap *= 2;
     }
 
-    *items = cbase_realloc_array(*items, old_cap, new_cap, SIZEOF(**items));
+    *items = realloc2(*items, old_cap, new_cap, SIZEOF(**items));
     *cap = new_cap;
     return true;
 }
@@ -102,8 +102,8 @@ ncm_job_queue_pop_pending_locked(NcmJobQueue *queue, NcmJob *job) {
 
     *job = queue->pending[0];
     if (queue->pending_len > 1) {
-        cbase_memmove(&queue->pending[0], &queue->pending[1],
-                    (queue->pending_len - 1)*SIZEOF(*queue->pending));
+        memmove64(&queue->pending[0], &queue->pending[1],
+                (queue->pending_len - 1)*SIZEOF(*queue->pending));
     }
     queue->pending_len -= 1;
     return true;
@@ -254,7 +254,7 @@ ncm_job_queue_dispatch_completed(NcmJobQueue *queue) {
         ncm_job_destroy(&items[i]);
     }
     if (items) {
-        cbase_free(items, cap*SIZEOF(*items));
+        free2(items, cap*SIZEOF(*items));
     }
 
     return len;
@@ -290,11 +290,11 @@ ncm_job_queue_destroy(NcmJobQueue *queue) {
     ncm_job_array_clear(queue->pending, queue->pending_len);
     ncm_job_array_clear(queue->completed, queue->completed_len);
     if (queue->pending) {
-        cbase_free(queue->pending, queue->pending_cap*SIZEOF(*queue->pending));
+        free2(queue->pending, queue->pending_cap*SIZEOF(*queue->pending));
     }
     if (queue->completed) {
-        cbase_free(queue->completed,
-                 queue->completed_cap*SIZEOF(*queue->completed));
+        free2(queue->completed,
+            queue->completed_cap*SIZEOF(*queue->completed));
     }
     pthread_cond_destroy(&queue->cond);
     pthread_mutex_destroy(&queue->mutex);

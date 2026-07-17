@@ -8,7 +8,7 @@
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
 #include "cbase/rapidhash.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static int32 ncm_song_cstring_len(char *string);
 static bool ncm_song_needs_numeric_zero(char *tag, int32 tag_len);
@@ -120,7 +120,7 @@ ncm_song_tag_destroy(NcmSongTag *tag) {
         return;
     }
     if (tag->value != NULL) {
-        cbase_free(tag->value, tag->value_len + 1);
+        free2(tag->value, tag->value_len + 1);
     }
 
     ncm_song_tag_init(tag);
@@ -141,10 +141,10 @@ ncm_song_tag_copy(NcmSongTag *dest, NcmSongTag *source) {
     }
 
     ncm_song_tag_destroy(dest);
-    dest->value = (char *)cbase_malloc(source->value_len + 1);
+    dest->value = (char *)malloc2(source->value_len + 1);
     dest->value_len = source->value_len;
     dest->type = source->type;
-    cbase_memcpy(dest->value, source->value, source->value_len);
+    memcpy64(dest->value, source->value, source->value_len);
     dest->value[source->value_len] = '\0';
     return true;
 }
@@ -165,9 +165,9 @@ ncm_song_grow_tags(NcmSong *song) {
         new_cap = old_cap*2;
     }
 
-    song->tags = (NcmSongTag *)cbase_realloc_array(song->tags, old_cap,
-                                               new_cap,
-                                               SIZEOF(*song->tags));
+    song->tags = (NcmSongTag *)realloc2(song->tags, old_cap,
+                                    new_cap,
+                                    SIZEOF(*song->tags));
     for (int32 i = old_cap; i < new_cap; i += 1) {
         ncm_song_tag_init(&song->tags[i]);
     }
@@ -269,13 +269,13 @@ ncm_song_destroy(NcmSong *song) {
     }
 
     if (song->uri != NULL) {
-        cbase_free(song->uri, song->uri_len + 1);
+        free2(song->uri, song->uri_len + 1);
     }
     for (int32 i = 0; i < song->tags_len; i += 1) {
         ncm_song_tag_destroy(&song->tags[i]);
     }
     if (song->tags != NULL) {
-        cbase_free(song->tags, song->tags_cap*SIZEOF(*song->tags));
+        free2(song->tags, song->tags_cap*SIZEOF(*song->tags));
     }
 
     ncm_song_init(song);
@@ -412,12 +412,12 @@ ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len) {
         return false;
     }
 
-    copy = (char *)cbase_malloc(uri_len + 1);
-    cbase_memcpy(copy, uri, uri_len);
+    copy = (char *)malloc2(uri_len + 1);
+    memcpy64(copy, uri, uri_len);
     copy[uri_len] = '\0';
 
     if (song->uri != NULL) {
-        cbase_free(song->uri, song->uri_len + 1);
+        free2(song->uri, song->uri_len + 1);
     }
     song->uri = copy;
     song->uri_len = uri_len;
@@ -447,10 +447,10 @@ ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
 
     tag = &song->tags[song->tags_len];
     ncm_song_tag_destroy(tag);
-    tag->value = (char *)cbase_malloc(value_len + 1);
+    tag->value = (char *)malloc2(value_len + 1);
     tag->value_len = value_len;
     tag->type = type;
-    cbase_memcpy(tag->value, value, value_len);
+    memcpy64(tag->value, value, value_len);
     tag->value[value_len] = '\0';
     song->tags_len += 1;
     return true;

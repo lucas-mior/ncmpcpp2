@@ -17,7 +17,7 @@
 #include "status.h"
 #include "statusbar.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static NativePlaylistEditorScreen *playlist_editor_from_screen(
     NcScreen *screen);
@@ -188,10 +188,10 @@ native_playlist_editor_command_destroy(
         return;
     }
     if (command->playlist != NULL) {
-        cbase_free(command->playlist, command->playlist_cap);
+        free2(command->playlist, command->playlist_cap);
     }
     if (command->target != NULL) {
-        cbase_free(command->target, command->target_cap);
+        free2(command->target, command->target_cap);
     }
     native_playlist_editor_command_init(command);
     return;
@@ -2633,8 +2633,8 @@ command_set_string(char **dest, int32 *dest_len, int32 *dest_cap,
         return true;
     }
     cap = source_len + 1;
-    *dest = cbase_malloc(cap);
-    cbase_memcpy(*dest, source, source_len);
+    *dest = malloc2(cap);
+    memcpy64(*dest, source, source_len);
     (*dest)[source_len] = '\0';
     *dest_len = source_len;
     *dest_cap = cap;

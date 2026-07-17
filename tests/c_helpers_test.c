@@ -5,6 +5,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
+#include "cbase/util.c"
 
 typedef struct IntRow {
     int32 value;
@@ -63,7 +64,7 @@ match_mpd_song_index(NcmSong *song, int32 idx, void *user) {
 static void
 copy_int_row(void *dest, void *source, void *user) {
     (void)user;
-    cbase_memcpy(dest, source, SIZEOF(IntRow));
+    memcpy64(dest, source, SIZEOF(IntRow));
     return;
 }
 

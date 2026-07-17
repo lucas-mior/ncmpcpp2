@@ -5,9 +5,25 @@
 #include <stdlib.h>
 
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
+
+static int32
+ncm_path_last_index_of(char *path, int32 path_len, char needle) {
+    char *found;
+
+    if (path_len <= 0) {
+        return -1;
+    }
+
+    found = memrchr64(path, needle, path_len);
+    if (found == NULL) {
+        return -1;
+    }
+
+    return (int32)(found - path);
+}
 
 bool
 ncm_path_expand_home(NcmBuffer *path, NcmError *error) {
@@ -63,9 +79,9 @@ ncm_path_expand_home(NcmBuffer *path, NcmError *error) {
         return false;
     }
     ncm_buffer_reserve(path, home_len - 1);
-    cbase_memmove(path->data + tilde + home_len,
-                path->data + tilde + 1, old_len - tilde);
-    cbase_memcpy(path->data + tilde, home, home_len);
+    memmove64(path->data + tilde + home_len,
+            path->data + tilde + 1, old_len - tilde);
+    memcpy64(path->data + tilde, home, home_len);
     path->len = old_len - 1 + home_len;
     ncm_error_clear(error);
     return true;
@@ -80,7 +96,7 @@ ncm_path_basename_start(char *path, int32 path_len) {
         return 0;
     }
 
-    slash = cbase_string_last_index_of(path, path_len, '/');
+    slash = ncm_path_last_index_of(path, path_len, '/');
     if (slash < 0) {
         result = 0;
     } else {
@@ -99,7 +115,7 @@ ncm_path_parent_directory_len(char *path, int32 path_len) {
         return 0;
     }
 
-    slash = cbase_string_last_index_of(path, path_len, '/');
+    slash = ncm_path_last_index_of(path, path_len, '/');
     if (slash < 0) {
         result = 0;
     } else {
@@ -119,7 +135,7 @@ ncm_path_extension_start(char *path, int32 path_len) {
     }
 
     basename = ncm_path_basename_start(path, path_len);
-    dot = cbase_string_last_index_of(path, path_len, '.');
+    dot = ncm_path_last_index_of(path, path_len, '.');
     if (dot <= basename) {
         return -1;
     }

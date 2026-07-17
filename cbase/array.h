@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #include "base_macros.h"
-#include "cbase.h"
+#include "util.c"
 
 typedef struct GenericArrayHeader {
     max_align_t alignment;
@@ -22,8 +22,8 @@ typedef struct GenericArrayHeader {
 #define ARRAY_FREE(array) do {                                           \
     if (array) {                                                         \
         GenericArrayHeader *array_header_ = ARRAY_HEADER(array);         \
-        cbase_free(array_header_, SIZEOF(*array_header_)                 \
-                   + array_header_->cap*SIZEOF(*(array)));               \
+        free2(array_header_, SIZEOF(*array_header_)                      \
+              + array_header_->cap*SIZEOF(*(array)));                    \
         (array) = NULL;                                                  \
     }                                                                    \
 } while (0)
@@ -43,7 +43,7 @@ generic_array_init(int32 cap, int64 item_size) {
     }
 
     size = SIZEOF(*header) + cap*item_size;
-    header = cbase_malloc(size);
+    header = malloc2(size);
     header->count = 0;
     header->cap = cap;
 
@@ -73,7 +73,7 @@ generic_array_grow(void *array, int64 item_size) {
 
     old_size = SIZEOF(*header) + old_cap*item_size;
     new_size = SIZEOF(*header) + new_cap*item_size;
-    header = cbase_realloc_array(header, old_size, new_size, 1);
+    header = realloc2(header, old_size, new_size, 1);
     if (!array) {
         header->count = 0;
     }

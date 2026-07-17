@@ -1,7 +1,7 @@
 #include "c/ncm_base.h"
 
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 void
 ncm_buffer_init(NcmBuffer *buffer) {
@@ -14,7 +14,7 @@ ncm_buffer_init(NcmBuffer *buffer) {
 void
 ncm_buffer_destroy(NcmBuffer *buffer) {
     if (buffer->data) {
-        cbase_free(buffer->data, buffer->cap);
+        free2(buffer->data, buffer->cap);
     }
 
     buffer->data = NULL;
@@ -119,8 +119,8 @@ ncm_buffer_reserve(NcmBuffer *buffer, int32 extra) {
         new_cap *= 2;
     }
 
-    buffer->data = cbase_realloc_array(buffer->data, old_cap, new_cap,
-                                     SIZEOF(*buffer->data));
+    buffer->data = realloc2(buffer->data, old_cap, new_cap,
+                          SIZEOF(*buffer->data));
     buffer->cap = new_cap;
     return;
 }
@@ -132,7 +132,7 @@ ncm_buffer_append(NcmBuffer *buffer, char *data, int32 data_len) {
     }
 
     ncm_buffer_reserve(buffer, data_len);
-    cbase_memcpy(buffer->data + buffer->len, data, data_len);
+    memcpy64(buffer->data + buffer->len, data, data_len);
     buffer->len += data_len;
     buffer->data[buffer->len] = '\0';
     return;

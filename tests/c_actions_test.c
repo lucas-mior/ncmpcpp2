@@ -7,7 +7,7 @@
 #include "c/ncm_error.h"
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 
@@ -268,8 +268,8 @@ static void
 test_command_set(NcmCommand *command, char *name, int32 name_len,
                  bool immediate) {
     ncm_command_init(command);
-    command->name = cbase_malloc(name_len + 1);
-    cbase_memcpy(command->name, name, name_len);
+    command->name = malloc2(name_len + 1);
+    memcpy64(command->name, name, name_len);
     command->name[name_len] = '\0';
     command->name_len = name_len;
     command->name_cap = name_len + 1;
@@ -282,7 +282,7 @@ test_immediate_command_prompt_stop(void) {
     NcmBuffer previous;
 
     ncm_bindings_configuration_init(&Bindings);
-    Bindings.commands = cbase_malloc(2*SIZEOF(*Bindings.commands));
+    Bindings.commands = malloc2(2*SIZEOF(*Bindings.commands));
     Bindings.commands_len = 2;
     Bindings.commands_cap = 2;
     test_command_set(Bindings.commands + 0, LIT_ARGS("later"), false);

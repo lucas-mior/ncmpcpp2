@@ -3,7 +3,7 @@
 #include <mpd/client.h>
 
 #include "c/ncm_base.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static int32 ncm_directory_cstring_len(char *string);
 
@@ -34,7 +34,7 @@ ncm_directory_init(NcmDirectory *directory) {
 void
 ncm_directory_destroy(NcmDirectory *directory) {
     if (directory->path) {
-        cbase_free(directory->path, directory->path_len + 1);
+        free2(directory->path, directory->path_len + 1);
     }
 
     directory->path = NULL;
@@ -59,10 +59,10 @@ ncm_directory_set(NcmDirectory *directory, char *path,
     }
 
     ncm_directory_init(&replacement);
-    replacement.path = cbase_malloc(path_len + 1);
+    replacement.path = malloc2(path_len + 1);
     replacement.path_len = path_len;
     replacement.last_modified = last_modified;
-    cbase_memcpy(replacement.path, path, path_len);
+    memcpy64(replacement.path, path, path_len);
     replacement.path[path_len] = '\0';
 
     ncm_directory_destroy(directory);

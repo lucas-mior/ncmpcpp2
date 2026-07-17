@@ -10,7 +10,7 @@
 #include "c/ncm_tags.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "curses/nc_cyclic_buffer.h"
 #include "global.h"
 #include "settings.h"
@@ -2756,22 +2756,22 @@ native_browser_remove_directory(char *path, int32 path_len,
         return false;
     }
 
-    copy = cbase_malloc(path_len + 1);
-    cbase_memcpy(copy, path, path_len);
+    copy = malloc2(path_len + 1);
+    memcpy64(copy, path, path_len);
     copy[path_len] = '\0';
     if (rmdir(copy) != 0) {
         if (errno == ENOENT) {
-            cbase_free(copy, path_len + 1);
+            free2(copy, path_len + 1);
             ncm_error_clear(error);
             return true;
         }
         native_browser_set_errno_error(error, errno, "rmdir", path,
                                        path_len);
-        cbase_free(copy, path_len + 1);
+        free2(copy, path_len + 1);
         return false;
     }
 
-    cbase_free(copy, path_len + 1);
+    free2(copy, path_len + 1);
     ncm_error_clear(error);
     return true;
 }

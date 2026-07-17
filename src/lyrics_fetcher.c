@@ -12,7 +12,7 @@
 #include "c/ncm_regex.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 #define LYRICS_MSG_NOT_FOUND "Not found"
 
@@ -106,8 +106,8 @@ lyrics_string_set(char **data, int32 *len, int32 *cap,
     }
 
     new_cap = source_len + 1;
-    new_data = cbase_malloc(new_cap);
-    cbase_memcpy(new_data, source, source_len);
+    new_data = malloc2(new_cap);
+    memcpy64(new_data, source, source_len);
     new_data[source_len] = '\0';
     *data = new_data;
     *len = source_len;
@@ -118,7 +118,7 @@ lyrics_string_set(char **data, int32 *len, int32 *cap,
 static void
 lyrics_string_destroy(char **data, int32 *len, int32 *cap) {
     if (*data != NULL) {
-        cbase_free(*data, *cap);
+        free2(*data, *cap);
     }
     *data = NULL;
     *len = 0;

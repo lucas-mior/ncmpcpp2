@@ -5,7 +5,7 @@
 #include "bindings.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "global.h"
 #include "settings.h"
 #include "status.h"

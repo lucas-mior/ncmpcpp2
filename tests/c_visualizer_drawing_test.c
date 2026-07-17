@@ -5,7 +5,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "screens/nc_visualizer.h"
 
 #define TEST_DRAW_CAPACITY 8192
@@ -322,7 +322,7 @@ test_frequency_drawing(void) {
                                   nc_color_default(), nc_border_none(),
                                   &config);
     samples_len = 2*screen.fft.dft_nonzero_size;
-    samples = cbase_malloc(samples_len*SIZEOF(*samples));
+    samples = malloc2(samples_len*SIZEOF(*samples));
     for (int32 i = 0; i < samples_len / 2; i += 1) {
         double angle;
         int16 sample;
@@ -341,7 +341,7 @@ test_frequency_drawing(void) {
     assert(test_reverse_on_calls > 0);
     assert(test_reverse_on_calls == test_reverse_off_calls);
 
-    cbase_free(samples, samples_len*SIZEOF(*samples));
+    free2(samples, samples_len*SIZEOF(*samples));
     native_visualizer_screen_destroy(&screen);
     return;
 }
