@@ -14,6 +14,7 @@
 #include "c/ncm_base.c"
 #include "c/ncm_error.c"
 #include "c/ncm_regex.c"
+#include "c/ncm_search_prompt.c"
 #include "curses/nc_formatted_color.c"
 #include "curses/nc_buffer.c"
 #include "curses/nc_menu.c"
@@ -368,6 +369,56 @@ test_search_without_wrap_preserves_position_on_failure(void) {
     return;
 }
 
+
+static void
+test_prompt_state_reuses_successful_result(void) {
+    NcmSearchPromptState state;
+    bool found;
+
+    ncm_search_prompt_state_init(&state, NCM_SEARCH_DIRECTION_FORWARD);
+    assert(!ncm_search_prompt_state_cached_result(
+        &state, STRLIT_ARGS("alp"), &found));
+
+    assert(ncm_search_prompt_state_finish_result(
+        &state, STRLIT_ARGS("alp"), true, true));
+    found = false;
+    assert(ncm_search_prompt_state_cached_result(
+        &state, STRLIT_ARGS("alp"), &found));
+    assert(found);
+    assert(!ncm_search_prompt_state_cached_result(
+        &state, STRLIT_ARGS("alpha"), &found));
+
+    ncm_search_prompt_state_destroy(&state);
+    return;
+}
+
+static void
+test_prompt_state_does_not_cache_failed_incremental_search(void) {
+    NcmSearchPromptState state;
+    bool found;
+
+    ncm_search_prompt_state_init(&state, NCM_SEARCH_DIRECTION_FORWARD);
+    assert(ncm_search_prompt_state_finish_result(
+        &state, STRLIT_ARGS("alp"), true, true));
+    assert(ncm_search_prompt_state_finish_result(
+        &state, STRLIT_ARGS("alp["), false, false));
+
+    found = true;
+    assert(!ncm_search_prompt_state_cached_result(
+        &state, STRLIT_ARGS("alp["), &found));
+    assert(found);
+
+    assert(ncm_search_prompt_state_finish_result(
+        &state, STRLIT_ARGS("alp[ha]"), true, true));
+    found = false;
+    assert(ncm_search_prompt_state_cached_result(
+        &state, STRLIT_ARGS("alp[ha]"), &found));
+    assert(found);
+
+    ncm_search_prompt_state_destroy(&state);
+    return;
+}
+
 int
 main(void) {
     test_prompt_search_accepts_current_match();
@@ -375,6 +426,8 @@ main(void) {
     test_backward_repeat_wraps_to_previous_match();
     test_search_skips_unselectable_matches();
     test_search_without_wrap_preserves_position_on_failure();
+    test_prompt_state_reuses_successful_result();
+    test_prompt_state_does_not_cache_failed_incremental_search();
     exit(EXIT_SUCCESS);
 }
 

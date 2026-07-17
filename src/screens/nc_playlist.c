@@ -885,6 +885,11 @@ native_playlist_screen_search(NativePlaylistScreen *screen,
         ncm_regex_destroy(&regex);
         return false;
     }
+    if (!ncm_buffer_set(&screen->search_constraint, pattern, pattern_len)) {
+        ncm_regex_destroy(&regex);
+        return false;
+    }
+
     result = native_playlist_search_menu(
         screen, native_playlist_storage_menu(screen), &regex, forward,
         wrap, skip_current);
