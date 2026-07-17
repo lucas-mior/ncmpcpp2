@@ -7,12 +7,6 @@
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
 
-static bool ncm_compare_has_the_word(char *string, int32 string_len);
-static bool ncm_compare_is_decimal_number(char *string, int32 string_len);
-static int64 ncm_compare_parse_decimal(char *string, int32 string_len);
-static int32 ncm_compare_copy_to_buffer(NcmBuffer *buffer,
-                                        char *string, int32 string_len);
-
 static bool
 ncm_compare_has_the_word(char *string, int32 string_len) {
     if (string_len < 4) {
