@@ -59,8 +59,7 @@ $(TOOLS_STAMP): FORCE
 
 $(OBJ_DIR)/%.c.o: %.c
 	@mkdir -p $(@D)
-	@printf 'CC  %s\n' '$<'
-	@$(CC) \
+	$(CC) \
 		$(COMMON_CPPFLAGS) \
 		$(CSTD) \
 		$(WARNINGS) \
@@ -72,8 +71,7 @@ $(OBJ_DIR)/%.c.o: %.c
 		-o $@
 
 $(BINARY): $(NCMPCPP_OBJECT)
-	@printf 'LD  %s\n' '$@'
-	@$(CC) $(LDFLAGS) -o $@ \
+	$(CC) $(LDFLAGS) -o $@ \
 		$(NCMPCPP_OBJECT) \
 		$(READLINE_LIBS) \
 		$(PKG_LIBS) \
@@ -106,8 +104,6 @@ check: check-no-foreign-sources
 		printf '%s\n' 'clang analyzer does not support C23 or C2x' >&2; \
 		exit 1; \
 	}
-	@set -e; \
-	printf 'ANALYZE %s\n' '$(NCMPCPP_SOURCE)'; \
 	$(CLANG_ANALYZER) \
 		$(COMMON_CPPFLAGS) \
 		$(ANALYZER_CSTD) \
