@@ -1176,7 +1176,6 @@ static bool action_runtime_confirm(char *message, int32 message_len);
 static bool action_runtime_parse_seek_position(char *text, int32 text_len,
                                                uint32 total,
                                                uint32 *position);
-static int32 action_runtime_cstrlen32(char *string);
 static void action_runtime_print_format_string(char *format,
                                                int32 format_len,
                                                char *text,
@@ -1954,7 +1953,7 @@ action_runtime_add_random_items(void) {
     } else {
         tag_type = ncm_char_to_tag_type(random_type);
         source_name = ncm_tag_type_name(tag_type);
-        source_name_len = action_runtime_cstrlen32(source_name);
+        source_name_len = optional_strlen32(source_name);
         if (source_name_len >= (int32)sizeof(tag_name)) {
             return false;
         }
@@ -2167,20 +2166,6 @@ action_runtime_toggle_bitrate_visibility(void) {
     return true;
 }
 
-static int32
-action_runtime_cstrlen32(char *string) {
-    int32 len;
-
-    len = 0;
-    if (string == NULL) {
-        return 0;
-    }
-    while (string[len] != '\0') {
-        len += 1;
-    }
-    return len;
-}
-
 static void
 action_runtime_print_format_string(char *format, int32 format_len,
                                    char *text, int32 text_len) {
@@ -2230,7 +2215,7 @@ action_runtime_command_prompt_hook(char *text, void *user) {
     int32 text_len;
 
     state = user;
-    text_len = action_runtime_cstrlen32(text);
+    text_len = optional_strlen32(text);
     if (!ncm_statusbar_main_hook(text, text_len)) {
         return false;
     }
@@ -2247,7 +2232,7 @@ action_runtime_filter_prompt_hook(char *text, void *user) {
     int32 text_len;
 
     (void)user;
-    text_len = action_runtime_cstrlen32(text);
+    text_len = optional_strlen32(text);
     if (!ncm_statusbar_main_hook(text, text_len)) {
         return false;
     }
@@ -2264,7 +2249,7 @@ action_runtime_search_prompt_hook(char *text, void *user) {
     int32 text_len;
 
     state = user;
-    text_len = action_runtime_cstrlen32(text);
+    text_len = optional_strlen32(text);
     if (!ncm_statusbar_main_hook(text, text_len)) {
         return false;
     }
@@ -2298,7 +2283,7 @@ action_runtime_prompt_result(NcmBuffer *result, NcPrompt *prompt,
         return false;
     }
 
-    text_len = action_runtime_cstrlen32(text);
+    text_len = optional_strlen32(text);
     ok = ncm_buffer_set(result, text, text_len);
     nc_window_prompt_result_destroy(text);
     return ok;
@@ -3387,7 +3372,7 @@ action_runtime_add_prompt(void) {
         ncm_buffer_append(&message, STRLIT_ARGS("Error while adding item: "));
         if (ncm_error_is_set(&error)) {
             ncm_buffer_append(&message, error.message,
-                              action_runtime_cstrlen32(error.message));
+                              optional_strlen32(error.message));
         }
         ncm_statusbar_print((int32)Config.message_delay_time,
                             message.data, message.len);
@@ -6070,7 +6055,7 @@ action_runtime_edit_library_tag(void) {
     }
     ncm_buffer_append(&prompt,
                       ncm_tag_type_name(Config.media_lib_primary_tag),
-                      action_runtime_cstrlen32(
+                      optional_strlen32(
                           ncm_tag_type_name(Config.media_lib_primary_tag)));
     ncm_buffer_append(&prompt, STRLIT_ARGS(": "));
     prompted = action_runtime_prompt_string(prompt.data, prompt.len,
