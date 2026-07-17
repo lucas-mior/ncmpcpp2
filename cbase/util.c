@@ -259,6 +259,14 @@ memchr64(void *pointer, int32 value, int64 size) {
 }
 
 static int32
+optional_strlen32(char *string) {
+    if (string == NULL) {
+        return 0;
+    }
+    return strlen32(string);
+}
+
+static int32
 strlen32(char *string) {
     int32 length;
     size_t len = strlen(string);
