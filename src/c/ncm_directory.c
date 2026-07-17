@@ -5,22 +5,6 @@
 #include "c/ncm_base.h"
 #include "cbase/util.c"
 
-static int32
-ncm_directory_cstrlen32(char *string) {
-    int32 len;
-
-    if (string == NULL) {
-        return 0;
-    }
-
-    len = 0;
-    while (string[len] != '\0') {
-        len += 1;
-    }
-
-    return len;
-}
-
 void
 ncm_directory_init(NcmDirectory *directory) {
     directory->path = NULL;
@@ -150,7 +134,7 @@ ncm_directory_from_mpd_directory(NcmDirectory *dest,
         return false;
     }
 
-    path_len = ncm_directory_cstrlen32(path);
+    path_len = optional_strlen32(path);
     last_modified = mpd_directory_get_last_modified(source);
     return ncm_directory_set(dest, path, path_len, last_modified);
 }
