@@ -2062,7 +2062,7 @@ tag_editor_resize(NcScreen *screen) {
 static char *
 tag_editor_title(NcScreen *screen) {
     (void)screen;
-    return (char *)"Tag editor";
+    return "Tag editor";
 }
 
 static void
@@ -3559,7 +3559,7 @@ tag_editor_reload_directories_from_mpd(NativeTagEditorScreen *screen,
     }
     dir = screen->current_dir.data;
     if (dir == NULL) {
-        dir = (char *)"/";
+        dir = "/";
     }
 
     ok = ncm_mpd_client_get_directory_list(client, dir, &directories,
@@ -4593,7 +4593,7 @@ tag_editor_save_context_add_directory(
             song->uri, song->uri_len);
     }
     if (directory == NULL) {
-        directory = (char *)"";
+        directory = "";
         directory_len = 0;
     }
 

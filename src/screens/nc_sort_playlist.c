@@ -475,7 +475,7 @@ sort_dialog_title_callback(NcScreen *screen) {
     if (dialog->previous_screen != NULL) {
         return nc_screen_title(dialog->previous_screen);
     }
-    return (char *)"Sort playlist";
+    return "Sort playlist";
 }
 
 static void
@@ -540,7 +540,7 @@ sort_dialog_show_move_hint(void *user) {
     (void)user;
     ncm_statusbar_print_cstring(
         (int32)Config.message_delay_time,
-        (char *)"Move tag types up and down to adjust sort order");
+        "Move tag types up and down to adjust sort order");
     return;
 }
 
@@ -560,7 +560,7 @@ sort_dialog_run_sort(void *user) {
     getters_len = native_sort_playlist_dialog_get_order(
         dialog, getters, NCM_ARRAY_LEN(getters));
     ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                (char *)"Sorting...");
+                                "Sorting...");
     ncm_error_clear(&error);
     success = ncm_playlist_sort_range(
         &dialog->songs, dialog->start_position, getters, getters_len,
@@ -571,13 +571,13 @@ sort_dialog_run_sort(void *user) {
 
     if (success) {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Range sorted");
+                                    "Range sorted");
     } else if (ncm_error_is_set(&error)) {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
                                     error.message);
     } else {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    (char *)"Could not sort playlist");
+                                    "Could not sort playlist");
     }
 
     sort_dialog_finish(dialog);

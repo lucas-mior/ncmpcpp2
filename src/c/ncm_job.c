@@ -185,7 +185,7 @@ ncm_job_queue_start(NcmJobQueue *queue, NcmError *error) {
     code = pthread_create(&queue->thread, NULL,
                           ncm_job_queue_thread_main, queue);
     if (code != 0) {
-        ncm_job_set_errno_error(error, code, (char *)"pthread_create");
+        ncm_job_set_errno_error(error, code, "pthread_create");
         return false;
     }
 

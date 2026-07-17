@@ -758,7 +758,7 @@ adder_title_callback(NcScreen *screen) {
     if ((adder != NULL) && (adder->previous_screen != NULL)) {
         return nc_screen_title(adder->previous_screen);
     }
-    return (char *)"Add selected items";
+    return "Add selected items";
 }
 
 static void
@@ -928,7 +928,7 @@ adder_add_to_stored_playlist(
         } else {
             ncm_statusbar_print_cstring(
                 (int32)Config.message_delay_time,
-                (char *)"Could not add selected items");
+                "Could not add selected items");
         }
         return false;
     }
@@ -971,7 +971,7 @@ adder_try_add_current_song(
     } else {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Could not add selected item");
+            "Could not add selected item");
     }
     return false;
 }
@@ -993,7 +993,7 @@ adder_add_to_current_playlist(
     if (position == INT32_MAX) {
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Playlist position is too large");
+            "Playlist position is too large");
         return false;
     }
 
@@ -1048,7 +1048,7 @@ adder_add_to_current_playlist(
 static void
 adder_song_album_view(NcmSong *song, NcmStringView *album) {
     if (!ncm_song_tag_view(song, MPD_TAG_ALBUM, 0, album)) {
-        ncm_string_view_set(album, (char *)"", 0);
+        ncm_string_view_set(album, "", 0);
     }
     return;
 }
@@ -1082,7 +1082,7 @@ adder_action_new_playlist(void *user) {
         nc_window_print_data(window,
                              STRLIT_ARGS("Save playlist as: "));
         prompt = (NcPrompt){0};
-        prompt.initial_text = (char *)"";
+        prompt.initial_text = "";
         prompt.width = -1;
         prompt.hook = adder_statusbar_prompt_hook;
         prompt.hook_user_data = NULL;
@@ -1096,13 +1096,13 @@ adder_action_new_playlist(void *user) {
         nc_window_prompt_result_destroy(input);
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
-            (char *)"Action aborted");
+            "Action aborted");
         return;
     }
 
     playlist = input;
     if (playlist == NULL) {
-        playlist = (char *)"";
+        playlist = "";
     }
     playlist_len = adder_cstring_len(playlist);
     (void)adder_add_to_stored_playlist(screen, playlist, playlist_len);

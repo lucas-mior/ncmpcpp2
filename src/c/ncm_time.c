@@ -31,7 +31,7 @@ ncm_time_monotonic_now(NcmTimePoint *point, NcmError *error) {
     }
 
     if (clock_gettime(CLOCK_MONOTONIC, &timespec) != 0) {
-        ncm_time_set_errno_error(error, errno, (char *)"clock_gettime");
+        ncm_time_set_errno_error(error, errno, "clock_gettime");
         return false;
     }
 
@@ -57,7 +57,7 @@ ncm_time_sleep_ms(int64 milliseconds, NcmError *error) {
     while (nanosleep(&request, &remaining) != 0) {
         saved_errno = errno;
         if (saved_errno != EINTR) {
-            ncm_time_set_errno_error(error, saved_errno, (char *)"nanosleep");
+            ncm_time_set_errno_error(error, saved_errno, "nanosleep");
             return false;
         }
         request = remaining;

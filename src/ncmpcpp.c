@@ -97,7 +97,7 @@ app_restore_stderr(void) {
 static void
 app_at_exit(void) {
     ncm_mpd_client_disconnect(&global_mpd);
-    ncm_window_title_set_cstring((char *)"");
+    ncm_window_title_set_cstring("");
 
     if (app_header_window != NULL) {
         ncmpcpp_legacy_window_destroy(app_header_window);

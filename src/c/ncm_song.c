@@ -218,29 +218,29 @@ static char *
 ncm_song_mpd_tag_name(enum mpd_tag_type type) {
     switch ((int32)type) {
     case MPD_TAG_ARTIST:
-        return (char *)"Artist";
+        return "Artist";
     case MPD_TAG_ALBUM:
-        return (char *)"Album";
+        return "Album";
     case MPD_TAG_ALBUM_ARTIST:
-        return (char *)"AlbumArtist";
+        return "AlbumArtist";
     case MPD_TAG_TITLE:
-        return (char *)"Title";
+        return "Title";
     case MPD_TAG_TRACK:
-        return (char *)"Track";
+        return "Track";
     case MPD_TAG_NAME:
-        return (char *)"Name";
+        return "Name";
     case MPD_TAG_GENRE:
-        return (char *)"Genre";
+        return "Genre";
     case MPD_TAG_DATE:
-        return (char *)"Date";
+        return "Date";
     case MPD_TAG_COMPOSER:
-        return (char *)"Composer";
+        return "Composer";
     case MPD_TAG_PERFORMER:
-        return (char *)"Performer";
+        return "Performer";
     case MPD_TAG_COMMENT:
-        return (char *)"Comment";
+        return "Comment";
     case MPD_TAG_DISC:
-        return (char *)"Disc";
+        return "Disc";
     case MPD_TAG_UNKNOWN:
     default:
         return NULL;
@@ -565,7 +565,7 @@ ncm_song_dup_mpd_song(NcmSong *song) {
         return NULL;
     }
 
-    pair.name = (char *)"file";
+    pair.name = "file";
     pair.value = song->uri;
     copy = mpd_song_begin(&pair);
     if (copy == NULL) {
@@ -584,7 +584,7 @@ ncm_song_dup_mpd_song(NcmSong *song) {
         written = snprintf(time_buffer, sizeof(time_buffer), "%u",
                            song->duration);
         if (written > 0) {
-            ncm_song_feed_pair(copy, (char *)"Time", time_buffer);
+            ncm_song_feed_pair(copy, "Time", time_buffer);
         }
     }
     return copy;

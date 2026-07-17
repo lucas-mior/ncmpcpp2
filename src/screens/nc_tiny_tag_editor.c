@@ -788,7 +788,7 @@ tiny_editor_resize(NcScreen *screen) {
 static char *
 tiny_editor_title(NcScreen *screen) {
     (void)screen;
-    return (char *)"Tiny tag editor";
+    return "Tiny tag editor";
 }
 
 static void

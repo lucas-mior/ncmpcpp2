@@ -247,7 +247,7 @@ ncm_lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *fetcher,
 char *
 ncm_lyrics_fetcher_name(NcmLyricsFetcherDef *fetcher) {
     if ((fetcher == NULL) || (fetcher->name == NULL)) {
-        return (char *)"";
+        return "";
     }
     return fetcher->name;
 }
@@ -495,31 +495,31 @@ lyrics_type_name(enum NcmLyricsFetcherType type, int32 *len) {
     switch (type) {
     case NCM_LYRICS_FETCHER_JUSTSOMELYRICS:
         *len = STRLIT_LEN("justsomelyrics.com");
-        return (char *)"justsomelyrics.com";
+        return "justsomelyrics.com";
     case NCM_LYRICS_FETCHER_JAHLYRICS:
         *len = STRLIT_LEN("jah-lyrics.com");
-        return (char *)"jah-lyrics.com";
+        return "jah-lyrics.com";
     case NCM_LYRICS_FETCHER_PLYRICS:
         *len = STRLIT_LEN("plyrics.com");
-        return (char *)"plyrics.com";
+        return "plyrics.com";
     case NCM_LYRICS_FETCHER_AZLYRICS:
         *len = STRLIT_LEN("azlyrics.com");
-        return (char *)"azlyrics.com";
+        return "azlyrics.com";
     case NCM_LYRICS_FETCHER_TEKSTOWO:
         *len = STRLIT_LEN("tekstowo.pl");
-        return (char *)"tekstowo.pl";
+        return "tekstowo.pl";
     case NCM_LYRICS_FETCHER_ZENESZOVEG:
         *len = STRLIT_LEN("zeneszoveg.hu");
-        return (char *)"zeneszoveg.hu";
+        return "zeneszoveg.hu";
     case NCM_LYRICS_FETCHER_INTERNET:
         *len = STRLIT_LEN("the Internet");
-        return (char *)"the Internet";
+        return "the Internet";
     case NCM_LYRICS_FETCHER_TAGS:
         *len = STRLIT_LEN("tags");
-        return (char *)"tags";
+        return "tags";
     default:
         *len = 0;
-        return (char *)"";
+        return "";
     }
 }
 
@@ -528,25 +528,25 @@ lyrics_type_site(enum NcmLyricsFetcherType type, int32 *len) {
     switch (type) {
     case NCM_LYRICS_FETCHER_JUSTSOMELYRICS:
         *len = STRLIT_LEN("justsomelyrics.com");
-        return (char *)"justsomelyrics.com";
+        return "justsomelyrics.com";
     case NCM_LYRICS_FETCHER_JAHLYRICS:
         *len = STRLIT_LEN("jah-lyrics.com");
-        return (char *)"jah-lyrics.com";
+        return "jah-lyrics.com";
     case NCM_LYRICS_FETCHER_PLYRICS:
         *len = STRLIT_LEN("plyrics.com");
-        return (char *)"plyrics.com";
+        return "plyrics.com";
     case NCM_LYRICS_FETCHER_AZLYRICS:
         *len = STRLIT_LEN("azlyrics.com");
-        return (char *)"azlyrics.com";
+        return "azlyrics.com";
     case NCM_LYRICS_FETCHER_TEKSTOWO:
         *len = STRLIT_LEN("tekstowo.pl");
-        return (char *)"tekstowo.pl";
+        return "tekstowo.pl";
     case NCM_LYRICS_FETCHER_ZENESZOVEG:
         *len = STRLIT_LEN("zeneszoveg.hu");
-        return (char *)"zeneszoveg.hu";
+        return "zeneszoveg.hu";
     default:
         *len = 0;
-        return (char *)"";
+        return "";
     }
 }
 
@@ -555,25 +555,25 @@ lyrics_type_regex(enum NcmLyricsFetcherType type, int32 *len) {
     switch (type) {
     case NCM_LYRICS_FETCHER_JUSTSOMELYRICS:
         *len = STRLIT_LEN("content");
-        return (char *)"content";
+        return "content";
     case NCM_LYRICS_FETCHER_JAHLYRICS:
         *len = STRLIT_LEN("song-header");
-        return (char *)"song-header";
+        return "song-header";
     case NCM_LYRICS_FETCHER_PLYRICS:
         *len = STRLIT_LEN("start of lyrics");
-        return (char *)"start of lyrics";
+        return "start of lyrics";
     case NCM_LYRICS_FETCHER_AZLYRICS:
         *len = STRLIT_LEN("Usage of azlyrics.com");
-        return (char *)"Usage of azlyrics.com";
+        return "Usage of azlyrics.com";
     case NCM_LYRICS_FETCHER_TEKSTOWO:
         *len = STRLIT_LEN("inner-text");
-        return (char *)"inner-text";
+        return "inner-text";
     case NCM_LYRICS_FETCHER_ZENESZOVEG:
         *len = STRLIT_LEN("lyrics-plain-text trans_original");
-        return (char *)"lyrics-plain-text trans_original";
+        return "lyrics-plain-text trans_original";
     default:
         *len = 0;
-        return (char *)"";
+        return "";
     }
 }
 

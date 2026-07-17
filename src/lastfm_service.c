@@ -193,9 +193,9 @@ char *
 ncm_lastfm_service_name(NcmLastfmService *service) {
     if ((service != NULL)
         && (service->type == NCM_LASTFM_SERVICE_ARTIST_INFO)) {
-        return (char *)"Artist info";
+        return "Artist info";
     }
-    return (char *)"Last.fm";
+    return "Last.fm";
 }
 
 enum NcmLastfmServiceType
