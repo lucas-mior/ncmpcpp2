@@ -91,7 +91,6 @@ static bool native_search_song_field_view(NcmSong *song, int32 field,
                                           NcmStringView *view);
 static bool native_search_append_result_rows(
     NativeSearchEngineScreen *screen, NcmSongArray *songs);
-static int32 optional_strlen32(char *string);
 
 static char *native_search_constraint_names[] = {
     "Any",
