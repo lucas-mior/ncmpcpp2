@@ -13,7 +13,7 @@
 #endif
 
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "global.h"
 #include "settings.h"
 #include "statusbar.h"
@@ -359,7 +359,7 @@ status_prompt_mpd_password(NcmMpdClient *client) {
     }
 
     nc_window_print_cstring(window, "Password: ");
-    cbase_memset(&prompt, 0, SIZEOF(prompt));
+    memset64(&prompt, 0, SIZEOF(prompt));
     prompt.initial_text = "";
     prompt.width = -1;
     prompt.encrypted = true;
@@ -1242,7 +1242,7 @@ status_player_state_string(char *buffer, int32 buffer_cap) {
         len = buffer_cap - 1;
     }
     if (len > 0) {
-        cbase_memcpy(buffer, string, len);
+        memcpy64(buffer, string, len);
     }
     buffer[len] = 0;
     return len;

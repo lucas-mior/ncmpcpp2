@@ -23,7 +23,7 @@
 
 #include "cbase/array.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "c/ncm_utf8.h"
 
 static int32 max_color;
@@ -484,7 +484,7 @@ nc_window_destroy(NcWindow *window) {
         delwin(window->window);
     }
     if (window->title != NULL) {
-        cbase_free(window->title, window->title_cap);
+        free2(window->title, window->title_cap);
     }
     ARRAY_FREE(window->color_stack);
     ARRAY_FREE(window->input_queue);
@@ -1285,13 +1285,13 @@ nc_window_assign_title(NcWindow *window, char *title, int32 title_len) {
     }
     if ((title_len + 1) > window->title_cap) {
         if (window->title != NULL) {
-            cbase_free(window->title, window->title_cap);
+            free2(window->title, window->title_cap);
         }
         window->title_cap = title_len + 1;
-        window->title = cbase_malloc(window->title_cap);
+        window->title = malloc2(window->title_cap);
     }
     if (title_len > 0) {
-        cbase_memcpy(window->title, title, title_len);
+        memcpy64(window->title, title, title_len);
     }
     window->title[title_len] = '\0';
     window->title_len = title_len;

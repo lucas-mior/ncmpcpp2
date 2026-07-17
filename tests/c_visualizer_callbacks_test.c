@@ -3,7 +3,7 @@
 
 #include "c/ncm_error.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "screens/nc_screen.h"
 #include "screens/nc_visualizer.h"
 #include "status.h"
@@ -173,7 +173,7 @@ __wrap_ui_state_main_height(void) {
 void
 __wrap_ncm_title_draw_header(char *title, int32 title_len) {
     assert(title_len < (int32)SIZEOF(test_header));
-    cbase_memcpy(test_header, title, title_len);
+    memcpy64(test_header, title, title_len);
     test_header[title_len] = '\0';
     test_header_len = title_len;
     test_header_calls += 1;
@@ -215,8 +215,8 @@ test_open_fifo(void *user, char *location, int32 location_len) {
 
     io = user;
     assert(location_len == STRLIT_LEN("/tmp/visualizer.fifo"));
-    assert(cbase_memcmp(location, "/tmp/visualizer.fifo",
-                        location_len) == 0);
+    assert(memcmp64(location, "/tmp/visualizer.fifo",
+                location_len) == 0);
     io->open_calls += 1;
     return TEST_SOURCE_FD;
 }
@@ -238,7 +238,7 @@ test_read_source(void *user, int32 fd, void *buffer,
     if (bytes > buffer_size) {
         bytes = buffer_size;
     }
-    cbase_memcpy(buffer, io->samples, bytes);
+    memcpy64(buffer, io->samples, bytes);
     io->samples_len = 0;
     return bytes;
 }
@@ -345,8 +345,8 @@ test_callbacks(void) {
     assert(test_clear_calls == 1);
     assert(test_header_calls == 1);
     assert(test_header_len == STRLIT_LEN("Music visualizer"));
-    assert(cbase_memcmp(test_header, "Music visualizer",
-                        test_header_len) == 0);
+    assert(memcmp64(test_header, "Music visualizer",
+                test_header_len) == 0);
 #if defined(HAVE_FFTW3_H)
     assert(screen.fft.dft_frequency_space_len == 20);
     assert(screen.fft.bar_heights_cap >= 20);

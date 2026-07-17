@@ -11,6 +11,7 @@
 #include "screens/nc_playlist_editor.h"
 #include "status.h"
 #include "ui_state.h"
+#include "cbase/util.c"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 
@@ -370,7 +371,7 @@ copy_cstring(char *dest, int32 dest_cap, char *source) {
     source_len = cstring_len(source);
     assert(source_len < dest_cap);
     if (source_len > 0) {
-        cbase_memcpy(dest, source, source_len);
+        memcpy64(dest, source, source_len);
     }
     dest[source_len] = '\0';
     return;
@@ -2215,8 +2216,8 @@ __wrap_nc_window_print_data(NcWindow *window, char *string,
     }
     assert((window_trace.printed_len + string_len)
            < (int32)sizeof(window_trace.printed));
-    cbase_memcpy(window_trace.printed + window_trace.printed_len,
-               string, string_len);
+    memcpy64(window_trace.printed + window_trace.printed_len,
+           string, string_len);
     window_trace.printed_len += string_len;
     window_trace.printed[window_trace.printed_len] = '\0';
     return;
@@ -2324,7 +2325,7 @@ __wrap_ncm_statusbar_print(int32 delay_seconds, char *message,
     assert(message_len < NCM_ARRAY_LEN(mpd_fixture.status_message));
     mpd_fixture.status_calls += 1;
     if (message_len > 0) {
-        cbase_memcpy(mpd_fixture.status_message, message, message_len);
+        memcpy64(mpd_fixture.status_message, message, message_len);
     }
     mpd_fixture.status_message[message_len] = '\0';
     return;
@@ -2361,7 +2362,7 @@ __wrap_ncm_action_add_song_to_playlist(NcmSong *song, bool play,
     assert(ncm_song_uri_view(song, 0, &uri));
     assert(uri.len < NCM_ARRAY_LEN(mpd_fixture.added_song_uri));
     if (uri.len > 0) {
-        cbase_memcpy(mpd_fixture.added_song_uri, uri.data, uri.len);
+        memcpy64(mpd_fixture.added_song_uri, uri.data, uri.len);
     }
     mpd_fixture.added_song_uri[uri.len] = '\0';
     return true;

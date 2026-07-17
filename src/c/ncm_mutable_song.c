@@ -3,7 +3,7 @@
 #include "c/ncm_string.h"
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static void ncm_mutable_song_free_string(char **string, int32 *string_len);
 static bool ncm_mutable_song_set_string(char **dest, int32 *dest_len,
@@ -35,7 +35,7 @@ ncm_mutable_song_free_string(char **string, int32 *string_len) {
     }
 
     if (*string != NULL) {
-        cbase_free(*string, *string_len + 1);
+        free2(*string, *string_len + 1);
     }
     *string = NULL;
     if (string_len != NULL) {
@@ -64,9 +64,9 @@ ncm_mutable_song_set_string(char **dest, int32 *dest_len,
 
     copy = NULL;
     if (source != NULL) {
-        copy = (char *)cbase_malloc(source_len + 1);
+        copy = (char *)malloc2(source_len + 1);
         if (source_len > 0) {
-            cbase_memcpy(copy, source, source_len);
+            memcpy64(copy, source, source_len);
         }
         copy[source_len] = '\0';
     }
@@ -139,7 +139,7 @@ ncm_mutable_song_grow_tags(NcmMutableSong *song) {
         new_cap = song->tags_cap*2;
     }
 
-    song->tags = (NcmMutableSongTag *)cbase_realloc_array(
+    song->tags = (NcmMutableSongTag *)realloc2(
         song->tags, song->tags_cap, new_cap, SIZEOF(*song->tags));
     for (int32 i = song->tags_cap; i < new_cap; i += 1) {
         ncm_mutable_song_tag_init(&song->tags[i]);
@@ -273,7 +273,7 @@ ncm_mutable_song_destroy(NcmMutableSong *song) {
         ncm_mutable_song_tag_destroy(&song->tags[i]);
     }
     if (song->tags != NULL) {
-        cbase_free(song->tags, song->tags_cap*SIZEOF(*song->tags));
+        free2(song->tags, song->tags_cap*SIZEOF(*song->tags));
     }
     ncm_mutable_song_init(song);
     return;

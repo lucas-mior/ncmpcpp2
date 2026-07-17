@@ -3,14 +3,14 @@
 #include <wchar.h>
 #include <wctype.h>
 
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 #include "cbase/base_macros.h"
 
 int32
 ncm_utf8_decode(char *string, int32 string_len, uint32 *rune) {
     int32 result;
 
-    result = cbase_utf8_decode_rune(string, rune, string_len);
+    result = utf8_decode(string, rune, string_len);
     if (result <= 0) {
         result = 1;
         if (rune) {
@@ -23,17 +23,32 @@ ncm_utf8_decode(char *string, int32 string_len, uint32 *rune) {
 
 int32
 ncm_utf8_encode(uint32 rune, char *buffer, int32 buffer_capacity) {
+    char encoded[4];
     int32 result;
 
-    result = cbase_utf8_encode_rune(rune, buffer, buffer_capacity);
+    result = utf8_encode(rune, encoded);
+    if (result > buffer_capacity) {
+        return 0;
+    }
+    if (result > 0) {
+        memcpy64(buffer, encoded, result);
+    }
+
     return result;
 }
 
 int32
 ncm_utf8_char_width(uint32 rune) {
+    int width;
     int32 result;
 
-    result = cbase_utf8_char_width(rune);
+    width = wcwidth((wchar_t)rune);
+    if (width < 0) {
+        result = 1;
+    } else {
+        result = (int32)width;
+    }
+
     return result;
 }
 
@@ -189,12 +204,12 @@ ncm_utf8_capitalize_first_letters(char *string, int32 string_len,
             encoded_len = length;
             if ((buffer != NULL)
                 && ((result_len + encoded_len) <= buffer_capacity)) {
-                cbase_memcpy(buffer + result_len, string + byte,
-                             encoded_len);
+                memcpy64(buffer + result_len, string + byte,
+                     encoded_len);
             }
         } else if ((buffer != NULL)
                    && ((result_len + encoded_len) <= buffer_capacity)) {
-            cbase_memcpy(buffer + result_len, encoded, encoded_len);
+            memcpy64(buffer + result_len, encoded, encoded_len);
         }
 
         result_len += encoded_len;

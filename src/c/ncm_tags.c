@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "c/ncm_taglib.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 typedef struct NcmTagsFirstPropertyContext {
     NcmStringView *value;
@@ -114,11 +114,11 @@ ncm_tags_build_file_path(char *music_dir, char *uri, bool is_from_database,
     uri_len = ncm_tags_cstring_len(uri);
     len = music_dir_len + uri_len;
 
-    path = (char *)cbase_malloc(len + 1);
+    path = (char *)malloc2(len + 1);
     if (music_dir_len > 0) {
-        cbase_memcpy(path, music_dir, music_dir_len);
+        memcpy64(path, music_dir, music_dir_len);
     }
-    cbase_memcpy(path + music_dir_len, uri, uri_len + 1);
+    memcpy64(path + music_dir_len, uri, uri_len + 1);
 
     if (path_len != NULL) {
         *path_len = len;
@@ -148,19 +148,19 @@ ncm_tags_build_renamed_path(char *music_dir, char *directory, char *new_name,
     new_name_len = ncm_tags_cstring_len(new_name);
     len = music_dir_len + directory_len + 1 + new_name_len;
 
-    path = (char *)cbase_malloc(len + 1);
+    path = (char *)malloc2(len + 1);
     offset = 0;
     if (music_dir_len > 0) {
-        cbase_memcpy(path + offset, music_dir, music_dir_len);
+        memcpy64(path + offset, music_dir, music_dir_len);
         offset += music_dir_len;
     }
     if (directory_len > 0) {
-        cbase_memcpy(path + offset, directory, directory_len);
+        memcpy64(path + offset, directory, directory_len);
         offset += directory_len;
     }
     path[offset] = '/';
     offset += 1;
-    cbase_memcpy(path + offset, new_name, new_name_len + 1);
+    memcpy64(path + offset, new_name, new_name_len + 1);
 
     if (path_len != NULL) {
         *path_len = len;
@@ -360,7 +360,7 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
 
     ncm_taglib_file_init(&file);
     if (!ncm_taglib_file_open(&file, old_path)) {
-        cbase_free(old_path, old_path_len + 1);
+        free2(old_path, old_path_len + 1);
         return false;
     }
 
@@ -372,7 +372,7 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
     saved = ncm_taglib_file_save(&file);
     ncm_taglib_file_close(&file);
     if (!saved) {
-        cbase_free(old_path, old_path_len + 1);
+        free2(old_path, old_path_len + 1);
         return false;
     }
 
@@ -381,17 +381,17 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
                                                is_from_database,
                                                &new_path_len);
         if (new_path == NULL) {
-            cbase_free(old_path, old_path_len + 1);
+            free2(old_path, old_path_len + 1);
             return false;
         }
         if (rename(old_path, new_path) != 0) {
-            cbase_free(new_path, new_path_len + 1);
-            cbase_free(old_path, old_path_len + 1);
+            free2(new_path, new_path_len + 1);
+            free2(old_path, old_path_len + 1);
             return false;
         }
-        cbase_free(new_path, new_path_len + 1);
+        free2(new_path, new_path_len + 1);
     }
 
-    cbase_free(old_path, old_path_len + 1);
+    free2(old_path, old_path_len + 1);
     return true;
 }

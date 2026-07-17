@@ -8,7 +8,7 @@
 #include "c/ncm_error.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 
@@ -199,7 +199,7 @@ runtime_run_external_command(char *command, int32 command_len,
 
     state = user;
     REQUIRE(command_len < (int32)SIZEOF(state->external));
-    cbase_memcpy(state->external, command, command_len);
+    memcpy64(state->external, command, command_len);
     state->external[command_len] = '\0';
     state->external_len = command_len;
     return true;
@@ -212,7 +212,7 @@ runtime_run_external_console_command(char *command, int32 command_len,
 
     state = user;
     REQUIRE(command_len < (int32)SIZEOF(state->console));
-    cbase_memcpy(state->console, command, command_len);
+    memcpy64(state->console, command, command_len);
     state->console[command_len] = '\0';
     state->console_len = command_len;
     return true;

@@ -2,7 +2,6 @@
 #include <stddef.h>
 
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
 #include "curses/nc_menu.h"
 
 typedef struct TestMenuItem {

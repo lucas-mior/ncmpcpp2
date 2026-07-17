@@ -2,7 +2,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 void
 ncm_sample_buffer_init(NcmSampleBuffer *buffer) {
@@ -15,7 +15,7 @@ ncm_sample_buffer_init(NcmSampleBuffer *buffer) {
 void
 ncm_sample_buffer_destroy(NcmSampleBuffer *buffer) {
     if (buffer->data) {
-        cbase_free(buffer->data, buffer->cap*SIZEOF(*buffer->data));
+        free2(buffer->data, buffer->cap*SIZEOF(*buffer->data));
     }
 
     buffer->data = NULL;
@@ -33,8 +33,8 @@ ncm_sample_buffer_copy(NcmSampleBuffer *dest, NcmSampleBuffer *source) {
     ncm_sample_buffer_resize(dest, source->cap);
     dest->len = source->len;
     if (source->len > 0) {
-        cbase_memcpy(dest->data, source->data,
-                   source->len*SIZEOF(*source->data));
+        memcpy64(dest->data, source->data,
+               source->len*SIZEOF(*source->data));
     }
     return;
 }
@@ -70,14 +70,14 @@ ncm_sample_buffer_put(NcmSampleBuffer *buffer,
         to_remove = samples_len - free_samples;
         kept = buffer->len - to_remove;
         if (kept > 0) {
-            cbase_memmove(buffer->data, buffer->data + to_remove,
-                        kept*SIZEOF(*buffer->data));
+            memmove64(buffer->data, buffer->data + to_remove,
+                    kept*SIZEOF(*buffer->data));
         }
         buffer->len -= to_remove;
     }
 
-    cbase_memcpy(buffer->data + buffer->len, samples,
-               samples_len*SIZEOF(*buffer->data));
+    memcpy64(buffer->data + buffer->len, samples,
+           samples_len*SIZEOF(*buffer->data));
     buffer->len += samples_len;
     return true;
 }
@@ -105,24 +105,24 @@ ncm_sample_buffer_get(NcmSampleBuffer *buffer,
     if (result >= dest_len) {
         samples_lost = result - dest_len;
         if (dest_len > 0) {
-            cbase_memcpy(dest, buffer->data + samples_lost,
-                       dest_len*SIZEOF(*dest));
+            memcpy64(dest, buffer->data + samples_lost,
+                   dest_len*SIZEOF(*dest));
         }
     } else {
         dest_move_len = dest_len - result;
         if (dest_move_len > 0) {
-            cbase_memmove(dest, dest + result, dest_move_len*SIZEOF(*dest));
+            memmove64(dest, dest + result, dest_move_len*SIZEOF(*dest));
         }
         if (result > 0) {
-            cbase_memcpy(dest + dest_move_len, buffer->data,
-                       result*SIZEOF(*dest));
+            memcpy64(dest + dest_move_len, buffer->data,
+                   result*SIZEOF(*dest));
         }
     }
 
     remove_len = buffer->len - result;
     if (remove_len > 0) {
-        cbase_memmove(buffer->data, buffer->data + result,
-                    remove_len*SIZEOF(*buffer->data));
+        memmove64(buffer->data, buffer->data + result,
+                remove_len*SIZEOF(*buffer->data));
     }
     buffer->len -= result;
 
@@ -160,7 +160,7 @@ ncm_sample_buffer_copy_data(NcmSampleBuffer *buffer,
         copied = buffer->cap;
     }
 
-    cbase_memcpy(dest, buffer->data, copied*SIZEOF(*dest));
+    memcpy64(dest, buffer->data, copied*SIZEOF(*dest));
     return copied;
 }
 
@@ -170,8 +170,13 @@ ncm_sample_buffer_resize(NcmSampleBuffer *buffer, int32 cap) {
         cap = 0;
     }
 
-    buffer->data = cbase_realloc_array(buffer->data, buffer->cap, cap,
-                                     SIZEOF(*buffer->data));
+    if (cap == 0) {
+        free2(buffer->data, buffer->cap*SIZEOF(*buffer->data));
+        buffer->data = NULL;
+    } else {
+        buffer->data = realloc2(buffer->data, buffer->cap, cap,
+                     SIZEOF(*buffer->data));
+    }
     buffer->cap = cap;
     ncm_sample_buffer_clear(buffer);
     return;

@@ -10,7 +10,7 @@
 
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static void ncm_process_set_errno_error(NcmError *error, int32 code,
                                         char *operation);
@@ -121,16 +121,16 @@ ncm_process_command_destroy(NcmProcessCommand *command) {
 
     for (int32 i = 0; i < command->argc; i += 1) {
         if (command->argv[i]) {
-            cbase_free(command->argv[i], command->argv_lens[i] + 1);
+            free2(command->argv[i], command->argv_lens[i] + 1);
         }
     }
     if (command->argv) {
-        cbase_free(command->argv,
-                 (command->cap + 1)*SIZEOF(*command->argv));
+        free2(command->argv,
+            (command->cap + 1)*SIZEOF(*command->argv));
     }
     if (command->argv_lens) {
-        cbase_free(command->argv_lens,
-                 command->cap*SIZEOF(*command->argv_lens));
+        free2(command->argv_lens,
+            command->cap*SIZEOF(*command->argv_lens));
     }
     ncm_process_command_init(command);
     return;
@@ -162,17 +162,17 @@ ncm_process_command_add_arg(NcmProcessCommand *command,
         while (command->argc + 1 >= new_cap) {
             new_cap *= 2;
         }
-        command->argv = cbase_realloc_array(command->argv,
-                                          old_cap + 1, new_cap + 1,
-                                          SIZEOF(*command->argv));
-        command->argv_lens = cbase_realloc_array(command->argv_lens,
-                                               old_cap, new_cap,
-                                               SIZEOF(*command->argv_lens));
+        command->argv = realloc2(command->argv,
+                               old_cap + 1, new_cap + 1,
+                               SIZEOF(*command->argv));
+        command->argv_lens = realloc2(command->argv_lens,
+                                    old_cap, new_cap,
+                                    SIZEOF(*command->argv_lens));
         command->cap = new_cap;
     }
 
-    copy = cbase_malloc(arg_len + 1);
-    cbase_memcpy(copy, arg, arg_len);
+    copy = malloc2(arg_len + 1);
+    memcpy64(copy, arg, arg_len);
     copy[arg_len] = '\0';
     command->argv[command->argc] = copy;
     command->argv_lens[command->argc] = arg_len;

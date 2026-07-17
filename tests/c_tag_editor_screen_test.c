@@ -10,6 +10,7 @@
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
+#include "cbase/util.c"
 #include "screens/nc_tag_editor.h"
 #include "settings.h"
 #include "ui_state.h"
@@ -3323,8 +3324,8 @@ __wrap_nc_window_print_data(NcWindow *window, char *string,
     }
     assert(window_trace.printed_len + string_len
            < (int32)SIZEOF(window_trace.printed));
-    cbase_memcpy(window_trace.printed + window_trace.printed_len, string,
-               string_len);
+    memcpy64(window_trace.printed + window_trace.printed_len, string,
+           string_len);
     window_trace.printed_len += string_len;
     window_trace.printed[window_trace.printed_len] = '\0';
     return;
@@ -3441,7 +3442,7 @@ test_tag_editor_parser_pattern_history_workflow(void) {
 
     destroy_screen(&screen);
     if ((Config.pattern != NULL) && (Config.pattern_cap > 0)) {
-        cbase_free(Config.pattern, Config.pattern_cap);
+        free2(Config.pattern, Config.pattern_cap);
     }
     Config.pattern = old_pattern;
     Config.pattern_len = old_pattern_len;
@@ -3612,8 +3613,8 @@ __wrap_ncm_mpd_client_get_directory_list(NcmMpdClient *client, char *path,
         mpd_trace.directory_path_len = (int32)strlen(path);
         assert(mpd_trace.directory_path_len
                < (int32)SIZEOF(mpd_trace.directory_path));
-        cbase_memcpy(mpd_trace.directory_path, path,
-                   mpd_trace.directory_path_len);
+        memcpy64(mpd_trace.directory_path, path,
+               mpd_trace.directory_path_len);
         mpd_trace.directory_path[mpd_trace.directory_path_len] = '\0';
     }
     if (!mpd_trace.get_directory_list_result) {
@@ -3634,7 +3635,7 @@ __wrap_ncm_mpd_client_get_songs(NcmMpdClient *client, char *path,
         mpd_trace.songs_path_len = (int32)strlen(path);
         assert(mpd_trace.songs_path_len
                < (int32)SIZEOF(mpd_trace.songs_path));
-        cbase_memcpy(mpd_trace.songs_path, path, mpd_trace.songs_path_len);
+        memcpy64(mpd_trace.songs_path, path, mpd_trace.songs_path_len);
         mpd_trace.songs_path[mpd_trace.songs_path_len] = '\0';
     }
     if (!mpd_trace.get_songs_result) {
@@ -3654,8 +3655,8 @@ __wrap_ncm_statusbar_print_cstring(int32 delay_seconds, char *message) {
         mpd_trace.status_message_len = (int32)strlen(message);
         assert(mpd_trace.status_message_len
                < (int32)SIZEOF(mpd_trace.status_message));
-        cbase_memcpy(mpd_trace.status_message, message,
-                   mpd_trace.status_message_len);
+        memcpy64(mpd_trace.status_message, message,
+               mpd_trace.status_message_len);
         mpd_trace.status_message[mpd_trace.status_message_len] = '\0';
     }
     return;

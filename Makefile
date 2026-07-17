@@ -39,16 +39,13 @@ THREAD_FLAGS := -pthread
 OBJ_DIR := $(BUILD_DIR)/obj
 TOOLS_STAMP := $(BUILD_DIR)/.tools-ok
 BINARY := $(BUILD_DIR)/ncmpcpp
-CBASE_LIB := $(BUILD_DIR)/libcbase.a
 NCMPCPP_C_LIB := $(BUILD_DIR)/libncmpcpp_c.a
 NCMPCPP_APP_C_LIB := $(BUILD_DIR)/libncmpcpp_app_c.a
 
-CBASE_SRCS := cbase/cbase.c
 NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
 APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
 C_TEST_SRCS := $(sort $(wildcard tests/*_test.c))
 
-CBASE_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(CBASE_SRCS))
 NCMPCPP_C_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(NCMPCPP_C_SRCS))
 APP_C_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(APP_C_SRCS))
 C_TEST_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(C_TEST_SRCS))
@@ -384,14 +381,13 @@ STATUS_TEST_WRAP_FLAGS := \
 $(BUILD_DIR)/tests/c_status_test: \
 	LDFLAGS += $(STATUS_TEST_WRAP_FLAGS)
 DEPS := \
-	$(CBASE_OBJS:.o=.d) \
 	$(NCMPCPP_C_OBJS:.o=.d) \
 	$(APP_C_OBJS:.o=.d) \
 	$(C_TEST_OBJS:.o=.d)
 
 .PHONY: all check install clean help check-no-foreign-sources FORCE
 .DELETE_ON_ERROR:
-.SECONDARY: $(CBASE_OBJS) $(NCMPCPP_C_OBJS) $(APP_C_OBJS) $(C_TEST_OBJS)
+.SECONDARY: $(NCMPCPP_C_OBJS) $(APP_C_OBJS) $(C_TEST_OBJS)
 
 all: check-no-foreign-sources $(BINARY)
 
@@ -416,11 +412,6 @@ $(OBJ_DIR)/%.c.o: %.c
 		-c $< \
 		-o $@
 
-$(CBASE_LIB): $(CBASE_OBJS)
-	@printf 'AR  %s\n' '$@'
-	@rm -f $@
-	@$(AR) rcs $@ $^
-
 $(NCMPCPP_C_LIB): $(NCMPCPP_C_OBJS)
 	@printf 'AR  %s\n' '$@'
 	@rm -f $@
@@ -431,18 +422,17 @@ $(NCMPCPP_APP_C_LIB): $(APP_C_OBJS)
 	@rm -f $@
 	@$(AR) rcs $@ $^
 
-$(BINARY): $(APP_C_OBJS) $(NCMPCPP_C_LIB) $(CBASE_LIB)
+$(BINARY): $(APP_C_OBJS) $(NCMPCPP_C_LIB)
 	@printf 'LD  %s\n' '$@'
 	@$(CC) $(LDFLAGS) -o $@ \
 		$(APP_C_OBJS) \
 		$(NCMPCPP_C_LIB) \
-		$(CBASE_LIB) \
 		$(READLINE_LIBS) \
 		$(PKG_LIBS) \
 		$(LDLIBS) \
 		$(THREAD_FLAGS)
 
-$(C_TEST_BINS): $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LIB) $(CBASE_LIB)
+$(C_TEST_BINS): $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LIB)
 	@mkdir -p $(@D)
 	@printf 'LD  %s\n' '$@'
 	@$(CC) $(LDFLAGS) -o $@ \
@@ -450,7 +440,6 @@ $(C_TEST_BINS): $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(
 		-Wl,--start-group \
 		$(NCMPCPP_APP_C_LIB) \
 		$(NCMPCPP_C_LIB) \
-		$(CBASE_LIB) \
 		-Wl,--end-group \
 		$(READLINE_LIBS) \
 		$(PKG_LIBS) \

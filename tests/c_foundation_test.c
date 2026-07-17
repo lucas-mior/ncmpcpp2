@@ -18,6 +18,7 @@
 #include "c/ncm_type_conversions.h"
 #include "c/ncm_utf8.h"
 #include "cbase/base_macros.h"
+#include "cbase/util.c"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 
@@ -168,7 +169,7 @@ test_buffer(void) {
     REQUIRE_INT(buffer.len, 0);
     REQUIRE_INT(buffer.cap, 0);
 
-    cbase_free(stolen, stolen_cap);
+    free2(stolen, stolen_cap);
     ncm_buffer_destroy(&moved);
     ncm_buffer_destroy(&copy);
     ncm_buffer_destroy(&buffer);

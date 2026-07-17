@@ -2,7 +2,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
-#include "cbase/cbase.h"
+#include "cbase/util.c"
 
 static NcmArrayItemCallbacks settings_no_callbacks = {0};
 
@@ -53,7 +53,7 @@ NCM_ARRAY_DEFINE_APPEND(ncm_formatted_color_array,
 static void
 settings_string_destroy(char **data, int32 *len, int32 *cap) {
     if (*data != NULL) {
-        cbase_free(*data, *cap);
+        free2(*data, *cap);
     }
     *data = NULL;
     *len = 0;
@@ -118,7 +118,7 @@ column_array_destroy(ColumnArray *array) {
     }
     column_array_clear(array);
     if (array->items) {
-        cbase_free(array->items, array->cap*SIZEOF(*array->items));
+        free2(array->items, array->cap*SIZEOF(*array->items));
     }
     column_array_init(array);
     return;
@@ -151,8 +151,8 @@ column_array_reserve(ColumnArray *array, int32 extra) {
         new_cap *= 2;
     }
 
-    array->items = cbase_realloc_array(array->items, old_cap, new_cap,
-                                     SIZEOF(*array->items));
+    array->items = realloc2(array->items, old_cap, new_cap,
+                          SIZEOF(*array->items));
     array->cap = new_cap;
     return true;
 }
@@ -194,7 +194,7 @@ screen_type_array_destroy(ScreenTypeArray *array) {
         return;
     }
     if (array->items) {
-        cbase_free(array->items, array->cap*SIZEOF(*array->items));
+        free2(array->items, array->cap*SIZEOF(*array->items));
     }
     screen_type_array_init(array);
     return;
@@ -227,8 +227,8 @@ screen_type_array_reserve(ScreenTypeArray *array, int32 extra) {
         new_cap *= 2;
     }
 
-    array->items = cbase_realloc_array(array->items, old_cap, new_cap,
-                                     SIZEOF(*array->items));
+    array->items = realloc2(array->items, old_cap, new_cap,
+                          SIZEOF(*array->items));
     array->cap = new_cap;
     return true;
 }
