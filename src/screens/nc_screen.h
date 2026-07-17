@@ -81,13 +81,11 @@ void nc_screen_scroll(NcScreen *screen, enum NcScroll where);
 void nc_screen_finish_list_change(NcScreen *screen);
 bool nc_screen_can_run_current(NcScreen *screen);
 bool nc_screen_run_current(NcScreen *screen);
-bool nc_screen_is_active_window(NcScreen *screen, NcWindow *window);
 void nc_screen_switch_to(NcScreen *screen);
 void nc_screen_resize(NcScreen *screen);
 int32 nc_screen_window_timeout(NcScreen *screen);
 char *nc_screen_title(NcScreen *screen);
 int32 nc_screen_type(NcScreen *screen);
-void nc_screen_set_type(NcScreen *screen, int32 type);
 void nc_screen_update(NcScreen *screen);
 void nc_screen_mouse_button_pressed(NcScreen *screen, MEVENT event);
 bool nc_screen_is_lockable(NcScreen *screen);
@@ -95,7 +93,6 @@ bool nc_screen_is_mergable(NcScreen *screen);
 bool nc_screen_has_to_be_resized(NcScreen *screen);
 void nc_screen_set_has_to_be_resized(NcScreen *screen,
                                      bool has_to_be_resized);
-bool nc_screen_has_to_be_updated(NcScreen *screen);
 void nc_screen_set_has_to_be_updated(NcScreen *screen,
                                      bool has_to_be_updated);
 void nc_screen_request_resize(NcScreen *screen);
@@ -106,7 +103,6 @@ NcScreenResizeParams nc_screen_resize_params(NcScreen *screen);
 void nc_screen_get_resize_params(NcScreen *screen, int64 *x_offset,
                                  int64 *width);
 void nc_screen_draw_vertical_separator(int64 x);
-void nc_screen_destroy(NcScreen *screen);
 void *nc_screen_user(NcScreen *screen);
 
 void nc_screen_registry_init(NcScreenRegistry *registry);
@@ -118,34 +114,19 @@ NcScreen *nc_screen_registry_find(NcScreenRegistry *registry, int32 type);
 NcScreen *nc_screen_registry_current(NcScreenRegistry *registry);
 NcScreen *nc_screen_registry_previous(NcScreenRegistry *registry);
 NcScreen *nc_screen_registry_locked(NcScreenRegistry *registry);
-NcScreen *nc_screen_registry_inactive(NcScreenRegistry *registry);
 bool nc_screen_registry_is_registered(NcScreenRegistry *registry,
                                       NcScreen *screen);
 bool nc_screen_registry_is_current(NcScreenRegistry *registry,
                                    NcScreen *screen);
-bool nc_screen_registry_is_previous(NcScreenRegistry *registry,
-                                    NcScreen *screen);
-bool nc_screen_registry_request_resize(NcScreenRegistry *registry,
-                                       NcScreen *screen);
-bool nc_screen_registry_request_update(NcScreenRegistry *registry,
-                                       NcScreen *screen);
 void nc_screen_registry_request_resize_current(
     NcScreenRegistry *registry);
-void nc_screen_registry_request_resize_visible(
-    NcScreenRegistry *registry);
-void nc_screen_registry_request_resize_all(NcScreenRegistry *registry);
 void nc_screen_registry_request_update_current(
     NcScreenRegistry *registry);
-void nc_screen_registry_request_update_visible(
-    NcScreenRegistry *registry);
-void nc_screen_registry_request_update_all(NcScreenRegistry *registry);
 NcScreenResizeParams nc_screen_registry_resize_params(
     NcScreenRegistry *registry, NcScreen *screen,
     bool adjust_locked_screen);
 bool nc_screen_registry_switch_to(NcScreenRegistry *registry,
                                   NcScreen *screen);
-bool nc_screen_registry_switch_to_type(NcScreenRegistry *registry,
-                                       int32 type);
 bool nc_screen_registry_lock_current(NcScreenRegistry *registry);
 void nc_screen_registry_unlock(NcScreenRegistry *registry);
 bool nc_screen_registry_is_visible(NcScreenRegistry *registry,
@@ -153,11 +134,8 @@ bool nc_screen_registry_is_visible(NcScreenRegistry *registry,
 void nc_screen_registry_each_visible(NcScreenRegistry *registry,
                                      NcScreenEachCallback callback,
                                      void *user);
-void nc_screen_registry_update_current(NcScreenRegistry *registry);
 void nc_screen_registry_update_visible(NcScreenRegistry *registry);
-void nc_screen_registry_update_all(NcScreenRegistry *registry);
 void nc_screen_registry_resize_current(NcScreenRegistry *registry);
 void nc_screen_registry_resize_visible(NcScreenRegistry *registry);
-void nc_screen_registry_resize_all(NcScreenRegistry *registry);
 
 #endif /* NCMPCPP_NC_SCREEN_H */

@@ -3,56 +3,6 @@
 #include "c/ncm_string.h"
 #include "cbase/util.c"
 
-char *
-screen_type_str(enum ScreenType screen_type) {
-    switch (screen_type) {
-    case NCM_SCREEN_TYPE_BROWSER:
-        return "browser";
-    case NCM_SCREEN_TYPE_HELP:
-        return "help";
-    case NCM_SCREEN_TYPE_LASTFM:
-        return "last_fm";
-    case NCM_SCREEN_TYPE_LYRICS:
-        return "lyrics";
-    case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
-        return "media_library";
-#if defined(ENABLE_OUTPUTS)
-    case NCM_SCREEN_TYPE_OUTPUTS:
-        return "outputs";
-#endif
-    case NCM_SCREEN_TYPE_PLAYLIST:
-        return "playlist";
-    case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
-        return "playlist_editor";
-    case NCM_SCREEN_TYPE_SEARCH_ENGINE:
-        return "search_engine";
-    case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
-        return "selected_items_adder";
-    case NCM_SCREEN_TYPE_SERVER_INFO:
-        return "server_info";
-    case NCM_SCREEN_TYPE_SONG_INFO:
-        return "song_info";
-    case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
-        return "sort_playlist_dialog";
-#if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR:
-        return "tag_editor";
-    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
-        return "tiny_tag_editor";
-#endif
-    case NCM_SCREEN_TYPE_UNKNOWN:
-        return "unknown";
-#if defined(ENABLE_VISUALIZER)
-    case NCM_SCREEN_TYPE_VISUALIZER:
-        return "visualizer";
-#endif
-    case NCM_SCREEN_TYPE_LAST:
-        break;
-    }
-
-    return "unknown";
-}
-
 int32
 screen_type_to_native_type(enum ScreenType screen_type) {
     switch (screen_type) {

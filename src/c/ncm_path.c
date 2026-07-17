@@ -143,16 +143,3 @@ ncm_path_extension_start(char *path, int32 path_len) {
     return dot + 1;
 }
 
-bool
-ncm_path_has_extension(char *path, int32 path_len,
-                       char *extension, int32 extension_len) {
-    int32 start;
-
-    start = ncm_path_extension_start(path, path_len);
-    if (start < 0) {
-        return false;
-    }
-
-    return STREQUAL(path + start, path_len - start,
-                            extension, extension_len);
-}

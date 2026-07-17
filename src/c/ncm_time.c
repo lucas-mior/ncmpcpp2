@@ -41,32 +41,6 @@ ncm_time_monotonic_now(NcmTimePoint *point, NcmError *error) {
     return true;
 }
 
-bool
-ncm_time_sleep_ms(int64 milliseconds, NcmError *error) {
-    struct timespec request;
-    struct timespec remaining;
-    int32 saved_errno;
-
-    if (milliseconds < 0) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("negative sleep interval"));
-        return false;
-    }
-
-    request.tv_sec = (time_t)(milliseconds / 1000);
-    request.tv_nsec = (long)((milliseconds % 1000)*1000000ll);
-    while (nanosleep(&request, &remaining) != 0) {
-        saved_errno = errno;
-        if (saved_errno != EINTR) {
-            ncm_time_set_errno_error(error, saved_errno, "nanosleep");
-            return false;
-        }
-        request = remaining;
-    }
-
-    ncm_error_clear(error);
-    return true;
-}
-
 int64
 ncm_time_elapsed_ns(NcmTimePoint start, NcmTimePoint end) {
     return end.ns - start.ns;
@@ -77,19 +51,3 @@ ncm_time_elapsed_ms(NcmTimePoint start, NcmTimePoint end) {
     return ncm_time_elapsed_ns(start, end) / 1000000ll;
 }
 
-bool
-ncm_time_since_ms(NcmTimePoint start, int64 *milliseconds,
-                  NcmError *error) {
-    NcmTimePoint now;
-
-    if (milliseconds == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing elapsed output"));
-        return false;
-    }
-    if (!ncm_time_monotonic_now(&now, error)) {
-        return false;
-    }
-
-    *milliseconds = ncm_time_elapsed_ms(start, now);
-    return true;
-}

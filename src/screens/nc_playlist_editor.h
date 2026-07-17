@@ -84,14 +84,6 @@ typedef struct NativePlaylistEditorScreen {
     bool registered;
 } NativePlaylistEditorScreen;
 
-void native_playlist_editor_command_init(
-    NativePlaylistEditorCommand *command);
-void native_playlist_editor_command_destroy(
-    NativePlaylistEditorCommand *command);
-bool native_playlist_editor_command_set(
-    NativePlaylistEditorCommand *command,
-    enum NativePlaylistEditorCommandType type, char *playlist,
-    int32 playlist_len, char *target, int32 target_len);
 
 void native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
                                         int64 start_x, int64 width,
@@ -122,7 +114,6 @@ void native_playlist_editor_screen_previous_column(
     NativePlaylistEditorScreen *screen);
 void native_playlist_editor_screen_next_column(
     NativePlaylistEditorScreen *screen);
-void native_playlist_editor_screen_clear(NativePlaylistEditorScreen *screen);
 bool native_playlist_editor_screen_load_playlists(
     NativePlaylistEditorScreen *screen, NcmMpdPlaylistList *playlists);
 bool native_playlist_editor_screen_reload_playlists_from_mpd(
@@ -141,25 +132,17 @@ bool native_playlist_editor_screen_locate_song(
     NcmSong *song, NcmError *error);
 bool native_playlist_editor_screen_current_playlist(
     NativePlaylistEditorScreen *screen, NcmPlaylist *playlist);
-bool native_playlist_editor_screen_current_playlist_path(
-    NativePlaylistEditorScreen *screen, char **path, int32 *path_len);
 bool native_playlist_editor_screen_current_song(
     NativePlaylistEditorScreen *screen, NcmSong *song);
 bool native_playlist_editor_screen_current_content_song(
     NativePlaylistEditorScreen *screen, NcmSong *song);
 int64 native_playlist_editor_screen_selected_playlist_count(
     NativePlaylistEditorScreen *screen);
-int64 native_playlist_editor_screen_selected_content_count(
-    NativePlaylistEditorScreen *screen);
-bool native_playlist_editor_screen_active_menu_empty(
-    NativePlaylistEditorScreen *screen);
 bool native_playlist_editor_screen_selected_songs(
     NativePlaylistEditorScreen *screen, NcmSongArray *songs);
 bool native_playlist_editor_screen_apply_active_filter(
     NativePlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, NcmError *error);
-void native_playlist_editor_screen_clear_active_filter(
-    NativePlaylistEditorScreen *screen);
 bool native_playlist_editor_screen_search_active(
     NativePlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, bool forward, bool wrap, bool skip_current,
@@ -168,17 +151,5 @@ void native_playlist_editor_screen_request_playlists_update(
     NativePlaylistEditorScreen *screen);
 void native_playlist_editor_screen_request_content_update(
     NativePlaylistEditorScreen *screen);
-void native_playlist_editor_screen_finish_list_change(
-    NativePlaylistEditorScreen *screen);
-bool native_playlist_editor_screen_prepare_playlist_command(
-    NativePlaylistEditorScreen *screen,
-    enum NativePlaylistEditorCommandType type, char *target,
-    int32 target_len, NativePlaylistEditorCommand *command);
-bool native_playlist_editor_command_execute(
-    NativePlaylistEditorCommand *command, NcmMpdClient *client,
-    NcmError *error);
-bool native_playlist_editor_screen_load_current_playlist(
-    NativePlaylistEditorScreen *screen, NcmMpdClient *client,
-    bool *loaded, NcmError *error);
 
 #endif /* NCMPCPP_NC_PLAYLIST_EDITOR_H */

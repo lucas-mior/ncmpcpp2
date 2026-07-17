@@ -68,8 +68,5 @@ enum NcmLastfmServiceType ncm_lastfm_service_type(
 bool ncm_lastfm_service_fetch(NcmLastfmService *service,
                               NcmLastfmResult *result);
 
-void ncm_lastfm_service_set_io_for_tests(NcmLastfmCurlPerformFn perform,
-                                         NcmLastfmCurlEscapeFn escape,
-                                         void *user);
 
 #endif /* NCMPCPP_LASTFM_SERVICE_H */

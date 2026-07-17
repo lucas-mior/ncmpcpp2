@@ -404,23 +404,6 @@ ncm_format_ast_move(NcmFormatAst *dest, NcmFormatAst *source) {
 }
 
 bool
-ncm_format_ast_append_text(NcmFormatAst *ast, char *data, int32 data_len) {
-    NcmFormatExpr *expr;
-
-    if (data_len <= 0) {
-        return true;
-    }
-
-    expr = ncm_format_expr_list_append(&ast->root);
-    if (expr == NULL) {
-        return false;
-    }
-    expr->type = NCM_FORMAT_EXPR_TEXT;
-    ncm_buffer_append(&expr->value.text, data, data_len);
-    return true;
-}
-
-bool
 ncm_format_ast_append_first_of_getters(NcmFormatAst *ast,
                                        enum NcmSongGetter *getters,
                                        int32 getters_len) {

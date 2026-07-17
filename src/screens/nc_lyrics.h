@@ -109,7 +109,6 @@ bool native_lyrics_screen_fetch_in_background(NativeLyricsScreen *screen,
                                               NcmError *error);
 int32 native_lyrics_screen_dispatch_jobs(NativeLyricsScreen *screen);
 void native_lyrics_screen_update(NativeLyricsScreen *screen);
-void native_lyrics_screen_stop_downloads(NativeLyricsScreen *screen);
 void native_lyrics_screen_refetch_current(NativeLyricsScreen *screen,
                                           NcmError *error);
 NcmLyricsFetcherDef *native_lyrics_screen_toggle_fetcher(
@@ -118,13 +117,10 @@ bool native_lyrics_screen_try_take_consumer_message(
     NativeLyricsScreen *screen, NcmBuffer *message);
 NcmSong *native_lyrics_screen_song(NativeLyricsScreen *screen);
 NcmBuffer *native_lyrics_screen_filename(NativeLyricsScreen *screen);
-NcBuffer *native_lyrics_screen_display(NativeLyricsScreen *screen);
 bool native_lyrics_buffer_find(NcBuffer *buffer, char *pattern,
                                int32 pattern_len, NcmError *error);
 bool native_lyrics_screen_find(NativeLyricsScreen *screen,
                                char *pattern, int32 pattern_len,
                                NcmError *error);
-int32 native_lyrics_screen_pending_jobs(NativeLyricsScreen *screen);
-int32 native_lyrics_screen_queued_count(NativeLyricsScreen *screen);
 
 #endif /* NCMPCPP_NC_LYRICS_H */

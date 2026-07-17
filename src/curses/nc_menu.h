@@ -85,7 +85,6 @@ void nc_menu_sync_item_count(NcMenu *menu);
 int64 nc_menu_item_count(NcMenu *menu);
 int64 nc_menu_all_item_count(NcMenu *menu);
 int64 nc_menu_filtered_item_count(NcMenu *menu);
-int64 nc_menu_beginning(NcMenu *menu);
 int64 nc_menu_highlight(NcMenu *menu);
 bool nc_menu_highlight_enabled(NcMenu *menu);
 void nc_menu_set_highlight_prefix(NcMenu *menu, NcBuffer *buffer);
@@ -109,11 +108,9 @@ void nc_menu_scroll_selectable(NcMenu *menu, int64 height,
                                enum NcScroll where);
 void nc_menu_reset(NcMenu *menu);
 void nc_menu_highlight_position(NcMenu *menu, int64 pos, int64 height);
-void nc_menu_resize_all_items(NcMenu *menu, int64 new_size);
 void nc_menu_add_item(NcMenu *menu, void *item);
 void nc_menu_add_item_with_flags(NcMenu *menu, void *item, uint32 flags);
 void nc_menu_add_separator(NcMenu *menu);
-void nc_menu_insert_item(NcMenu *menu, int64 pos, void *item);
 void nc_menu_insert_item_with_flags(NcMenu *menu, int64 pos, void *item,
                                     uint32 flags);
 bool nc_menu_remove_item(NcMenu *menu, enum NcMenuItemSource source,
@@ -134,10 +131,7 @@ bool nc_menu_position_is_inactive(NcMenu *menu, int64 pos);
 bool nc_menu_position_is_selected(NcMenu *menu, int64 pos);
 bool nc_menu_set_position_selected(NcMenu *menu, int64 pos, bool selected);
 bool nc_menu_toggle_position_selected(NcMenu *menu, int64 pos);
-bool nc_menu_select_range(NcMenu *menu, int64 first, int64 last,
-                          bool selected);
 void nc_menu_clear_selection(NcMenu *menu);
-void nc_menu_reverse_selection(NcMenu *menu);
 bool nc_menu_has_selected(NcMenu *menu);
 int64 nc_menu_selected_count(NcMenu *menu);
 int64 nc_menu_first_selected_position(NcMenu *menu);

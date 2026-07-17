@@ -49,10 +49,6 @@ void native_selected_items_adder_screen_destroy(
     NativeSelectedItemsAdderScreen *screen);
 NcScreen *native_selected_items_adder_screen_base(
     NativeSelectedItemsAdderScreen *screen);
-NcEditorActionMenu *native_selected_items_adder_screen_playlist_menu(
-    NativeSelectedItemsAdderScreen *screen);
-NcEditorActionMenu *native_selected_items_adder_screen_position_menu(
-    NativeSelectedItemsAdderScreen *screen);
 NcMenu *native_selected_items_adder_screen_active_menu(
     NativeSelectedItemsAdderScreen *screen);
 NcWindow *native_selected_items_adder_screen_active_window(
@@ -60,8 +56,6 @@ NcWindow *native_selected_items_adder_screen_active_window(
 bool native_selected_items_adder_screen_open(
     NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs,
     NativePlaylistScreen *playlist, NcmMpdClient *client, NcmError *error);
-bool native_selected_items_adder_screen_selected_songs(
-    NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs);
 void native_selected_items_adder_screen_populate_playlist_selector(
     NativeSelectedItemsAdderScreen *screen, NcmMpdPlaylistList *playlists,
     bool local_browser);
@@ -76,11 +70,6 @@ void native_selected_items_adder_screen_choose_current_playlist(
 bool native_selected_items_adder_screen_add_to_existing_playlist(
     NativeSelectedItemsAdderScreen *screen, NcmMpdClient *client,
     char *playlist, NcmError *error);
-bool native_selected_items_adder_screen_apply_search(
-    NativeSelectedItemsAdderScreen *screen, char *pattern,
-    int32 pattern_len, uint32 regex_flags, NcmError *error);
-void native_selected_items_adder_screen_clear_search(
-    NativeSelectedItemsAdderScreen *screen);
 bool native_selected_items_adder_screen_search(
     NativeSelectedItemsAdderScreen *screen, char *pattern,
     int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,

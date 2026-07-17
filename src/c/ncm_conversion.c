@@ -18,10 +18,6 @@ static bool ncm_conversion_is_negative_source(char *source);
 static void ncm_conversion_set_parse_error(NcmError *error,
                                            char *source,
                                            int32 source_len);
-static void ncm_conversion_set_i64_bounds_error(NcmError *error,
-                                                int64 value,
-                                                int64 lbound,
-                                                int64 ubound);
 static void ncm_conversion_set_u64_bounds_error(NcmError *error,
                                                 uint64 value,
                                                 uint64 lbound,
@@ -107,28 +103,6 @@ ncm_conversion_set_parse_error(NcmError *error, char *source,
     }
 
     ncm_error_set(error, EINVAL, message, len);
-    return;
-}
-
-static void
-ncm_conversion_set_i64_bounds_error(NcmError *error, int64 value,
-                                    int64 lbound, int64 ubound) {
-    char message[256];
-    int32 len;
-
-    len = snprintf(message, (size_t)SIZEOF(message),
-                   "value is out of bounds ([%" PRId64 ", %" PRId64
-                   "] expected, %" PRId64 " given)",
-                   lbound, ubound, value);
-    if (len < 0) {
-        ncm_error_set(error, ERANGE, STRLIT_ARGS("value is out of bounds"));
-        return;
-    }
-    if (len >= (int32)SIZEOF(message)) {
-        len = (int32)SIZEOF(message) - 1;
-    }
-
-    ncm_error_set(error, ERANGE, message, len);
     return;
 }
 
@@ -219,41 +193,6 @@ ncm_conversion_set_f64_lower_error(NcmError *error, double value,
 }
 
 bool
-ncm_parse_int64(char *source, int32 source_len,
-                int64 *out, NcmError *error) {
-    NcmBuffer buffer;
-    char *end;
-    long long value;
-    bool ok;
-
-    if (out == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing conversion output"));
-        return false;
-    }
-
-    ncm_buffer_init(&buffer);
-    if (!ncm_conversion_copy_source(&buffer, source, source_len, error)) {
-        ncm_buffer_destroy(&buffer);
-        return false;
-    }
-
-    errno = 0;
-    value = strtoll(buffer.data, &end, 10);
-    ok = (end != buffer.data)
-         && ncm_conversion_trailing_space_only(end)
-         && (errno != ERANGE);
-    if (ok) {
-        *out = (int64)value;
-        ncm_error_clear(error);
-    } else {
-        ncm_conversion_set_parse_error(error, source, source_len);
-    }
-
-    ncm_buffer_destroy(&buffer);
-    return ok;
-}
-
-bool
 ncm_parse_uint64(char *source, int32 source_len,
                  uint64 *out, NcmError *error) {
     NcmBuffer buffer;
@@ -287,30 +226,6 @@ ncm_parse_uint64(char *source, int32 source_len,
 
     ncm_buffer_destroy(&buffer);
     return ok;
-}
-
-bool
-ncm_parse_int32(char *source, int32 source_len,
-                int32 *out, NcmError *error) {
-    int64 value;
-
-    if (out == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing conversion output"));
-        return false;
-    }
-
-    if (!ncm_parse_int64(source, source_len, &value, error)) {
-        return false;
-    }
-    if ((value < INT32_MIN) || (value > INT32_MAX)) {
-        ncm_conversion_set_i64_bounds_error(error, value,
-                                            INT32_MIN, INT32_MAX);
-        return false;
-    }
-
-    *out = (int32)value;
-    ncm_error_clear(error);
-    return true;
 }
 
 bool

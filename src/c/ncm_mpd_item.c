@@ -164,30 +164,6 @@ ncm_mpd_item_set_directory(NcmMpdItem *item, NcmDirectory *source) {
 }
 
 bool
-ncm_mpd_item_set_playlist(NcmMpdItem *item, NcmPlaylist *source) {
-    NcmMpdItem replacement;
-
-    if (item == NULL) {
-        return false;
-    }
-    if (source == NULL) {
-        return false;
-    }
-
-    ncm_mpd_item_init(&replacement);
-    replacement.kind = NCM_MPD_ITEM_PLAYLIST;
-    ncm_playlist_init(&replacement.value.playlist);
-    if (!ncm_playlist_copy(&replacement.value.playlist, source)) {
-        ncm_mpd_item_destroy(&replacement);
-        return false;
-    }
-
-    ncm_mpd_item_destroy(item);
-    *item = replacement;
-    return true;
-}
-
-bool
 ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
     NcmMpdItem replacement;
     bool copied;
@@ -230,47 +206,6 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
     ncm_mpd_item_destroy(dest);
     *dest = replacement;
     return true;
-}
-
-bool
-ncm_mpd_item_equal(NcmMpdItem *a, NcmMpdItem *b) {
-    if ((a == NULL) || (b == NULL)) {
-        return a == b;
-    }
-    if (a->kind != b->kind) {
-        return false;
-    }
-
-    switch (a->kind) {
-    case NCM_MPD_ITEM_SONG:
-        return ncm_song_equal(&a->value.song, &b->value.song);
-    case NCM_MPD_ITEM_DIRECTORY:
-        return ncm_directory_equal(&a->value.directory,
-                                   &b->value.directory);
-    case NCM_MPD_ITEM_PLAYLIST:
-        return ncm_playlist_equal(&a->value.playlist,
-                                  &b->value.playlist);
-    case NCM_MPD_ITEM_UNKNOWN:
-        return true;
-    }
-
-    return false;
-}
-
-bool
-ncm_mpd_item_from_mpd_song_copy(NcmMpdItem *item,
-                                struct mpd_song *source) {
-    if (item == NULL) {
-        return false;
-    }
-
-    return ncm_mpd_item_set_song_copy(item, source);
-}
-
-bool
-ncm_mpd_item_from_mpd_song_borrow(NcmMpdItem *item,
-                                  struct mpd_song *source) {
-    return ncm_mpd_item_from_mpd_song_copy(item, source);
 }
 
 bool

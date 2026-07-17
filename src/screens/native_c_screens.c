@@ -614,24 +614,12 @@ native_c_screen_playlist_editor_register(void) {
 }
 
 void
-native_c_screen_playlist_editor_set_resize(void) {
-    nc_screen_request_resize(native_c_screen_playlist_editor_native());
-    return;
-}
-
-void
 native_c_screen_playlist_editor_switch_to(void) {
     (void)nc_screen_switcher_switch_to(
         native_c_screen_playlist_editor_native(),
         nc_screen_has_to_be_resized(
             native_c_screen_playlist_editor_native()));
     return;
-}
-
-bool
-native_c_screen_playlist_editor_is_current(void) {
-    return nc_screen_switcher_is_current(
-        native_c_screen_playlist_editor_native());
 }
 
 NativePlaylistEditorScreen *
@@ -995,12 +983,6 @@ native_c_screen_search_engine_switch_to(void) {
     return;
 }
 
-bool
-native_c_screen_search_engine_is_current(void) {
-    return nc_screen_switcher_is_current(
-        native_c_screen_search_engine_native());
-}
-
 NativeSearchEngineScreen *
 native_c_screen_search_engine(void) {
     native_c_screen_search_engine_init();
@@ -1046,12 +1028,6 @@ native_c_screen_media_library_switch_to(void) {
         native_c_screen_media_library_native(),
         nc_screen_has_to_be_resized(native_c_screen_media_library_native()));
     return;
-}
-
-bool
-native_c_screen_media_library_is_current(void) {
-    return nc_screen_switcher_is_current(
-        native_c_screen_media_library_native());
 }
 
 NativeMediaLibraryScreen *
@@ -1525,15 +1501,6 @@ native_c_screen_outputs_switch_to(void) {
     return;
 }
 
-bool
-native_c_screen_outputs_is_current(void) {
-#if defined(ENABLE_OUTPUTS)
-    return nc_screen_switcher_is_current(native_c_screen_outputs_native());
-#else
-    return false;
-#endif
-}
-
 void
 native_c_screen_outputs_toggle(void) {
 #if defined(ENABLE_OUTPUTS)
@@ -1648,11 +1615,6 @@ native_c_screens_request_registered_resize(void) {
     native_request_registered_resize(NC_SCREEN_TYPE_OUTPUTS);
 #endif
     return;
-}
-
-bool
-native_c_screens_is_registered_type(enum ScreenType screen_type) {
-    return native_c_screens_find_type(screen_type) != NULL;
 }
 
 NcScreen *

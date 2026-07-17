@@ -59,27 +59,3 @@ nc_formatted_color_format_count(NcFormattedColor *formatted_color) {
     return ARRAY_LEN(formatted_color->formats);
 }
 
-bool
-nc_formatted_color_equal(NcFormattedColor *left,
-                         NcFormattedColor *right) {
-    int32 left_count;
-    int32 right_count;
-
-    if (!nc_color_equal(left->color, right->color)) {
-        return false;
-    }
-
-    left_count = ARRAY_LEN(left->formats);
-    right_count = ARRAY_LEN(right->formats);
-    if (left_count != right_count) {
-        return false;
-    }
-
-    for (int32 i = 0; i < left_count; i += 1) {
-        if (left->formats[i] != right->formats[i]) {
-            return false;
-        }
-    }
-
-    return true;
-}

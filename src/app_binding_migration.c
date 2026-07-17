@@ -72,25 +72,6 @@ app_binding_migration_action_is_c_safe_for_screen(
 }
 
 bool
-app_binding_migration_binding_is_plain_action_sequence(
-    NcmBinding *binding) {
-    if (binding == NULL) {
-        return false;
-    }
-    if (binding->actions_len <= 0) {
-        return false;
-    }
-
-    for (int32 i = 0; i < binding->actions_len; i += 1) {
-        if (binding->actions[i].kind != NCM_BINDING_ACTION_NORMAL) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool
 app_binding_migration_binding_is_c_safe(NcmBinding *binding) {
     if (binding == NULL) {
         return false;
@@ -118,7 +99,3 @@ app_binding_migration_binding_is_c_safe_for_screen(
     return app_binding_migration_binding_is_c_safe(binding);
 }
 
-bool
-app_binding_migration_binding_is_hybrid_safe(NcmBinding *binding) {
-    return app_binding_migration_binding_is_c_safe(binding);
-}

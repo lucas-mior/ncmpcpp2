@@ -225,11 +225,6 @@ native_search_engine_screen_base(NativeSearchEngineScreen *screen) {
     return &screen->screen;
 }
 
-NcSearchRowMenu *
-native_search_engine_screen_rows(NativeSearchEngineScreen *screen) {
-    return &screen->rows;
-}
-
 NcMenu *
 native_search_engine_screen_menu(NativeSearchEngineScreen *screen) {
     return nc_search_row_menu_base(&screen->rows);
@@ -327,85 +322,12 @@ native_search_engine_search_mode_name(
 }
 
 bool
-native_search_engine_screen_is_prepared(
-    NativeSearchEngineScreen *screen) {
-    if (screen == NULL) {
-        return false;
-    }
-    return screen->prepared;
-}
-
-bool
-native_search_engine_screen_has_result_rows(
-    NativeSearchEngineScreen *screen) {
-    if (screen == NULL) {
-        return false;
-    }
-    return screen->result_rows_present;
-}
-
-int32
-native_search_engine_screen_result_count(
-    NativeSearchEngineScreen *screen) {
-    if (screen == NULL) {
-        return 0;
-    }
-    return screen->result_count;
-}
-
-bool
 native_search_engine_screen_constraints_locked(
     NativeSearchEngineScreen *screen) {
     if (screen == NULL) {
         return false;
     }
     return screen->constraints_locked;
-}
-
-bool
-native_search_engine_screen_set_title(
-    NativeSearchEngineScreen *screen, char *title, int32 title_len) {
-    if ((screen == NULL) || (title_len < 0)
-        || ((title == NULL) && (title_len > 0))) {
-        return false;
-    }
-    return ncm_buffer_set(&screen->title, title, title_len);
-}
-
-NcmStringView
-native_search_engine_screen_title(NativeSearchEngineScreen *screen) {
-    if (screen == NULL) {
-        return ncm_string_view_make(NULL, 0);
-    }
-    return ncm_string_view_make(screen->title.data, screen->title.len);
-}
-
-bool
-native_search_engine_screen_set_column_title(
-    NativeSearchEngineScreen *screen, char *title, int32 title_len) {
-    bool result;
-
-    if ((screen == NULL) || (title_len < 0)
-        || ((title == NULL) && (title_len > 0))) {
-        return false;
-    }
-    result = ncm_buffer_set(&screen->column_title, title, title_len);
-    if (result) {
-        nc_window_set_title(&screen->window,
-                            screen->column_title.data,
-                            screen->column_title.len);
-    }
-    return result;
-}
-
-NcmStringView
-native_search_engine_screen_column_title(
-    NativeSearchEngineScreen *screen) {
-    if (screen == NULL) {
-        return ncm_string_view_make(NULL, 0);
-    }
-    return ncm_string_view_make(screen->column_title.data,
-                                screen->column_title.len);
 }
 
 bool
@@ -661,13 +583,6 @@ native_search_engine_screen_add_song_copy(NativeSearchEngineScreen *screen,
 }
 
 bool
-native_search_engine_screen_add_buffer(NativeSearchEngineScreen *screen,
-                                       NcBuffer *buffer) {
-    return native_search_engine_screen_add_buffer_with_flags(
-        screen, buffer, NC_MENU_ITEM_SELECTABLE);
-}
-
-bool
 native_search_engine_screen_add_song_copy_with_flags(
     NativeSearchEngineScreen *screen, NcmSong *song, uint32 flags) {
     NcSearchRow row;
@@ -720,66 +635,6 @@ native_search_engine_screen_set_constraint(NativeSearchEngineScreen *screen,
     return true;
 }
 
-NcmStringView
-native_search_engine_screen_constraint(NativeSearchEngineScreen *screen,
-                                       int32 idx) {
-    if (screen == NULL || idx < 0
-        || idx >= NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT) {
-        return ncm_string_view_make(NULL, 0);
-    }
-    return ncm_string_view_make(screen->constraints[idx].data,
-                                screen->constraints[idx].len);
-}
-
-bool
-native_search_engine_screen_build_query(NativeSearchEngineScreen *screen,
-                                        NcmBuffer *query) {
-    bool first;
-
-    if (screen == NULL || query == NULL) {
-        return false;
-    }
-
-    ncm_buffer_clear(query);
-    first = true;
-    for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
-        if (screen->constraints[i].len <= 0) {
-            continue;
-        }
-        if (!first) {
-            ncm_buffer_append(query, " ", 1);
-        }
-        ncm_buffer_append(query, screen->constraints[i].data,
-                          screen->constraints[i].len);
-        first = false;
-    }
-    return true;
-}
-
-bool
-native_search_engine_screen_set_find_constraint(
-    NativeSearchEngineScreen *screen, char *data, int32 data_len) {
-    if ((screen == NULL) || (data_len < 0)
-        || ((data == NULL) && (data_len > 0))) {
-        return false;
-    }
-    if (!ncm_buffer_set(&screen->search_constraint, data, data_len)) {
-        return false;
-    }
-    screen->match_to_pattern = data_len > 0;
-    return true;
-}
-
-NcmStringView
-native_search_engine_screen_find_constraint(
-    NativeSearchEngineScreen *screen) {
-    if (screen == NULL) {
-        return ncm_string_view_make(NULL, 0);
-    }
-    return ncm_string_view_make(screen->search_constraint.data,
-                                screen->search_constraint.len);
-}
-
 void
 native_search_engine_screen_clear_find_constraint(
     NativeSearchEngineScreen *screen) {
@@ -806,15 +661,6 @@ native_search_engine_screen_set_search_mode(
     return true;
 }
 
-enum NativeSearchEngineSearchMode
-native_search_engine_screen_search_mode(
-    NativeSearchEngineScreen *screen) {
-    if (screen == NULL) {
-        return NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL;
-    }
-    return screen->search_mode;
-}
-
 void
 native_search_engine_screen_set_search_source(
     NativeSearchEngineScreen *screen, bool search_in_database) {
@@ -826,15 +672,6 @@ native_search_engine_screen_set_search_source(
         (void)native_search_engine_screen_update_search_source_row(screen);
     }
     return;
-}
-
-bool
-native_search_engine_screen_searches_database(
-    NativeSearchEngineScreen *screen) {
-    if (screen == NULL) {
-        return false;
-    }
-    return screen->search_in_database;
 }
 
 void

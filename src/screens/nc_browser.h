@@ -75,35 +75,17 @@ bool native_browser_screen_set_current_directory(
     NativeBrowserScreen *screen, char *directory, int32 directory_len);
 NcmStringView native_browser_screen_current_directory(
     NativeBrowserScreen *screen);
-bool native_browser_screen_set_last_highlighted_directory(
-    NativeBrowserScreen *screen, char *directory, int32 directory_len);
 NcmStringView native_browser_screen_last_highlighted_directory(
     NativeBrowserScreen *screen);
-bool native_browser_screen_set_title_text(
-    NativeBrowserScreen *screen, char *title, int32 title_len);
-NcmStringView native_browser_screen_title_text(NativeBrowserScreen *screen);
 void native_browser_screen_update_title_text(NativeBrowserScreen *screen);
-bool native_browser_screen_set_column_title_text(
-    NativeBrowserScreen *screen, char *title, int32 title_len);
-NcmStringView native_browser_screen_column_title_text(
-    NativeBrowserScreen *screen);
 void native_browser_screen_update_column_title(NativeBrowserScreen *screen);
 void native_browser_screen_draw_header(NativeBrowserScreen *screen);
 void native_browser_screen_set_display_mode(NativeBrowserScreen *screen,
                                             enum DisplayMode mode);
-enum DisplayMode native_browser_screen_display_mode(
-    NativeBrowserScreen *screen);
-void native_browser_screen_clear_supported_extensions(
-    NativeBrowserScreen *screen);
-bool native_browser_screen_add_supported_extension(
-    NativeBrowserScreen *screen, char *extension, int32 extension_len);
 bool native_browser_screen_has_supported_extension(
     NativeBrowserScreen *screen, char *extension, int32 extension_len);
 bool native_browser_screen_fetch_supported_extensions(
     NativeBrowserScreen *screen, NcmMpdClient *client, NcmError *error);
-NcmBufferArray *native_browser_screen_supported_extensions(
-    NativeBrowserScreen *screen);
-void native_browser_screen_clear_temp_buffers(NativeBrowserScreen *screen);
 bool native_browser_screen_update_requested(NativeBrowserScreen *screen);
 void native_browser_screen_clear_update_request(NativeBrowserScreen *screen);
 bool native_browser_screen_in_root_directory(NativeBrowserScreen *screen);
@@ -140,7 +122,6 @@ bool native_browser_screen_locate_song(NativeBrowserScreen *screen,
                                        NcmMpdClient *client,
                                        NcmError *error);
 bool native_browser_screen_enter_directory(NativeBrowserScreen *screen);
-bool native_browser_screen_activate_current(NativeBrowserScreen *screen);
 bool native_browser_screen_go_to_parent(NativeBrowserScreen *screen);
 bool native_browser_screen_apply_filter(NativeBrowserScreen *screen,
                                         char *pattern, int32 pattern_len,

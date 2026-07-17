@@ -96,8 +96,6 @@ bool ncm_lyrics_fetcher_registry_append_name(
     NcmLyricsFetcherRegistry *registry,
     char *name,
     int32 name_len);
-bool ncm_lyrics_fetcher_registry_add_defaults(
-    NcmLyricsFetcherRegistry *registry);
 
 bool ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher,
                               NcmLyricsResult *result,
@@ -114,8 +112,5 @@ bool ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher,
                                   int32 title_len);
 void ncm_lyrics_cleanup_html(NcmBuffer *out, char *data, int32 data_len);
 
-void ncm_lyrics_fetcher_set_io_for_tests(NcmLyricsCurlPerformFn perform,
-                                         NcmLyricsCurlEscapeFn escape,
-                                         void *user);
 
 #endif /* NCMPCPP_LYRICS_FETCHER_H */

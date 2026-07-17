@@ -13,10 +13,6 @@ static void nc_screen_registry_clear_refs(NcScreenRegistry *registry,
                                           NcScreen *screen);
 static void nc_screen_registry_update_one(NcScreen *screen, void *user);
 static void nc_screen_registry_resize_one(NcScreen *screen, void *user);
-static void nc_screen_registry_request_resize_one(NcScreen *screen,
-                                                  void *user);
-static void nc_screen_registry_request_update_one(NcScreen *screen,
-                                                  void *user);
 
 void
 nc_screen_init(NcScreen *screen, NcScreenCallbacks callbacks,
@@ -89,14 +85,6 @@ nc_screen_run_current(NcScreen *screen) {
     return screen->callbacks.run_current(screen);
 }
 
-bool
-nc_screen_is_active_window(NcScreen *screen, NcWindow *window) {
-    if (screen == NULL || window == NULL) {
-        return false;
-    }
-    return nc_screen_active_window(screen) == window;
-}
-
 void
 nc_screen_switch_to(NcScreen *screen) {
     if (screen->callbacks.switch_to) {
@@ -133,12 +121,6 @@ nc_screen_title(NcScreen *screen) {
 int32
 nc_screen_type(NcScreen *screen) {
     return screen->type;
-}
-
-void
-nc_screen_set_type(NcScreen *screen, int32 type) {
-    screen->type = type;
-    return;
 }
 
 void
@@ -184,11 +166,6 @@ nc_screen_set_has_to_be_resized(NcScreen *screen,
                                 bool has_to_be_resized) {
     screen->has_to_be_resized = has_to_be_resized;
     return;
-}
-
-bool
-nc_screen_has_to_be_updated(NcScreen *screen) {
-    return screen->has_to_be_updated;
 }
 
 void
@@ -254,14 +231,6 @@ nc_screen_draw_vertical_separator(int64 x) {
             (int32)ui_state_main_height());
     standend();
     refresh();
-    return;
-}
-
-void
-nc_screen_destroy(NcScreen *screen) {
-    if (screen->callbacks.destroy) {
-        screen->callbacks.destroy(screen);
-    }
     return;
 }
 
@@ -347,11 +316,6 @@ nc_screen_registry_locked(NcScreenRegistry *registry) {
     return registry->locked_screen;
 }
 
-NcScreen *
-nc_screen_registry_inactive(NcScreenRegistry *registry) {
-    return registry->inactive_screen;
-}
-
 bool
 nc_screen_registry_is_registered(NcScreenRegistry *registry,
                                  NcScreen *screen) {
@@ -364,32 +328,6 @@ nc_screen_registry_is_current(NcScreenRegistry *registry,
     return registry->current_screen == screen;
 }
 
-bool
-nc_screen_registry_is_previous(NcScreenRegistry *registry,
-                               NcScreen *screen) {
-    return registry->previous_screen == screen;
-}
-
-bool
-nc_screen_registry_request_resize(NcScreenRegistry *registry,
-                                  NcScreen *screen) {
-    if (!nc_screen_registry_is_registered(registry, screen)) {
-        return false;
-    }
-    nc_screen_request_resize(screen);
-    return true;
-}
-
-bool
-nc_screen_registry_request_update(NcScreenRegistry *registry,
-                                  NcScreen *screen) {
-    if (!nc_screen_registry_is_registered(registry, screen)) {
-        return false;
-    }
-    nc_screen_request_update(screen);
-    return true;
-}
-
 void
 nc_screen_registry_request_resize_current(NcScreenRegistry *registry) {
     if (registry->current_screen != NULL) {
@@ -399,39 +337,9 @@ nc_screen_registry_request_resize_current(NcScreenRegistry *registry) {
 }
 
 void
-nc_screen_registry_request_resize_visible(NcScreenRegistry *registry) {
-    nc_screen_registry_each_visible(
-        registry, nc_screen_registry_request_resize_one, NULL);
-    return;
-}
-
-void
-nc_screen_registry_request_resize_all(NcScreenRegistry *registry) {
-    for (int32 i = 0; i < registry->screens_len; i += 1) {
-        nc_screen_request_resize(registry->screens[i]);
-    }
-    return;
-}
-
-void
 nc_screen_registry_request_update_current(NcScreenRegistry *registry) {
     if (registry->current_screen != NULL) {
         nc_screen_request_update(registry->current_screen);
-    }
-    return;
-}
-
-void
-nc_screen_registry_request_update_visible(NcScreenRegistry *registry) {
-    nc_screen_registry_each_visible(
-        registry, nc_screen_registry_request_update_one, NULL);
-    return;
-}
-
-void
-nc_screen_registry_request_update_all(NcScreenRegistry *registry) {
-    for (int32 i = 0; i < registry->screens_len; i += 1) {
-        nc_screen_request_update(registry->screens[i]);
     }
     return;
 }
@@ -516,18 +424,6 @@ nc_screen_registry_switch_to(NcScreenRegistry *registry,
 }
 
 bool
-nc_screen_registry_switch_to_type(NcScreenRegistry *registry,
-                                  int32 type) {
-    NcScreen *screen;
-
-    screen = nc_screen_registry_find(registry, type);
-    if (screen == NULL) {
-        return false;
-    }
-    return nc_screen_registry_switch_to(registry, screen);
-}
-
-bool
 nc_screen_registry_lock_current(NcScreenRegistry *registry) {
     if (registry->locked_screen != NULL) {
         return false;
@@ -606,26 +502,10 @@ nc_screen_registry_each_visible(NcScreenRegistry *registry,
 }
 
 void
-nc_screen_registry_update_current(NcScreenRegistry *registry) {
-    if (registry->current_screen != NULL) {
-        nc_screen_update(registry->current_screen);
-    }
-    return;
-}
-
-void
 nc_screen_registry_update_visible(NcScreenRegistry *registry) {
     nc_screen_registry_each_visible(registry,
                                     nc_screen_registry_update_one,
                                     NULL);
-    return;
-}
-
-void
-nc_screen_registry_update_all(NcScreenRegistry *registry) {
-    for (int32 i = 0; i < registry->screens_len; i += 1) {
-        nc_screen_update(registry->screens[i]);
-    }
     return;
 }
 
@@ -642,14 +522,6 @@ nc_screen_registry_resize_visible(NcScreenRegistry *registry) {
     nc_screen_registry_each_visible(registry,
                                     nc_screen_registry_resize_one,
                                     NULL);
-    return;
-}
-
-void
-nc_screen_registry_resize_all(NcScreenRegistry *registry) {
-    for (int32 i = 0; i < registry->screens_len; i += 1) {
-        nc_screen_resize(registry->screens[i]);
-    }
     return;
 }
 
@@ -707,18 +579,3 @@ nc_screen_registry_resize_one(NcScreen *screen, void *user) {
     return;
 }
 
-static void
-nc_screen_registry_request_resize_one(NcScreen *screen,
-                                      void *user) {
-    (void)user;
-    nc_screen_request_resize(screen);
-    return;
-}
-
-static void
-nc_screen_registry_request_update_one(NcScreen *screen,
-                                      void *user) {
-    (void)user;
-    nc_screen_request_update(screen);
-    return;
-}

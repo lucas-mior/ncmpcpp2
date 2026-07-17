@@ -175,50 +175,6 @@ status_full_event_mask(void) {
 }
 
 void
-ncm_status_set_hooks(NcmStatusHooks *hooks) {
-    if (hooks == NULL) {
-        status_hooks_set = false;
-        return;
-    }
-
-    status_hooks = *hooks;
-    status_hooks_set = true;
-    return;
-}
-
-void
-ncm_status_set_ui_hooks(NcmStatusUiHooks *hooks) {
-    if (hooks == NULL) {
-        status_ui_hooks_set = false;
-        return;
-    }
-
-    status_ui_hooks = *hooks;
-    status_ui_hooks_set = true;
-    return;
-}
-
-void
-ncm_status_set_init_hooks(NcmStatusInitHooks *hooks) {
-    if (hooks == NULL) {
-        status_init_hooks_set = false;
-        return;
-    }
-
-    status_init_hooks = *hooks;
-    status_init_hooks_set = true;
-    return;
-}
-
-void
-ncm_status_set_notification_observer(void (*callback)(void *user),
-                                     void *user) {
-    status_notification_observer = callback;
-    status_notification_observer_user = user;
-    return;
-}
-
-void
 ncm_status_set_database_update_observer(void (*callback)(void *user),
                                         void *user) {
     status_database_update_observer = callback;
@@ -1010,11 +966,6 @@ ncm_status_state_single(void) {
 }
 
 int32
-ncm_status_state_current_song_id(void) {
-    return status_current_song_id;
-}
-
-int32
 ncm_status_state_current_song_position(void) {
     return status_current_song_pos;
 }
@@ -1029,19 +980,9 @@ ncm_status_state_elapsed_time(void) {
     return status_elapsed_time;
 }
 
-uint32
-ncm_status_state_kbps(void) {
-    return status_kbps;
-}
-
 enum NcmStatusPlayerState
 ncm_status_state_player(void) {
     return status_player_state;
-}
-
-uint32
-ncm_status_state_playlist_version(void) {
-    return status_playlist_version;
 }
 
 uint32

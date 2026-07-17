@@ -157,26 +157,3 @@ ncm_playlist_last_modified(NcmPlaylist *playlist) {
     return playlist->last_modified;
 }
 
-bool
-ncm_playlist_equal(NcmPlaylist *a, NcmPlaylist *b) {
-    if ((a == NULL) || (b == NULL)) {
-        return a == b;
-    }
-    if (a->last_modified != b->last_modified) {
-        return false;
-    }
-    if (a->path_len != b->path_len) {
-        return false;
-    }
-    if ((a->path == NULL) || (b->path == NULL)) {
-        return a->path == b->path;
-    }
-
-    for (int32 i = 0; i < a->path_len; i += 1) {
-        if (a->path[i] != b->path[i]) {
-            return false;
-        }
-    }
-
-    return true;
-}

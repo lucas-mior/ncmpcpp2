@@ -100,8 +100,6 @@ void native_tiny_tag_editor_screen_set_hooks(
     NativeTinyTagEditorScreen *screen, NativeTinyTagEditorHooks hooks);
 NcEditorBufferMenu *native_tiny_tag_editor_screen_rows(
     NativeTinyTagEditorScreen *screen);
-NcmMutableSong *native_tiny_tag_editor_screen_edited(
-    NativeTinyTagEditorScreen *screen);
 void native_tiny_tag_editor_screen_set_geometry(
     NativeTinyTagEditorScreen *screen, int64 start_x, int64 width,
     int64 main_start_y, int64 main_height);
@@ -112,8 +110,6 @@ native_tiny_tag_editor_screen_open_song(
     NativeTinyTagEditorScreen *screen, NcmSong *song,
     char *music_dir, int32 music_dir_len, char *tag_separator,
     int32 tag_separator_len, bool show_duplicate_tags, NcmBuffer *path);
-bool native_tiny_tag_editor_screen_set_edited_mutable_song(
-    NativeTinyTagEditorScreen *screen, NcmMutableSong *song);
 bool native_tiny_tag_editor_screen_reload_rows(
     NativeTinyTagEditorScreen *screen,
     NcmTaglibAudioProperties *properties,
@@ -126,8 +122,6 @@ bool native_tiny_tag_editor_screen_set_filename(
     NativeTinyTagEditorScreen *screen, char *name, int32 name_len);
 bool native_tiny_tag_editor_screen_set_filename_stem(
     NativeTinyTagEditorScreen *screen, char *stem, int32 stem_len);
-bool native_tiny_tag_editor_screen_save(
-    NativeTinyTagEditorScreen *screen, char *music_dir);
 bool native_tiny_tag_editor_screen_run_row(
     NativeTinyTagEditorScreen *screen, int64 row);
 bool native_tiny_tag_editor_screen_run_current(

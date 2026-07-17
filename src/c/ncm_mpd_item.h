@@ -31,14 +31,8 @@ void ncm_mpd_item_init(NcmMpdItem *item);
 void ncm_mpd_item_destroy(NcmMpdItem *item);
 void ncm_mpd_item_move(NcmMpdItem *dest, NcmMpdItem *source);
 bool ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source);
-bool ncm_mpd_item_equal(NcmMpdItem *a, NcmMpdItem *b);
 bool ncm_mpd_item_set_song(NcmMpdItem *item, NcmSong *source);
 bool ncm_mpd_item_set_directory(NcmMpdItem *item, NcmDirectory *source);
-bool ncm_mpd_item_set_playlist(NcmMpdItem *item, NcmPlaylist *source);
-bool ncm_mpd_item_from_mpd_song_copy(NcmMpdItem *item,
-                                     struct mpd_song *source);
-bool ncm_mpd_item_from_mpd_song_borrow(NcmMpdItem *item,
-                                       struct mpd_song *source);
 bool ncm_mpd_item_from_entity_copy(NcmMpdItem *item,
                                    struct mpd_entity *entity);
 enum NcmMpdItemKind ncm_mpd_item_kind(NcmMpdItem *item);
