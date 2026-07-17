@@ -301,10 +301,10 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
     dir = (DIR *)directory->dir;
     errno = 0;
     while ((dirent = readdir(dir))) {
-        if (strcmp(dirent->d_name, ".") == 0) {
+        if (strequal(dirent->d_name, ".")) {
             continue;
         }
-        if (strcmp(dirent->d_name, "..") == 0) {
+        if (strequal(dirent->d_name, "..")) {
             continue;
         }
 

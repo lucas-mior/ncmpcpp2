@@ -521,15 +521,15 @@ ncm_mpd_replay_gain_mode_parse(char *name,
         return false;
     }
 
-    if (strcmp(name, "off") == 0) {
+    if (strequal(name, "off")) {
         *mode = NCM_MPD_REPLAY_GAIN_OFF;
         return true;
     }
-    if (strcmp(name, "track") == 0) {
+    if (strequal(name, "track")) {
         *mode = NCM_MPD_REPLAY_GAIN_TRACK;
         return true;
     }
-    if (strcmp(name, "album") == 0) {
+    if (strequal(name, "album")) {
         *mode = NCM_MPD_REPLAY_GAIN_ALBUM;
         return true;
     }
