@@ -15,6 +15,7 @@
 #include "c/ncm_type_conversions.h"
 #include "cbase/utf8.c"
 #include "cbase/base_macros.h"
+#include "cbase/util.c"
 
 static void playlist_scroll_lines(NcPlaylistScreen *screen,
                                   enum NcScroll where);
@@ -1425,7 +1426,7 @@ native_playlist_refresh_stats(NativePlaylistScreen *screen) {
         char count_buffer[64];
         int32 count_len;
 
-        count_len = snprintf(count_buffer, sizeof(count_buffer),
+        count_len = SNPRINTF(count_buffer,
                              "%lld", (llong)count);
         ncm_buffer_append(&screen->title_cache, count_buffer, count_len);
     }

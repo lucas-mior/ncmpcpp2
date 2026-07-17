@@ -191,7 +191,7 @@ configuration_require_value(int32 argc, char **argv, int32 *i,
         char message[128];
         int32 len;
 
-        len = snprintf(message, SIZEOF(message),
+        len = SNPRINTF(message,
                        "option '%.*s' requires an argument",
                        option_len, option);
         ncm_error_set(error, EINVAL, message, len);
@@ -214,7 +214,7 @@ configuration_parse_port(char *value, int32 value_len, char *option,
         char message[192];
         int32 len;
 
-        len = snprintf(message, SIZEOF(message),
+        len = SNPRINTF(message,
                        "the argument ('%.*s') for option '%.*s' is invalid",
                        value_len, value, option_len, option);
         ncm_error_set(error, EINVAL, message, len);
@@ -298,7 +298,7 @@ configuration_parse_short_option(NcmConfigurationOptions *options,
         char message[128];
         int32 len;
 
-        len = snprintf(message, SIZEOF(message),
+        len = SNPRINTF(message,
                        "unrecognized option '-%c'", c);
         ncm_error_set(error, EINVAL, message, len);
         return false;
@@ -392,7 +392,7 @@ configuration_parse_long_option(NcmConfigurationOptions *options,
         if (value != NULL) { \
             char message[128]; \
             int32 len; \
-            len = snprintf(message, SIZEOF(message), \
+            len = SNPRINTF(message, \
                            "option '--%.*s' does not take an argument", \
                            name_len, name); \
             ncm_error_set(error, EINVAL, message, len); \
@@ -464,7 +464,7 @@ configuration_parse_long_option(NcmConfigurationOptions *options,
         char message[128];
         int32 len;
 
-        len = snprintf(message, SIZEOF(message),
+        len = SNPRINTF(message,
                        "unrecognized option '--%.*s'", name_len, name);
         ncm_error_set(error, EINVAL, message, len);
         return false;
@@ -491,7 +491,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options,
                 char message[192];
                 int32 len;
 
-                len = snprintf(message, SIZEOF(message),
+                len = SNPRINTF(message,
                                "unexpected positional argument '%s'",
                                argv[i + 1]);
                 ncm_error_set(error, EINVAL, message, len);
@@ -513,7 +513,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options,
             char message[192];
             int32 len;
 
-            len = snprintf(message, SIZEOF(message),
+            len = SNPRINTF(message,
                            "unexpected positional argument '%.*s'",
                            arg_len, arg);
             ncm_error_set(error, EINVAL, message, len);

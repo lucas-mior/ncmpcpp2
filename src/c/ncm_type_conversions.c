@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+#include "cbase/util.c"
+
 int32
 ncm_channels_to_string(int32 channels, char *buffer, int32 buffer_cap) {
     int32 result;
@@ -12,13 +14,13 @@ ncm_channels_to_string(int32 channels, char *buffer, int32 buffer_cap) {
 
     switch (channels) {
     case 1:
-        result = snprintf(buffer, (size_t)buffer_cap, "Mono");
+        result = snprintf2(buffer, buffer_cap, "Mono");
         break;
     case 2:
-        result = snprintf(buffer, (size_t)buffer_cap, "Stereo");
+        result = snprintf2(buffer, buffer_cap, "Stereo");
         break;
     default:
-        result = snprintf(buffer, (size_t)buffer_cap, "%d", channels);
+        result = snprintf2(buffer, buffer_cap, "%d", channels);
         break;
     }
 

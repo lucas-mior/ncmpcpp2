@@ -9,6 +9,7 @@
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
 #include "cbase/base_macros.h"
+#include "cbase/util.c"
 #include "screens/screen_switcher.h"
 #include "settings.h"
 #include "title.h"
@@ -620,9 +621,8 @@ native_tiny_tag_editor_screen_run_row(
                 screen, STRLIT_ARGS("Tags updated"));
             tiny_editor_complete_save(screen);
         } else {
-            error_len = snprintf(
-                error_buffer, (size_t)SIZEOF(error_buffer),
-                "Error while writing tags: %s", strerror(errno));
+            error_len = SNPRINTF(error_buffer, "Error while writing tags: %s",
+                                 strerror(errno));
             if (error_len < 0) {
                 error_len = 0;
             } else if (error_len >= (int32)SIZEOF(error_buffer)) {
@@ -1050,7 +1050,7 @@ tiny_editor_buffer_uint(NcBuffer *buffer, uint32 value, char *suffix,
     char number[64];
     int32 len;
 
-    len = snprintf(number, (size_t)SIZEOF(number), "%u", value);
+    len = SNPRINTF(number, "%u", value);
     if (len < 0) {
         return;
     }

@@ -298,7 +298,7 @@ ncm_tags_read_song(struct mpd_song *song) {
 
     found = false;
     if (ncm_taglib_file_audio_properties(&file, &properties)) {
-        written = snprintf(time_buffer, sizeof(time_buffer), "%d",
+        written = SNPRINTF(time_buffer, "%d",
                            properties.length);
         if (written > 0) {
             ncm_tags_set_attribute(song, "Time", time_buffer);

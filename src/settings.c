@@ -236,7 +236,7 @@ settings_invalid_value(NcmError *error, char *value, int32 value_len) {
     char message[256];
     int32 len;
 
-    len = snprintf(message, (size_t)SIZEOF(message),
+    len = SNPRINTF(message,
                    "invalid value: %.*s", value_len, value);
     if (len < 0) {
         settings_error(error, STRLIT_ARGS("invalid value"));
@@ -1903,7 +1903,7 @@ settings_set_option_error(NcmError *error, bool default_value,
         detail_len = strlen32(cause->message);
     }
 
-    len = snprintf(message, (size_t)SIZEOF(message),
+    len = SNPRINTF(message,
                    "error while %s option \"%.*s\": %.*s",
                    phase, option->name_len, option->name,
                    detail_len, detail);
@@ -1929,7 +1929,7 @@ settings_set_unknown_option_error(NcmError *error, char *option,
     char message[256];
     int32 len;
 
-    len = snprintf(message, (size_t)SIZEOF(message),
+    len = SNPRINTF(message,
                    "unknown option: %.*s", option_len, option);
     if (len < 0) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("unknown option"));
@@ -1947,7 +1947,7 @@ settings_set_duplicate_option_error(NcmError *error, SettingsOption *option) {
     char message[256];
     int32 len;
 
-    len = snprintf(message, (size_t)SIZEOF(message),
+    len = SNPRINTF(message,
                    "error while processing option \"%.*s\": "
                    "option already set",
                    option->name_len, option->name);
@@ -2007,7 +2007,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
         char message[256];
         int32 len;
 
-        len = snprintf(message, (size_t)SIZEOF(message),
+        len = SNPRINTF(message,
                        "failed to open configuration file '%.*s': %s",
                        path_len, path, strerror(errno));
         if (len < 0) {
