@@ -7,22 +7,6 @@
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
-static int32
-optional_strlen32(char *string) {
-    int32 len;
-
-    if (string == NULL) {
-        return 0;
-    }
-
-    len = 0;
-    while (string[len] != '\0') {
-        len += 1;
-    }
-
-    return len;
-}
-
 static void
 ncm_mpd_connection_cstring_copy(char *dst, int32 dst_cap,
                                 char *src) {
