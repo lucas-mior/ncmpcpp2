@@ -12,14 +12,6 @@
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
-static bool ncm_fs_path_copy(char *path, int32 path_len, char **copy,
-                             NcmError *error);
-static void ncm_fs_set_errno_error(NcmError *error, int32 code,
-                                   char *operation, char *path,
-                                   int32 path_len);
-static enum NcmFsEntryType ncm_fs_mode_type(mode_t mode);
-static enum NcmFsEntryType ncm_fs_dirent_type(int32 type);
-
 static bool
 ncm_fs_path_copy(char *path, int32 path_len, char **copy, NcmError *error) {
     if (copy == NULL) {

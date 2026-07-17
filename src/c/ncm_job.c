@@ -7,20 +7,6 @@
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
-static void *ncm_job_queue_thread_main(void *user);
-static void ncm_job_set_errno_error(NcmError *error, int32 code,
-                                    char *operation);
-static bool ncm_job_array_reserve(NcmJob **items, int32 *cap,
-                                  int32 len, int32 extra);
-static void ncm_job_destroy(NcmJob *job);
-static void ncm_job_array_clear(NcmJob *items, int32 len);
-static void ncm_job_array_push(NcmJob **items, int32 *len,
-                               int32 *cap, NcmJob job);
-static bool ncm_job_queue_pop_pending_locked(NcmJobQueue *queue,
-                                             NcmJob *job);
-static void ncm_job_queue_push_completed_locked(NcmJobQueue *queue,
-                                                NcmJob job);
-
 static void
 ncm_job_set_errno_error(NcmError *error, int32 code, char *operation) {
     char message[256];

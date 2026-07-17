@@ -12,17 +12,6 @@
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
-static void ncm_process_set_errno_error(NcmError *error, int32 code,
-                                        char *operation);
-static void ncm_process_set_text_error(NcmError *error, int32 code,
-                                       char *text, int32 text_len);
-static bool ncm_process_command_argv_ready(NcmProcessCommand *command,
-                                           NcmError *error);
-static int32 ncm_process_wait_status(int32 status);
-static bool ncm_process_wait(pid_t child, int32 *status, NcmError *error);
-static bool ncm_process_command_add_cstring(NcmProcessCommand *command,
-                                            char *arg);
-
 static void
 ncm_process_set_errno_error(NcmError *error, int32 code, char *operation) {
     char message[256];

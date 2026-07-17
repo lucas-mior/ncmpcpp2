@@ -6,14 +6,6 @@
 
 #include "cbase/base_macros.h"
 
-static int64 menu_item_count(NcMenu *menu, enum NcMenuItemSource source);
-static bool menu_position_is_selected(NcMenu *menu,
-                                      enum NcMenuItemSource source,
-                                      int64 pos);
-static bool menu_set_position_selected(NcMenu *menu,
-                                       enum NcMenuItemSource source,
-                                       int64 pos, bool selected);
-
 char *
 ncm_helpers_with_errors(bool success) {
     if (success) {

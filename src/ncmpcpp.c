@@ -24,18 +24,6 @@ static FILE *app_error_log;
 static NcWindow *app_header_window;
 static NcWindow *app_footer_window;
 
-static void app_signal_handler(int32 signal_number);
-static void app_init_state(void);
-static void app_destroy_state(void);
-static bool app_redirect_stderr(void);
-static void app_restore_stderr(void);
-static void app_at_exit(void);
-static void app_create_windows(void);
-static void app_apply_startup_screen(void);
-static void app_connect_if_due(NcmTimePoint *connect_attempt);
-static void app_execute_key(NcKey input);
-static bool app_exit_requested(void);
-
 static void
 app_signal_handler(int32 signal_number) {
     if (signal_number == SIGWINCH) {

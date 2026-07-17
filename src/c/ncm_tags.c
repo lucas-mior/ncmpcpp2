@@ -20,25 +20,6 @@ typedef struct NcmTagsMappedContext {
     struct mpd_song *song;
 } NcmTagsMappedContext;
 
-static int32 ncm_tags_cstrlen32(char *string);
-static void ncm_tags_view_init(NcmStringView *view);
-static void ncm_tags_forward_value_callback(char *value, void *user);
-static void ncm_tags_mapped_property_callback(char *name, char *value,
-                                              void *user);
-static char *ncm_tags_build_file_path(char *music_dir, char *uri,
-                                      bool is_from_database,
-                                      int32 *path_len);
-static char *ncm_tags_build_renamed_path(char *music_dir, char *directory,
-                                         char *new_name,
-                                         bool is_from_database,
-                                         int32 *path_len);
-static char *ncm_tags_field_property(enum NcmTagsField field);
-static bool ncm_tags_write_field(NcmTaglibFile *file,
-                                 enum NcmTagsField field,
-                                 NcmTagsGetFieldCallback callback,
-                                 void *user);
-static void ncm_tags_clear_write_aliases(NcmTaglibFile *file);
-
 static int32
 ncm_tags_cstrlen32(char *string) {
     int32 len;

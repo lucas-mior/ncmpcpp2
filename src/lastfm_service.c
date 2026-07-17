@@ -19,36 +19,7 @@ static NcmLastfmCurlPerformFn lastfm_test_perform;
 static NcmLastfmCurlEscapeFn lastfm_test_escape;
 static void *lastfm_test_user;
 
-static bool lastfm_string_set(char **data, int32 *len, int32 *cap,
-                              char *source, int32 source_len);
 static void lastfm_string_destroy(char **data, int32 *len, int32 *cap);
-static CURLcode lastfm_curl_perform(NcmBuffer *data, char *url,
-                                    int32 url_len, char *referer,
-                                    int32 referer_len,
-                                    bool follow_redirect,
-                                    int32 timeout_seconds);
-static CURLcode lastfm_curl_escape(NcmBuffer *out, char *string,
-                                   int32 string_len);
-static void lastfm_append_escaped(NcmBuffer *buffer, char *string,
-                                  int32 string_len);
-static bool lastfm_action_failed(char *data, int32 data_len);
-static int32 lastfm_find(char *data, int32 data_len, char *needle,
-                         int32 needle_len, int32 start);
-static bool lastfm_extract_between(NcmBuffer *out, char *data,
-                                   int32 data_len, char *start,
-                                   int32 start_len, char *end,
-                                   int32 end_len);
-static void lastfm_trim_view(char **data, int32 *len);
-static void lastfm_trim_buffer(NcmBuffer *buffer);
-static void lastfm_strip_unescape_trim(NcmBuffer *out, char *data,
-                                       int32 data_len);
-static void lastfm_append_similars(NcmBuffer *out, char *data,
-                                   int32 data_len, char *section_start,
-                                   int32 section_start_len,
-                                   char *section_end,
-                                   int32 section_end_len,
-                                   char *heading,
-                                   int32 heading_len);
 static bool lastfm_fetch_artist_info(NcmLastfmService *service,
                                      NcmLastfmResult *result);
 

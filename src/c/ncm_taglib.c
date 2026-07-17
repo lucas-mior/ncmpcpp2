@@ -32,9 +32,6 @@ static NcmTaglibPropertyMap ncm_taglib_properties[] = {
     { "COMMENT", "Comment" },
 };
 
-static TagLib_File *ncm_taglib_handle(NcmTaglibFile *file);
-static bool ncm_taglib_value_is_empty(char *value);
-
 static TagLib_File *
 ncm_taglib_handle(NcmTaglibFile *file) {
     if (file == NULL) {

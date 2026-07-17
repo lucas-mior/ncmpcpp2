@@ -3,11 +3,6 @@
 #include <ctype.h>
 #include <stddef.h>
 
-static bool ncm_option_is_word_char(char c);
-static int32 ncm_option_trim_start(char *string, int32 string_len);
-static int32 ncm_option_trim_end(char *string, int32 string_len);
-static int32 ncm_option_comment_start(char *line, int32 line_len);
-
 static bool
 ncm_option_is_word_char(char c) {
     unsigned char u;

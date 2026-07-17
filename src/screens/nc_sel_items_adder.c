@@ -19,7 +19,6 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
-static NativeSelectedItemsAdderScreen *adder_from_screen(NcScreen *screen);
 static NcScreenCallbacks adder_callbacks(void);
 static NcWindow *adder_active_window_callback(NcScreen *screen);
 static void adder_refresh_callback(NcScreen *screen);
@@ -39,23 +38,6 @@ static bool adder_mergable_callback(NcScreen *screen);
 static void adder_destroy_callback(NcScreen *screen);
 static bool adder_filter_callback(NcMenu *menu, void *item, void *user);
 static bool adder_row_matches(NcEditorActionRow *row, NcmRegex *regex);
-static bool adder_action_row_set(NcEditorActionRow *row, char *label,
-                                 int32 label_len, void (*run)(void *),
-                                 void *user);
-static bool adder_action_set_playlist(char **dest, int32 *dest_len,
-                                      int32 *dest_cap, char *source,
-                                      int32 source_len);
-static int32 adder_cstrlen32(char *string);
-static bool adder_statusbar_prompt_hook(char *text, void *user);
-static bool adder_add_to_stored_playlist(
-    NativeSelectedItemsAdderScreen *screen, char *playlist,
-    int32 playlist_len);
-static bool adder_try_add_current_song(
-    NativeSelectedItemsAdderScreen *screen, NcmSong *song,
-    int32 position, bool *added, bool *success);
-static bool adder_add_to_current_playlist(
-    NativeSelectedItemsAdderScreen *screen, int32 position);
-static void adder_song_album_view(NcmSong *song, NcmStringView *album);
 static void adder_action_current_playlist(void *user);
 static void adder_action_new_playlist(void *user);
 static void adder_action_cancel_target(void *user);
@@ -84,7 +66,6 @@ typedef struct ExistingPlaylistAction {
     int32 playlist_cap;
 } ExistingPlaylistAction;
 
-static void existing_playlist_action_init(ExistingPlaylistAction *action);
 static void existing_playlist_action_destroy(void *user);
 static ExistingPlaylistAction *existing_playlist_action_create(
     NativeSelectedItemsAdderScreen *screen, char *playlist,

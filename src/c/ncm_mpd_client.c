@@ -5,19 +5,6 @@
 #include "c/ncm_regex.h"
 #include "cbase/base_macros.h"
 
-static int32 ncm_mpd_client_cstrlen32(char *string);
-static void ncm_mpd_client_set_buffer(NcmBuffer *buffer, char *string,
-                                      int32 string_len);
-static char *ncm_mpd_client_buffer_cstr(NcmBuffer *buffer);
-static void ncm_mpd_client_copy_connection_error(NcmMpdClient *client,
-                                                 NcmError *error);
-static bool ncm_mpd_client_require_connected(NcmMpdClient *client,
-                                             NcmError *error);
-static bool ncm_mpd_client_prechecks(NcmMpdClient *client,
-                                     NcmError *error);
-static bool ncm_mpd_client_prechecks_no_commands(NcmMpdClient *client,
-                                                 NcmError *error);
-
 static int32
 ncm_mpd_client_cstrlen32(char *string) {
     int32 len;

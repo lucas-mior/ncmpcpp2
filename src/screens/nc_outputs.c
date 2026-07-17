@@ -5,7 +5,6 @@
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
-static NcOutputsScreen *nc_outputs_from_screen(NcScreen *screen);
 static NcScreenCallbacks nc_outputs_callbacks(void);
 static NcMenuItemCallbacks nc_outputs_item_callbacks(void);
 static NcMenuDisplayCallbacks nc_outputs_display_callbacks(void);

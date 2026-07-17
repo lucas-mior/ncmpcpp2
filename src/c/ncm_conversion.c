@@ -10,29 +10,6 @@
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
 
-static bool ncm_conversion_copy_source(NcmBuffer *buffer,
-                                       char *source, int32 source_len,
-                                       NcmError *error);
-static bool ncm_conversion_trailing_space_only(char *cursor);
-static bool ncm_conversion_is_negative_source(char *source);
-static void ncm_conversion_set_parse_error(NcmError *error,
-                                           char *source,
-                                           int32 source_len);
-static void ncm_conversion_set_u64_bounds_error(NcmError *error,
-                                                uint64 value,
-                                                uint64 lbound,
-                                                uint64 ubound);
-static void ncm_conversion_set_u64_upper_error(NcmError *error,
-                                               uint64 value,
-                                               uint64 ubound);
-static void ncm_conversion_set_f64_bounds_error(NcmError *error,
-                                                double value,
-                                                double lbound,
-                                                double ubound);
-static void ncm_conversion_set_f64_lower_error(NcmError *error,
-                                               double value,
-                                               double lbound);
-
 static bool
 ncm_conversion_copy_source(NcmBuffer *buffer, char *source,
                            int32 source_len, NcmError *error) {

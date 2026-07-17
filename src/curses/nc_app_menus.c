@@ -4,12 +4,6 @@
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
-static void nc_menu_owned_string_destroy(char **data, int32 *len,
-                                         int32 *cap);
-static bool nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
-                                      int32 *dest_cap, char *source_data,
-                                      int32 source_len);
-
 static void ncm_song_menu_item_init(void *item, void *user);
 static void ncm_song_menu_item_copy(void *dest, void *source, void *user);
 static void ncm_song_menu_item_destroy(void *item, void *user);

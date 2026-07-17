@@ -16,7 +16,6 @@
 #include "screens/screen_switcher.h"
 #include "cbase/util.c"
 
-static NativeMediaLibraryScreen *native_library_from_screen(NcScreen *screen);
 static NcWindow *native_library_active_window(NcScreen *screen);
 static void native_library_refresh(NcScreen *screen);
 static void native_library_refresh_window(NcScreen *screen);
@@ -32,17 +31,6 @@ static void native_library_update(NcScreen *screen);
 static bool native_library_is_lockable(NcScreen *screen);
 static bool native_library_is_mergable(NcScreen *screen);
 static void native_library_destroy_callback(NcScreen *screen);
-static bool native_library_tag_filter(NcMenu *menu, void *item, void *user);
-static bool native_library_album_filter(NcMenu *menu, void *item,
-                                        void *user);
-static bool native_library_song_filter(NcMenu *menu, void *item,
-                                       void *user);
-static void native_library_draw_tag(NcMenu *menu, NcWindow *window,
-                                    void *item, int64 pos, void *user);
-static void native_library_draw_album(NcMenu *menu, NcWindow *window,
-                                      void *item, int64 pos, void *user);
-static void native_library_draw_song(NcMenu *menu, NcWindow *window,
-                                     void *item, int64 pos, void *user);
 static void native_library_print_buffer(NcWindow *window, NcBuffer *buffer);
 static bool native_library_copy_song_at(NativeMediaLibraryScreen *screen,
                                         NcmSongArray *songs, int64 pos);
@@ -61,32 +49,12 @@ static bool native_library_album_matches(NativeMediaLibraryScreen *screen,
                                          NcmRegex *regex);
 static bool native_library_song_matches(NativeMediaLibraryScreen *screen,
                                         NcmSong *song, NcmRegex *regex);
-static void native_library_query_from_tag(
-    NativeMediaLibraryScreen *screen, NcMediaLibraryTagRow *tag,
-    NativeMediaLibrarySongQuery *query);
-static void native_library_query_from_album(
-    NativeMediaLibraryScreen *screen, NcMediaLibraryAlbumRow *album,
-    NativeMediaLibrarySongQuery *query);
-static bool native_library_append_query_songs(
-    NativeMediaLibraryScreen *screen, NativeMediaLibrarySongQuery *query,
-    NcmSongArray *songs, NcmError *error);
-static bool native_library_collect_tag_songs(
-    NativeMediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *error);
-static bool native_library_collect_album_songs(
-    NativeMediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *error);
-static bool native_library_collect_visible_song_rows(
-    NativeMediaLibraryScreen *screen, NcmSongArray *songs);
 static bool native_library_collect_selected_songs(
     NativeMediaLibraryScreen *screen, NcmSongArray *songs,
     NcmError *error);
 static bool native_library_collect_current_item_songs(
     NativeMediaLibraryScreen *screen, NcmSongArray *songs,
     NcmError *error);
-static void native_library_print_add_status(
-    NativeMediaLibraryScreen *screen, NcmSongArray *songs, bool result);
-static void native_library_print_add_error(NcmError *error);
 static void native_library_mouse_scroll(NativeMediaLibraryScreen *screen,
                                          enum NcScroll where);
 static bool native_library_mouse_select(
@@ -114,8 +82,6 @@ static bool native_library_set_owned_string(char **dest, int32 *dest_len,
 static void native_library_free_owned_string(char **data, int32 *len,
                                              int32 *cap);
 static int32 native_library_cstrlen32(char *string);
-static char *native_library_query_cstring(NcmBuffer *buffer, char *string,
-                                          int32 string_len);
 static bool native_library_mpd_list_tags(void *user,
                                          enum mpd_tag_type tag_type,
                                          NcmMpdStringList *tags,
@@ -133,41 +99,6 @@ static void native_library_tag_array_item_init(void *item);
 static void native_library_tag_array_item_destroy(void *item);
 static void native_library_album_array_item_init(void *item);
 static void native_library_album_array_item_destroy(void *item);
-static int32 native_library_compare_tag_rows(NcMediaLibraryTagRow *left,
-                                             NcMediaLibraryTagRow *right);
-static int32 native_library_compare_album_items(
-    NativeMediaLibraryAlbumItem *left,
-    NativeMediaLibraryAlbumItem *right);
-static int32 native_library_compare_songs(NcmSong *left, NcmSong *right);
-static int32 native_library_compare_bytes(char *left, int32 left_len,
-                                          char *right, int32 right_len);
-static int32 native_library_compare_song_getter(
-    NcmSong *left, NcmSong *right, enum NcmSongGetter getter);
-static void native_library_sort_tags(NativeMediaLibraryTagArray *tags);
-static void native_library_sort_albums(
-    NativeMediaLibraryAlbumArray *albums);
-static void native_library_sort_songs(NcmSongArray *songs);
-static int32 native_library_find_tag(NativeMediaLibraryTagArray *tags,
-                                     char *tag, int32 tag_len);
-static int32 native_library_find_album(
-    NativeMediaLibraryAlbumArray *albums, char *tag, int32 tag_len,
-    char *album, int32 album_len, char *date, int32 date_len);
-static bool native_library_append_tag(NativeMediaLibraryTagArray *tags,
-                                      char *tag, int32 tag_len,
-                                      time_t mtime);
-static bool native_library_append_album(
-    NativeMediaLibraryAlbumArray *albums, char *tag, int32 tag_len,
-    char *album, int32 album_len, char *date, int32 date_len,
-    time_t mtime, bool all_tracks_entry, uint32 menu_flags);
-static bool native_library_song_first_tag(NcmSong *song,
-                                          enum mpd_tag_type tag,
-                                          NcmStringView *view);
-static bool native_library_add_three_column_album(
-    NativeMediaLibraryAlbumArray *albums, NcmSong *song,
-    char *selected_tag, int32 selected_tag_len);
-static bool native_library_add_two_column_albums(
-    NativeMediaLibraryAlbumArray *albums, NcmSong *song,
-    enum NativeMediaLibraryMode mode, enum mpd_tag_type primary_tag);
 static bool native_library_update_tags(
     NativeMediaLibraryScreen *screen, NcmError *error);
 static bool native_library_update_albums(
@@ -183,8 +114,6 @@ static bool native_library_replace_songs(
 static void native_library_apply_column_filter(
     NativeMediaLibraryScreen *screen,
     enum NativeMediaLibraryColumn column, NcMenu *menu);
-static void native_library_restore_highlight(NcMenu *menu,
-                                             int64 highlight);
 static void native_library_restore_tag_identity(
     NcMediaLibraryTagMenu *menu, NcMediaLibraryTagRow *identity,
     bool identity_valid, int64 fallback);
@@ -214,35 +143,11 @@ static bool native_library_songs_pending(
     NativeMediaLibraryScreen *screen);
 static bool native_library_fetch_delay_elapsed(
     NativeMediaLibraryScreen *screen);
-static bool native_library_update_due(
-    NativeMediaLibraryScreen *screen);
 static void native_library_set_conversion_error(NcmError *error,
                                                  char *message,
                                                  int32 message_len);
 static void native_library_request_all_updates(
     NativeMediaLibraryScreen *screen);
-static void native_library_clear_column_filter(
-    NativeMediaLibraryScreen *screen,
-    enum NativeMediaLibraryColumn column);
-static void native_library_sort_tag_menu(NcMediaLibraryTagMenu *menu);
-static void native_library_sort_album_menu(NcMediaLibraryAlbumMenu *menu);
-static bool native_library_move_to_tag(
-    NativeMediaLibraryScreen *screen, char *tag, int32 tag_len);
-static bool native_library_move_to_album(
-    NativeMediaLibraryScreen *screen, char *tag, int32 tag_len,
-    char *album, int32 album_len, char *date, int32 date_len,
-    bool consider_date);
-static bool native_library_move_to_song(
-    NativeMediaLibraryScreen *screen, NcmSong *song);
-static bool native_library_insert_locate_tag(
-    NativeMediaLibraryScreen *screen, char *tag, int32 tag_len,
-    time_t mtime);
-static bool native_library_insert_locate_album(
-    NativeMediaLibraryScreen *screen, char *tag, int32 tag_len,
-    char *album, int32 album_len, char *date, int32 date_len,
-    time_t mtime);
-static bool native_library_locate_song_requirements(
-    NcmSong *song, NcmStringView *primary_value, NcmError *error);
 
 static NcScreenCallbacks native_library_callbacks = {
     .active_window = native_library_active_window,

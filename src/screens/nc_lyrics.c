@@ -52,21 +52,11 @@ static void lyrics_mouse_button_pressed_callback(NcScreen *screen,
 static bool lyrics_is_lockable_callback(NcScreen *screen);
 static bool lyrics_is_mergable_callback(NcScreen *screen);
 static void lyrics_destroy_callback(NcScreen *screen);
-static NcScreenCallbacks native_lyrics_callbacks(void);
-static NativeLyricsScreen *lyrics_from_screen(NcScreen *screen);
 static void native_lyrics_title_song_string(NcmSong *song,
                                             NcmBuffer *title);
-static bool native_lyrics_song_artist_title(NcmSong *song,
-                                            NcmBuffer *artist,
-                                            NcmBuffer *title);
-static bool native_lyrics_fetch_artist_title(NcmSong *song,
-                                             NcmBuffer *artist,
-                                             NcmBuffer *title);
 static void native_lyrics_replace_search_separators(NcmBuffer *buffer);
 static void native_lyrics_append_locale(NcBuffer *buffer, char *data,
                                         int32 data_len);
-static void native_lyrics_report_save_error(NcmBuffer *filename,
-                                            NcmError *error);
 static void native_lyrics_report_unlink_error(NcmBuffer *filename,
                                               NcmError *error);
 static void native_lyrics_remove_extension(NcmBuffer *buffer);
@@ -80,20 +70,11 @@ static bool native_lyrics_filename_from_song(NcmBuffer *filename,
                                              bool win32_filename);
 static bool native_lyrics_queue_song(NativeLyricsScreen *screen,
                                      NcmSong *song, bool notify);
-static NativeLyricsQueuedSong *native_lyrics_dequeue_song(
-    NativeLyricsScreen *screen);
 static NativeLyricsJob *native_lyrics_job_create(NativeLyricsScreen *screen,
                                                  NcmSong *song,
                                                  NcmLyricsFetcherDef *fetcher,
                                                  bool notify,
                                                  bool background);
-static bool native_lyrics_job_fetch_one(NativeLyricsJob *job,
-                                        NcmLyricsFetcherDef *fetcher,
-                                        NcmBuffer *artist,
-                                        NcmBuffer *title);
-static bool native_lyrics_job_fetch(NativeLyricsJob *job,
-                                    NcmBuffer *artist,
-                                    NcmBuffer *title);
 static NcmLyricsFetcherDef *native_lyrics_active_fetcher(
     NativeLyricsScreen *screen, NcmLyricsFetcherDef *fetcher);
 static void native_lyrics_append_fetching(NcBuffer *buffer,
@@ -101,8 +82,6 @@ static void native_lyrics_append_fetching(NcBuffer *buffer,
 static void native_lyrics_append_fetch_error(NcBuffer *buffer,
                                              NcmLyricsResult *result);
 static bool native_lyrics_job_is_current(NativeLyricsJob *job);
-static void native_lyrics_set_consumer_fetch_message(
-    NativeLyricsScreen *screen, NcmSong *song);
 static bool native_lyrics_job_run(void *user, NcmError *error);
 static void native_lyrics_job_complete(bool success, NcmError *error,
                                        void *user);

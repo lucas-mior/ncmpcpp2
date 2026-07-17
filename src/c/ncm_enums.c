@@ -3,9 +3,6 @@
 #include "c/ncm_string.h"
 #include "cbase/util.c"
 
-static int32 ncm_enum_cstr_len(char *string);
-static bool ncm_enum_equal(char *string, int32 string_len, char *expected);
-
 static int32
 ncm_enum_cstr_len(char *string) {
     int32 result;

@@ -40,10 +40,6 @@ extern bool ncmpcpp_legacy_execute_binding(NcmBinding *binding)
     __attribute__((weak));
 #endif
 
-static int32 ncm_action_name_len(char *name);
-static bool ncm_action_name_equals(char *left, int32 left_len,
-                                   char *right);
-
 #define NCM_ACTION_TABLE_CALLBACKS(SUFFIX, TYPE)                         \
     static bool                                                          \
     ncm_action_can_run_##SUFFIX(void *user) {                            \

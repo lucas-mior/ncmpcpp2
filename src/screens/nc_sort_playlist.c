@@ -15,7 +15,6 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
-static NativeSortPlaylistDialog *sort_dialog_from_screen(NcScreen *screen);
 static NcScreenCallbacks sort_dialog_callbacks(void);
 static NcWindow *sort_dialog_active_window_callback(NcScreen *screen);
 static void sort_dialog_refresh_callback(NcScreen *screen);

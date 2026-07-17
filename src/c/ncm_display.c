@@ -8,12 +8,9 @@
 #include "cbase/base_macros.h"
 #include "settings.h"
 
-static void ncm_display_append_basename(NcBuffer *buffer, char *path,
-                                        int32 path_len);
 static NcmBuffer ncm_display_column_value(NcmSong *song, Column *column);
 static int32 ncm_display_column_width(Column *column, int32 list_width,
                                       int32 remained_width);
-static NcmStringView ncm_display_column_type_name(char type);
 static void ncm_display_append_column_name(NcmBuffer *buffer,
                                            Column *column);
 static void ncm_display_append_spaces(NcmBuffer *buffer, int32 count);

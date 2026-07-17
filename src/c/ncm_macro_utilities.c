@@ -7,10 +7,6 @@
 #include "c/ncm_process.h"
 #include "cbase/base_macros.h"
 
-static bool ncm_macro_system_command(char *command, int32 command_len,
-                                     bool block, int32 *status,
-                                     NcmError *error);
-
 static bool
 ncm_macro_system_command(char *command, int32 command_len,
                          bool block, int32 *status, NcmError *error) {

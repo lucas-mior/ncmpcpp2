@@ -52,7 +52,6 @@ enum TagEditorTagTypeAction {
 
 typedef struct SaveContext SaveContext;
 
-static NativeTagEditorScreen *tag_editor_from_screen(NcScreen *screen);
 static NcWindow *tag_editor_active_window(NcScreen *screen);
 static void tag_editor_refresh(NcScreen *screen);
 static void tag_editor_refresh_window(NcScreen *screen);
@@ -93,7 +92,6 @@ static bool tag_editor_mouse_move_to_column(
     NativeTagEditorScreen *screen, enum NativeTagEditorColumn column);
 static bool tag_editor_mouse_move_to_parser_focus(
     NativeTagEditorScreen *screen, enum NativeTagEditorFocus focus);
-static bool tag_editor_tag_type_row_changed(NativeTagEditorScreen *screen);
 static void tag_editor_finish_tag_type_change(
     NativeTagEditorScreen *screen, bool refresh_tags);
 static void tag_editor_layout(NativeTagEditorScreen *screen);
@@ -181,22 +179,9 @@ static void tag_editor_status_directory_rename_error(
     NativeTagEditorScreen *screen, char *name, int32 name_len,
     NcmError *error);
 static bool tag_editor_has_modified_songs(NativeTagEditorScreen *screen);
-static void tag_editor_preserve_current_directory(
-    NativeTagEditorScreen *screen, NcmBuffer *path);
-static void tag_editor_restore_current_directory(
-    NativeTagEditorScreen *screen, NcmBuffer *path);
-static void tag_editor_preserve_current_song(NativeTagEditorScreen *screen,
-                                             NcmBuffer *uri);
-static void tag_editor_restore_current_song(NativeTagEditorScreen *screen,
-                                            NcmBuffer *uri);
-static bool tag_editor_add_control_directory(NativeTagEditorScreen *screen);
-static void tag_editor_sort_directories(NcmDirectoryArray *directories);
 static int32 tag_editor_compare_directories(NcmDirectory *left,
                                             NcmDirectory *right);
-static void tag_editor_sort_songs(NcmSongArray *songs);
 static int32 tag_editor_compare_songs(NcmSong *left, NcmSong *right);
-static void tag_editor_report_error(char *context, int32 context_len,
-                                    NcmError *error);
 static bool tag_editor_directory_filter(NcMenu *menu, void *item,
                                         void *user);
 static bool tag_editor_tag_filter(NcMenu *menu, void *item, void *user);
@@ -248,14 +233,6 @@ static bool tag_editor_active_item_matches(NativeTagEditorScreen *screen,
 static bool tag_editor_append_parser_row(NcEditorStringMenu *menu,
                                          char *data, int32 data_len,
                                          uint32 flags);
-static bool tag_editor_append_parser_separator(
-    NativeTagEditorScreen *screen);
-static bool tag_editor_append_parser_action_row(
-    NativeTagEditorScreen *screen, char *data, int32 data_len,
-    uint32 flags);
-static bool tag_editor_append_parser_action_label(
-    NativeTagEditorScreen *screen, char *label, int32 label_len);
-static bool tag_editor_append_pattern_row(NativeTagEditorScreen *screen);
 static bool tag_editor_build_parser_menus(NativeTagEditorScreen *screen);
 static bool tag_editor_build_parser_legend(NativeTagEditorScreen *screen);
 static bool tag_editor_build_parser_preview(NativeTagEditorScreen *screen,
@@ -265,13 +242,10 @@ static bool tag_editor_save_recent_patterns(NativeTagEditorScreen *screen);
 static bool tag_editor_history_path(NcmBuffer *path);
 static bool tag_editor_read_pattern_line(FILE *file, NcmBuffer *line,
                                          bool *read_line);
-static int32 tag_editor_find_recent_pattern(
-    NativeTagEditorScreen *screen, char *pattern, int32 pattern_len);
 static bool tag_editor_add_recent_pattern(
     NativeTagEditorScreen *screen, char *pattern, int32 pattern_len);
 static bool tag_editor_move_pattern_to_front(
     NativeTagEditorScreen *screen, char *pattern, int32 pattern_len);
-static bool tag_editor_set_config_pattern(char *pattern, int32 pattern_len);
 static bool tag_editor_set_pattern(NativeTagEditorScreen *screen,
                                    char *pattern, int32 pattern_len);
 static bool tag_editor_prompt_pattern(NativeTagEditorScreen *screen);
