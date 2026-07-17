@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_SEL_ITEMS_ADDER_C)
+#define NCMPCPP_NC_SEL_ITEMS_ADDER_C
+
 #include "screens/nc_sel_items_adder.h"
 
 #include <errno.h>
@@ -1343,3 +1346,5 @@ adder_finish(NativeSelectedItemsAdderScreen *screen) {
         nc_editor_action_menu_base(&screen->position_selector));
     return;
 }
+
+#endif /* NCMPCPP_NC_SEL_ITEMS_ADDER_C */

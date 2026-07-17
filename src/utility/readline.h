@@ -1,4 +1,4 @@
-#ifndef NCMPCPP_UTILITY_READLINE_H
+#if !defined(NCMPCPP_UTILITY_READLINE_H)
 #define NCMPCPP_UTILITY_READLINE_H
 
 #include "config.h"
@@ -15,4 +15,4 @@
 # error "readline is not available"
 #endif
 
-#endif // NCMPCPP_READLINE_UTILITY_H
+#endif /* NCMPCPP_UTILITY_READLINE_H */

@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_LYRICS_FETCHER_C)
+#define NCMPCPP_LYRICS_FETCHER_C
+
 #include "lyrics_fetcher.h"
 
 #include <errno.h>
@@ -996,3 +999,5 @@ lyrics_append_clean_lines(NcmBuffer *out, char *data, int32 data_len) {
     lyrics_trim_buffer(out);
     return;
 }
+
+#endif /* NCMPCPP_LYRICS_FETCHER_C */

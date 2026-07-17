@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_APP_BINDING_MIGRATION_C)
+#define NCMPCPP_APP_BINDING_MIGRATION_C
+
 #include "app_binding_migration.h"
 
 static bool
@@ -96,3 +99,4 @@ app_binding_migration_binding_is_c_safe_for_screen(
     return app_binding_migration_binding_is_c_safe(binding);
 }
 
+#endif /* NCMPCPP_APP_BINDING_MIGRATION_C */

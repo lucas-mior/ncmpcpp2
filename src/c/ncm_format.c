@@ -1,3 +1,6 @@
+#if !defined(NCM_FORMAT_C)
+#define NCM_FORMAT_C
+
 #include "c/ncm_format.h"
 
 #include <ctype.h>
@@ -985,3 +988,5 @@ ncm_format_render_string(NcmFormatAst *ast, NcmSong *song) {
                       NCM_FORMAT_FLAG_TAG);
     return result;
 }
+
+#endif /* NCM_FORMAT_C */

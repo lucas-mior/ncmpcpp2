@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_VISUALIZER_C)
+#define NCMPCPP_NC_VISUALIZER_C
+
 #include "screens/nc_visualizer.h"
 
 #include <errno.h>
@@ -2305,3 +2308,5 @@ native_visualizer_next_type(int32 type) {
     }
     return type;
 }
+
+#endif /* NCMPCPP_NC_VISUALIZER_C */

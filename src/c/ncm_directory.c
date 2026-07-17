@@ -1,3 +1,6 @@
+#if !defined(NCM_DIRECTORY_C)
+#define NCM_DIRECTORY_C
+
 #include "c/ncm_directory.h"
 
 #include <mpd/client.h>
@@ -138,3 +141,5 @@ ncm_directory_from_mpd_directory(NcmDirectory *dest,
     last_modified = mpd_directory_get_last_modified(source);
     return ncm_directory_set(dest, path, path_len, last_modified);
 }
+
+#endif /* NCM_DIRECTORY_C */

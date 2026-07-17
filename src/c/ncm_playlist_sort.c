@@ -1,3 +1,6 @@
+#if !defined(NCM_PLAYLIST_SORT_C)
+#define NCM_PLAYLIST_SORT_C
+
 #include "c/ncm_playlist_sort.h"
 
 #include <errno.h>
@@ -335,3 +338,5 @@ ncm_playlist_sort_range(
     ncm_playlist_sort_plan_destroy(&plan);
     return success;
 }
+
+#endif /* NCM_PLAYLIST_SORT_C */

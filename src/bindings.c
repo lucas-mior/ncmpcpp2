@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_BINDINGS_C)
+#define NCMPCPP_BINDINGS_C
+
 #include "bindings.h"
 
 #include <ctype.h>
@@ -1557,3 +1560,5 @@ ncm_bindings_configuration_get(NcmBindingsConfiguration *bindings,
     result.len = bindings->keys[at].bindings_len;
     return result;
 }
+
+#endif /* NCMPCPP_BINDINGS_C */

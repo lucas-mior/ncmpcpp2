@@ -1,3 +1,6 @@
+#if !defined(NCM_OPTION_PARSER_C)
+#define NCM_OPTION_PARSER_C
+
 #include "c/ncm_option_parser.h"
 
 #include <ctype.h>
@@ -160,3 +163,5 @@ ncm_option_parser_yes_no(char *value, int32 value_len, bool *result) {
 
     return false;
 }
+
+#endif /* NCM_OPTION_PARSER_C */

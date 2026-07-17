@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_PLAYLIST_EDITOR_C)
+#define NCMPCPP_NC_PLAYLIST_EDITOR_C
+
 #include "screens/nc_playlist_editor.h"
 
 #include <errno.h>
@@ -2364,3 +2367,4 @@ playlist_editor_set_display_callbacks(NativePlaylistEditorScreen *screen) {
     return;
 }
 
+#endif /* NCMPCPP_NC_PLAYLIST_EDITOR_C */

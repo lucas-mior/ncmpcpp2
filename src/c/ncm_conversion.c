@@ -1,3 +1,6 @@
+#if !defined(NCM_CONVERSION_C)
+#define NCM_CONVERSION_C
+
 #include "c/ncm_conversion.h"
 
 #include <ctype.h>
@@ -299,3 +302,5 @@ ncm_lower_bound_check_f64(double value, double lbound,
     ncm_error_clear(error);
     return true;
 }
+
+#endif /* NCM_CONVERSION_C */

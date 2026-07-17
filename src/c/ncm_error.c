@@ -1,3 +1,6 @@
+#if !defined(NCM_ERROR_C)
+#define NCM_ERROR_C
+
 #include "c/ncm_error.h"
 
 #include "cbase/base_macros.h"
@@ -49,3 +52,5 @@ ncm_error_is_set(NcmError *error) {
 
     return error->code != 0;
 }
+
+#endif /* NCM_ERROR_C */

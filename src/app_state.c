@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_APP_STATE_C)
+#define NCMPCPP_APP_STATE_C
+
 #include "app_state.h"
 
 #include <stddef.h>
@@ -164,3 +167,5 @@ app_state_resize_visible_screens(void) {
     nc_screen_registry_resize_visible(&screen_registry);
     return;
 }
+
+#endif /* NCMPCPP_APP_STATE_C */

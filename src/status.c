@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_STATUS_C)
+#define NCMPCPP_STATUS_C
+
 #include "status.h"
 
 #include "actions.h"
@@ -1965,3 +1968,5 @@ ncm_status_changes_outputs(void) {
 #endif
     return;
 }
+
+#endif /* NCMPCPP_STATUS_C */

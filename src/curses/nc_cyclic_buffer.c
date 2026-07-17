@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_CYCLIC_BUFFER_C)
+#define NCMPCPP_NC_CYCLIC_BUFFER_C
+
 #include "curses/nc_cyclic_buffer.h"
 
 #include <stddef.h>
@@ -398,3 +401,5 @@ nc_cyclic_window_write_text(NcWindow *window, char *string, int32 string_len,
     }
     return;
 }
+
+#endif /* NCMPCPP_NC_CYCLIC_BUFFER_C */

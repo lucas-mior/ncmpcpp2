@@ -1,3 +1,6 @@
+#if !defined(NCM_MPD_CLIENT_C)
+#define NCM_MPD_CLIENT_C
+
 #include "c/ncm_mpd_client.h"
 
 #include <errno.h>
@@ -1485,3 +1488,5 @@ cleanup:
     ncm_mpd_string_list_destroy(&files);
     return ok;
 }
+
+#endif /* NCM_MPD_CLIENT_C */

@@ -1,3 +1,6 @@
+#if !defined(NCM_PATH_C)
+#define NCM_PATH_C
+
 #include "c/ncm_path.h"
 
 #include <errno.h>
@@ -143,3 +146,4 @@ ncm_path_extension_start(char *path, int32 path_len) {
     return dot + 1;
 }
 
+#endif /* NCM_PATH_C */

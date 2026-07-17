@@ -1,3 +1,6 @@
+#if !defined(NCM_PROCESS_C)
+#define NCM_PROCESS_C
+
 #include "c/ncm_process.h"
 
 #include <errno.h>
@@ -214,3 +217,5 @@ ncm_process_run_shell(char *command, int32 command_len,
     ncm_process_command_destroy(&process);
     return result;
 }
+
+#endif /* NCM_PROCESS_C */

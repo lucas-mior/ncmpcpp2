@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_SCREEN_C)
+#define NCMPCPP_NC_SCREEN_C
+
 #include "screens/nc_screen.h"
 
 #include <stddef.h>
@@ -579,3 +582,4 @@ nc_screen_registry_resize_one(NcScreen *screen, void *user) {
     return;
 }
 
+#endif /* NCMPCPP_NC_SCREEN_C */

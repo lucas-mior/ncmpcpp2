@@ -1,3 +1,6 @@
+#if !defined(NCM_TYPE_CONVERSIONS_C)
+#define NCM_TYPE_CONVERSIONS_C
+
 #include "c/ncm_type_conversions.h"
 
 #include <stdio.h>
@@ -361,3 +364,4 @@ ncm_tags_field_name(enum NcmTagsField field) {
     }
 }
 
+#endif /* NCM_TYPE_CONVERSIONS_C */

@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_SERVER_INFO_C)
+#define NCMPCPP_NC_SERVER_INFO_C
+
 #include "screens/nc_server_info.h"
 
 #include "cbase/base_macros.h"
@@ -279,3 +282,5 @@ nc_server_info_display(NcServerInfoScreen *server_info) {
     nc_scrollpad_refresh(&server_info->scrollpad, &server_info->window);
     return;
 }
+
+#endif /* NCMPCPP_NC_SERVER_INFO_C */

@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_MEDIA_LIBRARY_C)
+#define NCMPCPP_NC_MEDIA_LIBRARY_C
+
 #include "screens/nc_media_library.h"
 
 #include <errno.h>
@@ -4321,3 +4324,5 @@ native_library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
     ncm_mpd_song_list_destroy(&queue);
     return result;
 }
+
+#endif /* NCMPCPP_NC_MEDIA_LIBRARY_C */

@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_CURL_HANDLE_C)
+#define NCMPCPP_CURL_HANDLE_C
+
 #include "curl_handle.h"
 
 #include <stddef.h>
@@ -111,3 +114,5 @@ append_c_string(NcmBuffer *buffer, char *string, int32 string_len) {
     ncm_buffer_append_byte(buffer, '\0');
     return;
 }
+
+#endif /* NCMPCPP_CURL_HANDLE_C */

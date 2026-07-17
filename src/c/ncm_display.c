@@ -1,3 +1,6 @@
+#if !defined(NCM_DISPLAY_C)
+#define NCM_DISPLAY_C
+
 #include "c/ncm_display.h"
 
 #include "c/ncm_base.h"
@@ -321,3 +324,5 @@ ncm_display_append_spaces(NcmBuffer *buffer, int32 count) {
     }
     return;
 }
+
+#endif /* NCM_DISPLAY_C */
