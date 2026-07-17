@@ -11,6 +11,7 @@ DESTDIR ?=
 PKG_CONFIG ?= pkg-config
 CC ?= cc
 AR ?= ar
+CLANG_ANALYZER ?= clang
 
 CPPFLAGS ?=
 CFLAGS ?= -O0 -g3
@@ -23,6 +24,7 @@ PKG_LIBS := $(shell $(PKG_CONFIG) --libs $(PKG_DEPS) 2>/dev/null)
 READLINE_CFLAGS := $(shell if $(PKG_CONFIG) --exists readline 2>/dev/null; then $(PKG_CONFIG) --cflags readline; fi)
 READLINE_LIBS := $(shell if $(PKG_CONFIG) --exists readline 2>/dev/null; then $(PKG_CONFIG) --libs readline; else printf '%s' '-lreadline -lhistory'; fi)
 CSTD ?= $(shell if printf 'int main(void) { return 0; }\n' | $(CC) -std=c23 -x c -c -o /dev/null - >/dev/null 2>&1; then printf '%s' -std=c23; elif printf 'int main(void) { return 0; }\n' | $(CC) -std=c2x -x c -c -o /dev/null - >/dev/null 2>&1; then printf '%s' -std=c2x; fi)
+ANALYZER_CSTD ?= $(shell if printf 'int main(void) { return 0; }\n' | $(CLANG_ANALYZER) -std=c23 -x c -c -o /dev/null - >/dev/null 2>&1; then printf '%s' -std=c23; elif printf 'int main(void) { return 0; }\n' | $(CLANG_ANALYZER) -std=c2x -x c -c -o /dev/null - >/dev/null 2>&1; then printf '%s' -std=c2x; fi)
 
 COMMON_CPPFLAGS := \
 	-I$(BUILD_DIR) \
@@ -43,6 +45,7 @@ NCMPCPP_C_LIB := $(BUILD_DIR)/libncmpcpp_c.a
 
 NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
 APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
+ANALYZER_C_SRCS := $(NCMPCPP_C_SRCS) $(APP_C_SRCS)
 
 NCMPCPP_C_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(NCMPCPP_C_SRCS))
 APP_C_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(APP_C_SRCS))
@@ -50,7 +53,7 @@ DEPS := \
 	$(NCMPCPP_C_OBJS:.o=.d) \
 	$(APP_C_OBJS:.o=.d)
 
-.PHONY: all install clean help check-no-foreign-sources FORCE
+.PHONY: all check install clean help check-no-foreign-sources FORCE
 .DELETE_ON_ERROR:
 .SECONDARY: $(NCMPCPP_C_OBJS) $(APP_C_OBJS)
 
@@ -101,6 +104,38 @@ check-no-foreign-sources:
 		exit 1; \
 	fi
 
+check: check-no-foreign-sources
+	@command -v $(CLANG_ANALYZER) >/dev/null 2>&1 || { \
+		printf 'missing command: %s\n' '$(CLANG_ANALYZER)' >&2; \
+		exit 1; \
+	}
+	@command -v $(PKG_CONFIG) >/dev/null 2>&1 || { \
+		printf 'missing command: %s\n' '$(PKG_CONFIG)' >&2; \
+		exit 1; \
+	}
+	@$(PKG_CONFIG) --exists $(PKG_DEPS) || { \
+		printf 'missing pkg-config package(s): %s\n' "$(PKG_DEPS)" >&2; \
+		exit 1; \
+	}
+	@test -n "$(ANALYZER_CSTD)" || { \
+		printf '%s\n' 'clang analyzer does not support C23 or C2x' >&2; \
+		exit 1; \
+	}
+	@set -e; \
+	for source in $(ANALYZER_C_SRCS); do \
+		printf 'ANALYZE %s\n' "$$source"; \
+		$(CLANG_ANALYZER) \
+			$(COMMON_CPPFLAGS) \
+			$(ANALYZER_CSTD) \
+			$(WARNINGS) \
+			$(CFLAGS) \
+			$(THREAD_FLAGS) \
+			--analyze \
+			-Xanalyzer -analyzer-output=text \
+			-fno-color-diagnostics \
+			"$$source"; \
+	done
+
 install: $(BINARY)
 	install -d '$(DESTDIR)$(BINDIR)'
 	install -m 755 '$(BINARY)' '$(DESTDIR)$(BINDIR)/ncmpcpp'
@@ -114,10 +149,11 @@ clean:
 	rm -rf '$(BUILD_DIR)'
 
 help:
-	@printf '%s\n' 'usage: make [all|install|clean|help]'
+	@printf '%s\n' 'usage: make [all|check|install|clean|help]'
 	@printf '%s\n' ''
 	@printf '%s\n' 'Common variables:'
 	@printf '%s\n' '  CC, AR             compiler and archive commands'
+	@printf '%s\n' '  CLANG_ANALYZER     clang command for make check'
 	@printf '%s\n' '  CFLAGS            extra compiler flags'
 	@printf '%s\n' '  CPPFLAGS, LDFLAGS  extra preprocessor and linker flags'
 	@printf '%s\n' '  LDLIBS             extra libraries, default: -lm'

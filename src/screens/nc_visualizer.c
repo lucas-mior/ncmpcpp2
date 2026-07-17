@@ -503,7 +503,6 @@ native_visualizer_screen_open_data_source(
         port = "";
     }
 
-    fd = -1;
     if (screen->source_port.len > 0) {
         if (screen->data_source_hooks.open_udp == NULL) {
             return false;
@@ -897,7 +896,6 @@ native_visualizer_screen_init_visualization(
         width = 1;
     }
 
-    rendered_samples = 0;
     switch (screen->visualization_type) {
     case NATIVE_VISUALIZER_WAVE:
     case NATIVE_VISUALIZER_WAVE_FILLED:
