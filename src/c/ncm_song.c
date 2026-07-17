@@ -10,7 +10,6 @@
 #include "cbase/rapidhash.h"
 #include "cbase/util.c"
 
-static int32 ncm_song_cstring_len(char *string);
 static bool ncm_song_needs_numeric_zero(char *tag, int32 tag_len);
 static int32 ncm_song_format_numeric_tag_prefix(char *buffer,
                                                 int32 buffer_cap,
@@ -26,22 +25,6 @@ static bool ncm_song_load_mpd_tag(NcmSong *song, struct mpd_song *source,
 static bool ncm_song_feed_pair(struct mpd_song *song, char *name,
                                char *value);
 static char *ncm_song_mpd_tag_name(enum mpd_tag_type type);
-
-static int32
-ncm_song_cstring_len(char *string) {
-    int32 len;
-
-    if (string == NULL) {
-        return 0;
-    }
-
-    len = 0;
-    while (string[len] != '\0') {
-        len += 1;
-    }
-
-    return len;
-}
 
 static bool
 ncm_song_needs_numeric_zero(char *tag, int32 tag_len) {
@@ -186,7 +169,7 @@ ncm_song_load_mpd_tag(NcmSong *song, struct mpd_song *source,
             break;
         }
         if (!ncm_song_add_tag(song, type, value,
-                              ncm_song_cstring_len(value))) {
+                              optional_strlen32(value))) {
             return false;
         }
     }
@@ -365,7 +348,7 @@ ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source) {
     }
 
     ncm_song_init(&replacement);
-    if (!ncm_song_set_uri(&replacement, uri, ncm_song_cstring_len(uri))) {
+    if (!ncm_song_set_uri(&replacement, uri, optional_strlen32(uri))) {
         ncm_song_destroy(&replacement);
         return false;
     }
