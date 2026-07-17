@@ -14,7 +14,6 @@
 #include "title.h"
 #include "ui_state.h"
 
-static NativeTinyTagEditorScreen *tiny_editor_from_screen(NcScreen *screen);
 static NcWindow *tiny_editor_active_window(NcScreen *screen);
 static bool tiny_editor_can_run_current(NcScreen *screen);
 static bool tiny_editor_run_current(NcScreen *screen);

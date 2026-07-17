@@ -31,53 +31,6 @@ static char current_song_default_format[] = "{{{(%l) }{{%a - }%t}}|{%f}}";
 static bool configuration_quiet;
 
 
-static bool command_line_options_append_path(NcmBufferArray *paths,
-                                             char *path, int32 path_len);
-static bool configuration_append_buffer_path(NcmBufferArray *paths,
-                                             NcmBuffer *path);
-static bool configuration_append_default_file(NcmBufferArray *paths,
-                                              char *filename,
-                                              int32 filename_len);
-static bool configuration_append_legacy_file(NcmBufferArray *paths,
-                                             char *filename,
-                                             int32 filename_len);
-static bool configuration_copy_string(NcmBuffer *buffer, char *string,
-                                      int32 string_len);
-static bool configuration_require_value(int32 argc, char **argv, int32 *i,
-                                        char *option, int32 option_len,
-                                        char **value, int32 *value_len,
-                                        NcmError *error);
-static bool configuration_parse_port(char *value, int32 value_len,
-                                     char *option, int32 option_len,
-                                     uint32 *port, NcmError *error);
-static bool configuration_is_flag_short_option(char c);
-static bool configuration_is_value_short_option(char c);
-static bool configuration_set_short_flag(NcmConfigurationOptions *options,
-                                         char c);
-static bool configuration_looks_like_option(char *arg, int32 arg_len);
-static bool configuration_parse_short_option(NcmConfigurationOptions *options,
-                                             int32 argc, char **argv,
-                                             int32 *i, NcmError *error);
-static bool configuration_parse_long_option(NcmConfigurationOptions *options,
-                                            int32 argc, char **argv,
-                                            int32 *i, NcmError *error);
-static void configuration_print_usage(char *program);
-static void configuration_print_version(void);
-static bool configuration_make_string_views(NcmStringViewArray *views,
-                                            NcmBufferArray *buffers);
-static bool configuration_read_settings(NcmConfigurationOptions *options,
-                                        NcmError *error);
-static bool configuration_read_bindings(NcmConfigurationOptions *options,
-                                        NcmError *error);
-static bool configuration_create_directories(NcmError *error);
-static bool configuration_apply_mpd_environment(NcmError *error);
-static bool configuration_apply_mpd_command_line(
-    NcmConfigurationOptions *options, NcmError *error);
-static bool configuration_apply_screen_options(NcmConfigurationOptions *options,
-                                               NcmError *error);
-static bool configuration_print_current_song(NcmConfigurationOptions *options,
-                                             NcmError *error);
-static bool configuration_test_lyrics_fetchers(NcmError *error);
 static void configuration_print_error(char *context, NcmError *error);
 
 void

@@ -14,18 +14,6 @@ static NcmArrayItemCallbacks settings_formatted_color_callbacks = {
     .destroy = settings_formatted_color_array_destroy_item,
 };
 
-static void settings_string_destroy(char **data, int32 *len, int32 *cap);
-static void configuration_init_strings(Configuration *config);
-static void configuration_destroy_strings(Configuration *config);
-static void configuration_init_buffers(Configuration *config);
-static void configuration_destroy_buffers(Configuration *config);
-static void configuration_init_formats(Configuration *config);
-static void configuration_destroy_formats(Configuration *config);
-static void configuration_init_colors(Configuration *config);
-static void configuration_destroy_colors(Configuration *config);
-static void configuration_init_arrays(Configuration *config);
-static void configuration_destroy_arrays(Configuration *config);
-
 NCM_ARRAY_DEFINE_INIT(ncm_int32_array, NcmInt32Array)
 NCM_ARRAY_DEFINE_CLEAR(ncm_int32_array,
                        NcmInt32Array,

@@ -7,18 +7,6 @@
 
 #include "c/ncm_base.h"
 
-static NcScreen *current_screen(void);
-static bool current_screen_is(int32 type);
-static NcmBuffer *current_screen_filter_buffer(void);
-static NcmBuffer *current_screen_search_buffer(void);
-static bool current_screen_set_search_constraint(char *pattern,
-                                                 int32 pattern_len);
-static bool current_screen_search_direction_forward(
-    enum SearchDirection direction);
-static bool current_screen_search_error(NcmError *error);
-static void current_screen_clear_current_search_constraint(void);
-static void current_screen_finish_immediate_change(void);
-
 static NcScreen *
 current_screen(void) {
     return app_controller_current_screen();

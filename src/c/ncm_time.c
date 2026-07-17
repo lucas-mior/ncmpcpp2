@@ -7,9 +7,6 @@
 
 #include "cbase/base_macros.h"
 
-static void ncm_time_set_errno_error(NcmError *error, int32 code,
-                                     char *operation);
-
 static void
 ncm_time_set_errno_error(NcmError *error, int32 code, char *operation) {
     char message[256];

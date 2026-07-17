@@ -26,7 +26,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-static NativeBrowserScreen *native_browser_from_screen(NcScreen *screen);
 static NcWindow *native_browser_active_window(NcScreen *screen);
 static void native_browser_refresh(NcScreen *screen);
 static void native_browser_refresh_window(NcScreen *screen);
@@ -40,10 +39,6 @@ static void native_browser_mouse_button_pressed(NcScreen *screen,
 static bool native_browser_is_lockable(NcScreen *screen);
 static bool native_browser_is_mergable(NcScreen *screen);
 static void native_browser_destroy_callback(NcScreen *screen);
-static NcMenuDisplayCallbacks native_browser_display_callbacks(
-    NativeBrowserScreen *screen);
-static NcMenuActionCallbacks native_browser_action_callbacks(
-    NativeBrowserScreen *screen);
 static void native_browser_install_menu_callbacks(
     NativeBrowserScreen *screen);
 static void native_browser_apply_menu_config(NativeBrowserScreen *screen);
@@ -78,19 +73,12 @@ static bool native_browser_set_parent_of_directory(
     NativeBrowserScreen *screen, char *directory, int32 directory_len);
 static bool native_browser_prepare_mpd_reload_directory(
     NativeBrowserScreen *screen);
-static bool native_browser_add_parent_directory_item(
-    NativeBrowserScreen *screen);
 static bool native_browser_load_mpd_items(NativeBrowserScreen *screen,
                                           NcmMpdItemArray *items);
 static bool native_browser_reload_from_local(NativeBrowserScreen *screen,
                                              NcmError *error);
 static bool native_browser_prepare_local_reload_directory(
     NativeBrowserScreen *screen, NcmError *error);
-static bool native_browser_add_local_directory_item(
-    NativeBrowserScreen *screen, NcmBuffer *path, time_t mtime);
-static bool native_browser_add_local_song_item(NativeBrowserScreen *screen,
-                                               NcmBuffer *path,
-                                               time_t mtime);
 static bool native_browser_load_local_entry(NativeBrowserScreen *screen,
                                             NcmFsDirectory *directory,
                                             NcmFsEntry *entry,

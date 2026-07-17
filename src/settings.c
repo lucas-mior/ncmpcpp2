@@ -50,86 +50,12 @@ typedef struct SettingsOption {
         .used = false, \
     }
 
-static void settings_error(NcmError *error, char *message, int32 message_len);
-static void settings_invalid_value(NcmError *error, char *value,
-                                   int32 value_len);
-static int32 settings_trim_start(char *value, int32 value_len);
-static int32 settings_trim_end(char *value, int32 value_len);
-static bool settings_string_set(char **data, int32 *len, int32 *cap,
-                                char *value, int32 value_len);
-static bool settings_string_set_expanded(char **data, int32 *len,
-                                         int32 *cap, char *value,
-                                         int32 value_len);
-static bool settings_string_set_directory(char **data, int32 *len,
-                                          int32 *cap, char *value,
-                                          int32 value_len);
-static bool settings_expand_home(NcmBuffer *buffer, char *value,
-                                 int32 value_len);
-static bool settings_copy_buffer(NcmBuffer *buffer, char *value,
-                                 int32 value_len);
-static bool settings_copy_nc_buffer(NcBuffer *buffer, char *value,
-                                    int32 value_len, int32 *width,
-                                    bool keep_existing);
-static bool settings_parse_bool(char *value, int32 value_len, bool *result,
-                                NcmError *error);
-static bool settings_parse_uint32(char *value, int32 value_len,
-                                  uint32 *result, NcmError *error);
-static bool settings_parse_double(char *value, int32 value_len,
-                                  double *result, NcmError *error);
-static bool settings_parse_color(char *value, int32 value_len,
-                                 NcColor *color, NcmError *error);
-static bool settings_parse_formatted_color(char *value, int32 value_len,
-                                           NcFormattedColor *color,
-                                           NcmError *error);
-static bool settings_parse_formatted_color_list(
-    NcmFormattedColorArray *array, char *value, int32 value_len,
-    NcmError *error);
-static bool settings_parse_ratio(NcmInt32Array *array, char *value,
-                                 int32 value_len, int32 expected_len,
-                                 NcmError *error);
-static bool settings_parse_columns(Configuration *config, char *value,
-                                   int32 value_len, NcmError *error);
-static bool settings_column_append_type(Column *column, char ch);
-static bool settings_parse_screen_list(Configuration *config, char *value,
-                                       int32 value_len, NcmError *error);
-static bool settings_parse_lyrics_fetchers(Configuration *config,
-                                           char *value, int32 value_len,
-                                           NcmError *error);
-static SettingsOption *settings_find_option(SettingsOption *options,
-                                            int32 option_count,
-                                            char *name, int32 name_len);
-static bool settings_read_file(Configuration *config, SettingsOption *options,
-                               int32 option_count, char *path,
-                               int32 path_len, bool ignore_errors,
-                               bool quiet, NcmError *error);
-static bool settings_initialize_defaults(Configuration *config,
-                                         SettingsOption *options,
-                                         int32 option_count,
-                                         bool ignore_errors,
-                                         NcmError *error);
-static bool settings_apply_option(Configuration *config,
-                                  SettingsOption *option,
-                                  char *value, int32 value_len,
-                                  bool default_value,
-                                  bool ignore_errors, NcmError *error);
-
 static bool apply_ncmpcpp_directory(Configuration *config, char *value,
                                     int32 value_len, NcmError *error);
 static bool apply_lyrics_directory(Configuration *config, char *value,
                                    int32 value_len, NcmError *error);
-static bool apply_mpd_host(Configuration *config, char *value,
-                           int32 value_len, NcmError *error);
-static bool apply_mpd_port(Configuration *config, char *value,
-                           int32 value_len, NcmError *error);
-static bool apply_mpd_password(Configuration *config, char *value,
-                               int32 value_len, NcmError *error);
 static bool apply_mpd_music_dir(Configuration *config, char *value,
                                 int32 value_len, NcmError *error);
-static bool apply_mpd_connection_timeout(Configuration *config,
-                                         char *value, int32 value_len,
-                                         NcmError *error);
-static bool apply_mpd_crossfade_time(Configuration *config, char *value,
-                                     int32 value_len, NcmError *error);
 static bool apply_random_exclude_pattern(Configuration *config, char *value,
                                          int32 value_len, NcmError *error);
 static bool apply_visualizer_data_source(Configuration *config, char *value,
@@ -138,12 +64,6 @@ static bool apply_visualizer_output_name(Configuration *config, char *value,
                                          int32 value_len, NcmError *error);
 static bool apply_visualizer_in_stereo(Configuration *config, char *value,
                                        int32 value_len, NcmError *error);
-static bool apply_visualizer_type(Configuration *config, char *value,
-                                  int32 value_len, NcmError *error);
-static bool apply_visualizer_look(Configuration *config, char *value,
-                                  int32 value_len, NcmError *error);
-static bool apply_visualizer_fps(Configuration *config, char *value,
-                                 int32 value_len, NcmError *error);
 static bool apply_visualizer_autoscale(Configuration *config, char *value,
                                        int32 value_len, NcmError *error);
 static bool apply_visualizer_spectrum_smooth_look(Configuration *config,
@@ -152,19 +72,6 @@ static bool apply_visualizer_spectrum_smooth_look(Configuration *config,
                                                   NcmError *error);
 static bool apply_visualizer_spectrum_smooth_look_legacy_chars(
     Configuration *config, char *value, int32 value_len, NcmError *error);
-static bool apply_visualizer_spectrum_dft_size(Configuration *config,
-                                               char *value,
-                                               int32 value_len,
-                                               NcmError *error);
-static bool apply_visualizer_spectrum_gain(Configuration *config,
-                                           char *value, int32 value_len,
-                                           NcmError *error);
-static bool apply_visualizer_spectrum_hz_min(Configuration *config,
-                                             char *value, int32 value_len,
-                                             NcmError *error);
-static bool apply_visualizer_spectrum_hz_max(Configuration *config,
-                                             char *value, int32 value_len,
-                                             NcmError *error);
 static bool apply_visualizer_spectrum_log_scale_x(Configuration *config,
                                                   char *value,
                                                   int32 value_len,
@@ -173,62 +80,8 @@ static bool apply_visualizer_spectrum_log_scale_y(Configuration *config,
                                                   char *value,
                                                   int32 value_len,
                                                   NcmError *error);
-static bool apply_visualizer_color(Configuration *config, char *value,
-                                   int32 value_len, NcmError *error);
-static bool apply_system_encoding(Configuration *config, char *value,
-                                  int32 value_len, NcmError *error);
-static bool apply_playlist_disable_highlight_delay(Configuration *config,
-                                                   char *value,
-                                                   int32 value_len,
-                                                   NcmError *error);
 static bool apply_message_delay_time(Configuration *config, char *value,
                                      int32 value_len, NcmError *error);
-static bool apply_song_list_format(Configuration *config, char *value,
-                                   int32 value_len, NcmError *error);
-static bool apply_song_status_format(Configuration *config, char *value,
-                                     int32 value_len, NcmError *error);
-static bool apply_song_library_format(Configuration *config, char *value,
-                                      int32 value_len, NcmError *error);
-static bool apply_header_first_line_format(Configuration *config,
-                                           char *value, int32 value_len,
-                                           NcmError *error);
-static bool apply_header_second_line_format(Configuration *config,
-                                            char *value, int32 value_len,
-                                            NcmError *error);
-static bool apply_current_item_prefix(Configuration *config, char *value,
-                                      int32 value_len, NcmError *error);
-static bool apply_current_item_suffix(Configuration *config, char *value,
-                                      int32 value_len, NcmError *error);
-static bool apply_current_item_inactive_column_prefix(Configuration *config,
-                                                      char *value,
-                                                      int32 value_len,
-                                                      NcmError *error);
-static bool apply_current_item_inactive_column_suffix(Configuration *config,
-                                                      char *value,
-                                                      int32 value_len,
-                                                      NcmError *error);
-static bool apply_now_playing_prefix(Configuration *config, char *value,
-                                     int32 value_len, NcmError *error);
-static bool apply_now_playing_suffix(Configuration *config, char *value,
-                                     int32 value_len, NcmError *error);
-static bool apply_browser_playlist_prefix(Configuration *config, char *value,
-                                          int32 value_len, NcmError *error);
-static bool apply_selected_item_prefix(Configuration *config, char *value,
-                                       int32 value_len, NcmError *error);
-static bool apply_selected_item_suffix(Configuration *config, char *value,
-                                       int32 value_len, NcmError *error);
-static bool apply_modified_item_prefix(Configuration *config, char *value,
-                                       int32 value_len, NcmError *error);
-static bool apply_song_window_title_format(Configuration *config,
-                                           char *value, int32 value_len,
-                                           NcmError *error);
-static bool apply_browser_sort_mode(Configuration *config, char *value,
-                                    int32 value_len, NcmError *error);
-static bool apply_browser_sort_format(Configuration *config, char *value,
-                                      int32 value_len, NcmError *error);
-static bool apply_song_columns_list_format(Configuration *config,
-                                           char *value, int32 value_len,
-                                           NcmError *error);
 static bool apply_execute_on_song_change(Configuration *config, char *value,
                                          int32 value_len, NcmError *error);
 static bool apply_execute_on_player_state_change(Configuration *config,
@@ -248,17 +101,6 @@ static bool apply_playlist_shorten_total_times(Configuration *config,
 static bool apply_playlist_separate_albums(Configuration *config,
                                            char *value, int32 value_len,
                                            NcmError *error);
-static bool apply_playlist_display_mode(Configuration *config, char *value,
-                                        int32 value_len, NcmError *error);
-static bool apply_browser_display_mode(Configuration *config, char *value,
-                                       int32 value_len, NcmError *error);
-static bool apply_search_engine_display_mode(Configuration *config,
-                                             char *value, int32 value_len,
-                                             NcmError *error);
-static bool apply_playlist_editor_display_mode(Configuration *config,
-                                               char *value,
-                                               int32 value_len,
-                                               NcmError *error);
 static bool apply_discard_colors_if_item_is_selected(Configuration *config,
                                                      char *value,
                                                      int32 value_len,
@@ -275,28 +117,16 @@ static bool apply_autocenter_mode(Configuration *config, char *value,
                                   int32 value_len, NcmError *error);
 static bool apply_centered_cursor(Configuration *config, char *value,
                                   int32 value_len, NcmError *error);
-static bool apply_progressbar_look(Configuration *config, char *value,
-                                   int32 value_len, NcmError *error);
-static bool apply_default_place_to_search_in(Configuration *config,
-                                             char *value, int32 value_len,
-                                             NcmError *error);
-static bool apply_user_interface(Configuration *config, char *value,
-                                 int32 value_len, NcmError *error);
 static bool apply_data_fetching_delay(Configuration *config, char *value,
                                       int32 value_len, NcmError *error);
 static bool apply_media_library_hide_album_dates(Configuration *config,
                                                  char *value,
                                                  int32 value_len,
                                                  NcmError *error);
-static bool apply_media_library_primary_tag(Configuration *config,
-                                            char *value, int32 value_len,
-                                            NcmError *error);
 static bool apply_media_library_albums_split_by_date(Configuration *config,
                                                      char *value,
                                                      int32 value_len,
                                                      NcmError *error);
-static bool apply_default_find_mode(Configuration *config, char *value,
-                                    int32 value_len, NcmError *error);
 static bool apply_default_tag_editor_pattern(Configuration *config,
                                              char *value, int32 value_len,
                                              NcmError *error);
@@ -314,8 +144,6 @@ static bool apply_header_text_scrolling(Configuration *config, char *value,
                                         int32 value_len, NcmError *error);
 static bool apply_cyclic_scrolling(Configuration *config, char *value,
                                    int32 value_len, NcmError *error);
-static bool apply_lyrics_fetchers(Configuration *config, char *value,
-                                  int32 value_len, NcmError *error);
 static bool apply_follow_now_playing_lyrics(Configuration *config,
                                             char *value, int32 value_len,
                                             NcmError *error);
@@ -336,38 +164,17 @@ static bool apply_allow_for_physical_item_deletion(Configuration *config,
 static bool apply_lastfm_preferred_language(Configuration *config,
                                             char *value, int32 value_len,
                                             NcmError *error);
-static bool apply_space_add_mode(Configuration *config, char *value,
-                                 int32 value_len, NcmError *error);
 static bool apply_show_hidden_files_in_local_browser(Configuration *config,
                                                      char *value,
                                                      int32 value_len,
                                                      NcmError *error);
-static bool apply_screen_switcher_mode(Configuration *config, char *value,
-                                       int32 value_len, NcmError *error);
-static bool apply_startup_screen(Configuration *config, char *value,
-                                 int32 value_len, NcmError *error);
-static bool apply_startup_slave_screen(Configuration *config, char *value,
-                                       int32 value_len, NcmError *error);
 static bool apply_startup_slave_screen_focus(Configuration *config,
                                              char *value, int32 value_len,
                                              NcmError *error);
-static bool apply_locked_screen_width_part(Configuration *config,
-                                           char *value, int32 value_len,
-                                           NcmError *error);
 static bool apply_ask_for_locked_screen_width_part(Configuration *config,
                                                    char *value,
                                                    int32 value_len,
                                                    NcmError *error);
-static bool apply_media_library_column_width_ratio_two(Configuration *config,
-                                                       char *value,
-                                                       int32 value_len,
-                                                       NcmError *error);
-static bool apply_media_library_column_width_ratio_three(
-    Configuration *config, char *value, int32 value_len, NcmError *error);
-static bool apply_playlist_editor_column_width_ratio(Configuration *config,
-                                                     char *value,
-                                                     int32 value_len,
-                                                     NcmError *error);
 static bool apply_jump_to_now_playing_song_at_start(Configuration *config,
                                                     char *value,
                                                     int32 value_len,
@@ -386,8 +193,6 @@ static bool apply_display_bitrate(Configuration *config, char *value,
                                   int32 value_len, NcmError *error);
 static bool apply_display_remaining_time(Configuration *config, char *value,
                                          int32 value_len, NcmError *error);
-static bool apply_regular_expressions(Configuration *config, char *value,
-                                      int32 value_len, NcmError *error);
 static bool apply_ignore_leading_the(Configuration *config, char *value,
                                      int32 value_len, NcmError *error);
 static bool apply_block_search_constraints_change(Configuration *config,
@@ -413,53 +218,12 @@ static bool apply_tag_editor_extended_numeration(Configuration *config,
 static bool apply_media_library_sort_by_mtime(Configuration *config,
                                               char *value, int32 value_len,
                                               NcmError *error);
-static bool apply_enable_window_title(Configuration *config, char *value,
-                                      int32 value_len, NcmError *error);
-static bool apply_search_engine_default_search_mode(Configuration *config,
-                                                    char *value,
-                                                    int32 value_len,
-                                                    NcmError *error);
 static bool apply_external_editor(Configuration *config, char *value,
                                   int32 value_len, NcmError *error);
 static bool apply_use_console_editor(Configuration *config, char *value,
                                      int32 value_len, NcmError *error);
 static bool apply_colors_enabled(Configuration *config, char *value,
                                  int32 value_len, NcmError *error);
-static bool apply_empty_tag_color(Configuration *config, char *value,
-                                  int32 value_len, NcmError *error);
-static bool apply_header_window_color(Configuration *config, char *value,
-                                      int32 value_len, NcmError *error);
-static bool apply_volume_color(Configuration *config, char *value,
-                               int32 value_len, NcmError *error);
-static bool apply_state_line_color(Configuration *config, char *value,
-                                   int32 value_len, NcmError *error);
-static bool apply_state_flags_color(Configuration *config, char *value,
-                                    int32 value_len, NcmError *error);
-static bool apply_main_window_color(Configuration *config, char *value,
-                                    int32 value_len, NcmError *error);
-static bool apply_color1(Configuration *config, char *value,
-                         int32 value_len, NcmError *error);
-static bool apply_color2(Configuration *config, char *value,
-                         int32 value_len, NcmError *error);
-static bool apply_progressbar_color(Configuration *config, char *value,
-                                    int32 value_len, NcmError *error);
-static bool apply_progressbar_elapsed_color(Configuration *config,
-                                            char *value, int32 value_len,
-                                            NcmError *error);
-static bool apply_statusbar_color(Configuration *config, char *value,
-                                  int32 value_len, NcmError *error);
-static bool apply_statusbar_time_color(Configuration *config, char *value,
-                                       int32 value_len, NcmError *error);
-static bool apply_player_state_color(Configuration *config, char *value,
-                                     int32 value_len, NcmError *error);
-static bool apply_alternative_ui_separator_color(Configuration *config,
-                                                 char *value,
-                                                 int32 value_len,
-                                                 NcmError *error);
-static bool apply_window_border_color(Configuration *config, char *value,
-                                      int32 value_len, NcmError *error);
-static bool apply_active_window_border(Configuration *config, char *value,
-                                       int32 value_len, NcmError *error);
 
 static void
 settings_error(NcmError *error, char *message, int32 message_len) {

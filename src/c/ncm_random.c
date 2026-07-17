@@ -5,9 +5,6 @@
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
 
-static uint64 ncm_random_splitmix64(uint64 *state);
-static void ncm_random_swap_bytes(char *left, char *right, int32 size);
-
 static uint64
 ncm_random_splitmix64(uint64 *state) {
     uint64 z;

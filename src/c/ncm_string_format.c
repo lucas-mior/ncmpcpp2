@@ -6,13 +6,6 @@
 
 #include "cbase/base_macros.h"
 
-static int32 ncm_string_format_cstrlen32(char *string);
-static void ncm_string_format_append_arg(NcmBuffer *out,
-                                         NcmStringFormatArg *arg);
-static void ncm_string_format_append_number(NcmBuffer *out,
-                                            char *format,
-                                            NcmStringFormatArg *arg);
-
 static int32
 ncm_string_format_cstrlen32(char *string) {
     int32 len;

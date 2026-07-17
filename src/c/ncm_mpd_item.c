@@ -2,13 +2,6 @@
 
 #include <mpd/client.h>
 
-static bool ncm_mpd_item_set_song_copy(NcmMpdItem *item,
-                                       struct mpd_song *source);
-static bool ncm_mpd_item_set_directory_from_mpd(NcmMpdItem *item,
-                                                struct mpd_directory *source);
-static bool ncm_mpd_item_set_playlist_from_mpd(NcmMpdItem *item,
-                                               struct mpd_playlist *source);
-
 static bool
 ncm_mpd_item_set_song_copy(NcmMpdItem *item,
                            struct mpd_song *source) {

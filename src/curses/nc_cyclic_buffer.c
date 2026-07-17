@@ -8,8 +8,6 @@ static int32 nc_cyclic_normalize_start(int64 *start_pos,
                                        int32 total_characters);
 static void nc_cyclic_increment_start(int64 *start_pos,
                                       int32 total_characters);
-static int32 nc_cyclic_next_position(char *string, int32 string_len,
-                                     int32 byte, int32 *char_width);
 static void nc_cyclic_text_append(NcmBuffer *output, char *string,
                                   int32 string_len, int32 start_byte,
                                   int32 *written_width, int32 width);
