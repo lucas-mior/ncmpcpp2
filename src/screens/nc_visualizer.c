@@ -1988,7 +1988,7 @@ static int64
 visualizer_system_read_source(void *user, int32 fd, void *buffer,
                               int64 buffer_size) {
     (void)user;
-    return (int64)read(fd, buffer, (size_t)buffer_size);
+    return read64(fd, buffer, buffer_size);
 }
 
 static void
