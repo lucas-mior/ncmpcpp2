@@ -24,8 +24,6 @@
 #include "screens/song_info.h"
 #include "title.h"
 
-
-
 enum TagEditorParserActionRow {
     TAG_EDITOR_PARSER_ACTION_PATTERN = 0,
     TAG_EDITOR_PARSER_ACTION_PREVIEW = 1,
