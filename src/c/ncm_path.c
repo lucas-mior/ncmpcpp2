@@ -153,6 +153,6 @@ ncm_path_has_extension(char *path, int32 path_len,
         return false;
     }
 
-    return ncm_string_equal(path + start, path_len - start,
+    return STREQUAL(path + start, path_len - start,
                             extension, extension_len);
 }

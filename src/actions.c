@@ -3260,7 +3260,7 @@ action_runtime_scroll_by_tag(enum NcmSongGetter getter, bool down) {
             target = next;
             break;
         }
-        same = ncm_string_equal(current_tag.data, current_tag.len,
+        same = STREQUAL(current_tag.data, current_tag.len,
                                 other_tag.data, other_tag.len);
         ncm_buffer_destroy(&other_tag);
         target = next;
@@ -4868,7 +4868,7 @@ action_runtime_select_album(void) {
                                         &candidate)) {
             break;
         }
-        equal = ncm_string_equal(album.data, album.len,
+        equal = STREQUAL(album.data, album.len,
                                  candidate.data, candidate.len);
         ncm_buffer_destroy(&candidate);
         if (!equal) {
@@ -4883,7 +4883,7 @@ action_runtime_select_album(void) {
                                         &candidate)) {
             break;
         }
-        equal = ncm_string_equal(album.data, album.len,
+        equal = STREQUAL(album.data, album.len,
                                  candidate.data, candidate.len);
         ncm_buffer_destroy(&candidate);
         if (!equal) {
@@ -5331,7 +5331,7 @@ action_runtime_edit_directory_name(void) {
             return true;
         }
         if ((name.len <= 0)
-            || ncm_string_equal(name.data, name.len,
+            || STREQUAL(name.data, name.len,
                                 path.data, path.len)) {
             ncm_buffer_destroy(&name);
             return true;
@@ -5391,7 +5391,7 @@ action_runtime_edit_playlist_name(void) {
             return true;
         }
         if ((name.len <= 0)
-            || ncm_string_equal(name.data, name.len,
+            || STREQUAL(name.data, name.len,
                                 path.data, path.len)) {
             ncm_buffer_destroy(&name);
             return true;
@@ -5440,7 +5440,7 @@ action_runtime_edit_playlist_name(void) {
         return true;
     }
     if ((name.len <= 0)
-        || ncm_string_equal(name.data, name.len,
+        || STREQUAL(name.data, name.len,
                             playlist.path, playlist.path_len)) {
         ncm_buffer_destroy(&name);
         ncm_playlist_destroy(&playlist);
@@ -6204,7 +6204,7 @@ action_runtime_edit_library_tag(void) {
         goto cleanup;
     }
     if ((new_tag.len <= 0)
-        || ncm_string_equal(new_tag.data, new_tag.len,
+        || STREQUAL(new_tag.data, new_tag.len,
                             current_tag.data, current_tag.len)) {
         success = true;
         goto cleanup;
@@ -6318,7 +6318,7 @@ action_runtime_edit_library_album(void) {
         goto cleanup;
     }
     if ((new_album.len <= 0)
-        || ncm_string_equal(new_album.data, new_album.len,
+        || STREQUAL(new_album.data, new_album.len,
                             current_album.data, current_album.len)) {
         success = true;
         goto cleanup;

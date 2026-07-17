@@ -1192,7 +1192,7 @@ adder_action_position_current_album(void *user) {
             break;
         }
         adder_song_album_view(&next, &next_album);
-        if (!ncm_string_equal(album.data, album.len,
+        if (!STREQUAL(album.data, album.len,
                               next_album.data, next_album.len)) {
             ncm_song_destroy(&next);
             break;

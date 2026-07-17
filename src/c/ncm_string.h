@@ -11,8 +11,6 @@ bool ncm_string_view_empty(NcmStringView *view);
 bool ncm_string_view_equal(NcmStringView *left, NcmStringView *right);
 
 void ncm_string_lowercase_ascii(char *string, int32 string_len);
-bool ncm_string_equal(char *left, int32 left_len,
-                      char *right, int32 right_len);
 bool ncm_string_starts_with(char *string, int32 string_len,
                             char *prefix, int32 prefix_len);
 bool ncm_string_ends_with(char *string, int32 string_len,

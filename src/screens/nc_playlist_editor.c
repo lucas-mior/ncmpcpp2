@@ -1767,7 +1767,7 @@ playlist_editor_find_playlist_position(
 
         playlist = nc_menu_active_item_at(menu, i);
         if ((playlist != NULL)
-            && ncm_string_equal(playlist->path, playlist->path_len,
+            && STREQUAL(playlist->path, playlist->path_len,
                                 path, path_len)) {
             *pos = i;
             return true;
@@ -1946,7 +1946,7 @@ playlist_editor_restore_playlist_path(NativePlaylistEditorScreen *screen,
 
         playlist = nc_menu_active_item_at(menu, i);
         if ((playlist != NULL)
-            && ncm_string_equal(playlist->path, playlist->path_len,
+            && STREQUAL(playlist->path, playlist->path_len,
                                 buffer->data, buffer->len)) {
             nc_menu_highlight_position(menu, i, screen->main_height);
             return true;
@@ -2171,7 +2171,7 @@ playlist_editor_displayed_playlist_is_current(
     if (!playlist_editor_current_playlist_path(screen, &path, &path_len)) {
         return false;
     }
-    return ncm_string_equal(screen->displayed_playlist_path.data,
+    return STREQUAL(screen->displayed_playlist_path.data,
                             screen->displayed_playlist_path.len,
                             path, path_len);
 }
@@ -2194,7 +2194,7 @@ playlist_editor_playlist_row_changed(NativePlaylistEditorScreen *screen) {
     }
 
     changed = !screen->observed_playlist_valid
-              || !ncm_string_equal(screen->observed_playlist_path.data,
+              || !STREQUAL(screen->observed_playlist_path.data,
                                    screen->observed_playlist_path.len,
                                    path, path_len)
               || (screen->last_playlist_highlight

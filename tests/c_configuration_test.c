@@ -99,7 +99,7 @@ static void
 require_string(char *file, int32 line, char *name,
                char *actual, int32 actual_len,
                char *expected, int32 expected_len) {
-    if (!ncm_string_equal(actual, actual_len, expected, expected_len)) {
+    if (!STREQUAL(actual, actual_len, expected, expected_len)) {
         fprintf(stderr, "%s:%d: %s: expected '%.*s', got '%.*s'\n",
                 file, line, name,
                 expected_len, expected, actual_len, actual);
@@ -537,7 +537,7 @@ test_expand_home(void) {
     ncm_buffer_append(&expected, LIT_ARGS("user@"));
     ncm_buffer_append(&expected, home, (int32)strlen(home));
     ncm_buffer_append(&expected, LIT_ARGS("/music"));
-    REQUIRE(ncm_string_equal(path.data, path.len,
+    REQUIRE(STREQUAL(path.data, path.len,
                              expected.data, expected.len));
 
     REQUIRE(unsetenv("HOME") == 0);
@@ -597,11 +597,11 @@ test_config_path_discovery(void) {
     REQUIRE_INT(config_paths.len, 2);
     REQUIRE_INT(bindings_paths.len, 2);
     make_path(&expected, xdg.data, "ncmpcpp/config");
-    REQUIRE(ncm_string_equal(config_paths.items[0].data,
+    REQUIRE(STREQUAL(config_paths.items[0].data,
                              config_paths.items[0].len,
                              expected.data, expected.len));
     make_path(&expected, xdg.data, "ncmpcpp/bindings");
-    REQUIRE(ncm_string_equal(bindings_paths.items[0].data,
+    REQUIRE(STREQUAL(bindings_paths.items[0].data,
                              bindings_paths.items[0].len,
                              expected.data, expected.len));
     REQUIRE_STRING(config_paths.items[1].data,

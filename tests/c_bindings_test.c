@@ -104,7 +104,7 @@ static void
 require_string(char *file, int32 line, char *name,
                char *actual, int32 actual_len,
                char *expected, int32 expected_len) {
-    if (!ncm_string_equal(actual, actual_len, expected, expected_len)) {
+    if (!STREQUAL(actual, actual_len, expected, expected_len)) {
         fprintf(stderr, "%s:%d: %s: expected '%.*s', got '%.*s'\n",
                 file, line, name,
                 expected_len, expected, actual_len, actual);

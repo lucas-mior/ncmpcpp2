@@ -93,7 +93,7 @@ test_global_state(void) {
     if (global_volume_state_len() != 9) {
         return 1;
     }
-    if (!ncm_string_equal(global_volume_state_cstr(), global_volume_state_len(),
+    if (!STREQUAL(global_volume_state_cstr(), global_volume_state_len(),
                           STRLIT_ARGS(" Vol: 42%"))) {
         return 2;
     }

@@ -54,7 +54,7 @@ static void
 require_string(char *file, int32 line, char *name,
                char *actual, int32 actual_len,
                char *expected, int32 expected_len) {
-    if (!ncm_string_equal(actual, actual_len, expected, expected_len)) {
+    if (!STREQUAL(actual, actual_len, expected, expected_len)) {
         fprintf(stderr, "%s:%d: %s: expected '%.*s', got '%.*s'\n",
                 file, line, name,
                 expected_len, expected, actual_len, actual);
@@ -162,7 +162,7 @@ song_uri_matches(NcmSong *song, void *user) {
     if (!ncm_song_uri_view(song, 0, &view)) {
         return false;
     }
-    return ncm_string_equal(view.data, view.len, needle->data,
+    return STREQUAL(view.data, view.len, needle->data,
                             needle->len);
 }
 

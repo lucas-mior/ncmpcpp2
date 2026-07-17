@@ -1,6 +1,7 @@
 #include "c/ncm_enums.h"
 
 #include "c/ncm_string.h"
+#include "cbase/util.c"
 
 static int32 ncm_enum_cstr_len(char *string);
 static bool ncm_enum_equal(char *string, int32 string_len, char *expected);
@@ -19,7 +20,7 @@ ncm_enum_cstr_len(char *string) {
 
 static bool
 ncm_enum_equal(char *string, int32 string_len, char *expected) {
-    return ncm_string_equal(string, string_len, expected,
+    return STREQUAL(string, string_len, expected,
                             ncm_enum_cstr_len(expected));
 }
 

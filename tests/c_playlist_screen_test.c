@@ -142,7 +142,7 @@ assert_song_uri(NcmSong *song, char *uri, int32 uri_len) {
     NcmStringView view;
 
     assert(ncm_song_uri_view(song, 0, &view));
-    assert(ncm_string_equal(view.data, view.len, uri, uri_len));
+    assert(STREQUAL(view.data, view.len, uri, uri_len));
     return;
 }
 
@@ -545,7 +545,7 @@ test_native_display_and_column_title(void) {
     reset_window_trace();
     native_playlist_screen_init(&screen, 0, 20, 0, 24,
                                 nc_color_default(), nc_border_none());
-    assert(ncm_string_equal(screen.column_title.data,
+    assert(STREQUAL(screen.column_title.data,
                             screen.column_title.len,
                             LIT_ARGS("Artist    Title     ")));
     assert(screen.window.start_y == 2);
@@ -559,7 +559,7 @@ test_native_display_and_column_title(void) {
     reset_window_trace();
     menu->display_callbacks.draw(menu, &screen.window, song, 0,
                                  menu->display_callbacks.user);
-    assert(ncm_string_equal(window_trace.printed,
+    assert(STREQUAL(window_trace.printed,
                             window_trace.printed_len,
                             LIT_ARGS("Artist    Title     ")));
 
@@ -571,7 +571,7 @@ test_native_display_and_column_title(void) {
     reset_window_trace();
     menu->display_callbacks.draw(menu, &screen.window, song, 0,
                                  menu->display_callbacks.user);
-    assert(ncm_string_equal(window_trace.printed,
+    assert(STREQUAL(window_trace.printed,
                             window_trace.printed_len,
                             LIT_ARGS("classic:song.flac")));
 
@@ -760,9 +760,9 @@ test_playlist_updates_current_mutable_song(void) {
     assert(native_playlist_screen_current_song(&screen, &result));
     assert_song_uri(&result, LIT_ARGS("/music/renamed.flac"));
     assert(ncm_song_tag_view(&result, MPD_TAG_TITLE, 0, &view));
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("New title")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("New title")));
     assert(ncm_song_tag_view(&result, MPD_TAG_NAME, 0, &view));
-    assert(ncm_string_equal(view.data, view.len,
+    assert(STREQUAL(view.data, view.len,
                             LIT_ARGS("Preserved name")));
     assert(ncm_song_duration(&result) == 321);
     assert(ncm_song_position(&result) == 7);

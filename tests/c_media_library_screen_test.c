@@ -149,7 +149,7 @@ test_media_library_state_contract(void) {
            == NATIVE_MEDIA_LIBRARY_FETCH_DELAY_MS);
     assert(native_media_library_screen_window_timeout_ms(&screen)
            == NATIVE_MEDIA_LIBRARY_FETCH_DELAY_MS);
-    assert(ncm_string_equal(screen.tags_title.data,
+    assert(STREQUAL(screen.tags_title.data,
                             screen.tags_title.len,
                             LIT_ARGS("Artists")));
 
@@ -171,21 +171,21 @@ test_media_library_state_contract(void) {
     assert(native_media_library_screen_current_tag(&screen));
     assert(native_media_library_screen_current_primary_tag_value(
         &screen, &value, &value_len));
-    assert(ncm_string_equal(value, value_len, LIT_ARGS("Artist A")));
+    assert(STREQUAL(value, value_len, LIT_ARGS("Artist A")));
     assert(native_media_library_screen_add_album(
         &screen, LIT_ARGS("Artist A"), LIT_ARGS("Album A"),
         LIT_ARGS("2026"), 0, false));
     assert(native_media_library_screen_current_album(&screen));
     assert(native_media_library_screen_current_album_value(
         &screen, &value, &value_len));
-    assert(ncm_string_equal(value, value_len, LIT_ARGS("Album A")));
+    assert(STREQUAL(value, value_len, LIT_ARGS("Album A")));
     assert(native_media_library_screen_current_album_date(
         &screen, &value, &value_len));
-    assert(ncm_string_equal(value, value_len, LIT_ARGS("2026")));
+    assert(STREQUAL(value, value_len, LIT_ARGS("2026")));
     assert(native_media_library_screen_apply_filter(
         &screen, LIT_ARGS("Artist A"), &error));
     assert(tags_state->filter_enabled);
-    assert(ncm_string_equal(tags_state->filter_constraint.data,
+    assert(STREQUAL(tags_state->filter_constraint.data,
                             tags_state->filter_constraint.len,
                             LIT_ARGS("Artist A")));
     assert(native_media_library_screen_set_active_column(
@@ -194,7 +194,7 @@ test_media_library_state_contract(void) {
     assert(native_media_library_screen_search(
         &screen, LIT_ARGS("Album"), true, true, false, &error));
     assert(albums_state->search_enabled);
-    assert(ncm_string_equal(albums_state->search_constraint.data,
+    assert(STREQUAL(albums_state->search_constraint.data,
                             albums_state->search_constraint.len,
                             LIT_ARGS("Album")));
     assert(!tags_state->search_enabled);
@@ -384,7 +384,7 @@ test_media_library_layout_and_rendering(void) {
     assert(nc_window_width(&screen.songs_window) == 49);
     assert(native_media_library_screen_column_visible(
         &screen, NATIVE_MEDIA_LIBRARY_COLUMN_TAGS));
-    assert(ncm_string_equal(screen.albums_title.data,
+    assert(STREQUAL(screen.albums_title.data,
                             screen.albums_title.len,
                             LIT_ARGS("Albums")));
 
@@ -396,7 +396,7 @@ test_media_library_layout_and_rendering(void) {
     assert(nc_window_width(&screen.albums_window) == 30);
     assert(nc_window_start_x(&screen.songs_window) == 38);
     assert(nc_window_width(&screen.songs_window) == 69);
-    assert(ncm_string_equal(
+    assert(STREQUAL(
         screen.albums_title.data, screen.albums_title.len,
         LIT_ARGS("Albums (sorted by artist)")));
     assert(nc_buffer_equal(&albums->highlight_prefix,
@@ -406,16 +406,16 @@ test_media_library_layout_and_rendering(void) {
         &Config.current_item_inactive_column_prefix));
 
     assert(native_media_library_screen_toggle_sort_mode(&screen));
-    assert(ncm_string_equal(
+    assert(STREQUAL(
         screen.albums_title.data, screen.albums_title.len,
         LIT_ARGS("Albums (sorted by artist and mtime)")));
     assert(native_media_library_screen_set_mode(
         &screen, NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY));
-    assert(ncm_string_equal(
+    assert(STREQUAL(
         screen.albums_title.data, screen.albums_title.len,
         LIT_ARGS("Albums (sorted by mtime)")));
     assert(!native_media_library_screen_toggle_sort_mode(&screen));
-    assert(ncm_string_equal(screen.albums_title.data,
+    assert(STREQUAL(screen.albums_title.data,
                             screen.albums_title.len,
                             LIT_ARGS("Albums")));
 
@@ -423,11 +423,11 @@ test_media_library_layout_and_rendering(void) {
     tag.tag = "Artist";
     tag.tag_len = STRLIT_LEN("Artist");
     native_media_library_screen_format_tag_row(&screen, &tag, &text);
-    assert(ncm_string_equal(text.data, text.len, LIT_ARGS("Artist")));
+    assert(STREQUAL(text.data, text.len, LIT_ARGS("Artist")));
     tag.tag = NULL;
     tag.tag_len = 0;
     native_media_library_screen_format_tag_row(&screen, &tag, &text);
-    assert(ncm_string_equal(text.data, text.len, LIT_ARGS("<empty>")));
+    assert(STREQUAL(text.data, text.len, LIT_ARGS("<empty>")));
 
     album.tag = "Artist";
     album.tag_len = STRLIT_LEN("Artist");
@@ -437,13 +437,13 @@ test_media_library_layout_and_rendering(void) {
     album.date_len = STRLIT_LEN("2026");
     native_media_library_screen_format_album_row(&screen, &album,
                                                   &text);
-    assert(ncm_string_equal(text.data, text.len,
+    assert(STREQUAL(text.data, text.len,
                             LIT_ARGS("(2026) Album")));
     assert(native_media_library_screen_set_mode(
         &screen, NATIVE_MEDIA_LIBRARY_MODE_TWO_COLUMNS));
     native_media_library_screen_format_album_row(&screen, &album,
                                                   &text);
-    assert(ncm_string_equal(
+    assert(STREQUAL(
         text.data, text.len, LIT_ARGS("Artist - (2026) Album")));
     album.tag = NULL;
     album.tag_len = 0;
@@ -451,13 +451,13 @@ test_media_library_layout_and_rendering(void) {
     album.album_len = 0;
     native_media_library_screen_format_album_row(&screen, &album,
                                                   &text);
-    assert(ncm_string_equal(
+    assert(STREQUAL(
         text.data, text.len,
         LIT_ARGS("<empty> - (2026) <no album>")));
     album.all_tracks_entry = true;
     native_media_library_screen_format_album_row(&screen, &album,
                                                   &text);
-    assert(ncm_string_equal(text.data, text.len,
+    assert(STREQUAL(text.data, text.len,
                             LIT_ARGS("All tracks")));
     album.all_tracks_entry = false;
 
@@ -468,7 +468,7 @@ test_media_library_layout_and_rendering(void) {
                             LIT_ARGS("library row")));
     native_media_library_screen_format_song_row(&screen, &song,
                                                  &song_text);
-    assert(ncm_string_equal(song_text.data, song_text.len,
+    assert(STREQUAL(song_text.data, song_text.len,
                             LIT_ARGS("library row")));
 
     nc_buffer_destroy(&song_text);
@@ -536,41 +536,41 @@ test_media_library_parity_surface(void) {
     native_media_library_screen_init(
         &screen, test_hooks(&fixture), 0, 90, 0, 24,
         nc_color_default(), nc_border_none());
-    assert(ncm_string_equal(
+    assert(STREQUAL(
         nc_screen_title(native_media_library_screen_base(&screen)),
         STRLIT_LEN("Media library"), LIT_ARGS("Media library")));
     title = nc_window_title(&screen.tags_window);
     title_len = nc_window_title_len(&screen.tags_window);
-    assert(ncm_string_equal(title, title_len, LIT_ARGS("Artists")));
+    assert(STREQUAL(title, title_len, LIT_ARGS("Artists")));
     title = nc_window_title(&screen.albums_window);
     title_len = nc_window_title_len(&screen.albums_window);
-    assert(ncm_string_equal(title, title_len, LIT_ARGS("Albums")));
+    assert(STREQUAL(title, title_len, LIT_ARGS("Albums")));
     title = nc_window_title(&screen.songs_window);
     title_len = nc_window_title_len(&screen.songs_window);
-    assert(ncm_string_equal(title, title_len, LIT_ARGS("Songs")));
+    assert(STREQUAL(title, title_len, LIT_ARGS("Songs")));
 
     assert(native_media_library_screen_set_primary_tag_type(
         &screen, MPD_TAG_GENRE));
     title = nc_window_title(&screen.tags_window);
     title_len = nc_window_title_len(&screen.tags_window);
-    assert(ncm_string_equal(title, title_len, LIT_ARGS("Genres")));
+    assert(STREQUAL(title, title_len, LIT_ARGS("Genres")));
     assert(native_media_library_screen_set_mode(
         &screen, NATIVE_MEDIA_LIBRARY_MODE_TWO_COLUMNS));
     title = nc_window_title(&screen.albums_window);
     title_len = nc_window_title_len(&screen.albums_window);
-    assert(ncm_string_equal(
+    assert(STREQUAL(
         title, title_len, LIT_ARGS("Albums (sorted by genre)")));
     assert(native_media_library_screen_toggle_sort_mode(&screen));
     title = nc_window_title(&screen.albums_window);
     title_len = nc_window_title_len(&screen.albums_window);
-    assert(ncm_string_equal(
+    assert(STREQUAL(
         title, title_len,
         LIT_ARGS("Albums (sorted by genre and mtime)")));
     assert(native_media_library_screen_set_mode(
         &screen, NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY));
     title = nc_window_title(&screen.albums_window);
     title_len = nc_window_title_len(&screen.albums_window);
-    assert(ncm_string_equal(
+    assert(STREQUAL(
         title, title_len, LIT_ARGS("Albums (sorted by mtime)")));
 
     native_media_library_screen_set_geometry(&screen, 5, 101, 2, 30);
@@ -657,7 +657,7 @@ test_media_library_external_interface(void) {
     assert(fixture.last_match_primary_tag);
     assert(!fixture.last_match_album);
     assert(!fixture.last_match_date);
-    assert(ncm_string_equal(
+    assert(STREQUAL(
         fixture.last_primary_value,
         fixture.last_primary_value_len,
         LIT_ARGS("Artist A")));
@@ -707,10 +707,10 @@ test_media_library_external_interface(void) {
     assert(native_media_library_screen_copy_visible_songs(
         &screen, &songs, &error));
     assert(songs.len == 2);
-    assert(ncm_string_equal(songs.items[0].uri,
+    assert(STREQUAL(songs.items[0].uri,
                             songs.items[0].uri_len,
                             LIT_ARGS("first.flac")));
-    assert(ncm_string_equal(songs.items[1].uri,
+    assert(STREQUAL(songs.items[1].uri,
                             songs.items[1].uri_len,
                             LIT_ARGS("second.flac")));
 
@@ -765,7 +765,7 @@ test_media_library_tag_grouping(void) {
     row = nc_media_library_tag_menu_item_at(
         native_media_library_screen_tags(&screen), NC_MENU_ITEMS_ALL, 0);
     assert(row);
-    assert(ncm_string_equal(row->tag, row->tag_len,
+    assert(STREQUAL(row->tag, row->tag_len,
                             LIT_ARGS("Artist A")));
 
     ncm_song_destroy(&song);
@@ -801,9 +801,9 @@ test_media_library_tag_primitives(void) {
     assert(native_media_library_tags_from_strings(&tags, &strings));
     assert(tags.len == 3);
     assert(tags.items[0].tag_len == 0);
-    assert(ncm_string_equal(tags.items[1].tag, tags.items[1].tag_len,
+    assert(STREQUAL(tags.items[1].tag, tags.items[1].tag_len,
                             LIT_ARGS("Yellow")));
-    assert(ncm_string_equal(tags.items[2].tag, tags.items[2].tag_len,
+    assert(STREQUAL(tags.items[2].tag, tags.items[2].tag_len,
                             LIT_ARGS("The Zebra")));
 
     assert(ncm_song_set_uri(&song, LIT_ARGS("first.flac")));
@@ -833,12 +833,12 @@ test_media_library_tag_primitives(void) {
     assert(native_media_library_tags_from_songs(
         &tags, &songs, MPD_TAG_ARTIST));
     assert(tags.len == 3);
-    assert(ncm_string_equal(tags.items[0].tag, tags.items[0].tag_len,
+    assert(STREQUAL(tags.items[0].tag, tags.items[0].tag_len,
                             LIT_ARGS("First")));
     assert(tags.items[0].mtime == 20);
     assert(tags.items[1].tag_len == 0);
     assert(tags.items[1].mtime == 15);
-    assert(ncm_string_equal(tags.items[2].tag, tags.items[2].tag_len,
+    assert(STREQUAL(tags.items[2].tag, tags.items[2].tag_len,
                             LIT_ARGS("Second")));
     assert(tags.items[2].mtime == 10);
 
@@ -897,7 +897,7 @@ test_media_library_album_primitives(void) {
         LIT_ARGS("Artist")));
     assert(albums.len == 1);
     row = &albums.items[0].row;
-    assert(ncm_string_equal(row->album, row->album_len,
+    assert(STREQUAL(row->album, row->album_len,
                             LIT_ARGS("The Zebra")));
     assert(row->date_len == 0);
     assert(row->mtime == 200);
@@ -923,19 +923,19 @@ test_media_library_album_primitives(void) {
         LIT_ARGS("Artist")));
     assert(albums.len == 6);
     assert(albums.items[0].row.album_len == 0);
-    assert(ncm_string_equal(albums.items[1].row.album,
+    assert(STREQUAL(albums.items[1].row.album,
                             albums.items[1].row.album_len,
                             LIT_ARGS("Yellow")));
-    assert(ncm_string_equal(albums.items[2].row.album,
+    assert(STREQUAL(albums.items[2].row.album,
                             albums.items[2].row.album_len,
                             LIT_ARGS("The Zebra")));
     assert(albums.items[2].row.mtime == 200);
-    assert(ncm_string_equal(albums.items[3].row.date,
+    assert(STREQUAL(albums.items[3].row.date,
                             albums.items[3].row.date_len,
                             LIT_ARGS("2021")));
     assert(albums.items[4].menu_flags == NC_MENU_ITEM_SEPARATOR);
     assert(albums.items[5].row.all_tracks_entry);
-    assert(ncm_string_equal(albums.items[5].row.tag,
+    assert(STREQUAL(albums.items[5].row.tag,
                             albums.items[5].row.tag_len,
                             LIT_ARGS("Artist")));
 
@@ -979,10 +979,10 @@ test_media_library_album_primitives(void) {
         NULL, 0));
     assert(albums.len == 3);
     assert(albums.items[0].row.tag_len == 0);
-    assert(ncm_string_equal(albums.items[1].row.tag,
+    assert(STREQUAL(albums.items[1].row.tag,
                             albums.items[1].row.tag_len,
                             LIT_ARGS("Second")));
-    assert(ncm_string_equal(albums.items[2].row.tag,
+    assert(STREQUAL(albums.items[2].row.tag,
                             albums.items[2].row.tag_len,
                             LIT_ARGS("The Zebra")));
     assert(albums.items[2].row.mtime == 100);
@@ -993,7 +993,7 @@ test_media_library_album_primitives(void) {
         NATIVE_MEDIA_LIBRARY_MODE_TWO_COLUMNS, MPD_TAG_ARTIST,
         NULL, 0));
     assert(albums.len == 3);
-    assert(ncm_string_equal(albums.items[0].row.tag,
+    assert(STREQUAL(albums.items[0].row.tag,
                             albums.items[0].row.tag_len,
                             LIT_ARGS("Second")));
     assert(albums.items[0].row.mtime == 300);
@@ -1009,7 +1009,7 @@ test_media_library_album_primitives(void) {
     assert(albums.items[0].row.tag_len == 0);
     assert(albums.items[0].row.album_len == 0);
     assert(albums.items[1].row.tag_len == 0);
-    assert(ncm_string_equal(albums.items[1].row.album,
+    assert(STREQUAL(albums.items[1].row.album,
                             albums.items[1].row.album_len,
                             LIT_ARGS("Album")));
     assert(albums.items[1].row.mtime == 100);
@@ -1101,22 +1101,22 @@ test_media_library_song_ordering(void) {
 
     assert(native_media_library_songs_from_list(&songs, &source));
     assert(songs.len == 6);
-    assert(ncm_string_equal(songs.items[0].uri,
+    assert(STREQUAL(songs.items[0].uri,
                             songs.items[0].uri_len,
                             LIT_ARGS("one.flac")));
-    assert(ncm_string_equal(songs.items[1].uri,
+    assert(STREQUAL(songs.items[1].uri,
                             songs.items[1].uri_len,
                             LIT_ARGS("two.flac")));
-    assert(ncm_string_equal(songs.items[2].uri,
+    assert(STREQUAL(songs.items[2].uri,
                             songs.items[2].uri_len,
                             LIT_ARGS("three.flac")));
-    assert(ncm_string_equal(songs.items[3].uri,
+    assert(STREQUAL(songs.items[3].uri,
                             songs.items[3].uri_len,
                             LIT_ARGS("four.flac")));
-    assert(ncm_string_equal(songs.items[4].uri,
+    assert(STREQUAL(songs.items[4].uri,
                             songs.items[4].uri_len,
                             LIT_ARGS("five.flac")));
-    assert(ncm_string_equal(songs.items[5].uri,
+    assert(STREQUAL(songs.items[5].uri,
                             songs.items[5].uri_len,
                             LIT_ARGS("six.flac")));
 
@@ -1185,9 +1185,9 @@ test_media_library_query_pipeline(void) {
             &screen.tags, NC_MENU_ITEMS_ALL, 1);
         assert(first);
         assert(second);
-        assert(ncm_string_equal(first->tag, first->tag_len,
+        assert(STREQUAL(first->tag, first->tag_len,
                                 LIT_ARGS("Artist A")));
-        assert(ncm_string_equal(second->tag, second->tag_len,
+        assert(STREQUAL(second->tag, second->tag_len,
                                 LIT_ARGS("Artist B")));
 
         native_media_library_screen_destroy(&screen);
@@ -1262,7 +1262,7 @@ test_media_library_query_pipeline(void) {
         assert(!fixture.last_match_album);
         assert(!fixture.last_match_date);
         assert(fixture.last_primary_tag == MPD_TAG_ARTIST);
-        assert(ncm_string_equal(
+        assert(STREQUAL(
             fixture.last_primary_value,
             fixture.last_primary_value_len,
             LIT_ARGS("Artist A")));
@@ -1362,10 +1362,10 @@ test_media_library_query_pipeline(void) {
         assert(fixture.last_match_primary_tag);
         assert(fixture.last_match_album);
         assert(fixture.last_match_date);
-        assert(ncm_string_equal(fixture.last_album,
+        assert(STREQUAL(fixture.last_album,
                                 fixture.last_album_len,
                                 LIT_ARGS("Album A")));
-        assert(ncm_string_equal(fixture.last_date,
+        assert(STREQUAL(fixture.last_date,
                                 fixture.last_date_len,
                                 LIT_ARGS("2020")));
         assert(native_media_library_screen_visible_song_count(&screen)
@@ -1388,7 +1388,7 @@ test_media_library_query_pipeline(void) {
         assert(fixture.last_match_primary_tag);
         assert(!fixture.last_match_album);
         assert(!fixture.last_match_date);
-        assert(ncm_string_equal(
+        assert(STREQUAL(
             fixture.last_primary_value,
             fixture.last_primary_value_len,
             LIT_ARGS("Artist A")));
@@ -1411,11 +1411,11 @@ test_media_library_query_pipeline(void) {
         assert(fixture.last_match_primary_tag);
         assert(fixture.last_match_album);
         assert(!fixture.last_match_date);
-        assert(ncm_string_equal(
+        assert(STREQUAL(
             fixture.last_primary_value,
             fixture.last_primary_value_len,
             LIT_ARGS("Artist B")));
-        assert(ncm_string_equal(fixture.last_album,
+        assert(STREQUAL(fixture.last_album,
                                 fixture.last_album_len,
                                 LIT_ARGS("Album B")));
         native_media_library_screen_destroy(&screen);
@@ -1483,7 +1483,7 @@ test_media_library_query_failures(void) {
         ncm_error_clear(&error);
         assert(!native_media_library_screen_update(&screen, &error));
         assert(error.code == EIO);
-        assert(ncm_string_equal(error.message,
+        assert(STREQUAL(error.message,
                                 STRLIT_LEN("test tag error"),
                                 LIT_ARGS("test tag error")));
         assert(!native_media_library_screen_sort_by_mtime(&screen));
@@ -1492,7 +1492,7 @@ test_media_library_query_failures(void) {
                == 1);
         tag = native_media_library_screen_current_tag(&screen);
         assert(tag);
-        assert(ncm_string_equal(tag->tag, tag->tag_len,
+        assert(STREQUAL(tag->tag, tag->tag_len,
                                 LIT_ARGS("Existing")));
         assert(screen.tags_update_request);
         assert(!screen.albums_update_request);
@@ -1517,7 +1517,7 @@ test_media_library_query_failures(void) {
         ncm_error_clear(&error);
         assert(!native_media_library_screen_update(&screen, &error));
         assert(error.code == EIO);
-        assert(ncm_string_equal(error.message,
+        assert(STREQUAL(error.message,
                                 STRLIT_LEN("test song-list error"),
                                 LIT_ARGS("test song-list error")));
         assert(!native_media_library_screen_sort_by_mtime(&screen));
@@ -1605,7 +1605,7 @@ test_media_library_query_failures(void) {
                == 1);
         album = native_media_library_screen_current_album(&screen);
         assert(album);
-        assert(ncm_string_equal(album->album, album->album_len,
+        assert(STREQUAL(album->album, album->album_len,
                                 LIT_ARGS("Existing")));
         native_media_library_screen_destroy(&screen);
     }
@@ -1640,7 +1640,7 @@ test_media_library_query_failures(void) {
                == 1);
         current = native_media_library_screen_visible_song_at(&screen, 0);
         assert(current);
-        assert(ncm_string_equal(current->uri, current->uri_len,
+        assert(STREQUAL(current->uri, current->uri_len,
                                 LIT_ARGS("existing.flac")));
         ncm_song_destroy(&song);
         native_media_library_screen_destroy(&screen);
@@ -1842,7 +1842,7 @@ test_media_library_native_list_change_callback(void) {
                      NC_SCROLL_DOWN);
     tag = native_media_library_screen_current_tag(&screen);
     assert(tag);
-    assert(ncm_string_equal(tag->tag, tag->tag_len,
+    assert(STREQUAL(tag->tag, tag->tag_len,
                             LIT_ARGS("Artist B")));
     assert(nc_menu_all_item_count(albums) == 0);
     assert(nc_menu_all_item_count(songs) == 0);
@@ -1864,7 +1864,7 @@ test_media_library_native_list_change_callback(void) {
                      NC_SCROLL_DOWN);
     album = native_media_library_screen_current_album(&screen);
     assert(album);
-    assert(ncm_string_equal(album->album, album->album_len,
+    assert(STREQUAL(album->album, album->album_len,
                             LIT_ARGS("Album C")));
     assert(nc_menu_all_item_count(songs) == 0);
     assert(screen.update_timer.ns == global_timer.ns);
@@ -1985,7 +1985,7 @@ test_media_library_identity_and_filter_replacement(void) {
     assert(native_media_library_screen_update(&screen, &error));
     current_tag = native_media_library_screen_current_tag(&screen);
     assert(current_tag);
-    assert(ncm_string_equal(current_tag->tag, current_tag->tag_len,
+    assert(STREQUAL(current_tag->tag, current_tag->tag_len,
                             LIT_ARGS("Artist C")));
     assert(nc_menu_all_item_count(tags_menu) == 3);
     assert(nc_menu_item_count(tags_menu) == 1);
@@ -1995,7 +1995,7 @@ test_media_library_identity_and_filter_replacement(void) {
     native_media_library_screen_clear_filter(&screen);
     current_tag = native_media_library_screen_current_tag(&screen);
     assert(current_tag);
-    assert(ncm_string_equal(current_tag->tag, current_tag->tag_len,
+    assert(STREQUAL(current_tag->tag, current_tag->tag_len,
                             LIT_ARGS("Artist A")));
     assert(nc_menu_all_item_count(albums_menu) == 0);
     assert(nc_menu_all_item_count(songs_menu) == 0);
@@ -2021,7 +2021,7 @@ test_media_library_identity_and_filter_replacement(void) {
     assert(native_media_library_screen_update(&screen, &error));
     current_album = native_media_library_screen_current_album(&screen);
     assert(current_album);
-    assert(ncm_string_equal(current_album->album,
+    assert(STREQUAL(current_album->album,
                             current_album->album_len,
                             LIT_ARGS("Album C")));
     assert(nc_menu_item_count(albums_menu) == 3);
@@ -2034,7 +2034,7 @@ test_media_library_identity_and_filter_replacement(void) {
     native_media_library_screen_clear_filter(&screen);
     current_album = native_media_library_screen_current_album(&screen);
     assert(current_album);
-    assert(ncm_string_equal(current_album->album,
+    assert(STREQUAL(current_album->album,
                             current_album->album_len,
                             LIT_ARGS("Album A")));
     assert(nc_menu_all_item_count(songs_menu) == 0);
@@ -2060,7 +2060,7 @@ test_media_library_identity_and_filter_replacement(void) {
     assert(nc_menu_item_count(songs_menu) == 1);
     current_song = nc_media_library_song_menu_current(&screen.songs);
     assert(current_song);
-    assert(ncm_string_equal(current_song->uri, current_song->uri_len,
+    assert(STREQUAL(current_song->uri, current_song->uri_len,
                             LIT_ARGS("c.flac")));
 
     ncm_song_destroy(&song);
@@ -2115,7 +2115,7 @@ test_media_library_mode_transitions(void) {
         LIT_ARGS("2025"), 0, false));
     assert(native_media_library_screen_current_primary_tag_value(
         &screen, &value, &value_len));
-    assert(ncm_string_equal(value, value_len, LIT_ARGS("Artist B")));
+    assert(STREQUAL(value, value_len, LIT_ARGS("Artist B")));
     assert(native_media_library_screen_toggle_columns_mode(&screen)
            == NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY);
     assert(!native_media_library_screen_current_primary_tag_value(
@@ -2250,7 +2250,7 @@ test_media_library_selected_songs(void) {
     assert(selected.len == 2);
     assert(fixture.search_songs_calls == 1);
     assert(fixture.last_match_primary_tag);
-    assert(ncm_string_equal(fixture.last_primary_value,
+    assert(STREQUAL(fixture.last_primary_value,
                             fixture.last_primary_value_len,
                             LIT_ARGS("Artist A")));
     ncm_song_array_clear(&selected);
@@ -2266,7 +2266,7 @@ test_media_library_selected_songs(void) {
     assert(fixture.add_songs_calls == 1);
     assert(fixture.added_song_count == 2);
     assert(!fixture.added_with_play);
-    assert(ncm_string_equal(fixture.last_primary_value,
+    assert(STREQUAL(fixture.last_primary_value,
                             fixture.last_primary_value_len,
                             LIT_ARGS("Artist A")));
     assert(nc_menu_set_position_selected(tags_menu, 1, false));
@@ -2282,7 +2282,7 @@ test_media_library_selected_songs(void) {
     assert(fixture.last_match_primary_tag);
     assert(fixture.last_match_album);
     assert(fixture.last_match_date);
-    assert(ncm_string_equal(fixture.last_album, fixture.last_album_len,
+    assert(STREQUAL(fixture.last_album, fixture.last_album_len,
                             LIT_ARGS("Album A")));
     ncm_song_array_clear(&selected);
 
@@ -2292,7 +2292,7 @@ test_media_library_selected_songs(void) {
     assert(fixture.search_songs_calls == 3);
     assert(fixture.last_match_primary_tag);
     assert(fixture.last_match_album);
-    assert(ncm_string_equal(fixture.last_primary_value,
+    assert(STREQUAL(fixture.last_primary_value,
                             fixture.last_primary_value_len,
                             LIT_ARGS("Artist A")));
     ncm_song_array_clear(&selected);
@@ -2320,7 +2320,7 @@ test_media_library_selected_songs(void) {
     assert(native_media_library_screen_visible_song_count(&screen) == 2);
     assert(native_media_library_screen_current_selected_song(
         &screen, &current_copy));
-    assert(ncm_string_equal(current_copy.uri, current_copy.uri_len,
+    assert(STREQUAL(current_copy.uri, current_copy.uri_len,
                             LIT_ARGS("second.flac")));
     assert(native_media_library_screen_selected_songs_checked(
         &screen, &selected, &error));
@@ -2340,7 +2340,7 @@ test_media_library_selected_songs(void) {
     assert(fixture.add_songs_calls == 1);
     assert(fixture.added_song_count == 1);
     assert(fixture.added_with_play);
-    assert(ncm_string_equal(fixture.added_uri, fixture.added_uri_len,
+    assert(STREQUAL(fixture.added_uri, fixture.added_uri_len,
                             LIT_ARGS("second.flac")));
 
     ncm_song_array_destroy(&selected);
@@ -2422,11 +2422,11 @@ test_media_library_locate_song(void) {
 
     current_tag = native_media_library_screen_current_tag(&screen);
     assert(current_tag);
-    assert(ncm_string_equal(current_tag->tag, current_tag->tag_len,
+    assert(STREQUAL(current_tag->tag, current_tag->tag_len,
                             LIT_ARGS("Artist A")));
     current_album = native_media_library_screen_current_album(&screen);
     assert(current_album);
-    assert(ncm_string_equal(current_album->album,
+    assert(STREQUAL(current_album->album,
                             current_album->album_len,
                             LIT_ARGS("Album A")));
     assert(current_album->date_len == 0);
@@ -2436,7 +2436,7 @@ test_media_library_locate_song(void) {
         &screen, nc_menu_highlight(
             nc_media_library_song_menu_base(&screen.songs)));
     assert(current_song);
-    assert(ncm_string_equal(current_song->uri, current_song->uri_len,
+    assert(STREQUAL(current_song->uri, current_song->uri_len,
                             LIT_ARGS("target.flac")));
 
     native_media_library_screen_destroy(&screen);

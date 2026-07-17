@@ -225,7 +225,7 @@ assert_row_text(NativeSearchEngineScreen *screen, int64 pos,
     row = row_at(screen, pos);
     assert(row != NULL);
     assert(!row->is_song);
-    assert(ncm_string_equal(row->buffer.data, row->buffer.len,
+    assert(STREQUAL(row->buffer.data, row->buffer.len,
                             expected, expected_len));
     return;
 }
@@ -265,7 +265,7 @@ assert_song_uri(NcmSong *song, char *expected, int32 expected_len) {
     NcmStringView view;
 
     assert(ncm_song_uri_view(song, 0, &view));
-    assert(ncm_string_equal(view.data, view.len,
+    assert(STREQUAL(view.data, view.len,
                             expected, expected_len));
     return;
 }
@@ -282,17 +282,17 @@ test_owned_screen_state(void) {
     assert(!native_search_engine_screen_constraints_locked(&screen));
 
     view = native_search_engine_screen_title(&screen);
-    assert(ncm_string_equal(view.data, view.len,
+    assert(STREQUAL(view.data, view.len,
                             LIT_ARGS("Search engine")));
     assert(native_search_engine_screen_set_title(
         &screen, LIT_ARGS("Search results")));
     view = native_search_engine_screen_title(&screen);
-    assert(ncm_string_equal(view.data, view.len,
+    assert(STREQUAL(view.data, view.len,
                             LIT_ARGS("Search results")));
     assert(native_search_engine_screen_set_column_title(
         &screen, LIT_ARGS("Artist | Album | Title")));
     view = native_search_engine_screen_column_title(&screen);
-    assert(ncm_string_equal(view.data, view.len,
+    assert(STREQUAL(view.data, view.len,
                             LIT_ARGS("Artist | Album | Title")));
 
     assert(native_search_engine_screen_set_constraint(
@@ -319,7 +319,7 @@ test_owned_screen_state(void) {
            == NATIVE_SEARCH_ENGINE_SEARCH_MODE_REGEX);
     assert(!native_search_engine_screen_searches_database(&screen));
     view = native_search_engine_screen_constraint(&screen, 3);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("needle")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("needle")));
 
     native_search_engine_screen_destroy(&screen);
     return;
@@ -392,7 +392,7 @@ add_song(void *user, NcmSong *song, bool play, NcmError *error) {
     fixture->add_calls += 1;
     fixture->play = play;
     assert(ncm_song_uri_view(song, 0, &uri));
-    assert(ncm_string_equal(uri.data, uri.len, LIT_ARGS("result.flac")));
+    assert(STREQUAL(uri.data, uri.len, LIT_ARGS("result.flac")));
     return true;
 }
 
@@ -456,19 +456,19 @@ test_external_operation_hooks(void) {
         &screen, 3, &prompt_result)
            == NATIVE_SEARCH_ENGINE_PROMPT_ACCEPTED);
     assert(fixture.prompt_calls == 1);
-    assert(ncm_string_equal(fixture.prompt_label.data,
+    assert(STREQUAL(fixture.prompt_label.data,
                             fixture.prompt_label.len,
                             LIT_ARGS("Title")));
-    assert(ncm_string_equal(fixture.prompt_initial.data,
+    assert(STREQUAL(fixture.prompt_initial.data,
                             fixture.prompt_initial.len,
                             LIT_ARGS("old title")));
-    assert(ncm_string_equal(prompt_result.data, prompt_result.len,
+    assert(STREQUAL(prompt_result.data, prompt_result.len,
                             LIT_ARGS("new title")));
 
     native_search_engine_screen_status_message(
         &screen, LIT_ARGS("Searching..."));
     assert(fixture.status_calls == 1);
-    assert(ncm_string_equal(fixture.status.data, fixture.status.len,
+    assert(STREQUAL(fixture.status.data, fixture.status.len,
                             LIT_ARGS("Searching...")));
 
     assert(ncm_song_set_uri(&song, LIT_ARGS("result.flac")));
@@ -501,7 +501,7 @@ test_search_query_construction(void) {
     assert(native_search_engine_screen_set_constraint(&screen, 2,
                                                       LIT_ARGS("album B")));
     assert(native_search_engine_screen_build_query(&screen, &query));
-    assert(ncm_string_equal(query.data, query.len,
+    assert(STREQUAL(query.data, query.len,
                             LIT_ARGS("artist A album B")));
 
     ncm_buffer_destroy(&query);
@@ -726,7 +726,7 @@ test_search_reset_contract(void) {
     assert(native_search_engine_screen_set_find_constraint(
         &screen, LIT_ARGS("previous find")));
     view = native_search_engine_screen_find_constraint(&screen);
-    assert(ncm_string_equal(view.data, view.len,
+    assert(STREQUAL(view.data, view.len,
                             LIT_ARGS("previous find")));
     assert(screen.match_to_pattern);
     native_search_engine_screen_prepare_static_rows(&screen);
@@ -755,7 +755,7 @@ test_search_reset_contract(void) {
     view = native_search_engine_screen_find_constraint(&screen);
     assert(view.len == 0);
     assert(fixture.status_calls == 1);
-    assert(ncm_string_equal(fixture.status.data, fixture.status.len,
+    assert(STREQUAL(fixture.status.data, fixture.status.len,
                             LIT_ARGS("Search state reset")));
     assert(native_search_engine_screen_search_mode(&screen)
            == NATIVE_SEARCH_ENGINE_SEARCH_MODE_REGEX);
@@ -1151,11 +1151,11 @@ test_database_search_execution(void) {
     assert(mpd_search_fixture.start_calls == 1);
     assert(!mpd_search_fixture.exact_match);
     assert(mpd_search_fixture.any_calls == 1);
-    assert(ncm_string_equal(mpd_search_fixture.any.data,
+    assert(STREQUAL(mpd_search_fixture.any.data,
                             mpd_search_fixture.any.len,
                             LIT_ARGS("any")));
     assert(mpd_search_fixture.uri_calls == 1);
-    assert(ncm_string_equal(mpd_search_fixture.uri.data,
+    assert(STREQUAL(mpd_search_fixture.uri.data,
                             mpd_search_fixture.uri.len,
                             LIT_ARGS("file.flac")));
     assert(mpd_search_fixture.tag_calls == SEARCH_TAG_CALL_CAPACITY);
@@ -1168,31 +1168,31 @@ test_database_search_execution(void) {
     assert(mpd_search_fixture.tags[6] == MPD_TAG_GENRE);
     assert(mpd_search_fixture.tags[7] == MPD_TAG_DATE);
     assert(mpd_search_fixture.tags[8] == MPD_TAG_COMMENT);
-    assert(ncm_string_equal(mpd_search_fixture.tag_values[0].data,
+    assert(STREQUAL(mpd_search_fixture.tag_values[0].data,
                             mpd_search_fixture.tag_values[0].len,
                             LIT_ARGS("artist")));
-    assert(ncm_string_equal(mpd_search_fixture.tag_values[1].data,
+    assert(STREQUAL(mpd_search_fixture.tag_values[1].data,
                             mpd_search_fixture.tag_values[1].len,
                             LIT_ARGS("album artist")));
-    assert(ncm_string_equal(mpd_search_fixture.tag_values[2].data,
+    assert(STREQUAL(mpd_search_fixture.tag_values[2].data,
                             mpd_search_fixture.tag_values[2].len,
                             LIT_ARGS("title")));
-    assert(ncm_string_equal(mpd_search_fixture.tag_values[3].data,
+    assert(STREQUAL(mpd_search_fixture.tag_values[3].data,
                             mpd_search_fixture.tag_values[3].len,
                             LIT_ARGS("album")));
-    assert(ncm_string_equal(mpd_search_fixture.tag_values[4].data,
+    assert(STREQUAL(mpd_search_fixture.tag_values[4].data,
                             mpd_search_fixture.tag_values[4].len,
                             LIT_ARGS("composer")));
-    assert(ncm_string_equal(mpd_search_fixture.tag_values[5].data,
+    assert(STREQUAL(mpd_search_fixture.tag_values[5].data,
                             mpd_search_fixture.tag_values[5].len,
                             LIT_ARGS("performer")));
-    assert(ncm_string_equal(mpd_search_fixture.tag_values[6].data,
+    assert(STREQUAL(mpd_search_fixture.tag_values[6].data,
                             mpd_search_fixture.tag_values[6].len,
                             LIT_ARGS("genre")));
-    assert(ncm_string_equal(mpd_search_fixture.tag_values[7].data,
+    assert(STREQUAL(mpd_search_fixture.tag_values[7].data,
                             mpd_search_fixture.tag_values[7].len,
                             LIT_ARGS("date")));
-    assert(ncm_string_equal(mpd_search_fixture.tag_values[8].data,
+    assert(STREQUAL(mpd_search_fixture.tag_values[8].data,
                             mpd_search_fixture.tag_values[8].len,
                             LIT_ARGS("comment")));
     assert(mpd_search_fixture.commit_calls == 1);
@@ -1203,7 +1203,7 @@ test_database_search_execution(void) {
     assert_search_result(&screen, 1, LIT_ARGS("second.flac"));
     assert_row_text(&screen, NATIVE_SEARCH_ENGINE_RESULT_SUMMARY_ROW,
                     LIT_ARGS("Search results: Found 2 songs"));
-    assert(ncm_string_equal(source.status.data, source.status.len,
+    assert(STREQUAL(source.status.data, source.status.len,
                             LIT_ARGS("Searching finished")));
 
     native_search_engine_screen_destroy(&screen);
@@ -1236,7 +1236,7 @@ test_database_search_execution(void) {
     assert(mpd_search_fixture.exact_match);
     assert(mpd_search_fixture.tag_calls == 1);
     assert(mpd_search_fixture.tags[0] == MPD_TAG_TITLE);
-    assert(ncm_string_equal(mpd_search_fixture.tag_values[0].data,
+    assert(STREQUAL(mpd_search_fixture.tag_values[0].data,
                             mpd_search_fixture.tag_values[0].len,
                             LIT_ARGS("Exact title")));
     assert_search_result(&screen, 0, LIT_ARGS("exact.flac"));
@@ -1404,7 +1404,7 @@ test_search_execution_failures(void) {
         &screen, &client, &error));
     assert(mpd_search_fixture.start_calls == 0);
     assert(native_search_engine_screen_result_count(&screen) == 0);
-    assert(ncm_string_equal(source.status.data, source.status.len,
+    assert(STREQUAL(source.status.data, source.status.len,
                             LIT_ARGS("No results found")));
 
     assert(native_search_engine_screen_set_constraint(
@@ -1414,7 +1414,7 @@ test_search_execution_failures(void) {
         &screen, &client, &error));
     assert(mpd_search_fixture.commit_calls == 1);
     assert(native_search_engine_screen_result_count(&screen) == 0);
-    assert(ncm_string_equal(source.status.data, source.status.len,
+    assert(STREQUAL(source.status.data, source.status.len,
                             LIT_ARGS("No results found")));
 
     mpd_search_fixture.fail_commit = true;
@@ -1426,7 +1426,7 @@ test_search_execution_failures(void) {
         native_search_engine_screen_menu(&screen))
            == NATIVE_SEARCH_ENGINE_RESET_BUTTON_ROW + 1);
     assert(!native_search_engine_screen_has_result_rows(&screen));
-    assert(ncm_string_equal(source.status.data, source.status.len,
+    assert(STREQUAL(source.status.data, source.status.len,
                             LIT_ARGS("commit search failed")));
 
     native_search_engine_screen_destroy(&screen);
@@ -1480,7 +1480,7 @@ test_native_row_activation(void) {
     assert(nc_screen_can_run_current(&screen.screen));
     assert(native_search_engine_screen_run_current(&screen));
     constraint = native_search_engine_screen_constraint(&screen, 3);
-    assert(ncm_string_equal(constraint.data, constraint.len,
+    assert(STREQUAL(constraint.data, constraint.len,
                             LIT_ARGS("new title")));
     assert(fixture.prompt_calls == 1);
 
@@ -1488,18 +1488,18 @@ test_native_row_activation(void) {
     highlight_row(&screen, 3);
     assert(!nc_screen_run_current(&screen.screen));
     constraint = native_search_engine_screen_constraint(&screen, 3);
-    assert(ncm_string_equal(constraint.data, constraint.len,
+    assert(STREQUAL(constraint.data, constraint.len,
                             LIT_ARGS("new title")));
-    assert(ncm_string_equal(fixture.status.data, fixture.status.len,
+    assert(STREQUAL(fixture.status.data, fixture.status.len,
                             LIT_ARGS("Action aborted")));
 
     fixture.prompt_result = NATIVE_SEARCH_ENGINE_PROMPT_ERROR;
     highlight_row(&screen, 3);
     assert(!nc_screen_run_current(&screen.screen));
     constraint = native_search_engine_screen_constraint(&screen, 3);
-    assert(ncm_string_equal(constraint.data, constraint.len,
+    assert(STREQUAL(constraint.data, constraint.len,
                             LIT_ARGS("new title")));
-    assert(ncm_string_equal(
+    assert(STREQUAL(
         fixture.status.data, fixture.status.len,
         LIT_ARGS("Unable to read search constraint")));
     assert(fixture.prompt_calls == 3);
@@ -1546,7 +1546,7 @@ test_native_row_activation(void) {
     ncm_error_clear(&error);
     assert(native_search_engine_screen_start_searching(
         &screen, NULL, &error));
-    assert(ncm_string_equal(fixture.status.data, fixture.status.len,
+    assert(STREQUAL(fixture.status.data, fixture.status.len,
                             LIT_ARGS("No results found")));
     assert(fixture.playlist_calls == 1);
 
@@ -1731,7 +1731,7 @@ reset_window_trace(void) {
 static void
 assert_printed(char *expected, int32 expected_len) {
     assert(window_trace.printed_len == expected_len);
-    assert(ncm_string_equal(window_trace.printed,
+    assert(STREQUAL(window_trace.printed,
                             window_trace.printed_len,
                             expected, expected_len));
     return;
@@ -1820,7 +1820,7 @@ test_native_display_and_column_title(void) {
     ncm_buffer_init(&formatted);
     assert(native_search_engine_screen_format_song_text(
         &screen, &row->song, &formatted));
-    assert(ncm_string_equal(formatted.data, formatted.len,
+    assert(STREQUAL(formatted.data, formatted.len,
                             LIT_ARGS("Band      Track     ")));
     ncm_buffer_destroy(&formatted);
 
@@ -1828,7 +1828,7 @@ test_native_display_and_column_title(void) {
     native_search_engine_screen_set_geometry(&screen, 0, 20, 0, 24);
     native_search_engine_screen_set_display_mode(
         &screen, NCM_DISPLAY_MODE_COLUMNS);
-    assert(ncm_string_equal(screen.column_title.data,
+    assert(STREQUAL(screen.column_title.data,
                             screen.column_title.len,
                             LIT_ARGS("Artist    Title     ")));
     assert(screen.window.start_y == 2);
@@ -1896,7 +1896,7 @@ test_native_lifecycle(void) {
     assert(nc_screen_has_to_be_updated(base));
     nc_screen_update(base);
     assert(!nc_screen_has_to_be_updated(base));
-    assert(ncm_string_equal(nc_screen_title(base),
+    assert(STREQUAL(nc_screen_title(base),
                             STRLIT_LEN("Search engine"),
                             LIT_ARGS("Search engine")));
 
