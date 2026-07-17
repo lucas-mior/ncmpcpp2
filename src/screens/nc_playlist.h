@@ -6,7 +6,6 @@
 #include "c/ncm_mutable_song.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_time.h"
-#include "c/ncm_song_list.h"
 #include "c/ncm_regex.h"
 #include "curses/nc_app_menus.h"
 #include "curses/nc_menu.h"
@@ -66,8 +65,6 @@ void nc_playlist_screen_scroll(NcPlaylistScreen *screen,
                                enum NcScroll where);
 bool nc_playlist_screen_goto_y(NcPlaylistScreen *screen, int64 y);
 bool nc_playlist_screen_activate_current(NcPlaylistScreen *screen);
-bool nc_playlist_screen_activate_position(NcPlaylistScreen *screen,
-                                          int64 pos);
 void nc_playlist_screen_mouse_button_pressed(NcPlaylistScreen *screen,
                                              MEVENT event);
 
@@ -96,10 +93,6 @@ void native_playlist_screen_set_highlighting(NativePlaylistScreen *screen,
 bool native_playlist_screen_highlighting(NativePlaylistScreen *screen);
 void native_playlist_screen_request_highlighting(NativePlaylistScreen *screen);
 void native_playlist_screen_clear(NativePlaylistScreen *screen);
-bool native_playlist_screen_add_song_copy(NativePlaylistScreen *screen,
-                                          NcmSong *song);
-bool native_playlist_screen_load_song_list(NativePlaylistScreen *screen,
-                                           NcmMpdSongList *songs);
 bool native_playlist_screen_reload_from_mpd(NativePlaylistScreen *screen,
                                             NcmMpdClient *client,
                                             uint32 version,
@@ -107,8 +100,6 @@ bool native_playlist_screen_reload_from_mpd(NativePlaylistScreen *screen,
                                             NcmError *error);
 int64 native_playlist_screen_song_count(NativePlaylistScreen *screen);
 bool native_playlist_screen_empty(NativePlaylistScreen *screen);
-bool native_playlist_screen_contains_song(NativePlaylistScreen *screen,
-                                          NcmSong *song);
 bool native_playlist_screen_current_song(NativePlaylistScreen *screen,
                                          NcmSong *song);
 bool native_playlist_screen_update_current_mutable_song(

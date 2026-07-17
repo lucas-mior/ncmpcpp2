@@ -166,17 +166,6 @@ ncm_fs_exists(char *path, int32 path_len) {
 }
 
 bool
-ncm_fs_is_directory(char *path, int32 path_len) {
-    NcmFsStat stat;
-
-    if (!ncm_fs_stat(path, path_len, &stat, NULL)) {
-        return false;
-    }
-
-    return stat.exists && (stat.type == NCM_FS_ENTRY_DIRECTORY);
-}
-
-bool
 ncm_fs_unlink(char *path, int32 path_len, NcmError *error) {
     char *path_copy;
 

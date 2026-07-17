@@ -9,7 +9,6 @@ typedef struct NcScrollpad {
     int64 real_height;
 } NcScrollpad;
 
-void nc_scrollpad_init_empty(NcScrollpad *scrollpad);
 void nc_scrollpad_init(NcScrollpad *scrollpad, int64 height);
 void nc_scrollpad_refresh(NcScrollpad *scrollpad, NcWindow *window);
 void nc_scrollpad_resize(NcScrollpad *scrollpad, NcWindow *window,

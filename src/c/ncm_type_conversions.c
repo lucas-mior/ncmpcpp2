@@ -91,54 +91,6 @@ ncm_tag_type_name(enum mpd_tag_type tag) {
     }
 }
 
-char *
-ncm_song_getter_name(enum NcmSongGetter getter) {
-    switch (getter) {
-    case NCM_SONG_GETTER_LENGTH:
-        return "Length";
-    case NCM_SONG_GETTER_DIRECTORY:
-        return "Directory";
-    case NCM_SONG_GETTER_NAME:
-        return "Filename";
-    case NCM_SONG_GETTER_URI:
-        return "URI";
-    case NCM_SONG_GETTER_ARTIST:
-        return "Artist";
-    case NCM_SONG_GETTER_ALBUM_ARTIST:
-        return "Album Artist";
-    case NCM_SONG_GETTER_TITLE:
-        return "Title";
-    case NCM_SONG_GETTER_ALBUM:
-        return "Album";
-    case NCM_SONG_GETTER_DATE:
-        return "Date";
-    case NCM_SONG_GETTER_TRACK_NUMBER:
-        return "Track Number";
-    case NCM_SONG_GETTER_TRACK:
-        return "Track";
-    case NCM_SONG_GETTER_GENRE:
-        return "Genre";
-    case NCM_SONG_GETTER_COMPOSER:
-        return "Composer";
-    case NCM_SONG_GETTER_PERFORMER:
-        return "Performer";
-    case NCM_SONG_GETTER_DISC:
-        return "Disc";
-    case NCM_SONG_GETTER_COMMENT:
-        return "Comment";
-    case NCM_SONG_GETTER_PRIORITY:
-        return "Priority";
-    case NCM_SONG_GETTER_NONE:
-    default:
-        return "";
-    }
-}
-
-bool
-ncm_char_is_tag_type(char c) {
-    return ncm_char_to_tag_type(c) != MPD_TAG_UNKNOWN;
-}
-
 enum mpd_tag_type
 ncm_char_to_tag_type(char c) {
     switch (c) {
@@ -211,36 +163,6 @@ ncm_song_getter_from_char(char c) {
     }
 }
 
-enum NcmSongGetter
-ncm_song_getter_from_tag_type(enum mpd_tag_type tag) {
-    switch (tag) {
-    case MPD_TAG_ARTIST:
-        return NCM_SONG_GETTER_ARTIST;
-    case MPD_TAG_ALBUM:
-        return NCM_SONG_GETTER_ALBUM;
-    case MPD_TAG_ALBUM_ARTIST:
-        return NCM_SONG_GETTER_ALBUM_ARTIST;
-    case MPD_TAG_TITLE:
-        return NCM_SONG_GETTER_TITLE;
-    case MPD_TAG_TRACK:
-        return NCM_SONG_GETTER_TRACK;
-    case MPD_TAG_GENRE:
-        return NCM_SONG_GETTER_GENRE;
-    case MPD_TAG_DATE:
-        return NCM_SONG_GETTER_DATE;
-    case MPD_TAG_COMPOSER:
-        return NCM_SONG_GETTER_COMPOSER;
-    case MPD_TAG_PERFORMER:
-        return NCM_SONG_GETTER_PERFORMER;
-    case MPD_TAG_COMMENT:
-        return NCM_SONG_GETTER_COMMENT;
-    case MPD_TAG_DISC:
-        return NCM_SONG_GETTER_DISC;
-    default:
-        return NCM_SONG_GETTER_NONE;
-    }
-}
-
 enum mpd_tag_type
 ncm_song_getter_to_tag_type(enum NcmSongGetter getter) {
     switch (getter) {
@@ -269,11 +191,6 @@ ncm_song_getter_to_tag_type(enum NcmSongGetter getter) {
     default:
         return MPD_TAG_UNKNOWN;
     }
-}
-
-bool
-ncm_char_is_tags_field(char c) {
-    return ncm_tags_field_from_char(c) != NCM_TAGS_FIELD_LAST;
 }
 
 enum NcmTagsField
@@ -442,18 +359,3 @@ ncm_tags_field_name(enum NcmTagsField field) {
     }
 }
 
-char *
-ncm_item_type_name(enum NcmItemType type) {
-    switch (type) {
-    case NCM_ITEM_DIRECTORY:
-        return "directory";
-    case NCM_ITEM_SONG:
-        return "song";
-    case NCM_ITEM_PLAYLIST:
-        return "playlist";
-    case NCM_ITEM_UNKNOWN:
-        return "unknown";
-    default:
-        return "unknown";
-    }
-}

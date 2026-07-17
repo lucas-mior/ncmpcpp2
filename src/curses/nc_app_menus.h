@@ -279,14 +279,10 @@ void nc_media_library_tag_row_init(NcMediaLibraryTagRow *row);
 void nc_media_library_tag_row_destroy(NcMediaLibraryTagRow *row);
 bool nc_media_library_tag_row_copy(NcMediaLibraryTagRow *dest,
                                    NcMediaLibraryTagRow *source);
-void nc_media_library_tag_row_move(NcMediaLibraryTagRow *dest,
-                                   NcMediaLibraryTagRow *source);
 
 void nc_media_library_album_row_init(NcMediaLibraryAlbumRow *row);
 void nc_media_library_album_row_destroy(NcMediaLibraryAlbumRow *row);
 bool nc_media_library_album_row_copy(NcMediaLibraryAlbumRow *dest,
-                                     NcMediaLibraryAlbumRow *source);
-void nc_media_library_album_row_move(NcMediaLibraryAlbumRow *dest,
                                      NcMediaLibraryAlbumRow *source);
 
 void nc_editor_action_row_init(NcEditorActionRow *row);

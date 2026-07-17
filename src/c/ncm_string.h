@@ -7,8 +7,6 @@ void ncm_string_view_init(NcmStringView *view);
 NcmStringView ncm_string_view_make(char *data, int32 len);
 void ncm_string_view_set(NcmStringView *view, char *data, int32 len);
 void ncm_string_view_clear(NcmStringView *view);
-bool ncm_string_view_empty(NcmStringView *view);
-bool ncm_string_view_equal(NcmStringView *left, NcmStringView *right);
 
 void ncm_string_lowercase_ascii(char *string, int32 string_len);
 bool ncm_string_starts_with(char *string, int32 string_len,

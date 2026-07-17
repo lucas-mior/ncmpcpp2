@@ -137,15 +137,6 @@ ncm_string_format_arg_u64(uint64 value) {
     return result;
 }
 
-NcmStringFormatArg
-ncm_string_format_arg_bool(bool value) {
-    NcmStringFormatArg result;
-
-    result.type = NCM_STRING_FORMAT_ARG_BOOL;
-    result.value.boolean = value;
-    return result;
-}
-
 void
 ncm_string_format_apply(NcmBuffer *out, char *format, int32 format_len,
                         NcmStringFormatArg *args, int32 args_len) {

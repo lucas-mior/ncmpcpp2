@@ -546,16 +546,6 @@ nc_window_start_y(NcWindow *window) {
     return start_y;
 }
 
-char *
-nc_window_title(NcWindow *window) {
-    return window->title;
-}
-
-int32
-nc_window_title_len(NcWindow *window) {
-    return window->title_len;
-}
-
 MEVENT *
 nc_window_mouse_event(NcWindow *window) {
     return &window->mouse_event;

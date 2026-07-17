@@ -569,18 +569,6 @@ nc_media_library_tag_row_copy(NcMediaLibraryTagRow *dest,
 }
 
 void
-nc_media_library_tag_row_move(NcMediaLibraryTagRow *dest,
-                              NcMediaLibraryTagRow *source) {
-    if (dest == NULL || source == NULL) {
-        return;
-    }
-    nc_media_library_tag_row_destroy(dest);
-    *dest = *source;
-    nc_media_library_tag_row_init(source);
-    return;
-}
-
-void
 nc_media_library_album_row_init(NcMediaLibraryAlbumRow *row) {
     row->tag = NULL;
     row->album = NULL;
@@ -644,18 +632,6 @@ nc_media_library_album_row_copy(NcMediaLibraryAlbumRow *dest,
     nc_media_library_album_row_destroy(dest);
     *dest = tmp;
     return true;
-}
-
-void
-nc_media_library_album_row_move(NcMediaLibraryAlbumRow *dest,
-                                NcMediaLibraryAlbumRow *source) {
-    if (dest == NULL || source == NULL) {
-        return;
-    }
-    nc_media_library_album_row_destroy(dest);
-    *dest = *source;
-    nc_media_library_album_row_init(source);
-    return;
 }
 
 void

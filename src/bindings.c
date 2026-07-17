@@ -297,22 +297,6 @@ ncm_binding_is_single(NcmBinding *binding) {
 }
 
 bool
-ncm_binding_execute(NcmBinding *binding,
-                    NcmBindingActionRunner runner, void *user) {
-    if (runner == NULL) {
-        return false;
-    }
-
-    for (int32 i = 0; i < binding->actions_len; i += 1) {
-        if (!runner(binding->actions + i, user)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool
 ncm_binding_action_can_run(NcmBindingAction *action,
                            NcmBindingRuntime *runtime) {
     if (action == NULL) {
@@ -538,61 +522,6 @@ ncm_binding_is_single_action_type(NcmBinding *binding,
         return false;
     }
     return binding->actions[0].type == type;
-}
-
-void
-ncm_binding_action_format(NcmBuffer *buffer,
-                          NcmBindingAction *action) {
-    if ((buffer == NULL) || (action == NULL)) {
-        return;
-    }
-
-    switch (action->kind) {
-    case NCM_BINDING_ACTION_NORMAL:
-        ncm_buffer_append(buffer, ncm_action_type_name(action->type),
-                          ncm_strlen32(
-                              ncm_action_type_name(action->type)));
-        break;
-    case NCM_BINDING_ACTION_PUSH_CHARACTERS:
-        ncm_buffer_append(buffer, STRLIT_ARGS("push_characters \""));
-        for (int32 i = 0; i < action->keys_len; i += 1) {
-            if (i > 0) {
-                ncm_buffer_append(buffer, STRLIT_ARGS(", "));
-            }
-            ncm_bindings_format_key(buffer, action->keys[i]);
-        }
-        ncm_buffer_append_byte(buffer, '"');
-        break;
-    case NCM_BINDING_ACTION_REQUIRE_SCREEN:
-        ncm_buffer_append(buffer, STRLIT_ARGS("require_screen \""));
-        ncm_buffer_append(buffer, screen_type_str(action->screen_type),
-                          ncm_strlen32(
-                              screen_type_str(action->screen_type)));
-        ncm_buffer_append_byte(buffer, '"');
-        break;
-    case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
-        ncm_buffer_append(buffer, STRLIT_ARGS("require_runnable \""));
-        ncm_buffer_append(buffer, ncm_action_type_name(action->type),
-                          ncm_strlen32(
-                              ncm_action_type_name(action->type)));
-        ncm_buffer_append_byte(buffer, '"');
-        break;
-    case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
-        ncm_buffer_append(buffer,
-                          STRLIT_ARGS("run_external_command \""));
-        ncm_buffer_append(buffer, action->argument, action->argument_len);
-        ncm_buffer_append_byte(buffer, '"');
-        break;
-    case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
-        ncm_buffer_append(buffer,
-                          STRLIT_ARGS(
-                              "run_external_console_command \""));
-        ncm_buffer_append(buffer, action->argument, action->argument_len);
-        ncm_buffer_append_byte(buffer, '"');
-        break;
-    }
-
-    return;
 }
 
 void
@@ -1506,19 +1435,6 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
     fclose(file);
     free2(path_copy, path_cap);
     return ok;
-}
-
-bool
-ncm_bindings_configuration_read_paths(NcmBindingsConfiguration *bindings,
-                                      char **paths, int32 *path_lens,
-                                      int32 paths_len, NcmError *error) {
-    for (int32 i = 0; i < paths_len; i += 1) {
-        if (!ncm_bindings_configuration_read(bindings, paths[i],
-                                             path_lens[i], error)) {
-            return false;
-        }
-    }
-    return true;
 }
 
 void

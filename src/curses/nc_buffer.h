@@ -36,7 +36,6 @@ void nc_buffer_move(NcBuffer *dest, NcBuffer *source);
 void nc_buffer_destroy(NcBuffer *buffer);
 void nc_buffer_clear(NcBuffer *buffer);
 bool nc_buffer_empty(NcBuffer *buffer);
-bool nc_buffer_equal(NcBuffer *left, NcBuffer *right);
 
 char *nc_buffer_data(NcBuffer *buffer);
 int32 nc_buffer_len(NcBuffer *buffer);

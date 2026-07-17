@@ -54,11 +54,7 @@ uint32 ncm_song_position(NcmSong *song);
 uint32 ncm_song_id(NcmSong *song);
 uint32 ncm_song_priority(NcmSong *song);
 time_t ncm_song_mtime(NcmSong *song);
-bool ncm_song_owns_mpd_song(NcmSong *song);
-bool ncm_song_borrows_mpd_song(NcmSong *song);
 bool ncm_song_empty(NcmSong *song);
-struct mpd_song *ncm_song_mpd_song(NcmSong *song);
-struct mpd_song *ncm_song_dup_mpd_song(NcmSong *song);
 
 bool ncm_song_tag_view(NcmSong *song, enum mpd_tag_type tag,
                        uint32 idx, NcmStringView *view);
@@ -86,7 +82,6 @@ NcmBuffer ncm_song_getter_buffer(NcmSong *song,
 NcmBuffer ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
                                char *separator, int32 separator_len,
                                bool show_duplicates);
-uint64 ncm_song_hash(NcmSong *song);
 bool ncm_song_equal(NcmSong *a, NcmSong *b);
 
 #endif /* NCM_SONG_H */

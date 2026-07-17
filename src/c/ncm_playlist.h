@@ -21,7 +21,6 @@ bool ncm_playlist_set(NcmPlaylist *playlist, char *path,
 bool ncm_playlist_copy(NcmPlaylist *dest, NcmPlaylist *source);
 bool ncm_playlist_path_view(NcmPlaylist *playlist, NcmStringView *view);
 time_t ncm_playlist_last_modified(NcmPlaylist *playlist);
-bool ncm_playlist_equal(NcmPlaylist *a, NcmPlaylist *b);
 bool ncm_playlist_from_mpd_playlist(NcmPlaylist *dest,
                                     struct mpd_playlist *source);
 

@@ -32,7 +32,6 @@ enum ScreenType {
     NCM_SCREEN_TYPE_LAST,
 };
 
-char *screen_type_str(enum ScreenType screen_type);
 int32 screen_type_to_native_type(enum ScreenType screen_type);
 bool screen_type_parse_startup(char *string, int32 string_len,
                                enum ScreenType *screen_type);

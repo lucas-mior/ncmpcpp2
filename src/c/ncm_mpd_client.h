@@ -3,7 +3,6 @@
 
 #include "c/ncm_base.h"
 #include "c/ncm_mpd_connection.h"
-#include "c/ncm_song_list.h"
 #include "c/ncm_random.h"
 
 typedef void (*NcmMpdNoidleCallback)(int32 flags, void *user);
@@ -24,8 +23,6 @@ typedef struct NcmMpdClient {
 void ncm_mpd_client_init(NcmMpdClient *client);
 void ncm_mpd_client_destroy(NcmMpdClient *client);
 char *ncm_mpd_client_hostname(NcmMpdClient *client);
-uint16 ncm_mpd_client_port(NcmMpdClient *client);
-uint32 ncm_mpd_client_timeout_ms(NcmMpdClient *client);
 bool ncm_mpd_client_connected(NcmMpdClient *client);
 uint32 ncm_mpd_client_version(NcmMpdClient *client);
 int32 ncm_mpd_client_fd(NcmMpdClient *client);
@@ -136,9 +133,6 @@ bool ncm_mpd_client_add_song_value(NcmMpdClient *client, NcmSong *song,
 bool ncm_mpd_client_add_song_list(NcmMpdClient *client,
                                   NcmMpdSongList *songs, int32 pos,
                                   NcmError *error);
-bool ncm_mpd_client_add_selected_songs(NcmMpdClient *client,
-                                       NcmSongList *songs, int32 pos,
-                                       NcmError *error);
 bool ncm_mpd_client_add(NcmMpdClient *client, char *path, bool *added,
                         NcmError *error);
 bool ncm_mpd_client_add_random_tag(NcmMpdClient *client,

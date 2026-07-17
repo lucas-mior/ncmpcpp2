@@ -90,8 +90,6 @@ void native_search_engine_screen_init(NativeSearchEngineScreen *screen,
                                       NcBorder border);
 void native_search_engine_screen_destroy(NativeSearchEngineScreen *screen);
 NcScreen *native_search_engine_screen_base(NativeSearchEngineScreen *screen);
-NcSearchRowMenu *native_search_engine_screen_rows(
-    NativeSearchEngineScreen *screen);
 NcMenu *native_search_engine_screen_menu(NativeSearchEngineScreen *screen);
 NcWindow *native_search_engine_screen_window(NativeSearchEngineScreen *screen);
 void native_search_engine_screen_set_geometry(
@@ -106,21 +104,7 @@ void native_search_engine_screen_clear(NativeSearchEngineScreen *screen);
 char *native_search_engine_constraint_name(int32 idx);
 char *native_search_engine_search_mode_name(
     enum NativeSearchEngineSearchMode mode);
-bool native_search_engine_screen_is_prepared(
-    NativeSearchEngineScreen *screen);
-bool native_search_engine_screen_has_result_rows(
-    NativeSearchEngineScreen *screen);
-int32 native_search_engine_screen_result_count(
-    NativeSearchEngineScreen *screen);
 bool native_search_engine_screen_constraints_locked(
-    NativeSearchEngineScreen *screen);
-bool native_search_engine_screen_set_title(
-    NativeSearchEngineScreen *screen, char *title, int32 title_len);
-NcmStringView native_search_engine_screen_title(
-    NativeSearchEngineScreen *screen);
-bool native_search_engine_screen_set_column_title(
-    NativeSearchEngineScreen *screen, char *title, int32 title_len);
-NcmStringView native_search_engine_screen_column_title(
     NativeSearchEngineScreen *screen);
 bool native_search_engine_screen_format_song_text(
     NativeSearchEngineScreen *screen, NcmSong *song, NcmBuffer *text);
@@ -141,33 +125,19 @@ void native_search_engine_screen_set_constraints_locked(
 void native_search_engine_screen_reset(NativeSearchEngineScreen *screen);
 bool native_search_engine_screen_add_song_copy(
     NativeSearchEngineScreen *screen, NcmSong *song);
-bool native_search_engine_screen_add_buffer(
-    NativeSearchEngineScreen *screen, NcBuffer *buffer);
 bool native_search_engine_screen_add_song_copy_with_flags(
     NativeSearchEngineScreen *screen, NcmSong *song, uint32 flags);
 bool native_search_engine_screen_add_buffer_with_flags(
     NativeSearchEngineScreen *screen, NcBuffer *buffer, uint32 flags);
 bool native_search_engine_screen_set_constraint(
     NativeSearchEngineScreen *screen, int32 idx, char *data, int32 data_len);
-NcmStringView native_search_engine_screen_constraint(
-    NativeSearchEngineScreen *screen, int32 idx);
-bool native_search_engine_screen_build_query(
-    NativeSearchEngineScreen *screen, NcmBuffer *query);
-bool native_search_engine_screen_set_find_constraint(
-    NativeSearchEngineScreen *screen, char *data, int32 data_len);
-NcmStringView native_search_engine_screen_find_constraint(
-    NativeSearchEngineScreen *screen);
 void native_search_engine_screen_clear_find_constraint(
     NativeSearchEngineScreen *screen);
 bool native_search_engine_screen_set_search_mode(
     NativeSearchEngineScreen *screen,
     enum NativeSearchEngineSearchMode mode);
-enum NativeSearchEngineSearchMode native_search_engine_screen_search_mode(
-    NativeSearchEngineScreen *screen);
 void native_search_engine_screen_set_search_source(
     NativeSearchEngineScreen *screen, bool search_in_database);
-bool native_search_engine_screen_searches_database(
-    NativeSearchEngineScreen *screen);
 void native_search_engine_screen_set_hooks(
     NativeSearchEngineScreen *screen, NativeSearchEngineHooks hooks);
 bool native_search_engine_screen_list_database_songs(

@@ -15,8 +15,6 @@ static void nc_buffer_property_copy(NcBufferProperty *dest,
 static void nc_buffer_property_move(NcBufferProperty *dest,
                                     NcBufferProperty *source);
 static void nc_buffer_property_destroy(NcBufferProperty *property);
-static bool nc_buffer_property_equal(NcBufferProperty *left,
-                                     NcBufferProperty *right);
 static enum NcFormat nc_buffer_reverse_format(enum NcFormat format);
 
 void
@@ -78,32 +76,6 @@ nc_buffer_clear(NcBuffer *buffer) {
 bool
 nc_buffer_empty(NcBuffer *buffer) {
     return (buffer->len == 0) && (ARRAY_LEN(buffer->properties) == 0);
-}
-
-bool
-nc_buffer_equal(NcBuffer *left, NcBuffer *right) {
-    int32 property_count;
-
-    if (left->len != right->len) {
-        return false;
-    }
-    if ((left->len > 0)
-        && (memcmp(left->data, right->data, (size_t)left->len) != 0)) {
-        return false;
-    }
-
-    property_count = ARRAY_LEN(left->properties);
-    if (property_count != ARRAY_LEN(right->properties)) {
-        return false;
-    }
-    for (int32 i = 0; i < property_count; i += 1) {
-        if (!nc_buffer_property_equal(&left->properties[i],
-                                      &right->properties[i])) {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 char *
@@ -405,33 +377,6 @@ nc_buffer_property_destroy(NcBufferProperty *property) {
         break;
     }
     return;
-}
-
-static bool
-nc_buffer_property_equal(NcBufferProperty *left,
-                         NcBufferProperty *right) {
-    if (left->id != right->id) {
-        return false;
-    }
-    if (left->position != right->position) {
-        return false;
-    }
-    if (left->type != right->type) {
-        return false;
-    }
-
-    switch (left->type) {
-    case NC_BUFFER_PROPERTY_COLOR:
-        return nc_color_equal(left->value.color, right->value.color);
-    case NC_BUFFER_PROPERTY_FORMAT:
-        return left->value.format == right->value.format;
-    case NC_BUFFER_PROPERTY_FORMATTED_COLOR:
-    case NC_BUFFER_PROPERTY_FORMATTED_COLOR_END:
-        return nc_formatted_color_equal(&left->value.formatted_color,
-                                        &right->value.formatted_color);
-    }
-
-    return false;
 }
 
 static enum NcFormat

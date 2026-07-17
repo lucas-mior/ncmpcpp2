@@ -27,12 +27,6 @@ static int64 nc_scrollpad_max_beginning(NcScrollpad *scrollpad,
                                         NcWindow *window);
 
 void
-nc_scrollpad_init_empty(NcScrollpad *scrollpad) {
-    *scrollpad = (NcScrollpad){0};
-    return;
-}
-
-void
 nc_scrollpad_init(NcScrollpad *scrollpad, int64 height) {
     scrollpad->beginning = 0;
     scrollpad->real_height = height;

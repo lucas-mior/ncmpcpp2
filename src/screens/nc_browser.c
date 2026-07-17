@@ -452,16 +452,6 @@ native_browser_screen_current_directory(NativeBrowserScreen *screen) {
                                 screen->current_directory.len);
 }
 
-bool
-native_browser_screen_set_last_highlighted_directory(
-    NativeBrowserScreen *screen, char *directory, int32 directory_len) {
-    if (screen == NULL) {
-        return false;
-    }
-    return ncm_buffer_set(&screen->last_highlighted_directory, directory,
-                          directory_len);
-}
-
 NcmStringView
 native_browser_screen_last_highlighted_directory(
     NativeBrowserScreen *screen) {
@@ -470,24 +460,6 @@ native_browser_screen_last_highlighted_directory(
     }
     return ncm_string_view_make(screen->last_highlighted_directory.data,
                                 screen->last_highlighted_directory.len);
-}
-
-bool
-native_browser_screen_set_title_text(NativeBrowserScreen *screen,
-                                     char *title, int32 title_len) {
-    if (screen == NULL) {
-        return false;
-    }
-    return ncm_buffer_set(&screen->title_text, title, title_len);
-}
-
-NcmStringView
-native_browser_screen_title_text(NativeBrowserScreen *screen) {
-    if (screen == NULL) {
-        return ncm_string_view_make(NULL, 0);
-    }
-    return ncm_string_view_make(screen->title_text.data,
-                                screen->title_text.len);
 }
 
 void
@@ -538,25 +510,6 @@ native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
     screen->title_scroll_beginning = scroll_beginning;
     ncm_buffer_destroy(&scroll_buffer);
     return;
-}
-
-bool
-native_browser_screen_set_column_title_text(NativeBrowserScreen *screen,
-                                            char *title,
-                                            int32 title_len) {
-    if (screen == NULL) {
-        return false;
-    }
-    return ncm_buffer_set(&screen->column_title_text, title, title_len);
-}
-
-NcmStringView
-native_browser_screen_column_title_text(NativeBrowserScreen *screen) {
-    if (screen == NULL) {
-        return ncm_string_view_make(NULL, 0);
-    }
-    return ncm_string_view_make(screen->column_title_text.data,
-                                screen->column_title_text.len);
 }
 
 void
@@ -620,35 +573,6 @@ native_browser_screen_set_display_mode(NativeBrowserScreen *screen,
     return;
 }
 
-enum DisplayMode
-native_browser_screen_display_mode(NativeBrowserScreen *screen) {
-    if (screen == NULL) {
-        return NCM_DISPLAY_MODE_CLASSIC;
-    }
-    return screen->active_display_mode;
-}
-
-void
-native_browser_screen_clear_supported_extensions(
-    NativeBrowserScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
-    ncm_buffer_array_clear(&screen->supported_extensions);
-    return;
-}
-
-bool
-native_browser_screen_add_supported_extension(NativeBrowserScreen *screen,
-                                              char *extension,
-                                              int32 extension_len) {
-    if (screen == NULL) {
-        return false;
-    }
-    return native_browser_supported_extensions_add(
-        &screen->supported_extensions, extension, extension_len);
-}
-
 bool
 native_browser_screen_has_supported_extension(NativeBrowserScreen *screen,
                                               char *extension,
@@ -698,26 +622,6 @@ native_browser_screen_fetch_supported_extensions(
     ncm_buffer_array_destroy(&extensions);
     ncm_mpd_string_list_destroy(&strings);
     return result;
-}
-
-NcmBufferArray *
-native_browser_screen_supported_extensions(
-    NativeBrowserScreen *screen) {
-    if (screen == NULL) {
-        return NULL;
-    }
-    return &screen->supported_extensions;
-}
-
-void
-native_browser_screen_clear_temp_buffers(NativeBrowserScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
-    ncm_buffer_clear(&screen->item_text_buffer);
-    ncm_buffer_clear(&screen->path_buffer);
-    ncm_buffer_clear(&screen->scratch_buffer);
-    return;
 }
 
 bool
@@ -1122,14 +1026,6 @@ native_browser_screen_enter_directory(NativeBrowserScreen *screen) {
     }
     native_browser_screen_request_update(screen);
     return true;
-}
-
-bool
-native_browser_screen_activate_current(NativeBrowserScreen *screen) {
-    if (screen == NULL) {
-        return false;
-    }
-    return nc_menu_activate_current(native_browser_screen_menu(screen));
 }
 
 bool

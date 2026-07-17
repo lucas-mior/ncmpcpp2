@@ -47,22 +47,6 @@ ncm_string_view_clear(NcmStringView *view) {
     return;
 }
 
-bool
-ncm_string_view_empty(NcmStringView *view) {
-    if (view == NULL) {
-        return true;
-    }
-    return view->len <= 0;
-}
-
-bool
-ncm_string_view_equal(NcmStringView *left, NcmStringView *right) {
-    if ((left == NULL) || (right == NULL)) {
-        return left == right;
-    }
-    return STREQUAL(left->data, left->len, right->data, right->len);
-}
-
 void
 ncm_string_lowercase_ascii(char *string, int32 string_len) {
     for (int32 i = 0; i < string_len; i += 1) {

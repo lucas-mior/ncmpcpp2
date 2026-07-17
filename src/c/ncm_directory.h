@@ -21,7 +21,6 @@ bool ncm_directory_set(NcmDirectory *directory, char *path,
 bool ncm_directory_copy(NcmDirectory *dest, NcmDirectory *source);
 bool ncm_directory_path_view(NcmDirectory *directory, NcmStringView *view);
 time_t ncm_directory_last_modified(NcmDirectory *directory);
-bool ncm_directory_equal(NcmDirectory *a, NcmDirectory *b);
 bool ncm_directory_from_mpd_directory(NcmDirectory *dest,
                                       struct mpd_directory *source);
 

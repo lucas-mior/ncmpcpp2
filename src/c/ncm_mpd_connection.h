@@ -66,14 +66,8 @@ typedef struct NcmMpdOutputList {
 
 void ncm_mpd_string_init(NcmMpdString *string);
 void ncm_mpd_string_destroy(NcmMpdString *string);
-bool ncm_mpd_string_set(NcmMpdString *string, char *value,
-                        int32 value_len);
 void ncm_mpd_output_init(NcmMpdOutput *output);
 void ncm_mpd_output_destroy(NcmMpdOutput *output);
-bool ncm_mpd_output_set(NcmMpdOutput *output, uint32 id, char *name,
-                        int32 name_len, bool enabled);
-bool ncm_mpd_output_copy(NcmMpdOutput *dest, NcmMpdOutput *source);
-void ncm_mpd_output_move(NcmMpdOutput *dest, NcmMpdOutput *source);
 
 typedef struct NcmMpdPlaylistList {
     NcmPlaylist *items;
@@ -165,13 +159,9 @@ bool ncm_mpd_connection_get_tag_types(NcmMpdConnection *connection,
 void ncm_mpd_song_list_init(NcmMpdSongList *list);
 void ncm_mpd_song_list_destroy(NcmMpdSongList *list);
 void ncm_mpd_song_list_clear(NcmMpdSongList *list);
-bool ncm_mpd_song_list_copy(NcmMpdSongList *dest,
-                            NcmMpdSongList *source);
 int32 ncm_mpd_song_list_count(NcmMpdSongList *list);
 NcmSong *ncm_mpd_song_list_at(NcmMpdSongList *list, int32 idx);
 bool ncm_mpd_song_list_append_copy(NcmMpdSongList *list,
-                                   NcmSong *song);
-void ncm_mpd_song_list_append_move(NcmMpdSongList *list,
                                    NcmSong *song);
 bool ncm_mpd_song_list_to_song_array(NcmMpdSongList *list,
                                      NcmSongArray *songs);
@@ -179,9 +169,6 @@ bool ncm_mpd_song_list_to_song_array(NcmMpdSongList *list,
 void ncm_mpd_item_list_init(NcmMpdItemList *list);
 void ncm_mpd_item_list_destroy(NcmMpdItemList *list);
 void ncm_mpd_item_list_clear(NcmMpdItemList *list);
-int32 ncm_mpd_item_list_count(NcmMpdItemList *list);
-bool ncm_mpd_item_list_append_copy(NcmMpdItemList *list,
-                                   NcmMpdItem *item);
 bool ncm_mpd_item_list_to_item_array(NcmMpdItemList *list,
                                      NcmMpdItemArray *items);
 bool ncm_mpd_item_list_to_directory_array(NcmMpdItemList *list,
@@ -190,41 +177,17 @@ bool ncm_mpd_item_list_to_directory_array(NcmMpdItemList *list,
 void ncm_mpd_string_list_init(NcmMpdStringList *list);
 void ncm_mpd_string_list_destroy(NcmMpdStringList *list);
 void ncm_mpd_string_list_clear(NcmMpdStringList *list);
-bool ncm_mpd_string_list_copy(NcmMpdStringList *dest,
-                              NcmMpdStringList *source);
 int32 ncm_mpd_string_list_count(NcmMpdStringList *list);
 NcmMpdString *ncm_mpd_string_list_at(NcmMpdStringList *list,
                                      int32 idx);
-bool ncm_mpd_string_list_append(NcmMpdStringList *list, char *value,
-                                int32 value_len);
-bool ncm_mpd_string_list_to_buffer_array(NcmMpdStringList *list,
-                                         NcmBufferArray *strings);
 
 void ncm_mpd_output_list_init(NcmMpdOutputList *list);
 void ncm_mpd_output_list_destroy(NcmMpdOutputList *list);
 void ncm_mpd_output_list_clear(NcmMpdOutputList *list);
-bool ncm_mpd_output_list_copy(NcmMpdOutputList *dest,
-                              NcmMpdOutputList *source);
-int32 ncm_mpd_output_list_count(NcmMpdOutputList *list);
-NcmMpdOutput *ncm_mpd_output_list_at(NcmMpdOutputList *list,
-                                     int32 idx);
-bool ncm_mpd_output_list_append_copy(NcmMpdOutputList *list,
-                                     NcmMpdOutput *output);
-void ncm_mpd_output_list_append_move(NcmMpdOutputList *list,
-                                     NcmMpdOutput *output);
 
 void ncm_mpd_playlist_list_init(NcmMpdPlaylistList *list);
 void ncm_mpd_playlist_list_destroy(NcmMpdPlaylistList *list);
 void ncm_mpd_playlist_list_clear(NcmMpdPlaylistList *list);
-bool ncm_mpd_playlist_list_copy(NcmMpdPlaylistList *dest,
-                                NcmMpdPlaylistList *source);
-bool ncm_mpd_playlist_list_append_copy(NcmMpdPlaylistList *list,
-                                       NcmPlaylist *playlist);
-void ncm_mpd_playlist_list_append_move(NcmMpdPlaylistList *list,
-                                       NcmPlaylist *playlist);
-bool ncm_mpd_playlist_list_to_playlist_array(
-    NcmMpdPlaylistList *list,
-    NcmPlaylistArray *playlists);
 
 bool ncm_mpd_connection_get_current_song(NcmMpdConnection *connection,
                                          NcmSong *song);

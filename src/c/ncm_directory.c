@@ -137,30 +137,6 @@ ncm_directory_last_modified(NcmDirectory *directory) {
 }
 
 bool
-ncm_directory_equal(NcmDirectory *a, NcmDirectory *b) {
-    if ((a == NULL) || (b == NULL)) {
-        return a == b;
-    }
-    if (a->last_modified != b->last_modified) {
-        return false;
-    }
-    if (a->path_len != b->path_len) {
-        return false;
-    }
-    if ((a->path == NULL) || (b->path == NULL)) {
-        return a->path == b->path;
-    }
-
-    for (int32 i = 0; i < a->path_len; i += 1) {
-        if (a->path[i] != b->path[i]) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool
 ncm_directory_from_mpd_directory(NcmDirectory *dest,
                                  struct mpd_directory *source) {
     char *path;

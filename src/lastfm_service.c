@@ -220,16 +220,6 @@ ncm_lastfm_service_fetch(NcmLastfmService *service,
     return true;
 }
 
-void
-ncm_lastfm_service_set_io_for_tests(NcmLastfmCurlPerformFn perform,
-                                    NcmLastfmCurlEscapeFn escape,
-                                    void *user) {
-    lastfm_test_perform = perform;
-    lastfm_test_escape = escape;
-    lastfm_test_user = user;
-    return;
-}
-
 static CURLcode
 lastfm_curl_perform(NcmBuffer *data, char *url, int32 url_len,
                     char *referer, int32 referer_len,

@@ -161,59 +161,6 @@ ncm_song_load_mpd_tag(NcmSong *song, struct mpd_song *source,
     return true;
 }
 
-static bool
-ncm_song_feed_pair(struct mpd_song *song, char *name, char *value) {
-    struct mpd_pair pair;
-
-    if (song == NULL) {
-        return false;
-    }
-    if (name == NULL) {
-        return false;
-    }
-    if (value == NULL) {
-        return false;
-    }
-
-    pair.name = name;
-    pair.value = value;
-    mpd_song_feed(song, &pair);
-    return true;
-}
-
-static char *
-ncm_song_mpd_tag_name(enum mpd_tag_type type) {
-    switch ((int32)type) {
-    case MPD_TAG_ARTIST:
-        return "Artist";
-    case MPD_TAG_ALBUM:
-        return "Album";
-    case MPD_TAG_ALBUM_ARTIST:
-        return "AlbumArtist";
-    case MPD_TAG_TITLE:
-        return "Title";
-    case MPD_TAG_TRACK:
-        return "Track";
-    case MPD_TAG_NAME:
-        return "Name";
-    case MPD_TAG_GENRE:
-        return "Genre";
-    case MPD_TAG_DATE:
-        return "Date";
-    case MPD_TAG_COMPOSER:
-        return "Composer";
-    case MPD_TAG_PERFORMER:
-        return "Performer";
-    case MPD_TAG_COMMENT:
-        return "Comment";
-    case MPD_TAG_DISC:
-        return "Disc";
-    case MPD_TAG_UNKNOWN:
-    default:
-        return NULL;
-    }
-}
-
 void
 ncm_song_init(NcmSong *song) {
     song->uri = NULL;
@@ -510,63 +457,6 @@ ncm_song_empty(NcmSong *song) {
     }
 
     return song->uri == NULL;
-}
-
-struct mpd_song *
-ncm_song_mpd_song(NcmSong *song) {
-    (void)song;
-    return NULL;
-}
-
-struct mpd_song *
-ncm_song_dup_mpd_song(NcmSong *song) {
-    struct mpd_pair pair;
-    struct mpd_song *copy;
-    char time_buffer[32];
-    int32 written;
-
-    if (song == NULL) {
-        return NULL;
-    }
-    if (song->uri == NULL) {
-        return NULL;
-    }
-
-    pair.name = "file";
-    pair.value = song->uri;
-    copy = mpd_song_begin(&pair);
-    if (copy == NULL) {
-        return NULL;
-    }
-
-    for (int32 i = 0; i < song->tags_len; i += 1) {
-        char *name;
-
-        name = ncm_song_mpd_tag_name(song->tags[i].type);
-        if (name != NULL) {
-            ncm_song_feed_pair(copy, name, song->tags[i].value);
-        }
-    }
-    if (song->duration > 0) {
-        written = snprintf(time_buffer, sizeof(time_buffer), "%u",
-                           song->duration);
-        if (written > 0) {
-            ncm_song_feed_pair(copy, "Time", time_buffer);
-        }
-    }
-    return copy;
-}
-
-bool
-ncm_song_owns_mpd_song(NcmSong *song) {
-    (void)song;
-    return false;
-}
-
-bool
-ncm_song_borrows_mpd_song(NcmSong *song) {
-    (void)song;
-    return false;
 }
 
 bool
@@ -991,21 +881,6 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
     }
 
     return result;
-}
-
-uint64
-ncm_song_hash(NcmSong *song) {
-    char *uri;
-    int32 uri_len;
-
-    uri = "";
-    uri_len = 0;
-    if ((song != NULL) && (song->uri != NULL)) {
-        uri = song->uri;
-        uri_len = song->uri_len;
-    }
-
-    return rapidhash(uri, uri_len);
 }
 
 bool

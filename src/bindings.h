@@ -106,8 +106,6 @@ bool ncm_binding_append_action(NcmBinding *binding,
                                NcmBindingAction *action);
 bool ncm_binding_copy(NcmBinding *dest, NcmBinding *source);
 bool ncm_binding_is_single(NcmBinding *binding);
-bool ncm_binding_execute(NcmBinding *binding,
-                         NcmBindingActionRunner runner, void *user);
 bool ncm_binding_action_can_run(NcmBindingAction *action,
                                 NcmBindingRuntime *runtime);
 bool ncm_binding_action_run(NcmBindingAction *action,
@@ -135,8 +133,6 @@ bool ncm_binding_can_execute_default(NcmBinding *binding);
 bool ncm_binding_execute_default(NcmBinding *binding);
 bool ncm_binding_is_single_action_type(NcmBinding *binding,
                                        enum NcmActionType type);
-void ncm_binding_action_format(NcmBuffer *buffer,
-                               NcmBindingAction *action);
 
 void ncm_command_init(NcmCommand *command);
 void ncm_command_destroy(NcmCommand *command);
@@ -150,10 +146,6 @@ void ncm_bindings_configuration_clear(NcmBindingsConfiguration *bindings);
 bool ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
                                      char *path, int32 path_len,
                                      NcmError *error);
-bool ncm_bindings_configuration_read_paths(NcmBindingsConfiguration *bindings,
-                                           char **paths, int32 *path_lens,
-                                           int32 paths_len,
-                                           NcmError *error);
 void ncm_bindings_configuration_generate_defaults(
     NcmBindingsConfiguration *bindings);
 NcmCommand *ncm_bindings_configuration_find_command(

@@ -1037,44 +1037,9 @@ native_visualizer_screen_reset_auto_scale_multiplier(
 }
 
 void
-native_visualizer_screen_set_type(NativeVisualizerScreen *screen,
-                                  enum NativeVisualizerType type) {
-    if ((type < 0) || (type >= NATIVE_VISUALIZER_TYPE_LAST)) {
-        type = NATIVE_VISUALIZER_WAVE;
-    }
-    screen->visualization_type = type;
-    native_visualizer_screen_init_visualization(screen);
-    return;
-}
-
-void
 native_visualizer_screen_toggle_type(NativeVisualizerScreen *screen) {
     screen->visualization_type = native_visualizer_next_type(
         screen->visualization_type);
-    native_visualizer_screen_init_visualization(screen);
-    return;
-}
-
-enum NativeVisualizerType
-native_visualizer_screen_type(NativeVisualizerScreen *screen) {
-    return screen->visualization_type;
-}
-
-void
-native_visualizer_screen_set_stereo(NativeVisualizerScreen *screen,
-                                    bool stereo) {
-    screen->stereo = stereo;
-    native_visualizer_screen_init_visualization(screen);
-    return;
-}
-
-void
-native_visualizer_screen_set_fps(NativeVisualizerScreen *screen,
-                                 int32 fps) {
-    if (fps <= 0) {
-        fps = NATIVE_VISUALIZER_DEFAULT_FPS;
-    }
-    screen->fps = fps;
     native_visualizer_screen_init_visualization(screen);
     return;
 }
@@ -1185,26 +1150,6 @@ native_visualizer_screen_split_stereo(NativeVisualizerScreen *screen,
             samples[i*2 + 1];
     }
     return pairs;
-}
-
-int32
-native_visualizer_screen_left_len(NativeVisualizerScreen *screen) {
-    return screen->left_channel.len;
-}
-
-int32
-native_visualizer_screen_right_len(NativeVisualizerScreen *screen) {
-    return screen->right_channel.len;
-}
-
-int16 *
-native_visualizer_screen_left_data(NativeVisualizerScreen *screen) {
-    return screen->left_channel.data;
-}
-
-int16 *
-native_visualizer_screen_right_data(NativeVisualizerScreen *screen) {
-    return screen->right_channel.data;
 }
 
 void

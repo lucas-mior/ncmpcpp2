@@ -32,7 +32,6 @@ typedef struct NativeSongInfoScreen NativeSongInfoScreen;
 void native_c_screens_init_all(void);
 void native_c_screens_register_native_only(void);
 void native_c_screens_request_registered_resize(void);
-bool native_c_screens_is_registered_type(enum ScreenType screen_type);
 NcScreen *native_c_screens_find_type(enum ScreenType screen_type);
 bool native_c_screens_switch_to_type(enum ScreenType screen_type);
 bool native_c_screens_lock_current(void);
@@ -83,9 +82,7 @@ NcScreen *native_c_screen_playlist_native(void);
 
 void native_c_screen_playlist_editor_init(void);
 void native_c_screen_playlist_editor_register(void);
-void native_c_screen_playlist_editor_set_resize(void);
 void native_c_screen_playlist_editor_switch_to(void);
-bool native_c_screen_playlist_editor_is_current(void);
 NativePlaylistEditorScreen *native_c_screen_playlist_editor(void);
 NcScreen *native_c_screen_playlist_editor_native(void);
 
@@ -106,14 +103,12 @@ NcScreen *native_c_screen_sort_playlist_dialog_native(void);
 void native_c_screen_search_engine_init(void);
 void native_c_screen_search_engine_register(void);
 void native_c_screen_search_engine_switch_to(void);
-bool native_c_screen_search_engine_is_current(void);
 NativeSearchEngineScreen *native_c_screen_search_engine(void);
 NcScreen *native_c_screen_search_engine_native(void);
 
 void native_c_screen_media_library_init(void);
 void native_c_screen_media_library_register(void);
 void native_c_screen_media_library_switch_to(void);
-bool native_c_screen_media_library_is_current(void);
 NativeMediaLibraryScreen *native_c_screen_media_library(void);
 NcScreen *native_c_screen_media_library_native(void);
 
@@ -143,7 +138,6 @@ NcScreen *native_c_screen_server_info_native(void);
 void native_c_screen_outputs_init(void);
 void native_c_screen_outputs_register(void);
 void native_c_screen_outputs_switch_to(void);
-bool native_c_screen_outputs_is_current(void);
 void native_c_screen_outputs_toggle(void);
 void native_c_screen_outputs_fetch_list(void);
 void native_c_screen_outputs_refresh_if_visible(void);

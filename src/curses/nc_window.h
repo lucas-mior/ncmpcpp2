@@ -212,8 +212,6 @@ int64 nc_window_width(NcWindow *window);
 int64 nc_window_height(NcWindow *window);
 int64 nc_window_start_x(NcWindow *window);
 int64 nc_window_start_y(NcWindow *window);
-char *nc_window_title(NcWindow *window);
-int32 nc_window_title_len(NcWindow *window);
 MEVENT *nc_window_mouse_event(NcWindow *window);
 
 void nc_window_set_color(NcWindow *window, NcColor color);
