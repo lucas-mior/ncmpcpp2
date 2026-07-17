@@ -264,6 +264,7 @@ strlen32(char *string) {
     size_t len = strlen(string);
 
     if (DEBUGGING) {
+        ASSERT(string);
         if (len >= MAXOF(length)) {
             error("Error: string (%.*s ...) is too long.\n", 50, string);
             fatal(EXIT_FAILURE);
