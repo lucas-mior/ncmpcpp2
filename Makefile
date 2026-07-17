@@ -40,354 +40,19 @@ OBJ_DIR := $(BUILD_DIR)/obj
 TOOLS_STAMP := $(BUILD_DIR)/.tools-ok
 BINARY := $(BUILD_DIR)/ncmpcpp
 NCMPCPP_C_LIB := $(BUILD_DIR)/libncmpcpp_c.a
-NCMPCPP_APP_C_LIB := $(BUILD_DIR)/libncmpcpp_app_c.a
 
 NCMPCPP_C_SRCS := $(shell find src/c -type f -name '*.c' | sort)
 APP_C_SRCS := $(shell find src -type f -name '*.c' ! -path 'src/c/*' | sort)
-C_TEST_SRCS := $(sort $(wildcard tests/*_test.c))
 
 NCMPCPP_C_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(NCMPCPP_C_SRCS))
 APP_C_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(APP_C_SRCS))
-C_TEST_OBJS := $(patsubst %.c,$(OBJ_DIR)/%.c.o,$(C_TEST_SRCS))
-C_TEST_BINS := $(patsubst tests/%.c,$(BUILD_DIR)/tests/%,$(C_TEST_SRCS))
-TEST_BINS := $(C_TEST_BINS)
-
-PLAYLIST_SCREEN_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=nc_window_init \
-	-Wl,--wrap=nc_window_destroy \
-	-Wl,--wrap=nc_window_set_title \
-	-Wl,--wrap=nc_window_move_to \
-	-Wl,--wrap=nc_window_resize \
-	-Wl,--wrap=nc_window_display \
-	-Wl,--wrap=nc_window_has_coords \
-	-Wl,--wrap=nc_window_print_char \
-	-Wl,--wrap=nc_buffer_apply_property \
-	-Wl,--wrap=nc_menu_refresh \
-	-Wl,--wrap=ncm_status_state_player \
-	-Wl,--wrap=ncm_status_state_current_song_position \
-	-Wl,--wrap=ncm_mpd_client_get_queue \
-	-Wl,--wrap=ncm_mpd_client_get_queue_changes \
-	-Wl,--wrap=ncm_mpd_client_play_id
-$(BUILD_DIR)/tests/c_playlist_screen_test: \
-	LDFLAGS += $(PLAYLIST_SCREEN_TEST_WRAP_FLAGS)
-PLAYLIST_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=nc_window_init \
-	-Wl,--wrap=nc_window_destroy \
-	-Wl,--wrap=nc_window_set_title \
-	-Wl,--wrap=nc_window_move_to \
-	-Wl,--wrap=nc_window_resize \
-	-Wl,--wrap=nc_window_display \
-	-Wl,--wrap=nc_window_has_coords \
-	-Wl,--wrap=nc_window_get_x \
-	-Wl,--wrap=nc_window_print_data \
-	-Wl,--wrap=nc_window_print_char \
-	-Wl,--wrap=nc_menu_refresh \
-	-Wl,--wrap=nc_screen_draw_vertical_separator \
-	-Wl,--wrap=ncm_statusbar_print \
-	-Wl,--wrap=ncm_statusbar_print_cstring \
-	-Wl,--wrap=ncm_status_update_full \
-	-Wl,--wrap=ncm_action_add_song_to_playlist \
-	-Wl,--wrap=ncm_mpd_client_get_playlists \
-	-Wl,--wrap=ncm_mpd_client_get_playlist_content \
-	-Wl,--wrap=ncm_mpd_client_get_playlist_content_no_info \
-	-Wl,--wrap=ncm_mpd_client_save_playlist \
-	-Wl,--wrap=ncm_mpd_client_rename_playlist \
-	-Wl,--wrap=ncm_mpd_client_delete_playlist \
-	-Wl,--wrap=ncm_mpd_client_load_playlist
-$(BUILD_DIR)/tests/c_playlist_editor_screen_test: \
-	LDFLAGS += $(PLAYLIST_EDITOR_SCREEN_TEST_WRAP_FLAGS)
-SCREEN_REGISTRY_BRIDGE_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=nc_window_init \
-	-Wl,--wrap=nc_window_destroy \
-	-Wl,--wrap=nc_window_move_to \
-	-Wl,--wrap=nc_window_resize \
-	-Wl,--wrap=nc_window_set_title \
-	-Wl,--wrap=nc_screen_draw_vertical_separator
-$(BUILD_DIR)/tests/c_screen_registry_bridge_test: \
-	LDFLAGS += $(SCREEN_REGISTRY_BRIDGE_TEST_WRAP_FLAGS)
-TAG_EDITOR_NATIVE_REGISTRATION_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=nc_window_init \
-	-Wl,--wrap=nc_window_destroy \
-	-Wl,--wrap=nc_window_move_to \
-	-Wl,--wrap=nc_window_resize \
-	-Wl,--wrap=nc_window_set_title \
-	-Wl,--wrap=nc_screen_draw_vertical_separator
-$(BUILD_DIR)/tests/tag_editor_native_registration_test: \
-	LDFLAGS += $(TAG_EDITOR_NATIVE_REGISTRATION_TEST_WRAP_FLAGS)
-TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=nc_window_init \
-	-Wl,--wrap=nc_window_destroy \
-	-Wl,--wrap=nc_window_move_to \
-	-Wl,--wrap=nc_window_resize \
-	-Wl,--wrap=nc_window_has_coords \
-	-Wl,--wrap=nc_window_set_title \
-	-Wl,--wrap=nc_window_display \
-	-Wl,--wrap=nc_window_print_data \
-	-Wl,--wrap=nc_window_print_char \
-	-Wl,--wrap=nc_buffer_apply_property \
-	-Wl,--wrap=nc_menu_refresh \
-	-Wl,--wrap=nc_screen_draw_vertical_separator \
-	-Wl,--wrap=ncm_mpd_client_get_directory_list \
-	-Wl,--wrap=ncm_mpd_client_get_songs \
-	-Wl,--wrap=ncm_mutable_song_write \
-	-Wl,--wrap=ncm_fs_rename \
-	-Wl,--wrap=ncm_statusbar_print_cstring
-$(BUILD_DIR)/tests/c_tag_editor_screen_test: \
-	LDFLAGS += $(TAG_EDITOR_SCREEN_TEST_WRAP_FLAGS)
-C_BROWSER_SCREEN_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=app_controller_current_screen \
-	-Wl,--wrap=native_c_screens_current_type \
-	-Wl,--wrap=native_c_screen_browser \
-	-Wl,--wrap=nc_window_has_coords \
-	-Wl,--wrap=nc_window_print_data \
-	-Wl,--wrap=nc_window_prompt \
-	-Wl,--wrap=nc_window_prompt_result_destroy \
-	-Wl,--wrap=ncm_statusbar_scoped_lock_init \
-	-Wl,--wrap=ncm_statusbar_scoped_lock_destroy \
-	-Wl,--wrap=ncm_statusbar_put \
-	-Wl,--wrap=ncm_statusbar_print \
-	-Wl,--wrap=ncm_statusbar_print_cstring \
-	-Wl,--wrap=ncm_mpd_client_connected \
-	-Wl,--wrap=ncm_mpd_client_get_directory_entries \
-	-Wl,--wrap=ncm_mpd_client_get_directory_recursive \
-	-Wl,--wrap=ncm_mpd_client_get_supported_extensions \
-	-Wl,--wrap=ncm_mpd_client_delete_playlist \
-	-Wl,--wrap=ncm_mpd_client_rename_playlist \
-	-Wl,--wrap=ncm_mpd_client_update_directory
-$(BUILD_DIR)/tests/c_browser_screen_test: \
-	LDFLAGS += $(C_BROWSER_SCREEN_TEST_WRAP_FLAGS)
-PLAYLIST_ACTIONS_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=app_controller_current_screen \
-	-Wl,--wrap=native_c_screens_current_type \
-	-Wl,--wrap=native_c_screen_playlist \
-	-Wl,--wrap=current_screen_current_search_constraint \
-	-Wl,--wrap=current_screen_search \
-	-Wl,--wrap=ncm_mpd_client_connected \
-	-Wl,--wrap=ncm_mpd_client_version \
-	-Wl,--wrap=ncm_mpd_client_start_command_list \
-	-Wl,--wrap=ncm_mpd_client_commit_command_list \
-	-Wl,--wrap=ncm_mpd_client_move \
-	-Wl,--wrap=ncm_mpd_client_swap \
-	-Wl,--wrap=ncm_mpd_client_shuffle_range \
-	-Wl,--wrap=ncm_mpd_client_clear_queue \
-	-Wl,--wrap=ncm_mpd_client_add_song_value \
-	-Wl,--wrap=ncm_mpd_client_play_id \
-	-Wl,--wrap=ncm_mpd_client_set_priority_song \
-	-Wl,--wrap=ncm_mpd_client_set_crossfade \
-	-Wl,--wrap=ncm_mpd_client_set_volume \
-	-Wl,--wrap=ncm_mpd_client_add_random_tag \
-	-Wl,--wrap=ncm_mpd_client_add_random_songs \
-	-Wl,--wrap=ncm_mpd_client_seek_pos \
-	-Wl,--wrap=ncm_mpd_client_save_playlist \
-	-Wl,--wrap=ncm_mpd_client_delete_playlist \
-	-Wl,--wrap=ncm_mpd_client_server_error_code \
-	-Wl,--wrap=ncm_status_update_full \
-	-Wl,--wrap=ncm_status_state_current_song_position \
-	-Wl,--wrap=ncm_status_state_playlist_length \
-	-Wl,--wrap=ncm_status_state_volume \
-	-Wl,--wrap=ncm_status_state_player \
-	-Wl,--wrap=ncm_status_state_total_time \
-	-Wl,--wrap=native_playlist_screen_locate_position \
-	-Wl,--wrap=ncm_statusbar_scoped_lock_init \
-	-Wl,--wrap=ncm_statusbar_scoped_lock_destroy \
-	-Wl,--wrap=ncm_statusbar_put \
-	-Wl,--wrap=ncm_statusbar_print \
-	-Wl,--wrap=ncm_statusbar_print_cstring \
-	-Wl,--wrap=ncm_statusbar_format \
-	-Wl,--wrap=ncm_statusbar_prompt_return_one_of \
-	-Wl,--wrap=nc_window_prompt \
-	-Wl,--wrap=nc_window_prompt_result_destroy \
-	-Wl,--wrap=nc_window_print_data \
-	-Wl,--wrap=nc_window_init \
-	-Wl,--wrap=nc_window_destroy \
-	-Wl,--wrap=nc_window_set_title
-$(BUILD_DIR)/tests/c_playlist_actions_test: \
-	LDFLAGS += $(PLAYLIST_ACTIONS_TEST_WRAP_FLAGS)
-PLAYLIST_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=native_c_screens_current_type \
-	-Wl,--wrap=ncm_action_runtime_can_run \
-	-Wl,--wrap=ncm_action_runtime_run
-$(BUILD_DIR)/tests/c_playlist_binding_dispatch_test: \
-	LDFLAGS += $(PLAYLIST_BINDING_DISPATCH_TEST_WRAP_FLAGS)
-PLAYLIST_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=native_c_screens_current_type \
-	-Wl,--wrap=ncm_action_runtime_can_run \
-	-Wl,--wrap=ncm_action_runtime_run
-$(BUILD_DIR)/tests/c_playlist_editor_binding_dispatch_test: \
-	LDFLAGS += $(PLAYLIST_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS)
-BROWSER_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=native_c_screens_current_type \
-	-Wl,--wrap=ncm_action_runtime_can_run \
-	-Wl,--wrap=ncm_action_runtime_run
-$(BUILD_DIR)/tests/c_browser_binding_dispatch_test: \
-	LDFLAGS += $(BROWSER_BINDING_DISPATCH_TEST_WRAP_FLAGS)
-TAG_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=native_c_screens_current_type \
-	-Wl,--wrap=ncm_action_runtime_can_run \
-	-Wl,--wrap=ncm_action_runtime_run
-$(BUILD_DIR)/tests/c_tag_editor_binding_dispatch_test: \
-	LDFLAGS += $(TAG_EDITOR_BINDING_DISPATCH_TEST_WRAP_FLAGS)
-SEARCH_ENGINE_SCREEN_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=nc_window_init \
-	-Wl,--wrap=nc_window_destroy \
-	-Wl,--wrap=nc_window_set_title \
-	-Wl,--wrap=nc_window_move_to \
-	-Wl,--wrap=nc_window_resize \
-	-Wl,--wrap=nc_window_width \
-	-Wl,--wrap=nc_window_height \
-	-Wl,--wrap=nc_window_display \
-	-Wl,--wrap=nc_window_has_coords \
-	-Wl,--wrap=nc_window_print_char \
-	-Wl,--wrap=nc_buffer_apply_property \
-	-Wl,--wrap=nc_menu_refresh \
-	-Wl,--wrap=nc_screen_get_resize_params \
-	-Wl,--wrap=ui_state_main_start_y \
-	-Wl,--wrap=ui_state_main_height \
-	-Wl,--wrap=ncm_mpd_client_start_search \
-	-Wl,--wrap=ncm_mpd_client_add_search_tag \
-	-Wl,--wrap=ncm_mpd_client_add_search_any \
-	-Wl,--wrap=ncm_mpd_client_add_search_uri \
-	-Wl,--wrap=ncm_mpd_client_commit_search_songs
-$(BUILD_DIR)/tests/c_search_engine_screen_test: \
-	LDFLAGS += $(SEARCH_ENGINE_SCREEN_TEST_WRAP_FLAGS)
-PLAYLIST_SORT_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=ncm_mpd_client_start_command_list \
-	-Wl,--wrap=ncm_mpd_client_swap \
-	-Wl,--wrap=ncm_mpd_client_commit_command_list
-$(BUILD_DIR)/tests/c_playlist_sort_test: \
-	LDFLAGS += $(PLAYLIST_SORT_TEST_WRAP_FLAGS)
-SORT_PLAYLIST_DIALOG_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=ncm_mpd_client_connected \
-	-Wl,--wrap=ncm_playlist_sort_range \
-	-Wl,--wrap=ncm_status_update_full \
-	-Wl,--wrap=ncm_statusbar_print_cstring \
-	-Wl,--wrap=nc_window_init \
-	-Wl,--wrap=nc_window_destroy \
-	-Wl,--wrap=nc_window_resize \
-	-Wl,--wrap=nc_window_move_to \
-	-Wl,--wrap=nc_window_display \
-	-Wl,--wrap=nc_window_print_data \
-	-Wl,--wrap=nc_window_has_coords \
-	-Wl,--wrap=nc_menu_refresh
-$(BUILD_DIR)/tests/c_sort_playlist_dialog_test: \
-	LDFLAGS += $(SORT_PLAYLIST_DIALOG_TEST_WRAP_FLAGS)
-PLAYLIST_MANAGEMENT_DIALOGS_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=ncm_mpd_client_get_playlists \
-	-Wl,--wrap=ncm_mpd_client_start_command_list \
-	-Wl,--wrap=ncm_mpd_client_add_song_to_playlist \
-	-Wl,--wrap=ncm_mpd_client_add_song_value \
-	-Wl,--wrap=ncm_mpd_client_commit_command_list \
-	-Wl,--wrap=ncm_status_state_player \
-	-Wl,--wrap=ncm_status_state_current_song_position \
-	-Wl,--wrap=native_playlist_screen_current_song \
-	-Wl,--wrap=native_playlist_screen_now_playing_song \
-	-Wl,--wrap=ncm_status_handle_server_error_value \
-	-Wl,--wrap=ncm_statusbar_scoped_lock_init \
-	-Wl,--wrap=ncm_statusbar_scoped_lock_destroy \
-	-Wl,--wrap=ncm_statusbar_put \
-	-Wl,--wrap=ncm_statusbar_print \
-	-Wl,--wrap=ncm_statusbar_print_cstring \
-	-Wl,--wrap=ncm_statusbar_format \
-	-Wl,--wrap=nc_window_prompt \
-	-Wl,--wrap=nc_window_prompt_result_destroy \
-	-Wl,--wrap=nc_window_init \
-	-Wl,--wrap=nc_window_destroy \
-	-Wl,--wrap=nc_window_resize \
-	-Wl,--wrap=nc_window_move_to \
-	-Wl,--wrap=nc_window_display \
-	-Wl,--wrap=nc_window_print_data \
-	-Wl,--wrap=nc_menu_refresh
-$(BUILD_DIR)/tests/c_playlist_management_dialogs_test: \
-	LDFLAGS += $(PLAYLIST_MANAGEMENT_DIALOGS_TEST_WRAP_FLAGS)
-SELECTED_ITEMS_ACTION_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=native_c_screens_current_type \
-	-Wl,--wrap=native_c_screen_playlist \
-	-Wl,--wrap=native_playlist_screen_selected_songs \
-	-Wl,--wrap=native_c_screen_tag_editor \
-	-Wl,--wrap=native_tag_editor_screen_selected_songs \
-	-Wl,--wrap=native_c_screen_selected_items_adder_open
-$(BUILD_DIR)/tests/c_selected_items_adder_action_test: \
-	LDFLAGS += $(SELECTED_ITEMS_ACTION_TEST_WRAP_FLAGS)
-VISUALIZER_DRAWING_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=nc_window_init \
-	-Wl,--wrap=nc_window_destroy \
-	-Wl,--wrap=nc_window_width \
-	-Wl,--wrap=nc_window_height \
-	-Wl,--wrap=nc_window_resize \
-	-Wl,--wrap=nc_window_move_to \
-	-Wl,--wrap=nc_window_clear \
-	-Wl,--wrap=nc_window_go_to_xy \
-	-Wl,--wrap=nc_window_push_color \
-	-Wl,--wrap=nc_window_apply_format \
-	-Wl,--wrap=nc_window_print_data
-$(BUILD_DIR)/tests/c_visualizer_drawing_test: \
-	LDFLAGS += $(VISUALIZER_DRAWING_TEST_WRAP_FLAGS)
-VISUALIZER_CALLBACKS_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=nc_window_init \
-	-Wl,--wrap=nc_window_destroy \
-	-Wl,--wrap=nc_window_width \
-	-Wl,--wrap=nc_window_height \
-	-Wl,--wrap=nc_window_resize \
-	-Wl,--wrap=nc_window_move_to \
-	-Wl,--wrap=nc_window_clear \
-	-Wl,--wrap=nc_window_refresh \
-	-Wl,--wrap=nc_window_go_to_xy \
-	-Wl,--wrap=nc_window_push_color \
-	-Wl,--wrap=nc_window_apply_format \
-	-Wl,--wrap=nc_window_print_data \
-	-Wl,--wrap=nc_screen_switcher_get_resize_params \
-	-Wl,--wrap=ui_state_main_start_y \
-	-Wl,--wrap=ui_state_main_height \
-	-Wl,--wrap=ncm_title_draw_header \
-	-Wl,--wrap=ncm_status_state_player
-$(BUILD_DIR)/tests/c_visualizer_callbacks_test: \
-	LDFLAGS += $(VISUALIZER_CALLBACKS_TEST_WRAP_FLAGS)
-VISUALIZER_BEHAVIOR_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=nc_window_init \
-	-Wl,--wrap=nc_window_destroy \
-	-Wl,--wrap=nc_window_width \
-	-Wl,--wrap=nc_window_height \
-	-Wl,--wrap=nc_window_resize \
-	-Wl,--wrap=nc_window_move_to \
-	-Wl,--wrap=nc_window_clear \
-	-Wl,--wrap=nc_window_refresh \
-	-Wl,--wrap=nc_window_go_to_xy \
-	-Wl,--wrap=nc_window_push_color \
-	-Wl,--wrap=nc_window_apply_format \
-	-Wl,--wrap=nc_window_print_data \
-	-Wl,--wrap=nc_screen_switcher_get_resize_params \
-	-Wl,--wrap=ui_state_main_start_y \
-	-Wl,--wrap=ui_state_main_height \
-	-Wl,--wrap=ncm_title_draw_header \
-	-Wl,--wrap=ncm_status_state_player \
-	-Wl,--wrap=ncm_statusbar_message_delay_time \
-	-Wl,--wrap=ncm_statusbar_format
-$(BUILD_DIR)/tests/c_visualizer_behavior_test: \
-	LDFLAGS += $(VISUALIZER_BEHAVIOR_TEST_WRAP_FLAGS)
-VISUALIZER_ACTIONS_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=app_controller_current_screen \
-	-Wl,--wrap=native_c_screen_visualizer_register \
-	-Wl,--wrap=native_c_screen_visualizer_is_current \
-	-Wl,--wrap=native_c_screens_switch_to_type \
-	-Wl,--wrap=native_c_screen_visualizer \
-	-Wl,--wrap=native_visualizer_screen_toggle_type
-$(BUILD_DIR)/tests/c_visualizer_actions_test: \
-	LDFLAGS += $(VISUALIZER_ACTIONS_TEST_WRAP_FLAGS)
-STATUS_TEST_WRAP_FLAGS := \
-	-Wl,--wrap=native_c_screen_visualizer \
-	-Wl,--wrap=native_visualizer_screen_close_data_source \
-	-Wl,--wrap=native_visualizer_screen_open_data_source \
-	-Wl,--wrap=native_visualizer_screen_find_output_id
-$(BUILD_DIR)/tests/c_status_test: \
-	LDFLAGS += $(STATUS_TEST_WRAP_FLAGS)
 DEPS := \
 	$(NCMPCPP_C_OBJS:.o=.d) \
-	$(APP_C_OBJS:.o=.d) \
-	$(C_TEST_OBJS:.o=.d)
+	$(APP_C_OBJS:.o=.d)
 
-.PHONY: all check install clean help check-no-foreign-sources FORCE
+.PHONY: all install clean help check-no-foreign-sources FORCE
 .DELETE_ON_ERROR:
-.SECONDARY: $(NCMPCPP_C_OBJS) $(APP_C_OBJS) $(C_TEST_OBJS)
+.SECONDARY: $(NCMPCPP_C_OBJS) $(APP_C_OBJS)
 
 all: check-no-foreign-sources $(BINARY)
 
@@ -417,11 +82,6 @@ $(NCMPCPP_C_LIB): $(NCMPCPP_C_OBJS)
 	@rm -f $@
 	@$(AR) rcs $@ $^
 
-$(NCMPCPP_APP_C_LIB): $(APP_C_OBJS)
-	@printf 'AR  %s\n' '$@'
-	@rm -f $@
-	@$(AR) rcs $@ $^
-
 $(BINARY): $(APP_C_OBJS) $(NCMPCPP_C_LIB)
 	@printf 'LD  %s\n' '$@'
 	@$(CC) $(LDFLAGS) -o $@ \
@@ -432,30 +92,8 @@ $(BINARY): $(APP_C_OBJS) $(NCMPCPP_C_LIB)
 		$(LDLIBS) \
 		$(THREAD_FLAGS)
 
-$(C_TEST_BINS): $(BUILD_DIR)/tests/%: $(OBJ_DIR)/tests/%.c.o $(NCMPCPP_C_LIB) $(NCMPCPP_APP_C_LIB)
-	@mkdir -p $(@D)
-	@printf 'LD  %s\n' '$@'
-	@$(CC) $(LDFLAGS) -o $@ \
-		$< \
-		-Wl,--start-group \
-		$(NCMPCPP_APP_C_LIB) \
-		$(NCMPCPP_C_LIB) \
-		-Wl,--end-group \
-		$(READLINE_LIBS) \
-		$(PKG_LIBS) \
-		$(LDLIBS) \
-		$(THREAD_FLAGS)
-
-check: check-no-foreign-sources $(TEST_BINS)
-	@set -e; \
-	for test in $(TEST_BINS); do \
-		printf 'TEST %s\n' "$$test"; \
-		"$$test"; \
-	done
-
-
 check-no-foreign-sources:
-	@bad_files=$$(find src tests -type f \
+	@bad_files=$$(find src -type f \
 		| awk '/[.](cc|c[p]p|cxx)$$/ { print }'); \
 	if test -n "$$bad_files"; then \
 		printf '%s\n' 'Non-C source files are not allowed:' >&2; \
@@ -476,7 +114,7 @@ clean:
 	rm -rf '$(BUILD_DIR)'
 
 help:
-	@printf '%s\n' 'usage: make [all|check|install|clean|help]'
+	@printf '%s\n' 'usage: make [all|install|clean|help]'
 	@printf '%s\n' ''
 	@printf '%s\n' 'Common variables:'
 	@printf '%s\n' '  CC, AR             compiler and archive commands'

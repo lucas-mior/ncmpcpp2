@@ -65,12 +65,10 @@ The simplest way to compile this package is:
   3. Run `make` to compile the package. The binary is written to
      `build/ncmpcpp`.
 
-  4. Run `make check` to compile and run the test programs.
-
-  5. Run `sudo make install` to install the program, docs, and man page.
+  4. Run `sudo make install` to install the program, docs, and man page.
      Use `PREFIX=/some/path make install` for a non-default prefix.
 
-  6. Run `make clean` to remove build outputs.
+  5. Run `make clean` to remove build outputs.
 
 The autotools files are no longer used. If this tree still has generated
 artifacts from the old build system or the old shell build script, run
