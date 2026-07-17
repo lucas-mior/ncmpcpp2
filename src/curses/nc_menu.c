@@ -484,6 +484,83 @@ nc_menu_goto_selectable_position(NcMenu *menu, int64 pos,
     return true;
 }
 
+bool
+nc_menu_search_selectable(NcMenu *menu, int64 height, bool forward,
+                          bool wrap, bool skip_current,
+                          NcMenuSearchFunc matches, void *user,
+                          int64 *found_pos) {
+    int64 count;
+    int64 current;
+    int64 start;
+    int64 step;
+
+    if ((menu == NULL) || (matches == NULL)) {
+        return false;
+    }
+
+    count = nc_menu_item_count(menu);
+    if (count <= 0) {
+        return false;
+    }
+
+    current = nc_menu_highlight(menu);
+    if ((current < 0) || (current >= count)) {
+        current = -1;
+        if (forward) {
+            start = 0;
+        } else {
+            start = count - 1;
+        }
+    } else {
+        start = current;
+        if (skip_current) {
+            if (forward) {
+                start += 1;
+            } else {
+                start -= 1;
+            }
+        }
+    }
+
+    if (forward) {
+        step = 1;
+    } else {
+        step = -1;
+    }
+
+    for (int64 i = 0; i < count; i += 1) {
+        int64 pos;
+
+        pos = start + step * i;
+        if (wrap) {
+            pos %= count;
+            if (pos < 0) {
+                pos += count;
+            }
+        } else if ((pos < 0) || (pos >= count)) {
+            break;
+        }
+        if (skip_current && (current >= 0) && (pos == current)) {
+            continue;
+        }
+        if (!nc_menu_position_is_selectable(menu, pos)) {
+            continue;
+        }
+        if (!matches(menu, pos, user)) {
+            continue;
+        }
+        if (!nc_menu_goto_selectable_position(menu, pos, height)) {
+            continue;
+        }
+        if (found_pos != NULL) {
+            *found_pos = pos;
+        }
+        return true;
+    }
+
+    return false;
+}
+
 void
 nc_menu_prepare_refresh(NcMenu *menu, int64 height,
                         NcMenuHighlightableFunc is_highlightable,

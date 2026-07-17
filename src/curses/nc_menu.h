@@ -10,6 +10,7 @@
 typedef struct NcMenu NcMenu;
 
 typedef bool (*NcMenuHighlightableFunc)(int64 pos, void *user);
+typedef bool (*NcMenuSearchFunc)(NcMenu *menu, int64 pos, void *user);
 
 enum NcMenuItemSource {
     NC_MENU_ITEMS_ALL,
@@ -99,6 +100,10 @@ bool nc_menu_goto(NcMenu *menu, int64 y,
 bool nc_menu_goto_selectable(NcMenu *menu, int64 y);
 bool nc_menu_goto_selectable_position(NcMenu *menu, int64 pos,
                                       int64 height);
+bool nc_menu_search_selectable(NcMenu *menu, int64 height, bool forward,
+                               bool wrap, bool skip_current,
+                               NcMenuSearchFunc matches, void *user,
+                               int64 *found_pos);
 void nc_menu_prepare_refresh(NcMenu *menu, int64 height,
                              NcMenuHighlightableFunc is_highlightable,
                              void *user);
