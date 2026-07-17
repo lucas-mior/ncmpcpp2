@@ -1,1 +1,0 @@
-tiny_editor_cstrlen32(char *string)
