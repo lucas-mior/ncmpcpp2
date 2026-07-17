@@ -7,21 +7,6 @@
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
-static int32
-ncm_string_format_cstrlen32(char *string) {
-    int32 len;
-
-    len = 0;
-    if (string == NULL) {
-        return 0;
-    }
-    while (string[len] != '\0') {
-        len += 1;
-    }
-
-    return len;
-}
-
 static void
 ncm_string_format_append_number(NcmBuffer *out, char *format,
                                 NcmStringFormatArg *arg) {
@@ -110,7 +95,7 @@ ncm_string_format_arg_string(char *data, int32 len) {
 NcmStringFormatArg
 ncm_string_format_arg_cstring(char *data) {
     return ncm_string_format_arg_string(
-        data, ncm_string_format_cstrlen32(data));
+        data, optional_strlen32(data));
 }
 
 NcmStringFormatArg
