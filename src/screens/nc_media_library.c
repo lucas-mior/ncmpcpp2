@@ -81,7 +81,7 @@ static bool native_library_set_owned_string(char **dest, int32 *dest_len,
                                             int32 source_len);
 static void native_library_free_owned_string(char **data, int32 *len,
                                              int32 *cap);
-static int32 native_library_cstrlen32(char *string);
+static int32 optional_strlen32(char *string);
 static bool native_library_mpd_list_tags(void *user,
                                          enum mpd_tag_type tag_type,
                                          NcmMpdStringList *tags,
@@ -2848,7 +2848,7 @@ native_library_print_add_status(NativeMediaLibraryScreen *screen,
         }
         ncm_buffer_append(&message, STRLIT_ARGS("\" added"));
         ncm_buffer_append(&message, ncm_helpers_with_errors(result),
-                          native_library_cstrlen32(
+                          optional_strlen32(
                               ncm_helpers_with_errors(result)));
     } else if (screen->active_column
                == NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS) {
@@ -2880,7 +2880,7 @@ native_library_print_add_status(NativeMediaLibraryScreen *screen,
             ncm_buffer_append(&message, STRLIT_ARGS("\" added"));
         }
         ncm_buffer_append(&message, ncm_helpers_with_errors(result),
-                          native_library_cstrlen32(
+                          optional_strlen32(
                               ncm_helpers_with_errors(result)));
     } else if (result && (songs->len == 1)) {
         rendered = ncm_format_render_string(&Config.song_status_format,
@@ -2891,7 +2891,7 @@ native_library_print_add_status(NativeMediaLibraryScreen *screen,
     } else if (result) {
         ncm_buffer_append(&message, STRLIT_ARGS("Songs added"));
         ncm_buffer_append(&message, ncm_helpers_with_errors(result),
-                          native_library_cstrlen32(
+                          optional_strlen32(
                               ncm_helpers_with_errors(result)));
     } else {
         ncm_buffer_destroy(&message);
@@ -3912,7 +3912,7 @@ native_library_update_titles(NativeMediaLibraryScreen *screen,
     ncm_buffer_clear(&screen->songs_title);
     if (Config.titles_visibility) {
         tag_type_name = ncm_tag_type_name(Config.media_lib_primary_tag);
-        tag_type_name_len = native_library_cstrlen32(tag_type_name);
+        tag_type_name_len = optional_strlen32(tag_type_name);
         ncm_buffer_append(&screen->tags_title, tag_type_name,
                           tag_type_name_len);
         ncm_buffer_append_byte(&screen->tags_title, 's');
@@ -4167,20 +4167,6 @@ native_library_free_owned_string(char **data, int32 *len, int32 *cap) {
     return;
 }
 
-static int32
-native_library_cstrlen32(char *string) {
-    int32 len;
-
-    if (string == NULL) {
-        return 0;
-    }
-    len = 0;
-    while (string[len] != '\0') {
-        len += 1;
-    }
-    return len;
-}
-
 static char *
 native_library_query_cstring(NcmBuffer *buffer, char *string,
                              int32 string_len) {
@@ -4191,7 +4177,7 @@ native_library_query_cstring(NcmBuffer *buffer, char *string,
         if (string == NULL) {
             return NULL;
         }
-        string_len = native_library_cstrlen32(string);
+        string_len = optional_strlen32(string);
     }
     if ((string == NULL) && (string_len > 0)) {
         return NULL;
