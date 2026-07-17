@@ -44,9 +44,22 @@ NCMPCPP_SOURCE := src/main.c
 NCMPCPP_OBJECT := $(OBJ_DIR)/src/main.c.o
 DEPS := $(NCMPCPP_OBJECT:.o=.d)
 
-.PHONY: all check install clean help check-no-foreign-sources FORCE
+TEST_SOURCES := $(sort $(wildcard tests/*.c))
+TEST_BINARIES := $(patsubst tests/%.c,$(BUILD_DIR)/tests/%,\
+    $(TEST_SOURCES))
+TEST_RUNS := $(TEST_BINARIES:%=%.run)
+TEST_CPPFLAGS ?= \
+    -I$(BUILD_DIR) \
+    -I. \
+    -Isrc \
+    -D_GNU_SOURCE \
+    -D_DEFAULT_SOURCE \
+    $(CPPFLAGS)
+TEST_LDLIBS ?= $(LDLIBS) $(THREAD_FLAGS)
+
+.PHONY: all check test install clean help check-no-foreign-sources FORCE
 .DELETE_ON_ERROR:
-.SECONDARY: $(NCMPCPP_OBJECT)
+.SECONDARY: $(NCMPCPP_OBJECT) $(TEST_BINARIES)
 
 all: check-no-foreign-sources $(BINARY)
 
@@ -77,6 +90,23 @@ $(BINARY): $(NCMPCPP_OBJECT)
 		$(PKG_LIBS) \
 		$(LDLIBS) \
 		$(THREAD_FLAGS)
+
+$(BUILD_DIR)/tests/%: tests/%.c
+	@mkdir -p $(@D)
+	$(CC) \
+		$(TEST_CPPFLAGS) \
+		$(CSTD) \
+		$(WARNINGS) \
+		$(CFLAGS) \
+		$(THREAD_FLAGS) \
+		$< \
+		-o $@ \
+		$(TEST_LDLIBS)
+
+$(BUILD_DIR)/tests/%.run: $(BUILD_DIR)/tests/%
+	$<
+
+test: $(TEST_RUNS)
 
 check-no-foreign-sources:
 	@bad_files=$$(find src -type f \
@@ -128,7 +158,7 @@ clean:
 	rm -rf '$(BUILD_DIR)'
 
 help:
-	@printf '%s\n' 'usage: make [all|check|install|clean|help]'
+	@printf '%s\n' 'usage: make [all|check|test|install|clean|help]'
 	@printf '%s\n' ''
 	@printf '%s\n' 'Common variables:'
 	@printf '%s\n' '  CC                 compiler command'
@@ -136,6 +166,8 @@ help:
 	@printf '%s\n' '  CFLAGS            extra compiler flags'
 	@printf '%s\n' '  CPPFLAGS, LDFLAGS  extra preprocessor and linker flags'
 	@printf '%s\n' '  LDLIBS             extra libraries, default: -lm'
+	@printf '%s\n' '  TEST_CPPFLAGS      preprocessor flags for make test'
+	@printf '%s\n' '  TEST_LDLIBS        libraries for make test'
 	@printf '%s\n' '  BUILD_DIR          build output directory, default: build'
 	@printf '%s\n' '  PREFIX             install prefix, default: /usr/local'
 	@printf '%s\n' '  BINDIR             binary install directory, default: PREFIX/bin'
