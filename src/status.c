@@ -20,7 +20,7 @@
 #include "app_controller.h"
 #include "c/ncm_macro_utilities.h"
 #include "c/ncm_format.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "curses/nc_buffer.h"
 #include "curses/nc_cyclic_buffer.h"
 #include "helpers.h"
@@ -1731,7 +1731,7 @@ status_draw_alternative_elapsed_time(NcWindow *header, NcmSong *song,
     ncm_format_render_buffer(&Config.new_header_second_line, song,
                              &second, &second, NCM_FORMAT_FLAG_ALL);
 
-    first_len = ncm_utf8_width(first.data, first.len);
+    first_len = utf8_width(first.data, first.len);
     first_margin = tracklength.len + 1;
     if (first_margin < (global_volume_state_len() + 1)) {
         first_margin = global_volume_state_len() + 1;
@@ -1742,7 +1742,7 @@ status_draw_alternative_elapsed_time(NcWindow *header, NcmSong *song,
         first_start = (COLS - first_len)/2;
     }
 
-    second_len = ncm_utf8_width(second.data, second.len);
+    second_len = utf8_width(second.data, second.len);
     second_margin = player_state_len;
     if (second_margin < 8) {
         second_margin = 8;

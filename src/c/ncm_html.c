@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 #include "c/ncm_string.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 
 typedef struct HtmlEntity {
@@ -149,7 +149,7 @@ ncm_html_unescape_utf8(char *data, int32 data_len) {
                 entity_len = entity_end - entity_start;
                 if (parse_entity_number(data + entity_start,
                                         entity_len, &rune)) {
-                    encoded_len = ncm_utf8_encode(rune, encoded,
+                    encoded_len = utf8_encode(rune, encoded,
                                                   (int32)SIZEOF(encoded));
                     if (encoded_len > 0) {
                         ncm_buffer_append(&out, encoded, encoded_len);

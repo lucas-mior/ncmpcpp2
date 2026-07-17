@@ -16,7 +16,7 @@
 #include "c/ncm_fs.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "c/ncm_type_conversions.h"
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
@@ -4429,10 +4429,10 @@ tag_editor_capitalize_song_callback(NcmMutableSong *song, void *user) {
             }
 
             ncm_buffer_init(&converted);
-            converted_len = ncm_utf8_capitalize_first_letters(
+            converted_len = utf8_capitalize_first_letters(
                 view.data, view.len, NULL, 0);
             ncm_buffer_reserve(&converted, converted_len);
-            converted.len = ncm_utf8_capitalize_first_letters(
+            converted.len = utf8_capitalize_first_letters(
                 view.data, view.len, converted.data, converted_len);
             if (converted.data != NULL) {
                 converted.data[converted.len] = '\0';

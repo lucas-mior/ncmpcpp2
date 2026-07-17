@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "app_controller.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "cbase/util.c"
 #include "global.h"
 #include "settings.h"
@@ -125,7 +125,7 @@ title_draw_alternative(NcWindow *window, char *title, int32 title_len,
     mvwhline(nc_window_raw(window), 4, 0, 0, COLS);
     title_apply_formatted_color_end(window, separator_color);
 
-    title_width = ncm_utf8_width(title, title_len);
+    title_width = utf8_width(title, title_len);
     title_x = (COLS - title_width)/2;
     nc_window_go_to_xy(window, title_x, 3);
     nc_window_apply_format(window, NC_FORMAT_BOLD);

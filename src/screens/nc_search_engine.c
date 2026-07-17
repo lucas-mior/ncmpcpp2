@@ -6,7 +6,7 @@
 #include "c/ncm_comparators.h"
 #include "c/ncm_display.h"
 #include "c/ncm_string.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "settings.h"
 #include "ui_state.h"
 
@@ -1796,7 +1796,7 @@ native_search_buffer_width(NcBuffer *buffer) {
     if ((buffer == NULL) || (buffer->len <= 0)) {
         return 0;
     }
-    return ncm_utf8_width(buffer->data, buffer->len);
+    return utf8_width(buffer->data, buffer->len);
 }
 
 static void

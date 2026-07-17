@@ -9,7 +9,7 @@
 #include "c/ncm_format.h"
 #include "c/ncm_regex.h"
 #include "c/ncm_string.h"
-#include "c/ncm_utf8.h"
+#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 #include "curses/nc_cyclic_buffer.h"
@@ -833,7 +833,7 @@ lyrics_title_callback(NcScreen *screen) {
 
     ncm_buffer_append(&lyrics->title, STRLIT_ARGS(": "));
     scroll_begin = nc_lyrics_screen_scroll_begin(&lyrics->screen);
-    scroll_width = COLS - ncm_utf8_width(lyrics->title.data,
+    scroll_width = COLS - utf8_width(lyrics->title.data,
                                          lyrics->title.len);
     if (Config.design == NCM_DESIGN_ALTERNATIVE) {
         scroll_width -= 2;
