@@ -17,7 +17,7 @@
 /*
  * App runtime bridge.
  *
- * Keep the public C entry points used by ncmpcpp.c in this C module while the
+ * Keep the public C entry points used by main.c in this C module while the
  * broader application startup path is still being renamed away from the old
  * legacy naming.
  */
