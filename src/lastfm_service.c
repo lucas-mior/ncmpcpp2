@@ -181,11 +181,11 @@ ncm_lastfm_service_equal(NcmLastfmService *left, NcmLastfmService *right) {
     if (left->type != right->type) {
         return false;
     }
-    if (!ncm_string_equal(left->artist, left->artist_len,
+    if (!STREQUAL(left->artist, left->artist_len,
                           right->artist, right->artist_len)) {
         return false;
     }
-    return ncm_string_equal(left->lang, left->lang_len,
+    return STREQUAL(left->lang, left->lang_len,
                             right->lang, right->lang_len);
 }
 

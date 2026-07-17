@@ -479,7 +479,7 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
     }
 
     changed_song = !screen->has_song || !ncm_song_equal(&screen->song, song);
-    changed_filename = !ncm_string_equal(screen->filename.data,
+    changed_filename = !STREQUAL(screen->filename.data,
                                          screen->filename.len,
                                          next_filename.data,
                                          next_filename.len);
@@ -1392,7 +1392,7 @@ native_lyrics_job_is_current(NativeLyricsJob *job) {
     if (!ncm_song_equal(&screen->song, &job->song)) {
         return false;
     }
-    return ncm_string_equal(screen->filename.data,
+    return STREQUAL(screen->filename.data,
                             screen->filename.len,
                             job->filename.data,
                             job->filename.len);

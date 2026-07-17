@@ -89,46 +89,46 @@ ncm_format_parse_color_component(char *data, int32 data_len,
                                  bool background, int16 *result) {
     int32 value;
 
-    if (ncm_string_equal(data, data_len, STRLIT_ARGS("black"))) {
+    if (STREQUAL(data, data_len, STRLIT_ARGS("black"))) {
         *result = COLOR_BLACK;
         return true;
     }
-    if (ncm_string_equal(data, data_len, STRLIT_ARGS("red"))) {
+    if (STREQUAL(data, data_len, STRLIT_ARGS("red"))) {
         *result = COLOR_RED;
         return true;
     }
-    if (ncm_string_equal(data, data_len, STRLIT_ARGS("green"))) {
+    if (STREQUAL(data, data_len, STRLIT_ARGS("green"))) {
         *result = COLOR_GREEN;
         return true;
     }
-    if (ncm_string_equal(data, data_len, STRLIT_ARGS("yellow"))) {
+    if (STREQUAL(data, data_len, STRLIT_ARGS("yellow"))) {
         *result = COLOR_YELLOW;
         return true;
     }
-    if (ncm_string_equal(data, data_len, STRLIT_ARGS("blue"))) {
+    if (STREQUAL(data, data_len, STRLIT_ARGS("blue"))) {
         *result = COLOR_BLUE;
         return true;
     }
-    if (ncm_string_equal(data, data_len, STRLIT_ARGS("magenta"))) {
+    if (STREQUAL(data, data_len, STRLIT_ARGS("magenta"))) {
         *result = COLOR_MAGENTA;
         return true;
     }
-    if (ncm_string_equal(data, data_len, STRLIT_ARGS("cyan"))) {
+    if (STREQUAL(data, data_len, STRLIT_ARGS("cyan"))) {
         *result = COLOR_CYAN;
         return true;
     }
-    if (ncm_string_equal(data, data_len, STRLIT_ARGS("white"))) {
+    if (STREQUAL(data, data_len, STRLIT_ARGS("white"))) {
         *result = COLOR_WHITE;
         return true;
     }
     if (background
-        && ncm_string_equal(data, data_len,
+        && STREQUAL(data, data_len,
                             STRLIT_ARGS("transparent"))) {
         *result = -1;
         return true;
     }
     if (background
-        && ncm_string_equal(data, data_len, STRLIT_ARGS("current"))) {
+        && STREQUAL(data, data_len, STRLIT_ARGS("current"))) {
         *result = -2;
         return true;
     }
@@ -156,11 +156,11 @@ ncm_format_parse_named_color(char *data, int32 data_len, NcColor *color) {
     int16 foreground;
     int16 background;
 
-    if (ncm_string_equal(data, data_len, STRLIT_ARGS("default"))) {
+    if (STREQUAL(data, data_len, STRLIT_ARGS("default"))) {
         *color = nc_color_default();
         return true;
     }
-    if (ncm_string_equal(data, data_len, STRLIT_ARGS("end"))) {
+    if (STREQUAL(data, data_len, STRLIT_ARGS("end"))) {
         *color = nc_color_end();
         return true;
     }

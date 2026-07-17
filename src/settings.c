@@ -680,44 +680,44 @@ settings_parse_double(char *value, int32 value_len, double *result,
 static bool
 settings_color_name(char *value, int32 value_len, bool background,
                     int16 *result) {
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("black"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("black"))) {
         *result = COLOR_BLACK;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("red"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("red"))) {
         *result = COLOR_RED;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("green"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("green"))) {
         *result = COLOR_GREEN;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("yellow"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("yellow"))) {
         *result = COLOR_YELLOW;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("blue"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("blue"))) {
         *result = COLOR_BLUE;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("magenta"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("magenta"))) {
         *result = COLOR_MAGENTA;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("cyan"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("cyan"))) {
         *result = COLOR_CYAN;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("white"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("white"))) {
         *result = COLOR_WHITE;
         return true;
     }
-    if (background && ncm_string_equal(value, value_len,
+    if (background && STREQUAL(value, value_len,
                                        STRLIT_ARGS("transparent"))) {
         *result = NC_COLOR_TRANSPARENT;
         return true;
     }
-    if (background && ncm_string_equal(value, value_len,
+    if (background && STREQUAL(value, value_len,
                                        STRLIT_ARGS("current"))) {
         *result = NC_COLOR_CURRENT;
         return true;
@@ -761,11 +761,11 @@ settings_parse_color(char *value, int32 value_len, NcColor *color,
     int16 foreground;
     int16 background;
 
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("default"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("default"))) {
         *color = nc_color_default();
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("end"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("end"))) {
         *color = nc_color_end();
         return true;
     }
@@ -1672,7 +1672,7 @@ apply_song_window_title_format(Configuration *config, char *value,
 static bool
 apply_browser_sort_mode(Configuration *config, char *value, int32 value_len,
                         NcmError *error) {
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("noop"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("noop"))) {
         value = "none";
         value_len = STRLIT_LEN("none");
     }
@@ -1762,11 +1762,11 @@ apply_progressbar_look(Configuration *config, char *value, int32 value_len,
 static bool
 apply_default_place_to_search_in(Configuration *config, char *value,
                                  int32 value_len, NcmError *error) {
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("database"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("database"))) {
         config->search_in_db = true;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("playlist"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("playlist"))) {
         config->search_in_db = false;
         return true;
     }
@@ -1787,27 +1787,27 @@ apply_user_interface(Configuration *config, char *value, int32 value_len,
 static bool
 apply_media_library_primary_tag(Configuration *config, char *value,
                                 int32 value_len, NcmError *error) {
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("artist"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("artist"))) {
         config->media_lib_primary_tag = MPD_TAG_ARTIST;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("album_artist"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("album_artist"))) {
         config->media_lib_primary_tag = MPD_TAG_ALBUM_ARTIST;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("date"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("date"))) {
         config->media_lib_primary_tag = MPD_TAG_DATE;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("genre"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("genre"))) {
         config->media_lib_primary_tag = MPD_TAG_GENRE;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("composer"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("composer"))) {
         config->media_lib_primary_tag = MPD_TAG_COMPOSER;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("performer"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("performer"))) {
         config->media_lib_primary_tag = MPD_TAG_PERFORMER;
         return true;
     }
@@ -1818,11 +1818,11 @@ apply_media_library_primary_tag(Configuration *config, char *value,
 static bool
 apply_default_find_mode(Configuration *config, char *value,
                         int32 value_len, NcmError *error) {
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("wrapped"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("wrapped"))) {
         config->wrapped_search = true;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("normal"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("normal"))) {
         config->wrapped_search = false;
         return true;
     }
@@ -1850,7 +1850,7 @@ apply_space_add_mode(Configuration *config, char *value, int32 value_len,
 static bool
 apply_screen_switcher_mode(Configuration *config, char *value,
                            int32 value_len, NcmError *error) {
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("previous"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("previous"))) {
         config->screen_switcher_previous = true;
         screen_type_array_clear(&config->screen_sequence);
         return true;
@@ -1926,15 +1926,15 @@ apply_playlist_editor_column_width_ratio(Configuration *config,
 static bool
 apply_regular_expressions(Configuration *config, char *value,
                           int32 value_len, NcmError *error) {
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("none"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("none"))) {
         config->regex_type = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("basic"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("basic"))) {
         config->regex_type = NCM_REGEX_BASIC_CASE_INSENSITIVE;
         return true;
     }
-    if (ncm_string_equal(value, value_len, STRLIT_ARGS("extended"))) {
+    if (STREQUAL(value, value_len, STRLIT_ARGS("extended"))) {
         config->regex_type = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
         return true;
     }
@@ -2110,7 +2110,7 @@ static SettingsOption *
 settings_find_option(SettingsOption *options, int32 option_count,
                      char *name, int32 name_len) {
     for (int32 i = 0; i < option_count; i += 1) {
-        if (ncm_string_equal(name, name_len, options[i].name,
+        if (STREQUAL(name, name_len, options[i].name,
                              options[i].name_len)) {
             return &options[i];
         }

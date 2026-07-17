@@ -3,6 +3,7 @@
 #include "cbase/base_macros.h"
 #include "c/ncm_base.h"
 #include "c/ncm_path.h"
+#include "cbase/util.c"
 
 void
 ncm_string_view_init(NcmStringView *view) {
@@ -59,7 +60,7 @@ ncm_string_view_equal(NcmStringView *left, NcmStringView *right) {
     if ((left == NULL) || (right == NULL)) {
         return left == right;
     }
-    return ncm_string_equal(left->data, left->len, right->data, right->len);
+    return STREQUAL(left->data, left->len, right->data, right->len);
 }
 
 void
@@ -70,16 +71,6 @@ ncm_string_lowercase_ascii(char *string, int32 string_len) {
         }
     }
     return;
-}
-
-bool
-ncm_string_equal(char *left, int32 left_len,
-                 char *right, int32 right_len) {
-    if (left_len != right_len) {
-        return false;
-    }
-
-    return ncm_string_starts_with(left, left_len, right, right_len);
 }
 
 bool
@@ -112,7 +103,7 @@ ncm_string_ends_with(char *string, int32 string_len,
         return false;
     }
 
-    return ncm_string_equal(string + string_len - suffix_len, suffix_len,
+    return STREQUAL(string + string_len - suffix_len, suffix_len,
                             suffix, suffix_len);
 }
 

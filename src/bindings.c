@@ -27,8 +27,6 @@ static void ncm_bindings_error(NcmError *error, char *format, ...)
     __attribute__((format(printf, 2, 3)));
 static int32 ncm_string_len(char *string);
 static char *ncm_string_copy(char *string, int32 string_len, int32 *cap);
-static bool ncm_string_equal(char *left, int32 left_len, char *right,
-                             int32 right_len);
 static int32 ncm_trim_start(char *string, int32 string_len);
 static int32 ncm_trim_end(char *string, int32 string_len);
 static bool ncm_extract_enclosed(char *line, int32 line_len,
@@ -113,18 +111,6 @@ ncm_string_copy(char *string, int32 string_len, int32 *cap) {
     result[string_len] = '\0';
     *cap = string_len + 1;
     return result;
-}
-
-static bool
-ncm_string_equal(char *left, int32 left_len, char *right,
-                 int32 right_len) {
-    if (left_len != right_len) {
-        return false;
-    }
-    if (left_len == 0) {
-        return true;
-    }
-    return memcmp64(left, right, left_len) == 0;
 }
 
 static int32
@@ -696,7 +682,7 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
 
     result = NC_KEY_NONE;
     if ((string_len == 6)
-        && ncm_string_equal(string, 4, STRLIT_ARGS("ctrl"))
+        && STREQUAL(string, 4, STRLIT_ARGS("ctrl"))
         && (string[4] == '-')) {
         char c;
 
@@ -715,57 +701,57 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
             result = NC_KEY_CTRL_UNDERSCORE;
         }
     } else if ((string_len > 4)
-               && ncm_string_equal(string, 3, STRLIT_ARGS("alt"))
+               && STREQUAL(string, 3, STRLIT_ARGS("alt"))
                && (string[3] == '-')) {
         result = ncm_bindings_string_to_key(string + 4, string_len - 4);
         if (result != NC_KEY_NONE) {
             result |= NC_KEY_ALT;
         }
     } else if ((string_len > 5)
-               && ncm_string_equal(string, 4, STRLIT_ARGS("ctrl"))
+               && STREQUAL(string, 4, STRLIT_ARGS("ctrl"))
                && (string[4] == '-')) {
         result = ncm_bindings_string_to_key(string + 5, string_len - 5);
         if (result != NC_KEY_NONE) {
             result |= NC_KEY_CTRL;
         }
     } else if ((string_len > 6)
-               && ncm_string_equal(string, 5, STRLIT_ARGS("shift"))
+               && STREQUAL(string, 5, STRLIT_ARGS("shift"))
                && (string[5] == '-')) {
         result = ncm_bindings_string_to_key(string + 6, string_len - 6);
         if (result != NC_KEY_NONE) {
             result |= NC_KEY_SHIFT;
         }
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("escape"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("escape"))) {
         result = NC_KEY_ESCAPE;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("mouse"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("mouse"))) {
         result = NC_KEY_MOUSE;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("up"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("up"))) {
         result = NC_KEY_UP;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("down"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("down"))) {
         result = NC_KEY_DOWN;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("page_up"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("page_up"))) {
         result = NC_KEY_PAGE_UP;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("page_down"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("page_down"))) {
         result = NC_KEY_PAGE_DOWN;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("home"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("home"))) {
         result = NC_KEY_HOME;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("end"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("end"))) {
         result = NC_KEY_END;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("space"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("space"))) {
         result = NC_KEY_SPACE;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("enter"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("enter"))) {
         result = NC_KEY_ENTER;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("insert"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("insert"))) {
         result = NC_KEY_INSERT;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("delete"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("delete"))) {
         result = NC_KEY_DELETE;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("left"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("left"))) {
         result = NC_KEY_LEFT;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("right"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("right"))) {
         result = NC_KEY_RIGHT;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("tab"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("tab"))) {
         result = NC_KEY_TAB;
-    } else if (ncm_string_equal(string, string_len, STRLIT_ARGS("backspace"))) {
+    } else if (STREQUAL(string, string_len, STRLIT_ARGS("backspace"))) {
         result = NC_KEY_BACKSPACE;
     } else if ((string_len >= 2) && (string_len <= 3) && (string[0] == 'f')) {
         int32 n;
@@ -889,7 +875,7 @@ ncm_parse_action_line(char *line, int32 line_len,
         name_len += 1;
     }
 
-    if (ncm_string_equal(line, name_len,
+    if (STREQUAL(line, name_len,
                          STRLIT_ARGS("set_visualizer_sample_multiplier"))) {
         result->kind = NCM_BINDING_ACTION_NORMAL;
         result->type = NCM_ACTION_DUMMY;
@@ -913,7 +899,7 @@ ncm_parse_action_line(char *line, int32 line_len,
         return false;
     }
 
-    if (ncm_string_equal(line, name_len, STRLIT_ARGS("push_character"))) {
+    if (STREQUAL(line, name_len, STRLIT_ARGS("push_character"))) {
         NcKey key;
 
         key = ncm_bindings_string_to_key(argument.data, argument.len);
@@ -932,7 +918,7 @@ ncm_parse_action_line(char *line, int32 line_len,
         return true;
     }
 
-    if (ncm_string_equal(line, name_len, STRLIT_ARGS("push_characters"))) {
+    if (STREQUAL(line, name_len, STRLIT_ARGS("push_characters"))) {
         if (argument.len <= 0) {
             ncm_bindings_error(error,
                                "empty argument passed to "
@@ -949,7 +935,7 @@ ncm_parse_action_line(char *line, int32 line_len,
         return true;
     }
 
-    if (ncm_string_equal(line, name_len, STRLIT_ARGS("require_screen"))) {
+    if (STREQUAL(line, name_len, STRLIT_ARGS("require_screen"))) {
         if (!screen_type_parse(argument.data, argument.len,
                                &result->screen_type)) {
             ncm_bindings_error(error,
@@ -962,7 +948,7 @@ ncm_parse_action_line(char *line, int32 line_len,
         return true;
     }
 
-    if (ncm_string_equal(line, name_len, STRLIT_ARGS("require_runnable"))) {
+    if (STREQUAL(line, name_len, STRLIT_ARGS("require_runnable"))) {
         if (!ncm_action_type_parse(argument.data, argument.len,
                                    &result->type)) {
             ncm_bindings_error(error,
@@ -975,7 +961,7 @@ ncm_parse_action_line(char *line, int32 line_len,
         return true;
     }
 
-    if (ncm_string_equal(line, name_len,
+    if (STREQUAL(line, name_len,
                          STRLIT_ARGS("run_external_command"))) {
         if (argument.len <= 0) {
             ncm_bindings_error(error,
@@ -990,7 +976,7 @@ ncm_parse_action_line(char *line, int32 line_len,
         return true;
     }
 
-    if (ncm_string_equal(line, name_len,
+    if (STREQUAL(line, name_len,
                          STRLIT_ARGS("run_external_console_command"))) {
         if (argument.len <= 0) {
             ncm_bindings_error(error,
@@ -1060,7 +1046,7 @@ ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings,
         }
     }
     if ((first < bindings->commands_len)
-        && ncm_string_equal(bindings->commands[first].name,
+        && STREQUAL(bindings->commands[first].name,
                             bindings->commands[first].name_len,
                             name, name_len)) {
         *found = true;
@@ -1392,7 +1378,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
         start = ncm_trim_start(line, len);
 
         if ((len - start >= 11)
-            && ncm_string_equal(line + start, 11,
+            && STREQUAL(line + start, 11,
                                 STRLIT_ARGS("def_command"))) {
             ok = ncm_bindings_finalize_definition(
                 bindings, in_progress, &actions, key, key_name,
@@ -1432,10 +1418,10 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
                 ok = false;
                 break;
             }
-            if (ncm_string_equal(enclosed.data, enclosed.len,
+            if (STREQUAL(enclosed.data, enclosed.len,
                                  STRLIT_ARGS("immediate"))) {
                 command_immediate = true;
-            } else if (ncm_string_equal(enclosed.data, enclosed.len,
+            } else if (STREQUAL(enclosed.data, enclosed.len,
                                         STRLIT_ARGS("deferred"))) {
                 command_immediate = false;
             } else {
@@ -1448,7 +1434,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
             }
             in_progress = IN_PROGRESS_COMMAND;
         } else if ((len - start >= 7)
-                   && ncm_string_equal(line + start, 7,
+                   && STREQUAL(line + start, 7,
                                        STRLIT_ARGS("def_key"))) {
             ok = ncm_bindings_finalize_definition(
                 bindings, in_progress, &actions, key, key_name,

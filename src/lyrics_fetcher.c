@@ -447,43 +447,43 @@ lyrics_fetcher_array_destroy_item(void *item) {
 static bool
 lyrics_name_to_type(char *name, int32 name_len,
                     enum NcmLyricsFetcherType *type) {
-    if (ncm_string_equal(name, name_len, STRLIT_ARGS("justsomelyrics"))
-        || ncm_string_equal(name, name_len,
+    if (STREQUAL(name, name_len, STRLIT_ARGS("justsomelyrics"))
+        || STREQUAL(name, name_len,
                             STRLIT_ARGS("justsomelyrics.com"))) {
         *type = NCM_LYRICS_FETCHER_JUSTSOMELYRICS;
         return true;
     }
-    if (ncm_string_equal(name, name_len, STRLIT_ARGS("jahlyrics"))
-        || ncm_string_equal(name, name_len, STRLIT_ARGS("jah-lyrics.com"))) {
+    if (STREQUAL(name, name_len, STRLIT_ARGS("jahlyrics"))
+        || STREQUAL(name, name_len, STRLIT_ARGS("jah-lyrics.com"))) {
         *type = NCM_LYRICS_FETCHER_JAHLYRICS;
         return true;
     }
-    if (ncm_string_equal(name, name_len, STRLIT_ARGS("plyrics"))
-        || ncm_string_equal(name, name_len, STRLIT_ARGS("plyrics.com"))) {
+    if (STREQUAL(name, name_len, STRLIT_ARGS("plyrics"))
+        || STREQUAL(name, name_len, STRLIT_ARGS("plyrics.com"))) {
         *type = NCM_LYRICS_FETCHER_PLYRICS;
         return true;
     }
-    if (ncm_string_equal(name, name_len, STRLIT_ARGS("azlyrics"))
-        || ncm_string_equal(name, name_len, STRLIT_ARGS("azlyrics.com"))) {
+    if (STREQUAL(name, name_len, STRLIT_ARGS("azlyrics"))
+        || STREQUAL(name, name_len, STRLIT_ARGS("azlyrics.com"))) {
         *type = NCM_LYRICS_FETCHER_AZLYRICS;
         return true;
     }
-    if (ncm_string_equal(name, name_len, STRLIT_ARGS("tekstowo"))
-        || ncm_string_equal(name, name_len, STRLIT_ARGS("tekstowo.pl"))) {
+    if (STREQUAL(name, name_len, STRLIT_ARGS("tekstowo"))
+        || STREQUAL(name, name_len, STRLIT_ARGS("tekstowo.pl"))) {
         *type = NCM_LYRICS_FETCHER_TEKSTOWO;
         return true;
     }
-    if (ncm_string_equal(name, name_len, STRLIT_ARGS("zeneszoveg"))
-        || ncm_string_equal(name, name_len, STRLIT_ARGS("zeneszoveg.hu"))) {
+    if (STREQUAL(name, name_len, STRLIT_ARGS("zeneszoveg"))
+        || STREQUAL(name, name_len, STRLIT_ARGS("zeneszoveg.hu"))) {
         *type = NCM_LYRICS_FETCHER_ZENESZOVEG;
         return true;
     }
-    if (ncm_string_equal(name, name_len, STRLIT_ARGS("internet"))
-        || ncm_string_equal(name, name_len, STRLIT_ARGS("the Internet"))) {
+    if (STREQUAL(name, name_len, STRLIT_ARGS("internet"))
+        || STREQUAL(name, name_len, STRLIT_ARGS("the Internet"))) {
         *type = NCM_LYRICS_FETCHER_INTERNET;
         return true;
     }
-    if (ncm_string_equal(name, name_len, STRLIT_ARGS("tags"))) {
+    if (STREQUAL(name, name_len, STRLIT_ARGS("tags"))) {
         *type = NCM_LYRICS_FETCHER_TAGS;
         return true;
     }

@@ -1207,7 +1207,7 @@ static int32
 native_library_find_tag(NativeMediaLibraryTagArray *tags,
                         char *tag, int32 tag_len) {
     for (int32 i = 0; i < tags->len; i += 1) {
-        if (ncm_string_equal(tags->items[i].tag,
+        if (STREQUAL(tags->items[i].tag,
                              tags->items[i].tag_len,
                              tag, tag_len)) {
             return i;
@@ -1228,15 +1228,15 @@ native_library_find_album(NativeMediaLibraryAlbumArray *albums,
         if (row->all_tracks_entry) {
             continue;
         }
-        if (!ncm_string_equal(row->tag, row->tag_len,
+        if (!STREQUAL(row->tag, row->tag_len,
                               tag, tag_len)) {
             continue;
         }
-        if (!ncm_string_equal(row->album, row->album_len,
+        if (!STREQUAL(row->album, row->album_len,
                               album, album_len)) {
             continue;
         }
-        if (!ncm_string_equal(row->date, row->date_len,
+        if (!STREQUAL(row->date, row->date_len,
                               date, date_len)) {
             continue;
         }
@@ -2720,7 +2720,7 @@ native_library_tag_identity_equal(NcMediaLibraryTagRow *left,
     if ((left == NULL) || (right == NULL)) {
         return left == right;
     }
-    return ncm_string_equal(left->tag, left->tag_len,
+    return STREQUAL(left->tag, left->tag_len,
                             right->tag, right->tag_len);
 }
 
@@ -2731,11 +2731,11 @@ native_library_album_identity_equal(NcMediaLibraryAlbumRow *left,
         return left == right;
     }
     return left->all_tracks_entry == right->all_tracks_entry
-           && ncm_string_equal(left->tag, left->tag_len,
+           && STREQUAL(left->tag, left->tag_len,
                                right->tag, right->tag_len)
-           && ncm_string_equal(left->album, left->album_len,
+           && STREQUAL(left->album, left->album_len,
                                right->album, right->album_len)
-           && ncm_string_equal(left->date, left->date_len,
+           && STREQUAL(left->date, left->date_len,
                                right->date, right->date_len);
 }
 
@@ -3021,7 +3021,7 @@ native_library_move_to_tag(NativeMediaLibraryScreen *screen,
 
         row = nc_menu_active_item_at(menu, i);
         if ((row != NULL)
-            && ncm_string_equal(row->tag, row->tag_len, tag, tag_len)) {
+            && STREQUAL(row->tag, row->tag_len, tag, tag_len)) {
             return nc_menu_goto_selectable(menu, i);
         }
     }
@@ -3061,19 +3061,19 @@ native_library_move_to_album(NativeMediaLibraryScreen *screen,
         tag_matches = (screen->mode == NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY)
                       || (screen->mode
                           == NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS)
-                      || ncm_string_equal(row->tag, row->tag_len,
+                      || STREQUAL(row->tag, row->tag_len,
                                           tag, tag_len);
         if (!tag_matches) {
             continue;
         }
-        if (!ncm_string_equal(row->album, row->album_len,
+        if (!STREQUAL(row->album, row->album_len,
                               album, album_len)) {
             continue;
         }
 
         date_matches = !consider_date
                        || !Config.media_library_albums_split_by_date
-                       || ncm_string_equal(row->date, row->date_len,
+                       || STREQUAL(row->date, row->date_len,
                                            date, date_len);
         if (date_matches) {
             return nc_menu_goto_selectable(menu, i);
