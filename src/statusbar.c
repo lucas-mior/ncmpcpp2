@@ -17,15 +17,6 @@ static bool statusbar_allow_unlock = true;
 static NcmTimePoint statusbar_lock_time;
 static int64 statusbar_lock_delay_seconds = -1;
 
-static int32
-statusbar_cstrlen32(char *string) {
-    if (string == NULL) {
-        return 0;
-    }
-
-    return strlen32(string);
-}
-
 static NcWindow *
 statusbar_footer_window(void) {
     return ui_state_footer_window();
@@ -355,7 +346,7 @@ ncm_statusbar_print(int32 delay_seconds, char *message, int32 message_len) {
 void
 ncm_statusbar_print_cstring(int32 delay_seconds, char *message) {
     ncm_statusbar_print(delay_seconds, message,
-                        statusbar_cstrlen32(message));
+                        optional_strlen32(message));
     return;
 }
 
