@@ -310,7 +310,6 @@ main(int32 argc, char **argv) {
     app_apply_startup_screen();
 
     key_pressed = false;
-    input = NC_KEY_NONE;
     connect_attempt.ns = 0;
 
     while (!app_exit_requested()) {

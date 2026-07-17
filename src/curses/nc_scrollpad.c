@@ -231,7 +231,6 @@ nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
         if (generate_height_only) {
             new_y = nc_window_get_y(state->window);
             height += new_y - y;
-            y = new_y;
         }
 
         if (state->i == len) {
