@@ -5,8 +5,6 @@
 #include "c/ncm_base.h"
 #include "cbase/util.c"
 
-static int32 ncm_directory_cstrlen32(char *string);
-
 static int32
 ncm_directory_cstrlen32(char *string) {
     int32 len;

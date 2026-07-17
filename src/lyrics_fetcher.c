@@ -22,8 +22,6 @@ static void *lyrics_test_user;
 
 static NcmArrayItemCallbacks lyrics_fetcher_callbacks;
 
-static bool lyrics_string_set(char **data, int32 *len, int32 *cap,
-                              char *source, int32 source_len);
 static void lyrics_string_destroy(char **data, int32 *len, int32 *cap);
 static void lyrics_fetcher_array_init_item(void *item);
 static void lyrics_fetcher_array_destroy_item(void *item);
@@ -34,37 +32,12 @@ static char *lyrics_type_site(enum NcmLyricsFetcherType type, int32 *len);
 static char *lyrics_type_regex(enum NcmLyricsFetcherType type, int32 *len);
 static bool lyrics_type_is_google(enum NcmLyricsFetcherType type);
 static bool lyrics_type_is_available(enum NcmLyricsFetcherType type);
-static CURLcode lyrics_curl_perform(NcmBuffer *data, char *url,
-                                    int32 url_len, char *referer,
-                                    int32 referer_len, bool follow_redirect,
-                                    int32 timeout_seconds);
-static CURLcode lyrics_curl_escape(NcmBuffer *out, char *string,
-                                   int32 string_len);
 static void lyrics_append_escaped(NcmBuffer *buffer, char *string,
                                   int32 string_len);
 static void lyrics_append_url_replaced(NcmBuffer *buffer, char *template,
                                        int32 template_len, char *artist,
                                        int32 artist_len, char *title,
                                        int32 title_len);
-static int32 lyrics_find(char *data, int32 data_len, char *needle,
-                         int32 needle_len, int32 start);
-static bool lyrics_extract_between(NcmBuffer *out, char *data,
-                                   int32 data_len, char *start,
-                                   int32 start_len, char *end,
-                                   int32 end_len);
-static bool lyrics_extract_after_until(NcmBuffer *out, char *data,
-                                       int32 data_len, char *start,
-                                       int32 start_len, char *after,
-                                       int32 after_len, char *end,
-                                       int32 end_len);
-static void lyrics_extract_content(NcmLyricsFetcherDef *fetcher,
-                                   NcmBuffer *out, char *data,
-                                   int32 data_len);
-static bool lyrics_regex_url_match(int32 start, int32 len, void *user);
-static bool lyrics_extract_google_url(NcmBuffer *out, char *data,
-                                      int32 data_len);
-static bool lyrics_url_ok(NcmLyricsFetcherDef *fetcher, char *url,
-                          int32 url_len);
 static bool lyrics_fetch_direct(NcmLyricsFetcherDef *fetcher,
                                 NcmLyricsResult *result, NcmBuffer *url,
                                 char *referer, int32 referer_len);
@@ -73,7 +46,6 @@ static bool lyrics_fetch_google(NcmLyricsFetcherDef *fetcher,
                                 int32 artist_len, char *title,
                                 int32 title_len, NcmSong *song);
 static bool lyrics_fetch_tags(NcmLyricsResult *result, NcmSong *song);
-static void lyrics_trim_view(char **data, int32 *len);
 static void lyrics_trim_buffer(NcmBuffer *buffer);
 static void lyrics_append_clean_lines(NcmBuffer *out, char *data,
                                       int32 data_len);

@@ -43,8 +43,6 @@ static void lastfm_mouse_button_pressed_callback(NcScreen *screen,
 static bool lastfm_is_lockable_callback(NcScreen *screen);
 static bool lastfm_is_mergable_callback(NcScreen *screen);
 static void lastfm_destroy_callback(NcScreen *screen);
-static NcScreenCallbacks native_lastfm_callbacks(void);
-static NativeLastfmScreen *lastfm_from_screen(NcScreen *screen);
 static bool native_lastfm_set_title(NativeLastfmScreen *screen,
                                     char *title, int32 title_len);
 static NativeLastfmJob *native_lastfm_job_create(

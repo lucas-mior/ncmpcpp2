@@ -6,11 +6,6 @@
 
 #include "cbase/base_macros.h"
 
-static bool ncm_regex_prepare_string(char *string, int32 string_len,
-                                     NcmBuffer *buffer, NcmError *error);
-static void ncm_regex_set_error(NcmRegex *regex, int32 code,
-                                NcmError *error);
-
 static bool
 ncm_regex_prepare_string(char *string, int32 string_len, NcmBuffer *buffer,
                          NcmError *error) {

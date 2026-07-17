@@ -22,15 +22,6 @@
  * legacy naming.
  */
 
-static void app_legacy_bridge_request_media_library_database_update(
-    void *user);
-static void app_legacy_bridge_refresh_playlist_related_inactive_columns(
-    void *user);
-static void app_legacy_bridge_set_status_observers(void);
-static void app_legacy_bridge_set_resize_flags(void);
-static void app_legacy_bridge_dispatch_lyrics_jobs(void);
-static void app_legacy_bridge_refresh_header_if_due(void);
-
 static NcmTimePoint app_legacy_bridge_header_refresh_time;
 
 

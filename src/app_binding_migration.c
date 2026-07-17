@@ -1,8 +1,5 @@
 #include "app_binding_migration.h"
 
-static bool app_binding_migration_action_kind_is_c_safe(
-    NcmBindingAction *action);
-
 static bool
 app_binding_migration_action_kind_is_c_safe(NcmBindingAction *action) {
     if (action == NULL) {

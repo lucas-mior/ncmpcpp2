@@ -111,79 +111,11 @@ static enum ScreenType native_screen_type_from_native_type(int32 type);
 static void native_request_registered_resize(int32 type);
 static NcBorder native_no_border(void);
 static int32 native_cstrlen32(char *string);
-static void native_draw_screen_header(NcScreen *screen);
 static bool native_register_screen(NcScreen *screen);
-static bool native_search_list_database_songs(
-    void *user, NcmSongArray *songs, NcmError *error);
-static bool native_search_snapshot_playlist(
-    void *user, NcmSongArray *songs, NcmError *error);
-static bool native_search_prompt_hook(char *text, void *user);
-static enum NativeSearchEnginePromptResult native_search_prompt_constraint(
-    void *user, char *label, int32 label_len, NcmBuffer *initial,
-    NcmBuffer *result);
-static bool native_statusbar_prompt_hook(char *text, void *user);
-static enum NativePromptResult native_prompt_buffer(
-    char *label, int32 label_len, NcmStringView initial,
-    NcmBuffer *result, bool bold_label);
-static enum NativeTagEditorPromptResult native_tag_editor_prompt(
-    void *user, char *label, int32 label_len, NcmStringView initial,
-    NcmBuffer *result);
-static bool native_tag_editor_confirm(
-    void *user, char *message, int32 message_len);
-static void native_tag_editor_status_message(
-    void *user, char *message, int32 message_len);
-static void native_tag_editor_update_directory(
-    void *user, char *directory, int32 directory_len);
 static NativeTagEditorHooks native_tag_editor_hooks(void);
-static void native_search_status_message(
-    void *user, char *message, int32 message_len);
-static bool native_search_add_song(
-    void *user, NcmSong *song, bool play, NcmError *error);
-static bool native_search_format_song(
-    void *user, NcmSong *song, NcmBuffer *text);
-static void native_resize_main_area(NcScreen *base, int64 *x, int64 *width);
-static void native_append_cstring(NcBuffer *buffer, char *string);
-static void native_append_data(NcBuffer *buffer, char *string, int32 len);
-static void native_append_format(NcBuffer *buffer, enum NcFormat format);
-static void native_append_formatted_color(NcBuffer *buffer,
-                                          NcFormattedColor *color);
-static void native_append_formatted_color_end(NcBuffer *buffer,
-                                              NcFormattedColor *color);
-static void native_append_bold_label(NcBuffer *buffer, char *label);
-static void native_append_song_tag(NcBuffer *buffer, NcmBuffer *tag);
-static void native_append_song_key_value(NcBuffer *buffer, char *key,
-                                         NcmBuffer *value,
-                                         bool empty_as_missing);
-static int32 native_key_name(NcKey key, char *buffer, int32 buffer_cap);
-static void native_append_action_keys(NcBuffer *buffer,
-                                      enum NcmActionType type);
-static void native_append_help_line(NcBuffer *buffer,
-                                    enum NcmActionType type,
-                                    char *description);
-static bool native_help_render(void *user, NcBuffer *buffer);
-static void native_help_switch_to(void *user);
-static void native_help_resize(void *user, NcHelpScreen *screen);
-static void native_help_destroy(void *user);
 static NcHelpHooks native_help_hooks(void);
-static void native_outputs_fetch(void *user, NcOutputsScreen *screen);
-static bool native_outputs_toggle(void *user, uint32 id, bool enabled,
-                                  char *name, int32 name_len);
-static void native_outputs_switch_to(void *user);
-static void native_outputs_resize(void *user, NcOutputsScreen *screen);
-static void native_outputs_destroy(void *user);
 static NcOutputsHooks native_outputs_hooks(void);
-static void native_server_info_load_lists(void *user);
-static bool native_server_info_render(void *user, NcBuffer *buffer);
-static void native_server_info_switch_to(void *user);
-static void native_server_info_resize(void *user);
-static char *native_server_info_title(void *user);
-static void native_server_info_destroy(void *user);
 static NcServerInfoHooks native_server_info_hooks(void);
-static bool native_song_info_render(void *user, NcSongInfoScreen *screen,
-                                    NcBuffer *buffer);
-static void native_song_info_switch_to(void *user, NcSongInfoScreen *screen);
-static void native_song_info_resize(void *user, NcSongInfoScreen *screen);
-static void native_song_info_destroy(void *user);
 static NcSongInfoHooks native_song_info_hooks(void);
 static void native_show_long_time(NcBuffer *buffer, uint64 seconds);
 

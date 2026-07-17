@@ -19,8 +19,6 @@
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
-static NativePlaylistEditorScreen *playlist_editor_from_screen(
-    NcScreen *screen);
 static NcScreenCallbacks playlist_editor_callbacks(void);
 static NcWindow *playlist_editor_active_window_callback(NcScreen *screen);
 static void playlist_editor_refresh_callback(NcScreen *screen);
@@ -37,12 +35,6 @@ static void playlist_editor_mouse_callback(NcScreen *screen, MEVENT event);
 static bool playlist_editor_lockable_callback(NcScreen *screen);
 static bool playlist_editor_mergable_callback(NcScreen *screen);
 static void playlist_editor_destroy_callback(NcScreen *screen);
-static bool playlist_filter_callback(NcMenu *menu, void *item, void *user);
-static bool content_filter_callback(NcMenu *menu, void *item, void *user);
-static void playlist_draw_callback(NcMenu *menu, NcWindow *window,
-                                   void *item, int64 pos, void *user);
-static void content_draw_callback(NcMenu *menu, NcWindow *window,
-                                  void *item, int64 pos, void *user);
 static void playlist_editor_print_buffer(NcWindow *window,
                                          NcBuffer *buffer);
 static int32 playlist_editor_content_list_width(NcMenu *menu,
@@ -78,8 +70,6 @@ static void playlist_editor_update_titles(
 static void playlist_editor_append_int64(NcmBuffer *buffer, int64 value);
 static void playlist_editor_reset_content_timer(
     NativePlaylistEditorScreen *screen);
-static bool playlist_editor_current_playlist_path(
-    NativePlaylistEditorScreen *screen, char **path, int32 *path_len);
 static void playlist_editor_clear_playlist_filter(
     NativePlaylistEditorScreen *screen);
 static void playlist_editor_clear_content_filter(
@@ -92,9 +82,6 @@ static bool playlist_editor_highlight_content_position(
 static int64 playlist_editor_find_song_in_content_range(
     NativePlaylistEditorScreen *screen, NcmSong *song,
     int64 first, int64 last);
-static bool playlist_editor_find_song_in_mpd_playlist(
-    NcmMpdClient *client, NcmPlaylist *playlist, NcmSong *song,
-    int64 *song_index, NcmError *error);
 static bool playlist_editor_locate_song_in_playlist_range(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client,
     NcmSong *song, int64 first, int64 last, NcmError *error);
@@ -110,17 +97,11 @@ static bool playlist_editor_restore_content_song(
 static void playlist_editor_sort_playlists(NcmMpdPlaylistList *playlists);
 static int32 playlist_editor_compare_playlists(NcmPlaylist *left,
                                                NcmPlaylist *right);
-static bool playlist_editor_content_fetch_due(
-    NativePlaylistEditorScreen *screen);
-static void playlist_editor_report_error(char *context, int32 context_len,
-                                         NcmError *error);
 static bool playlist_editor_update_from_mpd(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client);
 static void playlist_editor_observe_current_playlist(
     NativePlaylistEditorScreen *screen);
 static bool playlist_editor_displayed_playlist_is_current(
-    NativePlaylistEditorScreen *screen);
-static bool playlist_editor_playlist_row_changed(
     NativePlaylistEditorScreen *screen);
 static void playlist_editor_clear_stale_content(
     NativePlaylistEditorScreen *screen);

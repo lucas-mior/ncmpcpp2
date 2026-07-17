@@ -17,15 +17,6 @@ static bool statusbar_allow_unlock = true;
 static NcmTimePoint statusbar_lock_time;
 static int64 statusbar_lock_delay_seconds = -1;
 
-static void statusbar_apply_formatted_color(NcWindow *window,
-                                            NcFormattedColor *color);
-static void statusbar_apply_formatted_color_end(NcWindow *window,
-                                                NcFormattedColor *color);
-static void statusbar_progressbar_split(NcmStringView items[3]);
-static void statusbar_set_active_footer_line_locked(bool locked);
-static void statusbar_redraw_after_unlock(void);
-static void statusbar_redraw_after_stop_unlock(void);
-
 static int32
 statusbar_cstrlen32(char *string) {
     if (string == NULL) {

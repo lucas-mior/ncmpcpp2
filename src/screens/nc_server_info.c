@@ -3,7 +3,6 @@
 #include "cbase/base_macros.h"
 
 
-static NcServerInfoScreen *nc_server_info_from_screen(NcScreen *screen);
 static NcScreenCallbacks nc_server_info_callbacks(void);
 static NcWindow *nc_server_info_active_window(NcScreen *screen);
 static void nc_server_info_refresh(NcScreen *screen);

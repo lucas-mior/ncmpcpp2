@@ -10,7 +10,6 @@
 #include "settings.h"
 #include "ui_state.h"
 
-static NativeSearchEngineScreen *native_search_from_screen(NcScreen *screen);
 static NcWindow *native_search_active_window(NcScreen *screen);
 static void native_search_refresh(NcScreen *screen);
 static void native_search_refresh_window(NcScreen *screen);
@@ -26,7 +25,6 @@ static bool native_search_run_current(NcScreen *screen);
 static bool native_search_is_lockable(NcScreen *screen);
 static bool native_search_is_mergable(NcScreen *screen);
 static void native_search_destroy_callback(NcScreen *screen);
-static bool native_search_filter_row(NcMenu *menu, void *item, void *user);
 static void native_search_draw_row(NcMenu *menu, NcWindow *window,
                                    void *item, int64 pos, void *user);
 static NcMenuDisplayCallbacks native_search_display_callbacks(

@@ -1,7 +1,5 @@
 #include "c/ncm_charset.h"
 
-static NcmBuffer ncm_charset_copy(char *string, int32 string_len);
-
 static NcmBuffer
 ncm_charset_copy(char *string, int32 string_len) {
     NcmBuffer result;

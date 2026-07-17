@@ -16,10 +16,6 @@ typedef struct NcScrollpadWriteState {
 } NcScrollpadWriteState;
 
 static int32 nc_scrollpad_i32(int64 value);
-static void nc_scrollpad_load_properties(NcScrollpadWriteState *state);
-static void nc_scrollpad_write_whitespace(NcScrollpadWriteState *state);
-static void nc_scrollpad_write_word(NcScrollpadWriteState *state,
-                                    bool load_properties);
 static int64 nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
                                        bool generate_height_only);
 static bool nc_scrollpad_is_space(char ch);

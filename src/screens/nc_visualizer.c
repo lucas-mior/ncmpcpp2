@@ -105,8 +105,6 @@ static void visualizer_mouse_button_pressed_callback(NcScreen *screen,
 static bool visualizer_is_lockable_callback(NcScreen *screen);
 static bool visualizer_is_mergable_callback(NcScreen *screen);
 static void visualizer_destroy_callback(NcScreen *screen);
-static NcScreenCallbacks native_visualizer_callbacks(void);
-static NativeVisualizerScreen *visualizer_from_screen(NcScreen *screen);
 static int32 native_visualizer_next_type(int32 type);
 static int32 visualizer_system_open_fifo(void *user, char *location,
                                          int32 location_len);
@@ -126,60 +124,8 @@ static bool visualizer_system_enable_output(void *user, uint32 id,
                                             NcmError *error);
 static void visualizer_system_sleep_microseconds(void *user,
                                                  int32 microseconds);
-static bool visualizer_reset_output(NativeVisualizerScreen *screen);
-static int32 visualizer_read_samples(NativeVisualizerScreen *screen);
-static void visualizer_prepare_drawing(NativeVisualizerScreen *screen);
-static void visualizer_copy_characters(NativeVisualizerScreen *screen,
-                                       char *characters,
-                                       int32 characters_len);
-static void visualizer_copy_colors(NativeVisualizerScreen *screen,
-                                   NcFormattedColor *colors,
-                                   int32 colors_len);
-static void visualizer_destroy_colors(NativeVisualizerScreen *screen);
-static NcFormattedColor *visualizer_color(NativeVisualizerScreen *screen,
-                                          double number, double max,
-                                          bool wrap);
-static void visualizer_draw_character(NativeVisualizerScreen *screen,
-                                      int32 x, int32 y,
-                                      NcFormattedColor *color,
-                                      bool reverse, char *character,
-                                      int32 character_len);
-static void visualizer_draw_wave(NativeVisualizerScreen *screen,
-                                 int16 *samples, int32 samples_len,
-                                 int32 y_offset, int32 height);
-static void visualizer_draw_wave_filled(NativeVisualizerScreen *screen,
-                                        int16 *samples,
-                                        int32 samples_len,
-                                        int32 y_offset, int32 height);
-static void visualizer_draw_ellipse(NativeVisualizerScreen *screen,
-                                    int16 *samples, int32 samples_len,
-                                    int32 height);
-static void visualizer_draw_ellipse_stereo(
-    NativeVisualizerScreen *screen, int16 *left, int16 *right,
-    int32 samples_len, int32 half_height);
 #if defined(HAVE_FFTW3_H)
-static void visualizer_fft_init(NativeVisualizerScreen *screen,
-                                uint32 dft_size, double gain,
-                                double hz_min, double hz_max);
 static void visualizer_fft_destroy(NativeVisualizerScreen *screen);
-static void visualizer_fft_reserve_frequency_space(
-    NativeVisualizerScreen *screen, int32 capacity);
-static void visualizer_fft_reserve_bar_heights(
-    NativeVisualizerScreen *screen, int32 capacity);
-static void visualizer_generate_frequency_space(
-    NativeVisualizerScreen *screen);
-static void visualizer_apply_fft_window(NativeVisualizerScreen *screen,
-                                        int16 *samples,
-                                        int32 samples_len);
-static double visualizer_bin_to_hz(NativeVisualizerScreen *screen,
-                                   int32 bin);
-static double visualizer_interpolate_cubic(
-    NativeVisualizerScreen *screen, int32 x, int32 height_index);
-static double visualizer_interpolate_linear(
-    NativeVisualizerScreen *screen, int32 x, int32 height_index);
-static void visualizer_draw_frequency(NativeVisualizerScreen *screen,
-                                      int16 *samples, int32 samples_len,
-                                      int32 y_offset, int32 height);
 #endif
 
 static NcScreenCallbacks

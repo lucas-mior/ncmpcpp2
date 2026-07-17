@@ -17,16 +17,6 @@ typedef struct NcmPlaylistSortContext {
     bool ignore_leading_the;
 } NcmPlaylistSortContext;
 
-static int32 ncm_playlist_sort_compare_key(
-    NcmPlaylistSortContext *context, int32 left_idx,
-    int32 right_idx, enum NcmSongGetter getter);
-static int32 ncm_playlist_sort_compare(
-    NcmPlaylistSortContext *context, int32 left_idx,
-    int32 right_idx);
-static void ncm_playlist_sort_indices(
-    NcmPlaylistSortContext *context, int32 *order,
-    int32 *temporary, int32 first, int32 last);
-
 void
 ncm_playlist_sort_plan_init(NcmPlaylistSortPlan *plan) {
     if (plan == NULL) {

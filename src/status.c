@@ -71,8 +71,6 @@ typedef struct StatusTimeoutContext {
     int32 timeout;
 } StatusTimeoutContext;
 
-static void status_update_timeout_from_screen(NcScreen *screen, void *user);
-static void status_run_init_hooks(void);
 static void status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks);
 static void status_run_init_set_tcp_nodelay(NcmStatusInitHooks *hooks);
 static void status_run_init_load_browser_supported_extensions(
@@ -83,16 +81,6 @@ static void status_run_init_setup_visualizer_datasource(
 static void status_run_init_register_mpd_fd_callback(
     NcmStatusInitHooks *hooks);
 static void status_run_init_show_connected_message(NcmStatusInitHooks *hooks);
-static void status_refresh_footer(NcmStatusHooks *hooks);
-static void status_refresh_visible_screens(NcmStatusHooks *hooks);
-static void status_elapsed_time_changed(NcmStatusHooks *hooks, bool update);
-static int32 status_full_event_mask(void);
-static void status_apply_formatted_color(NcWindow *window,
-                                         NcFormattedColor *color);
-static void status_apply_formatted_color_end(NcWindow *window,
-                                             NcFormattedColor *color);
-static int32 status_song_time_string(uint32 length, char *buffer,
-                                     int32 buffer_cap);
 static int32 status_player_state_string(char *buffer, int32 buffer_cap);
 static void status_draw_song_title(NcmSong *song);
 static void status_draw_player_state_label(char *state, int32 state_len);
@@ -107,32 +95,10 @@ static void status_call_ui_player_state_changed(void);
 static void status_call_ui_player_stopped(void);
 static void status_call_ui_song_id_changed(int32 song_id);
 static void status_call_ui_current_song_changed(NcmSong *song);
-static char *status_player_state_env(void);
 static void status_run_player_state_command(void);
-static void status_run_song_change_command(void);
 static void status_reset_visualizer_autoscale(void);
 static void status_clear_visible_visualizer(void);
-static void status_fetch_background_lyrics(NcmSong *song);
-static void status_autocenter_playlist(NcmSong *song);
-static void status_fetch_now_playing_lyrics(NcmSong *song);
 static void status_handle_current_song_changed(NcmSong *song);
-static void status_draw_classic_elapsed_time(NcWindow *footer,
-                                             NcmSong *song,
-                                             char *player_state,
-                                             int32 player_state_len);
-static void status_draw_alternative_elapsed_time(NcWindow *header,
-                                                 NcmSong *song,
-                                                 char *player_state,
-                                                 int32 player_state_len);
-static void status_update_elapsed_from_mpd(void);
-static void status_buffer_append_char(NcmBuffer *buffer, char ch);
-static void status_buffer_append_uint32(NcmBuffer *buffer, uint32 value);
-static void status_tracklength_buffer(NcmBuffer *buffer);
-static int32 status_cstrlen32(char *string);
-static void status_print_client_error(char *message, int32 message_len);
-static void status_print_server_error(char *message, int32 message_len);
-static void status_request_exit(void);
-static void status_prompt_mpd_password(NcmMpdClient *client);
 
 static enum NcmStatusPlayerState
 status_player_state_from_mpd(enum mpd_state state) {

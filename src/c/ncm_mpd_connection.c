@@ -7,50 +7,6 @@
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
-static int32 ncm_mpd_connection_cstrlen32(char *string);
-static void ncm_mpd_connection_cstring_copy(char *dst, int32 dst_cap,
-                                            char *src);
-static void ncm_mpd_connection_set_error(NcmMpdConnection *connection,
-                                         enum mpd_error code,
-                                         enum mpd_server_error server_code,
-                                         bool clearable,
-                                         char *message);
-static bool ncm_mpd_connection_require_connected(
-    NcmMpdConnection *connection);
-static bool ncm_mpd_song_list_push(NcmMpdSongList *list,
-                                   NcmSong *song);
-static bool ncm_mpd_item_list_push(NcmMpdItemList *list,
-                                   NcmMpdItem *item);
-static bool ncm_mpd_string_list_push(NcmMpdStringList *list,
-                                     char *value);
-static bool ncm_mpd_output_list_push(NcmMpdOutputList *list,
-                                     struct mpd_output *output);
-static bool ncm_mpd_playlist_list_push(NcmMpdPlaylistList *list,
-                                       struct mpd_playlist *playlist);
-static char *ncm_mpd_connection_mpd_directory(char *directory);
-static bool ncm_mpd_connection_recv_song(NcmMpdConnection *connection,
-                                         NcmSong *song);
-static bool ncm_mpd_connection_recv_song_list(NcmMpdConnection *connection,
-                                              NcmMpdSongList *songs);
-static bool ncm_mpd_connection_recv_entity_song_list(
-    NcmMpdConnection *connection,
-    NcmMpdSongList *songs);
-static bool ncm_mpd_connection_recv_item_list(NcmMpdConnection *connection,
-                                              NcmMpdItemList *items);
-static bool ncm_mpd_connection_recv_string_list_tag(
-    NcmMpdConnection *connection,
-    enum mpd_tag_type tag,
-    NcmMpdStringList *strings);
-static bool ncm_mpd_connection_recv_pair_list(
-    NcmMpdConnection *connection,
-    char *name,
-    NcmMpdStringList *strings);
-static char *ncm_mpd_replay_gain_mode_name(
-    enum NcmMpdReplayGainMode mode);
-static bool ncm_mpd_replay_gain_mode_parse(
-    char *name,
-    enum NcmMpdReplayGainMode *mode);
-
 static int32
 ncm_mpd_connection_cstrlen32(char *string) {
     int32 len;

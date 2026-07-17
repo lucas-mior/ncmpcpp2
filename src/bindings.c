@@ -25,46 +25,6 @@ NcmBindingsConfiguration Bindings;
 
 static void ncm_bindings_error(NcmError *error, char *format, ...)
     __attribute__((format(printf, 2, 3)));
-static int32 ncm_strlen32(char *string);
-static char *ncm_string_copy(char *string, int32 string_len, int32 *cap);
-static int32 ncm_trim_start(char *string, int32 string_len);
-static int32 ncm_trim_end(char *string, int32 string_len);
-static bool ncm_extract_enclosed(char *line, int32 line_len,
-                                 char open, char close,
-                                 NcmStringView *result);
-static bool ncm_parse_action_line(char *line, int32 line_len,
-                                  NcmBindingAction *result,
-                                  NcmError *error);
-static bool ncm_binding_append_normal(NcmBinding *binding,
-                                      enum NcmActionType type);
-static bool ncm_bindings_bind(NcmBindingsConfiguration *bindings,
-                              NcKey key, NcmBinding *binding);
-static bool ncm_bindings_bind_single(NcmBindingsConfiguration *bindings,
-                                     char *key_name,
-                                     enum NcmActionType type);
-static bool ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings,
-                                     char *key_name,
-                                     enum NcmActionType first,
-                                     enum NcmActionType second);
-static bool ncm_bindings_bind_group(NcmBindingsConfiguration *bindings,
-                                    char *key_name,
-                                    enum NcmActionType *actions,
-                                    int32 actions_len);
-static bool ncm_bindings_not_bound(NcmBindingsConfiguration *bindings,
-                                   NcKey key);
-static int32 ncm_bindings_command_lower_bound(
-    NcmBindingsConfiguration *bindings, char *name, int32 name_len,
-    bool *found);
-static int32 ncm_bindings_key_lower_bound(NcmBindingsConfiguration *bindings,
-                                          NcKey key, bool *found);
-static bool ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
-                                        NcmCommand *command,
-                                        NcmError *error);
-static bool ncm_bindings_finalize_definition(
-    NcmBindingsConfiguration *bindings, int32 in_progress,
-    NcmBinding *actions, NcKey key, char *key_name, int32 key_name_len,
-    char *command_name, int32 command_name_len, bool command_immediate,
-    NcmError *error);
 
 static void
 ncm_bindings_error(NcmError *error, char *format, ...) {

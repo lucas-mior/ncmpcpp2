@@ -10,19 +10,6 @@
 #include "settings.h"
 #include "ui_state.h"
 
-static int32 title_cstrlen32(char *string);
-static char *title_current_screen_title(void);
-static void title_apply_formatted_color(NcWindow *window,
-                                        NcFormattedColor *color);
-static void title_apply_formatted_color_end(NcWindow *window,
-                                            NcFormattedColor *color);
-static void title_draw_classic(NcWindow *window, char *title,
-                               int32 title_len,
-                               NcFormattedColor *volume_color);
-static void title_draw_alternative(NcWindow *window, char *title,
-                                   int32 title_len,
-                                   NcFormattedColor *separator_color);
-
 static int32
 title_cstrlen32(char *string) {
     if (string == NULL) {
