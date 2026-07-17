@@ -11,6 +11,7 @@
 #include "c/ncm_string_format.h"
 #include "c/ncm_wide_string.h"
 #include "cbase/base_macros.h"
+#include "cbase/util.c"
 
 #define LIT_ARGS(S) (char *)S, STRLIT_LEN(S)
 
