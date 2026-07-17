@@ -20,22 +20,6 @@ typedef struct NcmTagsMappedContext {
     struct mpd_song *song;
 } NcmTagsMappedContext;
 
-static int32
-ncm_tags_cstrlen32(char *string) {
-    int32 len;
-
-    if (string == NULL) {
-        return 0;
-    }
-
-    len = 0;
-    while (string[len] != '\0') {
-        len += 1;
-    }
-
-    return len;
-}
-
 static void
 ncm_tags_view_init(NcmStringView *view) {
     if (view == NULL) {
@@ -59,7 +43,7 @@ ncm_tags_forward_value_callback(char *value, void *user) {
         return;
     }
 
-    context->callback(value, ncm_tags_cstrlen32(value), context->user);
+    context->callback(value, optional_strlen32(value), context->user);
     return;
 }
 
@@ -90,9 +74,9 @@ ncm_tags_build_file_path(char *music_dir, char *uri, bool is_from_database,
 
     music_dir_len = 0;
     if (is_from_database) {
-        music_dir_len = ncm_tags_cstrlen32(music_dir);
+        music_dir_len = optional_strlen32(music_dir);
     }
-    uri_len = ncm_tags_cstrlen32(uri);
+    uri_len = optional_strlen32(uri);
     len = music_dir_len + uri_len;
 
     path = (char *)malloc2(len + 1);
@@ -123,10 +107,10 @@ ncm_tags_build_renamed_path(char *music_dir, char *directory, char *new_name,
 
     music_dir_len = 0;
     if (is_from_database) {
-        music_dir_len = ncm_tags_cstrlen32(music_dir);
+        music_dir_len = optional_strlen32(music_dir);
     }
-    directory_len = ncm_tags_cstrlen32(directory);
-    new_name_len = ncm_tags_cstrlen32(new_name);
+    directory_len = optional_strlen32(directory);
+    new_name_len = optional_strlen32(new_name);
     len = music_dir_len + directory_len + 1 + new_name_len;
 
     path = (char *)malloc2(len + 1);
