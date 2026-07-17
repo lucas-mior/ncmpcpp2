@@ -474,6 +474,16 @@ nc_menu_goto_selectable(NcMenu *menu, int64 y) {
     return nc_menu_goto(menu, y, menu_is_position_highlightable, menu);
 }
 
+bool
+nc_menu_goto_selectable_position(NcMenu *menu, int64 pos,
+                                  int64 height) {
+    if (!nc_menu_position_is_selectable(menu, pos)) {
+        return false;
+    }
+    nc_menu_highlight_position(menu, pos, height);
+    return true;
+}
+
 void
 nc_menu_prepare_refresh(NcMenu *menu, int64 height,
                         NcMenuHighlightableFunc is_highlightable,

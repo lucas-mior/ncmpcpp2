@@ -1675,6 +1675,7 @@ native_media_library_screen_search(NativeMediaLibraryScreen *screen,
     NativeMediaLibraryColumnState *state;
     NcMenu *menu;
     int64 count;
+    int64 current;
     int64 start;
 
     if (screen == NULL) {
@@ -1703,7 +1704,8 @@ native_media_library_screen_search(NativeMediaLibraryScreen *screen,
 
     menu = native_media_library_screen_active_menu(screen);
     count = nc_menu_item_count(menu);
-    start = nc_menu_highlight(menu);
+    current = nc_menu_highlight(menu);
+    start = current;
     if (skip_current) {
         if (forward) {
             start += 1;
@@ -1731,9 +1733,13 @@ native_media_library_screen_search(NativeMediaLibraryScreen *screen,
         if ((pos < 0) || (pos >= count)) {
             continue;
         }
+        if (skip_current && (pos == current)) {
+            continue;
+        }
         if (native_library_active_item_matches(
                 screen, menu, pos, &state->search_regex)) {
-            if (nc_menu_goto_selectable(menu, pos)) {
+            if (nc_menu_goto_selectable_position(
+                    menu, pos, screen->main_height)) {
                 nc_screen_finish_list_change(&screen->screen);
                 return true;
             }

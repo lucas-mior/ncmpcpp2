@@ -1122,6 +1122,12 @@ typedef struct ActionRuntimeCommandPrompt {
 
 typedef struct ActionRuntimeSearchPrompt {
     enum SearchDirection direction;
+    NcmBuffer last_text;
+    int64 start_position;
+
+    bool has_start_position;
+    bool has_last_result;
+    bool last_found;
 } ActionRuntimeSearchPrompt;
 
 static NcmActionRuntime *action_runtime_or_global(
@@ -1162,6 +1168,19 @@ static bool action_runtime_find_item(enum SearchDirection direction);
 static bool action_runtime_repeat_search(enum SearchDirection direction);
 static bool action_runtime_command_prompt_hook(char *text, void *user);
 static bool action_runtime_filter_prompt_hook(char *text, void *user);
+static void action_runtime_search_prompt_init(
+    ActionRuntimeSearchPrompt *state, enum SearchDirection direction);
+static void action_runtime_search_prompt_destroy(
+    ActionRuntimeSearchPrompt *state);
+static bool action_runtime_search_prompt_text_matches(
+    ActionRuntimeSearchPrompt *state, char *text, int32 text_len);
+static void action_runtime_refresh_current_screen(void);
+static bool action_runtime_search_from_prompt_start(
+    ActionRuntimeSearchPrompt *state, char *text, int32 text_len,
+    bool *found, NcmError *error);
+static bool action_runtime_search_prompt_apply(
+    ActionRuntimeSearchPrompt *state, char *text, int32 text_len,
+    bool *found, NcmError *error);
 static bool action_runtime_search_prompt_hook(char *text, void *user);
 static bool action_runtime_prompt_result(NcmBuffer *result,
                                          NcPrompt *prompt,
@@ -2242,6 +2261,138 @@ action_runtime_filter_prompt_hook(char *text, void *user) {
     return true;
 }
 
+static void
+action_runtime_search_prompt_init(ActionRuntimeSearchPrompt *state,
+                                  enum SearchDirection direction) {
+    NcMenu *menu;
+    int64 count;
+    int64 highlight;
+
+    state->direction = direction;
+    ncm_buffer_init(&state->last_text);
+    state->start_position = 0;
+    state->has_start_position = false;
+    state->has_last_result = false;
+    state->last_found = false;
+
+    menu = action_runtime_current_menu();
+    if (menu == NULL) {
+        return;
+    }
+
+    count = nc_menu_item_count(menu);
+    highlight = nc_menu_highlight(menu);
+    if ((highlight < 0) || (highlight >= count)) {
+        return;
+    }
+
+    state->start_position = highlight;
+    state->has_start_position = true;
+    return;
+}
+
+static void
+action_runtime_search_prompt_destroy(ActionRuntimeSearchPrompt *state) {
+    ncm_buffer_destroy(&state->last_text);
+    return;
+}
+
+static bool
+action_runtime_search_prompt_text_matches(ActionRuntimeSearchPrompt *state,
+                                          char *text, int32 text_len) {
+    if (!state->has_last_result) {
+        return false;
+    }
+    if (text == NULL) {
+        text = "";
+        text_len = 0;
+    }
+    if (state->last_text.len != text_len) {
+        return false;
+    }
+    if (text_len == 0) {
+        return true;
+    }
+    return memcmp(state->last_text.data, text, (size_t)text_len) == 0;
+}
+
+static void
+action_runtime_refresh_current_screen(void) {
+    NcScreen *screen;
+
+    screen = app_controller_current_screen();
+    if (screen != NULL) {
+        nc_screen_refresh_window(screen);
+    }
+    return;
+}
+
+static bool
+action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
+                                        char *text, int32 text_len,
+                                        bool *found, NcmError *error) {
+    NcMenu *menu;
+    int64 old_beginning;
+    int64 old_highlight;
+    int64 count;
+    bool restore;
+
+    menu = action_runtime_current_menu();
+    old_beginning = 0;
+    old_highlight = 0;
+    restore = false;
+    if ((menu != NULL) && state->has_start_position) {
+        count = nc_menu_item_count(menu);
+        if ((state->start_position >= 0)
+            && (state->start_position < count)) {
+            old_beginning = menu->beginning;
+            old_highlight = menu->highlight;
+            menu->highlight = state->start_position;
+            restore = true;
+        }
+    }
+
+    *found = current_screen_search(state->direction, text, text_len,
+                                   Config.wrapped_search, false, error);
+    if (restore && !*found && !ncm_error_is_set(error)) {
+        menu->beginning = old_beginning;
+        menu->highlight = old_highlight;
+        action_runtime_refresh_current_screen();
+    }
+    return !ncm_error_is_set(error);
+}
+
+static bool
+action_runtime_search_prompt_apply(ActionRuntimeSearchPrompt *state,
+                                   char *text, int32 text_len,
+                                   bool *found, NcmError *error) {
+    bool ok;
+
+    if (text == NULL) {
+        text = "";
+        text_len = 0;
+    }
+    if (action_runtime_search_prompt_text_matches(state, text, text_len)) {
+        if (found != NULL) {
+            *found = state->last_found;
+        }
+        return true;
+    }
+
+    if (!ncm_buffer_set(&state->last_text, text, text_len)) {
+        return false;
+    }
+
+    ncm_error_clear(error);
+    ok = action_runtime_search_from_prompt_start(
+        state, text, text_len, &state->last_found, error);
+    state->has_last_result = true;
+    if (found != NULL) {
+        *found = state->last_found;
+    }
+    return ok;
+}
+
 static bool
 action_runtime_search_prompt_hook(char *text, void *user) {
     ActionRuntimeSearchPrompt *state;
@@ -2255,8 +2406,8 @@ action_runtime_search_prompt_hook(char *text, void *user) {
     }
 
     ncm_error_clear(&error);
-    (void)current_screen_search(state->direction, text, text_len,
-                                Config.wrapped_search, false, &error);
+    (void)action_runtime_search_prompt_apply(state, text, text_len,
+                                             NULL, &error);
     return true;
 }
 
@@ -2693,14 +2844,13 @@ action_runtime_find_item(enum SearchDirection direction) {
         return false;
     }
 
-    state.direction = direction;
+    action_runtime_search_prompt_init(&state, direction);
     ncm_buffer_init(&constraint);
     ncm_buffer_init(&previous_constraint);
     current_constraint = current_screen_current_search_constraint();
     if ((current_constraint.data != NULL) && (current_constraint.len > 0)) {
-        ncm_buffer_set(&constraint, current_constraint.data,
+        ncm_buffer_set(&previous_constraint, current_constraint.data,
                        current_constraint.len);
-        ncm_buffer_copy(&previous_constraint, &constraint);
     }
 
     prompt_len = SNPRINTF(prompt, "Find %s: ",
@@ -2715,7 +2865,7 @@ action_runtime_find_item(enum SearchDirection direction) {
     old_autocenter_mode = Config.autocenter_mode;
     Config.autocenter_mode = false;
     prompted = action_runtime_prompt_string(prompt, prompt_len,
-                                            constraint.data, false,
+                                            "", false,
                                             action_runtime_search_prompt_hook,
                                             &state, &constraint);
     Config.autocenter_mode = old_autocenter_mode;
@@ -2732,6 +2882,7 @@ action_runtime_find_item(enum SearchDirection direction) {
         }
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
                                     "Action cancelled");
+        action_runtime_search_prompt_destroy(&state);
         ncm_buffer_destroy(&previous_constraint);
         ncm_buffer_destroy(&constraint);
         return true;
@@ -2742,15 +2893,18 @@ action_runtime_find_item(enum SearchDirection direction) {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
                                     "Constraint unset");
     } else {
-        ncm_error_clear(&error);
-        (void)current_screen_search(direction, constraint.data,
-                                    constraint.len, Config.wrapped_search,
-                                    false, &error);
+        if (!action_runtime_search_prompt_text_matches(
+                &state, constraint.data, constraint.len)) {
+            ncm_error_clear(&error);
+            (void)action_runtime_search_prompt_apply(
+                &state, constraint.data, constraint.len, NULL, &error);
+        }
         action_runtime_print_format_string(STRLIT_ARGS(
             "Using constraint \"%1%\""),
             constraint.data, constraint.len);
     }
 
+    action_runtime_search_prompt_destroy(&state);
     ncm_buffer_destroy(&previous_constraint);
     ncm_buffer_destroy(&constraint);
     return true;
