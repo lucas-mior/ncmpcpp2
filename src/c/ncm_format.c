@@ -32,7 +32,7 @@ ncm_format_set_error(NcmError *error, char *message, int32 position) {
         return;
     }
 
-    len = snprintf(buffer, (size_t)SIZEOF(buffer),
+    len = SNPRINTF(buffer,
                    "format error: %s at position %d", message, position);
     if (len < 0) {
         ncm_error_set(error, 1, STRLIT_ARGS("format error"));

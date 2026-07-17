@@ -42,10 +42,10 @@ ncm_fs_set_errno_error(NcmError *error, int32 code, char *operation,
     int32 message_len;
 
     if (path == NULL) {
-        message_len = snprintf(message, SIZEOF(message), "%s: %s",
+        message_len = SNPRINTF(message, "%s: %s",
                                operation, strerror(code));
     } else {
-        message_len = snprintf(message, SIZEOF(message), "%s '%.*s': %s",
+        message_len = SNPRINTF(message, "%s '%.*s': %s",
                                operation, path_len, path, strerror(code));
     }
     ncm_error_set(error, code, message, message_len);

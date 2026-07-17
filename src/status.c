@@ -1489,7 +1489,7 @@ status_buffer_append_uint32(NcmBuffer *buffer, uint32 value) {
     char tmp[32];
     int32 len;
 
-    len = snprintf(tmp, sizeof(tmp), "%u", value);
+    len = SNPRINTF(tmp, "%u", value);
     if (len < 0) {
         return;
     }
@@ -1951,7 +1951,7 @@ ncm_status_changes_mixer(void) {
     if (status_volume < 0) {
         global_volume_state_append("n/a", STRLIT_LEN("n/a"));
     } else {
-        volume_len = snprintf(volume, sizeof(volume), "%d", status_volume);
+        volume_len = SNPRINTF(volume, "%d", status_volume);
         if (volume_len < 0) {
             volume_len = 0;
         }

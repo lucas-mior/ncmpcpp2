@@ -17,7 +17,7 @@ ncm_process_set_errno_error(NcmError *error, int32 code, char *operation) {
     char message[256];
     int32 message_len;
 
-    message_len = snprintf(message, SIZEOF(message), "%s: %s",
+    message_len = SNPRINTF(message, "%s: %s",
                            operation, strerror(code));
     ncm_error_set(error, code, message, message_len);
     return;

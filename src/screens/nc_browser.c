@@ -2037,7 +2037,7 @@ native_browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out,
             ncm_error_clear(error);
             return true;
         }
-        message_len = snprintf(message, SIZEOF(message), "stat '%.*s': %s",
+        message_len = SNPRINTF(message, "stat '%.*s': %s",
                                path_len, path, strerror(errno));
         ncm_error_set(error, errno, message, message_len);
         return false;
@@ -2667,7 +2667,7 @@ native_browser_set_errno_error(NcmError *error, int32 code,
     char message[256];
     int32 message_len;
 
-    message_len = snprintf(message, SIZEOF(message), "%s '%.*s': %s",
+    message_len = SNPRINTF(message, "%s '%.*s': %s",
                            operation, path_len, path, strerror(code));
     ncm_error_set(error, code, message, message_len);
     return;
