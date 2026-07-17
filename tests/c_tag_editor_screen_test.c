@@ -444,7 +444,7 @@ static void
 assert_status_message(int32 pos, char *expected, int32 expected_len) {
     assert(pos >= 0);
     assert(pos < NCM_ARRAY_LEN(hook_trace.status_messages));
-    assert(ncm_string_equal(hook_trace.status_messages[pos],
+    assert(STREQUAL(hook_trace.status_messages[pos],
                             hook_trace.status_messages_len[pos],
                             expected, expected_len));
     return;
@@ -478,9 +478,9 @@ assert_menu_string_pair(NcMenuStringPair *pair, char *first,
                         int32 first_len, char *second,
                         int32 second_len) {
     assert(pair != NULL);
-    assert(ncm_string_equal(pair->first, pair->first_len,
+    assert(STREQUAL(pair->first, pair->first_len,
                             first, first_len));
-    assert(ncm_string_equal(pair->second, pair->second_len,
+    assert(STREQUAL(pair->second, pair->second_len,
                             second, second_len));
     return;
 }
@@ -511,7 +511,7 @@ assert_song_uri(NcmSong *song, char *uri, int32 uri_len) {
     NcmStringView view;
 
     assert(ncm_song_uri_view(song, 0, &view));
-    assert(ncm_string_equal(view.data, view.len, uri, uri_len));
+    assert(STREQUAL(view.data, view.len, uri, uri_len));
     return;
 }
 
@@ -522,7 +522,7 @@ assert_mutable_song_tag_value(NcmMutableSong *song,
     NcmStringView view;
 
     assert(ncm_mutable_song_get_tag(song, field, idx, &view));
-    assert(ncm_string_equal(view.data, view.len, expected, expected_len));
+    assert(STREQUAL(view.data, view.len, expected, expected_len));
     return;
 }
 
@@ -538,7 +538,7 @@ assert_mutable_song_tag_missing(NcmMutableSong *song,
 static void
 assert_printed_equals(char *expected, int32 expected_len) {
     assert(window_trace.printed_len == expected_len);
-    assert(ncm_string_equal(window_trace.printed, window_trace.printed_len,
+    assert(STREQUAL(window_trace.printed, window_trace.printed_len,
                             expected, expected_len));
     return;
 }
@@ -549,7 +549,7 @@ assert_printed_contains(char *needle, int32 needle_len) {
 
     found = false;
     for (int32 i = 0; i + needle_len <= window_trace.printed_len; i += 1) {
-        if (ncm_string_equal(window_trace.printed + i, needle_len,
+        if (STREQUAL(window_trace.printed + i, needle_len,
                              needle, needle_len)) {
             found = true;
             break;
@@ -703,7 +703,7 @@ test_initial_state_and_geometry(void) {
            == &screen.directories_window);
     assert(screen.active_column == NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES);
     assert(native_tag_editor_screen_current_dir(&screen, &current_dir));
-    assert(ncm_string_equal(current_dir.data, current_dir.len,
+    assert(STREQUAL(current_dir.data, current_dir.len,
                             STRLIT_ARGS("/")));
 
     assert(screen.left_width == 37);
@@ -739,7 +739,7 @@ test_initial_state_and_geometry(void) {
 
     assert(nc_screen_is_lockable(native_tag_editor_screen_base(&screen)));
     assert(nc_screen_is_mergable(native_tag_editor_screen_base(&screen)));
-    assert(ncm_string_equal(nc_screen_title(
+    assert(STREQUAL(nc_screen_title(
                                 native_tag_editor_screen_base(&screen)),
                             STRLIT_LEN("Tag editor"),
                             STRLIT_ARGS("Tag editor")));
@@ -870,13 +870,13 @@ test_title_visibility_configuration(void) {
 
     Config.titles_visibility = true;
     native_tag_editor_screen_set_geometry(&screen, 2, 100, 3, 20);
-    assert(ncm_string_equal(screen.directories_window.title,
+    assert(STREQUAL(screen.directories_window.title,
                             screen.directories_window.title_len,
                             STRLIT_ARGS("Directories")));
-    assert(ncm_string_equal(screen.tag_types_window.title,
+    assert(STREQUAL(screen.tag_types_window.title,
                             screen.tag_types_window.title_len,
                             STRLIT_ARGS("Tag types")));
-    assert(ncm_string_equal(screen.tags_window.title,
+    assert(STREQUAL(screen.tags_window.title,
                             screen.tags_window.title_len,
                             STRLIT_ARGS("Tags")));
 
@@ -927,10 +927,10 @@ test_native_resize_preserves_state(void) {
     assert(directories->beginning == 1);
     assert(tags->beginning == 0);
     assert(screen.directory_filter_constraint.len == 0);
-    assert(ncm_string_equal(screen.directory_search_constraint.data,
+    assert(STREQUAL(screen.directory_search_constraint.data,
                             screen.directory_search_constraint.len,
                             STRLIT_ARGS("Alpha")));
-    assert(ncm_string_equal(screen.tag_filter_constraint.data,
+    assert(STREQUAL(screen.tag_filter_constraint.data,
                             screen.tag_filter_constraint.len,
                             STRLIT_ARGS("Beta")));
 
@@ -1020,7 +1020,7 @@ test_tag_editor_native_callbacks_do_not_delegate(void) {
     assert(!nc_screen_can_run_current(base));
     assert(!nc_screen_run_current(base));
 
-    assert(ncm_string_equal(nc_screen_title(base),
+    assert(STREQUAL(nc_screen_title(base),
                             STRLIT_LEN("Tag editor"),
                             STRLIT_ARGS("Tag editor")));
 
@@ -1074,10 +1074,10 @@ test_tag_editor_run_current_tag_type_field(void) {
     assert(nc_screen_can_run_current(base));
     assert(nc_screen_run_current(base));
     assert(hook_trace.prompt_calls == 1);
-    assert(ncm_string_equal(hook_trace.prompt_label,
+    assert(STREQUAL(hook_trace.prompt_label,
                             hook_trace.prompt_label_len,
                             STRLIT_ARGS("Title")));
-    assert(ncm_string_equal(hook_trace.prompt_initial,
+    assert(STREQUAL(hook_trace.prompt_initial,
                             hook_trace.prompt_initial_len,
                             STRLIT_ARGS("Title")));
 
@@ -1131,7 +1131,7 @@ test_tag_editor_run_current_tag_row_field_and_filename(void) {
     assert(nc_screen_run_current(base));
     song = nc_menu_active_item_at(tags, 1);
     assert(ncm_mutable_song_get_new_name(song, &new_name));
-    assert(ncm_string_equal(new_name.data, new_name.len,
+    assert(STREQUAL(new_name.data, new_name.len,
                             STRLIT_ARGS("accepted value.mp3")));
 
     destroy_screen(&screen);
@@ -1169,7 +1169,7 @@ test_tag_editor_run_current_number_and_transform_rows(void) {
     assert(nc_screen_can_run_current(base));
     assert(nc_screen_run_current(base));
     assert(hook_trace.confirm_calls == 1);
-    assert(ncm_string_equal(hook_trace.confirm_message,
+    assert(STREQUAL(hook_trace.confirm_message,
                             hook_trace.confirm_message_len,
                             STRLIT_ARGS("Number tracks?")));
     song = nc_menu_active_item_at(tags, 0);
@@ -1267,11 +1267,11 @@ test_tag_editor_run_current_directory_checks_subdirs(void) {
     assert(nc_screen_can_run_current(base));
     assert(!nc_screen_run_current(base));
     assert(hook_trace.status_message_calls == 1);
-    assert(ncm_string_equal(hook_trace.status_message,
+    assert(STREQUAL(hook_trace.status_message,
                             hook_trace.status_message_len,
                             STRLIT_ARGS("No subdirectories found")));
     assert(native_tag_editor_screen_current_dir(&screen, &current_dir));
-    assert(ncm_string_equal(current_dir.data, current_dir.len,
+    assert(STREQUAL(current_dir.data, current_dir.len,
                             STRLIT_ARGS("/")));
     destroy_screen(&screen);
 
@@ -1284,7 +1284,7 @@ test_tag_editor_run_current_directory_checks_subdirs(void) {
     assert(nc_screen_can_run_current(base));
     assert(nc_screen_run_current(base));
     assert(native_tag_editor_screen_current_dir(&screen, &current_dir));
-    assert(ncm_string_equal(current_dir.data, current_dir.len,
+    assert(STREQUAL(current_dir.data, current_dir.len,
                             STRLIT_ARGS("/Empty")));
 
     destroy_screen(&screen);
@@ -1405,29 +1405,29 @@ test_parser_menu_contract(void) {
     assert(nc_menu_item_count(actions) == 6);
 
     row = nc_menu_active_item_at(dialog, 0);
-    assert(ncm_string_equal(row->data, row->len,
+    assert(STREQUAL(row->data, row->len,
                             STRLIT_ARGS("Get tags from filename")));
     row = nc_menu_active_item_at(dialog, 1);
-    assert(ncm_string_equal(row->data, row->len,
+    assert(STREQUAL(row->data, row->len,
                             STRLIT_ARGS("Rename files")));
     row = nc_menu_active_item_at(dialog, 2);
-    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Cancel")));
+    assert(STREQUAL(row->data, row->len, STRLIT_ARGS("Cancel")));
     row = nc_menu_active_item_at(rows, 3);
-    assert(ncm_string_equal(row->data, row->len,
+    assert(STREQUAL(row->data, row->len,
                             STRLIT_ARGS("Pattern: %a - %t")));
     row = nc_menu_active_item_at(rows, 4);
-    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Preview")));
+    assert(STREQUAL(row->data, row->len, STRLIT_ARGS("Preview")));
     row = nc_menu_active_item_at(rows, 5);
-    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Legend")));
+    assert(STREQUAL(row->data, row->len, STRLIT_ARGS("Legend")));
     row = nc_menu_active_item_at(rows, 7);
-    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Proceed")));
+    assert(STREQUAL(row->data, row->len, STRLIT_ARGS("Proceed")));
     row = nc_menu_active_item_at(rows, 8);
-    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Cancel")));
+    assert(STREQUAL(row->data, row->len, STRLIT_ARGS("Cancel")));
     row = nc_menu_active_item_at(actions, 0);
-    assert(ncm_string_equal(row->data, row->len,
+    assert(STREQUAL(row->data, row->len,
                             STRLIT_ARGS("Pattern: %a - %t")));
     row = nc_menu_active_item_at(actions, 5);
-    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("Cancel")));
+    assert(STREQUAL(row->data, row->len, STRLIT_ARGS("Cancel")));
 
     destroy_screen(&screen);
     return;
@@ -1547,20 +1547,20 @@ test_native_state_ownership_without_bridge(void) {
     assert(screen.hooks.status_message == NULL);
     assert(screen.hooks.update_directory == NULL);
     assert(native_tag_editor_screen_current_dir(&screen, &current_dir));
-    assert(ncm_string_equal(current_dir.data, current_dir.len,
+    assert(STREQUAL(current_dir.data, current_dir.len,
                             STRLIT_ARGS("/")));
-    assert(ncm_string_equal(screen.directories_title.data,
+    assert(STREQUAL(screen.directories_title.data,
                             screen.directories_title.len,
                             STRLIT_ARGS("Directories")));
-    assert(ncm_string_equal(screen.tag_types_title.data,
+    assert(STREQUAL(screen.tag_types_title.data,
                             screen.tag_types_title.len,
                             STRLIT_ARGS("Tag types")));
-    assert(ncm_string_equal(screen.tags_title.data, screen.tags_title.len,
+    assert(STREQUAL(screen.tags_title.data, screen.tags_title.len,
                             STRLIT_ARGS("Tags")));
-    assert(ncm_string_equal(screen.parser_title.data,
+    assert(STREQUAL(screen.parser_title.data,
                             screen.parser_title.len,
                             STRLIT_ARGS("Pattern")));
-    assert(ncm_string_equal(screen.parser_helper_title.data,
+    assert(STREQUAL(screen.parser_helper_title.data,
                             screen.parser_helper_title.len,
                             STRLIT_ARGS("Preview")));
     assert(screen.last_known_directory_count == 0);
@@ -1639,7 +1639,7 @@ test_directory_change_clears_stale_tags(void) {
     tag_menu = nc_tag_row_menu_base(&screen.tags);
     assert(nc_menu_item_count(tag_menu) == 1);
     assert(native_tag_editor_screen_displayed_dir(&screen, &displayed));
-    assert(ncm_string_equal(displayed.data, displayed.len,
+    assert(STREQUAL(displayed.data, displayed.len,
                             STRLIT_ARGS("/Alpha")));
 
     directory_menu = nc_editor_pair_menu_base(&screen.directories);
@@ -1648,7 +1648,7 @@ test_directory_change_clears_stale_tags(void) {
     assert(nc_menu_item_count(tag_menu) == 0);
     assert(!native_tag_editor_screen_displayed_dir(&screen, &displayed));
     assert(native_tag_editor_screen_observed_dir(&screen, &observed));
-    assert(ncm_string_equal(observed.data, observed.len,
+    assert(STREQUAL(observed.data, observed.len,
                             STRLIT_ARGS("/Beta")));
     assert(screen.tags_update_requested);
     assert(screen.last_known_tag_count == 0);
@@ -1673,7 +1673,7 @@ test_separate_filter_and_search_state(void) {
     assert(native_tag_editor_screen_apply_directory_filter(
                &screen, STRLIT_ARGS("Alpha"), Config.regex_type, &error));
     assert(screen.directory_filter_enabled);
-    assert(ncm_string_equal(screen.directory_filter_constraint.data,
+    assert(STREQUAL(screen.directory_filter_constraint.data,
                             screen.directory_filter_constraint.len,
                             STRLIT_ARGS("Alpha")));
     assert(screen.directory_search_constraint.len == 0);
@@ -1682,7 +1682,7 @@ test_separate_filter_and_search_state(void) {
     assert(native_tag_editor_screen_search(
                &screen, STRLIT_ARGS("Beta"), true, true, false, &error));
     assert(screen.directory_search_enabled);
-    assert(ncm_string_equal(screen.directory_search_constraint.data,
+    assert(STREQUAL(screen.directory_search_constraint.data,
                             screen.directory_search_constraint.len,
                             STRLIT_ARGS("Beta")));
     assert(screen.directory_filter_constraint.len == 0);
@@ -1695,17 +1695,17 @@ test_separate_filter_and_search_state(void) {
     native_tag_editor_screen_next_column(&screen);
     assert(native_tag_editor_screen_apply_tag_filter(
                &screen, STRLIT_ARGS("Alpha"), Config.regex_type, &error));
-    assert(ncm_string_equal(screen.tag_filter_constraint.data,
+    assert(STREQUAL(screen.tag_filter_constraint.data,
                             screen.tag_filter_constraint.len,
                             STRLIT_ARGS("Alpha")));
     native_tag_editor_screen_clear_filters(&screen);
     assert(native_tag_editor_screen_search(
                &screen, STRLIT_ARGS("Beta"), true, true, false, &error));
     assert(screen.tag_search_enabled);
-    assert(ncm_string_equal(screen.tag_search_constraint.data,
+    assert(STREQUAL(screen.tag_search_constraint.data,
                             screen.tag_search_constraint.len,
                             STRLIT_ARGS("Beta")));
-    assert(ncm_string_equal(screen.directory_search_constraint.data,
+    assert(STREQUAL(screen.directory_search_constraint.data,
                             screen.directory_search_constraint.len,
                             STRLIT_ARGS("Beta")));
 
@@ -1856,10 +1856,10 @@ test_native_update_fetches_directories_and_songs(void) {
 
     assert(mpd_trace.get_directory_list_calls == 1);
     assert(mpd_trace.get_songs_calls == 1);
-    assert(ncm_string_equal(mpd_trace.directory_path,
+    assert(STREQUAL(mpd_trace.directory_path,
                             mpd_trace.directory_path_len,
                             STRLIT_ARGS("/")));
-    assert(ncm_string_equal(mpd_trace.songs_path,
+    assert(STREQUAL(mpd_trace.songs_path,
                             mpd_trace.songs_path_len,
                             STRLIT_ARGS("/")));
 
@@ -1879,15 +1879,15 @@ test_native_update_fetches_directories_and_songs(void) {
     assert(nc_menu_item_count(tags) == 2);
     song = nc_menu_active_item_at(tags, 0);
     assert(song != NULL);
-    assert(ncm_string_equal(song->uri, song->uri_len,
+    assert(STREQUAL(song->uri, song->uri_len,
                             STRLIT_ARGS("alpha.flac")));
     song = nc_menu_active_item_at(tags, 1);
     assert(song != NULL);
-    assert(ncm_string_equal(song->uri, song->uri_len,
+    assert(STREQUAL(song->uri, song->uri_len,
                             STRLIT_ARGS("zeta.flac")));
     assert(!screen.tags_update_requested);
     assert(screen.displayed_dir_valid);
-    assert(ncm_string_equal(screen.displayed_dir.data,
+    assert(STREQUAL(screen.displayed_dir.data,
                             screen.displayed_dir.len,
                             STRLIT_ARGS("/")));
 
@@ -1907,7 +1907,7 @@ test_native_update_reports_fetch_failures(void) {
     nc_screen_update(native_tag_editor_screen_base(&screen));
     assert(mpd_trace.get_directory_list_calls == 1);
     assert(mpd_trace.status_calls == 1);
-    assert(ncm_string_equal(mpd_trace.status_message,
+    assert(STREQUAL(mpd_trace.status_message,
                             mpd_trace.status_message_len,
                             STRLIT_ARGS("Could not fetch directories: "
                                         "directory failure")));
@@ -1924,7 +1924,7 @@ test_native_update_reports_fetch_failures(void) {
     assert(mpd_trace.get_directory_list_calls == 1);
     assert(mpd_trace.get_songs_calls == 1);
     assert(mpd_trace.status_calls == 1);
-    assert(ncm_string_equal(mpd_trace.status_message,
+    assert(STREQUAL(mpd_trace.status_message,
                             mpd_trace.status_message_len,
                             STRLIT_ARGS("Could not fetch songs: "
                                         "songs failure")));
@@ -2072,7 +2072,7 @@ test_invalid_regex_preserves_previous_constraints(void) {
     assert(!native_tag_editor_screen_apply_directory_filter(
                &screen, STRLIT_ARGS("("), NCM_REGEX_EXTENDED, &error));
     assert(screen.directory_filter_enabled);
-    assert(ncm_string_equal(screen.directory_filter_constraint.data,
+    assert(STREQUAL(screen.directory_filter_constraint.data,
                             screen.directory_filter_constraint.len,
                             STRLIT_ARGS("Alpha")));
 
@@ -2087,7 +2087,7 @@ test_invalid_regex_preserves_previous_constraints(void) {
     assert(!native_tag_editor_screen_search(
                &screen, STRLIT_ARGS("("), true, true, false, &error));
     assert(screen.tag_search_enabled);
-    assert(ncm_string_equal(screen.tag_search_constraint.data,
+    assert(STREQUAL(screen.tag_search_constraint.data,
                             screen.tag_search_constraint.len,
                             STRLIT_ARGS("Beta")));
     Config.regex_type = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
@@ -2164,7 +2164,7 @@ test_tag_editor_selection_helpers(void) {
     assert(native_tag_editor_screen_add_directory(
                &screen, STRLIT_ARGS("Alpha"), STRLIT_ARGS("/Alpha")));
     assert(native_tag_editor_screen_current_directory_path(&screen, &view));
-    assert(ncm_string_equal(view.data, view.len, STRLIT_ARGS("/Alpha")));
+    assert(STREQUAL(view.data, view.len, STRLIT_ARGS("/Alpha")));
     assert(native_tag_editor_screen_active_menu_empty(&screen) == false);
 
     append_song(&screen, STRLIT_ARGS("one.flac"), STRLIT_ARGS("Alpha"));
@@ -2182,7 +2182,7 @@ test_tag_editor_selection_helpers(void) {
     native_tag_editor_screen_next_column(&screen);
     tags = nc_tag_row_menu_base(&screen.tags);
     assert(native_tag_editor_screen_current_tag_song(&screen, &song));
-    assert(ncm_string_equal(song.uri, song.uri_len, STRLIT_ARGS("one.flac")));
+    assert(STREQUAL(song.uri, song.uri_len, STRLIT_ARGS("one.flac")));
     assert(native_tag_editor_screen_selected_tag_song_count(&screen) == 0);
     assert(nc_menu_set_current_selected(tags, true));
     assert(native_tag_editor_screen_selected_tag_song_count(&screen) == 1);
@@ -2258,11 +2258,11 @@ test_tag_editor_enter_directory_invalidates_tags(void) {
 
     assert(!native_tag_editor_screen_enter_directory(&screen));
     assert(hook_trace.status_message_calls == 1);
-    assert(ncm_string_equal(hook_trace.status_message,
+    assert(STREQUAL(hook_trace.status_message,
                             hook_trace.status_message_len,
                             STRLIT_ARGS("No subdirectories found")));
     assert(native_tag_editor_screen_current_dir(&screen, &view));
-    assert(ncm_string_equal(view.data, view.len, STRLIT_ARGS("/")));
+    assert(STREQUAL(view.data, view.len, STRLIT_ARGS("/")));
     destroy_screen(&screen);
 
     reset_mpd_trace();
@@ -2278,11 +2278,11 @@ test_tag_editor_enter_directory_invalidates_tags(void) {
 
     assert(native_tag_editor_screen_enter_directory(&screen));
     assert(mpd_trace.get_directory_list_calls == 1);
-    assert(ncm_string_equal(mpd_trace.directory_path,
+    assert(STREQUAL(mpd_trace.directory_path,
                             mpd_trace.directory_path_len,
                             STRLIT_ARGS("/Alpha")));
     assert(native_tag_editor_screen_current_dir(&screen, &view));
-    assert(ncm_string_equal(view.data, view.len, STRLIT_ARGS("/Alpha")));
+    assert(STREQUAL(view.data, view.len, STRLIT_ARGS("/Alpha")));
     assert(nc_menu_empty(tags));
     assert(native_tag_editor_screen_selected_tag_song_count(&screen) == 0);
     assert(screen.tags_update_requested);
@@ -2309,13 +2309,13 @@ test_tag_editor_go_to_parent_preserves_child_highlight(void) {
                &screen, STRLIT_ARGS("/Parent/Child")));
     assert(native_tag_editor_screen_go_to_parent(&screen));
     assert(native_tag_editor_screen_current_dir(&screen, &view));
-    assert(ncm_string_equal(view.data, view.len, STRLIT_ARGS("/Parent")));
+    assert(STREQUAL(view.data, view.len, STRLIT_ARGS("/Parent")));
     assert(screen.directories_update_requested);
 
     nc_screen_request_update(native_tag_editor_screen_base(&screen));
     nc_screen_update(native_tag_editor_screen_base(&screen));
     assert(mpd_trace.get_directory_list_calls == 1);
-    assert(ncm_string_equal(mpd_trace.directory_path,
+    assert(STREQUAL(mpd_trace.directory_path,
                             mpd_trace.directory_path_len,
                             STRLIT_ARGS("/Parent")));
 
@@ -2324,7 +2324,7 @@ test_tag_editor_go_to_parent_preserves_child_highlight(void) {
     assert_menu_string_pair(pair, STRLIT_ARGS("Child"),
                             STRLIT_ARGS("/Parent/Child"));
     assert(native_tag_editor_screen_observed_dir(&screen, &view));
-    assert(ncm_string_equal(view.data, view.len,
+    assert(STREQUAL(view.data, view.len,
                             STRLIT_ARGS("/Parent/Child")));
 
     destroy_screen(&screen);
@@ -2348,7 +2348,7 @@ test_tag_editor_previous_column_pending_changes_confirm(void) {
     native_tag_editor_screen_previous_column(&screen);
     assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES);
     assert(hook_trace.confirm_calls == 1);
-    assert(ncm_string_equal(hook_trace.confirm_message,
+    assert(STREQUAL(hook_trace.confirm_message,
                             hook_trace.confirm_message_len,
                             STRLIT_ARGS("There are pending changes, "
                                         "are you sure?")));
@@ -2386,7 +2386,7 @@ test_tag_editor_mouse_directory_click_enters_and_clears(void) {
 
     assert(screen.active_column == NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES);
     assert(native_tag_editor_screen_current_dir(&screen, &current_dir));
-    assert(ncm_string_equal(current_dir.data, current_dir.len,
+    assert(STREQUAL(current_dir.data, current_dir.len,
                             STRLIT_ARGS("/Beta")));
     assert(nc_menu_empty(nc_editor_pair_menu_base(&screen.directories)));
     assert(nc_menu_empty(nc_tag_row_menu_base(&screen.tags)));
@@ -2474,7 +2474,7 @@ test_tag_editor_mouse_wheel_directory_change(void) {
     assert(nc_menu_highlight(directories) == 1);
     assert(nc_menu_empty(nc_tag_row_menu_base(&screen.tags)));
     assert(native_tag_editor_screen_observed_dir(&screen, &observed));
-    assert(ncm_string_equal(observed.data, observed.len,
+    assert(STREQUAL(observed.data, observed.len,
                             STRLIT_ARGS("/Beta")));
     assert(screen.tags_update_requested);
 
@@ -2533,11 +2533,11 @@ test_tag_editor_search_result_directory_change(void) {
     assert(native_tag_editor_screen_search(&screen, STRLIT_ARGS("Beta"),
                                            true, true, true, &error));
     assert(native_tag_editor_screen_current_dir(&screen, &current_dir));
-    assert(ncm_string_equal(current_dir.data, current_dir.len,
+    assert(STREQUAL(current_dir.data, current_dir.len,
                             STRLIT_ARGS("/")));
     assert(nc_menu_empty(nc_tag_row_menu_base(&screen.tags)));
     assert(native_tag_editor_screen_observed_dir(&screen, &observed));
-    assert(ncm_string_equal(observed.data, observed.len,
+    assert(STREQUAL(observed.data, observed.len,
                             STRLIT_ARGS("/Beta")));
     assert(screen.tags_update_requested);
 
@@ -2764,7 +2764,7 @@ test_tag_editor_save_success_orchestration(void) {
                &screen, "/music"));
 
     assert(save_trace.calls == 2);
-    assert(ncm_string_equal(save_trace.music_dir, save_trace.music_dir_len,
+    assert(STREQUAL(save_trace.music_dir, save_trace.music_dir_len,
                             STRLIT_ARGS("/music")));
     assert_status_message(0, STRLIT_ARGS("Writing changes..."));
     assert_status_message(1, STRLIT_ARGS(
@@ -2774,7 +2774,7 @@ test_tag_editor_save_success_orchestration(void) {
     assert_status_message(3, STRLIT_ARGS("Tags updated"));
     assert(hook_trace.status_message_calls == 4);
     assert(hook_trace.update_directory_calls == 1);
-    assert(ncm_string_equal(hook_trace.update_directory,
+    assert(STREQUAL(hook_trace.update_directory,
                             hook_trace.update_directory_len,
                             STRLIT_ARGS("rock")));
     assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES);
@@ -2851,7 +2851,7 @@ test_tag_editor_save_no_modifications(void) {
     assert_status_message(1, STRLIT_ARGS("Tags updated"));
     assert(hook_trace.status_message_calls == 2);
     assert(hook_trace.update_directory_calls == 1);
-    assert(ncm_string_equal(hook_trace.update_directory,
+    assert(STREQUAL(hook_trace.update_directory,
                             hook_trace.update_directory_len,
                             STRLIT_ARGS("rock")));
     assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES);
@@ -2886,12 +2886,12 @@ test_tag_editor_save_selected_subset(void) {
                &screen, "/music"));
 
     assert(save_trace.calls == 2);
-    assert(ncm_string_equal(save_trace.names[0], save_trace.names_len[0],
+    assert(STREQUAL(save_trace.names[0], save_trace.names_len[0],
                             STRLIT_ARGS("jazz/two.flac")));
-    assert(ncm_string_equal(save_trace.names[1], save_trace.names_len[1],
+    assert(STREQUAL(save_trace.names[1], save_trace.names_len[1],
                             STRLIT_ARGS("jazz/three.flac")));
     assert(hook_trace.update_directory_calls == 1);
-    assert(ncm_string_equal(hook_trace.update_directory,
+    assert(STREQUAL(hook_trace.update_directory,
                             hook_trace.update_directory_len,
                             STRLIT_ARGS("jazz")));
     assert(ncm_mutable_song_is_modified(mutable_song_at(&screen, 0)));
@@ -2939,7 +2939,7 @@ test_tag_editor_locate_song_root_and_nested_paths(void) {
     assert(ncm_song_set_uri(&song, STRLIT_ARGS("Album/one.flac")));
     assert(native_tag_editor_screen_locate_song(&screen, &song));
     assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_TAGS);
-    assert(ncm_string_equal(screen.current_dir.data, screen.current_dir.len,
+    assert(STREQUAL(screen.current_dir.data, screen.current_dir.len,
                             STRLIT_ARGS("/")));
     directory = nc_menu_active_item_at(
         nc_editor_pair_menu_base(&screen.directories),
@@ -2950,7 +2950,7 @@ test_tag_editor_locate_song_root_and_nested_paths(void) {
         nc_tag_row_menu_base(&screen.tags),
         nc_menu_highlight(nc_tag_row_menu_base(&screen.tags)));
     assert(tag_song != NULL);
-    assert(ncm_string_equal(tag_song->uri, tag_song->uri_len,
+    assert(STREQUAL(tag_song->uri, tag_song->uri_len,
                             STRLIT_ARGS("Album/one.flac")));
     ncm_song_destroy(&song);
     destroy_screen(&screen);
@@ -2967,7 +2967,7 @@ test_tag_editor_locate_song_root_and_nested_paths(void) {
     assert(ncm_song_set_uri(&song,
                             STRLIT_ARGS("Parent/Child/two.flac")));
     assert(native_tag_editor_screen_locate_song(&screen, &song));
-    assert(ncm_string_equal(screen.current_dir.data, screen.current_dir.len,
+    assert(STREQUAL(screen.current_dir.data, screen.current_dir.len,
                             STRLIT_ARGS("Parent")));
     directory = nc_menu_active_item_at(
         nc_editor_pair_menu_base(&screen.directories),
@@ -2978,7 +2978,7 @@ test_tag_editor_locate_song_root_and_nested_paths(void) {
         nc_tag_row_menu_base(&screen.tags),
         nc_menu_highlight(nc_tag_row_menu_base(&screen.tags)));
     assert(tag_song != NULL);
-    assert(ncm_string_equal(tag_song->uri, tag_song->uri_len,
+    assert(STREQUAL(tag_song->uri, tag_song->uri_len,
                             STRLIT_ARGS("Parent/Child/two.flac")));
     ncm_song_destroy(&song);
     destroy_screen(&screen);
@@ -3040,18 +3040,18 @@ test_tag_editor_rename_directory_root_and_nested(void) {
     assert(native_tag_editor_screen_rename_current_directory(
                &screen, STRLIT_ARGS("/music")));
     assert(rename_trace.calls == 1);
-    assert(ncm_string_equal(rename_trace.old_path,
+    assert(STREQUAL(rename_trace.old_path,
                             rename_trace.old_path_len,
                             STRLIT_ARGS("/music/Alpha")));
-    assert(ncm_string_equal(rename_trace.new_path,
+    assert(STREQUAL(rename_trace.new_path,
                             rename_trace.new_path_len,
                             STRLIT_ARGS("/music/Beta")));
     assert(hook_trace.update_directory_calls == 1);
-    assert(ncm_string_equal(hook_trace.update_directory,
+    assert(STREQUAL(hook_trace.update_directory,
                             hook_trace.update_directory_len,
                             STRLIT_ARGS("/")));
     assert(screen.directories_update_requested);
-    assert(ncm_string_equal(screen.highlighted_dir.data,
+    assert(STREQUAL(screen.highlighted_dir.data,
                             screen.highlighted_dir.len,
                             STRLIT_ARGS("/Beta")));
 
@@ -3087,18 +3087,18 @@ test_tag_editor_rename_directory_root_and_nested(void) {
     assert(native_tag_editor_screen_rename_current_directory(
                &screen, STRLIT_ARGS("/music")));
     assert(rename_trace.calls == 1);
-    assert(ncm_string_equal(rename_trace.old_path,
+    assert(STREQUAL(rename_trace.old_path,
                             rename_trace.old_path_len,
                             STRLIT_ARGS("/music/Parent/Child")));
-    assert(ncm_string_equal(rename_trace.new_path,
+    assert(STREQUAL(rename_trace.new_path,
                             rename_trace.new_path_len,
                             STRLIT_ARGS("/music/Parent/Renamed")));
     assert(hook_trace.update_directory_calls == 1);
-    assert(ncm_string_equal(hook_trace.update_directory,
+    assert(STREQUAL(hook_trace.update_directory,
                             hook_trace.update_directory_len,
                             STRLIT_ARGS("Parent")));
     assert(screen.directories_update_requested);
-    assert(ncm_string_equal(screen.highlighted_dir.data,
+    assert(STREQUAL(screen.highlighted_dir.data,
                             screen.highlighted_dir.len,
                             STRLIT_ARGS("Parent/Renamed")));
     destroy_screen(&screen);
@@ -3158,14 +3158,14 @@ test_tag_editor_generate_filename_honors_config(void) {
     Config.generate_win32_compatible_filenames = false;
     assert(native_tag_editor_generate_filename(
                &song, STRLIT_ARGS("%a - %t"), &filename));
-    assert(ncm_string_equal(filename.data, filename.len,
+    assert(STREQUAL(filename.data, filename.len,
                             STRLIT_ARGS("a:b - tu")));
 
     ncm_buffer_clear(&filename);
     Config.generate_win32_compatible_filenames = true;
     assert(native_tag_editor_generate_filename(
                &song, STRLIT_ARGS("%a - %t"), &filename));
-    assert(ncm_string_equal(filename.data, filename.len,
+    assert(STREQUAL(filename.data, filename.len,
                             STRLIT_ARGS("ab - tu")));
 
     Config.generate_win32_compatible_filenames = old_win32;
@@ -3414,19 +3414,19 @@ test_tag_editor_parser_pattern_history_workflow(void) {
     assert(screen.recent_patterns_loaded);
     assert(screen.recent_patterns.len == 2);
     row = nc_menu_active_item_at(actions, 0);
-    assert(ncm_string_equal(row->data, row->len,
+    assert(STREQUAL(row->data, row->len,
                             STRLIT_ARGS("Pattern: %a - %t")));
     row = nc_menu_active_item_at(actions, 9);
-    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("%a - %t")));
+    assert(STREQUAL(row->data, row->len, STRLIT_ARGS("%a - %t")));
     row = nc_menu_active_item_at(actions, 10);
-    assert(ncm_string_equal(row->data, row->len, STRLIT_ARGS("%t")));
+    assert(STREQUAL(row->data, row->len, STRLIT_ARGS("%t")));
 
     assert(nc_menu_goto_selectable(actions, 0));
     assert(nc_screen_run_current(base));
     row = nc_menu_active_item_at(actions, 0);
-    assert(ncm_string_equal(row->data, row->len,
+    assert(STREQUAL(row->data, row->len,
                             STRLIT_ARGS("Pattern: %t")));
-    assert(ncm_string_equal(Config.pattern, Config.pattern_len,
+    assert(STREQUAL(Config.pattern, Config.pattern_len,
                             STRLIT_ARGS("%t")));
 
     assert(nc_menu_goto_selectable(actions, 4));
@@ -3437,7 +3437,7 @@ test_tag_editor_parser_pattern_history_workflow(void) {
     assert(file != NULL);
     assert(fgets(first_line, (int32)SIZEOF(first_line), file) != NULL);
     fclose(file);
-    assert(ncm_string_equal(first_line, STRLIT_LEN("%t"),
+    assert(STREQUAL(first_line, STRLIT_LEN("%t"),
                             STRLIT_ARGS("%t")));
 
     destroy_screen(&screen);
@@ -3477,10 +3477,10 @@ test_tag_editor_parser_tag_preview_and_proceed(void) {
     assert(nc_menu_goto_selectable(actions, 1));
     assert(nc_screen_run_current(base));
     assert(screen.active_focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW);
-    assert(ncm_string_equal(hook_trace.status_message,
+    assert(STREQUAL(hook_trace.status_message,
                             hook_trace.status_message_len,
                             STRLIT_ARGS("Operation finished")));
-    assert(ncm_string_equal(screen.parser_preview.data,
+    assert(STREQUAL(screen.parser_preview.data,
                             STRLIT_LEN("Artist - Title.flac:\n"),
                             STRLIT_ARGS("Artist - Title.flac:\n")));
     song = nc_tag_row_menu_current(&screen.tags);
@@ -3531,7 +3531,7 @@ test_tag_editor_parser_rename_preview_and_reject_empty(void) {
     assert(nc_menu_goto_selectable(actions, 1));
     assert(nc_screen_run_current(base));
     assert(ncm_mutable_song_get_new_name(song, &view) == false);
-    assert(ncm_string_equal(screen.parser_preview.data,
+    assert(STREQUAL(screen.parser_preview.data,
                             STRLIT_LEN("old.flac -> Title.flac"),
                             STRLIT_ARGS("old.flac -> Title.flac")));
 
@@ -3539,7 +3539,7 @@ test_tag_editor_parser_rename_preview_and_reject_empty(void) {
     assert(nc_menu_goto_selectable(actions, 4));
     assert(nc_screen_run_current(base));
     assert(ncm_mutable_song_get_new_name(song, &view));
-    assert(ncm_string_equal(view.data, view.len,
+    assert(STREQUAL(view.data, view.len,
                             STRLIT_ARGS("Title.flac")));
 
     native_tag_editor_screen_show_parser_actions(
@@ -3550,7 +3550,7 @@ test_tag_editor_parser_rename_preview_and_reject_empty(void) {
     actions = nc_editor_string_menu_base(&screen.parser_actions);
     assert(nc_menu_goto_selectable(actions, 4));
     assert(!nc_screen_run_current(base));
-    assert(ncm_string_equal(hook_trace.status_message,
+    assert(STREQUAL(hook_trace.status_message,
                             hook_trace.status_message_len,
                             STRLIT_ARGS(
                                 "File \"old.flac\" would have an empty "

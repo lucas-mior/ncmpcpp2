@@ -258,11 +258,11 @@ test_browser_path_navigation(void) {
     assert(native_browser_screen_add_item_copy(&screen, &item));
     assert(native_browser_screen_enter_directory(&screen));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist/album")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("artist/album")));
 
     assert(native_browser_screen_go_to_parent(&screen));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("artist")));
 
     ncm_directory_destroy(&directory);
     ncm_mpd_item_destroy(&item);
@@ -295,7 +295,7 @@ test_browser_parent_directory_compat(void) {
     assert(native_browser_screen_add_item_copy(&screen, &item));
     assert(native_browser_screen_enter_directory(&screen));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("artist")));
 
     native_browser_screen_clear(&screen);
     assert(ncm_directory_set(&directory, LIT_ARGS(".."), 0));
@@ -304,7 +304,7 @@ test_browser_parent_directory_compat(void) {
     assert(native_browser_screen_add_item_copy(&screen, &item));
     assert(native_browser_screen_enter_directory(&screen));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("/")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("/")));
     assert(native_browser_screen_in_root_directory(&screen));
 
     native_browser_screen_clear(&screen);
@@ -337,10 +337,10 @@ test_browser_mpd_reload(void) {
     assert(native_browser_screen_reload_from_mpd(&screen, &client,
                                                  &error));
     assert(mpd_trace.calls == 1);
-    assert(ncm_string_equal(mpd_trace.paths[0], mpd_trace.path_lens[0],
+    assert(STREQUAL(mpd_trace.paths[0], mpd_trace.path_lens[0],
                             LIT_ARGS("/")));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("/")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("/")));
     assert(nc_menu_all_item_count(menu) == 1);
     assert(nc_menu_item_count(menu) == 1);
     assert(!native_browser_screen_item_is_parent(
@@ -359,7 +359,7 @@ test_browser_mpd_reload(void) {
                nc_menu_active_item_at(menu, 0)));
     assert(ncm_directory_path_view(ncm_mpd_item_directory(
                nc_menu_active_item_at(menu, 0)), &view));
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist/..")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("artist/..")));
     assert(nc_menu_highlight(menu) == 1);
 
     browser_mpd_trace_reset(BROWSER_MPD_TRACE_ARTIST);
@@ -380,12 +380,12 @@ test_browser_mpd_reload(void) {
     assert(native_browser_screen_reload_from_mpd(&screen, &client,
                                                  &error));
     assert(mpd_trace.calls == 2);
-    assert(ncm_string_equal(mpd_trace.paths[0], mpd_trace.path_lens[0],
+    assert(STREQUAL(mpd_trace.paths[0], mpd_trace.path_lens[0],
                             LIT_ARGS("gone/child")));
-    assert(ncm_string_equal(mpd_trace.paths[1], mpd_trace.path_lens[1],
+    assert(STREQUAL(mpd_trace.paths[1], mpd_trace.path_lens[1],
                             LIT_ARGS("gone")));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("gone")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("gone")));
     assert(nc_menu_all_item_count(menu) == 2);
     assert(nc_menu_highlight(menu) == 1);
 
@@ -441,11 +441,11 @@ test_browser_navigation_requests_reload(void) {
     assert(native_browser_screen_enter_directory(&screen));
     assert(native_browser_screen_update_requested(&screen));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("artist")));
 
     nc_screen_update(native_browser_screen_base(&screen));
     assert(mpd_trace.calls == 1);
-    assert(ncm_string_equal(mpd_trace.paths[0], mpd_trace.path_lens[0],
+    assert(STREQUAL(mpd_trace.paths[0], mpd_trace.path_lens[0],
                             LIT_ARGS("artist")));
     assert(nc_menu_all_item_count(menu) == 4);
     assert(!native_browser_screen_update_requested(&screen));
@@ -454,11 +454,11 @@ test_browser_navigation_requests_reload(void) {
     assert(native_browser_screen_go_to_parent(&screen));
     assert(native_browser_screen_update_requested(&screen));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("/")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("/")));
 
     nc_screen_update(native_browser_screen_base(&screen));
     assert(mpd_trace.calls == 1);
-    assert(ncm_string_equal(mpd_trace.paths[0], mpd_trace.path_lens[0],
+    assert(STREQUAL(mpd_trace.paths[0], mpd_trace.path_lens[0],
                             LIT_ARGS("/")));
     assert(nc_menu_all_item_count(menu) == 1);
     assert(!native_browser_screen_update_requested(&screen));
@@ -579,7 +579,7 @@ test_browser_selected_mpd_directory_recursion(void) {
     browser_mpd_trace_reset(BROWSER_MPD_TRACE_RECURSIVE);
     assert(native_browser_screen_selected_songs(&screen, &songs));
     assert(mpd_trace.calls == 1);
-    assert(ncm_string_equal(mpd_trace.paths[0], mpd_trace.path_lens[0],
+    assert(STREQUAL(mpd_trace.paths[0], mpd_trace.path_lens[0],
                             LIT_ARGS("artist")));
     assert(songs.len == 2);
     browser_test_assert_song_uri(&songs, 0, LIT_ARGS("artist/a.flac"));
@@ -793,11 +793,11 @@ test_browser_delete_playlist_uses_mpd(void) {
     update_directory_calls = 0;
     assert(native_browser_screen_delete_items(&screen, &client, &error));
     assert(delete_playlist_calls == 1);
-    assert(ncm_string_equal(delete_playlist_path,
+    assert(STREQUAL(delete_playlist_path,
                             (int32)strlen(delete_playlist_path),
                             LIT_ARGS("stored")));
     assert(update_directory_calls == 1);
-    assert(ncm_string_equal(update_directory_path,
+    assert(STREQUAL(update_directory_path,
                             (int32)strlen(update_directory_path),
                             LIT_ARGS("/")));
     assert(native_browser_screen_update_requested(&screen));
@@ -985,7 +985,7 @@ test_browser_rename_mpd_directory_updates(void) {
     assert(native_browser_screen_rename_current_directory(
         &screen, LIT_ARGS("Artist/New"), &client, &error));
     assert(update_directory_calls == 1);
-    assert(ncm_string_equal(update_directory_path,
+    assert(STREQUAL(update_directory_path,
                             (int32)strlen(update_directory_path),
                             LIT_ARGS("Artist")));
     assert(native_browser_screen_update_requested(&screen));
@@ -1023,10 +1023,10 @@ test_browser_rename_playlist_uses_mpd(void) {
     assert(native_browser_screen_rename_current_playlist(
         &screen, LIT_ARGS("new-list"), &client, &error));
     assert(rename_playlist_calls == 1);
-    assert(ncm_string_equal(rename_playlist_from,
+    assert(STREQUAL(rename_playlist_from,
                             (int32)strlen(rename_playlist_from),
                             LIT_ARGS("old-list")));
-    assert(ncm_string_equal(rename_playlist_to,
+    assert(STREQUAL(rename_playlist_to,
                             (int32)strlen(rename_playlist_to),
                             LIT_ARGS("new-list")));
     assert(native_browser_screen_update_requested(&screen));
@@ -1086,10 +1086,10 @@ test_browser_action_rename_prompts(void) {
     assert(ncm_action_runtime_can_run(NULL, NCM_ACTION_EDIT_PLAYLIST_NAME));
     assert(ncm_action_runtime_run(NULL, NCM_ACTION_EDIT_PLAYLIST_NAME));
     assert(rename_playlist_calls == 1);
-    assert(ncm_string_equal(rename_playlist_from,
+    assert(STREQUAL(rename_playlist_from,
                             (int32)strlen(rename_playlist_from),
                             LIT_ARGS("old-playlist")));
-    assert(ncm_string_equal(rename_playlist_to,
+    assert(STREQUAL(rename_playlist_to,
                             (int32)strlen(rename_playlist_to),
                             LIT_ARGS("new-playlist")));
     assert(native_browser_screen_update_requested(&screen));
@@ -1128,12 +1128,12 @@ test_browser_locate_database_song(void) {
     assert(native_browser_screen_locate_song(&screen, &song, &client,
                                              &error));
     assert(mpd_trace.calls == 1);
-    assert(ncm_string_equal(mpd_trace.paths[0], mpd_trace.path_lens[0],
+    assert(STREQUAL(mpd_trace.paths[0], mpd_trace.path_lens[0],
                             LIT_ARGS("artist/album")));
     assert(!native_browser_screen_is_local(&screen));
     assert(!native_browser_screen_update_requested(&screen));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist/album")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("artist/album")));
     assert(nc_menu_highlight(native_browser_screen_menu(&screen)) == 2);
     browser_test_assert_item_path(&screen, 2, NCM_MPD_ITEM_SONG,
                                   LIT_ARGS("artist/album/target.flac"));
@@ -1187,7 +1187,7 @@ test_browser_locate_local_song(void) {
     assert(native_browser_screen_is_local(&screen));
     assert(!native_browser_screen_update_requested(&screen));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, album.data, album.len));
+    assert(STREQUAL(view.data, view.len, album.data, album.len));
     assert(nc_menu_item_count(native_browser_screen_menu(&screen)) == 2);
     assert(nc_menu_highlight(native_browser_screen_menu(&screen)) == 1);
     browser_test_assert_item_path(&screen, 1, NCM_MPD_ITEM_SONG,
@@ -1263,7 +1263,7 @@ test_browser_locate_missing_directory(void) {
     assert(mpd_trace.calls == 1);
     assert(native_browser_screen_update_requested(&screen));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("/")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("/")));
 
     ncm_song_destroy(&song);
     native_browser_screen_destroy(&screen);
@@ -1331,7 +1331,7 @@ test_browser_filter_and_search(void) {
     assert(nc_menu_item_count(native_browser_screen_menu(&screen)) == 3);
     assert(native_browser_screen_search(&screen, LIT_ARGS("two"), true,
                                         true, false, &error));
-    assert(ncm_string_equal(screen.search_constraint.data,
+    assert(STREQUAL(screen.search_constraint.data,
                             screen.search_constraint.len,
                             LIT_ARGS("two")));
     assert(nc_menu_highlight(native_browser_screen_menu(&screen)) == 2);
@@ -1397,7 +1397,7 @@ test_browser_change_browse_mode(void) {
     assert(native_browser_screen_update_requested(&screen));
     assert(native_browser_screen_supported_extensions(&screen)->len == 3);
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len,
+    assert(STREQUAL(view.data, view.len,
                             LIT_ARGS("/tmp/ncmpcpp-browser-home")));
 
     native_browser_screen_clear_update_request(&screen);
@@ -1406,7 +1406,7 @@ test_browser_change_browse_mode(void) {
     assert(!native_browser_screen_is_local(&screen));
     assert(native_browser_screen_update_requested(&screen));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("/")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("/")));
 
     if (had_home) {
         assert(setenv("HOME", old_home_buffer.data, 1) == 0);
@@ -1470,14 +1470,14 @@ test_browser_owned_state(void) {
     assert(native_browser_screen_set_title_text(&screen,
                                                 LIT_ARGS("Browse: /")));
     view = native_browser_screen_title_text(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("Browse: /")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("Browse: /")));
     title = nc_screen_title(native_browser_screen_base(&screen));
-    assert(ncm_string_equal(title, 9, LIT_ARGS("Browse: /")));
+    assert(STREQUAL(title, 9, LIT_ARGS("Browse: /")));
 
     assert(native_browser_screen_set_column_title_text(
         &screen, LIT_ARGS("Artist / Title")));
     view = native_browser_screen_column_title_text(&screen);
-    assert(ncm_string_equal(view.data, view.len,
+    assert(STREQUAL(view.data, view.len,
                             LIT_ARGS("Artist / Title")));
 
     native_browser_screen_set_display_mode(&screen, NCM_DISPLAY_MODE_COLUMNS);
@@ -1506,13 +1506,13 @@ test_browser_owned_state(void) {
     assert(native_browser_screen_set_current_directory(
         &screen, LIT_ARGS("artist/album")));
     view = native_browser_screen_last_highlighted_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("artist")));
     assert(native_browser_screen_go_to_parent(&screen));
     view = native_browser_screen_last_highlighted_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len,
+    assert(STREQUAL(view.data, view.len,
                             LIT_ARGS("artist/album")));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("artist")));
 
     ncm_buffer_append(&screen.item_text_buffer, LIT_ARGS("item"));
     ncm_buffer_append(&screen.path_buffer, LIT_ARGS("path"));
@@ -1566,7 +1566,7 @@ test_browser_menu_callbacks(void) {
     assert(native_browser_screen_activate_current(&screen));
     assert(native_browser_screen_update_requested(&screen));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("artist")));
 
     assert(native_browser_screen_set_current_directory(&screen,
                                                        LIT_ARGS("")));
@@ -1578,7 +1578,7 @@ test_browser_menu_callbacks(void) {
                                    event);
     assert(native_browser_screen_update_requested(&screen));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("artist")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("artist")));
 
     assert(native_browser_screen_set_current_directory(&screen,
                                                        LIT_ARGS("")));
@@ -1587,7 +1587,7 @@ test_browser_menu_callbacks(void) {
     assert(native_browser_screen_activate_current(&screen));
     assert(!native_browser_screen_update_requested(&screen));
     view = native_browser_screen_current_directory(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("")));
 
     ncm_song_destroy(&song);
     ncm_directory_destroy(&directory);
@@ -1640,13 +1640,13 @@ test_browser_item_rendering(void) {
     assert(ncm_mpd_item_set_directory(&item, &directory));
     assert(native_browser_screen_render_item(&screen, &buffer, &item,
                                              80, false, false));
-    assert(ncm_string_equal(buffer.data, buffer.len, LIT_ARGS("[Alpha]")));
+    assert(STREQUAL(buffer.data, buffer.len, LIT_ARGS("[Alpha]")));
 
     assert(ncm_playlist_set(&playlist, LIT_ARGS("lists/Favorites"), 0));
     assert(ncm_mpd_item_set_playlist(&item, &playlist));
     assert(native_browser_screen_render_item(&screen, &buffer, &item,
                                              80, false, false));
-    assert(ncm_string_equal(buffer.data, buffer.len,
+    assert(STREQUAL(buffer.data, buffer.len,
                             LIT_ARGS("PL:Favorites")));
 
     Config.browser_display_mode = NCM_DISPLAY_MODE_CLASSIC;
@@ -1654,7 +1654,7 @@ test_browser_item_rendering(void) {
     assert(ncm_mpd_item_set_song(&item, &song));
     assert(native_browser_screen_render_item(&screen, &buffer, &item,
                                              80, false, false));
-    assert(ncm_string_equal(buffer.data, buffer.len,
+    assert(STREQUAL(buffer.data, buffer.len,
                             LIT_ARGS("classic:songs/file.flac")));
 
     Config.browser_display_mode = NCM_DISPLAY_MODE_COLUMNS;
@@ -1663,7 +1663,7 @@ test_browser_item_rendering(void) {
     assert(ncm_mpd_item_set_song(&item, &song));
     assert(native_browser_screen_render_item(&screen, &buffer, &item,
                                              20, false, false));
-    assert(ncm_string_equal(buffer.data, buffer.len,
+    assert(STREQUAL(buffer.data, buffer.len,
                             LIT_ARGS("Artist    Title     ")));
 
     nc_buffer_destroy(&buffer);
@@ -1698,19 +1698,19 @@ test_browser_item_to_string(void) {
     assert(ncm_directory_set(&directory, LIT_ARGS("artists/Alpha"), 0));
     assert(ncm_mpd_item_set_directory(&item, &directory));
     assert(native_browser_screen_item_to_string(&screen, &item, &text));
-    assert(ncm_string_equal(text.data, text.len, LIT_ARGS("[Alpha]")));
+    assert(STREQUAL(text.data, text.len, LIT_ARGS("[Alpha]")));
 
     assert(ncm_playlist_set(&playlist, LIT_ARGS("lists/Favorites"), 0));
     assert(ncm_mpd_item_set_playlist(&item, &playlist));
     assert(native_browser_screen_item_to_string(&screen, &item, &text));
-    assert(ncm_string_equal(text.data, text.len,
+    assert(STREQUAL(text.data, text.len,
                             LIT_ARGS("PL:Favorites")));
 
     Config.browser_display_mode = NCM_DISPLAY_MODE_CLASSIC;
     assert(ncm_song_set_uri(&song, LIT_ARGS("songs/file.flac")));
     assert(ncm_mpd_item_set_song(&item, &song));
     assert(native_browser_screen_item_to_string(&screen, &item, &text));
-    assert(ncm_string_equal(text.data, text.len,
+    assert(STREQUAL(text.data, text.len,
                             LIT_ARGS("classic:songs/file.flac")));
 
     Config.browser_display_mode = NCM_DISPLAY_MODE_COLUMNS;
@@ -1718,7 +1718,7 @@ test_browser_item_to_string(void) {
     assert(ncm_song_add_tag(&song, MPD_TAG_TITLE, LIT_ARGS("Title")));
     assert(ncm_mpd_item_set_song(&item, &song));
     assert(native_browser_screen_item_to_string(&screen, &item, &text));
-    assert(ncm_string_equal(text.data, text.len,
+    assert(STREQUAL(text.data, text.len,
                             LIT_ARGS("columns:Artist-Title")));
 
     ncm_buffer_destroy(&text);
@@ -1757,15 +1757,15 @@ test_browser_header_title(void) {
     native_browser_screen_init(&screen, 0, 80, 0, 24, nc_color_default(),
                                nc_border_none());
     view = native_browser_screen_title_text(&screen);
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("Browse: /")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("Browse: /")));
 
     assert(native_browser_screen_set_current_directory(
         &screen, LIT_ARGS("artists/alpha")));
     native_browser_screen_update_title_text(&screen);
     view = native_browser_screen_title_text(&screen);
-    assert(ncm_string_equal(view.data, view.len,
+    assert(STREQUAL(view.data, view.len,
                             LIT_ARGS("Browse: artists/alpha")));
-    assert(ncm_string_equal(nc_screen_title(native_browser_screen_base(
+    assert(STREQUAL(nc_screen_title(native_browser_screen_base(
                                 &screen)), view.len,
                             LIT_ARGS("Browse: artists/alpha")));
 
@@ -1780,7 +1780,7 @@ test_browser_header_title(void) {
     native_browser_screen_update_title_text(&screen);
     view = native_browser_screen_title_text(&screen);
     assert(view.len < STRLIT_LEN("Browse: abcdefghijklmnopqrstuvwxyz"));
-    assert(ncm_string_equal(view.data, STRLIT_LEN("Browse: "),
+    assert(STREQUAL(view.data, STRLIT_LEN("Browse: "),
                             LIT_ARGS("Browse: ")));
 
     first_len = view.len;
@@ -1793,7 +1793,7 @@ test_browser_header_title(void) {
     native_browser_screen_update_title_text(&screen);
     view = native_browser_screen_title_text(&screen);
     assert((view.len != first_len)
-           || !ncm_string_equal(view.data, view.len,
+           || !STREQUAL(view.data, view.len,
                                 first_title, first_len));
 
     native_browser_screen_destroy(&screen);
@@ -1842,9 +1842,9 @@ test_browser_column_title(void) {
     native_browser_screen_init(&screen, 0, 20, 0, 24,
                                nc_color_default(), nc_border_none());
     view = native_browser_screen_column_title_text(&screen);
-    assert(ncm_string_equal(view.data, view.len,
+    assert(STREQUAL(view.data, view.len,
                             LIT_ARGS("Artist    Title     ")));
-    assert(ncm_string_equal(nc_window_title(&screen.window),
+    assert(STREQUAL(nc_window_title(&screen.window),
                             nc_window_title_len(&screen.window),
                             LIT_ARGS("Artist    Title     ")));
 
@@ -1984,7 +1984,7 @@ __wrap_ncm_mpd_client_get_directory_entries(
         return false;
     }
     if ((mpd_trace.mode == BROWSER_MPD_TRACE_NO_EXIST)
-        && ncm_string_equal(path, path_len, LIT_ARGS("missing"))) {
+        && STREQUAL(path, path_len, LIT_ARGS("missing"))) {
         client->connection.server_error_code = MPD_SERVER_ERROR_NO_EXIST;
         ncm_error_set(error, ENOENT, STRLIT_ARGS("directory missing"));
         return false;
@@ -1992,19 +1992,19 @@ __wrap_ncm_mpd_client_get_directory_entries(
 
     client->connection.server_error_code = (enum mpd_server_error)0;
     ncm_error_clear(error);
-    if (ncm_string_equal(path, path_len, LIT_ARGS("/"))) {
+    if (STREQUAL(path, path_len, LIT_ARGS("/"))) {
         browser_mpd_trace_add_directory(items, LIT_ARGS("artist"));
-    } else if (ncm_string_equal(path, path_len, LIT_ARGS("artist"))) {
+    } else if (STREQUAL(path, path_len, LIT_ARGS("artist"))) {
         browser_mpd_trace_add_directory(items, LIT_ARGS("artist/album"));
         browser_mpd_trace_add_song(items, LIT_ARGS("artist/keep.flac"));
         browser_mpd_trace_add_song(items, LIT_ARGS("artist/drop.flac"));
     } else if ((mpd_trace.mode == BROWSER_MPD_TRACE_LOCATE)
-               && ncm_string_equal(path, path_len,
+               && STREQUAL(path, path_len,
                                    LIT_ARGS("artist/album"))) {
         browser_mpd_trace_add_song(items, LIT_ARGS("artist/album/other.flac"));
         browser_mpd_trace_add_song(items,
                                    LIT_ARGS("artist/album/target.flac"));
-    } else if (ncm_string_equal(path, path_len, LIT_ARGS("gone"))) {
+    } else if (STREQUAL(path, path_len, LIT_ARGS("gone"))) {
         browser_mpd_trace_add_directory(items, LIT_ARGS("gone/child"));
     }
     return true;
@@ -2024,7 +2024,7 @@ __wrap_ncm_mpd_client_get_directory_recursive(
     }
 
     if ((mpd_trace.mode == BROWSER_MPD_TRACE_RECURSIVE)
-        && ncm_string_equal(path, path_len, LIT_ARGS("artist"))) {
+        && STREQUAL(path, path_len, LIT_ARGS("artist"))) {
         browser_mpd_trace_append_song(songs, LIT_ARGS("artist/a.flac"));
         browser_mpd_trace_append_song(songs,
                                       LIT_ARGS("artist/album/b.flac"));
@@ -2359,7 +2359,7 @@ browser_test_assert_item_path(NativeBrowserScreen *screen, int64 pos,
     case NCM_MPD_ITEM_UNKNOWN:
         break;
     }
-    assert(ncm_string_equal(view.data, view.len, path, path_len));
+    assert(STREQUAL(view.data, view.len, path, path_len));
     return;
 }
 
@@ -2372,7 +2372,7 @@ browser_test_assert_song_uri(NcmSongArray *songs, int32 pos, char *uri,
     assert(pos >= 0);
     assert(pos < songs->len);
     assert(ncm_song_uri_view(&songs->items[pos], 0, &view));
-    assert(ncm_string_equal(view.data, view.len, uri, uri_len));
+    assert(STREQUAL(view.data, view.len, uri, uri_len));
     return;
 }
 
@@ -2388,7 +2388,7 @@ browser_test_song_array_has_uri(NcmSongArray *songs, char *uri,
         if (!ncm_song_uri_view(&songs->items[i], 0, &view)) {
             continue;
         }
-        if (ncm_string_equal(view.data, view.len, uri, uri_len)) {
+        if (STREQUAL(view.data, view.len, uri, uri_len)) {
             return true;
         }
     }
@@ -2431,7 +2431,7 @@ browser_test_has_item_path(NativeBrowserScreen *screen,
         case NCM_MPD_ITEM_UNKNOWN:
             break;
         }
-        if (ncm_string_equal(view.data, view.len, path, path_len)) {
+        if (STREQUAL(view.data, view.len, path, path_len)) {
             return true;
         }
     }

@@ -230,7 +230,7 @@ test_mutable_song_tag_changes(void) {
     assert(native_tag_editor_screen_current_song(&screen, &current));
     assert(ncm_mutable_song_get_tag(&current, NCM_TAGS_FIELD_ARTIST,
                                     0, &view));
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("New")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("New")));
 
     ncm_mutable_song_destroy(&current);
     ncm_mutable_song_destroy(&song);
@@ -276,9 +276,9 @@ test_selected_songs(void) {
     assert(native_tag_editor_screen_selected_songs(&screen, &songs));
     assert(songs.len == 1);
     assert(ncm_song_uri_view(&songs.items[0], 0, &value));
-    assert(ncm_string_equal(value.data, value.len, LIT_ARGS("two.flac")));
+    assert(STREQUAL(value.data, value.len, LIT_ARGS("two.flac")));
     assert(ncm_song_tag_view(&songs.items[0], MPD_TAG_ARTIST, 0, &value));
-    assert(ncm_string_equal(value.data, value.len,
+    assert(STREQUAL(value.data, value.len,
                             LIT_ARGS("Original two")));
     assert(ncm_song_duration(&songs.items[0]) == 321);
     assert(ncm_song_mtime(&songs.items[0]) == 1234);
@@ -288,9 +288,9 @@ test_selected_songs(void) {
     assert(native_tag_editor_screen_selected_songs(&screen, &songs));
     assert(songs.len == 1);
     assert(ncm_song_uri_view(&songs.items[0], 0, &value));
-    assert(ncm_string_equal(value.data, value.len, LIT_ARGS("one.flac")));
+    assert(STREQUAL(value.data, value.len, LIT_ARGS("one.flac")));
     assert(ncm_song_tag_view(&songs.items[0], MPD_TAG_ARTIST, 0, &value));
-    assert(ncm_string_equal(value.data, value.len,
+    assert(STREQUAL(value.data, value.len,
                             LIT_ARGS("Original one")));
 
     ncm_song_array_destroy(&songs);
@@ -335,10 +335,10 @@ test_filename_parser(void) {
                                             false, NULL));
     assert(ncm_mutable_song_get_tag(&song, NCM_TAGS_FIELD_ARTIST,
                                     0, &view));
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("Artist")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("Artist")));
     assert(ncm_mutable_song_get_tag(&song, NCM_TAGS_FIELD_TITLE,
                                     0, &view));
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("Title")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("Title")));
 
     ncm_buffer_destroy(&preview);
     ncm_mutable_song_destroy(&song);
@@ -543,7 +543,7 @@ test_tiny_editor_field_updates(void) {
         assert(ncm_mutable_song_get_tag(
             native_tiny_tag_editor_screen_edited(&screen),
             (enum NcmTagsField)field, 0, &view));
-        assert(ncm_string_equal(view.data, view.len,
+        assert(STREQUAL(view.data, view.len,
                                 LIT_ARGS("Updated value")));
     }
     assert(ncm_mutable_song_is_modified(
@@ -570,18 +570,18 @@ test_tiny_editor_filename_stem(void) {
         &screen, LIT_ARGS("new")));
     assert(ncm_mutable_song_get_new_name(
         native_tiny_tag_editor_screen_edited(&screen), &view));
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("new.flac")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("new.flac")));
 
     assert(native_tiny_tag_editor_screen_set_filename_stem(
         &screen, LIT_ARGS("final")));
     assert(ncm_mutable_song_get_new_name(
         native_tiny_tag_editor_screen_edited(&screen), &view));
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("final.flac")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("final.flac")));
     assert(!native_tiny_tag_editor_screen_set_filename_stem(
         &screen, LIT_ARGS("")));
     assert(ncm_mutable_song_get_new_name(
         native_tiny_tag_editor_screen_edited(&screen), &view));
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("final.flac")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("final.flac")));
 
     ncm_mutable_song_destroy(&song);
     ncm_mutable_song_init(&song);
@@ -593,7 +593,7 @@ test_tiny_editor_filename_stem(void) {
         &screen, LIT_ARGS("COPY")));
     assert(ncm_mutable_song_get_new_name(
         native_tiny_tag_editor_screen_edited(&screen), &view));
-    assert(ncm_string_equal(view.data, view.len, LIT_ARGS("COPY")));
+    assert(STREQUAL(view.data, view.len, LIT_ARGS("COPY")));
 
     ncm_mutable_song_destroy(&song);
     native_tiny_tag_editor_screen_destroy(&screen);
@@ -676,22 +676,22 @@ test_tiny_editor_run_tag_action(void) {
 
     base = native_tiny_tag_editor_screen_base(&screen);
     assert(nc_screen_active_window(base) == &screen.window);
-    assert(ncm_string_equal(nc_screen_title(base),
+    assert(STREQUAL(nc_screen_title(base),
                             STRLIT_LEN("Tiny tag editor"),
                             LIT_ARGS("Tiny tag editor")));
     assert(nc_screen_can_run_current(base));
     assert(nc_screen_run_current(base));
     assert(fixture.prompt_calls == 1);
-    assert(ncm_string_equal(fixture.prompt_label.data,
+    assert(STREQUAL(fixture.prompt_label.data,
                             fixture.prompt_label.len,
                             LIT_ARGS("Title")));
-    assert(ncm_string_equal(fixture.prompt_initial.data,
+    assert(STREQUAL(fixture.prompt_initial.data,
                             fixture.prompt_initial.len,
                             LIT_ARGS("Title value")));
     assert(ncm_mutable_song_get_tag(
         native_tiny_tag_editor_screen_edited(&screen),
         NCM_TAGS_FIELD_TITLE, 0, &value));
-    assert(ncm_string_equal(value.data, value.len,
+    assert(STREQUAL(value.data, value.len,
                             LIT_ARGS("New title")));
     assert_tiny_editor_row_text(
         &screen, NATIVE_TINY_TAG_EDITOR_TAG_ROW(NCM_TAGS_FIELD_TITLE),
@@ -703,13 +703,13 @@ test_tiny_editor_run_tag_action(void) {
     assert(!nc_screen_run_current(base));
     assert(fixture.prompt_calls == 2);
     assert(fixture.status_calls == 1);
-    assert(ncm_string_equal(fixture.status_messages[0].data,
+    assert(STREQUAL(fixture.status_messages[0].data,
                             fixture.status_messages[0].len,
                             LIT_ARGS("Action aborted")));
     assert(ncm_mutable_song_get_tag(
         native_tiny_tag_editor_screen_edited(&screen),
         NCM_TAGS_FIELD_ARTIST, 0, &value));
-    assert(ncm_string_equal(value.data, value.len,
+    assert(STREQUAL(value.data, value.len,
                             LIT_ARGS("Artist value")));
 
     nc_menu_highlight_position(
@@ -753,15 +753,15 @@ test_tiny_editor_run_filename_action(void) {
         &screen, NATIVE_TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW);
 
     assert(native_tiny_tag_editor_screen_run_current(&screen));
-    assert(ncm_string_equal(fixture.prompt_label.data,
+    assert(STREQUAL(fixture.prompt_label.data,
                             fixture.prompt_label.len,
                             LIT_ARGS("Filename")));
-    assert(ncm_string_equal(fixture.prompt_initial.data,
+    assert(STREQUAL(fixture.prompt_initial.data,
                             fixture.prompt_initial.len,
                             LIT_ARGS("song")));
     assert(ncm_mutable_song_get_new_name(
         native_tiny_tag_editor_screen_edited(&screen), &name));
-    assert(ncm_string_equal(name.data, name.len,
+    assert(STREQUAL(name.data, name.len,
                             LIT_ARGS("renamed.flac")));
     assert_tiny_editor_row_text(
         &screen, NATIVE_TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW,
@@ -771,7 +771,7 @@ test_tiny_editor_run_filename_action(void) {
     assert(native_tiny_tag_editor_screen_run_current(&screen));
     assert(ncm_mutable_song_get_new_name(
         native_tiny_tag_editor_screen_edited(&screen), &name));
-    assert(ncm_string_equal(name.data, name.len,
+    assert(STREQUAL(name.data, name.len,
                             LIT_ARGS("renamed.flac")));
 
     ncm_mutable_song_destroy(&song);
@@ -816,16 +816,16 @@ test_tiny_editor_run_save_and_cancel_actions(void) {
     assert(fixture.write_calls == 1);
     assert(fixture.music_dir == screen.music_dir.data);
     assert(fixture.status_calls == 2);
-    assert(ncm_string_equal(fixture.status_messages[0].data,
+    assert(STREQUAL(fixture.status_messages[0].data,
                             fixture.status_messages[0].len,
                             LIT_ARGS("Updating tags...")));
-    assert(ncm_string_equal(fixture.status_messages[1].data,
+    assert(STREQUAL(fixture.status_messages[1].data,
                             fixture.status_messages[1].len,
                             LIT_ARGS("Tags updated")));
     assert(fixture.switch_calls == 1);
     assert(fixture.switched_screen == &previous);
     assert(fixture.update_directory_calls == 1);
-    assert(ncm_string_equal(fixture.updated_directory.data,
+    assert(STREQUAL(fixture.updated_directory.data,
                             fixture.updated_directory.len,
                             LIT_ARGS("album")));
     assert(fixture.status_calls_at_side_effect == 2);
@@ -842,7 +842,7 @@ test_tiny_editor_run_save_and_cancel_actions(void) {
         &screen, NATIVE_TINY_TAG_EDITOR_SAVE_ROW));
     assert(fixture.write_calls == 2);
     assert(fixture.status_calls == 4);
-    assert(ncm_string_equal(
+    assert(STREQUAL(
         fixture.status_messages[2].data,
         fixture.status_messages[2].len,
         LIT_ARGS("Updating tags...")));
@@ -911,10 +911,10 @@ test_tiny_editor_save_side_effects(void) {
     assert(fixture.update_playlist_calls == 1);
     assert(fixture.browser_update_calls == 0);
     assert(fixture.modified_at_side_effect);
-    assert(ncm_string_equal(fixture.playlist_title.data,
+    assert(STREQUAL(fixture.playlist_title.data,
                             fixture.playlist_title.len,
                             LIT_ARGS("Playlist title")));
-    assert(ncm_string_equal(fixture.playlist_new_name.data,
+    assert(STREQUAL(fixture.playlist_new_name.data,
                             fixture.playlist_new_name.len,
                             LIT_ARGS("renamed.flac")));
 
@@ -993,9 +993,9 @@ test_tiny_editor_open_song(void) {
         &screen, &song, LIT_ARGS("/music/"), LIT_ARGS(" | "), true,
         &path);
     assert(result == NATIVE_TINY_TAG_EDITOR_OPEN_SUCCESS);
-    assert(ncm_string_equal(path.data, path.len,
+    assert(STREQUAL(path.data, path.len,
                             LIT_ARGS("/music/album/song.flac")));
-    assert(ncm_string_equal(fixture.path.data, fixture.path.len,
+    assert(STREQUAL(fixture.path.data, fixture.path.len,
                             path.data, path.len));
     assert(fixture.open_calls == 1);
     assert(fixture.audio_calls == 1);
@@ -1071,7 +1071,7 @@ test_tiny_editor_open_failures(void) {
         &screen, &song, LIT_ARGS("/music/"), LIT_ARGS(" | "), true,
         &path);
     assert(result == NATIVE_TINY_TAG_EDITOR_OPEN_UNREADABLE_FILE);
-    assert(ncm_string_equal(path.data, path.len,
+    assert(STREQUAL(path.data, path.len,
                             LIT_ARGS("/music/album/song.flac")));
     assert(fixture.open_calls == 1);
     assert(fixture.audio_calls == 0);
@@ -1094,7 +1094,7 @@ test_tiny_editor_open_failures(void) {
     result = native_tiny_tag_editor_screen_open_song(
         &screen, &song, NULL, 0, NULL, 0, true, &path);
     assert(result == NATIVE_TINY_TAG_EDITOR_OPEN_SUCCESS);
-    assert(ncm_string_equal(path.data, path.len,
+    assert(STREQUAL(path.data, path.len,
                             LIT_ARGS("/tmp/song.flac")));
     assert(fixture.open_calls == 2);
     assert(fixture.close_calls == 2);
@@ -1153,7 +1153,7 @@ assert_tiny_editor_row_text(NativeTinyTagEditorScreen *screen, int64 row,
 
     buffer = tiny_editor_row(screen, row);
     assert(buffer != NULL);
-    if (!ncm_string_equal(buffer->data, buffer->len,
+    if (!STREQUAL(buffer->data, buffer->len,
                           expected, expected_len)) {
         fprintf(stderr,
                 "tiny editor row %lld mismatch: expected [%.*s], "

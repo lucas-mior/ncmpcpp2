@@ -96,7 +96,7 @@ static void
 require_string(char *file, int32 line, char *name,
                char *actual, int32 actual_len,
                char *expected, int32 expected_len) {
-    if (!ncm_string_equal(actual, actual_len, expected, expected_len)) {
+    if (!STREQUAL(actual, actual_len, expected, expected_len)) {
         fprintf(stderr, "%s:%d: %s: expected '%.*s', got '%.*s'\n",
                 file, line, name,
                 expected_len, expected, actual_len, actual);
@@ -290,8 +290,8 @@ test_string(void) {
     ncm_string_lowercase_ascii(lowercase, STRLIT_LEN("AbC-123-Ç"));
     REQUIRE_STRING(lowercase, STRLIT_LEN("abc-123-Ç"), "abc-123-Ç");
 
-    REQUIRE(ncm_string_equal(LIT_ARGS("same"), LIT_ARGS("same")));
-    REQUIRE(!ncm_string_equal(LIT_ARGS("same"), LIT_ARGS("other")));
+    REQUIRE(STREQUAL(LIT_ARGS("same"), LIT_ARGS("same")));
+    REQUIRE(!STREQUAL(LIT_ARGS("same"), LIT_ARGS("other")));
     REQUIRE(ncm_string_starts_with(LIT_ARGS("prefix"), LIT_ARGS("pre")));
     REQUIRE(!ncm_string_starts_with(LIT_ARGS("pre"), LIT_ARGS("prefix")));
     REQUIRE(ncm_string_ends_with(LIT_ARGS("track.flac"), LIT_ARGS("flac")));

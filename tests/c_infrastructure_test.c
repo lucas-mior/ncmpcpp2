@@ -79,7 +79,7 @@ static void
 require_string(char *file, int32 line, char *name,
                char *actual, int32 actual_len,
                char *expected, int32 expected_len) {
-    if (!ncm_string_equal(actual, actual_len, expected, expected_len)) {
+    if (!STREQUAL(actual, actual_len, expected, expected_len)) {
         fprintf(stderr, "%s:%d: %s: expected '%.*s', got '%.*s'\n",
                 file, line, name,
                 expected_len, expected, actual_len, actual);
@@ -232,7 +232,7 @@ test_fs(void) {
                                   (int32)strlen(tmpdir), &error));
     found = false;
     while (ncm_fs_directory_read(&directory, &entry, &error)) {
-        if (ncm_string_equal(entry.name, entry.name_len,
+        if (STREQUAL(entry.name, entry.name_len,
                              LIT_ARGS("file.txt"))) {
             found = true;
         }

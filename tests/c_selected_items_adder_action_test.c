@@ -194,7 +194,7 @@ test_playlist_action_opens_native_dialog(void) {
     assert(test_state.open_calls == 1);
     assert(test_state.opened_songs.len == 1);
     assert(ncm_song_uri_view(&test_state.opened_songs.items[0], 0, &uri));
-    assert(ncm_string_equal(uri.data, uri.len,
+    assert(STREQUAL(uri.data, uri.len,
                             LIT_ARGS("playlist.flac")));
     return;
 }
@@ -213,7 +213,7 @@ test_tag_editor_action_opens_native_dialog(void) {
     assert(test_state.open_calls == 1);
     assert(test_state.opened_songs.len == 1);
     assert(ncm_song_uri_view(&test_state.opened_songs.items[0], 0, &uri));
-    assert(ncm_string_equal(uri.data, uri.len,
+    assert(STREQUAL(uri.data, uri.len,
                             LIT_ARGS("tag-editor.flac")));
     return;
 }

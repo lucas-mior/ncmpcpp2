@@ -73,7 +73,7 @@ test_media_library_native_search(void) {
     assert(nc_menu_highlight(menu) == 1);
 
     constraint = current_screen_current_search_constraint();
-    assert(ncm_string_equal(constraint.data, constraint.len,
+    assert(STREQUAL(constraint.data, constraint.len,
                             LIT_ARGS("needle")));
 
     current_screen_clear_search_constraint();
@@ -114,7 +114,7 @@ test_search_engine_native_search(void) {
     assert(!ncm_error_is_set(&error));
 
     constraint = current_screen_current_search_constraint();
-    assert(ncm_string_equal(constraint.data, constraint.len,
+    assert(STREQUAL(constraint.data, constraint.len,
                             LIT_ARGS("result title")));
 
     current_screen_clear_search_constraint();
@@ -143,7 +143,7 @@ test_help_native_search(void) {
     assert(!ncm_error_is_set(&error));
 
     constraint = current_screen_current_search_constraint();
-    assert(ncm_string_equal(constraint.data, constraint.len,
+    assert(STREQUAL(constraint.data, constraint.len,
                             LIT_ARGS("playlist")));
     current_screen_clear_search_constraint();
     constraint = current_screen_current_search_constraint();
@@ -174,7 +174,7 @@ test_lastfm_native_search(void) {
     assert(!ncm_error_is_set(&error));
 
     constraint = current_screen_current_search_constraint();
-    assert(ncm_string_equal(constraint.data, constraint.len,
+    assert(STREQUAL(constraint.data, constraint.len,
                             LIT_ARGS("biography")));
     current_screen_clear_search_constraint();
     constraint = current_screen_current_search_constraint();
@@ -206,7 +206,7 @@ test_lyrics_native_search(void) {
     assert(!ncm_error_is_set(&error));
 
     constraint = current_screen_current_search_constraint();
-    assert(ncm_string_equal(constraint.data, constraint.len,
+    assert(STREQUAL(constraint.data, constraint.len,
                             LIT_ARGS("chorus")));
     current_screen_clear_search_constraint();
     constraint = current_screen_current_search_constraint();
@@ -252,7 +252,7 @@ test_selected_items_adder_native_search(void) {
     assert(nc_menu_highlight(menu) == 3);
 
     constraint = current_screen_current_search_constraint();
-    assert(ncm_string_equal(constraint.data, constraint.len,
+    assert(STREQUAL(constraint.data, constraint.len,
                             LIT_ARGS("current album")));
     current_screen_clear_search_constraint();
     constraint = current_screen_current_search_constraint();
@@ -296,7 +296,7 @@ test_playlist_editor_native_search(void) {
     assert(!ncm_error_is_set(&error));
 
     constraint = current_screen_current_search_constraint();
-    assert(ncm_string_equal(constraint.data, constraint.len,
+    assert(STREQUAL(constraint.data, constraint.len,
                             LIT_ARGS("Needle")));
 
     current_screen_clear_search_constraint();
@@ -343,7 +343,7 @@ test_tag_editor_native_search(void) {
     assert(!ncm_error_is_set(&error));
 
     constraint = current_screen_current_search_constraint();
-    assert(ncm_string_equal(constraint.data, constraint.len,
+    assert(STREQUAL(constraint.data, constraint.len,
                             LIT_ARGS("Needle")));
 
     current_screen_clear_search_constraint();

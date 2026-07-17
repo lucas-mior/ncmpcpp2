@@ -389,7 +389,7 @@ test_execute_preserves_first_error(void) {
     client.command_list_active = true;
     assert(!ncm_playlist_sort_plan_execute(&plan, &client, &error));
     assert(error.code == EIO);
-    assert(ncm_string_equal(error.message, STRLIT_LEN("start failure"),
+    assert(STREQUAL(error.message, STRLIT_LEN("start failure"),
                             LIT_ARGS("start failure")));
     assert(test_mpd.swaps_len == 0);
     assert(test_mpd.commit_calls == 0);
@@ -400,7 +400,7 @@ test_execute_preserves_first_error(void) {
     test_mpd.fail_swap = 1;
     assert(!ncm_playlist_sort_plan_execute(&plan, &client, &error));
     assert(error.code == EIO);
-    assert(ncm_string_equal(error.message, STRLIT_LEN("swap failure"),
+    assert(STREQUAL(error.message, STRLIT_LEN("swap failure"),
                             LIT_ARGS("swap failure")));
     assert(test_mpd.start_calls == 1);
     assert(test_mpd.swaps_len == 1);
@@ -411,7 +411,7 @@ test_execute_preserves_first_error(void) {
     test_mpd.fail_commit = true;
     assert(!ncm_playlist_sort_plan_execute(&plan, &client, &error));
     assert(error.code == EIO);
-    assert(ncm_string_equal(error.message, STRLIT_LEN("commit failure"),
+    assert(STREQUAL(error.message, STRLIT_LEN("commit failure"),
                             LIT_ARGS("commit failure")));
     assert(test_mpd.start_calls == 1);
     assert(test_mpd.swaps_len == 2);

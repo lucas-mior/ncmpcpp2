@@ -1004,7 +1004,7 @@ native_browser_screen_rename_current_directory(
                                                     error)) {
         return false;
     }
-    if (ncm_string_equal(old_path.data, old_path.len,
+    if (STREQUAL(old_path.data, old_path.len,
                          new_path, new_path_len)) {
         ncm_error_clear(error);
         return true;
@@ -1044,7 +1044,7 @@ native_browser_screen_rename_current_playlist(
                                                    error)) {
         return false;
     }
-    if (ncm_string_equal(old_path.data, old_path.len,
+    if (STREQUAL(old_path.data, old_path.len,
                          new_path, new_path_len)) {
         ncm_error_clear(error);
         return true;
@@ -1788,7 +1788,7 @@ native_browser_directory_is_root(char *directory, int32 directory_len) {
     if (directory_len <= 0) {
         return true;
     }
-    return ncm_string_equal(directory, directory_len, STRLIT_ARGS("/"));
+    return STREQUAL(directory, directory_len, STRLIT_ARGS("/"));
 }
 
 static bool
@@ -1797,7 +1797,7 @@ native_browser_path_is_parent_directory(char *directory,
     if (directory_len <= 0) {
         return false;
     }
-    if (ncm_string_equal(directory, directory_len, STRLIT_ARGS(".."))) {
+    if (STREQUAL(directory, directory_len, STRLIT_ARGS(".."))) {
         return true;
     }
     return ncm_string_ends_with(directory, directory_len, STRLIT_ARGS("/.."));
@@ -1817,7 +1817,7 @@ native_browser_set_normalized_directory(NativeBrowserScreen *screen,
         return false;
     }
     if (native_browser_path_is_parent_directory(directory, directory_len)) {
-        if (ncm_string_equal(directory, directory_len, STRLIT_ARGS(".."))) {
+        if (STREQUAL(directory, directory_len, STRLIT_ARGS(".."))) {
             return native_browser_set_parent_of_directory(
                 screen, screen->current_directory.data,
                 screen->current_directory.len);
@@ -2808,7 +2808,7 @@ native_browser_supported_extensions_contains(NcmBufferArray *extensions,
         NcmBuffer *item;
 
         item = &extensions->items[i];
-        if (ncm_string_equal(item->data, item->len, extension,
+        if (STREQUAL(item->data, item->len, extension,
                              extension_len)) {
             return true;
         }
@@ -3063,5 +3063,5 @@ native_browser_item_is_song(NcmMpdItem *item) {
 static bool
 native_browser_string_views_equal(NcmStringView left,
                                   NcmStringView right) {
-    return ncm_string_equal(left.data, left.len, right.data, right.len);
+    return STREQUAL(left.data, left.len, right.data, right.len);
 }

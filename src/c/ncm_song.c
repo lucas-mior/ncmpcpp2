@@ -1003,7 +1003,7 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
                 NcmBuffer previous;
 
                 previous = ncm_song_getter_buffer(song, getter, j);
-                if (ncm_string_equal(previous.data, previous.len,
+                if (STREQUAL(previous.data, previous.len,
                                      tag.data, tag.len)) {
                     already_present = true;
                 }
@@ -1056,5 +1056,5 @@ ncm_song_equal(NcmSong *a, NcmSong *b) {
         return false;
     }
 
-    return ncm_string_equal(a_uri.data, a_uri.len, b_uri.data, b_uri.len);
+    return STREQUAL(a_uri.data, a_uri.len, b_uri.data, b_uri.len);
 }

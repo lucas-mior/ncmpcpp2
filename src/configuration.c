@@ -447,18 +447,18 @@ configuration_parse_long_option(NcmConfigurationOptions *options,
         } \
     } while (0)
 
-    if (ncm_string_equal(name, name_len, STRLIT_ARGS("host"))) {
+    if (STREQUAL(name, name_len, STRLIT_ARGS("host"))) {
         REQUIRE_LONG_VALUE();
         configuration_copy_string(&options->host, value, value_len);
         options->host_provided = true;
-    } else if (ncm_string_equal(name, name_len, STRLIT_ARGS("port"))) {
+    } else if (STREQUAL(name, name_len, STRLIT_ARGS("port"))) {
         REQUIRE_LONG_VALUE();
         if (!configuration_parse_port(value, value_len, arg, name_len + 2,
                                       &options->port, error)) {
             return false;
         }
         options->port_provided = true;
-    } else if (ncm_string_equal(name, name_len,
+    } else if (STREQUAL(name, name_len,
                                 STRLIT_ARGS("current-song"))) {
         options->current_song = true;
         if (value != NULL) {
@@ -472,39 +472,39 @@ configuration_parse_long_option(NcmConfigurationOptions *options,
             configuration_copy_string(&options->current_song_format,
                                       argv[*i], strlen32(argv[*i]));
         }
-    } else if (ncm_string_equal(name, name_len, STRLIT_ARGS("config"))) {
+    } else if (STREQUAL(name, name_len, STRLIT_ARGS("config"))) {
         REQUIRE_LONG_VALUE();
         command_line_options_append_path(&options->config_paths,
                                          value, value_len);
-    } else if (ncm_string_equal(name, name_len,
+    } else if (STREQUAL(name, name_len,
                                 STRLIT_ARGS("ignore-config-errors"))) {
         REJECT_LONG_VALUE();
         options->ignore_config_errors = true;
-    } else if (ncm_string_equal(name, name_len,
+    } else if (STREQUAL(name, name_len,
                                 STRLIT_ARGS("test-lyrics-fetchers"))) {
         REJECT_LONG_VALUE();
         options->test_lyrics_fetchers = true;
-    } else if (ncm_string_equal(name, name_len, STRLIT_ARGS("bindings"))) {
+    } else if (STREQUAL(name, name_len, STRLIT_ARGS("bindings"))) {
         REQUIRE_LONG_VALUE();
         command_line_options_append_path(&options->bindings_paths,
                                          value, value_len);
-    } else if (ncm_string_equal(name, name_len, STRLIT_ARGS("screen"))) {
+    } else if (STREQUAL(name, name_len, STRLIT_ARGS("screen"))) {
         REQUIRE_LONG_VALUE();
         options->screen = true;
         configuration_copy_string(&options->screen_name, value, value_len);
-    } else if (ncm_string_equal(name, name_len,
+    } else if (STREQUAL(name, name_len,
                                 STRLIT_ARGS("slave-screen"))) {
         REQUIRE_LONG_VALUE();
         options->slave_screen = true;
         configuration_copy_string(&options->slave_screen_name,
                                   value, value_len);
-    } else if (ncm_string_equal(name, name_len, STRLIT_ARGS("help"))) {
+    } else if (STREQUAL(name, name_len, STRLIT_ARGS("help"))) {
         REJECT_LONG_VALUE();
         options->help = true;
-    } else if (ncm_string_equal(name, name_len, STRLIT_ARGS("version"))) {
+    } else if (STREQUAL(name, name_len, STRLIT_ARGS("version"))) {
         REJECT_LONG_VALUE();
         options->version = true;
-    } else if (ncm_string_equal(name, name_len, STRLIT_ARGS("quiet"))) {
+    } else if (STREQUAL(name, name_len, STRLIT_ARGS("quiet"))) {
         REJECT_LONG_VALUE();
         options->quiet = true;
     } else {
@@ -533,7 +533,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options,
 
         arg = argv[i];
         arg_len = strlen32(arg);
-        if (ncm_string_equal(arg, arg_len, STRLIT_ARGS("--"))) {
+        if (STREQUAL(arg, arg_len, STRLIT_ARGS("--"))) {
             if (i + 1 < argc) {
                 char message[192];
                 int32 len;

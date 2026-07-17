@@ -674,7 +674,7 @@ native_visualizer_screen_find_output_id(
         NcmMpdOutput *output;
 
         output = outputs.items + i;
-        if (ncm_string_equal(screen->output_name.data,
+        if (STREQUAL(screen->output_name.data,
                              screen->output_name.len,
                              output->name,
                              output->name_len)) {

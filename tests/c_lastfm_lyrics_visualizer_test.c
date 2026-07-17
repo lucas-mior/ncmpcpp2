@@ -394,7 +394,7 @@ test_lastfm_service_parsing_with_fake_io(void) {
                                        LIT_ARGS("pt BR")));
     assert(ncm_lastfm_service_fetch(&service, &result));
     assert(result.success);
-    assert(ncm_string_equal(result.text, result.text_len,
+    assert(STREQUAL(result.text, result.text_len,
                             expected, (int32)strlen(expected)));
     assert(test_buffer_contains(&io.urls[0],
                                 LIT_ARGS("artist=Test+Artist")));
@@ -434,7 +434,7 @@ test_lastfm_duplicate_artist_requests(void) {
                                                   &error));
     test_lastfm_io_wait_calls(&io, 1);
     assert(native_lastfm_screen_has_service(&screen));
-    assert(ncm_string_equal(native_lastfm_screen_title(&screen),
+    assert(STREQUAL(native_lastfm_screen_title(&screen),
                             native_lastfm_screen_title_len(&screen),
                             LIT_ARGS("Artist info")));
     assert(native_lastfm_screen_queue_artist_info(&screen,
@@ -447,7 +447,7 @@ test_lastfm_duplicate_artist_requests(void) {
     test_wait_for_lastfm_completed(&screen, 1);
     assert(native_lastfm_screen_dispatch_jobs(&screen) == 1);
     assert(native_lastfm_screen_result(&screen)->success);
-    assert(ncm_string_equal(native_lastfm_screen_result(&screen)->text,
+    assert(STREQUAL(native_lastfm_screen_result(&screen)->text,
                             native_lastfm_screen_result(&screen)->text_len,
                             LIT_ARGS("Duplicate bio\n\n"
                                      "https://last.fm/music/Dup")));
@@ -506,7 +506,7 @@ test_lastfm_stale_result_suppression(void) {
     test_wait_for_lastfm_completed(&screen, 1);
     assert(native_lastfm_screen_dispatch_jobs(&screen) == 1);
     assert(native_lastfm_screen_result(&screen)->success);
-    assert(ncm_string_equal(native_lastfm_screen_result(&screen)->text,
+    assert(STREQUAL(native_lastfm_screen_result(&screen)->text,
                             native_lastfm_screen_result(&screen)->text_len,
                             LIT_ARGS("Two bio\n\n"
                                      "https://last.fm/music/Two")));
@@ -555,7 +555,7 @@ test_lastfm_success_rendering_properties(void) {
     test_wait_for_lastfm_completed(&screen, 1);
     assert(native_lastfm_screen_dispatch_jobs(&screen) == 1);
     assert(native_lastfm_screen_result(&screen)->success);
-    assert(ncm_string_equal(screen.buffer.data, screen.buffer.len,
+    assert(STREQUAL(screen.buffer.data, screen.buffer.len,
                             native_lastfm_screen_result(&screen)->text,
                             native_lastfm_screen_result(&screen)->text_len));
 
@@ -630,7 +630,7 @@ test_lastfm_error_rendering_properties(void) {
     test_wait_for_lastfm_completed(&screen, 1);
     assert(native_lastfm_screen_dispatch_jobs(&screen) == 1);
     assert(!native_lastfm_screen_result(&screen)->success);
-    assert(ncm_string_equal(screen.buffer.data, screen.buffer.len,
+    assert(STREQUAL(screen.buffer.data, screen.buffer.len,
                             LIT_ARGS(" Invalid response")));
 
     red = nc_color_make(COLOR_RED, NC_COLOR_CURRENT, false, false);
@@ -654,12 +654,12 @@ test_lastfm_screen_result_storage(void) {
                               nc_color_default(), nc_border_none(), 1);
     result = native_lastfm_screen_result(&screen);
     assert(!result->success);
-    assert(ncm_string_equal(native_lastfm_screen_title(&screen),
+    assert(STREQUAL(native_lastfm_screen_title(&screen),
                             native_lastfm_screen_title_len(&screen),
                             LIT_ARGS("Last.fm")));
     assert(ncm_lastfm_result_set(result, true, LIT_ARGS("Artist info")));
     assert(result->success);
-    assert(ncm_string_equal(result->text, result->text_len,
+    assert(STREQUAL(result->text, result->text_len,
                             LIT_ARGS("Artist info")));
     native_lastfm_screen_destroy(&screen);
     return;
@@ -688,7 +688,7 @@ test_lyrics_filename_and_fetcher_toggle(void) {
                                                false,
                                                true));
     filename = native_lyrics_screen_filename(&screen);
-    assert(ncm_string_equal(filename->data, filename->len,
+    assert(STREQUAL(filename->data, filename->len,
                             LIT_ARGS("/lyrics/Artist A - Title B.txt")));
 
     assert(ncm_lyrics_fetcher_registry_append_name(&registry,
@@ -871,23 +871,23 @@ test_visualizer_data_source_parsing(void) {
     native_visualizer_screen_init(&screen, 0, 0, 80, 24,
                                   nc_color_default(), nc_border_none(),
                                   &config);
-    assert(ncm_string_equal(screen.source_location.data,
+    assert(STREQUAL(screen.source_location.data,
                             screen.source_location.len,
                             LIT_ARGS("127.0.0.1")));
-    assert(ncm_string_equal(screen.source_port.data,
+    assert(STREQUAL(screen.source_port.data,
                             screen.source_port.len,
                             LIT_ARGS("5555")));
 
     native_visualizer_screen_init_data_source(
         &screen, LIT_ARGS("/tmp/mpd:visualizer"));
-    assert(ncm_string_equal(screen.source_location.data,
+    assert(STREQUAL(screen.source_location.data,
                             screen.source_location.len,
                             LIT_ARGS("/tmp/mpd:visualizer")));
     assert(screen.source_port.len == 0);
 
     native_visualizer_screen_init_data_source(
         &screen, LIT_ARGS("localhost:"));
-    assert(ncm_string_equal(screen.source_location.data,
+    assert(STREQUAL(screen.source_location.data,
                             screen.source_location.len,
                             LIT_ARGS("localhost")));
     assert(screen.source_port.len == 0);
@@ -922,10 +922,10 @@ test_visualizer_data_source_hooks(void) {
     assert(screen.source_fd == io.udp_fd);
     assert(io.udp_open_calls == 1);
     assert(io.fifo_open_calls == 0);
-    assert(ncm_string_equal(io.open_location.data,
+    assert(STREQUAL(io.open_location.data,
                             io.open_location.len,
                             LIT_ARGS("localhost")));
-    assert(ncm_string_equal(io.open_port.data,
+    assert(STREQUAL(io.open_port.data,
                             io.open_port.len,
                             LIT_ARGS("5555")));
     assert(native_visualizer_screen_open_data_source(&screen));
@@ -951,7 +951,7 @@ test_visualizer_data_source_hooks(void) {
     assert(native_visualizer_screen_open_data_source(&screen));
     assert(screen.source_fd == io.fifo_fd);
     assert(io.fifo_open_calls == 1);
-    assert(ncm_string_equal(io.open_location.data,
+    assert(STREQUAL(io.open_location.data,
                             io.open_location.len,
                             LIT_ARGS("/tmp/mpd.fifo")));
     assert(io.open_port.len == 0);
@@ -998,7 +998,7 @@ test_visualizer_find_output_id(void) {
     assert(native_visualizer_screen_find_output_id(&screen));
     assert(screen.output_id == 42);
     assert(io.get_outputs_calls == 1);
-    assert(ncm_string_equal(screen.output_name.data,
+    assert(STREQUAL(screen.output_name.data,
                             screen.output_name.len,
                             LIT_ARGS("Visualizer feed")));
 
@@ -1288,13 +1288,13 @@ test_visualizer_resource_lifecycle(void) {
     assert(screen.output_id == -1);
     assert(!screen.reset_output);
     assert(screen.source_location.len == STRLIT_LEN("127.0.0.1"));
-    assert(ncm_string_equal(screen.source_location.data,
+    assert(STREQUAL(screen.source_location.data,
                             screen.source_location.len,
                             LIT_ARGS("127.0.0.1")));
-    assert(ncm_string_equal(screen.source_port.data,
+    assert(STREQUAL(screen.source_port.data,
                             screen.source_port.len,
                             LIT_ARGS("5555")));
-    assert(ncm_string_equal(screen.output_name.data,
+    assert(STREQUAL(screen.output_name.data,
                             screen.output_name.len,
                             LIT_ARGS("Visualizer feed")));
     assert(ncm_sample_buffer_capacity(&screen.incoming_samples) == 44100);

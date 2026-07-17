@@ -1,6 +1,7 @@
 #include "screens/screen_type.h"
 
 #include "c/ncm_string.h"
+#include "cbase/util.c"
 
 static int32 screen_type_cstr_len(char *string);
 static bool screen_type_string_equal(char *string, int32 string_len,
@@ -20,7 +21,7 @@ screen_type_cstr_len(char *string) {
 
 static bool
 screen_type_string_equal(char *string, int32 string_len, char *expected) {
-    return ncm_string_equal(string, string_len, expected,
+    return STREQUAL(string, string_len, expected,
                             screen_type_cstr_len(expected));
 }
 

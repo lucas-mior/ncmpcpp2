@@ -324,7 +324,7 @@ static void
 assert_playlist_path(NcmPlaylist *playlist, char *path,
                      int32 path_len) {
     assert(playlist != NULL);
-    assert(ncm_string_equal(playlist->path, playlist->path_len,
+    assert(STREQUAL(playlist->path, playlist->path_len,
                             path, path_len));
     return;
 }
@@ -335,7 +335,7 @@ assert_song_uri(NcmSong *song, char *uri, int32 uri_len) {
 
     assert(song != NULL);
     assert(ncm_song_uri_view(song, 0, &view));
-    assert(ncm_string_equal(view.data, view.len, uri, uri_len));
+    assert(STREQUAL(view.data, view.len, uri, uri_len));
     return;
 }
 
@@ -412,19 +412,19 @@ test_initial_state_and_geometry(void) {
     assert(nc_screen_is_mergable(base));
     assert(nc_screen_window_timeout(base)
            == NC_SCREEN_DEFAULT_WINDOW_TIMEOUT);
-    assert(ncm_string_equal(nc_screen_title(base),
+    assert(STREQUAL(nc_screen_title(base),
                             STRLIT_LEN("Playlist editor"),
                             LIT_ARGS("Playlist editor")));
-    assert(ncm_string_equal(screen.playlists_title.data,
+    assert(STREQUAL(screen.playlists_title.data,
                             screen.playlists_title.len,
                             LIT_ARGS("Playlists")));
-    assert(ncm_string_equal(screen.content_title.data,
+    assert(STREQUAL(screen.content_title.data,
                             screen.content_title.len,
                             LIT_ARGS("Content")));
-    assert(ncm_string_equal(screen.playlists_window.title,
+    assert(STREQUAL(screen.playlists_window.title,
                             screen.playlists_window.title_len,
                             LIT_ARGS("Playlists")));
-    assert(ncm_string_equal(screen.content_window.title,
+    assert(STREQUAL(screen.content_window.title,
                             screen.content_window.title_len,
                             LIT_ARGS("Content")));
 
@@ -661,10 +661,10 @@ test_owned_playlist_and_content_rows(void) {
     assert(screen.displayed_playlist_valid);
     assert(screen.last_playlist_highlight == 0);
     assert(screen.last_known_content_count == 2);
-    assert(ncm_string_equal(screen.displayed_playlist_path.data,
+    assert(STREQUAL(screen.displayed_playlist_path.data,
                             screen.displayed_playlist_path.len,
                             LIT_ARGS("Road trip")));
-    assert(ncm_string_equal(screen.content_title.data,
+    assert(STREQUAL(screen.content_title.data,
                             screen.content_title.len,
                             LIT_ARGS("Content (2 items)")));
 
@@ -676,7 +676,7 @@ test_owned_playlist_and_content_rows(void) {
     assert(!screen.displayed_playlist_valid);
     assert(!screen.observed_playlist_valid);
     assert(screen.last_known_content_count == -1);
-    assert(ncm_string_equal(screen.content_title.data,
+    assert(STREQUAL(screen.content_title.data,
                             screen.content_title.len,
                             LIT_ARGS("Content")));
 
@@ -761,7 +761,7 @@ test_filter_and_search_are_column_local(void) {
     assert(screen.playlist_filter_enabled);
     assert(nc_menu_item_count(playlist_menu) == 2);
     assert(nc_menu_item_count(content_menu) == 3);
-    assert(ncm_string_equal(screen.playlist_filter_constraint.data,
+    assert(STREQUAL(screen.playlist_filter_constraint.data,
                             screen.playlist_filter_constraint.len,
                             LIT_ARGS("road")));
 
@@ -781,7 +781,7 @@ test_filter_and_search_are_column_local(void) {
         NCM_REGEX_LITERAL_CASE_INSENSITIVE, true, true, false, &error));
     assert(nc_menu_highlight(content_menu) == 0);
     assert(screen.content_search_enabled);
-    assert(ncm_string_equal(screen.content_search_constraint.data,
+    assert(STREQUAL(screen.content_search_constraint.data,
                             screen.content_search_constraint.len,
                             LIT_ARGS("needle-uri")));
     ncm_error_clear(&error);
@@ -790,7 +790,7 @@ test_filter_and_search_are_column_local(void) {
         NCM_REGEX_LITERAL_CASE_INSENSITIVE, false, true, false, &error));
     assert(nc_menu_highlight(content_menu) == 0);
     assert(screen.content_search_enabled);
-    assert(ncm_string_equal(screen.content_search_constraint.data,
+    assert(STREQUAL(screen.content_search_constraint.data,
                             screen.content_search_constraint.len,
                             LIT_ARGS("Needle title")));
 
@@ -923,7 +923,7 @@ test_invalid_regex_preserves_constraints(void) {
         &screen, LIT_ARGS("("), NCM_REGEX_EXTENDED, &error));
     assert(ncm_error_is_set(&error));
     assert(screen.playlist_filter_enabled);
-    assert(ncm_string_equal(screen.playlist_filter_constraint.data,
+    assert(STREQUAL(screen.playlist_filter_constraint.data,
                             screen.playlist_filter_constraint.len,
                             LIT_ARGS("Road")));
 
@@ -938,7 +938,7 @@ test_invalid_regex_preserves_constraints(void) {
         true, true, false, &error));
     assert(ncm_error_is_set(&error));
     assert(screen.content_search_enabled);
-    assert(ncm_string_equal(screen.content_search_constraint.data,
+    assert(STREQUAL(screen.content_search_constraint.data,
                             screen.content_search_constraint.len,
                             LIT_ARGS("one")));
 
@@ -1244,7 +1244,7 @@ test_native_selection_helpers(void) {
 
     assert(native_playlist_editor_screen_current_playlist_path(
         &screen, &path, &path_len));
-    assert(ncm_string_equal(path, path_len, LIT_ARGS("Helper")));
+    assert(STREQUAL(path, path_len, LIT_ARGS("Helper")));
     assert(!native_playlist_editor_screen_active_menu_empty(&screen));
     assert(native_playlist_editor_screen_selected_playlist_count(
                &screen) == 0);
@@ -1295,7 +1295,7 @@ test_mpd_reload_and_current_items(void) {
     assert(native_playlist_editor_screen_reload_content_from_mpd(
         &screen, NULL, &error));
     assert(mpd_fixture.get_content_calls == 1);
-    assert(ncm_string_equal(mpd_fixture.content_path,
+    assert(STREQUAL(mpd_fixture.content_path,
                             cstring_len(mpd_fixture.content_path),
                             LIT_ARGS("Fetched")));
     assert(native_playlist_editor_screen_current_song(&screen, &song));
@@ -1351,7 +1351,7 @@ test_update_callback_uses_native_mpd_logic(void) {
     playlist = nc_playlist_entry_menu_item_at(&screen.playlists,
                                               NC_MENU_ITEMS_ALL, 0);
     assert_playlist_path(playlist, LIT_ARGS("Alpha"));
-    assert(ncm_string_equal(mpd_fixture.content_path,
+    assert(STREQUAL(mpd_fixture.content_path,
                             cstring_len(mpd_fixture.content_path),
                             LIT_ARGS("Alpha")));
 
@@ -1424,7 +1424,7 @@ test_native_scroll_fetches_new_playlist_content(void) {
     init_screen(&screen);
     nc_screen_update(native_playlist_editor_screen_base(&screen));
     assert(mpd_fixture.get_content_calls == 1);
-    assert(ncm_string_equal(mpd_fixture.content_path,
+    assert(STREQUAL(mpd_fixture.content_path,
                             cstring_len(mpd_fixture.content_path),
                             LIT_ARGS("First")));
 
@@ -1436,7 +1436,7 @@ test_native_scroll_fetches_new_playlist_content(void) {
 
     nc_screen_update(native_playlist_editor_screen_base(&screen));
     assert(mpd_fixture.get_content_calls == 2);
-    assert(ncm_string_equal(mpd_fixture.content_path,
+    assert(STREQUAL(mpd_fixture.content_path,
                             cstring_len(mpd_fixture.content_path),
                             LIT_ARGS("Second")));
     assert(nc_menu_all_item_count(content) == 1);
@@ -1479,11 +1479,11 @@ test_mouse_right_click_actions(void) {
            == NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS);
     assert(nc_menu_highlight(playlist_menu) == 0);
     assert(mpd_fixture.load_calls == 1);
-    assert(ncm_string_equal(mpd_fixture.command_playlist,
+    assert(STREQUAL(mpd_fixture.command_playlist,
                             cstring_len(mpd_fixture.command_playlist),
                             LIT_ARGS("First")));
     assert(mpd_fixture.status_update_full_calls == 1);
-    assert(ncm_string_equal(mpd_fixture.status_message,
+    assert(STREQUAL(mpd_fixture.status_message,
                             cstring_len(mpd_fixture.status_message),
                             LIT_ARGS("Playlist \"First\" loaded")));
 
@@ -1499,7 +1499,7 @@ test_mouse_right_click_actions(void) {
     assert(mpd_fixture.add_song_calls == 1);
     assert(mpd_fixture.add_song_play);
     assert(mpd_fixture.add_song_position == -1);
-    assert(ncm_string_equal(mpd_fixture.added_song_uri,
+    assert(STREQUAL(mpd_fixture.added_song_uri,
                             cstring_len(mpd_fixture.added_song_uri),
                             LIT_ARGS("two.flac")));
 
@@ -1516,7 +1516,7 @@ test_mouse_right_click_actions(void) {
     assert(nc_menu_all_item_count(content_menu) == 0);
     assert(screen.content_update_requested);
     assert(mpd_fixture.load_calls == 1);
-    assert(ncm_string_equal(mpd_fixture.command_playlist,
+    assert(STREQUAL(mpd_fixture.command_playlist,
                             cstring_len(mpd_fixture.command_playlist),
                             LIT_ARGS("Second")));
 
@@ -1641,14 +1641,14 @@ test_locate_playlist_fetches_content_and_switches(void) {
                native_playlist_editor_screen_base(&screen)));
     assert(native_playlist_editor_screen_current_playlist_path(
         &screen, &path, &path_len));
-    assert(ncm_string_equal(path, path_len, LIT_ARGS("Alpha")));
+    assert(STREQUAL(path, path_len, LIT_ARGS("Alpha")));
     assert(nc_menu_item_count(nc_playlist_entry_menu_base(
                &screen.playlists)) == 2);
     assert(!screen.playlist_filter_enabled);
     assert(native_playlist_editor_screen_current_content_song(&screen,
                                                               &song));
     assert_song_uri(&song, LIT_ARGS("alpha.flac"));
-    assert(ncm_string_equal(mpd_fixture.content_path,
+    assert(STREQUAL(mpd_fixture.content_path,
                             cstring_len(mpd_fixture.content_path),
                             LIT_ARGS("Alpha")));
 
@@ -1759,20 +1759,20 @@ test_locate_song_uses_legacy_playlist_order(void) {
     assert(native_playlist_editor_screen_locate_song(&screen, NULL,
                                                      &target, &error));
     assert(mpd_fixture.status_calls == 1);
-    assert(ncm_string_equal(mpd_fixture.status_message,
+    assert(STREQUAL(mpd_fixture.status_message,
                             cstring_len(mpd_fixture.status_message),
                             LIT_ARGS("Jumping to song...")));
     assert(mpd_fixture.get_content_no_info_calls == 2);
     assert(mpd_fixture.get_content_calls == 1);
-    assert(ncm_string_equal(mpd_fixture.no_info_content_path,
+    assert(STREQUAL(mpd_fixture.no_info_content_path,
                             cstring_len(mpd_fixture.no_info_content_path),
                             LIT_ARGS("Target")));
-    assert(ncm_string_equal(mpd_fixture.content_path,
+    assert(STREQUAL(mpd_fixture.content_path,
                             cstring_len(mpd_fixture.content_path),
                             LIT_ARGS("Target")));
     assert(native_playlist_editor_screen_current_playlist_path(
         &screen, &path, &path_len));
-    assert(ncm_string_equal(path, path_len, LIT_ARGS("Target")));
+    assert(STREQUAL(path, path_len, LIT_ARGS("Target")));
     assert(native_playlist_editor_screen_current_content_song(&screen,
                                                               &current));
     assert_song_uri(&current, LIT_ARGS("target.flac"));
@@ -1822,7 +1822,7 @@ test_locate_song_reports_not_found(void) {
     assert(!ncm_error_is_set(&error));
     assert(mpd_fixture.get_content_no_info_calls == 1);
     assert(mpd_fixture.status_calls == 2);
-    assert(ncm_string_equal(mpd_fixture.status_message,
+    assert(STREQUAL(mpd_fixture.status_message,
                             cstring_len(mpd_fixture.status_message),
                             LIT_ARGS("Song was not found in playlists")));
 
@@ -1852,7 +1852,7 @@ test_update_error_reporting_and_flags(void) {
     assert(!screen.playlists_update_requested);
     assert(screen.content_update_requested);
     assert(mpd_fixture.status_calls == 1);
-    assert(ncm_string_equal(mpd_fixture.status_message,
+    assert(STREQUAL(mpd_fixture.status_message,
                             cstring_len(mpd_fixture.status_message),
                             LIT_ARGS("Could not fetch playlists: "
                                      "playlist failure")));
@@ -1867,7 +1867,7 @@ test_update_error_reporting_and_flags(void) {
     assert(mpd_fixture.get_content_calls == 1);
     assert(!screen.content_update_requested);
     assert(mpd_fixture.status_calls == 1);
-    assert(ncm_string_equal(mpd_fixture.status_message,
+    assert(STREQUAL(mpd_fixture.status_message,
                             cstring_len(mpd_fixture.status_message),
                             LIT_ARGS("Could not fetch playlist content: "
                                      "content failure")));
@@ -1899,7 +1899,7 @@ test_playlist_commands(void) {
     ncm_error_clear(&error);
     assert(native_playlist_editor_command_execute(&command, NULL, &error));
     assert(mpd_fixture.save_calls == 1);
-    assert(ncm_string_equal(mpd_fixture.command_playlist,
+    assert(STREQUAL(mpd_fixture.command_playlist,
                             cstring_len(mpd_fixture.command_playlist),
                             LIT_ARGS("Original")));
 
@@ -1909,10 +1909,10 @@ test_playlist_commands(void) {
     ncm_error_clear(&error);
     assert(native_playlist_editor_command_execute(&command, NULL, &error));
     assert(mpd_fixture.rename_calls == 1);
-    assert(ncm_string_equal(mpd_fixture.command_playlist,
+    assert(STREQUAL(mpd_fixture.command_playlist,
                             cstring_len(mpd_fixture.command_playlist),
                             LIT_ARGS("Original")));
-    assert(ncm_string_equal(mpd_fixture.command_target,
+    assert(STREQUAL(mpd_fixture.command_target,
                             cstring_len(mpd_fixture.command_target),
                             LIT_ARGS("Renamed")));
 
@@ -1973,7 +1973,7 @@ test_native_rendering_callbacks(void) {
     assert(native_playlist_editor_screen_load_playlists(&screen,
                                                          &playlists));
     assert(native_playlist_editor_screen_load_content(&screen, &content));
-    assert(ncm_string_equal(screen.content_title.data,
+    assert(STREQUAL(screen.content_title.data,
                             screen.content_title.len,
                             LIT_ARGS("Content (2 items)")));
 
@@ -1988,7 +1988,7 @@ test_native_rendering_callbacks(void) {
     playlist_menu->display_callbacks.draw(
         playlist_menu, &screen.playlists_window, playlist, 0,
         playlist_menu->display_callbacks.user);
-    assert(ncm_string_equal(window_trace.printed,
+    assert(STREQUAL(window_trace.printed,
                             window_trace.printed_len,
                             LIT_ARGS("Very long road trip playlist name")));
 
@@ -1998,7 +1998,7 @@ test_native_rendering_callbacks(void) {
     playlist_menu->display_callbacks.draw(
         playlist_menu, &screen.playlists_window, playlist, 1,
         playlist_menu->display_callbacks.user);
-    assert(ncm_string_equal(window_trace.printed,
+    assert(STREQUAL(window_trace.printed,
                             window_trace.printed_len,
                             invalid_path,
                             NCM_ARRAY_LEN(invalid_path)));
@@ -2008,7 +2008,7 @@ test_native_rendering_callbacks(void) {
     content_menu->display_callbacks.draw(
         content_menu, &screen.content_window, song, 0,
         content_menu->display_callbacks.user);
-    assert(ncm_string_equal(
+    assert(STREQUAL(
         window_trace.printed, window_trace.printed_len,
         LIT_ARGS("classic:very-long-empty-metadata-file-name.flac")));
 
@@ -2018,7 +2018,7 @@ test_native_rendering_callbacks(void) {
         &screen, LIT_ARGS("tagged"),
         NCM_REGEX_LITERAL_CASE_INSENSITIVE, &error));
     assert(nc_menu_item_count(content_menu) == 1);
-    assert(ncm_string_equal(screen.content_title.data,
+    assert(STREQUAL(screen.content_title.data,
                             screen.content_title.len,
                             LIT_ARGS("Content (1 item)")));
 
@@ -2031,12 +2031,12 @@ test_native_rendering_callbacks(void) {
     content_menu->display_callbacks.draw(
         content_menu, &screen.content_window, song, 0,
         content_menu->display_callbacks.user);
-    assert(ncm_string_equal(window_trace.printed,
+    assert(STREQUAL(window_trace.printed,
                             window_trace.printed_len,
                             LIT_ARGS("Artis ")));
 
     native_playlist_editor_screen_clear_active_filter(&screen);
-    assert(ncm_string_equal(screen.content_title.data,
+    assert(STREQUAL(screen.content_title.data,
                             screen.content_title.len,
                             LIT_ARGS("Content (2 items)")));
 
@@ -2092,7 +2092,7 @@ test_native_refresh_and_mouse_fallback(void) {
     assert(screen.content_update_requested);
     assert(!screen.displayed_playlist_valid);
     assert(screen.last_known_content_count == -1);
-    assert(ncm_string_equal(screen.content_title.data,
+    assert(STREQUAL(screen.content_title.data,
                             screen.content_title.len,
                             LIT_ARGS("Content")));
 
@@ -2271,7 +2271,7 @@ __wrap_ncm_mpd_client_get_playlist_content(
     ncm_error_clear(error);
     if (!mpd_fixture.get_content_result
         || ((mpd_fixture.failing_content_path[0] != '\0')
-            && ncm_string_equal(
+            && STREQUAL(
                 path, cstring_len(path),
                 mpd_fixture.failing_content_path,
                 cstring_len(mpd_fixture.failing_content_path)))) {
@@ -2279,7 +2279,7 @@ __wrap_ncm_mpd_client_get_playlist_content(
         return false;
     }
     if ((mpd_fixture.alternate_content_path[0] != '\0')
-        && ncm_string_equal(path, cstring_len(path),
+        && STREQUAL(path, cstring_len(path),
                             mpd_fixture.alternate_content_path,
                             cstring_len(
                                 mpd_fixture.alternate_content_path))) {
@@ -2300,7 +2300,7 @@ __wrap_ncm_mpd_client_get_playlist_content_no_info(
     ncm_error_clear(error);
     if (!mpd_fixture.get_content_result
         || ((mpd_fixture.failing_content_path[0] != '\0')
-            && ncm_string_equal(
+            && STREQUAL(
                 path, cstring_len(path),
                 mpd_fixture.failing_content_path,
                 cstring_len(mpd_fixture.failing_content_path)))) {
@@ -2308,7 +2308,7 @@ __wrap_ncm_mpd_client_get_playlist_content_no_info(
         return false;
     }
     if ((mpd_fixture.alternate_content_path[0] != '\0')
-        && ncm_string_equal(path, cstring_len(path),
+        && STREQUAL(path, cstring_len(path),
                             mpd_fixture.alternate_content_path,
                             cstring_len(
                                 mpd_fixture.alternate_content_path))) {

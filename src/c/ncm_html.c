@@ -5,6 +5,7 @@
 #include "c/ncm_string.h"
 #include "cbase/utf8.c"
 #include "cbase/base_macros.h"
+#include "cbase/util.c"
 
 typedef struct HtmlEntity {
     char *from;
@@ -100,16 +101,16 @@ is_newline_tag(char *tag, int32 tag_len) {
     if (ncm_string_starts_with(tag, tag_len, STRLIT_ARGS("<p "))) {
         return true;
     }
-    if (ncm_string_equal(tag, tag_len, STRLIT_ARGS("<p>"))) {
+    if (STREQUAL(tag, tag_len, STRLIT_ARGS("<p>"))) {
         return true;
     }
-    if (ncm_string_equal(tag, tag_len, STRLIT_ARGS("</p>"))) {
+    if (STREQUAL(tag, tag_len, STRLIT_ARGS("</p>"))) {
         return true;
     }
-    if (ncm_string_equal(tag, tag_len, STRLIT_ARGS("<br>"))) {
+    if (STREQUAL(tag, tag_len, STRLIT_ARGS("<br>"))) {
         return true;
     }
-    if (ncm_string_equal(tag, tag_len, STRLIT_ARGS("<br/>"))) {
+    if (STREQUAL(tag, tag_len, STRLIT_ARGS("<br/>"))) {
         return true;
     }
     if (ncm_string_starts_with(tag, tag_len, STRLIT_ARGS("<br "))) {
