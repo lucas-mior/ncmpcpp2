@@ -50,11 +50,13 @@ TEST_BINARIES := $(patsubst tests/%.c,$(BUILD_DIR)/tests/%,\
 TEST_RUNS := $(TEST_BINARIES:%=%.run)
 TEST_CPPFLAGS ?= \
     -I$(BUILD_DIR) \
+    -Itests \
     -I. \
     -Isrc \
     -D_GNU_SOURCE \
     -D_DEFAULT_SOURCE \
     $(CPPFLAGS)
+TEST_CFLAGS ?= -Wno-psabi -Wno-constant-logical-operand
 TEST_LDLIBS ?= $(LDLIBS) $(THREAD_FLAGS)
 
 .PHONY: all check test install clean help check-no-foreign-sources FORCE
@@ -98,6 +100,7 @@ $(BUILD_DIR)/tests/%: tests/%.c
 		$(CSTD) \
 		$(WARNINGS) \
 		$(CFLAGS) \
+		$(TEST_CFLAGS) \
 		$(THREAD_FLAGS) \
 		$< \
 		-o $@ \
@@ -167,6 +170,7 @@ help:
 	@printf '%s\n' '  CPPFLAGS, LDFLAGS  extra preprocessor and linker flags'
 	@printf '%s\n' '  LDLIBS             extra libraries, default: -lm'
 	@printf '%s\n' '  TEST_CPPFLAGS      preprocessor flags for make test'
+	@printf '%s\n' '  TEST_CFLAGS        extra compiler flags for make test'
 	@printf '%s\n' '  TEST_LDLIBS        libraries for make test'
 	@printf '%s\n' '  BUILD_DIR          build output directory, default: build'
 	@printf '%s\n' '  PREFIX             install prefix, default: /usr/local'
