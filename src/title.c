@@ -10,15 +10,6 @@
 #include "settings.h"
 #include "ui_state.h"
 
-static int32
-title_cstrlen32(char *string) {
-    if (string == NULL) {
-        return 0;
-    }
-
-    return strlen32(string);
-}
-
 static char *
 title_current_screen_title(void) {
     NcScreen *screen;
@@ -144,7 +135,7 @@ ncm_window_title_set(char *title, int32 title_len) {
 
 void
 ncm_window_title_set_cstring(char *title) {
-    ncm_window_title_set(title, title_cstrlen32(title));
+    ncm_window_title_set(title, optional_strlen32(title));
     return;
 }
 
@@ -200,6 +191,6 @@ ncm_title_draw_current_header(void) {
     char *title;
 
     title = title_current_screen_title();
-    ncm_title_draw_header(title, title_cstrlen32(title));
+    ncm_title_draw_header(title, optional_strlen32(title));
     return;
 }
