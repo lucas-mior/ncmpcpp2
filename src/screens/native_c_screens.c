@@ -110,7 +110,6 @@ enum NativePromptResult {
 static enum ScreenType native_screen_type_from_native_type(int32 type);
 static void native_request_registered_resize(int32 type);
 static NcBorder native_no_border(void);
-static int32 optional_strlen32(char *string);
 static bool native_register_screen(NcScreen *screen);
 static NativeTagEditorHooks native_tag_editor_hooks(void);
 static NcHelpHooks native_help_hooks(void);
