@@ -81,7 +81,6 @@ static bool native_library_set_owned_string(char **dest, int32 *dest_len,
                                             int32 source_len);
 static void native_library_free_owned_string(char **data, int32 *len,
                                              int32 *cap);
-static int32 optional_strlen32(char *string);
 static bool native_library_mpd_list_tags(void *user,
                                          enum mpd_tag_type tag_type,
                                          NcmMpdStringList *tags,

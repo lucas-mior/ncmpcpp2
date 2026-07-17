@@ -34,7 +34,6 @@ static void tiny_editor_draw_row(NcMenu *menu, NcWindow *window,
 static void tiny_editor_print_buffer(NcWindow *window, NcBuffer *buffer);
 static bool tiny_editor_add_row(NativeTinyTagEditorScreen *screen,
                                 NcBuffer *buffer, uint32 flags);
-static int32 optional_strlen32(char *string);
 static int64 tiny_editor_current_row(NativeTinyTagEditorScreen *screen);
 static void tiny_editor_status_message(
     NativeTinyTagEditorScreen *screen, char *message, int32 message_len);
