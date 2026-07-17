@@ -5,22 +5,6 @@
 #include "c/ncm_regex.h"
 #include "cbase/base_macros.h"
 
-static int32
-ncm_mpd_client_cstrlen32(char *string) {
-    int32 len;
-
-    if (string == NULL) {
-        return 0;
-    }
-
-    len = 0;
-    while (string[len] != '\0') {
-        len += 1;
-    }
-
-    return len;
-}
-
 static void
 ncm_mpd_client_set_buffer(NcmBuffer *buffer, char *string,
                           int32 string_len) {
@@ -64,7 +48,7 @@ ncm_mpd_client_copy_connection_error(NcmMpdClient *client,
     }
 
     message = ncm_mpd_connection_error(&client->connection);
-    message_len = ncm_mpd_client_cstrlen32(message);
+    message_len = optional_strlen32(message);
     ncm_error_set(error,
                   (int32)ncm_mpd_connection_error_code(&client->connection),
                   message, message_len);
@@ -225,7 +209,7 @@ ncm_mpd_client_set_hostname(NcmMpdClient *client, char *host,
         host_len = 0;
     }
     if (host_len < 0) {
-        host_len = ncm_mpd_client_cstrlen32(host);
+        host_len = optional_strlen32(host);
     }
 
     at = -1;
@@ -266,7 +250,7 @@ ncm_mpd_client_set_password(NcmMpdClient *client, char *password,
         return false;
     }
     if (password_len < 0) {
-        password_len = ncm_mpd_client_cstrlen32(password);
+        password_len = optional_strlen32(password);
     }
 
     ncm_mpd_client_set_buffer(&client->password, password, password_len);
@@ -1440,7 +1424,7 @@ ncm_mpd_client_add_random_songs(NcmMpdClient *client,
         return false;
     }
     if (exclude_pattern_len < 0) {
-        exclude_pattern_len = ncm_mpd_client_cstrlen32(exclude_pattern);
+        exclude_pattern_len = optional_strlen32(exclude_pattern);
     }
 
     ncm_mpd_string_list_init(&files);
