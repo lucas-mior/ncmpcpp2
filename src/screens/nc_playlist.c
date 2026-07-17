@@ -215,6 +215,13 @@ static bool native_playlist_search_menu(NativePlaylistScreen *screen,
                                         NcMenu *menu, NcmRegex *regex,
                                         bool forward, bool wrap,
                                         bool skip_current);
+static bool native_playlist_search_position(NcMenu *menu, int64 pos,
+                                            void *user);
+
+typedef struct NativePlaylistSearchContext {
+    NativePlaylistScreen *screen;
+    NcmRegex *regex;
+} NativePlaylistSearchContext;
 
 typedef struct NativePlaylistPriorityContext {
     NcmMpdClient *client;
@@ -1129,55 +1136,25 @@ native_playlist_search_menu(NativePlaylistScreen *screen,
                             NcMenu *menu, NcmRegex *regex,
                             bool forward, bool wrap,
                             bool skip_current) {
-    int64 count;
-    int64 current;
-    int64 start;
+    NativePlaylistSearchContext context;
 
-    if (menu == NULL) {
-        return false;
-    }
-    count = nc_menu_item_count(menu);
-    current = nc_menu_highlight(menu);
-    start = current;
-    if (skip_current) {
-        if (forward) {
-            start += 1;
-        } else {
-            start -= 1;
-        }
-    }
+    context.screen = screen;
+    context.regex = regex;
+    return nc_menu_search_selectable(menu, screen->screen.main_height,
+                                     forward, wrap, skip_current,
+                                     native_playlist_search_position,
+                                     &context, NULL);
+}
 
-    for (int64 i = 0; i < count; i += 1) {
-        int64 pos;
+static bool
+native_playlist_search_position(NcMenu *menu, int64 pos,
+                                void *user) {
+    NativePlaylistSearchContext *context;
 
-        if (forward) {
-            pos = start + i;
-        } else {
-            pos = start - i;
-        }
-        if (wrap) {
-            while (pos < 0) {
-                pos += count;
-            }
-            while (pos >= count) {
-                pos -= count;
-            }
-        }
-        if (pos < 0 || pos >= count) {
-            continue;
-        }
-        if (skip_current && (pos == current)) {
-            continue;
-        }
-        if (native_playlist_song_matches(screen,
-                                         nc_menu_active_item_at(menu, pos),
-                                         regex)) {
-            return nc_menu_goto_selectable_position(
-                menu, pos, screen->screen.main_height);
-        }
-    }
-
-    return false;
+    context = user;
+    return native_playlist_song_matches(
+        context->screen, nc_menu_active_item_at(menu, pos),
+        context->regex);
 }
 
 static NcMenuDisplayCallbacks

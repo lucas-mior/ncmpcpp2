@@ -31,6 +31,8 @@ static NcMenuDisplayCallbacks native_search_display_callbacks(
     NativeSearchEngineScreen *screen, bool filtering);
 static bool native_search_row_matches(NativeSearchEngineScreen *screen,
                                       NcSearchRow *row, NcmRegex *regex);
+static bool native_search_find_position(NcMenu *menu, int64 pos,
+                                        void *user);
 static bool native_search_row_label(NativeSearchEngineScreen *screen,
                                     NcSearchRow *row, NcmStringView *view);
 static void native_search_draw_classic_song(
@@ -91,6 +93,11 @@ static bool native_search_song_field_view(NcmSong *song, int32 field,
                                           NcmStringView *view);
 static bool native_search_append_result_rows(
     NativeSearchEngineScreen *screen, NcmSongArray *songs);
+
+typedef struct NativeSearchFindContext {
+    NativeSearchEngineScreen *screen;
+    NcmRegex *regex;
+} NativeSearchFindContext;
 
 static char *native_search_constraint_names[] = {
     "Any",
@@ -1075,12 +1082,10 @@ native_search_engine_screen_search(NativeSearchEngineScreen *screen,
                                    char *pattern, int32 pattern_len,
                                    bool forward, bool wrap,
                                    bool skip_current, NcmError *error) {
+    NativeSearchFindContext context;
     NcmRegex regex;
     NcMenu *menu;
-    int64 count;
-    int64 current;
-    int64 start;
-    bool result = false;
+    bool result;
 
     if (screen == NULL || pattern == NULL || pattern_len <= 0) {
         return false;
@@ -1094,48 +1099,26 @@ native_search_engine_screen_search(NativeSearchEngineScreen *screen,
     }
 
     menu = native_search_engine_screen_menu(screen);
-    count = nc_menu_item_count(menu);
-    current = nc_menu_highlight(menu);
-    start = current;
-    if (skip_current) {
-        if (forward) {
-            start += 1;
-        } else {
-            start -= 1;
-        }
-    }
-
-    for (int64 i = 0; i < count; i += 1) {
-        int64 pos;
-        if (forward) {
-            pos = start + i;
-        } else {
-            pos = start - i;
-        }
-        if (wrap) {
-            while (pos < 0) {
-                pos += count;
-            }
-            while (pos >= count) {
-                pos -= count;
-            }
-        }
-        if (pos < 0 || pos >= count) {
-            continue;
-        }
-        if (skip_current && (pos == current)) {
-            continue;
-        }
-        if (native_search_row_matches(
-                screen, nc_menu_active_item_at(menu, pos), &regex)) {
-            result = nc_menu_goto_selectable_position(
-                menu, pos, screen->main_height);
-            break;
-        }
-    }
+    context.screen = screen;
+    context.regex = &regex;
+    result = nc_menu_search_selectable(menu, screen->main_height, forward,
+                                       wrap, skip_current,
+                                       native_search_find_position,
+                                       &context, NULL);
 
     ncm_regex_destroy(&regex);
     return result;
+}
+
+static bool
+native_search_find_position(NcMenu *menu, int64 pos,
+                            void *user) {
+    NativeSearchFindContext *context;
+
+    context = user;
+    return native_search_row_matches(
+        context->screen, nc_menu_active_item_at(menu, pos),
+        context->regex);
 }
 
 static NativeSearchEngineScreen *

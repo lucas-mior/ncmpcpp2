@@ -228,6 +228,8 @@ static bool tag_editor_directory_matches_regex(NcMenuStringPair *pair,
 static bool tag_editor_active_item_matches(NativeTagEditorScreen *screen,
                                            NcMenu *menu, int64 pos,
                                            NcmRegex *regex);
+static bool tag_editor_search_position(NcMenu *menu, int64 pos,
+                                       void *user);
 static bool tag_editor_append_parser_row(NcEditorStringMenu *menu,
                                          char *data, int32 data_len,
                                          uint32 flags);
@@ -302,6 +304,11 @@ static NcScreenCallbacks tag_editor_callbacks = {
     .is_mergable = tag_editor_is_mergable,
     .destroy = tag_editor_destroy_callback,
 };
+
+typedef struct TagEditorSearchContext {
+    NativeTagEditorScreen *screen;
+    NcmRegex *regex;
+} TagEditorSearchContext;
 
 typedef struct TagSetter {
     enum NcmTagsField field;
@@ -1220,13 +1227,13 @@ native_tag_editor_screen_search(NativeTagEditorScreen *screen,
                                 char *pattern, int32 pattern_len,
                                 bool forward, bool wrap,
                                 bool skip_current, NcmError *error) {
+    TagEditorSearchContext context;
     NcmRegex *regex;
     NcmBuffer *constraint;
     bool *enabled;
     NcMenu *menu;
-    int64 count;
-    int64 current;
-    int64 start;
+    NcWindow *window;
+    bool result;
 
     if (screen == NULL || pattern == NULL || pattern_len <= 0) {
         return false;
@@ -1253,53 +1260,26 @@ native_tag_editor_screen_search(NativeTagEditorScreen *screen,
     *enabled = true;
 
     menu = native_tag_editor_screen_active_menu(screen);
-    count = nc_menu_item_count(menu);
-    current = nc_menu_highlight(menu);
-    start = current;
-    if (skip_current) {
-        if (forward) {
-            start += 1;
-        } else {
-            start -= 1;
-        }
+    window = native_tag_editor_screen_active_window(screen);
+    context.screen = screen;
+    context.regex = regex;
+    result = nc_menu_search_selectable(menu, nc_window_height(window),
+                                       forward, wrap, skip_current,
+                                       tag_editor_search_position,
+                                       &context, NULL);
+    if (result) {
+        native_tag_editor_screen_finish_directory_change(screen);
     }
+    return result;
+}
 
-    for (int64 i = 0; i < count; i += 1) {
-        int64 pos;
+static bool
+tag_editor_search_position(NcMenu *menu, int64 pos, void *user) {
+    TagEditorSearchContext *context;
 
-        if (forward) {
-            pos = start + i;
-        } else {
-            pos = start - i;
-        }
-        if (wrap) {
-            while (pos < 0) {
-                pos += count;
-            }
-            while (pos >= count) {
-                pos -= count;
-            }
-        }
-        if (pos < 0 || pos >= count) {
-            continue;
-        }
-        if (skip_current && (pos == current)) {
-            continue;
-        }
-        if (tag_editor_active_item_matches(screen, menu, pos, regex)) {
-            NcWindow *window;
-
-            window = native_tag_editor_screen_active_window(screen);
-            if (!nc_menu_goto_selectable_position(
-                    menu, pos, nc_window_height(window))) {
-                return false;
-            }
-            native_tag_editor_screen_finish_directory_change(screen);
-            return true;
-        }
-    }
-
-    return false;
+    context = user;
+    return tag_editor_active_item_matches(context->screen, menu, pos,
+                                          context->regex);
 }
 
 static void

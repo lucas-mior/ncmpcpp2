@@ -38,6 +38,7 @@ static bool adder_mergable_callback(NcScreen *screen);
 static void adder_destroy_callback(NcScreen *screen);
 static bool adder_filter_callback(NcMenu *menu, void *item, void *user);
 static bool adder_row_matches(NcEditorActionRow *row, NcmRegex *regex);
+static bool adder_search_position(NcMenu *menu, int64 pos, void *user);
 static void adder_action_current_playlist(void *user);
 static void adder_action_new_playlist(void *user);
 static void adder_action_cancel_target(void *user);
@@ -468,9 +469,8 @@ native_selected_items_adder_screen_search(
     bool skip_current, NcmError *error) {
     NcmRegex regex;
     NcMenu *menu;
-    int64 count;
-    int64 current;
-    int64 start;
+    NcWindow *window;
+    bool result;
 
     if (screen == NULL || pattern == NULL || pattern_len <= 0) {
         return false;
@@ -484,52 +484,19 @@ native_selected_items_adder_screen_search(
     }
 
     menu = native_selected_items_adder_screen_active_menu(screen);
-    count = nc_menu_item_count(menu);
-    current = nc_menu_highlight(menu);
-    start = current;
-    if (skip_current) {
-        if (forward) {
-            start += 1;
-        } else {
-            start -= 1;
-        }
-    }
-
-    for (int64 i = 0; i < count; i += 1) {
-        int64 pos;
-
-        if (forward) {
-            pos = start + i;
-        } else {
-            pos = start - i;
-        }
-        if (wrap) {
-            while (pos < 0) {
-                pos += count;
-            }
-            while (pos >= count) {
-                pos -= count;
-            }
-        }
-        if (pos < 0 || pos >= count) {
-            continue;
-        }
-        if (skip_current && (pos == current)) {
-            continue;
-        }
-        if (adder_row_matches(nc_menu_active_item_at(menu, pos),
-                              &regex)) {
-            NcWindow *window;
-
-            window = native_selected_items_adder_screen_active_window(screen);
-            ncm_regex_destroy(&regex);
-            return nc_menu_goto_selectable_position(
-                menu, pos, nc_window_height(window));
-        }
-    }
+    window = native_selected_items_adder_screen_active_window(screen);
+    result = nc_menu_search_selectable(menu, nc_window_height(window),
+                                       forward, wrap, skip_current,
+                                       adder_search_position, &regex,
+                                       NULL);
 
     ncm_regex_destroy(&regex);
-    return false;
+    return result;
+}
+
+static bool
+adder_search_position(NcMenu *menu, int64 pos, void *user) {
+    return adder_row_matches(nc_menu_active_item_at(menu, pos), user);
 }
 
 static NativeSelectedItemsAdderScreen *

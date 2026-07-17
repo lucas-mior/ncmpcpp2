@@ -143,8 +143,15 @@ static bool playlist_editor_search_menu(
 static bool playlist_editor_search_item(
     NativePlaylistEditorScreen *screen, NcMenu *menu, NcmRegex *regex,
     int64 pos);
+static bool playlist_editor_search_position(NcMenu *menu, int64 pos,
+                                            void *user);
 static void playlist_editor_set_display_callbacks(
     NativePlaylistEditorScreen *screen);
+
+typedef struct PlaylistEditorSearchContext {
+    NativePlaylistEditorScreen *screen;
+    NcmRegex *regex;
+} PlaylistEditorSearchContext;
 
 void
 native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
@@ -2300,52 +2307,24 @@ static bool
 playlist_editor_search_menu(NativePlaylistEditorScreen *screen,
                             NcMenu *menu, NcmRegex *regex, bool forward,
                             bool wrap, bool skip_current) {
-    int64 count;
-    int64 current;
-    int64 start;
+    PlaylistEditorSearchContext context;
 
-    if (menu == NULL) {
-        return false;
-    }
-    count = nc_menu_item_count(menu);
-    if (count <= 0) {
-        return false;
-    }
-    current = nc_menu_highlight(menu);
-    start = current;
-    if (skip_current) {
-        if (forward) {
-            start += 1;
-        } else {
-            start -= 1;
-        }
-    }
+    context.screen = screen;
+    context.regex = regex;
+    return nc_menu_search_selectable(menu, screen->main_height, forward,
+                                     wrap, skip_current,
+                                     playlist_editor_search_position,
+                                     &context, NULL);
+}
 
-    for (int64 checked = 0; checked < count; checked += 1) {
-        int64 pos;
+static bool
+playlist_editor_search_position(NcMenu *menu, int64 pos,
+                                void *user) {
+    PlaylistEditorSearchContext *context;
 
-        if (forward) {
-            pos = start + checked;
-        } else {
-            pos = start - checked;
-        }
-        if (wrap) {
-            while (pos < 0) {
-                pos += count;
-            }
-            pos %= count;
-        } else if (pos < 0 || pos >= count) {
-            break;
-        }
-        if (skip_current && (pos == current)) {
-            continue;
-        }
-        if (playlist_editor_search_item(screen, menu, regex, pos)) {
-            nc_menu_highlight_position(menu, pos, screen->main_height);
-            return true;
-        }
-    }
-    return false;
+    context = user;
+    return playlist_editor_search_item(context->screen, menu,
+                                       context->regex, pos);
 }
 
 static bool

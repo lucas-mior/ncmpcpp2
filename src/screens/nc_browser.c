@@ -63,6 +63,8 @@ static int64 native_browser_render_width(NativeBrowserScreen *screen,
 static bool native_browser_item_matches(NativeBrowserScreen *screen,
                                         NcmMpdItem *item,
                                         NcmRegex *regex, bool filter);
+static bool native_browser_search_position(NcMenu *menu, int64 pos,
+                                           void *user);
 static bool native_browser_directory_is_root(char *directory,
                                              int32 directory_len);
 static bool native_browser_path_is_parent_directory(char *directory,
@@ -163,6 +165,11 @@ static bool native_browser_highlight_last_directory(
 static bool native_browser_item_is_song(NcmMpdItem *item);
 static bool native_browser_string_views_equal(NcmStringView left,
                                               NcmStringView right);
+
+typedef struct NativeBrowserSearchContext {
+    NativeBrowserScreen *screen;
+    NcmRegex *regex;
+} NativeBrowserSearchContext;
 
 static NcScreenCallbacks native_browser_callbacks = {
     .active_window = native_browser_active_window,
@@ -1076,12 +1083,10 @@ native_browser_screen_search(NativeBrowserScreen *screen,
                              char *pattern, int32 pattern_len,
                              bool forward, bool wrap,
                              bool skip_current, NcmError *error) {
+    NativeBrowserSearchContext context;
     NcmRegex regex;
     NcMenu *menu;
-    int64 count;
-    int64 current;
-    int64 start;
-    bool result = false;
+    bool result;
 
     if (screen == NULL || pattern == NULL || pattern_len <= 0) {
         return false;
@@ -1099,49 +1104,26 @@ native_browser_screen_search(NativeBrowserScreen *screen,
     }
 
     menu = native_browser_screen_menu(screen);
-    count = nc_menu_item_count(menu);
-    current = nc_menu_highlight(menu);
-    start = current;
-    if (skip_current) {
-        if (forward) {
-            start += 1;
-        } else {
-            start -= 1;
-        }
-    }
-
-    for (int64 i = 0; i < count; i += 1) {
-        int64 pos;
-        if (forward) {
-            pos = start + i;
-        } else {
-            pos = start - i;
-        }
-        if (wrap) {
-            while (pos < 0) {
-                pos += count;
-            }
-            while (pos >= count) {
-                pos -= count;
-            }
-        }
-        if (pos < 0 || pos >= count) {
-            continue;
-        }
-        if (skip_current && (pos == current)) {
-            continue;
-        }
-        if (native_browser_item_matches(screen,
-                                        nc_menu_active_item_at(menu, pos),
-                                        &regex, false)) {
-            result = nc_menu_goto_selectable_position(
-                menu, pos, screen->main_height);
-            break;
-        }
-    }
+    context.screen = screen;
+    context.regex = &regex;
+    result = nc_menu_search_selectable(menu, screen->main_height, forward,
+                                       wrap, skip_current,
+                                       native_browser_search_position,
+                                       &context, NULL);
 
     ncm_regex_destroy(&regex);
     return result;
+}
+
+static bool
+native_browser_search_position(NcMenu *menu, int64 pos,
+                               void *user) {
+    NativeBrowserSearchContext *context;
+
+    context = user;
+    return native_browser_item_matches(
+        context->screen, nc_menu_active_item_at(menu, pos),
+        context->regex, false);
 }
 
 bool
