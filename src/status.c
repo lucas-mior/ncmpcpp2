@@ -207,21 +207,6 @@ status_elapsed_time_changed(NcmStatusHooks *hooks, bool update) {
     return;
 }
 
-static int32
-status_cstrlen32(char *string) {
-    int32 len;
-
-    if (string == NULL) {
-        return 0;
-    }
-
-    len = 0;
-    while (string[len] != 0) {
-        len += 1;
-    }
-    return len;
-}
-
 static void
 status_print_client_error(char *message, int32 message_len) {
     NcmStringFormatArg arg;
@@ -230,7 +215,7 @@ status_print_client_error(char *message, int32 message_len) {
         message = "";
     }
     if (message_len < 0) {
-        message_len = status_cstrlen32(message);
+        message_len = optional_strlen32(message);
     }
 
     arg = ncm_string_format_arg_string(message, message_len);
@@ -247,7 +232,7 @@ status_print_server_error(char *message, int32 message_len) {
         message = "";
     }
     if (message_len < 0) {
-        message_len = status_cstrlen32(message);
+        message_len = optional_strlen32(message);
     }
 
     arg = ncm_string_format_arg_string(message, message_len);
@@ -1144,7 +1129,7 @@ status_player_state_string(char *buffer, int32 buffer_cap) {
         break;
     }
 
-    len = status_cstrlen32(string);
+    len = optional_strlen32(string);
     if (len >= buffer_cap) {
         len = buffer_cap - 1;
     }
