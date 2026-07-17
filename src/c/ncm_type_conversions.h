@@ -38,19 +38,14 @@ enum NcmSongGetter {
 int32 ncm_channels_to_string(int32 channels, char *buffer, int32 buffer_cap);
 int32 ncm_color_index_from_char(char c);
 char *ncm_tag_type_name(enum mpd_tag_type tag);
-bool ncm_char_is_tag_type(char c);
 enum mpd_tag_type ncm_char_to_tag_type(char c);
 enum NcmSongGetter ncm_song_getter_from_char(char c);
-enum NcmSongGetter ncm_song_getter_from_tag_type(enum mpd_tag_type tag);
 enum mpd_tag_type ncm_song_getter_to_tag_type(enum NcmSongGetter getter);
-char *ncm_song_getter_name(enum NcmSongGetter getter);
-bool ncm_char_is_tags_field(char c);
 enum NcmTagsField ncm_tags_field_from_char(char c);
 enum NcmTagsField ncm_tags_field_from_tag_type(enum mpd_tag_type tag);
 enum mpd_tag_type ncm_tags_field_to_tag_type(enum NcmTagsField field);
 enum NcmSongGetter ncm_tags_field_to_song_getter(enum NcmTagsField field);
 enum NcmTagsField ncm_song_getter_to_tags_field(enum NcmSongGetter getter);
 char *ncm_tags_field_name(enum NcmTagsField field);
-char *ncm_item_type_name(enum NcmItemType type);
 
 #endif /* NCM_TYPE_CONVERSIONS_H */

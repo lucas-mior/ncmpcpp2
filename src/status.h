@@ -65,11 +65,6 @@ void ncm_status_handle_server_error_value(NcmMpdClient *client,
                                           int32 message_len);
 void ncm_status_trace(NcmMpdClient *client, bool update_timer,
                       bool update_window_timeout, NcmError *error);
-void ncm_status_set_hooks(NcmStatusHooks *hooks);
-void ncm_status_set_ui_hooks(NcmStatusUiHooks *hooks);
-void ncm_status_set_init_hooks(NcmStatusInitHooks *hooks);
-void ncm_status_set_notification_observer(void (*callback)(void *user),
-                                          void *user);
 void ncm_status_set_database_update_observer(void (*callback)(void *user),
                                              void *user);
 void ncm_status_set_playlist_update_observer(void (*callback)(void *user),
@@ -93,13 +88,10 @@ bool ncm_status_state_crossfade(void);
 bool ncm_status_state_repeat(void);
 bool ncm_status_state_random(void);
 bool ncm_status_state_single(void);
-int32 ncm_status_state_current_song_id(void);
 int32 ncm_status_state_current_song_position(void);
 uint32 ncm_status_state_playlist_length(void);
 uint32 ncm_status_state_elapsed_time(void);
-uint32 ncm_status_state_kbps(void);
 enum NcmStatusPlayerState ncm_status_state_player(void);
-uint32 ncm_status_state_playlist_version(void);
 uint32 ncm_status_state_total_time(void);
 int32 ncm_status_state_volume(void);
 

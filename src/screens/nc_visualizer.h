@@ -185,15 +185,7 @@ void native_visualizer_screen_init_visualization(
 void native_visualizer_screen_clear(NativeVisualizerScreen *screen);
 void native_visualizer_screen_reset_auto_scale_multiplier(
     NativeVisualizerScreen *screen);
-void native_visualizer_screen_set_type(NativeVisualizerScreen *screen,
-                                       enum NativeVisualizerType type);
 void native_visualizer_screen_toggle_type(NativeVisualizerScreen *screen);
-enum NativeVisualizerType native_visualizer_screen_type(
-    NativeVisualizerScreen *screen);
-void native_visualizer_screen_set_stereo(NativeVisualizerScreen *screen,
-                                         bool stereo);
-void native_visualizer_screen_set_fps(NativeVisualizerScreen *screen,
-                                      int32 fps);
 int32 native_visualizer_screen_requested_samples(
     NativeVisualizerScreen *screen);
 bool native_visualizer_screen_push_samples(NativeVisualizerScreen *screen,
@@ -204,10 +196,6 @@ int32 native_visualizer_screen_take_render_samples(
 int32 native_visualizer_screen_split_stereo(NativeVisualizerScreen *screen,
                                             int16 *samples,
                                             int32 samples_len);
-int32 native_visualizer_screen_left_len(NativeVisualizerScreen *screen);
-int32 native_visualizer_screen_right_len(NativeVisualizerScreen *screen);
-int16 *native_visualizer_screen_left_data(NativeVisualizerScreen *screen);
-int16 *native_visualizer_screen_right_data(NativeVisualizerScreen *screen);
 void native_visualizer_screen_apply_auto_scale(NativeVisualizerScreen *screen,
                                                int16 *samples,
                                                int32 samples_len);

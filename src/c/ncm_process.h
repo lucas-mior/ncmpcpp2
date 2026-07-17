@@ -21,11 +21,6 @@ bool ncm_process_command_add_arg(NcmProcessCommand *command,
                                  char *arg, int32 arg_len);
 bool ncm_process_run_sync(NcmProcessCommand *command, int32 *status,
                           NcmError *error);
-bool ncm_process_run_capture(NcmProcessCommand *command,
-                             NcmProcessResult *result,
-                             NcmError *error);
-void ncm_process_result_init(NcmProcessResult *result);
-void ncm_process_result_destroy(NcmProcessResult *result);
 bool ncm_process_run_shell(char *command, int32 command_len,
                            int32 *status, NcmError *error);
 

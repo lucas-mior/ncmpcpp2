@@ -336,30 +336,12 @@ native_lastfm_screen_update(NativeLastfmScreen *screen) {
     return;
 }
 
-bool
-native_lastfm_screen_has_service(NativeLastfmScreen *screen) {
-    return screen->has_service;
-}
-
-NcmLastfmResult *
-native_lastfm_screen_result(NativeLastfmScreen *screen) {
-    return &screen->result;
-}
-
 char *
 native_lastfm_screen_title(NativeLastfmScreen *screen) {
     if (screen->title == NULL) {
         return (char *)NATIVE_LASTFM_DEFAULT_TITLE;
     }
     return screen->title;
-}
-
-int32
-native_lastfm_screen_title_len(NativeLastfmScreen *screen) {
-    if (screen->title == NULL) {
-        return STRLIT_LEN(NATIVE_LASTFM_DEFAULT_TITLE);
-    }
-    return screen->title_len;
 }
 
 bool
@@ -369,11 +351,6 @@ native_lastfm_screen_take_refresh_request(NativeLastfmScreen *screen) {
     result = screen->refresh_window;
     screen->refresh_window = false;
     return result;
-}
-
-int32
-native_lastfm_screen_completed_jobs(NativeLastfmScreen *screen) {
-    return ncm_job_queue_completed_count(&screen->jobs);
 }
 
 bool

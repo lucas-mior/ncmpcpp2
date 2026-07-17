@@ -621,29 +621,6 @@ ncm_mpd_string_destroy(NcmMpdString *string) {
     return;
 }
 
-bool
-ncm_mpd_string_set(NcmMpdString *string, char *value, int32 value_len) {
-    if (string == NULL) {
-        return false;
-    }
-    if (value == NULL) {
-        value = "";
-        value_len = 0;
-    }
-    if (value_len < 0) {
-        value_len = ncm_mpd_connection_cstrlen32(value);
-    }
-
-    ncm_mpd_string_destroy(string);
-    string->value = (char *)malloc2(value_len + 1);
-    string->value_len = value_len;
-    if (value_len > 0) {
-        memcpy64(string->value, value, value_len);
-    }
-    string->value[value_len] = '\0';
-    return true;
-}
-
 void
 ncm_mpd_output_init(NcmMpdOutput *output) {
     if (output == NULL) {
@@ -667,68 +644,6 @@ ncm_mpd_output_destroy(NcmMpdOutput *output) {
         free2(output->name, output->name_len + 1);
     }
     ncm_mpd_output_init(output);
-    return;
-}
-
-bool
-ncm_mpd_output_set(NcmMpdOutput *output, uint32 id, char *name,
-                   int32 name_len, bool enabled) {
-    if (output == NULL) {
-        return false;
-    }
-    if (name == NULL) {
-        name = "";
-        name_len = 0;
-    }
-    if (name_len < 0) {
-        name_len = ncm_mpd_connection_cstrlen32(name);
-    }
-
-    ncm_mpd_output_destroy(output);
-    output->id = id;
-    output->name = (char *)malloc2(name_len + 1);
-    output->name_len = name_len;
-    output->enabled = enabled;
-    if (name_len > 0) {
-        memcpy64(output->name, name, name_len);
-    }
-    output->name[name_len] = '\0';
-    return true;
-}
-
-bool
-ncm_mpd_output_copy(NcmMpdOutput *dest, NcmMpdOutput *source) {
-    if (dest == NULL) {
-        return false;
-    }
-    if (dest == source) {
-        return true;
-    }
-    if (source == NULL) {
-        ncm_mpd_output_destroy(dest);
-        return true;
-    }
-
-    return ncm_mpd_output_set(dest, source->id, source->name,
-                              source->name_len, source->enabled);
-}
-
-void
-ncm_mpd_output_move(NcmMpdOutput *dest, NcmMpdOutput *source) {
-    if (dest == NULL) {
-        return;
-    }
-    if (dest == source) {
-        return;
-    }
-
-    ncm_mpd_output_destroy(dest);
-    if (source == NULL) {
-        ncm_mpd_output_init(dest);
-        return;
-    }
-    *dest = *source;
-    ncm_mpd_output_init(source);
     return;
 }
 
@@ -772,33 +687,6 @@ ncm_mpd_song_list_clear(NcmMpdSongList *list) {
     return;
 }
 
-bool
-ncm_mpd_song_list_copy(NcmMpdSongList *dest, NcmMpdSongList *source) {
-    NcmMpdSongList replacement;
-
-    if (dest == NULL) {
-        return false;
-    }
-    if (dest == source) {
-        return true;
-    }
-
-    ncm_mpd_song_list_init(&replacement);
-    if (source != NULL) {
-        for (int32 i = 0; i < source->count; i += 1) {
-            if (!ncm_mpd_song_list_append_copy(&replacement,
-                                               &source->items[i])) {
-                ncm_mpd_song_list_destroy(&replacement);
-                return false;
-            }
-        }
-    }
-
-    ncm_mpd_song_list_destroy(dest);
-    *dest = replacement;
-    return true;
-}
-
 int32
 ncm_mpd_song_list_count(NcmMpdSongList *list) {
     if (list == NULL) {
@@ -832,12 +720,6 @@ ncm_mpd_song_list_append_copy(NcmMpdSongList *list, NcmSong *song) {
     }
     ncm_song_destroy(&copy);
     return ok;
-}
-
-void
-ncm_mpd_song_list_append_move(NcmMpdSongList *list, NcmSong *song) {
-    ncm_mpd_song_list_push(list, song);
-    return;
 }
 
 bool
@@ -902,29 +784,6 @@ ncm_mpd_item_list_clear(NcmMpdItemList *list) {
     }
     list->count = 0;
     return;
-}
-
-int32
-ncm_mpd_item_list_count(NcmMpdItemList *list) {
-    if (list == NULL) {
-        return 0;
-    }
-
-    return list->count;
-}
-
-bool
-ncm_mpd_item_list_append_copy(NcmMpdItemList *list, NcmMpdItem *item) {
-    NcmMpdItem copy;
-    bool ok;
-
-    ncm_mpd_item_init(&copy);
-    ok = ncm_mpd_item_copy(&copy, item);
-    if (ok) {
-        ok = ncm_mpd_item_list_push(list, &copy);
-    }
-    ncm_mpd_item_destroy(&copy);
-    return ok;
 }
 
 bool
@@ -1021,35 +880,6 @@ ncm_mpd_string_list_clear(NcmMpdStringList *list) {
     return;
 }
 
-bool
-ncm_mpd_string_list_copy(NcmMpdStringList *dest,
-                         NcmMpdStringList *source) {
-    NcmMpdStringList replacement;
-
-    if (dest == NULL) {
-        return false;
-    }
-    if (dest == source) {
-        return true;
-    }
-
-    ncm_mpd_string_list_init(&replacement);
-    if (source != NULL) {
-        for (int32 i = 0; i < source->count; i += 1) {
-            if (!ncm_mpd_string_list_append(&replacement,
-                                            source->items[i].value,
-                                            source->items[i].value_len)) {
-                ncm_mpd_string_list_destroy(&replacement);
-                return false;
-            }
-        }
-    }
-
-    ncm_mpd_string_list_destroy(dest);
-    *dest = replacement;
-    return true;
-}
-
 int32
 ncm_mpd_string_list_count(NcmMpdStringList *list) {
     if (list == NULL) {
@@ -1069,73 +899,6 @@ ncm_mpd_string_list_at(NcmMpdStringList *list, int32 idx) {
     }
 
     return &list->items[idx];
-}
-
-bool
-ncm_mpd_string_list_append(NcmMpdStringList *list, char *value,
-                           int32 value_len) {
-    int32 old_capacity;
-    int32 new_capacity;
-
-    if (list == NULL) {
-        return false;
-    }
-    if (value == NULL) {
-        value = "";
-        value_len = 0;
-    }
-    if (value_len < 0) {
-        value_len = ncm_mpd_connection_cstrlen32(value);
-    }
-
-    if (list->count >= list->capacity) {
-        old_capacity = list->capacity;
-        new_capacity = old_capacity*2;
-        if (new_capacity < 8) {
-            new_capacity = 8;
-        }
-
-        list->items = (NcmMpdString *)realloc2(
-            list->items, old_capacity, new_capacity, SIZEOF(*list->items));
-        list->capacity = new_capacity;
-    }
-
-    ncm_mpd_string_init(&list->items[list->count]);
-    if (!ncm_mpd_string_set(&list->items[list->count], value, value_len)) {
-        return false;
-    }
-    list->count += 1;
-    return true;
-}
-
-bool
-ncm_mpd_string_list_to_buffer_array(NcmMpdStringList *list,
-                                    NcmBufferArray *strings) {
-    NcmBufferArray replacement;
-    NcmBuffer *buffer;
-
-    if (strings == NULL) {
-        return false;
-    }
-
-    ncm_buffer_array_init(&replacement);
-    if (list != NULL) {
-        for (int32 i = 0; i < list->count; i += 1) {
-            buffer = ncm_buffer_array_append(&replacement);
-            if (buffer == NULL) {
-                ncm_buffer_array_destroy(&replacement);
-                return false;
-            }
-            if (!ncm_buffer_set(buffer, list->items[i].value,
-                                list->items[i].value_len)) {
-                ncm_buffer_array_destroy(&replacement);
-                return false;
-            }
-        }
-    }
-
-    ncm_buffer_array_move(strings, &replacement);
-    return true;
 }
 
 void
@@ -1178,108 +941,6 @@ ncm_mpd_output_list_clear(NcmMpdOutputList *list) {
     return;
 }
 
-bool
-ncm_mpd_output_list_copy(NcmMpdOutputList *dest,
-                         NcmMpdOutputList *source) {
-    NcmMpdOutputList replacement;
-
-    if (dest == NULL) {
-        return false;
-    }
-    if (dest == source) {
-        return true;
-    }
-
-    ncm_mpd_output_list_init(&replacement);
-    if (source != NULL) {
-        for (int32 i = 0; i < source->count; i += 1) {
-            if (!ncm_mpd_output_list_append_copy(&replacement,
-                                                 &source->items[i])) {
-                ncm_mpd_output_list_destroy(&replacement);
-                return false;
-            }
-        }
-    }
-
-    ncm_mpd_output_list_destroy(dest);
-    *dest = replacement;
-    return true;
-}
-
-int32
-ncm_mpd_output_list_count(NcmMpdOutputList *list) {
-    if (list == NULL) {
-        return 0;
-    }
-
-    return list->count;
-}
-
-NcmMpdOutput *
-ncm_mpd_output_list_at(NcmMpdOutputList *list, int32 idx) {
-    if (list == NULL) {
-        return NULL;
-    }
-    if ((idx < 0) || (idx >= list->count)) {
-        return NULL;
-    }
-
-    return &list->items[idx];
-}
-
-bool
-ncm_mpd_output_list_append_copy(NcmMpdOutputList *list,
-                                NcmMpdOutput *output) {
-    NcmMpdOutput copy;
-    bool ok;
-
-    if (list == NULL) {
-        return false;
-    }
-    if (output == NULL) {
-        return false;
-    }
-
-    ncm_mpd_output_init(&copy);
-    ok = ncm_mpd_output_copy(&copy, output);
-    if (ok) {
-        ncm_mpd_output_list_append_move(list, &copy);
-    }
-    ncm_mpd_output_destroy(&copy);
-    return ok;
-}
-
-void
-ncm_mpd_output_list_append_move(NcmMpdOutputList *list,
-                                NcmMpdOutput *output) {
-    int32 old_capacity;
-    int32 new_capacity;
-
-    if (list == NULL) {
-        return;
-    }
-    if (output == NULL) {
-        return;
-    }
-
-    if (list->count >= list->capacity) {
-        old_capacity = list->capacity;
-        new_capacity = old_capacity*2;
-        if (new_capacity < 8) {
-            new_capacity = 8;
-        }
-
-        list->items = (NcmMpdOutput *)realloc2(
-            list->items, old_capacity, new_capacity, SIZEOF(*list->items));
-        list->capacity = new_capacity;
-    }
-
-    ncm_mpd_output_init(&list->items[list->count]);
-    ncm_mpd_output_move(&list->items[list->count], output);
-    list->count += 1;
-    return;
-}
-
 void
 ncm_mpd_playlist_list_init(NcmMpdPlaylistList *list) {
     if (list == NULL) {
@@ -1318,111 +979,6 @@ ncm_mpd_playlist_list_clear(NcmMpdPlaylistList *list) {
     }
     list->count = 0;
     return;
-}
-
-bool
-ncm_mpd_playlist_list_copy(NcmMpdPlaylistList *dest,
-                           NcmMpdPlaylistList *source) {
-    NcmMpdPlaylistList replacement;
-
-    if (dest == NULL) {
-        return false;
-    }
-    if (dest == source) {
-        return true;
-    }
-
-    ncm_mpd_playlist_list_init(&replacement);
-    if (source != NULL) {
-        for (int32 i = 0; i < source->count; i += 1) {
-            if (!ncm_mpd_playlist_list_append_copy(&replacement,
-                                                   &source->items[i])) {
-                ncm_mpd_playlist_list_destroy(&replacement);
-                return false;
-            }
-        }
-    }
-
-    ncm_mpd_playlist_list_destroy(dest);
-    *dest = replacement;
-    return true;
-}
-
-bool
-ncm_mpd_playlist_list_append_copy(NcmMpdPlaylistList *list,
-                                  NcmPlaylist *playlist) {
-    NcmPlaylist copy;
-    bool ok;
-
-    if (list == NULL) {
-        return false;
-    }
-    if (playlist == NULL) {
-        return false;
-    }
-
-    ncm_playlist_init(&copy);
-    ok = ncm_playlist_copy(&copy, playlist);
-    if (ok) {
-        ncm_mpd_playlist_list_append_move(list, &copy);
-    }
-    ncm_playlist_destroy(&copy);
-    return ok;
-}
-
-void
-ncm_mpd_playlist_list_append_move(NcmMpdPlaylistList *list,
-                                  NcmPlaylist *playlist) {
-    int32 old_capacity;
-    int32 new_capacity;
-
-    if (list == NULL) {
-        return;
-    }
-    if (playlist == NULL) {
-        return;
-    }
-
-    if (list->count >= list->capacity) {
-        old_capacity = list->capacity;
-        new_capacity = old_capacity*2;
-        if (new_capacity < 8) {
-            new_capacity = 8;
-        }
-
-        list->items = (NcmPlaylist *)realloc2(
-            list->items, old_capacity, new_capacity, SIZEOF(*list->items));
-        list->capacity = new_capacity;
-    }
-
-    ncm_playlist_init(&list->items[list->count]);
-    ncm_playlist_move(&list->items[list->count], playlist);
-    list->count += 1;
-    return;
-}
-
-bool
-ncm_mpd_playlist_list_to_playlist_array(NcmMpdPlaylistList *list,
-                                        NcmPlaylistArray *playlists) {
-    NcmPlaylistArray replacement;
-
-    if (playlists == NULL) {
-        return false;
-    }
-
-    ncm_playlist_array_init(&replacement);
-    if (list != NULL) {
-        for (int32 i = 0; i < list->count; i += 1) {
-            if (!ncm_playlist_array_append_copy(&replacement,
-                                                &list->items[i])) {
-                ncm_playlist_array_destroy(&replacement);
-                return false;
-            }
-        }
-    }
-
-    ncm_playlist_array_move(playlists, &replacement);
-    return true;
 }
 
 void

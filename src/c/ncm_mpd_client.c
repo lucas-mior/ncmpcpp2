@@ -184,24 +184,6 @@ ncm_mpd_client_hostname(NcmMpdClient *client) {
     return ncm_mpd_client_buffer_cstr(&client->host);
 }
 
-uint16
-ncm_mpd_client_port(NcmMpdClient *client) {
-    if (client == NULL) {
-        return 0;
-    }
-
-    return client->port;
-}
-
-uint32
-ncm_mpd_client_timeout_ms(NcmMpdClient *client) {
-    if (client == NULL) {
-        return 0;
-    }
-
-    return client->timeout_ms;
-}
-
 bool
 ncm_mpd_client_connected(NcmMpdClient *client) {
     if (client == NULL) {
@@ -956,61 +938,6 @@ ncm_mpd_client_add_song_list(NcmMpdClient *client,
 
     ncm_error_clear(error);
     return true;
-}
-
-bool
-ncm_mpd_client_add_selected_songs(NcmMpdClient *client,
-                                  NcmSongList *songs, int32 pos,
-                                  NcmError *error) {
-    NcmSongArray selected;
-    bool started;
-    int32 insert_pos;
-    bool ok;
-
-    if (songs == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing song list"));
-        return false;
-    }
-    if (client == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
-        return false;
-    }
-
-    ncm_song_array_init(&selected);
-    if (!ncm_song_list_selected_songs(songs, &selected)) {
-        ncm_song_array_destroy(&selected);
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("no songs selected"));
-        return false;
-    }
-    if (selected.len == 0) {
-        ncm_song_array_destroy(&selected);
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("no songs selected"));
-        return false;
-    }
-
-    started = false;
-    ok = true;
-    if (!client->command_list_active) {
-        ok = ncm_mpd_client_start_command_list(client, error);
-        started = ok;
-    }
-    for (int32 i = 0; ok && (i < selected.len); i += 1) {
-        insert_pos = -1;
-        if (pos >= 0) {
-            insert_pos = pos + i;
-        }
-        ok = ncm_mpd_client_add_song_value(client, &selected.items[i],
-                                           insert_pos, NULL, error);
-    }
-    if (ok && started) {
-        ok = ncm_mpd_client_commit_command_list(client, error);
-    }
-    if (!ok && started) {
-        client->command_list_active = false;
-    }
-
-    ncm_song_array_destroy(&selected);
-    return ok;
 }
 
 bool

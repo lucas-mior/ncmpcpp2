@@ -159,14 +159,6 @@ native_tiny_tag_editor_screen_rows(NativeTinyTagEditorScreen *screen) {
     return &screen->rows;
 }
 
-NcmMutableSong *
-native_tiny_tag_editor_screen_edited(NativeTinyTagEditorScreen *screen) {
-    if (screen == NULL || !screen->has_edited) {
-        return NULL;
-    }
-    return &screen->edited;
-}
-
 void
 native_tiny_tag_editor_screen_set_geometry(
     NativeTinyTagEditorScreen *screen, int64 start_x, int64 width,
@@ -294,22 +286,6 @@ native_tiny_tag_editor_screen_open_song(
         return NATIVE_TINY_TAG_EDITOR_OPEN_PREPARE_FAILED;
     }
     return NATIVE_TINY_TAG_EDITOR_OPEN_SUCCESS;
-}
-
-bool
-native_tiny_tag_editor_screen_set_edited_mutable_song(
-    NativeTinyTagEditorScreen *screen, NcmMutableSong *song) {
-    if (screen == NULL || song == NULL) {
-        return false;
-    }
-    if (ncm_song_uri_is_stream(song->uri, song->uri_len)) {
-        return false;
-    }
-    if (!ncm_mutable_song_copy(&screen->edited, song)) {
-        return false;
-    }
-    screen->has_edited = true;
-    return true;
 }
 
 bool
@@ -521,16 +497,6 @@ native_tiny_tag_editor_screen_set_filename_stem(
         screen, new_name.data, new_name.len);
     ncm_buffer_destroy(&new_name);
     return result;
-}
-
-bool
-native_tiny_tag_editor_screen_save(NativeTinyTagEditorScreen *screen,
-                                   char *music_dir) {
-    if (!tiny_editor_write_song(screen, music_dir)) {
-        return false;
-    }
-    tiny_editor_complete_save(screen);
-    return true;
 }
 
 bool

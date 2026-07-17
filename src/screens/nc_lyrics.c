@@ -580,12 +580,6 @@ native_lyrics_screen_update(NativeLyricsScreen *screen) {
 }
 
 void
-native_lyrics_screen_stop_downloads(NativeLyricsScreen *screen) {
-    ncm_job_queue_stop(&screen->jobs);
-    return;
-}
-
-void
 native_lyrics_screen_refetch_current(NativeLyricsScreen *screen,
                                      NcmError *error) {
     if (!screen->has_song) {
@@ -664,11 +658,6 @@ native_lyrics_screen_filename(NativeLyricsScreen *screen) {
     return &screen->filename;
 }
 
-NcBuffer *
-native_lyrics_screen_display(NativeLyricsScreen *screen) {
-    return &screen->display;
-}
-
 bool
 native_lyrics_buffer_find(NcBuffer *buffer, char *pattern,
                           int32 pattern_len, NcmError *error) {
@@ -729,16 +718,6 @@ native_lyrics_screen_find(NativeLyricsScreen *screen,
                        &screen->display);
     native_lyrics_display(screen);
     return result;
-}
-
-int32
-native_lyrics_screen_pending_jobs(NativeLyricsScreen *screen) {
-    return ncm_job_queue_pending_count(&screen->jobs);
-}
-
-int32
-native_lyrics_screen_queued_count(NativeLyricsScreen *screen) {
-    return screen->queued_songs_len;
 }
 
 static NativeLyricsScreen *

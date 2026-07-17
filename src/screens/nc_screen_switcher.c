@@ -14,19 +14,9 @@ nc_screen_switcher_previous(void) {
     return app_controller_previous_screen();
 }
 
-NcScreen *
-nc_screen_switcher_locked(void) {
-    return app_controller_locked_screen();
-}
-
 bool
 nc_screen_switcher_is_current(NcScreen *screen) {
     return app_controller_is_current_screen(screen);
-}
-
-bool
-nc_screen_switcher_is_previous(NcScreen *screen) {
-    return app_controller_is_previous_screen(screen);
 }
 
 bool
@@ -72,14 +62,3 @@ nc_screen_switcher_get_resize_params(NcScreen *screen, int64 *x_offset,
     return;
 }
 
-void
-nc_screen_switcher_request_visible_resize(void) {
-    app_controller_request_visible_screens_resize();
-    return;
-}
-
-void
-nc_screen_switcher_request_visible_update(void) {
-    app_controller_request_visible_screens_update();
-    return;
-}

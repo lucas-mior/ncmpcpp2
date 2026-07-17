@@ -122,11 +122,6 @@ app_state_is_current_screen(NcScreen *screen) {
     return nc_screen_registry_is_current(&screen_registry, screen);
 }
 
-bool
-app_state_is_previous_screen(NcScreen *screen) {
-    return nc_screen_registry_is_previous(&screen_registry, screen);
-}
-
 NcScreenResizeParams
 app_state_screen_resize_params(NcScreen *screen,
                                bool adjust_locked_screen) {
@@ -141,20 +136,8 @@ app_state_request_current_screen_resize(void) {
 }
 
 void
-app_state_request_visible_screens_resize(void) {
-    nc_screen_registry_request_resize_visible(&screen_registry);
-    return;
-}
-
-void
 app_state_request_current_screen_update(void) {
     nc_screen_registry_request_update_current(&screen_registry);
-    return;
-}
-
-void
-app_state_request_visible_screens_update(void) {
-    nc_screen_registry_request_update_visible(&screen_registry);
     return;
 }
 

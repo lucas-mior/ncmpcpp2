@@ -24,33 +24,6 @@ ncm_sample_buffer_destroy(NcmSampleBuffer *buffer) {
     return;
 }
 
-void
-ncm_sample_buffer_copy(NcmSampleBuffer *dest, NcmSampleBuffer *source) {
-    if (dest == source) {
-        return;
-    }
-
-    ncm_sample_buffer_resize(dest, source->cap);
-    dest->len = source->len;
-    if (source->len > 0) {
-        memcpy64(dest->data, source->data,
-               source->len*SIZEOF(*source->data));
-    }
-    return;
-}
-
-void
-ncm_sample_buffer_move(NcmSampleBuffer *dest, NcmSampleBuffer *source) {
-    if (dest == source) {
-        return;
-    }
-
-    ncm_sample_buffer_destroy(dest);
-    *dest = *source;
-    ncm_sample_buffer_init(source);
-    return;
-}
-
 bool
 ncm_sample_buffer_put(NcmSampleBuffer *buffer,
                       int16 *samples, int32 samples_len) {
@@ -141,27 +114,6 @@ ncm_sample_buffer_get_clamped(NcmSampleBuffer *buffer,
     }
 
     return ncm_sample_buffer_get(buffer, (int32)samples_len, dest, dest_len);
-}
-
-int32
-ncm_sample_buffer_copy_data(NcmSampleBuffer *buffer,
-                            int16 *dest, int32 dest_len) {
-    int32 copied;
-
-    if (dest_len <= 0) {
-        return 0;
-    }
-    if (buffer->cap <= 0) {
-        return 0;
-    }
-
-    copied = dest_len;
-    if (copied > buffer->cap) {
-        copied = buffer->cap;
-    }
-
-    memcpy64(dest, buffer->data, copied*SIZEOF(*dest));
-    return copied;
 }
 
 void

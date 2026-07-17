@@ -66,12 +66,8 @@ bool native_lastfm_screen_queue_artist_info(NativeLastfmScreen *screen,
                                             NcmError *error);
 int32 native_lastfm_screen_dispatch_jobs(NativeLastfmScreen *screen);
 void native_lastfm_screen_update(NativeLastfmScreen *screen);
-bool native_lastfm_screen_has_service(NativeLastfmScreen *screen);
-NcmLastfmResult *native_lastfm_screen_result(NativeLastfmScreen *screen);
 char *native_lastfm_screen_title(NativeLastfmScreen *screen);
-int32 native_lastfm_screen_title_len(NativeLastfmScreen *screen);
 bool native_lastfm_screen_take_refresh_request(NativeLastfmScreen *screen);
-int32 native_lastfm_screen_completed_jobs(NativeLastfmScreen *screen);
 bool native_lastfm_buffer_find(NcBuffer *buffer, char *pattern,
                                 int32 pattern_len, NcmError *error);
 bool native_lastfm_screen_find(NativeLastfmScreen *screen,

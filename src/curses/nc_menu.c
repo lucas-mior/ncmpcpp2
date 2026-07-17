@@ -405,11 +405,6 @@ nc_menu_filtered_item_count(NcMenu *menu) {
 }
 
 int64
-nc_menu_beginning(NcMenu *menu) {
-    return menu->beginning;
-}
-
-int64
 nc_menu_highlight(NcMenu *menu) {
     return menu->highlight;
 }
@@ -637,27 +632,6 @@ nc_menu_highlight_position(NcMenu *menu, int64 pos, int64 height) {
 }
 
 void
-nc_menu_resize_all_items(NcMenu *menu, int64 new_size) {
-    int64 old_size;
-
-    assert(new_size >= 0);
-    old_size = menu_array_count(menu, NC_MENU_ITEMS_ALL);
-    while (old_size > new_size) {
-        old_size -= 1;
-        menu_destroy_item(menu, menu->all_items[old_size]);
-        ARRAY_HEADER(menu->all_items)->count -= 1;
-        ARRAY_HEADER(menu->all_item_flags)->count -= 1;
-    }
-    while (old_size < new_size) {
-        ARRAY_PUSH(menu->all_items, menu_construct_item(menu));
-        ARRAY_PUSH(menu->all_item_flags, menu_default_item_flags());
-        old_size += 1;
-    }
-    nc_menu_sync_item_count(menu);
-    return;
-}
-
-void
 nc_menu_add_item(NcMenu *menu, void *item) {
     nc_menu_add_item_with_flags(menu, item, menu_default_item_flags());
     return;
@@ -679,13 +653,6 @@ nc_menu_add_separator(NcMenu *menu) {
     ARRAY_PUSH(menu->all_items, item);
     ARRAY_PUSH(menu->all_item_flags, NC_MENU_ITEM_SEPARATOR);
     nc_menu_sync_item_count(menu);
-    return;
-}
-
-void
-nc_menu_insert_item(NcMenu *menu, int64 pos, void *item) {
-    nc_menu_insert_item_with_flags(menu, pos, item,
-                                   menu_default_item_flags());
     return;
 }
 
@@ -927,52 +894,10 @@ nc_menu_toggle_position_selected(NcMenu *menu, int64 pos) {
     return nc_menu_set_position_selected(menu, pos, !selected);
 }
 
-bool
-nc_menu_select_range(NcMenu *menu, int64 first, int64 last,
-                     bool selected) {
-    bool changed;
-    int64 item_count;
-
-    changed = false;
-    item_count = nc_menu_item_count(menu);
-    if (item_count == 0) {
-        return false;
-    }
-    if (first > last) {
-        int64 tmp;
-
-        tmp = first;
-        first = last;
-        last = tmp;
-    }
-    if (first < 0) {
-        first = 0;
-    }
-    if (last >= item_count) {
-        last = item_count - 1;
-    }
-    for (int64 i = first; i <= last; i += 1) {
-        if (nc_menu_set_position_selected(menu, i, selected)) {
-            changed = true;
-        }
-    }
-    return changed;
-}
-
 void
 nc_menu_clear_selection(NcMenu *menu) {
     for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
         nc_menu_set_position_selected(menu, i, false);
-    }
-    return;
-}
-
-void
-nc_menu_reverse_selection(NcMenu *menu) {
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        if (nc_menu_position_is_selectable(menu, i)) {
-            nc_menu_toggle_position_selected(menu, i);
-        }
     }
     return;
 }

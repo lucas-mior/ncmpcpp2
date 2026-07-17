@@ -310,41 +310,6 @@ ncm_lyrics_fetcher_registry_append_name(NcmLyricsFetcherRegistry *registry,
 }
 
 bool
-ncm_lyrics_fetcher_registry_add_defaults(NcmLyricsFetcherRegistry *registry) {
-#if defined(HAVE_TAGLIB_H)
-    if (!ncm_lyrics_fetcher_registry_append_name(registry,
-                                                 STRLIT_ARGS("tags"))) {
-        return false;
-    }
-#endif
-    if (!ncm_lyrics_fetcher_registry_append_name(registry,
-                                                 STRLIT_ARGS("tekstowo"))) {
-        return false;
-    }
-    if (!ncm_lyrics_fetcher_registry_append_name(registry,
-                                                 STRLIT_ARGS("plyrics"))) {
-        return false;
-    }
-    if (!ncm_lyrics_fetcher_registry_append_name(
-            registry, STRLIT_ARGS("justsomelyrics"))) {
-        return false;
-    }
-    if (!ncm_lyrics_fetcher_registry_append_name(registry,
-                                                 STRLIT_ARGS("jahlyrics"))) {
-        return false;
-    }
-    if (!ncm_lyrics_fetcher_registry_append_name(registry,
-                                                 STRLIT_ARGS("zeneszoveg"))) {
-        return false;
-    }
-    if (!ncm_lyrics_fetcher_registry_append_name(registry,
-                                                 STRLIT_ARGS("internet"))) {
-        return false;
-    }
-    return true;
-}
-
-bool
 ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher, NcmBuffer *url,
                              char *artist, int32 artist_len,
                              char *title, int32 title_len) {
@@ -419,16 +384,6 @@ ncm_lyrics_cleanup_html(NcmBuffer *out, char *data, int32 data_len) {
     lyrics_trim_buffer(out);
     ncm_buffer_destroy(&stripped);
     ncm_buffer_destroy(&unescaped);
-    return;
-}
-
-void
-ncm_lyrics_fetcher_set_io_for_tests(NcmLyricsCurlPerformFn perform,
-                                    NcmLyricsCurlEscapeFn escape,
-                                    void *user) {
-    lyrics_test_perform = perform;
-    lyrics_test_escape = escape;
-    lyrics_test_user = user;
     return;
 }
 

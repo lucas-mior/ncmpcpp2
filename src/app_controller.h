@@ -16,13 +16,10 @@ NcScreen *app_controller_find_screen_type(int32 type);
 bool app_controller_is_screen_registered(NcScreen *screen);
 bool app_controller_is_screen_visible(NcScreen *screen);
 bool app_controller_is_current_screen(NcScreen *screen);
-bool app_controller_is_previous_screen(NcScreen *screen);
 NcScreenResizeParams app_controller_screen_resize_params(
     NcScreen *screen, bool adjust_locked_screen);
 void app_controller_request_current_screen_resize(void);
-void app_controller_request_visible_screens_resize(void);
 void app_controller_request_current_screen_update(void);
-void app_controller_request_visible_screens_update(void);
 void app_controller_each_visible_screen(NcScreenEachCallback callback,
                                         void *user);
 bool app_controller_switch_to_screen(NcScreen *screen);

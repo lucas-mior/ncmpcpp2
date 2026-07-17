@@ -475,16 +475,6 @@ native_media_library_screen_base(NativeMediaLibraryScreen *screen) {
     return &screen->screen;
 }
 
-NcMediaLibraryTagMenu *
-native_media_library_screen_tags(NativeMediaLibraryScreen *screen) {
-    return &screen->tags;
-}
-
-NcMediaLibrarySongMenu *
-native_media_library_screen_songs(NativeMediaLibraryScreen *screen) {
-    return &screen->songs;
-}
-
 NcMenu *
 native_media_library_screen_active_menu(NativeMediaLibraryScreen *screen) {
     if (screen == NULL) {
@@ -527,14 +517,6 @@ native_media_library_screen_set_geometry(NativeMediaLibraryScreen *screen,
     screen->main_height = main_height;
     native_library_layout(screen);
     return;
-}
-
-enum NativeMediaLibraryMode
-native_media_library_screen_mode(NativeMediaLibraryScreen *screen) {
-    if (screen == NULL) {
-        return NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS;
-    }
-    return screen->mode;
 }
 
 int32
@@ -763,57 +745,6 @@ native_media_library_screen_current_album_value(
     *album = row->album;
     *album_len = row->album_len;
     return true;
-}
-
-bool
-native_media_library_screen_current_album_date(
-    NativeMediaLibraryScreen *screen, char **date, int32 *date_len) {
-    NcMediaLibraryAlbumRow *row;
-
-    if ((screen == NULL) || (date == NULL) || (date_len == NULL)) {
-        return false;
-    }
-
-    row = native_media_library_screen_current_album(screen);
-    if ((row == NULL) || row->all_tracks_entry) {
-        return false;
-    }
-
-    *date = row->date;
-    *date_len = row->date_len;
-    return true;
-}
-
-bool
-native_media_library_screen_current_album_is_all_tracks(
-    NativeMediaLibraryScreen *screen) {
-    NcMediaLibraryAlbumRow *row;
-
-    row = native_media_library_screen_current_album(screen);
-    if (row == NULL) {
-        return false;
-    }
-    return row->all_tracks_entry;
-}
-
-int64
-native_media_library_screen_visible_song_count(
-    NativeMediaLibraryScreen *screen) {
-    if (screen == NULL) {
-        return 0;
-    }
-    return nc_menu_item_count(
-        nc_media_library_song_menu_base(&screen->songs));
-}
-
-NcmSong *
-native_media_library_screen_visible_song_at(
-    NativeMediaLibraryScreen *screen, int64 pos) {
-    if (screen == NULL) {
-        return NULL;
-    }
-    return nc_menu_active_item_at(
-        nc_media_library_song_menu_base(&screen->songs), pos);
 }
 
 void
@@ -1550,53 +1481,6 @@ native_media_library_songs_from_list(
     return true;
 }
 
-NcmTimePoint
-native_media_library_screen_update_timer(NativeMediaLibraryScreen *screen) {
-    NcmTimePoint timer = {0};
-
-    if (screen) {
-        timer = screen->update_timer;
-    }
-    return timer;
-}
-
-void
-native_media_library_screen_set_update_timer(
-    NativeMediaLibraryScreen *screen, NcmTimePoint timer) {
-    if (screen == NULL) {
-        return;
-    }
-    screen->update_timer = timer;
-    return;
-}
-
-int64
-native_media_library_screen_fetching_delay_ms(
-    NativeMediaLibraryScreen *screen) {
-    if (screen == NULL) {
-        return -1;
-    }
-    return screen->fetching_delay_ms;
-}
-
-int32
-native_media_library_screen_window_timeout_ms(
-    NativeMediaLibraryScreen *screen) {
-    if (screen == NULL) {
-        return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
-    }
-    return screen->window_timeout_ms;
-}
-
-bool
-native_media_library_screen_sort_by_mtime(
-    NativeMediaLibraryScreen *screen) {
-    if (screen == NULL) {
-        return false;
-    }
-    return screen->sort_by_mtime;
-}
-
 bool
 native_media_library_screen_toggle_sort_mode(
     NativeMediaLibraryScreen *screen) {
@@ -1634,12 +1518,6 @@ native_media_library_screen_set_primary_tag_type(
     native_media_library_screen_request_tags_update(screen);
     nc_screen_finish_list_change(&screen->screen);
     return true;
-}
-
-enum NativeMediaLibraryMode
-native_media_library_screen_toggle_columns_mode(
-    NativeMediaLibraryScreen *screen) {
-    return native_media_library_screen_toggle_mode(screen);
 }
 
 void
@@ -1747,105 +1625,6 @@ native_media_library_screen_clear(NativeMediaLibraryScreen *screen) {
 }
 
 bool
-native_media_library_screen_add_tag(NativeMediaLibraryScreen *screen,
-                                    char *tag, int32 tag_len,
-                                    time_t mtime) {
-    NcMediaLibraryTagRow row;
-
-    if ((screen == NULL) || (tag_len < 0)
-        || ((tag == NULL) && (tag_len > 0))) {
-        return false;
-    }
-    nc_media_library_tag_row_init(&row);
-    if (!native_library_set_owned_string(&row.tag, &row.tag_len,
-                                         &row.tag_cap, tag, tag_len)) {
-        nc_media_library_tag_row_destroy(&row);
-        return false;
-    }
-    row.mtime = mtime;
-    nc_media_library_tag_menu_add(&screen->tags, &row);
-    nc_media_library_tag_row_destroy(&row);
-    nc_screen_finish_list_change(&screen->screen);
-    return true;
-}
-
-bool
-native_media_library_screen_add_album(NativeMediaLibraryScreen *screen,
-                                      char *tag, int32 tag_len,
-                                      char *album, int32 album_len,
-                                      char *date, int32 date_len,
-                                      time_t mtime,
-                                      bool all_tracks_entry) {
-    NcMediaLibraryAlbumRow row;
-    bool result;
-
-    if (screen == NULL) {
-        return false;
-    }
-    nc_media_library_album_row_init(&row);
-    result = native_library_set_owned_string(&row.tag, &row.tag_len,
-                                             &row.tag_cap, tag, tag_len);
-    if (result) {
-        result = native_library_set_owned_string(&row.album,
-                                                 &row.album_len,
-                                                 &row.album_cap,
-                                                 album, album_len);
-    }
-    if (result) {
-        result = native_library_set_owned_string(&row.date, &row.date_len,
-                                                 &row.date_cap, date,
-                                                 date_len);
-    }
-    if (result) {
-        row.mtime = mtime;
-        row.all_tracks_entry = all_tracks_entry;
-        nc_media_library_album_menu_add(&screen->albums, &row);
-    }
-    nc_media_library_album_row_destroy(&row);
-    if (result) {
-        nc_screen_finish_list_change(&screen->screen);
-    }
-    return result;
-}
-
-bool
-native_media_library_screen_add_song_copy(NativeMediaLibraryScreen *screen,
-                                          NcmSong *song) {
-    if ((screen == NULL) || (song == NULL)) {
-        return false;
-    }
-    nc_media_library_song_menu_add(&screen->songs, song);
-    return true;
-}
-
-bool
-native_media_library_screen_group_tags_from_songs(
-    NativeMediaLibraryScreen *screen, NcmSongArray *songs,
-    enum mpd_tag_type tag_type) {
-    NativeMediaLibraryTagArray grouped;
-    NcmMpdSongList source;
-    bool result;
-
-    if ((screen == NULL) || (songs == NULL)) {
-        return false;
-    }
-
-    source.items = songs->items;
-    source.count = songs->len;
-    source.capacity = songs->len;
-    native_media_library_tag_array_init(&grouped);
-    if (!native_media_library_tags_from_songs(
-            &grouped, &source, tag_type)) {
-        native_media_library_tag_array_destroy(&grouped);
-        return false;
-    }
-
-    result = native_library_replace_tags(screen, &grouped);
-    native_media_library_tag_array_destroy(&grouped);
-    return result;
-}
-
-bool
 native_media_library_screen_current_song(NativeMediaLibraryScreen *screen,
                                          NcmSong *song) {
     NcmSong *current;
@@ -1858,12 +1637,6 @@ native_media_library_screen_current_song(NativeMediaLibraryScreen *screen,
         return false;
     }
     return ncm_song_copy(song, current);
-}
-
-bool
-native_media_library_screen_current_selected_song(
-    NativeMediaLibraryScreen *screen, NcmSong *song) {
-    return native_media_library_screen_current_song(screen, song);
 }
 
 bool
@@ -1892,54 +1665,6 @@ native_media_library_screen_selected_songs_checked(
         return false;
     }
     return native_library_collect_selected_songs(screen, songs, error);
-}
-
-bool
-native_media_library_screen_current_tag_songs(
-    NativeMediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *error) {
-    NativeMediaLibrarySongQuery query = {0};
-    NcMediaLibraryTagRow *tag;
-
-    if ((screen == NULL) || (songs == NULL)) {
-        ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing media-library songs"));
-        return false;
-    }
-
-    tag = native_media_library_screen_current_tag(screen);
-    if (tag == NULL) {
-        ncm_error_set(error, ENOENT,
-                      STRLIT_ARGS("no selected media-library tag"));
-        return false;
-    }
-
-    native_library_query_from_tag(screen, tag, &query);
-    return native_library_append_query_songs(screen, &query, songs, error);
-}
-
-bool
-native_media_library_screen_current_album_songs(
-    NativeMediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *error) {
-    NativeMediaLibrarySongQuery query = {0};
-    NcMediaLibraryAlbumRow *album;
-
-    if ((screen == NULL) || (songs == NULL)) {
-        ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing media-library songs"));
-        return false;
-    }
-
-    album = native_media_library_screen_current_album(screen);
-    if (album == NULL) {
-        ncm_error_set(error, ENOENT,
-                      STRLIT_ARGS("no selected media-library album"));
-        return false;
-    }
-
-    native_library_query_from_album(screen, album, &query);
-    return native_library_append_query_songs(screen, &query, songs, error);
 }
 
 bool
@@ -2164,19 +1889,6 @@ native_media_library_screen_request_songs_update(
     }
     screen->songs_update_request = true;
     nc_screen_request_update(&screen->screen);
-    return;
-}
-
-void
-native_media_library_screen_clear_update_requests(
-    NativeMediaLibraryScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
-    screen->tags_update_request = false;
-    screen->albums_update_request = false;
-    screen->songs_update_request = false;
-    nc_screen_clear_update_request(&screen->screen);
     return;
 }
 

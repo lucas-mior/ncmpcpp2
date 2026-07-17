@@ -140,50 +140,24 @@ NcScreen *native_tag_editor_screen_base(NativeTagEditorScreen *screen);
 
 void native_tag_editor_screen_set_hooks(NativeTagEditorScreen *screen,
                                         NativeTagEditorHooks hooks);
-NcEditorPairMenu *native_tag_editor_screen_directories(
-    NativeTagEditorScreen *screen);
-NcTagRowMenu *native_tag_editor_screen_tags(NativeTagEditorScreen *screen);
-NcEditorStringMenu *native_tag_editor_screen_parser_dialog(
-    NativeTagEditorScreen *screen);
-NcEditorStringMenu *native_tag_editor_screen_parser_rows(
-    NativeTagEditorScreen *screen);
-NcEditorStringMenu *native_tag_editor_screen_parser_actions(
-    NativeTagEditorScreen *screen);
 NcMenu *native_tag_editor_screen_active_menu(NativeTagEditorScreen *screen);
 NcWindow *native_tag_editor_screen_active_window(NativeTagEditorScreen *screen);
 void native_tag_editor_screen_set_geometry(NativeTagEditorScreen *screen,
                                            int64 start_x, int64 width,
                                            int64 main_start_y,
                                            int64 main_height);
-void native_tag_editor_screen_clear(NativeTagEditorScreen *screen);
 void native_tag_editor_screen_clear_directories(
     NativeTagEditorScreen *screen);
 void native_tag_editor_screen_clear_stale_tags(
     NativeTagEditorScreen *screen);
 void native_tag_editor_screen_finish_directory_change(
     NativeTagEditorScreen *screen);
-bool native_tag_editor_screen_displayed_dir(NativeTagEditorScreen *screen,
-                                            NcmStringView *view);
-bool native_tag_editor_screen_observed_dir(NativeTagEditorScreen *screen,
-                                           NcmStringView *view);
 bool native_tag_editor_screen_set_current_dir(NativeTagEditorScreen *screen,
                                               char *dir, int32 dir_len);
 bool native_tag_editor_screen_current_dir(NativeTagEditorScreen *screen,
                                           NcmStringView *view);
 bool native_tag_editor_screen_current_directory_path(
     NativeTagEditorScreen *screen, NcmStringView *view);
-bool native_tag_editor_screen_current_tag_field(
-    NativeTagEditorScreen *screen, enum NcmTagsField *field);
-bool native_tag_editor_screen_current_tag_song(
-    NativeTagEditorScreen *screen, NcmMutableSong *song);
-int64 native_tag_editor_screen_selected_tag_song_count(
-    NativeTagEditorScreen *screen);
-bool native_tag_editor_screen_active_menu_empty(
-    NativeTagEditorScreen *screen);
-bool native_tag_editor_screen_current_tag_type_editable(
-    NativeTagEditorScreen *screen);
-bool native_tag_editor_screen_current_tag_type_actionable(
-    NativeTagEditorScreen *screen);
 bool native_tag_editor_screen_enter_directory(NativeTagEditorScreen *screen);
 bool native_tag_editor_screen_go_to_parent(NativeTagEditorScreen *screen);
 bool native_tag_editor_screen_locate_song(NativeTagEditorScreen *screen,
@@ -195,14 +169,10 @@ bool native_tag_editor_screen_rename_current_directory(
 bool native_tag_editor_screen_add_directory(NativeTagEditorScreen *screen,
                                             char *label, int32 label_len,
                                             char *path, int32 path_len);
-bool native_tag_editor_screen_load_directories(
-    NativeTagEditorScreen *screen, NcmDirectoryArray *directories);
 bool native_tag_editor_screen_load_songs(NativeTagEditorScreen *screen,
                                          NcmSongArray *songs);
 bool native_tag_editor_screen_add_mutable_song(
     NativeTagEditorScreen *screen, NcmMutableSong *song);
-bool native_tag_editor_screen_current_song(NativeTagEditorScreen *screen,
-                                           NcmMutableSong *song);
 bool native_tag_editor_screen_selected_songs(NativeTagEditorScreen *screen,
                                              NcmSongArray *songs);
 bool native_tag_editor_screen_previous_column_available(
@@ -231,7 +201,6 @@ bool native_tag_editor_screen_apply_directory_filter(
 bool native_tag_editor_screen_apply_tag_filter(
     NativeTagEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, NcmError *error);
-void native_tag_editor_screen_clear_filters(NativeTagEditorScreen *screen);
 bool native_tag_editor_screen_search(
     NativeTagEditorScreen *screen, char *pattern, int32 pattern_len,
     bool forward, bool wrap, bool skip_current, NcmError *error);

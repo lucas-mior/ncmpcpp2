@@ -193,24 +193,6 @@ native_selected_items_adder_screen_base(
     return &screen->screen;
 }
 
-NcEditorActionMenu *
-native_selected_items_adder_screen_playlist_menu(
-    NativeSelectedItemsAdderScreen *screen) {
-    if (screen == NULL) {
-        return NULL;
-    }
-    return &screen->playlist_selector;
-}
-
-NcEditorActionMenu *
-native_selected_items_adder_screen_position_menu(
-    NativeSelectedItemsAdderScreen *screen) {
-    if (screen == NULL) {
-        return NULL;
-    }
-    return &screen->position_selector;
-}
-
 NcMenu *
 native_selected_items_adder_screen_active_menu(
     NativeSelectedItemsAdderScreen *screen) {
@@ -335,15 +317,6 @@ native_selected_items_adder_screen_open(
 
     ncm_error_clear(error);
     return true;
-}
-
-bool
-native_selected_items_adder_screen_selected_songs(
-    NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs) {
-    if (screen == NULL || songs == NULL) {
-        return false;
-    }
-    return ncm_song_array_copy(songs, &screen->selected_songs);
 }
 
 void
@@ -505,45 +478,6 @@ native_selected_items_adder_screen_add_to_existing_playlist(
         client->command_list_active = false;
     }
     return ok;
-}
-
-bool
-native_selected_items_adder_screen_apply_search(
-    NativeSelectedItemsAdderScreen *screen, char *pattern,
-    int32 pattern_len, uint32 regex_flags, NcmError *error) {
-    if (screen == NULL) {
-        return false;
-    }
-    if (pattern == NULL || pattern_len <= 0) {
-        native_selected_items_adder_screen_clear_search(screen);
-        return true;
-    }
-    if (!ncm_regex_compile(&screen->search_regex, pattern, pattern_len,
-                           regex_flags, error)) {
-        return false;
-    }
-    ncm_buffer_set(&screen->search_constraint, pattern, pattern_len);
-    screen->search_enabled = true;
-    nc_menu_apply_filter(
-        nc_editor_action_menu_base(&screen->playlist_selector));
-    nc_menu_apply_filter(
-        nc_editor_action_menu_base(&screen->position_selector));
-    return true;
-}
-
-void
-native_selected_items_adder_screen_clear_search(
-    NativeSelectedItemsAdderScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
-    screen->search_enabled = false;
-    ncm_buffer_clear(&screen->search_constraint);
-    nc_menu_show_all_items(
-        nc_editor_action_menu_base(&screen->playlist_selector));
-    nc_menu_show_all_items(
-        nc_editor_action_menu_base(&screen->position_selector));
-    return;
 }
 
 bool
