@@ -10,22 +10,6 @@
 #include "cbase/rapidhash.h"
 #include "cbase/util.c"
 
-static bool ncm_song_needs_numeric_zero(char *tag, int32 tag_len);
-static int32 ncm_song_format_numeric_tag_prefix(char *buffer,
-                                                int32 buffer_cap,
-                                                char *tag,
-                                                int32 tag_len,
-                                                int32 copy_len);
-static void ncm_song_tag_init(NcmSongTag *tag);
-static void ncm_song_tag_destroy(NcmSongTag *tag);
-static bool ncm_song_tag_copy(NcmSongTag *dest, NcmSongTag *source);
-static bool ncm_song_grow_tags(NcmSong *song);
-static bool ncm_song_load_mpd_tag(NcmSong *song, struct mpd_song *source,
-                                  enum mpd_tag_type type);
-static bool ncm_song_feed_pair(struct mpd_song *song, char *name,
-                               char *value);
-static char *ncm_song_mpd_tag_name(enum mpd_tag_type type);
-
 static bool
 ncm_song_needs_numeric_zero(char *tag, int32 tag_len) {
     if (tag == NULL) {
