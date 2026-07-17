@@ -2301,6 +2301,7 @@ playlist_editor_search_menu(NativePlaylistEditorScreen *screen,
                             NcMenu *menu, NcmRegex *regex, bool forward,
                             bool wrap, bool skip_current) {
     int64 count;
+    int64 current;
     int64 start;
 
     if (menu == NULL) {
@@ -2310,7 +2311,8 @@ playlist_editor_search_menu(NativePlaylistEditorScreen *screen,
     if (count <= 0) {
         return false;
     }
-    start = nc_menu_highlight(menu);
+    current = nc_menu_highlight(menu);
+    start = current;
     if (skip_current) {
         if (forward) {
             start += 1;
@@ -2335,8 +2337,11 @@ playlist_editor_search_menu(NativePlaylistEditorScreen *screen,
         } else if (pos < 0 || pos >= count) {
             break;
         }
+        if (skip_current && (pos == current)) {
+            continue;
+        }
         if (playlist_editor_search_item(screen, menu, regex, pos)) {
-            nc_menu_highlight_position(menu, pos, count);
+            nc_menu_highlight_position(menu, pos, screen->main_height);
             return true;
         }
     }
