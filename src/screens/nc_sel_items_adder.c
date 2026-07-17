@@ -469,6 +469,7 @@ native_selected_items_adder_screen_search(
     NcmRegex regex;
     NcMenu *menu;
     int64 count;
+    int64 current;
     int64 start;
 
     if (screen == NULL || pattern == NULL || pattern_len <= 0) {
@@ -484,7 +485,8 @@ native_selected_items_adder_screen_search(
 
     menu = native_selected_items_adder_screen_active_menu(screen);
     count = nc_menu_item_count(menu);
-    start = nc_menu_highlight(menu);
+    current = nc_menu_highlight(menu);
+    start = current;
     if (skip_current) {
         if (forward) {
             start += 1;
@@ -512,10 +514,17 @@ native_selected_items_adder_screen_search(
         if (pos < 0 || pos >= count) {
             continue;
         }
+        if (skip_current && (pos == current)) {
+            continue;
+        }
         if (adder_row_matches(nc_menu_active_item_at(menu, pos),
                               &regex)) {
+            NcWindow *window;
+
+            window = native_selected_items_adder_screen_active_window(screen);
             ncm_regex_destroy(&regex);
-            return nc_menu_goto_selectable(menu, pos);
+            return nc_menu_goto_selectable_position(
+                menu, pos, nc_window_height(window));
         }
     }
 

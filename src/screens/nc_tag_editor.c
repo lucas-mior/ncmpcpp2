@@ -1225,6 +1225,7 @@ native_tag_editor_screen_search(NativeTagEditorScreen *screen,
     bool *enabled;
     NcMenu *menu;
     int64 count;
+    int64 current;
     int64 start;
 
     if (screen == NULL || pattern == NULL || pattern_len <= 0) {
@@ -1253,7 +1254,8 @@ native_tag_editor_screen_search(NativeTagEditorScreen *screen,
 
     menu = native_tag_editor_screen_active_menu(screen);
     count = nc_menu_item_count(menu);
-    start = nc_menu_highlight(menu);
+    current = nc_menu_highlight(menu);
+    start = current;
     if (skip_current) {
         if (forward) {
             start += 1;
@@ -1281,8 +1283,15 @@ native_tag_editor_screen_search(NativeTagEditorScreen *screen,
         if (pos < 0 || pos >= count) {
             continue;
         }
+        if (skip_current && (pos == current)) {
+            continue;
+        }
         if (tag_editor_active_item_matches(screen, menu, pos, regex)) {
-            if (!nc_menu_goto_selectable(menu, pos)) {
+            NcWindow *window;
+
+            window = native_tag_editor_screen_active_window(screen);
+            if (!nc_menu_goto_selectable_position(
+                    menu, pos, nc_window_height(window))) {
                 return false;
             }
             native_tag_editor_screen_finish_directory_change(screen);

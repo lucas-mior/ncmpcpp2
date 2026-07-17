@@ -1079,6 +1079,7 @@ native_browser_screen_search(NativeBrowserScreen *screen,
     NcmRegex regex;
     NcMenu *menu;
     int64 count;
+    int64 current;
     int64 start;
     bool result = false;
 
@@ -1099,7 +1100,8 @@ native_browser_screen_search(NativeBrowserScreen *screen,
 
     menu = native_browser_screen_menu(screen);
     count = nc_menu_item_count(menu);
-    start = nc_menu_highlight(menu);
+    current = nc_menu_highlight(menu);
+    start = current;
     if (skip_current) {
         if (forward) {
             start += 1;
@@ -1126,10 +1128,14 @@ native_browser_screen_search(NativeBrowserScreen *screen,
         if (pos < 0 || pos >= count) {
             continue;
         }
+        if (skip_current && (pos == current)) {
+            continue;
+        }
         if (native_browser_item_matches(screen,
                                         nc_menu_active_item_at(menu, pos),
                                         &regex, false)) {
-            result = nc_menu_goto_selectable(menu, pos);
+            result = nc_menu_goto_selectable_position(
+                menu, pos, screen->main_height);
             break;
         }
     }

@@ -1105,7 +1105,7 @@ native_playlist_filter_song(NcMenu *menu, void *item, void *user) {
 static bool
 native_playlist_song_matches(NativePlaylistScreen *screen,
                              NcmSong *song, NcmRegex *regex) {
-    NcBuffer buffer;
+    NcmBuffer buffer;
     bool result;
 
     (void)screen;
@@ -1113,23 +1113,14 @@ native_playlist_song_matches(NativePlaylistScreen *screen,
         return false;
     }
 
-    nc_buffer_init(&buffer);
     if (Config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
-        int32 list_width;
-
-        if (screen->screen.width > INT32_MAX) {
-            list_width = INT32_MAX;
-        } else {
-            list_width = (int32)screen->screen.width;
-        }
-        ncm_display_song_columns(&buffer, song, Config.columns.items,
-                                 Config.columns.len, list_width, false);
+        buffer = ncm_format_render_string(&Config.song_columns_mode_format,
+                                          song);
     } else {
-        ncm_display_song_row(&buffer, &Config.song_list_format, song,
-                             NCM_FORMAT_FLAG_ALL);
+        buffer = ncm_format_render_string(&Config.song_list_format, song);
     }
     result = ncm_regex_search(regex, buffer.data, buffer.len);
-    nc_buffer_destroy(&buffer);
+    ncm_buffer_destroy(&buffer);
     return result;
 }
 
@@ -1139,13 +1130,15 @@ native_playlist_search_menu(NativePlaylistScreen *screen,
                             bool forward, bool wrap,
                             bool skip_current) {
     int64 count;
+    int64 current;
     int64 start;
 
     if (menu == NULL) {
         return false;
     }
     count = nc_menu_item_count(menu);
-    start = nc_menu_highlight(menu);
+    current = nc_menu_highlight(menu);
+    start = current;
     if (skip_current) {
         if (forward) {
             start += 1;
@@ -1173,10 +1166,14 @@ native_playlist_search_menu(NativePlaylistScreen *screen,
         if (pos < 0 || pos >= count) {
             continue;
         }
+        if (skip_current && (pos == current)) {
+            continue;
+        }
         if (native_playlist_song_matches(screen,
                                          nc_menu_active_item_at(menu, pos),
                                          regex)) {
-            return nc_menu_goto_selectable(menu, pos);
+            return nc_menu_goto_selectable_position(
+                menu, pos, screen->screen.main_height);
         }
     }
 

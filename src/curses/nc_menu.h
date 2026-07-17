@@ -97,6 +97,8 @@ void nc_menu_set_centered_cursor(NcMenu *menu, bool state);
 bool nc_menu_goto(NcMenu *menu, int64 y,
                   NcMenuHighlightableFunc is_highlightable, void *user);
 bool nc_menu_goto_selectable(NcMenu *menu, int64 y);
+bool nc_menu_goto_selectable_position(NcMenu *menu, int64 pos,
+                                      int64 height);
 void nc_menu_prepare_refresh(NcMenu *menu, int64 height,
                              NcMenuHighlightableFunc is_highlightable,
                              void *user);
