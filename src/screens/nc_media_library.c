@@ -73,6 +73,8 @@ static void native_library_refresh_menu(NcMenu *menu, NcWindow *window);
 static bool native_library_active_item_matches(
     NativeMediaLibraryScreen *screen, NcMenu *menu, int64 pos,
     NcmRegex *regex);
+static bool native_library_search_position(NcMenu *menu, int64 pos,
+                                           void *user);
 static void native_library_layout(NativeMediaLibraryScreen *screen);
 static int32 native_library_ratio_value(NcmInt32Array *ratios,
                                         int32 idx, int32 fallback);
@@ -147,6 +149,11 @@ static void native_library_set_conversion_error(NcmError *error,
                                                  int32 message_len);
 static void native_library_request_all_updates(
     NativeMediaLibraryScreen *screen);
+
+typedef struct NativeMediaLibrarySearchContext {
+    NativeMediaLibraryScreen *screen;
+    NcmRegex *regex;
+} NativeMediaLibrarySearchContext;
 
 static NcScreenCallbacks native_library_callbacks = {
     .active_window = native_library_active_window,
@@ -1672,11 +1679,10 @@ native_media_library_screen_search(NativeMediaLibraryScreen *screen,
                                    char *pattern, int32 pattern_len,
                                    bool forward, bool wrap,
                                    bool skip_current, NcmError *error) {
+    NativeMediaLibrarySearchContext context;
     NativeMediaLibraryColumnState *state;
     NcMenu *menu;
-    int64 count;
-    int64 current;
-    int64 start;
+    bool result;
 
     if (screen == NULL) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing media library"));
@@ -1703,50 +1709,26 @@ native_media_library_screen_search(NativeMediaLibraryScreen *screen,
     state->search_enabled = true;
 
     menu = native_media_library_screen_active_menu(screen);
-    count = nc_menu_item_count(menu);
-    current = nc_menu_highlight(menu);
-    start = current;
-    if (skip_current) {
-        if (forward) {
-            start += 1;
-        } else {
-            start -= 1;
-        }
+    context.screen = screen;
+    context.regex = &state->search_regex;
+    result = nc_menu_search_selectable(menu, screen->main_height, forward,
+                                       wrap, skip_current,
+                                       native_library_search_position,
+                                       &context, NULL);
+    if (result) {
+        nc_screen_finish_list_change(&screen->screen);
     }
+    return result;
+}
 
-    for (int64 i = 0; i < count; i += 1) {
-        int64 pos;
+static bool
+native_library_search_position(NcMenu *menu, int64 pos,
+                               void *user) {
+    NativeMediaLibrarySearchContext *context;
 
-        if (forward) {
-            pos = start + i;
-        } else {
-            pos = start - i;
-        }
-        if (wrap) {
-            while (pos < 0) {
-                pos += count;
-            }
-            while (pos >= count) {
-                pos -= count;
-            }
-        }
-        if ((pos < 0) || (pos >= count)) {
-            continue;
-        }
-        if (skip_current && (pos == current)) {
-            continue;
-        }
-        if (native_library_active_item_matches(
-                screen, menu, pos, &state->search_regex)) {
-            if (nc_menu_goto_selectable_position(
-                    menu, pos, screen->main_height)) {
-                nc_screen_finish_list_change(&screen->screen);
-                return true;
-            }
-            return false;
-        }
-    }
-    return false;
+    context = user;
+    return native_library_active_item_matches(
+        context->screen, menu, pos, context->regex);
 }
 
 void
