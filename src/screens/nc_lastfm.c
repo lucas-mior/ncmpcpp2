@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_LASTFM_C)
+#define NCMPCPP_NC_LASTFM_C
+
 #include "screens/nc_lastfm.h"
 
 #include <errno.h>
@@ -741,3 +744,5 @@ native_lastfm_flush(NativeLastfmScreen *screen) {
     native_lastfm_display(screen);
     return;
 }
+
+#endif /* NCMPCPP_NC_LASTFM_C */

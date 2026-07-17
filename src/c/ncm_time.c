@@ -1,3 +1,6 @@
+#if !defined(NCM_TIME_C)
+#define NCM_TIME_C
+
 #include "c/ncm_time.h"
 
 #include <errno.h>
@@ -49,3 +52,4 @@ ncm_time_elapsed_ms(NcmTimePoint start, NcmTimePoint end) {
     return ncm_time_elapsed_ns(start, end) / 1000000ll;
 }
 
+#endif /* NCM_TIME_C */

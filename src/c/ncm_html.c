@@ -1,3 +1,6 @@
+#if !defined(NCM_HTML_C)
+#define NCM_HTML_C
+
 #include "c/ncm_html.h"
 
 #include <stdbool.h>
@@ -248,3 +251,5 @@ ncm_html_strip_tags(char *data, int32 data_len) {
     ncm_buffer_destroy(&stripped);
     return result;
 }
+
+#endif /* NCM_HTML_C */

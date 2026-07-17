@@ -1,4 +1,4 @@
-#ifndef NCMPCPP_NATIVE_C_SCREENS_H
+#if !defined(NCMPCPP_NATIVE_C_SCREENS_H)
 #define NCMPCPP_NATIVE_C_SCREENS_H
 
 #include <stdbool.h>

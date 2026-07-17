@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_MAIN_C)
+#define NCMPCPP_MAIN_C
+
 #include <assert.h>
 #include <errno.h>
 #include <locale.h>
@@ -252,3 +255,5 @@ main(int32 argc, char **argv) {
 
     exit(EXIT_SUCCESS);
 }
+
+#endif /* NCMPCPP_MAIN_C */

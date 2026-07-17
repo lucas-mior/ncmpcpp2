@@ -1,3 +1,6 @@
+#if !defined(NCM_RANDOM_C)
+#define NCM_RANDOM_C
+
 #include "c/ncm_random.h"
 
 #include <errno.h>
@@ -119,3 +122,5 @@ ncm_random_shuffle(NcmRandom *random, void *items,
     }
     return;
 }
+
+#endif /* NCM_RANDOM_C */

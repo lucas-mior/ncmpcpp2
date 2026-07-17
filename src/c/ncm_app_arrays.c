@@ -1,3 +1,6 @@
+#if !defined(NCM_APP_ARRAYS_C)
+#define NCM_APP_ARRAYS_C
+
 #include "c/ncm_app_arrays.h"
 
 static void ncm_app_array_buffer_init(void *item);
@@ -234,3 +237,5 @@ NCM_ARRAY_DEFINE_APPEND_COPY(ncm_mpd_item_array,
                              NcmMpdItemArray,
                              NcmMpdItem,
                              &ncm_app_array_mpd_item_callbacks)
+
+#endif /* NCM_APP_ARRAYS_C */

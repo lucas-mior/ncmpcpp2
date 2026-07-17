@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_WINDOW_C)
+#define NCMPCPP_NC_WINDOW_C
+
 #include "curses/nc_window.h"
 
 #include <assert.h>
@@ -1707,3 +1710,5 @@ nc_window_decrease_format(NcWindow *window, int32 *counter,
     }
     return;
 }
+
+#endif /* NCMPCPP_NC_WINDOW_C */

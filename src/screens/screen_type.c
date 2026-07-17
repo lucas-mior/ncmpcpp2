@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_SCREEN_TYPE_C)
+#define NCMPCPP_SCREEN_TYPE_C
+
 #include "screens/screen_type.h"
 
 #include "c/ncm_string.h"
@@ -152,3 +155,5 @@ screen_type_parse(char *string, int32 string_len,
     *screen_type = NCM_SCREEN_TYPE_UNKNOWN;
     return false;
 }
+
+#endif /* NCMPCPP_SCREEN_TYPE_C */

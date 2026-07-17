@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_SETTINGS_C)
+#define NCMPCPP_SETTINGS_C
+
 
 #include "settings.h"
 
@@ -2387,3 +2390,5 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
     return settings_initialize_defaults(config, options, option_count,
                                         ignore_errors, error);
 }
+
+#endif /* NCMPCPP_SETTINGS_C */

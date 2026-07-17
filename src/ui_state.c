@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_UI_STATE_C)
+#define NCMPCPP_UI_STATE_C
+
 #include "ui_state.h"
 
 static NcWindow *header_window;
@@ -110,3 +113,5 @@ bool
 ui_state_statusbar_visibility_baseline(void) {
     return statusbar_visibility_baseline;
 }
+
+#endif /* NCMPCPP_UI_STATE_C */

@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_TINY_TAG_EDITOR_C)
+#define NCMPCPP_NC_TINY_TAG_EDITOR_C
+
 #include "screens/nc_tiny_tag_editor.h"
 
 #include <errno.h>
@@ -1052,3 +1055,5 @@ tiny_editor_channels_to_string(int32 channels, char *buffer,
                                int32 buffer_cap) {
     return ncm_channels_to_string(channels, buffer, buffer_cap);
 }
+
+#endif /* NCMPCPP_NC_TINY_TAG_EDITOR_C */

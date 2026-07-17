@@ -1,3 +1,6 @@
+#if !defined(NCM_PLAYLIST_C)
+#define NCM_PLAYLIST_C
+
 #include "c/ncm_playlist.h"
 
 #include <mpd/client.h>
@@ -139,3 +142,4 @@ ncm_playlist_last_modified(NcmPlaylist *playlist) {
     return playlist->last_modified;
 }
 
+#endif /* NCM_PLAYLIST_C */

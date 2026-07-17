@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_STATUSBAR_C)
+#define NCMPCPP_STATUSBAR_C
+
 #include "statusbar.h"
 
 #include <string.h>
@@ -419,3 +422,5 @@ ncm_statusbar_prompt_return_one_of(NcWindow *window,
         }
     }
 }
+
+#endif /* NCMPCPP_STATUSBAR_C */

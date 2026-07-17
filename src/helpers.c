@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_HELPERS_C)
+#define NCMPCPP_HELPERS_C
+
 #include "helpers.h"
 
 #include <assert.h>
@@ -169,3 +172,4 @@ ncm_menu_find_full_selected_range(NcMenu *menu,
     return true;
 }
 
+#endif /* NCMPCPP_HELPERS_C */

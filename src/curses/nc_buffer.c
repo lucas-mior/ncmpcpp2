@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_BUFFER_C)
+#define NCMPCPP_NC_BUFFER_C
+
 #include "curses/nc_buffer.h"
 
 #include <stdio.h>
@@ -406,3 +409,5 @@ nc_buffer_reverse_format(enum NcFormat format) {
 
     return NC_FORMAT_NO_BOLD;
 }
+
+#endif /* NCMPCPP_NC_BUFFER_C */

@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_SETTINGS_TYPES_C)
+#define NCMPCPP_SETTINGS_TYPES_C
+
 #include "settings.h"
 
 #include "c/ncm_base.h"
@@ -547,3 +550,4 @@ configuration_clear(Configuration *config) {
     return;
 }
 
+#endif /* NCMPCPP_SETTINGS_TYPES_C */

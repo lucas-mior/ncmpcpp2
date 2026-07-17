@@ -1,3 +1,6 @@
+#if !defined(NCM_SONG_C)
+#define NCM_SONG_C
+
 #include "c/ncm_song.h"
 
 #include <mpd/client.h>
@@ -900,3 +903,5 @@ ncm_song_equal(NcmSong *a, NcmSong *b) {
 
     return STREQUAL(a_uri.data, a_uri.len, b_uri.data, b_uri.len);
 }
+
+#endif /* NCM_SONG_C */

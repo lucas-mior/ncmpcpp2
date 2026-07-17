@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_APP_LEGACY_BRIDGE_C)
+#define NCMPCPP_APP_LEGACY_BRIDGE_C
+
 #include "app_legacy_bridge.h"
 
 #include "app_binding_migration.h"
@@ -443,3 +446,5 @@ bool
 ncmpcpp_legacy_exit_requested(void) {
     return ncm_action_runtime_exit_requested(NULL);
 }
+
+#endif /* NCMPCPP_APP_LEGACY_BRIDGE_C */

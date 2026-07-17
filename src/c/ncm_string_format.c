@@ -1,3 +1,6 @@
+#if !defined(NCM_STRING_FORMAT_C)
+#define NCM_STRING_FORMAT_C
+
 #include "c/ncm_string_format.h"
 
 #include <ctype.h>
@@ -184,3 +187,5 @@ ncm_string_format_make(char *format, int32 format_len,
     ncm_string_format_apply(&result, format, format_len, args, args_len);
     return result;
 }
+
+#endif /* NCM_STRING_FORMAT_C */

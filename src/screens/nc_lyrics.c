@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_LYRICS_C)
+#define NCMPCPP_NC_LYRICS_C
+
 #include "screens/nc_lyrics.h"
 
 #include <errno.h>
@@ -1502,3 +1505,5 @@ native_lyrics_start_next_background(NativeLyricsScreen *screen,
     ncm_error_clear(error);
     return true;
 }
+
+#endif /* NCMPCPP_NC_LYRICS_C */

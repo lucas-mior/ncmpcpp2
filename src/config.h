@@ -1,4 +1,4 @@
-#ifndef NCMPCPP_CONFIG_H
+#if !defined(NCMPCPP_CONFIG_H)
 #define NCMPCPP_CONFIG_H
 
 #define ENABLE_OUTPUTS 1
@@ -27,4 +27,4 @@
 #define PACKAGE_VERSION "0.10.2_dev"
 #define VERSION "0.10.2_dev"
 
-#endif
+#endif /* NCMPCPP_CONFIG_H */

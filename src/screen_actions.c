@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_SCREEN_ACTIONS_C)
+#define NCMPCPP_SCREEN_ACTIONS_C
+
 #include "screen_actions.h"
 
 #include "app_controller.h"
@@ -388,3 +391,5 @@ current_screen_clear_search_constraint(void) {
     current_screen_clear_current_search_constraint();
     return;
 }
+
+#endif /* NCMPCPP_SCREEN_ACTIONS_C */

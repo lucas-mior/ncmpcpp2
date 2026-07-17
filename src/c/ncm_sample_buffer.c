@@ -1,3 +1,6 @@
+#if !defined(NCM_SAMPLE_BUFFER_C)
+#define NCM_SAMPLE_BUFFER_C
+
 #include "c/ncm_sample_buffer.h"
 
 #include "c/ncm_base.h"
@@ -149,3 +152,5 @@ int32
 ncm_sample_buffer_capacity(NcmSampleBuffer *buffer) {
     return buffer->cap;
 }
+
+#endif /* NCM_SAMPLE_BUFFER_C */

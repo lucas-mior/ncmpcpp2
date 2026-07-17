@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_NC_PLAYLIST_C)
+#define NCMPCPP_NC_PLAYLIST_C
+
 #include "screens/nc_playlist.h"
 
 #include <errno.h>
@@ -1579,3 +1582,5 @@ native_playlist_set_one_priority(NcmSong *song, int32 idx, void *user) {
                                             (uint32)context->priority,
                                             context->error);
 }
+
+#endif /* NCMPCPP_NC_PLAYLIST_C */

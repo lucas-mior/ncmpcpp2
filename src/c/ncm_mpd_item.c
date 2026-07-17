@@ -1,3 +1,6 @@
+#if !defined(NCM_MPD_ITEM_C)
+#define NCM_MPD_ITEM_C
+
 #include "c/ncm_mpd_item.h"
 
 #include <mpd/client.h>
@@ -270,3 +273,5 @@ ncm_mpd_item_playlist(NcmMpdItem *item) {
 
     return &item->value.playlist;
 }
+
+#endif /* NCM_MPD_ITEM_C */

@@ -1,3 +1,6 @@
+#if !defined(NCM_FS_C)
+#define NCM_FS_C
+
 #include "c/ncm_fs.h"
 
 #include <dirent.h>
@@ -378,3 +381,5 @@ ncm_fs_join(NcmBuffer *buffer, char *left, int32 left_len,
     ncm_buffer_destroy(&result);
     return true;
 }
+
+#endif /* NCM_FS_C */

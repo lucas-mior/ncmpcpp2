@@ -1,4 +1,4 @@
-#ifndef NCMPCPP_SONG_INFO_H
+#if !defined(NCMPCPP_SONG_INFO_H)
 #define NCMPCPP_SONG_INFO_H
 
 #include "c/ncm_defs.h"

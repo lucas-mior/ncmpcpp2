@@ -1,3 +1,6 @@
+#if !defined(NCMPCPP_APP_CONTROLLER_C)
+#define NCMPCPP_APP_CONTROLLER_C
+
 #include "app_controller.h"
 
 #include <stddef.h>
@@ -211,3 +214,5 @@ app_controller_refresh_one(NcScreen *screen, void *user) {
     nc_screen_refresh(screen);
     return;
 }
+
+#endif /* NCMPCPP_APP_CONTROLLER_C */
