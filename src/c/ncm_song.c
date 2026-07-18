@@ -304,10 +304,10 @@ ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source) {
         return false;
     }
 
-    replacement.duration = mpd_song_get_duration(source);
-    replacement.position = mpd_song_get_pos(source);
-    replacement.id = mpd_song_get_id(source);
-    replacement.priority = mpd_song_get_prio(source);
+    replacement.duration = (int32)mpd_song_get_duration(source);
+    replacement.position = (int32)mpd_song_get_pos(source);
+    replacement.id = (int32)mpd_song_get_id(source);
+    replacement.priority = (int32)mpd_song_get_prio(source);
     replacement.last_modified = mpd_song_get_last_modified(source);
 
     ncm_song_destroy(dest);
@@ -709,11 +709,11 @@ ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap) {
     seconds = length;
 
     if (hours > 0) {
-        result = snprintf2(buffer, buffer_cap, "%u:%02u:%02u",
-                          hours, minutes, seconds);
+        result = snprintf2(buffer, buffer_cap, "%d:%02d:%02d",
+                           hours, minutes, seconds);
     } else {
-        result = snprintf2(buffer, buffer_cap, "%u:%02u",
-                          minutes, seconds);
+        result = snprintf2(buffer, buffer_cap, "%d:%02d",
+                           minutes, seconds);
     }
 
     if (result < 0) {
@@ -799,8 +799,7 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
         if (idx > 0) {
             return buffer;
         }
-        len = SNPRINTF(number_buffer,
-                       "%u", song->priority);
+        len = SNPRINTF(number_buffer, "%d", song->priority);
         if (len > 0) {
             if (len >= NCM_ARRAY_LEN(number_buffer)) {
                 len = NCM_ARRAY_LEN(number_buffer) - 1;
@@ -847,7 +846,7 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
         separator_len = 0;
     }
 
-    for (uint32 i = 0; ; i += 1) {
+    for (int32 i = 0; ; i += 1) {
         bool already_present;
 
         tag = ncm_song_getter_buffer(song, getter, i);
@@ -858,7 +857,7 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
 
         already_present = false;
         if (!show_duplicates) {
-            for (uint32 j = 0; j < i; j += 1) {
+            for (int32 j = 0; j < i; j += 1) {
                 NcmBuffer previous;
 
                 previous = ncm_song_getter_buffer(song, getter, j);
