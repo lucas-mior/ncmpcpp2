@@ -314,8 +314,8 @@ utf8_capitalize_first_letters(char *string, int32 string_len,
 
         length = utf8_decode(string + byte, string_len - byte, &rune);
         wc = (wchar_t)rune;
-        if (!iswalpha(previous) && (previous != L'\'')) {
-            wc = towupper(wc);
+        if (!iswalpha((wint_t)previous) && (previous != L'\'')) {
+            wc = (wchar_t)towupper((wint_t)wc);
         }
 
         encoded_len = utf8_encode((uint32)wc, encoded, SIZEOF(encoded));
