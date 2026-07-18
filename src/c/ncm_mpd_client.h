@@ -146,12 +146,9 @@ bool ncm_mpd_client_add_random_songs(NcmMpdClient *client,
                                      int32 exclude_pattern_len,
                                      NcmRandom *random,
                                      NcmError *error);
-bool ncm_mpd_client_delete(NcmMpdClient *client, uint32 pos,
-                           NcmError *error);
-bool ncm_mpd_client_start_command_list(NcmMpdClient *client,
-                                       NcmError *error);
-bool ncm_mpd_client_commit_command_list(NcmMpdClient *client,
-                                        NcmError *error);
+bool ncm_mpd_client_delete(NcmMpdClient *client, int32 pos, NcmError *error);
+bool ncm_mpd_client_start_command_list(NcmMpdClient *client, NcmError *error);
+bool ncm_mpd_client_commit_command_list(NcmMpdClient *client, NcmError *error);
 
 bool ncm_mpd_client_delete_playlist(NcmMpdClient *client, char *name,
                                     NcmError *error);
