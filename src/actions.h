@@ -147,8 +147,7 @@ typedef bool (*NcmActionRunFn)(void *user);
 #define NCM_ACTION_RUNTIME_ALLOW 1
 #define NCM_ACTION_RUNTIME_DENY -1
 
-typedef int32 (*NcmActionRuntimeHook)(enum NcmActionType type,
-                                      void *user);
+typedef int32 (*NcmActionRuntimeHook)(enum NcmActionType type, void *user);
 
 typedef struct NcmActionRuntime {
     NcmActionRuntimeHook can_run_hook;
@@ -163,16 +162,13 @@ bool ncm_action_runtime_exit_requested(NcmActionRuntime *runtime);
 void ncm_action_runtime_request_exit(NcmActionRuntime *runtime);
 bool ncm_action_runtime_can_run(NcmActionRuntime *runtime,
                                 enum NcmActionType type);
-bool ncm_action_runtime_run(NcmActionRuntime *runtime,
-                            enum NcmActionType type);
+bool ncm_action_runtime_run(NcmActionRuntime *runtime, enum NcmActionType type);
 bool ncm_action_edit_song(NcmSong *song);
 bool ncm_action_show_visualizer(void);
 bool ncm_action_toggle_visualization_type(void);
 bool ncm_action_add_song_to_playlist_with_mode(
-    NcmSong *song, bool play, int32 position,
-    enum SpaceAddMode space_add_mode);
-bool ncm_action_add_song_to_playlist(NcmSong *song, bool play,
-                                     int32 position);
+    NcmSong *song, bool play, int32 position, enum SpaceAddMode space_add_mode);
+bool ncm_action_add_song_to_playlist(NcmSong *song, bool play, int32 position);
 
 typedef struct NcmActionDef {
     char *name;
@@ -194,7 +190,8 @@ bool ncm_action_def_can_run(NcmActionDef *action, void *user);
 bool ncm_action_def_run(NcmActionDef *action, void *user);
 bool ncm_action_can_run(enum NcmActionType type, void *user);
 bool ncm_action_run(enum NcmActionType type, void *user);
-bool ncm_action_immediate_command_prompt_should_stop(
-    NcmBuffer *previous, char *text, int32 text_len);
+bool ncm_action_immediate_command_prompt_should_stop(NcmBuffer *previous,
+                                                     char *text,
+                                                     int32 text_len);
 
 #endif /* NCMPCPP_ACTIONS_H */

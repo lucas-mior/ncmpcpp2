@@ -125,8 +125,7 @@ statusbar_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
 }
 
 static void
-statusbar_apply_formatted_color_end(NcWindow *window,
-                                    NcFormattedColor *color) {
+statusbar_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
     enum NcFormat *formats;
     int32 count;
 
@@ -160,7 +159,7 @@ statusbar_progressbar_split(NcmStringView items[3]) {
         }
 
         next = utf8_next_position(Config.progressbar.data,
-                                      Config.progressbar.len, byte);
+                                  Config.progressbar.len, byte);
         items[i].data = Config.progressbar.data + byte;
         items[i].len = next - byte;
         byte = next;
@@ -210,7 +209,7 @@ ncm_progressbar_draw(uint32 elapsed, uint32 time) {
 
     howlong = 0;
     if (time != 0) {
-        howlong = ((uint64)width*elapsed) / time;
+        howlong = ((uint64)width * elapsed) / time;
     }
     if (howlong > (uint64)width) {
         filled = width;
@@ -244,8 +243,8 @@ ncm_progressbar_draw(uint32 elapsed, uint32 time) {
             nc_window_print_data(window, progressbar[1].data,
                                  progressbar[1].len);
         }
-        statusbar_apply_formatted_color_end(
-            window, &Config.progressbar_elapsed_color);
+        statusbar_apply_formatted_color_end(window,
+                                            &Config.progressbar_elapsed_color);
     }
     nc_window_go_to_xy(window, 0, 0);
     return;
@@ -354,17 +353,13 @@ ncm_statusbar_print(int32 delay_seconds, char *message, int32 message_len) {
 
 void
 ncm_statusbar_print_cstring(int32 delay_seconds, char *message) {
-    ncm_statusbar_print(delay_seconds, message,
-                        optional_strlen32(message));
+    ncm_statusbar_print(delay_seconds, message, optional_strlen32(message));
     return;
 }
 
 void
-ncm_statusbar_format(int32 delay_seconds,
-                     char *format,
-                     int32 format_len,
-                     NcmStringFormatArg *args,
-                     int32 args_len) {
+ncm_statusbar_format(int32 delay_seconds, char *format, int32 format_len,
+                     NcmStringFormatArg *args, int32 args_len) {
     NcmBuffer buffer;
 
     ncm_buffer_init(&buffer);
@@ -400,10 +395,8 @@ ncm_statusbar_message_delay_time(void) {
 }
 
 bool
-ncm_statusbar_prompt_return_one_of(NcWindow *window,
-                                   char *values,
-                                   int32 values_len,
-                                   char *result) {
+ncm_statusbar_prompt_return_one_of(NcWindow *window, char *values,
+                                   int32 values_len, char *result) {
     NcKey key;
 
     if ((window == NULL) || (values_len <= 0) || (result == NULL)) {

@@ -58,10 +58,8 @@ menu_position_is_selected(NcMenu *menu, enum NcMenuItemSource source,
     if (menu->display_callbacks.is_selected == NULL) {
         return false;
     }
-    return menu->display_callbacks.is_selected(
-        item,
-        menu->display_callbacks.user
-    );
+    return menu->display_callbacks.is_selected(item,
+                                               menu->display_callbacks.user);
 }
 
 static bool
@@ -78,8 +76,8 @@ menu_set_position_selected(NcMenu *menu, enum NcMenuItemSource source,
         return false;
     }
     if (menu->action_callbacks.set_selected != NULL) {
-        menu->action_callbacks.set_selected(
-            item, selected, menu->action_callbacks.user);
+        menu->action_callbacks.set_selected(item, selected,
+                                            menu->action_callbacks.user);
     }
 
     flags = nc_menu_item_flags_at(menu, source, pos);
@@ -144,8 +142,7 @@ ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
 }
 
 bool
-ncm_menu_find_full_selected_range(NcMenu *menu,
-                                  enum NcMenuItemSource source,
+ncm_menu_find_full_selected_range(NcMenu *menu, enum NcMenuItemSource source,
                                   int64 *first, int64 *last) {
     int64 range_first;
     int64 range_last;

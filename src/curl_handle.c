@@ -7,8 +7,7 @@
 
 #include "c/ncm_base.h"
 
-static size_t write_data(char *buffer, size_t size, size_t nmemb,
-                         void *data);
+static size_t write_data(char *buffer, size_t size, size_t nmemb, void *data);
 static void append_c_string(NcmBuffer *buffer, char *string, int32 string_len);
 
 void
@@ -25,8 +24,8 @@ ncm_curl_response_writer_destroy(NcmCurlResponseWriter *writer) {
 }
 
 CURLcode
-ncm_curl_perform(NcmBuffer *data, char *url, int32 url_len,
-                 char *referer, int32 referer_len, bool follow_redirect,
+ncm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
+                 int32 referer_len, bool follow_redirect,
                  int32 timeout_seconds) {
     CURLcode result;
     CURL *curl;
@@ -94,7 +93,7 @@ write_data(char *buffer, size_t size, size_t nmemb, void *data) {
     size_t bytes;
     NcmCurlResponseWriter *writer;
 
-    bytes = size*nmemb;
+    bytes = size * nmemb;
     writer = data;
     if ((writer == NULL) || (writer->buffer == NULL)) {
         return 0;

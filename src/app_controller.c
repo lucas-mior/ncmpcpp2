@@ -84,8 +84,7 @@ app_controller_request_current_screen_update(void) {
 }
 
 void
-app_controller_each_visible_screen(NcScreenEachCallback callback,
-                                   void *user) {
+app_controller_each_visible_screen(NcScreenEachCallback callback, void *user) {
     app_state_each_visible_screen(callback, user);
     return;
 }

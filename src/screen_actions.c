@@ -151,13 +151,13 @@ current_screen_clear_current_search_constraint(void) {
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_LASTFM)) {
-        (void)native_lastfm_screen_find(native_c_screen_lastfm(),
-                                        NULL, 0, NULL);
+        (void)native_lastfm_screen_find(native_c_screen_lastfm(), NULL, 0,
+                                        NULL);
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_LYRICS)) {
-        (void)native_lyrics_screen_find(native_c_screen_lyrics(),
-                                        NULL, 0, NULL);
+        (void)native_lyrics_screen_find(native_c_screen_lyrics(), NULL, 0,
+                                        NULL);
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
@@ -169,8 +169,7 @@ current_screen_clear_current_search_constraint(void) {
         NativePlaylistEditorScreen *screen;
 
         screen = native_c_screen_playlist_editor();
-        if (screen->active_column
-            == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT) {
+        if (screen->active_column == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT) {
             screen->content_search_enabled = false;
             ncm_buffer_clear(&screen->content_search_constraint);
         } else {
@@ -210,8 +209,7 @@ current_screen_finish_immediate_change(void) {
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST)) {
-        native_playlist_screen_request_highlighting(
-            native_c_screen_playlist());
+        native_playlist_screen_request_highlighting(native_c_screen_playlist());
     }
     nc_screen_refresh_window(screen);
     return;
@@ -234,8 +232,7 @@ current_screen_current_filter(void) {
 }
 
 bool
-current_screen_apply_filter(char *pattern, int32 pattern_len,
-                            NcmError *error) {
+current_screen_apply_filter(char *pattern, int32 pattern_len, NcmError *error) {
     bool result;
 
     result = false;
@@ -307,9 +304,8 @@ current_screen_allows_search(void) {
 }
 
 bool
-current_screen_search(enum SearchDirection direction,
-                      char *pattern, int32 pattern_len,
-                      bool wrap, bool skip_current,
+current_screen_search(enum SearchDirection direction, char *pattern,
+                      int32 pattern_len, bool wrap, bool skip_current,
                       NcmError *error) {
     bool attempted;
     bool forward;
@@ -329,14 +325,14 @@ current_screen_search(enum SearchDirection direction,
 
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST)) {
         attempted = true;
-        found = native_playlist_screen_search(
-            native_c_screen_playlist(), pattern, pattern_len, forward,
-            wrap, skip_current, error);
+        found = native_playlist_screen_search(native_c_screen_playlist(),
+                                              pattern, pattern_len, forward,
+                                              wrap, skip_current, error);
     } else if (current_screen_is(NC_SCREEN_TYPE_BROWSER)) {
         attempted = true;
-        found = native_browser_screen_search(
-            native_c_screen_browser(), pattern, pattern_len, forward,
-            wrap, skip_current, error);
+        found = native_browser_screen_search(native_c_screen_browser(), pattern,
+                                             pattern_len, forward, wrap,
+                                             skip_current, error);
     } else if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
         attempted = true;
         found = native_playlist_editor_screen_search_active(
@@ -345,25 +341,25 @@ current_screen_search(enum SearchDirection direction,
     } else if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)) {
         attempted = true;
         found = native_search_engine_screen_search(
-            native_c_screen_search_engine(), pattern, pattern_len,
-            forward, wrap, skip_current, error);
+            native_c_screen_search_engine(), pattern, pattern_len, forward,
+            wrap, skip_current, error);
     } else if (current_screen_is(NC_SCREEN_TYPE_HELP)) {
         attempted = true;
-        found = nc_help_screen_find(native_c_screen_help_typed(),
-                                    pattern, pattern_len, error);
+        found = nc_help_screen_find(native_c_screen_help_typed(), pattern,
+                                    pattern_len, error);
     } else if (current_screen_is(NC_SCREEN_TYPE_LASTFM)) {
         attempted = true;
-        found = native_lastfm_screen_find(native_c_screen_lastfm(),
-                                          pattern, pattern_len, error);
+        found = native_lastfm_screen_find(native_c_screen_lastfm(), pattern,
+                                          pattern_len, error);
     } else if (current_screen_is(NC_SCREEN_TYPE_LYRICS)) {
         attempted = true;
-        found = native_lyrics_screen_find(native_c_screen_lyrics(),
-                                          pattern, pattern_len, error);
+        found = native_lyrics_screen_find(native_c_screen_lyrics(), pattern,
+                                          pattern_len, error);
     } else if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
         attempted = true;
         found = native_media_library_screen_search(
-            native_c_screen_media_library(), pattern, pattern_len,
-            forward, wrap, skip_current, error);
+            native_c_screen_media_library(), pattern, pattern_len, forward,
+            wrap, skip_current, error);
     } else if (current_screen_is(NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER)) {
         attempted = true;
         found = native_selected_items_adder_screen_search(
@@ -372,9 +368,9 @@ current_screen_search(enum SearchDirection direction,
 #if defined(HAVE_TAGLIB_H)
     } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
         attempted = true;
-        found = native_tag_editor_screen_search(
-            native_c_screen_tag_editor(), pattern, pattern_len, forward,
-            wrap, skip_current, error);
+        found = native_tag_editor_screen_search(native_c_screen_tag_editor(),
+                                                pattern, pattern_len, forward,
+                                                wrap, skip_current, error);
 #endif
     }
 

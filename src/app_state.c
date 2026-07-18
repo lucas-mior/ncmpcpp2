@@ -63,9 +63,9 @@ app_state_lock_current_screen(void) {
 
 void
 app_state_unlock_screen(void) {
-    last_switch_changed_screen = (screen_registry.inactive_screen != NULL)
-                                 && (screen_registry.inactive_screen
-                                     != screen_registry.locked_screen);
+    last_switch_changed_screen
+        = (screen_registry.inactive_screen != NULL)
+          && (screen_registry.inactive_screen != screen_registry.locked_screen);
     nc_screen_registry_unlock(&screen_registry);
     return;
 }
@@ -126,8 +126,7 @@ app_state_is_current_screen(NcScreen *screen) {
 }
 
 NcScreenResizeParams
-app_state_screen_resize_params(NcScreen *screen,
-                               bool adjust_locked_screen) {
+app_state_screen_resize_params(NcScreen *screen, bool adjust_locked_screen) {
     return nc_screen_registry_resize_params(&screen_registry, screen,
                                             adjust_locked_screen);
 }

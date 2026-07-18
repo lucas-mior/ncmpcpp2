@@ -22,21 +22,14 @@ void ncm_statusbar_scoped_lock_destroy(NcmStatusbarScopedLock *lock);
 bool ncm_statusbar_is_unlocked(void);
 void ncm_statusbar_try_redraw(void);
 NcWindow *ncm_statusbar_put(void);
-void ncm_statusbar_print(int32 delay_seconds,
-                         char *message,
-                         int32 message_len);
+void ncm_statusbar_print(int32 delay_seconds, char *message, int32 message_len);
 void ncm_statusbar_print_cstring(int32 delay_seconds, char *message);
-void ncm_statusbar_format(int32 delay_seconds,
-                          char *format,
-                          int32 format_len,
-                          NcmStringFormatArg *args,
-                          int32 args_len);
+void ncm_statusbar_format(int32 delay_seconds, char *format, int32 format_len,
+                          NcmStringFormatArg *args, int32 args_len);
 void ncm_statusbar_mpd_idle_callback(void);
 bool ncm_statusbar_main_hook(char *string, int32 string_len);
-bool ncm_statusbar_prompt_return_one_of(NcWindow *window,
-                                         char *values,
-                                         int32 values_len,
-                                         char *result);
+bool ncm_statusbar_prompt_return_one_of(NcWindow *window, char *values,
+                                        int32 values_len, char *result);
 int32 ncm_statusbar_message_delay_time(void);
 
 #endif /* NCMPCPP_STATUSBAR_H */
