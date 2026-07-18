@@ -222,7 +222,7 @@ typedef struct Configuration {
     bool startup_slave_screen_focus;
     bool has_startup_slave_screen_type;
 
-    uint32 mpd_connection_timeout;
+    int32 mpd_connection_timeout;
     int32 crossfade_time;
     int32 seek_time;
     int32 volume_change_step;
