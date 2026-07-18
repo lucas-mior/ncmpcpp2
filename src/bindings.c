@@ -1212,8 +1212,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
     FILE *file;
     char *path_copy;
     int32 path_cap;
-    char *line;
-    int64 line_cap;
+    char line[1024];
     int32 in_progress;
     int32 line_no;
     bool ok;
@@ -1234,8 +1233,6 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
         return true;
     }
 
-    line = NULL;
-    line_cap = 0;
     in_progress = IN_PROGRESS_NONE;
     line_no = 0;
     ok = true;
@@ -1249,13 +1246,24 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
     command_immediate = false;
     ncm_binding_init(&actions);
 
-    while (ok && (getline(&line, &line_cap, file) >= 0)) {
+    while (ok && (fgets(line, (int32)SIZEOF(line), file) != NULL)) {
         int32 len;
         int32 start;
         NcmStringView enclosed;
 
         line_no += 1;
         len = strlen32(line);
+        if ((len == (int32)SIZEOF(line) - 1)
+            && (line[len - 1] != '\n')) {
+            int32 next;
+
+            next = fgetc(file);
+            if ((next != '\n') && (next != EOF)) {
+                error("Bindings configuration line %d in '%.*s' is too "
+                      "long.\n", line_no, path_len, path);
+                fatal(EXIT_FAILURE);
+            }
+        }
         len = ncm_trim_end(line, len);
         if ((len == 0) || (line[0] == '#')) {
             continue;
@@ -1387,7 +1395,6 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
     if (key_name) {
         free2(key_name, key_name_cap);
     }
-    free(line);
     fclose(file);
     free2(path_copy, path_cap);
     return ok;
