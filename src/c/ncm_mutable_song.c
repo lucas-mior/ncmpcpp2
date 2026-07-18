@@ -681,9 +681,8 @@ ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
             continue;
         }
         for (uint32 i = 0; ; i += 1) {
-            NcmBuffer buffer;
+            NcmBuffer buffer = ncm_song_getter_buffer(source, getter, i);
 
-            buffer = ncm_song_getter_buffer(source, getter, i);
             if (buffer.len == 0) {
                 ncm_buffer_destroy(&buffer);
                 break;
