@@ -145,7 +145,7 @@ ncm_binding_action_destroy(NcmBindingAction *action) {
         free2(action->argument, action->argument_cap);
     }
     if (action->keys) {
-        free2(action->keys, action->keys_cap * SIZEOF(*action->keys));
+        free2(action->keys, action->keys_cap*SIZEOF(*action->keys));
     }
     ncm_binding_action_init(action);
     return;
@@ -165,9 +165,9 @@ ncm_binding_action_copy(NcmBindingAction *dest, NcmBindingAction *source) {
     }
     if (source->keys_len > 0) {
         dest->keys_cap = source->keys_len;
-        dest->keys = malloc2(dest->keys_cap * SIZEOF(*dest->keys));
+        dest->keys = malloc2(dest->keys_cap*SIZEOF(*dest->keys));
         memcpy64(dest->keys, source->keys,
-                 source->keys_len * SIZEOF(*dest->keys));
+                 source->keys_len*SIZEOF(*dest->keys));
         dest->keys_len = source->keys_len;
     }
     return true;
@@ -186,7 +186,7 @@ ncm_binding_destroy(NcmBinding *binding) {
     ncm_binding_clear(binding);
     if (binding->actions) {
         free2(binding->actions,
-              binding->actions_cap * SIZEOF(*binding->actions));
+              binding->actions_cap*SIZEOF(*binding->actions));
     }
     ncm_binding_init(binding);
     return;
@@ -211,7 +211,7 @@ ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action) {
         if (binding->actions_cap == 0) {
             new_cap = 4;
         } else {
-            new_cap = binding->actions_cap * 2;
+            new_cap = binding->actions_cap*2;
         }
         binding->actions = realloc2(binding->actions, binding->actions_cap,
                                     new_cap, SIZEOF(*binding->actions));
@@ -502,7 +502,7 @@ ncm_key_bindings_destroy(NcmKeyBindings *key_bindings) {
     }
     if (key_bindings->bindings) {
         free2(key_bindings->bindings,
-              key_bindings->bindings_cap * SIZEOF(*key_bindings->bindings));
+              key_bindings->bindings_cap*SIZEOF(*key_bindings->bindings));
     }
     ncm_key_bindings_init(key_bindings);
     return;
@@ -524,10 +524,10 @@ ncm_bindings_configuration_destroy(NcmBindingsConfiguration *bindings) {
     ncm_bindings_configuration_clear(bindings);
     if (bindings->commands) {
         free2(bindings->commands,
-              bindings->commands_cap * SIZEOF(*bindings->commands));
+              bindings->commands_cap*SIZEOF(*bindings->commands));
     }
     if (bindings->keys) {
-        free2(bindings->keys, bindings->keys_cap * SIZEOF(*bindings->keys));
+        free2(bindings->keys, bindings->keys_cap*SIZEOF(*bindings->keys));
     }
     ncm_bindings_configuration_init(bindings);
     return;
@@ -791,7 +791,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
         result->kind = NCM_BINDING_ACTION_PUSH_CHARACTERS;
         result->keys_cap = argument.len;
         result->keys_len = argument.len;
-        result->keys = malloc2(result->keys_cap * SIZEOF(*result->keys));
+        result->keys = malloc2(result->keys_cap*SIZEOF(*result->keys));
         for (int32 i = 0; i < argument.len; i += 1) {
             result->keys[i] = (NcKey)(uint8)argument.data[i];
         }
@@ -960,7 +960,7 @@ ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
         if (bindings->commands_cap == 0) {
             new_cap = 8;
         } else {
-            new_cap = bindings->commands_cap * 2;
+            new_cap = bindings->commands_cap*2;
         }
         bindings->commands
             = realloc2(bindings->commands, bindings->commands_cap, new_cap,
@@ -980,7 +980,7 @@ ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
 
     if (at < bindings->commands_len) {
         memmove64(bindings->commands + at + 1, bindings->commands + at,
-                  (bindings->commands_len - at) * SIZEOF(*bindings->commands));
+                  (bindings->commands_len - at)*SIZEOF(*bindings->commands));
     }
     bindings->commands[at] = copy;
     bindings->commands_len += 1;
@@ -1005,7 +1005,7 @@ ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
             if (bindings->keys_cap == 0) {
                 new_cap = 16;
             } else {
-                new_cap = bindings->keys_cap * 2;
+                new_cap = bindings->keys_cap*2;
             }
             bindings->keys = realloc2(bindings->keys, bindings->keys_cap,
                                       new_cap, SIZEOF(*bindings->keys));
@@ -1013,7 +1013,7 @@ ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
         }
         if (at < bindings->keys_len) {
             memmove64(bindings->keys + at + 1, bindings->keys + at,
-                      (bindings->keys_len - at) * SIZEOF(*bindings->keys));
+                      (bindings->keys_len - at)*SIZEOF(*bindings->keys));
         }
         ncm_key_bindings_init(&item);
         item.key = key;
@@ -1028,7 +1028,7 @@ ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
         if (key_bindings->bindings_cap == 0) {
             new_cap = 2;
         } else {
-            new_cap = key_bindings->bindings_cap * 2;
+            new_cap = key_bindings->bindings_cap*2;
         }
         key_bindings->bindings
             = realloc2(key_bindings->bindings, key_bindings->bindings_cap,
