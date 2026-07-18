@@ -1811,7 +1811,7 @@ action_runtime_replay_song(void) {
     }
 
     ncm_error_clear(&error);
-    if (!ncm_mpd_client_play_pos(&global_mpd, (uint32)position, &error)) {
+    if (!ncm_mpd_client_play_pos(&global_mpd, position, &error)) {
         return action_runtime_mpd_error(&error);
     }
     return true;
