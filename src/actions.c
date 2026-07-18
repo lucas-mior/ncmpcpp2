@@ -6655,8 +6655,8 @@ action_runtime_mouse_event(void) {
     NcmError error;
     NcWindow *window;
     MEVENT *event;
-    uint32 position;
-    uint32 seconds;
+    int32 position;
+    int32 seconds;
 
     if (!Config.mouse_support) {
         return false;
@@ -6676,8 +6676,8 @@ action_runtime_mouse_event(void) {
         if (ncm_status_state_player() == NCM_STATUS_PLAYER_STOP) {
             return true;
         }
-        position = (uint32)ncm_status_state_current_song_position();
-        seconds = (uint32)(ncm_status_state_total_time() * event->x / COLS);
+        position = ncm_status_state_current_song_position();
+        seconds = (ncm_status_state_total_time() * event->x / COLS);
         ncm_error_clear(&error);
         if (!ncm_mpd_client_seek_pos(&global_mpd, position, seconds, &error)) {
             return action_runtime_mpd_error(&error);

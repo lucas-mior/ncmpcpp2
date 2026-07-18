@@ -920,7 +920,7 @@ ncm_status_state_player(void) {
     return status_player_state;
 }
 
-uint32
+int32
 ncm_status_state_total_time(void) {
     return status_total_time;
 }
