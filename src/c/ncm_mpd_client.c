@@ -930,7 +930,7 @@ ncm_mpd_client_add(NcmMpdClient *client, char *path, bool *added,
 }
 
 bool
-ncm_mpd_client_delete(NcmMpdClient *client, uint32 pos, NcmError *error) {
+ncm_mpd_client_delete(NcmMpdClient *client, int32 pos, NcmError *error) {
     if (!ncm_mpd_client_prechecks(client, error)) {
         return false;
     }
