@@ -374,7 +374,7 @@ ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
 }
 
 void
-ncm_song_set_duration(NcmSong *song, uint32 duration) {
+ncm_song_set_duration(NcmSong *song, int32 duration) {
     if (song != NULL) {
         song->duration = duration;
     }
@@ -382,7 +382,7 @@ ncm_song_set_duration(NcmSong *song, uint32 duration) {
 }
 
 void
-ncm_song_set_position(NcmSong *song, uint32 position) {
+ncm_song_set_position(NcmSong *song, int32 position) {
     if (song != NULL) {
         song->position = position;
     }
@@ -390,7 +390,7 @@ ncm_song_set_position(NcmSong *song, uint32 position) {
 }
 
 void
-ncm_song_set_id(NcmSong *song, uint32 id) {
+ncm_song_set_id(NcmSong *song, int32 id) {
     if (song != NULL) {
         song->id = id;
     }
@@ -398,7 +398,7 @@ ncm_song_set_id(NcmSong *song, uint32 id) {
 }
 
 void
-ncm_song_set_priority(NcmSong *song, uint32 priority) {
+ncm_song_set_priority(NcmSong *song, int32 priority) {
     if (song != NULL) {
         song->priority = priority;
     }
@@ -413,7 +413,7 @@ ncm_song_set_mtime(NcmSong *song, time_t last_modified) {
     return;
 }
 
-uint32
+int32
 ncm_song_duration(NcmSong *song) {
     if (song == NULL) {
         return 0;
@@ -421,7 +421,7 @@ ncm_song_duration(NcmSong *song) {
     return song->duration;
 }
 
-uint32
+int32
 ncm_song_position(NcmSong *song) {
     if (song == NULL) {
         return 0;
@@ -429,7 +429,7 @@ ncm_song_position(NcmSong *song) {
     return song->position;
 }
 
-uint32
+int32
 ncm_song_id(NcmSong *song) {
     if (song == NULL) {
         return 0;
@@ -437,7 +437,7 @@ ncm_song_id(NcmSong *song) {
     return song->id;
 }
 
-uint32
+int32
 ncm_song_priority(NcmSong *song) {
     if (song == NULL) {
         return 0;
@@ -463,9 +463,9 @@ ncm_song_empty(NcmSong *song) {
 }
 
 bool
-ncm_song_tag_view(NcmSong *song, enum mpd_tag_type tag, uint32 idx,
+ncm_song_tag_view(NcmSong *song, enum mpd_tag_type tag, int32 idx,
                   NcmStringView *view) {
-    uint32 seen;
+    int32 seen;
 
     ncm_string_view_clear(view);
     if (song == NULL) {
@@ -489,7 +489,7 @@ ncm_song_tag_view(NcmSong *song, enum mpd_tag_type tag, uint32 idx,
 }
 
 bool
-ncm_song_uri_view(NcmSong *song, uint32 idx, NcmStringView *view) {
+ncm_song_uri_view(NcmSong *song, int32 idx, NcmStringView *view) {
     ncm_string_view_clear(view);
     if (song == NULL) {
         return false;
@@ -506,7 +506,7 @@ ncm_song_uri_view(NcmSong *song, uint32 idx, NcmStringView *view) {
 }
 
 bool
-ncm_song_name_view(NcmSong *song, uint32 idx, NcmStringView *view) {
+ncm_song_name_view(NcmSong *song, int32 idx, NcmStringView *view) {
     NcmStringView uri;
 
     if (ncm_song_tag_view(song, MPD_TAG_NAME, idx, view)) {
@@ -524,7 +524,7 @@ ncm_song_name_view(NcmSong *song, uint32 idx, NcmStringView *view) {
 }
 
 bool
-ncm_song_directory_view(NcmSong *song, uint32 idx, NcmStringView *view) {
+ncm_song_directory_view(NcmSong *song, int32 idx, NcmStringView *view) {
     NcmStringView uri;
 
     ncm_string_view_clear(view);
@@ -692,10 +692,10 @@ ncm_song_format_track_number(char *buffer, int32 buffer_cap,
 }
 
 int32
-ncm_song_show_time(uint32 length, char *buffer, int32 buffer_cap) {
-    uint32 hours;
-    uint32 minutes;
-    uint32 seconds;
+ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap) {
+    int32 hours;
+    int32 minutes;
+    int32 seconds;
     int32 result;
 
     if ((buffer == NULL) || (buffer_cap <= 0)) {
@@ -728,8 +728,7 @@ ncm_song_show_time(uint32 length, char *buffer, int32 buffer_cap) {
 }
 
 NcmBuffer
-ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter,
-                       uint32 idx) {
+ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
     NcmBuffer buffer;
     NcmStringView view;
     char number_buffer[32];

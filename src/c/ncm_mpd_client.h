@@ -105,9 +105,9 @@ bool ncm_mpd_client_set_single(NcmMpdClient *client, bool mode,
                                NcmError *error);
 bool ncm_mpd_client_set_consume(NcmMpdClient *client, bool mode,
                                 NcmError *error);
-bool ncm_mpd_client_set_crossfade(NcmMpdClient *client, uint32 seconds,
+bool ncm_mpd_client_set_crossfade(NcmMpdClient *client, int32 seconds,
                                   NcmError *error);
-bool ncm_mpd_client_set_volume(NcmMpdClient *client, uint32 volume,
+bool ncm_mpd_client_set_volume(NcmMpdClient *client, int32 volume,
                                NcmError *error);
 bool ncm_mpd_client_change_volume(NcmMpdClient *client, int32 change,
                                   NcmError *error);

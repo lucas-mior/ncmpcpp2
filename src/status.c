@@ -905,12 +905,12 @@ ncm_status_state_current_song_position(void) {
     return status_current_song_pos;
 }
 
-uint32
+int32
 ncm_status_state_playlist_length(void) {
     return status_playlist_length;
 }
 
-uint32
+int32
 ncm_status_state_elapsed_time(void) {
     return status_elapsed_time;
 }
