@@ -821,7 +821,7 @@ configuration_print_current_song(NcmConfigurationOptions *options,
         if (result) {
             output = ncm_format_render_string(&format, &song);
             if (output.len > 0) {
-                fwrite64(output.data, 1, (size_t)output.len, stdout);
+                fwrite64(output.data, 1, output.len, stdout);
             }
         }
     }
