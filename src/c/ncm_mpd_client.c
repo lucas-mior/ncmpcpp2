@@ -483,7 +483,7 @@ ncm_mpd_client_get_status(NcmMpdClient *client, NcmMpdStatus *status,
 
 bool
 ncm_mpd_client_update_directory(NcmMpdClient *client, char *path,
-                                uint32 *id, NcmError *error) {
+                                int32 *id, NcmError *error) {
     if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
         return false;
     }
@@ -525,7 +525,7 @@ ncm_mpd_client_play_id(NcmMpdClient *client, int32 id, NcmError *error) {
 }
 
 bool
-ncm_mpd_client_move(NcmMpdClient *client, uint32 from, uint32 to,
+ncm_mpd_client_move(NcmMpdClient *client, int32 from, int32 to,
                     NcmError *error) {
     if (!ncm_mpd_client_prechecks(client, error)) {
         return false;
@@ -557,8 +557,8 @@ ncm_mpd_client_swap(NcmMpdClient *client, int32 from, int32 to,
 }
 
 bool
-ncm_mpd_client_seek_pos(NcmMpdClient *client, uint32 pos,
-                        uint32 seconds, NcmError *error) {
+ncm_mpd_client_seek_pos(NcmMpdClient *client, int32 pos, int32 seconds,
+                        NcmError *error) {
     if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
         return false;
     }
@@ -572,8 +572,8 @@ ncm_mpd_client_seek_pos(NcmMpdClient *client, uint32 pos,
 }
 
 bool
-ncm_mpd_client_shuffle_range(NcmMpdClient *client, uint32 start,
-                             uint32 end, NcmError *error) {
+ncm_mpd_client_shuffle_range(NcmMpdClient *client, int32 start,
+                             int32 end, NcmError *error) {
     if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
         return false;
     }
@@ -634,7 +634,7 @@ ncm_mpd_client_get_queue(NcmMpdClient *client,
 }
 
 bool
-ncm_mpd_client_get_queue_changes(NcmMpdClient *client, uint32 version,
+ncm_mpd_client_get_queue_changes(NcmMpdClient *client, int32 version,
                                  NcmMpdSongList *songs, NcmError *error) {
     if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
         return false;
@@ -802,7 +802,7 @@ ncm_mpd_client_set_replay_gain_mode(NcmMpdClient *client,
 }
 
 bool
-ncm_mpd_client_set_priority_id(NcmMpdClient *client, uint32 id,
+ncm_mpd_client_set_priority_id(NcmMpdClient *client, int32 id,
                                int32 priority, NcmError *error) {
     if (!ncm_mpd_client_prechecks(client, error)) {
         return false;
@@ -1080,7 +1080,7 @@ ncm_mpd_client_add_song_to_playlist(NcmMpdClient *client,
 
 bool
 ncm_mpd_client_playlist_move(NcmMpdClient *client, char *playlist,
-                             uint32 from, uint32 to, NcmError *error) {
+                             int32 from, int32 to, NcmError *error) {
     if (!ncm_mpd_client_prechecks(client, error)) {
         return false;
     }
@@ -1316,7 +1316,7 @@ ncm_mpd_client_get_directory_list(NcmMpdClient *client, char *path,
 }
 
 bool
-ncm_mpd_client_enable_output(NcmMpdClient *client, uint32 id,
+ncm_mpd_client_enable_output(NcmMpdClient *client, int32 id,
                              NcmError *error) {
     if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
         return false;
@@ -1331,7 +1331,7 @@ ncm_mpd_client_enable_output(NcmMpdClient *client, uint32 id,
 }
 
 bool
-ncm_mpd_client_disable_output(NcmMpdClient *client, uint32 id,
+ncm_mpd_client_disable_output(NcmMpdClient *client, int32 id,
                               NcmError *error) {
     if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
         return false;

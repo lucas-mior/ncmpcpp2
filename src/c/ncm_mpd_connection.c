@@ -202,7 +202,7 @@ ncm_mpd_output_list_push(NcmMpdOutputList *list,
 
     item = &list->items[list->count];
     item->id = mpd_output_get_id(output);
-    item->name = (char *)malloc2(name_len + 1);
+    item->name = malloc2(name_len + 1);
     item->name_len = name_len;
     item->enabled = mpd_output_get_enabled(output);
     ncm_mpd_connection_cstring_copy(item->name, name_len + 1, name);
@@ -949,7 +949,7 @@ bool
 ncm_mpd_connection_connect(NcmMpdConnection *connection,
                            char *host,
                            uint16 port,
-                           uint32 timeout_ms) {
+                           int32 timeout_ms) {
     bool ok;
 
     if (connection == NULL) {
@@ -1010,7 +1010,7 @@ ncm_mpd_connection_fd(NcmMpdConnection *connection) {
 
 bool
 ncm_mpd_connection_set_timeout(NcmMpdConnection *connection,
-                               uint32 timeout_ms) {
+                               int32 timeout_ms) {
     if (connection == NULL) {
         return false;
     }
@@ -1243,7 +1243,7 @@ ncm_mpd_connection_get_status(NcmMpdConnection *connection,
     return ok;
 }
 
-uint32
+int32
 ncm_mpd_connection_version(NcmMpdConnection *connection) {
     unsigned *version;
 
@@ -1502,7 +1502,7 @@ ncm_mpd_connection_get_queue(NcmMpdConnection *connection,
 
 bool
 ncm_mpd_connection_get_queue_changes(NcmMpdConnection *connection,
-                                     uint32 version,
+                                     int32 version,
                                      NcmMpdSongList *songs) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
@@ -1711,7 +1711,7 @@ ncm_mpd_connection_list_tag_values(NcmMpdConnection *connection,
 bool
 ncm_mpd_connection_update_database(NcmMpdConnection *connection,
                                    char *path,
-                                   uint32 *id) {
+                                   int32 *id) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
     }
@@ -1779,7 +1779,7 @@ ncm_mpd_connection_get_outputs(NcmMpdConnection *connection,
 
 bool
 ncm_mpd_connection_enable_output(NcmMpdConnection *connection,
-                                 uint32 id) {
+                                 int32 id) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
     }
@@ -1790,7 +1790,7 @@ ncm_mpd_connection_enable_output(NcmMpdConnection *connection,
 
 bool
 ncm_mpd_connection_disable_output(NcmMpdConnection *connection,
-                                  uint32 id) {
+                                  int32 id) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
     }
@@ -1871,8 +1871,8 @@ ncm_mpd_connection_previous(NcmMpdConnection *connection) {
 
 bool
 ncm_mpd_connection_seek_pos(NcmMpdConnection *connection,
-                            uint32 pos,
-                            uint32 seconds) {
+                            int32 pos,
+                            int32 seconds) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
     }
@@ -1923,7 +1923,7 @@ ncm_mpd_connection_set_consume(NcmMpdConnection *connection, bool mode) {
 
 bool
 ncm_mpd_connection_set_crossfade(NcmMpdConnection *connection,
-                                 uint32 seconds) {
+                                 int32 seconds) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
     }
@@ -1933,7 +1933,7 @@ ncm_mpd_connection_set_crossfade(NcmMpdConnection *connection,
 }
 
 bool
-ncm_mpd_connection_set_volume(NcmMpdConnection *connection, uint32 vol) {
+ncm_mpd_connection_set_volume(NcmMpdConnection *connection, int32 vol) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
     }
@@ -1955,8 +1955,8 @@ ncm_mpd_connection_change_volume(NcmMpdConnection *connection,
 
 bool
 ncm_mpd_connection_move(NcmMpdConnection *connection,
-                        uint32 from,
-                        uint32 to,
+                        int32 from,
+                        int32 to,
                         bool command_list_active) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
@@ -1973,8 +1973,8 @@ ncm_mpd_connection_move(NcmMpdConnection *connection,
 
 bool
 ncm_mpd_connection_swap(NcmMpdConnection *connection,
-                        uint32 from,
-                        uint32 to,
+                        int32 from,
+                        int32 to,
                         bool command_list_active) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
@@ -2001,8 +2001,8 @@ ncm_mpd_connection_shuffle(NcmMpdConnection *connection) {
 
 bool
 ncm_mpd_connection_shuffle_range(NcmMpdConnection *connection,
-                                  uint32 start,
-                                  uint32 end) {
+                                 int32 start,
+                                 int32 end) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
     }
@@ -2023,7 +2023,7 @@ ncm_mpd_connection_clear_queue(NcmMpdConnection *connection) {
 
 bool
 ncm_mpd_connection_set_priority_id(NcmMpdConnection *connection,
-                                   uint32 id,
+                                   int32 id,
                                    int32 prio,
                                    bool command_list_active) {
     if (!ncm_mpd_connection_require_connected(connection)) {
@@ -2104,7 +2104,7 @@ ncm_mpd_connection_add(NcmMpdConnection *connection,
 
 bool
 ncm_mpd_connection_delete(NcmMpdConnection *connection,
-                          uint32 pos,
+                          int32 pos,
                           bool command_list_active) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
@@ -2151,8 +2151,8 @@ ncm_mpd_connection_add_to_playlist(NcmMpdConnection *connection,
 bool
 ncm_mpd_connection_playlist_move(NcmMpdConnection *connection,
                                  char *playlist,
-                                 uint32 from,
-                                 uint32 to,
+                                 int32 from,
+                                 int32 to,
                                  bool command_list_active) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
@@ -2170,7 +2170,7 @@ ncm_mpd_connection_playlist_move(NcmMpdConnection *connection,
 bool
 ncm_mpd_connection_playlist_delete(NcmMpdConnection *connection,
                                    char *playlist,
-                                   uint32 pos,
+                                   int32 pos,
                                    bool command_list_active) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
