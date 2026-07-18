@@ -230,7 +230,7 @@ nc_song_info_update(NcScreen *screen) {
 static void
 nc_song_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     NcSongInfoScreen *song_info;
-    enum NcScroll where;
+    enum NcScroll where = NC_SCROLL_HOME;
     bool do_scroll;
 
     song_info = nc_song_info_from_screen(screen);
