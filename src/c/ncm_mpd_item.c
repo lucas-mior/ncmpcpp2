@@ -228,6 +228,8 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item,
     case MPD_ENTITY_TYPE_PLAYLIST:
         return ncm_mpd_item_set_playlist_from_mpd(
             item, (struct mpd_playlist *)mpd_entity_get_playlist(entity));
+    case MPD_ENTITY_TYPE_UNKNOWN:
+        return false;
     default:
         return false;
     }
