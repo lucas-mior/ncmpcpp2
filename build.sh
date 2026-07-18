@@ -2,6 +2,9 @@
 
 set -eu
 
+find . -iname "*.[ch]" | xargs ctags --kinds-C=+l+d 2> /dev/null || true
+vtags.sed tags | sort | uniq > .tags.vim       2> /dev/null || true
+
 BUILD_DIR=${BUILD_DIR-build}
 PREFIX=${PREFIX-/usr/local}
 BINDIR=${BINDIR-$PREFIX/bin}
@@ -110,7 +113,7 @@ configure_compiler_flags() {
 
     CFLAGS="$CFLAGS -Wfatal-errors"
     CFLAGS="$CFLAGS -Wextra -Wall"
-    # CFLAGS="$CFLAGS -Werror"
+    CFLAGS="$CFLAGS -Werror"
     CFLAGS="$CFLAGS -Wno-format-pedantic"
     CFLAGS="$CFLAGS -Wno-unknown-warning-option"
     CFLAGS="$CFLAGS -Wno-gnu-union-cast"

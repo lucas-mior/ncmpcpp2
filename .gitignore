@@ -32,3 +32,5 @@ test-driver
 *.la
 build/
 *.tar.gz
+.tags.vim
+tags
