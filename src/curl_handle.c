@@ -88,7 +88,7 @@ ncm_curl_escape(NcmBuffer *out, char *string, int32 string_len) {
     return CURLE_OK;
 }
 
-static size_t
+static int64
 write_data(char *buffer, int64 size, int64 nmemb, void *data) {
     int64 bytes;
     NcmCurlResponseWriter *writer;
