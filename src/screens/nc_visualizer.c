@@ -2314,8 +2314,9 @@ native_visualizer_next_type(enum NativeVisualizerType type) {
     case NATIVE_VISUALIZER_ELLIPSE:
     case NATIVE_VISUALIZER_TYPE_LAST:
         return NATIVE_VISUALIZER_WAVE;
+    default:
+        return NATIVE_VISUALIZER_WAVE;
     }
-    return NATIVE_VISUALIZER_WAVE;
 }
 
 #endif /* NCMPCPP_NC_VISUALIZER_C */
