@@ -144,6 +144,7 @@ configure_compiler_flags() {
         CFLAGS="$CFLAGS -Wno-padded"
         CFLAGS="$CFLAGS -Wno-nrvo"
         CFLAGS="$CFLAGS -Wno-cast-align"
+        CFLAGS="$CFLAGS -Wno-tentative-definition-compat"
     fi
 
     return 0
