@@ -113,7 +113,7 @@ configure_compiler_flags() {
 
     CFLAGS="$CFLAGS -Wfatal-errors"
     CFLAGS="$CFLAGS -Wextra -Wall"
-    # CFLAGS="$CFLAGS -Werror"
+    CFLAGS="$CFLAGS -Werror"
     CFLAGS="$CFLAGS -Wno-format-pedantic"
     CFLAGS="$CFLAGS -Wno-unknown-warning-option"
     CFLAGS="$CFLAGS -Wno-gnu-union-cast"
@@ -142,7 +142,7 @@ configure_compiler_flags() {
         CFLAGS="$CFLAGS -Wno-bad-function-cast"
         CFLAGS="$CFLAGS -Wno-pre-c23-compat"
         CFLAGS="$CFLAGS -Wno-padded"
-        # CFLAGS="$CFLAGS -Wno-switch-enum"
+        CFLAGS="$CFLAGS -Wno-nrvo"
     fi
 
     return 0
