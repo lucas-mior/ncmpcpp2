@@ -386,7 +386,7 @@ lastfm_append_similars(NcmBuffer *out, char *data, int32 data_len,
                 ncm_buffer_append(out, heading, heading_len);
                 wrote_heading = true;
             }
-            ncm_buffer_append(out, STRLIT_ARGS("\n * "));
+            ncm_buffer_append(out, STRLIT_ARGS("\n*"));
             ncm_buffer_append(out, clean_name.data, clean_name.len);
             ncm_buffer_append(out, STRLIT_ARGS(" ("));
             ncm_buffer_append(out, clean_url.data, clean_url.len);

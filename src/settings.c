@@ -234,9 +234,9 @@ settings_trim_start(char *value, int32 value_len) {
 
     result = 0;
     while (result < value_len) {
-        unsigned char c;
+        uint8 c;
 
-        c = (unsigned char)value[result];
+        c = (uint8)value[result];
         if (!isspace(c)) {
             break;
         }
@@ -252,9 +252,9 @@ settings_trim_end(char *value, int32 value_len) {
 
     result = value_len;
     while (result > 0) {
-        unsigned char c;
+        uint8 c;
 
-        c = (unsigned char)value[result - 1];
+        c = (uint8)value[result - 1];
         if (!isspace(c)) {
             break;
         }
@@ -1107,7 +1107,7 @@ apply_mpd_connection_timeout(Configuration *config, char *value,
         return false;
     }
     return ncm_mpd_client_set_timeout_ms(
-        &global_mpd, config->mpd_connection_timeout * 1000, error);
+        &global_mpd, config->mpd_connection_timeout*1000, error);
 }
 
 static bool
@@ -1633,7 +1633,7 @@ apply_enable_window_title(Configuration *config, char *value, int32 value_len,
 
     term = getenv("TERM");
     if ((term == NULL) || (strstr(term, "linux") != NULL)
-        || (strncmp(term, "eterm", STRLIT_LEN("eterm")) == 0)) {
+        || (strncmp32(term, "eterm", STRLIT_LEN("eterm")) == 0)) {
         config->set_window_title = false;
         if (!settings_quiet) {
             fprintf(stderr, "Terminal doesn't support window title, skipping "

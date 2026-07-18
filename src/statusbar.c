@@ -209,7 +209,7 @@ ncm_progressbar_draw(uint32 elapsed, uint32 time) {
 
     howlong = 0;
     if (time != 0) {
-        howlong = ((uint64)width * elapsed) / time;
+        howlong = ((uint64)width*elapsed) / time;
     }
     if (howlong > (uint64)width) {
         filled = width;

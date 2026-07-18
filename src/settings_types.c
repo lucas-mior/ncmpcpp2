@@ -100,7 +100,7 @@ column_array_destroy(ColumnArray *array) {
     }
     column_array_clear(array);
     if (array->items) {
-        free2(array->items, array->cap * SIZEOF(*array->items));
+        free2(array->items, array->cap*SIZEOF(*array->items));
     }
     column_array_init(array);
     return;
@@ -176,7 +176,7 @@ screen_type_array_destroy(ScreenTypeArray *array) {
         return;
     }
     if (array->items) {
-        free2(array->items, array->cap * SIZEOF(*array->items));
+        free2(array->items, array->cap*SIZEOF(*array->items));
     }
     screen_type_array_init(array);
     return;

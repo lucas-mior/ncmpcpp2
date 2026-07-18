@@ -761,7 +761,7 @@ configuration_apply_mpd_command_line(NcmConfigurationOptions *options,
         ncm_mpd_client_set_port(&global_mpd, (uint16)options->port);
     }
     if (!ncm_mpd_client_set_timeout_ms(
-            &global_mpd, Config.mpd_connection_timeout * 1000, error)) {
+            &global_mpd, Config.mpd_connection_timeout*1000, error)) {
         return false;
     }
     return true;
@@ -821,7 +821,7 @@ configuration_print_current_song(NcmConfigurationOptions *options,
         if (result) {
             output = ncm_format_render_string(&format, &song);
             if (output.len > 0) {
-                fwrite(output.data, 1, (size_t)output.len, stdout);
+                fwrite64(output.data, 1, (size_t)output.len, stdout);
             }
         }
     }
