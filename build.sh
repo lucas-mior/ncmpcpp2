@@ -10,17 +10,24 @@ MANDIR=${MANDIR-$PREFIX/share/man}
 DESTDIR=${DESTDIR-}
 
 PKG_CONFIG=${PKG_CONFIG-pkg-config}
-CC=${CC-cc}
+ORIGINAL_CC=${CC-}
 CLANG_ANALYZER=${CLANG_ANALYZER-clang}
 
 CPPFLAGS=${CPPFLAGS-}
-CFLAGS=${CFLAGS--O0 -g3}
+if [ "${CFLAGS+x}" = x ]; then
+    ORIGINAL_CFLAGS_SET=1
+else
+    ORIGINAL_CFLAGS_SET=0
+fi
+ORIGINAL_CFLAGS=${CFLAGS-}
+CFLAGS=
 LDFLAGS=${LDFLAGS-}
 LDLIBS=${LDLIBS--lm}
 
 TEST_CFLAGS=${TEST_CFLAGS--Wno-psabi -Wno-constant-logical-operand}
 
-WARNINGS='-Wall -Wextra -Wfatal-errors'
+OS=$(uname -a)
+CC=
 THREAD_FLAGS=-pthread
 NCMPCPP_SOURCE=src/main.c
 
@@ -69,6 +76,69 @@ require_command() {
 
     if ! command -v "$required_command" >/dev/null 2>&1; then
         die "missing command: $required_command"
+    fi
+
+    return 0
+}
+
+configure_compiler_flags() {
+    target=$1
+
+    CC=$ORIGINAL_CC
+    if [ "$target" = test ] && [ -z "$CC" ] \
+        && command -v tcc >/dev/null 2>&1; then
+        CC=tcc
+    else
+        CC=${CC:-cc}
+    fi
+
+    case $target in
+    debug)
+        CFLAGS='-g3 -O0'
+        ;;
+    build)
+        CFLAGS='-O2 -flto'
+        ;;
+    *)
+        if [ "$ORIGINAL_CFLAGS_SET" = 1 ]; then
+            CFLAGS=$ORIGINAL_CFLAGS
+        else
+            CFLAGS='-O0 -g3'
+        fi
+        ;;
+    esac
+
+    CFLAGS="$CFLAGS -Wfatal-errors"
+    CFLAGS="$CFLAGS -Wextra -Wall"
+    # CFLAGS="$CFLAGS -Werror"
+    CFLAGS="$CFLAGS -Wno-format-pedantic"
+    CFLAGS="$CFLAGS -Wno-unknown-warning-option"
+    CFLAGS="$CFLAGS -Wno-gnu-union-cast"
+    CFLAGS="$CFLAGS -Wno-unused-macros"
+    CFLAGS="$CFLAGS -Wno-unused-function"
+    CFLAGS="$CFLAGS -Wno-constant-logical-operand"
+    CFLAGS="$CFLAGS -Wno-float-equal"
+    CFLAGS="$CFLAGS -Wno-undefined-internal"
+    CFLAGS="$CFLAGS -Wno-cast-qual"
+    CFLAGS="$CFLAGS -Wno-unknown-pragmas"
+
+    if [ "$CC" = clang ]; then
+        CFLAGS="$CFLAGS -Weverything"
+        CFLAGS="$CFLAGS -Wno-unsafe-buffer-usage"
+        CFLAGS="$CFLAGS -Wno-format-nonliteral"
+        CFLAGS="$CFLAGS -Wno-disabled-macro-expansion"
+        CFLAGS="$CFLAGS -Wno-c++-keyword"
+        CFLAGS="$CFLAGS -Wno-pre-c11-compat"
+        CFLAGS="$CFLAGS -Wno-implicit-void-ptr-cast"
+        CFLAGS="$CFLAGS -Wno-ignored-attributes"
+        CFLAGS="$CFLAGS -Wno-covered-switch-default"
+        CFLAGS="$CFLAGS -Wno-used-but-marked-unused"
+        CFLAGS="$CFLAGS -Wno-implicit-int-enum-cast"
+        CFLAGS="$CFLAGS -Wno-assign-enum"
+        CFLAGS="$CFLAGS -Wno-cast-function-type-strict"
+        CFLAGS="$CFLAGS -Wno-bad-function-cast"
+        CFLAGS="$CFLAGS -Wno-pre-c23-compat"
+        CFLAGS="$CFLAGS -Wno-padded"
     fi
 
     return 0
@@ -186,7 +256,6 @@ compile_main() {
         $PKG_CFLAGS \
         $READLINE_CFLAGS \
         $CSTD \
-        $WARNINGS \
         $CFLAGS \
         $THREAD_FLAGS \
         -c "$NCMPCPP_SOURCE" \
@@ -250,7 +319,6 @@ compile_test() {
         run_command "$CC" \
             $TEST_CPPFLAGS \
             $CSTD \
-            $WARNINGS \
             $CFLAGS \
             $TEST_CFLAGS \
             $THREAD_FLAGS \
@@ -269,7 +337,6 @@ compile_test() {
             -D_DEFAULT_SOURCE \
             $CPPFLAGS \
             $CSTD \
-            $WARNINGS \
             $CFLAGS \
             $TEST_CFLAGS \
             $THREAD_FLAGS \
@@ -328,7 +395,6 @@ run_analyzer() {
         $PKG_CFLAGS \
         $READLINE_CFLAGS \
         $ANALYZER_CSTD \
-        $WARNINGS \
         $CFLAGS \
         $THREAD_FLAGS \
         --analyze \
@@ -421,18 +487,11 @@ EOF_HELP
 run_target() {
     target=$1
 
+    configure_compiler_flags "$target"
+
     case $target in
-    debug)
-        saved_cflags=$CFLAGS
-        CFLAGS='-g3 -O0'
+    debug|build)
         build_binary
-        CFLAGS=$saved_cflags
-        ;;
-    build)
-        saved_cflags=$CFLAGS
-        CFLAGS='-O2 -flto'
-        build_binary
-        CFLAGS=$saved_cflags
         ;;
     all)
         build_binary
