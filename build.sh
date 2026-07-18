@@ -143,6 +143,7 @@ configure_compiler_flags() {
         CFLAGS="$CFLAGS -Wno-pre-c23-compat"
         CFLAGS="$CFLAGS -Wno-padded"
         CFLAGS="$CFLAGS -Wno-nrvo"
+        CFLAGS="$CFLAGS -Wno-cast-align"
     fi
 
     return 0
