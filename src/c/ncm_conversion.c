@@ -174,8 +174,8 @@ ncm_conversion_set_f64_lower_error(NcmError *error, double value,
 }
 
 bool
-ncm_parse_uint64(char *source, int32 source_len,
-                 uint64 *out, NcmError *error) {
+ncm_parse_int64(char *source, int32 source_len,
+                int64 *out, NcmError *error) {
     NcmBuffer buffer;
     char *end;
     unsigned long long value;
@@ -199,7 +199,7 @@ ncm_parse_uint64(char *source, int32 source_len,
          && ncm_conversion_trailing_space_only(end)
          && (errno != ERANGE);
     if (ok) {
-        *out = (uint64)value;
+        *out = (int32)value;
         ncm_error_clear(error);
     } else {
         ncm_conversion_set_parse_error(error, source, source_len);
@@ -211,22 +211,21 @@ ncm_parse_uint64(char *source, int32 source_len,
 
 bool
 ncm_parse_int32(char *source, int32 source_len, int32 *out, NcmError *error) {
-    uint64 value;
+    int64 value;
 
     if (out == NULL) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing conversion output"));
         return false;
     }
 
-    if (!ncm_parse_uint64(source, source_len, &value, error)) {
+    if (!ncm_parse_int64(source, source_len, &value, error)) {
         return false;
     }
-    if (value > UINT32_MAX) {
-        ncm_conversion_set_u64_upper_error(error, value, UINT32_MAX);
-        return false;
+    if (value > MAXOF(*out)) {
+        fatal(EXIT_FAILURE);
     }
 
-    *out = (uint32)value;
+    *out = (int32)value;
     ncm_error_clear(error);
     return true;
 }

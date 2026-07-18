@@ -167,7 +167,7 @@ ncm_mpd_client_connected(NcmMpdClient *client) {
     return ncm_mpd_connection_is_connected(&client->connection);
 }
 
-uint32
+int32
 ncm_mpd_client_version(NcmMpdClient *client) {
     if (client == NULL) {
         return 0;
@@ -262,7 +262,7 @@ ncm_mpd_client_set_password(NcmMpdClient *client, char *password,
 }
 
 bool
-ncm_mpd_client_set_timeout_ms(NcmMpdClient *client, uint32 timeout_ms,
+ncm_mpd_client_set_timeout_ms(NcmMpdClient *client, int32 timeout_ms,
                               NcmError *error) {
     if (client == NULL) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
