@@ -446,7 +446,7 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
     return true;
 }
 
-bool
+static bool
 ncm_format_ast_append_first_of_getters(NcmFormatAst *ast,
                                        enum NcmSongGetter *getters,
                                        int32 getters_len) {
