@@ -18,9 +18,9 @@ typedef struct NcmMpdConnection {
 } NcmMpdConnection;
 
 typedef struct NcmMpdStats {
-    uint32 artists;
-    uint32 albums;
-    uint32 songs;
+    int32 artists;
+    int32 albums;
+    int32 songs;
     uint64 play_time;
     uint64 uptime;
     uint64 db_update_time;
@@ -51,7 +51,7 @@ typedef struct NcmMpdStringList {
 } NcmMpdStringList;
 
 typedef struct NcmMpdOutput {
-    uint32 id;
+    int32 id;
     char *name;
     int32 name_len;
     bool enabled;
@@ -86,18 +86,18 @@ typedef struct NcmMpdStatus {
     bool random;
     bool single;
     bool consume;
-    uint32 queue_length;
-    uint32 queue_version;
+    int32 queue_length;
+    int32 queue_version;
     enum mpd_state state;
-    uint32 crossfade;
+    int32 crossfade;
     int32 song_pos;
     int32 song_id;
     int32 next_song_pos;
     int32 next_song_id;
-    uint32 elapsed_time;
-    uint32 total_time;
-    uint32 kbit_rate;
-    uint32 update_id;
+    int32 elapsed_time;
+    int32 total_time;
+    int32 kbit_rate;
+    int32 update_id;
     char error[256];
 } NcmMpdStatus;
 
@@ -106,12 +106,12 @@ void ncm_mpd_connection_destroy(NcmMpdConnection *connection);
 bool ncm_mpd_connection_connect(NcmMpdConnection *connection,
                                 char *host,
                                 uint16 port,
-                                uint32 timeout_ms);
+                                int32 timeout_ms);
 void ncm_mpd_connection_disconnect(NcmMpdConnection *connection);
 bool ncm_mpd_connection_is_connected(NcmMpdConnection *connection);
 int32 ncm_mpd_connection_fd(NcmMpdConnection *connection);
 bool ncm_mpd_connection_set_timeout(NcmMpdConnection *connection,
-                                    uint32 timeout_ms);
+                                    int32 timeout_ms);
 bool ncm_mpd_connection_noidle(NcmMpdConnection *connection);
 bool ncm_mpd_connection_send_idle(NcmMpdConnection *connection,
                                   enum mpd_idle events);
@@ -131,7 +131,7 @@ bool ncm_mpd_connection_get_stats(NcmMpdConnection *connection,
 bool ncm_mpd_connection_get_status(NcmMpdConnection *connection,
                                    NcmMpdStatus *status);
 
-uint32 ncm_mpd_connection_version(NcmMpdConnection *connection);
+int32 ncm_mpd_connection_version(NcmMpdConnection *connection);
 bool ncm_mpd_connection_send_password(NcmMpdConnection *connection,
                                       char *password);
 bool ncm_mpd_connection_start_command_list(NcmMpdConnection *connection);
@@ -193,7 +193,7 @@ bool ncm_mpd_connection_get_current_song(NcmMpdConnection *connection,
 bool ncm_mpd_connection_get_queue(NcmMpdConnection *connection,
                                   NcmMpdSongList *songs);
 bool ncm_mpd_connection_get_queue_changes(NcmMpdConnection *connection,
-                                          uint32 version,
+                                          int32 version,
                                           NcmMpdSongList *songs);
 bool ncm_mpd_connection_get_playlist_content(NcmMpdConnection *connection,
                                              char *path,
@@ -233,13 +233,13 @@ bool ncm_mpd_connection_list_tag_values(NcmMpdConnection *connection,
 
 bool ncm_mpd_connection_update_database(NcmMpdConnection *connection,
                                         char *path,
-                                        uint32 *id);
+                                        int32 *id);
 bool ncm_mpd_connection_get_outputs(NcmMpdConnection *connection,
                                     NcmMpdOutputList *outputs);
 bool ncm_mpd_connection_enable_output(NcmMpdConnection *connection,
-                                      uint32 id);
+                                      int32 id);
 bool ncm_mpd_connection_disable_output(NcmMpdConnection *connection,
-                                       uint32 id);
+                                       int32 id);
 
 bool ncm_mpd_connection_play(NcmMpdConnection *connection);
 bool ncm_mpd_connection_play_pos(NcmMpdConnection *connection, int32 pos);
@@ -249,33 +249,33 @@ bool ncm_mpd_connection_stop(NcmMpdConnection *connection);
 bool ncm_mpd_connection_next(NcmMpdConnection *connection);
 bool ncm_mpd_connection_previous(NcmMpdConnection *connection);
 bool ncm_mpd_connection_seek_pos(NcmMpdConnection *connection,
-                                 uint32 pos,
-                                 uint32 seconds);
+                                 int32 pos,
+                                 int32 seconds);
 bool ncm_mpd_connection_set_repeat(NcmMpdConnection *connection, bool mode);
 bool ncm_mpd_connection_set_random(NcmMpdConnection *connection, bool mode);
 bool ncm_mpd_connection_set_single(NcmMpdConnection *connection, bool mode);
 bool ncm_mpd_connection_set_consume(NcmMpdConnection *connection, bool mode);
 bool ncm_mpd_connection_set_crossfade(NcmMpdConnection *connection,
-                                      uint32 seconds);
-bool ncm_mpd_connection_set_volume(NcmMpdConnection *connection, uint32 vol);
+                                      int32 seconds);
+bool ncm_mpd_connection_set_volume(NcmMpdConnection *connection, int32 vol);
 bool ncm_mpd_connection_change_volume(NcmMpdConnection *connection,
                                       int32 change);
 
 bool ncm_mpd_connection_move(NcmMpdConnection *connection,
-                             uint32 from,
-                             uint32 to,
+                             int32 from,
+                             int32 to,
                              bool command_list_active);
 bool ncm_mpd_connection_swap(NcmMpdConnection *connection,
-                             uint32 from,
-                             uint32 to,
+                             int32 from,
+                             int32 to,
                              bool command_list_active);
 bool ncm_mpd_connection_shuffle(NcmMpdConnection *connection);
 bool ncm_mpd_connection_shuffle_range(NcmMpdConnection *connection,
-                                      uint32 start,
-                                      uint32 end);
+                                      int32 start,
+                                      int32 end);
 bool ncm_mpd_connection_clear_queue(NcmMpdConnection *connection);
 bool ncm_mpd_connection_set_priority_id(NcmMpdConnection *connection,
-                                        uint32 id,
+                                        int32 id,
                                         int32 prio,
                                         bool command_list_active);
 bool ncm_mpd_connection_add_song(NcmMpdConnection *connection,
@@ -288,7 +288,7 @@ bool ncm_mpd_connection_add(NcmMpdConnection *connection,
                             bool command_list_active,
                             bool *added);
 bool ncm_mpd_connection_delete(NcmMpdConnection *connection,
-                               uint32 pos,
+                               int32 pos,
                                bool command_list_active);
 bool ncm_mpd_connection_clear_playlist(NcmMpdConnection *connection,
                                        char *playlist);
@@ -298,12 +298,12 @@ bool ncm_mpd_connection_add_to_playlist(NcmMpdConnection *connection,
                                         bool command_list_active);
 bool ncm_mpd_connection_playlist_move(NcmMpdConnection *connection,
                                       char *playlist,
-                                      uint32 from,
-                                      uint32 to,
+                                      int32 from,
+                                      int32 to,
                                       bool command_list_active);
 bool ncm_mpd_connection_playlist_delete(NcmMpdConnection *connection,
                                         char *playlist,
-                                        uint32 pos,
+                                        int32 pos,
                                         bool command_list_active);
 bool ncm_mpd_connection_rename_playlist(NcmMpdConnection *connection,
                                         char *from,

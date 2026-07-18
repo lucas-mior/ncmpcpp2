@@ -541,7 +541,7 @@ ncm_mpd_client_move(NcmMpdClient *client, uint32 from, uint32 to,
 }
 
 bool
-ncm_mpd_client_swap(NcmMpdClient *client, uint32 from, uint32 to,
+ncm_mpd_client_swap(NcmMpdClient *client, int32 from, int32 to,
                     NcmError *error) {
     if (!ncm_mpd_client_prechecks(client, error)) {
         return false;
@@ -1097,7 +1097,7 @@ ncm_mpd_client_playlist_move(NcmMpdClient *client, char *playlist,
 
 bool
 ncm_mpd_client_playlist_delete(NcmMpdClient *client, char *playlist,
-                               uint32 pos, NcmError *error) {
+                               int32 pos, NcmError *error) {
     if (!ncm_mpd_client_prechecks(client, error)) {
         return false;
     }
