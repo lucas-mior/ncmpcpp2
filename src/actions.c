@@ -1154,7 +1154,7 @@ static bool action_runtime_prompt_string(char *prefix, int32 prefix_len,
                                          NcmBuffer *result);
 static bool action_runtime_confirm(char *message, int32 message_len);
 static bool action_runtime_parse_seek_position(char *text, int32 text_len,
-                                               uint32 total, int32 *position);
+                                               int32 total, int32 *position);
 static void action_runtime_print_format_string(char *format, int32 format_len,
                                                char *text, int32 text_len);
 static bool action_runtime_toggle_crossfade(void);
@@ -2411,7 +2411,7 @@ action_runtime_confirm(char *message, int32 message_len) {
 }
 
 static bool
-action_runtime_parse_seek_position(char *text, int32 text_len, uint32 total,
+action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
                                    int32 *position) {
     NcmError error;
     int32 first;
@@ -2469,10 +2469,10 @@ action_runtime_parse_seek_position(char *text, int32 text_len, uint32 total,
             }
             result = first*3600 + second*60 + third;
         }
-        if (result > UINT32_MAX) {
+        if (result > MAXOF(*position)) {
             return false;
         }
-        *position = result;
+        *position = (int32)result;
         return true;
     }
 
@@ -4359,8 +4359,8 @@ action_runtime_move_main_playlist_items_to(void) {
     NcmSong *song;
     NcmError error;
     int32 *positions;
-    uint32 target;
-    uint32 destination;
+    int32 target;
+    int32 destination;
     int64 item_count;
     int32 count;
     bool success;
@@ -4417,16 +4417,16 @@ action_runtime_move_main_playlist_items_to(void) {
     ncm_error_clear(&error);
     success = ncm_mpd_client_start_command_list(&global_mpd, &error);
     if (success && (target > positions[0])) {
-        destination = target - (uint32)count;
+        destination = target - count;
         for (int32 i = count; success && (i > 0); i -= 1) {
             success = ncm_mpd_client_move(&global_mpd, positions[i - 1],
-                                          destination + (uint32)i - 1, &error);
+                                          destination + i - 1, &error);
         }
     } else if (success) {
         destination = target;
         for (int32 i = 0; success && (i < count); i += 1) {
             success = ncm_mpd_client_move(&global_mpd, positions[i],
-                                          destination + (uint32)i, &error);
+                                          destination + i, &error);
         }
     }
     if (success) {
@@ -4452,8 +4452,8 @@ action_runtime_move_playlist_editor_items_to(void) {
     NcmSong *song;
     NcmError error;
     int32 *positions;
-    uint32 target;
-    uint32 destination;
+    int32 target;
+    int32 destination;
     int64 item_count;
     int32 count;
     bool success;
@@ -4526,18 +4526,18 @@ action_runtime_move_playlist_editor_items_to(void) {
     ncm_error_clear(&error);
     success = ncm_mpd_client_start_command_list(&global_mpd, &error);
     if (success && (target > positions[0])) {
-        destination = target - (uint32)count;
+        destination = target - count;
         for (int32 i = count; success && (i > 0); i -= 1) {
             success = ncm_mpd_client_playlist_move(
                 &global_mpd, playlist.path, positions[i - 1],
-                destination + (uint32)i - 1, &error);
+                destination + i - 1, &error);
         }
     } else if (success) {
         destination = target;
         for (int32 i = 0; success && (i < count); i += 1) {
             success = ncm_mpd_client_playlist_move(
                 &global_mpd, playlist.path, positions[i],
-                destination + (uint32)i, &error);
+                destination + i, &error);
         }
     }
     if (success) {
@@ -4663,8 +4663,8 @@ static bool
 action_runtime_shuffle_playlist(void) {
     NcMenu *menu;
     NcmError error;
-    uint32 first;
-    uint32 last;
+    int32 first;
+    int32 last;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
         return false;
@@ -4697,7 +4697,7 @@ static bool
 action_runtime_set_selected_items_priority(void) {
     NcmBuffer input;
     NcmError error;
-    uint32 priority;
+    int32 priority;
     bool prompted;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
@@ -4781,8 +4781,7 @@ action_runtime_jump_to_position_in_song(void) {
     ncm_buffer_destroy(&input);
 
     ncm_error_clear(&error);
-    if (!ncm_mpd_client_seek_pos(&global_mpd, (uint32)song_position, target,
-                                 &error)) {
+    if (!ncm_mpd_client_seek_pos(&global_mpd, song_position, target, &error)) {
         return action_runtime_mpd_error(&error);
     }
     (void)ncm_status_update_full(&global_mpd, NULL, &error);
@@ -5105,9 +5104,9 @@ static bool
 action_runtime_seek_relative(bool forward) {
     NcmError error;
     int32 position;
-    uint32 elapsed;
-    uint32 total;
-    uint32 target;
+    int32 elapsed;
+    int32 total;
+    int32 target;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
         return false;
@@ -5136,8 +5135,7 @@ action_runtime_seek_relative(bool forward) {
     }
 
     ncm_error_clear(&error);
-    if (!ncm_mpd_client_seek_pos(&global_mpd, (uint32)position, target,
-                                 &error)) {
+    if (!ncm_mpd_client_seek_pos(&global_mpd, position, target, &error)) {
         return action_runtime_mpd_error(&error);
     }
     (void)ncm_status_update_full(&global_mpd, NULL, &error);
@@ -5882,7 +5880,7 @@ action_runtime_toggle_screen_lock(void) {
     NcmError error;
     NcScreen *current;
     char initial[16];
-    uint32 part;
+    int32 part;
     bool prompted;
 
     if (app_controller_locked_screen() != NULL) {
@@ -5902,10 +5900,10 @@ action_runtime_toggle_screen_lock(void) {
         return true;
     }
 
-    part = (uint32)(Config.locked_screen_width_part * 100);
+    part = (int32)Config.locked_screen_width_part*100;
     if (Config.ask_for_locked_screen_width_part) {
         ncm_buffer_init(&input);
-        SNPRINTF(initial, "%u", part);
+        SNPRINTF(initial, "%d", part);
         prompted = action_runtime_prompt_string(
             STRLIT_ARGS("% of the locked screen's width to be reserved "
                         "(20-80): "),

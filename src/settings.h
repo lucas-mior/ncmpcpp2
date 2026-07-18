@@ -224,16 +224,16 @@ typedef struct Configuration {
 
     uint32 mpd_connection_timeout;
     int32 crossfade_time;
-    uint32 seek_time;
-    uint32 volume_change_step;
-    uint32 message_delay_time;
-    uint32 lyrics_db;
-    uint32 lines_scrolled;
-    uint32 search_engine_default_search_mode;
-    uint32 visualizer_fps;
-    uint32 visualizer_spectrum_dft_size;
-    uint32 playlist_disable_highlight_delay_seconds;
-    uint32 regex_type;
+    int32 seek_time;
+    int32 volume_change_step;
+    int32 message_delay_time;
+    int32 lyrics_db;
+    int32 lines_scrolled;
+    int32 search_engine_default_search_mode;
+    int32 visualizer_fps;
+    int32 visualizer_spectrum_dft_size;
+    int32 playlist_disable_highlight_delay_seconds;
+    int32 regex_type;
 
     double visualizer_spectrum_gain;
     double visualizer_spectrum_hz_min;
