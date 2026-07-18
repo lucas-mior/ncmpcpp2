@@ -725,7 +725,7 @@ native_lastfm_find_match_callback(int32 start, int32 len, void *user) {
 static void
 native_lastfm_mouse_scroll(NativeLastfmScreen *screen,
                            enum NcScroll where) {
-    for (uint32 i = 0; i < Config.lines_scrolled; i += 1) {
+    for (int32 i = 0; i < Config.lines_scrolled; i += 1) {
         nc_scrollpad_scroll(&screen->scrollpad, &screen->window, where);
     }
     return;
