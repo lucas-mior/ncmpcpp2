@@ -370,7 +370,7 @@ nc_screen_registry_resize_params(NcScreenRegistry *registry,
         return params;
     }
 
-    locked_width = (int64)(params.width * Config.locked_screen_width_part);
+    locked_width = (int64)((double)params.width*Config.locked_screen_width_part);
     if (locked_width < 0) {
         locked_width = 0;
     }
