@@ -3144,6 +3144,24 @@ action_runtime_song_tag_at(int64 pos, enum NcmSongGetter getter,
         return true;
     }
 #endif
+    case NCM_SCREEN_TYPE_HELP:
+    case NCM_SCREEN_TYPE_LASTFM:
+    case NCM_SCREEN_TYPE_LYRICS:
+#if defined(ENABLE_OUTPUTS)
+    case NCM_SCREEN_TYPE_OUTPUTS:
+#endif
+    case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
+    case NCM_SCREEN_TYPE_SERVER_INFO:
+    case NCM_SCREEN_TYPE_SONG_INFO:
+    case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
+#if defined(HAVE_TAGLIB_H)
+    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+#endif
+    case NCM_SCREEN_TYPE_UNKNOWN:
+#if defined(ENABLE_VISUALIZER)
+    case NCM_SCREEN_TYPE_VISUALIZER:
+#endif
+    case NCM_SCREEN_TYPE_LAST:
     default:
         break;
     }
@@ -4896,6 +4914,27 @@ action_runtime_previous_column_available(void) {
         return native_tag_editor_screen_previous_column_available(
             native_c_screen_tag_editor());
 #endif
+    case NCM_SCREEN_TYPE_BROWSER:
+    case NCM_SCREEN_TYPE_HELP:
+    case NCM_SCREEN_TYPE_LASTFM:
+    case NCM_SCREEN_TYPE_LYRICS:
+#if defined(ENABLE_OUTPUTS)
+    case NCM_SCREEN_TYPE_OUTPUTS:
+#endif
+    case NCM_SCREEN_TYPE_PLAYLIST:
+    case NCM_SCREEN_TYPE_SEARCH_ENGINE:
+    case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
+    case NCM_SCREEN_TYPE_SERVER_INFO:
+    case NCM_SCREEN_TYPE_SONG_INFO:
+    case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
+#if defined(HAVE_TAGLIB_H)
+    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+#endif
+    case NCM_SCREEN_TYPE_UNKNOWN:
+#if defined(ENABLE_VISUALIZER)
+    case NCM_SCREEN_TYPE_VISUALIZER:
+#endif
+    case NCM_SCREEN_TYPE_LAST:
     default:
         break;
     }
@@ -4916,6 +4955,27 @@ action_runtime_next_column_available(void) {
         return native_tag_editor_screen_next_column_available(
             native_c_screen_tag_editor());
 #endif
+    case NCM_SCREEN_TYPE_BROWSER:
+    case NCM_SCREEN_TYPE_HELP:
+    case NCM_SCREEN_TYPE_LASTFM:
+    case NCM_SCREEN_TYPE_LYRICS:
+#if defined(ENABLE_OUTPUTS)
+    case NCM_SCREEN_TYPE_OUTPUTS:
+#endif
+    case NCM_SCREEN_TYPE_PLAYLIST:
+    case NCM_SCREEN_TYPE_SEARCH_ENGINE:
+    case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
+    case NCM_SCREEN_TYPE_SERVER_INFO:
+    case NCM_SCREEN_TYPE_SONG_INFO:
+    case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
+#if defined(HAVE_TAGLIB_H)
+    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+#endif
+    case NCM_SCREEN_TYPE_UNKNOWN:
+#if defined(ENABLE_VISUALIZER)
+    case NCM_SCREEN_TYPE_VISUALIZER:
+#endif
+    case NCM_SCREEN_TYPE_LAST:
     default:
         break;
     }
@@ -4941,6 +5001,27 @@ action_runtime_previous_column(void) {
         native_tag_editor_screen_previous_column(native_c_screen_tag_editor());
         return true;
 #endif
+    case NCM_SCREEN_TYPE_BROWSER:
+    case NCM_SCREEN_TYPE_HELP:
+    case NCM_SCREEN_TYPE_LASTFM:
+    case NCM_SCREEN_TYPE_LYRICS:
+#if defined(ENABLE_OUTPUTS)
+    case NCM_SCREEN_TYPE_OUTPUTS:
+#endif
+    case NCM_SCREEN_TYPE_PLAYLIST:
+    case NCM_SCREEN_TYPE_SEARCH_ENGINE:
+    case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
+    case NCM_SCREEN_TYPE_SERVER_INFO:
+    case NCM_SCREEN_TYPE_SONG_INFO:
+    case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
+#if defined(HAVE_TAGLIB_H)
+    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+#endif
+    case NCM_SCREEN_TYPE_UNKNOWN:
+#if defined(ENABLE_VISUALIZER)
+    case NCM_SCREEN_TYPE_VISUALIZER:
+#endif
+    case NCM_SCREEN_TYPE_LAST:
     default:
         break;
     }
@@ -4966,6 +5047,27 @@ action_runtime_next_column(void) {
         native_tag_editor_screen_next_column(native_c_screen_tag_editor());
         return true;
 #endif
+    case NCM_SCREEN_TYPE_BROWSER:
+    case NCM_SCREEN_TYPE_HELP:
+    case NCM_SCREEN_TYPE_LASTFM:
+    case NCM_SCREEN_TYPE_LYRICS:
+#if defined(ENABLE_OUTPUTS)
+    case NCM_SCREEN_TYPE_OUTPUTS:
+#endif
+    case NCM_SCREEN_TYPE_PLAYLIST:
+    case NCM_SCREEN_TYPE_SEARCH_ENGINE:
+    case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
+    case NCM_SCREEN_TYPE_SERVER_INFO:
+    case NCM_SCREEN_TYPE_SONG_INFO:
+    case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
+#if defined(HAVE_TAGLIB_H)
+    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+#endif
+    case NCM_SCREEN_TYPE_UNKNOWN:
+#if defined(ENABLE_VISUALIZER)
+    case NCM_SCREEN_TYPE_VISUALIZER:
+#endif
+    case NCM_SCREEN_TYPE_LAST:
     default:
         break;
     }
@@ -5402,6 +5504,27 @@ action_runtime_toggle_display_mode(void) {
     case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
         mode = &Config.playlist_editor_display_mode;
         break;
+    case NCM_SCREEN_TYPE_HELP:
+    case NCM_SCREEN_TYPE_LASTFM:
+    case NCM_SCREEN_TYPE_LYRICS:
+    case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
+#if defined(ENABLE_OUTPUTS)
+    case NCM_SCREEN_TYPE_OUTPUTS:
+#endif
+    case NCM_SCREEN_TYPE_SEARCH_ENGINE:
+    case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
+    case NCM_SCREEN_TYPE_SERVER_INFO:
+    case NCM_SCREEN_TYPE_SONG_INFO:
+    case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
+#if defined(HAVE_TAGLIB_H)
+    case NCM_SCREEN_TYPE_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+#endif
+    case NCM_SCREEN_TYPE_UNKNOWN:
+#if defined(ENABLE_VISUALIZER)
+    case NCM_SCREEN_TYPE_VISUALIZER:
+#endif
+    case NCM_SCREEN_TYPE_LAST:
     default:
         break;
     }
@@ -5526,25 +5649,17 @@ action_runtime_toggle_library_tag_type(void) {
         return false;
     }
 
-    switch (Config.media_lib_primary_tag) {
-    case MPD_TAG_ARTIST:
+    tag_type = MPD_TAG_ARTIST;
+    if (Config.media_lib_primary_tag == MPD_TAG_ARTIST) {
         tag_type = MPD_TAG_ALBUM_ARTIST;
-        break;
-    case MPD_TAG_ALBUM_ARTIST:
+    } else if (Config.media_lib_primary_tag == MPD_TAG_ALBUM_ARTIST) {
         tag_type = MPD_TAG_DATE;
-        break;
-    case MPD_TAG_DATE:
+    } else if (Config.media_lib_primary_tag == MPD_TAG_DATE) {
         tag_type = MPD_TAG_GENRE;
-        break;
-    case MPD_TAG_GENRE:
+    } else if (Config.media_lib_primary_tag == MPD_TAG_GENRE) {
         tag_type = MPD_TAG_COMPOSER;
-        break;
-    case MPD_TAG_COMPOSER:
+    } else if (Config.media_lib_primary_tag == MPD_TAG_COMPOSER) {
         tag_type = MPD_TAG_PERFORMER;
-        break;
-    default:
-        tag_type = MPD_TAG_ARTIST;
-        break;
     }
 
     return native_media_library_screen_set_primary_tag_type(screen, tag_type);
@@ -6947,8 +7062,8 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_SHOW_LYRICS:
         return action_runtime_current_screen_is(NCM_SCREEN_TYPE_LYRICS)
                || action_runtime_has_current_song();
-#if defined(ENABLE_OUTPUTS)
     case NCM_ACTION_SHOW_OUTPUTS:
+#if defined(ENABLE_OUTPUTS)
         if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_OUTPUTS)) {
             return false;
         }
@@ -6958,11 +7073,17 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         }
 #endif
         return true;
-    case NCM_ACTION_TOGGLE_OUTPUT:
-        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_OUTPUTS);
+#else
+        return false;
 #endif
-#if defined(ENABLE_VISUALIZER)
+    case NCM_ACTION_TOGGLE_OUTPUT:
+#if defined(ENABLE_OUTPUTS)
+        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_OUTPUTS);
+#else
+        return false;
+#endif
     case NCM_ACTION_SHOW_VISUALIZER:
+#if defined(ENABLE_VISUALIZER)
         if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_VISUALIZER)) {
             return false;
         }
@@ -6972,12 +7093,20 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         }
 #endif
         return true;
-    case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
-        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_VISUALIZER);
+#else
+        return false;
 #endif
-#if defined(HAVE_TAGLIB_H)
+    case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
+#if defined(ENABLE_VISUALIZER)
+        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_VISUALIZER);
+#else
+        return false;
+#endif
     case NCM_ACTION_SHOW_TAG_EDITOR:
+#if defined(HAVE_TAGLIB_H)
         return true;
+#else
+        return false;
 #endif
     case NCM_ACTION_SHOW_BROWSER:
         return !action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER);
@@ -7084,6 +7213,8 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
 #else
         return false;
 #endif
+    case NCM_ACTION_MACRO_UTILITY:
+    case NCM_ACTION_LAST:
     default:
         return false;
     }
@@ -7409,22 +7540,36 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
         return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_SERVER_INFO);
     case NCM_ACTION_SHOW_SONG_INFO:
         return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_SONG_INFO);
-#if defined(ENABLE_OUTPUTS)
     case NCM_ACTION_SHOW_OUTPUTS:
+#if defined(ENABLE_OUTPUTS)
         return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_OUTPUTS);
+#else
+        return false;
+#endif
     case NCM_ACTION_TOGGLE_OUTPUT:
+#if defined(ENABLE_OUTPUTS)
         native_c_screen_outputs_toggle();
         return true;
+#else
+        return false;
 #endif
-#if defined(ENABLE_VISUALIZER)
     case NCM_ACTION_SHOW_VISUALIZER:
+#if defined(ENABLE_VISUALIZER)
         return ncm_action_show_visualizer();
-    case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
-        return ncm_action_toggle_visualization_type();
+#else
+        return false;
 #endif
-#if defined(HAVE_TAGLIB_H)
+    case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
+#if defined(ENABLE_VISUALIZER)
+        return ncm_action_toggle_visualization_type();
+#else
+        return false;
+#endif
     case NCM_ACTION_SHOW_TAG_EDITOR:
+#if defined(HAVE_TAGLIB_H)
         return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_TAG_EDITOR);
+#else
+        return false;
 #endif
     case NCM_ACTION_EXECUTE_COMMAND:
         return action_runtime_execute_command();
@@ -7477,6 +7622,8 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
         return action_runtime_edit_library_tag();
     case NCM_ACTION_EDIT_LIBRARY_ALBUM:
         return action_runtime_edit_library_album();
+    case NCM_ACTION_MACRO_UTILITY:
+    case NCM_ACTION_LAST:
     default:
         return false;
     }
