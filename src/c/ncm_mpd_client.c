@@ -725,7 +725,7 @@ NCM_CLIENT_MODE_CALL(ncm_mpd_client_set_consume,
 #undef NCM_CLIENT_MODE_CALL
 
 bool
-ncm_mpd_client_set_crossfade(NcmMpdClient *client, uint32 seconds,
+ncm_mpd_client_set_crossfade(NcmMpdClient *client, int32 seconds,
                              NcmError *error) {
     if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
         return false;
@@ -740,8 +740,7 @@ ncm_mpd_client_set_crossfade(NcmMpdClient *client, uint32 seconds,
 }
 
 bool
-ncm_mpd_client_set_volume(NcmMpdClient *client, uint32 volume,
-                          NcmError *error) {
+ncm_mpd_client_set_volume(NcmMpdClient *client, int32 volume, NcmError *error) {
     if (!ncm_mpd_client_prechecks_no_commands(client, error)) {
         return false;
     }

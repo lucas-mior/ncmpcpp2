@@ -1154,7 +1154,7 @@ static bool action_runtime_prompt_string(char *prefix, int32 prefix_len,
                                          NcmBuffer *result);
 static bool action_runtime_confirm(char *message, int32 message_len);
 static bool action_runtime_parse_seek_position(char *text, int32 text_len,
-                                               uint32 total, uint32 *position);
+                                               uint32 total, int32 *position);
 static void action_runtime_print_format_string(char *format, int32 format_len,
                                                char *text, int32 text_len);
 static bool action_runtime_toggle_crossfade(void);
@@ -1768,7 +1768,7 @@ action_runtime_replay_song(void) {
 static bool
 action_runtime_toggle_crossfade(void) {
     NcmError error;
-    uint32 seconds;
+    int32 seconds;
 
     ncm_error_clear(&error);
     seconds = Config.crossfade_time;
@@ -1786,7 +1786,7 @@ static bool
 action_runtime_set_crossfade(void) {
     NcmBuffer input;
     NcmError error;
-    uint32 seconds;
+    int32 seconds;
     bool prompted;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
@@ -1802,7 +1802,7 @@ action_runtime_set_crossfade(void) {
     }
 
     ncm_error_clear(&error);
-    if (!ncm_parse_uint32(input.data, input.len, &seconds, &error)) {
+    if (!ncm_parse_int32(input.data, input.len, &seconds, &error)) {
         ncm_buffer_destroy(&input);
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
                                     "Crossfade must be a non-negative number");
@@ -1823,7 +1823,7 @@ action_runtime_set_volume(void) {
     NcmStringFormatArg arg;
     NcmBuffer input;
     NcmError error;
-    uint32 volume;
+    int32 volume;
     bool prompted;
 
     if (!ncm_mpd_client_connected(&global_mpd)
@@ -1840,7 +1840,7 @@ action_runtime_set_volume(void) {
     }
 
     ncm_error_clear(&error);
-    if (!ncm_parse_uint32(input.data, input.len, &volume, &error)
+    if (!ncm_parse_int32(input.data, input.len, &volume, &error)
         || (volume > 100)) {
         ncm_buffer_destroy(&input);
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
@@ -1853,7 +1853,7 @@ action_runtime_set_volume(void) {
     if (!ncm_mpd_client_set_volume(&global_mpd, volume, &error)) {
         return action_runtime_mpd_error(&error);
     }
-    arg = ncm_string_format_arg_u64(volume);
+    arg = ncm_string_format_arg_u64((uint64)volume);
     ncm_statusbar_format((int32)Config.message_delay_time,
                          STRLIT_ARGS("Volume set to %1%%%"), &arg, 1);
     return true;
@@ -1880,7 +1880,7 @@ action_runtime_add_random_items(void) {
     char *source_name;
     int32 count;
     int32 source_name_len;
-    uint32 number;
+    int32 number;
     bool prompted;
     bool success;
 
@@ -1934,8 +1934,7 @@ action_runtime_add_random_items(void) {
     }
 
     ncm_error_clear(&error);
-    if (!ncm_parse_uint32(input.data, input.len, &number, &error)
-        || (number > (uint32)INT32_MAX)) {
+    if (!ncm_parse_int32(input.data, input.len, &number, &error)) {
         ncm_buffer_destroy(&input);
         ncm_statusbar_print_cstring(
             (int32)Config.message_delay_time,
@@ -2413,12 +2412,12 @@ action_runtime_confirm(char *message, int32 message_len) {
 
 static bool
 action_runtime_parse_seek_position(char *text, int32 text_len, uint32 total,
-                                   uint32 *position) {
+                                   int32 *position) {
     NcmError error;
-    uint32 first;
-    uint32 second;
-    uint32 third;
-    uint64 result;
+    int32 first;
+    int32 second;
+    int32 third;
+    int64 result;
     int32 first_colon;
     int32 second_colon;
     int32 number_len;
@@ -2451,29 +2450,29 @@ action_runtime_parse_seek_position(char *text, int32 text_len, uint32 total,
             if ((text_len - first_colon - 1) != 2) {
                 return false;
             }
-            if (!ncm_parse_uint32(text, first_colon, &first, &error)
-                || !ncm_parse_uint32(text + first_colon + 1, 2, &second, &error)
+            if (!ncm_parse_int32(text, first_colon, &first, &error)
+                || !ncm_parse_int32(text + first_colon + 1, 2, &second, &error)
                 || (second > 60)) {
                 return false;
             }
-            result = (uint64)first * 60 + second;
+            result = first*60 + second;
         } else {
             if (((second_colon - first_colon - 1) != 2)
                 || ((text_len - second_colon - 1) != 2)) {
                 return false;
             }
-            if (!ncm_parse_uint32(text, first_colon, &first, &error)
-                || !ncm_parse_uint32(text + first_colon + 1, 2, &second, &error)
-                || !ncm_parse_uint32(text + second_colon + 1, 2, &third, &error)
+            if (!ncm_parse_int32(text, first_colon, &first, &error)
+                || !ncm_parse_int32(text + first_colon + 1, 2, &second, &error)
+                || !ncm_parse_int32(text + second_colon + 1, 2, &third, &error)
                 || (second > 60) || (third > 60)) {
                 return false;
             }
-            result = (uint64)first * 3600 + (uint64)second * 60 + third;
+            result = first*3600 + second*60 + third;
         }
         if (result > UINT32_MAX) {
             return false;
         }
-        *position = (uint32)result;
+        *position = result;
         return true;
     }
 
@@ -2483,7 +2482,7 @@ action_runtime_parse_seek_position(char *text, int32 text_len, uint32 total,
         if (number_len <= 0) {
             return false;
         }
-        if (!ncm_parse_uint32(text, number_len, &first, &error)) {
+        if (!ncm_parse_int32(text, number_len, &first, &error)) {
             return false;
         }
         *position = first;
@@ -2495,10 +2494,10 @@ action_runtime_parse_seek_position(char *text, int32 text_len, uint32 total,
     if (number_len <= 0) {
         return false;
     }
-    if (!ncm_parse_uint32(text, number_len, &first, &error) || (first > 100)) {
+    if (!ncm_parse_int32(text, number_len, &first, &error) || (first > 100)) {
         return false;
     }
-    *position = (uint32)(((uint64)first * total) / 100);
+    *position = (first*total) / 100;
     return true;
 }
 
@@ -3372,8 +3371,8 @@ action_runtime_current_song(NcmSong *song) {
 }
 
 static void
-action_runtime_sort_positions(uint32 *positions, int32 count, bool descending) {
-    uint32 value;
+action_runtime_sort_positions(int32 *positions, int32 count, bool descending) {
+    int32 value;
 
     if (positions == NULL) {
         return;
@@ -3399,9 +3398,9 @@ action_runtime_sort_positions(uint32 *positions, int32 count, bool descending) {
 }
 
 static bool
-action_runtime_song_positions(NcmSongArray *songs, uint32 **positions,
-                              int32 *count) {
-    uint32 *result;
+action_runtime_song_positions(NcmSongArray *songs,
+                              int32 **positions, int32 *count) {
+    int32 *result;
 
     if ((songs == NULL) || (positions == NULL) || (count == NULL)) {
         return false;
@@ -3637,7 +3636,7 @@ action_runtime_add_playlist_editor_item(bool play) {
     NativePlaylistEditorScreen *screen;
     NcmPlaylist playlist;
     NcmError error;
-    uint32 play_position;
+    int32 play_position;
     bool loaded;
     bool success;
 
@@ -3816,7 +3815,7 @@ static bool
 action_runtime_delete_main_playlist_items(void) {
     NcmSongArray songs;
     NcmError error;
-    uint32 *positions;
+    int32 *positions;
     int32 count;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
@@ -3863,7 +3862,7 @@ action_runtime_delete_playlist_editor_items(void) {
     NcmPlaylist playlist;
     NcmSongArray songs;
     NcmError error;
-    uint32 *positions;
+    int32 *positions;
     int32 count;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
@@ -4211,7 +4210,7 @@ action_runtime_crop_playlist(bool main_playlist) {
 static bool
 action_runtime_move_main_playlist_items(NcmSongArray *songs, bool down) {
     NcmError error;
-    uint32 *positions;
+    int32 *positions;
     int32 count;
     bool success;
 
@@ -4257,7 +4256,7 @@ action_runtime_move_stored_playlist_items(NcmSongArray *songs, bool down) {
     NativePlaylistEditorScreen *screen;
     NcmPlaylist playlist;
     NcmError error;
-    uint32 *positions;
+    int32 *positions;
     int64 item_count;
     int32 count;
     bool success;
@@ -4359,7 +4358,7 @@ action_runtime_move_main_playlist_items_to(void) {
     NcMenu *menu;
     NcmSong *song;
     NcmError error;
-    uint32 *positions;
+    int32 *positions;
     uint32 target;
     uint32 destination;
     int64 item_count;
@@ -4452,7 +4451,7 @@ action_runtime_move_playlist_editor_items_to(void) {
     NcMenu *menu;
     NcmSong *song;
     NcmError error;
-    uint32 *positions;
+    int32 *positions;
     uint32 target;
     uint32 destination;
     int64 item_count;
@@ -4569,7 +4568,7 @@ action_runtime_move_selected_items_to(void) {
 }
 
 static bool
-action_runtime_playlist_range(NcMenu *menu, uint32 *first, uint32 *last) {
+action_runtime_playlist_range(NcMenu *menu, int32 *first, int32 *last) {
     enum NcMenuItemSource source;
     int64 range_first;
     int64 range_last;
@@ -4723,7 +4722,7 @@ action_runtime_set_selected_items_priority(void) {
     }
 
     ncm_error_clear(&error);
-    if (!ncm_parse_uint32(input.data, input.len, &priority, &error)
+    if (!ncm_parse_int32(input.data, input.len, &priority, &error)
         || (priority > 255)) {
         ncm_buffer_destroy(&input);
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
@@ -4747,8 +4746,8 @@ action_runtime_jump_to_position_in_song(void) {
     NcmBuffer input;
     NcmError error;
     int32 song_position;
-    uint32 total;
-    uint32 target;
+    int32 total;
+    int32 target;
     bool prompted;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
@@ -5919,7 +5918,7 @@ action_runtime_toggle_screen_lock(void) {
         }
 
         ncm_error_clear(&error);
-        if (!ncm_parse_uint32(input.data, input.len, &part, &error)) {
+        if (!ncm_parse_int32(input.data, input.len, &part, &error)) {
             args[0] = ncm_string_format_arg_string(input.data, input.len);
             ncm_statusbar_format((int32)Config.message_delay_time,
                                  STRLIT_ARGS("Invalid value: %1%"), args, 1);

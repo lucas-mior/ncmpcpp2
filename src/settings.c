@@ -405,9 +405,9 @@ settings_parse_bool(char *value, int32 value_len, bool *result,
 }
 
 static bool
-settings_parse_uint32(char *value, int32 value_len, uint32 *result,
-                      NcmError *error) {
-    return ncm_parse_uint32(value, value_len, result, error);
+settings_parse_int32(char *value, int32 value_len, int32 *result,
+                     NcmError *error) {
+    return ncm_parse_int32(value, value_len, result, error);
 }
 
 static bool
@@ -471,7 +471,7 @@ settings_parse_single_color(char *value, int32 value_len, bool background,
     if (settings_color_name(value, value_len, background, result)) {
         return true;
     }
-    if (!settings_parse_uint32(value, value_len, &parsed, error)) {
+    if (!settings_parse_int32(value, value_len, &parsed, error)) {
         return false;
     }
     if (background) {
@@ -676,7 +676,7 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
         while ((end < value_len) && (value[end] != ':')) {
             end += 1;
         }
-        if (!settings_parse_uint32(value + start, end - start, &parsed,
+        if (!settings_parse_int32(value + start, end - start, &parsed,
                                    error)) {
             return false;
         }
@@ -768,7 +768,7 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
             width.len -= 1;
             width.data[width.len] = '\0';
         }
-        if (!settings_parse_uint32(width.data, width.len, &parsed_width,
+        if (!settings_parse_int32(width.data, width.len, &parsed_width,
                                    error)) {
             ncm_buffer_destroy(&width);
             ncm_buffer_destroy(&color);
@@ -974,7 +974,7 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
     static bool \
     FUNC(Configuration *config, char *value, int32 value_len, \
          NcmError *error) { \
-        return settings_parse_uint32(value, value_len, &config->FIELD, \
+        return settings_parse_int32(value, value_len, &config->FIELD, \
                                      error); \
     }
 
@@ -1078,7 +1078,7 @@ apply_mpd_port(Configuration *config, char *value, int32 value_len,
     uint32 port;
 
     (void)config;
-    if (!settings_parse_uint32(value, value_len, &port, error)) {
+    if (!settings_parse_int32(value, value_len, &port, error)) {
         return false;
     }
     if (port > 65535) {
@@ -1102,7 +1102,7 @@ apply_mpd_password(Configuration *config, char *value, int32 value_len,
 static bool
 apply_mpd_connection_timeout(Configuration *config, char *value,
                              int32 value_len, NcmError *error) {
-    if (!settings_parse_uint32(value, value_len,
+    if (!settings_parse_int32(value, value_len,
                                &config->mpd_connection_timeout, error)) {
         return false;
     }
@@ -1113,7 +1113,7 @@ apply_mpd_connection_timeout(Configuration *config, char *value,
 static bool
 apply_mpd_crossfade_time(Configuration *config, char *value, int32 value_len,
                          NcmError *error) {
-    return settings_parse_uint32(value, value_len, &config->crossfade_time,
+    return settings_parse_int32(value, value_len, &config->crossfade_time,
                                  error);
 }
 
@@ -1141,7 +1141,7 @@ apply_visualizer_look(Configuration *config, char *value, int32 value_len,
 static bool
 apply_visualizer_fps(Configuration *config, char *value, int32 value_len,
                      NcmError *error) {
-    if (!settings_parse_uint32(value, value_len, &config->visualizer_fps,
+    if (!settings_parse_int32(value, value_len, &config->visualizer_fps,
                                error)) {
         return false;
     }
@@ -1151,7 +1151,7 @@ apply_visualizer_fps(Configuration *config, char *value, int32 value_len,
 static bool
 apply_visualizer_spectrum_dft_size(Configuration *config, char *value,
                                    int32 value_len, NcmError *error) {
-    if (!settings_parse_uint32(value, value_len,
+    if (!settings_parse_int32(value, value_len,
                                &config->visualizer_spectrum_dft_size, error)) {
         return false;
     }
@@ -1221,7 +1221,7 @@ apply_system_encoding(Configuration *config, char *value, int32 value_len,
 static bool
 apply_playlist_disable_highlight_delay(Configuration *config, char *value,
                                        int32 value_len, NcmError *error) {
-    return settings_parse_uint32(
+    return settings_parse_int32(
         value, value_len, &config->playlist_disable_highlight_delay_seconds,
         error);
 }
@@ -1650,7 +1650,7 @@ apply_search_engine_default_search_mode(Configuration *config, char *value,
                                         int32 value_len, NcmError *error) {
     uint32 mode;
 
-    if (!settings_parse_uint32(value, value_len, &mode, error)) {
+    if (!settings_parse_int32(value, value_len, &mode, error)) {
         return false;
     }
     if (!ncm_bounds_check_u64(mode, 1, 3, error)) {

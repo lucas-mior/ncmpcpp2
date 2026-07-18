@@ -209,7 +209,7 @@ configuration_parse_port(char *value, int32 value_len, char *option,
                          int32 option_len, uint32 *port, NcmError *error) {
     uint32 parsed;
 
-    if (!ncm_parse_uint32(value, value_len, &parsed, error)) {
+    if (!ncm_parse_int32(value, value_len, &parsed, error)) {
         char message[192];
         int32 len;
 
@@ -735,7 +735,7 @@ configuration_apply_mpd_environment(NcmError *error) {
         }
     }
     if (env_port != NULL) {
-        if (!ncm_parse_uint32(env_port, strlen32(env_port), &port, error)) {
+        if (!ncm_parse_int32(env_port, strlen32(env_port), &port, error)) {
             return false;
         }
         if (port > 65535) {

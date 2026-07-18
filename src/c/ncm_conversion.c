@@ -210,8 +210,7 @@ ncm_parse_uint64(char *source, int32 source_len,
 }
 
 bool
-ncm_parse_uint32(char *source, int32 source_len,
-                 uint32 *out, NcmError *error) {
+ncm_parse_int32(char *source, int32 source_len, int32 *out, NcmError *error) {
     uint64 value;
 
     if (out == NULL) {

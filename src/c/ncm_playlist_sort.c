@@ -157,7 +157,7 @@ ncm_playlist_sort_indices(NcmPlaylistSortContext *context,
 bool
 ncm_playlist_sort_plan_build(
     NcmPlaylistSortPlan *plan, NcmSongArray *songs,
-    uint32 start_position, enum NcmSongGetter *getters,
+    int32 start_position, enum NcmSongGetter *getters,
     int32 getters_len, bool ignore_leading_the, NcmError *error) {
     NcmPlaylistSortPlan replacement = {0};
     NcmPlaylistSortContext context;
@@ -321,7 +321,7 @@ ncm_playlist_sort_plan_execute(NcmPlaylistSortPlan *plan,
 
 bool
 ncm_playlist_sort_range(
-    NcmSongArray *songs, uint32 start_position,
+    NcmSongArray *songs, int32 start_position,
     enum NcmSongGetter *getters, int32 getters_len,
     bool ignore_leading_the, NcmMpdClient *client,
     NcmError *error) {
