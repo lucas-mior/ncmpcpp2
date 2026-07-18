@@ -1619,7 +1619,7 @@ status_draw_alternative_elapsed_time(NcWindow *header, NcmSong *song,
     if (second_margin < 8) {
         second_margin = 8;
     }
-    second_margin = (second_margin + 1) * 2;
+    second_margin = (second_margin + 1)*2;
     second_start = player_state_len + 1;
     if (second_len < (COLS - second_margin)) {
         second_start = (COLS - second_len) / 2;

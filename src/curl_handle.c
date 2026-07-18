@@ -7,7 +7,7 @@
 
 #include "c/ncm_base.h"
 
-static size_t write_data(char *buffer, size_t size, size_t nmemb, void *data);
+static int64 write_data(char *buffer, int64 size, int64 nmemb, void *data);
 static void append_c_string(NcmBuffer *buffer, char *string, int32 string_len);
 
 void
@@ -89,11 +89,11 @@ ncm_curl_escape(NcmBuffer *out, char *string, int32 string_len) {
 }
 
 static size_t
-write_data(char *buffer, size_t size, size_t nmemb, void *data) {
-    size_t bytes;
+write_data(char *buffer, int64 size, int64 nmemb, void *data) {
+    int64 bytes;
     NcmCurlResponseWriter *writer;
 
-    bytes = size * nmemb;
+    bytes = size*nmemb;
     writer = data;
     if ((writer == NULL) || (writer->buffer == NULL)) {
         return 0;
