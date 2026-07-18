@@ -394,7 +394,6 @@ ncm_statusbar_main_hook(char *string, int32 string_len) {
     return true;
 }
 
-
 int32
 ncm_statusbar_message_delay_time(void) {
     return (int32)Config.message_delay_time;

@@ -7,7 +7,6 @@
 #include <ctype.h>
 #include <wctype.h>
 
-
 typedef struct NcScrollpadWriteState {
     NcBuffer *buffer;
     NcBufferProperty *properties;

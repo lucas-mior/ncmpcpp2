@@ -112,5 +112,4 @@ bool ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher,
                                   int32 title_len);
 void ncm_lyrics_cleanup_html(NcmBuffer *out, char *data, int32 data_len);
 
-
 #endif /* NCMPCPP_LYRICS_FETCHER_H */

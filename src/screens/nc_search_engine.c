@@ -1460,7 +1460,6 @@ native_search_append_tag_value(NcBuffer *buffer, NcmBuffer *value) {
     return;
 }
 
-
 static NcMenuDisplayCallbacks
 native_search_display_callbacks(NativeSearchEngineScreen *screen,
                                 bool filtering) {
@@ -1652,7 +1651,6 @@ native_search_print_buffer(NcWindow *window, NcBuffer *buffer) {
     }
     return;
 }
-
 
 static void
 native_search_mouse_scroll(NativeSearchEngineScreen *screen,

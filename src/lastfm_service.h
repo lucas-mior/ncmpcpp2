@@ -68,5 +68,4 @@ enum NcmLastfmServiceType ncm_lastfm_service_type(
 bool ncm_lastfm_service_fetch(NcmLastfmService *service,
                               NcmLastfmResult *result);
 
-
 #endif /* NCMPCPP_LASTFM_SERVICE_H */

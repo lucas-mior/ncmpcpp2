@@ -27,7 +27,6 @@
 
 static NcmTimePoint app_legacy_bridge_header_refresh_time;
 
-
 static void
 app_legacy_bridge_request_media_library_database_update(void *user) {
     (void)user;

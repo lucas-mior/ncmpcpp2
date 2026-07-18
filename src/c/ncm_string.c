@@ -79,7 +79,6 @@ ncm_string_starts_with(char *string, int32 string_len,
     return true;
 }
 
-
 bool
 ncm_string_ends_with(char *string, int32 string_len,
                      char *suffix, int32 suffix_len) {

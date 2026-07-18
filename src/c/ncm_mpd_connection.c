@@ -169,7 +169,6 @@ ncm_mpd_string_list_push(NcmMpdStringList *list, char *value) {
     return true;
 }
 
-
 static bool
 ncm_mpd_output_list_push(NcmMpdOutputList *list,
                          struct mpd_output *output) {
@@ -211,7 +210,6 @@ ncm_mpd_output_list_push(NcmMpdOutputList *list,
     list->count += 1;
     return true;
 }
-
 
 static bool
 ncm_mpd_playlist_list_push(NcmMpdPlaylistList *list,
@@ -466,7 +464,6 @@ ncm_mpd_connection_recv_string_list_tag(NcmMpdConnection *connection,
     mpd_response_finish(connection->mpd);
     return ncm_mpd_connection_check_error(connection);
 }
-
 
 static bool
 ncm_mpd_connection_recv_pair_list(NcmMpdConnection *connection,
@@ -1246,7 +1243,6 @@ ncm_mpd_connection_get_status(NcmMpdConnection *connection,
     return ok;
 }
 
-
 uint32
 ncm_mpd_connection_version(NcmMpdConnection *connection) {
     unsigned *version;
@@ -1740,7 +1736,6 @@ ncm_mpd_connection_update_database(NcmMpdConnection *connection,
     mpd_response_finish(connection->mpd);
     return ncm_mpd_connection_check_error(connection);
 }
-
 
 bool
 ncm_mpd_connection_get_outputs(NcmMpdConnection *connection,

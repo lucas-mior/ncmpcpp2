@@ -1155,7 +1155,6 @@ ncm_bindings_bind_group(NcmBindingsConfiguration *bindings, char *key_name,
     return true;
 }
 
-
 static bool
 ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
                                  int32 in_progress, NcmBinding *actions,
