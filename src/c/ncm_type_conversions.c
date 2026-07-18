@@ -91,6 +91,33 @@ ncm_tag_type_name(enum mpd_tag_type tag) {
         return "Comment";
     case MPD_TAG_DISC:
         return "Disc";
+    case MPD_TAG_UNKNOWN:
+    case MPD_TAG_NAME:
+    case MPD_TAG_MUSICBRAINZ_ARTISTID:
+    case MPD_TAG_MUSICBRAINZ_ALBUMID:
+    case MPD_TAG_MUSICBRAINZ_ALBUMARTISTID:
+    case MPD_TAG_MUSICBRAINZ_TRACKID:
+    case MPD_TAG_MUSICBRAINZ_RELEASETRACKID:
+    case MPD_TAG_ORIGINAL_DATE:
+    case MPD_TAG_ARTIST_SORT:
+    case MPD_TAG_ALBUM_ARTIST_SORT:
+    case MPD_TAG_ALBUM_SORT:
+    case MPD_TAG_LABEL:
+    case MPD_TAG_MUSICBRAINZ_WORKID:
+    case MPD_TAG_GROUPING:
+    case MPD_TAG_WORK:
+    case MPD_TAG_CONDUCTOR:
+    case MPD_TAG_COMPOSER_SORT:
+    case MPD_TAG_ENSEMBLE:
+    case MPD_TAG_MOVEMENT:
+    case MPD_TAG_MOVEMENTNUMBER:
+    case MPD_TAG_LOCATION:
+    case MPD_TAG_MOOD:
+    case MPD_TAG_TITLE_SORT:
+    case MPD_TAG_MUSICBRAINZ_RELEASEGROUPID:
+    case MPD_TAG_SHOWMOVEMENT:
+    case MPD_TAG_DISCSUBTITLE:
+    case MPD_TAG_COUNT:
     default:
         return "";
     }
