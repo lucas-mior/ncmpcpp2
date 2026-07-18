@@ -35,8 +35,7 @@ typedef struct NcmStatusUiHooks {
     void (*playlist_changed)(uint32 previous_version, void *user);
     void (*stored_playlists_changed)(void *user);
     void (*database_changed)(void *user);
-    void (*player_state_changed)(enum NcmStatusPlayerState state,
-                                 void *user);
+    void (*player_state_changed)(enum NcmStatusPlayerState state, void *user);
     void (*player_stopped)(void *user);
     void (*song_id_changed)(int32 song_id, void *user);
     void (*current_song_changed)(NcmSong *song, void *user);
@@ -55,14 +54,10 @@ typedef struct NcmStatusInitHooks {
 } NcmStatusInitHooks;
 
 void ncm_status_handle_client_error(NcmMpdClient *client);
-void ncm_status_handle_client_error_value(NcmMpdClient *client,
-                                          char *message,
-                                          int32 message_len,
-                                          bool clearable);
-void ncm_status_handle_server_error_value(NcmMpdClient *client,
-                                          int32 code,
-                                          char *message,
-                                          int32 message_len);
+void ncm_status_handle_client_error_value(NcmMpdClient *client, char *message,
+                                          int32 message_len, bool clearable);
+void ncm_status_handle_server_error_value(NcmMpdClient *client, int32 code,
+                                          char *message, int32 message_len);
 void ncm_status_trace(NcmMpdClient *client, bool update_timer,
                       bool update_window_timeout, NcmError *error);
 void ncm_status_set_database_update_observer(void (*callback)(void *user),
@@ -78,9 +73,8 @@ bool ncm_status_initialize_from_mpd_status(NcmMpdStatus *mpd_status,
 bool ncm_status_initialize_connection(NcmMpdClient *client, NcmError *error);
 bool ncm_status_update_full(NcmMpdClient *client, NcmStatusHooks *hooks,
                             NcmError *error);
-bool ncm_status_update_from_noidle(NcmMpdClient *client,
-                                    NcmStatusHooks *hooks,
-                                    NcmError *error);
+bool ncm_status_update_from_noidle(NcmMpdClient *client, NcmStatusHooks *hooks,
+                                   NcmError *error);
 void ncm_status_clear(void);
 
 bool ncm_status_state_consume(void);

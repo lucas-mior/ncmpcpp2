@@ -50,8 +50,7 @@ title_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
 }
 
 static void
-title_apply_formatted_color_end(NcWindow *window,
-                                NcFormattedColor *color) {
+title_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
     enum NcFormat *formats;
     int32 count;
 
@@ -107,7 +106,7 @@ title_draw_alternative(NcWindow *window, char *title, int32 title_len,
     title_apply_formatted_color_end(window, separator_color);
 
     title_width = utf8_width(title, title_len);
-    title_x = (COLS - title_width)/2;
+    title_x = (COLS - title_width) / 2;
     nc_window_go_to_xy(window, title_x, 3);
     nc_window_apply_format(window, NC_FORMAT_BOLD);
     nc_window_print_data(window, title, title_len);
@@ -144,8 +143,7 @@ ncm_window_title_set_cstring(char *title) {
 
 void
 ncm_title_draw_header_with_config(char *title, int32 title_len,
-                                  bool header_visibility,
-                                  enum Design design,
+                                  bool header_visibility, enum Design design,
                                   NcFormattedColor *volume_color,
                                   NcFormattedColor *separator_color) {
     NcWindow *window;
@@ -183,11 +181,9 @@ ncm_title_draw_header_with_config(char *title, int32 title_len,
 
 void
 ncm_title_draw_header(char *title, int32 title_len) {
-    ncm_title_draw_header_with_config(title, title_len,
-                                      Config.header_visibility,
-                                      Config.design,
-                                      &Config.volume_color,
-                                      &Config.alternative_ui_separator_color);
+    ncm_title_draw_header_with_config(
+        title, title_len, Config.header_visibility, Config.design,
+        &Config.volume_color, &Config.alternative_ui_separator_color);
     return;
 }
 

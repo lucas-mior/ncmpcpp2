@@ -67,8 +67,8 @@ app_binding_migration_screen_is_c_only(enum ScreenType type) {
 }
 
 bool
-app_binding_migration_action_is_c_safe_for_screen(
-    enum NcmActionType type, enum ScreenType screen_type) {
+app_binding_migration_action_is_c_safe_for_screen(enum NcmActionType type,
+                                                  enum ScreenType screen_type) {
     if (!app_binding_migration_screen_is_c_only(screen_type)) {
         return false;
     }
@@ -85,8 +85,8 @@ app_binding_migration_binding_is_c_safe(NcmBinding *binding) {
     }
 
     for (int32 i = 0; i < binding->actions_len; i += 1) {
-        if (!app_binding_migration_action_kind_is_c_safe(
-                binding->actions + i)) {
+        if (!app_binding_migration_action_kind_is_c_safe(binding->actions
+                                                         + i)) {
             return false;
         }
     }

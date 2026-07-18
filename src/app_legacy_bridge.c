@@ -36,8 +36,7 @@ app_legacy_bridge_request_media_library_database_update(void *user) {
 }
 
 static void
-app_legacy_bridge_refresh_playlist_related_inactive_columns(
-    void *user) {
+app_legacy_bridge_refresh_playlist_related_inactive_columns(void *user) {
     (void)user;
     if (app_controller_is_screen_visible(
             native_c_screen_media_library_native())) {
@@ -74,10 +73,10 @@ app_legacy_bridge_dispatch_lyrics_jobs(void) {
 
     native_lyrics_screen_dispatch_jobs(native_c_screen_lyrics());
     ncm_buffer_init(&message);
-    if (native_lyrics_screen_try_take_consumer_message(
-            native_c_screen_lyrics(), &message)) {
-        ncm_statusbar_print((int32)Config.message_delay_time,
-                            message.data, message.len);
+    if (native_lyrics_screen_try_take_consumer_message(native_c_screen_lyrics(),
+                                                       &message)) {
+        ncm_statusbar_print((int32)Config.message_delay_time, message.data,
+                            message.len);
     }
     ncm_buffer_destroy(&message);
     return;
@@ -88,13 +87,12 @@ app_legacy_bridge_refresh_header_if_due(void) {
     bool current_screen_uses_header_timer;
 
     current_screen_uses_header_timer = native_c_screen_playlist_is_current()
-        || native_c_screen_browser_is_current()
-        || native_c_screen_lyrics_is_current();
+                                       || native_c_screen_browser_is_current()
+                                       || native_c_screen_lyrics_is_current();
     if (!current_screen_uses_header_timer) {
         return;
     }
-    if (global_timer_elapsed_ms(app_legacy_bridge_header_refresh_time)
-        <= 500) {
+    if (global_timer_elapsed_ms(app_legacy_bridge_header_refresh_time) <= 500) {
         return;
     }
 
@@ -238,14 +236,13 @@ ncmpcpp_legacy_footer_start_y(void) {
 }
 
 NcWindow *
-ncmpcpp_legacy_window_create(int64 start_x, int64 start_y,
-                             int64 width, int64 height,
-                             NcColor color) {
+ncmpcpp_legacy_window_create(int64 start_x, int64 start_y, int64 width,
+                             int64 height, NcColor color) {
     NcWindow *window;
 
     window = malloc2(SIZEOF(*window));
-    nc_window_init(window, start_x, start_y, width, height,
-                   STRLIT_ARGS(""), color, nc_border_none());
+    nc_window_init(window, start_x, start_y, width, height, STRLIT_ARGS(""),
+                   color, nc_border_none());
     return window;
 }
 
@@ -331,8 +328,7 @@ ncmpcpp_legacy_playlist_switch_to(void) {
 void
 ncmpcpp_legacy_playlist_enable_highlighting_if_current(void) {
     if (native_c_screen_playlist_is_current()) {
-        native_playlist_screen_request_highlighting(
-            native_c_screen_playlist());
+        native_playlist_screen_request_highlighting(native_c_screen_playlist());
     }
     return;
 }
@@ -390,8 +386,7 @@ ncmpcpp_legacy_status_clear(void) {
 }
 
 bool
-ncmpcpp_legacy_update_environment(bool update_timer,
-                                  bool refresh_window,
+ncmpcpp_legacy_update_environment(bool update_timer, bool refresh_window,
                                   bool mpd_sync) {
     NcmError error;
 
@@ -418,8 +413,8 @@ ncmpcpp_legacy_execute_binding(NcmBinding *binding) {
 
     screen_type = native_c_screens_current_type();
     if (app_binding_migration_screen_is_c_only(screen_type)
-        && !app_binding_migration_binding_is_c_safe_for_screen(
-            binding, screen_type)) {
+        && !app_binding_migration_binding_is_c_safe_for_screen(binding,
+                                                               screen_type)) {
         return false;
     }
     if (!ncm_binding_can_execute_default(binding)) {
@@ -434,8 +429,8 @@ ncmpcpp_legacy_execute_action(enum NcmActionType type) {
 
     screen_type = native_c_screens_current_type();
     if (app_binding_migration_screen_is_c_only(screen_type)
-        && !app_binding_migration_action_is_c_safe_for_screen(
-            type, screen_type)) {
+        && !app_binding_migration_action_is_c_safe_for_screen(type,
+                                                              screen_type)) {
         return false;
     }
     return ncm_action_runtime_run(NULL, type);
