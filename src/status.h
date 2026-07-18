@@ -86,7 +86,7 @@ int32 ncm_status_state_current_song_position(void);
 uint32 ncm_status_state_playlist_length(void);
 uint32 ncm_status_state_elapsed_time(void);
 enum NcmStatusPlayerState ncm_status_state_player(void);
-uint32 ncm_status_state_total_time(void);
+int32 ncm_status_state_total_time(void);
 int32 ncm_status_state_volume(void);
 
 void ncm_status_changes_playlist(uint32 previous_version);
