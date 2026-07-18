@@ -959,7 +959,7 @@ ncm_mpd_connection_connect(NcmMpdConnection *connection,
     ncm_mpd_connection_disconnect(connection);
     ncm_mpd_connection_clear_error(connection);
 
-    connection->mpd = mpd_connection_new(host, port, timeout_ms);
+    connection->mpd = mpd_connection_new(host, port, (uint32)timeout_ms);
     if (connection->mpd == NULL) {
         ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
                                      (enum mpd_server_error)0, false,
@@ -1018,7 +1018,7 @@ ncm_mpd_connection_set_timeout(NcmMpdConnection *connection,
         return true;
     }
 
-    mpd_connection_set_timeout(connection->mpd, timeout_ms);
+    mpd_connection_set_timeout(connection->mpd, (uint32)timeout_ms);
     return ncm_mpd_connection_check_error(connection);
 }
 
@@ -1179,13 +1179,13 @@ ncm_mpd_connection_get_stats(NcmMpdConnection *connection,
         return false;
     }
 
-    out_stats->artists = mpd_stats_get_number_of_artists(stats);
-    out_stats->albums = mpd_stats_get_number_of_albums(stats);
-    out_stats->songs = mpd_stats_get_number_of_songs(stats);
-    out_stats->play_time = mpd_stats_get_play_time(stats);
-    out_stats->uptime = mpd_stats_get_uptime(stats);
-    out_stats->db_update_time = mpd_stats_get_db_update_time(stats);
-    out_stats->db_play_time = mpd_stats_get_db_play_time(stats);
+    out_stats->artists = (int32)mpd_stats_get_number_of_artists(stats);
+    out_stats->albums = (int32)mpd_stats_get_number_of_albums(stats);
+    out_stats->songs = (int32)mpd_stats_get_number_of_songs(stats);
+    out_stats->play_time = (int64)mpd_stats_get_play_time(stats);
+    out_stats->uptime = (int64)mpd_stats_get_uptime(stats);
+    out_stats->db_update_time = (int64)mpd_stats_get_db_update_time(stats);
+    out_stats->db_play_time = (int64)mpd_stats_get_db_play_time(stats);
 
     mpd_stats_free(stats);
     ok = ncm_mpd_connection_check_error(connection);
@@ -1220,18 +1220,18 @@ ncm_mpd_connection_get_status(NcmMpdConnection *connection,
     out_status->random = mpd_status_get_random(status);
     out_status->single = mpd_status_get_single(status);
     out_status->consume = mpd_status_get_consume(status);
-    out_status->queue_length = mpd_status_get_queue_length(status);
-    out_status->queue_version = mpd_status_get_queue_version(status);
+    out_status->queue_length = (int32)mpd_status_get_queue_length(status);
+    out_status->queue_version = (int32)mpd_status_get_queue_version(status);
     out_status->state = mpd_status_get_state(status);
-    out_status->crossfade = mpd_status_get_crossfade(status);
+    out_status->crossfade = (int32)mpd_status_get_crossfade(status);
     out_status->song_pos = mpd_status_get_song_pos(status);
     out_status->song_id = mpd_status_get_song_id(status);
     out_status->next_song_pos = mpd_status_get_next_song_pos(status);
     out_status->next_song_id = mpd_status_get_next_song_id(status);
-    out_status->elapsed_time = mpd_status_get_elapsed_time(status);
-    out_status->total_time = mpd_status_get_total_time(status);
-    out_status->kbit_rate = mpd_status_get_kbit_rate(status);
-    out_status->update_id = mpd_status_get_update_id(status);
+    out_status->elapsed_time = (int32)mpd_status_get_elapsed_time(status);
+    out_status->total_time = (int32)mpd_status_get_total_time(status);
+    out_status->kbit_rate = (int32)mpd_status_get_kbit_rate(status);
+    out_status->update_id = (int32)mpd_status_get_update_id(status);
 
     error = (char *)mpd_status_get_error(status);
     ncm_mpd_connection_cstring_copy(out_status->error,
@@ -1256,7 +1256,7 @@ ncm_mpd_connection_version(NcmMpdConnection *connection) {
         return 0;
     }
 
-    return version[1];
+    return (int32)version[1];
 }
 
 bool
@@ -1508,7 +1508,7 @@ ncm_mpd_connection_get_queue_changes(NcmMpdConnection *connection,
         return false;
     }
 
-    if (!mpd_send_queue_changes_meta(connection->mpd, version)) {
+    if (!mpd_send_queue_changes_meta(connection->mpd, (uint32)version)) {
         return ncm_mpd_connection_check_error(connection);
     }
 
@@ -1729,7 +1729,7 @@ ncm_mpd_connection_update_database(NcmMpdConnection *connection,
         return ncm_mpd_connection_check_error(connection);
     }
     if (id != NULL) {
-        *id = mpd_recv_update_id(connection->mpd);
+        *id = (int32)mpd_recv_update_id(connection->mpd);
     } else {
         mpd_recv_update_id(connection->mpd);
     }
@@ -1784,7 +1784,7 @@ ncm_mpd_connection_enable_output(NcmMpdConnection *connection,
         return false;
     }
 
-    mpd_run_enable_output(connection->mpd, id);
+    mpd_run_enable_output(connection->mpd, (uint32)id);
     return ncm_mpd_connection_check_error(connection);
 }
 
@@ -1795,7 +1795,7 @@ ncm_mpd_connection_disable_output(NcmMpdConnection *connection,
         return false;
     }
 
-    mpd_run_disable_output(connection->mpd, id);
+    mpd_run_disable_output(connection->mpd, (uint32)id);
     return ncm_mpd_connection_check_error(connection);
 }
 
@@ -1877,7 +1877,7 @@ ncm_mpd_connection_seek_pos(NcmMpdConnection *connection,
         return false;
     }
 
-    mpd_run_seek_pos(connection->mpd, pos, seconds);
+    mpd_run_seek_pos(connection->mpd, (uint32)pos, (uint32)seconds);
     return ncm_mpd_connection_check_error(connection);
 }
 
@@ -1928,7 +1928,7 @@ ncm_mpd_connection_set_crossfade(NcmMpdConnection *connection,
         return false;
     }
 
-    mpd_run_crossfade(connection->mpd, seconds);
+    mpd_run_crossfade(connection->mpd, (uint32)seconds);
     return ncm_mpd_connection_check_error(connection);
 }
 
@@ -1938,7 +1938,7 @@ ncm_mpd_connection_set_volume(NcmMpdConnection *connection, int32 vol) {
         return false;
     }
 
-    mpd_run_set_volume(connection->mpd, vol);
+    mpd_run_set_volume(connection->mpd, (uint32)vol);
     return ncm_mpd_connection_check_error(connection);
 }
 
@@ -1963,11 +1963,11 @@ ncm_mpd_connection_move(NcmMpdConnection *connection,
     }
 
     if (command_list_active) {
-        mpd_send_move(connection->mpd, from, to);
+        mpd_send_move(connection->mpd, (uint32)from, (uint32)to);
         return true;
     }
 
-    mpd_run_move(connection->mpd, from, to);
+    mpd_run_move(connection->mpd, (uint32)from, (uint32)to);
     return ncm_mpd_connection_check_error(connection);
 }
 
@@ -1981,11 +1981,11 @@ ncm_mpd_connection_swap(NcmMpdConnection *connection,
     }
 
     if (command_list_active) {
-        mpd_send_swap(connection->mpd, from, to);
+        mpd_send_swap(connection->mpd, (uint32)from, (uint32)to);
         return true;
     }
 
-    mpd_run_swap(connection->mpd, from, to);
+    mpd_run_swap(connection->mpd, (uint32)from, (uint32)to);
     return ncm_mpd_connection_check_error(connection);
 }
 
@@ -2007,7 +2007,7 @@ ncm_mpd_connection_shuffle_range(NcmMpdConnection *connection,
         return false;
     }
 
-    mpd_run_shuffle_range(connection->mpd, start, end);
+    mpd_run_shuffle_range(connection->mpd, (uint32)start, (uint32)end);
     return ncm_mpd_connection_check_error(connection);
 }
 
@@ -2031,11 +2031,11 @@ ncm_mpd_connection_set_priority_id(NcmMpdConnection *connection,
     }
 
     if (command_list_active) {
-        mpd_send_prio_id(connection->mpd, prio, id);
+        mpd_send_prio_id(connection->mpd, (uint32)prio, (uint32)id);
         return true;
     }
 
-    mpd_run_prio_id(connection->mpd, prio, id);
+    mpd_run_prio_id(connection->mpd, (uint32)prio, (uint32)id);
     return ncm_mpd_connection_check_error(connection);
 }
 
@@ -2110,7 +2110,7 @@ ncm_mpd_connection_delete(NcmMpdConnection *connection,
         return false;
     }
 
-    mpd_send_delete(connection->mpd, pos);
+    mpd_send_delete(connection->mpd, (uint32)pos);
     if (command_list_active) {
         return true;
     }
@@ -2158,7 +2158,7 @@ ncm_mpd_connection_playlist_move(NcmMpdConnection *connection,
         return false;
     }
 
-    mpd_send_playlist_move(connection->mpd, playlist, from, to);
+    mpd_send_playlist_move(connection->mpd, playlist, (uint32)from, (uint32)to);
     if (command_list_active) {
         return true;
     }
@@ -2176,7 +2176,7 @@ ncm_mpd_connection_playlist_delete(NcmMpdConnection *connection,
         return false;
     }
 
-    mpd_send_playlist_delete(connection->mpd, playlist, pos);
+    mpd_send_playlist_delete(connection->mpd, playlist, (uint32)pos);
     if (command_list_active) {
         return true;
     }
