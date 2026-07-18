@@ -108,7 +108,8 @@ static void visualizer_mouse_button_pressed_callback(NcScreen *screen,
 static bool visualizer_is_lockable_callback(NcScreen *screen);
 static bool visualizer_is_mergable_callback(NcScreen *screen);
 static void visualizer_destroy_callback(NcScreen *screen);
-static int32 native_visualizer_next_type(int32 type);
+static enum NativeVisualizerType native_visualizer_next_type(
+    enum NativeVisualizerType type);
 static int32 visualizer_system_open_fifo(void *user, char *location,
                                          int32 location_len);
 static int32 visualizer_system_open_udp(void *user, char *location,
@@ -2300,13 +2301,25 @@ visualizer_destroy_callback(NcScreen *screen) {
     return;
 }
 
-static int32
-native_visualizer_next_type(int32 type) {
-    type += 1;
-    if (type >= NATIVE_VISUALIZER_TYPE_LAST) {
-        type = 0;
+static enum NativeVisualizerType
+native_visualizer_next_type(enum NativeVisualizerType type) {
+    switch (type) {
+    case NATIVE_VISUALIZER_WAVE:
+        return NATIVE_VISUALIZER_WAVE_FILLED;
+#if defined(HAVE_FFTW3_H)
+    case NATIVE_VISUALIZER_WAVE_FILLED:
+        return NATIVE_VISUALIZER_FREQUENCY;
+    case NATIVE_VISUALIZER_FREQUENCY:
+        return NATIVE_VISUALIZER_ELLIPSE;
+#else
+    case NATIVE_VISUALIZER_WAVE_FILLED:
+        return NATIVE_VISUALIZER_ELLIPSE;
+#endif
+    case NATIVE_VISUALIZER_ELLIPSE:
+    case NATIVE_VISUALIZER_TYPE_LAST:
+    default:
+        return NATIVE_VISUALIZER_WAVE;
     }
-    return type;
 }
 
 #endif /* NCMPCPP_NC_VISUALIZER_C */
