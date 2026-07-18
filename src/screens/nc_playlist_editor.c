@@ -1193,7 +1193,7 @@ playlist_editor_format_content_search_text(
         return false;
     }
 
-    if (Config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
+    if (Config.playlist_editor_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
         ncm_display_song_row(buffer, &Config.song_columns_mode_format,
                              song, NCM_FORMAT_FLAG_ALL);
     } else {

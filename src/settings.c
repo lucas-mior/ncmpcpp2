@@ -761,8 +761,6 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
     int32 pos;
     int32 last_relative;
     int32 stretch_limit;
-    enum NcmSongGetter getters[64];
-    int32 getters_len;
 
     column_array_clear(&config->columns);
     ncm_format_ast_clear(&config->song_columns_mode_format);
@@ -883,26 +881,13 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
         config->columns.items[last_relative].stretch_limit = stretch_limit;
     }
 
-    getters_len = 0;
     for (int32 i = 0; i < config->columns.len; i += 1) {
         Column *column;
 
         column = &config->columns.items[i];
-        for (int32 j = 0; j < column->type_len; j += 1) {
-            enum NcmSongGetter getter;
-
-            getter = ncm_song_getter_from_char(column->type[j]);
-            if ((getter != NCM_SONG_GETTER_NONE)
-                && (getters_len < (int32)LENGTH(getters))) {
-                getters[getters_len] = getter;
-                getters_len += 1;
-            }
-        }
-    }
-    if (getters_len > 0) {
-        if (!ncm_format_ast_append_first_of_getters(
-                &config->song_columns_mode_format, getters,
-                getters_len)) {
+        if (!ncm_format_ast_append_column_types(
+                &config->song_columns_mode_format, column->type,
+                column->type_len)) {
             settings_error(error, STRLIT_ARGS("failed to build column format"));
             return false;
         }

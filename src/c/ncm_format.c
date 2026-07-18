@@ -407,13 +407,44 @@ ncm_format_ast_move(NcmFormatAst *dest, NcmFormatAst *source) {
 }
 
 bool
-ncm_format_ast_append_first_of_getters(NcmFormatAst *ast,
-                                       enum NcmSongGetter *getters,
-                                       int32 getters_len) {
+ncm_format_ast_append_column_types(NcmFormatAst *ast,
+                                   char *types, int32 types_len) {
     NcmFormatExpr *first;
+    NcmFormatExpr *separator;
+    enum NcmSongGetter getter;
+    int32 getters_len;
 
+    if (ast == NULL) {
+        return false;
+    }
+    if (types_len < 0) {
+        return false;
+    }
+    if (types_len == 0) {
+        return true;
+    }
+    if (types == NULL) {
+        return false;
+    }
+
+    getters_len = 0;
+    for (int32 i = 0; i < types_len; i += 1) {
+        getter = ncm_song_getter_from_char(types[i]);
+        if (getter != NCM_SONG_GETTER_NONE) {
+            getters_len += 1;
+        }
+    }
     if (getters_len <= 0) {
         return true;
+    }
+
+    if (ast->root.len > 0) {
+        separator = ncm_format_expr_list_append(&ast->root);
+        if (separator == NULL) {
+            return false;
+        }
+        separator->type = NCM_FORMAT_EXPR_TEXT;
+        ncm_buffer_append_byte(&separator->value.text, ' ');
     }
 
     first = ncm_format_expr_list_append(&ast->root);
@@ -423,15 +454,19 @@ ncm_format_ast_append_first_of_getters(NcmFormatAst *ast,
     first->type = NCM_FORMAT_EXPR_FIRST_OF;
     ncm_format_expr_list_init(&first->value.list);
 
-    for (int32 i = 0; i < getters_len; i += 1) {
+    for (int32 i = 0; i < types_len; i += 1) {
         NcmFormatExpr *tag;
 
+        getter = ncm_song_getter_from_char(types[i]);
+        if (getter == NCM_SONG_GETTER_NONE) {
+            continue;
+        }
         tag = ncm_format_expr_list_append(&first->value.list);
         if (tag == NULL) {
             return false;
         }
         tag->type = NCM_FORMAT_EXPR_SONG_TAG;
-        tag->value.song_tag.getter = getters[i];
+        tag->value.song_tag.getter = getter;
         tag->value.song_tag.delimiter = 0;
     }
     return true;
