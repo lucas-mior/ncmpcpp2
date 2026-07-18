@@ -447,6 +447,7 @@ lyrics_type_name(enum NcmLyricsFetcherType type, int32 *len) {
     case NCM_LYRICS_FETCHER_TAGS:
         *len = STRLIT_LEN("tags");
         return "tags";
+    case NCM_LYRICS_FETCHER_UNKNOWN:
     default:
         *len = 0;
         return "";
@@ -474,6 +475,9 @@ lyrics_type_site(enum NcmLyricsFetcherType type, int32 *len) {
     case NCM_LYRICS_FETCHER_ZENESZOVEG:
         *len = STRLIT_LEN("zeneszoveg.hu");
         return "zeneszoveg.hu";
+    case NCM_LYRICS_FETCHER_UNKNOWN:
+    case NCM_LYRICS_FETCHER_INTERNET:
+    case NCM_LYRICS_FETCHER_TAGS:
     default:
         *len = 0;
         return "";
@@ -501,6 +505,9 @@ lyrics_type_regex(enum NcmLyricsFetcherType type, int32 *len) {
     case NCM_LYRICS_FETCHER_ZENESZOVEG:
         *len = STRLIT_LEN("lyrics-plain-text trans_original");
         return "lyrics-plain-text trans_original";
+    case NCM_LYRICS_FETCHER_UNKNOWN:
+    case NCM_LYRICS_FETCHER_INTERNET:
+    case NCM_LYRICS_FETCHER_TAGS:
     default:
         *len = 0;
         return "";
@@ -690,6 +697,9 @@ lyrics_extract_content(NcmLyricsFetcherDef *fetcher, NcmBuffer *out,
             STRLIT_ARGS("<div class=\"lyrics-plain-text trans_original\">"),
             STRLIT_ARGS("</div>"));
         break;
+    case NCM_LYRICS_FETCHER_UNKNOWN:
+    case NCM_LYRICS_FETCHER_INTERNET:
+    case NCM_LYRICS_FETCHER_TAGS:
     default:
         ncm_buffer_clear(out);
         break;
