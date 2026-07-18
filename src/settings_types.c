@@ -18,28 +18,19 @@ static NcmArrayItemCallbacks settings_formatted_color_callbacks = {
 };
 
 NCM_ARRAY_DEFINE_INIT(ncm_int32_array, NcmInt32Array)
-NCM_ARRAY_DEFINE_CLEAR(ncm_int32_array,
-                       NcmInt32Array,
-                       &settings_no_callbacks)
+NCM_ARRAY_DEFINE_CLEAR(ncm_int32_array, NcmInt32Array, &settings_no_callbacks)
 NCM_ARRAY_DEFINE_DESTROY(ncm_int32_array, NcmInt32Array)
 NCM_ARRAY_DEFINE_RESERVE(ncm_int32_array, NcmInt32Array)
-NCM_ARRAY_DEFINE_APPEND(ncm_int32_array,
-                        NcmInt32Array,
-                        int32,
+NCM_ARRAY_DEFINE_APPEND(ncm_int32_array, NcmInt32Array, int32,
                         &settings_no_callbacks)
 
 NCM_ARRAY_DEFINE_INIT(ncm_formatted_color_array, NcmFormattedColorArray)
-NCM_ARRAY_DEFINE_CLEAR(ncm_formatted_color_array,
-                       NcmFormattedColorArray,
+NCM_ARRAY_DEFINE_CLEAR(ncm_formatted_color_array, NcmFormattedColorArray,
                        &settings_formatted_color_callbacks)
-NCM_ARRAY_DEFINE_DESTROY(ncm_formatted_color_array,
-                         NcmFormattedColorArray)
-NCM_ARRAY_DEFINE_RESERVE(ncm_formatted_color_array,
-                         NcmFormattedColorArray)
-NCM_ARRAY_DEFINE_APPEND(ncm_formatted_color_array,
-                        NcmFormattedColorArray,
-                        NcFormattedColor,
-                        &settings_formatted_color_callbacks)
+NCM_ARRAY_DEFINE_DESTROY(ncm_formatted_color_array, NcmFormattedColorArray)
+NCM_ARRAY_DEFINE_RESERVE(ncm_formatted_color_array, NcmFormattedColorArray)
+NCM_ARRAY_DEFINE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
+                        NcFormattedColor, &settings_formatted_color_callbacks)
 
 static void
 settings_string_destroy(char **data, int32 *len, int32 *cap) {
@@ -109,7 +100,7 @@ column_array_destroy(ColumnArray *array) {
     }
     column_array_clear(array);
     if (array->items) {
-        free2(array->items, array->cap*SIZEOF(*array->items));
+        free2(array->items, array->cap * SIZEOF(*array->items));
     }
     column_array_init(array);
     return;
@@ -142,8 +133,8 @@ column_array_reserve(ColumnArray *array, int32 extra) {
         new_cap *= 2;
     }
 
-    array->items = realloc2(array->items, old_cap, new_cap,
-                          SIZEOF(*array->items));
+    array->items
+        = realloc2(array->items, old_cap, new_cap, SIZEOF(*array->items));
     array->cap = new_cap;
     return true;
 }
@@ -185,7 +176,7 @@ screen_type_array_destroy(ScreenTypeArray *array) {
         return;
     }
     if (array->items) {
-        free2(array->items, array->cap*SIZEOF(*array->items));
+        free2(array->items, array->cap * SIZEOF(*array->items));
     }
     screen_type_array_init(array);
     return;
@@ -218,8 +209,8 @@ screen_type_array_reserve(ScreenTypeArray *array, int32 extra) {
         new_cap *= 2;
     }
 
-    array->items = realloc2(array->items, old_cap, new_cap,
-                          SIZEOF(*array->items));
+    array->items
+        = realloc2(array->items, old_cap, new_cap, SIZEOF(*array->items));
     array->cap = new_cap;
     return true;
 }

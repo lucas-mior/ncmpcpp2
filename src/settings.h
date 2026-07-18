@@ -58,12 +58,9 @@ NCM_ARRAY_DECLARE_APPEND(ncm_int32_array, NcmInt32Array, int32)
 NCM_ARRAY_DECLARE_TYPE(NcmFormattedColorArray, NcFormattedColor)
 NCM_ARRAY_DECLARE_INIT(ncm_formatted_color_array, NcmFormattedColorArray)
 NCM_ARRAY_DECLARE_CLEAR(ncm_formatted_color_array, NcmFormattedColorArray)
-NCM_ARRAY_DECLARE_DESTROY(ncm_formatted_color_array,
-                          NcmFormattedColorArray)
-NCM_ARRAY_DECLARE_RESERVE(ncm_formatted_color_array,
-                          NcmFormattedColorArray)
-NCM_ARRAY_DECLARE_APPEND(ncm_formatted_color_array,
-                         NcmFormattedColorArray,
+NCM_ARRAY_DECLARE_DESTROY(ncm_formatted_color_array, NcmFormattedColorArray)
+NCM_ARRAY_DECLARE_RESERVE(ncm_formatted_color_array, NcmFormattedColorArray)
+NCM_ARRAY_DECLARE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
                          NcFormattedColor)
 
 typedef struct Configuration {
@@ -275,10 +272,8 @@ void screen_type_array_clear(ScreenTypeArray *array);
 void configuration_init(Configuration *config);
 void configuration_destroy(Configuration *config);
 void configuration_clear(Configuration *config);
-bool configuration_read(Configuration *config,
-                        NcmStringViewArray *config_paths,
-                        bool ignore_errors, bool quiet,
-                        NcmError *error);
+bool configuration_read(Configuration *config, NcmStringViewArray *config_paths,
+                        bool ignore_errors, bool quiet, NcmError *error);
 
 extern Configuration Config;
 

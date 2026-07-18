@@ -27,8 +27,8 @@ static bool lastfm_fetch_artist_info(NcmLastfmService *service,
                                      NcmLastfmResult *result);
 
 static bool
-lastfm_string_set(char **data, int32 *len, int32 *cap,
-                  char *source, int32 source_len) {
+lastfm_string_set(char **data, int32 *len, int32 *cap, char *source,
+                  int32 source_len) {
     char *new_data;
     int32 new_cap;
 
@@ -71,8 +71,7 @@ ncm_lastfm_result_destroy(NcmLastfmResult *result) {
     if (result == NULL) {
         return;
     }
-    lastfm_string_destroy(&result->text, &result->text_len,
-                          &result->text_cap);
+    lastfm_string_destroy(&result->text, &result->text_len, &result->text_cap);
     result->success = false;
     return;
 }
@@ -82,20 +81,19 @@ ncm_lastfm_result_clear(NcmLastfmResult *result) {
     if (result == NULL) {
         return;
     }
-    lastfm_string_destroy(&result->text, &result->text_len,
-                          &result->text_cap);
+    lastfm_string_destroy(&result->text, &result->text_len, &result->text_cap);
     result->success = false;
     return;
 }
 
 bool
-ncm_lastfm_result_set(NcmLastfmResult *result, bool success,
-                      char *text, int32 text_len) {
+ncm_lastfm_result_set(NcmLastfmResult *result, bool success, char *text,
+                      int32 text_len) {
     if (result == NULL) {
         return false;
     }
-    if (!lastfm_string_set(&result->text, &result->text_len,
-                           &result->text_cap, text, text_len)) {
+    if (!lastfm_string_set(&result->text, &result->text_len, &result->text_cap,
+                           text, text_len)) {
         return false;
     }
     result->success = success;
@@ -155,12 +153,11 @@ ncm_lastfm_service_equal(NcmLastfmService *left, NcmLastfmService *right) {
     if (left->type != right->type) {
         return false;
     }
-    if (!STREQUAL(left->artist, left->artist_len,
-                          right->artist, right->artist_len)) {
+    if (!STREQUAL(left->artist, left->artist_len, right->artist,
+                  right->artist_len)) {
         return false;
     }
-    return STREQUAL(left->lang, left->lang_len,
-                            right->lang, right->lang_len);
+    return STREQUAL(left->lang, left->lang_len, right->lang, right->lang_len);
 }
 
 char *
@@ -181,8 +178,7 @@ ncm_lastfm_service_type(NcmLastfmService *service) {
 }
 
 bool
-ncm_lastfm_service_fetch(NcmLastfmService *service,
-                         NcmLastfmResult *result) {
+ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
     if ((service == NULL) || (result == NULL)) {
         return false;
     }
@@ -195,9 +191,9 @@ ncm_lastfm_service_fetch(NcmLastfmService *service,
 }
 
 static CURLcode
-lastfm_curl_perform(NcmBuffer *data, char *url, int32 url_len,
-                    char *referer, int32 referer_len,
-                    bool follow_redirect, int32 timeout_seconds) {
+lastfm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
+                    int32 referer_len, bool follow_redirect,
+                    int32 timeout_seconds) {
     if (lastfm_test_perform != NULL) {
         return lastfm_test_perform(data, url, url_len, referer, referer_len,
                                    follow_redirect, timeout_seconds,
@@ -210,8 +206,7 @@ lastfm_curl_perform(NcmBuffer *data, char *url, int32 url_len,
 static CURLcode
 lastfm_curl_escape(NcmBuffer *out, char *string, int32 string_len) {
     if (lastfm_test_escape != NULL) {
-        return lastfm_test_escape(out, string, string_len,
-                                  lastfm_test_user);
+        return lastfm_test_escape(out, string, string_len, lastfm_test_user);
     }
     return ncm_curl_escape(out, string, string_len);
 }
@@ -255,8 +250,8 @@ lastfm_find(char *data, int32 data_len, char *needle, int32 needle_len,
         start = 0;
     }
     for (int32 i = start; i + needle_len <= data_len; i += 1) {
-        if (ncm_string_starts_with(data + i, data_len - i,
-                                   needle, needle_len)) {
+        if (ncm_string_starts_with(data + i, data_len - i, needle,
+                                   needle_len)) {
             return i;
         }
     }
@@ -264,9 +259,8 @@ lastfm_find(char *data, int32 data_len, char *needle, int32 needle_len,
 }
 
 static bool
-lastfm_extract_between(NcmBuffer *out, char *data, int32 data_len,
-                       char *start, int32 start_len, char *end,
-                       int32 end_len) {
+lastfm_extract_between(NcmBuffer *out, char *data, int32 data_len, char *start,
+                       int32 start_len, char *end, int32 end_len) {
     int32 a;
     int32 b;
 
@@ -292,14 +286,13 @@ lastfm_trim_view(char **data, int32 *len) {
     text = *data;
     text_len = *len;
     while ((text_len > 0)
-           && ((text[0] == ' ') || (text[0] == '\t')
-               || (text[0] == '\n') || (text[0] == '\r'))) {
+           && ((text[0] == ' ') || (text[0] == '\t') || (text[0] == '\n')
+               || (text[0] == '\r'))) {
         text += 1;
         text_len -= 1;
     }
     while ((text_len > 0)
-           && ((text[text_len - 1] == ' ')
-               || (text[text_len - 1] == '\t')
+           && ((text[text_len - 1] == ' ') || (text[text_len - 1] == '\t')
                || (text[text_len - 1] == '\n')
                || (text[text_len - 1] == '\r'))) {
         text_len -= 1;
@@ -344,8 +337,8 @@ lastfm_strip_unescape_trim(NcmBuffer *out, char *data, int32 data_len) {
 static void
 lastfm_append_similars(NcmBuffer *out, char *data, int32 data_len,
                        char *section_start, int32 section_start_len,
-                       char *section_end, int32 section_end_len,
-                       char *heading, int32 heading_len) {
+                       char *section_end, int32 section_end_len, char *heading,
+                       int32 heading_len) {
     int32 a;
     int32 b;
     int32 pos;
@@ -409,8 +402,7 @@ lastfm_append_similars(NcmBuffer *out, char *data, int32 data_len,
 }
 
 static bool
-lastfm_fetch_artist_info(NcmLastfmService *service,
-                         NcmLastfmResult *result) {
+lastfm_fetch_artist_info(NcmLastfmService *service, NcmLastfmResult *result) {
     NcmBuffer url;
     NcmBuffer data;
     NcmBuffer content;
@@ -436,8 +428,7 @@ lastfm_fetch_artist_info(NcmLastfmService *service,
         lastfm_append_escaped(&url, service->lang, service->lang_len);
     }
 
-    code = lastfm_curl_perform(&data, url.data, url.len, NULL, 0,
-                               false, 10);
+    code = lastfm_curl_perform(&data, url.data, url.len, NULL, 0, false, 10);
     if (code != CURLE_OK) {
         char *message = (char *)curl_easy_strerror(code);
         ncm_lastfm_result_set(result, false, message, strlen32(message));
@@ -465,16 +456,13 @@ lastfm_fetch_artist_info(NcmLastfmService *service,
     lastfm_strip_unescape_trim(&desc, content.data, content.len);
     ncm_buffer_append(&output, desc.data, desc.len);
     lastfm_append_similars(&output, data.data, data.len,
-                           STRLIT_ARGS("<similar>"),
-                           STRLIT_ARGS("</similar>"),
+                           STRLIT_ARGS("<similar>"), STRLIT_ARGS("</similar>"),
                            STRLIT_ARGS("\n\nSimilar artists:\n"));
-    lastfm_append_similars(&output, data.data, data.len,
-                           STRLIT_ARGS("<tags>"),
+    lastfm_append_similars(&output, data.data, data.len, STRLIT_ARGS("<tags>"),
                            STRLIT_ARGS("</tags>"),
                            STRLIT_ARGS("\n\nSimilar tags:\n"));
     if (lastfm_extract_between(&original_link, data.data, data.len,
-                               STRLIT_ARGS("<url>"),
-                               STRLIT_ARGS("</url>"))) {
+                               STRLIT_ARGS("<url>"), STRLIT_ARGS("</url>"))) {
         NcmBuffer clean_url;
 
         ncm_buffer_init(&clean_url);

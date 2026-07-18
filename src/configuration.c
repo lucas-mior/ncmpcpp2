@@ -113,8 +113,8 @@ configuration_append_default_file(NcmBufferArray *paths, char *filename,
     result = ncm_fs_join(&directory, directory.data, directory.len,
                          STRLIT_ARGS("ncmpcpp"));
     if (result) {
-        result = ncm_fs_join(&path, directory.data, directory.len,
-                             filename, filename_len);
+        result = ncm_fs_join(&path, directory.data, directory.len, filename,
+                             filename_len);
     }
     if (result) {
         result = configuration_append_buffer_path(paths, &path);
@@ -136,8 +136,8 @@ configuration_append_legacy_file(NcmBufferArray *paths, char *filename,
     ncm_buffer_init(&path);
 
     ncm_buffer_append(&directory, STRLIT_ARGS("~/.ncmpcpp"));
-    result = ncm_fs_join(&path, directory.data, directory.len,
-                         filename, filename_len);
+    result = ncm_fs_join(&path, directory.data, directory.len, filename,
+                         filename_len);
     if (result) {
         result = configuration_append_buffer_path(paths, &path);
     }
@@ -169,7 +169,7 @@ configuration_discover_default_paths(NcmBufferArray *config_paths,
                                                   STRLIT_ARGS("bindings"));
     result = result
              && configuration_append_legacy_file(bindings_paths,
-                                                  STRLIT_ARGS("bindings"));
+                                                 STRLIT_ARGS("bindings"));
     if (!result) {
         ncm_error_set(error, ENOMEM,
                       STRLIT_ARGS("failed to build default paths"));
@@ -185,16 +185,14 @@ configuration_copy_string(NcmBuffer *buffer, char *string, int32 string_len) {
 }
 
 static bool
-configuration_require_value(int32 argc, char **argv, int32 *i,
-                            char *option, int32 option_len,
-                            char **value, int32 *value_len,
+configuration_require_value(int32 argc, char **argv, int32 *i, char *option,
+                            int32 option_len, char **value, int32 *value_len,
                             NcmError *error) {
     if (*i + 1 >= argc) {
         char message[128];
         int32 len;
 
-        len = SNPRINTF(message,
-                       "option '%.*s' requires an argument",
+        len = SNPRINTF(message, "option '%.*s' requires an argument",
                        option_len, option);
         ncm_error_set(error, EINVAL, message, len);
         return false;
@@ -208,8 +206,7 @@ configuration_require_value(int32 argc, char **argv, int32 *i,
 
 static bool
 configuration_parse_port(char *value, int32 value_len, char *option,
-                         int32 option_len, uint32 *port,
-                         NcmError *error) {
+                         int32 option_len, uint32 *port, NcmError *error) {
     uint32 parsed;
 
     if (!ncm_parse_uint32(value, value_len, &parsed, error)) {
@@ -239,8 +236,8 @@ configuration_is_flag_short_option(char c) {
 
 static bool
 configuration_is_value_short_option(char c) {
-    return (c == 'h') || (c == 'p') || (c == 'c') || (c == 'b')
-           || (c == 's') || (c == 'S');
+    return (c == 'h') || (c == 'p') || (c == 'c') || (c == 'b') || (c == 's')
+           || (c == 'S');
 }
 
 static bool
@@ -268,9 +265,8 @@ configuration_looks_like_option(char *arg, int32 arg_len) {
 }
 
 static bool
-configuration_parse_short_option(NcmConfigurationOptions *options,
-                                 int32 argc, char **argv, int32 *i,
-                                 NcmError *error) {
+configuration_parse_short_option(NcmConfigurationOptions *options, int32 argc,
+                                 char **argv, int32 *i, NcmError *error) {
     char *arg;
     int32 arg_len;
     bool all_flags;
@@ -300,8 +296,7 @@ configuration_parse_short_option(NcmConfigurationOptions *options,
         char message[128];
         int32 len;
 
-        len = SNPRINTF(message,
-                       "unrecognized option '-%c'", c);
+        len = SNPRINTF(message, "unrecognized option '-%c'", c);
         ncm_error_set(error, EINVAL, message, len);
         return false;
     }
@@ -312,8 +307,8 @@ configuration_parse_short_option(NcmConfigurationOptions *options,
     if (arg_len > 2) {
         value = arg + 2;
         value_len = arg_len - 2;
-    } else if (!configuration_require_value(argc, argv, i, option, 2,
-                                            &value, &value_len, error)) {
+    } else if (!configuration_require_value(argc, argv, i, option, 2, &value,
+                                            &value_len, error)) {
         return false;
     }
 
@@ -330,12 +325,12 @@ configuration_parse_short_option(NcmConfigurationOptions *options,
         options->port_provided = true;
         break;
     case 'c':
-        command_line_options_append_path(&options->config_paths,
-                                         value, value_len);
+        command_line_options_append_path(&options->config_paths, value,
+                                         value_len);
         break;
     case 'b':
-        command_line_options_append_path(&options->bindings_paths,
-                                         value, value_len);
+        command_line_options_append_path(&options->bindings_paths, value,
+                                         value_len);
         break;
     case 's':
         options->screen = true;
@@ -343,8 +338,8 @@ configuration_parse_short_option(NcmConfigurationOptions *options,
         break;
     case 'S':
         options->slave_screen = true;
-        configuration_copy_string(&options->slave_screen_name,
-                                  value, value_len);
+        configuration_copy_string(&options->slave_screen_name, value,
+                                  value_len);
         break;
     default:
         break;
@@ -353,9 +348,8 @@ configuration_parse_short_option(NcmConfigurationOptions *options,
 }
 
 static bool
-configuration_parse_long_option(NcmConfigurationOptions *options,
-                                int32 argc, char **argv, int32 *i,
-                                NcmError *error) {
+configuration_parse_long_option(NcmConfigurationOptions *options, int32 argc,
+                                char **argv, int32 *i, NcmError *error) {
     char *arg;
     char *name;
     char *value;
@@ -413,46 +407,41 @@ configuration_parse_long_option(NcmConfigurationOptions *options,
             return false;
         }
         options->port_provided = true;
-    } else if (STREQUAL(name, name_len,
-                                STRLIT_ARGS("current-song"))) {
+    } else if (STREQUAL(name, name_len, STRLIT_ARGS("current-song"))) {
         options->current_song = true;
         if (value != NULL) {
-            configuration_copy_string(&options->current_song_format,
-                                      value, value_len);
+            configuration_copy_string(&options->current_song_format, value,
+                                      value_len);
         } else if ((*i + 1 < argc)
                    && !configuration_looks_like_option(
-                          argv[*i + 1],
-                          strlen32(argv[*i + 1]))) {
+                       argv[*i + 1], strlen32(argv[*i + 1]))) {
             *i += 1;
-            configuration_copy_string(&options->current_song_format,
-                                      argv[*i], strlen32(argv[*i]));
+            configuration_copy_string(&options->current_song_format, argv[*i],
+                                      strlen32(argv[*i]));
         }
     } else if (STREQUAL(name, name_len, STRLIT_ARGS("config"))) {
         REQUIRE_LONG_VALUE();
-        command_line_options_append_path(&options->config_paths,
-                                         value, value_len);
-    } else if (STREQUAL(name, name_len,
-                                STRLIT_ARGS("ignore-config-errors"))) {
+        command_line_options_append_path(&options->config_paths, value,
+                                         value_len);
+    } else if (STREQUAL(name, name_len, STRLIT_ARGS("ignore-config-errors"))) {
         REJECT_LONG_VALUE();
         options->ignore_config_errors = true;
-    } else if (STREQUAL(name, name_len,
-                                STRLIT_ARGS("test-lyrics-fetchers"))) {
+    } else if (STREQUAL(name, name_len, STRLIT_ARGS("test-lyrics-fetchers"))) {
         REJECT_LONG_VALUE();
         options->test_lyrics_fetchers = true;
     } else if (STREQUAL(name, name_len, STRLIT_ARGS("bindings"))) {
         REQUIRE_LONG_VALUE();
-        command_line_options_append_path(&options->bindings_paths,
-                                         value, value_len);
+        command_line_options_append_path(&options->bindings_paths, value,
+                                         value_len);
     } else if (STREQUAL(name, name_len, STRLIT_ARGS("screen"))) {
         REQUIRE_LONG_VALUE();
         options->screen = true;
         configuration_copy_string(&options->screen_name, value, value_len);
-    } else if (STREQUAL(name, name_len,
-                                STRLIT_ARGS("slave-screen"))) {
+    } else if (STREQUAL(name, name_len, STRLIT_ARGS("slave-screen"))) {
         REQUIRE_LONG_VALUE();
         options->slave_screen = true;
-        configuration_copy_string(&options->slave_screen_name,
-                                  value, value_len);
+        configuration_copy_string(&options->slave_screen_name, value,
+                                  value_len);
     } else if (STREQUAL(name, name_len, STRLIT_ARGS("help"))) {
         REJECT_LONG_VALUE();
         options->help = true;
@@ -466,8 +455,7 @@ configuration_parse_long_option(NcmConfigurationOptions *options,
         char message[128];
         int32 len;
 
-        len = SNPRINTF(message,
-                       "unrecognized option '--%.*s'", name_len, name);
+        len = SNPRINTF(message, "unrecognized option '--%.*s'", name_len, name);
         ncm_error_set(error, EINVAL, message, len);
         return false;
     }
@@ -479,9 +467,8 @@ configuration_parse_long_option(NcmConfigurationOptions *options,
 }
 
 bool
-ncm_configuration_options_parse(NcmConfigurationOptions *options,
-                                 int32 argc, char **argv,
-                                 NcmError *error) {
+ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
+                                char **argv, NcmError *error) {
     for (int32 i = 1; i < argc; i += 1) {
         char *arg;
         int32 arg_len;
@@ -493,8 +480,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options,
                 char message[192];
                 int32 len;
 
-                len = SNPRINTF(message,
-                               "unexpected positional argument '%s'",
+                len = SNPRINTF(message, "unexpected positional argument '%s'",
                                argv[i + 1]);
                 ncm_error_set(error, EINVAL, message, len);
                 return false;
@@ -502,21 +488,20 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options,
             break;
         }
         if (ncm_string_starts_with(arg, arg_len, STRLIT_ARGS("--"))) {
-            if (!configuration_parse_long_option(options, argc, argv,
-                                                 &i, error)) {
+            if (!configuration_parse_long_option(options, argc, argv, &i,
+                                                 error)) {
                 return false;
             }
         } else if ((arg_len > 1) && (arg[0] == '-')) {
-            if (!configuration_parse_short_option(options, argc, argv,
-                                                  &i, error)) {
+            if (!configuration_parse_short_option(options, argc, argv, &i,
+                                                  error)) {
                 return false;
             }
         } else {
             char message[192];
             int32 len;
 
-            len = SNPRINTF(message,
-                           "unexpected positional argument '%.*s'",
+            len = SNPRINTF(message, "unexpected positional argument '%.*s'",
                            arg_len, arg);
             ncm_error_set(error, EINVAL, message, len);
             return false;
@@ -530,9 +515,8 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options,
 
         ncm_buffer_array_init(&default_config_paths);
         ncm_buffer_array_init(&default_bindings_paths);
-        if (!configuration_discover_default_paths(&default_config_paths,
-                                                  &default_bindings_paths,
-                                                  error)) {
+        if (!configuration_discover_default_paths(
+                &default_config_paths, &default_bindings_paths, error)) {
             ncm_buffer_array_destroy(&default_config_paths);
             ncm_buffer_array_destroy(&default_bindings_paths);
             return false;
@@ -570,8 +554,7 @@ configuration_print_usage(char *program) {
     ncm_buffer_array_init(&config_paths);
     ncm_buffer_array_init(&bindings_paths);
     ncm_error_clear(&error);
-    if (!configuration_discover_default_paths(&config_paths,
-                                              &bindings_paths,
+    if (!configuration_discover_default_paths(&config_paths, &bindings_paths,
                                               &error)) {
         configuration_print_error("Failed to build default paths", &error);
         ncm_buffer_array_destroy(&bindings_paths);
@@ -690,8 +673,8 @@ configuration_read_settings(NcmConfigurationOptions *options, NcmError *error) {
 
     configuration_clear(&Config);
     result = configuration_read(&Config, &config_views,
-                                options->ignore_config_errors,
-                                options->quiet, error);
+                                options->ignore_config_errors, options->quiet,
+                                error);
     ncm_string_view_array_destroy(&config_views);
     if (!result) {
         if (!ncm_error_is_set(error)) {
@@ -704,8 +687,7 @@ configuration_read_settings(NcmConfigurationOptions *options, NcmError *error) {
 }
 
 static bool
-configuration_read_bindings(NcmConfigurationOptions *options,
-                            NcmError *error) {
+configuration_read_bindings(NcmConfigurationOptions *options, NcmError *error) {
     ncm_bindings_configuration_clear(&Bindings);
     for (int32 i = 0; i < options->bindings_paths.len; i += 1) {
         NcmBuffer *path;
@@ -714,8 +696,8 @@ configuration_read_bindings(NcmConfigurationOptions *options,
         if (!ncm_path_expand_home(path, error)) {
             return false;
         }
-        if (!ncm_bindings_configuration_read(&Bindings, path->data,
-                                             path->len, error)) {
+        if (!ncm_bindings_configuration_read(&Bindings, path->data, path->len,
+                                             error)) {
             return false;
         }
     }
@@ -725,8 +707,7 @@ configuration_read_bindings(NcmConfigurationOptions *options,
 
 static bool
 configuration_create_directories(NcmError *error) {
-    if (!ncm_fs_exists(Config.ncmpcpp_directory,
-                       Config.ncmpcpp_directory_len)
+    if (!ncm_fs_exists(Config.ncmpcpp_directory, Config.ncmpcpp_directory_len)
         && !ncm_fs_mkdir_all(Config.ncmpcpp_directory,
                              Config.ncmpcpp_directory_len, error)) {
         return false;
@@ -754,8 +735,7 @@ configuration_apply_mpd_environment(NcmError *error) {
         }
     }
     if (env_port != NULL) {
-        if (!ncm_parse_uint32(env_port, strlen32(env_port),
-                                &port, error)) {
+        if (!ncm_parse_uint32(env_port, strlen32(env_port), &port, error)) {
             return false;
         }
         if (port > 65535) {
@@ -780,9 +760,8 @@ configuration_apply_mpd_command_line(NcmConfigurationOptions *options,
     if (options->port_provided) {
         ncm_mpd_client_set_port(&global_mpd, (uint16)options->port);
     }
-    if (!ncm_mpd_client_set_timeout_ms(&global_mpd,
-                                       Config.mpd_connection_timeout*1000,
-                                       error)) {
+    if (!ncm_mpd_client_set_timeout_ms(
+            &global_mpd, Config.mpd_connection_timeout * 1000, error)) {
         return false;
     }
     return true;
@@ -803,8 +782,7 @@ configuration_apply_screen_options(NcmConfigurationOptions *options,
         if (!screen_type_parse_startup(options->slave_screen_name.data,
                                        options->slave_screen_name.len,
                                        &Config.startup_slave_screen_type)) {
-            ncm_error_set(error, EINVAL,
-                          STRLIT_ARGS("unknown slave screen"));
+            ncm_error_set(error, EINVAL, STRLIT_ARGS("unknown slave screen"));
             return false;
         }
         Config.has_startup_slave_screen_type = true;
@@ -835,11 +813,9 @@ configuration_print_current_song(NcmConfigurationOptions *options,
     ncm_buffer_init(&output);
 
     result = ncm_mpd_client_connect(&global_mpd, error)
-             && ncm_mpd_client_get_current_song(&global_mpd, &song,
-                                                error);
+             && ncm_mpd_client_get_current_song(&global_mpd, &song, error);
     if (result && !ncm_song_empty(&song)) {
-        result = ncm_format_parse(&format,
-                                  options->current_song_format.data,
+        result = ncm_format_parse(&format, options->current_song_format.data,
                                   options->current_song_format.len,
                                   NCM_FORMAT_FLAG_TAG, error);
         if (result) {
@@ -921,20 +897,16 @@ configuration_test_lyrics_fetchers(NcmError *error) {
         ncm_lyrics_result_init(&result);
         if (!ncm_lyrics_fetcher_def_set_name(&fetcher, tests[i].name,
                                              tests[i].name_len)) {
-            ncm_error_set(error, EINVAL,
-                          STRLIT_ARGS("unknown lyrics fetcher"));
+            ncm_error_set(error, EINVAL, STRLIT_ARGS("unknown lyrics fetcher"));
             ok = false;
         }
         if (ok) {
-            printf("%-20.*s : ",
-                   ncm_lyrics_fetcher_name_len(&fetcher),
+            printf("%-20.*s : ", ncm_lyrics_fetcher_name_len(&fetcher),
                    ncm_lyrics_fetcher_name(&fetcher));
             fflush(stdout);
-            (void)ncm_lyrics_fetcher_fetch(&fetcher, &result,
-                                            tests[i].artist,
-                                            tests[i].artist_len,
-                                            tests[i].title,
-                                            tests[i].title_len, NULL);
+            (void)ncm_lyrics_fetcher_fetch(&fetcher, &result, tests[i].artist,
+                                           tests[i].artist_len, tests[i].title,
+                                           tests[i].title_len, NULL);
             if (result.success) {
                 printf("ok\n");
             } else {

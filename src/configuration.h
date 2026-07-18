@@ -31,8 +31,7 @@ typedef struct NcmConfigurationOptions {
 void ncm_configuration_options_init(NcmConfigurationOptions *options);
 void ncm_configuration_options_destroy(NcmConfigurationOptions *options);
 bool ncm_configuration_options_parse(NcmConfigurationOptions *options,
-                                     int32 argc, char **argv,
-                                     NcmError *error);
+                                     int32 argc, char **argv, NcmError *error);
 bool ncm_configuration_options_apply(NcmConfigurationOptions *options,
                                      NcmError *error);
 

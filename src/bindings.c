@@ -98,7 +98,7 @@ ncm_trim_end(char *string, int32 string_len) {
 
 static bool
 ncm_extract_enclosed(char *line, int32 line_len, char open, char close,
-                    NcmStringView *result) {
+                     NcmStringView *result) {
     int32 start;
     int32 end;
 
@@ -145,7 +145,7 @@ ncm_binding_action_destroy(NcmBindingAction *action) {
         free2(action->argument, action->argument_cap);
     }
     if (action->keys) {
-        free2(action->keys, action->keys_cap*SIZEOF(*action->keys));
+        free2(action->keys, action->keys_cap * SIZEOF(*action->keys));
     }
     ncm_binding_action_init(action);
     return;
@@ -159,16 +159,15 @@ ncm_binding_action_copy(NcmBindingAction *dest, NcmBindingAction *source) {
     dest->screen_type = source->screen_type;
 
     if (source->argument_len > 0) {
-        dest->argument = ncm_string_copy(source->argument,
-                                        source->argument_len,
-                                        &dest->argument_cap);
+        dest->argument = ncm_string_copy(source->argument, source->argument_len,
+                                         &dest->argument_cap);
         dest->argument_len = source->argument_len;
     }
     if (source->keys_len > 0) {
         dest->keys_cap = source->keys_len;
-        dest->keys = malloc2(dest->keys_cap*SIZEOF(*dest->keys));
+        dest->keys = malloc2(dest->keys_cap * SIZEOF(*dest->keys));
         memcpy64(dest->keys, source->keys,
-               source->keys_len*SIZEOF(*dest->keys));
+                 source->keys_len * SIZEOF(*dest->keys));
         dest->keys_len = source->keys_len;
     }
     return true;
@@ -187,7 +186,7 @@ ncm_binding_destroy(NcmBinding *binding) {
     ncm_binding_clear(binding);
     if (binding->actions) {
         free2(binding->actions,
-            binding->actions_cap*SIZEOF(*binding->actions));
+              binding->actions_cap * SIZEOF(*binding->actions));
     }
     ncm_binding_init(binding);
     return;
@@ -212,12 +211,10 @@ ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action) {
         if (binding->actions_cap == 0) {
             new_cap = 4;
         } else {
-            new_cap = binding->actions_cap*2;
+            new_cap = binding->actions_cap * 2;
         }
-        binding->actions = realloc2(binding->actions,
-                                  binding->actions_cap,
-                                  new_cap,
-                                  SIZEOF(*binding->actions));
+        binding->actions = realloc2(binding->actions, binding->actions_cap,
+                                    new_cap, SIZEOF(*binding->actions));
         binding->actions_cap = new_cap;
     }
 
@@ -280,8 +277,7 @@ ncm_binding_action_can_run(NcmBindingAction *action,
 }
 
 bool
-ncm_binding_action_run(NcmBindingAction *action,
-                       NcmBindingRuntime *runtime) {
+ncm_binding_action_run(NcmBindingAction *action, NcmBindingRuntime *runtime) {
     if (!ncm_binding_action_can_run(action, runtime)) {
         return false;
     }
@@ -304,21 +300,18 @@ ncm_binding_action_run(NcmBindingAction *action,
     case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
         return true;
     case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
-        if ((runtime == NULL)
-            || (runtime->run_external_command == NULL)) {
+        if ((runtime == NULL) || (runtime->run_external_command == NULL)) {
             return false;
         }
-        return runtime->run_external_command(action->argument,
-                                             action->argument_len,
-                                             runtime->user);
+        return runtime->run_external_command(
+            action->argument, action->argument_len, runtime->user);
     case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
         if ((runtime == NULL)
             || (runtime->run_external_console_command == NULL)) {
             return false;
         }
-        return runtime->run_external_console_command(action->argument,
-                                                     action->argument_len,
-                                                     runtime->user);
+        return runtime->run_external_console_command(
+            action->argument, action->argument_len, runtime->user);
     default:
         break;
     }
@@ -343,8 +336,7 @@ ncm_binding_can_execute_runtime(NcmBinding *binding,
 }
 
 bool
-ncm_binding_execute_runtime(NcmBinding *binding,
-                            NcmBindingRuntime *runtime) {
+ncm_binding_execute_runtime(NcmBinding *binding, NcmBindingRuntime *runtime) {
     if (binding == NULL) {
         return false;
     }
@@ -359,8 +351,7 @@ ncm_binding_execute_runtime(NcmBinding *binding,
 }
 
 bool
-ncm_binding_runtime_can_run_action(enum NcmActionType type,
-                                   void *user) {
+ncm_binding_runtime_can_run_action(enum NcmActionType type, void *user) {
     return ncm_action_runtime_can_run(user, type);
 }
 
@@ -370,8 +361,7 @@ ncm_binding_runtime_run_action(enum NcmActionType type, void *user) {
 }
 
 bool
-ncm_binding_runtime_current_screen_is(enum ScreenType screen_type,
-                                      void *user) {
+ncm_binding_runtime_current_screen_is(enum ScreenType screen_type, void *user) {
     NcScreen *screen;
     int32 native_type;
 
@@ -398,15 +388,13 @@ ncm_binding_runtime_push_key(NcKey key, void *user) {
 }
 
 bool
-ncm_binding_runtime_run_external_command(char *command,
-                                         int32 command_len,
+ncm_binding_runtime_run_external_command(char *command, int32 command_len,
                                          void *user) {
     NcmError error;
 
     (void)user;
     ncm_error_clear(&error);
-    return ncm_macro_run_external_command(command, command_len, true,
-                                          &error);
+    return ncm_macro_run_external_command(command, command_len, true, &error);
 }
 
 bool
@@ -419,8 +407,8 @@ ncm_binding_runtime_run_external_console_command(char *command,
     (void)user;
     ncm_error_clear(&error);
     nc_pause_screen();
-    result = ncm_macro_run_external_console_command(command, command_len,
-                                                    &error);
+    result
+        = ncm_macro_run_external_console_command(command, command_len, &error);
     nc_unpause_screen();
     return result;
 }
@@ -436,10 +424,9 @@ ncm_binding_runtime_init(NcmBindingRuntime *runtime,
     runtime->run_action = ncm_binding_runtime_run_action;
     runtime->current_screen_is = ncm_binding_runtime_current_screen_is;
     runtime->push_key = ncm_binding_runtime_push_key;
-    runtime->run_external_command =
-        ncm_binding_runtime_run_external_command;
-    runtime->run_external_console_command =
-        ncm_binding_runtime_run_external_console_command;
+    runtime->run_external_command = ncm_binding_runtime_run_external_command;
+    runtime->run_external_console_command
+        = ncm_binding_runtime_run_external_console_command;
     runtime->user = action_runtime;
     return;
 }
@@ -464,8 +451,7 @@ ncm_binding_can_execute_default(NcmBinding *binding) {
 
 bool
 ncm_binding_execute_default(NcmBinding *binding) {
-    return ncm_binding_execute_runtime(binding,
-                                       ncm_binding_default_runtime());
+    return ncm_binding_execute_runtime(binding, ncm_binding_default_runtime());
 }
 
 bool
@@ -516,7 +502,7 @@ ncm_key_bindings_destroy(NcmKeyBindings *key_bindings) {
     }
     if (key_bindings->bindings) {
         free2(key_bindings->bindings,
-            key_bindings->bindings_cap*SIZEOF(*key_bindings->bindings));
+              key_bindings->bindings_cap * SIZEOF(*key_bindings->bindings));
     }
     ncm_key_bindings_init(key_bindings);
     return;
@@ -538,11 +524,10 @@ ncm_bindings_configuration_destroy(NcmBindingsConfiguration *bindings) {
     ncm_bindings_configuration_clear(bindings);
     if (bindings->commands) {
         free2(bindings->commands,
-            bindings->commands_cap*SIZEOF(*bindings->commands));
+              bindings->commands_cap * SIZEOF(*bindings->commands));
     }
     if (bindings->keys) {
-        free2(bindings->keys,
-            bindings->keys_cap*SIZEOF(*bindings->keys));
+        free2(bindings->keys, bindings->keys_cap * SIZEOF(*bindings->keys));
     }
     ncm_bindings_configuration_init(bindings);
     return;
@@ -566,8 +551,7 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
     NcKey result;
 
     result = NC_KEY_NONE;
-    if ((string_len == 6)
-        && STREQUAL(string, 4, STRLIT_ARGS("ctrl"))
+    if ((string_len == 6) && STREQUAL(string, 4, STRLIT_ARGS("ctrl"))
         && (string[4] == '-')) {
         char c;
 
@@ -585,22 +569,19 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
         } else if (c == '_') {
             result = NC_KEY_CTRL_UNDERSCORE;
         }
-    } else if ((string_len > 4)
-               && STREQUAL(string, 3, STRLIT_ARGS("alt"))
+    } else if ((string_len > 4) && STREQUAL(string, 3, STRLIT_ARGS("alt"))
                && (string[3] == '-')) {
         result = ncm_bindings_string_to_key(string + 4, string_len - 4);
         if (result != NC_KEY_NONE) {
             result |= NC_KEY_ALT;
         }
-    } else if ((string_len > 5)
-               && STREQUAL(string, 4, STRLIT_ARGS("ctrl"))
+    } else if ((string_len > 5) && STREQUAL(string, 4, STRLIT_ARGS("ctrl"))
                && (string[4] == '-')) {
         result = ncm_bindings_string_to_key(string + 5, string_len - 5);
         if (result != NC_KEY_NONE) {
             result |= NC_KEY_CTRL;
         }
-    } else if ((string_len > 6)
-               && STREQUAL(string, 5, STRLIT_ARGS("shift"))
+    } else if ((string_len > 6) && STREQUAL(string, 5, STRLIT_ARGS("shift"))
                && (string[5] == '-')) {
         result = ncm_bindings_string_to_key(string + 6, string_len - 6);
         if (result != NC_KEY_NONE) {
@@ -747,21 +728,20 @@ ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len) {
 }
 
 static bool
-ncm_parse_action_line(char *line, int32 line_len,
-                      NcmBindingAction *result, NcmError *error) {
+ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
+                      NcmError *error) {
     int32 name_len;
     NcmStringView argument;
 
     ncm_binding_action_init(result);
     line_len = ncm_trim_end(line, line_len);
     name_len = 0;
-    while ((name_len < line_len)
-           && !isspace((uint8)line[name_len])) {
+    while ((name_len < line_len) && !isspace((uint8)line[name_len])) {
         name_len += 1;
     }
 
     if (STREQUAL(line, name_len,
-                         STRLIT_ARGS("set_visualizer_sample_multiplier"))) {
+                 STRLIT_ARGS("set_visualizer_sample_multiplier"))) {
         result->kind = NCM_BINDING_ACTION_NORMAL;
         result->type = NCM_ACTION_DUMMY;
         return true;
@@ -769,18 +749,17 @@ ncm_parse_action_line(char *line, int32 line_len,
 
     if (name_len == line_len) {
         if (!ncm_action_type_parse(line, name_len, &result->type)) {
-            ncm_bindings_error(error, "unknown action: '%.*s'",
-                               name_len, line);
+            ncm_bindings_error(error, "unknown action: '%.*s'", name_len, line);
             return false;
         }
         result->kind = NCM_BINDING_ACTION_NORMAL;
         return true;
     }
 
-    if (!ncm_extract_enclosed(line + name_len, line_len - name_len,
-                              '"', '"', &argument)) {
-        ncm_bindings_error(error, "missing quoted argument: '%.*s'",
-                           line_len, line);
+    if (!ncm_extract_enclosed(line + name_len, line_len - name_len, '"', '"',
+                              &argument)) {
+        ncm_bindings_error(error, "missing quoted argument: '%.*s'", line_len,
+                           line);
         return false;
     }
 
@@ -805,15 +784,14 @@ ncm_parse_action_line(char *line, int32 line_len,
 
     if (STREQUAL(line, name_len, STRLIT_ARGS("push_characters"))) {
         if (argument.len <= 0) {
-            ncm_bindings_error(error,
-                               "empty argument passed to "
-                               "push_characters");
+            ncm_bindings_error(error, "empty argument passed to "
+                                      "push_characters");
             return false;
         }
         result->kind = NCM_BINDING_ACTION_PUSH_CHARACTERS;
         result->keys_cap = argument.len;
         result->keys_len = argument.len;
-        result->keys = malloc2(result->keys_cap*SIZEOF(*result->keys));
+        result->keys = malloc2(result->keys_cap * SIZEOF(*result->keys));
         for (int32 i = 0; i < argument.len; i += 1) {
             result->keys[i] = (NcKey)(uint8)argument.data[i];
         }
@@ -846,12 +824,10 @@ ncm_parse_action_line(char *line, int32 line_len,
         return true;
     }
 
-    if (STREQUAL(line, name_len,
-                         STRLIT_ARGS("run_external_command"))) {
+    if (STREQUAL(line, name_len, STRLIT_ARGS("run_external_command"))) {
         if (argument.len <= 0) {
-            ncm_bindings_error(error,
-                               "empty command passed to "
-                               "run_external_command");
+            ncm_bindings_error(error, "empty command passed to "
+                                      "run_external_command");
             return false;
         }
         result->kind = NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND;
@@ -861,12 +837,10 @@ ncm_parse_action_line(char *line, int32 line_len,
         return true;
     }
 
-    if (STREQUAL(line, name_len,
-                         STRLIT_ARGS("run_external_console_command"))) {
+    if (STREQUAL(line, name_len, STRLIT_ARGS("run_external_console_command"))) {
         if (argument.len <= 0) {
-            ncm_bindings_error(error,
-                               "empty command passed to "
-                               "run_external_console_command");
+            ncm_bindings_error(error, "empty command passed to "
+                                      "run_external_console_command");
             return false;
         }
         result->kind = NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND;
@@ -894,9 +868,8 @@ ncm_binding_append_normal(NcmBinding *binding, enum NcmActionType type) {
 }
 
 static int32
-ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings,
-                                 char *name, int32 name_len,
-                                 bool *found) {
+ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings, char *name,
+                                 int32 name_len, bool *found) {
     int32 first;
     int32 count;
 
@@ -909,7 +882,7 @@ ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings,
         int32 cmp;
         int32 min_len;
 
-        step = count/2;
+        step = count / 2;
         mid = first + step;
         min_len = bindings->commands[mid].name_len;
         if (name_len < min_len) {
@@ -932,16 +905,15 @@ ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings,
     }
     if ((first < bindings->commands_len)
         && STREQUAL(bindings->commands[first].name,
-                            bindings->commands[first].name_len,
-                            name, name_len)) {
+                    bindings->commands[first].name_len, name, name_len)) {
         *found = true;
     }
     return first;
 }
 
 static int32
-ncm_bindings_key_lower_bound(NcmBindingsConfiguration *bindings,
-                             NcKey key, bool *found) {
+ncm_bindings_key_lower_bound(NcmBindingsConfiguration *bindings, NcKey key,
+                             bool *found) {
     int32 first;
     int32 count;
 
@@ -952,7 +924,7 @@ ncm_bindings_key_lower_bound(NcmBindingsConfiguration *bindings,
         int32 step;
         int32 mid;
 
-        step = count/2;
+        step = count / 2;
         mid = first + step;
         if (bindings->keys[mid].key < key) {
             first = mid + 1;
@@ -988,18 +960,17 @@ ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
         if (bindings->commands_cap == 0) {
             new_cap = 8;
         } else {
-            new_cap = bindings->commands_cap*2;
+            new_cap = bindings->commands_cap * 2;
         }
-        bindings->commands = realloc2(bindings->commands,
-                                    bindings->commands_cap,
-                                    new_cap,
-                                    SIZEOF(*bindings->commands));
+        bindings->commands
+            = realloc2(bindings->commands, bindings->commands_cap, new_cap,
+                       SIZEOF(*bindings->commands));
         bindings->commands_cap = new_cap;
     }
 
     ncm_command_init(&copy);
-    copy.name = ncm_string_copy(command->name, command->name_len,
-                                &copy.name_cap);
+    copy.name
+        = ncm_string_copy(command->name, command->name_len, &copy.name_cap);
     copy.name_len = command->name_len;
     copy.immediate = command->immediate;
     if (!ncm_binding_copy(&copy.binding, &command->binding)) {
@@ -1009,7 +980,7 @@ ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
 
     if (at < bindings->commands_len) {
         memmove64(bindings->commands + at + 1, bindings->commands + at,
-                (bindings->commands_len - at)*SIZEOF(*bindings->commands));
+                  (bindings->commands_len - at) * SIZEOF(*bindings->commands));
     }
     bindings->commands[at] = copy;
     bindings->commands_len += 1;
@@ -1034,17 +1005,15 @@ ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
             if (bindings->keys_cap == 0) {
                 new_cap = 16;
             } else {
-                new_cap = bindings->keys_cap*2;
+                new_cap = bindings->keys_cap * 2;
             }
-            bindings->keys = realloc2(bindings->keys,
-                                    bindings->keys_cap,
-                                    new_cap,
-                                    SIZEOF(*bindings->keys));
+            bindings->keys = realloc2(bindings->keys, bindings->keys_cap,
+                                      new_cap, SIZEOF(*bindings->keys));
             bindings->keys_cap = new_cap;
         }
         if (at < bindings->keys_len) {
             memmove64(bindings->keys + at + 1, bindings->keys + at,
-                    (bindings->keys_len - at)*SIZEOF(*bindings->keys));
+                      (bindings->keys_len - at) * SIZEOF(*bindings->keys));
         }
         ncm_key_bindings_init(&item);
         item.key = key;
@@ -1059,11 +1028,11 @@ ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
         if (key_bindings->bindings_cap == 0) {
             new_cap = 2;
         } else {
-            new_cap = key_bindings->bindings_cap*2;
+            new_cap = key_bindings->bindings_cap * 2;
         }
-        key_bindings->bindings = realloc2(
-            key_bindings->bindings, key_bindings->bindings_cap, new_cap,
-            SIZEOF(*key_bindings->bindings));
+        key_bindings->bindings
+            = realloc2(key_bindings->bindings, key_bindings->bindings_cap,
+                       new_cap, SIZEOF(*key_bindings->bindings));
         key_bindings->bindings_cap = new_cap;
     }
 
@@ -1107,8 +1076,7 @@ ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
 
 static bool
 ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
-                         enum NcmActionType first,
-                         enum NcmActionType second) {
+                         enum NcmActionType first, enum NcmActionType second) {
     NcmBinding binding;
     NcKey key;
     bool result;
@@ -1158,11 +1126,9 @@ ncm_bindings_bind_group(NcmBindingsConfiguration *bindings, char *key_name,
 static bool
 ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
                                  int32 in_progress, NcmBinding *actions,
-                                 NcKey key, char *key_name,
-                                 int32 key_name_len, char *command_name,
-                                 int32 command_name_len,
-                                 bool command_immediate,
-                                 NcmError *error) {
+                                 NcKey key, char *key_name, int32 key_name_len,
+                                 char *command_name, int32 command_name_len,
+                                 bool command_immediate, NcmError *error) {
     NcmCommand command;
     bool result;
 
@@ -1200,9 +1166,8 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
 }
 
 bool
-ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
-                                char *path, int32 path_len,
-                                NcmError *error) {
+ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
+                                int32 path_len, NcmError *error) {
     enum {
         IN_PROGRESS_NONE = 0,
         IN_PROGRESS_COMMAND = 1,
@@ -1252,14 +1217,14 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
 
         line_no += 1;
         len = strlen32(line);
-        if ((len == (int32)SIZEOF(line) - 1)
-            && (line[len - 1] != '\n')) {
+        if ((len == (int32)SIZEOF(line) - 1) && (line[len - 1] != '\n')) {
             int32 next;
 
             next = fgetc(file);
             if ((next != '\n') && (next != EOF)) {
                 error("Bindings configuration line %d in '%.*s' is too "
-                      "long.\n", line_no, path_len, path);
+                      "long.\n",
+                      line_no, path_len, path);
                 fatal(EXIT_FAILURE);
             }
         }
@@ -1270,19 +1235,17 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
         start = ncm_trim_start(line, len);
 
         if ((len - start >= 11)
-            && STREQUAL(line + start, 11,
-                                STRLIT_ARGS("def_command"))) {
+            && STREQUAL(line + start, 11, STRLIT_ARGS("def_command"))) {
             ok = ncm_bindings_finalize_definition(
-                bindings, in_progress, &actions, key, key_name,
-                key_name_len, command_name, command_name_len,
-                command_immediate, error);
+                bindings, in_progress, &actions, key, key_name, key_name_len,
+                command_name, command_name_len, command_immediate, error);
             ncm_binding_clear(&actions);
             in_progress = IN_PROGRESS_NONE;
             if (!ok) {
                 break;
             }
-            if (!ncm_extract_enclosed(line + start, len - start,
-                                      '"', '"', &enclosed)) {
+            if (!ncm_extract_enclosed(line + start, len - start, '"', '"',
+                                      &enclosed)) {
                 ncm_bindings_error(error,
                                    "%.*s:%d: command must have non-empty name",
                                    path_len, path, line_no);
@@ -1302,61 +1265,57 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
             command_name = ncm_string_copy(enclosed.data, enclosed.len,
                                            &command_name_cap);
             command_name_len = enclosed.len;
-            if (!ncm_extract_enclosed(line + start, len - start,
-                                      '[', ']', &enclosed)) {
-                ncm_bindings_error(error,
-                                   "%.*s:%d: missing command type",
+            if (!ncm_extract_enclosed(line + start, len - start, '[', ']',
+                                      &enclosed)) {
+                ncm_bindings_error(error, "%.*s:%d: missing command type",
                                    path_len, path, line_no);
                 ok = false;
                 break;
             }
             if (STREQUAL(enclosed.data, enclosed.len,
-                                 STRLIT_ARGS("immediate"))) {
+                         STRLIT_ARGS("immediate"))) {
                 command_immediate = true;
             } else if (STREQUAL(enclosed.data, enclosed.len,
-                                        STRLIT_ARGS("deferred"))) {
+                                STRLIT_ARGS("deferred"))) {
                 command_immediate = false;
             } else {
-                ncm_bindings_error(error,
-                                   "%.*s:%d: invalid command type '%.*s'",
-                                   path_len, path, line_no,
-                                   enclosed.len, enclosed.data);
+                ncm_bindings_error(
+                    error, "%.*s:%d: invalid command type '%.*s'", path_len,
+                    path, line_no, enclosed.len, enclosed.data);
                 ok = false;
                 break;
             }
             in_progress = IN_PROGRESS_COMMAND;
         } else if ((len - start >= 7)
-                   && STREQUAL(line + start, 7,
-                                       STRLIT_ARGS("def_key"))) {
+                   && STREQUAL(line + start, 7, STRLIT_ARGS("def_key"))) {
             ok = ncm_bindings_finalize_definition(
-                bindings, in_progress, &actions, key, key_name,
-                key_name_len, command_name, command_name_len,
-                command_immediate, error);
+                bindings, in_progress, &actions, key, key_name, key_name_len,
+                command_name, command_name_len, command_immediate, error);
             ncm_binding_clear(&actions);
             in_progress = IN_PROGRESS_NONE;
             if (!ok) {
                 break;
             }
-            if (!ncm_extract_enclosed(line + start, len - start,
-                                      '"', '"', &enclosed)) {
-                ncm_bindings_error(error, "%.*s:%d: invalid key",
-                                   path_len, path, line_no);
+            if (!ncm_extract_enclosed(line + start, len - start, '"', '"',
+                                      &enclosed)) {
+                ncm_bindings_error(error, "%.*s:%d: invalid key", path_len,
+                                   path, line_no);
                 ok = false;
                 break;
             }
             key = ncm_bindings_string_to_key(enclosed.data, enclosed.len);
             if (key == NC_KEY_NONE) {
                 ncm_bindings_error(error, "%.*s:%d: invalid key '%.*s'",
-                                   path_len, path, line_no,
-                                   enclosed.len, enclosed.data);
+                                   path_len, path, line_no, enclosed.len,
+                                   enclosed.data);
                 ok = false;
                 break;
             }
             if (key_name) {
                 free2(key_name, key_name_cap);
             }
-            key_name = ncm_string_copy(enclosed.data, enclosed.len,
-                                       &key_name_cap);
+            key_name
+                = ncm_string_copy(enclosed.data, enclosed.len, &key_name_cap);
             key_name_len = enclosed.len;
             in_progress = IN_PROGRESS_KEY;
         } else if (isspace((uint8)line[0])) {
@@ -1365,18 +1324,17 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
             int32 action_len;
 
             action_start = ncm_trim_start(line, len);
-            action_len = ncm_trim_end(line + action_start,
-                                      len - action_start);
-            if (!ncm_parse_action_line(line + action_start, action_len,
-                                       &action, error)) {
+            action_len = ncm_trim_end(line + action_start, len - action_start);
+            if (!ncm_parse_action_line(line + action_start, action_len, &action,
+                                       error)) {
                 ok = false;
                 break;
             }
             ok = ncm_binding_append_action(&actions, &action);
             ncm_binding_action_destroy(&action);
         } else {
-            ncm_bindings_error(error, "%.*s:%d: invalid line '%.*s'",
-                               path_len, path, line_no, len, line);
+            ncm_bindings_error(error, "%.*s:%d: invalid line '%.*s'", path_len,
+                               path, line_no, len, line);
             ok = false;
         }
     }
@@ -1452,8 +1410,7 @@ ncm_bindings_configuration_generate_defaults(
     BIND("f1", NCM_ACTION_SHOW_HELP);
     BIND("1", NCM_ACTION_SHOW_PLAYLIST);
     GROUP("2", NCM_ACTION_SHOW_BROWSER, NCM_ACTION_CHANGE_BROWSE_MODE);
-    GROUP("3", NCM_ACTION_SHOW_SEARCH_ENGINE,
-          NCM_ACTION_RESET_SEARCH_ENGINE);
+    GROUP("3", NCM_ACTION_SHOW_SEARCH_ENGINE, NCM_ACTION_RESET_SEARCH_ENGINE);
     GROUP("4", NCM_ACTION_SHOW_MEDIA_LIBRARY,
           NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE);
     BIND("5", NCM_ACTION_SHOW_PLAYLIST_EDITOR);
@@ -1517,8 +1474,7 @@ ncm_bindings_configuration_generate_defaults(
     BIND("A", NCM_ACTION_ADD);
     BIND("S", NCM_ACTION_SAVE_PLAYLIST);
     BIND("o", NCM_ACTION_JUMP_TO_PLAYING_SONG);
-    GROUP("G", NCM_ACTION_JUMP_TO_BROWSER,
-          NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR);
+    GROUP("G", NCM_ACTION_JUMP_TO_BROWSER, NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR);
     BIND("~", NCM_ACTION_JUMP_TO_MEDIA_LIBRARY);
     BIND("E", NCM_ACTION_JUMP_TO_TAG_EDITOR);
     BIND("U", NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING);
@@ -1529,8 +1485,8 @@ ncm_bindings_configuration_generate_defaults(
     BIND("F", NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND);
     BIND("alt-l", NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND);
     BIND("ctrl-l", NCM_ACTION_TOGGLE_SCREEN_LOCK);
-    GROUP("`", NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE,
-          NCM_ACTION_REFETCH_LYRICS, NCM_ACTION_ADD_RANDOM_ITEMS);
+    GROUP("`", NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE, NCM_ACTION_REFETCH_LYRICS,
+          NCM_ACTION_ADD_RANDOM_ITEMS);
     BIND("ctrl-p", NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY);
     BIND("q", NCM_ACTION_QUIT);
 
@@ -1554,8 +1510,7 @@ ncm_bindings_configuration_find_command(NcmBindingsConfiguration *bindings,
 }
 
 NcmBindingSlice
-ncm_bindings_configuration_get(NcmBindingsConfiguration *bindings,
-                               NcKey key) {
+ncm_bindings_configuration_get(NcmBindingsConfiguration *bindings, NcKey key) {
     bool found;
     int32 at;
     NcmBindingSlice result;

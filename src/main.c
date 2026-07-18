@@ -205,8 +205,7 @@ app_create_windows(void) {
     app_header_window = ncmpcpp_legacy_window_create(
         0, 0, COLS, ncmpcpp_legacy_header_height(), Config.header_color);
     ui_state_set_header_window(app_header_window);
-    if (Config.header_visibility
-        || (Config.design == NCM_DESIGN_ALTERNATIVE)) {
+    if (Config.header_visibility || (Config.design == NCM_DESIGN_ALTERNATIVE)) {
         ncmpcpp_legacy_window_display(app_header_window);
     }
 
@@ -222,8 +221,8 @@ app_apply_startup_screen(void) {
     ncmpcpp_legacy_playlist_switch_to();
 
     if (Config.startup_screen_type != ncmpcpp_legacy_current_screen_type()) {
-        assert(ncmpcpp_legacy_switch_to_screen_type(
-            Config.startup_screen_type));
+        assert(
+            ncmpcpp_legacy_switch_to_screen_type(Config.startup_screen_type));
     }
 
     if (Config.has_startup_slave_screen_type) {
@@ -233,8 +232,7 @@ app_apply_startup_screen(void) {
         slave_screen_type = Config.startup_slave_screen_type;
         screen_locked = ncmpcpp_legacy_lock_current_screen();
         if (screen_locked
-            && (slave_screen_type
-                != ncmpcpp_legacy_current_screen_type())) {
+            && (slave_screen_type != ncmpcpp_legacy_current_screen_type())) {
             assert(ncmpcpp_legacy_switch_to_screen_type(slave_screen_type));
             if (!Config.startup_slave_screen_focus) {
                 ncmpcpp_legacy_execute_action(NCM_ACTION_MASTER_SCREEN);
@@ -321,8 +319,7 @@ main(int32 argc, char **argv) {
             app_resize_requested = 0;
         }
 
-        ncmpcpp_legacy_update_environment(!key_pressed, key_pressed,
-                                          false);
+        ncmpcpp_legacy_update_environment(!key_pressed, key_pressed, false);
 
         input = ncm_read_key(app_footer_window);
         key_pressed = input != NC_KEY_NONE;

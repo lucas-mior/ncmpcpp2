@@ -19,8 +19,8 @@ int64 ncmpcpp_legacy_footer_height(void);
 int64 ncmpcpp_legacy_footer_start_y(void);
 
 NcWindow *ncmpcpp_legacy_window_create(int64 start_x, int64 start_y,
-                                         int64 width, int64 height,
-                                         NcColor color);
+                                       int64 width, int64 height,
+                                       NcColor color);
 void ncmpcpp_legacy_window_display(NcWindow *window);
 void ncmpcpp_legacy_window_destroy(NcWindow *window);
 
@@ -36,9 +36,8 @@ void ncmpcpp_legacy_set_noidle_status_callback(void);
 bool ncmpcpp_legacy_mpd_connected(void);
 void ncmpcpp_legacy_connect_or_report(void);
 void ncmpcpp_legacy_status_clear(void);
-bool ncmpcpp_legacy_update_environment(bool update_timer,
-                                        bool refresh_window,
-                                        bool mpd_sync);
+bool ncmpcpp_legacy_update_environment(bool update_timer, bool refresh_window,
+                                       bool mpd_sync);
 bool ncmpcpp_legacy_execute_binding(NcmBinding *binding);
 bool ncmpcpp_legacy_execute_action(enum NcmActionType type);
 bool ncmpcpp_legacy_exit_requested(void);
