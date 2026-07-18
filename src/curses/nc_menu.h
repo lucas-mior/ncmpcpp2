@@ -17,7 +17,13 @@ enum NcMenuItemSource {
     NC_MENU_ITEMS_FILTERED,
 };
 
-enum NcMenuItemFlag {
+#if CC_CLANG
+#define ENUM_UNDERLYING_TYPE_ : uint32
+#else
+#define ENUM_UNDERLYING_TYPE_
+#endif
+
+enum NcMenuItemFlag ENUM_UNDERLYING_TYPE_{
     NC_MENU_ITEM_SELECTABLE = 1U << 0,
     NC_MENU_ITEM_SELECTED = 1U << 1,
     NC_MENU_ITEM_INACTIVE = 1U << 2,
