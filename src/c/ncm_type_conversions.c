@@ -220,6 +220,13 @@ ncm_song_getter_to_tag_type(enum NcmSongGetter getter) {
         return MPD_TAG_COMMENT;
     case NCM_SONG_GETTER_DISC:
         return MPD_TAG_DISC;
+    case NCM_SONG_GETTER_NONE:
+    case NCM_SONG_GETTER_LENGTH:
+    case NCM_SONG_GETTER_DIRECTORY:
+    case NCM_SONG_GETTER_NAME:
+    case NCM_SONG_GETTER_URI:
+    case NCM_SONG_GETTER_TRACK_NUMBER:
+    case NCM_SONG_GETTER_PRIORITY:
     default:
         return MPD_TAG_UNKNOWN;
     }
