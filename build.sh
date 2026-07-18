@@ -142,6 +142,7 @@ configure_compiler_flags() {
         CFLAGS="$CFLAGS -Wno-bad-function-cast"
         CFLAGS="$CFLAGS -Wno-pre-c23-compat"
         CFLAGS="$CFLAGS -Wno-padded"
+        CFLAGS="$CFLAGS -Wno-switch-enum"
     fi
 
     return 0
