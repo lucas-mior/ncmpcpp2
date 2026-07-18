@@ -18,16 +18,13 @@ ncm_string_format_append_number(NcmBuffer *out, char *format,
 
     switch (arg->type) {
     case NCM_STRING_FORMAT_ARG_I64:
-        len = SNPRINTF(buffer, format,
-                       arg->value.i64);
+        len = SNPRINTF(buffer, format, arg->value.i64);
         break;
     case NCM_STRING_FORMAT_ARG_U64:
-        len = SNPRINTF(buffer, format,
-                       arg->value.u64);
+        len = SNPRINTF(buffer, format, arg->value.u64);
         break;
     case NCM_STRING_FORMAT_ARG_F64:
-        len = SNPRINTF(buffer, format,
-                       arg->value.f64);
+        len = SNPRINTF(buffer, format, arg->value.f64);
         break;
     case NCM_STRING_FORMAT_ARG_STRING:
     case NCM_STRING_FORMAT_ARG_CHAR:
