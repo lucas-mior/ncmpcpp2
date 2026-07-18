@@ -3557,7 +3557,6 @@ native_library_copy_song_at(NativeMediaLibraryScreen *screen,
     return ncm_song_array_append_copy(songs, song);
 }
 
-
 static NcMenu *
 native_library_column_menu(
     NativeMediaLibraryScreen *screen,

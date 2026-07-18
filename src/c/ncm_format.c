@@ -86,7 +86,6 @@ ncm_format_color_index_to_nc_color(int32 index, NcColor *color) {
     }
 }
 
-
 static bool
 ncm_format_parse_color_component(char *data, int32 data_len,
                                  bool background, int16 *result) {

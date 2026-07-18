@@ -1839,7 +1839,6 @@ tag_editor_update(NcScreen *screen) {
     return;
 }
 
-
 static void
 tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     NativeTagEditorScreen *editor;
@@ -3569,7 +3568,6 @@ tag_editor_separator_width(NativeTagEditorScreen *screen) {
     return 0;
 }
 
-
 static bool
 tag_editor_initialize_tag_types(NativeTagEditorScreen *screen) {
     NcEditorStringMenu *menu;
@@ -3818,7 +3816,6 @@ tag_editor_draw_separators(NativeTagEditorScreen *screen) {
     nc_screen_draw_vertical_separator(screen->right_start_x - 1);
     return;
 }
-
 
 static NcMenuDisplayCallbacks
 tag_editor_directory_display_callbacks(NativeTagEditorScreen *screen) {

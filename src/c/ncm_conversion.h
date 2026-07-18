@@ -10,7 +10,6 @@ bool ncm_parse_uint64(char *source, int32 source_len,
 bool ncm_parse_double(char *source, int32 source_len,
                       double *out, NcmError *error);
 
-
 bool ncm_bounds_check_u64(uint64 value, uint64 lbound, uint64 ubound,
                           NcmError *error);
 

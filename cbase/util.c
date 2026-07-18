@@ -816,7 +816,6 @@ xclosedir(DIR *dir, char *dirname) {
     return 0;
 }
 
-
 #if OS_WINDOWS
 static int
 util_command(int argc, char **argv) {
@@ -1188,7 +1187,6 @@ util_copy_file_sync(char *destination, char *source) {
     XCLOSE(&destination_fd, destination);
     return 0;
 }
-
 
 #if !defined(MAX_FILES_COPY)
 #define MAX_FILES_COPY 256
@@ -2244,7 +2242,6 @@ command_result_free(CommandResult *result) {
     return;
 }
 
-
 static void
 command_push(Command *command, char *argument) {
 
@@ -2416,7 +2413,6 @@ util_functions_sink(void) {
     X(WEEK_DAY_SATURDAY, 20)
 #include "xenums.c"
 
-
 #define ENUM_NAME PowerOfTwo
 #define ENUM_BITFLAGS 1
 #define ENUM_PREFIX_ POWER_OF2_
@@ -2428,7 +2424,6 @@ util_functions_sink(void) {
     X(POWER_OF2_SIXTEEN) \
     X(POWER_OF2_THIRTY2)
 #include "xenums.c"
-
 
 static void
 write_file(char *path, void *data, int64 len) {

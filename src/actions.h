@@ -140,7 +140,6 @@ enum NcmActionType {
     NCM_ACTION_LAST,
 };
 
-
 typedef bool (*NcmActionCanRunFn)(void *user);
 typedef bool (*NcmActionRunFn)(void *user);
 

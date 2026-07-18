@@ -39,5 +39,4 @@ bool ncm_statusbar_prompt_return_one_of(NcWindow *window,
                                          char *result);
 int32 ncm_statusbar_message_delay_time(void);
 
-
 #endif /* NCMPCPP_STATUSBAR_H */

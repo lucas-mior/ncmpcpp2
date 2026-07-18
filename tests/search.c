@@ -568,7 +568,6 @@ test_search_without_wrap_preserves_position_on_failure(void) {
     return;
 }
 
-
 static void
 test_prompt_state_reuses_successful_result(void) {
     NcmSearchPromptState state;

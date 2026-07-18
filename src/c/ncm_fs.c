@@ -185,7 +185,6 @@ ncm_fs_unlink(char *path, int32 path_len, NcmError *error) {
     return true;
 }
 
-
 bool
 ncm_fs_rename(char *old_path, int32 old_path_len, char *new_path,
               int32 new_path_len, NcmError *error) {
