@@ -14,7 +14,7 @@ typedef struct NcmConfigurationOptions {
     NcmBufferArray config_paths;
     NcmBufferArray bindings_paths;
 
-    uint32 port;
+    int32 port;
 
     bool host_provided;
     bool port_provided;
