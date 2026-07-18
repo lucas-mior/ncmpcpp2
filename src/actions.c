@@ -3018,6 +3018,24 @@ action_runtime_current_tag_scroll_menu(void) {
         return native_tag_editor_screen_active_menu(
             native_c_screen_tag_editor());
 #endif
+    case NCM_SCREEN_TYPE_HELP:
+    case NCM_SCREEN_TYPE_LASTFM:
+    case NCM_SCREEN_TYPE_LYRICS:
+#if defined(ENABLE_OUTPUTS)
+    case NCM_SCREEN_TYPE_OUTPUTS:
+#endif
+    case NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
+    case NCM_SCREEN_TYPE_SERVER_INFO:
+    case NCM_SCREEN_TYPE_SONG_INFO:
+    case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
+#if defined(HAVE_TAGLIB_H)
+    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+#endif
+    case NCM_SCREEN_TYPE_UNKNOWN:
+#if defined(ENABLE_VISUALIZER)
+    case NCM_SCREEN_TYPE_VISUALIZER:
+#endif
+    case NCM_SCREEN_TYPE_LAST:
     default:
         break;
     }
