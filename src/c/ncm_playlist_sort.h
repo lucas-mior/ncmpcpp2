@@ -8,8 +8,8 @@ typedef struct NcmMpdClient NcmMpdClient;
 typedef struct NcmSongArray NcmSongArray;
 
 typedef struct NcmPlaylistSortSwap {
-    uint32 from;
-    uint32 to;
+    int32 from;
+    int32 to;
 } NcmPlaylistSortSwap;
 
 typedef struct NcmPlaylistSortPlan {
@@ -22,13 +22,13 @@ void ncm_playlist_sort_plan_init(NcmPlaylistSortPlan *plan);
 void ncm_playlist_sort_plan_destroy(NcmPlaylistSortPlan *plan);
 bool ncm_playlist_sort_plan_build(
     NcmPlaylistSortPlan *plan, NcmSongArray *songs,
-    uint32 start_position, enum NcmSongGetter *getters,
+    int32 start_position, enum NcmSongGetter *getters,
     int32 getters_len, bool ignore_leading_the, NcmError *error);
 bool ncm_playlist_sort_plan_execute(NcmPlaylistSortPlan *plan,
                                     NcmMpdClient *client,
                                     NcmError *error);
 bool ncm_playlist_sort_range(
-    NcmSongArray *songs, uint32 start_position,
+    NcmSongArray *songs, int32 start_position,
     enum NcmSongGetter *getters, int32 getters_len,
     bool ignore_leading_the, NcmMpdClient *client,
     NcmError *error);

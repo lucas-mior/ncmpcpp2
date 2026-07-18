@@ -28,10 +28,10 @@ typedef struct NcmSong {
     int32 tags_len;
     int32 tags_cap;
 
-    uint32 duration;
-    uint32 position;
-    uint32 id;
-    uint32 priority;
+    int32 duration;
+    int32 position;
+    int32 id;
+    int32 priority;
     time_t last_modified;
 } NcmSong;
 
@@ -44,24 +44,23 @@ bool ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source);
 bool ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len);
 bool ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
                       char *value, int32 value_len);
-void ncm_song_set_duration(NcmSong *song, uint32 duration);
-void ncm_song_set_position(NcmSong *song, uint32 position);
-void ncm_song_set_id(NcmSong *song, uint32 id);
-void ncm_song_set_priority(NcmSong *song, uint32 priority);
+void ncm_song_set_duration(NcmSong *song, int32 duration);
+void ncm_song_set_position(NcmSong *song, int32 position);
+void ncm_song_set_id(NcmSong *song, int32 id);
+void ncm_song_set_priority(NcmSong *song, int32 priority);
 void ncm_song_set_mtime(NcmSong *song, time_t last_modified);
-uint32 ncm_song_duration(NcmSong *song);
-uint32 ncm_song_position(NcmSong *song);
-uint32 ncm_song_id(NcmSong *song);
-uint32 ncm_song_priority(NcmSong *song);
+int32 ncm_song_duration(NcmSong *song);
+int32 ncm_song_position(NcmSong *song);
+int32 ncm_song_id(NcmSong *song);
+int32 ncm_song_priority(NcmSong *song);
 time_t ncm_song_mtime(NcmSong *song);
 bool ncm_song_empty(NcmSong *song);
 
 bool ncm_song_tag_view(NcmSong *song, enum mpd_tag_type tag,
-                       uint32 idx, NcmStringView *view);
-bool ncm_song_uri_view(NcmSong *song, uint32 idx, NcmStringView *view);
-bool ncm_song_name_view(NcmSong *song, uint32 idx, NcmStringView *view);
-bool ncm_song_directory_view(NcmSong *song, uint32 idx,
-                             NcmStringView *view);
+                       int32 idx, NcmStringView *view);
+bool ncm_song_uri_view(NcmSong *song, int32 idx, NcmStringView *view);
+bool ncm_song_name_view(NcmSong *song, int32 idx, NcmStringView *view);
+bool ncm_song_directory_view(NcmSong *song, int32 idx, NcmStringView *view);
 bool ncm_song_is_from_database(NcmSong *song);
 bool ncm_song_is_stream(NcmSong *song);
 
@@ -76,9 +75,9 @@ int32 ncm_song_format_numeric_tag(char *buffer, int32 buffer_cap,
                                   char *tag, int32 tag_len);
 int32 ncm_song_format_track_number(char *buffer, int32 buffer_cap,
                                    char *tag, int32 tag_len);
-int32 ncm_song_show_time(uint32 length, char *buffer, int32 buffer_cap);
+int32 ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap);
 NcmBuffer ncm_song_getter_buffer(NcmSong *song,
-                                 enum NcmSongGetter getter, uint32 idx);
+                                 enum NcmSongGetter getter, int32 idx);
 NcmBuffer ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
                                char *separator, int32 separator_len,
                                bool show_duplicates);
