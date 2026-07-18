@@ -10,7 +10,7 @@
 #include "screens/nc_screen.h"
 
 #define NATIVE_TINY_TAG_EDITOR_TAG_ROW(FIELD) \
-    (NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW + (FIELD))
+    ((int32)NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW + (int32)(FIELD))
 
 enum NativeTinyTagEditorRow {
     NATIVE_TINY_TAG_EDITOR_FILE_NAME_INFO_ROW,
