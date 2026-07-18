@@ -5478,15 +5478,15 @@ action_runtime_toggle_display_mode(void) {
 
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_SEARCH_ENGINE)) {
         NativeSearchEngineScreen *screen;
-        NcmStringFormatArg arg;
+        NcmStringFormatArg arg2;
         enum DisplayMode search_mode;
 
         screen = native_c_screen_search_engine();
         search_mode = native_search_engine_screen_toggle_display_mode(screen);
-        arg = ncm_string_format_arg_cstring(ncm_display_mode_str(search_mode));
+        arg2 = ncm_string_format_arg_cstring(ncm_display_mode_str(search_mode));
         ncm_statusbar_format((int32)Config.message_delay_time,
                              STRLIT_ARGS("Search engine display mode: %1%"),
-                             &arg, 1);
+                             &arg2, 1);
         app_controller_request_current_screen_resize();
         app_controller_refresh_current_screen();
         return true;
