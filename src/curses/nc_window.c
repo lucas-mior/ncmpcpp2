@@ -963,6 +963,9 @@ nc_window_scroll(NcWindow *window, enum NcScroll where) {
     case NC_SCROLL_PAGE_DOWN:
         wscrl(window->window, -nc_i32(window->width));
         break;
+    case NC_SCROLL_HOME:
+    case NC_SCROLL_END:
+        break;
     default:
         break;
     }
