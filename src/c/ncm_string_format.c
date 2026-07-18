@@ -29,6 +29,9 @@ ncm_string_format_append_number(NcmBuffer *out, char *format,
         len = SNPRINTF(buffer, format,
                        arg->value.f64);
         break;
+    case NCM_STRING_FORMAT_ARG_STRING:
+    case NCM_STRING_FORMAT_ARG_CHAR:
+    case NCM_STRING_FORMAT_ARG_BOOL:
     default:
         return;
     }
