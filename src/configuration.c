@@ -33,7 +33,6 @@
 static char current_song_default_format[] = "{{{(%l) }{{%a - }%t}}|{%f}}";
 static bool configuration_quiet;
 
-
 static void configuration_print_error(char *context, NcmError *error);
 
 void
@@ -703,7 +702,6 @@ configuration_read_settings(NcmConfigurationOptions *options, NcmError *error) {
     }
     return true;
 }
-
 
 static bool
 configuration_read_bindings(NcmConfigurationOptions *options,

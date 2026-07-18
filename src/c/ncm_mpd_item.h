@@ -21,7 +21,6 @@ typedef union NcmMpdItemValue {
     NcmPlaylist playlist;
 } NcmMpdItemValue;
 
-
 typedef struct NcmMpdItem {
     enum NcmMpdItemKind kind;
     NcmMpdItemValue value;

@@ -276,7 +276,6 @@ current_screen_apply_filter(char *pattern, int32 pattern_len,
     return result;
 }
 
-
 NcmStringView
 current_screen_current_search_constraint(void) {
     NcmBuffer *buffer;

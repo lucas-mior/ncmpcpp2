@@ -17,8 +17,6 @@ char *ncm_helpers_with_errors(bool success);
 int32 ncm_helpers_show_song_time(uint32 length, char *buffer,
                                  int32 buffer_cap);
 
-
-
 void ncm_menu_reverse_selection(NcMenu *menu, enum NcMenuItemSource source);
 bool ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
                                   int64 *first, int64 *last);

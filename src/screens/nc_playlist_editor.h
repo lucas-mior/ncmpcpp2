@@ -84,7 +84,6 @@ typedef struct NativePlaylistEditorScreen {
     bool registered;
 } NativePlaylistEditorScreen;
 
-
 void native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
                                         int64 start_x, int64 width,
                                         int64 main_start_y,

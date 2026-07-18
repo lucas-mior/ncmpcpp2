@@ -280,7 +280,6 @@ typedef struct NcmArrayItemCallbacks {
         return;                                                      \
     }
 
-
 #define NCM_ARRAY_DEFINE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE, CALLBACKS) \
     void                                                               \
     PREFIX##_remove_ordered(ARRAY_TYPE *array, int32 idx) {            \

@@ -9,7 +9,6 @@
 #include "curses/nc_window.h"
 #include "screens/screen_type.h"
 
-
 enum NcmBindingActionKind {
     NCM_BINDING_ACTION_NORMAL,
     NCM_BINDING_ACTION_PUSH_CHARACTERS,

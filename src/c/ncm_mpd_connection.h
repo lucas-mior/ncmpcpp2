@@ -63,7 +63,6 @@ typedef struct NcmMpdOutputList {
     int32 capacity;
 } NcmMpdOutputList;
 
-
 void ncm_mpd_string_init(NcmMpdString *string);
 void ncm_mpd_string_destroy(NcmMpdString *string);
 void ncm_mpd_output_init(NcmMpdOutput *output);
@@ -261,7 +260,6 @@ bool ncm_mpd_connection_set_crossfade(NcmMpdConnection *connection,
 bool ncm_mpd_connection_set_volume(NcmMpdConnection *connection, uint32 vol);
 bool ncm_mpd_connection_change_volume(NcmMpdConnection *connection,
                                       int32 change);
-
 
 bool ncm_mpd_connection_move(NcmMpdConnection *connection,
                              uint32 from,

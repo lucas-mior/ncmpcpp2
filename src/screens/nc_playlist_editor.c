@@ -798,7 +798,6 @@ native_playlist_editor_screen_request_content_update(
     return;
 }
 
-
 static NativePlaylistEditorScreen *
 playlist_editor_from_screen(NcScreen *screen) {
     return nc_screen_user(screen);

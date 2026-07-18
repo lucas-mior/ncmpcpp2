@@ -1,7 +1,6 @@
 #if !defined(NCMPCPP_SETTINGS_C)
 #define NCMPCPP_SETTINGS_C
 
-
 #include "settings.h"
 
 #include <ctype.h>

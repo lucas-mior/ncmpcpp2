@@ -1006,7 +1006,6 @@ static NcmActionDef action_defs[] = {
     },
 };
 
-
 static int32
 ncm_action_name_len(char *name) {
     int32 len;
