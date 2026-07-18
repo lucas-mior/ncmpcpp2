@@ -39,7 +39,6 @@ struct NativeOutputsScreen {
     bool initialized;
 };
 
-
 struct NativeServerInfoScreen {
     NcServerInfoScreen screen;
     NcmMpdStringList url_handlers;
@@ -120,7 +119,6 @@ static NcOutputsHooks native_outputs_hooks(void);
 static NcServerInfoHooks native_server_info_hooks(void);
 static NcSongInfoHooks native_song_info_hooks(void);
 static void native_show_long_time(NcBuffer *buffer, uint64 seconds);
-
 
 void
 native_c_screen_browser_init(void) {
@@ -235,7 +233,6 @@ native_c_screen_help_typed(void) {
     native_c_screen_help_init();
     return &help_screen.screen;
 }
-
 
 void
 native_c_screen_lastfm_init(void) {

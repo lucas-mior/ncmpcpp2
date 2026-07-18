@@ -28,7 +28,6 @@ typedef struct NativeSearchEngineScreen NativeSearchEngineScreen;
 typedef struct NativeServerInfoScreen NativeServerInfoScreen;
 typedef struct NativeSongInfoScreen NativeSongInfoScreen;
 
-
 void native_c_screens_init_all(void);
 void native_c_screens_register_native_only(void);
 void native_c_screens_request_registered_resize(void);
@@ -111,7 +110,6 @@ void native_c_screen_media_library_register(void);
 void native_c_screen_media_library_switch_to(void);
 NativeMediaLibraryScreen *native_c_screen_media_library(void);
 NcScreen *native_c_screen_media_library_native(void);
-
 
 void native_c_screen_tag_editor_init(void);
 void native_c_screen_tag_editor_register(void);
