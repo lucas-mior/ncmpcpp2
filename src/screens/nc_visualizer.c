@@ -757,8 +757,7 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     if (fps <= 0) {
         fps = NATIVE_VISUALIZER_DEFAULT_FPS;
     }
-    if ((visualization_type < 0)
-        || (visualization_type >= NATIVE_VISUALIZER_TYPE_LAST)) {
+    if (visualization_type >= NATIVE_VISUALIZER_TYPE_LAST) {
         visualization_type = NATIVE_VISUALIZER_WAVE;
     }
 #if defined(HAVE_FFTW3_H)
@@ -2306,20 +2305,17 @@ native_visualizer_next_type(enum NativeVisualizerType type) {
     switch (type) {
     case NATIVE_VISUALIZER_WAVE:
         return NATIVE_VISUALIZER_WAVE_FILLED;
-#if defined(HAVE_FFTW3_H)
     case NATIVE_VISUALIZER_WAVE_FILLED:
+#if defined(HAVE_FFTW3_H)
         return NATIVE_VISUALIZER_FREQUENCY;
     case NATIVE_VISUALIZER_FREQUENCY:
-        return NATIVE_VISUALIZER_ELLIPSE;
-#else
-    case NATIVE_VISUALIZER_WAVE_FILLED:
-        return NATIVE_VISUALIZER_ELLIPSE;
 #endif
+        return NATIVE_VISUALIZER_ELLIPSE;
     case NATIVE_VISUALIZER_ELLIPSE:
     case NATIVE_VISUALIZER_TYPE_LAST:
-    default:
         return NATIVE_VISUALIZER_WAVE;
     }
+    return NATIVE_VISUALIZER_WAVE;
 }
 
 #endif /* NCMPCPP_NC_VISUALIZER_C */
