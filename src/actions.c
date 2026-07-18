@@ -3410,7 +3410,7 @@ action_runtime_song_positions(NcmSongArray *songs, uint32 **positions,
         return false;
     }
 
-    result = malloc2((uint64)songs->len * SIZEOF(*result));
+    result = malloc2(songs->len * SIZEOF(*result));
     if (result == NULL) {
         return false;
     }
@@ -4385,7 +4385,7 @@ action_runtime_move_main_playlist_items_to(void) {
     target = ncm_song_position(song);
 
     item_count = nc_menu_all_item_count(menu);
-    positions = malloc2((uint64)item_count * SIZEOF(*positions));
+    positions = malloc2(item_count * SIZEOF(*positions));
     if (positions == NULL) {
         return false;
     }
@@ -4485,7 +4485,7 @@ action_runtime_move_playlist_editor_items_to(void) {
     target = ncm_song_position(song);
 
     item_count = nc_menu_all_item_count(menu);
-    positions = malloc2((uint64)item_count * SIZEOF(*positions));
+    positions = malloc2(item_count * SIZEOF(*positions));
     if (positions == NULL) {
         return false;
     }
