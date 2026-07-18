@@ -21,10 +21,10 @@ typedef struct NcmMpdStats {
     int32 artists;
     int32 albums;
     int32 songs;
-    uint64 play_time;
-    uint64 uptime;
-    uint64 db_update_time;
-    uint64 db_play_time;
+    int64 play_time;
+    int64 uptime;
+    int64 db_update_time;
+    int64 db_play_time;
 } NcmMpdStats;
 
 typedef struct NcmMpdSongList {
@@ -51,7 +51,7 @@ typedef struct NcmMpdStringList {
 } NcmMpdStringList;
 
 typedef struct NcmMpdOutput {
-    int32 id;
+    uint32 id;
     char *name;
     int32 name_len;
     bool enabled;
