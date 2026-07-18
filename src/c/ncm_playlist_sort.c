@@ -79,8 +79,8 @@ ncm_playlist_sort_compare_key(NcmPlaylistSortContext *context,
 static int32
 ncm_playlist_sort_compare(NcmPlaylistSortContext *context,
                           int32 left_idx, int32 right_idx) {
-    uint32 left_position;
-    uint32 right_position;
+    int32 left_position;
+    int32 right_position;
     int32 result;
 
     for (int32 i = 0; i < context->getters_len; i += 1) {
@@ -251,9 +251,9 @@ ncm_playlist_sort_plan_build(
                 continue;
             }
             replacement.items[replacement.len].from =
-                start_position + (uint32)i;
+                start_position + i;
             replacement.items[replacement.len].to =
-                start_position + (uint32)j;
+                start_position + j;
             replacement.len += 1;
 
             swap_value = current[i];

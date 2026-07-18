@@ -680,7 +680,7 @@ ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
         if (getter == NCM_SONG_GETTER_NONE) {
             continue;
         }
-        for (uint32 i = 0; ; i += 1) {
+        for (int32 i = 0; ; i += 1) {
             NcmBuffer buffer = ncm_song_getter_buffer(source, getter, i);
 
             if (buffer.len == 0) {
@@ -688,7 +688,7 @@ ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
                 break;
             }
             if (!ncm_mutable_song_set_original_tag(
-                    dest, (enum NcmTagsField)field, (int32)i,
+                    dest, (enum NcmTagsField)field, i,
                     buffer.data, buffer.len)) {
                 ncm_buffer_destroy(&buffer);
                 return false;
