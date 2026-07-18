@@ -490,6 +490,7 @@ native_media_library_screen_toggle_mode(NativeMediaLibraryScreen *screen) {
     case NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY:
         next_mode = NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS;
         break;
+    case NATIVE_MEDIA_LIBRARY_MODE_LAST:
     default:
         next_mode = NATIVE_MEDIA_LIBRARY_MODE_THREE_COLUMNS;
         break;
@@ -3571,6 +3572,7 @@ native_library_column_menu(
         return nc_media_library_album_menu_base(&screen->albums);
     case NATIVE_MEDIA_LIBRARY_COLUMN_SONGS:
         return nc_media_library_song_menu_base(&screen->songs);
+    case NATIVE_MEDIA_LIBRARY_COLUMN_LAST:
     default:
         return NULL;
     }
@@ -3851,6 +3853,7 @@ native_library_display_callbacks(
             callbacks.filter = native_library_song_filter;
         }
         break;
+    case NATIVE_MEDIA_LIBRARY_COLUMN_LAST:
     default:
         break;
     }
