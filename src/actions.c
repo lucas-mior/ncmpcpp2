@@ -5929,7 +5929,7 @@ action_runtime_toggle_screen_lock(void) {
     if ((part < 20) || (part > 80)) {
         args[0] = ncm_string_format_arg_u64(20);
         args[1] = ncm_string_format_arg_u64(80);
-        args[2] = ncm_string_format_arg_u64(part);
+        args[2] = ncm_string_format_arg_u64((uint64)part);
         ncm_statusbar_format((int32)Config.message_delay_time,
                              STRLIT_ARGS("Error: value is out of bounds "
                                          "([%1%, %2%] expected, %3% given)"),
@@ -5939,7 +5939,7 @@ action_runtime_toggle_screen_lock(void) {
 
     Config.locked_screen_width_part = part / 100.0;
     if (app_controller_lock_current_screen()) {
-        args[0] = ncm_string_format_arg_u64(part);
+        args[0] = ncm_string_format_arg_u64((uint32)part);
         ncm_statusbar_format((int32)Config.message_delay_time,
                              STRLIT_ARGS("Screen locked (with %1%%% width)"),
                              args, 1);
@@ -6923,8 +6923,8 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return ncm_mpd_client_connected(&global_mpd)
                && (ncm_status_state_volume() >= 0);
     case NCM_ACTION_SHUFFLE: {
-        uint32 first;
-        uint32 last;
+        int32 first;
+        int32 last;
 
         if (!ncm_mpd_client_connected(&global_mpd)
             || !action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST)) {
