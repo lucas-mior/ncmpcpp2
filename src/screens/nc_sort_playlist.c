@@ -211,7 +211,7 @@ native_sort_playlist_dialog_open(
     NcmMpdClient *client, bool ignore_leading_the, NcmError *error) {
     NcmSongArray songs;
     NcScreen *current;
-    uint32 start_position;
+    int32 start_position;
 
     if (dialog == NULL) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing sort dialog"));
