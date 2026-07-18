@@ -3356,7 +3356,7 @@ action_runtime_song_positions(NcmSongArray *songs, uint32 **positions,
         return false;
     }
 
-    result = malloc2((uint64)songs->len * SIZEOF(*result));
+    result = malloc2(songs->len*SIZEOF(*result));
     if (result == NULL) {
         return false;
     }
