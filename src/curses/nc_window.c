@@ -1691,9 +1691,9 @@ nc_window_alt_charset(NcWindow *window, bool state) {
 static void
 nc_window_italic(NcWindow *window, bool state) {
     if (state) {
-        wattron(window->window, A_ITALIC);
+        wattron(window->window, (int)A_ITALIC);
     } else {
-        wattroff(window->window, A_ITALIC);
+        wattroff(window->window, (int)A_ITALIC);
     }
     return;
 }
