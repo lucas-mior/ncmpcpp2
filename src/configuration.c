@@ -206,8 +206,8 @@ configuration_require_value(int32 argc, char **argv, int32 *i, char *option,
 
 static bool
 configuration_parse_port(char *value, int32 value_len, char *option,
-                         int32 option_len, uint32 *port, NcmError *error) {
-    uint32 parsed;
+                         int32 option_len, int32 *port, NcmError *error) {
+    int32 parsed;
 
     if (!ncm_parse_int32(value, value_len, &parsed, error)) {
         char message[192];
@@ -546,7 +546,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
 }
 
 static void
-configuration_print_usage(char *program) {
+configuration_print_usage(char *program_name) {
     NcmBufferArray config_paths;
     NcmBufferArray bindings_paths;
     NcmError error;
@@ -562,7 +562,7 @@ configuration_print_usage(char *program) {
         return;
     }
 
-    printf("Usage: %s [options]...\n", program);
+    printf("Usage: %s [options]...\n", program_name);
     printf("Options:\n");
     printf("  -h, --host HOST              connect to server at host\n");
     printf("  -p, --port PORT              connect to server at port\n");
@@ -724,7 +724,7 @@ static bool
 configuration_apply_mpd_environment(NcmError *error) {
     char *env_host;
     char *env_port;
-    uint32 port;
+    int32 port;
 
     env_host = getenv("MPD_HOST");
     env_port = getenv("MPD_PORT");
