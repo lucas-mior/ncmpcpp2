@@ -18,7 +18,7 @@ ncm_helpers_with_errors(bool success) {
 }
 
 int32
-ncm_helpers_show_song_time(uint32 length, char *buffer, int32 buffer_cap) {
+ncm_helpers_show_song_time(int32 length, char *buffer, int32 buffer_cap) {
     return ncm_song_show_time(length, buffer, buffer_cap);
 }
 
