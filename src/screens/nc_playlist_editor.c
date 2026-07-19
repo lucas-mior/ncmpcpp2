@@ -759,8 +759,7 @@ native_playlist_editor_screen_search_active(
         ncm_buffer_clear(constraint);
         return false;
     }
-    if (!ncm_regex_compile(regex, pattern, pattern_len, regex_flags,
-                           error)) {
+    if (!ncm_regex_compile(regex, pattern, pattern_len, regex_flags, error)) {
         return false;
     }
     ncm_buffer_set(constraint, pattern, pattern_len);
