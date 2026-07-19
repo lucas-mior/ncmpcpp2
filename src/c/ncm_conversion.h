@@ -3,8 +3,10 @@
 
 #include "c/ncm_error.h"
 
-bool ncm_parse_int32(char *source, int32 source_len, int32 *out, NcmError *error);
-bool ncm_parse_int64(char *source, int32 source_len, int64 *out, NcmError *error);
+bool ncm_parse_int32(char *source, int32 source_len, int32 *out,
+                     NcmError *error);
+bool ncm_parse_int64(char *source, int32 source_len, int64 *out,
+                     NcmError *error);
 bool ncm_parse_double(char *source, int32 source_len,
                       double *out, NcmError *error);
 

@@ -5,7 +5,7 @@
 #include "c/ncm_mpd_connection.h"
 #include "c/ncm_random.h"
 
-typedef void (*NcmMpdNoidleCallback)(int32 flags, void *user);
+typedef void NcmMpdNoidleCallback(int32 flags, void *user);
 
 typedef struct NcmMpdClient {
     NcmMpdConnection connection;
@@ -16,7 +16,7 @@ typedef struct NcmMpdClient {
     bool command_list_active;
     bool idle;
     int32 fd;
-    NcmMpdNoidleCallback noidle_callback;
+    NcmMpdNoidleCallback *noidle_callback;
     void *noidle_user;
 } NcmMpdClient;
 
@@ -27,7 +27,7 @@ bool ncm_mpd_client_connected(NcmMpdClient *client);
 int32 ncm_mpd_client_version(NcmMpdClient *client);
 int32 ncm_mpd_client_fd(NcmMpdClient *client);
 void ncm_mpd_client_set_noidle_callback(NcmMpdClient *client,
-                                        NcmMpdNoidleCallback callback,
+                                        NcmMpdNoidleCallback *callback,
                                         void *user);
 bool ncm_mpd_client_set_hostname(NcmMpdClient *client, char *host,
                                  int32 host_len, NcmError *error);

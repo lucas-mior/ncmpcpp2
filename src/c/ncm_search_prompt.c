@@ -50,7 +50,7 @@ ncm_search_prompt_state_cached_result(NcmSearchPromptState *state,
         return false;
     }
 
-    if (found != NULL) {
+    if (found) {
         *found = state->last_found;
     }
     return true;

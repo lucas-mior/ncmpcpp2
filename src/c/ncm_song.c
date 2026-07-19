@@ -36,7 +36,7 @@ ncm_song_format_numeric_tag_prefix(char *buffer, int32 buffer_cap,
     bool add_zero;
 
     if ((tag == NULL) || (tag_len < 0)) {
-        if ((buffer != NULL) && (buffer_cap > 0)) {
+        if (buffer && (buffer_cap > 0)) {
             buffer[0] = '\0';
         }
         return 0;
@@ -51,20 +51,20 @@ ncm_song_format_numeric_tag_prefix(char *buffer, int32 buffer_cap,
     out = 0;
     add_zero = ncm_song_needs_numeric_zero(tag, tag_len);
     if (add_zero) {
-        if ((buffer != NULL) && (out + 1 < buffer_cap)) {
+        if (buffer && (out + 1 < buffer_cap)) {
             buffer[out] = '0';
         }
         out += 1;
     }
 
     for (int32 i = 0; i < copy_len; i += 1) {
-        if ((buffer != NULL) && (out + 1 < buffer_cap)) {
+        if (buffer && (out + 1 < buffer_cap)) {
             buffer[out] = tag[i];
         }
         out += 1;
     }
 
-    if ((buffer != NULL) && (buffer_cap > 0)) {
+    if (buffer && (buffer_cap > 0)) {
         if (out < buffer_cap) {
             buffer[out] = '\0';
         } else {
@@ -89,7 +89,7 @@ ncm_song_tag_destroy(NcmSongTag *tag) {
     if (tag == NULL) {
         return;
     }
-    if (tag->value != NULL) {
+    if (tag->value) {
         free2(tag->value, tag->value_len + 1);
     }
 
@@ -129,7 +129,7 @@ ncm_song_grow_tags(NcmSong *song) {
     }
 
     old_cap = song->tags_cap;
-    if (old_cap == 0) {
+    if (old_cap <= 0) {
         new_cap = 8;
     } else {
         new_cap = old_cap*2;
@@ -185,13 +185,13 @@ ncm_song_destroy(NcmSong *song) {
         return;
     }
 
-    if (song->uri != NULL) {
+    if (song->uri) {
         free2(song->uri, song->uri_len + 1);
     }
     for (int32 i = 0; i < song->tags_len; i += 1) {
         ncm_song_tag_destroy(&song->tags[i]);
     }
-    if (song->tags != NULL) {
+    if (song->tags) {
         free2(song->tags, song->tags_cap*SIZEOF(*song->tags));
     }
 
@@ -227,7 +227,7 @@ ncm_song_copy(NcmSong *dest, NcmSong *source) {
     }
 
     ncm_song_init(&replacement);
-    if (source->uri != NULL) {
+    if (source->uri) {
         if (!ncm_song_set_uri(&replacement, source->uri,
                               source->uri_len)) {
             ncm_song_destroy(&replacement);
@@ -333,7 +333,7 @@ ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len) {
     memcpy64(copy, uri, uri_len);
     copy[uri_len] = '\0';
 
-    if (song->uri != NULL) {
+    if (song->uri) {
         free2(song->uri, song->uri_len + 1);
     }
     song->uri = copy;
@@ -375,7 +375,7 @@ ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
 
 void
 ncm_song_set_duration(NcmSong *song, int32 duration) {
-    if (song != NULL) {
+    if (song) {
         song->duration = duration;
     }
     return;
@@ -383,7 +383,7 @@ ncm_song_set_duration(NcmSong *song, int32 duration) {
 
 void
 ncm_song_set_position(NcmSong *song, int32 position) {
-    if (song != NULL) {
+    if (song) {
         song->position = position;
     }
     return;
@@ -391,7 +391,7 @@ ncm_song_set_position(NcmSong *song, int32 position) {
 
 void
 ncm_song_set_id(NcmSong *song, int32 id) {
-    if (song != NULL) {
+    if (song) {
         song->id = id;
     }
     return;
@@ -399,7 +399,7 @@ ncm_song_set_id(NcmSong *song, int32 id) {
 
 void
 ncm_song_set_priority(NcmSong *song, int32 priority) {
-    if (song != NULL) {
+    if (song) {
         song->priority = priority;
     }
     return;
@@ -407,7 +407,7 @@ ncm_song_set_priority(NcmSong *song, int32 priority) {
 
 void
 ncm_song_set_mtime(NcmSong *song, time_t last_modified) {
-    if (song != NULL) {
+    if (song) {
         song->last_modified = last_modified;
     }
     return;
@@ -850,7 +850,7 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
         bool already_present;
 
         tag = ncm_song_getter_buffer(song, getter, i);
-        if (tag.len == 0) {
+        if (tag.len <= 0) {
             ncm_buffer_destroy(&tag);
             break;
         }

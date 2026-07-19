@@ -39,10 +39,10 @@ ncm_conversion_copy_source(NcmBuffer *buffer, char *source,
 
 static bool
 ncm_conversion_trailing_space_only(char *cursor) {
-    unsigned char c;
+    uint8 c;
 
     while (*cursor != '\0') {
-        c = (unsigned char)*cursor;
+        c = (uint8)*cursor;
         if (!isspace(c)) {
             return false;
         }
@@ -54,10 +54,10 @@ ncm_conversion_trailing_space_only(char *cursor) {
 
 static bool
 ncm_conversion_is_negative_source(char *source) {
-    unsigned char c;
+    uint8 c;
 
     while (*source != '\0') {
-        c = (unsigned char)*source;
+        c = (uint8)*source;
         if (!isspace(c)) {
             break;
         }
@@ -178,7 +178,7 @@ ncm_parse_int64(char *source, int32 source_len,
                 int64 *out, NcmError *error) {
     NcmBuffer buffer;
     char *end;
-    unsigned long long value;
+    uint64 value;
     bool ok;
 
     if (out == NULL) {
@@ -197,9 +197,10 @@ ncm_parse_int64(char *source, int32 source_len,
     ok = (end != buffer.data)
          && !ncm_conversion_is_negative_source(buffer.data)
          && ncm_conversion_trailing_space_only(end)
-         && (errno != ERANGE);
+         && (errno != ERANGE)
+         && (value <= (uint64)MAXOF(*out));
     if (ok) {
-        *out = (int32)value;
+        *out = (int64)value;
         ncm_error_clear(error);
     } else {
         ncm_conversion_set_parse_error(error, source, source_len);

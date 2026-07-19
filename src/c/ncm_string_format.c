@@ -123,14 +123,16 @@ void
 ncm_string_format_apply(NcmBuffer *out, char *format, int32 format_len,
                         NcmStringFormatArg *args, int32 args_len) {
     int32 next_arg;
+    int32 i;
 
     if ((out == NULL) || (format == NULL) || (format_len <= 0)) {
         return;
     }
 
     next_arg = 0;
-    for (int32 i = 0; i < format_len;) {
-        unsigned char next;
+    i = 0;
+    while (i < format_len) {
+        uint8 next;
 
         if ((format[i] != '%') || (i + 1 >= format_len)) {
             ncm_buffer_append_byte(out, format[i]);
@@ -138,7 +140,7 @@ ncm_string_format_apply(NcmBuffer *out, char *format, int32 format_len,
             continue;
         }
 
-        next = (unsigned char)format[i + 1];
+        next = (uint8)format[i + 1];
         if (next == '%') {
             ncm_buffer_append_byte(out, '%');
             i += 2;
@@ -159,7 +161,7 @@ ncm_string_format_apply(NcmBuffer *out, char *format, int32 format_len,
             idx = 0;
             j = i + 1;
             while ((j < format_len)
-                   && isdigit((unsigned char)format[j])) {
+                   && isdigit((uint8)format[j])) {
                 idx = idx*10 + format[j] - '0';
                 j += 1;
             }

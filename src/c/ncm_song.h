@@ -9,10 +9,13 @@
 
 struct mpd_song;
 
-enum NcmSongOwnership {
-    NCM_SONG_BORROWED,
-    NCM_SONG_OWNED,
-};
+#define ENUM_NAME NcmSongOwnership
+#define ENUM_PREFIX_ NCM_SONG_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NCM_SONG_BORROWED) \
+    X(NCM_SONG_OWNED)
+#include "cbase/xenums.c"
 
 typedef struct NcmSongTag {
     char *value;

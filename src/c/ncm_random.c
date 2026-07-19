@@ -81,7 +81,7 @@ ncm_random_range_u32(NcmRandom *random, uint32 upper_bound) {
     }
 
     threshold = (uint32)(-upper_bound) % upper_bound;
-    for (;;) {
+    while (true) {
         value = ncm_random_u32(random);
         if (value >= threshold) {
             return value % upper_bound;

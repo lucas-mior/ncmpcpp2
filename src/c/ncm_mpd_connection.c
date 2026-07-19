@@ -305,7 +305,7 @@ ncm_mpd_connection_recv_song_list(NcmMpdConnection *connection,
     }
 
     ncm_mpd_song_list_clear(songs);
-    for (;;) {
+    while (true) {
         ncm_song_init(&song);
         if (!ncm_mpd_connection_recv_song(connection, &song)) {
             ncm_song_destroy(&song);
@@ -344,7 +344,7 @@ ncm_mpd_connection_recv_entity_song_list(NcmMpdConnection *connection,
     }
 
     ncm_mpd_song_list_clear(songs);
-    for (;;) {
+    while (true) {
         entity = mpd_recv_entity(connection->mpd);
         if (entity == NULL) {
             break;
@@ -401,7 +401,7 @@ ncm_mpd_connection_recv_item_list(NcmMpdConnection *connection,
     }
 
     ncm_mpd_item_list_clear(items);
-    for (;;) {
+    while (true) {
         entity = mpd_recv_entity(connection->mpd);
         if (entity == NULL) {
             break;
@@ -443,7 +443,7 @@ ncm_mpd_connection_recv_string_list_tag(NcmMpdConnection *connection,
     }
 
     ncm_mpd_string_list_clear(strings);
-    for (;;) {
+    while (true) {
         pair = mpd_recv_pair_tag(connection->mpd, tag);
         if (pair == NULL) {
             break;
@@ -480,7 +480,7 @@ ncm_mpd_connection_recv_pair_list(NcmMpdConnection *connection,
     }
 
     ncm_mpd_string_list_clear(strings);
-    for (;;) {
+    while (true) {
         pair = mpd_recv_pair_named(connection->mpd, name);
         if (pair == NULL) {
             break;
@@ -556,7 +556,7 @@ ncm_mpd_string_destroy(NcmMpdString *string) {
         return;
     }
 
-    if (string->value != NULL) {
+    if (string->value) {
         free2(string->value, string->value_len + 1);
     }
     ncm_mpd_string_init(string);
@@ -582,7 +582,7 @@ ncm_mpd_output_destroy(NcmMpdOutput *output) {
         return;
     }
 
-    if (output->name != NULL) {
+    if (output->name) {
         free2(output->name, output->name_len + 1);
     }
     ncm_mpd_output_init(output);
@@ -608,7 +608,7 @@ ncm_mpd_song_list_destroy(NcmMpdSongList *list) {
     }
 
     ncm_mpd_song_list_clear(list);
-    if (list->items != NULL) {
+    if (list->items) {
         free2(list->items, list->capacity*SIZEOF(*list->items));
     }
 
@@ -674,7 +674,7 @@ ncm_mpd_song_list_to_song_array(NcmMpdSongList *list,
     }
 
     ncm_song_array_init(&replacement);
-    if (list != NULL) {
+    if (list) {
         for (int32 i = 0; i < list->count; i += 1) {
             if (!ncm_song_array_append_copy(&replacement,
                                             &list->items[i])) {
@@ -707,7 +707,7 @@ ncm_mpd_item_list_destroy(NcmMpdItemList *list) {
     }
 
     ncm_mpd_item_list_clear(list);
-    if (list->items != NULL) {
+    if (list->items) {
         free2(list->items, list->capacity*SIZEOF(*list->items));
     }
 
@@ -738,7 +738,7 @@ ncm_mpd_item_list_to_item_array(NcmMpdItemList *list,
     }
 
     ncm_mpd_item_array_init(&replacement);
-    if (list != NULL) {
+    if (list) {
         for (int32 i = 0; i < list->count; i += 1) {
             if (!ncm_mpd_item_array_append_copy(&replacement,
                                                 &list->items[i])) {
@@ -763,7 +763,7 @@ ncm_mpd_item_list_to_directory_array(NcmMpdItemList *list,
     }
 
     ncm_directory_array_init(&replacement);
-    if (list != NULL) {
+    if (list) {
         for (int32 i = 0; i < list->count; i += 1) {
             if (ncm_mpd_item_kind(&list->items[i])
                 != NCM_MPD_ITEM_DIRECTORY) {
@@ -801,7 +801,7 @@ ncm_mpd_string_list_destroy(NcmMpdStringList *list) {
     }
 
     ncm_mpd_string_list_clear(list);
-    if (list->items != NULL) {
+    if (list->items) {
         free2(list->items, list->capacity*SIZEOF(*list->items));
     }
 
@@ -862,7 +862,7 @@ ncm_mpd_output_list_destroy(NcmMpdOutputList *list) {
     }
 
     ncm_mpd_output_list_clear(list);
-    if (list->items != NULL) {
+    if (list->items) {
         free2(list->items, list->capacity*SIZEOF(*list->items));
     }
 
@@ -902,7 +902,7 @@ ncm_mpd_playlist_list_destroy(NcmMpdPlaylistList *list) {
     }
 
     ncm_mpd_playlist_list_clear(list);
-    if (list->items != NULL) {
+    if (list->items) {
         free2(list->items, list->capacity*SIZEOF(*list->items));
     }
 
@@ -983,7 +983,7 @@ ncm_mpd_connection_disconnect(NcmMpdConnection *connection) {
         return;
     }
 
-    if (connection->mpd != NULL) {
+    if (connection->mpd) {
         mpd_connection_free(connection->mpd);
     }
     connection->mpd = NULL;
@@ -996,7 +996,7 @@ ncm_mpd_connection_is_connected(NcmMpdConnection *connection) {
         return false;
     }
 
-    return connection->mpd != NULL;
+    return connection->mpd;
 }
 
 int32
@@ -1052,7 +1052,7 @@ ncm_mpd_connection_recv_idle(NcmMpdConnection *connection,
     events = (enum mpd_idle)mpd_recv_idle(connection->mpd, disable_timeout);
     mpd_response_finish(connection->mpd);
     ok = ncm_mpd_connection_check_error(connection);
-    if (out_events != NULL) {
+    if (out_events) {
         *out_events = events;
     }
 
@@ -1392,7 +1392,7 @@ ncm_mpd_connection_get_playlists(NcmMpdConnection *connection,
     }
 
     ncm_mpd_playlist_list_clear(playlists);
-    for (;;) {
+    while (true) {
         playlist = mpd_recv_playlist(connection->mpd);
         if (playlist == NULL) {
             break;
@@ -1716,7 +1716,7 @@ ncm_mpd_connection_update_database(NcmMpdConnection *connection,
         return false;
     }
 
-    if (id != NULL) {
+    if (id) {
         *id = 0;
     }
 
@@ -1728,7 +1728,7 @@ ncm_mpd_connection_update_database(NcmMpdConnection *connection,
     if (!mpd_send_update(connection->mpd, path)) {
         return ncm_mpd_connection_check_error(connection);
     }
-    if (id != NULL) {
+    if (id) {
         *id = (int32)mpd_recv_update_id(connection->mpd);
     } else {
         mpd_recv_update_id(connection->mpd);
@@ -1755,7 +1755,7 @@ ncm_mpd_connection_get_outputs(NcmMpdConnection *connection,
         return ncm_mpd_connection_check_error(connection);
     }
 
-    for (;;) {
+    while (true) {
         output = mpd_recv_output(connection->mpd);
         if (output == NULL) {
             break;
@@ -2049,7 +2049,7 @@ ncm_mpd_connection_add_song(NcmMpdConnection *connection,
         return false;
     }
 
-    if (id != NULL) {
+    if (id) {
         *id = 0;
     }
 
@@ -2063,7 +2063,7 @@ ncm_mpd_connection_add_song(NcmMpdConnection *connection,
         return true;
     }
 
-    if (id != NULL) {
+    if (id) {
         *id = mpd_recv_song_id(connection->mpd);
     } else {
         mpd_recv_song_id(connection->mpd);
@@ -2081,12 +2081,12 @@ ncm_mpd_connection_add(NcmMpdConnection *connection,
         return false;
     }
 
-    if (added != NULL) {
+    if (added) {
         *added = false;
     }
 
     if (command_list_active) {
-        if (added != NULL) {
+        if (added) {
             *added = mpd_send_add(connection->mpd, path);
         } else {
             mpd_send_add(connection->mpd, path);
@@ -2094,7 +2094,7 @@ ncm_mpd_connection_add(NcmMpdConnection *connection,
         return true;
     }
 
-    if (added != NULL) {
+    if (added) {
         *added = mpd_run_add(connection->mpd, path);
     } else {
         mpd_run_add(connection->mpd, path);
@@ -2216,7 +2216,7 @@ ncm_mpd_connection_load_playlist(NcmMpdConnection *connection,
         return false;
     }
 
-    if (loaded != NULL) {
+    if (loaded) {
         *loaded = mpd_run_load(connection->mpd, playlist);
     } else {
         mpd_run_load(connection->mpd, playlist);

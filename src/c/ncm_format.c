@@ -90,6 +90,7 @@ static bool
 ncm_format_parse_color_component(char *data, int32 data_len,
                                  bool background, int16 *result) {
     int32 value;
+    int32 lower_bound;
 
     if (STREQUAL(data, data_len, STRLIT_ARGS("black"))) {
         *result = COLOR_BLACK;
@@ -124,8 +125,7 @@ ncm_format_parse_color_component(char *data, int32 data_len,
         return true;
     }
     if (background
-        && STREQUAL(data, data_len,
-                            STRLIT_ARGS("transparent"))) {
+        && STREQUAL(data, data_len, STRLIT_ARGS("transparent"))) {
         *result = -1;
         return true;
     }
@@ -140,12 +140,17 @@ ncm_format_parse_color_component(char *data, int32 data_len,
         return false;
     }
     for (int32 i = 0; i < data_len; i += 1) {
-        if (!isdigit((unsigned char)data[i])) {
+        if (!isdigit((uint8)data[i])) {
             return false;
         }
         value = value*10 + data[i] - '0';
     }
-    if (value < (background ? 0 : 1) || value > 256) {
+    if (background) {
+        lower_bound = 0;
+    } else {
+        lower_bound = 1;
+    }
+    if ((value < lower_bound) || (value > 256)) {
         return false;
     }
     *result = (int16)(value - 1);
@@ -208,7 +213,7 @@ ncm_format_read_uint(char *data, int32 start, int32 end,
     }
 
     for (int32 i = start; i < end; i += 1) {
-        if (!isdigit((unsigned char)data[i])) {
+        if (!isdigit((uint8)data[i])) {
             return false;
         }
         result = result*10 + (uint32)(data[i] - '0');
@@ -318,7 +323,7 @@ ncm_format_expr_list_destroy(NcmFormatExprList *list) {
         return;
     }
     ncm_format_expr_list_clear(list);
-    if (list->items != NULL) {
+    if (list->items) {
         free2(list->items, list->cap*SIZEOF(*list->items));
     }
     ncm_format_expr_list_init(list);
@@ -527,7 +532,7 @@ ncm_format_parse_dollar(NcmFormatExprList *out, char *data,
     }
 
     if ((flags & NCM_FORMAT_FLAG_COLOR)
-        && isdigit((unsigned char)data[i])) {
+        && isdigit((uint8)data[i])) {
         int32 color_index;
 
         color_index = ncm_color_index_from_char(data[i]);
@@ -631,9 +636,9 @@ ncm_format_parse_percent(NcmFormatExprList *out, char *data,
     }
 
     delimiter = 0;
-    if (isdigit((unsigned char)data[i])) {
+    if (isdigit((uint8)data[i])) {
         delimiter_start = i;
-        while ((i < end) && isdigit((unsigned char)data[i])) {
+        while ((i < end) && isdigit((uint8)data[i])) {
             i += 1;
         }
         if (i >= end) {
@@ -799,16 +804,19 @@ ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag) {
     if ((tag->delimiter > 0) && (result.len > 0)) {
         int32 limit;
 
+        if (tag->delimiter > (uint32)MAXOF(limit)) {
+            limit = MAXOF(limit);
+        } else {
+            limit = (int32)tag->delimiter;
+        }
+
         if ((tag->getter == NCM_SONG_GETTER_DATE)
             || (tag->getter == NCM_SONG_GETTER_LENGTH)) {
-            limit = (int32)tag->delimiter;
             if (limit < result.len) {
                 result.len = limit;
             }
         } else {
-            limit = utf8_cut_width(result.data, result.len,
-                                       (int32)tag->delimiter);
-            result.len = limit;
+            result.len = utf8_cut_width(result.data, result.len, limit);
         }
         result.data[result.len] = '\0';
     }
@@ -820,7 +828,7 @@ static void
 ncm_format_emit_text(NcmFormatCallbacks *cb, void *user,
                      char *data, int32 data_len,
                      NcmFormatSongTag *tag) {
-    if ((cb != NULL) && (cb->text != NULL) && (data_len > 0)) {
+    if (cb && cb->text && (data_len > 0)) {
         cb->text(user, data, data_len, tag);
     }
     return;
@@ -828,7 +836,7 @@ ncm_format_emit_text(NcmFormatCallbacks *cb, void *user,
 
 static void
 ncm_format_emit_color(NcmFormatCallbacks *cb, void *user, NcColor color) {
-    if ((cb != NULL) && (cb->color != NULL)) {
+    if (cb && cb->color) {
         cb->color(user, color);
     }
     return;
@@ -837,7 +845,7 @@ ncm_format_emit_color(NcmFormatCallbacks *cb, void *user, NcColor color) {
 static void
 ncm_format_emit_format(NcmFormatCallbacks *cb, void *user,
                        enum NcFormat format) {
-    if ((cb != NULL) && (cb->format != NULL)) {
+    if (cb && cb->format) {
         cb->format(user, format);
     }
     return;
@@ -845,7 +853,7 @@ ncm_format_emit_format(NcmFormatCallbacks *cb, void *user,
 
 static void *
 ncm_format_current_output(void *left, void *right, bool switched) {
-    if (switched && (right != NULL)) {
+    if (switched && right) {
         return right;
     }
     return left;
@@ -984,7 +992,7 @@ static void
 ncm_format_buffer_color(void *user, NcColor color) {
     NcBuffer *buffer = (NcBuffer *)user;
 
-    nc_buffer_add_color(buffer, nc_buffer_len(buffer), color, (uint64)-1);
+    nc_buffer_add_color(buffer, nc_buffer_len(buffer), color, MAXOF((uint64)0));
     return;
 }
 
@@ -992,7 +1000,8 @@ static void
 ncm_format_buffer_format(void *user, enum NcFormat format) {
     NcBuffer *buffer = (NcBuffer *)user;
 
-    nc_buffer_add_format(buffer, nc_buffer_len(buffer), format, (uint64)-1);
+    nc_buffer_add_format(buffer, nc_buffer_len(buffer), format,
+                         MAXOF((uint64)0));
     return;
 }
 

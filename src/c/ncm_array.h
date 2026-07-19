@@ -7,16 +7,16 @@
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 
-typedef void (*NcmArrayItemInitCallback)(void *item);
-typedef void (*NcmArrayItemDestroyCallback)(void *item);
-typedef bool (*NcmArrayItemCopyCallback)(void *dest, void *source);
-typedef void (*NcmArrayItemMoveCallback)(void *dest, void *source);
+typedef void NcmArrayItemInitCallback(void *item);
+typedef void NcmArrayItemDestroyCallback(void *item);
+typedef bool NcmArrayItemCopyCallback(void *dest, void *source);
+typedef void NcmArrayItemMoveCallback(void *dest, void *source);
 
 typedef struct NcmArrayItemCallbacks {
-    NcmArrayItemInitCallback init;
-    NcmArrayItemDestroyCallback destroy;
-    NcmArrayItemCopyCallback copy;
-    NcmArrayItemMoveCallback move;
+    NcmArrayItemInitCallback *init;
+    NcmArrayItemDestroyCallback *destroy;
+    NcmArrayItemCopyCallback *copy;
+    NcmArrayItemMoveCallback *move;
 } NcmArrayItemCallbacks;
 
 #define NCM_ARRAY_DECLARE_TYPE(ARRAY_TYPE, ITEM_TYPE) \
@@ -77,7 +77,7 @@ typedef struct NcmArrayItemCallbacks {
             return;                                                  \
         }                                                           \
         callbacks = CALLBACKS;                                       \
-        if ((callbacks != NULL) && (callbacks->destroy != NULL)) {   \
+        if (callbacks && callbacks->destroy) {                       \
             for (int32 i = 0; i < array->len; i += 1) {             \
                 callbacks->destroy(&array->items[i]);               \
             }                                                       \
@@ -93,7 +93,7 @@ typedef struct NcmArrayItemCallbacks {
             return;                                          \
         }                                                   \
         PREFIX##_clear(array);                               \
-        if (array->items != NULL) {                          \
+        if (array->items) {                                  \
             free2(array->items,                              \
                   array->cap*SIZEOF(*array->items));         \
         }                                                   \
@@ -114,7 +114,7 @@ typedef struct NcmArrayItemCallbacks {
         }                                                         \
                                                                   \
         PREFIX##_init(&replacement);                              \
-        if (source != NULL) {                                     \
+        if (source) {                                             \
             if (!PREFIX##_reserve(&replacement, source->len)) {   \
                 PREFIX##_destroy(&replacement);                   \
                 return false;                                     \
@@ -217,7 +217,7 @@ typedef struct NcmArrayItemCallbacks {
         callbacks = CALLBACKS;                                      \
         item = &array->items[array->len];                           \
         array->len += 1;                                            \
-        if ((callbacks != NULL) && (callbacks->init != NULL)) {     \
+        if (callbacks && callbacks->init) {                         \
             callbacks->init(item);                                  \
         } else {                                                    \
             char *bytes = (char *)item;                             \
@@ -243,10 +243,10 @@ typedef struct NcmArrayItemCallbacks {
             return false;                                            \
         }                                                            \
         callbacks = CALLBACKS;                                       \
-        if ((callbacks != NULL) && (callbacks->copy != NULL)) {      \
+        if (callbacks && callbacks->copy) {                          \
             if (!callbacks->copy(dest, item)) {                      \
                 array->len -= 1;                                     \
-                if (callbacks->destroy != NULL) {                    \
+                if (callbacks->destroy) {                            \
                     callbacks->destroy(dest);                        \
                 }                                                    \
                 return false;                                        \
@@ -272,7 +272,7 @@ typedef struct NcmArrayItemCallbacks {
             return;                                                  \
         }                                                            \
         callbacks = CALLBACKS;                                       \
-        if ((callbacks != NULL) && (callbacks->move != NULL)) {      \
+        if (callbacks && callbacks->move) {                          \
             callbacks->move(dest, item);                             \
         } else {                                                     \
             *dest = *item;                                           \
@@ -293,7 +293,7 @@ typedef struct NcmArrayItemCallbacks {
         }                                                              \
                                                                        \
         callbacks = CALLBACKS;                                         \
-        if ((callbacks != NULL) && (callbacks->destroy != NULL)) {     \
+        if (callbacks && callbacks->destroy) {                         \
             callbacks->destroy(&array->items[idx]);                    \
         }                                                              \
         if (idx + 1 < array->len) {                                    \
