@@ -495,12 +495,12 @@ status_run_init_setup_visualizer_datasource(NcmStatusInitHooks *hooks) {
     }
 
 #if defined(ENABLE_VISUALIZER)
-    NativeVisualizerScreen *visualizer;
-
-    visualizer = native_c_screen_visualizer();
-    native_visualizer_screen_close_data_source(visualizer);
-    (void)native_visualizer_screen_open_data_source(visualizer);
-    (void)native_visualizer_screen_find_output_id(visualizer);
+    {
+        NativeVisualizerScreen *visualizer2 = native_c_screen_visualizer();
+        native_visualizer_screen_close_data_source(visualizer2);
+        (void)native_visualizer_screen_open_data_source(visualizer2);
+        (void)native_visualizer_screen_find_output_id(visualizer2);
+    }
 #endif
     return;
 }
