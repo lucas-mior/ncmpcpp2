@@ -157,6 +157,7 @@ utf8_encode(uint32 rune, char *buffer, int32 buffer_capacity) {
     return result;
 }
 
+#if !OS_WINDOWS
 static int32
 utf8_char_width(uint32 rune) {
     int32 width;
@@ -171,6 +172,7 @@ utf8_char_width(uint32 rune) {
 
     return result;
 }
+#endif
 
 static int32
 utf8_next_position(char *string, int32 string_len, int32 byte) {
@@ -223,6 +225,7 @@ utf8_byte_position(char *string, int32 string_len,
     return byte;
 }
 
+#if !OS_WINDOWS
 static int32
 utf8_width(char *string, int32 string_len) {
     int32 result;
@@ -241,7 +244,9 @@ utf8_width(char *string, int32 string_len) {
 
     return result;
 }
+#endif
 
+#if !OS_WINDOWS
 static int32
 utf8_suffix_width_position(char *string, int32 string_len,
                            int32 max_width) {
@@ -269,7 +274,9 @@ utf8_suffix_width_position(char *string, int32 string_len,
 
     return string_len;
 }
+#endif
 
+#if !OS_WINDOWS
 static int32
 utf8_cut_width(char *string, int32 string_len, int32 max_width) {
     int32 byte;
@@ -294,6 +301,7 @@ utf8_cut_width(char *string, int32 string_len, int32 max_width) {
 
     return string_len;
 }
+#endif
 
 static int32
 utf8_capitalize_first_letters(char *string, int32 string_len,
@@ -411,21 +419,19 @@ random_utf8_string(char *buffer, int32 capacity, int32 min_len) {
     return current_byte_len;
 }
 
+#if 0 == TESTING_utf8
 static inline void
 utf8_functions_sink(void) {
     (void)utf8_decode;
     (void)utf8_encode;
-    (void)utf8_char_width;
     (void)utf8_characters;
     (void)utf8_byte_position;
     (void)utf8_next_position;
-    (void)utf8_suffix_width_position;
-    (void)utf8_width;
-    (void)utf8_cut_width;
     (void)utf8_capitalize_first_letters;
     (void)random_utf8_string;
     return;
 }
+#endif
 
 #if TESTING_utf8
 
