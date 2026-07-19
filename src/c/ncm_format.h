@@ -6,33 +6,43 @@
 #include "c/ncm_song.h"
 #include "curses/nc_buffer.h"
 
-enum NcmFormatFlags {
-    NCM_FORMAT_FLAG_NONE = 0,
-    NCM_FORMAT_FLAG_COLOR = 1,
-    NCM_FORMAT_FLAG_FORMAT = 2,
-    NCM_FORMAT_FLAG_OUTPUT_SWITCH = 4,
-    NCM_FORMAT_FLAG_TAG = 8,
-    NCM_FORMAT_FLAG_ALL = NCM_FORMAT_FLAG_COLOR
-                          |NCM_FORMAT_FLAG_FORMAT
-                          |NCM_FORMAT_FLAG_OUTPUT_SWITCH
-                          |NCM_FORMAT_FLAG_TAG,
-};
+#define ENUM_NAME NcmFormatFlags
+#define ENUM_PREFIX_ NCM_FORMAT_FLAG_
+#define ENUM_BITFLAGS 1
+#define ENUM_FIELDS \
+    X(NCM_FORMAT_FLAG_COLOR) \
+    X(NCM_FORMAT_FLAG_FORMAT) \
+    X(NCM_FORMAT_FLAG_OUTPUT_SWITCH) \
+    X(NCM_FORMAT_FLAG_TAG)
+#include "cbase/xenums.c"
 
-enum NcmFormatExprType {
-    NCM_FORMAT_EXPR_TEXT,
-    NCM_FORMAT_EXPR_COLOR,
-    NCM_FORMAT_EXPR_FORMAT,
-    NCM_FORMAT_EXPR_OUTPUT_SWITCH,
-    NCM_FORMAT_EXPR_SONG_TAG,
-    NCM_FORMAT_EXPR_GROUP,
-    NCM_FORMAT_EXPR_FIRST_OF,
-};
+#define NCM_FORMAT_FLAG_ALL \
+    (NCM_FORMAT_FLAG_COLOR \
+     |NCM_FORMAT_FLAG_FORMAT \
+     |NCM_FORMAT_FLAG_OUTPUT_SWITCH \
+     |NCM_FORMAT_FLAG_TAG)
 
-enum NcmFormatResult {
-    NCM_FORMAT_RESULT_EMPTY,
-    NCM_FORMAT_RESULT_MISSING,
-    NCM_FORMAT_RESULT_OK,
-};
+#define ENUM_NAME NcmFormatExprType
+#define ENUM_PREFIX_ NCM_FORMAT_EXPR_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NCM_FORMAT_EXPR_TEXT) \
+    X(NCM_FORMAT_EXPR_COLOR) \
+    X(NCM_FORMAT_EXPR_FORMAT) \
+    X(NCM_FORMAT_EXPR_OUTPUT_SWITCH) \
+    X(NCM_FORMAT_EXPR_SONG_TAG) \
+    X(NCM_FORMAT_EXPR_GROUP) \
+    X(NCM_FORMAT_EXPR_FIRST_OF)
+#include "cbase/xenums.c"
+
+#define ENUM_NAME NcmFormatResult
+#define ENUM_PREFIX_ NCM_FORMAT_RESULT_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NCM_FORMAT_RESULT_EMPTY) \
+    X(NCM_FORMAT_RESULT_MISSING) \
+    X(NCM_FORMAT_RESULT_OK)
+#include "cbase/xenums.c"
 
 typedef struct NcmFormatSongTag {
     enum NcmSongGetter getter;

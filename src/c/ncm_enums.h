@@ -4,48 +4,65 @@
 #include "config.h"
 #include "c/ncm_defs.h"
 
-enum SearchDirection {
-    NCM_SEARCH_DIRECTION_BACKWARD,
-    NCM_SEARCH_DIRECTION_FORWARD,
-    NCM_SEARCH_DIRECTION_LAST,
-};
+#define ENUM_NAME SearchDirection
+#define ENUM_PREFIX_ NCM_SEARCH_DIRECTION_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NCM_SEARCH_DIRECTION_BACKWARD) \
+    X(NCM_SEARCH_DIRECTION_FORWARD)
+#include "cbase/xenums.c"
 
-enum SpaceAddMode {
-    NCM_SPACE_ADD_MODE_ADD_REMOVE,
-    NCM_SPACE_ADD_MODE_ALWAYS_ADD,
-    NCM_SPACE_ADD_MODE_LAST,
-};
+#define ENUM_NAME SpaceAddMode
+#define ENUM_PREFIX_ NCM_SPACE_ADD_MODE_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NCM_SPACE_ADD_MODE_ADD_REMOVE) \
+    X(NCM_SPACE_ADD_MODE_ALWAYS_ADD)
+#include "cbase/xenums.c"
 
-enum SortMode {
-    NCM_SORT_MODE_TYPE,
-    NCM_SORT_MODE_NAME,
-    NCM_SORT_MODE_MODIFICATION_TIME,
-    NCM_SORT_MODE_CUSTOM_FORMAT,
-    NCM_SORT_MODE_NONE,
-    NCM_SORT_MODE_LAST,
-};
+#define ENUM_NAME SortMode
+#define ENUM_PREFIX_ NCM_SORT_MODE_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NCM_SORT_MODE_TYPE) \
+    X(NCM_SORT_MODE_NAME) \
+    X(NCM_SORT_MODE_MODIFICATION_TIME) \
+    X(NCM_SORT_MODE_CUSTOM_FORMAT) \
+    X(NCM_SORT_MODE_NONE)
+#include "cbase/xenums.c"
 
-enum DisplayMode {
-    NCM_DISPLAY_MODE_CLASSIC,
-    NCM_DISPLAY_MODE_COLUMNS,
-    NCM_DISPLAY_MODE_LAST,
-};
+#define ENUM_NAME DisplayMode
+#define ENUM_PREFIX_ NCM_DISPLAY_MODE_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NCM_DISPLAY_MODE_CLASSIC) \
+    X(NCM_DISPLAY_MODE_COLUMNS)
+#include "cbase/xenums.c"
 
-enum Design {
-    NCM_DESIGN_CLASSIC,
-    NCM_DESIGN_ALTERNATIVE,
-    NCM_DESIGN_LAST,
-};
+#define ENUM_NAME Design
+#define ENUM_PREFIX_ NCM_DESIGN_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NCM_DESIGN_CLASSIC) \
+    X(NCM_DESIGN_ALTERNATIVE)
+#include "cbase/xenums.c"
 
-enum VisualizerType {
-    NCM_VISUALIZER_TYPE_WAVE,
-    NCM_VISUALIZER_TYPE_WAVE_FILLED,
+#define ENUM_NAME VisualizerType
+#define ENUM_PREFIX_ NCM_VISUALIZER_TYPE_
+#define ENUM_BITFLAGS 0
 #if defined(HAVE_FFTW3_H)
-    NCM_VISUALIZER_TYPE_SPECTRUM,
+#define ENUM_FIELDS \
+    X(NCM_VISUALIZER_TYPE_WAVE) \
+    X(NCM_VISUALIZER_TYPE_WAVE_FILLED) \
+    X(NCM_VISUALIZER_TYPE_SPECTRUM) \
+    X(NCM_VISUALIZER_TYPE_ELLIPSE)
+#else
+#define ENUM_FIELDS \
+    X(NCM_VISUALIZER_TYPE_WAVE) \
+    X(NCM_VISUALIZER_TYPE_WAVE_FILLED) \
+    X(NCM_VISUALIZER_TYPE_ELLIPSE)
 #endif
-    NCM_VISUALIZER_TYPE_ELLIPSE,
-    NCM_VISUALIZER_TYPE_LAST,
-};
+#include "cbase/xenums.c"
 
 char *ncm_search_direction_str(enum SearchDirection value);
 bool ncm_space_add_mode_parse(char *string, int32 string_len,

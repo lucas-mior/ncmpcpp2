@@ -3,9 +3,10 @@
 
 #include <stdbool.h>
 
+#include "cbase/base_macros.h"
 #include "cbase/primitives.h"
 
-#define NCM_ARRAY_LEN(array) ((int32)(sizeof(array) / sizeof((array)[0])))
+#define NCM_ARRAY_LEN(array) ((int32)LENGTH(array))
 
 typedef struct NcmStringView {
     char *data;

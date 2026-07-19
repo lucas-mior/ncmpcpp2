@@ -125,7 +125,7 @@ ncm_sample_buffer_resize(NcmSampleBuffer *buffer, int32 cap) {
         cap = 0;
     }
 
-    if (cap == 0) {
+    if (cap <= 0) {
         free2(buffer->data, buffer->cap*SIZEOF(*buffer->data));
         buffer->data = NULL;
     } else {

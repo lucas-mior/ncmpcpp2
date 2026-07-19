@@ -85,7 +85,7 @@ ncm_mpd_client_prechecks(NcmMpdClient *client, NcmError *error) {
     if (!ncm_mpd_client_noidle(client, &flags, error)) {
         return false;
     }
-    if ((flags != 0) && (client->noidle_callback != NULL)) {
+    if ((flags != 0) && client->noidle_callback) {
         client->noidle_callback(flags, client->noidle_user);
     }
 
@@ -187,7 +187,7 @@ ncm_mpd_client_fd(NcmMpdClient *client) {
 
 void
 ncm_mpd_client_set_noidle_callback(NcmMpdClient *client,
-                                   NcmMpdNoidleCallback callback,
+                                   NcmMpdNoidleCallback *callback,
                                    void *user) {
     if (client == NULL) {
         return;
@@ -382,7 +382,7 @@ ncm_mpd_client_noidle(NcmMpdClient *client, int32 *flags,
         }
     }
 
-    if (flags != NULL) {
+    if (flags) {
         *flags = (int32)events;
     }
     ncm_error_clear(error);
@@ -878,7 +878,7 @@ ncm_mpd_client_add_song_list(NcmMpdClient *client,
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
         return false;
     }
-    if (songs->count == 0) {
+    if (songs->count <= 0) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("empty MPD song list"));
         return false;
     }
@@ -1445,7 +1445,7 @@ ncm_mpd_client_add_random_songs(NcmMpdClient *client,
         goto cleanup;
     }
 
-    if ((exclude_pattern != NULL) && (exclude_pattern_len > 0)) {
+    if (exclude_pattern && (exclude_pattern_len > 0)) {
         if (!ncm_regex_compile(&regex, exclude_pattern,
                                exclude_pattern_len,
                                NCM_REGEX_EXTENDED | NCM_REGEX_NOSUB,

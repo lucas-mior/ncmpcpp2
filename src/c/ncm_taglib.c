@@ -22,17 +22,50 @@ typedef struct NcmTaglibPropertyMap {
 static bool ncm_taglib_is_initialized;
 
 static NcmTaglibPropertyMap ncm_taglib_properties[] = {
-    { "TITLE", "Title" },
-    { "ARTIST", "Artist" },
-    { "ALBUMARTIST", "AlbumArtist" },
-    { "ALBUM", "Album" },
-    { "DATE", "Date" },
-    { "TRACKNUMBER", "Track" },
-    { "GENRE", "Genre" },
-    { "COMPOSER", "Composer" },
-    { "PERFORMER", "Performer" },
-    { "DISCNUMBER", "Disc" },
-    { "COMMENT", "Comment" },
+    {
+        .property = "TITLE",
+        .name = "Title",
+    },
+    {
+        .property = "ARTIST",
+        .name = "Artist",
+    },
+    {
+        .property = "ALBUMARTIST",
+        .name = "AlbumArtist",
+    },
+    {
+        .property = "ALBUM",
+        .name = "Album",
+    },
+    {
+        .property = "DATE",
+        .name = "Date",
+    },
+    {
+        .property = "TRACKNUMBER",
+        .name = "Track",
+    },
+    {
+        .property = "GENRE",
+        .name = "Genre",
+    },
+    {
+        .property = "COMPOSER",
+        .name = "Composer",
+    },
+    {
+        .property = "PERFORMER",
+        .name = "Performer",
+    },
+    {
+        .property = "DISCNUMBER",
+        .name = "Disc",
+    },
+    {
+        .property = "COMMENT",
+        .name = "Comment",
+    },
 };
 
 static TagLib_File *
@@ -113,11 +146,11 @@ ncm_taglib_file_close(NcmTaglibFile *file) {
     TagLib_File *handle;
 
     handle = ncm_taglib_handle(file);
-    if (handle != NULL) {
+    if (handle) {
         taglib_file_free(handle);
     }
 #endif
-    if (file != NULL) {
+    if (file) {
         file->handle = NULL;
     }
     return;
@@ -180,7 +213,7 @@ ncm_taglib_file_audio_properties(NcmTaglibFile *file,
 
 bool
 ncm_taglib_read_property(NcmTaglibFile *file, char *property,
-                         NcmTaglibValueCallback callback, void *user) {
+                         NcmTaglibValueCallback *callback, void *user) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
     char **values;
@@ -203,7 +236,7 @@ ncm_taglib_read_property(NcmTaglibFile *file, char *property,
     }
 
     found = false;
-    for (int32 i = 0; values[i] != NULL; i += 1) {
+    for (int32 i = 0; values[i]; i += 1) {
         if (!ncm_taglib_value_is_empty(values[i])) {
             callback(values[i], user);
             found = true;
@@ -223,7 +256,7 @@ ncm_taglib_read_property(NcmTaglibFile *file, char *property,
 
 bool
 ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
-                                  NcmTaglibPairCallback callback,
+                                  NcmTaglibPairCallback *callback,
                                   void *user) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
@@ -246,7 +279,7 @@ ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
             continue;
         }
 
-        for (int32 j = 0; values[j] != NULL; j += 1) {
+        for (int32 j = 0; values[j]; j += 1) {
             if (!ncm_taglib_value_is_empty(values[j])) {
                 callback(ncm_taglib_properties[i].name, values[j], user);
                 found = true;
@@ -314,7 +347,7 @@ ncm_taglib_append_property(NcmTaglibFile *file, char *property, char *value) {
 bool
 ncm_taglib_extended_set_supported(NcmTaglibFile *file) {
 #if defined(HAVE_TAGLIB_H)
-    return ncm_taglib_handle(file) != NULL;
+    return ncm_taglib_handle(file);
 #else
     (void)file;
     return false;

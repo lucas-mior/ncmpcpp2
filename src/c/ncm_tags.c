@@ -15,7 +15,7 @@ typedef struct NcmTagsFirstPropertyContext {
 } NcmTagsFirstPropertyContext;
 
 typedef struct NcmTagsForwardContext {
-    NcmTagsValueCallback callback;
+    NcmTagsValueCallback *callback;
     void *user;
 } NcmTagsForwardContext;
 
@@ -88,7 +88,7 @@ ncm_tags_build_file_path(char *music_dir, char *uri, bool is_from_database,
     }
     memcpy64(path + music_dir_len, uri, uri_len + 1);
 
-    if (path_len != NULL) {
+    if (path_len) {
         *path_len = len;
     }
     return path;
@@ -130,7 +130,7 @@ ncm_tags_build_renamed_path(char *music_dir, char *directory, char *new_name,
     offset += 1;
     memcpy64(path + offset, new_name, new_name_len + 1);
 
-    if (path_len != NULL) {
+    if (path_len) {
         *path_len = len;
     }
     return path;
@@ -172,7 +172,7 @@ ncm_tags_field_property(enum NcmTagsField field) {
 
 static bool
 ncm_tags_write_field(NcmTaglibFile *file, enum NcmTagsField field,
-                     NcmTagsGetFieldCallback callback, void *user) {
+                     NcmTagsGetFieldCallback *callback, void *user) {
     char *property;
 
     property = ncm_tags_field_property(field);
@@ -193,7 +193,7 @@ ncm_tags_write_field(NcmTaglibFile *file, enum NcmTagsField field,
         if (value.data == NULL) {
             break;
         }
-        if (value.len == 0) {
+        if (value.len <= 0) {
             break;
         }
 
@@ -233,7 +233,8 @@ ncm_tags_set_attribute(struct mpd_song *song, char *name, char *value) {
 }
 
 enum NcmTagsReadResult
-ncm_tags_read_lyrics(char *path, NcmTagsValueCallback callback, void *user) {
+ncm_tags_read_lyrics(char *path, NcmTagsValueCallback *callback,
+                     void *user) {
     NcmTaglibFile file;
     NcmTagsForwardContext context;
     bool found;
@@ -271,7 +272,7 @@ ncm_tags_read_song(struct mpd_song *song) {
     NcmTaglibAudioProperties properties;
     NcmTagsMappedContext context;
     char time_buffer[32];
-    int written;
+    int32 written;
     bool found;
 
     if (song == NULL) {
@@ -308,7 +309,7 @@ ncm_tags_read_song(struct mpd_song *song) {
 bool
 ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
                char *directory, char *new_name,
-               NcmTagsGetFieldCallback callback, void *user) {
+               NcmTagsGetFieldCallback *callback, void *user) {
     NcmTaglibFile file;
     char *old_path;
     char *new_path;
@@ -344,7 +345,7 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
         return false;
     }
 
-    if ((new_name != NULL) && (new_name[0] != '\0')) {
+    if (new_name && (new_name[0] != '\0')) {
         new_path = ncm_tags_build_renamed_path(music_dir, directory, new_name,
                                                is_from_database,
                                                &new_path_len);

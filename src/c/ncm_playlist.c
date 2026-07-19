@@ -115,7 +115,7 @@ ncm_playlist_move(NcmPlaylist *dest, NcmPlaylist *source) {
 
 bool
 ncm_playlist_path_view(NcmPlaylist *playlist, NcmStringView *view) {
-    if (view != NULL) {
+    if (view) {
         view->data = NULL;
         view->len = 0;
     }
@@ -125,7 +125,7 @@ ncm_playlist_path_view(NcmPlaylist *playlist, NcmStringView *view) {
     if (playlist->path == NULL) {
         return false;
     }
-    if (view != NULL) {
+    if (view) {
         view->data = playlist->path;
         view->len = playlist->path_len;
     }

@@ -4,14 +4,17 @@
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
 
-enum NcmStringFormatArgType {
-    NCM_STRING_FORMAT_ARG_STRING,
-    NCM_STRING_FORMAT_ARG_I64,
-    NCM_STRING_FORMAT_ARG_U64,
-    NCM_STRING_FORMAT_ARG_F64,
-    NCM_STRING_FORMAT_ARG_CHAR,
-    NCM_STRING_FORMAT_ARG_BOOL,
-};
+#define ENUM_NAME NcmStringFormatArgType
+#define ENUM_PREFIX_ NCM_STRING_FORMAT_ARG_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NCM_STRING_FORMAT_ARG_STRING) \
+    X(NCM_STRING_FORMAT_ARG_I64) \
+    X(NCM_STRING_FORMAT_ARG_U64) \
+    X(NCM_STRING_FORMAT_ARG_F64) \
+    X(NCM_STRING_FORMAT_ARG_CHAR) \
+    X(NCM_STRING_FORMAT_ARG_BOOL)
+#include "cbase/xenums.c"
 
 typedef struct NcmStringFormatArg {
     enum NcmStringFormatArgType type;

@@ -194,7 +194,7 @@ ncm_regex_search(NcmRegex *regex, char *string, int32 string_len) {
 
 bool
 ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
-                         NcmRegexMatchCallback callback, void *user) {
+                         NcmRegexMatchCallback *callback, void *user) {
     NcmBuffer buffer;
     regmatch_t match[1];
     char *cursor;

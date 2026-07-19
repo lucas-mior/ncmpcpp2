@@ -16,7 +16,7 @@
 #define NCM_REGEX_LITERAL_CASE_INSENSITIVE \
     (NCM_REGEX_LITERAL | NCM_REGEX_EXTENDED | NCM_REGEX_ICASE)
 
-typedef bool (*NcmRegexMatchCallback)(int32 start, int32 len, void *user);
+typedef bool NcmRegexMatchCallback(int32 start, int32 len, void *user);
 
 typedef struct NcmRegex {
     regex_t regex;
@@ -33,6 +33,6 @@ bool ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
 bool ncm_regex_search(NcmRegex *regex, char *string, int32 string_len);
 bool ncm_regex_for_each_match(NcmRegex *regex, char *string,
                               int32 string_len,
-                              NcmRegexMatchCallback callback, void *user);
+                              NcmRegexMatchCallback *callback, void *user);
 
 #endif /* NCM_REGEX_H */

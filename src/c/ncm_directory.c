@@ -94,7 +94,7 @@ ncm_directory_move(NcmDirectory *dest, NcmDirectory *source) {
 
 bool
 ncm_directory_path_view(NcmDirectory *directory, NcmStringView *view) {
-    if (view != NULL) {
+    if (view) {
         view->data = NULL;
         view->len = 0;
     }
@@ -104,7 +104,7 @@ ncm_directory_path_view(NcmDirectory *directory, NcmStringView *view) {
     if (directory->path == NULL) {
         return false;
     }
-    if (view != NULL) {
+    if (view) {
         view->data = directory->path;
         view->len = directory->path_len;
     }

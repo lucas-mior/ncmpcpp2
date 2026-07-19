@@ -62,7 +62,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
         column = &columns[i];
         width = ncm_display_column_width(column, list_width,
                                          remained_width);
-        if (width == 0) {
+        if (width <= 0) {
             continue;
         }
         if (column != last) {
@@ -134,7 +134,7 @@ ncm_display_column_title(NcmBuffer *buffer, struct Column *columns,
         column = &columns[i];
         width = ncm_display_column_width(column, list_width,
                                          remained_width);
-        if (width == 0) {
+        if (width <= 0) {
             continue;
         }
         if (column != last) {
@@ -188,7 +188,7 @@ ncm_display_playlist_row(NcBuffer *buffer, NcmPlaylist *playlist,
                          char *prefix, int32 prefix_len) {
     NcmStringView path;
 
-    if ((prefix != NULL) && (prefix_len > 0)) {
+    if (prefix && (prefix_len > 0)) {
         nc_buffer_append_data(buffer, prefix, prefix_len);
     }
     if (!ncm_playlist_path_view(playlist, &path)) {
@@ -226,7 +226,7 @@ ncm_display_column_value(NcmSong *song, Column *column) {
         ncm_buffer_destroy(&value);
     }
 
-    if (column->display_empty_tag && (Config.empty_tag != NULL)
+    if (column->display_empty_tag && Config.empty_tag
         && (Config.empty_tag_len > 0)) {
         ncm_buffer_append(&result, Config.empty_tag,
                           Config.empty_tag_len);
@@ -294,7 +294,7 @@ static void
 ncm_display_append_column_name(NcmBuffer *buffer, Column *column) {
     NcmStringView name;
 
-    if ((column->name != NULL) && (column->name_len > 0)) {
+    if (column->name && (column->name_len > 0)) {
         ncm_buffer_append(buffer, column->name, column->name_len);
         return;
     }

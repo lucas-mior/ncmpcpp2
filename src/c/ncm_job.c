@@ -112,7 +112,7 @@ ncm_job_queue_thread_main(void *user) {
     bool have_job;
 
     queue = user;
-    for (;;) {
+    while (true) {
         pthread_mutex_lock(&queue->mutex);
         while ((queue->pending_len <= 0) && !queue->stopping) {
             pthread_cond_wait(&queue->cond, &queue->mutex);

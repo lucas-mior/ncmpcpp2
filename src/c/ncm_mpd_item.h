@@ -8,22 +8,25 @@
 
 struct mpd_entity;
 
-enum NcmMpdItemKind {
-    NCM_MPD_ITEM_UNKNOWN,
-    NCM_MPD_ITEM_SONG,
-    NCM_MPD_ITEM_DIRECTORY,
-    NCM_MPD_ITEM_PLAYLIST,
-};
+#define ENUM_NAME NcmMpdItemKind
+#define ENUM_PREFIX_ NCM_MPD_ITEM_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NCM_MPD_ITEM_UNKNOWN) \
+    X(NCM_MPD_ITEM_SONG) \
+    X(NCM_MPD_ITEM_DIRECTORY) \
+    X(NCM_MPD_ITEM_PLAYLIST)
+#include "cbase/xenums.c"
 
-typedef union NcmMpdItemValue {
+union NcmMpdItemValue {
     NcmSong song;
     NcmDirectory directory;
     NcmPlaylist playlist;
-} NcmMpdItemValue;
+};
 
 typedef struct NcmMpdItem {
     enum NcmMpdItemKind kind;
-    NcmMpdItemValue value;
+    union NcmMpdItemValue value;
 } NcmMpdItem;
 
 void ncm_mpd_item_init(NcmMpdItem *item);

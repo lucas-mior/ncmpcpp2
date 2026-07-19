@@ -5,12 +5,15 @@
 
 #include "c/ncm_base.h"
 
-enum NcmFsEntryType {
-    NCM_FS_ENTRY_UNKNOWN,
-    NCM_FS_ENTRY_FILE,
-    NCM_FS_ENTRY_DIRECTORY,
-    NCM_FS_ENTRY_SYMLINK,
-};
+#define ENUM_NAME NcmFsEntryType
+#define ENUM_PREFIX_ NCM_FS_ENTRY_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NCM_FS_ENTRY_UNKNOWN) \
+    X(NCM_FS_ENTRY_FILE) \
+    X(NCM_FS_ENTRY_DIRECTORY) \
+    X(NCM_FS_ENTRY_SYMLINK)
+#include "cbase/xenums.c"
 
 typedef struct NcmFsStat {
     int64 size;

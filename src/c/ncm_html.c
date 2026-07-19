@@ -20,8 +20,8 @@ typedef struct HtmlEntity {
 #define HTML_ENTITY(FROM, TO) { \
     .from = FROM, \
     .to = TO, \
-    .from_len = STRLIT_LEN(FROM), \
-    .to_len = STRLIT_LEN(TO), \
+    .from_len = (int32)SIZEOF(FROM) - 1, \
+    .to_len = (int32)SIZEOF(TO) - 1, \
 }
 
 static HtmlEntity html_entities[] = {

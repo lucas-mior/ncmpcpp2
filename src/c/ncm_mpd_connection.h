@@ -74,11 +74,14 @@ typedef struct NcmMpdPlaylistList {
     int32 capacity;
 } NcmMpdPlaylistList;
 
-enum NcmMpdReplayGainMode {
-    NCM_MPD_REPLAY_GAIN_OFF,
-    NCM_MPD_REPLAY_GAIN_TRACK,
-    NCM_MPD_REPLAY_GAIN_ALBUM,
-};
+#define ENUM_NAME NcmMpdReplayGainMode
+#define ENUM_PREFIX_ NCM_MPD_REPLAY_GAIN_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NCM_MPD_REPLAY_GAIN_OFF) \
+    X(NCM_MPD_REPLAY_GAIN_TRACK) \
+    X(NCM_MPD_REPLAY_GAIN_ALBUM)
+#include "cbase/xenums.c"
 
 typedef struct NcmMpdStatus {
     int32 volume;
