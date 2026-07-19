@@ -408,7 +408,6 @@ static void
 status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks) {
     int32 position;
     bool highlighted;
-    NcScreen *playlist_screen;
 
     if ((hooks != NULL) && (hooks->jump_to_now_playing != NULL)) {
         hooks->jump_to_now_playing(hooks->user);
@@ -431,9 +430,11 @@ status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks) {
                                     "Song is filtered out");
     }
 
-    playlist_screen = native_c_screen_playlist_native();
-    if (highlighted && app_controller_is_screen_visible(playlist_screen)) {
-        nc_screen_refresh(playlist_screen);
+    {
+        NcScreen *playlist_screen = native_c_screen_playlist_native();
+        if (highlighted && app_controller_is_screen_visible(playlist_screen)) {
+            nc_screen_refresh(playlist_screen);
+        }
     }
     return;
 }
