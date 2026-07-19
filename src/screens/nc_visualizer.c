@@ -185,7 +185,7 @@ visualizer_copy_characters(NativeVisualizerScreen *screen,
 
 static void
 visualizer_destroy_colors(NativeVisualizerScreen *screen) {
-    if (screen->visualizer_colors != NULL) {
+    if (screen->visualizer_colors) {
         for (int32 i = 0; i < screen->visualizer_colors_len; i += 1) {
             nc_formatted_color_destroy(&screen->visualizer_colors[i]);
         }
@@ -271,7 +271,7 @@ visualizer_draw_character(NativeVisualizerScreen *screen,
     nc_window_go_to_xy(&screen->window, x, y);
     formats = NULL;
     count = 0;
-    if (color != NULL) {
+    if (color) {
         nc_window_push_color(&screen->window, color->color);
         formats = nc_formatted_color_formats(color);
         count = nc_formatted_color_format_count(color);
@@ -288,7 +288,7 @@ visualizer_draw_character(NativeVisualizerScreen *screen,
     if (reverse) {
         nc_window_apply_format(&screen->window, NC_FORMAT_NO_REVERSE);
     }
-    if (color != NULL) {
+    if (color) {
         for (int32 i = count - 1; i >= 0; i -= 1) {
             nc_window_apply_format(&screen->window,
                                    nc_format_reverse(formats[i]));
@@ -358,25 +358,25 @@ visualizer_fft_destroy(NativeVisualizerScreen *screen) {
     NativeVisualizerFftState *fft;
 
     fft = &screen->fft;
-    if (fft->plan != NULL) {
+    if (fft->plan) {
         fftw_destroy_plan(fft->plan);
     }
-    if (fft->output != NULL) {
+    if (fft->output) {
         fftw_free(fft->output);
     }
-    if (fft->input != NULL) {
+    if (fft->input) {
         fftw_free(fft->input);
     }
-    if (fft->bar_heights != NULL) {
+    if (fft->bar_heights) {
         free2(fft->bar_heights,
             fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
     }
-    if (fft->dft_frequency_space != NULL) {
+    if (fft->dft_frequency_space) {
         free2(fft->dft_frequency_space,
             fft->dft_frequency_space_cap
             *SIZEOF(*fft->dft_frequency_space));
     }
-    if (fft->frequency_magnitudes != NULL) {
+    if (fft->frequency_magnitudes) {
         free2(fft->frequency_magnitudes,
             fft->frequency_magnitudes_cap
             *SIZEOF(*fft->frequency_magnitudes));
@@ -700,7 +700,7 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     spectrum_smooth_look_legacy_chars = true;
     spectrum_log_scale_x = true;
     spectrum_log_scale_y = true;
-    if (config != NULL) {
+    if (config) {
         source_location = config->source_location;
         output_name = config->output_name;
         visualizer_chars = config->visualizer_chars;
@@ -1963,8 +1963,7 @@ visualizer_system_open_udp(void *user, char *location,
                     address->ai_socktype,
                     address->ai_protocol);
         if (fd < 0) {
-            fprintf(stderr, "Creation of socket failed: %s\n",
-                    strerror(errno));
+            error("Creation of socket failed: %s\n", strerror(errno));
             continue;
         }
 
@@ -1972,8 +1971,7 @@ visualizer_system_open_udp(void *user, char *location,
         fcntl(fd, F_SETFL, socket_flags | O_NONBLOCK);
         error_code = bind(fd, address->ai_addr, address->ai_addrlen);
         if (error_code < 0) {
-            fprintf(stderr, "Binding a socket failed: %s\n",
-                    strerror(errno));
+            error("Binding a socket failed: %s\n", strerror(errno));
             close(fd);
             fd = -1;
             continue;
@@ -2077,7 +2075,7 @@ visualizer_reset_output(NativeVisualizerScreen *screen) {
             1);
         return false;
     }
-    if (screen->data_source_hooks.sleep_microseconds != NULL) {
+    if (screen->data_source_hooks.sleep_microseconds) {
         screen->data_source_hooks.sleep_microseconds(
             screen->data_source_hooks.user, 50000);
     }

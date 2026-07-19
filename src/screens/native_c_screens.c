@@ -4,7 +4,6 @@
 #include "screens/native_c_screens.h"
 #include "screens/nc_search_engine.h"
 
-#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
 #include <time.h>
@@ -16,6 +15,7 @@
 #include "c/ncm_display.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
+#include "cbase/assert.c"
 #include "global.h"
 #include "settings.h"
 #include "screens/screen_switcher.h"
@@ -55,23 +55,66 @@ struct NativeSongInfoScreen {
 };
 
 NcmSongInfoMetadata ncm_song_info_tags[] = {
-    {"Title", NCM_SONG_GETTER_TITLE, NCM_TAGS_FIELD_TITLE},
-    {"Artist", NCM_SONG_GETTER_ARTIST, NCM_TAGS_FIELD_ARTIST},
-    {"Album Artist",
-     NCM_SONG_GETTER_ALBUM_ARTIST,
-     NCM_TAGS_FIELD_ALBUM_ARTIST},
-    {"Album", NCM_SONG_GETTER_ALBUM, NCM_TAGS_FIELD_ALBUM},
-    {"Date", NCM_SONG_GETTER_DATE, NCM_TAGS_FIELD_DATE},
-    {"Track", NCM_SONG_GETTER_TRACK, NCM_TAGS_FIELD_TRACK},
-    {"Genre", NCM_SONG_GETTER_GENRE, NCM_TAGS_FIELD_GENRE},
-    {"Composer", NCM_SONG_GETTER_COMPOSER,
-     NCM_TAGS_FIELD_COMPOSER},
-    {"Performer", NCM_SONG_GETTER_PERFORMER,
-     NCM_TAGS_FIELD_PERFORMER},
-    {"Disc", NCM_SONG_GETTER_DISC, NCM_TAGS_FIELD_DISC},
-    {"Comment", NCM_SONG_GETTER_COMMENT,
-     NCM_TAGS_FIELD_COMMENT},
-    {NULL, NCM_SONG_GETTER_NONE, NCM_TAGS_FIELD_LAST},
+    {
+        .name = "Title",
+        .get = NCM_SONG_GETTER_TITLE,
+        .field = NCM_TAGS_FIELD_TITLE,
+    },
+    {
+        .name = "Artist",
+        .get = NCM_SONG_GETTER_ARTIST,
+        .field = NCM_TAGS_FIELD_ARTIST,
+    },
+    {
+        .name = "Album Artist",
+        .get = NCM_SONG_GETTER_ALBUM_ARTIST,
+        .field = NCM_TAGS_FIELD_ALBUM_ARTIST,
+    },
+    {
+        .name = "Album",
+        .get = NCM_SONG_GETTER_ALBUM,
+        .field = NCM_TAGS_FIELD_ALBUM,
+    },
+    {
+        .name = "Date",
+        .get = NCM_SONG_GETTER_DATE,
+        .field = NCM_TAGS_FIELD_DATE,
+    },
+    {
+        .name = "Track",
+        .get = NCM_SONG_GETTER_TRACK,
+        .field = NCM_TAGS_FIELD_TRACK,
+    },
+    {
+        .name = "Genre",
+        .get = NCM_SONG_GETTER_GENRE,
+        .field = NCM_TAGS_FIELD_GENRE,
+    },
+    {
+        .name = "Composer",
+        .get = NCM_SONG_GETTER_COMPOSER,
+        .field = NCM_TAGS_FIELD_COMPOSER,
+    },
+    {
+        .name = "Performer",
+        .get = NCM_SONG_GETTER_PERFORMER,
+        .field = NCM_TAGS_FIELD_PERFORMER,
+    },
+    {
+        .name = "Disc",
+        .get = NCM_SONG_GETTER_DISC,
+        .field = NCM_TAGS_FIELD_DISC,
+    },
+    {
+        .name = "Comment",
+        .get = NCM_SONG_GETTER_COMMENT,
+        .field = NCM_TAGS_FIELD_COMMENT,
+    },
+    {
+        .name = NULL,
+        .get = NCM_SONG_GETTER_NONE,
+        .field = NCM_TAGS_FIELD_LAST,
+    },
 };
 
 static NativeBrowserScreen browser_screen;
@@ -103,11 +146,14 @@ static bool playlist_screen_initialized;
 static struct NativeServerInfoScreen server_info_screen;
 static struct NativeSongInfoScreen song_info_screen;
 
-enum NativePromptResult {
-    NATIVE_PROMPT_RESULT_ERROR,
-    NATIVE_PROMPT_RESULT_ABORTED,
-    NATIVE_PROMPT_RESULT_ACCEPTED,
-};
+#define ENUM_NAME NativePromptResult
+#define ENUM_PREFIX_ NATIVE_PROMPT_RESULT_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NATIVE_PROMPT_RESULT_ERROR) \
+    X(NATIVE_PROMPT_RESULT_ABORTED) \
+    X(NATIVE_PROMPT_RESULT_ACCEPTED)
+#include "cbase/xenums.c"
 
 static enum ScreenType native_screen_type_from_native_type(int32 type);
 static void native_request_registered_resize(int32 type);
@@ -145,7 +191,7 @@ native_c_screen_browser_init(void) {
 void
 native_c_screen_browser_register(void) {
     native_c_screen_browser_init();
-    assert(native_register_screen(native_c_screen_browser_native()));
+    ASSERT(native_register_screen(native_c_screen_browser_native()));
     return;
 }
 
@@ -211,7 +257,7 @@ native_c_screen_help_init(void) {
 void
 native_c_screen_help_register(void) {
     native_c_screen_help_init();
-    assert(native_register_screen(native_c_screen_help_native()));
+    ASSERT(native_register_screen(native_c_screen_help_native()));
     return;
 }
 
@@ -255,7 +301,7 @@ native_c_screen_lastfm_init(void) {
 void
 native_c_screen_lastfm_register(void) {
     native_c_screen_lastfm_init();
-    assert(native_register_screen(native_c_screen_lastfm_native()));
+    ASSERT(native_register_screen(native_c_screen_lastfm_native()));
     return;
 }
 
@@ -268,7 +314,7 @@ native_c_screen_lastfm_switch_to(void) {
     screen = native_c_screen_lastfm_native();
     if (nc_screen_switcher_is_current(screen)) {
         previous = nc_screen_switcher_previous();
-        if ((previous != NULL)
+        if (previous
             && app_controller_is_screen_registered(previous)) {
             (void)nc_screen_switcher_switch_to(
                 previous, nc_screen_has_to_be_resized(previous));
@@ -319,7 +365,7 @@ native_c_screen_lyrics_init(void) {
 void
 native_c_screen_lyrics_register(void) {
     native_c_screen_lyrics_init();
-    assert(native_register_screen(native_c_screen_lyrics_native()));
+    ASSERT(native_register_screen(native_c_screen_lyrics_native()));
     return;
 }
 
@@ -338,7 +384,7 @@ native_c_screen_lyrics_switch_to(void) {
     screen = native_c_screen_lyrics_native();
     if (nc_screen_switcher_is_current(screen)) {
         previous = nc_screen_switcher_previous();
-        if ((previous != NULL)
+        if (previous
             && app_controller_is_screen_registered(previous)) {
             (void)nc_screen_switcher_switch_to(
                 previous, nc_screen_has_to_be_resized(previous));
@@ -429,7 +475,7 @@ void
 native_c_screen_visualizer_register(void) {
 #if defined(ENABLE_VISUALIZER)
     native_c_screen_visualizer_init();
-    assert(native_register_screen(native_c_screen_visualizer_native()));
+    ASSERT(native_register_screen(native_c_screen_visualizer_native()));
 #endif
     return;
 }
@@ -484,7 +530,7 @@ native_c_screen_playlist_init(void) {
 void
 native_c_screen_playlist_register(void) {
     native_c_screen_playlist_init();
-    assert(native_register_screen(native_c_screen_playlist_native()));
+    ASSERT(native_register_screen(native_c_screen_playlist_native()));
     return;
 }
 
@@ -525,9 +571,9 @@ native_c_screen_playlist_editor_init(void) {
                                        ui_state_main_height(),
                                        Config.main_color,
                                        native_no_border());
-    if (Config.playlist_editor_column_width_ratio.len >= 2
-        && Config.playlist_editor_column_width_ratio.items[0] > 0
-        && Config.playlist_editor_column_width_ratio.items[1] > 0) {
+    if ((Config.playlist_editor_column_width_ratio.len >= 2)
+        && (Config.playlist_editor_column_width_ratio.items[0] > 0)
+        && (Config.playlist_editor_column_width_ratio.items[1] > 0)) {
         native_playlist_editor_screen_set_column_ratio(
             &playlist_editor_screen,
             Config.playlist_editor_column_width_ratio.items[0],
@@ -540,7 +586,7 @@ native_c_screen_playlist_editor_init(void) {
 void
 native_c_screen_playlist_editor_register(void) {
     native_c_screen_playlist_editor_init();
-    assert(native_register_screen(native_c_screen_playlist_editor_native()));
+    ASSERT(native_register_screen(native_c_screen_playlist_editor_native()));
     return;
 }
 
@@ -588,15 +634,15 @@ native_c_screen_selected_items_adder_register(void) {
     screen = native_c_screen_selected_items_adder_native();
     registered = app_controller_find_screen_type(
         NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
-    if ((registered != NULL) && (registered != screen)) {
+    if (registered && (registered != screen)) {
         success = app_controller_unregister_screen(registered);
-        assert(success);
+        ASSERT(success);
         if (!success) {
             return;
         }
     }
     success = native_register_screen(screen);
-    assert(success);
+    ASSERT(success);
     (void)success;
     return;
 }
@@ -656,15 +702,15 @@ native_c_screen_sort_playlist_dialog_register(void) {
     screen = native_c_screen_sort_playlist_dialog_native();
     registered = app_controller_find_screen_type(
         NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
-    if ((registered != NULL) && (registered != screen)) {
+    if (registered && (registered != screen)) {
         success = app_controller_unregister_screen(registered);
-        assert(success);
+        ASSERT(success);
         if (!success) {
             return;
         }
     }
     success = native_register_screen(screen);
-    assert(success);
+    ASSERT(success);
     (void)success;
     return;
 }
@@ -873,7 +919,7 @@ native_c_screen_search_engine_init(void) {
 
     mode = NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL;
     if (Config.search_engine_default_search_mode
-        < NATIVE_SEARCH_ENGINE_SEARCH_MODE_LAST) {
+        < (int32)NATIVE_SEARCH_ENGINE_SEARCH_MODE_LAST) {
         mode = (enum NativeSearchEngineSearchMode)
             Config.search_engine_default_search_mode;
     }
@@ -902,7 +948,7 @@ native_c_screen_search_engine_init(void) {
 void
 native_c_screen_search_engine_register(void) {
     native_c_screen_search_engine_init();
-    assert(native_register_screen(native_c_screen_search_engine_native()));
+    ASSERT(native_register_screen(native_c_screen_search_engine_native()));
     return;
 }
 
@@ -949,7 +995,7 @@ native_c_screen_media_library_init(void) {
 void
 native_c_screen_media_library_register(void) {
     native_c_screen_media_library_init();
-    assert(native_register_screen(native_c_screen_media_library_native()));
+    ASSERT(native_register_screen(native_c_screen_media_library_native()));
     return;
 }
 
@@ -996,7 +1042,7 @@ native_c_screen_tag_editor_init(void) {
 void
 native_c_screen_tag_editor_register(void) {
     native_c_screen_tag_editor_init();
-    assert(native_register_screen(native_c_screen_tag_editor_native()));
+    ASSERT(native_register_screen(native_c_screen_tag_editor_native()));
     return;
 }
 
@@ -1131,7 +1177,7 @@ native_tag_editor_confirm(
 
     ncm_statusbar_scoped_lock_init(&lock);
     window = ncm_statusbar_put();
-    if (window != NULL) {
+    if (window) {
         nc_window_print_data(window, message, message_len);
         nc_window_print_data(window, STRLIT_ARGS(" [y/n] "));
         prompted = ncm_statusbar_prompt_return_one_of(
@@ -1270,7 +1316,7 @@ native_c_screen_tiny_tag_editor_init(void) {
 void
 native_c_screen_tiny_tag_editor_register(void) {
     native_c_screen_tiny_tag_editor_init();
-    assert(native_register_screen(native_c_screen_tiny_tag_editor_native()));
+    ASSERT(native_register_screen(native_c_screen_tiny_tag_editor_native()));
     return;
 }
 
@@ -1319,7 +1365,7 @@ native_c_screen_song_info_init(void) {
 void
 native_c_screen_song_info_register(void) {
     native_c_screen_song_info_init();
-    assert(native_register_screen(native_c_screen_song_info_native()));
+    ASSERT(native_register_screen(native_c_screen_song_info_native()));
     return;
 }
 
@@ -1360,7 +1406,7 @@ native_c_screen_server_info_init(void) {
 void
 native_c_screen_server_info_register(void) {
     native_c_screen_server_info_init();
-    assert(native_register_screen(native_c_screen_server_info_native()));
+    ASSERT(native_register_screen(native_c_screen_server_info_native()));
     return;
 }
 
@@ -1417,7 +1463,7 @@ void
 native_c_screen_outputs_register(void) {
 #if defined(ENABLE_OUTPUTS)
     native_c_screen_outputs_init();
-    assert(native_register_screen(native_c_screen_outputs_native()));
+    ASSERT(native_register_screen(native_c_screen_outputs_native()));
 #endif
     return;
 }
@@ -1641,7 +1687,7 @@ native_request_registered_resize(int32 type) {
     NcScreen *screen;
 
     screen = app_controller_find_screen_type(type);
-    if (screen != NULL) {
+    if (screen) {
         nc_screen_request_resize(screen);
     }
     return;
@@ -1685,7 +1731,7 @@ native_append_cstring(NcBuffer *buffer, char *string) {
 
 static void
 native_append_data(NcBuffer *buffer, char *string, int32 len) {
-    if ((string != NULL) && (len > 0)) {
+    if (string && (len > 0)) {
         nc_buffer_append_data(buffer, string, len);
     }
     return;
@@ -1745,7 +1791,7 @@ native_append_song_key_value(NcBuffer *buffer, char *key,
     native_append_formatted_color(buffer, &Config.color2);
     if (empty_as_missing) {
         native_append_song_tag(buffer, value);
-    } else if (value != NULL) {
+    } else if (value) {
         native_append_data(buffer, value->data, value->len);
     }
     native_append_formatted_color_end(buffer, &Config.color2);
@@ -1785,7 +1831,7 @@ native_append_action_keys(NcBuffer *buffer, enum NcmActionType type) {
                 continue;
             }
             key_len = native_key_name(key_bindings->key, key_name,
-                                      (int32)sizeof(key_name));
+                                      (int32)SIZEOF(key_name));
             if (key_len <= 0) {
                 continue;
             }
@@ -2117,7 +2163,7 @@ native_server_info_render(void *user, NcBuffer *buffer) {
     native_append_bold_label(buffer, "Time playing: ");
     ncm_song_show_time((uint32)stats.play_time,
                        time_buffer,
-                       (int32)sizeof(time_buffer));
+                       (int32)SIZEOF(time_buffer));
     native_append_cstring(buffer, time_buffer);
     native_append_cstring(buffer, "\n\n");
 
@@ -2142,7 +2188,11 @@ native_server_info_render(void *user, NcBuffer *buffer) {
         NcmMpdString *handler;
 
         handler = owner->url_handlers.items + i;
-        native_append_cstring(buffer, i == 0 ? " " : ", ");
+        if (i == 0) {
+            native_append_cstring(buffer, " ");
+        } else {
+            native_append_cstring(buffer, ", ");
+        }
         native_append_data(buffer, handler->value, handler->value_len);
     }
     native_append_cstring(buffer, "\n\n");
@@ -2152,7 +2202,11 @@ native_server_info_render(void *user, NcBuffer *buffer) {
         NcmMpdString *tag;
 
         tag = owner->tag_types.items + i;
-        native_append_cstring(buffer, i == 0 ? " " : ", ");
+        if (i == 0) {
+            native_append_cstring(buffer, " ");
+        } else {
+            native_append_cstring(buffer, ", ");
+        }
         native_append_data(buffer, tag->value, tag->value_len);
     }
     return true;
@@ -2240,7 +2294,7 @@ native_song_info_render(void *user, NcSongInfoScreen *screen,
     native_append_song_key_value(buffer, "Length", &value, false);
     ncm_buffer_destroy(&value);
 
-    for (int32 i = 0; ncm_song_info_tags[i].name != NULL; i += 1) {
+    for (int32 i = 0; ncm_song_info_tags[i].name; i += 1) {
         native_append_format(buffer, NC_FORMAT_BOLD);
         native_append_cstring(buffer, "\n");
         native_append_cstring(buffer, ncm_song_info_tags[i].name);

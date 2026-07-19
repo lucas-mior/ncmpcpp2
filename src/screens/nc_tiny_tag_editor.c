@@ -182,7 +182,7 @@ native_tiny_tag_editor_screen_set_edited_song(
     NativeTinyTagEditorScreen *screen, NcmSong *song) {
     NcmMutableSong edited;
 
-    if (screen == NULL || song == NULL) {
+    if ((screen == NULL) || (song == NULL)) {
         return false;
     }
     if (ncm_song_is_stream(song)) {
@@ -212,7 +212,7 @@ native_tiny_tag_editor_screen_open_song(
     bool opened;
     bool rows_loaded;
 
-    if (path != NULL) {
+    if (path) {
         ncm_buffer_clear(path);
     }
     if ((screen == NULL) || (song == NULL) || (path == NULL)
@@ -224,7 +224,7 @@ native_tiny_tag_editor_screen_open_song(
     if (ncm_song_is_stream(song)) {
         return NATIVE_TINY_TAG_EDITOR_OPEN_STREAM;
     }
-    if (ncm_song_is_from_database(song) && music_dir_len <= 0) {
+    if (ncm_song_is_from_database(song) && (music_dir_len <= 0)) {
         return NATIVE_TINY_TAG_EDITOR_OPEN_MISSING_MUSIC_DIRECTORY;
     }
     if (!ncm_buffer_set(&screen->music_dir, music_dir, music_dir_len)
@@ -243,14 +243,14 @@ native_tiny_tag_editor_screen_open_song(
     ncm_buffer_append(path, screen->edited.uri, screen->edited.uri_len);
 
     ncm_taglib_file_init(&file);
-    if (screen->hooks.taglib_open != NULL) {
+    if (screen->hooks.taglib_open) {
         opened = screen->hooks.taglib_open(
             screen->hooks.user, &file, path->data, path->len);
     } else {
         opened = ncm_taglib_file_open(&file, path->data);
     }
     if (!opened) {
-        if (screen->hooks.taglib_close != NULL) {
+        if (screen->hooks.taglib_close) {
             screen->hooks.taglib_close(screen->hooks.user, &file);
         } else {
             ncm_taglib_file_close(&file);
@@ -260,13 +260,13 @@ native_tiny_tag_editor_screen_open_song(
         return NATIVE_TINY_TAG_EDITOR_OPEN_UNREADABLE_FILE;
     }
 
-    if (screen->hooks.taglib_audio_properties != NULL) {
+    if (screen->hooks.taglib_audio_properties) {
         (void)screen->hooks.taglib_audio_properties(
             screen->hooks.user, &file, &properties);
     } else {
         (void)ncm_taglib_file_audio_properties(&file, &properties);
     }
-    if (screen->hooks.taglib_extended_set_supported != NULL) {
+    if (screen->hooks.taglib_extended_set_supported) {
         extended_tags_supported =
             screen->hooks.taglib_extended_set_supported(
                 screen->hooks.user, &file);
@@ -277,7 +277,7 @@ native_tiny_tag_editor_screen_open_song(
     rows_loaded = native_tiny_tag_editor_screen_reload_rows(
         screen, &properties, extended_tags_supported, tag_separator,
         tag_separator_len, show_duplicate_tags);
-    if (screen->hooks.taglib_close != NULL) {
+    if (screen->hooks.taglib_close) {
         screen->hooks.taglib_close(screen->hooks.user, &file);
     } else {
         ncm_taglib_file_close(&file);
@@ -302,7 +302,7 @@ native_tiny_tag_editor_screen_reload_rows(
     int32 channel_len;
     int32 duration_len;
 
-    if (screen == NULL || !screen->has_edited
+    if ((screen == NULL) || !screen->has_edited
         || (tag_separator_len < 0)
         || ((tag_separator == NULL) && (tag_separator_len > 0))) {
         return false;
@@ -353,7 +353,7 @@ native_tiny_tag_editor_screen_reload_rows(
         return false;
     }
     nc_buffer_clear(&row);
-    if (properties != NULL) {
+    if (properties) {
         tiny_editor_buffer_key_uint(
             &row, STRLIT_ARGS("Bitrate"), (uint32)properties->bitrate,
             STRLIT_ARGS(" kbps"));
@@ -363,7 +363,7 @@ native_tiny_tag_editor_screen_reload_rows(
         return false;
     }
     nc_buffer_clear(&row);
-    if (properties != NULL) {
+    if (properties) {
         tiny_editor_buffer_key_uint(
             &row, STRLIT_ARGS("Sample rate"),
             (uint32)properties->sample_rate, STRLIT_ARGS(" Hz"));
@@ -374,7 +374,7 @@ native_tiny_tag_editor_screen_reload_rows(
     }
     nc_buffer_clear(&row);
     channel_len = 0;
-    if (properties != NULL) {
+    if (properties) {
         channel_len = tiny_editor_channels_to_string(properties->channels,
                                                      channel_buffer,
                                                      SIZEOF(channel_buffer));
@@ -448,7 +448,7 @@ bool
 native_tiny_tag_editor_screen_set_tag_value(
     NativeTinyTagEditorScreen *screen, enum NcmTagsField field,
     char *value, int32 value_len, char *separator, int32 separator_len) {
-    if (screen == NULL || !screen->has_edited) {
+    if ((screen == NULL) || !screen->has_edited) {
         return false;
     }
     return ncm_mutable_song_set_tags(&screen->edited, field, value,
@@ -458,7 +458,7 @@ native_tiny_tag_editor_screen_set_tag_value(
 bool
 native_tiny_tag_editor_screen_set_filename(
     NativeTinyTagEditorScreen *screen, char *name, int32 name_len) {
-    if (screen == NULL || !screen->has_edited) {
+    if ((screen == NULL) || !screen->has_edited) {
         return false;
     }
     return ncm_mutable_song_set_new_name(&screen->edited, name, name_len);
@@ -472,8 +472,8 @@ native_tiny_tag_editor_screen_set_filename_stem(
     int32 dot;
     bool result;
 
-    if (screen == NULL || !screen->has_edited || stem == NULL
-        || stem_len <= 0) {
+    if ((screen == NULL) || !screen->has_edited || (stem == NULL)
+        || (stem_len <= 0)) {
         return false;
     }
 
@@ -518,7 +518,7 @@ native_tiny_tag_editor_screen_run_row(
     bool saved;
     bool result;
 
-    if (screen == NULL || !screen->has_edited) {
+    if ((screen == NULL) || !screen->has_edited) {
         return false;
     }
     menu = nc_editor_buffer_menu_base(&screen->rows);
@@ -659,7 +659,7 @@ native_tiny_tag_editor_screen_action_runnable(
     NcMenu *menu;
     int64 row;
 
-    if (screen == NULL || !screen->has_edited) {
+    if ((screen == NULL) || !screen->has_edited) {
         return false;
     }
     menu = nc_editor_buffer_menu_base(&screen->rows);
@@ -874,7 +874,7 @@ tiny_editor_destroy_callback(NcScreen *screen) {
 static bool
 tiny_editor_add_row(NativeTinyTagEditorScreen *screen, NcBuffer *buffer,
                     uint32 flags) {
-    if (screen == NULL || buffer == NULL) {
+    if ((screen == NULL) || (buffer == NULL)) {
         return false;
     }
     nc_editor_buffer_menu_add_with_flags(&screen->rows, buffer, flags);
@@ -889,7 +889,7 @@ tiny_editor_current_row(NativeTinyTagEditorScreen *screen) {
 static void
 tiny_editor_status_message(
     NativeTinyTagEditorScreen *screen, char *message, int32 message_len) {
-    if ((screen->hooks.status_message != NULL) && (message != NULL)
+    if (screen->hooks.status_message && message
         && (message_len >= 0)) {
         screen->hooks.status_message(screen->hooks.user, message,
                                      message_len);
@@ -943,7 +943,7 @@ tiny_editor_replace_filename_row(
 static bool
 tiny_editor_write_song(NativeTinyTagEditorScreen *screen,
                        char *music_dir) {
-    if (screen == NULL || !screen->has_edited) {
+    if ((screen == NULL) || !screen->has_edited) {
         return false;
     }
     if (screen->hooks.write_song) {
@@ -987,7 +987,7 @@ tiny_editor_finish(NativeTinyTagEditorScreen *screen) {
     if (previous == NULL) {
         return true;
     }
-    if (screen->hooks.switch_to_screen != NULL) {
+    if (screen->hooks.switch_to_screen) {
         screen->hooks.switch_to_screen(screen->hooks.user, previous);
         return true;
     }
@@ -999,7 +999,7 @@ tiny_editor_buffer_key_value(NcBuffer *buffer, char *key, int32 key_len,
                              char *value, int32 value_len) {
     nc_buffer_append_data(buffer, key, key_len);
     nc_buffer_append_data(buffer, STRLIT_ARGS(": "));
-    if (value != NULL && value_len > 0) {
+    if (value && (value_len > 0)) {
         nc_buffer_append_data(buffer, value, value_len);
     }
     return;

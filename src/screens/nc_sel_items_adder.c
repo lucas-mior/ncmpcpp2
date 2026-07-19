@@ -149,7 +149,7 @@ native_selected_items_adder_screen_destroy(
 
         row = nc_editor_action_menu_item_at(&screen->playlist_selector,
                                             NC_MENU_ITEMS_ALL, i);
-        if (row != NULL && row->run == adder_action_existing_playlist) {
+        if (row && (row->run == adder_action_existing_playlist)) {
             existing_playlist_action_destroy(row->user);
             row->user = NULL;
         }
@@ -328,7 +328,7 @@ native_selected_items_adder_screen_populate_playlist_selector(
     }
     nc_editor_action_menu_add_separator(menu);
     stored_begin = nc_menu_all_item_count(base);
-    if (!local_browser && (playlists != NULL)) {
+    if (!local_browser && playlists) {
         for (int32 i = 0; i < playlists->count; i += 1) {
             ExistingPlaylistAction *action;
             NcmPlaylist *playlist;
@@ -396,7 +396,7 @@ native_selected_items_adder_screen_run_current(
     }
     row = nc_menu_current_item(
         native_selected_items_adder_screen_active_menu(screen));
-    if (row == NULL || row->run == NULL) {
+    if ((row == NULL) || (row->run == NULL)) {
         return false;
     }
     row->run(row->user);
@@ -475,7 +475,7 @@ native_selected_items_adder_screen_search(
     NcWindow *window;
     bool result;
 
-    if (screen == NULL || pattern == NULL || pattern_len <= 0) {
+    if ((screen == NULL) || (pattern == NULL) || (pattern_len <= 0)) {
         return false;
     }
 
@@ -607,7 +607,7 @@ adder_can_run_current_callback(NcScreen *screen) {
     }
     row = nc_menu_current_item(
         native_selected_items_adder_screen_active_menu(adder));
-    return (row != NULL) && (row->run != NULL);
+    return row && row->run;
 }
 
 static bool
@@ -630,7 +630,7 @@ adder_resize_callback(NcScreen *screen) {
     adder = adder_from_screen(screen);
     adder_apply_geometry(adder);
     previous = adder->previous_screen;
-    if ((previous != NULL)
+    if (previous
         && nc_screen_has_to_be_resized(previous)) {
         nc_screen_resize(previous);
         nc_screen_refresh(previous);
@@ -650,7 +650,7 @@ adder_title_callback(NcScreen *screen) {
     NativeSelectedItemsAdderScreen *adder;
 
     adder = adder_from_screen(screen);
-    if ((adder != NULL) && (adder->previous_screen != NULL)) {
+    if (adder && adder->previous_screen) {
         return nc_screen_title(adder->previous_screen);
     }
     return "Add selected items";
@@ -741,7 +741,7 @@ adder_filter_callback(NcMenu *menu, void *item, void *user) {
 
 static bool
 adder_row_matches(NcEditorActionRow *row, NcmRegex *regex) {
-    if (row == NULL || row->label == NULL) {
+    if ((row == NULL) || (row->label == NULL)) {
         return false;
     }
     return ncm_regex_search(regex, row->label, row->label_len);
@@ -753,7 +753,7 @@ adder_action_row_set(NcEditorActionRow *row, char *label,
     if (row == NULL) {
         return false;
     }
-    if (label != NULL && label_len > 0) {
+    if (label && (label_len > 0)) {
         row->label_cap = label_len + 1;
         row->label = malloc2(row->label_cap);
         memcpy64(row->label, label, label_len);
@@ -771,7 +771,7 @@ adder_action_set_playlist(char **dest, int32 *dest_len, int32 *dest_cap,
     *dest = NULL;
     *dest_len = 0;
     *dest_cap = 0;
-    if (source == NULL || source_len <= 0) {
+    if ((source == NULL) || (source_len <= 0)) {
         return true;
     }
     *dest_cap = source_len + 1;
@@ -1166,7 +1166,7 @@ existing_playlist_action_destroy(void *user) {
     if (action == NULL) {
         return;
     }
-    if (action->playlist != NULL) {
+    if (action->playlist) {
         free2(action->playlist, action->playlist_cap);
     }
     free2(action, SIZEOF(*action));
@@ -1204,7 +1204,7 @@ adder_clear_playlist_selector(NativeSelectedItemsAdderScreen *screen) {
 
         row = nc_editor_action_menu_item_at(&screen->playlist_selector,
                                             NC_MENU_ITEMS_ALL, i);
-        if (row != NULL && row->run == adder_action_existing_playlist) {
+        if (row && (row->run == adder_action_existing_playlist)) {
             existing_playlist_action_destroy(row->user);
             row->user = NULL;
         }
@@ -1247,7 +1247,7 @@ adder_sort_playlist_rows(NativeSelectedItemsAdderScreen *screen,
                 &screen->playlist_selector, NC_MENU_ITEMS_ALL, smallest);
             right = nc_editor_action_menu_item_at(
                 &screen->playlist_selector, NC_MENU_ITEMS_ALL, j);
-            if ((left != NULL) && (right != NULL)
+            if (left && right
                 && (ncm_compare_locale_strings(
                         right->label, right->label_len,
                         left->label, left->label_len,
@@ -1303,10 +1303,10 @@ adder_apply_geometry(NativeSelectedItemsAdderScreen *screen) {
 
     playlist_start_x = (screen_width - screen->playlist_width)/2;
     playlist_start_y = main_start_y
-                       +(main_height - screen->playlist_height)/2;
+                       + (main_height - screen->playlist_height)/2;
     position_start_x = (screen_width - screen->position_width)/2;
     position_start_y = main_start_y
-                       +(main_height - screen->position_height)/2;
+                       + (main_height - screen->position_height)/2;
     nc_window_resize(&screen->playlist_window, screen->playlist_width,
                      screen->playlist_height);
     nc_window_move_to(&screen->playlist_window, playlist_start_x,
@@ -1328,7 +1328,7 @@ adder_finish(NativeSelectedItemsAdderScreen *screen) {
 
     previous = screen->previous_screen;
     screen->ready = false;
-    if (previous != NULL) {
+    if (previous) {
         (void)nc_screen_switcher_switch_to(
             previous, nc_screen_has_to_be_resized(previous));
     }
