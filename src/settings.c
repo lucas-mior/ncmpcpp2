@@ -466,7 +466,7 @@ settings_color_name(char *value, int32 value_len, bool background,
 static bool
 settings_parse_single_color(char *value, int32 value_len, bool background,
                             int16 *result, NcmError *error) {
-    uint32 parsed;
+    int32 parsed;
 
     if (settings_color_name(value, value_len, background, result)) {
         return true;
@@ -669,15 +669,14 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
     total = 0;
     while (start <= value_len) {
         int32 end;
-        uint32 parsed;
+        int32 parsed;
         int32 *slot;
 
         end = start;
         while ((end < value_len) && (value[end] != ':')) {
             end += 1;
         }
-        if (!settings_parse_int32(value + start, end - start, &parsed,
-                                   error)) {
+        if (!settings_parse_int32(value + start, end - start, &parsed, error)) {
             return false;
         }
         slot = ncm_int32_array_append(array);
@@ -738,7 +737,7 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
         NcmBuffer tag;
         Column *column;
         int32 next;
-        uint32 parsed_width;
+        int32 parsed_width;
 
         ncm_buffer_init(&width);
         ncm_buffer_init(&color);
@@ -1075,7 +1074,7 @@ apply_mpd_host(Configuration *config, char *value, int32 value_len,
 static bool
 apply_mpd_port(Configuration *config, char *value, int32 value_len,
                NcmError *error) {
-    uint32 port;
+    int32 port;
 
     (void)config;
     if (!settings_parse_int32(value, value_len, &port, error)) {
@@ -1648,7 +1647,7 @@ apply_enable_window_title(Configuration *config, char *value, int32 value_len,
 static bool
 apply_search_engine_default_search_mode(Configuration *config, char *value,
                                         int32 value_len, NcmError *error) {
-    uint32 mode;
+    int32 mode;
 
     if (!settings_parse_int32(value, value_len, &mode, error)) {
         return false;
