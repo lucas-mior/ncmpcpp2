@@ -3,7 +3,6 @@
 
 #include "curses/nc_window.h"
 
-#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,16 +28,20 @@
 #include "cbase/util.c"
 #include "cbase/utf8.c"
 
+#define NC_COLOR_COMPONENT_COUNT 256
+#define NC_COLOR_PAIR_MAP_SIZE \
+    (NC_COLOR_COMPONENT_COUNT*NC_COLOR_COMPONENT_COUNT)
+
 static int32 max_color;
 static int32 color_pair_counter;
 static int32 *color_pair_map;
 static bool mouse_support_enabled;
 static struct termios orig_termios;
 
-static struct NcReadlineState {
+typedef struct NcReadlineState {
     NcWindow *window;
     char *initial_text;
-    NcPromptHook hook;
+    NcPromptHook *hook;
     void *hook_user_data;
     int32 start_x;
     int32 start_y;
@@ -46,7 +49,9 @@ static struct NcReadlineState {
     bool encrypted;
     bool aborted;
     bool initialized;
-} nc_readline_state;
+} NcReadlineState;
+
+static NcReadlineState nc_readline_state;
 
 static void nc_window_assign_title(NcWindow *window,
                                    char *title, int32 title_len);
@@ -69,7 +74,7 @@ static void nc_window_decrease_format(NcWindow *window, int32 *counter,
 static int32 nc_prompt_abort(int32 count, int32 key);
 static int32 nc_prompt_add_initial_text(void);
 static char **nc_prompt_attempt_completion(const char *text,
-                                           int start, int end);
+                                           int32 start, int32 end);
 static int32 nc_prompt_read_key(FILE *file);
 static void nc_prompt_display_string(void);
 static void nc_prompt_print_data(char *string, int32 string_len);
@@ -227,13 +232,13 @@ nc_key_name(NcKey key, char *buffer, int32 buffer_len) {
     } else if (key == NC_KEY_CTRL_UNDERSCORE) {
         result = snprintf2(buffer, buffer_len, "Ctrl-_");
     } else if ((key & NC_KEY_ALT) != 0) {
-        nc_key_name(key & ~NC_KEY_ALT, rest, (int32)sizeof(rest));
+        nc_key_name(key & ~NC_KEY_ALT, rest, (int32)LENGTH(rest));
         result = snprintf2(buffer, buffer_len, "Alt-%s", rest);
     } else if ((key & NC_KEY_CTRL) != 0) {
-        nc_key_name(key & ~NC_KEY_CTRL, rest, (int32)sizeof(rest));
+        nc_key_name(key & ~NC_KEY_CTRL, rest, (int32)LENGTH(rest));
         result = snprintf2(buffer, buffer_len, "Ctrl-%s", rest);
     } else if ((key & NC_KEY_SHIFT) != 0) {
-        nc_key_name(key & ~NC_KEY_SHIFT, rest, (int32)sizeof(rest));
+        nc_key_name(key & ~NC_KEY_SHIFT, rest, (int32)LENGTH(rest));
         result = snprintf2(buffer, buffer_len, "Shift-%s", rest);
     } else if (key == NC_KEY_SPACE) {
         result = snprintf2(buffer, buffer_len, "Space");
@@ -282,7 +287,7 @@ int32
 nc_color_pair_number(NcColor color) {
     int32 result;
 
-    if (ARRAY_LEN(color_pair_map) == 0) {
+    if (ARRAY_LEN(color_pair_map) <= 0) {
         return 0;
     }
 
@@ -294,18 +299,18 @@ nc_color_pair_number(NcColor color) {
         if (!nc_color_current_background(color)) {
             result = (color.background + 1) % nc_color_count();
         }
-        result *= 256;
+        result *= NC_COLOR_COMPONENT_COUNT;
         result += color.foreground % nc_color_count();
 
-        assert(result < ARRAY_LEN(color_pair_map));
+        ASSERT(result < ARRAY_LEN(color_pair_map));
 
-        if (!color_pair_map[result]) {
+        if (color_pair_map[result] == 0) {
             if (color_pair_counter >= COLOR_PAIRS) {
                 result = 0;
             } else {
-                init_pair((short)color_pair_counter,
-                          (short)color.foreground,
-                          (short)color.background);
+                init_pair((int16)color_pair_counter,
+                          (int16)color.foreground,
+                          (int16)color.background);
                 color_pair_map[result] = color_pair_counter;
                 color_pair_counter += 1;
             }
@@ -377,18 +382,18 @@ nc_init_screen(bool enable_colors, bool enable_mouse) {
         start_color();
         use_default_colors();
         max_color = COLORS;
-        if (max_color > 256) {
-            max_color = 256;
+        if (max_color > NC_COLOR_COMPONENT_COUNT) {
+            max_color = NC_COLOR_COMPONENT_COUNT;
         }
 
         ARRAY_FREE(color_pair_map);
-        for (int32 i = 0; i < 256*256; i += 1) {
+        for (int32 i = 0; i < NC_COLOR_PAIR_MAP_SIZE; i += 1) {
             ARRAY_PUSH(color_pair_map, 0);
         }
 
         color_pair_counter = 1;
         for (int32 fg = 0; fg < nc_color_count(); fg += 1) {
-            init_pair((short)color_pair_counter, (short)fg, -1);
+            init_pair((int16)color_pair_counter, (int16)fg, -1);
             color_pair_map[fg] = color_pair_counter;
             color_pair_counter += 1;
         }
@@ -483,10 +488,10 @@ nc_window_init(NcWindow *window, int64 start_x, int64 start_y,
 
 void
 nc_window_destroy(NcWindow *window) {
-    if (window->window != NULL) {
+    if (window->window) {
         delwin(window->window);
     }
-    if (window->title != NULL) {
+    if (window->title) {
         free2(window->title, window->title_cap);
     }
     ARRAY_FREE(window->color_stack);
@@ -560,11 +565,11 @@ nc_window_set_color(NcWindow *window, NcColor color) {
         color = window->base_color;
     }
     if (!nc_color_equal(color, nc_color_default())) {
-        assert(!nc_color_current_background(color));
-        wcolor_set(window->window, (short)nc_color_pair_number(color), NULL);
+        ASSERT(!nc_color_current_background(color));
+        wcolor_set(window->window, (int16)nc_color_pair_number(color), NULL);
     } else {
         wcolor_set(window->window,
-                   (short)nc_color_pair_number(window->base_color), NULL);
+                   (int16)nc_color_pair_number(window->base_color), NULL);
     }
     window->color = color;
     return;
@@ -653,7 +658,7 @@ nc_window_refresh_border(NcWindow *window) {
         start_y = nc_i32(nc_window_start_y(window));
         width = nc_i32(nc_window_width(window));
         height = nc_i32(nc_window_height(window));
-        color_set((short)nc_color_pair_number(window->border.color), NULL);
+        color_set((int16)nc_color_pair_number(window->border.color), NULL);
         attron(A_ALTCHARSET);
         mvaddch(start_y, start_x, 'l');
         mvaddch(start_y, start_x + width - 1, 'k');
@@ -669,7 +674,7 @@ nc_window_refresh_border(NcWindow *window) {
         }
         attroff(A_ALTCHARSET);
     } else {
-        color_set((short)nc_color_pair_number(window->base_color), NULL);
+        color_set((int16)nc_color_pair_number(window->base_color), NULL);
     }
     if (nc_window_has_title(window)) {
         mvhline(nc_i32(window->start_y - 2), nc_i32(window->start_x),
@@ -739,7 +744,7 @@ nc_window_resize(NcWindow *window, int64 new_width, int64 new_height) {
 
 void
 nc_window_recreate(NcWindow *window, int64 width, int64 height) {
-    if (window->window != NULL) {
+    if (window->window) {
         delwin(window->window);
     }
     window->window = newpad(nc_i32(height), nc_i32(width));
@@ -774,7 +779,7 @@ nc_window_clear_fd_callbacks(NcWindow *window) {
 
 bool
 nc_window_fd_callbacks_empty(NcWindow *window) {
-    return ARRAY_LEN(window->fd_callbacks) == 0;
+    return ARRAY_LEN(window->fd_callbacks) <= 0;
 }
 
 NcKey
@@ -789,7 +794,7 @@ nc_window_read_key(NcWindow *window) {
     if (window->input_queue_start < ARRAY_LEN(window->input_queue)) {
         result = window->input_queue[window->input_queue_start];
         window->input_queue_start += 1;
-        if (window->input_queue_start == ARRAY_LEN(window->input_queue)) {
+        if (window->input_queue_start >= ARRAY_LEN(window->input_queue)) {
             ARRAY_CLEAR(window->input_queue);
             window->input_queue_start = 0;
         }
@@ -1136,7 +1141,7 @@ nc_prompt_add_initial_text(void) {
 }
 
 static char **
-nc_prompt_attempt_completion(const char *text, int start, int end) {
+nc_prompt_attempt_completion(const char *text, int32 start, int32 end) {
     (void)text;
     (void)start;
     (void)end;
@@ -1269,7 +1274,7 @@ nc_prompt_run_hook(char *line) {
     if (line == NULL) {
         line = "";
     }
-    if (!nc_readline_state.hook) {
+    if (nc_readline_state.hook == NULL) {
         return true;
     }
     return nc_readline_state.hook(line, nc_readline_state.hook_user_data);
@@ -1284,7 +1289,7 @@ nc_window_assign_title(NcWindow *window, char *title, int32 title_len) {
         title_len = 0;
     }
     if ((title_len + 1) > window->title_cap) {
-        if (window->title != NULL) {
+        if (window->title) {
             free2(window->title, window->title_cap);
         }
         window->title_cap = title_len + 1;
@@ -1691,9 +1696,9 @@ nc_window_alt_charset(NcWindow *window, bool state) {
 static void
 nc_window_italic(NcWindow *window, bool state) {
     if (state) {
-        wattron(window->window, (int)A_ITALIC);
+        wattron(window->window, (int32)A_ITALIC);
     } else {
-        wattroff(window->window, (int)A_ITALIC);
+        wattroff(window->window, (int32)A_ITALIC);
     }
     return;
 }
@@ -1711,7 +1716,7 @@ nc_window_decrease_format(NcWindow *window, int32 *counter,
                           void (*set)(NcWindow *, bool)) {
     if (*counter > 0) {
         *counter -= 1;
-        if (*counter == 0) {
+        if (*counter <= 0) {
             set(window, false);
         }
     }

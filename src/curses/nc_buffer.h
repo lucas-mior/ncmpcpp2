@@ -3,12 +3,15 @@
 
 #include "curses/nc_formatted_color.h"
 
-enum NcBufferPropertyType {
-    NC_BUFFER_PROPERTY_COLOR,
-    NC_BUFFER_PROPERTY_FORMAT,
-    NC_BUFFER_PROPERTY_FORMATTED_COLOR,
-    NC_BUFFER_PROPERTY_FORMATTED_COLOR_END,
-};
+#define ENUM_NAME NcBufferPropertyType
+#define ENUM_PREFIX_ NC_BUFFER_PROPERTY_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NC_BUFFER_PROPERTY_COLOR) \
+    X(NC_BUFFER_PROPERTY_FORMAT) \
+    X(NC_BUFFER_PROPERTY_FORMATTED_COLOR) \
+    X(NC_BUFFER_PROPERTY_FORMATTED_COLOR_END)
+#include "cbase/xenums.c"
 
 typedef struct NcBufferProperty {
     union {

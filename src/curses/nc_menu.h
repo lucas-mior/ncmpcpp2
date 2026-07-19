@@ -10,20 +10,26 @@
 
 typedef struct NcMenu NcMenu;
 
-typedef bool (*NcMenuHighlightableFunc)(int64 pos, void *user);
-typedef bool (*NcMenuSearchFunc)(NcMenu *menu, int64 pos, void *user);
+typedef bool NcMenuHighlightableFunc(int64 pos, void *user);
+typedef bool NcMenuSearchFunc(NcMenu *menu, int64 pos, void *user);
 
-enum NcMenuItemSource {
-    NC_MENU_ITEMS_ALL,
-    NC_MENU_ITEMS_FILTERED,
-};
+#define ENUM_NAME NcMenuItemSource
+#define ENUM_PREFIX_ NC_MENU_ITEMS_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NC_MENU_ITEMS_ALL) \
+    X(NC_MENU_ITEMS_FILTERED)
+#include "cbase/xenums.c"
 
-enum NcMenuItemFlag ENUM_UNDERLYING_TYPE_ {
-    NC_MENU_ITEM_SELECTABLE = 1U << 0,
-    NC_MENU_ITEM_SELECTED = 1U << 1,
-    NC_MENU_ITEM_INACTIVE = 1U << 2,
-    NC_MENU_ITEM_SEPARATOR = 1U << 3,
-};
+#define ENUM_NAME NcMenuItemFlag
+#define ENUM_PREFIX_ NC_MENU_ITEM_
+#define ENUM_BITFLAGS 1
+#define ENUM_FIELDS \
+    X(NC_MENU_ITEM_SELECTABLE) \
+    X(NC_MENU_ITEM_SELECTED) \
+    X(NC_MENU_ITEM_INACTIVE) \
+    X(NC_MENU_ITEM_SEPARATOR)
+#include "cbase/xenums.c"
 
 typedef struct NcMenuItemCallbacks {
     int64 item_size;
@@ -97,21 +103,21 @@ void nc_menu_set_highlighting(NcMenu *menu, bool state);
 void nc_menu_set_cyclic_scrolling(NcMenu *menu, bool state);
 void nc_menu_set_centered_cursor(NcMenu *menu, bool state);
 bool nc_menu_goto(NcMenu *menu, int64 y,
-                  NcMenuHighlightableFunc is_highlightable, void *user);
+                  NcMenuHighlightableFunc *is_highlightable, void *user);
 bool nc_menu_goto_selectable(NcMenu *menu, int64 y);
 bool nc_menu_goto_selectable_position(NcMenu *menu, int64 pos,
                                       int64 height);
 bool nc_menu_search_selectable(NcMenu *menu, int64 height, bool forward,
                                bool wrap, bool skip_current,
-                               NcMenuSearchFunc matches, void *user,
+                               NcMenuSearchFunc *matches, void *user,
                                int64 *found_pos);
 void nc_menu_prepare_refresh(NcMenu *menu, int64 height,
-                             NcMenuHighlightableFunc is_highlightable,
+                             NcMenuHighlightableFunc *is_highlightable,
                              void *user);
 void nc_menu_refresh(NcMenu *menu, NcWindow *window, int64 width,
                      int64 height);
 void nc_menu_scroll(NcMenu *menu, int64 height, enum NcScroll where,
-                    NcMenuHighlightableFunc is_highlightable, void *user);
+                    NcMenuHighlightableFunc *is_highlightable, void *user);
 void nc_menu_scroll_selectable(NcMenu *menu, int64 height,
                                enum NcScroll where);
 void nc_menu_reset(NcMenu *menu);
