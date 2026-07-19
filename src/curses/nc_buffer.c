@@ -78,12 +78,12 @@ nc_buffer_clear(NcBuffer *buffer) {
 
 bool
 nc_buffer_empty(NcBuffer *buffer) {
-    return (buffer->len == 0) && (ARRAY_LEN(buffer->properties) == 0);
+    return (buffer->len <= 0) && (ARRAY_LEN(buffer->properties) <= 0);
 }
 
 char *
 nc_buffer_data(NcBuffer *buffer) {
-    if (!buffer->data) {
+    if (buffer->data == NULL) {
         nc_buffer_reserve(buffer, 0);
     }
     return buffer->data;
@@ -119,17 +119,11 @@ nc_buffer_append_data(NcBuffer *buffer, char *data, int32 data_len) {
 
 void
 nc_buffer_append_cstring(NcBuffer *buffer, char *string) {
-    int32 len;
-
-    if (!string) {
+    if (string == NULL) {
         return;
     }
 
-    len = 0;
-    while (string[len]) {
-        len += 1;
-    }
-    nc_buffer_append_data(buffer, string, len);
+    nc_buffer_append_data(buffer, string, strlen32(string));
     return;
 }
 
@@ -313,9 +307,9 @@ nc_buffer_reserve(NcBuffer *buffer, int32 extra) {
     }
 
     buffer->data = realloc2(buffer->data, old_cap, new_cap,
-                 SIZEOF(*buffer->data));
+                            SIZEOF(*buffer->data));
     buffer->cap = new_cap;
-    if (buffer->len == 0) {
+    if (buffer->len <= 0) {
         buffer->data[0] = '\0';
     }
     return;
