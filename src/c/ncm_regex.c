@@ -75,8 +75,7 @@ ncm_regex_destroy(NcmRegex *regex) {
 }
 
 void
-ncm_regex_escape_literal(NcmBuffer *buffer, char *pattern,
-                         int32 pattern_len) {
+ncm_regex_escape_literal(NcmBuffer *buffer, char *pattern, int32 pattern_len) {
     char c;
 
     ncm_buffer_clear(buffer);
