@@ -431,9 +431,9 @@ status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks) {
     }
 
     {
-        NcScreen *playlist_screen = native_c_screen_playlist_native();
-        if (highlighted && app_controller_is_screen_visible(playlist_screen)) {
-            nc_screen_refresh(playlist_screen);
+        NcScreen *playlist_screen2 = native_c_screen_playlist_native();
+        if (highlighted && app_controller_is_screen_visible(playlist_screen2)) {
+            nc_screen_refresh(playlist_screen2);
         }
     }
     return;
