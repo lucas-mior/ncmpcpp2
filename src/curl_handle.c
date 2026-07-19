@@ -90,11 +90,9 @@ ncm_curl_escape(NcmBuffer *out, char *string, int32 string_len) {
 
 static int64
 write_data(char *buffer, int64 size, int64 nmemb, void *data) {
-    int64 bytes;
-    NcmCurlResponseWriter *writer;
+    int64 bytes = size*nmemb;
+    NcmCurlResponseWriter *writer = data;
 
-    bytes = size*nmemb;
-    writer = data;
     if ((writer == NULL) || (writer->buffer == NULL)) {
         return 0;
     }
