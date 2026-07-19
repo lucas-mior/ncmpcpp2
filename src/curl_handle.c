@@ -53,7 +53,7 @@ ncm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
     curl_easy_setopt(curl, CURLOPT_URL, url_string.data);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &writer);
-    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, timeout_seconds);
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, (long)timeout_seconds);
     curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
     if (follow_redirect) {
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
