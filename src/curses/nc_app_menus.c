@@ -128,7 +128,7 @@ static NcMenuItemCallbacks nc_buffer_menu_callbacks = {
 
 static void
 nc_menu_owned_string_destroy(char **data, int32 *len, int32 *cap) {
-    if (*data != NULL) {
+    if (*data) {
         free2(*data, *cap);
     }
     *data = NULL;
@@ -145,7 +145,7 @@ nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
     int32 cap;
 
     nc_menu_owned_string_destroy(dest_data, dest_len, dest_cap);
-    if (source_data == NULL || source_len <= 0) {
+    if ((source_data == NULL) || (source_len <= 0)) {
         return true;
     }
 
@@ -416,7 +416,7 @@ nc_menu_string_destroy(NcMenuString *string) {
 
 bool
 nc_menu_string_copy(NcMenuString *dest, NcMenuString *source) {
-    if (dest == NULL || source == NULL) {
+    if ((dest == NULL) || (source == NULL)) {
         return false;
     }
     return nc_menu_owned_string_copy(&dest->data, &dest->len, &dest->cap,
@@ -460,7 +460,7 @@ nc_menu_string_pair_copy(NcMenuStringPair *dest,
                          NcMenuStringPair *source) {
     NcMenuStringPair tmp;
 
-    if (dest == NULL || source == NULL) {
+    if ((dest == NULL) || (source == NULL)) {
         return false;
     }
 
@@ -506,7 +506,7 @@ bool
 nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source) {
     NcSearchRow tmp;
 
-    if (dest == NULL || source == NULL) {
+    if ((dest == NULL) || (source == NULL)) {
         return false;
     }
 
@@ -548,7 +548,7 @@ nc_media_library_tag_row_copy(NcMediaLibraryTagRow *dest,
                               NcMediaLibraryTagRow *source) {
     NcMediaLibraryTagRow tmp;
 
-    if (dest == NULL || source == NULL) {
+    if ((dest == NULL) || (source == NULL)) {
         return false;
     }
 
@@ -602,7 +602,7 @@ nc_media_library_album_row_copy(NcMediaLibraryAlbumRow *dest,
                                 NcMediaLibraryAlbumRow *source) {
     NcMediaLibraryAlbumRow tmp;
 
-    if (dest == NULL || source == NULL) {
+    if ((dest == NULL) || (source == NULL)) {
         return false;
     }
 
@@ -658,7 +658,7 @@ nc_editor_action_row_copy(NcEditorActionRow *dest,
                           NcEditorActionRow *source) {
     NcEditorActionRow tmp;
 
-    if (dest == NULL || source == NULL) {
+    if ((dest == NULL) || (source == NULL)) {
         return false;
     }
 
@@ -698,7 +698,7 @@ bool
 nc_editor_sort_row_copy(NcEditorSortRow *dest, NcEditorSortRow *source) {
     NcEditorSortRow tmp;
 
-    if (dest == NULL || source == NULL) {
+    if ((dest == NULL) || (source == NULL)) {
         return false;
     }
 

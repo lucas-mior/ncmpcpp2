@@ -3,8 +3,6 @@
 
 #include "curses/nc_cyclic_buffer.h"
 
-#include <stddef.h>
-
 #include "cbase/utf8.c"
 
 static int32 nc_cyclic_normalize_start(int64 *start_pos,
@@ -85,7 +83,7 @@ nc_cyclic_text_write(NcmBuffer *output, char *string, int32 string_len,
 
         separator_start = start - string_characters;
         separator_byte = utf8_byte_position(separator, separator_len,
-                                                separator_start);
+                                            separator_start);
         nc_cyclic_text_append(output, separator, separator_len,
                               separator_byte, &written_width, width);
     } else {
@@ -157,7 +155,7 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
 
         separator_start = start - string_characters;
         separator_byte = utf8_byte_position(separator, separator_len,
-                                                separator_start);
+                                            separator_start);
         nc_cyclic_window_write_text(window, separator, separator_len,
                                     separator_byte, &written_width,
                                     width);

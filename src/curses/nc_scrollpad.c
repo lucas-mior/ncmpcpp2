@@ -3,9 +3,10 @@
 
 #include "curses/nc_scrollpad.h"
 
-#include <assert.h>
 #include <ctype.h>
 #include <wctype.h>
+
+#include "cbase/assert.c"
 
 typedef struct NcScrollpadWriteState {
     NcBuffer *buffer;
@@ -38,7 +39,7 @@ nc_scrollpad_refresh(NcScrollpad *scrollpad, NcWindow *window) {
     int32 end_y;
     int32 end_x;
 
-    assert(scrollpad->real_height >= window->height);
+    ASSERT(scrollpad->real_height >= window->height);
 
     if (scrollpad->beginning > nc_scrollpad_max_beginning(scrollpad,
                                                            window)) {
@@ -70,7 +71,7 @@ nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
                     enum NcScroll where) {
     int64 max_beginning;
 
-    assert(scrollpad->real_height >= window->height);
+    ASSERT(scrollpad->real_height >= window->height);
 
     max_beginning = nc_scrollpad_max_beginning(scrollpad, window);
     switch (where) {
@@ -234,7 +235,7 @@ nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
             height += new_y - y;
         }
 
-        if (state->i == len) {
+        if (state->i >= len) {
             break;
         }
 
@@ -288,7 +289,7 @@ nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
 
 static bool
 nc_scrollpad_is_space(char ch) {
-    return iswspace((wint_t)(unsigned char)ch);
+    return iswspace((wint_t)(uint8)ch);
 }
 
 #endif /* NCMPCPP_NC_SCROLLPAD_C */

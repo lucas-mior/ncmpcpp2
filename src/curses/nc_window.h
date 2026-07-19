@@ -104,43 +104,55 @@ typedef struct NcFdCallback {
     int32 fd;
 } NcFdCallback;
 
-enum NcTermManip {
-    NC_TERM_CLEAR_TO_EOL,
-};
+#define ENUM_NAME NcTermManip
+#define ENUM_PREFIX_ NC_TERM_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NC_TERM_CLEAR_TO_EOL)
+#include "cbase/xenums.c"
 
-enum NcFormat {
-    NC_FORMAT_BOLD,
-    NC_FORMAT_NO_BOLD,
-    NC_FORMAT_UNDERLINE,
-    NC_FORMAT_NO_UNDERLINE,
-    NC_FORMAT_REVERSE,
-    NC_FORMAT_NO_REVERSE,
-    NC_FORMAT_ALT_CHARSET,
-    NC_FORMAT_NO_ALT_CHARSET,
-    NC_FORMAT_ITALIC,
-    NC_FORMAT_NO_ITALIC,
-};
+#define ENUM_NAME NcFormat
+#define ENUM_PREFIX_ NC_FORMAT_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NC_FORMAT_BOLD) \
+    X(NC_FORMAT_NO_BOLD) \
+    X(NC_FORMAT_UNDERLINE) \
+    X(NC_FORMAT_NO_UNDERLINE) \
+    X(NC_FORMAT_REVERSE) \
+    X(NC_FORMAT_NO_REVERSE) \
+    X(NC_FORMAT_ALT_CHARSET) \
+    X(NC_FORMAT_NO_ALT_CHARSET) \
+    X(NC_FORMAT_ITALIC) \
+    X(NC_FORMAT_NO_ITALIC)
+#include "cbase/xenums.c"
 
-enum NcScroll {
-    NC_SCROLL_UP,
-    NC_SCROLL_DOWN,
-    NC_SCROLL_PAGE_UP,
-    NC_SCROLL_PAGE_DOWN,
-    NC_SCROLL_HOME,
-    NC_SCROLL_END,
-};
+#define ENUM_NAME NcScroll
+#define ENUM_PREFIX_ NC_SCROLL_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NC_SCROLL_UP) \
+    X(NC_SCROLL_DOWN) \
+    X(NC_SCROLL_PAGE_UP) \
+    X(NC_SCROLL_PAGE_DOWN) \
+    X(NC_SCROLL_HOME) \
+    X(NC_SCROLL_END)
+#include "cbase/xenums.c"
 
-enum NcPromptStatus {
-    NC_PROMPT_ACCEPTED,
-    NC_PROMPT_ABORTED,
-};
+#define ENUM_NAME NcPromptStatus
+#define ENUM_PREFIX_ NC_PROMPT_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NC_PROMPT_ACCEPTED) \
+    X(NC_PROMPT_ABORTED)
+#include "cbase/xenums.c"
 
-typedef bool (*NcPromptHook)(char *text, void *user_data);
+typedef bool NcPromptHook(char *text, void *user_data);
 
 typedef struct NcPrompt {
     char *initial_text;
     int64 width;
-    NcPromptHook hook;
+    NcPromptHook *hook;
     void *hook_user_data;
     bool encrypted;
     bool remember;
