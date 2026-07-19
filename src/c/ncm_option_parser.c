@@ -8,9 +8,9 @@
 
 static bool
 ncm_option_is_word_char(char c) {
-    unsigned char u;
+    uint8 u;
 
-    u = (unsigned char)c;
+    u = (uint8)c;
     if (isalnum(u)) {
         return true;
     }

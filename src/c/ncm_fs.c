@@ -363,7 +363,7 @@ ncm_fs_join(NcmBuffer *buffer, char *left, int32 left_len,
     }
 
     ncm_buffer_init(&result);
-    if ((left != NULL) && (left_len > 0)) {
+    if (left && (left_len > 0)) {
         ncm_buffer_append(&result, left, left_len);
         if ((result.len > 0) && (result.data[result.len - 1] != '/')) {
             ncm_buffer_append_byte(&result, '/');

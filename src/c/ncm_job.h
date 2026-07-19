@@ -5,15 +5,15 @@
 
 #include "c/ncm_base.h"
 
-typedef bool (*NcmJobRunCallback)(void *user, NcmError *error);
-typedef void (*NcmJobCompleteCallback)(bool success, NcmError *error,
-                                       void *user);
-typedef void (*NcmJobDestroyCallback)(void *user);
+typedef bool NcmJobRunCallback(void *user, NcmError *error);
+typedef void NcmJobCompleteCallback(bool success, NcmError *error,
+                                    void *user);
+typedef void NcmJobDestroyCallback(void *user);
 
 typedef struct NcmJob {
-    NcmJobRunCallback run;
-    NcmJobCompleteCallback complete;
-    NcmJobDestroyCallback destroy;
+    NcmJobRunCallback *run;
+    NcmJobCompleteCallback *complete;
+    NcmJobDestroyCallback *destroy;
     void *user;
     NcmError error;
     bool success;
