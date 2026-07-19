@@ -138,6 +138,15 @@ _Generic((SIZE), \
 #define MAP_POPULATE 0
 #endif
 
+#if !defined(MAP_ANON) && defined(MAP_ANONYMOUS)
+#define MAP_ANON MAP_ANONYMOUS
+#elif !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
+#define MAP_ANONYMOUS MAP_ANON
+#elif !defined(MAP_ANONYMOUS) && !defined(MAP_ANON)
+#define MAP_ANON 0
+#define MAP_ANONYMOUS 0
+#endif
+
 #if defined(__GNUC__) || defined(__clang__)
 #define UNUSED __attribute__((unused))
 #else
