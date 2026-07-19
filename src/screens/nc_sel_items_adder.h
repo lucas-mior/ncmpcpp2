@@ -12,10 +12,13 @@
 
 typedef struct NativePlaylistScreen NativePlaylistScreen;
 
-enum NativeSelectedItemsAdderMenu {
-    NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS,
-    NATIVE_SELECTED_ITEMS_ADDER_MENU_POSITIONS,
-};
+#define ENUM_NAME NativeSelectedItemsAdderMenu
+#define ENUM_PREFIX_ NATIVE_SELECTED_ITEMS_ADDER_MENU_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS \
+    X(NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS) \
+    X(NATIVE_SELECTED_ITEMS_ADDER_MENU_POSITIONS)
+#include "cbase/xenums.c"
 
 typedef struct NativeSelectedItemsAdderScreen {
     NcScreen screen;

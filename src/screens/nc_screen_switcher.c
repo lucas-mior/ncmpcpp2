@@ -56,10 +56,10 @@ nc_screen_switcher_get_resize_params(NcScreen *screen, int64 *x_offset,
     NcScreenResizeParams params;
 
     params = nc_screen_switcher_resize_params(screen, adjust_locked_screen);
-    if (x_offset != NULL) {
+    if (x_offset) {
         *x_offset = params.x_offset;
     }
-    if (width != NULL) {
+    if (width) {
         *width = params.width;
     }
     return;

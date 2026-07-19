@@ -498,7 +498,7 @@ native_search_engine_screen_add_result_summary(
     NcBuffer buffer;
     bool result;
 
-    if (screen == NULL || song_count <= 0) {
+    if ((screen == NULL) || (song_count <= 0)) {
         return false;
     }
 
@@ -594,7 +594,7 @@ native_search_engine_screen_add_song_copy_with_flags(
     NativeSearchEngineScreen *screen, NcmSong *song, uint32 flags) {
     NcSearchRow row;
 
-    if (screen == NULL || song == NULL) {
+    if ((screen == NULL) || (song == NULL)) {
         return false;
     }
     nc_search_row_init(&row);
@@ -613,7 +613,7 @@ native_search_engine_screen_add_buffer_with_flags(
     NativeSearchEngineScreen *screen, NcBuffer *buffer, uint32 flags) {
     NcSearchRow row;
 
-    if (screen == NULL || buffer == NULL) {
+    if ((screen == NULL) || (buffer == NULL)) {
         return false;
     }
     nc_search_row_init(&row);
@@ -628,8 +628,8 @@ bool
 native_search_engine_screen_set_constraint(NativeSearchEngineScreen *screen,
                                            int32 idx, char *data,
                                            int32 data_len) {
-    if (screen == NULL || idx < 0
-        || idx >= NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT) {
+    if ((screen == NULL) || (idx < 0)
+        || (idx >= NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT)) {
         return false;
     }
     if (!ncm_buffer_set(&screen->constraints[idx], data, data_len)) {
@@ -657,8 +657,8 @@ bool
 native_search_engine_screen_set_search_mode(
     NativeSearchEngineScreen *screen,
     enum NativeSearchEngineSearchMode mode) {
-    if (screen == NULL || mode < NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL
-        || mode >= NATIVE_SEARCH_ENGINE_SEARCH_MODE_LAST) {
+    if ((screen == NULL) || (mode < NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL)
+        || (mode >= NATIVE_SEARCH_ENGINE_SEARCH_MODE_LAST)) {
         return false;
     }
     screen->search_mode = mode;
@@ -865,7 +865,7 @@ native_search_engine_screen_can_run_current(
     }
 
     row = nc_search_row_menu_current(&screen->rows);
-    return (row != NULL) && !row->is_song;
+    return row && !row->is_song;
 }
 
 bool
@@ -998,11 +998,11 @@ native_search_engine_screen_current_song(NativeSearchEngineScreen *screen,
                                          NcmSong *song) {
     NcSearchRow *row;
 
-    if (screen == NULL || song == NULL) {
+    if ((screen == NULL) || (song == NULL)) {
         return false;
     }
     row = nc_search_row_menu_current(&screen->rows);
-    if (row == NULL || !row->is_song) {
+    if ((row == NULL) || !row->is_song) {
         return false;
     }
     return ncm_song_copy(song, &row->song);
@@ -1014,7 +1014,7 @@ native_search_engine_screen_selected_songs(NativeSearchEngineScreen *screen,
     NcMenu *menu;
     bool any_selected;
 
-    if (screen == NULL || songs == NULL) {
+    if ((screen == NULL) || (songs == NULL)) {
         return false;
     }
     menu = native_search_engine_screen_menu(screen);
@@ -1090,7 +1090,7 @@ native_search_engine_screen_search(NativeSearchEngineScreen *screen,
     NcMenu *menu;
     bool result;
 
-    if (screen == NULL || pattern == NULL || pattern_len <= 0) {
+    if ((screen == NULL) || (pattern == NULL) || (pattern_len <= 0)) {
         return false;
     }
 
@@ -1324,11 +1324,11 @@ native_search_row_matches(NativeSearchEngineScreen *screen,
 static bool
 native_search_row_label(NativeSearchEngineScreen *screen,
                         NcSearchRow *row, NcmStringView *view) {
-    if (screen == NULL || row == NULL || view == NULL) {
+    if ((screen == NULL) || (row == NULL) || (view == NULL)) {
         return false;
     }
     if (row->is_song) {
-        if (screen->hooks.format_song != NULL) {
+        if (screen->hooks.format_song) {
             ncm_buffer_clear(&screen->row_text);
             if (!screen->hooks.format_song(
                     screen->hooks.user, &row->song, &screen->row_text)) {
@@ -1356,7 +1356,7 @@ native_search_insert_buffer_with_flags(
     uint32 flags) {
     NcSearchRow row;
 
-    if (screen == NULL || buffer == NULL) {
+    if ((screen == NULL) || (buffer == NULL)) {
         return false;
     }
     nc_search_row_init(&row);
@@ -2018,7 +2018,7 @@ native_search_copy_song_at(NativeSearchEngineScreen *screen,
 
     row = nc_menu_active_item_at(native_search_engine_screen_menu(screen),
                                  pos);
-    if (row == NULL || !row->is_song) {
+    if ((row == NULL) || !row->is_song) {
         return true;
     }
     return ncm_song_array_append_copy(songs, &row->song);

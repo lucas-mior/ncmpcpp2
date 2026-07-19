@@ -29,7 +29,7 @@
 typedef struct NcScreen NcScreen;
 typedef struct NcScreenRegistry NcScreenRegistry;
 typedef struct NcScreenResizeParams NcScreenResizeParams;
-typedef void (*NcScreenEachCallback)(NcScreen *screen, void *user);
+typedef void NcScreenEachCallback(NcScreen *screen, void *user);
 
 typedef struct NcScreenResizeParams {
     int64 x_offset;
@@ -132,7 +132,7 @@ void nc_screen_registry_unlock(NcScreenRegistry *registry);
 bool nc_screen_registry_is_visible(NcScreenRegistry *registry,
                                    NcScreen *screen);
 void nc_screen_registry_each_visible(NcScreenRegistry *registry,
-                                     NcScreenEachCallback callback,
+                                     NcScreenEachCallback *callback,
                                      void *user);
 void nc_screen_registry_update_visible(NcScreenRegistry *registry);
 void nc_screen_registry_resize_current(NcScreenRegistry *registry);

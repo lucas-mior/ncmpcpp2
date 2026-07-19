@@ -200,7 +200,7 @@ native_lastfm_screen_destroy(NativeLastfmScreen *screen) {
     ncm_job_queue_destroy(&screen->jobs);
     ncm_lastfm_service_destroy(&screen->service);
     ncm_lastfm_result_destroy(&screen->result);
-    if (screen->title != NULL) {
+    if (screen->title) {
         free2(screen->title, screen->title_cap);
     }
     ncm_buffer_destroy(&screen->search_constraint);

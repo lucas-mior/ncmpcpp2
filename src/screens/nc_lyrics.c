@@ -283,7 +283,7 @@ native_lyrics_screen_destroy(NativeLyricsScreen *screen) {
     for (int32 i = 0; i < screen->queued_songs_len; i += 1) {
         native_lyrics_queued_song_destroy(&screen->queued_songs[i]);
     }
-    if (screen->queued_songs != NULL) {
+    if (screen->queued_songs) {
         free2(screen->queued_songs,
             screen->queued_songs_cap*SIZEOF(*screen->queued_songs));
     }
@@ -378,7 +378,7 @@ native_lyrics_screen_load_file(NativeLyricsScreen *screen,
 
     nc_buffer_clear(&screen->display);
     first = true;
-    while (fgets(line, (int32)SIZEOF(line), file) != NULL) {
+    while (fgets(line, (int32)SIZEOF(line), file)) {
         line_len = strlen32(line);
         ncm_string_remove_chars(line, &line_len, STRLIT_ARGS("\r\n"));
         if (!first) {
@@ -414,7 +414,7 @@ native_lyrics_screen_save_file(NativeLyricsScreen *screen,
     }
 
     written = 0;
-    if ((lyrics != NULL) && (lyrics_len > 0)) {
+    if (lyrics && (lyrics_len > 0)) {
         written = (int32)fwrite64(lyrics, 1, lyrics_len, file);
     }
     if ((written != lyrics_len) || (fclose(file) != 0)) {
@@ -492,7 +492,7 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
 
     nc_buffer_clear(&screen->display);
     active_fetcher = native_lyrics_active_fetcher(screen, fetcher);
-    if (active_fetcher != NULL) {
+    if (active_fetcher) {
         native_lyrics_append_fetching(&screen->display, active_fetcher);
     } else if (Config.lyrics_fetchers.fetchers.len > 0) {
         native_lyrics_append_fetching(
@@ -946,7 +946,7 @@ native_lyrics_report_save_error(NcmBuffer *filename, NcmError *error) {
     char *message;
 
     message = "unknown error";
-    if ((error != NULL) && (error->code != 0)) {
+    if (error && (error->code != 0)) {
         message = strerror(error->code);
     }
     args[0] = ncm_string_format_arg_string(filename->data, filename->len);
@@ -963,7 +963,7 @@ native_lyrics_report_unlink_error(NcmBuffer *filename, NcmError *error) {
     char *message;
 
     message = "unknown error";
-    if ((error != NULL) && (error->code != 0)) {
+    if (error && (error->code != 0)) {
         message = strerror(error->code);
     }
     args[0] = ncm_string_format_arg_string(filename->data, filename->len);
@@ -1166,7 +1166,7 @@ static bool
 native_lyrics_job_fetch(NativeLyricsJob *job,
                         NcmBuffer *artist,
                         NcmBuffer *title) {
-    if (job->fetcher != NULL) {
+    if (job->fetcher) {
         return native_lyrics_job_fetch_one(job,
                                            job->fetcher,
                                            artist,
@@ -1286,7 +1286,7 @@ native_lyrics_job_destroy(void *user) {
 static NcmLyricsFetcherDef *
 native_lyrics_active_fetcher(NativeLyricsScreen *screen,
                              NcmLyricsFetcherDef *fetcher) {
-    if (fetcher != NULL) {
+    if (fetcher) {
         return fetcher;
     }
     return screen->fetcher;

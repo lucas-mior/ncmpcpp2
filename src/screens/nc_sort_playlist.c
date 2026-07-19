@@ -281,7 +281,7 @@ native_sort_playlist_dialog_move_current_up(
     }
     menu = nc_editor_sort_menu_base(&dialog->rows);
     pos = nc_menu_highlight(menu);
-    if (pos <= 0 || !sort_dialog_position_is_sort_key(menu, pos)) {
+    if ((pos <= 0) || !sort_dialog_position_is_sort_key(menu, pos)) {
         return false;
     }
     if (!sort_dialog_position_is_sort_key(menu, pos - 1)) {
@@ -318,11 +318,11 @@ bool
 native_sort_playlist_dialog_run_current(NativeSortPlaylistDialog *dialog) {
     NcEditorSortRow *row;
 
-    if (dialog == NULL || !dialog->ready) {
+    if ((dialog == NULL) || !dialog->ready) {
         return false;
     }
     row = nc_editor_sort_menu_current(&dialog->rows);
-    if (row == NULL || row->action.run == NULL) {
+    if ((row == NULL) || (row->action.run == NULL)) {
         return false;
     }
     row->action.run(row->action.user);
@@ -336,7 +336,7 @@ native_sort_playlist_dialog_get_order(
     NcMenu *menu;
     int32 len;
 
-    if (dialog == NULL || getters == NULL || getters_cap <= 0) {
+    if ((dialog == NULL) || (getters == NULL) || (getters_cap <= 0)) {
         return 0;
     }
     menu = nc_editor_sort_menu_base(&dialog->rows);
@@ -346,7 +346,7 @@ native_sort_playlist_dialog_get_order(
 
         row = nc_editor_sort_menu_item_at(&dialog->rows,
                                           NC_MENU_ITEMS_ALL, i);
-        if (row == NULL || row->getter == NCM_SONG_GETTER_NONE) {
+        if ((row == NULL) || (row->getter == NCM_SONG_GETTER_NONE)) {
             continue;
         }
         if (len >= getters_cap) {
@@ -399,8 +399,8 @@ sort_dialog_draw_row(NcMenu *menu, NcWindow *window, void *item,
     (void)pos;
     (void)user;
     row = item;
-    if (row == NULL || row->action.label == NULL
-        || row->action.label_len <= 0) {
+    if ((row == NULL) || (row->action.label == NULL)
+        || (row->action.label_len <= 0)) {
         return;
     }
     nc_window_print_data(window, row->action.label,
@@ -438,11 +438,11 @@ sort_dialog_can_run_current_callback(NcScreen *screen) {
     NcEditorSortRow *row;
 
     dialog = sort_dialog_from_screen(screen);
-    if (dialog == NULL || !dialog->ready) {
+    if ((dialog == NULL) || !dialog->ready) {
         return false;
     }
     row = nc_editor_sort_menu_current(&dialog->rows);
-    return (row != NULL) && (row->action.run != NULL);
+    return row && row->action.run;
 }
 
 static bool
@@ -475,7 +475,7 @@ sort_dialog_title_callback(NcScreen *screen) {
     NativeSortPlaylistDialog *dialog;
 
     dialog = sort_dialog_from_screen(screen);
-    if (dialog->previous_screen != NULL) {
+    if (dialog->previous_screen) {
         return nc_screen_title(dialog->previous_screen);
     }
     return "Sort playlist";
@@ -556,7 +556,7 @@ sort_dialog_run_sort(void *user) {
     int32 getters_len;
 
     dialog = user;
-    if (dialog == NULL || !dialog->ready) {
+    if ((dialog == NULL) || !dialog->ready) {
         return;
     }
 
@@ -592,7 +592,7 @@ sort_dialog_cancel(void *user) {
     NativeSortPlaylistDialog *dialog;
 
     dialog = user;
-    if (dialog == NULL || !dialog->ready) {
+    if ((dialog == NULL) || !dialog->ready) {
         return;
     }
     sort_dialog_finish(dialog);
@@ -604,7 +604,7 @@ sort_dialog_label_set(NcEditorSortRow *row, char *label, int32 label_len) {
     if (row == NULL) {
         return false;
     }
-    if (label == NULL || label_len <= 0) {
+    if ((label == NULL) || (label_len <= 0)) {
         return true;
     }
     row->action.label_cap = label_len + 1;
@@ -645,7 +645,7 @@ sort_dialog_finish(NativeSortPlaylistDialog *dialog) {
 
     previous = dialog->previous_screen;
     dialog->ready = false;
-    if (previous != NULL) {
+    if (previous) {
         (void)nc_screen_switcher_switch_to(
             previous, nc_screen_has_to_be_resized(previous));
     }
