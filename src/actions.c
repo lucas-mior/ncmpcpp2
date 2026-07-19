@@ -5156,7 +5156,7 @@ action_runtime_jump_to_playing_song(void) {
 
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST)) {
         success = native_playlist_screen_locate_position(
-            native_c_screen_playlist(), (uint32)position);
+            native_c_screen_playlist(), position);
         if (!success) {
             ncm_statusbar_print_cstring((int32)Config.message_delay_time,
                                         "Song is filtered out");
@@ -7354,7 +7354,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
             position = ncm_status_state_current_song_position();
             if (position >= 0) {
                 (void)native_playlist_screen_locate_position(
-                    native_c_screen_playlist(), (uint32)position);
+                    native_c_screen_playlist(), position);
             }
         }
         if (Config.autocenter_mode) {
