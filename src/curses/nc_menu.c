@@ -11,7 +11,7 @@
 static bool menu_is_separator(NcMenu *menu, void *item);
 static bool menu_is_selected(NcMenu *menu, void *item);
 static bool menu_is_inactive(NcMenu *menu, void *item);
-static bool menu_is_position_highlightable(int64 pos, void *user);
+static bool menu_is_position_highlightable(int32 pos, void *user);
 static void menu_print_buffer(NcWindow *window, NcBuffer *buffer);
 static void menu_copy_buffer(NcBuffer *dest, NcBuffer *source);
 static void *menu_construct_item(NcMenu *menu);
@@ -22,11 +22,11 @@ static uint32 **menu_flags_array_pointer(NcMenu *menu,
                                          enum NcMenuItemSource source);
 static uint32 *menu_flags_array(NcMenu *menu,
                                 enum NcMenuItemSource source);
-static int64 menu_item_index(NcMenu *menu, enum NcMenuItemSource source,
+static int32 menu_item_index(NcMenu *menu, enum NcMenuItemSource source,
                              void *item);
 static bool menu_remove_array_slot(NcMenu *menu,
                                    enum NcMenuItemSource source,
-                                   int64 pos, bool destroy_item);
+                                   int32 pos, bool destroy_item);
 static void menu_clamp_navigation(NcMenu *menu);
 static void menu_set_flags_for_item(NcMenu *menu, void *item,
                                     uint32 flags);
@@ -57,7 +57,7 @@ menu_flags_array(NcMenu *menu, enum NcMenuItemSource source) {
     return *menu_flags_array_pointer(menu, source);
 }
 
-static int64
+static int32
 menu_array_count(NcMenu *menu, enum NcMenuItemSource source) {
     void **items;
 
@@ -109,7 +109,7 @@ menu_destroy_item(NcMenu *menu, void *item) {
 }
 
 static bool
-menu_is_highlightable(NcMenu *menu, int64 pos,
+menu_is_highlightable(NcMenu *menu, int32 pos,
                       NcMenuHighlightableFunc *is_highlightable,
                       void *user) {
     if ((pos < 0) || (pos >= menu->item_count)) {
@@ -122,12 +122,12 @@ menu_is_highlightable(NcMenu *menu, int64 pos,
 }
 
 static void
-scroll_internal(NcMenu *menu, int64 height, enum NcScroll where,
+scroll_internal(NcMenu *menu, int32 height, enum NcScroll where,
                 NcMenuHighlightableFunc *is_highlightable, void *user,
-                int64 depth) {
-    int64 max_beginning;
-    int64 max_highlight;
-    int64 max_visible_highlight;
+                int32 depth) {
+    int32 max_beginning;
+    int32 max_highlight;
+    int32 max_visible_highlight;
 
     if (menu->item_count <= 0) {
         return;
@@ -234,8 +234,8 @@ scroll_internal(NcMenu *menu, int64 height, enum NcScroll where,
         }
         menu->highlight += height;
         menu->beginning += height;
-        menu->beginning = MIN(menu->beginning, max_beginning);
-        menu->highlight = MIN(menu->highlight, max_highlight);
+        menu->beginning = (int32)MIN(menu->beginning, max_beginning);
+        menu->highlight = (int32)MIN(menu->highlight, max_highlight);
         if (!menu_is_highlightable(menu, menu->highlight, is_highlightable,
                                    user)) {
             if ((menu->highlight == max_highlight)
@@ -386,23 +386,23 @@ nc_menu_sync_item_count(NcMenu *menu) {
     return;
 }
 
-int64
+int32
 nc_menu_item_count(NcMenu *menu) {
     nc_menu_sync_item_count(menu);
     return menu->item_count;
 }
 
-int64
+int32
 nc_menu_all_item_count(NcMenu *menu) {
     return menu_array_count(menu, NC_MENU_ITEMS_ALL);
 }
 
-int64
+int32
 nc_menu_filtered_item_count(NcMenu *menu) {
     return menu_array_count(menu, NC_MENU_ITEMS_FILTERED);
 }
 
-int64
+int32
 nc_menu_highlight(NcMenu *menu) {
     return menu->highlight;
 }
@@ -455,9 +455,9 @@ nc_menu_set_centered_cursor(NcMenu *menu, bool state) {
 }
 
 bool
-nc_menu_goto(NcMenu *menu, int64 y,
+nc_menu_goto(NcMenu *menu, int32 y,
              NcMenuHighlightableFunc *is_highlightable, void *user) {
-    int64 pos;
+    int32 pos;
 
     pos = menu->beginning + y;
     if (!menu_is_highlightable(menu, pos, is_highlightable, user)) {
@@ -468,13 +468,12 @@ nc_menu_goto(NcMenu *menu, int64 y,
 }
 
 bool
-nc_menu_goto_selectable(NcMenu *menu, int64 y) {
+nc_menu_goto_selectable(NcMenu *menu, int32 y) {
     return nc_menu_goto(menu, y, menu_is_position_highlightable, menu);
 }
 
 bool
-nc_menu_goto_selectable_position(NcMenu *menu, int64 pos,
-                                  int64 height) {
+nc_menu_goto_selectable_position(NcMenu *menu, int32 pos, int32 height) {
     if (!nc_menu_position_is_selectable(menu, pos)) {
         return false;
     }
@@ -483,14 +482,14 @@ nc_menu_goto_selectable_position(NcMenu *menu, int64 pos,
 }
 
 bool
-nc_menu_search_selectable(NcMenu *menu, int64 height, bool forward,
+nc_menu_search_selectable(NcMenu *menu, int32 height, bool forward,
                           bool wrap, bool skip_current,
                           NcMenuSearchFunc *matches, void *user,
-                          int64 *found_pos) {
-    int64 count;
-    int64 current;
-    int64 start;
-    int64 step;
+                          int32 *found_pos) {
+    int32 count;
+    int32 current;
+    int32 start;
+    int32 step;
 
     if ((menu == NULL) || (matches == NULL)) {
         return false;
@@ -526,10 +525,9 @@ nc_menu_search_selectable(NcMenu *menu, int64 height, bool forward,
         step = -1;
     }
 
-    for (int64 i = 0; i < count; i += 1) {
-        int64 pos;
+    for (int32 i = 0; i < count; i += 1) {
+        int32 pos = start + step*i;
 
-        pos = start + step*i;
         if (wrap) {
             pos %= count;
             if (pos < 0) {
@@ -560,11 +558,11 @@ nc_menu_search_selectable(NcMenu *menu, int64 height, bool forward,
 }
 
 void
-nc_menu_prepare_refresh(NcMenu *menu, int64 height,
+nc_menu_prepare_refresh(NcMenu *menu, int32 height,
                         NcMenuHighlightableFunc *is_highlightable,
                         void *user) {
-    int64 max_beginning;
-    int64 max_visible_highlight;
+    int32 max_beginning;
+    int32 max_visible_highlight;
 
     nc_menu_sync_item_count(menu);
     if (menu->item_count <= 0) {
@@ -604,10 +602,9 @@ nc_menu_prepare_refresh(NcMenu *menu, int64 height,
 }
 
 void
-nc_menu_refresh(NcMenu *menu, NcWindow *window, int64 width,
-                int64 height) {
-    int64 end;
-    int64 line;
+nc_menu_refresh(NcMenu *menu, NcWindow *window, int32 width, int32 height) {
+    int32 end;
+    int32 line;
 
     nc_menu_sync_item_count(menu);
     if (menu->item_count <= 0) {
@@ -621,7 +618,7 @@ nc_menu_refresh(NcMenu *menu, NcWindow *window, int64 width,
 
     line = 0;
     end = menu->beginning + height;
-    for (int64 pos = menu->beginning; pos < end; pos += 1) {
+    for (int32 pos = menu->beginning; pos < end; pos += 1) {
         void *item;
         bool highlighted;
         bool selected;
@@ -671,7 +668,7 @@ nc_menu_refresh(NcMenu *menu, NcWindow *window, int64 width,
 }
 
 void
-nc_menu_scroll(NcMenu *menu, int64 height, enum NcScroll where,
+nc_menu_scroll(NcMenu *menu, int32 height, enum NcScroll where,
                NcMenuHighlightableFunc *is_highlightable, void *user) {
     nc_menu_sync_item_count(menu);
     scroll_internal(menu, height, where, is_highlightable, user, 0);
@@ -679,7 +676,7 @@ nc_menu_scroll(NcMenu *menu, int64 height, enum NcScroll where,
 }
 
 void
-nc_menu_scroll_selectable(NcMenu *menu, int64 height,
+nc_menu_scroll_selectable(NcMenu *menu, int32 height,
                           enum NcScroll where) {
     nc_menu_scroll(menu, height, where, menu_is_position_highlightable,
                    menu);
@@ -694,8 +691,8 @@ nc_menu_reset(NcMenu *menu) {
 }
 
 void
-nc_menu_highlight_position(NcMenu *menu, int64 pos, int64 height) {
-    int64 half_height;
+nc_menu_highlight_position(NcMenu *menu, int32 pos, int32 height) {
+    int32 half_height;
 
     nc_menu_sync_item_count(menu);
     ASSERT(pos >= 0);
@@ -742,9 +739,9 @@ nc_menu_add_separator(NcMenu *menu) {
 }
 
 void
-nc_menu_insert_item_with_flags(NcMenu *menu, int64 pos, void *item,
+nc_menu_insert_item_with_flags(NcMenu *menu, int32 pos, void *item,
                                uint32 flags) {
-    int64 count;
+    int32 count;
     void *new_item;
 
     count = menu_array_count(menu, NC_MENU_ITEMS_ALL);
@@ -770,7 +767,7 @@ nc_menu_insert_item_with_flags(NcMenu *menu, int64 pos, void *item,
 
 bool
 nc_menu_remove_item(NcMenu *menu, enum NcMenuItemSource source,
-                    int64 pos) {
+                    int32 pos) {
     bool destroy_item;
 
     destroy_item = source == NC_MENU_ITEMS_ALL;
@@ -779,10 +776,10 @@ nc_menu_remove_item(NcMenu *menu, enum NcMenuItemSource source,
 
 bool
 nc_menu_replace_item(NcMenu *menu, enum NcMenuItemSource source,
-                     int64 pos, void *item) {
+                     int32 pos, void *item) {
     void *old_item;
     void *new_item;
-    int64 all_pos;
+    int32 all_pos;
 
     if ((pos < 0) || (pos >= menu_array_count(menu, source))) {
         return false;
@@ -794,7 +791,7 @@ nc_menu_replace_item(NcMenu *menu, enum NcMenuItemSource source,
     if (all_pos >= 0) {
         menu->all_items[all_pos] = new_item;
     }
-    for (int64 i = 0; i < menu_array_count(menu, NC_MENU_ITEMS_FILTERED);
+    for (int32 i = 0; i < menu_array_count(menu, NC_MENU_ITEMS_FILTERED);
          i += 1) {
         if (menu->filtered_items[i] == old_item) {
             menu->filtered_items[i] = new_item;
@@ -807,11 +804,11 @@ nc_menu_replace_item(NcMenu *menu, enum NcMenuItemSource source,
 void
 nc_menu_clear_items(NcMenu *menu) {
     enum NcMenuItemSource active_items;
-    int64 count;
+    int32 count;
 
     active_items = menu->active_items;
     count = menu_array_count(menu, NC_MENU_ITEMS_ALL);
-    for (int64 i = 0; i < count; i += 1) {
+    for (int32 i = 0; i < count; i += 1) {
         menu_destroy_item(menu, menu->all_items[i]);
     }
     ARRAY_FREE(menu->all_items);
@@ -844,7 +841,7 @@ nc_menu_add_filtered_item_ref(NcMenu *menu, void *item) {
 void
 nc_menu_apply_filter(NcMenu *menu) {
     nc_menu_clear_filtered_items(menu);
-    for (int64 i = 0; i < menu_array_count(menu, NC_MENU_ITEMS_ALL);
+    for (int32 i = 0; i < menu_array_count(menu, NC_MENU_ITEMS_ALL);
          i += 1) {
         void *item;
 
@@ -884,7 +881,7 @@ nc_menu_empty(NcMenu *menu) {
 }
 
 bool
-nc_menu_position_is_selectable(NcMenu *menu, int64 pos) {
+nc_menu_position_is_selectable(NcMenu *menu, int32 pos) {
     void *item;
     uint32 flags;
 
@@ -908,7 +905,7 @@ nc_menu_position_is_selectable(NcMenu *menu, int64 pos) {
 }
 
 bool
-nc_menu_position_is_separator(NcMenu *menu, int64 pos) {
+nc_menu_position_is_separator(NcMenu *menu, int32 pos) {
     void *item;
 
     if ((pos < 0) || (pos >= nc_menu_item_count(menu))) {
@@ -920,7 +917,7 @@ nc_menu_position_is_separator(NcMenu *menu, int64 pos) {
 }
 
 bool
-nc_menu_position_is_inactive(NcMenu *menu, int64 pos) {
+nc_menu_position_is_inactive(NcMenu *menu, int32 pos) {
     void *item;
 
     if ((pos < 0) || (pos >= nc_menu_item_count(menu))) {
@@ -932,7 +929,7 @@ nc_menu_position_is_inactive(NcMenu *menu, int64 pos) {
 }
 
 bool
-nc_menu_position_is_selected(NcMenu *menu, int64 pos) {
+nc_menu_position_is_selected(NcMenu *menu, int32 pos) {
     void *item;
 
     if ((pos < 0) || (pos >= nc_menu_item_count(menu))) {
@@ -944,7 +941,7 @@ nc_menu_position_is_selected(NcMenu *menu, int64 pos) {
 }
 
 bool
-nc_menu_set_position_selected(NcMenu *menu, int64 pos, bool selected) {
+nc_menu_set_position_selected(NcMenu *menu, int32 pos, bool selected) {
     void *item;
     uint32 flags;
 
@@ -972,7 +969,7 @@ nc_menu_set_position_selected(NcMenu *menu, int64 pos, bool selected) {
 }
 
 bool
-nc_menu_toggle_position_selected(NcMenu *menu, int64 pos) {
+nc_menu_toggle_position_selected(NcMenu *menu, int32 pos) {
     bool selected;
 
     selected = nc_menu_position_is_selected(menu, pos);
@@ -981,7 +978,7 @@ nc_menu_toggle_position_selected(NcMenu *menu, int64 pos) {
 
 void
 nc_menu_clear_selection(NcMenu *menu) {
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         nc_menu_set_position_selected(menu, i, false);
     }
     return;
@@ -992,12 +989,12 @@ nc_menu_has_selected(NcMenu *menu) {
     return nc_menu_first_selected_position(menu) >= 0;
 }
 
-int64
+int32
 nc_menu_selected_count(NcMenu *menu) {
-    int64 count;
+    int32 count;
 
     count = 0;
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (nc_menu_position_is_selected(menu, i)) {
             count += 1;
         }
@@ -1005,9 +1002,9 @@ nc_menu_selected_count(NcMenu *menu) {
     return count;
 }
 
-int64
+int32
 nc_menu_first_selected_position(NcMenu *menu) {
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (nc_menu_position_is_selected(menu, i)) {
             return i;
         }
@@ -1032,7 +1029,7 @@ nc_menu_toggle_current_selected(NcMenu *menu) {
 }
 
 bool
-nc_menu_activate_position(NcMenu *menu, int64 pos) {
+nc_menu_activate_position(NcMenu *menu, int32 pos) {
     void *item;
 
     if (menu->action_callbacks.activate == NULL) {
@@ -1058,9 +1055,9 @@ nc_menu_activate_current(NcMenu *menu) {
 
 uint32
 nc_menu_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
-                      int64 pos) {
+                      int32 pos) {
     uint32 *flags;
-    int64 count;
+    int32 count;
 
     flags = menu_flags_array(menu, source);
     count = menu_array_count(menu, source);
@@ -1071,7 +1068,7 @@ nc_menu_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
 
 bool
 nc_menu_set_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
-                          int64 pos, uint32 flags) {
+                          int32 pos, uint32 flags) {
     void *item;
 
     if ((pos < 0) || (pos >= menu_array_count(menu, source))) {
@@ -1083,9 +1080,9 @@ nc_menu_set_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
 }
 
 void *
-nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int64 pos) {
+nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int32 pos) {
     void **items;
-    int64 count;
+    int32 count;
 
     items = menu_array(menu, source);
     count = menu_array_count(menu, source);
@@ -1095,7 +1092,7 @@ nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int64 pos) {
 }
 
 void *
-nc_menu_active_item_at(NcMenu *menu, int64 pos) {
+nc_menu_active_item_at(NcMenu *menu, int32 pos) {
     return nc_menu_item_at(menu, menu->active_items, pos);
 }
 
@@ -1109,12 +1106,12 @@ nc_menu_current_item(NcMenu *menu) {
 
 void
 nc_menu_swap_item_slots(NcMenu *menu, enum NcMenuItemSource source,
-                        int64 left, int64 right) {
+                        int32 left, int32 right) {
     uint32 *flags;
     void **items;
     void *temp;
     uint32 temp_flags;
-    int64 count;
+    int32 count;
 
     items = menu_array(menu, source);
     flags = menu_flags_array(menu, source);
@@ -1177,7 +1174,7 @@ menu_default_item_flags(void) {
 
 static uint32
 menu_flags_for_item(NcMenu *menu, void *item) {
-    int64 pos;
+    int32 pos;
 
     pos = menu_item_index(menu, NC_MENU_ITEMS_ALL, item);
     if (pos >= 0) {
@@ -1192,14 +1189,14 @@ menu_flags_for_item(NcMenu *menu, void *item) {
     return menu_default_item_flags();
 }
 
-static int64
+static int32
 menu_item_index(NcMenu *menu, enum NcMenuItemSource source, void *item) {
     void **items;
-    int64 count;
+    int32 count;
 
     items = menu_array(menu, source);
     count = menu_array_count(menu, source);
-    for (int64 i = 0; i < count; i += 1) {
+    for (int32 i = 0; i < count; i += 1) {
         if (items[i] == item) {
             return i;
         }
@@ -1209,10 +1206,10 @@ menu_item_index(NcMenu *menu, enum NcMenuItemSource source, void *item) {
 
 static bool
 menu_remove_array_slot(NcMenu *menu, enum NcMenuItemSource source,
-                       int64 pos, bool destroy_item) {
+                       int32 pos, bool destroy_item) {
     uint32 *flags;
     void **items;
-    int64 count;
+    int32 count;
 
     items = menu_array(menu, source);
     flags = menu_flags_array(menu, source);
@@ -1264,7 +1261,7 @@ menu_clamp_navigation(NcMenu *menu) {
 
 static void
 menu_set_flags_for_item(NcMenu *menu, void *item, uint32 flags) {
-    int64 pos;
+    int32 pos;
 
     pos = menu_item_index(menu, NC_MENU_ITEMS_ALL, item);
     if (pos >= 0) {
@@ -1279,7 +1276,7 @@ menu_set_flags_for_item(NcMenu *menu, void *item, uint32 flags) {
 }
 
 static bool
-menu_is_position_highlightable(int64 pos, void *user) {
+menu_is_position_highlightable(int32 pos, void *user) {
     NcMenu *menu;
     void *item;
 
