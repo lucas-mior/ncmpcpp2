@@ -920,11 +920,9 @@ void
 ncm_format_render(NcmFormatAst *ast, NcmSong *song,
                   NcmFormatCallbacks *callbacks, void *output,
                   void *second_output, uint32 flags) {
-    int32 no_output;
-    bool switched;
+    int32 no_output = 0;
+    bool switched = false;
 
-    no_output = 0;
-    switched = false;
     if (ast == NULL) {
         return;
     }
