@@ -148,8 +148,7 @@ void
 app_controller_refresh_current_screen(void) {
     NcScreen *screen;
 
-    screen = app_controller_current_screen();
-    if (screen) {
+    if ((screen = app_controller_current_screen())) {
         nc_screen_refresh(screen);
     }
     return;
