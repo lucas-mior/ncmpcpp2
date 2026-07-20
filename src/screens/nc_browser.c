@@ -501,7 +501,7 @@ native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
     scroll_beginning = screen->title_scroll_beginning;
     nc_cyclic_text_write(&scroll_buffer, directory.data, directory.len,
                          &scroll_beginning, scroll_width, separator,
-                         (int32)SIZEOF(separator) - 1,
+                         SIZEOF(separator) - 1,
                          Config.header_text_scrolling);
     ncm_buffer_append(&screen->title_text, scroll_buffer.data,
                       scroll_buffer.len);

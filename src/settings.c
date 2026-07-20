@@ -221,8 +221,8 @@ settings_invalid_value(NcmError *error, char *value, int32 value_len) {
         settings_error(error, STRLIT_ARGS("invalid value"));
         return;
     }
-    if (len >= (int32)SIZEOF(message)) {
-        len = (int32)SIZEOF(message) - 1;
+    if (len >= SIZEOF(message)) {
+        len = SIZEOF(message) - 1;
     }
     settings_error(error, message, len);
     return;
@@ -1825,8 +1825,8 @@ settings_set_option_error(NcmError *error, bool default_value,
                       STRLIT_ARGS("error while processing option"));
         return;
     }
-    if (len >= (int32)SIZEOF(message)) {
-        len = (int32)SIZEOF(message) - 1;
+    if (len >= SIZEOF(message)) {
+        len = SIZEOF(message) - 1;
     }
     if (ncm_error_is_set(cause)) {
         ncm_error_set(error, cause->code, message, len);
@@ -1847,8 +1847,8 @@ settings_set_unknown_option_error(NcmError *error, char *option,
         ncm_error_set(error, EINVAL, STRLIT_ARGS("unknown option"));
         return;
     }
-    if (len >= (int32)SIZEOF(message)) {
-        len = (int32)SIZEOF(message) - 1;
+    if (len >= SIZEOF(message)) {
+        len = SIZEOF(message) - 1;
     }
     ncm_error_set(error, EINVAL, message, len);
     return;
@@ -1867,8 +1867,8 @@ settings_set_duplicate_option_error(NcmError *error, SettingsOption *option) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("option already set"));
         return;
     }
-    if (len >= (int32)SIZEOF(message)) {
-        len = (int32)SIZEOF(message) - 1;
+    if (len >= SIZEOF(message)) {
+        len = SIZEOF(message) - 1;
     }
     ncm_error_set(error, EINVAL, message, len);
     return;
@@ -1925,8 +1925,8 @@ settings_read_file(Configuration *config, SettingsOption *options,
             ncm_error_set(error, errno,
                           STRLIT_ARGS("failed to open configuration file"));
         } else {
-            if (len >= (int32)SIZEOF(message)) {
-                len = (int32)SIZEOF(message) - 1;
+            if (len >= SIZEOF(message)) {
+                len = SIZEOF(message) - 1;
             }
             ncm_error_set(error, errno, message, len);
         }
@@ -1937,7 +1937,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
     if (!quiet) {
         fprintf(stderr, "Reading configuration from %s...\n", path_buffer.data);
     }
-    while (fgets(line, (int32)SIZEOF(line), file)) {
+    while (fgets(line, SIZEOF(line), file)) {
         int32 line_len;
         NcmOptionLine parsed;
         SettingsOption *option;

@@ -4173,8 +4173,8 @@ tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
     if (len < 0) {
         return false;
     }
-    if (len >= (int32)SIZEOF(buffer)) {
-        len = (int32)SIZEOF(buffer) - 1;
+    if (len >= SIZEOF(buffer)) {
+        len = SIZEOF(buffer) - 1;
     }
     numberer->current += 1;
     if (!ncm_mutable_song_set_tag(song, NCM_TAGS_FIELD_TRACK, 0,

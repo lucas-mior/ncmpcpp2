@@ -627,8 +627,8 @@ native_tiny_tag_editor_screen_run_row(
                                  strerror(errno));
             if (error_len < 0) {
                 error_len = 0;
-            } else if (error_len >= (int32)SIZEOF(error_buffer)) {
-                error_len = (int32)SIZEOF(error_buffer) - 1;
+            } else if (error_len >= SIZEOF(error_buffer)) {
+                error_len = SIZEOF(error_buffer) - 1;
             }
             tiny_editor_status_message(screen, error_buffer, error_len);
         }
@@ -1042,8 +1042,8 @@ tiny_editor_buffer_uint(NcBuffer *buffer, uint32 value, char *suffix,
     if (len < 0) {
         return;
     }
-    if (len >= (int32)SIZEOF(number)) {
-        len = (int32)SIZEOF(number) - 1;
+    if (len >= SIZEOF(number)) {
+        len = SIZEOF(number) - 1;
     }
     nc_buffer_append_data(buffer, number, len);
     nc_buffer_append_data(buffer, suffix, suffix_len);

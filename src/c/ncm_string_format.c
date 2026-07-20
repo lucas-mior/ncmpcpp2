@@ -37,8 +37,8 @@ ncm_string_format_append_number(NcmBuffer *out, char *format,
     if (len < 0) {
         return;
     }
-    if (len >= (int32)SIZEOF(buffer)) {
-        len = (int32)SIZEOF(buffer) - 1;
+    if (len >= SIZEOF(buffer)) {
+        len = SIZEOF(buffer) - 1;
     }
     ncm_buffer_append(out, buffer, len);
     return;
