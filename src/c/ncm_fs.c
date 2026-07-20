@@ -86,10 +86,8 @@ ncm_fs_dirent_type(int32 type) {
         return NCM_FS_ENTRY_SYMLINK;
 #endif
     default:
-        break;
+        return NCM_FS_ENTRY_UNKNOWN;
     }
-
-    return NCM_FS_ENTRY_UNKNOWN;
 }
 
 void
