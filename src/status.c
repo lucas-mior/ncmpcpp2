@@ -45,12 +45,12 @@ static char status_random;
 static char status_single;
 static int32 status_current_song_id;
 static int32 status_current_song_pos;
-static uint32 status_elapsed_time;
-static uint32 status_kbps;
+static int32 status_elapsed_time;
+static int32 status_kbps;
 static enum NcmStatusPlayerState status_player_state;
-static uint32 status_playlist_version;
-static uint32 status_playlist_length;
-static uint32 status_total_time;
+static int32 status_playlist_version;
+static int32 status_playlist_length;
+static int32 status_total_time;
 static int32 status_volume;
 
 static bool status_hooks_set;
@@ -87,8 +87,8 @@ static int32 status_player_state_string(char *buffer, int32 buffer_cap);
 static void status_draw_song_title(NcmSong *song);
 static void status_draw_player_state_label(char *state, int32 state_len);
 static bool status_current_song_for_change(NcmSong *song);
-static void status_call_ui_playlist_changed(uint32 previous_version);
-static void status_request_playlist_update(uint32 previous_version);
+static void status_call_ui_playlist_changed(int32 previous_version);
+static void status_request_playlist_update(int32 previous_version);
 static void status_call_ui_stored_playlists_changed(void);
 static void status_call_ui_database_changed(void);
 static void status_request_stored_playlists_update(void);
@@ -423,7 +423,7 @@ status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks) {
     }
 
     highlighted = native_playlist_screen_locate_position(
-        native_c_screen_playlist(), (uint32)position);
+        native_c_screen_playlist(), position);
     if (!highlighted) {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
                                     "Song is filtered out");
@@ -575,7 +575,7 @@ bool
 ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                             NcmStatusHooks *hooks, NcmError *error) {
     NcmStringFormatArg arg;
-    uint32 previous_playlist_version;
+    int32 previous_playlist_version;
     char new_consume;
     char new_crossfade;
     char new_random;
@@ -931,7 +931,7 @@ ncm_status_state_volume(void) {
 }
 
 void
-ncm_status_changes_playlist(uint32 previous_version) {
+ncm_status_changes_playlist(int32 previous_version) {
     status_request_playlist_update(previous_version);
     status_call_ui_playlist_changed(previous_version);
     return;
@@ -1076,7 +1076,7 @@ status_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
 }
 
 static int32
-status_song_time_string(uint32 length, char *buffer, int32 buffer_cap) {
+status_song_time_string(int32 length, char *buffer, int32 buffer_cap) {
     return ncm_helpers_show_song_time(length, buffer, buffer_cap);
 }
 
@@ -1137,7 +1137,7 @@ status_draw_song_title(NcmSong *song) {
 }
 
 static void
-status_call_ui_playlist_changed(uint32 previous_version) {
+status_call_ui_playlist_changed(int32 previous_version) {
     if (status_ui_hooks_set && status_ui_hooks.playlist_changed) {
         status_ui_hooks.playlist_changed(previous_version,
                                          status_ui_hooks.user);
@@ -1146,15 +1146,14 @@ status_call_ui_playlist_changed(uint32 previous_version) {
 }
 
 static void
-status_request_playlist_update(uint32 previous_version) {
+status_request_playlist_update(int32 previous_version) {
     NcmError error;
 
     ncm_error_clear(&error);
     if (!native_playlist_screen_reload_from_mpd(
             native_c_screen_playlist(), &global_mpd, previous_version,
             status_playlist_length, &error)) {
-        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
-                                    error.message);
+        ncm_statusbar_print_cstring(Config.message_delay_time, error.message);
     } else if (status_playlist_update_observer) {
         status_playlist_update_observer(status_playlist_update_observer_user);
     }
@@ -1454,7 +1453,7 @@ status_buffer_append_char(NcmBuffer *buffer, char ch) {
 }
 
 static void
-status_buffer_append_int32(NcmBuffer *buffer, uint32 value) {
+status_buffer_append_int32(NcmBuffer *buffer, int32 value) {
     char tmp[32];
     int32 len;
 
