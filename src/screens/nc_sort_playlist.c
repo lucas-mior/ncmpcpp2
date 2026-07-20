@@ -543,7 +543,7 @@ static void
 sort_dialog_show_move_hint(void *user) {
     (void)user;
     ncm_statusbar_print_cstring(
-        (int32)Config.message_delay_time,
+        Config.message_delay_time,
         "Move tag types up and down to adjust sort order");
     return;
 }
@@ -563,7 +563,7 @@ sort_dialog_run_sort(void *user) {
 
     getters_len = native_sort_playlist_dialog_get_order(
         dialog, getters, NCM_ARRAY_LEN(getters));
-    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+    ncm_statusbar_print_cstring(Config.message_delay_time,
                                 "Sorting...");
     ncm_error_clear(&error);
     success = ncm_playlist_sort_range(
@@ -574,13 +574,13 @@ sort_dialog_run_sort(void *user) {
     }
 
     if (success) {
-        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+        ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Range sorted");
     } else if (ncm_error_is_set(&error)) {
-        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+        ncm_statusbar_print_cstring(Config.message_delay_time,
                                     error.message);
     } else {
-        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+        ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Could not sort playlist");
     }
 

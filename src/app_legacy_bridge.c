@@ -75,7 +75,7 @@ app_legacy_bridge_dispatch_lyrics_jobs(void) {
     ncm_buffer_init(&message);
     if (native_lyrics_screen_try_take_consumer_message(native_c_screen_lyrics(),
                                                        &message)) {
-        ncm_statusbar_print((int32)Config.message_delay_time, message.data,
+        ncm_statusbar_print(Config.message_delay_time, message.data,
                             message.len);
     }
     ncm_buffer_destroy(&message);
@@ -137,10 +137,10 @@ app_legacy_bridge_report_mpd_error(NcmError *error) {
 
     if ((ncm_mpd_client_error_code(&global_mpd) == MPD_ERROR_SERVER)
         || (error && (error->code == MPD_ERROR_SERVER))) {
-        ncm_statusbar_format((int32)Config.message_delay_time,
+        ncm_statusbar_format(Config.message_delay_time,
                              STRLIT_ARGS("MPD: %1%"), &arg, 1);
     } else {
-        ncm_statusbar_format((int32)Config.message_delay_time,
+        ncm_statusbar_format(Config.message_delay_time,
                              STRLIT_ARGS("ncmpcpp: %1%"), &arg, 1);
     }
     return;

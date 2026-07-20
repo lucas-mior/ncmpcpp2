@@ -1565,7 +1565,7 @@ native_media_library_screen_selected_songs(
         screen, songs, &error);
     if (!result && ncm_error_is_set(&error)) {
         ncm_statusbar_print_cstring(
-            (int32)Config.message_delay_time, error.message);
+            Config.message_delay_time, error.message);
     }
     return result;
 }
@@ -2889,7 +2889,7 @@ native_library_print_add_status(NativeMediaLibraryScreen *screen,
         return;
     }
 
-    ncm_statusbar_print((int32)Config.message_delay_time,
+    ncm_statusbar_print(Config.message_delay_time,
                         message.data, message.len);
     ncm_buffer_destroy(&message);
     return;
@@ -2899,7 +2899,7 @@ static void
 native_library_print_add_error(NcmError *error) {
     if (error && ncm_error_is_set(error)) {
         ncm_statusbar_print_cstring(
-            (int32)Config.message_delay_time, error->message);
+            Config.message_delay_time, error->message);
     }
     return;
 }
@@ -3404,7 +3404,7 @@ native_library_update(NcScreen *screen) {
     if (!native_media_library_screen_update(library, &error)) {
         if (ncm_error_is_set(&error)) {
             ncm_statusbar_print_cstring(
-                (int32)Config.message_delay_time, error.message);
+                Config.message_delay_time, error.message);
         }
         return;
     }
