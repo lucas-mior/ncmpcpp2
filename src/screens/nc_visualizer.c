@@ -1984,10 +1984,19 @@ visualizer_system_open_udp(void *user, char *location,
 }
 
 static int32
-visualizer_system_read_source(void *user, int32 fd, void *buffer,
-                              int32 buffer_size) {
+visualizer_system_read_source(void *user, int32 fd,
+                              void *buffer, int32 buffer_size) {
+    int64 r;
+    int32 r2;
     (void)user;
-    return read64(fd, buffer, buffer_size);
+
+    if ((r = read64(fd, buffer, buffer_size)) >= MAXOF(r2)) {
+        error("Visualizer: too many bytes read.\n");
+        fatal(EXIT_FAILURE);
+    }
+
+    r2 = (int32)r;
+    return r;
 }
 
 static void
