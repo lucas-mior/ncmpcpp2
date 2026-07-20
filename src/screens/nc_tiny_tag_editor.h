@@ -87,9 +87,9 @@ typedef struct NativeTinyTagEditorScreen {
     NcmBuffer tag_separator;
     NcScreen *previous_screen;
 
-    int64 start_x;
+    int32 start_x;
     int32 width;
-    int64 main_start_y;
+    int32 main_start_y;
     int32 main_height;
 
     bool has_edited;
@@ -98,8 +98,8 @@ typedef struct NativeTinyTagEditorScreen {
 } NativeTinyTagEditorScreen;
 
 void native_tiny_tag_editor_screen_init(
-    NativeTinyTagEditorScreen *screen, int64 start_x, int64 width,
-    int64 main_start_y, int64 main_height, NcColor color, NcBorder border);
+    NativeTinyTagEditorScreen *screen, int32 start_x, int32 width,
+    int32 main_start_y, int32 main_height, NcColor color, NcBorder border);
 void native_tiny_tag_editor_screen_destroy(
     NativeTinyTagEditorScreen *screen);
 NcScreen *native_tiny_tag_editor_screen_base(
@@ -110,8 +110,8 @@ void native_tiny_tag_editor_screen_set_hooks(
 NcEditorBufferMenu *native_tiny_tag_editor_screen_rows(
     NativeTinyTagEditorScreen *screen);
 void native_tiny_tag_editor_screen_set_geometry(
-    NativeTinyTagEditorScreen *screen, int64 start_x, int64 width,
-    int64 main_start_y, int64 main_height);
+    NativeTinyTagEditorScreen *screen, int32 start_x, int32 width,
+    int32 main_start_y, int32 main_height);
 bool native_tiny_tag_editor_screen_set_edited_song(
     NativeTinyTagEditorScreen *screen, NcmSong *song);
 enum NativeTinyTagEditorOpenResult

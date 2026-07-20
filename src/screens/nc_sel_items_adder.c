@@ -77,8 +77,8 @@ static ExistingPlaylistAction *existing_playlist_action_create(
 
 void
 native_selected_items_adder_screen_init(
-    NativeSelectedItemsAdderScreen *screen, int64 start_x, int64 start_y,
-    int64 width, int64 height, NcColor color, NcBorder border) {
+    NativeSelectedItemsAdderScreen *screen, int32 start_x, int32 start_y,
+    int32 width, int32 height, NcColor color, NcBorder border) {
     NcScreenCallbacks callbacks;
     NcMenuDisplayCallbacks display_callbacks = {0};
     NcMenu *playlist_menu;
@@ -667,7 +667,7 @@ adder_mouse_callback(NcScreen *screen, MEVENT event) {
     NativeSelectedItemsAdderScreen *adder;
     NcWindow *window;
     enum NcScroll where;
-    int64 count;
+    int32 count;
     int32 x;
     int32 y;
 
@@ -703,7 +703,7 @@ adder_mouse_callback(NcScreen *screen, MEVENT event) {
             where = NC_SCROLL_PAGE_UP;
         }
     }
-    for (int64 i = 0; i < count; i += 1) {
+    for (int32 i = 0; i < count; i += 1) {
         adder_scroll_callback(screen, where);
     }
     return;
@@ -1264,14 +1264,14 @@ adder_sort_playlist_rows(NativeSelectedItemsAdderScreen *screen,
 
 static void
 adder_apply_geometry(NativeSelectedItemsAdderScreen *screen) {
-    int64 main_height;
-    int64 main_start_y;
-    int64 screen_height;
-    int64 screen_width;
-    int64 playlist_start_x;
-    int64 playlist_start_y;
-    int64 position_start_x;
-    int64 position_start_y;
+    int32 main_height;
+    int32 main_start_y;
+    int32 screen_height;
+    int32 screen_width;
+    int32 playlist_start_x;
+    int32 playlist_start_y;
+    int32 position_start_x;
+    int32 position_start_y;
 
     screen_width = ui_state_screen_width();
     screen_height = ui_state_screen_height();

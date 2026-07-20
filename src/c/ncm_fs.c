@@ -137,8 +137,8 @@ ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat, NcmError *error) {
         return false;
     }
 
-    stat->size = (int64)statbuf.st_size;
-    stat->mtime = (int64)statbuf.st_mtime;
+    stat->size = (int32)statbuf.st_size;
+    stat->mtime = (int32)statbuf.st_mtime;
     stat->type = ncm_fs_mode_type(statbuf.st_mode);
     stat->exists = true;
 

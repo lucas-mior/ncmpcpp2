@@ -151,7 +151,7 @@ typedef bool NcPromptHook(char *text, void *user_data);
 
 typedef struct NcPrompt {
     char *initial_text;
-    int64 width;
+    int32 width;
     NcPromptHook *hook;
     void *hook_user_data;
     bool encrypted;
@@ -165,8 +165,8 @@ typedef struct NcWindow {
     NcKey *input_queue;
     NcFdCallback *fd_callbacks;
 
-    int64 start_x;
-    int64 start_y;
+    int32 start_x;
+    int32 start_y;
     int32 width;
     int32 height;
     int32 title_len;
@@ -214,16 +214,16 @@ void nc_unpause_screen(void);
 void nc_destroy_screen(void);
 
 void nc_window_init_empty(NcWindow *window);
-void nc_window_init(NcWindow *window, int64 start_x, int64 start_y,
-                    int64 width, int64 height, char *title,
+void nc_window_init(NcWindow *window, int32 start_x, int32 start_y,
+                    int32 width, int32 height, char *title,
                     int32 title_len, NcColor color, NcBorder border);
 void nc_window_destroy(NcWindow *window);
 
 WINDOW *nc_window_raw(NcWindow *window);
 int32 nc_window_width(NcWindow *window);
 int32 nc_window_height(NcWindow *window);
-int64 nc_window_start_x(NcWindow *window);
-int64 nc_window_start_y(NcWindow *window);
+int32 nc_window_start_x(NcWindow *window);
+int32 nc_window_start_y(NcWindow *window);
 MEVENT *nc_window_mouse_event(NcWindow *window);
 
 void nc_window_set_color(NcWindow *window, NcColor color);
@@ -236,11 +236,11 @@ void nc_window_set_escape_terminal_sequences(NcWindow *window, bool enabled);
 void nc_window_display(NcWindow *window);
 void nc_window_refresh_border(NcWindow *window);
 void nc_window_refresh(NcWindow *window);
-void nc_window_move_to(NcWindow *window, int64 new_x, int64 new_y);
+void nc_window_move_to(NcWindow *window, int32 new_x, int32 new_y);
 void nc_window_adjust_dimensions(NcWindow *window,
-                                 int64 width, int64 height);
-void nc_window_resize(NcWindow *window, int64 new_width, int64 new_height);
-void nc_window_recreate(NcWindow *window, int64 width, int64 height);
+                                 int32 width, int32 height);
+void nc_window_resize(NcWindow *window, int32 new_width, int32 new_height);
+void nc_window_recreate(NcWindow *window, int32 width, int32 height);
 void nc_window_clear(NcWindow *window);
 
 void nc_window_add_fd_callback(NcWindow *window,

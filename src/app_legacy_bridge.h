@@ -14,12 +14,12 @@ void ncmpcpp_legacy_destroy_screen(void);
 
 void ncmpcpp_legacy_set_statusbar_visibility_baseline(bool visible);
 void ncmpcpp_legacy_set_windows_dimensions(void);
-int64 ncmpcpp_legacy_header_height(void);
-int64 ncmpcpp_legacy_footer_height(void);
-int64 ncmpcpp_legacy_footer_start_y(void);
+int32 ncmpcpp_legacy_header_height(void);
+int32 ncmpcpp_legacy_footer_height(void);
+int32 ncmpcpp_legacy_footer_start_y(void);
 
-NcWindow *ncmpcpp_legacy_window_create(int64 start_x, int64 start_y,
-                                       int64 width, int64 height,
+NcWindow *ncmpcpp_legacy_window_create(int32 start_x, int32 start_y,
+                                       int32 width, int32 height,
                                        NcColor color);
 void ncmpcpp_legacy_window_display(NcWindow *window);
 void ncmpcpp_legacy_window_destroy(NcWindow *window);

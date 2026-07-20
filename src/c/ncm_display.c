@@ -235,8 +235,8 @@ ncm_display_column_value(NcmSong *song, Column *column) {
 }
 
 static int32
-ncm_display_column_width(Column *column, int32 list_width,
-                         int32 remained_width) {
+ncm_display_column_width(Column *column,
+                         int32 list_width, int32 remained_width) {
     int32 width;
 
     if (column->stretch_limit >= 0) {
@@ -244,8 +244,9 @@ ncm_display_column_width(Column *column, int32 list_width,
     } else if (column->fixed) {
         width = column->width;
     } else {
-        width = (int32)((int64)column->width*list_width/100);
+        width = column->width*list_width/100;
     }
+
     return width;
 }
 

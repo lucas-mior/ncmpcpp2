@@ -104,7 +104,7 @@ ncm_string_format_arg_cstring(char *data) {
 }
 
 NcmStringFormatArg
-ncm_string_format_arg_i64(int64 value) {
+ncm_string_format_arg_i64(int32 value) {
     NcmStringFormatArg result;
 
     result.type = NCM_STRING_FORMAT_ARG_I64;

@@ -64,20 +64,20 @@ typedef struct NativePlaylistEditorScreen {
 
     NcmTimePoint timer;
 
-    int64 start_x;
-    int64 width;
-    int64 main_start_y;
+    int32 start_x;
+    int32 width;
+    int32 main_start_y;
     int32 main_height;
-    int64 left_width;
-    int64 right_start_x;
-    int64 right_width;
-    int64 column_ratio_left;
-    int64 column_ratio_right;
-    int64 fetching_delay_ms;
-    int64 last_playlist_highlight;
-    int64 last_known_content_count;
+    int32 left_width;
+    int32 right_start_x;
+    int32 right_width;
+    int32 column_ratio_left;
+    int32 column_ratio_right;
+    int32 fetching_delay_ms;
+    int32 last_playlist_highlight;
+    int32 last_known_content_count;
     int32 window_timeout_ms;
-    int64 active_column;
+    int32 active_column;
 
     bool playlists_update_requested;
     bool content_update_requested;
@@ -91,9 +91,9 @@ typedef struct NativePlaylistEditorScreen {
 } NativePlaylistEditorScreen;
 
 void native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
-                                        int64 start_x, int64 width,
-                                        int64 main_start_y,
-                                        int64 main_height,
+                                        int32 start_x, int32 width,
+                                        int32 main_start_y,
+                                        int32 main_height,
                                         NcColor color, NcBorder border);
 void native_playlist_editor_screen_destroy(NativePlaylistEditorScreen *screen);
 NcScreen *native_playlist_editor_screen_base(
@@ -107,10 +107,10 @@ NcMenu *native_playlist_editor_screen_active_menu(
 NcWindow *native_playlist_editor_screen_active_window(
     NativePlaylistEditorScreen *screen);
 void native_playlist_editor_screen_set_geometry(
-    NativePlaylistEditorScreen *screen, int64 start_x, int64 width,
-    int64 main_start_y, int64 main_height);
+    NativePlaylistEditorScreen *screen, int32 start_x, int32 width,
+    int32 main_start_y, int32 main_height);
 void native_playlist_editor_screen_set_column_ratio(
-    NativePlaylistEditorScreen *screen, int64 left, int64 right);
+    NativePlaylistEditorScreen *screen, int32 left, int32 right);
 bool native_playlist_editor_screen_previous_column_available(
     NativePlaylistEditorScreen *screen);
 bool native_playlist_editor_screen_next_column_available(
@@ -141,7 +141,7 @@ bool native_playlist_editor_screen_current_song(
     NativePlaylistEditorScreen *screen, NcmSong *song);
 bool native_playlist_editor_screen_current_content_song(
     NativePlaylistEditorScreen *screen, NcmSong *song);
-int64 native_playlist_editor_screen_selected_playlist_count(
+int32 native_playlist_editor_screen_selected_playlist_count(
     NativePlaylistEditorScreen *screen);
 bool native_playlist_editor_screen_selected_songs(
     NativePlaylistEditorScreen *screen, NcmSongArray *songs);

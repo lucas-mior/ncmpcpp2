@@ -66,9 +66,9 @@ static void *status_database_update_observer_user;
 static void (*status_playlist_update_observer)(void *user);
 static void *status_playlist_update_observer_user;
 static NcmTimePoint status_past;
-static int64 status_playing_song_scroll_begin;
-static int64 status_first_line_scroll_begin;
-static int64 status_second_line_scroll_begin;
+static int32 status_playing_song_scroll_begin;
+static int32 status_first_line_scroll_begin;
+static int32 status_second_line_scroll_begin;
 
 typedef struct StatusTimeoutContext {
     int32 timeout;

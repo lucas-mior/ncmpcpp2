@@ -16,7 +16,7 @@
 typedef struct NcLyricsScreen {
     NcScrollpadScreen scrollpad_screen;
 
-    int64 scroll_begin;
+    int32 scroll_begin;
     bool refresh_window;
 } NcLyricsScreen;
 
@@ -50,22 +50,22 @@ typedef struct NativeLyricsScreen {
 
 void nc_lyrics_screen_init(NcLyricsScreen *screen,
                            NcScreenCallbacks callbacks, void *user,
-                           int64 start_x, int64 width,
-                           int64 main_start_y, int64 main_height);
+                           int32 start_x, int32 width,
+                           int32 main_start_y, int32 main_height);
 void nc_lyrics_screen_set_geometry(NcLyricsScreen *screen,
-                                   int64 start_x, int64 width,
-                                   int64 main_start_y, int64 main_height);
+                                   int32 start_x, int32 width,
+                                   int32 main_start_y, int32 main_height);
 NcScreen *nc_lyrics_screen_base(NcLyricsScreen *screen);
-int64 nc_lyrics_screen_start_x(NcLyricsScreen *screen);
-int64 nc_lyrics_screen_start_y(NcLyricsScreen *screen);
-int64 nc_lyrics_screen_width(NcLyricsScreen *screen);
-int64 nc_lyrics_screen_height(NcLyricsScreen *screen);
+int32 nc_lyrics_screen_start_x(NcLyricsScreen *screen);
+int32 nc_lyrics_screen_start_y(NcLyricsScreen *screen);
+int32 nc_lyrics_screen_width(NcLyricsScreen *screen);
+int32 nc_lyrics_screen_height(NcLyricsScreen *screen);
 void nc_lyrics_screen_request_refresh(NcLyricsScreen *screen);
 bool nc_lyrics_screen_take_refresh_request(NcLyricsScreen *screen);
 void nc_lyrics_screen_reset_scroll_begin(NcLyricsScreen *screen);
-int64 nc_lyrics_screen_scroll_begin(NcLyricsScreen *screen);
+int32 nc_lyrics_screen_scroll_begin(NcLyricsScreen *screen);
 void nc_lyrics_screen_set_scroll_begin(NcLyricsScreen *screen,
-                                       int64 scroll_begin);
+                                       int32 scroll_begin);
 
 void native_lyrics_queued_song_init(NativeLyricsQueuedSong *queued);
 void native_lyrics_queued_song_destroy(NativeLyricsQueuedSong *queued);
@@ -73,17 +73,17 @@ void native_lyrics_queued_song_move(NativeLyricsQueuedSong *dest,
                                     NativeLyricsQueuedSong *source);
 
 void native_lyrics_screen_init(NativeLyricsScreen *screen,
-                               int64 start_x, int64 width,
-                               int64 main_start_y, int64 main_height,
+                               int32 start_x, int32 width,
+                               int32 main_start_y, int32 main_height,
                                NcColor color, NcBorder border,
                                int32 lines_scrolled);
 void native_lyrics_screen_destroy(NativeLyricsScreen *screen);
 NcScreen *native_lyrics_screen_base(NativeLyricsScreen *screen);
 NcWindow *native_lyrics_screen_window(NativeLyricsScreen *screen);
 void native_lyrics_screen_set_geometry(NativeLyricsScreen *screen,
-                                       int64 start_x, int64 width,
-                                       int64 main_start_y,
-                                       int64 main_height);
+                                       int32 start_x, int32 width,
+                                       int32 main_start_y,
+                                       int32 main_height);
 bool native_lyrics_screen_build_filename(NativeLyricsScreen *screen,
                                          NcmSong *song,
                                          char *music_dir,

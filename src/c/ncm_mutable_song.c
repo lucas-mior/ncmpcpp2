@@ -755,7 +755,7 @@ ncm_mutable_song_duration(NcmMutableSong *song) {
 }
 
 void
-ncm_mutable_song_set_mtime(NcmMutableSong *song, int64 mtime) {
+ncm_mutable_song_set_mtime(NcmMutableSong *song, int32 mtime) {
     if (song == NULL) {
         return;
     }
@@ -764,7 +764,7 @@ ncm_mutable_song_set_mtime(NcmMutableSong *song, int64 mtime) {
     return;
 }
 
-int64
+int32
 ncm_mutable_song_mtime(NcmMutableSong *song) {
     if (song == NULL) {
         return 0;

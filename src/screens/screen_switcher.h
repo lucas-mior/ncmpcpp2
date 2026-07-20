@@ -15,7 +15,7 @@ bool nc_screen_switcher_finish_switch(NcScreen *screen);
 NcScreenResizeParams nc_screen_switcher_resize_params(
     NcScreen *screen, bool adjust_locked_screen);
 void nc_screen_switcher_get_resize_params(NcScreen *screen,
-                                          int64 *x_offset, int64 *width,
+                                          int32 *x_offset, int32 *width,
                                           bool adjust_locked_screen);
 
 #endif /* NCMPCPP_SCREEN_SWITCHER_H */

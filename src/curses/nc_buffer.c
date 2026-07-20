@@ -147,7 +147,7 @@ nc_buffer_append_int32(NcBuffer *buffer, int32 value) {
 }
 
 void
-nc_buffer_append_int64(NcBuffer *buffer, int64 value) {
+nc_buffer_append_int64(NcBuffer *buffer, int32 value) {
     char string[64];
     int32 len;
 

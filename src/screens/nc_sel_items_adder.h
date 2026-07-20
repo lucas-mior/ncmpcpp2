@@ -33,11 +33,11 @@ typedef struct NativeSelectedItemsAdderScreen {
     NcScreen *previous_screen;
     NcmMpdClient *client;
 
-    int64 playlist_width;
-    int64 playlist_height;
-    int64 position_width;
-    int64 position_height;
-    int64 active_menu;
+    int32 playlist_width;
+    int32 playlist_height;
+    int32 position_width;
+    int32 position_height;
+    int32 active_menu;
 
     bool local_browser;
     bool search_enabled;
@@ -46,8 +46,8 @@ typedef struct NativeSelectedItemsAdderScreen {
 } NativeSelectedItemsAdderScreen;
 
 void native_selected_items_adder_screen_init(
-    NativeSelectedItemsAdderScreen *screen, int64 start_x, int64 start_y,
-    int64 width, int64 height, NcColor color, NcBorder border);
+    NativeSelectedItemsAdderScreen *screen, int32 start_x, int32 start_y,
+    int32 width, int32 height, NcColor color, NcBorder border);
 void native_selected_items_adder_screen_destroy(
     NativeSelectedItemsAdderScreen *screen);
 NcScreen *native_selected_items_adder_screen_base(

@@ -238,8 +238,8 @@ native_media_library_mpd_hooks(NcmMpdClient *client) {
 void
 native_media_library_screen_init(NativeMediaLibraryScreen *screen,
                                  NativeMediaLibraryHooks hooks,
-                                 int64 start_x, int64 width,
-                                 int64 main_start_y, int64 main_height,
+                                 int32 start_x, int32 width,
+                                 int32 main_start_y, int32 main_height,
                                  NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks callbacks;
 
@@ -419,9 +419,9 @@ native_media_library_screen_active_window(NativeMediaLibraryScreen *screen) {
 
 void
 native_media_library_screen_set_geometry(NativeMediaLibraryScreen *screen,
-                                         int64 start_x, int64 width,
-                                         int64 main_start_y,
-                                         int64 main_height) {
+                                         int32 start_x, int32 width,
+                                         int32 main_start_y,
+                                         int32 main_height) {
     if (screen == NULL) {
         return;
     }
@@ -3286,7 +3286,7 @@ static void
 native_library_mouse_scroll(NativeMediaLibraryScreen *screen,
                             enum NcScroll where) {
     enum NcScroll effective;
-    int64 count;
+    int32 count;
 
     effective = where;
     count = Config.lines_scrolled;
@@ -3299,7 +3299,7 @@ native_library_mouse_scroll(NativeMediaLibraryScreen *screen,
         count = 1;
     }
 
-    for (int64 i = 0; i < count; i += 1) {
+    for (int32 i = 0; i < count; i += 1) {
         nc_menu_scroll_selectable(
             native_media_library_screen_active_menu(screen),
             screen->main_height, effective);
@@ -3360,8 +3360,8 @@ native_library_switch_to(NcScreen *screen) {
 static void
 native_library_resize(NcScreen *screen) {
     NativeMediaLibraryScreen *library;
-    int64 x_offset;
-    int64 width;
+    int32 x_offset;
+    int32 width;
 
     library = native_library_from_screen(screen);
     nc_screen_switcher_get_resize_params(screen, &x_offset, &width, true);
@@ -4032,11 +4032,11 @@ native_library_song_matches(NativeMediaLibraryScreen *screen,
 
 static void
 native_library_layout(NativeMediaLibraryScreen *screen) {
-    int64 left_width;
-    int64 middle_width;
-    int64 right_width;
-    int64 middle_x;
-    int64 right_x;
+    int32 left_width;
+    int32 middle_width;
+    int32 right_width;
+    int32 middle_x;
+    int32 right_x;
     int32 left_ratio;
     int32 middle_ratio;
     int32 right_ratio;

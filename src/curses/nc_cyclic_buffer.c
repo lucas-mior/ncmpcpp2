@@ -5,9 +5,9 @@
 
 #include "cbase/utf8.c"
 
-static int32 nc_cyclic_normalize_start(int64 *start_pos,
+static int32 nc_cyclic_normalize_start(int32 *start_pos,
                                        int32 total_characters);
-static void nc_cyclic_increment_start(int64 *start_pos,
+static void nc_cyclic_increment_start(int32 *start_pos,
                                       int32 total_characters);
 static void nc_cyclic_text_append(NcmBuffer *output, char *string,
                                   int32 string_len, int32 start_byte,
@@ -31,7 +31,7 @@ static void nc_cyclic_window_write_text(NcWindow *window, char *string,
 
 void
 nc_cyclic_text_write(NcmBuffer *output, char *string, int32 string_len,
-                     int64 *start_pos, int32 width, char *separator,
+                     int32 *start_pos, int32 width, char *separator,
                      int32 separator_len, bool scrolling_enabled) {
     int32 string_width;
     int32 start;
@@ -100,7 +100,7 @@ nc_cyclic_text_write(NcmBuffer *output, char *string, int32 string_len,
 
 void
 nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
-                       int64 *start_pos, int32 width, char *separator,
+                       int32 *start_pos, int32 width, char *separator,
                        int32 separator_len) {
     char *string;
     int32 string_len;
@@ -174,7 +174,7 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
 }
 
 static int32
-nc_cyclic_normalize_start(int64 *start_pos, int32 total_characters) {
+nc_cyclic_normalize_start(int32 *start_pos, int32 total_characters) {
     if (total_characters <= 0) {
         if (start_pos) {
             *start_pos = 0;
@@ -192,7 +192,7 @@ nc_cyclic_normalize_start(int64 *start_pos, int32 total_characters) {
 }
 
 static void
-nc_cyclic_increment_start(int64 *start_pos, int32 total_characters) {
+nc_cyclic_increment_start(int32 *start_pos, int32 total_characters) {
     if ((start_pos == NULL) || (total_characters <= 0)) {
         return;
     }

@@ -70,11 +70,11 @@ typedef struct NativeSearchEngineScreen {
     NcmBuffer column_title;
     NcmRegex filter_regex;
 
-    int64 start_x;
-    int64 width;
-    int64 main_start_y;
+    int32 start_x;
+    int32 width;
+    int32 main_start_y;
     int32 main_height;
-    int64 lines_scrolled;
+    int32 lines_scrolled;
     int32 result_count;
 
     enum NativeSearchEngineSearchMode search_mode;
@@ -89,19 +89,19 @@ typedef struct NativeSearchEngineScreen {
 } NativeSearchEngineScreen;
 
 void native_search_engine_screen_init(NativeSearchEngineScreen *screen,
-                                      int64 start_x, int64 width,
-                                      int64 main_start_y,
-                                      int64 main_height, NcColor color,
+                                      int32 start_x, int32 width,
+                                      int32 main_start_y,
+                                      int32 main_height, NcColor color,
                                       NcBorder border);
 void native_search_engine_screen_destroy(NativeSearchEngineScreen *screen);
 NcScreen *native_search_engine_screen_base(NativeSearchEngineScreen *screen);
 NcMenu *native_search_engine_screen_menu(NativeSearchEngineScreen *screen);
 NcWindow *native_search_engine_screen_window(NativeSearchEngineScreen *screen);
 void native_search_engine_screen_set_geometry(
-    NativeSearchEngineScreen *screen, int64 start_x, int64 width,
-    int64 main_start_y, int64 main_height);
+    NativeSearchEngineScreen *screen, int32 start_x, int32 width,
+    int32 main_start_y, int32 main_height);
 void native_search_engine_screen_set_mouse_config(
-    NativeSearchEngineScreen *screen, int64 lines_scrolled,
+    NativeSearchEngineScreen *screen, int32 lines_scrolled,
     bool whole_page);
 void native_search_engine_screen_set_display_mode(
     NativeSearchEngineScreen *screen, enum DisplayMode mode);

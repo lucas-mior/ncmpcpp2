@@ -26,18 +26,18 @@ typedef struct NcServerInfoScreen {
 
 void nc_server_info_screen_init(NcServerInfoScreen *screen,
                                 NcServerInfoHooks hooks,
-                                int64 cols, int64 lines,
-                                int64 main_start_y,
-                                int64 main_height,
+                                int32 cols, int32 lines,
+                                int32 main_start_y,
+                                int32 main_height,
                                 NcColor color, NcBorder border);
 void nc_server_info_screen_set_dimensions(NcServerInfoScreen *screen,
-                                          int64 cols, int64 lines,
-                                          int64 main_start_y,
-                                          int64 main_height);
+                                          int32 cols, int32 lines,
+                                          int32 main_start_y,
+                                          int32 main_height);
 NcScreen *nc_server_info_screen_base(NcServerInfoScreen *screen);
-int64 nc_server_info_screen_width(NcServerInfoScreen *screen);
-int64 nc_server_info_screen_height(NcServerInfoScreen *screen);
-int64 nc_server_info_screen_start_x(NcServerInfoScreen *screen);
-int64 nc_server_info_screen_start_y(NcServerInfoScreen *screen);
+int32 nc_server_info_screen_width(NcServerInfoScreen *screen);
+int32 nc_server_info_screen_height(NcServerInfoScreen *screen);
+int32 nc_server_info_screen_start_x(NcServerInfoScreen *screen);
+int32 nc_server_info_screen_start_y(NcServerInfoScreen *screen);
 
 #endif /* NCMPCPP_NC_SERVER_INFO_H */

@@ -167,11 +167,11 @@ ncmpcpp_legacy_set_statusbar_visibility_baseline(bool visible) {
 
 void
 ncmpcpp_legacy_set_windows_dimensions(void) {
-    int64 main_start_y;
-    int64 main_height;
-    int64 header_height;
-    int64 footer_height;
-    int64 footer_start_y;
+    int32 main_start_y;
+    int32 main_height;
+    int32 header_height;
+    int32 footer_height;
+    int32 footer_start_y;
 
     ui_state_set_screen_size(COLS, LINES);
 
@@ -220,24 +220,24 @@ ncmpcpp_legacy_set_windows_dimensions(void) {
     return;
 }
 
-int64
+int32
 ncmpcpp_legacy_header_height(void) {
     return ui_state_header_height();
 }
 
-int64
+int32
 ncmpcpp_legacy_footer_height(void) {
     return ui_state_footer_height();
 }
 
-int64
+int32
 ncmpcpp_legacy_footer_start_y(void) {
     return ui_state_footer_start_y();
 }
 
 NcWindow *
-ncmpcpp_legacy_window_create(int64 start_x, int64 start_y, int64 width,
-                             int64 height, NcColor color) {
+ncmpcpp_legacy_window_create(int32 start_x, int32 start_y, int32 width,
+                             int32 height, NcColor color) {
     NcWindow *window;
 
     window = malloc2(SIZEOF(*window));
