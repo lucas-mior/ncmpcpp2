@@ -444,9 +444,8 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
 static bool
 ncm_format_find_matching_brace(char *data, int32 start,
                                int32 end, int32 *result) {
-    int32 depth;
+    int32 depth = 1;
 
-    depth = 1;
     for (int32 i = start + 1; i < end; i += 1) {
         if (data[i] == '{') {
             depth += 1;
@@ -458,6 +457,7 @@ ncm_format_find_matching_brace(char *data, int32 start,
             }
         }
     }
+
     return false;
 }
 
