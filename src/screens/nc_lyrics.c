@@ -541,9 +541,7 @@ native_lyrics_screen_fetch_in_background(NativeLyricsScreen *screen,
 
 int32
 native_lyrics_screen_dispatch_jobs(NativeLyricsScreen *screen) {
-    int32 result;
-
-    result = ncm_job_queue_dispatch_completed(&screen->jobs);
+    int32 result = ncm_job_queue_dispatch_completed(&screen->jobs);
     (void)native_lyrics_start_next_background(screen, NULL);
     return result;
 }
