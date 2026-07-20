@@ -1105,16 +1105,17 @@ native_lyrics_job_create(NativeLyricsScreen *screen,
                          NcmLyricsFetcherDef *fetcher,
                          bool notify,
                          bool background) {
-    NativeLyricsJob *job;
     bool win32_filename;
+    NativeLyricsJob *job = malloc2(SIZEOF(*job));
 
-    job = malloc2(SIZEOF(*job));
     job->screen = screen;
     ncm_song_init(&job->song);
     ncm_song_copy(&job->song, song);
     ncm_buffer_init(&job->filename);
     nc_buffer_init(&job->log);
+
     win32_filename = Config.generate_win32_compatible_filenames;
+
     (void)native_lyrics_filename_from_song(&job->filename,
                                            song,
                                            Config.mpd_music_dir,
@@ -1123,10 +1124,12 @@ native_lyrics_job_create(NativeLyricsScreen *screen,
                                            Config.lyrics_directory_len,
                                            Config.store_lyrics_in_song_dir,
                                            win32_filename);
+
     job->fetcher = fetcher;
     ncm_lyrics_result_init(&job->result);
     job->notify = notify;
     job->background = background;
+
     return job;
 }
 
