@@ -638,6 +638,10 @@ functionality is already in `cbase/`. If not, implement it, probably in
 ## Functions
 - Avoid defining functions that are called only once in the same file.
   * Simply write the code for the function inlined.
+- Everytime you call a function, look at the implementation of the function to
+  check the types and the semantics of the function. Don't call functions that
+  you don't know how they work. The exceptions are functions defined in external
+  libraries (libc and other libraries not implemented by us).
 - Try to give code some empty lines here and there.
   * For instance, a good practice is to add a blank line after the variable
     declarations of a block.
