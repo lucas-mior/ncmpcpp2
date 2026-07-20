@@ -44,8 +44,8 @@ ncm_bindings_error(NcmError *error, char *format, ...) {
                       STRLIT_ARGS("bindings parse error"));
         return;
     }
-    if (len >= (int32)SIZEOF(buffer)) {
-        len = (int32)SIZEOF(buffer) - 1;
+    if (len >= SIZEOF(buffer)) {
+        len = SIZEOF(buffer) - 1;
     }
 
     ncm_error_set(error, NCM_BINDINGS_ERROR_PARSE, buffer, len);
@@ -650,7 +650,7 @@ ncm_bindings_format_key(NcmBuffer *buffer, NcKey key) {
     char name[64];
     int32 name_len;
 
-    name_len = nc_key_name(key, name, (int32)SIZEOF(name));
+    name_len = nc_key_name(key, name, SIZEOF(name));
     if (name_len < 0) {
         return;
     }
@@ -1211,14 +1211,14 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     command_immediate = false;
     ncm_binding_init(&actions);
 
-    while (ok && fgets(line, (int32)SIZEOF(line), file)) {
+    while (ok && fgets(line, SIZEOF(line), file)) {
         int32 len;
         int32 start;
         NcmStringView enclosed;
 
         line_no += 1;
         len = strlen32(line);
-        if ((len == (int32)SIZEOF(line) - 1) && (line[len - 1] != '\n')) {
+        if ((len == SIZEOF(line) - 1) && (line[len - 1] != '\n')) {
             int32 next;
 
             next = fgetc(file);

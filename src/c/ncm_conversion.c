@@ -79,8 +79,8 @@ ncm_conversion_set_parse_error(NcmError *error, char *source,
         ncm_error_set(error, EINVAL, STRLIT_ARGS("conversion failed"));
         return;
     }
-    if (len >= (int32)SIZEOF(message)) {
-        len = (int32)SIZEOF(message) - 1;
+    if (len >= SIZEOF(message)) {
+        len = SIZEOF(message) - 1;
     }
 
     ncm_error_set(error, EINVAL, message, len);
@@ -101,8 +101,8 @@ ncm_conversion_set_u64_bounds_error(NcmError *error, uint64 value,
         ncm_error_set(error, ERANGE, STRLIT_ARGS("value is out of bounds"));
         return;
     }
-    if (len >= (int32)SIZEOF(message)) {
-        len = (int32)SIZEOF(message) - 1;
+    if (len >= SIZEOF(message)) {
+        len = SIZEOF(message) - 1;
     }
 
     ncm_error_set(error, ERANGE, message, len);
@@ -110,22 +110,14 @@ ncm_conversion_set_u64_bounds_error(NcmError *error, uint64 value,
 }
 
 static void
-ncm_conversion_set_u64_upper_error(NcmError *error, uint64 value,
-                                   uint64 ubound) {
+ncm_conversion_set_i64_upper_error(NcmError *error, int64 value, int64 ubound) {
     char message[256];
     int32 len;
 
     len = SNPRINTF(message,
-                   "value is out of bounds ((<-, %" PRIu64
-                   "] expected, %" PRIu64 " given)",
-                   ubound, value);
-    if (len < 0) {
-        ncm_error_set(error, ERANGE, STRLIT_ARGS("value is out of bounds"));
-        return;
-    }
-    if (len >= (int32)SIZEOF(message)) {
-        len = (int32)SIZEOF(message) - 1;
-    }
+                   "value is out of bounds ((<-, %lld"
+                   "] expected, %lld given)",
+                   (llong)ubound, (llong)value);
 
     ncm_error_set(error, ERANGE, message, len);
     return;
@@ -144,8 +136,8 @@ ncm_conversion_set_f64_bounds_error(NcmError *error, double value,
         ncm_error_set(error, ERANGE, STRLIT_ARGS("value is out of bounds"));
         return;
     }
-    if (len >= (int32)SIZEOF(message)) {
-        len = (int32)SIZEOF(message) - 1;
+    if (len >= SIZEOF(message)) {
+        len = SIZEOF(message) - 1;
     }
 
     ncm_error_set(error, ERANGE, message, len);
@@ -165,8 +157,8 @@ ncm_conversion_set_f64_lower_error(NcmError *error, double value,
         ncm_error_set(error, ERANGE, STRLIT_ARGS("value is out of bounds"));
         return;
     }
-    if (len >= (int32)SIZEOF(message)) {
-        len = (int32)SIZEOF(message) - 1;
+    if (len >= SIZEOF(message)) {
+        len = SIZEOF(message) - 1;
     }
 
     ncm_error_set(error, ERANGE, message, len);
@@ -267,7 +259,7 @@ ncm_parse_double(char *source, int32 source_len,
 }
 
 bool
-ncm_bounds_check_u64(uint64 value, uint64 lbound, uint64 ubound,
+ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound,
                      NcmError *error) {
     if ((value < lbound) || (value > ubound)) {
         ncm_conversion_set_u64_bounds_error(error, value, lbound, ubound);
