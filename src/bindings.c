@@ -322,7 +322,7 @@ ncm_binding_action_run(NcmBindingAction *action, NcmBindingRuntime *runtime) {
 bool
 ncm_binding_can_execute_runtime(NcmBinding *binding,
                                 NcmBindingRuntime *runtime) {
-    if (binding == NULL) {
+    if ((binding == NULL) || (binding->actions_len <= 0)) {
         return false;
     }
 
@@ -337,7 +337,7 @@ ncm_binding_can_execute_runtime(NcmBinding *binding,
 
 bool
 ncm_binding_execute_runtime(NcmBinding *binding, NcmBindingRuntime *runtime) {
-    if (binding == NULL) {
+    if ((binding == NULL) || (binding->actions_len <= 0)) {
         return false;
     }
 
