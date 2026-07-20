@@ -69,6 +69,20 @@ search_song_value(NcmSong *song, enum NcmSongGetter getter) {
             return "Choros No 1, 4, 6, 8 and 9";
         case NCM_SONG_GETTER_LENGTH:
             return "25:08";
+        case NCM_SONG_GETTER_NONE:
+        case NCM_SONG_GETTER_DIRECTORY:
+        case NCM_SONG_GETTER_URI:
+        case NCM_SONG_GETTER_ALBUM_ARTIST:
+        case NCM_SONG_GETTER_DATE:
+        case NCM_SONG_GETTER_TRACK_NUMBER:
+        case NCM_SONG_GETTER_TRACK:
+        case NCM_SONG_GETTER_GENRE:
+        case NCM_SONG_GETTER_COMPOSER:
+        case NCM_SONG_GETTER_PERFORMER:
+        case NCM_SONG_GETTER_DISC:
+        case NCM_SONG_GETTER_COMMENT:
+        case NCM_SONG_GETTER_PRIORITY:
+        case NCM_SONG_GETTER_LAST:
         default:
             return NULL;
         }
@@ -84,6 +98,20 @@ search_song_value(NcmSong *song, enum NcmSongGetter getter) {
             return "Reise, Reise";
         case NCM_SONG_GETTER_LENGTH:
             return "4:32";
+        case NCM_SONG_GETTER_NONE:
+        case NCM_SONG_GETTER_DIRECTORY:
+        case NCM_SONG_GETTER_URI:
+        case NCM_SONG_GETTER_ALBUM_ARTIST:
+        case NCM_SONG_GETTER_DATE:
+        case NCM_SONG_GETTER_TRACK_NUMBER:
+        case NCM_SONG_GETTER_TRACK:
+        case NCM_SONG_GETTER_GENRE:
+        case NCM_SONG_GETTER_COMPOSER:
+        case NCM_SONG_GETTER_PERFORMER:
+        case NCM_SONG_GETTER_DISC:
+        case NCM_SONG_GETTER_COMMENT:
+        case NCM_SONG_GETTER_PRIORITY:
+        case NCM_SONG_GETTER_LAST:
         default:
             return NULL;
         }
@@ -97,6 +125,21 @@ search_song_value(NcmSong *song, enum NcmSongGetter getter) {
             return "Live aus Berlin";
         case NCM_SONG_GETTER_LENGTH:
             return "5:01";
+        case NCM_SONG_GETTER_NONE:
+        case NCM_SONG_GETTER_DIRECTORY:
+        case NCM_SONG_GETTER_URI:
+        case NCM_SONG_GETTER_ALBUM_ARTIST:
+        case NCM_SONG_GETTER_TITLE:
+        case NCM_SONG_GETTER_DATE:
+        case NCM_SONG_GETTER_TRACK_NUMBER:
+        case NCM_SONG_GETTER_TRACK:
+        case NCM_SONG_GETTER_GENRE:
+        case NCM_SONG_GETTER_COMPOSER:
+        case NCM_SONG_GETTER_PERFORMER:
+        case NCM_SONG_GETTER_DISC:
+        case NCM_SONG_GETTER_COMMENT:
+        case NCM_SONG_GETTER_PRIORITY:
+        case NCM_SONG_GETTER_LAST:
         default:
             return NULL;
         }
@@ -285,7 +328,7 @@ search_add_song(NcMenu *menu, NcmSong *song) {
 }
 
 static bool
-search_matches(NcMenu *menu, int64 pos, void *user) {
+search_matches(NcMenu *menu, int32 pos, void *user) {
     SearchTestContext *context;
     char **item;
     char *text;
@@ -301,7 +344,7 @@ search_matches(NcMenu *menu, int64 pos, void *user) {
 }
 
 static bool
-search_song_matches(NcMenu *menu, int64 pos, void *user) {
+search_song_matches(NcMenu *menu, int32 pos, void *user) {
     SearchSongTestContext *context;
     NcmBuffer rendered;
     NcmSong **item;
@@ -400,7 +443,7 @@ test_prompt_search_accepts_current_match(void) {
         "alphabet",
         "gamma",
     };
-    int64 found;
+    int32 found;
 
     search_menu_init(&menu);
     search_context_init(&context, "alp");
@@ -428,7 +471,7 @@ test_forward_repeat_skips_current_match(void) {
         "alphabet",
         "gamma",
     };
-    int64 found;
+    int32 found;
 
     search_menu_init(&menu);
     search_context_init(&context, "alp");
@@ -457,7 +500,7 @@ test_forward_repeat_wraps_to_first_match(void) {
         "other",
         "target current",
     };
-    int64 found;
+    int32 found;
 
     search_menu_init(&menu);
     search_context_init(&context, "target");
@@ -487,7 +530,7 @@ test_backward_repeat_wraps_to_previous_match(void) {
         "gamma",
         "alpine",
     };
-    int64 found;
+    int32 found;
 
     search_menu_init(&menu);
     search_context_init(&context, "alp");
@@ -514,7 +557,7 @@ test_search_skips_unselectable_matches(void) {
     char *second;
     char *third;
     char *fourth;
-    int64 found;
+    int32 found;
 
     search_menu_init(&menu);
     search_context_init(&context, "target");
@@ -549,7 +592,7 @@ test_search_without_wrap_preserves_position_on_failure(void) {
         "plain",
         "target current",
     };
-    int64 found;
+    int32 found;
 
     search_menu_init(&menu);
     search_context_init(&context, "target");
@@ -627,7 +670,7 @@ test_backward_search_without_wrap_preserves_position(void) {
         "target later",
         "other",
     };
-    int64 found;
+    int32 found;
 
     search_menu_init(&menu);
     search_context_init(&context, "target");
@@ -656,7 +699,7 @@ test_search_failure_with_wrap_preserves_position(void) {
         "beta",
         "gamma",
     };
-    int64 found;
+    int32 found;
 
     search_menu_init(&menu);
     search_context_init(&context, "missing");
@@ -685,7 +728,7 @@ test_single_match_repeat_does_not_reselect_current(void) {
         "only target",
         "other",
     };
-    int64 found;
+    int32 found;
 
     search_menu_init(&menu);
     search_context_init(&context, "target");
@@ -712,7 +755,7 @@ test_search_uses_only_active_filtered_items(void) {
     char *first;
     char *second;
     char *third;
-    int64 found;
+    int32 found;
 
     search_menu_init(&menu);
     search_context_init(&context, "target");
@@ -800,7 +843,7 @@ test_repeat_search_advances_between_column_matches(void) {
     NcmSong ohne_song = {0};
     NcmSong live_song = {0};
     SearchSongTestContext context;
-    int64 found;
+    int32 found;
 
     choros_song.id = SEARCH_TEST_SONG_CHOROS;
     ohne_song.id = SEARCH_TEST_SONG_OHNE_DICH;
@@ -856,7 +899,7 @@ test_playlist_fixture_finds_ohne_dich(void) {
     int32 data_len;
     int32 count;
     int32 target;
-    int64 found;
+    int32 found;
 
     data = read_entire_file("tests/playlist.m3u", &data_len);
     count = 0;
