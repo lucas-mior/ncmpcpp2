@@ -182,10 +182,9 @@ ncm_tags_write_field(NcmTaglibFile *file, enum NcmTagsField field,
     ncm_taglib_clear_property(file, property);
     for (int32 i = 0; ; i += 1) {
         NcmStringView value;
-        bool has_value;
 
         ncm_tags_view_init(&value);
-        if (!(has_value = callback(field, i, &value, user))) {
+        if (!callback(field, i, &value, user)) {
             break;
         }
         if (value.data == NULL) {

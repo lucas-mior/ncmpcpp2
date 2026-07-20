@@ -527,7 +527,6 @@ native_tiny_tag_editor_screen_run_row(
     char error_buffer[256];
     int32 error_len;
     int32 dot;
-    bool saved;
     bool result;
 
     if ((screen == NULL) || !screen->has_edited) {
@@ -629,7 +628,7 @@ native_tiny_tag_editor_screen_run_row(
     if (row == NATIVE_TINY_TAG_EDITOR_SAVE_ROW) {
         tiny_editor_status_message(
             screen, STRLIT_ARGS("Updating tags..."));
-        if ((saved = tiny_editor_write_song(screen, screen->music_dir.data))) {
+        if (tiny_editor_write_song(screen, screen->music_dir.data)) {
             tiny_editor_status_message(
                 screen, STRLIT_ARGS("Tags updated"));
             tiny_editor_complete_save(screen);

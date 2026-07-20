@@ -1011,13 +1011,12 @@ bool
 native_search_engine_screen_selected_songs(NativeSearchEngineScreen *screen,
                                            NcmSongArray *songs) {
     NcMenu *menu;
-    bool any_selected;
 
     if ((screen == NULL) || (songs == NULL)) {
         return false;
     }
     menu = native_search_engine_screen_menu(screen);
-    if (!(any_selected = nc_menu_has_selected(menu))) {
+    if (!nc_menu_has_selected(menu)) {
         return native_search_copy_song_at(
             screen, songs, nc_menu_highlight(menu));
     }

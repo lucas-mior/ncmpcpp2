@@ -2184,10 +2184,9 @@ static bool
 append_selected_content(NativePlaylistEditorScreen *screen,
                         NcmSongArray *songs) {
     NcMenu *menu;
-    bool any_selected;
 
     menu = nc_song_menu_base(&screen->content);
-    if (!(any_selected = nc_menu_has_selected(menu))) {
+    if (!nc_menu_has_selected(menu)) {
         return append_content_item(screen, nc_menu_highlight(menu), songs);
     }
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
