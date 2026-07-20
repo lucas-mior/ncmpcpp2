@@ -1863,13 +1863,6 @@ settings_set_duplicate_option_error(NcmError *error, SettingsOption *option) {
                    "error while processing option \"%.*s\": "
                    "option already set",
                    option->name_len, option->name);
-    if (len < 0) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("option already set"));
-        return;
-    }
-    if (len >= SIZEOF(message)) {
-        len = SIZEOF(message) - 1;
-    }
     ncm_error_set(error, EINVAL, message, len);
     return;
 }
