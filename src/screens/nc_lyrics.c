@@ -1150,8 +1150,7 @@ native_lyrics_job_fetch_one(NativeLyricsJob *job,
                                   artist->data,
                                   artist->len,
                                   title->data,
-                                  title->len,
-                                  &job->song)) {
+                                  title->len)) {
         native_lyrics_append_fetch_error(&job->log, &job->result);
         return false;
     }

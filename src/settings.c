@@ -2148,17 +2148,10 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
         SETTINGS_OPTION("header_text_scrolling", "yes",
                         apply_header_text_scrolling),
         SETTINGS_OPTION("cyclic_scrolling", "no", apply_cyclic_scrolling),
-#if defined(HAVE_TAGLIB_H)
         SETTINGS_OPTION("lyrics_fetchers",
-                        "tags, tekstowo, plyrics, justsomelyrics, "
-                        "jahlyrics, zeneszoveg, internet",
+                        "azlyrics, genius, letras, musixmatch, tekstowo, "
+                        "vagalume, internet",
                         apply_lyrics_fetchers),
-#else
-        SETTINGS_OPTION("lyrics_fetchers",
-                        "tekstowo, plyrics, justsomelyrics, jahlyrics, "
-                        "zeneszoveg, internet",
-                        apply_lyrics_fetchers),
-#endif
         SETTINGS_OPTION("follow_now_playing_lyrics", "no",
                         apply_follow_now_playing_lyrics),
         SETTINGS_OPTION("fetch_lyrics_for_current_song_in_background", "no",

@@ -414,7 +414,7 @@
 #
 #cyclic_scrolling = no
 #
-#lyrics_fetchers = tags, tekstowo, plyrics, justsomelyrics, jahlyrics, zeneszoveg, internet
+#lyrics_fetchers = azlyrics,genius,letras,musixmatch,tekstowo,vagalume,internet
 #
 #follow_now_playing_lyrics = no
 #
