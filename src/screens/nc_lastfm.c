@@ -559,9 +559,8 @@ native_lastfm_job_create(NativeLastfmScreen *screen,
 
 static bool
 native_lastfm_job_run(void *user, NcmError *error) {
-    NativeLastfmJob *job;
+    NativeLastfmJob *job = user;
 
-    job = user;
     (void)ncm_lastfm_service_fetch(&job->service, &job->result);
     if (!job->result.success) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("Last.fm fetch failed"));
