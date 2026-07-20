@@ -838,7 +838,7 @@ native_playlist_screen_apply_filter(NativePlaylistScreen *screen,
         return true;
     }
     if (!ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
-                           Config.regex_type, error)) {
+                           Config.regex_flags, error)) {
         return false;
     }
     if (!ncm_buffer_set(&screen->filter_constraint, pattern, pattern_len)) {
@@ -881,7 +881,7 @@ native_playlist_screen_search(NativePlaylistScreen *screen,
 
     ncm_regex_init(&regex);
     if (!ncm_regex_compile(&regex, pattern, pattern_len,
-                           Config.regex_type, error)) {
+                           Config.regex_flags, error)) {
         ncm_regex_destroy(&regex);
         return false;
     }

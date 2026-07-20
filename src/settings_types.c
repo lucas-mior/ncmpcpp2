@@ -499,7 +499,7 @@ configuration_init(Configuration *config) {
     config->visualizer_fps = 0;
     config->visualizer_spectrum_dft_size = 0;
     config->playlist_disable_highlight_delay_seconds = 0;
-    config->regex_type = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
+    config->regex_flags = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
 
     config->visualizer_spectrum_gain = 0;
     config->visualizer_spectrum_hz_min = 0;
