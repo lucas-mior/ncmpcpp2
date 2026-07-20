@@ -200,8 +200,7 @@ void
 app_controller_mouse_button_pressed_current(MEVENT event) {
     NcScreen *screen;
 
-    screen = app_controller_current_screen();
-    if (screen) {
+    if ((screen = app_controller_current_screen())) {
         nc_screen_mouse_button_pressed(screen, event);
     }
     return;
