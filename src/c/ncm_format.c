@@ -374,6 +374,7 @@ ncm_format_expr_destroy(NcmFormatExpr *expr) {
     case NCM_FORMAT_EXPR_OUTPUT_SWITCH:
     case NCM_FORMAT_EXPR_SONG_TAG:
         break;
+    case NCM_FORMAT_EXPR_LAST:
     default:
         break;
     }
@@ -933,6 +934,7 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
             }
         }
         return NCM_FORMAT_RESULT_EMPTY;
+    case NCM_FORMAT_EXPR_LAST:
     default:
         break;
     }

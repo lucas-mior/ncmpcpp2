@@ -85,6 +85,7 @@ ncm_mpd_item_destroy(NcmMpdItem *item) {
         break;
     case NCM_MPD_ITEM_UNKNOWN:
         break;
+    case NCM_MPD_ITEM_LAST:
     default:
         break;
     }
@@ -194,6 +195,7 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
         break;
     case NCM_MPD_ITEM_UNKNOWN:
         break;
+    case NCM_MPD_ITEM_LAST:
     default:
         break;
     }

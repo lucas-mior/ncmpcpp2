@@ -822,6 +822,7 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
         }
         return buffer;
     case NCM_SONG_GETTER_NONE:
+    case NCM_SONG_GETTER_LAST:
     default:
         return buffer;
     }
