@@ -369,7 +369,7 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                          char *artist, int32 artist_len, char *title,
                          int32 title_len) {
     NcmBuffer direct_url;
-    bool retry;
+    bool retry = false;
     bool ok;
 
     if ((fetcher == NULL) || (result == NULL)) {
@@ -393,8 +393,7 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
     ok = lyrics_build_direct_url(fetcher, &direct_url, artist, artist_len,
                                  title, title_len);
     if (ok) {
-        ok = lyrics_fetch_page(fetcher, result, &direct_url, NULL, 0,
-                               &retry);
+        ok = lyrics_fetch_page(fetcher, result, &direct_url, NULL, 0, &retry);
     }
     ncm_buffer_destroy(&direct_url);
     if (ok && retry) {
