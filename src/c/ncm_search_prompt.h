@@ -9,7 +9,7 @@
 typedef struct NcmSearchPromptState {
     enum SearchDirection direction;
     NcmBuffer last_text;
-    int64 start_position;
+    int32 start_position;
 
     bool has_start_position;
     bool has_last_result;
@@ -20,7 +20,7 @@ void ncm_search_prompt_state_init(NcmSearchPromptState *state,
                                   enum SearchDirection direction);
 void ncm_search_prompt_state_destroy(NcmSearchPromptState *state);
 void ncm_search_prompt_state_set_start_position(
-    NcmSearchPromptState *state, int64 position);
+    NcmSearchPromptState *state, int32 position);
 bool ncm_search_prompt_state_cached_result(NcmSearchPromptState *state,
                                            char *text, int32 text_len,
                                            bool *found);

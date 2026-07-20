@@ -2191,8 +2191,8 @@ static void
 action_runtime_search_prompt_init(ActionRuntimeSearchPrompt *state,
                                   enum SearchDirection direction) {
     NcMenu *menu;
-    int64 count;
-    int64 highlight;
+    int32 count;
+    int32 highlight;
 
     ncm_search_prompt_state_init(state, direction);
 
@@ -2239,9 +2239,9 @@ action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
                                         char *text, int32 text_len, bool *found,
                                         NcmError *error) {
     NcMenu *menu;
-    int64 old_beginning;
-    int64 old_highlight;
-    int64 count;
+    int32 old_beginning;
+    int32 old_highlight;
+    int32 count;
     bool restore;
 
     menu = action_runtime_current_menu();
