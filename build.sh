@@ -256,13 +256,12 @@ prepare_compiler() {
     return 0
 }
 
-compile_main() {
-    object_dir=$BUILD_DIR/obj/src
-    object=$object_dir/main.c.o
-    temporary_object=$object.tmp.$$
+compile_and_link_main() {
+    binary=$BUILD_DIR/ncmpcpp2
+    temporary_binary=$binary.tmp.$$
 
-    mkdir -p "$object_dir"
-    TEMP_FILE=$temporary_object
+    mkdir -p "$BUILD_DIR"
+    TEMP_FILE=$temporary_binary
 
     # Flag variables intentionally require shell word splitting.
     # shellcheck disable=SC2086
@@ -278,30 +277,9 @@ compile_main() {
         $CSTD \
         $CFLAGS \
         $THREAD_FLAGS \
-        -c "$NCMPCPP_SOURCE" \
-        -o "$temporary_object"
-
-    mv "$temporary_object" "$object"
-    TEMP_FILE=
-
-    return 0
-}
-
-link_main() {
-    object=$BUILD_DIR/obj/src/main.c.o
-    binary=$BUILD_DIR/ncmpcpp2
-    temporary_binary=$binary.tmp.$$
-
-    mkdir -p "$BUILD_DIR"
-    TEMP_FILE=$temporary_binary
-
-    # Flag variables intentionally require shell word splitting.
-    # shellcheck disable=SC2086
-    run_command "$CC" \
-        $CFLAGS \
         $LDFLAGS \
+        "$NCMPCPP_SOURCE" \
         -o "$temporary_binary" \
-        "$object" \
         $READLINE_LIBS \
         $PKG_LIBS \
         $LDLIBS \
@@ -316,8 +294,7 @@ link_main() {
 build_binary() {
     check_no_foreign_sources
     prepare_compiler
-    compile_main
-    link_main
+    compile_and_link_main
 
     return 0
 }
