@@ -15,9 +15,9 @@ ncm_job_set_errno_error(NcmError *error, int32 code, char *operation) {
     char message[256];
     int32 message_len;
 
-    message_len = SNPRINTF(message, "%s: %s",
-                           operation, strerror(code));
+    message_len = SNPRINTF(message, "%s: %s", operation, strerror(code));
     ncm_error_set(error, code, message, message_len);
+
     return;
 }
 
@@ -47,6 +47,7 @@ ncm_job_array_reserve(NcmJob **items, int32 *cap,
 
     *items = realloc2(*items, old_cap, new_cap, SIZEOF(**items));
     *cap = new_cap;
+
     return true;
 }
 
@@ -58,12 +59,14 @@ ncm_job_destroy(NcmJob *job) {
     if (job->destroy) {
         job->destroy(job->user);
     }
+
     job->run = NULL;
     job->complete = NULL;
     job->destroy = NULL;
     job->user = NULL;
     ncm_error_clear(&job->error);
     job->success = false;
+
     return;
 }
 
@@ -100,8 +103,9 @@ ncm_job_queue_pop_pending_locked(NcmJobQueue *queue, NcmJob *job) {
 
 static void
 ncm_job_queue_push_completed_locked(NcmJobQueue *queue, NcmJob job) {
-    ncm_job_array_push(&queue->completed, &queue->completed_len,
-                       &queue->completed_cap, job);
+    ncm_job_array_push(&queue->completed,
+                       &queue->completed_len, &queue->completed_cap,
+                       job);
     return;
 }
 

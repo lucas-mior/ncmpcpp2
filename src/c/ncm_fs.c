@@ -268,8 +268,7 @@ ncm_fs_directory_open(NcmFsDirectory *directory, char *path,
     }
 
     if ((dir = opendir(path_copy)) == NULL) {
-        ncm_fs_set_errno_error(error, errno, "opendir", path,
-                               path_len);
+        ncm_fs_set_errno_error(error, errno, "opendir", path, path_len);
         free2(path_copy, path_len + 1);
         return false;
     }
@@ -314,13 +313,14 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
         entry->name_len = name_len;
         entry->type = ncm_fs_dirent_type(dirent->d_type);
         memcpy64(entry->name, dirent->d_name, name_len + 1);
+
         ncm_error_clear(error);
         return true;
     }
 
     if (errno) {
-        ncm_fs_set_errno_error(error, errno, "readdir",
-                               directory->path, directory->path_len);
+        ncm_fs_set_errno_error(error, errno,
+                               "readdir", directory->path, directory->path_len);
     } else {
         ncm_error_clear(error);
     }
@@ -347,8 +347,8 @@ ncm_fs_directory_close(NcmFsDirectory *directory) {
 }
 
 bool
-ncm_fs_join(NcmBuffer *buffer, char *left, int32 left_len,
-            char *right, int32 right_len) {
+ncm_fs_join(NcmBuffer *buffer,
+            char *left, int32 left_len, char *right, int32 right_len) {
     NcmBuffer result;
 
     if (buffer == NULL) {
@@ -377,6 +377,7 @@ ncm_fs_join(NcmBuffer *buffer, char *left, int32 left_len,
     ncm_buffer_clear(buffer);
     ncm_buffer_append(buffer, result.data, result.len);
     ncm_buffer_destroy(&result);
+
     return true;
 }
 
