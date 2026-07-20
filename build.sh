@@ -10,7 +10,7 @@ fi
 BUILD_DIR=${BUILD_DIR-build}
 PREFIX=${PREFIX-/usr/local}
 BINDIR=${BINDIR-$PREFIX/bin}
-DOCDIR=${DOCDIR-$PREFIX/share/doc/ncmpcpp}
+DOCDIR=${DOCDIR-$PREFIX/share/doc/ncmpcpp2}
 MANDIR=${MANDIR-$PREFIX/share/man}
 DESTDIR=${DESTDIR-}
 
@@ -277,7 +277,7 @@ compile_main() {
 
 link_main() {
     object=$BUILD_DIR/obj/src/main.c.o
-    binary=$BUILD_DIR/ncmpcpp
+    binary=$BUILD_DIR/ncmpcpp2
     temporary_binary=$binary.tmp.$$
 
     mkdir -p "$BUILD_DIR"
@@ -414,7 +414,7 @@ run_analyzer() {
 }
 
 binary_needs_build() {
-    binary=$BUILD_DIR/ncmpcpp
+    binary=$BUILD_DIR/ncmpcpp2
 
     if [ ! -f "$binary" ]; then
         return 0
@@ -436,12 +436,12 @@ install_program() {
     fi
 
     install -d "$DESTDIR$BINDIR"
-    install -m 755 "$BUILD_DIR/ncmpcpp" "$DESTDIR$BINDIR/ncmpcpp"
+    install -m 755 "$BUILD_DIR/ncmpcpp2" "$DESTDIR$BINDIR/ncmpcpp2"
     install -d "$DESTDIR$DOCDIR"
     install -m 644 AUTHORS COPYING "$DESTDIR$DOCDIR"
     install -m 644 doc/bindings doc/config "$DESTDIR$DOCDIR"
     install -d "$DESTDIR$MANDIR/man1"
-    install -m 644 doc/ncmpcpp.1 "$DESTDIR$MANDIR/man1/ncmpcpp.1"
+    install -m 644 doc/ncmpcpp2.1 "$DESTDIR$MANDIR/man1/ncmpcpp2.1"
 
     return 0
 }
@@ -485,7 +485,7 @@ common variables:
   BUILD_DIR          build output directory, default: build
   PREFIX             install prefix, default: /usr/local
   BINDIR             binary install directory, default: PREFIX/bin
-  DOCDIR             docs install directory, default: PREFIX/share/doc/ncmpcpp
+  DOCDIR             docs install directory, default: PREFIX/share/doc/ncmpcpp2
   MANDIR             man install directory, default: PREFIX/share/man
 EOF_HELP
 
