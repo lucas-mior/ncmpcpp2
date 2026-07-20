@@ -1091,12 +1091,9 @@ adder_action_position_current_album(void *user) {
 
 static void
 adder_action_position_highlighted(void *user) {
-    NativeSelectedItemsAdderScreen *screen;
+    NativeSelectedItemsAdderScreen *screen = user;
     NcmSong song;
-    uint32 song_position;
-    int32 position;
-
-    screen = user;
+    int32 song_position;
 
     ncm_song_init(&song);
     if (!native_playlist_screen_current_song(screen->playlist, &song)) {
@@ -1104,14 +1101,9 @@ adder_action_position_highlighted(void *user) {
         return;
     }
     song_position = ncm_song_position(&song);
-    if (song_position >= (uint32)INT32_MAX) {
-        ncm_song_destroy(&song);
-        return;
-    }
-    position = (int32)song_position;
     ncm_song_destroy(&song);
 
-    (void)adder_add_to_current_playlist(screen, position + 1);
+    (void)adder_add_to_current_playlist(screen, song_position + 1);
     return;
 }
 
