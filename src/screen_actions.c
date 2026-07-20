@@ -194,7 +194,7 @@ current_screen_clear_current_search_constraint(void) {
     }
 #endif
     buffer = current_screen_search_buffer();
-    if (buffer != NULL) {
+    if (buffer) {
         ncm_buffer_clear(buffer);
     }
     return;
@@ -217,7 +217,7 @@ current_screen_finish_immediate_change(void) {
 
 bool
 current_screen_allows_filter(void) {
-    return current_screen_filter_buffer() != NULL;
+    return current_screen_filter_buffer();
 }
 
 NcmStringView
@@ -300,7 +300,7 @@ current_screen_allows_search(void) {
         return false;
 #endif
     }
-    return current_screen_search_buffer() != NULL;
+    return current_screen_search_buffer();
 }
 
 bool
@@ -311,7 +311,7 @@ current_screen_search(enum SearchDirection direction, char *pattern,
     bool forward;
     bool found;
 
-    if (pattern == NULL || pattern_len <= 0) {
+    if ((pattern == NULL) || (pattern_len <= 0)) {
         if (current_screen_allows_search()) {
             current_screen_clear_current_search_constraint();
             current_screen_finish_immediate_change();

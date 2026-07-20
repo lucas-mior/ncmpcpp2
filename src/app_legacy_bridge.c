@@ -115,12 +115,12 @@ static char *
 app_legacy_bridge_mpd_error_message(NcmError *error) {
     char *message;
 
-    if ((error != NULL) && (error->message[0] != '\0')) {
+    if (error && (error->message[0] != '\0')) {
         return error->message;
     }
 
     message = ncm_mpd_client_error_message(&global_mpd);
-    if ((message != NULL) && (message[0] != '\0')) {
+    if (message && (message[0] != '\0')) {
         return message;
     }
 
@@ -136,7 +136,7 @@ app_legacy_bridge_report_mpd_error(NcmError *error) {
     arg = ncm_string_format_arg_cstring(message);
 
     if ((ncm_mpd_client_error_code(&global_mpd) == MPD_ERROR_SERVER)
-        || ((error != NULL) && (error->code == MPD_ERROR_SERVER))) {
+        || (error && (error->code == MPD_ERROR_SERVER))) {
         ncm_statusbar_format((int32)Config.message_delay_time,
                              STRLIT_ARGS("MPD: %1%"), &arg, 1);
     } else {
@@ -295,14 +295,14 @@ ncmpcpp_legacy_resize_screen(bool reload_main_window) {
     app_controller_resize_visible_screens();
 
     header = ui_state_header_window();
-    if ((header != NULL)
+    if (header
         && (Config.header_visibility
             || (Config.design == NCM_DESIGN_ALTERNATIVE))) {
         nc_window_resize(header, COLS, ncmpcpp_legacy_header_height());
     }
 
     footer = ui_state_footer_window();
-    if (footer != NULL) {
+    if (footer) {
         nc_window_move_to(footer, 0, ncmpcpp_legacy_footer_start_y());
         nc_window_resize(footer, COLS, ncmpcpp_legacy_footer_height());
     }
@@ -312,7 +312,7 @@ ncmpcpp_legacy_resize_screen(bool reload_main_window) {
     ncm_status_changes_player_state();
     ncm_status_changes_flags();
     ncm_title_draw_current_header();
-    if (footer != NULL) {
+    if (footer) {
         nc_window_refresh(footer);
     }
     refresh();

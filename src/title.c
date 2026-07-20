@@ -117,7 +117,7 @@ title_draw_alternative(NcWindow *window, char *title, int32 title_len,
 void
 ncm_window_title_write(char *title, int32 title_len) {
     printf("\033]0;");
-    if ((title != NULL) && (title_len > 0)) {
+    if (title && (title_len > 0)) {
         fwrite64(title, 1, title_len, stdout);
     }
     printf("\7");
