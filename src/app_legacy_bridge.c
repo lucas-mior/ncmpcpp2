@@ -3,7 +3,6 @@
 
 #include "app_legacy_bridge.h"
 
-#include "app_binding_migration.h"
 #include "app_controller.h"
 #include "bindings.h"
 #include "c/ncm_base.h"
@@ -408,14 +407,6 @@ ncmpcpp_legacy_update_environment(bool update_timer, bool refresh_window,
 
 bool
 ncmpcpp_legacy_execute_binding(NcmBinding *binding) {
-    enum ScreenType screen_type;
-
-    screen_type = native_c_screens_current_type();
-    if (app_binding_migration_screen_is_c_only(screen_type)
-        && !app_binding_migration_binding_is_c_safe_for_screen(binding,
-                                                               screen_type)) {
-        return false;
-    }
     if (!ncm_binding_can_execute_default(binding)) {
         return false;
     }
@@ -424,14 +415,6 @@ ncmpcpp_legacy_execute_binding(NcmBinding *binding) {
 
 bool
 ncmpcpp_legacy_execute_action(enum NcmActionType type) {
-    enum ScreenType screen_type;
-
-    screen_type = native_c_screens_current_type();
-    if (app_binding_migration_screen_is_c_only(screen_type)
-        && !app_binding_migration_action_is_c_safe_for_screen(type,
-                                                              screen_type)) {
-        return false;
-    }
     return ncm_action_runtime_run(NULL, type);
 }
 
