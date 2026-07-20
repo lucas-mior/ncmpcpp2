@@ -245,6 +245,7 @@ ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *error) {
 
     free2(copy, path_len + 1);
     ncm_error_clear(error);
+
     return true;
 }
 
