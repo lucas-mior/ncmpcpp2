@@ -154,10 +154,8 @@ native_lastfm_screen_init(NativeLastfmScreen *screen,
     nc_lastfm_screen_init(&screen->screen,
                           native_lastfm_callbacks(),
                           screen,
-                          start_x,
-                          width,
-                          main_start_y,
-                          main_height);
+                          start_x, width,
+                          main_start_y, main_height);
     nc_window_init(&screen->window,
                    nc_lastfm_screen_start_x(&screen->screen),
                    nc_lastfm_screen_start_y(&screen->screen),
