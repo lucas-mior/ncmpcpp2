@@ -619,6 +619,7 @@ ncm_format_parse_percent(NcmFormatExprList *out, char *data,
     expr->value.song_tag.getter = getter;
     expr->value.song_tag.delimiter = delimiter;
     *pos = i;
+
     return true;
 }
 
