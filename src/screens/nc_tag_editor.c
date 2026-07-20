@@ -2547,7 +2547,9 @@ tag_editor_set_focus(NativeTagEditorScreen *screen,
     if (screen == NULL) {
         return;
     }
+
     screen->active_focus = focus;
+
     if (focus == NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES) {
         screen->active_column = NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES;
     } else if (focus == NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES) {
@@ -2559,6 +2561,7 @@ tag_editor_set_focus(NativeTagEditorScreen *screen,
     } else if (focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW) {
         screen->parser_preview_enabled = true;
     }
+
     tag_editor_update_menu_highlights(screen);
     return;
 }
