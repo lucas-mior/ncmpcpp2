@@ -743,11 +743,10 @@ tiny_editor_resize(NcScreen *screen) {
     int32 width;
 
     editor = tiny_editor_from_screen(screen);
-    nc_screen_switcher_get_resize_params(
-        screen, &start_x, &width, true);
-    native_tiny_tag_editor_screen_set_geometry(
-        editor, start_x, width, ui_state_main_start_y(),
-        ui_state_main_height());
+    nc_screen_switcher_get_resize_params(screen, &start_x, &width, true);
+    native_tiny_tag_editor_screen_set_geometry(editor, start_x, width,
+                                               ui_state_main_start_y(),
+                                               ui_state_main_height());
     nc_screen_clear_resize_request(screen);
     return;
 }
