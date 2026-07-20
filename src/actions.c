@@ -5893,7 +5893,7 @@ action_runtime_toggle_screen_lock(void) {
         return true;
     }
 
-    part = Config.locked_screen_width_part*100;
+    part = (int32)Config.locked_screen_width_part*100;
     if (Config.ask_for_locked_screen_width_part) {
         ncm_buffer_init(&input);
         SNPRINTF(initial, "%d", part);
