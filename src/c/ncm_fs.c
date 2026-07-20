@@ -126,7 +126,7 @@ ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat, NcmError *error) {
         return false;
     }
 
-    if (lstat(path_copy, &statbuf) != 0) {
+    if (lstat(path_copy, &statbuf) < 0) {
         if (errno == ENOENT) {
             free2(path_copy, path_len + 1);
             ncm_error_clear(error);
