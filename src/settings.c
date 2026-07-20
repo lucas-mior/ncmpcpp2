@@ -684,8 +684,8 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
             settings_error(error, STRLIT_ARGS("failed to append ratio"));
             return false;
         }
-        *slot = (int32)parsed;
-        total += (int32)parsed;
+        *slot = parsed;
+        total += parsed;
         if (end >= value_len) {
             break;
         }
@@ -774,7 +774,7 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
             ncm_buffer_destroy(&tag);
             return false;
         }
-        column->width = (int32)parsed_width;
+        column->width = parsed_width;
         if (color.len > 0) {
             if (!settings_parse_color(color.data, color.len, &column->color,
                                       error)) {

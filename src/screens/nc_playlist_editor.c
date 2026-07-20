@@ -301,7 +301,7 @@ native_playlist_editor_screen_set_geometry(
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = (int32)main_height;
+    screen->main_height = main_height;
     playlist_editor_apply_geometry(screen);
     return;
 }
@@ -1148,7 +1148,7 @@ playlist_editor_content_list_width(NcMenu *menu, NcWindow *window,
     if (available_width > INT32_MAX) {
         return INT32_MAX;
     }
-    return (int32)available_width;
+    return available_width;
 }
 
 static bool

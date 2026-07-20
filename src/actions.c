@@ -1638,7 +1638,7 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
         if (action_runtime_queue_find_song(&queue, song, &match)) {
             if (play) {
                 ok = ncm_mpd_client_play_id(&global_mpd,
-                                            (int32)ncm_song_id(match), &error);
+                                            ncm_song_id(match), &error);
             } else {
                 ok = action_runtime_queue_remove_song(&queue, song, &error);
             }
@@ -1942,7 +1942,7 @@ action_runtime_add_random_items(void) {
         return true;
     }
     ncm_buffer_destroy(&input);
-    count = (int32)number;
+    count = number;
     if (count <= 0) {
         return true;
     }
@@ -2472,7 +2472,7 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
         if (result > MAXOF(*position)) {
             return false;
         }
-        *position = (int32)result;
+        *position = result;
         return true;
     }
 
@@ -2976,7 +2976,7 @@ action_runtime_current_menu_height(void) {
     }
 
     if (window == NULL) {
-        return (int32)ui_state_main_height();
+        return ui_state_main_height();
     }
     return nc_window_height(window);
 }
@@ -3664,7 +3664,7 @@ action_runtime_add_playlist_editor_item(bool play) {
     success = ncm_mpd_client_load_playlist(&global_mpd, playlist.path, &loaded,
                                            &error);
     if (success && play && loaded) {
-        success = ncm_mpd_client_play_pos(&global_mpd, (int32)play_position,
+        success = ncm_mpd_client_play_pos(&global_mpd, play_position,
                                           &error);
     }
     ncm_playlist_destroy(&playlist);
@@ -4278,7 +4278,7 @@ action_runtime_move_stored_playlist_items(NcmSongArray *songs, bool down) {
     success = ncm_mpd_client_start_command_list(&global_mpd, &error);
     for (int32 i = 0; success && (i < count); i += 1) {
         if (down) {
-            if ((int32)positions[i] + 1 >= item_count) {
+            if (positions[i] + 1 >= item_count) {
                 continue;
             }
             success = ncm_mpd_client_playlist_move(&global_mpd, playlist.path,
@@ -4724,7 +4724,7 @@ action_runtime_set_selected_items_priority(void) {
 
     ncm_error_clear(&error);
     if (!native_playlist_screen_set_selected_priority(
-            native_c_screen_playlist(), &global_mpd, (int32)priority, &error)) {
+            native_c_screen_playlist(), &global_mpd, priority, &error)) {
         return action_runtime_mpd_error(&error);
     }
     ncm_statusbar_print_cstring(Config.message_delay_time,

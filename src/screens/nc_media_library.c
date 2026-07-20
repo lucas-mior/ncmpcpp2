@@ -266,7 +266,7 @@ native_media_library_screen_init(NativeMediaLibraryScreen *screen,
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = (int32)main_height;
+    screen->main_height = main_height;
     if (Config.data_fetching_delay) {
         screen->fetching_delay_ms = NATIVE_MEDIA_LIBRARY_FETCH_DELAY_MS;
         screen->window_timeout_ms = NATIVE_MEDIA_LIBRARY_FETCH_DELAY_MS;
@@ -428,7 +428,7 @@ native_media_library_screen_set_geometry(NativeMediaLibraryScreen *screen,
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = (int32)main_height;
+    screen->main_height = main_height;
     native_library_layout(screen);
     return;
 }

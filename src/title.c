@@ -80,7 +80,7 @@ title_draw_classic(NcWindow *window, char *title, int32 title_len,
     nc_window_print_data(window, title, title_len);
     nc_window_apply_format(window, NC_FORMAT_NO_BOLD);
 
-    volume_x = (int32)(nc_window_width(window) - global_volume_state_len());
+    volume_x = nc_window_width(window) - global_volume_state_len();
     if (volume_x < 0) {
         volume_x = 0;
     }

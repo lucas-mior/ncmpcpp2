@@ -158,7 +158,7 @@ nc_scrollpad_reset(NcScrollpad *scrollpad) {
 
 static int32
 nc_scrollpad_i32(int32 value) {
-    return (int32)value;
+    return value;
 }
 
 static int32
