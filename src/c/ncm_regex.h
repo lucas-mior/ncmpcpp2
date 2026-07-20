@@ -26,13 +26,13 @@ typedef struct NcmRegex {
 
 void ncm_regex_init(NcmRegex *regex);
 void ncm_regex_destroy(NcmRegex *regex);
-void ncm_regex_escape_literal(NcmBuffer *buffer, char *pattern,
-                              int32 pattern_len);
+void ncm_regex_escape_literal(NcmBuffer *buffer,
+                              char *pattern, int32 pattern_len);
 bool ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
                        uint32 flags, NcmError *error);
 bool ncm_regex_search(NcmRegex *regex, char *string, int32 string_len);
-bool ncm_regex_for_each_match(NcmRegex *regex, char *string,
-                              int32 string_len,
+bool ncm_regex_for_each_match(NcmRegex *regex,
+                              char *string, int32 string_len,
                               NcmRegexMatchCallback *callback, void *user);
 
 #endif /* NCM_REGEX_H */
