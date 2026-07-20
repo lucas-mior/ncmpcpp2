@@ -1209,13 +1209,12 @@ native_lyrics_job_run(void *user, NcmError *error) {
 
 static void
 native_lyrics_job_complete(bool success, NcmError *error, void *user) {
-    NativeLyricsJob *job;
-    NativeLyricsScreen *screen;
+    NativeLyricsJob *job = user;
+    NativeLyricsScreen *screen = job->screen;
 
     (void)success;
     (void)error;
-    job = user;
-    screen = job->screen;
+
     if (!job->background) {
         if (!native_lyrics_job_is_current(job)) {
             return;
