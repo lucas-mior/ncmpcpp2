@@ -55,8 +55,7 @@ static void lyrics_mouse_button_pressed_callback(NcScreen *screen,
 static bool lyrics_is_lockable_callback(NcScreen *screen);
 static bool lyrics_is_mergable_callback(NcScreen *screen);
 static void lyrics_destroy_callback(NcScreen *screen);
-static void native_lyrics_title_song_string(NcmSong *song,
-                                            NcmBuffer *title);
+static void native_lyrics_title_song_string(NcmSong *song, NcmBuffer *title);
 static void native_lyrics_replace_search_separators(NcmBuffer *buffer);
 static void native_lyrics_append_locale(NcBuffer *buffer, char *data,
                                         int32 data_len);
