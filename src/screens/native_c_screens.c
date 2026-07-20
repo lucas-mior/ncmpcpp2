@@ -2381,9 +2381,9 @@ native_song_info_hooks(void) {
 
 static void
 native_show_long_time(NcBuffer *buffer, uint64 seconds) {
-    uint64 days;
-    uint64 hours;
-    uint64 minutes;
+    int64 days;
+    int64 hours;
+    int64 minutes;
 
     days = seconds / 86400;
     seconds -= days*86400;
