@@ -1354,10 +1354,8 @@ native_lyrics_job_is_current(NativeLyricsJob *job) {
     if (!ncm_song_equal(&screen->song, &job->song)) {
         return false;
     }
-    return STREQUAL(screen->filename.data,
-                            screen->filename.len,
-                            job->filename.data,
-                            job->filename.len);
+    return STREQUAL(screen->filename.data, screen->filename.len,
+                    job->filename.data, job->filename.len);
 }
 
 static void
