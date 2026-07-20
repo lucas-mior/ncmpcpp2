@@ -718,9 +718,7 @@ tiny_editor_refresh_window(NcScreen *screen) {
 
 static void
 tiny_editor_scroll(NcScreen *screen, enum NcScroll where) {
-    NativeTinyTagEditorScreen *editor;
-
-    editor = tiny_editor_from_screen(screen);
+    NativeTinyTagEditorScreen *editor = tiny_editor_from_screen(screen);
     nc_menu_scroll_selectable(nc_editor_buffer_menu_base(&editor->rows),
                               editor->main_height, where);
     return;
