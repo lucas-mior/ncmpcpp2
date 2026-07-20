@@ -189,8 +189,7 @@ void
 app_controller_scroll_current_screen(enum NcScroll where) {
     NcScreen *screen;
 
-    screen = app_controller_current_screen();
-    if (screen) {
+    if ((screen = app_controller_current_screen())) {
         nc_screen_scroll(screen, where);
     }
     return;
