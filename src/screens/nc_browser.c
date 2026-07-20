@@ -451,7 +451,8 @@ native_browser_screen_current_directory(NativeBrowserScreen *screen) {
 
 NcmStringView
 native_browser_screen_last_highlighted_directory(
-    NativeBrowserScreen *screen) {
+    NativeBrowserScreen *screen
+) {
     if (screen == NULL) {
         return ncm_string_view_make(NULL, 0);
     }
@@ -586,7 +587,8 @@ native_browser_screen_has_supported_extension(NativeBrowserScreen *screen,
 
 bool
 native_browser_screen_fetch_supported_extensions(
-    NativeBrowserScreen *screen, NcmMpdClient *client, NcmError *error) {
+    NativeBrowserScreen *screen, NcmMpdClient *client, NcmError *error
+) {
     NcmMpdStringList strings;
     NcmBufferArray extensions;
     NcmMpdString *string;
@@ -668,7 +670,8 @@ native_browser_screen_is_local(NativeBrowserScreen *screen) {
 
 bool
 native_browser_screen_change_browse_mode(
-    NativeBrowserScreen *screen, NcmMpdClient *client, NcmError *error) {
+    NativeBrowserScreen *screen, NcmMpdClient *client, NcmError *error
+) {
     NcmBuffer directory;
     char *hostname;
     bool local_browser;
@@ -869,7 +872,8 @@ native_browser_screen_current_playlist_path(NativeBrowserScreen *screen,
 
 bool
 native_browser_screen_rename_directory_available(
-    NativeBrowserScreen *screen) {
+    NativeBrowserScreen *screen
+) {
     NcmStringView path;
     NcmError error;
 
@@ -880,7 +884,8 @@ native_browser_screen_rename_directory_available(
 
 bool
 native_browser_screen_rename_playlist_available(
-    NativeBrowserScreen *screen) {
+    NativeBrowserScreen *screen
+) {
     NcmStringView path;
     NcmError error;
 
@@ -891,7 +896,8 @@ native_browser_screen_rename_playlist_available(
 bool
 native_browser_screen_rename_current_directory(
     NativeBrowserScreen *screen, char *new_path, int32 new_path_len,
-    NcmMpdClient *client, NcmError *error) {
+    NcmMpdClient *client, NcmError *error
+) {
     NcmStringView old_path;
     NcmStringView new_path_view;
 
@@ -928,7 +934,8 @@ native_browser_screen_rename_current_directory(
 bool
 native_browser_screen_rename_current_playlist(
     NativeBrowserScreen *screen, char *new_path, int32 new_path_len,
-    NcmMpdClient *client, NcmError *error) {
+    NcmMpdClient *client, NcmError *error
+) {
     NcmStringView old_path;
 
     if ((new_path == NULL) || (new_path_len <= 0)) {
@@ -1737,7 +1744,8 @@ native_browser_set_parent_of_directory(NativeBrowserScreen *screen,
 
 static bool
 native_browser_prepare_mpd_reload_directory(
-    NativeBrowserScreen *screen) {
+    NativeBrowserScreen *screen
+) {
     if (screen == NULL) {
         return false;
     }
@@ -1756,7 +1764,8 @@ native_browser_prepare_mpd_reload_directory(
 
 static bool
 native_browser_add_parent_directory_item(
-    NativeBrowserScreen *screen) {
+    NativeBrowserScreen *screen
+) {
     NcmDirectory directory;
     NcmMpdItem item;
     bool result;
@@ -2061,7 +2070,8 @@ native_browser_local_mode_type(mode_t mode) {
 
 static bool
 native_browser_local_path_has_supported_extension(
-    NativeBrowserScreen *screen, char *path, int32 path_len) {
+    NativeBrowserScreen *screen, char *path, int32 path_len
+) {
     int32 extension;
 
     extension = ncm_path_extension_start(path, path_len);
@@ -2144,7 +2154,8 @@ native_browser_collect_item_songs(NativeBrowserScreen *screen,
 
 static bool
 native_browser_collect_mpd_directory_songs(
-    NcmSongArray *songs, char *path, int32 path_len) {
+    NcmSongArray *songs, char *path, int32 path_len
+) {
     NcmMpdSongList source;
     NcmError error;
     char *directory;
@@ -2174,7 +2185,8 @@ native_browser_collect_mpd_directory_songs(
 static bool
 native_browser_collect_local_directory_songs(
     NativeBrowserScreen *screen, NcmSongArray *songs, char *path,
-    int32 path_len, NcmError *error) {
+    int32 path_len, NcmError *error
+) {
     NcmFsDirectory directory;
     NcmFsEntry entry;
     bool result;
@@ -2206,7 +2218,8 @@ native_browser_collect_local_directory_songs(
 static bool
 native_browser_collect_local_entry_songs(
     NativeBrowserScreen *screen, NcmSongArray *songs,
-    NcmFsDirectory *directory, NcmFsEntry *entry, NcmError *error) {
+    NcmFsDirectory *directory, NcmFsEntry *entry, NcmError *error
+) {
     NcmBuffer path;
     NcmFsStat stat;
     NcmSong song;
@@ -2427,7 +2440,8 @@ native_browser_current_playlist_item_path(NativeBrowserScreen *screen,
 static bool
 native_browser_load_mpd_song_directory(
     NativeBrowserScreen *screen, NcmMpdClient *client,
-    NcmStringView directory, NcmError *error) {
+    NcmStringView directory, NcmError *error
+) {
     NcmMpdItemArray items;
     NcmBuffer path;
     bool result;
@@ -2733,7 +2747,8 @@ native_browser_supported_extensions_add(NcmBufferArray *extensions,
 
 static bool
 native_browser_highlight_last_directory(
-    NativeBrowserScreen *screen) {
+    NativeBrowserScreen *screen
+) {
     NcmStringView target;
     NcmStringView path;
     NcMenu *menu;

@@ -78,7 +78,8 @@ static ExistingPlaylistAction *existing_playlist_action_create(
 void
 native_selected_items_adder_screen_init(
     NativeSelectedItemsAdderScreen *screen, int32 start_x, int32 start_y,
-    int32 width, int32 height, NcColor color, NcBorder border) {
+    int32 width, int32 height, NcColor color, NcBorder border
+) {
     NcScreenCallbacks callbacks;
     NcMenuDisplayCallbacks display_callbacks = {0};
     NcMenu *playlist_menu;
@@ -136,7 +137,8 @@ native_selected_items_adder_screen_init(
 
 void
 native_selected_items_adder_screen_destroy(
-    NativeSelectedItemsAdderScreen *screen) {
+    NativeSelectedItemsAdderScreen *screen
+) {
     if (screen == NULL) {
         return;
     }
@@ -171,7 +173,8 @@ native_selected_items_adder_screen_destroy(
 
 NcScreen *
 native_selected_items_adder_screen_base(
-    NativeSelectedItemsAdderScreen *screen) {
+    NativeSelectedItemsAdderScreen *screen
+) {
     if (screen == NULL) {
         return NULL;
     }
@@ -180,7 +183,8 @@ native_selected_items_adder_screen_base(
 
 NcMenu *
 native_selected_items_adder_screen_active_menu(
-    NativeSelectedItemsAdderScreen *screen) {
+    NativeSelectedItemsAdderScreen *screen
+) {
     if (screen == NULL) {
         return NULL;
     }
@@ -192,7 +196,8 @@ native_selected_items_adder_screen_active_menu(
 
 NcWindow *
 native_selected_items_adder_screen_active_window(
-    NativeSelectedItemsAdderScreen *screen) {
+    NativeSelectedItemsAdderScreen *screen
+) {
     if (screen == NULL) {
         return NULL;
     }
@@ -205,7 +210,8 @@ native_selected_items_adder_screen_active_window(
 bool
 native_selected_items_adder_screen_open(
     NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs,
-    NativePlaylistScreen *playlist, NcmMpdClient *client, NcmError *error) {
+    NativePlaylistScreen *playlist, NcmMpdClient *client, NcmError *error
+) {
     NcmMpdPlaylistList playlists;
     NcmSongArray selected_songs;
     NcmError playlist_error;
@@ -306,7 +312,8 @@ native_selected_items_adder_screen_open(
 void
 native_selected_items_adder_screen_populate_playlist_selector(
     NativeSelectedItemsAdderScreen *screen, NcmMpdPlaylistList *playlists,
-    bool local_browser) {
+    bool local_browser
+) {
     NcEditorActionMenu *menu;
     NcMenu *base;
     int32 stored_begin;
@@ -360,7 +367,8 @@ native_selected_items_adder_screen_populate_playlist_selector(
 
 void
 native_selected_items_adder_screen_populate_position_selector(
-    NativeSelectedItemsAdderScreen *screen) {
+    NativeSelectedItemsAdderScreen *screen
+) {
     NcEditorActionMenu *menu;
 
     if (screen == NULL) {
@@ -387,7 +395,8 @@ native_selected_items_adder_screen_populate_position_selector(
 
 bool
 native_selected_items_adder_screen_run_current(
-    NativeSelectedItemsAdderScreen *screen) {
+    NativeSelectedItemsAdderScreen *screen
+) {
     NcEditorActionRow *row;
 
     if (screen == NULL) {
@@ -404,7 +413,8 @@ native_selected_items_adder_screen_run_current(
 
 bool
 native_selected_items_adder_screen_return_to_previous(
-    NativeSelectedItemsAdderScreen *screen) {
+    NativeSelectedItemsAdderScreen *screen
+) {
     if ((screen == NULL) || !screen->ready
         || (screen->previous_screen == NULL)) {
         return false;
@@ -416,7 +426,8 @@ native_selected_items_adder_screen_return_to_previous(
 
 void
 native_selected_items_adder_screen_choose_current_playlist(
-    NativeSelectedItemsAdderScreen *screen) {
+    NativeSelectedItemsAdderScreen *screen
+) {
     if (screen == NULL) {
         return;
     }
@@ -428,7 +439,8 @@ native_selected_items_adder_screen_choose_current_playlist(
 bool
 native_selected_items_adder_screen_add_to_existing_playlist(
     NativeSelectedItemsAdderScreen *screen, NcmMpdClient *client,
-    char *playlist, NcmError *error) {
+    char *playlist, NcmError *error
+) {
     bool ok;
 
     if (screen == NULL) {
@@ -468,7 +480,8 @@ bool
 native_selected_items_adder_screen_search(
     NativeSelectedItemsAdderScreen *screen, char *pattern,
     int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,
-    bool skip_current, NcmError *error) {
+    bool skip_current, NcmError *error
+) {
     NcmRegex regex;
     NcMenu *menu;
     NcWindow *window;
@@ -788,7 +801,8 @@ adder_statusbar_prompt_hook(char *text, void *user) {
 static bool
 adder_add_to_stored_playlist(
     NativeSelectedItemsAdderScreen *screen, char *playlist,
-    int32 playlist_len) {
+    int32 playlist_len
+) {
     NcmStringFormatArg arg;
     NcmError error;
 
@@ -822,7 +836,8 @@ adder_add_to_stored_playlist(
 static bool
 adder_try_add_current_song(
     NativeSelectedItemsAdderScreen *screen, NcmSong *song,
-    int32 position, bool *added, bool *success) {
+    int32 position, bool *added, bool *success
+) {
     NcmError error;
 
     *added = false;
@@ -855,7 +870,8 @@ adder_try_add_current_song(
 
 static bool
 adder_add_to_current_playlist(
-    NativeSelectedItemsAdderScreen *screen, int32 position) {
+    NativeSelectedItemsAdderScreen *screen, int32 position
+) {
     NcmBuffer message;
     char *suffix;
     bool added;

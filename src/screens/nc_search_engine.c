@@ -273,7 +273,8 @@ native_search_engine_screen_set_geometry(NativeSearchEngineScreen *screen,
 void
 native_search_engine_screen_set_mouse_config(
     NativeSearchEngineScreen *screen, int32 lines_scrolled,
-    bool whole_page) {
+    bool whole_page
+) {
     if (screen == NULL) {
         return;
     }
@@ -287,7 +288,8 @@ native_search_engine_screen_set_mouse_config(
 
 void
 native_search_engine_screen_set_display_mode(
-    NativeSearchEngineScreen *screen, enum DisplayMode mode) {
+    NativeSearchEngineScreen *screen, enum DisplayMode mode
+) {
     if ((screen == NULL) || ((mode != NCM_DISPLAY_MODE_CLASSIC)
         && (mode != NCM_DISPLAY_MODE_COLUMNS))) {
         return;
@@ -320,7 +322,8 @@ native_search_engine_constraint_name(int32 idx) {
 
 char *
 native_search_engine_search_mode_name(
-    enum NativeSearchEngineSearchMode mode) {
+    enum NativeSearchEngineSearchMode mode
+) {
     if ((mode < NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL)
         || (mode >= NATIVE_SEARCH_ENGINE_SEARCH_MODE_LAST)) {
         return native_search_mode_names[0];
@@ -330,7 +333,8 @@ native_search_engine_search_mode_name(
 
 bool
 native_search_engine_screen_constraints_locked(
-    NativeSearchEngineScreen *screen) {
+    NativeSearchEngineScreen *screen
+) {
     if (screen == NULL) {
         return false;
     }
@@ -339,7 +343,8 @@ native_search_engine_screen_constraints_locked(
 
 bool
 native_search_engine_screen_format_song_text(
-    NativeSearchEngineScreen *screen, NcmSong *song, NcmBuffer *text) {
+    NativeSearchEngineScreen *screen, NcmSong *song, NcmBuffer *text
+) {
     NcBuffer formatted;
     bool result;
 
@@ -365,7 +370,8 @@ native_search_engine_screen_format_song_text(
 
 void
 native_search_engine_screen_update_column_title(
-    NativeSearchEngineScreen *screen) {
+    NativeSearchEngineScreen *screen
+) {
     int32 list_width;
 
     if (screen == NULL) {
@@ -396,7 +402,8 @@ native_search_engine_screen_update_column_title(
 
 void
 native_search_engine_screen_prepare_static_rows(
-    NativeSearchEngineScreen *screen) {
+    NativeSearchEngineScreen *screen
+) {
     NcBuffer buffer;
 
     if (screen == NULL) {
@@ -440,7 +447,8 @@ native_search_engine_screen_prepare_static_rows(
 
 bool
 native_search_engine_screen_update_constraint_row(
-    NativeSearchEngineScreen *screen, int32 idx) {
+    NativeSearchEngineScreen *screen, int32 idx
+) {
     NcBuffer buffer;
     bool result;
 
@@ -458,7 +466,8 @@ native_search_engine_screen_update_constraint_row(
 
 bool
 native_search_engine_screen_update_search_source_row(
-    NativeSearchEngineScreen *screen) {
+    NativeSearchEngineScreen *screen
+) {
     NcBuffer buffer;
     bool result;
 
@@ -476,7 +485,8 @@ native_search_engine_screen_update_search_source_row(
 
 bool
 native_search_engine_screen_update_search_mode_row(
-    NativeSearchEngineScreen *screen) {
+    NativeSearchEngineScreen *screen
+) {
     NcBuffer buffer;
     bool result;
 
@@ -494,7 +504,8 @@ native_search_engine_screen_update_search_mode_row(
 
 bool
 native_search_engine_screen_add_result_summary(
-    NativeSearchEngineScreen *screen, int32 song_count) {
+    NativeSearchEngineScreen *screen, int32 song_count
+) {
     NcBuffer buffer;
     bool result;
 
@@ -540,7 +551,8 @@ native_search_engine_screen_add_result_summary(
 
 void
 native_search_engine_screen_set_constraints_locked(
-    NativeSearchEngineScreen *screen, bool locked) {
+    NativeSearchEngineScreen *screen, bool locked
+) {
     NcMenu *menu;
     uint32 flags;
 
@@ -591,7 +603,8 @@ native_search_engine_screen_add_song_copy(NativeSearchEngineScreen *screen,
 
 bool
 native_search_engine_screen_add_song_copy_with_flags(
-    NativeSearchEngineScreen *screen, NcmSong *song, uint32 flags) {
+    NativeSearchEngineScreen *screen, NcmSong *song, uint32 flags
+) {
     NcSearchRow row;
 
     if ((screen == NULL) || (song == NULL)) {
@@ -610,7 +623,8 @@ native_search_engine_screen_add_song_copy_with_flags(
 
 bool
 native_search_engine_screen_add_buffer_with_flags(
-    NativeSearchEngineScreen *screen, NcBuffer *buffer, uint32 flags) {
+    NativeSearchEngineScreen *screen, NcBuffer *buffer, uint32 flags
+) {
     NcSearchRow row;
 
     if ((screen == NULL) || (buffer == NULL)) {
@@ -644,7 +658,8 @@ native_search_engine_screen_set_constraint(NativeSearchEngineScreen *screen,
 
 void
 native_search_engine_screen_clear_find_constraint(
-    NativeSearchEngineScreen *screen) {
+    NativeSearchEngineScreen *screen
+) {
     if (screen == NULL) {
         return;
     }
@@ -656,7 +671,8 @@ native_search_engine_screen_clear_find_constraint(
 bool
 native_search_engine_screen_set_search_mode(
     NativeSearchEngineScreen *screen,
-    enum NativeSearchEngineSearchMode mode) {
+    enum NativeSearchEngineSearchMode mode
+) {
     if ((screen == NULL) || (mode < NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL)
         || (mode >= NATIVE_SEARCH_ENGINE_SEARCH_MODE_LAST)) {
         return false;
@@ -670,7 +686,8 @@ native_search_engine_screen_set_search_mode(
 
 void
 native_search_engine_screen_set_search_source(
-    NativeSearchEngineScreen *screen, bool search_in_database) {
+    NativeSearchEngineScreen *screen, bool search_in_database
+) {
     if (screen == NULL) {
         return;
     }
@@ -683,7 +700,8 @@ native_search_engine_screen_set_search_source(
 
 void
 native_search_engine_screen_set_hooks(
-    NativeSearchEngineScreen *screen, NativeSearchEngineHooks hooks) {
+    NativeSearchEngineScreen *screen, NativeSearchEngineHooks hooks
+) {
     if (screen == NULL) {
         return;
     }
@@ -694,7 +712,8 @@ native_search_engine_screen_set_hooks(
 bool
 native_search_engine_screen_list_database_songs(
     NativeSearchEngineScreen *screen, NcmSongArray *songs,
-    NcmError *error) {
+    NcmError *error
+) {
     if ((screen == NULL) || (songs == NULL)
         || (screen->hooks.list_database_songs == NULL)) {
         return false;
@@ -706,7 +725,8 @@ native_search_engine_screen_list_database_songs(
 bool
 native_search_engine_screen_snapshot_playlist(
     NativeSearchEngineScreen *screen, NcmSongArray *songs,
-    NcmError *error) {
+    NcmError *error
+) {
     if ((screen == NULL) || (songs == NULL)
         || (screen->hooks.snapshot_playlist == NULL)) {
         return false;
@@ -717,7 +737,8 @@ native_search_engine_screen_snapshot_playlist(
 
 enum NativeSearchEnginePromptResult
 native_search_engine_screen_prompt_constraint(
-    NativeSearchEngineScreen *screen, int32 idx, NcmBuffer *result) {
+    NativeSearchEngineScreen *screen, int32 idx, NcmBuffer *result
+) {
     char *label;
     int32 label_len;
 
@@ -735,7 +756,8 @@ native_search_engine_screen_prompt_constraint(
 
 void
 native_search_engine_screen_status_message(
-    NativeSearchEngineScreen *screen, char *message, int32 message_len) {
+    NativeSearchEngineScreen *screen, char *message, int32 message_len
+) {
     if ((screen == NULL) || (message == NULL) || (message_len < 0)
         || (screen->hooks.status_message == NULL)) {
         return;
@@ -747,7 +769,8 @@ native_search_engine_screen_status_message(
 bool
 native_search_engine_screen_add_song(
     NativeSearchEngineScreen *screen, NcmSong *song, bool play,
-    NcmError *error) {
+    NcmError *error
+) {
     if ((screen == NULL) || (song == NULL)
         || (screen->hooks.add_song == NULL)) {
         return false;
@@ -758,7 +781,8 @@ native_search_engine_screen_add_song(
 bool
 native_search_engine_screen_execute_search(
     NativeSearchEngineScreen *screen, NcmMpdClient *client,
-    NcmError *error) {
+    NcmError *error
+) {
     NcmSongArray source;
     NcmSongArray songs;
     bool result;
@@ -845,7 +869,8 @@ cleanup:
 
 bool
 native_search_engine_screen_can_run_current(
-    NativeSearchEngineScreen *screen) {
+    NativeSearchEngineScreen *screen
+) {
     NcMenu *menu;
     NcSearchRow *row;
     int32 pos;
@@ -870,7 +895,8 @@ native_search_engine_screen_can_run_current(
 
 bool
 native_search_engine_screen_run_current(
-    NativeSearchEngineScreen *screen) {
+    NativeSearchEngineScreen *screen
+) {
     enum NativeSearchEnginePromptResult prompt_status;
     enum NativeSearchEngineSearchMode mode;
     NcmBuffer value;
@@ -936,7 +962,8 @@ native_search_engine_screen_run_current(
 bool
 native_search_engine_screen_start_searching(
     NativeSearchEngineScreen *screen, NcmMpdClient *client,
-    NcmError *error) {
+    NcmError *error
+) {
     NcMenu *menu;
 
     if ((screen == NULL) || screen->constraints_locked) {
@@ -955,7 +982,8 @@ native_search_engine_screen_start_searching(
 
 enum DisplayMode
 native_search_engine_screen_toggle_display_mode(
-    NativeSearchEngineScreen *screen) {
+    NativeSearchEngineScreen *screen
+) {
     enum DisplayMode mode;
 
     if (screen == NULL) {
@@ -973,7 +1001,8 @@ native_search_engine_screen_toggle_display_mode(
 
 bool
 native_search_engine_screen_allows_search(
-    NativeSearchEngineScreen *screen) {
+    NativeSearchEngineScreen *screen
+) {
     NcMenu *menu;
     NcSearchRow *row;
     int32 count;
@@ -1349,7 +1378,8 @@ native_search_row_label(NativeSearchEngineScreen *screen,
 static bool
 native_search_insert_buffer_with_flags(
     NativeSearchEngineScreen *screen, int32 pos, NcBuffer *buffer,
-    uint32 flags) {
+    uint32 flags
+) {
     NcSearchRow row;
 
     if ((screen == NULL) || (buffer == NULL)) {
@@ -1364,7 +1394,8 @@ native_search_insert_buffer_with_flags(
 
 static void
 native_search_append_constraint_row(
-    NativeSearchEngineScreen *screen, int32 idx) {
+    NativeSearchEngineScreen *screen, int32 idx
+) {
     NcBuffer buffer;
 
     nc_buffer_init(&buffer);
@@ -1376,7 +1407,8 @@ native_search_append_constraint_row(
 
 static bool
 native_search_set_buffer_row(
-    NativeSearchEngineScreen *screen, int32 pos, NcBuffer *buffer) {
+    NativeSearchEngineScreen *screen, int32 pos, NcBuffer *buffer
+) {
     NcSearchRow *row;
 
     row = nc_search_row_menu_item_at(
@@ -1391,7 +1423,8 @@ native_search_set_buffer_row(
 
 static void
 native_search_build_constraint_row(
-    NativeSearchEngineScreen *screen, int32 idx, NcBuffer *buffer) {
+    NativeSearchEngineScreen *screen, int32 idx, NcBuffer *buffer
+) {
     nc_buffer_clear(buffer);
     native_search_append_format(buffer, NC_FORMAT_BOLD);
     nc_buffer_append_cstring(buffer, native_search_constraint_names[idx]);
@@ -1406,7 +1439,8 @@ native_search_build_constraint_row(
 
 static void
 native_search_build_search_source_row(
-    NativeSearchEngineScreen *screen, NcBuffer *buffer) {
+    NativeSearchEngineScreen *screen, NcBuffer *buffer
+) {
     nc_buffer_clear(buffer);
     native_search_append_format(buffer, NC_FORMAT_BOLD);
     nc_buffer_append_data(buffer, STRLIT_ARGS("Search in:"));
@@ -1422,7 +1456,8 @@ native_search_build_search_source_row(
 
 static void
 native_search_build_search_mode_row(
-    NativeSearchEngineScreen *screen, NcBuffer *buffer) {
+    NativeSearchEngineScreen *screen, NcBuffer *buffer
+) {
     nc_buffer_clear(buffer);
     native_search_append_format(buffer, NC_FORMAT_BOLD);
     nc_buffer_append_data(buffer, STRLIT_ARGS("Search mode:"));
@@ -1500,7 +1535,8 @@ native_search_draw_row(NcMenu *menu, NcWindow *window, void *item,
 static void
 native_search_draw_classic_song(
     NativeSearchEngineScreen *screen, NcMenu *menu, NcWindow *window,
-    NcmSong *song, int32 pos) {
+    NcmSong *song, int32 pos
+) {
     NcBuffer left;
     NcBuffer right;
     int32 right_width;
@@ -1534,7 +1570,8 @@ native_search_draw_classic_song(
 static void
 native_search_draw_columns_song(
     NativeSearchEngineScreen *screen, NcMenu *menu, NcWindow *window,
-    NcmSong *song, int32 pos) {
+    NcmSong *song, int32 pos
+) {
     NcBuffer buffer;
     int32 width;
 
@@ -1555,7 +1592,8 @@ native_search_draw_columns_song(
 static bool
 native_search_format_columns(
     NativeSearchEngineScreen *screen, NcmSong *song, NcBuffer *buffer,
-    int32 list_width) {
+    int32 list_width
+) {
     if ((screen == NULL) || (song == NULL) || (buffer == NULL)) {
         return false;
     }
@@ -1691,7 +1729,8 @@ native_search_has_constraints(NativeSearchEngineScreen *screen) {
 static bool
 native_search_collect_database_results(
     NativeSearchEngineScreen *screen, NcmMpdClient *client,
-    NcmSongArray *songs, NcmError *error) {
+    NcmSongArray *songs, NcmError *error
+) {
     NcmMpdSongList result;
     bool exact_match;
     bool ok;
@@ -1726,7 +1765,8 @@ native_search_collect_database_results(
 static bool
 native_search_add_database_constraints(
     NativeSearchEngineScreen *screen, NcmMpdClient *client,
-    NcmError *error) {
+    NcmError *error
+) {
     NcmBuffer *constraint;
 
     constraint = &screen->constraints[0];
@@ -1795,7 +1835,8 @@ native_search_add_database_constraints(
 static bool
 native_search_collect_local_results(
     NativeSearchEngineScreen *screen, NcmSongArray *source,
-    NcmSongArray *songs, NcmError *error) {
+    NcmSongArray *songs, NcmError *error
+) {
     NcmRegex regexes[NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT];
     NcmError regex_error;
     bool exact_match;
@@ -1852,7 +1893,8 @@ native_search_collect_local_results(
 
 static bool
 native_search_song_matches(
-    NativeSearchEngineScreen *screen, NcmSong *song, NcmRegex *regexes) {
+    NativeSearchEngineScreen *screen, NcmSong *song, NcmRegex *regexes
+) {
     if ((screen == NULL) || (song == NULL) || (regexes == NULL)) {
         return false;
     }
@@ -1876,7 +1918,8 @@ native_search_song_matches(
 static bool
 native_search_song_field_matches(
     NativeSearchEngineScreen *screen, NcmSong *song, int32 field,
-    NcmRegex *regex) {
+    NcmRegex *regex
+) {
     NcmStringView value;
     NcmBuffer *constraint;
 
@@ -1897,7 +1940,8 @@ native_search_song_field_matches(
 
 static bool
 native_search_song_any_matches(
-    NativeSearchEngineScreen *screen, NcmSong *song, NcmRegex *regex) {
+    NativeSearchEngineScreen *screen, NcmSong *song, NcmRegex *regex
+) {
     NcmStringView value;
     NcmBuffer *constraint;
 
@@ -1973,7 +2017,8 @@ native_search_song_field_view(NcmSong *song, int32 field,
 
 static bool
 native_search_append_result_rows(
-    NativeSearchEngineScreen *screen, NcmSongArray *songs) {
+    NativeSearchEngineScreen *screen, NcmSongArray *songs
+) {
     if ((screen == NULL) || (songs == NULL) || (songs->len <= 0)) {
         return false;
     }
