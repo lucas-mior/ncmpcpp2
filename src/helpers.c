@@ -76,10 +76,12 @@ menu_set_position_selected(NcMenu *menu, enum NcMenuItemSource source,
     if (menu == NULL) {
         return false;
     }
+
     item = nc_menu_item_at(menu, source, pos);
     if (item == NULL) {
         return false;
     }
+
     if (menu->action_callbacks.set_selected) {
         menu->action_callbacks.set_selected(item, selected,
                                             menu->action_callbacks.user);
@@ -91,6 +93,7 @@ menu_set_position_selected(NcMenu *menu, enum NcMenuItemSource source,
     } else {
         flags &= ~NC_MENU_ITEM_SELECTED;
     }
+
     return nc_menu_set_item_flags_at(menu, source, pos, flags);
 }
 
