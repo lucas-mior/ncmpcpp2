@@ -438,8 +438,7 @@ native_c_screen_visualizer_init(void) {
     visualizer_config.visualizer_colors = Config.visualizer_colors.items;
     visualizer_config.visualizer_colors_len = Config.visualizer_colors.len;
     visualizer_config.fps = (int32)Config.visualizer_fps;
-    visualizer_config.spectrum_dft_size =
-        Config.visualizer_spectrum_dft_size;
+    visualizer_config.spectrum_dft_size = Config.visualizer_spectrum_dft_size;
     visualizer_config.spectrum_gain = Config.visualizer_spectrum_gain;
     visualizer_config.spectrum_hz_min = Config.visualizer_spectrum_hz_min;
     visualizer_config.spectrum_hz_max = Config.visualizer_spectrum_hz_max;
@@ -2014,7 +2013,7 @@ native_outputs_fetch(void *user, NcOutputsScreen *screen) {
 }
 
 static bool
-native_outputs_toggle(void *user, uint32 id, bool enabled,
+native_outputs_toggle(void *user, int32 id, bool enabled,
                       char *name, int32 name_len) {
 #if defined(ENABLE_OUTPUTS)
     NcmError error;
@@ -2113,6 +2112,7 @@ native_outputs_hooks(void) {
     hooks.resize_layout = native_outputs_resize;
     hooks.destroy = native_outputs_destroy;
     hooks.user = &outputs_screen;
+
     return hooks;
 }
 
@@ -2153,7 +2153,7 @@ native_server_info_render(void *user, NcBuffer *buffer) {
 
     native_append_bold_label(buffer, "Version: ");
     native_append_cstring(buffer, "0.");
-    nc_buffer_append_uint32(buffer, ncm_mpd_client_version(&global_mpd));
+    nc_buffer_append_int32(buffer, ncm_mpd_client_version(&global_mpd));
     native_append_cstring(buffer, ".*\n");
 
     native_append_bold_label(buffer, "Uptime: ");
@@ -2172,15 +2172,15 @@ native_server_info_render(void *user, NcBuffer *buffer) {
     native_append_cstring(buffer, "\n");
 
     native_append_bold_label(buffer, "Artist names: ");
-    nc_buffer_append_uint32(buffer, stats.artists);
+    nc_buffer_append_int32(buffer, stats.artists);
     native_append_cstring(buffer, "\n");
 
     native_append_bold_label(buffer, "Album names: ");
-    nc_buffer_append_uint32(buffer, stats.albums);
+    nc_buffer_append_int32(buffer, stats.albums);
     native_append_cstring(buffer, "\n");
 
     native_append_bold_label(buffer, "Songs in database: ");
-    nc_buffer_append_uint32(buffer, stats.songs);
+    nc_buffer_append_int32(buffer, stats.songs);
     native_append_cstring(buffer, "\n\n");
 
     native_append_bold_label(buffer, "URL Handlers:");
@@ -2393,18 +2393,18 @@ native_show_long_time(NcBuffer *buffer, uint64 seconds) {
     seconds -= minutes*60;
 
     if (days > 0) {
-        nc_buffer_append_uint64(buffer, days);
+        nc_buffer_append_int64(buffer, days);
         native_append_cstring(buffer, "d ");
     }
     if ((days > 0) || (hours > 0)) {
-        nc_buffer_append_uint64(buffer, hours);
+        nc_buffer_append_int64(buffer, hours);
         native_append_cstring(buffer, "h ");
     }
     if ((days > 0) || (hours > 0) || (minutes > 0)) {
-        nc_buffer_append_uint64(buffer, minutes);
+        nc_buffer_append_int64(buffer, minutes);
         native_append_cstring(buffer, "m ");
     }
-    nc_buffer_append_uint64(buffer, seconds);
+    nc_buffer_append_int64(buffer, seconds);
     native_append_cstring(buffer, "s");
     return;
 }

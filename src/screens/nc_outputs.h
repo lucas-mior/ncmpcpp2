@@ -8,7 +8,7 @@ typedef struct NcOutputsScreen NcOutputsScreen;
 
 typedef struct NcOutputsHooks {
     void (*fetch_outputs)(void *user, NcOutputsScreen *screen);
-    bool (*toggle_output)(void *user, uint32 id, bool enabled,
+    bool (*toggle_output)(void *user, int32 id, bool enabled,
                           char *name, int32 name_len);
     void (*switch_to)(void *user);
     void (*resize_layout)(void *user, NcOutputsScreen *screen);
@@ -20,7 +20,7 @@ typedef struct NcOutputsHooks {
 typedef struct NcOutputsItem {
     char *name;
     int32 name_len;
-    uint32 id;
+    int32 id;
     bool enabled;
 } NcOutputsItem;
 

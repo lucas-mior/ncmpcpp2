@@ -67,7 +67,7 @@ typedef struct NativeVisualizerScreenConfig {
     int32 visualizer_chars_len;
     int32 visualizer_colors_len;
     int32 fps;
-    uint32 spectrum_dft_size;
+    int32 spectrum_dft_size;
 
     double spectrum_gain;
     double spectrum_hz_min;
