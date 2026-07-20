@@ -1770,9 +1770,8 @@ visualizer_draw_frequency(NativeVisualizerScreen *screen,
                 if (screen->spectrum_smooth_look) {
                     int32 index;
 
-                    index = (int32)((int32)(
-                        NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT*h)
-                        %NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT);
+                    index = (int32)(NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT*h)
+                                    % NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT;
                     if (((double)j < h - 1.0)
                         || (index
                             == NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT - 1)) {
