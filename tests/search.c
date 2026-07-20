@@ -447,7 +447,7 @@ test_prompt_search_accepts_current_match(void) {
 
     search_menu_init(&menu);
     search_context_init(&context, "alp");
-    search_add_many(&menu, items, NCM_ARRAY_LEN(items));
+    search_add_many(&menu, items, LENGTH(items));
     menu.highlight = 0;
 
     found = -1;
@@ -475,7 +475,7 @@ test_forward_repeat_skips_current_match(void) {
 
     search_menu_init(&menu);
     search_context_init(&context, "alp");
-    search_add_many(&menu, items, NCM_ARRAY_LEN(items));
+    search_add_many(&menu, items, LENGTH(items));
     menu.highlight = 0;
 
     found = -1;
@@ -504,7 +504,7 @@ test_forward_repeat_wraps_to_first_match(void) {
 
     search_menu_init(&menu);
     search_context_init(&context, "target");
-    search_add_many(&menu, items, NCM_ARRAY_LEN(items));
+    search_add_many(&menu, items, LENGTH(items));
     menu.highlight = 3;
 
     found = -1;
@@ -534,7 +534,7 @@ test_backward_repeat_wraps_to_previous_match(void) {
 
     search_menu_init(&menu);
     search_context_init(&context, "alp");
-    search_add_many(&menu, items, NCM_ARRAY_LEN(items));
+    search_add_many(&menu, items, LENGTH(items));
     menu.highlight = 0;
 
     found = -1;
@@ -596,7 +596,7 @@ test_search_without_wrap_preserves_position_on_failure(void) {
 
     search_menu_init(&menu);
     search_context_init(&context, "target");
-    search_add_many(&menu, items, NCM_ARRAY_LEN(items));
+    search_add_many(&menu, items, LENGTH(items));
     menu.highlight = 2;
     menu.beginning = 1;
 
@@ -674,7 +674,7 @@ test_backward_search_without_wrap_preserves_position(void) {
 
     search_menu_init(&menu);
     search_context_init(&context, "target");
-    search_add_many(&menu, items, NCM_ARRAY_LEN(items));
+    search_add_many(&menu, items, LENGTH(items));
     menu.highlight = 0;
     menu.beginning = 0;
 
@@ -703,7 +703,7 @@ test_search_failure_with_wrap_preserves_position(void) {
 
     search_menu_init(&menu);
     search_context_init(&context, "missing");
-    search_add_many(&menu, items, NCM_ARRAY_LEN(items));
+    search_add_many(&menu, items, LENGTH(items));
     menu.highlight = 1;
     menu.beginning = 1;
 
@@ -732,7 +732,7 @@ test_single_match_repeat_does_not_reselect_current(void) {
 
     search_menu_init(&menu);
     search_context_init(&context, "target");
-    search_add_many(&menu, items, NCM_ARRAY_LEN(items));
+    search_add_many(&menu, items, LENGTH(items));
     menu.highlight = 1;
     menu.beginning = 0;
 

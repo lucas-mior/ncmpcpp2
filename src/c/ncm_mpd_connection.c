@@ -1226,7 +1226,7 @@ ncm_mpd_connection_get_status(NcmMpdConnection *connection,
 
     error = (char *)mpd_status_get_error(status);
     ncm_mpd_connection_cstring_copy(out_status->error,
-                                    NCM_ARRAY_LEN(out_status->error),
+                                    LENGTH(out_status->error),
                                     error);
 
     mpd_status_free(status);
