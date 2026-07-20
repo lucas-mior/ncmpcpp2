@@ -487,9 +487,8 @@ lastfm_update_callback(NcScreen *screen) {
 
 static void
 lastfm_mouse_button_pressed_callback(NcScreen *screen, MEVENT event) {
-    NativeLastfmScreen *lastfm;
+    NativeLastfmScreen *lastfm = lastfm_from_screen(screen);
 
-    lastfm = lastfm_from_screen(screen);
     if (event.bstate & BUTTON5_PRESSED) {
         native_lastfm_mouse_scroll(lastfm, NC_SCROLL_DOWN);
     } else if (event.bstate & BUTTON4_PRESSED) {
