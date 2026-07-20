@@ -29,7 +29,7 @@ typedef struct NcmMutableSong {
     int32 new_name_len;
 
     int64 mtime;
-    uint32 duration;
+    int32 duration;
     bool is_from_database;
 
     NcmMutableSongTag *tags;
@@ -77,8 +77,8 @@ bool ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
                                    int32 new_name_len);
 bool ncm_mutable_song_get_new_name(NcmMutableSong *song, NcmStringView *view);
 
-void ncm_mutable_song_set_duration(NcmMutableSong *song, uint32 duration);
-uint32 ncm_mutable_song_duration(NcmMutableSong *song);
+void ncm_mutable_song_set_duration(NcmMutableSong *song, int32 duration);
+int32 ncm_mutable_song_duration(NcmMutableSong *song);
 void ncm_mutable_song_set_mtime(NcmMutableSong *song, int64 mtime);
 int64 ncm_mutable_song_mtime(NcmMutableSong *song);
 
