@@ -269,7 +269,8 @@ native_playlist_editor_screen_content(NativePlaylistEditorScreen *screen) {
 
 NcMenu *
 native_playlist_editor_screen_active_menu(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     if (screen == NULL) {
         return NULL;
     }
@@ -281,7 +282,8 @@ native_playlist_editor_screen_active_menu(
 
 NcWindow *
 native_playlist_editor_screen_active_window(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     if (screen == NULL) {
         return NULL;
     }
@@ -294,7 +296,8 @@ native_playlist_editor_screen_active_window(
 void
 native_playlist_editor_screen_set_geometry(
     NativePlaylistEditorScreen *screen, int32 start_x, int32 width,
-    int32 main_start_y, int32 main_height) {
+    int32 main_start_y, int32 main_height
+) {
     if (screen == NULL) {
         return;
     }
@@ -308,7 +311,8 @@ native_playlist_editor_screen_set_geometry(
 
 void
 native_playlist_editor_screen_set_column_ratio(
-    NativePlaylistEditorScreen *screen, int32 left, int32 right) {
+    NativePlaylistEditorScreen *screen, int32 left, int32 right
+) {
     if (screen == NULL) {
         return;
     }
@@ -326,7 +330,8 @@ native_playlist_editor_screen_set_column_ratio(
 
 bool
 native_playlist_editor_screen_previous_column_available(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     NcMenu *playlists;
 
     if (screen == NULL) {
@@ -339,7 +344,8 @@ native_playlist_editor_screen_previous_column_available(
 
 bool
 native_playlist_editor_screen_next_column_available(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     NcMenu *content;
 
     if (screen == NULL) {
@@ -352,7 +358,8 @@ native_playlist_editor_screen_next_column_available(
 
 void
 native_playlist_editor_screen_previous_column(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     if (native_playlist_editor_screen_previous_column_available(screen)) {
         screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
         playlist_editor_update_menu_highlights(screen);
@@ -362,7 +369,8 @@ native_playlist_editor_screen_previous_column(
 
 void
 native_playlist_editor_screen_next_column(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     if (native_playlist_editor_screen_next_column_available(screen)) {
         screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT;
         playlist_editor_update_menu_highlights(screen);
@@ -372,7 +380,8 @@ native_playlist_editor_screen_next_column(
 
 bool
 native_playlist_editor_screen_load_playlists(
-    NativePlaylistEditorScreen *screen, NcmMpdPlaylistList *playlists) {
+    NativePlaylistEditorScreen *screen, NcmMpdPlaylistList *playlists
+) {
     NcmBuffer preserved;
     NcMenu *menu;
     bool had_preserved;
@@ -413,7 +422,8 @@ native_playlist_editor_screen_load_playlists(
 bool
 native_playlist_editor_screen_reload_playlists_from_mpd(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmError *error) {
+    NcmError *error
+) {
     NcmMpdPlaylistList playlists;
     bool ok;
 
@@ -436,7 +446,8 @@ native_playlist_editor_screen_reload_playlists_from_mpd(
 
 bool
 native_playlist_editor_screen_load_content(
-    NativePlaylistEditorScreen *screen, NcmMpdSongList *songs) {
+    NativePlaylistEditorScreen *screen, NcmMpdSongList *songs
+) {
     NcMenu *menu;
     NcmSong preserved_song;
     bool had_preserved_song;
@@ -473,7 +484,8 @@ native_playlist_editor_screen_load_content(
 bool
 native_playlist_editor_screen_reload_content_from_mpd(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmError *error) {
+    NcmError *error
+) {
     NcmMpdSongList songs;
     NcmPlaylist *playlist;
     bool ok;
@@ -498,7 +510,8 @@ native_playlist_editor_screen_reload_content_from_mpd(
 bool
 native_playlist_editor_screen_locate_playlist(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client,
-    char *path, int32 path_len, NcmError *error) {
+    char *path, int32 path_len, NcmError *error
+) {
     NcMenu *menu;
     int32 pos;
 
@@ -536,7 +549,8 @@ native_playlist_editor_screen_locate_playlist(
 bool
 native_playlist_editor_screen_locate_song(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmSong *song, NcmError *error) {
+    NcmSong *song, NcmError *error
+) {
     NcMenu *playlists;
     NcMenu *content;
     NcmSong current_song;
@@ -629,7 +643,8 @@ native_playlist_editor_screen_locate_song(
 
 bool
 native_playlist_editor_screen_current_playlist(
-    NativePlaylistEditorScreen *screen, NcmPlaylist *playlist) {
+    NativePlaylistEditorScreen *screen, NcmPlaylist *playlist
+) {
     NcmPlaylist *current;
 
     if ((screen == NULL) || (playlist == NULL)) {
@@ -644,13 +659,15 @@ native_playlist_editor_screen_current_playlist(
 
 bool
 native_playlist_editor_screen_current_song(
-    NativePlaylistEditorScreen *screen, NcmSong *song) {
+    NativePlaylistEditorScreen *screen, NcmSong *song
+) {
     return native_playlist_editor_screen_current_content_song(screen, song);
 }
 
 bool
 native_playlist_editor_screen_current_content_song(
-    NativePlaylistEditorScreen *screen, NcmSong *song) {
+    NativePlaylistEditorScreen *screen, NcmSong *song
+) {
     NcmSong *current;
 
     if ((screen == NULL) || (song == NULL)) {
@@ -664,7 +681,8 @@ native_playlist_editor_screen_current_content_song(
 
 int32
 native_playlist_editor_screen_selected_playlist_count(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     if (screen == NULL) {
         return 0;
     }
@@ -674,7 +692,8 @@ native_playlist_editor_screen_selected_playlist_count(
 
 bool
 native_playlist_editor_screen_selected_songs(
-    NativePlaylistEditorScreen *screen, NcmSongArray *songs) {
+    NativePlaylistEditorScreen *screen, NcmSongArray *songs
+) {
     if (songs) {
         ncm_song_array_clear(songs);
     }
@@ -693,7 +712,8 @@ native_playlist_editor_screen_selected_songs(
 bool
 native_playlist_editor_screen_apply_active_filter(
     NativePlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
-    uint32 regex_flags, NcmError *error) {
+    uint32 regex_flags, NcmError *error
+) {
     NcMenu *menu;
     NcmRegex *regex;
     NcmBuffer *constraint;
@@ -734,7 +754,8 @@ bool
 native_playlist_editor_screen_search_active(
     NativePlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, bool forward, bool wrap, bool skip_current,
-    NcmError *error) {
+    NcmError *error
+) {
     NcmBuffer *constraint;
     NcmRegex *regex;
     NcMenu *menu;
@@ -773,7 +794,8 @@ native_playlist_editor_screen_search_active(
 
 void
 native_playlist_editor_screen_request_playlists_update(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     if (screen == NULL) {
         return;
     }
@@ -784,7 +806,8 @@ native_playlist_editor_screen_request_playlists_update(
 
 void
 native_playlist_editor_screen_request_content_update(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     if (screen == NULL) {
         return;
     }
@@ -1181,7 +1204,8 @@ playlist_editor_content_matches_regex(NativePlaylistEditorScreen *screen,
 
 static bool
 playlist_editor_format_content_search_text(
-    NativePlaylistEditorScreen *screen, NcmSong *song, NcBuffer *buffer) {
+    NativePlaylistEditorScreen *screen, NcmSong *song, NcBuffer *buffer
+) {
     (void)screen;
     if ((song == NULL) || (buffer == NULL)) {
         return false;
@@ -1342,7 +1366,8 @@ playlist_editor_configure_menus(NativePlaylistEditorScreen *screen) {
 
 static void
 playlist_editor_update_menu_highlights(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     NcMenu *playlists;
     NcMenu *content;
     NcMenu *active;
@@ -1472,7 +1497,8 @@ playlist_editor_current_playlist_path(NativePlaylistEditorScreen *screen,
 
 static void
 playlist_editor_clear_playlist_filter(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     NcmBuffer path;
     bool has_path;
 
@@ -1495,7 +1521,8 @@ playlist_editor_clear_playlist_filter(
 
 static void
 playlist_editor_clear_content_filter(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     NcmSong song;
     bool has_song;
 
@@ -1518,7 +1545,8 @@ playlist_editor_clear_content_filter(
 static bool
 playlist_editor_find_playlist_position(
     NativePlaylistEditorScreen *screen, char *path, int32 path_len,
-    int32 *pos) {
+    int32 *pos
+) {
     NcMenu *menu;
 
     if ((screen == NULL) || (path == NULL) || (pos == NULL)) {
@@ -1541,7 +1569,8 @@ playlist_editor_find_playlist_position(
 
 static bool
 playlist_editor_highlight_content_position(
-    NativePlaylistEditorScreen *screen, int32 pos) {
+    NativePlaylistEditorScreen *screen, int32 pos
+) {
     NcMenu *menu;
 
     if (screen == NULL) {
@@ -1561,7 +1590,8 @@ playlist_editor_highlight_content_position(
 static int32
 playlist_editor_find_song_in_content_range(
     NativePlaylistEditorScreen *screen, NcmSong *song,
-    int32 first, int32 last) {
+    int32 first, int32 last
+) {
     NcMenu *menu;
 
     if ((screen == NULL) || (song == NULL)) {
@@ -1588,7 +1618,8 @@ playlist_editor_find_song_in_content_range(
 static bool
 playlist_editor_find_song_in_mpd_playlist(
     NcmMpdClient *client, NcmPlaylist *playlist, NcmSong *song,
-    int32 *song_index, NcmError *error) {
+    int32 *song_index, NcmError *error
+) {
     NcmMpdSongList songs;
     bool success;
 
@@ -1622,7 +1653,8 @@ playlist_editor_find_song_in_mpd_playlist(
 static bool
 playlist_editor_locate_song_in_playlist_range(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmSong *song, int32 first, int32 last, NcmError *error) {
+    NcmSong *song, int32 first, int32 last, NcmError *error
+) {
     NcMenu *menu;
 
     if (screen == NULL) {
@@ -1923,7 +1955,8 @@ playlist_editor_observe_current_playlist(NativePlaylistEditorScreen *screen) {
 
 static bool
 playlist_editor_displayed_playlist_is_current(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     char *path;
     int32 path_len;
 
@@ -2075,7 +2108,8 @@ playlist_editor_mouse_select_content(NativePlaylistEditorScreen *screen,
 
 static bool
 playlist_editor_mouse_load_current_playlist(
-    NativePlaylistEditorScreen *screen) {
+    NativePlaylistEditorScreen *screen
+) {
     NcmPlaylist *playlist;
     NcmError error;
     bool loaded;

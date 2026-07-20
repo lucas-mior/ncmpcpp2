@@ -1524,7 +1524,8 @@ bool
 ncm_mpd_connection_get_playlist_content_no_info(
     NcmMpdConnection *connection,
     char *path,
-    NcmMpdSongList *songs) {
+    NcmMpdSongList *songs
+) {
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
     }

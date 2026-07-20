@@ -1354,7 +1354,8 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
 
 void
 ncm_bindings_configuration_generate_defaults(
-    NcmBindingsConfiguration *bindings) {
+    NcmBindingsConfiguration *bindings
+) {
     NcmBinding binding;
 
     ncm_binding_init(&binding);

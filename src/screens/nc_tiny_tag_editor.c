@@ -85,7 +85,8 @@ static NcScreenCallbacks tiny_editor_callbacks = {
 void
 native_tiny_tag_editor_screen_init(
     NativeTinyTagEditorScreen *screen, int32 start_x, int32 width,
-    int32 main_start_y, int32 main_height, NcColor color, NcBorder border) {
+    int32 main_start_y, int32 main_height, NcColor color, NcBorder border
+) {
     NcMenuDisplayCallbacks display_callbacks = {0};
     NcMenu *menu;
 
@@ -154,7 +155,8 @@ native_tiny_tag_editor_screen_base(NativeTinyTagEditorScreen *screen) {
 
 void
 native_tiny_tag_editor_screen_set_hooks(
-    NativeTinyTagEditorScreen *screen, NativeTinyTagEditorHooks hooks) {
+    NativeTinyTagEditorScreen *screen, NativeTinyTagEditorHooks hooks
+) {
     if (screen == NULL) {
         return;
     }
@@ -173,7 +175,8 @@ native_tiny_tag_editor_screen_rows(NativeTinyTagEditorScreen *screen) {
 void
 native_tiny_tag_editor_screen_set_geometry(
     NativeTinyTagEditorScreen *screen, int32 start_x, int32 width,
-    int32 main_start_y, int32 main_height) {
+    int32 main_start_y, int32 main_height
+) {
     if (screen == NULL) {
         return;
     }
@@ -191,7 +194,8 @@ native_tiny_tag_editor_screen_set_geometry(
 
 bool
 native_tiny_tag_editor_screen_set_edited_song(
-    NativeTinyTagEditorScreen *screen, NcmSong *song) {
+    NativeTinyTagEditorScreen *screen, NcmSong *song
+) {
     NcmMutableSong edited;
 
     if ((screen == NULL) || (song == NULL)) {
@@ -217,7 +221,8 @@ enum NativeTinyTagEditorOpenResult
 native_tiny_tag_editor_screen_open_song(
     NativeTinyTagEditorScreen *screen, NcmSong *song,
     char *music_dir, int32 music_dir_len, char *tag_separator,
-    int32 tag_separator_len, bool show_duplicate_tags, NcmBuffer *path) {
+    int32 tag_separator_len, bool show_duplicate_tags, NcmBuffer *path
+) {
     NcmTaglibAudioProperties properties = {0};
     NcmTaglibFile file;
     bool extended_tags_supported;
@@ -307,7 +312,8 @@ native_tiny_tag_editor_screen_reload_rows(
     NativeTinyTagEditorScreen *screen,
     NcmTaglibAudioProperties *properties,
     bool extended_tags_supported, char *tag_separator,
-    int32 tag_separator_len, bool show_duplicate_tags) {
+    int32 tag_separator_len, bool show_duplicate_tags
+) {
     NcBuffer row;
     char channel_buffer[32];
     char duration_buffer[32];
@@ -459,7 +465,8 @@ native_tiny_tag_editor_screen_reload_rows(
 bool
 native_tiny_tag_editor_screen_set_tag_value(
     NativeTinyTagEditorScreen *screen, enum NcmTagsField field,
-    char *value, int32 value_len, char *separator, int32 separator_len) {
+    char *value, int32 value_len, char *separator, int32 separator_len
+) {
     if ((screen == NULL) || !screen->has_edited) {
         return false;
     }
@@ -469,7 +476,8 @@ native_tiny_tag_editor_screen_set_tag_value(
 
 bool
 native_tiny_tag_editor_screen_set_filename(
-    NativeTinyTagEditorScreen *screen, char *name, int32 name_len) {
+    NativeTinyTagEditorScreen *screen, char *name, int32 name_len
+) {
     if ((screen == NULL) || !screen->has_edited) {
         return false;
     }
@@ -478,7 +486,8 @@ native_tiny_tag_editor_screen_set_filename(
 
 bool
 native_tiny_tag_editor_screen_set_filename_stem(
-    NativeTinyTagEditorScreen *screen, char *stem, int32 stem_len) {
+    NativeTinyTagEditorScreen *screen, char *stem, int32 stem_len
+) {
     NcmStringView current_name;
     NcmBuffer new_name;
     int32 dot;
@@ -515,7 +524,8 @@ native_tiny_tag_editor_screen_set_filename_stem(
 
 bool
 native_tiny_tag_editor_screen_run_row(
-    NativeTinyTagEditorScreen *screen, int32 row) {
+    NativeTinyTagEditorScreen *screen, int32 row
+) {
     enum NativeTinyTagEditorPromptResult prompt_result;
     enum NcmTagsField field;
     NcmStringView initial;
@@ -655,7 +665,8 @@ native_tiny_tag_editor_screen_run_row(
 
 bool
 native_tiny_tag_editor_screen_run_current(
-    NativeTinyTagEditorScreen *screen) {
+    NativeTinyTagEditorScreen *screen
+) {
     if (!native_tiny_tag_editor_screen_action_runnable(screen)) {
         return false;
     }
@@ -665,7 +676,8 @@ native_tiny_tag_editor_screen_run_current(
 
 bool
 native_tiny_tag_editor_screen_action_runnable(
-    NativeTinyTagEditorScreen *screen) {
+    NativeTinyTagEditorScreen *screen
+) {
     NcMenu *menu;
     int32 row;
 
@@ -894,7 +906,8 @@ tiny_editor_current_row(NativeTinyTagEditorScreen *screen) {
 
 static void
 tiny_editor_status_message(
-    NativeTinyTagEditorScreen *screen, char *message, int32 message_len) {
+    NativeTinyTagEditorScreen *screen, char *message, int32 message_len
+) {
     if (screen->hooks.status_message && message
         && (message_len >= 0)) {
         screen->hooks.status_message(screen->hooks.user, message,
@@ -905,7 +918,8 @@ tiny_editor_status_message(
 
 static bool
 tiny_editor_replace_tag_row(
-    NativeTinyTagEditorScreen *screen, enum NcmTagsField field) {
+    NativeTinyTagEditorScreen *screen, enum NcmTagsField field
+) {
     NcBuffer row;
     NcMenu *menu;
     int32 row_index;
@@ -925,7 +939,8 @@ tiny_editor_replace_tag_row(
 
 static bool
 tiny_editor_replace_filename_row(
-    NativeTinyTagEditorScreen *screen) {
+    NativeTinyTagEditorScreen *screen
+) {
     NcmStringView name;
     NcBuffer row;
     NcMenu *menu;
@@ -1015,7 +1030,8 @@ static void
 tiny_editor_buffer_mutable_tag(
     NcBuffer *buffer, NcmMutableSong *song, enum NcmTagsField field,
     char *tag_separator, int32 tag_separator_len,
-    bool show_duplicate_tags) {
+    bool show_duplicate_tags
+) {
     NcmBuffer value;
     char *name;
 

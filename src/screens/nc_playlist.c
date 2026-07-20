@@ -543,7 +543,8 @@ native_playlist_screen_current_song(NativePlaylistScreen *screen,
 
 bool
 native_playlist_screen_update_current_mutable_song(
-    NativePlaylistScreen *screen, NcmMutableSong *song) {
+    NativePlaylistScreen *screen, NcmMutableSong *song
+) {
     NcmSong replacement;
     NcmSong *current;
     NcMenu *menu;
@@ -669,7 +670,8 @@ native_playlist_screen_selected_songs(NativePlaylistScreen *screen,
 static bool
 native_playlist_screen_find_sort_range(
     NativePlaylistScreen *screen, int32 *first_position,
-    int32 *last_position, int32 *start_position, NcmError *error) {
+    int32 *last_position, int32 *start_position, NcmError *error
+) {
     NcMenu *menu;
     NcmSong *song;
     int32 first;
@@ -765,7 +767,8 @@ native_playlist_screen_find_sort_range(
 
 bool
 native_playlist_screen_has_sortable_range(
-    NativePlaylistScreen *screen) {
+    NativePlaylistScreen *screen
+) {
     return native_playlist_screen_find_sort_range(
         screen, NULL, NULL, NULL, NULL);
 }
@@ -773,7 +776,8 @@ native_playlist_screen_has_sortable_range(
 bool
 native_playlist_screen_copy_sort_range(
     NativePlaylistScreen *screen, NcmSongArray *songs,
-    int32 *start_position, NcmError *error) {
+    int32 *start_position, NcmError *error
+) {
     NcmSongArray replacement;
     NcMenu *menu;
     NcmSong *song;
@@ -1305,7 +1309,8 @@ native_playlist_storage_menu(NativePlaylistScreen *screen) {
 
 static bool
 native_playlist_build_mutable_song(
-    NcmSong *replacement, NcmSong *current, NcmMutableSong *edited) {
+    NcmSong *replacement, NcmSong *current, NcmMutableSong *edited
+) {
     NcmStringView value;
     enum NcmTagsField field;
     enum mpd_tag_type type;

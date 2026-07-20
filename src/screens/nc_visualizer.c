@@ -448,7 +448,8 @@ visualizer_fft_reserve_bar_heights(NativeVisualizerScreen *screen,
 void
 native_visualizer_screen_init_data_source(
     NativeVisualizerScreen *screen, char *source_location,
-    int32 source_location_len) {
+    int32 source_location_len
+) {
     int32 colon;
 
     if (screen == NULL) {
@@ -485,7 +486,8 @@ native_visualizer_screen_init_data_source(
 
 bool
 native_visualizer_screen_open_data_source(
-    NativeVisualizerScreen *screen) {
+    NativeVisualizerScreen *screen
+) {
     char *location;
     char *port;
     int32 fd;
@@ -532,7 +534,8 @@ native_visualizer_screen_open_data_source(
 
 void
 native_visualizer_screen_close_data_source(
-    NativeVisualizerScreen *screen) {
+    NativeVisualizerScreen *screen
+) {
     int32 fd;
 
     if ((screen == NULL) || (screen->source_fd < 0)) {
@@ -550,7 +553,8 @@ native_visualizer_screen_close_data_source(
 
 int32
 native_visualizer_screen_drain_data_source(
-    NativeVisualizerScreen *screen) {
+    NativeVisualizerScreen *screen
+) {
     int32 buffer_size;
     int32 bytes_read;
     int32 total_read;
@@ -585,7 +589,8 @@ native_visualizer_screen_drain_data_source(
 
 bool
 native_visualizer_screen_find_output_id(
-    NativeVisualizerScreen *screen) {
+    NativeVisualizerScreen *screen
+) {
     NcmMpdOutputList outputs;
     NcmError error;
     bool found;
@@ -874,7 +879,8 @@ native_visualizer_screen_set_geometry(NativeVisualizerScreen *screen,
 
 void
 native_visualizer_screen_init_visualization(
-    NativeVisualizerScreen *screen) {
+    NativeVisualizerScreen *screen
+) {
     double samples_per_column;
     int32 rendered_samples;
     int32 incoming_samples;
@@ -971,7 +977,8 @@ native_visualizer_screen_clear(NativeVisualizerScreen *screen) {
 
 void
 native_visualizer_screen_reset_auto_scale_multiplier(
-    NativeVisualizerScreen *screen) {
+    NativeVisualizerScreen *screen
+) {
     screen->auto_scale_multiplier = 1.0;
     return;
 }

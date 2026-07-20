@@ -134,7 +134,8 @@ native_sort_playlist_dialog_set_geometry(NativeSortPlaylistDialog *dialog,
 
 void
 native_sort_playlist_dialog_populate_defaults(
-    NativeSortPlaylistDialog *dialog) {
+    NativeSortPlaylistDialog *dialog
+) {
     if (dialog == NULL) {
         return;
     }
@@ -207,7 +208,8 @@ native_sort_playlist_dialog_add_row(NativeSortPlaylistDialog *dialog,
 bool
 native_sort_playlist_dialog_open(
     NativeSortPlaylistDialog *dialog, NativePlaylistScreen *playlist,
-    NcmMpdClient *client, bool ignore_leading_the, NcmError *error) {
+    NcmMpdClient *client, bool ignore_leading_the, NcmError *error
+) {
     NcmSongArray songs;
     NcScreen *current;
     int32 start_position;
@@ -272,7 +274,8 @@ native_sort_playlist_dialog_open(
 
 bool
 native_sort_playlist_dialog_move_current_up(
-    NativeSortPlaylistDialog *dialog) {
+    NativeSortPlaylistDialog *dialog
+) {
     NcMenu *menu;
     int32 pos;
 
@@ -294,7 +297,8 @@ native_sort_playlist_dialog_move_current_up(
 
 bool
 native_sort_playlist_dialog_move_current_down(
-    NativeSortPlaylistDialog *dialog) {
+    NativeSortPlaylistDialog *dialog
+) {
     NcMenu *menu;
     int32 pos;
 
@@ -332,7 +336,8 @@ native_sort_playlist_dialog_run_current(NativeSortPlaylistDialog *dialog) {
 int32
 native_sort_playlist_dialog_get_order(
     NativeSortPlaylistDialog *dialog, enum NcmSongGetter *getters,
-    int32 getters_cap) {
+    int32 getters_cap
+) {
     NcMenu *menu;
     int32 len;
 
