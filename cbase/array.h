@@ -7,7 +7,7 @@
 #include "util.c"
 
 typedef struct GenericArrayHeader {
-    max_align_t alignment;
+    ldouble alignment;
     int32 count;
     int32 cap;
 } GenericArrayHeader;
