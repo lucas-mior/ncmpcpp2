@@ -219,11 +219,11 @@ ncm_playlist_sort_plan_build(
         return true;
     }
 
-    order = malloc2((int64)songs->len*SIZEOF(*order));
-    temporary = malloc2((int64)songs->len*SIZEOF(*temporary));
-    current = malloc2((int64)songs->len*SIZEOF(*current));
+    order = malloc2((int32)songs->len*SIZEOF(*order));
+    temporary = malloc2((int32)songs->len*SIZEOF(*temporary));
+    current = malloc2((int32)songs->len*SIZEOF(*current));
     replacement.items = malloc2(
-        (int64)(songs->len - 1)*SIZEOF(*replacement.items));
+        (int32)(songs->len - 1)*SIZEOF(*replacement.items));
     replacement.cap = songs->len - 1;
 
     for (int32 i = 0; i < songs->len; i += 1) {
@@ -263,9 +263,9 @@ ncm_playlist_sort_plan_build(
         }
     }
 
-    free2(current, (int64)songs->len*SIZEOF(*current));
-    free2(temporary, (int64)songs->len*SIZEOF(*temporary));
-    free2(order, (int64)songs->len*SIZEOF(*order));
+    free2(current, (int32)songs->len*SIZEOF(*current));
+    free2(temporary, (int32)songs->len*SIZEOF(*temporary));
+    free2(order, (int32)songs->len*SIZEOF(*order));
     ncm_playlist_sort_plan_destroy(plan);
     *plan = replacement;
     ncm_error_clear(error);

@@ -1183,10 +1183,10 @@ ncm_mpd_connection_get_stats(NcmMpdConnection *connection,
     out_stats->artists = (int32)mpd_stats_get_number_of_artists(stats);
     out_stats->albums = (int32)mpd_stats_get_number_of_albums(stats);
     out_stats->songs = (int32)mpd_stats_get_number_of_songs(stats);
-    out_stats->play_time = (int64)mpd_stats_get_play_time(stats);
-    out_stats->uptime = (int64)mpd_stats_get_uptime(stats);
-    out_stats->db_update_time = (int64)mpd_stats_get_db_update_time(stats);
-    out_stats->db_play_time = (int64)mpd_stats_get_db_play_time(stats);
+    out_stats->play_time = (int32)mpd_stats_get_play_time(stats);
+    out_stats->uptime = (int32)mpd_stats_get_uptime(stats);
+    out_stats->db_update_time = (int32)mpd_stats_get_db_update_time(stats);
+    out_stats->db_play_time = (int32)mpd_stats_get_db_play_time(stats);
 
     mpd_stats_free(stats);
     ok = ncm_mpd_connection_check_error(connection);

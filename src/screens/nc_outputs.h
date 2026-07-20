@@ -29,21 +29,21 @@ struct NcOutputsScreen {
     NcWindow window;
     NcMenu menu;
     NcOutputsHooks hooks;
-    int64 lines_scrolled;
+    int32 lines_scrolled;
     bool mouse_scroll_whole_page;
 };
 
 void nc_outputs_screen_init(NcOutputsScreen *screen,
                             NcOutputsHooks hooks,
-                            int64 start_x, int64 width,
-                            int64 main_start_y, int64 main_height,
+                            int32 start_x, int32 width,
+                            int32 main_start_y, int32 main_height,
                             NcColor color, NcBorder border,
-                            int64 lines_scrolled,
+                            int32 lines_scrolled,
                             bool mouse_scroll_whole_page);
 void nc_outputs_screen_set_geometry(NcOutputsScreen *screen,
-                                    int64 start_x, int64 width,
-                                    int64 main_start_y,
-                                    int64 main_height);
+                                    int32 start_x, int32 width,
+                                    int32 main_start_y,
+                                    int32 main_height);
 void nc_outputs_screen_set_highlight_prefix(NcOutputsScreen *screen,
                                             NcBuffer *buffer);
 void nc_outputs_screen_set_highlight_suffix(NcOutputsScreen *screen,
@@ -57,9 +57,9 @@ void nc_outputs_screen_add_output(NcOutputsScreen *screen,
                                   bool enabled);
 bool nc_outputs_screen_toggle_current(NcOutputsScreen *screen);
 NcScreen *nc_outputs_screen_base(NcOutputsScreen *screen);
-int64 nc_outputs_screen_start_x(NcOutputsScreen *screen);
-int64 nc_outputs_screen_start_y(NcOutputsScreen *screen);
-int64 nc_outputs_screen_width(NcOutputsScreen *screen);
-int64 nc_outputs_screen_height(NcOutputsScreen *screen);
+int32 nc_outputs_screen_start_x(NcOutputsScreen *screen);
+int32 nc_outputs_screen_start_y(NcOutputsScreen *screen);
+int32 nc_outputs_screen_width(NcOutputsScreen *screen);
+int32 nc_outputs_screen_height(NcOutputsScreen *screen);
 
 #endif /* NCMPCPP_NC_OUTPUTS_H */

@@ -22,10 +22,10 @@ typedef struct NativeSortPlaylistDialog {
     NcScreen *previous_screen;
     NcmMpdClient *client;
 
-    int64 start_x;
-    int64 start_y;
-    int64 width;
-    int64 height;
+    int32 start_x;
+    int32 start_y;
+    int32 width;
+    int32 height;
     uint32 start_position;
 
     bool ignore_leading_the;
@@ -33,8 +33,8 @@ typedef struct NativeSortPlaylistDialog {
 } NativeSortPlaylistDialog;
 
 void native_sort_playlist_dialog_init(NativeSortPlaylistDialog *dialog,
-                                      int64 start_x, int64 start_y,
-                                      int64 width, int64 height,
+                                      int32 start_x, int32 start_y,
+                                      int32 width, int32 height,
                                       NcColor color, NcBorder border);
 void native_sort_playlist_dialog_destroy(NativeSortPlaylistDialog *dialog);
 NcScreen *native_sort_playlist_dialog_base(
@@ -42,8 +42,8 @@ NcScreen *native_sort_playlist_dialog_base(
 NcEditorSortMenu *native_sort_playlist_dialog_menu(
     NativeSortPlaylistDialog *dialog);
 void native_sort_playlist_dialog_set_geometry(
-    NativeSortPlaylistDialog *dialog, int64 start_x, int64 start_y,
-    int64 width, int64 height);
+    NativeSortPlaylistDialog *dialog, int32 start_x, int32 start_y,
+    int32 width, int32 height);
 void native_sort_playlist_dialog_populate_defaults(
     NativeSortPlaylistDialog *dialog);
 bool native_sort_playlist_dialog_add_row(NativeSortPlaylistDialog *dialog,

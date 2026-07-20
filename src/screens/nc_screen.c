@@ -213,8 +213,8 @@ nc_screen_resize_params(NcScreen *screen) {
 }
 
 void
-nc_screen_get_resize_params(NcScreen *screen, int64 *x_offset,
-                            int64 *width) {
+nc_screen_get_resize_params(NcScreen *screen, int32 *x_offset,
+                            int32 *width) {
     NcScreenResizeParams params;
 
     params = nc_screen_resize_params(screen);
@@ -228,10 +228,9 @@ nc_screen_get_resize_params(NcScreen *screen, int64 *x_offset,
 }
 
 void
-nc_screen_draw_vertical_separator(int64 x) {
+nc_screen_draw_vertical_separator(int32 x) {
     color_set((int16)nc_color_pair_number(Config.main_color), NULL);
-    mvvline((int32)ui_state_main_start_y(), (int32)x, 0,
-            (int32)ui_state_main_height());
+    mvvline(ui_state_main_start_y(), x, 0, ui_state_main_height());
     standend();
     refresh();
     return;
@@ -354,7 +353,7 @@ nc_screen_registry_resize_params(NcScreenRegistry *registry,
     NcScreenResizeParams params;
     NcScreen *locked_screen;
     NcScreen *inactive_screen;
-    int64 locked_width;
+    int32 locked_width;
 
     params = nc_screen_resize_params(screen);
     if (registry == NULL) {
@@ -370,7 +369,7 @@ nc_screen_registry_resize_params(NcScreenRegistry *registry,
         return params;
     }
 
-    locked_width = (int64)(
+    locked_width = (int32)(
         (double)params.width*Config.locked_screen_width_part);
     if (locked_width < 0) {
         locked_width = 0;

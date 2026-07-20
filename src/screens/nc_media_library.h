@@ -129,11 +129,11 @@ typedef struct NativeMediaLibraryScreen {
     NcMediaLibraryTagRow observed_tag;
     NcMediaLibraryAlbumRow observed_album;
 
-    int64 start_x;
-    int64 width;
-    int64 main_start_y;
+    int32 start_x;
+    int32 width;
+    int32 main_start_y;
     int32 main_height;
-    int64 fetching_delay_ms;
+    int32 fetching_delay_ms;
     int32 window_timeout_ms;
 
     enum NativeMediaLibraryMode mode;
@@ -152,9 +152,9 @@ NativeMediaLibraryHooks native_media_library_mpd_hooks(
     NcmMpdClient *client);
 void native_media_library_screen_init(NativeMediaLibraryScreen *screen,
                                       NativeMediaLibraryHooks hooks,
-                                      int64 start_x, int64 width,
-                                      int64 main_start_y,
-                                      int64 main_height, NcColor color,
+                                      int32 start_x, int32 width,
+                                      int32 main_start_y,
+                                      int32 main_height, NcColor color,
                                       NcBorder border);
 void native_media_library_screen_destroy(NativeMediaLibraryScreen *screen);
 NcScreen *native_media_library_screen_base(NativeMediaLibraryScreen *screen);
@@ -163,8 +163,8 @@ NcMenu *native_media_library_screen_active_menu(
 NcWindow *native_media_library_screen_active_window(
     NativeMediaLibraryScreen *screen);
 void native_media_library_screen_set_geometry(
-    NativeMediaLibraryScreen *screen, int64 start_x, int64 width,
-    int64 main_start_y, int64 main_height);
+    NativeMediaLibraryScreen *screen, int32 start_x, int32 width,
+    int32 main_start_y, int32 main_height);
 
 int32 native_media_library_screen_column_count(
     NativeMediaLibraryScreen *screen);

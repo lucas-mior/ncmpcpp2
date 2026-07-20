@@ -26,8 +26,8 @@ static void playlist_scroll_lines(NcPlaylistScreen *screen,
 void
 nc_playlist_screen_init(NcPlaylistScreen *screen,
                         NcScreenCallbacks callbacks, void *user,
-                        NcMenu *menu, int64 start_x, int64 width,
-                        int64 main_start_y, int64 main_height) {
+                        NcMenu *menu, int32 start_x, int32 width,
+                        int32 main_start_y, int32 main_height) {
     nc_screen_init(&screen->screen, callbacks, user, NC_SCREEN_TYPE_PLAYLIST);
     nc_playlist_screen_set_menu(screen, menu);
     nc_playlist_screen_set_geometry(screen, start_x, width, main_start_y,
@@ -38,8 +38,8 @@ nc_playlist_screen_init(NcPlaylistScreen *screen,
 
 void
 nc_playlist_screen_set_geometry(NcPlaylistScreen *screen,
-                                int64 start_x, int64 width,
-                                int64 main_start_y, int64 main_height) {
+                                int32 start_x, int32 width,
+                                int32 main_start_y, int32 main_height) {
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
@@ -55,7 +55,7 @@ nc_playlist_screen_set_menu(NcPlaylistScreen *screen, NcMenu *menu) {
 
 void
 nc_playlist_screen_set_mouse_config(NcPlaylistScreen *screen,
-                                    int64 lines_scrolled,
+                                    int32 lines_scrolled,
                                     bool scroll_whole_page) {
     if (lines_scrolled < 1) {
         lines_scrolled = 1;
@@ -75,7 +75,7 @@ nc_playlist_screen_menu(NcPlaylistScreen *screen) {
     return screen->menu;
 }
 
-int64
+int32
 nc_playlist_screen_height(NcPlaylistScreen *screen) {
     return screen->main_height;
 }
@@ -158,7 +158,7 @@ nc_playlist_screen_mouse_button_pressed(NcPlaylistScreen *screen,
 
 static void
 playlist_scroll_lines(NcPlaylistScreen *screen, enum NcScroll where) {
-    for (int64 i = 0; i < screen->lines_scrolled; i += 1) {
+    for (int32 i = 0; i < screen->lines_scrolled; i += 1) {
         nc_playlist_screen_scroll(screen, where);
     }
     return;
@@ -234,9 +234,9 @@ typedef struct NativePlaylistPriorityContext {
 } NativePlaylistPriorityContext;
 
 void
-native_playlist_screen_init(NativePlaylistScreen *screen, int64 start_x,
-                            int64 width, int64 main_start_y,
-                            int64 main_height, NcColor color,
+native_playlist_screen_init(NativePlaylistScreen *screen, int32 start_x,
+                            int32 width, int32 main_start_y,
+                            int32 main_height, NcColor color,
                             NcBorder border) {
     NcScreenCallbacks callbacks;
 
@@ -391,8 +391,8 @@ native_playlist_screen_update_column_title(NativePlaylistScreen *screen) {
 
 void
 native_playlist_screen_set_geometry(NativePlaylistScreen *screen,
-                                    int64 start_x, int64 width,
-                                    int64 main_start_y, int64 main_height) {
+                                    int32 start_x, int32 width,
+                                    int32 main_start_y, int32 main_height) {
     if (screen == NULL) {
         return;
     }
@@ -406,7 +406,7 @@ native_playlist_screen_set_geometry(NativePlaylistScreen *screen,
 
 void
 native_playlist_screen_set_mouse_config(NativePlaylistScreen *screen,
-                                        int64 lines_scrolled,
+                                        int32 lines_scrolled,
                                         bool scroll_whole_page) {
     if (screen == NULL) {
         return;
@@ -510,7 +510,7 @@ native_playlist_screen_reload_from_mpd(NativePlaylistScreen *screen,
     return result;
 }
 
-int64
+int32
 native_playlist_screen_song_count(NativePlaylistScreen *screen) {
     if (screen == NULL) {
         return 0;
@@ -736,7 +736,7 @@ native_playlist_screen_find_sort_range(
     range_start = ncm_song_position(song);
 
     for (int32 i = first; i < last; i += 1) {
-        int64 expected_position;
+        int32 expected_position;
 
         song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i);
         if (song == NULL) {
@@ -1068,7 +1068,7 @@ native_playlist_update(NcScreen *screen) {
     delay = Config.playlist_disable_highlight_delay_seconds;
     if ((delay == 0)
         || (global_timer_elapsed_seconds(playlist->highlight_timer)
-            <= (int64)delay)) {
+            <= (int32)delay)) {
         return;
     }
 
@@ -1199,7 +1199,7 @@ native_playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
 
     nc_buffer_init(&buffer);
     if (Config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
-        int64 available_width;
+        int32 available_width;
         int32 list_width;
         bool use_colors;
 
@@ -1315,7 +1315,7 @@ native_playlist_build_mutable_song(
     NcmStringView value;
     enum NcmTagsField field;
     enum mpd_tag_type type;
-    int64 mtime;
+    int32 mtime;
     int32 duration;
 
     if ((replacement == NULL) || (current == NULL) || (edited == NULL)) {
@@ -1362,7 +1362,7 @@ native_playlist_build_mutable_song(
     }
     mtime = ncm_mutable_song_mtime(edited);
     if (mtime <= 0) {
-        mtime = (int64)ncm_song_mtime(current);
+        mtime = (int32)ncm_song_mtime(current);
     }
     ncm_song_set_duration(replacement, duration);
     ncm_song_set_position(replacement, ncm_song_position(current));
@@ -1397,7 +1397,7 @@ native_playlist_set_mutable_uri(NcmSong *song, NcmMutableSong *edited) {
 
 static void
 native_playlist_refresh_stats(NativePlaylistScreen *screen) {
-    int64 count;
+    int32 count;
 
     ncm_buffer_clear(&screen->title_cache);
     ncm_buffer_append(&screen->title_cache, STRLIT_ARGS("Playlist ("));

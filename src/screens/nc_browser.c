@@ -48,7 +48,7 @@ static void native_browser_apply_menu_config(NativeBrowserScreen *screen);
 static void native_browser_draw_item(NcMenu *menu, NcWindow *window,
                                      void *item, int32 pos, void *user);
 static void native_browser_print_buffer(NcWindow *window, NcBuffer *buffer);
-static int32 native_browser_i32_width(int64 width);
+static int32 native_browser_i32_width(int32 width);
 static void native_browser_mouse_scroll(NativeBrowserScreen *screen,
                                         enum NcScroll where);
 static bool native_browser_filter_item(NcMenu *menu, void *item,
@@ -60,8 +60,8 @@ static void native_browser_set_item_selected(void *item, bool selected,
 static bool native_browser_enter_item(NativeBrowserScreen *screen,
                                       NcmMpdItem *item);
 static void native_browser_sync_display_mode(NativeBrowserScreen *screen);
-static int64 native_browser_render_width(NativeBrowserScreen *screen,
-                                         int64 available_width,
+static int32 native_browser_render_width(NativeBrowserScreen *screen,
+                                         int32 available_width,
                                          bool selected, bool highlighted);
 static bool native_browser_item_matches(NativeBrowserScreen *screen,
                                         NcmMpdItem *item,
@@ -191,8 +191,8 @@ static NcScreenCallbacks native_browser_callbacks = {
 
 void
 native_browser_screen_init(NativeBrowserScreen *screen,
-                           int64 start_x, int64 width,
-                           int64 main_start_y, int64 main_height,
+                           int32 start_x, int32 width,
+                           int32 main_start_y, int32 main_height,
                            NcColor color, NcBorder border) {
     nc_browser_entry_menu_init(&screen->entries);
     nc_window_init(&screen->window, start_x, main_start_y, width,
@@ -274,9 +274,9 @@ native_browser_screen_window(NativeBrowserScreen *screen) {
 
 void
 native_browser_screen_set_geometry(NativeBrowserScreen *screen,
-                                   int64 start_x, int64 width,
-                                   int64 main_start_y,
-                                   int64 main_height) {
+                                   int32 start_x, int32 width,
+                                   int32 main_start_y,
+                                   int32 main_height) {
     screen->start_x = start_x;
     screen->width = (int32)width;
     screen->main_start_y = main_start_y;
@@ -289,7 +289,7 @@ native_browser_screen_set_geometry(NativeBrowserScreen *screen,
 
 void
 native_browser_screen_set_mouse_config(NativeBrowserScreen *screen,
-                                       int64 lines_scrolled,
+                                       int32 lines_scrolled,
                                        bool scroll_whole_page) {
     screen->lines_scrolled = lines_scrolled;
     screen->mouse_list_scroll_whole_page = scroll_whole_page;
@@ -464,7 +464,7 @@ void
 native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
     NcmBuffer scroll_buffer;
     NcmStringView directory;
-    int64 scroll_beginning;
+    int32 scroll_beginning;
     int32 scroll_width;
     int32 screen_width;
     char separator[] = " ** ";
@@ -1132,9 +1132,9 @@ native_browser_search_position(NcMenu *menu, int32 pos,
 bool
 native_browser_screen_render_item(NativeBrowserScreen *screen,
                                   NcBuffer *buffer, NcmMpdItem *item,
-                                  int64 available_width, bool selected,
+                                  int32 available_width, bool selected,
                                   bool highlighted) {
-    int64 render_width;
+    int32 render_width;
     int32 list_width;
     bool use_colors;
 
@@ -1321,8 +1321,8 @@ native_browser_switch_to(NcScreen *screen) {
 static void
 native_browser_resize(NcScreen *screen) {
     NativeBrowserScreen *browser;
-    int64 x;
-    int64 width;
+    int32 x;
+    int32 width;
 
     browser = native_browser_from_screen(screen);
     x = browser->start_x;
@@ -1489,7 +1489,7 @@ native_browser_draw_item(NcMenu *menu, NcWindow *window,
                          void *item, int32 pos, void *user) {
     NativeBrowserScreen *screen;
     NcBuffer buffer;
-    int64 available_width;
+    int32 available_width;
     bool highlighted;
     bool selected;
 
@@ -1541,7 +1541,7 @@ native_browser_print_buffer(NcWindow *window, NcBuffer *buffer) {
 }
 
 static int32
-native_browser_i32_width(int64 width) {
+native_browser_i32_width(int32 width) {
     if (width <= 0) {
         return 0;
     }
@@ -1554,7 +1554,7 @@ native_browser_i32_width(int64 width) {
 static void
 native_browser_mouse_scroll(NativeBrowserScreen *screen,
                             enum NcScroll where) {
-    for (int64 i = 0; i < screen->lines_scrolled; i += 1) {
+    for (int32 i = 0; i < screen->lines_scrolled; i += 1) {
         nc_menu_scroll_selectable(native_browser_screen_menu(screen),
                                   screen->main_height, where);
     }
@@ -1624,12 +1624,12 @@ native_browser_sync_display_mode(NativeBrowserScreen *screen) {
     return;
 }
 
-static int64
+static int32
 native_browser_render_width(NativeBrowserScreen *screen,
-                            int64 available_width,
+                            int32 available_width,
                             bool selected, bool highlighted) {
     NcMenu *menu;
-    int64 result;
+    int32 result;
 
     result = available_width;
     menu = native_browser_screen_menu(screen);
@@ -2040,8 +2040,8 @@ native_browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out,
         return false;
     }
 
-    out->size = (int64)statbuf.st_size;
-    out->mtime = (int64)statbuf.st_mtime;
+    out->size = (int32)statbuf.st_size;
+    out->mtime = (int32)statbuf.st_mtime;
     out->type = native_browser_local_mode_type(statbuf.st_mode);
     out->exists = true;
     ncm_error_clear(error);

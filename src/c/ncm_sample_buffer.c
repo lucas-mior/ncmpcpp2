@@ -107,7 +107,7 @@ ncm_sample_buffer_get(NcmSampleBuffer *buffer,
 
 int32
 ncm_sample_buffer_get_clamped(NcmSampleBuffer *buffer,
-                              int64 samples_len,
+                              int32 samples_len,
                               int16 *dest, int32 dest_len) {
     if (samples_len > buffer->len) {
         samples_len = buffer->len;

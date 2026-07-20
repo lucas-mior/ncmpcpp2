@@ -100,8 +100,8 @@ static void native_lyrics_display(NativeLyricsScreen *screen);
 void
 nc_lyrics_screen_init(NcLyricsScreen *screen,
                       NcScreenCallbacks callbacks, void *user,
-                      int64 start_x, int64 width,
-                      int64 main_start_y, int64 main_height) {
+                      int32 start_x, int32 width,
+                      int32 main_start_y, int32 main_height) {
     nc_scrollpad_screen_init(&screen->scrollpad_screen,
                              callbacks,
                              user,
@@ -122,8 +122,8 @@ nc_lyrics_screen_init(NcLyricsScreen *screen,
 
 void
 nc_lyrics_screen_set_geometry(NcLyricsScreen *screen,
-                              int64 start_x, int64 width,
-                              int64 main_start_y, int64 main_height) {
+                              int32 start_x, int32 width,
+                              int32 main_start_y, int32 main_height) {
     nc_scrollpad_screen_set_main_area(&screen->scrollpad_screen,
                                       start_x,
                                       width,
@@ -137,22 +137,22 @@ nc_lyrics_screen_base(NcLyricsScreen *screen) {
     return nc_scrollpad_screen_base(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_lyrics_screen_start_x(NcLyricsScreen *screen) {
     return nc_scrollpad_screen_start_x(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_lyrics_screen_start_y(NcLyricsScreen *screen) {
     return nc_scrollpad_screen_start_y(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_lyrics_screen_width(NcLyricsScreen *screen) {
     return nc_scrollpad_screen_width(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_lyrics_screen_height(NcLyricsScreen *screen) {
     return nc_scrollpad_screen_height(&screen->scrollpad_screen);
 }
@@ -177,14 +177,14 @@ nc_lyrics_screen_reset_scroll_begin(NcLyricsScreen *screen) {
     return;
 }
 
-int64
+int32
 nc_lyrics_screen_scroll_begin(NcLyricsScreen *screen) {
     return screen->scroll_begin;
 }
 
 void
 nc_lyrics_screen_set_scroll_begin(NcLyricsScreen *screen,
-                                  int64 scroll_begin) {
+                                  int32 scroll_begin) {
     screen->scroll_begin = scroll_begin;
     return;
 }
@@ -234,8 +234,8 @@ native_lyrics_callbacks(void) {
 
 void
 native_lyrics_screen_init(NativeLyricsScreen *screen,
-                          int64 start_x, int64 width,
-                          int64 main_start_y, int64 main_height,
+                          int32 start_x, int32 width,
+                          int32 main_start_y, int32 main_height,
                           NcColor color, NcBorder border,
                           int32 lines_scrolled) {
     nc_lyrics_screen_init(&screen->screen,
@@ -316,8 +316,8 @@ native_lyrics_screen_window(NativeLyricsScreen *screen) {
 
 void
 native_lyrics_screen_set_geometry(NativeLyricsScreen *screen,
-                                  int64 start_x, int64 width,
-                                  int64 main_start_y, int64 main_height) {
+                                  int32 start_x, int32 width,
+                                  int32 main_start_y, int32 main_height) {
     nc_lyrics_screen_set_geometry(&screen->screen,
                                   start_x,
                                   width,
@@ -749,8 +749,8 @@ lyrics_switch_to_callback(NcScreen *screen) {
 static void
 lyrics_resize_callback(NcScreen *screen) {
     NativeLyricsScreen *lyrics;
-    int64 x;
-    int64 width;
+    int32 x;
+    int32 width;
 
     lyrics = lyrics_from_screen(screen);
     nc_screen_switcher_get_resize_params(screen, &x, &width, true);
@@ -774,7 +774,7 @@ lyrics_title_callback(NcScreen *screen) {
     NativeLyricsScreen *lyrics;
     NcmBuffer song_title;
     NcmBuffer scroll_buffer;
-    int64 scroll_begin;
+    int32 scroll_begin;
     int32 scroll_width;
     char separator[] = " ** ";
 

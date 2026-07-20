@@ -25,10 +25,10 @@ static void nc_song_info_display(NcSongInfoScreen *song_info);
 void
 nc_song_info_screen_init(NcSongInfoScreen *screen,
                          NcSongInfoHooks hooks,
-                         int64 start_x, int64 width,
-                         int64 main_start_y, int64 main_height,
+                         int32 start_x, int32 width,
+                         int32 main_start_y, int32 main_height,
                          NcColor color, NcBorder border,
-                         int64 lines_scrolled) {
+                         int32 lines_scrolled) {
     screen->hooks = hooks;
     screen->lines_scrolled = lines_scrolled;
     nc_scrollpad_screen_init(&screen->scrollpad_screen,
@@ -60,9 +60,9 @@ nc_song_info_screen_init(NcSongInfoScreen *screen,
 
 void
 nc_song_info_screen_set_geometry(NcSongInfoScreen *screen,
-                                 int64 start_x, int64 width,
-                                 int64 main_start_y,
-                                 int64 main_height) {
+                                 int32 start_x, int32 width,
+                                 int32 main_start_y,
+                                 int32 main_height) {
     nc_scrollpad_screen_set_main_area(&screen->scrollpad_screen,
                                       start_x,
                                       width,
@@ -101,22 +101,22 @@ nc_song_info_screen_base(NcSongInfoScreen *screen) {
     return nc_scrollpad_screen_base(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_song_info_screen_start_x(NcSongInfoScreen *screen) {
     return nc_scrollpad_screen_start_x(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_song_info_screen_start_y(NcSongInfoScreen *screen) {
     return nc_scrollpad_screen_start_y(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_song_info_screen_width(NcSongInfoScreen *screen) {
     return nc_scrollpad_screen_width(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_song_info_screen_height(NcSongInfoScreen *screen) {
     return nc_scrollpad_screen_height(&screen->scrollpad_screen);
 }
@@ -244,7 +244,7 @@ nc_song_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     }
 
     if (do_scroll) {
-        for (int64 i = 0; i < song_info->lines_scrolled; i += 1) {
+        for (int32 i = 0; i < song_info->lines_scrolled; i += 1) {
             nc_scrollpad_scroll(&song_info->scrollpad,
                                 &song_info->window,
                                 where);

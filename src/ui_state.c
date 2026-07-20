@@ -5,13 +5,13 @@
 
 static NcWindow *header_window;
 static NcWindow *footer_window;
-static int64 screen_width;
-static int64 screen_height;
-static int64 main_start_y;
-static int64 main_height;
-static int64 header_height;
-static int64 footer_height;
-static int64 footer_start_y;
+static int32 screen_width;
+static int32 screen_height;
+static int32 main_start_y;
+static int32 main_height;
+static int32 header_height;
+static int32 footer_height;
+static int32 footer_start_y;
 static bool statusbar_visibility_baseline;
 
 void
@@ -37,68 +37,68 @@ ui_state_footer_window(void) {
 }
 
 void
-ui_state_set_screen_size(int64 width, int64 height) {
+ui_state_set_screen_size(int32 width, int32 height) {
     screen_width = width;
     screen_height = height;
     return;
 }
 
-int64
+int32
 ui_state_screen_width(void) {
     return screen_width;
 }
 
-int64
+int32
 ui_state_screen_height(void) {
     return screen_height;
 }
 
 void
-ui_state_set_main_geometry(int64 start_y, int64 height) {
+ui_state_set_main_geometry(int32 start_y, int32 height) {
     main_start_y = start_y;
     main_height = height;
     return;
 }
 
-int64
+int32
 ui_state_main_start_y(void) {
     return main_start_y;
 }
 
-int64
+int32
 ui_state_main_height(void) {
     return main_height;
 }
 
 void
-ui_state_set_header_height(int64 value) {
+ui_state_set_header_height(int32 value) {
     header_height = value;
     return;
 }
 
-int64
+int32
 ui_state_header_height(void) {
     return header_height;
 }
 
 void
-ui_state_set_footer_height(int64 value) {
+ui_state_set_footer_height(int32 value) {
     footer_height = value;
     return;
 }
 
-int64
+int32
 ui_state_footer_height(void) {
     return footer_height;
 }
 
 void
-ui_state_set_footer_start_y(int64 value) {
+ui_state_set_footer_start_y(int32 value) {
     footer_start_y = value;
     return;
 }
 
-int64
+int32
 ui_state_footer_start_y(void) {
     return footer_start_y;
 }

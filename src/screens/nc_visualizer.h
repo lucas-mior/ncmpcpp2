@@ -43,8 +43,8 @@ typedef struct NativeVisualizerDataSourceHooks {
     int32 (*open_fifo)(void *user, char *location, int32 location_len);
     int32 (*open_udp)(void *user, char *location, int32 location_len,
                       char *port, int32 port_len);
-    int64 (*read_source)(void *user, int32 fd, void *buffer,
-                         int64 buffer_size);
+    int32 (*read_source)(void *user, int32 fd, void *buffer,
+                         int32 buffer_size);
     void (*close_source)(void *user, int32 fd);
     bool (*get_outputs)(void *user, struct NcmMpdOutputList *outputs,
                         struct NcmError *error);
@@ -165,8 +165,8 @@ typedef struct NativeVisualizerScreen {
 } NativeVisualizerScreen;
 
 void native_visualizer_screen_init(NativeVisualizerScreen *screen,
-                                   int64 start_x, int64 start_y,
-                                   int64 width, int64 height,
+                                   int32 start_x, int32 start_y,
+                                   int32 width, int32 height,
                                    NcColor color, NcBorder border,
                                    NativeVisualizerScreenConfig *config);
 void native_visualizer_screen_destroy(NativeVisualizerScreen *screen);
@@ -179,15 +179,15 @@ bool native_visualizer_screen_open_data_source(
     NativeVisualizerScreen *screen);
 void native_visualizer_screen_close_data_source(
     NativeVisualizerScreen *screen);
-int64 native_visualizer_screen_drain_data_source(
+int32 native_visualizer_screen_drain_data_source(
     NativeVisualizerScreen *screen);
 bool native_visualizer_screen_find_output_id(
     NativeVisualizerScreen *screen);
 NcScreen *native_visualizer_screen_base(NativeVisualizerScreen *screen);
 NcWindow *native_visualizer_screen_window(NativeVisualizerScreen *screen);
 void native_visualizer_screen_set_geometry(NativeVisualizerScreen *screen,
-                                           int64 start_x, int64 start_y,
-                                           int64 width, int64 height);
+                                           int32 start_x, int32 start_y,
+                                           int32 width, int32 height);
 void native_visualizer_screen_init_visualization(
     NativeVisualizerScreen *screen);
 void native_visualizer_screen_clear(NativeVisualizerScreen *screen);
@@ -209,6 +209,6 @@ void native_visualizer_screen_apply_auto_scale(NativeVisualizerScreen *screen,
                                                int32 samples_len);
 bool native_visualizer_screen_draw(NativeVisualizerScreen *screen,
                                    int16 *samples, int32 samples_len);
-int16 native_visualizer_clamp_sample(int64 sample);
+int16 native_visualizer_clamp_sample(int32 sample);
 
 #endif /* NCMPCPP_NC_VISUALIZER_H */

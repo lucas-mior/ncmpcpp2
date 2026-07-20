@@ -49,9 +49,9 @@ ncm_compare_is_decimal_number(char *string, int32 string_len) {
     return true;
 }
 
-static int64
+static int32
 ncm_compare_parse_decimal(char *string, int32 string_len) {
-    int64 n;
+    int32 n;
 
     n = 0;
     for (int32 i = 0; i < string_len; i += 1) {
@@ -78,8 +78,8 @@ ncm_compare_locale_strings(char *left, int32 left_len,
                            bool ignore_the) {
     NcmBuffer left_buffer;
     NcmBuffer right_buffer;
-    int64 left_number;
-    int64 right_number;
+    int32 left_number;
+    int32 right_number;
     int32 left_offset;
     int32 right_offset;
     int32 result;

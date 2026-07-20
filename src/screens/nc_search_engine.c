@@ -157,8 +157,8 @@ static NcScreenCallbacks native_search_callbacks = {
 
 void
 native_search_engine_screen_init(NativeSearchEngineScreen *screen,
-                                 int64 start_x, int64 width,
-                                 int64 main_start_y, int64 main_height,
+                                 int32 start_x, int32 width,
+                                 int32 main_start_y, int32 main_height,
                                  NcColor color, NcBorder border) {
     NcMenu *menu;
 
@@ -244,11 +244,11 @@ native_search_engine_screen_window(NativeSearchEngineScreen *screen) {
 
 void
 native_search_engine_screen_set_geometry(NativeSearchEngineScreen *screen,
-                                         int64 start_x, int64 width,
-                                         int64 main_start_y,
-                                         int64 main_height) {
-    int64 window_height;
-    int64 window_start_y;
+                                         int32 start_x, int32 width,
+                                         int32 main_start_y,
+                                         int32 main_height) {
+    int32 window_height;
+    int32 window_start_y;
 
     screen->start_x = start_x;
     screen->width = width;
@@ -272,7 +272,7 @@ native_search_engine_screen_set_geometry(NativeSearchEngineScreen *screen,
 
 void
 native_search_engine_screen_set_mouse_config(
-    NativeSearchEngineScreen *screen, int64 lines_scrolled,
+    NativeSearchEngineScreen *screen, int32 lines_scrolled,
     bool whole_page) {
     if (screen == NULL) {
         return;
@@ -1187,8 +1187,8 @@ native_search_switch_to(NcScreen *screen) {
 static void
 native_search_resize(NcScreen *screen) {
     NativeSearchEngineScreen *search;
-    int64 start_x;
-    int64 width;
+    int32 start_x;
+    int32 width;
 
     search = native_search_from_screen(screen);
     nc_screen_get_resize_params(screen, &start_x, &width);
@@ -1657,7 +1657,7 @@ native_search_mouse_scroll(NativeSearchEngineScreen *screen,
                            enum NcScroll where) {
     NcMenu *menu;
     enum NcScroll effective;
-    int64 count;
+    int32 count;
 
     menu = native_search_engine_screen_menu(screen);
     effective = where;
@@ -1671,7 +1671,7 @@ native_search_mouse_scroll(NativeSearchEngineScreen *screen,
         }
     }
 
-    for (int64 i = 0; i < count; i += 1) {
+    for (int32 i = 0; i < count; i += 1) {
         nc_menu_scroll_selectable(menu, nc_window_height(&screen->window),
                                   effective);
     }

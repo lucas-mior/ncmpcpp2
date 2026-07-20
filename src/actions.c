@@ -2417,7 +2417,7 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
     int32 first;
     int32 second;
     int32 third;
-    int64 result;
+    int32 result;
     int32 first_colon;
     int32 second_colon;
     int32 number_len;
@@ -4254,7 +4254,7 @@ action_runtime_move_stored_playlist_items(NcmSongArray *songs, bool down) {
     NcmPlaylist playlist;
     NcmError error;
     int32 *positions;
-    int64 item_count;
+    int32 item_count;
     int32 count;
     bool success;
 
@@ -4278,7 +4278,7 @@ action_runtime_move_stored_playlist_items(NcmSongArray *songs, bool down) {
     success = ncm_mpd_client_start_command_list(&global_mpd, &error);
     for (int32 i = 0; success && (i < count); i += 1) {
         if (down) {
-            if ((int64)positions[i] + 1 >= item_count) {
+            if ((int32)positions[i] + 1 >= item_count) {
                 continue;
             }
             success = ncm_mpd_client_playlist_move(&global_mpd, playlist.path,

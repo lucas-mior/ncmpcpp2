@@ -50,8 +50,8 @@ nc_screen_switcher_resize_params(NcScreen *screen,
 }
 
 void
-nc_screen_switcher_get_resize_params(NcScreen *screen, int64 *x_offset,
-                                     int64 *width,
+nc_screen_switcher_get_resize_params(NcScreen *screen, int32 *x_offset,
+                                     int32 *width,
                                      bool adjust_locked_screen) {
     NcScreenResizeParams params;
 

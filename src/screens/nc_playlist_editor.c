@@ -59,7 +59,7 @@ static void playlist_editor_initialize_regexes(
     NativePlaylistEditorScreen *screen);
 static void playlist_editor_apply_geometry(
     NativePlaylistEditorScreen *screen);
-static int64 playlist_editor_separator_width(int64 width);
+static int32 playlist_editor_separator_width(int32 width);
 static void playlist_editor_configure_menus(
     NativePlaylistEditorScreen *screen);
 static void playlist_editor_update_menu_highlights(
@@ -70,7 +70,7 @@ static void playlist_editor_destroy_regexes(
     NativePlaylistEditorScreen *screen);
 static void playlist_editor_update_titles(
     NativePlaylistEditorScreen *screen, bool update_windows);
-static void playlist_editor_append_int64(NcmBuffer *buffer, int64 value);
+static void playlist_editor_append_int64(NcmBuffer *buffer, int32 value);
 static void playlist_editor_reset_content_timer(
     NativePlaylistEditorScreen *screen);
 static void playlist_editor_clear_playlist_filter(
@@ -158,12 +158,12 @@ typedef struct PlaylistEditorSearchContext {
 
 void
 native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
-                                   int64 start_x, int64 width,
-                                   int64 main_start_y, int64 main_height,
+                                   int32 start_x, int32 width,
+                                   int32 main_start_y, int32 main_height,
                                    NcColor color, NcBorder border) {
     NcScreenCallbacks callbacks;
-    int64 initial_left_width;
-    int64 initial_right_width;
+    int32 initial_left_width;
+    int32 initial_right_width;
 
     if (width < 1) {
         width = 1;
@@ -293,8 +293,8 @@ native_playlist_editor_screen_active_window(
 
 void
 native_playlist_editor_screen_set_geometry(
-    NativePlaylistEditorScreen *screen, int64 start_x, int64 width,
-    int64 main_start_y, int64 main_height) {
+    NativePlaylistEditorScreen *screen, int32 start_x, int32 width,
+    int32 main_start_y, int32 main_height) {
     if (screen == NULL) {
         return;
     }
@@ -308,7 +308,7 @@ native_playlist_editor_screen_set_geometry(
 
 void
 native_playlist_editor_screen_set_column_ratio(
-    NativePlaylistEditorScreen *screen, int64 left, int64 right) {
+    NativePlaylistEditorScreen *screen, int32 left, int32 right) {
     if (screen == NULL) {
         return;
     }
@@ -664,7 +664,7 @@ native_playlist_editor_screen_current_content_song(
     return ncm_song_copy(song, current);
 }
 
-int64
+int32
 native_playlist_editor_screen_selected_playlist_count(
     NativePlaylistEditorScreen *screen) {
     if (screen == NULL) {
@@ -1131,7 +1131,7 @@ playlist_editor_print_buffer(NcWindow *window, NcBuffer *buffer) {
 static int32
 playlist_editor_content_list_width(NcMenu *menu, NcWindow *window,
                                    int32 pos) {
-    int64 available_width;
+    int32 available_width;
 
     available_width = nc_window_width(window) - nc_window_get_x(window);
     if (nc_menu_position_is_selected(menu, pos)) {
@@ -1256,9 +1256,9 @@ playlist_editor_destroy_regexes(NativePlaylistEditorScreen *screen) {
 
 static void
 playlist_editor_apply_geometry(NativePlaylistEditorScreen *screen) {
-    int64 total;
-    int64 separator_width;
-    int64 left_width;
+    int32 total;
+    int32 separator_width;
+    int32 left_width;
 
     if (screen == NULL) {
         return;
@@ -1310,8 +1310,8 @@ playlist_editor_apply_geometry(NativePlaylistEditorScreen *screen) {
     return;
 }
 
-static int64
-playlist_editor_separator_width(int64 width) {
+static int32
+playlist_editor_separator_width(int32 width) {
     if (width >= 3) {
         return 1;
     }
@@ -1427,7 +1427,7 @@ playlist_editor_update_titles(NativePlaylistEditorScreen *screen,
 }
 
 static void
-playlist_editor_append_int64(NcmBuffer *buffer, int64 value) {
+playlist_editor_append_int64(NcmBuffer *buffer, int32 value) {
     char digits[32];
     int32 len;
 
@@ -2005,7 +2005,7 @@ playlist_editor_mouse_scroll(NativePlaylistEditorScreen *screen,
                              enum NcScroll where) {
     enum NcScroll effective;
     NcMenu *menu;
-    int64 count;
+    int32 count;
 
     if (screen == NULL) {
         return;
@@ -2028,7 +2028,7 @@ playlist_editor_mouse_scroll(NativePlaylistEditorScreen *screen,
     if (count < 1) {
         count = 1;
     }
-    for (int64 i = 0; i < count; i += 1) {
+    for (int32 i = 0; i < count; i += 1) {
         nc_menu_scroll_selectable(menu, screen->main_height, effective);
     }
     playlist_editor_finish_playlist_change(screen);
