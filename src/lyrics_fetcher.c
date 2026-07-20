@@ -565,11 +565,9 @@ lyrics_append_percent_byte(NcmBuffer *buffer, uint8 value) {
 static bool
 lyrics_append_slug(NcmBuffer *buffer, char *string, int32 string_len,
                    bool compact) {
-    bool pending_separator;
-    bool wrote;
+    bool pending_separator = false;
+    bool wrote = false;
 
-    pending_separator = false;
-    wrote = false;
     for (int32 i = 0; i < string_len; i += 1) {
         uint8 byte;
 
@@ -594,6 +592,7 @@ lyrics_append_slug(NcmBuffer *buffer, char *string, int32 string_len,
             pending_separator = true;
         }
     }
+
     return wrote;
 }
 
