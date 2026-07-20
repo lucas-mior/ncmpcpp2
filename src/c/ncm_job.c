@@ -319,6 +319,7 @@ ncm_job_queue_pending_count(NcmJobQueue *queue) {
     pthread_mutex_lock(&queue->mutex);
     result = queue->pending_len;
     pthread_mutex_unlock(&queue->mutex);
+
     return result;
 }
 
