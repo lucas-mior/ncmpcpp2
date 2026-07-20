@@ -54,10 +54,8 @@ ncm_conversion_trailing_space_only(char *cursor) {
 
 static bool
 ncm_conversion_is_negative_source(char *source) {
-    uint8 c;
-
     while (*source != '\0') {
-        c = (uint8)*source;
+        uint8 c = (uint8)*source;
         if (!isspace(c)) {
             break;
         }
