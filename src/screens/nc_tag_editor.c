@@ -1737,7 +1737,7 @@ tag_editor_can_run_current(NcScreen *screen) {
             return true;
         default:
             return nc_menu_highlight(menu)
-                   >= TAG_EDITOR_PARSER_ACTION_RECENT_START;
+                   >= (int32)TAG_EDITOR_PARSER_ACTION_RECENT_START;
         }
     case NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES:
         if (nc_menu_empty(nc_tag_row_menu_base(&editor->tags))) {
@@ -2347,7 +2347,7 @@ tag_editor_run_parser_action_current(NativeTagEditorScreen *screen) {
         native_tag_editor_screen_close_parser(screen);
         return true;
     }
-    if (choice >= TAG_EDITOR_PARSER_ACTION_RECENT_START) {
+    if (choice >= (int32)TAG_EDITOR_PARSER_ACTION_RECENT_START) {
         return tag_editor_apply_recent_pattern(screen, choice);
     }
     return false;
