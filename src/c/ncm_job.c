@@ -156,8 +156,10 @@ ncm_job_queue_init(NcmJobQueue *queue) {
     queue->completed_cap = 0;
     queue->started = false;
     queue->stopping = false;
+
     pthread_mutex_init(&queue->mutex, NULL);
     pthread_cond_init(&queue->cond, NULL);
+
     return;
 }
 
@@ -230,12 +232,14 @@ ncm_job_queue_dispatch_completed(NcmJobQueue *queue) {
     }
 
     pthread_mutex_lock(&queue->mutex);
+
     items = queue->completed;
     len = queue->completed_len;
     cap = queue->completed_cap;
     queue->completed = NULL;
     queue->completed_len = 0;
     queue->completed_cap = 0;
+
     pthread_mutex_unlock(&queue->mutex);
 
     for (int32 i = 0; i < len; i += 1) {
@@ -281,6 +285,7 @@ ncm_job_queue_destroy(NcmJobQueue *queue) {
     ncm_job_queue_stop(queue);
     ncm_job_array_clear(queue->pending, queue->pending_len);
     ncm_job_array_clear(queue->completed, queue->completed_len);
+
     if (queue->pending) {
         free2(queue->pending, queue->pending_cap*SIZEOF(*queue->pending));
     }
@@ -288,8 +293,10 @@ ncm_job_queue_destroy(NcmJobQueue *queue) {
         free2(queue->completed,
             queue->completed_cap*SIZEOF(*queue->completed));
     }
+
     pthread_cond_destroy(&queue->cond);
     pthread_mutex_destroy(&queue->mutex);
+
     queue->pending = NULL;
     queue->completed = NULL;
     queue->pending_len = 0;
@@ -297,6 +304,7 @@ ncm_job_queue_destroy(NcmJobQueue *queue) {
     queue->completed_len = 0;
     queue->completed_cap = 0;
     queue->stopping = false;
+
     return;
 }
 
@@ -311,6 +319,7 @@ ncm_job_queue_pending_count(NcmJobQueue *queue) {
     pthread_mutex_lock(&queue->mutex);
     result = queue->pending_len;
     pthread_mutex_unlock(&queue->mutex);
+
     return result;
 }
 
