@@ -73,7 +73,7 @@ typedef struct NativeSearchEngineScreen {
     int64 start_x;
     int64 width;
     int64 main_start_y;
-    int64 main_height;
+    int32 main_height;
     int64 lines_scrolled;
     int32 result_count;
 

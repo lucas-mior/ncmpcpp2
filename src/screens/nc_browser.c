@@ -46,7 +46,7 @@ static void native_browser_install_menu_callbacks(
     NativeBrowserScreen *screen);
 static void native_browser_apply_menu_config(NativeBrowserScreen *screen);
 static void native_browser_draw_item(NcMenu *menu, NcWindow *window,
-                                     void *item, int64 pos, void *user);
+                                     void *item, int32 pos, void *user);
 static void native_browser_print_buffer(NcWindow *window, NcBuffer *buffer);
 static int32 native_browser_i32_width(int64 width);
 static void native_browser_mouse_scroll(NativeBrowserScreen *screen,
@@ -54,7 +54,7 @@ static void native_browser_mouse_scroll(NativeBrowserScreen *screen,
 static bool native_browser_filter_item(NcMenu *menu, void *item,
                                        void *user);
 static void native_browser_activate_item(NcMenu *menu, void *item,
-                                         int64 pos, void *user);
+                                         int32 pos, void *user);
 static void native_browser_set_item_selected(void *item, bool selected,
                                              void *user);
 static bool native_browser_enter_item(NativeBrowserScreen *screen,
@@ -66,7 +66,7 @@ static int64 native_browser_render_width(NativeBrowserScreen *screen,
 static bool native_browser_item_matches(NativeBrowserScreen *screen,
                                         NcmMpdItem *item,
                                         NcmRegex *regex, bool filter);
-static bool native_browser_search_position(NcMenu *menu, int64 pos,
+static bool native_browser_search_position(NcMenu *menu, int32 pos,
                                            void *user);
 static bool native_browser_directory_is_root(char *directory,
                                              int32 directory_len);
@@ -210,9 +210,9 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     ncm_regex_init(&screen->filter_regex);
 
     screen->start_x = start_x;
-    screen->width = width;
+    screen->width = (int32)width;
     screen->main_start_y = main_start_y;
-    screen->main_height = main_height;
+    screen->main_height = (int32)main_height;
     screen->lines_scrolled = 1;
     screen->title_scroll_beginning = 0;
     screen->active_display_mode = Config.browser_display_mode;
@@ -278,9 +278,9 @@ native_browser_screen_set_geometry(NativeBrowserScreen *screen,
                                    int64 main_start_y,
                                    int64 main_height) {
     screen->start_x = start_x;
-    screen->width = width;
+    screen->width = (int32)width;
     screen->main_start_y = main_start_y;
-    screen->main_height = main_height;
+    screen->main_height = (int32)main_height;
     nc_window_move_to(&screen->window, start_x, main_start_y);
     nc_window_resize(&screen->window, width, main_height);
     native_browser_screen_update_column_title(screen);
@@ -331,8 +331,8 @@ native_browser_screen_add_item_move(NativeBrowserScreen *screen,
 bool
 native_browser_screen_sort(NativeBrowserScreen *screen) {
     NcMenu *menu;
-    int64 begin;
-    int64 count;
+    int32 begin;
+    int32 count;
 
     if (screen == NULL) {
         return false;
@@ -349,8 +349,8 @@ native_browser_screen_sort(NativeBrowserScreen *screen) {
         begin = 1;
     }
 
-    for (int64 i = begin + 1; i < count; i += 1) {
-        for (int64 j = i; j > begin; j -= 1) {
+    for (int32 i = begin + 1; i < count; i += 1) {
+        for (int32 j = i; j > begin; j -= 1) {
             NcmMpdItem *left;
             NcmMpdItem *right;
 
@@ -772,7 +772,7 @@ native_browser_screen_selected_songs(NativeBrowserScreen *screen,
             screen, songs, nc_menu_current_item(menu));
     }
 
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (!nc_menu_position_is_selected(menu, i)) {
             continue;
         }
@@ -789,7 +789,7 @@ native_browser_screen_delete_items(NativeBrowserScreen *screen,
                                    NcmMpdClient *client,
                                    NcmError *error) {
     NcMenu *menu;
-    int64 count;
+    int32 count;
     bool any_selected;
 
     if (screen == NULL) {
@@ -814,7 +814,7 @@ native_browser_screen_delete_items(NativeBrowserScreen *screen,
 
     any_selected = nc_menu_has_selected(menu);
     count = nc_menu_item_count(menu);
-    for (int64 i = 0; i < count; i += 1) {
+    for (int32 i = 0; i < count; i += 1) {
         NcmMpdItem *item;
 
         if (any_selected && !nc_menu_position_is_selected(menu, i)) {
@@ -1119,7 +1119,7 @@ native_browser_screen_search(NativeBrowserScreen *screen,
 }
 
 static bool
-native_browser_search_position(NcMenu *menu, int64 pos,
+native_browser_search_position(NcMenu *menu, int32 pos,
                                void *user) {
     NativeBrowserSearchContext *context;
 
@@ -1486,7 +1486,7 @@ native_browser_apply_menu_config(NativeBrowserScreen *screen) {
 
 static void
 native_browser_draw_item(NcMenu *menu, NcWindow *window,
-                         void *item, int64 pos, void *user) {
+                         void *item, int32 pos, void *user) {
     NativeBrowserScreen *screen;
     NcBuffer buffer;
     int64 available_width;
@@ -1575,7 +1575,7 @@ native_browser_filter_item(NcMenu *menu, void *item, void *user) {
 }
 
 static void
-native_browser_activate_item(NcMenu *menu, void *item, int64 pos,
+native_browser_activate_item(NcMenu *menu, void *item, int32 pos,
                              void *user) {
     NativeBrowserScreen *screen;
 
@@ -2483,7 +2483,7 @@ native_browser_highlight_song_item(NativeBrowserScreen *screen,
     }
 
     menu = native_browser_screen_menu(screen);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (!native_browser_item_song_equal(
                 nc_menu_active_item_at(menu, i), song)) {
             continue;
@@ -2757,7 +2757,7 @@ native_browser_highlight_last_directory(
     }
 
     menu = native_browser_screen_menu(screen);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmMpdItem *item;
 
         item = nc_menu_active_item_at(menu, i);

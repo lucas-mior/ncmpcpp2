@@ -29,9 +29,9 @@ typedef struct NativeBrowserScreen {
     NcmRegex filter_regex;
 
     int64 start_x;
-    int64 width;
+    int32 width;
     int64 main_start_y;
-    int64 main_height;
+    int32 main_height;
     int64 lines_scrolled;
     int64 title_scroll_beginning;
 

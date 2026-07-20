@@ -29,7 +29,7 @@ static void nc_outputs_item_construct(void *dest, void *user);
 static void nc_outputs_item_copy(void *dest, void *source, void *user);
 static void nc_outputs_item_destroy(void *item, void *user);
 static void nc_outputs_draw_item(NcMenu *menu, NcWindow *window,
-                                 void *item, int64 pos, void *user);
+                                 void *item, int32 pos, void *user);
 static void nc_outputs_display(NcOutputsScreen *outputs);
 static bool nc_outputs_mouse_scroll(NcOutputsScreen *outputs,
                                     MEVENT event);
@@ -408,7 +408,7 @@ nc_outputs_item_destroy(void *item, void *user) {
 
 static void
 nc_outputs_draw_item(NcMenu *menu, NcWindow *window,
-                     void *item, int64 pos, void *user) {
+                     void *item, int32 pos, void *user) {
     NcOutputsItem *output;
 
     (void)menu;
@@ -442,7 +442,7 @@ nc_outputs_display(NcOutputsScreen *outputs) {
 static bool
 nc_outputs_mouse_scroll(NcOutputsScreen *outputs, MEVENT event) {
     enum NcScroll scroll;
-    int64 count;
+    int32 count;
 
     if (event.bstate & BUTTON5_PRESSED) {
         scroll = NC_SCROLL_DOWN;
@@ -463,7 +463,7 @@ nc_outputs_mouse_scroll(NcOutputsScreen *outputs, MEVENT event) {
         count = outputs->lines_scrolled;
     }
 
-    for (int64 i = 0; i < count; i += 1) {
+    for (int32 i = 0; i < count; i += 1) {
         nc_menu_scroll_selectable(&outputs->menu,
                                   nc_window_height(&outputs->window),
                                   scroll);

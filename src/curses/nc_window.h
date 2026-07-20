@@ -167,8 +167,8 @@ typedef struct NcWindow {
 
     int64 start_x;
     int64 start_y;
-    int64 width;
-    int64 height;
+    int32 width;
+    int32 height;
     int32 title_len;
     int32 title_cap;
     int32 window_timeout;
@@ -220,8 +220,8 @@ void nc_window_init(NcWindow *window, int64 start_x, int64 start_y,
 void nc_window_destroy(NcWindow *window);
 
 WINDOW *nc_window_raw(NcWindow *window);
-int64 nc_window_width(NcWindow *window);
-int64 nc_window_height(NcWindow *window);
+int32 nc_window_width(NcWindow *window);
+int32 nc_window_height(NcWindow *window);
 int64 nc_window_start_x(NcWindow *window);
 int64 nc_window_start_y(NcWindow *window);
 MEVENT *nc_window_mouse_event(NcWindow *window);
