@@ -141,6 +141,7 @@ native_lastfm_callbacks(void) {
     callbacks.is_lockable = lastfm_is_lockable_callback;
     callbacks.is_mergable = lastfm_is_mergable_callback;
     callbacks.destroy = lastfm_destroy_callback;
+
     return callbacks;
 }
 
