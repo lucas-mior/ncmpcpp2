@@ -745,7 +745,8 @@ native_c_screen_sort_playlist_dialog_native(void) {
 
 static bool
 native_search_list_database_songs(
-    void *user, NcmSongArray *songs, NcmError *error) {
+    void *user, NcmSongArray *songs, NcmError *error
+) {
     NcmMpdSongList source;
     bool result;
 
@@ -770,7 +771,8 @@ native_search_list_database_songs(
 
 static bool
 native_search_snapshot_playlist(
-    void *user, NcmSongArray *songs, NcmError *error) {
+    void *user, NcmSongArray *songs, NcmError *error
+) {
     NativePlaylistScreen *playlist;
     NcSongMenu *song_menu;
     NcMenu *menu;
@@ -811,7 +813,8 @@ native_search_prompt_hook(char *text, void *user) {
 static enum NativeSearchEnginePromptResult
 native_search_prompt_constraint(
     void *user, char *label, int32 label_len, NcmBuffer *initial,
-    NcmBuffer *result) {
+    NcmBuffer *result
+) {
     NcmStatusbarScopedLock lock;
     enum NcPromptStatus status;
     NcPrompt prompt = {0};
@@ -869,7 +872,8 @@ native_search_prompt_constraint(
 
 static void
 native_search_status_message(
-    void *user, char *message, int32 message_len) {
+    void *user, char *message, int32 message_len
+) {
     (void)user;
     ncm_statusbar_print(Config.message_delay_time,
                         message, message_len);
@@ -878,7 +882,8 @@ native_search_status_message(
 
 static bool
 native_search_add_song(
-    void *user, NcmSong *song, bool play, NcmError *error) {
+    void *user, NcmSong *song, bool play, NcmError *error
+) {
     (void)user;
     (void)error;
     return ncm_action_add_song_to_playlist(song, play, -1);
@@ -886,7 +891,8 @@ native_search_add_song(
 
 static bool
 native_search_format_song(
-    void *user, NcmSong *song, NcmBuffer *text) {
+    void *user, NcmSong *song, NcmBuffer *text
+) {
     NativeSearchEngineScreen *screen;
 
     screen = user;
@@ -1137,7 +1143,8 @@ native_prompt_buffer(char *label, int32 label_len,
 static enum NativeTagEditorPromptResult
 native_tag_editor_prompt(
     void *user, char *label, int32 label_len, NcmStringView initial,
-    NcmBuffer *result) {
+    NcmBuffer *result
+) {
     enum NativePromptResult prompt_result;
 
     (void)user;
@@ -1154,7 +1161,8 @@ native_tag_editor_prompt(
 
 static bool
 native_tag_editor_confirm(
-    void *user, char *message, int32 message_len) {
+    void *user, char *message, int32 message_len
+) {
     NcmStatusbarScopedLock lock;
     NcWindow *window;
     char values[2];
@@ -1190,7 +1198,8 @@ native_tag_editor_confirm(
 
 static void
 native_tag_editor_status_message(
-    void *user, char *message, int32 message_len) {
+    void *user, char *message, int32 message_len
+) {
     (void)user;
     ncm_statusbar_print(Config.message_delay_time,
                         message, message_len);
@@ -1199,7 +1208,8 @@ native_tag_editor_status_message(
 
 static void
 native_tag_editor_update_directory(
-    void *user, char *directory, int32 directory_len) {
+    void *user, char *directory, int32 directory_len
+) {
     NcmError error = {0};
 
     (void)user;
@@ -1226,7 +1236,8 @@ native_tag_editor_hooks(void) {
 static enum NativeTinyTagEditorPromptResult
 native_tiny_tag_editor_prompt(
     void *user, char *label, int32 label_len, NcmStringView initial,
-    NcmBuffer *result) {
+    NcmBuffer *result
+) {
     enum NativePromptResult prompt_result;
 
     (void)user;
@@ -1243,7 +1254,8 @@ native_tiny_tag_editor_prompt(
 
 static void
 native_tiny_tag_editor_status_message(
-    void *user, char *message, int32 message_len) {
+    void *user, char *message, int32 message_len
+) {
     (void)user;
     ncm_statusbar_print(Config.message_delay_time,
                         message, message_len);
@@ -1252,7 +1264,8 @@ native_tiny_tag_editor_status_message(
 
 static void
 native_tiny_tag_editor_update_directory(
-    void *user, char *directory, int32 directory_len) {
+    void *user, char *directory, int32 directory_len
+) {
     NcmError error = {0};
 
     (void)user;
@@ -1267,7 +1280,8 @@ native_tiny_tag_editor_update_directory(
 
 static void
 native_tiny_tag_editor_update_playlist_song(
-    void *user, NcmMutableSong *song) {
+    void *user, NcmMutableSong *song
+) {
     (void)user;
     (void)native_playlist_screen_update_current_mutable_song(
         native_c_screen_playlist(), song);
