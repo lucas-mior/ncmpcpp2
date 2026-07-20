@@ -120,7 +120,7 @@ nc_outputs_screen_clear_outputs(NcOutputsScreen *screen) {
 
 void
 nc_outputs_screen_add_output(NcOutputsScreen *screen,
-                             uint32 id,
+                             int32 id,
                              char *name,
                              int32 name_len,
                              bool enabled) {
@@ -130,6 +130,7 @@ nc_outputs_screen_add_output(NcOutputsScreen *screen,
     item.name_len = name_len;
     item.id = id;
     item.enabled = enabled;
+
     nc_menu_add_item(&screen->menu, &item);
     return;
 }

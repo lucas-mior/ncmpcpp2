@@ -95,8 +95,8 @@ void native_playlist_screen_request_highlighting(NativePlaylistScreen *screen);
 void native_playlist_screen_clear(NativePlaylistScreen *screen);
 bool native_playlist_screen_reload_from_mpd(NativePlaylistScreen *screen,
                                             NcmMpdClient *client,
-                                            uint32 version,
-                                            uint32 playlist_length,
+                                            int32 version,
+                                            int32 playlist_length,
                                             NcmError *error);
 int64 native_playlist_screen_song_count(NativePlaylistScreen *screen);
 bool native_playlist_screen_empty(NativePlaylistScreen *screen);

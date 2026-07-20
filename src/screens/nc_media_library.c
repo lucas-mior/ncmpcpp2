@@ -1194,7 +1194,7 @@ native_library_add_two_column_albums(
         ncm_string_view_clear(&date);
     }
 
-    for (uint32 i = 0;
+    for (int32 i = 0;
          ncm_song_tag_view(song, primary_tag, i, &primary_value);
          i += 1) {
         char *tag;
@@ -1278,7 +1278,7 @@ native_media_library_tags_from_songs(
             native_media_library_tag_array_destroy(&replacement);
             return false;
         }
-        for (uint32 j = 0;
+        for (int32 j = 0;
              ncm_song_tag_view(song, primary_tag, j, &primary_value);
              j += 1) {
             int32 existing;
