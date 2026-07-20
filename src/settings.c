@@ -217,13 +217,6 @@ settings_invalid_value(NcmError *error, char *value, int32 value_len) {
     int32 len;
 
     len = SNPRINTF(message, "invalid value: %.*s", value_len, value);
-    if (len < 0) {
-        settings_error(error, STRLIT_ARGS("invalid value"));
-        return;
-    }
-    if (len >= SIZEOF(message)) {
-        len = SIZEOF(message) - 1;
-    }
     settings_error(error, message, len);
     return;
 }
