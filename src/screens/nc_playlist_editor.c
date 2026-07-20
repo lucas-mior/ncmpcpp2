@@ -582,7 +582,7 @@ native_playlist_editor_screen_locate_song(
         return playlist_editor_show_screen(screen);
     }
 
-    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+    ncm_statusbar_print_cstring(Config.message_delay_time,
                                 "Jumping to song...");
     success = playlist_editor_locate_song_in_playlist_range(
         screen, client, song, playlist_pos + 1,
@@ -623,7 +623,7 @@ native_playlist_editor_screen_locate_song(
         return playlist_editor_show_screen(screen);
     }
 
-    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+    ncm_statusbar_print_cstring(Config.message_delay_time,
                                 "Song was not found in playlists");
     return false;
 }
@@ -1847,7 +1847,7 @@ playlist_editor_report_error(char *context, int32 context_len,
                           strlen32(error->message));
     }
     ncm_buffer_append_byte(&message, '\0');
-    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+    ncm_statusbar_print_cstring(Config.message_delay_time,
                                 message.data);
     ncm_buffer_destroy(&message);
     return;
@@ -2134,7 +2134,7 @@ playlist_editor_print_playlist_loaded(NcmPlaylist *playlist) {
     ncm_buffer_append(&message, STRLIT_ARGS("Playlist \""));
     ncm_buffer_append(&message, playlist->path, playlist->path_len);
     ncm_buffer_append(&message, STRLIT_ARGS("\" loaded"));
-    ncm_statusbar_print((int32)Config.message_delay_time,
+    ncm_statusbar_print(Config.message_delay_time,
                         message.data, message.len);
     ncm_buffer_destroy(&message);
     return;
