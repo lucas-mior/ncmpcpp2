@@ -370,8 +370,7 @@ native_lyrics_screen_load_file(NativeLyricsScreen *screen,
         return false;
     }
 
-    file = fopen(filename, "rb");
-    if (file == NULL) {
+    if ((file = fopen(filename, "rb")) == NULL) {
         ncm_error_set(error, errno, STRLIT_ARGS("failed to open lyrics"));
         return false;
     }
@@ -407,8 +406,7 @@ native_lyrics_screen_save_file(NativeLyricsScreen *screen,
         return false;
     }
 
-    file = fopen(filename, "wb");
-    if (file == NULL) {
+    if ((file = fopen(filename, "wb")) == NULL) {
         ncm_error_set(error, errno, STRLIT_ARGS("failed to write lyrics"));
         return false;
     }
@@ -491,8 +489,7 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
     }
 
     nc_buffer_clear(&screen->display);
-    active_fetcher = native_lyrics_active_fetcher(screen, fetcher);
-    if (active_fetcher) {
+    if ((active_fetcher = native_lyrics_active_fetcher(screen, fetcher))) {
         native_lyrics_append_fetching(&screen->display, active_fetcher);
     } else if (Config.lyrics_fetchers.fetchers.len > 0) {
         native_lyrics_append_fetching(
@@ -738,8 +735,7 @@ lyrics_switch_to_callback(NcScreen *screen) {
     char *title;
 
     nc_lyrics_screen_reset_scroll_begin(&lyrics_from_screen(screen)->screen);
-    title = nc_screen_title(screen);
-    if (title == NULL) {
+    if ((title = nc_screen_title(screen)) == NULL) {
         title = "";
     }
     ncm_title_draw_header(title, strlen32(title));
@@ -1430,8 +1426,7 @@ native_lyrics_start_next_background(NativeLyricsScreen *screen,
     queued = NULL;
     win32_filename = Config.generate_win32_compatible_filenames;
     while (!found_job) {
-        queued = native_lyrics_dequeue_song(screen);
-        if (queued == NULL) {
+        if ((queued = native_lyrics_dequeue_song(screen)) == NULL) {
             ncm_buffer_destroy(&filename);
             ncm_error_clear(error);
             return true;

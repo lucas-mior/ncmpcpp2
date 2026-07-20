@@ -390,8 +390,7 @@ native_browser_screen_reload_from_mpd(NativeBrowserScreen *screen,
         result = ncm_mpd_client_get_directory_entries(
             client, screen->current_directory.data, &items, error);
         if (result) {
-            result = native_browser_load_mpd_items(screen, &items);
-            if (result) {
+            if ((result = native_browser_load_mpd_items(screen, &items))) {
                 native_browser_screen_clear_update_request(screen);
             }
             ncm_mpd_item_array_destroy(&items);
@@ -680,8 +679,8 @@ native_browser_screen_change_browse_mode(
         return false;
     }
 
-    hostname = ncm_mpd_client_hostname(client);
-    if ((hostname == NULL) || (hostname[0] != '/')) {
+    if (((hostname = ncm_mpd_client_hostname(client)) == NULL)
+        || (hostname[0] != '/')) {
         ncm_error_set(
             error, EINVAL,
             STRLIT_ARGS(
@@ -766,8 +765,7 @@ native_browser_screen_selected_songs(NativeBrowserScreen *screen,
         return true;
     }
 
-    any_selected = nc_menu_has_selected(menu);
-    if (!any_selected) {
+    if (!(any_selected = nc_menu_has_selected(menu))) {
         return native_browser_collect_item_songs(
             screen, songs, nc_menu_current_item(menu));
     }
@@ -2088,8 +2086,7 @@ native_browser_make_local_song(NcmSong *song, char *path, int32 path_len,
         return false;
     }
 
-    result = ncm_song_set_uri(song, path, path_len);
-    if (result) {
+    if ((result = ncm_song_set_uri(song, path, path_len))) {
         ncm_song_set_mtime(song, mtime);
     }
 
@@ -2097,11 +2094,9 @@ native_browser_make_local_song(NcmSong *song, char *path, int32 path_len,
     if (result) {
         pair.name = "file";
         pair.value = path;
-        mpd_song = mpd_song_begin(&pair);
-        if (mpd_song) {
+        if ((mpd_song = mpd_song_begin(&pair))) {
             if (ncm_tags_read_song(mpd_song)) {
-                result = ncm_song_from_mpd_song(song, mpd_song);
-                if (result) {
+                if ((result = ncm_song_from_mpd_song(song, mpd_song))) {
                     ncm_song_set_mtime(song, mtime);
                 }
             }
@@ -2375,8 +2370,7 @@ native_browser_current_directory_item_path(NativeBrowserScreen *screen,
         return false;
     }
 
-    item = native_browser_screen_current_item(screen);
-    if (item == NULL) {
+    if ((item = native_browser_screen_current_item(screen)) == NULL) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing browser item"));
         return false;
     }
@@ -2414,8 +2408,7 @@ native_browser_current_playlist_item_path(NativeBrowserScreen *screen,
         return false;
     }
 
-    item = native_browser_screen_current_item(screen);
-    if (item == NULL) {
+    if ((item = native_browser_screen_current_item(screen)) == NULL) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing browser item"));
         return false;
     }
@@ -2723,8 +2716,7 @@ native_browser_supported_extensions_add(NcmBufferArray *extensions,
 
     ncm_buffer_init(&buffer);
     if ((extension_len <= 0) || (extension[0] != '.')) {
-        result = ncm_buffer_set(&buffer, STRLIT_ARGS("."));
-        if (result) {
+        if ((result = ncm_buffer_set(&buffer, STRLIT_ARGS(".")))) {
             ncm_buffer_append(&buffer, extension, extension_len);
         }
     } else {
@@ -2760,8 +2752,7 @@ native_browser_highlight_last_directory(
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmMpdItem *item;
 
-        item = nc_menu_active_item_at(menu, i);
-        if (item == NULL) {
+        if ((item = nc_menu_active_item_at(menu, i)) == NULL) {
             continue;
         }
         if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_DIRECTORY) {

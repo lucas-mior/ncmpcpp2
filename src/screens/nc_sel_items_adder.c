@@ -236,8 +236,7 @@ native_selected_items_adder_screen_open(
         return false;
     }
 
-    current = nc_screen_switcher_current();
-    if ((current == NULL)
+    if (((current = nc_screen_switcher_current()) == NULL)
         || (current == native_selected_items_adder_screen_base(screen))) {
         ncm_error_set(error, EINVAL,
                       STRLIT_ARGS("missing previous screen"));
@@ -601,8 +600,7 @@ adder_can_run_current_callback(NcScreen *screen) {
     NativeSelectedItemsAdderScreen *adder;
     NcEditorActionRow *row;
 
-    adder = adder_from_screen(screen);
-    if ((adder == NULL) || !adder->ready) {
+    if (((adder = adder_from_screen(screen)) == NULL) || !adder->ready) {
         return false;
     }
     row = nc_menu_current_item(
@@ -649,8 +647,7 @@ static char *
 adder_title_callback(NcScreen *screen) {
     NativeSelectedItemsAdderScreen *adder;
 
-    adder = adder_from_screen(screen);
-    if (adder && adder->previous_screen) {
+    if ((adder = adder_from_screen(screen)) && adder->previous_screen) {
         return nc_screen_title(adder->previous_screen);
     }
     return "Add selected items";
@@ -957,8 +954,7 @@ adder_action_new_playlist(void *user) {
     input = NULL;
     prompt_status = NC_PROMPT_ABORTED;
     ncm_statusbar_scoped_lock_init(&lock);
-    window = ncm_statusbar_put();
-    if (window) {
+    if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window,
                              STRLIT_ARGS("Save playlist as: "));
         prompt = (NcPrompt){0};
@@ -1133,8 +1129,7 @@ adder_add_action_row(NcEditorActionMenu *menu, char *label,
     bool ok;
 
     nc_editor_action_row_init(&row);
-    ok = adder_action_row_set(&row, label, label_len, run, user);
-    if (ok) {
+    if ((ok = adder_action_row_set(&row, label, label_len, run, user))) {
         nc_editor_action_menu_add(menu, &row);
     }
     nc_editor_action_row_destroy(&row);

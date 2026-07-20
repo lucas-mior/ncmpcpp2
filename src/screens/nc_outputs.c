@@ -140,8 +140,7 @@ nc_outputs_screen_toggle_current(NcOutputsScreen *screen) {
     NcOutputsItem *output;
     bool result;
 
-    output = nc_menu_current_item(&screen->menu);
-    if (output == NULL) {
+    if ((output = nc_menu_current_item(&screen->menu)) == NULL) {
         return false;
     }
     if (screen->hooks.toggle_output == NULL) {

@@ -240,8 +240,7 @@ ncm_format_append_group_or_single(NcmFormatExprList *list,
     NcmFormatExpr *expr;
 
     if (source->len == 1) {
-        expr = ncm_format_expr_list_append(list);
-        if (expr == NULL) {
+        if ((expr = ncm_format_expr_list_append(list)) == NULL) {
             return false;
         }
         *expr = source->items[0];
@@ -251,8 +250,7 @@ ncm_format_append_group_or_single(NcmFormatExprList *list,
         return true;
     }
 
-    expr = ncm_format_expr_list_append(list);
-    if (expr == NULL) {
+    if ((expr = ncm_format_expr_list_append(list)) == NULL) {
         return false;
     }
     expr->type = NCM_FORMAT_EXPR_GROUP;
@@ -424,8 +422,7 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
         }
     }
 
-    first = ncm_format_expr_list_append(&ast->root);
-    if (first == NULL) {
+    if ((first = ncm_format_expr_list_append(&ast->root)) == NULL) {
         return false;
     }
     first->type = NCM_FORMAT_EXPR_FIRST_OF;
@@ -434,8 +431,7 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
     for (int32 i = 0; i < types_len; i += 1) {
         NcmFormatExpr *tag;
 
-        tag = ncm_format_expr_list_append(&first->value.list);
-        if (tag == NULL) {
+        if ((tag = ncm_format_expr_list_append(&first->value.list)) == NULL) {
             return false;
         }
         tag->type = NCM_FORMAT_EXPR_SONG_TAG;
@@ -455,8 +451,7 @@ ncm_format_ast_append_first_of_getters(NcmFormatAst *ast,
         return true;
     }
 
-    first = ncm_format_expr_list_append(&ast->root);
-    if (first == NULL) {
+    if ((first = ncm_format_expr_list_append(&ast->root)) == NULL) {
         return false;
     }
     first->type = NCM_FORMAT_EXPR_FIRST_OF;
@@ -465,8 +460,7 @@ ncm_format_ast_append_first_of_getters(NcmFormatAst *ast,
     for (int32 i = 0; i < getters_len; i += 1) {
         NcmFormatExpr *tag;
 
-        tag = ncm_format_expr_list_append(&first->value.list);
-        if (tag == NULL) {
+        if ((tag = ncm_format_expr_list_append(&first->value.list)) == NULL) {
             return false;
         }
         tag->type = NCM_FORMAT_EXPR_SONG_TAG;
@@ -510,8 +504,7 @@ ncm_format_parse_dollar(NcmFormatExprList *out, char *data,
     }
 
     if (data[i] == '$') {
-        expr = ncm_format_expr_list_append(out);
-        if (expr == NULL) {
+        if ((expr = ncm_format_expr_list_append(out)) == NULL) {
             return false;
         }
         expr->type = NCM_FORMAT_EXPR_TEXT;
@@ -520,8 +513,7 @@ ncm_format_parse_dollar(NcmFormatExprList *out, char *data,
         return true;
     }
 
-    expr = ncm_format_expr_list_append(out);
-    if (expr == NULL) {
+    if ((expr = ncm_format_expr_list_append(out)) == NULL) {
         return false;
     }
 
@@ -619,8 +611,7 @@ ncm_format_parse_percent(NcmFormatExprList *out, char *data,
     }
 
     if (data[i] == '%') {
-        expr = ncm_format_expr_list_append(out);
-        if (expr == NULL) {
+        if ((expr = ncm_format_expr_list_append(out)) == NULL) {
             return false;
         }
         expr->type = NCM_FORMAT_EXPR_TEXT;
@@ -651,8 +642,7 @@ ncm_format_parse_percent(NcmFormatExprList *out, char *data,
         return false;
     }
 
-    expr = ncm_format_expr_list_append(out);
-    if (expr == NULL) {
+    if ((expr = ncm_format_expr_list_append(out)) == NULL) {
         return false;
     }
     expr->type = NCM_FORMAT_EXPR_SONG_TAG;
@@ -670,8 +660,7 @@ ncm_format_parse_first_of(NcmFormatExprList *out, char *data,
     bool done;
     int32 i;
 
-    first = ncm_format_expr_list_append(out);
-    if (first == NULL) {
+    if ((first = ncm_format_expr_list_append(out)) == NULL) {
         return false;
     }
     first->type = NCM_FORMAT_EXPR_FIRST_OF;

@@ -20,8 +20,7 @@ ncm_path_last_index_of(char *path, int32 path_len, char needle) {
         return -1;
     }
 
-    found = memrchr64(path, needle, path_len);
-    if (found == NULL) {
+    if ((found = memrchr64(path, needle, path_len)) == NULL) {
         return -1;
     }
 
@@ -58,8 +57,7 @@ ncm_path_expand_home(NcmBuffer *path, NcmError *error) {
         return true;
     }
 
-    home = getenv("HOME");
-    if ((home == NULL) || (home[0] == '\0')) {
+    if (((home = getenv("HOME")) == NULL) || (home[0] == '\0')) {
         ncm_error_set(error, ENOENT,
                       STRLIT_ARGS("HOME environment variable is not set"));
         return false;

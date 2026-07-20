@@ -49,8 +49,7 @@ ncm_song_format_numeric_tag_prefix(char *buffer, int32 buffer_cap,
     }
 
     out = 0;
-    add_zero = ncm_song_needs_numeric_zero(tag, tag_len);
-    if (add_zero) {
+    if ((add_zero = ncm_song_needs_numeric_zero(tag, tag_len))) {
         if (buffer && (out + 1 < buffer_cap)) {
             buffer[out] = '0';
         }
@@ -151,8 +150,7 @@ ncm_song_load_mpd_tag(NcmSong *song, struct mpd_song *source,
     char *value;
 
     for (uint32 i = 0; ; i += 1) {
-        value = (char *)mpd_song_get_tag(source, type, i);
-        if (value == NULL) {
+        if ((value = (char *)mpd_song_get_tag(source, type, i)) == NULL) {
             break;
         }
         if (!ncm_song_add_tag(song, type, value,
@@ -276,8 +274,7 @@ ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source) {
         return false;
     }
 
-    uri = (char *)mpd_song_get_uri(source);
-    if (uri == NULL) {
+    if ((uri = (char *)mpd_song_get_uri(source)) == NULL) {
         return false;
     }
 
