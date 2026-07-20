@@ -5694,6 +5694,7 @@ action_runtime_replay_gain_mode_name(enum NcmMpdReplayGainMode mode) {
         return "track";
     case NCM_MPD_REPLAY_GAIN_ALBUM:
         return "album";
+    case NCM_MPD_REPLAY_GAIN_LAST:
     default:
         break;
     }
@@ -5820,6 +5821,7 @@ ncm_action_edit_song(NcmSong *song) {
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,
                                     "Couldn't prepare tiny tag editor");
         break;
+    case NATIVE_TINY_TAG_EDITOR_OPEN_LAST:
     default:
         break;
     }
