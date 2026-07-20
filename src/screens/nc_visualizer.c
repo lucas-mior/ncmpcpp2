@@ -1343,21 +1343,17 @@ visualizer_draw_ellipse_stereo(NativeVisualizerScreen *screen,
         int32 y;
 
         if (left[i] < 0) {
-            x = (int32)((double)left[i]/32768.0
-                        *(double)left_half_width);
+            x = (int32)((double)left[i]/32768.0 *(double)left_half_width);
         } else {
-            x = (int32)((double)left[i]/32768.0
-                        *(double)right_half_width);
+            x = (int32)((double)left[i]/32768.0 *(double)right_half_width);
         }
         if (right[i] < 0) {
-            y = (int32)((double)right[i]/32768.0
-                        *(double)top_half_height);
+            y = (int32)((double)right[i]/32768.0 *(double)top_half_height);
         } else {
-            y = (int32)((double)right[i]/32768.0
-                        *(double)bottom_half_height);
+            y = (int32)((double)right[i]/32768.0 *(double)bottom_half_height);
         }
-        distance = sqrt((double)x*(double)x
-                        + 4.0*(double)y*(double)y);
+        distance = sqrt((double)x*(double)x + 4.0*(double)y*(double)y);
+
         visualizer_draw_character(
             screen, left_half_width + x, top_half_height + y,
             visualizer_color(screen, distance, radius, true),
