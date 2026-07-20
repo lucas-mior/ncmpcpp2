@@ -225,6 +225,7 @@ native_lyrics_callbacks(void) {
     callbacks.is_lockable = lyrics_is_lockable_callback;
     callbacks.is_mergable = lyrics_is_mergable_callback;
     callbacks.destroy = lyrics_destroy_callback;
+
     return callbacks;
 }
 
