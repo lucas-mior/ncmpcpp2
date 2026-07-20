@@ -88,15 +88,14 @@ ncm_conversion_set_parse_error(NcmError *error, char *source,
 }
 
 static void
-ncm_conversion_set_u64_bounds_error(NcmError *error, uint64 value,
-                                    uint64 lbound, uint64 ubound) {
+ncm_conversion_set_i64_bounds_error(NcmError *error, int64 value,
+                                    int64 lbound, int64 ubound) {
     char message[256];
     int32 len;
 
     len = SNPRINTF(message,
-                   "value is out of bounds ([%" PRIu64 ", %" PRIu64
-                   "] expected, %" PRIu64 " given)",
-                   lbound, ubound, value);
+                   "value is out of bounds ([%lld, %lld] expected, %lld given)",
+                   (llong)lbound, (llong)ubound, (llong)value);
     if (len < 0) {
         ncm_error_set(error, ERANGE, STRLIT_ARGS("value is out of bounds"));
         return;
@@ -262,7 +261,7 @@ bool
 ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound,
                      NcmError *error) {
     if ((value < lbound) || (value > ubound)) {
-        ncm_conversion_set_u64_bounds_error(error, value, lbound, ubound);
+        ncm_conversion_set_i64_bounds_error(error, value, lbound, ubound);
         return false;
     }
 

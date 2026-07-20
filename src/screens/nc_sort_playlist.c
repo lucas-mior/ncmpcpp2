@@ -246,6 +246,7 @@ native_sort_playlist_dialog_open(
     sort_dialog_apply_geometry(dialog);
 
     ncm_song_array_destroy(&dialog->songs);
+
     dialog->songs = songs;
     dialog->playlist = playlist;
     dialog->previous_screen = current;

@@ -26,7 +26,7 @@ typedef struct NativeSortPlaylistDialog {
     int32 start_y;
     int32 width;
     int32 height;
-    uint32 start_position;
+    int32 start_position;
 
     bool ignore_leading_the;
     bool ready;
