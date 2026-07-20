@@ -846,44 +846,52 @@ static bool
 configuration_test_lyrics_fetchers(NcmError *error) {
     ConfigurationLyricsFetcherTest tests[] = {
         {
-            .name = "justsomelyrics",
-            .artist = "rihanna",
-            .title = "umbrella",
-            .name_len = STRLIT_LEN("justsomelyrics"),
-            .artist_len = STRLIT_LEN("rihanna"),
-            .title_len = STRLIT_LEN("umbrella"),
+            .name = "azlyrics",
+            .artist = "luis fonsi",
+            .title = "despacito",
+            .name_len = STRLIT_LEN("azlyrics"),
+            .artist_len = STRLIT_LEN("luis fonsi"),
+            .title_len = STRLIT_LEN("despacito"),
         },
         {
-            .name = "jahlyrics",
-            .artist = "sean kingston",
-            .title = "dry your eyes",
-            .name_len = STRLIT_LEN("jahlyrics"),
-            .artist_len = STRLIT_LEN("sean kingston"),
-            .title_len = STRLIT_LEN("dry your eyes"),
+            .name = "genius",
+            .artist = "luis fonsi",
+            .title = "despacito",
+            .name_len = STRLIT_LEN("genius"),
+            .artist_len = STRLIT_LEN("luis fonsi"),
+            .title_len = STRLIT_LEN("despacito"),
         },
         {
-            .name = "plyrics",
-            .artist = "rihanna",
-            .title = "umbrella",
-            .name_len = STRLIT_LEN("plyrics"),
-            .artist_len = STRLIT_LEN("rihanna"),
-            .title_len = STRLIT_LEN("umbrella"),
+            .name = "letras",
+            .artist = "luis fonsi",
+            .title = "despacito",
+            .name_len = STRLIT_LEN("letras"),
+            .artist_len = STRLIT_LEN("luis fonsi"),
+            .title_len = STRLIT_LEN("despacito"),
+        },
+        {
+            .name = "musixmatch",
+            .artist = "luis fonsi",
+            .title = "despacito",
+            .name_len = STRLIT_LEN("musixmatch"),
+            .artist_len = STRLIT_LEN("luis fonsi"),
+            .title_len = STRLIT_LEN("despacito"),
         },
         {
             .name = "tekstowo",
-            .artist = "rihanna",
-            .title = "umbrella",
+            .artist = "luis fonsi",
+            .title = "despacito",
             .name_len = STRLIT_LEN("tekstowo"),
-            .artist_len = STRLIT_LEN("rihanna"),
-            .title_len = STRLIT_LEN("umbrella"),
+            .artist_len = STRLIT_LEN("luis fonsi"),
+            .title_len = STRLIT_LEN("despacito"),
         },
         {
-            .name = "zeneszoveg",
-            .artist = "rihanna",
-            .title = "umbrella",
-            .name_len = STRLIT_LEN("zeneszoveg"),
-            .artist_len = STRLIT_LEN("rihanna"),
-            .title_len = STRLIT_LEN("umbrella"),
+            .name = "vagalume",
+            .artist = "luis fonsi",
+            .title = "despacito",
+            .name_len = STRLIT_LEN("vagalume"),
+            .artist_len = STRLIT_LEN("luis fonsi"),
+            .title_len = STRLIT_LEN("despacito"),
         },
     };
     bool ok;
@@ -906,7 +914,7 @@ configuration_test_lyrics_fetchers(NcmError *error) {
             fflush(stdout);
             (void)ncm_lyrics_fetcher_fetch(&fetcher, &result, tests[i].artist,
                                            tests[i].artist_len, tests[i].title,
-                                           tests[i].title_len, NULL);
+                                           tests[i].title_len);
             if (result.success) {
                 printf("ok\n");
             } else {
