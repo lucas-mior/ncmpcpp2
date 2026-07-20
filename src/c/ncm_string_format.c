@@ -189,6 +189,7 @@ ncm_string_format_make(char *format, int32 format_len,
 
     ncm_buffer_init(&result);
     ncm_string_format_apply(&result, format, format_len, args, args_len);
+
     return result;
 }
 
