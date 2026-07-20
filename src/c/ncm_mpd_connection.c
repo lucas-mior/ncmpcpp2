@@ -944,8 +944,6 @@ ncm_mpd_connection_connect(NcmMpdConnection *connection,
                            char *host,
                            uint16 port,
                            int32 timeout_ms) {
-    bool ok;
-
     if (connection == NULL) {
         return false;
     }
@@ -961,7 +959,7 @@ ncm_mpd_connection_connect(NcmMpdConnection *connection,
         return false;
     }
 
-    if (!(ok = ncm_mpd_connection_check_error(connection))) {
+    if (!ncm_mpd_connection_check_error(connection)) {
         mpd_connection_free(connection->mpd);
         connection->mpd = NULL;
         return false;

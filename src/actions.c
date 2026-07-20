@@ -4313,7 +4313,7 @@ action_runtime_move_selected_items(bool down) {
     }
 
     ncm_song_array_init(&songs);
-    if (!(success = action_runtime_selected_songs(&songs) && (songs.len > 0))) {
+    if (!action_runtime_selected_songs(&songs) || (songs.len <= 0)) {
         ncm_song_array_destroy(&songs);
         return false;
     }
@@ -5231,7 +5231,7 @@ action_runtime_jump_to_media_library(void) {
     bool success;
 
     ncm_song_init(&song);
-    if (!(success = action_runtime_current_song(&song))) {
+    if (!action_runtime_current_song(&song)) {
         ncm_song_destroy(&song);
         return false;
     }
@@ -6494,10 +6494,9 @@ static bool
 action_runtime_fetch_lyrics_background(void) {
     NcmSongArray songs;
     NcmError error;
-    bool success;
 
     ncm_song_array_init(&songs);
-    if (!(success = action_runtime_selected_songs(&songs) && (songs.len > 0))) {
+    if (!action_runtime_selected_songs(&songs) || (songs.len <= 0)) {
         ncm_song_array_destroy(&songs);
         return false;
     }
@@ -6580,7 +6579,7 @@ action_runtime_show_artist_info(void) {
 
     ncm_song_init(&song);
     if (!has_artist) {
-        if (!(success = action_runtime_current_song(&song))) {
+        if (!action_runtime_current_song(&song)) {
             ncm_song_destroy(&song);
             return false;
         }
@@ -7419,8 +7418,8 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
         bool success;
 
         ncm_song_array_init(&songs);
-        if (!(success = action_runtime_selected_songs(&songs)
-            && (songs.len > 0))) {
+        if (!action_runtime_selected_songs(&songs)
+            || (songs.len <= 0)) {
             ncm_song_array_destroy(&songs);
             return false;
         }

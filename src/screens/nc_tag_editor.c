@@ -956,7 +956,6 @@ bool
 native_tag_editor_screen_selected_songs(NativeTagEditorScreen *screen,
                                         NcmSongArray *songs) {
     NcMenu *menu;
-    bool has_selected;
 
     if ((screen == NULL) || (songs == NULL)) {
         return false;
@@ -967,7 +966,7 @@ native_tag_editor_screen_selected_songs(NativeTagEditorScreen *screen,
     }
 
     menu = nc_tag_row_menu_base(&screen->tags);
-    if (!(has_selected = nc_menu_has_selected(menu))) {
+    if (!nc_menu_has_selected(menu)) {
         if (nc_menu_empty(menu)) {
             return true;
         }
@@ -3295,7 +3294,7 @@ tag_editor_update_from_mpd(NativeTagEditorScreen *screen,
     }
 
     ncm_error_clear(&error);
-    if (!(ok = tag_editor_reload_songs_from_mpd(screen, client, &error))) {
+    if (!tag_editor_reload_songs_from_mpd(screen, client, &error)) {
         screen->tags_update_requested = false;
         tag_editor_report_error(STRLIT_ARGS("Could not fetch songs"),
                                 &error);

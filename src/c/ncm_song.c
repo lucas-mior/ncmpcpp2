@@ -33,7 +33,6 @@ ncm_song_format_numeric_tag_prefix(char *buffer, int32 buffer_cap,
                                    char *tag, int32 tag_len,
                                    int32 copy_len) {
     int32 out;
-    bool add_zero;
 
     if ((tag == NULL) || (tag_len < 0)) {
         if (buffer && (buffer_cap > 0)) {
@@ -49,7 +48,7 @@ ncm_song_format_numeric_tag_prefix(char *buffer, int32 buffer_cap,
     }
 
     out = 0;
-    if ((add_zero = ncm_song_needs_numeric_zero(tag, tag_len))) {
+    if (ncm_song_needs_numeric_zero(tag, tag_len)) {
         if (buffer && (out + 1 < buffer_cap)) {
             buffer[out] = '0';
         }
