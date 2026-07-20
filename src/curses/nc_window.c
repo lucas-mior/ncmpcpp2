@@ -233,13 +233,13 @@ nc_key_name(NcKey key, char *buffer, int32 buffer_len) {
     } else if (key == NC_KEY_CTRL_UNDERSCORE) {
         result = snprintf2(buffer, buffer_len, "Ctrl-_");
     } else if ((key & NC_KEY_ALT) != 0) {
-        nc_key_name(key & ~NC_KEY_ALT, rest, (int32)LENGTH(rest));
+        nc_key_name(key & ~NC_KEY_ALT, rest, LENGTH(rest));
         result = snprintf2(buffer, buffer_len, "Alt-%s", rest);
     } else if ((key & NC_KEY_CTRL) != 0) {
-        nc_key_name(key & ~NC_KEY_CTRL, rest, (int32)LENGTH(rest));
+        nc_key_name(key & ~NC_KEY_CTRL, rest, LENGTH(rest));
         result = snprintf2(buffer, buffer_len, "Ctrl-%s", rest);
     } else if ((key & NC_KEY_SHIFT) != 0) {
-        nc_key_name(key & ~NC_KEY_SHIFT, rest, (int32)LENGTH(rest));
+        nc_key_name(key & ~NC_KEY_SHIFT, rest, LENGTH(rest));
         result = snprintf2(buffer, buffer_len, "Shift-%s", rest);
     } else if (key == NC_KEY_SPACE) {
         result = snprintf2(buffer, buffer_len, "Space");

@@ -912,7 +912,7 @@ test_playlist_fixture_finds_ohne_dich(void) {
             continue;
         }
         data[i] = '\0';
-        if ((i + 1 < data_len) && (count < (int32)LENGTH(lines))) {
+        if ((i + 1 < data_len) && (count < LENGTH(lines))) {
             lines[count++] = data + i + 1;
         }
     }

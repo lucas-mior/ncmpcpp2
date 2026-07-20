@@ -976,7 +976,7 @@ native_library_compare_songs(NcmSong *left, NcmSong *right) {
     NcmBuffer right_text;
     int32 result;
 
-    for (int32 i = 0; i < (int32)LENGTH(getters); i += 1) {
+    for (int32 i = 0; i < LENGTH(getters); i += 1) {
         result = native_library_compare_song_getter(
             left, right, getters[i]);
         if (result != 0) {
