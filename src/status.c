@@ -757,8 +757,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         status_refresh_footer(active_hooks);
     }
 
-    if ((event & (MPD_IDLE_PLAYLIST | MPD_IDLE_DATABASE | MPD_IDLE_PLAYER))
-        != 0) {
+    if ((event & (MPD_IDLE_PLAYLIST | MPD_IDLE_DATABASE | MPD_IDLE_PLAYER))) {
         status_refresh_visible_screens(active_hooks);
     }
 
