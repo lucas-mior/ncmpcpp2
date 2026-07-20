@@ -156,8 +156,10 @@ ncm_job_queue_init(NcmJobQueue *queue) {
     queue->completed_cap = 0;
     queue->started = false;
     queue->stopping = false;
+
     pthread_mutex_init(&queue->mutex, NULL);
     pthread_cond_init(&queue->cond, NULL);
+
     return;
 }
 
