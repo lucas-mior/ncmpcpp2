@@ -51,6 +51,7 @@ ncm_fs_set_errno_error(NcmError *error, int32 code, char *operation,
                                operation, path_len, path, strerror(code));
     }
     ncm_error_set(error, code, message, message_len);
+
     return;
 }
 
