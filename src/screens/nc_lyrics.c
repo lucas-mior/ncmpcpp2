@@ -1189,18 +1189,21 @@ native_lyrics_job_run(void *user, NcmError *error) {
 
     ncm_buffer_init(&artist);
     ncm_buffer_init(&title);
+
     if (!native_lyrics_fetch_artist_title(&job->song, &artist, &title)) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing song metadata"));
         ncm_buffer_destroy(&title);
         ncm_buffer_destroy(&artist);
         return false;
     }
+
     success = native_lyrics_job_fetch(job, &artist, &title);
     ncm_buffer_destroy(&title);
     ncm_buffer_destroy(&artist);
     if (!success || !job->result.success) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("lyrics not found"));
     }
+
     return success && job->result.success;
 }
 
