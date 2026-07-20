@@ -543,10 +543,9 @@ native_lastfm_set_title(NativeLastfmScreen *screen,
 static NativeLastfmJob *
 native_lastfm_job_create(NativeLastfmScreen *screen,
                          NcmLastfmService *service) {
-    NativeLastfmJob *job;
-
-    job = malloc2(SIZEOF(*job));
+    NativeLastfmJob *job = malloc2(SIZEOF(*job));
     job->screen = screen;
+
     ncm_lastfm_service_init(&job->service);
     ncm_lastfm_result_init(&job->result);
     (void)ncm_lastfm_artist_info_init(&job->service,
@@ -554,6 +553,7 @@ native_lastfm_job_create(NativeLastfmScreen *screen,
                                       service->artist_len,
                                       service->lang,
                                       service->lang_len);
+
     return job;
 }
 
