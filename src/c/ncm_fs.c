@@ -209,6 +209,7 @@ ncm_fs_rename(char *old_path, int32 old_path_len, char *new_path,
     free2(new_copy, new_path_len + 1);
     free2(old_copy, old_path_len + 1);
     ncm_error_clear(error);
+
     return true;
 }
 
