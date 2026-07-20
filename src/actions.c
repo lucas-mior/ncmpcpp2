@@ -1912,7 +1912,7 @@ action_runtime_add_random_items(void) {
         tag_type = ncm_char_to_tag_type(random_type);
         source_name = ncm_tag_type_name(tag_type);
         source_name_len = optional_strlen32(source_name);
-        if (source_name_len >= (int32)SIZEOF(tag_name)) {
+        if (source_name_len >= SIZEOF(tag_name)) {
             return false;
         }
         memcpy64(tag_name, source_name, source_name_len);
@@ -2751,8 +2751,8 @@ action_runtime_find_item(enum SearchDirection direction) {
     if (prompt_len < 0) {
         prompt_len = 0;
     }
-    if (prompt_len >= (int32)SIZEOF(prompt)) {
-        prompt_len = (int32)SIZEOF(prompt) - 1;
+    if (prompt_len >= SIZEOF(prompt)) {
+        prompt_len = SIZEOF(prompt) - 1;
     }
 
     old_autocenter_mode = Config.autocenter_mode;

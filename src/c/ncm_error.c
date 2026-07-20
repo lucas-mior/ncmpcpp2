@@ -34,8 +34,8 @@ ncm_error_set(NcmError *error, int32 code,
     }
 
     len = message_len;
-    if (len >= (int32)SIZEOF(error->message)) {
-        len = (int32)SIZEOF(error->message) - 1;
+    if (len >= SIZEOF(error->message)) {
+        len = SIZEOF(error->message) - 1;
     }
 
     memcpy64(error->message, message, len);

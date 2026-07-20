@@ -20,8 +20,8 @@ typedef struct HtmlEntity {
 #define HTML_ENTITY(FROM, TO) { \
     .from = FROM, \
     .to = TO, \
-    .from_len = (int32)SIZEOF(FROM) - 1, \
-    .to_len = (int32)SIZEOF(TO) - 1, \
+    .from_len = SIZEOF(FROM) - 1, \
+    .to_len = SIZEOF(TO) - 1, \
 }
 
 static HtmlEntity html_entities[] = {
@@ -154,7 +154,7 @@ ncm_html_unescape_utf8(char *data, int32 data_len) {
                 if (parse_entity_number(data + entity_start,
                                         entity_len, &rune)) {
                     encoded_len = utf8_encode(rune, encoded,
-                                                  (int32)SIZEOF(encoded));
+                                                  SIZEOF(encoded));
                     if (encoded_len > 0) {
                         ncm_buffer_append(&out, encoded, encoded_len);
                         i = entity_end + 1;

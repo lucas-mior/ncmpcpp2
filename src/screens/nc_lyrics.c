@@ -378,7 +378,7 @@ native_lyrics_screen_load_file(NativeLyricsScreen *screen,
 
     nc_buffer_clear(&screen->display);
     first = true;
-    while (fgets(line, (int32)SIZEOF(line), file)) {
+    while (fgets(line, SIZEOF(line), file)) {
         line_len = strlen32(line);
         ncm_string_remove_chars(line, &line_len, STRLIT_ARGS("\r\n"));
         if (!first) {
@@ -805,7 +805,7 @@ lyrics_title_callback(NcScreen *screen) {
     ncm_buffer_init(&scroll_buffer);
     nc_cyclic_text_write(&scroll_buffer, song_title.data, song_title.len,
                          &scroll_begin, scroll_width, separator,
-                         (int32)SIZEOF(separator) - 1,
+                         SIZEOF(separator) - 1,
                          Config.header_text_scrolling);
     ncm_buffer_append(&lyrics->title, scroll_buffer.data, scroll_buffer.len);
     nc_lyrics_screen_set_scroll_begin(&lyrics->screen, scroll_begin);

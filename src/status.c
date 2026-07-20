@@ -999,7 +999,7 @@ ncm_status_changes_player_state(void) {
     }
 
     player_state_len
-        = status_player_state_string(player_state, (int32)SIZEOF(player_state));
+        = status_player_state_string(player_state, SIZEOF(player_state));
     status_draw_player_state_label(player_state, player_state_len);
     ncm_status_changes_elapsed_time(false);
     return;
@@ -1462,8 +1462,8 @@ status_buffer_append_int32(NcmBuffer *buffer, uint32 value) {
     if (len < 0) {
         return;
     }
-    if (len >= (int32)SIZEOF(tmp)) {
-        len = (int32)SIZEOF(tmp) - 1;
+    if (len >= SIZEOF(tmp)) {
+        len = SIZEOF(tmp) - 1;
     }
     ncm_buffer_append(buffer, tmp, len);
     return;
@@ -1491,21 +1491,21 @@ status_tracklength_buffer(NcmBuffer *buffer) {
         if (status_elapsed_time < status_total_time) {
             time_len = status_song_time_string(
                 status_total_time - status_elapsed_time, time_buffer,
-                (int32)SIZEOF(time_buffer));
+                SIZEOF(time_buffer));
         } else {
             time_len = status_song_time_string(0, time_buffer,
-                                               (int32)SIZEOF(time_buffer));
+                                               SIZEOF(time_buffer));
         }
     } else {
         time_len = status_song_time_string(status_elapsed_time, time_buffer,
-                                           (int32)SIZEOF(time_buffer));
+                                           SIZEOF(time_buffer));
     }
     ncm_buffer_append(buffer, time_buffer, time_len);
 
     if (status_total_time != 0) {
         status_buffer_append_char(buffer, '/');
         time_len = status_song_time_string(status_total_time, time_buffer,
-                                           (int32)SIZEOF(time_buffer));
+                                           SIZEOF(time_buffer));
         ncm_buffer_append(buffer, time_buffer, time_len);
     }
 
@@ -1736,7 +1736,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
     }
 
     player_state_len
-        = status_player_state_string(player_state, (int32)SIZEOF(player_state));
+        = status_player_state_string(player_state, SIZEOF(player_state));
     status_draw_song_title(&song);
 
     switch (Config.design) {

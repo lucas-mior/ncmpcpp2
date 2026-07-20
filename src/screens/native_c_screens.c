@@ -1830,7 +1830,7 @@ native_append_action_keys(NcBuffer *buffer, enum NcmActionType type) {
                 continue;
             }
             key_len = native_key_name(key_bindings->key, key_name,
-                                      (int32)SIZEOF(key_name));
+                                      SIZEOF(key_name));
             if (key_len <= 0) {
                 continue;
             }
