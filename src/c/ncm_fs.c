@@ -347,8 +347,8 @@ ncm_fs_directory_close(NcmFsDirectory *directory) {
 }
 
 bool
-ncm_fs_join(NcmBuffer *buffer, char *left, int32 left_len,
-            char *right, int32 right_len) {
+ncm_fs_join(NcmBuffer *buffer,
+            char *left, int32 left_len, char *right, int32 right_len) {
     NcmBuffer result;
 
     if (buffer == NULL) {
