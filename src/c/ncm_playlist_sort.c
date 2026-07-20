@@ -164,7 +164,7 @@ ncm_playlist_sort_plan_build(
     int32 *order;
     int32 *temporary;
     int32 *current;
-    uint64 last_position;
+    int64 last_position;
 
     if (plan == NULL) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing sort plan"));
@@ -202,8 +202,7 @@ ncm_playlist_sort_plan_build(
         }
     }
     if (songs->len > 0) {
-        last_position = (uint64)start_position
-                        + (uint64)songs->len - 1;
+        last_position = start_position + songs->len - 1;
         if (last_position > UINT32_MAX) {
             ncm_error_set(error, EOVERFLOW,
                           STRLIT_ARGS("playlist sort range overflow"));

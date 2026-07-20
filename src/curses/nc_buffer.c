@@ -157,8 +157,7 @@ nc_buffer_append_int64(NcBuffer *buffer, int32 value) {
 }
 
 void
-nc_buffer_add_color(NcBuffer *buffer, int32 position, NcColor color,
-                    uint64 id) {
+nc_buffer_add_color(NcBuffer *buffer, int32 position, NcColor color, int64 id) {
     NcBufferProperty property;
 
     property.value.color = color;
@@ -171,7 +170,7 @@ nc_buffer_add_color(NcBuffer *buffer, int32 position, NcColor color,
 
 void
 nc_buffer_add_format(NcBuffer *buffer, int32 position,
-                     enum NcFormat format, uint64 id) {
+                     enum NcFormat format, int64 id) {
     NcBufferProperty property;
 
     property.value.format = format;
@@ -185,7 +184,7 @@ nc_buffer_add_format(NcBuffer *buffer, int32 position,
 void
 nc_buffer_add_formatted_color(NcBuffer *buffer, int32 position,
                               NcFormattedColor *formatted_color,
-                              uint64 id) {
+                              int64 id) {
     NcBufferProperty property;
 
     nc_formatted_color_copy(&property.value.formatted_color,
@@ -200,7 +199,7 @@ nc_buffer_add_formatted_color(NcBuffer *buffer, int32 position,
 void
 nc_buffer_add_formatted_color_end(NcBuffer *buffer, int32 position,
                                   NcFormattedColor *formatted_color,
-                                  uint64 id) {
+                                  int64 id) {
     NcBufferProperty property;
 
     nc_formatted_color_copy(&property.value.formatted_color,
@@ -213,7 +212,7 @@ nc_buffer_add_formatted_color_end(NcBuffer *buffer, int32 position,
 }
 
 void
-nc_buffer_remove_properties(NcBuffer *buffer, uint64 id) {
+nc_buffer_remove_properties(NcBuffer *buffer, int64 id) {
     int32 out;
     int32 count;
 
