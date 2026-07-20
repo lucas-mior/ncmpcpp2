@@ -107,8 +107,8 @@ ncm_conversion_set_f64_bounds_error(NcmError *error, double value,
 }
 
 static void
-ncm_conversion_set_f64_lower_error(NcmError *error, double value,
-                                   double lbound) {
+ncm_conversion_set_f64_lower_error(NcmError *error,
+                                   double value, double lbound) {
     char message[256];
     int32 len;
 
