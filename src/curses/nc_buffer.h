@@ -20,7 +20,7 @@ typedef struct NcBufferProperty {
         NcFormattedColor formatted_color;
     } value;
 
-    uint64 id;
+    int64 id;
     int32 position;
     enum NcBufferPropertyType type;
 } NcBufferProperty;
@@ -52,16 +52,16 @@ void nc_buffer_append_int32(NcBuffer *buffer, int32 value);
 void nc_buffer_append_int64(NcBuffer *buffer, int32 value);
 
 void nc_buffer_add_color(NcBuffer *buffer, int32 position, NcColor color,
-                         uint64 id);
+                         int64 id);
 void nc_buffer_add_format(NcBuffer *buffer, int32 position,
-                          enum NcFormat format, uint64 id);
+                          enum NcFormat format, int64 id);
 void nc_buffer_add_formatted_color(NcBuffer *buffer, int32 position,
                                    NcFormattedColor *formatted_color,
-                                   uint64 id);
+                                   int64 id);
 void nc_buffer_add_formatted_color_end(NcBuffer *buffer, int32 position,
                                        NcFormattedColor *formatted_color,
-                                       uint64 id);
-void nc_buffer_remove_properties(NcBuffer *buffer, uint64 id);
+                                       int64 id);
+void nc_buffer_remove_properties(NcBuffer *buffer, int64 id);
 void nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property);
 
 #endif /* NCMPCPP_NC_BUFFER_H */

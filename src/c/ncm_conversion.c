@@ -121,7 +121,7 @@ bool
 ncm_parse_int64(char *source, int32 source_len, int32 *out, NcmError *error) {
     NcmBuffer buffer;
     char *end;
-    uint64 value;
+    int64 value;
     bool ok;
 
     if (out == NULL) {
@@ -141,7 +141,7 @@ ncm_parse_int64(char *source, int32 source_len, int32 *out, NcmError *error) {
          && !ncm_conversion_is_negative_source(buffer.data)
          && ncm_conversion_trailing_space_only(end)
          && (errno != ERANGE)
-         && (value <= (uint64)MAXOF(*out));
+         && (value <= MAXOF(*out));
     if (ok) {
         *out = (int32)value;
         ncm_error_clear(error);

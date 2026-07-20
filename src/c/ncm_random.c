@@ -53,7 +53,7 @@ ncm_random_seed_from_time(NcmRandom *random, NcmError *error) {
         return false;
     }
 
-    ncm_random_init(random, (uint64)point.ns);
+    ncm_random_init(random, point.ns);
     return true;
 }
 
