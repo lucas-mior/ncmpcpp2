@@ -698,15 +698,14 @@ tiny_editor_run_current(NcScreen *screen) {
 
 static void
 tiny_editor_refresh(NcScreen *screen) {
-    NativeTinyTagEditorScreen *editor;
-    NcMenu *menu;
+    NativeTinyTagEditorScreen *editor = tiny_editor_from_screen(screen);
+    NcMenu *menu = nc_editor_buffer_menu_base(&editor->rows);
 
-    editor = tiny_editor_from_screen(screen);
-    menu = nc_editor_buffer_menu_base(&editor->rows);
     nc_menu_prepare_refresh(menu, editor->main_height, NULL, NULL);
     nc_window_display(&editor->window);
     nc_menu_refresh(menu, &editor->window, editor->width,
                     editor->main_height);
+
     return;
 }
 
