@@ -1102,9 +1102,9 @@ native_tag_editor_screen_number_tracks(NativeTagEditorScreen *screen,
     menu = nc_tag_row_menu_base(&screen->tags);
     numberer.current = 1;
     if (nc_menu_has_selected(menu)) {
-        numberer.total = (int32)nc_menu_selected_count(menu);
+        numberer.total = nc_menu_selected_count(menu);
     } else {
-        numberer.total = (int32)nc_menu_item_count(menu);
+        numberer.total = nc_menu_item_count(menu);
     }
     numberer.extended = extended;
     return tag_editor_for_each_target(screen, tag_editor_number_song_callback,
@@ -4169,6 +4169,12 @@ tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
     } else {
         len = SNPRINTF(buffer, "%d",
                        numberer->current);
+    }
+    if (len < 0) {
+        return false;
+    }
+    if (len >= SIZEOF(buffer)) {
+        len = SIZEOF(buffer) - 1;
     }
     numberer->current += 1;
     if (!ncm_mutable_song_set_tag(song, NCM_TAGS_FIELD_TRACK, 0,

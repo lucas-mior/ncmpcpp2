@@ -180,7 +180,7 @@ native_search_engine_screen_init(NativeSearchEngineScreen *screen,
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = (int32)main_height;
+    screen->main_height = main_height;
     screen->lines_scrolled = 1;
     screen->result_count = 0;
     screen->search_mode = NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL;
@@ -253,7 +253,7 @@ native_search_engine_screen_set_geometry(NativeSearchEngineScreen *screen,
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = (int32)main_height;
+    screen->main_height = main_height;
 
     window_start_y = main_start_y;
     window_height = main_height;
@@ -889,10 +889,10 @@ native_search_engine_screen_run_current(
     if (pos < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT) {
         ncm_buffer_init(&value);
         prompt_status = native_search_engine_screen_prompt_constraint(
-            screen, (int32)pos, &value);
+            screen, pos, &value);
         if (prompt_status == NATIVE_SEARCH_ENGINE_PROMPT_ACCEPTED) {
             success = native_search_engine_screen_set_constraint(
-                screen, (int32)pos, value.data, value.len);
+                screen, pos, value.data, value.len);
             ncm_buffer_destroy(&value);
             return success;
         }
@@ -1577,7 +1577,7 @@ native_search_screen_width(NativeSearchEngineScreen *screen) {
     if (screen->width > INT32_MAX) {
         return INT32_MAX;
     }
-    return (int32)screen->width;
+    return screen->width;
 }
 
 static int32

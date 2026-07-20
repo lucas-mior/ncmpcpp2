@@ -116,7 +116,7 @@ ncm_sample_buffer_get_clamped(NcmSampleBuffer *buffer,
         return 0;
     }
 
-    return ncm_sample_buffer_get(buffer, (int32)samples_len, dest, dest_len);
+    return ncm_sample_buffer_get(buffer, samples_len, dest, dest_len);
 }
 
 void

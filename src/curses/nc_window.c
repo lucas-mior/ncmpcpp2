@@ -1313,7 +1313,7 @@ nc_window_assign_title(NcWindow *window, char *title, int32 title_len) {
 
 static int32
 nc_i32(int32 value) {
-    return (int32)value;
+    return value;
 }
 
 static bool
