@@ -2730,6 +2730,7 @@ tag_editor_update_titles(NativeTagEditorScreen *screen,
     if (screen == NULL) {
         return;
     }
+
     tag_editor_update_visible_counts(screen);
     ncm_buffer_clear(&screen->directories_title);
     ncm_buffer_clear(&screen->tag_types_title);
@@ -2737,6 +2738,7 @@ tag_editor_update_titles(NativeTagEditorScreen *screen,
     ncm_buffer_clear(&screen->parser_dialog_title);
     ncm_buffer_clear(&screen->parser_title);
     ncm_buffer_clear(&screen->parser_helper_title);
+
     if (Config.titles_visibility) {
         ncm_buffer_append(&screen->directories_title,
                           STRLIT_ARGS("Directories"));
@@ -2764,6 +2766,7 @@ tag_editor_update_titles(NativeTagEditorScreen *screen,
                               STRLIT_ARGS("Preview"));
         }
     }
+
     if (!update_windows) {
         return;
     }
@@ -2783,6 +2786,7 @@ tag_editor_update_titles(NativeTagEditorScreen *screen,
     nc_window_set_title(&screen->parser_helper_window,
                         screen->parser_helper_title.data,
                         screen->parser_helper_title.len);
+
     return;
 }
 
