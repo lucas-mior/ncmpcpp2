@@ -155,11 +155,9 @@ ncm_status_set_playlist_update_observer(void (*callback)(void *user),
 
 static void
 status_update_timeout_from_screen(NcScreen *screen, void *user) {
-    StatusTimeoutContext *context;
-    int32 timeout;
+    StatusTimeoutContext *context = user;
+    int32 timeout = nc_screen_window_timeout(screen);
 
-    context = user;
-    timeout = nc_screen_window_timeout(screen);
     if (timeout < context->timeout) {
         context->timeout = timeout;
     }
