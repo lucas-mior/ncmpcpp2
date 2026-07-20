@@ -2547,7 +2547,9 @@ tag_editor_set_focus(NativeTagEditorScreen *screen,
     if (screen == NULL) {
         return;
     }
+
     screen->active_focus = focus;
+
     if (focus == NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES) {
         screen->active_column = NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES;
     } else if (focus == NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES) {
@@ -2559,6 +2561,7 @@ tag_editor_set_focus(NativeTagEditorScreen *screen,
     } else if (focus == NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW) {
         screen->parser_preview_enabled = true;
     }
+
     tag_editor_update_menu_highlights(screen);
     return;
 }
@@ -2580,10 +2583,12 @@ tag_editor_tag_type_row_changed(NativeTagEditorScreen *screen) {
     if (screen == NULL) {
         return false;
     }
+
     menu = nc_editor_string_menu_base(&screen->tag_types);
     highlight = nc_menu_highlight(menu);
     changed = screen->last_tag_type_highlight != highlight;
     screen->last_tag_type_highlight = highlight;
+
     return changed;
 }
 
@@ -2725,6 +2730,7 @@ tag_editor_update_titles(NativeTagEditorScreen *screen,
     if (screen == NULL) {
         return;
     }
+
     tag_editor_update_visible_counts(screen);
     ncm_buffer_clear(&screen->directories_title);
     ncm_buffer_clear(&screen->tag_types_title);
@@ -2732,6 +2738,7 @@ tag_editor_update_titles(NativeTagEditorScreen *screen,
     ncm_buffer_clear(&screen->parser_dialog_title);
     ncm_buffer_clear(&screen->parser_title);
     ncm_buffer_clear(&screen->parser_helper_title);
+
     if (Config.titles_visibility) {
         ncm_buffer_append(&screen->directories_title,
                           STRLIT_ARGS("Directories"));
@@ -2759,6 +2766,7 @@ tag_editor_update_titles(NativeTagEditorScreen *screen,
                               STRLIT_ARGS("Preview"));
         }
     }
+
     if (!update_windows) {
         return;
     }
@@ -2778,6 +2786,7 @@ tag_editor_update_titles(NativeTagEditorScreen *screen,
     nc_window_set_title(&screen->parser_helper_window,
                         screen->parser_helper_title.data,
                         screen->parser_helper_title.len);
+
     return;
 }
 
