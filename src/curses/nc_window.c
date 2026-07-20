@@ -618,6 +618,9 @@ nc_window_set_title(NcWindow *window, char *title, int32 title_len) {
     bool old_has_title;
     bool new_has_title;
 
+    if ((title == NULL) || (title_len < 0)) {
+        title_len = 0;
+    }
     old_has_title = nc_window_has_title(window);
     new_has_title = title_len > 0;
     if (new_has_title && !old_has_title) {
@@ -1282,13 +1285,14 @@ nc_prompt_run_hook(char *line) {
 
 static void
 nc_window_assign_title(NcWindow *window, char *title, int32 title_len) {
-    if (title == NULL) {
+    if ((title == NULL) || (title_len < 0)) {
         title_len = 0;
     }
-    if (title_len < 0) {
-        title_len = 0;
+    if (title_len >= MAXOF(window->title_cap)) {
+        error("Window title is too long: %d bytes.\n", title_len);
+        fatal(EXIT_FAILURE);
     }
-    if ((title_len + 1) > window->title_cap) {
+    if (title_len >= window->title_cap) {
         if (window->title) {
             free2(window->title, window->title_cap);
         }
