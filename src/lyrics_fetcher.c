@@ -268,7 +268,6 @@ lyrics_build_direct_url(NcmLyricsFetcherDef *fetcher, NcmBuffer *url,
 
     ncm_buffer_clear(url);
     compact = false;
-    valid = true;
     switch (fetcher->type) {
     case NCM_LYRICS_FETCHER_AZLYRICS:
         ncm_buffer_append(url,
@@ -910,7 +909,6 @@ lyrics_url_song_matches(NcmLyricsFetcherDef *fetcher, char *url,
     ncm_buffer_init(&marker);
     compact = false;
     include_title = true;
-    valid = true;
     switch (fetcher->type) {
     case NCM_LYRICS_FETCHER_AZLYRICS:
         ncm_buffer_append(&marker, STRLIT_ARGS("/lyrics/"));
