@@ -55,8 +55,7 @@ static void lyrics_mouse_button_pressed_callback(NcScreen *screen,
 static bool lyrics_is_lockable_callback(NcScreen *screen);
 static bool lyrics_is_mergable_callback(NcScreen *screen);
 static void lyrics_destroy_callback(NcScreen *screen);
-static void native_lyrics_title_song_string(NcmSong *song,
-                                            NcmBuffer *title);
+static void native_lyrics_title_song_string(NcmSong *song, NcmBuffer *title);
 static void native_lyrics_replace_search_separators(NcmBuffer *buffer);
 static void native_lyrics_append_locale(NcBuffer *buffer, char *data,
                                         int32 data_len);
@@ -106,10 +105,7 @@ nc_lyrics_screen_init(NcLyricsScreen *screen,
                              callbacks,
                              user,
                              NC_SCREEN_TYPE_LYRICS,
-                             0,
-                             0,
-                             0,
-                             0);
+                             0, 0, 0, 0);
     screen->scroll_begin = 0;
     screen->refresh_window = false;
     nc_lyrics_screen_set_geometry(screen,
@@ -229,6 +225,7 @@ native_lyrics_callbacks(void) {
     callbacks.is_lockable = lyrics_is_lockable_callback;
     callbacks.is_mergable = lyrics_is_mergable_callback;
     callbacks.destroy = lyrics_destroy_callback;
+
     return callbacks;
 }
 
@@ -287,6 +284,7 @@ native_lyrics_screen_destroy(NativeLyricsScreen *screen) {
         free2(screen->queued_songs,
             screen->queued_songs_cap*SIZEOF(*screen->queued_songs));
     }
+
     ncm_buffer_destroy(&screen->consumer_message);
     ncm_lyrics_result_destroy(&screen->result);
     ncm_buffer_destroy(&screen->filename);
@@ -295,12 +293,14 @@ native_lyrics_screen_destroy(NativeLyricsScreen *screen) {
     ncm_buffer_destroy(&screen->search_constraint);
     nc_buffer_destroy(&screen->display);
     nc_window_destroy(&screen->window);
+
     screen->queued_songs = NULL;
     screen->queued_songs_len = 0;
     screen->queued_songs_cap = 0;
     screen->fetcher = NULL;
     screen->has_song = false;
     screen->initialized = false;
+
     return;
 }
 
@@ -386,9 +386,11 @@ native_lyrics_screen_load_file(NativeLyricsScreen *screen,
         native_lyrics_append_locale(&screen->display, line, line_len);
         first = false;
     }
+
     fclose(file);
     nc_lyrics_screen_request_refresh(&screen->screen);
     ncm_error_clear(error);
+
     return true;
 }
 
