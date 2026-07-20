@@ -107,8 +107,8 @@ ncm_conversion_set_f64_bounds_error(NcmError *error, double value,
 }
 
 static void
-ncm_conversion_set_f64_lower_error(NcmError *error, double value,
-                                   double lbound) {
+ncm_conversion_set_f64_lower_error(NcmError *error,
+                                   double value, double lbound) {
     char message[256];
     int32 len;
 
@@ -121,8 +121,7 @@ ncm_conversion_set_f64_lower_error(NcmError *error, double value,
 }
 
 bool
-ncm_parse_int64(char *source, int32 source_len,
-                int32 *out, NcmError *error) {
+ncm_parse_int64(char *source, int32 source_len, int32 *out, NcmError *error) {
     NcmBuffer buffer;
     char *end;
     uint64 value;
@@ -179,8 +178,7 @@ ncm_parse_int32(char *source, int32 source_len, int32 *out, NcmError *error) {
 }
 
 bool
-ncm_parse_double(char *source, int32 source_len,
-                 double *out, NcmError *error) {
+ncm_parse_double(char *source, int32 source_len, double *out, NcmError *error) {
     NcmBuffer buffer;
     char *end;
     double value;
@@ -214,8 +212,7 @@ ncm_parse_double(char *source, int32 source_len,
 }
 
 bool
-ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound,
-                     NcmError *error) {
+ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound, NcmError *error) {
     if ((value < lbound) || (value > ubound)) {
         ncm_conversion_set_i64_bounds_error(error, value, lbound, ubound);
         return false;
@@ -238,8 +235,7 @@ ncm_bounds_check_f64(double value, double lbound, double ubound,
 }
 
 bool
-ncm_lower_bound_check_f64(double value, double lbound,
-                          NcmError *error) {
+ncm_lower_bound_check_f64(double value, double lbound, NcmError *error) {
     if (value < lbound) {
         ncm_conversion_set_f64_lower_error(error, value, lbound);
         return false;
