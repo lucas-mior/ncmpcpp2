@@ -1324,7 +1324,7 @@ visualizer_draw_ellipse_stereo(NativeVisualizerScreen *screen,
     int32 radius;
 
     width = nc_window_width(&screen->window);
-    height = (int32)nc_window_height(&screen->window);
+    height = nc_window_height(&screen->window);
     if ((left == NULL) || (right == NULL) || (samples_len <= 0)
         || (width <= 0) || (height <= 0)) {
         return;
@@ -1816,7 +1816,7 @@ native_visualizer_screen_draw(NativeVisualizerScreen *screen,
         || (samples == NULL) || (samples_len <= 0)) {
         return false;
     }
-    height = (int32)nc_window_height(&screen->window);
+    height = nc_window_height(&screen->window);
     if ((nc_window_width(&screen->window) <= 0) || (height <= 0)) {
         return false;
     }
