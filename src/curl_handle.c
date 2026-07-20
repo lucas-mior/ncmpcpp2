@@ -4,6 +4,7 @@
 #include "curl_handle.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "c/ncm_base.h"
 
@@ -54,7 +55,12 @@ ncm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &writer);
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, (long)timeout_seconds);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, (long)timeout_seconds);
     curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
+    curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
+    curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");
+    curl_easy_setopt(curl, CURLOPT_USERAGENT,
+                     "Mozilla/5.0 (compatible; ncmpcpp/" PACKAGE_VERSION ")");
     if (follow_redirect) {
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     }
@@ -91,10 +97,19 @@ ncm_curl_escape(NcmBuffer *out, char *string, int32 string_len) {
 
 static size_t
 write_data(char *buffer, size_t size, size_t nmemb, void *data) {
-    size_t bytes = size*nmemb;
-    NcmCurlResponseWriter *writer = data;
+    NcmCurlResponseWriter *writer;
+    size_t bytes;
 
+    if ((size != 0) && (nmemb > SIZE_MAX/size)) {
+        return 0;
+    }
+    bytes = size*nmemb;
+    writer = data;
     if ((writer == NULL) || (writer->buffer == NULL)) {
+        return 0;
+    }
+    if ((writer->buffer->len >= INT32_MAX)
+        || (bytes > (size_t)(INT32_MAX - writer->buffer->len - 1))) {
         return 0;
     }
     if (bytes > 0) {

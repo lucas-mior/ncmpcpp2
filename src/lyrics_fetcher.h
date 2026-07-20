@@ -9,20 +9,27 @@
 
 #include "c/ncm_array.h"
 #include "c/ncm_defs.h"
-#include "c/ncm_song.h"
-#include "curl_handle.h"
+
+#define NCM_LYRICS_FETCHER_LIST(X) \
+    X(AZLYRICS, "azlyrics.com") \
+    X(GENIUS, "genius.com") \
+    X(LETRASMUS, "letras.mus.br") \
+    X(MUSIXMATCH, "musixmatch.com") \
+    X(TEKSTOWO, "tekstowo.pl") \
+    X(VAGALUME, "vagalume.com.br") \
+    X(INTERNET, "the Internet")
+
 
 enum NcmLyricsFetcherType {
     NCM_LYRICS_FETCHER_UNKNOWN,
-    NCM_LYRICS_FETCHER_JUSTSOMELYRICS,
-    NCM_LYRICS_FETCHER_JAHLYRICS,
-    NCM_LYRICS_FETCHER_PLYRICS,
-    NCM_LYRICS_FETCHER_AZLYRICS,
-    NCM_LYRICS_FETCHER_TEKSTOWO,
-    NCM_LYRICS_FETCHER_ZENESZOVEG,
-    NCM_LYRICS_FETCHER_INTERNET,
-    NCM_LYRICS_FETCHER_TAGS,
+#define NCM_LYRICS_FETCHER_ENUM(NAME, DISPLAY_NAME) \
+    NCM_LYRICS_FETCHER_##NAME,
+    NCM_LYRICS_FETCHER_LIST(NCM_LYRICS_FETCHER_ENUM)
+#undef NCM_LYRICS_FETCHER_ENUM
+    NCM_LYRICS_FETCHER_LAST,
 };
+
+#undef NCM_LYRICS_FETCHER_LIST
 
 typedef struct NcmLyricsResult {
     char *text;
@@ -33,15 +40,9 @@ typedef struct NcmLyricsResult {
 
 typedef struct NcmLyricsFetcherDef {
     char *name;
-    char *url_template;
-    char *match_regex;
 
     int32 name_len;
     int32 name_cap;
-    int32 url_template_len;
-    int32 url_template_cap;
-    int32 match_regex_len;
-    int32 match_regex_cap;
 
     enum NcmLyricsFetcherType type;
     bool enabled;
@@ -64,9 +65,6 @@ typedef CURLcode (*NcmLyricsCurlPerformFn)(NcmBuffer *data, char *url,
                                            int32 referer_len,
                                            bool follow_redirect,
                                            int32 timeout_seconds, void *user);
-
-typedef CURLcode (*NcmLyricsCurlEscapeFn)(NcmBuffer *out, char *string,
-                                          int32 string_len, void *user);
 
 void ncm_lyrics_result_init(NcmLyricsResult *result);
 void ncm_lyrics_result_destroy(NcmLyricsResult *result);
@@ -91,8 +89,7 @@ bool ncm_lyrics_fetcher_registry_append_name(NcmLyricsFetcherRegistry *registry,
 
 bool ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher,
                               NcmLyricsResult *result, char *artist,
-                              int32 artist_len, char *title, int32 title_len,
-                              NcmSong *song);
+                              int32 artist_len, char *title, int32 title_len);
 bool ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher, NcmBuffer *url,
                                   char *artist, int32 artist_len, char *title,
                                   int32 title_len);
