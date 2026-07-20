@@ -227,6 +227,7 @@ ncm_song_getter_to_tag_type(enum NcmSongGetter getter) {
     case NCM_SONG_GETTER_URI:
     case NCM_SONG_GETTER_TRACK_NUMBER:
     case NCM_SONG_GETTER_PRIORITY:
+    case NCM_SONG_GETTER_LAST:
     default:
         return MPD_TAG_UNKNOWN;
     }
@@ -388,6 +389,7 @@ ncm_song_getter_to_tags_field(enum NcmSongGetter getter) {
     case NCM_SONG_GETTER_NAME:
     case NCM_SONG_GETTER_URI:
     case NCM_SONG_GETTER_PRIORITY:
+    case NCM_SONG_GETTER_LAST:
     default:
         return NCM_TAGS_FIELD_LAST;
     }

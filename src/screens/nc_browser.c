@@ -1172,6 +1172,7 @@ native_browser_screen_render_item(NativeBrowserScreen *screen,
         break;
     case NCM_MPD_ITEM_UNKNOWN:
         break;
+    case NCM_MPD_ITEM_LAST:
     default:
         return false;
     }
@@ -1230,6 +1231,7 @@ native_browser_screen_item_to_string(NativeBrowserScreen *screen,
         break;
     case NCM_MPD_ITEM_UNKNOWN:
         break;
+    case NCM_MPD_ITEM_LAST:
     default:
         return false;
     }
@@ -2140,6 +2142,7 @@ native_browser_collect_item_songs(NativeBrowserScreen *screen,
     case NCM_MPD_ITEM_PLAYLIST:
     case NCM_MPD_ITEM_UNKNOWN:
         return true;
+    case NCM_MPD_ITEM_LAST:
     default:
         return false;
     }
@@ -2276,6 +2279,7 @@ native_browser_delete_item(NativeBrowserScreen *screen,
                                                    error);
     case NCM_MPD_ITEM_UNKNOWN:
         break;
+    case NCM_MPD_ITEM_LAST:
     default:
         break;
     }
@@ -2819,6 +2823,7 @@ native_browser_compare_item_values(NativeBrowserScreen *screen,
                 native_browser_playlist_sort_view(right));
         case NCM_MPD_ITEM_UNKNOWN:
             return 0;
+        case NCM_MPD_ITEM_LAST:
         default:
             break;
         }
@@ -2846,6 +2851,7 @@ native_browser_compare_item_values(NativeBrowserScreen *screen,
             return result;
         case NCM_MPD_ITEM_UNKNOWN:
             return 0;
+        case NCM_MPD_ITEM_LAST:
         default:
             break;
         }
@@ -2870,6 +2876,7 @@ native_browser_compare_item_values(NativeBrowserScreen *screen,
                 ncm_song_mtime(ncm_mpd_item_song(right)));
         case NCM_MPD_ITEM_UNKNOWN:
             return 0;
+        case NCM_MPD_ITEM_LAST:
         default:
             break;
         }
@@ -2894,6 +2901,7 @@ native_browser_item_sort_rank(NcmMpdItem *item) {
         return 2;
     case NCM_MPD_ITEM_UNKNOWN:
         return 3;
+    case NCM_MPD_ITEM_LAST:
     default:
         break;
     }
