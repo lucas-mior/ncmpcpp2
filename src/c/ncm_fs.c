@@ -313,6 +313,7 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
         entry->name_len = name_len;
         entry->type = ncm_fs_dirent_type(dirent->d_type);
         memcpy64(entry->name, dirent->d_name, name_len + 1);
+
         ncm_error_clear(error);
         return true;
     }
