@@ -663,10 +663,10 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     int32 visualizer_colors_len;
     int32 fps;
 #if defined(HAVE_FFTW3_H)
-    uint32 spectrum_dft_size;
-    double spectrum_gain;
-    double spectrum_hz_min;
-    double spectrum_hz_max;
+    int32 spectrum_dft_size = NATIVE_VISUALIZER_DEFAULT_DFT_SIZE;           
+    double spectrum_gain = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_GAIN;   
+    double spectrum_hz_min = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MIN;   
+    double spectrum_hz_max = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MAX;   
 #endif
     NativeVisualizerDataSourceHooks data_source_hooks;
     enum NativeVisualizerType visualization_type;
@@ -687,12 +687,7 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     visualizer_colors_len = 0;
     fps = NATIVE_VISUALIZER_DEFAULT_FPS;
     data_source_hooks = native_visualizer_data_source_system_hooks(NULL);
-#if defined(HAVE_FFTW3_H)
-    spectrum_dft_size = NATIVE_VISUALIZER_DEFAULT_DFT_SIZE;
-    spectrum_gain = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_GAIN;
-    spectrum_hz_min = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MIN;
-    spectrum_hz_max = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MAX;
-#endif
+    
     visualization_type = NATIVE_VISUALIZER_WAVE;
     autoscale = false;
     stereo = false;
