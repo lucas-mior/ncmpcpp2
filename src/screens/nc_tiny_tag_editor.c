@@ -105,9 +105,9 @@ native_tiny_tag_editor_screen_init(
     ncm_buffer_init(&screen->tag_separator);
     screen->previous_screen = NULL;
     screen->start_x = start_x;
-    screen->width = (int32)width;
+    screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = (int32)main_height;
+    screen->main_height = main_height;
     screen->has_edited = false;
     screen->show_duplicate_tags = false;
     screen->registered = false;
@@ -169,9 +169,9 @@ native_tiny_tag_editor_screen_set_geometry(
         return;
     }
     screen->start_x = start_x;
-    screen->width = (int32)width;
+    screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = (int32)main_height;
+    screen->main_height = main_height;
     nc_window_move_to(&screen->window, start_x, main_start_y);
     nc_window_resize(&screen->window, width, main_height);
     return;
