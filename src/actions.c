@@ -3780,7 +3780,7 @@ action_runtime_browser_item_name(NcmMpdItem *item, NcmBuffer *name) {
         }
         break;
     case NCM_MPD_ITEM_UNKNOWN:
-        return false;
+    case NCM_MPD_ITEM_LAST:
     default:
         return false;
     }
