@@ -1039,12 +1039,6 @@ tiny_editor_buffer_uint(NcBuffer *buffer, uint32 value, char *suffix,
     int32 len;
 
     len = SNPRINTF(number, "%u", value);
-    if (len < 0) {
-        return;
-    }
-    if (len >= SIZEOF(number)) {
-        len = SIZEOF(number) - 1;
-    }
     nc_buffer_append_data(buffer, number, len);
     nc_buffer_append_data(buffer, suffix, suffix_len);
     return;

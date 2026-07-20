@@ -72,17 +72,8 @@ ncm_conversion_set_parse_error(NcmError *error, char *source,
                                int32 source_len) {
     char message[256];
     int32 len;
-
     len = SNPRINTF(message,
                    "conversion failed for '%.*s'", source_len, source);
-    if (len < 0) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("conversion failed"));
-        return;
-    }
-    if (len >= SIZEOF(message)) {
-        len = SIZEOF(message) - 1;
-    }
-
     ncm_error_set(error, EINVAL, message, len);
     return;
 }
@@ -96,13 +87,6 @@ ncm_conversion_set_i64_bounds_error(NcmError *error, int64 value,
     len = SNPRINTF(message,
                    "value is out of bounds ([%lld, %lld] expected, %lld given)",
                    (llong)lbound, (llong)ubound, (llong)value);
-    if (len < 0) {
-        ncm_error_set(error, ERANGE, STRLIT_ARGS("value is out of bounds"));
-        return;
-    }
-    if (len >= SIZEOF(message)) {
-        len = SIZEOF(message) - 1;
-    }
 
     ncm_error_set(error, ERANGE, message, len);
     return;
@@ -117,13 +101,6 @@ ncm_conversion_set_f64_bounds_error(NcmError *error, double value,
     len = SNPRINTF(message,
                    "value is out of bounds ([%g, %g] expected, %g given)",
                    lbound, ubound, value);
-    if (len < 0) {
-        ncm_error_set(error, ERANGE, STRLIT_ARGS("value is out of bounds"));
-        return;
-    }
-    if (len >= SIZEOF(message)) {
-        len = SIZEOF(message) - 1;
-    }
 
     ncm_error_set(error, ERANGE, message, len);
     return;
@@ -138,13 +115,6 @@ ncm_conversion_set_f64_lower_error(NcmError *error, double value,
     len = SNPRINTF(message,
                    "value is out of bounds ([%g, ->) expected, %g given)",
                    lbound, value);
-    if (len < 0) {
-        ncm_error_set(error, ERANGE, STRLIT_ARGS("value is out of bounds"));
-        return;
-    }
-    if (len >= SIZEOF(message)) {
-        len = SIZEOF(message) - 1;
-    }
 
     ncm_error_set(error, ERANGE, message, len);
     return;
