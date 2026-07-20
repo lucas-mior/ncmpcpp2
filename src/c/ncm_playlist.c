@@ -83,8 +83,7 @@ ncm_playlist_from_mpd_playlist(NcmPlaylist *dest,
         return false;
     }
 
-    path = (char *)mpd_playlist_get_path(source);
-    if (path == NULL) {
+    if ((path = (char *)mpd_playlist_get_path(source)) == NULL) {
         return false;
     }
 

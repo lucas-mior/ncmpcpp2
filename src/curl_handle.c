@@ -44,8 +44,7 @@ ncm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
         append_c_string(&referer_string, referer, referer_len);
     }
 
-    curl = curl_easy_init();
-    if (curl == NULL) {
+    if ((curl = curl_easy_init()) == NULL) {
         result = CURLE_FAILED_INIT;
         goto cleanup;
     }
@@ -82,8 +81,7 @@ ncm_curl_escape(NcmBuffer *out, char *string, int32 string_len) {
     char *escaped;
 
     ncm_buffer_clear(out);
-    escaped = curl_easy_escape(NULL, string, string_len);
-    if (escaped == NULL) {
+    if ((escaped = curl_easy_escape(NULL, string, string_len)) == NULL) {
         return CURLE_OUT_OF_MEMORY;
     }
 

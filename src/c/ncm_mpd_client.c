@@ -1285,8 +1285,7 @@ ncm_mpd_client_get_directory_entries(NcmMpdClient *client, char *path,
     }
 
     ncm_mpd_item_list_init(&list);
-    ok = ncm_mpd_client_get_directory(client, path, &list, error);
-    if (ok) {
+    if ((ok = ncm_mpd_client_get_directory(client, path, &list, error))) {
         ok = ncm_mpd_item_list_to_item_array(&list, items);
     }
     ncm_mpd_item_list_destroy(&list);
@@ -1307,8 +1306,7 @@ ncm_mpd_client_get_directory_list(NcmMpdClient *client, char *path,
     }
 
     ncm_mpd_item_list_init(&items);
-    ok = ncm_mpd_client_get_directory(client, path, &items, error);
-    if (ok) {
+    if ((ok = ncm_mpd_client_get_directory(client, path, &items, error))) {
         ok = ncm_mpd_item_list_to_directory_array(&items, directories);
     }
     ncm_mpd_item_list_destroy(&items);

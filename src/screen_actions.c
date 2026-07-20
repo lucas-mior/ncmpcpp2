@@ -19,8 +19,7 @@ static bool
 current_screen_is(int32 type) {
     NcScreen *screen;
 
-    screen = current_screen();
-    if (screen == NULL) {
+    if ((screen = current_screen()) == NULL) {
         return false;
     }
     return nc_screen_type(screen) == type;
@@ -122,8 +121,7 @@ static bool
 current_screen_set_search_constraint(char *pattern, int32 pattern_len) {
     NcmBuffer *buffer;
 
-    buffer = current_screen_search_buffer();
-    if (buffer == NULL) {
+    if ((buffer = current_screen_search_buffer()) == NULL) {
         return false;
     }
     return ncm_buffer_set(buffer, pattern, pattern_len);
@@ -193,8 +191,7 @@ current_screen_clear_current_search_constraint(void) {
         return;
     }
 #endif
-    buffer = current_screen_search_buffer();
-    if (buffer) {
+    if ((buffer = current_screen_search_buffer())) {
         ncm_buffer_clear(buffer);
     }
     return;
@@ -204,8 +201,7 @@ static void
 current_screen_finish_immediate_change(void) {
     NcScreen *screen;
 
-    screen = current_screen();
-    if (screen == NULL) {
+    if ((screen = current_screen()) == NULL) {
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST)) {
@@ -224,8 +220,7 @@ NcmStringView
 current_screen_current_filter(void) {
     NcmBuffer *buffer;
 
-    buffer = current_screen_filter_buffer();
-    if (buffer == NULL) {
+    if ((buffer = current_screen_filter_buffer()) == NULL) {
         return ncm_string_view_make(NULL, 0);
     }
     return ncm_string_view_make(buffer->data, buffer->len);
@@ -277,8 +272,7 @@ NcmStringView
 current_screen_current_search_constraint(void) {
     NcmBuffer *buffer;
 
-    buffer = current_screen_search_buffer();
-    if (buffer == NULL) {
+    if ((buffer = current_screen_search_buffer()) == NULL) {
         return ncm_string_view_make(NULL, 0);
     }
     return ncm_string_view_make(buffer->data, buffer->len);

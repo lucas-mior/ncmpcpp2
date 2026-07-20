@@ -132,8 +132,7 @@ ncm_directory_from_mpd_directory(NcmDirectory *dest,
         return false;
     }
 
-    path = (char *)mpd_directory_get_path(source);
-    if (path == NULL) {
+    if ((path = (char *)mpd_directory_get_path(source)) == NULL) {
         return false;
     }
 

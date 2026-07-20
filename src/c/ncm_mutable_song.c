@@ -398,8 +398,7 @@ ncm_mutable_song_set_original_tag(NcmMutableSong *song,
         return false;
     }
 
-    tag = ncm_mutable_song_find_tag(song, field, idx);
-    if (tag == NULL) {
+    if ((tag = ncm_mutable_song_find_tag(song, field, idx)) == NULL) {
         tag = ncm_mutable_song_add_tag(song, field, idx);
     }
     if (tag == NULL) {
@@ -428,8 +427,7 @@ ncm_mutable_song_set_tag(NcmMutableSong *song, enum NcmTagsField field,
         return false;
     }
 
-    tag = ncm_mutable_song_find_tag(song, field, idx);
-    if (tag == NULL) {
+    if ((tag = ncm_mutable_song_find_tag(song, field, idx)) == NULL) {
         if (value_len <= 0) {
             return true;
         }
@@ -526,8 +524,7 @@ ncm_mutable_song_get_tag(NcmMutableSong *song, enum NcmTagsField field,
         return false;
     }
 
-    tag = ncm_mutable_song_find_tag(song, field, idx);
-    if (tag == NULL) {
+    if ((tag = ncm_mutable_song_find_tag(song, field, idx)) == NULL) {
         return false;
     }
     if (tag->modified) {

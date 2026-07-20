@@ -759,8 +759,7 @@ native_search_list_database_songs(
     result = ncm_mpd_client_get_directory_recursive(
         &global_mpd, "/", &source, error);
     if (result) {
-        result = ncm_mpd_song_list_to_song_array(&source, songs);
-        if (!result) {
+        if (!(result = ncm_mpd_song_list_to_song_array(&source, songs))) {
             ncm_error_set(error, EIO,
                           STRLIT_ARGS("failed to copy database songs"));
         }
@@ -835,8 +834,7 @@ native_search_prompt_constraint(
     }
 
     ncm_statusbar_scoped_lock_init(&lock);
-    window = ncm_statusbar_put();
-    if (window == NULL) {
+    if ((window = ncm_statusbar_put()) == NULL) {
         ncm_statusbar_scoped_lock_destroy(&lock);
         return NATIVE_SEARCH_ENGINE_PROMPT_ERROR;
     }
@@ -1097,8 +1095,7 @@ native_prompt_buffer(char *label, int32 label_len,
     }
 
     ncm_statusbar_scoped_lock_init(&lock);
-    window = ncm_statusbar_put();
-    if (window == NULL) {
+    if ((window = ncm_statusbar_put()) == NULL) {
         ncm_statusbar_scoped_lock_destroy(&lock);
         return NATIVE_PROMPT_RESULT_ERROR;
     }
@@ -1175,8 +1172,7 @@ native_tag_editor_confirm(
     prompted = false;
 
     ncm_statusbar_scoped_lock_init(&lock);
-    window = ncm_statusbar_put();
-    if (window) {
+    if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, message, message_len);
         nc_window_print_data(window, STRLIT_ARGS(" [y/n] "));
         prompted = ncm_statusbar_prompt_return_one_of(
@@ -1608,8 +1604,7 @@ bool
 native_c_screens_switch_to_type(enum ScreenType screen_type) {
     NcScreen *screen;
 
-    screen = native_c_screens_find_type(screen_type);
-    if (screen == NULL) {
+    if ((screen = native_c_screens_find_type(screen_type)) == NULL) {
         return false;
     }
     return nc_screen_switcher_switch_to(screen,
@@ -1625,8 +1620,7 @@ enum ScreenType
 native_c_screens_current_type(void) {
     NcScreen *screen;
 
-    screen = app_controller_current_screen();
-    if (screen == NULL) {
+    if ((screen = app_controller_current_screen()) == NULL) {
         return NCM_SCREEN_TYPE_UNKNOWN;
     }
     return native_screen_type_from_native_type(nc_screen_type(screen));
@@ -1685,8 +1679,7 @@ static void
 native_request_registered_resize(int32 type) {
     NcScreen *screen;
 
-    screen = app_controller_find_screen_type(type);
-    if (screen) {
+    if ((screen = app_controller_find_screen_type(type))) {
         nc_screen_request_resize(screen);
     }
     return;

@@ -175,8 +175,7 @@ ncm_tags_write_field(NcmTaglibFile *file, enum NcmTagsField field,
                      NcmTagsGetFieldCallback *callback, void *user) {
     char *property;
 
-    property = ncm_tags_field_property(field);
-    if (property == NULL) {
+    if ((property = ncm_tags_field_property(field)) == NULL) {
         return false;
     }
 
@@ -186,8 +185,7 @@ ncm_tags_write_field(NcmTaglibFile *file, enum NcmTagsField field,
         bool has_value;
 
         ncm_tags_view_init(&value);
-        has_value = callback(field, i, &value, user);
-        if (!has_value) {
+        if (!(has_value = callback(field, i, &value, user))) {
             break;
         }
         if (value.data == NULL) {

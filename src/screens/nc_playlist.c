@@ -119,8 +119,7 @@ nc_playlist_screen_mouse_button_pressed(NcPlaylistScreen *screen,
         return;
     }
 
-    window = nc_screen_active_window(&screen->screen);
-    if (window == NULL) {
+    if ((window = nc_screen_active_window(&screen->screen)) == NULL) {
         return;
     }
 
@@ -555,8 +554,7 @@ native_playlist_screen_update_current_mutable_song(
     }
 
     menu = native_playlist_storage_menu(screen);
-    current = nc_menu_current_item(menu);
-    if (current == NULL) {
+    if ((current = nc_menu_current_item(menu)) == NULL) {
         return false;
     }
 
@@ -635,8 +633,8 @@ native_playlist_screen_locate_position(NativePlaylistScreen *screen,
     menu = native_playlist_storage_menu(screen);
     height = nc_playlist_screen_height(&screen->screen);
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        song = nc_menu_active_item_at(menu, i);
-        if (song && (ncm_song_position(song) == position)) {
+        if ((song = nc_menu_active_item_at(menu, i))
+            && (ncm_song_position(song) == position)) {
             nc_menu_highlight_position(menu, i, height);
             return true;
         }
@@ -727,8 +725,7 @@ native_playlist_screen_find_sort_range(
         last = selected_last;
     }
 
-    song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, first);
-    if (song == NULL) {
+    if ((song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, first)) == NULL) {
         ncm_error_set(error, EINVAL,
                       STRLIT_ARGS("missing playlist range song"));
         return false;
@@ -738,8 +735,7 @@ native_playlist_screen_find_sort_range(
     for (int32 i = first; i < last; i += 1) {
         int32 expected_position;
 
-        song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i);
-        if (song == NULL) {
+        if ((song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i)) == NULL) {
             ncm_error_set(error, EINVAL,
                           STRLIT_ARGS("missing playlist range song"));
             return false;
@@ -802,8 +798,7 @@ native_playlist_screen_copy_sort_range(
     menu = native_playlist_storage_menu(screen);
     ncm_song_array_init(&replacement);
     for (int32 i = first; i < last; i += 1) {
-        song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i);
-        if (song == NULL) {
+        if ((song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i)) == NULL) {
             ncm_error_set(error, EINVAL,
                           STRLIT_ARGS("missing playlist range song"));
             ncm_song_array_destroy(&replacement);
@@ -1192,8 +1187,7 @@ native_playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
         return;
     }
 
-    is_now_playing = native_playlist_song_is_now_playing(item);
-    if (is_now_playing) {
+    if ((is_now_playing = native_playlist_song_is_now_playing(item))) {
         native_playlist_print_buffer(window, &Config.now_playing_prefix);
     }
 
@@ -1568,8 +1562,7 @@ native_playlist_append_position(NcMenu *menu, int32 pos,
                                 NcmSongArray *songs) {
     NcmSong *song;
 
-    song = nc_menu_active_item_at(menu, pos);
-    if (song == NULL) {
+    if ((song = nc_menu_active_item_at(menu, pos)) == NULL) {
         return false;
     }
     return ncm_song_array_append_copy(songs, song);

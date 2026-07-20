@@ -54,8 +54,7 @@ menu_position_is_selected(NcMenu *menu, enum NcMenuItemSource source,
         return true;
     }
 
-    item = nc_menu_item_at(menu, source, pos);
-    if (item == NULL) {
+    if ((item = nc_menu_item_at(menu, source, pos)) == NULL) {
         return false;
     }
 
@@ -77,8 +76,7 @@ menu_set_position_selected(NcMenu *menu, enum NcMenuItemSource source,
         return false;
     }
 
-    item = nc_menu_item_at(menu, source, pos);
-    if (item == NULL) {
+    if ((item = nc_menu_item_at(menu, source, pos)) == NULL) {
         return false;
     }
 

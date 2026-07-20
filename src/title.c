@@ -18,13 +18,11 @@ title_current_screen_title(void) {
     NcScreen *screen;
     char *title;
 
-    screen = app_controller_current_screen();
-    if (screen == NULL) {
+    if ((screen = app_controller_current_screen()) == NULL) {
         return "";
     }
 
-    title = nc_screen_title(screen);
-    if (title == NULL) {
+    if ((title = nc_screen_title(screen)) == NULL) {
         return "";
     }
 
@@ -152,8 +150,8 @@ ncm_title_draw_header_with_config(char *title, int32 title_len,
         return;
     }
 
-    window = ui_state_header_window();
-    if ((window == NULL) || (window->window == NULL)) {
+    if (((window = ui_state_header_window()) == NULL)
+        || (window->window == NULL)) {
         return;
     }
 
