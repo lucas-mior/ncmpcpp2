@@ -164,7 +164,7 @@ static NcHelpHooks native_help_hooks(void);
 static NcOutputsHooks native_outputs_hooks(void);
 static NcServerInfoHooks native_server_info_hooks(void);
 static NcSongInfoHooks native_song_info_hooks(void);
-static void native_show_long_time(NcBuffer *buffer, uint64 seconds);
+static void native_show_long_time(NcBuffer *buffer, int64 seconds);
 
 void
 native_c_screen_browser_init(void) {
@@ -2161,9 +2161,7 @@ native_server_info_render(void *user, NcBuffer *buffer) {
     native_append_cstring(buffer, "\n");
 
     native_append_bold_label(buffer, "Time playing: ");
-    ncm_song_show_time((uint32)stats.play_time,
-                       time_buffer,
-                       (int32)SIZEOF(time_buffer));
+    ncm_song_show_time(stats.play_time, time_buffer, SIZEOF(time_buffer));
     native_append_cstring(buffer, time_buffer);
     native_append_cstring(buffer, "\n\n");
 
@@ -2380,7 +2378,7 @@ native_song_info_hooks(void) {
 }
 
 static void
-native_show_long_time(NcBuffer *buffer, uint64 seconds) {
+native_show_long_time(NcBuffer *buffer, int64 seconds) {
     int64 days;
     int64 hours;
     int64 minutes;
