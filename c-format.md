@@ -196,6 +196,26 @@ function(int32 arg) {
 }
 ```
 
+If the function header is long, and needs more than one line, put an extra new
+line before the closing parenthesis:
+```c
+// bad
+static void
+function_with_long_name_and_multiple_arguments(void *pointer,
+    char *argument_long_name_very_long) {
+    return;
+}
+
+// good
+static void
+function_with_long_name_and_multiple_arguments(
+    void *pointer,
+    char *argument_long_name_very_long
+) {
+    return;
+}
+```
+
 In standalone declarations, if one is needed at all, put all in one line. Break
 long lines so the 80-character limit rule is followed.
 
