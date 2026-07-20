@@ -126,17 +126,21 @@ native_tiny_tag_editor_screen_destroy(NativeTinyTagEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
+
     (void)app_controller_unregister_screen(
         native_tiny_tag_editor_screen_base(screen));
     ncm_mutable_song_destroy(&screen->edited);
     ncm_buffer_destroy(&screen->music_dir);
     ncm_buffer_destroy(&screen->tag_separator);
     nc_window_destroy(&screen->window);
+
     nc_editor_buffer_menu_destroy(&screen->rows);
+
     screen->previous_screen = NULL;
     screen->has_edited = false;
     screen->show_duplicate_tags = false;
     screen->registered = false;
+
     return;
 }
 
