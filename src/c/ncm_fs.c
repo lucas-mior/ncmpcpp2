@@ -377,6 +377,7 @@ ncm_fs_join(NcmBuffer *buffer,
     ncm_buffer_clear(buffer);
     ncm_buffer_append(buffer, result.data, result.len);
     ncm_buffer_destroy(&result);
+
     return true;
 }
 
