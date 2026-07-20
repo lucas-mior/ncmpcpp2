@@ -1182,12 +1182,11 @@ native_lyrics_job_fetch(NativeLyricsJob *job,
 
 static bool
 native_lyrics_job_run(void *user, NcmError *error) {
-    NativeLyricsJob *job;
     NcmBuffer artist;
     NcmBuffer title;
     bool success;
+    NativeLyricsJob *job = user;
 
-    job = user;
     ncm_buffer_init(&artist);
     ncm_buffer_init(&title);
     if (!native_lyrics_fetch_artist_title(&job->song, &artist, &title)) {
