@@ -193,6 +193,7 @@ nc_format_reverse(enum NcFormat format) {
     case NC_FORMAT_NO_ITALIC:
         result = NC_FORMAT_ITALIC;
         break;
+    case NC_FORMAT_LAST:
     default:
         result = format;
         break;
@@ -974,6 +975,7 @@ nc_window_scroll(NcWindow *window, enum NcScroll where) {
     case NC_SCROLL_HOME:
     case NC_SCROLL_END:
         break;
+    case NC_SCROLL_LAST:
     default:
         break;
     }
@@ -994,6 +996,7 @@ nc_window_apply_term_manip(NcWindow *window, enum NcTermManip tm) {
         mvwhline(window->window, y, x, ' ', nc_i32(window->width) - x);
         nc_window_go_to_xy(window, x, y);
         break;
+    case NC_TERM_LAST:
     default:
         break;
     }
@@ -1043,6 +1046,7 @@ nc_window_apply_format(NcWindow *window, enum NcFormat format) {
         nc_window_decrease_format(window, &window->italic_counter,
                                   nc_window_italic);
         break;
+    case NC_FORMAT_LAST:
     default:
         break;
     }

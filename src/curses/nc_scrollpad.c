@@ -104,6 +104,7 @@ nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
     case NC_SCROLL_END:
         scrollpad->beginning = max_beginning;
         break;
+    case NC_SCROLL_LAST:
     default:
         break;
     }
