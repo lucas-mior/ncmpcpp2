@@ -43,7 +43,7 @@ nc_playlist_screen_set_geometry(NcPlaylistScreen *screen,
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = (int32)main_height;
+    screen->main_height = main_height;
     return;
 }
 
@@ -375,7 +375,7 @@ native_playlist_screen_update_column_title(NativePlaylistScreen *screen) {
     if (screen->screen.width > INT32_MAX) {
         list_width = INT32_MAX;
     } else {
-        list_width = (int32)screen->screen.width;
+        list_width = screen->screen.width;
     }
     if (list_width <= 0) {
         nc_window_set_title(&screen->window, NULL, 0);
@@ -1068,7 +1068,7 @@ native_playlist_update(NcScreen *screen) {
     delay = Config.playlist_disable_highlight_delay_seconds;
     if ((delay == 0)
         || (global_timer_elapsed_seconds(playlist->highlight_timer)
-            <= (int32)delay)) {
+            <= delay)) {
         return;
     }
 
@@ -1223,7 +1223,7 @@ native_playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
         if (available_width > INT32_MAX) {
             list_width = INT32_MAX;
         } else {
-            list_width = (int32)available_width;
+            list_width = available_width;
         }
         use_colors = !Config.discard_colors_if_item_is_selected
                      || !nc_menu_position_is_selected(menu, pos);
@@ -1253,7 +1253,7 @@ native_playlist_activate_song(NcMenu *menu, void *item, int32 pos,
     if (item == NULL) {
         return;
     }
-    if (!ncm_mpd_client_play_id(&global_mpd, (int32)ncm_song_id(item),
+    if (!ncm_mpd_client_play_id(&global_mpd, ncm_song_id(item),
                                 &error)) {
         ncm_statusbar_print_cstring(1, error.message);
     }

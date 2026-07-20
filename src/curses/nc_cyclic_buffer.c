@@ -188,7 +188,7 @@ nc_cyclic_normalize_start(int32 *start_pos, int32 total_characters) {
         *start_pos = 0;
     }
 
-    return (int32)*start_pos;
+    return *start_pos;
 }
 
 static void

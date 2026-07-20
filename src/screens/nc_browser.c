@@ -210,9 +210,9 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     ncm_regex_init(&screen->filter_regex);
 
     screen->start_x = start_x;
-    screen->width = (int32)width;
+    screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = (int32)main_height;
+    screen->main_height = main_height;
     screen->lines_scrolled = 1;
     screen->title_scroll_beginning = 0;
     screen->active_display_mode = Config.browser_display_mode;
@@ -278,9 +278,9 @@ native_browser_screen_set_geometry(NativeBrowserScreen *screen,
                                    int32 main_start_y,
                                    int32 main_height) {
     screen->start_x = start_x;
-    screen->width = (int32)width;
+    screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = (int32)main_height;
+    screen->main_height = main_height;
     nc_window_move_to(&screen->window, start_x, main_start_y);
     nc_window_resize(&screen->window, width, main_height);
     native_browser_screen_update_column_title(screen);
@@ -481,7 +481,7 @@ native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
         directory = ncm_string_view_make("/", 1);
     }
 
-    screen_width = (int32)ui_state_screen_width();
+    screen_width = ui_state_screen_width();
     if (screen_width <= 0) {
         screen_width = native_browser_i32_width(screen->width);
     }
@@ -1548,7 +1548,7 @@ native_browser_i32_width(int32 width) {
     if (width > INT32_MAX) {
         return INT32_MAX;
     }
-    return (int32)width;
+    return width;
 }
 
 static void
