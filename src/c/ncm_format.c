@@ -442,35 +442,6 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
 }
 
 static bool
-ncm_format_ast_append_first_of_getters(NcmFormatAst *ast,
-                                       enum NcmSongGetter *getters,
-                                       int32 getters_len) {
-    NcmFormatExpr *first;
-
-    if (getters_len <= 0) {
-        return true;
-    }
-
-    if ((first = ncm_format_expr_list_append(&ast->root)) == NULL) {
-        return false;
-    }
-    first->type = NCM_FORMAT_EXPR_FIRST_OF;
-    ncm_format_expr_list_init(&first->value.list);
-
-    for (int32 i = 0; i < getters_len; i += 1) {
-        NcmFormatExpr *tag;
-
-        if ((tag = ncm_format_expr_list_append(&first->value.list)) == NULL) {
-            return false;
-        }
-        tag->type = NCM_FORMAT_EXPR_SONG_TAG;
-        tag->value.song_tag.getter = getters[i];
-        tag->value.song_tag.delimiter = 0;
-    }
-    return true;
-}
-
-static bool
 ncm_format_find_matching_brace(char *data, int32 start,
                                int32 end, int32 *result) {
     int32 depth;
