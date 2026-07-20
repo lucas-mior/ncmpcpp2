@@ -195,15 +195,16 @@ static bool native_playlist_set_mutable_uri(
     NcmSong *song, NcmMutableSong *edited);
 static void native_playlist_refresh_stats(NativePlaylistScreen *screen);
 static bool native_playlist_truncate_storage(NativePlaylistScreen *screen,
-                                             uint32 playlist_length);
+                                             int32 playlist_length);
 static bool native_playlist_apply_changed_song_to_storage(
     NativePlaylistScreen *screen, NcmSong *song);
 static bool native_playlist_apply_changed_songs(
     NativePlaylistScreen *screen, NcmMpdSongList *songs,
-    uint32 playlist_length);
-static bool native_playlist_should_reload_full(
-    NativePlaylistScreen *screen, uint32 version,
-    uint32 playlist_length, NcmMpdSongList *changes);
+    int32 playlist_length);
+static bool native_playlist_should_reload_full(NativePlaylistScreen *screen,
+                                               int32 version,
+                                               int32 playlist_length,
+                                               NcmMpdSongList *changes);
 static bool native_playlist_append_selected(NcMenu *menu,
                                             NcmSongArray *songs);
 static bool native_playlist_append_position(NcMenu *menu, int64 pos,
@@ -467,8 +468,8 @@ native_playlist_screen_clear(NativePlaylistScreen *screen) {
 bool
 native_playlist_screen_reload_from_mpd(NativePlaylistScreen *screen,
                                        NcmMpdClient *client,
-                                       uint32 version,
-                                       uint32 playlist_length,
+                                       int32 version,
+                                       int32 playlist_length,
                                        NcmError *error) {
     NcmMpdSongList songs;
     bool result;
@@ -498,8 +499,8 @@ native_playlist_screen_reload_from_mpd(NativePlaylistScreen *screen,
     }
 
     if (result) {
-        result = native_playlist_apply_changed_songs(
-            screen, &songs, playlist_length);
+        result = native_playlist_apply_changed_songs(screen,
+                                                     &songs, playlist_length);
         if (!result) {
             ncm_error_set(error, -1,
                           STRLIT_ARGS("could not copy playlist songs"));
@@ -691,9 +692,8 @@ native_playlist_screen_find_sort_range(
 
     first = last;
     for (int64 i = 0; i < last; i += 1) {
-        uint32 flags;
+        uint32 flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
 
-        flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
         if (flags & NC_MENU_ITEM_SELECTED) {
             first = i;
             break;
@@ -745,7 +745,7 @@ native_playlist_screen_find_sort_range(
             return false;
         }
         expected_position = range_start + i - first;
-        if ((expected_position > UINT32_MAX)
+        if ((expected_position > INT32_MAX)
             || (ncm_song_position(song) != expected_position)) {
             ncm_error_set(
                 error, EINVAL,
@@ -1058,7 +1058,7 @@ native_playlist_title(NcScreen *screen) {
 static void
 native_playlist_update(NcScreen *screen) {
     NativePlaylistScreen *playlist;
-    uint32 delay;
+    int32 delay;
 
     playlist = native_playlist_from_screen(screen);
     if (!native_playlist_screen_highlighting(playlist)) {
@@ -1316,7 +1316,7 @@ native_playlist_build_mutable_song(
     enum NcmTagsField field;
     enum mpd_tag_type type;
     int64 mtime;
-    uint32 duration;
+    int32 duration;
 
     if ((replacement == NULL) || (current == NULL) || (edited == NULL)) {
         return false;
@@ -1340,7 +1340,7 @@ native_playlist_build_mutable_song(
         }
     }
 
-    for (uint32 i = 0; i < NCM_TAGS_FIELD_LAST; i += 1) {
+    for (int32 i = 0; i < NCM_TAGS_FIELD_LAST; i += 1) {
         type = ncm_tags_field_to_tag_type((enum NcmTagsField)i);
         for (int32 j = 0; ; j += 1) {
             if (!ncm_mutable_song_get_tag(edited,
@@ -1422,7 +1422,7 @@ native_playlist_refresh_stats(NativePlaylistScreen *screen) {
 
 static bool
 native_playlist_truncate_storage(NativePlaylistScreen *screen,
-                                 uint32 playlist_length) {
+                                 int32 playlist_length) {
     NcMenu *menu;
     int64 new_count;
     int64 old_count;
@@ -1446,7 +1446,7 @@ static bool
 native_playlist_apply_changed_song_to_storage(NativePlaylistScreen *screen,
                                               NcmSong *song) {
     NcMenu *menu;
-    uint32 position;
+    int32 position;
 
     if (screen == NULL) {
         return false;
@@ -1457,7 +1457,7 @@ native_playlist_apply_changed_song_to_storage(NativePlaylistScreen *screen,
 
     menu = native_playlist_storage_menu(screen);
     position = ncm_song_position(song);
-    if (position < (uint32)nc_menu_all_item_count(menu)) {
+    if (position < nc_menu_all_item_count(menu)) {
         return nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL,
                                     (int64)position, song);
     }
@@ -1468,11 +1468,11 @@ native_playlist_apply_changed_song_to_storage(NativePlaylistScreen *screen,
 
 static bool
 native_playlist_should_reload_full(NativePlaylistScreen *screen,
-                                   uint32 version,
-                                   uint32 playlist_length,
+                                   int32 version,
+                                   int32 playlist_length,
                                    NcmMpdSongList *changes) {
     int64 count;
-    uint32 next_append_position;
+    int32 next_append_position;
 
     if (playlist_length == 0) {
         return false;
@@ -1489,9 +1489,9 @@ native_playlist_should_reload_full(NativePlaylistScreen *screen,
         return false;
     }
 
-    next_append_position = (uint32)count;
+    next_append_position = count;
     for (int32 i = 0; i < changes->count; i += 1) {
-        uint32 position;
+        int32 position;
 
         position = ncm_song_position(&changes->items[i]);
         if (position > next_append_position) {
@@ -1507,7 +1507,7 @@ native_playlist_should_reload_full(NativePlaylistScreen *screen,
 static bool
 native_playlist_apply_changed_songs(NativePlaylistScreen *screen,
                                     NcmMpdSongList *songs,
-                                    uint32 playlist_length) {
+                                    int32 playlist_length) {
     NcMenu *menu;
     bool result;
     bool was_filtered;
@@ -1584,7 +1584,7 @@ native_playlist_set_one_priority(NcmSong *song, int32 idx, void *user) {
     (void)idx;
     context = user;
     return ncm_mpd_client_set_priority_song(context->client, song,
-                                            (uint32)context->priority,
+                                            context->priority,
                                             context->error);
 }
 

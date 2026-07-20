@@ -673,7 +673,7 @@ ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
     ncm_mutable_song_set_from_database(dest,
                                        ncm_song_is_from_database(source));
 
-    for (uint32 field = 0; field < NCM_TAGS_FIELD_LAST; field += 1) {
+    for (int32 field = 0; field < NCM_TAGS_FIELD_LAST; field += 1) {
         enum NcmSongGetter getter;
 
         getter = ncm_tags_field_to_song_getter((enum NcmTagsField)field);
@@ -737,7 +737,7 @@ ncm_mutable_song_get_new_name(NcmMutableSong *song, NcmStringView *view) {
 }
 
 void
-ncm_mutable_song_set_duration(NcmMutableSong *song, uint32 duration) {
+ncm_mutable_song_set_duration(NcmMutableSong *song, int32 duration) {
     if (song == NULL) {
         return;
     }
@@ -746,7 +746,7 @@ ncm_mutable_song_set_duration(NcmMutableSong *song, uint32 duration) {
     return;
 }
 
-uint32
+int32
 ncm_mutable_song_duration(NcmMutableSong *song) {
     if (song == NULL) {
         return 0;

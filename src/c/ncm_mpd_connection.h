@@ -51,7 +51,7 @@ typedef struct NcmMpdStringList {
 } NcmMpdStringList;
 
 typedef struct NcmMpdOutput {
-    uint32 id;
+    int32 id;
     char *name;
     int32 name_len;
     bool enabled;

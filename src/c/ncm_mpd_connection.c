@@ -170,8 +170,7 @@ ncm_mpd_string_list_push(NcmMpdStringList *list, char *value) {
 }
 
 static bool
-ncm_mpd_output_list_push(NcmMpdOutputList *list,
-                         struct mpd_output *output) {
+ncm_mpd_output_list_push(NcmMpdOutputList *list, struct mpd_output *output) {
     int32 old_capacity;
     int32 new_capacity;
     char *name;
@@ -201,13 +200,14 @@ ncm_mpd_output_list_push(NcmMpdOutputList *list,
     name_len = optional_strlen32(name);
 
     item = &list->items[list->count];
-    item->id = mpd_output_get_id(output);
+    item->id = (int32)mpd_output_get_id(output);
     item->name = malloc2(name_len + 1);
     item->name_len = name_len;
     item->enabled = mpd_output_get_enabled(output);
-    ncm_mpd_connection_cstring_copy(item->name, name_len + 1, name);
 
+    ncm_mpd_connection_cstring_copy(item->name, name_len + 1, name);
     list->count += 1;
+
     return true;
 }
 
