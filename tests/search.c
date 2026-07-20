@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <mpd/tag.h>
 
 #define COLOR_BLACK   0
 #define COLOR_RED     1
