@@ -453,11 +453,10 @@ lastfm_switch_to_callback(NcScreen *screen) {
 
 static void
 lastfm_resize_callback(NcScreen *screen) {
-    NativeLastfmScreen *lastfm;
     int32 x;
     int32 width;
+    NativeLastfmScreen *lastfm = lastfm_from_screen(screen);
 
-    lastfm = lastfm_from_screen(screen);
     nc_screen_switcher_get_resize_params(screen, &x, &width, true);
     native_lastfm_screen_set_geometry(lastfm,
                                       x,
@@ -465,6 +464,7 @@ lastfm_resize_callback(NcScreen *screen) {
                                       ui_state_main_start_y(),
                                       ui_state_main_height());
     nc_screen_clear_resize_request(screen);
+
     return;
 }
 
