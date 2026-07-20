@@ -82,10 +82,7 @@ nc_lastfm_screen_init(NcLastfmScreen *screen,
                              callbacks,
                              user,
                              NC_SCREEN_TYPE_LASTFM,
-                             0,
-                             0,
-                             0,
-                             0);
+                             0, 0, 0, 0);
     nc_lastfm_screen_set_geometry(screen,
                                   start_x,
                                   width,
