@@ -245,7 +245,7 @@ current_screen_apply_filter(char *pattern, int32 pattern_len, NcmError *error) {
     } else if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
         result = native_playlist_editor_screen_apply_active_filter(
             native_c_screen_playlist_editor(), pattern, pattern_len,
-            Config.regex_type, error);
+            Config.regex_flags, error);
     } else if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)) {
         result = native_search_engine_screen_apply_filter(
             native_c_screen_search_engine(), pattern, pattern_len, error);
@@ -259,10 +259,10 @@ current_screen_apply_filter(char *pattern, int32 pattern_len, NcmError *error) {
         screen = native_c_screen_tag_editor();
         if (screen->active_column == NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES) {
             result = native_tag_editor_screen_apply_directory_filter(
-                screen, pattern, pattern_len, Config.regex_type, error);
+                screen, pattern, pattern_len, Config.regex_flags, error);
         } else if (screen->active_column == NATIVE_TAG_EDITOR_COLUMN_TAGS) {
             result = native_tag_editor_screen_apply_tag_filter(
-                screen, pattern, pattern_len, Config.regex_type, error);
+                screen, pattern, pattern_len, Config.regex_flags, error);
         }
 #endif
     }
@@ -337,7 +337,7 @@ current_screen_search(enum SearchDirection direction, char *pattern,
         attempted = true;
         found = native_playlist_editor_screen_search_active(
             native_c_screen_playlist_editor(), pattern, pattern_len,
-            Config.regex_type, forward, wrap, skip_current, error);
+            Config.regex_flags, forward, wrap, skip_current, error);
     } else if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)) {
         attempted = true;
         found = native_search_engine_screen_search(
@@ -364,7 +364,7 @@ current_screen_search(enum SearchDirection direction, char *pattern,
         attempted = true;
         found = native_selected_items_adder_screen_search(
             native_c_screen_selected_items_adder(), pattern, pattern_len,
-            Config.regex_type, forward, wrap, skip_current, error);
+            Config.regex_flags, forward, wrap, skip_current, error);
 #if defined(HAVE_TAGLIB_H)
     } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
         attempted = true;

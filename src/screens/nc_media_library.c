@@ -1633,7 +1633,7 @@ native_media_library_screen_apply_filter(
         return false;
     }
     if (!ncm_regex_compile(&state->filter_regex, pattern, pattern_len,
-                           Config.regex_type, error)) {
+                           Config.regex_flags, error)) {
         return false;
     }
     if (!ncm_buffer_set(&state->filter_constraint, pattern, pattern_len)) {
@@ -1703,7 +1703,7 @@ native_media_library_screen_search(NativeMediaLibraryScreen *screen,
         return false;
     }
     if (!ncm_regex_compile(&state->search_regex, pattern, pattern_len,
-                           Config.regex_type, error)) {
+                           Config.regex_flags, error)) {
         return false;
     }
     if (!ncm_buffer_set(&state->search_constraint, pattern, pattern_len)) {

@@ -1610,15 +1610,15 @@ static bool
 apply_regular_expressions(Configuration *config, char *value, int32 value_len,
                           NcmError *error) {
     if (STREQUAL(value, value_len, STRLIT_ARGS("none"))) {
-        config->regex_type = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
+        config->regex_flags = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
         return true;
     }
     if (STREQUAL(value, value_len, STRLIT_ARGS("basic"))) {
-        config->regex_type = NCM_REGEX_BASIC_CASE_INSENSITIVE;
+        config->regex_flags = NCM_REGEX_BASIC_CASE_INSENSITIVE;
         return true;
     }
     if (STREQUAL(value, value_len, STRLIT_ARGS("extended"))) {
-        config->regex_type = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
+        config->regex_flags = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
         return true;
     }
     settings_invalid_value(error, value, value_len);

@@ -1266,7 +1266,7 @@ native_tag_editor_screen_search(NativeTagEditorScreen *screen,
         enabled = &screen->directory_search_enabled;
     }
     if (!tag_editor_compile_constraint(regex, pattern, pattern_len,
-                                       Config.regex_type, error)) {
+                                       Config.regex_flags, error)) {
         return false;
     }
     ncm_buffer_set(constraint, pattern, pattern_len);
