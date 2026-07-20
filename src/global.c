@@ -31,12 +31,12 @@ global_timer_update(NcmError *error) {
     return ncm_time_monotonic_now(&global_timer, error);
 }
 
-int32
+int64
 global_timer_elapsed_ms(NcmTimePoint start) {
     return ncm_time_elapsed_ms(start, global_timer);
 }
 
-int32
+int64
 global_timer_elapsed_seconds(NcmTimePoint start) {
     return ncm_time_elapsed_ms(start, global_timer) / 1000;
 }
