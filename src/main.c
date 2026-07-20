@@ -23,7 +23,6 @@
 
 /* Single translation unit source inclusions. */
 #include "actions.c"
-#include "app_binding_migration.c"
 #include "app_controller.c"
 #include "app_legacy_bridge.c"
 #include "app_state.c"
