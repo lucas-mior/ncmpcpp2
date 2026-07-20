@@ -1340,12 +1340,10 @@ native_playlist_build_mutable_song(
         }
     }
 
-    for (int32 i = 0; i < NCM_TAGS_FIELD_LAST; i += 1) {
-        type = ncm_tags_field_to_tag_type((enum NcmTagsField)i);
+    for (uint32 i = 0; i < NCM_TAGS_FIELD_LAST; i += 1) {
+        type = ncm_tags_field_to_tag_type(i);
         for (int32 j = 0; ; j += 1) {
-            if (!ncm_mutable_song_get_tag(edited,
-                                          (enum NcmTagsField)i,
-                                          j, &value)) {
+            if (!ncm_mutable_song_get_tag(edited, i, j, &value)) {
                 break;
             }
             if (value.len <= 0) {

@@ -25,7 +25,7 @@ ncm_search_prompt_state_destroy(NcmSearchPromptState *state) {
 
 void
 ncm_search_prompt_state_set_start_position(NcmSearchPromptState *state,
-                                           int64 position) {
+                                           int32 position) {
     state->start_position = position;
     state->has_start_position = true;
     return;
