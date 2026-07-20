@@ -17,7 +17,7 @@ if command -v ctags >/dev/null 2>&1 \
     vtags.sed tags | sort | uniq > .tags.vim 2>/dev/null || true
 fi
 
-BUILD_DIR=${BUILD_DIR-build}
+BUILD_DIR=${BUILD_DIR-bin}
 PREFIX=${PREFIX-/usr/local}
 BINDIR=${BINDIR-$PREFIX/bin}
 DOCDIR=${DOCDIR-$PREFIX/share/doc/ncmpcpp2}
