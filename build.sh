@@ -1,5 +1,13 @@
 #!/bin/sh
 
+if [ -n "$BASH_VERSION" ]; then
+    # shellcheck disable=SC3044
+    shopt -s expand_aliases
+fi
+
+alias trace_on='set -x'
+alias trace_off='{ set +x; } 2>/dev/null'
+
 set -eu
 
 if command -v ctags >/dev/null 2>&1 \
@@ -158,9 +166,11 @@ run_command() {
     command_string=$1
     shift
 
+    trace_on
     # Commands such as CC='ccache gcc' intentionally require word splitting.
     # shellcheck disable=SC2086
     $command_string "$@"
+    trace_off
 }
 
 pkg_config() {
