@@ -173,8 +173,7 @@ status_refresh_footer(NcmStatusHooks *hooks) {
         return;
     }
 
-    footer = ui_state_footer_window();
-    if (footer) {
+    if ((footer = ui_state_footer_window())) {
         nc_window_refresh(footer);
     }
     return;
