@@ -692,10 +692,10 @@ ncm_song_format_track_number(char *buffer, int32 buffer_cap,
 }
 
 int32
-ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap) {
-    int32 hours;
-    int32 minutes;
-    int32 seconds;
+ncm_song_show_time(int64 length, char *buffer, int32 buffer_cap) {
+    int64 hours;
+    int64 minutes;
+    int64 seconds;
     int32 result;
 
     if ((buffer == NULL) || (buffer_cap <= 0)) {
@@ -709,11 +709,12 @@ ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap) {
     seconds = length;
 
     if (hours > 0) {
-        result = snprintf2(buffer, buffer_cap, "%d:%02d:%02d",
-                           hours, minutes, seconds);
+        result = snprintf2(buffer, buffer_cap,
+                           "%lld:%02lld:%02lld",
+                           (llong)hours, (llong)minutes, (llong)seconds);
     } else {
-        result = snprintf2(buffer, buffer_cap, "%d:%02d",
-                           minutes, seconds);
+        result = snprintf2(buffer, buffer_cap,
+                           "%lld:%02lld", (llong)minutes, (llong)seconds);
     }
 
     if (result < 0) {
