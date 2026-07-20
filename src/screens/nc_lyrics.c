@@ -1273,11 +1273,13 @@ native_lyrics_job_destroy(void *user) {
     if (job == NULL) {
         return;
     }
+
     ncm_song_destroy(&job->song);
     ncm_buffer_destroy(&job->filename);
     ncm_lyrics_result_destroy(&job->result);
     nc_buffer_destroy(&job->log);
     free2(job, SIZEOF(*job));
+
     return;
 }
 
