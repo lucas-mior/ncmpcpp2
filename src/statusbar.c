@@ -190,12 +190,12 @@ ncm_progressbar_is_unlocked(void) {
 }
 
 void
-ncm_progressbar_draw(uint32 elapsed, uint32 time) {
+ncm_progressbar_draw(int32 elapsed, int32 time) {
     NcmStringView progressbar[3];
     NcWindow *window;
     int32 width;
     int32 filled;
-    uint64 howlong;
+    int64 howlong;
 
     window = statusbar_footer_window();
     if (window == NULL) {
@@ -209,9 +209,9 @@ ncm_progressbar_draw(uint32 elapsed, uint32 time) {
 
     howlong = 0;
     if (time != 0) {
-        howlong = ((uint64)width*elapsed) / time;
+        howlong = (width*elapsed) / time;
     }
-    if (howlong > (uint64)width) {
+    if (howlong > (int64)width) {
         filled = width;
     } else {
         filled = (int32)howlong;
@@ -239,7 +239,7 @@ ncm_progressbar_draw(uint32 elapsed, uint32 time) {
             nc_window_print_data(window, progressbar[0].data,
                                  progressbar[0].len);
         }
-        if (howlong < (uint64)width) {
+        if (howlong < (int64)width) {
             nc_window_print_data(window, progressbar[1].data,
                                  progressbar[1].len);
         }
