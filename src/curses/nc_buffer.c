@@ -147,21 +147,11 @@ nc_buffer_append_int32(NcBuffer *buffer, int32 value) {
 }
 
 void
-nc_buffer_append_uint32(NcBuffer *buffer, uint32 value) {
+nc_buffer_append_int64(NcBuffer *buffer, uint64 value) {
     char string[64];
     int32 len;
 
-    len = SNPRINTF(string, "%u", value);
-    nc_buffer_append_data(buffer, string, len);
-    return;
-}
-
-void
-nc_buffer_append_uint64(NcBuffer *buffer, uint64 value) {
-    char string[64];
-    int32 len;
-
-    len = SNPRINTF(string, "%llu", (ullong)value);
+    len = SNPRINTF(string, "%lld", (llong)value);
     nc_buffer_append_data(buffer, string, len);
     return;
 }
