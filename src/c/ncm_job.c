@@ -47,6 +47,7 @@ ncm_job_array_reserve(NcmJob **items, int32 *cap,
 
     *items = realloc2(*items, old_cap, new_cap, SIZEOF(**items));
     *cap = new_cap;
+
     return true;
 }
 
