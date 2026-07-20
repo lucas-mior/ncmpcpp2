@@ -284,6 +284,7 @@ native_lyrics_screen_destroy(NativeLyricsScreen *screen) {
         free2(screen->queued_songs,
             screen->queued_songs_cap*SIZEOF(*screen->queued_songs));
     }
+
     ncm_buffer_destroy(&screen->consumer_message);
     ncm_lyrics_result_destroy(&screen->result);
     ncm_buffer_destroy(&screen->filename);
@@ -292,12 +293,14 @@ native_lyrics_screen_destroy(NativeLyricsScreen *screen) {
     ncm_buffer_destroy(&screen->search_constraint);
     nc_buffer_destroy(&screen->display);
     nc_window_destroy(&screen->window);
+
     screen->queued_songs = NULL;
     screen->queued_songs_len = 0;
     screen->queued_songs_cap = 0;
     screen->fetcher = NULL;
     screen->has_song = false;
     screen->initialized = false;
+
     return;
 }
 
