@@ -8,8 +8,7 @@
 
 #include "c/ncm_base.h"
 
-static size_t write_data(char *buffer, size_t size, size_t nmemb,
-                         void *data);
+static size_t write_data(char *buffer, size_t size, size_t nmemb, void *data);
 static void append_c_string(NcmBuffer *buffer, char *string, int32 string_len);
 
 void

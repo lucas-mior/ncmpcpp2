@@ -27,6 +27,7 @@ menu_item_count(NcMenu *menu, enum NcMenuItemSource source) {
     if (menu == NULL) {
         return 0;
     }
+
     switch (source) {
     case NC_MENU_ITEMS_FILTERED:
         return nc_menu_filtered_item_count(menu);
@@ -34,9 +35,8 @@ menu_item_count(NcMenu *menu, enum NcMenuItemSource source) {
         return nc_menu_all_item_count(menu);
     case NC_MENU_ITEMS_LAST:
     default:
-        break;
+        return 0;
     }
-    return 0;
 }
 
 static bool
@@ -48,17 +48,21 @@ menu_position_is_selected(NcMenu *menu, enum NcMenuItemSource source,
     if (menu == NULL) {
         return false;
     }
+
     flags = nc_menu_item_flags_at(menu, source, pos);
     if (flags & NC_MENU_ITEM_SELECTED) {
         return true;
     }
+
     item = nc_menu_item_at(menu, source, pos);
     if (item == NULL) {
         return false;
     }
+
     if (menu->display_callbacks.is_selected == NULL) {
         return false;
     }
+
     return menu->display_callbacks.is_selected(item,
                                                menu->display_callbacks.user);
 }
