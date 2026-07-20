@@ -105,10 +105,7 @@ nc_lyrics_screen_init(NcLyricsScreen *screen,
                              callbacks,
                              user,
                              NC_SCREEN_TYPE_LYRICS,
-                             0,
-                             0,
-                             0,
-                             0);
+                             0, 0, 0, 0);
     screen->scroll_begin = 0;
     screen->refresh_window = false;
     nc_lyrics_screen_set_geometry(screen,
