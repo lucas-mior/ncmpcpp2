@@ -111,11 +111,10 @@ ncm_job_queue_push_completed_locked(NcmJobQueue *queue, NcmJob job) {
 
 static void *
 ncm_job_queue_thread_main(void *user) {
-    NcmJobQueue *queue;
+    NcmJobQueue *queue = user;
     NcmJob job;
     bool have_job;
 
-    queue = user;
     while (true) {
         pthread_mutex_lock(&queue->mutex);
         while ((queue->pending_len <= 0) && !queue->stopping) {
