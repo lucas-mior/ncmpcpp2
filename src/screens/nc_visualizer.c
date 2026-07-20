@@ -1175,6 +1175,7 @@ visualizer_draw_wave(NativeVisualizerScreen *screen, int16 *samples,
         }
         point_y = sum / samples_per_column;
         point_y = (int32)((double)point_y*(double)height/65536.0);
+
         visualizer_draw_character(
             screen, x, base_y + point_y,
             visualizer_color(screen, point_y, half_height, false),
