@@ -776,7 +776,7 @@ native_search_snapshot_playlist(
     NcSongMenu *song_menu;
     NcMenu *menu;
     NcmSong *song;
-    int64 count;
+    int32 count;
 
     (void)user;
     (void)error;
@@ -789,7 +789,7 @@ native_search_snapshot_playlist(
     song_menu = native_playlist_screen_song_menu(playlist);
     menu = nc_song_menu_base(song_menu);
     count = nc_menu_all_item_count(menu);
-    for (int64 i = 0; i < count; i += 1) {
+    for (int32 i = 0; i < count; i += 1) {
         song = nc_song_menu_item_at(song_menu, NC_MENU_ITEMS_ALL, i);
         if (song == NULL) {
             continue;

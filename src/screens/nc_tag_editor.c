@@ -120,12 +120,12 @@ static NcMenuDisplayCallbacks tag_editor_tag_type_display_callbacks(
 static NcMenuDisplayCallbacks tag_editor_tag_display_callbacks(
     NativeTagEditorScreen *screen);
 static void tag_editor_draw_directory(NcMenu *menu, NcWindow *window,
-                                      void *item, int64 pos,
+                                      void *item, int32 pos,
                                       void *user);
 static void tag_editor_draw_string(NcMenu *menu, NcWindow *window,
-                                   void *item, int64 pos, void *user);
+                                   void *item, int32 pos, void *user);
 static void tag_editor_draw_tag(NcMenu *menu, NcWindow *window,
-                                void *item, int64 pos, void *user);
+                                void *item, int32 pos, void *user);
 static void tag_editor_append_tag_display_value(
     NativeTagEditorScreen *screen, NcmMutableSong *song, NcBuffer *buffer);
 static void tag_editor_append_empty_tag(NcBuffer *buffer);
@@ -191,7 +191,7 @@ static bool tag_editor_directory_filter(NcMenu *menu, void *item,
                                         void *user);
 static bool tag_editor_tag_filter(NcMenu *menu, void *item, void *user);
 static bool tag_editor_copy_selected_song_at(
-    NativeTagEditorScreen *screen, NcmSongArray *songs, int64 pos);
+    NativeTagEditorScreen *screen, NcmSongArray *songs, int32 pos);
 static bool tag_editor_for_each_target(NativeTagEditorScreen *screen,
                                        bool (*cb)(NcmMutableSong *song,
                                                   void *user),
@@ -226,16 +226,16 @@ static bool tag_editor_tag_search_text(NativeTagEditorScreen *screen,
                                        NcmBuffer *buffer);
 static bool tag_editor_tag_search_field(NativeTagEditorScreen *screen,
                                         enum NcmTagsField *field);
-static bool tag_editor_tag_type_choice_is_editable(int64 choice);
+static bool tag_editor_tag_type_choice_is_editable(int32 choice);
 static bool tag_editor_mutable_song_to_song(NcmMutableSong *source,
                                             NcmSong *dest);
 static bool tag_editor_directory_matches_regex(NcMenuStringPair *pair,
                                                NcmRegex *regex,
                                                bool filter);
 static bool tag_editor_active_item_matches(NativeTagEditorScreen *screen,
-                                           NcMenu *menu, int64 pos,
+                                           NcMenu *menu, int32 pos,
                                            NcmRegex *regex);
-static bool tag_editor_search_position(NcMenu *menu, int64 pos,
+static bool tag_editor_search_position(NcMenu *menu, int32 pos,
                                        void *user);
 static bool tag_editor_append_parser_row(NcEditorStringMenu *menu,
                                          char *data, int32 data_len,
@@ -257,7 +257,7 @@ static bool tag_editor_set_pattern(NativeTagEditorScreen *screen,
                                    char *pattern, int32 pattern_len);
 static bool tag_editor_prompt_pattern(NativeTagEditorScreen *screen);
 static bool tag_editor_apply_recent_pattern(NativeTagEditorScreen *screen,
-                                            int64 choice);
+                                            int32 choice);
 static bool tag_editor_mutable_song_to_format_song(NcmMutableSong *source,
                                                    NcmSong *dest);
 static int32 tag_editor_filename_extension_start(char *name,
@@ -976,7 +976,7 @@ native_tag_editor_screen_selected_songs(NativeTagEditorScreen *screen,
             screen, songs, nc_menu_highlight(menu));
     }
 
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (!nc_menu_position_is_selected(menu, i)) {
             continue;
         }
@@ -1135,7 +1135,7 @@ native_tag_editor_screen_clear_modifications(NativeTagEditorScreen *screen) {
         return;
     }
     menu = nc_tag_row_menu_base(&screen->tags);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmMutableSong *song;
 
         song = nc_menu_active_item_at(menu, i);
@@ -1287,7 +1287,7 @@ native_tag_editor_screen_search(NativeTagEditorScreen *screen,
 }
 
 static bool
-tag_editor_search_position(NcMenu *menu, int64 pos, void *user) {
+tag_editor_search_position(NcMenu *menu, int32 pos, void *user) {
     TagEditorSearchContext *context;
 
     context = user;
@@ -2273,7 +2273,7 @@ tag_editor_run_tag_current(NativeTagEditorScreen *screen) {
 static bool
 tag_editor_run_parser_choice_current(NativeTagEditorScreen *screen) {
     NcMenu *menu;
-    int64 choice;
+    int32 choice;
 
     menu = nc_editor_string_menu_base(&screen->parser_dialog);
     if (!nc_menu_current_is_selectable(menu)) {
@@ -2300,7 +2300,7 @@ tag_editor_run_parser_choice_current(NativeTagEditorScreen *screen) {
 static bool
 tag_editor_run_parser_action_current(NativeTagEditorScreen *screen) {
     NcMenu *menu;
-    int64 choice;
+    int32 choice;
     bool success;
 
     menu = nc_editor_string_menu_base(&screen->parser_actions);
@@ -2574,7 +2574,7 @@ tag_editor_current_helper_focus(NativeTagEditorScreen *screen) {
 static bool
 tag_editor_tag_type_row_changed(NativeTagEditorScreen *screen) {
     NcMenu *menu;
-    int64 highlight;
+    int32 highlight;
     bool changed;
 
     if (screen == NULL) {
@@ -2906,7 +2906,7 @@ tag_editor_highlight_directory_path(NativeTagEditorScreen *screen,
         return false;
     }
     menu = nc_editor_pair_menu_base(&screen->directories);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcMenuStringPair *pair;
 
         pair = nc_menu_active_item_at(menu, i);
@@ -2932,7 +2932,7 @@ tag_editor_highlight_song_uri(NativeTagEditorScreen *screen, char *uri,
         return false;
     }
     menu = nc_tag_row_menu_base(&screen->tags);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmMutableSong *song;
 
         song = nc_menu_active_item_at(menu, i);
@@ -3025,7 +3025,7 @@ tag_editor_has_modified_songs(NativeTagEditorScreen *screen) {
         return false;
     }
     menu = nc_tag_row_menu_base(&screen->tags);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmMutableSong *song;
 
         song = nc_menu_active_item_at(menu, i);
@@ -3061,7 +3061,7 @@ tag_editor_restore_current_directory(NativeTagEditorScreen *screen,
         return;
     }
     menu = nc_editor_pair_menu_base(&screen->directories);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcMenuStringPair *pair;
 
         pair = nc_menu_active_item_at(menu, i);
@@ -3107,7 +3107,7 @@ tag_editor_restore_current_song(NativeTagEditorScreen *screen,
         return;
     }
     menu = nc_tag_row_menu_base(&screen->tags);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmMutableSong *item;
 
         item = nc_menu_active_item_at(menu, i);
@@ -3862,7 +3862,7 @@ tag_editor_tag_display_callbacks(NativeTagEditorScreen *screen) {
 
 static void
 tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
-                          int64 pos, void *user) {
+                          int32 pos, void *user) {
     NcMenuStringPair *pair;
     NcmBuffer converted;
 
@@ -3881,7 +3881,7 @@ tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
 
 static void
 tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item,
-                       int64 pos, void *user) {
+                       int32 pos, void *user) {
     NcMenuString *string;
     NcmBuffer converted;
 
@@ -3900,7 +3900,7 @@ tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item,
 
 static void
 tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
-                    int64 pos, void *user) {
+                    int32 pos, void *user) {
     NativeTagEditorScreen *screen;
     NcBuffer buffer;
 
@@ -3922,7 +3922,7 @@ tag_editor_append_tag_display_value(NativeTagEditorScreen *screen,
                                     NcmMutableSong *song,
                                     NcBuffer *buffer) {
     NcMenu *tag_types;
-    int64 choice;
+    int32 choice;
 
     if ((screen == NULL) || (song == NULL) || (buffer == NULL)) {
         return;
@@ -4056,7 +4056,7 @@ tag_editor_tag_filter(NcMenu *menu, void *item, void *user) {
 
 static bool
 tag_editor_copy_selected_song_at(NativeTagEditorScreen *screen,
-                                 NcmSongArray *songs, int64 pos) {
+                                 NcmSongArray *songs, int32 pos) {
     NcmMutableSong *source;
     NcmSong song;
 
@@ -4122,7 +4122,7 @@ tag_editor_for_each_target(NativeTagEditorScreen *screen,
     }
     menu = nc_tag_row_menu_base(&screen->tags);
     has_selected = nc_menu_has_selected(menu);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmMutableSong *song;
 
         if (has_selected && !nc_menu_position_is_selected(menu, i)) {
@@ -4452,7 +4452,7 @@ static bool
 tag_editor_tag_search_field(NativeTagEditorScreen *screen,
                             enum NcmTagsField *field) {
     NcMenu *tag_types;
-    int64 choice;
+    int32 choice;
 
     if ((screen == NULL) || (field == NULL)) {
         return false;
@@ -4471,7 +4471,7 @@ tag_editor_tag_search_field(NativeTagEditorScreen *screen,
 }
 
 static bool
-tag_editor_tag_type_choice_is_editable(int64 choice) {
+tag_editor_tag_type_choice_is_editable(int32 choice) {
     return ((choice >= 0) && (choice < 11)) || (choice == 12);
 }
 
@@ -4480,7 +4480,7 @@ tag_editor_current_tag_type_action(NativeTagEditorScreen *screen,
                                    enum NcmTagsField *field) {
     NcMenu *menu;
     NcMenuString *row;
-    int64 choice;
+    int32 choice;
 
     if (field) {
         *field = NCM_TAGS_FIELD_LAST;
@@ -4579,7 +4579,7 @@ tag_editor_directory_matches_regex(NcMenuStringPair *pair,
 
 static bool
 tag_editor_active_item_matches(NativeTagEditorScreen *screen,
-                               NcMenu *menu, int64 pos, NcmRegex *regex) {
+                               NcMenu *menu, int32 pos, NcmRegex *regex) {
     if (screen->active_focus == NATIVE_TAG_EDITOR_FOCUS_TAGS) {
         return tag_editor_tag_matches_regex(screen,
                                             nc_menu_active_item_at(menu,
@@ -4708,7 +4708,7 @@ tag_editor_build_parser_menus(NativeTagEditorScreen *screen) {
 static bool
 tag_editor_build_parser_legend(NativeTagEditorScreen *screen) {
     NcMenu *tags;
-    int64 count;
+    int32 count;
 
     if (screen == NULL) {
         return false;
@@ -4739,7 +4739,7 @@ tag_editor_build_parser_legend(NativeTagEditorScreen *screen) {
 
     tags = nc_tag_row_menu_base(&screen->tags);
     count = nc_menu_item_count(tags);
-    for (int64 i = 0; i < count; i += 1) {
+    for (int32 i = 0; i < count; i += 1) {
         NcmMutableSong *song;
 
         song = nc_menu_active_item_at(tags, i);
@@ -4758,7 +4758,7 @@ static bool
 tag_editor_build_parser_preview(NativeTagEditorScreen *screen,
                                 bool apply, bool *success) {
     NcMenu *tags;
-    int64 count;
+    int32 count;
 
     if (success) {
         *success = true;
@@ -4770,7 +4770,7 @@ tag_editor_build_parser_preview(NativeTagEditorScreen *screen,
     ncm_buffer_clear(&screen->parser_preview);
     tags = nc_tag_row_menu_base(&screen->tags);
     count = nc_menu_item_count(tags);
-    for (int64 i = 0; i < count; i += 1) {
+    for (int32 i = 0; i < count; i += 1) {
         NcmMutableSong *song;
 
         song = nc_menu_active_item_at(tags, i);
@@ -5166,7 +5166,7 @@ tag_editor_prompt_pattern(NativeTagEditorScreen *screen) {
 
 static bool
 tag_editor_apply_recent_pattern(NativeTagEditorScreen *screen,
-                                int64 choice) {
+                                int32 choice) {
     NcMenu *menu;
     NcMenuString *row;
 

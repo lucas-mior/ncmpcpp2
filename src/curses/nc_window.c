@@ -463,8 +463,8 @@ nc_window_init(NcWindow *window, int64 start_x, int64 start_y,
 
     window->start_x = start_x;
     window->start_y = start_y;
-    window->width = width;
-    window->height = height;
+    window->width = nc_i32(width);
+    window->height = nc_i32(height);
     window->border = border;
     nc_window_assign_title(window, title, title_len);
 
@@ -507,7 +507,7 @@ nc_window_raw(NcWindow *window) {
     return window->window;
 }
 
-int64
+int32
 nc_window_width(NcWindow *window) {
     if (window->border.enabled) {
         return window->width + 2;
@@ -516,9 +516,9 @@ nc_window_width(NcWindow *window) {
     return window->width;
 }
 
-int64
+int32
 nc_window_height(NcWindow *window) {
-    int64 height;
+    int32 height;
 
     height = window->height;
     if (window->border.enabled) {
@@ -734,8 +734,8 @@ nc_window_adjust_dimensions(NcWindow *window,
             height -= 2;
         }
     }
-    window->height = height;
-    window->width = width;
+    window->height = nc_i32(height);
+    window->width = nc_i32(width);
     return;
 }
 

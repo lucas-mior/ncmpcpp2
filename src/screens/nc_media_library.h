@@ -132,7 +132,7 @@ typedef struct NativeMediaLibraryScreen {
     int64 start_x;
     int64 width;
     int64 main_start_y;
-    int64 main_height;
+    int32 main_height;
     int64 fetching_delay_ms;
     int32 window_timeout_ms;
 

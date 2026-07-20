@@ -2923,7 +2923,7 @@ action_runtime_menu_has_selection(void) {
     return nc_menu_has_selected(menu);
 }
 
-static int64
+static int32
 action_runtime_current_menu_height(void) {
     NcWindow *window;
 
@@ -2976,7 +2976,7 @@ action_runtime_current_menu_height(void) {
     }
 
     if (window == NULL) {
-        return ui_state_main_height();
+        return (int32)ui_state_main_height();
     }
     return nc_window_height(window);
 }
@@ -3055,7 +3055,7 @@ action_runtime_song_tag_buffer(NcmSong *song, enum NcmSongGetter getter) {
 }
 
 static bool
-action_runtime_song_tag_at(int64 pos, enum NcmSongGetter getter,
+action_runtime_song_tag_at(int32 pos, enum NcmSongGetter getter,
                            NcmBuffer *tag) {
     NcmMpdItem *item;
     NcSearchRow *row;
@@ -3190,10 +3190,10 @@ action_runtime_scroll_by_tag(enum NcmSongGetter getter, bool down) {
     NcmBuffer current_tag;
     NcmBuffer other_tag;
     NcMenu *menu;
-    int64 current;
-    int64 target;
-    int64 count;
-    int64 step;
+    int32 current;
+    int32 target;
+    int32 count;
+    int32 step;
     bool same;
 
     menu = action_runtime_current_tag_scroll_menu();
@@ -3215,7 +3215,7 @@ action_runtime_scroll_by_tag(enum NcmSongGetter getter, bool down) {
     }
 
     while (true) {
-        int64 next;
+        int32 next;
 
         next = target + step;
         if ((next < 0) || (next >= count)) {
@@ -3930,7 +3930,7 @@ action_runtime_delete_stored_playlists(void) {
     NcmBuffer question;
     NcmError error;
     enum NcMenuItemSource source;
-    int64 count;
+    int32 count;
     bool has_selected;
     bool success;
 
@@ -3972,7 +3972,7 @@ action_runtime_delete_stored_playlists(void) {
     ncm_error_clear(&error);
     success = true;
     count = nc_menu_item_count(menu);
-    for (int64 i = 0; success && (i < count); i += 1) {
+    for (int32 i = 0; success && (i < count); i += 1) {
         if (has_selected && !nc_menu_position_is_selected(menu, i)) {
             continue;
         }
@@ -4358,7 +4358,7 @@ action_runtime_move_main_playlist_items_to(void) {
     int32 *positions;
     int32 target;
     int32 destination;
-    int64 item_count;
+    int32 item_count;
     int32 count;
     bool success;
 
@@ -4383,7 +4383,7 @@ action_runtime_move_main_playlist_items_to(void) {
     item_count = nc_menu_all_item_count(menu);
     positions = malloc2(item_count*SIZEOF(*positions));
     count = 0;
-    for (int64 i = 0; i < item_count; i += 1) {
+    for (int32 i = 0; i < item_count; i += 1) {
         uint32 flags;
 
         flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
@@ -4448,7 +4448,7 @@ action_runtime_move_playlist_editor_items_to(void) {
     int32 *positions;
     int32 target;
     int32 destination;
-    int64 item_count;
+    int32 item_count;
     int32 count;
     bool success;
 
@@ -4480,7 +4480,7 @@ action_runtime_move_playlist_editor_items_to(void) {
     item_count = nc_menu_all_item_count(menu);
     positions = malloc2(item_count*SIZEOF(*positions));
     count = 0;
-    for (int64 i = 0; i < item_count; i += 1) {
+    for (int32 i = 0; i < item_count; i += 1) {
         uint32 flags;
 
         flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
@@ -4561,8 +4561,8 @@ action_runtime_move_selected_items_to(void) {
 static bool
 action_runtime_playlist_range(NcMenu *menu, int32 *first, int32 *last) {
     enum NcMenuItemSource source;
-    int64 range_first;
-    int64 range_last;
+    int32 range_first;
+    int32 range_last;
     NcmSong *song;
 
     if ((menu == NULL) || (first == NULL) || (last == NULL)) {
@@ -4597,8 +4597,8 @@ action_runtime_reverse_playlist(void) {
     NcmSong *left;
     NcmSong *right;
     NcmError error;
-    int64 first;
-    int64 last;
+    int32 first;
+    int32 last;
     bool success;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
@@ -4784,8 +4784,8 @@ action_runtime_select_album(void) {
     NcmBuffer album;
     NcmBuffer candidate;
     NcMenu *menu;
-    int64 current;
-    int64 count;
+    int32 current;
+    int32 count;
     bool equal;
 
     menu = action_runtime_current_tag_scroll_menu();
@@ -4798,7 +4798,7 @@ action_runtime_select_album(void) {
         return false;
     }
 
-    for (int64 position = current; position >= 0; position -= 1) {
+    for (int32 position = current; position >= 0; position -= 1) {
         if (!action_runtime_song_tag_at(position, NCM_SONG_GETTER_ALBUM,
                                         &candidate)) {
             break;
@@ -4812,7 +4812,7 @@ action_runtime_select_album(void) {
     }
 
     count = nc_menu_item_count(menu);
-    for (int64 position = current + 1; position < count; position += 1) {
+    for (int32 position = current + 1; position < count; position += 1) {
         if (!action_runtime_song_tag_at(position, NCM_SONG_GETTER_ALBUM,
                                         &candidate)) {
             break;
@@ -4836,8 +4836,8 @@ action_runtime_select_found_items(void) {
     NcmStringView constraint;
     NcMenu *menu;
     NcmError error;
-    int64 original;
-    int64 height;
+    int32 original;
+    int32 height;
     bool found;
 
     if (!current_screen_allows_search()) {
@@ -7015,8 +7015,8 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
                    native_c_screen_playlist());
     case NCM_ACTION_REVERSE_PLAYLIST: {
         NcMenu *menu;
-        int64 first;
-        int64 last;
+        int32 first;
+        int32 last;
 
         if (!ncm_mpd_client_connected(&global_mpd)
             || !action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST)) {
@@ -7414,8 +7414,8 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
     case NCM_ACTION_SELECT_RANGE: {
         enum NcMenuItemSource source;
         NcMenu *menu;
-        int64 first;
-        int64 last;
+        int32 first;
+        int32 last;
 
         menu = action_runtime_current_menu();
         if (menu == NULL) {
@@ -7425,7 +7425,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
         if (!ncm_menu_find_selected_range(menu, source, &first, &last)) {
             return false;
         }
-        for (int64 i = first; i < last; i += 1) {
+        for (int32 i = first; i < last; i += 1) {
             (void)nc_menu_set_position_selected(menu, i, true);
         }
         ncm_statusbar_print_cstring((int32)Config.message_delay_time,

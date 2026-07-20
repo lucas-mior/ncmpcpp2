@@ -36,7 +36,7 @@ static bool native_library_is_mergable(NcScreen *screen);
 static void native_library_destroy_callback(NcScreen *screen);
 static void native_library_print_buffer(NcWindow *window, NcBuffer *buffer);
 static bool native_library_copy_song_at(NativeMediaLibraryScreen *screen,
-                                        NcmSongArray *songs, int64 pos);
+                                        NcmSongArray *songs, int32 pos);
 static NcMenu *native_library_column_menu(
     NativeMediaLibraryScreen *screen,
     enum NativeMediaLibraryColumn column);
@@ -74,9 +74,9 @@ static void native_library_update_titles(NativeMediaLibraryScreen *screen,
                                          bool update_windows);
 static void native_library_refresh_menu(NcMenu *menu, NcWindow *window);
 static bool native_library_active_item_matches(
-    NativeMediaLibraryScreen *screen, NcMenu *menu, int64 pos,
+    NativeMediaLibraryScreen *screen, NcMenu *menu, int32 pos,
     NcmRegex *regex);
-static bool native_library_search_position(NcMenu *menu, int64 pos,
+static bool native_library_search_position(NcMenu *menu, int32 pos,
                                            void *user);
 static void native_library_layout(NativeMediaLibraryScreen *screen);
 static int32 native_library_ratio_value(NcmInt32Array *ratios,
@@ -120,13 +120,13 @@ static void native_library_apply_column_filter(
     enum NativeMediaLibraryColumn column, NcMenu *menu);
 static void native_library_restore_tag_identity(
     NcMediaLibraryTagMenu *menu, NcMediaLibraryTagRow *identity,
-    bool identity_valid, int64 fallback);
+    bool identity_valid, int32 fallback);
 static void native_library_restore_album_identity(
     NcMediaLibraryAlbumMenu *menu, NcMediaLibraryAlbumRow *identity,
-    bool identity_valid, int64 fallback);
+    bool identity_valid, int32 fallback);
 static void native_library_restore_song_identity(
     NcMediaLibrarySongMenu *menu, NcmSong *identity,
-    bool identity_valid, int64 fallback);
+    bool identity_valid, int32 fallback);
 static bool native_library_tag_identity_equal(
     NcMediaLibraryTagRow *left, NcMediaLibraryTagRow *right);
 static bool native_library_album_identity_equal(
@@ -266,7 +266,7 @@ native_media_library_screen_init(NativeMediaLibraryScreen *screen,
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = main_height;
+    screen->main_height = (int32)main_height;
     if (Config.data_fetching_delay) {
         screen->fetching_delay_ms = NATIVE_MEDIA_LIBRARY_FETCH_DELAY_MS;
         screen->window_timeout_ms = NATIVE_MEDIA_LIBRARY_FETCH_DELAY_MS;
@@ -428,7 +428,7 @@ native_media_library_screen_set_geometry(NativeMediaLibraryScreen *screen,
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = main_height;
+    screen->main_height = (int32)main_height;
     native_library_layout(screen);
     return;
 }
@@ -1595,7 +1595,7 @@ native_media_library_screen_copy_visible_songs(
     }
 
     menu = nc_media_library_song_menu_base(&screen->songs);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (!native_library_copy_song_at(screen, songs, i)) {
             native_library_set_conversion_error(
                 error,
@@ -1726,7 +1726,7 @@ native_media_library_screen_search(NativeMediaLibraryScreen *screen,
 }
 
 static bool
-native_library_search_position(NcMenu *menu, int64 pos,
+native_library_search_position(NcMenu *menu, int32 pos,
                                void *user) {
     NativeMediaLibrarySearchContext *context;
 
@@ -2085,7 +2085,7 @@ native_library_replace_tags(NativeMediaLibraryScreen *screen,
     NcMediaLibraryTagRow *current;
     NcMenu *menu;
     NcMenu *replacement_menu;
-    int64 highlight;
+    int32 highlight;
     bool identity_valid;
 
     if ((screen == NULL) || (tags == NULL)) {
@@ -2130,7 +2130,7 @@ native_library_replace_albums(NativeMediaLibraryScreen *screen,
     NcMediaLibraryAlbumRow *current;
     NcMenu *menu;
     NcMenu *replacement_menu;
-    int64 highlight;
+    int32 highlight;
     bool identity_valid;
 
     if ((screen == NULL) || (albums == NULL)) {
@@ -2177,7 +2177,7 @@ native_library_replace_songs(NativeMediaLibraryScreen *screen,
     NcmSong *current;
     NcMenu *menu;
     NcMenu *replacement_menu;
-    int64 highlight;
+    int32 highlight;
     bool identity_valid;
 
     if ((screen == NULL) || (songs == NULL)) {
@@ -2234,8 +2234,8 @@ native_library_apply_column_filter(
 }
 
 static void
-native_library_restore_highlight(NcMenu *menu, int64 highlight) {
-    int64 count;
+native_library_restore_highlight(NcMenu *menu, int32 highlight) {
+    int32 count;
 
     count = nc_menu_item_count(menu);
     if (count <= 0) {
@@ -2254,12 +2254,12 @@ native_library_restore_highlight(NcMenu *menu, int64 highlight) {
 static void
 native_library_restore_tag_identity(
     NcMediaLibraryTagMenu *menu, NcMediaLibraryTagRow *identity,
-    bool identity_valid, int64 fallback) {
+    bool identity_valid, int32 fallback) {
     NcMenu *base;
 
     base = nc_media_library_tag_menu_base(menu);
     if (identity_valid) {
-        for (int64 i = 0; i < nc_menu_item_count(base); i += 1) {
+        for (int32 i = 0; i < nc_menu_item_count(base); i += 1) {
             NcMediaLibraryTagRow *candidate;
 
             candidate = nc_media_library_tag_menu_item_at(
@@ -2278,12 +2278,12 @@ native_library_restore_tag_identity(
 static void
 native_library_restore_album_identity(
     NcMediaLibraryAlbumMenu *menu, NcMediaLibraryAlbumRow *identity,
-    bool identity_valid, int64 fallback) {
+    bool identity_valid, int32 fallback) {
     NcMenu *base;
 
     base = nc_media_library_album_menu_base(menu);
     if (identity_valid) {
-        for (int64 i = 0; i < nc_menu_item_count(base); i += 1) {
+        for (int32 i = 0; i < nc_menu_item_count(base); i += 1) {
             NcMediaLibraryAlbumRow *candidate;
 
             candidate = nc_media_library_album_menu_item_at(
@@ -2302,12 +2302,12 @@ native_library_restore_album_identity(
 static void
 native_library_restore_song_identity(
     NcMediaLibrarySongMenu *menu, NcmSong *identity,
-    bool identity_valid, int64 fallback) {
+    bool identity_valid, int32 fallback) {
     NcMenu *base;
 
     base = nc_media_library_song_menu_base(menu);
     if (identity_valid) {
-        for (int64 i = 0; i < nc_menu_item_count(base); i += 1) {
+        for (int32 i = 0; i < nc_menu_item_count(base); i += 1) {
             NcmSong *candidate;
 
             candidate = nc_media_library_song_menu_item_at(
@@ -2517,8 +2517,8 @@ native_library_sort_tag_menu(NcMediaLibraryTagMenu *menu) {
     }
 
     base = nc_media_library_tag_menu_base(menu);
-    for (int64 i = 1; i < nc_menu_all_item_count(base); i += 1) {
-        int64 j;
+    for (int32 i = 1; i < nc_menu_all_item_count(base); i += 1) {
+        int32 j;
 
         j = i;
         while (j > 0) {
@@ -2550,8 +2550,8 @@ native_library_sort_album_menu(NcMediaLibraryAlbumMenu *menu) {
     }
 
     base = nc_media_library_album_menu_base(menu);
-    for (int64 i = 1; i < nc_menu_all_item_count(base); i += 1) {
-        int64 j;
+    for (int32 i = 1; i < nc_menu_all_item_count(base); i += 1) {
+        int32 j;
 
         j = i;
         while (j > 0) {
@@ -2624,7 +2624,7 @@ native_library_move_to_tag(NativeMediaLibraryScreen *screen,
     }
 
     menu = nc_media_library_tag_menu_base(&screen->tags);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcMediaLibraryTagRow *row;
 
         row = nc_menu_active_item_at(menu, i);
@@ -2652,7 +2652,7 @@ native_library_move_to_album(NativeMediaLibraryScreen *screen,
     }
 
     menu = nc_media_library_album_menu_base(&screen->albums);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcMediaLibraryAlbumRow *row;
         bool tag_matches;
         bool date_matches;
@@ -2705,7 +2705,7 @@ native_library_move_to_song(NativeMediaLibraryScreen *screen,
     }
 
     menu = nc_media_library_song_menu_base(&screen->songs);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmSong *candidate;
 
         candidate = nc_menu_active_item_at(menu, i);
@@ -3476,7 +3476,7 @@ native_library_song_filter(NcMenu *menu, void *item, void *user) {
 
 static void
 native_library_draw_tag(NcMenu *menu, NcWindow *window,
-                        void *item, int64 pos, void *user) {
+                        void *item, int32 pos, void *user) {
     NcmBuffer text;
 
     (void)menu;
@@ -3490,7 +3490,7 @@ native_library_draw_tag(NcMenu *menu, NcWindow *window,
 
 static void
 native_library_draw_album(NcMenu *menu, NcWindow *window,
-                          void *item, int64 pos, void *user) {
+                          void *item, int32 pos, void *user) {
     NcmBuffer text;
 
     (void)menu;
@@ -3504,7 +3504,7 @@ native_library_draw_album(NcMenu *menu, NcWindow *window,
 
 static void
 native_library_draw_song(NcMenu *menu, NcWindow *window,
-                         void *item, int64 pos, void *user) {
+                         void *item, int32 pos, void *user) {
     NcBuffer text;
 
     (void)menu;
@@ -3546,7 +3546,7 @@ native_library_print_buffer(NcWindow *window, NcBuffer *buffer) {
 
 static bool
 native_library_copy_song_at(NativeMediaLibraryScreen *screen,
-                            NcmSongArray *songs, int64 pos) {
+                            NcmSongArray *songs, int32 pos) {
     NcmSong *song;
 
     song = nc_menu_active_item_at(
@@ -3598,7 +3598,7 @@ native_library_menu_item_is_separator(NcMenu *menu, void *item) {
     if ((menu == NULL) || (item == NULL)) {
         return false;
     }
-    for (int64 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
         if ((nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i) == item)
             && (nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i)
                 & NC_MENU_ITEM_SEPARATOR)) {
@@ -3693,7 +3693,7 @@ native_library_collect_tag_songs(
 
     menu = nc_media_library_tag_menu_base(&screen->tags);
     any_selected = nc_menu_has_selected(menu);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (any_selected && !nc_menu_position_is_selected(menu, i)) {
             continue;
         }
@@ -3725,7 +3725,7 @@ native_library_collect_album_songs(
 
     menu = nc_media_library_album_menu_base(&screen->albums);
     any_selected = nc_menu_has_selected(menu);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (nc_menu_position_is_separator(menu, i)) {
             continue;
         }
@@ -3757,7 +3757,7 @@ native_library_collect_visible_song_rows(
 
     menu = nc_media_library_song_menu_base(&screen->songs);
     any_selected = nc_menu_has_selected(menu);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (any_selected && !nc_menu_position_is_selected(menu, i)) {
             continue;
         }
@@ -3960,7 +3960,7 @@ native_library_refresh_menu(NcMenu *menu, NcWindow *window) {
 
 static bool
 native_library_active_item_matches(NativeMediaLibraryScreen *screen,
-                                   NcMenu *menu, int64 pos,
+                                   NcMenu *menu, int32 pos,
                                    NcmRegex *regex) {
     void *item;
 

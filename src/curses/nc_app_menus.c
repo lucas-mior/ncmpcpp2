@@ -205,7 +205,7 @@ nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
 
 #define NC_TYPED_MENU_DEFINE_INSERT_WITH_FLAGS(TYPE_NAME, PREFIX, ITEM_TYPE) \
     void \
-    PREFIX##_insert_with_flags(TYPE_NAME *menu, int64 pos, \
+    PREFIX##_insert_with_flags(TYPE_NAME *menu, int32 pos, \
                                ITEM_TYPE *item, uint32 flags) { \
         nc_menu_insert_item_with_flags(&menu->menu, pos, item, flags); \
         return; \
@@ -214,7 +214,7 @@ nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
 #define NC_TYPED_MENU_DEFINE_ITEM_AT(TYPE_NAME, PREFIX, ITEM_TYPE) \
     ITEM_TYPE * \
     PREFIX##_item_at(TYPE_NAME *menu, enum NcMenuItemSource source, \
-                     int64 pos) { \
+                     int32 pos) { \
         return nc_menu_item_at(&menu->menu, source, pos); \
     }
 

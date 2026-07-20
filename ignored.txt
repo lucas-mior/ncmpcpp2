@@ -17,3 +17,6 @@ Makefile.in
 config.log
 build/
 obj
+AUTHORS
+style.sed
+style.sh

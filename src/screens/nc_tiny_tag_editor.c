@@ -33,11 +33,11 @@ static bool tiny_editor_is_lockable(NcScreen *screen);
 static bool tiny_editor_is_mergable(NcScreen *screen);
 static void tiny_editor_destroy_callback(NcScreen *screen);
 static void tiny_editor_draw_row(NcMenu *menu, NcWindow *window,
-                                 void *item, int64 pos, void *user);
+                                 void *item, int32 pos, void *user);
 static void tiny_editor_print_buffer(NcWindow *window, NcBuffer *buffer);
 static bool tiny_editor_add_row(NativeTinyTagEditorScreen *screen,
                                 NcBuffer *buffer, uint32 flags);
-static int64 tiny_editor_current_row(NativeTinyTagEditorScreen *screen);
+static int32 tiny_editor_current_row(NativeTinyTagEditorScreen *screen);
 static void tiny_editor_status_message(
     NativeTinyTagEditorScreen *screen, char *message, int32 message_len);
 static bool tiny_editor_replace_tag_row(
@@ -105,9 +105,9 @@ native_tiny_tag_editor_screen_init(
     ncm_buffer_init(&screen->tag_separator);
     screen->previous_screen = NULL;
     screen->start_x = start_x;
-    screen->width = width;
+    screen->width = (int32)width;
     screen->main_start_y = main_start_y;
-    screen->main_height = main_height;
+    screen->main_height = (int32)main_height;
     screen->has_edited = false;
     screen->show_duplicate_tags = false;
     screen->registered = false;
@@ -169,9 +169,9 @@ native_tiny_tag_editor_screen_set_geometry(
         return;
     }
     screen->start_x = start_x;
-    screen->width = width;
+    screen->width = (int32)width;
     screen->main_start_y = main_start_y;
-    screen->main_height = main_height;
+    screen->main_height = (int32)main_height;
     nc_window_move_to(&screen->window, start_x, main_start_y);
     nc_window_resize(&screen->window, width, main_height);
     return;
@@ -503,7 +503,7 @@ native_tiny_tag_editor_screen_set_filename_stem(
 
 bool
 native_tiny_tag_editor_screen_run_row(
-    NativeTinyTagEditorScreen *screen, int64 row) {
+    NativeTinyTagEditorScreen *screen, int32 row) {
     enum NativeTinyTagEditorPromptResult prompt_result;
     enum NcmTagsField field;
     NcmStringView initial;
@@ -657,7 +657,7 @@ bool
 native_tiny_tag_editor_screen_action_runnable(
     NativeTinyTagEditorScreen *screen) {
     NcMenu *menu;
-    int64 row;
+    int32 row;
 
     if ((screen == NULL) || !screen->has_edited) {
         return false;
@@ -816,7 +816,7 @@ tiny_editor_mouse_callback(NcScreen *screen, MEVENT event) {
 
 static void
 tiny_editor_draw_row(NcMenu *menu, NcWindow *window, void *item,
-                     int64 pos, void *user) {
+                     int32 pos, void *user) {
     NcBuffer *buffer;
 
     (void)menu;
@@ -881,7 +881,7 @@ tiny_editor_add_row(NativeTinyTagEditorScreen *screen, NcBuffer *buffer,
     return true;
 }
 
-static int64
+static int32
 tiny_editor_current_row(NativeTinyTagEditorScreen *screen) {
     return nc_menu_highlight(nc_editor_buffer_menu_base(&screen->rows));
 }
@@ -902,7 +902,7 @@ tiny_editor_replace_tag_row(
     NativeTinyTagEditorScreen *screen, enum NcmTagsField field) {
     NcBuffer row;
     NcMenu *menu;
-    int64 row_index;
+    int32 row_index;
     bool result;
 
     row_index = NATIVE_TINY_TAG_EDITOR_TAG_ROW(field);
