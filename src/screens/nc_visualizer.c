@@ -1284,6 +1284,7 @@ visualizer_draw_ellipse(NativeVisualizerScreen *screen, int16 *samples,
     half_width = width / 2;
     half_height = height / 2;
     angle_multiplier = 2.0*NATIVE_VISUALIZER_PI/(double)samples_len;
+
     for (int32 i = 0; i < samples_len; i += 1) {
         double angle;
         double max_radius;
@@ -1298,6 +1299,7 @@ visualizer_draw_ellipse(NativeVisualizerScreen *screen, int16 *samples,
         radius = fabs((double)samples[i])/32768.0;
         x = (int32)((double)x*radius);
         y = (int32)((double)y*radius);
+
         visualizer_draw_character(
             screen, half_width + x, half_height + y,
             visualizer_color(screen,
