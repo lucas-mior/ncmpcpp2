@@ -43,15 +43,12 @@ typedef struct NativeVisualizerDataSourceHooks {
     int32 (*open_fifo)(void *user, char *location, int32 location_len);
     int32 (*open_udp)(void *user, char *location, int32 location_len,
                       char *port, int32 port_len);
-    int32 (*read_source)(void *user, int32 fd, void *buffer,
-                         int32 buffer_size);
+    int32 (*read_source)(void *user, int32 fd, void *buffer, int32 buffer_size);
     void (*close_source)(void *user, int32 fd);
     bool (*get_outputs)(void *user, struct NcmMpdOutputList *outputs,
                         struct NcmError *error);
-    bool (*disable_output)(void *user, uint32 id,
-                           struct NcmError *error);
-    bool (*enable_output)(void *user, uint32 id,
-                          struct NcmError *error);
+    bool (*disable_output)(void *user, int32 id, struct NcmError *error);
+    bool (*enable_output)(void *user, int32 id, struct NcmError *error);
     void (*sleep_microseconds)(void *user, int32 microseconds);
     void *user;
 } NativeVisualizerDataSourceHooks;

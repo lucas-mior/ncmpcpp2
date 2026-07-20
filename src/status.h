@@ -16,7 +16,7 @@ enum NcmStatusPlayerState {
 typedef struct NcmStatusHooks {
     void *user;
 
-    void (*playlist_changed)(uint32 previous_version, void *user);
+    void (*playlist_changed)(int32 previous_version, void *user);
     void (*stored_playlists_changed)(void *user);
     void (*database_changed)(void *user);
     void (*player_state_changed)(void *user);
@@ -32,7 +32,7 @@ typedef struct NcmStatusHooks {
 typedef struct NcmStatusUiHooks {
     void *user;
 
-    void (*playlist_changed)(uint32 previous_version, void *user);
+    void (*playlist_changed)(int32 previous_version, void *user);
     void (*stored_playlists_changed)(void *user);
     void (*database_changed)(void *user);
     void (*player_state_changed)(enum NcmStatusPlayerState state, void *user);
@@ -89,7 +89,7 @@ enum NcmStatusPlayerState ncm_status_state_player(void);
 int32 ncm_status_state_total_time(void);
 int32 ncm_status_state_volume(void);
 
-void ncm_status_changes_playlist(uint32 previous_version);
+void ncm_status_changes_playlist(int32 previous_version);
 void ncm_status_changes_stored_playlists(void);
 void ncm_status_changes_database(void);
 void ncm_status_changes_player_state(void);
