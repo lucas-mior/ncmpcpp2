@@ -580,8 +580,7 @@ native_lastfm_job_complete(bool success, NcmError *error, void *user) {
         return;
     }
 
-    screen = job->screen;
-    if ((screen == NULL)
+    if (((screen = job->screen) == NULL)
         || !screen->has_service
         || !ncm_lastfm_service_equal(&job->service, &screen->service)) {
         return;
