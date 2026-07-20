@@ -117,7 +117,7 @@ configure_compiler_flags() {
 
     CFLAGS="$CFLAGS -Wfatal-errors"
     CFLAGS="$CFLAGS -Wextra -Wall"
-    # CFLAGS="$CFLAGS -Werror"
+    CFLAGS="$CFLAGS -Werror"
     CFLAGS="$CFLAGS -Wno-format-pedantic"
     CFLAGS="$CFLAGS -Wno-unknown-warning-option"
     CFLAGS="$CFLAGS -Wno-gnu-union-cast"
