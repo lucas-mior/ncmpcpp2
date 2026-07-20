@@ -40,22 +40,22 @@ static bool tiny_editor_add_row(NativeTinyTagEditorScreen *screen,
 static int32 tiny_editor_current_row(NativeTinyTagEditorScreen *screen);
 static void tiny_editor_status_message(
     NativeTinyTagEditorScreen *screen, char *message, int32 message_len);
-static bool tiny_editor_replace_tag_row(
-    NativeTinyTagEditorScreen *screen, enum NcmTagsField field);
-static bool tiny_editor_replace_filename_row(
-    NativeTinyTagEditorScreen *screen);
-static bool tiny_editor_write_song(
-    NativeTinyTagEditorScreen *screen, char *music_dir);
-static void tiny_editor_complete_save(
-    NativeTinyTagEditorScreen *screen);
+static bool tiny_editor_replace_tag_row(NativeTinyTagEditorScreen *screen,
+                                        enum NcmTagsField field);
+static bool tiny_editor_replace_filename_row(NativeTinyTagEditorScreen *screen);
+static bool tiny_editor_write_song(NativeTinyTagEditorScreen *screen,
+                                   char *music_dir);
+static void tiny_editor_complete_save(NativeTinyTagEditorScreen *screen);
 static bool tiny_editor_finish(NativeTinyTagEditorScreen *screen);
 static void tiny_editor_buffer_key_value(NcBuffer *buffer, char *key,
                                          int32 key_len, char *value,
                                          int32 value_len);
-static void tiny_editor_buffer_mutable_tag(
-    NcBuffer *buffer, NcmMutableSong *song, enum NcmTagsField field,
-    char *tag_separator, int32 tag_separator_len,
-    bool show_duplicate_tags);
+static void tiny_editor_buffer_mutable_tag(NcBuffer *buffer,
+                                           NcmMutableSong *song,
+                                           enum NcmTagsField field,
+                                           char *tag_separator,
+                                           int32 tag_separator_len,
+                                           bool show_duplicate_tags);
 static void tiny_editor_buffer_uint(NcBuffer *buffer, uint32 value,
                                     char *suffix, int32 suffix_len);
 static void tiny_editor_buffer_key_uint(NcBuffer *buffer, char *key,
@@ -1010,11 +1010,11 @@ tiny_editor_buffer_mutable_tag(
     char *name;
 
     name = ncm_tags_field_name(field);
-    tiny_editor_buffer_key_value(
-        buffer, name, optional_strlen32(name), NULL, 0);
-    value = ncm_mutable_song_tags_buffer(
-        song, field, tag_separator, tag_separator_len,
-        show_duplicate_tags);
+    tiny_editor_buffer_key_value(buffer,
+                                 name, optional_strlen32(name), NULL, 0);
+    value = ncm_mutable_song_tags_buffer(song, field,
+                                         tag_separator, tag_separator_len,
+                                         show_duplicate_tags);
     nc_buffer_append_data(buffer, value.data, value.len);
     ncm_buffer_destroy(&value);
     return;
