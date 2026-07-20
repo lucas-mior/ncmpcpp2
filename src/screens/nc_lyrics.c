@@ -386,9 +386,11 @@ native_lyrics_screen_load_file(NativeLyricsScreen *screen,
         native_lyrics_append_locale(&screen->display, line, line_len);
         first = false;
     }
+
     fclose(file);
     nc_lyrics_screen_request_refresh(&screen->screen);
     ncm_error_clear(error);
+
     return true;
 }
 
