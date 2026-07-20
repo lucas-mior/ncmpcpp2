@@ -15,7 +15,7 @@ typedef struct NcmStatusbarScopedLock {
 void ncm_progressbar_scoped_lock_init(NcmStatusbarScopedLock *lock);
 void ncm_progressbar_scoped_lock_destroy(NcmStatusbarScopedLock *lock);
 bool ncm_progressbar_is_unlocked(void);
-void ncm_progressbar_draw(uint32 elapsed, uint32 time);
+void ncm_progressbar_draw(int32 elapsed, int32 time);
 
 void ncm_statusbar_scoped_lock_init(NcmStatusbarScopedLock *lock);
 void ncm_statusbar_scoped_lock_destroy(NcmStatusbarScopedLock *lock);
