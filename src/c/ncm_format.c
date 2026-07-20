@@ -466,9 +466,8 @@ ncm_format_parse_dollar(NcmFormatExprList *out, char *data,
                         int32 *pos, int32 end, uint32 flags,
                         NcmError *error) {
     NcmFormatExpr *expr;
-    int32 i;
+    int32 i = *pos + 1;
 
-    i = *pos + 1;
     if (i >= end) {
         ncm_format_set_error(error, "unexpected end", i);
         return false;
