@@ -1175,6 +1175,7 @@ visualizer_draw_wave(NativeVisualizerScreen *screen, int16 *samples,
         }
         point_y = sum / samples_per_column;
         point_y = (int32)((double)point_y*(double)height/65536.0);
+
         visualizer_draw_character(
             screen, x, base_y + point_y,
             visualizer_color(screen, point_y, half_height, false),
@@ -1284,6 +1285,7 @@ visualizer_draw_ellipse(NativeVisualizerScreen *screen, int16 *samples,
     half_width = width / 2;
     half_height = height / 2;
     angle_multiplier = 2.0*NATIVE_VISUALIZER_PI/(double)samples_len;
+
     for (int32 i = 0; i < samples_len; i += 1) {
         double angle;
         double max_radius;
@@ -1298,6 +1300,7 @@ visualizer_draw_ellipse(NativeVisualizerScreen *screen, int16 *samples,
         radius = fabs((double)samples[i])/32768.0;
         x = (int32)((double)x*radius);
         y = (int32)((double)y*radius);
+
         visualizer_draw_character(
             screen, half_width + x, half_height + y,
             visualizer_color(screen,
@@ -1343,21 +1346,17 @@ visualizer_draw_ellipse_stereo(NativeVisualizerScreen *screen,
         int32 y;
 
         if (left[i] < 0) {
-            x = (int32)((double)left[i]/32768.0
-                        *(double)left_half_width);
+            x = (int32)((double)left[i]/32768.0 *(double)left_half_width);
         } else {
-            x = (int32)((double)left[i]/32768.0
-                        *(double)right_half_width);
+            x = (int32)((double)left[i]/32768.0 *(double)right_half_width);
         }
         if (right[i] < 0) {
-            y = (int32)((double)right[i]/32768.0
-                        *(double)top_half_height);
+            y = (int32)((double)right[i]/32768.0 *(double)top_half_height);
         } else {
-            y = (int32)((double)right[i]/32768.0
-                        *(double)bottom_half_height);
+            y = (int32)((double)right[i]/32768.0 *(double)bottom_half_height);
         }
-        distance = sqrt((double)x*(double)x
-                        + 4.0*(double)y*(double)y);
+        distance = sqrt((double)x*(double)x + 4.0*(double)y*(double)y);
+
         visualizer_draw_character(
             screen, left_half_width + x, top_half_height + y,
             visualizer_color(screen, distance, radius, true),
