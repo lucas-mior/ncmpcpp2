@@ -213,7 +213,7 @@ status_print_client_error(char *message, int32 message_len) {
     }
 
     arg = ncm_string_format_arg_string(message, message_len);
-    ncm_statusbar_format((int32)Config.message_delay_time,
+    ncm_statusbar_format(Config.message_delay_time,
                          STRLIT_ARGS("ncmpcpp: %1%"), &arg, 1);
     return;
 }
@@ -230,7 +230,7 @@ status_print_server_error(char *message, int32 message_len) {
     }
 
     arg = ncm_string_format_arg_string(message, message_len);
-    ncm_statusbar_format((int32)Config.message_delay_time,
+    ncm_statusbar_format(Config.message_delay_time,
                          STRLIT_ARGS("MPD: %1%"), &arg, 1);
     return;
 }
@@ -299,7 +299,7 @@ status_prompt_mpd_password(NcmMpdClient *client) {
         return;
     }
 
-    ncm_statusbar_print((int32)Config.message_delay_time,
+    ncm_statusbar_print(Config.message_delay_time,
                         STRLIT_ARGS("Password accepted"));
     return;
 }
@@ -422,7 +422,7 @@ status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks) {
     highlighted = native_playlist_screen_locate_position(
         native_c_screen_playlist(), position);
     if (!highlighted) {
-        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+        ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Song is filtered out");
     }
 
@@ -535,7 +535,7 @@ status_run_init_show_connected_message(NcmStatusInitHooks *hooks) {
     }
 
     arg = ncm_string_format_arg_cstring(ncm_mpd_client_hostname(&global_mpd));
-    ncm_statusbar_format((int32)Config.message_delay_time,
+    ncm_statusbar_format(Config.message_delay_time,
                          STRLIT_ARGS("Connected to %1%"), &arg, 1);
     return;
 }
@@ -554,7 +554,7 @@ statusbar_format_cstring(char *format, int32 format_len, char *value) {
 
     status_notify_statusbar();
     arg = ncm_string_format_arg_cstring(value);
-    ncm_statusbar_format((int32)Config.message_delay_time, format, format_len,
+    ncm_statusbar_format(Config.message_delay_time, format, format_len,
                          &arg, 1);
     return;
 }
@@ -737,7 +737,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                 status_notify_statusbar();
                 arg = ncm_string_format_arg_u64((uint64)mpd_status->crossfade);
                 ncm_statusbar_format(
-                    (int32)Config.message_delay_time,
+                    Config.message_delay_time,
                     STRLIT_ARGS("Crossfade set to %1% seconds"), &arg, 1);
             }
         }
@@ -1536,7 +1536,7 @@ status_draw_classic_elapsed_time(NcWindow *footer, NcmSong *song,
     status_apply_formatted_color_end(footer, &Config.player_state_color);
     nc_window_print_char(footer, ' ');
 
-    text_width = (int32)nc_window_width(footer) - player_state_len;
+    text_width = nc_window_width(footer) - player_state_len;
     text_width -= tracklength.len;
     text_width -= 2;
     if (text_width < 0) {
@@ -1546,7 +1546,7 @@ status_draw_classic_elapsed_time(NcWindow *footer, NcmSong *song,
                            &status_playing_song_scroll_begin, text_width,
                            separator, STRLIT_LEN(" ** "));
 
-    track_x = (int32)nc_window_width(footer) - tracklength.len;
+    track_x = nc_window_width(footer) - tracklength.len;
     if (track_x < 0) {
         track_x = 0;
     }
@@ -1643,7 +1643,7 @@ status_draw_alternative_elapsed_time(NcWindow *header, NcmSong *song,
     nc_cyclic_buffer_write(&second, header, &status_second_line_scroll_begin,
                            text_width, separator, STRLIT_LEN(" ** "));
 
-    volume_x = (int32)nc_window_width(header) - global_volume_state_len();
+    volume_x = nc_window_width(header) - global_volume_state_len();
     if (volume_x < 0) {
         volume_x = 0;
     }
@@ -1912,7 +1912,7 @@ ncm_status_changes_mixer(void) {
         global_volume_state_append("%", STRLIT_LEN("%"));
     }
 
-    volume_x = (int32)nc_window_width(header) - global_volume_state_len();
+    volume_x = nc_window_width(header) - global_volume_state_len();
     if (volume_x < 0) {
         volume_x = 0;
     }
