@@ -216,7 +216,7 @@ native_c_screen_browser_fetch_supported_extensions(void) {
     if (!native_browser_screen_fetch_supported_extensions(
             native_c_screen_browser(), &global_mpd, &error)
         && ncm_error_is_set(&error)) {
-        ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+        ncm_statusbar_print_cstring(Config.message_delay_time,
                                     error.message);
     }
     return;
@@ -437,7 +437,7 @@ native_c_screen_visualizer_init(void) {
     visualizer_config.visualizer_chars_len = Config.visualizer_chars.len;
     visualizer_config.visualizer_colors = Config.visualizer_colors.items;
     visualizer_config.visualizer_colors_len = Config.visualizer_colors.len;
-    visualizer_config.fps = (int32)Config.visualizer_fps;
+    visualizer_config.fps = Config.visualizer_fps;
     visualizer_config.spectrum_dft_size = Config.visualizer_spectrum_dft_size;
     visualizer_config.spectrum_gain = Config.visualizer_spectrum_gain;
     visualizer_config.spectrum_hz_min = Config.visualizer_spectrum_hz_min;
@@ -726,7 +726,7 @@ native_c_screen_sort_playlist_dialog_switch_to(void) {
         Config.ignore_leading_the, &error);
     if (!success && ncm_error_is_set(&error)) {
         ncm_statusbar_print_cstring(
-            (int32)Config.message_delay_time, error.message);
+            Config.message_delay_time, error.message);
     }
     return success;
 }
@@ -873,7 +873,7 @@ static void
 native_search_status_message(
     void *user, char *message, int32 message_len) {
     (void)user;
-    ncm_statusbar_print((int32)Config.message_delay_time,
+    ncm_statusbar_print(Config.message_delay_time,
                         message, message_len);
     return;
 }
@@ -1186,7 +1186,7 @@ native_tag_editor_confirm(
 
     if (!prompted || (answer != 'y')) {
         ncm_statusbar_print_cstring(
-            (int32)Config.message_delay_time, "Action cancelled");
+            Config.message_delay_time, "Action cancelled");
         return false;
     }
     return true;
@@ -1196,7 +1196,7 @@ static void
 native_tag_editor_status_message(
     void *user, char *message, int32 message_len) {
     (void)user;
-    ncm_statusbar_print((int32)Config.message_delay_time,
+    ncm_statusbar_print(Config.message_delay_time,
                         message, message_len);
     return;
 }
@@ -1211,7 +1211,7 @@ native_tag_editor_update_directory(
     if (!ncm_mpd_client_update_directory(
             &global_mpd, directory, NULL, &error)) {
         ncm_statusbar_print_cstring(
-            (int32)Config.message_delay_time, error.message);
+            Config.message_delay_time, error.message);
     }
     return;
 }
@@ -1249,7 +1249,7 @@ static void
 native_tiny_tag_editor_status_message(
     void *user, char *message, int32 message_len) {
     (void)user;
-    ncm_statusbar_print((int32)Config.message_delay_time,
+    ncm_statusbar_print(Config.message_delay_time,
                         message, message_len);
     return;
 }
@@ -1264,7 +1264,7 @@ native_tiny_tag_editor_update_directory(
     if (!ncm_mpd_client_update_directory(
             &global_mpd, directory, NULL, &error)) {
         ncm_statusbar_print_cstring(
-            (int32)Config.message_delay_time, error.message);
+            Config.message_delay_time, error.message);
     }
     return;
 }

@@ -273,7 +273,7 @@ native_selected_items_adder_screen_open(
             ncm_mpd_playlist_list_clear(&playlists);
             arg = ncm_string_format_arg_cstring(playlist_error.message);
             ncm_statusbar_format(
-                (int32)Config.message_delay_time,
+                Config.message_delay_time,
                 STRLIT_ARGS("Could not fetch playlists: %1"), &arg, 1);
         }
     }
@@ -804,10 +804,10 @@ adder_add_to_stored_playlist(
             screen, screen->client, playlist, &error)) {
         if (error.message[0] != '\0') {
             ncm_statusbar_print_cstring(
-                (int32)Config.message_delay_time, error.message);
+                Config.message_delay_time, error.message);
         } else {
             ncm_statusbar_print_cstring(
-                (int32)Config.message_delay_time,
+                Config.message_delay_time,
                 "Could not add selected items");
         }
         return false;
@@ -815,7 +815,7 @@ adder_add_to_stored_playlist(
 
     arg = ncm_string_format_arg_string(playlist, playlist_len);
     ncm_statusbar_format(
-        (int32)Config.message_delay_time,
+        Config.message_delay_time,
         STRLIT_ARGS("Selected item(s) added to playlist \"%1\""),
         &arg, 1);
     adder_finish(screen);
@@ -847,10 +847,10 @@ adder_try_add_current_song(
 
     if (error.message[0] != '\0') {
         ncm_statusbar_print_cstring(
-            (int32)Config.message_delay_time, error.message);
+            Config.message_delay_time, error.message);
     } else {
         ncm_statusbar_print_cstring(
-            (int32)Config.message_delay_time,
+            Config.message_delay_time,
             "Could not add selected item");
     }
     return false;
@@ -872,7 +872,7 @@ adder_add_to_current_playlist(
     }
     if (position == INT32_MAX) {
         ncm_statusbar_print_cstring(
-            (int32)Config.message_delay_time,
+            Config.message_delay_time,
             "Playlist position is too large");
         return false;
     }
@@ -918,7 +918,7 @@ adder_add_to_current_playlist(
     ncm_buffer_append(&message, STRLIT_ARGS("Selected items added"));
     suffix = ncm_helpers_with_errors(success);
     ncm_buffer_append(&message, suffix, optional_strlen32(suffix));
-    ncm_statusbar_print((int32)Config.message_delay_time,
+    ncm_statusbar_print(Config.message_delay_time,
                         message.data, message.len);
     ncm_buffer_destroy(&message);
     adder_finish(screen);
@@ -975,7 +975,7 @@ adder_action_new_playlist(void *user) {
     if (prompt_status != NC_PROMPT_ACCEPTED) {
         nc_window_prompt_result_destroy(input);
         ncm_statusbar_print_cstring(
-            (int32)Config.message_delay_time,
+            Config.message_delay_time,
             "Action aborted");
         return;
     }

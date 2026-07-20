@@ -3263,7 +3263,7 @@ tag_editor_report_error(char *context, int32 context_len,
                           strlen32(error->message));
     }
     ncm_buffer_append_byte(&message, '\0');
-    ncm_statusbar_print_cstring((int32)Config.message_delay_time,
+    ncm_statusbar_print_cstring(Config.message_delay_time,
                                 message.data);
     ncm_buffer_destroy(&message);
     return;
