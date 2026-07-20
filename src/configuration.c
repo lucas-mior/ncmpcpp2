@@ -77,8 +77,7 @@ command_line_options_append_path(NcmBufferArray *paths, char *path,
                                  int32 path_len) {
     NcmBuffer *slot;
 
-    slot = ncm_buffer_array_append(paths);
-    if (slot == NULL) {
+    if ((slot = ncm_buffer_array_append(paths)) == NULL) {
         return false;
     }
     ncm_buffer_append(slot, path, path_len);
@@ -101,8 +100,8 @@ configuration_append_default_file(NcmBufferArray *paths, char *filename,
     ncm_buffer_init(&directory);
     ncm_buffer_init(&path);
 
-    xdg_config_home = getenv("XDG_CONFIG_HOME");
-    if (xdg_config_home && (xdg_config_home[0] != '\0')) {
+    if ((xdg_config_home = getenv("XDG_CONFIG_HOME"))
+        && (xdg_config_home[0] != '\0')) {
         ncm_buffer_append(&directory, xdg_config_home,
                           strlen32(xdg_config_home));
     } else {
@@ -641,8 +640,7 @@ configuration_make_string_views(NcmStringViewArray *views,
         NcmBuffer *buffer;
 
         buffer = &buffers->items[i];
-        view = ncm_string_view_array_append(views);
-        if (view == NULL) {
+        if ((view = ncm_string_view_array_append(views)) == NULL) {
             ncm_string_view_array_destroy(views);
             return false;
         }
@@ -977,8 +975,8 @@ configure(int32 argc, char **argv) {
         exit(EXIT_SUCCESS);
     }
 
-    result = ncm_configuration_options_apply(&options, &error);
-    if (result && !options.current_song) {
+    if ((result = ncm_configuration_options_apply(&options, &error))
+        && !options.current_song) {
         result = configuration_read_bindings(&options, &error);
     }
     if (result && options.current_song) {

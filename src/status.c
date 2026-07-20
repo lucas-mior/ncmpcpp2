@@ -254,8 +254,7 @@ status_prompt_mpd_password(NcmMpdClient *client) {
         return;
     }
 
-    window = ncm_statusbar_put();
-    if (window == NULL) {
+    if ((window = ncm_statusbar_put()) == NULL) {
         return;
     }
 
@@ -373,8 +372,7 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
         app_controller_each_visible_screen(status_update_timeout_from_screen,
                                            &timeout_context);
 
-        footer = ui_state_footer_window();
-        if (footer) {
+        if ((footer = ui_state_footer_window())) {
             nc_window_set_timeout(footer, timeout_context.timeout);
         }
     }
@@ -448,8 +446,7 @@ status_run_init_set_tcp_nodelay(NcmStatusInitHooks *hooks) {
     }
 
 #if defined(HAVE_NETINET_IN_H) && defined(HAVE_NETINET_TCP_H)
-    fd = ncm_mpd_client_fd(&global_mpd);
-    if (fd < 0) {
+    if ((fd = ncm_mpd_client_fd(&global_mpd)) < 0) {
         return;
     }
 
@@ -512,8 +509,7 @@ status_run_init_register_mpd_fd_callback(NcmStatusInitHooks *hooks) {
     }
 
     footer = ui_state_footer_window();
-    fd = ncm_mpd_client_fd(&global_mpd);
-    if ((footer == NULL) || (fd < 0)) {
+    if ((footer == NULL) || ((fd = ncm_mpd_client_fd(&global_mpd)) < 0)) {
         return;
     }
 
@@ -974,8 +970,7 @@ ncm_status_changes_player_state(void) {
         }
         native_playlist_screen_reload_remaining(native_c_screen_playlist());
         if (Config.design == NCM_DESIGN_ALTERNATIVE) {
-            header = ui_state_header_window();
-            if (header) {
+            if ((header = ui_state_header_window())) {
                 nc_window_go_to_xy(header, 0, 0);
                 nc_window_apply_term_manip(header, NC_TERM_CLEAR_TO_EOL);
                 nc_window_go_to_xy(header, 0, 1);
@@ -1183,8 +1178,8 @@ status_request_stored_playlists_update(void) {
     native_playlist_editor_screen_request_playlists_update(editor);
     native_playlist_editor_screen_request_content_update(editor);
 
-    browser = native_c_screen_browser();
-    if (browser && !native_browser_screen_is_local(browser)
+    if ((browser = native_c_screen_browser())
+        && !native_browser_screen_is_local(browser)
         && native_browser_screen_in_root_directory(browser)) {
         native_browser_screen_request_update(browser);
     }
@@ -1385,8 +1380,7 @@ status_draw_player_state_label(char *state, int32 state_len) {
 
     switch (Config.design) {
     case NCM_DESIGN_ALTERNATIVE:
-        window = ui_state_header_window();
-        if (window == NULL) {
+        if ((window = ui_state_header_window()) == NULL) {
             return;
         }
         nc_window_go_to_xy(window, 0, 1);
@@ -1396,8 +1390,8 @@ status_draw_player_state_label(char *state, int32 state_len) {
         nc_window_refresh(window);
         break;
     case NCM_DESIGN_CLASSIC:
-        window = ui_state_footer_window();
-        if ((window == NULL) || !ncm_statusbar_is_unlocked()
+        if (((window = ui_state_footer_window()) == NULL)
+            || !ncm_statusbar_is_unlocked()
             || !Config.statusbar_visibility) {
             return;
         }
@@ -1694,8 +1688,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
 
     if ((status_player_state == NCM_STATUS_PLAYER_STOP)
         || (status_player_state == NCM_STATUS_PLAYER_UNKNOWN)) {
-        footer = ui_state_footer_window();
-        if (footer && ncm_statusbar_is_unlocked()
+        if ((footer = ui_state_footer_window()) && ncm_statusbar_is_unlocked()
             && Config.statusbar_visibility) {
             nc_window_go_to_xy(footer, 0, 1);
             nc_window_apply_term_manip(footer, NC_TERM_CLEAR_TO_EOL);
@@ -1710,8 +1703,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
     if (!native_playlist_screen_now_playing_song(
             native_c_screen_playlist(), status_current_song_pos, &song)) {
         ncm_song_destroy(&song);
-        footer = ui_state_footer_window();
-        if (footer && ncm_statusbar_is_unlocked()
+        if ((footer = ui_state_footer_window()) && ncm_statusbar_is_unlocked()
             && Config.statusbar_visibility) {
             nc_window_go_to_xy(footer, 0, 1);
             nc_window_apply_term_manip(footer, NC_TERM_CLEAR_TO_EOL);
@@ -1760,8 +1752,7 @@ ncm_status_changes_flags(void) {
         return;
     }
 
-    header = ui_state_header_window();
-    if (header == NULL) {
+    if ((header = ui_state_header_window()) == NULL) {
         return;
     }
 
@@ -1882,8 +1873,7 @@ ncm_status_changes_mixer(void) {
         return;
     }
 
-    header = ui_state_header_window();
-    if (header == NULL) {
+    if ((header = ui_state_header_window()) == NULL) {
         return;
     }
 

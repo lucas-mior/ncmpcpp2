@@ -291,8 +291,7 @@ settings_expand_home(NcmBuffer *buffer, char *value, int32 value_len) {
         return true;
     }
 
-    home = getenv("HOME");
-    if (home == NULL) {
+    if ((home = getenv("HOME")) == NULL) {
         ncm_buffer_append(buffer, value, value_len);
         return true;
     }
@@ -319,8 +318,7 @@ settings_string_set_expanded(char **data, int32 *len, int32 *cap, char *value,
     bool result;
 
     ncm_buffer_init(&buffer);
-    result = settings_expand_home(&buffer, value, value_len);
-    if (result) {
+    if ((result = settings_expand_home(&buffer, value, value_len))) {
         result = settings_string_set(data, len, cap, buffer.data, buffer.len);
     }
     ncm_buffer_destroy(&buffer);
@@ -334,8 +332,8 @@ settings_string_set_directory(char **data, int32 *len, int32 *cap, char *value,
     bool result;
 
     ncm_buffer_init(&buffer);
-    result = settings_expand_home(&buffer, value, value_len);
-    if (result && ((buffer.len <= 0) || (buffer.data[buffer.len - 1] != '/'))) {
+    if ((result = settings_expand_home(&buffer, value, value_len))
+        && ((buffer.len <= 0) || (buffer.data[buffer.len - 1] != '/'))) {
         ncm_buffer_append_byte(&buffer, '/');
     }
     if (result) {
@@ -632,8 +630,7 @@ settings_parse_formatted_color_list(NcmFormattedColorArray *array, char *value,
         if (item_len <= 0) {
             continue;
         }
-        dest = ncm_formatted_color_array_append(array);
-        if (dest == NULL) {
+        if ((dest = ncm_formatted_color_array_append(array)) == NULL) {
             settings_error(error, STRLIT_ARGS("failed to append color"));
             return false;
         }
@@ -670,8 +667,7 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
         if (!settings_parse_int32(value + start, end - start, &parsed, error)) {
             return false;
         }
-        slot = ncm_int32_array_append(array);
-        if (slot == NULL) {
+        if ((slot = ncm_int32_array_append(array)) == NULL) {
             settings_error(error, STRLIT_ARGS("failed to append ratio"));
             return false;
         }
@@ -745,8 +741,7 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
         pos = next;
         tag = ncm_string_get_enclosed(value, value_len, '{', '}', pos, &next);
         pos = next;
-        column = column_array_append(&config->columns);
-        if (column == NULL) {
+        if ((column = column_array_append(&config->columns)) == NULL) {
             settings_error(error, STRLIT_ARGS("failed to append column"));
             ncm_buffer_destroy(&width);
             ncm_buffer_destroy(&color);
@@ -1053,8 +1048,7 @@ apply_mpd_host(Configuration *config, char *value, int32 value_len,
 
     (void)config;
     ncm_buffer_init(&host);
-    result = settings_expand_home(&host, value, value_len);
-    if (result) {
+    if ((result = settings_expand_home(&host, value, value_len))) {
         result = ncm_mpd_client_set_hostname(&global_mpd, host.data, host.len,
                                              error);
     }
@@ -1898,8 +1892,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
 
     ncm_buffer_init(&path_buffer);
     ncm_buffer_append(&path_buffer, path, path_len);
-    file = fopen(path_buffer.data, "r");
-    if (file == NULL) {
+    if ((file = fopen(path_buffer.data, "r")) == NULL) {
         char message[256];
         int32 len;
 

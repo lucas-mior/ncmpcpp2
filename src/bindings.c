@@ -366,8 +366,7 @@ ncm_binding_runtime_current_screen_is(enum ScreenType screen_type, void *user) {
     int32 native_type;
 
     (void)user;
-    screen = app_controller_current_screen();
-    if (screen == NULL) {
+    if ((screen = app_controller_current_screen()) == NULL) {
         return false;
     }
 
@@ -380,8 +379,7 @@ ncm_binding_runtime_push_key(NcKey key, void *user) {
     NcWindow *window;
 
     (void)user;
-    window = ui_state_footer_window();
-    if (window) {
+    if ((window = ui_state_footer_window())) {
         nc_window_push_key(window, key);
     }
     return;
@@ -1065,8 +1063,7 @@ ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
         return true;
     }
     ncm_binding_init(&binding);
-    result = ncm_binding_append_normal(&binding, type);
-    if (result) {
+    if ((result = ncm_binding_append_normal(&binding, type))) {
         result = ncm_bindings_bind(bindings, key, &binding);
     }
     ncm_binding_destroy(&binding);
@@ -1086,8 +1083,7 @@ ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
         return true;
     }
     ncm_binding_init(&binding);
-    result = ncm_binding_append_normal(&binding, first);
-    if (result) {
+    if ((result = ncm_binding_append_normal(&binding, first))) {
         result = ncm_binding_append_normal(&binding, second);
     }
     if (result) {
@@ -1112,8 +1108,7 @@ ncm_bindings_bind_group(NcmBindingsConfiguration *bindings, char *key_name,
         bool result;
 
         ncm_binding_init(&binding);
-        result = ncm_binding_append_normal(&binding, actions[i]);
-        if (result) {
+        if ((result = ncm_binding_append_normal(&binding, actions[i]))) {
             result = ncm_bindings_bind(bindings, key, &binding);
         }
         ncm_binding_destroy(&binding);
@@ -1192,8 +1187,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     bool command_immediate;
 
     path_copy = ncm_string_copy(path, path_len, &path_cap);
-    file = fopen(path_copy, "r");
-    if (file == NULL) {
+    if ((file = fopen(path_copy, "r")) == NULL) {
         free2(path_copy, path_cap);
         return true;
     }

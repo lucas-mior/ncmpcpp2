@@ -302,8 +302,7 @@ ncm_playlist_sort_plan_execute(NcmPlaylistSortPlan *plan,
     }
 
     started = false;
-    success = ncm_mpd_client_start_command_list(client, error);
-    if (success) {
+    if ((success = ncm_mpd_client_start_command_list(client, error))) {
         started = true;
     }
     for (int32 i = 0; success && (i < plan->len); i += 1) {

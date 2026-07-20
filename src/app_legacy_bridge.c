@@ -119,8 +119,8 @@ app_legacy_bridge_mpd_error_message(NcmError *error) {
         return error->message;
     }
 
-    message = ncm_mpd_client_error_message(&global_mpd);
-    if (message && (message[0] != '\0')) {
+    if ((message = ncm_mpd_client_error_message(&global_mpd))
+        && (message[0] != '\0')) {
         return message;
     }
 
@@ -301,8 +301,7 @@ ncmpcpp_legacy_resize_screen(bool reload_main_window) {
         nc_window_resize(header, COLS, ncmpcpp_legacy_header_height());
     }
 
-    footer = ui_state_footer_window();
-    if (footer) {
+    if ((footer = ui_state_footer_window())) {
         nc_window_move_to(footer, 0, ncmpcpp_legacy_footer_start_y());
         nc_window_resize(footer, COLS, ncmpcpp_legacy_footer_height());
     }

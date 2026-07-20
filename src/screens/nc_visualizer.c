@@ -661,10 +661,10 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     int32 visualizer_colors_len;
     int32 fps;
 #if defined(HAVE_FFTW3_H)
-    int32 spectrum_dft_size = NATIVE_VISUALIZER_DEFAULT_DFT_SIZE;           
-    double spectrum_gain = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_GAIN;   
-    double spectrum_hz_min = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MIN;   
-    double spectrum_hz_max = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MAX;   
+    int32 spectrum_dft_size = NATIVE_VISUALIZER_DEFAULT_DFT_SIZE;
+    double spectrum_gain = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_GAIN;
+    double spectrum_hz_min = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MIN;
+    double spectrum_hz_max = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MAX;
 #endif
     NativeVisualizerDataSourceHooks data_source_hooks;
     enum NativeVisualizerType visualization_type;
@@ -685,7 +685,7 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     visualizer_colors_len = 0;
     fps = NATIVE_VISUALIZER_DEFAULT_FPS;
     data_source_hooks = native_visualizer_data_source_system_hooks(NULL);
-    
+
     visualization_type = NATIVE_VISUALIZER_WAVE;
     autoscale = false;
     stereo = false;
@@ -1899,8 +1899,7 @@ visualizer_system_open_fifo(void *user, char *location,
     int32 fd;
 
     (void)user;
-    fd = open(location, O_RDONLY | O_NONBLOCK);
-    if (fd < 0) {
+    if ((fd = open(location, O_RDONLY | O_NONBLOCK)) < 0) {
         NcmStringFormatArg args[2];
 
         args[0] = ncm_string_format_arg_string(location, location_len);
@@ -1930,8 +1929,7 @@ visualizer_system_open_udp(void *user, char *location,
     hints.ai_protocol = IPPROTO_UDP;
 
     addresses = NULL;
-    error_code = getaddrinfo(location, port, &hints, &addresses);
-    if (error_code != 0) {
+    if ((error_code = getaddrinfo(location, port, &hints, &addresses)) != 0) {
         NcmStringFormatArg args[3];
 
         args[0] = ncm_string_format_arg_string(location, location_len);

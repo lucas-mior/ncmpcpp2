@@ -986,8 +986,7 @@ native_search_engine_screen_allows_search(
     if (count <= 0) {
         return false;
     }
-    row = nc_menu_active_item_at(menu, count - 1);
-    if (row == NULL) {
+    if ((row = nc_menu_active_item_at(menu, count - 1)) == NULL) {
         return false;
     }
     return row->is_song;
@@ -1001,8 +1000,8 @@ native_search_engine_screen_current_song(NativeSearchEngineScreen *screen,
     if ((screen == NULL) || (song == NULL)) {
         return false;
     }
-    row = nc_search_row_menu_current(&screen->rows);
-    if ((row == NULL) || !row->is_song) {
+    if (((row = nc_search_row_menu_current(&screen->rows)) == NULL)
+        || !row->is_song) {
         return false;
     }
     return ncm_song_copy(song, &row->song);
@@ -1018,8 +1017,7 @@ native_search_engine_screen_selected_songs(NativeSearchEngineScreen *screen,
         return false;
     }
     menu = native_search_engine_screen_menu(screen);
-    any_selected = nc_menu_has_selected(menu);
-    if (!any_selected) {
+    if (!(any_selected = nc_menu_has_selected(menu))) {
         return native_search_copy_song_at(
             screen, songs, nc_menu_highlight(menu));
     }
@@ -1237,8 +1235,7 @@ native_search_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         if (!nc_menu_goto_selectable(menu, y)) {
             return;
         }
-        row = nc_search_row_menu_current(&search->rows);
-        if (row == NULL) {
+        if ((row = nc_search_row_menu_current(&search->rows)) == NULL) {
             return;
         }
         if (!row->is_song) {
@@ -1709,8 +1706,7 @@ native_search_collect_database_results(
     exact_match = screen->search_mode
         == NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT;
     ncm_mpd_song_list_init(&result);
-    ok = ncm_mpd_client_start_search(client, exact_match, error);
-    if (ok) {
+    if ((ok = ncm_mpd_client_start_search(client, exact_match, error))) {
         ok = native_search_add_database_constraints(
             screen, client, error);
     }
@@ -1719,8 +1715,7 @@ native_search_collect_database_results(
             client, &result, error);
     }
     if (ok) {
-        ok = ncm_mpd_song_list_to_song_array(&result, songs);
-        if (!ok) {
+        if (!(ok = ncm_mpd_song_list_to_song_array(&result, songs))) {
             ncm_error_set(error, EIO,
                           STRLIT_ARGS("failed to copy search results"));
         }

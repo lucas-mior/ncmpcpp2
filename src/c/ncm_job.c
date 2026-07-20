@@ -120,8 +120,8 @@ ncm_job_queue_thread_main(void *user) {
         while ((queue->pending_len <= 0) && !queue->stopping) {
             pthread_cond_wait(&queue->cond, &queue->mutex);
         }
-        have_job = ncm_job_queue_pop_pending_locked(queue, &job);
-        if (!have_job && queue->stopping) {
+        if (!(have_job = ncm_job_queue_pop_pending_locked(queue, &job))
+            && queue->stopping) {
             pthread_mutex_unlock(&queue->mutex);
             break;
         }

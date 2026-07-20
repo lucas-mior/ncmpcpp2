@@ -43,8 +43,7 @@ statusbar_redraw_after_stop_unlock(void) {
         return;
     }
 
-    window = statusbar_footer_window();
-    if (window == NULL) {
+    if ((window = statusbar_footer_window()) == NULL) {
         return;
     }
 
@@ -73,8 +72,7 @@ statusbar_redraw_after_unlock(void) {
         return;
     }
 
-    window = statusbar_footer_window();
-    if (window == NULL) {
+    if ((window = statusbar_footer_window()) == NULL) {
         return;
     }
 
@@ -197,8 +195,7 @@ ncm_progressbar_draw(int32 elapsed, int32 time) {
     int32 filled;
     int64 howlong;
 
-    window = statusbar_footer_window();
-    if (window == NULL) {
+    if ((window = statusbar_footer_window()) == NULL) {
         return;
     }
 
@@ -299,8 +296,7 @@ ncm_statusbar_put(void) {
     NcWindow *window;
     int32 y;
 
-    window = statusbar_footer_window();
-    if (window == NULL) {
+    if ((window = statusbar_footer_window()) == NULL) {
         return NULL;
     }
 
@@ -323,8 +319,7 @@ ncm_statusbar_print(int32 delay_seconds, char *message, int32 message_len) {
         return;
     }
 
-    window = statusbar_footer_window();
-    if (window == NULL) {
+    if ((window = statusbar_footer_window()) == NULL) {
         return;
     }
 

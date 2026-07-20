@@ -197,8 +197,7 @@ native_sort_playlist_dialog_add_row(NativeSortPlaylistDialog *dialog,
     row.getter = getter;
     row.action.run = run;
     row.action.user = user;
-    ok = sort_dialog_label_set(&row, label, label_len);
-    if (ok) {
+    if ((ok = sort_dialog_label_set(&row, label, label_len))) {
         nc_editor_sort_menu_add(&dialog->rows, &row);
     }
     nc_editor_sort_row_destroy(&row);
@@ -322,8 +321,8 @@ native_sort_playlist_dialog_run_current(NativeSortPlaylistDialog *dialog) {
     if ((dialog == NULL) || !dialog->ready) {
         return false;
     }
-    row = nc_editor_sort_menu_current(&dialog->rows);
-    if ((row == NULL) || (row->action.run == NULL)) {
+    if (((row = nc_editor_sort_menu_current(&dialog->rows)) == NULL)
+        || (row->action.run == NULL)) {
         return false;
     }
     row->action.run(row->action.user);
@@ -438,8 +437,8 @@ sort_dialog_can_run_current_callback(NcScreen *screen) {
     NativeSortPlaylistDialog *dialog;
     NcEditorSortRow *row;
 
-    dialog = sort_dialog_from_screen(screen);
-    if ((dialog == NULL) || !dialog->ready) {
+    if (((dialog = sort_dialog_from_screen(screen)) == NULL)
+        || !dialog->ready) {
         return false;
     }
     row = nc_editor_sort_menu_current(&dialog->rows);
@@ -532,8 +531,7 @@ static bool
 sort_dialog_position_is_sort_key(NcMenu *menu, int32 pos) {
     NcEditorSortRow *row;
 
-    row = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, pos);
-    if (row == NULL) {
+    if ((row = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, pos)) == NULL) {
         return false;
     }
     return row->getter != NCM_SONG_GETTER_NONE;
