@@ -1036,9 +1036,7 @@ static void
 tiny_editor_buffer_uint(NcBuffer *buffer, uint32 value, char *suffix,
                         int32 suffix_len) {
     char number[64];
-    int32 len;
-
-    len = SNPRINTF(number, "%u", value);
+    int32 len = SNPRINTF(number, "%u", value);
     nc_buffer_append_data(buffer, number, len);
     nc_buffer_append_data(buffer, suffix, suffix_len);
     return;
