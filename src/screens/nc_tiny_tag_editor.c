@@ -40,22 +40,22 @@ static bool tiny_editor_add_row(NativeTinyTagEditorScreen *screen,
 static int32 tiny_editor_current_row(NativeTinyTagEditorScreen *screen);
 static void tiny_editor_status_message(
     NativeTinyTagEditorScreen *screen, char *message, int32 message_len);
-static bool tiny_editor_replace_tag_row(
-    NativeTinyTagEditorScreen *screen, enum NcmTagsField field);
-static bool tiny_editor_replace_filename_row(
-    NativeTinyTagEditorScreen *screen);
-static bool tiny_editor_write_song(
-    NativeTinyTagEditorScreen *screen, char *music_dir);
-static void tiny_editor_complete_save(
-    NativeTinyTagEditorScreen *screen);
+static bool tiny_editor_replace_tag_row(NativeTinyTagEditorScreen *screen,
+                                        enum NcmTagsField field);
+static bool tiny_editor_replace_filename_row(NativeTinyTagEditorScreen *screen);
+static bool tiny_editor_write_song(NativeTinyTagEditorScreen *screen,
+                                   char *music_dir);
+static void tiny_editor_complete_save(NativeTinyTagEditorScreen *screen);
 static bool tiny_editor_finish(NativeTinyTagEditorScreen *screen);
 static void tiny_editor_buffer_key_value(NcBuffer *buffer, char *key,
                                          int32 key_len, char *value,
                                          int32 value_len);
-static void tiny_editor_buffer_mutable_tag(
-    NcBuffer *buffer, NcmMutableSong *song, enum NcmTagsField field,
-    char *tag_separator, int32 tag_separator_len,
-    bool show_duplicate_tags);
+static void tiny_editor_buffer_mutable_tag(NcBuffer *buffer,
+                                           NcmMutableSong *song,
+                                           enum NcmTagsField field,
+                                           char *tag_separator,
+                                           int32 tag_separator_len,
+                                           bool show_duplicate_tags);
 static void tiny_editor_buffer_uint(NcBuffer *buffer, uint32 value,
                                     char *suffix, int32 suffix_len);
 static void tiny_editor_buffer_key_uint(NcBuffer *buffer, char *key,
@@ -92,17 +92,21 @@ native_tiny_tag_editor_screen_init(
     nc_editor_buffer_menu_init(&screen->rows);
     menu = nc_editor_buffer_menu_base(&screen->rows);
     display_callbacks.draw = tiny_editor_draw_row;
+
     nc_menu_set_display_callbacks(menu, display_callbacks);
     nc_menu_set_highlight_prefix(menu, &Config.current_item_prefix);
     nc_menu_set_highlight_suffix(menu, &Config.current_item_suffix);
     nc_menu_set_cyclic_scrolling(menu, Config.use_cyclic_scrolling);
     nc_menu_set_centered_cursor(menu, Config.centered_cursor);
+
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, NULL, 0, color, border);
     screen->hooks = (NativeTinyTagEditorHooks){0};
     ncm_mutable_song_init(&screen->edited);
+
     ncm_buffer_init(&screen->music_dir);
     ncm_buffer_init(&screen->tag_separator);
+
     screen->previous_screen = NULL;
     screen->start_x = start_x;
     screen->width = width;
@@ -111,6 +115,7 @@ native_tiny_tag_editor_screen_init(
     screen->has_edited = false;
     screen->show_duplicate_tags = false;
     screen->registered = false;
+
     nc_screen_init(&screen->screen, tiny_editor_callbacks, screen,
                    NC_SCREEN_TYPE_TINY_TAG_EDITOR);
     return;
@@ -121,17 +126,21 @@ native_tiny_tag_editor_screen_destroy(NativeTinyTagEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
+
     (void)app_controller_unregister_screen(
         native_tiny_tag_editor_screen_base(screen));
     ncm_mutable_song_destroy(&screen->edited);
     ncm_buffer_destroy(&screen->music_dir);
     ncm_buffer_destroy(&screen->tag_separator);
     nc_window_destroy(&screen->window);
+
     nc_editor_buffer_menu_destroy(&screen->rows);
+
     screen->previous_screen = NULL;
     screen->has_edited = false;
     screen->show_duplicate_tags = false;
     screen->registered = false;
+
     return;
 }
 
@@ -168,12 +177,15 @@ native_tiny_tag_editor_screen_set_geometry(
     if (screen == NULL) {
         return;
     }
+
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
     screen->main_height = main_height;
+
     nc_window_move_to(&screen->window, start_x, main_start_y);
     nc_window_resize(&screen->window, width, main_height);
+
     return;
 }
 
@@ -1010,11 +1022,11 @@ tiny_editor_buffer_mutable_tag(
     char *name;
 
     name = ncm_tags_field_name(field);
-    tiny_editor_buffer_key_value(
-        buffer, name, optional_strlen32(name), NULL, 0);
-    value = ncm_mutable_song_tags_buffer(
-        song, field, tag_separator, tag_separator_len,
-        show_duplicate_tags);
+    tiny_editor_buffer_key_value(buffer,
+                                 name, optional_strlen32(name), NULL, 0);
+    value = ncm_mutable_song_tags_buffer(song, field,
+                                         tag_separator, tag_separator_len,
+                                         show_duplicate_tags);
     nc_buffer_append_data(buffer, value.data, value.len);
     ncm_buffer_destroy(&value);
     return;
