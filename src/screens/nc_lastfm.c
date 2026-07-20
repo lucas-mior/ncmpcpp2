@@ -94,10 +94,8 @@ nc_lastfm_screen_set_geometry(NcLastfmScreen *screen,
                               int32 start_x, int32 width,
                               int32 main_start_y, int32 main_height) {
     nc_scrollpad_screen_set_main_area(&screen->scrollpad_screen,
-                                      start_x,
-                                      width,
-                                      main_start_y,
-                                      main_height);
+                                      start_x, width,
+                                      main_start_y, main_height);
     return;
 }
 
