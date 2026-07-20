@@ -1144,7 +1144,7 @@ apply_visualizer_fps(Configuration *config, char *value, int32 value_len,
                                error)) {
         return false;
     }
-    return ncm_bounds_check_u64(config->visualizer_fps, 30, 1000, error);
+    return ncm_bounds_check_i64(config->visualizer_fps, 30, 1000, error);
 }
 
 static bool
@@ -1154,7 +1154,7 @@ apply_visualizer_spectrum_dft_size(Configuration *config, char *value,
                                &config->visualizer_spectrum_dft_size, error)) {
         return false;
     }
-    return ncm_bounds_check_u64(config->visualizer_spectrum_dft_size, 1, 5,
+    return ncm_bounds_check_i64(config->visualizer_spectrum_dft_size, 1, 5,
                                 error);
 }
 
@@ -1659,7 +1659,7 @@ apply_search_engine_default_search_mode(Configuration *config, char *value,
     if (!settings_parse_int32(value, value_len, &mode, error)) {
         return false;
     }
-    if (!ncm_bounds_check_u64(mode, 1, 3, error)) {
+    if (!ncm_bounds_check_i64(mode, 1, 3, error)) {
         return false;
     }
     config->search_engine_default_search_mode = mode - 1;
