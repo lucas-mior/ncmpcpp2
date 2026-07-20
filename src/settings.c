@@ -227,9 +227,8 @@ settings_trim_start(char *value, int32 value_len) {
 
     result = 0;
     while (result < value_len) {
-        uint8 c;
+        uint8 c = (uint8)value[result];
 
-        c = (uint8)value[result];
         if (!isspace(c)) {
             break;
         }
