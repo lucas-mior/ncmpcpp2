@@ -36,7 +36,7 @@ ncm_bindings_error(NcmError *error, char *format, ...) {
     int32 len;
 
     va_start(args, format);
-    len = vsnprintf(buffer, sizeof(buffer), format, args);
+    len = vsnprintf(buffer, (size_t)SIZEOF(buffer), format, args);
     va_end(args);
 
     if (len < 0) {
@@ -44,8 +44,8 @@ ncm_bindings_error(NcmError *error, char *format, ...) {
                       STRLIT_ARGS("bindings parse error"));
         return;
     }
-    if (len >= (int32)sizeof(buffer)) {
-        len = (int32)sizeof(buffer) - 1;
+    if (len >= (int32)SIZEOF(buffer)) {
+        len = (int32)SIZEOF(buffer) - 1;
     }
 
     ncm_error_set(error, NCM_BINDINGS_ERROR_PARSE, buffer, len);
@@ -255,7 +255,7 @@ ncm_binding_action_can_run(NcmBindingAction *action,
     switch (action->kind) {
     case NCM_BINDING_ACTION_NORMAL:
     case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
-        if ((runtime != NULL) && (runtime->can_run_action != NULL)) {
+        if (runtime && runtime->can_run_action) {
             return runtime->can_run_action(action->type, runtime->user);
         }
         return ncm_action_can_run(action->type, NULL);
@@ -284,7 +284,7 @@ ncm_binding_action_run(NcmBindingAction *action, NcmBindingRuntime *runtime) {
 
     switch (action->kind) {
     case NCM_BINDING_ACTION_NORMAL:
-        if ((runtime != NULL) && (runtime->run_action != NULL)) {
+        if (runtime && runtime->run_action) {
             return runtime->run_action(action->type, runtime->user);
         }
         return ncm_action_run(action->type, NULL);
@@ -381,7 +381,7 @@ ncm_binding_runtime_push_key(NcKey key, void *user) {
 
     (void)user;
     window = ui_state_footer_window();
-    if (window != NULL) {
+    if (window) {
         nc_window_push_key(window, key);
     }
     return;
@@ -625,7 +625,7 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
 
         memcpy64(buffer, string + 1, string_len - 1);
         buffer[string_len - 1] = '\0';
-        n = atoi(buffer);
+        n = (int32)atoi2(buffer);
         if ((n >= 1) && (n <= 12)) {
             result = NC_KEY_F1 + (NcKey)n - 1;
         }
@@ -633,10 +633,9 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
 
     if ((result == NC_KEY_NONE) && (string_len > 0)) {
         wchar_t wc;
-        mbstate_t state;
+        mbstate_t state = {0};
         int64 converted;
 
-        memset64(&state, 0, SIZEOF(state));
         converted = (int64)mbrtowc(&wc, string, (size_t)string_len, &state);
         if ((converted == string_len) && (wc != 0)) {
             result = (NcKey)wc;
@@ -1056,12 +1055,12 @@ ncm_bindings_not_bound(NcmBindingsConfiguration *bindings, NcKey key) {
 
 static bool
 ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
-                         enum NcmActionType type) {
+                         int32 key_name_len, enum NcmActionType type) {
     NcmBinding binding;
     NcKey key;
     bool result;
 
-    key = ncm_bindings_string_to_key(key_name, strlen32(key_name));
+    key = ncm_bindings_string_to_key(key_name, key_name_len);
     if (!ncm_bindings_not_bound(bindings, key)) {
         return true;
     }
@@ -1076,12 +1075,13 @@ ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
 
 static bool
 ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
-                         enum NcmActionType first, enum NcmActionType second) {
+                         int32 key_name_len, enum NcmActionType first,
+                         enum NcmActionType second) {
     NcmBinding binding;
     NcKey key;
     bool result;
 
-    key = ncm_bindings_string_to_key(key_name, strlen32(key_name));
+    key = ncm_bindings_string_to_key(key_name, key_name_len);
     if (!ncm_bindings_not_bound(bindings, key)) {
         return true;
     }
@@ -1098,10 +1098,11 @@ ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
 }
 static bool
 ncm_bindings_bind_group(NcmBindingsConfiguration *bindings, char *key_name,
-                        enum NcmActionType *actions, int32 actions_len) {
+                        int32 key_name_len, enum NcmActionType *actions,
+                        int32 actions_len) {
     NcKey key;
 
-    key = ncm_bindings_string_to_key(key_name, strlen32(key_name));
+    key = ncm_bindings_string_to_key(key_name, key_name_len);
     if (!ncm_bindings_not_bound(bindings, key)) {
         return true;
     }
@@ -1210,7 +1211,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     command_immediate = false;
     ncm_binding_init(&actions);
 
-    while (ok && (fgets(line, (int32)SIZEOF(line), file) != NULL)) {
+    while (ok && fgets(line, (int32)SIZEOF(line), file)) {
         int32 len;
         int32 start;
         NcmStringView enclosed;
@@ -1368,13 +1369,15 @@ ncm_bindings_configuration_generate_defaults(
     ncm_binding_destroy(&binding);
 
 #define BIND(KEY, ACTION) \
-    (void)ncm_bindings_bind_single(bindings, (char *)(KEY), ACTION)
+    (void)ncm_bindings_bind_single( \
+        bindings, STRLIT_ARGS(KEY), ACTION)
 #define CHAIN2(KEY, A, B) \
-    (void)ncm_bindings_bind_chain2(bindings, (char *)(KEY), A, B)
+    (void)ncm_bindings_bind_chain2( \
+        bindings, STRLIT_ARGS(KEY), A, B)
 #define GROUP(KEY, ...) do { \
     enum NcmActionType actions[] = { __VA_ARGS__ }; \
-    (void)ncm_bindings_bind_group(bindings, (char *)(KEY), actions, \
-                                  NCM_ARRAY_LEN(actions)); \
+    (void)ncm_bindings_bind_group( \
+        bindings, STRLIT_ARGS(KEY), actions, NCM_ARRAY_LEN(actions)); \
 } while (0)
 
     BIND("mouse", NCM_ACTION_MOUSE_EVENT);

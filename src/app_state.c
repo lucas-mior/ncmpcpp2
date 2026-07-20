@@ -64,7 +64,7 @@ app_state_lock_current_screen(void) {
 void
 app_state_unlock_screen(void) {
     last_switch_changed_screen
-        = (screen_registry.inactive_screen != NULL)
+        = screen_registry.inactive_screen
           && (screen_registry.inactive_screen != screen_registry.locked_screen);
     nc_screen_registry_unlock(&screen_registry);
     return;
@@ -72,9 +72,9 @@ app_state_unlock_screen(void) {
 
 bool
 app_state_can_show_locked_screen(void) {
-    return (screen_registry.current_screen != NULL)
-           && (screen_registry.locked_screen != NULL)
-           && (screen_registry.inactive_screen != NULL)
+    return screen_registry.current_screen
+           && screen_registry.locked_screen
+           && screen_registry.inactive_screen
            && (screen_registry.locked_screen != screen_registry.current_screen)
            && (nc_screen_is_mergable(screen_registry.current_screen));
 }
@@ -92,9 +92,9 @@ app_state_show_locked_screen(void) {
 
 bool
 app_state_can_show_inactive_screen(void) {
-    return (screen_registry.current_screen != NULL)
-           && (screen_registry.locked_screen != NULL)
-           && (screen_registry.inactive_screen != NULL)
+    return screen_registry.current_screen
+           && screen_registry.locked_screen
+           && screen_registry.inactive_screen
            && (screen_registry.locked_screen == screen_registry.current_screen)
            && (nc_screen_is_mergable(screen_registry.current_screen));
 }

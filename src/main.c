@@ -154,7 +154,7 @@ app_redirect_stderr(void) {
 
     app_error_log = freopen(path.data, "a", stderr);
     ncm_buffer_destroy(&path);
-    return app_error_log != NULL;
+    return app_error_log;
 }
 
 static void
@@ -173,12 +173,12 @@ app_at_exit(void) {
     ncm_mpd_client_disconnect(&global_mpd);
     ncm_window_title_set_cstring("");
 
-    if (app_header_window != NULL) {
+    if (app_header_window) {
         ncmpcpp_legacy_window_destroy(app_header_window);
         app_header_window = NULL;
         ui_state_set_header_window(NULL);
     }
-    if (app_footer_window != NULL) {
+    if (app_footer_window) {
         ncmpcpp_legacy_window_destroy(app_footer_window);
         app_footer_window = NULL;
         ui_state_set_footer_window(NULL);

@@ -280,7 +280,7 @@ settings_string_set(char **data, int32 *len, int32 *cap, char *value,
     }
     new_data[value_len] = '\0';
 
-    if (*data != NULL) {
+    if (*data) {
         free2(*data, *cap);
     }
     *data = new_data;
@@ -385,7 +385,7 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
                                      | NCM_FORMAT_FLAG_FORMAT);
         nc_buffer_destroy(buffer);
         nc_buffer_move(buffer, &tmp);
-        if (width != NULL) {
+        if (width) {
             *width = utf8_width(nc_buffer_data(buffer), nc_buffer_len(buffer));
         }
     }
@@ -712,7 +712,7 @@ settings_column_append_type(Column *column, char ch) {
     }
     new_data[column->type_len] = ch;
     new_data[new_len] = '\0';
-    if (column->type != NULL) {
+    if (column->type) {
         free2(column->type, column->type_cap);
     }
     column->type = new_data;
@@ -1629,10 +1629,17 @@ static bool
 apply_enable_window_title(Configuration *config, char *value, int32 value_len,
                           NcmError *error) {
     char *term;
+    int32 term_len;
+    bool unsupported;
 
     term = getenv("TERM");
-    if ((term == NULL) || (strstr(term, "linux") != NULL)
-        || (strncmp32(term, "eterm", STRLIT_LEN("eterm")) == 0)) {
+    unsupported = term == NULL;
+    if (!unsupported) {
+        term_len = strlen32(term);
+        unsupported = memmem64(term, term_len, STRLIT_ARGS("linux"))
+                      || BEGINS_WITH(term, term_len, "eterm");
+    }
+    if (unsupported) {
         config->set_window_title = false;
         if (!settings_quiet) {
             fprintf(stderr, "Terminal doesn't support window title, skipping "
@@ -1930,7 +1937,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
     if (!quiet) {
         fprintf(stderr, "Reading configuration from %s...\n", path_buffer.data);
     }
-    while (fgets(line, (int32)SIZEOF(line), file) != NULL) {
+    while (fgets(line, (int32)SIZEOF(line), file)) {
         int32 line_len;
         NcmOptionLine parsed;
         SettingsOption *option;
@@ -2247,7 +2254,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
     configuration_clear(config);
     settings_quiet = quiet;
     option_count = (int32)LENGTH(options);
-    if (config_paths != NULL) {
+    if (config_paths) {
         for (int32 i = 0; i < config_paths->len; i += 1) {
             NcmStringView path;
 

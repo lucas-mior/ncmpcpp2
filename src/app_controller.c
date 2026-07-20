@@ -150,7 +150,7 @@ app_controller_refresh_current_screen(void) {
     NcScreen *screen;
 
     screen = app_controller_current_screen();
-    if (screen != NULL) {
+    if (screen) {
         nc_screen_refresh(screen);
     }
     return;
@@ -161,7 +161,7 @@ app_controller_refresh_current_window(void) {
     NcScreen *screen;
 
     screen = app_controller_current_screen();
-    if (screen != NULL) {
+    if (screen) {
         nc_screen_refresh_window(screen);
     }
     return;
@@ -190,7 +190,7 @@ app_controller_scroll_current_screen(enum NcScroll where) {
     NcScreen *screen;
 
     screen = app_controller_current_screen();
-    if (screen != NULL) {
+    if (screen) {
         nc_screen_scroll(screen, where);
     }
     return;
@@ -201,7 +201,7 @@ app_controller_mouse_button_pressed_current(MEVENT event) {
     NcScreen *screen;
 
     screen = app_controller_current_screen();
-    if (screen != NULL) {
+    if (screen) {
         nc_screen_mouse_button_pressed(screen, event);
     }
     return;
