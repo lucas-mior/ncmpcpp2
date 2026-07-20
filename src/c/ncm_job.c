@@ -103,8 +103,9 @@ ncm_job_queue_pop_pending_locked(NcmJobQueue *queue, NcmJob *job) {
 
 static void
 ncm_job_queue_push_completed_locked(NcmJobQueue *queue, NcmJob job) {
-    ncm_job_array_push(&queue->completed, &queue->completed_len,
-                       &queue->completed_cap, job);
+    ncm_job_array_push(&queue->completed,
+                       &queue->completed_len, &queue->completed_cap,
+                       job);
     return;
 }
 
