@@ -232,12 +232,14 @@ ncm_job_queue_dispatch_completed(NcmJobQueue *queue) {
     }
 
     pthread_mutex_lock(&queue->mutex);
+
     items = queue->completed;
     len = queue->completed_len;
     cap = queue->completed_cap;
     queue->completed = NULL;
     queue->completed_len = 0;
     queue->completed_cap = 0;
+
     pthread_mutex_unlock(&queue->mutex);
 
     for (int32 i = 0; i < len; i += 1) {
