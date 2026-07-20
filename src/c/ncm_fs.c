@@ -233,7 +233,7 @@ ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *error) {
         }
 
         copy[i] = '\0';
-        if ((mkdir(copy, 0700) != 0) && (errno != EEXIST)) {
+        if ((mkdir(copy, 0700) < 0) && (errno != EEXIST)) {
             ncm_fs_set_errno_error(error, errno, "mkdir", copy, i);
             free2(copy, path_len + 1);
             return false;
