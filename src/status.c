@@ -1455,8 +1455,7 @@ status_buffer_append_char(NcmBuffer *buffer, char ch) {
 static void
 status_buffer_append_int32(NcmBuffer *buffer, int32 value) {
     char tmp[32];
-    int32 len;
-    len = SNPRINTF(tmp, "%d", value);
+    int32 len = SNPRINTF(tmp, "%d", value);
     ncm_buffer_append(buffer, tmp, len);
     return;
 }
