@@ -1305,6 +1305,7 @@ native_lyrics_append_fetching(NcBuffer *buffer,
 
     name = ncm_lyrics_fetcher_name(fetcher);
     name_len = ncm_lyrics_fetcher_name_len(fetcher);
+
     nc_buffer_append_cstring(buffer, "Fetching lyrics from ");
     fetcher_position = nc_buffer_len(buffer);
     nc_buffer_add_format(buffer,
@@ -1317,6 +1318,7 @@ native_lyrics_append_fetching(NcBuffer *buffer,
                          NC_FORMAT_NO_BOLD,
                          NATIVE_LYRICS_PROPERTY_ID);
     nc_buffer_append_cstring(buffer, "... ");
+
     return;
 }
 
