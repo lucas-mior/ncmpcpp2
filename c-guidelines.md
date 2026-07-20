@@ -244,7 +244,7 @@ Instead use:
 ## Standard-library wrappers
 
 Use the project's own `int64`/`int32` wrappers for useful standard-library
-functions.
+functions. Those are defined in cbase/.
 
 ## Error messages
 
