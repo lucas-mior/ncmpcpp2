@@ -112,10 +112,9 @@ ncm_menu_reverse_selection(NcMenu *menu, enum NcMenuItemSource source) {
 bool
 ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
                              int32 *first, int32 *last) {
-    int32 count;
     int32 range_first;
+    int32 count = menu_item_count(menu, source);
 
-    count = menu_item_count(menu, source);
     if (first) {
         *first = 0;
     }
