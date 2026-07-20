@@ -121,8 +121,7 @@ ncm_conversion_set_f64_lower_error(NcmError *error, double value,
 }
 
 bool
-ncm_parse_int64(char *source, int32 source_len,
-                int32 *out, NcmError *error) {
+ncm_parse_int64(char *source, int32 source_len, int32 *out, NcmError *error) {
     NcmBuffer buffer;
     char *end;
     uint64 value;
