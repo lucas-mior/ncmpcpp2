@@ -3223,8 +3223,7 @@ native_library_mouse_button_pressed(NcScreen *screen,
         && nc_window_has_coords(&library->tags_window, &x, &y)) {
         native_media_library_screen_set_active_column(
             library, NATIVE_MEDIA_LIBRARY_COLUMN_TAGS);
-        if (!(((event.bstate
-                 & (BUTTON1_PRESSED | BUTTON3_PRESSED)) != 0)
+        if (!((event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED))
               && native_library_mouse_select(
                   library, NATIVE_MEDIA_LIBRARY_COLUMN_TAGS,
                   nc_media_library_tag_menu_base(&library->tags), y,
