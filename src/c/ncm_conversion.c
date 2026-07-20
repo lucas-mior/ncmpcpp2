@@ -39,10 +39,9 @@ ncm_conversion_copy_source(NcmBuffer *buffer, char *source,
 
 static bool
 ncm_conversion_trailing_space_only(char *cursor) {
-    uint8 c;
 
     while (*cursor != '\0') {
-        c = (uint8)*cursor;
+        uint8 c = (uint8)*cursor;
         if (!isspace(c)) {
             return false;
         }
