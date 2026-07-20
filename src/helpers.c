@@ -99,10 +99,9 @@ menu_set_position_selected(NcMenu *menu, enum NcMenuItemSource source,
 
 void
 ncm_menu_reverse_selection(NcMenu *menu, enum NcMenuItemSource source) {
-    int32 count;
     bool selected;
+    int32 count = menu_item_count(menu, source);
 
-    count = menu_item_count(menu, source);
     for (int32 i = 0; i < count; i += 1) {
         selected = menu_position_is_selected(menu, source, i);
         menu_set_position_selected(menu, source, i, !selected);
