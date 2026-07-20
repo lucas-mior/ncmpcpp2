@@ -202,7 +202,7 @@ ncm_progressbar_draw(int32 elapsed, int32 time) {
         return;
     }
 
-    width = (int32)nc_window_width(window);
+    width = nc_window_width(window);
     if (width <= 0) {
         return;
     }
