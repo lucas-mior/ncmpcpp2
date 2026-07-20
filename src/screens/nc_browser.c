@@ -750,7 +750,6 @@ bool
 native_browser_screen_selected_songs(NativeBrowserScreen *screen,
                                      NcmSongArray *songs) {
     NcMenu *menu;
-    bool any_selected;
 
     if (songs == NULL) {
         return false;
@@ -765,7 +764,7 @@ native_browser_screen_selected_songs(NativeBrowserScreen *screen,
         return true;
     }
 
-    if (!(any_selected = nc_menu_has_selected(menu))) {
+    if (!nc_menu_has_selected(menu)) {
         return native_browser_collect_item_songs(
             screen, songs, nc_menu_current_item(menu));
     }

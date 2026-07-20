@@ -22,6 +22,7 @@ static void *lyrics_test_user;
 
 static NcmArrayItemCallbacks lyrics_fetcher_callbacks;
 
+static void lyrics_string_destroy(char **data, int32 *len, int32 *cap);
 static void lyrics_fetcher_array_init_item(void *item);
 static void lyrics_fetcher_array_destroy_item(void *item);
 static bool lyrics_name_to_type(char *name, int32 name_len,
@@ -66,17 +67,6 @@ NCM_ARRAY_DEFINE_RESERVE(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
 NCM_ARRAY_DEFINE_APPEND(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray,
                         NcmLyricsFetcherDef, &lyrics_fetcher_callbacks)
 
-static void
-lyrics_string_destroy(char **data, int32 *len, int32 *cap) {
-    if (*data) {
-        free2(*data, *cap);
-    }
-    *data = NULL;
-    *len = 0;
-    *cap = 0;
-    return;
-}
-
 static bool
 lyrics_string_set(char **data, int32 *len, int32 *cap, char *source,
                   int32 source_len) {
@@ -96,6 +86,17 @@ lyrics_string_set(char **data, int32 *len, int32 *cap, char *source,
     *len = source_len;
     *cap = new_cap;
     return true;
+}
+
+static void
+lyrics_string_destroy(char **data, int32 *len, int32 *cap) {
+    if (*data) {
+        free2(*data, *cap);
+    }
+    *data = NULL;
+    *len = 0;
+    *cap = 0;
+    return;
 }
 
 void
@@ -273,21 +274,21 @@ lyrics_build_direct_url(NcmLyricsFetcherDef *fetcher, NcmBuffer *url,
         compact = true;
         valid = lyrics_append_slug(url, artist, artist_len, compact);
         ncm_buffer_append_byte(url, '/');
-        valid = lyrics_append_slug(url, title, title_len, compact) && valid;
+        valid = valid && lyrics_append_slug(url, title, title_len, compact);
         ncm_buffer_append(url, STRLIT_ARGS(".html"));
         break;
     case NCM_LYRICS_FETCHER_GENIUS:
         ncm_buffer_append(url, STRLIT_ARGS("https://genius.com/"));
         valid = lyrics_append_slug(url, artist, artist_len, compact);
         ncm_buffer_append_byte(url, '-');
-        valid = lyrics_append_slug(url, title, title_len, compact) && valid;
+        valid = valid && lyrics_append_slug(url, title, title_len, compact);
         ncm_buffer_append(url, STRLIT_ARGS("-lyrics"));
         break;
     case NCM_LYRICS_FETCHER_LETRASMUS:
         ncm_buffer_append(url, STRLIT_ARGS("https://www.letras.mus.br/"));
         valid = lyrics_append_slug(url, artist, artist_len, compact);
         ncm_buffer_append_byte(url, '/');
-        valid = lyrics_append_slug(url, title, title_len, compact) && valid;
+        valid = valid && lyrics_append_slug(url, title, title_len, compact);
         ncm_buffer_append_byte(url, '/');
         break;
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
@@ -295,20 +296,20 @@ lyrics_build_direct_url(NcmLyricsFetcherDef *fetcher, NcmBuffer *url,
                           STRLIT_ARGS("https://www.musixmatch.com/lyrics/"));
         valid = lyrics_append_slug(url, artist, artist_len, compact);
         ncm_buffer_append_byte(url, '/');
-        valid = lyrics_append_slug(url, title, title_len, compact) && valid;
+        valid = valid && lyrics_append_slug(url, title, title_len, compact);
         break;
     case NCM_LYRICS_FETCHER_TEKSTOWO:
         ncm_buffer_append(url, STRLIT_ARGS("https://www.tekstowo.pl/"));
         valid = lyrics_append_slug(url, artist, artist_len, compact);
         ncm_buffer_append_byte(url, '/');
-        valid = lyrics_append_slug(url, title, title_len, compact) && valid;
+        valid = valid && lyrics_append_slug(url, title, title_len, compact);
         break;
     case NCM_LYRICS_FETCHER_VAGALUME:
         ncm_buffer_append(url,
                           STRLIT_ARGS("https://www.vagalume.com.br/"));
         valid = lyrics_append_slug(url, artist, artist_len, compact);
         ncm_buffer_append_byte(url, '/');
-        valid = lyrics_append_slug(url, title, title_len, compact) && valid;
+        valid = valid && lyrics_append_slug(url, title, title_len, compact);
         ncm_buffer_append(url, STRLIT_ARGS(".html"));
         break;
     case NCM_LYRICS_FETCHER_UNKNOWN:
@@ -565,9 +566,11 @@ lyrics_append_percent_byte(NcmBuffer *buffer, uint8 value) {
 static bool
 lyrics_append_slug(NcmBuffer *buffer, char *string, int32 string_len,
                    bool compact) {
-    bool pending_separator = false;
-    bool wrote = false;
+    bool pending_separator;
+    bool wrote;
 
+    pending_separator = false;
+    wrote = false;
     for (int32 i = 0; i < string_len; i += 1) {
         uint8 byte;
 
@@ -592,7 +595,6 @@ lyrics_append_slug(NcmBuffer *buffer, char *string, int32 string_len,
             pending_separator = true;
         }
     }
-
     return wrote;
 }
 
@@ -956,8 +958,7 @@ lyrics_url_song_matches(NcmLyricsFetcherDef *fetcher, char *url,
         ncm_buffer_append(&marker, STRLIT_ARGS("/letras/"));
         valid = lyrics_append_slug(&marker, artist, artist_len, false);
         ncm_buffer_append_byte(&marker, '/');
-        if ((valid = lyrics_append_slug(&marker, title, title_len, false)
-            && valid)) {
+        if (valid && lyrics_append_slug(&marker, title, title_len, false)) {
             found = lyrics_find_ignore_case(url, url_len, marker.data,
                                             marker.len, 0);
         }
