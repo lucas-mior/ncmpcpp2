@@ -233,7 +233,7 @@ typedef struct Configuration {
     int32 visualizer_fps;
     int32 visualizer_spectrum_dft_size;
     int32 playlist_disable_highlight_delay_seconds;
-    int32 regex_type;
+    uint32 regex_flags;
 
     double visualizer_spectrum_gain;
     double visualizer_spectrum_hz_min;

@@ -660,7 +660,7 @@ native_lyrics_buffer_find(NcBuffer *buffer, char *pattern,
     }
 
     ncm_regex_init(&regex);
-    if (!ncm_regex_compile(&regex, pattern, pattern_len, Config.regex_type,
+    if (!ncm_regex_compile(&regex, pattern, pattern_len, Config.regex_flags,
                            error)) {
         ncm_regex_destroy(&regex);
         return false;

@@ -1828,7 +1828,7 @@ native_search_collect_local_results(
             ncm_error_clear(&regex_error);
             (void)ncm_regex_compile(
                 &regexes[i], screen->constraints[i].data,
-                screen->constraints[i].len, Config.regex_type,
+                screen->constraints[i].len, Config.regex_flags,
                 &regex_error);
         }
     }
