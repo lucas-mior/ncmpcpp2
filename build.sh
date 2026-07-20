@@ -2,10 +2,10 @@
 
 set -eu
 
-if command ctags && command vtags.sed ; then
-    find . -iname "*.[ch]" | xargs ctags --kinds-C=+l+d 2> /dev/null || true
-    vtags.sed tags | sort | uniq > .tags.vim       2> /dev/null || true
-fi
+# if command ctags && command vtags.sed ; then
+#     find . -iname "*.[ch]" | xargs ctags --kinds-C=+l+d 2> /dev/null || true
+#     vtags.sed tags | sort | uniq > .tags.vim       2> /dev/null || true
+# fi
 
 BUILD_DIR=${BUILD_DIR-build}
 PREFIX=${PREFIX-/usr/local}
