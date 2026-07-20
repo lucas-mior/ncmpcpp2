@@ -949,7 +949,7 @@ native_lyrics_report_save_error(NcmBuffer *filename, NcmError *error) {
     args[1] = ncm_string_format_arg_cstring(message);
     ncm_statusbar_format(Config.message_delay_time,
                          STRLIT_ARGS("Couldn't save lyrics as \"%1%\": %2%"),
-                         args, NCM_ARRAY_LEN(args));
+                         args, LENGTH(args));
     return;
 }
 
@@ -966,7 +966,7 @@ native_lyrics_report_unlink_error(NcmBuffer *filename, NcmError *error) {
     args[1] = ncm_string_format_arg_cstring(message);
     ncm_statusbar_format(Config.message_delay_time,
                          STRLIT_ARGS("Couldn't remove \"%1%\": %2%"),
-                         args, NCM_ARRAY_LEN(args));
+                         args, LENGTH(args));
     return;
 }
 

@@ -1184,7 +1184,7 @@ native_tag_editor_confirm(
         nc_window_print_data(window, message, message_len);
         nc_window_print_data(window, STRLIT_ARGS(" [y/n] "));
         prompted = ncm_statusbar_prompt_return_one_of(
-            window, values, NCM_ARRAY_LEN(values), &answer);
+            window, values, LENGTH(values), &answer);
     }
     ncm_statusbar_scoped_lock_destroy(&lock);
 

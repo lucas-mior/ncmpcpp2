@@ -1372,7 +1372,7 @@ ncm_bindings_configuration_generate_defaults(
 #define GROUP(KEY, ...) do { \
     enum NcmActionType actions[] = { __VA_ARGS__ }; \
     (void)ncm_bindings_bind_group( \
-        bindings, STRLIT_ARGS(KEY), actions, NCM_ARRAY_LEN(actions)); \
+        bindings, STRLIT_ARGS(KEY), actions, LENGTH(actions)); \
 } while (0)
 
     BIND("mouse", NCM_ACTION_MOUSE_EVENT);
