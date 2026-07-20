@@ -132,8 +132,7 @@ NcWindow *
 app_controller_active_window(void) {
     NcScreen *screen;
 
-    screen = app_controller_current_screen();
-    if (screen == NULL) {
+    if ((screen = app_controller_current_screen()) == NULL) {
         return NULL;
     }
     return nc_screen_active_window(screen);
