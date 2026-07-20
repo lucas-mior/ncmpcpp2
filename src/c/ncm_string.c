@@ -258,10 +258,10 @@ ncm_string_remove_invalid_filename_chars(char *filename,
 
     if (win32_compatible) {
         unallowed_chars = win32_unallowed_chars;
-        unallowed_chars_len = (int32)LENGTH(win32_unallowed_chars) - 1;
+        unallowed_chars_len = LENGTH(win32_unallowed_chars) - 1;
     } else {
         unallowed_chars = unix_unallowed_chars;
-        unallowed_chars_len = (int32)LENGTH(unix_unallowed_chars) - 1;
+        unallowed_chars_len = LENGTH(unix_unallowed_chars) - 1;
     }
 
     ncm_string_remove_chars(filename, filename_len,

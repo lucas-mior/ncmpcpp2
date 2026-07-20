@@ -2230,7 +2230,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
 
     configuration_clear(config);
     settings_quiet = quiet;
-    option_count = (int32)LENGTH(options);
+    option_count = LENGTH(options);
     if (config_paths) {
         for (int32 i = 0; i < config_paths->len; i += 1) {
             NcmStringView path;
