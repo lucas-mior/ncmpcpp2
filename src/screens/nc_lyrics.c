@@ -387,7 +387,7 @@ native_lyrics_screen_load_file(NativeLyricsScreen *screen,
         first = false;
     }
 
-    fclose(file);
+    XFCLOSE(file, filename);
     nc_lyrics_screen_request_refresh(&screen->screen);
     ncm_error_clear(error);
 
