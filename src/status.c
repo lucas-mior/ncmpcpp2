@@ -1454,7 +1454,7 @@ status_buffer_append_char(NcmBuffer *buffer, char ch) {
 }
 
 static void
-status_buffer_append_uint32(NcmBuffer *buffer, uint32 value) {
+status_buffer_append_int32(NcmBuffer *buffer, uint32 value) {
     char tmp[32];
     int32 len;
 
@@ -1478,7 +1478,7 @@ status_tracklength_buffer(NcmBuffer *buffer) {
     if ((Config.display_bitrate) && (status_kbps != 0)
         && (Config.design == NCM_DESIGN_CLASSIC)) {
         status_buffer_append_char(buffer, '(');
-        status_buffer_append_uint32(buffer, status_kbps);
+        status_buffer_append_int32(buffer, status_kbps);
         ncm_buffer_append(buffer, STRLIT_ARGS(" kbps) "));
     }
 
@@ -1513,7 +1513,7 @@ status_tracklength_buffer(NcmBuffer *buffer) {
         status_buffer_append_char(buffer, ']');
     } else if ((Config.display_bitrate) && (status_kbps != 0)) {
         ncm_buffer_append(buffer, STRLIT_ARGS(" ("));
-        status_buffer_append_uint32(buffer, status_kbps);
+        status_buffer_append_int32(buffer, status_kbps);
         ncm_buffer_append(buffer, STRLIT_ARGS(" kbps)"));
     }
     return;
