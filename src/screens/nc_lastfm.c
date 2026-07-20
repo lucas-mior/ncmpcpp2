@@ -156,6 +156,7 @@ native_lastfm_screen_init(NativeLastfmScreen *screen,
                           screen,
                           start_x, width,
                           main_start_y, main_height);
+
     nc_window_init(&screen->window,
                    nc_lastfm_screen_start_x(&screen->screen),
                    nc_lastfm_screen_start_y(&screen->screen),
@@ -164,19 +165,23 @@ native_lastfm_screen_init(NativeLastfmScreen *screen,
                    STRLIT_ARGS(""),
                    color,
                    border);
+
     nc_scrollpad_init(&screen->scrollpad,
                       nc_lastfm_screen_height(&screen->screen));
+
     nc_buffer_init(&screen->buffer);
     ncm_buffer_init(&screen->search_constraint);
     ncm_lastfm_service_init(&screen->service);
     ncm_lastfm_result_init(&screen->result);
     ncm_job_queue_init(&screen->jobs);
+
     screen->title = NULL;
     screen->title_len = 0;
     screen->title_cap = 0;
     screen->has_service = false;
     screen->refresh_window = false;
     screen->initialized = true;
+
     nc_window_set_timeout(&screen->window, lines_scrolled);
     (void)native_lastfm_set_title(screen,
                                   STRLIT_ARGS(NATIVE_LASTFM_DEFAULT_TITLE));
