@@ -738,16 +738,16 @@ tiny_editor_switch_to(NcScreen *screen) {
 
 static void
 tiny_editor_resize(NcScreen *screen) {
-    NativeTinyTagEditorScreen *editor;
     int32 start_x;
     int32 width;
+    NativeTinyTagEditorScreen *editor = tiny_editor_from_screen(screen);
 
-    editor = tiny_editor_from_screen(screen);
     nc_screen_switcher_get_resize_params(screen, &start_x, &width, true);
     native_tiny_tag_editor_screen_set_geometry(editor, start_x, width,
                                                ui_state_main_start_y(),
                                                ui_state_main_height());
     nc_screen_clear_resize_request(screen);
+
     return;
 }
 
