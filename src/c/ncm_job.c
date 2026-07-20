@@ -59,12 +59,14 @@ ncm_job_destroy(NcmJob *job) {
     if (job->destroy) {
         job->destroy(job->user);
     }
+
     job->run = NULL;
     job->complete = NULL;
     job->destroy = NULL;
     job->user = NULL;
     ncm_error_clear(&job->error);
     job->success = false;
+
     return;
 }
 
