@@ -630,19 +630,17 @@ nc_menu_refresh(NcMenu *menu, NcWindow *window, int32 width, int32 height) {
         bool selected;
 
         menu->drawn_position = pos;
-        nc_window_go_to_xy(window, 0, (int32)line);
+        nc_window_go_to_xy(window, 0, line);
         if (pos >= menu->item_count) {
             for (; line < height; line += 1) {
-                mvwhline(nc_window_raw(window), (int32)line, 0,
-                         NC_KEY_SPACE, (int32)width);
+                mvwhline(nc_window_raw(window), line, 0, NC_KEY_SPACE, width);
             }
             break;
         }
 
         item = nc_menu_active_item_at(menu, pos);
         if (menu_is_separator(menu, item)) {
-            mvwhline(nc_window_raw(window), (int32)line, 0, 0,
-                     (int32)width);
+            mvwhline(nc_window_raw(window), line, 0, 0, width);
             line += 1;
             continue;
         }
