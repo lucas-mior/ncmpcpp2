@@ -1361,17 +1361,19 @@ native_lyrics_job_is_current(NativeLyricsJob *job) {
 static void
 native_lyrics_set_consumer_fetch_message(NativeLyricsScreen *screen,
                                          NcmSong *song) {
-    NcmBuffer formatted;
-
-    formatted = ncm_format_render_string(&Config.song_status_format, song);
+    NcmBuffer formatted = ncm_format_render_string(&Config.song_status_format,
+                                                   song);
     ncm_buffer_clear(&screen->consumer_message);
+
     ncm_buffer_append(&screen->consumer_message,
                       STRLIT_ARGS("Fetching lyrics for \""));
     ncm_buffer_append(&screen->consumer_message,
                       formatted.data,
                       formatted.len);
     ncm_buffer_append(&screen->consumer_message, STRLIT_ARGS("\"..."));
+
     ncm_buffer_destroy(&formatted);
+
     return;
 }
 
