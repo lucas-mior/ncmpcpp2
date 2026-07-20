@@ -282,26 +282,26 @@ test_registry_has_only_supported_fetchers(void) {
     };
 
     ncm_lyrics_fetcher_registry_init(&registry);
-    for (int32 i = 0; i < NCM_ARRAY_LEN(lyrics_tests); i += 1) {
+    for (int32 i = 0; i < LENGTH(lyrics_tests); i += 1) {
         assert(ncm_lyrics_fetcher_registry_append_name(
             &registry, lyrics_tests[i].name, lyrics_tests[i].name_len));
     }
     assert(ncm_lyrics_fetcher_registry_append_name(
         &registry, STRLIT_ARGS("internet")));
-    assert(registry.fetchers.len == NCM_ARRAY_LEN(lyrics_tests) + 1);
+    assert(registry.fetchers.len == LENGTH(lyrics_tests) + 1);
 
-    for (int32 i = 0; i < NCM_ARRAY_LEN(removed); i += 1) {
+    for (int32 i = 0; i < LENGTH(removed); i += 1) {
         assert(!ncm_lyrics_fetcher_registry_append_name(
             &registry, removed[i], strlen32(removed[i])));
     }
-    assert(registry.fetchers.len == NCM_ARRAY_LEN(lyrics_tests) + 1);
+    assert(registry.fetchers.len == LENGTH(lyrics_tests) + 1);
     ncm_lyrics_fetcher_registry_destroy(&registry);
     return;
 }
 
 static void
 test_site_fetchers_direct_download_and_parse_fixtures(void) {
-    for (int32 i = 0; i < NCM_ARRAY_LEN(lyrics_tests); i += 1) {
+    for (int32 i = 0; i < LENGTH(lyrics_tests); i += 1) {
         LyricsFetcherTestContext context;
         NcmLyricsFetcherDef fetcher;
         NcmLyricsResult result;
@@ -329,7 +329,7 @@ test_site_fetchers_direct_download_and_parse_fixtures(void) {
 
 static void
 test_site_fetchers_search_download_and_parse_fixtures(void) {
-    for (int32 i = 0; i < NCM_ARRAY_LEN(lyrics_tests); i += 1) {
+    for (int32 i = 0; i < LENGTH(lyrics_tests); i += 1) {
         LyricsFetcherTestContext context;
         NcmLyricsFetcherDef fetcher;
         NcmLyricsResult result;

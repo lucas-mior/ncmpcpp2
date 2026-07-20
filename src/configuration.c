@@ -893,7 +893,7 @@ configuration_test_lyrics_fetchers(NcmError *error) {
     bool ok;
 
     ok = true;
-    for (int32 i = 0; i < NCM_ARRAY_LEN(tests); i += 1) {
+    for (int32 i = 0; i < LENGTH(tests); i += 1) {
         NcmLyricsFetcherDef fetcher;
         NcmLyricsResult result;
 

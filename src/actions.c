@@ -1033,12 +1033,12 @@ ncm_action_table_find(NcmActionDef *defs, int32 defs_len, char *name,
 
 NcmActionDef *
 ncm_action_get(enum NcmActionType type) {
-    return ncm_action_table_get(action_defs, NCM_ARRAY_LEN(action_defs), type);
+    return ncm_action_table_get(action_defs, LENGTH(action_defs), type);
 }
 
 NcmActionDef *
 ncm_action_find(char *name, int32 name_len) {
-    return ncm_action_table_find(action_defs, NCM_ARRAY_LEN(action_defs), name,
+    return ncm_action_table_find(action_defs, LENGTH(action_defs), name,
                                  name_len);
 }
 
@@ -6072,7 +6072,7 @@ action_runtime_print_song_write_error(NcmSong *song) {
     ncm_statusbar_format(
         Config.message_delay_time,
         STRLIT_ARGS("Error while writing tags to \"%1%\": %2%"), args,
-        NCM_ARRAY_LEN(args));
+        LENGTH(args));
     return;
 }
 

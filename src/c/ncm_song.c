@@ -744,7 +744,7 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
         }
         if (song->duration > 0) {
             len = ncm_song_show_time(song->duration, number_buffer,
-                                     NCM_ARRAY_LEN(number_buffer));
+                                     LENGTH(number_buffer));
             ncm_buffer_append(&buffer, number_buffer, len);
         } else {
             ncm_buffer_append(&buffer, STRLIT_ARGS("-:--"));
@@ -798,8 +798,8 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
         }
         len = SNPRINTF(number_buffer, "%d", song->priority);
         if (len > 0) {
-            if (len >= NCM_ARRAY_LEN(number_buffer)) {
-                len = NCM_ARRAY_LEN(number_buffer) - 1;
+            if (len >= LENGTH(number_buffer)) {
+                len = LENGTH(number_buffer) - 1;
             }
             ncm_buffer_append(&buffer, number_buffer, len);
         }

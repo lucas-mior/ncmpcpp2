@@ -565,7 +565,7 @@ sort_dialog_run_sort(void *user) {
     }
 
     getters_len = native_sort_playlist_dialog_get_order(
-        dialog, getters, NCM_ARRAY_LEN(getters));
+        dialog, getters, LENGTH(getters));
     ncm_statusbar_print_cstring(Config.message_delay_time,
                                 "Sorting...");
     ncm_error_clear(&error);

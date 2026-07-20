@@ -6,8 +6,6 @@
 #include "cbase/base_macros.h"
 #include "cbase/primitives.h"
 
-#define NCM_ARRAY_LEN(array) ((int32)LENGTH(array))
-
 typedef struct NcmStringView {
     char *data;
     int32 len;
