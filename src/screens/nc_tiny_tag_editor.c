@@ -92,17 +92,21 @@ native_tiny_tag_editor_screen_init(
     nc_editor_buffer_menu_init(&screen->rows);
     menu = nc_editor_buffer_menu_base(&screen->rows);
     display_callbacks.draw = tiny_editor_draw_row;
+
     nc_menu_set_display_callbacks(menu, display_callbacks);
     nc_menu_set_highlight_prefix(menu, &Config.current_item_prefix);
     nc_menu_set_highlight_suffix(menu, &Config.current_item_suffix);
     nc_menu_set_cyclic_scrolling(menu, Config.use_cyclic_scrolling);
     nc_menu_set_centered_cursor(menu, Config.centered_cursor);
+
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, NULL, 0, color, border);
     screen->hooks = (NativeTinyTagEditorHooks){0};
     ncm_mutable_song_init(&screen->edited);
+
     ncm_buffer_init(&screen->music_dir);
     ncm_buffer_init(&screen->tag_separator);
+
     screen->previous_screen = NULL;
     screen->start_x = start_x;
     screen->width = width;
@@ -111,6 +115,7 @@ native_tiny_tag_editor_screen_init(
     screen->has_edited = false;
     screen->show_duplicate_tags = false;
     screen->registered = false;
+
     nc_screen_init(&screen->screen, tiny_editor_callbacks, screen,
                    NC_SCREEN_TYPE_TINY_TAG_EDITOR);
     return;
