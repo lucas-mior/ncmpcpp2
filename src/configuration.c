@@ -30,7 +30,6 @@
 #define VERSION "unknown"
 #endif
 
-static char current_song_default_format[] = "{{{(%l) }{{%a - }%t}}|{%f}}";
 static bool configuration_quiet;
 
 static void configuration_print_error(char *context, NcmError *error);
@@ -46,8 +45,7 @@ ncm_configuration_options_init(NcmConfigurationOptions *options) {
 
     ncm_buffer_append(&options->host, STRLIT_ARGS("localhost"));
     ncm_buffer_append(&options->current_song_format,
-                      current_song_default_format,
-                      strlen32(current_song_default_format));
+                      STRLIT_ARGS("{{{(%l) }{{%a - }%t}}|{%f}}"));
     options->port = 6600;
 
     options->host_provided = false;
@@ -104,7 +102,7 @@ configuration_append_default_file(NcmBufferArray *paths, char *filename,
     ncm_buffer_init(&path);
 
     xdg_config_home = getenv("XDG_CONFIG_HOME");
-    if ((xdg_config_home != NULL) && (xdg_config_home[0] != '\0')) {
+    if (xdg_config_home && (xdg_config_home[0] != '\0')) {
         ncm_buffer_append(&directory, xdg_config_home,
                           strlen32(xdg_config_home));
     } else {
@@ -385,7 +383,7 @@ configuration_parse_long_option(NcmConfigurationOptions *options, int32 argc,
 
 #define REJECT_LONG_VALUE() \
     do { \
-        if (value != NULL) { \
+        if (value) { \
             char message[128]; \
             int32 len; \
             len = SNPRINTF(message, \
@@ -409,7 +407,7 @@ configuration_parse_long_option(NcmConfigurationOptions *options, int32 argc,
         options->port_provided = true;
     } else if (STREQUAL(name, name_len, STRLIT_ARGS("current-song"))) {
         options->current_song = true;
-        if (value != NULL) {
+        if (value) {
             configuration_copy_string(&options->current_song_format, value,
                                       value_len);
         } else if ((*i + 1 < argc)
@@ -728,13 +726,13 @@ configuration_apply_mpd_environment(NcmError *error) {
 
     env_host = getenv("MPD_HOST");
     env_port = getenv("MPD_PORT");
-    if (env_host != NULL) {
+    if (env_host) {
         if (!ncm_mpd_client_set_hostname(&global_mpd, env_host,
                                          strlen32(env_host), error)) {
             return false;
         }
     }
-    if (env_port != NULL) {
+    if (env_port) {
         if (!ncm_parse_int32(env_port, strlen32(env_port), &port, error)) {
             return false;
         }
@@ -932,7 +930,7 @@ configuration_test_lyrics_fetchers(NcmError *error) {
 
 static void
 configuration_print_error(char *context, NcmError *error) {
-    if ((error != NULL) && (error->message[0] != '\0')) {
+    if (error && (error->message[0] != '\0')) {
         fprintf(stderr, "%s: %s\n", context, error->message);
     } else {
         fprintf(stderr, "%s\n", context);

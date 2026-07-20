@@ -75,7 +75,7 @@ menu_set_position_selected(NcMenu *menu, enum NcMenuItemSource source,
     if (item == NULL) {
         return false;
     }
-    if (menu->action_callbacks.set_selected != NULL) {
+    if (menu->action_callbacks.set_selected) {
         menu->action_callbacks.set_selected(item, selected,
                                             menu->action_callbacks.user);
     }

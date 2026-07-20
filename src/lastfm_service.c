@@ -48,7 +48,7 @@ lastfm_string_set(char **data, int32 *len, int32 *cap, char *source,
 
 static void
 lastfm_string_destroy(char **data, int32 *len, int32 *cap) {
-    if (*data != NULL) {
+    if (*data) {
         free2(*data, *cap);
     }
     *data = NULL;
@@ -162,7 +162,7 @@ ncm_lastfm_service_equal(NcmLastfmService *left, NcmLastfmService *right) {
 
 char *
 ncm_lastfm_service_name(NcmLastfmService *service) {
-    if ((service != NULL)
+    if (service
         && (service->type == NCM_LASTFM_SERVICE_ARTIST_INFO)) {
         return "Artist info";
     }
@@ -194,7 +194,7 @@ static CURLcode
 lastfm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
                     int32 referer_len, bool follow_redirect,
                     int32 timeout_seconds) {
-    if (lastfm_test_perform != NULL) {
+    if (lastfm_test_perform) {
         return lastfm_test_perform(data, url, url_len, referer, referer_len,
                                    follow_redirect, timeout_seconds,
                                    lastfm_test_user);
@@ -205,7 +205,7 @@ lastfm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
 
 static CURLcode
 lastfm_curl_escape(NcmBuffer *out, char *string, int32 string_len) {
-    if (lastfm_test_escape != NULL) {
+    if (lastfm_test_escape) {
         return lastfm_test_escape(out, string, string_len, lastfm_test_user);
     }
     return ncm_curl_escape(out, string, string_len);

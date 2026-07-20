@@ -169,7 +169,7 @@ statusbar_progressbar_split(NcmStringView items[3]) {
 
 void
 ncm_progressbar_scoped_lock_init(NcmStatusbarScopedLock *lock) {
-    if (lock != NULL) {
+    if (lock) {
         lock->locked_progressbar = true;
         lock->locked_statusbar = false;
     }
@@ -252,7 +252,7 @@ ncm_progressbar_draw(uint32 elapsed, uint32 time) {
 
 void
 ncm_statusbar_scoped_lock_init(NcmStatusbarScopedLock *lock) {
-    if (lock != NULL) {
+    if (lock) {
         lock->locked_statusbar = Config.statusbar_visibility;
         lock->locked_progressbar = !Config.statusbar_visibility;
     }
@@ -404,7 +404,7 @@ ncm_statusbar_prompt_return_one_of(NcWindow *window, char *values,
     }
 
     while (true) {
-        if (nc_window_raw(window) != NULL) {
+        if (nc_window_raw(window)) {
             nc_window_refresh(window);
         }
         key = ncm_read_key(window);

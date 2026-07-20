@@ -90,7 +90,7 @@ lyrics_string_set(char **data, int32 *len, int32 *cap, char *source,
 
 static void
 lyrics_string_destroy(char **data, int32 *len, int32 *cap) {
-    if (*data != NULL) {
+    if (*data) {
         free2(*data, *cap);
     }
     *data = NULL;
@@ -1409,7 +1409,7 @@ static CURLcode
 lyrics_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
                     int32 referer_len, bool follow_redirect,
                     int32 timeout_seconds) {
-    if (lyrics_test_perform != NULL) {
+    if (lyrics_test_perform) {
         return lyrics_test_perform(data, url, url_len, referer, referer_len,
                                    follow_redirect, timeout_seconds,
                                    lyrics_test_user);

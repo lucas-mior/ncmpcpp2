@@ -41,7 +41,7 @@ ncm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
     ncm_curl_response_writer_init(&writer, data);
 
     append_c_string(&url_string, url, url_len);
-    if ((referer != NULL) && (referer_len > 0)) {
+    if (referer && (referer_len > 0)) {
         append_c_string(&referer_string, referer, referer_len);
     }
 
@@ -121,7 +121,7 @@ write_data(char *buffer, size_t size, size_t nmemb, void *data) {
 
 static void
 append_c_string(NcmBuffer *buffer, char *string, int32 string_len) {
-    if ((string != NULL) && (string_len > 0)) {
+    if (string && (string_len > 0)) {
         ncm_buffer_append(buffer, string, string_len);
     }
     ncm_buffer_append_byte(buffer, '\0');
