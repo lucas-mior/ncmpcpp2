@@ -532,9 +532,11 @@ native_lastfm_set_title(NativeLastfmScreen *screen,
                                SIZEOF(*screen->title));
         screen->title_cap = cap;
     }
+
     memcpy64(screen->title, title, title_len);
     screen->title[title_len] = '\0';
     screen->title_len = title_len;
+
     return true;
 }
 
