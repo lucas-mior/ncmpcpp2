@@ -85,6 +85,7 @@ generic_array_grow(void *array, int64 item_size) {
 static inline void
 array_sink(void) {
     (void)generic_array_init;
+    (void)generic_array_grow;
     return;
 }
 
