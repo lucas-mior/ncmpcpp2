@@ -136,7 +136,7 @@ ncm_parse_int64(char *source, int32 source_len, int32 *out, NcmError *error) {
     }
 
     errno = 0;
-    value = strtoull(buffer.data, &end, 10);
+    value = strtoll(buffer.data, &end, 10);
     ok = (end != buffer.data)
          && !ncm_conversion_is_negative_source(buffer.data)
          && ncm_conversion_trailing_space_only(end)
