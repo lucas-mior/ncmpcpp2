@@ -1273,11 +1273,13 @@ native_lyrics_job_destroy(void *user) {
     if (job == NULL) {
         return;
     }
+
     ncm_song_destroy(&job->song);
     ncm_buffer_destroy(&job->filename);
     ncm_lyrics_result_destroy(&job->result);
     nc_buffer_destroy(&job->log);
     free2(job, SIZEOF(*job));
+
     return;
 }
 
@@ -1303,6 +1305,7 @@ native_lyrics_append_fetching(NcBuffer *buffer,
 
     name = ncm_lyrics_fetcher_name(fetcher);
     name_len = ncm_lyrics_fetcher_name_len(fetcher);
+
     nc_buffer_append_cstring(buffer, "Fetching lyrics from ");
     fetcher_position = nc_buffer_len(buffer);
     nc_buffer_add_format(buffer,
@@ -1315,6 +1318,7 @@ native_lyrics_append_fetching(NcBuffer *buffer,
                          NC_FORMAT_NO_BOLD,
                          NATIVE_LYRICS_PROPERTY_ID);
     nc_buffer_append_cstring(buffer, "... ");
+
     return;
 }
 
