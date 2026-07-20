@@ -43,7 +43,7 @@ nc_playlist_screen_set_geometry(NcPlaylistScreen *screen,
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = main_height;
+    screen->main_height = (int32)main_height;
     return;
 }
 
@@ -90,7 +90,7 @@ nc_playlist_screen_scroll(NcPlaylistScreen *screen, enum NcScroll where) {
 }
 
 bool
-nc_playlist_screen_goto_y(NcPlaylistScreen *screen, int64 y) {
+nc_playlist_screen_goto_y(NcPlaylistScreen *screen, int32 y) {
     if (screen->menu == NULL) {
         return false;
     }
@@ -183,9 +183,9 @@ static void native_playlist_destroy_callback(NcScreen *screen);
 static NcMenuDisplayCallbacks native_playlist_display_callbacks(void);
 static NcMenuActionCallbacks native_playlist_action_callbacks(void);
 static void native_playlist_draw_song(NcMenu *menu, NcWindow *window,
-                                      void *item, int64 pos, void *user);
+                                      void *item, int32 pos, void *user);
 static void native_playlist_activate_song(NcMenu *menu, void *item,
-                                          int64 pos, void *user);
+                                          int32 pos, void *user);
 static void native_playlist_print_buffer(NcWindow *window, NcBuffer *buffer);
 static bool native_playlist_song_is_now_playing(NcmSong *song);
 static NcMenu *native_playlist_storage_menu(NativePlaylistScreen *screen);
@@ -207,7 +207,7 @@ static bool native_playlist_should_reload_full(NativePlaylistScreen *screen,
                                                NcmMpdSongList *changes);
 static bool native_playlist_append_selected(NcMenu *menu,
                                             NcmSongArray *songs);
-static bool native_playlist_append_position(NcMenu *menu, int64 pos,
+static bool native_playlist_append_position(NcMenu *menu, int32 pos,
                                             NcmSongArray *songs);
 static bool native_playlist_set_one_priority(NcmSong *song, int32 idx,
                                              void *user);
@@ -219,7 +219,7 @@ static bool native_playlist_search_menu(NativePlaylistScreen *screen,
                                         NcMenu *menu, NcmRegex *regex,
                                         bool forward, bool wrap,
                                         bool skip_current);
-static bool native_playlist_search_position(NcMenu *menu, int64 pos,
+static bool native_playlist_search_position(NcMenu *menu, int32 pos,
                                             void *user);
 
 typedef struct NativePlaylistSearchContext {
@@ -582,7 +582,7 @@ native_playlist_screen_now_playing_song(NativePlaylistScreen *screen,
     NcMenu *base;
     NcSongMenu *menu;
     NcmSong *item;
-    int64 count;
+    int32 count;
     int32 queue_position;
 
     if (screen == NULL) {
@@ -600,7 +600,7 @@ native_playlist_screen_now_playing_song(NativePlaylistScreen *screen,
     count = nc_menu_all_item_count(base);
     queue_position = position;
 
-    if ((int64)position < count) {
+    if (position < count) {
         item = nc_song_menu_item_at(menu, NC_MENU_ITEMS_ALL, position);
         if (item
             && (ncm_song_position(item) == queue_position)) {
@@ -608,8 +608,8 @@ native_playlist_screen_now_playing_song(NativePlaylistScreen *screen,
         }
     }
 
-    for (int64 i = 0; i < count; i += 1) {
-        if (i == (int64)position) {
+    for (int32 i = 0; i < count; i += 1) {
+        if (i == position) {
             continue;
         }
         item = nc_song_menu_item_at(menu, NC_MENU_ITEMS_ALL, i);
@@ -626,7 +626,7 @@ native_playlist_screen_locate_position(NativePlaylistScreen *screen,
                                        int32 position) {
     NcMenu *menu;
     NcmSong *song;
-    int64 height;
+    int32 height;
 
     if (screen == NULL) {
         return false;
@@ -634,7 +634,7 @@ native_playlist_screen_locate_position(NativePlaylistScreen *screen,
 
     menu = native_playlist_storage_menu(screen);
     height = nc_playlist_screen_height(&screen->screen);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         song = nc_menu_active_item_at(menu, i);
         if (song && (ncm_song_position(song) == position)) {
             nc_menu_highlight_position(menu, i, height);
@@ -670,12 +670,12 @@ native_playlist_screen_selected_songs(NativePlaylistScreen *screen,
 
 static bool
 native_playlist_screen_find_sort_range(
-    NativePlaylistScreen *screen, int64 *first_position,
-    int64 *last_position, int32 *start_position, NcmError *error) {
+    NativePlaylistScreen *screen, int32 *first_position,
+    int32 *last_position, int32 *start_position, NcmError *error) {
     NcMenu *menu;
     NcmSong *song;
-    int64 first;
-    int64 last;
+    int32 first;
+    int32 last;
     int32 range_start;
 
     if (screen == NULL) {
@@ -691,7 +691,7 @@ native_playlist_screen_find_sort_range(
     }
 
     first = last;
-    for (int64 i = 0; i < last; i += 1) {
+    for (int32 i = 0; i < last; i += 1) {
         uint32 flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
 
         if (flags & NC_MENU_ITEM_SELECTED) {
@@ -702,10 +702,10 @@ native_playlist_screen_find_sort_range(
     if (first == last) {
         first = 0;
     } else {
-        int64 selected_last;
+        int32 selected_last;
 
         selected_last = first + 1;
-        for (int64 i = first + 1; i < last; i += 1) {
+        for (int32 i = first + 1; i < last; i += 1) {
             uint32 flags;
 
             flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
@@ -713,7 +713,7 @@ native_playlist_screen_find_sort_range(
                 selected_last = i + 1;
             }
         }
-        for (int64 i = first; i < selected_last; i += 1) {
+        for (int32 i = first; i < selected_last; i += 1) {
             uint32 flags;
 
             flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
@@ -735,7 +735,7 @@ native_playlist_screen_find_sort_range(
     }
     range_start = ncm_song_position(song);
 
-    for (int64 i = first; i < last; i += 1) {
+    for (int32 i = first; i < last; i += 1) {
         int64 expected_position;
 
         song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i);
@@ -781,8 +781,8 @@ native_playlist_screen_copy_sort_range(
     NcmSongArray replacement;
     NcMenu *menu;
     NcmSong *song;
-    int64 first;
-    int64 last;
+    int32 first;
+    int32 last;
     int32 range_start;
 
     if (songs == NULL) {
@@ -801,7 +801,7 @@ native_playlist_screen_copy_sort_range(
 
     menu = native_playlist_storage_menu(screen);
     ncm_song_array_init(&replacement);
-    for (int64 i = first; i < last; i += 1) {
+    for (int32 i = first; i < last; i += 1) {
         song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i);
         if (song == NULL) {
             ncm_error_set(error, EINVAL,
@@ -1155,7 +1155,7 @@ native_playlist_search_menu(NativePlaylistScreen *screen,
 }
 
 static bool
-native_playlist_search_position(NcMenu *menu, int64 pos,
+native_playlist_search_position(NcMenu *menu, int32 pos,
                                 void *user) {
     NativePlaylistSearchContext *context;
 
@@ -1183,7 +1183,7 @@ native_playlist_action_callbacks(void) {
 
 static void
 native_playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
-                          int64 pos, void *user) {
+                          int32 pos, void *user) {
     NcBuffer buffer;
     bool is_now_playing;
 
@@ -1243,7 +1243,7 @@ native_playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
 }
 
 static void
-native_playlist_activate_song(NcMenu *menu, void *item, int64 pos,
+native_playlist_activate_song(NcMenu *menu, void *item, int32 pos,
                               void *user) {
     NcmError error = {0};
 
@@ -1422,14 +1422,14 @@ static bool
 native_playlist_truncate_storage(NativePlaylistScreen *screen,
                                  int32 playlist_length) {
     NcMenu *menu;
-    int64 new_count;
-    int64 old_count;
+    int32 new_count;
+    int32 old_count;
     if (screen == NULL) {
         return false;
     }
 
     menu = native_playlist_storage_menu(screen);
-    new_count = (int64)playlist_length;
+    new_count = playlist_length;
     old_count = nc_menu_all_item_count(menu);
     while (old_count > new_count) {
         old_count -= 1;
@@ -1457,7 +1457,7 @@ native_playlist_apply_changed_song_to_storage(NativePlaylistScreen *screen,
     position = ncm_song_position(song);
     if (position < nc_menu_all_item_count(menu)) {
         return nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL,
-                                    (int64)position, song);
+                                    position, song);
     }
 
     nc_menu_add_item(menu, song);
@@ -1469,7 +1469,7 @@ native_playlist_should_reload_full(NativePlaylistScreen *screen,
                                    int32 version,
                                    int32 playlist_length,
                                    NcmMpdSongList *changes) {
-    int64 count;
+    int32 count;
     int32 next_append_position;
 
     if (playlist_length == 0) {
@@ -1551,7 +1551,7 @@ native_playlist_append_selected(NcMenu *menu, NcmSongArray *songs) {
     bool found;
 
     found = false;
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (nc_menu_position_is_selected(menu, i)) {
             if (!native_playlist_append_position(menu, i, songs)) {
                 ncm_song_array_clear(songs);
@@ -1564,7 +1564,7 @@ native_playlist_append_selected(NcMenu *menu, NcmSongArray *songs) {
 }
 
 static bool
-native_playlist_append_position(NcMenu *menu, int64 pos,
+native_playlist_append_position(NcMenu *menu, int32 pos,
                                 NcmSongArray *songs) {
     NcmSong *song;
 

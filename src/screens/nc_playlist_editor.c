@@ -42,7 +42,7 @@ static void playlist_editor_print_buffer(NcWindow *window,
                                          NcBuffer *buffer);
 static int32 playlist_editor_content_list_width(NcMenu *menu,
                                                 NcWindow *window,
-                                                int64 pos);
+                                                int32 pos);
 static bool playlist_editor_playlist_matches_regex(NcmRegex *regex,
                                                    NcmPlaylist *playlist);
 static bool playlist_editor_content_matches_regex(
@@ -79,15 +79,15 @@ static void playlist_editor_clear_content_filter(
     NativePlaylistEditorScreen *screen);
 static bool playlist_editor_find_playlist_position(
     NativePlaylistEditorScreen *screen, char *path, int32 path_len,
-    int64 *pos);
+    int32 *pos);
 static bool playlist_editor_highlight_content_position(
-    NativePlaylistEditorScreen *screen, int64 pos);
-static int64 playlist_editor_find_song_in_content_range(
+    NativePlaylistEditorScreen *screen, int32 pos);
+static int32 playlist_editor_find_song_in_content_range(
     NativePlaylistEditorScreen *screen, NcmSong *song,
-    int64 first, int64 last);
+    int32 first, int32 last);
 static bool playlist_editor_locate_song_in_playlist_range(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmSong *song, int64 first, int64 last, NcmError *error);
+    NcmSong *song, int32 first, int32 last, NcmError *error);
 static bool playlist_editor_show_screen(NativePlaylistEditorScreen *screen);
 static bool playlist_editor_store_current_playlist_path(
     NativePlaylistEditorScreen *screen, NcmBuffer *buffer);
@@ -136,17 +136,17 @@ static bool append_playlist_content_from_mpd(
 static bool append_song_list_content(NcmMpdSongList *list,
                                      NcmSongArray *songs);
 static bool append_content_item(NativePlaylistEditorScreen *screen,
-                                int64 pos, NcmSongArray *songs);
+                                int32 pos, NcmSongArray *songs);
 static bool append_content_item_from_source(
     NativePlaylistEditorScreen *screen, enum NcMenuItemSource source,
-    int64 pos, NcmSongArray *songs);
+    int32 pos, NcmSongArray *songs);
 static bool playlist_editor_search_menu(
     NativePlaylistEditorScreen *screen, NcMenu *menu, NcmRegex *regex,
     bool forward, bool wrap, bool skip_current);
 static bool playlist_editor_search_item(
     NativePlaylistEditorScreen *screen, NcMenu *menu, NcmRegex *regex,
-    int64 pos);
-static bool playlist_editor_search_position(NcMenu *menu, int64 pos,
+    int32 pos);
+static bool playlist_editor_search_position(NcMenu *menu, int32 pos,
                                             void *user);
 static void playlist_editor_set_display_callbacks(
     NativePlaylistEditorScreen *screen);
@@ -301,7 +301,7 @@ native_playlist_editor_screen_set_geometry(
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = main_height;
+    screen->main_height = (int32)main_height;
     playlist_editor_apply_geometry(screen);
     return;
 }
@@ -501,7 +501,7 @@ native_playlist_editor_screen_locate_playlist(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client,
     char *path, int32 path_len, NcmError *error) {
     NcMenu *menu;
-    int64 pos;
+    int32 pos;
 
     if ((screen == NULL) || (path == NULL) || (path_len <= 0)) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing playlist"));
@@ -541,9 +541,9 @@ native_playlist_editor_screen_locate_song(
     NcMenu *playlists;
     NcMenu *content;
     NcmSong current_song;
-    int64 playlist_pos;
-    int64 song_pos;
-    int64 found_pos;
+    int32 playlist_pos;
+    int32 song_pos;
+    int32 found_pos;
     bool success;
 
     if ((screen == NULL) || (song == NULL)) {
@@ -1046,7 +1046,7 @@ content_filter_callback(NcMenu *menu, void *item, void *user) {
 
 static void
 playlist_draw_callback(NcMenu *menu, NcWindow *window, void *item,
-                       int64 pos, void *user) {
+                       int32 pos, void *user) {
     NcmPlaylist *playlist;
     NcmBuffer converted;
 
@@ -1068,7 +1068,7 @@ playlist_draw_callback(NcMenu *menu, NcWindow *window, void *item,
 
 static void
 content_draw_callback(NcMenu *menu, NcWindow *window, void *item,
-                      int64 pos, void *user) {
+                      int32 pos, void *user) {
     NcBuffer buffer;
     int32 list_width;
     bool use_colors;
@@ -1130,7 +1130,7 @@ playlist_editor_print_buffer(NcWindow *window, NcBuffer *buffer) {
 
 static int32
 playlist_editor_content_list_width(NcMenu *menu, NcWindow *window,
-                                   int64 pos) {
+                                   int32 pos) {
     int64 available_width;
 
     available_width = nc_window_width(window) - nc_window_get_x(window);
@@ -1521,14 +1521,14 @@ playlist_editor_clear_content_filter(
 static bool
 playlist_editor_find_playlist_position(
     NativePlaylistEditorScreen *screen, char *path, int32 path_len,
-    int64 *pos) {
+    int32 *pos) {
     NcMenu *menu;
 
     if ((screen == NULL) || (path == NULL) || (pos == NULL)) {
         return false;
     }
     menu = nc_playlist_entry_menu_base(&screen->playlists);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmPlaylist *playlist;
 
         playlist = nc_menu_active_item_at(menu, i);
@@ -1544,7 +1544,7 @@ playlist_editor_find_playlist_position(
 
 static bool
 playlist_editor_highlight_content_position(
-    NativePlaylistEditorScreen *screen, int64 pos) {
+    NativePlaylistEditorScreen *screen, int32 pos) {
     NcMenu *menu;
 
     if (screen == NULL) {
@@ -1561,10 +1561,10 @@ playlist_editor_highlight_content_position(
     return true;
 }
 
-static int64
+static int32
 playlist_editor_find_song_in_content_range(
     NativePlaylistEditorScreen *screen, NcmSong *song,
-    int64 first, int64 last) {
+    int32 first, int32 last) {
     NcMenu *menu;
 
     if ((screen == NULL) || (song == NULL)) {
@@ -1577,7 +1577,7 @@ playlist_editor_find_song_in_content_range(
     if (last > nc_menu_item_count(menu)) {
         last = nc_menu_item_count(menu);
     }
-    for (int64 i = first; i < last; i += 1) {
+    for (int32 i = first; i < last; i += 1) {
         NcmSong *candidate;
 
         candidate = nc_menu_active_item_at(menu, i);
@@ -1591,7 +1591,7 @@ playlist_editor_find_song_in_content_range(
 static bool
 playlist_editor_find_song_in_mpd_playlist(
     NcmMpdClient *client, NcmPlaylist *playlist, NcmSong *song,
-    int64 *song_index, NcmError *error) {
+    int32 *song_index, NcmError *error) {
     NcmMpdSongList songs;
     bool success;
 
@@ -1625,7 +1625,7 @@ playlist_editor_find_song_in_mpd_playlist(
 static bool
 playlist_editor_locate_song_in_playlist_range(
     NativePlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmSong *song, int64 first, int64 last, NcmError *error) {
+    NcmSong *song, int32 first, int32 last, NcmError *error) {
     NcMenu *menu;
 
     if (screen == NULL) {
@@ -1638,9 +1638,9 @@ playlist_editor_locate_song_in_playlist_range(
     if (last > nc_menu_item_count(menu)) {
         last = nc_menu_item_count(menu);
     }
-    for (int64 i = first; i < last; i += 1) {
+    for (int32 i = first; i < last; i += 1) {
         NcmPlaylist *playlist;
-        int64 song_index;
+        int32 song_index;
 
         playlist = nc_menu_active_item_at(menu, i);
         song_index = -1;
@@ -1707,7 +1707,7 @@ playlist_editor_restore_playlist_path(NativePlaylistEditorScreen *screen,
         return false;
     }
     menu = nc_playlist_entry_menu_base(&screen->playlists);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmPlaylist *playlist;
 
         playlist = nc_menu_active_item_at(menu, i);
@@ -1745,7 +1745,7 @@ playlist_editor_restore_content_song(NativePlaylistEditorScreen *screen,
         return false;
     }
     menu = nc_song_menu_base(&screen->content);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmSong *item;
 
         item = nc_menu_active_item_at(menu, i);
@@ -2177,7 +2177,7 @@ append_current_content(NativePlaylistEditorScreen *screen,
     NcMenu *menu;
 
     menu = nc_song_menu_base(&screen->content);
-    for (int64 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
         if (!append_content_item_from_source(
                 screen, NC_MENU_ITEMS_ALL, i, songs)) {
             return false;
@@ -2197,7 +2197,7 @@ append_selected_content(NativePlaylistEditorScreen *screen,
     if (!any_selected) {
         return append_content_item(screen, nc_menu_highlight(menu), songs);
     }
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (!nc_menu_position_is_selected(menu, i)) {
             continue;
         }
@@ -2218,7 +2218,7 @@ append_selected_playlist_content(NativePlaylistEditorScreen *screen,
     }
 
     menu = nc_playlist_entry_menu_base(&screen->playlists);
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmPlaylist *playlist;
 
         if (!nc_menu_position_is_selected(menu, i)) {
@@ -2276,7 +2276,7 @@ append_song_list_content(NcmMpdSongList *list, NcmSongArray *songs) {
 }
 
 static bool
-append_content_item(NativePlaylistEditorScreen *screen, int64 pos,
+append_content_item(NativePlaylistEditorScreen *screen, int32 pos,
                     NcmSongArray *songs) {
     enum NcMenuItemSource source;
     NcMenu *menu;
@@ -2291,7 +2291,7 @@ append_content_item(NativePlaylistEditorScreen *screen, int64 pos,
 
 static bool
 append_content_item_from_source(NativePlaylistEditorScreen *screen,
-                                enum NcMenuItemSource source, int64 pos,
+                                enum NcMenuItemSource source, int32 pos,
                                 NcmSongArray *songs) {
     NcmSong *song;
 
@@ -2318,7 +2318,7 @@ playlist_editor_search_menu(NativePlaylistEditorScreen *screen,
 }
 
 static bool
-playlist_editor_search_position(NcMenu *menu, int64 pos,
+playlist_editor_search_position(NcMenu *menu, int32 pos,
                                 void *user) {
     PlaylistEditorSearchContext *context;
 
@@ -2329,7 +2329,7 @@ playlist_editor_search_position(NcMenu *menu, int64 pos,
 
 static bool
 playlist_editor_search_item(NativePlaylistEditorScreen *screen,
-                            NcMenu *menu, NcmRegex *regex, int64 pos) {
+                            NcMenu *menu, NcmRegex *regex, int32 pos) {
     void *item;
 
     item = nc_menu_active_item_at(menu, pos);

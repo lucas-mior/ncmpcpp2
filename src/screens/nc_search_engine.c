@@ -29,32 +29,32 @@ static bool native_search_is_lockable(NcScreen *screen);
 static bool native_search_is_mergable(NcScreen *screen);
 static void native_search_destroy_callback(NcScreen *screen);
 static void native_search_draw_row(NcMenu *menu, NcWindow *window,
-                                   void *item, int64 pos, void *user);
+                                   void *item, int32 pos, void *user);
 static NcMenuDisplayCallbacks native_search_display_callbacks(
     NativeSearchEngineScreen *screen, bool filtering);
 static bool native_search_row_matches(NativeSearchEngineScreen *screen,
                                       NcSearchRow *row, NcmRegex *regex);
-static bool native_search_find_position(NcMenu *menu, int64 pos,
+static bool native_search_find_position(NcMenu *menu, int32 pos,
                                         void *user);
 static bool native_search_row_label(NativeSearchEngineScreen *screen,
                                     NcSearchRow *row, NcmStringView *view);
 static void native_search_draw_classic_song(
     NativeSearchEngineScreen *screen, NcMenu *menu, NcWindow *window,
-    NcmSong *song, int64 pos);
+    NcmSong *song, int32 pos);
 static void native_search_draw_columns_song(
     NativeSearchEngineScreen *screen, NcMenu *menu, NcWindow *window,
-    NcmSong *song, int64 pos);
+    NcmSong *song, int32 pos);
 static bool native_search_format_columns(
     NativeSearchEngineScreen *screen, NcmSong *song, NcBuffer *buffer,
     int32 list_width);
 static int32 native_search_screen_width(NativeSearchEngineScreen *screen);
-static int32 native_search_menu_prefix_width(NcMenu *menu, int64 pos);
-static int32 native_search_menu_suffix_width(NcMenu *menu, int64 pos);
+static int32 native_search_menu_prefix_width(NcMenu *menu, int32 pos);
+static int32 native_search_menu_suffix_width(NcMenu *menu, int32 pos);
 static int32 native_search_buffer_width(NcBuffer *buffer);
 static bool native_search_copy_song_at(NativeSearchEngineScreen *screen,
-                                       NcmSongArray *songs, int64 pos);
+                                       NcmSongArray *songs, int32 pos);
 static bool native_search_insert_buffer_with_flags(
-    NativeSearchEngineScreen *screen, int64 pos, NcBuffer *buffer,
+    NativeSearchEngineScreen *screen, int32 pos, NcBuffer *buffer,
     uint32 flags);
 static void native_search_append_constraint_row(
     NativeSearchEngineScreen *screen, int32 idx);
@@ -180,7 +180,7 @@ native_search_engine_screen_init(NativeSearchEngineScreen *screen,
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = main_height;
+    screen->main_height = (int32)main_height;
     screen->lines_scrolled = 1;
     screen->result_count = 0;
     screen->search_mode = NATIVE_SEARCH_ENGINE_SEARCH_MODE_LITERAL;
@@ -253,7 +253,7 @@ native_search_engine_screen_set_geometry(NativeSearchEngineScreen *screen,
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
-    screen->main_height = main_height;
+    screen->main_height = (int32)main_height;
 
     window_start_y = main_start_y;
     window_height = main_height;
@@ -848,7 +848,7 @@ native_search_engine_screen_can_run_current(
     NativeSearchEngineScreen *screen) {
     NcMenu *menu;
     NcSearchRow *row;
-    int64 pos;
+    int32 pos;
 
     if ((screen == NULL) || !screen->prepared) {
         return false;
@@ -876,7 +876,7 @@ native_search_engine_screen_run_current(
     NcmBuffer value;
     NcmError error;
     NcMenu *menu;
-    int64 pos;
+    int32 pos;
     uint32 next_mode;
     bool success;
 
@@ -976,7 +976,7 @@ native_search_engine_screen_allows_search(
     NativeSearchEngineScreen *screen) {
     NcMenu *menu;
     NcSearchRow *row;
-    int64 count;
+    int32 count;
 
     if (screen == NULL) {
         return false;
@@ -1023,7 +1023,7 @@ native_search_engine_screen_selected_songs(NativeSearchEngineScreen *screen,
         return native_search_copy_song_at(
             screen, songs, nc_menu_highlight(menu));
     }
-    for (int64 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (!nc_menu_position_is_selected(menu, i)) {
             continue;
         }
@@ -1114,7 +1114,7 @@ native_search_engine_screen_search(NativeSearchEngineScreen *screen,
 }
 
 static bool
-native_search_find_position(NcMenu *menu, int64 pos,
+native_search_find_position(NcMenu *menu, int32 pos,
                             void *user) {
     NativeSearchFindContext *context;
 
@@ -1352,7 +1352,7 @@ native_search_row_label(NativeSearchEngineScreen *screen,
 
 static bool
 native_search_insert_buffer_with_flags(
-    NativeSearchEngineScreen *screen, int64 pos, NcBuffer *buffer,
+    NativeSearchEngineScreen *screen, int32 pos, NcBuffer *buffer,
     uint32 flags) {
     NcSearchRow row;
 
@@ -1476,7 +1476,7 @@ native_search_display_callbacks(NativeSearchEngineScreen *screen,
 
 static void
 native_search_draw_row(NcMenu *menu, NcWindow *window, void *item,
-                       int64 pos, void *user) {
+                       int32 pos, void *user) {
     NativeSearchEngineScreen *screen;
     NcSearchRow *row;
 
@@ -1504,7 +1504,7 @@ native_search_draw_row(NcMenu *menu, NcWindow *window, void *item,
 static void
 native_search_draw_classic_song(
     NativeSearchEngineScreen *screen, NcMenu *menu, NcWindow *window,
-    NcmSong *song, int64 pos) {
+    NcmSong *song, int32 pos) {
     NcBuffer left;
     NcBuffer right;
     int32 right_width;
@@ -1538,7 +1538,7 @@ native_search_draw_classic_song(
 static void
 native_search_draw_columns_song(
     NativeSearchEngineScreen *screen, NcMenu *menu, NcWindow *window,
-    NcmSong *song, int64 pos) {
+    NcmSong *song, int32 pos) {
     NcBuffer buffer;
     int32 width;
 
@@ -1581,7 +1581,7 @@ native_search_screen_width(NativeSearchEngineScreen *screen) {
 }
 
 static int32
-native_search_menu_prefix_width(NcMenu *menu, int64 pos) {
+native_search_menu_prefix_width(NcMenu *menu, int32 pos) {
     int32 width;
 
     if (menu == NULL) {
@@ -1599,7 +1599,7 @@ native_search_menu_prefix_width(NcMenu *menu, int64 pos) {
 }
 
 static int32
-native_search_menu_suffix_width(NcMenu *menu, int64 pos) {
+native_search_menu_suffix_width(NcMenu *menu, int32 pos) {
     int32 width;
 
     if (menu == NULL) {
@@ -2013,7 +2013,7 @@ native_search_print_error(NativeSearchEngineScreen *screen,
 
 static bool
 native_search_copy_song_at(NativeSearchEngineScreen *screen,
-                           NcmSongArray *songs, int64 pos) {
+                           NcmSongArray *songs, int32 pos) {
     NcSearchRow *row;
 
     row = nc_menu_active_item_at(native_search_engine_screen_menu(screen),

@@ -88,9 +88,9 @@ typedef struct NativeTinyTagEditorScreen {
     NcScreen *previous_screen;
 
     int64 start_x;
-    int64 width;
+    int32 width;
     int64 main_start_y;
-    int64 main_height;
+    int32 main_height;
 
     bool has_edited;
     bool show_duplicate_tags;
@@ -132,7 +132,7 @@ bool native_tiny_tag_editor_screen_set_filename(
 bool native_tiny_tag_editor_screen_set_filename_stem(
     NativeTinyTagEditorScreen *screen, char *stem, int32 stem_len);
 bool native_tiny_tag_editor_screen_run_row(
-    NativeTinyTagEditorScreen *screen, int64 row);
+    NativeTinyTagEditorScreen *screen, int32 row);
 bool native_tiny_tag_editor_screen_run_current(
     NativeTinyTagEditorScreen *screen);
 bool native_tiny_tag_editor_screen_action_runnable(

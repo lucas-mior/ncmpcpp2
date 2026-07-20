@@ -580,11 +580,17 @@ nc_menu_prepare_refresh(NcMenu *menu, int32 height,
     if (menu->beginning < 0) {
         menu->beginning = 0;
     }
-    menu->beginning = MIN(menu->beginning, max_beginning);
+    if (menu->beginning > max_beginning) {
+        menu->beginning = max_beginning;
+    }
 
     max_visible_highlight = menu->beginning + height - 1;
-    menu->highlight = MIN(menu->highlight, max_visible_highlight);
-    menu->highlight = MIN(menu->highlight, menu->item_count - 1);
+    if (menu->highlight > max_visible_highlight) {
+        menu->highlight = max_visible_highlight;
+    }
+    if (menu->highlight >= menu->item_count) {
+        menu->highlight = menu->item_count - 1;
+    }
     if (menu->highlight < 0) {
         menu->highlight = 0;
     }

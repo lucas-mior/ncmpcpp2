@@ -22,7 +22,7 @@ static NcScreenCallbacks sort_dialog_callbacks(void);
 static NcWindow *sort_dialog_active_window_callback(NcScreen *screen);
 static void sort_dialog_refresh_callback(NcScreen *screen);
 static void sort_dialog_draw_row(NcMenu *menu, NcWindow *window,
-                                 void *item, int64 pos,
+                                 void *item, int32 pos,
                                  void *user);
 static void sort_dialog_scroll_callback(NcScreen *screen,
                                         enum NcScroll where);
@@ -37,7 +37,7 @@ static void sort_dialog_mouse_callback(NcScreen *screen, MEVENT event);
 static bool sort_dialog_lockable_callback(NcScreen *screen);
 static bool sort_dialog_mergable_callback(NcScreen *screen);
 static void sort_dialog_destroy_callback(NcScreen *screen);
-static bool sort_dialog_position_is_sort_key(NcMenu *menu, int64 pos);
+static bool sort_dialog_position_is_sort_key(NcMenu *menu, int32 pos);
 static void sort_dialog_show_move_hint(void *user);
 static void sort_dialog_run_sort(void *user);
 static void sort_dialog_cancel(void *user);
@@ -274,7 +274,7 @@ bool
 native_sort_playlist_dialog_move_current_up(
     NativeSortPlaylistDialog *dialog) {
     NcMenu *menu;
-    int64 pos;
+    int32 pos;
 
     if (dialog == NULL) {
         return false;
@@ -296,7 +296,7 @@ bool
 native_sort_playlist_dialog_move_current_down(
     NativeSortPlaylistDialog *dialog) {
     NcMenu *menu;
-    int64 pos;
+    int32 pos;
 
     if (dialog == NULL) {
         return false;
@@ -341,7 +341,7 @@ native_sort_playlist_dialog_get_order(
     }
     menu = nc_editor_sort_menu_base(&dialog->rows);
     len = 0;
-    for (int64 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
         NcEditorSortRow *row;
 
         row = nc_editor_sort_menu_item_at(&dialog->rows,
@@ -392,7 +392,7 @@ sort_dialog_active_window_callback(NcScreen *screen) {
 
 static void
 sort_dialog_draw_row(NcMenu *menu, NcWindow *window, void *item,
-                     int64 pos, void *user) {
+                     int32 pos, void *user) {
     NcEditorSortRow *row;
 
     (void)menu;
@@ -528,7 +528,7 @@ sort_dialog_destroy_callback(NcScreen *screen) {
 }
 
 static bool
-sort_dialog_position_is_sort_key(NcMenu *menu, int64 pos) {
+sort_dialog_position_is_sort_key(NcMenu *menu, int32 pos) {
     NcEditorSortRow *row;
 
     row = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, pos);

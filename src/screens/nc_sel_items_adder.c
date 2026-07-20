@@ -26,7 +26,7 @@ static NcScreenCallbacks adder_callbacks(void);
 static NcWindow *adder_active_window_callback(NcScreen *screen);
 static void adder_refresh_callback(NcScreen *screen);
 static void adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
-                           int64 pos, void *user);
+                           int32 pos, void *user);
 static void adder_scroll_callback(NcScreen *screen, enum NcScroll where);
 static bool adder_can_run_current_callback(NcScreen *screen);
 static bool adder_run_current_callback(NcScreen *screen);
@@ -41,7 +41,7 @@ static bool adder_mergable_callback(NcScreen *screen);
 static void adder_destroy_callback(NcScreen *screen);
 static bool adder_filter_callback(NcMenu *menu, void *item, void *user);
 static bool adder_row_matches(NcEditorActionRow *row, NcmRegex *regex);
-static bool adder_search_position(NcMenu *menu, int64 pos, void *user);
+static bool adder_search_position(NcMenu *menu, int32 pos, void *user);
 static void adder_action_current_playlist(void *user);
 static void adder_action_new_playlist(void *user);
 static void adder_action_cancel_target(void *user);
@@ -59,7 +59,7 @@ static void adder_clear_playlist_selector(
     NativeSelectedItemsAdderScreen *screen);
 static bool adder_previous_is_local_browser(NcScreen *previous);
 static void adder_sort_playlist_rows(NativeSelectedItemsAdderScreen *screen,
-                                     int64 begin, int64 end);
+                                     int32 begin, int32 end);
 static void adder_apply_geometry(NativeSelectedItemsAdderScreen *screen);
 static void adder_finish(NativeSelectedItemsAdderScreen *screen);
 
@@ -142,7 +142,7 @@ native_selected_items_adder_screen_destroy(
     }
     (void)app_controller_unregister_screen(
         native_selected_items_adder_screen_base(screen));
-    for (int64 i = 0; i < nc_menu_all_item_count(
+    for (int32 i = 0; i < nc_menu_all_item_count(
              nc_editor_action_menu_base(&screen->playlist_selector));
          i += 1) {
         NcEditorActionRow *row;
@@ -310,8 +310,8 @@ native_selected_items_adder_screen_populate_playlist_selector(
     bool local_browser) {
     NcEditorActionMenu *menu;
     NcMenu *base;
-    int64 stored_begin;
-    int64 stored_end;
+    int32 stored_begin;
+    int32 stored_end;
 
     if (screen == NULL) {
         return;
@@ -498,7 +498,7 @@ native_selected_items_adder_screen_search(
 }
 
 static bool
-adder_search_position(NcMenu *menu, int64 pos, void *user) {
+adder_search_position(NcMenu *menu, int32 pos, void *user) {
     return adder_row_matches(nc_menu_active_item_at(menu, pos), user);
 }
 
@@ -537,7 +537,7 @@ adder_active_window_callback(NcScreen *screen) {
 
 static void
 adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
-               int64 pos, void *user) {
+               int32 pos, void *user) {
     NcEditorActionRow *row;
     NcmBuffer converted;
 
@@ -1199,7 +1199,7 @@ adder_clear_playlist_selector(NativeSelectedItemsAdderScreen *screen) {
         return;
     }
     menu = nc_editor_action_menu_base(&screen->playlist_selector);
-    for (int64 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
         NcEditorActionRow *row;
 
         row = nc_editor_action_menu_item_at(&screen->playlist_selector,
@@ -1231,15 +1231,15 @@ adder_previous_is_local_browser(NcScreen *previous) {
 
 static void
 adder_sort_playlist_rows(NativeSelectedItemsAdderScreen *screen,
-                         int64 begin, int64 end) {
+                         int32 begin, int32 end) {
     NcMenu *menu;
 
     menu = nc_editor_action_menu_base(&screen->playlist_selector);
-    for (int64 i = begin; i < end; i += 1) {
-        int64 smallest;
+    for (int32 i = begin; i < end; i += 1) {
+        int32 smallest;
 
         smallest = i;
-        for (int64 j = i + 1; j < end; j += 1) {
+        for (int32 j = i + 1; j < end; j += 1) {
             NcEditorActionRow *left;
             NcEditorActionRow *right;
 
