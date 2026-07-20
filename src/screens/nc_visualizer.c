@@ -122,9 +122,9 @@ static void visualizer_system_close_source(void *user, int32 fd);
 static bool visualizer_system_get_outputs(void *user,
                                           NcmMpdOutputList *outputs,
                                           NcmError *error);
-static bool visualizer_system_disable_output(void *user, uint32 id,
+static bool visualizer_system_disable_output(void *user, int32 id,
                                              NcmError *error);
-static bool visualizer_system_enable_output(void *user, uint32 id,
+static bool visualizer_system_enable_output(void *user, int32 id,
                                             NcmError *error);
 static void visualizer_system_sleep_microseconds(void *user,
                                                  int32 microseconds);
@@ -302,7 +302,7 @@ visualizer_draw_character(NativeVisualizerScreen *screen,
 
 #if defined(HAVE_FFTW3_H)
 static void
-visualizer_fft_init(NativeVisualizerScreen *screen, uint32 dft_size,
+visualizer_fft_init(NativeVisualizerScreen *screen, int32 dft_size,
                     double gain, double hz_min, double hz_max) {
     NativeVisualizerFftState *fft;
 
@@ -2016,8 +2016,7 @@ visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
 }
 
 static bool
-visualizer_system_disable_output(void *user, uint32 id,
-                                 NcmError *error) {
+visualizer_system_disable_output(void *user, int32 id, NcmError *error) {
     NcmMpdClient *client;
 
     client = user;
@@ -2030,8 +2029,7 @@ visualizer_system_disable_output(void *user, uint32 id,
 }
 
 static bool
-visualizer_system_enable_output(void *user, uint32 id,
-                                NcmError *error) {
+visualizer_system_enable_output(void *user, int32 id, NcmError *error) {
     NcmMpdClient *client;
 
     client = user;
@@ -2067,7 +2065,7 @@ visualizer_reset_output(NativeVisualizerScreen *screen) {
     ncm_error_clear(&error);
     if (!screen->data_source_hooks.disable_output(
             screen->data_source_hooks.user,
-            (uint32)screen->output_id,
+            screen->output_id,
             &error)) {
         NcmStringFormatArg arg;
 
@@ -2087,7 +2085,7 @@ visualizer_reset_output(NativeVisualizerScreen *screen) {
     ncm_error_clear(&error);
     if (!screen->data_source_hooks.enable_output(
             screen->data_source_hooks.user,
-            (uint32)screen->output_id,
+            screen->output_id,
             &error)) {
         NcmStringFormatArg arg;
 
