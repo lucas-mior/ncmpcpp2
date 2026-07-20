@@ -120,7 +120,7 @@ typedef struct NativeTagEditorScreen {
     int32 parser_width_two;
     int32 parser_height;
     int32 parser_helper_start_x;
-    int32 active_column;
+    enum NativeTagEditorColumn active_column;
     int32 last_directory_highlight;
     int32 last_tag_type_highlight;
     int32 last_known_directory_count;
