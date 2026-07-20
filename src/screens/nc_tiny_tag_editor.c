@@ -527,10 +527,10 @@ native_tiny_tag_editor_screen_run_row(
         return false;
     }
 
-    if ((row >= NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW)
-        && (row <= NATIVE_TINY_TAG_EDITOR_LAST_TAG_ROW)) {
+    if ((row >= (int32)NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW)
+        && (row <= (int32)NATIVE_TINY_TAG_EDITOR_LAST_TAG_ROW)) {
         field = (enum NcmTagsField)(
-            row - NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW);
+            row - (int32)NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW);
         tag_value = ncm_mutable_song_tags_buffer(
             &screen->edited, field, screen->tag_separator.data,
             screen->tag_separator.len, screen->show_duplicate_tags);
