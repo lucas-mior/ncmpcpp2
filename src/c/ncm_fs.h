@@ -16,8 +16,8 @@
 #include "cbase/xenums.c"
 
 typedef struct NcmFsStat {
-    int64 size;
-    int64 mtime;
+    int32 size;
+    int32 mtime;
     enum NcmFsEntryType type;
     bool exists;
 } NcmFsStat;

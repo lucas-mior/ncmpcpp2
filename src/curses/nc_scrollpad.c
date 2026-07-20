@@ -18,15 +18,15 @@ typedef struct NcScrollpadWriteState {
     int32 property_count;
 } NcScrollpadWriteState;
 
-static int32 nc_scrollpad_i32(int64 value);
-static int64 nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
+static int32 nc_scrollpad_i32(int32 value);
+static int32 nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
                                        bool generate_height_only);
 static bool nc_scrollpad_is_space(char ch);
-static int64 nc_scrollpad_max_beginning(NcScrollpad *scrollpad,
+static int32 nc_scrollpad_max_beginning(NcScrollpad *scrollpad,
                                         NcWindow *window);
 
 void
-nc_scrollpad_init(NcScrollpad *scrollpad, int64 height) {
+nc_scrollpad_init(NcScrollpad *scrollpad, int32 height) {
     scrollpad->beginning = 0;
     scrollpad->real_height = height;
     return;
@@ -59,7 +59,7 @@ nc_scrollpad_refresh(NcScrollpad *scrollpad, NcWindow *window) {
 
 void
 nc_scrollpad_resize(NcScrollpad *scrollpad, NcWindow *window,
-                    int64 new_width, int64 new_height) {
+                    int32 new_width, int32 new_height) {
     (void)scrollpad;
     nc_window_adjust_dimensions(window, new_width, new_height);
     nc_window_recreate(window, new_width, new_height);
@@ -69,7 +69,7 @@ nc_scrollpad_resize(NcScrollpad *scrollpad, NcWindow *window,
 void
 nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
                     enum NcScroll where) {
-    int64 max_beginning;
+    int32 max_beginning;
 
     ASSERT(scrollpad->real_height >= window->height);
 
@@ -113,7 +113,7 @@ nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
 
 void
 nc_scrollpad_prepare_flush(NcScrollpad *scrollpad, NcWindow *window,
-                           int64 generated_height) {
+                           int32 generated_height) {
     scrollpad->real_height = generated_height;
     if (scrollpad->real_height < window->height) {
         scrollpad->real_height = window->height;
@@ -130,7 +130,7 @@ void
 nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window,
                    NcBuffer *buffer) {
     NcScrollpadWriteState state;
-    int64 height;
+    int32 height;
 
     state.buffer = buffer;
     state.properties = nc_buffer_properties(buffer);
@@ -157,11 +157,11 @@ nc_scrollpad_reset(NcScrollpad *scrollpad) {
 }
 
 static int32
-nc_scrollpad_i32(int64 value) {
+nc_scrollpad_i32(int32 value) {
     return (int32)value;
 }
 
-static int64
+static int32
 nc_scrollpad_max_beginning(NcScrollpad *scrollpad, NcWindow *window) {
     return scrollpad->real_height - window->height;
 }
@@ -211,7 +211,7 @@ nc_scrollpad_write_word(NcScrollpadWriteState *state,
     return;
 }
 
-static int64
+static int32
 nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
                           bool generate_height_only) {
     int32 new_y;
@@ -219,7 +219,7 @@ nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
     int32 y;
     int32 old_i;
     int32 old_property_index;
-    int64 height;
+    int32 height;
     int32 len;
 
     state->i = 0;

@@ -32,8 +32,8 @@ typedef struct NcScreenResizeParams NcScreenResizeParams;
 typedef void NcScreenEachCallback(NcScreen *screen, void *user);
 
 typedef struct NcScreenResizeParams {
-    int64 x_offset;
-    int64 width;
+    int32 x_offset;
+    int32 width;
 } NcScreenResizeParams;
 
 typedef struct NcScreenCallbacks {
@@ -100,9 +100,9 @@ void nc_screen_request_update(NcScreen *screen);
 void nc_screen_clear_resize_request(NcScreen *screen);
 void nc_screen_clear_update_request(NcScreen *screen);
 NcScreenResizeParams nc_screen_resize_params(NcScreen *screen);
-void nc_screen_get_resize_params(NcScreen *screen, int64 *x_offset,
-                                 int64 *width);
-void nc_screen_draw_vertical_separator(int64 x);
+void nc_screen_get_resize_params(NcScreen *screen, int32 *x_offset,
+                                 int32 *width);
+void nc_screen_draw_vertical_separator(int32 x);
 void *nc_screen_user(NcScreen *screen);
 
 void nc_screen_registry_init(NcScreenRegistry *registry);

@@ -20,7 +20,7 @@ typedef struct NcmStringFormatArg {
     enum NcmStringFormatArgType type;
     union {
         NcmStringView string;
-        int64 i64;
+        int32 i64;
         uint64 u64;
         double f64;
         char ch;
@@ -30,7 +30,7 @@ typedef struct NcmStringFormatArg {
 
 NcmStringFormatArg ncm_string_format_arg_string(char *data, int32 len);
 NcmStringFormatArg ncm_string_format_arg_cstring(char *data);
-NcmStringFormatArg ncm_string_format_arg_i64(int64 value);
+NcmStringFormatArg ncm_string_format_arg_i64(int32 value);
 NcmStringFormatArg ncm_string_format_arg_u64(uint64 value);
 
 void ncm_string_format_apply(NcmBuffer *out, char *format,

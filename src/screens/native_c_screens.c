@@ -164,7 +164,7 @@ static NcHelpHooks native_help_hooks(void);
 static NcOutputsHooks native_outputs_hooks(void);
 static NcServerInfoHooks native_server_info_hooks(void);
 static NcSongInfoHooks native_song_info_hooks(void);
-static void native_show_long_time(NcBuffer *buffer, int64 seconds);
+static void native_show_long_time(NcBuffer *buffer, int32 seconds);
 
 void
 native_c_screen_browser_init(void) {
@@ -1717,7 +1717,7 @@ native_register_screen(NcScreen *screen) {
 }
 
 static void
-native_resize_main_area(NcScreen *base, int64 *x, int64 *width) {
+native_resize_main_area(NcScreen *base, int32 *x, int32 *width) {
     nc_screen_switcher_get_resize_params(base, x, width, true);
     return;
 }
@@ -1939,8 +1939,8 @@ native_help_switch_to(void *user) {
 
 static void
 native_help_resize(void *user, NcHelpScreen *screen) {
-    int64 x;
-    int64 width;
+    int32 x;
+    int32 width;
 
     (void)user;
     native_resize_main_area(nc_help_screen_base(screen), &x, &width);
@@ -2076,8 +2076,8 @@ native_outputs_switch_to(void *user) {
 
 static void
 native_outputs_resize(void *user, NcOutputsScreen *screen) {
-    int64 x;
-    int64 width;
+    int32 x;
+    int32 width;
 
     (void)user;
     native_resize_main_area(nc_outputs_screen_base(screen), &x, &width);
@@ -2341,8 +2341,8 @@ native_song_info_switch_to(void *user, NcSongInfoScreen *screen) {
 
 static void
 native_song_info_resize(void *user, NcSongInfoScreen *screen) {
-    int64 x;
-    int64 width;
+    int32 x;
+    int32 width;
 
     (void)user;
     native_resize_main_area(nc_song_info_screen_base(screen), &x, &width);
@@ -2378,10 +2378,10 @@ native_song_info_hooks(void) {
 }
 
 static void
-native_show_long_time(NcBuffer *buffer, int64 seconds) {
-    int64 days;
-    int64 hours;
-    int64 minutes;
+native_show_long_time(NcBuffer *buffer, int32 seconds) {
+    int32 days;
+    int32 hours;
+    int32 minutes;
 
     days = seconds / 86400;
     seconds -= days*86400;

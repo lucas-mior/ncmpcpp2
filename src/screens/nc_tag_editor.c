@@ -100,8 +100,8 @@ static bool tag_editor_mouse_move_to_parser_focus(
 static void tag_editor_finish_tag_type_change(
     NativeTagEditorScreen *screen, bool refresh_tags);
 static void tag_editor_layout(NativeTagEditorScreen *screen);
-static int64 tag_editor_min_int64(int64 left, int64 right);
-static int64 tag_editor_separator_width(NativeTagEditorScreen *screen);
+static int32 tag_editor_min_int64(int32 left, int32 right);
+static int32 tag_editor_separator_width(NativeTagEditorScreen *screen);
 static void tag_editor_configure_menus(NativeTagEditorScreen *screen);
 static bool tag_editor_initialize_tag_types(NativeTagEditorScreen *screen);
 static bool tag_editor_append_string_row(NcEditorStringMenu *menu,
@@ -344,8 +344,8 @@ struct SaveContext {
 
 void
 native_tag_editor_screen_init(NativeTagEditorScreen *screen,
-                              int64 start_x, int64 width,
-                              int64 main_start_y, int64 main_height,
+                              int32 start_x, int32 width,
+                              int32 main_start_y, int32 main_height,
                               NcColor color, NcBorder border) {
     nc_editor_pair_menu_init(&screen->directories);
     nc_editor_string_menu_init(&screen->tag_types);
@@ -512,9 +512,9 @@ native_tag_editor_screen_active_window(NativeTagEditorScreen *screen) {
 
 void
 native_tag_editor_screen_set_geometry(NativeTagEditorScreen *screen,
-                                      int64 start_x, int64 width,
-                                      int64 main_start_y,
-                                      int64 main_height) {
+                                      int32 start_x, int32 width,
+                                      int32 main_start_y,
+                                      int32 main_height) {
     if (screen == NULL) {
         return;
     }
@@ -1815,8 +1815,8 @@ tag_editor_switch_to(NcScreen *screen) {
 static void
 tag_editor_resize(NcScreen *screen) {
     NativeTagEditorScreen *editor;
-    int64 start_x;
-    int64 width;
+    int32 start_x;
+    int32 width;
 
     editor = tag_editor_from_screen(screen);
     nc_screen_switcher_get_resize_params(screen, &start_x, &width, true);
@@ -2007,7 +2007,7 @@ static void
 tag_editor_mouse_scroll_menu(NcMenu *menu, NcWindow *window,
                              enum NcScroll where) {
     enum NcScroll effective;
-    int64 count;
+    int32 count;
 
     if ((menu == NULL) || (window == NULL)) {
         return;
@@ -2025,7 +2025,7 @@ tag_editor_mouse_scroll_menu(NcMenu *menu, NcWindow *window,
     if (count < 1) {
         count = 1;
     }
-    for (int64 i = 0; i < count; i += 1) {
+    for (int32 i = 0; i < count; i += 1) {
         nc_menu_scroll_selectable(menu, nc_window_height(window),
                                   effective);
     }
@@ -3426,12 +3426,12 @@ tag_editor_reload_songs_from_mpd(NativeTagEditorScreen *screen,
 
 static void
 tag_editor_layout(NativeTagEditorScreen *screen) {
-    int64 separator_width;
-    int64 parser_dialog_x_space;
-    int64 parser_dialog_y_space;
-    int64 parser_x_space;
-    int64 parser_y_space;
-    int64 screen_height;
+    int32 separator_width;
+    int32 parser_dialog_x_space;
+    int32 parser_dialog_y_space;
+    int32 parser_x_space;
+    int32 parser_y_space;
+    int32 screen_height;
 
     if (screen == NULL) {
         return;
@@ -3560,15 +3560,15 @@ tag_editor_layout(NativeTagEditorScreen *screen) {
     return;
 }
 
-static int64
-tag_editor_min_int64(int64 left, int64 right) {
+static int32
+tag_editor_min_int64(int32 left, int32 right) {
     if (left < right) {
         return left;
     }
     return right;
 }
 
-static int64
+static int32
 tag_editor_separator_width(NativeTagEditorScreen *screen) {
     if (screen == NULL) {
         return 0;

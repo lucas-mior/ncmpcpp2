@@ -37,10 +37,10 @@ static bool nc_outputs_mouse_scroll(NcOutputsScreen *outputs,
 void
 nc_outputs_screen_init(NcOutputsScreen *screen,
                        NcOutputsHooks hooks,
-                       int64 start_x, int64 width,
-                       int64 main_start_y, int64 main_height,
+                       int32 start_x, int32 width,
+                       int32 main_start_y, int32 main_height,
                        NcColor color, NcBorder border,
-                       int64 lines_scrolled,
+                       int32 lines_scrolled,
                        bool mouse_scroll_whole_page) {
     screen->hooks = hooks;
     screen->lines_scrolled = lines_scrolled;
@@ -78,8 +78,8 @@ nc_outputs_screen_init(NcOutputsScreen *screen,
 
 void
 nc_outputs_screen_set_geometry(NcOutputsScreen *screen,
-                               int64 start_x, int64 width,
-                               int64 main_start_y, int64 main_height) {
+                               int32 start_x, int32 width,
+                               int32 main_start_y, int32 main_height) {
     nc_scrollpad_screen_set_main_area(&screen->menu_screen,
                                       start_x,
                                       width,
@@ -165,22 +165,22 @@ nc_outputs_screen_base(NcOutputsScreen *screen) {
     return nc_scrollpad_screen_base(&screen->menu_screen);
 }
 
-int64
+int32
 nc_outputs_screen_start_x(NcOutputsScreen *screen) {
     return nc_scrollpad_screen_start_x(&screen->menu_screen);
 }
 
-int64
+int32
 nc_outputs_screen_start_y(NcOutputsScreen *screen) {
     return nc_scrollpad_screen_start_y(&screen->menu_screen);
 }
 
-int64
+int32
 nc_outputs_screen_width(NcOutputsScreen *screen) {
     return nc_scrollpad_screen_width(&screen->menu_screen);
 }
 
-int64
+int32
 nc_outputs_screen_height(NcOutputsScreen *screen) {
     return nc_scrollpad_screen_height(&screen->menu_screen);
 }

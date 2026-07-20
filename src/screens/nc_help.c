@@ -30,10 +30,10 @@ static bool nc_help_find_match_callback(int32 start, int32 len, void *user);
 void
 nc_help_screen_init(NcHelpScreen *screen,
                     NcHelpHooks hooks,
-                    int64 start_x, int64 width,
-                    int64 main_start_y, int64 main_height,
+                    int32 start_x, int32 width,
+                    int32 main_start_y, int32 main_height,
                     NcColor color, NcBorder border,
-                    int64 lines_scrolled) {
+                    int32 lines_scrolled) {
     screen->hooks = hooks;
     screen->lines_scrolled = lines_scrolled;
     nc_scrollpad_screen_init(&screen->scrollpad_screen,
@@ -66,8 +66,8 @@ nc_help_screen_init(NcHelpScreen *screen,
 
 void
 nc_help_screen_set_geometry(NcHelpScreen *screen,
-                            int64 start_x, int64 width,
-                            int64 main_start_y, int64 main_height) {
+                            int32 start_x, int32 width,
+                            int32 main_start_y, int32 main_height) {
     nc_scrollpad_screen_set_main_area(&screen->scrollpad_screen,
                                       start_x,
                                       width,
@@ -164,22 +164,22 @@ nc_help_screen_base(NcHelpScreen *screen) {
     return nc_scrollpad_screen_base(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_help_screen_start_x(NcHelpScreen *screen) {
     return nc_scrollpad_screen_start_x(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_help_screen_start_y(NcHelpScreen *screen) {
     return nc_scrollpad_screen_start_y(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_help_screen_width(NcHelpScreen *screen) {
     return nc_scrollpad_screen_width(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_help_screen_height(NcHelpScreen *screen) {
     return nc_scrollpad_screen_height(&screen->scrollpad_screen);
 }
@@ -334,7 +334,7 @@ nc_help_display(NcHelpScreen *help) {
 
 static void
 nc_help_mouse_scroll(NcHelpScreen *help, enum NcScroll where) {
-    for (int64 i = 0; i < help->lines_scrolled; i += 1) {
+    for (int32 i = 0; i < help->lines_scrolled; i += 1) {
         nc_scrollpad_scroll(&help->scrollpad, &help->window, where);
     }
     return;

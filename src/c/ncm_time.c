@@ -36,18 +36,18 @@ ncm_time_monotonic_now(NcmTimePoint *point, NcmError *error) {
         return false;
     }
 
-    point->ns = (int64)timespec.tv_sec*1000000000ll;
-    point->ns += (int64)timespec.tv_nsec;
+    point->ns = (int32)timespec.tv_sec*1000000000ll;
+    point->ns += (int32)timespec.tv_nsec;
     ncm_error_clear(error);
     return true;
 }
 
-int64
+int32
 ncm_time_elapsed_ns(NcmTimePoint start, NcmTimePoint end) {
     return end.ns - start.ns;
 }
 
-int64
+int32
 ncm_time_elapsed_ms(NcmTimePoint start, NcmTimePoint end) {
     return ncm_time_elapsed_ns(start, end) / 1000000ll;
 }

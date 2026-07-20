@@ -48,8 +48,8 @@ static void sort_dialog_finish(NativeSortPlaylistDialog *dialog);
 
 void
 native_sort_playlist_dialog_init(NativeSortPlaylistDialog *dialog,
-                                 int64 start_x, int64 start_y,
-                                 int64 width, int64 height,
+                                 int32 start_x, int32 start_y,
+                                 int32 width, int32 height,
                                  NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks display_callbacks = {0};
     NcScreenCallbacks callbacks;
@@ -118,8 +118,8 @@ native_sort_playlist_dialog_menu(NativeSortPlaylistDialog *dialog) {
 
 void
 native_sort_playlist_dialog_set_geometry(NativeSortPlaylistDialog *dialog,
-                                         int64 start_x, int64 start_y,
-                                         int64 width, int64 height) {
+                                         int32 start_x, int32 start_y,
+                                         int32 width, int32 height) {
     if (dialog == NULL) {
         return;
     }
@@ -617,11 +617,11 @@ sort_dialog_label_set(NcEditorSortRow *row, char *label, int32 label_len) {
 
 static void
 sort_dialog_apply_geometry(NativeSortPlaylistDialog *dialog) {
-    int64 main_height;
-    int64 height;
-    int64 width;
-    int64 start_x;
-    int64 start_y;
+    int32 main_height;
+    int32 height;
+    int32 width;
+    int32 start_x;
+    int32 start_y;
 
     main_height = ui_state_main_height();
     height = main_height;

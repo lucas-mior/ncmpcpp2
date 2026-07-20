@@ -100,31 +100,31 @@ typedef struct NativeTagEditorScreen {
     NcmRegex directory_search_regex;
     NcmRegex tag_search_regex;
 
-    int64 start_x;
-    int64 width;
-    int64 main_start_y;
-    int64 main_height;
-    int64 left_width;
-    int64 middle_start_x;
-    int64 middle_width;
-    int64 right_start_x;
-    int64 right_width;
-    int64 parser_dialog_start_x;
-    int64 parser_dialog_start_y;
-    int64 parser_dialog_width;
-    int64 parser_dialog_height;
-    int64 parser_start_x;
-    int64 parser_start_y;
-    int64 parser_width;
-    int64 parser_width_one;
-    int64 parser_width_two;
-    int64 parser_height;
-    int64 parser_helper_start_x;
-    int64 active_column;
-    int64 last_directory_highlight;
-    int64 last_tag_type_highlight;
-    int64 last_known_directory_count;
-    int64 last_known_tag_count;
+    int32 start_x;
+    int32 width;
+    int32 main_start_y;
+    int32 main_height;
+    int32 left_width;
+    int32 middle_start_x;
+    int32 middle_width;
+    int32 right_start_x;
+    int32 right_width;
+    int32 parser_dialog_start_x;
+    int32 parser_dialog_start_y;
+    int32 parser_dialog_width;
+    int32 parser_dialog_height;
+    int32 parser_start_x;
+    int32 parser_start_y;
+    int32 parser_width;
+    int32 parser_width_one;
+    int32 parser_width_two;
+    int32 parser_height;
+    int32 parser_helper_start_x;
+    int32 active_column;
+    int32 last_directory_highlight;
+    int32 last_tag_type_highlight;
+    int32 last_known_directory_count;
+    int32 last_known_tag_count;
     int32 window_timeout_ms;
 
     enum NativeTagEditorParserMode parser_mode;
@@ -143,9 +143,9 @@ typedef struct NativeTagEditorScreen {
 } NativeTagEditorScreen;
 
 void native_tag_editor_screen_init(NativeTagEditorScreen *screen,
-                                   int64 start_x, int64 width,
-                                   int64 main_start_y,
-                                   int64 main_height, NcColor color,
+                                   int32 start_x, int32 width,
+                                   int32 main_start_y,
+                                   int32 main_height, NcColor color,
                                    NcBorder border);
 void native_tag_editor_screen_destroy(NativeTagEditorScreen *screen);
 NcScreen *native_tag_editor_screen_base(NativeTagEditorScreen *screen);
@@ -155,9 +155,9 @@ void native_tag_editor_screen_set_hooks(NativeTagEditorScreen *screen,
 NcMenu *native_tag_editor_screen_active_menu(NativeTagEditorScreen *screen);
 NcWindow *native_tag_editor_screen_active_window(NativeTagEditorScreen *screen);
 void native_tag_editor_screen_set_geometry(NativeTagEditorScreen *screen,
-                                           int64 start_x, int64 width,
-                                           int64 main_start_y,
-                                           int64 main_height);
+                                           int32 start_x, int32 width,
+                                           int32 main_start_y,
+                                           int32 main_height);
 void native_tag_editor_screen_clear_directories(
     NativeTagEditorScreen *screen);
 void native_tag_editor_screen_clear_stale_tags(

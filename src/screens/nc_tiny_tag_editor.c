@@ -84,8 +84,8 @@ static NcScreenCallbacks tiny_editor_callbacks = {
 
 void
 native_tiny_tag_editor_screen_init(
-    NativeTinyTagEditorScreen *screen, int64 start_x, int64 width,
-    int64 main_start_y, int64 main_height, NcColor color, NcBorder border) {
+    NativeTinyTagEditorScreen *screen, int32 start_x, int32 width,
+    int32 main_start_y, int32 main_height, NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks display_callbacks = {0};
     NcMenu *menu;
 
@@ -163,8 +163,8 @@ native_tiny_tag_editor_screen_rows(NativeTinyTagEditorScreen *screen) {
 
 void
 native_tiny_tag_editor_screen_set_geometry(
-    NativeTinyTagEditorScreen *screen, int64 start_x, int64 width,
-    int64 main_start_y, int64 main_height) {
+    NativeTinyTagEditorScreen *screen, int32 start_x, int32 width,
+    int32 main_start_y, int32 main_height) {
     if (screen == NULL) {
         return;
     }
@@ -195,7 +195,7 @@ native_tiny_tag_editor_screen_set_edited_song(
         return false;
     }
     ncm_mutable_song_set_duration(&edited, ncm_song_duration(song));
-    ncm_mutable_song_set_mtime(&edited, (int64)ncm_song_mtime(song));
+    ncm_mutable_song_set_mtime(&edited, (int32)ncm_song_mtime(song));
     ncm_mutable_song_move(&screen->edited, &edited);
     screen->has_edited = true;
     return true;
@@ -739,8 +739,8 @@ tiny_editor_switch_to(NcScreen *screen) {
 static void
 tiny_editor_resize(NcScreen *screen) {
     NativeTinyTagEditorScreen *editor;
-    int64 start_x;
-    int64 width;
+    int32 start_x;
+    int32 width;
 
     editor = tiny_editor_from_screen(screen);
     nc_screen_switcher_get_resize_params(
@@ -769,7 +769,7 @@ tiny_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     NativeTinyTagEditorScreen *editor;
     NcMenu *menu;
     enum NcScroll where;
-    int64 count;
+    int32 count;
     int32 x;
     int32 y;
 
@@ -808,7 +808,7 @@ tiny_editor_mouse_callback(NcScreen *screen, MEVENT event) {
             where = NC_SCROLL_PAGE_UP;
         }
     }
-    for (int64 i = 0; i < count; i += 1) {
+    for (int32 i = 0; i < count; i += 1) {
         tiny_editor_scroll(screen, where);
     }
     return;

@@ -36,30 +36,30 @@ typedef struct NativeLastfmScreen {
 
 void nc_lastfm_screen_init(NcLastfmScreen *screen,
                            NcScreenCallbacks callbacks, void *user,
-                           int64 start_x, int64 width,
-                           int64 main_start_y, int64 main_height);
+                           int32 start_x, int32 width,
+                           int32 main_start_y, int32 main_height);
 void nc_lastfm_screen_set_geometry(NcLastfmScreen *screen,
-                                   int64 start_x, int64 width,
-                                   int64 main_start_y,
-                                   int64 main_height);
+                                   int32 start_x, int32 width,
+                                   int32 main_start_y,
+                                   int32 main_height);
 NcScreen *nc_lastfm_screen_base(NcLastfmScreen *screen);
-int64 nc_lastfm_screen_start_x(NcLastfmScreen *screen);
-int64 nc_lastfm_screen_start_y(NcLastfmScreen *screen);
-int64 nc_lastfm_screen_width(NcLastfmScreen *screen);
-int64 nc_lastfm_screen_height(NcLastfmScreen *screen);
+int32 nc_lastfm_screen_start_x(NcLastfmScreen *screen);
+int32 nc_lastfm_screen_start_y(NcLastfmScreen *screen);
+int32 nc_lastfm_screen_width(NcLastfmScreen *screen);
+int32 nc_lastfm_screen_height(NcLastfmScreen *screen);
 
 void native_lastfm_screen_init(NativeLastfmScreen *screen,
-                               int64 start_x, int64 width,
-                               int64 main_start_y, int64 main_height,
+                               int32 start_x, int32 width,
+                               int32 main_start_y, int32 main_height,
                                NcColor color, NcBorder border,
                                int32 lines_scrolled);
 void native_lastfm_screen_destroy(NativeLastfmScreen *screen);
 NcScreen *native_lastfm_screen_base(NativeLastfmScreen *screen);
 NcWindow *native_lastfm_screen_window(NativeLastfmScreen *screen);
 void native_lastfm_screen_set_geometry(NativeLastfmScreen *screen,
-                                       int64 start_x, int64 width,
-                                       int64 main_start_y,
-                                       int64 main_height);
+                                       int32 start_x, int32 width,
+                                       int32 main_start_y,
+                                       int32 main_height);
 bool native_lastfm_screen_queue_artist_info(NativeLastfmScreen *screen,
                                             char *artist, int32 artist_len,
                                             char *lang, int32 lang_len,

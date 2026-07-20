@@ -28,12 +28,12 @@ typedef struct NativeBrowserScreen {
     NcmBufferArray supported_extensions;
     NcmRegex filter_regex;
 
-    int64 start_x;
+    int32 start_x;
     int32 width;
-    int64 main_start_y;
+    int32 main_start_y;
     int32 main_height;
-    int64 lines_scrolled;
-    int64 title_scroll_beginning;
+    int32 lines_scrolled;
+    int32 title_scroll_beginning;
 
     enum DisplayMode active_display_mode;
 
@@ -46,8 +46,8 @@ typedef struct NativeBrowserScreen {
 } NativeBrowserScreen;
 
 void native_browser_screen_init(NativeBrowserScreen *screen,
-                                int64 start_x, int64 width,
-                                int64 main_start_y, int64 main_height,
+                                int32 start_x, int32 width,
+                                int32 main_start_y, int32 main_height,
                                 NcColor color, NcBorder border);
 void native_browser_screen_destroy(NativeBrowserScreen *screen);
 NcScreen *native_browser_screen_base(NativeBrowserScreen *screen);
@@ -56,11 +56,11 @@ NcBrowserEntryMenu *native_browser_screen_entries(
 NcMenu *native_browser_screen_menu(NativeBrowserScreen *screen);
 NcWindow *native_browser_screen_window(NativeBrowserScreen *screen);
 void native_browser_screen_set_geometry(NativeBrowserScreen *screen,
-                                        int64 start_x, int64 width,
-                                        int64 main_start_y,
-                                        int64 main_height);
+                                        int32 start_x, int32 width,
+                                        int32 main_start_y,
+                                        int32 main_height);
 void native_browser_screen_set_mouse_config(NativeBrowserScreen *screen,
-                                            int64 lines_scrolled,
+                                            int32 lines_scrolled,
                                             bool scroll_whole_page);
 void native_browser_screen_clear(NativeBrowserScreen *screen);
 bool native_browser_screen_add_item_copy(NativeBrowserScreen *screen,
@@ -134,7 +134,7 @@ bool native_browser_screen_search(NativeBrowserScreen *screen,
 bool native_browser_screen_render_item(NativeBrowserScreen *screen,
                                        NcBuffer *buffer,
                                        NcmMpdItem *item,
-                                       int64 available_width,
+                                       int32 available_width,
                                        bool selected,
                                        bool highlighted);
 bool native_browser_screen_item_to_string(NativeBrowserScreen *screen,

@@ -6,35 +6,35 @@
 typedef struct NcScrollpadScreen {
     NcScreen base;
 
-    int64 start_x;
-    int64 start_y;
-    int64 width;
-    int64 height;
+    int32 start_x;
+    int32 start_y;
+    int32 width;
+    int32 height;
 } NcScrollpadScreen;
 
 void nc_scrollpad_screen_init(NcScrollpadScreen *screen,
                               NcScreenCallbacks callbacks, void *user,
-                              int32 type, int64 start_x, int64 start_y,
-                              int64 width, int64 height);
+                              int32 type, int32 start_x, int32 start_y,
+                              int32 width, int32 height);
 void nc_scrollpad_screen_set_geometry(NcScrollpadScreen *screen,
-                                      int64 start_x, int64 start_y,
-                                      int64 width, int64 height);
+                                      int32 start_x, int32 start_y,
+                                      int32 width, int32 height);
 void nc_scrollpad_screen_set_main_area(NcScrollpadScreen *screen,
-                                       int64 start_x, int64 width,
-                                       int64 main_start_y,
-                                       int64 main_height);
+                                       int32 start_x, int32 width,
+                                       int32 main_start_y,
+                                       int32 main_height);
 void nc_scrollpad_screen_set_centered_box(NcScrollpadScreen *screen,
-                                          int64 cols, int64 lines,
-                                          int64 main_start_y,
-                                          int64 main_height,
-                                          int64 width_num,
-                                          int64 width_den,
-                                          int64 height_num,
-                                          int64 height_den);
+                                          int32 cols, int32 lines,
+                                          int32 main_start_y,
+                                          int32 main_height,
+                                          int32 width_num,
+                                          int32 width_den,
+                                          int32 height_num,
+                                          int32 height_den);
 NcScreen *nc_scrollpad_screen_base(NcScrollpadScreen *screen);
-int64 nc_scrollpad_screen_start_x(NcScrollpadScreen *screen);
-int64 nc_scrollpad_screen_start_y(NcScrollpadScreen *screen);
-int64 nc_scrollpad_screen_width(NcScrollpadScreen *screen);
-int64 nc_scrollpad_screen_height(NcScrollpadScreen *screen);
+int32 nc_scrollpad_screen_start_x(NcScrollpadScreen *screen);
+int32 nc_scrollpad_screen_start_y(NcScrollpadScreen *screen);
+int32 nc_scrollpad_screen_width(NcScrollpadScreen *screen);
+int32 nc_scrollpad_screen_height(NcScrollpadScreen *screen);
 
 #endif /* NCMPCPP_NC_SCROLLPAD_SCREEN_H */

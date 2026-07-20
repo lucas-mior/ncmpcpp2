@@ -22,24 +22,24 @@ struct NcSongInfoScreen {
     NcBuffer buffer;
     NcSongInfoHooks hooks;
 
-    int64 lines_scrolled;
+    int32 lines_scrolled;
 };
 
 void nc_song_info_screen_init(NcSongInfoScreen *screen,
                               NcSongInfoHooks hooks,
-                              int64 start_x, int64 width,
-                              int64 main_start_y, int64 main_height,
+                              int32 start_x, int32 width,
+                              int32 main_start_y, int32 main_height,
                               NcColor color, NcBorder border,
-                              int64 lines_scrolled);
+                              int32 lines_scrolled);
 void nc_song_info_screen_set_geometry(NcSongInfoScreen *screen,
-                                      int64 start_x, int64 width,
-                                      int64 main_start_y,
-                                      int64 main_height);
+                                      int32 start_x, int32 width,
+                                      int32 main_start_y,
+                                      int32 main_height);
 bool nc_song_info_screen_prepare_current(NcSongInfoScreen *screen);
 NcScreen *nc_song_info_screen_base(NcSongInfoScreen *screen);
-int64 nc_song_info_screen_start_x(NcSongInfoScreen *screen);
-int64 nc_song_info_screen_start_y(NcSongInfoScreen *screen);
-int64 nc_song_info_screen_width(NcSongInfoScreen *screen);
-int64 nc_song_info_screen_height(NcSongInfoScreen *screen);
+int32 nc_song_info_screen_start_x(NcSongInfoScreen *screen);
+int32 nc_song_info_screen_start_y(NcSongInfoScreen *screen);
+int32 nc_song_info_screen_width(NcSongInfoScreen *screen);
+int32 nc_song_info_screen_height(NcSongInfoScreen *screen);
 
 #endif /* NCMPCPP_NC_SONG_INFO_H */

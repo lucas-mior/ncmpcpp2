@@ -76,8 +76,8 @@ static void native_lastfm_flush(NativeLastfmScreen *screen);
 void
 nc_lastfm_screen_init(NcLastfmScreen *screen,
                       NcScreenCallbacks callbacks, void *user,
-                      int64 start_x, int64 width,
-                      int64 main_start_y, int64 main_height) {
+                      int32 start_x, int32 width,
+                      int32 main_start_y, int32 main_height) {
     nc_scrollpad_screen_init(&screen->scrollpad_screen,
                              callbacks,
                              user,
@@ -96,8 +96,8 @@ nc_lastfm_screen_init(NcLastfmScreen *screen,
 
 void
 nc_lastfm_screen_set_geometry(NcLastfmScreen *screen,
-                              int64 start_x, int64 width,
-                              int64 main_start_y, int64 main_height) {
+                              int32 start_x, int32 width,
+                              int32 main_start_y, int32 main_height) {
     nc_scrollpad_screen_set_main_area(&screen->scrollpad_screen,
                                       start_x,
                                       width,
@@ -111,22 +111,22 @@ nc_lastfm_screen_base(NcLastfmScreen *screen) {
     return nc_scrollpad_screen_base(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_lastfm_screen_start_x(NcLastfmScreen *screen) {
     return nc_scrollpad_screen_start_x(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_lastfm_screen_start_y(NcLastfmScreen *screen) {
     return nc_scrollpad_screen_start_y(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_lastfm_screen_width(NcLastfmScreen *screen) {
     return nc_scrollpad_screen_width(&screen->scrollpad_screen);
 }
 
-int64
+int32
 nc_lastfm_screen_height(NcLastfmScreen *screen) {
     return nc_scrollpad_screen_height(&screen->scrollpad_screen);
 }
@@ -153,8 +153,8 @@ native_lastfm_callbacks(void) {
 
 void
 native_lastfm_screen_init(NativeLastfmScreen *screen,
-                          int64 start_x, int64 width,
-                          int64 main_start_y, int64 main_height,
+                          int32 start_x, int32 width,
+                          int32 main_start_y, int32 main_height,
                           NcColor color, NcBorder border,
                           int32 lines_scrolled) {
     nc_lastfm_screen_init(&screen->screen,
@@ -227,8 +227,8 @@ native_lastfm_screen_window(NativeLastfmScreen *screen) {
 
 void
 native_lastfm_screen_set_geometry(NativeLastfmScreen *screen,
-                                  int64 start_x, int64 width,
-                                  int64 main_start_y, int64 main_height) {
+                                  int32 start_x, int32 width,
+                                  int32 main_start_y, int32 main_height) {
     nc_lastfm_screen_set_geometry(&screen->screen,
                                   start_x,
                                   width,
@@ -455,8 +455,8 @@ lastfm_switch_to_callback(NcScreen *screen) {
 static void
 lastfm_resize_callback(NcScreen *screen) {
     NativeLastfmScreen *lastfm;
-    int64 x;
-    int64 width;
+    int32 x;
+    int32 width;
 
     lastfm = lastfm_from_screen(screen);
     nc_screen_switcher_get_resize_params(screen, &x, &width, true);

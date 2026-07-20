@@ -5,18 +5,18 @@
 #include "curses/nc_window.h"
 
 typedef struct NcScrollpad {
-    int64 beginning;
-    int64 real_height;
+    int32 beginning;
+    int32 real_height;
 } NcScrollpad;
 
-void nc_scrollpad_init(NcScrollpad *scrollpad, int64 height);
+void nc_scrollpad_init(NcScrollpad *scrollpad, int32 height);
 void nc_scrollpad_refresh(NcScrollpad *scrollpad, NcWindow *window);
 void nc_scrollpad_resize(NcScrollpad *scrollpad, NcWindow *window,
-                         int64 new_width, int64 new_height);
+                         int32 new_width, int32 new_height);
 void nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
                          enum NcScroll where);
 void nc_scrollpad_prepare_flush(NcScrollpad *scrollpad, NcWindow *window,
-                                int64 generated_height);
+                                int32 generated_height);
 void nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window,
                         NcBuffer *buffer);
 void nc_scrollpad_reset(NcScrollpad *scrollpad);

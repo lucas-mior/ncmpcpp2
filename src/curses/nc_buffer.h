@@ -49,7 +49,7 @@ void nc_buffer_append_data(NcBuffer *buffer, char *data, int32 data_len);
 void nc_buffer_append_cstring(NcBuffer *buffer, char *string);
 void nc_buffer_append_char(NcBuffer *buffer, char ch);
 void nc_buffer_append_int32(NcBuffer *buffer, int32 value);
-void nc_buffer_append_int64(NcBuffer *buffer, int64 value);
+void nc_buffer_append_int64(NcBuffer *buffer, int32 value);
 
 void nc_buffer_add_color(NcBuffer *buffer, int32 position, NcColor color,
                          uint64 id);

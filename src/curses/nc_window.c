@@ -55,7 +55,7 @@ static NcReadlineState nc_readline_state;
 
 static void nc_window_assign_title(NcWindow *window,
                                    char *title, int32 title_len);
-static int32 nc_i32(int64 value);
+static int32 nc_i32(int32 value);
 static bool nc_window_has_title(NcWindow *window);
 static NcKey nc_window_get_input_char(NcWindow *window, int32 key);
 static NcKey nc_window_define_mouse_event(NcWindow *window, int32 type);
@@ -456,8 +456,8 @@ nc_window_init_empty(NcWindow *window) {
 }
 
 void
-nc_window_init(NcWindow *window, int64 start_x, int64 start_y,
-               int64 width, int64 height, char *title,
+nc_window_init(NcWindow *window, int32 start_x, int32 start_y,
+               int32 width, int32 height, char *title,
                int32 title_len, NcColor color, NcBorder border) {
     nc_window_init_empty(window);
 
@@ -531,7 +531,7 @@ nc_window_height(NcWindow *window) {
     return height;
 }
 
-int64
+int32
 nc_window_start_x(NcWindow *window) {
     if (window->border.enabled) {
         return window->start_x - 1;
@@ -540,9 +540,9 @@ nc_window_start_x(NcWindow *window) {
     return window->start_x;
 }
 
-int64
+int32
 nc_window_start_y(NcWindow *window) {
-    int64 start_y;
+    int32 start_y;
 
     start_y = window->start_y;
     if (window->border.enabled) {
@@ -705,7 +705,7 @@ nc_window_refresh(NcWindow *window) {
 }
 
 void
-nc_window_move_to(NcWindow *window, int64 new_x, int64 new_y) {
+nc_window_move_to(NcWindow *window, int32 new_x, int32 new_y) {
     window->start_x = new_x;
     window->start_y = new_y;
     if (window->border.enabled) {
@@ -720,7 +720,7 @@ nc_window_move_to(NcWindow *window, int64 new_x, int64 new_y) {
 
 void
 nc_window_adjust_dimensions(NcWindow *window,
-                            int64 width, int64 height) {
+                            int32 width, int32 height) {
     if (window->border.enabled) {
         if (width >= 2) {
             width -= 2;
@@ -740,14 +740,14 @@ nc_window_adjust_dimensions(NcWindow *window,
 }
 
 void
-nc_window_resize(NcWindow *window, int64 new_width, int64 new_height) {
+nc_window_resize(NcWindow *window, int32 new_width, int32 new_height) {
     nc_window_adjust_dimensions(window, new_width, new_height);
     nc_window_recreate(window, window->width, window->height);
     return;
 }
 
 void
-nc_window_recreate(NcWindow *window, int64 width, int64 height) {
+nc_window_recreate(NcWindow *window, int32 width, int32 height) {
     if (window->window) {
         delwin(window->window);
     }
@@ -861,9 +861,9 @@ enum NcPromptStatus
 nc_window_prompt(NcWindow *window, NcPrompt *prompt, char **result) {
     enum NcPromptStatus status;
     char *input;
-    int64 requested_width;
-    int64 available_width;
-    int64 prompt_width;
+    int32 requested_width;
+    int32 available_width;
+    int32 prompt_width;
 
     if (result == NULL) {
         return NC_PROMPT_ABORTED;
@@ -1312,7 +1312,7 @@ nc_window_assign_title(NcWindow *window, char *title, int32 title_len) {
 }
 
 static int32
-nc_i32(int64 value) {
+nc_i32(int32 value) {
     return (int32)value;
 }
 
