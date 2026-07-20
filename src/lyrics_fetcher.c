@@ -22,7 +22,6 @@ static void *lyrics_test_user;
 
 static NcmArrayItemCallbacks lyrics_fetcher_callbacks;
 
-static void lyrics_string_destroy(char **data, int32 *len, int32 *cap);
 static void lyrics_fetcher_array_init_item(void *item);
 static void lyrics_fetcher_array_destroy_item(void *item);
 static bool lyrics_name_to_type(char *name, int32 name_len,
@@ -67,6 +66,17 @@ NCM_ARRAY_DEFINE_RESERVE(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
 NCM_ARRAY_DEFINE_APPEND(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray,
                         NcmLyricsFetcherDef, &lyrics_fetcher_callbacks)
 
+static void
+lyrics_string_destroy(char **data, int32 *len, int32 *cap) {
+    if (*data) {
+        free2(*data, *cap);
+    }
+    *data = NULL;
+    *len = 0;
+    *cap = 0;
+    return;
+}
+
 static bool
 lyrics_string_set(char **data, int32 *len, int32 *cap, char *source,
                   int32 source_len) {
@@ -86,17 +96,6 @@ lyrics_string_set(char **data, int32 *len, int32 *cap, char *source,
     *len = source_len;
     *cap = new_cap;
     return true;
-}
-
-static void
-lyrics_string_destroy(char **data, int32 *len, int32 *cap) {
-    if (*data) {
-        free2(*data, *cap);
-    }
-    *data = NULL;
-    *len = 0;
-    *cap = 0;
-    return;
 }
 
 void
