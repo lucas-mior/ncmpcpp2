@@ -268,8 +268,7 @@ ncm_fs_directory_open(NcmFsDirectory *directory, char *path,
     }
 
     if ((dir = opendir(path_copy)) == NULL) {
-        ncm_fs_set_errno_error(error, errno, "opendir", path,
-                               path_len);
+        ncm_fs_set_errno_error(error, errno, "opendir", path, path_len);
         free2(path_copy, path_len + 1);
         return false;
     }
