@@ -1996,7 +1996,7 @@ visualizer_system_read_source(void *user, int32 fd,
     }
 
     r2 = (int32)r;
-    return r;
+    return r2;
 }
 
 static void
