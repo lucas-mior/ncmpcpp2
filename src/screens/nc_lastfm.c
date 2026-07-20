@@ -19,8 +19,8 @@
 
 #define NATIVE_LASTFM_DEFAULT_TITLE "Last.fm"
 #define NATIVE_LASTFM_FETCHING "Fetching information..."
-#define NATIVE_LASTFM_PROPERTY_ID ((uint64)-2)
-#define NATIVE_LASTFM_DEFAULT_PROPERTY_ID ((uint64)-1)
+#define NATIVE_LASTFM_PROPERTY_ID ((int64)-2)
+#define NATIVE_LASTFM_DEFAULT_PROPERTY_ID ((int64)-1)
 
 typedef struct NativeLastfmJob {
     NativeLastfmScreen *screen;
