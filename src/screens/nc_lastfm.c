@@ -203,12 +203,14 @@ native_lastfm_screen_destroy(NativeLastfmScreen *screen) {
     ncm_buffer_destroy(&screen->search_constraint);
     nc_buffer_destroy(&screen->buffer);
     nc_window_destroy(&screen->window);
+
     screen->title = NULL;
     screen->title_len = 0;
     screen->title_cap = 0;
     screen->has_service = false;
     screen->refresh_window = false;
     screen->initialized = false;
+
     return;
 }
 
