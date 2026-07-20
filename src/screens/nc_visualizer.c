@@ -309,8 +309,7 @@ visualizer_fft_init(NativeVisualizerScreen *screen, int32 dft_size,
     fft = &screen->fft;
     *fft = (NativeVisualizerFftState){0};
     fft->dft_nonzero_size = NATIVE_VISUALIZER_DFT_BASE_SIZE
-                            *(2*(int32)dft_size
-                              + NATIVE_VISUALIZER_DFT_PADDING);
+                            *(2*dft_size + NATIVE_VISUALIZER_DFT_PADDING);
     fft->dft_total_size = NATIVE_VISUALIZER_DFT_TOTAL_SIZE;
     fft->results_len = fft->dft_total_size / 2 + 1;
     fft->dynamic_range = 100.0 - gain;
@@ -620,14 +619,13 @@ native_visualizer_screen_find_output_id(
 
     found = false;
     for (int32 i = 0; i < outputs.count; i += 1) {
-        NcmMpdOutput *output;
+        NcmMpdOutput *output = outputs.items + i;
 
-        output = outputs.items + i;
         if (STREQUAL(screen->output_name.data,
                              screen->output_name.len,
                              output->name,
                              output->name_len)) {
-            screen->output_id = (int32)output->id;
+            screen->output_id = output->id;
             found = true;
             break;
         }
@@ -936,8 +934,8 @@ native_visualizer_screen_init_visualization(
         return;
     }
 
-    rendered_cap = (int32)rendered_samples;
-    incoming_cap = (int32)incoming_samples;
+    rendered_cap = rendered_samples;
+    incoming_cap = incoming_samples;
     channel_cap = 0;
     if (screen->stereo) {
         channel_cap = rendered_cap / 2;
@@ -1151,7 +1149,7 @@ visualizer_draw_wave(NativeVisualizerScreen *screen, int16 *samples,
     int32 samples_per_column;
     int32 previous_y;
 
-    width = (int32)nc_window_width(&screen->window);
+    width = nc_window_width(&screen->window);
     if ((samples == NULL) || (samples_len <= 0)
         || (width <= 0) || (height <= 0)) {
         return;
@@ -1175,7 +1173,7 @@ visualizer_draw_wave(NativeVisualizerScreen *screen, int16 *samples,
         for (int32 j = 0; j < samples_per_column; j += 1) {
             sum += samples[x*samples_per_column + j];
         }
-        point_y = (int32)(sum / samples_per_column);
+        point_y = sum / samples_per_column;
         point_y = (int32)((double)point_y*(double)height/65536.0);
         visualizer_draw_character(
             screen, x, base_y + point_y,
@@ -1217,7 +1215,7 @@ visualizer_draw_wave_filled(NativeVisualizerScreen *screen,
     int32 samples_per_column;
     bool flipped;
 
-    width = (int32)nc_window_width(&screen->window);
+    width = nc_window_width(&screen->window);
     if ((samples == NULL) || (samples_len <= 0)
         || (width <= 0) || (height <= 0)) {
         return;
@@ -1275,7 +1273,7 @@ visualizer_draw_ellipse(NativeVisualizerScreen *screen, int16 *samples,
     int32 half_height;
     double angle_multiplier;
 
-    width = (int32)nc_window_width(&screen->window);
+    width = nc_window_width(&screen->window);
     if ((samples == NULL) || (samples_len <= 0)
         || (width <= 0) || (height <= 0)) {
         return;
@@ -1325,7 +1323,7 @@ visualizer_draw_ellipse_stereo(NativeVisualizerScreen *screen,
     int32 bottom_half_height;
     int32 radius;
 
-    width = (int32)nc_window_width(&screen->window);
+    width = nc_window_width(&screen->window);
     height = (int32)nc_window_height(&screen->window);
     if ((left == NULL) || (right == NULL) || (samples_len <= 0)
         || (width <= 0) || (height <= 0)) {
@@ -1378,7 +1376,7 @@ visualizer_generate_frequency_space(NativeVisualizerScreen *screen) {
     int32 width;
 
     fft = &screen->fft;
-    width = (int32)nc_window_width(&screen->window);
+    width = nc_window_width(&screen->window);
     fft->dft_frequency_space_len = 0;
     if ((width <= 0) || (fft->hz_min <= 0.0)
         || (fft->hz_max <= fft->hz_min)) {
@@ -1625,7 +1623,7 @@ visualizer_draw_frequency(NativeVisualizerScreen *screen,
     bool flipped;
 
     fft = &screen->fft;
-    width = (int32)nc_window_width(&screen->window);
+    width = nc_window_width(&screen->window);
     if ((samples == NULL) || (samples_len <= 0)
         || (width <= 0) || (height <= 0) || (fft->plan == NULL)
         || (fft->input == NULL) || (fft->output == NULL)) {
@@ -2145,12 +2143,11 @@ visualizer_read_samples(NativeVisualizerScreen *screen) {
 static void
 visualizer_prepare_drawing(NativeVisualizerScreen *screen) {
 #if defined(HAVE_FFTW3_H)
-    int32 width;
+    int32 width = nc_window_width(&screen->window);
 
-    width = nc_window_width(&screen->window);
-    if ((width > 0) && (width <= INT32_MAX)) {
+    if (width > 0) {
         visualizer_generate_frequency_space(screen);
-        visualizer_fft_reserve_bar_heights(screen, (int32)width);
+        visualizer_fft_reserve_bar_heights(screen, width);
     }
 #else
     (void)screen;
