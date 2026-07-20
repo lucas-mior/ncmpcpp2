@@ -319,8 +319,8 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
     }
 
     if (errno) {
-        ncm_fs_set_errno_error(error, errno, "readdir",
-                               directory->path, directory->path_len);
+        ncm_fs_set_errno_error(error, errno,
+                               "readdir", directory->path, directory->path_len);
     } else {
         ncm_error_clear(error);
     }
