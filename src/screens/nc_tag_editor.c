@@ -2583,10 +2583,12 @@ tag_editor_tag_type_row_changed(NativeTagEditorScreen *screen) {
     if (screen == NULL) {
         return false;
     }
+
     menu = nc_editor_string_menu_base(&screen->tag_types);
     highlight = nc_menu_highlight(menu);
     changed = screen->last_tag_type_highlight != highlight;
     screen->last_tag_type_highlight = highlight;
+
     return changed;
 }
 
