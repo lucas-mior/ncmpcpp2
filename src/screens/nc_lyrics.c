@@ -767,12 +767,12 @@ lyrics_window_timeout_callback(NcScreen *screen) {
 
 static char *
 lyrics_title_callback(NcScreen *screen) {
-    NativeLyricsScreen *lyrics = lyrics_from_screen(screen);
     NcmBuffer song_title;
     NcmBuffer scroll_buffer;
     int32 scroll_begin;
     int32 scroll_width;
     char separator[] = " ** ";
+    NativeLyricsScreen *lyrics = lyrics_from_screen(screen);
 
     ncm_buffer_clear(&lyrics->title);
     ncm_buffer_append(&lyrics->title, STRLIT_ARGS(NATIVE_LYRICS_TITLE));
