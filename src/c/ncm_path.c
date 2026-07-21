@@ -28,7 +28,7 @@ ncm_path_last_index_of(char *path, int32 path_len, char needle) {
 }
 
 bool
-ncm_path_expand_home(NcmBuffer *path, NcmError *error) {
+ncm_path_expand_home(StrBuilder *path, NcmError *error) {
     char *home;
     int32 home_len;
     int32 tilde;
@@ -79,7 +79,7 @@ ncm_path_expand_home(NcmBuffer *path, NcmError *error) {
                       STRLIT_ARGS("expanded path is too long"));
         return false;
     }
-    ncm_buffer_reserve(path, home_len - 1);
+    sb_reserve(path, home_len - 1);
     memmove64(path->data + tilde + home_len,
             path->data + tilde + 1, old_len - tilde);
     memcpy64(path->data + tilde, home, home_len);

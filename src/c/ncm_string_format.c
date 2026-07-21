@@ -11,7 +11,7 @@
 #include "cbase/util.c"
 
 static void
-ncm_string_format_append_number(NcmBuffer *out, char *format,
+ncm_string_format_append_number(StrBuilder *out, char *format,
                                 NcmStringFormatArg *arg) {
     char buffer[128];
     int32 len;
@@ -40,12 +40,12 @@ ncm_string_format_append_number(NcmBuffer *out, char *format,
     if (len >= SIZEOF(buffer)) {
         len = SIZEOF(buffer) - 1;
     }
-    ncm_buffer_append(out, buffer, len);
+    sb_append(out, buffer, len);
     return;
 }
 
 static void
-ncm_string_format_append_arg(NcmBuffer *out, NcmStringFormatArg *arg) {
+ncm_string_format_append_arg(StrBuilder *out, NcmStringFormatArg *arg) {
     char ch;
 
     if (arg == NULL) {
@@ -54,7 +54,7 @@ ncm_string_format_append_arg(NcmBuffer *out, NcmStringFormatArg *arg) {
 
     switch (arg->type) {
     case NCM_STRING_FORMAT_ARG_STRING:
-        ncm_buffer_append(out, arg->value.string.data,
+        sb_append(out, arg->value.string.data,
                           arg->value.string.len);
         break;
     case NCM_STRING_FORMAT_ARG_I64:
@@ -68,13 +68,13 @@ ncm_string_format_append_arg(NcmBuffer *out, NcmStringFormatArg *arg) {
         break;
     case NCM_STRING_FORMAT_ARG_CHAR:
         ch = arg->value.ch;
-        ncm_buffer_append(out, &ch, 1);
+        sb_append(out, &ch, 1);
         break;
     case NCM_STRING_FORMAT_ARG_BOOL:
         if (arg->value.boolean) {
-            ncm_buffer_append(out, STRLIT_ARGS("1"));
+            sb_append(out, STRLIT_ARGS("1"));
         } else {
-            ncm_buffer_append(out, STRLIT_ARGS("0"));
+            sb_append(out, STRLIT_ARGS("0"));
         }
         break;
     case NCM_STRING_FORMAT_ARG_LAST:
@@ -122,7 +122,7 @@ ncm_string_format_arg_u64(uint64 value) {
 }
 
 void
-ncm_string_format_apply(NcmBuffer *out, char *format, int32 format_len,
+ncm_string_format_apply(StrBuilder *out, char *format, int32 format_len,
                         NcmStringFormatArg *args, int32 args_len) {
     int32 next_arg;
     int32 i;
@@ -137,14 +137,14 @@ ncm_string_format_apply(NcmBuffer *out, char *format, int32 format_len,
         uint8 next;
 
         if ((format[i] != '%') || (i + 1 >= format_len)) {
-            ncm_buffer_append_byte(out, format[i]);
+            sb_append_byte(out, format[i]);
             i += 1;
             continue;
         }
 
         next = (uint8)format[i + 1];
         if (next == '%') {
-            ncm_buffer_append_byte(out, '%');
+            sb_append_byte(out, '%');
             i += 2;
             continue;
         }
@@ -176,7 +176,7 @@ ncm_string_format_apply(NcmBuffer *out, char *format, int32 format_len,
             }
         }
 
-        ncm_buffer_append_byte(out, format[i]);
+        sb_append_byte(out, format[i]);
         i += 1;
     }
     return;

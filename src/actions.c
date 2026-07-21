@@ -1145,12 +1145,12 @@ static bool action_runtime_search_prompt_apply(ActionRuntimeSearchPrompt *state,
                                                char *text, int32 text_len,
                                                bool *found, NcmError *error);
 static bool action_runtime_search_prompt_hook(char *text, void *user);
-static bool action_runtime_prompt_result(NcmBuffer *result, NcPrompt *prompt,
+static bool action_runtime_prompt_result(StrBuilder *result, NcPrompt *prompt,
                                          NcWindow *window);
 static bool action_runtime_prompt_string(char *prefix, int32 prefix_len,
                                          char *initial_text, bool remember,
                                          NcPromptHook hook, void *hook_user,
-                                         NcmBuffer *result);
+                                         StrBuilder *result);
 static bool action_runtime_confirm(char *message, int32 message_len);
 static bool action_runtime_parse_seek_position(char *text, int32 text_len,
                                                int32 total, int32 *position);
@@ -1177,9 +1177,10 @@ static bool action_runtime_add_selected_songs(bool play);
 static bool action_runtime_add_playlist_editor_item(bool play);
 static bool action_runtime_delete_playlist_items(void);
 static bool action_runtime_delete_browser_items(void);
-static bool action_runtime_browser_item_name(NcmMpdItem *item, NcmBuffer *name);
+static bool action_runtime_browser_item_name(NcmMpdItem *item,
+                                             StrBuilder *name);
 static void action_runtime_print_renamed(char *prefix, int32 prefix_len,
-                                         NcmBuffer *name);
+                                         StrBuilder *name);
 static bool action_runtime_delete_playlist_editor_items(void);
 static bool action_runtime_delete_stored_playlists(void);
 static bool action_runtime_clear_playlist(bool main_playlist);
@@ -2120,8 +2121,8 @@ action_runtime_print_format_string(char *format, int32 format_len, char *text,
 }
 
 bool
-ncm_action_immediate_command_prompt_should_stop(NcmBuffer *previous, char *text,
-                                                int32 text_len) {
+ncm_action_immediate_command_prompt_should_stop(StrBuilder *previous,
+                                                char *text, int32 text_len) {
     NcmCommand *command;
 
     if (previous == NULL) {
@@ -2138,7 +2139,7 @@ ncm_action_immediate_command_prompt_should_stop(NcmBuffer *previous, char *text,
         return false;
     }
 
-    if (!ncm_buffer_set(previous, text, text_len)) {
+    if (!sb_set(previous, text, text_len)) {
         return false;
     }
 
@@ -2314,7 +2315,7 @@ action_runtime_search_prompt_hook(char *text, void *user) {
 }
 
 static bool
-action_runtime_prompt_result(NcmBuffer *result, NcPrompt *prompt,
+action_runtime_prompt_result(StrBuilder *result, NcPrompt *prompt,
                              NcWindow *window) {
     enum NcPromptStatus status;
     char *text;
@@ -2337,7 +2338,7 @@ action_runtime_prompt_result(NcmBuffer *result, NcPrompt *prompt,
     }
 
     text_len = optional_strlen32(text);
-    ok = ncm_buffer_set(result, text, text_len);
+    ok = sb_set(result, text, text_len);
     nc_window_prompt_result_destroy(text);
     return ok;
 }
@@ -2345,7 +2346,7 @@ action_runtime_prompt_result(NcmBuffer *result, NcPrompt *prompt,
 static bool
 action_runtime_prompt_string(char *prefix, int32 prefix_len, char *initial_text,
                              bool remember, NcPromptHook hook, void *hook_user,
-                             NcmBuffer *result) {
+                             StrBuilder *result) {
     NcmStatusbarScopedLock lock;
     NcPrompt prompt;
     NcWindow *window;
@@ -3044,7 +3045,7 @@ action_runtime_song_tag_buffer(NcmSong *song, enum NcmSongGetter getter) {
 
 static bool
 action_runtime_song_tag_at(int32 pos, enum NcmSongGetter getter,
-                           NcmBuffer *tag) {
+                           StrBuilder *tag) {
     NcmMpdItem *item;
     NcSearchRow *row;
     NcMenu *menu;
@@ -3735,14 +3736,14 @@ action_runtime_delete_browser_items(void) {
 }
 
 static bool
-action_runtime_browser_item_name(NcmMpdItem *item, NcmBuffer *name) {
+action_runtime_browser_item_name(NcmMpdItem *item, StrBuilder *name) {
     NcmStringView view;
     int32 basename;
 
     if ((item == NULL) || (name == NULL)) {
         return false;
     }
-    ncm_buffer_clear(name);
+    sb_clear(name);
     ncm_string_view_clear(&view);
 
     switch (ncm_mpd_item_kind(item)) {
@@ -3769,12 +3770,12 @@ action_runtime_browser_item_name(NcmMpdItem *item, NcmBuffer *name) {
     }
 
     basename = ncm_path_basename_start(view.data, view.len);
-    ncm_buffer_append(name, view.data + basename, view.len - basename);
+    sb_append(name, view.data + basename, view.len - basename);
     return true;
 }
 
 static void
-action_runtime_print_renamed(char *prefix, int32 prefix_len, NcmBuffer *name) {
+action_runtime_print_renamed(char *prefix, int32 prefix_len, StrBuilder *name) {
     StrBuilder message;
 
     if (name == NULL) {
@@ -6004,22 +6005,23 @@ action_runtime_song_name_or_uri_view(NcmSong *song, NcmStringView *view) {
 }
 
 static bool
-action_runtime_song_file_path(NcmSong *song, NcmBuffer *path) {
+action_runtime_song_file_path(NcmSong *song, StrBuilder *path) {
     NcmStringView uri;
 
-    ncm_buffer_clear(path);
+    sb_clear(path);
     if (!action_runtime_song_uri_view(song, &uri)) {
         return false;
     }
 
-    ncm_buffer_append(path, Config.mpd_music_dir, Config.mpd_music_dir_len);
-    ncm_buffer_append(path, uri.data, uri.len);
+    sb_append(path, Config.mpd_music_dir, Config.mpd_music_dir_len);
+    sb_append(path, uri.data, uri.len);
     return true;
 }
 
 static bool
-action_runtime_shared_directory_update(NcmBuffer *shared_directory, bool *valid,
-                                       char *directory, int32 directory_len) {
+action_runtime_shared_directory_update(StrBuilder *shared_directory,
+                                       bool *valid, char *directory,
+                                       int32 directory_len) {
     StrBuilder shared;
 
     if ((shared_directory == NULL) || (valid == NULL)) {
@@ -6032,13 +6034,13 @@ action_runtime_shared_directory_update(NcmBuffer *shared_directory, bool *valid,
 
     if (!*valid) {
         *valid = true;
-        return ncm_buffer_set(shared_directory, directory, directory_len);
+        return sb_set(shared_directory, directory, directory_len);
     }
 
     shared = ncm_string_shared_directory(shared_directory->data,
                                          shared_directory->len, directory,
                                          directory_len);
-    ncm_buffer_destroy(shared_directory);
+    sb_free(shared_directory);
     *shared_directory = shared;
     return true;
 }
@@ -6100,7 +6102,7 @@ action_runtime_print_album_file_error(char *format, int32 format_len,
 }
 
 static bool
-action_runtime_update_tag_directory(NcmBuffer *shared_directory, bool valid) {
+action_runtime_update_tag_directory(StrBuilder *shared_directory, bool valid) {
     NcmError error;
     char *directory;
 
@@ -6416,7 +6418,7 @@ static bool
 action_runtime_edit_lyrics(void) {
     NativeLyricsScreen *lyrics;
     NcmSong *song;
-    NcmBuffer *filename;
+    StrBuilder *filename;
     StrBuilder escaped;
     StrBuilder command;
     NcmError error;

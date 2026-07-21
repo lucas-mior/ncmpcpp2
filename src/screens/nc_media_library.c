@@ -574,7 +574,7 @@ native_media_library_screen_column_state(
     return &screen->column_state[column];
 }
 
-NcmBuffer *
+StrBuilder *
 native_media_library_screen_active_filter_constraint(
     NativeMediaLibraryScreen *screen
 ) {
@@ -586,7 +586,7 @@ native_media_library_screen_active_filter_constraint(
     return &state->filter_constraint;
 }
 
-NcmBuffer *
+StrBuilder *
 native_media_library_screen_active_search_constraint(
     NativeMediaLibraryScreen *screen
 ) {
@@ -669,7 +669,7 @@ native_media_library_screen_current_album_value(
 void
 native_media_library_screen_format_tag_row(
     NativeMediaLibraryScreen *screen, NcMediaLibraryTagRow *row,
-    NcmBuffer *output
+    StrBuilder *output
 ) {
     StrBuilder converted;
 
@@ -677,20 +677,20 @@ native_media_library_screen_format_tag_row(
     if (output == NULL) {
         return;
     }
-    ncm_buffer_clear(output);
+    sb_clear(output);
     if (row == NULL) {
         return;
     }
     if ((row->tag == NULL) || (row->tag_len <= 0)) {
         if (Config.empty_tag && (Config.empty_tag_len > 0)) {
-            ncm_buffer_append(output, Config.empty_tag,
+            sb_append(output, Config.empty_tag,
                               Config.empty_tag_len);
         }
         return;
     }
 
     converted = ncm_charset_utf8_to_locale(row->tag, row->tag_len);
-    ncm_buffer_append(output, converted.data, converted.len);
+    sb_append(output, converted.data, converted.len);
     sb_free(&converted);
     return;
 }
@@ -698,7 +698,7 @@ native_media_library_screen_format_tag_row(
 void
 native_media_library_screen_format_album_row(
     NativeMediaLibraryScreen *screen, NcMediaLibraryAlbumRow *row,
-    NcmBuffer *output
+    StrBuilder *output
 ) {
     StrBuilder raw;
     StrBuilder converted;
@@ -706,12 +706,12 @@ native_media_library_screen_format_album_row(
     if (output == NULL) {
         return;
     }
-    ncm_buffer_clear(output);
+    sb_clear(output);
     if (row == NULL) {
         return;
     }
     if (row->all_tracks_entry) {
-        ncm_buffer_append(output, STRLIT_ARGS("All tracks"));
+        sb_append(output, STRLIT_ARGS("All tracks"));
         return;
     }
 
@@ -743,7 +743,7 @@ native_media_library_screen_format_album_row(
     }
 
     converted = ncm_charset_utf8_to_locale(raw.data, raw.len);
-    ncm_buffer_append(output, converted.data, converted.len);
+    sb_append(output, converted.data, converted.len);
     sb_free(&converted);
     sb_free(&raw);
     return;
@@ -4185,7 +4185,7 @@ native_library_free_owned_string(char **data, int32 *len, int32 *cap) {
 }
 
 static char *
-native_library_query_cstring(NcmBuffer *buffer, char *string,
+native_library_query_cstring(StrBuilder *buffer, char *string,
                              int32 string_len) {
     if (buffer == NULL) {
         return NULL;
@@ -4200,11 +4200,11 @@ native_library_query_cstring(NcmBuffer *buffer, char *string,
         return NULL;
     }
 
-    ncm_buffer_clear(buffer);
+    sb_clear(buffer);
     if (string_len > 0) {
-        ncm_buffer_append(buffer, string, string_len);
+        sb_append(buffer, string, string_len);
     }
-    ncm_buffer_append_byte(buffer, '\0');
+    sb_append_byte(buffer, '\0');
     buffer->len = string_len;
     return buffer->data;
 }

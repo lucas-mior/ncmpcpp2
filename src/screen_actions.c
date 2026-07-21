@@ -25,7 +25,7 @@ current_screen_is(int32 type) {
     return nc_screen_type(screen) == type;
 }
 
-static NcmBuffer *
+static StrBuilder *
 current_screen_filter_buffer(void) {
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST)) {
         return &native_c_screen_playlist()->filter_constraint;
@@ -65,7 +65,7 @@ current_screen_filter_buffer(void) {
     return NULL;
 }
 
-static NcmBuffer *
+static StrBuilder *
 current_screen_search_buffer(void) {
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST)) {
         return &native_c_screen_playlist()->search_constraint;
@@ -119,12 +119,12 @@ current_screen_search_buffer(void) {
 
 static bool
 current_screen_set_search_constraint(char *pattern, int32 pattern_len) {
-    NcmBuffer *buffer;
+    StrBuilder *buffer;
 
     if ((buffer = current_screen_search_buffer()) == NULL) {
         return false;
     }
-    return ncm_buffer_set(buffer, pattern, pattern_len);
+    return sb_set(buffer, pattern, pattern_len);
 }
 
 static bool
@@ -142,7 +142,7 @@ current_screen_search_error(NcmError *error) {
 
 static void
 current_screen_clear_current_search_constraint(void) {
-    NcmBuffer *buffer;
+    StrBuilder *buffer;
 
     if (current_screen_is(NC_SCREEN_TYPE_HELP)) {
         nc_help_screen_clear_search(native_c_screen_help_typed());
@@ -192,7 +192,7 @@ current_screen_clear_current_search_constraint(void) {
     }
 #endif
     if ((buffer = current_screen_search_buffer())) {
-        ncm_buffer_clear(buffer);
+        sb_clear(buffer);
     }
     return;
 }
@@ -218,7 +218,7 @@ current_screen_allows_filter(void) {
 
 NcmStringView
 current_screen_current_filter(void) {
-    NcmBuffer *buffer;
+    StrBuilder *buffer;
 
     if ((buffer = current_screen_filter_buffer()) == NULL) {
         return ncm_string_view_make(NULL, 0);
@@ -270,7 +270,7 @@ current_screen_apply_filter(char *pattern, int32 pattern_len, NcmError *error) {
 
 NcmStringView
 current_screen_current_search_constraint(void) {
-    NcmBuffer *buffer;
+    StrBuilder *buffer;
 
     if ((buffer = current_screen_search_buffer()) == NULL) {
         return ncm_string_view_make(NULL, 0);

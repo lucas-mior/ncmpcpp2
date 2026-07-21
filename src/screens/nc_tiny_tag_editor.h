@@ -59,7 +59,7 @@
 typedef struct NativeTinyTagEditorHooks {
     enum NativeTinyTagEditorPromptResult (*prompt)(
         void *user, char *label, int32 label_len, NcmStringView initial,
-        NcmBuffer *result);
+        StrBuilder *result);
     void (*status_message)(void *user, char *message, int32 message_len);
     bool (*taglib_open)(void *user, NcmTaglibFile *file, char *path,
                         int32 path_len);
@@ -118,7 +118,7 @@ enum NativeTinyTagEditorOpenResult
 native_tiny_tag_editor_screen_open_song(
     NativeTinyTagEditorScreen *screen, NcmSong *song,
     char *music_dir, int32 music_dir_len, char *tag_separator,
-    int32 tag_separator_len, bool show_duplicate_tags, NcmBuffer *path);
+    int32 tag_separator_len, bool show_duplicate_tags, StrBuilder *path);
 bool native_tiny_tag_editor_screen_reload_rows(
     NativeTinyTagEditorScreen *screen,
     NcmTaglibAudioProperties *properties,

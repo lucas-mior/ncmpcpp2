@@ -70,7 +70,7 @@ static void playlist_editor_destroy_regexes(
     NativePlaylistEditorScreen *screen);
 static void playlist_editor_update_titles(
     NativePlaylistEditorScreen *screen, bool update_windows);
-static void playlist_editor_append_int64(NcmBuffer *buffer, int32 value);
+static void playlist_editor_append_int64(StrBuilder *buffer, int32 value);
 static void playlist_editor_reset_content_timer(
     NativePlaylistEditorScreen *screen);
 static void playlist_editor_clear_playlist_filter(
@@ -90,9 +90,9 @@ static bool playlist_editor_locate_song_in_playlist_range(
     NcmSong *song, int32 first, int32 last, NcmError *error);
 static bool playlist_editor_show_screen(NativePlaylistEditorScreen *screen);
 static bool playlist_editor_store_current_playlist_path(
-    NativePlaylistEditorScreen *screen, NcmBuffer *buffer);
+    NativePlaylistEditorScreen *screen, StrBuilder *buffer);
 static bool playlist_editor_restore_playlist_path(
-    NativePlaylistEditorScreen *screen, NcmBuffer *buffer);
+    NativePlaylistEditorScreen *screen, StrBuilder *buffer);
 static bool playlist_editor_store_current_song(
     NativePlaylistEditorScreen *screen, NcmSong *song);
 static bool playlist_editor_restore_content_song(
@@ -1449,13 +1449,13 @@ playlist_editor_update_titles(NativePlaylistEditorScreen *screen,
 }
 
 static void
-playlist_editor_append_int64(NcmBuffer *buffer, int32 value) {
+playlist_editor_append_int64(StrBuilder *buffer, int32 value) {
     char digits[32];
     int32 len;
 
     len = 0;
     if (value == 0) {
-        ncm_buffer_append_byte(buffer, '0');
+        sb_append_byte(buffer, '0');
         return;
     }
     while (value > 0) {
@@ -1464,7 +1464,7 @@ playlist_editor_append_int64(NcmBuffer *buffer, int32 value) {
         len += 1;
     }
     for (int32 i = len - 1; i >= 0; i -= 1) {
-        ncm_buffer_append_byte(buffer, digits[i]);
+        sb_append_byte(buffer, digits[i]);
     }
     return;
 }
@@ -1713,23 +1713,23 @@ playlist_editor_show_screen(NativePlaylistEditorScreen *screen) {
 
 static bool
 playlist_editor_store_current_playlist_path(NativePlaylistEditorScreen *screen,
-                                            NcmBuffer *buffer) {
+                                            StrBuilder *buffer) {
     char *path;
     int32 path_len;
 
     if (buffer == NULL) {
         return false;
     }
-    ncm_buffer_clear(buffer);
+    sb_clear(buffer);
     if (!playlist_editor_current_playlist_path(screen, &path, &path_len)) {
         return false;
     }
-    return ncm_buffer_set(buffer, path, path_len);
+    return sb_set(buffer, path, path_len);
 }
 
 static bool
 playlist_editor_restore_playlist_path(NativePlaylistEditorScreen *screen,
-                                      NcmBuffer *buffer) {
+                                      StrBuilder *buffer) {
     NcMenu *menu;
 
     if ((screen == NULL) || (buffer == NULL) || (buffer->len <= 0)) {

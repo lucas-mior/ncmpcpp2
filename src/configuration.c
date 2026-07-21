@@ -75,17 +75,17 @@ ncm_configuration_options_destroy(NcmConfigurationOptions *options) {
 static bool
 command_line_options_append_path(NcmBufferArray *paths, char *path,
                                  int32 path_len) {
-    NcmBuffer *slot;
+    StrBuilder *slot;
 
     if ((slot = ncm_buffer_array_append(paths)) == NULL) {
         return false;
     }
-    ncm_buffer_append(slot, path, path_len);
+    sb_append(slot, path, path_len);
     return true;
 }
 
 static bool
-configuration_append_buffer_path(NcmBufferArray *paths, NcmBuffer *path) {
+configuration_append_buffer_path(NcmBufferArray *paths, StrBuilder *path) {
     return command_line_options_append_path(paths, path->data, path->len);
 }
 
@@ -175,9 +175,9 @@ configuration_discover_default_paths(NcmBufferArray *config_paths,
 }
 
 static bool
-configuration_copy_string(NcmBuffer *buffer, char *string, int32 string_len) {
-    ncm_buffer_clear(buffer);
-    ncm_buffer_append(buffer, string, string_len);
+configuration_copy_string(StrBuilder *buffer, char *string, int32 string_len) {
+    sb_clear(buffer);
+    sb_append(buffer, string, string_len);
     return true;
 }
 
@@ -520,7 +520,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
         }
         if (options->config_paths.len == 0) {
             for (int32 j = 0; j < default_config_paths.len; j += 1) {
-                NcmBuffer *path;
+                StrBuilder *path;
 
                 path = &default_config_paths.items[j];
                 command_line_options_append_path(&options->config_paths,
@@ -529,7 +529,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
         }
         if (options->bindings_paths.len == 0) {
             for (int32 j = 0; j < default_bindings_paths.len; j += 1) {
-                NcmBuffer *path;
+                StrBuilder *path;
 
                 path = &default_bindings_paths.items[j];
                 command_line_options_append_path(&options->bindings_paths,
@@ -568,7 +568,7 @@ configuration_print_usage(char *program_name) {
     printf("  -c, --config PATH            specify configuration file(s)\n");
     printf("                               default: ");
     for (int32 i = 0; i < config_paths.len; i += 1) {
-        NcmBuffer *path;
+        StrBuilder *path;
 
         path = &config_paths.items[i];
         if (i > 0) {
@@ -583,7 +583,7 @@ configuration_print_usage(char *program_name) {
     printf("  -b, --bindings PATH          specify bindings file(s)\n");
     printf("                               default: ");
     for (int32 i = 0; i < bindings_paths.len; i += 1) {
-        NcmBuffer *path;
+        StrBuilder *path;
 
         path = &bindings_paths.items[i];
         if (i > 0) {
@@ -637,7 +637,7 @@ configuration_make_string_views(NcmStringViewArray *views,
     ncm_string_view_array_init(views);
     for (int32 i = 0; i < buffers->len; i += 1) {
         NcmStringView *view;
-        NcmBuffer *buffer;
+        StrBuilder *buffer;
 
         buffer = &buffers->items[i];
         if ((view = ncm_string_view_array_append(views)) == NULL) {
@@ -686,7 +686,7 @@ static bool
 configuration_read_bindings(NcmConfigurationOptions *options, NcmError *error) {
     ncm_bindings_configuration_clear(&Bindings);
     for (int32 i = 0; i < options->bindings_paths.len; i += 1) {
-        NcmBuffer *path;
+        StrBuilder *path;
 
         path = &options->bindings_paths.items[i];
         if (!ncm_path_expand_home(path, error)) {

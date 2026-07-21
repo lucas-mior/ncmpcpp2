@@ -185,9 +185,9 @@ bool native_media_library_screen_column_visible(
 NativeMediaLibraryColumnState *native_media_library_screen_column_state(
     NativeMediaLibraryScreen *screen,
     enum NativeMediaLibraryColumn column);
-NcmBuffer *native_media_library_screen_active_filter_constraint(
+StrBuilder *native_media_library_screen_active_filter_constraint(
     NativeMediaLibraryScreen *screen);
-NcmBuffer *native_media_library_screen_active_search_constraint(
+StrBuilder *native_media_library_screen_active_search_constraint(
     NativeMediaLibraryScreen *screen);
 NcMediaLibraryTagRow *native_media_library_screen_current_tag(
     NativeMediaLibraryScreen *screen);
@@ -199,10 +199,10 @@ bool native_media_library_screen_current_album_value(
     NativeMediaLibraryScreen *screen, char **album, int32 *album_len);
 void native_media_library_screen_format_tag_row(
     NativeMediaLibraryScreen *screen, NcMediaLibraryTagRow *row,
-    NcmBuffer *output);
+    StrBuilder *output);
 void native_media_library_screen_format_album_row(
     NativeMediaLibraryScreen *screen, NcMediaLibraryAlbumRow *row,
-    NcmBuffer *output);
+    StrBuilder *output);
 void native_media_library_screen_format_song_row(
     NativeMediaLibraryScreen *screen, NcmSong *song, NcBuffer *output);
 

@@ -221,7 +221,7 @@ enum NativeTinyTagEditorOpenResult
 native_tiny_tag_editor_screen_open_song(
     NativeTinyTagEditorScreen *screen, NcmSong *song,
     char *music_dir, int32 music_dir_len, char *tag_separator,
-    int32 tag_separator_len, bool show_duplicate_tags, NcmBuffer *path
+    int32 tag_separator_len, bool show_duplicate_tags, StrBuilder *path
 ) {
     NcmTaglibAudioProperties properties = {0};
     NcmTaglibFile file;
@@ -230,7 +230,7 @@ native_tiny_tag_editor_screen_open_song(
     bool rows_loaded;
 
     if (path) {
-        ncm_buffer_clear(path);
+        sb_clear(path);
     }
     if ((screen == NULL) || (song == NULL) || (path == NULL)
         || (music_dir_len < 0) || (tag_separator_len < 0)
@@ -255,9 +255,9 @@ native_tiny_tag_editor_screen_open_song(
     }
 
     if (screen->edited.is_from_database) {
-        ncm_buffer_append(path, music_dir, music_dir_len);
+        sb_append(path, music_dir, music_dir_len);
     }
-    ncm_buffer_append(path, screen->edited.uri, screen->edited.uri_len);
+    sb_append(path, screen->edited.uri, screen->edited.uri_len);
 
     ncm_taglib_file_init(&file);
     if (screen->hooks.taglib_open) {

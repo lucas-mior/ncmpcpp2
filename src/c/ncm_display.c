@@ -14,9 +14,9 @@
 static StrBuilder ncm_display_column_value(NcmSong *song, Column *column);
 static int32 ncm_display_column_width(Column *column, int32 list_width,
                                       int32 remained_width);
-static void ncm_display_append_column_name(NcmBuffer *buffer,
+static void ncm_display_append_column_name(StrBuilder *buffer,
                                            Column *column);
-static void ncm_display_append_spaces(NcmBuffer *buffer, int32 count);
+static void ncm_display_append_spaces(StrBuilder *buffer, int32 count);
 static void ncm_display_append_nc_spaces(NcBuffer *buffer, int32 count);
 
 static void
@@ -106,7 +106,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
 }
 
 void
-ncm_display_column_title(NcmBuffer *buffer, struct Column *columns,
+ncm_display_column_title(StrBuilder *buffer, struct Column *columns,
                          int32 column_count, int32 list_width) {
     StrBuilder name;
     Column *last;
@@ -116,7 +116,7 @@ ncm_display_column_title(NcmBuffer *buffer, struct Column *columns,
         return;
     }
 
-    ncm_buffer_clear(buffer);
+    sb_clear(buffer);
     if ((columns == NULL) || (column_count <= 0) || (list_width <= 0)) {
         return;
     }
@@ -154,15 +154,15 @@ ncm_display_column_title(NcmBuffer *buffer, struct Column *columns,
         }
         if (column->right_alignment) {
             ncm_display_append_spaces(buffer, padding);
-            ncm_buffer_append(buffer, name.data, cut_len);
+            sb_append(buffer, name.data, cut_len);
         } else {
-            ncm_buffer_append(buffer, name.data, cut_len);
+            sb_append(buffer, name.data, cut_len);
             ncm_display_append_spaces(buffer, padding);
         }
 
         if (column != last) {
             remained_width -= width + 1;
-            ncm_buffer_append_byte(buffer, ' ');
+            sb_append_byte(buffer, ' ');
         }
     }
     sb_free(&name);
@@ -219,7 +219,7 @@ ncm_display_column_value(NcmSong *song, Column *column) {
             song, getter, Config.tags_separator,
             Config.tags_separator_len, Config.show_duplicate_tags);
         if (value.len > 0) {
-            ncm_buffer_move(&result, &value);
+            sb_move(&result, &value);
             sb_free(&value);
             return result;
         }
@@ -292,20 +292,20 @@ ncm_display_column_type_name(char type) {
 }
 
 static void
-ncm_display_append_column_name(NcmBuffer *buffer, Column *column) {
+ncm_display_append_column_name(StrBuilder *buffer, Column *column) {
     NcmStringView name;
 
     if (column->name && (column->name_len > 0)) {
-        ncm_buffer_append(buffer, column->name, column->name_len);
+        sb_append(buffer, column->name, column->name_len);
         return;
     }
 
     for (int32 i = 0; i < column->type_len; i += 1) {
         if (i > 0) {
-            ncm_buffer_append_byte(buffer, '/');
+            sb_append_byte(buffer, '/');
         }
         name = ncm_display_column_type_name(column->type[i]);
-        ncm_buffer_append(buffer, name.data, name.len);
+        sb_append(buffer, name.data, name.len);
     }
     return;
 }
@@ -319,9 +319,9 @@ ncm_display_append_nc_spaces(NcBuffer *buffer, int32 count) {
 }
 
 static void
-ncm_display_append_spaces(NcmBuffer *buffer, int32 count) {
+ncm_display_append_spaces(StrBuilder *buffer, int32 count) {
     for (int32 i = 0; i < count; i += 1) {
-        ncm_buffer_append_byte(buffer, ' ');
+        sb_append_byte(buffer, ' ');
     }
     return;
 }

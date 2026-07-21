@@ -1437,30 +1437,30 @@ status_current_song_for_change(NcmSong *song) {
 }
 
 static void
-status_buffer_append_char(NcmBuffer *buffer, char ch) {
-    ncm_buffer_append_byte(buffer, ch);
+status_buffer_append_char(StrBuilder *buffer, char ch) {
+    sb_append_byte(buffer, ch);
     return;
 }
 
 static void
-status_buffer_append_int32(NcmBuffer *buffer, int32 value) {
+status_buffer_append_int32(StrBuilder *buffer, int32 value) {
     char tmp[32];
     int32 len = SNPRINTF(tmp, "%d", value);
-    ncm_buffer_append(buffer, tmp, len);
+    sb_append(buffer, tmp, len);
     return;
 }
 
 static void
-status_tracklength_buffer(NcmBuffer *buffer) {
+status_tracklength_buffer(StrBuilder *buffer) {
     char time_buffer[64];
     int32 time_len;
 
-    ncm_buffer_clear(buffer);
+    sb_clear(buffer);
     if ((Config.display_bitrate) && (status_kbps != 0)
         && (Config.design == NCM_DESIGN_CLASSIC)) {
         status_buffer_append_char(buffer, '(');
         status_buffer_append_int32(buffer, status_kbps);
-        ncm_buffer_append(buffer, STRLIT_ARGS(" kbps) "));
+        sb_append(buffer, STRLIT_ARGS(" kbps) "));
     }
 
     if (Config.design == NCM_DESIGN_CLASSIC) {
@@ -1481,21 +1481,21 @@ status_tracklength_buffer(NcmBuffer *buffer) {
         time_len = status_song_time_string(status_elapsed_time, time_buffer,
                                            SIZEOF(time_buffer));
     }
-    ncm_buffer_append(buffer, time_buffer, time_len);
+    sb_append(buffer, time_buffer, time_len);
 
     if (status_total_time != 0) {
         status_buffer_append_char(buffer, '/');
         time_len = status_song_time_string(status_total_time, time_buffer,
                                            SIZEOF(time_buffer));
-        ncm_buffer_append(buffer, time_buffer, time_len);
+        sb_append(buffer, time_buffer, time_len);
     }
 
     if (Config.design == NCM_DESIGN_CLASSIC) {
         status_buffer_append_char(buffer, ']');
     } else if ((Config.display_bitrate) && (status_kbps != 0)) {
-        ncm_buffer_append(buffer, STRLIT_ARGS(" ("));
+        sb_append(buffer, STRLIT_ARGS(" ("));
         status_buffer_append_int32(buffer, status_kbps);
-        ncm_buffer_append(buffer, STRLIT_ARGS(" kbps)"));
+        sb_append(buffer, STRLIT_ARGS(" kbps)"));
     }
     return;
 }

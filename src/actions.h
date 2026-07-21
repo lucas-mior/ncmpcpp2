@@ -190,7 +190,7 @@ bool ncm_action_def_can_run(NcmActionDef *action, void *user);
 bool ncm_action_def_run(NcmActionDef *action, void *user);
 bool ncm_action_can_run(enum NcmActionType type, void *user);
 bool ncm_action_run(enum NcmActionType type, void *user);
-bool ncm_action_immediate_command_prompt_should_stop(NcmBuffer *previous,
+bool ncm_action_immediate_command_prompt_should_stop(StrBuilder *previous,
                                                      char *text,
                                                      int32 text_len);
 

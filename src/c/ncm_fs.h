@@ -49,7 +49,7 @@ bool ncm_fs_directory_open(NcmFsDirectory *directory, char *path,
 bool ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
                            NcmError *error);
 void ncm_fs_directory_close(NcmFsDirectory *directory);
-bool ncm_fs_join(NcmBuffer *buffer, char *left, int32 left_len,
+bool ncm_fs_join(StrBuilder *buffer, char *left, int32 left_len,
                  char *right, int32 right_len);
 
 #endif /* NCM_FS_H */

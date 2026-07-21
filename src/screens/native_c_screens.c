@@ -812,8 +812,8 @@ native_search_prompt_hook(char *text, void *user) {
 
 static enum NativeSearchEnginePromptResult
 native_search_prompt_constraint(
-    void *user, char *label, int32 label_len, NcmBuffer *initial,
-    NcmBuffer *result
+    void *user, char *label, int32 label_len, StrBuilder *initial,
+    StrBuilder *result
 ) {
     NcmStatusbarScopedLock lock;
     enum NcPromptStatus status;
@@ -862,7 +862,7 @@ native_search_prompt_constraint(
     }
 
     input_len = optional_strlen32(input);
-    copied = ncm_buffer_set(result, input, input_len);
+    copied = sb_set(result, input, input_len);
     nc_window_prompt_result_destroy(input);
     if (!copied) {
         return NATIVE_SEARCH_ENGINE_PROMPT_ERROR;
@@ -891,7 +891,7 @@ native_search_add_song(
 
 static bool
 native_search_format_song(
-    void *user, NcmSong *song, NcmBuffer *text
+    void *user, NcmSong *song, StrBuilder *text
 ) {
     NativeSearchEngineScreen *screen;
 
@@ -1077,7 +1077,7 @@ native_statusbar_prompt_hook(char *text, void *user) {
 
 static enum NativePromptResult
 native_prompt_buffer(char *label, int32 label_len,
-                     NcmStringView initial, NcmBuffer *result,
+                     NcmStringView initial, StrBuilder *result,
                      bool bold_label) {
     NcmStatusbarScopedLock lock;
     enum NcPromptStatus status;
@@ -1132,7 +1132,7 @@ native_prompt_buffer(char *label, int32 label_len,
     }
 
     input_len = optional_strlen32(input);
-    copied = ncm_buffer_set(result, input, input_len);
+    copied = sb_set(result, input, input_len);
     nc_window_prompt_result_destroy(input);
     if (!copied) {
         return NATIVE_PROMPT_RESULT_ERROR;
@@ -1143,7 +1143,7 @@ native_prompt_buffer(char *label, int32 label_len,
 static enum NativeTagEditorPromptResult
 native_tag_editor_prompt(
     void *user, char *label, int32 label_len, NcmStringView initial,
-    NcmBuffer *result
+    StrBuilder *result
 ) {
     enum NativePromptResult prompt_result;
 
@@ -1236,7 +1236,7 @@ native_tag_editor_hooks(void) {
 static enum NativeTinyTagEditorPromptResult
 native_tiny_tag_editor_prompt(
     void *user, char *label, int32 label_len, NcmStringView initial,
-    NcmBuffer *result
+    StrBuilder *result
 ) {
     enum NativePromptResult prompt_result;
 
@@ -1772,7 +1772,7 @@ native_append_bold_label(NcBuffer *buffer, char *label) {
 }
 
 static void
-native_append_song_tag(NcBuffer *buffer, NcmBuffer *tag) {
+native_append_song_tag(NcBuffer *buffer, StrBuilder *tag) {
     if ((tag == NULL) || (tag->len <= 0)) {
         native_append_formatted_color(buffer, &Config.empty_tags_color);
         native_append_data(buffer, Config.empty_tag, Config.empty_tag_len);
@@ -1785,7 +1785,7 @@ native_append_song_tag(NcBuffer *buffer, NcmBuffer *tag) {
 
 static void
 native_append_song_key_value(NcBuffer *buffer, char *key,
-                             NcmBuffer *value,
+                             StrBuilder *value,
                              bool empty_as_missing) {
     native_append_format(buffer, NC_FORMAT_BOLD);
     native_append_formatted_color(buffer, &Config.color1);
