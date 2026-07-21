@@ -1170,8 +1170,7 @@ native_lyrics_job_fetch_one(NativeLyricsJob *job,
 
 static bool
 native_lyrics_job_fetch(NativeLyricsJob *job,
-                        NcmBuffer *artist,
-                        NcmBuffer *title) {
+                        NcmBuffer *artist, NcmBuffer *title) {
     if (job->fetcher) {
         return native_lyrics_job_fetch_one(job,
                                            job->fetcher,
