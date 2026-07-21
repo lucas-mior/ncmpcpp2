@@ -874,8 +874,7 @@ native_lyrics_title_song_string(NcmSong *song, NcmBuffer *title) {
 
 static bool
 native_lyrics_song_artist_title(NcmSong *song,
-                                NcmBuffer *artist,
-                                NcmBuffer *title) {
+                                NcmBuffer *artist, NcmBuffer *title) {
     NcmBuffer fallback;
     NcmStringView artist_view;
     NcmStringView title_view;
