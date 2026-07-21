@@ -378,6 +378,15 @@ lyrics_build_direct_url_profiles(
     case NCM_LYRICS_FETCHER_MUSICA:
         valid = false;
         break;
+    case NCM_LYRICS_FETCHER_PAROLES:
+        sb_append(url, STRLIT_ARGS("https://www.paroles.net/"));
+        valid = lyrics_append_slug_profile(url, artist_profile,
+                                           artist, artist_len);
+        sb_append(url, STRLIT_ARGS("/paroles-"));
+        valid = valid
+                && lyrics_append_slug_profile(url, title_profile,
+                                              title, title_len);
+        break;
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
         sb_append(url, STRLIT_ARGS("https://www.musixmatch.com/lyrics/"));
         valid = lyrics_append_slug_profile(url, artist_profile,
@@ -601,6 +610,11 @@ lyrics_name_to_type(char *name, int32 name_len,
         *type = NCM_LYRICS_FETCHER_MUSICA;
         return true;
     }
+    if (STREQUAL(name, name_len, STRLIT_ARGS("paroles"))
+        || STREQUAL(name, name_len, STRLIT_ARGS("paroles.net"))) {
+        *type = NCM_LYRICS_FETCHER_PAROLES;
+        return true;
+    }
     if (STREQUAL(name, name_len, STRLIT_ARGS("musixmatch"))
         || STREQUAL(name, name_len, STRLIT_ARGS("musixmatch.com"))) {
         *type = NCM_LYRICS_FETCHER_MUSIXMATCH;
@@ -639,6 +653,9 @@ lyrics_type_name(enum NcmLyricsFetcherType type, int32 *len) {
     case NCM_LYRICS_FETCHER_MUSICA:
         *len = STRLIT_LEN("musica.com");
         return "musica.com";
+    case NCM_LYRICS_FETCHER_PAROLES:
+        *len = STRLIT_LEN("paroles.net");
+        return "paroles.net";
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
         *len = STRLIT_LEN("musixmatch.com");
         return "musixmatch.com";
@@ -674,6 +691,9 @@ lyrics_type_domain(enum NcmLyricsFetcherType type, int32 *len) {
     case NCM_LYRICS_FETCHER_MUSICA:
         *len = STRLIT_LEN("musica.com");
         return "musica.com";
+    case NCM_LYRICS_FETCHER_PAROLES:
+        *len = STRLIT_LEN("paroles.net");
+        return "paroles.net";
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
         *len = STRLIT_LEN("musixmatch.com");
         return "musixmatch.com";
@@ -730,6 +750,7 @@ lyrics_slug_profile(enum NcmLyricsFetcherType type) {
         return LYRICS_SLUG_PROFILE_COMPACT_FOLDED;
     case NCM_LYRICS_FETCHER_GENIUS:
     case NCM_LYRICS_FETCHER_LETRASMUS:
+    case NCM_LYRICS_FETCHER_PAROLES:
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
     case NCM_LYRICS_FETCHER_TEKSTOWO:
     case NCM_LYRICS_FETCHER_VAGALUME:
@@ -1567,6 +1588,7 @@ static bool
 lyrics_url_looks_like_song_page(NcmLyricsFetcherDef *fetcher, char *url,
                                 int32 url_len) {
     int32 path_start;
+    int32 path_end;
 
     path_start = lyrics_url_path_start(url, url_len);
     if (path_start < 0) {
@@ -1598,6 +1620,14 @@ lyrics_url_looks_like_song_page(NcmLyricsFetcherDef *fetcher, char *url,
                                          STRLIT_ARGS("/letras.asp"))
                && lyrics_url_query_has_key(url, url_len,
                                            STRLIT_ARGS("letra"));
+    case NCM_LYRICS_FETCHER_PAROLES:
+        path_end = lyrics_url_path_end(url, url_len, path_start);
+        return lyrics_url_path_has_segments(url, url_len, path_start, 2)
+               && (lyrics_find_ignore_case(url + path_start,
+                                           path_end - path_start,
+                                           STRLIT_ARGS("/paroles-"), 0) >= 0)
+               && !lyrics_url_path_ends_with(url, url_len, path_start,
+                                             STRLIT_ARGS("-traduction"));
     case NCM_LYRICS_FETCHER_VAGALUME:
         return lyrics_url_path_has_segments(url, url_len, path_start, 2)
                && lyrics_url_path_ends_with(url, url_len, path_start,
@@ -2289,6 +2319,73 @@ lyrics_extract_musica(StrBuilder *out, char *data, int32 data_len) {
     return true;
 }
 
+static int32
+lyrics_paroles_content_start(char *data, int32 data_len) {
+    int32 marker;
+    int32 second_marker;
+    int32 content_start;
+
+    marker = lyrics_find_ignore_case(
+        data, data_len, STRLIT_ARGS("Paroles de la chanson"), 0);
+    if (marker < 0) {
+        return -1;
+    }
+
+    second_marker = lyrics_find_ignore_case(
+        data, data_len, STRLIT_ARGS("Paroles de la chanson"),
+        marker + STRLIT_LEN("Paroles de la chanson"));
+    if (second_marker >= 0) {
+        marker = second_marker;
+    }
+
+    content_start = lyrics_find_char(data, data_len, '>', marker);
+    if (content_start < 0) {
+        return -1;
+    }
+    return content_start + 1;
+}
+
+static int32
+lyrics_paroles_content_end(char *data, int32 data_len, int32 start) {
+    int32 best;
+
+    best = -1;
+    lyrics_update_first_match(data, data_len, start,
+                              STRLIT_ARGS("Paroles.net dispose"), &best);
+    lyrics_update_first_match(data, data_len, start,
+                              STRLIT_ARGS("Sélection du moment"), &best);
+    lyrics_update_first_match(data, data_len, start,
+                              STRLIT_ARGS("Les plus grands succès"), &best);
+    lyrics_update_first_match(data, data_len, start,
+                              STRLIT_ARGS("On aime"), &best);
+    lyrics_update_first_match(data, data_len, start,
+                              STRLIT_ARGS("Top traduction"), &best);
+    return best;
+}
+
+static bool
+lyrics_extract_paroles(StrBuilder *out, char *data, int32 data_len) {
+    int32 start;
+    int32 end;
+
+    sb_clear(out);
+    start = lyrics_paroles_content_start(data, data_len);
+    if (start < 0) {
+        return false;
+    }
+
+    end = lyrics_paroles_content_end(data, data_len, start);
+    if (end < 0) {
+        return false;
+    }
+    if (end <= start) {
+        return false;
+    }
+
+    sb_append(out, data + start, end - start);
+    return true;
+}
+
 static bool
 lyrics_extract_content(NcmLyricsFetcherDef *fetcher, StrBuilder *out,
                        char *data, int32 data_len, bool *plain_text) {
@@ -2306,6 +2403,8 @@ lyrics_extract_content(NcmLyricsFetcherDef *fetcher, StrBuilder *out,
                                    false);
     case NCM_LYRICS_FETCHER_MUSICA:
         return lyrics_extract_musica(out, data, data_len);
+    case NCM_LYRICS_FETCHER_PAROLES:
+        return lyrics_extract_paroles(out, data, data_len);
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
         *plain_text = true;
         return lyrics_extract_musixmatch(out, data, data_len);
