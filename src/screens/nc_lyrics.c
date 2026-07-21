@@ -259,14 +259,18 @@ native_lyrics_screen_init(NativeLyricsScreen *screen,
     ncm_buffer_init(&screen->filename);
     ncm_lyrics_result_init(&screen->result);
     ncm_job_queue_init(&screen->jobs);
+
     screen->queued_songs = NULL;
     screen->queued_songs_len = 0;
     screen->queued_songs_cap = 0;
+
     ncm_buffer_init(&screen->consumer_message);
+
     screen->fetcher = NULL;
     screen->has_song = false;
     screen->initialized = true;
     nc_window_set_timeout(&screen->window, lines_scrolled);
+
     return;
 }
 
@@ -339,10 +343,8 @@ native_lyrics_screen_set_geometry(NativeLyricsScreen *screen,
 bool
 native_lyrics_screen_build_filename(NativeLyricsScreen *screen,
                                     NcmSong *song,
-                                    char *music_dir,
-                                    int32 music_dir_len,
-                                    char *lyrics_dir,
-                                    int32 lyrics_dir_len,
+                                    char *music_dir, int32 music_dir_len,
+                                    char *lyrics_dir, int32 lyrics_dir_len,
                                     bool store_in_song_dir,
                                     bool win32_filename) {
     (void)screen;
@@ -638,8 +640,8 @@ native_lyrics_screen_filename(NativeLyricsScreen *screen) {
 }
 
 bool
-native_lyrics_buffer_find(NcBuffer *buffer, char *pattern,
-                          int32 pattern_len, NcmError *error) {
+native_lyrics_buffer_find(NcBuffer *buffer,
+                          char *pattern, int32 pattern_len, NcmError *error) {
     NativeLyricsFindState state;
     NcmRegex regex;
     char *data;
@@ -874,8 +876,7 @@ native_lyrics_title_song_string(NcmSong *song, NcmBuffer *title) {
 
 static bool
 native_lyrics_song_artist_title(NcmSong *song,
-                                NcmBuffer *artist,
-                                NcmBuffer *title) {
+                                NcmBuffer *artist, NcmBuffer *title) {
     NcmBuffer fallback;
     NcmStringView artist_view;
     NcmStringView title_view;
@@ -910,8 +911,8 @@ native_lyrics_song_artist_title(NcmSong *song,
 }
 
 static bool
-native_lyrics_fetch_artist_title(NcmSong *song, NcmBuffer *artist,
-                                 NcmBuffer *title) {
+native_lyrics_fetch_artist_title(NcmSong *song,
+                                 NcmBuffer *artist, NcmBuffer *title) {
     if (!native_lyrics_song_artist_title(song, artist, title)) {
         return false;
     }
@@ -989,14 +990,10 @@ native_lyrics_remove_extension(NcmBuffer *buffer) {
 }
 
 static bool
-native_lyrics_filename_from_song(NcmBuffer *filename,
-                                 NcmSong *song,
-                                 char *music_dir,
-                                 int32 music_dir_len,
-                                 char *lyrics_dir,
-                                 int32 lyrics_dir_len,
-                                 bool store_in_song_dir,
-                                 bool win32_filename) {
+native_lyrics_filename_from_song(NcmBuffer *filename, NcmSong *song,
+                                 char *music_dir, int32 music_dir_len,
+                                 char *lyrics_dir, int32 lyrics_dir_len,
+                                 bool store_in_song_dir, bool win32_filename) {
     NcmBuffer artist;
     NcmBuffer title;
     NcmStringView uri;
@@ -1007,6 +1004,7 @@ native_lyrics_filename_from_song(NcmBuffer *filename,
     ncm_buffer_init(&title);
     ncm_string_view_init(&uri);
     ncm_buffer_clear(filename);
+
     if (store_in_song_dir && !ncm_song_is_stream(song)) {
         if (ncm_song_is_from_database(song) && (music_dir_len > 0)) {
             ncm_buffer_append(filename, music_dir, music_dir_len);
@@ -1046,9 +1044,11 @@ native_lyrics_filename_from_song(NcmBuffer *filename,
             filename->data[filename->len] = '\0';
         }
     }
+
     ncm_buffer_append(filename, STRLIT_ARGS(".txt"));
     ncm_buffer_destroy(&title);
     ncm_buffer_destroy(&artist);
+
     return filename->len > 4;
 }
 
@@ -1078,10 +1078,12 @@ native_lyrics_queue_song(NativeLyricsScreen *screen,
         }
         screen->queued_songs_cap = new_cap;
     }
+
     queued = &screen->queued_songs[screen->queued_songs_len];
     ncm_song_copy(&queued->song, song);
     queued->notify = notify;
     screen->queued_songs_len += 1;
+
     return true;
 }
 
@@ -1138,10 +1140,8 @@ native_lyrics_job_create(NativeLyricsScreen *screen,
 }
 
 static bool
-native_lyrics_job_fetch_one(NativeLyricsJob *job,
-                            NcmLyricsFetcherDef *fetcher,
-                            NcmBuffer *artist,
-                            NcmBuffer *title) {
+native_lyrics_job_fetch_one(NativeLyricsJob *job, NcmLyricsFetcherDef *fetcher,
+                            NcmBuffer *artist, NcmBuffer *title) {
     if (fetcher == NULL) {
         return false;
     }
@@ -1165,8 +1165,7 @@ native_lyrics_job_fetch_one(NativeLyricsJob *job,
 
 static bool
 native_lyrics_job_fetch(NativeLyricsJob *job,
-                        NcmBuffer *artist,
-                        NcmBuffer *title) {
+                        NcmBuffer *artist, NcmBuffer *title) {
     if (job->fetcher) {
         return native_lyrics_job_fetch_one(job,
                                            job->fetcher,
@@ -1297,8 +1296,7 @@ native_lyrics_active_fetcher(NativeLyricsScreen *screen,
 }
 
 static void
-native_lyrics_append_fetching(NcBuffer *buffer,
-                              NcmLyricsFetcherDef *fetcher) {
+native_lyrics_append_fetching(NcBuffer *buffer, NcmLyricsFetcherDef *fetcher) {
     char *name;
     int32 name_len;
     int32 fetcher_position;
@@ -1327,8 +1325,7 @@ native_lyrics_append_fetching(NcBuffer *buffer,
 }
 
 static void
-native_lyrics_append_fetch_error(NcBuffer *buffer,
-                                 NcmLyricsResult *result) {
+native_lyrics_append_fetch_error(NcBuffer *buffer, NcmLyricsResult *result) {
     NcColor red = nc_color_make(COLOR_RED, NC_COLOR_CURRENT, false, false);
     nc_buffer_add_color(buffer,
                         nc_buffer_len(buffer),
@@ -1389,17 +1386,16 @@ native_lyrics_find_match_callback(int32 start, int32 len, void *user) {
         return true;
     }
 
-    nc_buffer_add_format(state->buffer, start, NC_FORMAT_REVERSE,
-                         NATIVE_LYRICS_PROPERTY_ID);
-    nc_buffer_add_format(state->buffer, start + len, NC_FORMAT_NO_REVERSE,
-                         NATIVE_LYRICS_PROPERTY_ID);
+    nc_buffer_add_format(state->buffer, start,
+                         NC_FORMAT_REVERSE, NATIVE_LYRICS_PROPERTY_ID);
+    nc_buffer_add_format(state->buffer, start + len,
+                         NC_FORMAT_NO_REVERSE, NATIVE_LYRICS_PROPERTY_ID);
 
     return true;
 }
 
 static void
-native_lyrics_mouse_scroll(NativeLyricsScreen *screen,
-                           enum NcScroll where) {
+native_lyrics_mouse_scroll(NativeLyricsScreen *screen, enum NcScroll where) {
     for (int32 i = 0; i < Config.lines_scrolled; i += 1) {
         nc_scrollpad_scroll(&screen->scrollpad, &screen->window, where);
     }
