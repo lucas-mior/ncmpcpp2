@@ -1568,7 +1568,9 @@ normalize(char *path, int32 *length) {
         *length -= 2;
     }
 
-    while ((*length >= 2) && (path[*length - 2] == '/') && (path[*length - 1] == '.')) {
+    while ((*length >= 2)
+           && (path[*length - 2] == '/')
+           && (path[*length - 1] == '.')) {
         path[*length - 1] = '\0';
         *length -= 1;
     }
@@ -2122,6 +2124,179 @@ sb_steal(StrBuilder *str_builder, int32 *len, int32 *cap) {
 
     sb_init(str_builder);
     return data;
+}
+
+static void
+str_builder_array_init(StrBuilderArray *array) {
+    array->items = NULL;
+    array->len = 0;
+    array->cap = 0;
+    return;
+}
+
+static void
+str_builder_array_clear(StrBuilderArray *array) {
+    if (array == NULL) {
+        return;
+    }
+
+    for (int32 i = 0; i < array->len; i += 1) {
+        sb_free(&array->items[i]);
+    }
+    array->len = 0;
+    return;
+}
+
+static void
+str_builder_array_destroy(StrBuilderArray *array) {
+    if (array == NULL) {
+        return;
+    }
+
+    str_builder_array_clear(array);
+    if (array->items) {
+        free2(array->items, array->cap*SIZEOF(*array->items));
+    }
+    str_builder_array_init(array);
+    return;
+}
+
+static bool
+str_builder_array_copy(StrBuilderArray *dest, StrBuilderArray *source) {
+    StrBuilderArray replacement;
+
+    if (dest == NULL) {
+        return false;
+    }
+    if (dest == source) {
+        return true;
+    }
+
+    str_builder_array_init(&replacement);
+    if (source) {
+        if (!str_builder_array_reserve(&replacement, source->len)) {
+            str_builder_array_destroy(&replacement);
+            return false;
+        }
+        for (int32 i = 0; i < source->len; i += 1) {
+            if (!str_builder_array_append_copy(&replacement,
+                                               &source->items[i])) {
+                str_builder_array_destroy(&replacement);
+                return false;
+            }
+        }
+    }
+
+    str_builder_array_destroy(dest);
+    *dest = replacement;
+    return true;
+}
+
+static void
+str_builder_array_move(StrBuilderArray *dest, StrBuilderArray *source) {
+    if (dest == NULL) {
+        return;
+    }
+    if (dest == source) {
+        return;
+    }
+
+    str_builder_array_destroy(dest);
+    if (source == NULL) {
+        str_builder_array_init(dest);
+        return;
+    }
+    *dest = *source;
+    str_builder_array_init(source);
+    return;
+}
+
+static void
+str_builder_array_swap(StrBuilderArray *left, StrBuilderArray *right) {
+    StrBuilderArray temp;
+
+    if (left == NULL) {
+        return;
+    }
+    if (right == NULL) {
+        return;
+    }
+
+    temp = *left;
+    *left = *right;
+    *right = temp;
+    return;
+}
+
+static bool
+str_builder_array_reserve(StrBuilderArray *array, int32 extra) {
+    int64 needed;
+    int32 old_cap;
+    int32 new_cap;
+
+    if (array == NULL) {
+        return false;
+    }
+    if (extra <= 0) {
+        return true;
+    }
+
+    needed = (int64)array->len + extra;
+    if (needed <= array->cap) {
+        return true;
+    }
+    if (needed >= MAXOF(array->cap)) {
+        error("StrBuilderArray only supports fewer than 2GB items.\n");
+        fatal(EXIT_FAILURE);
+    }
+
+    old_cap = array->cap;
+    new_cap = array->cap;
+    if (new_cap <= 0) {
+        new_cap = 8;
+    }
+    while (new_cap < needed) {
+        new_cap *= 2;
+    }
+
+    array->items = realloc2(array->items, old_cap, new_cap,
+                            SIZEOF(*array->items));
+    array->cap = new_cap;
+    return true;
+}
+
+static StrBuilder *
+str_builder_array_append(StrBuilderArray *array) {
+    StrBuilder *item;
+
+    if (!str_builder_array_reserve(array, 1)) {
+        return NULL;
+    }
+
+    item = &array->items[array->len];
+    array->len += 1;
+    sb_init(item);
+    return item;
+}
+
+static bool
+str_builder_array_append_copy(StrBuilderArray *array, StrBuilder *item) {
+    StrBuilder *dest;
+
+    if (item == NULL) {
+        return false;
+    }
+
+    dest = str_builder_array_append(array);
+    if (dest == NULL) {
+        return false;
+    }
+    if (!sb_copy(dest, item)) {
+        array->len -= 1;
+        sb_free(dest);
+        return false;
+    }
+    return true;
 }
 
 static bool

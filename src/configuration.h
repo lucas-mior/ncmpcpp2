@@ -11,8 +11,8 @@ typedef struct NcmConfigurationOptions {
     StrBuilder current_song_format;
     StrBuilder screen_name;
     StrBuilder slave_screen_name;
-    NcmBufferArray config_paths;
-    NcmBufferArray bindings_paths;
+    StrBuilderArray config_paths;
+    StrBuilderArray bindings_paths;
 
     int32 port;
 
@@ -35,8 +35,8 @@ bool ncm_configuration_options_parse(NcmConfigurationOptions *options,
 bool ncm_configuration_options_apply(NcmConfigurationOptions *options,
                                      NcmError *error);
 
-bool configuration_discover_default_paths(NcmBufferArray *config_paths,
-                                          NcmBufferArray *bindings_paths,
+bool configuration_discover_default_paths(StrBuilderArray *config_paths,
+                                          StrBuilderArray *bindings_paths,
                                           NcmError *error);
 bool configure(int32 argc, char **argv);
 

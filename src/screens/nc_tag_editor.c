@@ -2649,7 +2649,7 @@ tag_editor_initialize_buffers(NativeTagEditorScreen *screen) {
     sb_init(&screen->parser_helper_title);
     sb_init(&screen->parser_legend);
     sb_init(&screen->parser_preview);
-    ncm_buffer_array_init(&screen->recent_patterns);
+    str_builder_array_init(&screen->recent_patterns);
     sb_init(&screen->directory_filter_constraint);
     sb_init(&screen->tag_filter_constraint);
     sb_init(&screen->directory_search_constraint);
@@ -2665,7 +2665,7 @@ tag_editor_destroy_buffers(NativeTagEditorScreen *screen) {
     sb_free(&screen->directory_search_constraint);
     sb_free(&screen->tag_filter_constraint);
     sb_free(&screen->directory_filter_constraint);
-    ncm_buffer_array_destroy(&screen->recent_patterns);
+    str_builder_array_destroy(&screen->recent_patterns);
     sb_free(&screen->parser_preview);
     sb_free(&screen->parser_legend);
     sb_free(&screen->parser_helper_title);
@@ -5048,7 +5048,7 @@ tag_editor_add_recent_pattern(NativeTagEditorScreen *screen,
     if (tag_editor_find_recent_pattern(screen, pattern, pattern_len) >= 0) {
         return true;
     }
-    if ((item = ncm_buffer_array_append(&screen->recent_patterns)) == NULL) {
+    if ((item = str_builder_array_append(&screen->recent_patterns)) == NULL) {
         return false;
     }
     return tag_editor_set_buffer(item, pattern, pattern_len);
@@ -5057,7 +5057,7 @@ tag_editor_add_recent_pattern(NativeTagEditorScreen *screen,
 static bool
 tag_editor_move_pattern_to_front(NativeTagEditorScreen *screen,
                                  char *pattern, int32 pattern_len) {
-    NcmBufferArray replacement;
+    StrBuilderArray replacement;
     StrBuilder first;
     int32 existing;
     bool ok;
@@ -5065,13 +5065,13 @@ tag_editor_move_pattern_to_front(NativeTagEditorScreen *screen,
     if ((screen == NULL) || (pattern == NULL) || (pattern_len <= 0)) {
         return false;
     }
-    ncm_buffer_array_init(&replacement);
+    str_builder_array_init(&replacement);
     sb_init(&first);
     ok = tag_editor_set_buffer(&first, pattern, pattern_len)
-         && ncm_buffer_array_append_copy(&replacement, &first);
+         && str_builder_array_append_copy(&replacement, &first);
     sb_free(&first);
     if (!ok) {
-        ncm_buffer_array_destroy(&replacement);
+        str_builder_array_destroy(&replacement);
         return false;
     }
     existing = tag_editor_find_recent_pattern(screen, pattern, pattern_len);
@@ -5079,14 +5079,14 @@ tag_editor_move_pattern_to_front(NativeTagEditorScreen *screen,
         if (i == existing) {
             continue;
         }
-        if (!ncm_buffer_array_append_copy(&replacement,
+        if (!str_builder_array_append_copy(&replacement,
                                           &screen->recent_patterns.items[i])) {
-            ncm_buffer_array_destroy(&replacement);
+            str_builder_array_destroy(&replacement);
             return false;
         }
     }
-    ncm_buffer_array_move(&screen->recent_patterns, &replacement);
-    ncm_buffer_array_destroy(&replacement);
+    str_builder_array_move(&screen->recent_patterns, &replacement);
+    str_builder_array_destroy(&replacement);
     return native_tag_editor_screen_prepare_parser_rows(
         screen, screen->parser_mode, screen->pattern.data,
         screen->pattern.len);

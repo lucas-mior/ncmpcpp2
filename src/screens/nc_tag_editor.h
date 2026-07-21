@@ -88,7 +88,7 @@ typedef struct NativeTagEditorScreen {
     StrBuilder parser_helper_title;
     StrBuilder parser_legend;
     StrBuilder parser_preview;
-    NcmBufferArray recent_patterns;
+    StrBuilderArray recent_patterns;
     StrBuilder directory_filter_constraint;
     StrBuilder tag_filter_constraint;
     StrBuilder directory_search_constraint;
