@@ -82,9 +82,11 @@ lyrics_string_set(char **data, int32 *len, int32 *cap, char *source,
     new_data = malloc2(new_cap);
     memcpy64(new_data, source, source_len);
     new_data[source_len] = '\0';
+
     *data = new_data;
     *len = source_len;
     *cap = new_cap;
+
     return true;
 }
 
