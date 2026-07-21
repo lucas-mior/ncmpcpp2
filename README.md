@@ -9,6 +9,8 @@ This is a fork of ncmpcpp. The goals are:
 - ~~Remove boost~~
 - ~~Convert the project to C23.~~
 - Fix the bugs reported in original repo.
+- ~~Fix the lyrics fetcher~~
+- ~~Add more lyrics fetchers~~
 
 Original README is below.
 
