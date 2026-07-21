@@ -82,11 +82,18 @@ typedef struct StrBuilder {
     int32 cap;
 } StrBuilder;
 
-static void sb_reserve(StrBuilder *sb, int32 extra);
-static void sb_append(StrBuilder *sb, char *s, int32 n);
-static void sb_printf(StrBuilder *sb, char *fmt, ...)
+static void sb_init(StrBuilder *str_builder);
+static void sb_free(StrBuilder *str_builder);
+static void sb_clear(StrBuilder *str_builder);
+static bool sb_copy(StrBuilder *dest, StrBuilder *source);
+static void sb_move(StrBuilder *dest, StrBuilder *source);
+static bool sb_set(StrBuilder *str_builder, char *data, int32 data_len);
+static void sb_reserve(StrBuilder *str_builder, int32 extra);
+static void sb_append(StrBuilder *str_builder, char *data, int32 data_len);
+static void sb_append_byte(StrBuilder *str_builder, char byte);
+static void sb_printf(StrBuilder *str_builder, char *fmt, ...)
     __attribute__((format(printf, 2, 3)));
-static char *sb_steal(StrBuilder *sb, int32 *len);
+static char *sb_steal(StrBuilder *str_builder, int32 *len, int32 *cap);
 
 static void *memmem64(void *haystack, int64 hay_len,
                       void *needle, int64 needle_len);
