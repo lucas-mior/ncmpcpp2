@@ -11,7 +11,7 @@ typedef struct NcmProcessCommand {
 } NcmProcessCommand;
 
 typedef struct NcmProcessResult {
-    NcmBuffer output;
+    StrBuilder output;
     int32 status;
 } NcmProcessResult;
 

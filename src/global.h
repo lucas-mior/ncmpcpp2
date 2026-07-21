@@ -8,7 +8,7 @@
 
 extern bool global_show_messages;
 extern bool global_seeking_in_progress;
-extern NcmBuffer global_volume_state;
+extern StrBuilder global_volume_state;
 extern NcmTimePoint global_timer;
 extern NcmRandom global_random;
 extern NcmMpdClient global_mpd;

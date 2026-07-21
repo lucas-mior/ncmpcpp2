@@ -48,14 +48,14 @@ typedef struct NativePlaylistEditorScreen {
     NcSongMenu content;
     NcWindow playlists_window;
     NcWindow content_window;
-    NcmBuffer playlist_filter_constraint;
-    NcmBuffer content_filter_constraint;
-    NcmBuffer playlist_search_constraint;
-    NcmBuffer content_search_constraint;
-    NcmBuffer playlists_title;
-    NcmBuffer content_title;
-    NcmBuffer displayed_playlist_path;
-    NcmBuffer observed_playlist_path;
+    StrBuilder playlist_filter_constraint;
+    StrBuilder content_filter_constraint;
+    StrBuilder playlist_search_constraint;
+    StrBuilder content_search_constraint;
+    StrBuilder playlists_title;
+    StrBuilder content_title;
+    StrBuilder displayed_playlist_path;
+    StrBuilder observed_playlist_path;
 
     NcmRegex playlist_filter_regex;
     NcmRegex content_filter_regex;

@@ -107,7 +107,7 @@ native_selected_items_adder_screen_init(
                    height, STRLIT_ARGS("Where?"), color, border);
     ncm_song_array_init(&screen->selected_songs);
     ncm_regex_init(&screen->search_regex);
-    ncm_buffer_init(&screen->search_constraint);
+    sb_init(&screen->search_constraint);
     screen->playlist = NULL;
     screen->previous_screen = NULL;
     screen->client = NULL;
@@ -162,7 +162,7 @@ native_selected_items_adder_screen_destroy(
     nc_window_destroy(&screen->position_window);
     ncm_song_array_destroy(&screen->selected_songs);
     ncm_regex_destroy(&screen->search_regex);
-    ncm_buffer_destroy(&screen->search_constraint);
+    sb_free(&screen->search_constraint);
     screen->playlist = NULL;
     screen->previous_screen = NULL;
     screen->client = NULL;
@@ -261,7 +261,7 @@ native_selected_items_adder_screen_open(
     nc_menu_reset(nc_editor_action_menu_base(&screen->position_selector));
     screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
     screen->search_enabled = false;
-    ncm_buffer_clear(&screen->search_constraint);
+    sb_clear(&screen->search_constraint);
     nc_menu_show_all_items(
         nc_editor_action_menu_base(&screen->playlist_selector));
     nc_menu_show_all_items(
@@ -1342,7 +1342,7 @@ adder_finish(NativeSelectedItemsAdderScreen *screen) {
     screen->client = NULL;
     screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
     screen->search_enabled = false;
-    ncm_buffer_clear(&screen->search_constraint);
+    sb_clear(&screen->search_constraint);
     nc_menu_show_all_items(
         nc_editor_action_menu_base(&screen->playlist_selector));
     nc_menu_show_all_items(

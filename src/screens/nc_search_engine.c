@@ -166,14 +166,14 @@ native_search_engine_screen_init(NativeSearchEngineScreen *screen,
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, NULL, 0, color, border);
     for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
-        ncm_buffer_init(&screen->constraints[i]);
+        sb_init(&screen->constraints[i]);
     }
-    ncm_buffer_init(&screen->filter_constraint);
-    ncm_buffer_init(&screen->search_constraint);
-    ncm_buffer_init(&screen->row_text);
-    ncm_buffer_init(&screen->title);
-    ncm_buffer_init(&screen->column_title);
-    ncm_buffer_append(&screen->title, STRLIT_ARGS("Search engine"));
+    sb_init(&screen->filter_constraint);
+    sb_init(&screen->search_constraint);
+    sb_init(&screen->row_text);
+    sb_init(&screen->title);
+    sb_init(&screen->column_title);
+    sb_append(&screen->title, STRLIT_ARGS("Search engine"));
     ncm_regex_init(&screen->filter_regex);
 
     screen->hooks = (NativeSearchEngineHooks){0};
@@ -214,13 +214,13 @@ native_search_engine_screen_destroy(NativeSearchEngineScreen *screen) {
         return;
     }
     ncm_regex_destroy(&screen->filter_regex);
-    ncm_buffer_destroy(&screen->filter_constraint);
-    ncm_buffer_destroy(&screen->row_text);
-    ncm_buffer_destroy(&screen->title);
-    ncm_buffer_destroy(&screen->column_title);
-    ncm_buffer_destroy(&screen->search_constraint);
+    sb_free(&screen->filter_constraint);
+    sb_free(&screen->row_text);
+    sb_free(&screen->title);
+    sb_free(&screen->column_title);
+    sb_free(&screen->search_constraint);
     for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
-        ncm_buffer_destroy(&screen->constraints[i]);
+        sb_free(&screen->constraints[i]);
     }
     nc_window_destroy(&screen->window);
     nc_search_row_menu_destroy(&screen->rows);
@@ -378,7 +378,7 @@ native_search_engine_screen_update_column_title(
         return;
     }
 
-    ncm_buffer_clear(&screen->column_title);
+    sb_clear(&screen->column_title);
     if ((Config.search_engine_display_mode != NCM_DISPLAY_MODE_COLUMNS)
         || !Config.titles_visibility || (Config.columns.items == NULL)
         || (Config.columns.len <= 0) || (screen->main_height <= 2)) {
@@ -584,7 +584,7 @@ native_search_engine_screen_reset(NativeSearchEngineScreen *screen) {
         return;
     }
     for (int32 i = 0; i < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
-        ncm_buffer_clear(&screen->constraints[i]);
+        sb_clear(&screen->constraints[i]);
     }
     native_search_engine_screen_clear_filter(screen);
     native_search_engine_screen_clear_find_constraint(screen);
@@ -646,7 +646,7 @@ native_search_engine_screen_set_constraint(NativeSearchEngineScreen *screen,
         || (idx >= NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT)) {
         return false;
     }
-    if (!ncm_buffer_set(&screen->constraints[idx], data, data_len)) {
+    if (!sb_set(&screen->constraints[idx], data, data_len)) {
         return false;
     }
     if (screen->prepared) {
@@ -663,7 +663,7 @@ native_search_engine_screen_clear_find_constraint(
     if (screen == NULL) {
         return;
     }
-    ncm_buffer_clear(&screen->search_constraint);
+    sb_clear(&screen->search_constraint);
     screen->match_to_pattern = false;
     return;
 }
@@ -1077,7 +1077,7 @@ native_search_engine_screen_apply_filter(NativeSearchEngineScreen *screen,
                            NCM_REGEX_LITERAL_CASE_INSENSITIVE, error)) {
         return false;
     }
-    if (!ncm_buffer_set(&screen->filter_constraint, pattern, pattern_len)) {
+    if (!sb_set(&screen->filter_constraint, pattern, pattern_len)) {
         return false;
     }
     callbacks = native_search_display_callbacks(screen, true);
@@ -1097,7 +1097,7 @@ native_search_engine_screen_clear_filter(NativeSearchEngineScreen *screen) {
     }
     ncm_regex_destroy(&screen->filter_regex);
     ncm_regex_init(&screen->filter_regex);
-    ncm_buffer_clear(&screen->filter_constraint);
+    sb_clear(&screen->filter_constraint);
     screen->filter_enabled = false;
     callbacks = native_search_display_callbacks(screen, false);
     nc_menu_set_display_callbacks(native_search_engine_screen_menu(screen),
@@ -1354,7 +1354,7 @@ native_search_row_label(NativeSearchEngineScreen *screen,
     }
     if (row->is_song) {
         if (screen->hooks.format_song) {
-            ncm_buffer_clear(&screen->row_text);
+            sb_clear(&screen->row_text);
             if (!screen->hooks.format_song(
                     screen->hooks.user, &row->song, &screen->row_text)) {
                 return false;

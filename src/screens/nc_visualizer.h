@@ -117,10 +117,10 @@ typedef struct NativeVisualizerScreen {
     NcScreen screen;
     NcWindow window;
 
-    NcmBuffer source_location;
-    NcmBuffer source_port;
-    NcmBuffer output_name;
-    NcmBuffer visualizer_chars;
+    StrBuilder source_location;
+    StrBuilder source_port;
+    StrBuilder output_name;
+    StrBuilder visualizer_chars;
     NcFormattedColor *visualizer_colors;
     NativeVisualizerDataSourceHooks data_source_hooks;
 

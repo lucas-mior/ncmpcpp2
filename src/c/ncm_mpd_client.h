@@ -9,8 +9,8 @@ typedef void NcmMpdNoidleCallback(int32 flags, void *user);
 
 typedef struct NcmMpdClient {
     NcmMpdConnection connection;
-    NcmBuffer host;
-    NcmBuffer password;
+    StrBuilder host;
+    StrBuilder password;
     uint16 port;
     int32 timeout_ms;
     bool command_list_active;

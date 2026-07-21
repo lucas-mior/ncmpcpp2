@@ -45,7 +45,7 @@ nc_help_screen_init(NcHelpScreen *screen,
                              0,
                              0);
     nc_buffer_init(&screen->buffer);
-    ncm_buffer_init(&screen->search_constraint);
+    sb_init(&screen->search_constraint);
     nc_help_screen_set_geometry(screen,
                                 start_x,
                                 width,
@@ -112,7 +112,7 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern,
 
     nc_buffer_remove_properties(&screen->buffer, 0);
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        ncm_buffer_clear(&screen->search_constraint);
+        sb_clear(&screen->search_constraint);
         nc_scrollpad_flush(&screen->scrollpad,
                            &screen->window,
                            &screen->buffer);
@@ -127,7 +127,7 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern,
         return false;
     }
 
-    if (!ncm_buffer_set(&screen->search_constraint, pattern, pattern_len)) {
+    if (!sb_set(&screen->search_constraint, pattern, pattern_len)) {
         ncm_regex_destroy(&regex);
         ncm_error_set(error, ENOMEM, STRLIT_ARGS("failed to save search"));
         return false;
@@ -151,7 +151,7 @@ nc_help_screen_clear_search(NcHelpScreen *screen) {
     if (screen == NULL) {
         return;
     }
-    ncm_buffer_clear(&screen->search_constraint);
+    sb_clear(&screen->search_constraint);
     nc_buffer_remove_properties(&screen->buffer, 0);
     nc_scrollpad_flush(&screen->scrollpad,
                        &screen->window,

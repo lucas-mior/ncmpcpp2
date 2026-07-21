@@ -295,8 +295,8 @@ configuration_destroy_strings(Configuration *config) {
 
 static void
 configuration_init_buffers(Configuration *config) {
-    ncm_buffer_init(&config->progressbar);
-    ncm_buffer_init(&config->visualizer_chars);
+    sb_init(&config->progressbar);
+    sb_init(&config->visualizer_chars);
     nc_buffer_init(&config->browser_playlist_prefix);
     nc_buffer_init(&config->selected_item_prefix);
     nc_buffer_init(&config->selected_item_suffix);
@@ -312,8 +312,8 @@ configuration_init_buffers(Configuration *config) {
 
 static void
 configuration_destroy_buffers(Configuration *config) {
-    ncm_buffer_destroy(&config->progressbar);
-    ncm_buffer_destroy(&config->visualizer_chars);
+    sb_free(&config->progressbar);
+    sb_free(&config->visualizer_chars);
     nc_buffer_destroy(&config->browser_playlist_prefix);
     nc_buffer_destroy(&config->selected_item_prefix);
     nc_buffer_destroy(&config->selected_item_suffix);

@@ -62,12 +62,12 @@ typedef struct NativeSearchEngineScreen {
     NcSearchRowMenu rows;
     NcWindow window;
     NativeSearchEngineHooks hooks;
-    NcmBuffer constraints[NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT];
-    NcmBuffer filter_constraint;
-    NcmBuffer search_constraint;
-    NcmBuffer row_text;
-    NcmBuffer title;
-    NcmBuffer column_title;
+    StrBuilder constraints[NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT];
+    StrBuilder filter_constraint;
+    StrBuilder search_constraint;
+    StrBuilder row_text;
+    StrBuilder title;
+    StrBuilder column_title;
     NcmRegex filter_regex;
 
     int32 start_x;

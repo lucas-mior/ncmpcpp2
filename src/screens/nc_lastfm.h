@@ -19,7 +19,7 @@ typedef struct NativeLastfmScreen {
     NcWindow window;
     NcScrollpad scrollpad;
     NcBuffer buffer;
-    NcmBuffer search_constraint;
+    StrBuilder search_constraint;
 
     NcmLastfmService service;
     NcmLastfmResult result;

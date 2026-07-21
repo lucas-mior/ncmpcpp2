@@ -169,10 +169,10 @@ current_screen_clear_current_search_constraint(void) {
         screen = native_c_screen_playlist_editor();
         if (screen->active_column == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT) {
             screen->content_search_enabled = false;
-            ncm_buffer_clear(&screen->content_search_constraint);
+            sb_clear(&screen->content_search_constraint);
         } else {
             screen->playlist_search_enabled = false;
-            ncm_buffer_clear(&screen->playlist_search_constraint);
+            sb_clear(&screen->playlist_search_constraint);
         }
         return;
     }
@@ -183,10 +183,10 @@ current_screen_clear_current_search_constraint(void) {
         screen = native_c_screen_tag_editor();
         if (screen->active_column == NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES) {
             screen->directory_search_enabled = false;
-            ncm_buffer_clear(&screen->directory_search_constraint);
+            sb_clear(&screen->directory_search_constraint);
         } else if (screen->active_column == NATIVE_TAG_EDITOR_COLUMN_TAGS) {
             screen->tag_search_enabled = false;
-            ncm_buffer_clear(&screen->tag_search_constraint);
+            sb_clear(&screen->tag_search_constraint);
         }
         return;
     }

@@ -197,15 +197,15 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     nc_browser_entry_menu_init(&screen->entries);
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, NULL, 0, color, border);
-    ncm_buffer_init(&screen->current_directory);
-    ncm_buffer_init(&screen->last_highlighted_directory);
-    ncm_buffer_init(&screen->title_text);
-    ncm_buffer_init(&screen->column_title_text);
-    ncm_buffer_init(&screen->filter_constraint);
-    ncm_buffer_init(&screen->search_constraint);
-    ncm_buffer_init(&screen->item_text_buffer);
-    ncm_buffer_init(&screen->path_buffer);
-    ncm_buffer_init(&screen->scratch_buffer);
+    sb_init(&screen->current_directory);
+    sb_init(&screen->last_highlighted_directory);
+    sb_init(&screen->title_text);
+    sb_init(&screen->column_title_text);
+    sb_init(&screen->filter_constraint);
+    sb_init(&screen->search_constraint);
+    sb_init(&screen->item_text_buffer);
+    sb_init(&screen->path_buffer);
+    sb_init(&screen->scratch_buffer);
     ncm_buffer_array_init(&screen->supported_extensions);
     ncm_regex_init(&screen->filter_regex);
 
@@ -238,15 +238,15 @@ native_browser_screen_destroy(NativeBrowserScreen *screen) {
     }
     ncm_regex_destroy(&screen->filter_regex);
     ncm_buffer_array_destroy(&screen->supported_extensions);
-    ncm_buffer_destroy(&screen->scratch_buffer);
-    ncm_buffer_destroy(&screen->path_buffer);
-    ncm_buffer_destroy(&screen->item_text_buffer);
-    ncm_buffer_destroy(&screen->filter_constraint);
-    ncm_buffer_destroy(&screen->search_constraint);
-    ncm_buffer_destroy(&screen->column_title_text);
-    ncm_buffer_destroy(&screen->title_text);
-    ncm_buffer_destroy(&screen->last_highlighted_directory);
-    ncm_buffer_destroy(&screen->current_directory);
+    sb_free(&screen->scratch_buffer);
+    sb_free(&screen->path_buffer);
+    sb_free(&screen->item_text_buffer);
+    sb_free(&screen->filter_constraint);
+    sb_free(&screen->search_constraint);
+    sb_free(&screen->column_title_text);
+    sb_free(&screen->title_text);
+    sb_free(&screen->last_highlighted_directory);
+    sb_free(&screen->current_directory);
     nc_window_destroy(&screen->window);
     nc_browser_entry_menu_destroy(&screen->entries);
     return;
@@ -429,14 +429,14 @@ native_browser_screen_set_current_directory(NativeBrowserScreen *screen,
                                    screen->current_directory.len);
     replacement = ncm_string_view_make(directory, directory_len);
     if (!native_browser_string_views_equal(current, replacement)) {
-        if (!ncm_buffer_set(&screen->last_highlighted_directory,
+        if (!sb_set(&screen->last_highlighted_directory,
                             current.data, current.len)) {
             return false;
         }
         screen->title_scroll_beginning = 0;
         screen->redraw_header = true;
     }
-    return ncm_buffer_set(&screen->current_directory, directory,
+    return sb_set(&screen->current_directory, directory,
                           directory_len);
 }
 
@@ -473,8 +473,8 @@ native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
         return;
     }
 
-    ncm_buffer_clear(&screen->title_text);
-    ncm_buffer_append(&screen->title_text, STRLIT_ARGS("Browse: "));
+    sb_clear(&screen->title_text);
+    sb_append(&screen->title_text, STRLIT_ARGS("Browse: "));
 
     directory = native_browser_screen_current_directory(screen);
     if (directory.len <= 0) {
@@ -503,7 +503,7 @@ native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
                          &scroll_beginning, scroll_width, separator,
                          SIZEOF(separator) - 1,
                          Config.header_text_scrolling);
-    ncm_buffer_append(&screen->title_text, scroll_buffer.data,
+    sb_append(&screen->title_text, scroll_buffer.data,
                       scroll_buffer.len);
     screen->title_scroll_beginning = scroll_beginning;
     sb_free(&scroll_buffer);
@@ -518,7 +518,7 @@ native_browser_screen_update_column_title(NativeBrowserScreen *screen) {
         return;
     }
 
-    ncm_buffer_clear(&screen->column_title_text);
+    sb_clear(&screen->column_title_text);
     if ((screen->active_display_mode != NCM_DISPLAY_MODE_COLUMNS)
         || !Config.titles_visibility || (Config.columns.items == NULL)
         || (Config.columns.len <= 0) || (screen->main_height <= 2)) {
@@ -1062,7 +1062,7 @@ native_browser_screen_apply_filter(NativeBrowserScreen *screen,
                            NCM_REGEX_LITERAL_CASE_INSENSITIVE, error)) {
         return false;
     }
-    if (!ncm_buffer_set(&screen->filter_constraint, pattern, pattern_len)) {
+    if (!sb_set(&screen->filter_constraint, pattern, pattern_len)) {
         return false;
     }
     screen->filter_enabled = true;
@@ -1078,7 +1078,7 @@ native_browser_screen_clear_filter(NativeBrowserScreen *screen) {
     }
     ncm_regex_destroy(&screen->filter_regex);
     ncm_regex_init(&screen->filter_regex);
-    ncm_buffer_clear(&screen->filter_constraint);
+    sb_clear(&screen->filter_constraint);
     screen->filter_enabled = false;
     native_browser_install_menu_callbacks(screen);
     nc_menu_show_all_items(native_browser_screen_menu(screen));
@@ -1105,7 +1105,7 @@ native_browser_screen_search(NativeBrowserScreen *screen,
         ncm_regex_destroy(&regex);
         return false;
     }
-    if (!ncm_buffer_set(&screen->search_constraint, pattern, pattern_len)) {
+    if (!sb_set(&screen->search_constraint, pattern, pattern_len)) {
         ncm_regex_destroy(&regex);
         return false;
     }
@@ -1777,11 +1777,11 @@ native_browser_add_parent_directory_item(
         return true;
     }
 
-    ncm_buffer_clear(&screen->scratch_buffer);
-    ncm_buffer_append(&screen->scratch_buffer,
+    sb_clear(&screen->scratch_buffer);
+    sb_append(&screen->scratch_buffer,
                       screen->current_directory.data,
                       screen->current_directory.len);
-    ncm_buffer_append(&screen->scratch_buffer, STRLIT_ARGS("/.."));
+    sb_append(&screen->scratch_buffer, STRLIT_ARGS("/.."));
 
     ncm_directory_init(&directory);
     ncm_mpd_item_init(&item);
@@ -1902,7 +1902,7 @@ native_browser_prepare_local_reload_directory(NativeBrowserScreen *screen,
         return false;
     }
     if (screen->current_directory.len <= 0) {
-        if (!ncm_buffer_set(&screen->current_directory, STRLIT_ARGS("~"))) {
+        if (!sb_set(&screen->current_directory, STRLIT_ARGS("~"))) {
             return false;
         }
         if (!ncm_path_expand_home(&screen->current_directory, error)) {

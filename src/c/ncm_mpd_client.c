@@ -115,8 +115,8 @@ ncm_mpd_client_init(NcmMpdClient *client) {
     }
 
     ncm_mpd_connection_init(&client->connection);
-    ncm_buffer_init(&client->host);
-    ncm_buffer_init(&client->password);
+    sb_init(&client->host);
+    sb_init(&client->password);
     ncm_mpd_client_set_buffer(&client->host, STRLIT_ARGS("localhost"));
     ncm_mpd_client_set_buffer(&client->password, NULL, 0);
     client->port = 6600;
@@ -137,8 +137,8 @@ ncm_mpd_client_destroy(NcmMpdClient *client) {
 
     ncm_mpd_client_disconnect(client);
     ncm_mpd_connection_destroy(&client->connection);
-    ncm_buffer_destroy(&client->host);
-    ncm_buffer_destroy(&client->password);
+    sb_free(&client->host);
+    sb_free(&client->password);
     client->port = 0;
     client->timeout_ms = 0;
     client->command_list_active = false;

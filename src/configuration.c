@@ -36,15 +36,15 @@ static void configuration_print_error(char *context, NcmError *error);
 
 void
 ncm_configuration_options_init(NcmConfigurationOptions *options) {
-    ncm_buffer_init(&options->host);
-    ncm_buffer_init(&options->current_song_format);
-    ncm_buffer_init(&options->screen_name);
-    ncm_buffer_init(&options->slave_screen_name);
+    sb_init(&options->host);
+    sb_init(&options->current_song_format);
+    sb_init(&options->screen_name);
+    sb_init(&options->slave_screen_name);
     ncm_buffer_array_init(&options->config_paths);
     ncm_buffer_array_init(&options->bindings_paths);
 
-    ncm_buffer_append(&options->host, STRLIT_ARGS("localhost"));
-    ncm_buffer_append(&options->current_song_format,
+    sb_append(&options->host, STRLIT_ARGS("localhost"));
+    sb_append(&options->current_song_format,
                       STRLIT_ARGS("{{{(%l) }{{%a - }%t}}|{%f}}"));
     options->port = 6600;
 
@@ -63,10 +63,10 @@ ncm_configuration_options_init(NcmConfigurationOptions *options) {
 
 void
 ncm_configuration_options_destroy(NcmConfigurationOptions *options) {
-    ncm_buffer_destroy(&options->host);
-    ncm_buffer_destroy(&options->current_song_format);
-    ncm_buffer_destroy(&options->screen_name);
-    ncm_buffer_destroy(&options->slave_screen_name);
+    sb_free(&options->host);
+    sb_free(&options->current_song_format);
+    sb_free(&options->screen_name);
+    sb_free(&options->slave_screen_name);
     ncm_buffer_array_destroy(&options->config_paths);
     ncm_buffer_array_destroy(&options->bindings_paths);
     return;

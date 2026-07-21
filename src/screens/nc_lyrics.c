@@ -29,7 +29,7 @@
 typedef struct NativeLyricsJob {
     NativeLyricsScreen *screen;
     NcmSong song;
-    NcmBuffer filename;
+    StrBuilder filename;
     NcmLyricsFetcherDef *fetcher;
     NcmLyricsResult result;
     NcBuffer log;
@@ -253,10 +253,10 @@ native_lyrics_screen_init(NativeLyricsScreen *screen,
     nc_scrollpad_init(&screen->scrollpad,
                       nc_lyrics_screen_height(&screen->screen));
     nc_buffer_init(&screen->display);
-    ncm_buffer_init(&screen->search_constraint);
-    ncm_buffer_init(&screen->title);
+    sb_init(&screen->search_constraint);
+    sb_init(&screen->title);
     ncm_song_init(&screen->song);
-    ncm_buffer_init(&screen->filename);
+    sb_init(&screen->filename);
     ncm_lyrics_result_init(&screen->result);
     ncm_job_queue_init(&screen->jobs);
 
@@ -264,7 +264,7 @@ native_lyrics_screen_init(NativeLyricsScreen *screen,
     screen->queued_songs_len = 0;
     screen->queued_songs_cap = 0;
 
-    ncm_buffer_init(&screen->consumer_message);
+    sb_init(&screen->consumer_message);
 
     screen->fetcher = NULL;
     screen->has_song = false;
@@ -289,12 +289,12 @@ native_lyrics_screen_destroy(NativeLyricsScreen *screen) {
             screen->queued_songs_cap*SIZEOF(*screen->queued_songs));
     }
 
-    ncm_buffer_destroy(&screen->consumer_message);
+    sb_free(&screen->consumer_message);
     ncm_lyrics_result_destroy(&screen->result);
-    ncm_buffer_destroy(&screen->filename);
+    sb_free(&screen->filename);
     ncm_song_destroy(&screen->song);
-    ncm_buffer_destroy(&screen->title);
-    ncm_buffer_destroy(&screen->search_constraint);
+    sb_free(&screen->title);
+    sb_free(&screen->search_constraint);
     nc_buffer_destroy(&screen->display);
     nc_window_destroy(&screen->window);
 
@@ -621,8 +621,8 @@ native_lyrics_screen_try_take_consumer_message(NativeLyricsScreen *screen,
     if (screen->consumer_message.len <= 0) {
         return false;
     }
-    ncm_buffer_copy(message, &screen->consumer_message);
-    ncm_buffer_clear(&screen->consumer_message);
+    sb_copy(message, &screen->consumer_message);
+    sb_clear(&screen->consumer_message);
     return true;
 }
 
@@ -690,9 +690,9 @@ native_lyrics_screen_find(NativeLyricsScreen *screen,
     result = native_lyrics_buffer_find(&screen->display, pattern,
                                        pattern_len, error);
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        ncm_buffer_clear(&screen->search_constraint);
+        sb_clear(&screen->search_constraint);
     } else if (!ncm_error_is_set(error)) {
-        (void)ncm_buffer_set(&screen->search_constraint, pattern,
+        (void)sb_set(&screen->search_constraint, pattern,
                              pattern_len);
     }
     nc_scrollpad_flush(&screen->scrollpad, &screen->window,
@@ -776,8 +776,8 @@ lyrics_title_callback(NcScreen *screen) {
     char separator[] = " ** ";
     NativeLyricsScreen *lyrics = lyrics_from_screen(screen);
 
-    ncm_buffer_clear(&lyrics->title);
-    ncm_buffer_append(&lyrics->title, STRLIT_ARGS(NATIVE_LYRICS_TITLE));
+    sb_clear(&lyrics->title);
+    sb_append(&lyrics->title, STRLIT_ARGS(NATIVE_LYRICS_TITLE));
     if (!lyrics->has_song || ncm_song_empty(&lyrics->song)) {
         return lyrics->title.data;
     }
@@ -789,7 +789,7 @@ lyrics_title_callback(NcScreen *screen) {
         return lyrics->title.data;
     }
 
-    ncm_buffer_append(&lyrics->title, STRLIT_ARGS(": "));
+    sb_append(&lyrics->title, STRLIT_ARGS(": "));
     scroll_begin = nc_lyrics_screen_scroll_begin(&lyrics->screen);
     scroll_width = COLS - utf8_width(lyrics->title.data,
                                          lyrics->title.len);
@@ -804,7 +804,7 @@ lyrics_title_callback(NcScreen *screen) {
                          &scroll_begin, scroll_width, separator,
                          SIZEOF(separator) - 1,
                          Config.header_text_scrolling);
-    ncm_buffer_append(&lyrics->title, scroll_buffer.data, scroll_buffer.len);
+    sb_append(&lyrics->title, scroll_buffer.data, scroll_buffer.len);
     nc_lyrics_screen_set_scroll_begin(&lyrics->screen, scroll_begin);
     sb_free(&scroll_buffer);
     sb_free(&song_title);
@@ -1117,7 +1117,7 @@ native_lyrics_job_create(NativeLyricsScreen *screen,
     job->screen = screen;
     ncm_song_init(&job->song);
     ncm_song_copy(&job->song, song);
-    ncm_buffer_init(&job->filename);
+    sb_init(&job->filename);
     nc_buffer_init(&job->log);
 
     win32_filename = Config.generate_win32_compatible_filenames;
@@ -1235,7 +1235,7 @@ native_lyrics_job_complete(bool success, NcmError *error, void *user) {
             native_lyrics_append_locale(&screen->display,
                                         job->result.text,
                                         job->result.text_len);
-            ncm_buffer_copy(&screen->filename, &job->filename);
+            sb_copy(&screen->filename, &job->filename);
             if (!native_lyrics_screen_save_file(screen,
                                                 job->filename.data,
                                                 job->filename.len,
@@ -1278,7 +1278,7 @@ native_lyrics_job_destroy(void *user) {
     }
 
     ncm_song_destroy(&job->song);
-    ncm_buffer_destroy(&job->filename);
+    sb_free(&job->filename);
     ncm_lyrics_result_destroy(&job->result);
     nc_buffer_destroy(&job->log);
     free2(job, SIZEOF(*job));
@@ -1364,14 +1364,14 @@ native_lyrics_set_consumer_fetch_message(NativeLyricsScreen *screen,
                                          NcmSong *song) {
     StrBuilder formatted = ncm_format_render_string(&Config.song_status_format,
                                                    song);
-    ncm_buffer_clear(&screen->consumer_message);
+    sb_clear(&screen->consumer_message);
 
-    ncm_buffer_append(&screen->consumer_message,
+    sb_append(&screen->consumer_message,
                       STRLIT_ARGS("Fetching lyrics for \""));
-    ncm_buffer_append(&screen->consumer_message,
+    sb_append(&screen->consumer_message,
                       formatted.data,
                       formatted.len);
-    ncm_buffer_append(&screen->consumer_message, STRLIT_ARGS("\"..."));
+    sb_append(&screen->consumer_message, STRLIT_ARGS("\"..."));
 
     sb_free(&formatted);
 
