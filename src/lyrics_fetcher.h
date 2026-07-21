@@ -14,6 +14,7 @@
     X(AZLYRICS, "azlyrics.com") \
     X(GENIUS, "genius.com") \
     X(LETRASMUS, "letras.mus.br") \
+    X(MUSICA, "musica.com") \
     X(MUSIXMATCH, "musixmatch.com") \
     X(TEKSTOWO, "tekstowo.pl") \
     X(VAGALUME, "vagalume.com.br") \

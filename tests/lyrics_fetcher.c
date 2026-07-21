@@ -285,6 +285,49 @@ lyrics_test_direct_candidate_download(
 }
 
 static CURLcode
+lyrics_test_musica_search_download(
+    StrBuilder *data, char *url, int32 url_len, char *referer,
+    int32 referer_len, bool follow_redirect, int32 timeout_seconds, void *user
+) {
+    int32 *calls;
+
+    calls = user;
+    *calls += 1;
+    assert(follow_redirect);
+    assert(timeout_seconds == 15);
+
+    if (*calls == 1) {
+        assert(STREQUAL(
+            url, url_len,
+            STRLIT_ARGS("https://www.google.com/search?hl=en&q=site%3A"
+                        "musica.com+luis+fonsi+despacito+lyrics")));
+        assert(referer == NULL);
+        assert(referer_len == 0);
+        sb_clear(data);
+        lyrics_test_append_search_link(
+            data,
+            STRLIT_ARGS("https://www.musica.com/letras.asp?letras=9124"));
+        lyrics_test_append_search_link(
+            data,
+            STRLIT_ARGS("https://www.musica.com/letras.asp?letra=2547843"));
+        return CURLE_OK;
+    }
+
+    assert(*calls == 2);
+    assert(STREQUAL(
+        url, url_len,
+        STRLIT_ARGS("https://www.musica.com/letras.asp?letra=2547843")));
+    assert(STREQUAL(
+        referer, referer_len,
+        STRLIT_ARGS("https://www.google.com/search?hl=en&q=site%3A"
+                    "musica.com+luis+fonsi+despacito+lyrics")));
+    sb_clear(data);
+    sb_append(data, STRLIT_ARGS("<html><body>not implemented yet</body>"
+                                "</html>"));
+    return CURLE_OK;
+}
+
+static CURLcode
 lyrics_test_jorge_ben_search_download(
     StrBuilder *data, char *url, int32 url_len, char *referer,
     int32 referer_len, bool follow_redirect, int32 timeout_seconds, void *user
@@ -406,6 +449,20 @@ lyrics_test_assert_first_direct_url(
 }
 
 static void
+lyrics_test_assert_no_direct_urls(NcmLyricsFetcherDef *fetcher, char *artist,
+                                  int32 artist_len, char *title,
+                                  int32 title_len) {
+    StrBuilderArray urls;
+
+    str_builder_array_init(&urls);
+    assert(lyrics_collect_direct_urls(fetcher, &urls, artist, artist_len,
+                                      title, title_len));
+    assert(urls.len == 0);
+    str_builder_array_destroy(&urls);
+    return;
+}
+
+static void
 test_registry_has_only_supported_fetchers(void) {
     NcmLyricsFetcherRegistry registry;
     char *removed[] = {
@@ -422,14 +479,16 @@ test_registry_has_only_supported_fetchers(void) {
             &registry, lyrics_tests[i].name, lyrics_tests[i].name_len));
     }
     assert(ncm_lyrics_fetcher_registry_append_name(
+        &registry, STRLIT_ARGS("musica")));
+    assert(ncm_lyrics_fetcher_registry_append_name(
         &registry, STRLIT_ARGS("internet")));
-    assert(registry.fetchers.len == LENGTH(lyrics_tests) + 1);
+    assert(registry.fetchers.len == LENGTH(lyrics_tests) + 2);
 
     for (int32 i = 0; i < LENGTH(removed); i += 1) {
         assert(!ncm_lyrics_fetcher_registry_append_name(
             &registry, removed[i], strlen32(removed[i])));
     }
-    assert(registry.fetchers.len == LENGTH(lyrics_tests) + 1);
+    assert(registry.fetchers.len == LENGTH(lyrics_tests) + 2);
     ncm_lyrics_fetcher_registry_destroy(&registry);
     return;
 }
@@ -534,6 +593,56 @@ test_provider_aware_slug_normalization(void) {
         STRLIT_ARGS("https://www.azlyrics.com/lyrics/beyoncejayz/"
                     "dejavu.html"));
 
+    ncm_lyrics_fetcher_def_destroy(&fetcher);
+    return;
+}
+
+static void
+test_musica_is_search_first(void) {
+    NcmLyricsFetcherDef fetcher;
+    NcmLyricsResult result;
+    StrBuilder search_url;
+    int32 calls;
+
+    calls = 0;
+    ncm_lyrics_fetcher_def_init(&fetcher);
+    ncm_lyrics_result_init(&result);
+    sb_init(&search_url);
+
+    assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
+                                           STRLIT_ARGS("musica")));
+    assert(STREQUAL(ncm_lyrics_fetcher_name(&fetcher),
+                    ncm_lyrics_fetcher_name_len(&fetcher),
+                    STRLIT_ARGS("musica.com")));
+    lyrics_test_assert_no_direct_urls(
+        &fetcher, STRLIT_ARGS("luis fonsi"), STRLIT_ARGS("despacito"));
+    assert(ncm_lyrics_fetcher_build_url(
+        &fetcher, &search_url, STRLIT_ARGS("luis fonsi"),
+        STRLIT_ARGS("despacito")));
+    assert(STREQUAL(
+        search_url.data, search_url.len,
+        STRLIT_ARGS("https://www.google.com/search?hl=en&q=site%3A"
+                    "musica.com+luis+fonsi+despacito+lyrics")));
+    assert(lyrics_search_candidate_score(
+        &fetcher,
+        STRLIT_ARGS("https://www.musica.com/letras.asp?letra=2547843"),
+        STRLIT_ARGS("luis fonsi"), STRLIT_ARGS("despacito")) > 0);
+    assert(lyrics_search_candidate_score(
+        &fetcher,
+        STRLIT_ARGS("https://www.musica.com/letras.asp?letras=9124"),
+        STRLIT_ARGS("luis fonsi"), STRLIT_ARGS("despacito")) == 0);
+
+    lyrics_test_set_download(lyrics_test_musica_search_download, &calls);
+    assert(ncm_lyrics_fetcher_fetch(
+        &fetcher, &result, STRLIT_ARGS("luis fonsi"),
+        STRLIT_ARGS("despacito")));
+    assert(calls == 2);
+    assert(!result.success);
+    assert(STREQUAL(result.text, result.text_len, STRLIT_ARGS("Not found")));
+
+    lyrics_test_set_download(NULL, NULL);
+    sb_free(&search_url);
+    ncm_lyrics_result_destroy(&result);
     ncm_lyrics_fetcher_def_destroy(&fetcher);
     return;
 }
@@ -653,6 +762,7 @@ main(void) {
     test_site_fetchers_direct_download_and_parse_fixtures();
     test_site_fetchers_search_download_and_parse_fixtures();
     test_provider_aware_slug_normalization();
+    test_musica_is_search_first();
     test_site_fetcher_tries_multiple_direct_urls();
     test_vagalume_search_finds_jorge_ben_jor_alias();
     test_internet_fetcher_returns_search_url_without_download();
