@@ -11,6 +11,7 @@
 
 #include "c/ncm_defs.h"
 #include "c/ncm_sample_buffer.h"
+#include "c/ncm_time.h"
 #include "curses/nc_formatted_color.h"
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
@@ -141,9 +142,8 @@ typedef struct NativeVisualizerScreen {
     int32 output_id;
     int32 fps;
     int32 sample_rate;
-    int32 sample_consumption_rate;
-    int32 sample_consumption_rate_up_ctr;
-    int32 sample_consumption_rate_dn_ctr;
+    NcmTimePoint sample_clock;
+    int64 sample_clock_frame_remainder;
     int32 visualizer_colors_len;
     int32 visualizer_colors_cap;
     int32 point_char_offset;
@@ -152,6 +152,7 @@ typedef struct NativeVisualizerScreen {
     int32 bar_char_len;
 
     bool reset_output;
+    bool sample_clock_initialized;
     bool autoscale;
     bool stereo;
     bool spectrum_smooth_look;
