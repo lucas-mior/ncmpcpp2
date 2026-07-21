@@ -1920,51 +1920,158 @@ write_entire_file(char *path, char *text, int64 text_len) {
     return;
 }
 
+#define STR_BUILDER_INITIAL_CAPACITY 16
+
 static void
-sb_reserve(StrBuilder *str_builder, int32 extra) {
-    int64 need = str_builder->len + extra + 1;
-    int32 old_cap = str_builder->cap;
-    int32 cap;
-
-    if (str_builder->data && need <= str_builder->cap) {
-        return;
-    }
-    if (need >= MAXOF(str_builder->cap)) {
-        error("StrBuilder only supports up to 2GB strings.\n");
-        fatal(EXIT_FAILURE);
-    }
-
-    if (!str_builder->data) {
-        old_cap = 0;
-    }
-
-    if (!str_builder->data || str_builder->cap <= 0) {
-        cap = 256;
-    } else {
-        cap = str_builder->cap;
-    }
-
-    while (cap < need) {
-        cap *= 2;
-    }
-
-    str_builder->data = realloc2(str_builder->data, old_cap, cap, 1);
-    str_builder->cap = cap;
+sb_init(StrBuilder *str_builder) {
+    str_builder->data = NULL;
+    str_builder->len = 0;
+    str_builder->cap = 0;
     return;
 }
 
 static void
-sb_append(StrBuilder *str_builder, char *s, int32 n) {
-    sb_reserve(str_builder, n);
-    memcpy64(str_builder->data + str_builder->len, s, n);
-    str_builder->len += n;
-    str_builder->data[str_builder->len] = 0;
+sb_free(StrBuilder *str_builder) {
+    if (str_builder->data) {
+        free2(str_builder->data, str_builder->cap);
+    }
+
+    sb_init(str_builder);
+    return;
 }
 
 static void
-sb_free(StrBuilder *str_builder) {
-    free2(str_builder->data, str_builder->cap);
-    memset64(str_builder, 0, SIZEOF(*str_builder));
+sb_clear(StrBuilder *str_builder) {
+    str_builder->len = 0;
+    if (str_builder->data) {
+        str_builder->data[0] = '\0';
+    }
+    return;
+}
+
+static bool
+sb_copy(StrBuilder *dest, StrBuilder *source) {
+    if (dest == NULL) {
+        return false;
+    }
+    if (dest == source) {
+        return true;
+    }
+    if (source == NULL) {
+        sb_free(dest);
+        return true;
+    }
+
+    sb_clear(dest);
+    sb_append(dest, source->data, source->len);
+    return true;
+}
+
+static void
+sb_move(StrBuilder *dest, StrBuilder *source) {
+    if (dest == NULL) {
+        return;
+    }
+    if (dest == source) {
+        return;
+    }
+
+    sb_free(dest);
+    if (source == NULL) {
+        sb_init(dest);
+        return;
+    }
+
+    *dest = *source;
+    sb_init(source);
+    return;
+}
+
+static bool
+sb_set(StrBuilder *str_builder, char *data, int32 data_len) {
+    if (str_builder == NULL) {
+        return false;
+    }
+    if (data_len < 0) {
+        return false;
+    }
+    if ((data == NULL) && (data_len > 0)) {
+        return false;
+    }
+    if ((data == str_builder->data) && str_builder->data) {
+        if (data_len > str_builder->len) {
+            return false;
+        }
+        str_builder->len = data_len;
+        str_builder->data[data_len] = '\0';
+        return true;
+    }
+
+    sb_clear(str_builder);
+    sb_append(str_builder, data, data_len);
+    return true;
+}
+
+static void
+sb_reserve(StrBuilder *str_builder, int32 extra) {
+    int64 needed;
+    int64 new_cap;
+    int32 old_cap;
+
+    if (extra <= 0) {
+        return;
+    }
+
+    needed = (int64)str_builder->len + extra + 1;
+    if (str_builder->data && (needed <= str_builder->cap)) {
+        return;
+    }
+    if (needed >= MAXOF(str_builder->cap)) {
+        error("StrBuilder only supports strings shorter than 2GB.\n");
+        fatal(EXIT_FAILURE);
+    }
+
+    old_cap = str_builder->cap;
+    if (str_builder->data == NULL) {
+        old_cap = 0;
+    }
+
+    new_cap = str_builder->cap;
+    if (new_cap <= 0) {
+        new_cap = STR_BUILDER_INITIAL_CAPACITY;
+    }
+    while (new_cap < needed) {
+        new_cap *= 2;
+    }
+    if (new_cap >= MAXOF(str_builder->cap)) {
+        new_cap = needed;
+    }
+
+    str_builder->data = realloc2(str_builder->data, old_cap, new_cap,
+                                 SIZEOF(*str_builder->data));
+    str_builder->cap = (int32)new_cap;
+    return;
+}
+
+static void
+sb_append(StrBuilder *str_builder, char *data, int32 data_len) {
+    if (data_len <= 0) {
+        return;
+    }
+
+    sb_reserve(str_builder, data_len);
+    memcpy64(str_builder->data + str_builder->len, data, data_len);
+    str_builder->len += data_len;
+    str_builder->data[str_builder->len] = '\0';
+    return;
+}
+
+static void
+sb_append_byte(StrBuilder *str_builder, char byte) {
+    sb_reserve(str_builder, 1);
+    str_builder->data[str_builder->len] = byte;
+    str_builder->len += 1;
+    str_builder->data[str_builder->len] = '\0';
     return;
 }
 
@@ -1990,6 +2097,10 @@ sb_printf(StrBuilder *str_builder, char *fmt, ...) {
         error("Error formatting \"%s\".", fmt);
         fatal(EXIT_FAILURE);
     }
+    if (n == 0) {
+        va_end(ap2);
+        return;
+    }
 
     sb_reserve(str_builder, n);
     vsnprintf(str_builder->data + str_builder->len, (size_t)n + 1, fmt, ap2);
@@ -1999,27 +2110,18 @@ sb_printf(StrBuilder *str_builder, char *fmt, ...) {
 }
 
 static char *
-sb_steal(StrBuilder *str_builder, int32 *len) {
-    char *out;
-    (void)len;
+sb_steal(StrBuilder *str_builder, int32 *len, int32 *cap) {
+    char *data = str_builder->data;
 
-    if (!str_builder->data) {
-        if (len) {
-            *len = 0;
-        }
-        return xstrdup("");
-    }
-
-    out = xstrdup(str_builder->data);
     if (len) {
         *len = str_builder->len;
     }
+    if (cap) {
+        *cap = str_builder->cap;
+    }
 
-    free2(str_builder->data, str_builder->cap);
-    str_builder->data = NULL;
-    str_builder->len = 0;
-    str_builder->cap = 0;
-    return out;
+    sb_init(str_builder);
+    return data;
 }
 
 static bool
