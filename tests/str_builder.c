@@ -313,6 +313,105 @@ str_builder_test_steal_transfers_exact_allocation(void) {
     return;
 }
 
+static void
+str_builder_test_array_append_clear_and_destroy(void) {
+    StrBuilderArray array;
+    StrBuilder *item;
+    StrBuilder source;
+    char bytes[] = {'a', '\0', 'b'};
+    StrBuilder *allocation;
+    int32 capacity;
+
+    str_builder_array_init(&array);
+    sb_init(&source);
+    ASSERT(str_builder_array_reserve(&array, 2));
+    allocation = array.items;
+    capacity = array.cap;
+
+    item = str_builder_array_append(&array);
+    ASSERT(item);
+    sb_append(item, STRLIT_ARGS("first"));
+
+    sb_append(&source, bytes, LENGTH(bytes));
+    ASSERT(str_builder_array_append_copy(&array, &source));
+    ASSERT_EQUAL(array.len, 2);
+    ASSERT(array.items == allocation);
+    ASSERT_EQUAL(array.items[0].data, "first");
+    ASSERT_EQUAL(array.items[1].len, LENGTH(bytes));
+    ASSERT(memcmp64(array.items[1].data, bytes, LENGTH(bytes)) == 0);
+    ASSERT(array.items[1].data != source.data);
+
+    str_builder_array_clear(&array);
+    ASSERT(array.items == allocation);
+    ASSERT_EQUAL(array.len, 0);
+    ASSERT_EQUAL(array.cap, capacity);
+    ASSERT(array.items[1].data == NULL);
+
+    sb_free(&source);
+    str_builder_array_destroy(&array);
+    ASSERT(array.items == NULL);
+    ASSERT_EQUAL(array.len, 0);
+    ASSERT_EQUAL(array.cap, 0);
+    return;
+}
+
+static void
+str_builder_test_array_copy_move_and_swap(void) {
+    StrBuilderArray source;
+    StrBuilderArray dest;
+    StrBuilderArray other;
+    StrBuilder *item;
+    StrBuilder *source_allocation;
+
+    str_builder_array_init(&source);
+    str_builder_array_init(&dest);
+    str_builder_array_init(&other);
+
+    item = str_builder_array_append(&source);
+    ASSERT(item);
+    sb_append(item, STRLIT_ARGS("source"));
+    item = str_builder_array_append(&source);
+    ASSERT(item);
+    sb_append(item, STRLIT_ARGS("second"));
+
+    ASSERT(str_builder_array_copy(&dest, &source));
+    ASSERT_EQUAL(dest.len, source.len);
+    ASSERT(dest.items != source.items);
+    ASSERT(dest.items[0].data != source.items[0].data);
+    ASSERT_EQUAL(dest.items[0].data, "source");
+    ASSERT_EQUAL(dest.items[1].data, "second");
+
+    ASSERT(str_builder_array_copy(&dest, &dest));
+    ASSERT_EQUAL(dest.len, 2);
+    ASSERT_EQUAL(dest.items[0].data, "source");
+
+    source_allocation = source.items;
+    str_builder_array_move(&other, &source);
+    ASSERT(other.items == source_allocation);
+    ASSERT_EQUAL(other.len, 2);
+    ASSERT(source.items == NULL);
+    ASSERT_EQUAL(source.len, 0);
+    ASSERT_EQUAL(source.cap, 0);
+
+    str_builder_array_swap(&dest, &other);
+    ASSERT(dest.items == source_allocation);
+    ASSERT_EQUAL(dest.items[0].data, "source");
+    ASSERT_EQUAL(other.items[0].data, "source");
+    ASSERT(other.items != dest.items);
+
+    str_builder_array_move(&dest, NULL);
+    ASSERT(dest.items == NULL);
+    ASSERT_EQUAL(dest.len, 0);
+    ASSERT_EQUAL(dest.cap, 0);
+
+    ASSERT(str_builder_array_append_copy(&source, NULL) == false);
+
+    str_builder_array_destroy(&source);
+    str_builder_array_destroy(&dest);
+    str_builder_array_destroy(&other);
+    return;
+}
+
 int
 main(void) {
     str_builder_test_init_and_empty_free();
@@ -325,6 +424,8 @@ main(void) {
     str_builder_test_reserve_direct_write_and_growth();
     str_builder_test_printf_appends();
     str_builder_test_steal_transfers_exact_allocation();
+    str_builder_test_array_append_clear_and_destroy();
+    str_builder_test_array_copy_move_and_swap();
     return 0;
 }
 

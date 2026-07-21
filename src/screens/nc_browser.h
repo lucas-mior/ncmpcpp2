@@ -25,7 +25,7 @@ typedef struct NativeBrowserScreen {
     StrBuilder item_text_buffer;
     StrBuilder path_buffer;
     StrBuilder scratch_buffer;
-    NcmBufferArray supported_extensions;
+    StrBuilderArray supported_extensions;
     NcmRegex filter_regex;
 
     int32 start_x;

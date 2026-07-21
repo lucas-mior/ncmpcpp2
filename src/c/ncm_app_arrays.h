@@ -18,7 +18,7 @@ NCM_ARRAY_DECLARE_APPEND(ncm_string_view_array,
                          NcmStringViewArray,
                          NcmStringView)
 
-NCM_ARRAY_DECLARE_TYPE(NcmBufferArray, NcmBuffer)
+typedef StrBuilderArray NcmBufferArray;
 NCM_ARRAY_DECLARE_INIT(ncm_buffer_array, NcmBufferArray)
 NCM_ARRAY_DECLARE_CLEAR(ncm_buffer_array, NcmBufferArray)
 NCM_ARRAY_DECLARE_DESTROY(ncm_buffer_array, NcmBufferArray)

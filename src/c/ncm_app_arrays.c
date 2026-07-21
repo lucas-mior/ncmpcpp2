@@ -3,9 +3,6 @@
 
 #include "c/ncm_app_arrays.h"
 
-static void ncm_app_array_buffer_init(void *item);
-static void ncm_app_array_buffer_destroy(void *item);
-static bool ncm_app_array_buffer_copy(void *dest, void *source);
 static void ncm_app_array_song_init(void *item);
 static void ncm_app_array_song_destroy(void *item);
 static bool ncm_app_array_song_copy(void *dest, void *source);
@@ -21,11 +18,6 @@ static void ncm_app_array_mpd_item_destroy(void *item);
 static bool ncm_app_array_mpd_item_copy(void *dest, void *source);
 
 static NcmArrayItemCallbacks ncm_app_array_no_callbacks = {0};
-static NcmArrayItemCallbacks ncm_app_array_buffer_callbacks = {
-    .init = ncm_app_array_buffer_init,
-    .destroy = ncm_app_array_buffer_destroy,
-    .copy = ncm_app_array_buffer_copy,
-};
 static NcmArrayItemCallbacks ncm_app_array_song_callbacks = {
     .init = ncm_app_array_song_init,
     .destroy = ncm_app_array_song_destroy,
@@ -47,23 +39,6 @@ static NcmArrayItemCallbacks ncm_app_array_mpd_item_callbacks = {
     .destroy = ncm_app_array_mpd_item_destroy,
     .copy = ncm_app_array_mpd_item_copy,
 };
-
-static void
-ncm_app_array_buffer_init(void *item) {
-    ncm_buffer_init(item);
-    return;
-}
-
-static void
-ncm_app_array_buffer_destroy(void *item) {
-    ncm_buffer_destroy(item);
-    return;
-}
-
-static bool
-ncm_app_array_buffer_copy(void *dest, void *source) {
-    return ncm_buffer_copy(dest, source);
-}
 
 static void
 ncm_app_array_song_init(void *item) {
@@ -150,23 +125,55 @@ NCM_ARRAY_DEFINE_APPEND(ncm_string_view_array,
                         NcmStringView,
                         &ncm_app_array_no_callbacks)
 
-NCM_ARRAY_DEFINE_INIT(ncm_buffer_array, NcmBufferArray)
-NCM_ARRAY_DEFINE_CLEAR(ncm_buffer_array,
-                       NcmBufferArray,
-                       &ncm_app_array_buffer_callbacks)
-NCM_ARRAY_DEFINE_DESTROY(ncm_buffer_array, NcmBufferArray)
-NCM_ARRAY_DEFINE_COPY(ncm_buffer_array, NcmBufferArray)
-NCM_ARRAY_DEFINE_MOVE(ncm_buffer_array, NcmBufferArray)
-NCM_ARRAY_DEFINE_SWAP(ncm_buffer_array, NcmBufferArray)
-NCM_ARRAY_DEFINE_RESERVE(ncm_buffer_array, NcmBufferArray)
-NCM_ARRAY_DEFINE_APPEND(ncm_buffer_array,
-                        NcmBufferArray,
-                        NcmBuffer,
-                        &ncm_app_array_buffer_callbacks)
-NCM_ARRAY_DEFINE_APPEND_COPY(ncm_buffer_array,
-                             NcmBufferArray,
-                             NcmBuffer,
-                             &ncm_app_array_buffer_callbacks)
+void
+ncm_buffer_array_init(NcmBufferArray *array) {
+    str_builder_array_init(array);
+    return;
+}
+
+void
+ncm_buffer_array_clear(NcmBufferArray *array) {
+    str_builder_array_clear(array);
+    return;
+}
+
+void
+ncm_buffer_array_destroy(NcmBufferArray *array) {
+    str_builder_array_destroy(array);
+    return;
+}
+
+bool
+ncm_buffer_array_copy(NcmBufferArray *dest, NcmBufferArray *source) {
+    return str_builder_array_copy(dest, source);
+}
+
+void
+ncm_buffer_array_move(NcmBufferArray *dest, NcmBufferArray *source) {
+    str_builder_array_move(dest, source);
+    return;
+}
+
+void
+ncm_buffer_array_swap(NcmBufferArray *left, NcmBufferArray *right) {
+    str_builder_array_swap(left, right);
+    return;
+}
+
+bool
+ncm_buffer_array_reserve(NcmBufferArray *array, int32 extra) {
+    return str_builder_array_reserve(array, extra);
+}
+
+NcmBuffer *
+ncm_buffer_array_append(NcmBufferArray *array) {
+    return str_builder_array_append(array);
+}
+
+bool
+ncm_buffer_array_append_copy(NcmBufferArray *array, NcmBuffer *item) {
+    return str_builder_array_append_copy(array, item);
+}
 
 NCM_ARRAY_DEFINE_INIT(ncm_song_array, NcmSongArray)
 NCM_ARRAY_DEFINE_CLEAR(ncm_song_array,

@@ -40,8 +40,8 @@ ncm_configuration_options_init(NcmConfigurationOptions *options) {
     sb_init(&options->current_song_format);
     sb_init(&options->screen_name);
     sb_init(&options->slave_screen_name);
-    ncm_buffer_array_init(&options->config_paths);
-    ncm_buffer_array_init(&options->bindings_paths);
+    str_builder_array_init(&options->config_paths);
+    str_builder_array_init(&options->bindings_paths);
 
     sb_append(&options->host, STRLIT_ARGS("localhost"));
     sb_append(&options->current_song_format,
@@ -67,17 +67,17 @@ ncm_configuration_options_destroy(NcmConfigurationOptions *options) {
     sb_free(&options->current_song_format);
     sb_free(&options->screen_name);
     sb_free(&options->slave_screen_name);
-    ncm_buffer_array_destroy(&options->config_paths);
-    ncm_buffer_array_destroy(&options->bindings_paths);
+    str_builder_array_destroy(&options->config_paths);
+    str_builder_array_destroy(&options->bindings_paths);
     return;
 }
 
 static bool
-command_line_options_append_path(NcmBufferArray *paths, char *path,
+command_line_options_append_path(StrBuilderArray *paths, char *path,
                                  int32 path_len) {
     StrBuilder *slot;
 
-    if ((slot = ncm_buffer_array_append(paths)) == NULL) {
+    if ((slot = str_builder_array_append(paths)) == NULL) {
         return false;
     }
     sb_append(slot, path, path_len);
@@ -85,12 +85,12 @@ command_line_options_append_path(NcmBufferArray *paths, char *path,
 }
 
 static bool
-configuration_append_buffer_path(NcmBufferArray *paths, StrBuilder *path) {
+configuration_append_buffer_path(StrBuilderArray *paths, StrBuilder *path) {
     return command_line_options_append_path(paths, path->data, path->len);
 }
 
 static bool
-configuration_append_default_file(NcmBufferArray *paths, char *filename,
+configuration_append_default_file(StrBuilderArray *paths, char *filename,
                                   int32 filename_len) {
     char *xdg_config_home;
     StrBuilder directory;
@@ -123,7 +123,7 @@ configuration_append_default_file(NcmBufferArray *paths, char *filename,
 }
 
 static bool
-configuration_append_legacy_file(NcmBufferArray *paths, char *filename,
+configuration_append_legacy_file(StrBuilderArray *paths, char *filename,
                                  int32 filename_len) {
     StrBuilder directory;
     StrBuilder path;
@@ -145,8 +145,8 @@ configuration_append_legacy_file(NcmBufferArray *paths, char *filename,
 }
 
 bool
-configuration_discover_default_paths(NcmBufferArray *config_paths,
-                                     NcmBufferArray *bindings_paths,
+configuration_discover_default_paths(StrBuilderArray *config_paths,
+                                     StrBuilderArray *bindings_paths,
                                      NcmError *error) {
     bool result;
 
@@ -507,15 +507,15 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
 
     if ((options->config_paths.len == 0)
         || (options->bindings_paths.len == 0)) {
-        NcmBufferArray default_config_paths;
-        NcmBufferArray default_bindings_paths;
+        StrBuilderArray default_config_paths;
+        StrBuilderArray default_bindings_paths;
 
-        ncm_buffer_array_init(&default_config_paths);
-        ncm_buffer_array_init(&default_bindings_paths);
+        str_builder_array_init(&default_config_paths);
+        str_builder_array_init(&default_bindings_paths);
         if (!configuration_discover_default_paths(
                 &default_config_paths, &default_bindings_paths, error)) {
-            ncm_buffer_array_destroy(&default_config_paths);
-            ncm_buffer_array_destroy(&default_bindings_paths);
+            str_builder_array_destroy(&default_config_paths);
+            str_builder_array_destroy(&default_bindings_paths);
             return false;
         }
         if (options->config_paths.len == 0) {
@@ -536,26 +536,26 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
                                                  path->data, path->len);
             }
         }
-        ncm_buffer_array_destroy(&default_config_paths);
-        ncm_buffer_array_destroy(&default_bindings_paths);
+        str_builder_array_destroy(&default_config_paths);
+        str_builder_array_destroy(&default_bindings_paths);
     }
     return true;
 }
 
 static void
 configuration_print_usage(char *program_name) {
-    NcmBufferArray config_paths;
-    NcmBufferArray bindings_paths;
+    StrBuilderArray config_paths;
+    StrBuilderArray bindings_paths;
     NcmError error;
 
-    ncm_buffer_array_init(&config_paths);
-    ncm_buffer_array_init(&bindings_paths);
+    str_builder_array_init(&config_paths);
+    str_builder_array_init(&bindings_paths);
     ncm_error_clear(&error);
     if (!configuration_discover_default_paths(&config_paths, &bindings_paths,
                                               &error)) {
         configuration_print_error("Failed to build default paths", &error);
-        ncm_buffer_array_destroy(&bindings_paths);
-        ncm_buffer_array_destroy(&config_paths);
+        str_builder_array_destroy(&bindings_paths);
+        str_builder_array_destroy(&config_paths);
         return;
     }
 
@@ -599,8 +599,8 @@ configuration_print_usage(char *program_name) {
     printf("  -q, --quiet                  suppress logs and excess output\n");
     printf("\n");
 
-    ncm_buffer_array_destroy(&bindings_paths);
-    ncm_buffer_array_destroy(&config_paths);
+    str_builder_array_destroy(&bindings_paths);
+    str_builder_array_destroy(&config_paths);
     return;
 }
 
@@ -633,7 +633,7 @@ configuration_print_version(void) {
 
 static bool
 configuration_make_string_views(NcmStringViewArray *views,
-                                NcmBufferArray *buffers) {
+                                StrBuilderArray *buffers) {
     ncm_string_view_array_init(views);
     for (int32 i = 0; i < buffers->len; i += 1) {
         NcmStringView *view;
