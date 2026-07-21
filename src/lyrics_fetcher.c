@@ -167,8 +167,8 @@ ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher) {
 }
 
 bool
-ncm_lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *fetcher, char *name,
-                                int32 name_len) {
+ncm_lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *fetcher,
+                                char *name, int32 name_len) {
     enum NcmLyricsFetcherType type;
     char *display_name;
     int32 display_name_len;
