@@ -42,6 +42,8 @@
 #define NATIVE_VISUALIZER_MAX_SAMPLE 32767
 #define NATIVE_VISUALIZER_DEFAULT_CHARS "●▮"
 #define NATIVE_VISUALIZER_NANOSECONDS_PER_SECOND 1000000000ll
+#define NATIVE_VISUALIZER_MILLISECONDS_PER_SECOND 1000
+#define NATIVE_VISUALIZER_TARGET_QUEUE_MILLISECONDS 100
 
 #if defined(HAVE_FFTW3_H)
 #define NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT 8
@@ -1075,14 +1077,64 @@ native_visualizer_screen_push_samples(NativeVisualizerScreen *screen,
 int32
 native_visualizer_screen_take_render_samples(NativeVisualizerScreen *screen,
                                              int16 *dest, int32 dest_len) {
+    int64 keep_samples;
+    int64 target_frames;
+    int32 available_samples;
+    int32 capacity;
+    int32 channels;
+    int32 discard_samples;
+    int32 queued_samples;
     int32 requested;
     int32 result;
+    int32 target_samples;
 
-    if ((screen == NULL) || (dest == NULL) || (dest_len <= 0)) {
+    if ((screen == NULL) || (dest == NULL) || (dest_len <= 0)
+        || (screen->sample_rate <= 0)) {
         return 0;
     }
 
+    channels = 1;
+    if (screen->stereo) {
+        channels = 2;
+    }
+    target_frames = (int64)screen->sample_rate
+                    *NATIVE_VISUALIZER_TARGET_QUEUE_MILLISECONDS;
+    target_frames /= NATIVE_VISUALIZER_MILLISECONDS_PER_SECOND;
+    target_samples = (int32)(target_frames*channels);
+    capacity = ncm_sample_buffer_capacity(&screen->buffered_samples);
+    if (target_samples > capacity) {
+        target_samples = capacity;
+    }
+
     requested = native_visualizer_screen_requested_samples(screen);
+    keep_samples = (int64)target_samples + requested;
+    if (keep_samples > capacity) {
+        keep_samples = capacity;
+    }
+
+    queued_samples = ncm_sample_buffer_size(&screen->buffered_samples);
+    if (queued_samples > keep_samples) {
+        discard_samples = queued_samples - (int32)keep_samples;
+        discard_samples -= discard_samples%channels;
+        if (discard_samples > 0) {
+            ncm_sample_buffer_get(&screen->buffered_samples,
+                                  discard_samples, NULL, 0);
+            queued_samples -= discard_samples;
+        }
+    }
+
+    available_samples = queued_samples - target_samples;
+    if (available_samples <= 0) {
+        return 0;
+    }
+    if (requested > available_samples) {
+        requested = available_samples;
+    }
+    requested -= requested%channels;
+    if (requested <= 0) {
+        return 0;
+    }
+
     result = ncm_sample_buffer_get_clamped(&screen->buffered_samples,
                                            requested,
                                            dest,
@@ -2130,6 +2182,7 @@ visualizer_read_samples(NativeVisualizerScreen *screen) {
     int32 buffer_size;
     int32 bytes_read;
     int32 samples_read;
+    int32 total_samples_read;
 
     if ((screen->data_source_hooks.read_source == NULL)
         || (screen->incoming_samples.data == NULL)) {
@@ -2141,28 +2194,36 @@ visualizer_read_samples(NativeVisualizerScreen *screen) {
         return 0;
     }
 
-    bytes_read = screen->data_source_hooks.read_source(
-        screen->data_source_hooks.user,
-        screen->source_fd,
-        screen->incoming_samples.data,
-        buffer_size);
-    if (bytes_read <= 0) {
-        return 0;
-    }
-    if (bytes_read > buffer_size) {
-        bytes_read = buffer_size;
-    }
+    total_samples_read = 0;
+    for (;;) {
+        bytes_read = screen->data_source_hooks.read_source(
+            screen->data_source_hooks.user,
+            screen->source_fd,
+            screen->incoming_samples.data,
+            buffer_size);
+        if (bytes_read <= 0) {
+            break;
+        }
+        if (bytes_read > buffer_size) {
+            bytes_read = buffer_size;
+        }
 
-    samples_read = (int32)(bytes_read
-                           / SIZEOF(*screen->incoming_samples.data));
-    if (samples_read <= 0) {
-        return 0;
+        samples_read = (int32)(bytes_read
+                               / SIZEOF(*screen->incoming_samples.data));
+        if (samples_read <= 0) {
+            continue;
+        }
+        if (!native_visualizer_screen_push_samples(
+                screen, screen->incoming_samples.data, samples_read)) {
+            break;
+        }
+        if (samples_read >= INT32_MAX - total_samples_read) {
+            total_samples_read = INT32_MAX;
+        } else {
+            total_samples_read += samples_read;
+        }
     }
-    if (!native_visualizer_screen_push_samples(
-            screen, screen->incoming_samples.data, samples_read)) {
-        return 0;
-    }
-    return samples_read;
+    return total_samples_read;
 }
 
 static void
