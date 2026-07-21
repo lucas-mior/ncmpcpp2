@@ -49,12 +49,14 @@ typedef struct LyricsFetcherTestCase {
     char *name;
     char *fixture;
     char *direct_url;
+    char *bad_page_url;
     char *page_url;
     char *search_url;
     char *expected_text;
 
     int32 name_len;
     int32 direct_url_len;
+    int32 bad_page_url_len;
     int32 page_url_len;
     int32 search_url_len;
     int32 expected_text_len;
@@ -66,16 +68,18 @@ typedef struct LyricsFetcherTestContext {
     int32 calls;
 } LyricsFetcherTestContext;
 
-#define LYRICS_TEST(NAME, FIXTURE, DIRECT_URL, PAGE_URL, SEARCH_URL, \
-                    EXPECTED_TEXT, SUCCESS) { \
+#define LYRICS_TEST(NAME, FIXTURE, DIRECT_URL, BAD_PAGE_URL, PAGE_URL, \
+                    SEARCH_URL, EXPECTED_TEXT, SUCCESS) { \
     .name = NAME, \
     .fixture = FIXTURE, \
     .direct_url = DIRECT_URL, \
+    .bad_page_url = BAD_PAGE_URL, \
     .page_url = PAGE_URL, \
     .search_url = SEARCH_URL, \
     .expected_text = EXPECTED_TEXT, \
     .name_len = STRLIT_LEN(NAME), \
     .direct_url_len = STRLIT_LEN(DIRECT_URL), \
+    .bad_page_url_len = STRLIT_LEN(BAD_PAGE_URL), \
     .page_url_len = STRLIT_LEN(PAGE_URL), \
     .search_url_len = STRLIT_LEN(SEARCH_URL), \
     .expected_text_len = STRLIT_LEN(EXPECTED_TEXT), \
@@ -87,6 +91,7 @@ static LyricsFetcherTestCase lyrics_tests[] = {
         "azlyrics",
         "tests/lyrics/azlyrics.html",
         "https://www.azlyrics.com/lyrics/luisfonsi/despacito.html",
+        "https://www.azlyrics.com/lyrics/luisfonsi/otra.html",
         "https://www.azlyrics.com/lyrics/luisfonsi/despacito.html",
         "https://www.google.com/search?hl=en&q=site%3Aazlyrics.com+"
         "luis+fonsi+despacito+lyrics",
@@ -96,6 +101,7 @@ static LyricsFetcherTestCase lyrics_tests[] = {
         "genius",
         "tests/lyrics/genius.html",
         "https://genius.com/luis-fonsi-despacito-lyrics",
+        "https://genius.com/Luis-fonsi-otra-lyrics",
         "https://genius.com/Luis-fonsi-despacito-lyrics",
         "https://www.google.com/search?hl=en&q=site%3Agenius.com+"
         "luis+fonsi+despacito+lyrics",
@@ -105,6 +111,7 @@ static LyricsFetcherTestCase lyrics_tests[] = {
         "letras",
         "tests/lyrics/letrasmus.html",
         "https://www.letras.mus.br/luis-fonsi/despacito/",
+        "https://www.letras.mus.br/luis-fonsi/outra/",
         "https://www.letras.mus.br/luis-fonsi/despacito/",
         "https://www.google.com/search?hl=en&q=site%3Aletras.mus.br+"
         "luis+fonsi+despacito+lyrics",
@@ -114,6 +121,7 @@ static LyricsFetcherTestCase lyrics_tests[] = {
         "musixmatch",
         "tests/lyrics/musixmatch.html",
         "https://www.musixmatch.com/lyrics/luis-fonsi/despacito",
+        "https://www.musixmatch.com/lyrics/Luis-Fonsi/Otra",
         "https://www.musixmatch.com/lyrics/Luis-Fonsi/Despacito",
         "https://www.google.com/search?hl=en&q=site%3Amusixmatch.com+"
         "luis+fonsi+despacito+lyrics",
@@ -123,6 +131,7 @@ static LyricsFetcherTestCase lyrics_tests[] = {
         "tekstowo",
         "tests/lyrics/tekstowo.html",
         "https://www.tekstowo.pl/luis-fonsi/despacito",
+        "https://www.tekstowo.pl/luis-fonsi/outra",
         "https://www.tekstowo.pl/luis-fonsi/"
         "despacito-ft-daddy-yankee",
         "https://www.google.com/search?hl=en&q=site%3Atekstowo.pl+"
@@ -133,6 +142,7 @@ static LyricsFetcherTestCase lyrics_tests[] = {
         "vagalume",
         "tests/lyrics/vagalume.html",
         "https://www.vagalume.com.br/luis-fonsi/despacito.html",
+        "https://www.vagalume.com.br/luis-fonsi/outra.html",
         "https://www.vagalume.com.br/luis-fonsi/"
         "despacito-feat-daddy-yankee.html",
         "https://www.google.com/search?hl=en&q=site%3Avagalume.com.br+"
@@ -185,6 +195,14 @@ lyrics_test_direct_download(StrBuilder *data, char *url, int32 url_len,
     return CURLE_OK;
 }
 
+static void
+lyrics_test_append_search_link(StrBuilder *data, char *url, int32 url_len) {
+    sb_append(data, STRLIT_ARGS("<a href=\"/url?q=&amp;url="));
+    lyrics_append_query(data, url, url_len);
+    sb_append(data, STRLIT_ARGS("&amp;sa=U\">lyrics</a>"));
+    return;
+}
+
 static CURLcode
 lyrics_test_download(StrBuilder *data, char *url, int32 url_len, char *referer,
                      int32 referer_len, bool follow_redirect,
@@ -213,18 +231,29 @@ lyrics_test_download(StrBuilder *data, char *url, int32 url_len, char *referer,
         assert(referer == NULL);
         assert(referer_len == 0);
         sb_clear(data);
-        sb_append(
-            data,
-            STRLIT_ARGS("<a href=\"https://example.com/luis-fonsi/"
-                        "despacito\">wrong domain</a>"
-                        "<a href=\"/url?q=&amp;url="));
-        lyrics_append_query(data, test->page_url, test->page_url_len);
         sb_append(data,
-                          STRLIT_ARGS("&amp;sa=U\">lyrics</a>"));
+                  STRLIT_ARGS("<a href=\"https://example.com/luis-fonsi/"
+                              "despacito\">wrong domain</a>"));
+        lyrics_test_append_search_link(data, test->bad_page_url,
+                                       test->bad_page_url_len);
+        lyrics_test_append_search_link(data, test->bad_page_url,
+                                       test->bad_page_url_len);
+        lyrics_test_append_search_link(data, test->page_url,
+                                       test->page_url_len);
         return CURLE_OK;
     }
 
-    assert(context->calls == 3);
+    if (context->calls == 3) {
+        assert(STREQUAL(url, url_len, test->bad_page_url,
+                        test->bad_page_url_len));
+        assert(STREQUAL(referer, referer_len, test->search_url,
+                        test->search_url_len));
+        sb_clear(data);
+        sb_append(data, STRLIT_ARGS("No lyrics here"));
+        return CURLE_OK;
+    }
+
+    assert(context->calls == 4);
     assert(STREQUAL(url, url_len, test->page_url, test->page_url_len));
     assert(STREQUAL(referer, referer_len, test->search_url,
                     test->search_url_len));
@@ -362,7 +391,7 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
         assert(ncm_lyrics_fetcher_fetch(
             &fetcher, &result, STRLIT_ARGS("luis fonsi"),
             STRLIT_ARGS("despacito")));
-        assert(context.calls == 3);
+        assert(context.calls == 4);
         lyrics_test_assert_result(context.test, &result);
 
         sb_free(&search_url);
@@ -392,9 +421,8 @@ test_provider_aware_slug_normalization(void) {
                     "que-nega-e-essa.html")));
     assert(lyrics_search_candidate_ok(
         &fetcher,
-        STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben/"
-                    "que-nega-e-essa.html"),
-        STRLIT_ARGS("Jorge Ben"), STRLIT_ARGS("Que nega é essa")));
+        STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben-jor/"
+                    "que-nega-e-essa.html")));
 
     assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT_ARGS("azlyrics")));
