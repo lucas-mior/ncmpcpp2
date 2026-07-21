@@ -285,6 +285,72 @@ lyrics_test_direct_candidate_download(
 }
 
 static CURLcode
+lyrics_test_jorge_ben_search_download(
+    StrBuilder *data, char *url, int32 url_len, char *referer,
+    int32 referer_len, bool follow_redirect, int32 timeout_seconds, void *user
+) {
+    LyricsFetcherTestContext *context;
+
+    context = user;
+    assert(context != NULL);
+    assert(context->test != NULL);
+    context->calls += 1;
+    assert(follow_redirect);
+    assert(timeout_seconds == 15);
+
+    if (context->calls == 1) {
+        assert(STREQUAL(
+            url, url_len,
+            STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben/"
+                        "que-nega-e-essa.html")));
+        assert(referer == NULL);
+        assert(referer_len == 0);
+        return CURLE_HTTP_RETURNED_ERROR;
+    }
+    if (context->calls == 2) {
+        assert(STREQUAL(
+            url, url_len,
+            STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben/"
+                        "que-nega-%C3%A9-essa.html")));
+        assert(referer == NULL);
+        assert(referer_len == 0);
+        return CURLE_HTTP_RETURNED_ERROR;
+    }
+    if (context->calls == 3) {
+        assert(STREQUAL(
+            url, url_len,
+            STRLIT_ARGS("https://www.google.com/search?hl=en&q=site%3A"
+                        "vagalume.com.br+Jorge+Ben+Que+nega+%C3%A9+"
+                        "essa+lyrics")));
+        assert(referer == NULL);
+        assert(referer_len == 0);
+        sb_clear(data);
+        lyrics_test_append_search_link(
+            data,
+            STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben-jor/"
+                        "mas-que-nada.html"));
+        lyrics_test_append_search_link(
+            data,
+            STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben-jor/"
+                        "que-nega-e-essa.html"));
+        return CURLE_OK;
+    }
+
+    assert(context->calls == 4);
+    assert(STREQUAL(
+        url, url_len,
+        STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben-jor/"
+                    "que-nega-e-essa.html")));
+    assert(STREQUAL(
+        referer, referer_len,
+        STRLIT_ARGS("https://www.google.com/search?hl=en&q=site%3A"
+                    "vagalume.com.br+Jorge+Ben+Que+nega+%C3%A9+"
+                    "essa+lyrics")));
+    lyrics_test_append_fixture(data, context->test);
+    return CURLE_OK;
+}
+
+static CURLcode
 lyrics_test_timeout(StrBuilder *data, char *url, int32 url_len, char *referer,
                     int32 referer_len, bool follow_redirect,
                     int32 timeout_seconds, void *user) {
@@ -496,6 +562,32 @@ test_site_fetcher_tries_multiple_direct_urls(void) {
 }
 
 static void
+test_vagalume_search_finds_jorge_ben_jor_alias(void) {
+    LyricsFetcherTestContext context;
+    NcmLyricsFetcherDef fetcher;
+    NcmLyricsResult result;
+
+    context.test = &lyrics_tests[5];
+    context.calls = 0;
+    ncm_lyrics_fetcher_def_init(&fetcher);
+    ncm_lyrics_result_init(&result);
+
+    assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
+                                           STRLIT_ARGS("vagalume")));
+    lyrics_test_set_download(lyrics_test_jorge_ben_search_download, &context);
+    assert(ncm_lyrics_fetcher_fetch(
+        &fetcher, &result, STRLIT_ARGS("Jorge Ben"),
+        STRLIT_ARGS("Que nega é essa")));
+    assert(context.calls == 4);
+    lyrics_test_assert_result(context.test, &result);
+
+    lyrics_test_set_download(NULL, NULL);
+    ncm_lyrics_result_destroy(&result);
+    ncm_lyrics_fetcher_def_destroy(&fetcher);
+    return;
+}
+
+static void
 test_internet_fetcher_returns_search_url_without_download(void) {
     NcmLyricsFetcherDef fetcher;
     NcmLyricsResult result;
@@ -559,6 +651,7 @@ main(void) {
     test_site_fetchers_search_download_and_parse_fixtures();
     test_provider_aware_slug_normalization();
     test_site_fetcher_tries_multiple_direct_urls();
+    test_vagalume_search_finds_jorge_ben_jor_alias();
     test_internet_fetcher_returns_search_url_without_download();
     test_transport_error_is_reported();
     exit(EXIT_SUCCESS);
