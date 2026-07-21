@@ -817,14 +817,14 @@ lyrics_update_callback(NcScreen *screen) {
 
 static void
 lyrics_mouse_button_pressed_callback(NcScreen *screen, MEVENT event) {
-    NativeLyricsScreen *lyrics;
+    NativeLyricsScreen *lyrics = lyrics_from_screen(screen);
 
-    lyrics = lyrics_from_screen(screen);
     if ((event.bstate & BUTTON5_PRESSED) != 0) {
         native_lyrics_mouse_scroll(lyrics, NC_SCROLL_DOWN);
     } else if ((event.bstate & BUTTON4_PRESSED) != 0) {
         native_lyrics_mouse_scroll(lyrics, NC_SCROLL_UP);
     }
+
     return;
 }
 
