@@ -29,10 +29,10 @@ static bool lyrics_name_to_type(char *name, int32 name_len,
                                 enum NcmLyricsFetcherType *type);
 static char *lyrics_type_name(enum NcmLyricsFetcherType type, int32 *len);
 static char *lyrics_type_domain(enum NcmLyricsFetcherType type, int32 *len);
-static bool lyrics_append_slug(StrBuilder *buffer, char *string,
-                               int32 string_len, bool compact);
-static void lyrics_append_query(StrBuilder *buffer, char *string,
-                                int32 string_len);
+static bool lyrics_append_slug(StrBuilder *buffer,
+                               char *string, int32 string_len, bool compact);
+static void lyrics_append_query(StrBuilder *buffer,
+                                char *string, int32 string_len);
 static int32 lyrics_hex_value(char ch);
 static bool lyrics_build_direct_url(NcmLyricsFetcherDef *fetcher,
                                     StrBuilder *url, char *artist,
@@ -68,8 +68,8 @@ NCM_ARRAY_DEFINE_APPEND(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray,
                         NcmLyricsFetcherDef, &lyrics_fetcher_callbacks)
 
 static bool
-lyrics_string_set(char **data, int32 *len, int32 *cap, char *source,
-                  int32 source_len) {
+lyrics_string_set(char **data, int32 *len, int32 *cap,
+                  char *source, int32 source_len) {
     char *new_data;
     int32 new_cap;
 
@@ -82,9 +82,11 @@ lyrics_string_set(char **data, int32 *len, int32 *cap, char *source,
     new_data = malloc2(new_cap);
     memcpy64(new_data, source, source_len);
     new_data[source_len] = '\0';
+
     *data = new_data;
     *len = source_len;
     *cap = new_cap;
+
     return true;
 }
 
@@ -129,8 +131,8 @@ ncm_lyrics_result_clear(NcmLyricsResult *result) {
 }
 
 bool
-ncm_lyrics_result_set(NcmLyricsResult *result, bool success, char *text,
-                      int32 text_len) {
+ncm_lyrics_result_set(NcmLyricsResult *result, bool success,
+                      char *text, int32 text_len) {
     if (result == NULL) {
         return false;
     }
@@ -165,8 +167,8 @@ ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher) {
 }
 
 bool
-ncm_lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *fetcher, char *name,
-                                int32 name_len) {
+ncm_lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *fetcher,
+                                char *name, int32 name_len) {
     enum NcmLyricsFetcherType type;
     char *display_name;
     int32 display_name_len;
@@ -292,8 +294,7 @@ lyrics_build_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *url,
         sb_append_byte(url, '/');
         break;
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
-        sb_append(url,
-                          STRLIT_ARGS("https://www.musixmatch.com/lyrics/"));
+        sb_append(url, STRLIT_ARGS("https://www.musixmatch.com/lyrics/"));
         valid = lyrics_append_slug(url, artist, artist_len, compact);
         sb_append_byte(url, '/');
         valid = valid && lyrics_append_slug(url, title, title_len, compact);
@@ -305,8 +306,7 @@ lyrics_build_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *url,
         valid = valid && lyrics_append_slug(url, title, title_len, compact);
         break;
     case NCM_LYRICS_FETCHER_VAGALUME:
-        sb_append(url,
-                          STRLIT_ARGS("https://www.vagalume.com.br/"));
+        sb_append(url, STRLIT_ARGS("https://www.vagalume.com.br/"));
         valid = lyrics_append_slug(url, artist, artist_len, compact);
         sb_append_byte(url, '/');
         valid = valid && lyrics_append_slug(url, title, title_len, compact);
