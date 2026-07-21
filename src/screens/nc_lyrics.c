@@ -933,9 +933,7 @@ native_lyrics_replace_search_separators(NcmBuffer *buffer) {
 
 static void
 native_lyrics_append_locale(NcBuffer *buffer, char *data, int32 data_len) {
-    NcmBuffer converted;
-
-    converted = ncm_charset_utf8_to_locale(data, data_len);
+    NcmBuffer converted = ncm_charset_utf8_to_locale(data, data_len);
     nc_buffer_append_data(buffer, converted.data, converted.len);
     ncm_buffer_destroy(&converted);
     return;
