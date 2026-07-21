@@ -5,7 +5,7 @@
 
 static void
 ncm_buffer_compat_test_alias_and_direct_access(void) {
-    NcmBuffer buffer;
+    StrBuilder buffer;
     StrBuilder *str_builder = &buffer;
 
     ncm_buffer_init(&buffer);
@@ -25,8 +25,8 @@ ncm_buffer_compat_test_alias_and_direct_access(void) {
 
 static void
 ncm_buffer_compat_test_wrappers(void) {
-    NcmBuffer source;
-    NcmBuffer dest;
+    StrBuilder source;
+    StrBuilder dest;
     char bytes[] = {'x', '\0', 'y'};
     char *allocation;
     char *stolen;
