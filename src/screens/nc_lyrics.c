@@ -638,8 +638,8 @@ native_lyrics_screen_filename(NativeLyricsScreen *screen) {
 }
 
 bool
-native_lyrics_buffer_find(NcBuffer *buffer, char *pattern,
-                          int32 pattern_len, NcmError *error) {
+native_lyrics_buffer_find(NcBuffer *buffer,
+                          char *pattern, int32 pattern_len, NcmError *error) {
     NativeLyricsFindState state;
     NcmRegex regex;
     char *data;
