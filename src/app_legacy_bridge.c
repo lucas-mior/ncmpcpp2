@@ -68,16 +68,16 @@ app_legacy_bridge_set_resize_flags(void) {
 
 static void
 app_legacy_bridge_dispatch_lyrics_jobs(void) {
-    NcmBuffer message;
+    StrBuilder message;
 
     native_lyrics_screen_dispatch_jobs(native_c_screen_lyrics());
-    ncm_buffer_init(&message);
+    sb_init(&message);
     if (native_lyrics_screen_try_take_consumer_message(native_c_screen_lyrics(),
                                                        &message)) {
         ncm_statusbar_print(Config.message_delay_time, message.data,
                             message.len);
     }
-    ncm_buffer_destroy(&message);
+    sb_free(&message);
     return;
 }
 

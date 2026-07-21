@@ -79,9 +79,9 @@ int32 ncm_song_format_numeric_tag(char *buffer, int32 buffer_cap,
 int32 ncm_song_format_track_number(char *buffer, int32 buffer_cap,
                                    char *tag, int32 tag_len);
 int32 ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap);
-NcmBuffer ncm_song_getter_buffer(NcmSong *song,
+StrBuilder ncm_song_getter_buffer(NcmSong *song,
                                  enum NcmSongGetter getter, int32 idx);
-NcmBuffer ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
+StrBuilder ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
                                char *separator, int32 separator_len,
                                bool show_duplicates);
 bool ncm_song_equal(NcmSong *a, NcmSong *b);

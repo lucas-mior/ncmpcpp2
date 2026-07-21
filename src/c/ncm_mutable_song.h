@@ -60,13 +60,13 @@ bool ncm_mutable_song_set_tags(NcmMutableSong *song, enum NcmTagsField field,
                                char *separator, int32 separator_len);
 bool ncm_mutable_song_get_tag(NcmMutableSong *song, enum NcmTagsField field,
                               int32 idx, NcmStringView *view);
-NcmBuffer ncm_mutable_song_get_numeric_tag_buffer(NcmMutableSong *song,
+StrBuilder ncm_mutable_song_get_numeric_tag_buffer(NcmMutableSong *song,
                                                   enum NcmTagsField field,
                                                   int32 idx);
-NcmBuffer ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
+StrBuilder ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
                                           enum NcmTagsField field,
                                           int32 idx);
-NcmBuffer ncm_mutable_song_tags_buffer(NcmMutableSong *song,
+StrBuilder ncm_mutable_song_tags_buffer(NcmMutableSong *song,
                                        enum NcmTagsField field,
                                        char *separator, int32 separator_len,
                                        bool show_duplicates);

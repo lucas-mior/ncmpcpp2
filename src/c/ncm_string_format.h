@@ -37,7 +37,7 @@ void ncm_string_format_apply(NcmBuffer *out, char *format,
                              int32 format_len,
                              NcmStringFormatArg *args,
                              int32 args_len);
-NcmBuffer ncm_string_format_make(char *format, int32 format_len,
+StrBuilder ncm_string_format_make(char *format, int32 format_len,
                                  NcmStringFormatArg *args,
                                  int32 args_len);
 

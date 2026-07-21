@@ -538,54 +538,54 @@ ncm_mutable_song_get_tag(NcmMutableSong *song, enum NcmTagsField field,
     return true;
 }
 
-NcmBuffer
+StrBuilder
 ncm_mutable_song_get_numeric_tag_buffer(NcmMutableSong *song,
                                         enum NcmTagsField field,
                                         int32 idx) {
-    NcmBuffer buffer;
+    StrBuilder buffer;
     NcmStringView view;
     int32 len;
 
-    ncm_buffer_init(&buffer);
+    sb_init(&buffer);
     if (!ncm_mutable_song_get_tag(song, field, idx, &view)) {
         return buffer;
     }
 
     len = ncm_song_numeric_tag_len(view.data, view.len);
-    ncm_buffer_reserve(&buffer, len);
+    sb_reserve(&buffer, len);
     buffer.len = ncm_song_format_numeric_tag(buffer.data, buffer.cap,
                                              view.data, view.len);
     return buffer;
 }
 
-NcmBuffer
+StrBuilder
 ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
                                 enum NcmTagsField field, int32 idx) {
-    NcmBuffer buffer;
+    StrBuilder buffer;
     NcmStringView view;
 
-    ncm_buffer_init(&buffer);
+    sb_init(&buffer);
     if (field == NCM_TAGS_FIELD_TRACK) {
-        ncm_buffer_destroy(&buffer);
+        sb_free(&buffer);
         return ncm_mutable_song_get_numeric_tag_buffer(song, field, idx);
     }
     if (!ncm_mutable_song_get_tag(song, field, idx, &view)) {
         return buffer;
     }
 
-    ncm_buffer_append(&buffer, view.data, view.len);
+    sb_append(&buffer, view.data, view.len);
     return buffer;
 }
 
-NcmBuffer
+StrBuilder
 ncm_mutable_song_tags_buffer(NcmMutableSong *song,
                              enum NcmTagsField field,
                              char *separator, int32 separator_len,
                              bool show_duplicates) {
-    NcmBuffer result;
-    NcmBuffer tag;
+    StrBuilder result;
+    StrBuilder tag;
 
-    ncm_buffer_init(&result);
+    sb_init(&result);
     if (song == NULL) {
         return result;
     }
@@ -602,14 +602,14 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
 
         tag = ncm_mutable_song_get_tag_buffer(song, field, i);
         if (tag.len <= 0) {
-            ncm_buffer_destroy(&tag);
+            sb_free(&tag);
             break;
         }
 
         already_present = false;
         if (!show_duplicates) {
             for (int32 j = 0; j < i; j += 1) {
-                NcmBuffer previous;
+                StrBuilder previous;
 
                 previous = ncm_mutable_song_get_tag_buffer(song, field, j);
                 if (ncm_mutable_song_string_equal(previous.data,
@@ -617,7 +617,7 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
                                                   tag.data, tag.len)) {
                     already_present = true;
                 }
-                ncm_buffer_destroy(&previous);
+                sb_free(&previous);
                 if (already_present) {
                     break;
                 }
@@ -626,11 +626,11 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
 
         if (!already_present) {
             if (result.len > 0) {
-                ncm_buffer_append(&result, separator, separator_len);
+                sb_append(&result, separator, separator_len);
             }
-            ncm_buffer_append(&result, tag.data, tag.len);
+            sb_append(&result, tag.data, tag.len);
         }
-        ncm_buffer_destroy(&tag);
+        sb_free(&tag);
     }
 
     return result;
@@ -677,19 +677,19 @@ ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
             continue;
         }
         for (int32 i = 0; ; i += 1) {
-            NcmBuffer buffer = ncm_song_getter_buffer(source, getter, i);
+            StrBuilder buffer = ncm_song_getter_buffer(source, getter, i);
 
             if (buffer.len <= 0) {
-                ncm_buffer_destroy(&buffer);
+                sb_free(&buffer);
                 break;
             }
             if (!ncm_mutable_song_set_original_tag(
                     dest, (enum NcmTagsField)field, i,
                     buffer.data, buffer.len)) {
-                ncm_buffer_destroy(&buffer);
+                sb_free(&buffer);
                 return false;
             }
-            ncm_buffer_destroy(&buffer);
+            sb_free(&buffer);
         }
     }
 

@@ -119,7 +119,7 @@ ncm_conversion_set_f64_lower_error(NcmError *error,
 
 bool
 ncm_parse_int64(char *source, int32 source_len, int32 *out, NcmError *error) {
-    NcmBuffer buffer;
+    StrBuilder buffer;
     char *end;
     int64 value;
     bool ok;
@@ -129,9 +129,9 @@ ncm_parse_int64(char *source, int32 source_len, int32 *out, NcmError *error) {
         return false;
     }
 
-    ncm_buffer_init(&buffer);
+    sb_init(&buffer);
     if (!ncm_conversion_copy_source(&buffer, source, source_len, error)) {
-        ncm_buffer_destroy(&buffer);
+        sb_free(&buffer);
         return false;
     }
 
@@ -149,7 +149,7 @@ ncm_parse_int64(char *source, int32 source_len, int32 *out, NcmError *error) {
         ncm_conversion_set_parse_error(error, source, source_len);
     }
 
-    ncm_buffer_destroy(&buffer);
+    sb_free(&buffer);
     return ok;
 }
 
@@ -176,7 +176,7 @@ ncm_parse_int32(char *source, int32 source_len, int32 *out, NcmError *error) {
 
 bool
 ncm_parse_double(char *source, int32 source_len, double *out, NcmError *error) {
-    NcmBuffer buffer;
+    StrBuilder buffer;
     char *end;
     double value;
     bool ok;
@@ -186,9 +186,9 @@ ncm_parse_double(char *source, int32 source_len, double *out, NcmError *error) {
         return false;
     }
 
-    ncm_buffer_init(&buffer);
+    sb_init(&buffer);
     if (!ncm_conversion_copy_source(&buffer, source, source_len, error)) {
-        ncm_buffer_destroy(&buffer);
+        sb_free(&buffer);
         return false;
     }
 
@@ -204,7 +204,7 @@ ncm_parse_double(char *source, int32 source_len, double *out, NcmError *error) {
         ncm_conversion_set_parse_error(error, source, source_len);
     }
 
-    ncm_buffer_destroy(&buffer);
+    sb_free(&buffer);
     return ok;
 }
 
