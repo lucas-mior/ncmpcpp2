@@ -243,17 +243,7 @@ lyrics_test_download(StrBuilder *data, char *url, int32 url_len, char *referer,
         return CURLE_OK;
     }
 
-    if (context->calls == 3) {
-        assert(STREQUAL(url, url_len, test->bad_page_url,
-                        test->bad_page_url_len));
-        assert(STREQUAL(referer, referer_len, test->search_url,
-                        test->search_url_len));
-        sb_clear(data);
-        sb_append(data, STRLIT_ARGS("No lyrics here"));
-        return CURLE_OK;
-    }
-
-    assert(context->calls == 4);
+    assert(context->calls == 3);
     assert(STREQUAL(url, url_len, test->page_url, test->page_url_len));
     assert(STREQUAL(referer, referer_len, test->search_url,
                     test->search_url_len));
@@ -391,7 +381,7 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
         assert(ncm_lyrics_fetcher_fetch(
             &fetcher, &result, STRLIT_ARGS("luis fonsi"),
             STRLIT_ARGS("despacito")));
-        assert(context.calls == 4);
+        assert(context.calls == 3);
         lyrics_test_assert_result(context.test, &result);
 
         sb_free(&search_url);
@@ -419,10 +409,16 @@ test_provider_aware_slug_normalization(void) {
         url.data, url.len,
         STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben/"
                     "que-nega-e-essa.html")));
-    assert(lyrics_search_candidate_ok(
+    assert(lyrics_search_candidate_score(
         &fetcher,
         STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben-jor/"
-                    "que-nega-e-essa.html")));
+                    "que-nega-e-essa.html"),
+        STRLIT_ARGS("Jorge Ben"), STRLIT_ARGS("Que nega é essa")) > 0);
+    assert(lyrics_search_candidate_score(
+        &fetcher,
+        STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben-jor/"
+                    "mas-que-nada.html"),
+        STRLIT_ARGS("Jorge Ben"), STRLIT_ARGS("Que nega é essa")) == 0);
 
     assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT_ARGS("azlyrics")));
