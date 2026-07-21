@@ -1394,10 +1394,10 @@ native_lyrics_find_match_callback(int32 start, int32 len, void *user) {
         return true;
     }
 
-    nc_buffer_add_format(state->buffer, start, NC_FORMAT_REVERSE,
-                         NATIVE_LYRICS_PROPERTY_ID);
-    nc_buffer_add_format(state->buffer, start + len, NC_FORMAT_NO_REVERSE,
-                         NATIVE_LYRICS_PROPERTY_ID);
+    nc_buffer_add_format(state->buffer, start,
+                         NC_FORMAT_REVERSE, NATIVE_LYRICS_PROPERTY_ID);
+    nc_buffer_add_format(state->buffer, start + len,
+                         NC_FORMAT_NO_REVERSE, NATIVE_LYRICS_PROPERTY_ID);
 
     return true;
 }
