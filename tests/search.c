@@ -148,20 +148,20 @@ search_song_value(NcmSong *song, enum NcmSongGetter getter) {
     }
 }
 
-NcmBuffer
+StrBuilder
 ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
                      char *separator, int32 separator_len,
                      bool show_duplicates) {
-    NcmBuffer result;
+    StrBuilder result;
     char *value;
 
     (void)separator;
     (void)separator_len;
     (void)show_duplicates;
-    ncm_buffer_init(&result);
+    sb_init(&result);
     value = search_song_value(song, getter);
     if (value != NULL) {
-        ncm_buffer_append(&result, value, strlen32(value));
+        sb_append(&result, value, strlen32(value));
     }
     return result;
 }
@@ -346,7 +346,7 @@ search_matches(NcMenu *menu, int32 pos, void *user) {
 static bool
 search_song_matches(NcMenu *menu, int32 pos, void *user) {
     SearchSongTestContext *context;
-    NcmBuffer rendered;
+    StrBuilder rendered;
     NcmSong **item;
     bool result;
 
@@ -359,7 +359,7 @@ search_song_matches(NcMenu *menu, int32 pos, void *user) {
     rendered = ncm_format_render_string(context->format, *item);
     result = ncm_regex_search(&context->regex, rendered.data,
                               rendered.len);
-    ncm_buffer_destroy(&rendered);
+    sb_free(&rendered);
     return result;
 }
 
@@ -805,8 +805,8 @@ test_prompt_state_caches_no_match(void) {
 static void
 test_column_search_uses_every_displayed_column(void) {
     NcmFormatAst format;
-    NcmBuffer choros;
-    NcmBuffer ohne;
+    StrBuilder choros;
+    StrBuilder ohne;
     NcmSong choros_song = {0};
     NcmSong ohne_song = {0};
     SearchTestContext context;
@@ -829,8 +829,8 @@ test_column_search_uses_every_displayed_column(void) {
     assert(strstr(ohne.data, "Ohne Dich") != NULL);
 
     search_context_destroy(&context);
-    ncm_buffer_destroy(&ohne);
-    ncm_buffer_destroy(&choros);
+    sb_free(&ohne);
+    sb_free(&choros);
     ncm_format_ast_destroy(&format);
     return;
 }

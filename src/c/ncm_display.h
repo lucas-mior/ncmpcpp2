@@ -16,7 +16,7 @@ void ncm_display_song_row(NcBuffer *buffer, NcmFormatAst *format,
 void ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
                               struct Column *columns, int32 column_count,
                               int32 list_width, bool use_colors);
-void ncm_display_column_title(NcmBuffer *buffer,
+void ncm_display_column_title(StrBuilder *buffer,
                               struct Column *columns,
                               int32 column_count, int32 list_width);
 void ncm_display_directory_row(NcBuffer *buffer, NcmDirectory *directory);

@@ -62,13 +62,13 @@ ncm_compare_parse_decimal(char *string, int32 string_len) {
 }
 
 static int32
-ncm_compare_copy_to_buffer(NcmBuffer *buffer,
+ncm_compare_copy_to_buffer(StrBuilder *buffer,
                            char *string, int32 string_len) {
-    ncm_buffer_clear(buffer);
+    sb_clear(buffer);
     if (string_len > 0) {
-        ncm_buffer_append(buffer, string, string_len);
+        sb_append(buffer, string, string_len);
     }
-    ncm_buffer_append_byte(buffer, '\0');
+    sb_append_byte(buffer, '\0');
     return buffer->len - 1;
 }
 

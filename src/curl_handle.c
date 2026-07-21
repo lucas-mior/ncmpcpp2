@@ -9,11 +9,11 @@
 #include "c/ncm_base.h"
 
 static size_t write_data(char *buffer, size_t size, size_t nmemb, void *data);
-static void append_c_string(NcmBuffer *buffer, char *string, int32 string_len);
+static void append_c_string(StrBuilder *buffer, char *string, int32 string_len);
 
 void
 ncm_curl_response_writer_init(NcmCurlResponseWriter *writer,
-                              NcmBuffer *buffer) {
+                              StrBuilder *buffer) {
     writer->buffer = buffer;
     return;
 }
@@ -25,7 +25,7 @@ ncm_curl_response_writer_destroy(NcmCurlResponseWriter *writer) {
 }
 
 CURLcode
-ncm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
+ncm_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
                  int32 referer_len, bool follow_redirect,
                  int32 timeout_seconds) {
     CURLcode result;
@@ -34,7 +34,7 @@ ncm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
     StrBuilder referer_string;
     NcmCurlResponseWriter writer;
 
-    ncm_buffer_clear(data);
+    sb_clear(data);
     sb_init(&url_string);
     sb_init(&referer_string);
     ncm_curl_response_writer_init(&writer, data);
@@ -77,16 +77,16 @@ cleanup:
 }
 
 CURLcode
-ncm_curl_escape(NcmBuffer *out, char *string, int32 string_len) {
+ncm_curl_escape(StrBuilder *out, char *string, int32 string_len) {
     char *escaped;
 
-    ncm_buffer_clear(out);
+    sb_clear(out);
     if ((escaped = curl_easy_escape(NULL, string, string_len)) == NULL) {
         return CURLE_OUT_OF_MEMORY;
     }
 
     for (int32 i = 0; escaped[i] != '\0'; i += 1) {
-        ncm_buffer_append_byte(out, escaped[i]);
+        sb_append_byte(out, escaped[i]);
     }
     curl_free(escaped);
     return CURLE_OK;
@@ -110,18 +110,18 @@ write_data(char *buffer, size_t size, size_t nmemb, void *data) {
         return 0;
     }
     if (bytes > 0) {
-        ncm_buffer_append(writer->buffer, buffer, (int32)bytes);
+        sb_append(writer->buffer, buffer, (int32)bytes);
     }
 
     return bytes;
 }
 
 static void
-append_c_string(NcmBuffer *buffer, char *string, int32 string_len) {
+append_c_string(StrBuilder *buffer, char *string, int32 string_len) {
     if (string && (string_len > 0)) {
-        ncm_buffer_append(buffer, string, string_len);
+        sb_append(buffer, string, string_len);
     }
-    ncm_buffer_append_byte(buffer, '\0');
+    sb_append_byte(buffer, '\0');
     return;
 }
 

@@ -7,7 +7,7 @@
 #include "curses/nc_buffer.h"
 #include "curses/nc_window.h"
 
-void nc_cyclic_text_write(NcmBuffer *output, char *string,
+void nc_cyclic_text_write(StrBuilder *output, char *string,
                           int32 string_len, int32 *start_pos,
                           int32 width, char *separator,
                           int32 separator_len, bool scrolling_enabled);

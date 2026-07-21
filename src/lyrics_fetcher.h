@@ -60,7 +60,7 @@ typedef struct NcmLyricsFetcherRegistry {
     NcmLyricsFetcherArray fetchers;
 } NcmLyricsFetcherRegistry;
 
-typedef CURLcode (*NcmLyricsCurlPerformFn)(NcmBuffer *data, char *url,
+typedef CURLcode (*NcmLyricsCurlPerformFn)(StrBuilder *data, char *url,
                                            int32 url_len, char *referer,
                                            int32 referer_len,
                                            bool follow_redirect,
@@ -90,9 +90,9 @@ bool ncm_lyrics_fetcher_registry_append_name(NcmLyricsFetcherRegistry *registry,
 bool ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher,
                               NcmLyricsResult *result, char *artist,
                               int32 artist_len, char *title, int32 title_len);
-bool ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher, NcmBuffer *url,
+bool ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher, StrBuilder *url,
                                   char *artist, int32 artist_len, char *title,
                                   int32 title_len);
-void ncm_lyrics_cleanup_html(NcmBuffer *out, char *data, int32 data_len);
+void ncm_lyrics_cleanup_html(StrBuilder *out, char *data, int32 data_len);
 
 #endif /* NCMPCPP_LYRICS_FETCHER_H */

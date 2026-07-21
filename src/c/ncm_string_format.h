@@ -33,7 +33,7 @@ NcmStringFormatArg ncm_string_format_arg_cstring(char *data);
 NcmStringFormatArg ncm_string_format_arg_i64(int32 value);
 NcmStringFormatArg ncm_string_format_arg_u64(uint64 value);
 
-void ncm_string_format_apply(NcmBuffer *out, char *format,
+void ncm_string_format_apply(StrBuilder *out, char *format,
                              int32 format_len,
                              NcmStringFormatArg *args,
                              int32 args_len);

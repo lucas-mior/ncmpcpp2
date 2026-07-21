@@ -25,7 +25,7 @@ void ncm_string_remove_chars(char *string, int32 *string_len,
 void ncm_string_remove_invalid_filename_chars(char *filename,
                                               int32 *filename_len,
                                               bool win32_compatible);
-void ncm_string_append_shell_escaped_single_quotes(NcmBuffer *buffer,
+void ncm_string_append_shell_escaped_single_quotes(StrBuilder *buffer,
                                                    char *string,
                                                    int32 string_len);
 int32 ncm_string_basename_start(char *path, int32 path_len);

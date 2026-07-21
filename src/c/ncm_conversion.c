@@ -15,9 +15,9 @@
 #include "cbase/util.c"
 
 static bool
-ncm_conversion_copy_source(NcmBuffer *buffer, char *source,
+ncm_conversion_copy_source(StrBuilder *buffer, char *source,
                            int32 source_len, NcmError *error) {
-    ncm_buffer_clear(buffer);
+    sb_clear(buffer);
 
     if (source == NULL) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing conversion source"));
@@ -28,9 +28,9 @@ ncm_conversion_copy_source(NcmBuffer *buffer, char *source,
         return false;
     }
 
-    ncm_buffer_append(buffer, source, source_len);
+    sb_append(buffer, source, source_len);
     if (buffer->data == NULL) {
-        ncm_buffer_append_byte(buffer, '\0');
+        sb_append_byte(buffer, '\0');
         buffer->len = 0;
     }
 

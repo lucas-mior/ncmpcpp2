@@ -114,9 +114,9 @@ void native_lyrics_screen_refetch_current(NativeLyricsScreen *screen,
 NcmLyricsFetcherDef *native_lyrics_screen_toggle_fetcher(
     NativeLyricsScreen *screen, NcmLyricsFetcherRegistry *registry);
 bool native_lyrics_screen_try_take_consumer_message(
-    NativeLyricsScreen *screen, NcmBuffer *message);
+    NativeLyricsScreen *screen, StrBuilder *message);
 NcmSong *native_lyrics_screen_song(NativeLyricsScreen *screen);
-NcmBuffer *native_lyrics_screen_filename(NativeLyricsScreen *screen);
+StrBuilder *native_lyrics_screen_filename(NativeLyricsScreen *screen);
 bool native_lyrics_buffer_find(NcBuffer *buffer, char *pattern,
                                int32 pattern_len, NcmError *error);
 bool native_lyrics_screen_find(NativeLyricsScreen *screen,

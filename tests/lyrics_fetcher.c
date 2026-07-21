@@ -26,7 +26,7 @@ ncm_string_starts_with(char *string, int32 string_len, char *prefix,
 #include "curl_handle.h"
 
 CURLcode
-ncm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
+ncm_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
                  int32 referer_len, bool follow_redirect,
                  int32 timeout_seconds) {
     (void)data;
@@ -151,19 +151,19 @@ lyrics_test_set_download(NcmLyricsCurlPerformFn perform, void *user) {
 }
 
 static void
-lyrics_test_append_fixture(NcmBuffer *data, LyricsFetcherTestCase *test) {
+lyrics_test_append_fixture(StrBuilder *data, LyricsFetcherTestCase *test) {
     char *html;
     int32 html_len;
 
     html = read_entire_file(test->fixture, &html_len);
-    ncm_buffer_clear(data);
-    ncm_buffer_append(data, html, html_len);
+    sb_clear(data);
+    sb_append(data, html, html_len);
     free2(html, html_len + 1);
     return;
 }
 
 static CURLcode
-lyrics_test_direct_download(NcmBuffer *data, char *url, int32 url_len,
+lyrics_test_direct_download(StrBuilder *data, char *url, int32 url_len,
                             char *referer, int32 referer_len,
                             bool follow_redirect, int32 timeout_seconds,
                             void *user) {
@@ -186,7 +186,7 @@ lyrics_test_direct_download(NcmBuffer *data, char *url, int32 url_len,
 }
 
 static CURLcode
-lyrics_test_download(NcmBuffer *data, char *url, int32 url_len, char *referer,
+lyrics_test_download(StrBuilder *data, char *url, int32 url_len, char *referer,
                      int32 referer_len, bool follow_redirect,
                      int32 timeout_seconds, void *user) {
     LyricsFetcherTestContext *context;
@@ -212,14 +212,14 @@ lyrics_test_download(NcmBuffer *data, char *url, int32 url_len, char *referer,
                         test->search_url_len));
         assert(referer == NULL);
         assert(referer_len == 0);
-        ncm_buffer_clear(data);
-        ncm_buffer_append(
+        sb_clear(data);
+        sb_append(
             data,
             STRLIT_ARGS("<a href=\"https://example.com/luis-fonsi/"
                         "despacito\">wrong domain</a>"
                         "<a href=\"/url?q=&amp;url="));
         lyrics_append_query(data, test->page_url, test->page_url_len);
-        ncm_buffer_append(data,
+        sb_append(data,
                           STRLIT_ARGS("&amp;sa=U\">lyrics</a>"));
         return CURLE_OK;
     }
@@ -233,7 +233,7 @@ lyrics_test_download(NcmBuffer *data, char *url, int32 url_len, char *referer,
 }
 
 static CURLcode
-lyrics_test_timeout(NcmBuffer *data, char *url, int32 url_len, char *referer,
+lyrics_test_timeout(StrBuilder *data, char *url, int32 url_len, char *referer,
                     int32 referer_len, bool follow_redirect,
                     int32 timeout_seconds, void *user) {
     int32 *calls;
@@ -333,15 +333,15 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
         LyricsFetcherTestContext context;
         NcmLyricsFetcherDef fetcher;
         NcmLyricsResult result;
-        NcmBuffer direct_url;
-        NcmBuffer search_url;
+        StrBuilder direct_url;
+        StrBuilder search_url;
 
         context.test = &lyrics_tests[i];
         context.calls = 0;
         ncm_lyrics_fetcher_def_init(&fetcher);
         ncm_lyrics_result_init(&result);
-        ncm_buffer_init(&direct_url);
-        ncm_buffer_init(&search_url);
+        sb_init(&direct_url);
+        sb_init(&search_url);
 
         assert(ncm_lyrics_fetcher_def_set_name(
             &fetcher, context.test->name, context.test->name_len));
@@ -365,8 +365,8 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
         assert(context.calls == 3);
         lyrics_test_assert_result(context.test, &result);
 
-        ncm_buffer_destroy(&search_url);
-        ncm_buffer_destroy(&direct_url);
+        sb_free(&search_url);
+        sb_free(&direct_url);
         ncm_lyrics_result_destroy(&result);
         ncm_lyrics_fetcher_def_destroy(&fetcher);
     }
@@ -378,11 +378,11 @@ static void
 test_internet_fetcher_returns_search_url_without_download(void) {
     NcmLyricsFetcherDef fetcher;
     NcmLyricsResult result;
-    NcmBuffer url;
+    StrBuilder url;
 
     ncm_lyrics_fetcher_def_init(&fetcher);
     ncm_lyrics_result_init(&result);
-    ncm_buffer_init(&url);
+    sb_init(&url);
     assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT_ARGS("internet")));
     assert(ncm_lyrics_fetcher_build_url(
@@ -399,7 +399,7 @@ test_internet_fetcher_returns_search_url_without_download(void) {
     assert(!result.success);
     assert(memmem64(result.text, result.text_len, url.data, url.len) != NULL);
 
-    ncm_buffer_destroy(&url);
+    sb_free(&url);
     ncm_lyrics_result_destroy(&result);
     ncm_lyrics_fetcher_def_destroy(&fetcher);
     return;

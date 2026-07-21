@@ -48,12 +48,12 @@ typedef struct NativeSearchEngineHooks {
     bool (*snapshot_playlist)(void *user, NcmSongArray *songs,
                               NcmError *error);
     enum NativeSearchEnginePromptResult (*prompt_constraint)(
-        void *user, char *label, int32 label_len, NcmBuffer *initial,
-        NcmBuffer *result);
+        void *user, char *label, int32 label_len, StrBuilder *initial,
+        StrBuilder *result);
     void (*status_message)(void *user, char *message, int32 message_len);
     bool (*add_song)(void *user, NcmSong *song, bool play,
                      NcmError *error);
-    bool (*format_song)(void *user, NcmSong *song, NcmBuffer *text);
+    bool (*format_song)(void *user, NcmSong *song, StrBuilder *text);
     void *user;
 } NativeSearchEngineHooks;
 
@@ -112,7 +112,7 @@ char *native_search_engine_search_mode_name(
 bool native_search_engine_screen_constraints_locked(
     NativeSearchEngineScreen *screen);
 bool native_search_engine_screen_format_song_text(
-    NativeSearchEngineScreen *screen, NcmSong *song, NcmBuffer *text);
+    NativeSearchEngineScreen *screen, NcmSong *song, StrBuilder *text);
 void native_search_engine_screen_update_column_title(
     NativeSearchEngineScreen *screen);
 void native_search_engine_screen_prepare_static_rows(
@@ -153,7 +153,7 @@ bool native_search_engine_screen_snapshot_playlist(
     NcmError *error);
 enum NativeSearchEnginePromptResult
 native_search_engine_screen_prompt_constraint(
-    NativeSearchEngineScreen *screen, int32 idx, NcmBuffer *result);
+    NativeSearchEngineScreen *screen, int32 idx, StrBuilder *result);
 void native_search_engine_screen_status_message(
     NativeSearchEngineScreen *screen, char *message, int32 message_len);
 bool native_search_engine_screen_add_song(

@@ -644,7 +644,7 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
 }
 
 void
-ncm_bindings_format_key(NcmBuffer *buffer, NcKey key) {
+ncm_bindings_format_key(StrBuilder *buffer, NcKey key) {
     char name[64];
     int32 name_len;
 
@@ -653,7 +653,7 @@ ncm_bindings_format_key(NcmBuffer *buffer, NcKey key) {
         return;
     }
 
-    ncm_buffer_append(buffer, name, name_len);
+    sb_append(buffer, name, name_len);
     return;
 }
 

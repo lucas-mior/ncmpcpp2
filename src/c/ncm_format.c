@@ -218,7 +218,7 @@ ncm_format_read_uint(char *data, int32 start, int32 end,
 
 static bool
 ncm_format_text_append(NcmFormatExprList *list,
-                       NcmBuffer *token) {
+                       StrBuilder *token) {
     NcmFormatExpr *expr;
 
     if (token->len <= 0) {
@@ -975,7 +975,7 @@ static void
 ncm_format_string_text(void *user, char *data, int32 data_len,
                        NcmFormatSongTag *tag) {
     (void)tag;
-    ncm_buffer_append((NcmBuffer *)user, data, data_len);
+    sb_append((StrBuilder *)user, data, data_len);
     return;
 }
 
