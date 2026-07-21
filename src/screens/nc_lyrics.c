@@ -26,16 +26,18 @@
 #define NATIVE_LYRICS_TITLE "Lyrics"
 #define NATIVE_LYRICS_PROPERTY_ID 0x4c59524943534649ULL
 
-typedef struct NativeLyricsJob {
+struct NativeLyricsJob {
     NativeLyricsScreen *screen;
     NcmSong song;
     StrBuilder filename;
     NcmLyricsFetcherDef *fetcher;
     NcmLyricsResult result;
     NcBuffer log;
+    pthread_mutex_t log_mutex;
+    bool log_dirty;
     bool notify;
     bool background;
-} NativeLyricsJob;
+};
 
 typedef struct NativeLyricsFindState {
     NcBuffer *buffer;
@@ -83,6 +85,13 @@ static void native_lyrics_append_fetching(NcBuffer *buffer,
                                           NcmLyricsFetcherDef *fetcher);
 static void native_lyrics_append_fetch_error(NcBuffer *buffer,
                                              NcmLyricsResult *result);
+static void native_lyrics_job_append_fetching(NativeLyricsJob *job,
+                                              NcmLyricsFetcherDef *fetcher);
+static void native_lyrics_job_append_fetch_error(NativeLyricsJob *job,
+                                                 NcmLyricsResult *result);
+static bool native_lyrics_job_take_log(NativeLyricsJob *job,
+                                       NcBuffer *buffer);
+static void native_lyrics_screen_update_progress(NativeLyricsScreen *screen);
 static bool native_lyrics_job_is_current(NativeLyricsJob *job);
 static bool native_lyrics_job_run(void *user, NcmError *error);
 static void native_lyrics_job_complete(bool success, NcmError *error,
@@ -259,7 +268,7 @@ native_lyrics_screen_init(NativeLyricsScreen *screen,
     sb_init(&screen->filename);
     ncm_lyrics_result_init(&screen->result);
     ncm_job_queue_init(&screen->jobs);
-
+    screen->foreground_job = NULL;
     screen->queued_songs = NULL;
     screen->queued_songs_len = 0;
     screen->queued_songs_cap = 0;
@@ -298,6 +307,7 @@ native_lyrics_screen_destroy(NativeLyricsScreen *screen) {
     nc_buffer_destroy(&screen->display);
     nc_window_destroy(&screen->window);
 
+    screen->foreground_job = NULL;
     screen->queued_songs = NULL;
     screen->queued_songs_len = 0;
     screen->queued_songs_cap = 0;
@@ -506,6 +516,7 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
     }
 
     job = native_lyrics_job_create(screen, song, active_fetcher, false, false);
+    screen->foreground_job = job;
     if (!ncm_job_queue_push(&screen->jobs,
                             (NcmJob){
                                 .run = native_lyrics_job_run,
@@ -514,6 +525,7 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
                                 .user = job,
                             },
                             error)) {
+        screen->foreground_job = NULL;
         native_lyrics_job_destroy(job);
         return false;
     }
@@ -550,6 +562,7 @@ native_lyrics_screen_dispatch_jobs(NativeLyricsScreen *screen) {
 
 void
 native_lyrics_screen_update(NativeLyricsScreen *screen) {
+    native_lyrics_screen_update_progress(screen);
     native_lyrics_screen_dispatch_jobs(screen);
     if (nc_lyrics_screen_take_refresh_request(&screen->screen)) {
         nc_scrollpad_flush(&screen->scrollpad,
@@ -1119,6 +1132,8 @@ native_lyrics_job_create(NativeLyricsScreen *screen,
     ncm_song_copy(&job->song, song);
     sb_init(&job->filename);
     nc_buffer_init(&job->log);
+    pthread_mutex_init(&job->log_mutex, NULL);
+    job->log_dirty = false;
 
     win32_filename = Config.generate_win32_compatible_filenames;
 
@@ -1146,18 +1161,18 @@ native_lyrics_job_fetch_one(NativeLyricsJob *job, NcmLyricsFetcherDef *fetcher,
         return false;
     }
 
-    native_lyrics_append_fetching(&job->log, fetcher);
+    native_lyrics_job_append_fetching(job, fetcher);
     if (!ncm_lyrics_fetcher_fetch(fetcher,
                                   &job->result,
                                   artist->data,
                                   artist->len,
                                   title->data,
                                   title->len)) {
-        native_lyrics_append_fetch_error(&job->log, &job->result);
+        native_lyrics_job_append_fetch_error(job, &job->result);
         return false;
     }
     if (!job->result.success) {
-        native_lyrics_append_fetch_error(&job->log, &job->result);
+        native_lyrics_job_append_fetch_error(job, &job->result);
         return false;
     }
     return true;
@@ -1219,6 +1234,9 @@ native_lyrics_job_complete(bool success, NcmError *error, void *user) {
     (void)error;
 
     if (!job->background) {
+        if (screen->foreground_job == job) {
+            screen->foreground_job = NULL;
+        }
         if (!native_lyrics_job_is_current(job)) {
             return;
         }
@@ -1281,6 +1299,7 @@ native_lyrics_job_destroy(void *user) {
     sb_free(&job->filename);
     ncm_lyrics_result_destroy(&job->result);
     nc_buffer_destroy(&job->log);
+    pthread_mutex_destroy(&job->log_mutex);
     free2(job, SIZEOF(*job));
 
     return;
@@ -1337,6 +1356,86 @@ native_lyrics_append_fetch_error(NcBuffer *buffer, NcmLyricsResult *result) {
                         nc_color_end(),
                         NATIVE_LYRICS_PROPERTY_ID);
     nc_buffer_append_char(buffer, '\n');
+
+    return;
+}
+
+static void
+native_lyrics_job_append_fetching(NativeLyricsJob *job,
+                                  NcmLyricsFetcherDef *fetcher) {
+    if ((job == NULL) || (fetcher == NULL)) {
+        return;
+    }
+
+    pthread_mutex_lock(&job->log_mutex);
+    native_lyrics_append_fetching(&job->log, fetcher);
+    job->log_dirty = true;
+    pthread_mutex_unlock(&job->log_mutex);
+
+    return;
+}
+
+static void
+native_lyrics_job_append_fetch_error(NativeLyricsJob *job,
+                                     NcmLyricsResult *result) {
+    if ((job == NULL) || (result == NULL)) {
+        return;
+    }
+
+    pthread_mutex_lock(&job->log_mutex);
+    native_lyrics_append_fetch_error(&job->log, result);
+    job->log_dirty = true;
+    pthread_mutex_unlock(&job->log_mutex);
+
+    return;
+}
+
+static bool
+native_lyrics_job_take_log(NativeLyricsJob *job, NcBuffer *buffer) {
+    NcBuffer copy;
+    bool result = false;
+
+    if ((job == NULL) || (buffer == NULL)) {
+        return false;
+    }
+
+    nc_buffer_init(&copy);
+    pthread_mutex_lock(&job->log_mutex);
+    if (job->log_dirty) {
+        nc_buffer_copy(&copy, &job->log);
+        job->log_dirty = false;
+        result = true;
+    }
+    pthread_mutex_unlock(&job->log_mutex);
+
+    if (result) {
+        nc_buffer_destroy(buffer);
+        nc_buffer_move(buffer, &copy);
+    } else {
+        nc_buffer_destroy(&copy);
+    }
+
+    return result;
+}
+
+static void
+native_lyrics_screen_update_progress(NativeLyricsScreen *screen) {
+    NativeLyricsJob *job;
+
+    if (screen == NULL) {
+        return;
+    }
+
+    job = screen->foreground_job;
+    if (job == NULL) {
+        return;
+    }
+    if (!native_lyrics_job_is_current(job)) {
+        return;
+    }
+    if (native_lyrics_job_take_log(job, &screen->display)) {
+        nc_lyrics_screen_request_refresh(&screen->screen);
+    }
 
     return;
 }

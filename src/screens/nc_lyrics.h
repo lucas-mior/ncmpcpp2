@@ -13,6 +13,8 @@
 #include "lyrics_fetcher.h"
 #include "screens/nc_scrollpad_screen.h"
 
+typedef struct NativeLyricsJob NativeLyricsJob;
+
 typedef struct NcLyricsScreen {
     NcScrollpadScreen scrollpad_screen;
 
@@ -37,6 +39,7 @@ typedef struct NativeLyricsScreen {
     StrBuilder filename;
     NcmLyricsResult result;
     NcmJobQueue jobs;
+    NativeLyricsJob *foreground_job;
     NativeLyricsQueuedSong *queued_songs;
     StrBuilder consumer_message;
 
