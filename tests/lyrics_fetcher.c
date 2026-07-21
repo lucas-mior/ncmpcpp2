@@ -88,6 +88,17 @@ typedef struct LyricsFetcherTestContext {
 
 static LyricsFetcherTestCase lyrics_tests[] = {
     LYRICS_TEST(
+        "amalgama",
+        "tests/lyrics/amalgama.html",
+        "https://www.amalgama-lab.com/songs/l/luis_fonsi/despacito.html",
+        "https://www.amalgama-lab.com/songs/l/luis_fonsi/"
+        "echame_la_culpa.html",
+        "https://www.amalgama-lab.com/songs/l/luis_fonsi/despacito.html",
+        "https://www.google.com/search?hl=en&q=site%3Aamalgama-lab.com+"
+        "luis+fonsi+despacito+lyrics",
+        "Synthetic Amalgama original lyric line",
+        true),
+    LYRICS_TEST(
         "azlyrics",
         "tests/lyrics/azlyrics.html",
         "https://www.azlyrics.com/lyrics/luisfonsi/despacito.html",
@@ -597,6 +608,9 @@ test_provider_profiles_drive_metadata(void) {
     value = lyrics_type_name(NCM_LYRICS_FETCHER_MUSICA, &len);
     assert(STREQUAL(value, len, STRLIT_ARGS("musica.com")));
     assert(len == STRLIT_LEN("musica.com"));
+    value = lyrics_type_name(NCM_LYRICS_FETCHER_AMALGAMA, &len);
+    assert(STREQUAL(value, len, STRLIT_ARGS("amalgama-lab.com")));
+    assert(len == STRLIT_LEN("amalgama-lab.com"));
     value = lyrics_type_domain(NCM_LYRICS_FETCHER_PAROLES, &len);
     assert(STREQUAL(value, len, STRLIT_ARGS("paroles.net")));
     assert(len == STRLIT_LEN("paroles.net"));
@@ -608,7 +622,15 @@ test_provider_profiles_drive_metadata(void) {
            == LYRICS_SLUG_PROFILE_NONE);
     assert(lyrics_slug_profile(NCM_LYRICS_FETCHER_LACOCCINELLE)
            == LYRICS_SLUG_PROFILE_HYPHEN_FOLDED);
+    assert(lyrics_slug_profile(NCM_LYRICS_FETCHER_AMALGAMA)
+           == LYRICS_SLUG_PROFILE_UNDERSCORE_FOLDED);
 
+    assert(lyrics_provider_has_flag(NCM_LYRICS_FETCHER_AMALGAMA,
+                                    LYRICS_PROVIDER_DIRECT_URLS));
+    assert(lyrics_provider_has_flag(NCM_LYRICS_FETCHER_AMALGAMA,
+                                    LYRICS_PROVIDER_SEARCH_URLS));
+    assert(lyrics_provider_has_flag(NCM_LYRICS_FETCHER_AMALGAMA,
+                                    LYRICS_PROVIDER_TRANSLATION_PAGES));
     assert(lyrics_provider_has_flag(NCM_LYRICS_FETCHER_PAROLES,
                                     LYRICS_PROVIDER_DIRECT_URLS));
     assert(lyrics_provider_has_flag(NCM_LYRICS_FETCHER_PAROLES,
@@ -749,6 +771,23 @@ test_provider_aware_slug_normalization(void) {
                     "paroles-despacito-traduction"),
         STRLIT_ARGS("Luis Fonsi"), STRLIT_ARGS("Despacito")) == 0);
 
+    assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
+                                           STRLIT_ARGS("amalgama")));
+    lyrics_test_assert_first_direct_url(
+        &fetcher, STRLIT_ARGS("Luis Fonsi"), STRLIT_ARGS("Despacito"),
+        STRLIT_ARGS("https://www.amalgama-lab.com/songs/l/"
+                    "luis_fonsi/despacito.html"));
+    assert(lyrics_search_candidate_score(
+        &fetcher,
+        STRLIT_ARGS("https://www.amalgama-lab.com/songs/l/"
+                    "luis_fonsi/despacito.html"),
+        STRLIT_ARGS("Luis Fonsi"), STRLIT_ARGS("Despacito")) > 0);
+    assert(lyrics_search_candidate_score(
+        &fetcher,
+        STRLIT_ARGS("https://www.amalgama-lab.com/songs/l/"
+                    "luis_fonsi/echame_la_culpa.html"),
+        STRLIT_ARGS("Luis Fonsi"), STRLIT_ARGS("Despacito")) == 0);
+
     ncm_lyrics_fetcher_def_destroy(&fetcher);
     return;
 }
@@ -864,6 +903,41 @@ test_lacoccinelle_search_download_and_parse_fixture(void) {
 
     lyrics_test_set_download(NULL, NULL);
     sb_free(&search_url);
+    ncm_lyrics_result_destroy(&result);
+    ncm_lyrics_fetcher_def_destroy(&fetcher);
+    return;
+}
+
+static void
+test_amalgama_extracts_original_without_translation(void) {
+    LyricsFetcherTestContext context;
+    LyricsFetcherTestCase *test;
+    NcmLyricsFetcherDef fetcher;
+    NcmLyricsResult result;
+
+    test = lyrics_test_case_named(STRLIT_ARGS("amalgama"));
+    context.test = test;
+    context.calls = 0;
+    ncm_lyrics_fetcher_def_init(&fetcher);
+    ncm_lyrics_result_init(&result);
+
+    assert(test != NULL);
+    assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
+                                           STRLIT_ARGS("amalgama")));
+    lyrics_test_set_download(lyrics_test_direct_download, &context);
+    assert(ncm_lyrics_fetcher_fetch(
+        &fetcher, &result, STRLIT_ARGS("luis fonsi"),
+        STRLIT_ARGS("despacito")));
+    assert(context.calls == 1);
+    lyrics_test_assert_result(test, &result);
+    assert(memmem64(result.text, result.text_len,
+                    STRLIT_ARGS("translated line"))
+           == NULL);
+    assert(memmem64(result.text, result.text_len,
+                    STRLIT_ARGS("Понравился перевод"))
+           == NULL);
+
+    lyrics_test_set_download(NULL, NULL);
     ncm_lyrics_result_destroy(&result);
     ncm_lyrics_fetcher_def_destroy(&fetcher);
     return;
@@ -987,6 +1061,7 @@ main(void) {
     test_provider_aware_slug_normalization();
     test_musica_search_download_and_parse_fixture();
     test_lacoccinelle_search_download_and_parse_fixture();
+    test_amalgama_extracts_original_without_translation();
     test_site_fetcher_tries_multiple_direct_urls();
     test_vagalume_search_finds_jorge_ben_jor_alias();
     test_internet_fetcher_returns_search_url_without_download();
