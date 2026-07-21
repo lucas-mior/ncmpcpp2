@@ -172,6 +172,19 @@ static LyricsFetcherTestCase lyrics_musica_test = LYRICS_TEST(
     "Synthetic search-first lyric line",
     true);
 
+static LyricsFetcherTestCase lyrics_lacoccinelle_test = LYRICS_TEST(
+    "lacoccinelle",
+    "tests/lyrics/lacoccinelle.html",
+    "",
+    "https://www.lacoccinelle.net/1227000-luis-fonsi-"
+    "echame-la-culpa.html",
+    "https://www.lacoccinelle.net/1225780-luis-fonsi-despacito-"
+    "ft-daddy-yankee.html",
+    "https://www.google.com/search?hl=en&q=site%3Alacoccinelle.net+"
+    "luis+fonsi+despacito+lyrics",
+    "Synthetic LaCoccinelle lyric line",
+    true);
+
 #undef LYRICS_TEST
 
 static void
@@ -367,6 +380,48 @@ lyrics_test_musica_search_download(
 }
 
 static CURLcode
+lyrics_test_lacoccinelle_search_download(
+    StrBuilder *data, char *url, int32 url_len, char *referer,
+    int32 referer_len, bool follow_redirect, int32 timeout_seconds, void *user
+) {
+    LyricsFetcherTestContext *context;
+    LyricsFetcherTestCase *test;
+
+    context = user;
+    assert(context != NULL);
+    assert(context->test != NULL);
+    test = context->test;
+    context->calls += 1;
+    assert(follow_redirect);
+    assert(timeout_seconds == 15);
+
+    if (context->calls == 1) {
+        assert(STREQUAL(url, url_len, test->search_url,
+                        test->search_url_len));
+        assert(referer == NULL);
+        assert(referer_len == 0);
+        sb_clear(data);
+        lyrics_test_append_search_link(
+            data, STRLIT_ARGS("https://www.lacoccinelle.net/"
+                              "212021-luis-fonsi.html"));
+        lyrics_test_append_search_link(data, test->bad_page_url,
+                                       test->bad_page_url_len);
+        lyrics_test_append_search_link(
+            data, STRLIT_ARGS("https://www.lacoccinelle.net/260074.html"));
+        lyrics_test_append_search_link(data, test->page_url,
+                                       test->page_url_len);
+        return CURLE_OK;
+    }
+
+    assert(context->calls == 2);
+    assert(STREQUAL(url, url_len, test->page_url, test->page_url_len));
+    assert(STREQUAL(referer, referer_len, test->search_url,
+                    test->search_url_len));
+    lyrics_test_append_fixture(data, test);
+    return CURLE_OK;
+}
+
+static CURLcode
 lyrics_test_jorge_ben_search_download(
     StrBuilder *data, char *url, int32 url_len, char *referer,
     int32 referer_len, bool follow_redirect, int32 timeout_seconds, void *user
@@ -518,17 +573,62 @@ test_registry_has_only_supported_fetchers(void) {
             &registry, lyrics_tests[i].name, lyrics_tests[i].name_len));
     }
     assert(ncm_lyrics_fetcher_registry_append_name(
+        &registry, STRLIT_ARGS("lacoccinelle")));
+    assert(ncm_lyrics_fetcher_registry_append_name(
         &registry, STRLIT_ARGS("musica")));
     assert(ncm_lyrics_fetcher_registry_append_name(
         &registry, STRLIT_ARGS("internet")));
-    assert(registry.fetchers.len == LENGTH(lyrics_tests) + 2);
+    assert(registry.fetchers.len == LENGTH(lyrics_tests) + 3);
 
     for (int32 i = 0; i < LENGTH(removed); i += 1) {
         assert(!ncm_lyrics_fetcher_registry_append_name(
             &registry, removed[i], strlen32(removed[i])));
     }
-    assert(registry.fetchers.len == LENGTH(lyrics_tests) + 2);
+    assert(registry.fetchers.len == LENGTH(lyrics_tests) + 3);
     ncm_lyrics_fetcher_registry_destroy(&registry);
+    return;
+}
+
+static void
+test_provider_profiles_drive_metadata(void) {
+    char *value;
+    int32 len;
+
+    value = lyrics_type_name(NCM_LYRICS_FETCHER_MUSICA, &len);
+    assert(STREQUAL(value, len, STRLIT_ARGS("musica.com")));
+    assert(len == STRLIT_LEN("musica.com"));
+    value = lyrics_type_domain(NCM_LYRICS_FETCHER_PAROLES, &len);
+    assert(STREQUAL(value, len, STRLIT_ARGS("paroles.net")));
+    assert(len == STRLIT_LEN("paroles.net"));
+    assert(lyrics_slug_profile(NCM_LYRICS_FETCHER_AZLYRICS)
+           == LYRICS_SLUG_PROFILE_COMPACT_FOLDED);
+    assert(lyrics_slug_profile(NCM_LYRICS_FETCHER_PAROLES)
+           == LYRICS_SLUG_PROFILE_HYPHEN_FOLDED);
+    assert(lyrics_slug_profile(NCM_LYRICS_FETCHER_MUSICA)
+           == LYRICS_SLUG_PROFILE_NONE);
+    assert(lyrics_slug_profile(NCM_LYRICS_FETCHER_LACOCCINELLE)
+           == LYRICS_SLUG_PROFILE_HYPHEN_FOLDED);
+
+    assert(lyrics_provider_has_flag(NCM_LYRICS_FETCHER_PAROLES,
+                                    LYRICS_PROVIDER_DIRECT_URLS));
+    assert(lyrics_provider_has_flag(NCM_LYRICS_FETCHER_PAROLES,
+                                    LYRICS_PROVIDER_SEARCH_URLS));
+    assert(lyrics_provider_has_flag(NCM_LYRICS_FETCHER_PAROLES,
+                                    LYRICS_PROVIDER_TRANSLATION_PAGES));
+    assert(!lyrics_provider_has_flag(NCM_LYRICS_FETCHER_MUSICA,
+                                     LYRICS_PROVIDER_DIRECT_URLS));
+    assert(lyrics_provider_has_flag(NCM_LYRICS_FETCHER_MUSICA,
+                                    LYRICS_PROVIDER_SEARCH_URLS));
+    assert(lyrics_provider_has_flag(NCM_LYRICS_FETCHER_MUSICA,
+                                    LYRICS_PROVIDER_NUMERIC_PAGE_IDS));
+    assert(!lyrics_provider_has_flag(NCM_LYRICS_FETCHER_LACOCCINELLE,
+                                     LYRICS_PROVIDER_DIRECT_URLS));
+    assert(lyrics_provider_has_flag(NCM_LYRICS_FETCHER_LACOCCINELLE,
+                                    LYRICS_PROVIDER_SEARCH_URLS));
+    assert(lyrics_provider_has_flag(NCM_LYRICS_FETCHER_LACOCCINELLE,
+                                    LYRICS_PROVIDER_NUMERIC_PAGE_IDS));
+    assert(lyrics_provider_has_flag(NCM_LYRICS_FETCHER_LACOCCINELLE,
+                                    LYRICS_PROVIDER_TRANSLATION_PAGES));
     return;
 }
 
@@ -705,6 +805,71 @@ test_musica_search_download_and_parse_fixture(void) {
 }
 
 static void
+test_lacoccinelle_search_download_and_parse_fixture(void) {
+    LyricsFetcherTestContext context;
+    NcmLyricsFetcherDef fetcher;
+    NcmLyricsResult result;
+    StrBuilder search_url;
+
+    context.test = &lyrics_lacoccinelle_test;
+    context.calls = 0;
+    ncm_lyrics_fetcher_def_init(&fetcher);
+    ncm_lyrics_result_init(&result);
+    sb_init(&search_url);
+
+    assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
+                                           STRLIT_ARGS("lacoccinelle")));
+    assert(STREQUAL(ncm_lyrics_fetcher_name(&fetcher),
+                    ncm_lyrics_fetcher_name_len(&fetcher),
+                    STRLIT_ARGS("lacoccinelle.net")));
+    lyrics_test_assert_no_direct_urls(
+        &fetcher, STRLIT_ARGS("luis fonsi"), STRLIT_ARGS("despacito"));
+    assert(ncm_lyrics_fetcher_build_url(
+        &fetcher, &search_url, STRLIT_ARGS("luis fonsi"),
+        STRLIT_ARGS("despacito")));
+    assert(STREQUAL(search_url.data, search_url.len,
+                    context.test->search_url, context.test->search_url_len));
+    assert(lyrics_search_candidate_score(
+        &fetcher,
+        STRLIT_ARGS("https://www.lacoccinelle.net/1225780-luis-fonsi-"
+                    "despacito-ft-daddy-yankee.html"),
+        STRLIT_ARGS("luis fonsi"), STRLIT_ARGS("despacito")) > 0);
+    assert(lyrics_search_candidate_score(
+        &fetcher,
+        STRLIT_ARGS("https://www.lacoccinelle.net/1227000-luis-fonsi-"
+                    "echame-la-culpa.html"),
+        STRLIT_ARGS("luis fonsi"), STRLIT_ARGS("despacito")) == 0);
+    assert(lyrics_search_candidate_score(
+        &fetcher,
+        STRLIT_ARGS("https://www.lacoccinelle.net/212021-luis-fonsi.html"),
+        STRLIT_ARGS("luis fonsi"), STRLIT_ARGS("despacito")) == 0);
+    assert(lyrics_search_candidate_score(
+        &fetcher, STRLIT_ARGS("https://www.lacoccinelle.net/260074.html"),
+        STRLIT_ARGS("luis fonsi"), STRLIT_ARGS("despacito")) > 0);
+
+    lyrics_test_set_download(lyrics_test_lacoccinelle_search_download,
+                             &context);
+    assert(ncm_lyrics_fetcher_fetch(
+        &fetcher, &result, STRLIT_ARGS("luis fonsi"),
+        STRLIT_ARGS("despacito")));
+    assert(context.calls == 2);
+    lyrics_test_assert_result(context.test, &result);
+    assert(memmem64(result.text, result.text_len, STRLIT_ARGS("Publié par"))
+           == NULL);
+    assert(memmem64(result.text, result.text_len, STRLIT_ARGS("Chanteurs :"))
+           == NULL);
+    assert(memmem64(result.text, result.text_len,
+                    STRLIT_ARGS("Vos commentaires"))
+           == NULL);
+
+    lyrics_test_set_download(NULL, NULL);
+    sb_free(&search_url);
+    ncm_lyrics_result_destroy(&result);
+    ncm_lyrics_fetcher_def_destroy(&fetcher);
+    return;
+}
+
+static void
 test_site_fetcher_tries_multiple_direct_urls(void) {
     LyricsFetcherTestContext context;
     NcmLyricsFetcherDef fetcher;
@@ -816,10 +981,12 @@ test_transport_error_is_reported(void) {
 int
 main(void) {
     test_registry_has_only_supported_fetchers();
+    test_provider_profiles_drive_metadata();
     test_site_fetchers_direct_download_and_parse_fixtures();
     test_site_fetchers_search_download_and_parse_fixtures();
     test_provider_aware_slug_normalization();
     test_musica_search_download_and_parse_fixture();
+    test_lacoccinelle_search_download_and_parse_fixture();
     test_site_fetcher_tries_multiple_direct_urls();
     test_vagalume_search_finds_jorge_ben_jor_alias();
     test_internet_fetcher_returns_search_url_without_download();
