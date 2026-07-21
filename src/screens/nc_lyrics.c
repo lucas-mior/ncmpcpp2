@@ -1143,10 +1143,8 @@ native_lyrics_job_create(NativeLyricsScreen *screen,
 }
 
 static bool
-native_lyrics_job_fetch_one(NativeLyricsJob *job,
-                            NcmLyricsFetcherDef *fetcher,
-                            NcmBuffer *artist,
-                            NcmBuffer *title) {
+native_lyrics_job_fetch_one(NativeLyricsJob *job, NcmLyricsFetcherDef *fetcher,
+                            NcmBuffer *artist, NcmBuffer *title) {
     if (fetcher == NULL) {
         return false;
     }
