@@ -1007,6 +1007,7 @@ native_lyrics_filename_from_song(NcmBuffer *filename,
     ncm_buffer_init(&title);
     ncm_string_view_init(&uri);
     ncm_buffer_clear(filename);
+
     if (store_in_song_dir && !ncm_song_is_stream(song)) {
         if (ncm_song_is_from_database(song) && (music_dir_len > 0)) {
             ncm_buffer_append(filename, music_dir, music_dir_len);
@@ -1046,9 +1047,11 @@ native_lyrics_filename_from_song(NcmBuffer *filename,
             filename->data[filename->len] = '\0';
         }
     }
+
     ncm_buffer_append(filename, STRLIT_ARGS(".txt"));
     ncm_buffer_destroy(&title);
     ncm_buffer_destroy(&artist);
+
     return filename->len > 4;
 }
 
