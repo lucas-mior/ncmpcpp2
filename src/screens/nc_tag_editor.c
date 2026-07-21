@@ -889,10 +889,8 @@ native_tag_editor_screen_add_directory(NativeTagEditorScreen *screen,
     ok = sb_set(&first, label, label_len)
          && sb_set(&second, path, path_len);
     if (ok) {
-        pair.first = ncm_buffer_steal(&first, &pair.first_len,
-                                      &pair.first_cap);
-        pair.second = ncm_buffer_steal(&second, &pair.second_len,
-                                       &pair.second_cap);
+        pair.first = sb_steal(&first, &pair.first_len, &pair.first_cap);
+        pair.second = sb_steal(&second, &pair.second_len, &pair.second_cap);
         nc_editor_pair_menu_add(&screen->directories, &pair);
         screen->last_known_directory_count = nc_menu_item_count(
             nc_editor_pair_menu_base(&screen->directories));
