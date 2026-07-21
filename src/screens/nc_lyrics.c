@@ -1332,8 +1332,7 @@ native_lyrics_append_fetching(NcBuffer *buffer,
 }
 
 static void
-native_lyrics_append_fetch_error(NcBuffer *buffer,
-                                 NcmLyricsResult *result) {
+native_lyrics_append_fetch_error(NcBuffer *buffer, NcmLyricsResult *result) {
     NcColor red = nc_color_make(COLOR_RED, NC_COLOR_CURRENT, false, false);
     nc_buffer_add_color(buffer,
                         nc_buffer_len(buffer),
