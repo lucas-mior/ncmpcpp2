@@ -41,6 +41,7 @@
 #define NATIVE_VISUALIZER_MIN_SAMPLE (-32768)
 #define NATIVE_VISUALIZER_MAX_SAMPLE 32767
 #define NATIVE_VISUALIZER_DEFAULT_CHARS "●▮"
+#define NATIVE_VISUALIZER_NANOSECONDS_PER_SECOND 1000000000ll
 
 #if defined(HAVE_FFTW3_H)
 #define NATIVE_VISUALIZER_SMOOTH_CHAR_COUNT 8
@@ -128,6 +129,7 @@ static bool visualizer_system_enable_output(void *user, int32 id,
                                             NcmError *error);
 static void visualizer_system_sleep_microseconds(void *user,
                                                  int32 microseconds);
+static void visualizer_reset_sample_clock(NativeVisualizerScreen *screen);
 #if defined(HAVE_FFTW3_H)
 static void visualizer_fft_destroy(NativeVisualizerScreen *screen);
 #endif
@@ -811,9 +813,7 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     screen->output_id = -1;
     screen->fps = fps;
     screen->sample_rate = NATIVE_VISUALIZER_DEFAULT_RATE;
-    screen->sample_consumption_rate = 5;
-    screen->sample_consumption_rate_up_ctr = 0;
-    screen->sample_consumption_rate_dn_ctr = 0;
+    visualizer_reset_sample_clock(screen);
     screen->reset_output = false;
     screen->autoscale = autoscale;
     screen->stereo = stereo;
@@ -972,6 +972,7 @@ native_visualizer_screen_clear(NativeVisualizerScreen *screen) {
     }
     nc_window_clear(&screen->window);
     native_visualizer_screen_drain_data_source(screen);
+    visualizer_reset_sample_clock(screen);
     return;
 }
 
@@ -991,29 +992,64 @@ native_visualizer_screen_toggle_type(NativeVisualizerScreen *screen) {
     return;
 }
 
+static void
+visualizer_reset_sample_clock(NativeVisualizerScreen *screen) {
+    screen->sample_clock.ns = 0;
+    screen->sample_clock_frame_remainder = 0;
+    screen->sample_clock_initialized = false;
+    return;
+}
+
 int32
 native_visualizer_screen_requested_samples(NativeVisualizerScreen *screen) {
-    double rate;
-    int32 result;
+    NcmTimePoint now;
+    int64 elapsed_ns;
+    int64 frames;
+    int64 max_elapsed_ns;
+    int64 max_frames;
+    int64 scaled_frames;
+    int32 channels;
 
-    if ((screen == NULL) || (screen->fps <= 0)) {
+    if ((screen == NULL) || (screen->sample_rate <= 0)) {
+        return 0;
+    }
+    if (!ncm_time_monotonic_now(&now, NULL)) {
+        return 0;
+    }
+    if (!screen->sample_clock_initialized) {
+        screen->sample_clock = now;
+        screen->sample_clock_initialized = true;
         return 0;
     }
 
-    rate = (double)screen->sample_rate / (double)screen->fps;
-    rate *= pow(1.1, (double)screen->sample_consumption_rate);
-    if (screen->stereo) {
-        rate *= 2.0;
-    }
-    if (!isfinite(rate) || (rate >= (double)INT32_MAX)) {
-        return INT32_MAX;
+    elapsed_ns = ncm_time_elapsed_ns(screen->sample_clock, now);
+    screen->sample_clock = now;
+    if (elapsed_ns <= 0) {
+        return 0;
     }
 
-    result = (int32)rate;
-    if (result < 1) {
-        result = 1;
+    channels = 1;
+    if (screen->stereo) {
+        channels = 2;
     }
-    return result;
+    max_frames = INT32_MAX/channels;
+    max_elapsed_ns = max_frames*NATIVE_VISUALIZER_NANOSECONDS_PER_SECOND
+                     /screen->sample_rate;
+    if (elapsed_ns > max_elapsed_ns) {
+        screen->sample_clock_frame_remainder = 0;
+        return (int32)(max_frames*channels);
+    }
+
+    scaled_frames = elapsed_ns*screen->sample_rate;
+    scaled_frames += screen->sample_clock_frame_remainder;
+    frames = scaled_frames/NATIVE_VISUALIZER_NANOSECONDS_PER_SECOND;
+    screen->sample_clock_frame_remainder =
+        scaled_frames%NATIVE_VISUALIZER_NANOSECONDS_PER_SECOND;
+    if (frames >= max_frames) {
+        screen->sample_clock_frame_remainder = 0;
+        frames = max_frames;
+    }
+    return (int32)(frames*channels);
 }
 
 bool
@@ -1055,20 +1091,6 @@ native_visualizer_screen_take_render_samples(NativeVisualizerScreen *screen,
         return 0;
     }
 
-    if (ncm_sample_buffer_size(&screen->buffered_samples) > 0) {
-        screen->sample_consumption_rate_up_ctr += 1;
-        if (screen->sample_consumption_rate_up_ctr > 8) {
-            screen->sample_consumption_rate_up_ctr = 0;
-            screen->sample_consumption_rate += 1;
-        }
-    } else if (screen->sample_consumption_rate > 0) {
-        screen->sample_consumption_rate_dn_ctr += 1;
-        if (screen->sample_consumption_rate_dn_ctr > 4) {
-            screen->sample_consumption_rate_dn_ctr = 0;
-            screen->sample_consumption_rate -= 1;
-        }
-        screen->sample_consumption_rate_up_ctr = 0;
-    }
     return result;
 }
 
