@@ -2218,6 +2218,77 @@ lyrics_extract_musixmatch(StrBuilder *out, char *data, int32 data_len) {
                                 &value_end);
 }
 
+static void
+lyrics_update_first_match(char *data, int32 data_len, int32 start,
+                          char *needle, int32 needle_len, int32 *best) {
+    int32 pos;
+
+    pos = lyrics_find_ignore_case(data, data_len, needle, needle_len, start);
+    if ((pos >= 0) && ((*best < 0) || (pos < *best))) {
+        *best = pos;
+    }
+    return;
+}
+
+static int32
+lyrics_musica_content_start(char *data, int32 data_len) {
+    int32 marker;
+    int32 content_start;
+
+    marker = lyrics_find_ignore_case(data, data_len, STRLIT_ARGS(">LETRA<"), 0);
+    if (marker < 0) {
+        return -1;
+    }
+
+    content_start = lyrics_find_char(data, data_len, '>',
+                                     marker + STRLIT_LEN(">LETRA<") - 1);
+    if (content_start < 0) {
+        return -1;
+    }
+    return content_start + 1;
+}
+
+static int32
+lyrics_musica_content_end(char *data, int32 data_len, int32 start) {
+    int32 best;
+
+    best = -1;
+    lyrics_update_first_match(data, data_len, start,
+                              STRLIT_ARGS("Significado de la letra"), &best);
+    lyrics_update_first_match(data, data_len, start,
+                              STRLIT_ARGS("Puntuar "), &best);
+    lyrics_update_first_match(data, data_len, start,
+                              STRLIT_ARGS("Imprimir letra"), &best);
+    lyrics_update_first_match(data, data_len, start,
+                              STRLIT_ARGS("Letra añadida"), &best);
+    lyrics_update_first_match(data, data_len, start,
+                              STRLIT_ARGS("+ Letras de"), &best);
+    return best;
+}
+
+static bool
+lyrics_extract_musica(StrBuilder *out, char *data, int32 data_len) {
+    int32 start;
+    int32 end;
+
+    sb_clear(out);
+    start = lyrics_musica_content_start(data, data_len);
+    if (start < 0) {
+        return false;
+    }
+
+    end = lyrics_musica_content_end(data, data_len, start);
+    if (end < 0) {
+        return false;
+    }
+    if (end <= start) {
+        return false;
+    }
+
+    sb_append(out, data + start, end - start);
+    return true;
+}
+
 static bool
 lyrics_extract_content(NcmLyricsFetcherDef *fetcher, StrBuilder *out,
                        char *data, int32 data_len, bool *plain_text) {
@@ -2234,8 +2305,7 @@ lyrics_extract_content(NcmLyricsFetcherDef *fetcher, StrBuilder *out,
                                    STRLIT_ARGS("class=\"lyric-original\""),
                                    false);
     case NCM_LYRICS_FETCHER_MUSICA:
-        sb_clear(out);
-        return false;
+        return lyrics_extract_musica(out, data, data_len);
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
         *plain_text = true;
         return lyrics_extract_musixmatch(out, data, data_len);
