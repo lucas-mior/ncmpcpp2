@@ -11,6 +11,5 @@ typedef struct NcmStringView {
     int32 len;
 } NcmStringView;
 
-typedef StrBuilder NcmBuffer;
 
 #endif /* NCM_DEFS_H */

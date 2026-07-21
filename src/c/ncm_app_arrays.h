@@ -18,18 +18,6 @@ NCM_ARRAY_DECLARE_APPEND(ncm_string_view_array,
                          NcmStringViewArray,
                          NcmStringView)
 
-typedef StrBuilderArray NcmBufferArray;
-NCM_ARRAY_DECLARE_INIT(ncm_buffer_array, NcmBufferArray)
-NCM_ARRAY_DECLARE_CLEAR(ncm_buffer_array, NcmBufferArray)
-NCM_ARRAY_DECLARE_DESTROY(ncm_buffer_array, NcmBufferArray)
-NCM_ARRAY_DECLARE_COPY(ncm_buffer_array, NcmBufferArray)
-NCM_ARRAY_DECLARE_MOVE(ncm_buffer_array, NcmBufferArray)
-NCM_ARRAY_DECLARE_SWAP(ncm_buffer_array, NcmBufferArray)
-NCM_ARRAY_DECLARE_RESERVE(ncm_buffer_array, NcmBufferArray)
-NCM_ARRAY_DECLARE_APPEND(ncm_buffer_array, NcmBufferArray, NcmBuffer)
-NCM_ARRAY_DECLARE_APPEND_COPY(ncm_buffer_array,
-                              NcmBufferArray,
-                              NcmBuffer)
 
 NCM_ARRAY_DECLARE_TYPE(NcmSongArray, NcmSong)
 NCM_ARRAY_DECLARE_INIT(ncm_song_array, NcmSongArray)

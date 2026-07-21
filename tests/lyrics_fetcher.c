@@ -9,7 +9,7 @@
 #pragma GCC diagnostic ignored "-Wunused-function"
 #endif
 
-#include "c/ncm_base.c"
+#include "cbase/util.c"
 #include "c/ncm_string.h"
 
 bool

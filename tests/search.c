@@ -21,7 +21,7 @@
 #pragma GCC diagnostic ignored "-Wabi"
 #endif
 
-#include "c/ncm_base.c"
+#include "cbase/util.c"
 #include "c/ncm_error.c"
 #include "c/ncm_regex.c"
 #include "c/ncm_search_prompt.c"
