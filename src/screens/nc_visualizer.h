@@ -189,6 +189,8 @@ void native_visualizer_screen_set_geometry(NativeVisualizerScreen *screen,
 void native_visualizer_screen_init_visualization(
     NativeVisualizerScreen *screen);
 void native_visualizer_screen_clear(NativeVisualizerScreen *screen);
+void native_visualizer_screen_reset_audio_state(
+    NativeVisualizerScreen *screen);
 void native_visualizer_screen_reset_auto_scale_multiplier(
     NativeVisualizerScreen *screen);
 void native_visualizer_screen_toggle_type(NativeVisualizerScreen *screen);

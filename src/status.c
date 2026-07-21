@@ -98,6 +98,7 @@ static void status_call_ui_player_stopped(void);
 static void status_call_ui_song_id_changed(int32 song_id);
 static void status_call_ui_current_song_changed(NcmSong *song);
 static void status_run_player_state_command(void);
+static void status_reset_visualizer_for_player_event(int32 event);
 static void status_reset_visualizer_autoscale(void);
 static void status_clear_visible_visualizer(void);
 static void status_handle_current_song_changed(NcmSong *song);
@@ -801,6 +802,7 @@ ncm_status_update(NcmMpdClient *client, int32 event, NcmError *error) {
     if (!ncm_mpd_client_get_status(client, &mpd_status, error)) {
         return false;
     }
+    status_reset_visualizer_for_player_event(event);
 
     return ncm_status_apply_mpd_status(&mpd_status, event, NULL, error);
 }
@@ -842,6 +844,7 @@ ncm_status_update_from_noidle(NcmMpdClient *client, NcmStatusHooks *hooks,
     if (!ncm_mpd_client_get_status(client, &mpd_status, error)) {
         return false;
     }
+    status_reset_visualizer_for_player_event(flags);
 
     return ncm_status_apply_mpd_status(&mpd_status, flags, hooks, error);
 }
@@ -1289,6 +1292,19 @@ status_run_song_change_command(void) {
                                          Config.execute_on_song_change_len,
                                          true, &error);
     ncm_error_clear(&error);
+    return;
+}
+
+static void
+status_reset_visualizer_for_player_event(int32 event) {
+#if defined(ENABLE_VISUALIZER)
+    if ((event & MPD_IDLE_PLAYER) != 0) {
+        native_visualizer_screen_reset_audio_state(
+            native_c_screen_visualizer());
+    }
+#else
+    (void)event;
+#endif
     return;
 }
 

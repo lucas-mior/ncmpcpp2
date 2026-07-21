@@ -959,7 +959,10 @@ native_visualizer_screen_init_visualization(
 }
 
 void
-native_visualizer_screen_clear(NativeVisualizerScreen *screen) {
+native_visualizer_screen_reset_audio_state(
+    NativeVisualizerScreen *screen
+) {
+    ncm_sample_buffer_clear(&screen->incoming_samples);
     ncm_sample_buffer_clear(&screen->buffered_samples);
     ncm_sample_buffer_clear(&screen->rendered_samples);
     ncm_sample_buffer_clear(&screen->left_channel);
@@ -970,9 +973,15 @@ native_visualizer_screen_clear(NativeVisualizerScreen *screen) {
              screen->rendered_samples.cap
              *SIZEOF(*screen->rendered_samples.data));
     }
-    nc_window_clear(&screen->window);
     native_visualizer_screen_drain_data_source(screen);
     visualizer_reset_sample_clock(screen);
+    return;
+}
+
+void
+native_visualizer_screen_clear(NativeVisualizerScreen *screen) {
+    native_visualizer_screen_reset_audio_state(screen);
+    nc_window_clear(&screen->window);
     return;
 }
 
