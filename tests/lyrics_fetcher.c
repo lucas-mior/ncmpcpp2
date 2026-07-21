@@ -151,6 +151,17 @@ static LyricsFetcherTestCase lyrics_tests[] = {
         true),
 };
 
+static LyricsFetcherTestCase lyrics_musica_test = LYRICS_TEST(
+    "musica",
+    "tests/lyrics/musica.html",
+    "",
+    "https://www.musica.com/letras.asp?letra=2529772",
+    "https://www.musica.com/letras.asp?letra=2276162",
+    "https://www.google.com/search?hl=en&q=site%3Amusica.com+"
+    "luis+fonsi+despacito+lyrics",
+    "Synthetic search-first lyric line",
+    true);
+
 #undef LYRICS_TEST
 
 static void
@@ -289,41 +300,48 @@ lyrics_test_musica_search_download(
     StrBuilder *data, char *url, int32 url_len, char *referer,
     int32 referer_len, bool follow_redirect, int32 timeout_seconds, void *user
 ) {
-    int32 *calls;
+    LyricsFetcherTestContext *context;
+    LyricsFetcherTestCase *test;
 
-    calls = user;
-    *calls += 1;
+    context = user;
+    assert(context != NULL);
+    assert(context->test != NULL);
+    test = context->test;
+    context->calls += 1;
     assert(follow_redirect);
     assert(timeout_seconds == 15);
 
-    if (*calls == 1) {
-        assert(STREQUAL(
-            url, url_len,
-            STRLIT_ARGS("https://www.google.com/search?hl=en&q=site%3A"
-                        "musica.com+luis+fonsi+despacito+lyrics")));
+    if (context->calls == 1) {
+        assert(STREQUAL(url, url_len, test->search_url,
+                        test->search_url_len));
         assert(referer == NULL);
         assert(referer_len == 0);
         sb_clear(data);
         lyrics_test_append_search_link(
             data,
             STRLIT_ARGS("https://www.musica.com/letras.asp?letras=9124"));
-        lyrics_test_append_search_link(
-            data,
-            STRLIT_ARGS("https://www.musica.com/letras.asp?letra=2547843"));
+        lyrics_test_append_search_link(data, test->bad_page_url,
+                                       test->bad_page_url_len);
+        lyrics_test_append_search_link(data, test->page_url,
+                                       test->page_url_len);
+        return CURLE_OK;
+    }
+    if (context->calls == 2) {
+        assert(STREQUAL(url, url_len, test->bad_page_url,
+                        test->bad_page_url_len));
+        assert(STREQUAL(referer, referer_len, test->search_url,
+                        test->search_url_len));
+        sb_clear(data);
+        sb_append(data, STRLIT_ARGS("<html><body><h1>Wrong song</h1>"
+                                    "</body></html>"));
         return CURLE_OK;
     }
 
-    assert(*calls == 2);
-    assert(STREQUAL(
-        url, url_len,
-        STRLIT_ARGS("https://www.musica.com/letras.asp?letra=2547843")));
-    assert(STREQUAL(
-        referer, referer_len,
-        STRLIT_ARGS("https://www.google.com/search?hl=en&q=site%3A"
-                    "musica.com+luis+fonsi+despacito+lyrics")));
-    sb_clear(data);
-    sb_append(data, STRLIT_ARGS("<html><body>not implemented yet</body>"
-                                "</html>"));
+    assert(context->calls == 3);
+    assert(STREQUAL(url, url_len, test->page_url, test->page_url_len));
+    assert(STREQUAL(referer, referer_len, test->search_url,
+                    test->search_url_len));
+    lyrics_test_append_fixture(data, test);
     return CURLE_OK;
 }
 
@@ -598,13 +616,14 @@ test_provider_aware_slug_normalization(void) {
 }
 
 static void
-test_musica_is_search_first(void) {
+test_musica_search_download_and_parse_fixture(void) {
+    LyricsFetcherTestContext context;
     NcmLyricsFetcherDef fetcher;
     NcmLyricsResult result;
     StrBuilder search_url;
-    int32 calls;
 
-    calls = 0;
+    context.test = &lyrics_musica_test;
+    context.calls = 0;
     ncm_lyrics_fetcher_def_init(&fetcher);
     ncm_lyrics_result_init(&result);
     sb_init(&search_url);
@@ -619,26 +638,26 @@ test_musica_is_search_first(void) {
     assert(ncm_lyrics_fetcher_build_url(
         &fetcher, &search_url, STRLIT_ARGS("luis fonsi"),
         STRLIT_ARGS("despacito")));
-    assert(STREQUAL(
-        search_url.data, search_url.len,
-        STRLIT_ARGS("https://www.google.com/search?hl=en&q=site%3A"
-                    "musica.com+luis+fonsi+despacito+lyrics")));
+    assert(STREQUAL(search_url.data, search_url.len,
+                    context.test->search_url, context.test->search_url_len));
     assert(lyrics_search_candidate_score(
         &fetcher,
-        STRLIT_ARGS("https://www.musica.com/letras.asp?letra=2547843"),
+        STRLIT_ARGS("https://www.musica.com/letras.asp?letra=2276162"),
         STRLIT_ARGS("luis fonsi"), STRLIT_ARGS("despacito")) > 0);
     assert(lyrics_search_candidate_score(
         &fetcher,
         STRLIT_ARGS("https://www.musica.com/letras.asp?letras=9124"),
         STRLIT_ARGS("luis fonsi"), STRLIT_ARGS("despacito")) == 0);
 
-    lyrics_test_set_download(lyrics_test_musica_search_download, &calls);
+    lyrics_test_set_download(lyrics_test_musica_search_download, &context);
     assert(ncm_lyrics_fetcher_fetch(
         &fetcher, &result, STRLIT_ARGS("luis fonsi"),
         STRLIT_ARGS("despacito")));
-    assert(calls == 2);
-    assert(!result.success);
-    assert(STREQUAL(result.text, result.text_len, STRLIT_ARGS("Not found")));
+    assert(context.calls == 3);
+    lyrics_test_assert_result(context.test, &result);
+    assert(memmem64(result.text, result.text_len,
+                    STRLIT_ARGS("Significado de la letra"))
+           == NULL);
 
     lyrics_test_set_download(NULL, NULL);
     sb_free(&search_url);
@@ -762,7 +781,7 @@ main(void) {
     test_site_fetchers_direct_download_and_parse_fixtures();
     test_site_fetchers_search_download_and_parse_fixtures();
     test_provider_aware_slug_normalization();
-    test_musica_is_search_first();
+    test_musica_search_download_and_parse_fixture();
     test_site_fetcher_tries_multiple_direct_urls();
     test_vagalume_search_finds_jorge_ben_jor_alias();
     test_internet_fetcher_returns_search_url_without_download();
