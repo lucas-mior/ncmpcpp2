@@ -1403,8 +1403,7 @@ native_lyrics_find_match_callback(int32 start, int32 len, void *user) {
 }
 
 static void
-native_lyrics_mouse_scroll(NativeLyricsScreen *screen,
-                           enum NcScroll where) {
+native_lyrics_mouse_scroll(NativeLyricsScreen *screen, enum NcScroll where) {
     for (int32 i = 0; i < Config.lines_scrolled; i += 1) {
         nc_scrollpad_scroll(&screen->scrollpad, &screen->window, where);
     }
