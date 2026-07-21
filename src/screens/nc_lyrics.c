@@ -884,8 +884,10 @@ native_lyrics_song_artist_title(NcmSong *song,
     ncm_string_view_init(&artist_view);
     ncm_string_view_init(&title_view);
     ncm_string_view_init(&name_view);
+
     ncm_buffer_clear(artist);
     ncm_buffer_clear(title);
+
     if (ncm_song_tag_view(song, MPD_TAG_ARTIST, 0, &artist_view)
         && ncm_song_tag_view(song, MPD_TAG_TITLE, 0, &title_view)) {
         ncm_buffer_append(artist, artist_view.data, artist_view.len);
@@ -899,9 +901,11 @@ native_lyrics_song_artist_title(NcmSong *song,
     } else if (ncm_song_uri_view(song, 0, &name_view)) {
         ncm_buffer_append(&fallback, name_view.data, name_view.len);
     }
+
     native_lyrics_remove_extension(&fallback);
     ncm_buffer_copy(title, &fallback);
     ncm_buffer_destroy(&fallback);
+
     return title->len > 0;
 }
 
