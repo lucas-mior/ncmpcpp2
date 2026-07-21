@@ -375,6 +375,44 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
 }
 
 static void
+test_provider_aware_slug_normalization(void) {
+    NcmLyricsFetcherDef fetcher;
+    StrBuilder url;
+
+    ncm_lyrics_fetcher_def_init(&fetcher);
+    sb_init(&url);
+
+    assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
+                                           STRLIT_ARGS("vagalume")));
+    assert(lyrics_build_direct_url(&fetcher, &url, STRLIT_ARGS("Jorge Ben"),
+                                   STRLIT_ARGS("Que nega é essa")));
+    assert(STREQUAL(
+        url.data, url.len,
+        STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben/"
+                    "que-nega-e-essa.html")));
+    assert(lyrics_search_candidate_ok(
+        &fetcher,
+        STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben/"
+                    "que-nega-e-essa.html"),
+        STRLIT_ARGS("Jorge Ben"), STRLIT_ARGS("Que nega é essa")));
+
+    assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
+                                           STRLIT_ARGS("azlyrics")));
+    sb_clear(&url);
+    assert(lyrics_build_direct_url(&fetcher, &url,
+                                   STRLIT_ARGS("Beyoncé & Jay-Z"),
+                                   STRLIT_ARGS("Déjà Vu")));
+    assert(STREQUAL(
+        url.data, url.len,
+        STRLIT_ARGS("https://www.azlyrics.com/lyrics/beyoncejayz/"
+                    "dejavu.html")));
+
+    sb_free(&url);
+    ncm_lyrics_fetcher_def_destroy(&fetcher);
+    return;
+}
+
+static void
 test_internet_fetcher_returns_search_url_without_download(void) {
     NcmLyricsFetcherDef fetcher;
     NcmLyricsResult result;
@@ -436,6 +474,7 @@ main(void) {
     test_registry_has_only_supported_fetchers();
     test_site_fetchers_direct_download_and_parse_fixtures();
     test_site_fetchers_search_download_and_parse_fixtures();
+    test_provider_aware_slug_normalization();
     test_internet_fetcher_returns_search_url_without_download();
     test_transport_error_is_reported();
     exit(EXIT_SUCCESS);

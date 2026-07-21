@@ -22,6 +22,12 @@ static void *lyrics_test_user;
 
 static NcmArrayItemCallbacks lyrics_fetcher_callbacks;
 
+typedef enum LyricsSlugProfile {
+    LYRICS_SLUG_PROFILE_NONE,
+    LYRICS_SLUG_PROFILE_COMPACT_FOLDED,
+    LYRICS_SLUG_PROFILE_HYPHEN_FOLDED,
+} LyricsSlugProfile;
+
 static void lyrics_string_destroy(char **data, int32 *len, int32 *cap);
 static void lyrics_fetcher_array_init_item(void *item);
 static void lyrics_fetcher_array_destroy_item(void *item);
@@ -29,8 +35,15 @@ static bool lyrics_name_to_type(char *name, int32 name_len,
                                 enum NcmLyricsFetcherType *type);
 static char *lyrics_type_name(enum NcmLyricsFetcherType type, int32 *len);
 static char *lyrics_type_domain(enum NcmLyricsFetcherType type, int32 *len);
+static LyricsSlugProfile lyrics_slug_profile(enum NcmLyricsFetcherType type);
+static bool lyrics_slug_profile_compact(LyricsSlugProfile profile);
+static bool lyrics_fold_latin_rune(uint32 rune, char *folded,
+                                   int32 *folded_len);
+static bool lyrics_skip_slug_rune(uint32 rune);
+static bool lyrics_slug_separator_rune(uint32 rune);
 static bool lyrics_append_slug(StrBuilder *buffer,
-                               char *string, int32 string_len, bool compact);
+                               enum NcmLyricsFetcherType type, char *string,
+                               int32 string_len);
 static void lyrics_append_query(StrBuilder *buffer,
                                 char *string, int32 string_len);
 static int32 lyrics_hex_value(char ch);
@@ -258,7 +271,6 @@ static bool
 lyrics_build_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *url,
                         char *artist, int32 artist_len, char *title,
                         int32 title_len) {
-    bool compact;
     bool valid;
 
     if ((fetcher == NULL) || (url == NULL) || !fetcher->enabled
@@ -268,48 +280,51 @@ lyrics_build_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *url,
     }
 
     sb_clear(url);
-    compact = false;
     switch (fetcher->type) {
     case NCM_LYRICS_FETCHER_AZLYRICS:
-        sb_append(url,
-                          STRLIT_ARGS("https://www.azlyrics.com/lyrics/"));
-        compact = true;
-        valid = lyrics_append_slug(url, artist, artist_len, compact);
+        sb_append(url, STRLIT_ARGS("https://www.azlyrics.com/lyrics/"));
+        valid = lyrics_append_slug(url, fetcher->type, artist, artist_len);
         sb_append_byte(url, '/');
-        valid = valid && lyrics_append_slug(url, title, title_len, compact);
+        valid = valid
+                && lyrics_append_slug(url, fetcher->type, title, title_len);
         sb_append(url, STRLIT_ARGS(".html"));
         break;
     case NCM_LYRICS_FETCHER_GENIUS:
         sb_append(url, STRLIT_ARGS("https://genius.com/"));
-        valid = lyrics_append_slug(url, artist, artist_len, compact);
+        valid = lyrics_append_slug(url, fetcher->type, artist, artist_len);
         sb_append_byte(url, '-');
-        valid = valid && lyrics_append_slug(url, title, title_len, compact);
+        valid = valid
+                && lyrics_append_slug(url, fetcher->type, title, title_len);
         sb_append(url, STRLIT_ARGS("-lyrics"));
         break;
     case NCM_LYRICS_FETCHER_LETRASMUS:
         sb_append(url, STRLIT_ARGS("https://www.letras.mus.br/"));
-        valid = lyrics_append_slug(url, artist, artist_len, compact);
+        valid = lyrics_append_slug(url, fetcher->type, artist, artist_len);
         sb_append_byte(url, '/');
-        valid = valid && lyrics_append_slug(url, title, title_len, compact);
+        valid = valid
+                && lyrics_append_slug(url, fetcher->type, title, title_len);
         sb_append_byte(url, '/');
         break;
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
         sb_append(url, STRLIT_ARGS("https://www.musixmatch.com/lyrics/"));
-        valid = lyrics_append_slug(url, artist, artist_len, compact);
+        valid = lyrics_append_slug(url, fetcher->type, artist, artist_len);
         sb_append_byte(url, '/');
-        valid = valid && lyrics_append_slug(url, title, title_len, compact);
+        valid = valid
+                && lyrics_append_slug(url, fetcher->type, title, title_len);
         break;
     case NCM_LYRICS_FETCHER_TEKSTOWO:
         sb_append(url, STRLIT_ARGS("https://www.tekstowo.pl/"));
-        valid = lyrics_append_slug(url, artist, artist_len, compact);
+        valid = lyrics_append_slug(url, fetcher->type, artist, artist_len);
         sb_append_byte(url, '/');
-        valid = valid && lyrics_append_slug(url, title, title_len, compact);
+        valid = valid
+                && lyrics_append_slug(url, fetcher->type, title, title_len);
         break;
     case NCM_LYRICS_FETCHER_VAGALUME:
         sb_append(url, STRLIT_ARGS("https://www.vagalume.com.br/"));
-        valid = lyrics_append_slug(url, artist, artist_len, compact);
+        valid = lyrics_append_slug(url, fetcher->type, artist, artist_len);
         sb_append_byte(url, '/');
-        valid = valid && lyrics_append_slug(url, title, title_len, compact);
+        valid = valid
+                && lyrics_append_slug(url, fetcher->type, title, title_len);
         sb_append(url, STRLIT_ARGS(".html"));
         break;
     case NCM_LYRICS_FETCHER_UNKNOWN:
@@ -563,16 +578,342 @@ lyrics_append_percent_byte(StrBuilder *buffer, uint8 value) {
     return;
 }
 
+static LyricsSlugProfile
+lyrics_slug_profile(enum NcmLyricsFetcherType type) {
+    switch (type) {
+    case NCM_LYRICS_FETCHER_AZLYRICS:
+        return LYRICS_SLUG_PROFILE_COMPACT_FOLDED;
+    case NCM_LYRICS_FETCHER_GENIUS:
+    case NCM_LYRICS_FETCHER_LETRASMUS:
+    case NCM_LYRICS_FETCHER_MUSIXMATCH:
+    case NCM_LYRICS_FETCHER_TEKSTOWO:
+    case NCM_LYRICS_FETCHER_VAGALUME:
+        return LYRICS_SLUG_PROFILE_HYPHEN_FOLDED;
+    case NCM_LYRICS_FETCHER_UNKNOWN:
+    case NCM_LYRICS_FETCHER_INTERNET:
+    case NCM_LYRICS_FETCHER_LAST:
+    default:
+        return LYRICS_SLUG_PROFILE_NONE;
+    }
+}
+
 static bool
-lyrics_append_slug(StrBuilder *buffer, char *string, int32 string_len,
-                   bool compact) {
+lyrics_slug_profile_compact(LyricsSlugProfile profile) {
+    switch (profile) {
+    case LYRICS_SLUG_PROFILE_COMPACT_FOLDED:
+        return true;
+    case LYRICS_SLUG_PROFILE_HYPHEN_FOLDED:
+    case LYRICS_SLUG_PROFILE_NONE:
+    default:
+        return false;
+    }
+}
+
+static bool
+lyrics_fold_latin_rune(uint32 rune, char *folded, int32 *folded_len) {
+    switch (rune) {
+    case 0x00aa:
+    case 0x00c0:
+    case 0x00c1:
+    case 0x00c2:
+    case 0x00c3:
+    case 0x00c4:
+    case 0x00c5:
+    case 0x00e0:
+    case 0x00e1:
+    case 0x00e2:
+    case 0x00e3:
+    case 0x00e4:
+    case 0x00e5:
+    case 0x0100:
+    case 0x0101:
+    case 0x0102:
+    case 0x0103:
+    case 0x0104:
+    case 0x0105:
+        folded[0] = 'a';
+        *folded_len = 1;
+        return true;
+    case 0x00c6:
+    case 0x00e6:
+        folded[0] = 'a';
+        folded[1] = 'e';
+        *folded_len = 2;
+        return true;
+    case 0x00c7:
+    case 0x00e7:
+    case 0x0106:
+    case 0x0107:
+    case 0x0108:
+    case 0x0109:
+    case 0x010a:
+    case 0x010b:
+    case 0x010c:
+    case 0x010d:
+        folded[0] = 'c';
+        *folded_len = 1;
+        return true;
+    case 0x00d0:
+    case 0x00f0:
+    case 0x010e:
+    case 0x010f:
+    case 0x0110:
+    case 0x0111:
+        folded[0] = 'd';
+        *folded_len = 1;
+        return true;
+    case 0x00c8:
+    case 0x00c9:
+    case 0x00ca:
+    case 0x00cb:
+    case 0x00e8:
+    case 0x00e9:
+    case 0x00ea:
+    case 0x00eb:
+    case 0x0112:
+    case 0x0113:
+    case 0x0114:
+    case 0x0115:
+    case 0x0116:
+    case 0x0117:
+    case 0x0118:
+    case 0x0119:
+    case 0x011a:
+    case 0x011b:
+        folded[0] = 'e';
+        *folded_len = 1;
+        return true;
+    case 0x011c:
+    case 0x011d:
+    case 0x011e:
+    case 0x011f:
+    case 0x0120:
+    case 0x0121:
+    case 0x0122:
+    case 0x0123:
+        folded[0] = 'g';
+        *folded_len = 1;
+        return true;
+    case 0x0124:
+    case 0x0125:
+    case 0x0126:
+    case 0x0127:
+        folded[0] = 'h';
+        *folded_len = 1;
+        return true;
+    case 0x00cc:
+    case 0x00cd:
+    case 0x00ce:
+    case 0x00cf:
+    case 0x00ec:
+    case 0x00ed:
+    case 0x00ee:
+    case 0x00ef:
+    case 0x0128:
+    case 0x0129:
+    case 0x012a:
+    case 0x012b:
+    case 0x012c:
+    case 0x012d:
+    case 0x012e:
+    case 0x012f:
+    case 0x0130:
+    case 0x0131:
+        folded[0] = 'i';
+        *folded_len = 1;
+        return true;
+    case 0x0134:
+    case 0x0135:
+        folded[0] = 'j';
+        *folded_len = 1;
+        return true;
+    case 0x0136:
+    case 0x0137:
+        folded[0] = 'k';
+        *folded_len = 1;
+        return true;
+    case 0x0139:
+    case 0x013a:
+    case 0x013b:
+    case 0x013c:
+    case 0x013d:
+    case 0x013e:
+    case 0x013f:
+    case 0x0140:
+    case 0x0141:
+    case 0x0142:
+        folded[0] = 'l';
+        *folded_len = 1;
+        return true;
+    case 0x00d1:
+    case 0x00f1:
+    case 0x0143:
+    case 0x0144:
+    case 0x0145:
+    case 0x0146:
+    case 0x0147:
+    case 0x0148:
+    case 0x014a:
+    case 0x014b:
+        folded[0] = 'n';
+        *folded_len = 1;
+        return true;
+    case 0x00ba:
+    case 0x00d2:
+    case 0x00d3:
+    case 0x00d4:
+    case 0x00d5:
+    case 0x00d6:
+    case 0x00d8:
+    case 0x00f2:
+    case 0x00f3:
+    case 0x00f4:
+    case 0x00f5:
+    case 0x00f6:
+    case 0x00f8:
+    case 0x014c:
+    case 0x014d:
+    case 0x014e:
+    case 0x014f:
+    case 0x0150:
+    case 0x0151:
+        folded[0] = 'o';
+        *folded_len = 1;
+        return true;
+    case 0x0152:
+    case 0x0153:
+        folded[0] = 'o';
+        folded[1] = 'e';
+        *folded_len = 2;
+        return true;
+    case 0x0154:
+    case 0x0155:
+    case 0x0156:
+    case 0x0157:
+    case 0x0158:
+    case 0x0159:
+        folded[0] = 'r';
+        *folded_len = 1;
+        return true;
+    case 0x015a:
+    case 0x015b:
+    case 0x015c:
+    case 0x015d:
+    case 0x015e:
+    case 0x015f:
+    case 0x0160:
+    case 0x0161:
+        folded[0] = 's';
+        *folded_len = 1;
+        return true;
+    case 0x00df:
+        folded[0] = 's';
+        folded[1] = 's';
+        *folded_len = 2;
+        return true;
+    case 0x00de:
+    case 0x00fe:
+        folded[0] = 't';
+        folded[1] = 'h';
+        *folded_len = 2;
+        return true;
+    case 0x0162:
+    case 0x0163:
+    case 0x0164:
+    case 0x0165:
+    case 0x0166:
+    case 0x0167:
+        folded[0] = 't';
+        *folded_len = 1;
+        return true;
+    case 0x00d9:
+    case 0x00da:
+    case 0x00db:
+    case 0x00dc:
+    case 0x00f9:
+    case 0x00fa:
+    case 0x00fb:
+    case 0x00fc:
+    case 0x0168:
+    case 0x0169:
+    case 0x016a:
+    case 0x016b:
+    case 0x016c:
+    case 0x016d:
+    case 0x016e:
+    case 0x016f:
+    case 0x0170:
+    case 0x0171:
+    case 0x0172:
+    case 0x0173:
+        folded[0] = 'u';
+        *folded_len = 1;
+        return true;
+    case 0x0174:
+    case 0x0175:
+        folded[0] = 'w';
+        *folded_len = 1;
+        return true;
+    case 0x00dd:
+    case 0x00fd:
+    case 0x00ff:
+    case 0x0176:
+    case 0x0177:
+    case 0x0178:
+        folded[0] = 'y';
+        *folded_len = 1;
+        return true;
+    case 0x0179:
+    case 0x017a:
+    case 0x017b:
+    case 0x017c:
+    case 0x017d:
+    case 0x017e:
+        folded[0] = 'z';
+        *folded_len = 1;
+        return true;
+    default:
+        return false;
+    }
+}
+
+static bool
+lyrics_skip_slug_rune(uint32 rune) {
+    return (rune == '\'') || (rune == '`') || (rune == 0x2018)
+           || (rune == 0x2019) || (rune == 0x02bc);
+}
+
+static bool
+lyrics_slug_separator_rune(uint32 rune) {
+    return (rune == 0x00a0) || (rune == 0x1680)
+           || ((rune >= 0x2000) && (rune <= 0x200a))
+           || (rune == 0x202f) || (rune == 0x205f)
+           || (rune == 0x3000)
+           || ((rune >= 0x2010) && (rune <= 0x2015))
+           || (rune == 0x2212);
+}
+
+static bool
+lyrics_append_slug(StrBuilder *buffer, enum NcmLyricsFetcherType type,
+                   char *string, int32 string_len) {
+    LyricsSlugProfile profile;
+    bool compact;
     bool pending_separator;
     bool wrote;
 
+    profile = lyrics_slug_profile(type);
+    if (profile == LYRICS_SLUG_PROFILE_NONE) {
+        return false;
+    }
+    compact = lyrics_slug_profile_compact(profile);
     pending_separator = false;
     wrote = false;
     for (int32 i = 0; i < string_len; i += 1) {
         uint8 byte;
+        uint32 rune;
+        int32 rune_len;
+        char folded[2];
+        int32 folded_len;
 
         byte = (uint8)string[i];
         if (lyrics_ascii_alnum(string[i])) {
@@ -582,18 +923,43 @@ lyrics_append_slug(StrBuilder *buffer, char *string, int32 string_len,
             sb_append_byte(buffer, lyrics_ascii_lower(string[i]));
             pending_separator = false;
             wrote = true;
-        } else if (byte >= 0x80) {
-            if (pending_separator && wrote && !compact) {
-                sb_append_byte(buffer, '-');
-            }
-            lyrics_append_percent_byte(buffer, byte);
-            pending_separator = false;
-            wrote = true;
-        } else if ((string[i] == '\'') || (string[i] == '`')) {
             continue;
-        } else if (wrote && !compact) {
-            pending_separator = true;
         }
+        if (byte < 0x80) {
+            if (lyrics_skip_slug_rune((uint32)string[i])) {
+                continue;
+            }
+            if (wrote && !compact) {
+                pending_separator = true;
+            }
+            continue;
+        }
+
+        rune_len = utf8_decode(string + i, string_len - i, &rune);
+        if (lyrics_skip_slug_rune(rune)) {
+            i += rune_len - 1;
+            continue;
+        }
+        if (lyrics_slug_separator_rune(rune)) {
+            if (wrote && !compact) {
+                pending_separator = true;
+            }
+            i += rune_len - 1;
+            continue;
+        }
+        if (pending_separator && wrote && !compact) {
+            sb_append_byte(buffer, '-');
+        }
+        if (lyrics_fold_latin_rune(rune, folded, &folded_len)) {
+            sb_append(buffer, folded, folded_len);
+        } else {
+            for (int32 j = 0; j < rune_len; j += 1) {
+                lyrics_append_percent_byte(buffer, (uint8)string[i + j]);
+            }
+        }
+        pending_separator = false;
+        wrote = true;
+        i += rune_len - 1;
     }
     return wrote;
 }
@@ -899,41 +1265,43 @@ lyrics_url_song_matches(NcmLyricsFetcherDef *fetcher, char *url,
                         int32 url_len, char *artist, int32 artist_len,
                         char *title, int32 title_len) {
     StrBuilder marker;
-    bool compact;
     bool include_title;
     bool valid;
     int32 found;
 
     sb_init(&marker);
-    compact = false;
     include_title = true;
     switch (fetcher->type) {
     case NCM_LYRICS_FETCHER_AZLYRICS:
         sb_append(&marker, STRLIT_ARGS("/lyrics/"));
-        compact = true;
-        valid = lyrics_append_slug(&marker, artist, artist_len, compact);
+        valid = lyrics_append_slug(&marker, fetcher->type, artist,
+                                   artist_len);
         sb_append_byte(&marker, '/');
         break;
     case NCM_LYRICS_FETCHER_GENIUS:
         sb_append_byte(&marker, '/');
-        valid = lyrics_append_slug(&marker, artist, artist_len, compact);
+        valid = lyrics_append_slug(&marker, fetcher->type, artist,
+                                   artist_len);
         sb_append_byte(&marker, '-');
         break;
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
         sb_append(&marker, STRLIT_ARGS("/lyrics/"));
-        valid = lyrics_append_slug(&marker, artist, artist_len, compact);
+        valid = lyrics_append_slug(&marker, fetcher->type, artist,
+                                   artist_len);
         sb_append_byte(&marker, '/');
         break;
     case NCM_LYRICS_FETCHER_LETRASMUS:
         sb_append_byte(&marker, '/');
-        valid = lyrics_append_slug(&marker, artist, artist_len, compact);
+        valid = lyrics_append_slug(&marker, fetcher->type, artist,
+                                   artist_len);
         sb_append_byte(&marker, '/');
         include_title = false;
         break;
     case NCM_LYRICS_FETCHER_TEKSTOWO:
     case NCM_LYRICS_FETCHER_VAGALUME:
         sb_append_byte(&marker, '/');
-        valid = lyrics_append_slug(&marker, artist, artist_len, compact);
+        valid = lyrics_append_slug(&marker, fetcher->type, artist,
+                                   artist_len);
         sb_append_byte(&marker, '/');
         break;
     case NCM_LYRICS_FETCHER_UNKNOWN:
@@ -944,7 +1312,8 @@ lyrics_url_song_matches(NcmLyricsFetcherDef *fetcher, char *url,
         break;
     }
     if (valid && include_title) {
-        valid = lyrics_append_slug(&marker, title, title_len, compact);
+        valid = lyrics_append_slug(&marker, fetcher->type, title,
+                                   title_len);
     }
 
     found = -1;
@@ -956,9 +1325,11 @@ lyrics_url_song_matches(NcmLyricsFetcherDef *fetcher, char *url,
         && (fetcher->type == NCM_LYRICS_FETCHER_MUSIXMATCH)) {
         sb_clear(&marker);
         sb_append(&marker, STRLIT_ARGS("/letras/"));
-        valid = lyrics_append_slug(&marker, artist, artist_len, false);
+        valid = lyrics_append_slug(&marker, fetcher->type, artist,
+                                   artist_len);
         sb_append_byte(&marker, '/');
-        if (valid && lyrics_append_slug(&marker, title, title_len, false)) {
+        if (valid && lyrics_append_slug(&marker, fetcher->type, title,
+                                        title_len)) {
             found = lyrics_find_ignore_case(url, url_len, marker.data,
                                             marker.len, 0);
         }
