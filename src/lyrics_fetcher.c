@@ -70,10 +70,6 @@ static bool lyrics_build_direct_url_profiles(
     int32 artist_len, char *title, int32 title_len,
     LyricsSlugProfile artist_profile, LyricsSlugProfile title_profile
 );
-static bool lyrics_build_direct_url(NcmLyricsFetcherDef *fetcher,
-                                    StrBuilder *url, char *artist,
-                                    int32 artist_len, char *title,
-                                    int32 title_len);
 static bool lyrics_collect_direct_urls(NcmLyricsFetcherDef *fetcher,
                                        StrBuilderArray *urls, char *artist,
                                        int32 artist_len, char *title,
@@ -419,22 +415,6 @@ lyrics_build_direct_url_profiles(
         sb_clear(url);
     }
     return valid;
-}
-
-static bool
-lyrics_build_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *url,
-                        char *artist, int32 artist_len, char *title,
-                        int32 title_len) {
-    LyricsSlugProfile profile;
-
-    if (fetcher == NULL) {
-        return false;
-    }
-
-    profile = lyrics_slug_profile(fetcher->type);
-    return lyrics_build_direct_url_profiles(fetcher, url, artist, artist_len,
-                                            title, title_len, profile,
-                                            profile);
 }
 
 static bool

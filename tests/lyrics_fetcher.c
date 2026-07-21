@@ -389,6 +389,23 @@ lyrics_test_assert_result(LyricsFetcherTestCase *test,
 }
 
 static void
+lyrics_test_assert_first_direct_url(
+    NcmLyricsFetcherDef *fetcher, char *artist, int32 artist_len,
+    char *title, int32 title_len, char *expected, int32 expected_len
+) {
+    StrBuilderArray urls;
+
+    str_builder_array_init(&urls);
+    assert(lyrics_collect_direct_urls(fetcher, &urls, artist, artist_len,
+                                      title, title_len));
+    assert(urls.len > 0);
+    assert(STREQUAL(urls.items[0].data, urls.items[0].len,
+                    expected, expected_len));
+    str_builder_array_destroy(&urls);
+    return;
+}
+
+static void
 test_registry_has_only_supported_fetchers(void) {
     NcmLyricsFetcherRegistry registry;
     char *removed[] = {
@@ -451,24 +468,19 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
         LyricsFetcherTestContext context;
         NcmLyricsFetcherDef fetcher;
         NcmLyricsResult result;
-        StrBuilder direct_url;
         StrBuilder search_url;
 
         context.test = &lyrics_tests[i];
         context.calls = 0;
         ncm_lyrics_fetcher_def_init(&fetcher);
         ncm_lyrics_result_init(&result);
-        sb_init(&direct_url);
         sb_init(&search_url);
 
         assert(ncm_lyrics_fetcher_def_set_name(
             &fetcher, context.test->name, context.test->name_len));
-        assert(lyrics_build_direct_url(
-            &fetcher, &direct_url, STRLIT_ARGS("luis fonsi"),
-            STRLIT_ARGS("despacito")));
-        assert(STREQUAL(direct_url.data, direct_url.len,
-                        context.test->direct_url,
-                        context.test->direct_url_len));
+        lyrics_test_assert_first_direct_url(
+            &fetcher, STRLIT_ARGS("luis fonsi"), STRLIT_ARGS("despacito"),
+            context.test->direct_url, context.test->direct_url_len);
         assert(ncm_lyrics_fetcher_build_url(
             &fetcher, &search_url, STRLIT_ARGS("luis fonsi"),
             STRLIT_ARGS("despacito")));
@@ -484,7 +496,6 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
         lyrics_test_assert_result(context.test, &result);
 
         sb_free(&search_url);
-        sb_free(&direct_url);
         ncm_lyrics_result_destroy(&result);
         ncm_lyrics_fetcher_def_destroy(&fetcher);
     }
@@ -495,19 +506,16 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
 static void
 test_provider_aware_slug_normalization(void) {
     NcmLyricsFetcherDef fetcher;
-    StrBuilder url;
 
     ncm_lyrics_fetcher_def_init(&fetcher);
-    sb_init(&url);
 
     assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT_ARGS("vagalume")));
-    assert(lyrics_build_direct_url(&fetcher, &url, STRLIT_ARGS("Jorge Ben"),
-                                   STRLIT_ARGS("Que nega é essa")));
-    assert(STREQUAL(
-        url.data, url.len,
+    lyrics_test_assert_first_direct_url(
+        &fetcher, STRLIT_ARGS("Jorge Ben"),
+        STRLIT_ARGS("Que nega é essa"),
         STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben/"
-                    "que-nega-e-essa.html")));
+                    "que-nega-e-essa.html"));
     assert(lyrics_search_candidate_score(
         &fetcher,
         STRLIT_ARGS("https://www.vagalume.com.br/jorge-ben-jor/"
@@ -521,16 +529,11 @@ test_provider_aware_slug_normalization(void) {
 
     assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT_ARGS("azlyrics")));
-    sb_clear(&url);
-    assert(lyrics_build_direct_url(&fetcher, &url,
-                                   STRLIT_ARGS("Beyoncé & Jay-Z"),
-                                   STRLIT_ARGS("Déjà Vu")));
-    assert(STREQUAL(
-        url.data, url.len,
+    lyrics_test_assert_first_direct_url(
+        &fetcher, STRLIT_ARGS("Beyoncé & Jay-Z"), STRLIT_ARGS("Déjà Vu"),
         STRLIT_ARGS("https://www.azlyrics.com/lyrics/beyoncejayz/"
-                    "dejavu.html")));
+                    "dejavu.html"));
 
-    sb_free(&url);
     ncm_lyrics_fetcher_def_destroy(&fetcher);
     return;
 }
