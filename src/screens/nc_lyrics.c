@@ -942,17 +942,18 @@ native_lyrics_append_locale(NcBuffer *buffer, char *data, int32 data_len) {
 static void
 native_lyrics_report_save_error(NcmBuffer *filename, NcmError *error) {
     NcmStringFormatArg args[2];
-    char *message;
+    char *message = "unknown error";
 
-    message = "unknown error";
     if (error && (error->code != 0)) {
         message = strerror(error->code);
     }
+
     args[0] = ncm_string_format_arg_string(filename->data, filename->len);
     args[1] = ncm_string_format_arg_cstring(message);
     ncm_statusbar_format(Config.message_delay_time,
                          STRLIT_ARGS("Couldn't save lyrics as \"%1%\": %2%"),
                          args, LENGTH(args));
+
     return;
 }
 
