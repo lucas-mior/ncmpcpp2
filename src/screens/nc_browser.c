@@ -147,9 +147,9 @@ static void native_browser_set_errno_error(NcmError *error, int32 code,
                                            char *operation, char *path,
                                            int32 path_len);
 static bool native_browser_supported_extensions_contains(
-    NcmBufferArray *extensions, char *extension, int32 extension_len);
+    StrBuilderArray *extensions, char *extension, int32 extension_len);
 static bool native_browser_supported_extensions_add(
-    NcmBufferArray *extensions, char *extension, int32 extension_len);
+    StrBuilderArray *extensions, char *extension, int32 extension_len);
 static int32 native_browser_compare_items(NativeBrowserScreen *screen,
                                           NcmMpdItem *left,
                                           NcmMpdItem *right);
@@ -206,7 +206,7 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     sb_init(&screen->item_text_buffer);
     sb_init(&screen->path_buffer);
     sb_init(&screen->scratch_buffer);
-    ncm_buffer_array_init(&screen->supported_extensions);
+    str_builder_array_init(&screen->supported_extensions);
     ncm_regex_init(&screen->filter_regex);
 
     screen->start_x = start_x;
@@ -237,7 +237,7 @@ native_browser_screen_destroy(NativeBrowserScreen *screen) {
         return;
     }
     ncm_regex_destroy(&screen->filter_regex);
-    ncm_buffer_array_destroy(&screen->supported_extensions);
+    str_builder_array_destroy(&screen->supported_extensions);
     sb_free(&screen->scratch_buffer);
     sb_free(&screen->path_buffer);
     sb_free(&screen->item_text_buffer);
@@ -575,7 +575,7 @@ bool
 native_browser_screen_has_supported_extension(NativeBrowserScreen *screen,
                                               char *extension,
                                               int32 extension_len) {
-    NcmBufferArray *extensions;
+    StrBuilderArray *extensions;
 
     if (screen == NULL) {
         return false;
@@ -590,7 +590,7 @@ native_browser_screen_fetch_supported_extensions(
     NativeBrowserScreen *screen, NcmMpdClient *client, NcmError *error
 ) {
     NcmMpdStringList strings;
-    NcmBufferArray extensions;
+    StrBuilderArray extensions;
     NcmMpdString *string;
     bool result;
 
@@ -607,7 +607,7 @@ native_browser_screen_fetch_supported_extensions(
     }
 
     result = true;
-    ncm_buffer_array_init(&extensions);
+    str_builder_array_init(&extensions);
     for (int32 i = 0; result && (i < strings.count); i += 1) {
         string = &strings.items[i];
         result = native_browser_supported_extensions_add(
@@ -615,10 +615,10 @@ native_browser_screen_fetch_supported_extensions(
     }
 
     if (result) {
-        ncm_buffer_array_move(&screen->supported_extensions, &extensions);
+        str_builder_array_move(&screen->supported_extensions, &extensions);
         ncm_error_clear(error);
     }
-    ncm_buffer_array_destroy(&extensions);
+    str_builder_array_destroy(&extensions);
     ncm_mpd_string_list_destroy(&strings);
     return result;
 }
@@ -2683,7 +2683,7 @@ native_browser_set_errno_error(NcmError *error, int32 code,
 }
 
 static bool
-native_browser_supported_extensions_contains(NcmBufferArray *extensions,
+native_browser_supported_extensions_contains(StrBuilderArray *extensions,
                                              char *extension,
                                              int32 extension_len) {
     if (extensions == NULL) {
@@ -2710,7 +2710,7 @@ native_browser_supported_extensions_contains(NcmBufferArray *extensions,
 }
 
 static bool
-native_browser_supported_extensions_add(NcmBufferArray *extensions,
+native_browser_supported_extensions_add(StrBuilderArray *extensions,
                                         char *extension,
                                         int32 extension_len) {
     StrBuilder buffer;
@@ -2739,7 +2739,7 @@ native_browser_supported_extensions_add(NcmBufferArray *extensions,
     if (result
         && !native_browser_supported_extensions_contains(
             extensions, buffer.data, buffer.len)) {
-        result = ncm_buffer_array_append_copy(extensions, &buffer);
+        result = str_builder_array_append_copy(extensions, &buffer);
     }
     sb_free(&buffer);
     return result;
