@@ -31,6 +31,7 @@
 #define NC_COLOR_COMPONENT_COUNT 256
 #define NC_COLOR_PAIR_MAP_SIZE \
     (NC_COLOR_COMPONENT_COUNT*NC_COLOR_COMPONENT_COUNT)
+#define NC_PROMPT_ESCAPE_DELAY_MS 25
 
 static int32 max_color;
 static int32 color_pair_counter;
@@ -72,6 +73,7 @@ static void nc_window_decrease_format(NcWindow *window, int32 *counter,
                                       void (*set)(NcWindow *, bool));
 
 static int32 nc_prompt_abort(int32 count, int32 key);
+static bool nc_prompt_escape_is_standalone(NcWindow *window);
 static int32 nc_prompt_add_initial_text(void);
 static char **nc_prompt_attempt_completion(const char *text,
                                            int32 start, int32 end);
@@ -918,7 +920,13 @@ nc_window_prompt(NcWindow *window, NcPrompt *prompt, char **result) {
     nc_mouse_enable();
     curs_set(0);
 
-    if (input) {
+    if (nc_readline_state.aborted) {
+        status = NC_PROMPT_ABORTED;
+    } else {
+        status = NC_PROMPT_ACCEPTED;
+    }
+
+    if ((status == NC_PROMPT_ACCEPTED) && input) {
         bool remember;
 
         remember = true;
@@ -931,12 +939,8 @@ nc_window_prompt(NcWindow *window, NcPrompt *prompt, char **result) {
         }
 #endif
         *result = input;
-    }
-
-    if (nc_readline_state.aborted) {
-        status = NC_PROMPT_ABORTED;
     } else {
-        status = NC_PROMPT_ACCEPTED;
+        nc_window_prompt_result_destroy(input);
     }
 
     nc_readline_state.window = NULL;
@@ -1139,6 +1143,36 @@ nc_prompt_abort(int32 count, int32 key) {
     return 0;
 }
 
+static bool
+nc_prompt_escape_is_standalone(NcWindow *window) {
+    int32 key;
+
+    if (window == NULL) {
+        return true;
+    }
+
+    if (window->input_queue_start < ARRAY_LEN(window->input_queue)) {
+        return false;
+    }
+
+    if (window->window == NULL) {
+        return true;
+    }
+
+    wtimeout(window->window, NC_PROMPT_ESCAPE_DELAY_MS);
+    key = wgetch(window->window);
+    wtimeout(window->window, 0);
+    if (key == ERR) {
+        return true;
+    }
+
+    while (key != ERR) {
+        ARRAY_PUSH(window->input_queue, (NcKey)key);
+        key = wgetch(window->window);
+    }
+    return false;
+}
+
 static int32
 nc_prompt_add_initial_text(void) {
     if (nc_readline_state.initial_text) {
@@ -1179,6 +1213,11 @@ nc_prompt_read_key(FILE *file) {
         nc_window_go_to_xy(window, x, nc_readline_state.start_y);
         nc_window_refresh(window);
         key = nc_window_read_key(window);
+        if ((key == NC_KEY_ESCAPE) && nc_prompt_escape_is_standalone(window)) {
+            nc_readline_state.aborted = true;
+            rl_done = 1;
+            return EOF;
+        }
         if (!nc_window_fd_callbacks_empty(window)) {
             nc_window_go_to_xy(window, x, nc_readline_state.start_y);
             nc_window_refresh(window);
