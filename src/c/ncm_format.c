@@ -681,10 +681,10 @@ static bool
 ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                          int32 start, int32 end, uint32 flags,
                          NcmError *error) {
-    NcmBuffer token;
+    StrBuilder token;
     bool ok;
 
-    ncm_buffer_init(&token);
+    sb_init(&token);
     ok = true;
     for (int32 i = start; ok && (i < end); i += 1) {
         if (data[i] == '{') {
@@ -702,14 +702,14 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                  && ncm_format_parse_dollar(out, data, &i, end,
                                             flags, error);
         } else {
-            ncm_buffer_append_byte(&token, data[i]);
+            sb_append_byte(&token, data[i]);
         }
     }
 
     if (ok) {
         ok = ncm_format_text_append(out, &token);
     }
-    ncm_buffer_destroy(&token);
+    sb_free(&token);
     return ok;
 }
 
@@ -744,11 +744,11 @@ ncm_format_result_add(enum NcmFormatResult base,
     return NCM_FORMAT_RESULT_EMPTY;
 }
 
-NcmBuffer
+StrBuilder
 ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag) {
-    NcmBuffer result;
+    StrBuilder result;
 
-    ncm_buffer_init(&result);
+    sb_init(&result);
     if ((song == NULL) || (tag == NULL)) {
         return result;
     }
@@ -819,7 +819,7 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
                        void *right, uint32 flags, int32 *no_output,
                        bool *switched) {
     void *output;
-    NcmBuffer tag;
+    StrBuilder tag;
     enum NcmFormatResult result;
 
     output = ncm_format_current_output(left, right, *switched);
@@ -854,14 +854,14 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
         }
         tag = ncm_format_render_tag(song, &expr->value.song_tag);
         if (tag.len <= 0) {
-            ncm_buffer_destroy(&tag);
+            sb_free(&tag);
             return NCM_FORMAT_RESULT_MISSING;
         }
         if (*no_output <= 0) {
             ncm_format_emit_text(cb, output, tag.data, tag.len,
                                  &expr->value.song_tag);
         }
-        ncm_buffer_destroy(&tag);
+        sb_free(&tag);
         return NCM_FORMAT_RESULT_OK;
     case NCM_FORMAT_EXPR_GROUP:
         *no_output += 1;
@@ -979,15 +979,15 @@ ncm_format_string_text(void *user, char *data, int32 data_len,
     return;
 }
 
-NcmBuffer
+StrBuilder
 ncm_format_render_string(NcmFormatAst *ast, NcmSong *song) {
     NcmFormatCallbacks callbacks;
-    NcmBuffer result;
+    StrBuilder result;
 
     callbacks.text = ncm_format_string_text;
     callbacks.color = NULL;
     callbacks.format = NULL;
-    ncm_buffer_init(&result);
+    sb_init(&result);
     ncm_format_render(ast, song, &callbacks, &result, &result,
                       NCM_FORMAT_FLAG_TAG);
     return result;

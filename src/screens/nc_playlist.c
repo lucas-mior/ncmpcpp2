@@ -1119,7 +1119,7 @@ native_playlist_filter_song(NcMenu *menu, void *item, void *user) {
 static bool
 native_playlist_song_matches(NativePlaylistScreen *screen,
                              NcmSong *song, NcmRegex *regex) {
-    NcmBuffer buffer;
+    StrBuilder buffer;
     bool result;
 
     (void)screen;
@@ -1134,7 +1134,7 @@ native_playlist_song_matches(NativePlaylistScreen *screen,
         buffer = ncm_format_render_string(&Config.song_list_format, song);
     }
     result = ncm_regex_search(regex, buffer.data, buffer.len);
-    ncm_buffer_destroy(&buffer);
+    sb_free(&buffer);
     return result;
 }
 
@@ -1374,23 +1374,23 @@ native_playlist_build_mutable_song(
 static bool
 native_playlist_set_mutable_uri(NcmSong *song, NcmMutableSong *edited) {
     NcmStringView new_name;
-    NcmBuffer uri;
+    StrBuilder uri;
     bool result;
 
     if (!ncm_mutable_song_get_new_name(edited, &new_name)) {
         return ncm_song_set_uri(song, edited->uri, edited->uri_len);
     }
 
-    ncm_buffer_init(&uri);
+    sb_init(&uri);
     if (edited->directory_len > 0) {
-        ncm_buffer_append(&uri, edited->directory, edited->directory_len);
+        sb_append(&uri, edited->directory, edited->directory_len);
         if (edited->directory[edited->directory_len - 1] != '/') {
-            ncm_buffer_append(&uri, STRLIT_ARGS("/"));
+            sb_append(&uri, STRLIT_ARGS("/"));
         }
     }
-    ncm_buffer_append(&uri, new_name.data, new_name.len);
+    sb_append(&uri, new_name.data, new_name.len);
     result = ncm_song_set_uri(song, uri.data, uri.len);
-    ncm_buffer_destroy(&uri);
+    sb_free(&uri);
     return result;
 }
 

@@ -138,21 +138,21 @@ app_destroy_state(void) {
 
 static bool
 app_redirect_stderr(void) {
-    NcmBuffer path;
+    StrBuilder path;
 
-    ncm_buffer_init(&path);
-    ncm_buffer_append(&path, Config.ncmpcpp_directory,
+    sb_init(&path);
+    sb_append(&path, Config.ncmpcpp_directory,
                       Config.ncmpcpp_directory_len);
-    ncm_buffer_append(&path, STRLIT_ARGS("error.log"));
+    sb_append(&path, STRLIT_ARGS("error.log"));
 
     app_saved_stderr_fd = (int32)dup(STDERR_FILENO);
     if (app_saved_stderr_fd < 0) {
-        ncm_buffer_destroy(&path);
+        sb_free(&path);
         return false;
     }
 
     app_error_log = freopen(path.data, "a", stderr);
-    ncm_buffer_destroy(&path);
+    sb_free(&path);
     return app_error_log;
 }
 

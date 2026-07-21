@@ -113,8 +113,8 @@ ncm_regex_escape_literal(NcmBuffer *buffer, char *pattern, int32 pattern_len) {
 bool
 ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
                   uint32 flags, NcmError *error) {
-    NcmBuffer escaped;
-    NcmBuffer compiled_pattern;
+    StrBuilder escaped;
+    StrBuilder compiled_pattern;
     int32 reg_flags;
     int32 code;
 
@@ -132,14 +132,14 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
     }
 
     ncm_regex_destroy(regex);
-    ncm_buffer_init(&escaped);
-    ncm_buffer_init(&compiled_pattern);
+    sb_init(&escaped);
+    sb_init(&compiled_pattern);
 
     if (flags & NCM_REGEX_LITERAL) {
         ncm_regex_escape_literal(&escaped, pattern, pattern_len);
-        ncm_buffer_append(&compiled_pattern, escaped.data, escaped.len);
+        sb_append(&compiled_pattern, escaped.data, escaped.len);
     } else {
-        ncm_buffer_append(&compiled_pattern, pattern, pattern_len);
+        sb_append(&compiled_pattern, pattern, pattern_len);
     }
 
     reg_flags = 0;
@@ -154,13 +154,13 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
     }
 
     if (compiled_pattern.data == NULL) {
-        ncm_buffer_append_byte(&compiled_pattern, '\0');
+        sb_append_byte(&compiled_pattern, '\0');
         compiled_pattern.len = 0;
     }
 
     code = regcomp(&regex->regex, compiled_pattern.data, reg_flags);
-    ncm_buffer_destroy(&compiled_pattern);
-    ncm_buffer_destroy(&escaped);
+    sb_free(&compiled_pattern);
+    sb_free(&escaped);
     if (code != 0) {
         ncm_regex_set_error(regex, code, error);
         return false;
@@ -174,28 +174,28 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
 
 bool
 ncm_regex_search(NcmRegex *regex, char *string, int32 string_len) {
-    NcmBuffer buffer;
+    StrBuilder buffer;
     bool result;
 
     if ((regex == NULL) || !regex->compiled) {
         return false;
     }
 
-    ncm_buffer_init(&buffer);
+    sb_init(&buffer);
     if (!ncm_regex_prepare_string(string, string_len, &buffer, NULL)) {
-        ncm_buffer_destroy(&buffer);
+        sb_free(&buffer);
         return false;
     }
 
     result = regexec(&regex->regex, buffer.data, 0, NULL, 0) == 0;
-    ncm_buffer_destroy(&buffer);
+    sb_free(&buffer);
     return result;
 }
 
 bool
 ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
                          NcmRegexMatchCallback *callback, void *user) {
-    NcmBuffer buffer;
+    StrBuilder buffer;
     regmatch_t match[1];
     char *cursor;
     int32 offset;
@@ -210,9 +210,9 @@ ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
         return false;
     }
 
-    ncm_buffer_init(&buffer);
+    sb_init(&buffer);
     if (!ncm_regex_prepare_string(string, string_len, &buffer, NULL)) {
-        ncm_buffer_destroy(&buffer);
+        sb_free(&buffer);
         return false;
     }
 
@@ -246,7 +246,7 @@ ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
         }
     }
 
-    ncm_buffer_destroy(&buffer);
+    sb_free(&buffer);
     return matched;
 }
 

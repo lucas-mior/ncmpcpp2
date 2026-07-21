@@ -213,13 +213,13 @@ lastfm_curl_escape(NcmBuffer *out, char *string, int32 string_len) {
 
 static void
 lastfm_append_escaped(NcmBuffer *buffer, char *string, int32 string_len) {
-    NcmBuffer escaped;
+    StrBuilder escaped;
 
-    ncm_buffer_init(&escaped);
+    sb_init(&escaped);
     if (lastfm_curl_escape(&escaped, string, string_len) == CURLE_OK) {
         ncm_buffer_append(buffer, escaped.data, escaped.len);
     }
-    ncm_buffer_destroy(&escaped);
+    sb_free(&escaped);
     return;
 }
 
@@ -306,31 +306,31 @@ static void
 lastfm_trim_buffer(NcmBuffer *buffer) {
     char *text;
     int32 text_len;
-    NcmBuffer tmp;
+    StrBuilder tmp;
 
     text = buffer->data;
     text_len = buffer->len;
     lastfm_trim_view(&text, &text_len);
-    ncm_buffer_init(&tmp);
-    ncm_buffer_append(&tmp, text, text_len);
+    sb_init(&tmp);
+    sb_append(&tmp, text, text_len);
     ncm_buffer_clear(buffer);
     ncm_buffer_append(buffer, tmp.data, tmp.len);
-    ncm_buffer_destroy(&tmp);
+    sb_free(&tmp);
     return;
 }
 
 static void
 lastfm_strip_unescape_trim(NcmBuffer *out, char *data, int32 data_len) {
-    NcmBuffer stripped;
-    NcmBuffer unescaped;
+    StrBuilder stripped;
+    StrBuilder unescaped;
 
     ncm_buffer_clear(out);
     stripped = ncm_html_strip_tags(data, data_len);
     unescaped = ncm_html_unescape_utf8(stripped.data, stripped.len);
     ncm_buffer_append(out, unescaped.data, unescaped.len);
     lastfm_trim_buffer(out);
-    ncm_buffer_destroy(&unescaped);
-    ncm_buffer_destroy(&stripped);
+    sb_free(&unescaped);
+    sb_free(&stripped);
     return;
 }
 
@@ -353,10 +353,10 @@ lastfm_append_similars(NcmBuffer *out, char *data, int32 data_len,
     pos = a;
     wrote_heading = false;
     while (pos < b) {
-        NcmBuffer name;
-        NcmBuffer url;
-        NcmBuffer clean_name;
-        NcmBuffer clean_url;
+        StrBuilder name;
+        StrBuilder url;
+        StrBuilder clean_name;
+        StrBuilder clean_url;
         int32 item_end;
         bool have_name;
         bool have_url;
@@ -369,10 +369,10 @@ lastfm_append_similars(NcmBuffer *out, char *data, int32 data_len,
             break;
         }
 
-        ncm_buffer_init(&name);
-        ncm_buffer_init(&url);
-        ncm_buffer_init(&clean_name);
-        ncm_buffer_init(&clean_url);
+        sb_init(&name);
+        sb_init(&url);
+        sb_init(&clean_name);
+        sb_init(&clean_url);
         have_name = lastfm_extract_between(&name, data + pos, item_end - pos,
                                            STRLIT_ARGS("<name>"),
                                            STRLIT_ARGS("</name>"));
@@ -392,10 +392,10 @@ lastfm_append_similars(NcmBuffer *out, char *data, int32 data_len,
             ncm_buffer_append(out, clean_url.data, clean_url.len);
             ncm_buffer_append_byte(out, ')');
         }
-        ncm_buffer_destroy(&clean_url);
-        ncm_buffer_destroy(&clean_name);
-        ncm_buffer_destroy(&url);
-        ncm_buffer_destroy(&name);
+        sb_free(&clean_url);
+        sb_free(&clean_name);
+        sb_free(&url);
+        sb_free(&name);
         pos = item_end + 1;
     }
     return;
@@ -403,28 +403,28 @@ lastfm_append_similars(NcmBuffer *out, char *data, int32 data_len,
 
 static bool
 lastfm_fetch_artist_info(NcmLastfmService *service, NcmLastfmResult *result) {
-    NcmBuffer url;
-    NcmBuffer data;
-    NcmBuffer content;
-    NcmBuffer desc;
-    NcmBuffer original_link;
-    NcmBuffer output;
+    StrBuilder url;
+    StrBuilder data;
+    StrBuilder content;
+    StrBuilder desc;
+    StrBuilder original_link;
+    StrBuilder output;
     CURLcode code;
     bool ok;
 
-    ncm_buffer_init(&url);
-    ncm_buffer_init(&data);
-    ncm_buffer_init(&content);
-    ncm_buffer_init(&desc);
-    ncm_buffer_init(&original_link);
-    ncm_buffer_init(&output);
+    sb_init(&url);
+    sb_init(&data);
+    sb_init(&content);
+    sb_init(&desc);
+    sb_init(&original_link);
+    sb_init(&output);
     ok = true;
 
-    ncm_buffer_append(&url, STRLIT_ARGS(LASTFM_API_URL));
-    ncm_buffer_append(&url, STRLIT_ARGS("artist.getinfo&artist="));
+    sb_append(&url, STRLIT_ARGS(LASTFM_API_URL));
+    sb_append(&url, STRLIT_ARGS("artist.getinfo&artist="));
     lastfm_append_escaped(&url, service->artist, service->artist_len);
     if (service->lang_len > 0) {
-        ncm_buffer_append(&url, STRLIT_ARGS("&lang="));
+        sb_append(&url, STRLIT_ARGS("&lang="));
         lastfm_append_escaped(&url, service->lang, service->lang_len);
     }
 
@@ -454,7 +454,7 @@ lastfm_fetch_artist_info(NcmLastfmService *service, NcmLastfmResult *result) {
     }
 
     lastfm_strip_unescape_trim(&desc, content.data, content.len);
-    ncm_buffer_append(&output, desc.data, desc.len);
+    sb_append(&output, desc.data, desc.len);
     lastfm_append_similars(&output, data.data, data.len,
                            STRLIT_ARGS("<similar>"), STRLIT_ARGS("</similar>"),
                            STRLIT_ARGS("\n\nSimilar artists:\n"));
@@ -463,26 +463,26 @@ lastfm_fetch_artist_info(NcmLastfmService *service, NcmLastfmResult *result) {
                            STRLIT_ARGS("\n\nSimilar tags:\n"));
     if (lastfm_extract_between(&original_link, data.data, data.len,
                                STRLIT_ARGS("<url>"), STRLIT_ARGS("</url>"))) {
-        NcmBuffer clean_url;
+        StrBuilder clean_url;
 
-        ncm_buffer_init(&clean_url);
+        sb_init(&clean_url);
         lastfm_strip_unescape_trim(&clean_url, original_link.data,
                                    original_link.len);
         if (clean_url.len > 0) {
-            ncm_buffer_append(&output, STRLIT_ARGS("\n\n"));
-            ncm_buffer_append(&output, clean_url.data, clean_url.len);
+            sb_append(&output, STRLIT_ARGS("\n\n"));
+            sb_append(&output, clean_url.data, clean_url.len);
         }
-        ncm_buffer_destroy(&clean_url);
+        sb_free(&clean_url);
     }
     ncm_lastfm_result_set(result, true, output.data, output.len);
 
 cleanup:
-    ncm_buffer_destroy(&output);
-    ncm_buffer_destroy(&original_link);
-    ncm_buffer_destroy(&desc);
-    ncm_buffer_destroy(&content);
-    ncm_buffer_destroy(&data);
-    ncm_buffer_destroy(&url);
+    sb_free(&output);
+    sb_free(&original_link);
+    sb_free(&desc);
+    sb_free(&content);
+    sb_free(&data);
+    sb_free(&url);
     return ok;
 }
 

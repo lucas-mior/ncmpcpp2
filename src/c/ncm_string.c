@@ -113,17 +113,17 @@ ncm_string_contains_char(char *string, int32 string_len, char needle) {
     return ncm_string_find_char(string, string_len, needle) >= 0;
 }
 
-NcmBuffer
+StrBuilder
 ncm_string_shared_directory(char *left, int32 left_len,
                             char *right, int32 right_len) {
-    NcmBuffer result;
+    StrBuilder result;
     int32 min_len;
     int32 common;
     int32 slash;
 
-    ncm_buffer_init(&result);
+    sb_init(&result);
     if ((left == NULL) || (right == NULL)) {
-        ncm_buffer_append(&result, STRLIT_ARGS("/"));
+        sb_append(&result, STRLIT_ARGS("/"));
         return result;
     }
     if (left_len < 0) {
@@ -151,22 +151,22 @@ ncm_string_shared_directory(char *left, int32 left_len,
     }
 
     if (slash < 0) {
-        ncm_buffer_append(&result, STRLIT_ARGS("/"));
+        sb_append(&result, STRLIT_ARGS("/"));
     } else if (slash > 0) {
-        ncm_buffer_append(&result, left, slash);
+        sb_append(&result, left, slash);
     }
 
     return result;
 }
 
-NcmBuffer
+StrBuilder
 ncm_string_get_enclosed(char *string, int32 string_len,
                         char open, char close,
                         int32 start, int32 *pos) {
-    NcmBuffer result;
+    StrBuilder result;
     int32 i;
 
-    ncm_buffer_init(&result);
+    sb_init(&result);
     if (pos) {
         *pos = -1;
     }
@@ -198,14 +198,14 @@ ncm_string_get_enclosed(char *string, int32 string_len,
             && ((string[i + 1] == '\\') || (string[i + 1] == close))) {
             i += 1;
         }
-        ncm_buffer_append_byte(&result, string[i]);
+        sb_append_byte(&result, string[i]);
         i += 1;
     }
 
     if (i < string_len) {
         i += 1;
     } else {
-        ncm_buffer_clear(&result);
+        sb_clear(&result);
     }
     if (pos) {
         *pos = i;

@@ -382,14 +382,14 @@ bool
 native_playlist_editor_screen_load_playlists(
     NativePlaylistEditorScreen *screen, NcmMpdPlaylistList *playlists
 ) {
-    NcmBuffer preserved;
+    StrBuilder preserved;
     NcMenu *menu;
     bool had_preserved;
 
     if ((screen == NULL) || (playlists == NULL)) {
         return false;
     }
-    ncm_buffer_init(&preserved);
+    sb_init(&preserved);
     had_preserved = playlist_editor_store_current_playlist_path(
         screen, &preserved);
     menu = nc_playlist_entry_menu_base(&screen->playlists);
@@ -415,7 +415,7 @@ native_playlist_editor_screen_load_playlists(
     }
     playlist_editor_observe_current_playlist(screen);
     screen->playlists_update_requested = false;
-    ncm_buffer_destroy(&preserved);
+    sb_free(&preserved);
     return true;
 }
 
@@ -1068,7 +1068,7 @@ static void
 playlist_draw_callback(NcMenu *menu, NcWindow *window, void *item,
                        int32 pos, void *user) {
     NcmPlaylist *playlist;
-    NcmBuffer converted;
+    StrBuilder converted;
 
     (void)menu;
     (void)pos;
@@ -1082,7 +1082,7 @@ playlist_draw_callback(NcMenu *menu, NcWindow *window, void *item,
     converted = ncm_charset_utf8_to_locale(playlist->path,
                                            playlist->path_len);
     nc_window_print_data(window, converted.data, converted.len);
-    ncm_buffer_destroy(&converted);
+    sb_free(&converted);
     return;
 }
 
@@ -1499,13 +1499,13 @@ static void
 playlist_editor_clear_playlist_filter(
     NativePlaylistEditorScreen *screen
 ) {
-    NcmBuffer path;
+    StrBuilder path;
     bool has_path;
 
     if (screen == NULL) {
         return;
     }
-    ncm_buffer_init(&path);
+    sb_init(&path);
     has_path = playlist_editor_store_current_playlist_path(screen, &path);
     screen->playlist_filter_enabled = false;
     ncm_buffer_clear(&screen->playlist_filter_constraint);
@@ -1514,7 +1514,7 @@ playlist_editor_clear_playlist_filter(
     if (has_path) {
         (void)playlist_editor_restore_playlist_path(screen, &path);
     }
-    ncm_buffer_destroy(&path);
+    sb_free(&path);
     playlist_editor_update_titles(screen, true);
     return;
 }
@@ -1865,19 +1865,19 @@ playlist_editor_content_fetch_due(NativePlaylistEditorScreen *screen) {
 static void
 playlist_editor_report_error(char *context, int32 context_len,
                              NcmError *error) {
-    NcmBuffer message;
+    StrBuilder message;
 
-    ncm_buffer_init(&message);
-    ncm_buffer_append(&message, context, context_len);
+    sb_init(&message);
+    sb_append(&message, context, context_len);
     if (error && (error->message[0] != 0)) {
-        ncm_buffer_append(&message, STRLIT_ARGS(": "));
-        ncm_buffer_append(&message, error->message,
+        sb_append(&message, STRLIT_ARGS(": "));
+        sb_append(&message, error->message,
                           strlen32(error->message));
     }
-    ncm_buffer_append_byte(&message, '\0');
+    sb_append_byte(&message, '\0');
     ncm_statusbar_print_cstring(Config.message_delay_time,
                                 message.data);
-    ncm_buffer_destroy(&message);
+    sb_free(&message);
     return;
 }
 
@@ -2153,18 +2153,18 @@ playlist_editor_mouse_add_current_song(NativePlaylistEditorScreen *screen,
 
 static void
 playlist_editor_print_playlist_loaded(NcmPlaylist *playlist) {
-    NcmBuffer message;
+    StrBuilder message;
 
     if ((playlist == NULL) || (playlist->path == NULL)) {
         return;
     }
-    ncm_buffer_init(&message);
-    ncm_buffer_append(&message, STRLIT_ARGS("Playlist \""));
-    ncm_buffer_append(&message, playlist->path, playlist->path_len);
-    ncm_buffer_append(&message, STRLIT_ARGS("\" loaded"));
+    sb_init(&message);
+    sb_append(&message, STRLIT_ARGS("Playlist \""));
+    sb_append(&message, playlist->path, playlist->path_len);
+    sb_append(&message, STRLIT_ARGS("\" loaded"));
     ncm_statusbar_print(Config.message_delay_time,
                         message.data, message.len);
-    ncm_buffer_destroy(&message);
+    sb_free(&message);
     return;
 }
 

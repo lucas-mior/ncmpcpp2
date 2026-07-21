@@ -551,7 +551,7 @@ static void
 adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
                int32 pos, void *user) {
     NcEditorActionRow *row;
-    NcmBuffer converted;
+    StrBuilder converted;
 
     (void)menu;
     (void)pos;
@@ -564,7 +564,7 @@ adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
 
     converted = ncm_charset_utf8_to_locale(row->label, row->label_len);
     nc_window_print_data(window, converted.data, converted.len);
-    ncm_buffer_destroy(&converted);
+    sb_free(&converted);
     return;
 }
 
@@ -872,7 +872,7 @@ static bool
 adder_add_to_current_playlist(
     NativeSelectedItemsAdderScreen *screen, int32 position
 ) {
-    NcmBuffer message;
+    StrBuilder message;
     char *suffix;
     bool added;
     bool success;
@@ -927,13 +927,13 @@ adder_add_to_current_playlist(
         }
     }
 
-    ncm_buffer_init(&message);
-    ncm_buffer_append(&message, STRLIT_ARGS("Selected items added"));
+    sb_init(&message);
+    sb_append(&message, STRLIT_ARGS("Selected items added"));
     suffix = ncm_helpers_with_errors(success);
-    ncm_buffer_append(&message, suffix, optional_strlen32(suffix));
+    sb_append(&message, suffix, optional_strlen32(suffix));
     ncm_statusbar_print(Config.message_delay_time,
                         message.data, message.len);
-    ncm_buffer_destroy(&message);
+    sb_free(&message);
     adder_finish(screen);
     return true;
 }
