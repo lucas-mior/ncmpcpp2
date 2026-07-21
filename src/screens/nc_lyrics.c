@@ -259,14 +259,18 @@ native_lyrics_screen_init(NativeLyricsScreen *screen,
     ncm_buffer_init(&screen->filename);
     ncm_lyrics_result_init(&screen->result);
     ncm_job_queue_init(&screen->jobs);
+
     screen->queued_songs = NULL;
     screen->queued_songs_len = 0;
     screen->queued_songs_cap = 0;
+
     ncm_buffer_init(&screen->consumer_message);
+
     screen->fetcher = NULL;
     screen->has_song = false;
     screen->initialized = true;
     nc_window_set_timeout(&screen->window, lines_scrolled);
+
     return;
 }
 
