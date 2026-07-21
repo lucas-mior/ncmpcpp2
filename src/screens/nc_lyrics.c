@@ -339,10 +339,8 @@ native_lyrics_screen_set_geometry(NativeLyricsScreen *screen,
 bool
 native_lyrics_screen_build_filename(NativeLyricsScreen *screen,
                                     NcmSong *song,
-                                    char *music_dir,
-                                    int32 music_dir_len,
-                                    char *lyrics_dir,
-                                    int32 lyrics_dir_len,
+                                    char *music_dir, int32 music_dir_len,
+                                    char *lyrics_dir, int32 lyrics_dir_len,
                                     bool store_in_song_dir,
                                     bool win32_filename) {
     (void)screen;
