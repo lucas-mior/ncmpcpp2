@@ -1302,8 +1302,7 @@ native_lyrics_active_fetcher(NativeLyricsScreen *screen,
 }
 
 static void
-native_lyrics_append_fetching(NcBuffer *buffer,
-                              NcmLyricsFetcherDef *fetcher) {
+native_lyrics_append_fetching(NcBuffer *buffer, NcmLyricsFetcherDef *fetcher) {
     char *name;
     int32 name_len;
     int32 fetcher_position;
