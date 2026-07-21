@@ -14,6 +14,7 @@
     X(AZLYRICS, "azlyrics.com") \
     X(GENIUS, "genius.com") \
     X(LETRASMUS, "letras.mus.br") \
+    X(LACOCCINELLE, "lacoccinelle.net") \
     X(MUSICA, "musica.com") \
     X(PAROLES, "paroles.net") \
     X(MUSIXMATCH, "musixmatch.com") \
