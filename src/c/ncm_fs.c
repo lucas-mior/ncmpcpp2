@@ -347,7 +347,7 @@ ncm_fs_directory_close(NcmFsDirectory *directory) {
 }
 
 bool
-ncm_fs_join(NcmBuffer *buffer,
+ncm_fs_join(StrBuilder *buffer,
             char *left, int32 left_len, char *right, int32 right_len) {
     StrBuilder result;
 
@@ -374,8 +374,8 @@ ncm_fs_join(NcmBuffer *buffer,
     }
     sb_append(&result, right, right_len);
 
-    ncm_buffer_clear(buffer);
-    ncm_buffer_append(buffer, result.data, result.len);
+    sb_clear(buffer);
+    sb_append(buffer, result.data, result.len);
     sb_free(&result);
 
     return true;

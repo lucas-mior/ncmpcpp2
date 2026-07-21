@@ -69,7 +69,7 @@ static void native_search_build_search_mode_row(
 static void native_search_append_format(NcBuffer *buffer,
                                         enum NcFormat format);
 static void native_search_append_tag_value(NcBuffer *buffer,
-                                           NcmBuffer *value);
+                                           StrBuilder *value);
 static void native_search_print_buffer(NcWindow *window, NcBuffer *buffer);
 static void native_search_mouse_scroll(NativeSearchEngineScreen *screen,
                                        enum NcScroll where);
@@ -343,7 +343,7 @@ native_search_engine_screen_constraints_locked(
 
 bool
 native_search_engine_screen_format_song_text(
-    NativeSearchEngineScreen *screen, NcmSong *song, NcmBuffer *text
+    NativeSearchEngineScreen *screen, NcmSong *song, StrBuilder *text
 ) {
     NcBuffer formatted;
     bool result;
@@ -362,7 +362,7 @@ native_search_engine_screen_format_song_text(
         result = true;
     }
     if (result) {
-        result = ncm_buffer_set(text, formatted.data, formatted.len);
+        result = sb_set(text, formatted.data, formatted.len);
     }
     nc_buffer_destroy(&formatted);
     return result;
@@ -737,7 +737,7 @@ native_search_engine_screen_snapshot_playlist(
 
 enum NativeSearchEnginePromptResult
 native_search_engine_screen_prompt_constraint(
-    NativeSearchEngineScreen *screen, int32 idx, NcmBuffer *result
+    NativeSearchEngineScreen *screen, int32 idx, StrBuilder *result
 ) {
     char *label;
     int32 label_len;
@@ -1475,7 +1475,7 @@ native_search_append_format(NcBuffer *buffer, enum NcFormat format) {
 }
 
 static void
-native_search_append_tag_value(NcBuffer *buffer, NcmBuffer *value) {
+native_search_append_tag_value(NcBuffer *buffer, StrBuilder *value) {
     if (value->len > 0) {
         nc_buffer_append_data(buffer, value->data, value->len);
         return;
@@ -1767,7 +1767,7 @@ native_search_add_database_constraints(
     NativeSearchEngineScreen *screen, NcmMpdClient *client,
     NcmError *error
 ) {
-    NcmBuffer *constraint;
+    StrBuilder *constraint;
 
     constraint = &screen->constraints[0];
     if ((constraint->len > 0)
@@ -1921,7 +1921,7 @@ native_search_song_field_matches(
     NcmRegex *regex
 ) {
     NcmStringView value;
-    NcmBuffer *constraint;
+    StrBuilder *constraint;
 
     constraint = &screen->constraints[field];
     if (!native_search_song_field_view(song, field, &value)) {
@@ -1943,7 +1943,7 @@ native_search_song_any_matches(
     NativeSearchEngineScreen *screen, NcmSong *song, NcmRegex *regex
 ) {
     NcmStringView value;
-    NcmBuffer *constraint;
+    StrBuilder *constraint;
 
     constraint = &screen->constraints[0];
     if ((screen->search_mode != NATIVE_SEARCH_ENGINE_SEARCH_MODE_EXACT)

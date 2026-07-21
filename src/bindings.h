@@ -146,7 +146,7 @@ NcmBindingSlice
 ncm_bindings_configuration_get(NcmBindingsConfiguration *bindings, NcKey key);
 
 NcKey ncm_bindings_string_to_key(char *string, int32 string_len);
-void ncm_bindings_format_key(NcmBuffer *buffer, NcKey key);
+void ncm_bindings_format_key(StrBuilder *buffer, NcKey key);
 NcKey ncm_read_key(NcWindow *window);
 int32 ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len);
 

@@ -281,32 +281,32 @@ settings_string_set(char **data, int32 *len, int32 *cap, char *value,
 }
 
 static bool
-settings_expand_home(NcmBuffer *buffer, char *value, int32 value_len) {
+settings_expand_home(StrBuilder *buffer, char *value, int32 value_len) {
     char *home;
     int32 home_len;
 
-    ncm_buffer_clear(buffer);
+    sb_clear(buffer);
     if ((value_len <= 0) || (value[0] != '~')) {
-        ncm_buffer_append(buffer, value, value_len);
+        sb_append(buffer, value, value_len);
         return true;
     }
 
     if ((home = getenv("HOME")) == NULL) {
-        ncm_buffer_append(buffer, value, value_len);
+        sb_append(buffer, value, value_len);
         return true;
     }
     home_len = strlen32(home);
-    ncm_buffer_append(buffer, home, home_len);
+    sb_append(buffer, home, home_len);
     if (value_len == 1) {
         return true;
     }
-    ncm_buffer_append_byte(buffer, '/');
+    sb_append_byte(buffer, '/');
     if (value[1] == '/') {
         if (value_len > 2) {
-            ncm_buffer_append(buffer, value + 2, value_len - 2);
+            sb_append(buffer, value + 2, value_len - 2);
         }
     } else {
-        ncm_buffer_append(buffer, value + 1, value_len - 1);
+        sb_append(buffer, value + 1, value_len - 1);
     }
     return true;
 }
@@ -344,9 +344,9 @@ settings_string_set_directory(char **data, int32 *len, int32 *cap, char *value,
 }
 
 static bool
-settings_copy_buffer(NcmBuffer *buffer, char *value, int32 value_len) {
-    ncm_buffer_clear(buffer);
-    ncm_buffer_append(buffer, value, value_len);
+settings_copy_buffer(StrBuilder *buffer, char *value, int32 value_len) {
+    sb_clear(buffer);
+    sb_append(buffer, value, value_len);
     return true;
 }
 

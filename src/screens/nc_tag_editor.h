@@ -53,7 +53,7 @@
 typedef struct NativeTagEditorHooks {
     enum NativeTagEditorPromptResult (*prompt)(
         void *user, char *label, int32 label_len, NcmStringView initial,
-        NcmBuffer *result);
+        StrBuilder *result);
     bool (*confirm)(void *user, char *message, int32 message_len);
     void (*status_message)(void *user, char *message, int32 message_len);
     void (*update_directory)(void *user, char *directory,
@@ -231,12 +231,12 @@ void native_tag_editor_screen_close_parser(
     NativeTagEditorScreen *screen);
 bool native_tag_editor_parse_filename(NcmMutableSong *song, char *mask,
                                       int32 mask_len, bool preview,
-                                      NcmBuffer *preview_buffer);
+                                      StrBuilder *preview_buffer);
 bool native_tag_editor_generate_filename(NcmMutableSong *song,
                                          char *pattern, int32 pattern_len,
-                                         NcmBuffer *filename);
+                                         StrBuilder *filename);
 bool native_tag_editor_song_display_value(NcmMutableSong *song,
                                           enum NcmTagsField field,
-                                          NcmBuffer *buffer);
+                                          StrBuilder *buffer);
 
 #endif /* NCMPCPP_NC_TAG_EDITOR_H */

@@ -9,7 +9,7 @@ static int32 nc_cyclic_normalize_start(int32 *start_pos,
                                        int32 total_characters);
 static void nc_cyclic_increment_start(int32 *start_pos,
                                       int32 total_characters);
-static void nc_cyclic_text_append(NcmBuffer *output, char *string,
+static void nc_cyclic_text_append(StrBuilder *output, char *string,
                                   int32 string_len, int32 start_byte,
                                   int32 *written_width, int32 width);
 static void nc_cyclic_buffer_write_all(NcBuffer *buffer, NcWindow *window);
@@ -30,7 +30,7 @@ static void nc_cyclic_window_write_text(NcWindow *window, char *string,
                                         int32 *written_width, int32 width);
 
 void
-nc_cyclic_text_write(NcmBuffer *output, char *string, int32 string_len,
+nc_cyclic_text_write(StrBuilder *output, char *string, int32 string_len,
                      int32 *start_pos, int32 width, char *separator,
                      int32 separator_len, bool scrolling_enabled) {
     int32 string_width;
@@ -43,7 +43,7 @@ nc_cyclic_text_write(NcmBuffer *output, char *string, int32 string_len,
     if (output == NULL) {
         return;
     }
-    ncm_buffer_clear(output);
+    sb_clear(output);
 
     if (string == NULL) {
         string_len = 0;
@@ -63,7 +63,7 @@ nc_cyclic_text_write(NcmBuffer *output, char *string, int32 string_len,
 
     string_width = utf8_width(string, string_len);
     if (!scrolling_enabled || (string_width <= width)) {
-        ncm_buffer_append(output, string, string_len);
+        sb_append(output, string, string_len);
         return;
     }
 
@@ -231,7 +231,7 @@ nc_cyclic_next_position(char *string, int32 string_len, int32 byte,
 }
 
 static void
-nc_cyclic_text_append(NcmBuffer *output, char *string, int32 string_len,
+nc_cyclic_text_append(StrBuilder *output, char *string, int32 string_len,
                       int32 start_byte, int32 *written_width,
                       int32 width) {
     int32 byte;
@@ -256,7 +256,7 @@ nc_cyclic_text_append(NcmBuffer *output, char *string, int32 string_len,
         if ((*written_width + char_width) > width) {
             break;
         }
-        ncm_buffer_append(output, string + byte, next_byte - byte);
+        sb_append(output, string + byte, next_byte - byte);
         *written_width += char_width;
         byte = next_byte;
     }

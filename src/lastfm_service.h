@@ -21,13 +21,13 @@ typedef struct NcmLastfmResult {
     bool success;
 } NcmLastfmResult;
 
-typedef CURLcode (*NcmLastfmCurlPerformFn)(NcmBuffer *data, char *url,
+typedef CURLcode (*NcmLastfmCurlPerformFn)(StrBuilder *data, char *url,
                                            int32 url_len, char *referer,
                                            int32 referer_len,
                                            bool follow_redirect,
                                            int32 timeout_seconds, void *user);
 
-typedef CURLcode (*NcmLastfmCurlEscapeFn)(NcmBuffer *out, char *string,
+typedef CURLcode (*NcmLastfmCurlEscapeFn)(StrBuilder *out, char *string,
                                           int32 string_len, void *user);
 
 typedef struct NcmLastfmService {

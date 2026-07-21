@@ -9,23 +9,23 @@
 #include "cbase/base_macros.h"
 
 static void
-ncm_mpd_client_set_buffer(NcmBuffer *buffer, char *string,
+ncm_mpd_client_set_buffer(StrBuilder *buffer, char *string,
                           int32 string_len) {
-    ncm_buffer_clear(buffer);
+    sb_clear(buffer);
     if ((string == NULL) || (string_len <= 0)) {
-        ncm_buffer_append_byte(buffer, '\0');
+        sb_append_byte(buffer, '\0');
         buffer->len = 0;
         return;
     }
 
-    ncm_buffer_append(buffer, string, string_len);
-    ncm_buffer_append_byte(buffer, '\0');
+    sb_append(buffer, string, string_len);
+    sb_append_byte(buffer, '\0');
     buffer->len = string_len;
     return;
 }
 
 static char *
-ncm_mpd_client_buffer_cstr(NcmBuffer *buffer) {
+ncm_mpd_client_buffer_cstr(StrBuilder *buffer) {
     if (buffer == NULL) {
         return "";
     }

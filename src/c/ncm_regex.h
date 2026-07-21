@@ -26,7 +26,7 @@ typedef struct NcmRegex {
 
 void ncm_regex_init(NcmRegex *regex);
 void ncm_regex_destroy(NcmRegex *regex);
-void ncm_regex_escape_literal(NcmBuffer *buffer,
+void ncm_regex_escape_literal(StrBuilder *buffer,
                               char *pattern, int32 pattern_len);
 bool ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
                        uint32 flags, NcmError *error);

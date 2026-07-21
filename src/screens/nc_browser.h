@@ -139,7 +139,7 @@ bool native_browser_screen_render_item(NativeBrowserScreen *screen,
                                        bool highlighted);
 bool native_browser_screen_item_to_string(NativeBrowserScreen *screen,
                                           NcmMpdItem *item,
-                                          NcmBuffer *buffer);
+                                          StrBuilder *buffer);
 void native_browser_screen_request_update(NativeBrowserScreen *screen);
 bool native_browser_screen_item_is_parent(NcmMpdItem *item);
 

@@ -10,13 +10,13 @@
 #include "cbase/base_macros.h"
 
 static bool
-ncm_regex_prepare_string(char *string, int32 string_len, NcmBuffer *buffer,
+ncm_regex_prepare_string(char *string, int32 string_len, StrBuilder *buffer,
                          NcmError *error) {
     if (buffer == NULL) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing regex buffer"));
         return false;
     }
-    ncm_buffer_clear(buffer);
+    sb_clear(buffer);
 
     if (string == NULL) {
         ncm_error_set(error, EINVAL, STRLIT_ARGS("missing regex string"));
@@ -27,9 +27,9 @@ ncm_regex_prepare_string(char *string, int32 string_len, NcmBuffer *buffer,
         return false;
     }
 
-    ncm_buffer_append(buffer, string, string_len);
+    sb_append(buffer, string, string_len);
     if (buffer->data == NULL) {
-        ncm_buffer_append_byte(buffer, '\0');
+        sb_append_byte(buffer, '\0');
         buffer->len = 0;
     }
     return true;
@@ -75,10 +75,10 @@ ncm_regex_destroy(NcmRegex *regex) {
 }
 
 void
-ncm_regex_escape_literal(NcmBuffer *buffer, char *pattern, int32 pattern_len) {
+ncm_regex_escape_literal(StrBuilder *buffer, char *pattern, int32 pattern_len) {
     char c;
 
-    ncm_buffer_clear(buffer);
+    sb_clear(buffer);
     if ((pattern == NULL) || (pattern_len <= 0)) {
         return;
     }
@@ -100,12 +100,12 @@ ncm_regex_escape_literal(NcmBuffer *buffer, char *pattern, int32 pattern_len) {
         case ']':
         case '{':
         case '}':
-            ncm_buffer_append_byte(buffer, '\\');
+            sb_append_byte(buffer, '\\');
             break;
         default:
             break;
         }
-        ncm_buffer_append_byte(buffer, c);
+        sb_append_byte(buffer, c);
     }
     return;
 }

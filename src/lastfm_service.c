@@ -191,7 +191,7 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
 }
 
 static CURLcode
-lastfm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
+lastfm_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
                     int32 referer_len, bool follow_redirect,
                     int32 timeout_seconds) {
     if (lastfm_test_perform) {
@@ -204,7 +204,7 @@ lastfm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
 }
 
 static CURLcode
-lastfm_curl_escape(NcmBuffer *out, char *string, int32 string_len) {
+lastfm_curl_escape(StrBuilder *out, char *string, int32 string_len) {
     if (lastfm_test_escape) {
         return lastfm_test_escape(out, string, string_len, lastfm_test_user);
     }
@@ -212,12 +212,12 @@ lastfm_curl_escape(NcmBuffer *out, char *string, int32 string_len) {
 }
 
 static void
-lastfm_append_escaped(NcmBuffer *buffer, char *string, int32 string_len) {
+lastfm_append_escaped(StrBuilder *buffer, char *string, int32 string_len) {
     StrBuilder escaped;
 
     sb_init(&escaped);
     if (lastfm_curl_escape(&escaped, string, string_len) == CURLE_OK) {
-        ncm_buffer_append(buffer, escaped.data, escaped.len);
+        sb_append(buffer, escaped.data, escaped.len);
     }
     sb_free(&escaped);
     return;
@@ -259,12 +259,12 @@ lastfm_find(char *data, int32 data_len, char *needle, int32 needle_len,
 }
 
 static bool
-lastfm_extract_between(NcmBuffer *out, char *data, int32 data_len, char *start,
+lastfm_extract_between(StrBuilder *out, char *data, int32 data_len, char *start,
                        int32 start_len, char *end, int32 end_len) {
     int32 a;
     int32 b;
 
-    ncm_buffer_clear(out);
+    sb_clear(out);
     a = lastfm_find(data, data_len, start, start_len, 0);
     if (a < 0) {
         return false;
@@ -274,7 +274,7 @@ lastfm_extract_between(NcmBuffer *out, char *data, int32 data_len, char *start,
     if (b < 0) {
         return false;
     }
-    ncm_buffer_append(out, data + a, b - a);
+    sb_append(out, data + a, b - a);
     return true;
 }
 
@@ -303,7 +303,7 @@ lastfm_trim_view(char **data, int32 *len) {
 }
 
 static void
-lastfm_trim_buffer(NcmBuffer *buffer) {
+lastfm_trim_buffer(StrBuilder *buffer) {
     char *text;
     int32 text_len;
     StrBuilder tmp;
@@ -313,21 +313,21 @@ lastfm_trim_buffer(NcmBuffer *buffer) {
     lastfm_trim_view(&text, &text_len);
     sb_init(&tmp);
     sb_append(&tmp, text, text_len);
-    ncm_buffer_clear(buffer);
-    ncm_buffer_append(buffer, tmp.data, tmp.len);
+    sb_clear(buffer);
+    sb_append(buffer, tmp.data, tmp.len);
     sb_free(&tmp);
     return;
 }
 
 static void
-lastfm_strip_unescape_trim(NcmBuffer *out, char *data, int32 data_len) {
+lastfm_strip_unescape_trim(StrBuilder *out, char *data, int32 data_len) {
     StrBuilder stripped;
     StrBuilder unescaped;
 
-    ncm_buffer_clear(out);
+    sb_clear(out);
     stripped = ncm_html_strip_tags(data, data_len);
     unescaped = ncm_html_unescape_utf8(stripped.data, stripped.len);
-    ncm_buffer_append(out, unescaped.data, unescaped.len);
+    sb_append(out, unescaped.data, unescaped.len);
     lastfm_trim_buffer(out);
     sb_free(&unescaped);
     sb_free(&stripped);
@@ -335,7 +335,7 @@ lastfm_strip_unescape_trim(NcmBuffer *out, char *data, int32 data_len) {
 }
 
 static void
-lastfm_append_similars(NcmBuffer *out, char *data, int32 data_len,
+lastfm_append_similars(StrBuilder *out, char *data, int32 data_len,
                        char *section_start, int32 section_start_len,
                        char *section_end, int32 section_end_len, char *heading,
                        int32 heading_len) {
@@ -383,14 +383,14 @@ lastfm_append_similars(NcmBuffer *out, char *data, int32 data_len,
             lastfm_strip_unescape_trim(&clean_name, name.data, name.len);
             lastfm_strip_unescape_trim(&clean_url, url.data, url.len);
             if (!wrote_heading) {
-                ncm_buffer_append(out, heading, heading_len);
+                sb_append(out, heading, heading_len);
                 wrote_heading = true;
             }
-            ncm_buffer_append(out, STRLIT_ARGS("\n*"));
-            ncm_buffer_append(out, clean_name.data, clean_name.len);
-            ncm_buffer_append(out, STRLIT_ARGS(" ("));
-            ncm_buffer_append(out, clean_url.data, clean_url.len);
-            ncm_buffer_append_byte(out, ')');
+            sb_append(out, STRLIT_ARGS("\n*"));
+            sb_append(out, clean_name.data, clean_name.len);
+            sb_append(out, STRLIT_ARGS(" ("));
+            sb_append(out, clean_url.data, clean_url.len);
+            sb_append_byte(out, ')');
         }
         sb_free(&clean_url);
         sb_free(&clean_name);

@@ -270,14 +270,14 @@ ncm_string_remove_invalid_filename_chars(char *filename,
 }
 
 void
-ncm_string_append_shell_escaped_single_quotes(NcmBuffer *buffer,
+ncm_string_append_shell_escaped_single_quotes(StrBuilder *buffer,
                                               char *string,
                                               int32 string_len) {
     for (int32 i = 0; i < string_len; i += 1) {
         if (string[i] == '\'') {
-            ncm_buffer_append(buffer, STRLIT_ARGS("'\\''"));
+            sb_append(buffer, STRLIT_ARGS("'\\''"));
         } else {
-            ncm_buffer_append_byte(buffer, string[i]);
+            sb_append_byte(buffer, string[i]);
         }
     }
     return;
