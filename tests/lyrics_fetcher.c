@@ -118,6 +118,16 @@ static LyricsFetcherTestCase lyrics_tests[] = {
         "Ohne dich",
         true),
     LYRICS_TEST(
+        "paroles",
+        "tests/lyrics/paroles.html",
+        "https://www.paroles.net/luis-fonsi/paroles-despacito",
+        "https://www.paroles.net/luis-fonsi/paroles-otra",
+        "https://www.paroles.net/luis-fonsi/paroles-despacito",
+        "https://www.google.com/search?hl=en&q=site%3Aparoles.net+"
+        "luis+fonsi+despacito+lyrics",
+        "Synthetic Paroles lyric line",
+        true),
+    LYRICS_TEST(
         "musixmatch",
         "tests/lyrics/musixmatch.html",
         "https://www.musixmatch.com/lyrics/luis-fonsi/despacito",
@@ -181,6 +191,17 @@ lyrics_test_append_fixture(StrBuilder *data, LyricsFetcherTestCase *test) {
     sb_append(data, html, html_len);
     free2(html, html_len + 1);
     return;
+}
+
+static LyricsFetcherTestCase *
+lyrics_test_case_named(char *name, int32 name_len) {
+    for (int32 i = 0; i < LENGTH(lyrics_tests); i += 1) {
+        if (STREQUAL(lyrics_tests[i].name, lyrics_tests[i].name_len,
+                     name, name_len)) {
+            return &lyrics_tests[i];
+        }
+    }
+    return NULL;
 }
 
 static CURLcode
@@ -611,6 +632,23 @@ test_provider_aware_slug_normalization(void) {
         STRLIT_ARGS("https://www.azlyrics.com/lyrics/beyoncejayz/"
                     "dejavu.html"));
 
+    assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
+                                           STRLIT_ARGS("paroles")));
+    lyrics_test_assert_first_direct_url(
+        &fetcher, STRLIT_ARGS("Luis Fonsi"), STRLIT_ARGS("Despacito"),
+        STRLIT_ARGS("https://www.paroles.net/luis-fonsi/"
+                    "paroles-despacito"));
+    assert(lyrics_search_candidate_score(
+        &fetcher,
+        STRLIT_ARGS("https://www.paroles.net/luis-fonsi/"
+                    "paroles-despacito"),
+        STRLIT_ARGS("Luis Fonsi"), STRLIT_ARGS("Despacito")) > 0);
+    assert(lyrics_search_candidate_score(
+        &fetcher,
+        STRLIT_ARGS("https://www.paroles.net/luis-fonsi/"
+                    "paroles-despacito-traduction"),
+        STRLIT_ARGS("Luis Fonsi"), STRLIT_ARGS("Despacito")) == 0);
+
     ncm_lyrics_fetcher_def_destroy(&fetcher);
     return;
 }
@@ -672,7 +710,7 @@ test_site_fetcher_tries_multiple_direct_urls(void) {
     NcmLyricsFetcherDef fetcher;
     NcmLyricsResult result;
 
-    context.test = &lyrics_tests[5];
+    context.test = lyrics_test_case_named(STRLIT_ARGS("vagalume"));
     context.calls = 0;
     ncm_lyrics_fetcher_def_init(&fetcher);
     ncm_lyrics_result_init(&result);
@@ -698,7 +736,7 @@ test_vagalume_search_finds_jorge_ben_jor_alias(void) {
     NcmLyricsFetcherDef fetcher;
     NcmLyricsResult result;
 
-    context.test = &lyrics_tests[5];
+    context.test = lyrics_test_case_named(STRLIT_ARGS("vagalume"));
     context.calls = 0;
     ncm_lyrics_fetcher_def_init(&fetcher);
     ncm_lyrics_result_init(&result);
