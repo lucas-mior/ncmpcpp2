@@ -11,6 +11,7 @@
 #include "c/ncm_defs.h"
 
 #define NCM_LYRICS_FETCHER_LIST(X) \
+    X(AMALGAMA, "amalgama-lab.com") \
     X(AZLYRICS, "azlyrics.com") \
     X(GENIUS, "genius.com") \
     X(LETRASMUS, "letras.mus.br") \
