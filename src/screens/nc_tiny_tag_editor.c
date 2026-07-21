@@ -489,7 +489,7 @@ native_tiny_tag_editor_screen_set_filename_stem(
     NativeTinyTagEditorScreen *screen, char *stem, int32 stem_len
 ) {
     NcmStringView current_name;
-    NcmBuffer new_name;
+    StrBuilder new_name;
     int32 dot;
     bool result;
 
@@ -510,15 +510,15 @@ native_tiny_tag_editor_screen_set_filename_stem(
         }
     }
 
-    ncm_buffer_init(&new_name);
-    ncm_buffer_append(&new_name, stem, stem_len);
+    sb_init(&new_name);
+    sb_append(&new_name, stem, stem_len);
     if (dot >= 0) {
-        ncm_buffer_append(&new_name, &current_name.data[dot],
+        sb_append(&new_name, &current_name.data[dot],
                           current_name.len - dot);
     }
     result = native_tiny_tag_editor_screen_set_filename(
         screen, new_name.data, new_name.len);
-    ncm_buffer_destroy(&new_name);
+    sb_free(&new_name);
     return result;
 }
 
@@ -531,8 +531,8 @@ native_tiny_tag_editor_screen_run_row(
     NcmStringView initial;
     char *field_name;
     NcmStringView current_name;
-    NcmBuffer input;
-    NcmBuffer tag_value;
+    StrBuilder input;
+    StrBuilder tag_value;
     NcMenu *menu;
     char error_buffer[256];
     int32 error_len;
@@ -558,7 +558,7 @@ native_tiny_tag_editor_screen_run_row(
         initial.data = tag_value.data;
         initial.len = tag_value.len;
         field_name = ncm_tags_field_name(field);
-        ncm_buffer_init(&input);
+        sb_init(&input);
         if (screen->hooks.prompt == NULL) {
             prompt_result = NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
         } else {
@@ -566,21 +566,21 @@ native_tiny_tag_editor_screen_run_row(
                 screen->hooks.user, field_name,
                 optional_strlen32(field_name), initial, &input);
         }
-        ncm_buffer_destroy(&tag_value);
+        sb_free(&tag_value);
         if (prompt_result == NATIVE_TINY_TAG_EDITOR_PROMPT_ABORTED) {
             tiny_editor_status_message(
                 screen, STRLIT_ARGS("Action aborted"));
-            ncm_buffer_destroy(&input);
+            sb_free(&input);
             return false;
         }
         if (prompt_result != NATIVE_TINY_TAG_EDITOR_PROMPT_ACCEPTED) {
-            ncm_buffer_destroy(&input);
+            sb_free(&input);
             return false;
         }
         result = native_tiny_tag_editor_screen_set_tag_value(
             screen, field, input.data, input.len,
             screen->tag_separator.data, screen->tag_separator.len);
-        ncm_buffer_destroy(&input);
+        sb_free(&input);
         if (!result || !tiny_editor_replace_tag_row(screen, field)) {
             return false;
         }
@@ -604,7 +604,7 @@ native_tiny_tag_editor_screen_run_row(
             initial.len = dot;
         }
 
-        ncm_buffer_init(&input);
+        sb_init(&input);
         if (screen->hooks.prompt == NULL) {
             prompt_result = NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
         } else {
@@ -615,20 +615,20 @@ native_tiny_tag_editor_screen_run_row(
         if (prompt_result == NATIVE_TINY_TAG_EDITOR_PROMPT_ABORTED) {
             tiny_editor_status_message(
                 screen, STRLIT_ARGS("Action aborted"));
-            ncm_buffer_destroy(&input);
+            sb_free(&input);
             return false;
         }
         if (prompt_result != NATIVE_TINY_TAG_EDITOR_PROMPT_ACCEPTED) {
-            ncm_buffer_destroy(&input);
+            sb_free(&input);
             return false;
         }
         if (input.len <= 0) {
-            ncm_buffer_destroy(&input);
+            sb_free(&input);
             return true;
         }
         result = native_tiny_tag_editor_screen_set_filename_stem(
             screen, input.data, input.len);
-        ncm_buffer_destroy(&input);
+        sb_free(&input);
         if (!result || !tiny_editor_replace_filename_row(screen)) {
             return false;
         }
@@ -1032,7 +1032,7 @@ tiny_editor_buffer_mutable_tag(
     char *tag_separator, int32 tag_separator_len,
     bool show_duplicate_tags
 ) {
-    NcmBuffer value;
+    StrBuilder value;
     char *name;
 
     name = ncm_tags_field_name(field);
@@ -1042,7 +1042,7 @@ tiny_editor_buffer_mutable_tag(
                                          tag_separator, tag_separator_len,
                                          show_duplicate_tags);
     nc_buffer_append_data(buffer, value.data, value.len);
-    ncm_buffer_destroy(&value);
+    sb_free(&value);
     return;
 }
 

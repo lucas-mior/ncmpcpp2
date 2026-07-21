@@ -349,7 +349,7 @@ ncm_fs_directory_close(NcmFsDirectory *directory) {
 bool
 ncm_fs_join(NcmBuffer *buffer,
             char *left, int32 left_len, char *right, int32 right_len) {
-    NcmBuffer result;
+    StrBuilder result;
 
     if (buffer == NULL) {
         return false;
@@ -361,22 +361,22 @@ ncm_fs_join(NcmBuffer *buffer,
         return false;
     }
 
-    ncm_buffer_init(&result);
+    sb_init(&result);
     if (left && (left_len > 0)) {
-        ncm_buffer_append(&result, left, left_len);
+        sb_append(&result, left, left_len);
         if ((result.len > 0) && (result.data[result.len - 1] != '/')) {
-            ncm_buffer_append_byte(&result, '/');
+            sb_append_byte(&result, '/');
         }
     }
     while ((right_len > 0) && (right[0] == '/')) {
         right += 1;
         right_len -= 1;
     }
-    ncm_buffer_append(&result, right, right_len);
+    sb_append(&result, right, right_len);
 
     ncm_buffer_clear(buffer);
     ncm_buffer_append(buffer, result.data, result.len);
-    ncm_buffer_destroy(&result);
+    sb_free(&result);
 
     return true;
 }

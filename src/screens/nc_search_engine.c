@@ -899,7 +899,7 @@ native_search_engine_screen_run_current(
 ) {
     enum NativeSearchEnginePromptResult prompt_status;
     enum NativeSearchEngineSearchMode mode;
-    NcmBuffer value;
+    StrBuilder value;
     NcmError error;
     NcMenu *menu;
     int32 pos;
@@ -913,16 +913,16 @@ native_search_engine_screen_run_current(
     menu = native_search_engine_screen_menu(screen);
     pos = nc_menu_highlight(menu);
     if (pos < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT) {
-        ncm_buffer_init(&value);
+        sb_init(&value);
         prompt_status = native_search_engine_screen_prompt_constraint(
             screen, pos, &value);
         if (prompt_status == NATIVE_SEARCH_ENGINE_PROMPT_ACCEPTED) {
             success = native_search_engine_screen_set_constraint(
                 screen, pos, value.data, value.len);
-            ncm_buffer_destroy(&value);
+            sb_free(&value);
             return success;
         }
-        ncm_buffer_destroy(&value);
+        sb_free(&value);
         if (prompt_status == NATIVE_SEARCH_ENGINE_PROMPT_ABORTED) {
             native_search_engine_screen_status_message(
                 screen, STRLIT_ARGS("Action aborted"));

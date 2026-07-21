@@ -13,22 +13,22 @@
 static bool
 ncm_macro_system_command(char *command, int32 command_len,
                          bool block, int32 *status, NcmError *error) {
-    NcmBuffer buffer;
+    StrBuilder buffer;
     int32 rc;
 
     if (block) {
         return ncm_process_run_shell(command, command_len, status, error);
     }
 
-    ncm_buffer_init(&buffer);
+    sb_init(&buffer);
     if (command_len > 0) {
-        ncm_buffer_append(&buffer, command, command_len);
+        sb_append(&buffer, command, command_len);
     }
-    ncm_buffer_append(&buffer, STRLIT_ARGS(" >/dev/null 2>&1 &"));
-    ncm_buffer_append_byte(&buffer, '\0');
+    sb_append(&buffer, STRLIT_ARGS(" >/dev/null 2>&1 &"));
+    sb_append_byte(&buffer, '\0');
 
     rc = system(buffer.data);
-    ncm_buffer_destroy(&buffer);
+    sb_free(&buffer);
     if (status) {
         *status = rc;
     }

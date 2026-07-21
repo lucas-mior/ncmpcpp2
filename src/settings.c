@@ -314,32 +314,32 @@ settings_expand_home(NcmBuffer *buffer, char *value, int32 value_len) {
 static bool
 settings_string_set_expanded(char **data, int32 *len, int32 *cap, char *value,
                              int32 value_len) {
-    NcmBuffer buffer;
+    StrBuilder buffer;
     bool result;
 
-    ncm_buffer_init(&buffer);
+    sb_init(&buffer);
     if ((result = settings_expand_home(&buffer, value, value_len))) {
         result = settings_string_set(data, len, cap, buffer.data, buffer.len);
     }
-    ncm_buffer_destroy(&buffer);
+    sb_free(&buffer);
     return result;
 }
 
 static bool
 settings_string_set_directory(char **data, int32 *len, int32 *cap, char *value,
                               int32 value_len) {
-    NcmBuffer buffer;
+    StrBuilder buffer;
     bool result;
 
-    ncm_buffer_init(&buffer);
+    sb_init(&buffer);
     if ((result = settings_expand_home(&buffer, value, value_len))
         && ((buffer.len <= 0) || (buffer.data[buffer.len - 1] != '/'))) {
-        ncm_buffer_append_byte(&buffer, '/');
+        sb_append_byte(&buffer, '/');
     }
     if (result) {
         result = settings_string_set(data, len, cap, buffer.data, buffer.len);
     }
-    ncm_buffer_destroy(&buffer);
+    sb_free(&buffer);
     return result;
 }
 
@@ -719,21 +719,21 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
     ncm_format_ast_clear(&config->song_columns_mode_format);
     pos = 0;
     while (pos < value_len) {
-        NcmBuffer width;
-        NcmBuffer color;
-        NcmBuffer tag;
+        StrBuilder width;
+        StrBuilder color;
+        StrBuilder tag;
         Column *column;
         int32 next;
         int32 parsed_width;
 
-        ncm_buffer_init(&width);
-        ncm_buffer_init(&color);
-        ncm_buffer_init(&tag);
+        sb_init(&width);
+        sb_init(&color);
+        sb_init(&tag);
         width = ncm_string_get_enclosed(value, value_len, '(', ')', pos, &next);
         if (width.len <= 0) {
-            ncm_buffer_destroy(&width);
-            ncm_buffer_destroy(&color);
-            ncm_buffer_destroy(&tag);
+            sb_free(&width);
+            sb_free(&color);
+            sb_free(&tag);
             break;
         }
         pos = next;
@@ -743,9 +743,9 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
         pos = next;
         if ((column = column_array_append(&config->columns)) == NULL) {
             settings_error(error, STRLIT_ARGS("failed to append column"));
-            ncm_buffer_destroy(&width);
-            ncm_buffer_destroy(&color);
-            ncm_buffer_destroy(&tag);
+            sb_free(&width);
+            sb_free(&color);
+            sb_free(&tag);
             return false;
         }
         if ((width.len > 0) && (width.data[width.len - 1] == 'f')) {
@@ -755,18 +755,18 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
         }
         if (!settings_parse_int32(width.data, width.len, &parsed_width,
                                    error)) {
-            ncm_buffer_destroy(&width);
-            ncm_buffer_destroy(&color);
-            ncm_buffer_destroy(&tag);
+            sb_free(&width);
+            sb_free(&color);
+            sb_free(&tag);
             return false;
         }
         column->width = parsed_width;
         if (color.len > 0) {
             if (!settings_parse_color(color.data, color.len, &column->color,
                                       error)) {
-                ncm_buffer_destroy(&width);
-                ncm_buffer_destroy(&color);
-                ncm_buffer_destroy(&tag);
+                sb_free(&width);
+                sb_free(&color);
+                sb_free(&tag);
                 return false;
             }
         }
@@ -805,9 +805,9 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
         } else {
             column->display_empty_tag = false;
         }
-        ncm_buffer_destroy(&width);
-        ncm_buffer_destroy(&color);
-        ncm_buffer_destroy(&tag);
+        sb_free(&width);
+        sb_free(&color);
+        sb_free(&tag);
     }
 
     if (config->columns.len <= 0) {
@@ -1043,16 +1043,16 @@ APPLY_BOOL(apply_colors_enabled, colors_enabled)
 static bool
 apply_mpd_host(Configuration *config, char *value, int32 value_len,
                NcmError *error) {
-    NcmBuffer host;
+    StrBuilder host;
     bool result;
 
     (void)config;
-    ncm_buffer_init(&host);
+    sb_init(&host);
     if ((result = settings_expand_home(&host, value, value_len))) {
         result = ncm_mpd_client_set_hostname(&global_mpd, host.data, host.len,
                                              error);
     }
-    ncm_buffer_destroy(&host);
+    sb_free(&host);
     return result;
 }
 
@@ -1883,15 +1883,15 @@ settings_read_file(Configuration *config, SettingsOption *options,
                    int32 option_count, char *path, int32 path_len,
                    bool ignore_errors, bool quiet, NcmError *error) {
     FILE *file;
-    NcmBuffer path_buffer;
+    StrBuilder path_buffer;
     char line[SETTINGS_LINE_CAP];
 
     if (!ncm_fs_exists(path, path_len)) {
         return true;
     }
 
-    ncm_buffer_init(&path_buffer);
-    ncm_buffer_append(&path_buffer, path, path_len);
+    sb_init(&path_buffer);
+    sb_append(&path_buffer, path, path_len);
     if ((file = fopen(path_buffer.data, "r")) == NULL) {
         char message[256];
         int32 len;
@@ -1907,7 +1907,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
             }
             ncm_error_set(error, errno, message, len);
         }
-        ncm_buffer_destroy(&path_buffer);
+        sb_free(&path_buffer);
         return settings_report_or_ignore(error, ignore_errors);
     }
 
@@ -1936,7 +1936,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
                                               parsed.option_len);
             if (!settings_report_or_ignore(error, ignore_errors)) {
                 fclose(file);
-                ncm_buffer_destroy(&path_buffer);
+                sb_free(&path_buffer);
                 return false;
             }
             continue;
@@ -1945,7 +1945,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
             settings_set_duplicate_option_error(error, option);
             if (!settings_report_or_ignore(error, ignore_errors)) {
                 fclose(file);
-                ncm_buffer_destroy(&path_buffer);
+                sb_free(&path_buffer);
                 return false;
             }
             continue;
@@ -1955,12 +1955,12 @@ settings_read_file(Configuration *config, SettingsOption *options,
                                    parsed.value_len, false, ignore_errors,
                                    error)) {
             fclose(file);
-            ncm_buffer_destroy(&path_buffer);
+            sb_free(&path_buffer);
             return false;
         }
     }
     fclose(file);
-    ncm_buffer_destroy(&path_buffer);
+    sb_free(&path_buffer);
     return true;
 }
 

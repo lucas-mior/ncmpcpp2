@@ -30,13 +30,13 @@ ncm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
                  int32 timeout_seconds) {
     CURLcode result;
     CURL *curl;
-    NcmBuffer url_string;
-    NcmBuffer referer_string;
+    StrBuilder url_string;
+    StrBuilder referer_string;
     NcmCurlResponseWriter writer;
 
     ncm_buffer_clear(data);
-    ncm_buffer_init(&url_string);
-    ncm_buffer_init(&referer_string);
+    sb_init(&url_string);
+    sb_init(&referer_string);
     ncm_curl_response_writer_init(&writer, data);
 
     append_c_string(&url_string, url, url_len);
@@ -71,8 +71,8 @@ ncm_curl_perform(NcmBuffer *data, char *url, int32 url_len, char *referer,
 
 cleanup:
     ncm_curl_response_writer_destroy(&writer);
-    ncm_buffer_destroy(&referer_string);
-    ncm_buffer_destroy(&url_string);
+    sb_free(&referer_string);
+    sb_free(&url_string);
     return result;
 }
 

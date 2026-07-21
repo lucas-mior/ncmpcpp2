@@ -102,7 +102,7 @@ void ncm_format_render(NcmFormatAst *ast, NcmSong *song,
 void ncm_format_render_buffer(NcmFormatAst *ast, NcmSong *song,
                               NcBuffer *buffer, NcBuffer *right_aligned,
                               uint32 flags);
-NcmBuffer ncm_format_render_string(NcmFormatAst *ast, NcmSong *song);
-NcmBuffer ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag);
+StrBuilder ncm_format_render_string(NcmFormatAst *ast, NcmSong *song);
+StrBuilder ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag);
 
 #endif /* NCM_FORMAT_H */

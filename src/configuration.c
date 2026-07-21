@@ -93,19 +93,19 @@ static bool
 configuration_append_default_file(NcmBufferArray *paths, char *filename,
                                   int32 filename_len) {
     char *xdg_config_home;
-    NcmBuffer directory;
-    NcmBuffer path;
+    StrBuilder directory;
+    StrBuilder path;
     bool result;
 
-    ncm_buffer_init(&directory);
-    ncm_buffer_init(&path);
+    sb_init(&directory);
+    sb_init(&path);
 
     if ((xdg_config_home = getenv("XDG_CONFIG_HOME"))
         && (xdg_config_home[0] != '\0')) {
-        ncm_buffer_append(&directory, xdg_config_home,
+        sb_append(&directory, xdg_config_home,
                           strlen32(xdg_config_home));
     } else {
-        ncm_buffer_append(&directory, STRLIT_ARGS("~/.config"));
+        sb_append(&directory, STRLIT_ARGS("~/.config"));
     }
     result = ncm_fs_join(&directory, directory.data, directory.len,
                          STRLIT_ARGS("ncmpcpp"));
@@ -117,30 +117,30 @@ configuration_append_default_file(NcmBufferArray *paths, char *filename,
         result = configuration_append_buffer_path(paths, &path);
     }
 
-    ncm_buffer_destroy(&path);
-    ncm_buffer_destroy(&directory);
+    sb_free(&path);
+    sb_free(&directory);
     return result;
 }
 
 static bool
 configuration_append_legacy_file(NcmBufferArray *paths, char *filename,
                                  int32 filename_len) {
-    NcmBuffer directory;
-    NcmBuffer path;
+    StrBuilder directory;
+    StrBuilder path;
     bool result;
 
-    ncm_buffer_init(&directory);
-    ncm_buffer_init(&path);
+    sb_init(&directory);
+    sb_init(&path);
 
-    ncm_buffer_append(&directory, STRLIT_ARGS("~/.ncmpcpp"));
+    sb_append(&directory, STRLIT_ARGS("~/.ncmpcpp"));
     result = ncm_fs_join(&path, directory.data, directory.len, filename,
                          filename_len);
     if (result) {
         result = configuration_append_buffer_path(paths, &path);
     }
 
-    ncm_buffer_destroy(&path);
-    ncm_buffer_destroy(&directory);
+    sb_free(&path);
+    sb_free(&directory);
     return result;
 }
 
@@ -801,12 +801,12 @@ configuration_print_current_song(NcmConfigurationOptions *options,
                                  NcmError *error) {
     NcmSong song;
     NcmFormatAst format;
-    NcmBuffer output;
+    StrBuilder output;
     bool result;
 
     ncm_song_init(&song);
     ncm_format_ast_init(&format);
-    ncm_buffer_init(&output);
+    sb_init(&output);
 
     result = ncm_mpd_client_connect(&global_mpd, error)
              && ncm_mpd_client_get_current_song(&global_mpd, &song, error);
@@ -822,7 +822,7 @@ configuration_print_current_song(NcmConfigurationOptions *options,
         }
     }
 
-    ncm_buffer_destroy(&output);
+    sb_free(&output);
     ncm_format_ast_destroy(&format);
     ncm_song_destroy(&song);
     ncm_mpd_client_disconnect(&global_mpd);

@@ -462,7 +462,7 @@ native_browser_screen_last_highlighted_directory(
 
 void
 native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
-    NcmBuffer scroll_buffer;
+    StrBuilder scroll_buffer;
     NcmStringView directory;
     int32 scroll_beginning;
     int32 scroll_width;
@@ -497,7 +497,7 @@ native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
         scroll_width = 0;
     }
 
-    ncm_buffer_init(&scroll_buffer);
+    sb_init(&scroll_buffer);
     scroll_beginning = screen->title_scroll_beginning;
     nc_cyclic_text_write(&scroll_buffer, directory.data, directory.len,
                          &scroll_beginning, scroll_width, separator,
@@ -506,7 +506,7 @@ native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
     ncm_buffer_append(&screen->title_text, scroll_buffer.data,
                       scroll_buffer.len);
     screen->title_scroll_beginning = scroll_beginning;
-    ncm_buffer_destroy(&scroll_buffer);
+    sb_free(&scroll_buffer);
     return;
 }
 
@@ -672,7 +672,7 @@ bool
 native_browser_screen_change_browse_mode(
     NativeBrowserScreen *screen, NcmMpdClient *client, NcmError *error
 ) {
-    NcmBuffer directory;
+    StrBuilder directory;
     char *hostname;
     bool local_browser;
     bool result;
@@ -691,19 +691,19 @@ native_browser_screen_change_browse_mode(
         return false;
     }
 
-    ncm_buffer_init(&directory);
+    sb_init(&directory);
     local_browser = !screen->local_browser;
     if (local_browser) {
-        if (!ncm_buffer_set(&directory, STRLIT_ARGS("~"))) {
-            ncm_buffer_destroy(&directory);
+        if (!sb_set(&directory, STRLIT_ARGS("~"))) {
+            sb_free(&directory);
             return false;
         }
         if (!ncm_path_expand_home(&directory, error)) {
-            ncm_buffer_destroy(&directory);
+            sb_free(&directory);
             return false;
         }
-    } else if (!ncm_buffer_set(&directory, STRLIT_ARGS("/"))) {
-        ncm_buffer_destroy(&directory);
+    } else if (!sb_set(&directory, STRLIT_ARGS("/"))) {
+        sb_free(&directory);
         return false;
     }
 
@@ -722,7 +722,7 @@ native_browser_screen_change_browse_mode(
         }
     }
 
-    ncm_buffer_destroy(&directory);
+    sb_free(&directory);
     return result;
 }
 
@@ -1188,7 +1188,7 @@ native_browser_screen_item_to_string(NativeBrowserScreen *screen,
                                      NcmMpdItem *item,
                                      NcmBuffer *buffer) {
     NcmStringView path;
-    NcmBuffer rendered;
+    StrBuilder rendered;
     int32 basename;
 
     if ((screen == NULL) || (item == NULL) || (buffer == NULL)) {
@@ -1218,7 +1218,7 @@ native_browser_screen_item_to_string(NativeBrowserScreen *screen,
                 &Config.song_list_format, ncm_mpd_item_song(item));
         }
         ncm_buffer_move(buffer, &rendered);
-        ncm_buffer_destroy(&rendered);
+        sb_free(&rendered);
         break;
     case NCM_MPD_ITEM_PLAYLIST:
         if (Config.browser_playlist_prefix.data
@@ -1965,7 +1965,7 @@ static bool
 native_browser_load_local_entry(NativeBrowserScreen *screen,
                                 NcmFsDirectory *directory,
                                 NcmFsEntry *entry, NcmError *error) {
-    NcmBuffer path;
+    StrBuilder path;
     NcmFsStat stat;
     bool result;
 
@@ -1978,20 +1978,20 @@ native_browser_load_local_entry(NativeBrowserScreen *screen,
         return true;
     }
 
-    ncm_buffer_init(&path);
+    sb_init(&path);
     if (!ncm_fs_join(&path, directory->path, directory->path_len,
                      entry->name, entry->name_len)) {
-        ncm_buffer_destroy(&path);
+        sb_free(&path);
         return false;
     }
 
     if (!native_browser_stat_local_path(path.data, path.len,
                                         &stat, error)) {
-        ncm_buffer_destroy(&path);
+        sb_free(&path);
         return false;
     }
     if (!stat.exists) {
-        ncm_buffer_destroy(&path);
+        sb_free(&path);
         return true;
     }
 
@@ -2006,7 +2006,7 @@ native_browser_load_local_entry(NativeBrowserScreen *screen,
             screen, &path, (time_t)stat.mtime);
     }
 
-    ncm_buffer_destroy(&path);
+    sb_free(&path);
     return result;
 }
 
@@ -2220,7 +2220,7 @@ native_browser_collect_local_entry_songs(
     NativeBrowserScreen *screen, NcmSongArray *songs,
     NcmFsDirectory *directory, NcmFsEntry *entry, NcmError *error
 ) {
-    NcmBuffer path;
+    StrBuilder path;
     NcmFsStat stat;
     NcmSong song;
     bool result;
@@ -2235,10 +2235,10 @@ native_browser_collect_local_entry_songs(
         return true;
     }
 
-    ncm_buffer_init(&path);
+    sb_init(&path);
     if (!ncm_fs_join(&path, directory->path, directory->path_len,
                      entry->name, entry->name_len)) {
-        ncm_buffer_destroy(&path);
+        sb_free(&path);
         return false;
     }
 
@@ -2257,7 +2257,7 @@ native_browser_collect_local_entry_songs(
         ncm_song_destroy(&song);
     }
 
-    ncm_buffer_destroy(&path);
+    sb_free(&path);
     return result;
 }
 
@@ -2299,7 +2299,7 @@ static bool
 native_browser_delete_directory_item(NativeBrowserScreen *screen,
                                      NcmMpdItem *item, NcmError *error) {
     NcmStringView path;
-    NcmBuffer real_path;
+    StrBuilder real_path;
     bool result;
 
     if (!ncm_directory_path_view(ncm_mpd_item_directory(item), &path)) {
@@ -2307,11 +2307,11 @@ native_browser_delete_directory_item(NativeBrowserScreen *screen,
         return false;
     }
 
-    ncm_buffer_init(&real_path);
+    sb_init(&real_path);
     result = native_browser_real_path(screen, path, &real_path, error)
              && native_browser_delete_path_recursive(
                  real_path.data, real_path.len, error);
-    ncm_buffer_destroy(&real_path);
+    sb_free(&real_path);
     return result;
 }
 
@@ -2319,7 +2319,7 @@ static bool
 native_browser_delete_song_item(NativeBrowserScreen *screen,
                                 NcmMpdItem *item, NcmError *error) {
     NcmStringView path;
-    NcmBuffer real_path;
+    StrBuilder real_path;
     bool result;
 
     if (!ncm_song_uri_view(ncm_mpd_item_song(item), 0, &path)) {
@@ -2327,10 +2327,10 @@ native_browser_delete_song_item(NativeBrowserScreen *screen,
         return false;
     }
 
-    ncm_buffer_init(&real_path);
+    sb_init(&real_path);
     result = native_browser_real_path(screen, path, &real_path, error)
              && ncm_fs_unlink(real_path.data, real_path.len, error);
-    ncm_buffer_destroy(&real_path);
+    sb_free(&real_path);
     return result;
 }
 
@@ -2339,7 +2339,7 @@ native_browser_delete_playlist_item(NativeBrowserScreen *screen,
                                     NcmMpdClient *client,
                                     NcmMpdItem *item, NcmError *error) {
     NcmStringView path;
-    NcmBuffer real_path;
+    StrBuilder real_path;
     bool result;
 
     if (client == NULL) {
@@ -2359,10 +2359,10 @@ native_browser_delete_playlist_item(NativeBrowserScreen *screen,
         return false;
     }
 
-    ncm_buffer_init(&real_path);
+    sb_init(&real_path);
     result = native_browser_real_path(screen, path, &real_path, error)
              && ncm_fs_unlink(real_path.data, real_path.len, error);
-    ncm_buffer_destroy(&real_path);
+    sb_free(&real_path);
     return result;
 }
 
@@ -2443,7 +2443,7 @@ native_browser_load_mpd_song_directory(
     NcmStringView directory, NcmError *error
 ) {
     NcmMpdItemArray items;
-    NcmBuffer path;
+    StrBuilder path;
     bool result;
 
     if ((screen == NULL) || (client == NULL)) {
@@ -2451,14 +2451,14 @@ native_browser_load_mpd_song_directory(
         return false;
     }
 
-    ncm_buffer_init(&path);
+    sb_init(&path);
     if (directory.len <= 0) {
-        result = ncm_buffer_set(&path, STRLIT_ARGS("/"));
+        result = sb_set(&path, STRLIT_ARGS("/"));
     } else {
-        result = ncm_buffer_set(&path, directory.data, directory.len);
+        result = sb_set(&path, directory.data, directory.len);
     }
     if (!result) {
-        ncm_buffer_destroy(&path);
+        sb_free(&path);
         return false;
     }
 
@@ -2475,7 +2475,7 @@ native_browser_load_mpd_song_directory(
     }
 
     ncm_mpd_item_array_destroy(&items);
-    ncm_buffer_destroy(&path);
+    sb_free(&path);
     return result;
 }
 
@@ -2516,12 +2516,12 @@ native_browser_rename_real_paths(NativeBrowserScreen *screen,
                                  NcmStringView old_path,
                                  NcmStringView new_path,
                                  NcmError *error) {
-    NcmBuffer old_real_path;
-    NcmBuffer new_real_path;
+    StrBuilder old_real_path;
+    StrBuilder new_real_path;
     bool result;
 
-    ncm_buffer_init(&old_real_path);
-    ncm_buffer_init(&new_real_path);
+    sb_init(&old_real_path);
+    sb_init(&new_real_path);
     result = native_browser_real_path(screen, old_path, &old_real_path,
                                       error)
              && native_browser_real_path(screen, new_path, &new_real_path,
@@ -2529,8 +2529,8 @@ native_browser_rename_real_paths(NativeBrowserScreen *screen,
              && ncm_fs_rename(old_real_path.data, old_real_path.len,
                               new_real_path.data, new_real_path.len,
                               error);
-    ncm_buffer_destroy(&new_real_path);
-    ncm_buffer_destroy(&old_real_path);
+    sb_free(&new_real_path);
+    sb_free(&old_real_path);
     return result;
 }
 
@@ -2539,7 +2539,7 @@ native_browser_update_renamed_directory(NcmMpdClient *client,
                                         NcmStringView old_path,
                                         NcmStringView new_path,
                                         NcmError *error) {
-    NcmBuffer shared;
+    StrBuilder shared;
     char *directory;
     bool result;
 
@@ -2556,7 +2556,7 @@ native_browser_update_renamed_directory(NcmMpdClient *client,
     }
     result = ncm_mpd_client_update_directory(client, directory, NULL,
                                              error);
-    ncm_buffer_destroy(&shared);
+    sb_free(&shared);
     return result;
 }
 
@@ -2618,14 +2618,14 @@ native_browser_delete_path_recursive(char *path, int32 path_len,
     result = true;
     ncm_fs_entry_init(&entry);
     while (result && ncm_fs_directory_read(&directory, &entry, error)) {
-        NcmBuffer child;
+        StrBuilder child;
 
-        ncm_buffer_init(&child);
+        sb_init(&child);
         result = ncm_fs_join(&child, directory.path, directory.path_len,
                              entry.name, entry.name_len)
                  && native_browser_delete_path_recursive(
                      child.data, child.len, error);
-        ncm_buffer_destroy(&child);
+        sb_free(&child);
     }
     if (ncm_error_is_set(error)) {
         result = false;
@@ -2713,7 +2713,7 @@ static bool
 native_browser_supported_extensions_add(NcmBufferArray *extensions,
                                         char *extension,
                                         int32 extension_len) {
-    NcmBuffer buffer;
+    StrBuilder buffer;
     bool result;
 
     if (extensions == NULL) {
@@ -2727,13 +2727,13 @@ native_browser_supported_extensions_add(NcmBufferArray *extensions,
         extension_len = strlen32(extension);
     }
 
-    ncm_buffer_init(&buffer);
+    sb_init(&buffer);
     if ((extension_len <= 0) || (extension[0] != '.')) {
-        if ((result = ncm_buffer_set(&buffer, STRLIT_ARGS(".")))) {
-            ncm_buffer_append(&buffer, extension, extension_len);
+        if ((result = sb_set(&buffer, STRLIT_ARGS(".")))) {
+            sb_append(&buffer, extension, extension_len);
         }
     } else {
-        result = ncm_buffer_set(&buffer, extension, extension_len);
+        result = sb_set(&buffer, extension, extension_len);
     }
 
     if (result
@@ -2741,7 +2741,7 @@ native_browser_supported_extensions_add(NcmBufferArray *extensions,
             extensions, buffer.data, buffer.len)) {
         result = ncm_buffer_array_append_copy(extensions, &buffer);
     }
-    ncm_buffer_destroy(&buffer);
+    sb_free(&buffer);
     return result;
 }
 
@@ -2804,8 +2804,8 @@ static int32
 native_browser_compare_item_values(NativeBrowserScreen *screen,
                                    NcmMpdItem *left,
                                    NcmMpdItem *right) {
-    NcmBuffer left_buffer;
-    NcmBuffer right_buffer;
+    StrBuilder left_buffer;
+    StrBuilder right_buffer;
     int32 result;
 
     (void)screen;
@@ -2851,8 +2851,8 @@ native_browser_compare_item_values(NativeBrowserScreen *screen,
             result = native_browser_compare_views(
                 ncm_string_view_make(left_buffer.data, left_buffer.len),
                 ncm_string_view_make(right_buffer.data, right_buffer.len));
-            ncm_buffer_destroy(&right_buffer);
-            ncm_buffer_destroy(&left_buffer);
+            sb_free(&right_buffer);
+            sb_free(&left_buffer);
             return result;
         case NCM_MPD_ITEM_UNKNOWN:
             return 0;

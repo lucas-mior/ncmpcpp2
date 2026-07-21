@@ -2272,7 +2272,7 @@ static bool
 native_song_info_render(void *user, NcSongInfoScreen *screen,
                         NcBuffer *buffer) {
     NativeSongInfoScreen *owner;
-    NcmBuffer value;
+    StrBuilder value;
 
     (void)screen;
     owner = user;
@@ -2284,20 +2284,20 @@ native_song_info_render(void *user, NcSongInfoScreen *screen,
                                    NCM_SONG_GETTER_NAME,
                                    0);
     native_append_song_key_value(buffer, "Filename", &value, false);
-    ncm_buffer_destroy(&value);
+    sb_free(&value);
 
     value = ncm_song_getter_buffer(&owner->song,
                                    NCM_SONG_GETTER_DIRECTORY,
                                    0);
     native_append_song_key_value(buffer, "Directory", &value, true);
-    ncm_buffer_destroy(&value);
+    sb_free(&value);
     native_append_cstring(buffer, "\n");
 
     value = ncm_song_getter_buffer(&owner->song,
                                    NCM_SONG_GETTER_LENGTH,
                                    0);
     native_append_song_key_value(buffer, "Length", &value, false);
-    ncm_buffer_destroy(&value);
+    sb_free(&value);
 
     for (int32 i = 0; ncm_song_info_tags[i].name; i += 1) {
         native_append_format(buffer, NC_FORMAT_BOLD);
@@ -2312,7 +2312,7 @@ native_song_info_render(void *user, NcSongInfoScreen *screen,
                                      Config.tags_separator_len,
                                      Config.show_duplicate_tags);
         native_append_song_tag(buffer, &value);
-        ncm_buffer_destroy(&value);
+        sb_free(&value);
     }
     return true;
 }

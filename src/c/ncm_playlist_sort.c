@@ -49,8 +49,8 @@ static int32
 ncm_playlist_sort_compare_key(NcmPlaylistSortContext *context,
                               int32 left_idx, int32 right_idx,
                               enum NcmSongGetter getter) {
-    NcmBuffer left;
-    NcmBuffer right;
+    StrBuilder left;
+    StrBuilder right;
     char *left_data;
     char *right_data;
     int32 result;
@@ -71,8 +71,8 @@ ncm_playlist_sort_compare_key(NcmPlaylistSortContext *context,
     result = ncm_compare_locale_strings(
         left_data, left.len, right_data, right.len,
         context->ignore_leading_the);
-    ncm_buffer_destroy(&right);
-    ncm_buffer_destroy(&left);
+    sb_free(&right);
+    sb_free(&left);
     return result;
 }
 
