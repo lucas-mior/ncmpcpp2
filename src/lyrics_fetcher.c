@@ -294,8 +294,7 @@ lyrics_build_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *url,
         sb_append_byte(url, '/');
         break;
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
-        sb_append(url,
-                          STRLIT_ARGS("https://www.musixmatch.com/lyrics/"));
+        sb_append(url, STRLIT_ARGS("https://www.musixmatch.com/lyrics/"));
         valid = lyrics_append_slug(url, artist, artist_len, compact);
         sb_append_byte(url, '/');
         valid = valid && lyrics_append_slug(url, title, title_len, compact);
@@ -307,8 +306,7 @@ lyrics_build_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *url,
         valid = valid && lyrics_append_slug(url, title, title_len, compact);
         break;
     case NCM_LYRICS_FETCHER_VAGALUME:
-        sb_append(url,
-                          STRLIT_ARGS("https://www.vagalume.com.br/"));
+        sb_append(url, STRLIT_ARGS("https://www.vagalume.com.br/"));
         valid = lyrics_append_slug(url, artist, artist_len, compact);
         sb_append_byte(url, '/');
         valid = valid && lyrics_append_slug(url, title, title_len, compact);
