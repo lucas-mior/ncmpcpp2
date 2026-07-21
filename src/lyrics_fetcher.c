@@ -131,8 +131,8 @@ ncm_lyrics_result_clear(NcmLyricsResult *result) {
 }
 
 bool
-ncm_lyrics_result_set(NcmLyricsResult *result, bool success, char *text,
-                      int32 text_len) {
+ncm_lyrics_result_set(NcmLyricsResult *result, bool success,
+                      char *text, int32 text_len) {
     if (result == NULL) {
         return false;
     }
