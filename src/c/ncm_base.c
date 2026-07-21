@@ -3,170 +3,63 @@
 
 #include "c/ncm_base.h"
 
-#include "cbase/base_macros.h"
 #include "cbase/util.c"
 
 void
 ncm_buffer_init(NcmBuffer *buffer) {
-    buffer->data = NULL;
-    buffer->len = 0;
-    buffer->cap = 0;
+    sb_init(buffer);
     return;
 }
 
 void
 ncm_buffer_destroy(NcmBuffer *buffer) {
-    if (buffer->data) {
-        free2(buffer->data, buffer->cap);
-    }
-
-    buffer->data = NULL;
-    buffer->len = 0;
-    buffer->cap = 0;
+    sb_free(buffer);
     return;
 }
 
 void
 ncm_buffer_clear(NcmBuffer *buffer) {
-    buffer->len = 0;
-    if (buffer->data) {
-        buffer->data[0] = '\0';
-    }
+    sb_clear(buffer);
     return;
 }
 
 bool
 ncm_buffer_copy(NcmBuffer *dest, NcmBuffer *source) {
-    if (dest == NULL) {
-        return false;
-    }
-    if (dest == source) {
-        return true;
-    }
-    if (source == NULL) {
-        ncm_buffer_destroy(dest);
-        return true;
-    }
-
-    ncm_buffer_clear(dest);
-    ncm_buffer_append(dest, source->data, source->len);
-    return true;
+    return sb_copy(dest, source);
 }
 
 void
 ncm_buffer_move(NcmBuffer *dest, NcmBuffer *source) {
-    if (dest == NULL) {
-        return;
-    }
-    if (dest == source) {
-        return;
-    }
-
-    ncm_buffer_destroy(dest);
-    if (source == NULL) {
-        ncm_buffer_init(dest);
-        return;
-    }
-
-    *dest = *source;
-    ncm_buffer_init(source);
+    sb_move(dest, source);
     return;
 }
 
 bool
 ncm_buffer_set(NcmBuffer *buffer, char *data, int32 data_len) {
-    if (buffer == NULL) {
-        return false;
-    }
-    if (data_len < 0) {
-        return false;
-    }
-    if ((data == NULL) && (data_len > 0)) {
-        return false;
-    }
-    if ((data == buffer->data) && buffer->data) {
-        if (data_len > buffer->len) {
-            return false;
-        }
-        buffer->len = data_len;
-        buffer->data[data_len] = '\0';
-        return true;
-    }
-
-    ncm_buffer_clear(buffer);
-    ncm_buffer_append(buffer, data, data_len);
-    return true;
+    return sb_set(buffer, data, data_len);
 }
 
 void
 ncm_buffer_reserve(NcmBuffer *buffer, int32 extra) {
-    int32 needed;
-    int32 old_cap;
-    int32 new_cap;
-
-    if (extra <= 0) {
-        return;
-    }
-
-    needed = buffer->len + extra + 1;
-    if (buffer->data && (needed <= buffer->cap)) {
-        return;
-    }
-
-    old_cap = buffer->cap;
-    new_cap = buffer->cap;
-    if (new_cap <= 0) {
-        new_cap = 16;
-    }
-    while (new_cap < needed) {
-        new_cap *= 2;
-    }
-
-    buffer->data = realloc2(buffer->data, old_cap, new_cap,
-                          SIZEOF(*buffer->data));
-    buffer->cap = new_cap;
+    sb_reserve(buffer, extra);
     return;
 }
 
 void
 ncm_buffer_append(NcmBuffer *buffer, char *data, int32 data_len) {
-    if (data_len <= 0) {
-        return;
-    }
-
-    ncm_buffer_reserve(buffer, data_len);
-    memcpy64(buffer->data + buffer->len, data, data_len);
-    buffer->len += data_len;
-    buffer->data[buffer->len] = '\0';
+    sb_append(buffer, data, data_len);
     return;
 }
 
 void
 ncm_buffer_append_byte(NcmBuffer *buffer, char byte) {
-    ncm_buffer_reserve(buffer, 1);
-    buffer->data[buffer->len] = byte;
-    buffer->len += 1;
-    buffer->data[buffer->len] = '\0';
+    sb_append_byte(buffer, byte);
     return;
 }
 
 char *
 ncm_buffer_steal(NcmBuffer *buffer, int32 *len, int32 *cap) {
-    char *data;
-
-    data = buffer->data;
-    if (len) {
-        *len = buffer->len;
-    }
-    if (cap) {
-        *cap = buffer->cap;
-    }
-
-    buffer->data = NULL;
-    buffer->len = 0;
-    buffer->cap = 0;
-
-    return data;
+    return sb_steal(buffer, len, cap);
 }
 
 #endif /* NCM_BASE_C */
