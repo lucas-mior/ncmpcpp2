@@ -855,7 +855,9 @@ native_lyrics_title_song_string(NcmSong *song, NcmBuffer *title) {
     ncm_string_view_init(&artist_view);
     ncm_string_view_init(&title_view);
     ncm_string_view_init(&name_view);
+
     ncm_buffer_clear(title);
+
     if (ncm_song_tag_view(song, MPD_TAG_ARTIST, 0, &artist_view)
         && ncm_song_tag_view(song, MPD_TAG_TITLE, 0, &title_view)) {
         ncm_buffer_append(title, artist_view.data, artist_view.len);
