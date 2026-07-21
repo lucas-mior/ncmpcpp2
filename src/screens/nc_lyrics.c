@@ -1081,10 +1081,12 @@ native_lyrics_queue_song(NativeLyricsScreen *screen,
         }
         screen->queued_songs_cap = new_cap;
     }
+
     queued = &screen->queued_songs[screen->queued_songs_len];
     ncm_song_copy(&queued->song, song);
     queued->notify = notify;
     screen->queued_songs_len += 1;
+
     return true;
 }
 
