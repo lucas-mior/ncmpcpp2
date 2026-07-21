@@ -989,14 +989,10 @@ native_lyrics_remove_extension(NcmBuffer *buffer) {
 }
 
 static bool
-native_lyrics_filename_from_song(NcmBuffer *filename,
-                                 NcmSong *song,
-                                 char *music_dir,
-                                 int32 music_dir_len,
-                                 char *lyrics_dir,
-                                 int32 lyrics_dir_len,
-                                 bool store_in_song_dir,
-                                 bool win32_filename) {
+native_lyrics_filename_from_song(NcmBuffer *filename, NcmSong *song,
+                                 char *music_dir, int32 music_dir_len,
+                                 char *lyrics_dir, int32 lyrics_dir_len,
+                                 bool store_in_song_dir, bool win32_filename) {
     NcmBuffer artist;
     NcmBuffer title;
     NcmStringView uri;
