@@ -3,10 +3,11 @@ This is a fork of ncmpcpp. The goals are:
 - Remove features I don't use:
   + ~~Remove clock~~
   + Remove others?
-- Remove dependency on external C++ utility libraries.
-- Remove the remaining C++ implementation and build as C-only.
+- ~~Change command/search prompt behaviour so that escape key exits the prompt~~
+- ~~Remove dependency on external C++ utility libraries.~~
+- ~~Remove the remaining C++ implementation and build as C-only.~~
 - ~~Remove boost~~
-- Convert the project to C23.
+- ~~Convert the project to C23.~~
 - Fix the bugs reported in original repo.
 
 Original README is below.
