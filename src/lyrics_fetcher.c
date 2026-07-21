@@ -29,10 +29,10 @@ static bool lyrics_name_to_type(char *name, int32 name_len,
                                 enum NcmLyricsFetcherType *type);
 static char *lyrics_type_name(enum NcmLyricsFetcherType type, int32 *len);
 static char *lyrics_type_domain(enum NcmLyricsFetcherType type, int32 *len);
-static bool lyrics_append_slug(StrBuilder *buffer, char *string,
-                               int32 string_len, bool compact);
-static void lyrics_append_query(StrBuilder *buffer, char *string,
-                                int32 string_len);
+static bool lyrics_append_slug(StrBuilder *buffer,
+                               char *string, int32 string_len, bool compact);
+static void lyrics_append_query(StrBuilder *buffer,
+                                char *string, int32 string_len);
 static int32 lyrics_hex_value(char ch);
 static bool lyrics_build_direct_url(NcmLyricsFetcherDef *fetcher,
                                     StrBuilder *url, char *artist,
