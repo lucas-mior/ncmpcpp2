@@ -4,17 +4,13 @@
 #include <stdbool.h>
 
 #include "cbase/base_macros.h"
-#include "cbase/primitives.h"
+#include "cbase/util.h"
 
 typedef struct NcmStringView {
     char *data;
     int32 len;
 } NcmStringView;
 
-typedef struct NcmBuffer {
-    char *data;
-    int32 len;
-    int32 cap;
-} NcmBuffer;
+typedef StrBuilder NcmBuffer;
 
 #endif /* NCM_DEFS_H */
