@@ -68,8 +68,8 @@ NCM_ARRAY_DEFINE_APPEND(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray,
                         NcmLyricsFetcherDef, &lyrics_fetcher_callbacks)
 
 static bool
-lyrics_string_set(char **data, int32 *len, int32 *cap, char *source,
-                  int32 source_len) {
+lyrics_string_set(char **data, int32 *len, int32 *cap,
+                  char *source, int32 source_len) {
     char *new_data;
     int32 new_cap;
 
