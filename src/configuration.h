@@ -7,10 +7,10 @@
 #include "c/ncm_error.h"
 
 typedef struct NcmConfigurationOptions {
-    NcmBuffer host;
-    NcmBuffer current_song_format;
-    NcmBuffer screen_name;
-    NcmBuffer slave_screen_name;
+    StrBuilder host;
+    StrBuilder current_song_format;
+    StrBuilder screen_name;
+    StrBuilder slave_screen_name;
     NcmBufferArray config_paths;
     NcmBufferArray bindings_paths;
 

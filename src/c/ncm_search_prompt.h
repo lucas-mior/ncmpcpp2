@@ -8,7 +8,7 @@
 
 typedef struct NcmSearchPromptState {
     enum SearchDirection direction;
-    NcmBuffer last_text;
+    StrBuilder last_text;
     int32 start_position;
 
     bool has_start_position;

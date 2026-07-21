@@ -29,10 +29,10 @@ typedef struct NativePlaylistScreen {
     NcPlaylistScreen screen;
     NcSongMenu songs;
     NcWindow window;
-    NcmBuffer title_cache;
-    NcmBuffer column_title;
-    NcmBuffer filter_constraint;
-    NcmBuffer search_constraint;
+    StrBuilder title_cache;
+    StrBuilder column_title;
+    StrBuilder filter_constraint;
+    StrBuilder search_constraint;
     NcmRegex filter_regex;
 
     uint64 total_length;

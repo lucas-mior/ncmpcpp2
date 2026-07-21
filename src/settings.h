@@ -112,8 +112,8 @@ typedef struct Configuration {
     int32 random_exclude_pattern_cap;
     int32 tags_separator_cap;
 
-    NcmBuffer progressbar;
-    NcmBuffer visualizer_chars;
+    StrBuilder progressbar;
+    StrBuilder visualizer_chars;
 
     NcmFormatAst song_list_format;
     NcmFormatAst song_window_title_format;

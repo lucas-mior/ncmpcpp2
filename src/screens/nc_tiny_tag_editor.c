@@ -105,8 +105,8 @@ native_tiny_tag_editor_screen_init(
     screen->hooks = (NativeTinyTagEditorHooks){0};
     ncm_mutable_song_init(&screen->edited);
 
-    ncm_buffer_init(&screen->music_dir);
-    ncm_buffer_init(&screen->tag_separator);
+    sb_init(&screen->music_dir);
+    sb_init(&screen->tag_separator);
 
     screen->previous_screen = NULL;
     screen->start_x = start_x;
@@ -131,8 +131,8 @@ native_tiny_tag_editor_screen_destroy(NativeTinyTagEditorScreen *screen) {
     (void)app_controller_unregister_screen(
         native_tiny_tag_editor_screen_base(screen));
     ncm_mutable_song_destroy(&screen->edited);
-    ncm_buffer_destroy(&screen->music_dir);
-    ncm_buffer_destroy(&screen->tag_separator);
+    sb_free(&screen->music_dir);
+    sb_free(&screen->tag_separator);
     nc_window_destroy(&screen->window);
 
     nc_editor_buffer_menu_destroy(&screen->rows);
@@ -244,8 +244,8 @@ native_tiny_tag_editor_screen_open_song(
     if (ncm_song_is_from_database(song) && (music_dir_len <= 0)) {
         return NATIVE_TINY_TAG_EDITOR_OPEN_MISSING_MUSIC_DIRECTORY;
     }
-    if (!ncm_buffer_set(&screen->music_dir, music_dir, music_dir_len)
-        || !ncm_buffer_set(&screen->tag_separator, tag_separator,
+    if (!sb_set(&screen->music_dir, music_dir, music_dir_len)
+        || !sb_set(&screen->tag_separator, tag_separator,
                            tag_separator_len)) {
         return NATIVE_TINY_TAG_EDITOR_OPEN_PREPARE_FAILED;
     }
@@ -325,7 +325,7 @@ native_tiny_tag_editor_screen_reload_rows(
         || ((tag_separator == NULL) && (tag_separator_len > 0))) {
         return false;
     }
-    if (!ncm_buffer_set(&screen->tag_separator, tag_separator,
+    if (!sb_set(&screen->tag_separator, tag_separator,
                         tag_separator_len)) {
         return false;
     }

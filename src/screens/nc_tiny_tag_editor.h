@@ -83,8 +83,8 @@ typedef struct NativeTinyTagEditorScreen {
     NcWindow window;
     NativeTinyTagEditorHooks hooks;
     NcmMutableSong edited;
-    NcmBuffer music_dir;
-    NcmBuffer tag_separator;
+    StrBuilder music_dir;
+    StrBuilder tag_separator;
     NcScreen *previous_screen;
 
     int32 start_x;

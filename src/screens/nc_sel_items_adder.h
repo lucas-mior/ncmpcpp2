@@ -28,7 +28,7 @@ typedef struct NativeSelectedItemsAdderScreen {
     NcWindow position_window;
     NcmSongArray selected_songs;
     NcmRegex search_regex;
-    NcmBuffer search_constraint;
+    StrBuilder search_constraint;
     NativePlaylistScreen *playlist;
     NcScreen *previous_screen;
     NcmMpdClient *client;

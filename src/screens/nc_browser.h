@@ -16,15 +16,15 @@ typedef struct NativeBrowserScreen {
     NcScreen screen;
     NcBrowserEntryMenu entries;
     NcWindow window;
-    NcmBuffer current_directory;
-    NcmBuffer last_highlighted_directory;
-    NcmBuffer title_text;
-    NcmBuffer column_title_text;
-    NcmBuffer filter_constraint;
-    NcmBuffer search_constraint;
-    NcmBuffer item_text_buffer;
-    NcmBuffer path_buffer;
-    NcmBuffer scratch_buffer;
+    StrBuilder current_directory;
+    StrBuilder last_highlighted_directory;
+    StrBuilder title_text;
+    StrBuilder column_title_text;
+    StrBuilder filter_constraint;
+    StrBuilder search_constraint;
+    StrBuilder item_text_buffer;
+    StrBuilder path_buffer;
+    StrBuilder scratch_buffer;
     NcmBufferArray supported_extensions;
     NcmRegex filter_regex;
 

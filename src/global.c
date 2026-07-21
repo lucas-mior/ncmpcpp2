@@ -7,14 +7,14 @@
 
 bool global_show_messages;
 bool global_seeking_in_progress;
-NcmBuffer global_volume_state;
+StrBuilder global_volume_state;
 NcmTimePoint global_timer;
 NcmRandom global_random;
 NcmMpdClient global_mpd;
 
 void
 global_state_init(void) {
-    ncm_buffer_init(&global_volume_state);
+    sb_init(&global_volume_state);
     ncm_mpd_client_init(&global_mpd);
     return;
 }
@@ -22,7 +22,7 @@ global_state_init(void) {
 void
 global_state_destroy(void) {
     ncm_mpd_client_destroy(&global_mpd);
-    ncm_buffer_destroy(&global_volume_state);
+    sb_free(&global_volume_state);
     return;
 }
 
@@ -43,14 +43,14 @@ global_timer_elapsed_seconds(NcmTimePoint start) {
 
 void
 global_volume_state_set(char *string, int32 string_len) {
-    ncm_buffer_clear(&global_volume_state);
-    ncm_buffer_append(&global_volume_state, string, string_len);
+    sb_clear(&global_volume_state);
+    sb_append(&global_volume_state, string, string_len);
     return;
 }
 
 void
 global_volume_state_append(char *string, int32 string_len) {
-    ncm_buffer_append(&global_volume_state, string, string_len);
+    sb_append(&global_volume_state, string, string_len);
     return;
 }
 

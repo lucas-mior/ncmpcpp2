@@ -249,16 +249,16 @@ native_media_library_screen_init(NativeMediaLibraryScreen *screen,
     screen->hooks = hooks;
 
     for (uint32 i = 0; i < NATIVE_MEDIA_LIBRARY_COLUMN_LAST; i += 1) {
-        ncm_buffer_init(&screen->column_state[i].filter_constraint);
-        ncm_buffer_init(&screen->column_state[i].search_constraint);
+        sb_init(&screen->column_state[i].filter_constraint);
+        sb_init(&screen->column_state[i].search_constraint);
         ncm_regex_init(&screen->column_state[i].filter_regex);
         ncm_regex_init(&screen->column_state[i].search_regex);
         screen->column_state[i].filter_enabled = false;
         screen->column_state[i].search_enabled = false;
     }
-    ncm_buffer_init(&screen->tags_title);
-    ncm_buffer_init(&screen->albums_title);
-    ncm_buffer_init(&screen->songs_title);
+    sb_init(&screen->tags_title);
+    sb_init(&screen->albums_title);
+    sb_init(&screen->songs_title);
     nc_media_library_tag_row_init(&screen->observed_tag);
     nc_media_library_album_row_init(&screen->observed_album);
 
@@ -363,12 +363,12 @@ native_media_library_screen_destroy(NativeMediaLibraryScreen *screen) {
     for (uint32 i = 0; i < NATIVE_MEDIA_LIBRARY_COLUMN_LAST; i += 1) {
         ncm_regex_destroy(&screen->column_state[i].search_regex);
         ncm_regex_destroy(&screen->column_state[i].filter_regex);
-        ncm_buffer_destroy(&screen->column_state[i].search_constraint);
-        ncm_buffer_destroy(&screen->column_state[i].filter_constraint);
+        sb_free(&screen->column_state[i].search_constraint);
+        sb_free(&screen->column_state[i].filter_constraint);
     }
-    ncm_buffer_destroy(&screen->songs_title);
-    ncm_buffer_destroy(&screen->albums_title);
-    ncm_buffer_destroy(&screen->tags_title);
+    sb_free(&screen->songs_title);
+    sb_free(&screen->albums_title);
+    sb_free(&screen->tags_title);
     nc_media_library_album_row_destroy(&screen->observed_album);
     nc_media_library_tag_row_destroy(&screen->observed_tag);
     nc_window_destroy(&screen->songs_window);
@@ -1653,7 +1653,7 @@ native_media_library_screen_apply_filter(
                            Config.regex_flags, error)) {
         return false;
     }
-    if (!ncm_buffer_set(&state->filter_constraint, pattern, pattern_len)) {
+    if (!sb_set(&state->filter_constraint, pattern, pattern_len)) {
         ncm_error_set(error, ENOMEM, STRLIT_ARGS("cannot save filter"));
         return false;
     }
@@ -1683,7 +1683,7 @@ native_media_library_screen_clear_filter(NativeMediaLibraryScreen *screen) {
     }
     ncm_regex_destroy(&state->filter_regex);
     ncm_regex_init(&state->filter_regex);
-    ncm_buffer_clear(&state->filter_constraint);
+    sb_clear(&state->filter_constraint);
     menu = native_media_library_screen_active_menu(screen);
     callbacks = native_library_display_callbacks(
         screen, screen->active_column, false);
@@ -1721,7 +1721,7 @@ native_media_library_screen_search(NativeMediaLibraryScreen *screen,
                            Config.regex_flags, error)) {
         return false;
     }
-    if (!ncm_buffer_set(&state->search_constraint, pattern, pattern_len)) {
+    if (!sb_set(&state->search_constraint, pattern, pattern_len)) {
         ncm_error_set(error, ENOMEM, STRLIT_ARGS("cannot save search"));
         return false;
     }
@@ -1759,7 +1759,7 @@ native_media_library_screen_clear_search(NativeMediaLibraryScreen *screen) {
     }
     ncm_regex_destroy(&state->search_regex);
     ncm_regex_init(&state->search_regex);
-    ncm_buffer_clear(&state->search_constraint);
+    sb_clear(&state->search_constraint);
     state->search_enabled = false;
     return;
 }
@@ -2517,7 +2517,7 @@ native_library_clear_column_filter(NativeMediaLibraryScreen *screen,
 
     ncm_regex_destroy(&state->filter_regex);
     ncm_regex_init(&state->filter_regex);
-    ncm_buffer_clear(&state->filter_constraint);
+    sb_clear(&state->filter_constraint);
     callbacks = native_library_display_callbacks(screen, column, false);
     nc_menu_set_display_callbacks(menu, callbacks);
     nc_menu_show_all_items(menu);
@@ -3924,21 +3924,21 @@ native_library_update_titles(NativeMediaLibraryScreen *screen,
     char *tag_type_name;
     int32 tag_type_name_len;
 
-    ncm_buffer_clear(&screen->tags_title);
-    ncm_buffer_clear(&screen->albums_title);
-    ncm_buffer_clear(&screen->songs_title);
+    sb_clear(&screen->tags_title);
+    sb_clear(&screen->albums_title);
+    sb_clear(&screen->songs_title);
     if (Config.titles_visibility) {
         tag_type_name = ncm_tag_type_name(Config.media_lib_primary_tag);
         tag_type_name_len = optional_strlen32(tag_type_name);
-        ncm_buffer_append(&screen->tags_title, tag_type_name,
+        sb_append(&screen->tags_title, tag_type_name,
                           tag_type_name_len);
-        ncm_buffer_append_byte(&screen->tags_title, 's');
-        ncm_buffer_append(&screen->albums_title,
+        sb_append_byte(&screen->tags_title, 's');
+        sb_append(&screen->albums_title,
                           STRLIT_ARGS("Albums"));
-        ncm_buffer_append(&screen->songs_title, STRLIT_ARGS("Songs"));
+        sb_append(&screen->songs_title, STRLIT_ARGS("Songs"));
 
         if (screen->mode == NATIVE_MEDIA_LIBRARY_MODE_TWO_COLUMNS) {
-            ncm_buffer_append(&screen->albums_title,
+            sb_append(&screen->albums_title,
                               STRLIT_ARGS(" (sorted by "));
             for (int32 i = 0; i < tag_type_name_len; i += 1) {
                 char ch = tag_type_name[i];
@@ -3946,17 +3946,17 @@ native_library_update_titles(NativeMediaLibraryScreen *screen,
                 if ((ch >= 'A') && (ch <= 'Z')) {
                     ch = (char)(ch - 'A' + 'a');
                 }
-                ncm_buffer_append_byte(&screen->albums_title, ch);
+                sb_append_byte(&screen->albums_title, ch);
             }
             if (screen->sort_by_mtime) {
-                ncm_buffer_append(&screen->albums_title,
+                sb_append(&screen->albums_title,
                                   STRLIT_ARGS(" and mtime"));
             }
-            ncm_buffer_append_byte(&screen->albums_title, ')');
+            sb_append_byte(&screen->albums_title, ')');
         } else if ((screen->mode
                     == NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY)
                    && screen->sort_by_mtime) {
-            ncm_buffer_append(&screen->albums_title,
+            sb_append(&screen->albums_title,
                               STRLIT_ARGS(" (sorted by mtime)"));
         }
     }

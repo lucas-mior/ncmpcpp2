@@ -1424,10 +1424,10 @@ apply_progressbar_look(Configuration *config, char *value, int32 value_len,
         settings_invalid_value(error, value, value_len);
         return false;
     }
-    ncm_buffer_clear(&config->progressbar);
-    ncm_buffer_append(&config->progressbar, value, value_len);
+    sb_clear(&config->progressbar);
+    sb_append(&config->progressbar, value, value_len);
     if (characters == 2) {
-        ncm_buffer_append_byte(&config->progressbar, '\0');
+        sb_append_byte(&config->progressbar, '\0');
     }
     return true;
 }

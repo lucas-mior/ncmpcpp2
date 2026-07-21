@@ -88,8 +88,8 @@ typedef struct NativeMediaLibrarySongQuery {
 } NativeMediaLibrarySongQuery;
 
 typedef struct NativeMediaLibraryColumnState {
-    NcmBuffer filter_constraint;
-    NcmBuffer search_constraint;
+    StrBuilder filter_constraint;
+    StrBuilder search_constraint;
     NcmRegex filter_regex;
     NcmRegex search_regex;
     bool filter_enabled;
@@ -122,9 +122,9 @@ typedef struct NativeMediaLibraryScreen {
 
     NativeMediaLibraryColumnState column_state[
         NATIVE_MEDIA_LIBRARY_COLUMN_LAST];
-    NcmBuffer tags_title;
-    NcmBuffer albums_title;
-    NcmBuffer songs_title;
+    StrBuilder tags_title;
+    StrBuilder albums_title;
+    StrBuilder songs_title;
     NcmTimePoint update_timer;
     NcMediaLibraryTagRow observed_tag;
     NcMediaLibraryAlbumRow observed_album;
