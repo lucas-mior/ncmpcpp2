@@ -910,8 +910,8 @@ native_lyrics_song_artist_title(NcmSong *song,
 }
 
 static bool
-native_lyrics_fetch_artist_title(NcmSong *song, NcmBuffer *artist,
-                                 NcmBuffer *title) {
+native_lyrics_fetch_artist_title(NcmSong *song,
+                                 NcmBuffer *artist, NcmBuffer *title) {
     if (!native_lyrics_song_artist_title(song, artist, title)) {
         return false;
     }
