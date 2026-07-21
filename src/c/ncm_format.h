@@ -60,7 +60,7 @@ typedef struct NcmFormatExprList {
 struct NcmFormatExpr {
     enum NcmFormatExprType type;
     union {
-        NcmBuffer text;
+        StrBuilder text;
         NcColor color;
         enum NcFormat format;
         NcmFormatSongTag song_tag;

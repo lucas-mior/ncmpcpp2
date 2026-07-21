@@ -243,10 +243,10 @@ native_playlist_screen_init(NativePlaylistScreen *screen, int32 start_x,
     nc_song_menu_init(&screen->songs);
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, "", 0, color, border);
-    ncm_buffer_init(&screen->title_cache);
-    ncm_buffer_init(&screen->column_title);
-    ncm_buffer_init(&screen->filter_constraint);
-    ncm_buffer_init(&screen->search_constraint);
+    sb_init(&screen->title_cache);
+    sb_init(&screen->column_title);
+    sb_init(&screen->filter_constraint);
+    sb_init(&screen->search_constraint);
     ncm_regex_init(&screen->filter_regex);
     screen->total_length = 0;
     screen->remaining_time = 0;
@@ -291,10 +291,10 @@ native_playlist_screen_destroy(NativePlaylistScreen *screen) {
     nc_playlist_screen_set_menu(&screen->screen, NULL);
     nc_window_destroy(&screen->window);
     nc_song_menu_destroy(&screen->songs);
-    ncm_buffer_destroy(&screen->title_cache);
-    ncm_buffer_destroy(&screen->column_title);
-    ncm_buffer_destroy(&screen->filter_constraint);
-    ncm_buffer_destroy(&screen->search_constraint);
+    sb_free(&screen->title_cache);
+    sb_free(&screen->column_title);
+    sb_free(&screen->filter_constraint);
+    sb_free(&screen->search_constraint);
     ncm_regex_destroy(&screen->filter_regex);
     return;
 }
@@ -363,7 +363,7 @@ native_playlist_screen_update_column_title(NativePlaylistScreen *screen) {
         return;
     }
 
-    ncm_buffer_clear(&screen->column_title);
+    sb_clear(&screen->column_title);
     if ((Config.playlist_display_mode != NCM_DISPLAY_MODE_COLUMNS)
         || !Config.titles_visibility || (Config.columns.items == NULL)
         || (Config.columns.len <= 0) || (screen->screen.main_height <= 2)) {
@@ -840,7 +840,7 @@ native_playlist_screen_apply_filter(NativePlaylistScreen *screen,
                            Config.regex_flags, error)) {
         return false;
     }
-    if (!ncm_buffer_set(&screen->filter_constraint, pattern, pattern_len)) {
+    if (!sb_set(&screen->filter_constraint, pattern, pattern_len)) {
         return false;
     }
     callbacks = native_playlist_display_callbacks();
@@ -859,7 +859,7 @@ native_playlist_screen_clear_filter(NativePlaylistScreen *screen) {
     }
     ncm_regex_destroy(&screen->filter_regex);
     ncm_regex_init(&screen->filter_regex);
-    ncm_buffer_clear(&screen->filter_constraint);
+    sb_clear(&screen->filter_constraint);
     nc_menu_set_display_callbacks(native_playlist_storage_menu(screen),
                                   native_playlist_display_callbacks());
     nc_menu_show_all_items(native_playlist_storage_menu(screen));
@@ -884,7 +884,7 @@ native_playlist_screen_search(NativePlaylistScreen *screen,
         ncm_regex_destroy(&regex);
         return false;
     }
-    if (!ncm_buffer_set(&screen->search_constraint, pattern, pattern_len)) {
+    if (!sb_set(&screen->search_constraint, pattern, pattern_len)) {
         ncm_regex_destroy(&regex);
         return false;
     }
@@ -1398,8 +1398,8 @@ static void
 native_playlist_refresh_stats(NativePlaylistScreen *screen) {
     int32 count;
 
-    ncm_buffer_clear(&screen->title_cache);
-    ncm_buffer_append(&screen->title_cache, STRLIT_ARGS("Playlist ("));
+    sb_clear(&screen->title_cache);
+    sb_append(&screen->title_cache, STRLIT_ARGS("Playlist ("));
     count = native_playlist_screen_song_count(screen);
     {
         char count_buffer[64];
@@ -1407,12 +1407,12 @@ native_playlist_refresh_stats(NativePlaylistScreen *screen) {
 
         count_len = SNPRINTF(count_buffer,
                              "%lld", (llong)count);
-        ncm_buffer_append(&screen->title_cache, count_buffer, count_len);
+        sb_append(&screen->title_cache, count_buffer, count_len);
     }
     if (count == 1) {
-        ncm_buffer_append(&screen->title_cache, STRLIT_ARGS(" item)"));
+        sb_append(&screen->title_cache, STRLIT_ARGS(" item)"));
     } else {
-        ncm_buffer_append(&screen->title_cache, STRLIT_ARGS(" items)"));
+        sb_append(&screen->title_cache, STRLIT_ARGS(" items)"));
     }
     return;
 }

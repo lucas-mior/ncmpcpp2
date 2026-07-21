@@ -173,7 +173,7 @@ visualizer_copy_characters(NativeVisualizerScreen *screen,
                            char *characters, int32 characters_len) {
     int32 next;
 
-    ncm_buffer_set(&screen->visualizer_chars, characters, characters_len);
+    sb_set(&screen->visualizer_chars, characters, characters_len);
     next = utf8_next_position(screen->visualizer_chars.data,
                                   screen->visualizer_chars.len, 0);
     screen->point_char_offset = 0;
@@ -468,16 +468,16 @@ native_visualizer_screen_init_data_source(
         }
     }
 
-    ncm_buffer_clear(&screen->source_location);
-    ncm_buffer_clear(&screen->source_port);
+    sb_clear(&screen->source_location);
+    sb_clear(&screen->source_port);
     if ((source_location_len > 0) && (source_location[0] != '/')
         && (colon >= 0)) {
-        ncm_buffer_set(&screen->source_location, source_location, colon);
-        ncm_buffer_set(&screen->source_port,
+        sb_set(&screen->source_location, source_location, colon);
+        sb_set(&screen->source_port,
                        source_location + colon + 1,
                        source_location_len - colon - 1);
     } else {
-        ncm_buffer_set(&screen->source_location,
+        sb_set(&screen->source_location,
                        source_location,
                        source_location_len);
     }
@@ -777,17 +777,17 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
                    STRLIT_ARGS(""),
                    color,
                    border);
-    ncm_buffer_init(&screen->source_location);
-    ncm_buffer_init(&screen->source_port);
-    ncm_buffer_init(&screen->output_name);
-    ncm_buffer_init(&screen->visualizer_chars);
+    sb_init(&screen->source_location);
+    sb_init(&screen->source_port);
+    sb_init(&screen->output_name);
+    sb_init(&screen->visualizer_chars);
     screen->visualizer_colors = NULL;
     screen->visualizer_colors_len = 0;
     screen->visualizer_colors_cap = 0;
     native_visualizer_screen_init_data_source(screen,
                                               source_location,
                                               source_location_len);
-    ncm_buffer_set(&screen->output_name, output_name, output_name_len);
+    sb_set(&screen->output_name, output_name, output_name_len);
     visualizer_copy_characters(screen, visualizer_chars,
                                visualizer_chars_len);
     visualizer_copy_colors(screen, visualizer_colors,
@@ -845,10 +845,10 @@ native_visualizer_screen_destroy(NativeVisualizerScreen *screen) {
     ncm_sample_buffer_destroy(&screen->buffered_samples);
     ncm_sample_buffer_destroy(&screen->incoming_samples);
     visualizer_destroy_colors(screen);
-    ncm_buffer_destroy(&screen->visualizer_chars);
-    ncm_buffer_destroy(&screen->output_name);
-    ncm_buffer_destroy(&screen->source_port);
-    ncm_buffer_destroy(&screen->source_location);
+    sb_free(&screen->visualizer_chars);
+    sb_free(&screen->output_name);
+    sb_free(&screen->source_port);
+    sb_free(&screen->source_location);
     nc_window_destroy(&screen->window);
 
     screen->output_id = -1;

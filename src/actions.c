@@ -1090,7 +1090,7 @@ static NcmActionRuntime action_global_runtime;
 static bool action_global_runtime_initialized;
 
 typedef struct ActionRuntimeCommandPrompt {
-    NcmBuffer previous;
+    StrBuilder previous;
 } ActionRuntimeCommandPrompt;
 
 typedef NcmSearchPromptState ActionRuntimeSearchPrompt;
@@ -2511,7 +2511,7 @@ action_runtime_execute_command(void) {
     bool prompted;
     bool result;
 
-    ncm_buffer_init(&state.previous);
+    sb_init(&state.previous);
     sb_init(&command_name);
     prompted = action_runtime_prompt_string(STRLIT_ARGS(":"), "", true,
                                             action_runtime_command_prompt_hook,
@@ -2520,7 +2520,7 @@ action_runtime_execute_command(void) {
         sb_copy(&command_name, &state.previous);
         prompted = true;
     }
-    ncm_buffer_destroy(&state.previous);
+    sb_free(&state.previous);
 
     if (!prompted) {
         sb_free(&command_name);

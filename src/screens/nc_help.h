@@ -22,7 +22,7 @@ struct NcHelpScreen {
     NcWindow window;
     NcScrollpad scrollpad;
     NcBuffer buffer;
-    NcmBuffer search_constraint;
+    StrBuilder search_constraint;
     NcHelpHooks hooks;
 
     int32 lines_scrolled;

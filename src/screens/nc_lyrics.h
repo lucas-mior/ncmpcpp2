@@ -30,15 +30,15 @@ typedef struct NativeLyricsScreen {
     NcWindow window;
     NcScrollpad scrollpad;
     NcBuffer display;
-    NcmBuffer search_constraint;
+    StrBuilder search_constraint;
 
-    NcmBuffer title;
+    StrBuilder title;
     NcmSong song;
-    NcmBuffer filename;
+    StrBuilder filename;
     NcmLyricsResult result;
     NcmJobQueue jobs;
     NativeLyricsQueuedSong *queued_songs;
-    NcmBuffer consumer_message;
+    StrBuilder consumer_message;
 
     NcmLyricsFetcherDef *fetcher;
     int32 queued_songs_len;

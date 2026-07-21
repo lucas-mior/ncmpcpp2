@@ -9,7 +9,7 @@ void
 ncm_search_prompt_state_init(NcmSearchPromptState *state,
                              enum SearchDirection direction) {
     state->direction = direction;
-    ncm_buffer_init(&state->last_text);
+    sb_init(&state->last_text);
     state->start_position = 0;
     state->has_start_position = false;
     state->has_last_result = false;
@@ -19,7 +19,7 @@ ncm_search_prompt_state_init(NcmSearchPromptState *state,
 
 void
 ncm_search_prompt_state_destroy(NcmSearchPromptState *state) {
-    ncm_buffer_destroy(&state->last_text);
+    sb_free(&state->last_text);
     return;
 }
 
@@ -67,7 +67,7 @@ ncm_search_prompt_state_finish_result(NcmSearchPromptState *state,
         text = "";
         text_len = 0;
     }
-    if (!ncm_buffer_set(&state->last_text, text, text_len)) {
+    if (!sb_set(&state->last_text, text, text_len)) {
         return false;
     }
 

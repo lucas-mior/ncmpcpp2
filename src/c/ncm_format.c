@@ -230,7 +230,7 @@ ncm_format_text_append(NcmFormatExprList *list,
     }
     expr->type = NCM_FORMAT_EXPR_TEXT;
     expr->value.text = *token;
-    ncm_buffer_init(token);
+    sb_init(token);
     return true;
 }
 
@@ -245,7 +245,7 @@ ncm_format_append_group_or_single(NcmFormatExprList *list,
         }
         *expr = source->items[0];
         source->items[0].type = NCM_FORMAT_EXPR_TEXT;
-        ncm_buffer_init(&source->items[0].value.text);
+        sb_init(&source->items[0].value.text);
         source->len = 0;
         return true;
     }
@@ -346,7 +346,7 @@ ncm_format_expr_list_append(NcmFormatExprList *list) {
 static void
 ncm_format_expr_init(NcmFormatExpr *expr) {
     expr->type = NCM_FORMAT_EXPR_TEXT;
-    ncm_buffer_init(&expr->value.text);
+    sb_init(&expr->value.text);
     return;
 }
 
@@ -354,7 +354,7 @@ static void
 ncm_format_expr_destroy(NcmFormatExpr *expr) {
     switch (expr->type) {
     case NCM_FORMAT_EXPR_TEXT:
-        ncm_buffer_destroy(&expr->value.text);
+        sb_free(&expr->value.text);
         break;
     case NCM_FORMAT_EXPR_GROUP:
     case NCM_FORMAT_EXPR_FIRST_OF:
@@ -478,7 +478,7 @@ ncm_format_parse_dollar(NcmFormatExprList *out, char *data,
             return false;
         }
         expr->type = NCM_FORMAT_EXPR_TEXT;
-        ncm_buffer_append_byte(&expr->value.text, '$');
+        sb_append_byte(&expr->value.text, '$');
         *pos = i;
         return true;
     }
@@ -585,7 +585,7 @@ ncm_format_parse_percent(NcmFormatExprList *out, char *data,
             return false;
         }
         expr->type = NCM_FORMAT_EXPR_TEXT;
-        ncm_buffer_append_byte(&expr->value.text, '%');
+        sb_append_byte(&expr->value.text, '%');
         *pos = i;
         return true;
     }
