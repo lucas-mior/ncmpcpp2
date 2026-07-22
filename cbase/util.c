@@ -269,10 +269,12 @@ optional_strlen32(char *string) {
 static int32
 strlen32(char *string) {
     int32 length;
-    size_t len = strlen(string);
+    size_t len;
+
+    ASSERT(string);
+    len = strlen(string);
 
     if (DEBUGGING) {
-        ASSERT(string);
         if (len >= MAXOF(length)) {
             error("Error: string (%.*s ...) is too long.\n", 50, string);
             fatal(EXIT_FAILURE);
@@ -445,6 +447,9 @@ write_all(int fd, char *buffer, int64 left) {
     while (left > 0) {
         if ((w = write(fd, buffer + written, (RW_TYPE)left)) <= 0) {
             fprintf(stderr, "Error writing: %s.\n", strerror(errno));
+            if (errno == EINTR) {
+                continue;
+            }
             fatal(EXIT_FAILURE);
         }
         left -= w;
@@ -479,7 +484,7 @@ qsort64(void *base, int64 n, int64 size,
             fatal(EXIT_FAILURE);
         }
         if ((ullong)n >= (ullong)SIZE_MAX) {
-            error("Error: Number (%lld) is bigger than SIZEMAX\n", (llong)size);
+            error("Error: Number (%lld) is bigger than SIZEMAX\n", (llong)n);
             fatal(EXIT_FAILURE);
         }
     }
@@ -572,6 +577,7 @@ snprintf2(char *buffer, int64 size, char *format, ...) {
     int n;
     va_list args;
 
+    ASSERT_MORE_EQUAL(size, 0);
     va_start(args, format);
     n = vsnprintf(buffer, (size_t)size, format, args);
     va_end(args);
@@ -586,6 +592,7 @@ snprintf2(char *buffer, int64 size, char *format, ...) {
 
 int32
 itoa2(char *str, int32 size, llong num) {
+    ullong magnitude;
     int i = 0;
     bool negative = false;
 
@@ -596,14 +603,16 @@ itoa2(char *str, int32 size, llong num) {
 
     if (num < 0) {
         negative = true;
-        num = -num;
+        magnitude = (ullong)(-(num + 1)) + 1;
+    } else {
+        magnitude = (ullong)num;
     }
 
     do {
-        str[i] = num % 10 + '0';
+        str[i] = (char)(magnitude % 10 + '0');
         i += 1;
-        num /= 10;
-    } while (num > 0);
+        magnitude /= 10;
+    } while (magnitude > 0);
 
     if (negative) {
         str[i] = '-';
@@ -637,7 +646,7 @@ strftime2(char *buffer, int64 size, char *format, struct tm *time_info) {
 
     n = (int64)strftime(buffer, (size_t)size, format, time_info);
     if ((n <= 0) || (n >= size)) {
-        error("Error in strftime(%s) (n = %lld).\n", format, (llong)n);
+        error("Error in strftime(\"%s\") (n = %lld).\n", format, (llong)n);
         fatal(EXIT_FAILURE);
     }
     return n;
@@ -664,6 +673,7 @@ util_filename_from(char *buffer, int64 size, int fd) {
     }
     len = MIN(strlen32(buffer2), size - 1);
     memcpy64(buffer, buffer2, len + 1);
+    buffer[len] = '\0';
     return 0;
 #elif OS_WINDOWS
     HANDLE h;
@@ -699,8 +709,11 @@ static int
 strerror_r(int errnum, char *buffer, size_t size) {
     char *error_message = strerror(errnum);
     int32 len = strlen32(error_message);
+
+    ASSERT_MORE(size, 0);
     memcpy64(buffer, error_message, (llong)MIN(len + 1, size - 1));
-    buffer[size] = '\0';
+    buffer[size - 1] = '\0';
+
     return 0;
 }
 #endif
@@ -722,6 +735,10 @@ xclose(char *file, int line, int *fd, char *fd_var_name, char *filename) {
         filename = fd_var_name;
     }
 #endif
+
+    if (*fd < 0) {
+        return 0;
+    }
 
     if (close(*fd) < 0) {
         char error_buffer[4096];
@@ -823,6 +840,7 @@ util_command(int argc, char **argv) {
     FILE *tty;
     PROCESS_INFORMATION proc_info = {0};
     DWORD exit_code = 0;
+
     int64 len0 = strlen32(argv[0]);
     char argv0_windows[BUFSIZ];
     char *argv0 = argv[0];
@@ -935,13 +953,16 @@ util_command(int argc, char **argv) {
             error(" %s", argv[j]);
         }
         error("': %s.\n", strerror(errno));
-        exit(2);
+        _exit(2);
     case -1:
         error("Error forking: %s.\n", strerror(errno));
         fatal(EXIT_FAILURE);
     default:
-        if (waitpid(child, &status, 0) < 0) {
+        while (waitpid(child, &status, 0) < 0) {
             error("Error waiting for the forked child: %s.\n", strerror(errno));
+            if (errno == EINTR) {
+                continue;
+            }
             fatal(EXIT_FAILURE);
         }
         if (!WIFEXITED(status)) {
@@ -958,6 +979,9 @@ util_command_launch(int argc, char **argv) {
     (void)argc;
 
     switch (fork()) {
+    case -1:
+        error("Error forking: %s.\n", strerror(errno));
+        fatal(EXIT_FAILURE);
     case 0:
         if (setsid() < 0) {
             error("Error in setsid: %s.\n", strerror(errno));
@@ -965,10 +989,7 @@ util_command_launch(int argc, char **argv) {
         execvp(argv[0], argv);
         STRING_FROM_ARRAY(cmd, " ", argv, argc);
         error("\nError executing\n%s\n%s.", cmd, strerror(errno));
-        return -1;
-    case -1:
-        error("Error forking: %s.\n", strerror(errno));
-        fatal(EXIT_FAILURE);
+        _exit(EXIT_FAILURE);
     default:
         return 0;
     }
@@ -981,6 +1002,7 @@ error_impl(char *file, int32 line, char *func, char *format, ...) {
     char *big_buffer = NULL;
     char *pbuffer = buffer;
     va_list args;
+    va_list args_copy;
     int32 n;
     int32 m = SIZEOF(buffer);
     int32 p;
@@ -998,7 +1020,9 @@ error_impl(char *file, int32 line, char *func, char *format, ...) {
     file = basename2(file2, &file_len, &base_len);
 
     va_start(args, format);
-    n = vsnprintf(buffer, (size_t)m, format, args);
+    va_copy(args_copy, args);
+    n = vsnprintf(buffer, (size_t)m, format, args_copy);
+    va_end(args_copy);
 
     if (n >= m) {
         m = n + 1;
@@ -1235,7 +1259,7 @@ util_copy_file_async_parsed(UtilCopyFilesAsync *copy_files) {
     int *dests = copy_files->dests;
     int32 left = copy_files->nfds;
 
-    if (copy_files->nfds >= LENGTH(copy_files->pipes)) {
+    if (copy_files->nfds > LENGTH(copy_files->pipes)) {
         error("Error too many files for UtilCopyFilesAsync definition.\n");
         fatal(EXIT_FAILURE);
     }
@@ -1248,7 +1272,7 @@ util_copy_file_async_parsed(UtilCopyFilesAsync *copy_files) {
 
         n = poll(pipes, (nfds_t)copy_files->nfds, 1000);
         if (n == 0) {
-            break;
+            continue;
         }
         if (n < 0) {
             error("Error in poll(nfds=%lld): %s.\n",
@@ -1597,6 +1621,7 @@ basename2(char *path, int32 *full_length, int32 *base_len) {
     normalize(path, full_length);
 
     left = *full_length;
+    ASSERT_MORE(*full_length, 0);
     end = path + left - 1;
 
     if (left == 1) {
@@ -1626,7 +1651,7 @@ basename2(char *path, int32 *full_length, int32 *base_len) {
             }
             return p;
         }
-        if (fslash > bslash) {
+        if ((uintptr_t)fslash > (uintptr_t)bslash) {
             length = fslash - p + 1;
             p = fslash + 1;
         } else {
@@ -1736,6 +1761,8 @@ catfile(int where, char *file) {
         error("Error reading %s: %s.\n", file, strerror(errno));
         fatal(EXIT_FAILURE);
     }
+
+    XCLOSE(&fd, file);
     return;
 }
 
@@ -2057,14 +2084,39 @@ sb_reserve(StrBuilder *str_builder, int32 extra) {
 
 static void
 sb_append(StrBuilder *str_builder, char *data, int32 data_len) {
+    bool aliases = false;
+    int32 data_offset = 0;
+
     if (data_len <= 0) {
         return;
     }
 
+    if (data == str_builder->data) {
+        aliases = true;
+    } else if (str_builder->data) {
+        uintptr_t data_address = (uintptr_t)data;
+        uintptr_t start = (uintptr_t)str_builder->data;
+
+        if (data_address >= start) {
+            uintptr_t offset = data_address - start;
+
+            if (offset < (uint32)str_builder->cap) {
+                aliases = true;
+                data_offset = (int32)offset;
+            }
+        }
+    }
+
     sb_reserve(str_builder, data_len);
-    memcpy64(str_builder->data + str_builder->len, data, data_len);
+    if (aliases) {
+        data = str_builder->data + data_offset;
+        memmove64(str_builder->data + str_builder->len, data, data_len);
+    } else {
+        memcpy64(str_builder->data + str_builder->len, data, data_len);
+    }
     str_builder->len += data_len;
     str_builder->data[str_builder->len] = '\0';
+
     return;
 }
 
@@ -2123,6 +2175,24 @@ sb_steal(StrBuilder *str_builder, int32 *len, int32 *cap) {
     }
 
     sb_init(str_builder);
+    return data;
+}
+
+static char *
+sb_steal_exact(StrBuilder *str_builder, int32 *len) {
+    char *data;
+    int32 data_len;
+    int32 cap;
+
+    data = sb_steal(str_builder, &data_len, &cap);
+    if (cap != data_len + 1) {
+        data = realloc2(data, cap, data_len + 1, SIZEOF(*data));
+    }
+    data[data_len] = '\0';
+
+    if (len) {
+        *len = data_len;
+    }
     return data;
 }
 
@@ -2255,8 +2325,13 @@ str_builder_array_reserve(StrBuilderArray *array, int32 extra) {
     if (new_cap <= 0) {
         new_cap = 8;
     }
-    while (new_cap < needed) {
-        new_cap *= 2;
+
+    if (needed >= (MAXOF(new_cap)/2)) {
+        new_cap = (int32)needed;
+    } else {
+        while (new_cap < needed) {
+            new_cap *= 2;
+        }
     }
 
     array->items = realloc2(array->items, old_cap, new_cap,
@@ -2479,9 +2554,12 @@ command_run_capture(Command *command, char *cwd) {
     }
     XCLOSE(&pipefd[0]);
 
-    if (waitpid(pid, &status, 0) < 0) {
+    while (waitpid(pid, &status, 0) < 0) {
         free2(output, len + 1);
-        error("waitpid failed: %s", strerror(errno));
+        error("Error waiting for child: %s", strerror(errno));
+        if (errno == EINTR) {
+            continue;
+        }
         fatal(EXIT_FAILURE);
     }
 
@@ -2759,6 +2837,19 @@ main(int argc, char **argv) {
     ASSERT(ENDS_WITH(s1, strlen32(s1), "aaaabbbb"));
     ASSERT(!ENDS_WITH(s1, strlen32(s1), "aaaa"));
     ASSERT(!ENDS_WITH(s1, strlen32(s1), "aaaaabbbbb"));
+
+    {
+        StrBuilder builder = {0};
+        int32 old_cap;
+
+        SB_APPEND(&builder, "0123456789abcde");
+        old_cap = builder.cap;
+        sb_append(&builder, builder.data + 1, builder.len - 1);
+        ASSERT_MORE(builder.cap, old_cap);
+        ASSERT_EQUAL(builder.data,
+                     "0123456789abcde123456789abcde");
+        sb_free(&builder);
+    }
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &t0);
 #if OS_UNIX

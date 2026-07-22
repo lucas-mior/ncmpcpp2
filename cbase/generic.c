@@ -108,6 +108,7 @@ snprint_0(char *restrict buf, int64 bufSize, ... /* strings, NULL */) {
     char *dst = buf;
     char *s;
 
+    assert(bufSize >= 0);
     if (bufSize) {
         remainingLen = bufSize - 1;
     } else {
@@ -151,7 +152,7 @@ toString(char *restrict buf, int64 bufSize, char *restrict fmt, ...) {
     va_list ap;
 
     assert(buf);
-    assert(bufSize);
+    assert(bufSize > 0);
     assert(fmt);
 
     va_start(ap, fmt);
@@ -492,10 +493,8 @@ _Generic((x), \
   fprintf(stderr, "["GREEN("%s%lld")"]%s = %llu ", \
                   typename(TYPE), typebits(TYPE), #VAR, (ullong)(VAR))
 
-#define DOUBLE_FORMAT "%f"
-
 #define PRINT_DOUBLE(VAR, TYPE) \
-  fprintf(stderr, "["GREEN("%s%lld")"]%s = "DOUBLE_FORMAT" ", \
+  fprintf(stderr, "["GREEN("%s%lld")"]%s = %f ", \
                   typename(TYPE), typebits(TYPE), #VAR, DOUBLE_GET2(VAR, TYPE))
 
 #define PRINT_OTHER(VAR, TYPE, FORMAT, CAST) \
