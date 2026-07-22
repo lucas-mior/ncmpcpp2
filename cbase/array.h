@@ -64,11 +64,22 @@ generic_array_grow(void *array, int64 item_size) {
             return array;
         }
         old_cap = header->cap;
-        new_cap = old_cap*2;
+        if (old_cap <= (MAXOF(old_cap)/2)) {
+            new_cap = old_cap*2;
+        } else {
+            error("Array is too large.\n");
+            fatal(EXIT_FAILURE);
+        }
     } else {
         header = NULL;
         old_cap = 0;
         new_cap = 8;
+    }
+
+    if ((MAXOF(new_size)/item_size) < new_cap) {
+        error("Array with %lld items of size %lld is too much.\n",
+              (llong)new_cap, (llong)item_size);
+        fatal(EXIT_FAILURE);
     }
 
     old_size = SIZEOF(*header) + old_cap*item_size;

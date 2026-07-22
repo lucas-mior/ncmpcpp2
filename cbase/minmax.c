@@ -91,6 +91,10 @@ get_signed_unsigned_##MODE(llong var1, ullong var2) { \
     if ((compare_sign_with_unsign(var1, var2) SYMBOL 0)) { \
         return var1; \
     } else { \
+        if (var2 > LLONG_MAX) { \
+            error2("You are working with a too large number.\n"); \
+            TRAP(); \
+        } \
         return (llong)var2; \
     } \
 }
@@ -104,6 +108,10 @@ GENERATE_COMPARE_SIGNED_UNSIGNED(max, >)
 static llong \
 get_unsigned_signed_##MODE(ullong var1, llong var2) { \
     if (((-compare_sign_with_unsign(var2, var1)) SYMBOL 0)) { \
+        if (var1 > LLONG_MAX) { \
+            error2("You are working with a too large number.\n"); \
+            TRAP(); \
+        } \
         return (llong)var1; \
     } else { \
         return var2; \
@@ -295,8 +303,8 @@ main(void) {
         ASSERT_EQUAL(max, b);
     } {
         long a = MINOF(a);
-        ulong b = MAXOF(b);
-        double min = MIN(a, b);
+        ulong b = MAXOF(a);
+        double min = (double)MIN(a, b);
         ullong max = (ullong)MAX(a, b);
         ASSERT_EQUAL((long)min, a);
         ASSERT_EQUAL(max, b);
