@@ -1,8 +1,9 @@
 #if !defined(NCMPCPP_TESTS_SEARCH_C)
 #define NCMPCPP_TESTS_SEARCH_C
 
-#include <assert.h>
-#include <stdlib.h>
+#define CBASE_IMPLEMENT
+#include "cbase.h"
+
 #include <mpd/tag.h>
 
 #define COLOR_BLACK   0
@@ -21,7 +22,6 @@
 #pragma GCC diagnostic ignored "-Wabi"
 #endif
 
-#include "cbase/util.c"
 #include "c/ncm_error.c"
 #include "c/ncm_regex.c"
 #include "c/ncm_search_prompt.c"

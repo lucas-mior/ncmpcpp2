@@ -1,8 +1,8 @@
 #if !defined(NCMPCPP_TESTS_LYRICS_FETCHER_C)
 #define NCMPCPP_TESTS_LYRICS_FETCHER_C
 
-#include <assert.h>
-#include <stdlib.h>
+#define CBASE_IMPLEMENT
+#include "cbase.h"
 
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push

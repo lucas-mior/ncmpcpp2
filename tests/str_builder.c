@@ -1,6 +1,9 @@
 #if !defined(NCMPCPP_TESTS_STR_BUILDER_C)
 #define NCMPCPP_TESTS_STR_BUILDER_C
 
+#define CBASE_IMPLEMENT
+#include "cbase.h"
+
 #include "cbase/util.c"
 
 static void
