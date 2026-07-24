@@ -19,7 +19,8 @@
 #include "ui_state.h"
 
 #include "c/ncm_base.h"
-#include "cbase/base_macros.h"
+#define CBASE_IMPLEMENT
+#include "cbase.h"
 
 /* Single translation unit source inclusions. */
 #include "actions.c"

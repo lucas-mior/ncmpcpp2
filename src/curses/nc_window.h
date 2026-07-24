@@ -7,9 +7,7 @@
 
 #include "curses.h"
 
-#include <stdbool.h>
-
-#include "cbase/primitives.h"
+#include "cbase.h"
 
 #if NCURSES_MOUSE_VERSION == 1
 #define BUTTON5_PRESSED (1U << 27)

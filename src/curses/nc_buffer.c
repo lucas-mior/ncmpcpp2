@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "cbase/array.h"
+#include "cbase.h"
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 

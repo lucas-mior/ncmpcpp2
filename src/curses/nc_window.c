@@ -23,7 +23,7 @@
 #error "readline is not available"
 #endif
 
-#include "cbase/array.h"
+#include "cbase.h"
 #include "cbase/base_macros.h"
 #include "cbase/util.c"
 #include "cbase/utf8.c"
