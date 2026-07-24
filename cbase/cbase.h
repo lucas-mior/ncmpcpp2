@@ -557,6 +557,7 @@ static void array_sink(void);
 
 #include "arena.c"
 #include "memory.c"
+#include "array.c"
 #include "utf8.c"
 #include "util.c"
 #include "command.c"
