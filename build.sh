@@ -268,6 +268,7 @@ compile_and_link_main() {
         -I"$BUILD_DIR" \
         -I. \
         -Isrc \
+        -Icbase \
         -D_GNU_SOURCE \
         -D_DEFAULT_SOURCE \
         $CPPFLAGS \
@@ -329,6 +330,7 @@ compile_test() {
             -Itests \
             -I. \
             -Isrc \
+            -Icbase \
             -D_GNU_SOURCE \
             -D_DEFAULT_SOURCE \
             $CPPFLAGS \
@@ -385,6 +387,7 @@ run_analyzer() {
         -I"$BUILD_DIR" \
         -I. \
         -Isrc \
+        -Icbase \
         -D_GNU_SOURCE \
         -D_DEFAULT_SOURCE \
         $CPPFLAGS \
