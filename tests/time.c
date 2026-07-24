@@ -1,7 +1,8 @@
 #if !defined(NCMPCPP_TESTS_TIME_C)
 #define NCMPCPP_TESTS_TIME_C
 
-#include <assert.h>
+#define CBASE_IMPLEMENT
+#include "cbase.h"
 
 #include "c/ncm_error.c"
 #include "c/ncm_time.c"
