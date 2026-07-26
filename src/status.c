@@ -1462,7 +1462,7 @@ status_tracklength_buffer(StrBuilder *buffer) {
         && (Config.design == NCM_DESIGN_CLASSIC)) {
         sb_append_byte(buffer, '(');
         sb_printf(buffer, "%d", status_kbps);
-        sb_append(buffer, STRLIT_ARGS(" kbps) "));
+        SB_APPEND(buffer, STRLIT_ARGS(" kbps) "));
     }
 
     if (Config.design == NCM_DESIGN_CLASSIC) {
@@ -1483,21 +1483,21 @@ status_tracklength_buffer(StrBuilder *buffer) {
         time_len = status_song_time_string(status_elapsed_time, time_buffer,
                                            SIZEOF(time_buffer));
     }
-    sb_append(buffer, time_buffer, time_len);
+    SB_APPEND(buffer, time_buffer, time_len);
 
     if (status_total_time != 0) {
         sb_append_byte(buffer, '/');
         time_len = status_song_time_string(status_total_time, time_buffer,
                                            SIZEOF(time_buffer));
-        sb_append(buffer, time_buffer, time_len);
+        SB_APPEND(buffer, time_buffer, time_len);
     }
 
     if (Config.design == NCM_DESIGN_CLASSIC) {
         sb_append_byte(buffer, ']');
     } else if ((Config.display_bitrate) && (status_kbps != 0)) {
-        sb_append(buffer, STRLIT_ARGS(" ("));
+        SB_APPEND(buffer, STRLIT_ARGS(" ("));
         sb_printf(buffer, "%d", status_kbps);
-        sb_append(buffer, STRLIT_ARGS(" kbps)"));
+        SB_APPEND(buffer, STRLIT_ARGS(" kbps)"));
     }
     return;
 }

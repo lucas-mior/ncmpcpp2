@@ -287,26 +287,26 @@ settings_expand_home(StrBuilder *buffer, char *value, int32 value_len) {
 
     sb_clear(buffer);
     if ((value_len <= 0) || (value[0] != '~')) {
-        sb_append(buffer, value, value_len);
+        SB_APPEND(buffer, value, value_len);
         return true;
     }
 
     if ((home = getenv("HOME")) == NULL) {
-        sb_append(buffer, value, value_len);
+        SB_APPEND(buffer, value, value_len);
         return true;
     }
     home_len = strlen32(home);
-    sb_append(buffer, home, home_len);
+    SB_APPEND(buffer, home, home_len);
     if (value_len == 1) {
         return true;
     }
     sb_append_byte(buffer, '/');
     if (value[1] == '/') {
         if (value_len > 2) {
-            sb_append(buffer, value + 2, value_len - 2);
+            SB_APPEND(buffer, value + 2, value_len - 2);
         }
     } else {
-        sb_append(buffer, value + 1, value_len - 1);
+        SB_APPEND(buffer, value + 1, value_len - 1);
     }
     return true;
 }
@@ -346,7 +346,7 @@ settings_string_set_directory(char **data, int32 *len, int32 *cap, char *value,
 static bool
 settings_copy_buffer(StrBuilder *buffer, char *value, int32 value_len) {
     sb_clear(buffer);
-    sb_append(buffer, value, value_len);
+    SB_APPEND(buffer, value, value_len);
     return true;
 }
 
@@ -1425,7 +1425,7 @@ apply_progressbar_look(Configuration *config, char *value, int32 value_len,
         return false;
     }
     sb_clear(&config->progressbar);
-    sb_append(&config->progressbar, value, value_len);
+    SB_APPEND(&config->progressbar, value, value_len);
     if (characters == 2) {
         sb_append_byte(&config->progressbar, '\0');
     }
@@ -1891,7 +1891,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
     }
 
     sb_init(&path_buffer);
-    sb_append(&path_buffer, path, path_len);
+    SB_APPEND(&path_buffer, path, path_len);
     if ((file = fopen(path_buffer.data, "r")) == NULL) {
         char message[256];
         int32 len;

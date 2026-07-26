@@ -653,7 +653,7 @@ ncm_bindings_format_key(StrBuilder *buffer, NcKey key) {
         return;
     }
 
-    sb_append(buffer, name, name_len);
+    SB_APPEND(buffer, name, name_len);
     return;
 }
 
