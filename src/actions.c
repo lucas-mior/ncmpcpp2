@@ -1658,8 +1658,8 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
 
     formatted = ncm_format_render_string(&Config.song_status_format, song);
     sb_init(&message);
-    sb_append(&message, STRLIT_ARGS("Added to playlist: "));
-    sb_append(&message, formatted.data, formatted.len);
+    SB_APPEND(&message, STRLIT_ARGS("Added to playlist: "));
+    SB_APPEND(&message, formatted.data, formatted.len);
     ncm_statusbar_print(Config.message_delay_time, message.data,
                         message.len);
     sb_free(&message);
@@ -2581,9 +2581,9 @@ action_runtime_save_playlist(void) {
         StrBuilder question;
 
         sb_init(&question);
-        sb_append(&question, STRLIT_ARGS("Playlist \""));
-        sb_append(&question, name.data, name.len);
-        sb_append(&question,
+        SB_APPEND(&question, STRLIT_ARGS("Playlist \""));
+        SB_APPEND(&question, name.data, name.len);
+        SB_APPEND(&question,
                           STRLIT_ARGS("\" already exists, overwrite?"));
         success = action_runtime_confirm(question.data, question.len);
         sb_free(&question);
@@ -3456,9 +3456,9 @@ action_runtime_add_prompt(void) {
 
     if (!success && (server_error != (enum mpd_server_error)0)) {
         sb_init(&message);
-        sb_append(&message, STRLIT_ARGS("Error while adding item: "));
+        SB_APPEND(&message, STRLIT_ARGS("Error while adding item: "));
         if (ncm_error_is_set(&error)) {
-            sb_append(&message, error.message,
+            SB_APPEND(&message, error.message,
                               optional_strlen32(error.message));
         }
         ncm_statusbar_print(Config.message_delay_time, message.data,
@@ -3699,7 +3699,7 @@ action_runtime_delete_browser_items(void) {
     sb_init(&question);
     sb_init(&name);
     if (has_selected) {
-        sb_append(&question, STRLIT_ARGS("Delete selected items?"));
+        SB_APPEND(&question, STRLIT_ARGS("Delete selected items?"));
     } else {
         item = nc_menu_current_item(menu);
         if (native_browser_screen_item_is_parent(item)) {
@@ -3712,9 +3712,9 @@ action_runtime_delete_browser_items(void) {
             sb_free(&question);
             return false;
         }
-        sb_append(&question, STRLIT_ARGS("Delete \""));
-        sb_append(&question, name.data, name.len);
-        sb_append(&question, STRLIT_ARGS("\"?"));
+        SB_APPEND(&question, STRLIT_ARGS("Delete \""));
+        SB_APPEND(&question, name.data, name.len);
+        SB_APPEND(&question, STRLIT_ARGS("\"?"));
     }
 
     success = action_runtime_confirm(question.data, question.len);
@@ -3770,7 +3770,7 @@ action_runtime_browser_item_name(NcmMpdItem *item, StrBuilder *name) {
     }
 
     basename = ncm_path_basename_start(view.data, view.len);
-    sb_append(name, view.data + basename, view.len - basename);
+    SB_APPEND(name, view.data + basename, view.len - basename);
     return true;
 }
 
@@ -3783,9 +3783,9 @@ action_runtime_print_renamed(char *prefix, int32 prefix_len, StrBuilder *name) {
     }
 
     sb_init(&message);
-    sb_append(&message, prefix, prefix_len);
-    sb_append(&message, name->data, name->len);
-    sb_append(&message, STRLIT_ARGS("\""));
+    SB_APPEND(&message, prefix, prefix_len);
+    SB_APPEND(&message, name->data, name->len);
+    SB_APPEND(&message, STRLIT_ARGS("\""));
     ncm_statusbar_print(Config.message_delay_time, message.data,
                         message.len);
     sb_free(&message);
@@ -3936,16 +3936,16 @@ action_runtime_delete_stored_playlists(void) {
 
     sb_init(&question);
     if (has_selected) {
-        sb_append(&question, STRLIT_ARGS("Delete selected playlists?"));
+        SB_APPEND(&question, STRLIT_ARGS("Delete selected playlists?"));
     } else {
         if (((playlist = nc_menu_current_item(menu)) == NULL)
             || (playlist->path == NULL)) {
             sb_free(&question);
             return false;
         }
-        sb_append(&question, STRLIT_ARGS("Delete playlist \""));
-        sb_append(&question, playlist->path, playlist->path_len);
-        sb_append(&question, STRLIT_ARGS("\"?"));
+        SB_APPEND(&question, STRLIT_ARGS("Delete playlist \""));
+        SB_APPEND(&question, playlist->path, playlist->path_len);
+        SB_APPEND(&question, STRLIT_ARGS("\"?"));
     }
     success = action_runtime_confirm(question.data, question.len);
     sb_free(&question);
@@ -4035,10 +4035,9 @@ action_runtime_clear_playlist(bool main_playlist) {
     if (Config.ask_before_clearing_playlists) {
         sb_init(&question);
 
-        sb_append(&question,
-                  STRLIT_ARGS("Do you really want to clear playlist \""));
-        sb_append(&question, playlist.path, playlist.path_len);
-        sb_append(&question, STRLIT_ARGS("\"?"));
+        SB_APPEND(&question, "Do you really want to clear playlist \"");
+        SB_APPEND(&question, playlist.path, playlist.path_len);
+        SB_APPEND(&question, "\"?");
 
         success = action_runtime_confirm(question.data, question.len);
         sb_free(&question);
@@ -4051,9 +4050,9 @@ action_runtime_clear_playlist(bool main_playlist) {
     success = ncm_mpd_client_clear_playlist(&global_mpd, playlist.path, &error);
     if (success) {
         sb_init(&message);
-        sb_append(&message, STRLIT_ARGS("Playlist \""));
-        sb_append(&message, playlist.path, playlist.path_len);
-        sb_append(&message, STRLIT_ARGS("\" cleared"));
+        SB_APPEND(&message, STRLIT_ARGS("Playlist \""));
+        SB_APPEND(&message, playlist.path, playlist.path_len);
+        SB_APPEND(&message, STRLIT_ARGS("\" cleared"));
         ncm_statusbar_print(Config.message_delay_time, message.data,
                             message.len);
         sb_free(&message);
@@ -4145,10 +4144,10 @@ action_runtime_crop_playlist(bool main_playlist) {
     success = native_playlist_editor_screen_current_playlist(editor, &playlist);
     if (success && Config.ask_before_clearing_playlists) {
         sb_init(&question);
-        sb_append(
+        SB_APPEND(
             &question, STRLIT_ARGS("Do you really want to crop playlist \""));
-        sb_append(&question, playlist.path, playlist.path_len);
-        sb_append(&question, STRLIT_ARGS("\"?"));
+        SB_APPEND(&question, playlist.path, playlist.path_len);
+        SB_APPEND(&question, STRLIT_ARGS("\"?"));
         success = action_runtime_confirm(question.data, question.len);
         sb_free(&question);
         if (!success) {
@@ -4159,9 +4158,9 @@ action_runtime_crop_playlist(bool main_playlist) {
     }
     if (success) {
         sb_init(&message);
-        sb_append(&message, STRLIT_ARGS("Cropping playlist \""));
-        sb_append(&message, playlist.path, playlist.path_len);
-        sb_append(&message, STRLIT_ARGS("\"..."));
+        SB_APPEND(&message, STRLIT_ARGS("Cropping playlist \""));
+        SB_APPEND(&message, playlist.path, playlist.path_len);
+        SB_APPEND(&message, STRLIT_ARGS("\"..."));
         ncm_statusbar_print(Config.message_delay_time, message.data,
                             message.len);
         sb_free(&message);
@@ -4174,9 +4173,9 @@ action_runtime_crop_playlist(bool main_playlist) {
     }
     if (success) {
         sb_init(&message);
-        sb_append(&message, STRLIT_ARGS("Playlist \""));
-        sb_append(&message, playlist.path, playlist.path_len);
-        sb_append(&message, STRLIT_ARGS("\" cropped"));
+        SB_APPEND(&message, STRLIT_ARGS("Playlist \""));
+        SB_APPEND(&message, playlist.path, playlist.path_len);
+        SB_APPEND(&message, STRLIT_ARGS("\" cropped"));
         ncm_statusbar_print(Config.message_delay_time, message.data,
                             message.len);
         sb_free(&message);
@@ -6015,8 +6014,8 @@ action_runtime_song_file_path(NcmSong *song, StrBuilder *path) {
         return false;
     }
 
-    sb_append(path, Config.mpd_music_dir, Config.mpd_music_dir_len);
-    sb_append(path, uri.data, uri.len);
+    SB_APPEND(path, Config.mpd_music_dir, Config.mpd_music_dir_len);
+    SB_APPEND(path, uri.data, uri.len);
     return true;
 }
 
@@ -6162,10 +6161,10 @@ action_runtime_edit_library_tag(void) {
     if (!sb_set(&current_tag, tag, tag_len)) {
         goto cleanup;
     }
-    sb_append(
+    SB_APPEND(
         &prompt, ncm_tag_type_name(Config.media_lib_primary_tag),
         optional_strlen32(ncm_tag_type_name(Config.media_lib_primary_tag)));
-    sb_append(&prompt, STRLIT_ARGS(": "));
+    SB_APPEND(&prompt, STRLIT_ARGS(": "));
     prompted = action_runtime_prompt_string(
         prompt.data, prompt.len, current_tag.data, false, NULL, NULL, &new_tag);
     if (!prompted) {
@@ -6457,10 +6456,10 @@ action_runtime_edit_lyrics(void) {
     sb_init(&command);
     ncm_string_append_shell_escaped_single_quotes(&escaped, filename->data,
                                                   filename->len);
-    sb_append(&command, Config.external_editor,
+    SB_APPEND(&command, Config.external_editor,
                       Config.external_editor_len);
-    sb_append(&command, STRLIT_ARGS(" '"));
-    sb_append(&command, escaped.data, escaped.len);
+    SB_APPEND(&command, STRLIT_ARGS(" '"));
+    SB_APPEND(&command, escaped.data, escaped.len);
     sb_append_byte(&command, '\'');
 
     ncm_error_clear(&error);

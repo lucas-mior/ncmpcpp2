@@ -132,9 +132,9 @@ app_redirect_stderr(void) {
     StrBuilder path;
 
     sb_init(&path);
-    sb_append(&path, Config.ncmpcpp_directory,
+    SB_APPEND(&path, Config.ncmpcpp_directory,
                       Config.ncmpcpp_directory_len);
-    sb_append(&path, STRLIT_ARGS("error.log"));
+    SB_APPEND(&path, STRLIT_ARGS("error.log"));
 
     app_saved_stderr_fd = (int32)dup(STDERR_FILENO);
     if (app_saved_stderr_fd < 0) {
