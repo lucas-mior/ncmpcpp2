@@ -173,7 +173,7 @@ native_search_engine_screen_init(NativeSearchEngineScreen *screen,
     sb_init(&screen->row_text);
     sb_init(&screen->title);
     sb_init(&screen->column_title);
-    sb_append(&screen->title, STRLIT_ARGS("Search engine"));
+    SB_APPEND(&screen->title, STRLIT_ARGS("Search engine"));
     ncm_regex_init(&screen->filter_regex);
 
     screen->hooks = (NativeSearchEngineHooks){0};

@@ -790,7 +790,7 @@ lyrics_title_callback(NcScreen *screen) {
     NativeLyricsScreen *lyrics = lyrics_from_screen(screen);
 
     sb_clear(&lyrics->title);
-    sb_append(&lyrics->title, STRLIT_ARGS(NATIVE_LYRICS_TITLE));
+    SB_APPEND(&lyrics->title, STRLIT_ARGS(NATIVE_LYRICS_TITLE));
     if (!lyrics->has_song || ncm_song_empty(&lyrics->song)) {
         return lyrics->title.data;
     }
@@ -802,7 +802,7 @@ lyrics_title_callback(NcScreen *screen) {
         return lyrics->title.data;
     }
 
-    sb_append(&lyrics->title, STRLIT_ARGS(": "));
+    SB_APPEND(&lyrics->title, STRLIT_ARGS(": "));
     scroll_begin = nc_lyrics_screen_scroll_begin(&lyrics->screen);
     scroll_width = COLS - utf8_width(lyrics->title.data,
                                          lyrics->title.len);
@@ -817,7 +817,7 @@ lyrics_title_callback(NcScreen *screen) {
                          &scroll_begin, scroll_width, separator,
                          SIZEOF(separator) - 1,
                          Config.header_text_scrolling);
-    sb_append(&lyrics->title, scroll_buffer.data, scroll_buffer.len);
+    SB_APPEND(&lyrics->title, scroll_buffer.data, scroll_buffer.len);
     nc_lyrics_screen_set_scroll_begin(&lyrics->screen, scroll_begin);
     sb_free(&scroll_buffer);
     sb_free(&song_title);
@@ -875,14 +875,14 @@ native_lyrics_title_song_string(NcmSong *song, StrBuilder *title) {
 
     if (ncm_song_tag_view(song, MPD_TAG_ARTIST, 0, &artist_view)
         && ncm_song_tag_view(song, MPD_TAG_TITLE, 0, &title_view)) {
-        sb_append(title, artist_view.data, artist_view.len);
-        sb_append(title, STRLIT_ARGS(" - "));
-        sb_append(title, title_view.data, title_view.len);
+        SB_APPEND(title, artist_view.data, artist_view.len);
+        SB_APPEND(title, STRLIT_ARGS(" - "));
+        SB_APPEND(title, title_view.data, title_view.len);
         return;
     }
 
     if (ncm_song_name_view(song, 0, &name_view)) {
-        sb_append(title, name_view.data, name_view.len);
+        SB_APPEND(title, name_view.data, name_view.len);
     }
     return;
 }
@@ -904,16 +904,16 @@ native_lyrics_song_artist_title(NcmSong *song,
 
     if (ncm_song_tag_view(song, MPD_TAG_ARTIST, 0, &artist_view)
         && ncm_song_tag_view(song, MPD_TAG_TITLE, 0, &title_view)) {
-        sb_append(artist, artist_view.data, artist_view.len);
-        sb_append(title, title_view.data, title_view.len);
+        SB_APPEND(artist, artist_view.data, artist_view.len);
+        SB_APPEND(title, title_view.data, title_view.len);
         return true;
     }
 
     sb_init(&fallback);
     if (ncm_song_name_view(song, 0, &name_view)) {
-        sb_append(&fallback, name_view.data, name_view.len);
+        SB_APPEND(&fallback, name_view.data, name_view.len);
     } else if (ncm_song_uri_view(song, 0, &name_view)) {
-        sb_append(&fallback, name_view.data, name_view.len);
+        SB_APPEND(&fallback, name_view.data, name_view.len);
     }
 
     native_lyrics_remove_extension(&fallback);
@@ -1020,20 +1020,20 @@ native_lyrics_filename_from_song(StrBuilder *filename, NcmSong *song,
 
     if (store_in_song_dir && !ncm_song_is_stream(song)) {
         if (ncm_song_is_from_database(song) && (music_dir_len > 0)) {
-            sb_append(filename, music_dir, music_dir_len);
+            SB_APPEND(filename, music_dir, music_dir_len);
             if ((filename->len > 0)
                 && (filename->data[filename->len - 1] != '/')) {
                 sb_append_byte(filename, '/');
             }
         }
         if (ncm_song_uri_view(song, 0, &uri)) {
-            sb_append(filename, uri.data, uri.len);
+            SB_APPEND(filename, uri.data, uri.len);
         }
         native_lyrics_remove_extension(filename);
     } else {
         (void)native_lyrics_song_artist_title(song, &artist, &title);
         if (lyrics_dir_len > 0) {
-            sb_append(filename, lyrics_dir, lyrics_dir_len);
+            SB_APPEND(filename, lyrics_dir, lyrics_dir_len);
             if ((filename->len > 0)
                 && (filename->data[filename->len - 1] != '/')) {
                 sb_append_byte(filename, '/');
@@ -1041,11 +1041,11 @@ native_lyrics_filename_from_song(StrBuilder *filename, NcmSong *song,
         }
         basename_start = filename->len;
         if ((artist.len > 0) && (title.len > 0)) {
-            sb_append(filename, artist.data, artist.len);
-            sb_append(filename, STRLIT_ARGS(" - "));
-            sb_append(filename, title.data, title.len);
+            SB_APPEND(filename, artist.data, artist.len);
+            SB_APPEND(filename, STRLIT_ARGS(" - "));
+            SB_APPEND(filename, title.data, title.len);
         } else {
-            sb_append(filename, title.data, title.len);
+            SB_APPEND(filename, title.data, title.len);
         }
         basename_len = filename->len - basename_start;
         if (basename_len > 0) {
@@ -1058,7 +1058,7 @@ native_lyrics_filename_from_song(StrBuilder *filename, NcmSong *song,
         }
     }
 
-    sb_append(filename, STRLIT_ARGS(".txt"));
+    SB_APPEND(filename, STRLIT_ARGS(".txt"));
     sb_free(&title);
     sb_free(&artist);
 
@@ -1465,12 +1465,12 @@ native_lyrics_set_consumer_fetch_message(NativeLyricsScreen *screen,
                                                    song);
     sb_clear(&screen->consumer_message);
 
-    sb_append(&screen->consumer_message,
+    SB_APPEND(&screen->consumer_message,
                       STRLIT_ARGS("Fetching lyrics for \""));
-    sb_append(&screen->consumer_message,
+    SB_APPEND(&screen->consumer_message,
                       formatted.data,
                       formatted.len);
-    sb_append(&screen->consumer_message, STRLIT_ARGS("\"..."));
+    SB_APPEND(&screen->consumer_message, STRLIT_ARGS("\"..."));
 
     sb_free(&formatted);
 

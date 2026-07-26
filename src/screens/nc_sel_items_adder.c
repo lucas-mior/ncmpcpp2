@@ -928,9 +928,9 @@ adder_add_to_current_playlist(
     }
 
     sb_init(&message);
-    sb_append(&message, STRLIT_ARGS("Selected items added"));
+    SB_APPEND(&message, STRLIT_ARGS("Selected items added"));
     suffix = ncm_helpers_with_errors(success);
-    sb_append(&message, suffix, optional_strlen32(suffix));
+    SB_APPEND(&message, suffix, optional_strlen32(suffix));
     ncm_statusbar_print(Config.message_delay_time,
                         message.data, message.len);
     sb_free(&message);

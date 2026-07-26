@@ -156,7 +156,7 @@ ncm_html_unescape_utf8(char *data, int32 data_len) {
                     encoded_len = utf8_encode(rune, encoded,
                                                   SIZEOF(encoded));
                     if (encoded_len > 0) {
-                        sb_append(&out, encoded, encoded_len);
+                        SB_APPEND(&out, encoded, encoded_len);
                         i = entity_end + 1;
                         replaced = true;
                     }
@@ -190,7 +190,7 @@ ncm_html_unescape_entities(char *data, int32 data_len) {
 
                 if (ncm_string_starts_with(data + i, data_len - i,
                                            entity->from, entity->from_len)) {
-                    sb_append(&out, entity->to, entity->to_len);
+                    SB_APPEND(&out, entity->to, entity->to_len);
                     i += entity->from_len;
                     replaced = true;
                     break;

@@ -9,7 +9,7 @@ ncm_charset_copy(char *string, int32 string_len) {
 
     sb_init(&result);
     if (string_len > 0) {
-        sb_append(&result, string, string_len);
+        SB_APPEND(&result, string, string_len);
     }
     return result;
 }

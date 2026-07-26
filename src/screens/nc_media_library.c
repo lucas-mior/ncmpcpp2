@@ -683,14 +683,14 @@ native_media_library_screen_format_tag_row(
     }
     if ((row->tag == NULL) || (row->tag_len <= 0)) {
         if (Config.empty_tag && (Config.empty_tag_len > 0)) {
-            sb_append(output, Config.empty_tag,
+            SB_APPEND(output, Config.empty_tag,
                               Config.empty_tag_len);
         }
         return;
     }
 
     converted = ncm_charset_utf8_to_locale(row->tag, row->tag_len);
-    sb_append(output, converted.data, converted.len);
+    SB_APPEND(output, converted.data, converted.len);
     sb_free(&converted);
     return;
 }
@@ -711,7 +711,7 @@ native_media_library_screen_format_album_row(
         return;
     }
     if (row->all_tracks_entry) {
-        sb_append(output, STRLIT_ARGS("All tracks"));
+        SB_APPEND(output, STRLIT_ARGS("All tracks"));
         return;
     }
 
@@ -721,29 +721,29 @@ native_media_library_screen_format_album_row(
         if ((row->tag == NULL) || (row->tag_len <= 0)) {
             if (Config.empty_tag
                 && (Config.empty_tag_len > 0)) {
-                sb_append(&raw, Config.empty_tag,
+                SB_APPEND(&raw, Config.empty_tag,
                                   Config.empty_tag_len);
             }
         } else {
-            sb_append(&raw, row->tag, row->tag_len);
+            SB_APPEND(&raw, row->tag, row->tag_len);
         }
-        sb_append(&raw, STRLIT_ARGS(" - "));
+        SB_APPEND(&raw, STRLIT_ARGS(" - "));
     }
     if ((Config.media_lib_primary_tag != MPD_TAG_DATE)
         && !Config.media_lib_hide_album_dates
         && row->date && (row->date_len > 0)) {
         sb_append_byte(&raw, '(');
-        sb_append(&raw, row->date, row->date_len);
-        sb_append(&raw, STRLIT_ARGS(") "));
+        SB_APPEND(&raw, row->date, row->date_len);
+        SB_APPEND(&raw, STRLIT_ARGS(") "));
     }
     if ((row->album == NULL) || (row->album_len <= 0)) {
-        sb_append(&raw, STRLIT_ARGS("<no album>"));
+        SB_APPEND(&raw, STRLIT_ARGS("<no album>"));
     } else {
-        sb_append(&raw, row->album, row->album_len);
+        SB_APPEND(&raw, row->album, row->album_len);
     }
 
     converted = ncm_charset_utf8_to_locale(raw.data, raw.len);
-    sb_append(output, converted.data, converted.len);
+    SB_APPEND(output, converted.data, converted.len);
     sb_free(&converted);
     sb_free(&raw);
     return;
@@ -2839,7 +2839,7 @@ native_library_print_add_status(NativeMediaLibraryScreen *screen,
 
         tag = native_media_library_screen_current_tag(screen);
         tag_name = ncm_tag_type_name(Config.media_lib_primary_tag);
-        sb_append(&message, STRLIT_ARGS("Songs with "));
+        SB_APPEND(&message, STRLIT_ARGS("Songs with "));
         for (int32 i = 0; tag_name[i] != '\0'; i += 1) {
             char ch;
 
@@ -2849,12 +2849,12 @@ native_library_print_add_status(NativeMediaLibraryScreen *screen,
             }
             sb_append_byte(&message, ch);
         }
-        sb_append(&message, STRLIT_ARGS(" \""));
+        SB_APPEND(&message, STRLIT_ARGS(" \""));
         if (tag && tag->tag) {
-            sb_append(&message, tag->tag, tag->tag_len);
+            SB_APPEND(&message, tag->tag, tag->tag_len);
         }
-        sb_append(&message, STRLIT_ARGS("\" added"));
-        sb_append(&message, ncm_helpers_with_errors(result),
+        SB_APPEND(&message, STRLIT_ARGS("\" added"));
+        SB_APPEND(&message, ncm_helpers_with_errors(result),
                           optional_strlen32(
                               ncm_helpers_with_errors(result)));
     } else if (screen->active_column
@@ -2862,7 +2862,7 @@ native_library_print_add_status(NativeMediaLibraryScreen *screen,
         if ((album = native_media_library_screen_current_album(screen))
             && album->all_tracks_entry) {
             tag_name = ncm_tag_type_name(Config.media_lib_primary_tag);
-            sb_append(&message, STRLIT_ARGS("Songs with "));
+            SB_APPEND(&message, STRLIT_ARGS("Songs with "));
             for (int32 i = 0; tag_name[i] != '\0'; i += 1) {
                 char ch;
 
@@ -2872,32 +2872,32 @@ native_library_print_add_status(NativeMediaLibraryScreen *screen,
                 }
                 sb_append_byte(&message, ch);
             }
-            sb_append(&message, STRLIT_ARGS(" \""));
+            SB_APPEND(&message, STRLIT_ARGS(" \""));
             if (album->tag) {
-                sb_append(&message, album->tag, album->tag_len);
+                SB_APPEND(&message, album->tag, album->tag_len);
             }
-            sb_append(&message, STRLIT_ARGS("\" added"));
+            SB_APPEND(&message, STRLIT_ARGS("\" added"));
         } else {
-            sb_append(&message,
+            SB_APPEND(&message,
                               STRLIT_ARGS("Songs from album \""));
             if (album && album->album) {
-                sb_append(&message, album->album,
+                SB_APPEND(&message, album->album,
                                   album->album_len);
             }
-            sb_append(&message, STRLIT_ARGS("\" added"));
+            SB_APPEND(&message, STRLIT_ARGS("\" added"));
         }
-        sb_append(&message, ncm_helpers_with_errors(result),
+        SB_APPEND(&message, ncm_helpers_with_errors(result),
                           optional_strlen32(
                               ncm_helpers_with_errors(result)));
     } else if (result && (songs->len == 1)) {
         rendered = ncm_format_render_string(&Config.song_status_format,
                                             &songs->items[0]);
-        sb_append(&message, STRLIT_ARGS("Added to playlist: "));
-        sb_append(&message, rendered.data, rendered.len);
+        SB_APPEND(&message, STRLIT_ARGS("Added to playlist: "));
+        SB_APPEND(&message, rendered.data, rendered.len);
         sb_free(&rendered);
     } else if (result) {
-        sb_append(&message, STRLIT_ARGS("Songs added"));
-        sb_append(&message, ncm_helpers_with_errors(result),
+        SB_APPEND(&message, STRLIT_ARGS("Songs added"));
+        SB_APPEND(&message, ncm_helpers_with_errors(result),
                           optional_strlen32(
                               ncm_helpers_with_errors(result)));
     } else {
@@ -3930,15 +3930,15 @@ native_library_update_titles(NativeMediaLibraryScreen *screen,
     if (Config.titles_visibility) {
         tag_type_name = ncm_tag_type_name(Config.media_lib_primary_tag);
         tag_type_name_len = optional_strlen32(tag_type_name);
-        sb_append(&screen->tags_title, tag_type_name,
+        SB_APPEND(&screen->tags_title, tag_type_name,
                           tag_type_name_len);
         sb_append_byte(&screen->tags_title, 's');
-        sb_append(&screen->albums_title,
+        SB_APPEND(&screen->albums_title,
                           STRLIT_ARGS("Albums"));
-        sb_append(&screen->songs_title, STRLIT_ARGS("Songs"));
+        SB_APPEND(&screen->songs_title, STRLIT_ARGS("Songs"));
 
         if (screen->mode == NATIVE_MEDIA_LIBRARY_MODE_TWO_COLUMNS) {
-            sb_append(&screen->albums_title,
+            SB_APPEND(&screen->albums_title,
                               STRLIT_ARGS(" (sorted by "));
             for (int32 i = 0; i < tag_type_name_len; i += 1) {
                 char ch = tag_type_name[i];
@@ -3949,14 +3949,14 @@ native_library_update_titles(NativeMediaLibraryScreen *screen,
                 sb_append_byte(&screen->albums_title, ch);
             }
             if (screen->sort_by_mtime) {
-                sb_append(&screen->albums_title,
+                SB_APPEND(&screen->albums_title,
                                   STRLIT_ARGS(" and mtime"));
             }
             sb_append_byte(&screen->albums_title, ')');
         } else if ((screen->mode
                     == NATIVE_MEDIA_LIBRARY_MODE_ALBUM_ONLY)
                    && screen->sort_by_mtime) {
-            sb_append(&screen->albums_title,
+            SB_APPEND(&screen->albums_title,
                               STRLIT_ARGS(" (sorted by mtime)"));
         }
     }
@@ -4202,7 +4202,7 @@ native_library_query_cstring(StrBuilder *buffer, char *string,
 
     sb_clear(buffer);
     if (string_len > 0) {
-        sb_append(buffer, string, string_len);
+        SB_APPEND(buffer, string, string_len);
     }
     sb_append_byte(buffer, '\0');
     buffer->len = string_len;

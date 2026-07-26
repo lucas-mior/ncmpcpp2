@@ -44,7 +44,7 @@ ncm_string_format_append_arg(StrBuilder *out, NcmStringFormatArg *arg) {
 
     switch (arg->type) {
     case NCM_STRING_FORMAT_ARG_STRING:
-        sb_append(out, arg->value.string.data,
+        SB_APPEND(out, arg->value.string.data,
                           arg->value.string.len);
         break;
     case NCM_STRING_FORMAT_ARG_I64:
@@ -58,13 +58,13 @@ ncm_string_format_append_arg(StrBuilder *out, NcmStringFormatArg *arg) {
         break;
     case NCM_STRING_FORMAT_ARG_CHAR:
         ch = arg->value.ch;
-        sb_append(out, &ch, 1);
+        SB_APPEND(out, &ch, 1);
         break;
     case NCM_STRING_FORMAT_ARG_BOOL:
         if (arg->value.boolean) {
-            sb_append(out, STRLIT_ARGS("1"));
+            SB_APPEND(out, STRLIT_ARGS("1"));
         } else {
-            sb_append(out, STRLIT_ARGS("0"));
+            SB_APPEND(out, STRLIT_ARGS("0"));
         }
         break;
     case NCM_STRING_FORMAT_ARG_LAST:

@@ -474,7 +474,7 @@ native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
     }
 
     sb_clear(&screen->title_text);
-    sb_append(&screen->title_text, STRLIT_ARGS("Browse: "));
+    SB_APPEND(&screen->title_text, STRLIT_ARGS("Browse: "));
 
     directory = native_browser_screen_current_directory(screen);
     if (directory.len <= 0) {
@@ -503,7 +503,7 @@ native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
                          &scroll_beginning, scroll_width, separator,
                          SIZEOF(separator) - 1,
                          Config.header_text_scrolling);
-    sb_append(&screen->title_text, scroll_buffer.data,
+    SB_APPEND(&screen->title_text, scroll_buffer.data,
                       scroll_buffer.len);
     screen->title_scroll_beginning = scroll_beginning;
     sb_free(&scroll_buffer);
@@ -1204,7 +1204,7 @@ native_browser_screen_item_to_string(NativeBrowserScreen *screen,
         }
         basename = ncm_path_basename_start(path.data, path.len);
         sb_append_byte(buffer, '[');
-        sb_append(buffer, path.data + basename,
+        SB_APPEND(buffer, path.data + basename,
                           path.len - basename);
         sb_append_byte(buffer, ']');
         break;
@@ -1223,14 +1223,14 @@ native_browser_screen_item_to_string(NativeBrowserScreen *screen,
     case NCM_MPD_ITEM_PLAYLIST:
         if (Config.browser_playlist_prefix.data
             && (Config.browser_playlist_prefix.len > 0)) {
-            sb_append(buffer, Config.browser_playlist_prefix.data,
+            SB_APPEND(buffer, Config.browser_playlist_prefix.data,
                               Config.browser_playlist_prefix.len);
         }
         if (!ncm_playlist_path_view(ncm_mpd_item_playlist(item), &path)) {
             return false;
         }
         basename = ncm_path_basename_start(path.data, path.len);
-        sb_append(buffer, path.data + basename,
+        SB_APPEND(buffer, path.data + basename,
                           path.len - basename);
         break;
     case NCM_MPD_ITEM_UNKNOWN:
@@ -1778,10 +1778,10 @@ native_browser_add_parent_directory_item(
     }
 
     sb_clear(&screen->scratch_buffer);
-    sb_append(&screen->scratch_buffer,
+    SB_APPEND(&screen->scratch_buffer,
                       screen->current_directory.data,
                       screen->current_directory.len);
-    sb_append(&screen->scratch_buffer, STRLIT_ARGS("/.."));
+    SB_APPEND(&screen->scratch_buffer, STRLIT_ARGS("/.."));
 
     ncm_directory_init(&directory);
     ncm_mpd_item_init(&item);
@@ -2730,7 +2730,7 @@ native_browser_supported_extensions_add(StrBuilderArray *extensions,
     sb_init(&buffer);
     if ((extension_len <= 0) || (extension[0] != '.')) {
         if ((result = sb_set(&buffer, STRLIT_ARGS(".")))) {
-            sb_append(&buffer, extension, extension_len);
+            SB_APPEND(&buffer, extension, extension_len);
         }
     } else {
         result = sb_set(&buffer, extension, extension_len);
