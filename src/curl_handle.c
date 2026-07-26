@@ -9,7 +9,6 @@
 #include "c/ncm_base.h"
 
 static size_t write_data(char *buffer, size_t size, size_t nmemb, void *data);
-static void append_c_string(StrBuilder *buffer, char *string, int32 string_len);
 
 void
 ncm_curl_response_writer_init(NcmCurlResponseWriter *writer,
@@ -39,9 +38,9 @@ ncm_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
     sb_init(&referer_string);
     ncm_curl_response_writer_init(&writer, data);
 
-    append_c_string(&url_string, url, url_len);
+    SB_APPEND(&url_string, url, url_len);
     if (referer && (referer_len > 0)) {
-        append_c_string(&referer_string, referer, referer_len);
+        SB_APPEND(&referer_string, referer, referer_len);
     }
 
     if ((curl = curl_easy_init()) == NULL) {
@@ -114,13 +113,6 @@ write_data(char *buffer, size_t size, size_t nmemb, void *data) {
     }
 
     return bytes;
-}
-
-static void
-append_c_string(StrBuilder *buffer, char *string, int32 string_len) {
-    sb_append(buffer, string, string_len);
-    sb_append_byte(buffer, '\0');
-    return;
 }
 
 #endif /* NCMPCPP_CURL_HANDLE_C */
