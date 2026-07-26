@@ -1460,9 +1460,7 @@ status_buffer_append_char(StrBuilder *buffer, char ch) {
 
 static void
 status_buffer_append_int32(StrBuilder *buffer, int32 value) {
-    char tmp[32];
-    int32 len = SNPRINTF(tmp, "%d", value);
-    sb_append(buffer, tmp, len);
+    sb_printf(buffer, "%d", value);
     return;
 }
 

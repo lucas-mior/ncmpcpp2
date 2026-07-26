@@ -13,34 +13,24 @@
 static void
 ncm_string_format_append_number(StrBuilder *out, char *format,
                                 NcmStringFormatArg *arg) {
-    char buffer[128];
-    int32 len;
-
     switch (arg->type) {
     case NCM_STRING_FORMAT_ARG_I64:
-        len = SNPRINTF(buffer, format, arg->value.i64);
+        sb_printf(out, format, arg->value.i64);
         break;
     case NCM_STRING_FORMAT_ARG_U64:
-        len = SNPRINTF(buffer, format, arg->value.u64);
+        sb_printf(out, format, arg->value.u64);
         break;
     case NCM_STRING_FORMAT_ARG_F64:
-        len = SNPRINTF(buffer, format, arg->value.f64);
+        sb_printf(out, format, arg->value.f64);
         break;
     case NCM_STRING_FORMAT_ARG_STRING:
     case NCM_STRING_FORMAT_ARG_CHAR:
     case NCM_STRING_FORMAT_ARG_BOOL:
     case NCM_STRING_FORMAT_ARG_LAST:
     default:
-        return;
+        break;
     }
 
-    if (len < 0) {
-        return;
-    }
-    if (len >= SIZEOF(buffer)) {
-        len = SIZEOF(buffer) - 1;
-    }
-    sb_append(out, buffer, len);
     return;
 }
 
