@@ -706,10 +706,10 @@ ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap) {
 
     if (hours > 0) {
         result = snprintf2(buffer, buffer_cap,
-                           "%lld:%02lld:%02lld", hours, minutes, seconds);
+                           "%d:%02d:%02d", hours, minutes, seconds);
     } else {
         result = snprintf2(buffer, buffer_cap,
-                           "%lld:%02lld", minutes, seconds);
+                           "%d:%d", minutes, seconds);
     }
 
     if (result < 0) {
