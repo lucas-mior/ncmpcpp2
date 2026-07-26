@@ -118,9 +118,7 @@ write_data(char *buffer, size_t size, size_t nmemb, void *data) {
 
 static void
 append_c_string(StrBuilder *buffer, char *string, int32 string_len) {
-    if (string && (string_len > 0)) {
-        sb_append(buffer, string, string_len);
-    }
+    sb_append(buffer, string, string_len);
     sb_append_byte(buffer, '\0');
     return;
 }
