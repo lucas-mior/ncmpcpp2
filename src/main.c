@@ -1,14 +1,9 @@
 #if !defined(NCMPCPP_MAIN_C)
 #define NCMPCPP_MAIN_C
 
-#include <assert.h>
-#include <errno.h>
-#include <locale.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "c/ncm_base.h"
+#define CBASE_IMPLEMENT
+#include "cbase.h"
 
 #include "app_legacy_bridge.h"
 #include "bindings.h"
@@ -17,10 +12,6 @@
 #include "settings.h"
 #include "title.h"
 #include "ui_state.h"
-
-#include "c/ncm_base.h"
-#define CBASE_IMPLEMENT
-#include "cbase.h"
 
 /* Single translation unit source inclusions. */
 #include "actions.c"
