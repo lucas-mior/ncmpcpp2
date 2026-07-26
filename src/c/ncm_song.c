@@ -744,24 +744,24 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
         if (song->duration > 0) {
             len = ncm_song_show_time(song->duration, number_buffer,
                                      LENGTH(number_buffer));
-            sb_append(&buffer, number_buffer, len);
+            SB_APPEND(&buffer, number_buffer, len);
         } else {
-            sb_append(&buffer, STRLIT_ARGS("-:--"));
+            SB_APPEND(&buffer, STRLIT_ARGS("-:--"));
         }
         return buffer;
     case NCM_SONG_GETTER_DIRECTORY:
         if (ncm_song_directory_view(song, idx, &view)) {
-            sb_append(&buffer, view.data, view.len);
+            SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
     case NCM_SONG_GETTER_NAME:
         if (ncm_song_name_view(song, idx, &view)) {
-            sb_append(&buffer, view.data, view.len);
+            SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
     case NCM_SONG_GETTER_URI:
         if (ncm_song_uri_view(song, idx, &view)) {
-            sb_append(&buffer, view.data, view.len);
+            SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
     case NCM_SONG_GETTER_TRACK:
@@ -808,7 +808,7 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
     case NCM_SONG_GETTER_COMMENT:
         tag = ncm_song_getter_to_tag_type(getter);
         if (ncm_song_tag_view(song, tag, idx, &view)) {
-            sb_append(&buffer, view.data, view.len);
+            SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
     case NCM_SONG_GETTER_NONE:
@@ -865,9 +865,9 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
 
         if (!already_present) {
             if (result.len > 0) {
-                sb_append(&result, separator, separator_len);
+                SB_APPEND(&result, separator, separator_len);
             }
-            sb_append(&result, tag.data, tag.len);
+            SB_APPEND(&result, tag.data, tag.len);
         }
         sb_free(&tag);
     }

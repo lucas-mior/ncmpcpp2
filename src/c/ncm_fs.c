@@ -363,7 +363,7 @@ ncm_fs_join(StrBuilder *buffer,
 
     sb_init(&result);
     if (left && (left_len > 0)) {
-        sb_append(&result, left, left_len);
+        SB_APPEND(&result, left, left_len);
         if ((result.len > 0) && (result.data[result.len - 1] != '/')) {
             sb_append_byte(&result, '/');
         }
@@ -372,10 +372,10 @@ ncm_fs_join(StrBuilder *buffer,
         right += 1;
         right_len -= 1;
     }
-    sb_append(&result, right, right_len);
+    SB_APPEND(&result, right, right_len);
 
     sb_clear(buffer);
-    sb_append(buffer, result.data, result.len);
+    SB_APPEND(buffer, result.data, result.len);
     sb_free(&result);
 
     return true;

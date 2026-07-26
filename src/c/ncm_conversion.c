@@ -28,7 +28,7 @@ ncm_conversion_copy_source(StrBuilder *buffer, char *source,
         return false;
     }
 
-    sb_append(buffer, source, source_len);
+    SB_APPEND(buffer, source, source_len);
     if (buffer->data == NULL) {
         sb_append_byte(buffer, '\0');
         buffer->len = 0;
