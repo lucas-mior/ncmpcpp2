@@ -4803,8 +4803,7 @@ tag_editor_build_parser_preview(NativeTagEditorScreen *screen,
                 &screen->parser_preview);
             if (!parsed && !apply) {
                 SB_APPEND(&screen->parser_preview,
-                                  STRLIT_ARGS(
-                                      "Error while parsing filename!\n"));
+                          "Error while parsing filename!\n");
             }
             if (!apply) {
                 sb_append_byte(&screen->parser_preview, '\n');
@@ -4833,8 +4832,7 @@ tag_editor_build_parser_preview(NativeTagEditorScreen *screen,
             }
             if (apply && (stem.len <= 0)) {
                 sb_clear(&screen->parser_preview);
-                SB_APPEND(&screen->parser_preview,
-                                  STRLIT_ARGS("File \""));
+                SB_APPEND(&screen->parser_preview, "File \"");
                 tag_editor_append_parser_filename(
                     &screen->parser_preview, song->name, song->name_len);
                 SB_APPEND(&screen->parser_preview,
