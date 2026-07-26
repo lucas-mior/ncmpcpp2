@@ -147,7 +147,7 @@ nc_buffer_append_int32(NcBuffer *buffer, int32 value) {
 }
 
 void
-nc_buffer_append_int64(NcBuffer *buffer, int32 value) {
+nc_buffer_append_int64(NcBuffer *buffer, int64 value) {
     char string[64];
     int32 len;
 
@@ -283,7 +283,7 @@ nc_buffer_reserve(NcBuffer *buffer, int32 extra) {
     int32 old_cap;
 
     needed = buffer->len + extra + 1;
-    if (needed <= buffer->cap) {
+    if ((buffer->data != NULL) && (needed <= buffer->cap)) {
         return;
     }
 
