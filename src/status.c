@@ -1453,12 +1453,6 @@ status_current_song_for_change(NcmSong *song) {
 }
 
 static void
-status_buffer_append_char(StrBuilder *buffer, char ch) {
-    sb_append_byte(buffer, ch);
-    return;
-}
-
-static void
 status_tracklength_buffer(StrBuilder *buffer) {
     char time_buffer[64];
     int32 time_len;
@@ -1466,17 +1460,17 @@ status_tracklength_buffer(StrBuilder *buffer) {
     sb_clear(buffer);
     if ((Config.display_bitrate) && (status_kbps != 0)
         && (Config.design == NCM_DESIGN_CLASSIC)) {
-        status_buffer_append_char(buffer, '(');
+        sb_append_byte(buffer, '(');
         sb_printf(buffer, "%d", status_kbps);
         sb_append(buffer, STRLIT_ARGS(" kbps) "));
     }
 
     if (Config.design == NCM_DESIGN_CLASSIC) {
-        status_buffer_append_char(buffer, '[');
+        sb_append_byte(buffer, '[');
     }
 
     if ((Config.display_remaining_time) && (status_total_time != 0)) {
-        status_buffer_append_char(buffer, '-');
+        sb_append_byte(buffer, '-');
         if (status_elapsed_time < status_total_time) {
             time_len = status_song_time_string(
                 status_total_time - status_elapsed_time, time_buffer,
@@ -1492,14 +1486,14 @@ status_tracklength_buffer(StrBuilder *buffer) {
     sb_append(buffer, time_buffer, time_len);
 
     if (status_total_time != 0) {
-        status_buffer_append_char(buffer, '/');
+        sb_append_byte(buffer, '/');
         time_len = status_song_time_string(status_total_time, time_buffer,
                                            SIZEOF(time_buffer));
         sb_append(buffer, time_buffer, time_len);
     }
 
     if (Config.design == NCM_DESIGN_CLASSIC) {
-        status_buffer_append_char(buffer, ']');
+        sb_append_byte(buffer, ']');
     } else if ((Config.display_bitrate) && (status_kbps != 0)) {
         sb_append(buffer, STRLIT_ARGS(" ("));
         sb_printf(buffer, "%d", status_kbps);
@@ -1768,22 +1762,22 @@ ncm_status_changes_flags(void) {
     switch (Config.design) {
     case NCM_DESIGN_CLASSIC:
         if (status_repeat) {
-            status_buffer_append_char(&switch_state, status_repeat);
+            sb_append_byte(&switch_state, status_repeat);
         }
         if (status_random) {
-            status_buffer_append_char(&switch_state, status_random);
+            sb_append_byte(&switch_state, status_random);
         }
         if (status_single) {
-            status_buffer_append_char(&switch_state, status_single);
+            sb_append_byte(&switch_state, status_single);
         }
         if (status_consume) {
-            status_buffer_append_char(&switch_state, status_consume);
+            sb_append_byte(&switch_state, status_consume);
         }
         if (status_crossfade) {
-            status_buffer_append_char(&switch_state, status_crossfade);
+            sb_append_byte(&switch_state, status_crossfade);
         }
         if (status_db_updating) {
-            status_buffer_append_char(&switch_state, status_db_updating);
+            sb_append_byte(&switch_state, status_db_updating);
         }
 
         status_apply_formatted_color(header, &Config.state_line_color);
@@ -1808,38 +1802,38 @@ ncm_status_changes_flags(void) {
         }
         break;
     case NCM_DESIGN_ALTERNATIVE:
-        status_buffer_append_char(&switch_state, '[');
+        sb_append_byte(&switch_state, '[');
         if (status_repeat) {
-            status_buffer_append_char(&switch_state, status_repeat);
+            sb_append_byte(&switch_state, status_repeat);
         } else {
-            status_buffer_append_char(&switch_state, '-');
+            sb_append_byte(&switch_state, '-');
         }
         if (status_random) {
-            status_buffer_append_char(&switch_state, status_random);
+            sb_append_byte(&switch_state, status_random);
         } else {
-            status_buffer_append_char(&switch_state, '-');
+            sb_append_byte(&switch_state, '-');
         }
         if (status_single) {
-            status_buffer_append_char(&switch_state, status_single);
+            sb_append_byte(&switch_state, status_single);
         } else {
-            status_buffer_append_char(&switch_state, '-');
+            sb_append_byte(&switch_state, '-');
         }
         if (status_consume) {
-            status_buffer_append_char(&switch_state, status_consume);
+            sb_append_byte(&switch_state, status_consume);
         } else {
-            status_buffer_append_char(&switch_state, '-');
+            sb_append_byte(&switch_state, '-');
         }
         if (status_crossfade) {
-            status_buffer_append_char(&switch_state, status_crossfade);
+            sb_append_byte(&switch_state, status_crossfade);
         } else {
-            status_buffer_append_char(&switch_state, '-');
+            sb_append_byte(&switch_state, '-');
         }
         if (status_db_updating) {
-            status_buffer_append_char(&switch_state, status_db_updating);
+            sb_append_byte(&switch_state, status_db_updating);
         } else {
-            status_buffer_append_char(&switch_state, '-');
+            sb_append_byte(&switch_state, '-');
         }
-        status_buffer_append_char(&switch_state, ']');
+        sb_append_byte(&switch_state, ']');
 
         flags_x = COLS - switch_state.len;
         if (flags_x < 0) {
