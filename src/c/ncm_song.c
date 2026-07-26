@@ -795,13 +795,7 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
         if (idx > 0) {
             return buffer;
         }
-        len = SNPRINTF(number_buffer, "%d", song->priority);
-        if (len > 0) {
-            if (len >= LENGTH(number_buffer)) {
-                len = LENGTH(number_buffer) - 1;
-            }
-            sb_append(&buffer, number_buffer, len);
-        }
+        sb_printf(&buffer, "%d", song->priority);
         return buffer;
     case NCM_SONG_GETTER_ARTIST:
     case NCM_SONG_GETTER_ALBUM_ARTIST:

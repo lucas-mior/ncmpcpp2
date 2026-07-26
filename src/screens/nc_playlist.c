@@ -1401,11 +1401,7 @@ native_playlist_refresh_stats(NativePlaylistScreen *screen) {
     sb_clear(&screen->title_cache);
     sb_append(&screen->title_cache, STRLIT_ARGS("Playlist ("));
     count = native_playlist_screen_song_count(screen);
-    {
-        char count_buffer[64];
-        int32 count_len = SNPRINTF(count_buffer, "%d", count);
-        sb_append(&screen->title_cache, count_buffer, count_len);
-    }
+    sb_printf(&screen->title_cache, "%d", count);
     if (count == 1) {
         sb_append(&screen->title_cache, STRLIT_ARGS(" item)"));
     } else {
