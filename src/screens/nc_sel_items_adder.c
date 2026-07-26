@@ -101,10 +101,10 @@ native_selected_items_adder_screen_init(
                                  Config.use_cyclic_scrolling);
     nc_menu_set_centered_cursor(position_menu, Config.centered_cursor);
     nc_window_init(&screen->playlist_window, start_x, start_y, width,
-                   height, STRLIT_ARGS("Add selected item(s) to..."),
+                   height, STRLIT("Add selected item(s) to..."),
                    color, border);
     nc_window_init(&screen->position_window, start_x, start_y, width,
-                   height, STRLIT_ARGS("Where?"), color, border);
+                   height, STRLIT("Where?"), color, border);
     ncm_song_array_init(&screen->selected_songs);
     ncm_regex_init(&screen->search_regex);
     sb_init(&screen->search_constraint);
@@ -220,32 +220,32 @@ native_selected_items_adder_screen_open(
 
     if (screen == NULL) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing selected items dialog"));
+                      STRLIT("missing selected items dialog"));
         return false;
     }
     if ((songs == NULL) || (songs->len <= 0)) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("no selected songs"));
+        ncm_error_set(error, EINVAL, STRLIT("no selected songs"));
         return false;
     }
     if (playlist == NULL) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing native playlist"));
+                      STRLIT("missing native playlist"));
         return false;
     }
     if (client == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
+        ncm_error_set(error, EINVAL, STRLIT("missing MPD client"));
         return false;
     }
     if (screen->ready) {
         ncm_error_set(error, EBUSY,
-                      STRLIT_ARGS("selected items dialog is already open"));
+                      STRLIT("selected items dialog is already open"));
         return false;
     }
 
     if (((current = nc_screen_switcher_current()) == NULL)
         || (current == native_selected_items_adder_screen_base(screen))) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing previous screen"));
+                      STRLIT("missing previous screen"));
         return false;
     }
 
@@ -253,7 +253,7 @@ native_selected_items_adder_screen_open(
     if (!ncm_song_array_copy(&selected_songs, songs)) {
         ncm_song_array_destroy(&selected_songs);
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("failed to copy selected songs"));
+                      STRLIT("failed to copy selected songs"));
         return false;
     }
 
@@ -279,7 +279,7 @@ native_selected_items_adder_screen_open(
             arg = ncm_string_format_arg_cstring(playlist_error.message);
             ncm_statusbar_format(
                 Config.message_delay_time,
-                STRLIT_ARGS("Could not fetch playlists: %1"), &arg, 1);
+                STRLIT("Could not fetch playlists: %1"), &arg, 1);
         }
     }
     native_selected_items_adder_screen_populate_playlist_selector(
@@ -301,7 +301,7 @@ native_selected_items_adder_screen_open(
         screen->client = NULL;
         screen->ready = false;
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("selected items dialog is not registered"));
+                      STRLIT("selected items dialog is not registered"));
         return false;
     }
 
@@ -326,10 +326,10 @@ native_selected_items_adder_screen_populate_playlist_selector(
     base = nc_editor_action_menu_base(menu);
     adder_clear_playlist_selector(screen);
     screen->local_browser = local_browser;
-    (void)adder_add_action_row(menu, STRLIT_ARGS("Current playlist"),
+    (void)adder_add_action_row(menu, STRLIT("Current playlist"),
                                adder_action_current_playlist, screen);
     if (!local_browser) {
-        (void)adder_add_action_row(menu, STRLIT_ARGS("New playlist"),
+        (void)adder_add_action_row(menu, STRLIT("New playlist"),
                                    adder_action_new_playlist, screen);
     }
     nc_editor_action_menu_add_separator(menu);
@@ -358,7 +358,7 @@ native_selected_items_adder_screen_populate_playlist_selector(
     if (stored_end > stored_begin) {
         nc_editor_action_menu_add_separator(menu);
     }
-    (void)adder_add_action_row(menu, STRLIT_ARGS("Cancel"),
+    (void)adder_add_action_row(menu, STRLIT("Cancel"),
                                adder_action_cancel_target, screen);
     nc_menu_reset(base);
     screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
@@ -376,19 +376,19 @@ native_selected_items_adder_screen_populate_position_selector(
     }
     menu = &screen->position_selector;
     nc_menu_clear_items(nc_editor_action_menu_base(menu));
-    (void)adder_add_action_row(menu, STRLIT_ARGS("At the end of playlist"),
+    (void)adder_add_action_row(menu, STRLIT("At the end of playlist"),
                                adder_action_position_end, screen);
     (void)adder_add_action_row(menu,
-                               STRLIT_ARGS("At the beginning of playlist"),
+                               STRLIT("At the beginning of playlist"),
                                adder_action_position_beginning, screen);
-    (void)adder_add_action_row(menu, STRLIT_ARGS("After current song"),
+    (void)adder_add_action_row(menu, STRLIT("After current song"),
                                adder_action_position_current_song, screen);
-    (void)adder_add_action_row(menu, STRLIT_ARGS("After current album"),
+    (void)adder_add_action_row(menu, STRLIT("After current album"),
                                adder_action_position_current_album, screen);
-    (void)adder_add_action_row(menu, STRLIT_ARGS("After highlighted item"),
+    (void)adder_add_action_row(menu, STRLIT("After highlighted item"),
                                adder_action_position_highlighted, screen);
     nc_editor_action_menu_add_separator(menu);
-    (void)adder_add_action_row(menu, STRLIT_ARGS("Cancel"),
+    (void)adder_add_action_row(menu, STRLIT("Cancel"),
                                adder_action_position_cancel, screen);
     return;
 }
@@ -445,20 +445,20 @@ native_selected_items_adder_screen_add_to_existing_playlist(
 
     if (screen == NULL) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing selected items dialog"));
+                      STRLIT("missing selected items dialog"));
         return false;
     }
     if (client == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
+        ncm_error_set(error, EINVAL, STRLIT("missing MPD client"));
         return false;
     }
     if (playlist == NULL) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing stored playlist"));
+                      STRLIT("missing stored playlist"));
         return false;
     }
     if (screen->selected_songs.len <= 0) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("no selected songs"));
+        ncm_error_set(error, EINVAL, STRLIT("no selected songs"));
         return false;
     }
 
@@ -827,7 +827,7 @@ adder_add_to_stored_playlist(
     arg = ncm_string_format_arg_string(playlist, playlist_len);
     ncm_statusbar_format(
         Config.message_delay_time,
-        STRLIT_ARGS("Selected item(s) added to playlist \"%1\""),
+        STRLIT("Selected item(s) added to playlist \"%1\""),
         &arg, 1);
     adder_finish(screen);
     return true;
@@ -928,7 +928,7 @@ adder_add_to_current_playlist(
     }
 
     sb_init(&message);
-    SB_APPEND(&message, STRLIT_ARGS("Selected items added"));
+    SB_APPEND(&message, STRLIT("Selected items added"));
     suffix = ncm_helpers_with_errors(success);
     SB_APPEND(&message, suffix, optional_strlen32(suffix));
     ncm_statusbar_print(Config.message_delay_time,
@@ -972,7 +972,7 @@ adder_action_new_playlist(void *user) {
     ncm_statusbar_scoped_lock_init(&lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window,
-                             STRLIT_ARGS("Save playlist as: "));
+                             STRLIT("Save playlist as: "));
         prompt = (NcPrompt){0};
         prompt.initial_text = "";
         prompt.width = -1;

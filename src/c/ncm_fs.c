@@ -18,17 +18,17 @@
 static bool
 ncm_fs_path_copy(char *path, int32 path_len, char **copy, NcmError *error) {
     if (copy == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing path copy output"));
+        ncm_error_set(error, EINVAL, STRLIT("missing path copy output"));
         return false;
     }
     *copy = NULL;
 
     if (path == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing path"));
+        ncm_error_set(error, EINVAL, STRLIT("missing path"));
         return false;
     }
     if (path_len < 0) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("negative path length"));
+        ncm_error_set(error, EINVAL, STRLIT("negative path length"));
         return false;
     }
 
@@ -113,7 +113,7 @@ ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat, NcmError *error) {
     char *path_copy;
 
     if (stat == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing stat output"));
+        ncm_error_set(error, EINVAL, STRLIT("missing stat output"));
         return false;
     }
 
@@ -256,7 +256,7 @@ ncm_fs_directory_open(NcmFsDirectory *directory, char *path,
     char *path_copy;
 
     if (directory == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing directory"));
+        ncm_error_set(error, EINVAL, STRLIT("missing directory"));
         return false;
     }
     directory->dir = NULL;
@@ -288,13 +288,13 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
     int32 name_len;
 
     if (entry == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing directory entry"));
+        ncm_error_set(error, EINVAL, STRLIT("missing directory entry"));
         return false;
     }
     ncm_fs_entry_destroy(entry);
 
     if ((directory == NULL) || (directory->dir == NULL)) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("directory is not open"));
+        ncm_error_set(error, EINVAL, STRLIT("directory is not open"));
         return false;
     }
 

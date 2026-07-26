@@ -408,43 +408,43 @@ settings_parse_double(char *value, int32 value_len, double *result,
 static bool
 settings_color_name(char *value, int32 value_len, bool background,
                     int16 *result) {
-    if (STREQUAL(value, value_len, STRLIT_ARGS("black"))) {
+    if (STREQUAL(value, value_len, STRLIT("black"))) {
         *result = COLOR_BLACK;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("red"))) {
+    if (STREQUAL(value, value_len, STRLIT("red"))) {
         *result = COLOR_RED;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("green"))) {
+    if (STREQUAL(value, value_len, STRLIT("green"))) {
         *result = COLOR_GREEN;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("yellow"))) {
+    if (STREQUAL(value, value_len, STRLIT("yellow"))) {
         *result = COLOR_YELLOW;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("blue"))) {
+    if (STREQUAL(value, value_len, STRLIT("blue"))) {
         *result = COLOR_BLUE;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("magenta"))) {
+    if (STREQUAL(value, value_len, STRLIT("magenta"))) {
         *result = COLOR_MAGENTA;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("cyan"))) {
+    if (STREQUAL(value, value_len, STRLIT("cyan"))) {
         *result = COLOR_CYAN;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("white"))) {
+    if (STREQUAL(value, value_len, STRLIT("white"))) {
         *result = COLOR_WHITE;
         return true;
     }
-    if (background && STREQUAL(value, value_len, STRLIT_ARGS("transparent"))) {
+    if (background && STREQUAL(value, value_len, STRLIT("transparent"))) {
         *result = NC_COLOR_TRANSPARENT;
         return true;
     }
-    if (background && STREQUAL(value, value_len, STRLIT_ARGS("current"))) {
+    if (background && STREQUAL(value, value_len, STRLIT("current"))) {
         *result = NC_COLOR_CURRENT;
         return true;
     }
@@ -487,11 +487,11 @@ settings_parse_color(char *value, int32 value_len, NcColor *color,
     int16 foreground;
     int16 background;
 
-    if (STREQUAL(value, value_len, STRLIT_ARGS("default"))) {
+    if (STREQUAL(value, value_len, STRLIT("default"))) {
         *color = nc_color_default();
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("end"))) {
+    if (STREQUAL(value, value_len, STRLIT("end"))) {
         *color = nc_color_end();
         return true;
     }
@@ -631,7 +631,7 @@ settings_parse_formatted_color_list(NcmFormattedColorArray *array, char *value,
             continue;
         }
         if ((dest = ncm_formatted_color_array_append(array)) == NULL) {
-            settings_error(error, STRLIT_ARGS("failed to append color"));
+            settings_error(error, STRLIT("failed to append color"));
             return false;
         }
         if (!settings_parse_formatted_color(item, item_len, dest, error)) {
@@ -668,7 +668,7 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
             return false;
         }
         if ((slot = ncm_int32_array_append(array)) == NULL) {
-            settings_error(error, STRLIT_ARGS("failed to append ratio"));
+            settings_error(error, STRLIT("failed to append ratio"));
             return false;
         }
         *slot = parsed;
@@ -742,7 +742,7 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
         tag = ncm_string_get_enclosed(value, value_len, '{', '}', pos, &next);
         pos = next;
         if ((column = column_array_append(&config->columns)) == NULL) {
-            settings_error(error, STRLIT_ARGS("failed to append column"));
+            settings_error(error, STRLIT("failed to append column"));
             sb_free(&width);
             sb_free(&color);
             sb_free(&tag);
@@ -836,7 +836,7 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
         if (!ncm_format_ast_append_column_types(
                 &config->song_columns_mode_format, column->type,
                 column->type_len)) {
-            settings_error(error, STRLIT_ARGS("failed to build column format"));
+            settings_error(error, STRLIT("failed to build column format"));
             return false;
         }
     }
@@ -871,7 +871,7 @@ settings_parse_screen_list(Configuration *config, char *value, int32 value_len,
         }
         slot = screen_type_array_append(&config->screen_sequence);
         if (slot == NULL) {
-            settings_error(error, STRLIT_ARGS("failed to append screen"));
+            settings_error(error, STRLIT("failed to append screen"));
             return false;
         }
         *slot = screen;
@@ -905,7 +905,7 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
         }
         if (!ncm_lyrics_fetcher_registry_append_name(&config->lyrics_fetchers,
                                                      item, item_len)) {
-            settings_error(error, STRLIT_ARGS("unknown lyrics fetcher"));
+            settings_error(error, STRLIT("unknown lyrics fetcher"));
             return false;
         }
         added = true;
@@ -1346,7 +1346,7 @@ apply_song_window_title_format(Configuration *config, char *value,
 static bool
 apply_browser_sort_mode(Configuration *config, char *value, int32 value_len,
                         NcmError *error) {
-    if (STREQUAL(value, value_len, STRLIT_ARGS("noop"))) {
+    if (STREQUAL(value, value_len, STRLIT("noop"))) {
         value = "none";
         value_len = STRLIT_LEN("none");
     }
@@ -1435,11 +1435,11 @@ apply_progressbar_look(Configuration *config, char *value, int32 value_len,
 static bool
 apply_default_place_to_search_in(Configuration *config, char *value,
                                  int32 value_len, NcmError *error) {
-    if (STREQUAL(value, value_len, STRLIT_ARGS("database"))) {
+    if (STREQUAL(value, value_len, STRLIT("database"))) {
         config->search_in_db = true;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("playlist"))) {
+    if (STREQUAL(value, value_len, STRLIT("playlist"))) {
         config->search_in_db = false;
         return true;
     }
@@ -1460,27 +1460,27 @@ apply_user_interface(Configuration *config, char *value, int32 value_len,
 static bool
 apply_media_library_primary_tag(Configuration *config, char *value,
                                 int32 value_len, NcmError *error) {
-    if (STREQUAL(value, value_len, STRLIT_ARGS("artist"))) {
+    if (STREQUAL(value, value_len, STRLIT("artist"))) {
         config->media_lib_primary_tag = MPD_TAG_ARTIST;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("album_artist"))) {
+    if (STREQUAL(value, value_len, STRLIT("album_artist"))) {
         config->media_lib_primary_tag = MPD_TAG_ALBUM_ARTIST;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("date"))) {
+    if (STREQUAL(value, value_len, STRLIT("date"))) {
         config->media_lib_primary_tag = MPD_TAG_DATE;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("genre"))) {
+    if (STREQUAL(value, value_len, STRLIT("genre"))) {
         config->media_lib_primary_tag = MPD_TAG_GENRE;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("composer"))) {
+    if (STREQUAL(value, value_len, STRLIT("composer"))) {
         config->media_lib_primary_tag = MPD_TAG_COMPOSER;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("performer"))) {
+    if (STREQUAL(value, value_len, STRLIT("performer"))) {
         config->media_lib_primary_tag = MPD_TAG_PERFORMER;
         return true;
     }
@@ -1491,11 +1491,11 @@ apply_media_library_primary_tag(Configuration *config, char *value,
 static bool
 apply_default_find_mode(Configuration *config, char *value, int32 value_len,
                         NcmError *error) {
-    if (STREQUAL(value, value_len, STRLIT_ARGS("wrapped"))) {
+    if (STREQUAL(value, value_len, STRLIT("wrapped"))) {
         config->wrapped_search = true;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("normal"))) {
+    if (STREQUAL(value, value_len, STRLIT("normal"))) {
         config->wrapped_search = false;
         return true;
     }
@@ -1522,7 +1522,7 @@ apply_space_add_mode(Configuration *config, char *value, int32 value_len,
 static bool
 apply_screen_switcher_mode(Configuration *config, char *value, int32 value_len,
                            NcmError *error) {
-    if (STREQUAL(value, value_len, STRLIT_ARGS("previous"))) {
+    if (STREQUAL(value, value_len, STRLIT("previous"))) {
         config->screen_switcher_previous = true;
         screen_type_array_clear(&config->screen_sequence);
         return true;
@@ -1594,15 +1594,15 @@ apply_playlist_editor_column_width_ratio(Configuration *config, char *value,
 static bool
 apply_regular_expressions(Configuration *config, char *value, int32 value_len,
                           NcmError *error) {
-    if (STREQUAL(value, value_len, STRLIT_ARGS("none"))) {
+    if (STREQUAL(value, value_len, STRLIT("none"))) {
         config->regex_flags = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("basic"))) {
+    if (STREQUAL(value, value_len, STRLIT("basic"))) {
         config->regex_flags = NCM_REGEX_BASIC_CASE_INSENSITIVE;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT_ARGS("extended"))) {
+    if (STREQUAL(value, value_len, STRLIT("extended"))) {
         config->regex_flags = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
         return true;
     }
@@ -1621,7 +1621,7 @@ apply_enable_window_title(Configuration *config, char *value, int32 value_len,
     unsupported = term == NULL;
     if (!unsupported) {
         term_len = strlen32(term);
-        unsupported = memmem64(term, term_len, STRLIT_ARGS("linux"))
+        unsupported = memmem64(term, term_len, STRLIT("linux"))
                       || BEGINS_WITH(term, term_len, "eterm");
     }
     if (unsupported) {
@@ -1807,7 +1807,7 @@ settings_set_option_error(NcmError *error, bool default_value,
                    option->name_len, option->name, detail_len, detail);
     if (len < 0) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("error while processing option"));
+                      STRLIT("error while processing option"));
         return;
     }
     if (len >= SIZEOF(message)) {
@@ -1829,7 +1829,7 @@ settings_set_unknown_option_error(NcmError *error, char *option,
 
     len = SNPRINTF(message, "unknown option: %.*s", option_len, option);
     if (len < 0) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("unknown option"));
+        ncm_error_set(error, EINVAL, STRLIT("unknown option"));
         return;
     }
     if (len >= SIZEOF(message)) {
@@ -1900,7 +1900,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
                        path_len, path, strerror(errno));
         if (len < 0) {
             ncm_error_set(error, errno,
-                          STRLIT_ARGS("failed to open configuration file"));
+                          STRLIT("failed to open configuration file"));
         } else {
             if (len >= SIZEOF(message)) {
                 len = SIZEOF(message) - 1;
