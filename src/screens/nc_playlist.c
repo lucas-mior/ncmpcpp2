@@ -1405,8 +1405,7 @@ native_playlist_refresh_stats(NativePlaylistScreen *screen) {
         char count_buffer[64];
         int32 count_len;
 
-        count_len = SNPRINTF(count_buffer,
-                             "%lld", (llong)count);
+        count_len = SNPRINTF(count_buffer, "%lld", count);
         sb_append(&screen->title_cache, count_buffer, count_len);
     }
     if (count == 1) {

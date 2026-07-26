@@ -83,7 +83,7 @@ ncm_conversion_set_i64_bounds_error(NcmError *error, int64 value,
 
     len = SNPRINTF(message,
                    "value is out of bounds ([%lld, %lld] expected, %lld given)",
-                   (llong)lbound, (llong)ubound, (llong)value);
+                   lbound, ubound, value);
 
     ncm_error_set(error, ERANGE, message, len);
     return;
