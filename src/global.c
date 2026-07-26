@@ -44,13 +44,13 @@ global_timer_elapsed_seconds(NcmTimePoint start) {
 void
 global_volume_state_set(char *string, int32 string_len) {
     sb_clear(&global_volume_state);
-    sb_append(&global_volume_state, string, string_len);
+    SB_APPEND(&global_volume_state, string, string_len);
     return;
 }
 
 void
 global_volume_state_append(char *string, int32 string_len) {
-    sb_append(&global_volume_state, string, string_len);
+    SB_APPEND(&global_volume_state, string, string_len);
     return;
 }
 

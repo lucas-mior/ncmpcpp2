@@ -43,8 +43,8 @@ ncm_configuration_options_init(NcmConfigurationOptions *options) {
     str_builder_array_init(&options->config_paths);
     str_builder_array_init(&options->bindings_paths);
 
-    sb_append(&options->host, STRLIT_ARGS("localhost"));
-    sb_append(&options->current_song_format,
+    SB_APPEND(&options->host, STRLIT_ARGS("localhost"));
+    SB_APPEND(&options->current_song_format,
                       STRLIT_ARGS("{{{(%l) }{{%a - }%t}}|{%f}}"));
     options->port = 6600;
 
@@ -80,7 +80,7 @@ command_line_options_append_path(StrBuilderArray *paths, char *path,
     if ((slot = str_builder_array_append(paths)) == NULL) {
         return false;
     }
-    sb_append(slot, path, path_len);
+    SB_APPEND(slot, path, path_len);
     return true;
 }
 
@@ -102,10 +102,10 @@ configuration_append_default_file(StrBuilderArray *paths, char *filename,
 
     if ((xdg_config_home = getenv("XDG_CONFIG_HOME"))
         && (xdg_config_home[0] != '\0')) {
-        sb_append(&directory, xdg_config_home,
+        SB_APPEND(&directory, xdg_config_home,
                           strlen32(xdg_config_home));
     } else {
-        sb_append(&directory, STRLIT_ARGS("~/.config"));
+        SB_APPEND(&directory, STRLIT_ARGS("~/.config"));
     }
     result = ncm_fs_join(&directory, directory.data, directory.len,
                          STRLIT_ARGS("ncmpcpp"));
@@ -132,7 +132,7 @@ configuration_append_legacy_file(StrBuilderArray *paths, char *filename,
     sb_init(&directory);
     sb_init(&path);
 
-    sb_append(&directory, STRLIT_ARGS("~/.ncmpcpp"));
+    SB_APPEND(&directory, STRLIT_ARGS("~/.ncmpcpp"));
     result = ncm_fs_join(&path, directory.data, directory.len, filename,
                          filename_len);
     if (result) {
@@ -177,7 +177,7 @@ configuration_discover_default_paths(StrBuilderArray *config_paths,
 static bool
 configuration_copy_string(StrBuilder *buffer, char *string, int32 string_len) {
     sb_clear(buffer);
-    sb_append(buffer, string, string_len);
+    SB_APPEND(buffer, string, string_len);
     return true;
 }
 

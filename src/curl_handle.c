@@ -107,7 +107,7 @@ write_data(char *buffer, size_t size, size_t nmemb, void *data) {
         return 0;
     }
     if (bytes > 0) {
-        sb_append(writer->buffer, buffer, (int32)bytes);
+        SB_APPEND(writer->buffer, buffer, (int32)bytes);
     }
 
     return bytes;
