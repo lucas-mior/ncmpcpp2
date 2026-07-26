@@ -1459,12 +1459,6 @@ status_buffer_append_char(StrBuilder *buffer, char ch) {
 }
 
 static void
-status_buffer_append_int32(StrBuilder *buffer, int32 value) {
-    sb_printf(buffer, "%d", value);
-    return;
-}
-
-static void
 status_tracklength_buffer(StrBuilder *buffer) {
     char time_buffer[64];
     int32 time_len;
@@ -1473,7 +1467,7 @@ status_tracklength_buffer(StrBuilder *buffer) {
     if ((Config.display_bitrate) && (status_kbps != 0)
         && (Config.design == NCM_DESIGN_CLASSIC)) {
         status_buffer_append_char(buffer, '(');
-        status_buffer_append_int32(buffer, status_kbps);
+        sb_printf(buffer, "%d", status_kbps);
         sb_append(buffer, STRLIT_ARGS(" kbps) "));
     }
 
@@ -1508,7 +1502,7 @@ status_tracklength_buffer(StrBuilder *buffer) {
         status_buffer_append_char(buffer, ']');
     } else if ((Config.display_bitrate) && (status_kbps != 0)) {
         sb_append(buffer, STRLIT_ARGS(" ("));
-        status_buffer_append_int32(buffer, status_kbps);
+        sb_printf(buffer, "%d", status_kbps);
         sb_append(buffer, STRLIT_ARGS(" kbps)"));
     }
     return;
