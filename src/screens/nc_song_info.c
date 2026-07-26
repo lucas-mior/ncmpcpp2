@@ -50,7 +50,7 @@ nc_song_info_screen_init(NcSongInfoScreen *screen,
                    nc_song_info_screen_start_y(screen),
                    nc_song_info_screen_width(screen),
                    nc_song_info_screen_height(screen),
-                   STRLIT_ARGS(""),
+                   STRLIT(""),
                    color,
                    border);
     nc_scrollpad_init(&screen->scrollpad,

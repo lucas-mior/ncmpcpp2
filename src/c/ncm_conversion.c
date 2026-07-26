@@ -20,11 +20,11 @@ ncm_conversion_copy_source(StrBuilder *buffer, char *source,
     sb_clear(buffer);
 
     if (source == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing conversion source"));
+        ncm_error_set(error, EINVAL, STRLIT("missing conversion source"));
         return false;
     }
     if (source_len < 0) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("negative source length"));
+        ncm_error_set(error, EINVAL, STRLIT("negative source length"));
         return false;
     }
 
@@ -125,7 +125,7 @@ ncm_parse_int64(char *source, int32 source_len, int32 *out, NcmError *error) {
     bool ok;
 
     if (out == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing conversion output"));
+        ncm_error_set(error, EINVAL, STRLIT("missing conversion output"));
         return false;
     }
 
@@ -158,7 +158,7 @@ ncm_parse_int32(char *source, int32 source_len, int32 *out, NcmError *error) {
     int32 value;
 
     if (out == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing conversion output"));
+        ncm_error_set(error, EINVAL, STRLIT("missing conversion output"));
         return false;
     }
 
@@ -182,7 +182,7 @@ ncm_parse_double(char *source, int32 source_len, double *out, NcmError *error) {
     bool ok;
 
     if (out == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing conversion output"));
+        ncm_error_set(error, EINVAL, STRLIT("missing conversion output"));
         return false;
     }
 

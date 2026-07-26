@@ -137,10 +137,10 @@ app_legacy_bridge_report_mpd_error(NcmError *error) {
     if ((ncm_mpd_client_error_code(&global_mpd) == MPD_ERROR_SERVER)
         || (error && (error->code == MPD_ERROR_SERVER))) {
         ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT_ARGS("MPD: %1%"), &arg, 1);
+                             STRLIT("MPD: %1%"), &arg, 1);
     } else {
         ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT_ARGS("ncmpcpp: %1%"), &arg, 1);
+                             STRLIT("ncmpcpp: %1%"), &arg, 1);
     }
     return;
 }
@@ -242,7 +242,7 @@ ncmpcpp_legacy_window_create(int32 start_x, int32 start_y, int32 width,
     window = malloc2(SIZEOF(*window));
     nc_window_init(window,
                    start_x, start_y, width, height,
-                   STRLIT_ARGS(""), color, nc_border_none());
+                   STRLIT(""), color, nc_border_none());
     return window;
 }
 
@@ -372,7 +372,7 @@ ncmpcpp_legacy_connect_or_report(void) {
     if (ncm_mpd_client_version(&global_mpd) < 16) {
         ncm_mpd_client_disconnect(&global_mpd);
         ncm_error_set(&error, MPD_ERROR_STATE,
-                      STRLIT_ARGS("MPD < 0.16.0 is not supported"));
+                      STRLIT("MPD < 0.16.0 is not supported"));
         app_legacy_bridge_report_mpd_error(&error);
     }
     return;

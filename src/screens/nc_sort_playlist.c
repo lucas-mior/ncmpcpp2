@@ -65,7 +65,7 @@ native_sort_playlist_dialog_init(NativeSortPlaylistDialog *dialog,
     nc_menu_set_cyclic_scrolling(menu, Config.use_cyclic_scrolling);
     nc_menu_set_centered_cursor(menu, Config.centered_cursor);
     nc_window_init(&dialog->window, start_x, start_y, width, height,
-                   STRLIT_ARGS("Sort songs by..."), color, border);
+                   STRLIT("Sort songs by..."), color, border);
     ncm_song_array_init(&dialog->songs);
     dialog->playlist = NULL;
     dialog->previous_screen = NULL;
@@ -141,44 +141,44 @@ native_sort_playlist_dialog_populate_defaults(
     }
     nc_menu_clear_items(nc_editor_sort_menu_base(&dialog->rows));
     (void)native_sort_playlist_dialog_add_row(
-        dialog, STRLIT_ARGS("Artist"), NCM_SONG_GETTER_ARTIST,
+        dialog, STRLIT("Artist"), NCM_SONG_GETTER_ARTIST,
         sort_dialog_show_move_hint, dialog);
     (void)native_sort_playlist_dialog_add_row(
-        dialog, STRLIT_ARGS("Album artist"),
+        dialog, STRLIT("Album artist"),
         NCM_SONG_GETTER_ALBUM_ARTIST, sort_dialog_show_move_hint, dialog);
     (void)native_sort_playlist_dialog_add_row(
-        dialog, STRLIT_ARGS("Album"), NCM_SONG_GETTER_ALBUM,
+        dialog, STRLIT("Album"), NCM_SONG_GETTER_ALBUM,
         sort_dialog_show_move_hint, dialog);
     (void)native_sort_playlist_dialog_add_row(
-        dialog, STRLIT_ARGS("Disc"), NCM_SONG_GETTER_DISC,
+        dialog, STRLIT("Disc"), NCM_SONG_GETTER_DISC,
         sort_dialog_show_move_hint, dialog);
     (void)native_sort_playlist_dialog_add_row(
-        dialog, STRLIT_ARGS("Track"), NCM_SONG_GETTER_TRACK,
+        dialog, STRLIT("Track"), NCM_SONG_GETTER_TRACK,
         sort_dialog_show_move_hint, dialog);
     (void)native_sort_playlist_dialog_add_row(
-        dialog, STRLIT_ARGS("Genre"), NCM_SONG_GETTER_GENRE,
+        dialog, STRLIT("Genre"), NCM_SONG_GETTER_GENRE,
         sort_dialog_show_move_hint, dialog);
     (void)native_sort_playlist_dialog_add_row(
-        dialog, STRLIT_ARGS("Date"), NCM_SONG_GETTER_DATE,
+        dialog, STRLIT("Date"), NCM_SONG_GETTER_DATE,
         sort_dialog_show_move_hint, dialog);
     (void)native_sort_playlist_dialog_add_row(
-        dialog, STRLIT_ARGS("Composer"), NCM_SONG_GETTER_COMPOSER,
+        dialog, STRLIT("Composer"), NCM_SONG_GETTER_COMPOSER,
         sort_dialog_show_move_hint, dialog);
     (void)native_sort_playlist_dialog_add_row(
-        dialog, STRLIT_ARGS("Performer"), NCM_SONG_GETTER_PERFORMER,
+        dialog, STRLIT("Performer"), NCM_SONG_GETTER_PERFORMER,
         sort_dialog_show_move_hint, dialog);
     (void)native_sort_playlist_dialog_add_row(
-        dialog, STRLIT_ARGS("Title"), NCM_SONG_GETTER_TITLE,
+        dialog, STRLIT("Title"), NCM_SONG_GETTER_TITLE,
         sort_dialog_show_move_hint, dialog);
     (void)native_sort_playlist_dialog_add_row(
-        dialog, STRLIT_ARGS("Filename"), NCM_SONG_GETTER_URI,
+        dialog, STRLIT("Filename"), NCM_SONG_GETTER_URI,
         sort_dialog_show_move_hint, dialog);
     nc_editor_sort_menu_add_separator(&dialog->rows);
     (void)native_sort_playlist_dialog_add_row(
-        dialog, STRLIT_ARGS("Sort"), NCM_SONG_GETTER_NONE,
+        dialog, STRLIT("Sort"), NCM_SONG_GETTER_NONE,
         sort_dialog_run_sort, dialog);
     (void)native_sort_playlist_dialog_add_row(
-        dialog, STRLIT_ARGS("Cancel"), NCM_SONG_GETTER_NONE,
+        dialog, STRLIT("Cancel"), NCM_SONG_GETTER_NONE,
         sort_dialog_cancel, dialog);
     return;
 }
@@ -215,23 +215,23 @@ native_sort_playlist_dialog_open(
     int32 start_position;
 
     if (dialog == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing sort dialog"));
+        ncm_error_set(error, EINVAL, STRLIT("missing sort dialog"));
         return false;
     }
     if (playlist == NULL) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing native playlist"));
+                      STRLIT("missing native playlist"));
         return false;
     }
     if (client == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
+        ncm_error_set(error, EINVAL, STRLIT("missing MPD client"));
         return false;
     }
 
     current = nc_screen_switcher_current();
     if (current != native_playlist_screen_base(playlist)) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("sort dialog requires native playlist"));
+                      STRLIT("sort dialog requires native playlist"));
         return false;
     }
 
@@ -264,7 +264,7 @@ native_sort_playlist_dialog_open(
         dialog->client = NULL;
         dialog->ready = false;
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("sort dialog is not registered"));
+                      STRLIT("sort dialog is not registered"));
         return false;
     }
 

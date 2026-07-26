@@ -56,7 +56,7 @@ nc_help_screen_init(NcHelpScreen *screen,
                    nc_help_screen_start_y(screen),
                    nc_help_screen_width(screen),
                    nc_help_screen_height(screen),
-                   STRLIT_ARGS(""),
+                   STRLIT(""),
                    color,
                    border);
     nc_scrollpad_init(&screen->scrollpad,
@@ -106,7 +106,7 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern,
     bool result;
 
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing help screen"));
+        ncm_error_set(error, EINVAL, STRLIT("missing help screen"));
         return false;
     }
 
@@ -129,7 +129,7 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern,
 
     if (!sb_set(&screen->search_constraint, pattern, pattern_len)) {
         ncm_regex_destroy(&regex);
-        ncm_error_set(error, ENOMEM, STRLIT_ARGS("failed to save search"));
+        ncm_error_set(error, ENOMEM, STRLIT("failed to save search"));
         return false;
     }
 

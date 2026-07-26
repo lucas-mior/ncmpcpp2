@@ -85,45 +85,45 @@ ncm_format_parse_color_component(char *data, int32 data_len,
     int32 value;
     int32 lower_bound;
 
-    if (STREQUAL(data, data_len, STRLIT_ARGS("black"))) {
+    if (STREQUAL(data, data_len, STRLIT("black"))) {
         *result = COLOR_BLACK;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT_ARGS("red"))) {
+    if (STREQUAL(data, data_len, STRLIT("red"))) {
         *result = COLOR_RED;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT_ARGS("green"))) {
+    if (STREQUAL(data, data_len, STRLIT("green"))) {
         *result = COLOR_GREEN;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT_ARGS("yellow"))) {
+    if (STREQUAL(data, data_len, STRLIT("yellow"))) {
         *result = COLOR_YELLOW;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT_ARGS("blue"))) {
+    if (STREQUAL(data, data_len, STRLIT("blue"))) {
         *result = COLOR_BLUE;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT_ARGS("magenta"))) {
+    if (STREQUAL(data, data_len, STRLIT("magenta"))) {
         *result = COLOR_MAGENTA;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT_ARGS("cyan"))) {
+    if (STREQUAL(data, data_len, STRLIT("cyan"))) {
         *result = COLOR_CYAN;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT_ARGS("white"))) {
+    if (STREQUAL(data, data_len, STRLIT("white"))) {
         *result = COLOR_WHITE;
         return true;
     }
     if (background
-        && STREQUAL(data, data_len, STRLIT_ARGS("transparent"))) {
+        && STREQUAL(data, data_len, STRLIT("transparent"))) {
         *result = -1;
         return true;
     }
     if (background
-        && STREQUAL(data, data_len, STRLIT_ARGS("current"))) {
+        && STREQUAL(data, data_len, STRLIT("current"))) {
         *result = -2;
         return true;
     }
@@ -156,11 +156,11 @@ ncm_format_parse_named_color(char *data, int32 data_len, NcColor *color) {
     int16 foreground;
     int16 background;
 
-    if (STREQUAL(data, data_len, STRLIT_ARGS("default"))) {
+    if (STREQUAL(data, data_len, STRLIT("default"))) {
         *color = nc_color_default();
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT_ARGS("end"))) {
+    if (STREQUAL(data, data_len, STRLIT("end"))) {
         *color = nc_color_end();
         return true;
     }
@@ -753,7 +753,7 @@ ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag) {
         return result;
     }
 
-    result = ncm_song_tags_buffer(song, tag->getter, STRLIT_ARGS(" | "),
+    result = ncm_song_tags_buffer(song, tag->getter, STRLIT(" | "),
                                   true);
     if ((tag->delimiter > 0) && (result.len > 0)) {
         int32 limit;

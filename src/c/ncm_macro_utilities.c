@@ -24,7 +24,7 @@ ncm_macro_system_command(char *command, int32 command_len,
     if (command_len > 0) {
         SB_APPEND(&buffer, command, command_len);
     }
-    SB_APPEND(&buffer, STRLIT_ARGS(" >/dev/null 2>&1 &"));
+    SB_APPEND(&buffer, STRLIT(" >/dev/null 2>&1 &"));
     sb_append_byte(&buffer, '\0');
 
     rc = system(buffer.data);
@@ -33,7 +33,7 @@ ncm_macro_system_command(char *command, int32 command_len,
         *status = rc;
     }
     if (rc == -1) {
-        ncm_error_set(error, errno, STRLIT_ARGS("system failed"));
+        ncm_error_set(error, errno, STRLIT("system failed"));
         return false;
     }
 

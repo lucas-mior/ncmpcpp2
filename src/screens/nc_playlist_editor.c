@@ -437,7 +437,7 @@ native_playlist_editor_screen_reload_playlists_from_mpd(
                                                           &playlists);
         if (!ok) {
             ncm_error_set(error, ENOMEM,
-                          STRLIT_ARGS("could not copy playlists"));
+                          STRLIT("could not copy playlists"));
         }
     }
     ncm_mpd_playlist_list_destroy(&playlists);
@@ -495,7 +495,7 @@ native_playlist_editor_screen_reload_content_from_mpd(
     }
     playlist = nc_playlist_entry_menu_current(&screen->playlists);
     if ((playlist == NULL) || (playlist->path == NULL)) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing playlist"));
+        ncm_error_set(error, EINVAL, STRLIT("missing playlist"));
         return false;
     }
 
@@ -516,7 +516,7 @@ native_playlist_editor_screen_locate_playlist(
     int32 pos;
 
     if ((screen == NULL) || (path == NULL) || (path_len <= 0)) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing playlist"));
+        ncm_error_set(error, EINVAL, STRLIT("missing playlist"));
         return false;
     }
     if (!native_playlist_editor_screen_reload_playlists_from_mpd(
@@ -527,7 +527,7 @@ native_playlist_editor_screen_locate_playlist(
     playlist_editor_clear_playlist_filter(screen);
     if (!playlist_editor_find_playlist_position(screen, path, path_len,
                                                 &pos)) {
-        ncm_error_set(error, ENOENT, STRLIT_ARGS("playlist not found"));
+        ncm_error_set(error, ENOENT, STRLIT("playlist not found"));
         return false;
     }
 
@@ -560,7 +560,7 @@ native_playlist_editor_screen_locate_song(
     bool success;
 
     if ((screen == NULL) || (song == NULL)) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing song"));
+        ncm_error_set(error, EINVAL, STRLIT("missing song"));
         return false;
     }
     playlists = nc_playlist_entry_menu_base(&screen->playlists);
@@ -1421,18 +1421,18 @@ playlist_editor_update_titles(NativePlaylistEditorScreen *screen,
     sb_clear(&screen->content_title);
     if (Config.titles_visibility) {
         SB_APPEND(&screen->playlists_title,
-                          STRLIT_ARGS("Playlists"));
-        SB_APPEND(&screen->content_title, STRLIT_ARGS("Content"));
+                          STRLIT("Playlists"));
+        SB_APPEND(&screen->content_title, STRLIT("Content"));
         if (screen->last_known_content_count >= 0) {
-            SB_APPEND(&screen->content_title, STRLIT_ARGS(" ("));
+            SB_APPEND(&screen->content_title, STRLIT(" ("));
             playlist_editor_append_int64(&screen->content_title,
                                          screen->last_known_content_count);
             if (screen->last_known_content_count == 1) {
                 SB_APPEND(&screen->content_title,
-                                  STRLIT_ARGS(" item)"));
+                                  STRLIT(" item)"));
             } else {
                 SB_APPEND(&screen->content_title,
-                                  STRLIT_ARGS(" items)"));
+                                  STRLIT(" items)"));
             }
         }
     }
@@ -1625,7 +1625,7 @@ playlist_editor_find_song_in_mpd_playlist(
 
     if ((playlist == NULL) || (playlist->path == NULL)
         || (song == NULL) || (song_index == NULL)) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing playlist"));
+        ncm_error_set(error, EINVAL, STRLIT("missing playlist"));
         return false;
     }
 
@@ -1870,7 +1870,7 @@ playlist_editor_report_error(char *context, int32 context_len,
     sb_init(&message);
     SB_APPEND(&message, context, context_len);
     if (error && (error->message[0] != 0)) {
-        SB_APPEND(&message, STRLIT_ARGS(": "));
+        SB_APPEND(&message, STRLIT(": "));
         SB_APPEND(&message, error->message,
                           strlen32(error->message));
     }
@@ -1902,7 +1902,7 @@ playlist_editor_update_from_mpd(NativePlaylistEditorScreen *screen,
         if (!ok) {
             screen->playlists_update_requested = false;
             playlist_editor_report_error(
-                STRLIT_ARGS("Could not fetch playlists"), &error);
+                STRLIT("Could not fetch playlists"), &error);
             ncm_error_clear(&error);
             playlist_editor_update_titles(screen, true);
             return changed;
@@ -1922,7 +1922,7 @@ playlist_editor_update_from_mpd(NativePlaylistEditorScreen *screen,
     if (!ok) {
         screen->content_update_requested = false;
         playlist_editor_report_error(
-            STRLIT_ARGS("Could not fetch playlist content"), &error);
+            STRLIT("Could not fetch playlist content"), &error);
         ncm_error_clear(&error);
         playlist_editor_update_titles(screen, true);
         return changed;
@@ -2126,7 +2126,7 @@ playlist_editor_mouse_load_current_playlist(
     ncm_error_clear(&error);
     if (!ncm_mpd_client_load_playlist(&global_mpd, playlist->path, &loaded,
                                       &error)) {
-        playlist_editor_report_error(STRLIT_ARGS("Could not load playlist"),
+        playlist_editor_report_error(STRLIT("Could not load playlist"),
                                      &error);
         return false;
     }
@@ -2159,9 +2159,9 @@ playlist_editor_print_playlist_loaded(NcmPlaylist *playlist) {
         return;
     }
     sb_init(&message);
-    SB_APPEND(&message, STRLIT_ARGS("Playlist \""));
+    SB_APPEND(&message, STRLIT("Playlist \""));
     SB_APPEND(&message, playlist->path, playlist->path_len);
-    SB_APPEND(&message, STRLIT_ARGS("\" loaded"));
+    SB_APPEND(&message, STRLIT("\" loaded"));
     ncm_statusbar_print(Config.message_delay_time,
                         message.data, message.len);
     sb_free(&message);
@@ -2277,7 +2277,7 @@ append_playlist_content_from_mpd(NcmPlaylist *playlist,
                                              &list, &error);
     if (!ok) {
         playlist_editor_report_error(
-            STRLIT_ARGS("Could not fetch playlist content"), &error);
+            STRLIT("Could not fetch playlist content"), &error);
         ncm_error_clear(&error);
         ncm_mpd_song_list_destroy(&list);
         return false;

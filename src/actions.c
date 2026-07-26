@@ -1568,11 +1568,11 @@ action_runtime_queue_remove_song(NcmMpdSongList *queue, NcmSong *song,
     bool ok;
 
     if (queue == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD queue"));
+        ncm_error_set(error, EINVAL, STRLIT("missing MPD queue"));
         return false;
     }
     if (song == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD song"));
+        ncm_error_set(error, EINVAL, STRLIT("missing MPD song"));
         return false;
     }
 
@@ -1658,7 +1658,7 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
 
     formatted = ncm_format_render_string(&Config.song_status_format, song);
     sb_init(&message);
-    SB_APPEND(&message, STRLIT_ARGS("Added to playlist: "));
+    SB_APPEND(&message, STRLIT("Added to playlist: "));
     SB_APPEND(&message, formatted.data, formatted.len);
     ncm_statusbar_print(Config.message_delay_time, message.data,
                         message.len);
@@ -1792,7 +1792,7 @@ action_runtime_set_crossfade(void) {
     }
 
     sb_init(&input);
-    prompted = action_runtime_prompt_string(STRLIT_ARGS("Set crossfade to: "),
+    prompted = action_runtime_prompt_string(STRLIT("Set crossfade to: "),
                                             "", false, NULL, NULL, &input);
     if (!prompted) {
         sb_free(&input);
@@ -1830,7 +1830,7 @@ action_runtime_set_volume(void) {
     }
 
     sb_init(&input);
-    prompted = action_runtime_prompt_string(STRLIT_ARGS("Set volume to: "), "",
+    prompted = action_runtime_prompt_string(STRLIT("Set volume to: "), "",
                                             false, NULL, NULL, &input);
     if (!prompted) {
         sb_free(&input);
@@ -1853,7 +1853,7 @@ action_runtime_set_volume(void) {
     }
     arg = ncm_string_format_arg_u64((uint64)volume);
     ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT_ARGS("Volume set to %1%%%"), &arg, 1);
+                         STRLIT("Volume set to %1%%%"), &arg, 1);
     return true;
 }
 
@@ -1891,7 +1891,7 @@ action_runtime_add_random_items(void) {
     ncm_statusbar_scoped_lock_init(&lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window,
-                             STRLIT_ARGS("Add random? [s]ongs/[a]rtists/"
+                             STRLIT("Add random? [s]ongs/[a]rtists/"
                                          "album [A]rtists/al[b]ums "));
         prompted = ncm_statusbar_prompt_return_one_of(
             window, values, LENGTH(values), &random_type);
@@ -1919,7 +1919,7 @@ action_runtime_add_random_items(void) {
     }
 
     args[0] = ncm_string_format_arg_string(source_name, source_name_len);
-    prompt = ncm_string_format_make(STRLIT_ARGS("Number of random %1%s: "),
+    prompt = ncm_string_format_make(STRLIT("Number of random %1%s: "),
                                     args, 1);
     sb_init(&input);
     prompted = action_runtime_prompt_string(prompt.data, prompt.len, "", false,
@@ -1966,7 +1966,7 @@ action_runtime_add_random_items(void) {
     args[1] = ncm_string_format_arg_string(source_name, source_name_len);
     args[2] = ncm_string_format_arg_cstring(plural);
     ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT_ARGS("%1% random %2%%3% added to playlist"),
+                         STRLIT("%1% random %2%%3% added to playlist"),
                          args, LENGTH(args));
     return true;
 }
@@ -2010,7 +2010,7 @@ action_runtime_toggle_interface(void) {
     ncm_progressbar_scoped_lock_destroy(&lock);
     ncm_status_changes_mixer();
     ncm_status_changes_elapsed_time(false);
-    action_runtime_print_toggle(STRLIT_ARGS("User interface: %1%"),
+    action_runtime_print_toggle(STRLIT("User interface: %1%"),
                                 ncm_design_str(Config.design));
     return true;
 }
@@ -2021,10 +2021,10 @@ action_runtime_toggle_separators_between_albums(void) {
     app_controller_request_current_screen_resize();
     if (Config.playlist_separate_albums) {
         action_runtime_print_toggle(
-            STRLIT_ARGS("Separators between albums: %1%"), "on");
+            STRLIT("Separators between albums: %1%"), "on");
     } else {
         action_runtime_print_toggle(
-            STRLIT_ARGS("Separators between albums: %1%"), "off");
+            STRLIT("Separators between albums: %1%"), "off");
     }
     return true;
 }
@@ -2037,10 +2037,10 @@ action_runtime_toggle_lyrics_update_on_song_change(void) {
     Config.now_playing_lyrics = !Config.now_playing_lyrics;
     if (Config.now_playing_lyrics) {
         action_runtime_print_toggle(
-            STRLIT_ARGS("Update lyrics if song changes: %1%"), "on");
+            STRLIT("Update lyrics if song changes: %1%"), "on");
     } else {
         action_runtime_print_toggle(
-            STRLIT_ARGS("Update lyrics if song changes: %1%"), "off");
+            STRLIT("Update lyrics if song changes: %1%"), "off");
     }
     return true;
 }
@@ -2050,11 +2050,11 @@ action_runtime_toggle_fetching_lyrics_in_background(void) {
     Config.fetch_lyrics_in_background = !Config.fetch_lyrics_in_background;
     if (Config.fetch_lyrics_in_background) {
         action_runtime_print_toggle(
-            STRLIT_ARGS("Fetching lyrics for playing songs in background: %1%"),
+            STRLIT("Fetching lyrics for playing songs in background: %1%"),
             "on");
     } else {
         action_runtime_print_toggle(
-            STRLIT_ARGS("Fetching lyrics for playing songs in background: %1%"),
+            STRLIT("Fetching lyrics for playing songs in background: %1%"),
             "off");
     }
     return true;
@@ -2077,7 +2077,7 @@ action_runtime_toggle_add_mode(void) {
     default:
         return false;
     }
-    action_runtime_print_toggle(STRLIT_ARGS("Add mode: %1%"), mode_desc);
+    action_runtime_print_toggle(STRLIT("Add mode: %1%"), mode_desc);
     return true;
 }
 
@@ -2086,11 +2086,11 @@ action_runtime_toggle_mouse(void) {
     Config.mouse_support = !Config.mouse_support;
     if (Config.mouse_support) {
         nc_mouse_enable();
-        action_runtime_print_toggle(STRLIT_ARGS("Mouse support %1%"),
+        action_runtime_print_toggle(STRLIT("Mouse support %1%"),
                                     "enabled");
     } else {
         nc_mouse_disable();
-        action_runtime_print_toggle(STRLIT_ARGS("Mouse support %1%"),
+        action_runtime_print_toggle(STRLIT("Mouse support %1%"),
                                     "disabled");
     }
     return true;
@@ -2100,10 +2100,10 @@ static bool
 action_runtime_toggle_bitrate_visibility(void) {
     Config.display_bitrate = !Config.display_bitrate;
     if (Config.display_bitrate) {
-        action_runtime_print_toggle(STRLIT_ARGS("Bitrate visibility %1%"),
+        action_runtime_print_toggle(STRLIT("Bitrate visibility %1%"),
                                     "enabled");
     } else {
-        action_runtime_print_toggle(STRLIT_ARGS("Bitrate visibility %1%"),
+        action_runtime_print_toggle(STRLIT("Bitrate visibility %1%"),
                                     "disabled");
     }
     return true;
@@ -2389,7 +2389,7 @@ action_runtime_confirm(char *message, int32 message_len) {
     ncm_statusbar_scoped_lock_init(&lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, message, message_len);
-        nc_window_print_data(window, STRLIT_ARGS(" [y/n] "));
+        nc_window_print_data(window, STRLIT(" [y/n] "));
         prompted = ncm_statusbar_prompt_return_one_of(window, values,
                                                       LENGTH(values), &answer);
     }
@@ -2514,7 +2514,7 @@ action_runtime_execute_command(void) {
 
     sb_init(&state.previous);
     sb_init(&command_name);
-    prompted = action_runtime_prompt_string(STRLIT_ARGS(":"), "", true,
+    prompted = action_runtime_prompt_string(STRLIT(":"), "", true,
                                             action_runtime_command_prompt_hook,
                                             &state, &command_name);
     if (!prompted && (state.previous.len > 0)) {
@@ -2532,21 +2532,21 @@ action_runtime_execute_command(void) {
         &Bindings, command_name.data, command_name.len);
     if (command == NULL) {
         action_runtime_print_format_string(
-            STRLIT_ARGS("No command named \"%1%\""), command_name.data,
+            STRLIT("No command named \"%1%\""), command_name.data,
             command_name.len);
         sb_free(&command_name);
         return true;
     }
 
-    action_runtime_print_format_string(STRLIT_ARGS("Executing %1%..."),
+    action_runtime_print_format_string(STRLIT("Executing %1%..."),
                                        command_name.data, command_name.len);
     if ((result = action_runtime_execute_binding(&command->binding))) {
         action_runtime_print_format_string(
-            STRLIT_ARGS("Execution of command \"%1%\" successful."),
+            STRLIT("Execution of command \"%1%\" successful."),
             command_name.data, command_name.len);
     } else {
         action_runtime_print_format_string(
-            STRLIT_ARGS("Execution of command \"%1%\" unsuccessful."),
+            STRLIT("Execution of command \"%1%\" unsuccessful."),
             command_name.data, command_name.len);
     }
 
@@ -2566,7 +2566,7 @@ action_runtime_save_playlist(void) {
     }
 
     sb_init(&name);
-    prompted = action_runtime_prompt_string(STRLIT_ARGS("Save playlist as: "),
+    prompted = action_runtime_prompt_string(STRLIT("Save playlist as: "),
                                             "", false, NULL, NULL, &name);
     if (!prompted) {
         sb_free(&name);
@@ -2581,10 +2581,10 @@ action_runtime_save_playlist(void) {
         StrBuilder question;
 
         sb_init(&question);
-        SB_APPEND(&question, STRLIT_ARGS("Playlist \""));
+        SB_APPEND(&question, STRLIT("Playlist \""));
         SB_APPEND(&question, name.data, name.len);
         SB_APPEND(&question,
-                          STRLIT_ARGS("\" already exists, overwrite?"));
+                          STRLIT("\" already exists, overwrite?"));
         success = action_runtime_confirm(question.data, question.len);
         sb_free(&question);
         if (!success) {
@@ -2605,7 +2605,7 @@ action_runtime_save_playlist(void) {
         }
     } else if (success) {
         action_runtime_print_format_string(
-            STRLIT_ARGS("Playlist saved as \"%1%\""), name.data, name.len);
+            STRLIT("Playlist saved as \"%1%\""), name.data, name.len);
     }
 
     sb_free(&name);
@@ -2641,7 +2641,7 @@ action_runtime_apply_filter(void) {
     old_autocenter_mode = Config.autocenter_mode;
     Config.autocenter_mode = false;
     prompted = action_runtime_prompt_string(
-        STRLIT_ARGS("Apply filter: "), filter.data, false,
+        STRLIT("Apply filter: "), filter.data, false,
         action_runtime_filter_prompt_hook, NULL, &filter);
     Config.autocenter_mode = old_autocenter_mode;
 
@@ -2662,7 +2662,7 @@ action_runtime_apply_filter(void) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Filtering disabled");
     } else {
-        action_runtime_print_format_string(STRLIT_ARGS("Using filter \"%1%\""),
+        action_runtime_print_format_string(STRLIT("Using filter \"%1%\""),
                                            filter.data, filter.len);
     }
 
@@ -2685,7 +2685,7 @@ action_runtime_find(void) {
     }
 
     sb_init(&token);
-    prompted = action_runtime_prompt_string(STRLIT_ARGS("Find: "), "", false,
+    prompted = action_runtime_prompt_string(STRLIT("Find: "), "", false,
                                             NULL, NULL, &token);
     if (!prompted) {
         sb_free(&token);
@@ -2791,7 +2791,7 @@ action_runtime_find_item(enum SearchDirection direction) {
             }
         }
         action_runtime_print_format_string(
-            STRLIT_ARGS("Using constraint \"%1%\""), constraint.data,
+            STRLIT("Using constraint \"%1%\""), constraint.data,
             constraint.len);
     }
 
@@ -3417,7 +3417,7 @@ action_runtime_add_prompt(void) {
     bool success;
 
     sb_init(&path);
-    prompted = action_runtime_prompt_string(STRLIT_ARGS("Add: "), "", false,
+    prompted = action_runtime_prompt_string(STRLIT("Add: "), "", false,
                                             NULL, NULL, &path);
     if (!prompted) {
         sb_free(&path);
@@ -3426,7 +3426,7 @@ action_runtime_add_prompt(void) {
 
     if ((path.len <= 0)
         && !action_runtime_confirm(
-            STRLIT_ARGS("Are you sure you want to add the whole database?"))) {
+            STRLIT("Are you sure you want to add the whole database?"))) {
         sb_free(&path);
         return true;
     }
@@ -3456,7 +3456,7 @@ action_runtime_add_prompt(void) {
 
     if (!success && (server_error != (enum mpd_server_error)0)) {
         sb_init(&message);
-        SB_APPEND(&message, STRLIT_ARGS("Error while adding item: "));
+        SB_APPEND(&message, STRLIT("Error while adding item: "));
         if (ncm_error_is_set(&error)) {
             SB_APPEND(&message, error.message,
                               optional_strlen32(error.message));
@@ -3481,7 +3481,7 @@ action_runtime_load_prompt(void) {
     bool prompted;
 
     sb_init(&name);
-    prompted = action_runtime_prompt_string(STRLIT_ARGS("Load playlist: "), "",
+    prompted = action_runtime_prompt_string(STRLIT("Load playlist: "), "",
                                             false, NULL, NULL, &name);
     if (!prompted) {
         sb_free(&name);
@@ -3699,7 +3699,7 @@ action_runtime_delete_browser_items(void) {
     sb_init(&question);
     sb_init(&name);
     if (has_selected) {
-        SB_APPEND(&question, STRLIT_ARGS("Delete selected items?"));
+        SB_APPEND(&question, STRLIT("Delete selected items?"));
     } else {
         item = nc_menu_current_item(menu);
         if (native_browser_screen_item_is_parent(item)) {
@@ -3712,9 +3712,9 @@ action_runtime_delete_browser_items(void) {
             sb_free(&question);
             return false;
         }
-        SB_APPEND(&question, STRLIT_ARGS("Delete \""));
+        SB_APPEND(&question, STRLIT("Delete \""));
         SB_APPEND(&question, name.data, name.len);
-        SB_APPEND(&question, STRLIT_ARGS("\"?"));
+        SB_APPEND(&question, STRLIT("\"?"));
     }
 
     success = action_runtime_confirm(question.data, question.len);
@@ -3785,7 +3785,7 @@ action_runtime_print_renamed(char *prefix, int32 prefix_len, StrBuilder *name) {
     sb_init(&message);
     SB_APPEND(&message, prefix, prefix_len);
     SB_APPEND(&message, name->data, name->len);
-    SB_APPEND(&message, STRLIT_ARGS("\""));
+    SB_APPEND(&message, STRLIT("\""));
     ncm_statusbar_print(Config.message_delay_time, message.data,
                         message.len);
     sb_free(&message);
@@ -3936,16 +3936,16 @@ action_runtime_delete_stored_playlists(void) {
 
     sb_init(&question);
     if (has_selected) {
-        SB_APPEND(&question, STRLIT_ARGS("Delete selected playlists?"));
+        SB_APPEND(&question, STRLIT("Delete selected playlists?"));
     } else {
         if (((playlist = nc_menu_current_item(menu)) == NULL)
             || (playlist->path == NULL)) {
             sb_free(&question);
             return false;
         }
-        SB_APPEND(&question, STRLIT_ARGS("Delete playlist \""));
+        SB_APPEND(&question, STRLIT("Delete playlist \""));
         SB_APPEND(&question, playlist->path, playlist->path_len);
-        SB_APPEND(&question, STRLIT_ARGS("\"?"));
+        SB_APPEND(&question, STRLIT("\"?"));
     }
     success = action_runtime_confirm(question.data, question.len);
     sb_free(&question);
@@ -4004,7 +4004,7 @@ action_runtime_clear_playlist(bool main_playlist) {
         if (!native_playlist_screen_empty(native_c_screen_playlist())
             && Config.ask_before_clearing_playlists
             && !action_runtime_confirm(
-                STRLIT_ARGS("Do you really want to clear main playlist?"))) {
+                STRLIT("Do you really want to clear main playlist?"))) {
             return true;
         }
         if (!ncm_mpd_client_clear_queue(&global_mpd, &error)) {
@@ -4050,9 +4050,9 @@ action_runtime_clear_playlist(bool main_playlist) {
     success = ncm_mpd_client_clear_playlist(&global_mpd, playlist.path, &error);
     if (success) {
         sb_init(&message);
-        SB_APPEND(&message, STRLIT_ARGS("Playlist \""));
+        SB_APPEND(&message, STRLIT("Playlist \""));
         SB_APPEND(&message, playlist.path, playlist.path_len);
-        SB_APPEND(&message, STRLIT_ARGS("\" cleared"));
+        SB_APPEND(&message, STRLIT("\" cleared"));
         ncm_statusbar_print(Config.message_delay_time, message.data,
                             message.len);
         sb_free(&message);
@@ -4089,7 +4089,7 @@ action_runtime_crop_playlist(bool main_playlist) {
         }
         if (Config.ask_before_clearing_playlists
             && !action_runtime_confirm(
-                STRLIT_ARGS("Do you really want to crop main playlist?"))) {
+                STRLIT("Do you really want to crop main playlist?"))) {
             ncm_song_array_destroy(&songs);
             return true;
         }
@@ -4145,9 +4145,9 @@ action_runtime_crop_playlist(bool main_playlist) {
     if (success && Config.ask_before_clearing_playlists) {
         sb_init(&question);
         SB_APPEND(
-            &question, STRLIT_ARGS("Do you really want to crop playlist \""));
+            &question, STRLIT("Do you really want to crop playlist \""));
         SB_APPEND(&question, playlist.path, playlist.path_len);
-        SB_APPEND(&question, STRLIT_ARGS("\"?"));
+        SB_APPEND(&question, STRLIT("\"?"));
         success = action_runtime_confirm(question.data, question.len);
         sb_free(&question);
         if (!success) {
@@ -4158,9 +4158,9 @@ action_runtime_crop_playlist(bool main_playlist) {
     }
     if (success) {
         sb_init(&message);
-        SB_APPEND(&message, STRLIT_ARGS("Cropping playlist \""));
+        SB_APPEND(&message, STRLIT("Cropping playlist \""));
         SB_APPEND(&message, playlist.path, playlist.path_len);
-        SB_APPEND(&message, STRLIT_ARGS("\"..."));
+        SB_APPEND(&message, STRLIT("\"..."));
         ncm_statusbar_print(Config.message_delay_time, message.data,
                             message.len);
         sb_free(&message);
@@ -4173,9 +4173,9 @@ action_runtime_crop_playlist(bool main_playlist) {
     }
     if (success) {
         sb_init(&message);
-        SB_APPEND(&message, STRLIT_ARGS("Playlist \""));
+        SB_APPEND(&message, STRLIT("Playlist \""));
         SB_APPEND(&message, playlist.path, playlist.path_len);
-        SB_APPEND(&message, STRLIT_ARGS("\" cropped"));
+        SB_APPEND(&message, STRLIT("\" cropped"));
         ncm_statusbar_print(Config.message_delay_time, message.data,
                             message.len);
         sb_free(&message);
@@ -4649,7 +4649,7 @@ action_runtime_shuffle_playlist(void) {
     }
     if (Config.ask_before_shuffling_playlists
         && !action_runtime_confirm(
-            STRLIT_ARGS("Do you really want to shuffle selected range?"))) {
+            STRLIT("Do you really want to shuffle selected range?"))) {
         return true;
     }
 
@@ -4685,7 +4685,7 @@ action_runtime_set_selected_items_priority(void) {
 
     sb_init(&input);
     prompted = action_runtime_prompt_string(
-        STRLIT_ARGS("Set priority [0-255]: "), "", false, NULL, NULL, &input);
+        STRLIT("Set priority [0-255]: "), "", false, NULL, NULL, &input);
     if (!prompted) {
         sb_free(&input);
         return true;
@@ -4734,7 +4734,7 @@ action_runtime_jump_to_position_in_song(void) {
 
     sb_init(&input);
     prompted = action_runtime_prompt_string(
-        STRLIT_ARGS("Position to go (in %/h:m:ss/m:ss/seconds(s)): "), "",
+        STRLIT("Position to go (in %/h:m:ss/m:ss/seconds(s)): "), "",
         false, NULL, NULL, &input);
     if (!prompted) {
         sb_free(&input);
@@ -5303,7 +5303,7 @@ action_runtime_edit_directory_name(void) {
 
         sb_init(&name);
         prompted = action_runtime_prompt_string(
-            STRLIT_ARGS("Directory: "), path.data, false, NULL, NULL, &name);
+            STRLIT("Directory: "), path.data, false, NULL, NULL, &name);
         if (!prompted) {
             sb_free(&name);
             return true;
@@ -5318,7 +5318,7 @@ action_runtime_edit_directory_name(void) {
         success = native_browser_screen_rename_current_directory(
             browser, name.data, name.len, &global_mpd, &error);
         if (success) {
-            action_runtime_print_renamed(STRLIT_ARGS("Directory renamed to \""),
+            action_runtime_print_renamed(STRLIT("Directory renamed to \""),
                                          &name);
         }
         sb_free(&name);
@@ -5360,7 +5360,7 @@ action_runtime_edit_playlist_name(void) {
 
         sb_init(&name);
         prompted = action_runtime_prompt_string(
-            STRLIT_ARGS("Playlist: "), path.data, false, NULL, NULL, &name);
+            STRLIT("Playlist: "), path.data, false, NULL, NULL, &name);
         if (!prompted) {
             sb_free(&name);
             return true;
@@ -5375,7 +5375,7 @@ action_runtime_edit_playlist_name(void) {
         success = native_browser_screen_rename_current_playlist(
             browser, name.data, name.len, &global_mpd, &error);
         if (success) {
-            action_runtime_print_renamed(STRLIT_ARGS("Playlist renamed to \""),
+            action_runtime_print_renamed(STRLIT("Playlist renamed to \""),
                                          &name);
         }
         sb_free(&name);
@@ -5405,7 +5405,7 @@ action_runtime_edit_playlist_name(void) {
 
     sb_init(&name);
     prompted = action_runtime_prompt_string(
-        STRLIT_ARGS("Playlist: "), playlist.path, false, NULL, NULL, &name);
+        STRLIT("Playlist: "), playlist.path, false, NULL, NULL, &name);
     if (!prompted) {
         sb_free(&name);
         ncm_playlist_destroy(&playlist);
@@ -5422,7 +5422,7 @@ action_runtime_edit_playlist_name(void) {
     success = ncm_mpd_client_rename_playlist(&global_mpd, playlist.path,
                                              name.data, &error);
     if (success) {
-        action_runtime_print_renamed(STRLIT_ARGS("Playlist renamed to \""),
+        action_runtime_print_renamed(STRLIT("Playlist renamed to \""),
                                      &name);
         native_playlist_editor_screen_request_playlists_update(screen);
     }
@@ -5448,7 +5448,7 @@ action_runtime_toggle_display_mode(void) {
         search_mode = native_search_engine_screen_toggle_display_mode(screen);
         arg = ncm_string_format_arg_cstring(ncm_display_mode_str(search_mode));
         ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT_ARGS("Search engine display mode: %1%"),
+                             STRLIT("Search engine display mode: %1%"),
                              &arg, 1);
         app_controller_request_current_screen_resize();
         app_controller_refresh_current_screen();
@@ -5513,7 +5513,7 @@ action_runtime_toggle_display_mode(void) {
         app_controller_refresh_current_screen();
         arg = ncm_string_format_arg_cstring(ncm_display_mode_str(*mode));
         ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT_ARGS("Playlist display mode: %1%"), &arg,
+                             STRLIT("Playlist display mode: %1%"), &arg,
                              1);
     }
     return true;
@@ -5714,7 +5714,7 @@ action_runtime_toggle_replay_gain_mode(void) {
     if (!ncm_mpd_client_get_replay_gain_mode(&global_mpd, &mode, &error)) {
         return action_runtime_mpd_error(&error);
     }
-    action_runtime_print_toggle(STRLIT_ARGS("Replay gain mode: %1%"),
+    action_runtime_print_toggle(STRLIT("Replay gain mode: %1%"),
                                 action_runtime_replay_gain_mode_name(mode));
     return true;
 }
@@ -5788,7 +5788,7 @@ ncm_action_edit_song(NcmSong *song) {
         path_len = utf8_cut_width(path.data, path.len, path_width);
         arg = ncm_string_format_arg_string(path.data, path_len);
         ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT_ARGS("Couldn't read file \"%1%\""), &arg,
+                             STRLIT("Couldn't read file \"%1%\""), &arg,
                              1);
         break;
     case NATIVE_TINY_TAG_EDITOR_OPEN_INVALID_ARGUMENT:
@@ -5873,7 +5873,7 @@ action_runtime_toggle_screen_lock(void) {
         sb_init(&input);
         SNPRINTF(initial, "%d", part);
         prompted = action_runtime_prompt_string(
-            STRLIT_ARGS("% of the locked screen's width to be reserved "
+            STRLIT("% of the locked screen's width to be reserved "
                         "(20-80): "),
             initial, true, NULL, NULL, &input);
         if (!prompted) {
@@ -5887,7 +5887,7 @@ action_runtime_toggle_screen_lock(void) {
         if (!ncm_parse_int32(input.data, input.len, &part, &error)) {
             args[0] = ncm_string_format_arg_string(input.data, input.len);
             ncm_statusbar_format(Config.message_delay_time,
-                                 STRLIT_ARGS("Invalid value: %1%"), args, 1);
+                                 STRLIT("Invalid value: %1%"), args, 1);
             sb_free(&input);
             return true;
         }
@@ -5899,7 +5899,7 @@ action_runtime_toggle_screen_lock(void) {
         args[1] = ncm_string_format_arg_u64(80);
         args[2] = ncm_string_format_arg_u64((uint64)part);
         ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT_ARGS("Error: value is out of bounds "
+                             STRLIT("Error: value is out of bounds "
                                          "([%1%, %2%] expected, %3% given)"),
                              args, LENGTH(args));
         return true;
@@ -5909,7 +5909,7 @@ action_runtime_toggle_screen_lock(void) {
     if (app_controller_lock_current_screen()) {
         args[0] = ncm_string_format_arg_u64((uint32)part);
         ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT_ARGS("Screen locked (with %1%%% width)"),
+                             STRLIT("Screen locked (with %1%%% width)"),
                              args, 1);
     } else {
         ncm_statusbar_print_cstring(Config.message_delay_time,
@@ -6056,7 +6056,7 @@ action_runtime_print_updating_song(NcmSong *song) {
     }
 
     arg = ncm_string_format_arg_string(name.data, name.len);
-    ncm_statusbar_format(0, STRLIT_ARGS("Updating tags in \"%1%\"..."), &arg,
+    ncm_statusbar_format(0, STRLIT("Updating tags in \"%1%\"..."), &arg,
                          1);
     return;
 }
@@ -6074,7 +6074,7 @@ action_runtime_print_song_write_error(NcmSong *song) {
     args[1] = ncm_string_format_arg_cstring(strerror(errno));
     ncm_statusbar_format(
         Config.message_delay_time,
-        STRLIT_ARGS("Error while writing tags to \"%1%\": %2%"), args,
+        STRLIT("Error while writing tags to \"%1%\": %2%"), args,
         LENGTH(args));
     return;
 }
@@ -6164,7 +6164,7 @@ action_runtime_edit_library_tag(void) {
     SB_APPEND(
         &prompt, ncm_tag_type_name(Config.media_lib_primary_tag),
         optional_strlen32(ncm_tag_type_name(Config.media_lib_primary_tag)));
-    SB_APPEND(&prompt, STRLIT_ARGS(": "));
+    SB_APPEND(&prompt, STRLIT(": "));
     prompted = action_runtime_prompt_string(
         prompt.data, prompt.len, current_tag.data, false, NULL, NULL, &new_tag);
     if (!prompted) {
@@ -6273,7 +6273,7 @@ action_runtime_edit_library_album(void) {
     if (!sb_set(&current_album, album, album_len)) {
         goto cleanup;
     }
-    prompted = action_runtime_prompt_string(STRLIT_ARGS("Album: "),
+    prompted = action_runtime_prompt_string(STRLIT("Album: "),
                                             current_album.data, false, NULL,
                                             NULL, &new_album);
     if (!prompted) {
@@ -6321,7 +6321,7 @@ action_runtime_edit_library_album(void) {
         ncm_taglib_file_init(&file);
         if (!ncm_taglib_file_open(&file, path.data)) {
             action_runtime_print_album_file_error(
-                STRLIT_ARGS("Error while opening file \"%1%\""), song);
+                STRLIT("Error while opening file \"%1%\""), song);
             success = false;
             break;
         }
@@ -6329,7 +6329,7 @@ action_runtime_edit_library_album(void) {
         ncm_taglib_append_property(&file, "ALBUM", new_album.data);
         if (!ncm_taglib_file_save(&file)) {
             action_runtime_print_album_file_error(
-                STRLIT_ARGS("Error while writing tags in \"%1%\""), song);
+                STRLIT("Error while writing tags in \"%1%\""), song);
             ncm_taglib_file_close(&file);
             success = false;
             break;
@@ -6411,7 +6411,7 @@ action_runtime_toggle_lyrics_fetcher(void) {
     arg = ncm_string_format_arg_string(ncm_lyrics_fetcher_name(fetcher),
                                        ncm_lyrics_fetcher_name_len(fetcher));
     ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT_ARGS("Using lyrics fetcher: %1%"), &arg, 1);
+                         STRLIT("Using lyrics fetcher: %1%"), &arg, 1);
     return true;
 }
 
@@ -6458,7 +6458,7 @@ action_runtime_edit_lyrics(void) {
                                                   filename->len);
     SB_APPEND(&command, Config.external_editor,
                       Config.external_editor_len);
-    SB_APPEND(&command, STRLIT_ARGS(" '"));
+    SB_APPEND(&command, STRLIT(" '"));
     SB_APPEND(&command, escaped.data, escaped.len);
     sb_append_byte(&command, '\'');
 

@@ -332,7 +332,7 @@ native_tiny_tag_editor_screen_reload_rows(
     screen->show_duplicate_tags = show_duplicate_tags;
     nc_menu_clear_items(nc_editor_buffer_menu_base(&screen->rows));
     nc_buffer_init(&row);
-    tiny_editor_buffer_key_value(&row, STRLIT_ARGS("Filename"),
+    tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
                                  screen->edited.name,
                                  screen->edited.name_len);
     if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE)) {
@@ -340,7 +340,7 @@ native_tiny_tag_editor_screen_reload_rows(
         return false;
     }
     nc_buffer_clear(&row);
-    tiny_editor_buffer_key_value(&row, STRLIT_ARGS("Directory"),
+    tiny_editor_buffer_key_value(&row, STRLIT("Directory"),
                                  screen->edited.directory,
                                  screen->edited.directory_len);
     if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE)) {
@@ -364,7 +364,7 @@ native_tiny_tag_editor_screen_reload_rows(
         duration_buffer[3] = '-';
         duration_len = 4;
     }
-    tiny_editor_buffer_key_value(&row, STRLIT_ARGS("Length"),
+    tiny_editor_buffer_key_value(&row, STRLIT("Length"),
                                  duration_buffer, duration_len);
     if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE)) {
         nc_buffer_destroy(&row);
@@ -373,8 +373,8 @@ native_tiny_tag_editor_screen_reload_rows(
     nc_buffer_clear(&row);
     if (properties) {
         tiny_editor_buffer_key_uint(
-            &row, STRLIT_ARGS("Bitrate"), (uint32)properties->bitrate,
-            STRLIT_ARGS(" kbps"));
+            &row, STRLIT("Bitrate"), (uint32)properties->bitrate,
+            STRLIT(" kbps"));
     }
     if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE)) {
         nc_buffer_destroy(&row);
@@ -383,8 +383,8 @@ native_tiny_tag_editor_screen_reload_rows(
     nc_buffer_clear(&row);
     if (properties) {
         tiny_editor_buffer_key_uint(
-            &row, STRLIT_ARGS("Sample rate"),
-            (uint32)properties->sample_rate, STRLIT_ARGS(" Hz"));
+            &row, STRLIT("Sample rate"),
+            (uint32)properties->sample_rate, STRLIT(" Hz"));
     }
     if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE)) {
         nc_buffer_destroy(&row);
@@ -397,7 +397,7 @@ native_tiny_tag_editor_screen_reload_rows(
                                                      channel_buffer,
                                                      SIZEOF(channel_buffer));
     }
-    tiny_editor_buffer_key_value(&row, STRLIT_ARGS("Channels"),
+    tiny_editor_buffer_key_value(&row, STRLIT("Channels"),
                                  channel_buffer, channel_len);
     if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE)) {
         nc_buffer_destroy(&row);
@@ -434,7 +434,7 @@ native_tiny_tag_editor_screen_reload_rows(
 
     nc_editor_buffer_menu_add_separator(&screen->rows);
     nc_buffer_init(&row);
-    tiny_editor_buffer_key_value(&row, STRLIT_ARGS("Filename"),
+    tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
                                  screen->edited.name,
                                  screen->edited.name_len);
     if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE)) {
@@ -444,13 +444,13 @@ native_tiny_tag_editor_screen_reload_rows(
     nc_buffer_destroy(&row);
     nc_editor_buffer_menu_add_separator(&screen->rows);
     nc_buffer_init(&row);
-    nc_buffer_append_data(&row, STRLIT_ARGS("Save"));
+    nc_buffer_append_data(&row, STRLIT("Save"));
     if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE)) {
         nc_buffer_destroy(&row);
         return false;
     }
     nc_buffer_clear(&row);
-    nc_buffer_append_data(&row, STRLIT_ARGS("Cancel"));
+    nc_buffer_append_data(&row, STRLIT("Cancel"));
     if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE)) {
         nc_buffer_destroy(&row);
         return false;
@@ -569,7 +569,7 @@ native_tiny_tag_editor_screen_run_row(
         sb_free(&tag_value);
         if (prompt_result == NATIVE_TINY_TAG_EDITOR_PROMPT_ABORTED) {
             tiny_editor_status_message(
-                screen, STRLIT_ARGS("Action aborted"));
+                screen, STRLIT("Action aborted"));
             sb_free(&input);
             return false;
         }
@@ -609,12 +609,12 @@ native_tiny_tag_editor_screen_run_row(
             prompt_result = NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
         } else {
             prompt_result = screen->hooks.prompt(
-                screen->hooks.user, STRLIT_ARGS("Filename"), initial,
+                screen->hooks.user, STRLIT("Filename"), initial,
                 &input);
         }
         if (prompt_result == NATIVE_TINY_TAG_EDITOR_PROMPT_ABORTED) {
             tiny_editor_status_message(
-                screen, STRLIT_ARGS("Action aborted"));
+                screen, STRLIT("Action aborted"));
             sb_free(&input);
             return false;
         }
@@ -637,10 +637,10 @@ native_tiny_tag_editor_screen_run_row(
 
     if (row == NATIVE_TINY_TAG_EDITOR_SAVE_ROW) {
         tiny_editor_status_message(
-            screen, STRLIT_ARGS("Updating tags..."));
+            screen, STRLIT("Updating tags..."));
         if (tiny_editor_write_song(screen, screen->music_dir.data)) {
             tiny_editor_status_message(
-                screen, STRLIT_ARGS("Tags updated"));
+                screen, STRLIT("Tags updated"));
             tiny_editor_complete_save(screen);
         } else {
             error_len = SNPRINTF(error_buffer, "Error while writing tags: %s",
@@ -751,7 +751,7 @@ tiny_editor_switch_to(NcScreen *screen) {
 
     editor = tiny_editor_from_screen(screen);
     editor->previous_screen = app_controller_previous_screen();
-    ncm_title_draw_header(STRLIT_ARGS("Tiny tag editor"));
+    ncm_title_draw_header(STRLIT("Tiny tag editor"));
     return;
 }
 
@@ -952,7 +952,7 @@ tiny_editor_replace_filename_row(
     }
     menu = nc_editor_buffer_menu_base(&screen->rows);
     nc_buffer_init(&row);
-    tiny_editor_buffer_key_value(&row, STRLIT_ARGS("Filename"),
+    tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
                                  name.data, name.len);
     result = nc_menu_replace_item(
         menu, NC_MENU_ITEMS_ALL,
@@ -1019,7 +1019,7 @@ static void
 tiny_editor_buffer_key_value(NcBuffer *buffer, char *key, int32 key_len,
                              char *value, int32 value_len) {
     nc_buffer_append_data(buffer, key, key_len);
-    nc_buffer_append_data(buffer, STRLIT_ARGS(": "));
+    nc_buffer_append_data(buffer, STRLIT(": "));
     if (value && (value_len > 0)) {
         nc_buffer_append_data(buffer, value, value_len);
     }

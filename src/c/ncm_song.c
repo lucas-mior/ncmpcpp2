@@ -591,7 +591,7 @@ ncm_song_directory_from_uri(char *uri, int32 uri_len,
 
     basename = ncm_path_basename_start(uri, uri_len);
     if (basename == 0) {
-        ncm_string_view_set(view, STRLIT_ARGS("/"));
+        ncm_string_view_set(view, STRLIT("/"));
     } else {
         ncm_string_view_set(view, uri, basename - 1);
     }
@@ -620,8 +620,8 @@ ncm_song_uri_is_stream(char *uri, int32 uri_len) {
         return false;
     }
 
-    return ncm_string_starts_with(uri, uri_len, STRLIT_ARGS("http://"))
-           || ncm_string_starts_with(uri, uri_len, STRLIT_ARGS("https://"));
+    return ncm_string_starts_with(uri, uri_len, STRLIT("http://"))
+           || ncm_string_starts_with(uri, uri_len, STRLIT("https://"));
 }
 
 int32
@@ -746,7 +746,7 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
                                      LENGTH(number_buffer));
             SB_APPEND(&buffer, number_buffer, len);
         } else {
-            SB_APPEND(&buffer, STRLIT_ARGS("-:--"));
+            SB_APPEND(&buffer, STRLIT("-:--"));
         }
         return buffer;
     case NCM_SONG_GETTER_DIRECTORY:

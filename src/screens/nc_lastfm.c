@@ -162,7 +162,7 @@ native_lastfm_screen_init(NativeLastfmScreen *screen,
                    nc_lastfm_screen_start_y(&screen->screen),
                    nc_lastfm_screen_width(&screen->screen),
                    nc_lastfm_screen_height(&screen->screen),
-                   STRLIT_ARGS(""),
+                   STRLIT(""),
                    color,
                    border);
 
@@ -184,7 +184,7 @@ native_lastfm_screen_init(NativeLastfmScreen *screen,
 
     nc_window_set_timeout(&screen->window, lines_scrolled);
     (void)native_lastfm_set_title(screen,
-                                  STRLIT_ARGS(NATIVE_LASTFM_DEFAULT_TITLE));
+                                  STRLIT(NATIVE_LASTFM_DEFAULT_TITLE));
     return;
 }
 
@@ -255,7 +255,7 @@ native_lastfm_screen_queue_artist_info(NativeLastfmScreen *screen,
     NcmLastfmService candidate;
 
     if ((screen == NULL) || (artist == NULL) || (artist_len <= 0)) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing artist"));
+        ncm_error_set(error, EINVAL, STRLIT("missing artist"));
         return false;
     }
 
@@ -264,7 +264,7 @@ native_lastfm_screen_queue_artist_info(NativeLastfmScreen *screen,
                                      lang, lang_len)) {
         ncm_lastfm_service_destroy(&candidate);
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("invalid Last.fm service"));
+                      STRLIT("invalid Last.fm service"));
         return false;
     }
     if (screen->has_service
@@ -282,7 +282,7 @@ native_lastfm_screen_queue_artist_info(NativeLastfmScreen *screen,
     job = native_lastfm_job_create(screen, &candidate);
     ncm_lastfm_service_destroy(&candidate);
     if (job == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("failed to create job"));
+        ncm_error_set(error, EINVAL, STRLIT("failed to create job"));
         return false;
     }
 
@@ -362,7 +362,7 @@ native_lastfm_buffer_find(NcBuffer *buffer, char *pattern,
     bool result;
 
     if (buffer == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing Last.fm buffer"));
+        ncm_error_set(error, EINVAL, STRLIT("missing Last.fm buffer"));
         return false;
     }
 
@@ -397,7 +397,7 @@ native_lastfm_screen_find(NativeLastfmScreen *screen,
     bool result;
 
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing Last.fm screen"));
+        ncm_error_set(error, EINVAL, STRLIT("missing Last.fm screen"));
         return false;
     }
 
@@ -563,7 +563,7 @@ native_lastfm_job_run(void *user, NcmError *error) {
 
     (void)ncm_lastfm_service_fetch(&job->service, &job->result);
     if (!job->result.success) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("Last.fm fetch failed"));
+        ncm_error_set(error, EINVAL, STRLIT("Last.fm fetch failed"));
     }
     return job->result.success;
 }
@@ -626,13 +626,13 @@ native_lastfm_render_result(NativeLastfmScreen *screen) {
         if (ncm_lastfm_service_type(&screen->service)
             == NCM_LASTFM_SERVICE_ARTIST_INFO) {
             native_lastfm_apply_literal_format(
-                &screen->buffer, STRLIT_ARGS("\n\nSimilar artists:\n"),
+                &screen->buffer, STRLIT("\n\nSimilar artists:\n"),
                 NC_FORMAT_BOLD, NC_FORMAT_NO_BOLD);
             native_lastfm_apply_literal_format(
-                &screen->buffer, STRLIT_ARGS("\n\nSimilar tags:\n"),
+                &screen->buffer, STRLIT("\n\nSimilar tags:\n"),
                 NC_FORMAT_BOLD, NC_FORMAT_NO_BOLD);
             native_lastfm_apply_literal_color2(&screen->buffer,
-                                               STRLIT_ARGS("\n * "));
+                                               STRLIT("\n * "));
         }
     } else {
         native_lastfm_render_failure(screen);

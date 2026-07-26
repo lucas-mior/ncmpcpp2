@@ -49,7 +49,7 @@ nc_server_info_screen_init(NcServerInfoScreen *screen,
                    nc_server_info_screen_start_y(screen),
                    nc_server_info_screen_width(screen),
                    nc_server_info_screen_height(screen),
-                   STRLIT_ARGS("MPD server info"),
+                   STRLIT("MPD server info"),
                    color,
                    border);
     nc_scrollpad_init(&screen->scrollpad,

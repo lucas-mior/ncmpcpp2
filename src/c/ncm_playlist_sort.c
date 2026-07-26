@@ -168,27 +168,27 @@ ncm_playlist_sort_plan_build(
     int64 last_position;
 
     if (plan == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing sort plan"));
+        ncm_error_set(error, EINVAL, STRLIT("missing sort plan"));
         return false;
     }
     if (songs == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing song array"));
+        ncm_error_set(error, EINVAL, STRLIT("missing song array"));
         return false;
     }
     if (songs->len < 0) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("invalid song count"));
+        ncm_error_set(error, EINVAL, STRLIT("invalid song count"));
         return false;
     }
     if ((songs->len > 0) && (songs->items == NULL)) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing songs"));
+        ncm_error_set(error, EINVAL, STRLIT("missing songs"));
         return false;
     }
     if (getters_len < 0) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("invalid sort key count"));
+        ncm_error_set(error, EINVAL, STRLIT("invalid sort key count"));
         return false;
     }
     if ((getters_len > 0) && (getters == NULL)) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing sort keys"));
+        ncm_error_set(error, EINVAL, STRLIT("missing sort keys"));
         return false;
     }
     for (int32 i = 0; i < getters_len; i += 1) {
@@ -198,7 +198,7 @@ ncm_playlist_sort_plan_build(
         if ((getters[i] < NCM_SONG_GETTER_NONE)
             || (getters[i] > NCM_SONG_GETTER_PRIORITY)) {
             ncm_error_set(error, EINVAL,
-                          STRLIT_ARGS("invalid playlist sort key"));
+                          STRLIT("invalid playlist sort key"));
             return false;
         }
     }
@@ -206,7 +206,7 @@ ncm_playlist_sort_plan_build(
         last_position = start_position + songs->len - 1;
         if (last_position > UINT32_MAX) {
             ncm_error_set(error, EOVERFLOW,
-                          STRLIT_ARGS("playlist sort range overflow"));
+                          STRLIT("playlist sort range overflow"));
             return false;
         }
     }
@@ -280,20 +280,20 @@ ncm_playlist_sort_plan_execute(NcmPlaylistSortPlan *plan,
     bool success;
 
     if (plan == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing sort plan"));
+        ncm_error_set(error, EINVAL, STRLIT("missing sort plan"));
         return false;
     }
     if ((plan->len < 0) || (plan->cap < plan->len)) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("invalid sort plan"));
+        ncm_error_set(error, EINVAL, STRLIT("invalid sort plan"));
         return false;
     }
     if ((plan->len > 0) && (plan->items == NULL)) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing sort operations"));
+                      STRLIT("missing sort operations"));
         return false;
     }
     if (client == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing MPD client"));
+        ncm_error_set(error, EINVAL, STRLIT("missing MPD client"));
         return false;
     }
     if (plan->len <= 0) {

@@ -254,40 +254,40 @@ static NcmStringView
 ncm_display_column_type_name(char type) {
     switch (type) {
     case 'l':
-        return ncm_string_view_make(STRLIT_ARGS("Time"));
+        return ncm_string_view_make(STRLIT("Time"));
     case 'f':
-        return ncm_string_view_make(STRLIT_ARGS("Filename"));
+        return ncm_string_view_make(STRLIT("Filename"));
     case 'D':
-        return ncm_string_view_make(STRLIT_ARGS("Directory"));
+        return ncm_string_view_make(STRLIT("Directory"));
     case 'F':
-        return ncm_string_view_make(STRLIT_ARGS("Filepath"));
+        return ncm_string_view_make(STRLIT("Filepath"));
     case 'a':
-        return ncm_string_view_make(STRLIT_ARGS("Artist"));
+        return ncm_string_view_make(STRLIT("Artist"));
     case 'A':
-        return ncm_string_view_make(STRLIT_ARGS("Album Artist"));
+        return ncm_string_view_make(STRLIT("Album Artist"));
     case 't':
-        return ncm_string_view_make(STRLIT_ARGS("Title"));
+        return ncm_string_view_make(STRLIT("Title"));
     case 'b':
-        return ncm_string_view_make(STRLIT_ARGS("Album"));
+        return ncm_string_view_make(STRLIT("Album"));
     case 'y':
-        return ncm_string_view_make(STRLIT_ARGS("Date"));
+        return ncm_string_view_make(STRLIT("Date"));
     case 'n':
     case 'N':
-        return ncm_string_view_make(STRLIT_ARGS("Track"));
+        return ncm_string_view_make(STRLIT("Track"));
     case 'g':
-        return ncm_string_view_make(STRLIT_ARGS("Genre"));
+        return ncm_string_view_make(STRLIT("Genre"));
     case 'c':
-        return ncm_string_view_make(STRLIT_ARGS("Composer"));
+        return ncm_string_view_make(STRLIT("Composer"));
     case 'p':
-        return ncm_string_view_make(STRLIT_ARGS("Performer"));
+        return ncm_string_view_make(STRLIT("Performer"));
     case 'd':
-        return ncm_string_view_make(STRLIT_ARGS("Disc"));
+        return ncm_string_view_make(STRLIT("Disc"));
     case 'C':
-        return ncm_string_view_make(STRLIT_ARGS("Comment"));
+        return ncm_string_view_make(STRLIT("Comment"));
     case 'P':
-        return ncm_string_view_make(STRLIT_ARGS("Priority"));
+        return ncm_string_view_make(STRLIT("Priority"));
     default:
-        return ncm_string_view_make(STRLIT_ARGS("?"));
+        return ncm_string_view_make(STRLIT("?"));
     }
 }
 

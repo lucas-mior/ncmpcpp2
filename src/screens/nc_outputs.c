@@ -63,7 +63,7 @@ nc_outputs_screen_init(NcOutputsScreen *screen,
                    nc_outputs_screen_start_y(screen),
                    nc_outputs_screen_width(screen),
                    nc_outputs_screen_height(screen),
-                   STRLIT_ARGS(""),
+                   STRLIT(""),
                    color,
                    border);
     nc_menu_init(&screen->menu);

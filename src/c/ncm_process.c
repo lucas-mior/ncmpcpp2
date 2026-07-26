@@ -37,17 +37,17 @@ static bool
 ncm_process_command_argv_ready(NcmProcessCommand *command, NcmError *error) {
     if (command == NULL) {
         ncm_process_set_text_error(error, EINVAL,
-                                   STRLIT_ARGS("missing command"));
+                                   STRLIT("missing command"));
         return false;
     }
     if (command->argc <= 0) {
         ncm_process_set_text_error(error, EINVAL,
-                                   STRLIT_ARGS("empty command"));
+                                   STRLIT("empty command"));
         return false;
     }
     if (command->argv == NULL) {
         ncm_process_set_text_error(error, EINVAL,
-                                   STRLIT_ARGS("command has no argv"));
+                                   STRLIT("command has no argv"));
         return false;
     }
 
@@ -212,7 +212,7 @@ ncm_process_run_shell(char *command, int32 command_len,
         result = ncm_process_run_sync(&process, status, error);
     } else {
         ncm_process_set_text_error(error, EINVAL,
-                                   STRLIT_ARGS("invalid shell command"));
+                                   STRLIT("invalid shell command"));
     }
     ncm_process_command_destroy(&process);
     return result;

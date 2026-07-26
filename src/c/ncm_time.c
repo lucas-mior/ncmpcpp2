@@ -27,7 +27,7 @@ ncm_time_monotonic_now(NcmTimePoint *point, NcmError *error) {
     struct timespec timespec;
 
     if (point == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing time point"));
+        ncm_error_set(error, EINVAL, STRLIT("missing time point"));
         return false;
     }
 

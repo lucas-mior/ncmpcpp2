@@ -474,11 +474,11 @@ native_playlist_screen_reload_from_mpd(NativePlaylistScreen *screen,
     bool result;
 
     if (screen == NULL) {
-        ncm_error_set(error, -1, STRLIT_ARGS("playlist screen is NULL"));
+        ncm_error_set(error, -1, STRLIT("playlist screen is NULL"));
         return false;
     }
     if (client == NULL) {
-        ncm_error_set(error, -1, STRLIT_ARGS("MPD client is NULL"));
+        ncm_error_set(error, -1, STRLIT("MPD client is NULL"));
         return false;
     }
 
@@ -502,7 +502,7 @@ native_playlist_screen_reload_from_mpd(NativePlaylistScreen *screen,
                                                      &songs, playlist_length);
         if (!result) {
             ncm_error_set(error, -1,
-                          STRLIT_ARGS("could not copy playlist songs"));
+                          STRLIT("could not copy playlist songs"));
         }
     }
     ncm_mpd_song_list_destroy(&songs);
@@ -679,14 +679,14 @@ native_playlist_screen_find_sort_range(
     int32 range_start;
 
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing playlist screen"));
+        ncm_error_set(error, EINVAL, STRLIT("missing playlist screen"));
         return false;
     }
 
     menu = native_playlist_storage_menu(screen);
     last = nc_menu_all_item_count(menu);
     if (last <= 0) {
-        ncm_error_set(error, ENOENT, STRLIT_ARGS("playlist is empty"));
+        ncm_error_set(error, ENOENT, STRLIT("playlist is empty"));
         return false;
     }
 
@@ -720,7 +720,7 @@ native_playlist_screen_find_sort_range(
             if (!(flags & NC_MENU_ITEM_SELECTED)) {
                 ncm_error_set(
                     error, EINVAL,
-                    STRLIT_ARGS("selected songs are not contiguous"));
+                    STRLIT("selected songs are not contiguous"));
                 return false;
             }
         }
@@ -729,7 +729,7 @@ native_playlist_screen_find_sort_range(
 
     if ((song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, first)) == NULL) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing playlist range song"));
+                      STRLIT("missing playlist range song"));
         return false;
     }
     range_start = ncm_song_position(song);
@@ -739,7 +739,7 @@ native_playlist_screen_find_sort_range(
 
         if ((song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i)) == NULL) {
             ncm_error_set(error, EINVAL,
-                          STRLIT_ARGS("missing playlist range song"));
+                          STRLIT("missing playlist range song"));
             return false;
         }
         expected_position = range_start + i - first;
@@ -747,7 +747,7 @@ native_playlist_screen_find_sort_range(
             || (ncm_song_position(song) != expected_position)) {
             ncm_error_set(
                 error, EINVAL,
-                STRLIT_ARGS("playlist range positions are not contiguous"));
+                STRLIT("playlist range positions are not contiguous"));
             return false;
         }
     }
@@ -786,12 +786,12 @@ native_playlist_screen_copy_sort_range(
     int32 range_start;
 
     if (songs == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing song array"));
+        ncm_error_set(error, EINVAL, STRLIT("missing song array"));
         return false;
     }
     if (start_position == NULL) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing playlist range position"));
+                      STRLIT("missing playlist range position"));
         return false;
     }
     if (!native_playlist_screen_find_sort_range(
@@ -804,13 +804,13 @@ native_playlist_screen_copy_sort_range(
     for (int32 i = first; i < last; i += 1) {
         if ((song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i)) == NULL) {
             ncm_error_set(error, EINVAL,
-                          STRLIT_ARGS("missing playlist range song"));
+                          STRLIT("missing playlist range song"));
             ncm_song_array_destroy(&replacement);
             return false;
         }
         if (!ncm_song_array_append_copy(&replacement, song)) {
             ncm_error_set(error, ENOMEM,
-                          STRLIT_ARGS("could not copy playlist range"));
+                          STRLIT("could not copy playlist range"));
             ncm_song_array_destroy(&replacement);
             return false;
         }
@@ -1385,7 +1385,7 @@ native_playlist_set_mutable_uri(NcmSong *song, NcmMutableSong *edited) {
     if (edited->directory_len > 0) {
         SB_APPEND(&uri, edited->directory, edited->directory_len);
         if (edited->directory[edited->directory_len - 1] != '/') {
-            SB_APPEND(&uri, STRLIT_ARGS("/"));
+            SB_APPEND(&uri, STRLIT("/"));
         }
     }
     SB_APPEND(&uri, new_name.data, new_name.len);
@@ -1399,13 +1399,13 @@ native_playlist_refresh_stats(NativePlaylistScreen *screen) {
     int32 count;
 
     sb_clear(&screen->title_cache);
-    SB_APPEND(&screen->title_cache, STRLIT_ARGS("Playlist ("));
+    SB_APPEND(&screen->title_cache, STRLIT("Playlist ("));
     count = native_playlist_screen_song_count(screen);
     sb_printf(&screen->title_cache, "%d", count);
     if (count == 1) {
-        SB_APPEND(&screen->title_cache, STRLIT_ARGS(" item)"));
+        SB_APPEND(&screen->title_cache, STRLIT(" item)"));
     } else {
-        SB_APPEND(&screen->title_cache, STRLIT_ARGS(" items)"));
+        SB_APPEND(&screen->title_cache, STRLIT(" items)"));
     }
     return;
 }
