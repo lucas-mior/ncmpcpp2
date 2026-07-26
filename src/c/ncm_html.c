@@ -101,22 +101,22 @@ parse_entity_number(char *data, int32 data_len, uint32 *rune) {
 
 static bool
 is_newline_tag(char *tag, int32 tag_len) {
-    if (ncm_string_starts_with(tag, tag_len, STRLIT_ARGS("<p "))) {
+    if (ncm_string_starts_with(tag, tag_len, STRLIT("<p "))) {
         return true;
     }
-    if (STREQUAL(tag, tag_len, STRLIT_ARGS("<p>"))) {
+    if (STREQUAL(tag, tag_len, STRLIT("<p>"))) {
         return true;
     }
-    if (STREQUAL(tag, tag_len, STRLIT_ARGS("</p>"))) {
+    if (STREQUAL(tag, tag_len, STRLIT("</p>"))) {
         return true;
     }
-    if (STREQUAL(tag, tag_len, STRLIT_ARGS("<br>"))) {
+    if (STREQUAL(tag, tag_len, STRLIT("<br>"))) {
         return true;
     }
-    if (STREQUAL(tag, tag_len, STRLIT_ARGS("<br/>"))) {
+    if (STREQUAL(tag, tag_len, STRLIT("<br/>"))) {
         return true;
     }
-    if (ncm_string_starts_with(tag, tag_len, STRLIT_ARGS("<br "))) {
+    if (ncm_string_starts_with(tag, tag_len, STRLIT("<br "))) {
         return true;
     }
 

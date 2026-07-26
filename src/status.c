@@ -215,7 +215,7 @@ status_print_client_error(char *message, int32 message_len) {
 
     arg = ncm_string_format_arg_string(message, message_len);
     ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT_ARGS("ncmpcpp: %1%"), &arg, 1);
+                         STRLIT("ncmpcpp: %1%"), &arg, 1);
     return;
 }
 
@@ -232,7 +232,7 @@ status_print_server_error(char *message, int32 message_len) {
 
     arg = ncm_string_format_arg_string(message, message_len);
     ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT_ARGS("MPD: %1%"), &arg, 1);
+                         STRLIT("MPD: %1%"), &arg, 1);
     return;
 }
 
@@ -300,7 +300,7 @@ status_prompt_mpd_password(NcmMpdClient *client) {
     }
 
     ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT_ARGS("Password accepted"));
+                        STRLIT("Password accepted"));
     return;
 }
 
@@ -533,7 +533,7 @@ status_run_init_show_connected_message(NcmStatusInitHooks *hooks) {
 
     arg = ncm_string_format_arg_cstring(ncm_mpd_client_hostname(&global_mpd));
     ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT_ARGS("Connected to %1%"), &arg, 1);
+                         STRLIT("Connected to %1%"), &arg, 1);
     return;
 }
 
@@ -578,7 +578,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     NcmStatusHooks *active_hooks;
 
     if (mpd_status == NULL) {
-        ncm_error_set(error, -1, STRLIT_ARGS("MPD status is NULL"));
+        ncm_error_set(error, -1, STRLIT("MPD status is NULL"));
         return false;
     }
 
@@ -666,10 +666,10 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
 
         if (status_initialized) {
             if (status_db_updating) {
-                statusbar_format_cstring(STRLIT_ARGS("Database update %1%"),
+                statusbar_format_cstring(STRLIT("Database update %1%"),
                                          "started");
             } else {
-                statusbar_format_cstring(STRLIT_ARGS("Database update %1%"),
+                statusbar_format_cstring(STRLIT("Database update %1%"),
                                          "finished");
             }
         }
@@ -683,7 +683,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         if (new_repeat != status_repeat) {
             status_repeat = new_repeat;
             if (status_initialized) {
-                statusbar_format_cstring(STRLIT_ARGS("Repeat mode is %1%"),
+                statusbar_format_cstring(STRLIT("Repeat mode is %1%"),
                                          status_on_off(status_repeat));
             }
         }
@@ -695,7 +695,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         if (new_random != status_random) {
             status_random = new_random;
             if (status_initialized) {
-                statusbar_format_cstring(STRLIT_ARGS("Random mode is %1%"),
+                statusbar_format_cstring(STRLIT("Random mode is %1%"),
                                          status_on_off(status_random));
             }
         }
@@ -707,7 +707,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         if (new_single != status_single) {
             status_single = new_single;
             if (status_initialized) {
-                statusbar_format_cstring(STRLIT_ARGS("Single mode is %1%"),
+                statusbar_format_cstring(STRLIT("Single mode is %1%"),
                                          status_on_off(status_single));
             }
         }
@@ -719,7 +719,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         if (new_consume != status_consume) {
             status_consume = new_consume;
             if (status_initialized) {
-                statusbar_format_cstring(STRLIT_ARGS("Consume mode is %1%"),
+                statusbar_format_cstring(STRLIT("Consume mode is %1%"),
                                          status_on_off(status_consume));
             }
         }
@@ -735,7 +735,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                 arg = ncm_string_format_arg_u64((uint64)mpd_status->crossfade);
                 ncm_statusbar_format(
                     Config.message_delay_time,
-                    STRLIT_ARGS("Crossfade set to %1% seconds"), &arg, 1);
+                    STRLIT("Crossfade set to %1% seconds"), &arg, 1);
             }
         }
     }
@@ -779,7 +779,7 @@ ncm_status_initialize_connection(NcmMpdClient *client, NcmError *error) {
     NcmMpdStatus mpd_status;
 
     if (client == NULL) {
-        ncm_error_set(error, -1, STRLIT_ARGS("MPD client is NULL"));
+        ncm_error_set(error, -1, STRLIT("MPD client is NULL"));
         return false;
     }
 
@@ -795,7 +795,7 @@ ncm_status_update(NcmMpdClient *client, int32 event, NcmError *error) {
     NcmMpdStatus mpd_status;
 
     if (client == NULL) {
-        ncm_error_set(error, -1, STRLIT_ARGS("MPD client is NULL"));
+        ncm_error_set(error, -1, STRLIT("MPD client is NULL"));
         return false;
     }
 
@@ -813,7 +813,7 @@ ncm_status_update_full(NcmMpdClient *client, NcmStatusHooks *hooks,
     NcmMpdStatus mpd_status;
 
     if (client == NULL) {
-        ncm_error_set(error, -1, STRLIT_ARGS("MPD client is NULL"));
+        ncm_error_set(error, -1, STRLIT("MPD client is NULL"));
         return false;
     }
 
@@ -832,7 +832,7 @@ ncm_status_update_from_noidle(NcmMpdClient *client, NcmStatusHooks *hooks,
     int32 flags;
 
     if (client == NULL) {
-        ncm_error_set(error, -1, STRLIT_ARGS("MPD client is NULL"));
+        ncm_error_set(error, -1, STRLIT("MPD client is NULL"));
         return false;
     }
 
@@ -967,7 +967,7 @@ ncm_status_changes_player_state(void) {
         native_playlist_screen_reload_remaining(native_c_screen_playlist());
         break;
     case NCM_STATUS_PLAYER_STOP:
-        ncm_window_title_set(STRLIT_ARGS("ncmpcpp " VERSION));
+        ncm_window_title_set(STRLIT("ncmpcpp " VERSION));
         if (ncm_progressbar_is_unlocked()) {
             ncm_progressbar_draw(0, 0);
         }
@@ -1462,7 +1462,7 @@ status_tracklength_buffer(StrBuilder *buffer) {
         && (Config.design == NCM_DESIGN_CLASSIC)) {
         sb_append_byte(buffer, '(');
         sb_printf(buffer, "%d", status_kbps);
-        SB_APPEND(buffer, STRLIT_ARGS(" kbps) "));
+        SB_APPEND(buffer, STRLIT(" kbps) "));
     }
 
     if (Config.design == NCM_DESIGN_CLASSIC) {
@@ -1495,9 +1495,9 @@ status_tracklength_buffer(StrBuilder *buffer) {
     if (Config.design == NCM_DESIGN_CLASSIC) {
         sb_append_byte(buffer, ']');
     } else if ((Config.display_bitrate) && (status_kbps != 0)) {
-        SB_APPEND(buffer, STRLIT_ARGS(" ("));
+        SB_APPEND(buffer, STRLIT(" ("));
         sb_printf(buffer, "%d", status_kbps);
-        SB_APPEND(buffer, STRLIT_ARGS(" kbps)"));
+        SB_APPEND(buffer, STRLIT(" kbps)"));
     }
     return;
 }

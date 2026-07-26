@@ -35,12 +35,12 @@ ncm_path_expand_home(StrBuilder *path, NcmError *error) {
     int32 old_len;
 
     if (path == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing path buffer"));
+        ncm_error_set(error, EINVAL, STRLIT("missing path buffer"));
         return false;
     }
     if ((path->len < 0)
         || ((path->data == NULL) && (path->len > 0))) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("invalid path buffer"));
+        ncm_error_set(error, EINVAL, STRLIT("invalid path buffer"));
         return false;
     }
 
@@ -59,7 +59,7 @@ ncm_path_expand_home(StrBuilder *path, NcmError *error) {
 
     if (((home = getenv("HOME")) == NULL) || (home[0] == '\0')) {
         ncm_error_set(error, ENOENT,
-                      STRLIT_ARGS("HOME environment variable is not set"));
+                      STRLIT("HOME environment variable is not set"));
         return false;
     }
 
@@ -67,7 +67,7 @@ ncm_path_expand_home(StrBuilder *path, NcmError *error) {
     while (home[home_len] != '\0') {
         if (home_len == INT32_MAX) {
             ncm_error_set(error, ENAMETOOLONG,
-                          STRLIT_ARGS("HOME path is too long"));
+                          STRLIT("HOME path is too long"));
             return false;
         }
         home_len += 1;
@@ -76,7 +76,7 @@ ncm_path_expand_home(StrBuilder *path, NcmError *error) {
     old_len = path->len;
     if (home_len > (INT32_MAX - (old_len - 1))) {
         ncm_error_set(error, ENAMETOOLONG,
-                      STRLIT_ARGS("expanded path is too long"));
+                      STRLIT("expanded path is too long"));
         return false;
     }
     sb_reserve(path, home_len - 1);

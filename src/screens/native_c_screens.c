@@ -762,7 +762,7 @@ native_search_list_database_songs(
     if (result) {
         if (!(result = ncm_mpd_song_list_to_song_array(&source, songs))) {
             ncm_error_set(error, EIO,
-                          STRLIT_ARGS("failed to copy database songs"));
+                          STRLIT("failed to copy database songs"));
         }
     }
     ncm_mpd_song_list_destroy(&source);
@@ -797,7 +797,7 @@ native_search_snapshot_playlist(
         }
         if (!ncm_song_array_append_copy(songs, song)) {
             ncm_error_set(error, EIO,
-                          STRLIT_ARGS("failed to copy playlist songs"));
+                          STRLIT("failed to copy playlist songs"));
             return false;
         }
     }
@@ -842,7 +842,7 @@ native_search_prompt_constraint(
         return NATIVE_SEARCH_ENGINE_PROMPT_ERROR;
     }
     nc_window_print_data(window, label, label_len);
-    nc_window_print_data(window, STRLIT_ARGS(": "));
+    nc_window_print_data(window, STRLIT(": "));
 
     prompt.initial_text = initial_text;
     prompt.width = -1;
@@ -1109,7 +1109,7 @@ native_prompt_buffer(char *label, int32 label_len,
         nc_window_apply_format(window, NC_FORMAT_BOLD);
     }
     nc_window_print_data(window, label, label_len);
-    nc_window_print_data(window, STRLIT_ARGS(": "));
+    nc_window_print_data(window, STRLIT(": "));
     if (bold_label) {
         nc_window_apply_format(window, NC_FORMAT_NO_BOLD);
     }
@@ -1182,7 +1182,7 @@ native_tag_editor_confirm(
     ncm_statusbar_scoped_lock_init(&lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, message, message_len);
-        nc_window_print_data(window, STRLIT_ARGS(" [y/n] "));
+        nc_window_print_data(window, STRLIT(" [y/n] "));
         prompted = ncm_statusbar_prompt_return_one_of(
             window, values, LENGTH(values), &answer);
     }
@@ -1994,7 +1994,7 @@ native_outputs_fetch(void *user, NcOutputsScreen *screen) {
 
         arg = ncm_string_format_arg_cstring(error.message);
         ncm_statusbar_format(5,
-                             STRLIT_ARGS("Could not fetch outputs: %1"),
+                             STRLIT("Could not fetch outputs: %1"),
                              &arg,
                              1);
         ncm_mpd_output_list_destroy(&outputs);
@@ -2039,7 +2039,7 @@ native_outputs_toggle(void *user, int32 id, bool enabled,
         args[0] = ncm_string_format_arg_string(name, name_len);
         args[1] = ncm_string_format_arg_cstring(error.message);
         ncm_statusbar_format(5,
-                             STRLIT_ARGS("Could not toggle output %1: %2"),
+                             STRLIT("Could not toggle output %1: %2"),
                              args,
                              2);
         return false;
@@ -2050,7 +2050,7 @@ native_outputs_toggle(void *user, int32 id, bool enabled,
 
         arg = ncm_string_format_arg_string(name, name_len);
         ncm_statusbar_format(3,
-                             STRLIT_ARGS("Output %1 disabled"),
+                             STRLIT("Output %1 disabled"),
                              &arg,
                              1);
     } else {
@@ -2058,7 +2058,7 @@ native_outputs_toggle(void *user, int32 id, bool enabled,
 
         arg = ncm_string_format_arg_string(name, name_len);
         ncm_statusbar_format(3,
-                             STRLIT_ARGS("Output %1 enabled"),
+                             STRLIT("Output %1 enabled"),
                              &arg,
                              1);
     }
@@ -2334,7 +2334,7 @@ native_song_info_switch_to(void *user, NcSongInfoScreen *screen) {
 
         arg = ncm_string_format_arg_cstring(error.message);
         ncm_statusbar_format(5,
-                             STRLIT_ARGS("Could not fetch current song: %1"),
+                             STRLIT("Could not fetch current song: %1"),
                              &arg,
                              1);
         return;

@@ -134,7 +134,7 @@ app_redirect_stderr(void) {
     sb_init(&path);
     SB_APPEND(&path, Config.ncmpcpp_directory,
                       Config.ncmpcpp_directory_len);
-    SB_APPEND(&path, STRLIT_ARGS("error.log"));
+    SB_APPEND(&path, STRLIT("error.log"));
 
     app_saved_stderr_fd = (int32)dup(STDERR_FILENO);
     if (app_saved_stderr_fd < 0) {

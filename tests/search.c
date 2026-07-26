@@ -413,15 +413,15 @@ static void
 search_column_format_init(NcmFormatAst *format) {
     ncm_format_ast_init(format);
     assert(ncm_format_ast_append_column_types(
-        format, STRLIT_ARGS("a")));
+        format, STRLIT("a")));
     assert(ncm_format_ast_append_column_types(
-        format, STRLIT_ARGS("N")));
+        format, STRLIT("N")));
     assert(ncm_format_ast_append_column_types(
-        format, STRLIT_ARGS("tf")));
+        format, STRLIT("tf")));
     assert(ncm_format_ast_append_column_types(
-        format, STRLIT_ARGS("b")));
+        format, STRLIT("b")));
     assert(ncm_format_ast_append_column_types(
-        format, STRLIT_ARGS("l")));
+        format, STRLIT("l")));
     return;
 }
 
@@ -619,16 +619,16 @@ test_prompt_state_reuses_successful_result(void) {
 
     ncm_search_prompt_state_init(&state, NCM_SEARCH_DIRECTION_FORWARD);
     assert(!ncm_search_prompt_state_cached_result(
-        &state, STRLIT_ARGS("alp"), &found));
+        &state, STRLIT("alp"), &found));
 
     assert(ncm_search_prompt_state_finish_result(
-        &state, STRLIT_ARGS("alp"), true, true));
+        &state, STRLIT("alp"), true, true));
     found = false;
     assert(ncm_search_prompt_state_cached_result(
-        &state, STRLIT_ARGS("alp"), &found));
+        &state, STRLIT("alp"), &found));
     assert(found);
     assert(!ncm_search_prompt_state_cached_result(
-        &state, STRLIT_ARGS("alpha"), &found));
+        &state, STRLIT("alpha"), &found));
 
     ncm_search_prompt_state_destroy(&state);
     return;
@@ -641,20 +641,20 @@ test_prompt_state_does_not_cache_search_error(void) {
 
     ncm_search_prompt_state_init(&state, NCM_SEARCH_DIRECTION_FORWARD);
     assert(ncm_search_prompt_state_finish_result(
-        &state, STRLIT_ARGS("alp"), true, true));
+        &state, STRLIT("alp"), true, true));
     assert(ncm_search_prompt_state_finish_result(
-        &state, STRLIT_ARGS("alp["), false, false));
+        &state, STRLIT("alp["), false, false));
 
     found = true;
     assert(!ncm_search_prompt_state_cached_result(
-        &state, STRLIT_ARGS("alp["), &found));
+        &state, STRLIT("alp["), &found));
     assert(found);
 
     assert(ncm_search_prompt_state_finish_result(
-        &state, STRLIT_ARGS("alp[ha]"), true, true));
+        &state, STRLIT("alp[ha]"), true, true));
     found = false;
     assert(ncm_search_prompt_state_cached_result(
-        &state, STRLIT_ARGS("alp[ha]"), &found));
+        &state, STRLIT("alp[ha]"), &found));
     assert(found);
 
     ncm_search_prompt_state_destroy(&state);
@@ -791,11 +791,11 @@ test_prompt_state_caches_no_match(void) {
 
     ncm_search_prompt_state_init(&state, NCM_SEARCH_DIRECTION_FORWARD);
     assert(ncm_search_prompt_state_finish_result(
-        &state, STRLIT_ARGS("ohne"), true, false));
+        &state, STRLIT("ohne"), true, false));
 
     found = true;
     assert(ncm_search_prompt_state_cached_result(
-        &state, STRLIT_ARGS("ohne"), &found));
+        &state, STRLIT("ohne"), &found));
     assert(!found);
 
     ncm_search_prompt_state_destroy(&state);
@@ -920,7 +920,7 @@ test_playlist_fixture_finds_ohne_dich(void) {
     search_menu_init(&menu);
     for (int32 i = 0; i < count; i += 1) {
         if (STREQUAL(lines[i], strlen32(lines[i]),
-                     STRLIT_ARGS(
+                     STRLIT(
                          "Rammstein/2004 - Reise, Reise/Ohne Dich.flac"))) {
             target = i;
         }

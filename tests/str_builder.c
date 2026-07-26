@@ -14,7 +14,7 @@ str_builder_test_init_and_empty_free(void) {
     ASSERT(zeroed.data == NULL);
     ASSERT_EQUAL(zeroed.len, 0);
     ASSERT_EQUAL(zeroed.cap, 0);
-    sb_append(&zeroed, STRLIT_ARGS("zero initialized"));
+    sb_append(&zeroed, STRLIT("zero initialized"));
     ASSERT_EQUAL(zeroed.data, "zero initialized");
     sb_free(&zeroed);
 
@@ -37,7 +37,7 @@ str_builder_test_append_clear_and_reuse(void) {
     int32 capacity;
 
     sb_init(&str_builder);
-    sb_append(&str_builder, STRLIT_ARGS("first"));
+    sb_append(&str_builder, STRLIT("first"));
     ASSERT_EQUAL(str_builder.data, "first");
     ASSERT_EQUAL(str_builder.len, STRLIT_LEN("first"));
     ASSERT_EQUAL(str_builder.cap, STR_BUILDER_INITIAL_CAPACITY);
@@ -50,7 +50,7 @@ str_builder_test_append_clear_and_reuse(void) {
     ASSERT_EQUAL(str_builder.cap, capacity);
     ASSERT_EQUAL(str_builder.data, "");
 
-    sb_append(&str_builder, STRLIT_ARGS("second"));
+    sb_append(&str_builder, STRLIT("second"));
     ASSERT(str_builder.data == allocation);
     ASSERT_EQUAL(str_builder.data, "second");
     ASSERT_EQUAL(str_builder.len, STRLIT_LEN("second"));
@@ -75,7 +75,7 @@ str_builder_test_nonpositive_operations_are_noops(void) {
 
     sb_printf(&str_builder, "%.*s", 0, "");
     ASSERT(str_builder.data == NULL);
-    sb_append(&str_builder, STRLIT_ARGS("value"));
+    sb_append(&str_builder, STRLIT("value"));
     sb_printf(&str_builder, "%.*s", 0, "");
     ASSERT_EQUAL(str_builder.data, "value");
     ASSERT_EQUAL(str_builder.len, STRLIT_LEN("value"));
@@ -93,7 +93,7 @@ str_builder_test_copy_and_self_copy(void) {
     sb_init(&source);
     sb_init(&dest);
     sb_append(&source, bytes, LENGTH(bytes));
-    sb_append(&dest, STRLIT_ARGS("old destination"));
+    sb_append(&dest, STRLIT("old destination"));
 
     ASSERT(sb_copy(&dest, &source));
     ASSERT(dest.data != source.data);
@@ -137,8 +137,8 @@ str_builder_test_move_transfers_ownership(void) {
 
     sb_init(&source);
     sb_init(&dest);
-    sb_append(&source, STRLIT_ARGS("source value"));
-    sb_append(&dest, STRLIT_ARGS("destination value"));
+    sb_append(&source, STRLIT("source value"));
+    sb_append(&dest, STRLIT("destination value"));
     allocation = source.data;
     capacity = source.cap;
 
@@ -160,7 +160,7 @@ str_builder_test_move_transfers_ownership(void) {
     ASSERT_EQUAL(dest.len, 0);
     ASSERT_EQUAL(dest.cap, 0);
 
-    sb_append(&source, STRLIT_ARGS("kept"));
+    sb_append(&source, STRLIT("kept"));
     allocation = source.data;
     sb_move(NULL, &source);
     ASSERT(source.data == allocation);
@@ -178,11 +178,11 @@ str_builder_test_set_validation_and_self_shrink(void) {
     int32 capacity;
 
     sb_init(&str_builder);
-    ASSERT(sb_set(&str_builder, STRLIT_ARGS("abcdef")));
+    ASSERT(sb_set(&str_builder, STRLIT("abcdef")));
     allocation = str_builder.data;
     capacity = str_builder.cap;
 
-    ASSERT(!sb_set(NULL, STRLIT_ARGS("value")));
+    ASSERT(!sb_set(NULL, STRLIT("value")));
     ASSERT(!sb_set(&str_builder, "value", -1));
     ASSERT(!sb_set(&str_builder, NULL, 1));
     ASSERT_EQUAL(str_builder.data, "abcdef");
@@ -262,7 +262,7 @@ str_builder_test_printf_appends(void) {
     StrBuilder str_builder;
 
     sb_init(&str_builder);
-    sb_append(&str_builder, STRLIT_ARGS("prefix "));
+    sb_append(&str_builder, STRLIT("prefix "));
     sb_printf(&str_builder, "%s %d", "value", 42);
     ASSERT_EQUAL(str_builder.data, "prefix value 42");
     ASSERT_EQUAL(str_builder.len, STRLIT_LEN("prefix value 42"));
@@ -305,7 +305,7 @@ str_builder_test_steal_transfers_exact_allocation(void) {
 
     free2(stolen, cap);
 
-    sb_append(&str_builder, STRLIT_ARGS("reused"));
+    sb_append(&str_builder, STRLIT("reused"));
     expected_cap = str_builder.cap;
     stolen = sb_steal(&str_builder, NULL, NULL);
     ASSERT_EQUAL(stolen, "reused");
@@ -333,7 +333,7 @@ str_builder_test_array_append_clear_and_destroy(void) {
 
     item = str_builder_array_append(&array);
     ASSERT(item);
-    sb_append(item, STRLIT_ARGS("first"));
+    sb_append(item, STRLIT("first"));
 
     sb_append(&source, bytes, LENGTH(bytes));
     ASSERT(str_builder_array_append_copy(&array, &source));
@@ -372,10 +372,10 @@ str_builder_test_array_copy_move_and_swap(void) {
 
     item = str_builder_array_append(&source);
     ASSERT(item);
-    sb_append(item, STRLIT_ARGS("source"));
+    sb_append(item, STRLIT("source"));
     item = str_builder_array_append(&source);
     ASSERT(item);
-    sb_append(item, STRLIT_ARGS("second"));
+    sb_append(item, STRLIT("second"));
 
     ASSERT(str_builder_array_copy(&dest, &source));
     ASSERT_EQUAL(dest.len, source.len);

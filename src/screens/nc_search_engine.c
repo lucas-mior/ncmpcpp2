@@ -173,7 +173,7 @@ native_search_engine_screen_init(NativeSearchEngineScreen *screen,
     sb_init(&screen->row_text);
     sb_init(&screen->title);
     sb_init(&screen->column_title);
-    SB_APPEND(&screen->title, STRLIT_ARGS("Search engine"));
+    SB_APPEND(&screen->title, STRLIT("Search engine"));
     ncm_regex_init(&screen->filter_regex);
 
     screen->hooks = (NativeSearchEngineHooks){0};
@@ -429,11 +429,11 @@ native_search_engine_screen_prepare_static_rows(
     native_search_engine_screen_add_buffer_with_flags(
         screen, &buffer, NC_MENU_ITEM_SEPARATOR);
 
-    nc_buffer_append_data(&buffer, STRLIT_ARGS("Search"));
+    nc_buffer_append_data(&buffer, STRLIT("Search"));
     native_search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
 
     nc_buffer_clear(&buffer);
-    nc_buffer_append_data(&buffer, STRLIT_ARGS("Reset"));
+    nc_buffer_append_data(&buffer, STRLIT("Reset"));
     native_search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
     nc_buffer_destroy(&buffer);
 
@@ -590,7 +590,7 @@ native_search_engine_screen_reset(NativeSearchEngineScreen *screen) {
     native_search_engine_screen_clear_find_constraint(screen);
     native_search_engine_screen_prepare_static_rows(screen);
     native_search_engine_screen_status_message(
-        screen, STRLIT_ARGS("Search state reset"));
+        screen, STRLIT("Search state reset"));
     return;
 }
 
@@ -788,7 +788,7 @@ native_search_engine_screen_execute_search(
     bool result;
 
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT_ARGS("missing search screen"));
+        ncm_error_set(error, EINVAL, STRLIT("missing search screen"));
         return false;
     }
 
@@ -798,12 +798,12 @@ native_search_engine_screen_execute_search(
     native_search_engine_screen_clear_filter(screen);
     native_search_engine_screen_prepare_static_rows(screen);
     native_search_engine_screen_status_message(
-        screen, STRLIT_ARGS("Searching..."));
+        screen, STRLIT("Searching..."));
 
     result = true;
     if (!native_search_has_constraints(screen)) {
         native_search_engine_screen_status_message(
-            screen, STRLIT_ARGS("No results found"));
+            screen, STRLIT("No results found"));
         goto cleanup;
     }
 
@@ -836,13 +836,13 @@ native_search_engine_screen_execute_search(
 
     if (songs.len <= 0) {
         native_search_engine_screen_status_message(
-            screen, STRLIT_ARGS("No results found"));
+            screen, STRLIT("No results found"));
         goto cleanup;
     }
 
     if (!native_search_append_result_rows(screen, &songs)) {
         ncm_error_set(error, EIO,
-                      STRLIT_ARGS("failed to build search results"));
+                      STRLIT("failed to build search results"));
         native_search_engine_screen_prepare_static_rows(screen);
         native_search_print_error(screen, error);
         result = false;
@@ -859,7 +859,7 @@ native_search_engine_screen_execute_search(
         nc_window_height(&screen->window), NC_SCROLL_DOWN);
     native_search_engine_screen_update_column_title(screen);
     native_search_engine_screen_status_message(
-        screen, STRLIT_ARGS("Searching finished"));
+        screen, STRLIT("Searching finished"));
 
 cleanup:
     ncm_song_array_destroy(&songs);
@@ -925,10 +925,10 @@ native_search_engine_screen_run_current(
         sb_free(&value);
         if (prompt_status == NATIVE_SEARCH_ENGINE_PROMPT_ABORTED) {
             native_search_engine_screen_status_message(
-                screen, STRLIT_ARGS("Action aborted"));
+                screen, STRLIT("Action aborted"));
         } else {
             native_search_engine_screen_status_message(
-                screen, STRLIT_ARGS("Unable to read search constraint"));
+                screen, STRLIT("Unable to read search constraint"));
         }
         return false;
     }
@@ -1432,7 +1432,7 @@ native_search_build_constraint_row(
         nc_buffer_append_char(buffer, ' ');
     }
     native_search_append_format(buffer, NC_FORMAT_NO_BOLD);
-    nc_buffer_append_data(buffer, STRLIT_ARGS(": "));
+    nc_buffer_append_data(buffer, STRLIT(": "));
     native_search_append_tag_value(buffer, &screen->constraints[idx]);
     return;
 }
@@ -1443,13 +1443,13 @@ native_search_build_search_source_row(
 ) {
     nc_buffer_clear(buffer);
     native_search_append_format(buffer, NC_FORMAT_BOLD);
-    nc_buffer_append_data(buffer, STRLIT_ARGS("Search in:"));
+    nc_buffer_append_data(buffer, STRLIT("Search in:"));
     native_search_append_format(buffer, NC_FORMAT_NO_BOLD);
     nc_buffer_append_char(buffer, ' ');
     if (screen->search_in_database) {
-        nc_buffer_append_data(buffer, STRLIT_ARGS("Database"));
+        nc_buffer_append_data(buffer, STRLIT("Database"));
     } else {
-        nc_buffer_append_data(buffer, STRLIT_ARGS("Current playlist"));
+        nc_buffer_append_data(buffer, STRLIT("Current playlist"));
     }
     return;
 }
@@ -1460,7 +1460,7 @@ native_search_build_search_mode_row(
 ) {
     nc_buffer_clear(buffer);
     native_search_append_format(buffer, NC_FORMAT_BOLD);
-    nc_buffer_append_data(buffer, STRLIT_ARGS("Search mode:"));
+    nc_buffer_append_data(buffer, STRLIT("Search mode:"));
     native_search_append_format(buffer, NC_FORMAT_NO_BOLD);
     nc_buffer_append_char(buffer, ' ');
     nc_buffer_append_cstring(
@@ -1737,7 +1737,7 @@ native_search_collect_database_results(
 
     if ((screen == NULL) || (client == NULL) || (songs == NULL)) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing database search state"));
+                      STRLIT("missing database search state"));
         return false;
     }
 
@@ -1755,7 +1755,7 @@ native_search_collect_database_results(
     if (ok) {
         if (!(ok = ncm_mpd_song_list_to_song_array(&result, songs))) {
             ncm_error_set(error, EIO,
-                          STRLIT_ARGS("failed to copy search results"));
+                          STRLIT("failed to copy search results"));
         }
     }
     ncm_mpd_song_list_destroy(&result);
@@ -1821,7 +1821,7 @@ native_search_add_database_constraints(
             break;
         default:
             ncm_error_set(error, EINVAL,
-                          STRLIT_ARGS("invalid search constraint"));
+                          STRLIT("invalid search constraint"));
             return false;
         }
         if (!ncm_mpd_client_add_search_tag(
@@ -1844,7 +1844,7 @@ native_search_collect_local_results(
 
     if ((screen == NULL) || (source == NULL) || (songs == NULL)) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("missing local search state"));
+                      STRLIT("missing local search state"));
         return false;
     }
 
@@ -1876,7 +1876,7 @@ native_search_collect_local_results(
         }
         if (!ncm_song_array_append_copy(songs, &source->items[i])) {
             ncm_error_set(error, EIO,
-                          STRLIT_ARGS("failed to copy matching song"));
+                          STRLIT("failed to copy matching song"));
             ok = false;
             break;
         }

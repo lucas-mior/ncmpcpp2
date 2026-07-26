@@ -617,7 +617,7 @@ native_visualizer_screen_find_output_id(
 
         arg = ncm_string_format_arg_cstring(error.message);
         ncm_statusbar_format(ncm_statusbar_message_delay_time(),
-                             STRLIT_ARGS("Could not fetch outputs: %1"),
+                             STRLIT("Could not fetch outputs: %1"),
                              &arg,
                              1);
         ncm_mpd_output_list_destroy(&outputs);
@@ -645,7 +645,7 @@ native_visualizer_screen_find_output_id(
         arg = ncm_string_format_arg_string(screen->output_name.data,
                                             screen->output_name.len);
         ncm_statusbar_format(ncm_statusbar_message_delay_time(),
-                             STRLIT_ARGS("There is no output named \"%1\""),
+                             STRLIT("There is no output named \"%1\""),
                              &arg,
                              1);
     }
@@ -776,7 +776,7 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
                    start_y,
                    width,
                    height,
-                   STRLIT_ARGS(""),
+                   STRLIT(""),
                    color,
                    border);
     sb_init(&screen->source_location);
@@ -1944,7 +1944,7 @@ visualizer_system_open_fifo(void *user, char *location,
         args[1] = ncm_string_format_arg_cstring(strerror(errno));
         ncm_statusbar_format(
             ncm_statusbar_message_delay_time(),
-            STRLIT_ARGS("Couldn't open \"%1\" for reading PCM data: %2"),
+            STRLIT("Couldn't open \"%1\" for reading PCM data: %2"),
             args,
             2);
     }
@@ -1976,7 +1976,7 @@ visualizer_system_open_udp(void *user, char *location,
             (char *)gai_strerror(error_code));
         ncm_statusbar_format(
             ncm_statusbar_message_delay_time(),
-            STRLIT_ARGS("Couldn't resolve \"%1:%2\": %3"),
+            STRLIT("Couldn't resolve \"%1:%2\": %3"),
             args,
             3);
         return -1;
@@ -2041,7 +2041,7 @@ visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
     client = user;
     if (client == NULL) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("MPD client is not configured"));
+                      STRLIT("MPD client is not configured"));
         return false;
     }
     return ncm_mpd_client_get_outputs(client, outputs, error);
@@ -2054,7 +2054,7 @@ visualizer_system_disable_output(void *user, int32 id, NcmError *error) {
     client = user;
     if (client == NULL) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("MPD client is not configured"));
+                      STRLIT("MPD client is not configured"));
         return false;
     }
     return ncm_mpd_client_disable_output(client, id, error);
@@ -2067,7 +2067,7 @@ visualizer_system_enable_output(void *user, int32 id, NcmError *error) {
     client = user;
     if (client == NULL) {
         ncm_error_set(error, EINVAL,
-                      STRLIT_ARGS("MPD client is not configured"));
+                      STRLIT("MPD client is not configured"));
         return false;
     }
     return ncm_mpd_client_enable_output(client, id, error);
@@ -2104,7 +2104,7 @@ visualizer_reset_output(NativeVisualizerScreen *screen) {
         arg = ncm_string_format_arg_cstring(error.message);
         ncm_statusbar_format(
             ncm_statusbar_message_delay_time(),
-            STRLIT_ARGS("Could not disable visualizer output: %1"),
+            STRLIT("Could not disable visualizer output: %1"),
             &arg,
             1);
         return false;
@@ -2124,7 +2124,7 @@ visualizer_reset_output(NativeVisualizerScreen *screen) {
         arg = ncm_string_format_arg_cstring(error.message);
         ncm_statusbar_format(
             ncm_statusbar_message_delay_time(),
-            STRLIT_ARGS("Could not enable visualizer output: %1"),
+            STRLIT("Could not enable visualizer output: %1"),
             &arg,
             1);
         return false;
@@ -2232,7 +2232,7 @@ visualizer_switch_to_callback(NcScreen *screen) {
     }
     native_visualizer_screen_clear(visualizer);
     visualizer->reset_output = true;
-    ncm_title_draw_header(STRLIT_ARGS(NATIVE_VISUALIZER_TITLE));
+    ncm_title_draw_header(STRLIT(NATIVE_VISUALIZER_TITLE));
     visualizer_prepare_drawing(visualizer);
     return;
 }
