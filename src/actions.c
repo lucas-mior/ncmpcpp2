@@ -4034,10 +4034,12 @@ action_runtime_clear_playlist(bool main_playlist) {
 
     if (Config.ask_before_clearing_playlists) {
         sb_init(&question);
+
         sb_append(&question,
                   STRLIT_ARGS("Do you really want to clear playlist \""));
         sb_append(&question, playlist.path, playlist.path_len);
         sb_append(&question, STRLIT_ARGS("\"?"));
+
         success = action_runtime_confirm(question.data, question.len);
         sb_free(&question);
         if (!success) {
