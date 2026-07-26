@@ -240,8 +240,9 @@ ncmpcpp_legacy_window_create(int32 start_x, int32 start_y, int32 width,
     NcWindow *window;
 
     window = malloc2(SIZEOF(*window));
-    nc_window_init(window, start_x, start_y, width, height, STRLIT_ARGS(""),
-                   color, nc_border_none());
+    nc_window_init(window,
+                   start_x, start_y, width, height,
+                   STRLIT_ARGS(""), color, nc_border_none());
     return window;
 }
 
