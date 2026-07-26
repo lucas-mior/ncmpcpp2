@@ -39,9 +39,7 @@ ncm_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
     ncm_curl_response_writer_init(&writer, data);
 
     SB_APPEND(&url_string, url, url_len);
-    if (referer && (referer_len > 0)) {
-        SB_APPEND(&referer_string, referer, referer_len);
-    }
+    SB_APPEND(&referer_string, referer, referer_len);
 
     if ((curl = curl_easy_init()) == NULL) {
         result = CURLE_FAILED_INIT;
