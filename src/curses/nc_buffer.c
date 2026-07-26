@@ -151,7 +151,7 @@ nc_buffer_append_int64(NcBuffer *buffer, int32 value) {
     char string[64];
     int32 len;
 
-    len = SNPRINTF(string, "%lld", (llong)value);
+    len = SNPRINTF(string, "%lld", value);
     nc_buffer_append_data(buffer, string, len);
     return;
 }
