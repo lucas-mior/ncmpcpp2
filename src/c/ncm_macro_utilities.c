@@ -22,9 +22,9 @@ ncm_macro_system_command(char *command, int32 command_len,
 
     sb_init(&buffer);
     if (command_len > 0) {
-        sb_append(&buffer, command, command_len);
+        SB_APPEND(&buffer, command, command_len);
     }
-    sb_append(&buffer, STRLIT_ARGS(" >/dev/null 2>&1 &"));
+    SB_APPEND(&buffer, STRLIT_ARGS(" >/dev/null 2>&1 &"));
     sb_append_byte(&buffer, '\0');
 
     rc = system(buffer.data);

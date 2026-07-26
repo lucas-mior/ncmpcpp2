@@ -573,7 +573,7 @@ ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
         return buffer;
     }
 
-    sb_append(&buffer, view.data, view.len);
+    SB_APPEND(&buffer, view.data, view.len);
     return buffer;
 }
 
@@ -626,9 +626,9 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
 
         if (!already_present) {
             if (result.len > 0) {
-                sb_append(&result, separator, separator_len);
+                SB_APPEND(&result, separator, separator_len);
             }
-            sb_append(&result, tag.data, tag.len);
+            SB_APPEND(&result, tag.data, tag.len);
         }
         sb_free(&tag);
     }

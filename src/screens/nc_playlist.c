@@ -1383,12 +1383,12 @@ native_playlist_set_mutable_uri(NcmSong *song, NcmMutableSong *edited) {
 
     sb_init(&uri);
     if (edited->directory_len > 0) {
-        sb_append(&uri, edited->directory, edited->directory_len);
+        SB_APPEND(&uri, edited->directory, edited->directory_len);
         if (edited->directory[edited->directory_len - 1] != '/') {
-            sb_append(&uri, STRLIT_ARGS("/"));
+            SB_APPEND(&uri, STRLIT_ARGS("/"));
         }
     }
-    sb_append(&uri, new_name.data, new_name.len);
+    SB_APPEND(&uri, new_name.data, new_name.len);
     result = ncm_song_set_uri(song, uri.data, uri.len);
     sb_free(&uri);
     return result;
@@ -1399,13 +1399,13 @@ native_playlist_refresh_stats(NativePlaylistScreen *screen) {
     int32 count;
 
     sb_clear(&screen->title_cache);
-    sb_append(&screen->title_cache, STRLIT_ARGS("Playlist ("));
+    SB_APPEND(&screen->title_cache, STRLIT_ARGS("Playlist ("));
     count = native_playlist_screen_song_count(screen);
     sb_printf(&screen->title_cache, "%d", count);
     if (count == 1) {
-        sb_append(&screen->title_cache, STRLIT_ARGS(" item)"));
+        SB_APPEND(&screen->title_cache, STRLIT_ARGS(" item)"));
     } else {
-        sb_append(&screen->title_cache, STRLIT_ARGS(" items)"));
+        SB_APPEND(&screen->title_cache, STRLIT_ARGS(" items)"));
     }
     return;
 }

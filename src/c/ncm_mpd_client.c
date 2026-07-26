@@ -18,7 +18,7 @@ ncm_mpd_client_set_buffer(StrBuilder *buffer, char *string,
         return;
     }
 
-    sb_append(buffer, string, string_len);
+    SB_APPEND(buffer, string, string_len);
     sb_append_byte(buffer, '\0');
     buffer->len = string_len;
     return;

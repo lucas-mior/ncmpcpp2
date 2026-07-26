@@ -255,9 +255,9 @@ native_tiny_tag_editor_screen_open_song(
     }
 
     if (screen->edited.is_from_database) {
-        sb_append(path, music_dir, music_dir_len);
+        SB_APPEND(path, music_dir, music_dir_len);
     }
-    sb_append(path, screen->edited.uri, screen->edited.uri_len);
+    SB_APPEND(path, screen->edited.uri, screen->edited.uri_len);
 
     ncm_taglib_file_init(&file);
     if (screen->hooks.taglib_open) {
@@ -511,9 +511,9 @@ native_tiny_tag_editor_screen_set_filename_stem(
     }
 
     sb_init(&new_name);
-    sb_append(&new_name, stem, stem_len);
+    SB_APPEND(&new_name, stem, stem_len);
     if (dot >= 0) {
-        sb_append(&new_name, &current_name.data[dot],
+        SB_APPEND(&new_name, &current_name.data[dot],
                           current_name.len - dot);
     }
     result = native_tiny_tag_editor_screen_set_filename(
