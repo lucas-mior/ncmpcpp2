@@ -3,18 +3,13 @@
 
 #include "screens/nc_lyrics.h"
 
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "c/ncm_charset.h"
 #include "c/ncm_format.h"
 #include "c/ncm_regex.h"
 #include "c/ncm_string.h"
-#include "cbase/utf8.c"
-#include "cbase/base_macros.h"
-#include "cbase.h"
 #include "curses/nc_cyclic_buffer.h"
 #include "global.h"
 #include "settings.h"
