@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_ACTIONS_H)
 #define NCMPCPP_ACTIONS_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_defs.h"
 #include "c/ncm_error.h"
