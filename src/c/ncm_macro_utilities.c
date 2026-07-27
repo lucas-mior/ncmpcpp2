@@ -14,7 +14,7 @@ ncm_macro_system_command(char *command, int32 command_len,
                          bool block, int32 *status, NcmError *error) {
     StrBuilder buffer;
     Command process = {0};
-    int rc;
+    int32 rc;
     bool success;
 
     if (block) {
