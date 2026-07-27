@@ -948,8 +948,8 @@ static void
 ncm_format_buffer_format(void *user, enum NcFormat format) {
     NcBuffer *buffer = (NcBuffer *)user;
 
-    nc_buffer_add_format(buffer, nc_buffer_len(buffer), format,
-                         MAXOF((int64)0));
+    nc_buffer_add_format(buffer, nc_buffer_len(buffer),
+                         format, MAXOF((int64)0));
     return;
 }
 
