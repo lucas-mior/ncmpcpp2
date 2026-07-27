@@ -53,6 +53,15 @@ For formatting-only style rules, see `c-format.md`.
 
   result = (int32)value;
   ```
+- unsigned integers: avoid, prefer signed integers
+  * use unsigned integers for bit flags and other bit-wise operated values.
+  * when interfacing a stupid library that receives unsigned integers where a
+    signed integer is used on our side of the code, write a wrapper. The
+    wrapper checks if the signed value is less than zero before converting.
+  * when interfacing a stupid library that returns unsigned integers where a
+    signed integer is used on our side of the code, write a wrapper. The
+    wrapper checks if the received value fits in the positive range of our
+    signed integer type. Use `MAXOF()` macro defined in cbase/.
 
 ## Expressions and control flow
 
@@ -108,8 +117,10 @@ typeof(var)  // good
 - Clean exit: use `exit(EXIT_SUCCESS)`
 
 ## Enums, structs, and unions
-
-- Use include-based `xenums.c` for creating enums.
+- Enums that don't need the `_str` and `_parse` functions, and arent bit flags,
+  don't need xenums.c. Define the enum manually.
+- But do use include-based `xenums.c` for creating enums if it is a bit flag
+  enum, or if we need the `_str` or the `_parse` functions.
   * It will give automatic bit flags if needed with `#define ENUM_BITFLAGS 1`.
   * It will give automatic `_str` and `_parse` functions.
   * It will give automatic `_LAST` value. Use it for iterating on the enum:
@@ -118,6 +129,8 @@ typeof(var)  // good
         printf("x = %s.\n", MY_ENUM_str(x));
     }
     ```
+- The moment that you find that an existing enum ends up needing `_str`, or
+  `_parse`, then it is time to define it using `xenums.c`.
 - Always typedef structs:
   ```c
   typedef struct MyStruct {
@@ -663,6 +676,20 @@ functionality is already in `cbase/`. If not, implement it, probably in
 Don't reimplement root finding, minimization and integrating algorithms.
 When you need one of those, make use of the algorithms implemented in
 `cy_roots.c`, `cy_minimize.c` and `cy_methods.c`.
+
+## Testing
+Every .c file (except the main program) must have a testing block:
+```c
+#if TESTING_file_prefix`
+
+#define CBASE_IMPLEMENT
+#include "cbase.h"
+
+int main(void) {
+    // tests most of the file
+}
+#endif /* TESTING_file_prefix */
+```
 
 ## Missing cases
 
