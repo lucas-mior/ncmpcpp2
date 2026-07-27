@@ -159,10 +159,11 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
     (void)separator_len;
     (void)show_duplicates;
     sb_init(&result);
-    value = search_song_value(song, getter);
-    if (value != NULL) {
+
+    if ((value = search_song_value(song, getter))) {
         sb_append(&result, value, strlen32(value));
     }
+
     return result;
 }
 
