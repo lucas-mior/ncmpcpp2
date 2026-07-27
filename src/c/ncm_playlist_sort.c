@@ -233,9 +233,8 @@ ncm_playlist_sort_plan_build(
     ncm_playlist_sort_indices(&context, order, temporary, 0, songs->len);
 
     for (int32 i = 0; i < songs->len; i += 1) {
-        int32 source_idx;
+        int32 source_idx = order[i];
 
-        source_idx = order[i];
         if (current[i] == source_idx) {
             continue;
         }
