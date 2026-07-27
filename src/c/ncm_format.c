@@ -3,14 +3,10 @@
 
 #include "c/ncm_format.h"
 
-#include <ctype.h>
-#include <stdio.h>
+#include "cbase.h"
 
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
-#include "cbase/utf8.c"
-#include "cbase/base_macros.h"
-#include "cbase.h"
 
 static void ncm_format_expr_init(NcmFormatExpr *expr);
 static void ncm_format_expr_destroy(NcmFormatExpr *expr);

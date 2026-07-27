@@ -1,9 +1,7 @@
 #if !defined(NCM_OPTION_PARSER_H)
 #define NCM_OPTION_PARSER_H
 
-#include <stdbool.h>
-
-#include "cbase/primitives.h"
+#include "cbase.h"
 
 typedef struct NcmOptionLine {
     char *option;

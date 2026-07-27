@@ -3,6 +3,8 @@
 
 #include <regex.h>
 
+#include "cbase.h"
+
 #include "c/ncm_base.h"
 
 #define NCM_REGEX_EXTENDED 0x01u

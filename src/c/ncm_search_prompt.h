@@ -1,7 +1,7 @@
 #if !defined(NCM_SEARCH_PROMPT_H)
 #define NCM_SEARCH_PROMPT_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "c/ncm_enums.h"
