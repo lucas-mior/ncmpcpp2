@@ -3,7 +3,7 @@
 
 #include "screens/nc_sort_playlist.h"
 
-#include <errno.h>
+#include "cbase.h"
 
 #include "app_controller.h"
 #include "c/ncm_base.h"

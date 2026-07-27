@@ -3,7 +3,7 @@
 
 #include "screens/nc_media_library.h"
 
-#include <errno.h>
+#include "cbase.h"
 
 #include "global.h"
 #include "helpers.h"

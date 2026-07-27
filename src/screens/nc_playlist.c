@@ -3,10 +3,7 @@
 
 #include "screens/nc_playlist.h"
 
-#include <errno.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stddef.h>
+#include "cbase.h"
 
 #include "app_controller.h"
 #include "global.h"

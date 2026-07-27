@@ -3,7 +3,7 @@
 
 #include "screens/nc_search_engine.h"
 
-#include <errno.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "c/ncm_comparators.h"
