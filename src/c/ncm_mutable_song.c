@@ -73,9 +73,8 @@ ncm_mutable_song_find_tag(NcmMutableSong *song, enum NcmTagsField field,
     }
 
     for (int32 i = 0; i < song->tags_len; i += 1) {
-        NcmMutableSongTag *tag;
+        NcmMutableSongTag *tag = &song->tags[i];
 
-        tag = &song->tags[i];
         if ((tag->field == field) && (tag->idx == idx)) {
             return tag;
         }
@@ -278,10 +277,9 @@ ncm_mutable_song_copy(NcmMutableSong *dest, NcmMutableSong *source) {
     copy.is_from_database = source->is_from_database;
 
     for (int32 i = 0; i < source->tags_len; i += 1) {
-        NcmMutableSongTag *tag;
-
-        tag = ncm_mutable_song_add_tag(&copy, source->tags[i].field,
-                                       source->tags[i].idx);
+        NcmMutableSongTag *tag = ncm_mutable_song_add_tag(&copy,
+                                                          source->tags[i].field,
+                                                          source->tags[i].idx);
         if (tag == NULL) {
             ncm_mutable_song_destroy(&copy);
             return false;
