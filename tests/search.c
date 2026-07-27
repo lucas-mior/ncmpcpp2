@@ -189,6 +189,7 @@ nc_color_default(void) {
     color.background = 0;
     color.is_default = true;
     color.is_end = false;
+
     return color;
 }
 
@@ -200,6 +201,7 @@ nc_color_end(void) {
     color.background = 0;
     color.is_default = false;
     color.is_end = true;
+
     return color;
 }
 
