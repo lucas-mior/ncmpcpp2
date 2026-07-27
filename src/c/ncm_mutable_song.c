@@ -556,7 +556,6 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
                              char *separator, int32 separator_len,
                              bool show_duplicates) {
     StrBuilder result = {0};
-    StrBuilder tag;
 
     if (song == NULL) {
         return result;
@@ -571,8 +570,8 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
 
     for (int32 i = 0; ; i += 1) {
         bool already_present;
+        StrBuilder tag = ncm_mutable_song_get_tag_buffer(song, field, i);
 
-        tag = ncm_mutable_song_get_tag_buffer(song, field, i);
         if (tag.len <= 0) {
             sb_free(&tag);
             break;
