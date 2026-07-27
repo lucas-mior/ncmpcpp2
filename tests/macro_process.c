@@ -10,7 +10,6 @@
 #endif
 
 #include "c/ncm_error.c"
-#include "c/ncm_process.c"
 #include "c/ncm_macro_utilities.c"
 
 #if defined(__GNUC__) || defined(__clang__)
