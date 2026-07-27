@@ -3257,9 +3257,8 @@ tag_editor_compare_songs(NcmSong *left, NcmSong *right) {
 static void
 tag_editor_report_error(char *context, int32 context_len,
                         NcmError *ncm_error) {
-    StrBuilder message;
+    StrBuilder message = {0};
 
-    sb_init(&message);
     SB_APPEND(&message, context, context_len);
     if (ncm_error && (ncm_error->message[0] != 0)) {
         SB_APPEND(&message, STRLIT(": "));
