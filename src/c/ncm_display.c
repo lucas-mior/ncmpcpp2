@@ -123,15 +123,13 @@ ncm_display_column_title(StrBuilder *buffer, struct Column *columns,
     remained_width = list_width;
     last = &columns[column_count - 1];
     for (int32 i = 0; i < column_count; i += 1) {
-        Column *column;
+        Column *column = &columns[i];
+        int32 width = ncm_display_column_width(column,
+                                               list_width, remained_width);
         int32 cut_len;
         int32 name_width;
         int32 padding;
-        int32 width;
 
-        column = &columns[i];
-        width = ncm_display_column_width(column, list_width,
-                                         remained_width);
         if (width <= 0) {
             continue;
         }
