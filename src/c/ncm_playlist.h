@@ -1,7 +1,7 @@
 #if !defined(NCM_PLAYLIST_H)
 #define NCM_PLAYLIST_H
 
-#include <time.h>
+#include "cbase.h"
 
 #include "c/ncm_defs.h"
 
