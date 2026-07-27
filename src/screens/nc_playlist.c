@@ -13,7 +13,6 @@
 #include "c/ncm_base.h"
 #include "c/ncm_display.h"
 #include "c/ncm_type_conversions.h"
-#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 #include "cbase.h"
 

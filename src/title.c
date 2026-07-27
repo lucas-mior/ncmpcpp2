@@ -7,7 +7,6 @@
 #include <string.h>
 
 #include "app_controller.h"
-#include "cbase/utf8.c"
 #include "cbase.h"
 #include "global.h"
 #include "settings.h"

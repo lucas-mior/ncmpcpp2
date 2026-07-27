@@ -13,7 +13,6 @@
 #include "c/ncm_comparators.h"
 #include "c/ncm_charset.h"
 #include "c/ncm_display.h"
-#include "cbase/utf8.c"
 #include "c/ncm_string.h"
 #include "status.h"
 #include "statusbar.h"

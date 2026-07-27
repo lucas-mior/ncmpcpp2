@@ -19,7 +19,6 @@
 #include "cbase.h"
 #include "cbase/base_macros.h"
 #include "cbase.h"
-#include "cbase/utf8.c"
 
 #define NC_COLOR_COMPONENT_COUNT 256
 #define NC_COLOR_PAIR_MAP_SIZE \
