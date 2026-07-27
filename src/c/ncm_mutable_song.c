@@ -64,27 +64,6 @@ ncm_mutable_song_set_string(char **dest, int32 *dest_len,
     return true;
 }
 
-static bool
-ncm_mutable_song_string_equal(char *a, int32 a_len, char *b, int32 b_len) {
-    if (a_len != b_len) {
-        return false;
-    }
-    if (a_len <= 0) {
-        return true;
-    }
-    if ((a == NULL) || (b == NULL)) {
-        return false;
-    }
-
-    for (int32 i = 0; i < a_len; i += 1) {
-        if (a[i] != b[i]) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 static NcmMutableSongTag *
 ncm_mutable_song_find_tag(NcmMutableSong *song, enum NcmTagsField field,
                           int32 idx) {
@@ -437,7 +416,7 @@ ncm_mutable_song_set_tag(NcmMutableSong *song, enum NcmTagsField field,
         return false;
     }
 
-    if (ncm_mutable_song_string_equal(tag->original, tag->original_len,
+    if (optional_strequal(tag->original, tag->original_len,
                                       value, value_len)) {
         ncm_mutable_song_free_string(&tag->value, &tag->value_len);
         tag->modified = false;
@@ -488,7 +467,7 @@ ncm_mutable_song_set_tags(NcmMutableSong *song, enum NcmTagsField field,
         at_end = i == value_len;
         at_separator = false;
         if (!at_end && (i + separator_len <= value_len)) {
-            at_separator = ncm_mutable_song_string_equal(
+            at_separator = optional_strequal(
                 value + i, separator_len, separator, separator_len);
         }
 
@@ -612,7 +591,7 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
                 StrBuilder previous;
 
                 previous = ncm_mutable_song_get_tag_buffer(song, field, j);
-                if (ncm_mutable_song_string_equal(previous.data,
+                if (optional_strequal(previous.data,
                                                   previous.len,
                                                   tag.data, tag.len)) {
                     already_present = true;
@@ -710,7 +689,7 @@ ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
         ncm_mutable_song_free_string(&song->new_name, &song->new_name_len);
         return true;
     }
-    if (ncm_mutable_song_string_equal(song->name, song->name_len, new_name,
+    if (optional_strequal(song->name, song->name_len, new_name,
                                       new_name_len)) {
         ncm_mutable_song_free_string(&song->new_name, &song->new_name_len);
         return true;
