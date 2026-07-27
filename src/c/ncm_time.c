@@ -3,12 +3,6 @@
 
 #include "c/ncm_time.h"
 
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-
-#include "cbase/base_macros.h"
 #include "cbase.h"
 
 static void

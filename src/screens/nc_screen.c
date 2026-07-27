@@ -3,7 +3,7 @@
 
 #include "screens/nc_screen.h"
 
-#include <stddef.h>
+#include "cbase.h"
 
 #include "settings.h"
 #include "ui_state.h"

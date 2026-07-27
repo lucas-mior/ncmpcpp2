@@ -3,10 +3,9 @@
 
 #include "c/ncm_mpd_client.h"
 
-#include <errno.h>
+#include "cbase.h"
 
 #include "c/ncm_regex.h"
-#include "cbase/base_macros.h"
 
 static void
 ncm_mpd_client_set_buffer(StrBuilder *buffer, char *string,

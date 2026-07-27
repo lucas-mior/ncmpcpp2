@@ -3,11 +3,6 @@
 
 #include "curses/nc_buffer.h"
 
-#include <stdio.h>
-#include <string.h>
-
-#include "cbase.h"
-#include "cbase/base_macros.h"
 #include "cbase.h"
 
 static void nc_buffer_reserve(NcBuffer *buffer, int32 extra);

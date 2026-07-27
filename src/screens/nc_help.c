@@ -3,10 +3,9 @@
 
 #include "screens/nc_help.h"
 
-#include <errno.h>
+#include "cbase.h"
 
 #include "c/ncm_regex.h"
-#include "cbase/base_macros.h"
 #include "settings.h"
 
 static NcScreenCallbacks nc_help_callbacks(void);

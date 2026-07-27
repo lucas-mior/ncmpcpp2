@@ -3,9 +3,6 @@
 
 #include "screens/nc_outputs.h"
 
-#include <stddef.h>
-
-#include "cbase/base_macros.h"
 #include "cbase.h"
 
 static NcScreenCallbacks nc_outputs_callbacks(void);
