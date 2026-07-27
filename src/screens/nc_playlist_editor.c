@@ -3,9 +3,7 @@
 
 #include "screens/nc_playlist_editor.h"
 
-#include <errno.h>
-#include <stdint.h>
-#include <string.h>
+#include "cbase.h"
 
 #include "actions.h"
 #include "app_controller.h"
