@@ -9,7 +9,6 @@
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
-#include "cbase/base_macros.h"
 #include "screens/screen_switcher.h"
 #include "settings.h"
 #include "title.h"

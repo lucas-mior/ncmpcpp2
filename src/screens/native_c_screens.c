@@ -13,7 +13,6 @@
 #include "c/ncm_display.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
-#include "cbase/assert.c"
 #include "global.h"
 #include "settings.h"
 #include "screens/screen_switcher.h"
