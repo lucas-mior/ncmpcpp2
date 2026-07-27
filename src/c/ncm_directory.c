@@ -18,9 +18,7 @@ ncm_directory_init(NcmDirectory *directory) {
 
 void
 ncm_directory_destroy(NcmDirectory *directory) {
-    if (directory->path) {
-        free2(directory->path, directory->path_len + 1);
-    }
+    free2(directory->path, directory->path_len + 1);
 
     directory->path = NULL;
     directory->path_len = 0;
