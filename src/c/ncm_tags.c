@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #include "c/ncm_taglib.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 typedef struct NcmTagsFirstPropertyContext {
     NcmStringView *value;

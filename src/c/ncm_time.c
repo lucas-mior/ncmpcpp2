@@ -9,7 +9,7 @@
 #include <time.h>
 
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 static void
 ncm_time_set_errno_error(NcmError *error, int32 code, char *operation) {

@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
 

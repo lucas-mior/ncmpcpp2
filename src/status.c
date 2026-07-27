@@ -16,7 +16,7 @@
 #endif
 
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 #include "global.h"
 #include "settings.h"
 #include "statusbar.h"

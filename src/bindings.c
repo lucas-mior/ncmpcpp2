@@ -19,7 +19,7 @@
 #include "ui_state.h"
 
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 #define NCM_BINDINGS_ERROR_PARSE 1
 #define NCM_BINDINGS_ERROR_MEMORY 2

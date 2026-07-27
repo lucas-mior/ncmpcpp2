@@ -12,7 +12,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 static bool
 ncm_conversion_copy_source(StrBuilder *buffer, char *source,

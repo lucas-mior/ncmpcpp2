@@ -11,7 +11,7 @@
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
 #include "cbase/rapidhash.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 static bool
 ncm_song_needs_numeric_zero(char *tag, int32 tag_len) {

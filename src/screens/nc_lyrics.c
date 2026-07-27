@@ -14,7 +14,7 @@
 #include "c/ncm_string.h"
 #include "cbase/utf8.c"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 #include "curses/nc_cyclic_buffer.h"
 #include "global.h"
 #include "settings.h"

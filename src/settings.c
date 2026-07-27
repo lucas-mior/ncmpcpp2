@@ -21,7 +21,7 @@
 #include "c/ncm_type_conversions.h"
 #include "cbase/utf8.c"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 #include "global.h"
 
 #define SETTINGS_LINE_CAP 16384

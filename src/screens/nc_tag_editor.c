@@ -22,7 +22,7 @@
 #include "cbase/utf8.c"
 #include "c/ncm_type_conversions.h"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 #include "screens/screen_switcher.h"
 #include "screens/song_info.h"
 #include "title.h"
