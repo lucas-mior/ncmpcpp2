@@ -1,12 +1,11 @@
 #if !defined(NCMPCPP_NC_MENU_H)
 #define NCMPCPP_NC_MENU_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "cbase/primitives.h"
 #include "curses/nc_buffer.h"
 #include "curses/nc_window.h"
-#include "cbase/base_macros.h"
 
 typedef struct NcMenu NcMenu;
 
