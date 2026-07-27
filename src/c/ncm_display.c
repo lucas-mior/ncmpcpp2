@@ -108,7 +108,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
 void
 ncm_display_column_title(StrBuilder *buffer, struct Column *columns,
                          int32 column_count, int32 list_width) {
-    StrBuilder name;
+    StrBuilder name = {0};
     Column *last;
     int32 remained_width;
 
@@ -123,7 +123,6 @@ ncm_display_column_title(StrBuilder *buffer, struct Column *columns,
 
     remained_width = list_width;
     last = &columns[column_count - 1];
-    sb_init(&name);
     for (int32 i = 0; i < column_count; i += 1) {
         Column *column;
         int32 cut_len;
@@ -200,9 +199,8 @@ ncm_display_playlist_row(NcBuffer *buffer, NcmPlaylist *playlist,
 
 static StrBuilder
 ncm_display_column_value(NcmSong *song, Column *column) {
-    StrBuilder result;
+    StrBuilder result = {0};
 
-    sb_init(&result);
     if ((song == NULL) || (column == NULL)) {
         return result;
     }

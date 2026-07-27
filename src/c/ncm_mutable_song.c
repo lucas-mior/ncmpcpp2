@@ -520,11 +520,10 @@ StrBuilder
 ncm_mutable_song_get_numeric_tag_buffer(NcmMutableSong *song,
                                         enum NcmTagsField field,
                                         int32 idx) {
-    StrBuilder buffer;
+    StrBuilder buffer = {0};
     NcmStringView view;
     int32 len;
 
-    sb_init(&buffer);
     if (!ncm_mutable_song_get_tag(song, field, idx, &view)) {
         return buffer;
     }
@@ -539,10 +538,9 @@ ncm_mutable_song_get_numeric_tag_buffer(NcmMutableSong *song,
 StrBuilder
 ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
                                 enum NcmTagsField field, int32 idx) {
-    StrBuilder buffer;
+    StrBuilder buffer = {0};
     NcmStringView view;
 
-    sb_init(&buffer);
     if (field == NCM_TAGS_FIELD_TRACK) {
         sb_free(&buffer);
         return ncm_mutable_song_get_numeric_tag_buffer(song, field, idx);
@@ -560,10 +558,9 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
                              enum NcmTagsField field,
                              char *separator, int32 separator_len,
                              bool show_duplicates) {
-    StrBuilder result;
+    StrBuilder result = {0};
     StrBuilder tag;
 
-    sb_init(&result);
     if (song == NULL) {
         return result;
     }

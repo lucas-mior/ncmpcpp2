@@ -314,10 +314,9 @@ settings_expand_home(StrBuilder *buffer, char *value, int32 value_len) {
 static bool
 settings_string_set_expanded(char **data, int32 *len, int32 *cap, char *value,
                              int32 value_len) {
-    StrBuilder buffer;
+    StrBuilder buffer = {0};
     bool result;
 
-    sb_init(&buffer);
     if ((result = settings_expand_home(&buffer, value, value_len))) {
         result = settings_string_set(data, len, cap, buffer.data, buffer.len);
     }
@@ -328,10 +327,9 @@ settings_string_set_expanded(char **data, int32 *len, int32 *cap, char *value,
 static bool
 settings_string_set_directory(char **data, int32 *len, int32 *cap, char *value,
                               int32 value_len) {
-    StrBuilder buffer;
+    StrBuilder buffer = {0};
     bool result;
 
-    sb_init(&buffer);
     if ((result = settings_expand_home(&buffer, value, value_len))
         && ((buffer.len <= 0) || (buffer.data[buffer.len - 1] != '/'))) {
         sb_append_byte(&buffer, '/');
@@ -719,16 +717,13 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
     ncm_format_ast_clear(&config->song_columns_mode_format);
     pos = 0;
     while (pos < value_len) {
-        StrBuilder width;
-        StrBuilder color;
-        StrBuilder tag;
+        StrBuilder width = {0};
+        StrBuilder color = {0};
+        StrBuilder tag = {0};
         Column *column;
         int32 next;
         int32 parsed_width;
 
-        sb_init(&width);
-        sb_init(&color);
-        sb_init(&tag);
         width = ncm_string_get_enclosed(value, value_len, '(', ')', pos, &next);
         if (width.len <= 0) {
             sb_free(&width);
@@ -1043,11 +1038,10 @@ APPLY_BOOL(apply_colors_enabled, colors_enabled)
 static bool
 apply_mpd_host(Configuration *config, char *value, int32 value_len,
                NcmError *error) {
-    StrBuilder host;
+    StrBuilder host = {0};
     bool result;
 
     (void)config;
-    sb_init(&host);
     if ((result = settings_expand_home(&host, value, value_len))) {
         result = ncm_mpd_client_set_hostname(&global_mpd, host.data, host.len,
                                              error);
@@ -1883,14 +1877,13 @@ settings_read_file(Configuration *config, SettingsOption *options,
                    int32 option_count, char *path, int32 path_len,
                    bool ignore_errors, bool quiet, NcmError *error) {
     FILE *file;
-    StrBuilder path_buffer;
+    StrBuilder path_buffer = {0};
     char line[SETTINGS_LINE_CAP];
 
     if (!ncm_fs_exists(path, path_len)) {
         return true;
     }
 
-    sb_init(&path_buffer);
     SB_APPEND(&path_buffer, path, path_len);
     if ((file = fopen(path_buffer.data, "r")) == NULL) {
         char message[256];

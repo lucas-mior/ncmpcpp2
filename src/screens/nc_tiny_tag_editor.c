@@ -487,7 +487,7 @@ native_tiny_tag_editor_screen_set_filename_stem(
     NativeTinyTagEditorScreen *screen, char *stem, int32 stem_len
 ) {
     NcmStringView current_name;
-    StrBuilder new_name;
+    StrBuilder new_name = {0};
     int32 dot;
     bool result;
 
@@ -508,7 +508,6 @@ native_tiny_tag_editor_screen_set_filename_stem(
         }
     }
 
-    sb_init(&new_name);
     SB_APPEND(&new_name, stem, stem_len);
     if (dot >= 0) {
         SB_APPEND(&new_name, &current_name.data[dot],
@@ -529,7 +528,7 @@ native_tiny_tag_editor_screen_run_row(
     NcmStringView initial;
     char *field_name;
     NcmStringView current_name;
-    StrBuilder input;
+    StrBuilder input = {0};
     StrBuilder tag_value;
     NcMenu *menu;
     char error_buffer[256];
@@ -556,7 +555,6 @@ native_tiny_tag_editor_screen_run_row(
         initial.data = tag_value.data;
         initial.len = tag_value.len;
         field_name = ncm_tags_field_name(field);
-        sb_init(&input);
         if (screen->hooks.prompt == NULL) {
             prompt_result = NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
         } else {
@@ -602,7 +600,6 @@ native_tiny_tag_editor_screen_run_row(
             initial.len = dot;
         }
 
-        sb_init(&input);
         if (screen->hooks.prompt == NULL) {
             prompt_result = NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR;
         } else {

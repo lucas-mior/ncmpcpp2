@@ -109,8 +109,8 @@ ncm_regex_escape_literal(StrBuilder *buffer, char *pattern, int32 pattern_len) {
 bool
 ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
                   uint32 flags, NcmError *error) {
-    StrBuilder escaped;
-    StrBuilder compiled_pattern;
+    StrBuilder escaped = {0};
+    StrBuilder compiled_pattern = {0};
     int32 reg_flags;
     int32 code;
 
@@ -128,8 +128,6 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
     }
 
     ncm_regex_destroy(regex);
-    sb_init(&escaped);
-    sb_init(&compiled_pattern);
 
     if (flags & NCM_REGEX_LITERAL) {
         ncm_regex_escape_literal(&escaped, pattern, pattern_len);
@@ -170,14 +168,13 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
 
 bool
 ncm_regex_search(NcmRegex *regex, char *string, int32 string_len) {
-    StrBuilder buffer;
+    StrBuilder buffer = {0};
     bool result;
 
     if ((regex == NULL) || !regex->compiled) {
         return false;
     }
 
-    sb_init(&buffer);
     if (!ncm_regex_prepare_string(string, string_len, &buffer, NULL)) {
         sb_free(&buffer);
         return false;
@@ -191,7 +188,7 @@ ncm_regex_search(NcmRegex *regex, char *string, int32 string_len) {
 bool
 ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
                          NcmRegexMatchCallback *callback, void *user) {
-    StrBuilder buffer;
+    StrBuilder buffer = {0};
     regmatch_t match[1];
     char *cursor;
     int32 offset;
@@ -206,7 +203,6 @@ ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
         return false;
     }
 
-    sb_init(&buffer);
     if (!ncm_regex_prepare_string(string, string_len, &buffer, NULL)) {
         sb_free(&buffer);
         return false;

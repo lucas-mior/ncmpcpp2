@@ -175,9 +175,8 @@ ncm_string_format_apply(StrBuilder *out, char *format, int32 format_len,
 StrBuilder
 ncm_string_format_make(char *format, int32 format_len,
                        NcmStringFormatArg *args, int32 args_len) {
-    StrBuilder result;
+    StrBuilder result = {0};
 
-    sb_init(&result);
     ncm_string_format_apply(&result, format, format_len, args, args_len);
 
     return result;

@@ -719,13 +719,12 @@ ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap) {
 
 StrBuilder
 ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
-    StrBuilder buffer;
+    StrBuilder buffer = {0};
     NcmStringView view;
     char number_buffer[32];
     int32 len;
     enum mpd_tag_type tag;
 
-    sb_init(&buffer);
     if (song == NULL) {
         return buffer;
     }
@@ -816,10 +815,9 @@ StrBuilder
 ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
                      char *separator, int32 separator_len,
                      bool show_duplicates) {
-    StrBuilder result;
+    StrBuilder result = {0};
     StrBuilder tag;
 
-    sb_init(&result);
     if (song == NULL) {
         return result;
     }

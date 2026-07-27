@@ -93,12 +93,10 @@ static bool
 configuration_append_default_file(StrBuilderArray *paths, char *filename,
                                   int32 filename_len) {
     char *xdg_config_home;
-    StrBuilder directory;
-    StrBuilder path;
+    StrBuilder directory = {0};
+    StrBuilder path = {0};
     bool result;
 
-    sb_init(&directory);
-    sb_init(&path);
 
     if ((xdg_config_home = getenv("XDG_CONFIG_HOME"))
         && (xdg_config_home[0] != '\0')) {
@@ -125,12 +123,10 @@ configuration_append_default_file(StrBuilderArray *paths, char *filename,
 static bool
 configuration_append_legacy_file(StrBuilderArray *paths, char *filename,
                                  int32 filename_len) {
-    StrBuilder directory;
-    StrBuilder path;
+    StrBuilder directory = {0};
+    StrBuilder path = {0};
     bool result;
 
-    sb_init(&directory);
-    sb_init(&path);
 
     SB_APPEND(&directory, STRLIT("~/.ncmpcpp"));
     result = ncm_fs_join(&path, directory.data, directory.len, filename,
@@ -801,12 +797,11 @@ configuration_print_current_song(NcmConfigurationOptions *options,
                                  NcmError *error) {
     NcmSong song;
     NcmFormatAst format;
-    StrBuilder output;
+    StrBuilder output = {0};
     bool result;
 
     ncm_song_init(&song);
     ncm_format_ast_init(&format);
-    sb_init(&output);
 
     result = ncm_mpd_client_connect(&global_mpd, error)
              && ncm_mpd_client_get_current_song(&global_mpd, &song, error);

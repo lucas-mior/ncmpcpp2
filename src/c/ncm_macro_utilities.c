@@ -12,7 +12,7 @@
 static bool
 ncm_macro_system_command(char *command, int32 command_len,
                          bool block, int32 *status, NcmError *error) {
-    StrBuilder buffer;
+    StrBuilder buffer = {0};
     Command process = {0};
     int32 rc;
     bool success;
@@ -41,7 +41,6 @@ ncm_macro_system_command(char *command, int32 command_len,
         return success;
     }
 
-    sb_init(&buffer);
     SB_APPEND(&buffer, command, command_len);
     SB_APPEND(&buffer, STRLIT(" >/dev/null 2>&1 &"));
 

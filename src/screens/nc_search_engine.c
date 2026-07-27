@@ -899,7 +899,7 @@ native_search_engine_screen_run_current(
 ) {
     enum NativeSearchEnginePromptResult prompt_status;
     enum NativeSearchEngineSearchMode mode;
-    StrBuilder value;
+    StrBuilder value = {0};
     NcmError error;
     NcMenu *menu;
     int32 pos;
@@ -913,7 +913,6 @@ native_search_engine_screen_run_current(
     menu = native_search_engine_screen_menu(screen);
     pos = nc_menu_highlight(menu);
     if (pos < NATIVE_SEARCH_ENGINE_CONSTRAINT_COUNT) {
-        sb_init(&value);
         prompt_status = native_search_engine_screen_prompt_constraint(
             screen, pos, &value);
         if (prompt_status == NATIVE_SEARCH_ENGINE_PROMPT_ACCEPTED) {

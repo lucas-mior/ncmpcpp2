@@ -116,12 +116,11 @@ ncm_string_contains_char(char *string, int32 string_len, char needle) {
 StrBuilder
 ncm_string_shared_directory(char *left, int32 left_len,
                             char *right, int32 right_len) {
-    StrBuilder result;
+    StrBuilder result = {0};
     int32 min_len;
     int32 common;
     int32 slash;
 
-    sb_init(&result);
     if ((left == NULL) || (right == NULL)) {
         SB_APPEND(&result, STRLIT("/"));
         return result;
@@ -163,10 +162,9 @@ StrBuilder
 ncm_string_get_enclosed(char *string, int32 string_len,
                         char open, char close,
                         int32 start, int32 *pos) {
-    StrBuilder result;
+    StrBuilder result = {0};
     int32 i;
 
-    sb_init(&result);
     if (pos) {
         *pos = -1;
     }

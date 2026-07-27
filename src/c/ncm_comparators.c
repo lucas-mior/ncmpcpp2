@@ -73,8 +73,8 @@ int32
 ncm_compare_locale_strings(char *left, int32 left_len,
                            char *right, int32 right_len,
                            bool ignore_the) {
-    StrBuilder left_buffer;
-    StrBuilder right_buffer;
+    StrBuilder left_buffer = {0};
+    StrBuilder right_buffer = {0};
     int32 left_number;
     int32 right_number;
     int32 left_offset;
@@ -105,8 +105,6 @@ ncm_compare_locale_strings(char *left, int32 left_len,
         }
     }
 
-    sb_init(&left_buffer);
-    sb_init(&right_buffer);
     left_len = ncm_compare_copy_to_buffer(&left_buffer,
                                           left + left_offset,
                                           left_len - left_offset);
