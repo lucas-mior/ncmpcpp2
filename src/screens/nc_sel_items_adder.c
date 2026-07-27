@@ -10,8 +10,6 @@
 #include "c/ncm_charset.h"
 #include "c/ncm_comparators.h"
 #include "c/ncm_string.h"
-#include "cbase/base_macros.h"
-#include "cbase.h"
 #include "helpers.h"
 #include "screens/nc_browser.h"
 #include "screens/nc_playlist.h"
