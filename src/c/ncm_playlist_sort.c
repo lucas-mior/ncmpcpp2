@@ -3,15 +3,12 @@
 
 #include "c/ncm_playlist_sort.h"
 
-#include <errno.h>
-#include <stdint.h>
+#include "cbase.h"
 
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_base.h"
 #include "c/ncm_comparators.h"
 #include "c/ncm_mpd_client.h"
-#include "cbase/base_macros.h"
-#include "cbase.h"
 
 typedef struct NcmPlaylistSortContext {
     NcmSongArray *songs;
