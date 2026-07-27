@@ -3,9 +3,7 @@
 
 #include "c/ncm_string_format.h"
 
-#include <ctype.h>
-#include <inttypes.h>
-#include <stdio.h>
+#include "cbase.h"
 
 #include "cbase/base_macros.h"
 #include "cbase.h"

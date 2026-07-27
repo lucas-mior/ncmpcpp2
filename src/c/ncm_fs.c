@@ -359,9 +359,7 @@ ncm_fs_join(StrBuilder *buffer,
 
     if (left && (left_len > 0)) {
         SB_APPEND(&result, left, left_len);
-        if ((result.len > 0) && (result.data[result.len - 1] != '/')) {
-            sb_append_byte(&result, '/');
-        }
+        sb_append_byte_if_not(&result, '/');
     }
     while ((right_len > 0) && (right[0] == '/')) {
         right += 1;
