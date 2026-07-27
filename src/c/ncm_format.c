@@ -898,10 +898,11 @@ ncm_format_render_list(NcmFormatExprList *list, NcmSong *song,
     enum NcmFormatResult result = NCM_FORMAT_RESULT_EMPTY;
 
     for (int32 i = 0; i < list->len; i += 1) {
-        enum NcmFormatResult part;
-
-        part = ncm_format_render_expr(&list->items[i], song, cb, left,
-                                      right, flags, no_output, switched);
+        enum NcmFormatResult part = ncm_format_render_expr(&list->items[i],
+                                                           song, cb,
+                                                           left, right,
+                                                           flags,
+                                                           no_output, switched);
 
         result = ncm_format_result_add(result, part);
         if (result == NCM_FORMAT_RESULT_MISSING) {
