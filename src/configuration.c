@@ -474,7 +474,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
             }
             break;
         }
-        if (ncm_string_starts_with(arg, arg_len, STRLIT("--"))) {
+        if (BEGINS_WITH(arg, arg_len, STRLIT("--"))) {
             if (!configuration_parse_long_option(options, argc, argv, &i,
                                                  error)) {
                 return false;
