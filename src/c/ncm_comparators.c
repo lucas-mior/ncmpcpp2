@@ -3,12 +3,9 @@
 
 #include "c/ncm_comparators.h"
 
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
-#include "cbase/base_macros.h"
 
 static bool
 ncm_compare_has_the_word(char *string, int32 string_len) {
