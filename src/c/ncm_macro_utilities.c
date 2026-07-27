@@ -49,18 +49,23 @@ ncm_macro_system_command(char *command, int32 command_len,
     SB_APPEND(&buffer, STRLIT(" >/dev/null 2>&1 &"));
     sb_append_byte(&buffer, '\0');
 
-    rc = system(buffer.data);
-    sb_free(&buffer);
-    if (status) {
-        *status = rc;
-    }
-    if (rc == -1) {
-        ncm_error_set(error, errno, STRLIT("system failed"));
-        return false;
-    }
+    command_push(&process, "/bin/sh");
+    command_push(&process, "-c");
+    command_push_length(&process, buffer.data, buffer.len - 1);
 
-    ncm_error_clear(error);
-    return true;
+    success = command_run_sync(&process, &rc);
+    sb_free(&buffer);
+    if (success) {
+        if (status) {
+            *status = rc;
+        }
+        ncm_error_clear(error);
+    } else {
+        ncm_error_set(error, process.error_status,
+                      STRLIT("command failed"));
+    }
+    command_free(&process);
+    return success;
 }
 
 bool
