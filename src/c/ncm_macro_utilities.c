@@ -6,7 +6,6 @@
 #include "cbase.h"
 
 #include "c/ncm_base.h"
-#include "cbase.h"
 
 static bool
 ncm_macro_system_command(char *command, int32 command_len,

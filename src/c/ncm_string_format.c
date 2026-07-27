@@ -5,8 +5,6 @@
 
 #include "cbase.h"
 
-#include "cbase.h"
-
 static void
 ncm_string_format_append_number(StrBuilder *out, char *format,
                                 NcmStringFormatArg *arg) {

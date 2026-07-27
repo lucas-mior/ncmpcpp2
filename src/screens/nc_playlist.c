@@ -13,7 +13,6 @@
 #include "c/ncm_base.h"
 #include "c/ncm_display.h"
 #include "c/ncm_type_conversions.h"
-#include "cbase.h"
 
 static void playlist_scroll_lines(NcPlaylistScreen *screen,
                                   enum NcScroll where);
