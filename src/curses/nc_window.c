@@ -3,6 +3,8 @@
 
 #include "cbase.h"
 
+#include <termios.h>
+
 #include "config.h"
 
 #if defined(HAVE_READLINE_HISTORY_H)
