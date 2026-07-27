@@ -3,6 +3,8 @@
 
 #include "screens/nc_browser.h"
 
+#include "cbase.h"
+
 #include "c/ncm_base.h"
 #include "c/ncm_comparators.h"
 #include "c/ncm_display.h"
@@ -21,13 +23,7 @@
 #include "title.h"
 #include "ui_state.h"
 
-#include <errno.h>
-#include <limits.h>
 #include <mpd/client.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 static NcWindow *native_browser_active_window(NcScreen *screen);
 static void native_browser_refresh(NcScreen *screen);

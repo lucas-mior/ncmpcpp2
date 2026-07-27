@@ -3,7 +3,9 @@
 
 #include "screens/nc_lyrics.h"
 
-#include "cbase.h"
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "c/ncm_base.h"
 #include "c/ncm_charset.h"
@@ -814,10 +816,8 @@ lyrics_title_callback(NcScreen *screen) {
                          Config.header_text_scrolling);
     SB_APPEND(&lyrics->title, scroll_buffer.data, scroll_buffer.len);
     nc_lyrics_screen_set_scroll_begin(&lyrics->screen, scroll_begin);
-
     sb_free(&scroll_buffer);
     sb_free(&song_title);
-
     return lyrics->title.data;
 }
 
@@ -1015,10 +1015,7 @@ native_lyrics_filename_from_song(StrBuilder *filename, NcmSong *song,
     if (store_in_song_dir && !ncm_song_is_stream(song)) {
         if (ncm_song_is_from_database(song) && (music_dir_len > 0)) {
             SB_APPEND(filename, music_dir, music_dir_len);
-            if ((filename->len > 0)
-                && (filename->data[filename->len - 1] != '/')) {
-                sb_append_byte(filename, '/');
-            }
+            sb_append_byte_if_not(filename, '/');
         }
         if (ncm_song_uri_view(song, 0, &uri)) {
             SB_APPEND(filename, uri.data, uri.len);
@@ -1028,10 +1025,7 @@ native_lyrics_filename_from_song(StrBuilder *filename, NcmSong *song,
         (void)native_lyrics_song_artist_title(song, &artist, &title);
         if (lyrics_dir_len > 0) {
             SB_APPEND(filename, lyrics_dir, lyrics_dir_len);
-            if ((filename->len > 0)
-                && (filename->data[filename->len - 1] != '/')) {
-                sb_append_byte(filename, '/');
-            }
+            sb_append_byte_if_not(filename, '/');
         }
         basename_start = filename->len;
         if ((artist.len > 0) && (title.len > 0)) {

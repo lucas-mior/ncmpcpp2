@@ -168,6 +168,7 @@ CBASE_API_DECL char *read_entire_file(char *, int32 *);
 CBASE_API_DECL char *remove_escape_sequences(char *, int32 *);
 CBASE_API_DECL void sb_append(StrBuilder *, char *, int32);
 CBASE_API_DECL void sb_append_byte(StrBuilder *, char);
+CBASE_API_DECL void sb_append_byte_if_not(StrBuilder *, char);
 CBASE_API_DECL void sb_clear(StrBuilder *);
 CBASE_API_DECL bool sb_copy(StrBuilder *, StrBuilder *);
 CBASE_API_DECL void sb_free(StrBuilder *);

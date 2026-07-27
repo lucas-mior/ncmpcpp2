@@ -330,9 +330,8 @@ settings_string_set_directory(char **data, int32 *len, int32 *cap, char *value,
     StrBuilder buffer = {0};
     bool result;
 
-    if ((result = settings_expand_home(&buffer, value, value_len))
-        && ((buffer.len <= 0) || (buffer.data[buffer.len - 1] != '/'))) {
-        sb_append_byte(&buffer, '/');
+    if ((result = settings_expand_home(&buffer, value, value_len))) {
+        sb_append_byte_if_not(&buffer, '/');
     }
     if (result) {
         result = settings_string_set(data, len, cap, buffer.data, buffer.len);

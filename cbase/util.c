@@ -1892,6 +1892,16 @@ sb_append_byte(StrBuilder *str_builder, char byte) {
 }
 
 CBASE_API_DEF void
+sb_append_byte_if_not(StrBuilder *str_builder, char byte) {
+    if ((str_builder->len > 0)
+        && (str_builder->data[str_builder->len - 1] == byte)) {
+        return;
+    }
+    sb_append_byte(str_builder, byte);
+    return;
+}
+
+CBASE_API_DEF void
 sb_printf(StrBuilder *str_builder, char *fmt, ...) {
     va_list ap;
     va_list ap2;
