@@ -44,7 +44,6 @@ ncm_macro_system_command(char *command, int32 command_len,
     sb_init(&buffer);
     SB_APPEND(&buffer, command, command_len);
     SB_APPEND(&buffer, STRLIT(" >/dev/null 2>&1 &"));
-    sb_append_byte(&buffer, '\0');
 
     command_push(&process, "/bin/sh");
     command_push(&process, "-c");
