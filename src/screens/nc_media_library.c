@@ -2356,11 +2356,11 @@ native_library_album_identity_equal(NcMediaLibraryAlbumRow *left,
     }
     return left->all_tracks_entry == right->all_tracks_entry
            && STREQUAL(left->tag, left->tag_len,
-                               right->tag, right->tag_len)
+                       right->tag, right->tag_len)
            && STREQUAL(left->album, left->album_len,
-                               right->album, right->album_len)
+                       right->album, right->album_len)
            && STREQUAL(left->date, left->date_len,
-                               right->date, right->date_len);
+                       right->date, right->date_len);
 }
 
 static void
