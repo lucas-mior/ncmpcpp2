@@ -2997,9 +2997,8 @@ tag_editor_build_renamed_directory(NativeTagEditorScreen *screen,
 static void
 tag_editor_status_directory_renamed(NativeTagEditorScreen *screen,
                                     char *name, int32 name_len) {
-    StrBuilder message;
+    StrBuilder message = {0};
 
-    sb_init(&message);
     SB_APPEND(&message, STRLIT("Directory renamed to \""));
     SB_APPEND(&message, name, name_len);
     SB_APPEND(&message, STRLIT("\""));
@@ -3015,7 +3014,6 @@ tag_editor_status_directory_rename_error(NativeTagEditorScreen *screen,
     StrBuilder message;
     int32 error_len;
 
-    sb_init(&message);
     SB_APPEND(&message, STRLIT("Couldn't rename \""));
     SB_APPEND(&message, name, name_len);
     SB_APPEND(&message, STRLIT("\": "));
@@ -3325,7 +3323,7 @@ tag_editor_reload_directories_from_mpd(NativeTagEditorScreen *screen,
                                        NcmMpdClient *client,
                                        NcmError *error) {
     NcmDirectoryArray directories;
-    StrBuilder preserved;
+    StrBuilder preserved = {0};
     char *dir;
     bool ok;
 
@@ -3334,7 +3332,6 @@ tag_editor_reload_directories_from_mpd(NativeTagEditorScreen *screen,
     }
 
     ncm_directory_array_init(&directories);
-    sb_init(&preserved);
     tag_editor_preserve_current_directory(screen, &preserved);
     if ((preserved.len <= 0) && (screen->highlighted_dir.len > 0)) {
         sb_set(&preserved, screen->highlighted_dir.data,
@@ -3393,7 +3390,7 @@ tag_editor_reload_songs_from_mpd(NativeTagEditorScreen *screen,
                                  NcmMpdClient *client, NcmError *error) {
     NcmMpdSongList list;
     NcmSongArray songs;
-    StrBuilder preserved_uri;
+    StrBuilder preserved_uri = {0};
     char *path;
     int32 path_len;
     bool ok;
@@ -3408,7 +3405,6 @@ tag_editor_reload_songs_from_mpd(NativeTagEditorScreen *screen,
 
     ncm_mpd_song_list_init(&list);
     ncm_song_array_init(&songs);
-    sb_init(&preserved_uri);
     tag_editor_preserve_current_song(screen, &preserved_uri);
 
     if ((ok = ncm_mpd_client_get_songs(client, path, &list, error))) {
@@ -4192,21 +4188,21 @@ tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
 static bool
 tag_editor_capitalize_song_callback(NcmMutableSong *song, void *user) {
     (void)user;
-    for (int32 field_idx = 0;
-         ncm_song_info_tags[field_idx].name; field_idx += 1) {
-        enum NcmTagsField field;
 
-        field = ncm_song_info_tags[field_idx].field;
+    for (int32 field_idx = 0;
+         ncm_song_info_tags[field_idx].name;
+         field_idx += 1) {
+        enum NcmTagsField field = ncm_song_info_tags[field_idx].field;
+
         for (int32 i = 0; ; i += 1) {
             NcmStringView view;
-            StrBuilder converted;
+            StrBuilder converted = {0};
             int32 converted_len;
 
             if (!ncm_mutable_song_get_tag(song, field, i, &view)) {
                 break;
             }
 
-            sb_init(&converted);
             converted_len = utf8_capitalize_first_letters(
                 view.data, view.len, NULL, 0);
             sb_reserve(&converted, converted_len);
@@ -4223,6 +4219,7 @@ tag_editor_capitalize_song_callback(NcmMutableSong *song, void *user) {
             sb_free(&converted);
         }
     }
+
     return true;
 }
 
