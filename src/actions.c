@@ -978,22 +978,11 @@ static NcmActionDef action_defs[] = {
     },
 };
 
-static int32
-ncm_action_name_len(char *name) {
-    int32 len;
-
-    len = 0;
-    while (name[len] != '\0') {
-        len += 1;
-    }
-    return len;
-}
-
 static bool
 ncm_action_name_equals(char *left, int32 left_len, char *right) {
     int32 right_len;
 
-    right_len = ncm_action_name_len(right);
+    right_len = strlen32(right);
     if (left_len != right_len) {
         return false;
     }
