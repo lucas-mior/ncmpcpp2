@@ -580,9 +580,9 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
         already_present = false;
         if (!show_duplicates) {
             for (int32 j = 0; j < i; j += 1) {
-                StrBuilder previous;
-
-                previous = ncm_mutable_song_get_tag_buffer(song, field, j);
+                StrBuilder previous = ncm_mutable_song_get_tag_buffer(song,
+                                                                      field,
+                                                                      j);
 
                 if (optional_strequal(previous.data, previous.len,
                                       tag.data, tag.len)) {
