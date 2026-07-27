@@ -3,23 +3,13 @@
 
 #include "bindings.h"
 
-#include <ctype.h>
-#include <errno.h>
-#include <locale.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <wchar.h>
+#include "cbase.h"
 
 #include "app_controller.h"
 #include "c/ncm_base.h"
 #include "c/ncm_macro_utilities.h"
 #include "screens/screen_type.h"
 #include "ui_state.h"
-
-#include "cbase/base_macros.h"
-#include "cbase.h"
 
 #define NCM_BINDINGS_ERROR_PARSE 1
 #define NCM_BINDINGS_ERROR_MEMORY 2
