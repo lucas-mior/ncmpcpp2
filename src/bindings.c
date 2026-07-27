@@ -660,12 +660,11 @@ ncm_bindings_format_key(StrBuilder *buffer, NcKey key) {
 NcKey
 ncm_read_key(NcWindow *window) {
     NcKey result;
-    StrBuilder tmp;
+    StrBuilder tmp = {0};
     bool alt_pressed;
 
     result = NC_KEY_NONE;
     alt_pressed = false;
-    sb_init(&tmp);
 
     while (true) {
         NcKey input;
@@ -702,14 +701,13 @@ ncm_read_key(NcWindow *window) {
 
 int32
 ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len) {
-    StrBuilder key_name;
+    StrBuilder key_name = {0};
     int32 result;
 
     if ((buffer == NULL) || (buffer_len <= 0)) {
         return -1;
     }
 
-    sb_init(&key_name);
     ncm_bindings_format_key(&key_name, key);
     if (key_name.len >= buffer_len) {
         result = -1;

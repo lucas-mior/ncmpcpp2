@@ -380,14 +380,13 @@ bool
 native_playlist_editor_screen_load_playlists(
     NativePlaylistEditorScreen *screen, NcmMpdPlaylistList *playlists
 ) {
-    StrBuilder preserved;
+    StrBuilder preserved = {0};
     NcMenu *menu;
     bool had_preserved;
 
     if ((screen == NULL) || (playlists == NULL)) {
         return false;
     }
-    sb_init(&preserved);
     had_preserved = playlist_editor_store_current_playlist_path(
         screen, &preserved);
     menu = nc_playlist_entry_menu_base(&screen->playlists);
@@ -1497,13 +1496,12 @@ static void
 playlist_editor_clear_playlist_filter(
     NativePlaylistEditorScreen *screen
 ) {
-    StrBuilder path;
+    StrBuilder path = {0};
     bool has_path;
 
     if (screen == NULL) {
         return;
     }
-    sb_init(&path);
     has_path = playlist_editor_store_current_playlist_path(screen, &path);
     screen->playlist_filter_enabled = false;
     sb_clear(&screen->playlist_filter_constraint);
@@ -1863,9 +1861,8 @@ playlist_editor_content_fetch_due(NativePlaylistEditorScreen *screen) {
 static void
 playlist_editor_report_error(char *context, int32 context_len,
                              NcmError *error) {
-    StrBuilder message;
+    StrBuilder message = {0};
 
-    sb_init(&message);
     SB_APPEND(&message, context, context_len);
     if (error && (error->message[0] != 0)) {
         SB_APPEND(&message, STRLIT(": "));
@@ -2148,12 +2145,11 @@ playlist_editor_mouse_add_current_song(NativePlaylistEditorScreen *screen,
 
 static void
 playlist_editor_print_playlist_loaded(NcmPlaylist *playlist) {
-    StrBuilder message;
+    StrBuilder message = {0};
 
     if ((playlist == NULL) || (playlist->path == NULL)) {
         return;
     }
-    sb_init(&message);
     SB_APPEND(&message, STRLIT("Playlist \""));
     SB_APPEND(&message, playlist->path, playlist->path_len);
     SB_APPEND(&message, STRLIT("\" loaded"));

@@ -462,7 +462,7 @@ native_browser_screen_last_highlighted_directory(
 
 void
 native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
-    StrBuilder scroll_buffer;
+    StrBuilder scroll_buffer = {0};
     NcmStringView directory;
     int32 scroll_beginning;
     int32 scroll_width;
@@ -497,7 +497,6 @@ native_browser_screen_update_title_text(NativeBrowserScreen *screen) {
         scroll_width = 0;
     }
 
-    sb_init(&scroll_buffer);
     scroll_beginning = screen->title_scroll_beginning;
     nc_cyclic_text_write(&scroll_buffer, directory.data, directory.len,
                          &scroll_beginning, scroll_width, separator,
@@ -672,7 +671,7 @@ bool
 native_browser_screen_change_browse_mode(
     NativeBrowserScreen *screen, NcmMpdClient *client, NcmError *error
 ) {
-    StrBuilder directory;
+    StrBuilder directory = {0};
     char *hostname;
     bool local_browser;
     bool result;
@@ -691,7 +690,6 @@ native_browser_screen_change_browse_mode(
         return false;
     }
 
-    sb_init(&directory);
     local_browser = !screen->local_browser;
     if (local_browser) {
         if (!sb_set(&directory, STRLIT("~"))) {
@@ -1965,7 +1963,7 @@ static bool
 native_browser_load_local_entry(NativeBrowserScreen *screen,
                                 NcmFsDirectory *directory,
                                 NcmFsEntry *entry, NcmError *error) {
-    StrBuilder path;
+    StrBuilder path = {0};
     NcmFsStat stat;
     bool result;
 
@@ -1978,7 +1976,6 @@ native_browser_load_local_entry(NativeBrowserScreen *screen,
         return true;
     }
 
-    sb_init(&path);
     if (!ncm_fs_join(&path, directory->path, directory->path_len,
                      entry->name, entry->name_len)) {
         sb_free(&path);
@@ -2220,7 +2217,7 @@ native_browser_collect_local_entry_songs(
     NativeBrowserScreen *screen, NcmSongArray *songs,
     NcmFsDirectory *directory, NcmFsEntry *entry, NcmError *error
 ) {
-    StrBuilder path;
+    StrBuilder path = {0};
     NcmFsStat stat;
     NcmSong song;
     bool result;
@@ -2235,7 +2232,6 @@ native_browser_collect_local_entry_songs(
         return true;
     }
 
-    sb_init(&path);
     if (!ncm_fs_join(&path, directory->path, directory->path_len,
                      entry->name, entry->name_len)) {
         sb_free(&path);
@@ -2299,7 +2295,7 @@ static bool
 native_browser_delete_directory_item(NativeBrowserScreen *screen,
                                      NcmMpdItem *item, NcmError *error) {
     NcmStringView path;
-    StrBuilder real_path;
+    StrBuilder real_path = {0};
     bool result;
 
     if (!ncm_directory_path_view(ncm_mpd_item_directory(item), &path)) {
@@ -2307,7 +2303,6 @@ native_browser_delete_directory_item(NativeBrowserScreen *screen,
         return false;
     }
 
-    sb_init(&real_path);
     result = native_browser_real_path(screen, path, &real_path, error)
              && native_browser_delete_path_recursive(
                  real_path.data, real_path.len, error);
@@ -2319,7 +2314,7 @@ static bool
 native_browser_delete_song_item(NativeBrowserScreen *screen,
                                 NcmMpdItem *item, NcmError *error) {
     NcmStringView path;
-    StrBuilder real_path;
+    StrBuilder real_path = {0};
     bool result;
 
     if (!ncm_song_uri_view(ncm_mpd_item_song(item), 0, &path)) {
@@ -2327,7 +2322,6 @@ native_browser_delete_song_item(NativeBrowserScreen *screen,
         return false;
     }
 
-    sb_init(&real_path);
     result = native_browser_real_path(screen, path, &real_path, error)
              && ncm_fs_unlink(real_path.data, real_path.len, error);
     sb_free(&real_path);
@@ -2339,7 +2333,7 @@ native_browser_delete_playlist_item(NativeBrowserScreen *screen,
                                     NcmMpdClient *client,
                                     NcmMpdItem *item, NcmError *error) {
     NcmStringView path;
-    StrBuilder real_path;
+    StrBuilder real_path = {0};
     bool result;
 
     if (client == NULL) {
@@ -2359,7 +2353,6 @@ native_browser_delete_playlist_item(NativeBrowserScreen *screen,
         return false;
     }
 
-    sb_init(&real_path);
     result = native_browser_real_path(screen, path, &real_path, error)
              && ncm_fs_unlink(real_path.data, real_path.len, error);
     sb_free(&real_path);
@@ -2443,7 +2436,7 @@ native_browser_load_mpd_song_directory(
     NcmStringView directory, NcmError *error
 ) {
     NcmMpdItemArray items;
-    StrBuilder path;
+    StrBuilder path = {0};
     bool result;
 
     if ((screen == NULL) || (client == NULL)) {
@@ -2451,7 +2444,6 @@ native_browser_load_mpd_song_directory(
         return false;
     }
 
-    sb_init(&path);
     if (directory.len <= 0) {
         result = sb_set(&path, STRLIT("/"));
     } else {
@@ -2516,12 +2508,10 @@ native_browser_rename_real_paths(NativeBrowserScreen *screen,
                                  NcmStringView old_path,
                                  NcmStringView new_path,
                                  NcmError *error) {
-    StrBuilder old_real_path;
-    StrBuilder new_real_path;
+    StrBuilder old_real_path = {0};
+    StrBuilder new_real_path = {0};
     bool result;
 
-    sb_init(&old_real_path);
-    sb_init(&new_real_path);
     result = native_browser_real_path(screen, old_path, &old_real_path,
                                       error)
              && native_browser_real_path(screen, new_path, &new_real_path,
@@ -2618,9 +2608,8 @@ native_browser_delete_path_recursive(char *path, int32 path_len,
     result = true;
     ncm_fs_entry_init(&entry);
     while (result && ncm_fs_directory_read(&directory, &entry, error)) {
-        StrBuilder child;
+        StrBuilder child = {0};
 
-        sb_init(&child);
         result = ncm_fs_join(&child, directory.path, directory.path_len,
                              entry.name, entry.name_len)
                  && native_browser_delete_path_recursive(
@@ -2713,7 +2702,7 @@ static bool
 native_browser_supported_extensions_add(StrBuilderArray *extensions,
                                         char *extension,
                                         int32 extension_len) {
-    StrBuilder buffer;
+    StrBuilder buffer = {0};
     bool result;
 
     if (extensions == NULL) {
@@ -2727,7 +2716,6 @@ native_browser_supported_extensions_add(StrBuilderArray *extensions,
         extension_len = strlen32(extension);
     }
 
-    sb_init(&buffer);
     if ((extension_len <= 0) || (extension[0] != '.')) {
         if ((result = sb_set(&buffer, STRLIT(".")))) {
             SB_APPEND(&buffer, extension, extension_len);

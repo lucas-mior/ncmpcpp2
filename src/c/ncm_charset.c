@@ -5,9 +5,8 @@
 
 static StrBuilder
 ncm_charset_copy(char *string, int32 string_len) {
-    StrBuilder result;
+    StrBuilder result = {0};
 
-    sb_init(&result);
     SB_APPEND(&result, string, string_len);
     return result;
 }

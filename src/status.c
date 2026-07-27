@@ -1506,7 +1506,7 @@ static void
 status_draw_classic_elapsed_time(NcWindow *footer, NcmSong *song,
                                  char *player_state, int32 player_state_len) {
     NcBuffer rendered_song;
-    StrBuilder tracklength;
+    StrBuilder tracklength = {0};
     int32 text_width;
     int32 track_x;
     char separator[] = " ** ";
@@ -1519,7 +1519,6 @@ status_draw_classic_elapsed_time(NcWindow *footer, NcmSong *song,
     }
 
     nc_buffer_init(&rendered_song);
-    sb_init(&tracklength);
     status_tracklength_buffer(&tracklength);
     ncm_format_render_buffer(&Config.song_status_format, song, &rendered_song,
                              &rendered_song, NCM_FORMAT_FLAG_ALL);
@@ -1561,7 +1560,7 @@ status_draw_alternative_elapsed_time(NcWindow *header, NcmSong *song,
                                      int32 player_state_len) {
     NcBuffer first;
     NcBuffer second;
-    StrBuilder tracklength;
+    StrBuilder tracklength = {0};
     int32 first_len;
     int32 first_margin;
     int32 first_start;
@@ -1578,7 +1577,6 @@ status_draw_alternative_elapsed_time(NcWindow *header, NcmSong *song,
 
     nc_buffer_init(&first);
     nc_buffer_init(&second);
-    sb_init(&tracklength);
     status_tracklength_buffer(&tracklength);
 
     ncm_format_render_buffer(&Config.new_header_first_line, song, &first,
@@ -1747,7 +1745,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
 void
 ncm_status_changes_flags(void) {
     NcWindow *header;
-    StrBuilder switch_state;
+    StrBuilder switch_state = {0};
     int32 flags_x;
 
     if (!Config.header_visibility && (Config.design == NCM_DESIGN_CLASSIC)) {
@@ -1758,7 +1756,6 @@ ncm_status_changes_flags(void) {
         return;
     }
 
-    sb_init(&switch_state);
     switch (Config.design) {
     case NCM_DESIGN_CLASSIC:
         sb_append_byte(&switch_state, status_repeat);

@@ -700,7 +700,7 @@ native_media_library_screen_format_album_row(
     NativeMediaLibraryScreen *screen, NcMediaLibraryAlbumRow *row,
     StrBuilder *output
 ) {
-    StrBuilder raw;
+    StrBuilder raw = {0};
     StrBuilder converted;
 
     if (output == NULL) {
@@ -715,7 +715,6 @@ native_media_library_screen_format_album_row(
         return;
     }
 
-    sb_init(&raw);
     if (screen
         && (screen->mode == NATIVE_MEDIA_LIBRARY_MODE_TWO_COLUMNS)) {
         if ((row->tag == NULL) || (row->tag_len <= 0)) {
@@ -2821,7 +2820,7 @@ static void
 native_library_print_add_status(NativeMediaLibraryScreen *screen,
                                 NcmSongArray *songs, bool result) {
     NcMediaLibraryAlbumRow *album;
-    StrBuilder message;
+    StrBuilder message = {0};
     StrBuilder rendered;
     char *tag_name;
 
@@ -2832,7 +2831,6 @@ native_library_print_add_status(NativeMediaLibraryScreen *screen,
         return;
     }
 
-    sb_init(&message);
     if (screen->active_column == NATIVE_MEDIA_LIBRARY_COLUMN_TAGS) {
         NcMediaLibraryTagRow *tag;
 
@@ -3493,11 +3491,10 @@ native_library_song_filter(NcMenu *menu, void *item, void *user) {
 static void
 native_library_draw_tag(NcMenu *menu, NcWindow *window,
                         void *item, int32 pos, void *user) {
-    StrBuilder text;
+    StrBuilder text = {0};
 
     (void)menu;
     (void)pos;
-    sb_init(&text);
     native_media_library_screen_format_tag_row(user, item, &text);
     nc_window_print_data(window, text.data, text.len);
     sb_free(&text);
@@ -3507,11 +3504,10 @@ native_library_draw_tag(NcMenu *menu, NcWindow *window,
 static void
 native_library_draw_album(NcMenu *menu, NcWindow *window,
                           void *item, int32 pos, void *user) {
-    StrBuilder text;
+    StrBuilder text = {0};
 
     (void)menu;
     (void)pos;
-    sb_init(&text);
     native_media_library_screen_format_album_row(user, item, &text);
     nc_window_print_data(window, text.data, text.len);
     sb_free(&text);
@@ -4006,13 +4002,12 @@ native_library_active_item_matches(NativeMediaLibraryScreen *screen,
 static bool
 native_library_tag_matches(NativeMediaLibraryScreen *screen,
                            NcMediaLibraryTagRow *row, NcmRegex *regex) {
-    StrBuilder text;
+    StrBuilder text = {0};
     bool result;
 
     if (row == NULL) {
         return false;
     }
-    sb_init(&text);
     native_media_library_screen_format_tag_row(screen, row, &text);
     result = ncm_regex_search(regex, text.data, text.len);
     sb_free(&text);
@@ -4023,13 +4018,12 @@ static bool
 native_library_album_matches(NativeMediaLibraryScreen *screen,
                              NcMediaLibraryAlbumRow *row,
                              NcmRegex *regex) {
-    StrBuilder text;
+    StrBuilder text = {0};
     bool result;
 
     if (row == NULL) {
         return false;
     }
-    sb_init(&text);
     native_media_library_screen_format_album_row(screen, row, &text);
     result = ncm_regex_search(regex, text.data, text.len);
     sb_free(&text);
@@ -4235,9 +4229,9 @@ native_library_mpd_search_songs(void *user,
                                 NcmMpdSongList *songs,
                                 NcmError *error) {
     NcmMpdClient *client;
-    StrBuilder primary;
-    StrBuilder album;
-    StrBuilder date;
+    StrBuilder primary = {0};
+    StrBuilder album = {0};
+    StrBuilder date = {0};
     char *value;
     bool result;
 
@@ -4248,9 +4242,6 @@ native_library_mpd_search_songs(void *user,
         return false;
     }
 
-    sb_init(&primary);
-    sb_init(&album);
-    sb_init(&date);
     if ((result = ncm_mpd_client_start_search(client, true, error))
         && query->match_primary_tag) {
         value = native_library_query_cstring(

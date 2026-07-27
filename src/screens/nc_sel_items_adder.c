@@ -872,7 +872,7 @@ static bool
 adder_add_to_current_playlist(
     NativeSelectedItemsAdderScreen *screen, int32 position
 ) {
-    StrBuilder message;
+    StrBuilder message = {0};
     char *suffix;
     bool added;
     bool success;
@@ -927,7 +927,6 @@ adder_add_to_current_playlist(
         }
     }
 
-    sb_init(&message);
     SB_APPEND(&message, STRLIT("Selected items added"));
     suffix = ncm_helpers_with_errors(success);
     SB_APPEND(&message, suffix, optional_strlen32(suffix));

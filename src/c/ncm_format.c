@@ -681,10 +681,9 @@ static bool
 ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                          int32 start, int32 end, uint32 flags,
                          NcmError *error) {
-    StrBuilder token;
+    StrBuilder token = {0};
     bool ok;
 
-    sb_init(&token);
     ok = true;
     for (int32 i = start; ok && (i < end); i += 1) {
         if (data[i] == '{') {
@@ -746,9 +745,8 @@ ncm_format_result_add(enum NcmFormatResult base,
 
 StrBuilder
 ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag) {
-    StrBuilder result;
+    StrBuilder result = {0};
 
-    sb_init(&result);
     if ((song == NULL) || (tag == NULL)) {
         return result;
     }
@@ -982,12 +980,11 @@ ncm_format_string_text(void *user, char *data, int32 data_len,
 StrBuilder
 ncm_format_render_string(NcmFormatAst *ast, NcmSong *song) {
     NcmFormatCallbacks callbacks;
-    StrBuilder result;
+    StrBuilder result = {0};
 
     callbacks.text = ncm_format_string_text;
     callbacks.color = NULL;
     callbacks.format = NULL;
-    sb_init(&result);
     ncm_format_render(ast, song, &callbacks, &result, &result,
                       NCM_FORMAT_FLAG_TAG);
     return result;

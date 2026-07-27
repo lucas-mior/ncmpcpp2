@@ -345,7 +345,7 @@ ncm_fs_directory_close(NcmFsDirectory *directory) {
 bool
 ncm_fs_join(StrBuilder *buffer,
             char *left, int32 left_len, char *right, int32 right_len) {
-    StrBuilder result;
+    StrBuilder result = {0};
 
     if (buffer == NULL) {
         return false;
@@ -357,7 +357,6 @@ ncm_fs_join(StrBuilder *buffer,
         return false;
     }
 
-    sb_init(&result);
     if (left && (left_len > 0)) {
         SB_APPEND(&result, left, left_len);
         if ((result.len > 0) && (result.data[result.len - 1] != '/')) {

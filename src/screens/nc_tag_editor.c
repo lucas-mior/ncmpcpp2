@@ -655,7 +655,7 @@ native_tag_editor_screen_enter_directory(NativeTagEditorScreen *screen) {
 
 bool
 native_tag_editor_screen_go_to_parent(NativeTagEditorScreen *screen) {
-    StrBuilder parent;
+    StrBuilder parent = {0};
     int32 parent_len;
     bool ok;
 
@@ -672,7 +672,6 @@ native_tag_editor_screen_go_to_parent(NativeTagEditorScreen *screen) {
         return false;
     }
 
-    sb_init(&parent);
     if (!tag_editor_set_buffer(&screen->highlighted_dir,
                                screen->current_dir.data,
                                screen->current_dir.len)) {
@@ -707,7 +706,7 @@ native_tag_editor_screen_locate_song(NativeTagEditorScreen *screen,
                                      NcmSong *song) {
     NcmStringView directory;
     NcmStringView uri;
-    StrBuilder parent;
+    StrBuilder parent = {0};
     NcmError error;
     int32 parent_len;
     bool ok;
@@ -726,7 +725,6 @@ native_tag_editor_screen_locate_song(NativeTagEditorScreen *screen,
         return false;
     }
 
-    sb_init(&parent);
     parent_len = ncm_string_parent_directory_len(directory.data,
                                                 directory.len);
     if (parent_len <= 0) {
@@ -796,10 +794,10 @@ native_tag_editor_screen_rename_current_directory(
 ) {
     NcMenuStringPair *pair;
     NcmStringView initial;
-    StrBuilder name;
-    StrBuilder old_path;
-    StrBuilder new_path;
-    StrBuilder new_relative;
+    StrBuilder name = {0};
+    StrBuilder old_path = {0};
+    StrBuilder new_path = {0};
+    StrBuilder new_relative = {0};
     NcmError error;
     enum NativeTagEditorPromptResult result;
     bool ok;
@@ -814,7 +812,6 @@ native_tag_editor_screen_rename_current_directory(
     }
 
     ncm_string_view_set(&initial, pair->first, pair->first_len);
-    sb_init(&name);
     result = screen->hooks.prompt(
         screen->hooks.user, STRLIT("Directory: "), initial, &name);
     if (result == NATIVE_TAG_EDITOR_PROMPT_ABORTED) {
@@ -832,9 +829,6 @@ native_tag_editor_screen_rename_current_directory(
         return true;
     }
 
-    sb_init(&old_path);
-    sb_init(&new_path);
-    sb_init(&new_relative);
     ok = ncm_fs_join(&old_path, music_dir, music_dir_len,
                      pair->second, pair->second_len)
          && tag_editor_build_renamed_directory(screen, name.data,
@@ -875,16 +869,14 @@ native_tag_editor_screen_add_directory(NativeTagEditorScreen *screen,
                                        char *label, int32 label_len,
                                        char *path, int32 path_len) {
     NcMenuStringPair pair;
-    StrBuilder first;
-    StrBuilder second;
+    StrBuilder first = {0};
+    StrBuilder second = {0};
     bool ok;
 
     if (screen == NULL) {
         return false;
     }
     nc_menu_string_pair_init(&pair);
-    sb_init(&first);
-    sb_init(&second);
     ok = sb_set(&first, label, label_len)
          && sb_set(&second, path, path_len);
     if (ok) {
@@ -1458,7 +1450,7 @@ bool
 native_tag_editor_parse_filename(NcmMutableSong *song, char *mask,
                                  int32 mask_len, bool preview,
                                  StrBuilder *preview_buffer) {
-    StrBuilder file;
+    StrBuilder file = {0};
     int32 mask_pos;
     int32 file_pos;
     int32 percent_pos;
@@ -1468,7 +1460,6 @@ native_tag_editor_parse_filename(NcmMutableSong *song, char *mask,
     if ((song == NULL) || (mask == NULL) || (mask_len < 0)) {
         return false;
     }
-    sb_init(&file);
     if (song->name == NULL) {
         sb_free(&file);
         return false;
@@ -2363,7 +2354,7 @@ tag_editor_prompt_tag_value(NativeTagEditorScreen *screen,
                             enum NcmTagsField field, bool all_targets) {
     NcmMutableSong *song;
     StrBuilder initial;
-    StrBuilder input;
+    StrBuilder input = {0};
     char *label;
     int32 label_len;
     enum NativeTagEditorPromptResult prompt_result;
@@ -2381,7 +2372,6 @@ tag_editor_prompt_tag_value(NativeTagEditorScreen *screen,
     initial = ncm_mutable_song_tags_buffer(
         song, field, Config.tags_separator, Config.tags_separator_len,
         Config.show_duplicate_tags);
-    sb_init(&input);
     if (screen->hooks.prompt == NULL) {
         prompt_result = NATIVE_TAG_EDITOR_PROMPT_ERROR;
     } else {
@@ -2421,7 +2411,7 @@ tag_editor_prompt_current_filename(NativeTagEditorScreen *screen) {
     NcmMutableSong *song;
     NcmStringView current_name;
     NcmStringView initial;
-    StrBuilder input;
+    StrBuilder input = {0};
     enum NativeTagEditorPromptResult prompt_result;
     int32 dot;
     bool result;
@@ -2448,7 +2438,6 @@ tag_editor_prompt_current_filename(NativeTagEditorScreen *screen) {
         initial.len = dot;
     }
 
-    sb_init(&input);
     if (screen->hooks.prompt == NULL) {
         prompt_result = NATIVE_TAG_EDITOR_PROMPT_ERROR;
     } else {
@@ -2478,7 +2467,7 @@ static bool
 tag_editor_set_song_filename_stem(NcmMutableSong *song, char *stem,
                                   int32 stem_len) {
     NcmStringView current_name;
-    StrBuilder new_name;
+    StrBuilder new_name = {0};
     int32 dot;
     bool result;
 
@@ -2497,7 +2486,6 @@ tag_editor_set_song_filename_stem(NcmMutableSong *song, char *stem,
         }
     }
 
-    sb_init(&new_name);
     SB_APPEND(&new_name, stem, stem_len);
     if (dot >= 0) {
         SB_APPEND(&new_name, current_name.data + dot,
@@ -4233,12 +4221,11 @@ tag_editor_lower_song_callback(NcmMutableSong *song, void *user) {
         field = ncm_song_info_tags[field_idx].field;
         for (int32 i = 0; ; i += 1) {
             NcmStringView view;
-            StrBuilder buffer;
+            StrBuilder buffer = {0};
 
             if (!ncm_mutable_song_get_tag(song, field, i, &view)) {
                 break;
             }
-            sb_init(&buffer);
             SB_APPEND(&buffer, view.data, view.len);
             tag_editor_lower_ascii_buffer(&buffer);
             if (!ncm_mutable_song_set_tag(song, field, i, buffer.data,
@@ -4293,13 +4280,12 @@ tag_editor_save_status_with_name(
     NativeTagEditorScreen *screen, char *prefix, int32 prefix_len,
     NcmMutableSong *song, char *suffix, int32 suffix_len
 ) {
-    StrBuilder message;
+    StrBuilder message = {0};
 
     if ((screen == NULL) || (song == NULL)) {
         return;
     }
 
-    sb_init(&message);
     SB_APPEND(&message, prefix, prefix_len);
     if (song->name) {
         SB_APPEND(&message, song->name, song->name_len);
@@ -4313,7 +4299,7 @@ tag_editor_save_status_with_name(
 static void
 tag_editor_save_status_error(NativeTagEditorScreen *screen,
                              NcmMutableSong *song, int32 error) {
-    StrBuilder message;
+    StrBuilder message = {0};
     char *system_error;
 
     if ((screen == NULL) || (song == NULL)) {
@@ -4321,7 +4307,6 @@ tag_editor_save_status_error(NativeTagEditorScreen *screen,
     }
 
     system_error = strerror(error);
-    sb_init(&message);
     SB_APPEND(&message, STRLIT(
                           "Error while writing tags to \""));
     if (song->name) {
@@ -4418,14 +4403,13 @@ tag_editor_directory_matches(NativeTagEditorScreen *screen,
 static bool
 tag_editor_tag_matches_regex(NativeTagEditorScreen *screen,
                              NcmMutableSong *song, NcmRegex *regex) {
-    StrBuilder buffer;
+    StrBuilder buffer = {0};
     bool found;
 
     if ((screen == NULL) || (song == NULL) || (regex == NULL)) {
         return false;
     }
 
-    sb_init(&buffer);
     if (!tag_editor_tag_search_text(screen, song, &buffer)) {
         sb_free(&buffer);
         return false;
@@ -4649,10 +4633,9 @@ tag_editor_append_parser_action_label(NativeTagEditorScreen *screen,
 
 static bool
 tag_editor_append_pattern_row(NativeTagEditorScreen *screen) {
-    StrBuilder row;
+    StrBuilder row = {0};
     bool result;
 
-    sb_init(&row);
     SB_APPEND(&row, STRLIT("Pattern: "));
     SB_APPEND(&row, screen->pattern.data, screen->pattern.len);
     result = tag_editor_append_parser_action_label(screen, row.data,
@@ -4804,12 +4787,10 @@ tag_editor_build_parser_preview(NativeTagEditorScreen *screen,
             }
         } else if (screen->parser_mode
                    == NATIVE_TAG_EDITOR_PARSER_RENAME_FILES) {
-            StrBuilder stem;
-            StrBuilder new_name;
+            StrBuilder stem = {0};
+            StrBuilder new_name = {0};
             int32 extension_start;
 
-            sb_init(&stem);
-            sb_init(&new_name);
             if (!native_tag_editor_generate_filename(
                     song, screen->pattern.data, screen->pattern.len,
                     &stem)) {
@@ -4878,8 +4859,8 @@ tag_editor_build_parser_preview(NativeTagEditorScreen *screen,
 
 static bool
 tag_editor_load_recent_patterns(NativeTagEditorScreen *screen) {
-    StrBuilder path;
-    StrBuilder line;
+    StrBuilder path = {0};
+    StrBuilder line = {0};
     FILE *file;
     bool ok;
     bool read_line;
@@ -4891,8 +4872,6 @@ tag_editor_load_recent_patterns(NativeTagEditorScreen *screen) {
         return true;
     }
     screen->recent_patterns_loaded = true;
-    sb_init(&path);
-    sb_init(&line);
     if (!tag_editor_history_path(&path)) {
         sb_free(&line);
         sb_free(&path);
@@ -4923,14 +4902,13 @@ tag_editor_load_recent_patterns(NativeTagEditorScreen *screen) {
 
 static bool
 tag_editor_save_recent_patterns(NativeTagEditorScreen *screen) {
-    StrBuilder path;
+    StrBuilder path = {0};
     FILE *file;
     int32 limit;
 
     if (screen == NULL) {
         return false;
     }
-    sb_init(&path);
     if (!tag_editor_history_path(&path)) {
         sb_free(&path);
         return false;
@@ -5048,7 +5026,7 @@ static bool
 tag_editor_move_pattern_to_front(NativeTagEditorScreen *screen,
                                  char *pattern, int32 pattern_len) {
     StrBuilderArray replacement;
-    StrBuilder first;
+    StrBuilder first = {0};
     int32 existing;
     bool ok;
 
@@ -5056,7 +5034,6 @@ tag_editor_move_pattern_to_front(NativeTagEditorScreen *screen,
         return false;
     }
     str_builder_array_init(&replacement);
-    sb_init(&first);
     ok = tag_editor_set_buffer(&first, pattern, pattern_len)
          && str_builder_array_append_copy(&replacement, &first);
     sb_free(&first);
@@ -5127,7 +5104,7 @@ tag_editor_set_pattern(NativeTagEditorScreen *screen,
 
 static bool
 tag_editor_prompt_pattern(NativeTagEditorScreen *screen) {
-    StrBuilder input;
+    StrBuilder input = {0};
     NcmStringView initial;
     enum NativeTagEditorPromptResult prompt_result;
     bool result;
@@ -5135,7 +5112,6 @@ tag_editor_prompt_pattern(NativeTagEditorScreen *screen) {
     if ((screen == NULL) || (screen->hooks.prompt == NULL)) {
         return false;
     }
-    sb_init(&input);
     initial.data = screen->pattern.data;
     initial.len = screen->pattern.len;
     prompt_result = screen->hooks.prompt(screen->hooks.user,
@@ -5194,14 +5170,13 @@ tag_editor_apply_recent_pattern(NativeTagEditorScreen *screen,
 static bool
 tag_editor_mutable_song_to_format_song(NcmMutableSong *source,
                                        NcmSong *dest) {
-    StrBuilder uri;
+    StrBuilder uri = {0};
     bool ok;
 
     if ((source == NULL) || (dest == NULL)) {
         return false;
     }
 
-    sb_init(&uri);
     if (source->uri && (source->uri_len >= 0)) {
         SB_APPEND(&uri, source->uri, source->uri_len);
     } else if (source->directory && (source->directory_len > 0)
