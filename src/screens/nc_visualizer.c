@@ -3,16 +3,6 @@
 
 #include "screens/nc_visualizer.h"
 
-#include <errno.h>
-#include <fcntl.h>
-#include <math.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
 #include "c/ncm_base.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
