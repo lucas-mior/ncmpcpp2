@@ -1706,6 +1706,18 @@ write_entire_file(char *path, char *text, int64 text_len) {
 
 #define STR_BUILDER_INITIAL_CAPACITY 16
 
+CBASE_API_DEF char *
+sb_opt_cstr(StrBuilder *buffer) {
+    if (buffer == NULL) {
+        return "";
+    }
+    if (buffer->data == NULL) {
+        return "";
+    }
+
+    return buffer->data;
+}
+
 CBASE_API_DEF void
 sb_init(StrBuilder *str_builder) {
     str_builder->data = NULL;
