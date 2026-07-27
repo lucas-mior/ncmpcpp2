@@ -962,6 +962,7 @@ ncm_format_render_buffer(NcmFormatAst *ast, NcmSong *song,
     callbacks.text = ncm_format_buffer_text;
     callbacks.color = ncm_format_buffer_color;
     callbacks.format = ncm_format_buffer_format;
+
     ncm_format_render(ast, song, &callbacks, buffer, right_aligned, flags);
     return;
 }
