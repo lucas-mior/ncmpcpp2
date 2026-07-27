@@ -1,8 +1,7 @@
 #if !defined(NCM_JOB_H)
 #define NCM_JOB_H
 
-#include <pthread.h>
-
+#include "cbase.h"
 #include "c/ncm_base.h"
 
 typedef bool NcmJobRunCallback(void *user, NcmError *error);
