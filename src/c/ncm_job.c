@@ -3,11 +3,6 @@
 
 #include "c/ncm_job.h"
 
-#include <errno.h>
-#include "cbase.h"
-#include <string.h>
-
-#include "cbase/base_macros.h"
 #include "cbase.h"
 
 static void
