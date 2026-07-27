@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_SCREEN_SWITCHER_H)
 #define NCMPCPP_SCREEN_SWITCHER_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "screens/nc_screen.h"
 

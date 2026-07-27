@@ -3,14 +3,7 @@
 
 #include "curses/nc_window.h"
 
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <termios.h>
-#include <unistd.h>
-
+#include "cbase.h"
 #if defined(HAVE_READLINE_HISTORY_H)
 #include <readline/history.h>
 #endif

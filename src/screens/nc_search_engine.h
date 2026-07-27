@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_NC_SEARCH_ENGINE_H)
 #define NCMPCPP_NC_SEARCH_ENGINE_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_enums.h"
