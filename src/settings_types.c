@@ -313,6 +313,7 @@ static void
 configuration_destroy_buffers(Configuration *config) {
     sb_free(&config->progressbar);
     sb_free(&config->visualizer_chars);
+
     nc_buffer_destroy(&config->browser_playlist_prefix);
     nc_buffer_destroy(&config->selected_item_prefix);
     nc_buffer_destroy(&config->selected_item_suffix);
@@ -323,6 +324,7 @@ configuration_destroy_buffers(Configuration *config) {
     nc_buffer_destroy(&config->current_item_suffix);
     nc_buffer_destroy(&config->current_item_inactive_column_prefix);
     nc_buffer_destroy(&config->current_item_inactive_column_suffix);
+
     return;
 }
 
@@ -357,6 +359,7 @@ configuration_init_colors(Configuration *config) {
     config->header_color = nc_color_default();
     config->main_color = nc_color_default();
     config->statusbar_color = nc_color_default();
+
     nc_formatted_color_init(&config->color1);
     nc_formatted_color_init(&config->color2);
     nc_formatted_color_init(&config->empty_tags_color);
@@ -368,8 +371,10 @@ configuration_init_colors(Configuration *config) {
     nc_formatted_color_init(&config->player_state_color);
     nc_formatted_color_init(&config->statusbar_time_color);
     nc_formatted_color_init(&config->alternative_ui_separator_color);
+
     config->window_border = nc_border_none();
     config->active_window_border = nc_border_none();
+
     return;
 }
 
@@ -531,6 +536,7 @@ configuration_destroy(Configuration *config) {
     configuration_destroy_colors(config);
     configuration_destroy_arrays(config);
     configuration_init(config);
+
     return;
 }
 
