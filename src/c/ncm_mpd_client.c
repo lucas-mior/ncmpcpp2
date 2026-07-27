@@ -1275,8 +1275,7 @@ ncm_mpd_client_get_directory_list(NcmMpdClient *client, char *path,
     bool ok;
 
     if (directories == NULL) {
-        ncm_error_set(ncm_error, EINVAL,
-                      STRLIT("missing MPD directory array"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing MPD directory array"));
         return false;
     }
 
