@@ -813,7 +813,6 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
                      char *separator, int32 separator_len,
                      bool show_duplicates) {
     StrBuilder result = {0};
-    StrBuilder tag;
 
     if (song == NULL) {
         return result;
@@ -827,9 +826,9 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
     }
 
     for (int32 i = 0; ; i += 1) {
+        StrBuilder tag = ncm_song_getter_buffer(song, getter, i);
         bool already_present;
 
-        tag = ncm_song_getter_buffer(song, getter, i);
         if (tag.len <= 0) {
             sb_free(&tag);
             break;
