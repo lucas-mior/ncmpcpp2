@@ -216,8 +216,11 @@ Exceptions to this rule are:
 - `StrBuilder`: use this struct and its functions to build long, dynamic
   strings. Do not use it where a single
   `SNPRINTF(stack_array, "format_string", args);` would be enough.
-  * Use `SB_APPEND` for append literals or strings of known length, and
-    `sb_printf` for appending formatted strings.
+  * Use `SB_APPEND` to append literals or strings of known length, and
+    `sb_printf` to append formatted strings.
+    + Note: `SB_APPEND` already checks if the string to append is NULL or has
+      zero length, and returns early in that case. No need to check it before
+      calling `SB_APPEND`.
   * `SNPRINTF` and `snprintf2` return the number of bytes written (excluding the
     terminating null byte. No need to call `strlen32` on the buffer:
     ```c
