@@ -142,14 +142,14 @@ ncm_song_grow_tags(NcmSong *song) {
 static bool
 ncm_song_load_mpd_tag(NcmSong *song, struct mpd_song *source,
                       enum mpd_tag_type type) {
-    char *value;
 
     for (uint32 i = 0; ; i += 1) {
+        char *value;
+
         if ((value = (char *)mpd_song_get_tag(source, type, i)) == NULL) {
             break;
         }
-        if (!ncm_song_add_tag(song, type, value,
-                              optional_strlen32(value))) {
+        if (!ncm_song_add_tag(song, type, value, strlen32(value))) {
             return false;
         }
     }
