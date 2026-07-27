@@ -2,7 +2,8 @@
 #define NCM_SONG_H
 
 #include <mpd/tag.h>
-#include <time.h>
+
+#include "cbase.h"
 
 #include "c/ncm_defs.h"
 #include "c/ncm_type_conversions.h"
