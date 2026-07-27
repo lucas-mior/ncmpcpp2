@@ -1682,7 +1682,7 @@ native_browser_path_is_parent_directory(char *directory,
     if (STREQUAL(directory, directory_len, STRLIT(".."))) {
         return true;
     }
-    return ncm_string_ends_with(directory, directory_len, STRLIT("/.."));
+    return ENDS_WITH(directory, directory_len, STRLIT("/.."));
 }
 
 static bool

@@ -13,7 +13,7 @@
 #include "c/ncm_string.h"
 
 bool
-ncm_string_starts_with(char *string, int32 string_len, char *prefix,
+BEGINS_WITH(char *string, int32 string_len, char *prefix,
                        int32 prefix_len) {
     if ((string == NULL) || (prefix == NULL) || (prefix_len < 0)
         || (string_len < prefix_len)) {

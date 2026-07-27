@@ -668,7 +668,7 @@ native_lastfm_apply_literal_format(NcBuffer *buffer,
     data = buffer->data;
     len = buffer->len;
     for (int32 i = 0; i + needle_len <= len; i += 1) {
-        if (ncm_string_starts_with(data + i, len - i,
+        if (BEGINS_WITH(data + i, len - i,
                                    needle, needle_len)) {
             nc_buffer_add_format(buffer, i, start_format,
                                  NATIVE_LASTFM_PROPERTY_ID);
@@ -688,7 +688,7 @@ native_lastfm_apply_literal_color2(NcBuffer *buffer,
     data = buffer->data;
     len = buffer->len;
     for (int32 i = 0; i + needle_len <= len; i += 1) {
-        if (ncm_string_starts_with(data + i, len - i,
+        if (BEGINS_WITH(data + i, len - i,
                                    needle, needle_len)) {
             nc_buffer_add_formatted_color(buffer, i, &Config.color2,
                                           NATIVE_LASTFM_PROPERTY_ID);

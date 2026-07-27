@@ -97,7 +97,7 @@ parse_entity_number(char *data, int32 data_len, uint32 *rune) {
 
 static bool
 is_newline_tag(char *tag, int32 tag_len) {
-    if (ncm_string_starts_with(tag, tag_len, STRLIT("<p "))) {
+    if (BEGINS_WITH(tag, tag_len, STRLIT("<p "))) {
         return true;
     }
     if (STREQUAL(tag, tag_len, STRLIT("<p>"))) {
@@ -112,7 +112,7 @@ is_newline_tag(char *tag, int32 tag_len) {
     if (STREQUAL(tag, tag_len, STRLIT("<br/>"))) {
         return true;
     }
-    if (ncm_string_starts_with(tag, tag_len, STRLIT("<br "))) {
+    if (BEGINS_WITH(tag, tag_len, STRLIT("<br "))) {
         return true;
     }
 
@@ -182,7 +182,7 @@ ncm_html_unescape_entities(char *data, int32 data_len) {
             for (int32 j = 0; j < LENGTH(html_entities); j += 1) {
                 HtmlEntity *entity = html_entities + j;
 
-                if (ncm_string_starts_with(data + i, data_len - i,
+                if (BEGINS_WITH(data + i, data_len - i,
                                            entity->from, entity->from_len)) {
                     SB_APPEND(&out, entity->to, entity->to_len);
                     i += entity->from_len;
