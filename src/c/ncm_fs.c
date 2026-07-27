@@ -3,17 +3,9 @@
 
 #include "c/ncm_fs.h"
 
-#include <dirent.h>
-#include <errno.h>
 #include "cbase.h"
-#include "cbase.h"
-#include <string.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 #include "c/ncm_string.h"
-#include "cbase/base_macros.h"
-#include "cbase.h"
 
 static bool
 ncm_fs_path_copy(char *path, int32 path_len, char **copy, NcmError *error) {
