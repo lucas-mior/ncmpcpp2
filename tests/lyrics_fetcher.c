@@ -214,6 +214,7 @@ lyrics_test_append_fixture(StrBuilder *data, LyricsFetcherTestCase *test) {
     sb_clear(data);
     sb_append(data, html, html_len);
     free2(html, html_len + 1);
+
     return;
 }
 
@@ -233,20 +234,24 @@ lyrics_test_direct_download(StrBuilder *data, char *url, int32 url_len,
                             char *referer, int32 referer_len,
                             bool follow_redirect, int32 timeout_seconds,
                             void *user) {
-    LyricsFetcherTestContext *context;
-    LyricsFetcherTestCase *test;
+    LyricsFetcherTestContext *context = user;
+    LyricsFetcherTestCase *test = context->test;
 
-    context = user;
-    assert(context != NULL);
-    assert(context->test != NULL);
-    test = context->test;
+    (void)url_len;
+    (void)referer_len;
+
+    ASSERT(context);
+    ASSERT(context->test);
+
     context->calls += 1;
-    assert(context->calls == 1);
-    assert(STREQUAL(url, url_len, test->direct_url, test->direct_url_len));
-    assert(referer == NULL);
-    assert(referer_len == 0);
-    assert(follow_redirect);
-    assert(timeout_seconds == 15);
+
+    ASSERT(context->calls == 1);
+    ASSERT_EQUAL(url, test->direct_url);
+    ASSERT_NULL(referer);
+    ASSERT(referer_len == 0);
+    ASSERT(follow_redirect);
+    ASSERT(timeout_seconds == 15);
+
     lyrics_test_append_fixture(data, test);
     return CURLE_OK;
 }

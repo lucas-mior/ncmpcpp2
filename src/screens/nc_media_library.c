@@ -4198,9 +4198,7 @@ native_library_query_cstring(StrBuilder *buffer, char *string,
     }
 
     sb_clear(buffer);
-    if (string_len > 0) {
-        SB_APPEND(buffer, string, string_len);
-    }
+    SB_APPEND(buffer, string, string_len);
     sb_append_byte(buffer, '\0');
     buffer->len = string_len;
     return buffer->data;
