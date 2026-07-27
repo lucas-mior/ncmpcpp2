@@ -4,7 +4,7 @@
 #include "c/ncm_job.h"
 
 #include <errno.h>
-#include <stdio.h>
+#include "cbase.h"
 #include <string.h>
 
 #include "cbase/base_macros.h"

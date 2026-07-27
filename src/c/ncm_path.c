@@ -3,9 +3,7 @@
 
 #include "c/ncm_path.h"
 
-#include <errno.h>
-#include <stdint.h>
-#include <stdlib.h>
+#include "cbase.h"
 
 #include "cbase/base_macros.h"
 #include "cbase.h"
