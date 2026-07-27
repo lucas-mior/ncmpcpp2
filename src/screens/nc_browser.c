@@ -231,8 +231,10 @@ native_browser_screen_destroy(NativeBrowserScreen *screen) {
     if (screen == NULL) {
         return;
     }
+
     ncm_regex_destroy(&screen->filter_regex);
     str_builder_array_destroy(&screen->supported_extensions);
+
     sb_free(&screen->scratch_buffer);
     sb_free(&screen->path_buffer);
     sb_free(&screen->item_text_buffer);
@@ -242,6 +244,7 @@ native_browser_screen_destroy(NativeBrowserScreen *screen) {
     sb_free(&screen->title_text);
     sb_free(&screen->last_highlighted_directory);
     sb_free(&screen->current_directory);
+
     nc_window_destroy(&screen->window);
     nc_browser_entry_menu_destroy(&screen->entries);
     return;
