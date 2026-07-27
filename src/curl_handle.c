@@ -3,8 +3,7 @@
 
 #include "curl_handle.h"
 
-#include <stddef.h>
-#include <stdint.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 
