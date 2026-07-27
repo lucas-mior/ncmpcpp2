@@ -5,8 +5,6 @@
 
 #include "cbase.h"
 
-#include "cbase/base_macros.h"
-#include "cbase.h"
 #include "c/ncm_base.h"
 #include "c/ncm_string.h"
 
