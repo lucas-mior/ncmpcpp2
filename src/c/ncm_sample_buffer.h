@@ -1,9 +1,7 @@
 #if !defined(NCM_SAMPLE_BUFFER_H)
 #define NCM_SAMPLE_BUFFER_H
 
-#include <stdbool.h>
-
-#include "cbase/primitives.h"
+#include "cbase.h"
 
 typedef struct NcmSampleBuffer {
     int16 *data;
