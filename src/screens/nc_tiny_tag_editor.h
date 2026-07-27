@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_NC_TINY_TAG_EDITOR_H)
 #define NCMPCPP_NC_TINY_TAG_EDITOR_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_mutable_song.h"
 #include "c/ncm_taglib.h"

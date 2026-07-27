@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_NC_MEDIA_LIBRARY_H)
 #define NCMPCPP_NC_MEDIA_LIBRARY_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_mpd_client.h"

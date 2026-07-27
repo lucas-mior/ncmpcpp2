@@ -1,7 +1,8 @@
 #if !defined(NCM_TYPE_CONVERSIONS_H)
 #define NCM_TYPE_CONVERSIONS_H
 
-#include <stdbool.h>
+#include "cbase.h"
+
 #include <mpd/tag.h>
 
 #include "c/ncm_defs.h"

@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_NATIVE_C_SCREENS_H)
 #define NCMPCPP_NATIVE_C_SCREENS_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_defs.h"
 #include "screens/nc_browser.h"

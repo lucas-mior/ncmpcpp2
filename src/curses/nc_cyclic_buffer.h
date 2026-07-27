@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_NC_CYCLIC_BUFFER_H)
 #define NCMPCPP_NC_CYCLIC_BUFFER_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "curses/nc_buffer.h"
