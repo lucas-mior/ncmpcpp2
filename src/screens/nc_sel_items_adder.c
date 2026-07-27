@@ -3,8 +3,7 @@
 
 #include "screens/nc_sel_items_adder.h"
 
-#include <errno.h>
-#include <stdint.h>
+#include "cbase.h"
 
 #include "app_controller.h"
 #include "c/ncm_base.h"
