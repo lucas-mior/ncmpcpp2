@@ -1,7 +1,7 @@
 #if !defined(NCM_TAGLIB_C)
 #define NCM_TAGLIB_C
 
-#include "c/ncm_taglib.h"
+#include "cbase.h"
 
 #include "config.h"
 
@@ -9,7 +9,7 @@
 #include <tag_c.h>
 #endif
 
-#include "cbase.h"
+#include "c/ncm_taglib.h"
 
 #if defined(HAVE_TAGLIB_H)
 

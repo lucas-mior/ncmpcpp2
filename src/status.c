@@ -1,31 +1,28 @@
 #if !defined(NCMPCPP_STATUS_C)
 #define NCMPCPP_STATUS_C
 
-#include "status.h"
+#include "cbase.h"
 
-#include "actions.h"
 #include "config.h"
 
 #include <mpd/client.h>
 #include <mpd/status.h>
-
 #if defined(HAVE_NETINET_IN_H) && defined(HAVE_NETINET_TCP_H)
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <netinet/tcp.h>
 #endif
 
-#include "cbase.h"
-#include "global.h"
-#include "settings.h"
-#include "statusbar.h"
+#include "actions.h"
 #include "app_controller.h"
-#include "c/ncm_macro_utilities.h"
 #include "c/ncm_format.h"
+#include "c/ncm_macro_utilities.h"
 #include "curses/nc_buffer.h"
 #include "curses/nc_cyclic_buffer.h"
+#include "global.h"
 #include "helpers.h"
 #include "screens/native_c_screens.h"
+#include "settings.h"
+#include "status.h"
+#include "statusbar.h"
 #include "title.h"
 #include "ui_state.h"
 

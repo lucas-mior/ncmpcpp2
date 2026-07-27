@@ -1,6 +1,8 @@
 #if !defined(NCMPCPP_GLOBAL_H)
 #define NCMPCPP_GLOBAL_H
 
+#include "cbase.h"
+
 #include "c/ncm_base.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_random.h"

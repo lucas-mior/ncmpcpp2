@@ -1,10 +1,10 @@
 #if !defined(NCM_SAMPLE_BUFFER_C)
 #define NCM_SAMPLE_BUFFER_C
 
-#include "c/ncm_sample_buffer.h"
+#include "cbase.h"
 
 #include "c/ncm_base.h"
-#include "cbase.h"
+#include "c/ncm_sample_buffer.h"
 
 void
 ncm_sample_buffer_init(NcmSampleBuffer *buffer) {

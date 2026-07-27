@@ -1,8 +1,6 @@
 #if !defined(NCMPCPP_NC_LYRICS_C)
 #define NCMPCPP_NC_LYRICS_C
 
-#include "screens/nc_lyrics.h"
-
 #include "cbase.h"
 
 #include "c/ncm_base.h"
@@ -12,8 +10,9 @@
 #include "c/ncm_string.h"
 #include "curses/nc_cyclic_buffer.h"
 #include "global.h"
-#include "settings.h"
+#include "screens/nc_lyrics.h"
 #include "screens/screen_switcher.h"
+#include "settings.h"
 #include "statusbar.h"
 #include "title.h"
 #include "ui_state.h"

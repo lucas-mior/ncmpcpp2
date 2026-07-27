@@ -1,14 +1,14 @@
 #if !defined(NCMPCPP_SCREEN_ACTIONS_C)
 #define NCMPCPP_SCREEN_ACTIONS_C
 
-#include "screen_actions.h"
+#include "cbase.h"
 
 #include "app_controller.h"
-#include "settings.h"
+#include "c/ncm_base.h"
+#include "screen_actions.h"
 #include "screens/native_c_screens.h"
 #include "screens/nc_search_engine.h"
-
-#include "c/ncm_base.h"
+#include "settings.h"
 
 static NcScreen *
 current_screen(void) {

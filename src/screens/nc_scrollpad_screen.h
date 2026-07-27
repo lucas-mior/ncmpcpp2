@@ -1,6 +1,8 @@
 #if !defined(NCMPCPP_NC_SCROLLPAD_SCREEN_H)
 #define NCMPCPP_NC_SCROLLPAD_SCREEN_H
 
+#include "cbase.h"
+
 #include "screens/nc_screen.h"
 
 typedef struct NcScrollpadScreen {

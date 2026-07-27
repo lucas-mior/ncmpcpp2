@@ -1,10 +1,10 @@
 #if !defined(NCMPCPP_NC_APP_MENUS_C)
 #define NCMPCPP_NC_APP_MENUS_C
 
-#include "curses/nc_app_menus.h"
+#include "cbase.h"
 
 #include "c/ncm_base.h"
-#include "cbase.h"
+#include "curses/nc_app_menus.h"
 
 static void ncm_song_menu_item_init(void *item, void *user);
 static void ncm_song_menu_item_copy(void *dest, void *source, void *user);

@@ -1,19 +1,18 @@
 #if !defined(NCMPCPP_NC_PLAYLIST_EDITOR_C)
 #define NCMPCPP_NC_PLAYLIST_EDITOR_C
 
-#include "screens/nc_playlist_editor.h"
-
 #include "cbase.h"
 
 #include "actions.h"
 #include "app_controller.h"
-#include "global.h"
-#include "settings.h"
 #include "c/ncm_base.h"
-#include "c/ncm_comparators.h"
 #include "c/ncm_charset.h"
+#include "c/ncm_comparators.h"
 #include "c/ncm_display.h"
 #include "c/ncm_string.h"
+#include "global.h"
+#include "screens/nc_playlist_editor.h"
+#include "settings.h"
 #include "status.h"
 #include "statusbar.h"
 

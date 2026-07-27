@@ -1,8 +1,10 @@
 #if !defined(NCM_ENUMS_H)
 #define NCM_ENUMS_H
 
-#include "config.h"
+#include "cbase.h"
+
 #include "c/ncm_defs.h"
+#include "config.h"
 
 #define ENUM_NAME SearchDirection
 #define ENUM_PREFIX_ NCM_SEARCH_DIRECTION_

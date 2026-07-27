@@ -1,11 +1,10 @@
 #if !defined(NCMPCPP_BINDINGS_C)
 #define NCMPCPP_BINDINGS_C
 
-#include "bindings.h"
-
 #include "cbase.h"
 
 #include "app_controller.h"
+#include "bindings.h"
 #include "c/ncm_base.h"
 #include "c/ncm_macro_utilities.h"
 #include "screens/screen_type.h"

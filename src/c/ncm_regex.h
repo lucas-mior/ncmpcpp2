@@ -1,9 +1,9 @@
 #if !defined(NCM_REGEX_H)
 #define NCM_REGEX_H
 
-#include <regex.h>
-
 #include "cbase.h"
+
+#include <regex.h>
 
 #include "c/ncm_base.h"
 

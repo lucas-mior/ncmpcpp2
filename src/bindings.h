@@ -3,9 +3,9 @@
 
 #include "cbase.h"
 
+#include "actions.h"
 #include "c/ncm_defs.h"
 #include "c/ncm_error.h"
-#include "actions.h"
 #include "curses/nc_window.h"
 #include "screens/screen_type.h"
 

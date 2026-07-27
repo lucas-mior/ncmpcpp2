@@ -1,8 +1,6 @@
 #if !defined(NCMPCPP_NC_SEL_ITEMS_ADDER_C)
 #define NCMPCPP_NC_SEL_ITEMS_ADDER_C
 
-#include "screens/nc_sel_items_adder.h"
-
 #include "cbase.h"
 
 #include "app_controller.h"
@@ -13,6 +11,7 @@
 #include "helpers.h"
 #include "screens/nc_browser.h"
 #include "screens/nc_playlist.h"
+#include "screens/nc_sel_items_adder.h"
 #include "screens/screen_switcher.h"
 #include "settings.h"
 #include "status.h"

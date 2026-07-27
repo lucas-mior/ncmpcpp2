@@ -1,6 +1,8 @@
 #if !defined(NCMPCPP_TITLE_H)
 #define NCMPCPP_TITLE_H
 
+#include "cbase.h"
+
 #include "c/ncm_defs.h"
 #include "c/ncm_enums.h"
 #include "curses/nc_formatted_color.h"

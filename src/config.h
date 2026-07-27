@@ -1,6 +1,8 @@
 #if !defined(NCMPCPP_CONFIG_H)
 #define NCMPCPP_CONFIG_H
 
+#include "cbase.h"
+
 #define ENABLE_OUTPUTS 1
 #define ENABLE_VISUALIZER 1
 #define HAVE_CURL_CURL_H 1

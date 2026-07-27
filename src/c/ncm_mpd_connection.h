@@ -1,6 +1,8 @@
 #if !defined(NCM_MPD_CONNECTION_H)
 #define NCM_MPD_CONNECTION_H
 
+#include "cbase.h"
+
 #include <mpd/client.h>
 
 #include "c/ncm_app_arrays.h"

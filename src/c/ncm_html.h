@@ -1,6 +1,8 @@
 #if !defined(NCM_HTML_H)
 #define NCM_HTML_H
 
+#include "cbase.h"
+
 #include "c/ncm_base.h"
 
 StrBuilder ncm_html_unescape_utf8(char *data, int32 data_len);

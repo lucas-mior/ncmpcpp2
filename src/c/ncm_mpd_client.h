@@ -1,6 +1,8 @@
 #if !defined(NCM_MPD_CLIENT_H)
 #define NCM_MPD_CLIENT_H
 
+#include "cbase.h"
+
 #include "c/ncm_base.h"
 #include "c/ncm_mpd_connection.h"
 #include "c/ncm_random.h"

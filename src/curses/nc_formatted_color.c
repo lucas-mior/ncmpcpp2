@@ -1,9 +1,9 @@
 #if !defined(NCMPCPP_NC_FORMATTED_COLOR_C)
 #define NCMPCPP_NC_FORMATTED_COLOR_C
 
-#include "curses/nc_formatted_color.h"
-
 #include "cbase.h"
+
+#include "curses/nc_formatted_color.h"
 
 void
 nc_formatted_color_init(NcFormattedColor *formatted_color) {

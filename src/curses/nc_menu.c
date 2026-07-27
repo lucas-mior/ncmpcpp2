@@ -1,9 +1,9 @@
 #if !defined(NCMPCPP_NC_MENU_C)
 #define NCMPCPP_NC_MENU_C
 
-#include "curses/nc_menu.h"
-
 #include "cbase.h"
+
+#include "curses/nc_menu.h"
 
 #define NC_MENU_SCROLL_DEPTH_MARGIN 4
 

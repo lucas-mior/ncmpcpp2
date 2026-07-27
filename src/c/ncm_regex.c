@@ -1,9 +1,9 @@
 #if !defined(NCM_REGEX_C)
 #define NCM_REGEX_C
 
-#include "c/ncm_regex.h"
-
 #include "cbase.h"
+
+#include "c/ncm_regex.h"
 
 static bool
 ncm_regex_prepare_string(char *string, int32 string_len, StrBuilder *buffer,

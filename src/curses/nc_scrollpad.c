@@ -1,9 +1,9 @@
 #if !defined(NCMPCPP_NC_SCROLLPAD_C)
 #define NCMPCPP_NC_SCROLLPAD_C
 
-#include "curses/nc_scrollpad.h"
-
 #include "cbase.h"
+
+#include "curses/nc_scrollpad.h"
 
 typedef struct NcScrollpadWriteState {
     NcBuffer *buffer;

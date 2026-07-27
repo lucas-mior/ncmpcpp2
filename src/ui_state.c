@@ -1,6 +1,8 @@
 #if !defined(NCMPCPP_UI_STATE_C)
 #define NCMPCPP_UI_STATE_C
 
+#include "cbase.h"
+
 #include "ui_state.h"
 
 static NcWindow *header_window;

@@ -1,6 +1,8 @@
 #if !defined(NCM_APP_ARRAYS_H)
 #define NCM_APP_ARRAYS_H
 
+#include "cbase.h"
+
 #include "c/ncm_array.h"
 #include "c/ncm_directory.h"
 #include "c/ncm_mpd_item.h"
