@@ -267,7 +267,6 @@ compile_and_link_main() {
     # Flag variables intentionally require shell word splitting.
     # shellcheck disable=SC2086
     run_command "$CC" \
-        -I"$BUILD_DIR" \
         -I. \
         -Isrc \
         -Icbase \
@@ -328,7 +327,6 @@ compile_test() {
         # Flag variables intentionally require shell word splitting.
         # shellcheck disable=SC2086
         run_command "$CC" \
-            -I"$BUILD_DIR" \
             -Itests \
             -I. \
             -Isrc \
@@ -386,7 +384,6 @@ run_analyzer() {
     # Flag variables intentionally require shell word splitting.
     # shellcheck disable=SC2086
     run_command "$CLANG_ANALYZER" \
-        -I"$BUILD_DIR" \
         -I. \
         -Isrc \
         -Icbase \
