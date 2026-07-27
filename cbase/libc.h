@@ -23,11 +23,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <termios.h>
 #include <time.h>
 #include <unistd.h>
 #include <wchar.h>
@@ -38,6 +36,8 @@
 #endif
 
 #if OS_UNIX
+#include <sys/select.h>
+#include <termios.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <poll.h>
