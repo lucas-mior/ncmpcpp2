@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_HELPERS_H)
 #define NCMPCPP_HELPERS_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "c/ncm_enums.h"
