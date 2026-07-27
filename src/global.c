@@ -3,7 +3,7 @@
 
 #include "global.h"
 
-#include <stddef.h>
+#include "cbase.h"
 
 bool global_show_messages;
 bool global_seeking_in_progress;
