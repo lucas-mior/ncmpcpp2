@@ -748,8 +748,7 @@ ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag) {
         return result;
     }
 
-    result = ncm_song_tags_buffer(song, tag->getter, STRLIT(" | "),
-                                  true);
+    result = ncm_song_tags_buffer(song, tag->getter, STRLIT(" | "), true);
     if ((tag->delimiter > 0) && (result.len > 0)) {
         int32 limit;
 
