@@ -978,17 +978,6 @@ static NcmActionDef action_defs[] = {
     },
 };
 
-static bool
-ncm_action_name_equals(char *left, int32 left_len, char *right) {
-    int32 right_len;
-
-    right_len = strlen32(right);
-    if (left_len != right_len) {
-        return false;
-    }
-    return memcmp64(left, right, left_len) == 0;
-}
-
 NcmActionDef *
 ncm_action_table_get(NcmActionDef *defs, int32 defs_len,
                      enum NcmActionType type) {
@@ -1012,8 +1001,7 @@ ncm_action_table_find(NcmActionDef *defs, int32 defs_len, char *name,
     }
 
     for (int32 i = 0; i < defs_len; i += 1) {
-        if (defs[i].name
-            && ncm_action_name_equals(name, name_len, defs[i].name)) {
+        if (defs[i].name && STREQUAL(name, name_len, defs[i].name)) {
             return defs + i;
         }
     }
