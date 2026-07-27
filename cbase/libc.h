@@ -14,8 +14,6 @@
 #include <libgen.h>
 #include <limits.h>
 #include <math.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <pthread.h>
 #include <setjmp.h>
 #include <signal.h>
@@ -25,7 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -39,9 +36,12 @@
 #endif
 
 #if OS_UNIX
-#include <sys/mman.h>
-#include <sys/wait.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <poll.h>
+#include <sys/mman.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
 #endif
 
 #if defined(__GLIBC__)
