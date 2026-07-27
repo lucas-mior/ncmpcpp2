@@ -12,16 +12,6 @@
 #include "cbase/util.c"
 #include "c/ncm_string.h"
 
-bool
-optional_begins_with(char *string, int32 string_len,
-                     char *prefix, int32 prefix_len) {
-    if ((string == NULL) || (prefix == NULL) || (prefix_len < 0)
-        || (string_len < prefix_len)) {
-        return false;
-    }
-    return memcmp64(string, prefix, prefix_len) == 0;
-}
-
 #include "c/ncm_html.c"
 #include "curl_handle.h"
 
