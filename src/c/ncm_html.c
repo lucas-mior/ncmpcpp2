@@ -6,7 +6,6 @@
 #include "cbase.h"
 
 #include "c/ncm_string.h"
-#include "cbase.h"
 
 typedef struct HtmlEntity {
     char *from;
