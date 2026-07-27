@@ -3,16 +3,9 @@
 
 #include "c/ncm_conversion.h"
 
-#include <ctype.h>
-#include <errno.h>
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
-#include "cbase/base_macros.h"
-#include "cbase.h"
 
 static bool
 ncm_conversion_copy_source(StrBuilder *buffer, char *source,
