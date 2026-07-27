@@ -13,14 +13,10 @@ ncm_mpd_client_set_buffer(StrBuilder *buffer, char *string,
                           int32 string_len) {
     sb_clear(buffer);
     if ((string == NULL) || (string_len <= 0)) {
-        sb_append_byte(buffer, '\0');
-        buffer->len = 0;
         return;
     }
 
     SB_APPEND(buffer, string, string_len);
-    sb_append_byte(buffer, '\0');
-    buffer->len = string_len;
     return;
 }
 

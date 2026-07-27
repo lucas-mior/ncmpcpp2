@@ -1842,10 +1842,11 @@ sb_append(StrBuilder *str_builder, char *data, int32 data_len) {
     bool aliases = false;
     int32 data_offset = 0;
 
-    if (data_len <= 0) {
-        return;
-    }
-    if (data == NULL) {
+    if ((data_len <= 0) || (data == NULL)) {
+        if (str_builder->data == NULL) {
+            sb_reserve(str_builder, 8);
+            str_builder->data[0] = '\0';
+        }
         return;
     }
 
