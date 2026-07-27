@@ -217,7 +217,7 @@ Exceptions to this rule are:
   strings. Do not use it where a single
   `SNPRINTF(stack_array, "format_string", args);` would be enough.
   * Use `SB_APPEND` for append literals or strings of known length, and
-    `sb_printf` for formatting.
+    `sb_printf` for appending formatted strings.
   * `SNPRINTF` and `snprintf2` return the number of bytes written (excluding the
     terminating null byte. No need to call `strlen32` on the buffer:
     ```c
