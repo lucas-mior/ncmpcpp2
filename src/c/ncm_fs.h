@@ -1,7 +1,7 @@
 #if !defined(NCM_FS_H)
 #define NCM_FS_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 
