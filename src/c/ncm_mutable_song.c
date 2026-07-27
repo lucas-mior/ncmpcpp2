@@ -569,8 +569,8 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
     }
 
     for (int32 i = 0; ; i += 1) {
-        bool already_present;
         StrBuilder tag = ncm_mutable_song_get_tag_buffer(song, field, i);
+        bool already_present;
 
         if (tag.len <= 0) {
             sb_free(&tag);
