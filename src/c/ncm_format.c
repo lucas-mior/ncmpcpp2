@@ -223,9 +223,11 @@ ncm_format_text_append(NcmFormatExprList *list,
     if ((expr = ncm_format_expr_list_append(list)) == NULL) {
         return false;
     }
+
     expr->type = NCM_FORMAT_EXPR_TEXT;
     expr->value.text = *token;
     sb_init(token);
+
     return true;
 }
 
