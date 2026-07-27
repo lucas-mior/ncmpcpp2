@@ -16,9 +16,6 @@
 #error "readline is not available"
 #endif
 
-#include "cbase.h"
-#include "cbase.h"
-
 #define NC_COLOR_COMPONENT_COUNT 256
 #define NC_COLOR_PAIR_MAP_SIZE \
     (NC_COLOR_COMPONENT_COUNT*NC_COLOR_COMPONENT_COUNT)
