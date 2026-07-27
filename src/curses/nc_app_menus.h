@@ -1,8 +1,7 @@
 #if !defined(NCMPCPP_NC_APP_MENUS_H)
 #define NCMPCPP_NC_APP_MENUS_H
 
-#include <stdbool.h>
-#include <time.h>
+#include "cbase.h"
 
 #include "c/ncm_mpd_item.h"
 #include "c/ncm_mutable_song.h"

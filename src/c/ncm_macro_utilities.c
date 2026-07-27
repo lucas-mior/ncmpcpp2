@@ -3,7 +3,7 @@
 
 #include "c/ncm_macro_utilities.h"
 
-#include <errno.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
