@@ -313,6 +313,7 @@ static void
 configuration_destroy_buffers(Configuration *config) {
     sb_free(&config->progressbar);
     sb_free(&config->visualizer_chars);
+
     nc_buffer_destroy(&config->browser_playlist_prefix);
     nc_buffer_destroy(&config->selected_item_prefix);
     nc_buffer_destroy(&config->selected_item_suffix);
@@ -323,6 +324,7 @@ configuration_destroy_buffers(Configuration *config) {
     nc_buffer_destroy(&config->current_item_suffix);
     nc_buffer_destroy(&config->current_item_inactive_column_prefix);
     nc_buffer_destroy(&config->current_item_inactive_column_suffix);
+
     return;
 }
 
