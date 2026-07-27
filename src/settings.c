@@ -3,11 +3,7 @@
 
 #include "settings.h"
 
-#include <ctype.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "cbase.h"
 
 #include <mpd/tag.h>
 
@@ -19,9 +15,6 @@
 #include "c/ncm_option_parser.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
-#include "cbase/utf8.c"
-#include "cbase/base_macros.h"
-#include "cbase.h"
 #include "global.h"
 
 #define SETTINGS_LINE_CAP 16384
