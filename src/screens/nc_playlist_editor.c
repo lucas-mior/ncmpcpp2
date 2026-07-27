@@ -1869,12 +1869,9 @@ playlist_editor_report_error(char *context, int32 context_len,
     SB_APPEND(&message, context, context_len);
     if (error && (error->message[0] != 0)) {
         SB_APPEND(&message, STRLIT(": "));
-        SB_APPEND(&message, error->message,
-                          strlen32(error->message));
+        SB_APPEND(&message, error->message);
     }
-    sb_append_byte(&message, '\0');
-    ncm_statusbar_print_cstring(Config.message_delay_time,
-                                message.data);
+    ncm_statusbar_print_cstring(Config.message_delay_time, message.data);
     sb_free(&message);
     return;
 }
