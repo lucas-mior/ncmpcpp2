@@ -191,8 +191,7 @@ ncm_format_parse_named_color(char *data, int32 data_len, NcColor *color) {
 }
 
 static bool
-ncm_format_read_uint(char *data, int32 start, int32 end,
-                     uint32 *value) {
+ncm_format_read_uint(char *data, int32 start, int32 end, uint32 *value) {
     uint32 result;
 
     result = 0;
@@ -212,8 +211,7 @@ ncm_format_read_uint(char *data, int32 start, int32 end,
 }
 
 static bool
-ncm_format_text_append(NcmFormatExprList *list,
-                       StrBuilder *token) {
+ncm_format_text_append(NcmFormatExprList *list, StrBuilder *token) {
     NcmFormatExpr *expr;
 
     if (token->len <= 0) {
@@ -279,8 +277,7 @@ ncm_format_expr_list_reserve(NcmFormatExprList *list, int32 extra) {
         new_cap *= 2;
     }
 
-    list->items = realloc2(list->items, old_cap, new_cap,
-                         SIZEOF(*list->items));
+    list->items = realloc2(list->items, old_cap, new_cap, SIZEOF(*list->items));
     list->cap = new_cap;
     return true;
 }
@@ -319,8 +316,7 @@ ncm_format_expr_list_destroy(NcmFormatExprList *list) {
 }
 
 void
-ncm_format_expr_list_move(NcmFormatExprList *dest,
-                          NcmFormatExprList *source) {
+ncm_format_expr_list_move(NcmFormatExprList *dest, NcmFormatExprList *source) {
     *dest = *source;
     ncm_format_expr_list_init(source);
     return;
@@ -439,8 +435,8 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
 }
 
 static bool
-ncm_format_find_matching_brace(char *data, int32 start,
-                               int32 end, int32 *result) {
+ncm_format_find_matching_brace(char *data, int32 start, int32 end,
+                               int32 *result) {
     int32 depth = 1;
 
     for (int32 i = start + 1; i < end; i += 1) {
