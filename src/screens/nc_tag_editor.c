@@ -17,7 +17,6 @@
 #include "c/ncm_fs.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
-#include "cbase/utf8.c"
 #include "c/ncm_type_conversions.h"
 #include "cbase/base_macros.h"
 #include "cbase.h"
