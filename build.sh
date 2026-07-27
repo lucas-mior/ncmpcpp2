@@ -24,6 +24,8 @@ DOCDIR=${DOCDIR-$PREFIX/share/doc/ncmpcpp2}
 MANDIR=${MANDIR-$PREFIX/share/man}
 DESTDIR=${DESTDIR-}
 
+CC="${CC:-tcc}"
+
 PKG_CONFIG=${PKG_CONFIG-pkg-config}
 ORIGINAL_CC=${CC-}
 CLANG_ANALYZER=${CLANG_ANALYZER-clang}
