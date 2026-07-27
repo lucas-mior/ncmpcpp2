@@ -223,9 +223,11 @@ ncm_format_text_append(NcmFormatExprList *list,
     if ((expr = ncm_format_expr_list_append(list)) == NULL) {
         return false;
     }
+
     expr->type = NCM_FORMAT_EXPR_TEXT;
     expr->value.text = *token;
     sb_init(token);
+
     return true;
 }
 
@@ -946,8 +948,8 @@ static void
 ncm_format_buffer_format(void *user, enum NcFormat format) {
     NcBuffer *buffer = (NcBuffer *)user;
 
-    nc_buffer_add_format(buffer, nc_buffer_len(buffer), format,
-                         MAXOF((int64)0));
+    nc_buffer_add_format(buffer, nc_buffer_len(buffer),
+                         format, MAXOF((int64)0));
     return;
 }
 
@@ -960,6 +962,7 @@ ncm_format_render_buffer(NcmFormatAst *ast, NcmSong *song,
     callbacks.text = ncm_format_buffer_text;
     callbacks.color = ncm_format_buffer_color;
     callbacks.format = ncm_format_buffer_format;
+
     ncm_format_render(ast, song, &callbacks, buffer, right_aligned, flags);
     return;
 }
@@ -980,8 +983,11 @@ ncm_format_render_string(NcmFormatAst *ast, NcmSong *song) {
     callbacks.text = ncm_format_string_text;
     callbacks.color = NULL;
     callbacks.format = NULL;
-    ncm_format_render(ast, song, &callbacks, &result, &result,
+
+    ncm_format_render(ast, song,
+                      &callbacks, &result, &result,
                       NCM_FORMAT_FLAG_TAG);
+
     return result;
 }
 
