@@ -246,7 +246,7 @@ lastfm_find(char *data, int32 data_len, char *needle, int32 needle_len,
         start = 0;
     }
     for (int32 i = start; i + needle_len <= data_len; i += 1) {
-        if (ncm_string_starts_with(data + i, data_len - i, needle,
+        if (BEGINS_WITH(data + i, data_len - i, needle,
                                    needle_len)) {
             return i;
         }

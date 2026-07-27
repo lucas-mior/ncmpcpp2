@@ -59,39 +59,6 @@ ncm_string_lowercase_ascii(char *string, int32 string_len) {
     return;
 }
 
-bool
-ncm_string_starts_with(char *string, int32 string_len,
-                       char *prefix, int32 prefix_len) {
-    if (prefix_len > string_len) {
-        return false;
-    }
-    if (prefix_len < 0) {
-        return false;
-    }
-
-    for (int32 i = 0; i < prefix_len; i += 1) {
-        if (string[i] != prefix[i]) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool
-ncm_string_ends_with(char *string, int32 string_len,
-                     char *suffix, int32 suffix_len) {
-    if (suffix_len > string_len) {
-        return false;
-    }
-    if (suffix_len < 0) {
-        return false;
-    }
-
-    return STREQUAL(string + string_len - suffix_len, suffix_len,
-                            suffix, suffix_len);
-}
-
 int32
 ncm_string_find_char(char *string, int32 string_len, char needle) {
     if (string_len <= 0) {
