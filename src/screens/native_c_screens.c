@@ -4,9 +4,7 @@
 #include "screens/native_c_screens.h"
 #include "screens/nc_search_engine.h"
 
-#include <errno.h>
-#include <stdio.h>
-#include <time.h>
+#include "cbase.h"
 
 #include "actions.h"
 #include "app_controller.h"
