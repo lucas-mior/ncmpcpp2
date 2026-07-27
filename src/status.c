@@ -15,7 +15,6 @@
 #include <netinet/tcp.h>
 #endif
 
-#include "cbase/base_macros.h"
 #include "cbase.h"
 #include "global.h"
 #include "settings.h"
@@ -23,18 +22,12 @@
 #include "app_controller.h"
 #include "c/ncm_macro_utilities.h"
 #include "c/ncm_format.h"
-#include "cbase/utf8.c"
 #include "curses/nc_buffer.h"
 #include "curses/nc_cyclic_buffer.h"
 #include "helpers.h"
 #include "screens/native_c_screens.h"
 #include "title.h"
 #include "ui_state.h"
-
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 static bool status_initialized;
 static char status_consume;
