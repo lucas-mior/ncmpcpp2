@@ -1,8 +1,7 @@
 #if !defined(NCM_DIRECTORY_H)
 #define NCM_DIRECTORY_H
 
-#include <time.h>
-
+#include "cbase.h"
 #include "c/ncm_defs.h"
 
 struct mpd_directory;
