@@ -895,14 +895,14 @@ ncm_format_render_list(NcmFormatExprList *list, NcmSong *song,
                        NcmFormatCallbacks *cb, void *left,
                        void *right, uint32 flags, int32 *no_output,
                        bool *switched) {
-    enum NcmFormatResult result;
+    enum NcmFormatResult result = NCM_FORMAT_RESULT_EMPTY;
 
-    result = NCM_FORMAT_RESULT_EMPTY;
     for (int32 i = 0; i < list->len; i += 1) {
         enum NcmFormatResult part;
 
         part = ncm_format_render_expr(&list->items[i], song, cb, left,
                                       right, flags, no_output, switched);
+
         result = ncm_format_result_add(result, part);
         if (result == NCM_FORMAT_RESULT_MISSING) {
             break;
