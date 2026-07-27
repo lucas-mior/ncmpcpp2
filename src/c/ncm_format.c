@@ -983,8 +983,11 @@ ncm_format_render_string(NcmFormatAst *ast, NcmSong *song) {
     callbacks.text = ncm_format_string_text;
     callbacks.color = NULL;
     callbacks.format = NULL;
-    ncm_format_render(ast, song, &callbacks, &result, &result,
+
+    ncm_format_render(ast, song,
+                      &callbacks, &result, &result,
                       NCM_FORMAT_FLAG_TAG);
+
     return result;
 }
 
