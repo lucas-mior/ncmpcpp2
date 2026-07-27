@@ -18,7 +18,7 @@
 #include "status.h"
 #include "statusbar.h"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 static NcScreenCallbacks playlist_editor_callbacks(void);
 static NcWindow *playlist_editor_active_window_callback(NcScreen *screen);

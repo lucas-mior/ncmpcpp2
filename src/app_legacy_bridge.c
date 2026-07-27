@@ -14,7 +14,7 @@
 #include "title.h"
 #include "cbase/base_macros.h"
 #include "ui_state.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 /*
  * App runtime bridge.

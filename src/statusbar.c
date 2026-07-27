@@ -8,7 +8,7 @@
 #include "bindings.h"
 #include "cbase/utf8.c"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 #include "global.h"
 #include "settings.h"
 #include "status.h"

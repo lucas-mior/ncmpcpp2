@@ -8,7 +8,7 @@
 
 #include "cbase.h"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 static void nc_buffer_reserve(NcBuffer *buffer, int32 extra);
 static void nc_buffer_add_property(NcBuffer *buffer,

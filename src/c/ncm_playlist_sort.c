@@ -11,7 +11,7 @@
 #include "c/ncm_comparators.h"
 #include "c/ncm_mpd_client.h"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 typedef struct NcmPlaylistSortContext {
     NcmSongArray *songs;

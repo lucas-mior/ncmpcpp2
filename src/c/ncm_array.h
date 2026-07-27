@@ -5,7 +5,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 typedef void NcmArrayItemInitCallback(void *item);
 typedef void NcmArrayItemDestroyCallback(void *item);

@@ -6,7 +6,7 @@
 #include <mpd/client.h>
 
 #include "c/ncm_base.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 void
 ncm_directory_init(NcmDirectory *directory) {

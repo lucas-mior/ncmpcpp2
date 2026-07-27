@@ -8,7 +8,7 @@
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 static void
 ncm_mpd_connection_cstring_copy(char *dst, int32 dst_cap,
