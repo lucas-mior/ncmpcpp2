@@ -6,22 +6,9 @@
 #include "c/ncm_string.h"
 #include "cbase/util.c"
 
-static int32
-ncm_enum_cstr_len(char *string) {
-    int32 result;
-
-    result = 0;
-    while (string[result] != '\0') {
-        result += 1;
-    }
-
-    return result;
-}
-
 static bool
 ncm_enum_equal(char *string, int32 string_len, char *expected) {
-    return STREQUAL(string, string_len, expected,
-                            ncm_enum_cstr_len(expected));
+    return STREQUAL(string, string_len, expected, strlen32(expected));
 }
 
 char *
