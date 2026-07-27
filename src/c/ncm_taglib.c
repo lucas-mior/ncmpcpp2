@@ -266,8 +266,9 @@ ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
     for (int32 i = 0; i < LENGTH(ncm_taglib_properties); i += 1) {
         char **values;
 
-        values = taglib_property_get(handle, ncm_taglib_properties[i].property);
-        if (values == NULL) {
+        if ((values = taglib_property_get(handle,
+                                          ncm_taglib_properties[i].property))
+                                          == NULL) {
             continue;
         }
 
