@@ -816,8 +816,10 @@ lyrics_title_callback(NcScreen *screen) {
                          Config.header_text_scrolling);
     SB_APPEND(&lyrics->title, scroll_buffer.data, scroll_buffer.len);
     nc_lyrics_screen_set_scroll_begin(&lyrics->screen, scroll_begin);
+
     sb_free(&scroll_buffer);
     sb_free(&song_title);
+
     return lyrics->title.data;
 }
 
