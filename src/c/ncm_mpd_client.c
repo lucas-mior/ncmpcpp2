@@ -18,18 +18,6 @@ ncm_mpd_client_set_buffer(StrBuilder *buffer, char *string,
     return;
 }
 
-static char *
-ncm_mpd_client_buffer_cstr(StrBuilder *buffer) {
-    if (buffer == NULL) {
-        return "";
-    }
-    if (buffer->data == NULL) {
-        return "";
-    }
-
-    return buffer->data;
-}
-
 static void
 ncm_mpd_client_copy_connection_error(NcmMpdClient *client,
                                      NcmError *error) {
@@ -149,7 +137,7 @@ ncm_mpd_client_hostname(NcmMpdClient *client) {
         return "";
     }
 
-    return ncm_mpd_client_buffer_cstr(&client->host);
+    return sb_opt_cstr(&client->host);
 }
 
 bool
@@ -284,7 +272,7 @@ ncm_mpd_client_connect(NcmMpdClient *client, NcmError *error) {
     }
 
     if (!ncm_mpd_connection_connect(&client->connection,
-                                    ncm_mpd_client_buffer_cstr(&client->host),
+                                    sb_opt_cstr(&client->host),
                                     client->port, client->timeout_ms)) {
         ncm_mpd_client_copy_connection_error(client, error);
         return false;
@@ -323,9 +311,8 @@ ncm_mpd_client_send_password(NcmMpdClient *client, NcmError *error) {
         return false;
     }
 
-    if (!ncm_mpd_connection_send_password(
-            &client->connection,
-            ncm_mpd_client_buffer_cstr(&client->password))) {
+    if (!ncm_mpd_connection_send_password(&client->connection,
+                                          sb_opt_cstr(&client->password))) {
         ncm_mpd_client_copy_connection_error(client, error);
         return false;
     }
