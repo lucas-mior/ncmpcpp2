@@ -100,9 +100,7 @@ ncm_fs_entry_init(NcmFsEntry *entry) {
 
 void
 ncm_fs_entry_destroy(NcmFsEntry *entry) {
-    if (entry->name) {
-        free2(entry->name, entry->name_len + 1);
-    }
+    free2(entry->name, entry->name_len + 1);
     ncm_fs_entry_init(entry);
     return;
 }
@@ -336,9 +334,7 @@ ncm_fs_directory_close(NcmFsDirectory *directory) {
     if (directory->dir) {
         closedir((DIR *)directory->dir);
     }
-    if (directory->path) {
-        free2(directory->path, directory->path_len + 1);
-    }
+    free2(directory->path, directory->path_len + 1);
 
     directory->dir = NULL;
     directory->path = NULL;

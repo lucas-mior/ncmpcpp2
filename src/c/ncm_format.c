@@ -313,11 +313,11 @@ ncm_format_expr_list_destroy(NcmFormatExprList *list) {
     if (list == NULL) {
         return;
     }
+
     ncm_format_expr_list_clear(list);
-    if (list->items) {
-        free2(list->items, list->cap*SIZEOF(*list->items));
-    }
+    free2(list->items, list->cap*SIZEOF(*list->items));
     ncm_format_expr_list_init(list);
+
     return;
 }
 
