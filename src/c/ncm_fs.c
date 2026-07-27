@@ -13,7 +13,7 @@
 
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 static bool
 ncm_fs_path_copy(char *path, int32 path_len, char **copy, NcmError *error) {

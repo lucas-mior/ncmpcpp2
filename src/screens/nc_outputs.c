@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 static NcScreenCallbacks nc_outputs_callbacks(void);
 static NcMenuItemCallbacks nc_outputs_item_callbacks(void);

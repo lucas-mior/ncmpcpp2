@@ -6,7 +6,7 @@
 #include "cbase/base_macros.h"
 #include "c/ncm_base.h"
 #include "c/ncm_path.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 void
 ncm_string_view_init(NcmStringView *view) {

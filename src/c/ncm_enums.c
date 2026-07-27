@@ -4,7 +4,7 @@
 #include "c/ncm_enums.h"
 
 #include "c/ncm_string.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 char *
 ncm_search_direction_str(enum SearchDirection value) {

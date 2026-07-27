@@ -18,7 +18,7 @@
 #include "c/ncm_type_conversions.h"
 #include "cbase/utf8.c"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 static void playlist_scroll_lines(NcPlaylistScreen *screen,
                                   enum NcScroll where);

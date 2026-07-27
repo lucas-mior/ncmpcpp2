@@ -8,7 +8,7 @@
 #include "c/ncm_string.h"
 #include "cbase/utf8.c"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 #include "screens/screen_switcher.h"
 #include "status.h"
 #include "statusbar.h"

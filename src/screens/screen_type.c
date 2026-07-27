@@ -4,7 +4,7 @@
 #include "screens/screen_type.h"
 
 #include "c/ncm_string.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 int32
 screen_type_to_native_type(enum ScreenType screen_type) {

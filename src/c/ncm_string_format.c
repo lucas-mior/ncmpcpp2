@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 static void
 ncm_string_format_append_number(StrBuilder *out, char *format,

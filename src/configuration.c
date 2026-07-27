@@ -18,7 +18,7 @@
 #include "c/ncm_song.h"
 #include "c/ncm_string.h"
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 #include "config.h"
 #include "global.h"
 #include "bindings.h"

@@ -35,7 +35,7 @@
 #include "c/ncm_taglib.h"
 #endif
 #include "cbase/base_macros.h"
-#include "cbase/util.c"
+#include "cbase.h"
 
 #if defined(__GNUC__)
 extern bool ncmpcpp_legacy_execute_binding(NcmBinding *binding)
