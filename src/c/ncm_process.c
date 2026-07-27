@@ -112,18 +112,12 @@ ncm_process_command_destroy(NcmProcessCommand *command) {
     }
 
     for (int32 i = 0; i < command->argc; i += 1) {
-        if (command->argv[i]) {
-            free2(command->argv[i], command->argv_lens[i] + 1);
-        }
+        free2(command->argv[i], command->argv_lens[i] + 1);
     }
-    if (command->argv) {
-        free2(command->argv,
-            (command->cap + 1)*SIZEOF(*command->argv));
-    }
-    if (command->argv_lens) {
-        free2(command->argv_lens,
-            command->cap*SIZEOF(*command->argv_lens));
-    }
+
+    free2(command->argv, (command->cap + 1)*SIZEOF(*command->argv));
+    free2(command->argv_lens, command->cap*SIZEOF(*command->argv_lens));
+
     ncm_process_command_init(command);
     return;
 }
