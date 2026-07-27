@@ -3,10 +3,9 @@
 
 #include "c/ncm_random.h"
 
-#include <errno.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
-#include "cbase/base_macros.h"
 
 static uint64
 ncm_random_splitmix64(uint64 *state) {
