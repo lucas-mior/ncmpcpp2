@@ -9,20 +9,20 @@
 static bool
 ncm_macro_system_command(char *command, int32 command_len,
                          bool block, int32 *status, NcmError *error) {
+    StrBuilder command_arg = {0};
     StrBuilder buffer = {0};
     Command process = {0};
     int32 rc;
     bool success;
 
-    if (block) {
-        if ((command == NULL) || (command_len < 0)) {
-            ncm_error_set(error, EINVAL, STRLIT("invalid shell command"));
-            return false;
-        }
+    if ((command == NULL) || (command_len < 0)) {
+        ncm_error_set(error, EINVAL, STRLIT("invalid shell command"));
+        return false;
+    }
 
-        command_push(&process, "/bin/sh");
-        command_push(&process, "-c");
-        command_push_length(&process, command, command_len);
+    if (block) {
+        SB_APPEND(&command_arg, command, command_len);
+        COMMAND_PUSH(&process, "/bin/sh", "-c", command_arg.data);
 
         success = command_run_sync(&process, &rc);
         if (success) {
@@ -35,15 +35,14 @@ ncm_macro_system_command(char *command, int32 command_len,
                           STRLIT("command failed"));
         }
         command_free(&process);
+        sb_free(&command_arg);
         return success;
     }
 
     SB_APPEND(&buffer, command, command_len);
     SB_APPEND(&buffer, STRLIT(" >/dev/null 2>&1 &"));
 
-    command_push(&process, "/bin/sh");
-    command_push(&process, "-c");
-    command_push_length(&process, buffer.data, buffer.len - 1);
+    COMMAND_PUSH(&process, "/bin/sh", "-c", buffer.data);
 
     success = command_run_sync(&process, &rc);
     sb_free(&buffer);
