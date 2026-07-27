@@ -2344,8 +2344,7 @@ native_library_tag_identity_equal(NcMediaLibraryTagRow *left,
     if ((left == NULL) || (right == NULL)) {
         return left == right;
     }
-    return STREQUAL(left->tag, left->tag_len,
-                            right->tag, right->tag_len);
+    return STREQUAL(left->tag, left->tag_len, right->tag, right->tag_len);
 }
 
 static bool
