@@ -34,9 +34,8 @@ ncm_compare_is_decimal_number(char *string, int32 string_len) {
     }
 
     for (int32 i = 0; i < string_len; i += 1) {
-        uint8 c;
+        uint8 c = (uint8)string[i];
 
-        c = (uint8)string[i];
         if (!isdigit(c)) {
             return false;
         }
