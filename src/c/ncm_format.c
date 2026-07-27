@@ -812,11 +812,10 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
                        void *left, void *right,
                        uint32 flags,
                        int32 *no_output, bool *switched) {
-    void *output;
+    void *output = ncm_format_current_output(left, right, *switched);
     StrBuilder tag;
     enum NcmFormatResult result;
 
-    output = ncm_format_current_output(left, right, *switched);
     switch (expr->type) {
     case NCM_FORMAT_EXPR_TEXT:
         if (expr->value.text.len <= 0) {
