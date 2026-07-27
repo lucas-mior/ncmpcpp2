@@ -9,8 +9,7 @@
 #include <tag_c.h>
 #endif
 
-#include <stdbool.h>
-#include <stddef.h>
+#include "cbase.h"
 
 #if defined(HAVE_TAGLIB_H)
 
