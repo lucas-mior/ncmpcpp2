@@ -177,6 +177,7 @@ nc_color_make(int16 foreground, int16 background,
     color.background = background;
     color.is_default = is_default;
     color.is_end = is_end;
+
     return color;
 }
 
