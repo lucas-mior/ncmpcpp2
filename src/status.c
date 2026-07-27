@@ -1761,24 +1761,12 @@ ncm_status_changes_flags(void) {
     sb_init(&switch_state);
     switch (Config.design) {
     case NCM_DESIGN_CLASSIC:
-        if (status_repeat) {
-            sb_append_byte(&switch_state, status_repeat);
-        }
-        if (status_random) {
-            sb_append_byte(&switch_state, status_random);
-        }
-        if (status_single) {
-            sb_append_byte(&switch_state, status_single);
-        }
-        if (status_consume) {
-            sb_append_byte(&switch_state, status_consume);
-        }
-        if (status_crossfade) {
-            sb_append_byte(&switch_state, status_crossfade);
-        }
-        if (status_db_updating) {
-            sb_append_byte(&switch_state, status_db_updating);
-        }
+        sb_append_byte(&switch_state, status_repeat);
+        sb_append_byte(&switch_state, status_random);
+        sb_append_byte(&switch_state, status_single);
+        sb_append_byte(&switch_state, status_consume);
+        sb_append_byte(&switch_state, status_crossfade);
+        sb_append_byte(&switch_state, status_db_updating);
 
         status_apply_formatted_color(header, &Config.state_line_color);
         mvwhline(nc_window_raw(header), 1, 0, 0, COLS);

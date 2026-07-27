@@ -1880,6 +1880,9 @@ sb_append(StrBuilder *str_builder, char *data, int32 data_len) {
 
 CBASE_API_DEF void
 sb_append_byte(StrBuilder *str_builder, char byte) {
+    if (byte == '\0') {
+        return;
+    }
     sb_reserve(str_builder, 1);
     str_builder->data[str_builder->len] = byte;
     str_builder->len += 1;
