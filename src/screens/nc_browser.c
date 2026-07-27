@@ -279,9 +279,11 @@ native_browser_screen_set_geometry(NativeBrowserScreen *screen,
     screen->width = width;
     screen->main_start_y = main_start_y;
     screen->main_height = main_height;
+
     nc_window_move_to(&screen->window, start_x, main_start_y);
     nc_window_resize(&screen->window, width, main_height);
     native_browser_screen_update_column_title(screen);
+
     return;
 }
 
