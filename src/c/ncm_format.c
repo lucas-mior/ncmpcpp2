@@ -808,9 +808,10 @@ ncm_format_current_output(void *left, void *right, bool switched) {
 
 static enum NcmFormatResult
 ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
-                       NcmFormatCallbacks *cb, void *left,
-                       void *right, uint32 flags, int32 *no_output,
-                       bool *switched) {
+                       NcmFormatCallbacks *cb,
+                       void *left, void *right,
+                       uint32 flags,
+                       int32 *no_output, bool *switched) {
     void *output;
     StrBuilder tag;
     enum NcmFormatResult result;
