@@ -3,11 +3,9 @@
 
 #include "title.h"
 
-#include <stdio.h>
-#include <string.h>
+#include "cbase.h"
 
 #include "app_controller.h"
-#include "cbase.h"
 #include "global.h"
 #include "settings.h"
 #include "ui_state.h"

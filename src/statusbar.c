@@ -3,11 +3,9 @@
 
 #include "statusbar.h"
 
-#include <string.h>
+#include "cbase.h"
 
 #include "bindings.h"
-#include "cbase/base_macros.h"
-#include "cbase.h"
 #include "global.h"
 #include "settings.h"
 #include "status.h"

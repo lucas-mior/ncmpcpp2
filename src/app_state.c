@@ -3,7 +3,7 @@
 
 #include "app_state.h"
 
-#include <stddef.h>
+#include "cbase.h"
 
 static NcScreenRegistry screen_registry;
 static bool last_switch_changed_screen;
