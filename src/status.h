@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_STATUS_H)
 #define NCMPCPP_STATUS_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_error.h"
 #include "c/ncm_mpd_client.h"

@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_SETTINGS_H)
 #define NCMPCPP_SETTINGS_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include <mpd/tag.h>
 

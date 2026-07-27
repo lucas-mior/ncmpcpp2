@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_UI_STATE_H)
 #define NCMPCPP_UI_STATE_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "cbase/primitives.h"
 #include "curses/nc_window.h"

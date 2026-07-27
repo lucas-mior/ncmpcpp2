@@ -3,7 +3,7 @@
 
 #include "config.h"
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include <curl/curl.h>
 
