@@ -9,7 +9,6 @@
 #include "c/ncm_base.h"
 #include "c/ncm_playlist_sort.h"
 #include "c/ncm_string.h"
-#include "cbase/base_macros.h"
 #include "screens/nc_playlist.h"
 #include "screens/screen_switcher.h"
 #include "settings.h"

@@ -7,7 +7,6 @@
 #include "c/ncm_path.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
-#include "cbase/base_macros.h"
 #include "settings.h"
 
 static StrBuilder ncm_display_column_value(NcmSong *song, Column *column);

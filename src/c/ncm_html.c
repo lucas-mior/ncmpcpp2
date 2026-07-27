@@ -6,7 +6,6 @@
 #include "cbase.h"
 
 #include "c/ncm_string.h"
-#include "cbase/base_macros.h"
 #include "cbase.h"
 
 typedef struct HtmlEntity {

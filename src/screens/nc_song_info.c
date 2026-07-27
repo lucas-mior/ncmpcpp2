@@ -3,7 +3,6 @@
 
 #include "screens/nc_song_info.h"
 
-#include "cbase/base_macros.h"
 
 static NcScreenCallbacks nc_song_info_callbacks(void);
 static NcWindow *nc_song_info_active_window(NcScreen *screen);
