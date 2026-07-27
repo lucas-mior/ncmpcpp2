@@ -40,7 +40,6 @@
 #include "c/ncm_path.c"
 #include "c/ncm_playlist.c"
 #include "c/ncm_playlist_sort.c"
-#include "c/ncm_process.c"
 #include "c/ncm_random.c"
 #include "c/ncm_regex.c"
 #include "c/ncm_search_prompt.c"
