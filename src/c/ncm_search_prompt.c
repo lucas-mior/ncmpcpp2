@@ -8,12 +8,14 @@
 void
 ncm_search_prompt_state_init(NcmSearchPromptState *state,
                              enum SearchDirection direction) {
-    state->direction = direction;
     sb_init(&state->last_text);
+
+    state->direction = direction;
     state->start_position = 0;
     state->has_start_position = false;
     state->has_last_result = false;
     state->last_found = false;
+
     return;
 }
 
