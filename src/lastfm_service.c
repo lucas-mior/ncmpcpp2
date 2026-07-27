@@ -3,14 +3,12 @@
 
 #include "lastfm_service.h"
 
-#include <string.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "c/ncm_html.h"
 #include "c/ncm_regex.h"
 #include "c/ncm_string.h"
-#include "cbase/base_macros.h"
-#include "cbase.h"
 #include "curl_handle.h"
 
 #define LASTFM_API_URL \
