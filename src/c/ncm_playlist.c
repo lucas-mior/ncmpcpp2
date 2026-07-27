@@ -18,13 +18,12 @@ ncm_playlist_init(NcmPlaylist *playlist) {
 
 void
 ncm_playlist_destroy(NcmPlaylist *playlist) {
-    if (playlist->path) {
-        free2(playlist->path, playlist->path_len + 1);
-    }
+    free2(playlist->path, playlist->path_len + 1);
 
     playlist->path = NULL;
     playlist->path_len = 0;
     playlist->last_modified = 0;
+
     return;
 }
 

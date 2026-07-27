@@ -19,10 +19,9 @@ ncm_mutable_song_free_string(char **string, int32 *string_len) {
         return;
     }
 
-    if (*string) {
-        free2(*string, *string_len + 1);
-    }
+    free2(*string, *string_len + 1);
     *string = NULL;
+
     if (string_len) {
         *string_len = 0;
     }
@@ -233,12 +232,12 @@ ncm_mutable_song_destroy(NcmMutableSong *song) {
     ncm_mutable_song_free_string(&song->directory, &song->directory_len);
     ncm_mutable_song_free_string(&song->name, &song->name_len);
     ncm_mutable_song_free_string(&song->new_name, &song->new_name_len);
+
     for (int32 i = 0; i < song->tags_len; i += 1) {
         ncm_mutable_song_tag_destroy(&song->tags[i]);
     }
-    if (song->tags) {
-        free2(song->tags, song->tags_cap*SIZEOF(*song->tags));
-    }
+
+    free2(song->tags, song->tags_cap*SIZEOF(*song->tags));
     ncm_mutable_song_init(song);
     return;
 }
