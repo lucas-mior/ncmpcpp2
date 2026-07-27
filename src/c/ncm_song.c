@@ -4,14 +4,12 @@
 #include "c/ncm_song.h"
 
 #include <mpd/client.h>
-#include <stdio.h>
+
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "c/ncm_path.h"
 #include "c/ncm_string.h"
-#include "cbase/base_macros.h"
-#include "cbase/rapidhash.h"
-#include "cbase.h"
 
 static bool
 ncm_song_needs_numeric_zero(char *tag, int32 tag_len) {
