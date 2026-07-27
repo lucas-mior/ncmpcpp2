@@ -1,12 +1,12 @@
 #if !defined(NCM_TAGS_C)
 #define NCM_TAGS_C
 
-#include "c/ncm_tags.h"
-
-#include <mpd/client.h>
 #include "cbase.h"
 
+#include <mpd/client.h>
+
 #include "c/ncm_taglib.h"
+#include "c/ncm_tags.h"
 
 typedef struct NcmTagsFirstPropertyContext {
     NcmStringView *value;

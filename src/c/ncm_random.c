@@ -1,11 +1,10 @@
 #if !defined(NCM_RANDOM_C)
 #define NCM_RANDOM_C
 
-#include "c/ncm_random.h"
-
 #include "cbase.h"
 
 #include "c/ncm_base.h"
+#include "c/ncm_random.h"
 
 static uint64
 ncm_random_splitmix64(uint64 *state) {

@@ -1,6 +1,8 @@
 #if !defined(NCMPCPP_NC_FORMATTED_COLOR_H)
 #define NCMPCPP_NC_FORMATTED_COLOR_H
 
+#include "cbase.h"
+
 #include "curses/nc_window.h"
 
 typedef struct NcFormattedColor {

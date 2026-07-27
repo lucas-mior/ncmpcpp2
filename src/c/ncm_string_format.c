@@ -1,9 +1,9 @@
 #if !defined(NCM_STRING_FORMAT_C)
 #define NCM_STRING_FORMAT_C
 
-#include "c/ncm_string_format.h"
-
 #include "cbase.h"
+
+#include "c/ncm_string_format.h"
 
 static void
 ncm_string_format_append_number(StrBuilder *out, char *format,

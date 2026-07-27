@@ -1,10 +1,9 @@
 #if !defined(NCM_FORMAT_C)
 #define NCM_FORMAT_C
 
-#include "c/ncm_format.h"
-
 #include "cbase.h"
 
+#include "c/ncm_format.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
 

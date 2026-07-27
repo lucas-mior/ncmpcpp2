@@ -1,6 +1,8 @@
 #if !defined(NCMPCPP_NC_BUFFER_H)
 #define NCMPCPP_NC_BUFFER_H
 
+#include "cbase.h"
+
 #include "curses/nc_formatted_color.h"
 
 #define ENUM_NAME NcBufferPropertyType

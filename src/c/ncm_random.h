@@ -1,6 +1,8 @@
 #if !defined(NCM_RANDOM_H)
 #define NCM_RANDOM_H
 
+#include "cbase.h"
+
 #include "c/ncm_time.h"
 
 typedef struct NcmRandom {

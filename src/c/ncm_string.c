@@ -1,11 +1,11 @@
 #if !defined(NCM_STRING_C)
 #define NCM_STRING_C
 
-#include "c/ncm_string.h"
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "c/ncm_path.h"
-#include "cbase.h"
+#include "c/ncm_string.h"
 
 void
 ncm_string_view_init(NcmStringView *view) {

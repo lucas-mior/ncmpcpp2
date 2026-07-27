@@ -1,11 +1,10 @@
 #if !defined(NCM_MACRO_UTILITIES_C)
 #define NCM_MACRO_UTILITIES_C
 
-#include "c/ncm_macro_utilities.h"
-
 #include "cbase.h"
 
 #include "c/ncm_base.h"
+#include "c/ncm_macro_utilities.h"
 
 static bool
 ncm_macro_system_command(char *command, int32 command_len,

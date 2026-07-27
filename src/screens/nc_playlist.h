@@ -3,10 +3,10 @@
 
 #include "cbase.h"
 
-#include "c/ncm_mutable_song.h"
 #include "c/ncm_mpd_client.h"
-#include "c/ncm_time.h"
+#include "c/ncm_mutable_song.h"
 #include "c/ncm_regex.h"
+#include "c/ncm_time.h"
 #include "curses/nc_app_menus.h"
 #include "curses/nc_menu.h"
 #include "curses/nc_window.h"

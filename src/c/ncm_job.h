@@ -2,6 +2,7 @@
 #define NCM_JOB_H
 
 #include "cbase.h"
+
 #include "c/ncm_base.h"
 
 typedef bool NcmJobRunCallback(void *user, NcmError *error);

@@ -1,9 +1,10 @@
 #if !defined(NCMPCPP_APP_LEGACY_BRIDGE_C)
 #define NCMPCPP_APP_LEGACY_BRIDGE_C
 
-#include "app_legacy_bridge.h"
+#include "cbase.h"
 
 #include "app_controller.h"
+#include "app_legacy_bridge.h"
 #include "bindings.h"
 #include "c/ncm_base.h"
 #include "global.h"
@@ -13,7 +14,6 @@
 #include "statusbar.h"
 #include "title.h"
 #include "ui_state.h"
-#include "cbase.h"
 
 /*
  * App runtime bridge.

@@ -1,22 +1,21 @@
 #if !defined(NCMPCPP_NC_MEDIA_LIBRARY_C)
 #define NCMPCPP_NC_MEDIA_LIBRARY_C
 
-#include "screens/nc_media_library.h"
-
 #include "cbase.h"
 
-#include "global.h"
-#include "helpers.h"
-#include "settings.h"
-#include "statusbar.h"
-#include "ui_state.h"
 #include "c/ncm_base.h"
 #include "c/ncm_charset.h"
 #include "c/ncm_comparators.h"
 #include "c/ncm_display.h"
 #include "c/ncm_format.h"
 #include "c/ncm_string.h"
+#include "global.h"
+#include "helpers.h"
+#include "screens/nc_media_library.h"
 #include "screens/screen_switcher.h"
+#include "settings.h"
+#include "statusbar.h"
+#include "ui_state.h"
 
 static NcWindow *native_library_active_window(NcScreen *screen);
 static void native_library_refresh(NcScreen *screen);

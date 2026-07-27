@@ -1,10 +1,10 @@
 #if !defined(NCM_ERROR_C)
 #define NCM_ERROR_C
 
-#include "c/ncm_error.h"
-
 #include "cbase.h"
+
 #include "c/ncm_base.h"
+#include "c/ncm_error.h"
 
 void
 ncm_error_clear(NcmError *error) {

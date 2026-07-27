@@ -1,6 +1,8 @@
 #if !defined(NCMPCPP_NC_SONG_INFO_H)
 #define NCMPCPP_NC_SONG_INFO_H
 
+#include "cbase.h"
+
 #include "curses/nc_buffer.h"
 #include "curses/nc_scrollpad.h"
 #include "screens/nc_scrollpad_screen.h"

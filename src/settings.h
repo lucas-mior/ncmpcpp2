@@ -12,10 +12,10 @@
 #include "c/ncm_format.h"
 #include "c/ncm_regex.h"
 #include "c/ncm_song.h"
-#include "lyrics_fetcher.h"
 #include "curses/nc_buffer.h"
 #include "curses/nc_formatted_color.h"
 #include "curses/nc_window.h"
+#include "lyrics_fetcher.h"
 #include "screens/screen_type.h"
 
 typedef struct Column {

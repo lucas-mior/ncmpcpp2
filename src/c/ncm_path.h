@@ -1,6 +1,8 @@
 #if !defined(NCM_PATH_H)
 #define NCM_PATH_H
 
+#include "cbase.h"
+
 #include "c/ncm_defs.h"
 #include "c/ncm_error.h"
 

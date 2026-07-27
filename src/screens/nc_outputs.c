@@ -1,9 +1,9 @@
 #if !defined(NCMPCPP_NC_OUTPUTS_C)
 #define NCMPCPP_NC_OUTPUTS_C
 
-#include "screens/nc_outputs.h"
-
 #include "cbase.h"
+
+#include "screens/nc_outputs.h"
 
 static NcScreenCallbacks nc_outputs_callbacks(void);
 static NcMenuItemCallbacks nc_outputs_item_callbacks(void);

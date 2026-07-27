@@ -1,9 +1,9 @@
 #if !defined(NCMPCPP_NC_BROWSER_C)
 #define NCMPCPP_NC_BROWSER_C
 
-#include "screens/nc_browser.h"
-
 #include "cbase.h"
+
+#include <mpd/client.h>
 
 #include "c/ncm_base.h"
 #include "c/ncm_comparators.h"
@@ -15,12 +15,11 @@
 #include "c/ncm_tags.h"
 #include "curses/nc_cyclic_buffer.h"
 #include "global.h"
-#include "settings.h"
+#include "screens/nc_browser.h"
 #include "screens/screen_switcher.h"
+#include "settings.h"
 #include "title.h"
 #include "ui_state.h"
-
-#include <mpd/client.h>
 
 static NcWindow *native_browser_active_window(NcScreen *screen);
 static void native_browser_refresh(NcScreen *screen);

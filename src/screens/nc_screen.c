@@ -1,10 +1,9 @@
 #if !defined(NCMPCPP_NC_SCREEN_C)
 #define NCMPCPP_NC_SCREEN_C
 
-#include "screens/nc_screen.h"
-
 #include "cbase.h"
 
+#include "screens/nc_screen.h"
 #include "settings.h"
 #include "ui_state.h"
 

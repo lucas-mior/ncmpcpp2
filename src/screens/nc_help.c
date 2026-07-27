@@ -1,11 +1,10 @@
 #if !defined(NCMPCPP_NC_HELP_C)
 #define NCMPCPP_NC_HELP_C
 
-#include "screens/nc_help.h"
-
 #include "cbase.h"
 
 #include "c/ncm_regex.h"
+#include "screens/nc_help.h"
 #include "settings.h"
 
 static NcScreenCallbacks nc_help_callbacks(void);

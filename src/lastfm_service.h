@@ -1,8 +1,6 @@
 #if !defined(NCMPCPP_LASTFM_SERVICE_H)
 #define NCMPCPP_LASTFM_SERVICE_H
 
-#include "config.h"
-
 #include "cbase.h"
 
 #include <curl/curl.h>

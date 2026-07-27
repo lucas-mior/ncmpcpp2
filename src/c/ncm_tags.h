@@ -1,6 +1,8 @@
 #if !defined(NCM_TAGS_H)
 #define NCM_TAGS_H
 
+#include "cbase.h"
+
 #include <mpd/tag.h>
 
 #include "c/ncm_defs.h"

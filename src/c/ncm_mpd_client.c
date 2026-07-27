@@ -1,10 +1,9 @@
 #if !defined(NCM_MPD_CLIENT_C)
 #define NCM_MPD_CLIENT_C
 
-#include "c/ncm_mpd_client.h"
-
 #include "cbase.h"
 
+#include "c/ncm_mpd_client.h"
 #include "c/ncm_regex.h"
 
 static void

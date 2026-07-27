@@ -1,8 +1,10 @@
 #if !defined(NCMPCPP_SCREEN_TYPE_H)
 #define NCMPCPP_SCREEN_TYPE_H
 
-#include "config.h"
+#include "cbase.h"
+
 #include "c/ncm_defs.h"
+#include "config.h"
 #include "screens/nc_screen.h"
 
 #if defined(ENABLE_OUTPUTS)

@@ -1,9 +1,9 @@
 #if !defined(NCM_JOB_C)
 #define NCM_JOB_C
 
-#include "c/ncm_job.h"
-
 #include "cbase.h"
+
+#include "c/ncm_job.h"
 
 static void
 ncm_job_set_errno_error(NcmError *error, int32 code, char *operation) {

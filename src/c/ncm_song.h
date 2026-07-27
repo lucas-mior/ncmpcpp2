@@ -1,9 +1,9 @@
 #if !defined(NCM_SONG_H)
 #define NCM_SONG_H
 
-#include <mpd/tag.h>
-
 #include "cbase.h"
+
+#include <mpd/tag.h>
 
 #include "c/ncm_defs.h"
 #include "c/ncm_type_conversions.h"

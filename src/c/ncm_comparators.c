@@ -1,11 +1,10 @@
 #if !defined(NCM_COMPARATORS_C)
 #define NCM_COMPARATORS_C
 
-#include "c/ncm_comparators.h"
-
 #include "cbase.h"
 
 #include "c/ncm_base.h"
+#include "c/ncm_comparators.h"
 
 static bool
 ncm_compare_has_the_word(char *string, int32 string_len) {

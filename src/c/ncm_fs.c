@@ -1,10 +1,9 @@
 #if !defined(NCM_FS_C)
 #define NCM_FS_C
 
-#include "c/ncm_fs.h"
-
 #include "cbase.h"
 
+#include "c/ncm_fs.h"
 #include "c/ncm_string.h"
 
 static bool

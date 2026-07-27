@@ -1,14 +1,13 @@
 #if !defined(NCM_PLAYLIST_SORT_C)
 #define NCM_PLAYLIST_SORT_C
 
-#include "c/ncm_playlist_sort.h"
-
 #include "cbase.h"
 
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_base.h"
 #include "c/ncm_comparators.h"
 #include "c/ncm_mpd_client.h"
+#include "c/ncm_playlist_sort.h"
 
 typedef struct NcmPlaylistSortContext {
     NcmSongArray *songs;

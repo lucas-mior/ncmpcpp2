@@ -1,12 +1,12 @@
 #if !defined(NCM_PLAYLIST_C)
 #define NCM_PLAYLIST_C
 
-#include "c/ncm_playlist.h"
+#include "cbase.h"
 
 #include <mpd/client.h>
 
 #include "c/ncm_base.h"
-#include "cbase.h"
+#include "c/ncm_playlist.h"
 
 void
 ncm_playlist_init(NcmPlaylist *playlist) {

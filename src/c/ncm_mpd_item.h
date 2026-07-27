@@ -1,6 +1,8 @@
 #if !defined(NCM_MPD_ITEM_H)
 #define NCM_MPD_ITEM_H
 
+#include "cbase.h"
+
 #include "c/ncm_defs.h"
 #include "c/ncm_directory.h"
 #include "c/ncm_playlist.h"

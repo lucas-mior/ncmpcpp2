@@ -1,6 +1,8 @@
 #if !defined(NCM_APP_ARRAYS_C)
 #define NCM_APP_ARRAYS_C
 
+#include "cbase.h"
+
 #include "c/ncm_app_arrays.h"
 
 static void ncm_app_array_song_init(void *item);

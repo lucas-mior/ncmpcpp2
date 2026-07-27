@@ -1,10 +1,9 @@
 #if !defined(NCMPCPP_CONFIGURATION_C)
 #define NCMPCPP_CONFIGURATION_C
 
-#include "configuration.h"
-
 #include "cbase.h"
 
+#include "bindings.h"
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_base.h"
 #include "c/ncm_conversion.h"
@@ -15,11 +14,11 @@
 #include "c/ncm_song.h"
 #include "c/ncm_string.h"
 #include "config.h"
+#include "configuration.h"
 #include "global.h"
-#include "bindings.h"
-#include "settings.h"
 #include "lyrics_fetcher.h"
 #include "screens/screen_type.h"
+#include "settings.h"
 
 #if !defined(VERSION)
 #define VERSION "unknown"

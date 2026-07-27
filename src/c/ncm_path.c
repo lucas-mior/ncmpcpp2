@@ -1,11 +1,10 @@
 #if !defined(NCM_PATH_C)
 #define NCM_PATH_C
 
-#include "c/ncm_path.h"
-
 #include "cbase.h"
 
 #include "c/ncm_base.h"
+#include "c/ncm_path.h"
 #include "c/ncm_string.h"
 
 static int32

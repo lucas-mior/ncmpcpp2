@@ -1,13 +1,10 @@
 #if !defined(NCMPCPP_SETTINGS_C)
 #define NCMPCPP_SETTINGS_C
 
-#include "settings.h"
-
 #include "cbase.h"
 
 #include <mpd/tag.h>
 
-#include "config.h"
 #include "c/ncm_base.h"
 #include "c/ncm_conversion.h"
 #include "c/ncm_fs.h"
@@ -15,7 +12,9 @@
 #include "c/ncm_option_parser.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
+#include "config.h"
 #include "global.h"
+#include "settings.h"
 
 #define SETTINGS_LINE_CAP 16384
 

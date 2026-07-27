@@ -1,11 +1,10 @@
 #if !defined(NCMPCPP_CURL_HANDLE_C)
 #define NCMPCPP_CURL_HANDLE_C
 
-#include "curl_handle.h"
-
 #include "cbase.h"
 
 #include "c/ncm_base.h"
+#include "curl_handle.h"
 
 static size_t write_data(char *buffer, size_t size, size_t nmemb, void *data);
 

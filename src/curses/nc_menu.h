@@ -3,7 +3,6 @@
 
 #include "cbase.h"
 
-#include "cbase/primitives.h"
 #include "curses/nc_buffer.h"
 #include "curses/nc_window.h"
 

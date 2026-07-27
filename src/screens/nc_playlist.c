@@ -1,18 +1,17 @@
 #if !defined(NCMPCPP_NC_PLAYLIST_C)
 #define NCMPCPP_NC_PLAYLIST_C
 
-#include "screens/nc_playlist.h"
-
 #include "cbase.h"
 
 #include "app_controller.h"
-#include "global.h"
-#include "settings.h"
-#include "status.h"
-#include "statusbar.h"
 #include "c/ncm_base.h"
 #include "c/ncm_display.h"
 #include "c/ncm_type_conversions.h"
+#include "global.h"
+#include "screens/nc_playlist.h"
+#include "settings.h"
+#include "status.h"
+#include "statusbar.h"
 
 static void playlist_scroll_lines(NcPlaylistScreen *screen,
                                   enum NcScroll where);

@@ -1,6 +1,8 @@
 #if !defined(NCM_PLAYLIST_SORT_H)
 #define NCM_PLAYLIST_SORT_H
 
+#include "cbase.h"
+
 #include "c/ncm_error.h"
 #include "c/ncm_type_conversions.h"
 

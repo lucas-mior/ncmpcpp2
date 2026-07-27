@@ -1,8 +1,6 @@
 #if !defined(NCMPCPP_NC_SORT_PLAYLIST_C)
 #define NCMPCPP_NC_SORT_PLAYLIST_C
 
-#include "screens/nc_sort_playlist.h"
-
 #include "cbase.h"
 
 #include "app_controller.h"
@@ -10,6 +8,7 @@
 #include "c/ncm_playlist_sort.h"
 #include "c/ncm_string.h"
 #include "screens/nc_playlist.h"
+#include "screens/nc_sort_playlist.h"
 #include "screens/screen_switcher.h"
 #include "settings.h"
 #include "status.h"

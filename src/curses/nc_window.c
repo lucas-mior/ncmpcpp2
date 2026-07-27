@@ -1,9 +1,10 @@
 #if !defined(NCMPCPP_NC_WINDOW_C)
 #define NCMPCPP_NC_WINDOW_C
 
-#include "curses/nc_window.h"
-
 #include "cbase.h"
+
+#include "config.h"
+
 #if defined(HAVE_READLINE_HISTORY_H)
 #include <readline/history.h>
 #endif
@@ -15,6 +16,8 @@
 #else
 #error "readline is not available"
 #endif
+
+#include "curses/nc_window.h"
 
 #define NC_COLOR_COMPONENT_COUNT 256
 #define NC_COLOR_PAIR_MAP_SIZE \

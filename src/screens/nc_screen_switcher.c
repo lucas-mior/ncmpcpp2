@@ -1,11 +1,10 @@
 #if !defined(NCMPCPP_NC_SCREEN_SWITCHER_C)
 #define NCMPCPP_NC_SCREEN_SWITCHER_C
 
-#include "screens/screen_switcher.h"
-
 #include "cbase.h"
 
 #include "app_controller.h"
+#include "screens/screen_switcher.h"
 
 NcScreen *
 nc_screen_switcher_current(void) {

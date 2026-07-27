@@ -1,12 +1,12 @@
 #if !defined(NCM_DIRECTORY_C)
 #define NCM_DIRECTORY_C
 
-#include "c/ncm_directory.h"
+#include "cbase.h"
 
 #include <mpd/client.h>
 
 #include "c/ncm_base.h"
-#include "cbase.h"
+#include "c/ncm_directory.h"
 
 void
 ncm_directory_init(NcmDirectory *directory) {

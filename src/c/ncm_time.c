@@ -1,9 +1,9 @@
 #if !defined(NCM_TIME_C)
 #define NCM_TIME_C
 
-#include "c/ncm_time.h"
-
 #include "cbase.h"
+
+#include "c/ncm_time.h"
 
 static void
 ncm_time_set_errno_error(NcmError *error, int32 code, char *operation) {

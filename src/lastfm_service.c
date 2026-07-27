@@ -1,8 +1,6 @@
 #if !defined(NCMPCPP_LASTFM_SERVICE_C)
 #define NCMPCPP_LASTFM_SERVICE_C
 
-#include "lastfm_service.h"
-
 #include "cbase.h"
 
 #include "c/ncm_base.h"
@@ -10,6 +8,7 @@
 #include "c/ncm_regex.h"
 #include "c/ncm_string.h"
 #include "curl_handle.h"
+#include "lastfm_service.h"
 
 #define LASTFM_API_URL \
     "http://ws.audioscrobbler.com/2.0/?api_key=" \

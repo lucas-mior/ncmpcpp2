@@ -1,6 +1,8 @@
 #if !defined(NCM_MUTABLE_SONG_H)
 #define NCM_MUTABLE_SONG_H
 
+#include "cbase.h"
+
 #include "c/ncm_defs.h"
 #include "c/ncm_song.h"
 #include "c/ncm_tags.h"

@@ -1,8 +1,9 @@
 #if !defined(NCMPCPP_NC_SERVER_INFO_C)
 #define NCMPCPP_NC_SERVER_INFO_C
 
-#include "screens/nc_server_info.h"
+#include "cbase.h"
 
+#include "screens/nc_server_info.h"
 
 static NcScreenCallbacks nc_server_info_callbacks(void);
 static NcWindow *nc_server_info_active_window(NcScreen *screen);

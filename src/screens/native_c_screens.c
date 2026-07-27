@@ -1,9 +1,6 @@
 #if !defined(NCMPCPP_NATIVE_C_SCREENS_C)
 #define NCMPCPP_NATIVE_C_SCREENS_C
 
-#include "screens/native_c_screens.h"
-#include "screens/nc_search_engine.h"
-
 #include "cbase.h"
 
 #include "actions.h"
@@ -13,18 +10,19 @@
 #include "c/ncm_display.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
-#include "global.h"
-#include "settings.h"
-#include "screens/screen_switcher.h"
-#include "screens/song_info.h"
-#include "statusbar.h"
-#include "title.h"
-#include "ui_state.h"
-
 #if defined(HAVE_TAGLIB_H)
 # include "c/ncm_taglib.h"
 # include "c/ncm_tags.h"
 #endif
+#include "global.h"
+#include "screens/native_c_screens.h"
+#include "screens/nc_search_engine.h"
+#include "screens/screen_switcher.h"
+#include "screens/song_info.h"
+#include "settings.h"
+#include "statusbar.h"
+#include "title.h"
+#include "ui_state.h"
 
 struct NativeHelpScreen {
     NcHelpScreen screen;

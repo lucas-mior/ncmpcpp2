@@ -1,9 +1,11 @@
 #if !defined(NCM_MPD_ITEM_C)
 #define NCM_MPD_ITEM_C
 
-#include "c/ncm_mpd_item.h"
+#include "cbase.h"
 
 #include <mpd/client.h>
+
+#include "c/ncm_mpd_item.h"
 
 static bool
 ncm_mpd_item_set_song_copy(NcmMpdItem *item,

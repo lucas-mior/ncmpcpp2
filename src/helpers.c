@@ -1,9 +1,9 @@
 #if !defined(NCMPCPP_HELPERS_C)
 #define NCMPCPP_HELPERS_C
 
-#include "helpers.h"
-
 #include "cbase.h"
+
+#include "helpers.h"
 
 char *
 ncm_helpers_with_errors(bool success) {

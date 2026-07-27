@@ -1,9 +1,9 @@
 #if !defined(NCM_OPTION_PARSER_C)
 #define NCM_OPTION_PARSER_C
 
-#include "c/ncm_option_parser.h"
-
 #include "cbase.h"
+
+#include "c/ncm_option_parser.h"
 
 static bool
 ncm_option_is_word_char(char c) {

@@ -1,9 +1,9 @@
 #if !defined(NCM_SEARCH_PROMPT_C)
 #define NCM_SEARCH_PROMPT_C
 
-#include "c/ncm_search_prompt.h"
-
 #include "cbase.h"
+
+#include "c/ncm_search_prompt.h"
 
 void
 ncm_search_prompt_state_init(NcmSearchPromptState *state,

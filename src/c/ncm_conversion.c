@@ -1,11 +1,10 @@
 #if !defined(NCM_CONVERSION_C)
 #define NCM_CONVERSION_C
 
-#include "c/ncm_conversion.h"
-
 #include "cbase.h"
 
 #include "c/ncm_base.h"
+#include "c/ncm_conversion.h"
 
 static bool
 ncm_conversion_copy_source(StrBuilder *buffer, char *source,
