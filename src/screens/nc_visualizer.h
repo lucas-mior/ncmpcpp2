@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_NC_VISUALIZER_H)
 #define NCMPCPP_NC_VISUALIZER_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "config.h"
 
