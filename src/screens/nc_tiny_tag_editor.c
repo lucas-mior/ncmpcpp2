@@ -3,9 +3,7 @@
 
 #include "screens/nc_tiny_tag_editor.h"
 
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
+#include "cbase.h"
 
 #include "app_controller.h"
 #include "c/ncm_base.h"
