@@ -190,6 +190,7 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     nc_browser_entry_menu_init(&screen->entries);
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, NULL, 0, color, border);
+
     sb_init(&screen->current_directory);
     sb_init(&screen->last_highlighted_directory);
     sb_init(&screen->title_text);
@@ -199,6 +200,7 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     sb_init(&screen->item_text_buffer);
     sb_init(&screen->path_buffer);
     sb_init(&screen->scratch_buffer);
+
     str_builder_array_init(&screen->supported_extensions);
     ncm_regex_init(&screen->filter_regex);
 
@@ -229,8 +231,10 @@ native_browser_screen_destroy(NativeBrowserScreen *screen) {
     if (screen == NULL) {
         return;
     }
+
     ncm_regex_destroy(&screen->filter_regex);
     str_builder_array_destroy(&screen->supported_extensions);
+
     sb_free(&screen->scratch_buffer);
     sb_free(&screen->path_buffer);
     sb_free(&screen->item_text_buffer);
@@ -240,6 +244,7 @@ native_browser_screen_destroy(NativeBrowserScreen *screen) {
     sb_free(&screen->title_text);
     sb_free(&screen->last_highlighted_directory);
     sb_free(&screen->current_directory);
+
     nc_window_destroy(&screen->window);
     nc_browser_entry_menu_destroy(&screen->entries);
     return;
@@ -274,9 +279,11 @@ native_browser_screen_set_geometry(NativeBrowserScreen *screen,
     screen->width = width;
     screen->main_start_y = main_start_y;
     screen->main_height = main_height;
+
     nc_window_move_to(&screen->window, start_x, main_start_y);
     nc_window_resize(&screen->window, width, main_height);
     native_browser_screen_update_column_title(screen);
+
     return;
 }
 
