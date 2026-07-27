@@ -3,7 +3,7 @@
 
 #include "c/ncm_html.h"
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_string.h"
 #include "cbase/utf8.c"
