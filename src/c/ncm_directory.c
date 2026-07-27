@@ -23,6 +23,7 @@ ncm_directory_destroy(NcmDirectory *directory) {
     directory->path = NULL;
     directory->path_len = 0;
     directory->last_modified = 0;
+
     return;
 }
 

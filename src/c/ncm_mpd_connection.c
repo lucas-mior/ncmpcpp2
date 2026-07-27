@@ -551,10 +551,9 @@ ncm_mpd_string_destroy(NcmMpdString *string) {
         return;
     }
 
-    if (string->value) {
-        free2(string->value, string->value_len + 1);
-    }
+    free2(string->value, string->value_len + 1);
     ncm_mpd_string_init(string);
+
     return;
 }
 
@@ -577,10 +576,9 @@ ncm_mpd_output_destroy(NcmMpdOutput *output) {
         return;
     }
 
-    if (output->name) {
-        free2(output->name, output->name_len + 1);
-    }
+    free2(output->name, output->name_len + 1);
     ncm_mpd_output_init(output);
+
     return;
 }
 
@@ -603,11 +601,9 @@ ncm_mpd_song_list_destroy(NcmMpdSongList *list) {
     }
 
     ncm_mpd_song_list_clear(list);
-    if (list->items) {
-        free2(list->items, list->capacity*SIZEOF(*list->items));
-    }
-
+    free2(list->items, list->capacity*SIZEOF(*list->items));
     ncm_mpd_song_list_init(list);
+
     return;
 }
 
@@ -701,11 +697,9 @@ ncm_mpd_item_list_destroy(NcmMpdItemList *list) {
     }
 
     ncm_mpd_item_list_clear(list);
-    if (list->items) {
-        free2(list->items, list->capacity*SIZEOF(*list->items));
-    }
-
+    free2(list->items, list->capacity*SIZEOF(*list->items));
     ncm_mpd_item_list_init(list);
+
     return;
 }
 
@@ -795,11 +789,9 @@ ncm_mpd_string_list_destroy(NcmMpdStringList *list) {
     }
 
     ncm_mpd_string_list_clear(list);
-    if (list->items) {
-        free2(list->items, list->capacity*SIZEOF(*list->items));
-    }
-
+    free2(list->items, list->capacity*SIZEOF(*list->items));
     ncm_mpd_string_list_init(list);
+
     return;
 }
 
@@ -856,11 +848,9 @@ ncm_mpd_output_list_destroy(NcmMpdOutputList *list) {
     }
 
     ncm_mpd_output_list_clear(list);
-    if (list->items) {
-        free2(list->items, list->capacity*SIZEOF(*list->items));
-    }
-
+    free2(list->items, list->capacity*SIZEOF(*list->items));
     ncm_mpd_output_list_init(list);
+
     return;
 }
 
@@ -896,11 +886,9 @@ ncm_mpd_playlist_list_destroy(NcmMpdPlaylistList *list) {
     }
 
     ncm_mpd_playlist_list_clear(list);
-    if (list->items) {
-        free2(list->items, list->capacity*SIZEOF(*list->items));
-    }
-
+    free2(list->items, list->capacity*SIZEOF(*list->items));
     ncm_mpd_playlist_list_init(list);
+
     return;
 }
 

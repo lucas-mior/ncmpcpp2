@@ -249,9 +249,7 @@ ncm_job_queue_dispatch_completed(NcmJobQueue *queue) {
         }
         ncm_job_destroy(&items[i]);
     }
-    if (items) {
-        free2(items, cap*SIZEOF(*items));
-    }
+    free2(items, cap*SIZEOF(*items));
 
     return len;
 }
@@ -286,13 +284,8 @@ ncm_job_queue_destroy(NcmJobQueue *queue) {
     ncm_job_array_clear(queue->pending, queue->pending_len);
     ncm_job_array_clear(queue->completed, queue->completed_len);
 
-    if (queue->pending) {
-        free2(queue->pending, queue->pending_cap*SIZEOF(*queue->pending));
-    }
-    if (queue->completed) {
-        free2(queue->completed,
-            queue->completed_cap*SIZEOF(*queue->completed));
-    }
+    free2(queue->pending, queue->pending_cap*SIZEOF(*queue->pending));
+    free2(queue->completed, queue->completed_cap*SIZEOF(*queue->completed));
 
     pthread_cond_destroy(&queue->cond);
     pthread_mutex_destroy(&queue->mutex);

@@ -37,11 +37,10 @@ ncm_playlist_sort_plan_destroy(NcmPlaylistSortPlan *plan) {
     if (plan == NULL) {
         return;
     }
-    if (plan->items) {
-        free2(plan->items, plan->cap*SIZEOF(*plan->items));
-    }
 
+    free2(plan->items, plan->cap*SIZEOF(*plan->items));
     ncm_playlist_sort_plan_init(plan);
+
     return;
 }
 
@@ -266,6 +265,7 @@ ncm_playlist_sort_plan_build(
     free2(current, songs->len*SIZEOF(*current));
     free2(temporary, songs->len*SIZEOF(*temporary));
     free2(order, songs->len*SIZEOF(*order));
+
     ncm_playlist_sort_plan_destroy(plan);
     *plan = replacement;
     ncm_error_clear(error);

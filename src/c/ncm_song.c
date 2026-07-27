@@ -87,11 +87,10 @@ ncm_song_tag_destroy(NcmSongTag *tag) {
     if (tag == NULL) {
         return;
     }
-    if (tag->value) {
-        free2(tag->value, tag->value_len + 1);
-    }
 
+    free2(tag->value, tag->value_len + 1);
     ncm_song_tag_init(tag);
+
     return;
 }
 
@@ -182,15 +181,11 @@ ncm_song_destroy(NcmSong *song) {
         return;
     }
 
-    if (song->uri) {
-        free2(song->uri, song->uri_len + 1);
-    }
+    free2(song->uri, song->uri_len + 1);
     for (int32 i = 0; i < song->tags_len; i += 1) {
         ncm_song_tag_destroy(&song->tags[i]);
     }
-    if (song->tags) {
-        free2(song->tags, song->tags_cap*SIZEOF(*song->tags));
-    }
+    free2(song->tags, song->tags_cap*SIZEOF(*song->tags));
 
     ncm_song_init(song);
     return;
@@ -329,9 +324,8 @@ ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len) {
     memcpy64(copy, uri, uri_len);
     copy[uri_len] = '\0';
 
-    if (song->uri) {
-        free2(song->uri, song->uri_len + 1);
-    }
+    free2(song->uri, song->uri_len + 1);
+
     song->uri = copy;
     song->uri_len = uri_len;
     return true;

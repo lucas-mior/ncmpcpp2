@@ -17,13 +17,12 @@ ncm_sample_buffer_init(NcmSampleBuffer *buffer) {
 
 void
 ncm_sample_buffer_destroy(NcmSampleBuffer *buffer) {
-    if (buffer->data) {
-        free2(buffer->data, buffer->cap*SIZEOF(*buffer->data));
-    }
+    free2(buffer->data, buffer->cap*SIZEOF(*buffer->data));
 
     buffer->data = NULL;
     buffer->len = 0;
     buffer->cap = 0;
+
     return;
 }
 
@@ -129,8 +128,8 @@ ncm_sample_buffer_resize(NcmSampleBuffer *buffer, int32 cap) {
         free2(buffer->data, buffer->cap*SIZEOF(*buffer->data));
         buffer->data = NULL;
     } else {
-        buffer->data = realloc2(buffer->data, buffer->cap, cap,
-                     SIZEOF(*buffer->data));
+        buffer->data = realloc2(buffer->data,
+                                buffer->cap, cap, SIZEOF(*buffer->data));
     }
     buffer->cap = cap;
     ncm_sample_buffer_clear(buffer);
