@@ -838,11 +838,9 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
         already_present = false;
         if (!show_duplicates) {
             for (int32 j = 0; j < i; j += 1) {
-                StrBuilder previous;
+                StrBuilder previous = ncm_song_getter_buffer(song, getter, j);
 
-                previous = ncm_song_getter_buffer(song, getter, j);
-                if (STREQUAL(previous.data, previous.len,
-                                     tag.data, tag.len)) {
+                if (STREQUAL(previous.data, previous.len, tag.data, tag.len)) {
                     already_present = true;
                 }
                 sb_free(&previous);
