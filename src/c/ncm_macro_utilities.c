@@ -4,7 +4,6 @@
 #include "c/ncm_macro_utilities.h"
 
 #include <errno.h>
-#include <stdlib.h>
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
@@ -15,7 +14,7 @@ ncm_macro_system_command(char *command, int32 command_len,
                          bool block, int32 *status, NcmError *error) {
     StrBuilder buffer;
     Command process = {0};
-    int32 rc;
+    int rc;
     bool success;
 
     if (block) {
