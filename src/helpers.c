@@ -3,11 +3,7 @@
 
 #include "helpers.h"
 
-#include <assert.h>
-#include <stddef.h>
-#include <time.h>
-
-#include "cbase/base_macros.h"
+#include "cbase.h"
 
 char *
 ncm_helpers_with_errors(bool success) {
