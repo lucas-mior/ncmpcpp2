@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_APP_CONTROLLER_H)
 #define NCMPCPP_APP_CONTROLLER_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "screens/nc_screen.h"
 

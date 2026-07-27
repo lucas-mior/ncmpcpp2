@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_NC_LASTFM_H)
 #define NCMPCPP_NC_LASTFM_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_job.h"
 #include "curses/nc_buffer.h"
