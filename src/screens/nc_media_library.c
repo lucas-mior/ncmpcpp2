@@ -17,7 +17,6 @@
 #include "c/ncm_format.h"
 #include "c/ncm_string.h"
 #include "screens/screen_switcher.h"
-#include "cbase.h"
 
 static NcWindow *native_library_active_window(NcScreen *screen);
 static void native_library_refresh(NcScreen *screen);
