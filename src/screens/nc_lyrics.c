@@ -3,9 +3,7 @@
 
 #include "screens/nc_lyrics.h"
 
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "c/ncm_charset.h"
