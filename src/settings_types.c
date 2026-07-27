@@ -359,6 +359,7 @@ configuration_init_colors(Configuration *config) {
     config->header_color = nc_color_default();
     config->main_color = nc_color_default();
     config->statusbar_color = nc_color_default();
+
     nc_formatted_color_init(&config->color1);
     nc_formatted_color_init(&config->color2);
     nc_formatted_color_init(&config->empty_tags_color);
@@ -370,8 +371,10 @@ configuration_init_colors(Configuration *config) {
     nc_formatted_color_init(&config->player_state_color);
     nc_formatted_color_init(&config->statusbar_time_color);
     nc_formatted_color_init(&config->alternative_ui_separator_color);
+
     config->window_border = nc_border_none();
     config->active_window_border = nc_border_none();
+
     return;
 }
 
