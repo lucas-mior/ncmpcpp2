@@ -18,7 +18,6 @@
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
-#include "cbase/base_macros.h"
 #include "cbase.h"
 #include "screens/screen_switcher.h"
 #include "screens/song_info.h"

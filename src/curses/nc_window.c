@@ -17,7 +17,6 @@
 #endif
 
 #include "cbase.h"
-#include "cbase/base_macros.h"
 #include "cbase.h"
 
 #define NC_COLOR_COMPONENT_COUNT 256
