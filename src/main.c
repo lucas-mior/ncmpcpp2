@@ -128,9 +128,8 @@ app_destroy_state(void) {
 
 static bool
 app_redirect_stderr(void) {
-    StrBuilder path;
+    StrBuilder path = {0};
 
-    sb_init(&path);
     SB_APPEND(&path, Config.ncmpcpp_directory,
                       Config.ncmpcpp_directory_len);
     SB_APPEND(&path, STRLIT("error.log"));

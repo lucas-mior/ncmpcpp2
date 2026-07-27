@@ -1589,7 +1589,7 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
     NcmSong *match;
     NcmError error;
     StrBuilder formatted;
-    StrBuilder message;
+    StrBuilder message = {0};
     int32 id;
     bool ok;
 
@@ -1632,7 +1632,6 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
     }
 
     formatted = ncm_format_render_string(&Config.song_status_format, song);
-    sb_init(&message);
     SB_APPEND(&message, STRLIT("Added to playlist: "));
     SB_APPEND(&message, formatted.data, formatted.len);
     ncm_statusbar_print(Config.message_delay_time, message.data,
@@ -1757,7 +1756,7 @@ action_runtime_toggle_crossfade(void) {
 
 static bool
 action_runtime_set_crossfade(void) {
-    StrBuilder input;
+    StrBuilder input = {0};
     NcmError error;
     int32 seconds;
     bool prompted;
@@ -1766,7 +1765,6 @@ action_runtime_set_crossfade(void) {
         return false;
     }
 
-    sb_init(&input);
     prompted = action_runtime_prompt_string(STRLIT("Set crossfade to: "),
                                             "", false, NULL, NULL, &input);
     if (!prompted) {
@@ -1794,7 +1792,7 @@ action_runtime_set_crossfade(void) {
 static bool
 action_runtime_set_volume(void) {
     NcmStringFormatArg arg;
-    StrBuilder input;
+    StrBuilder input = {0};
     NcmError error;
     int32 volume;
     bool prompted;
@@ -1804,7 +1802,6 @@ action_runtime_set_volume(void) {
         return false;
     }
 
-    sb_init(&input);
     prompted = action_runtime_prompt_string(STRLIT("Set volume to: "), "",
                                             false, NULL, NULL, &input);
     if (!prompted) {
@@ -1836,7 +1833,7 @@ static bool
 action_runtime_add_random_items(void) {
     NcmStatusbarScopedLock lock;
     NcmStringFormatArg args[3];
-    StrBuilder input;
+    StrBuilder input = {0};
     StrBuilder prompt;
     NcmError error;
     NcWindow *window;
@@ -1896,7 +1893,6 @@ action_runtime_add_random_items(void) {
     args[0] = ncm_string_format_arg_string(source_name, source_name_len);
     prompt = ncm_string_format_make(STRLIT("Number of random %1%s: "),
                                     args, 1);
-    sb_init(&input);
     prompted = action_runtime_prompt_string(prompt.data, prompt.len, "", false,
                                             NULL, NULL, &input);
     sb_free(&prompt);
@@ -2482,13 +2478,12 @@ action_runtime_execute_binding(NcmBinding *binding) {
 static bool
 action_runtime_execute_command(void) {
     ActionRuntimeCommandPrompt state;
-    StrBuilder command_name;
+    StrBuilder command_name = {0};
     NcmCommand *command;
     bool prompted;
     bool result;
 
     sb_init(&state.previous);
-    sb_init(&command_name);
     prompted = action_runtime_prompt_string(STRLIT(":"), "", true,
                                             action_runtime_command_prompt_hook,
                                             &state, &command_name);
@@ -2531,7 +2526,7 @@ action_runtime_execute_command(void) {
 
 static bool
 action_runtime_save_playlist(void) {
-    StrBuilder name;
+    StrBuilder name = {0};
     NcmError error;
     bool prompted;
     bool success;
@@ -2540,7 +2535,6 @@ action_runtime_save_playlist(void) {
         return false;
     }
 
-    sb_init(&name);
     prompted = action_runtime_prompt_string(STRLIT("Save playlist as: "),
                                             "", false, NULL, NULL, &name);
     if (!prompted) {
@@ -2553,9 +2547,8 @@ action_runtime_save_playlist(void) {
     if (!success
         && (ncm_mpd_client_server_error_code(&global_mpd)
             == MPD_SERVER_ERROR_EXIST)) {
-        StrBuilder question;
+        StrBuilder question = {0};
 
-        sb_init(&question);
         SB_APPEND(&question, STRLIT("Playlist \""));
         SB_APPEND(&question, name.data, name.len);
         SB_APPEND(&question,
@@ -2593,8 +2586,8 @@ action_runtime_save_playlist(void) {
 static bool
 action_runtime_apply_filter(void) {
     NcmStringView current_filter;
-    StrBuilder filter;
-    StrBuilder previous_filter;
+    StrBuilder filter = {0};
+    StrBuilder previous_filter = {0};
     NcmError error;
     bool old_autocenter_mode;
     bool prompted;
@@ -2603,8 +2596,6 @@ action_runtime_apply_filter(void) {
         return false;
     }
 
-    sb_init(&filter);
-    sb_init(&previous_filter);
     current_filter = current_screen_current_filter();
     if (current_filter.data && (current_filter.len > 0)) {
         sb_set(&filter, current_filter.data, current_filter.len);
@@ -2648,7 +2639,7 @@ action_runtime_apply_filter(void) {
 
 static bool
 action_runtime_find(void) {
-    StrBuilder token;
+    StrBuilder token = {0};
     NcmError error;
     bool found;
     bool prompted;
@@ -2659,7 +2650,6 @@ action_runtime_find(void) {
         return false;
     }
 
-    sb_init(&token);
     prompted = action_runtime_prompt_string(STRLIT("Find: "), "", false,
                                             NULL, NULL, &token);
     if (!prompted) {
@@ -2692,8 +2682,8 @@ static bool
 action_runtime_find_item(enum SearchDirection direction) {
     ActionRuntimeSearchPrompt state;
     NcmStringView current_constraint;
-    StrBuilder constraint;
-    StrBuilder previous_constraint;
+    StrBuilder constraint = {0};
+    StrBuilder previous_constraint = {0};
     NcmError error;
     bool old_autocenter_mode;
     bool prompted;
@@ -2705,8 +2695,6 @@ action_runtime_find_item(enum SearchDirection direction) {
     }
 
     action_runtime_search_prompt_init(&state, direction);
-    sb_init(&constraint);
-    sb_init(&previous_constraint);
     current_constraint = current_screen_current_search_constraint();
     if (current_constraint.data && (current_constraint.len > 0)) {
         sb_set(&previous_constraint, current_constraint.data,
@@ -3008,9 +2996,8 @@ action_runtime_current_tag_scroll_menu(void) {
 static StrBuilder
 action_runtime_song_tag_buffer(NcmSong *song, enum NcmSongGetter getter) {
     if (song == NULL) {
-        StrBuilder empty;
+        StrBuilder empty = {0};
 
-        sb_init(&empty);
         return empty;
     }
     return ncm_song_tags_buffer(song, getter, Config.tags_separator,
@@ -3129,7 +3116,7 @@ action_runtime_song_tag_at(int32 pos, enum NcmSongGetter getter,
 
 static bool
 action_runtime_tag_scroll_available(enum NcmSongGetter getter) {
-    StrBuilder tag;
+    StrBuilder tag = {0};
     NcMenu *menu;
     bool available;
 
@@ -3138,7 +3125,6 @@ action_runtime_tag_scroll_available(enum NcmSongGetter getter) {
         return false;
     }
 
-    sb_init(&tag);
     available
         = action_runtime_song_tag_at(nc_menu_highlight(menu), getter, &tag);
     sb_free(&tag);
@@ -3381,8 +3367,8 @@ action_runtime_song_positions(NcmSongArray *songs,
 
 static bool
 action_runtime_add_prompt(void) {
-    StrBuilder path;
-    StrBuilder message;
+    StrBuilder path = {0};
+    StrBuilder message = {0};
     NcmError error;
     enum mpd_server_error server_error;
     char *path_text;
@@ -3391,7 +3377,6 @@ action_runtime_add_prompt(void) {
     bool prompted;
     bool success;
 
-    sb_init(&path);
     prompted = action_runtime_prompt_string(STRLIT("Add: "), "", false,
                                             NULL, NULL, &path);
     if (!prompted) {
@@ -3430,7 +3415,6 @@ action_runtime_add_prompt(void) {
     sb_free(&path);
 
     if (!success && (server_error != (enum mpd_server_error)0)) {
-        sb_init(&message);
         SB_APPEND(&message, STRLIT("Error while adding item: "));
         if (ncm_error_is_set(&error)) {
             SB_APPEND(&message, error.message,
@@ -3449,13 +3433,12 @@ action_runtime_add_prompt(void) {
 
 static bool
 action_runtime_load_prompt(void) {
-    StrBuilder name;
+    StrBuilder name = {0};
     NcmError error;
     char *name_text;
     bool loaded;
     bool prompted;
 
-    sb_init(&name);
     prompted = action_runtime_prompt_string(STRLIT("Load playlist: "), "",
                                             false, NULL, NULL, &name);
     if (!prompted) {
@@ -3640,8 +3623,8 @@ action_runtime_delete_browser_items(void) {
     NativeBrowserScreen *screen;
     NcMenu *menu;
     NcmMpdItem *item;
-    StrBuilder question;
-    StrBuilder name;
+    StrBuilder question = {0};
+    StrBuilder name = {0};
     NcmError error;
     bool success;
     bool has_selected;
@@ -3671,8 +3654,6 @@ action_runtime_delete_browser_items(void) {
     }
 
     has_selected = nc_menu_has_selected(menu);
-    sb_init(&question);
-    sb_init(&name);
     if (has_selected) {
         SB_APPEND(&question, STRLIT("Delete selected items?"));
     } else {
@@ -3751,13 +3732,12 @@ action_runtime_browser_item_name(NcmMpdItem *item, StrBuilder *name) {
 
 static void
 action_runtime_print_renamed(char *prefix, int32 prefix_len, StrBuilder *name) {
-    StrBuilder message;
+    StrBuilder message = {0};
 
     if (name == NULL) {
         return;
     }
 
-    sb_init(&message);
     SB_APPEND(&message, prefix, prefix_len);
     SB_APPEND(&message, name->data, name->len);
     SB_APPEND(&message, STRLIT("\""));
@@ -3886,7 +3866,7 @@ action_runtime_delete_stored_playlists(void) {
     NativePlaylistEditorScreen *screen;
     NcMenu *menu;
     NcmPlaylist *playlist;
-    StrBuilder question;
+    StrBuilder question = {0};
     NcmError error;
     enum NcMenuItemSource source;
     int32 count;
@@ -3909,7 +3889,6 @@ action_runtime_delete_stored_playlists(void) {
     source = action_runtime_menu_item_source(menu);
     has_selected = nc_menu_has_selected(menu);
 
-    sb_init(&question);
     if (has_selected) {
         SB_APPEND(&question, STRLIT("Delete selected playlists?"));
     } else {
@@ -3965,8 +3944,8 @@ static bool
 action_runtime_clear_playlist(bool main_playlist) {
     NativePlaylistEditorScreen *screen;
     NcmPlaylist playlist;
-    StrBuilder question;
-    StrBuilder message;
+    StrBuilder question = {0};
+    StrBuilder message = {0};
     NcmError error;
     bool success;
 
@@ -4008,7 +3987,6 @@ action_runtime_clear_playlist(bool main_playlist) {
     }
 
     if (Config.ask_before_clearing_playlists) {
-        sb_init(&question);
 
         SB_APPEND(&question, "Do you really want to clear playlist \"");
         SB_APPEND(&question, playlist.path, playlist.path_len);
@@ -4024,7 +4002,6 @@ action_runtime_clear_playlist(bool main_playlist) {
 
     success = ncm_mpd_client_clear_playlist(&global_mpd, playlist.path, &error);
     if (success) {
-        sb_init(&message);
         SB_APPEND(&message, STRLIT("Playlist \""));
         SB_APPEND(&message, playlist.path, playlist.path_len);
         SB_APPEND(&message, STRLIT("\" cleared"));
@@ -4045,8 +4022,8 @@ action_runtime_crop_playlist(bool main_playlist) {
     NativePlaylistEditorScreen *editor;
     NcmPlaylist playlist;
     NcmSongArray songs;
-    StrBuilder question;
-    StrBuilder message;
+    StrBuilder question = {0};
+    StrBuilder message = {0};
     NcmError error;
     bool success;
 
@@ -4118,7 +4095,6 @@ action_runtime_crop_playlist(bool main_playlist) {
     ncm_playlist_init(&playlist);
     success = native_playlist_editor_screen_current_playlist(editor, &playlist);
     if (success && Config.ask_before_clearing_playlists) {
-        sb_init(&question);
         SB_APPEND(
             &question, STRLIT("Do you really want to crop playlist \""));
         SB_APPEND(&question, playlist.path, playlist.path_len);
@@ -4132,7 +4108,6 @@ action_runtime_crop_playlist(bool main_playlist) {
         }
     }
     if (success) {
-        sb_init(&message);
         SB_APPEND(&message, STRLIT("Cropping playlist \""));
         SB_APPEND(&message, playlist.path, playlist.path_len);
         SB_APPEND(&message, STRLIT("\"..."));
@@ -4147,7 +4122,6 @@ action_runtime_crop_playlist(bool main_playlist) {
             &global_mpd, playlist.path, &songs.items[i], &error);
     }
     if (success) {
-        sb_init(&message);
         SB_APPEND(&message, STRLIT("Playlist \""));
         SB_APPEND(&message, playlist.path, playlist.path_len);
         SB_APPEND(&message, STRLIT("\" cropped"));
@@ -4640,7 +4614,7 @@ action_runtime_shuffle_playlist(void) {
 
 static bool
 action_runtime_set_selected_items_priority(void) {
-    StrBuilder input;
+    StrBuilder input = {0};
     NcmError error;
     int32 priority;
     bool prompted;
@@ -4658,7 +4632,6 @@ action_runtime_set_selected_items_priority(void) {
         return false;
     }
 
-    sb_init(&input);
     prompted = action_runtime_prompt_string(
         STRLIT("Set priority [0-255]: "), "", false, NULL, NULL, &input);
     if (!prompted) {
@@ -4688,7 +4661,7 @@ action_runtime_set_selected_items_priority(void) {
 
 static bool
 action_runtime_jump_to_position_in_song(void) {
-    StrBuilder input;
+    StrBuilder input = {0};
     NcmError error;
     int32 song_position;
     int32 total;
@@ -4707,7 +4680,6 @@ action_runtime_jump_to_position_in_song(void) {
         return false;
     }
 
-    sb_init(&input);
     prompted = action_runtime_prompt_string(
         STRLIT("Position to go (in %/h:m:ss/m:ss/seconds(s)): "), "",
         false, NULL, NULL, &input);
@@ -5265,7 +5237,7 @@ static bool
 action_runtime_edit_directory_name(void) {
     NativeBrowserScreen *browser;
     NcmStringView path;
-    StrBuilder name;
+    StrBuilder name = {0};
     NcmError error;
     bool prompted;
     bool success;
@@ -5276,7 +5248,6 @@ action_runtime_edit_directory_name(void) {
             return false;
         }
 
-        sb_init(&name);
         prompted = action_runtime_prompt_string(
             STRLIT("Directory: "), path.data, false, NULL, NULL, &name);
         if (!prompted) {
@@ -5319,7 +5290,7 @@ action_runtime_edit_playlist_name(void) {
     NativePlaylistEditorScreen *screen;
     NcmPlaylist playlist;
     NcmStringView path;
-    StrBuilder name;
+    StrBuilder name = {0};
     NcmError error;
     bool prompted;
     bool success;
@@ -5333,7 +5304,6 @@ action_runtime_edit_playlist_name(void) {
             return false;
         }
 
-        sb_init(&name);
         prompted = action_runtime_prompt_string(
             STRLIT("Playlist: "), path.data, false, NULL, NULL, &name);
         if (!prompted) {
@@ -5378,7 +5348,6 @@ action_runtime_edit_playlist_name(void) {
         return false;
     }
 
-    sb_init(&name);
     prompted = action_runtime_prompt_string(
         STRLIT("Playlist: "), playlist.path, false, NULL, NULL, &name);
     if (!prompted) {
@@ -5718,7 +5687,7 @@ ncm_action_edit_song(NcmSong *song) {
 #if defined(HAVE_TAGLIB_H)
     enum NativeTinyTagEditorOpenResult open_result;
     NcmStringFormatArg arg;
-    StrBuilder path;
+    StrBuilder path = {0};
     int32 path_len;
     int32 path_width;
     bool success;
@@ -5734,7 +5703,6 @@ ncm_action_edit_song(NcmSong *song) {
         return false;
     }
 
-    sb_init(&path);
     open_result = native_tiny_tag_editor_screen_open_song(
         native_c_screen_tiny_tag_editor(), song, Config.mpd_music_dir,
         Config.mpd_music_dir_len, Config.tags_separator,
@@ -5819,7 +5787,7 @@ action_runtime_media_library_current_artist_tag(char **artist,
 static bool
 action_runtime_toggle_screen_lock(void) {
     NcmStringFormatArg args[3];
-    StrBuilder input;
+    StrBuilder input = {0};
     NcmError error;
     NcScreen *current;
     char initial[16];
@@ -5845,7 +5813,6 @@ action_runtime_toggle_screen_lock(void) {
 
     part = (int32)Config.locked_screen_width_part*100;
     if (Config.ask_for_locked_screen_width_part) {
-        sb_init(&input);
         SNPRINTF(initial, "%d", part);
         prompted = action_runtime_prompt_string(
             STRLIT("% of the locked screen's width to be reserved "
@@ -6107,10 +6074,10 @@ action_runtime_edit_library_tag(void) {
     NcmMpdSongList songs;
     NcmMutableSong mutable_song;
     NcmStringView uri;
-    StrBuilder current_tag;
-    StrBuilder prompt;
-    StrBuilder new_tag;
-    StrBuilder shared_directory;
+    StrBuilder current_tag = {0};
+    StrBuilder prompt = {0};
+    StrBuilder new_tag = {0};
+    StrBuilder shared_directory = {0};
     NcmError error;
     char *tag;
     int32 tag_len;
@@ -6125,10 +6092,6 @@ action_runtime_edit_library_tag(void) {
         return false;
     }
 
-    sb_init(&current_tag);
-    sb_init(&prompt);
-    sb_init(&new_tag);
-    sb_init(&shared_directory);
     ncm_mpd_song_list_init(&songs);
     success = false;
     shared_directory_valid = false;
@@ -6218,10 +6181,10 @@ cleanup:
 static bool
 action_runtime_edit_library_album(void) {
     NcmSongArray songs;
-    StrBuilder current_album;
-    StrBuilder new_album;
-    StrBuilder path;
-    StrBuilder shared_directory;
+    StrBuilder current_album = {0};
+    StrBuilder new_album = {0};
+    StrBuilder path = {0};
+    StrBuilder shared_directory = {0};
     NcmError error;
     char *album;
     int32 album_len;
@@ -6237,10 +6200,6 @@ action_runtime_edit_library_album(void) {
     }
 
     ncm_song_array_init(&songs);
-    sb_init(&current_album);
-    sb_init(&new_album);
-    sb_init(&path);
-    sb_init(&shared_directory);
     ncm_error_clear(&error);
     success = false;
     shared_directory_valid = false;
@@ -6395,8 +6354,8 @@ action_runtime_edit_lyrics(void) {
     NativeLyricsScreen *lyrics;
     NcmSong *song;
     StrBuilder *filename;
-    StrBuilder escaped;
-    StrBuilder command;
+    StrBuilder escaped = {0};
+    StrBuilder command = {0};
     NcmError error;
     bool success;
 
@@ -6427,8 +6386,6 @@ action_runtime_edit_lyrics(void) {
                                 "Opening lyrics in external "
                                 "editor...");
     filename = native_lyrics_screen_filename(lyrics);
-    sb_init(&escaped);
-    sb_init(&command);
     ncm_string_append_shell_escaped_single_quotes(&escaped, filename->data,
                                                   filename->len);
     SB_APPEND(&command, Config.external_editor,

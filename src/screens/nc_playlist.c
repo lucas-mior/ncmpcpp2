@@ -1374,14 +1374,13 @@ native_playlist_build_mutable_song(
 static bool
 native_playlist_set_mutable_uri(NcmSong *song, NcmMutableSong *edited) {
     NcmStringView new_name;
-    StrBuilder uri;
+    StrBuilder uri = {0};
     bool result;
 
     if (!ncm_mutable_song_get_new_name(edited, &new_name)) {
         return ncm_song_set_uri(song, edited->uri, edited->uri_len);
     }
 
-    sb_init(&uri);
     if (edited->directory_len > 0) {
         SB_APPEND(&uri, edited->directory, edited->directory_len);
         if (edited->directory[edited->directory_len - 1] != '/') {

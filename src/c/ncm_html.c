@@ -125,10 +125,9 @@ is_newline_tag(char *tag, int32 tag_len) {
 
 StrBuilder
 ncm_html_unescape_utf8(char *data, int32 data_len) {
-    StrBuilder out;
+    StrBuilder out = {0};
     int32 i;
 
-    sb_init(&out);
     i = 0;
     while (i < data_len) {
         int32 entity_start;
@@ -175,10 +174,9 @@ ncm_html_unescape_utf8(char *data, int32 data_len) {
 
 StrBuilder
 ncm_html_unescape_entities(char *data, int32 data_len) {
-    StrBuilder out;
+    StrBuilder out = {0};
     int32 i;
 
-    sb_init(&out);
     i = 0;
     while (i < data_len) {
         bool replaced;
@@ -209,11 +207,10 @@ ncm_html_unescape_entities(char *data, int32 data_len) {
 
 StrBuilder
 ncm_html_strip_tags(char *data, int32 data_len) {
-    StrBuilder stripped;
+    StrBuilder stripped = {0};
     StrBuilder result;
     int32 i;
 
-    sb_init(&stripped);
     i = 0;
     while (i < data_len) {
         int32 tag_end;

@@ -445,7 +445,7 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
                            NcmError *error) {
     NativeLyricsJob *job;
     NcmLyricsFetcherDef *active_fetcher;
-    StrBuilder next_filename;
+    StrBuilder next_filename = {0};
     bool changed_song;
     bool changed_filename;
     bool changed;
@@ -456,7 +456,6 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
         return false;
     }
 
-    sb_init(&next_filename);
     win32_filename = Config.generate_win32_compatible_filenames;
     if (!native_lyrics_filename_from_song(&next_filename,
                                           song,
@@ -782,8 +781,8 @@ lyrics_window_timeout_callback(NcScreen *screen) {
 
 static char *
 lyrics_title_callback(NcScreen *screen) {
-    StrBuilder song_title;
-    StrBuilder scroll_buffer;
+    StrBuilder song_title = {0};
+    StrBuilder scroll_buffer = {0};
     int32 scroll_begin;
     int32 scroll_width;
     char separator[] = " ** ";
@@ -795,7 +794,6 @@ lyrics_title_callback(NcScreen *screen) {
         return lyrics->title.data;
     }
 
-    sb_init(&song_title);
     native_lyrics_title_song_string(&lyrics->song, &song_title);
     if (song_title.len <= 0) {
         sb_free(&song_title);
@@ -812,7 +810,6 @@ lyrics_title_callback(NcScreen *screen) {
         scroll_width -= global_volume_state_len();
     }
 
-    sb_init(&scroll_buffer);
     nc_cyclic_text_write(&scroll_buffer, song_title.data, song_title.len,
                          &scroll_begin, scroll_width, separator,
                          SIZEOF(separator) - 1,
@@ -890,7 +887,7 @@ native_lyrics_title_song_string(NcmSong *song, StrBuilder *title) {
 static bool
 native_lyrics_song_artist_title(NcmSong *song,
                                 StrBuilder *artist, StrBuilder *title) {
-    StrBuilder fallback;
+    StrBuilder fallback = {0};
     NcmStringView artist_view;
     NcmStringView title_view;
     NcmStringView name_view;
@@ -909,7 +906,6 @@ native_lyrics_song_artist_title(NcmSong *song,
         return true;
     }
 
-    sb_init(&fallback);
     if (ncm_song_name_view(song, 0, &name_view)) {
         SB_APPEND(&fallback, name_view.data, name_view.len);
     } else if (ncm_song_uri_view(song, 0, &name_view)) {
@@ -1007,14 +1003,12 @@ native_lyrics_filename_from_song(StrBuilder *filename, NcmSong *song,
                                  char *music_dir, int32 music_dir_len,
                                  char *lyrics_dir, int32 lyrics_dir_len,
                                  bool store_in_song_dir, bool win32_filename) {
-    StrBuilder artist;
-    StrBuilder title;
+    StrBuilder artist = {0};
+    StrBuilder title = {0};
     NcmStringView uri;
     int32 basename_start;
     int32 basename_len;
 
-    sb_init(&artist);
-    sb_init(&title);
     ncm_string_view_init(&uri);
     sb_clear(filename);
 
@@ -1200,13 +1194,11 @@ native_lyrics_job_fetch(NativeLyricsJob *job,
 
 static bool
 native_lyrics_job_run(void *user, NcmError *error) {
-    StrBuilder artist;
-    StrBuilder title;
+    StrBuilder artist = {0};
+    StrBuilder title = {0};
     bool success;
     NativeLyricsJob *job = user;
 
-    sb_init(&artist);
-    sb_init(&title);
 
     if (!native_lyrics_fetch_artist_title(&job->song, &artist, &title)) {
         ncm_error_set(error, EINVAL, STRLIT("missing song metadata"));
@@ -1513,7 +1505,7 @@ native_lyrics_start_next_background(NativeLyricsScreen *screen,
                                     NcmError *error) {
     NativeLyricsQueuedSong *queued;
     NativeLyricsJob *job;
-    StrBuilder filename;
+    StrBuilder filename = {0};
     bool win32_filename;
     bool found_job;
 
@@ -1526,7 +1518,6 @@ native_lyrics_start_next_background(NativeLyricsScreen *screen,
         return true;
     }
 
-    sb_init(&filename);
     found_job = false;
     queued = NULL;
     win32_filename = Config.generate_win32_compatible_filenames;

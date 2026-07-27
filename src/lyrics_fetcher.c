@@ -461,12 +461,10 @@ lyrics_build_amalgama_direct_url(
     int32 title_len, LyricsSlugProfile artist_profile,
     LyricsSlugProfile title_profile
 ) {
-    StrBuilder artist_slug;
-    StrBuilder title_slug;
+    StrBuilder artist_slug = {0};
+    StrBuilder title_slug = {0};
     bool valid;
 
-    sb_init(&artist_slug);
-    sb_init(&title_slug);
     valid = lyrics_append_slug_profile(&artist_slug, artist_profile,
                                        artist, artist_len)
             && lyrics_append_slug_profile(&title_slug, title_profile,
@@ -599,7 +597,7 @@ lyrics_collect_direct_urls(NcmLyricsFetcherDef *fetcher,
     LyricsSlugProfile profile;
     LyricsSlugProfile legacy_profile;
     LyricsDirectSlugPair pairs[4];
-    StrBuilder candidate;
+    StrBuilder candidate = {0};
     bool ok;
 
     if ((fetcher == NULL) || (urls == NULL) || !fetcher->enabled
@@ -624,7 +622,6 @@ lyrics_collect_direct_urls(NcmLyricsFetcherDef *fetcher,
     pairs[2] = (LyricsDirectSlugPair){profile, legacy_profile};
     pairs[3] = (LyricsDirectSlugPair){legacy_profile, profile};
 
-    sb_init(&candidate);
     ok = true;
     for (int32 i = 0; i < LENGTH(pairs); i += 1) {
         if (!lyrics_build_direct_url_profiles(
@@ -1890,8 +1887,8 @@ lyrics_trim_url_segment_suffix(char **segment, int32 *segment_len,
 static int32
 lyrics_url_segment_slug_score(NcmLyricsFetcherDef *fetcher, char *segment,
                               int32 segment_len, StrBuilder *wanted) {
-    StrBuilder decoded;
-    StrBuilder slug;
+    StrBuilder decoded = {0};
+    StrBuilder slug = {0};
     int32 score;
 
     lyrics_trim_url_segment_suffix(&segment, &segment_len,
@@ -1902,8 +1899,6 @@ lyrics_url_segment_slug_score(NcmLyricsFetcherDef *fetcher, char *segment,
         return 0;
     }
 
-    sb_init(&decoded);
-    sb_init(&slug);
     lyrics_percent_decode(&decoded, segment, segment_len);
     if (!lyrics_append_slug(&slug, fetcher->type, decoded.data,
                             decoded.len)) {
@@ -1983,8 +1978,8 @@ static int32
 lyrics_search_candidate_score(NcmLyricsFetcherDef *fetcher, char *url,
                               int32 url_len, char *artist, int32 artist_len,
                               char *title, int32 title_len) {
-    StrBuilder wanted_artist;
-    StrBuilder wanted_title;
+    StrBuilder wanted_artist = {0};
+    StrBuilder wanted_title = {0};
     char *domain;
     int32 domain_len;
     int32 artist_score;
@@ -1997,8 +1992,6 @@ lyrics_search_candidate_score(NcmLyricsFetcherDef *fetcher, char *url,
         || !lyrics_url_looks_like_song_page(fetcher, url, url_len)) {
         return 0;
     }
-    sb_init(&wanted_artist);
-    sb_init(&wanted_title);
     if (!lyrics_append_slug(&wanted_artist, fetcher->type, artist, artist_len)
         || !lyrics_append_slug(&wanted_title, fetcher->type, title,
                                title_len)) {
@@ -2143,7 +2136,7 @@ lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
                            int32 artist_len, char *title, int32 title_len) {
     StrBuilder numeric_unescaped;
     StrBuilder unescaped;
-    StrBuilder candidate;
+    StrBuilder candidate = {0};
     int32 scores[LYRICS_SEARCH_MAX_CANDIDATES];
     int32 pos;
     bool ok;
@@ -2152,7 +2145,6 @@ lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
     unescaped = ncm_html_unescape_entities(numeric_unescaped.data,
                                            numeric_unescaped.len);
     sb_free(&numeric_unescaped);
-    sb_init(&candidate);
     str_builder_array_clear(out);
     pos = 0;
     ok = true;
@@ -2357,11 +2349,10 @@ lyrics_decode_quoted(StrBuilder *out, char *data, int32 data_len, int32 start,
 static bool
 lyrics_json_value_start(char *data, int32 data_len, char *key,
                         int32 key_len, int32 start, int32 *value_start) {
-    StrBuilder pattern;
+    StrBuilder pattern = {0};
     int32 key_pos;
     int32 pos;
 
-    sb_init(&pattern);
     sb_append_byte(&pattern, '"');
     SB_APPEND(&pattern, key, key_len);
     sb_append_byte(&pattern, '"');
@@ -2395,8 +2386,8 @@ lyrics_json_value_start(char *data, int32 data_len, char *key,
 
 static bool
 lyrics_extract_genius(StrBuilder *out, char *data, int32 data_len) {
-    StrBuilder json;
-    StrBuilder html;
+    StrBuilder json = {0};
+    StrBuilder html = {0};
     int32 marker;
     int32 json_end;
     int32 lyrics_data;
@@ -2404,8 +2395,6 @@ lyrics_extract_genius(StrBuilder *out, char *data, int32 data_len) {
     int32 value_end;
     bool ok;
 
-    sb_init(&json);
-    sb_init(&html);
     marker = lyrics_find(data, data_len,
                          STRLIT("window.__PRELOADED_STATE__ = "
                                      "JSON.parse('"),
@@ -2832,17 +2821,14 @@ lyrics_fetch_page(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                   StrBuilder *url, char *referer, int32 referer_len,
                   bool *retry) {
     CURLcode code;
-    StrBuilder data;
-    StrBuilder lyrics;
-    StrBuilder cleaned;
+    StrBuilder data = {0};
+    StrBuilder lyrics = {0};
+    StrBuilder cleaned = {0};
     char *message;
     int32 message_len;
     bool extracted;
     bool plain_text;
 
-    sb_init(&data);
-    sb_init(&lyrics);
-    sb_init(&cleaned);
     *retry = false;
     code = lyrics_curl_perform(&data, url->data, url->len, referer, referer_len,
                                true, 15);
@@ -2894,16 +2880,14 @@ lyrics_fetch_search(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                     char *artist, int32 artist_len, char *title,
                     int32 title_len) {
     CURLcode code;
-    StrBuilder search_url;
-    StrBuilder data;
+    StrBuilder search_url = {0};
+    StrBuilder data = {0};
     StrBuilderArray page_urls;
     char *message;
     int32 message_len;
     bool retry;
     bool ok;
 
-    sb_init(&search_url);
-    sb_init(&data);
     str_builder_array_init(&page_urls);
     ok = ncm_lyrics_fetcher_build_url(fetcher, &search_url, artist,
                                       artist_len, title, title_len);
@@ -2947,12 +2931,10 @@ static bool
 lyrics_fetch_internet(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                       char *artist, int32 artist_len, char *title,
                       int32 title_len) {
-    StrBuilder url;
-    StrBuilder message;
+    StrBuilder url = {0};
+    StrBuilder message = {0};
     bool ok;
 
-    sb_init(&url);
-    sb_init(&message);
     ok = ncm_lyrics_fetcher_build_url(fetcher, &url, artist, artist_len, title,
                                       title_len);
     if (ok) {
@@ -2995,12 +2977,11 @@ static void
 lyrics_trim_buffer(StrBuilder *buffer) {
     char *text;
     int32 text_len;
-    StrBuilder tmp;
+    StrBuilder tmp = {0};
 
     text = buffer->data;
     text_len = buffer->len;
     lyrics_trim_view(&text, &text_len);
-    sb_init(&tmp);
     SB_APPEND(&tmp, text, text_len);
     sb_clear(buffer);
     SB_APPEND(buffer, tmp.data, tmp.len);

@@ -29,13 +29,11 @@ ncm_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
                  int32 timeout_seconds) {
     CURLcode result;
     CURL *curl;
-    StrBuilder url_string;
-    StrBuilder referer_string;
+    StrBuilder url_string = {0};
+    StrBuilder referer_string = {0};
     NcmCurlResponseWriter writer;
 
     sb_clear(data);
-    sb_init(&url_string);
-    sb_init(&referer_string);
     ncm_curl_response_writer_init(&writer, data);
 
     SB_APPEND(&url_string, url, url_len);

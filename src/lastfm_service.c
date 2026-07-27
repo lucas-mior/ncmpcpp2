@@ -213,9 +213,8 @@ lastfm_curl_escape(StrBuilder *out, char *string, int32 string_len) {
 
 static void
 lastfm_append_escaped(StrBuilder *buffer, char *string, int32 string_len) {
-    StrBuilder escaped;
+    StrBuilder escaped = {0};
 
-    sb_init(&escaped);
     if (lastfm_curl_escape(&escaped, string, string_len) == CURLE_OK) {
         SB_APPEND(buffer, escaped.data, escaped.len);
     }
@@ -306,12 +305,11 @@ static void
 lastfm_trim_buffer(StrBuilder *buffer) {
     char *text;
     int32 text_len;
-    StrBuilder tmp;
+    StrBuilder tmp = {0};
 
     text = buffer->data;
     text_len = buffer->len;
     lastfm_trim_view(&text, &text_len);
-    sb_init(&tmp);
     SB_APPEND(&tmp, text, text_len);
     sb_clear(buffer);
     SB_APPEND(buffer, tmp.data, tmp.len);
@@ -353,10 +351,10 @@ lastfm_append_similars(StrBuilder *out, char *data, int32 data_len,
     pos = a;
     wrote_heading = false;
     while (pos < b) {
-        StrBuilder name;
-        StrBuilder url;
-        StrBuilder clean_name;
-        StrBuilder clean_url;
+        StrBuilder name = {0};
+        StrBuilder url = {0};
+        StrBuilder clean_name = {0};
+        StrBuilder clean_url = {0};
         int32 item_end;
         bool have_name;
         bool have_url;
@@ -369,10 +367,6 @@ lastfm_append_similars(StrBuilder *out, char *data, int32 data_len,
             break;
         }
 
-        sb_init(&name);
-        sb_init(&url);
-        sb_init(&clean_name);
-        sb_init(&clean_url);
         have_name = lastfm_extract_between(&name, data + pos, item_end - pos,
                                            STRLIT("<name>"),
                                            STRLIT("</name>"));
@@ -403,21 +397,15 @@ lastfm_append_similars(StrBuilder *out, char *data, int32 data_len,
 
 static bool
 lastfm_fetch_artist_info(NcmLastfmService *service, NcmLastfmResult *result) {
-    StrBuilder url;
-    StrBuilder data;
-    StrBuilder content;
-    StrBuilder desc;
-    StrBuilder original_link;
-    StrBuilder output;
+    StrBuilder url = {0};
+    StrBuilder data = {0};
+    StrBuilder content = {0};
+    StrBuilder desc = {0};
+    StrBuilder original_link = {0};
+    StrBuilder output = {0};
     CURLcode code;
     bool ok;
 
-    sb_init(&url);
-    sb_init(&data);
-    sb_init(&content);
-    sb_init(&desc);
-    sb_init(&original_link);
-    sb_init(&output);
     ok = true;
 
     SB_APPEND(&url, STRLIT(LASTFM_API_URL));
@@ -463,9 +451,8 @@ lastfm_fetch_artist_info(NcmLastfmService *service, NcmLastfmResult *result) {
                            STRLIT("\n\nSimilar tags:\n"));
     if (lastfm_extract_between(&original_link, data.data, data.len,
                                STRLIT("<url>"), STRLIT("</url>"))) {
-        StrBuilder clean_url;
+        StrBuilder clean_url = {0};
 
-        sb_init(&clean_url);
         lastfm_strip_unescape_trim(&clean_url, original_link.data,
                                    original_link.len);
         if (clean_url.len > 0) {
