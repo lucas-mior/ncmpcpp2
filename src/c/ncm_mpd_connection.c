@@ -740,7 +740,6 @@ bool
 ncm_mpd_item_list_to_directory_array(NcmMpdItemList *list,
                                      NcmDirectoryArray *directories) {
     NcmDirectoryArray replacement;
-    NcmDirectory *directory;
 
     if (directories == NULL) {
         return false;
@@ -749,10 +748,13 @@ ncm_mpd_item_list_to_directory_array(NcmMpdItemList *list,
     ncm_directory_array_init(&replacement);
     if (list) {
         for (int32 i = 0; i < list->count; i += 1) {
+            NcmDirectory *directory;
+
             if (ncm_mpd_item_kind(&list->items[i])
                 != NCM_MPD_ITEM_DIRECTORY) {
                 continue;
             }
+
             directory = ncm_mpd_item_directory(&list->items[i]);
             if (!ncm_directory_array_append_copy(&replacement,
                                                  directory)) {
