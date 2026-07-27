@@ -531,6 +531,7 @@ configuration_destroy(Configuration *config) {
     configuration_destroy_colors(config);
     configuration_destroy_arrays(config);
     configuration_init(config);
+
     return;
 }
 
