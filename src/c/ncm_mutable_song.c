@@ -583,11 +583,12 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
                 StrBuilder previous;
 
                 previous = ncm_mutable_song_get_tag_buffer(song, field, j);
-                if (optional_strequal(previous.data,
-                                                  previous.len,
-                                                  tag.data, tag.len)) {
+
+                if (optional_strequal(previous.data, previous.len,
+                                      tag.data, tag.len)) {
                     already_present = true;
                 }
+
                 sb_free(&previous);
                 if (already_present) {
                     break;
