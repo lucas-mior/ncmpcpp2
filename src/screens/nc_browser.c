@@ -13,7 +13,6 @@
 #include "c/ncm_path.h"
 #include "c/ncm_string.h"
 #include "c/ncm_tags.h"
-#include "cbase/base_macros.h"
 #include "cbase.h"
 #include "curses/nc_cyclic_buffer.h"
 #include "global.h"

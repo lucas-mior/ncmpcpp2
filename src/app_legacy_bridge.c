@@ -12,7 +12,6 @@
 #include "status.h"
 #include "statusbar.h"
 #include "title.h"
-#include "cbase/base_macros.h"
 #include "ui_state.h"
 #include "cbase.h"
 

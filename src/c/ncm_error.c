@@ -3,7 +3,6 @@
 
 #include "c/ncm_error.h"
 
-#include "cbase/base_macros.h"
 #include "cbase.h"
 #include "c/ncm_base.h"
 

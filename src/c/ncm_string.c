@@ -3,7 +3,6 @@
 
 #include "c/ncm_string.h"
 
-#include "cbase/base_macros.h"
 #include "c/ncm_base.h"
 #include "c/ncm_path.h"
 #include "cbase.h"

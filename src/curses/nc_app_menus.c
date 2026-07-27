@@ -4,7 +4,6 @@
 #include "curses/nc_app_menus.h"
 
 #include "c/ncm_base.h"
-#include "cbase/base_macros.h"
 #include "cbase.h"
 
 static void ncm_song_menu_item_init(void *item, void *user);

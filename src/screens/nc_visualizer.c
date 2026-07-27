@@ -6,7 +6,6 @@
 #include "c/ncm_base.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
-#include "cbase/base_macros.h"
 #include "cbase.h"
 #include "screens/screen_switcher.h"
 #include "status.h"

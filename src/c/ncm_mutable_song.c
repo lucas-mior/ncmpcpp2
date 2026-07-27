@@ -5,7 +5,6 @@
 
 #include "c/ncm_string.h"
 #include "c/ncm_base.h"
-#include "cbase/base_macros.h"
 #include "cbase.h"
 
 static void ncm_mutable_song_tag_init(NcmMutableSongTag *tag);

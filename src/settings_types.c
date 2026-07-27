@@ -4,7 +4,6 @@
 #include "settings.h"
 
 #include "c/ncm_base.h"
-#include "cbase/base_macros.h"
 #include "cbase.h"
 
 static NcmArrayItemCallbacks settings_no_callbacks = {0};
