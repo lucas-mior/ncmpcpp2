@@ -3,11 +3,7 @@
 
 #include "c/ncm_regex.h"
 
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
-
-#include "cbase/base_macros.h"
+#include "cbase.h"
 
 static bool
 ncm_regex_prepare_string(char *string, int32 string_len, StrBuilder *buffer,

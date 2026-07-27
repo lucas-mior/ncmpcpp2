@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_NC_SCREEN_H)
 #define NCMPCPP_NC_SCREEN_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "cbase/primitives.h"
 #include "curses/nc_window.h"

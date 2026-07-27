@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_SCREEN_ACTIONS_H)
 #define NCMPCPP_SCREEN_ACTIONS_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_enums.h"
 #include "c/ncm_error.h"

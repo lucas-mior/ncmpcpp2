@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_APP_LEGACY_BRIDGE_H)
 #define NCMPCPP_APP_LEGACY_BRIDGE_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "actions.h"
 #include "bindings.h"
