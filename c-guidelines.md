@@ -104,6 +104,8 @@ typeof(var)  // good
     + `realloc2(size) + memset64(pointer, 0, size)` instead of `calloc`.
   * The wrappers above never fail: if out of memory, they exit the program. No
     need to check if they succeded or not.
+- Note: `free2(pointer, size)` does not need previous checking if pointer is
+  NULL or not. Its internals already do the check.
 - Choose what is best in each situation:
   * Use traditional `malloc2`, `realloc2`, and `free2`.
   * Use the `arena.c` bump allocator for groups of allocations with the same
