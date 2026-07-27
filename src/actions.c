@@ -29,13 +29,10 @@
 #include "c/ncm_search_prompt.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
-#include "cbase/utf8.c"
 
 #if defined(HAVE_TAGLIB_H)
 #include "c/ncm_taglib.h"
 #endif
-#include "cbase/base_macros.h"
-#include "cbase.h"
 
 #if defined(__GNUC__)
 extern bool ncmpcpp_legacy_execute_binding(NcmBinding *binding)
