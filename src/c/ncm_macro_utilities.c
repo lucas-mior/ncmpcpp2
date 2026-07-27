@@ -7,17 +7,39 @@
 #include <stdlib.h>
 
 #include "c/ncm_base.h"
-#include "c/ncm_process.h"
 #include "cbase/base_macros.h"
+#include "cbase.h"
 
 static bool
 ncm_macro_system_command(char *command, int32 command_len,
                          bool block, int32 *status, NcmError *error) {
     StrBuilder buffer;
+    Command process = {0};
     int32 rc;
+    bool success;
 
     if (block) {
-        return ncm_process_run_shell(command, command_len, status, error);
+        if ((command == NULL) || (command_len < 0)) {
+            ncm_error_set(error, EINVAL, STRLIT("invalid shell command"));
+            return false;
+        }
+
+        command_push(&process, "/bin/sh");
+        command_push(&process, "-c");
+        command_push_length(&process, command, command_len);
+
+        success = command_run_sync(&process, &rc);
+        if (success) {
+            if (status) {
+                *status = rc;
+            }
+            ncm_error_clear(error);
+        } else {
+            ncm_error_set(error, process.error_status,
+                          STRLIT("command failed"));
+        }
+        command_free(&process);
+        return success;
     }
 
     sb_init(&buffer);
