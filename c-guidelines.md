@@ -105,7 +105,22 @@ typeof(var)  // good
   * The wrappers above never fail: if out of memory, they exit the program. No
     need to check if they succeded or not.
 - Note: `free2(pointer, size)` does not need previous checking if pointer is
-  NULL or not. Its internals already do the check.
+  NULL or not. Its internals already do the check:
+  ```c
+  // bad
+  static void my_function(MyStruct *pointer) {
+      if (pointer) {
+          free2(pointer, SIZEOF(*pointer));
+      }
+      return;
+  }
+
+  // good
+  static void my_function(MyStruct *pointer) {
+      free2(pointer, SIZEOF(*pointer));
+      return;
+  }
+  ```
 - Choose what is best in each situation:
   * Use traditional `malloc2`, `realloc2`, and `free2`.
   * Use the `arena.c` bump allocator for groups of allocations with the same
