@@ -42,9 +42,7 @@ ncm_macro_system_command(char *command, int32 command_len,
     }
 
     sb_init(&buffer);
-    if (command_len > 0) {
-        SB_APPEND(&buffer, command, command_len);
-    }
+    SB_APPEND(&buffer, command, command_len);
     SB_APPEND(&buffer, STRLIT(" >/dev/null 2>&1 &"));
     sb_append_byte(&buffer, '\0');
 
