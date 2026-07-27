@@ -9,7 +9,6 @@
 #include "c/ncm_comparators.h"
 #include "c/ncm_display.h"
 #include "c/ncm_string.h"
-#include "cbase/utf8.c"
 #include "settings.h"
 #include "ui_state.h"
 

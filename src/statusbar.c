@@ -6,7 +6,6 @@
 #include <string.h>
 
 #include "bindings.h"
-#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 #include "cbase.h"
 #include "global.h"

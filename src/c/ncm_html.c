@@ -6,7 +6,6 @@
 #include "cbase.h"
 
 #include "c/ncm_string.h"
-#include "cbase/utf8.c"
 #include "cbase/base_macros.h"
 #include "cbase.h"
 
