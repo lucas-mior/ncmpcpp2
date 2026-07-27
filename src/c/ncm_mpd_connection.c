@@ -7,8 +7,7 @@
 #include "c/ncm_mpd_connection.h"
 
 static void
-ncm_mpd_connection_cstring_copy(char *dst, int32 dst_cap,
-                                char *src) {
+ncm_mpd_connection_cstring_copy(char *dst, int32 dst_cap, char *src) {
     int32 src_len;
     int32 len;
 
@@ -259,8 +258,7 @@ ncm_mpd_connection_mpd_directory(char *directory) {
 }
 
 static bool
-ncm_mpd_connection_recv_song(NcmMpdConnection *connection,
-                             NcmSong *song) {
+ncm_mpd_connection_recv_song(NcmMpdConnection *connection, NcmSong *song) {
     struct mpd_song *mpd_song;
     bool ok;
 
@@ -347,10 +345,9 @@ ncm_mpd_connection_recv_entity_song_list(NcmMpdConnection *connection,
         if (mpd_entity_get_type(entity) == MPD_ENTITY_TYPE_SONG) {
             mpd_song = (struct mpd_song *)mpd_entity_get_song(entity);
             if (mpd_song == NULL) {
-                ncm_mpd_connection_set_error(
-                    connection, MPD_ERROR_STATE,
-                    (enum mpd_server_error)0, false,
-                    "MPD song entity has no song");
+                ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
+                                             (enum mpd_server_error)0, false,
+                                             "MPD song entity has no song");
                 mpd_entity_free(entity);
                 mpd_response_finish(connection->mpd);
                 return false;
@@ -362,10 +359,9 @@ ncm_mpd_connection_recv_entity_song_list(NcmMpdConnection *connection,
             }
             ncm_song_destroy(&song);
             if (!ok) {
-                ncm_mpd_connection_set_error(
-                    connection, MPD_ERROR_STATE,
-                    (enum mpd_server_error)0, false,
-                    "Could not read MPD song entity");
+                ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
+                                             (enum mpd_server_error)0, false,
+                                             "Could not read MPD song entity");
                 mpd_entity_free(entity);
                 mpd_response_finish(connection->mpd);
                 return false;
@@ -407,10 +403,9 @@ ncm_mpd_connection_recv_item_list(NcmMpdConnection *connection,
         }
         ncm_mpd_item_destroy(&item);
         if (!ok) {
-            ncm_mpd_connection_set_error(
-                connection, MPD_ERROR_STATE,
-                (enum mpd_server_error)0, false,
-                "Could not read MPD directory item");
+            ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
+                                         (enum mpd_server_error)0, false,
+                                         "Could not read MPD directory item");
             mpd_response_finish(connection->mpd);
             return false;
         }
@@ -443,10 +438,9 @@ ncm_mpd_connection_recv_string_list_tag(NcmMpdConnection *connection,
         ok = ncm_mpd_string_list_push(strings, (char *)pair->value);
         mpd_return_pair(connection->mpd, pair);
         if (!ok) {
-            ncm_mpd_connection_set_error(
-                connection, MPD_ERROR_STATE,
-                (enum mpd_server_error)0, false,
-                "Could not read MPD tag value");
+            ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
+                                         (enum mpd_server_error)0, false,
+                                         "Could not read MPD tag value");
             mpd_response_finish(connection->mpd);
             return false;
         }
@@ -505,8 +499,7 @@ ncm_mpd_replay_gain_mode_name(enum NcmMpdReplayGainMode mode) {
 }
 
 static bool
-ncm_mpd_replay_gain_mode_parse(char *name,
-                               enum NcmMpdReplayGainMode *mode) {
+ncm_mpd_replay_gain_mode_parse(char *name, enum NcmMpdReplayGainMode *mode) {
     if (mode == NULL) {
         return false;
     }
@@ -651,8 +644,7 @@ ncm_mpd_song_list_append_copy(NcmMpdSongList *list, NcmSong *song) {
 }
 
 bool
-ncm_mpd_song_list_to_song_array(NcmMpdSongList *list,
-                                NcmSongArray *songs) {
+ncm_mpd_song_list_to_song_array(NcmMpdSongList *list, NcmSongArray *songs) {
     NcmSongArray replacement;
 
     if (songs == NULL) {
@@ -662,8 +654,7 @@ ncm_mpd_song_list_to_song_array(NcmMpdSongList *list,
     ncm_song_array_init(&replacement);
     if (list) {
         for (int32 i = 0; i < list->count; i += 1) {
-            if (!ncm_song_array_append_copy(&replacement,
-                                            &list->items[i])) {
+            if (!ncm_song_array_append_copy(&replacement, &list->items[i])) {
                 ncm_song_array_destroy(&replacement);
                 return false;
             }
@@ -713,8 +704,7 @@ ncm_mpd_item_list_clear(NcmMpdItemList *list) {
 }
 
 bool
-ncm_mpd_item_list_to_item_array(NcmMpdItemList *list,
-                                NcmMpdItemArray *items) {
+ncm_mpd_item_list_to_item_array(NcmMpdItemList *list, NcmMpdItemArray *items) {
     NcmMpdItemArray replacement;
 
     if (items == NULL) {
@@ -756,8 +746,7 @@ ncm_mpd_item_list_to_directory_array(NcmMpdItemList *list,
             }
 
             directory = ncm_mpd_item_directory(&list->items[i]);
-            if (!ncm_directory_array_append_copy(&replacement,
-                                                 directory)) {
+            if (!ncm_directory_array_append_copy(&replacement, directory)) {
                 ncm_directory_array_destroy(&replacement);
                 return false;
             }
@@ -927,8 +916,7 @@ ncm_mpd_connection_destroy(NcmMpdConnection *connection) {
 
 bool
 ncm_mpd_connection_connect(NcmMpdConnection *connection,
-                           char *host,
-                           uint16 port,
+                           char *host, uint16 port,
                            int32 timeout_ms) {
     if (connection == NULL) {
         return false;
@@ -986,8 +974,7 @@ ncm_mpd_connection_fd(NcmMpdConnection *connection) {
 }
 
 bool
-ncm_mpd_connection_set_timeout(NcmMpdConnection *connection,
-                               int32 timeout_ms) {
+ncm_mpd_connection_set_timeout(NcmMpdConnection *connection, int32 timeout_ms) {
     if (connection == NULL) {
         return false;
     }
