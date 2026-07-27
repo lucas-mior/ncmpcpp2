@@ -2853,9 +2853,7 @@ native_library_print_add_status(NativeMediaLibraryScreen *screen,
             SB_APPEND(&message, tag->tag, tag->tag_len);
         }
         SB_APPEND(&message, STRLIT("\" added"));
-        SB_APPEND(&message, ncm_helpers_with_errors(result),
-                          optional_strlen32(
-                              ncm_helpers_with_errors(result)));
+        SB_APPEND(&message, ncm_helpers_with_errors(result));
     } else if (screen->active_column
                == NATIVE_MEDIA_LIBRARY_COLUMN_ALBUMS) {
         if ((album = native_media_library_screen_current_album(screen))
