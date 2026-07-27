@@ -3256,17 +3256,16 @@ tag_editor_compare_songs(NcmSong *left, NcmSong *right) {
 
 static void
 tag_editor_report_error(char *context, int32 context_len,
-                        NcmError *error) {
+                        NcmError *ncm_error) {
     StrBuilder message;
 
     sb_init(&message);
     SB_APPEND(&message, context, context_len);
-    if (error && (error->message[0] != 0)) {
+    if (ncm_error && (ncm_error->message[0] != 0)) {
         SB_APPEND(&message, STRLIT(": "));
-        SB_APPEND(&message, error->message,
-                          strlen32(error->message));
+        SB_APPEND(&message, ncm_error->message,
+                          strlen32(ncm_error->message));
     }
-    sb_append_byte(&message, '\0');
     ncm_statusbar_print_cstring(Config.message_delay_time,
                                 message.data);
     sb_free(&message);

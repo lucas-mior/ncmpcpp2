@@ -28,10 +28,6 @@ ncm_regex_prepare_string(char *string, int32 string_len, StrBuilder *buffer,
     }
 
     SB_APPEND(buffer, string, string_len);
-    if (buffer->data == NULL) {
-        sb_append_byte(buffer, '\0');
-        buffer->len = 0;
-    }
     return true;
 }
 
