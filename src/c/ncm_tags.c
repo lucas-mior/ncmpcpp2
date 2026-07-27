@@ -4,7 +4,7 @@
 #include "c/ncm_tags.h"
 
 #include <mpd/client.h>
-#include <stdio.h>
+#include "cbase.h"
 
 #include "c/ncm_taglib.h"
 #include "cbase.h"

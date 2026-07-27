@@ -1,7 +1,7 @@
 #if !defined(NCM_ARRAY_H)
 #define NCM_ARRAY_H
 
-#include <stddef.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "cbase/base_macros.h"
