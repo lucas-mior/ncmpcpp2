@@ -1,6 +1,8 @@
 #if !defined(NCMPCPP_UTILITY_READLINE_H)
 #define NCMPCPP_UTILITY_READLINE_H
 
+#include "cbase.h"
+
 #include "config.h"
 
 #if defined(HAVE_READLINE_HISTORY_H)

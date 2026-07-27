@@ -1,13 +1,13 @@
 #if !defined(NCMPCPP_LYRICS_FETCHER_C)
 #define NCMPCPP_LYRICS_FETCHER_C
 
-#include "lyrics_fetcher.h"
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "c/ncm_html.h"
 #include "c/ncm_string.h"
-#include "cbase.h"
 #include "curl_handle.h"
+#include "lyrics_fetcher.h"
 
 #define LYRICS_MSG_ACCESS_DENIED "Access denied"
 #define LYRICS_MSG_DOWNLOAD_FAILED "Download failed"

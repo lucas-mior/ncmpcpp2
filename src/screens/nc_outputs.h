@@ -1,6 +1,8 @@
 #if !defined(NCMPCPP_NC_OUTPUTS_H)
 #define NCMPCPP_NC_OUTPUTS_H
 
+#include "cbase.h"
+
 #include "curses/nc_menu.h"
 #include "screens/nc_scrollpad_screen.h"
 

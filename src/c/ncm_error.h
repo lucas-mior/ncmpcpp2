@@ -1,6 +1,8 @@
 #if !defined(NCM_ERROR_H)
 #define NCM_ERROR_H
 
+#include "cbase.h"
+
 #include "c/ncm_defs.h"
 
 typedef struct NcmError {

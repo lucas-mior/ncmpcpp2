@@ -1,10 +1,10 @@
 #if !defined(NCMPCPP_SCREEN_TYPE_C)
 #define NCMPCPP_SCREEN_TYPE_C
 
-#include "screens/screen_type.h"
+#include "cbase.h"
 
 #include "c/ncm_string.h"
-#include "cbase.h"
+#include "screens/screen_type.h"
 
 int32
 screen_type_to_native_type(enum ScreenType screen_type) {

@@ -1,14 +1,13 @@
 #if !defined(NCMPCPP_NC_SEARCH_ENGINE_C)
 #define NCMPCPP_NC_SEARCH_ENGINE_C
 
-#include "screens/nc_search_engine.h"
-
 #include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "c/ncm_comparators.h"
 #include "c/ncm_display.h"
 #include "c/ncm_string.h"
+#include "screens/nc_search_engine.h"
 #include "settings.h"
 #include "ui_state.h"
 

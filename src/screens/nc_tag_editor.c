@@ -1,15 +1,9 @@
 #if !defined(NCMPCPP_NC_TAG_EDITOR_C)
 #define NCMPCPP_NC_TAG_EDITOR_C
 
-#include "screens/nc_tag_editor.h"
-
 #include "cbase.h"
 
 #include "app_controller.h"
-#include "global.h"
-#include "settings.h"
-#include "statusbar.h"
-#include "ui_state.h"
 #include "c/ncm_base.h"
 #include "c/ncm_charset.h"
 #include "c/ncm_comparators.h"
@@ -18,9 +12,14 @@
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
+#include "global.h"
+#include "screens/nc_tag_editor.h"
 #include "screens/screen_switcher.h"
 #include "screens/song_info.h"
+#include "settings.h"
+#include "statusbar.h"
 #include "title.h"
+#include "ui_state.h"
 
 #define ENUM_NAME TagEditorParserActionRow
 #define ENUM_PREFIX_ TAG_EDITOR_PARSER_ACTION_

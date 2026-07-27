@@ -1,26 +1,12 @@
 #if !defined(NCMPCPP_ACTIONS_C)
 #define NCMPCPP_ACTIONS_C
 
-#include "actions.h"
-
 #include "cbase.h"
 
+#include "actions.h"
 #include "app_controller.h"
 #include "app_legacy_bridge.h"
 #include "bindings.h"
-#include "curses/nc_window.h"
-#include "global.h"
-#include "helpers.h"
-#include "settings.h"
-#include "screens/native_c_screens.h"
-#include "screens/nc_search_engine.h"
-#include "screens/screen_type.h"
-#include "screen_actions.h"
-#include "status.h"
-#include "statusbar.h"
-#include "title.h"
-#include "ui_state.h"
-
 #include "c/ncm_base.h"
 #include "c/ncm_conversion.h"
 #include "c/ncm_macro_utilities.h"
@@ -28,11 +14,22 @@
 #include "c/ncm_path.h"
 #include "c/ncm_search_prompt.h"
 #include "c/ncm_string.h"
-#include "c/ncm_type_conversions.h"
-
 #if defined(HAVE_TAGLIB_H)
 #include "c/ncm_taglib.h"
 #endif
+#include "c/ncm_type_conversions.h"
+#include "curses/nc_window.h"
+#include "global.h"
+#include "helpers.h"
+#include "screen_actions.h"
+#include "screens/native_c_screens.h"
+#include "screens/nc_search_engine.h"
+#include "screens/screen_type.h"
+#include "settings.h"
+#include "status.h"
+#include "statusbar.h"
+#include "title.h"
+#include "ui_state.h"
 
 #if defined(__GNUC__)
 extern bool ncmpcpp_legacy_execute_binding(NcmBinding *binding)

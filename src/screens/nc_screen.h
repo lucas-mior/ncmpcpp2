@@ -3,7 +3,6 @@
 
 #include "cbase.h"
 
-#include "cbase/primitives.h"
 #include "curses/nc_window.h"
 
 #define NC_SCREEN_DEFAULT_WINDOW_TIMEOUT 500

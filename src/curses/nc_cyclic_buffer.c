@@ -1,8 +1,9 @@
 #if !defined(NCMPCPP_NC_CYCLIC_BUFFER_C)
 #define NCMPCPP_NC_CYCLIC_BUFFER_C
 
-#include "curses/nc_cyclic_buffer.h"
+#include "cbase.h"
 
+#include "curses/nc_cyclic_buffer.h"
 
 static int32 nc_cyclic_normalize_start(int32 *start_pos,
                                        int32 total_characters);

@@ -1,9 +1,9 @@
 #if !defined(NCMPCPP_GLOBAL_C)
 #define NCMPCPP_GLOBAL_C
 
-#include "global.h"
-
 #include "cbase.h"
+
+#include "global.h"
 
 bool global_show_messages;
 bool global_seeking_in_progress;

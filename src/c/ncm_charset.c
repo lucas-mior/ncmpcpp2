@@ -1,6 +1,8 @@
 #if !defined(NCM_CHARSET_C)
 #define NCM_CHARSET_C
 
+#include "cbase.h"
+
 #include "c/ncm_charset.h"
 
 static StrBuilder

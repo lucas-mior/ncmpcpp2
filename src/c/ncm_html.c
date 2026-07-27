@@ -1,10 +1,9 @@
 #if !defined(NCM_HTML_C)
 #define NCM_HTML_C
 
-#include "c/ncm_html.h"
-
 #include "cbase.h"
 
+#include "c/ncm_html.h"
 #include "c/ncm_string.h"
 
 typedef struct HtmlEntity {

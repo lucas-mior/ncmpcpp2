@@ -1,6 +1,8 @@
 #if !defined(NCM_DISPLAY_H)
 #define NCM_DISPLAY_H
 
+#include "cbase.h"
+
 #include "c/ncm_directory.h"
 #include "c/ncm_format.h"
 #include "c/ncm_mpd_connection.h"

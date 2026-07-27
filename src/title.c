@@ -1,13 +1,12 @@
 #if !defined(NCMPCPP_TITLE_C)
 #define NCMPCPP_TITLE_C
 
-#include "title.h"
-
 #include "cbase.h"
 
 #include "app_controller.h"
 #include "global.h"
 #include "settings.h"
+#include "title.h"
 #include "ui_state.h"
 
 static char *

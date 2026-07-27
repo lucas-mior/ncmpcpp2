@@ -1,10 +1,10 @@
 #if !defined(NCMPCPP_SETTINGS_TYPES_C)
 #define NCMPCPP_SETTINGS_TYPES_C
 
-#include "settings.h"
+#include "cbase.h"
 
 #include "c/ncm_base.h"
-#include "cbase.h"
+#include "settings.h"
 
 static NcmArrayItemCallbacks settings_no_callbacks = {0};
 

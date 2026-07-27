@@ -1,6 +1,8 @@
 #if !defined(NCM_STRING_H)
 #define NCM_STRING_H
 
+#include "cbase.h"
+
 #include "c/ncm_defs.h"
 
 void ncm_string_view_init(NcmStringView *view);

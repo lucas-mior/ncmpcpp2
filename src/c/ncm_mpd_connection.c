@@ -1,11 +1,10 @@
 #if !defined(NCM_MPD_CONNECTION_C)
 #define NCM_MPD_CONNECTION_C
 
-#include "c/ncm_mpd_connection.h"
-
 #include "cbase.h"
 
 #include "c/ncm_base.h"
+#include "c/ncm_mpd_connection.h"
 
 static void
 ncm_mpd_connection_cstring_copy(char *dst, int32 dst_cap,

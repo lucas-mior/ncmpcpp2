@@ -1,11 +1,11 @@
 #if !defined(NCM_MUTABLE_SONG_C)
 #define NCM_MUTABLE_SONG_C
 
-#include "c/ncm_mutable_song.h"
-
-#include "c/ncm_string.h"
-#include "c/ncm_base.h"
 #include "cbase.h"
+
+#include "c/ncm_base.h"
+#include "c/ncm_mutable_song.h"
+#include "c/ncm_string.h"
 
 static void ncm_mutable_song_tag_init(NcmMutableSongTag *tag);
 

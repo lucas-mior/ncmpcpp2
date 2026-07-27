@@ -1,14 +1,13 @@
 #if !defined(NCM_SONG_C)
 #define NCM_SONG_C
 
-#include "c/ncm_song.h"
+#include "cbase.h"
 
 #include <mpd/client.h>
 
-#include "cbase.h"
-
 #include "c/ncm_base.h"
 #include "c/ncm_path.h"
+#include "c/ncm_song.h"
 #include "c/ncm_string.h"
 
 static bool

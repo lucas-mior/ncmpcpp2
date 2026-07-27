@@ -1,10 +1,9 @@
 #if !defined(NCMPCPP_APP_CONTROLLER_C)
 #define NCMPCPP_APP_CONTROLLER_C
 
-#include "app_controller.h"
-
 #include "cbase.h"
 
+#include "app_controller.h"
 #include "app_state.h"
 
 static void app_controller_refresh_one(NcScreen *screen, void *user);

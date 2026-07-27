@@ -1,6 +1,8 @@
 #if !defined(NCM_FORMAT_H)
 #define NCM_FORMAT_H
 
+#include "cbase.h"
+
 #include "c/ncm_base.h"
 #include "c/ncm_error.h"
 #include "c/ncm_song.h"

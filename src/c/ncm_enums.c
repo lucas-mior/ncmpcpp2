@@ -1,10 +1,10 @@
 #if !defined(NCM_ENUMS_C)
 #define NCM_ENUMS_C
 
-#include "c/ncm_enums.h"
-
-#include "c/ncm_string.h"
 #include "cbase.h"
+
+#include "c/ncm_enums.h"
+#include "c/ncm_string.h"
 
 char *
 ncm_search_direction_str(enum SearchDirection value) {

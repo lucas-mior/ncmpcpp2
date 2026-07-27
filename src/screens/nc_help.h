@@ -1,6 +1,8 @@
 #if !defined(NCMPCPP_NC_HELP_H)
 #define NCMPCPP_NC_HELP_H
 
+#include "cbase.h"
+
 #include "c/ncm_base.h"
 #include "curses/nc_buffer.h"
 #include "curses/nc_scrollpad.h"

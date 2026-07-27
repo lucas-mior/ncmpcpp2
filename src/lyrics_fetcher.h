@@ -1,8 +1,6 @@
 #if !defined(NCMPCPP_LYRICS_FETCHER_H)
 #define NCMPCPP_LYRICS_FETCHER_H
 
-#include "config.h"
-
 #include "cbase.h"
 
 #include <curl/curl.h>
@@ -22,7 +20,6 @@
     X(TEKSTOWO, "tekstowo.pl") \
     X(VAGALUME, "vagalume.com.br") \
     X(INTERNET, "the Internet")
-
 
 enum NcmLyricsFetcherType {
     NCM_LYRICS_FETCHER_UNKNOWN,

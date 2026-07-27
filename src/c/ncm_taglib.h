@@ -1,6 +1,8 @@
 #if !defined(NCM_TAGLIB_H)
 #define NCM_TAGLIB_H
 
+#include "cbase.h"
+
 #include "c/ncm_defs.h"
 
 typedef struct NcmTaglibFile {

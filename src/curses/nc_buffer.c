@@ -1,9 +1,9 @@
 #if !defined(NCMPCPP_NC_BUFFER_C)
 #define NCMPCPP_NC_BUFFER_C
 
-#include "curses/nc_buffer.h"
-
 #include "cbase.h"
+
+#include "curses/nc_buffer.h"
 
 static void nc_buffer_reserve(NcBuffer *buffer, int32 extra);
 static void nc_buffer_add_property(NcBuffer *buffer,

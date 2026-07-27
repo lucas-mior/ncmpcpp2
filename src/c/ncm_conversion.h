@@ -1,6 +1,8 @@
 #if !defined(NCM_CONVERSION_H)
 #define NCM_CONVERSION_H
 
+#include "cbase.h"
+
 #include "c/ncm_error.h"
 
 bool ncm_parse_int32(char *source, int32 source_len, int32 *out,

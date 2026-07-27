@@ -1,8 +1,6 @@
 #if !defined(NCMPCPP_CURL_HANDLE_H)
 #define NCMPCPP_CURL_HANDLE_H
 
-#include "config.h"
-
 #include "cbase.h"
 
 #include <curl/curl.h>

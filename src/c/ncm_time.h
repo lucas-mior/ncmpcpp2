@@ -1,6 +1,8 @@
 #if !defined(NCM_TIME_H)
 #define NCM_TIME_H
 
+#include "cbase.h"
+
 #include "c/ncm_error.h"
 
 typedef struct NcmTimePoint {

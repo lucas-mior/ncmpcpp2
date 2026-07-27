@@ -1,14 +1,13 @@
 #if !defined(NCMPCPP_STATUSBAR_C)
 #define NCMPCPP_STATUSBAR_C
 
-#include "statusbar.h"
-
 #include "cbase.h"
 
 #include "bindings.h"
 #include "global.h"
 #include "settings.h"
 #include "status.h"
+#include "statusbar.h"
 #include "ui_state.h"
 
 static bool progressbar_block_update;

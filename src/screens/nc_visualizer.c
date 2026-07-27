@@ -1,12 +1,12 @@
 #if !defined(NCMPCPP_NC_VISUALIZER_C)
 #define NCMPCPP_NC_VISUALIZER_C
 
-#include "screens/nc_visualizer.h"
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "c/ncm_mpd_client.h"
 #include "c/ncm_string.h"
-#include "cbase.h"
+#include "screens/nc_visualizer.h"
 #include "screens/screen_switcher.h"
 #include "status.h"
 #include "statusbar.h"

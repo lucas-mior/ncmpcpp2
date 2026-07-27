@@ -1,15 +1,14 @@
 #if !defined(NCMPCPP_NC_LASTFM_C)
 #define NCMPCPP_NC_LASTFM_C
 
-#include "screens/nc_lastfm.h"
-
 #include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "c/ncm_regex.h"
 #include "c/ncm_string.h"
-#include "settings.h"
+#include "screens/nc_lastfm.h"
 #include "screens/screen_switcher.h"
+#include "settings.h"
 #include "statusbar.h"
 #include "title.h"
 #include "ui_state.h"

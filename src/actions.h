@@ -4,8 +4,8 @@
 #include "cbase.h"
 
 #include "c/ncm_defs.h"
-#include "c/ncm_error.h"
 #include "c/ncm_enums.h"
+#include "c/ncm_error.h"
 #include "c/ncm_song.h"
 
 enum NcmActionType {

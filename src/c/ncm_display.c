@@ -1,9 +1,10 @@
 #if !defined(NCM_DISPLAY_C)
 #define NCM_DISPLAY_C
 
-#include "c/ncm_display.h"
+#include "cbase.h"
 
 #include "c/ncm_base.h"
+#include "c/ncm_display.h"
 #include "c/ncm_path.h"
 #include "c/ncm_string.h"
 #include "c/ncm_type_conversions.h"
