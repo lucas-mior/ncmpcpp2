@@ -179,7 +179,7 @@ CBASE_API_DECL void sb_reserve(StrBuilder *, int32);
 CBASE_API_DECL bool sb_set(StrBuilder *, char *, int32);
 CBASE_API_DECL char *sb_steal(StrBuilder *, int32 *, int32 *);
 CBASE_API_DECL char *sb_steal_exact(StrBuilder *, int32 *);
-CBASE_API_DEF char *sb_opt_cstr(StrBuilder *buffer);
+CBASE_API_DECL char *sb_opt_cstr(StrBuilder *buffer);
 CBASE_API_DECL void send_signal(char *, int32);
 CBASE_API_DECL int32 snprintf2(char *, int64, char *, ...);
 CBASE_API_DECL StrBuilder *str_builder_array_append(StrBuilderArray *);
