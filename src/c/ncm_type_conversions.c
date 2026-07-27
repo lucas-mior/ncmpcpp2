@@ -3,9 +3,7 @@
 
 #include "c/ncm_type_conversions.h"
 
-#include <stdio.h>
-
-#include "cbase/util.c"
+#include "cbase.h"
 
 int32
 ncm_channels_to_string(int32 channels, char *buffer, int32 buffer_cap) {
