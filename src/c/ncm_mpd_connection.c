@@ -3,12 +3,9 @@
 
 #include "c/ncm_mpd_connection.h"
 
-#include <stddef.h>
-#include <string.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
-#include "cbase/base_macros.h"
-#include "cbase.h"
 
 static void
 ncm_mpd_connection_cstring_copy(char *dst, int32 dst_cap,
