@@ -1,7 +1,7 @@
 #if !defined(NCMPCPP_STATUSBAR_H)
 #define NCMPCPP_STATUSBAR_H
 
-#include <stdbool.h>
+#include "cbase.h"
 
 #include "c/ncm_base.h"
 #include "c/ncm_string_format.h"
