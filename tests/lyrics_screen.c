@@ -46,6 +46,9 @@ static int32 lyrics_test_player_state;
 
 Configuration Config;
 
+static NcmJob lyrics_test_pushed_job;
+static bool lyrics_test_has_pushed_job;
+
 int32
 prefresh(WINDOW *pad, int32 pminrow, int32 pmincol,
          int32 sminrow, int32 smincol,
@@ -328,7 +331,9 @@ bool
 ncm_job_queue_push(NcmJobQueue *queue, NcmJob job,
                    NcmError *error) {
     (void)queue;
-    (void)job;
+    ASSERT(!lyrics_test_has_pushed_job);
+    lyrics_test_pushed_job = job;
+    lyrics_test_has_pushed_job = true;
     ncm_error_clear(error);
     return true;
 }
@@ -700,6 +705,37 @@ lyrics_screen_test_remove_file(char *path) {
 }
 
 static void
+lyrics_screen_test_clear_pushed_job(void) {
+    if (!lyrics_test_has_pushed_job) {
+        return;
+    }
+
+    if (lyrics_test_pushed_job.destroy) {
+        lyrics_test_pushed_job.destroy(lyrics_test_pushed_job.user);
+    }
+    memset64(&lyrics_test_pushed_job, 0, SIZEOF(lyrics_test_pushed_job));
+    lyrics_test_has_pushed_job = false;
+    return;
+}
+
+static NativeLyricsJob *
+lyrics_screen_test_pushed_lyrics_job(void) {
+    ASSERT(lyrics_test_has_pushed_job);
+    return lyrics_test_pushed_job.user;
+}
+
+static void
+lyrics_screen_test_assert_file_text(char *path, char *text, int32 text_len) {
+    char *bytes;
+    int32 bytes_len;
+
+    ASSERT(read_entire_file(path, &bytes, &bytes_len));
+    ASSERT(STREQUAL(bytes, bytes_len, text, text_len));
+    free2(bytes, bytes_len + 1);
+    return;
+}
+
+static void
 lyrics_screen_test_path(char *buffer, int32 buffer_cap,
                         char *directory, char *name) {
     int32 len;
@@ -807,6 +843,12 @@ lyrics_screen_test_assert_sync_highlight(NativeLyricsScreen *screen,
         entry->buffer_end,
         NC_FORMAT_NO_BOLD));
     return;
+}
+
+static bool
+lyrics_screen_test_dummy_is_mergable(NcScreen *screen) {
+    (void)screen;
+    return true;
 }
 
 static void
@@ -1093,6 +1135,146 @@ lyrics_screen_test_lrc_integration_fixture(void) {
     return;
 }
 
+static void
+lyrics_screen_test_refetch_writes_txt_without_removing_lrc(void) {
+    NativeLyricsScreen screen;
+    NativeLyricsJob *job;
+    NcmSong song;
+    NcmError error = {0};
+    char directory[256];
+    char lrc_path[512];
+    char txt_path[512];
+
+    lyrics_screen_test_clear_pushed_job();
+    lyrics_screen_test_prepare_directory(directory, SIZEOF(directory));
+    lyrics_screen_test_setup_config(directory);
+    lyrics_screen_test_path(lrc_path, SIZEOF(lrc_path), directory,
+                            "Artist - Title.lrc");
+    lyrics_screen_test_path(txt_path, SIZEOF(txt_path), directory,
+                            "Artist - Title.txt");
+    lyrics_screen_test_write_file(lrc_path, STRLIT("[00:01.00]synced\n"));
+    lyrics_screen_test_write_file(txt_path, STRLIT("old plain\n"));
+
+    lyrics_screen_test_song(&song);
+    lyrics_screen_test_init(&screen);
+    ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(native_lyrics_screen_mode(&screen)
+           == NATIVE_LYRICS_MODE_SYNCHRONIZED);
+
+    native_lyrics_screen_refetch_current(&screen, &error);
+    ASSERT(lyrics_test_has_pushed_job);
+    ASSERT(ncm_fs_exists(lrc_path, strlen32(lrc_path)));
+    ASSERT(!ncm_fs_exists(txt_path, strlen32(txt_path)));
+    ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
+                    txt_path, strlen32(txt_path)));
+
+    job = lyrics_screen_test_pushed_lyrics_job();
+    ASSERT(STREQUAL(job->filename.data, job->filename.len,
+                    txt_path, strlen32(txt_path)));
+    ASSERT(ncm_lyrics_result_set(&job->result, true,
+                                 STRLIT("downloaded plain\n")));
+    lyrics_test_pushed_job.complete(true, &error, job);
+    ASSERT(ncm_fs_exists(lrc_path, strlen32(lrc_path)));
+    lyrics_screen_test_assert_file_text(txt_path,
+                                        STRLIT("downloaded plain\n"));
+    ASSERT(native_lyrics_screen_mode(&screen) == NATIVE_LYRICS_MODE_PLAIN);
+
+    lyrics_screen_test_clear_pushed_job();
+    native_lyrics_screen_destroy(&screen);
+    ncm_song_destroy(&song);
+    lyrics_screen_test_remove_file(lrc_path);
+    lyrics_screen_test_remove_file(txt_path);
+    ASSERT(rmdir(directory) == 0);
+    return;
+}
+
+static void
+lyrics_screen_test_background_fetch_respects_lrc_and_txt(void) {
+    NativeLyricsScreen screen;
+    NativeLyricsJob *job;
+    NcmSong song;
+    NcmError error = {0};
+    char directory[256];
+    char lrc_path[512];
+    char txt_path[512];
+
+    lyrics_screen_test_clear_pushed_job();
+    lyrics_screen_test_prepare_directory(directory, SIZEOF(directory));
+    lyrics_screen_test_setup_config(directory);
+    lyrics_screen_test_path(lrc_path, SIZEOF(lrc_path), directory,
+                            "Artist - Title.lrc");
+    lyrics_screen_test_path(txt_path, SIZEOF(txt_path), directory,
+                            "Artist - Title.txt");
+    lyrics_screen_test_write_file(lrc_path, STRLIT("[00:01.00]synced\n"));
+
+    lyrics_screen_test_song(&song);
+    lyrics_screen_test_init(&screen);
+    ASSERT(native_lyrics_screen_fetch_in_background(
+        &screen, &song, false, &error));
+    ASSERT(!lyrics_test_has_pushed_job);
+
+    lyrics_screen_test_remove_file(lrc_path);
+    lyrics_screen_test_write_file(txt_path, STRLIT("plain\n"));
+    ASSERT(native_lyrics_screen_fetch_in_background(
+        &screen, &song, false, &error));
+    ASSERT(!lyrics_test_has_pushed_job);
+
+    lyrics_screen_test_remove_file(txt_path);
+    ASSERT(native_lyrics_screen_fetch_in_background(
+        &screen, &song, false, &error));
+    ASSERT(lyrics_test_has_pushed_job);
+    job = lyrics_screen_test_pushed_lyrics_job();
+    ASSERT(STREQUAL(job->filename.data, job->filename.len,
+                    txt_path, strlen32(txt_path)));
+
+    lyrics_screen_test_clear_pushed_job();
+    native_lyrics_screen_destroy(&screen);
+    ncm_song_destroy(&song);
+    lyrics_screen_test_remove_file(txt_path);
+    ASSERT(rmdir(directory) == 0);
+    return;
+}
+
+static void
+lyrics_screen_test_locked_visible_update_refreshes_lrc(void) {
+    NativeLyricsScreen screen;
+    NcScreenRegistry registry;
+    NcScreenCallbacks callbacks = {0};
+    NcScreen dummy;
+    NcmError error = {0};
+    char path[] = "/tmp/ncmpcpp2-lyrics-screen-visible.lrc";
+
+    lyrics_screen_test_setup_config("/tmp");
+    lyrics_screen_test_write_file(path,
+                                  STRLIT("[00:01.00]visible\n"));
+    lyrics_screen_test_init(&screen);
+    ASSERT(native_lyrics_screen_load_file(&screen,
+                                          path,
+                                          strlen32(path),
+                                          &error));
+
+    callbacks.is_mergable = lyrics_screen_test_dummy_is_mergable;
+    nc_screen_init(&dummy, callbacks, NULL, NC_SCREEN_TYPE_BROWSER);
+    nc_screen_registry_init(&registry);
+    ASSERT(nc_screen_registry_register(
+        &registry, native_lyrics_screen_base(&screen)));
+    ASSERT(nc_screen_registry_register(&registry, &dummy));
+    ASSERT(nc_screen_registry_switch_to(
+        &registry, native_lyrics_screen_base(&screen)));
+    ASSERT(nc_screen_registry_lock_current(&registry));
+    ASSERT(nc_screen_registry_switch_to(&registry, &dummy));
+
+    lyrics_test_elapsed_ms = 1000;
+    lyrics_test_player_state = NCM_STATUS_PLAYER_PLAY;
+    nc_screen_registry_update_visible(&registry);
+    ASSERT_EQUAL(native_lyrics_screen_active_lrc_line(&screen), 0);
+    lyrics_screen_test_assert_sync_highlight(&screen, 0);
+
+    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_test_remove_file(path);
+    return;
+}
+
 int
 main(void) {
     lyrics_screen_test_lrc_preferred_over_txt();
@@ -1102,6 +1284,9 @@ main(void) {
     lyrics_screen_test_search_and_sync_properties_are_independent();
     lyrics_screen_test_auto_scroll_clamps();
     lyrics_screen_test_lrc_integration_fixture();
+    lyrics_screen_test_refetch_writes_txt_without_removing_lrc();
+    lyrics_screen_test_background_fetch_respects_lrc_and_txt();
+    lyrics_screen_test_locked_visible_update_refreshes_lrc();
     exit(EXIT_SUCCESS);
 }
 
