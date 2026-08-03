@@ -771,6 +771,44 @@ lyrics_screen_test_has_property(NcBuffer *buffer, int64 id) {
     return false;
 }
 
+static bool
+lyrics_screen_test_has_format_property(NcBuffer *buffer, int64 id,
+                                       int32 position, enum NcFormat format) {
+    NcBufferProperty *properties;
+
+    properties = nc_buffer_properties(buffer);
+    for (int32 i = 0; i < nc_buffer_property_count(buffer); i += 1) {
+        if ((properties[i].id == id)
+            && (properties[i].position == position)
+            && (properties[i].type == NC_BUFFER_PROPERTY_FORMAT)
+            && (properties[i].value.format == format)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void
+lyrics_screen_test_assert_sync_highlight(NativeLyricsScreen *screen,
+                                         int32 entry_index) {
+    NcmLrcEntry *entry;
+
+    ASSERT(entry_index >= 0);
+    ASSERT(entry_index < screen->lrc.entries_len);
+    entry = &screen->lrc.entries[entry_index];
+    ASSERT(lyrics_screen_test_has_format_property(
+        &screen->display,
+        NATIVE_LYRICS_SYNC_PROPERTY_ID,
+        entry->buffer_start,
+        NC_FORMAT_BOLD));
+    ASSERT(lyrics_screen_test_has_format_property(
+        &screen->display,
+        NATIVE_LYRICS_SYNC_PROPERTY_ID,
+        entry->buffer_end,
+        NC_FORMAT_NO_BOLD));
+    return;
+}
+
 static void
 lyrics_screen_test_lrc_preferred_over_txt(void) {
     NativeLyricsScreen screen;
@@ -986,6 +1024,75 @@ lyrics_screen_test_auto_scroll_clamps(void) {
     return;
 }
 
+static void
+lyrics_screen_test_lrc_integration_fixture(void) {
+    NativeLyricsScreen screen;
+    NativeLyricsScreen plain_screen;
+    NcmSong song;
+    NcmError error = {0};
+    char directory[256];
+    char lrc_path[512];
+    char txt_path[512];
+    int32 first_beginning;
+
+    lyrics_screen_test_prepare_directory(directory, SIZEOF(directory));
+    lyrics_screen_test_setup_config(directory);
+    lyrics_screen_test_path(lrc_path, SIZEOF(lrc_path), directory,
+                            "Artist - Title.lrc");
+    lyrics_screen_test_path(txt_path, SIZEOF(txt_path), directory,
+                            "Artist - Title.txt");
+    lyrics_screen_test_write_file(lrc_path,
+                                  STRLIT("[00:01.00]first line\n"
+                                         "[00:02.00]second line\n"
+                                         "[00:03.00]third line\n"
+                                         "[00:04.00]fourth line\n"
+                                         "[00:05.00]fifth line\n"
+                                         "[00:06.00]sixth line\n"
+                                         "[00:07.00]seventh line\n"));
+    lyrics_screen_test_write_file(txt_path, STRLIT("plain fallback\n"));
+
+    lyrics_screen_test_song(&song);
+    lyrics_screen_test_init(&screen);
+    ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(native_lyrics_screen_mode(&screen)
+           == NATIVE_LYRICS_MODE_SYNCHRONIZED);
+    ASSERT(STREQUAL(screen.display.data, screen.display.len,
+                    STRLIT("first line\n"
+                           "second line\n"
+                           "third line\n"
+                           "fourth line\n"
+                           "fifth line\n"
+                           "sixth line\n"
+                           "seventh line")));
+    ASSERT(memmem64(screen.display.data,
+                    screen.display.len,
+                    STRLIT("[00:")) == NULL);
+
+    lyrics_screen_test_update_at(1000, &screen, 0);
+    lyrics_screen_test_assert_sync_highlight(&screen, 0);
+    first_beginning = screen.scrollpad.beginning;
+
+    lyrics_screen_test_update_at(7000, &screen, 6);
+    lyrics_screen_test_assert_sync_highlight(&screen, 6);
+    ASSERT(screen.scrollpad.beginning > first_beginning);
+
+    native_lyrics_screen_destroy(&screen);
+
+    lyrics_screen_test_remove_file(lrc_path);
+    lyrics_screen_test_init(&plain_screen);
+    ASSERT(native_lyrics_screen_fetch(&plain_screen, &song, NULL, &error));
+    ASSERT(native_lyrics_screen_mode(&plain_screen)
+           == NATIVE_LYRICS_MODE_PLAIN);
+    ASSERT(STREQUAL(plain_screen.display.data, plain_screen.display.len,
+                    STRLIT("plain fallback")));
+
+    native_lyrics_screen_destroy(&plain_screen);
+    ncm_song_destroy(&song);
+    lyrics_screen_test_remove_file(txt_path);
+    ASSERT(rmdir(directory) == 0);
+    return;
+}
+
 int
 main(void) {
     lyrics_screen_test_lrc_preferred_over_txt();
@@ -994,6 +1101,7 @@ main(void) {
     lyrics_screen_test_active_line_selection();
     lyrics_screen_test_search_and_sync_properties_are_independent();
     lyrics_screen_test_auto_scroll_clamps();
+    lyrics_screen_test_lrc_integration_fixture();
     exit(EXIT_SUCCESS);
 }
 
