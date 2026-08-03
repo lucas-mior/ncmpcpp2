@@ -221,6 +221,46 @@ scrollpad_test_narrow_window(void) {
 }
 
 static void
+scrollpad_test_buffer_height(void) {
+    NcBuffer buffer;
+    char data[] = "a bc";
+
+    scrollpad_test_init_buffer(&buffer, data, strlen32(data));
+    ASSERT_EQUAL(nc_scrollpad_buffer_height(&buffer, 1), 4);
+    ASSERT_EQUAL(nc_scrollpad_buffer_height(&buffer, 10), 1);
+    ASSERT_EQUAL(nc_scrollpad_buffer_height(&buffer, 0), 1);
+    nc_buffer_destroy(&buffer);
+    return;
+}
+
+static void
+scrollpad_test_center_on_buffer_position(void) {
+    NcBuffer buffer;
+    NcScrollpad scrollpad;
+    NcWindow window = {0};
+    char data[] = "zero\none\ntwo\nthree\nfour\nfive";
+
+    scrollpad_test_init_buffer(&buffer, data, strlen32(data));
+    nc_scrollpad_init(&scrollpad, 3);
+    window.width = 20;
+    window.height = 3;
+
+    nc_scrollpad_center_on_buffer_position(&scrollpad, &window, &buffer, 0);
+    ASSERT_EQUAL(scrollpad.beginning, 0);
+    ASSERT_EQUAL(scrollpad.real_height, 6);
+
+    nc_scrollpad_center_on_buffer_position(&scrollpad, &window, &buffer, 13);
+    ASSERT_EQUAL(scrollpad.beginning, 2);
+
+    nc_scrollpad_center_on_buffer_position(&scrollpad, &window, &buffer, 24);
+    ASSERT_EQUAL(scrollpad.beginning, 3);
+    ASSERT_EQUAL(nc_scrollpad_max_beginning(&scrollpad, &window), 3);
+
+    nc_buffer_destroy(&buffer);
+    return;
+}
+
+static void
 scrollpad_test_clamps_positions(void) {
     NcBuffer buffer;
     char data[] = "abc";
@@ -240,6 +280,8 @@ main(void) {
     scrollpad_test_wraps_long_words();
     scrollpad_test_empty_lines();
     scrollpad_test_narrow_window();
+    scrollpad_test_buffer_height();
+    scrollpad_test_center_on_buffer_position();
     scrollpad_test_clamps_positions();
     exit(EXIT_SUCCESS);
 }
