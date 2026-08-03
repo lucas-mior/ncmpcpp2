@@ -259,10 +259,10 @@ prepare_compiler() {
 }
 
 compile_and_link_main() {
-    binary=$BUILD_DIR/ncmpcpp2
+    binary=bin/ncmpcpp2
     temporary_binary=$binary.tmp.$$
 
-    mkdir -p "$BUILD_DIR"
+    mkdir -p "bin"
     TEMP_FILE=$temporary_binary
 
     # Flag variables intentionally require shell word splitting.
@@ -303,7 +303,7 @@ compile_test() {
     source=$1
     test_name=${source#tests/}
     test_name=${test_name%.c}
-    test_dir=$BUILD_DIR/tests
+    test_dir=bin/tests
     binary=$test_dir/$test_name
     temporary_binary=$binary.tmp.$$
 
@@ -399,7 +399,7 @@ run_analyzer() {
 }
 
 binary_needs_build() {
-    binary=$BUILD_DIR/ncmpcpp2
+    binary=bin/ncmpcpp2
 
     if [ ! -f "$binary" ]; then
         return 0
@@ -421,7 +421,7 @@ install_program() {
     fi
 
     install -d "$DESTDIR$BINDIR"
-    install -m 755 "$BUILD_DIR/ncmpcpp2" "$DESTDIR$BINDIR/ncmpcpp2"
+    install -m 755 "bin/ncmpcpp2" "$DESTDIR$BINDIR/ncmpcpp2"
     install -d "$DESTDIR$DOCDIR"
     install -m 644 AUTHORS COPYING "$DESTDIR$DOCDIR"
     install -m 644 doc/bindings doc/config "$DESTDIR$DOCDIR"
@@ -432,13 +432,13 @@ install_program() {
 }
 
 clean_build() {
-    case $BUILD_DIR in
+    case bin in
     ''|/)
-        die "refusing to remove unsafe BUILD_DIR: $BUILD_DIR"
+        die "refusing to remove unsafe BUILD_DIR: bin"
         ;;
     esac
 
-    rm -rf "$BUILD_DIR"
+    rm -rf "bin"
 
     return 0
 }
