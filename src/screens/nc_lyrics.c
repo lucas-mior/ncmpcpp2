@@ -13,6 +13,7 @@
 #include "screens/nc_lyrics.h"
 #include "screens/screen_switcher.h"
 #include "settings.h"
+#include "status.h"
 #include "statusbar.h"
 #include "title.h"
 #include "ui_state.h"
@@ -21,6 +22,7 @@
 #define NATIVE_LYRICS_FETCH_PROPERTY_ID ((int64)0x4c59524645544348LL)
 #define NATIVE_LYRICS_SEARCH_PROPERTY_ID ((int64)0x4c59525345415243LL)
 #define NATIVE_LYRICS_SYNC_PROPERTY_ID ((int64)0x4c595253594e4321LL)
+#define NATIVE_LYRICS_NO_ACTIVE_LINE (-1)
 
 struct NativeLyricsJob {
     NativeLyricsScreen *screen;
@@ -59,6 +61,8 @@ static void native_lyrics_append_locale(NcBuffer *buffer, char *data,
                                         int32 data_len);
 static bool native_lyrics_screen_render_lrc(NativeLyricsScreen *screen,
                                             NcmError *error);
+static bool native_lyrics_screen_update_sync_line(NativeLyricsScreen *screen);
+static void native_lyrics_screen_clear_sync_line(NativeLyricsScreen *screen);
 static int32 native_lyrics_lrc_buffer_position(void *user);
 static void native_lyrics_lrc_buffer_append(void *user,
                                             char *data, int32 data_len);
@@ -293,6 +297,7 @@ native_lyrics_screen_init(NativeLyricsScreen *screen,
     screen->queued_songs = NULL;
     screen->queued_songs_len = 0;
     screen->queued_songs_cap = 0;
+    screen->active_lrc_line = NATIVE_LYRICS_NO_ACTIVE_LINE;
 
     sb_init(&screen->consumer_message);
 
@@ -419,6 +424,7 @@ native_lyrics_screen_load_file(NativeLyricsScreen *screen,
     }
 
     nc_buffer_clear(&screen->display);
+    screen->active_lrc_line = NATIVE_LYRICS_NO_ACTIVE_LINE;
     first = true;
     while (fgets(line, SIZEOF(line), file)) {
         line_len = strlen32(line);
@@ -676,6 +682,9 @@ void
 native_lyrics_screen_update(NativeLyricsScreen *screen) {
     native_lyrics_screen_update_progress(screen);
     native_lyrics_screen_dispatch_jobs(screen);
+    if (native_lyrics_screen_update_sync_line(screen)) {
+        nc_lyrics_screen_request_refresh(&screen->screen);
+    }
     if (nc_lyrics_screen_take_refresh_request(&screen->screen)) {
         nc_scrollpad_flush(&screen->scrollpad,
                            &screen->window,
@@ -774,6 +783,14 @@ native_lyrics_screen_mode(NativeLyricsScreen *screen) {
 NcmLrcDocument *
 native_lyrics_screen_lrc(NativeLyricsScreen *screen) {
     return &screen->lrc;
+}
+
+int32
+native_lyrics_screen_active_lrc_line(NativeLyricsScreen *screen) {
+    if (screen == NULL) {
+        return NATIVE_LYRICS_NO_ACTIVE_LINE;
+    }
+    return screen->active_lrc_line;
 }
 
 bool
@@ -929,6 +946,56 @@ lyrics_resize_callback(NcScreen *screen) {
                                       ui_state_main_start_y(),
                                       ui_state_main_height());
     nc_screen_clear_resize_request(screen);
+    return;
+}
+
+static bool
+native_lyrics_screen_update_sync_line(NativeLyricsScreen *screen) {
+    NcmLrcEntry *entry;
+    int32 active_line;
+
+    if (screen == NULL) {
+        return false;
+    }
+    if (screen->mode != NATIVE_LYRICS_MODE_SYNCHRONIZED) {
+        if (screen->active_lrc_line == NATIVE_LYRICS_NO_ACTIVE_LINE) {
+            return false;
+        }
+        native_lyrics_screen_clear_sync_line(screen);
+        return true;
+    }
+
+    active_line = ncm_lrc_document_entry_at_time(
+        &screen->lrc, ncm_status_state_elapsed_time_ms());
+    if (active_line == screen->active_lrc_line) {
+        return false;
+    }
+
+    screen->active_lrc_line = active_line;
+    if (active_line == NATIVE_LYRICS_NO_ACTIVE_LINE) {
+        native_lyrics_buffer_clear_sync_highlight(&screen->display);
+        return true;
+    }
+    if (active_line >= screen->lrc.entries_len) {
+        native_lyrics_buffer_clear_sync_highlight(&screen->display);
+        return true;
+    }
+
+    entry = &screen->lrc.entries[active_line];
+    native_lyrics_buffer_highlight_sync_line(&screen->display,
+                                             entry->buffer_start,
+                                             entry->buffer_end);
+    return true;
+}
+
+static void
+native_lyrics_screen_clear_sync_line(NativeLyricsScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+
+    screen->active_lrc_line = NATIVE_LYRICS_NO_ACTIVE_LINE;
+    native_lyrics_buffer_clear_sync_highlight(&screen->display);
     return;
 }
 
@@ -1189,6 +1256,7 @@ native_lyrics_screen_clear_lyrics_state(NativeLyricsScreen *screen,
                                         NativeLyricsMode mode) {
     nc_buffer_clear(&screen->display);
     ncm_lrc_document_clear(&screen->lrc);
+    screen->active_lrc_line = NATIVE_LYRICS_NO_ACTIVE_LINE;
     screen->mode = mode;
     return;
 }
@@ -1697,6 +1765,7 @@ native_lyrics_screen_update_progress(NativeLyricsScreen *screen) {
     }
     if (native_lyrics_job_take_log(job, &screen->display)) {
         ncm_lrc_document_clear(&screen->lrc);
+        screen->active_lrc_line = NATIVE_LYRICS_NO_ACTIVE_LINE;
         screen->mode = NATIVE_LYRICS_MODE_FETCH_LOG;
         nc_lyrics_screen_request_refresh(&screen->screen);
     }

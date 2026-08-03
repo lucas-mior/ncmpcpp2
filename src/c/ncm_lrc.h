@@ -42,5 +42,7 @@ NcmStringView ncm_lrc_entry_text(NcmLrcDocument *document,
                                  NcmLrcEntry *entry);
 bool ncm_lrc_document_render_plain(NcmLrcDocument *document,
                                    NcmLrcRenderTarget *target);
+int32 ncm_lrc_document_entry_at_time(NcmLrcDocument *document,
+                                     int64 elapsed_ms);
 
 #endif /* NCM_LRC_H */
