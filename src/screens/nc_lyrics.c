@@ -55,6 +55,11 @@ static void native_lyrics_title_song_string(NcmSong *song, StrBuilder *title);
 static void native_lyrics_replace_search_separators(StrBuilder *buffer);
 static void native_lyrics_append_locale(NcBuffer *buffer, char *data,
                                         int32 data_len);
+static bool native_lyrics_screen_render_lrc(NativeLyricsScreen *screen,
+                                            NcmError *error);
+static int32 native_lyrics_lrc_buffer_position(void *user);
+static void native_lyrics_lrc_buffer_append(void *user,
+                                            char *data, int32 data_len);
 static void native_lyrics_report_unlink_error(StrBuilder *filename,
                                               NcmError *error);
 static void native_lyrics_screen_clear_lyrics_state(
@@ -417,7 +422,9 @@ native_lyrics_screen_load_file(NativeLyricsScreen *screen,
         line_len = strlen32(line);
         if (lrc_file) {
             SB_APPEND(&raw, line, line_len);
+            continue;
         }
+
         ncm_string_remove_chars(line, &line_len, STRLIT("\r\n"));
         if (!first) {
             nc_buffer_append_char(&screen->display, '\n');
@@ -436,6 +443,13 @@ native_lyrics_screen_load_file(NativeLyricsScreen *screen,
     }
 
     if (lrc_file) {
+        nc_buffer_clear(&screen->display);
+        if (!native_lyrics_screen_render_lrc(screen, error)) {
+            sb_free(&raw);
+            native_lyrics_screen_clear_lyrics_state(
+                screen, NATIVE_LYRICS_MODE_FETCH_LOG);
+            return false;
+        }
         screen->mode = NATIVE_LYRICS_MODE_SYNCHRONIZED;
     } else {
         ncm_lrc_document_clear(&screen->lrc);
@@ -1055,6 +1069,48 @@ native_lyrics_append_locale(NcBuffer *buffer, char *data, int32 data_len) {
     StrBuilder converted = ncm_charset_utf8_to_locale(data, data_len);
     nc_buffer_append_data(buffer, converted.data, converted.len);
     sb_free(&converted);
+    return;
+}
+
+static bool
+native_lyrics_screen_render_lrc(NativeLyricsScreen *screen,
+                                NcmError *error) {
+    NcmLrcRenderTarget target = {0};
+
+    target.user = screen;
+    target.position = native_lyrics_lrc_buffer_position;
+    target.append = native_lyrics_lrc_buffer_append;
+
+    if (!ncm_lrc_document_render_plain(&screen->lrc, &target)) {
+        ncm_error_set(error, EINVAL, STRLIT("failed to render LRC"));
+        return false;
+    }
+
+    ncm_error_clear(error);
+    return true;
+}
+
+static int32
+native_lyrics_lrc_buffer_position(void *user) {
+    NativeLyricsScreen *screen = user;
+
+    if (screen == NULL) {
+        return 0;
+    }
+
+    return nc_buffer_len(&screen->display);
+}
+
+static void
+native_lyrics_lrc_buffer_append(void *user,
+                                char *data, int32 data_len) {
+    NativeLyricsScreen *screen = user;
+
+    if (screen == NULL) {
+        return;
+    }
+
+    native_lyrics_append_locale(&screen->display, data, data_len);
     return;
 }
 
