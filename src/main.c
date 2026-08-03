@@ -282,7 +282,9 @@ main(int32 argc, char **argv) {
         app_destroy_state();
         exit(EXIT_SUCCESS);
     }
+#if CC_GCC || CC_CLANG
     atexit(app_at_exit);
+#endif
     if (!app_redirect_stderr()) {
         fprintf(stderr, "warning: could not redirect stderr: %s\n",
                 strerror(errno));
