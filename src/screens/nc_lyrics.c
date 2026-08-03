@@ -65,6 +65,12 @@ static void native_lyrics_append_locale(NcBuffer *buffer, char *data,
 static bool native_lyrics_screen_render_lrc(NativeLyricsScreen *screen,
                                             NcmError *error);
 static bool native_lyrics_screen_update_sync_line(NativeLyricsScreen *screen);
+static bool native_lyrics_screen_start_foreground_fetch(
+    NativeLyricsScreen *screen,
+    NcmSong *song,
+    NcmLyricsFetcherDef *fetcher,
+    StrBuilder *filename,
+    NcmError *error);
 static bool native_lyrics_screen_update_sync_line_force(
     NativeLyricsScreen *screen,
     bool force);
@@ -522,8 +528,6 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
                            NcmSong *song,
                            NcmLyricsFetcherDef *fetcher,
                            NcmError *error) {
-    NativeLyricsJob *job;
-    NcmLyricsFetcherDef *active_fetcher;
     StrBuilder next_filename = {0};
     StrBuilder lrc_filename = {0};
     StrBuilder txt_filename = {0};
@@ -627,39 +631,16 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
         return true;
     }
 
-    native_lyrics_screen_clear_lyrics_state(
-        screen, NATIVE_LYRICS_MODE_FETCH_LOG);
-    sb_copy(&screen->filename, &txt_filename);
-    if ((active_fetcher = native_lyrics_active_fetcher(screen, fetcher))) {
-        native_lyrics_append_fetching(&screen->display, active_fetcher);
-    } else if (Config.lyrics_fetchers.fetchers.len > 0) {
-        native_lyrics_append_fetching(
-            &screen->display, &Config.lyrics_fetchers.fetchers.items[0]);
-    }
-    nc_lyrics_screen_request_refresh(&screen->screen);
-
-    if (!ncm_job_queue_start(&screen->jobs, error)) {
+    if (!native_lyrics_screen_start_foreground_fetch(screen,
+                                                     song,
+                                                     fetcher,
+                                                     &txt_filename,
+                                                     error)) {
         sb_free(&txt_filename);
         sb_free(&lrc_filename);
         return false;
     }
 
-    job = native_lyrics_job_create(screen, song, active_fetcher, false, false);
-    screen->foreground_job = job;
-    if (!ncm_job_queue_push(&screen->jobs,
-                            (NcmJob){
-                                .run = native_lyrics_job_run,
-                                .complete = native_lyrics_job_complete,
-                                .destroy = native_lyrics_job_destroy,
-                                .user = job,
-                            },
-                            error)) {
-        screen->foreground_job = NULL;
-        native_lyrics_job_destroy(job);
-        sb_free(&txt_filename);
-        sb_free(&lrc_filename);
-        return false;
-    }
     sb_free(&txt_filename);
     sb_free(&lrc_filename);
     ncm_error_clear(error);
@@ -712,24 +693,45 @@ native_lyrics_screen_update(NativeLyricsScreen *screen) {
 void
 native_lyrics_screen_refetch_current(NativeLyricsScreen *screen,
                                      NcmError *error) {
+    StrBuilder filename = {0};
+    bool win32_filename;
+
     if (!screen->has_song) {
         ncm_error_set(error, EINVAL, STRLIT("no current song"));
         return;
     }
-    if ((screen->filename.len > 0)
-        && !ncm_fs_unlink(screen->filename.data,
-                          screen->filename.len,
-                          error)) {
-        native_lyrics_report_unlink_error(&screen->filename, error);
+
+    win32_filename = Config.generate_win32_compatible_filenames;
+    if (!native_lyrics_filename_from_song(&filename,
+                                          &screen->song,
+                                          Config.mpd_music_dir,
+                                          Config.mpd_music_dir_len,
+                                          Config.lyrics_directory,
+                                          Config.lyrics_directory_len,
+                                          Config.store_lyrics_in_song_dir,
+                                          win32_filename)) {
+        ncm_error_set(error, EINVAL,
+                      STRLIT("failed to build lyrics filename"));
+        sb_free(&filename);
         return;
     }
-    native_lyrics_screen_clear_lyrics_state(
-        screen, NATIVE_LYRICS_MODE_FETCH_LOG);
-    screen->has_song = false;
-    (void)native_lyrics_screen_fetch(screen,
-                                     &screen->song,
-                                     screen->fetcher,
-                                     error);
+    if (!ncm_fs_unlink(filename.data, filename.len, error)) {
+        native_lyrics_report_unlink_error(&filename, error);
+        sb_free(&filename);
+        return;
+    }
+
+    if (!native_lyrics_screen_start_foreground_fetch(screen,
+                                                     &screen->song,
+                                                     screen->fetcher,
+                                                     &filename,
+                                                     error)) {
+        sb_free(&filename);
+        return;
+    }
+
+    sb_free(&filename);
+    ncm_error_clear(error);
     return;
 }
 
@@ -1026,6 +1028,60 @@ native_lyrics_screen_clear_sync_line(NativeLyricsScreen *screen) {
     screen->active_lrc_line = NATIVE_LYRICS_NO_ACTIVE_LINE;
     native_lyrics_buffer_clear_sync_highlight(&screen->display);
     return;
+}
+
+static bool
+native_lyrics_screen_start_foreground_fetch(
+    NativeLyricsScreen *screen,
+    NcmSong *song,
+    NcmLyricsFetcherDef *fetcher,
+    StrBuilder *filename,
+    NcmError *error
+) {
+    NativeLyricsJob *job;
+    NcmLyricsFetcherDef *active_fetcher;
+
+    native_lyrics_screen_clear_lyrics_state(
+        screen, NATIVE_LYRICS_MODE_FETCH_LOG);
+    nc_scrollpad_reset(&screen->scrollpad);
+    nc_lyrics_screen_reset_scroll_begin(&screen->screen);
+    ncm_lyrics_result_clear(&screen->result);
+    if (song != &screen->song) {
+        ncm_song_copy(&screen->song, song);
+    }
+    screen->has_song = true;
+    sb_copy(&screen->filename, filename);
+
+    active_fetcher = native_lyrics_active_fetcher(screen, fetcher);
+    if (active_fetcher) {
+        native_lyrics_append_fetching(&screen->display, active_fetcher);
+    } else if (Config.lyrics_fetchers.fetchers.len > 0) {
+        native_lyrics_append_fetching(
+            &screen->display, &Config.lyrics_fetchers.fetchers.items[0]);
+    }
+    nc_lyrics_screen_request_refresh(&screen->screen);
+
+    if (!ncm_job_queue_start(&screen->jobs, error)) {
+        return false;
+    }
+
+    job = native_lyrics_job_create(screen, song, active_fetcher, false, false);
+    screen->foreground_job = job;
+    if (!ncm_job_queue_push(&screen->jobs,
+                            (NcmJob){
+                                .run = native_lyrics_job_run,
+                                .complete = native_lyrics_job_complete,
+                                .destroy = native_lyrics_job_destroy,
+                                .user = job,
+                            },
+                            error)) {
+        screen->foreground_job = NULL;
+        native_lyrics_job_destroy(job);
+        return false;
+    }
+
+    ncm_error_clear(error);
+    return true;
 }
 
 static int32
