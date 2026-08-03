@@ -27,6 +27,8 @@ static bool ncm_lrc_parse_line(NcmLrcDocument *document,
                                int32 *source_order);
 static NcmLrcEntry *ncm_lrc_document_append_entry(
     NcmLrcDocument *document);
+static void ncm_lrc_document_clear_buffer_positions(
+    NcmLrcDocument *document);
 static int ncm_lrc_entry_compare(void *left_ptr, void *right_ptr);
 
 void
@@ -136,10 +138,54 @@ ncm_lrc_entry_text(NcmLrcDocument *document, NcmLrcEntry *entry) {
     if ((entry->text_start + entry->text_len) > document->text.len) {
         return view;
     }
+    if (entry->text_len <= 0) {
+        view.data = "";
+        view.len = 0;
+        return view;
+    }
+    if (document->text.data == NULL) {
+        return view;
+    }
 
     view.data = document->text.data + entry->text_start;
     view.len = entry->text_len;
     return view;
+}
+
+bool
+ncm_lrc_document_render_plain(NcmLrcDocument *document,
+                              NcmLrcRenderTarget *target) {
+    char line_break[] = "\n";
+
+    if ((document == NULL) || (target == NULL)) {
+        return false;
+    }
+    if ((target->position == NULL) || (target->append == NULL)) {
+        return false;
+    }
+
+    ncm_lrc_document_clear_buffer_positions(document);
+    for (int32 i = 0; i < document->entries_len; i += 1) {
+        NcmLrcEntry *entry;
+        NcmStringView text;
+
+        if (i > 0) {
+            target->append(target->user, line_break, STRLIT_LEN("\n"));
+        }
+
+        entry = &document->entries[i];
+        text = ncm_lrc_entry_text(document, entry);
+        if ((text.len > 0) && (text.data == NULL)) {
+            ncm_lrc_document_clear_buffer_positions(document);
+            return false;
+        }
+
+        entry->buffer_start = target->position(target->user);
+        target->append(target->user, text.data, text.len);
+        entry->buffer_end = target->position(target->user);
+    }
+
+    return true;
 }
 
 static bool
@@ -490,6 +536,20 @@ ncm_lrc_document_append_entry(NcmLrcDocument *document) {
     entry = &document->entries[document->entries_len];
     document->entries_len += 1;
     return entry;
+}
+
+static void
+ncm_lrc_document_clear_buffer_positions(NcmLrcDocument *document) {
+    if (document == NULL) {
+        return;
+    }
+
+    for (int32 i = 0; i < document->entries_len; i += 1) {
+        document->entries[i].buffer_start = NCM_LRC_NO_BUFFER_POSITION;
+        document->entries[i].buffer_end = NCM_LRC_NO_BUFFER_POSITION;
+    }
+
+    return;
 }
 
 static int

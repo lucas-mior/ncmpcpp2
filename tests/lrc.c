@@ -7,6 +7,25 @@
 #include "c/ncm_error.c"
 #include "c/ncm_lrc.c"
 
+typedef struct LrcTestRenderTarget {
+    StrBuilder text;
+} LrcTestRenderTarget;
+
+static int32
+lrc_test_render_position(void *user) {
+    LrcTestRenderTarget *target = user;
+
+    return target->text.len;
+}
+
+static void
+lrc_test_render_append(void *user, char *data, int32 data_len) {
+    LrcTestRenderTarget *target = user;
+
+    SB_APPEND(&target->text, data, data_len);
+    return;
+}
+
 static void
 lrc_test_parse_simple_lines(void) {
     NcmLrcDocument document;
@@ -145,6 +164,41 @@ lrc_test_preserves_blank_lyric_lines(void) {
 }
 
 static void
+lrc_test_renders_plain_text_and_buffer_ranges(void) {
+    LrcTestRenderTarget target = {0};
+    NcmLrcRenderTarget render_target = {0};
+    NcmLrcDocument document;
+    NcmError error = {0};
+    char data[] = "[00:03.00]three\n"
+                  "[00:01.00]one\n"
+                  "[00:02.00]two\n"
+                  "[00:04.00]\n";
+
+    ncm_lrc_document_init(&document);
+    ASSERT(ncm_lrc_parse(&document, data, strlen32(data), &error));
+
+    render_target.user = &target;
+    render_target.position = lrc_test_render_position;
+    render_target.append = lrc_test_render_append;
+    ASSERT(ncm_lrc_document_render_plain(&document, &render_target));
+
+    ASSERT_EQUAL(target.text.len, STRLIT_LEN("one\ntwo\nthree\n"));
+    ASSERT(memcmp64(target.text.data, STRLIT("one\ntwo\nthree\n")) == 0);
+    ASSERT_EQUAL(document.entries[0].buffer_start, 0);
+    ASSERT_EQUAL(document.entries[0].buffer_end, 3);
+    ASSERT_EQUAL(document.entries[1].buffer_start, 4);
+    ASSERT_EQUAL(document.entries[1].buffer_end, 7);
+    ASSERT_EQUAL(document.entries[2].buffer_start, 8);
+    ASSERT_EQUAL(document.entries[2].buffer_end, 13);
+    ASSERT_EQUAL(document.entries[3].buffer_start, 14);
+    ASSERT_EQUAL(document.entries[3].buffer_end, 14);
+
+    sb_free(&target.text);
+    ncm_lrc_document_destroy(&document);
+    return;
+}
+
+static void
 lrc_test_rejects_untimed_or_malformed_text(void) {
     NcmLrcDocument document;
     NcmError error = {0};
@@ -175,6 +229,7 @@ main(void) {
     lrc_test_negative_offset_is_allowed();
     lrc_test_sorts_entries_with_stable_equal_times();
     lrc_test_preserves_blank_lyric_lines();
+    lrc_test_renders_plain_text_and_buffer_ranges();
     lrc_test_rejects_untimed_or_malformed_text();
     exit(EXIT_SUCCESS);
 }
