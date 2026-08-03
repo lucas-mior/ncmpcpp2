@@ -19,8 +19,6 @@ static int32 nc_scrollpad_i32(int32 value);
 static int32 nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
                                        bool generate_height_only);
 static bool nc_scrollpad_is_space(char ch);
-static int32 nc_scrollpad_max_beginning(NcScrollpad *scrollpad,
-                                        NcWindow *window);
 
 void
 nc_scrollpad_init(NcScrollpad *scrollpad, int32 height) {
@@ -229,6 +227,50 @@ nc_scrollpad_buffer_position_row(NcBuffer *buffer, int32 width,
     return row;
 }
 
+int32
+nc_scrollpad_buffer_height(NcBuffer *buffer, int32 width) {
+    int32 len;
+
+    if ((buffer == NULL) || (width <= 0)) {
+        return 1;
+    }
+
+    len = nc_buffer_len(buffer);
+    return nc_scrollpad_buffer_position_row(buffer, width, len) + 1;
+}
+
+void
+nc_scrollpad_center_on_buffer_position(
+    NcScrollpad *scrollpad,
+    NcWindow *window,
+    NcBuffer *buffer,
+    int32 position
+) {
+    int32 max_beginning;
+    int32 height;
+    int32 row;
+    int32 beginning;
+
+    if ((scrollpad == NULL) || (window == NULL) || (buffer == NULL)) {
+        return;
+    }
+    if ((window->width <= 0) || (window->height <= 0)) {
+        return;
+    }
+
+    row = nc_scrollpad_buffer_position_row(buffer, window->width, position);
+    height = nc_scrollpad_buffer_height(buffer, window->width);
+    if (height < window->height) {
+        height = window->height;
+    }
+    scrollpad->real_height = height;
+
+    beginning = row - window->height/2;
+    max_beginning = nc_scrollpad_max_beginning(scrollpad, window);
+    scrollpad->beginning = (int32)CLAMP(beginning, 0, max_beginning);
+    return;
+}
+
 void
 nc_scrollpad_reset(NcScrollpad *scrollpad) {
     scrollpad->beginning = 0;
@@ -240,9 +282,19 @@ nc_scrollpad_i32(int32 value) {
     return value;
 }
 
-static int32
+int32
 nc_scrollpad_max_beginning(NcScrollpad *scrollpad, NcWindow *window) {
-    return scrollpad->real_height - window->height;
+    int32 result;
+
+    if ((scrollpad == NULL) || (window == NULL)) {
+        return 0;
+    }
+
+    result = scrollpad->real_height - window->height;
+    if (result < 0) {
+        return 0;
+    }
+    return result;
 }
 
 static void
