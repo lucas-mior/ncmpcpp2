@@ -885,6 +885,8 @@ native_lyrics_buffer_clear_sync_highlight(NcBuffer *buffer) {
 void
 native_lyrics_buffer_highlight_sync_line(NcBuffer *buffer,
                                          int32 start, int32 end) {
+    NcFormattedColor highlight;
+
     if (buffer == NULL) {
         return;
     }
@@ -897,12 +899,14 @@ native_lyrics_buffer_highlight_sync_line(NcBuffer *buffer,
         end = buffer->len;
     }
 
-    nc_buffer_add_format(buffer, start,
-                         NC_FORMAT_BOLD,
-                         NATIVE_LYRICS_SYNC_PROPERTY_ID);
-    nc_buffer_add_format(buffer, end,
-                         NC_FORMAT_NO_BOLD,
-                         NATIVE_LYRICS_SYNC_PROPERTY_ID);
+    nc_formatted_color_init_color(
+        &highlight, nc_color_make(COLOR_WHITE, COLOR_BLACK, false, false));
+    nc_formatted_color_add_format(&highlight, NC_FORMAT_BOLD);
+    nc_buffer_add_formatted_color(buffer, start, &highlight,
+                                  NATIVE_LYRICS_SYNC_PROPERTY_ID);
+    nc_buffer_add_formatted_color_end(buffer, end, &highlight,
+                                      NATIVE_LYRICS_SYNC_PROPERTY_ID);
+    nc_formatted_color_destroy(&highlight);
     return;
 }
 
