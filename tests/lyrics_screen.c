@@ -808,16 +808,37 @@ lyrics_screen_test_has_property(NcBuffer *buffer, int64 id) {
 }
 
 static bool
-lyrics_screen_test_has_format_property(NcBuffer *buffer, int64 id,
-                                       int32 position, enum NcFormat format) {
+lyrics_screen_test_formatted_color_matches(NcFormattedColor *color) {
+    enum NcFormat *formats;
+
+    if (!nc_color_equal(color->color,
+                        nc_color_make(COLOR_WHITE, COLOR_BLACK,
+                                      false, false))) {
+        return false;
+    }
+
+    formats = nc_formatted_color_formats(color);
+    if (nc_formatted_color_format_count(color) != 1) {
+        return false;
+    }
+    if (formats[0] != NC_FORMAT_BOLD) {
+        return false;
+    }
+    return true;
+}
+
+static bool
+lyrics_screen_test_has_sync_property(NcBuffer *buffer, int32 position,
+                                     enum NcBufferPropertyType type) {
     NcBufferProperty *properties;
 
     properties = nc_buffer_properties(buffer);
     for (int32 i = 0; i < nc_buffer_property_count(buffer); i += 1) {
-        if ((properties[i].id == id)
+        if ((properties[i].id == NATIVE_LYRICS_SYNC_PROPERTY_ID)
             && (properties[i].position == position)
-            && (properties[i].type == NC_BUFFER_PROPERTY_FORMAT)
-            && (properties[i].value.format == format)) {
+            && (properties[i].type == type)
+            && lyrics_screen_test_formatted_color_matches(
+                &properties[i].value.formatted_color)) {
             return true;
         }
     }
@@ -832,16 +853,12 @@ lyrics_screen_test_assert_sync_highlight(NativeLyricsScreen *screen,
     ASSERT(entry_index >= 0);
     ASSERT(entry_index < screen->lrc.entries_len);
     entry = &screen->lrc.entries[entry_index];
-    ASSERT(lyrics_screen_test_has_format_property(
-        &screen->display,
-        NATIVE_LYRICS_SYNC_PROPERTY_ID,
-        entry->buffer_start,
-        NC_FORMAT_BOLD));
-    ASSERT(lyrics_screen_test_has_format_property(
-        &screen->display,
-        NATIVE_LYRICS_SYNC_PROPERTY_ID,
-        entry->buffer_end,
-        NC_FORMAT_NO_BOLD));
+    ASSERT(lyrics_screen_test_has_sync_property(
+        &screen->display, entry->buffer_start,
+        NC_BUFFER_PROPERTY_FORMATTED_COLOR));
+    ASSERT(lyrics_screen_test_has_sync_property(
+        &screen->display, entry->buffer_end,
+        NC_BUFFER_PROPERTY_FORMATTED_COLOR_END));
     return;
 }
 
