@@ -30,7 +30,8 @@ PKG_CONFIG=${PKG_CONFIG-pkg-config}
 ORIGINAL_CC=${CC-}
 CLANG_ANALYZER=${CLANG_ANALYZER-clang}
 
-CPPFLAGS=${CPPFLAGS-}
+CPPFLAGS=""
+CPPFLAGS="$CPPFLAGS -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=700"
 if [ "${CFLAGS+x}" = x ]; then
     ORIGINAL_CFLAGS_SET=1
 else
@@ -270,8 +271,6 @@ compile_and_link_main() {
         -I. \
         -Isrc \
         -Icbase \
-        -D_GNU_SOURCE \
-        -D_DEFAULT_SOURCE \
         $CPPFLAGS \
         $PKG_CFLAGS \
         $READLINE_CFLAGS \
@@ -331,8 +330,6 @@ compile_test() {
             -I. \
             -Isrc \
             -Icbase \
-            -D_GNU_SOURCE \
-            -D_DEFAULT_SOURCE \
             $CPPFLAGS \
             $CSTD \
             $CFLAGS \
@@ -387,8 +384,6 @@ run_analyzer() {
         -I. \
         -Isrc \
         -Icbase \
-        -D_GNU_SOURCE \
-        -D_DEFAULT_SOURCE \
         $CPPFLAGS \
         $PKG_CFLAGS \
         $READLINE_CFLAGS \
