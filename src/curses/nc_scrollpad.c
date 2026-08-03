@@ -147,6 +147,85 @@ nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window,
     return;
 }
 
+int32
+nc_scrollpad_buffer_position_row(NcBuffer *buffer, int32 width,
+                                 int32 position) {
+    char *data;
+    int32 len;
+    int32 word_len;
+    int32 word_start;
+    int32 row;
+    int32 x;
+    int32 i;
+
+    if ((buffer == NULL) || (width <= 0)) {
+        return 0;
+    }
+
+    data = nc_buffer_data(buffer);
+    len = nc_buffer_len(buffer);
+    if (position < 0) {
+        position = 0;
+    }
+    if (position > len) {
+        position = len;
+    }
+
+    row = 0;
+    x = 0;
+    i = 0;
+    while (i < len) {
+        while ((i < len) && nc_scrollpad_is_space(data[i])) {
+            if (position == i) {
+                return row;
+            }
+
+            if (data[i] == '\n') {
+                row += 1;
+                x = 0;
+            } else {
+                if (x >= width) {
+                    row += 1;
+                    x = 0;
+                }
+                x += 1;
+            }
+            i += 1;
+        }
+
+        if (i >= len) {
+            break;
+        }
+
+        word_start = i;
+        word_len = 0;
+        while ((i + word_len < len)
+               && !nc_scrollpad_is_space(data[i + word_len])) {
+            word_len += 1;
+        }
+
+        if ((x > 0) && (word_len > (width - x))) {
+            row += 1;
+            x = 0;
+        }
+
+        while (i < word_start + word_len) {
+            if (x >= width) {
+                row += 1;
+                x = 0;
+            }
+            if (position == i) {
+                return row;
+            }
+
+            x += 1;
+            i += 1;
+        }
+    }
+
+    return row;
+}
+
 void
 nc_scrollpad_reset(NcScrollpad *scrollpad) {
     scrollpad->beginning = 0;
