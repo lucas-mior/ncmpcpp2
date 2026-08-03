@@ -54,6 +54,7 @@ typedef struct NativeLyricsScreen {
     NcmLyricsFetcherDef *fetcher;
     int32 queued_songs_len;
     int32 queued_songs_cap;
+    int32 active_lrc_line;
     NativeLyricsMode mode;
 
     bool has_song;
@@ -131,6 +132,7 @@ NcmSong *native_lyrics_screen_song(NativeLyricsScreen *screen);
 StrBuilder *native_lyrics_screen_filename(NativeLyricsScreen *screen);
 NativeLyricsMode native_lyrics_screen_mode(NativeLyricsScreen *screen);
 NcmLrcDocument *native_lyrics_screen_lrc(NativeLyricsScreen *screen);
+int32 native_lyrics_screen_active_lrc_line(NativeLyricsScreen *screen);
 bool native_lyrics_buffer_find(NcBuffer *buffer, char *pattern,
                                int32 pattern_len, NcmError *error);
 void native_lyrics_buffer_clear_sync_highlight(NcBuffer *buffer);

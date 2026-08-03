@@ -199,6 +199,30 @@ lrc_test_renders_plain_text_and_buffer_ranges(void) {
 }
 
 static void
+lrc_test_finds_active_entry_at_time(void) {
+    NcmLrcDocument document;
+    NcmError error = {0};
+    char data[] = "[00:10.00]ten\n"
+                  "[00:05.00]five\n"
+                  "[00:05.00]five again\n"
+                  "[00:12.50]later\n";
+
+    ncm_lrc_document_init(&document);
+    ASSERT(ncm_lrc_parse(&document, data, strlen32(data), &error));
+
+    ASSERT_EQUAL(ncm_lrc_document_entry_at_time(&document, -1), -1);
+    ASSERT_EQUAL(ncm_lrc_document_entry_at_time(&document, 4999), -1);
+    ASSERT_EQUAL(ncm_lrc_document_entry_at_time(&document, 5000), 1);
+    ASSERT_EQUAL(ncm_lrc_document_entry_at_time(&document, 9999), 1);
+    ASSERT_EQUAL(ncm_lrc_document_entry_at_time(&document, 10000), 2);
+    ASSERT_EQUAL(ncm_lrc_document_entry_at_time(&document, 12500), 3);
+    ASSERT_EQUAL(ncm_lrc_document_entry_at_time(&document, 20000), 3);
+
+    ncm_lrc_document_destroy(&document);
+    return;
+}
+
+static void
 lrc_test_rejects_untimed_or_malformed_text(void) {
     NcmLrcDocument document;
     NcmError error = {0};
@@ -230,6 +254,7 @@ main(void) {
     lrc_test_sorts_entries_with_stable_equal_times();
     lrc_test_preserves_blank_lyric_lines();
     lrc_test_renders_plain_text_and_buffer_ranges();
+    lrc_test_finds_active_entry_at_time();
     lrc_test_rejects_untimed_or_malformed_text();
     exit(EXIT_SUCCESS);
 }
