@@ -188,6 +188,35 @@ ncm_lrc_document_render_plain(NcmLrcDocument *document,
     return true;
 }
 
+int32
+ncm_lrc_document_entry_at_time(NcmLrcDocument *document,
+                               int64 elapsed_ms) {
+    int32 left;
+    int32 right;
+
+    if ((document == NULL) || (document->entries_len <= 0)) {
+        return -1;
+    }
+    if (elapsed_ms < 0) {
+        return -1;
+    }
+
+    left = 0;
+    right = document->entries_len;
+    while (left < right) {
+        int32 middle;
+
+        middle = left + (right - left)/2;
+        if ((int64)document->entries[middle].time_ms <= elapsed_ms) {
+            left = middle + 1;
+        } else {
+            right = middle;
+        }
+    }
+
+    return left - 1;
+}
+
 static bool
 ncm_lrc_char_is_digit(char c) {
     return (c >= '0') && (c <= '9');
