@@ -17,5 +17,10 @@ typedef struct MEVENT {
 #define NCURSES_MOUSE_VERSION 2
 
 int32 mvwhline(WINDOW *win, int32 y, int32 x, chtype ch, int32 n);
+int32 prefresh(WINDOW *pad, int32 pminrow, int32 pmincol,
+               int32 sminrow, int32 smincol,
+               int32 smaxrow, int32 smaxcol);
+int32 werase(WINDOW *win);
+int32 wclrtoeol(WINDOW *win);
 
 #endif /* NCMPCPP_TESTS_CURSES_H */

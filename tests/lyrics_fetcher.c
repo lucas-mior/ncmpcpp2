@@ -199,7 +199,9 @@ lyrics_test_append_fixture(StrBuilder *data, LyricsFetcherTestCase *test) {
     char *html;
     int32 html_len;
 
-    html = read_entire_file(test->fixture, &html_len);
+    if (!read_entire_file(test->fixture, &html, &html_len)) {
+        assert(false);
+    }
     sb_clear(data);
     sb_append(data, html, html_len);
     free2(html, html_len + 1);
