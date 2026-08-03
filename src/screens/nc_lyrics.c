@@ -58,6 +58,14 @@ static void native_lyrics_append_locale(NcBuffer *buffer, char *data,
 static void native_lyrics_report_unlink_error(StrBuilder *filename,
                                               NcmError *error);
 static void native_lyrics_remove_extension(StrBuilder *buffer);
+static bool native_lyrics_filename_from_song_with_extension(
+    StrBuilder *filename,
+    NcmSong *song,
+    char *music_dir, int32 music_dir_len,
+    char *lyrics_dir, int32 lyrics_dir_len,
+    bool store_in_song_dir,
+    bool win32_filename,
+    char *extension, int32 extension_len);
 static bool native_lyrics_filename_from_song(StrBuilder *filename,
                                              NcmSong *song,
                                              char *music_dir,
@@ -66,6 +74,14 @@ static bool native_lyrics_filename_from_song(StrBuilder *filename,
                                              int32 lyrics_dir_len,
                                              bool store_in_song_dir,
                                              bool win32_filename);
+static bool native_lyrics_preferred_filename_from_song(StrBuilder *filename,
+                                                       NcmSong *song,
+                                                       char *music_dir,
+                                                       int32 music_dir_len,
+                                                       char *lyrics_dir,
+                                                       int32 lyrics_dir_len,
+                                                       bool store_in_song_dir,
+                                                       bool win32_filename);
 static bool native_lyrics_queue_song(NativeLyricsScreen *screen,
                                      NcmSong *song, bool notify);
 static NativeLyricsJob *native_lyrics_job_create(NativeLyricsScreen *screen,
@@ -351,15 +367,14 @@ native_lyrics_screen_build_filename(NativeLyricsScreen *screen,
                                     char *lyrics_dir, int32 lyrics_dir_len,
                                     bool store_in_song_dir,
                                     bool win32_filename) {
-    (void)screen;
-    return native_lyrics_filename_from_song(&screen->filename,
-                                            song,
-                                            music_dir,
-                                            music_dir_len,
-                                            lyrics_dir,
-                                            lyrics_dir_len,
-                                            store_in_song_dir,
-                                            win32_filename);
+    return native_lyrics_preferred_filename_from_song(&screen->filename,
+                                                      song,
+                                                      music_dir,
+                                                      music_dir_len,
+                                                      lyrics_dir,
+                                                      lyrics_dir_len,
+                                                      store_in_song_dir,
+                                                      win32_filename);
 }
 
 bool
@@ -440,6 +455,8 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
     NativeLyricsJob *job;
     NcmLyricsFetcherDef *active_fetcher;
     StrBuilder next_filename = {0};
+    StrBuilder lrc_filename = {0};
+    StrBuilder txt_filename = {0};
     bool changed_song;
     bool changed_filename;
     bool changed;
@@ -451,7 +468,22 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
     }
 
     win32_filename = Config.generate_win32_compatible_filenames;
-    if (!native_lyrics_filename_from_song(&next_filename,
+    if (!native_lyrics_filename_from_song_with_extension(
+            &lrc_filename,
+            song,
+            Config.mpd_music_dir,
+            Config.mpd_music_dir_len,
+            Config.lyrics_directory,
+            Config.lyrics_directory_len,
+            Config.store_lyrics_in_song_dir,
+            win32_filename,
+            STRLIT(".lrc"))) {
+        sb_free(&lrc_filename);
+        ncm_error_set(error, EINVAL,
+                      STRLIT("failed to build lyrics filename"));
+        return false;
+    }
+    if (!native_lyrics_filename_from_song(&txt_filename,
                                           song,
                                           Config.mpd_music_dir,
                                           Config.mpd_music_dir_len,
@@ -459,7 +491,21 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
                                           Config.lyrics_directory_len,
                                           Config.store_lyrics_in_song_dir,
                                           win32_filename)) {
+        sb_free(&txt_filename);
+        sb_free(&lrc_filename);
+        ncm_error_set(error, EINVAL,
+                      STRLIT("failed to build lyrics filename"));
+        return false;
+    }
+    if (ncm_fs_exists(lrc_filename.data, lrc_filename.len)) {
+        sb_copy(&next_filename, &lrc_filename);
+    } else {
+        sb_copy(&next_filename, &txt_filename);
+    }
+    if (next_filename.len <= 0) {
         sb_free(&next_filename);
+        sb_free(&txt_filename);
+        sb_free(&lrc_filename);
         ncm_error_set(error, EINVAL,
                       STRLIT("failed to build lyrics filename"));
         return false;
@@ -483,19 +529,35 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
     sb_free(&next_filename);
 
     if (!changed) {
+        sb_free(&txt_filename);
+        sb_free(&lrc_filename);
         ncm_error_clear(error);
         return true;
     }
 
     if (native_lyrics_screen_load_file(screen,
-                                       screen->filename.data,
-                                       screen->filename.len,
+                                       lrc_filename.data,
+                                       lrc_filename.len,
                                        error)) {
+        sb_copy(&screen->filename, &lrc_filename);
+        sb_free(&txt_filename);
+        sb_free(&lrc_filename);
+        ncm_error_clear(error);
+        return true;
+    }
+    if (native_lyrics_screen_load_file(screen,
+                                       txt_filename.data,
+                                       txt_filename.len,
+                                       error)) {
+        sb_copy(&screen->filename, &txt_filename);
+        sb_free(&txt_filename);
+        sb_free(&lrc_filename);
         ncm_error_clear(error);
         return true;
     }
 
     nc_buffer_clear(&screen->display);
+    sb_copy(&screen->filename, &txt_filename);
     if ((active_fetcher = native_lyrics_active_fetcher(screen, fetcher))) {
         native_lyrics_append_fetching(&screen->display, active_fetcher);
     } else if (Config.lyrics_fetchers.fetchers.len > 0) {
@@ -505,6 +567,8 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
     nc_lyrics_screen_request_refresh(&screen->screen);
 
     if (!ncm_job_queue_start(&screen->jobs, error)) {
+        sb_free(&txt_filename);
+        sb_free(&lrc_filename);
         return false;
     }
 
@@ -520,8 +584,12 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
                             error)) {
         screen->foreground_job = NULL;
         native_lyrics_job_destroy(job);
+        sb_free(&txt_filename);
+        sb_free(&lrc_filename);
         return false;
     }
+    sb_free(&txt_filename);
+    sb_free(&lrc_filename);
     ncm_error_clear(error);
     return true;
 }
@@ -993,10 +1061,15 @@ native_lyrics_remove_extension(StrBuilder *buffer) {
 }
 
 static bool
-native_lyrics_filename_from_song(StrBuilder *filename, NcmSong *song,
-                                 char *music_dir, int32 music_dir_len,
-                                 char *lyrics_dir, int32 lyrics_dir_len,
-                                 bool store_in_song_dir, bool win32_filename) {
+native_lyrics_filename_from_song_with_extension(
+    StrBuilder *filename,
+    NcmSong *song,
+    char *music_dir, int32 music_dir_len,
+    char *lyrics_dir, int32 lyrics_dir_len,
+    bool store_in_song_dir,
+    bool win32_filename,
+    char *extension, int32 extension_len
+) {
     StrBuilder artist = {0};
     StrBuilder title = {0};
     NcmStringView uri;
@@ -1040,11 +1113,69 @@ native_lyrics_filename_from_song(StrBuilder *filename, NcmSong *song,
         }
     }
 
-    SB_APPEND(filename, STRLIT(".txt"));
+    SB_APPEND(filename, extension, extension_len);
     sb_free(&title);
     sb_free(&artist);
 
-    return filename->len > 4;
+    return filename->len > extension_len;
+}
+
+static bool
+native_lyrics_filename_from_song(StrBuilder *filename, NcmSong *song,
+                                 char *music_dir, int32 music_dir_len,
+                                 char *lyrics_dir, int32 lyrics_dir_len,
+                                 bool store_in_song_dir, bool win32_filename) {
+    return native_lyrics_filename_from_song_with_extension(filename,
+                                                          song,
+                                                          music_dir,
+                                                          music_dir_len,
+                                                          lyrics_dir,
+                                                          lyrics_dir_len,
+                                                          store_in_song_dir,
+                                                          win32_filename,
+                                                          STRLIT(".txt"));
+}
+
+static bool
+native_lyrics_preferred_filename_from_song(StrBuilder *filename,
+                                           NcmSong *song,
+                                           char *music_dir,
+                                           int32 music_dir_len,
+                                           char *lyrics_dir,
+                                           int32 lyrics_dir_len,
+                                           bool store_in_song_dir,
+                                           bool win32_filename) {
+    StrBuilder lrc_filename = {0};
+    bool success;
+
+    success = native_lyrics_filename_from_song_with_extension(&lrc_filename,
+                                                             song,
+                                                             music_dir,
+                                                             music_dir_len,
+                                                             lyrics_dir,
+                                                             lyrics_dir_len,
+                                                             store_in_song_dir,
+                                                             win32_filename,
+                                                             STRLIT(".lrc"));
+    if (!success) {
+        sb_free(&lrc_filename);
+        return false;
+    }
+    if (ncm_fs_exists(lrc_filename.data, lrc_filename.len)) {
+        sb_copy(filename, &lrc_filename);
+        sb_free(&lrc_filename);
+        return true;
+    }
+    sb_free(&lrc_filename);
+
+    return native_lyrics_filename_from_song(filename,
+                                           song,
+                                           music_dir,
+                                           music_dir_len,
+                                           lyrics_dir,
+                                           lyrics_dir_len,
+                                           store_in_song_dir,
+                                           win32_filename);
 }
 
 static bool
@@ -1523,14 +1654,15 @@ native_lyrics_start_next_background(NativeLyricsScreen *screen,
             continue;
         }
 
-        if (!native_lyrics_filename_from_song(&filename,
-                                              &queued->song,
-                                              Config.mpd_music_dir,
-                                              Config.mpd_music_dir_len,
-                                              Config.lyrics_directory,
-                                              Config.lyrics_directory_len,
-                                              Config.store_lyrics_in_song_dir,
-                                              win32_filename)) {
+        if (!native_lyrics_preferred_filename_from_song(
+                &filename,
+                &queued->song,
+                Config.mpd_music_dir,
+                Config.mpd_music_dir_len,
+                Config.lyrics_directory,
+                Config.lyrics_directory_len,
+                Config.store_lyrics_in_song_dir,
+                win32_filename)) {
             native_lyrics_queued_song_destroy(queued);
             free2(queued, SIZEOF(*queued));
             queued = NULL;
