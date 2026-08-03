@@ -34,6 +34,7 @@
 #include "c/ncm_fs.c"
 #include "c/ncm_html.c"
 #include "c/ncm_job.c"
+#include "c/ncm_lrc.c"
 #include "c/ncm_macro_utilities.c"
 #include "c/ncm_mpd_client.c"
 #include "c/ncm_mpd_connection.c"
