@@ -133,6 +133,9 @@ NativeLyricsMode native_lyrics_screen_mode(NativeLyricsScreen *screen);
 NcmLrcDocument *native_lyrics_screen_lrc(NativeLyricsScreen *screen);
 bool native_lyrics_buffer_find(NcBuffer *buffer, char *pattern,
                                int32 pattern_len, NcmError *error);
+void native_lyrics_buffer_clear_sync_highlight(NcBuffer *buffer);
+void native_lyrics_buffer_highlight_sync_line(NcBuffer *buffer,
+                                              int32 start, int32 end);
 bool native_lyrics_screen_find(NativeLyricsScreen *screen,
                                char *pattern, int32 pattern_len,
                                NcmError *error);

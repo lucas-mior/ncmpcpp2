@@ -18,7 +18,9 @@
 #include "ui_state.h"
 
 #define NATIVE_LYRICS_TITLE "Lyrics"
-#define NATIVE_LYRICS_PROPERTY_ID 0x4c59524943534649ULL
+#define NATIVE_LYRICS_FETCH_PROPERTY_ID ((int64)0x4c59524645544348LL)
+#define NATIVE_LYRICS_SEARCH_PROPERTY_ID ((int64)0x4c59525345415243LL)
+#define NATIVE_LYRICS_SYNC_PROPERTY_ID ((int64)0x4c595253594e4321LL)
 
 struct NativeLyricsJob {
     NativeLyricsScreen *screen;
@@ -787,7 +789,7 @@ native_lyrics_buffer_find(NcBuffer *buffer,
         return false;
     }
 
-    nc_buffer_remove_properties(buffer, NATIVE_LYRICS_PROPERTY_ID);
+    nc_buffer_remove_properties(buffer, NATIVE_LYRICS_SEARCH_PROPERTY_ID);
     if ((pattern == NULL) || (pattern_len <= 0)) {
         ncm_error_clear(error);
         return true;
@@ -834,6 +836,40 @@ native_lyrics_screen_find(NativeLyricsScreen *screen,
                        &screen->display);
     native_lyrics_display(screen);
     return result;
+}
+
+void
+native_lyrics_buffer_clear_sync_highlight(NcBuffer *buffer) {
+    if (buffer == NULL) {
+        return;
+    }
+
+    nc_buffer_remove_properties(buffer, NATIVE_LYRICS_SYNC_PROPERTY_ID);
+    return;
+}
+
+void
+native_lyrics_buffer_highlight_sync_line(NcBuffer *buffer,
+                                         int32 start, int32 end) {
+    if (buffer == NULL) {
+        return;
+    }
+
+    native_lyrics_buffer_clear_sync_highlight(buffer);
+    if ((start < 0) || (end <= start) || (start >= buffer->len)) {
+        return;
+    }
+    if (end > buffer->len) {
+        end = buffer->len;
+    }
+
+    nc_buffer_add_format(buffer, start,
+                         NC_FORMAT_BOLD,
+                         NATIVE_LYRICS_SYNC_PROPERTY_ID);
+    nc_buffer_add_format(buffer, end,
+                         NC_FORMAT_NO_BOLD,
+                         NATIVE_LYRICS_SYNC_PROPERTY_ID);
+    return;
 }
 
 static NativeLyricsScreen *
@@ -1558,12 +1594,12 @@ native_lyrics_append_fetching(NcBuffer *buffer, NcmLyricsFetcherDef *fetcher) {
     nc_buffer_add_format(buffer,
                          fetcher_position,
                          NC_FORMAT_BOLD,
-                         NATIVE_LYRICS_PROPERTY_ID);
+                         NATIVE_LYRICS_FETCH_PROPERTY_ID);
     nc_buffer_append_data(buffer, name, name_len);
     nc_buffer_add_format(buffer,
                          nc_buffer_len(buffer),
                          NC_FORMAT_NO_BOLD,
-                         NATIVE_LYRICS_PROPERTY_ID);
+                         NATIVE_LYRICS_FETCH_PROPERTY_ID);
     nc_buffer_append_cstring(buffer, "... ");
 
     return;
@@ -1575,12 +1611,12 @@ native_lyrics_append_fetch_error(NcBuffer *buffer, NcmLyricsResult *result) {
     nc_buffer_add_color(buffer,
                         nc_buffer_len(buffer),
                         red,
-                        NATIVE_LYRICS_PROPERTY_ID);
+                        NATIVE_LYRICS_FETCH_PROPERTY_ID);
     nc_buffer_append_data(buffer, result->text, result->text_len);
     nc_buffer_add_color(buffer,
                         nc_buffer_len(buffer),
                         nc_color_end(),
-                        NATIVE_LYRICS_PROPERTY_ID);
+                        NATIVE_LYRICS_FETCH_PROPERTY_ID);
     nc_buffer_append_char(buffer, '\n');
 
     return;
@@ -1714,9 +1750,10 @@ native_lyrics_find_match_callback(int32 start, int32 len, void *user) {
     }
 
     nc_buffer_add_format(state->buffer, start,
-                         NC_FORMAT_REVERSE, NATIVE_LYRICS_PROPERTY_ID);
+                         NC_FORMAT_REVERSE, NATIVE_LYRICS_SEARCH_PROPERTY_ID);
     nc_buffer_add_format(state->buffer, start + len,
-                         NC_FORMAT_NO_REVERSE, NATIVE_LYRICS_PROPERTY_ID);
+                         NC_FORMAT_NO_REVERSE,
+                         NATIVE_LYRICS_SEARCH_PROPERTY_ID);
 
     return true;
 }
