@@ -44,5 +44,7 @@ bool ncm_lrc_document_render_plain(NcmLrcDocument *document,
                                    NcmLrcRenderTarget *target);
 int32 ncm_lrc_document_entry_at_time(NcmLrcDocument *document,
                                      int64 elapsed_ms);
+int32 ncm_lrc_document_next_entry_after_time(NcmLrcDocument *document,
+                                             int64 elapsed_ms);
 
 #endif /* NCM_LRC_H */

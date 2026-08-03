@@ -191,13 +191,30 @@ ncm_lrc_document_render_plain(NcmLrcDocument *document,
 int32
 ncm_lrc_document_entry_at_time(NcmLrcDocument *document,
                                int64 elapsed_ms) {
-    int32 left;
-    int32 right;
+    int32 next;
 
     if ((document == NULL) || (document->entries_len <= 0)) {
         return -1;
     }
     if (elapsed_ms < 0) {
+        return -1;
+    }
+
+    next = ncm_lrc_document_next_entry_after_time(document, elapsed_ms);
+    if (next < 0) {
+        return document->entries_len - 1;
+    }
+
+    return next - 1;
+}
+
+int32
+ncm_lrc_document_next_entry_after_time(NcmLrcDocument *document,
+                                           int64 elapsed_ms) {
+    int32 left;
+    int32 right;
+
+    if ((document == NULL) || (document->entries_len <= 0)) {
         return -1;
     }
 
@@ -214,7 +231,10 @@ ncm_lrc_document_entry_at_time(NcmLrcDocument *document,
         }
     }
 
-    return left - 1;
+    if (left >= document->entries_len) {
+        return -1;
+    }
+    return left;
 }
 
 static bool
