@@ -176,6 +176,13 @@ nc_scrollpad_buffer_position_row(NcBuffer *buffer, int32 width,
     i = 0;
     while (i < len) {
         while ((i < len) && nc_scrollpad_is_space(data[i])) {
+            if (data[i] != '\n') {
+                if (x >= width) {
+                    row += 1;
+                    x = 0;
+                }
+            }
+
             if (position == i) {
                 return row;
             }
@@ -184,10 +191,6 @@ nc_scrollpad_buffer_position_row(NcBuffer *buffer, int32 width,
                 row += 1;
                 x = 0;
             } else {
-                if (x >= width) {
-                    row += 1;
-                    x = 0;
-                }
                 x += 1;
             }
             i += 1;
