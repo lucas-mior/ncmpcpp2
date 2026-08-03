@@ -380,6 +380,10 @@ native_lyrics_screen_set_geometry(NativeLyricsScreen *screen,
                         &screen->window,
                         nc_lyrics_screen_width(&screen->screen),
                         nc_lyrics_screen_height(&screen->screen));
+    if (screen->mode == NATIVE_LYRICS_MODE_SYNCHRONIZED) {
+        nc_scrollpad_reset(&screen->scrollpad);
+        screen->active_lrc_line = NATIVE_LYRICS_NO_ACTIVE_LINE;
+    }
     return;
 }
 
@@ -428,6 +432,7 @@ native_lyrics_screen_load_file(NativeLyricsScreen *screen,
     }
 
     nc_buffer_clear(&screen->display);
+    nc_scrollpad_reset(&screen->scrollpad);
     screen->active_lrc_line = NATIVE_LYRICS_NO_ACTIVE_LINE;
     first = true;
     while (fgets(line, SIZEOF(line), file)) {
@@ -978,10 +983,12 @@ native_lyrics_screen_update_sync_line(NativeLyricsScreen *screen) {
     screen->active_lrc_line = active_line;
     if (active_line == NATIVE_LYRICS_NO_ACTIVE_LINE) {
         native_lyrics_buffer_clear_sync_highlight(&screen->display);
+        nc_scrollpad_reset(&screen->scrollpad);
         return true;
     }
     if (active_line >= screen->lrc.entries_len) {
         native_lyrics_buffer_clear_sync_highlight(&screen->display);
+        nc_scrollpad_reset(&screen->scrollpad);
         return true;
     }
 
@@ -989,6 +996,10 @@ native_lyrics_screen_update_sync_line(NativeLyricsScreen *screen) {
     native_lyrics_buffer_highlight_sync_line(&screen->display,
                                              entry->buffer_start,
                                              entry->buffer_end);
+    nc_scrollpad_center_on_buffer_position(&screen->scrollpad,
+                                           &screen->window,
+                                           &screen->display,
+                                           entry->buffer_start);
     return true;
 }
 
