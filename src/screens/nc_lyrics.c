@@ -23,6 +23,9 @@
 #define NATIVE_LYRICS_SEARCH_PROPERTY_ID ((int64)0x4c59525345415243LL)
 #define NATIVE_LYRICS_SYNC_PROPERTY_ID ((int64)0x4c595253594e4321LL)
 #define NATIVE_LYRICS_NO_ACTIVE_LINE (-1)
+#define NATIVE_LYRICS_DEFAULT_TIMEOUT_MS NC_SCREEN_DEFAULT_WINDOW_TIMEOUT
+#define NATIVE_LYRICS_SYNC_TIMEOUT_MIN_MS 25
+#define NATIVE_LYRICS_SYNC_TIMEOUT_MAX_MS 100
 
 struct NativeLyricsJob {
     NativeLyricsScreen *screen;
@@ -63,6 +66,7 @@ static bool native_lyrics_screen_render_lrc(NativeLyricsScreen *screen,
                                             NcmError *error);
 static bool native_lyrics_screen_update_sync_line(NativeLyricsScreen *screen);
 static void native_lyrics_screen_clear_sync_line(NativeLyricsScreen *screen);
+static int32 native_lyrics_screen_sync_timeout(NativeLyricsScreen *screen);
 static int32 native_lyrics_lrc_buffer_position(void *user);
 static void native_lyrics_lrc_buffer_append(void *user,
                                             char *data, int32 data_len);
@@ -1000,9 +1004,42 @@ native_lyrics_screen_clear_sync_line(NativeLyricsScreen *screen) {
 }
 
 static int32
+native_lyrics_screen_sync_timeout(NativeLyricsScreen *screen) {
+    int32 next_line;
+    int64 elapsed_ms;
+    int64 remaining_ms;
+
+    if (screen == NULL) {
+        return NATIVE_LYRICS_DEFAULT_TIMEOUT_MS;
+    }
+    if (screen->mode != NATIVE_LYRICS_MODE_SYNCHRONIZED) {
+        return NATIVE_LYRICS_DEFAULT_TIMEOUT_MS;
+    }
+    if (ncm_status_state_player() != NCM_STATUS_PLAYER_PLAY) {
+        return NATIVE_LYRICS_DEFAULT_TIMEOUT_MS;
+    }
+
+    elapsed_ms = ncm_status_state_elapsed_time_ms();
+    next_line = ncm_lrc_document_next_entry_after_time(&screen->lrc,
+                                                       elapsed_ms);
+    if (next_line < 0) {
+        return NATIVE_LYRICS_DEFAULT_TIMEOUT_MS;
+    }
+    if (next_line >= screen->lrc.entries_len) {
+        return NATIVE_LYRICS_DEFAULT_TIMEOUT_MS;
+    }
+
+    remaining_ms = (int64)screen->lrc.entries[next_line].time_ms
+                   - elapsed_ms;
+    remaining_ms = CLAMP(remaining_ms,
+                         NATIVE_LYRICS_SYNC_TIMEOUT_MIN_MS,
+                         NATIVE_LYRICS_SYNC_TIMEOUT_MAX_MS);
+    return (int32)remaining_ms;
+}
+
+static int32
 lyrics_window_timeout_callback(NcScreen *screen) {
-    (void)screen;
-    return 500;
+    return native_lyrics_screen_sync_timeout(lyrics_from_screen(screen));
 }
 
 static char *
