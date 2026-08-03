@@ -6,6 +6,7 @@
 #include "c/ncm_app_arrays.h"
 #include "c/ncm_fs.h"
 #include "c/ncm_job.h"
+#include "c/ncm_lrc.h"
 #include "c/ncm_song.h"
 #include "curses/nc_buffer.h"
 #include "curses/nc_scrollpad.h"
@@ -14,6 +15,12 @@
 #include "screens/nc_scrollpad_screen.h"
 
 typedef struct NativeLyricsJob NativeLyricsJob;
+
+typedef enum NativeLyricsMode {
+    NATIVE_LYRICS_MODE_PLAIN,
+    NATIVE_LYRICS_MODE_SYNCHRONIZED,
+    NATIVE_LYRICS_MODE_FETCH_LOG,
+} NativeLyricsMode;
 
 typedef struct NcLyricsScreen {
     NcScrollpadScreen scrollpad_screen;
@@ -37,6 +44,7 @@ typedef struct NativeLyricsScreen {
     StrBuilder title;
     NcmSong song;
     StrBuilder filename;
+    NcmLrcDocument lrc;
     NcmLyricsResult result;
     NcmJobQueue jobs;
     NativeLyricsJob *foreground_job;
@@ -46,6 +54,7 @@ typedef struct NativeLyricsScreen {
     NcmLyricsFetcherDef *fetcher;
     int32 queued_songs_len;
     int32 queued_songs_cap;
+    NativeLyricsMode mode;
 
     bool has_song;
     bool initialized;
@@ -120,6 +129,8 @@ bool native_lyrics_screen_try_take_consumer_message(
     NativeLyricsScreen *screen, StrBuilder *message);
 NcmSong *native_lyrics_screen_song(NativeLyricsScreen *screen);
 StrBuilder *native_lyrics_screen_filename(NativeLyricsScreen *screen);
+NativeLyricsMode native_lyrics_screen_mode(NativeLyricsScreen *screen);
+NcmLrcDocument *native_lyrics_screen_lrc(NativeLyricsScreen *screen);
 bool native_lyrics_buffer_find(NcBuffer *buffer, char *pattern,
                                int32 pattern_len, NcmError *error);
 bool native_lyrics_screen_find(NativeLyricsScreen *screen,
