@@ -218,6 +218,14 @@ lrc_test_finds_active_entry_at_time(void) {
     ASSERT_EQUAL(ncm_lrc_document_entry_at_time(&document, 12500), 3);
     ASSERT_EQUAL(ncm_lrc_document_entry_at_time(&document, 20000), 3);
 
+    ASSERT_EQUAL(ncm_lrc_document_next_entry_after_time(&document, -1), 0);
+    ASSERT_EQUAL(ncm_lrc_document_next_entry_after_time(&document, 4999), 0);
+    ASSERT_EQUAL(ncm_lrc_document_next_entry_after_time(&document, 5000), 2);
+    ASSERT_EQUAL(ncm_lrc_document_next_entry_after_time(&document, 9999), 2);
+    ASSERT_EQUAL(ncm_lrc_document_next_entry_after_time(&document, 10000), 3);
+    ASSERT_EQUAL(ncm_lrc_document_next_entry_after_time(&document, 12500), -1);
+    ASSERT_EQUAL(ncm_lrc_document_next_entry_after_time(&document, 20000), -1);
+
     ncm_lrc_document_destroy(&document);
     return;
 }
