@@ -65,6 +65,9 @@ static void native_lyrics_append_locale(NcBuffer *buffer, char *data,
 static bool native_lyrics_screen_render_lrc(NativeLyricsScreen *screen,
                                             NcmError *error);
 static bool native_lyrics_screen_update_sync_line(NativeLyricsScreen *screen);
+static bool native_lyrics_screen_update_sync_line_force(
+    NativeLyricsScreen *screen,
+    bool force);
 static void native_lyrics_screen_clear_sync_line(NativeLyricsScreen *screen);
 static int32 native_lyrics_screen_sync_timeout(NativeLyricsScreen *screen);
 static int32 native_lyrics_lrc_buffer_position(void *user);
@@ -381,8 +384,11 @@ native_lyrics_screen_set_geometry(NativeLyricsScreen *screen,
                         nc_lyrics_screen_width(&screen->screen),
                         nc_lyrics_screen_height(&screen->screen));
     if (screen->mode == NATIVE_LYRICS_MODE_SYNCHRONIZED) {
-        nc_scrollpad_reset(&screen->scrollpad);
-        screen->active_lrc_line = NATIVE_LYRICS_NO_ACTIVE_LINE;
+        (void)native_lyrics_screen_update_sync_line_force(screen, true);
+        nc_scrollpad_flush(&screen->scrollpad,
+                           &screen->window,
+                           &screen->display);
+        nc_lyrics_screen_request_refresh(&screen->screen);
     }
     return;
 }
@@ -960,6 +966,14 @@ lyrics_resize_callback(NcScreen *screen) {
 
 static bool
 native_lyrics_screen_update_sync_line(NativeLyricsScreen *screen) {
+    return native_lyrics_screen_update_sync_line_force(screen, false);
+}
+
+static bool
+native_lyrics_screen_update_sync_line_force(
+    NativeLyricsScreen *screen,
+    bool force
+) {
     NcmLrcEntry *entry;
     int32 active_line;
 
@@ -976,7 +990,7 @@ native_lyrics_screen_update_sync_line(NativeLyricsScreen *screen) {
 
     active_line = ncm_lrc_document_entry_at_time(
         &screen->lrc, ncm_status_state_elapsed_time_ms());
-    if (active_line == screen->active_lrc_line) {
+    if (!force && (active_line == screen->active_lrc_line)) {
         return false;
     }
 
