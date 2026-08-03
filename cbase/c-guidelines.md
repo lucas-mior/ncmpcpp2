@@ -104,23 +104,6 @@ typeof(var)  // good
     + `realloc2(size) + memset64(pointer, 0, size)` instead of `calloc`.
   * The wrappers above never fail: if out of memory, they exit the program. No
     need to check if they succeded or not.
-- Note: `free2(pointer, size)` does not need previous checking if pointer is
-  NULL or not. Its internals already do the check:
-  ```c
-  // bad
-  static void my_function(MyStruct *pointer) {
-      if (pointer) {
-          free2(pointer, SIZEOF(*pointer));
-      }
-      return;
-  }
-
-  // good
-  static void my_function(MyStruct *pointer) {
-      free2(pointer, SIZEOF(*pointer));
-      return;
-  }
-  ```
 - Choose what is best in each situation:
   * Use traditional `malloc2`, `realloc2`, and `free2`.
   * Use the `arena.c` bump allocator for groups of allocations with the same
@@ -156,6 +139,14 @@ typeof(var)  // good
   ```
 - Never typedef enums and unions.
 - Never typedef pointers.
+
+## Function declarations
+Most functions don't need to have an extra declaration, only the definition will
+suffice. Order the functions in a file properly so that extra declarations
+aren't needed. Functions that do need an extra pre declaration, put the
+declaration in a project-wide header file or in the header file associated with
+the C file itself. Avoid declaring functions defined in a C file, in another C
+file. 
 
 ## Struct declarations
 
@@ -202,7 +193,7 @@ That means to also avoid calling `strlen32`:
     + Instead, to `my_function(STRLIT("literal"))`
 - `STRLIT("literal")` can be used to pass the string literal and its length
   in an "don't repeat yourself" way, that also does not depend on the compiler
-  to optimize the strlen32 away, since it uses `sizeof` to get the length of the
+  to optimize the `strlen32`, since it uses `sizeof` to get the length of the
   literal.
 
 Exceptions to this rule are:
@@ -216,11 +207,8 @@ Exceptions to this rule are:
 - `StrBuilder`: use this struct and its functions to build long, dynamic
   strings. Do not use it where a single
   `SNPRINTF(stack_array, "format_string", args);` would be enough.
-  * Use `SB_APPEND` to append literals or strings of known length, and
-    `sb_printf` to append formatted strings.
-    + Note: `SB_APPEND` already checks if the string to append is NULL or has
-      zero length, and returns early in that case. No need to check it before
-      calling `SB_APPEND`.
+  * Use `SB_APPEND` for append literals or strings of known length, and
+    `sb_printf` for formatting.
   * `SNPRINTF` and `snprintf2` return the number of bytes written (excluding the
     terminating null byte. No need to call `strlen32` on the buffer:
     ```c
