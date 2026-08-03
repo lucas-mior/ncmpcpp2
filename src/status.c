@@ -26,6 +26,8 @@
 #include "title.h"
 #include "ui_state.h"
 
+#define STATUS_MILLISECONDS_PER_SECOND 1000
+
 static bool status_initialized;
 static char status_consume;
 static char status_crossfade;
@@ -36,6 +38,7 @@ static char status_single;
 static int32 status_current_song_id;
 static int32 status_current_song_pos;
 static int32 status_elapsed_time;
+static int64 status_elapsed_time_ms;
 static int32 status_kbps;
 static enum NcmStatusPlayerState status_player_state;
 static int32 status_playlist_version;
@@ -56,6 +59,7 @@ static void *status_database_update_observer_user;
 static void (*status_playlist_update_observer)(void *user);
 static void *status_playlist_update_observer_user;
 static NcmTimePoint status_past;
+static NcmTimePoint status_elapsed_time_updated_at;
 static int32 status_playing_song_scroll_begin;
 static int32 status_first_line_scroll_begin;
 static int32 status_second_line_scroll_begin;
@@ -555,6 +559,42 @@ status_on_off(char status) {
     return "on";
 }
 
+static int64
+status_elapsed_time_ms_now(void) {
+    int64 elapsed;
+    int64 total;
+    int64 delta;
+
+    elapsed = status_elapsed_time_ms;
+    if (status_player_state == NCM_STATUS_PLAYER_PLAY) {
+        delta = global_timer_elapsed_ms(status_elapsed_time_updated_at);
+        if (delta > 0) {
+            elapsed += delta;
+        }
+    }
+
+    total = (int64)status_total_time*STATUS_MILLISECONDS_PER_SECOND;
+    if ((total > 0) && (elapsed > total)) {
+        elapsed = total;
+    }
+    return elapsed;
+}
+
+static void
+status_rebase_elapsed_time(int32 elapsed_time, int64 elapsed_time_ms) {
+    if (elapsed_time < 0) {
+        elapsed_time = 0;
+    }
+    if ((elapsed_time_ms <= 0) && (elapsed_time > 0)) {
+        elapsed_time_ms = (int64)elapsed_time*STATUS_MILLISECONDS_PER_SECOND;
+    }
+
+    status_elapsed_time = elapsed_time;
+    status_elapsed_time_ms = elapsed_time_ms;
+    status_elapsed_time_updated_at = global_timer;
+    return;
+}
+
 bool
 ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                             NcmStatusHooks *hooks, NcmError *error) {
@@ -575,9 +615,10 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     active_hooks = status_active_hooks(hooks);
 
     status_current_song_pos = mpd_status->song_pos;
-    status_elapsed_time = mpd_status->elapsed_time;
-    status_kbps = mpd_status->kbit_rate;
     status_player_state = status_player_state_from_mpd(mpd_status->state);
+    status_rebase_elapsed_time(mpd_status->elapsed_time,
+                               mpd_status->elapsed_time_ms);
+    status_kbps = mpd_status->kbit_rate;
     status_playlist_length = mpd_status->queue_length;
     status_total_time = mpd_status->total_time;
     status_volume = mpd_status->volume;
@@ -851,6 +892,8 @@ ncm_status_clear(void) {
     status_current_song_id = -1;
     status_current_song_pos = -1;
     status_elapsed_time = 0;
+    status_elapsed_time_ms = 0;
+    status_elapsed_time_updated_at = global_timer;
     status_kbps = 0;
     status_player_state = NCM_STATUS_PLAYER_UNKNOWN;
     status_playlist_version = 0;
@@ -898,6 +941,11 @@ ncm_status_state_playlist_length(void) {
 int32
 ncm_status_state_elapsed_time(void) {
     return status_elapsed_time;
+}
+
+int64
+ncm_status_state_elapsed_time_ms(void) {
+    return status_elapsed_time_ms_now();
 }
 
 enum NcmStatusPlayerState
@@ -1647,19 +1695,23 @@ static void
 status_update_elapsed_from_mpd(void) {
     NcmMpdStatus mpd_status;
     NcmError error;
+    int64 elapsed_ms;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
-        status_elapsed_time += 1;
+        elapsed_ms = status_elapsed_time_ms_now();
+        status_rebase_elapsed_time(status_elapsed_time + 1, elapsed_ms);
         return;
     }
 
     ncm_error_clear(&error);
     if (!ncm_mpd_client_get_status(&global_mpd, &mpd_status, &error)) {
-        status_elapsed_time += 1;
+        elapsed_ms = status_elapsed_time_ms_now();
+        status_rebase_elapsed_time(status_elapsed_time + 1, elapsed_ms);
         return;
     }
 
-    status_elapsed_time = mpd_status.elapsed_time;
+    status_rebase_elapsed_time(mpd_status.elapsed_time,
+                               mpd_status.elapsed_time_ms);
     status_kbps = mpd_status.kbit_rate;
     return;
 }

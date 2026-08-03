@@ -1193,6 +1193,7 @@ ncm_mpd_connection_get_status(NcmMpdConnection *connection,
     out_status->next_song_pos = mpd_status_get_next_song_pos(status);
     out_status->next_song_id = mpd_status_get_next_song_id(status);
     out_status->elapsed_time = (int32)mpd_status_get_elapsed_time(status);
+    out_status->elapsed_time_ms = (int64)mpd_status_get_elapsed_ms(status);
     out_status->total_time = (int32)mpd_status_get_total_time(status);
     out_status->kbit_rate = (int32)mpd_status_get_kbit_rate(status);
     out_status->update_id = (int32)mpd_status_get_update_id(status);

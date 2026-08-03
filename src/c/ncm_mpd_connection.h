@@ -100,6 +100,7 @@ typedef struct NcmMpdStatus {
     int32 next_song_pos;
     int32 next_song_id;
     int32 elapsed_time;
+    int64 elapsed_time_ms;
     int32 total_time;
     int32 kbit_rate;
     int32 update_id;
