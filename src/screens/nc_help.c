@@ -7,20 +7,29 @@
 #include "screens/nc_help.h"
 #include "settings.h"
 
-static NcScreenOps nc_help_callbacks(void);
-static NcWindow *nc_help_active_window(NcScreen *screen);
-static void nc_help_refresh(NcScreen *screen);
-static void nc_help_refresh_window(NcScreen *screen);
-static void nc_help_scroll(NcScreen *screen, enum NcScroll where);
 static void nc_help_switch_to(NcScreen *screen);
 static void nc_help_resize(NcScreen *screen);
-static char *nc_help_title(NcScreen *screen);
-static void nc_help_update(NcScreen *screen);
 static void nc_help_mouse_button_pressed(NcScreen *screen, MEVENT event);
 static void nc_help_destroy_callback(NcScreen *screen);
 static void nc_help_display(NcHelpScreen *help);
 static void nc_help_mouse_scroll(NcHelpScreen *help, enum NcScroll where);
 static bool nc_help_find_match_callback(int32 start, int32 len, void *user);
+
+#define NC_SCREEN_IMPL_TYPE NcHelpScreen
+#define NC_SCREEN_IMPL_PREFIX nc_help
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX nc_help_screen
+#define NC_SCREEN_IMPL_BASE_FIELD scrollpad_screen
+#define NC_SCREEN_IMPL_WINDOW_FIELD window
+#define NC_SCREEN_IMPL_SCROLLPAD_FIELD scrollpad
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK nc_help_display
+#define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK nc_help_switch_to
+#define NC_SCREEN_IMPL_RESIZE_CALLBACK nc_help_resize
+#define NC_SCREEN_IMPL_TITLE_LITERAL "Help"
+#define NC_SCREEN_IMPL_MOUSE_CALLBACK nc_help_mouse_button_pressed
+#define NC_SCREEN_IMPL_DESTROY_CALLBACK nc_help_destroy_callback
+#define NC_SCREEN_IMPL_LOCKABLE true
+#define NC_SCREEN_IMPL_MERGABLE true
+#include "screens/nc_screen_impl_template.c"
 
 void
 nc_help_screen_init(NcHelpScreen *screen,
@@ -32,7 +41,7 @@ nc_help_screen_init(NcHelpScreen *screen,
     screen->hooks = hooks;
     screen->lines_scrolled = lines_scrolled;
     nc_scrollpad_screen_init(&screen->scrollpad_screen,
-                             nc_help_callbacks(),
+                             nc_help_ops,
                              hooks.user,
                              NC_SCREEN_TYPE_HELP,
                              0,
@@ -154,81 +163,6 @@ nc_help_screen_clear_search(NcHelpScreen *screen) {
     return;
 }
 
-NcScreen *
-nc_help_screen_base(NcHelpScreen *screen) {
-    return nc_scrollpad_screen_base(&screen->scrollpad_screen);
-}
-
-int32
-nc_help_screen_start_x(NcHelpScreen *screen) {
-    return nc_scrollpad_screen_start_x(&screen->scrollpad_screen);
-}
-
-int32
-nc_help_screen_start_y(NcHelpScreen *screen) {
-    return nc_scrollpad_screen_start_y(&screen->scrollpad_screen);
-}
-
-int32
-nc_help_screen_width(NcHelpScreen *screen) {
-    return nc_scrollpad_screen_width(&screen->scrollpad_screen);
-}
-
-int32
-nc_help_screen_height(NcHelpScreen *screen) {
-    return nc_scrollpad_screen_height(&screen->scrollpad_screen);
-}
-
-static NcHelpScreen *
-nc_help_from_screen(NcScreen *screen) {
-    return (NcHelpScreen *)screen;
-}
-
-static NcScreenOps
-nc_help_callbacks(void) {
-    NcScreenOps callbacks = {0};
-
-    callbacks.active_window = nc_help_active_window;
-    callbacks.refresh = nc_help_refresh;
-    callbacks.refresh_window = nc_help_refresh_window;
-    callbacks.scroll = nc_help_scroll;
-    callbacks.switch_to = nc_help_switch_to;
-    callbacks.resize = nc_help_resize;
-    callbacks.title = nc_help_title;
-    callbacks.update = nc_help_update;
-    callbacks.mouse_button_pressed = nc_help_mouse_button_pressed;
-    callbacks.lockable = true;
-    callbacks.mergable = true;
-    callbacks.destroy = nc_help_destroy_callback;
-    return callbacks;
-}
-
-static NcWindow *
-nc_help_active_window(NcScreen *screen) {
-    return &nc_help_from_screen(screen)->window;
-}
-
-static void
-nc_help_refresh(NcScreen *screen) {
-    nc_help_display(nc_help_from_screen(screen));
-    return;
-}
-
-static void
-nc_help_refresh_window(NcScreen *screen) {
-    nc_help_display(nc_help_from_screen(screen));
-    return;
-}
-
-static void
-nc_help_scroll(NcScreen *screen, enum NcScroll where) {
-    NcHelpScreen *help;
-
-    help = nc_help_from_screen(screen);
-    nc_scrollpad_scroll(&help->scrollpad, &help->window, where);
-    return;
-}
-
 static void
 nc_help_switch_to(NcScreen *screen) {
     NcHelpScreen *help;
@@ -265,19 +199,6 @@ nc_help_resize(NcScreen *screen) {
 }
 
 
-static char *
-nc_help_title(NcScreen *screen) {
-    static char title[] = "Help";
-
-    (void)screen;
-    return title;
-}
-
-static void
-nc_help_update(NcScreen *screen) {
-    (void)screen;
-    return;
-}
 
 static void
 nc_help_mouse_button_pressed(NcScreen *screen, MEVENT event) {

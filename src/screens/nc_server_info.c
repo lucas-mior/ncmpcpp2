@@ -5,11 +5,6 @@
 
 #include "screens/nc_server_info.h"
 
-static NcScreenOps nc_server_info_callbacks(void);
-static NcWindow *nc_server_info_active_window(NcScreen *screen);
-static void nc_server_info_refresh(NcScreen *screen);
-static void nc_server_info_refresh_window(NcScreen *screen);
-static void nc_server_info_scroll(NcScreen *screen, enum NcScroll where);
 static void nc_server_info_switch_to(NcScreen *screen);
 static void nc_server_info_resize(NcScreen *screen);
 static char *nc_server_info_title(NcScreen *screen);
@@ -18,6 +13,21 @@ static void nc_server_info_mouse_button_pressed(NcScreen *screen,
                                                 MEVENT event);
 static void nc_server_info_destroy_callback(NcScreen *screen);
 static void nc_server_info_display(NcServerInfoScreen *server_info);
+
+#define NC_SCREEN_IMPL_TYPE NcServerInfoScreen
+#define NC_SCREEN_IMPL_PREFIX nc_server_info
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX nc_server_info_screen
+#define NC_SCREEN_IMPL_BASE_FIELD scrollpad_screen
+#define NC_SCREEN_IMPL_WINDOW_FIELD window
+#define NC_SCREEN_IMPL_SCROLLPAD_FIELD scrollpad
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK nc_server_info_display
+#define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK nc_server_info_switch_to
+#define NC_SCREEN_IMPL_RESIZE_CALLBACK nc_server_info_resize
+#define NC_SCREEN_IMPL_TITLE_CALLBACK nc_server_info_title
+#define NC_SCREEN_IMPL_UPDATE_CALLBACK nc_server_info_update
+#define NC_SCREEN_IMPL_MOUSE_CALLBACK nc_server_info_mouse_button_pressed
+#define NC_SCREEN_IMPL_DESTROY_CALLBACK nc_server_info_destroy_callback
+#include "screens/nc_screen_impl_template.c"
 
 void
 nc_server_info_screen_init(NcServerInfoScreen *screen,
@@ -28,7 +38,7 @@ nc_server_info_screen_init(NcServerInfoScreen *screen,
                            NcColor color, NcBorder border) {
     screen->hooks = hooks;
     nc_scrollpad_screen_init(&screen->scrollpad_screen,
-                             nc_server_info_callbacks(),
+                             nc_server_info_ops,
                              hooks.user,
                              NC_SCREEN_TYPE_SERVER_INFO,
                              0,
@@ -68,84 +78,6 @@ nc_server_info_screen_set_dimensions(NcServerInfoScreen *screen,
                                          10,
                                          7,
                                          10);
-    return;
-}
-
-NcScreen *
-nc_server_info_screen_base(NcServerInfoScreen *screen) {
-    return nc_scrollpad_screen_base(&screen->scrollpad_screen);
-}
-
-int32
-nc_server_info_screen_width(NcServerInfoScreen *screen) {
-    return nc_scrollpad_screen_width(&screen->scrollpad_screen);
-}
-
-int32
-nc_server_info_screen_height(NcServerInfoScreen *screen) {
-    return nc_scrollpad_screen_height(&screen->scrollpad_screen);
-}
-
-int32
-nc_server_info_screen_start_x(NcServerInfoScreen *screen) {
-    return nc_scrollpad_screen_start_x(&screen->scrollpad_screen);
-}
-
-int32
-nc_server_info_screen_start_y(NcServerInfoScreen *screen) {
-    return nc_scrollpad_screen_start_y(&screen->scrollpad_screen);
-}
-
-static NcServerInfoScreen *
-nc_server_info_from_screen(NcScreen *screen) {
-    return (NcServerInfoScreen *)screen;
-}
-
-static NcScreenOps
-nc_server_info_callbacks(void) {
-    NcScreenOps callbacks = {0};
-
-    callbacks.active_window = nc_server_info_active_window;
-    callbacks.refresh = nc_server_info_refresh;
-    callbacks.refresh_window = nc_server_info_refresh_window;
-    callbacks.scroll = nc_server_info_scroll;
-    callbacks.switch_to = nc_server_info_switch_to;
-    callbacks.resize = nc_server_info_resize;
-    callbacks.title = nc_server_info_title;
-    callbacks.update = nc_server_info_update;
-    callbacks.mouse_button_pressed = nc_server_info_mouse_button_pressed;
-    callbacks.lockable = false;
-    callbacks.mergable = false;
-    callbacks.destroy = nc_server_info_destroy_callback;
-    return callbacks;
-}
-
-static NcWindow *
-nc_server_info_active_window(NcScreen *screen) {
-    NcServerInfoScreen *server_info;
-
-    server_info = nc_server_info_from_screen(screen);
-    return &server_info->window;
-}
-
-static void
-nc_server_info_refresh(NcScreen *screen) {
-    nc_server_info_display(nc_server_info_from_screen(screen));
-    return;
-}
-
-static void
-nc_server_info_refresh_window(NcScreen *screen) {
-    nc_server_info_display(nc_server_info_from_screen(screen));
-    return;
-}
-
-static void
-nc_server_info_scroll(NcScreen *screen, enum NcScroll where) {
-    NcServerInfoScreen *server_info;
-
-    server_info = nc_server_info_from_screen(screen);
-    nc_scrollpad_scroll(&server_info->scrollpad, &server_info->window, where);
     return;
 }
 

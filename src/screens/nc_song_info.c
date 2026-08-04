@@ -5,19 +5,27 @@
 
 #include "screens/nc_song_info.h"
 
-static NcScreenOps nc_song_info_callbacks(void);
-static NcWindow *nc_song_info_active_window(NcScreen *screen);
-static void nc_song_info_refresh(NcScreen *screen);
-static void nc_song_info_refresh_window(NcScreen *screen);
-static void nc_song_info_scroll(NcScreen *screen, enum NcScroll where);
 static void nc_song_info_switch_to(NcScreen *screen);
 static void nc_song_info_resize(NcScreen *screen);
-static char *nc_song_info_title(NcScreen *screen);
-static void nc_song_info_update(NcScreen *screen);
 static void nc_song_info_mouse_button_pressed(NcScreen *screen,
                                               MEVENT event);
 static void nc_song_info_destroy_callback(NcScreen *screen);
 static void nc_song_info_display(NcSongInfoScreen *song_info);
+
+#define NC_SCREEN_IMPL_TYPE NcSongInfoScreen
+#define NC_SCREEN_IMPL_PREFIX nc_song_info
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX nc_song_info_screen
+#define NC_SCREEN_IMPL_BASE_FIELD scrollpad_screen
+#define NC_SCREEN_IMPL_WINDOW_FIELD window
+#define NC_SCREEN_IMPL_SCROLLPAD_FIELD scrollpad
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK nc_song_info_display
+#define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK nc_song_info_switch_to
+#define NC_SCREEN_IMPL_RESIZE_CALLBACK nc_song_info_resize
+#define NC_SCREEN_IMPL_TITLE_LITERAL "Song info"
+#define NC_SCREEN_IMPL_MOUSE_CALLBACK nc_song_info_mouse_button_pressed
+#define NC_SCREEN_IMPL_DESTROY_CALLBACK nc_song_info_destroy_callback
+#define NC_SCREEN_IMPL_MERGABLE true
+#include "screens/nc_screen_impl_template.c"
 
 void
 nc_song_info_screen_init(NcSongInfoScreen *screen,
@@ -29,7 +37,7 @@ nc_song_info_screen_init(NcSongInfoScreen *screen,
     screen->hooks = hooks;
     screen->lines_scrolled = lines_scrolled;
     nc_scrollpad_screen_init(&screen->scrollpad_screen,
-                             nc_song_info_callbacks(),
+                             nc_song_info_ops,
                              hooks.user,
                              NC_SCREEN_TYPE_SONG_INFO,
                              0,
@@ -93,84 +101,6 @@ nc_song_info_screen_prepare_current(NcSongInfoScreen *screen) {
     return true;
 }
 
-NcScreen *
-nc_song_info_screen_base(NcSongInfoScreen *screen) {
-    return nc_scrollpad_screen_base(&screen->scrollpad_screen);
-}
-
-int32
-nc_song_info_screen_start_x(NcSongInfoScreen *screen) {
-    return nc_scrollpad_screen_start_x(&screen->scrollpad_screen);
-}
-
-int32
-nc_song_info_screen_start_y(NcSongInfoScreen *screen) {
-    return nc_scrollpad_screen_start_y(&screen->scrollpad_screen);
-}
-
-int32
-nc_song_info_screen_width(NcSongInfoScreen *screen) {
-    return nc_scrollpad_screen_width(&screen->scrollpad_screen);
-}
-
-int32
-nc_song_info_screen_height(NcSongInfoScreen *screen) {
-    return nc_scrollpad_screen_height(&screen->scrollpad_screen);
-}
-
-static NcSongInfoScreen *
-nc_song_info_from_screen(NcScreen *screen) {
-    return (NcSongInfoScreen *)screen;
-}
-
-static NcScreenOps
-nc_song_info_callbacks(void) {
-    NcScreenOps callbacks = {0};
-
-    callbacks.active_window = nc_song_info_active_window;
-    callbacks.refresh = nc_song_info_refresh;
-    callbacks.refresh_window = nc_song_info_refresh_window;
-    callbacks.scroll = nc_song_info_scroll;
-    callbacks.switch_to = nc_song_info_switch_to;
-    callbacks.resize = nc_song_info_resize;
-    callbacks.title = nc_song_info_title;
-    callbacks.update = nc_song_info_update;
-    callbacks.mouse_button_pressed = nc_song_info_mouse_button_pressed;
-    callbacks.lockable = false;
-    callbacks.mergable = true;
-    callbacks.destroy = nc_song_info_destroy_callback;
-    return callbacks;
-}
-
-static NcWindow *
-nc_song_info_active_window(NcScreen *screen) {
-    NcSongInfoScreen *song_info;
-
-    song_info = nc_song_info_from_screen(screen);
-    return &song_info->window;
-}
-
-static void
-nc_song_info_refresh(NcScreen *screen) {
-    nc_song_info_display(nc_song_info_from_screen(screen));
-    return;
-}
-
-static void
-nc_song_info_refresh_window(NcScreen *screen) {
-    nc_song_info_display(nc_song_info_from_screen(screen));
-    return;
-}
-
-static void
-nc_song_info_scroll(NcScreen *screen, enum NcScroll where) {
-    NcSongInfoScreen *song_info;
-
-    song_info = nc_song_info_from_screen(screen);
-    nc_scrollpad_scroll(&song_info->scrollpad, &song_info->window, where);
-    return;
-}
-
 static void
 nc_song_info_switch_to(NcScreen *screen) {
     NcSongInfoScreen *song_info;
@@ -204,19 +134,6 @@ nc_song_info_resize(NcScreen *screen) {
 }
 
 
-static char *
-nc_song_info_title(NcScreen *screen) {
-    static char title[] = "Song info";
-
-    (void)screen;
-    return title;
-}
-
-static void
-nc_song_info_update(NcScreen *screen) {
-    (void)screen;
-    return;
-}
 
 static void
 nc_song_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
