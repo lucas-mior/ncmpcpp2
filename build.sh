@@ -30,15 +30,10 @@ PKG_CONFIG=${PKG_CONFIG-pkg-config}
 ORIGINAL_CC=${CC-}
 CLANG_ANALYZER=${CLANG_ANALYZER-clang}
 
+CFLAGS="${CFLAGS:-}"
+CFLAGS="$CFLAGS -std=c11"
 CPPFLAGS=""
 CPPFLAGS="$CPPFLAGS -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=700"
-if [ "${CFLAGS+x}" = x ]; then
-    ORIGINAL_CFLAGS_SET=1
-else
-    ORIGINAL_CFLAGS_SET=0
-fi
-ORIGINAL_CFLAGS=${CFLAGS-}
-CFLAGS=
 LDFLAGS=${LDFLAGS-}
 LDLIBS=${LDLIBS--lm}
 
@@ -112,17 +107,13 @@ configure_compiler_flags() {
 
     case $target in
     debug)
-        CFLAGS='-g3 -O0'
+        CFLAGS="$CFLAGS -g3 -O0"
         ;;
     build)
-        CFLAGS='-O2 -flto'
+        CFLAGS="$CFLAGS -O2 -flto"
         ;;
     *)
-        if [ "$ORIGINAL_CFLAGS_SET" = 1 ]; then
-            CFLAGS=$ORIGINAL_CFLAGS
-        else
-            CFLAGS='-O0 -g3'
-        fi
+        CFLAGS="$CFLAGS -O0 -g3"
         ;;
     esac
 
