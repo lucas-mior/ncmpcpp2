@@ -44,13 +44,35 @@ typedef struct NcScreenCallbacks {
     void (*destroy)(NcScreen *screen);
 } NcScreenCallbacks;
 
+typedef struct NcScreenOps {
+    NcWindow *(*active_window)(NcScreen *screen);
+    void (*refresh)(NcScreen *screen);
+    void (*refresh_window)(NcScreen *screen);
+    void (*scroll)(NcScreen *screen, enum NcScroll where);
+    void (*list_change_finished)(NcScreen *screen);
+    bool (*can_run_current)(NcScreen *screen);
+    bool (*run_current)(NcScreen *screen);
+    void (*switch_to)(NcScreen *screen);
+    void (*resize)(NcScreen *screen);
+    int32 (*window_timeout)(NcScreen *screen);
+    char *(*title)(NcScreen *screen);
+    void (*update)(NcScreen *screen);
+    void (*mouse_button_pressed)(NcScreen *screen, MEVENT event);
+    bool (*is_lockable)(NcScreen *screen);
+    bool (*is_mergable)(NcScreen *screen);
+    void (*destroy)(NcScreen *screen);
+} NcScreenOps;
+
 struct NcScreen {
     NcScreenCallbacks callbacks;
+    const NcScreenOps *ops;
     void *user;
     int32 type;
     bool has_to_be_resized;
     bool has_to_be_updated;
 };
+
+extern const NcScreenOps nc_screen_default_ops;
 
 struct NcScreenRegistry {
     NcScreen *screens[NC_SCREEN_REGISTRY_MAX_SCREENS];
@@ -63,6 +85,24 @@ struct NcScreenRegistry {
 
 void nc_screen_init(NcScreen *screen, NcScreenCallbacks callbacks,
                     void *user, int32 type);
+void nc_screen_init_ops(NcScreen *screen, const NcScreenOps *ops,
+                        void *user, int32 type);
+NcWindow *nc_screen_default_active_window(NcScreen *screen);
+void nc_screen_noop_refresh(NcScreen *screen);
+void nc_screen_noop_refresh_window(NcScreen *screen);
+void nc_screen_noop_scroll(NcScreen *screen, enum NcScroll where);
+void nc_screen_noop_list_change_finished(NcScreen *screen);
+bool nc_screen_default_can_run_current(NcScreen *screen);
+bool nc_screen_default_run_current(NcScreen *screen);
+void nc_screen_noop_switch_to(NcScreen *screen);
+void nc_screen_noop_resize(NcScreen *screen);
+int32 nc_screen_default_window_timeout(NcScreen *screen);
+char *nc_screen_default_title(NcScreen *screen);
+void nc_screen_noop_update(NcScreen *screen);
+void nc_screen_noop_mouse_button_pressed(NcScreen *screen, MEVENT event);
+bool nc_screen_default_is_lockable(NcScreen *screen);
+bool nc_screen_default_is_mergable(NcScreen *screen);
+void nc_screen_noop_destroy(NcScreen *screen);
 NcWindow *nc_screen_active_window(NcScreen *screen);
 void nc_screen_refresh(NcScreen *screen);
 void nc_screen_refresh_window(NcScreen *screen);
