@@ -15,7 +15,7 @@ typedef struct NcScrollpadScreen {
 } NcScrollpadScreen;
 
 void nc_scrollpad_screen_init(NcScrollpadScreen *screen,
-                              NcScreenCallbacks callbacks, void *user,
+                              NcScreenOps callbacks, void *user,
                               int32 type, int32 start_x, int32 start_y,
                               int32 width, int32 height);
 void nc_scrollpad_screen_set_geometry(NcScrollpadScreen *screen,

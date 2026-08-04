@@ -23,8 +23,6 @@ static void native_search_mouse_button_pressed(NcScreen *screen,
                                                MEVENT event);
 static bool native_search_can_run_current(NcScreen *screen);
 static bool native_search_run_current(NcScreen *screen);
-static bool native_search_is_lockable(NcScreen *screen);
-static bool native_search_is_mergable(NcScreen *screen);
 static void native_search_destroy_callback(NcScreen *screen);
 static void native_search_draw_row(NcMenu *menu, NcWindow *window,
                                    void *item, int32 pos, void *user);
@@ -136,7 +134,7 @@ static char *native_search_mode_names[] = {
 
 static char native_search_empty_string[] = "";
 
-static NcScreenCallbacks native_search_callbacks = {
+static NcScreenOps native_search_callbacks = {
     .active_window = native_search_active_window,
     .refresh = native_search_refresh,
     .refresh_window = native_search_refresh_window,
@@ -148,8 +146,8 @@ static NcScreenCallbacks native_search_callbacks = {
     .mouse_button_pressed = native_search_mouse_button_pressed,
     .can_run_current = native_search_can_run_current,
     .run_current = native_search_run_current,
-    .is_lockable = native_search_is_lockable,
-    .is_mergable = native_search_is_mergable,
+    .lockable = true,
+    .mergable = true,
     .destroy = native_search_destroy_callback,
 };
 
@@ -191,7 +189,7 @@ native_search_engine_screen_init(NativeSearchEngineScreen *screen,
     screen->constraints_locked = false;
     screen->registered = false;
 
-    nc_screen_init(&screen->screen, native_search_callbacks, screen,
+    nc_screen_init_ops(&screen->screen, native_search_callbacks, screen,
                    NC_SCREEN_TYPE_SEARCH_ENGINE);
     menu = native_search_engine_screen_menu(screen);
     nc_menu_set_display_callbacks(
@@ -1299,17 +1297,7 @@ native_search_run_current(NcScreen *screen) {
         native_search_from_screen(screen));
 }
 
-static bool
-native_search_is_lockable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
-static bool
-native_search_is_mergable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
 static void
 native_search_destroy_callback(NcScreen *screen) {

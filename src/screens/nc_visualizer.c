@@ -94,8 +94,6 @@ static char *visualizer_title_callback(NcScreen *screen);
 static void visualizer_update_callback(NcScreen *screen);
 static void visualizer_mouse_button_pressed_callback(NcScreen *screen,
                                                      MEVENT event);
-static bool visualizer_is_lockable_callback(NcScreen *screen);
-static bool visualizer_is_mergable_callback(NcScreen *screen);
 static void visualizer_destroy_callback(NcScreen *screen);
 static enum NativeVisualizerType native_visualizer_next_type(
     enum NativeVisualizerType type);
@@ -122,9 +120,9 @@ static void visualizer_reset_sample_clock(NativeVisualizerScreen *screen);
 static void visualizer_fft_destroy(NativeVisualizerScreen *screen);
 #endif
 
-static NcScreenCallbacks
+static NcScreenOps
 native_visualizer_callbacks(void) {
-    NcScreenCallbacks callbacks = {0};
+    NcScreenOps callbacks = {0};
 
     callbacks.active_window = visualizer_active_window_callback;
     callbacks.refresh = visualizer_refresh_callback;
@@ -132,12 +130,12 @@ native_visualizer_callbacks(void) {
     callbacks.scroll = visualizer_scroll_callback;
     callbacks.switch_to = visualizer_switch_to_callback;
     callbacks.resize = visualizer_resize_callback;
-    callbacks.window_timeout = visualizer_window_timeout_callback;
+    callbacks.window_timeout_callback = visualizer_window_timeout_callback;
     callbacks.title = visualizer_title_callback;
     callbacks.update = visualizer_update_callback;
     callbacks.mouse_button_pressed = visualizer_mouse_button_pressed_callback;
-    callbacks.is_lockable = visualizer_is_lockable_callback;
-    callbacks.is_mergable = visualizer_is_mergable_callback;
+    callbacks.lockable = true;
+    callbacks.mergable = true;
     callbacks.destroy = visualizer_destroy_callback;
     return callbacks;
 }
@@ -755,7 +753,7 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
     }
 #endif
 
-    nc_screen_init(&screen->screen,
+    nc_screen_init_ops(&screen->screen,
                    native_visualizer_callbacks(),
                    screen,
                    NC_SCREEN_TYPE_VISUALIZER);
@@ -2301,17 +2299,7 @@ visualizer_mouse_button_pressed_callback(NcScreen *screen, MEVENT event) {
     return;
 }
 
-static bool
-visualizer_is_lockable_callback(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
-static bool
-visualizer_is_mergable_callback(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
 static void
 visualizer_destroy_callback(NcScreen *screen) {

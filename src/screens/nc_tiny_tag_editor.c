@@ -24,8 +24,6 @@ static void tiny_editor_resize(NcScreen *screen);
 static char *tiny_editor_title(NcScreen *screen);
 static void tiny_editor_update(NcScreen *screen);
 static void tiny_editor_mouse_callback(NcScreen *screen, MEVENT event);
-static bool tiny_editor_is_lockable(NcScreen *screen);
-static bool tiny_editor_is_mergable(NcScreen *screen);
 static void tiny_editor_destroy_callback(NcScreen *screen);
 static void tiny_editor_draw_row(NcMenu *menu, NcWindow *window,
                                  void *item, int32 pos, void *user);
@@ -60,7 +58,7 @@ static int32 tiny_editor_channels_to_string(int32 channels,
                                             char *buffer,
                                             int32 buffer_cap);
 
-static NcScreenCallbacks tiny_editor_callbacks = {
+static NcScreenOps tiny_editor_callbacks = {
     .active_window = tiny_editor_active_window,
     .can_run_current = tiny_editor_can_run_current,
     .run_current = tiny_editor_run_current,
@@ -72,8 +70,8 @@ static NcScreenCallbacks tiny_editor_callbacks = {
     .title = tiny_editor_title,
     .update = tiny_editor_update,
     .mouse_button_pressed = tiny_editor_mouse_callback,
-    .is_lockable = tiny_editor_is_lockable,
-    .is_mergable = tiny_editor_is_mergable,
+    .lockable = false,
+    .mergable = true,
     .destroy = tiny_editor_destroy_callback,
 };
 
@@ -112,7 +110,7 @@ native_tiny_tag_editor_screen_init(
     screen->show_duplicate_tags = false;
     screen->registered = false;
 
-    nc_screen_init(&screen->screen, tiny_editor_callbacks, screen,
+    nc_screen_init_ops(&screen->screen, tiny_editor_callbacks, screen,
                    NC_SCREEN_TYPE_TINY_TAG_EDITOR);
     return;
 }
@@ -863,17 +861,7 @@ tiny_editor_print_buffer(NcWindow *window, NcBuffer *buffer) {
     return;
 }
 
-static bool
-tiny_editor_is_lockable(NcScreen *screen) {
-    (void)screen;
-    return false;
-}
 
-static bool
-tiny_editor_is_mergable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
 static void
 tiny_editor_destroy_callback(NcScreen *screen) {

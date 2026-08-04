@@ -31,8 +31,6 @@ static char *native_browser_title(NcScreen *screen);
 static void native_browser_update(NcScreen *screen);
 static void native_browser_mouse_button_pressed(NcScreen *screen,
                                                 MEVENT event);
-static bool native_browser_is_lockable(NcScreen *screen);
-static bool native_browser_is_mergable(NcScreen *screen);
 static void native_browser_destroy_callback(NcScreen *screen);
 static void native_browser_install_menu_callbacks(
     NativeBrowserScreen *screen);
@@ -166,7 +164,7 @@ typedef struct NativeBrowserSearchContext {
     NcmRegex *regex;
 } NativeBrowserSearchContext;
 
-static NcScreenCallbacks native_browser_callbacks = {
+static NcScreenOps native_browser_callbacks = {
     .active_window = native_browser_active_window,
     .refresh = native_browser_refresh,
     .refresh_window = native_browser_refresh_window,
@@ -176,8 +174,8 @@ static NcScreenCallbacks native_browser_callbacks = {
     .title = native_browser_title,
     .update = native_browser_update,
     .mouse_button_pressed = native_browser_mouse_button_pressed,
-    .is_lockable = native_browser_is_lockable,
-    .is_mergable = native_browser_is_mergable,
+    .lockable = true,
+    .mergable = true,
     .destroy = native_browser_destroy_callback,
 };
 
@@ -220,7 +218,7 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     native_browser_screen_update_title_text(screen);
     native_browser_screen_update_column_title(screen);
     native_browser_install_menu_callbacks(screen);
-    nc_screen_init(&screen->screen, native_browser_callbacks, screen,
+    nc_screen_init_ops(&screen->screen, native_browser_callbacks, screen,
                    NC_SCREEN_TYPE_BROWSER);
     return;
 }
@@ -1416,17 +1414,7 @@ native_browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     return;
 }
 
-static bool
-native_browser_is_lockable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
-static bool
-native_browser_is_mergable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
 static void
 native_browser_destroy_callback(NcScreen *screen) {

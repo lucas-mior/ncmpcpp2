@@ -17,7 +17,7 @@
 #include "status.h"
 #include "statusbar.h"
 
-static NcScreenCallbacks playlist_editor_callbacks(void);
+static NcScreenOps playlist_editor_callbacks(void);
 static NcWindow *playlist_editor_active_window_callback(NcScreen *screen);
 static void playlist_editor_refresh_callback(NcScreen *screen);
 static void playlist_editor_refresh_window_callback(NcScreen *screen);
@@ -30,8 +30,6 @@ static int32 playlist_editor_timeout_callback(NcScreen *screen);
 static char *playlist_editor_title_callback(NcScreen *screen);
 static void playlist_editor_update_callback(NcScreen *screen);
 static void playlist_editor_mouse_callback(NcScreen *screen, MEVENT event);
-static bool playlist_editor_lockable_callback(NcScreen *screen);
-static bool playlist_editor_mergable_callback(NcScreen *screen);
 static void playlist_editor_destroy_callback(NcScreen *screen);
 static void playlist_editor_print_buffer(NcWindow *window,
                                          NcBuffer *buffer);
@@ -156,7 +154,7 @@ native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
                                    int32 start_x, int32 width,
                                    int32 main_start_y, int32 main_height,
                                    NcColor color, NcBorder border) {
-    NcScreenCallbacks callbacks;
+    NcScreenOps callbacks;
     int32 initial_left_width;
     int32 initial_right_width;
 
@@ -214,7 +212,7 @@ native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
                    color, border);
     native_playlist_editor_screen_set_geometry(screen, start_x, width,
                                                main_start_y, main_height);
-    nc_screen_init(&screen->screen, callbacks, screen,
+    nc_screen_init_ops(&screen->screen, callbacks, screen,
                    NC_SCREEN_TYPE_PLAYLIST_EDITOR);
     playlist_editor_configure_menus(screen);
     playlist_editor_set_display_callbacks(screen);
@@ -816,9 +814,9 @@ playlist_editor_from_screen(NcScreen *screen) {
     return nc_screen_user(screen);
 }
 
-static NcScreenCallbacks
+static NcScreenOps
 playlist_editor_callbacks(void) {
-    NcScreenCallbacks callbacks = {0};
+    NcScreenOps callbacks = {0};
 
     callbacks.active_window = playlist_editor_active_window_callback;
     callbacks.refresh = playlist_editor_refresh_callback;
@@ -828,12 +826,12 @@ playlist_editor_callbacks(void) {
         playlist_editor_finish_list_change_callback;
     callbacks.switch_to = playlist_editor_switch_to_callback;
     callbacks.resize = playlist_editor_resize_callback;
-    callbacks.window_timeout = playlist_editor_timeout_callback;
+    callbacks.window_timeout_callback = playlist_editor_timeout_callback;
     callbacks.title = playlist_editor_title_callback;
     callbacks.update = playlist_editor_update_callback;
     callbacks.mouse_button_pressed = playlist_editor_mouse_callback;
-    callbacks.is_lockable = playlist_editor_lockable_callback;
-    callbacks.is_mergable = playlist_editor_mergable_callback;
+    callbacks.lockable = true;
+    callbacks.mergable = true;
     callbacks.destroy = playlist_editor_destroy_callback;
     return callbacks;
 }
@@ -1009,17 +1007,7 @@ playlist_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     return;
 }
 
-static bool
-playlist_editor_lockable_callback(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
-static bool
-playlist_editor_mergable_callback(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
 static void
 playlist_editor_destroy_callback(NcScreen *screen) {

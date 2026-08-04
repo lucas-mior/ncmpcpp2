@@ -35,7 +35,7 @@ typedef struct NativeLastfmScreen {
 } NativeLastfmScreen;
 
 void nc_lastfm_screen_init(NcLastfmScreen *screen,
-                           NcScreenCallbacks callbacks, void *user,
+                           NcScreenOps callbacks, void *user,
                            int32 start_x, int32 width,
                            int32 main_start_y, int32 main_height);
 void nc_lastfm_screen_set_geometry(NcLastfmScreen *screen,

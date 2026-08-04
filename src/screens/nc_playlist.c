@@ -19,10 +19,11 @@ static void playlist_scroll_lines(NcPlaylistScreen *screen,
 
 void
 nc_playlist_screen_init(NcPlaylistScreen *screen,
-                        NcScreenCallbacks callbacks, void *user,
+                        NcScreenOps callbacks, void *user,
                         NcMenu *menu, int32 start_x, int32 width,
                         int32 main_start_y, int32 main_height) {
-    nc_screen_init(&screen->screen, callbacks, user, NC_SCREEN_TYPE_PLAYLIST);
+    nc_screen_init_ops(&screen->screen, callbacks, user,
+                       NC_SCREEN_TYPE_PLAYLIST);
     nc_playlist_screen_set_menu(screen, menu);
     nc_playlist_screen_set_geometry(screen, start_x, width, main_start_y,
                                     main_height);
@@ -158,20 +159,17 @@ playlist_scroll_lines(NcPlaylistScreen *screen, enum NcScroll where) {
 }
 
 static NativePlaylistScreen *native_playlist_from_screen(NcScreen *screen);
-static NcScreenCallbacks native_playlist_callbacks(void);
+static NcScreenOps native_playlist_callbacks(void);
 static NcWindow *native_playlist_active_window(NcScreen *screen);
 static void native_playlist_refresh(NcScreen *screen);
 static void native_playlist_refresh_window(NcScreen *screen);
 static void native_playlist_scroll(NcScreen *screen, enum NcScroll where);
 static void native_playlist_switch_to(NcScreen *screen);
 static void native_playlist_resize(NcScreen *screen);
-static int32 native_playlist_window_timeout(NcScreen *screen);
 static char *native_playlist_title(NcScreen *screen);
 static void native_playlist_update(NcScreen *screen);
 static void native_playlist_mouse_button_pressed(NcScreen *screen,
                                                  MEVENT event);
-static bool native_playlist_is_lockable(NcScreen *screen);
-static bool native_playlist_is_mergable(NcScreen *screen);
 static void native_playlist_destroy_callback(NcScreen *screen);
 static NcMenuDisplayCallbacks native_playlist_display_callbacks(void);
 static NcMenuActionCallbacks native_playlist_action_callbacks(void);
@@ -231,7 +229,7 @@ native_playlist_screen_init(NativePlaylistScreen *screen, int32 start_x,
                             int32 width, int32 main_start_y,
                             int32 main_height, NcColor color,
                             NcBorder border) {
-    NcScreenCallbacks callbacks;
+    NcScreenOps callbacks;
 
     callbacks = native_playlist_callbacks();
     nc_song_menu_init(&screen->songs);
@@ -951,9 +949,9 @@ native_playlist_from_screen(NcScreen *screen) {
     return nc_screen_user(screen);
 }
 
-static NcScreenCallbacks
+static NcScreenOps
 native_playlist_callbacks(void) {
-    NcScreenCallbacks callbacks = {0};
+    NcScreenOps callbacks = {0};
 
     callbacks.active_window = native_playlist_active_window;
     callbacks.refresh = native_playlist_refresh;
@@ -961,12 +959,11 @@ native_playlist_callbacks(void) {
     callbacks.scroll = native_playlist_scroll;
     callbacks.switch_to = native_playlist_switch_to;
     callbacks.resize = native_playlist_resize;
-    callbacks.window_timeout = native_playlist_window_timeout;
     callbacks.title = native_playlist_title;
     callbacks.update = native_playlist_update;
     callbacks.mouse_button_pressed = native_playlist_mouse_button_pressed;
-    callbacks.is_lockable = native_playlist_is_lockable;
-    callbacks.is_mergable = native_playlist_is_mergable;
+    callbacks.lockable = true;
+    callbacks.mergable = true;
     callbacks.destroy = native_playlist_destroy_callback;
     return callbacks;
 }
@@ -1033,11 +1030,6 @@ native_playlist_resize(NcScreen *screen) {
     return;
 }
 
-static int32
-native_playlist_window_timeout(NcScreen *screen) {
-    (void)screen;
-    return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
-}
 
 static char *
 native_playlist_title(NcScreen *screen) {
@@ -1079,17 +1071,7 @@ native_playlist_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     return;
 }
 
-static bool
-native_playlist_is_lockable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
-static bool
-native_playlist_is_mergable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
 static void
 native_playlist_destroy_callback(NcScreen *screen) {
