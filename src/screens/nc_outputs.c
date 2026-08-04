@@ -26,7 +26,7 @@ static bool nc_outputs_mouse_scroll(NcOutputsScreen *outputs,
 #define NC_SCREEN_IMPL_PUBLIC_PREFIX nc_outputs_screen
 #define NC_SCREEN_IMPL_BASE_FIELD menu_screen
 #define NC_SCREEN_IMPL_WINDOW_FIELD window
-#define NC_SCREEN_IMPL_SCROLLPAD_BASE
+#define NC_SCREEN_IMPL_SCROLLPAD_BASE menu_screen
 #define NC_SCREEN_IMPL_MENU(screen) (&(screen)->menu)
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK nc_outputs_display
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK nc_outputs_switch_to
