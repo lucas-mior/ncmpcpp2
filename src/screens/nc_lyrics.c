@@ -391,11 +391,11 @@ native_lyrics_screen_set_geometry(NativeLyricsScreen *screen,
                         nc_lyrics_screen_height(&screen->screen));
     if (screen->mode == NATIVE_LYRICS_MODE_SYNCHRONIZED) {
         (void)native_lyrics_screen_update_sync_line_force(screen, true);
-        nc_scrollpad_flush(&screen->scrollpad,
-                           &screen->window,
-                           &screen->display);
-        nc_lyrics_screen_request_refresh(&screen->screen);
     }
+    nc_scrollpad_flush(&screen->scrollpad,
+                       &screen->window,
+                       &screen->display);
+    nc_lyrics_screen_request_refresh(&screen->screen);
     return;
 }
 
