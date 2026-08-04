@@ -391,7 +391,7 @@ for (int32 i = 0; i < LENGTH(some_array); i += 1) {
 ### Return value for errors
 - Functions that return an index, or another form of non negative integer,
   can use -1 to indicate that the function failed.
-- Functions that return pointer to allocated memory can return NULL in case they  fail
+- Functions that return pointer to allocated memory can return NULL in case they fail
 - Other functions can return a `bool`: `true` means that the functions succeded,
   `false` means that the function failed. If information about the error could
   be useful, organize the function to have a struct pointer parameter that fills
@@ -727,9 +727,10 @@ When you need one of those, make use of the algorithms implemented in
 Every .c file (except the main program) must have a testing block:
 ```c
 #if TESTING_file_prefix`
-
 #define CBASE_IMPLEMENT
 #include "cbase.h"
+
+#include "other_needed_file.c"
 
 int main(void) {
     // tests most of the file
