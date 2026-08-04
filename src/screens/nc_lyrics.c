@@ -79,6 +79,10 @@ static int32 native_lyrics_screen_sync_timeout(NativeLyricsScreen *screen);
 static int32 native_lyrics_lrc_buffer_position(void *user);
 static void native_lyrics_lrc_buffer_append(void *user,
                                             char *data, int32 data_len);
+static void native_lyrics_report_sidecar_status(StrBuilder *lrc_filename,
+                                                bool lrc_found,
+                                                StrBuilder *txt_filename,
+                                                bool txt_found);
 static void native_lyrics_report_unlink_error(StrBuilder *filename,
                                               NcmError *error);
 static void native_lyrics_screen_clear_lyrics_state(
@@ -534,6 +538,8 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
     bool changed_song;
     bool changed_filename;
     bool changed;
+    bool lrc_found;
+    bool txt_found;
     bool win32_filename;
 
     if ((screen == NULL) || (song == NULL) || ncm_song_empty(song)) {
@@ -571,7 +577,11 @@ native_lyrics_screen_fetch(NativeLyricsScreen *screen,
                       STRLIT("failed to build lyrics filename"));
         return false;
     }
-    if (ncm_fs_exists(lrc_filename.data, lrc_filename.len)) {
+    lrc_found = ncm_fs_exists(lrc_filename.data, lrc_filename.len);
+    txt_found = ncm_fs_exists(txt_filename.data, txt_filename.len);
+    native_lyrics_report_sidecar_status(&lrc_filename, lrc_found,
+                                        &txt_filename, txt_found);
+    if (lrc_found) {
         sb_copy(&next_filename, &lrc_filename);
     } else {
         sb_copy(&next_filename, &txt_filename);
@@ -1336,6 +1346,52 @@ native_lyrics_lrc_buffer_append(void *user,
     }
 
     native_lyrics_append_locale(&screen->display, data, data_len);
+    return;
+}
+
+static void
+native_lyrics_report_sidecar_status(StrBuilder *lrc_filename,
+                                    bool lrc_found,
+                                    StrBuilder *txt_filename,
+                                    bool txt_found) {
+    NcmStringFormatArg args[4];
+    char *lrc_status;
+    char *txt_status;
+    int32 lrc_start;
+    int32 txt_start;
+
+    if ((lrc_filename == NULL) || (txt_filename == NULL)) {
+        return;
+    }
+    if ((lrc_filename->len <= 0) || (txt_filename->len <= 0)) {
+        return;
+    }
+
+    if (lrc_found) {
+        lrc_status = "found";
+    } else {
+        lrc_status = "not found";
+    }
+    if (txt_found) {
+        txt_status = "found";
+    } else {
+        txt_status = "not found";
+    }
+
+    lrc_start = ncm_string_basename_start(lrc_filename->data,
+                                          lrc_filename->len);
+    txt_start = ncm_string_basename_start(txt_filename->data,
+                                          txt_filename->len);
+    args[0] = ncm_string_format_arg_string(
+        lrc_filename->data + lrc_start, lrc_filename->len - lrc_start);
+    args[1] = ncm_string_format_arg_cstring(lrc_status);
+    args[2] = ncm_string_format_arg_string(
+        txt_filename->data + txt_start, txt_filename->len - txt_start);
+    args[3] = ncm_string_format_arg_cstring(txt_status);
+
+    ncm_statusbar_format(Config.message_delay_time,
+                         STRLIT("%1% %2%; %3% %4%"),
+                         args, LENGTH(args));
     return;
 }
 
