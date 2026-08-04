@@ -141,4 +141,205 @@
     X(NCM_SCREEN_TYPE_UNKNOWN, unknown) \
     NCM_SCREEN_TYPES_AFTER_UNKNOWN(NCM_SCREEN_TYPE_XENUM_FIELD)
 
+
+#define NCM_NATIVE_DIRECT_STORAGE_TYPES(X) \
+    X(NativeBrowserScreen, browser_screen) \
+    X(NativeLastfmScreen, lastfm_screen) \
+    X(NativeLyricsScreen, lyrics_screen) \
+    X(NativeVisualizerScreen, visualizer_screen) \
+    X(NativePlaylistScreen, playlist_screen) \
+    X(NativePlaylistEditorScreen, playlist_editor_screen) \
+    X(NativeSelectedItemsAdderScreen, selected_items_adder_screen) \
+    X(NativeSortPlaylistDialog, sort_playlist_dialog) \
+    X(NativeSearchEngineScreen, search_engine_screen) \
+    X(NativeMediaLibraryScreen, media_library_screen) \
+    X(NativeTagEditorScreen, tag_editor_screen) \
+    X(NativeTinyTagEditorScreen, tiny_tag_editor_screen)
+
+#define NCM_NATIVE_WRAPPED_STORAGE_TYPES(X) \
+    X(NativeHelpScreen, help_screen) \
+    X(NativeOutputsScreen, outputs_screen) \
+    X(NativeServerInfoScreen, server_info_screen) \
+    X(NativeSongInfoScreen, song_info_screen)
+
+#define NCM_NATIVE_INIT_FLAGS(X) \
+    X(browser_screen_initialized) \
+    X(lastfm_screen_initialized) \
+    X(lyrics_screen_initialized) \
+    X(visualizer_screen_initialized) \
+    X(playlist_editor_screen_initialized) \
+    X(selected_items_adder_screen_initialized) \
+    X(sort_playlist_dialog_initialized) \
+    X(search_engine_screen_initialized) \
+    X(media_library_screen_initialized) \
+    X(tag_editor_screen_initialized) \
+    X(tiny_tag_editor_screen_initialized) \
+    X(playlist_screen_initialized)
+
+#define NCM_NATIVE_DIRECT_ACCESSOR_TYPES(X) \
+    X(browser, NativeBrowserScreen, browser_screen, \
+      native_browser_screen_base(&browser_screen)) \
+    X(lastfm, NativeLastfmScreen, lastfm_screen, \
+      native_lastfm_screen_base(&lastfm_screen)) \
+    X(lyrics, NativeLyricsScreen, lyrics_screen, \
+      native_lyrics_screen_base(&lyrics_screen)) \
+    X(playlist, NativePlaylistScreen, playlist_screen, \
+      native_playlist_screen_base(&playlist_screen)) \
+    X(playlist_editor, NativePlaylistEditorScreen, playlist_editor_screen, \
+      native_playlist_editor_screen_base(&playlist_editor_screen)) \
+    X(selected_items_adder, NativeSelectedItemsAdderScreen, \
+      selected_items_adder_screen, \
+      native_selected_items_adder_screen_base(&selected_items_adder_screen)) \
+    X(sort_playlist_dialog, NativeSortPlaylistDialog, sort_playlist_dialog, \
+      native_sort_playlist_dialog_base(&sort_playlist_dialog)) \
+    X(search_engine, NativeSearchEngineScreen, search_engine_screen, \
+      native_search_engine_screen_base(&search_engine_screen)) \
+    X(media_library, NativeMediaLibraryScreen, media_library_screen, \
+      native_media_library_screen_base(&media_library_screen)) \
+    X(tag_editor, NativeTagEditorScreen, tag_editor_screen, \
+      native_tag_editor_screen_base(&tag_editor_screen)) \
+    X(tiny_tag_editor, NativeTinyTagEditorScreen, tiny_tag_editor_screen, \
+      native_tiny_tag_editor_screen_base(&tiny_tag_editor_screen))
+
+#define NCM_NATIVE_WRAPPED_ACCESSOR_TYPES(X) \
+    X(help, nc_help_screen_base(&help_screen.screen)) \
+    X(server_info, nc_server_info_screen_base(&server_info_screen.screen)) \
+    X(song_info, nc_song_info_screen_base(&song_info_screen.screen))
+
+#define NCM_NATIVE_TYPED_WRAPPED_ACCESSOR_TYPES(X) \
+    X(help, native_c_screen_help_typed, NcHelpScreen, &help_screen.screen)
+
+#define NCM_NATIVE_STANDARD_REGISTER_TYPES(X) \
+    X(browser) \
+    X(help) \
+    X(lastfm) \
+    X(lyrics) \
+    X(visualizer) \
+    X(playlist) \
+    X(playlist_editor) \
+    X(search_engine) \
+    X(media_library) \
+    X(tag_editor) \
+    X(tiny_tag_editor) \
+    X(song_info) \
+    X(server_info) \
+    X(outputs)
+
+#define NCM_NATIVE_REPLACE_REGISTER_TYPES(X) \
+    X(selected_items_adder, NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER) \
+    X(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG)
+
+#define NCM_NATIVE_SIMPLE_SWITCH_TYPES(X) \
+    X(browser) \
+    X(help) \
+    X(playlist) \
+    X(playlist_editor) \
+    X(selected_items_adder) \
+    X(search_engine) \
+    X(media_library) \
+    X(tag_editor) \
+    X(song_info) \
+    X(server_info) \
+    X(outputs)
+
+#define NCM_NATIVE_REGISTER_SWITCH_TYPES(X) \
+    X(tiny_tag_editor)
+
+#define NCM_NATIVE_IS_CURRENT_TYPES(X) \
+    X(browser) \
+    X(help) \
+    X(lastfm) \
+    X(lyrics) \
+    X(visualizer) \
+    X(playlist) \
+    X(playlist_editor) \
+    X(selected_items_adder) \
+    X(sort_playlist_dialog) \
+    X(search_engine) \
+    X(media_library) \
+    X(tag_editor) \
+    X(tiny_tag_editor) \
+    X(song_info) \
+    X(server_info) \
+    X(outputs)
+
+#if defined(ENABLE_OUTPUTS)
+  #define NCM_NATIVE_ENABLED_OUTPUTS(X) X(outputs)
+  #define NCM_NATIVE_ENABLED_OUTPUTS_RESIZE(X) \
+      X(outputs, NC_SCREEN_TYPE_OUTPUTS)
+#else
+  #define NCM_NATIVE_ENABLED_OUTPUTS(X)
+  #define NCM_NATIVE_ENABLED_OUTPUTS_RESIZE(X)
+#endif
+
+#if defined(HAVE_TAGLIB_H)
+  #define NCM_NATIVE_ENABLED_TAG_EDITOR(X) \
+      X(tag_editor) \
+      X(tiny_tag_editor)
+  #define NCM_NATIVE_ENABLED_TAG_EDITOR_RESIZE(X) \
+      X(tag_editor, NC_SCREEN_TYPE_TAG_EDITOR) \
+      X(tiny_tag_editor, NC_SCREEN_TYPE_TINY_TAG_EDITOR)
+#else
+  #define NCM_NATIVE_ENABLED_TAG_EDITOR(X)
+  #define NCM_NATIVE_ENABLED_TAG_EDITOR_RESIZE(X)
+#endif
+
+#if defined(ENABLE_VISUALIZER)
+  #define NCM_NATIVE_ENABLED_VISUALIZER(X) X(visualizer)
+  #define NCM_NATIVE_ENABLED_VISUALIZER_RESIZE(X) \
+      X(visualizer, NC_SCREEN_TYPE_VISUALIZER)
+#else
+  #define NCM_NATIVE_ENABLED_VISUALIZER(X)
+  #define NCM_NATIVE_ENABLED_VISUALIZER_RESIZE(X)
+#endif
+
+#define NCM_NATIVE_INIT_ALL_TYPES(X) \
+    X(browser) \
+    X(help) \
+    X(lastfm) \
+    X(lyrics) \
+    X(media_library) \
+    X(playlist) \
+    X(playlist_editor) \
+    X(search_engine) \
+    X(selected_items_adder) \
+    X(server_info) \
+    X(song_info) \
+    X(sort_playlist_dialog) \
+    NCM_NATIVE_ENABLED_TAG_EDITOR(X) \
+    NCM_NATIVE_ENABLED_VISUALIZER(X) \
+    NCM_NATIVE_ENABLED_OUTPUTS(X)
+
+#define NCM_NATIVE_REGISTER_NATIVE_ONLY_TYPES(X) \
+    X(browser) \
+    X(help) \
+    X(lastfm) \
+    X(media_library) \
+    X(search_engine) \
+    X(selected_items_adder) \
+    X(song_info) \
+    X(server_info) \
+    NCM_NATIVE_ENABLED_VISUALIZER(X) \
+    NCM_NATIVE_ENABLED_TAG_EDITOR(X) \
+    NCM_NATIVE_ENABLED_OUTPUTS(X) \
+    X(playlist) \
+    X(playlist_editor)
+
+#define NCM_NATIVE_RESIZE_REQUEST_TYPES(X) \
+    X(browser, NC_SCREEN_TYPE_BROWSER) \
+    X(help, NC_SCREEN_TYPE_HELP) \
+    X(lastfm, NC_SCREEN_TYPE_LASTFM) \
+    X(lyrics, NC_SCREEN_TYPE_LYRICS) \
+    X(media_library, NC_SCREEN_TYPE_MEDIA_LIBRARY) \
+    X(playlist, NC_SCREEN_TYPE_PLAYLIST) \
+    X(playlist_editor, NC_SCREEN_TYPE_PLAYLIST_EDITOR) \
+    X(search_engine, NC_SCREEN_TYPE_SEARCH_ENGINE) \
+    X(selected_items_adder, NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER) \
+    X(server_info, NC_SCREEN_TYPE_SERVER_INFO) \
+    X(song_info, NC_SCREEN_TYPE_SONG_INFO) \
+    X(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG) \
+    NCM_NATIVE_ENABLED_TAG_EDITOR_RESIZE(X) \
+    NCM_NATIVE_ENABLED_VISUALIZER_RESIZE(X) \
+    NCM_NATIVE_ENABLED_OUTPUTS_RESIZE(X)
+
 #endif /* NCMPCPP_SCREEN_DEFS_H */

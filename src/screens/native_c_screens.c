@@ -112,34 +112,20 @@ NcmSongInfoMetadata ncm_song_info_tags[] = {
     },
 };
 
-static NativeBrowserScreen browser_screen;
-static bool browser_screen_initialized;
-static struct NativeHelpScreen help_screen;
-static struct NativeOutputsScreen outputs_screen;
-static NativeLastfmScreen lastfm_screen;
-static bool lastfm_screen_initialized;
-static NativeLyricsScreen lyrics_screen;
-static bool lyrics_screen_initialized;
-static NativeVisualizerScreen visualizer_screen;
-static bool visualizer_screen_initialized;
-static NativePlaylistScreen playlist_screen;
-static NativePlaylistEditorScreen playlist_editor_screen;
-static NativeSelectedItemsAdderScreen selected_items_adder_screen;
-static NativeSortPlaylistDialog sort_playlist_dialog;
-static NativeSearchEngineScreen search_engine_screen;
-static bool playlist_editor_screen_initialized;
-static bool selected_items_adder_screen_initialized;
-static bool sort_playlist_dialog_initialized;
-static bool search_engine_screen_initialized;
-static NativeMediaLibraryScreen media_library_screen;
-static bool media_library_screen_initialized;
-static NativeTagEditorScreen tag_editor_screen;
-static bool tag_editor_screen_initialized;
-static NativeTinyTagEditorScreen tiny_tag_editor_screen;
-static bool tiny_tag_editor_screen_initialized;
-static bool playlist_screen_initialized;
-static struct NativeServerInfoScreen server_info_screen;
-static struct NativeSongInfoScreen song_info_screen;
+#define NCM_NATIVE_DECLARE_STORAGE(type, name) \
+    static type name;
+
+NCM_NATIVE_DIRECT_STORAGE_TYPES(NCM_NATIVE_DECLARE_STORAGE)
+NCM_NATIVE_WRAPPED_STORAGE_TYPES(NCM_NATIVE_DECLARE_STORAGE)
+
+#undef NCM_NATIVE_DECLARE_STORAGE
+
+#define NCM_NATIVE_DECLARE_INIT_FLAG(name) \
+    static bool name;
+
+NCM_NATIVE_INIT_FLAGS(NCM_NATIVE_DECLARE_INIT_FLAG)
+
+#undef NCM_NATIVE_DECLARE_INIT_FLAG
 
 #define ENUM_NAME NativePromptResult
 #define ENUM_PREFIX_ NATIVE_PROMPT_RESULT_
@@ -151,6 +137,11 @@ static struct NativeSongInfoScreen song_info_screen;
 #include "cbase/xenums.c"
 
 static void native_request_registered_resize(int32 type);
+static void native_screen_register_once(NcScreen *screen);
+static void native_screen_register_replacing(NcScreen *screen, int32 type);
+static bool native_screen_is_current(NcScreen *screen);
+static void native_screen_switch_to(NcScreen *screen);
+static void native_screen_toggle_or_switch_to(NcScreen *screen);
 static NcBorder native_no_border(void);
 static bool native_register_screen(NcScreen *screen);
 static NativeTagEditorHooks native_tag_editor_hooks(void);
@@ -159,6 +150,106 @@ static NcOutputsHooks native_outputs_hooks(void);
 static NcServerInfoHooks native_server_info_hooks(void);
 static NcSongInfoHooks native_song_info_hooks(void);
 static void native_show_long_time(NcBuffer *buffer, int32 seconds);
+
+#define NCM_NATIVE_DEFINE_DIRECT_ACCESSOR( \
+    suffix, type, storage, native_expr \
+) \
+type * \
+native_c_screen_##suffix(void) { \
+    native_c_screen_##suffix##_init(); \
+    return &storage; \
+} \
+ \
+NcScreen * \
+native_c_screen_##suffix##_native(void) { \
+    native_c_screen_##suffix##_init(); \
+    return native_expr; \
+}
+
+NCM_NATIVE_DIRECT_ACCESSOR_TYPES(NCM_NATIVE_DEFINE_DIRECT_ACCESSOR)
+
+#undef NCM_NATIVE_DEFINE_DIRECT_ACCESSOR
+
+#define NCM_NATIVE_DEFINE_WRAPPED_ACCESSOR(suffix, native_expr) \
+    NcScreen * \
+    native_c_screen_##suffix##_native(void) { \
+        native_c_screen_##suffix##_init(); \
+        return native_expr; \
+    }
+
+NCM_NATIVE_WRAPPED_ACCESSOR_TYPES(NCM_NATIVE_DEFINE_WRAPPED_ACCESSOR)
+
+#undef NCM_NATIVE_DEFINE_WRAPPED_ACCESSOR
+
+#define NCM_NATIVE_DEFINE_TYPED_WRAPPED_ACCESSOR( \
+    suffix, function, type, expr \
+) \
+    type * \
+    function(void) { \
+        native_c_screen_##suffix##_init(); \
+        return expr; \
+    }
+
+NCM_NATIVE_TYPED_WRAPPED_ACCESSOR_TYPES(
+    NCM_NATIVE_DEFINE_TYPED_WRAPPED_ACCESSOR)
+
+#undef NCM_NATIVE_DEFINE_TYPED_WRAPPED_ACCESSOR
+
+#define NCM_NATIVE_DEFINE_STANDARD_REGISTER(suffix) \
+    void \
+    native_c_screen_##suffix##_register(void) { \
+        native_screen_register_once(native_c_screen_##suffix##_native()); \
+        return; \
+    }
+
+NCM_NATIVE_STANDARD_REGISTER_TYPES(NCM_NATIVE_DEFINE_STANDARD_REGISTER)
+
+#undef NCM_NATIVE_DEFINE_STANDARD_REGISTER
+
+#define NCM_NATIVE_DEFINE_REPLACE_REGISTER(suffix, type) \
+    void \
+    native_c_screen_##suffix##_register(void) { \
+        native_screen_register_replacing( \
+            native_c_screen_##suffix##_native(), type); \
+        return; \
+    }
+
+NCM_NATIVE_REPLACE_REGISTER_TYPES(NCM_NATIVE_DEFINE_REPLACE_REGISTER)
+
+#undef NCM_NATIVE_DEFINE_REPLACE_REGISTER
+
+#define NCM_NATIVE_DEFINE_SIMPLE_SWITCH(suffix) \
+    void \
+    native_c_screen_##suffix##_switch_to(void) { \
+        native_screen_switch_to(native_c_screen_##suffix##_native()); \
+        return; \
+    }
+
+NCM_NATIVE_SIMPLE_SWITCH_TYPES(NCM_NATIVE_DEFINE_SIMPLE_SWITCH)
+
+#undef NCM_NATIVE_DEFINE_SIMPLE_SWITCH
+
+#define NCM_NATIVE_DEFINE_REGISTER_SWITCH(suffix) \
+    void \
+    native_c_screen_##suffix##_switch_to(void) { \
+        native_c_screen_##suffix##_register(); \
+        native_screen_switch_to(native_c_screen_##suffix##_native()); \
+        return; \
+    }
+
+NCM_NATIVE_REGISTER_SWITCH_TYPES(NCM_NATIVE_DEFINE_REGISTER_SWITCH)
+
+#undef NCM_NATIVE_DEFINE_REGISTER_SWITCH
+
+#define NCM_NATIVE_DEFINE_IS_CURRENT(suffix) \
+    bool \
+    native_c_screen_##suffix##_is_current(void) { \
+        return native_screen_is_current(native_c_screen_##suffix##_native()); \
+    }
+
+NCM_NATIVE_IS_CURRENT_TYPES(NCM_NATIVE_DEFINE_IS_CURRENT)
+
+#undef NCM_NATIVE_DEFINE_IS_CURRENT
 
 void
 native_c_screen_browser_init(void) {
@@ -183,26 +274,6 @@ native_c_screen_browser_init(void) {
 }
 
 void
-native_c_screen_browser_register(void) {
-    native_c_screen_browser_init();
-    ASSERT(native_register_screen(native_c_screen_browser_native()));
-    return;
-}
-
-void
-native_c_screen_browser_switch_to(void) {
-    (void)nc_screen_switcher_switch_to(native_c_screen_browser_native(),
-                                       nc_screen_has_to_be_resized(
-                                           native_c_screen_browser_native()));
-    return;
-}
-
-bool
-native_c_screen_browser_is_current(void) {
-    return nc_screen_switcher_is_current(native_c_screen_browser_native());
-}
-
-void
 native_c_screen_browser_fetch_supported_extensions(void) {
     NcmError error;
 
@@ -214,18 +285,6 @@ native_c_screen_browser_fetch_supported_extensions(void) {
                                     error.message);
     }
     return;
-}
-
-NativeBrowserScreen *
-native_c_screen_browser(void) {
-    native_c_screen_browser_init();
-    return &browser_screen;
-}
-
-NcScreen *
-native_c_screen_browser_native(void) {
-    native_c_screen_browser_init();
-    return native_browser_screen_base(&browser_screen);
 }
 
 void
@@ -249,32 +308,6 @@ native_c_screen_help_init(void) {
 }
 
 void
-native_c_screen_help_register(void) {
-    native_c_screen_help_init();
-    ASSERT(native_register_screen(native_c_screen_help_native()));
-    return;
-}
-
-void
-native_c_screen_help_switch_to(void) {
-    (void)nc_screen_switcher_switch_to(native_c_screen_help_native(),
-                                       nc_screen_has_to_be_resized(
-                                           native_c_screen_help_native()));
-    return;
-}
-
-bool
-native_c_screen_help_is_current(void) {
-    return nc_screen_switcher_is_current(native_c_screen_help_native());
-}
-
-NcHelpScreen *
-native_c_screen_help_typed(void) {
-    native_c_screen_help_init();
-    return &help_screen.screen;
-}
-
-void
 native_c_screen_lastfm_init(void) {
     if (lastfm_screen_initialized) {
         return;
@@ -293,49 +326,10 @@ native_c_screen_lastfm_init(void) {
 }
 
 void
-native_c_screen_lastfm_register(void) {
-    native_c_screen_lastfm_init();
-    ASSERT(native_register_screen(native_c_screen_lastfm_native()));
-    return;
-}
-
-void
 native_c_screen_lastfm_switch_to(void) {
-    NcScreen *screen;
-    NcScreen *previous;
-
     native_c_screen_lastfm_register();
-    screen = native_c_screen_lastfm_native();
-    if (nc_screen_switcher_is_current(screen)) {
-        previous = nc_screen_switcher_previous();
-        if (previous
-            && app_controller_is_screen_registered(previous)) {
-            (void)nc_screen_switcher_switch_to(
-                previous, nc_screen_has_to_be_resized(previous));
-        }
-        return;
-    }
-
-    (void)nc_screen_switcher_switch_to(screen,
-                                       nc_screen_has_to_be_resized(screen));
+    native_screen_toggle_or_switch_to(native_c_screen_lastfm_native());
     return;
-}
-
-bool
-native_c_screen_lastfm_is_current(void) {
-    return nc_screen_switcher_is_current(native_c_screen_lastfm_native());
-}
-
-NativeLastfmScreen *
-native_c_screen_lastfm(void) {
-    native_c_screen_lastfm_init();
-    return &lastfm_screen;
-}
-
-NcScreen *
-native_c_screen_lastfm_native(void) {
-    native_c_screen_lastfm_init();
-    return native_lastfm_screen_base(&lastfm_screen);
 }
 
 void
@@ -357,13 +351,6 @@ native_c_screen_lyrics_init(void) {
 }
 
 void
-native_c_screen_lyrics_register(void) {
-    native_c_screen_lyrics_init();
-    ASSERT(native_register_screen(native_c_screen_lyrics_native()));
-    return;
-}
-
-void
 native_c_screen_lyrics_set_resize(void) {
     nc_screen_request_resize(native_c_screen_lyrics_native());
     return;
@@ -371,41 +358,9 @@ native_c_screen_lyrics_set_resize(void) {
 
 void
 native_c_screen_lyrics_switch_to(void) {
-    NcScreen *screen;
-    NcScreen *previous;
-
     native_c_screen_lyrics_register();
-    screen = native_c_screen_lyrics_native();
-    if (nc_screen_switcher_is_current(screen)) {
-        previous = nc_screen_switcher_previous();
-        if (previous
-            && app_controller_is_screen_registered(previous)) {
-            (void)nc_screen_switcher_switch_to(
-                previous, nc_screen_has_to_be_resized(previous));
-        }
-        return;
-    }
-
-    (void)nc_screen_switcher_switch_to(screen,
-                                       nc_screen_has_to_be_resized(screen));
+    native_screen_toggle_or_switch_to(native_c_screen_lyrics_native());
     return;
-}
-
-bool
-native_c_screen_lyrics_is_current(void) {
-    return nc_screen_switcher_is_current(native_c_screen_lyrics_native());
-}
-
-NativeLyricsScreen *
-native_c_screen_lyrics(void) {
-    native_c_screen_lyrics_init();
-    return &lyrics_screen;
-}
-
-NcScreen *
-native_c_screen_lyrics_native(void) {
-    native_c_screen_lyrics_init();
-    return native_lyrics_screen_base(&lyrics_screen);
 }
 
 void
@@ -464,24 +419,6 @@ native_c_screen_visualizer_init(void) {
     return;
 }
 
-void
-native_c_screen_visualizer_register(void) {
-#if defined(ENABLE_VISUALIZER)
-    native_c_screen_visualizer_init();
-    ASSERT(native_register_screen(native_c_screen_visualizer_native()));
-#endif
-    return;
-}
-
-bool
-native_c_screen_visualizer_is_current(void) {
-#if defined(ENABLE_VISUALIZER)
-    return nc_screen_switcher_is_current(native_c_screen_visualizer_native());
-#else
-    return false;
-#endif
-}
-
 NativeVisualizerScreen *
 native_c_screen_visualizer(void) {
     native_c_screen_visualizer_init();
@@ -490,14 +427,12 @@ native_c_screen_visualizer(void) {
 
 NcScreen *
 native_c_screen_visualizer_native(void) {
+#if defined(ENABLE_VISUALIZER)
     native_c_screen_visualizer_init();
     return native_visualizer_screen_base(&visualizer_screen);
-}
-
-NcScreen *
-native_c_screen_help_native(void) {
-    native_c_screen_help_init();
-    return nc_help_screen_base(&help_screen.screen);
+#else
+    return NULL;
+#endif
 }
 
 void
@@ -518,38 +453,6 @@ native_c_screen_playlist_init(void) {
         Config.mouse_list_scroll_whole_page);
     playlist_screen_initialized = true;
     return;
-}
-
-void
-native_c_screen_playlist_register(void) {
-    native_c_screen_playlist_init();
-    ASSERT(native_register_screen(native_c_screen_playlist_native()));
-    return;
-}
-
-void
-native_c_screen_playlist_switch_to(void) {
-    (void)nc_screen_switcher_switch_to(native_c_screen_playlist_native(),
-                                       nc_screen_has_to_be_resized(
-                                           native_c_screen_playlist_native()));
-    return;
-}
-
-bool
-native_c_screen_playlist_is_current(void) {
-    return nc_screen_switcher_is_current(native_c_screen_playlist_native());
-}
-
-NativePlaylistScreen *
-native_c_screen_playlist(void) {
-    native_c_screen_playlist_init();
-    return &playlist_screen;
-}
-
-NcScreen *
-native_c_screen_playlist_native(void) {
-    native_c_screen_playlist_init();
-    return native_playlist_screen_base(&playlist_screen);
 }
 
 void
@@ -577,34 +480,6 @@ native_c_screen_playlist_editor_init(void) {
 }
 
 void
-native_c_screen_playlist_editor_register(void) {
-    native_c_screen_playlist_editor_init();
-    ASSERT(native_register_screen(native_c_screen_playlist_editor_native()));
-    return;
-}
-
-void
-native_c_screen_playlist_editor_switch_to(void) {
-    (void)nc_screen_switcher_switch_to(
-        native_c_screen_playlist_editor_native(),
-        nc_screen_has_to_be_resized(
-            native_c_screen_playlist_editor_native()));
-    return;
-}
-
-NativePlaylistEditorScreen *
-native_c_screen_playlist_editor(void) {
-    native_c_screen_playlist_editor_init();
-    return &playlist_editor_screen;
-}
-
-NcScreen *
-native_c_screen_playlist_editor_native(void) {
-    native_c_screen_playlist_editor_init();
-    return native_playlist_editor_screen_base(&playlist_editor_screen);
-}
-
-void
 native_c_screen_selected_items_adder_init(void) {
     if (selected_items_adder_screen_initialized) {
         return;
@@ -617,38 +492,6 @@ native_c_screen_selected_items_adder_init(void) {
     return;
 }
 
-void
-native_c_screen_selected_items_adder_register(void) {
-    NcScreen *registered;
-    NcScreen *screen;
-    bool success;
-
-    native_c_screen_selected_items_adder_init();
-    screen = native_c_screen_selected_items_adder_native();
-    registered = app_controller_find_screen_type(
-        NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
-    if (registered && (registered != screen)) {
-        success = app_controller_unregister_screen(registered);
-        ASSERT(success);
-        if (!success) {
-            return;
-        }
-    }
-    success = native_register_screen(screen);
-    ASSERT(success);
-    (void)success;
-    return;
-}
-
-void
-native_c_screen_selected_items_adder_switch_to(void) {
-    (void)nc_screen_switcher_switch_to(
-        native_c_screen_selected_items_adder_native(),
-        nc_screen_has_to_be_resized(
-            native_c_screen_selected_items_adder_native()));
-    return;
-}
-
 bool
 native_c_screen_selected_items_adder_open(NcmSongArray *songs,
                                           NcmError *error) {
@@ -656,19 +499,6 @@ native_c_screen_selected_items_adder_open(NcmSongArray *songs,
     return native_selected_items_adder_screen_open(
         native_c_screen_selected_items_adder(), songs,
         native_c_screen_playlist(), &global_mpd, error);
-}
-
-NativeSelectedItemsAdderScreen *
-native_c_screen_selected_items_adder(void) {
-    native_c_screen_selected_items_adder_init();
-    return &selected_items_adder_screen;
-}
-
-NcScreen *
-native_c_screen_selected_items_adder_native(void) {
-    native_c_screen_selected_items_adder_init();
-    return native_selected_items_adder_screen_base(
-        &selected_items_adder_screen);
 }
 
 void
@@ -682,29 +512,6 @@ native_c_screen_sort_playlist_dialog_init(void) {
                                      Config.main_color,
                                      Config.window_border);
     sort_playlist_dialog_initialized = true;
-    return;
-}
-
-void
-native_c_screen_sort_playlist_dialog_register(void) {
-    NcScreen *registered;
-    NcScreen *screen;
-    bool success;
-
-    native_c_screen_sort_playlist_dialog_init();
-    screen = native_c_screen_sort_playlist_dialog_native();
-    registered = app_controller_find_screen_type(
-        NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
-    if (registered && (registered != screen)) {
-        success = app_controller_unregister_screen(registered);
-        ASSERT(success);
-        if (!success) {
-            return;
-        }
-    }
-    success = native_register_screen(screen);
-    ASSERT(success);
-    (void)success;
     return;
 }
 
@@ -723,18 +530,6 @@ native_c_screen_sort_playlist_dialog_switch_to(void) {
             Config.message_delay_time, error.message);
     }
     return success;
-}
-
-NativeSortPlaylistDialog *
-native_c_screen_sort_playlist_dialog(void) {
-    native_c_screen_sort_playlist_dialog_init();
-    return &sort_playlist_dialog;
-}
-
-NcScreen *
-native_c_screen_sort_playlist_dialog_native(void) {
-    native_c_screen_sort_playlist_dialog_init();
-    return native_sort_playlist_dialog_base(&sort_playlist_dialog);
 }
 
 static bool
@@ -943,33 +738,6 @@ native_c_screen_search_engine_init(void) {
 }
 
 void
-native_c_screen_search_engine_register(void) {
-    native_c_screen_search_engine_init();
-    ASSERT(native_register_screen(native_c_screen_search_engine_native()));
-    return;
-}
-
-void
-native_c_screen_search_engine_switch_to(void) {
-    (void)nc_screen_switcher_switch_to(
-        native_c_screen_search_engine_native(),
-        nc_screen_has_to_be_resized(native_c_screen_search_engine_native()));
-    return;
-}
-
-NativeSearchEngineScreen *
-native_c_screen_search_engine(void) {
-    native_c_screen_search_engine_init();
-    return &search_engine_screen;
-}
-
-NcScreen *
-native_c_screen_search_engine_native(void) {
-    native_c_screen_search_engine_init();
-    return native_search_engine_screen_base(&search_engine_screen);
-}
-
-void
 native_c_screen_media_library_init(void) {
     NativeMediaLibraryHooks hooks;
 
@@ -990,33 +758,6 @@ native_c_screen_media_library_init(void) {
 }
 
 void
-native_c_screen_media_library_register(void) {
-    native_c_screen_media_library_init();
-    ASSERT(native_register_screen(native_c_screen_media_library_native()));
-    return;
-}
-
-void
-native_c_screen_media_library_switch_to(void) {
-    (void)nc_screen_switcher_switch_to(
-        native_c_screen_media_library_native(),
-        nc_screen_has_to_be_resized(native_c_screen_media_library_native()));
-    return;
-}
-
-NativeMediaLibraryScreen *
-native_c_screen_media_library(void) {
-    native_c_screen_media_library_init();
-    return &media_library_screen;
-}
-
-NcScreen *
-native_c_screen_media_library_native(void) {
-    native_c_screen_media_library_init();
-    return native_media_library_screen_base(&media_library_screen);
-}
-
-void
 native_c_screen_tag_editor_init(void) {
     NativeTagEditorHooks hooks;
 
@@ -1034,33 +775,6 @@ native_c_screen_tag_editor_init(void) {
     native_tag_editor_screen_set_hooks(&tag_editor_screen, hooks);
     tag_editor_screen_initialized = true;
     return;
-}
-
-void
-native_c_screen_tag_editor_register(void) {
-    native_c_screen_tag_editor_init();
-    ASSERT(native_register_screen(native_c_screen_tag_editor_native()));
-    return;
-}
-
-void
-native_c_screen_tag_editor_switch_to(void) {
-    (void)nc_screen_switcher_switch_to(
-        native_c_screen_tag_editor_native(),
-        nc_screen_has_to_be_resized(native_c_screen_tag_editor_native()));
-    return;
-}
-
-NativeTagEditorScreen *
-native_c_screen_tag_editor(void) {
-    native_c_screen_tag_editor_init();
-    return &tag_editor_screen;
-}
-
-NcScreen *
-native_c_screen_tag_editor_native(void) {
-    native_c_screen_tag_editor_init();
-    return native_tag_editor_screen_base(&tag_editor_screen);
 }
 
 static bool
@@ -1317,35 +1031,6 @@ native_c_screen_tiny_tag_editor_init(void) {
 }
 
 void
-native_c_screen_tiny_tag_editor_register(void) {
-    native_c_screen_tiny_tag_editor_init();
-    ASSERT(native_register_screen(native_c_screen_tiny_tag_editor_native()));
-    return;
-}
-
-void
-native_c_screen_tiny_tag_editor_switch_to(void) {
-    native_c_screen_tiny_tag_editor_register();
-    (void)nc_screen_switcher_switch_to(
-        native_c_screen_tiny_tag_editor_native(),
-        nc_screen_has_to_be_resized(
-            native_c_screen_tiny_tag_editor_native()));
-    return;
-}
-
-NativeTinyTagEditorScreen *
-native_c_screen_tiny_tag_editor(void) {
-    native_c_screen_tiny_tag_editor_init();
-    return &tiny_tag_editor_screen;
-}
-
-NcScreen *
-native_c_screen_tiny_tag_editor_native(void) {
-    native_c_screen_tiny_tag_editor_init();
-    return native_tiny_tag_editor_screen_base(&tiny_tag_editor_screen);
-}
-
-void
 native_c_screen_song_info_init(void) {
     if (song_info_screen.initialized) {
         return;
@@ -1366,27 +1051,6 @@ native_c_screen_song_info_init(void) {
 }
 
 void
-native_c_screen_song_info_register(void) {
-    native_c_screen_song_info_init();
-    ASSERT(native_register_screen(native_c_screen_song_info_native()));
-    return;
-}
-
-void
-native_c_screen_song_info_switch_to(void) {
-    (void)nc_screen_switcher_switch_to(native_c_screen_song_info_native(),
-                                       nc_screen_has_to_be_resized(
-                                           native_c_screen_song_info_native()));
-    return;
-}
-
-NcScreen *
-native_c_screen_song_info_native(void) {
-    native_c_screen_song_info_init();
-    return nc_song_info_screen_base(&song_info_screen.screen);
-}
-
-void
 native_c_screen_server_info_init(void) {
     if (server_info_screen.initialized) {
         return;
@@ -1404,29 +1068,6 @@ native_c_screen_server_info_init(void) {
                                Config.window_border);
     server_info_screen.initialized = true;
     return;
-}
-
-void
-native_c_screen_server_info_register(void) {
-    native_c_screen_server_info_init();
-    ASSERT(native_register_screen(native_c_screen_server_info_native()));
-    return;
-}
-
-void
-native_c_screen_server_info_switch_to(void) {
-    NcScreen *screen;
-
-    screen = native_c_screen_server_info_native();
-    (void)nc_screen_switcher_switch_to(screen,
-                                       nc_screen_has_to_be_resized(screen));
-    return;
-}
-
-NcScreen *
-native_c_screen_server_info_native(void) {
-    native_c_screen_server_info_init();
-    return nc_server_info_screen_base(&server_info_screen.screen);
 }
 
 void
@@ -1458,25 +1099,6 @@ native_c_screen_outputs_init(void) {
     nc_buffer_destroy(&prefix);
     nc_buffer_destroy(&suffix);
     outputs_screen.initialized = true;
-#endif
-    return;
-}
-
-void
-native_c_screen_outputs_register(void) {
-#if defined(ENABLE_OUTPUTS)
-    native_c_screen_outputs_init();
-    ASSERT(native_register_screen(native_c_screen_outputs_native()));
-#endif
-    return;
-}
-
-void
-native_c_screen_outputs_switch_to(void) {
-#if defined(ENABLE_OUTPUTS)
-    (void)nc_screen_switcher_switch_to(native_c_screen_outputs_native(),
-                                       nc_screen_has_to_be_resized(
-                                           native_c_screen_outputs_native()));
 #endif
     return;
 }
@@ -1520,80 +1142,34 @@ native_c_screen_outputs_native(void) {
 
 void
 native_c_screens_init_all(void) {
-    native_c_screen_browser_init();
-    native_c_screen_help_init();
-    native_c_screen_lastfm_init();
-    native_c_screen_lyrics_init();
-    native_c_screen_media_library_init();
-    native_c_screen_playlist_init();
-    native_c_screen_playlist_editor_init();
-    native_c_screen_search_engine_init();
-    native_c_screen_selected_items_adder_init();
-    native_c_screen_server_info_init();
-    native_c_screen_song_info_init();
-    native_c_screen_sort_playlist_dialog_init();
-#if defined(HAVE_TAGLIB_H)
-    native_c_screen_tag_editor_init();
-    native_c_screen_tiny_tag_editor_init();
-#endif
-#if defined(ENABLE_VISUALIZER)
-    native_c_screen_visualizer_init();
-#endif
-#if defined(ENABLE_OUTPUTS)
-    native_c_screen_outputs_init();
-#endif
+    #define NCM_NATIVE_INIT_SCREEN(suffix) \
+        native_c_screen_##suffix##_init();
+
+    NCM_NATIVE_INIT_ALL_TYPES(NCM_NATIVE_INIT_SCREEN)
+
+    #undef NCM_NATIVE_INIT_SCREEN
     return;
 }
 
 void
 native_c_screens_register_native_only(void) {
-    native_c_screen_browser_register();
-    native_c_screen_help_register();
-    native_c_screen_lastfm_register();
-    native_c_screen_media_library_register();
-    native_c_screen_search_engine_register();
-    native_c_screen_selected_items_adder_register();
-    native_c_screen_song_info_register();
-    native_c_screen_server_info_register();
-#if defined(ENABLE_VISUALIZER)
-    native_c_screen_visualizer_register();
-#endif
-#if defined(HAVE_TAGLIB_H)
-    native_c_screen_tag_editor_register();
-    native_c_screen_tiny_tag_editor_register();
-#endif
-#if defined(ENABLE_OUTPUTS)
-    native_c_screen_outputs_register();
-#endif
-    native_c_screen_playlist_register();
-    native_c_screen_playlist_editor_register();
+    #define NCM_NATIVE_REGISTER_SCREEN(suffix) \
+        native_c_screen_##suffix##_register();
+
+    NCM_NATIVE_REGISTER_NATIVE_ONLY_TYPES(NCM_NATIVE_REGISTER_SCREEN)
+
+    #undef NCM_NATIVE_REGISTER_SCREEN
     return;
 }
 
 void
 native_c_screens_request_registered_resize(void) {
-    native_request_registered_resize(NC_SCREEN_TYPE_BROWSER);
-    native_request_registered_resize(NC_SCREEN_TYPE_HELP);
-    native_request_registered_resize(NC_SCREEN_TYPE_LASTFM);
-    native_request_registered_resize(NC_SCREEN_TYPE_LYRICS);
-    native_request_registered_resize(NC_SCREEN_TYPE_MEDIA_LIBRARY);
-    native_request_registered_resize(NC_SCREEN_TYPE_PLAYLIST);
-    native_request_registered_resize(NC_SCREEN_TYPE_PLAYLIST_EDITOR);
-    native_request_registered_resize(NC_SCREEN_TYPE_SEARCH_ENGINE);
-    native_request_registered_resize(NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
-    native_request_registered_resize(NC_SCREEN_TYPE_SERVER_INFO);
-    native_request_registered_resize(NC_SCREEN_TYPE_SONG_INFO);
-    native_request_registered_resize(NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
-#if defined(HAVE_TAGLIB_H)
-    native_request_registered_resize(NC_SCREEN_TYPE_TAG_EDITOR);
-    native_request_registered_resize(NC_SCREEN_TYPE_TINY_TAG_EDITOR);
-#endif
-#if defined(ENABLE_VISUALIZER)
-    native_request_registered_resize(NC_SCREEN_TYPE_VISUALIZER);
-#endif
-#if defined(ENABLE_OUTPUTS)
-    native_request_registered_resize(NC_SCREEN_TYPE_OUTPUTS);
-#endif
+    #define NCM_NATIVE_REQUEST_RESIZE(suffix, type) \
+        native_request_registered_resize(type);
+
+    NCM_NATIVE_RESIZE_REQUEST_TYPES(NCM_NATIVE_REQUEST_RESIZE)
+
+    #undef NCM_NATIVE_REQUEST_RESIZE
     return;
 }
 
@@ -1641,6 +1217,74 @@ native_request_registered_resize(int32 type) {
     if ((screen = app_controller_find_screen_type(type))) {
         nc_screen_request_resize(screen);
     }
+    return;
+}
+
+static void
+native_screen_register_once(NcScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    ASSERT(native_register_screen(screen));
+    return;
+}
+
+static void
+native_screen_register_replacing(NcScreen *screen, int32 type) {
+    NcScreen *registered;
+    bool success;
+
+    if (screen == NULL) {
+        return;
+    }
+
+    registered = app_controller_find_screen_type(type);
+    if (registered && (registered != screen)) {
+        success = app_controller_unregister_screen(registered);
+        ASSERT(success);
+        if (!success) {
+            return;
+        }
+    }
+    success = native_register_screen(screen);
+    ASSERT(success);
+    (void)success;
+    return;
+}
+
+static bool
+native_screen_is_current(NcScreen *screen) {
+    if (screen == NULL) {
+        return false;
+    }
+    return nc_screen_switcher_is_current(screen);
+}
+
+static void
+native_screen_switch_to(NcScreen *screen) {
+    if (screen == NULL) {
+        return;
+    }
+    (void)nc_screen_switcher_switch_to(screen,
+                                       nc_screen_has_to_be_resized(screen));
+    return;
+}
+
+static void
+native_screen_toggle_or_switch_to(NcScreen *screen) {
+    NcScreen *previous;
+
+    if (screen == NULL) {
+        return;
+    }
+    if (nc_screen_switcher_is_current(screen)) {
+        previous = nc_screen_switcher_previous();
+        if (previous && app_controller_is_screen_registered(previous)) {
+            native_screen_switch_to(previous);
+        }
+        return;
+    }
+    native_screen_switch_to(screen);
     return;
 }
 
