@@ -423,7 +423,7 @@ install_program() {
     install -d "$DESTDIR$BINDIR"
     install -m 755 "bin/ncmpcpp2" "$DESTDIR$BINDIR/ncmpcpp2"
     install -d "$DESTDIR$DOCDIR"
-    install -m 644 AUTHORS COPYING "$DESTDIR$DOCDIR"
+    install -m 644 AUTHORS LICENSE "$DESTDIR$DOCDIR"
     install -m 644 doc/bindings doc/config "$DESTDIR$DOCDIR"
     install -d "$DESTDIR$MANDIR/man1"
     install -m 644 doc/ncmpcpp2.1 "$DESTDIR$MANDIR/man1/ncmpcpp2.1"

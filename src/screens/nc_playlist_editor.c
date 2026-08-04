@@ -899,7 +899,7 @@ playlist_editor_finish_list_change_callback(NcScreen *screen) {
 
 static void
 playlist_editor_switch_to_callback(NcScreen *screen) {
-    (void)screen;
+    playlist_editor_refresh_callback(screen);
     return;
 }
 
