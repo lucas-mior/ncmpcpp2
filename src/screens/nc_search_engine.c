@@ -148,7 +148,7 @@ static char native_search_empty_string[] = "";
     native_search_engine_screen_destroy
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
-#include "screens/nc_screen_impl_template.c"
+#include "screens/nc_screen_impl_template.h"
 
 void
 native_search_engine_screen_init(NativeSearchEngineScreen *screen,

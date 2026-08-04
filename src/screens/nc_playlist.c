@@ -237,7 +237,7 @@ typedef struct NativePlaylistPriorityContext {
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK native_playlist_screen_destroy
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
-#include "screens/nc_screen_impl_template.c"
+#include "screens/nc_screen_impl_template.h"
 
 void
 native_playlist_screen_init(NativePlaylistScreen *screen, int32 start_x,

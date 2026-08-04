@@ -78,7 +78,7 @@ static void native_lastfm_flush(NativeLastfmScreen *screen);
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK native_lastfm_screen_destroy
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
-#include "screens/nc_screen_impl_template.c"
+#include "screens/nc_screen_impl_template.h"
 
 void
 nc_lastfm_screen_init(NcLastfmScreen *screen,

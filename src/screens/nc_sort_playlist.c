@@ -52,7 +52,7 @@ static void sort_dialog_finish(NativeSortPlaylistDialog *dialog);
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK sort_dialog_mouse_callback
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK \
     native_sort_playlist_dialog_destroy
-#include "screens/nc_screen_impl_template.c"
+#include "screens/nc_screen_impl_template.h"
 
 void
 native_sort_playlist_dialog_init(NativeSortPlaylistDialog *dialog,

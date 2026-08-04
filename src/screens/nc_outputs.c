@@ -36,7 +36,7 @@ static bool nc_outputs_mouse_scroll(NcOutputsScreen *outputs,
 #define NC_SCREEN_IMPL_DESTROY_CALLBACK nc_outputs_destroy_callback
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
-#include "screens/nc_screen_impl_template.c"
+#include "screens/nc_screen_impl_template.h"
 
 void
 nc_outputs_screen_init(NcOutputsScreen *screen,

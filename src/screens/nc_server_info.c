@@ -27,7 +27,7 @@ static void nc_server_info_display(NcServerInfoScreen *server_info);
 #define NC_SCREEN_IMPL_UPDATE_CALLBACK nc_server_info_update
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK nc_server_info_mouse_button_pressed
 #define NC_SCREEN_IMPL_DESTROY_CALLBACK nc_server_info_destroy_callback
-#include "screens/nc_screen_impl_template.c"
+#include "screens/nc_screen_impl_template.h"
 
 void
 nc_server_info_screen_init(NcServerInfoScreen *screen,
