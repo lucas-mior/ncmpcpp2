@@ -7,6 +7,24 @@
 #include "settings.h"
 #include "ui_state.h"
 
+static NcWindow *nc_screen_callbacks_active_window(NcScreen *screen);
+static void nc_screen_callbacks_refresh(NcScreen *screen);
+static void nc_screen_callbacks_refresh_window(NcScreen *screen);
+static void nc_screen_callbacks_scroll(NcScreen *screen,
+                                       enum NcScroll where);
+static void nc_screen_callbacks_list_change_finished(NcScreen *screen);
+static bool nc_screen_callbacks_can_run_current(NcScreen *screen);
+static bool nc_screen_callbacks_run_current(NcScreen *screen);
+static void nc_screen_callbacks_switch_to(NcScreen *screen);
+static void nc_screen_callbacks_resize(NcScreen *screen);
+static int32 nc_screen_callbacks_window_timeout(NcScreen *screen);
+static char *nc_screen_callbacks_title(NcScreen *screen);
+static void nc_screen_callbacks_update(NcScreen *screen);
+static void nc_screen_callbacks_mouse_button_pressed(NcScreen *screen,
+                                                     MEVENT event);
+static bool nc_screen_callbacks_is_lockable(NcScreen *screen);
+static bool nc_screen_callbacks_is_mergable(NcScreen *screen);
+static void nc_screen_callbacks_destroy(NcScreen *screen);
 static int32 nc_screen_registry_index_of(NcScreenRegistry *registry,
                                          NcScreen *screen);
 static bool nc_screen_registry_has_type(NcScreenRegistry *registry,
@@ -16,10 +34,160 @@ static void nc_screen_registry_clear_refs(NcScreenRegistry *registry,
 static void nc_screen_registry_update_one(NcScreen *screen, void *user);
 static void nc_screen_registry_resize_one(NcScreen *screen, void *user);
 
+const NcScreenOps nc_screen_default_ops = {
+    .active_window = nc_screen_default_active_window,
+    .refresh = nc_screen_noop_refresh,
+    .refresh_window = nc_screen_noop_refresh_window,
+    .scroll = nc_screen_noop_scroll,
+    .list_change_finished = nc_screen_noop_list_change_finished,
+    .can_run_current = nc_screen_default_can_run_current,
+    .run_current = nc_screen_default_run_current,
+    .switch_to = nc_screen_noop_switch_to,
+    .resize = nc_screen_noop_resize,
+    .window_timeout = nc_screen_default_window_timeout,
+    .title = nc_screen_default_title,
+    .update = nc_screen_noop_update,
+    .mouse_button_pressed = nc_screen_noop_mouse_button_pressed,
+    .is_lockable = nc_screen_default_is_lockable,
+    .is_mergable = nc_screen_default_is_mergable,
+    .destroy = nc_screen_noop_destroy,
+};
+
+static const NcScreenOps nc_screen_callbacks_ops = {
+    .active_window = nc_screen_callbacks_active_window,
+    .refresh = nc_screen_callbacks_refresh,
+    .refresh_window = nc_screen_callbacks_refresh_window,
+    .scroll = nc_screen_callbacks_scroll,
+    .list_change_finished = nc_screen_callbacks_list_change_finished,
+    .can_run_current = nc_screen_callbacks_can_run_current,
+    .run_current = nc_screen_callbacks_run_current,
+    .switch_to = nc_screen_callbacks_switch_to,
+    .resize = nc_screen_callbacks_resize,
+    .window_timeout = nc_screen_callbacks_window_timeout,
+    .title = nc_screen_callbacks_title,
+    .update = nc_screen_callbacks_update,
+    .mouse_button_pressed = nc_screen_callbacks_mouse_button_pressed,
+    .is_lockable = nc_screen_callbacks_is_lockable,
+    .is_mergable = nc_screen_callbacks_is_mergable,
+    .destroy = nc_screen_callbacks_destroy,
+};
+
+NcWindow *
+nc_screen_default_active_window(NcScreen *screen) {
+    (void)screen;
+    return NULL;
+}
+
+void
+nc_screen_noop_refresh(NcScreen *screen) {
+    (void)screen;
+    return;
+}
+
+void
+nc_screen_noop_refresh_window(NcScreen *screen) {
+    (void)screen;
+    return;
+}
+
+void
+nc_screen_noop_scroll(NcScreen *screen, enum NcScroll where) {
+    (void)screen;
+    (void)where;
+    return;
+}
+
+void
+nc_screen_noop_list_change_finished(NcScreen *screen) {
+    (void)screen;
+    return;
+}
+
+bool
+nc_screen_default_can_run_current(NcScreen *screen) {
+    (void)screen;
+    return false;
+}
+
+bool
+nc_screen_default_run_current(NcScreen *screen) {
+    (void)screen;
+    return false;
+}
+
+void
+nc_screen_noop_switch_to(NcScreen *screen) {
+    (void)screen;
+    return;
+}
+
+void
+nc_screen_noop_resize(NcScreen *screen) {
+    (void)screen;
+    return;
+}
+
+int32
+nc_screen_default_window_timeout(NcScreen *screen) {
+    (void)screen;
+    return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
+}
+
+char *
+nc_screen_default_title(NcScreen *screen) {
+    (void)screen;
+    return NULL;
+}
+
+void
+nc_screen_noop_update(NcScreen *screen) {
+    (void)screen;
+    return;
+}
+
+void
+nc_screen_noop_mouse_button_pressed(NcScreen *screen, MEVENT event) {
+    (void)screen;
+    (void)event;
+    return;
+}
+
+bool
+nc_screen_default_is_lockable(NcScreen *screen) {
+    (void)screen;
+    return false;
+}
+
+bool
+nc_screen_default_is_mergable(NcScreen *screen) {
+    (void)screen;
+    return false;
+}
+
+void
+nc_screen_noop_destroy(NcScreen *screen) {
+    (void)screen;
+    return;
+}
+
 void
 nc_screen_init(NcScreen *screen, NcScreenCallbacks callbacks,
                void *user, int32 type) {
+    nc_screen_init_ops(screen, &nc_screen_callbacks_ops, user, type);
     screen->callbacks = callbacks;
+    return;
+}
+
+void
+nc_screen_init_ops(NcScreen *screen, const NcScreenOps *ops,
+                   void *user, int32 type) {
+    NcScreenCallbacks callbacks = {0};
+
+    if (ops == NULL) {
+        ops = &nc_screen_default_ops;
+    }
+    screen->callbacks = callbacks;
+    screen->ops = ops;
     screen->user = user;
     screen->type = type;
     screen->has_to_be_resized = false;
@@ -29,54 +197,40 @@ nc_screen_init(NcScreen *screen, NcScreenCallbacks callbacks,
 
 NcWindow *
 nc_screen_active_window(NcScreen *screen) {
-    if (screen->callbacks.active_window == NULL) {
-        return NULL;
-    }
-    return screen->callbacks.active_window(screen);
+    return screen->ops->active_window(screen);
 }
 
 void
 nc_screen_refresh(NcScreen *screen) {
-    if (screen->callbacks.refresh) {
-        screen->callbacks.refresh(screen);
-    }
+    screen->ops->refresh(screen);
     return;
 }
 
 void
 nc_screen_refresh_window(NcScreen *screen) {
-    if (screen->callbacks.refresh_window) {
-        screen->callbacks.refresh_window(screen);
-    }
+    screen->ops->refresh_window(screen);
     return;
 }
 
 void
 nc_screen_scroll(NcScreen *screen, enum NcScroll where) {
-    if (screen->callbacks.scroll) {
-        screen->callbacks.scroll(screen, where);
-    }
+    screen->ops->scroll(screen, where);
     nc_screen_finish_list_change(screen);
     return;
 }
 
 void
 nc_screen_finish_list_change(NcScreen *screen) {
-    if (screen->callbacks.list_change_finished) {
-        screen->callbacks.list_change_finished(screen);
-    }
+    screen->ops->list_change_finished(screen);
     return;
 }
 
 bool
 nc_screen_can_run_current(NcScreen *screen) {
-    if ((screen == NULL) || (screen->callbacks.run_current == NULL)) {
+    if (screen == NULL) {
         return false;
     }
-    if (screen->callbacks.can_run_current == NULL) {
-        return true;
-    }
-    return screen->callbacks.can_run_current(screen);
+    return screen->ops->can_run_current(screen);
 }
 
 bool
@@ -84,40 +238,30 @@ nc_screen_run_current(NcScreen *screen) {
     if (!nc_screen_can_run_current(screen)) {
         return false;
     }
-    return screen->callbacks.run_current(screen);
+    return screen->ops->run_current(screen);
 }
 
 void
 nc_screen_switch_to(NcScreen *screen) {
-    if (screen->callbacks.switch_to) {
-        screen->callbacks.switch_to(screen);
-    }
+    screen->ops->switch_to(screen);
     return;
 }
 
 void
 nc_screen_resize(NcScreen *screen) {
-    if (screen->callbacks.resize) {
-        screen->callbacks.resize(screen);
-    }
+    screen->ops->resize(screen);
     screen->has_to_be_resized = false;
     return;
 }
 
 int32
 nc_screen_window_timeout(NcScreen *screen) {
-    if (screen->callbacks.window_timeout == NULL) {
-        return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
-    }
-    return screen->callbacks.window_timeout(screen);
+    return screen->ops->window_timeout(screen);
 }
 
 char *
 nc_screen_title(NcScreen *screen) {
-    if (screen->callbacks.title == NULL) {
-        return NULL;
-    }
-    return screen->callbacks.title(screen);
+    return screen->ops->title(screen);
 }
 
 int32
@@ -127,35 +271,25 @@ nc_screen_type(NcScreen *screen) {
 
 void
 nc_screen_update(NcScreen *screen) {
-    if (screen->callbacks.update) {
-        screen->callbacks.update(screen);
-    }
+    screen->ops->update(screen);
     screen->has_to_be_updated = false;
     return;
 }
 
 void
 nc_screen_mouse_button_pressed(NcScreen *screen, MEVENT event) {
-    if (screen->callbacks.mouse_button_pressed) {
-        screen->callbacks.mouse_button_pressed(screen, event);
-    }
+    screen->ops->mouse_button_pressed(screen, event);
     return;
 }
 
 bool
 nc_screen_is_lockable(NcScreen *screen) {
-    if (screen->callbacks.is_lockable == NULL) {
-        return false;
-    }
-    return screen->callbacks.is_lockable(screen);
+    return screen->ops->is_lockable(screen);
 }
 
 bool
 nc_screen_is_mergable(NcScreen *screen) {
-    if (screen->callbacks.is_mergable == NULL) {
-        return false;
-    }
-    return screen->callbacks.is_mergable(screen);
+    return screen->ops->is_mergable(screen);
 }
 
 bool
@@ -524,6 +658,156 @@ nc_screen_registry_resize_visible(NcScreenRegistry *registry) {
     nc_screen_registry_each_visible(registry,
                                     nc_screen_registry_resize_one,
                                     NULL);
+    return;
+}
+
+static NcWindow *
+nc_screen_callbacks_active_window(NcScreen *screen) {
+    if (screen->callbacks.active_window == NULL) {
+        return nc_screen_default_active_window(screen);
+    }
+    return screen->callbacks.active_window(screen);
+}
+
+static void
+nc_screen_callbacks_refresh(NcScreen *screen) {
+    if (screen->callbacks.refresh == NULL) {
+        nc_screen_noop_refresh(screen);
+        return;
+    }
+    screen->callbacks.refresh(screen);
+    return;
+}
+
+static void
+nc_screen_callbacks_refresh_window(NcScreen *screen) {
+    if (screen->callbacks.refresh_window == NULL) {
+        nc_screen_noop_refresh_window(screen);
+        return;
+    }
+    screen->callbacks.refresh_window(screen);
+    return;
+}
+
+static void
+nc_screen_callbacks_scroll(NcScreen *screen, enum NcScroll where) {
+    if (screen->callbacks.scroll == NULL) {
+        nc_screen_noop_scroll(screen, where);
+        return;
+    }
+    screen->callbacks.scroll(screen, where);
+    return;
+}
+
+static void
+nc_screen_callbacks_list_change_finished(NcScreen *screen) {
+    if (screen->callbacks.list_change_finished == NULL) {
+        nc_screen_noop_list_change_finished(screen);
+        return;
+    }
+    screen->callbacks.list_change_finished(screen);
+    return;
+}
+
+static bool
+nc_screen_callbacks_can_run_current(NcScreen *screen) {
+    if (screen->callbacks.run_current == NULL) {
+        return false;
+    }
+    if (screen->callbacks.can_run_current == NULL) {
+        return true;
+    }
+    return screen->callbacks.can_run_current(screen);
+}
+
+static bool
+nc_screen_callbacks_run_current(NcScreen *screen) {
+    if (screen->callbacks.run_current == NULL) {
+        return false;
+    }
+    return screen->callbacks.run_current(screen);
+}
+
+static void
+nc_screen_callbacks_switch_to(NcScreen *screen) {
+    if (screen->callbacks.switch_to == NULL) {
+        nc_screen_noop_switch_to(screen);
+        return;
+    }
+    screen->callbacks.switch_to(screen);
+    return;
+}
+
+static void
+nc_screen_callbacks_resize(NcScreen *screen) {
+    if (screen->callbacks.resize == NULL) {
+        nc_screen_noop_resize(screen);
+        return;
+    }
+    screen->callbacks.resize(screen);
+    return;
+}
+
+static int32
+nc_screen_callbacks_window_timeout(NcScreen *screen) {
+    if (screen->callbacks.window_timeout == NULL) {
+        return nc_screen_default_window_timeout(screen);
+    }
+    return screen->callbacks.window_timeout(screen);
+}
+
+static char *
+nc_screen_callbacks_title(NcScreen *screen) {
+    if (screen->callbacks.title == NULL) {
+        return nc_screen_default_title(screen);
+    }
+    return screen->callbacks.title(screen);
+}
+
+static void
+nc_screen_callbacks_update(NcScreen *screen) {
+    if (screen->callbacks.update == NULL) {
+        nc_screen_noop_update(screen);
+        return;
+    }
+    screen->callbacks.update(screen);
+    return;
+}
+
+static void
+nc_screen_callbacks_mouse_button_pressed(NcScreen *screen,
+                                         MEVENT event) {
+    if (screen->callbacks.mouse_button_pressed == NULL) {
+        nc_screen_noop_mouse_button_pressed(screen, event);
+        return;
+    }
+    screen->callbacks.mouse_button_pressed(screen, event);
+    return;
+}
+
+static bool
+nc_screen_callbacks_is_lockable(NcScreen *screen) {
+    if (screen->callbacks.is_lockable == NULL) {
+        return nc_screen_default_is_lockable(screen);
+    }
+    return screen->callbacks.is_lockable(screen);
+}
+
+static bool
+nc_screen_callbacks_is_mergable(NcScreen *screen) {
+    if (screen->callbacks.is_mergable == NULL) {
+        return nc_screen_default_is_mergable(screen);
+    }
+    return screen->callbacks.is_mergable(screen);
+}
+
+static void
+nc_screen_callbacks_destroy(NcScreen *screen) {
+    if (screen->callbacks.destroy == NULL) {
+        nc_screen_noop_destroy(screen);
+        return;
+    }
+    screen->callbacks.destroy(screen);
     return;
 }
 
