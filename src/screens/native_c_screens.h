@@ -36,109 +36,55 @@ bool native_c_screens_switch_to_type(enum ScreenType screen_type);
 bool native_c_screens_lock_current(void);
 enum ScreenType native_c_screens_current_type(void);
 
-void native_c_screen_browser_init(void);
-void native_c_screen_browser_register(void);
-void native_c_screen_browser_switch_to(void);
-bool native_c_screen_browser_is_current(void);
-void native_c_screen_browser_fetch_supported_extensions(void);
-NativeBrowserScreen *native_c_screen_browser(void);
-NcScreen *native_c_screen_browser_native(void);
+#define NCM_NATIVE_DECLARE_COMMON(suffix) \
+    void native_c_screen_##suffix##_init(void); \
+    void native_c_screen_##suffix##_register(void); \
+    bool native_c_screen_##suffix##_is_current(void); \
+    NcScreen *native_c_screen_##suffix##_native(void);
 
-void native_c_screen_help_init(void);
-void native_c_screen_help_register(void);
-void native_c_screen_help_switch_to(void);
-bool native_c_screen_help_is_current(void);
-NcHelpScreen *native_c_screen_help_typed(void);
-NcScreen *native_c_screen_help_native(void);
+NCM_NATIVE_IS_CURRENT_TYPES(NCM_NATIVE_DECLARE_COMMON)
 
-void native_c_screen_lastfm_init(void);
-void native_c_screen_lastfm_register(void);
+#undef NCM_NATIVE_DECLARE_COMMON
+
+#define NCM_NATIVE_DECLARE_DIRECT_ACCESSOR( \
+    suffix, type, storage, native_expr \
+) \
+    type *native_c_screen_##suffix(void);
+
+NCM_NATIVE_DIRECT_ACCESSOR_TYPES(NCM_NATIVE_DECLARE_DIRECT_ACCESSOR)
+
+#undef NCM_NATIVE_DECLARE_DIRECT_ACCESSOR
+
+#define NCM_NATIVE_DECLARE_TYPED_WRAPPED_ACCESSOR( \
+    suffix, function, type, expr \
+) \
+    type *function(void);
+
+NCM_NATIVE_TYPED_WRAPPED_ACCESSOR_TYPES(
+    NCM_NATIVE_DECLARE_TYPED_WRAPPED_ACCESSOR)
+
+#undef NCM_NATIVE_DECLARE_TYPED_WRAPPED_ACCESSOR
+
+#define NCM_NATIVE_DECLARE_VOID_SWITCH(suffix) \
+    void native_c_screen_##suffix##_switch_to(void);
+
+NCM_NATIVE_SIMPLE_SWITCH_TYPES(NCM_NATIVE_DECLARE_VOID_SWITCH)
+NCM_NATIVE_REGISTER_SWITCH_TYPES(NCM_NATIVE_DECLARE_VOID_SWITCH)
+
+#undef NCM_NATIVE_DECLARE_VOID_SWITCH
+
 void native_c_screen_lastfm_switch_to(void);
-bool native_c_screen_lastfm_is_current(void);
-NativeLastfmScreen *native_c_screen_lastfm(void);
-NcScreen *native_c_screen_lastfm_native(void);
-
-void native_c_screen_lyrics_init(void);
-void native_c_screen_lyrics_register(void);
+NativeVisualizerScreen *native_c_screen_visualizer(void);
 void native_c_screen_lyrics_set_resize(void);
 void native_c_screen_lyrics_switch_to(void);
-bool native_c_screen_lyrics_is_current(void);
-NativeLyricsScreen *native_c_screen_lyrics(void);
-NcScreen *native_c_screen_lyrics_native(void);
-
-void native_c_screen_visualizer_init(void);
-void native_c_screen_visualizer_register(void);
-bool native_c_screen_visualizer_is_current(void);
-NativeVisualizerScreen *native_c_screen_visualizer(void);
-NcScreen *native_c_screen_visualizer_native(void);
-
-void native_c_screen_playlist_init(void);
-void native_c_screen_playlist_register(void);
-void native_c_screen_playlist_switch_to(void);
-bool native_c_screen_playlist_is_current(void);
-NativePlaylistScreen *native_c_screen_playlist(void);
-NcScreen *native_c_screen_playlist_native(void);
-
-void native_c_screen_playlist_editor_init(void);
-void native_c_screen_playlist_editor_register(void);
-void native_c_screen_playlist_editor_switch_to(void);
-NativePlaylistEditorScreen *native_c_screen_playlist_editor(void);
-NcScreen *native_c_screen_playlist_editor_native(void);
-
-void native_c_screen_selected_items_adder_init(void);
-void native_c_screen_selected_items_adder_register(void);
-void native_c_screen_selected_items_adder_switch_to(void);
+void native_c_screen_browser_fetch_supported_extensions(void);
 bool native_c_screen_selected_items_adder_open(
-    NcmSongArray *songs, NcmError *error);
-NativeSelectedItemsAdderScreen *native_c_screen_selected_items_adder(void);
-NcScreen *native_c_screen_selected_items_adder_native(void);
-
-void native_c_screen_sort_playlist_dialog_init(void);
-void native_c_screen_sort_playlist_dialog_register(void);
+    NcmSongArray *songs,
+    NcmError *error
+);
 bool native_c_screen_sort_playlist_dialog_switch_to(void);
-NativeSortPlaylistDialog *native_c_screen_sort_playlist_dialog(void);
-NcScreen *native_c_screen_sort_playlist_dialog_native(void);
-
-void native_c_screen_search_engine_init(void);
-void native_c_screen_search_engine_register(void);
-void native_c_screen_search_engine_switch_to(void);
-NativeSearchEngineScreen *native_c_screen_search_engine(void);
-NcScreen *native_c_screen_search_engine_native(void);
-
-void native_c_screen_media_library_init(void);
-void native_c_screen_media_library_register(void);
-void native_c_screen_media_library_switch_to(void);
-NativeMediaLibraryScreen *native_c_screen_media_library(void);
-NcScreen *native_c_screen_media_library_native(void);
-
-void native_c_screen_tag_editor_init(void);
-void native_c_screen_tag_editor_register(void);
-void native_c_screen_tag_editor_switch_to(void);
-NativeTagEditorScreen *native_c_screen_tag_editor(void);
-NcScreen *native_c_screen_tag_editor_native(void);
-
-void native_c_screen_tiny_tag_editor_init(void);
-void native_c_screen_tiny_tag_editor_register(void);
-void native_c_screen_tiny_tag_editor_switch_to(void);
-NativeTinyTagEditorScreen *native_c_screen_tiny_tag_editor(void);
-NcScreen *native_c_screen_tiny_tag_editor_native(void);
-
-void native_c_screen_song_info_init(void);
-void native_c_screen_song_info_register(void);
-void native_c_screen_song_info_switch_to(void);
-NcScreen *native_c_screen_song_info_native(void);
-
-void native_c_screen_server_info_init(void);
-void native_c_screen_server_info_register(void);
-void native_c_screen_server_info_switch_to(void);
-NcScreen *native_c_screen_server_info_native(void);
-
-void native_c_screen_outputs_init(void);
-void native_c_screen_outputs_register(void);
-void native_c_screen_outputs_switch_to(void);
 void native_c_screen_outputs_toggle(void);
 void native_c_screen_outputs_fetch_list(void);
 void native_c_screen_outputs_refresh_if_visible(void);
-NcScreen *native_c_screen_outputs_native(void);
 
 #endif /* NCMPCPP_NATIVE_C_SCREENS_H */
