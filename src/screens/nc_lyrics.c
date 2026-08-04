@@ -157,7 +157,7 @@ static void native_lyrics_display(NativeLyricsScreen *screen);
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK native_lyrics_screen_destroy
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
-#include "screens/nc_screen_impl_template.c"
+#include "screens/nc_screen_impl_template.h"
 
 void
 nc_lyrics_screen_init(NcLyricsScreen *screen,

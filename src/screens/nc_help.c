@@ -29,7 +29,7 @@ static bool nc_help_find_match_callback(int32 start, int32 len, void *user);
 #define NC_SCREEN_IMPL_DESTROY_CALLBACK nc_help_destroy_callback
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
-#include "screens/nc_screen_impl_template.c"
+#include "screens/nc_screen_impl_template.h"
 
 void
 nc_help_screen_init(NcHelpScreen *screen,

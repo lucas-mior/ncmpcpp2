@@ -81,7 +81,7 @@ static ExistingPlaylistAction *existing_playlist_action_create(
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK adder_mouse_callback
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK \
     native_selected_items_adder_screen_destroy
-#include "screens/nc_screen_impl_template.c"
+#include "screens/nc_screen_impl_template.h"
 
 void
 native_selected_items_adder_screen_init(

@@ -25,7 +25,7 @@ static void nc_song_info_display(NcSongInfoScreen *song_info);
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK nc_song_info_mouse_button_pressed
 #define NC_SCREEN_IMPL_DESTROY_CALLBACK nc_song_info_destroy_callback
 #define NC_SCREEN_IMPL_MERGABLE true
-#include "screens/nc_screen_impl_template.c"
+#include "screens/nc_screen_impl_template.h"
 
 void
 nc_song_info_screen_init(NcSongInfoScreen *screen,

@@ -128,7 +128,7 @@ static void visualizer_fft_destroy(NativeVisualizerScreen *screen);
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK native_visualizer_screen_destroy
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
-#include "screens/nc_screen_impl_template.c"
+#include "screens/nc_screen_impl_template.h"
 NativeVisualizerDataSourceHooks
 native_visualizer_data_source_system_hooks(NcmMpdClient *client) {
     NativeVisualizerDataSourceHooks hooks = {0};
