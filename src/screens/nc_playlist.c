@@ -158,19 +158,13 @@ playlist_scroll_lines(NcPlaylistScreen *screen, enum NcScroll where) {
     return;
 }
 
-static NativePlaylistScreen *native_playlist_from_screen(NcScreen *screen);
-static NcScreenOps native_playlist_callbacks(void);
-static NcWindow *native_playlist_active_window(NcScreen *screen);
-static void native_playlist_refresh(NcScreen *screen);
-static void native_playlist_refresh_window(NcScreen *screen);
-static void native_playlist_scroll(NcScreen *screen, enum NcScroll where);
+static void native_playlist_display(NativePlaylistScreen *screen);
 static void native_playlist_switch_to(NcScreen *screen);
 static void native_playlist_resize(NcScreen *screen);
 static char *native_playlist_title(NcScreen *screen);
 static void native_playlist_update(NcScreen *screen);
 static void native_playlist_mouse_button_pressed(NcScreen *screen,
                                                  MEVENT event);
-static void native_playlist_destroy_callback(NcScreen *screen);
 static NcMenuDisplayCallbacks native_playlist_display_callbacks(void);
 static NcMenuActionCallbacks native_playlist_action_callbacks(void);
 static void native_playlist_draw_song(NcMenu *menu, NcWindow *window,
@@ -224,14 +218,31 @@ typedef struct NativePlaylistPriorityContext {
     int32 priority;
 } NativePlaylistPriorityContext;
 
+#define NC_SCREEN_IMPL_TYPE NativePlaylistScreen
+#define NC_SCREEN_IMPL_PREFIX native_playlist
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX native_playlist_screen
+#define NC_SCREEN_IMPL_BASE_FIELD screen
+#define NC_SCREEN_IMPL_BASE_EXPR(screen) \
+    nc_playlist_screen_base(&(screen)->screen)
+#define NC_SCREEN_IMPL_WINDOW(screen) native_playlist_screen_window(screen)
+#define NC_SCREEN_IMPL_MENU(screen) nc_playlist_screen_menu(&(screen)->screen)
+#define NC_SCREEN_IMPL_SCROLL_HEIGHT(screen) ((screen)->screen.main_height)
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK native_playlist_display
+#define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK native_playlist_switch_to
+#define NC_SCREEN_IMPL_RESIZE_CALLBACK native_playlist_resize
+#define NC_SCREEN_IMPL_TITLE_CALLBACK native_playlist_title
+#define NC_SCREEN_IMPL_UPDATE_CALLBACK native_playlist_update
+#define NC_SCREEN_IMPL_MOUSE_CALLBACK native_playlist_mouse_button_pressed
+#define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK native_playlist_screen_destroy
+#define NC_SCREEN_IMPL_LOCKABLE true
+#define NC_SCREEN_IMPL_MERGABLE true
+#include "screens/nc_screen_impl_template.c"
+
 void
 native_playlist_screen_init(NativePlaylistScreen *screen, int32 start_x,
                             int32 width, int32 main_start_y,
                             int32 main_height, NcColor color,
                             NcBorder border) {
-    NcScreenOps callbacks;
-
-    callbacks = native_playlist_callbacks();
     nc_song_menu_init(&screen->songs);
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, "", 0, color, border);
@@ -248,7 +259,7 @@ native_playlist_screen_init(NativePlaylistScreen *screen, int32 start_x,
     screen->reload_remaining = true;
     screen->registered = false;
     screen->highlighting_requested = false;
-    nc_playlist_screen_init(&screen->screen, callbacks, screen,
+    nc_playlist_screen_init(&screen->screen, native_playlist_ops, screen,
                             nc_song_menu_base(&screen->songs), start_x,
                             width, main_start_y, main_height);
     nc_menu_set_display_callbacks(native_playlist_screen_menu(screen),
@@ -305,14 +316,6 @@ native_playlist_screen_unregister(NativePlaylistScreen *screen) {
     }
     screen->registered = false;
     return true;
-}
-
-NcScreen *
-native_playlist_screen_base(NativePlaylistScreen *screen) {
-    if (screen == NULL) {
-        return NULL;
-    }
-    return nc_playlist_screen_base(&screen->screen);
 }
 
 NcPlaylistScreen *
@@ -944,65 +947,16 @@ native_playlist_screen_reload_remaining(NativePlaylistScreen *screen) {
     return;
 }
 
-static NativePlaylistScreen *
-native_playlist_from_screen(NcScreen *screen) {
-    return nc_screen_user(screen);
-}
-
-static NcScreenOps
-native_playlist_callbacks(void) {
-    NcScreenOps callbacks = {0};
-
-    callbacks.active_window = native_playlist_active_window;
-    callbacks.refresh = native_playlist_refresh;
-    callbacks.refresh_window = native_playlist_refresh_window;
-    callbacks.scroll = native_playlist_scroll;
-    callbacks.switch_to = native_playlist_switch_to;
-    callbacks.resize = native_playlist_resize;
-    callbacks.title = native_playlist_title;
-    callbacks.update = native_playlist_update;
-    callbacks.mouse_button_pressed = native_playlist_mouse_button_pressed;
-    callbacks.lockable = true;
-    callbacks.mergable = true;
-    callbacks.destroy = native_playlist_destroy_callback;
-    return callbacks;
-}
-
-static NcWindow *
-native_playlist_active_window(NcScreen *screen) {
-    NativePlaylistScreen *playlist;
-
-    playlist = native_playlist_from_screen(screen);
-    return native_playlist_screen_window(playlist);
-}
-
 static void
-native_playlist_refresh(NcScreen *screen) {
-    NativePlaylistScreen *playlist;
+native_playlist_display(NativePlaylistScreen *playlist) {
     NcMenu *menu;
     NcWindow *window;
 
-    playlist = native_playlist_from_screen(screen);
     menu = nc_playlist_screen_menu(&playlist->screen);
     window = native_playlist_screen_window(playlist);
     nc_window_display(window);
     nc_menu_refresh(menu, window, nc_window_width(window),
                     nc_window_height(window));
-    return;
-}
-
-static void
-native_playlist_refresh_window(NcScreen *screen) {
-    native_playlist_refresh(screen);
-    return;
-}
-
-static void
-native_playlist_scroll(NcScreen *screen, enum NcScroll where) {
-    NativePlaylistScreen *playlist;
-
-    playlist = native_playlist_from_screen(screen);
-    nc_playlist_screen_scroll(&playlist->screen, where);
     return;
 }
 
@@ -1072,15 +1026,6 @@ native_playlist_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 }
 
 
-
-static void
-native_playlist_destroy_callback(NcScreen *screen) {
-    NativePlaylistScreen *playlist;
-
-    playlist = native_playlist_from_screen(screen);
-    native_playlist_screen_destroy(playlist);
-    return;
-}
 
 static bool
 native_playlist_filter_song(NcMenu *menu, void *item, void *user) {
