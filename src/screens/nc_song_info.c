@@ -5,20 +5,17 @@
 
 #include "screens/nc_song_info.h"
 
-static NcScreenCallbacks nc_song_info_callbacks(void);
+static NcScreenOps nc_song_info_callbacks(void);
 static NcWindow *nc_song_info_active_window(NcScreen *screen);
 static void nc_song_info_refresh(NcScreen *screen);
 static void nc_song_info_refresh_window(NcScreen *screen);
 static void nc_song_info_scroll(NcScreen *screen, enum NcScroll where);
 static void nc_song_info_switch_to(NcScreen *screen);
 static void nc_song_info_resize(NcScreen *screen);
-static int32 nc_song_info_window_timeout(NcScreen *screen);
 static char *nc_song_info_title(NcScreen *screen);
 static void nc_song_info_update(NcScreen *screen);
 static void nc_song_info_mouse_button_pressed(NcScreen *screen,
                                               MEVENT event);
-static bool nc_song_info_is_lockable(NcScreen *screen);
-static bool nc_song_info_is_mergable(NcScreen *screen);
 static void nc_song_info_destroy_callback(NcScreen *screen);
 static void nc_song_info_display(NcSongInfoScreen *song_info);
 
@@ -126,9 +123,9 @@ nc_song_info_from_screen(NcScreen *screen) {
     return (NcSongInfoScreen *)screen;
 }
 
-static NcScreenCallbacks
+static NcScreenOps
 nc_song_info_callbacks(void) {
-    NcScreenCallbacks callbacks = {0};
+    NcScreenOps callbacks = {0};
 
     callbacks.active_window = nc_song_info_active_window;
     callbacks.refresh = nc_song_info_refresh;
@@ -136,12 +133,11 @@ nc_song_info_callbacks(void) {
     callbacks.scroll = nc_song_info_scroll;
     callbacks.switch_to = nc_song_info_switch_to;
     callbacks.resize = nc_song_info_resize;
-    callbacks.window_timeout = nc_song_info_window_timeout;
     callbacks.title = nc_song_info_title;
     callbacks.update = nc_song_info_update;
     callbacks.mouse_button_pressed = nc_song_info_mouse_button_pressed;
-    callbacks.is_lockable = nc_song_info_is_lockable;
-    callbacks.is_mergable = nc_song_info_is_mergable;
+    callbacks.lockable = false;
+    callbacks.mergable = true;
     callbacks.destroy = nc_song_info_destroy_callback;
     return callbacks;
 }
@@ -207,11 +203,6 @@ nc_song_info_resize(NcScreen *screen) {
     return;
 }
 
-static int32
-nc_song_info_window_timeout(NcScreen *screen) {
-    (void)screen;
-    return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
-}
 
 static char *
 nc_song_info_title(NcScreen *screen) {
@@ -253,17 +244,7 @@ nc_song_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     return;
 }
 
-static bool
-nc_song_info_is_lockable(NcScreen *screen) {
-    (void)screen;
-    return false;
-}
 
-static bool
-nc_song_info_is_mergable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
 static void
 nc_song_info_destroy_callback(NcScreen *screen) {

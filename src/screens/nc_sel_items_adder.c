@@ -18,7 +18,7 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
-static NcScreenCallbacks adder_callbacks(void);
+static NcScreenOps adder_callbacks(void);
 static NcWindow *adder_active_window_callback(NcScreen *screen);
 static void adder_refresh_callback(NcScreen *screen);
 static void adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
@@ -28,12 +28,9 @@ static bool adder_can_run_current_callback(NcScreen *screen);
 static bool adder_run_current_callback(NcScreen *screen);
 static void adder_switch_to_callback(NcScreen *screen);
 static void adder_resize_callback(NcScreen *screen);
-static int32 adder_timeout_callback(NcScreen *screen);
 static char *adder_title_callback(NcScreen *screen);
 static void adder_update_callback(NcScreen *screen);
 static void adder_mouse_callback(NcScreen *screen, MEVENT event);
-static bool adder_lockable_callback(NcScreen *screen);
-static bool adder_mergable_callback(NcScreen *screen);
 static void adder_destroy_callback(NcScreen *screen);
 static bool adder_filter_callback(NcMenu *menu, void *item, void *user);
 static bool adder_row_matches(NcEditorActionRow *row, NcmRegex *regex);
@@ -76,7 +73,7 @@ native_selected_items_adder_screen_init(
     NativeSelectedItemsAdderScreen *screen, int32 start_x, int32 start_y,
     int32 width, int32 height, NcColor color, NcBorder border
 ) {
-    NcScreenCallbacks callbacks;
+    NcScreenOps callbacks;
     NcMenuDisplayCallbacks display_callbacks = {0};
     NcMenu *playlist_menu;
     NcMenu *position_menu;
@@ -116,7 +113,7 @@ native_selected_items_adder_screen_init(
     screen->search_enabled = false;
     screen->registered = false;
     screen->ready = false;
-    nc_screen_init(&screen->screen, callbacks, screen,
+    nc_screen_init_ops(&screen->screen, callbacks, screen,
                    NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
     display_callbacks.draw = adder_draw_row;
     display_callbacks.filter = adder_filter_callback;
@@ -515,9 +512,9 @@ adder_from_screen(NcScreen *screen) {
     return nc_screen_user(screen);
 }
 
-static NcScreenCallbacks
+static NcScreenOps
 adder_callbacks(void) {
-    NcScreenCallbacks callbacks = {0};
+    NcScreenOps callbacks = {0};
 
     callbacks.active_window = adder_active_window_callback;
     callbacks.refresh = adder_refresh_callback;
@@ -527,12 +524,11 @@ adder_callbacks(void) {
     callbacks.run_current = adder_run_current_callback;
     callbacks.switch_to = adder_switch_to_callback;
     callbacks.resize = adder_resize_callback;
-    callbacks.window_timeout = adder_timeout_callback;
     callbacks.title = adder_title_callback;
     callbacks.update = adder_update_callback;
     callbacks.mouse_button_pressed = adder_mouse_callback;
-    callbacks.is_lockable = adder_lockable_callback;
-    callbacks.is_mergable = adder_mergable_callback;
+    callbacks.lockable = false;
+    callbacks.mergable = false;
     callbacks.destroy = adder_destroy_callback;
     return callbacks;
 }
@@ -646,11 +642,6 @@ adder_resize_callback(NcScreen *screen) {
     return;
 }
 
-static int32
-adder_timeout_callback(NcScreen *screen) {
-    (void)screen;
-    return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
-}
 
 static char *
 adder_title_callback(NcScreen *screen) {
@@ -715,17 +706,7 @@ adder_mouse_callback(NcScreen *screen, MEVENT event) {
     return;
 }
 
-static bool
-adder_lockable_callback(NcScreen *screen) {
-    (void)screen;
-    return false;
-}
 
-static bool
-adder_mergable_callback(NcScreen *screen) {
-    (void)screen;
-    return false;
-}
 
 static void
 adder_destroy_callback(NcScreen *screen) {

@@ -55,8 +55,6 @@ static char *lyrics_title_callback(NcScreen *screen);
 static void lyrics_update_callback(NcScreen *screen);
 static void lyrics_mouse_button_pressed_callback(NcScreen *screen,
                                                  MEVENT event);
-static bool lyrics_is_lockable_callback(NcScreen *screen);
-static bool lyrics_is_mergable_callback(NcScreen *screen);
 static void lyrics_destroy_callback(NcScreen *screen);
 static void native_lyrics_title_song_string(NcmSong *song, StrBuilder *title);
 static void native_lyrics_replace_search_separators(StrBuilder *buffer);
@@ -148,7 +146,7 @@ static void native_lyrics_display(NativeLyricsScreen *screen);
 
 void
 nc_lyrics_screen_init(NcLyricsScreen *screen,
-                      NcScreenCallbacks callbacks, void *user,
+                      NcScreenOps callbacks, void *user,
                       int32 start_x, int32 width,
                       int32 main_start_y, int32 main_height) {
     nc_scrollpad_screen_init(&screen->scrollpad_screen,
@@ -258,9 +256,9 @@ native_lyrics_queued_song_move(NativeLyricsQueuedSong *dest,
     return;
 }
 
-static NcScreenCallbacks
+static NcScreenOps
 native_lyrics_callbacks(void) {
-    NcScreenCallbacks callbacks = {0};
+    NcScreenOps callbacks = {0};
 
     callbacks.active_window = lyrics_active_window_callback;
     callbacks.refresh = lyrics_refresh_callback;
@@ -268,12 +266,12 @@ native_lyrics_callbacks(void) {
     callbacks.scroll = lyrics_scroll_callback;
     callbacks.switch_to = lyrics_switch_to_callback;
     callbacks.resize = lyrics_resize_callback;
-    callbacks.window_timeout = lyrics_window_timeout_callback;
+    callbacks.window_timeout_callback = lyrics_window_timeout_callback;
     callbacks.title = lyrics_title_callback;
     callbacks.update = lyrics_update_callback;
     callbacks.mouse_button_pressed = lyrics_mouse_button_pressed_callback;
-    callbacks.is_lockable = lyrics_is_lockable_callback;
-    callbacks.is_mergable = lyrics_is_mergable_callback;
+    callbacks.lockable = true;
+    callbacks.mergable = true;
     callbacks.destroy = lyrics_destroy_callback;
 
     return callbacks;
@@ -1198,17 +1196,7 @@ lyrics_mouse_button_pressed_callback(NcScreen *screen, MEVENT event) {
     return;
 }
 
-static bool
-lyrics_is_lockable_callback(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
-static bool
-lyrics_is_mergable_callback(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
 static void
 lyrics_destroy_callback(NcScreen *screen) {
