@@ -15,14 +15,10 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
-static NcScreenOps sort_dialog_callbacks(void);
-static NcWindow *sort_dialog_active_window_callback(NcScreen *screen);
-static void sort_dialog_refresh_callback(NcScreen *screen);
+static void sort_dialog_refresh_rows(NativeSortPlaylistDialog *dialog);
 static void sort_dialog_draw_row(NcMenu *menu, NcWindow *window,
                                  void *item, int32 pos,
                                  void *user);
-static void sort_dialog_scroll_callback(NcScreen *screen,
-                                        enum NcScroll where);
 static bool sort_dialog_can_run_current_callback(NcScreen *screen);
 static bool sort_dialog_run_current_callback(NcScreen *screen);
 static void sort_dialog_switch_to_callback(NcScreen *screen);
@@ -30,7 +26,6 @@ static void sort_dialog_resize_callback(NcScreen *screen);
 static char *sort_dialog_title_callback(NcScreen *screen);
 static void sort_dialog_update_callback(NcScreen *screen);
 static void sort_dialog_mouse_callback(NcScreen *screen, MEVENT event);
-static void sort_dialog_destroy_callback(NcScreen *screen);
 static bool sort_dialog_position_is_sort_key(NcMenu *menu, int32 pos);
 static void sort_dialog_show_move_hint(void *user);
 static void sort_dialog_run_sort(void *user);
@@ -40,16 +35,33 @@ static bool sort_dialog_label_set(NcEditorSortRow *row, char *label,
 static void sort_dialog_apply_geometry(NativeSortPlaylistDialog *dialog);
 static void sort_dialog_finish(NativeSortPlaylistDialog *dialog);
 
+#define NC_SCREEN_IMPL_TYPE NativeSortPlaylistDialog
+#define NC_SCREEN_IMPL_PREFIX sort_dialog
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX native_sort_playlist_dialog
+#define NC_SCREEN_IMPL_BASE_FIELD screen
+#define NC_SCREEN_IMPL_WINDOW_FIELD window
+#define NC_SCREEN_IMPL_MENU(dialog) nc_editor_sort_menu_base(&(dialog)->rows)
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK sort_dialog_refresh_rows
+#define NC_SCREEN_IMPL_CAN_RUN_CURRENT_CALLBACK \
+    sort_dialog_can_run_current_callback
+#define NC_SCREEN_IMPL_RUN_CURRENT_CALLBACK sort_dialog_run_current_callback
+#define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK sort_dialog_switch_to_callback
+#define NC_SCREEN_IMPL_RESIZE_CALLBACK sort_dialog_resize_callback
+#define NC_SCREEN_IMPL_TITLE_CALLBACK sort_dialog_title_callback
+#define NC_SCREEN_IMPL_UPDATE_CALLBACK sort_dialog_update_callback
+#define NC_SCREEN_IMPL_MOUSE_CALLBACK sort_dialog_mouse_callback
+#define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK \
+    native_sort_playlist_dialog_destroy
+#include "screens/nc_screen_impl_template.c"
+
 void
 native_sort_playlist_dialog_init(NativeSortPlaylistDialog *dialog,
                                  int32 start_x, int32 start_y,
                                  int32 width, int32 height,
                                  NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks display_callbacks = {0};
-    NcScreenOps callbacks;
     NcMenu *menu;
 
-    callbacks = sort_dialog_callbacks();
     nc_editor_sort_menu_init(&dialog->rows);
     menu = nc_editor_sort_menu_base(&dialog->rows);
     display_callbacks.draw = sort_dialog_draw_row;
@@ -71,8 +83,8 @@ native_sort_playlist_dialog_init(NativeSortPlaylistDialog *dialog,
     dialog->start_position = 0;
     dialog->ignore_leading_the = false;
     dialog->ready = false;
-    nc_screen_init_ops(&dialog->screen, callbacks, dialog,
-                   NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
+    nc_screen_init_ops(&dialog->screen, sort_dialog_ops, dialog,
+                       NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
     native_sort_playlist_dialog_populate_defaults(dialog);
     return;
 }
@@ -92,14 +104,6 @@ native_sort_playlist_dialog_destroy(NativeSortPlaylistDialog *dialog) {
     dialog->client = NULL;
     dialog->ready = false;
     return;
-}
-
-NcScreen *
-native_sort_playlist_dialog_base(NativeSortPlaylistDialog *dialog) {
-    if (dialog == NULL) {
-        return NULL;
-    }
-    return &dialog->screen;
 }
 
 NcEditorSortMenu *
@@ -357,37 +361,6 @@ native_sort_playlist_dialog_get_order(
     return len;
 }
 
-static NativeSortPlaylistDialog *
-sort_dialog_from_screen(NcScreen *screen) {
-    return nc_screen_user(screen);
-}
-
-static NcScreenOps
-sort_dialog_callbacks(void) {
-    NcScreenOps callbacks = {0};
-
-    callbacks.active_window = sort_dialog_active_window_callback;
-    callbacks.refresh = sort_dialog_refresh_callback;
-    callbacks.refresh_window = sort_dialog_refresh_callback;
-    callbacks.scroll = sort_dialog_scroll_callback;
-    callbacks.can_run_current = sort_dialog_can_run_current_callback;
-    callbacks.run_current = sort_dialog_run_current_callback;
-    callbacks.switch_to = sort_dialog_switch_to_callback;
-    callbacks.resize = sort_dialog_resize_callback;
-    callbacks.title = sort_dialog_title_callback;
-    callbacks.update = sort_dialog_update_callback;
-    callbacks.mouse_button_pressed = sort_dialog_mouse_callback;
-    callbacks.lockable = false;
-    callbacks.mergable = false;
-    callbacks.destroy = sort_dialog_destroy_callback;
-    return callbacks;
-}
-
-static NcWindow *
-sort_dialog_active_window_callback(NcScreen *screen) {
-    return &sort_dialog_from_screen(screen)->window;
-}
-
 static void
 sort_dialog_draw_row(NcMenu *menu, NcWindow *window, void *item,
                      int32 pos, void *user) {
@@ -407,26 +380,14 @@ sort_dialog_draw_row(NcMenu *menu, NcWindow *window, void *item,
 }
 
 static void
-sort_dialog_refresh_callback(NcScreen *screen) {
-    NativeSortPlaylistDialog *dialog;
+sort_dialog_refresh_rows(NativeSortPlaylistDialog *dialog) {
     NcMenu *menu;
 
-    dialog = sort_dialog_from_screen(screen);
     menu = nc_editor_sort_menu_base(&dialog->rows);
     nc_menu_prepare_refresh(menu, dialog->window.height, NULL, NULL);
     nc_window_display(&dialog->window);
     nc_menu_refresh(menu, &dialog->window, dialog->window.width,
                     dialog->window.height);
-    return;
-}
-
-static void
-sort_dialog_scroll_callback(NcScreen *screen, enum NcScroll where) {
-    NativeSortPlaylistDialog *dialog;
-
-    dialog = sort_dialog_from_screen(screen);
-    nc_menu_scroll_selectable(nc_editor_sort_menu_base(&dialog->rows),
-                              dialog->window.height, where);
     return;
 }
 
@@ -499,14 +460,6 @@ sort_dialog_mouse_callback(NcScreen *screen, MEVENT event) {
             (void)native_sort_playlist_dialog_run_current(dialog);
         }
     }
-    return;
-}
-
-
-
-static void
-sort_dialog_destroy_callback(NcScreen *screen) {
-    native_sort_playlist_dialog_destroy(sort_dialog_from_screen(screen));
     return;
 }
 
