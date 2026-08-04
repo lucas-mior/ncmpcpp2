@@ -72,7 +72,7 @@ static int32 tiny_editor_channels_to_string(int32 channels,
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK \
     native_tiny_tag_editor_screen_destroy
 #define NC_SCREEN_IMPL_MERGABLE true
-#include "screens/nc_screen_impl_template.c"
+#include "screens/nc_screen_impl_template.h"
 
 void
 native_tiny_tag_editor_screen_init(

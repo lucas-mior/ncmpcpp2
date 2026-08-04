@@ -176,7 +176,7 @@ typedef struct NativeBrowserSearchContext {
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK native_browser_screen_destroy
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
-#include "screens/nc_screen_impl_template.c"
+#include "screens/nc_screen_impl_template.h"
 
 void
 native_browser_screen_init(NativeBrowserScreen *screen,
