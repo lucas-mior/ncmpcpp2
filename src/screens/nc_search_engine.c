@@ -11,10 +11,7 @@
 #include "settings.h"
 #include "ui_state.h"
 
-static NcWindow *native_search_active_window(NcScreen *screen);
-static void native_search_refresh(NcScreen *screen);
-static void native_search_refresh_window(NcScreen *screen);
-static void native_search_scroll(NcScreen *screen, enum NcScroll where);
+static void native_search_display(NativeSearchEngineScreen *screen);
 static void native_search_switch_to(NcScreen *screen);
 static void native_search_resize(NcScreen *screen);
 static char *native_search_title(NcScreen *screen);
@@ -23,7 +20,6 @@ static void native_search_mouse_button_pressed(NcScreen *screen,
                                                MEVENT event);
 static bool native_search_can_run_current(NcScreen *screen);
 static bool native_search_run_current(NcScreen *screen);
-static void native_search_destroy_callback(NcScreen *screen);
 static void native_search_draw_row(NcMenu *menu, NcWindow *window,
                                    void *item, int32 pos, void *user);
 static NcMenuDisplayCallbacks native_search_display_callbacks(
@@ -134,22 +130,25 @@ static char *native_search_mode_names[] = {
 
 static char native_search_empty_string[] = "";
 
-static NcScreenOps native_search_callbacks = {
-    .active_window = native_search_active_window,
-    .refresh = native_search_refresh,
-    .refresh_window = native_search_refresh_window,
-    .scroll = native_search_scroll,
-    .switch_to = native_search_switch_to,
-    .resize = native_search_resize,
-    .title = native_search_title,
-    .update = native_search_update,
-    .mouse_button_pressed = native_search_mouse_button_pressed,
-    .can_run_current = native_search_can_run_current,
-    .run_current = native_search_run_current,
-    .lockable = true,
-    .mergable = true,
-    .destroy = native_search_destroy_callback,
-};
+#define NC_SCREEN_IMPL_TYPE NativeSearchEngineScreen
+#define NC_SCREEN_IMPL_PREFIX native_search
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX native_search_engine_screen
+#define NC_SCREEN_IMPL_BASE_FIELD screen
+#define NC_SCREEN_IMPL_WINDOW_FIELD window
+#define NC_SCREEN_IMPL_MENU(screen) native_search_engine_screen_menu(screen)
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK native_search_display
+#define NC_SCREEN_IMPL_CAN_RUN_CURRENT_CALLBACK native_search_can_run_current
+#define NC_SCREEN_IMPL_RUN_CURRENT_CALLBACK native_search_run_current
+#define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK native_search_switch_to
+#define NC_SCREEN_IMPL_RESIZE_CALLBACK native_search_resize
+#define NC_SCREEN_IMPL_TITLE_CALLBACK native_search_title
+#define NC_SCREEN_IMPL_UPDATE_CALLBACK native_search_update
+#define NC_SCREEN_IMPL_MOUSE_CALLBACK native_search_mouse_button_pressed
+#define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK \
+    native_search_engine_screen_destroy
+#define NC_SCREEN_IMPL_LOCKABLE true
+#define NC_SCREEN_IMPL_MERGABLE true
+#include "screens/nc_screen_impl_template.c"
 
 void
 native_search_engine_screen_init(NativeSearchEngineScreen *screen,
@@ -189,8 +188,8 @@ native_search_engine_screen_init(NativeSearchEngineScreen *screen,
     screen->constraints_locked = false;
     screen->registered = false;
 
-    nc_screen_init_ops(&screen->screen, native_search_callbacks, screen,
-                   NC_SCREEN_TYPE_SEARCH_ENGINE);
+    nc_screen_init_ops(&screen->screen, native_search_ops, screen,
+                       NC_SCREEN_TYPE_SEARCH_ENGINE);
     menu = native_search_engine_screen_menu(screen);
     nc_menu_set_display_callbacks(
         menu, native_search_display_callbacks(screen, false));
@@ -221,11 +220,6 @@ native_search_engine_screen_destroy(NativeSearchEngineScreen *screen) {
     nc_window_destroy(&screen->window);
     nc_search_row_menu_destroy(&screen->rows);
     return;
-}
-
-NcScreen *
-native_search_engine_screen_base(NativeSearchEngineScreen *screen) {
-    return &screen->screen;
 }
 
 NcMenu *
@@ -1145,26 +1139,11 @@ native_search_find_position(NcMenu *menu, int32 pos,
         context->regex);
 }
 
-static NativeSearchEngineScreen *
-native_search_from_screen(NcScreen *screen) {
-    return nc_screen_user(screen);
-}
-
-static NcWindow *
-native_search_active_window(NcScreen *screen) {
-    NativeSearchEngineScreen *search;
-
-    search = native_search_from_screen(screen);
-    return &search->window;
-}
-
 static void
-native_search_refresh(NcScreen *screen) {
-    NativeSearchEngineScreen *search;
+native_search_display(NativeSearchEngineScreen *search) {
     NcMenu *menu;
     NcWindow *window;
 
-    search = native_search_from_screen(screen);
     if (!search->prepared) {
         native_search_engine_screen_prepare_static_rows(search);
     }
@@ -1174,22 +1153,6 @@ native_search_refresh(NcScreen *screen) {
     nc_window_display(window);
     nc_menu_refresh(menu, window, nc_window_width(window),
                     nc_window_height(window));
-    return;
-}
-
-static void
-native_search_refresh_window(NcScreen *screen) {
-    native_search_refresh(screen);
-    return;
-}
-
-static void
-native_search_scroll(NcScreen *screen, enum NcScroll where) {
-    NativeSearchEngineScreen *search;
-
-    search = native_search_from_screen(screen);
-    nc_menu_scroll_selectable(native_search_engine_screen_menu(search),
-                              nc_window_height(&search->window), where);
     return;
 }
 
@@ -1298,12 +1261,6 @@ native_search_run_current(NcScreen *screen) {
 }
 
 
-
-static void
-native_search_destroy_callback(NcScreen *screen) {
-    native_search_engine_screen_destroy(native_search_from_screen(screen));
-    return;
-}
 
 static bool
 native_search_filter_row(NcMenu *menu, void *item, void *user) {

@@ -21,17 +21,13 @@
 #include "title.h"
 #include "ui_state.h"
 
-static NcWindow *native_browser_active_window(NcScreen *screen);
-static void native_browser_refresh(NcScreen *screen);
-static void native_browser_refresh_window(NcScreen *screen);
-static void native_browser_scroll(NcScreen *screen, enum NcScroll where);
+static void native_browser_display(NativeBrowserScreen *screen);
 static void native_browser_switch_to(NcScreen *screen);
 static void native_browser_resize(NcScreen *screen);
 static char *native_browser_title(NcScreen *screen);
 static void native_browser_update(NcScreen *screen);
 static void native_browser_mouse_button_pressed(NcScreen *screen,
                                                 MEVENT event);
-static void native_browser_destroy_callback(NcScreen *screen);
 static void native_browser_install_menu_callbacks(
     NativeBrowserScreen *screen);
 static void native_browser_apply_menu_config(NativeBrowserScreen *screen);
@@ -164,20 +160,23 @@ typedef struct NativeBrowserSearchContext {
     NcmRegex *regex;
 } NativeBrowserSearchContext;
 
-static NcScreenOps native_browser_callbacks = {
-    .active_window = native_browser_active_window,
-    .refresh = native_browser_refresh,
-    .refresh_window = native_browser_refresh_window,
-    .scroll = native_browser_scroll,
-    .switch_to = native_browser_switch_to,
-    .resize = native_browser_resize,
-    .title = native_browser_title,
-    .update = native_browser_update,
-    .mouse_button_pressed = native_browser_mouse_button_pressed,
-    .lockable = true,
-    .mergable = true,
-    .destroy = native_browser_destroy_callback,
-};
+#define NC_SCREEN_IMPL_TYPE NativeBrowserScreen
+#define NC_SCREEN_IMPL_PREFIX native_browser
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX native_browser_screen
+#define NC_SCREEN_IMPL_BASE_FIELD screen
+#define NC_SCREEN_IMPL_WINDOW_FIELD window
+#define NC_SCREEN_IMPL_MENU(screen) native_browser_screen_menu(screen)
+#define NC_SCREEN_IMPL_SCROLL_HEIGHT(screen) ((screen)->main_height)
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK native_browser_display
+#define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK native_browser_switch_to
+#define NC_SCREEN_IMPL_RESIZE_CALLBACK native_browser_resize
+#define NC_SCREEN_IMPL_TITLE_CALLBACK native_browser_title
+#define NC_SCREEN_IMPL_UPDATE_CALLBACK native_browser_update
+#define NC_SCREEN_IMPL_MOUSE_CALLBACK native_browser_mouse_button_pressed
+#define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK native_browser_screen_destroy
+#define NC_SCREEN_IMPL_LOCKABLE true
+#define NC_SCREEN_IMPL_MERGABLE true
+#include "screens/nc_screen_impl_template.c"
 
 void
 native_browser_screen_init(NativeBrowserScreen *screen,
@@ -218,8 +217,8 @@ native_browser_screen_init(NativeBrowserScreen *screen,
     native_browser_screen_update_title_text(screen);
     native_browser_screen_update_column_title(screen);
     native_browser_install_menu_callbacks(screen);
-    nc_screen_init_ops(&screen->screen, native_browser_callbacks, screen,
-                   NC_SCREEN_TYPE_BROWSER);
+    nc_screen_init_ops(&screen->screen, native_browser_ops, screen,
+                       NC_SCREEN_TYPE_BROWSER);
     return;
 }
 
@@ -245,11 +244,6 @@ native_browser_screen_destroy(NativeBrowserScreen *screen) {
     nc_window_destroy(&screen->window);
     nc_browser_entry_menu_destroy(&screen->entries);
     return;
-}
-
-NcScreen *
-native_browser_screen_base(NativeBrowserScreen *screen) {
-    return &screen->screen;
 }
 
 NcBrowserEntryMenu *
@@ -1263,43 +1257,11 @@ native_browser_screen_request_update(NativeBrowserScreen *screen) {
     return;
 }
 
-static NativeBrowserScreen *
-native_browser_from_screen(NcScreen *screen) {
-    return nc_screen_user(screen);
-}
-
-static NcWindow *
-native_browser_active_window(NcScreen *screen) {
-    NativeBrowserScreen *browser;
-
-    browser = native_browser_from_screen(screen);
-    return &browser->window;
-}
-
 static void
-native_browser_refresh(NcScreen *screen) {
-    NativeBrowserScreen *browser;
-
-    browser = native_browser_from_screen(screen);
+native_browser_display(NativeBrowserScreen *browser) {
     native_browser_screen_update_column_title(browser);
     nc_menu_refresh(native_browser_screen_menu(browser), &browser->window,
                     browser->width, browser->main_height);
-    return;
-}
-
-static void
-native_browser_refresh_window(NcScreen *screen) {
-    native_browser_refresh(screen);
-    return;
-}
-
-static void
-native_browser_scroll(NcScreen *screen, enum NcScroll where) {
-    NativeBrowserScreen *browser;
-
-    browser = native_browser_from_screen(screen);
-    nc_menu_scroll_selectable(native_browser_screen_menu(browser),
-                              browser->main_height, where);
     return;
 }
 
@@ -1415,12 +1377,6 @@ native_browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 }
 
 
-
-static void
-native_browser_destroy_callback(NcScreen *screen) {
-    native_browser_screen_destroy(native_browser_from_screen(screen));
-    return;
-}
 
 static NcMenuDisplayCallbacks
 native_browser_display_callbacks(NativeBrowserScreen *screen) {
