@@ -553,7 +553,14 @@ default:
   * Don't use `memset(&my_struct, 0, SIZEOF(my_struct));`
 - To initialize a stack array to zero, use `MyType array[ARRAY_SIZE] = {0};`
   * Don't use `memset(&array, 0, SIZEOF(array));`
-- Try to keep the scope of variables reduced.
+- Try to keep the scope of variables reduced. Use of artificial blocks is
+  sometimes useful:
+  ```c
+  {
+      // this var only exists here and can't leak where it is not needed
+      int32 x;
+  }
+  ```
 - Prefer to declare variable at the top of blocks
   * Avoid mixing declarations and code (`-Wdeclaration-after-statement`)
   * Unless doing code generation / meta programming:
@@ -561,15 +568,6 @@ default:
 - Variable that have a "default return" value, or a "stub" value, shall be
   initialized:
   ```c
-  // good
-  static bool function(void *parameters) {
-      bool result = false;
-
-      // do stuff that might change result
-
-      return result;
-  }
-
   // bad
   static bool function(void *parameters) {
       bool result;
@@ -580,23 +578,19 @@ default:
 
       return result;
   }
+
+  // good
+  static bool function(void *parameters) {
+      bool result = false;
+
+      // do stuff that might change result
+
+      return result;
+  }
   ```
   * But initializing an "ORing" or "summing" variable is better done before the
     "ORing"/"summing" loop:
     ```c
-    // good (this makes it clear how the variable works)
-    static uint32
-    function(void *params) {
-        uint32 mask;
-        double other_var;
-
-        mask = 0;
-        for (uint32 i = 0; i < N; i += 1) {
-            mask |= some_function(params, i);
-        }
-        return mask;
-    }
-
     // bad (this obscures the fact that 0 is not a dummy return, it is a valid
     //      temporary state of the variable)
     static uint32
@@ -609,7 +603,49 @@ default:
         }
         return mask;
     }
+
+    // better (this makes it clear how the variable works)
+    // prefer this only when there are many variables, which can confuse the
+    // reader. When there are fewer variables, use the // even better version
+    static uint32
+    function(void *params) {
+        uint32 mask;
+        double other_var;
+
+        mask = 0;
+        for (uint32 i = 0; i < N; i += 1) {
+            mask |= some_function(params, i);
+        }
+        return mask;
+    }
+
+    // even better (now the important variable is initialized near the loop)
+    static uint32
+    function(void *params) {
+        double other_var;
+        uint32 mask = 0;
+
+        for (uint32 i = 0; i < N; i += 1) {
+            mask |= some_function(params, i);
+        }
+        return mask;
+    }
     ```
+- Variables that are aliases/copies, shall be declared and initialized in the
+  same line:
+  ```c
+  // bad
+  void my_function(ProgramOptions *options) {
+      char *name;
+
+      name = options->name;
+  }
+
+  // good
+  void my_function(ProgramOptions *options) {
+      char *name = options->name;
+  }
+  ```
 
 ## Utilities
 Use the following available functions from `cbase/util.c` for common programming

@@ -13,18 +13,14 @@
 #include "title.h"
 #include "ui_state.h"
 
-static NcWindow *tiny_editor_active_window(NcScreen *screen);
 static bool tiny_editor_can_run_current(NcScreen *screen);
 static bool tiny_editor_run_current(NcScreen *screen);
-static void tiny_editor_refresh(NcScreen *screen);
-static void tiny_editor_refresh_window(NcScreen *screen);
-static void tiny_editor_scroll(NcScreen *screen, enum NcScroll where);
+static void tiny_editor_display(NativeTinyTagEditorScreen *screen);
 static void tiny_editor_switch_to(NcScreen *screen);
 static void tiny_editor_resize(NcScreen *screen);
 static char *tiny_editor_title(NcScreen *screen);
 static void tiny_editor_update(NcScreen *screen);
 static void tiny_editor_mouse_callback(NcScreen *screen, MEVENT event);
-static void tiny_editor_destroy_callback(NcScreen *screen);
 static void tiny_editor_draw_row(NcMenu *menu, NcWindow *window,
                                  void *item, int32 pos, void *user);
 static void tiny_editor_print_buffer(NcWindow *window, NcBuffer *buffer);
@@ -58,22 +54,25 @@ static int32 tiny_editor_channels_to_string(int32 channels,
                                             char *buffer,
                                             int32 buffer_cap);
 
-static NcScreenOps tiny_editor_callbacks = {
-    .active_window = tiny_editor_active_window,
-    .can_run_current = tiny_editor_can_run_current,
-    .run_current = tiny_editor_run_current,
-    .refresh = tiny_editor_refresh,
-    .refresh_window = tiny_editor_refresh_window,
-    .scroll = tiny_editor_scroll,
-    .switch_to = tiny_editor_switch_to,
-    .resize = tiny_editor_resize,
-    .title = tiny_editor_title,
-    .update = tiny_editor_update,
-    .mouse_button_pressed = tiny_editor_mouse_callback,
-    .lockable = false,
-    .mergable = true,
-    .destroy = tiny_editor_destroy_callback,
-};
+#define NC_SCREEN_IMPL_TYPE NativeTinyTagEditorScreen
+#define NC_SCREEN_IMPL_PREFIX tiny_editor
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX native_tiny_tag_editor_screen
+#define NC_SCREEN_IMPL_BASE_FIELD screen
+#define NC_SCREEN_IMPL_WINDOW_FIELD window
+#define NC_SCREEN_IMPL_MENU(screen) nc_editor_buffer_menu_base(&(screen)->rows)
+#define NC_SCREEN_IMPL_SCROLL_HEIGHT(screen) ((screen)->main_height)
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK tiny_editor_display
+#define NC_SCREEN_IMPL_CAN_RUN_CURRENT_CALLBACK tiny_editor_can_run_current
+#define NC_SCREEN_IMPL_RUN_CURRENT_CALLBACK tiny_editor_run_current
+#define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK tiny_editor_switch_to
+#define NC_SCREEN_IMPL_RESIZE_CALLBACK tiny_editor_resize
+#define NC_SCREEN_IMPL_TITLE_CALLBACK tiny_editor_title
+#define NC_SCREEN_IMPL_UPDATE_CALLBACK tiny_editor_update
+#define NC_SCREEN_IMPL_MOUSE_CALLBACK tiny_editor_mouse_callback
+#define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK \
+    native_tiny_tag_editor_screen_destroy
+#define NC_SCREEN_IMPL_MERGABLE true
+#include "screens/nc_screen_impl_template.c"
 
 void
 native_tiny_tag_editor_screen_init(
@@ -110,8 +109,8 @@ native_tiny_tag_editor_screen_init(
     screen->show_duplicate_tags = false;
     screen->registered = false;
 
-    nc_screen_init_ops(&screen->screen, tiny_editor_callbacks, screen,
-                   NC_SCREEN_TYPE_TINY_TAG_EDITOR);
+    nc_screen_init_ops(&screen->screen, tiny_editor_ops, screen,
+                       NC_SCREEN_TYPE_TINY_TAG_EDITOR);
     return;
 }
 
@@ -136,14 +135,6 @@ native_tiny_tag_editor_screen_destroy(NativeTinyTagEditorScreen *screen) {
     screen->registered = false;
 
     return;
-}
-
-NcScreen *
-native_tiny_tag_editor_screen_base(NativeTinyTagEditorScreen *screen) {
-    if (screen == NULL) {
-        return NULL;
-    }
-    return &screen->screen;
 }
 
 void
@@ -683,19 +674,6 @@ native_tiny_tag_editor_screen_action_runnable(
            && nc_menu_position_is_selectable(menu, row);
 }
 
-static NativeTinyTagEditorScreen *
-tiny_editor_from_screen(NcScreen *screen) {
-    return nc_screen_user(screen);
-}
-
-static NcWindow *
-tiny_editor_active_window(NcScreen *screen) {
-    NativeTinyTagEditorScreen *editor;
-
-    editor = tiny_editor_from_screen(screen);
-    return &editor->window;
-}
-
 static bool
 tiny_editor_can_run_current(NcScreen *screen) {
     return native_tiny_tag_editor_screen_action_runnable(
@@ -709,29 +687,15 @@ tiny_editor_run_current(NcScreen *screen) {
 }
 
 static void
-tiny_editor_refresh(NcScreen *screen) {
-    NativeTinyTagEditorScreen *editor = tiny_editor_from_screen(screen);
-    NcMenu *menu = nc_editor_buffer_menu_base(&editor->rows);
+tiny_editor_display(NativeTinyTagEditorScreen *editor) {
+    NcMenu *menu;
 
+    menu = nc_editor_buffer_menu_base(&editor->rows);
     nc_menu_prepare_refresh(menu, editor->main_height, NULL, NULL);
     nc_window_display(&editor->window);
     nc_menu_refresh(menu, &editor->window, editor->width,
                     editor->main_height);
 
-    return;
-}
-
-static void
-tiny_editor_refresh_window(NcScreen *screen) {
-    tiny_editor_refresh(screen);
-    return;
-}
-
-static void
-tiny_editor_scroll(NcScreen *screen, enum NcScroll where) {
-    NativeTinyTagEditorScreen *editor = tiny_editor_from_screen(screen);
-    nc_menu_scroll_selectable(nc_editor_buffer_menu_base(&editor->rows),
-                              editor->main_height, where);
     return;
 }
 
@@ -862,12 +826,6 @@ tiny_editor_print_buffer(NcWindow *window, NcBuffer *buffer) {
 }
 
 
-
-static void
-tiny_editor_destroy_callback(NcScreen *screen) {
-    native_tiny_tag_editor_screen_destroy(tiny_editor_from_screen(screen));
-    return;
-}
 
 static bool
 tiny_editor_add_row(NativeTinyTagEditorScreen *screen, NcBuffer *buffer,
