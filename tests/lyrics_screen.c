@@ -29,6 +29,7 @@ static int32 lyrics_test_y;
 static int32 lyrics_test_print_count;
 static int64 lyrics_test_elapsed_ms;
 static int32 lyrics_test_player_state;
+static StrBuilder lyrics_test_status_message;
 
 #include "c/ncm_error.c"
 #include "c/ncm_path.c"
@@ -639,11 +640,35 @@ ncm_string_format_arg_cstring(char *data) {
 void
 ncm_statusbar_format(int32 delay_seconds, char *format, int32 format_len,
                      NcmStringFormatArg *args, int32 args_len) {
+    int32 idx;
+
     (void)delay_seconds;
-    (void)format;
-    (void)format_len;
-    (void)args;
-    (void)args_len;
+    sb_clear(&lyrics_test_status_message);
+    for (int32 i = 0; i < format_len; i += 1) {
+        if (format[i] != '%') {
+            sb_append_byte(&lyrics_test_status_message, format[i]);
+            continue;
+        }
+
+        idx = -1;
+        if ((i + 2 < format_len)
+            && (format[i + 2] == '%')
+            && (format[i + 1] >= '1')
+            && (format[i + 1] <= '9')) {
+            idx = format[i + 1] - '1';
+        }
+
+        if ((idx >= 0) && (idx < args_len)
+            && (args[idx].type == NCM_STRING_FORMAT_ARG_STRING)) {
+            SB_APPEND(&lyrics_test_status_message,
+                      args[idx].value.string.data,
+                      args[idx].value.string.len);
+            i += 2;
+            continue;
+        }
+
+        sb_append_byte(&lyrics_test_status_message, format[i]);
+    }
     return;
 }
 
@@ -734,6 +759,22 @@ lyrics_screen_test_assert_file_text(char *path, char *text, int32 text_len) {
     ASSERT(read_entire_file(path, &bytes, &bytes_len));
     ASSERT(STREQUAL(bytes, bytes_len, text, text_len));
     free2(bytes, bytes_len + 1);
+    return;
+}
+
+static void
+lyrics_screen_test_clear_status_message(void) {
+    sb_clear(&lyrics_test_status_message);
+    return;
+}
+
+static void
+lyrics_screen_test_assert_status_message(char *message,
+                                         int32 message_len) {
+    ASSERT(STREQUAL(lyrics_test_status_message.data,
+                    lyrics_test_status_message.len,
+                    message,
+                    message_len));
     return;
 }
 
@@ -890,7 +931,10 @@ lyrics_screen_test_lrc_preferred_over_txt(void) {
 
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
+    lyrics_screen_test_clear_status_message();
     ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
+    lyrics_screen_test_assert_status_message(
+        STRLIT("Artist - Title.lrc found; Artist - Title.txt found"));
     ASSERT_EQUAL((int32)native_lyrics_screen_mode(&screen),
                  (int32)NATIVE_LYRICS_MODE_SYNCHRONIZED);
     ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
@@ -922,7 +966,10 @@ lyrics_screen_test_txt_used_when_lrc_missing(void) {
 
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
+    lyrics_screen_test_clear_status_message();
     ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
+    lyrics_screen_test_assert_status_message(
+        STRLIT("Artist - Title.lrc not found; Artist - Title.txt found"));
     ASSERT_EQUAL((int32)native_lyrics_screen_mode(&screen),
                  (int32)NATIVE_LYRICS_MODE_PLAIN);
     ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
@@ -957,7 +1004,10 @@ lyrics_screen_test_invalid_lrc_falls_back_to_txt(void) {
 
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
+    lyrics_screen_test_clear_status_message();
     ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
+    lyrics_screen_test_assert_status_message(
+        STRLIT("Artist - Title.lrc found; Artist - Title.txt found"));
     ASSERT_EQUAL((int32)native_lyrics_screen_mode(&screen),
                  (int32)NATIVE_LYRICS_MODE_PLAIN);
     ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
@@ -970,6 +1020,31 @@ lyrics_screen_test_invalid_lrc_falls_back_to_txt(void) {
     ncm_song_destroy(&song);
     lyrics_screen_test_remove_file(lrc_path);
     lyrics_screen_test_remove_file(txt_path);
+    ASSERT(rmdir(directory) == 0);
+    return;
+}
+
+static void
+lyrics_screen_test_missing_sidecars_report_status(void) {
+    NativeLyricsScreen screen;
+    NcmSong song;
+    NcmError error = {0};
+    char directory[256];
+
+    lyrics_screen_test_clear_pushed_job();
+    lyrics_screen_test_prepare_directory(directory, SIZEOF(directory));
+    lyrics_screen_test_setup_config(directory);
+
+    lyrics_screen_test_song(&song);
+    lyrics_screen_test_init(&screen);
+    lyrics_screen_test_clear_status_message();
+    ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
+    lyrics_screen_test_assert_status_message(
+        STRLIT("Artist - Title.lrc not found; Artist - Title.txt not found"));
+
+    lyrics_screen_test_clear_pushed_job();
+    native_lyrics_screen_destroy(&screen);
+    ncm_song_destroy(&song);
     ASSERT(rmdir(directory) == 0);
     return;
 }
@@ -1323,6 +1398,7 @@ main(void) {
     lyrics_screen_test_lrc_preferred_over_txt();
     lyrics_screen_test_txt_used_when_lrc_missing();
     lyrics_screen_test_invalid_lrc_falls_back_to_txt();
+    lyrics_screen_test_missing_sidecars_report_status();
     lyrics_screen_test_active_line_selection();
     lyrics_screen_test_search_and_sync_properties_are_independent();
     lyrics_screen_test_auto_scroll_clamps();
