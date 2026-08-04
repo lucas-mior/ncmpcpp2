@@ -26,6 +26,7 @@ int32 standend(void);
 
 static int32 lyrics_test_x;
 static int32 lyrics_test_y;
+static int32 lyrics_test_print_count;
 static int64 lyrics_test_elapsed_ms;
 static int32 lyrics_test_player_state;
 
@@ -258,6 +259,7 @@ nc_window_push_color(NcWindow *window, NcColor color) {
 
 void
 nc_window_print_char(NcWindow *window, char ch) {
+    lyrics_test_print_count += 1;
     if (ch == '\n') {
         lyrics_test_x = 0;
         lyrics_test_y += 1;
@@ -1084,6 +1086,30 @@ lyrics_screen_test_auto_scroll_clamps(void) {
 }
 
 static void
+lyrics_screen_test_resize_reflushes_plain_lyrics(void) {
+    NativeLyricsScreen screen;
+    NcmError error = {0};
+    char path[] = "/tmp/ncmpcpp2-lyrics-screen-resize.txt";
+
+    lyrics_screen_test_setup_config("/tmp");
+    lyrics_screen_test_write_file(path, STRLIT("alpha\nbeta\n"));
+    lyrics_screen_test_init(&screen);
+    ASSERT(native_lyrics_screen_load_file(&screen,
+                                          path,
+                                          strlen32(path),
+                                          &error));
+    ASSERT(native_lyrics_screen_mode(&screen) == NATIVE_LYRICS_MODE_PLAIN);
+
+    lyrics_test_print_count = 0;
+    native_lyrics_screen_set_geometry(&screen, 0, 20, 0, 4);
+    ASSERT(lyrics_test_print_count > 0);
+
+    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_test_remove_file(path);
+    return;
+}
+
+static void
 lyrics_screen_test_lrc_integration_fixture(void) {
     NativeLyricsScreen screen;
     NativeLyricsScreen plain_screen;
@@ -1300,6 +1326,7 @@ main(void) {
     lyrics_screen_test_active_line_selection();
     lyrics_screen_test_search_and_sync_properties_are_independent();
     lyrics_screen_test_auto_scroll_clamps();
+    lyrics_screen_test_resize_reflushes_plain_lyrics();
     lyrics_screen_test_lrc_integration_fixture();
     lyrics_screen_test_refetch_writes_txt_without_removing_lrc();
     lyrics_screen_test_background_fetch_respects_lrc_and_txt();
