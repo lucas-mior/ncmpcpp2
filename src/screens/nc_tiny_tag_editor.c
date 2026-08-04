@@ -1004,7 +1004,8 @@ tiny_editor_finish(NativeTinyTagEditorScreen *screen) {
         screen->hooks.switch_to_screen(screen->hooks.user, previous);
         return true;
     }
-    return app_controller_switch_to_screen(previous);
+    return nc_screen_switcher_switch_to(
+        previous, nc_screen_has_to_be_resized(previous));
 }
 
 static void

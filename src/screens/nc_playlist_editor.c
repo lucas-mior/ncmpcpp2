@@ -12,6 +12,7 @@
 #include "c/ncm_string.h"
 #include "global.h"
 #include "screens/nc_playlist_editor.h"
+#include "screens/screen_switcher.h"
 #include "settings.h"
 #include "status.h"
 #include "statusbar.h"
@@ -1700,7 +1701,8 @@ playlist_editor_show_screen(NativePlaylistEditorScreen *screen) {
         }
         screen->registered = true;
     }
-    return app_controller_switch_to_screen(&screen->screen);
+    return nc_screen_switcher_switch_to(
+        &screen->screen, nc_screen_has_to_be_resized(&screen->screen));
 }
 
 static bool

@@ -5,6 +5,7 @@
 
 #include "app_controller.h"
 #include "screens/screen_switcher.h"
+#include "title.h"
 
 NcScreen *
 nc_screen_switcher_current(void) {
@@ -29,11 +30,17 @@ nc_screen_switcher_is_visible(NcScreen *screen) {
 bool
 nc_screen_switcher_switch_to(NcScreen *screen,
                              bool has_to_be_resized) {
+    bool switched;
+
     if (screen == NULL) {
         return false;
     }
     nc_screen_set_has_to_be_resized(screen, has_to_be_resized);
-    return app_controller_switch_to_screen(screen);
+    switched = app_controller_switch_to_screen(screen);
+    if (switched && app_controller_last_switch_changed_screen()) {
+        ncm_title_draw_current_header();
+    }
+    return switched;
 }
 
 bool
