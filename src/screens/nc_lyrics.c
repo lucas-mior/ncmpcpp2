@@ -44,10 +44,6 @@ typedef struct NativeLyricsFindState {
     NcBuffer *buffer;
 } NativeLyricsFindState;
 
-static NcWindow *lyrics_active_window_callback(NcScreen *screen);
-static void lyrics_refresh_callback(NcScreen *screen);
-static void lyrics_refresh_window_callback(NcScreen *screen);
-static void lyrics_scroll_callback(NcScreen *screen, enum NcScroll where);
 static void lyrics_switch_to_callback(NcScreen *screen);
 static void lyrics_resize_callback(NcScreen *screen);
 static int32 lyrics_window_timeout_callback(NcScreen *screen);
@@ -55,7 +51,6 @@ static char *lyrics_title_callback(NcScreen *screen);
 static void lyrics_update_callback(NcScreen *screen);
 static void lyrics_mouse_button_pressed_callback(NcScreen *screen,
                                                  MEVENT event);
-static void lyrics_destroy_callback(NcScreen *screen);
 static void native_lyrics_title_song_string(NcmSong *song, StrBuilder *title);
 static void native_lyrics_replace_search_separators(StrBuilder *buffer);
 static void native_lyrics_append_locale(NcBuffer *buffer, char *data,
@@ -143,6 +138,26 @@ static bool native_lyrics_find_match_callback(int32 start, int32 len,
 static void native_lyrics_mouse_scroll(NativeLyricsScreen *screen,
                                        enum NcScroll where);
 static void native_lyrics_display(NativeLyricsScreen *screen);
+
+#define NC_SCREEN_IMPL_TYPE NativeLyricsScreen
+#define NC_SCREEN_IMPL_PREFIX lyrics
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX native_lyrics_screen
+#define NC_SCREEN_IMPL_BASE_FIELD screen
+#define NC_SCREEN_IMPL_SCROLLPAD_BASE screen.scrollpad_screen
+#define NC_SCREEN_IMPL_NO_GEOMETRY_ACCESSORS
+#define NC_SCREEN_IMPL_WINDOW_FIELD window
+#define NC_SCREEN_IMPL_SCROLLPAD_FIELD scrollpad
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK native_lyrics_display
+#define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK lyrics_switch_to_callback
+#define NC_SCREEN_IMPL_RESIZE_CALLBACK lyrics_resize_callback
+#define NC_SCREEN_IMPL_TITLE_CALLBACK lyrics_title_callback
+#define NC_SCREEN_IMPL_WINDOW_TIMEOUT_CALLBACK lyrics_window_timeout_callback
+#define NC_SCREEN_IMPL_UPDATE_CALLBACK lyrics_update_callback
+#define NC_SCREEN_IMPL_MOUSE_CALLBACK lyrics_mouse_button_pressed_callback
+#define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK native_lyrics_screen_destroy
+#define NC_SCREEN_IMPL_LOCKABLE true
+#define NC_SCREEN_IMPL_MERGABLE true
+#include "screens/nc_screen_impl_template.c"
 
 void
 nc_lyrics_screen_init(NcLyricsScreen *screen,
@@ -256,27 +271,6 @@ native_lyrics_queued_song_move(NativeLyricsQueuedSong *dest,
     return;
 }
 
-static NcScreenOps
-native_lyrics_callbacks(void) {
-    NcScreenOps callbacks = {0};
-
-    callbacks.active_window = lyrics_active_window_callback;
-    callbacks.refresh = lyrics_refresh_callback;
-    callbacks.refresh_window = lyrics_refresh_window_callback;
-    callbacks.scroll = lyrics_scroll_callback;
-    callbacks.switch_to = lyrics_switch_to_callback;
-    callbacks.resize = lyrics_resize_callback;
-    callbacks.window_timeout_callback = lyrics_window_timeout_callback;
-    callbacks.title = lyrics_title_callback;
-    callbacks.update = lyrics_update_callback;
-    callbacks.mouse_button_pressed = lyrics_mouse_button_pressed_callback;
-    callbacks.lockable = true;
-    callbacks.mergable = true;
-    callbacks.destroy = lyrics_destroy_callback;
-
-    return callbacks;
-}
-
 void
 native_lyrics_screen_init(NativeLyricsScreen *screen,
                           int32 start_x, int32 width,
@@ -284,7 +278,7 @@ native_lyrics_screen_init(NativeLyricsScreen *screen,
                           NcColor color, NcBorder border,
                           int32 lines_scrolled) {
     nc_lyrics_screen_init(&screen->screen,
-                          native_lyrics_callbacks(),
+                          lyrics_ops,
                           screen,
                           start_x,
                           width,
@@ -360,11 +354,6 @@ native_lyrics_screen_destroy(NativeLyricsScreen *screen) {
     screen->initialized = false;
 
     return;
-}
-
-NcScreen *
-native_lyrics_screen_base(NativeLyricsScreen *screen) {
-    return nc_lyrics_screen_base(&screen->screen);
 }
 
 NcWindow *
@@ -918,37 +907,6 @@ native_lyrics_buffer_highlight_sync_line(NcBuffer *buffer,
     return;
 }
 
-static NativeLyricsScreen *
-lyrics_from_screen(NcScreen *screen) {
-    return nc_screen_user(screen);
-}
-
-static NcWindow *
-lyrics_active_window_callback(NcScreen *screen) {
-    return native_lyrics_screen_window(lyrics_from_screen(screen));
-}
-
-static void
-lyrics_refresh_callback(NcScreen *screen) {
-    native_lyrics_display(lyrics_from_screen(screen));
-    return;
-}
-
-static void
-lyrics_refresh_window_callback(NcScreen *screen) {
-    native_lyrics_display(lyrics_from_screen(screen));
-    return;
-}
-
-static void
-lyrics_scroll_callback(NcScreen *screen, enum NcScroll where) {
-    NativeLyricsScreen *lyrics;
-
-    lyrics = lyrics_from_screen(screen);
-    nc_scrollpad_scroll(&lyrics->scrollpad, &lyrics->window, where);
-    return;
-}
-
 static void
 lyrics_switch_to_callback(NcScreen *screen) {
     char *title;
@@ -1193,14 +1151,6 @@ lyrics_mouse_button_pressed_callback(NcScreen *screen, MEVENT event) {
         native_lyrics_mouse_scroll(lyrics, NC_SCROLL_UP);
     }
 
-    return;
-}
-
-
-
-static void
-lyrics_destroy_callback(NcScreen *screen) {
-    native_lyrics_screen_destroy(lyrics_from_screen(screen));
     return;
 }
 

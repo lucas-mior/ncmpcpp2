@@ -46,11 +46,22 @@
 #define NC_SCREEN_IMPL_SCROLL_HEIGHT(screen) \
     nc_window_height(NC_SCREEN_IMPL_WINDOW(screen))
 #endif
+#if (defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD) \
+     || defined(NC_SCREEN_IMPL_SCROLLPAD_BASE)) \
+    && !defined(NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR)
+#if defined(NC_SCREEN_IMPL_SCROLLPAD_BASE)
+#define NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen) \
+    (&(screen)->NC_SCREEN_IMPL_SCROLLPAD_BASE)
+#else
+#define NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen) \
+    (&(screen)->NC_SCREEN_IMPL_BASE_FIELD)
+#endif
+#endif
 #if !defined(NC_SCREEN_IMPL_BASE_EXPR)
 #if defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD) \
     || defined(NC_SCREEN_IMPL_SCROLLPAD_BASE)
 #define NC_SCREEN_IMPL_BASE_EXPR(screen) \
-    nc_scrollpad_screen_base(&(screen)->NC_SCREEN_IMPL_BASE_FIELD)
+    nc_scrollpad_screen_base(NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen))
 #else
 #define NC_SCREEN_IMPL_BASE_EXPR(screen) \
     (&(screen)->NC_SCREEN_IMPL_BASE_FIELD)
@@ -84,26 +95,31 @@ NC_SCREEN_IMPL_BASE(NC_SCREEN_IMPL_TYPE *screen) {
     return NC_SCREEN_IMPL_BASE_EXPR(screen);
 }
 
-#if defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD) \
-    || defined(NC_SCREEN_IMPL_SCROLLPAD_BASE)
+#if (defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD) \
+     || defined(NC_SCREEN_IMPL_SCROLLPAD_BASE)) \
+    && !defined(NC_SCREEN_IMPL_NO_GEOMETRY_ACCESSORS)
 int32
 NC_SCREEN_IMPL_START_X(NC_SCREEN_IMPL_TYPE *screen) {
-    return nc_scrollpad_screen_start_x(&screen->NC_SCREEN_IMPL_BASE_FIELD);
+    return nc_scrollpad_screen_start_x(
+        NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen));
 }
 
 int32
 NC_SCREEN_IMPL_START_Y(NC_SCREEN_IMPL_TYPE *screen) {
-    return nc_scrollpad_screen_start_y(&screen->NC_SCREEN_IMPL_BASE_FIELD);
+    return nc_scrollpad_screen_start_y(
+        NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen));
 }
 
 int32
 NC_SCREEN_IMPL_WIDTH(NC_SCREEN_IMPL_TYPE *screen) {
-    return nc_scrollpad_screen_width(&screen->NC_SCREEN_IMPL_BASE_FIELD);
+    return nc_scrollpad_screen_width(
+        NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen));
 }
 
 int32
 NC_SCREEN_IMPL_HEIGHT(NC_SCREEN_IMPL_TYPE *screen) {
-    return nc_scrollpad_screen_height(&screen->NC_SCREEN_IMPL_BASE_FIELD);
+    return nc_scrollpad_screen_height(
+        NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen));
 }
 #endif
 
@@ -199,6 +215,9 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
 #if defined(NC_SCREEN_IMPL_RESIZE_CALLBACK)
     .resize = NC_SCREEN_IMPL_RESIZE_CALLBACK,
 #endif
+#if defined(NC_SCREEN_IMPL_WINDOW_TIMEOUT_CALLBACK)
+    .window_timeout_callback = NC_SCREEN_IMPL_WINDOW_TIMEOUT_CALLBACK,
+#endif
 #if defined(NC_SCREEN_IMPL_TITLE_LITERAL)
     .title = NC_SCREEN_IMPL_TITLE,
 #endif
@@ -234,6 +253,8 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
 #undef NC_SCREEN_IMPL_OPS
 #undef NC_SCREEN_IMPL_FROM_SCREEN
 #undef NC_SCREEN_IMPL_BASE_EXPR
+#undef NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR
+#undef NC_SCREEN_IMPL_NO_GEOMETRY_ACCESSORS
 #undef NC_SCREEN_IMPL_SCROLL_HEIGHT
 #undef NC_SCREEN_IMPL_SCROLL_MENU
 #undef NC_SCREEN_IMPL_WINDOW
@@ -244,6 +265,7 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
 #undef NC_SCREEN_IMPL_MOUSE_CALLBACK
 #undef NC_SCREEN_IMPL_UPDATE_CALLBACK
 #undef NC_SCREEN_IMPL_TITLE_CALLBACK
+#undef NC_SCREEN_IMPL_WINDOW_TIMEOUT_CALLBACK
 #undef NC_SCREEN_IMPL_TITLE_LITERAL
 #undef NC_SCREEN_IMPL_RESIZE_CALLBACK
 #undef NC_SCREEN_IMPL_SWITCH_TO_CALLBACK
