@@ -222,11 +222,12 @@ typedef struct NativePlaylistPriorityContext {
 #define NC_SCREEN_IMPL_PREFIX native_playlist
 #define NC_SCREEN_IMPL_PUBLIC_PREFIX native_playlist_screen
 #define NC_SCREEN_IMPL_BASE_FIELD screen
-#define NC_SCREEN_IMPL_BASE_EXPR(screen) \
-    nc_playlist_screen_base(&(screen)->screen)
-#define NC_SCREEN_IMPL_WINDOW(screen) native_playlist_screen_window(screen)
-#define NC_SCREEN_IMPL_MENU(screen) nc_playlist_screen_menu(&(screen)->screen)
-#define NC_SCREEN_IMPL_SCROLL_HEIGHT(screen) ((screen)->screen.main_height)
+#define NC_SCREEN_IMPL_BASE_EXPR(playlist) \
+    nc_playlist_screen_base(&(playlist)->screen)
+#define NC_SCREEN_IMPL_WINDOW(playlist) native_playlist_screen_window(playlist)
+#define NC_SCREEN_IMPL_MENU(playlist) \
+    nc_playlist_screen_menu(&(playlist)->screen)
+#define NC_SCREEN_IMPL_SCROLL_HEIGHT(playlist) ((playlist)->screen.main_height)
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK native_playlist_display
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK native_playlist_switch_to
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK native_playlist_resize
