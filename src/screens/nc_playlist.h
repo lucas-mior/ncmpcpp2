@@ -47,7 +47,7 @@ typedef struct NativePlaylistScreen {
 } NativePlaylistScreen;
 
 void nc_playlist_screen_init(NcPlaylistScreen *screen,
-                             NcScreenCallbacks callbacks, void *user,
+                             NcScreenOps callbacks, void *user,
                              NcMenu *menu, int32 start_x, int32 width,
                              int32 main_start_y, int32 main_height);
 void nc_playlist_screen_set_geometry(NcPlaylistScreen *screen,

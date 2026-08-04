@@ -7,19 +7,16 @@
 #include "screens/nc_help.h"
 #include "settings.h"
 
-static NcScreenCallbacks nc_help_callbacks(void);
+static NcScreenOps nc_help_callbacks(void);
 static NcWindow *nc_help_active_window(NcScreen *screen);
 static void nc_help_refresh(NcScreen *screen);
 static void nc_help_refresh_window(NcScreen *screen);
 static void nc_help_scroll(NcScreen *screen, enum NcScroll where);
 static void nc_help_switch_to(NcScreen *screen);
 static void nc_help_resize(NcScreen *screen);
-static int32 nc_help_window_timeout(NcScreen *screen);
 static char *nc_help_title(NcScreen *screen);
 static void nc_help_update(NcScreen *screen);
 static void nc_help_mouse_button_pressed(NcScreen *screen, MEVENT event);
-static bool nc_help_is_lockable(NcScreen *screen);
-static bool nc_help_is_mergable(NcScreen *screen);
 static void nc_help_destroy_callback(NcScreen *screen);
 static void nc_help_display(NcHelpScreen *help);
 static void nc_help_mouse_scroll(NcHelpScreen *help, enum NcScroll where);
@@ -187,9 +184,9 @@ nc_help_from_screen(NcScreen *screen) {
     return (NcHelpScreen *)screen;
 }
 
-static NcScreenCallbacks
+static NcScreenOps
 nc_help_callbacks(void) {
-    NcScreenCallbacks callbacks = {0};
+    NcScreenOps callbacks = {0};
 
     callbacks.active_window = nc_help_active_window;
     callbacks.refresh = nc_help_refresh;
@@ -197,12 +194,11 @@ nc_help_callbacks(void) {
     callbacks.scroll = nc_help_scroll;
     callbacks.switch_to = nc_help_switch_to;
     callbacks.resize = nc_help_resize;
-    callbacks.window_timeout = nc_help_window_timeout;
     callbacks.title = nc_help_title;
     callbacks.update = nc_help_update;
     callbacks.mouse_button_pressed = nc_help_mouse_button_pressed;
-    callbacks.is_lockable = nc_help_is_lockable;
-    callbacks.is_mergable = nc_help_is_mergable;
+    callbacks.lockable = true;
+    callbacks.mergable = true;
     callbacks.destroy = nc_help_destroy_callback;
     return callbacks;
 }
@@ -268,11 +264,6 @@ nc_help_resize(NcScreen *screen) {
     return;
 }
 
-static int32
-nc_help_window_timeout(NcScreen *screen) {
-    (void)screen;
-    return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
-}
 
 static char *
 nc_help_title(NcScreen *screen) {
@@ -301,17 +292,7 @@ nc_help_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     return;
 }
 
-static bool
-nc_help_is_lockable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
-static bool
-nc_help_is_mergable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
 static void
 nc_help_destroy_callback(NcScreen *screen) {

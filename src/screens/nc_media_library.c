@@ -29,8 +29,6 @@ static void native_library_resize(NcScreen *screen);
 static int32 native_library_window_timeout(NcScreen *screen);
 static char *native_library_title(NcScreen *screen);
 static void native_library_update(NcScreen *screen);
-static bool native_library_is_lockable(NcScreen *screen);
-static bool native_library_is_mergable(NcScreen *screen);
 static void native_library_destroy_callback(NcScreen *screen);
 static void native_library_print_buffer(NcWindow *window, NcBuffer *buffer);
 static bool native_library_copy_song_at(NativeMediaLibraryScreen *screen,
@@ -156,7 +154,7 @@ typedef struct NativeMediaLibrarySearchContext {
     NcmRegex *regex;
 } NativeMediaLibrarySearchContext;
 
-static NcScreenCallbacks native_library_callbacks = {
+static NcScreenOps native_library_callbacks = {
     .active_window = native_library_active_window,
     .refresh = native_library_refresh,
     .refresh_window = native_library_refresh_window,
@@ -164,12 +162,12 @@ static NcScreenCallbacks native_library_callbacks = {
     .list_change_finished = native_library_finish_list_change,
     .switch_to = native_library_switch_to,
     .resize = native_library_resize,
-    .window_timeout = native_library_window_timeout,
+    .window_timeout_callback = native_library_window_timeout,
     .title = native_library_title,
     .update = native_library_update,
     .mouse_button_pressed = native_library_mouse_button_pressed,
-    .is_lockable = native_library_is_lockable,
-    .is_mergable = native_library_is_mergable,
+    .lockable = true,
+    .mergable = true,
     .destroy = native_library_destroy_callback,
 };
 
@@ -345,7 +343,7 @@ native_media_library_screen_init(NativeMediaLibraryScreen *screen,
         nc_media_library_song_menu_base(&screen->songs),
         Config.centered_cursor);
 
-    nc_screen_init(&screen->screen, native_library_callbacks, screen,
+    nc_screen_init_ops(&screen->screen, native_library_callbacks, screen,
                    NC_SCREEN_TYPE_MEDIA_LIBRARY);
     native_library_update_menu_highlights(screen);
     native_library_layout(screen);
@@ -3427,17 +3425,7 @@ native_library_update(NcScreen *screen) {
     return;
 }
 
-static bool
-native_library_is_lockable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
-static bool
-native_library_is_mergable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
 static void
 native_library_destroy_callback(NcScreen *screen) {

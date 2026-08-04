@@ -15,7 +15,7 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
-static NcScreenCallbacks sort_dialog_callbacks(void);
+static NcScreenOps sort_dialog_callbacks(void);
 static NcWindow *sort_dialog_active_window_callback(NcScreen *screen);
 static void sort_dialog_refresh_callback(NcScreen *screen);
 static void sort_dialog_draw_row(NcMenu *menu, NcWindow *window,
@@ -27,12 +27,9 @@ static bool sort_dialog_can_run_current_callback(NcScreen *screen);
 static bool sort_dialog_run_current_callback(NcScreen *screen);
 static void sort_dialog_switch_to_callback(NcScreen *screen);
 static void sort_dialog_resize_callback(NcScreen *screen);
-static int32 sort_dialog_timeout_callback(NcScreen *screen);
 static char *sort_dialog_title_callback(NcScreen *screen);
 static void sort_dialog_update_callback(NcScreen *screen);
 static void sort_dialog_mouse_callback(NcScreen *screen, MEVENT event);
-static bool sort_dialog_lockable_callback(NcScreen *screen);
-static bool sort_dialog_mergable_callback(NcScreen *screen);
 static void sort_dialog_destroy_callback(NcScreen *screen);
 static bool sort_dialog_position_is_sort_key(NcMenu *menu, int32 pos);
 static void sort_dialog_show_move_hint(void *user);
@@ -49,7 +46,7 @@ native_sort_playlist_dialog_init(NativeSortPlaylistDialog *dialog,
                                  int32 width, int32 height,
                                  NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks display_callbacks = {0};
-    NcScreenCallbacks callbacks;
+    NcScreenOps callbacks;
     NcMenu *menu;
 
     callbacks = sort_dialog_callbacks();
@@ -74,7 +71,7 @@ native_sort_playlist_dialog_init(NativeSortPlaylistDialog *dialog,
     dialog->start_position = 0;
     dialog->ignore_leading_the = false;
     dialog->ready = false;
-    nc_screen_init(&dialog->screen, callbacks, dialog,
+    nc_screen_init_ops(&dialog->screen, callbacks, dialog,
                    NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
     native_sort_playlist_dialog_populate_defaults(dialog);
     return;
@@ -365,9 +362,9 @@ sort_dialog_from_screen(NcScreen *screen) {
     return nc_screen_user(screen);
 }
 
-static NcScreenCallbacks
+static NcScreenOps
 sort_dialog_callbacks(void) {
-    NcScreenCallbacks callbacks = {0};
+    NcScreenOps callbacks = {0};
 
     callbacks.active_window = sort_dialog_active_window_callback;
     callbacks.refresh = sort_dialog_refresh_callback;
@@ -377,12 +374,11 @@ sort_dialog_callbacks(void) {
     callbacks.run_current = sort_dialog_run_current_callback;
     callbacks.switch_to = sort_dialog_switch_to_callback;
     callbacks.resize = sort_dialog_resize_callback;
-    callbacks.window_timeout = sort_dialog_timeout_callback;
     callbacks.title = sort_dialog_title_callback;
     callbacks.update = sort_dialog_update_callback;
     callbacks.mouse_button_pressed = sort_dialog_mouse_callback;
-    callbacks.is_lockable = sort_dialog_lockable_callback;
-    callbacks.is_mergable = sort_dialog_mergable_callback;
+    callbacks.lockable = false;
+    callbacks.mergable = false;
     callbacks.destroy = sort_dialog_destroy_callback;
     return callbacks;
 }
@@ -466,11 +462,6 @@ sort_dialog_resize_callback(NcScreen *screen) {
     return;
 }
 
-static int32
-sort_dialog_timeout_callback(NcScreen *screen) {
-    (void)screen;
-    return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
-}
 
 static char *
 sort_dialog_title_callback(NcScreen *screen) {
@@ -511,17 +502,7 @@ sort_dialog_mouse_callback(NcScreen *screen, MEVENT event) {
     return;
 }
 
-static bool
-sort_dialog_lockable_callback(NcScreen *screen) {
-    (void)screen;
-    return false;
-}
 
-static bool
-sort_dialog_mergable_callback(NcScreen *screen) {
-    (void)screen;
-    return false;
-}
 
 static void
 sort_dialog_destroy_callback(NcScreen *screen) {

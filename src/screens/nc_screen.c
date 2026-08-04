@@ -25,6 +25,8 @@ static void nc_screen_callbacks_mouse_button_pressed(NcScreen *screen,
 static bool nc_screen_callbacks_is_lockable(NcScreen *screen);
 static bool nc_screen_callbacks_is_mergable(NcScreen *screen);
 static void nc_screen_callbacks_destroy(NcScreen *screen);
+static bool nc_screen_run_current_is_available(NcScreen *screen);
+static void nc_screen_ops_apply_defaults(NcScreenOps *ops);
 static int32 nc_screen_registry_index_of(NcScreenRegistry *registry,
                                          NcScreen *screen);
 static bool nc_screen_registry_has_type(NcScreenRegistry *registry,
@@ -44,12 +46,12 @@ const NcScreenOps nc_screen_default_ops = {
     .run_current = nc_screen_default_run_current,
     .switch_to = nc_screen_noop_switch_to,
     .resize = nc_screen_noop_resize,
-    .window_timeout = nc_screen_default_window_timeout,
+    .window_timeout = NC_SCREEN_DEFAULT_WINDOW_TIMEOUT,
     .title = nc_screen_default_title,
     .update = nc_screen_noop_update,
     .mouse_button_pressed = nc_screen_noop_mouse_button_pressed,
-    .is_lockable = nc_screen_default_is_lockable,
-    .is_mergable = nc_screen_default_is_mergable,
+    .lockable = false,
+    .mergable = false,
     .destroy = nc_screen_noop_destroy,
 };
 
@@ -63,12 +65,12 @@ static const NcScreenOps nc_screen_callbacks_ops = {
     .run_current = nc_screen_callbacks_run_current,
     .switch_to = nc_screen_callbacks_switch_to,
     .resize = nc_screen_callbacks_resize,
-    .window_timeout = nc_screen_callbacks_window_timeout,
+    .window_timeout_callback = nc_screen_callbacks_window_timeout,
     .title = nc_screen_callbacks_title,
     .update = nc_screen_callbacks_update,
     .mouse_button_pressed = nc_screen_callbacks_mouse_button_pressed,
-    .is_lockable = nc_screen_callbacks_is_lockable,
-    .is_mergable = nc_screen_callbacks_is_mergable,
+    .is_lockable_callback = nc_screen_callbacks_is_lockable,
+    .is_mergable_callback = nc_screen_callbacks_is_mergable,
     .destroy = nc_screen_callbacks_destroy,
 };
 
@@ -127,12 +129,6 @@ nc_screen_noop_resize(NcScreen *screen) {
     return;
 }
 
-int32
-nc_screen_default_window_timeout(NcScreen *screen) {
-    (void)screen;
-    return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
-}
-
 char *
 nc_screen_default_title(NcScreen *screen) {
     (void)screen;
@@ -152,18 +148,6 @@ nc_screen_noop_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     return;
 }
 
-bool
-nc_screen_default_is_lockable(NcScreen *screen) {
-    (void)screen;
-    return false;
-}
-
-bool
-nc_screen_default_is_mergable(NcScreen *screen) {
-    (void)screen;
-    return false;
-}
-
 void
 nc_screen_noop_destroy(NcScreen *screen) {
     (void)screen;
@@ -173,21 +157,20 @@ nc_screen_noop_destroy(NcScreen *screen) {
 void
 nc_screen_init(NcScreen *screen, NcScreenCallbacks callbacks,
                void *user, int32 type) {
-    nc_screen_init_ops(screen, &nc_screen_callbacks_ops, user, type);
+    nc_screen_init_ops(screen, nc_screen_callbacks_ops, user, type);
     screen->callbacks = callbacks;
     return;
 }
 
 void
-nc_screen_init_ops(NcScreen *screen, const NcScreenOps *ops,
+nc_screen_init_ops(NcScreen *screen, NcScreenOps ops,
                    void *user, int32 type) {
     NcScreenCallbacks callbacks = {0};
 
-    if (ops == NULL) {
-        ops = &nc_screen_default_ops;
-    }
+    nc_screen_ops_apply_defaults(&ops);
     screen->callbacks = callbacks;
-    screen->ops = ops;
+    screen->ops_storage = ops;
+    screen->ops = &screen->ops_storage;
     screen->user = user;
     screen->type = type;
     screen->has_to_be_resized = false;
@@ -256,7 +239,10 @@ nc_screen_resize(NcScreen *screen) {
 
 int32
 nc_screen_window_timeout(NcScreen *screen) {
-    return screen->ops->window_timeout(screen);
+    if (screen->ops->window_timeout_callback) {
+        return screen->ops->window_timeout_callback(screen);
+    }
+    return screen->ops->window_timeout;
 }
 
 char *
@@ -284,12 +270,18 @@ nc_screen_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 
 bool
 nc_screen_is_lockable(NcScreen *screen) {
-    return screen->ops->is_lockable(screen);
+    if (screen->ops->is_lockable_callback) {
+        return screen->ops->is_lockable_callback(screen);
+    }
+    return screen->ops->lockable;
 }
 
 bool
 nc_screen_is_mergable(NcScreen *screen) {
-    return screen->ops->is_mergable(screen);
+    if (screen->ops->is_mergable_callback) {
+        return screen->ops->is_mergable_callback(screen);
+    }
+    return screen->ops->mergable;
 }
 
 bool
@@ -751,7 +743,7 @@ nc_screen_callbacks_resize(NcScreen *screen) {
 static int32
 nc_screen_callbacks_window_timeout(NcScreen *screen) {
     if (screen->callbacks.window_timeout == NULL) {
-        return nc_screen_default_window_timeout(screen);
+        return screen->ops->window_timeout;
     }
     return screen->callbacks.window_timeout(screen);
 }
@@ -788,7 +780,7 @@ nc_screen_callbacks_mouse_button_pressed(NcScreen *screen,
 static bool
 nc_screen_callbacks_is_lockable(NcScreen *screen) {
     if (screen->callbacks.is_lockable == NULL) {
-        return nc_screen_default_is_lockable(screen);
+        return screen->ops->lockable;
     }
     return screen->callbacks.is_lockable(screen);
 }
@@ -796,7 +788,7 @@ nc_screen_callbacks_is_lockable(NcScreen *screen) {
 static bool
 nc_screen_callbacks_is_mergable(NcScreen *screen) {
     if (screen->callbacks.is_mergable == NULL) {
-        return nc_screen_default_is_mergable(screen);
+        return screen->ops->mergable;
     }
     return screen->callbacks.is_mergable(screen);
 }
@@ -808,6 +800,61 @@ nc_screen_callbacks_destroy(NcScreen *screen) {
         return;
     }
     screen->callbacks.destroy(screen);
+    return;
+}
+
+static bool
+nc_screen_run_current_is_available(NcScreen *screen) {
+    return screen->ops->run_current != nc_screen_default_run_current;
+}
+
+static void
+nc_screen_ops_apply_defaults(NcScreenOps *ops) {
+    if (ops->active_window == NULL) {
+        ops->active_window = nc_screen_default_ops.active_window;
+    }
+    if (ops->refresh == NULL) {
+        ops->refresh = nc_screen_default_ops.refresh;
+    }
+    if (ops->refresh_window == NULL) {
+        ops->refresh_window = nc_screen_default_ops.refresh_window;
+    }
+    if (ops->scroll == NULL) {
+        ops->scroll = nc_screen_default_ops.scroll;
+    }
+    if (ops->list_change_finished == NULL) {
+        ops->list_change_finished = nc_screen_default_ops.list_change_finished;
+    }
+    if ((ops->can_run_current == NULL) && (ops->run_current != NULL)) {
+        ops->can_run_current = nc_screen_run_current_is_available;
+    }
+    if (ops->can_run_current == NULL) {
+        ops->can_run_current = nc_screen_default_ops.can_run_current;
+    }
+    if (ops->run_current == NULL) {
+        ops->run_current = nc_screen_default_ops.run_current;
+    }
+    if (ops->switch_to == NULL) {
+        ops->switch_to = nc_screen_default_ops.switch_to;
+    }
+    if (ops->resize == NULL) {
+        ops->resize = nc_screen_default_ops.resize;
+    }
+    if (ops->title == NULL) {
+        ops->title = nc_screen_default_ops.title;
+    }
+    if (ops->update == NULL) {
+        ops->update = nc_screen_default_ops.update;
+    }
+    if (ops->mouse_button_pressed == NULL) {
+        ops->mouse_button_pressed = nc_screen_default_ops.mouse_button_pressed;
+    }
+    if (ops->destroy == NULL) {
+        ops->destroy = nc_screen_default_ops.destroy;
+    }
+    if (ops->window_timeout <= 0) {
+        ops->window_timeout = nc_screen_default_ops.window_timeout;
+    }
     return;
 }
 

@@ -62,7 +62,7 @@ typedef struct NativeLyricsScreen {
 } NativeLyricsScreen;
 
 void nc_lyrics_screen_init(NcLyricsScreen *screen,
-                           NcScreenCallbacks callbacks, void *user,
+                           NcScreenOps callbacks, void *user,
                            int32 start_x, int32 width,
                            int32 main_start_y, int32 main_height);
 void nc_lyrics_screen_set_geometry(NcLyricsScreen *screen,

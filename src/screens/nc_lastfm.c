@@ -34,13 +34,10 @@ static void lastfm_refresh_window_callback(NcScreen *screen);
 static void lastfm_scroll_callback(NcScreen *screen, enum NcScroll where);
 static void lastfm_switch_to_callback(NcScreen *screen);
 static void lastfm_resize_callback(NcScreen *screen);
-static int32 lastfm_window_timeout_callback(NcScreen *screen);
 static char *lastfm_title_callback(NcScreen *screen);
 static void lastfm_update_callback(NcScreen *screen);
 static void lastfm_mouse_button_pressed_callback(NcScreen *screen,
                                                  MEVENT event);
-static bool lastfm_is_lockable_callback(NcScreen *screen);
-static bool lastfm_is_mergable_callback(NcScreen *screen);
 static void lastfm_destroy_callback(NcScreen *screen);
 static bool native_lastfm_set_title(NativeLastfmScreen *screen,
                                     char *title, int32 title_len);
@@ -71,7 +68,7 @@ static void native_lastfm_flush(NativeLastfmScreen *screen);
 
 void
 nc_lastfm_screen_init(NcLastfmScreen *screen,
-                      NcScreenCallbacks callbacks, void *user,
+                      NcScreenOps callbacks, void *user,
                       int32 start_x, int32 width,
                       int32 main_start_y, int32 main_height) {
     nc_scrollpad_screen_init(&screen->scrollpad_screen,
@@ -120,9 +117,9 @@ nc_lastfm_screen_height(NcLastfmScreen *screen) {
     return nc_scrollpad_screen_height(&screen->scrollpad_screen);
 }
 
-static NcScreenCallbacks
+static NcScreenOps
 native_lastfm_callbacks(void) {
-    NcScreenCallbacks callbacks = {0};
+    NcScreenOps callbacks = {0};
 
     callbacks.active_window = lastfm_active_window_callback;
     callbacks.refresh = lastfm_refresh_callback;
@@ -130,12 +127,11 @@ native_lastfm_callbacks(void) {
     callbacks.scroll = lastfm_scroll_callback;
     callbacks.switch_to = lastfm_switch_to_callback;
     callbacks.resize = lastfm_resize_callback;
-    callbacks.window_timeout = lastfm_window_timeout_callback;
     callbacks.title = lastfm_title_callback;
     callbacks.update = lastfm_update_callback;
     callbacks.mouse_button_pressed = lastfm_mouse_button_pressed_callback;
-    callbacks.is_lockable = lastfm_is_lockable_callback;
-    callbacks.is_mergable = lastfm_is_mergable_callback;
+    callbacks.lockable = true;
+    callbacks.mergable = true;
     callbacks.destroy = lastfm_destroy_callback;
 
     return callbacks;
@@ -464,11 +460,6 @@ lastfm_resize_callback(NcScreen *screen) {
     return;
 }
 
-static int32
-lastfm_window_timeout_callback(NcScreen *screen) {
-    (void)screen;
-    return 500;
-}
 
 static char *
 lastfm_title_callback(NcScreen *screen) {
@@ -493,17 +484,7 @@ lastfm_mouse_button_pressed_callback(NcScreen *screen, MEVENT event) {
     return;
 }
 
-static bool
-lastfm_is_lockable_callback(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
-static bool
-lastfm_is_mergable_callback(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
 static void
 lastfm_destroy_callback(NcScreen *screen) {

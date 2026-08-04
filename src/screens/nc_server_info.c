@@ -5,20 +5,17 @@
 
 #include "screens/nc_server_info.h"
 
-static NcScreenCallbacks nc_server_info_callbacks(void);
+static NcScreenOps nc_server_info_callbacks(void);
 static NcWindow *nc_server_info_active_window(NcScreen *screen);
 static void nc_server_info_refresh(NcScreen *screen);
 static void nc_server_info_refresh_window(NcScreen *screen);
 static void nc_server_info_scroll(NcScreen *screen, enum NcScroll where);
 static void nc_server_info_switch_to(NcScreen *screen);
 static void nc_server_info_resize(NcScreen *screen);
-static int32 nc_server_info_window_timeout(NcScreen *screen);
 static char *nc_server_info_title(NcScreen *screen);
 static void nc_server_info_update(NcScreen *screen);
 static void nc_server_info_mouse_button_pressed(NcScreen *screen,
                                                 MEVENT event);
-static bool nc_server_info_is_lockable(NcScreen *screen);
-static bool nc_server_info_is_mergable(NcScreen *screen);
 static void nc_server_info_destroy_callback(NcScreen *screen);
 static void nc_server_info_display(NcServerInfoScreen *server_info);
 
@@ -104,9 +101,9 @@ nc_server_info_from_screen(NcScreen *screen) {
     return (NcServerInfoScreen *)screen;
 }
 
-static NcScreenCallbacks
+static NcScreenOps
 nc_server_info_callbacks(void) {
-    NcScreenCallbacks callbacks = {0};
+    NcScreenOps callbacks = {0};
 
     callbacks.active_window = nc_server_info_active_window;
     callbacks.refresh = nc_server_info_refresh;
@@ -114,12 +111,11 @@ nc_server_info_callbacks(void) {
     callbacks.scroll = nc_server_info_scroll;
     callbacks.switch_to = nc_server_info_switch_to;
     callbacks.resize = nc_server_info_resize;
-    callbacks.window_timeout = nc_server_info_window_timeout;
     callbacks.title = nc_server_info_title;
     callbacks.update = nc_server_info_update;
     callbacks.mouse_button_pressed = nc_server_info_mouse_button_pressed;
-    callbacks.is_lockable = nc_server_info_is_lockable;
-    callbacks.is_mergable = nc_server_info_is_mergable;
+    callbacks.lockable = false;
+    callbacks.mergable = false;
     callbacks.destroy = nc_server_info_destroy_callback;
     return callbacks;
 }
@@ -191,11 +187,6 @@ nc_server_info_resize(NcScreen *screen) {
     return;
 }
 
-static int32
-nc_server_info_window_timeout(NcScreen *screen) {
-    (void)screen;
-    return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
-}
 
 static char *
 nc_server_info_title(NcScreen *screen) {
@@ -252,17 +243,7 @@ nc_server_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     return;
 }
 
-static bool
-nc_server_info_is_lockable(NcScreen *screen) {
-    (void)screen;
-    return false;
-}
 
-static bool
-nc_server_info_is_mergable(NcScreen *screen) {
-    (void)screen;
-    return false;
-}
 
 static void
 nc_server_info_destroy_callback(NcScreen *screen) {

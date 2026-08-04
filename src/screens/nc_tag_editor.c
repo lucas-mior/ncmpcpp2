@@ -66,8 +66,6 @@ static bool tag_editor_reload_songs_from_mpd(NativeTagEditorScreen *screen,
                                              NcmMpdClient *client,
                                              NcmError *error);
 static void tag_editor_mouse_callback(NcScreen *screen, MEVENT event);
-static bool tag_editor_is_lockable(NcScreen *screen);
-static bool tag_editor_is_mergable(NcScreen *screen);
 static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_scroll(NativeTagEditorScreen *screen,
                                     enum NcScroll where);
@@ -286,7 +284,7 @@ static bool tag_editor_confirm(NativeTagEditorScreen *screen,
 static bool tag_editor_strings_equal(char *left, int32 left_len,
                                      char *right, int32 right_len);
 
-static NcScreenCallbacks tag_editor_callbacks = {
+static NcScreenOps tag_editor_callbacks = {
     .active_window = tag_editor_active_window,
     .refresh = tag_editor_refresh,
     .refresh_window = tag_editor_refresh_window,
@@ -298,8 +296,8 @@ static NcScreenCallbacks tag_editor_callbacks = {
     .title = tag_editor_title,
     .update = tag_editor_update,
     .mouse_button_pressed = tag_editor_mouse_callback,
-    .is_lockable = tag_editor_is_lockable,
-    .is_mergable = tag_editor_is_mergable,
+    .lockable = true,
+    .mergable = true,
     .destroy = tag_editor_destroy_callback,
 };
 
@@ -399,7 +397,7 @@ native_tag_editor_screen_init(NativeTagEditorScreen *screen,
     tag_editor_layout(screen);
     tag_editor_configure_menus(screen);
     tag_editor_observe_current_directory(screen);
-    nc_screen_init(&screen->screen, tag_editor_callbacks, screen,
+    nc_screen_init_ops(&screen->screen, tag_editor_callbacks, screen,
                    NC_SCREEN_TYPE_TAG_EDITOR);
     (void)native_tag_editor_screen_prepare_parser_rows(
         screen, NATIVE_TAG_EDITOR_PARSER_NONE, NULL, 0);
@@ -2593,17 +2591,7 @@ tag_editor_finish_tag_type_change(NativeTagEditorScreen *screen,
     return;
 }
 
-static bool
-tag_editor_is_lockable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
-static bool
-tag_editor_is_mergable(NcScreen *screen) {
-    (void)screen;
-    return true;
-}
 
 static void
 tag_editor_destroy_callback(NcScreen *screen) {
