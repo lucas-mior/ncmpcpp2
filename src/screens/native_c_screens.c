@@ -150,7 +150,6 @@ static struct NativeSongInfoScreen song_info_screen;
     X(NATIVE_PROMPT_RESULT_ACCEPTED)
 #include "cbase/xenums.c"
 
-static enum ScreenType native_screen_type_from_native_type(int32 type);
 static void native_request_registered_resize(int32 type);
 static NcBorder native_no_border(void);
 static bool native_register_screen(NcScreen *screen);
@@ -1632,56 +1631,7 @@ native_c_screens_current_type(void) {
     if ((screen = app_controller_current_screen()) == NULL) {
         return NCM_SCREEN_TYPE_UNKNOWN;
     }
-    return native_screen_type_from_native_type(nc_screen_type(screen));
-}
-
-static enum ScreenType
-native_screen_type_from_native_type(int32 type) {
-    switch (type) {
-    case NC_SCREEN_TYPE_BROWSER:
-        return NCM_SCREEN_TYPE_BROWSER;
-    case NC_SCREEN_TYPE_HELP:
-        return NCM_SCREEN_TYPE_HELP;
-    case NC_SCREEN_TYPE_LASTFM:
-        return NCM_SCREEN_TYPE_LASTFM;
-    case NC_SCREEN_TYPE_LYRICS:
-        return NCM_SCREEN_TYPE_LYRICS;
-    case NC_SCREEN_TYPE_MEDIA_LIBRARY:
-        return NCM_SCREEN_TYPE_MEDIA_LIBRARY;
-#if defined(ENABLE_OUTPUTS)
-    case NC_SCREEN_TYPE_OUTPUTS:
-        return NCM_SCREEN_TYPE_OUTPUTS;
-#endif
-    case NC_SCREEN_TYPE_PLAYLIST:
-        return NCM_SCREEN_TYPE_PLAYLIST;
-    case NC_SCREEN_TYPE_PLAYLIST_EDITOR:
-        return NCM_SCREEN_TYPE_PLAYLIST_EDITOR;
-    case NC_SCREEN_TYPE_SEARCH_ENGINE:
-        return NCM_SCREEN_TYPE_SEARCH_ENGINE;
-    case NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER:
-        return NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER;
-    case NC_SCREEN_TYPE_SERVER_INFO:
-        return NCM_SCREEN_TYPE_SERVER_INFO;
-    case NC_SCREEN_TYPE_SONG_INFO:
-        return NCM_SCREEN_TYPE_SONG_INFO;
-    case NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
-        return NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG;
-#if defined(HAVE_TAGLIB_H)
-    case NC_SCREEN_TYPE_TAG_EDITOR:
-        return NCM_SCREEN_TYPE_TAG_EDITOR;
-    case NC_SCREEN_TYPE_TINY_TAG_EDITOR:
-        return NCM_SCREEN_TYPE_TINY_TAG_EDITOR;
-#endif
-#if defined(ENABLE_VISUALIZER)
-    case NC_SCREEN_TYPE_VISUALIZER:
-        return NCM_SCREEN_TYPE_VISUALIZER;
-#endif
-    case NC_SCREEN_TYPE_UNKNOWN:
-        break;
-    default:
-        break;
-    }
-    return NCM_SCREEN_TYPE_UNKNOWN;
+    return screen_type_from_native_type(nc_screen_type(screen));
 }
 
 static void
