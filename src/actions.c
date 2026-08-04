@@ -24,6 +24,7 @@
 #include "screen_actions.h"
 #include "screens/native_c_screens.h"
 #include "screens/nc_search_engine.h"
+#include "screens/screen_switcher.h"
 #include "screens/screen_type.h"
 #include "settings.h"
 #include "status.h"
@@ -1451,8 +1452,12 @@ action_runtime_switch_to_next_screen(bool reverse) {
             native_c_screen_selected_items_adder());
     }
     if (Config.screen_switcher_previous) {
-        return app_controller_switch_to_screen(
-            app_controller_previous_screen());
+        current = app_controller_previous_screen();
+        if (current == NULL) {
+            return false;
+        }
+        return nc_screen_switcher_switch_to(
+            current, nc_screen_has_to_be_resized(current));
     }
 
     sequence = &Config.screen_sequence;
