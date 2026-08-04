@@ -12,6 +12,7 @@
 #include "settings.h"
 #include "status.h"
 #include "statusbar.h"
+#include "ui_state.h"
 
 static void playlist_scroll_lines(NcPlaylistScreen *screen,
                                   enum NcScroll where);
@@ -1026,9 +1027,9 @@ native_playlist_resize(NcScreen *screen) {
     params = app_controller_screen_resize_params(screen, true);
     native_playlist_screen_set_geometry(playlist, params.x_offset,
                                         params.width,
-                                        playlist->screen.main_start_y,
-                                        playlist->screen.main_height);
-    nc_screen_set_has_to_be_resized(screen, false);
+                                        ui_state_main_start_y(),
+                                        ui_state_main_height());
+    nc_screen_clear_resize_request(screen);
     return;
 }
 
