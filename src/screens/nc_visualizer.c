@@ -82,19 +82,11 @@ static int32 visualizer_smooth_flipped_char_lens[
 };
 #endif
 
-static NcWindow *visualizer_active_window_callback(NcScreen *screen);
-static void visualizer_refresh_callback(NcScreen *screen);
-static void visualizer_refresh_window_callback(NcScreen *screen);
-static void visualizer_scroll_callback(NcScreen *screen,
-                                       enum NcScroll where);
+static void visualizer_refresh_screen(NativeVisualizerScreen *screen);
 static void visualizer_switch_to_callback(NcScreen *screen);
 static void visualizer_resize_callback(NcScreen *screen);
 static int32 visualizer_window_timeout_callback(NcScreen *screen);
-static char *visualizer_title_callback(NcScreen *screen);
 static void visualizer_update_callback(NcScreen *screen);
-static void visualizer_mouse_button_pressed_callback(NcScreen *screen,
-                                                     MEVENT event);
-static void visualizer_destroy_callback(NcScreen *screen);
 static enum NativeVisualizerType native_visualizer_next_type(
     enum NativeVisualizerType type);
 static int32 visualizer_system_open_fifo(void *user, char *location,
@@ -120,26 +112,23 @@ static void visualizer_reset_sample_clock(NativeVisualizerScreen *screen);
 static void visualizer_fft_destroy(NativeVisualizerScreen *screen);
 #endif
 
-static NcScreenOps
-native_visualizer_callbacks(void) {
-    NcScreenOps callbacks = {0};
-
-    callbacks.active_window = visualizer_active_window_callback;
-    callbacks.refresh = visualizer_refresh_callback;
-    callbacks.refresh_window = visualizer_refresh_window_callback;
-    callbacks.scroll = visualizer_scroll_callback;
-    callbacks.switch_to = visualizer_switch_to_callback;
-    callbacks.resize = visualizer_resize_callback;
-    callbacks.window_timeout_callback = visualizer_window_timeout_callback;
-    callbacks.title = visualizer_title_callback;
-    callbacks.update = visualizer_update_callback;
-    callbacks.mouse_button_pressed = visualizer_mouse_button_pressed_callback;
-    callbacks.lockable = true;
-    callbacks.mergable = true;
-    callbacks.destroy = visualizer_destroy_callback;
-    return callbacks;
-}
-
+#define NC_SCREEN_IMPL_TYPE NativeVisualizerScreen
+#define NC_SCREEN_IMPL_PREFIX visualizer
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX native_visualizer_screen
+#define NC_SCREEN_IMPL_BASE_FIELD screen
+#define NC_SCREEN_IMPL_WINDOW_FIELD window
+#define NC_SCREEN_IMPL_SCROLL_CALLBACK nc_screen_noop_scroll
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK visualizer_refresh_screen
+#define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK visualizer_switch_to_callback
+#define NC_SCREEN_IMPL_RESIZE_CALLBACK visualizer_resize_callback
+#define NC_SCREEN_IMPL_WINDOW_TIMEOUT_CALLBACK \
+    visualizer_window_timeout_callback
+#define NC_SCREEN_IMPL_TITLE_LITERAL NATIVE_VISUALIZER_TITLE
+#define NC_SCREEN_IMPL_UPDATE_CALLBACK visualizer_update_callback
+#define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK native_visualizer_screen_destroy
+#define NC_SCREEN_IMPL_LOCKABLE true
+#define NC_SCREEN_IMPL_MERGABLE true
+#include "screens/nc_screen_impl_template.c"
 NativeVisualizerDataSourceHooks
 native_visualizer_data_source_system_hooks(NcmMpdClient *client) {
     NativeVisualizerDataSourceHooks hooks = {0};
@@ -754,9 +743,9 @@ native_visualizer_screen_init(NativeVisualizerScreen *screen,
 #endif
 
     nc_screen_init_ops(&screen->screen,
-                   native_visualizer_callbacks(),
-                   screen,
-                   NC_SCREEN_TYPE_VISUALIZER);
+                       visualizer_ops,
+                       screen,
+                       NC_SCREEN_TYPE_VISUALIZER);
     nc_window_init(&screen->window,
                    start_x,
                    start_y,
@@ -841,11 +830,6 @@ native_visualizer_screen_destroy(NativeVisualizerScreen *screen) {
     screen->reset_output = false;
     screen->initialized = false;
     return;
-}
-
-NcScreen *
-native_visualizer_screen_base(NativeVisualizerScreen *screen) {
-    return &screen->screen;
 }
 
 NcWindow *
@@ -2175,34 +2159,9 @@ visualizer_prepare_drawing(NativeVisualizerScreen *screen) {
     return;
 }
 
-static NativeVisualizerScreen *
-visualizer_from_screen(NcScreen *screen) {
-    return nc_screen_user(screen);
-}
-
-static NcWindow *
-visualizer_active_window_callback(NcScreen *screen) {
-    return native_visualizer_screen_window(visualizer_from_screen(screen));
-}
-
 static void
-visualizer_refresh_callback(NcScreen *screen) {
-    nc_window_display(native_visualizer_screen_window(
-        visualizer_from_screen(screen)));
-    return;
-}
-
-static void
-visualizer_refresh_window_callback(NcScreen *screen) {
-    nc_window_display(native_visualizer_screen_window(
-        visualizer_from_screen(screen)));
-    return;
-}
-
-static void
-visualizer_scroll_callback(NcScreen *screen, enum NcScroll where) {
-    (void)screen;
-    (void)where;
+visualizer_refresh_screen(NativeVisualizerScreen *screen) {
+    nc_window_display(native_visualizer_screen_window(screen));
     return;
 }
 
@@ -2254,12 +2213,6 @@ visualizer_window_timeout_callback(NcScreen *screen) {
     return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
 }
 
-static char *
-visualizer_title_callback(NcScreen *screen) {
-    (void)screen;
-    return (char *)NATIVE_VISUALIZER_TITLE;
-}
-
 static void
 visualizer_update_callback(NcScreen *screen) {
     NativeVisualizerScreen *visualizer;
@@ -2289,21 +2242,6 @@ visualizer_update_callback(NcScreen *screen) {
         return;
     }
     nc_window_refresh(&visualizer->window);
-    return;
-}
-
-static void
-visualizer_mouse_button_pressed_callback(NcScreen *screen, MEVENT event) {
-    (void)screen;
-    (void)event;
-    return;
-}
-
-
-
-static void
-visualizer_destroy_callback(NcScreen *screen) {
-    native_visualizer_screen_destroy(visualizer_from_screen(screen));
     return;
 }
 
