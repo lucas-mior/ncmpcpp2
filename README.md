@@ -7,7 +7,7 @@ This is a fork of ncmpcpp. The goals are:
 - ~~Remove dependency on external C++ utility libraries.~~
 - ~~Remove the remaining C++ implementation and build as C-only.~~
 - ~~Remove boost~~
-- ~~Convert the project to C23.~~
+- ~~Convert the project to C11.~~
 - Fix the bugs reported in original repo.
 - ~~Fix the lyrics fetcher~~
 - ~~Add more lyrics fetchers~~
@@ -56,7 +56,7 @@ The simplest way to compile this package is:
   1. `cd` to the directory containing the package's source code.
 
   2. Install the build dependencies and their pkg-config files:
-     * C23-capable C compiler
+     * C11-capable C compiler
      * pkg-config
      * ncursesw
      * readline
@@ -67,7 +67,7 @@ The simplest way to compile this package is:
 
   3. Run `./build.sh build` for an optimized build, or
      `./build.sh debug` for a debug build. The binary is written to
-     `build/ncmpcpp`.
+     `bin/ncmpcpp2`.
 
   4. Run `sudo ./build.sh install` to install the program, docs, and man page.
      Use `sudo env PREFIX=/some/path ./build.sh install` for a non-default

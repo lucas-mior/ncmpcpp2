@@ -21,7 +21,6 @@ exe="bin/$program"
 mkdir -p "$(dirname "$exe")"
 
 CPPFLAGS="$CPPFLAGS -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=700"
-CFLAGS="$CFLAGS -std=c11"
 CFLAGS="$CFLAGS -Wfatal-errors"
 CFLAGS="$CFLAGS -Wextra -Wall"
 CFLAGS="$CFLAGS -Wno-format-pedantic"
@@ -96,14 +95,16 @@ pkg_config() {
 detect_c_standard() {
     compiler=$1
 
-    for standard in -std=c23 -std=c2x; do
-        if printf 'int main(void) { return 0; }\n' \
-            | run_command "$compiler" "$standard" -c \
-                -o /dev/null - >/dev/null 2>&1; then
-            printf '%s\n' "$standard"
-            return 0
-        fi
-    done
+    # Keep this as the only -std= flag emitted by build.sh.
+    # ./build.sh test should show exactly one -std=c11 in each compile line.
+    standard=-std=c11
+
+    if printf 'int main(void) { return 0; }\n' \
+        | run_command "$compiler" "$standard" -c \
+            -o /dev/null - >/dev/null 2>&1; then
+        printf '%s\n' "$standard"
+        return 0
+    fi
 
     return 1
 }
@@ -165,7 +166,7 @@ build_binary() {
     require_command "$CC"
 
     if ! cstd=$(detect_c_standard "$CC"); then
-        die 'C compiler does not support C23 or C2x'
+        die 'C compiler does not support C11'
     fi
 
     temporary_binary=$exe.tmp.$$
@@ -253,11 +254,11 @@ if [ "$CC" = "clang" ]; then
     CFLAGS="$CFLAGS -Wno-assign-enum"
     CFLAGS="$CFLAGS -Wno-cast-function-type-strict"
     CFLAGS="$CFLAGS -Wno-bad-function-cast"
-    CFLAGS="$CFLAGS -Wno-pre-c23-compat"
     CFLAGS="$CFLAGS -Wno-padded"
     CFLAGS="$CFLAGS -Wno-nrvo"
     CFLAGS="$CFLAGS -Wno-cast-align"
     CFLAGS="$CFLAGS -Wno-tentative-definition-compat"
+    CFLAGS="$CFLAGS -Wno-fixed-enum-extension"
 fi
 
 case "$target" in
@@ -287,7 +288,7 @@ check)
     require_command "$CC"
 
     if ! cstd=$(detect_c_standard "$CC"); then
-        die 'clang analyzer does not support C23 or C2x'
+        die 'clang analyzer does not support C11'
     fi
 
     # Flag variables intentionally require shell word splitting.
@@ -310,7 +311,7 @@ test)
     require_command "$CC"
 
     if ! cstd=$(detect_c_standard "$CC"); then
-        die 'C compiler does not support C23 or C2x'
+        die 'C compiler does not support C11'
     fi
 
     for source in tests/*.c; do
