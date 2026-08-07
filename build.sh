@@ -39,8 +39,6 @@ LDLIBS=${LDLIBS--lm}
 
 TEST_CFLAGS=${TEST_CFLAGS--Wno-psabi -Wno-constant-logical-operand}
 
-OS=$(uname -a)
-CC=
 THREAD_FLAGS=-pthread
 NCMPCPP_SOURCE=src/main.c
 
