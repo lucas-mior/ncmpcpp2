@@ -26,9 +26,7 @@ DOCDIR=${DOCDIR-$PREFIX/share/doc/ncmpcpp2}
 MANDIR=${MANDIR-$PREFIX/share/man}
 DESTDIR=${DESTDIR-}
 
-ORIGINAL_CC=${CC-}
 PKG_CONFIG=${PKG_CONFIG-pkg-config}
-CLANG_ANALYZER=${CLANG_ANALYZER-clang}
 
 CFLAGS="${CFLAGS:-}"
 CFLAGS="$CFLAGS -std=c11"
@@ -94,14 +92,16 @@ require_command() {
 
 configure_compiler_flags() {
     target=$1
-    requested_cc=$ORIGINAL_CC
 
-    case $target in
-    debug|test|fast_feedback)
-        CC=${requested_cc:-tcc}
+    case "$target" in
+    debug|test)
+        CC="${CC:-tcc}"
+        ;;
+    fast_feedback)
+        CC="${CC:-clang}"
         ;;
     *)
-        CC=${requested_cc:-cc}
+        CC="${CC:-cc}"
         ;;
     esac
 
@@ -364,17 +364,17 @@ run_tests() {
 run_analyzer() {
     check_no_foreign_sources
     load_package_flags
-    require_command "$CLANG_ANALYZER"
+    require_command clang
 
     if [ -z "$ANALYZER_CSTD" ]; then
-        if ! ANALYZER_CSTD=$(detect_c_standard "$CLANG_ANALYZER"); then
+        if ! ANALYZER_CSTD=$(detect_c_standard clang); then
             die 'clang analyzer does not support C23 or C2x'
         fi
     fi
 
     # Flag variables intentionally require shell word splitting.
     # shellcheck disable=SC2086
-    run_command "$CLANG_ANALYZER" \
+    run_command clang \
         -I. \
         -Isrc \
         -Icbase \
@@ -429,18 +429,6 @@ uninstall_program() {
     rm -f "$DESTDIR$BINDIR/ncmpcpp2"
     rm -f "$DESTDIR$MANDIR/man1/ncmpcpp2.1"
     rm -rf "$DESTDIR$DOCDIR"
-
-    return 0
-}
-
-clean_build() {
-    case bin in
-    ''|/)
-        die "refusing to remove unsafe BUILD_DIR: bin"
-        ;;
-    esac
-
-    rm -rf "bin"
 
     return 0
 }
@@ -509,7 +497,7 @@ run_target() {
         uninstall_program
         ;;
     clean)
-        clean_build
+        rm -rf bin/
         ;;
     help|-h|--help)
         show_help
