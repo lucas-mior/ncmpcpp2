@@ -66,93 +66,20 @@ die() {
     exit 1
 }
 
-command_name() {
+require_command() {
     command_string=$1
 
     # Command variables may contain wrappers, for example CC='ccache gcc'.
     # shellcheck disable=SC2086
     set -- $command_string
     if [ "$#" -eq 0 ]; then
-        printf '%s\n' ''
-        return 0
+        required_command=
+    else
+        required_command=$1
     fi
-
-    printf '%s\n' "$1"
-}
-
-require_command() {
-    required_command=$(command_name "$1")
 
     if ! command -v "$required_command" >/dev/null 2>&1; then
         die "missing command: $required_command"
-    fi
-
-    return 0
-}
-
-configure_compiler_flags() {
-    target=$1
-
-    case "$target" in
-    debug|test)
-        CC="${CC:-tcc}"
-        ;;
-    fast_feedback)
-        CC="${CC:-clang}"
-        ;;
-    *)
-        CC="${CC:-cc}"
-        ;;
-    esac
-
-    case $target in
-    debug)
-        CFLAGS="$CFLAGS -g3 -O0"
-        ;;
-    build)
-        CFLAGS="$CFLAGS -O2 -flto"
-        ;;
-    fast_feedback)
-        CFLAGS="$CFLAGS -O0 -g3 -Werror"
-        ;;
-    *)
-        CFLAGS="$CFLAGS -O0 -g3"
-        ;;
-    esac
-
-    CFLAGS="$CFLAGS -Wfatal-errors"
-    CFLAGS="$CFLAGS -Wextra -Wall"
-    # CFLAGS="$CFLAGS -Werror"
-    CFLAGS="$CFLAGS -Wno-format-pedantic"
-    CFLAGS="$CFLAGS -Wno-unknown-warning-option"
-    CFLAGS="$CFLAGS -Wno-gnu-union-cast"
-    CFLAGS="$CFLAGS -Wno-unused-macros"
-    CFLAGS="$CFLAGS -Wno-constant-logical-operand"
-    CFLAGS="$CFLAGS -Wno-float-equal"
-    CFLAGS="$CFLAGS -Wno-undefined-internal"
-    CFLAGS="$CFLAGS -Wno-cast-qual"
-    CFLAGS="$CFLAGS -Wno-unknown-pragmas"
-
-    if [ "$CC" = clang ]; then
-        CFLAGS="$CFLAGS -Weverything"
-        CFLAGS="$CFLAGS -Wno-unsafe-buffer-usage"
-        CFLAGS="$CFLAGS -Wno-format-nonliteral"
-        CFLAGS="$CFLAGS -Wno-disabled-macro-expansion"
-        CFLAGS="$CFLAGS -Wno-c++-keyword"
-        CFLAGS="$CFLAGS -Wno-pre-c11-compat"
-        CFLAGS="$CFLAGS -Wno-implicit-void-ptr-cast"
-        CFLAGS="$CFLAGS -Wno-ignored-attributes"
-        CFLAGS="$CFLAGS -Wno-covered-switch-default"
-        CFLAGS="$CFLAGS -Wno-used-but-marked-unused"
-        CFLAGS="$CFLAGS -Wno-implicit-int-enum-cast"
-        CFLAGS="$CFLAGS -Wno-assign-enum"
-        CFLAGS="$CFLAGS -Wno-cast-function-type-strict"
-        CFLAGS="$CFLAGS -Wno-bad-function-cast"
-        CFLAGS="$CFLAGS -Wno-pre-c23-compat"
-        CFLAGS="$CFLAGS -Wno-padded"
-        CFLAGS="$CFLAGS -Wno-nrvo"
-        CFLAGS="$CFLAGS -Wno-cast-align"
-        CFLAGS="$CFLAGS -Wno-tentative-definition-compat"
     fi
 
     return 0
@@ -239,7 +166,8 @@ check_no_foreign_sources() {
     return 0
 }
 
-prepare_compiler() {
+build_binary() {
+    check_no_foreign_sources
     load_package_flags
     require_command "$CC"
 
@@ -249,10 +177,6 @@ prepare_compiler() {
         fi
     fi
 
-    return 0
-}
-
-compile_and_link_main() {
     binary=bin/ncmpcpp2
     temporary_binary=$binary.tmp.$$
 
@@ -281,154 +205,6 @@ compile_and_link_main() {
 
     mv "$temporary_binary" "$binary"
     TEMP_FILE=
-
-    return 0
-}
-
-build_binary() {
-    check_no_foreign_sources
-    prepare_compiler
-    compile_and_link_main
-
-    return 0
-}
-
-compile_test() {
-    source=$1
-    test_name=${source#tests/}
-    test_name=${test_name%.c}
-    test_dir=bin/tests
-    binary=$test_dir/$test_name
-    temporary_binary=$binary.tmp.$$
-
-    mkdir -p "$test_dir"
-    TEMP_FILE=$temporary_binary
-
-    if [ "${TEST_CPPFLAGS+x}" = x ]; then
-        # Flag variables intentionally require shell word splitting.
-        # shellcheck disable=SC2086
-        run_command "$CC" \
-            $TEST_CPPFLAGS \
-            $CSTD \
-            $CFLAGS \
-            $TEST_CFLAGS \
-            $THREAD_FLAGS \
-            "$source" \
-            -o "$temporary_binary" \
-            ${TEST_LDLIBS-$LDLIBS $THREAD_FLAGS}
-    else
-        # Flag variables intentionally require shell word splitting.
-        # shellcheck disable=SC2086
-        run_command "$CC" \
-            -Itests \
-            -I. \
-            -Isrc \
-            -Icbase \
-            $CPPFLAGS \
-            $CSTD \
-            $CFLAGS \
-            $TEST_CFLAGS \
-            $THREAD_FLAGS \
-            "$source" \
-            -o "$temporary_binary" \
-            ${TEST_LDLIBS-$LDLIBS $THREAD_FLAGS}
-    fi
-
-    mv "$temporary_binary" "$binary"
-    TEMP_FILE=
-
-    "$binary"
-
-    return 0
-}
-
-run_tests() {
-    require_command "$CC"
-    if [ -z "$CSTD" ]; then
-        if ! CSTD=$(detect_c_standard "$CC"); then
-            die 'C compiler does not support C23 or C2x'
-        fi
-    fi
-
-    for source in tests/*.c; do
-        if [ ! -f "$source" ]; then
-            continue
-        fi
-
-        compile_test "$source"
-    done
-
-    return 0
-}
-
-run_analyzer() {
-    check_no_foreign_sources
-    load_package_flags
-    require_command clang
-
-    if [ -z "$ANALYZER_CSTD" ]; then
-        if ! ANALYZER_CSTD=$(detect_c_standard clang); then
-            die 'clang analyzer does not support C23 or C2x'
-        fi
-    fi
-
-    # Flag variables intentionally require shell word splitting.
-    # shellcheck disable=SC2086
-    run_command clang \
-        -I. \
-        -Isrc \
-        -Icbase \
-        $CPPFLAGS \
-        $PKG_CFLAGS \
-        $READLINE_CFLAGS \
-        $ANALYZER_CSTD \
-        $CFLAGS \
-        $THREAD_FLAGS \
-        --analyze \
-        -Xanalyzer -analyzer-output=text \
-        -fno-color-diagnostics \
-        "$NCMPCPP_SOURCE"
-
-    return 0
-}
-
-binary_needs_build() {
-    binary=bin/ncmpcpp2
-
-    if [ ! -f "$binary" ]; then
-        return 0
-    fi
-
-    if find src cbase -type f \
-        \( -name '*.c' -o -name '*.h' \) \
-        -newer "$binary" -print \
-        | grep -q .; then
-        return 0
-    fi
-
-    return 1
-}
-
-install_program() {
-    if binary_needs_build; then
-        build_binary
-    fi
-
-    install -d "$DESTDIR$BINDIR"
-    install -m 755 "bin/ncmpcpp2" "$DESTDIR$BINDIR/ncmpcpp2"
-    install -d "$DESTDIR$DOCDIR"
-    install -m 644 AUTHORS LICENSE "$DESTDIR$DOCDIR"
-    install -m 644 doc/bindings doc/config "$DESTDIR$DOCDIR"
-    install -d "$DESTDIR$MANDIR/man1"
-    install -m 644 doc/ncmpcpp2.1 "$DESTDIR$MANDIR/man1/ncmpcpp2.1"
-
-    return 0
-}
-
-uninstall_program() {
-    rm -f "$DESTDIR$BINDIR/ncmpcpp2"
-    rm -f "$DESTDIR$MANDIR/man1/ncmpcpp2.1"
-    rm -rf "$DESTDIR$DOCDIR"
 
     return 0
 }
@@ -469,10 +245,72 @@ EOF_HELP
     return 0
 }
 
-run_target() {
-    target=$1
+if [ "$#" -eq 0 ]; then
+    set -- debug
+fi
 
-    configure_compiler_flags "$target"
+for target in "$@"; do
+    case "$target" in
+    debug|test)
+        CC="${CC:-tcc}"
+        ;;
+    fast_feedback)
+        CC="${CC:-clang}"
+        ;;
+    *)
+        CC="${CC:-cc}"
+        ;;
+    esac
+
+    case $target in
+    debug)
+        CFLAGS="$CFLAGS -g3 -O0"
+        ;;
+    build)
+        CFLAGS="$CFLAGS -O2 -flto"
+        ;;
+    fast_feedback)
+        CFLAGS="$CFLAGS -O0 -g3 -Werror"
+        ;;
+    *)
+        CFLAGS="$CFLAGS -O0 -g3"
+        ;;
+    esac
+
+    CFLAGS="$CFLAGS -Wfatal-errors"
+    CFLAGS="$CFLAGS -Wextra -Wall"
+    # CFLAGS="$CFLAGS -Werror"
+    CFLAGS="$CFLAGS -Wno-format-pedantic"
+    CFLAGS="$CFLAGS -Wno-unknown-warning-option"
+    CFLAGS="$CFLAGS -Wno-gnu-union-cast"
+    CFLAGS="$CFLAGS -Wno-unused-macros"
+    CFLAGS="$CFLAGS -Wno-constant-logical-operand"
+    CFLAGS="$CFLAGS -Wno-float-equal"
+    CFLAGS="$CFLAGS -Wno-undefined-internal"
+    CFLAGS="$CFLAGS -Wno-cast-qual"
+    CFLAGS="$CFLAGS -Wno-unknown-pragmas"
+
+    if [ "$CC" = clang ]; then
+        CFLAGS="$CFLAGS -Weverything"
+        CFLAGS="$CFLAGS -Wno-unsafe-buffer-usage"
+        CFLAGS="$CFLAGS -Wno-format-nonliteral"
+        CFLAGS="$CFLAGS -Wno-disabled-macro-expansion"
+        CFLAGS="$CFLAGS -Wno-c++-keyword"
+        CFLAGS="$CFLAGS -Wno-pre-c11-compat"
+        CFLAGS="$CFLAGS -Wno-implicit-void-ptr-cast"
+        CFLAGS="$CFLAGS -Wno-ignored-attributes"
+        CFLAGS="$CFLAGS -Wno-covered-switch-default"
+        CFLAGS="$CFLAGS -Wno-used-but-marked-unused"
+        CFLAGS="$CFLAGS -Wno-implicit-int-enum-cast"
+        CFLAGS="$CFLAGS -Wno-assign-enum"
+        CFLAGS="$CFLAGS -Wno-cast-function-type-strict"
+        CFLAGS="$CFLAGS -Wno-bad-function-cast"
+        CFLAGS="$CFLAGS -Wno-pre-c23-compat"
+        CFLAGS="$CFLAGS -Wno-padded"
+        CFLAGS="$CFLAGS -Wno-nrvo"
+        CFLAGS="$CFLAGS -Wno-cast-align"
+        CFLAGS="$CFLAGS -Wno-tentative-definition-compat"
+    fi
 
     case $target in
     debug|build|fast_feedback)
@@ -482,19 +320,118 @@ run_target() {
         build_binary
         ;;
     check)
-        run_analyzer
+        check_no_foreign_sources
+        load_package_flags
+        require_command clang
+
+        if [ -z "$ANALYZER_CSTD" ]; then
+            if ! ANALYZER_CSTD=$(detect_c_standard clang); then
+                die 'clang analyzer does not support C23 or C2x'
+            fi
+        fi
+
+        # Flag variables intentionally require shell word splitting.
+        # shellcheck disable=SC2086
+        run_command clang \
+            -I. \
+            -Isrc \
+            -Icbase \
+            $CPPFLAGS \
+            $PKG_CFLAGS \
+            $READLINE_CFLAGS \
+            $ANALYZER_CSTD \
+            $CFLAGS \
+            $THREAD_FLAGS \
+            --analyze \
+            -Xanalyzer -analyzer-output=text \
+            -fno-color-diagnostics \
+            "$NCMPCPP_SOURCE"
         ;;
     test)
-        run_tests
+        require_command "$CC"
+        if [ -z "$CSTD" ]; then
+            if ! CSTD=$(detect_c_standard "$CC"); then
+                die 'C compiler does not support C23 or C2x'
+            fi
+        fi
+
+        for source in tests/*.c; do
+            if [ ! -f "$source" ]; then
+                continue
+            fi
+
+            test_name=${source#tests/}
+            test_name=${test_name%.c}
+            test_dir=bin/tests
+            binary=$test_dir/$test_name
+            temporary_binary=$binary.tmp.$$
+
+            mkdir -p "$test_dir"
+            TEMP_FILE=$temporary_binary
+
+            if [ "${TEST_CPPFLAGS+x}" = x ]; then
+                # Flag variables intentionally require shell word splitting.
+                # shellcheck disable=SC2086
+                run_command "$CC" \
+                    $TEST_CPPFLAGS \
+                    $CSTD \
+                    $CFLAGS \
+                    $TEST_CFLAGS \
+                    $THREAD_FLAGS \
+                    "$source" \
+                    -o "$temporary_binary" \
+                    ${TEST_LDLIBS-$LDLIBS $THREAD_FLAGS}
+            else
+                # Flag variables intentionally require shell word splitting.
+                # shellcheck disable=SC2086
+                run_command "$CC" \
+                    -Itests \
+                    -I. \
+                    -Isrc \
+                    -Icbase \
+                    $CPPFLAGS \
+                    $CSTD \
+                    $CFLAGS \
+                    $TEST_CFLAGS \
+                    $THREAD_FLAGS \
+                    "$source" \
+                    -o "$temporary_binary" \
+                    ${TEST_LDLIBS-$LDLIBS $THREAD_FLAGS}
+            fi
+
+            mv "$temporary_binary" "$binary"
+            TEMP_FILE=
+
+            "$binary"
+        done
         ;;
     check-no-foreign-sources)
         check_no_foreign_sources
         ;;
     install)
-        install_program
+        binary=bin/ncmpcpp2
+
+        if [ ! -f "$binary" ]; then
+            build_binary
+        elif find src cbase -type f \
+            \( -name '*.c' -o -name '*.h' \) \
+            -newer "$binary" -print \
+            | grep -q .; then
+            build_binary
+        fi
+
+        install -d "$DESTDIR$BINDIR"
+        install -m 755 "bin/ncmpcpp2" "$DESTDIR$BINDIR/ncmpcpp2"
+        install -d "$DESTDIR$DOCDIR"
+        install -m 644 AUTHORS LICENSE "$DESTDIR$DOCDIR"
+        install -m 644 doc/bindings doc/config "$DESTDIR$DOCDIR"
+        install -d "$DESTDIR$MANDIR/man1"
+        install -m 644 doc/ncmpcpp2.1 "$DESTDIR$MANDIR/man1/ncmpcpp2.1"
         ;;
     uninstall)
-        uninstall_program
+        rm -f "$DESTDIR$BINDIR/ncmpcpp2"
+        rm -f "$DESTDIR$MANDIR/man1/ncmpcpp2.1"
+        rm -rf "$DESTDIR$DOCDIR"
         ;;
     clean)
         rm -rf bin/
@@ -508,14 +445,4 @@ run_target() {
         exit 1
         ;;
     esac
-
-    return 0
-}
-
-if [ "$#" -eq 0 ]; then
-    set -- debug
-fi
-
-for target in "$@"; do
-    run_target "$target"
 done
