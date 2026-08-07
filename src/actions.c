@@ -32,11 +32,6 @@
 #include "title.h"
 #include "ui_state.h"
 
-#if defined(__GNUC__)
-extern bool ncmpcpp_legacy_execute_binding(NcmBinding *binding)
-    __attribute__((weak));
-#endif
-
 #define NCM_ACTION_TABLE_CALLBACKS(SUFFIX, TYPE)                         \
     static bool                                                          \
     ncm_action_can_run_##SUFFIX(void *user) {                            \
@@ -2466,12 +2461,7 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
 
 static bool
 action_runtime_execute_binding(NcmBinding *binding) {
-#if defined(__GNUC__)
-    if (ncmpcpp_legacy_execute_binding) {
-        return ncmpcpp_legacy_execute_binding(binding);
-    }
-#endif
-    return ncm_binding_execute_default(binding);
+    return ncmpcpp_legacy_execute_binding(binding);
 }
 
 static bool

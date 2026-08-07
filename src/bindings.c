@@ -16,7 +16,7 @@
 NcmBindingsConfiguration Bindings;
 
 static void ncm_bindings_error(NcmError *error, char *format, ...)
-    __attribute__((format(printf, 2, 3)));
+    ATTR_PRINTF(2, 3);
 
 static void
 ncm_bindings_error(NcmError *error, char *format, ...) {
