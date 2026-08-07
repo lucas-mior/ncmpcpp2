@@ -450,8 +450,8 @@ show_help() {
 usage: ./build.sh [target ...]
 
 targets:
-  build                    build with CFLAGS=-O2 -flto (default)
-  debug                    build with CFLAGS=-g3 -O0
+  build                    build with CFLAGS=-O2 -flto
+  debug                    build with CFLAGS=-g3 -O0 (default)
   fast_feedback            build with the default feedback compiler and Werror
   all                      build with the current CFLAGS
   check                    run the clang static analyzer
@@ -525,7 +525,7 @@ run_target() {
 }
 
 if [ "$#" -eq 0 ]; then
-    set -- build
+    set -- debug
 fi
 
 for target in "$@"; do
