@@ -178,7 +178,7 @@ detect_c_standard() {
 
     for standard in -std=c23 -std=c2x; do
         if printf 'int main(void) { return 0; }\n' \
-            | run_command "$compiler" "$standard" -x c -c \
+            | run_command "$compiler" "$standard" -c \
                 -o /dev/null - >/dev/null 2>&1; then
             printf '%s\n' "$standard"
             return 0
