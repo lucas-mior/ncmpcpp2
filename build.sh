@@ -26,10 +26,8 @@ DOCDIR=${DOCDIR-$PREFIX/share/doc/ncmpcpp2}
 MANDIR=${MANDIR-$PREFIX/share/man}
 DESTDIR=${DESTDIR-}
 
-CC="${CC:-tcc}"
-
-PKG_CONFIG=${PKG_CONFIG-pkg-config}
 ORIGINAL_CC=${CC-}
+PKG_CONFIG=${PKG_CONFIG-pkg-config}
 CLANG_ANALYZER=${CLANG_ANALYZER-clang}
 
 CFLAGS="${CFLAGS:-}"
@@ -96,14 +94,16 @@ require_command() {
 
 configure_compiler_flags() {
     target=$1
+    requested_cc=$ORIGINAL_CC
 
-    CC=$ORIGINAL_CC
-    if [ "$target" = test ] && [ -z "$CC" ] \
-        && command -v tcc >/dev/null 2>&1; then
-        CC=tcc
-    else
-        CC=${CC:-cc}
-    fi
+    case $target in
+    debug|test|fast_feedback)
+        CC=${requested_cc:-tcc}
+        ;;
+    *)
+        CC=${requested_cc:-cc}
+        ;;
+    esac
 
     case $target in
     debug)
@@ -113,7 +113,6 @@ configure_compiler_flags() {
         CFLAGS="$CFLAGS -O2 -flto"
         ;;
     fast_feedback)
-        CC=clang
         CFLAGS="$CFLAGS -O0 -g3 -Werror"
         ;;
     *)
@@ -453,7 +452,7 @@ usage: ./build.sh [target ...]
 targets:
   build                    build with CFLAGS=-O2 -flto (default)
   debug                    build with CFLAGS=-g3 -O0
-  fast_feedback            build with clang and Werror
+  fast_feedback            build with the default feedback compiler and Werror
   all                      build with the current CFLAGS
   check                    run the clang static analyzer
   test                     build and run all tests
