@@ -14,6 +14,7 @@
 #include "screens/nc_media_library.h"
 #include "screens/screen_switcher.h"
 #include "settings.h"
+#include "status.h"
 #include "statusbar.h"
 #include "ui_state.h"
 
@@ -4278,7 +4279,6 @@ static bool
 native_library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
                              NcmError *error) {
     NcmMpdClient *client;
-    NcmMpdSongList queue;
     NcmMpdSongList additions;
     int32 play_pos;
     bool result;
@@ -4290,7 +4290,6 @@ native_library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
         return false;
     }
 
-    ncm_mpd_song_list_init(&queue);
     ncm_mpd_song_list_init(&additions);
     result = true;
     for (int32 i = 0; i < songs->len; i += 1) {
@@ -4304,10 +4303,8 @@ native_library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
     }
 
     play_pos = -1;
-    if (result && play) {
-        if ((result = ncm_mpd_client_get_queue(client, &queue, error))) {
-            play_pos = ncm_mpd_song_list_count(&queue);
-        }
+    if (play) {
+        play_pos = ncm_status_state_playlist_length();
     }
     if (result) {
         result = ncm_mpd_client_add_song_list(client, &additions, -1,
@@ -4317,7 +4314,6 @@ native_library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
         result = ncm_mpd_client_play_pos(client, play_pos, error);
     }
     ncm_mpd_song_list_destroy(&additions);
-    ncm_mpd_song_list_destroy(&queue);
     return result;
 }
 
