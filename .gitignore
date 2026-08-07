@@ -30,12 +30,12 @@ c_mutable_song_test
 *.trs
 test-driver
 *.la
-build/
 bin/
 *.tar.gz
 .tags.vim
 tags
+*temp_delete_me*
 *.cmd
 *.o
-temp_delete_me
-step-*
+bin/
+*.tar.gz
