@@ -236,13 +236,13 @@ EOF_HELP
 
 case "$target" in
 debug|test)
-    CC=tcc
+    CC="${CC:-tcc}"
     ;;
-fast_feedback|check)
-    CC=clang
+fast_feedback)
+    CC="${CC:-clang}"
     ;;
 *)
-    CC=cc
+    CC="${CC:-cc}"
     ;;
 esac
 
