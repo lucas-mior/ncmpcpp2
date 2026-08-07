@@ -2,17 +2,10 @@
 
 # shellcheck disable=SC2086,SC2031
 
-set -e
-
-if [ -n "$BASH_VERSION" ]; then
-    # shellcheck disable=SC3044
-    shopt -s expand_aliases
-fi
-
-alias trace_on='set -x'
-alias trace_off='{ set +x; } 2>/dev/null'
-
 dir=$(dirname "$(readlink -f "$0")")
+# shellcheck source=/dev/null
+. "$dir/cbase/common.sh"
+
 cd "$dir" || exit
 program=$(basename "$(readlink -f "$(dirname "$0")")")
 script=$(basename "$0")
@@ -57,11 +50,6 @@ trap cleanup 0
 trap 'cleanup; exit 129' 1
 trap 'cleanup; exit 130' 2
 trap 'cleanup; exit 143' 15
-
-error() {
-    >&2 printf "$@"
-    return
-}
 
 die() {
     error '%s\n' "$1"
