@@ -20,8 +20,25 @@ main="src/main.c"
 exe="bin/$program"
 mkdir -p "$(dirname "$exe")"
 
+case "$target" in
+debug|test)
+    CC="${CC:-tcc}"
+    ;;
+fast_feedback)
+    CC="${CC:-clang}"
+    ;;
+*)
+    CC="${CC:-cc}"
+    ;;
+esac
+
+if ! command -v "$CC" > /dev/null 2>&1; then
+    CC=cc
+fi
+
 CPPFLAGS="$CPPFLAGS -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=700"
 
+CFLAGS="$CFLAGS -std=c11"
 CFLAGS="$CFLAGS -Wfatal-errors"
 CFLAGS="$CFLAGS -Wextra -Wall"
 CFLAGS="$CFLAGS -Werror=all -Werror=extra"
@@ -35,6 +52,29 @@ CFLAGS="$CFLAGS -Wno-undefined-internal"
 CFLAGS="$CFLAGS -Wno-unknown-pragmas"
 CFLAGS="$CFLAGS -Wno-unknown-warning-option"
 CFLAGS="$CFLAGS -Wno-unused-macros"
+
+if [ "$CC" = "clang" ]; then
+    CFLAGS="$CFLAGS -Weverything"
+    CFLAGS="$CFLAGS -Wno-unsafe-buffer-usage"
+    CFLAGS="$CFLAGS -Wno-format-nonliteral"
+    CFLAGS="$CFLAGS -Wno-disabled-macro-expansion"
+    CFLAGS="$CFLAGS -Wno-c++-keyword"
+    CFLAGS="$CFLAGS -Wno-pre-c11-compat"
+    CFLAGS="$CFLAGS -Wno-implicit-void-ptr-cast"
+    CFLAGS="$CFLAGS -Wno-ignored-attributes"
+    CFLAGS="$CFLAGS -Wno-covered-switch-default"
+    CFLAGS="$CFLAGS -Wno-used-but-marked-unused"
+    CFLAGS="$CFLAGS -Wno-implicit-int-enum-cast"
+    CFLAGS="$CFLAGS -Wno-assign-enum"
+    CFLAGS="$CFLAGS -Wno-cast-function-type-strict"
+    CFLAGS="$CFLAGS -Wno-bad-function-cast"
+    CFLAGS="$CFLAGS -Wno-padded"
+    CFLAGS="$CFLAGS -Wno-nrvo"
+    CFLAGS="$CFLAGS -Wno-cast-align"
+    CFLAGS="$CFLAGS -Wno-tentative-definition-compat"
+    CFLAGS="$CFLAGS -Wno-fixed-enum-extension"
+fi
+
 CFLAGS="$CFLAGS -pthread"
 
 LDFLAGS="$LDFLAGS -lm"
@@ -99,14 +139,9 @@ pkg_config() {
 detect_c_standard() {
     compiler=$1
 
-    # Keep this as the only -std= flag emitted by build.sh.
-    # ./build.sh test should show exactly one -std=c11 in each compile line.
-    standard=-std=c11
-
     if printf 'int main(void) { return 0; }\n' \
-        | run_command "$compiler" "$standard" -c \
+        | run_command "$compiler" -std=c11 -c \
             -o /dev/null - >/dev/null 2>&1; then
-        printf '%s\n' "$standard"
         return 0
     fi
 
@@ -194,44 +229,6 @@ EOF_HELP
 
 case "$target" in
 debug|test)
-    CC="${CC:-tcc}"
-    ;;
-fast_feedback)
-    CC="${CC:-clang}"
-    ;;
-*)
-    CC="${CC:-cc}"
-    ;;
-esac
-
-if ! command -v "$CC" > /dev/null 2>&1; then
-    CC=cc
-fi
-
-if [ "$CC" = "clang" ]; then
-    CFLAGS="$CFLAGS -Weverything"
-    CFLAGS="$CFLAGS -Wno-unsafe-buffer-usage"
-    CFLAGS="$CFLAGS -Wno-format-nonliteral"
-    CFLAGS="$CFLAGS -Wno-disabled-macro-expansion"
-    CFLAGS="$CFLAGS -Wno-c++-keyword"
-    CFLAGS="$CFLAGS -Wno-pre-c11-compat"
-    CFLAGS="$CFLAGS -Wno-implicit-void-ptr-cast"
-    CFLAGS="$CFLAGS -Wno-ignored-attributes"
-    CFLAGS="$CFLAGS -Wno-covered-switch-default"
-    CFLAGS="$CFLAGS -Wno-used-but-marked-unused"
-    CFLAGS="$CFLAGS -Wno-implicit-int-enum-cast"
-    CFLAGS="$CFLAGS -Wno-assign-enum"
-    CFLAGS="$CFLAGS -Wno-cast-function-type-strict"
-    CFLAGS="$CFLAGS -Wno-bad-function-cast"
-    CFLAGS="$CFLAGS -Wno-padded"
-    CFLAGS="$CFLAGS -Wno-nrvo"
-    CFLAGS="$CFLAGS -Wno-cast-align"
-    CFLAGS="$CFLAGS -Wno-tentative-definition-compat"
-    CFLAGS="$CFLAGS -Wno-fixed-enum-extension"
-fi
-
-case "$target" in
-debug|test)
     CFLAGS="$CFLAGS -g3 -O0"
     ;;
 build)
@@ -253,7 +250,7 @@ debug|build|fast_feedback|all)
     load_package_flags
     require_command "$CC"
 
-    if ! cstd=$(detect_c_standard "$CC"); then
+    if ! detect_c_standard "$CC"; then
         die 'C compiler does not support C11'
     fi
 
@@ -269,7 +266,6 @@ debug|build|fast_feedback|all)
         $CPPFLAGS \
         $PKG_CFLAGS \
         $READLINE_CFLAGS \
-        $cstd \
         $CFLAGS \
         "$main" \
         -o "$temporary_binary" \
@@ -285,7 +281,7 @@ check)
     load_package_flags
     require_command "$CC"
 
-    if ! cstd=$(detect_c_standard "$CC"); then
+    if ! detect_c_standard "$CC"; then
         die 'clang analyzer does not support C11'
     fi
 
@@ -298,7 +294,6 @@ check)
         $CPPFLAGS \
         $PKG_CFLAGS \
         $READLINE_CFLAGS \
-        $cstd \
         $CFLAGS \
         --analyze \
         -Xanalyzer -analyzer-output=text \
@@ -308,7 +303,7 @@ check)
 test)
     require_command "$CC"
 
-    if ! cstd=$(detect_c_standard "$CC"); then
+    if ! detect_c_standard "$CC"; then
         die 'C compiler does not support C11'
     fi
 
@@ -334,7 +329,6 @@ test)
             -Isrc \
             -Icbase \
             $CPPFLAGS \
-            $cstd \
             $CFLAGS \
             "$source" \
             -o "$temporary_binary" \
