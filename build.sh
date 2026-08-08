@@ -7,11 +7,11 @@ dir=$(dirname "$(readlink -f "$0")")
 . "$dir/cbase/common.sh"
 
 cd "$dir" || exit
-program=$(basename "$(readlink -f "$(dirname "$0")")")
+program=$(get_program "$0")
 script=$(basename "$0")
 target="${1:-debug}"
 
-printf "\n${script} ${RED}${1} ${2}$RES\n"
+printf "\n${script} ${RED}${1:-} ${2:-}$RES\n"
 
 PREFIX="${PREFIX:-/usr/local}"
 DESTDIR="${DESTDIR:-/}"
@@ -21,6 +21,7 @@ exe="bin/$program"
 mkdir -p "$(dirname "$exe")"
 
 CPPFLAGS="$CPPFLAGS -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=700"
+
 CFLAGS="$CFLAGS -Wfatal-errors"
 CFLAGS="$CFLAGS -Wextra -Wall"
 CFLAGS="$CFLAGS -Wno-format-pedantic"
@@ -33,6 +34,7 @@ CFLAGS="$CFLAGS -Wno-undefined-internal"
 CFLAGS="$CFLAGS -Wno-cast-qual"
 CFLAGS="$CFLAGS -Wno-unknown-pragmas"
 CFLAGS="$CFLAGS -pthread"
+
 LDFLAGS="$LDFLAGS -lm"
 
 TEMP_FILE=
@@ -160,41 +162,6 @@ check_no_foreign_sources() {
     return 0
 }
 
-build_binary() {
-    check_no_foreign_sources
-    load_package_flags
-    require_command "$CC"
-
-    if ! cstd=$(detect_c_standard "$CC"); then
-        die 'C compiler does not support C11'
-    fi
-
-    temporary_binary=$exe.tmp.$$
-    TEMP_FILE=$temporary_binary
-
-    # Flag variables intentionally require shell word splitting.
-    # shellcheck disable=SC2086
-    run_command "$CC" \
-        -I. \
-        -Isrc \
-        -Icbase \
-        $CPPFLAGS \
-        $PKG_CFLAGS \
-        $READLINE_CFLAGS \
-        $cstd \
-        $CFLAGS \
-        "$main" \
-        -o "$temporary_binary" \
-        $READLINE_LIBS \
-        $PKG_LIBS \
-        $LDFLAGS
-
-    mv "$temporary_binary" "$exe"
-    TEMP_FILE=
-
-    return 0
-}
-
 show_help() {
     cat <<EOF_HELP
 usage: ./$script <target>
@@ -280,7 +247,36 @@ esac
 
 case "$target" in
 debug|build|fast_feedback|all)
-    build_binary
+    check_no_foreign_sources
+    load_package_flags
+    require_command "$CC"
+
+    if ! cstd=$(detect_c_standard "$CC"); then
+        die 'C compiler does not support C11'
+    fi
+
+    temporary_binary=$exe.tmp.$$
+    TEMP_FILE=$temporary_binary
+
+    # Flag variables intentionally require shell word splitting.
+    # shellcheck disable=SC2086
+    run_command "$CC" \
+        -I. \
+        -Isrc \
+        -Icbase \
+        $CPPFLAGS \
+        $PKG_CFLAGS \
+        $READLINE_CFLAGS \
+        $cstd \
+        $CFLAGS \
+        "$main" \
+        -o "$temporary_binary" \
+        $READLINE_LIBS \
+        $PKG_LIBS \
+        $LDFLAGS
+
+    mv "$temporary_binary" "$exe"
+    TEMP_FILE=
     ;;
 check)
     check_no_foreign_sources
