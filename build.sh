@@ -321,6 +321,7 @@ test)
             -Isrc \
             -Icbase \
             $CPPFLAGS \
+            -D_XOPEN_SOURCE=700 \
             $CFLAGS \
             "$source" \
             -o "$temporary_binary" \
