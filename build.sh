@@ -16,7 +16,6 @@ printf "\n${script} ${RED}${1:-} ${2:-}$RES\n"
 PREFIX="${PREFIX:-/usr/local}"
 DESTDIR="${DESTDIR:-/}"
 
-main="src/main.c"
 exe="bin/$program"
 mkdir -p "$(dirname "$exe")"
 
@@ -245,7 +244,7 @@ debug|build|fast_feedback|all)
         $PKG_CFLAGS \
         $READLINE_CFLAGS \
         $CFLAGS \
-        "$main" \
+        "src/main.c" \
         -o "$temporary_binary" \
         $READLINE_LIBS \
         $PKG_LIBS \
@@ -276,7 +275,7 @@ check)
         --analyze \
         -Xanalyzer -analyzer-output=text \
         -fno-color-diagnostics \
-        "$main"
+        "src/main.c"
     ;;
 test)
     require_command "$CC"
