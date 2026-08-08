@@ -24,6 +24,8 @@ CPPFLAGS="$CPPFLAGS -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=700"
 
 CFLAGS="$CFLAGS -Wfatal-errors"
 CFLAGS="$CFLAGS -Wextra -Wall"
+CFLAGS="$CFLAGS -Werror=all -Werror=extra"
+# CFLAGS="$CFLAGS -Werror"  # Only uncomment occasionally, keep this line
 CFLAGS="$CFLAGS -Wno-format-pedantic"
 CFLAGS="$CFLAGS -Wno-unknown-warning-option"
 CFLAGS="$CFLAGS -Wno-gnu-union-cast"
@@ -169,7 +171,7 @@ usage: ./$script <target>
 targets:
   build                    build with CFLAGS=-O2 -flto
   debug                    build with CFLAGS=-g3 -O0 (default)
-  fast_feedback            build with clang and Werror
+  fast_feedback            build with clang warning checks
   all                      build with the current CFLAGS
   check                    run the clang static analyzer
   test                     build and run all tests
@@ -236,7 +238,7 @@ build)
     CFLAGS="$CFLAGS -O2 -flto"
     ;;
 fast_feedback)
-    CFLAGS="$CFLAGS -g3 -O0 -Werror"
+    CFLAGS="$CFLAGS -g3 -O0"
     ;;
 check)
     CFLAGS="$CFLAGS -g3 -O0"
