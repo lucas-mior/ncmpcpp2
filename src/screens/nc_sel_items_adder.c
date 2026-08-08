@@ -761,6 +761,7 @@ adder_try_add_current_song(
     int32 position, bool *added, bool *success
 ) {
     NcmError error;
+    enum mpd_server_error server_error;
 
     *added = false;
     ncm_error_clear(&error);
@@ -771,9 +772,9 @@ adder_try_add_current_song(
     }
 
     if (error.code == MPD_ERROR_SERVER) {
+        server_error = ncm_mpd_client_server_error_code(screen->client);
         ncm_status_handle_server_error_value(
-            screen->client,
-            (int32)ncm_mpd_client_server_error_code(screen->client),
+            screen->client, (int32)server_error,
             error.message, optional_strlen32(error.message));
         *success = false;
         return true;

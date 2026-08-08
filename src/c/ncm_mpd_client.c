@@ -19,6 +19,7 @@ ncm_mpd_client_set_buffer(StrBuilder *buffer, char *string, int32 string_len) {
 
 static void
 ncm_mpd_client_copy_connection_error(NcmMpdClient *client, NcmError *ncm_error) {
+    enum mpd_error code;
     char *message;
     int32 message_len;
 
@@ -32,8 +33,8 @@ ncm_mpd_client_copy_connection_error(NcmMpdClient *client, NcmError *ncm_error) 
 
     message = ncm_mpd_connection_error(&client->connection);
     message_len = optional_strlen32(message);
-    ncm_error_set(ncm_error,
-                  (int32)ncm_mpd_connection_error_code(&client->connection),
+    code = ncm_mpd_connection_error_code(&client->connection);
+    ncm_error_set(ncm_error, (int32)code,
                   message, message_len);
     return;
 }
