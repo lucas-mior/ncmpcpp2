@@ -916,6 +916,7 @@ lyrics_screen_test_lrc_preferred_over_txt(void) {
     NativeLyricsScreen screen;
     NcmSong song;
     NcmError error = {0};
+    NativeLyricsMode mode;
     char directory[256];
     char lrc_path[512];
     char txt_path[512];
@@ -935,8 +936,8 @@ lyrics_screen_test_lrc_preferred_over_txt(void) {
     ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
     lyrics_screen_test_assert_status_message(
         STRLIT("Artist - Title.lrc found; Artist - Title.txt found"));
-    ASSERT_EQUAL((int32)native_lyrics_screen_mode(&screen),
-                 (int32)NATIVE_LYRICS_MODE_SYNCHRONIZED);
+    mode = native_lyrics_screen_mode(&screen);
+    ASSERT_EQUAL((int32)mode, (int32)NATIVE_LYRICS_MODE_SYNCHRONIZED);
     ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
                     lrc_path, strlen32(lrc_path)));
     ASSERT(STREQUAL(screen.display.data, screen.display.len,
@@ -955,6 +956,7 @@ lyrics_screen_test_txt_used_when_lrc_missing(void) {
     NativeLyricsScreen screen;
     NcmSong song;
     NcmError error = {0};
+    NativeLyricsMode mode;
     char directory[256];
     char txt_path[512];
 
@@ -970,8 +972,8 @@ lyrics_screen_test_txt_used_when_lrc_missing(void) {
     ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
     lyrics_screen_test_assert_status_message(
         STRLIT("Artist - Title.lrc not found; Artist - Title.txt found"));
-    ASSERT_EQUAL((int32)native_lyrics_screen_mode(&screen),
-                 (int32)NATIVE_LYRICS_MODE_PLAIN);
+    mode = native_lyrics_screen_mode(&screen);
+    ASSERT_EQUAL((int32)mode, (int32)NATIVE_LYRICS_MODE_PLAIN);
     ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
                     txt_path, strlen32(txt_path)));
     ASSERT(STREQUAL(screen.display.data, screen.display.len,
@@ -989,6 +991,7 @@ lyrics_screen_test_invalid_lrc_falls_back_to_txt(void) {
     NativeLyricsScreen screen;
     NcmSong song;
     NcmError error = {0};
+    NativeLyricsMode mode;
     char directory[256];
     char lrc_path[512];
     char txt_path[512];
@@ -1008,8 +1011,8 @@ lyrics_screen_test_invalid_lrc_falls_back_to_txt(void) {
     ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
     lyrics_screen_test_assert_status_message(
         STRLIT("Artist - Title.lrc found; Artist - Title.txt found"));
-    ASSERT_EQUAL((int32)native_lyrics_screen_mode(&screen),
-                 (int32)NATIVE_LYRICS_MODE_PLAIN);
+    mode = native_lyrics_screen_mode(&screen);
+    ASSERT_EQUAL((int32)mode, (int32)NATIVE_LYRICS_MODE_PLAIN);
     ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
                     txt_path, strlen32(txt_path)));
     ASSERT(STREQUAL(screen.display.data, screen.display.len,
