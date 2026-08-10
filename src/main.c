@@ -1,8 +1,6 @@
 #if !defined(NCMPCPP_MAIN_C)
 #define NCMPCPP_MAIN_C
 
-#include "cbase.h"
-
 #include "c/ncm_base.h"
 
 #define CBASE_IMPLEMENT
