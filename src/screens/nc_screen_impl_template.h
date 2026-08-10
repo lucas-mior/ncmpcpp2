@@ -100,7 +100,7 @@
 #define NC_SCREEN_IMPL_WIDTH CAT(NC_SCREEN_IMPL_PUBLIC_PREFIX, _width)
 #define NC_SCREEN_IMPL_HEIGHT CAT(NC_SCREEN_IMPL_PUBLIC_PREFIX, _height)
 
-_Static_assert(OFFSET_OF(NC_SCREEN_IMPL_TYPE, NC_SCREEN_IMPL_FIRST_FIELD) == 0,
+_Static_assert(offsetof(NC_SCREEN_IMPL_TYPE, NC_SCREEN_IMPL_FIRST_FIELD) == 0,
                "screen first field must start at offset zero");
 
 NcScreen *

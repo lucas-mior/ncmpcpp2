@@ -21,8 +21,6 @@ mkdir -p "$(dirname "$exe")"
 
 CC=$(get_compiler "$target")
 
-CPPFLAGS="$CPPFLAGS -D_DEFAULT_SOURCE"
-
 CFLAGS="$CFLAGS -std=c11"
 CFLAGS="$CFLAGS -Wfatal-errors"
 CFLAGS="$CFLAGS -Wextra -Wall"
@@ -283,7 +281,7 @@ test)
         die 'C compiler does not support C11'
     fi
 
-    TEST_CPPFLAGS="-Itests -I. -Isrc -Icbase -D_XOPEN_SOURCE=700" \
+    TEST_CPPFLAGS="-Itests -I. -Isrc -Icbase" \
     TEST_DEFINE_MODULE=0 \
     TEST_DEFINE_TESTING=0 \
     TEST_EXE_SUFFIX= \

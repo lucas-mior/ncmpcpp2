@@ -1,6 +1,8 @@
 #if !defined(NCMPCPP_SCREEN_DEFS_H)
 #define NCMPCPP_SCREEN_DEFS_H
 
+#include "cbase.h"
+
 #include "config.h"
 
 #define NCM_SCREEN_FLAG_NONE 0
