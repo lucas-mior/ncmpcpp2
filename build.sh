@@ -283,39 +283,14 @@ test)
         die 'C compiler does not support C11'
     fi
 
-    for source in tests/*.c; do
-        if [ ! -f "$source" ]; then
-            continue
-        fi
-
-        test_name=${source#tests/}
-        test_name=${test_name%.c}
-        test_dir=bin/tests
-        binary=$test_dir/$test_name
-        temporary_binary=$binary.tmp.$$
-
-        mkdir -p "$test_dir"
-        TEMP_FILE=$temporary_binary
-
-        # Flag variables intentionally require shell word splitting.
-        # shellcheck disable=SC2086
-        run_command "$CC" \
-            -Itests \
-            -I. \
-            -Isrc \
-            -Icbase \
-            $CPPFLAGS \
-            -D_XOPEN_SOURCE=700 \
-            $CFLAGS \
-            "$source" \
-            -o "$temporary_binary" \
-            $LDFLAGS
-
-        mv "$temporary_binary" "$binary"
-        TEMP_FILE=
-
-        "$binary"
-    done
+    TEST_CPPFLAGS="-Itests -I. -Isrc -Icbase -D_XOPEN_SOURCE=700" \
+    TEST_DEFINE_MODULE=0 \
+    TEST_DEFINE_TESTING=0 \
+    TEST_EXE_SUFFIX= \
+    TEST_REQUIRE_TESTING_MARKER=0 \
+    TEST_SKIP_MAIN=0 \
+    TEST_TMPDIR=bin/tests \
+        test "$2" tests
     ;;
 check-no-foreign-sources)
     check_no_foreign_sources
