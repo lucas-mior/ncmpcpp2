@@ -4,8 +4,6 @@
 #define CBASE_IMPLEMENT
 #include "cbase.h"
 
-#include "cbase/util.c"
-
 static void
 str_builder_test_init_and_empty_free(void) {
     StrBuilder str_builder;
