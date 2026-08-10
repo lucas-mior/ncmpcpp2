@@ -5,8 +5,6 @@
 #include "cbase.h"
 #include "curses.h"
 
-#include <unistd.h>
-
 #define COLOR_BLACK   0
 #define COLOR_RED     1
 #define COLOR_GREEN   2
