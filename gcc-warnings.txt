@@ -1,8 +1,0 @@
-
-build.sh [01;38;2;255;000;000mdebug [0;m
-+ pkg-config --exists libmpdclient >= 2.8 ncursesw fftw3 >= 3 libcurl taglib_c
-+ pkg-config --cflags libmpdclient >= 2.8 ncursesw fftw3 >= 3 libcurl taglib_c
-+ pkg-config --libs libmpdclient >= 2.8 ncursesw fftw3 >= 3 libcurl taglib_c
-+ pkg-config --cflags readline
-+ pkg-config --libs readline
-+ gcc -I. -Isrc -Icbase -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -I/usr/include/taglib -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -fanalyzer -fdiagnostics-color=never -std=c11 -Wfatal-errors -Wextra -Wall -Werror=all -Werror=extra -Werror -pthread -g3 -Og -DDEBUGGING=1 src/main.c -o bin/ncmpcpp2.tmp.2022363 -lreadline -lmpdclient -lncursesw -lfftw3 -lcurl -ltag_c -ltag -lz -lm
