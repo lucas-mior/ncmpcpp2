@@ -157,7 +157,7 @@ build)
     CFLAGS="$CFLAGS -O2 -flto"
     ;;
 fast_feedback)
-    CFLAGS="$CFLAGS -g3 -Og"
+    CFLAGS="$CFLAGS -Werror"
     ;;
 check)
     ;;
