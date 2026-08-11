@@ -258,12 +258,12 @@ app_screen_browser_init(void) {
     }
 
     browser_screen_init(&browser_screen,
-                               0,
-                               ui_state_screen_width(),
-                               ui_state_main_start_y(),
-                               ui_state_main_height(),
-                               Config.main_color,
-                               no_border());
+                        0,
+                        ui_state_screen_width(),
+                        ui_state_main_start_y(),
+                        ui_state_main_height(),
+                        Config.main_color,
+                        no_border());
     browser_screen_set_mouse_config(
         &browser_screen, Config.lines_scrolled,
         Config.mouse_list_scroll_whole_page);
@@ -279,7 +279,7 @@ app_screen_browser_fetch_supported_extensions(void) {
 
     ncm_error_clear(&ncm_error);
     if (!browser_screen_fetch_supported_extensions(
-            app_screen_browser(), &global_mpd, &ncm_error)
+        app_screen_browser(), &global_mpd, &ncm_error)
         && ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     ncm_error.message);
@@ -314,13 +314,13 @@ app_screen_lastfm_init(void) {
     }
 
     lastfm_screen_init(&lastfm_screen,
-                              0,
-                              ui_state_screen_width(),
-                              ui_state_main_start_y(),
-                              ui_state_main_height(),
-                              Config.main_color,
-                              no_border(),
-                              Config.lines_scrolled);
+                       0,
+                       ui_state_screen_width(),
+                       ui_state_main_start_y(),
+                       ui_state_main_height(),
+                       Config.main_color,
+                       no_border(),
+                       Config.lines_scrolled);
     lastfm_screen_initialized = true;
     return;
 }
@@ -339,13 +339,13 @@ app_screen_lyrics_init(void) {
     }
 
     lyrics_screen_init(&lyrics_screen,
-                              0,
-                              ui_state_screen_width(),
-                              ui_state_main_start_y(),
-                              ui_state_main_height(),
-                              Config.main_color,
-                              no_border(),
-                              Config.lines_scrolled);
+                       0,
+                       ui_state_screen_width(),
+                       ui_state_main_start_y(),
+                       ui_state_main_height(),
+                       Config.main_color,
+                       no_border(),
+                       Config.lines_scrolled);
     lyrics_screen_initialized = true;
     return;
 }
@@ -407,13 +407,13 @@ app_screen_visualizer_init(void) {
         Config.visualizer_spectrum_log_scale_y;
 
     visualizer_screen_init(&visualizer_screen,
-                                  0,
-                                  ui_state_main_start_y(),
-                                  ui_state_screen_width(),
-                                  ui_state_main_height(),
-                                  Config.main_color,
-                                  no_border(),
-                                  &visualizer_config);
+                           0,
+                           ui_state_main_start_y(),
+                           ui_state_screen_width(),
+                           ui_state_main_height(),
+                           Config.main_color,
+                           no_border(),
+                           &visualizer_config);
     visualizer_screen_initialized = true;
 #endif
     return;
@@ -442,12 +442,12 @@ app_screen_playlist_init(void) {
     }
 
     playlist_screen_init(&playlist_screen,
-                                0,
-                                ui_state_screen_width(),
-                                ui_state_main_start_y(),
-                                ui_state_main_height(),
-                                Config.main_color,
-                                no_border());
+                         0,
+                         ui_state_screen_width(),
+                         ui_state_main_start_y(),
+                         ui_state_main_height(),
+                         Config.main_color,
+                         no_border());
     playlist_screen_set_mouse_config(
         &playlist_screen, Config.lines_scrolled,
         Config.mouse_list_scroll_whole_page);
@@ -461,12 +461,12 @@ app_screen_playlist_editor_init(void) {
         return;
     }
     playlist_editor_screen_init(&playlist_editor_screen,
-                                       0,
-                                       ui_state_screen_width(),
-                                       ui_state_main_start_y(),
-                                       ui_state_main_height(),
-                                       Config.main_color,
-                                       no_border());
+                                0,
+                                ui_state_screen_width(),
+                                ui_state_main_start_y(),
+                                ui_state_main_height(),
+                                Config.main_color,
+                                no_border());
     if ((Config.playlist_editor_column_width_ratio.len >= 2)
         && (Config.playlist_editor_column_width_ratio.items[0] > 0)
         && (Config.playlist_editor_column_width_ratio.items[1] > 0)) {
@@ -494,7 +494,7 @@ app_screen_selected_items_adder_init(void) {
 
 bool
 app_screen_selected_items_adder_open(NcmSongArray *songs,
-                                          NcmError *ncm_error) {
+                                     NcmError *ncm_error) {
     app_screen_selected_items_adder_register();
     return selected_items_adder_screen_open(
         app_screen_selected_items_adder(), songs,
@@ -507,10 +507,10 @@ app_screen_sort_playlist_dialog_init(void) {
         return;
     }
     sort_playlist_dialog_init(&sort_playlist_dialog, 0,
-                                     ui_state_main_start_y(),
-                                     30, ui_state_main_height(),
-                                     Config.main_color,
-                                     Config.window_border);
+                              ui_state_main_start_y(),
+                              30, ui_state_main_height(),
+                              Config.main_color,
+                              Config.window_border);
     sort_playlist_dialog_initialized = true;
     return;
 }
@@ -702,12 +702,12 @@ app_screen_search_engine_init(void) {
     }
 
     search_engine_screen_init(&search_engine_screen,
-                                     0,
-                                     ui_state_screen_width(),
-                                     ui_state_main_start_y(),
-                                     ui_state_main_height(),
-                                     Config.main_color,
-                                     no_border());
+                              0,
+                              ui_state_screen_width(),
+                              ui_state_main_start_y(),
+                              ui_state_main_height(),
+                              Config.main_color,
+                              no_border());
 
     mode = SEARCH_ENGINE_SEARCH_MODE_LITERAL;
     if (Config.search_engine_default_search_mode
@@ -747,12 +747,12 @@ app_screen_media_library_init(void) {
 
     hooks = media_library_mpd_hooks(&global_mpd);
     media_library_screen_init(&media_library_screen, hooks,
-                                     0,
-                                     ui_state_screen_width(),
-                                     ui_state_main_start_y(),
-                                     ui_state_main_height(),
-                                     Config.main_color,
-                                     no_border());
+                              0,
+                              ui_state_screen_width(),
+                              ui_state_main_start_y(),
+                              ui_state_main_height(),
+                              Config.main_color,
+                              no_border());
     media_library_screen_initialized = true;
     return;
 }
@@ -766,11 +766,11 @@ app_screen_tag_editor_init(void) {
     }
 
     tag_editor_screen_init(&tag_editor_screen, 0,
-                                  ui_state_screen_width(),
-                                  ui_state_main_start_y(),
-                                  ui_state_main_height(),
-                                  Config.main_color,
-                                  no_border());
+                           ui_state_screen_width(),
+                           ui_state_main_start_y(),
+                           ui_state_main_height(),
+                           Config.main_color,
+                           no_border());
     hooks = tag_editor_hooks();
     tag_editor_screen_set_hooks(&tag_editor_screen, hooks);
     tag_editor_screen_initialized = true;
@@ -785,8 +785,8 @@ statusbar_prompt_hook(char *text, void *user) {
 
 static enum PromptResult
 prompt_buffer(char *label, int32 label_len,
-                     NcmStringView initial, StrBuilder *result,
-                     bool bold_label) {
+              NcmStringView initial, StrBuilder *result,
+              bool bold_label) {
     NcmStatusbarScopedLock lock;
     enum NcPromptStatus status;
     NcPrompt prompt = {0};
@@ -857,7 +857,7 @@ tag_editor_hook_prompt(
 
     (void)user;
     prompt_result = prompt_buffer(label, label_len, initial,
-                                         result, true);
+                                  result, true);
     if (prompt_result == PROMPT_RESULT_ACCEPTED) {
         return TAG_EDITOR_PROMPT_ACCEPTED;
     }
@@ -923,7 +923,7 @@ tag_editor_hook_update_directory(
     (void)user;
     (void)directory_len;
     if (!ncm_mpd_client_update_directory(
-            &global_mpd, directory, NULL, &ncm_error)) {
+        &global_mpd, directory, NULL, &ncm_error)) {
         ncm_statusbar_print_cstring(
             Config.message_delay_time, ncm_error.message);
     }
@@ -950,7 +950,7 @@ tiny_tag_editor_prompt(
 
     (void)user;
     prompt_result = prompt_buffer(label, label_len, initial,
-                                         result, true);
+                                  result, true);
     if (prompt_result == PROMPT_RESULT_ACCEPTED) {
         return TINY_TAG_EDITOR_PROMPT_ACCEPTED;
     }
@@ -979,7 +979,7 @@ tiny_tag_editor_update_directory(
     (void)user;
     (void)directory_len;
     if (!ncm_mpd_client_update_directory(
-            &global_mpd, directory, NULL, &ncm_error)) {
+        &global_mpd, directory, NULL, &ncm_error)) {
         ncm_statusbar_print_cstring(
             Config.message_delay_time, ncm_error.message);
     }
@@ -1012,11 +1012,11 @@ app_screen_tiny_tag_editor_init(void) {
     }
 
     tiny_tag_editor_screen_init(&tiny_tag_editor_screen, 0,
-                                       ui_state_screen_width(),
-                                       ui_state_main_start_y(),
-                                       ui_state_main_height(),
-                                       Config.main_color,
-                                       no_border());
+                                ui_state_screen_width(),
+                                ui_state_main_start_y(),
+                                ui_state_main_height(),
+                                Config.main_color,
+                                no_border());
     hooks.prompt = tiny_tag_editor_prompt;
     hooks.status_message = tiny_tag_editor_status_message;
     hooks.update_directory = tiny_tag_editor_update_directory;
@@ -1192,7 +1192,7 @@ app_screens_switch_to_type(enum ScreenType screen_type) {
         return false;
     }
     return nc_screen_switcher_switch_to(screen,
-                                       nc_screen_has_to_be_resized(screen));
+                                        nc_screen_has_to_be_resized(screen));
 }
 
 bool
@@ -1340,14 +1340,14 @@ append_format(NcBuffer *buffer, enum NcFormat format) {
 
 static void
 append_formatted_color(NcBuffer *buffer,
-                              NcFormattedColor *color) {
+                       NcFormattedColor *color) {
     nc_buffer_add_formatted_color(buffer, nc_buffer_len(buffer), color, 0);
     return;
 }
 
 static void
 append_formatted_color_end(NcBuffer *buffer,
-                                  NcFormattedColor *color) {
+                           NcFormattedColor *color) {
     nc_buffer_add_formatted_color_end(buffer, nc_buffer_len(buffer), color, 0);
     return;
 }
@@ -1374,8 +1374,8 @@ append_song_tag(NcBuffer *buffer, StrBuilder *tag) {
 
 static void
 append_song_key_value(NcBuffer *buffer, char *key,
-                             StrBuilder *value,
-                             bool empty_as_missing) {
+                      StrBuilder *value,
+                      bool empty_as_missing) {
     append_format(buffer, NC_FORMAT_BOLD);
     append_formatted_color(buffer, &Config.color1);
     append_cstring(buffer, key);
@@ -1446,7 +1446,7 @@ append_action_keys(NcBuffer *buffer, enum NcmActionType type) {
 
 static void
 append_help_line(NcBuffer *buffer, enum NcmActionType type,
-                        char *description) {
+                 char *description) {
     append_cstring(buffer, "    ");
     append_action_keys(buffer, type);
     append_cstring(buffer, " : ");
@@ -1610,7 +1610,7 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
 
 static bool
 outputs_toggle(void *user, int32 id, bool enabled,
-                      char *name, int32 name_len) {
+               char *name, int32 name_len) {
 #if defined(ENABLE_OUTPUTS)
     NcmError ncm_error;
     bool ok;
@@ -1720,12 +1720,12 @@ server_info_load_lists(void *user) {
     owner = user;
     ncm_error_clear(&ncm_error);
     (void)ncm_mpd_client_get_url_handlers(&global_mpd,
-                                           &owner->url_handlers,
-                                           &ncm_error);
+                                          &owner->url_handlers,
+                                          &ncm_error);
     ncm_error_clear(&ncm_error);
     (void)ncm_mpd_client_get_tag_types(&global_mpd,
-                                        &owner->tag_types,
-                                        &ncm_error);
+                                       &owner->tag_types,
+                                       &ncm_error);
     return;
 }
 
@@ -1859,7 +1859,7 @@ server_info_hooks(void) {
 
 static bool
 song_info_render(void *user, NcSongInfoScreen *screen,
-                        NcBuffer *buffer) {
+                 NcBuffer *buffer) {
     SongInfoScreen *owner;
     StrBuilder value;
 

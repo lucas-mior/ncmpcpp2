@@ -33,9 +33,9 @@ typedef struct SortPlaylistDialog {
 } SortPlaylistDialog;
 
 void sort_playlist_dialog_init(SortPlaylistDialog *dialog,
-                                      int32 start_x, int32 start_y,
-                                      int32 width, int32 height,
-                                      NcColor color, NcBorder border);
+                               int32 start_x, int32 start_y,
+                               int32 width, int32 height,
+                               NcColor color, NcBorder border);
 void sort_playlist_dialog_destroy(SortPlaylistDialog *dialog);
 NcScreen *sort_playlist_dialog_base(
     SortPlaylistDialog *dialog);
@@ -47,10 +47,10 @@ void sort_playlist_dialog_set_geometry(
 void sort_playlist_dialog_populate_defaults(
     SortPlaylistDialog *dialog);
 bool sort_playlist_dialog_add_row(SortPlaylistDialog *dialog,
-                                         char *label, int32 label_len,
-                                         enum NcmSongGetter getter,
-                                         void (*run)(void *user),
-                                         void *user);
+                                  char *label, int32 label_len,
+                                  enum NcmSongGetter getter,
+                                  void (*run)(void *user),
+                                  void *user);
 bool sort_playlist_dialog_open(
     SortPlaylistDialog *dialog, PlaylistScreen *playlist,
     NcmMpdClient *client, bool ignore_leading_the, NcmError *ncm_error);

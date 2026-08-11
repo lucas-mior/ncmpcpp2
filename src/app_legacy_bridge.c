@@ -36,13 +36,13 @@ static void
 app_bridge_refresh_playlist_related_inactive_columns(void *user) {
     (void)user;
     if (app_controller_is_screen_visible(
-            app_screen_media_library_base())) {
+        app_screen_media_library_base())) {
         media_library_screen_refresh_inactive_songs(
             app_screen_media_library());
     }
 
     if (app_controller_is_screen_visible(
-            app_screen_playlist_editor_base())) {
+        app_screen_playlist_editor_base())) {
         nc_screen_refresh(app_screen_playlist_editor_base());
     }
     return;

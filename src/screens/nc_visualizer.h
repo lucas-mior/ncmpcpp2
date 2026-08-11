@@ -164,10 +164,10 @@ typedef struct VisualizerScreen {
 } VisualizerScreen;
 
 void visualizer_screen_init(VisualizerScreen *screen,
-                                   int32 start_x, int32 start_y,
-                                   int32 width, int32 height,
-                                   NcColor color, NcBorder border,
-                                   VisualizerScreenConfig *config);
+                            int32 start_x, int32 start_y,
+                            int32 width, int32 height,
+                            NcColor color, NcBorder border,
+                            VisualizerScreenConfig *config);
 void visualizer_screen_destroy(VisualizerScreen *screen);
 VisualizerDataSourceHooks visualizer_data_source_system_hooks(
     struct NcmMpdClient *client);
@@ -185,8 +185,8 @@ bool visualizer_screen_find_output_id(
 NcScreen *visualizer_screen_base(VisualizerScreen *screen);
 NcWindow *visualizer_screen_window(VisualizerScreen *screen);
 void visualizer_screen_set_geometry(VisualizerScreen *screen,
-                                           int32 start_x, int32 start_y,
-                                           int32 width, int32 height);
+                                    int32 start_x, int32 start_y,
+                                    int32 width, int32 height);
 void visualizer_screen_init_visualization(
     VisualizerScreen *screen);
 void visualizer_screen_clear(VisualizerScreen *screen);
@@ -198,18 +198,18 @@ void visualizer_screen_toggle_type(VisualizerScreen *screen);
 int32 visualizer_screen_requested_samples(
     VisualizerScreen *screen);
 bool visualizer_screen_push_samples(VisualizerScreen *screen,
-                                           int16 *samples,
-                                           int32 samples_len);
+                                    int16 *samples,
+                                    int32 samples_len);
 int32 visualizer_screen_take_render_samples(
     VisualizerScreen *screen, int16 *dest, int32 dest_len);
 int32 visualizer_screen_split_stereo(VisualizerScreen *screen,
-                                            int16 *samples,
-                                            int32 samples_len);
+                                     int16 *samples,
+                                     int32 samples_len);
 void visualizer_screen_apply_auto_scale(VisualizerScreen *screen,
-                                               int16 *samples,
-                                               int32 samples_len);
+                                        int16 *samples,
+                                        int32 samples_len);
 bool visualizer_screen_draw(VisualizerScreen *screen,
-                                   int16 *samples, int32 samples_len);
+                            int16 *samples, int32 samples_len);
 int16 visualizer_clamp_sample(int32 sample);
 
 #endif /* NCMPCPP_NC_VISUALIZER_H */

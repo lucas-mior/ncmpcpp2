@@ -164,13 +164,13 @@ static void playlist_resize(NcScreen *screen);
 static char *playlist_title(NcScreen *screen);
 static void playlist_update(NcScreen *screen);
 static void playlist_mouse_button_pressed(NcScreen *screen,
-                                                 MEVENT event);
+                                          MEVENT event);
 static NcMenuDisplayCallbacks playlist_display_callbacks(void);
 static NcMenuActionCallbacks playlist_action_callbacks(void);
 static void playlist_draw_song(NcMenu *menu, NcWindow *window,
-                                      void *item, int32 pos, void *user);
+                               void *item, int32 pos, void *user);
 static void playlist_activate_song(NcMenu *menu, void *item,
-                                          int32 pos, void *user);
+                                   int32 pos, void *user);
 static void playlist_print_buffer(NcWindow *window, NcBuffer *buffer);
 static bool playlist_song_is_now_playing(NcmSong *song);
 static NcMenu *playlist_storage_menu(PlaylistScreen *screen);
@@ -180,32 +180,32 @@ static bool playlist_set_mutable_uri(
     NcmSong *song, NcmMutableSong *edited);
 static void playlist_refresh_stats(PlaylistScreen *screen);
 static bool playlist_truncate_storage(PlaylistScreen *screen,
-                                             int32 playlist_length);
+                                      int32 playlist_length);
 static bool playlist_apply_changed_song_to_storage(
     PlaylistScreen *screen, NcmSong *song);
 static bool playlist_apply_changed_songs(
     PlaylistScreen *screen, NcmMpdSongList *songs,
     int32 playlist_length);
 static bool playlist_should_reload_full(PlaylistScreen *screen,
-                                               int32 version,
-                                               int32 playlist_length,
-                                               NcmMpdSongList *changes);
+                                        int32 version,
+                                        int32 playlist_length,
+                                        NcmMpdSongList *changes);
 static bool playlist_append_selected(NcMenu *menu,
-                                            NcmSongArray *songs);
+                                     NcmSongArray *songs);
 static bool playlist_append_position(NcMenu *menu, int32 pos,
-                                            NcmSongArray *songs);
+                                     NcmSongArray *songs);
 static bool playlist_set_one_priority(NcmSong *song, int32 idx,
-                                             void *user);
+                                      void *user);
 static bool playlist_filter_song(NcMenu *menu, void *item,
-                                        void *user);
+                                 void *user);
 static bool playlist_song_matches(PlaylistScreen *screen,
-                                         NcmSong *song, NcmRegex *regex);
+                                  NcmSong *song, NcmRegex *regex);
 static bool playlist_search_menu(PlaylistScreen *screen,
-                                        NcMenu *menu, NcmRegex *regex,
-                                        bool forward, bool wrap,
-                                        bool skip_current);
+                                 NcMenu *menu, NcmRegex *regex,
+                                 bool forward, bool wrap,
+                                 bool skip_current);
 static bool playlist_search_position(NcMenu *menu, int32 pos,
-                                            void *user);
+                                     void *user);
 
 typedef struct PlaylistSearchContext {
     PlaylistScreen *screen;
@@ -241,9 +241,9 @@ typedef struct PlaylistPriorityContext {
 
 void
 playlist_screen_init(PlaylistScreen *screen, int32 start_x,
-                            int32 width, int32 main_start_y,
-                            int32 main_height, NcColor color,
-                            NcBorder border) {
+                     int32 width, int32 main_start_y,
+                     int32 main_height, NcColor color,
+                     NcBorder border) {
     nc_song_menu_init(&screen->songs);
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, "", 0, color, border);
@@ -312,7 +312,7 @@ playlist_screen_unregister(PlaylistScreen *screen) {
         return true;
     }
     if (!app_controller_unregister_screen(
-            playlist_screen_base(screen))) {
+        playlist_screen_base(screen))) {
         return false;
     }
     screen->registered = false;
@@ -386,8 +386,8 @@ playlist_screen_update_column_title(PlaylistScreen *screen) {
 
 void
 playlist_screen_set_geometry(PlaylistScreen *screen,
-                                    int32 start_x, int32 width,
-                                    int32 main_start_y, int32 main_height) {
+                             int32 start_x, int32 width,
+                             int32 main_start_y, int32 main_height) {
     if (screen == NULL) {
         return;
     }
@@ -401,8 +401,8 @@ playlist_screen_set_geometry(PlaylistScreen *screen,
 
 void
 playlist_screen_set_mouse_config(PlaylistScreen *screen,
-                                        int32 lines_scrolled,
-                                        bool scroll_whole_page) {
+                                 int32 lines_scrolled,
+                                 bool scroll_whole_page) {
     if (screen == NULL) {
         return;
     }
@@ -413,7 +413,7 @@ playlist_screen_set_mouse_config(PlaylistScreen *screen,
 
 void
 playlist_screen_set_highlighting(PlaylistScreen *screen,
-                                        bool enabled) {
+                                 bool enabled) {
     bool was_enabled;
 
     if (screen == NULL) {
@@ -462,10 +462,10 @@ playlist_screen_clear(PlaylistScreen *screen) {
 
 bool
 playlist_screen_reload_from_mpd(PlaylistScreen *screen,
-                                       NcmMpdClient *client,
-                                       int32 version,
-                                       int32 playlist_length,
-                                       NcmError *ncm_error) {
+                                NcmMpdClient *client,
+                                int32 version,
+                                int32 playlist_length,
+                                NcmError *ncm_error) {
     NcmMpdSongList songs;
     bool result;
 
@@ -480,22 +480,22 @@ playlist_screen_reload_from_mpd(PlaylistScreen *screen,
 
     ncm_mpd_song_list_init(&songs);
     if (playlist_should_reload_full(screen, version,
-                                           playlist_length, NULL)) {
+                                    playlist_length, NULL)) {
         result = ncm_mpd_client_get_queue(client, &songs, ncm_error);
     } else {
         result = ncm_mpd_client_get_queue_changes(client, version, &songs,
                                                   ncm_error);
         if (result
             && playlist_should_reload_full(screen, version,
-                                                  playlist_length,
-                                                  &songs)) {
+                                           playlist_length,
+                                           &songs)) {
             result = ncm_mpd_client_get_queue(client, &songs, ncm_error);
         }
     }
 
     if (result) {
         result = playlist_apply_changed_songs(screen,
-                                                     &songs, playlist_length);
+                                              &songs, playlist_length);
         if (!result) {
             ncm_error_set(ncm_error, -1,
                           STRLIT("could not copy playlist songs"));
@@ -520,7 +520,7 @@ playlist_screen_empty(PlaylistScreen *screen) {
 
 bool
 playlist_screen_current_song(PlaylistScreen *screen,
-                                    NcmSong *song) {
+                             NcmSong *song) {
     NcmSong *current;
 
     if (screen == NULL) {
@@ -573,7 +573,7 @@ playlist_screen_update_current_mutable_song(
 
 bool
 playlist_screen_now_playing_song(PlaylistScreen *screen,
-                                        int32 position, NcmSong *song) {
+                                 int32 position, NcmSong *song) {
     NcMenu *base;
     NcSongMenu *menu;
     NcmSong *item;
@@ -618,7 +618,7 @@ playlist_screen_now_playing_song(PlaylistScreen *screen,
 
 bool
 playlist_screen_locate_position(PlaylistScreen *screen,
-                                       int32 position) {
+                                int32 position) {
     NcMenu *menu;
     NcmSong *song;
     int32 height;
@@ -641,7 +641,7 @@ playlist_screen_locate_position(PlaylistScreen *screen,
 
 bool
 playlist_screen_selected_songs(PlaylistScreen *screen,
-                                      NcmSongArray *songs) {
+                               NcmSongArray *songs) {
     NcMenu *menu;
 
     if (songs == NULL) {
@@ -660,7 +660,7 @@ playlist_screen_selected_songs(PlaylistScreen *screen,
         return true;
     }
     return playlist_append_position(menu, nc_menu_highlight(menu),
-                                           songs);
+                                    songs);
 }
 
 static bool
@@ -791,7 +791,7 @@ playlist_screen_copy_sort_range(
         return false;
     }
     if (!playlist_screen_find_sort_range(
-            screen, &first, &last, &range_start, ncm_error)) {
+        screen, &first, &last, &range_start, ncm_error)) {
         return false;
     }
 
@@ -821,8 +821,8 @@ playlist_screen_copy_sort_range(
 
 bool
 playlist_screen_apply_filter(PlaylistScreen *screen,
-                                    char *pattern, int32 pattern_len,
-                                    NcmError *ncm_error) {
+                             char *pattern, int32 pattern_len,
+                             NcmError *ncm_error) {
     NcMenuDisplayCallbacks callbacks;
 
     if (screen == NULL) {
@@ -864,9 +864,9 @@ playlist_screen_clear_filter(PlaylistScreen *screen) {
 
 bool
 playlist_screen_search(PlaylistScreen *screen,
-                              char *pattern, int32 pattern_len,
-                              bool forward, bool wrap,
-                              bool skip_current, NcmError *ncm_error) {
+                       char *pattern, int32 pattern_len,
+                       bool forward, bool wrap,
+                       bool skip_current, NcmError *ncm_error) {
     NcmRegex regex;
     bool result;
 
@@ -894,9 +894,9 @@ playlist_screen_search(PlaylistScreen *screen,
 
 bool
 playlist_screen_set_selected_priority(PlaylistScreen *screen,
-                                             NcmMpdClient *client,
-                                             int32 priority,
-                                             NcmError *ncm_error) {
+                                      NcmMpdClient *client,
+                                      int32 priority,
+                                      NcmError *ncm_error) {
     PlaylistPriorityContext context;
     NcmSongArray songs;
     bool result;
@@ -920,7 +920,7 @@ playlist_screen_set_selected_priority(PlaylistScreen *screen,
     result = true;
     for (int32 i = 0; i < songs.len; i += 1) {
         if (!playlist_set_one_priority(&songs.items[i], i,
-                                              &context)) {
+                                       &context)) {
             result = false;
             break;
         }
@@ -978,9 +978,9 @@ playlist_resize(NcScreen *screen) {
     playlist = playlist_from_screen(screen);
     params = app_controller_screen_resize_params(screen, true);
     playlist_screen_set_geometry(playlist, params.x_offset,
-                                        params.width,
-                                        ui_state_main_start_y(),
-                                        ui_state_main_height());
+                                 params.width,
+                                 ui_state_main_start_y(),
+                                 ui_state_main_height());
     nc_screen_clear_resize_request(screen);
     return;
 }
@@ -1035,12 +1035,12 @@ playlist_filter_song(NcMenu *menu, void *item, void *user) {
     (void)menu;
     screen = user;
     return playlist_song_matches(screen, item,
-                                        &screen->filter_regex);
+                                 &screen->filter_regex);
 }
 
 static bool
 playlist_song_matches(PlaylistScreen *screen,
-                             NcmSong *song, NcmRegex *regex) {
+                      NcmSong *song, NcmRegex *regex) {
     StrBuilder buffer;
     bool result;
 
@@ -1062,9 +1062,9 @@ playlist_song_matches(PlaylistScreen *screen,
 
 static bool
 playlist_search_menu(PlaylistScreen *screen,
-                            NcMenu *menu, NcmRegex *regex,
-                            bool forward, bool wrap,
-                            bool skip_current) {
+                     NcMenu *menu, NcmRegex *regex,
+                     bool forward, bool wrap,
+                     bool skip_current) {
     PlaylistSearchContext context;
 
     context.screen = screen;
@@ -1077,7 +1077,7 @@ playlist_search_menu(PlaylistScreen *screen,
 
 static bool
 playlist_search_position(NcMenu *menu, int32 pos,
-                                void *user) {
+                         void *user) {
     PlaylistSearchContext *context;
 
     context = user;
@@ -1104,7 +1104,7 @@ playlist_action_callbacks(void) {
 
 static void
 playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
-                          int32 pos, void *user) {
+                   int32 pos, void *user) {
     NcBuffer buffer;
     bool is_now_playing;
 
@@ -1164,7 +1164,7 @@ playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
 
 static void
 playlist_activate_song(NcMenu *menu, void *item, int32 pos,
-                              void *user) {
+                       void *user) {
     NcmError ncm_error = {0};
 
     (void)menu;
@@ -1333,7 +1333,7 @@ playlist_refresh_stats(PlaylistScreen *screen) {
 
 static bool
 playlist_truncate_storage(PlaylistScreen *screen,
-                                 int32 playlist_length) {
+                          int32 playlist_length) {
     NcMenu *menu;
     int32 new_count;
     int32 old_count;
@@ -1355,7 +1355,7 @@ playlist_truncate_storage(PlaylistScreen *screen,
 
 static bool
 playlist_apply_changed_song_to_storage(PlaylistScreen *screen,
-                                              NcmSong *song) {
+                                       NcmSong *song) {
     NcMenu *menu;
     int32 position;
 
@@ -1379,9 +1379,9 @@ playlist_apply_changed_song_to_storage(PlaylistScreen *screen,
 
 static bool
 playlist_should_reload_full(PlaylistScreen *screen,
-                                   int32 version,
-                                   int32 playlist_length,
-                                   NcmMpdSongList *changes) {
+                            int32 version,
+                            int32 playlist_length,
+                            NcmMpdSongList *changes) {
     int32 count;
     int32 next_append_position;
 
@@ -1417,8 +1417,8 @@ playlist_should_reload_full(PlaylistScreen *screen,
 
 static bool
 playlist_apply_changed_songs(PlaylistScreen *screen,
-                                    NcmMpdSongList *songs,
-                                    int32 playlist_length) {
+                             NcmMpdSongList *songs,
+                             int32 playlist_length) {
     NcMenu *menu;
     bool result;
     bool was_filtered;
@@ -1435,13 +1435,13 @@ playlist_apply_changed_songs(PlaylistScreen *screen,
     was_filtered = nc_menu_is_filtered(menu);
 
     if (result && !playlist_truncate_storage(screen,
-                                                    playlist_length)) {
+                                             playlist_length)) {
         result = false;
     }
 
     for (int32 i = 0; result && i < songs->count; i += 1) {
         if (!playlist_apply_changed_song_to_storage(
-                screen, &songs->items[i])) {
+            screen, &songs->items[i])) {
             result = false;
             break;
         }
@@ -1478,7 +1478,7 @@ playlist_append_selected(NcMenu *menu, NcmSongArray *songs) {
 
 static bool
 playlist_append_position(NcMenu *menu, int32 pos,
-                                NcmSongArray *songs) {
+                         NcmSongArray *songs) {
     NcmSong *song;
 
     if ((song = nc_menu_active_item_at(menu, pos)) == NULL) {

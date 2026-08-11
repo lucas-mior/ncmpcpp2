@@ -17,7 +17,7 @@ static void search_resize(NcScreen *screen);
 static char *search_title(NcScreen *screen);
 static void search_update(NcScreen *screen);
 static void search_mouse_button_pressed(NcScreen *screen,
-                                         MEVENT event);
+                                        MEVENT event);
 static bool search_can_run_current(NcScreen *screen);
 static bool search_run_current(NcScreen *screen);
 static void search_draw_row(NcMenu *menu, NcWindow *window,
@@ -275,7 +275,7 @@ void
 search_engine_screen_set_display_mode(SearchEngineScreen *screen,
                                       enum DisplayMode mode) {
     if ((screen == NULL) || ((mode != NCM_DISPLAY_MODE_CLASSIC)
-        && (mode != NCM_DISPLAY_MODE_COLUMNS))) {
+                             && (mode != NCM_DISPLAY_MODE_COLUMNS))) {
         return;
     }
     Config.search_engine_display_mode = mode;
@@ -569,7 +569,7 @@ search_engine_screen_add_song_copy(SearchEngineScreen *screen,
 
 bool
 search_engine_screen_add_song_copy_with_flags(SearchEngineScreen *screen,
-                                             NcmSong *song, uint32 flags) {
+                                              NcmSong *song, uint32 flags) {
     NcSearchRow row;
 
     if ((screen == NULL) || (song == NULL)) {
@@ -890,8 +890,8 @@ search_engine_screen_run_current(SearchEngineScreen *screen) {
     if (pos == SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
         ncm_error_clear(&ncm_error);
         return search_engine_screen_start_searching(screen,
-                                                   screen->hooks.client,
-                                                   &ncm_error);
+                                                    screen->hooks.client,
+                                                    &ncm_error);
     }
     if (pos == SEARCH_ENGINE_RESET_BUTTON_ROW) {
         search_engine_screen_reset(screen);
@@ -1171,7 +1171,7 @@ search_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         play = (event.bstate & BUTTON3_PRESSED) != 0;
         ncm_error_clear(&ncm_error);
         if (!search_engine_screen_add_song(
-                search, &row->song, play, &ncm_error)) {
+            search, &row->song, play, &ncm_error)) {
             search_print_error(search, &ncm_error);
         }
         return;
@@ -1229,7 +1229,7 @@ search_row_label(SearchEngineScreen *screen,
         if (screen->hooks.format_song) {
             sb_clear(&screen->row_text);
             if (!screen->hooks.format_song(
-                    screen->hooks.user, &row->song, &screen->row_text)) {
+                screen->hooks.user, &row->song, &screen->row_text)) {
                 return false;
             }
             *view = ncm_string_view_make(screen->row_text.data,
@@ -1237,7 +1237,7 @@ search_row_label(SearchEngineScreen *screen,
             return true;
         }
         if (!search_engine_screen_format_song_text(
-                screen, &row->song, &screen->row_text)) {
+            screen, &row->song, &screen->row_text)) {
             return false;
         }
         *view = ncm_string_view_make(screen->row_text.data,
@@ -1628,7 +1628,7 @@ search_add_database_constraints(SearchEngineScreen *screen,
         }
         if (i == 5) {
             if (!ncm_mpd_client_add_search_uri(
-                    client, constraint->data, ncm_error)) {
+                client, constraint->data, ncm_error)) {
                 return false;
             }
             continue;
@@ -1668,7 +1668,7 @@ search_add_database_constraints(SearchEngineScreen *screen,
             return false;
         }
         if (!ncm_mpd_client_add_search_tag(
-                client, tag, constraint->data, ncm_error)) {
+            client, tag, constraint->data, ncm_error)) {
             return false;
         }
     }
@@ -1711,7 +1711,7 @@ search_collect_local_results(SearchEngineScreen *screen, NcmSongArray *source,
     ok = true;
     for (int32 i = 0; i < source->len; i += 1) {
         if (!search_song_matches(
-                screen, &source->items[i], regexes)) {
+            screen, &source->items[i], regexes)) {
             continue;
         }
         if (!ncm_song_array_append_copy(songs, &source->items[i])) {
@@ -1764,8 +1764,8 @@ search_song_field_matches(SearchEngineScreen *screen, NcmSong *song,
     }
     if (screen->search_mode == SEARCH_ENGINE_SEARCH_MODE_EXACT) {
         return ncm_compare_locale_strings(
-                   value.data, value.len, constraint->data,
-                   constraint->len, Config.ignore_leading_the) == 0;
+            value.data, value.len, constraint->data,
+            constraint->len, Config.ignore_leading_the) == 0;
     }
     if ((regex == NULL) || !regex->compiled) {
         return true;
@@ -1791,8 +1791,8 @@ search_song_any_matches(SearchEngineScreen *screen, NcmSong *song,
         if (screen->search_mode
             == SEARCH_ENGINE_SEARCH_MODE_EXACT) {
             if (ncm_compare_locale_strings(
-                    value.data, value.len, constraint->data,
-                    constraint->len, Config.ignore_leading_the) == 0) {
+                value.data, value.len, constraint->data,
+                constraint->len, Config.ignore_leading_the) == 0) {
                 return true;
             }
         } else if (ncm_regex_search(regex, value.data, value.len)) {

@@ -143,21 +143,21 @@ typedef struct TagEditorScreen {
 } TagEditorScreen;
 
 void tag_editor_screen_init(TagEditorScreen *screen,
-                                   int32 start_x, int32 width,
-                                   int32 main_start_y,
-                                   int32 main_height, NcColor color,
-                                   NcBorder border);
+                            int32 start_x, int32 width,
+                            int32 main_start_y,
+                            int32 main_height, NcColor color,
+                            NcBorder border);
 void tag_editor_screen_destroy(TagEditorScreen *screen);
 NcScreen *tag_editor_screen_base(TagEditorScreen *screen);
 
 void tag_editor_screen_set_hooks(TagEditorScreen *screen,
-                                        TagEditorHooks hooks);
+                                 TagEditorHooks hooks);
 NcMenu *tag_editor_screen_active_menu(TagEditorScreen *screen);
 NcWindow *tag_editor_screen_active_window(TagEditorScreen *screen);
 void tag_editor_screen_set_geometry(TagEditorScreen *screen,
-                                           int32 start_x, int32 width,
-                                           int32 main_start_y,
-                                           int32 main_height);
+                                    int32 start_x, int32 width,
+                                    int32 main_start_y,
+                                    int32 main_height);
 void tag_editor_screen_clear_directories(
     TagEditorScreen *screen);
 void tag_editor_screen_clear_stale_tags(
@@ -165,28 +165,28 @@ void tag_editor_screen_clear_stale_tags(
 void tag_editor_screen_finish_directory_change(
     TagEditorScreen *screen);
 bool tag_editor_screen_set_current_dir(TagEditorScreen *screen,
-                                              char *dir, int32 dir_len);
+                                       char *dir, int32 dir_len);
 bool tag_editor_screen_current_dir(TagEditorScreen *screen,
-                                          NcmStringView *view);
+                                   NcmStringView *view);
 bool tag_editor_screen_current_directory_path(
     TagEditorScreen *screen, NcmStringView *view);
 bool tag_editor_screen_enter_directory(TagEditorScreen *screen);
 bool tag_editor_screen_go_to_parent(TagEditorScreen *screen);
 bool tag_editor_screen_locate_song(TagEditorScreen *screen,
-                                          NcmSong *song);
+                                   NcmSong *song);
 bool tag_editor_screen_rename_directory_available(
     TagEditorScreen *screen, char *music_dir, int32 music_dir_len);
 bool tag_editor_screen_rename_current_directory(
     TagEditorScreen *screen, char *music_dir, int32 music_dir_len);
 bool tag_editor_screen_add_directory(TagEditorScreen *screen,
-                                            char *label, int32 label_len,
-                                            char *path, int32 path_len);
+                                     char *label, int32 label_len,
+                                     char *path, int32 path_len);
 bool tag_editor_screen_load_songs(TagEditorScreen *screen,
-                                         NcmSongArray *songs);
+                                  NcmSongArray *songs);
 bool tag_editor_screen_add_mutable_song(
     TagEditorScreen *screen, NcmMutableSong *song);
 bool tag_editor_screen_selected_songs(TagEditorScreen *screen,
-                                             NcmSongArray *songs);
+                                      NcmSongArray *songs);
 bool tag_editor_screen_previous_column_available(
     TagEditorScreen *screen);
 bool tag_editor_screen_next_column_available(
@@ -197,14 +197,14 @@ bool tag_editor_screen_apply_tag_to_selection(
     TagEditorScreen *screen, enum NcmTagsField field, char *value,
     int32 value_len, char *separator, int32 separator_len);
 bool tag_editor_screen_number_tracks(TagEditorScreen *screen,
-                                            bool extended);
+                                     bool extended);
 void tag_editor_screen_capitalize_first_letters(
     TagEditorScreen *screen);
 void tag_editor_screen_lower_all_letters(TagEditorScreen *screen);
 void tag_editor_screen_clear_modifications(
     TagEditorScreen *screen);
 bool tag_editor_screen_save_modified(TagEditorScreen *screen,
-                                            char *music_dir);
+                                     char *music_dir);
 bool tag_editor_screen_save_action_available(
     TagEditorScreen *screen);
 bool tag_editor_screen_apply_directory_filter(
@@ -230,13 +230,13 @@ void tag_editor_screen_show_parser_preview(
 void tag_editor_screen_close_parser(
     TagEditorScreen *screen);
 bool tag_editor_parse_filename(NcmMutableSong *song, char *mask,
-                                      int32 mask_len, bool preview,
-                                      StrBuilder *preview_buffer);
+                               int32 mask_len, bool preview,
+                               StrBuilder *preview_buffer);
 bool tag_editor_generate_filename(NcmMutableSong *song,
-                                         char *pattern, int32 pattern_len,
-                                         StrBuilder *filename);
+                                  char *pattern, int32 pattern_len,
+                                  StrBuilder *filename);
 bool tag_editor_song_display_value(NcmMutableSong *song,
-                                          enum NcmTagsField field,
-                                          StrBuilder *buffer);
+                                   enum NcmTagsField field,
+                                   StrBuilder *buffer);
 
 #endif /* NCMPCPP_NC_TAG_EDITOR_H */

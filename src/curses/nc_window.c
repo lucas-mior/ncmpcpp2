@@ -216,7 +216,7 @@ nc_key_name(NcKey key, char *buffer, int32 buffer_len) {
         result = snprintf2(buffer, buffer_len, "Escape");
     } else if ((key >= NC_KEY_CTRL_A) && (key <= NC_KEY_CTRL_Z)) {
         result = snprintf2(buffer, buffer_len, "Ctrl-%c",
-                          (char)('A' + key - NC_KEY_CTRL_A));
+                           (char)('A' + key - NC_KEY_CTRL_A));
     } else if (key == NC_KEY_CTRL_LEFT_BRACKET) {
         result = snprintf2(buffer, buffer_len, "Ctrl-[");
     } else if (key == NC_KEY_CTRL_BACKSLASH) {
@@ -264,10 +264,10 @@ nc_key_name(NcKey key, char *buffer, int32 buffer_len) {
         result = snprintf2(buffer, buffer_len, "EoF");
     } else if ((key >= NC_KEY_F1) && (key <= NC_KEY_F9)) {
         result = snprintf2(buffer, buffer_len, "F%c",
-                          (char)('1' + key - NC_KEY_F1));
+                           (char)('1' + key - NC_KEY_F1));
     } else if ((key >= NC_KEY_F10) && (key <= NC_KEY_F12)) {
         result = snprintf2(buffer, buffer_len, "F1%c",
-                          (char)('0' + key - NC_KEY_F10));
+                           (char)('0' + key - NC_KEY_F10));
     } else {
         result = snprintf2(buffer, buffer_len, "%c", (char)key);
     }
@@ -1062,7 +1062,7 @@ nc_window_push_color(NcWindow *window, NcColor color) {
         if (ARRAY_LEN(window->color_stack) > 0) {
             nc_window_set_color(window,
                                 window->color_stack[
-                                    ARRAY_LEN(window->color_stack) - 1]);
+                                ARRAY_LEN(window->color_stack) - 1]);
         } else {
             nc_window_set_color(window, window->base_color);
         }
@@ -1259,7 +1259,7 @@ nc_prompt_display_string(void) {
 
             next_byte = utf8_next_position(after_cursor, after_len, byte);
             char_width = utf8_width(after_cursor + byte,
-                                        next_byte - byte);
+                                    next_byte - byte);
             if (printed_width + char_width > nc_readline_state.width) {
                 break;
             }
@@ -1273,7 +1273,7 @@ nc_prompt_display_string(void) {
         suffix_position = utf8_suffix_width_position(
             before_cursor, before_len, nc_readline_state.width);
         cursor_pos = utf8_width(before_cursor + suffix_position,
-                                    before_len - suffix_position);
+                                before_len - suffix_position);
         nc_prompt_print_visible_suffix(before_cursor + suffix_position,
                                        before_len - suffix_position);
     }

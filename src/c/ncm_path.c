@@ -76,7 +76,7 @@ ncm_path_expand_home(StrBuilder *path, NcmError *ncm_error) {
     }
     sb_reserve(path, home_len - 1);
     memmove64(path->data + tilde + home_len,
-            path->data + tilde + 1, old_len - tilde);
+              path->data + tilde + 1, old_len - tilde);
     memcpy64(path->data + tilde, home, home_len);
     path->len = old_len - 1 + home_len;
     ncm_error_clear(ncm_error);
