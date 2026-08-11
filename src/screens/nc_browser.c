@@ -1465,8 +1465,7 @@ browser_print_buffer(NcWindow *window, NcBuffer *buffer) {
 }
 
 static void
-browser_mouse_scroll(BrowserScreen *screen,
-                            enum NcScroll where) {
+browser_mouse_scroll(BrowserScreen *screen, enum NcScroll where) {
     for (int32 i = 0; i < screen->lines_scrolled; i += 1) {
         nc_menu_scroll_selectable(browser_screen_menu(screen),
                                   screen->main_height, where);
