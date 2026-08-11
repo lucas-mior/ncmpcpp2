@@ -321,18 +321,12 @@ visualizer_fft_init(
     fft->dft_frequency_space_cap = NATIVE_VISUALIZER_FREQ_SPACE_CAP;
     fft->bar_heights_cap = NATIVE_VISUALIZER_BAR_HEIGHTS_CAP;
 
-    fft->freqs_mags = malloc2(
-        fft->freqs_mags_cap
-        *SIZEOF(*fft->freqs_mags));
-    fft->dft_frequency_space = malloc2(
-        fft->dft_frequency_space_cap
-        *SIZEOF(*fft->dft_frequency_space));
-    fft->bar_heights = malloc2(
-        fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
+    fft->freqs_mags = malloc2(fft->freqs_mags_cap*SIZEOF(*fft->freqs_mags));
+    fft->dft_frequency_space = malloc2(fft->dft_frequency_space_cap
+                                       *SIZEOF(*fft->dft_frequency_space));
+    fft->bar_heights = malloc2(fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
 
-    memset64(fft->freqs_mags, 0,
-             fft->freqs_mags_cap
-             *SIZEOF(*fft->freqs_mags));
+    memset64(fft->freqs_mags, 0, fft->freqs_mags_cap*SIZEOF(*fft->freqs_mags));
 
     fft->input = fftw_malloc(
         (size_t)(fft->dft_total_size*SIZEOF(*fft->input)));
@@ -342,8 +336,7 @@ visualizer_fft_init(
         visualizer_fft_destroy(screen);
         return;
     }
-    memset64(fft->input, 0,
-             fft->dft_total_size*SIZEOF(*fft->input));
+    memset64(fft->input, 0, fft->dft_total_size*SIZEOF(*fft->input));
     fft->plan = fftw_plan_dft_r2c_1d(fft->dft_total_size,
                                      fft->input, fft->output,
                                      FFTW_ESTIMATE);
