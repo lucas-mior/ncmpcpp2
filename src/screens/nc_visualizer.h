@@ -93,7 +93,7 @@ typedef struct NativeVisualizerFftState {
     fftw_complex *output;
     fftw_plan plan;
 
-    double *frequency_magnitudes;
+    double *freqs_mags;
     double *dft_frequency_space;
     NativeVisualizerBarHeight *bar_heights;
 
@@ -101,8 +101,8 @@ typedef struct NativeVisualizerFftState {
     int32 dft_nonzero_size;
     int32 dft_total_size;
 
-    int32 frequency_magnitudes_len;
-    int32 frequency_magnitudes_cap;
+    int32 freqs_mags_len;
+    int32 freqs_mags_cap;
     int32 dft_frequency_space_len;
     int32 dft_frequency_space_cap;
     int32 bar_heights_len;
