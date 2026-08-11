@@ -44,27 +44,18 @@ nc_help_screen_init(NcHelpScreen *screen,
                              nc_help_ops,
                              hooks.user,
                              NC_SCREEN_TYPE_HELP,
-                             0,
-                             0,
-                             0,
-                             0);
+                             0, 0, 0, 0);
     nc_buffer_init(&screen->buffer);
     sb_init(&screen->search_constraint);
-    nc_help_screen_set_geometry(screen,
-                                start_x,
-                                width,
-                                main_start_y,
+    nc_help_screen_set_geometry(screen, start_x, width, main_start_y,
                                 main_height);
     nc_window_init(&screen->window,
                    nc_help_screen_start_x(screen),
                    nc_help_screen_start_y(screen),
                    nc_help_screen_width(screen),
                    nc_help_screen_height(screen),
-                   STRLIT(""),
-                   color,
-                   border);
-    nc_scrollpad_init(&screen->scrollpad,
-                      nc_window_height(&screen->window));
+                   STRLIT(""), color, border);
+    nc_scrollpad_init(&screen->scrollpad, nc_window_height(&screen->window));
     return;
 }
 
@@ -73,10 +64,8 @@ nc_help_screen_set_geometry(NcHelpScreen *screen,
                             int32 start_x, int32 width,
                             int32 main_start_y, int32 main_height) {
     nc_scrollpad_screen_set_main_area(&screen->scrollpad_screen,
-                                      start_x,
-                                      width,
-                                      main_start_y,
-                                      main_height);
+                                      start_x, width,
+                                      main_start_y, main_height);
     return;
 }
 
@@ -96,15 +85,14 @@ nc_help_screen_reload(NcHelpScreen *screen) {
 
     nc_buffer_destroy(&screen->buffer);
     nc_buffer_move(&screen->buffer, &next_buffer);
-    nc_scrollpad_flush(&screen->scrollpad,
-                       &screen->window,
-                       &screen->buffer);
+    nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
     return true;
 }
 
 bool
-nc_help_screen_find(NcHelpScreen *screen, char *pattern,
-                    int32 pattern_len, NcmError *error) {
+nc_help_screen_find(NcHelpScreen *screen,
+                    char *pattern, int32 pattern_len,
+                    NcmError *error) {
     NcmRegex regex;
     char *data;
     bool result;
@@ -117,15 +105,16 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern,
     nc_buffer_remove_properties(&screen->buffer, 0);
     if ((pattern == NULL) || (pattern_len <= 0)) {
         sb_clear(&screen->search_constraint);
-        nc_scrollpad_flush(&screen->scrollpad,
-                           &screen->window,
+        nc_scrollpad_flush(&screen->scrollpad, &screen->window,
                            &screen->buffer);
         ncm_error_clear(error);
         return true;
     }
 
     ncm_regex_init(&regex);
-    if (!ncm_regex_compile(&regex, pattern, pattern_len, Config.regex_flags,
+    if (!ncm_regex_compile(&regex,
+                           pattern, pattern_len,
+                           Config.regex_flags,
                            error)) {
         ncm_regex_destroy(&regex);
         return false;
@@ -139,14 +128,10 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern,
 
     data = nc_buffer_data(&screen->buffer);
     result = ncm_regex_for_each_match(&regex,
-                                      data,
-                                      screen->buffer.len,
-                                      nc_help_find_match_callback,
-                                      screen);
+                                      data, screen->buffer.len,
+                                      nc_help_find_match_callback, screen);
     ncm_regex_destroy(&regex);
-    nc_scrollpad_flush(&screen->scrollpad,
-                       &screen->window,
-                       &screen->buffer);
+    nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
     return result;
 }
 
@@ -157,17 +142,14 @@ nc_help_screen_clear_search(NcHelpScreen *screen) {
     }
     sb_clear(&screen->search_constraint);
     nc_buffer_remove_properties(&screen->buffer, 0);
-    nc_scrollpad_flush(&screen->scrollpad,
-                       &screen->window,
-                       &screen->buffer);
+    nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
     return;
 }
 
 static void
 nc_help_switch_to(NcScreen *screen) {
-    NcHelpScreen *help;
+    NcHelpScreen *help = nc_help_from_screen(screen);
 
-    help = nc_help_from_screen(screen);
     if (help->hooks.switch_to) {
         help->hooks.switch_to(help->hooks.user);
     }
@@ -176,9 +158,8 @@ nc_help_switch_to(NcScreen *screen) {
 
 static void
 nc_help_resize(NcScreen *screen) {
-    NcHelpScreen *help;
+    NcHelpScreen *help = nc_help_from_screen(screen);
 
-    help = nc_help_from_screen(screen);
     if (help->hooks.resize_layout) {
         help->hooks.resize_layout(help->hooks.user, help);
     }
@@ -189,22 +170,17 @@ nc_help_resize(NcScreen *screen) {
     nc_window_move_to(&help->window,
                       nc_help_screen_start_x(help),
                       nc_help_screen_start_y(help));
-    nc_scrollpad_flush(&help->scrollpad,
-                       &help->window,
-                       &help->buffer);
+    nc_scrollpad_flush(&help->scrollpad, &help->window, &help->buffer);
     if (help->hooks.resize_background) {
         help->hooks.resize_background(help->hooks.user);
     }
     return;
 }
 
-
-
 static void
 nc_help_mouse_button_pressed(NcScreen *screen, MEVENT event) {
-    NcHelpScreen *help;
+    NcHelpScreen *help = nc_help_from_screen(screen);
 
-    help = nc_help_from_screen(screen);
     if (event.bstate & BUTTON5_PRESSED) {
         nc_help_mouse_scroll(help, NC_SCROLL_DOWN);
     } else if (event.bstate & BUTTON4_PRESSED) {
@@ -213,13 +189,10 @@ nc_help_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     return;
 }
 
-
-
 static void
 nc_help_destroy_callback(NcScreen *screen) {
-    NcHelpScreen *help;
+    NcHelpScreen *help = nc_help_from_screen(screen);
 
-    help = nc_help_from_screen(screen);
     if (help->hooks.destroy) {
         help->hooks.destroy(help->hooks.user);
     }
@@ -242,13 +215,12 @@ nc_help_mouse_scroll(NcHelpScreen *help, enum NcScroll where) {
 
 static bool
 nc_help_find_match_callback(int32 start, int32 len, void *user) {
-    NcHelpScreen *screen;
+    NcHelpScreen *screen = user;
 
     if (len <= 0) {
         return true;
     }
 
-    screen = user;
     nc_buffer_add_format(&screen->buffer, start, NC_FORMAT_REVERSE, 0);
     nc_buffer_add_format(&screen->buffer, start + len, NC_FORMAT_NO_REVERSE, 0);
     return true;
