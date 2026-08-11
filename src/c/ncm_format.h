@@ -96,7 +96,7 @@ bool ncm_format_ast_append_column_types(NcmFormatAst *ast,
                                         char *types, int32 types_len);
 
 bool ncm_format_parse(NcmFormatAst *ast, char *data, int32 data_len,
-                      uint32 flags, NcmError *error);
+                      uint32 flags, NcmError *ncm_error);
 
 void ncm_format_render(NcmFormatAst *ast, NcmSong *song,
                        NcmFormatCallbacks *callbacks, void *output,

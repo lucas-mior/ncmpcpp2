@@ -98,14 +98,14 @@ typedef struct MediaLibraryColumnState {
 
 typedef struct MediaLibraryHooks {
     bool (*list_tags)(void *user, enum mpd_tag_type tag_type,
-                      NcmMpdStringList *tags, NcmError *error);
+                      NcmMpdStringList *tags, NcmError *ncm_error);
     bool (*list_all_songs)(void *user, NcmMpdSongList *songs,
-                           NcmError *error);
+                           NcmError *ncm_error);
     bool (*search_songs)(void *user,
                          MediaLibrarySongQuery *query,
-                         NcmMpdSongList *songs, NcmError *error);
+                         NcmMpdSongList *songs, NcmError *ncm_error);
     bool (*add_songs)(void *user, NcmSongArray *songs, bool play,
-                      NcmError *error);
+                      NcmError *ncm_error);
     void (*destroy)(void *user);
     void *user;
 } MediaLibraryHooks;
@@ -240,18 +240,18 @@ bool media_library_screen_current_song(
 bool media_library_screen_selected_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs);
 bool media_library_screen_selected_songs_checked(
-    MediaLibraryScreen *screen, NcmSongArray *songs, NcmError *error);
+    MediaLibraryScreen *screen, NcmSongArray *songs, NcmError *ncm_error);
 bool media_library_screen_copy_visible_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *error);
+    NcmError *ncm_error);
 bool media_library_screen_apply_filter(
     MediaLibraryScreen *screen, char *pattern, int32 pattern_len,
-    NcmError *error);
+    NcmError *ncm_error);
 void media_library_screen_clear_filter(
     MediaLibraryScreen *screen);
 bool media_library_screen_search(
     MediaLibraryScreen *screen, char *pattern, int32 pattern_len,
-    bool forward, bool wrap, bool skip_current, NcmError *error);
+    bool forward, bool wrap, bool skip_current, NcmError *ncm_error);
 void media_library_screen_clear_search(
     MediaLibraryScreen *screen);
 void media_library_screen_request_tags_update(
@@ -263,24 +263,24 @@ void media_library_screen_request_songs_update(
 void media_library_screen_finish_list_change(
     MediaLibraryScreen *screen);
 bool media_library_screen_update(
-    MediaLibraryScreen *screen, NcmError *error);
+    MediaLibraryScreen *screen, NcmError *ncm_error);
 
 bool media_library_screen_list_tags(
     MediaLibraryScreen *screen, enum mpd_tag_type tag_type,
-    NcmMpdStringList *tags, NcmError *error);
+    NcmMpdStringList *tags, NcmError *ncm_error);
 bool media_library_screen_list_all_songs(
     MediaLibraryScreen *screen, NcmMpdSongList *songs,
-    NcmError *error);
+    NcmError *ncm_error);
 bool media_library_screen_search_songs(
     MediaLibraryScreen *screen,
     MediaLibrarySongQuery *query, NcmMpdSongList *songs,
-    NcmError *error);
+    NcmError *ncm_error);
 bool media_library_screen_add_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs, bool play,
-    NcmError *error);
+    NcmError *ncm_error);
 bool media_library_screen_add_item_to_playlist(
-    MediaLibraryScreen *screen, bool play, NcmError *error);
+    MediaLibraryScreen *screen, bool play, NcmError *ncm_error);
 bool media_library_screen_locate_song(
-    MediaLibraryScreen *screen, NcmSong *song, NcmError *error);
+    MediaLibraryScreen *screen, NcmSong *song, NcmError *ncm_error);
 
 #endif /* NCMPCPP_NC_MEDIA_LIBRARY_H */

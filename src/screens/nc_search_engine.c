@@ -61,19 +61,19 @@ static void search_append_tag_value(NcBuffer *buffer, StrBuilder *value);
 static void search_print_buffer(NcWindow *window, NcBuffer *buffer);
 static void search_mouse_scroll(SearchEngineScreen *screen,
                                 enum NcScroll where);
-static void search_print_error(SearchEngineScreen *screen, NcmError *error);
+static void search_print_error(SearchEngineScreen *screen, NcmError *ncm_error);
 static bool search_has_constraints(SearchEngineScreen *screen);
 static bool search_collect_database_results(SearchEngineScreen *screen,
                                             NcmMpdClient *client,
                                             NcmSongArray *songs,
-                                            NcmError *error);
+                                            NcmError *ncm_error);
 static bool search_add_database_constraints(SearchEngineScreen *screen,
                                             NcmMpdClient *client,
-                                            NcmError *error);
+                                            NcmError *ncm_error);
 static bool search_collect_local_results(SearchEngineScreen *screen,
                                          NcmSongArray *source,
                                          NcmSongArray *songs,
-                                         NcmError *error);
+                                         NcmError *ncm_error);
 static bool search_song_matches(SearchEngineScreen *screen, NcmSong *song,
                                 NcmRegex *regexes);
 static bool search_song_field_matches(SearchEngineScreen *screen,
@@ -669,25 +669,25 @@ search_engine_screen_set_hooks(SearchEngineScreen *screen,
 bool
 search_engine_screen_list_database_songs(SearchEngineScreen *screen,
                                          NcmSongArray *songs,
-                                         NcmError *error) {
+                                         NcmError *ncm_error) {
     if ((screen == NULL) || (songs == NULL)
         || (screen->hooks.list_database_songs == NULL)) {
         return false;
     }
     return screen->hooks.list_database_songs(screen->hooks.user,
-                                             songs, error);
+                                             songs, ncm_error);
 }
 
 bool
 search_engine_screen_snapshot_playlist(SearchEngineScreen *screen,
                                        NcmSongArray *songs,
-                                       NcmError *error) {
+                                       NcmError *ncm_error) {
     if ((screen == NULL) || (songs == NULL)
         || (screen->hooks.snapshot_playlist == NULL)) {
         return false;
     }
     return screen->hooks.snapshot_playlist(screen->hooks.user,
-                                           songs, error);
+                                           songs, ncm_error);
 }
 
 enum SearchEnginePromptResult
@@ -719,29 +719,29 @@ search_engine_screen_status_message(SearchEngineScreen *screen, char *message,
 
 bool
 search_engine_screen_add_song(SearchEngineScreen *screen, NcmSong *song,
-                              bool play, NcmError *error) {
+                              bool play, NcmError *ncm_error) {
     if ((screen == NULL) || (song == NULL)
         || (screen->hooks.add_song == NULL)) {
         return false;
     }
-    return screen->hooks.add_song(screen->hooks.user, song, play, error);
+    return screen->hooks.add_song(screen->hooks.user, song, play, ncm_error);
 }
 
 bool
 search_engine_screen_execute_search(SearchEngineScreen *screen,
-                                    NcmMpdClient *client, NcmError *error) {
+                                    NcmMpdClient *client, NcmError *ncm_error) {
     NcmSongArray source;
     NcmSongArray songs;
     bool result;
 
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing search screen"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing search screen"));
         return false;
     }
 
     ncm_song_array_init(&source);
     ncm_song_array_init(&songs);
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     search_engine_screen_clear_filter(screen);
     search_engine_screen_prepare_static_rows(screen);
     search_engine_screen_status_message(screen, STRLIT("Searching..."));
@@ -758,24 +758,24 @@ search_engine_screen_execute_search(SearchEngineScreen *screen,
             || (screen->search_mode
                 == SEARCH_ENGINE_SEARCH_MODE_EXACT))) {
         result = search_collect_database_results(
-            screen, client, &songs, error);
+            screen, client, &songs, ncm_error);
     } else {
         if (screen->search_in_database) {
             result = search_engine_screen_list_database_songs(
-                screen, &source, error);
+                screen, &source, ncm_error);
         } else {
             result = search_engine_screen_snapshot_playlist(
-                screen, &source, error);
+                screen, &source, ncm_error);
         }
         if (result) {
             result = search_collect_local_results(screen, &source, &songs,
-                                                  error);
+                                                  ncm_error);
         }
     }
 
     if (!result) {
         search_engine_screen_prepare_static_rows(screen);
-        search_print_error(screen, error);
+        search_print_error(screen, ncm_error);
         goto cleanup;
     }
 
@@ -785,10 +785,10 @@ search_engine_screen_execute_search(SearchEngineScreen *screen,
     }
 
     if (!search_append_result_rows(screen, &songs)) {
-        ncm_error_set(error, EIO,
+        ncm_error_set(ncm_error, EIO,
                       STRLIT("failed to build search results"));
         search_engine_screen_prepare_static_rows(screen);
-        search_print_error(screen, error);
+        search_print_error(screen, ncm_error);
         result = false;
         goto cleanup;
     }
@@ -899,7 +899,7 @@ search_engine_screen_run_current(SearchEngineScreen *screen) {
 
 bool
 search_engine_screen_start_searching(SearchEngineScreen *screen,
-                                     NcmMpdClient *client, NcmError *error) {
+                                     NcmMpdClient *client, NcmError *ncm_error) {
     NcMenu *menu;
 
     if ((screen == NULL) || screen->constraints_locked) {
@@ -913,7 +913,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
     nc_menu_highlight_position(
         menu, SEARCH_ENGINE_SEARCH_BUTTON_ROW,
         nc_window_height(&screen->window));
-    return search_engine_screen_execute_search(screen, client, error);
+    return search_engine_screen_execute_search(screen, client, ncm_error);
 }
 
 enum DisplayMode
@@ -993,7 +993,7 @@ search_engine_screen_selected_songs(SearchEngineScreen *screen,
 bool
 search_engine_screen_apply_filter(SearchEngineScreen *screen,
                                   char *pattern, int32 pattern_len,
-                                  NcmError *error) {
+                                  NcmError *ncm_error) {
     NcMenuDisplayCallbacks callbacks;
 
     if (screen == NULL) {
@@ -1004,7 +1004,7 @@ search_engine_screen_apply_filter(SearchEngineScreen *screen,
         return true;
     }
     if (!ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
-                           NCM_REGEX_LITERAL_CASE_INSENSITIVE, error)) {
+                           NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) {
         return false;
     }
     if (!sb_set(&screen->filter_constraint, pattern, pattern_len)) {
@@ -1040,7 +1040,7 @@ bool
 search_engine_screen_search(SearchEngineScreen *screen,
                             char *pattern, int32 pattern_len,
                             bool forward, bool wrap, bool skip_current,
-                            NcmError *error) {
+                            NcmError *ncm_error) {
     SearchFindContext context;
     NcmRegex regex;
     NcMenu *menu;
@@ -1052,7 +1052,7 @@ search_engine_screen_search(SearchEngineScreen *screen,
 
     ncm_regex_init(&regex);
     if (!ncm_regex_compile(&regex, pattern, pattern_len,
-                           NCM_REGEX_LITERAL_CASE_INSENSITIVE, error)) {
+                           NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) {
         ncm_regex_destroy(&regex);
         return false;
     }
@@ -1569,29 +1569,29 @@ search_has_constraints(SearchEngineScreen *screen) {
 static bool
 search_collect_database_results(SearchEngineScreen *screen,
                                 NcmMpdClient *client,
-                                NcmSongArray *songs, NcmError *error) {
+                                NcmSongArray *songs, NcmError *ncm_error) {
     NcmMpdSongList result;
     bool ok;
 
     if ((screen == NULL) || (client == NULL) || (songs == NULL)) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing database search state"));
         return false;
     }
 
     bool exact_match = screen->search_mode == SEARCH_ENGINE_SEARCH_MODE_EXACT;
     ncm_mpd_song_list_init(&result);
-    if ((ok = ncm_mpd_client_start_search(client, exact_match, error))) {
+    if ((ok = ncm_mpd_client_start_search(client, exact_match, ncm_error))) {
         ok = search_add_database_constraints(
-            screen, client, error);
+            screen, client, ncm_error);
     }
     if (ok) {
         ok = ncm_mpd_client_commit_search_songs(
-            client, &result, error);
+            client, &result, ncm_error);
     }
     if (ok) {
         if (!(ok = ncm_mpd_song_list_to_song_array(&result, songs))) {
-            ncm_error_set(error, EIO,
+            ncm_error_set(ncm_error, EIO,
                           STRLIT("failed to copy search results"));
         }
     }
@@ -1601,13 +1601,13 @@ search_collect_database_results(SearchEngineScreen *screen,
 
 static bool
 search_add_database_constraints(SearchEngineScreen *screen,
-                                NcmMpdClient *client, NcmError *error) {
+                                NcmMpdClient *client, NcmError *ncm_error) {
     StrBuilder *constraint;
 
     constraint = &screen->constraints[0];
     if ((constraint->len > 0)
         && !ncm_mpd_client_add_search_any(
-            client, constraint->data, error)) {
+            client, constraint->data, ncm_error)) {
         return false;
     }
 
@@ -1620,7 +1620,7 @@ search_add_database_constraints(SearchEngineScreen *screen,
         }
         if (i == 5) {
             if (!ncm_mpd_client_add_search_uri(
-                    client, constraint->data, error)) {
+                    client, constraint->data, ncm_error)) {
                 return false;
             }
             continue;
@@ -1655,12 +1655,12 @@ search_add_database_constraints(SearchEngineScreen *screen,
             tag = MPD_TAG_COMMENT;
             break;
         default:
-            ncm_error_set(error, EINVAL,
+            ncm_error_set(ncm_error, EINVAL,
                           STRLIT("invalid search constraint"));
             return false;
         }
         if (!ncm_mpd_client_add_search_tag(
-                client, tag, constraint->data, error)) {
+                client, tag, constraint->data, ncm_error)) {
             return false;
         }
     }
@@ -1669,13 +1669,13 @@ search_add_database_constraints(SearchEngineScreen *screen,
 
 static bool
 search_collect_local_results(SearchEngineScreen *screen, NcmSongArray *source,
-                             NcmSongArray *songs, NcmError *error) {
+                             NcmSongArray *songs, NcmError *ncm_error) {
     NcmRegex regexes[SEARCH_ENGINE_CONSTRAINT_COUNT];
     NcmError regex_error;
     bool ok;
 
     if ((screen == NULL) || (source == NULL) || (songs == NULL)) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing local search state"));
         return false;
     }
@@ -1706,7 +1706,7 @@ search_collect_local_results(SearchEngineScreen *screen, NcmSongArray *source,
             continue;
         }
         if (!ncm_song_array_append_copy(songs, &source->items[i])) {
-            ncm_error_set(error, EIO,
+            ncm_error_set(ncm_error, EIO,
                           STRLIT("failed to copy matching song"));
             ok = false;
             break;
@@ -1717,7 +1717,7 @@ search_collect_local_results(SearchEngineScreen *screen, NcmSongArray *source,
         ncm_regex_destroy(&regexes[i]);
     }
     if (ok) {
-        ncm_error_clear(error);
+        ncm_error_clear(ncm_error);
     }
     return ok;
 }
@@ -1854,16 +1854,16 @@ search_append_result_rows(SearchEngineScreen *screen, NcmSongArray *songs) {
 }
 
 static void
-search_print_error(SearchEngineScreen *screen, NcmError *error) {
+search_print_error(SearchEngineScreen *screen, NcmError *ncm_error) {
     int32 len;
 
     if ((screen == NULL) || (screen->hooks.status_message == NULL)
-        || (error == NULL)) {
+        || (ncm_error == NULL)) {
         return;
     }
-    len = optional_strlen32(error->message);
+    len = optional_strlen32(ncm_error->message);
     if (len > 0) {
-        screen->hooks.status_message(screen->hooks.user, error->message,
+        screen->hooks.status_message(screen->hooks.user, ncm_error->message,
                                      len);
     }
     return;

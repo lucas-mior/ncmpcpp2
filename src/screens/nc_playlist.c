@@ -214,7 +214,7 @@ typedef struct PlaylistSearchContext {
 
 typedef struct PlaylistPriorityContext {
     NcmMpdClient *client;
-    NcmError *error;
+    NcmError *ncm_error;
     int32 priority;
 } PlaylistPriorityContext;
 
@@ -465,31 +465,31 @@ playlist_screen_reload_from_mpd(PlaylistScreen *screen,
                                        NcmMpdClient *client,
                                        int32 version,
                                        int32 playlist_length,
-                                       NcmError *error) {
+                                       NcmError *ncm_error) {
     NcmMpdSongList songs;
     bool result;
 
     if (screen == NULL) {
-        ncm_error_set(error, -1, STRLIT("playlist screen is NULL"));
+        ncm_error_set(ncm_error, -1, STRLIT("playlist screen is NULL"));
         return false;
     }
     if (client == NULL) {
-        ncm_error_set(error, -1, STRLIT("MPD client is NULL"));
+        ncm_error_set(ncm_error, -1, STRLIT("MPD client is NULL"));
         return false;
     }
 
     ncm_mpd_song_list_init(&songs);
     if (playlist_should_reload_full(screen, version,
                                            playlist_length, NULL)) {
-        result = ncm_mpd_client_get_queue(client, &songs, error);
+        result = ncm_mpd_client_get_queue(client, &songs, ncm_error);
     } else {
         result = ncm_mpd_client_get_queue_changes(client, version, &songs,
-                                                  error);
+                                                  ncm_error);
         if (result
             && playlist_should_reload_full(screen, version,
                                                   playlist_length,
                                                   &songs)) {
-            result = ncm_mpd_client_get_queue(client, &songs, error);
+            result = ncm_mpd_client_get_queue(client, &songs, ncm_error);
         }
     }
 
@@ -497,7 +497,7 @@ playlist_screen_reload_from_mpd(PlaylistScreen *screen,
         result = playlist_apply_changed_songs(screen,
                                                      &songs, playlist_length);
         if (!result) {
-            ncm_error_set(error, -1,
+            ncm_error_set(ncm_error, -1,
                           STRLIT("could not copy playlist songs"));
         }
     }
@@ -666,7 +666,7 @@ playlist_screen_selected_songs(PlaylistScreen *screen,
 static bool
 playlist_screen_find_sort_range(
     PlaylistScreen *screen, int32 *first_position,
-    int32 *last_position, int32 *start_position, NcmError *error
+    int32 *last_position, int32 *start_position, NcmError *ncm_error
 ) {
     NcMenu *menu;
     NcmSong *song;
@@ -675,14 +675,14 @@ playlist_screen_find_sort_range(
     int32 range_start;
 
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing playlist screen"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing playlist screen"));
         return false;
     }
 
     menu = playlist_storage_menu(screen);
     last = nc_menu_all_item_count(menu);
     if (last <= 0) {
-        ncm_error_set(error, ENOENT, STRLIT("playlist is empty"));
+        ncm_error_set(ncm_error, ENOENT, STRLIT("playlist is empty"));
         return false;
     }
 
@@ -715,7 +715,7 @@ playlist_screen_find_sort_range(
             flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
             if (!(flags & NC_MENU_ITEM_SELECTED)) {
                 ncm_error_set(
-                    error, EINVAL,
+                    ncm_error, EINVAL,
                     STRLIT("selected songs are not contiguous"));
                 return false;
             }
@@ -724,7 +724,7 @@ playlist_screen_find_sort_range(
     }
 
     if ((song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, first)) == NULL) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing playlist range song"));
         return false;
     }
@@ -734,7 +734,7 @@ playlist_screen_find_sort_range(
         int32 expected_position;
 
         if ((song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i)) == NULL) {
-            ncm_error_set(error, EINVAL,
+            ncm_error_set(ncm_error, EINVAL,
                           STRLIT("missing playlist range song"));
             return false;
         }
@@ -742,7 +742,7 @@ playlist_screen_find_sort_range(
         if ((expected_position > INT32_MAX)
             || (ncm_song_position(song) != expected_position)) {
             ncm_error_set(
-                error, EINVAL,
+                ncm_error, EINVAL,
                 STRLIT("playlist range positions are not contiguous"));
             return false;
         }
@@ -757,7 +757,7 @@ playlist_screen_find_sort_range(
     if (start_position) {
         *start_position = range_start;
     }
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     return true;
 }
 
@@ -772,7 +772,7 @@ playlist_screen_has_sortable_range(
 bool
 playlist_screen_copy_sort_range(
     PlaylistScreen *screen, NcmSongArray *songs,
-    int32 *start_position, NcmError *error
+    int32 *start_position, NcmError *ncm_error
 ) {
     NcmSongArray replacement;
     NcMenu *menu;
@@ -782,16 +782,16 @@ playlist_screen_copy_sort_range(
     int32 range_start;
 
     if (songs == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing song array"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing song array"));
         return false;
     }
     if (start_position == NULL) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing playlist range position"));
         return false;
     }
     if (!playlist_screen_find_sort_range(
-            screen, &first, &last, &range_start, error)) {
+            screen, &first, &last, &range_start, ncm_error)) {
         return false;
     }
 
@@ -799,13 +799,13 @@ playlist_screen_copy_sort_range(
     ncm_song_array_init(&replacement);
     for (int32 i = first; i < last; i += 1) {
         if ((song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i)) == NULL) {
-            ncm_error_set(error, EINVAL,
+            ncm_error_set(ncm_error, EINVAL,
                           STRLIT("missing playlist range song"));
             ncm_song_array_destroy(&replacement);
             return false;
         }
         if (!ncm_song_array_append_copy(&replacement, song)) {
-            ncm_error_set(error, ENOMEM,
+            ncm_error_set(ncm_error, ENOMEM,
                           STRLIT("could not copy playlist range"));
             ncm_song_array_destroy(&replacement);
             return false;
@@ -815,14 +815,14 @@ playlist_screen_copy_sort_range(
     ncm_song_array_destroy(songs);
     *songs = replacement;
     *start_position = range_start;
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     return true;
 }
 
 bool
 playlist_screen_apply_filter(PlaylistScreen *screen,
                                     char *pattern, int32 pattern_len,
-                                    NcmError *error) {
+                                    NcmError *ncm_error) {
     NcMenuDisplayCallbacks callbacks;
 
     if (screen == NULL) {
@@ -833,7 +833,7 @@ playlist_screen_apply_filter(PlaylistScreen *screen,
         return true;
     }
     if (!ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
-                           Config.regex_flags, error)) {
+                           Config.regex_flags, ncm_error)) {
         return false;
     }
     if (!sb_set(&screen->filter_constraint, pattern, pattern_len)) {
@@ -866,7 +866,7 @@ bool
 playlist_screen_search(PlaylistScreen *screen,
                               char *pattern, int32 pattern_len,
                               bool forward, bool wrap,
-                              bool skip_current, NcmError *error) {
+                              bool skip_current, NcmError *ncm_error) {
     NcmRegex regex;
     bool result;
 
@@ -876,7 +876,7 @@ playlist_screen_search(PlaylistScreen *screen,
 
     ncm_regex_init(&regex);
     if (!ncm_regex_compile(&regex, pattern, pattern_len,
-                           Config.regex_flags, error)) {
+                           Config.regex_flags, ncm_error)) {
         ncm_regex_destroy(&regex);
         return false;
     }
@@ -896,7 +896,7 @@ bool
 playlist_screen_set_selected_priority(PlaylistScreen *screen,
                                              NcmMpdClient *client,
                                              int32 priority,
-                                             NcmError *error) {
+                                             NcmError *ncm_error) {
     PlaylistPriorityContext context;
     NcmSongArray songs;
     bool result;
@@ -915,7 +915,7 @@ playlist_screen_set_selected_priority(PlaylistScreen *screen,
     }
 
     context.client = client;
-    context.error = error;
+    context.ncm_error = ncm_error;
     context.priority = priority;
     result = true;
     for (int32 i = 0; i < songs.len; i += 1) {
@@ -1495,7 +1495,7 @@ playlist_set_one_priority(NcmSong *song, int32 idx, void *user) {
     context = user;
     return ncm_mpd_client_set_priority_song(context->client, song,
                                             context->priority,
-                                            context->error);
+                                            context->ncm_error);
 }
 
 #endif /* NCMPCPP_NC_PLAYLIST_C */

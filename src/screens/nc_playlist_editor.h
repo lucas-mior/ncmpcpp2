@@ -123,18 +123,18 @@ bool playlist_editor_screen_load_playlists(
     PlaylistEditorScreen *screen, NcmMpdPlaylistList *playlists);
 bool playlist_editor_screen_reload_playlists_from_mpd(
     PlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmError *error);
+    NcmError *ncm_error);
 bool playlist_editor_screen_load_content(
     PlaylistEditorScreen *screen, NcmMpdSongList *songs);
 bool playlist_editor_screen_reload_content_from_mpd(
     PlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmError *error);
+    NcmError *ncm_error);
 bool playlist_editor_screen_locate_playlist(
     PlaylistEditorScreen *screen, NcmMpdClient *client,
-    char *path, int32 path_len, NcmError *error);
+    char *path, int32 path_len, NcmError *ncm_error);
 bool playlist_editor_screen_locate_song(
     PlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmSong *song, NcmError *error);
+    NcmSong *song, NcmError *ncm_error);
 bool playlist_editor_screen_current_playlist(
     PlaylistEditorScreen *screen, NcmPlaylist *playlist);
 bool playlist_editor_screen_current_song(
@@ -147,11 +147,11 @@ bool playlist_editor_screen_selected_songs(
     PlaylistEditorScreen *screen, NcmSongArray *songs);
 bool playlist_editor_screen_apply_active_filter(
     PlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
-    uint32 regex_flags, NcmError *error);
+    uint32 regex_flags, NcmError *ncm_error);
 bool playlist_editor_screen_search_active(
     PlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, bool forward, bool wrap, bool skip_current,
-    NcmError *error);
+    NcmError *ncm_error);
 void playlist_editor_screen_request_playlists_update(
     PlaylistEditorScreen *screen);
 void playlist_editor_screen_request_content_update(

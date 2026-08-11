@@ -27,8 +27,8 @@ global_state_destroy(void) {
 }
 
 bool
-global_timer_update(NcmError *error) {
-    return ncm_time_monotonic_now(&global_timer, error);
+global_timer_update(NcmError *ncm_error) {
+    return ncm_time_monotonic_now(&global_timer, ncm_error);
 }
 
 int64

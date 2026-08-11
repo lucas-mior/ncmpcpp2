@@ -6,12 +6,12 @@
 #include "c/ncm_job.h"
 
 static void
-ncm_job_set_errno_error(NcmError *error, int32 code, char *operation) {
+ncm_job_set_errno_error(NcmError *ncm_error, int32 code, char *operation) {
     char message[256];
     int32 message_len;
 
     message_len = SNPRINTF(message, "%s: %s", operation, strerror(code));
-    ncm_error_set(error, code, message, message_len);
+    ncm_error_set(ncm_error, code, message, message_len);
 
     return;
 }
@@ -159,11 +159,11 @@ ncm_job_queue_init(NcmJobQueue *queue) {
 }
 
 bool
-ncm_job_queue_start(NcmJobQueue *queue, NcmError *error) {
+ncm_job_queue_start(NcmJobQueue *queue, NcmError *ncm_error) {
     int32 code;
 
     if (queue == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing job queue"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing job queue"));
         return false;
     }
     if (queue->started) {
@@ -174,27 +174,27 @@ ncm_job_queue_start(NcmJobQueue *queue, NcmError *error) {
     code = pthread_create(&queue->thread, NULL,
                           ncm_job_queue_thread_main, queue);
     if (code != 0) {
-        ncm_job_set_errno_error(error, code, "pthread_create");
+        ncm_job_set_errno_error(ncm_error, code, "pthread_create");
         return false;
     }
 
     queue->started = true;
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     return true;
 }
 
 bool
-ncm_job_queue_push(NcmJobQueue *queue, NcmJob job, NcmError *error) {
+ncm_job_queue_push(NcmJobQueue *queue, NcmJob job, NcmError *ncm_error) {
     if (queue == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing job queue"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing job queue"));
         return false;
     }
     if (!queue->started) {
-        ncm_error_set(error, EINVAL, STRLIT("job queue is not started"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("job queue is not started"));
         return false;
     }
     if (job.run == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing job callback"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing job callback"));
         return false;
     }
 
@@ -204,7 +204,7 @@ ncm_job_queue_push(NcmJobQueue *queue, NcmJob job, NcmError *error) {
     pthread_mutex_lock(&queue->mutex);
     if (queue->stopping) {
         pthread_mutex_unlock(&queue->mutex);
-        ncm_error_set(error, EINVAL, STRLIT("job queue is stopping"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("job queue is stopping"));
         return false;
     }
     ncm_job_array_push(&queue->pending, &queue->pending_len,
@@ -212,7 +212,7 @@ ncm_job_queue_push(NcmJobQueue *queue, NcmJob job, NcmError *error) {
     pthread_cond_signal(&queue->cond);
     pthread_mutex_unlock(&queue->mutex);
 
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     return true;
 }
 

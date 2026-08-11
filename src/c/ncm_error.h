@@ -10,9 +10,9 @@ typedef struct NcmError {
     int32 code;
 } NcmError;
 
-void ncm_error_clear(NcmError *error);
-void ncm_error_set(NcmError *error, int32 code,
+void ncm_error_clear(NcmError *ncm_error);
+void ncm_error_set(NcmError *ncm_error, int32 code,
                    char *message, int32 message_len);
-bool ncm_error_is_set(NcmError *error);
+bool ncm_error_is_set(NcmError *ncm_error);
 
 #endif /* NCM_ERROR_H */

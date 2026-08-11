@@ -73,7 +73,7 @@ ncm_lrc_document_destroy(NcmLrcDocument *document) {
 bool
 ncm_lrc_parse(NcmLrcDocument *document,
               char *data, int32 data_len,
-              NcmError *error) {
+              NcmError *ncm_error) {
     NcmLrcDocument parsed;
     int32 source_order;
     int32 raw_line_len;
@@ -81,11 +81,11 @@ ncm_lrc_parse(NcmLrcDocument *document,
     int32 pos;
 
     if (document == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing LRC document"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing LRC document"));
         return false;
     }
     if ((data == NULL) || (data_len <= 0)) {
-        ncm_error_set(error, EINVAL, STRLIT("missing LRC data"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing LRC data"));
         return false;
     }
 
@@ -109,7 +109,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
 
     if (parsed.entries_len <= 0) {
         ncm_lrc_document_destroy(&parsed);
-        ncm_error_set(error, EINVAL, STRLIT("no synchronized LRC lines"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("no synchronized LRC lines"));
         return false;
     }
     if (parsed.entries_len > 1) {
@@ -121,7 +121,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
 
     ncm_lrc_document_destroy(document);
     *document = parsed;
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     return true;
 }
 

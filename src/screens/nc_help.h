@@ -42,7 +42,7 @@ void nc_help_screen_set_geometry(NcHelpScreen *screen,
                                  int32 main_height);
 bool nc_help_screen_reload(NcHelpScreen *screen);
 bool nc_help_screen_find(NcHelpScreen *screen, char *pattern,
-                         int32 pattern_len, NcmError *error);
+                         int32 pattern_len, NcmError *ncm_error);
 void nc_help_screen_clear_search(NcHelpScreen *screen);
 NcScreen *nc_help_screen_base(NcHelpScreen *screen);
 int32 nc_help_screen_start_x(NcHelpScreen *screen);

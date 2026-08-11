@@ -80,7 +80,7 @@ void app_screen_lyrics_switch_to(void);
 void app_screen_browser_fetch_supported_extensions(void);
 bool app_screen_selected_items_adder_open(
     NcmSongArray *songs,
-    NcmError *error
+    NcmError *ncm_error
 );
 bool app_screen_sort_playlist_dialog_switch_to(void);
 void app_screen_outputs_toggle(void);

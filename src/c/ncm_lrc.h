@@ -37,7 +37,7 @@ void ncm_lrc_document_clear(NcmLrcDocument *document);
 void ncm_lrc_document_destroy(NcmLrcDocument *document);
 bool ncm_lrc_parse(NcmLrcDocument *document,
                    char *data, int32 data_len,
-                   NcmError *error);
+                   NcmError *ncm_error);
 NcmStringView ncm_lrc_entry_text(NcmLrcDocument *document,
                                  NcmLrcEntry *entry);
 bool ncm_lrc_document_render_plain(NcmLrcDocument *document,

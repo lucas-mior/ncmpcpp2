@@ -6,18 +6,18 @@
 #include "c/ncm_error.h"
 
 bool ncm_parse_int32(char *source, int32 source_len, int32 *out,
-                     NcmError *error);
+                     NcmError *ncm_error);
 bool ncm_parse_int64(char *source, int32 source_len, int32 *out,
-                     NcmError *error);
+                     NcmError *ncm_error);
 bool ncm_parse_double(char *source, int32 source_len,
-                      double *out, NcmError *error);
+                      double *out, NcmError *ncm_error);
 
 bool ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound,
-                          NcmError *error);
+                          NcmError *ncm_error);
 
 bool ncm_bounds_check_f64(double value, double lbound, double ubound,
-                          NcmError *error);
+                          NcmError *ncm_error);
 bool ncm_lower_bound_check_f64(double value, double lbound,
-                               NcmError *error);
+                               NcmError *ncm_error);
 
 #endif /* NCM_CONVERSION_H */

@@ -206,36 +206,36 @@ sort_playlist_dialog_add_row(SortPlaylistDialog *dialog,
 bool
 sort_playlist_dialog_open(
     SortPlaylistDialog *dialog, PlaylistScreen *playlist,
-    NcmMpdClient *client, bool ignore_leading_the, NcmError *error
+    NcmMpdClient *client, bool ignore_leading_the, NcmError *ncm_error
 ) {
     NcmSongArray songs;
     NcScreen *current;
     int32 start_position;
 
     if (dialog == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing sort dialog"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing sort dialog"));
         return false;
     }
     if (playlist == NULL) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing playlist screen"));
         return false;
     }
     if (client == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing MPD client"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing MPD client"));
         return false;
     }
 
     current = nc_screen_switcher_current();
     if (current != playlist_screen_base(playlist)) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("sort dialog requires playlist screen"));
         return false;
     }
 
     ncm_song_array_init(&songs);
     if (!playlist_screen_copy_sort_range(
-            playlist, &songs, &start_position, error)) {
+            playlist, &songs, &start_position, ncm_error)) {
         ncm_song_array_destroy(&songs);
         return false;
     }
@@ -261,12 +261,12 @@ sort_playlist_dialog_open(
         dialog->previous_screen = NULL;
         dialog->client = NULL;
         dialog->ready = false;
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("sort dialog is not registered"));
         return false;
     }
 
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     return true;
 }
 

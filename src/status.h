@@ -59,22 +59,22 @@ void ncm_status_handle_client_error_value(NcmMpdClient *client, char *message,
 void ncm_status_handle_server_error_value(NcmMpdClient *client, int32 code,
                                           char *message, int32 message_len);
 void ncm_status_trace(NcmMpdClient *client, bool update_timer,
-                      bool update_window_timeout, NcmError *error);
+                      bool update_window_timeout, NcmError *ncm_error);
 void ncm_status_set_database_update_observer(void (*callback)(void *user),
                                              void *user);
 void ncm_status_set_playlist_update_observer(void (*callback)(void *user),
                                              void *user);
 bool ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
-                                 NcmStatusHooks *hooks, NcmError *error);
-bool ncm_status_update(NcmMpdClient *client, int32 event, NcmError *error);
+                                 NcmStatusHooks *hooks, NcmError *ncm_error);
+bool ncm_status_update(NcmMpdClient *client, int32 event, NcmError *ncm_error);
 bool ncm_status_initialize_from_mpd_status(NcmMpdStatus *mpd_status,
                                            NcmStatusHooks *hooks,
-                                           NcmError *error);
-bool ncm_status_initialize_connection(NcmMpdClient *client, NcmError *error);
+                                           NcmError *ncm_error);
+bool ncm_status_initialize_connection(NcmMpdClient *client, NcmError *ncm_error);
 bool ncm_status_update_full(NcmMpdClient *client, NcmStatusHooks *hooks,
-                            NcmError *error);
+                            NcmError *ncm_error);
 bool ncm_status_update_from_noidle(NcmMpdClient *client, NcmStatusHooks *hooks,
-                                   NcmError *error);
+                                   NcmError *ncm_error);
 void ncm_status_clear(void);
 
 bool ncm_status_state_consume(void);

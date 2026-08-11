@@ -6,9 +6,9 @@
 #include "c/ncm_error.h"
 
 bool ncm_macro_run_external_command(char *command, int32 command_len,
-                                    bool block, NcmError *error);
+                                    bool block, NcmError *ncm_error);
 bool ncm_macro_run_external_console_command(char *command,
                                             int32 command_len,
-                                            NcmError *error);
+                                            NcmError *ncm_error);
 
 #endif /* NCM_MACRO_UTILITIES_H */

@@ -107,23 +107,23 @@ bool lyrics_screen_build_filename(LyricsScreen *screen,
                                          bool win32_filename);
 bool lyrics_screen_load_file(LyricsScreen *screen,
                                     char *filename, int32 filename_len,
-                                    NcmError *error);
+                                    NcmError *ncm_error);
 bool lyrics_screen_save_file(LyricsScreen *screen,
                                     char *filename, int32 filename_len,
                                     char *lyrics, int32 lyrics_len,
-                                    NcmError *error);
+                                    NcmError *ncm_error);
 bool lyrics_screen_fetch(LyricsScreen *screen,
                                 NcmSong *song,
                                 NcmLyricsFetcherDef *fetcher,
-                                NcmError *error);
+                                NcmError *ncm_error);
 bool lyrics_screen_fetch_in_background(LyricsScreen *screen,
                                               NcmSong *song,
                                               bool notify,
-                                              NcmError *error);
+                                              NcmError *ncm_error);
 int32 lyrics_screen_dispatch_jobs(LyricsScreen *screen);
 void lyrics_screen_update(LyricsScreen *screen);
 void lyrics_screen_refetch_current(LyricsScreen *screen,
-                                          NcmError *error);
+                                          NcmError *ncm_error);
 NcmLyricsFetcherDef *lyrics_screen_toggle_fetcher(
     LyricsScreen *screen, NcmLyricsFetcherRegistry *registry);
 bool lyrics_screen_try_take_consumer_message(
@@ -134,12 +134,12 @@ LyricsMode lyrics_screen_mode(LyricsScreen *screen);
 NcmLrcDocument *lyrics_screen_lrc(LyricsScreen *screen);
 int32 lyrics_screen_active_lrc_line(LyricsScreen *screen);
 bool lyrics_buffer_find(NcBuffer *buffer, char *pattern,
-                               int32 pattern_len, NcmError *error);
+                               int32 pattern_len, NcmError *ncm_error);
 void lyrics_buffer_clear_sync_highlight(NcBuffer *buffer);
 void lyrics_buffer_highlight_sync_line(NcBuffer *buffer,
                                               int32 start, int32 end);
 bool lyrics_screen_find(LyricsScreen *screen,
                                char *pattern, int32 pattern_len,
-                               NcmError *error);
+                               NcmError *ncm_error);
 
 #endif /* NCMPCPP_NC_LYRICS_H */

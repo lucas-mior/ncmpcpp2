@@ -8,14 +8,14 @@
 
 static bool
 ncm_macro_system_command(char *command, int32 command_len,
-                         bool block, int32 *status, NcmError *error) {
+                         bool block, int32 *status, NcmError *ncm_error) {
     StrBuilder buffer = {0};
     Command process = {0};
     int32 rc;
     bool success;
 
     if ((command == NULL) || (command_len < 0)) {
-        ncm_error_set(error, EINVAL, STRLIT("invalid shell command"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("invalid shell command"));
         return false;
     }
 
@@ -28,9 +28,9 @@ ncm_macro_system_command(char *command, int32 command_len,
             if (status) {
                 *status = rc;
             }
-            ncm_error_clear(error);
+            ncm_error_clear(ncm_error);
         } else {
-            ncm_error_set(error, process.error_status,
+            ncm_error_set(ncm_error, process.error_status,
                           STRLIT("command failed"));
         }
         command_free(&process);
@@ -48,9 +48,9 @@ ncm_macro_system_command(char *command, int32 command_len,
         if (status) {
             *status = rc;
         }
-        ncm_error_clear(error);
+        ncm_error_clear(ncm_error);
     } else {
-        ncm_error_set(error, process.error_status,
+        ncm_error_set(ncm_error, process.error_status,
                       STRLIT("command failed"));
     }
     command_free(&process);
@@ -59,21 +59,21 @@ ncm_macro_system_command(char *command, int32 command_len,
 
 bool
 ncm_macro_run_external_command(char *command, int32 command_len,
-                               bool block, NcmError *error) {
+                               bool block, NcmError *ncm_error) {
     int32 status;
 
     return ncm_macro_system_command(command, command_len,
-                                    block, &status, error);
+                                    block, &status, ncm_error);
 }
 
 bool
 ncm_macro_run_external_console_command(char *command,
                                        int32 command_len,
-                                       NcmError *error) {
+                                       NcmError *ncm_error) {
     int32 status;
 
     return ncm_macro_system_command(command, command_len,
-                                    true, &status, error);
+                                    true, &status, ncm_error);
 }
 
 #endif /* NCM_MACRO_UTILITIES_C */

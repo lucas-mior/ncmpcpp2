@@ -10,7 +10,7 @@ typedef struct NcmRandom {
 } NcmRandom;
 
 void ncm_random_init(NcmRandom *random, uint64 seed);
-bool ncm_random_seed_from_time(NcmRandom *random, NcmError *error);
+bool ncm_random_seed_from_time(NcmRandom *random, NcmError *ncm_error);
 uint64 ncm_random_u64(NcmRandom *random);
 uint32 ncm_random_u32(NcmRandom *random);
 uint32 ncm_random_range_u32(NcmRandom *random, uint32 upper_bound);

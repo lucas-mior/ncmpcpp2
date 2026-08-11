@@ -44,15 +44,15 @@
 typedef struct SearchEngineHooks {
     NcmMpdClient *client;
     bool (*list_database_songs)(void *user, NcmSongArray *songs,
-                                NcmError *error);
+                                NcmError *ncm_error);
     bool (*snapshot_playlist)(void *user, NcmSongArray *songs,
-                              NcmError *error);
+                              NcmError *ncm_error);
     enum SearchEnginePromptResult (*prompt_constraint)(
         void *user, char *label, int32 label_len, StrBuilder *initial,
         StrBuilder *result);
     void (*status_message)(void *user, char *message, int32 message_len);
     bool (*add_song)(void *user, NcmSong *song, bool play,
-                     NcmError *error);
+                     NcmError *ncm_error);
     bool (*format_song)(void *user, NcmSong *song, StrBuilder *text);
     void *user;
 } SearchEngineHooks;
@@ -147,10 +147,10 @@ void search_engine_screen_set_hooks(
     SearchEngineScreen *screen, SearchEngineHooks hooks);
 bool search_engine_screen_list_database_songs(
     SearchEngineScreen *screen, NcmSongArray *songs,
-    NcmError *error);
+    NcmError *ncm_error);
 bool search_engine_screen_snapshot_playlist(
     SearchEngineScreen *screen, NcmSongArray *songs,
-    NcmError *error);
+    NcmError *ncm_error);
 enum SearchEnginePromptResult
 search_engine_screen_prompt_constraint(
     SearchEngineScreen *screen, int32 idx, StrBuilder *result);
@@ -158,17 +158,17 @@ void search_engine_screen_status_message(
     SearchEngineScreen *screen, char *message, int32 message_len);
 bool search_engine_screen_add_song(
     SearchEngineScreen *screen, NcmSong *song, bool play,
-    NcmError *error);
+    NcmError *ncm_error);
 bool search_engine_screen_execute_search(
     SearchEngineScreen *screen, NcmMpdClient *client,
-    NcmError *error);
+    NcmError *ncm_error);
 bool search_engine_screen_can_run_current(
     SearchEngineScreen *screen);
 bool search_engine_screen_run_current(
     SearchEngineScreen *screen);
 bool search_engine_screen_start_searching(
     SearchEngineScreen *screen, NcmMpdClient *client,
-    NcmError *error);
+    NcmError *ncm_error);
 enum DisplayMode search_engine_screen_toggle_display_mode(
     SearchEngineScreen *screen);
 bool search_engine_screen_allows_search(
@@ -179,12 +179,12 @@ bool search_engine_screen_selected_songs(
     SearchEngineScreen *screen, NcmSongArray *songs);
 bool search_engine_screen_apply_filter(
     SearchEngineScreen *screen, char *pattern, int32 pattern_len,
-    NcmError *error);
+    NcmError *ncm_error);
 void search_engine_screen_clear_filter(
     SearchEngineScreen *screen);
 bool search_engine_screen_search(SearchEngineScreen *screen,
                                         char *pattern, int32 pattern_len,
                                         bool forward, bool wrap,
                                         bool skip_current,
-                                        NcmError *error);
+                                        NcmError *ncm_error);
 #endif /* NCMPCPP_NC_SEARCH_ENGINE_H */
