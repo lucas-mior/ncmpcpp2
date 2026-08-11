@@ -250,8 +250,7 @@ nc_help_find_match_callback(int32 start, int32 len, void *user) {
 
     screen = user;
     nc_buffer_add_format(&screen->buffer, start, NC_FORMAT_REVERSE, 0);
-    nc_buffer_add_format(&screen->buffer, start + len,
-                         NC_FORMAT_NO_REVERSE, 0);
+    nc_buffer_add_format(&screen->buffer, start + len, NC_FORMAT_NO_REVERSE, 0);
     return true;
 }
 
