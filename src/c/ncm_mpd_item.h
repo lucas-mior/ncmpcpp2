@@ -14,7 +14,6 @@ struct mpd_entity;
 #define ENUM_PREFIX_ NCM_MPD_ITEM_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NCM_MPD_ITEM_UNKNOWN) \
     X(NCM_MPD_ITEM_SONG) \
     X(NCM_MPD_ITEM_DIRECTORY) \
     X(NCM_MPD_ITEM_PLAYLIST)
