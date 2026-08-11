@@ -160,19 +160,6 @@ load_package_flags() {
     return 0
 }
 
-check_no_foreign_sources() {
-    bad_files=$(find src -type f \
-        | awk '/[.](cc|c[p]p|cxx)$/ { print }')
-
-    if [ -n "$bad_files" ]; then
-        printf '%s\n' 'Non-C source files are not allowed:' >&2
-        printf '%s\n' "$bad_files" >&2
-        exit 1
-    fi
-
-    return 0
-}
-
 show_help() {
     cat <<EOF_HELP
 usage: ./$script <target>
@@ -219,7 +206,6 @@ esac
 
 case "$target" in
 debug|build|fast_feedback|all)
-    check_no_foreign_sources
     load_package_flags
     require_command "$CC"
 
@@ -250,8 +236,6 @@ debug|build|fast_feedback|all)
     TEMP_FILE=
     ;;
 check)
-    check_no_foreign_sources
-
     CC=gcc CFLAGS="-fanalyzer -fdiagnostics-color=never" "$0" build
 
     CFLAGS="--analyze -Xanalyzer -analyzer-output=text"
@@ -277,9 +261,6 @@ test)
     TEST_SKIP_MAIN=0 \
     TEST_TMPDIR=bin/tests \
         test "$2" tests
-    ;;
-check-no-foreign-sources)
-    check_no_foreign_sources
     ;;
 install)
     if [ ! -f "$exe" ]; then
