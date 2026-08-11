@@ -1291,19 +1291,16 @@ browser_resize(NcScreen *screen) {
 
 static char *
 browser_title(NcScreen *screen) {
-    BrowserScreen *browser;
-
-    browser = browser_from_screen(screen);
+    BrowserScreen *browser = browser_from_screen(screen);
     browser_screen_update_title_text(browser);
     return browser->title_text.data;
 }
 
 static void
 browser_update(NcScreen *screen) {
-    BrowserScreen *browser;
+    BrowserScreen *browser = browser_from_screen(screen);
     NcmError ncm_error;
 
-    browser = browser_from_screen(screen);
     if (browser_screen_update_requested(browser)) {
         ncm_error_clear(&ncm_error);
         if (browser_screen_is_local(browser)) {
