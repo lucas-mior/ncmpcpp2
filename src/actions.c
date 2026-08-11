@@ -1086,9 +1086,7 @@ static bool action_runtime_mpd_toggle(bool (*func)(NcmMpdClient *client,
 static bool action_runtime_volume(int32 change);
 static bool action_runtime_update_database(void);
 static bool action_runtime_replay_song(void);
-static bool action_runtime_update_environment(void);
 static bool action_runtime_execute_command(void);
-static bool action_runtime_execute_binding(NcmBinding *binding);
 static bool action_runtime_apply_filter(void);
 static bool action_runtime_find(void);
 static bool action_runtime_find_item(enum SearchDirection direction);
@@ -1099,9 +1097,6 @@ static void action_runtime_search_prompt_init(ActionRuntimeSearchPrompt *state,
                                               enum SearchDirection direction);
 static void action_runtime_search_prompt_destroy(
     ActionRuntimeSearchPrompt *state);
-static bool action_runtime_search_prompt_text_matches(
-    ActionRuntimeSearchPrompt *state, char *text, int32 text_len);
-static void action_runtime_refresh_current_screen(void);
 static bool action_runtime_search_from_prompt_start(
     ActionRuntimeSearchPrompt *state, char *text, int32 text_len, bool *found,
     NcmError *ncm_error);
@@ -1931,11 +1926,6 @@ action_runtime_add_random_items(void) {
     return true;
 }
 
-static bool
-action_runtime_update_environment(void) {
-    return ncmpcpp_update_environment(true, true, true);
-}
-
 static void
 action_runtime_print_toggle(char *format, int32 format_len, char *value) {
     NcmStringFormatArg arg = ncm_string_format_arg_cstring(value);
@@ -2169,22 +2159,6 @@ action_runtime_search_prompt_destroy(ActionRuntimeSearchPrompt *state) {
 }
 
 static bool
-action_runtime_search_prompt_text_matches(ActionRuntimeSearchPrompt *state,
-                                          char *text, int32 text_len) {
-    return ncm_search_prompt_state_cached_result(state, text, text_len, NULL);
-}
-
-static void
-action_runtime_refresh_current_screen(void) {
-    NcScreen *screen;
-
-    if ((screen = app_controller_current_screen())) {
-        nc_screen_refresh_window(screen);
-    }
-    return;
-}
-
-static bool
 action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
                                         char *text, int32 text_len, bool *found,
                                         NcmError *ncm_error) {
@@ -2207,9 +2181,13 @@ action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
     *found = current_screen_search(state->direction, text, text_len,
                                    Config.wrapped_search, false, ncm_error);
     if (restore && !*found && !ncm_error_is_set(ncm_error)) {
+        NcScreen *screen;
+
         menu->beginning = old_beginning;
         menu->highlight = old_highlight;
-        action_runtime_refresh_current_screen();
+        if ((screen = app_controller_current_screen())) {
+            nc_screen_refresh_window(screen);
+        }
     }
     return !ncm_error_is_set(ncm_error);
 }
@@ -2442,11 +2420,6 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
 }
 
 static bool
-action_runtime_execute_binding(NcmBinding *binding) {
-    return ncmpcpp_execute_binding(binding);
-}
-
-static bool
 action_runtime_execute_command(void) {
     ActionRuntimeCommandPrompt state;
     StrBuilder command_name = {0};
@@ -2481,7 +2454,7 @@ action_runtime_execute_command(void) {
 
     action_runtime_print_format_string(STRLIT("Executing %1%..."),
                                        command_name.data, command_name.len);
-    if ((result = action_runtime_execute_binding(&command->binding))) {
+    if ((result = ncmpcpp_execute_binding(&command->binding))) {
         action_runtime_print_format_string(
             STRLIT("Execution of command \"%1%\" successful."),
             command_name.data, command_name.len);
@@ -2710,8 +2683,8 @@ action_runtime_find_item(enum SearchDirection direction) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Constraint unset");
     } else {
-        if (!action_runtime_search_prompt_text_matches(&state, constraint.data,
-                                                       constraint.len)) {
+        if (!ncm_search_prompt_state_cached_result(
+                &state, constraint.data, constraint.len, NULL)) {
             ncm_error_clear(&ncm_error);
             if (!action_runtime_search_prompt_apply(
                     &state, constraint.data, constraint.len, NULL,
@@ -7020,7 +6993,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
     case NCM_ACTION_DUMMY:
         return true;
     case NCM_ACTION_UPDATE_ENVIRONMENT:
-        return action_runtime_update_environment();
+        return ncmpcpp_update_environment(true, true, true);
     case NCM_ACTION_MOUSE_EVENT:
         return action_runtime_mouse_event();
     case NCM_ACTION_SCROLL_UP:

@@ -293,8 +293,7 @@ status_prompt_mpd_password(NcmMpdClient *client) {
         return;
     }
 
-    ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Password accepted"));
+    ncm_statusbar_print(Config.message_delay_time, STRLIT("Password accepted"));
     return;
 }
 
