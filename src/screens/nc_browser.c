@@ -1482,8 +1482,7 @@ browser_filter_item(NcMenu *menu, void *item, void *user) {
     if ((screen == NULL) || !screen->filter_enabled) {
         return true;
     }
-    return browser_item_matches(screen, item, &screen->filter_regex,
-                                       true);
+    return browser_item_matches(screen, item, &screen->filter_regex, true);
 }
 
 static void
