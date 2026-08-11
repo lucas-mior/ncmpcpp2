@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_APP_LEGACY_BRIDGE_C)
-#define NCMPCPP_APP_LEGACY_BRIDGE_C
+#if !defined(NCMPCPP_APP_BRIDGE_C)
+#define NCMPCPP_APP_BRIDGE_C
 
 #include "cbase.h"
 
@@ -19,14 +19,13 @@
  * App runtime bridge.
  *
  * Keep the public C entry points used by main.c in this C module while the
- * broader application startup path is still being renamed away from the old
- * legacy naming.
+ * broader application startup path is split across app modules.
  */
 
-static NcmTimePoint app_legacy_bridge_header_refresh_time;
+static NcmTimePoint app_bridge_header_refresh_time;
 
 static void
-app_legacy_bridge_request_media_library_database_update(void *user) {
+app_bridge_request_media_library_database_update(void *user) {
     (void)user;
     media_library_screen_request_database_update(
         app_screen_media_library());
@@ -34,7 +33,7 @@ app_legacy_bridge_request_media_library_database_update(void *user) {
 }
 
 static void
-app_legacy_bridge_refresh_playlist_related_inactive_columns(void *user) {
+app_bridge_refresh_playlist_related_inactive_columns(void *user) {
     (void)user;
     if (app_controller_is_screen_visible(
             app_screen_media_library_base())) {
@@ -50,23 +49,23 @@ app_legacy_bridge_refresh_playlist_related_inactive_columns(void *user) {
 }
 
 static void
-app_legacy_bridge_set_status_observers(void) {
+app_bridge_set_status_observers(void) {
     ncm_status_set_database_update_observer(
-        app_legacy_bridge_request_media_library_database_update, NULL);
+        app_bridge_request_media_library_database_update, NULL);
     ncm_status_set_playlist_update_observer(
-        app_legacy_bridge_refresh_playlist_related_inactive_columns, NULL);
+        app_bridge_refresh_playlist_related_inactive_columns, NULL);
     return;
 }
 
 static void
-app_legacy_bridge_set_resize_flags(void) {
+app_bridge_set_resize_flags(void) {
     app_screens_request_registered_resize();
     app_screen_lyrics_set_resize();
     return;
 }
 
 static void
-app_legacy_bridge_dispatch_lyrics_jobs(void) {
+app_bridge_dispatch_lyrics_jobs(void) {
     StrBuilder message = {0};
 
     lyrics_screen_dispatch_jobs(app_screen_lyrics());
@@ -80,7 +79,7 @@ app_legacy_bridge_dispatch_lyrics_jobs(void) {
 }
 
 static void
-app_legacy_bridge_refresh_header_if_due(void) {
+app_bridge_refresh_header_if_due(void) {
     bool current_screen_uses_header_timer;
 
     current_screen_uses_header_timer = app_screen_playlist_is_current()
@@ -89,17 +88,17 @@ app_legacy_bridge_refresh_header_if_due(void) {
     if (!current_screen_uses_header_timer) {
         return;
     }
-    if (global_timer_elapsed_ms(app_legacy_bridge_header_refresh_time) <= 500) {
+    if (global_timer_elapsed_ms(app_bridge_header_refresh_time) <= 500) {
         return;
     }
 
     ncm_title_draw_current_header();
-    app_legacy_bridge_header_refresh_time = global_timer;
+    app_bridge_header_refresh_time = global_timer;
     return;
 }
 
 static void
-app_legacy_bridge_noidle_status_update(int32 flags, void *user) {
+app_bridge_noidle_status_update(int32 flags, void *user) {
     NcmError ncm_error;
 
     (void)user;
@@ -109,7 +108,7 @@ app_legacy_bridge_noidle_status_update(int32 flags, void *user) {
 }
 
 static char *
-app_legacy_bridge_mpd_error_message(NcmError *ncm_error) {
+app_bridge_mpd_error_message(NcmError *ncm_error) {
     char *message;
 
     if (ncm_error && (ncm_error->message[0] != '\0')) {
@@ -125,11 +124,11 @@ app_legacy_bridge_mpd_error_message(NcmError *ncm_error) {
 }
 
 static void
-app_legacy_bridge_report_mpd_error(NcmError *ncm_error) {
+app_bridge_report_mpd_error(NcmError *ncm_error) {
     NcmStringFormatArg arg;
     char *message;
 
-    message = app_legacy_bridge_mpd_error_message(ncm_error);
+    message = app_bridge_mpd_error_message(ncm_error);
     arg = ncm_string_format_arg_cstring(message);
 
     if ((ncm_mpd_client_error_code(&global_mpd) == MPD_ERROR_SERVER)
@@ -144,26 +143,26 @@ app_legacy_bridge_report_mpd_error(NcmError *ncm_error) {
 }
 
 void
-ncmpcpp_legacy_init_screen(bool enable_colors, bool enable_mouse) {
+ncmpcpp_init_screen(bool enable_colors, bool enable_mouse) {
     nc_init_screen(enable_colors, enable_mouse);
     nc_init_readline();
     return;
 }
 
 void
-ncmpcpp_legacy_destroy_screen(void) {
+ncmpcpp_destroy_screen(void) {
     nc_destroy_screen();
     return;
 }
 
 void
-ncmpcpp_legacy_set_statusbar_visibility_baseline(bool visible) {
+ncmpcpp_set_statusbar_visibility_baseline(bool visible) {
     ui_state_set_statusbar_visibility_baseline(visible);
     return;
 }
 
 void
-ncmpcpp_legacy_set_windows_dimensions(void) {
+ncmpcpp_set_windows_dimensions(void) {
     int32 main_start_y;
     int32 main_height;
     int32 header_height;
@@ -218,22 +217,22 @@ ncmpcpp_legacy_set_windows_dimensions(void) {
 }
 
 int32
-ncmpcpp_legacy_header_height(void) {
+ncmpcpp_header_height(void) {
     return ui_state_header_height();
 }
 
 int32
-ncmpcpp_legacy_footer_height(void) {
+ncmpcpp_footer_height(void) {
     return ui_state_footer_height();
 }
 
 int32
-ncmpcpp_legacy_footer_start_y(void) {
+ncmpcpp_footer_start_y(void) {
     return ui_state_footer_start_y();
 }
 
 NcWindow *
-ncmpcpp_legacy_window_create(int32 start_x, int32 start_y, int32 width,
+ncmpcpp_window_create(int32 start_x, int32 start_y, int32 width,
                              int32 height, NcColor color) {
     NcWindow *window;
 
@@ -245,7 +244,7 @@ ncmpcpp_legacy_window_create(int32 start_x, int32 start_y, int32 width,
 }
 
 void
-ncmpcpp_legacy_window_display(NcWindow *window) {
+ncmpcpp_window_display(NcWindow *window) {
     if (window == NULL) {
         return;
     }
@@ -256,7 +255,7 @@ ncmpcpp_legacy_window_display(NcWindow *window) {
 }
 
 void
-ncmpcpp_legacy_window_destroy(NcWindow *window) {
+ncmpcpp_window_destroy(NcWindow *window) {
     if (window == NULL) {
         return;
     }
@@ -267,17 +266,17 @@ ncmpcpp_legacy_window_destroy(NcWindow *window) {
 }
 
 void
-ncmpcpp_legacy_initialize_screens(void) {
+ncmpcpp_initialize_screens(void) {
     app_controller_init();
     app_screens_init_all();
-    app_legacy_bridge_set_status_observers();
+    app_bridge_set_status_observers();
     app_screens_register_initial();
     app_screen_lyrics_register();
     return;
 }
 
 void
-ncmpcpp_legacy_resize_screen(bool reload_main_window) {
+ncmpcpp_resize_screen(bool reload_main_window) {
     NcWindow *header;
     NcWindow *footer;
 
@@ -288,20 +287,20 @@ ncmpcpp_legacy_resize_screen(bool reload_main_window) {
         getch();
     }
 
-    ncmpcpp_legacy_set_windows_dimensions();
-    app_legacy_bridge_set_resize_flags();
+    ncmpcpp_set_windows_dimensions();
+    app_bridge_set_resize_flags();
     app_controller_resize_visible_screens();
 
     header = ui_state_header_window();
     if (header
         && (Config.header_visibility
             || (Config.design == NCM_DESIGN_ALTERNATIVE))) {
-        nc_window_resize(header, COLS, ncmpcpp_legacy_header_height());
+        nc_window_resize(header, COLS, ncmpcpp_header_height());
     }
 
     if ((footer = ui_state_footer_window())) {
-        nc_window_move_to(footer, 0, ncmpcpp_legacy_footer_start_y());
-        nc_window_resize(footer, COLS, ncmpcpp_legacy_footer_height());
+        nc_window_move_to(footer, 0, ncmpcpp_footer_start_y());
+        nc_window_resize(footer, COLS, ncmpcpp_footer_height());
     }
 
     app_controller_refresh_visible_screens();
@@ -317,13 +316,13 @@ ncmpcpp_legacy_resize_screen(bool reload_main_window) {
 }
 
 void
-ncmpcpp_legacy_playlist_switch_to(void) {
+ncmpcpp_playlist_switch_to(void) {
     (void)app_screens_switch_to_type(NCM_SCREEN_TYPE_PLAYLIST);
     return;
 }
 
 void
-ncmpcpp_legacy_playlist_enable_highlighting_if_current(void) {
+ncmpcpp_playlist_enable_highlighting_if_current(void) {
     if (app_screen_playlist_is_current()) {
         playlist_screen_request_highlighting(app_screen_playlist());
     }
@@ -331,39 +330,39 @@ ncmpcpp_legacy_playlist_enable_highlighting_if_current(void) {
 }
 
 bool
-ncmpcpp_legacy_switch_to_screen_type(enum ScreenType screen_type) {
+ncmpcpp_switch_to_screen_type(enum ScreenType screen_type) {
     return app_screens_switch_to_type(screen_type);
 }
 
 bool
-ncmpcpp_legacy_lock_current_screen(void) {
+ncmpcpp_lock_current_screen(void) {
     return app_screens_lock_current();
 }
 
 enum ScreenType
-ncmpcpp_legacy_current_screen_type(void) {
+ncmpcpp_current_screen_type(void) {
     return app_screens_current_type();
 }
 
 void
-ncmpcpp_legacy_set_noidle_status_callback(void) {
+ncmpcpp_set_noidle_status_callback(void) {
     ncm_mpd_client_set_noidle_callback(
-        &global_mpd, app_legacy_bridge_noidle_status_update, NULL);
+        &global_mpd, app_bridge_noidle_status_update, NULL);
     return;
 }
 
 bool
-ncmpcpp_legacy_mpd_connected(void) {
+ncmpcpp_mpd_connected(void) {
     return ncm_mpd_client_connected(&global_mpd);
 }
 
 void
-ncmpcpp_legacy_connect_or_report(void) {
+ncmpcpp_connect_or_report(void) {
     NcmError ncm_error;
 
     ncm_error_clear(&ncm_error);
     if (!ncm_mpd_client_connect(&global_mpd, &ncm_error)) {
-        app_legacy_bridge_report_mpd_error(&ncm_error);
+        app_bridge_report_mpd_error(&ncm_error);
         return;
     }
 
@@ -371,27 +370,27 @@ ncmpcpp_legacy_connect_or_report(void) {
         ncm_mpd_client_disconnect(&global_mpd);
         ncm_error_set(&ncm_error, MPD_ERROR_STATE,
                       STRLIT("MPD < 0.16.0 is not supported"));
-        app_legacy_bridge_report_mpd_error(&ncm_error);
+        app_bridge_report_mpd_error(&ncm_error);
     }
     return;
 }
 
 void
-ncmpcpp_legacy_status_clear(void) {
+ncmpcpp_status_clear(void) {
     ncm_status_clear();
     return;
 }
 
 bool
-ncmpcpp_legacy_update_environment(bool update_timer, bool refresh_window,
+ncmpcpp_update_environment(bool update_timer, bool refresh_window,
                                   bool mpd_sync) {
     NcmError ncm_error;
 
-    app_legacy_bridge_set_status_observers();
+    app_bridge_set_status_observers();
     ncm_error_clear(&ncm_error);
     ncm_status_trace(&global_mpd, update_timer, true, &ncm_error);
-    app_legacy_bridge_dispatch_lyrics_jobs();
-    app_legacy_bridge_refresh_header_if_due();
+    app_bridge_dispatch_lyrics_jobs();
+    app_bridge_refresh_header_if_due();
 
     if (refresh_window) {
         app_controller_refresh_current_window();
@@ -405,7 +404,7 @@ ncmpcpp_legacy_update_environment(bool update_timer, bool refresh_window,
 }
 
 bool
-ncmpcpp_legacy_execute_binding(NcmBinding *binding) {
+ncmpcpp_execute_binding(NcmBinding *binding) {
     if (!ncm_binding_can_execute_default(binding)) {
         return false;
     }
@@ -413,13 +412,13 @@ ncmpcpp_legacy_execute_binding(NcmBinding *binding) {
 }
 
 bool
-ncmpcpp_legacy_execute_action(enum NcmActionType type) {
+ncmpcpp_execute_action(enum NcmActionType type) {
     return ncm_action_runtime_run(NULL, type);
 }
 
 bool
-ncmpcpp_legacy_exit_requested(void) {
+ncmpcpp_exit_requested(void) {
     return ncm_action_runtime_exit_requested(NULL);
 }
 
-#endif /* NCMPCPP_APP_LEGACY_BRIDGE_C */
+#endif /* NCMPCPP_APP_BRIDGE_C */
