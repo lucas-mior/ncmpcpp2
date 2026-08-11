@@ -1115,7 +1115,7 @@ status_song_time_string(int32 length, char *buffer, int32 buffer_cap) {
 
 static int32
 status_player_state_string(char *buffer, int32 buffer_cap) {
-    char *string;
+    char *string = "";
     int32 len;
 
     switch (status_player_state) {
@@ -1144,7 +1144,6 @@ status_player_state_string(char *buffer, int32 buffer_cap) {
         }
         break;
     default:
-        string = "";
         break;
     }
 
