@@ -841,13 +841,12 @@ ncm_binding_append_normal(NcmBinding *binding, enum NcmActionType type) {
 
 static int32
 ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings, char *name,
-                                 int32 name_len, bool *found) {
+                                 int32 name_len) {
     int32 first;
     int32 count;
 
     first = 0;
     count = bindings->commands_len;
-    *found = false;
     while (count > 0) {
         int32 step;
         int32 mid;
@@ -875,23 +874,16 @@ ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings, char *name,
             count = step;
         }
     }
-    if ((first < bindings->commands_len)
-        && STREQUAL(bindings->commands[first].name,
-                    bindings->commands[first].name_len, name, name_len)) {
-        *found = true;
-    }
     return first;
 }
 
 static int32
-ncm_bindings_key_lower_bound(NcmBindingsConfiguration *bindings, NcKey key,
-                             bool *found) {
+ncm_bindings_key_lower_bound(NcmBindingsConfiguration *bindings, NcKey key) {
     int32 first;
     int32 count;
 
     first = 0;
     count = bindings->keys_len;
-    *found = false;
     while (count > 0) {
         int32 step;
         int32 mid;
@@ -905,22 +897,42 @@ ncm_bindings_key_lower_bound(NcmBindingsConfiguration *bindings, NcKey key,
             count = step;
         }
     }
-    if ((first < bindings->keys_len) && (bindings->keys[first].key == key)) {
-        *found = true;
-    }
     return first;
+}
+
+static int32
+ncm_bindings_command_index(NcmBindingsConfiguration *bindings, char *name,
+                           int32 name_len) {
+    int32 at;
+
+    at = ncm_bindings_command_lower_bound(bindings, name, name_len);
+    if ((at >= bindings->commands_len)
+        || !STREQUAL(bindings->commands[at].name,
+                     bindings->commands[at].name_len, name, name_len)) {
+        return -1;
+    }
+    return at;
+}
+
+static int32
+ncm_bindings_key_index(NcmBindingsConfiguration *bindings, NcKey key) {
+    int32 at;
+
+    at = ncm_bindings_key_lower_bound(bindings, key);
+    if ((at >= bindings->keys_len) || (bindings->keys[at].key != key)) {
+        return -1;
+    }
+    return at;
 }
 
 static bool
 ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
                             NcmCommand *command, NcmError *ncm_error) {
-    bool found;
     int32 at;
     NcmCommand copy;
 
-    at = ncm_bindings_command_lower_bound(bindings, command->name,
-                                          command->name_len, &found);
-    if (found) {
+    if (ncm_bindings_command_index(bindings, command->name,
+                                   command->name_len) >= 0) {
         ncm_bindings_error(ncm_error, "redefinition of command '%.*s'",
                            command->name_len, command->name);
         return false;
@@ -950,6 +962,8 @@ ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
         return false;
     }
 
+    at = ncm_bindings_command_lower_bound(bindings, command->name,
+                                          command->name_len);
     if (at < bindings->commands_len) {
         memmove64(bindings->commands + at + 1, bindings->commands + at,
                   (bindings->commands_len - at)*SIZEOF(*bindings->commands));
@@ -962,15 +976,15 @@ ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
 static bool
 ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
                   NcmBinding *binding) {
-    bool found;
     int32 at;
     NcmKeyBindings *key_bindings;
     NcmBinding copy;
 
-    at = ncm_bindings_key_lower_bound(bindings, key, &found);
-    if (!found) {
+    at = ncm_bindings_key_index(bindings, key);
+    if (at < 0) {
         NcmKeyBindings item;
 
+        at = ncm_bindings_key_lower_bound(bindings, key);
         if (bindings->keys_len == bindings->keys_cap) {
             int32 new_cap;
 
@@ -1018,13 +1032,13 @@ ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
 
 static bool
 ncm_bindings_not_bound(NcmBindingsConfiguration *bindings, NcKey key) {
-    bool found;
+    int32 at;
 
     if (key == NC_KEY_NONE) {
         return false;
     }
-    (void)ncm_bindings_key_lower_bound(bindings, key, &found);
-    return !found;
+    at = ncm_bindings_key_index(bindings, key);
+    return at < 0;
 }
 
 static bool
@@ -1466,31 +1480,33 @@ ncm_bindings_configuration_generate_defaults(
 NcmCommand *
 ncm_bindings_configuration_find_command(NcmBindingsConfiguration *bindings,
                                         char *name, int32 name_len) {
-    bool found;
     int32 at;
 
-    at = ncm_bindings_command_lower_bound(bindings, name, name_len, &found);
-    if (!found) {
+    at = ncm_bindings_command_index(bindings, name, name_len);
+    if (at < 0) {
         return NULL;
     }
     return bindings->commands + at;
 }
 
-NcmBindingSlice
-ncm_bindings_configuration_get(NcmBindingsConfiguration *bindings, NcKey key) {
-    bool found;
+bool
+ncm_bindings_configuration_get(NcmBindingsConfiguration *bindings, NcKey key,
+                               NcmBindingSlice *result) {
     int32 at;
-    NcmBindingSlice result;
 
-    at = ncm_bindings_key_lower_bound(bindings, key, &found);
-    if (!found) {
-        result.data = NULL;
-        result.len = 0;
-        return result;
+    if (result == NULL) {
+        return false;
     }
-    result.data = bindings->keys[at].bindings;
-    result.len = bindings->keys[at].bindings_len;
-    return result;
+
+    result->data = NULL;
+    result->len = 0;
+    at = ncm_bindings_key_index(bindings, key);
+    if (at < 0) {
+        return false;
+    }
+    result->data = bindings->keys[at].bindings;
+    result->len = bindings->keys[at].bindings_len;
+    return true;
 }
 
 #endif /* NCMPCPP_BINDINGS_C */

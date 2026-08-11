@@ -142,8 +142,8 @@ void ncm_bindings_configuration_generate_defaults(
 NcmCommand *
 ncm_bindings_configuration_find_command(NcmBindingsConfiguration *bindings,
                                         char *name, int32 name_len);
-NcmBindingSlice
-ncm_bindings_configuration_get(NcmBindingsConfiguration *bindings, NcKey key);
+bool ncm_bindings_configuration_get(NcmBindingsConfiguration *bindings,
+                                    NcKey key, NcmBindingSlice *result);
 
 NcKey ncm_bindings_string_to_key(char *string, int32 string_len);
 void ncm_bindings_format_key(StrBuilder *buffer, NcKey key);
