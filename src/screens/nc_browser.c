@@ -542,8 +542,7 @@ browser_screen_draw_header(BrowserScreen *screen) {
 }
 
 void
-browser_screen_set_display_mode(BrowserScreen *screen,
-                                        enum DisplayMode mode) {
+browser_screen_set_display_mode(BrowserScreen *screen, enum DisplayMode mode) {
     if (screen == NULL) {
         return;
     }
@@ -575,9 +574,9 @@ browser_screen_has_supported_extension(BrowserScreen *screen,
 }
 
 bool
-browser_screen_fetch_supported_extensions(
-    BrowserScreen *screen, NcmMpdClient *client, NcmError *ncm_error
-) {
+browser_screen_fetch_supported_extensions(BrowserScreen *screen,
+                                          NcmMpdClient *client,
+                                          NcmError *ncm_error) {
     NcmMpdStringList strings;
     StrBuilderArray extensions;
     NcmMpdString *string;
@@ -658,9 +657,8 @@ browser_screen_is_local(BrowserScreen *screen) {
 }
 
 bool
-browser_screen_change_browse_mode(
-    BrowserScreen *screen, NcmMpdClient *client, NcmError *ncm_error
-) {
+browser_screen_change_browse_mode(BrowserScreen *screen,
+                                  NcmMpdClient *client, NcmError *ncm_error) {
     StrBuilder directory = {0};
     char *hostname;
     bool local_browser;
