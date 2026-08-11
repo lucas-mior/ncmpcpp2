@@ -1579,8 +1579,9 @@ apply_player_state_color(Configuration *config, char *value, int32 value_len,
 }
 
 static bool
-apply_alternative_ui_separator_color(Configuration *config, char *value,
-                                     int32 value_len, NcmError *ncm_error) {
+apply_alternative_ui_separator_color(Configuration *config,
+                                     char *value, int32 value_len,
+                                     NcmError *ncm_error) {
     return settings_parse_formatted_color(
         value, value_len, &config->alternative_ui_separator_color, ncm_error);
 }
