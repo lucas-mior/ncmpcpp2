@@ -249,6 +249,25 @@ function_with_long_name_and_multiple_arguments(MyStruct *handle,
                                                double a, double b);
 ```
 
+In function calls/definitions/headers, try to make the `_len` of a variable in
+the same line of the object it refers to:
+```c
+// bad
+static void
+function_with_long_name_and_multiple_arguments_x(MyStruct *handle, char *string,
+                                                 int32 string_len);
+function_with_long_name_and_multiple_arguments_x(handle, string_name,
+                                                 string_name_len);
+
+// good
+static void
+function_with_long_name_and_multiple_arguments_x(MyStruct *handle,
+                                                 char *string, int32 string_len);
+function_with_long_name_and_multiple_arguments_x(handle,
+                                                 string_name, string_name_len);
+
+```
+
 In standalone declarations, if one is needed at all, put all in one line. Break
 long lines so the 80-character limit rule is followed.
 
