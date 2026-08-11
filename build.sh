@@ -171,7 +171,6 @@ targets:
   all                      build with the current CFLAGS
   check                    run the clang static analyzer
   test                     build and run all tests
-  check-no-foreign-sources reject C++ source files under src
   install                  build and install the program and documentation
   uninstall                remove installed program and documentation
   clean                    remove bin/
