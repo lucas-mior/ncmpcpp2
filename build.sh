@@ -3,10 +3,11 @@
 # shellcheck disable=SC2086,SC2031
 
 dir=$(dirname "$(readlink -f "$0")")
-# shellcheck source=/dev/null
-. "$dir/cbase/common.sh"
-
 cd "$dir" || exit
+
+# shellcheck source=./cbase/common.sh
+. ./cbase/common.sh
+
 program=$(get_program "$0")
 script=$(basename "$0")
 target="${1:-debug}"
@@ -21,13 +22,15 @@ mkdir -p "$(dirname "$exe")"
 
 CC=$(get_compiler "$target")
 
+CPPFLAGS="$CPPFLAGS -I$dir -I$dir/src -I$dir/cbase"
+
 CFLAGS="$CFLAGS -std=c11"
 CFLAGS="$CFLAGS -Wfatal-errors"
 CFLAGS="$CFLAGS -Wextra -Wall"
 CFLAGS="$CFLAGS -Werror=all -Werror=extra"
 CFLAGS="$CFLAGS -Werror"  # Only uncomment occasionally, keep this line
 
-if [ "$CC" = "clang" ]; then
+if [ "$CC" = "clang" ] || [ "$CC" = "zig cc" ]; then
     CFLAGS="$CFLAGS -Weverything"
     CFLAGS="$CFLAGS -Wno-assign-enum"
     CFLAGS="$CFLAGS -Wno-c++-keyword"
@@ -77,34 +80,9 @@ require_command() {
     return 0
 }
 
-run_command() {
-    command_string=$1
-    shift
-
-    trace_on
-    # Commands such as compiler wrappers intentionally require word splitting.
-    # shellcheck disable=SC2086
-    $command_string "$@"
-    trace_off
-
-    return 0
-}
-
 pkg_config() {
-    run_command pkg-config "$@"
+    pkg-config "$@"
     return 0
-}
-
-detect_c_standard() {
-    compiler=$1
-
-    if printf 'int main(void) { return 0; }\n' \
-        | run_command "$compiler" -std=c11 -c \
-            -o /dev/null - >/dev/null 2>&1; then
-        return 0
-    fi
-
-    return 1
 }
 
 load_package_flags() {
@@ -193,25 +171,18 @@ debug|build|fast_feedback|all)
     load_package_flags
     require_command "$CC"
 
-    if ! detect_c_standard "$CC"; then
-        die 'C compiler does not support C11'
-    fi
-
-    # Flag variables intentionally require shell word splitting.
-    # shellcheck disable=SC2086
-    run_command "$CC" \
-        -I. \
-        -Isrc \
-        -Icbase \
+    trace_on
+    $CC \
         $CPPFLAGS \
         $PKG_CFLAGS \
         $READLINE_CFLAGS \
         $CFLAGS \
-        "src/main.c" \
         -o "$exe" \
+        src/main.c \
         $READLINE_LIBS \
         $PKG_LIBS \
         $LDFLAGS
+    trace_off
     ;;
 check)
     set +e
@@ -227,19 +198,8 @@ check)
     ;;
 test)
     require_command "$CC"
-
-    if ! detect_c_standard "$CC"; then
-        die 'C compiler does not support C11'
-    fi
-
-    TEST_CPPFLAGS="-Itests -I. -Isrc -Icbase" \
-    TEST_DEFINE_MODULE=0 \
-    TEST_DEFINE_TESTING=0 \
-    TEST_EXE_SUFFIX= \
-    TEST_REQUIRE_TESTING_MARKER=0 \
-    TEST_SKIP_MAIN=0 \
-    TEST_TMPDIR=bin/tests \
-        test "$2" tests
+    CPPFLAGS="$CPPFLAGS -I$dir/tests"
+    test "$2" tests
     ;;
 install)
     if [ ! -f "$exe" ]; then
