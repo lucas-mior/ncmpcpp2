@@ -413,7 +413,7 @@ ncm_mutable_song_set_tag(NcmMutableSong *song, enum NcmTagsField field,
     }
 
     if (optional_strequal(tag->original, tag->original_len,
-                                      value, value_len)) {
+                          value, value_len)) {
         ncm_mutable_song_free_string(&tag->value, &tag->value_len);
         tag->modified = false;
         return true;
@@ -656,8 +656,8 @@ ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
                 break;
             }
             if (!ncm_mutable_song_set_original_tag(
-                    dest, (enum NcmTagsField)field, i,
-                    buffer.data, buffer.len)) {
+                dest, (enum NcmTagsField)field, i,
+                buffer.data, buffer.len)) {
                 sb_free(&buffer);
                 return false;
             }
@@ -683,7 +683,7 @@ ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
         return true;
     }
     if (optional_strequal(song->name, song->name_len, new_name,
-                                      new_name_len)) {
+                          new_name_len)) {
         ncm_mutable_song_free_string(&song->new_name, &song->new_name_len);
         return true;
     }

@@ -666,7 +666,7 @@ ncm_mpd_client_get_playlist_content_no_info(NcmMpdClient *client,
         return false;
     }
     if (!ncm_mpd_connection_get_playlist_content_no_info(
-            &client->connection, path, songs)) {
+        &client->connection, path, songs)) {
         ncm_mpd_client_copy_connection_error(client, ncm_error);
         return false;
     }

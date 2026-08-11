@@ -49,29 +49,29 @@ int32 nc_lastfm_screen_width(NcLastfmScreen *screen);
 int32 nc_lastfm_screen_height(NcLastfmScreen *screen);
 
 void lastfm_screen_init(LastfmScreen *screen,
-                               int32 start_x, int32 width,
-                               int32 main_start_y, int32 main_height,
-                               NcColor color, NcBorder border,
-                               int32 lines_scrolled);
+                        int32 start_x, int32 width,
+                        int32 main_start_y, int32 main_height,
+                        NcColor color, NcBorder border,
+                        int32 lines_scrolled);
 void lastfm_screen_destroy(LastfmScreen *screen);
 NcScreen *lastfm_screen_base(LastfmScreen *screen);
 NcWindow *lastfm_screen_window(LastfmScreen *screen);
 void lastfm_screen_set_geometry(LastfmScreen *screen,
-                                       int32 start_x, int32 width,
-                                       int32 main_start_y,
-                                       int32 main_height);
+                                int32 start_x, int32 width,
+                                int32 main_start_y,
+                                int32 main_height);
 bool lastfm_screen_queue_artist_info(LastfmScreen *screen,
-                                            char *artist, int32 artist_len,
-                                            char *lang, int32 lang_len,
-                                            NcmError *ncm_error);
+                                     char *artist, int32 artist_len,
+                                     char *lang, int32 lang_len,
+                                     NcmError *ncm_error);
 int32 lastfm_screen_dispatch_jobs(LastfmScreen *screen);
 void lastfm_screen_update(LastfmScreen *screen);
 char *lastfm_screen_title(LastfmScreen *screen);
 bool lastfm_screen_take_refresh_request(LastfmScreen *screen);
 bool lastfm_buffer_find(NcBuffer *buffer, char *pattern,
-                                int32 pattern_len, NcmError *ncm_error);
+                        int32 pattern_len, NcmError *ncm_error);
 bool lastfm_screen_find(LastfmScreen *screen,
-                               char *pattern, int32 pattern_len,
-                               NcmError *ncm_error);
+                        char *pattern, int32 pattern_len,
+                        NcmError *ncm_error);
 
 #endif /* NCMPCPP_NC_LASTFM_H */

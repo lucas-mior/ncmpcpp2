@@ -56,9 +56,9 @@ static void sort_dialog_finish(SortPlaylistDialog *dialog);
 
 void
 sort_playlist_dialog_init(SortPlaylistDialog *dialog,
-                                 int32 start_x, int32 start_y,
-                                 int32 width, int32 height,
-                                 NcColor color, NcBorder border) {
+                          int32 start_x, int32 start_y,
+                          int32 width, int32 height,
+                          NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks display_callbacks = {0};
     NcMenu *menu;
 
@@ -116,8 +116,8 @@ sort_playlist_dialog_menu(SortPlaylistDialog *dialog) {
 
 void
 sort_playlist_dialog_set_geometry(SortPlaylistDialog *dialog,
-                                         int32 start_x, int32 start_y,
-                                         int32 width, int32 height) {
+                                  int32 start_x, int32 start_y,
+                                  int32 width, int32 height) {
     if (dialog == NULL) {
         return;
     }
@@ -183,9 +183,9 @@ sort_playlist_dialog_populate_defaults(
 
 bool
 sort_playlist_dialog_add_row(SortPlaylistDialog *dialog,
-                                    char *label, int32 label_len,
-                                    enum NcmSongGetter getter,
-                                    void (*run)(void *user), void *user) {
+                             char *label, int32 label_len,
+                             enum NcmSongGetter getter,
+                             void (*run)(void *user), void *user) {
     NcEditorSortRow row;
     bool ok;
 
@@ -235,7 +235,7 @@ sort_playlist_dialog_open(
 
     ncm_song_array_init(&songs);
     if (!playlist_screen_copy_sort_range(
-            playlist, &songs, &start_position, ncm_error)) {
+        playlist, &songs, &start_position, ncm_error)) {
         ncm_song_array_destroy(&songs);
         return false;
     }
@@ -255,7 +255,7 @@ sort_playlist_dialog_open(
     dialog->ready = true;
 
     if (!nc_screen_switcher_switch_to(
-            sort_playlist_dialog_base(dialog), false)) {
+        sort_playlist_dialog_base(dialog), false)) {
         ncm_song_array_clear(&dialog->songs);
         dialog->playlist = NULL;
         dialog->previous_screen = NULL;
@@ -455,7 +455,7 @@ sort_dialog_mouse_callback(NcScreen *screen, MEVENT event) {
     }
     if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
         (void)nc_menu_goto_selectable(nc_editor_sort_menu_base(
-                                          &dialog->rows), y);
+            &dialog->rows), y);
         if (event.bstate & BUTTON3_PRESSED) {
             (void)sort_playlist_dialog_run_current(dialog);
         }

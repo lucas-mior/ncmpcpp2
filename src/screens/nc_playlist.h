@@ -69,9 +69,9 @@ void nc_playlist_screen_mouse_button_pressed(NcPlaylistScreen *screen,
                                              MEVENT event);
 
 void playlist_screen_init(PlaylistScreen *screen,
-                                 int32 start_x, int32 width,
-                                 int32 main_start_y, int32 main_height,
-                                 NcColor color, NcBorder border);
+                          int32 start_x, int32 width,
+                          int32 main_start_y, int32 main_height,
+                          NcColor color, NcBorder border);
 void playlist_screen_destroy(PlaylistScreen *screen);
 bool playlist_screen_unregister(PlaylistScreen *screen);
 NcScreen *playlist_screen_base(PlaylistScreen *screen);
@@ -82,52 +82,52 @@ NcWindow *playlist_screen_window(PlaylistScreen *screen);
 void playlist_screen_update_column_title(
     PlaylistScreen *screen);
 void playlist_screen_set_geometry(PlaylistScreen *screen,
-                                         int32 start_x, int32 width,
-                                         int32 main_start_y,
-                                         int32 main_height);
+                                  int32 start_x, int32 width,
+                                  int32 main_start_y,
+                                  int32 main_height);
 void playlist_screen_set_mouse_config(PlaylistScreen *screen,
-                                             int32 lines_scrolled,
-                                             bool scroll_whole_page);
+                                      int32 lines_scrolled,
+                                      bool scroll_whole_page);
 void playlist_screen_set_highlighting(PlaylistScreen *screen,
-                                             bool enabled);
+                                      bool enabled);
 bool playlist_screen_highlighting(PlaylistScreen *screen);
 void playlist_screen_request_highlighting(PlaylistScreen *screen);
 void playlist_screen_clear(PlaylistScreen *screen);
 bool playlist_screen_reload_from_mpd(PlaylistScreen *screen,
-                                            NcmMpdClient *client,
-                                            int32 version,
-                                            int32 playlist_length,
-                                            NcmError *ncm_error);
+                                     NcmMpdClient *client,
+                                     int32 version,
+                                     int32 playlist_length,
+                                     NcmError *ncm_error);
 int32 playlist_screen_song_count(PlaylistScreen *screen);
 bool playlist_screen_empty(PlaylistScreen *screen);
 bool playlist_screen_current_song(PlaylistScreen *screen,
-                                         NcmSong *song);
+                                  NcmSong *song);
 bool playlist_screen_update_current_mutable_song(
     PlaylistScreen *screen, NcmMutableSong *song);
 bool playlist_screen_now_playing_song(PlaylistScreen *screen,
-                                             int32 position,
-                                             NcmSong *song);
+                                      int32 position,
+                                      NcmSong *song);
 bool playlist_screen_locate_position(PlaylistScreen *screen,
-                                            int32 position);
+                                     int32 position);
 bool playlist_screen_selected_songs(PlaylistScreen *screen,
-                                           NcmSongArray *songs);
+                                    NcmSongArray *songs);
 bool playlist_screen_has_sortable_range(
     PlaylistScreen *screen);
 bool playlist_screen_copy_sort_range(
     PlaylistScreen *screen, NcmSongArray *songs,
     int32 *start_position, NcmError *ncm_error);
 bool playlist_screen_apply_filter(PlaylistScreen *screen,
-                                         char *pattern, int32 pattern_len,
-                                         NcmError *ncm_error);
+                                  char *pattern, int32 pattern_len,
+                                  NcmError *ncm_error);
 void playlist_screen_clear_filter(PlaylistScreen *screen);
 bool playlist_screen_search(PlaylistScreen *screen,
-                                   char *pattern, int32 pattern_len,
-                                   bool forward, bool wrap,
-                                   bool skip_current, NcmError *ncm_error);
+                            char *pattern, int32 pattern_len,
+                            bool forward, bool wrap,
+                            bool skip_current, NcmError *ncm_error);
 bool playlist_screen_set_selected_priority(PlaylistScreen *screen,
-                                                  NcmMpdClient *client,
-                                                  int32 priority,
-                                                  NcmError *ncm_error);
+                                           NcmMpdClient *client,
+                                           int32 priority,
+                                           NcmError *ncm_error);
 void playlist_screen_reload_total_length(PlaylistScreen *screen);
 void playlist_screen_reload_remaining(PlaylistScreen *screen);
 

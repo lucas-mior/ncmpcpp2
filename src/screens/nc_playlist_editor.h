@@ -91,10 +91,10 @@ typedef struct PlaylistEditorScreen {
 } PlaylistEditorScreen;
 
 void playlist_editor_screen_init(PlaylistEditorScreen *screen,
-                                        int32 start_x, int32 width,
-                                        int32 main_start_y,
-                                        int32 main_height,
-                                        NcColor color, NcBorder border);
+                                 int32 start_x, int32 width,
+                                 int32 main_start_y,
+                                 int32 main_height,
+                                 NcColor color, NcBorder border);
 void playlist_editor_screen_destroy(PlaylistEditorScreen *screen);
 NcScreen *playlist_editor_screen_base(
     PlaylistEditorScreen *screen);

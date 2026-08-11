@@ -151,11 +151,11 @@ typedef struct MediaLibraryScreen {
 MediaLibraryHooks media_library_mpd_hooks(
     NcmMpdClient *client);
 void media_library_screen_init(MediaLibraryScreen *screen,
-                                      MediaLibraryHooks hooks,
-                                      int32 start_x, int32 width,
-                                      int32 main_start_y,
-                                      int32 main_height, NcColor color,
-                                      NcBorder border);
+                               MediaLibraryHooks hooks,
+                               int32 start_x, int32 width,
+                               int32 main_start_y,
+                               int32 main_height, NcColor color,
+                               NcBorder border);
 void media_library_screen_destroy(MediaLibraryScreen *screen);
 NcScreen *media_library_screen_base(MediaLibraryScreen *screen);
 NcMenu *media_library_screen_active_menu(

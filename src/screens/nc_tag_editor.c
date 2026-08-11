@@ -250,7 +250,7 @@ static bool tag_editor_apply_recent_pattern(TagEditorScreen *screen,
 static bool tag_editor_mutable_song_to_format_song(NcmMutableSong *source,
                                                    NcmSong *dest);
 static int32 tag_editor_filename_extension_start(char *name,
-                                                int32 name_len);
+                                                 int32 name_len);
 static void tag_editor_append_parser_filename(StrBuilder *buffer,
                                               char *name, int32 name_len);
 static bool tag_editor_mutable_song_get_field(NcmMutableSong *song,
@@ -330,9 +330,9 @@ struct SaveContext {
 
 void
 tag_editor_screen_init(TagEditorScreen *screen,
-                              int32 start_x, int32 width,
-                              int32 main_start_y, int32 main_height,
-                              NcColor color, NcBorder border) {
+                       int32 start_x, int32 width,
+                       int32 main_start_y, int32 main_height,
+                       NcColor color, NcBorder border) {
     nc_editor_pair_menu_init(&screen->directories);
     nc_editor_string_menu_init(&screen->tag_types);
     nc_tag_row_menu_init(&screen->tags);
@@ -389,13 +389,13 @@ tag_editor_screen_init(TagEditorScreen *screen,
     screen->registered = false;
 
     (void)tag_editor_screen_set_current_dir(screen,
-                                                   STRLIT("/"));
+                                            STRLIT("/"));
     (void)tag_editor_initialize_tag_types(screen);
     tag_editor_layout(screen);
     tag_editor_configure_menus(screen);
     tag_editor_observe_current_directory(screen);
     nc_screen_init_ops(&screen->screen, tag_editor_callbacks, screen,
-                   NC_SCREEN_TYPE_TAG_EDITOR);
+                       NC_SCREEN_TYPE_TAG_EDITOR);
     (void)tag_editor_screen_prepare_parser_rows(
         screen, TAG_EDITOR_PARSER_NONE, NULL, 0);
     return;
@@ -407,7 +407,7 @@ tag_editor_screen_destroy(TagEditorScreen *screen) {
         return;
     }
     (void)app_controller_unregister_screen(tag_editor_screen_base(
-                                               screen));
+        screen));
     tag_editor_destroy_regexes(screen);
     tag_editor_destroy_buffers(screen);
     nc_window_destroy(&screen->parser_helper_window);
@@ -436,7 +436,7 @@ tag_editor_screen_base(TagEditorScreen *screen) {
 
 void
 tag_editor_screen_set_hooks(TagEditorScreen *screen,
-                                   TagEditorHooks hooks) {
+                            TagEditorHooks hooks) {
     if (screen == NULL) {
         return;
     }
@@ -615,13 +615,13 @@ tag_editor_screen_enter_directory(TagEditorScreen *screen) {
         return false;
     }
     if (!tag_editor_directory_has_subdirectories(screen, path.data,
-                                                path.len)) {
+                                                 path.len)) {
         tag_editor_status_message(screen, STRLIT("No subdirectories found"));
         return false;
     }
     sb_clear(&screen->highlighted_dir);
     if (!tag_editor_screen_set_current_dir(screen, path.data,
-                                                 path.len)) {
+                                           path.len)) {
         return false;
     }
     nc_menu_clear_items(nc_editor_pair_menu_base(&screen->directories));
@@ -647,7 +647,7 @@ tag_editor_screen_go_to_parent(TagEditorScreen *screen) {
     if ((screen->current_dir.data == NULL)
         || (screen->current_dir.len <= 0)
         || STREQUAL(screen->current_dir.data,
-                            screen->current_dir.len, STRLIT("/"))) {
+                    screen->current_dir.len, STRLIT("/"))) {
         return false;
     }
 
@@ -658,7 +658,7 @@ tag_editor_screen_go_to_parent(TagEditorScreen *screen) {
         return false;
     }
     parent_len = ncm_string_parent_directory_len(screen->current_dir.data,
-                                                screen->current_dir.len);
+                                                 screen->current_dir.len);
     if (parent_len <= 0) {
         ok = tag_editor_set_buffer(&parent, STRLIT("/"));
     } else {
@@ -666,7 +666,7 @@ tag_editor_screen_go_to_parent(TagEditorScreen *screen) {
                                    parent_len);
     }
     if (!ok || !tag_editor_screen_set_current_dir(
-            screen, parent.data, parent.len)) {
+        screen, parent.data, parent.len)) {
         sb_free(&parent);
         return false;
     }
@@ -705,7 +705,7 @@ tag_editor_screen_locate_song(TagEditorScreen *screen,
     }
 
     parent_len = ncm_string_parent_directory_len(directory.data,
-                                                directory.len);
+                                                 directory.len);
     if (parent_len <= 0) {
         ok = sb_set(&parent, STRLIT("/"));
     } else {
@@ -717,9 +717,9 @@ tag_editor_screen_locate_song(TagEditorScreen *screen,
     }
 
     ok = tag_editor_screen_set_current_dir(screen, parent.data,
-                                                 parent.len)
+                                           parent.len)
          && sb_set(&screen->highlighted_dir, directory.data,
-                           directory.len);
+                   directory.len);
     if (ok) {
         nc_menu_clear_items(nc_editor_pair_menu_base(&screen->directories));
         ncm_error_clear(&ncm_error);
@@ -728,7 +728,7 @@ tag_editor_screen_locate_song(TagEditorScreen *screen,
     }
     if (ok) {
         ok = tag_editor_highlight_directory_path(screen, directory.data,
-                                                directory.len);
+                                                 directory.len);
     }
     if (ok) {
         tag_editor_screen_clear_stale_tags(screen);
@@ -782,11 +782,11 @@ tag_editor_screen_rename_current_directory(TagEditorScreen *screen,
     bool ok;
 
     if (!tag_editor_screen_rename_directory_available(
-            screen, music_dir, music_dir_len)) {
+        screen, music_dir, music_dir_len)) {
         return false;
     }
     if ((screen->hooks.prompt == NULL) || !tag_editor_current_directory_pair(
-            screen, &pair)) {
+        screen, &pair)) {
         return false;
     }
 
@@ -803,7 +803,7 @@ tag_editor_screen_rename_current_directory(TagEditorScreen *screen,
     }
     if ((name.len <= 0)
         || STREQUAL(name.data, name.len, pair->first,
-                            pair->first_len)) {
+                    pair->first_len)) {
         sb_free(&name);
         return true;
     }
@@ -913,7 +913,7 @@ tag_editor_screen_load_songs(TagEditorScreen *screen,
 
 bool
 tag_editor_screen_add_mutable_song(TagEditorScreen *screen,
-                                          NcmMutableSong *song) {
+                                   NcmMutableSong *song) {
     if ((screen == NULL) || (song == NULL)) {
         return false;
     }
@@ -974,7 +974,7 @@ tag_editor_screen_previous_column_available(TagEditorScreen *screen) {
     }
     if (tag_editor_focus_is_parser_helper(screen->active_focus)) {
         return !nc_menu_empty(nc_editor_string_menu_base(
-                                  &screen->parser_actions));
+            &screen->parser_actions));
     }
     return false;
 }
@@ -1204,9 +1204,9 @@ tag_editor_screen_apply_tag_filter(TagEditorScreen *screen,
 
 bool
 tag_editor_screen_search(TagEditorScreen *screen,
-                                char *pattern, int32 pattern_len,
-                                bool forward, bool wrap,
-                                bool skip_current, NcmError *ncm_error) {
+                         char *pattern, int32 pattern_len,
+                         bool forward, bool wrap,
+                         bool skip_current, NcmError *ncm_error) {
     TagEditorSearchContext context;
     NcmRegex *regex;
     StrBuilder *constraint;
@@ -1297,18 +1297,18 @@ tag_editor_screen_prepare_parser_rows(TagEditorScreen *screen,
     nc_menu_clear_items(nc_editor_string_menu_base(&screen->parser_rows));
     nc_menu_clear_items(nc_editor_string_menu_base(&screen->parser_actions));
     if (!tag_editor_append_parser_row(
-            &screen->parser_dialog, STRLIT("Get tags from filename"),
-            NC_MENU_ITEM_SELECTABLE)) {
+        &screen->parser_dialog, STRLIT("Get tags from filename"),
+        NC_MENU_ITEM_SELECTABLE)) {
         return false;
     }
     if (!tag_editor_append_parser_row(
-            &screen->parser_dialog, STRLIT("Rename files"),
-            NC_MENU_ITEM_SELECTABLE)) {
+        &screen->parser_dialog, STRLIT("Rename files"),
+        NC_MENU_ITEM_SELECTABLE)) {
         return false;
     }
     if (!tag_editor_append_parser_row(
-            &screen->parser_dialog, STRLIT("Cancel"),
-            NC_MENU_ITEM_SELECTABLE)) {
+        &screen->parser_dialog, STRLIT("Cancel"),
+        NC_MENU_ITEM_SELECTABLE)) {
         return false;
     }
     if (mode == TAG_EDITOR_PARSER_NONE) {
@@ -1316,18 +1316,18 @@ tag_editor_screen_prepare_parser_rows(TagEditorScreen *screen,
         return true;
     }
     if (!tag_editor_append_parser_row(
-            &screen->parser_rows, STRLIT("Get tags from filename"),
-            NC_MENU_ITEM_SELECTABLE)) {
+        &screen->parser_rows, STRLIT("Get tags from filename"),
+        NC_MENU_ITEM_SELECTABLE)) {
         return false;
     }
     if (!tag_editor_append_parser_row(
-            &screen->parser_rows, STRLIT("Rename files"),
-            NC_MENU_ITEM_SELECTABLE)) {
+        &screen->parser_rows, STRLIT("Rename files"),
+        NC_MENU_ITEM_SELECTABLE)) {
         return false;
     }
     if (!tag_editor_append_parser_row(
-            &screen->parser_rows, STRLIT("Cancel"),
-            NC_MENU_ITEM_SELECTABLE)) {
+        &screen->parser_rows, STRLIT("Cancel"),
+        NC_MENU_ITEM_SELECTABLE)) {
         return false;
     }
     if (!tag_editor_build_parser_menus(screen)
@@ -1407,8 +1407,8 @@ tag_editor_screen_close_parser(TagEditorScreen *screen) {
 
 bool
 tag_editor_parse_filename(NcmMutableSong *song, char *mask,
-                                 int32 mask_len, bool preview,
-                                 StrBuilder *preview_buffer) {
+                          int32 mask_len, bool preview,
+                          StrBuilder *preview_buffer) {
     StrBuilder file = {0};
     int32 mask_pos;
     int32 file_pos;
@@ -1446,7 +1446,7 @@ tag_editor_parse_filename(NcmMutableSong *song, char *mask,
         if ((separator_len > 0)
             && (((file_pos + separator_len) > file.len)
                 || !STREQUAL(file.data + file_pos, separator_len,
-                                     mask + mask_pos, separator_len))) {
+                             mask + mask_pos, separator_len))) {
             sb_free(&file);
             return false;
         }
@@ -1465,8 +1465,8 @@ tag_editor_parse_filename(NcmMutableSong *song, char *mask,
                 for (int32 i = file_pos; i + literal_len <= file.len;
                      i += 1) {
                     if (STREQUAL(file.data + i, literal_len,
-                                         mask + next_mask_pos,
-                                         literal_len)) {
+                                 mask + next_mask_pos,
+                                 literal_len)) {
                         found = i;
                         break;
                     }
@@ -1493,7 +1493,7 @@ tag_editor_parse_filename(NcmMutableSong *song, char *mask,
                 sb_append_byte(preview_buffer, tag_char);
                 SB_APPEND(preview_buffer, STRLIT(": "));
                 SB_APPEND(preview_buffer, file.data + file_pos,
-                                  value_end - file_pos);
+                          value_end - file_pos);
                 sb_append_byte(preview_buffer, '\n');
             } else if (!ncm_mutable_song_set_tags(song, field,
                                                   file.data + file_pos,
@@ -1512,8 +1512,8 @@ tag_editor_parse_filename(NcmMutableSong *song, char *mask,
 
 bool
 tag_editor_generate_filename(NcmMutableSong *song, char *pattern,
-                                    int32 pattern_len,
-                                    StrBuilder *filename) {
+                             int32 pattern_len,
+                             StrBuilder *filename) {
     NcmFormatAst ast;
     NcmSong format_song;
     StrBuilder rendered;
@@ -1557,8 +1557,8 @@ tag_editor_generate_filename(NcmMutableSong *song, char *pattern,
 
 bool
 tag_editor_song_display_value(NcmMutableSong *song,
-                                     enum NcmTagsField field,
-                                     StrBuilder *buffer) {
+                              enum NcmTagsField field,
+                              StrBuilder *buffer) {
     if ((song == NULL) || (buffer == NULL)) {
         return false;
     }
@@ -1816,7 +1816,7 @@ tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
         y = event.y;
         if (nc_window_has_coords(&editor->parser_dialog_window, &x, &y)) {
             if (!tag_editor_mouse_move_to_parser_focus(
-                    editor, TAG_EDITOR_FOCUS_PARSER_CHOICE)) {
+                editor, TAG_EDITOR_FOCUS_PARSER_CHOICE)) {
                 return;
             }
             if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
@@ -1839,7 +1839,7 @@ tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
         y = event.y;
         if (nc_window_has_coords(&editor->parser_window, &x, &y)) {
             if (!tag_editor_mouse_move_to_parser_focus(
-                    editor, TAG_EDITOR_FOCUS_PARSER_ACTIONS)) {
+                editor, TAG_EDITOR_FOCUS_PARSER_ACTIONS)) {
                 return;
             }
             if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
@@ -1862,7 +1862,7 @@ tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
         y = event.y;
         if (nc_window_has_coords(&editor->parser_helper_window, &x, &y)) {
             if (!tag_editor_mouse_move_to_parser_focus(
-                    editor, tag_editor_current_helper_focus(editor))) {
+                editor, tag_editor_current_helper_focus(editor))) {
                 return;
             }
             if (event.bstate & BUTTON5_PRESSED) {
@@ -1881,7 +1881,7 @@ tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     y = event.y;
     if (nc_window_has_coords(&editor->directories_window, &x, &y)) {
         if (!tag_editor_mouse_move_to_column(
-                editor, TAG_EDITOR_COLUMN_DIRECTORIES)) {
+            editor, TAG_EDITOR_COLUMN_DIRECTORIES)) {
             return;
         }
         if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
@@ -1901,7 +1901,7 @@ tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     y = event.y;
     if (nc_window_has_coords(&editor->tag_types_window, &x, &y)) {
         if (!tag_editor_mouse_move_to_column(
-                editor, TAG_EDITOR_COLUMN_TAG_TYPES)) {
+            editor, TAG_EDITOR_COLUMN_TAG_TYPES)) {
             return;
         }
         if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
@@ -1921,7 +1921,7 @@ tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     y = event.y;
     if (nc_window_has_coords(&editor->tags_window, &x, &y)) {
         if (!tag_editor_mouse_move_to_column(
-                editor, TAG_EDITOR_COLUMN_TAGS)) {
+            editor, TAG_EDITOR_COLUMN_TAGS)) {
             return;
         }
         if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
@@ -2164,7 +2164,7 @@ tag_editor_run_tag_type_current(TagEditorScreen *screen) {
             return false;
         }
         if (!tag_editor_screen_number_tracks(
-                screen, Config.tag_editor_extended_numeration)) {
+            screen, Config.tag_editor_extended_numeration)) {
             return false;
         }
         tag_editor_status_message(screen, STRLIT("Tracks numbered"));
@@ -2284,7 +2284,7 @@ tag_editor_run_parser_action_current(TagEditorScreen *screen) {
         }
         if (success) {
             if (!tag_editor_move_pattern_to_front(
-                    screen, screen->pattern.data, screen->pattern.len)) {
+                screen, screen->pattern.data, screen->pattern.len)) {
                 return false;
             }
             (void)tag_editor_save_recent_patterns(screen);
@@ -2443,7 +2443,7 @@ tag_editor_set_song_filename_stem(NcmMutableSong *song, char *stem,
     SB_APPEND(&new_name, stem, stem_len);
     if (dot >= 0) {
         SB_APPEND(&new_name, current_name.data + dot,
-                          current_name.len - dot);
+                  current_name.len - dot);
     }
     result = ncm_mutable_song_set_new_name(song, new_name.data,
                                            new_name.len);
@@ -2676,29 +2676,29 @@ tag_editor_update_titles(TagEditorScreen *screen,
 
     if (Config.titles_visibility) {
         SB_APPEND(&screen->directories_title,
-                          STRLIT("Directories"));
+                  STRLIT("Directories"));
         SB_APPEND(&screen->tag_types_title,
-                          STRLIT("Tag types"));
+                  STRLIT("Tag types"));
         SB_APPEND(&screen->tags_title, STRLIT("Tags"));
         if (screen->parser_mode
             == TAG_EDITOR_PARSER_TAGS_FROM_FILENAME) {
             SB_APPEND(&screen->parser_title,
-                              STRLIT("Get tags from filename"));
+                      STRLIT("Get tags from filename"));
         } else if (screen->parser_mode
                    == TAG_EDITOR_PARSER_RENAME_FILES) {
             SB_APPEND(&screen->parser_title,
-                              STRLIT("Rename files"));
+                      STRLIT("Rename files"));
         } else {
             SB_APPEND(&screen->parser_title,
-                              STRLIT("Pattern"));
+                      STRLIT("Pattern"));
         }
         if ((screen->active_focus == TAG_EDITOR_FOCUS_PARSER_LEGEND)
             || !screen->parser_preview_enabled) {
             SB_APPEND(&screen->parser_helper_title,
-                              STRLIT("Legend"));
+                      STRLIT("Legend"));
         } else {
             SB_APPEND(&screen->parser_helper_title,
-                              STRLIT("Preview"));
+                      STRLIT("Preview"));
         }
     }
 
@@ -2776,8 +2776,8 @@ tag_editor_directory_row_changed(TagEditorScreen *screen) {
     }
     changed = !screen->observed_dir_valid
               || !STREQUAL(screen->observed_dir.data,
-                                   screen->observed_dir.len, path,
-                                   path_len)
+                           screen->observed_dir.len, path,
+                           path_len)
               || (screen->last_directory_highlight
                   != nc_menu_highlight(menu));
     if (changed) {
@@ -2858,7 +2858,7 @@ tag_editor_highlight_directory_path(TagEditorScreen *screen,
             continue;
         }
         if (STREQUAL(pair->second, pair->second_len,
-                             path, path_len)) {
+                     path, path_len)) {
             (void)nc_menu_goto_selectable(menu, i);
             tag_editor_observe_current_directory(screen);
             return true;
@@ -3011,7 +3011,7 @@ tag_editor_restore_current_directory(TagEditorScreen *screen,
             continue;
         }
         if (STREQUAL(pair->second, pair->second_len,
-                             path->data, path->len)) {
+                     path->data, path->len)) {
             (void)nc_menu_goto_selectable(menu, i);
             return;
         }
@@ -3057,7 +3057,7 @@ tag_editor_restore_current_song(TagEditorScreen *screen,
             continue;
         }
         if (STREQUAL(item->uri, item->uri_len,
-                             uri->data, uri->len)) {
+                     uri->data, uri->len)) {
             (void)nc_menu_goto_selectable(menu, i);
             return;
         }
@@ -3105,7 +3105,7 @@ tag_editor_sort_directories(NcmDirectoryArray *directories) {
         j = i;
         while ((j > 0)
                && (tag_editor_compare_directories(
-                       &directories->items[j - 1], &current) > 0)) {
+                   &directories->items[j - 1], &current) > 0)) {
             ncm_directory_move(&directories->items[j],
                                &directories->items[j - 1]);
             j -= 1;
@@ -3192,7 +3192,7 @@ tag_editor_report_error(char *context, int32 context_len,
     if (ncm_error && (ncm_error->message[0] != 0)) {
         SB_APPEND(&message, STRLIT(": "));
         SB_APPEND(&message, ncm_error->message,
-                          strlen32(ncm_error->message));
+                  strlen32(ncm_error->message));
     }
     ncm_statusbar_print_cstring(Config.message_delay_time,
                                 message.data);
@@ -3265,7 +3265,7 @@ tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
     tag_editor_preserve_current_directory(screen, &preserved);
     if ((preserved.len <= 0) && (screen->highlighted_dir.len > 0)) {
         sb_set(&preserved, screen->highlighted_dir.data,
-                       screen->highlighted_dir.len);
+               screen->highlighted_dir.len);
     }
     dir = screen->current_dir.data;
     if (dir == NULL) {
@@ -3277,9 +3277,9 @@ tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
     if (ok) {
         tag_editor_sort_directories(&directories);
         nc_menu_show_all_items(nc_editor_pair_menu_base(
-                                   &screen->directories));
+            &screen->directories));
         nc_menu_clear_items(nc_editor_pair_menu_base(
-                                &screen->directories));
+            &screen->directories));
         ok = tag_editor_add_control_directory(screen);
         for (int32 i = 0; ok && (i < directories.len); i += 1) {
             NcmDirectory *directory;
@@ -3302,7 +3302,7 @@ tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
         tag_editor_restore_current_directory(screen, &preserved);
         if (screen->directory_filter_enabled) {
             nc_menu_apply_filter(nc_editor_pair_menu_base(
-                                     &screen->directories));
+                &screen->directories));
             tag_editor_restore_current_directory(screen, &preserved);
         }
         tag_editor_observe_current_directory(screen);
@@ -3544,14 +3544,14 @@ tag_editor_initialize_tag_types(TagEditorScreen *screen) {
     nc_editor_string_menu_add_separator(menu);
     if (Config.titles_visibility) {
         if (!tag_editor_append_string_row(
-                menu, STRLIT("Options"), NC_MENU_ITEM_INACTIVE)) {
+            menu, STRLIT("Options"), NC_MENU_ITEM_INACTIVE)) {
             return false;
         }
         nc_editor_string_menu_add_separator(menu);
     }
     if (!tag_editor_append_string_row(
-            menu, STRLIT("Capitalize First Letters"),
-            NC_MENU_ITEM_SELECTABLE)) {
+        menu, STRLIT("Capitalize First Letters"),
+        NC_MENU_ITEM_SELECTABLE)) {
         return false;
     }
     if (!tag_editor_append_string_row(menu, STRLIT("lower all letters"),
@@ -3627,7 +3627,7 @@ tag_editor_configure_menus(TagEditorScreen *screen) {
     nc_menu_set_display_callbacks(
         tag_types, tag_editor_tag_type_display_callbacks(screen));
     nc_menu_set_display_callbacks(tags, tag_editor_tag_display_callbacks(
-                                      screen));
+        screen));
     nc_menu_set_display_callbacks(
         parser_dialog, tag_editor_tag_type_display_callbacks(screen));
     nc_menu_set_display_callbacks(
@@ -4034,8 +4034,8 @@ tag_editor_mutable_song_to_song(NcmMutableSong *source,
 
 static bool
 tag_editor_for_each_target(TagEditorScreen *screen,
-                            bool (*cb)(NcmMutableSong *song, void *user),
-                            void *user) {
+                           bool (*cb)(NcmMutableSong *song, void *user),
+                           void *user) {
     NcMenu *menu;
     bool has_selected;
 
@@ -4092,9 +4092,9 @@ tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
         return false;
     }
     for (int32 i = 1; ncm_mutable_song_get_tag(
-             song, NCM_TAGS_FIELD_TRACK, i, &view); i += 1) {
+        song, NCM_TAGS_FIELD_TRACK, i, &view); i += 1) {
         if (!ncm_mutable_song_set_tag(
-                song, NCM_TAGS_FIELD_TRACK, i, STRLIT(""))) {
+            song, NCM_TAGS_FIELD_TRACK, i, STRLIT(""))) {
             return false;
         }
     }
@@ -4627,27 +4627,27 @@ tag_editor_build_parser_legend(TagEditorScreen *screen) {
     }
     sb_clear(&screen->parser_legend);
     SB_APPEND(&screen->parser_legend,
-                      STRLIT("%a - artist\n"));
+              STRLIT("%a - artist\n"));
     SB_APPEND(&screen->parser_legend,
-                      STRLIT("%A - album artist\n"));
+              STRLIT("%A - album artist\n"));
     SB_APPEND(&screen->parser_legend,
-                      STRLIT("%t - title\n"));
+              STRLIT("%t - title\n"));
     SB_APPEND(&screen->parser_legend,
-                      STRLIT("%b - album\n"));
+              STRLIT("%b - album\n"));
     SB_APPEND(&screen->parser_legend,
-                      STRLIT("%y - date\n"));
+              STRLIT("%y - date\n"));
     SB_APPEND(&screen->parser_legend,
-                      STRLIT("%n - track number\n"));
+              STRLIT("%n - track number\n"));
     SB_APPEND(&screen->parser_legend,
-                      STRLIT("%g - genre\n"));
+              STRLIT("%g - genre\n"));
     SB_APPEND(&screen->parser_legend,
-                      STRLIT("%c - composer\n"));
+              STRLIT("%c - composer\n"));
     SB_APPEND(&screen->parser_legend,
-                      STRLIT("%p - performer\n"));
+              STRLIT("%p - performer\n"));
     SB_APPEND(&screen->parser_legend,
-                      STRLIT("%d - disc\n"));
+              STRLIT("%d - disc\n"));
     SB_APPEND(&screen->parser_legend,
-                      STRLIT("%C - comment\n\nFiles:\n"));
+              STRLIT("%C - comment\n\nFiles:\n"));
 
     tags = nc_tag_row_menu_base(&screen->tags);
     count = nc_menu_item_count(tags);
@@ -4660,7 +4660,7 @@ tag_editor_build_parser_legend(TagEditorScreen *screen) {
         }
         SB_APPEND(&screen->parser_legend, STRLIT(" * "));
         SB_APPEND(&screen->parser_legend, song->name,
-                          song->name_len);
+                  song->name_len);
         sb_append_byte(&screen->parser_legend, '\n');
     }
     return true;
@@ -4694,9 +4694,9 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
 
             if (!apply && song->name) {
                 SB_APPEND(&screen->parser_preview, song->name,
-                                  song->name_len);
+                          song->name_len);
                 SB_APPEND(&screen->parser_preview,
-                                  STRLIT(":\n"));
+                          STRLIT(":\n"));
             }
             parsed = tag_editor_parse_filename(
                 song, screen->pattern.data, screen->pattern.len, !apply,
@@ -4715,8 +4715,8 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
             int32 extension_start;
 
             if (!tag_editor_generate_filename(
-                    song, screen->pattern.data, screen->pattern.len,
-                    &stem)) {
+                song, screen->pattern.data, screen->pattern.len,
+                &stem)) {
                 sb_free(&new_name);
                 sb_free(&stem);
                 return false;
@@ -4726,7 +4726,7 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
             SB_APPEND(&new_name, stem.data, stem.len);
             if ((extension_start >= 0) && song->name) {
                 SB_APPEND(&new_name, song->name + extension_start,
-                                  song->name_len - extension_start);
+                          song->name_len - extension_start);
             }
             if (apply && (stem.len <= 0)) {
                 sb_clear(&screen->parser_preview);
@@ -4734,7 +4734,7 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
                 tag_editor_append_parser_filename(
                     &screen->parser_preview, song->name, song->name_len);
                 SB_APPEND(&screen->parser_preview,
-                                  STRLIT(
+                          STRLIT(
                                       "\" would have an empty name"));
                 tag_editor_status_message(
                     screen, screen->parser_preview.data,
@@ -4758,17 +4758,17 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
                 tag_editor_append_parser_filename(
                     &screen->parser_preview, song->name, song->name_len);
                 SB_APPEND(&screen->parser_preview,
-                                  STRLIT(" -> "));
+                          STRLIT(" -> "));
                 if (new_name.len > 0) {
                     SB_APPEND(&screen->parser_preview,
-                                      new_name.data, new_name.len);
+                              new_name.data, new_name.len);
                 } else if (Config.empty_tag) {
                     SB_APPEND(&screen->parser_preview,
-                                      Config.empty_tag,
-                                      Config.empty_tag_len);
+                              Config.empty_tag,
+                              Config.empty_tag_len);
                 }
                 SB_APPEND(&screen->parser_preview,
-                                  STRLIT("\n\n"));
+                          STRLIT("\n\n"));
             }
             sb_free(&new_name);
             sb_free(&stem);
@@ -4921,7 +4921,7 @@ tag_editor_find_recent_pattern(TagEditorScreen *screen,
 
         item = &screen->recent_patterns.items[i];
         if (STREQUAL(item->data, item->len, pattern,
-                             pattern_len)) {
+                     pattern_len)) {
             return i;
         }
     }
@@ -4970,7 +4970,7 @@ tag_editor_move_pattern_to_front(TagEditorScreen *screen,
             continue;
         }
         if (!str_builder_array_append_copy(&replacement,
-                                          &screen->recent_patterns.items[i])) {
+                                           &screen->recent_patterns.items[i])) {
             str_builder_array_destroy(&replacement);
             return false;
         }
@@ -5080,8 +5080,8 @@ tag_editor_apply_recent_pattern(TagEditorScreen *screen,
         return false;
     }
     if (!tag_editor_screen_prepare_parser_rows(
-            screen, screen->parser_mode, screen->pattern.data,
-            screen->pattern.len)) {
+        screen, screen->parser_mode, screen->pattern.data,
+        screen->pattern.len)) {
         return false;
     }
     tag_editor_set_focus(screen, TAG_EDITOR_FOCUS_PARSER_ACTIONS);
