@@ -260,7 +260,6 @@ check)
     fi
 
     # Flag variables intentionally require shell word splitting.
-    # shellcheck disable=SC2086
     run_command "$CC" \
         -I. \
         -Isrc \
