@@ -1143,8 +1143,8 @@ static bool
 apply_selected_item_suffix(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
     (void)ncm_error;
-    return settings_copy_nc_buffer(&config->selected_item_suffix, value,
-                                   value_len,
+    return settings_copy_nc_buffer(&config->selected_item_suffix,
+                                   value, value_len,
                                    &config->selected_item_suffix_length, false);
 }
 
@@ -1152,15 +1152,17 @@ static bool
 apply_modified_item_prefix(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
     (void)ncm_error;
-    return settings_copy_nc_buffer(&config->modified_item_prefix, value,
-                                   value_len, NULL, false);
+    return settings_copy_nc_buffer(&config->modified_item_prefix,
+                                   value, value_len, NULL, false);
 }
 
 static bool
-apply_song_window_title_format(Configuration *config, char *value,
-                               int32 value_len, NcmError *ncm_error) {
-    return settings_parse_format(&config->song_window_title_format, value,
-                                 value_len, NCM_FORMAT_FLAG_TAG, ncm_error);
+apply_song_window_title_format(Configuration *config,
+                               char *value, int32 value_len,
+                               NcmError *ncm_error) {
+    return settings_parse_format(&config->song_window_title_format,
+                                 value, value_len, NCM_FORMAT_FLAG_TAG,
+                                 ncm_error);
 }
 
 static bool
@@ -1185,8 +1187,9 @@ apply_browser_sort_format(Configuration *config, char *value, int32 value_len,
 }
 
 static bool
-apply_song_columns_list_format(Configuration *config, char *value,
-                               int32 value_len, NcmError *ncm_error) {
+apply_song_columns_list_format(Configuration *config,
+                               char *value, int32 value_len,
+                               NcmError *ncm_error) {
     return settings_parse_columns(config, value, value_len, ncm_error);
 }
 
@@ -1213,8 +1216,9 @@ apply_browser_display_mode(Configuration *config, char *value, int32 value_len,
 }
 
 static bool
-apply_search_engine_display_mode(Configuration *config, char *value,
-                                 int32 value_len, NcmError *ncm_error) {
+apply_search_engine_display_mode(Configuration *config,
+                                 char *value, int32 value_len,
+                                 NcmError *ncm_error) {
     if (!ncm_display_mode_parse(value, value_len,
                                 &config->search_engine_display_mode)) {
         settings_invalid_value(ncm_error, value, value_len);
@@ -1224,8 +1228,9 @@ apply_search_engine_display_mode(Configuration *config, char *value,
 }
 
 static bool
-apply_playlist_editor_display_mode(Configuration *config, char *value,
-                                   int32 value_len, NcmError *ncm_error) {
+apply_playlist_editor_display_mode(Configuration *config,
+                                   char *value, int32 value_len,
+                                   NcmError *ncm_error) {
     if (!ncm_display_mode_parse(value, value_len,
                                 &config->playlist_editor_display_mode)) {
         settings_invalid_value(ncm_error, value, value_len);
@@ -1252,8 +1257,9 @@ apply_progressbar_look(Configuration *config, char *value, int32 value_len,
 }
 
 static bool
-apply_default_place_to_search_in(Configuration *config, char *value,
-                                 int32 value_len, NcmError *ncm_error) {
+apply_default_place_to_search_in(Configuration *config,
+                                 char *value, int32 value_len,
+                                 NcmError *ncm_error) {
     if (STREQUAL(value, value_len, STRLIT("database"))) {
         config->search_in_db = true;
         return true;
@@ -1277,8 +1283,9 @@ apply_user_interface(Configuration *config, char *value, int32 value_len,
 }
 
 static bool
-apply_media_library_primary_tag(Configuration *config, char *value,
-                                int32 value_len, NcmError *ncm_error) {
+apply_media_library_primary_tag(Configuration *config,
+                                char *value, int32 value_len,
+                                NcmError *ncm_error) {
     if (STREQUAL(value, value_len, STRLIT("artist"))) {
         config->media_lib_primary_tag = MPD_TAG_ARTIST;
         return true;
