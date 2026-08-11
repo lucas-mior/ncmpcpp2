@@ -1046,7 +1046,6 @@ ncm_status_changes_reset_song_scroll(void) {
 
 void
 ncm_status_changes_song_id(int32 song_id) {
-    NcmSong song;
 
     playlist_screen_reload_remaining(app_screen_playlist());
     ncm_status_changes_reset_song_scroll();
@@ -1054,12 +1053,15 @@ ncm_status_changes_song_id(int32 song_id) {
     status_call_ui_song_id_changed(song_id);
 
     if (status_player_state != NCM_STATUS_PLAYER_STOP) {
+        NcmSong song;
         ncm_song_init(&song);
+
         if (status_current_song_for_change(&song)) {
             status_handle_current_song_changed(&song);
             status_call_ui_current_song_changed(&song);
             status_draw_song_title(&song);
         }
+
         ncm_song_destroy(&song);
     }
 
