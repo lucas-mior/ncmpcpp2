@@ -1359,9 +1359,8 @@ status_reset_visualizer_autoscale(void) {
 static void
 status_clear_visible_visualizer(void) {
 #if defined(ENABLE_VISUALIZER)
-    NcScreen *visualizer;
+    NcScreen *visualizer = app_screen_visualizer_base();
 
-    visualizer = app_screen_visualizer_base();
     if (app_controller_is_screen_visible(visualizer)) {
         visualizer_screen_clear(app_screen_visualizer());
     }
