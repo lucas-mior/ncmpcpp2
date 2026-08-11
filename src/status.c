@@ -1118,7 +1118,6 @@ status_player_state_string(char *buffer, int32 buffer_cap) {
     char *string;
     int32 len;
 
-    string = "";
     switch (status_player_state) {
     case NCM_STATUS_PLAYER_UNKNOWN:
         if (Config.design == NCM_DESIGN_ALTERNATIVE) {
@@ -1145,6 +1144,7 @@ status_player_state_string(char *buffer, int32 buffer_cap) {
         }
         break;
     default:
+        string = "";
         break;
     }
 
