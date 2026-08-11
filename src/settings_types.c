@@ -520,7 +520,7 @@ configuration_init(Configuration *config) {
     config->current_item_inactive_column_suffix_length = 0;
 
     config->startup_screen_type = NCM_SCREEN_TYPE_PLAYLIST;
-    config->startup_slave_screen_type = NCM_SCREEN_TYPE_UNKNOWN;
+    config->startup_slave_screen_type = NCM_SCREEN_TYPE_LAST;
     return;
 }
 

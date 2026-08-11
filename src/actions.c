@@ -1399,7 +1399,6 @@ action_runtime_switch_to_screen(enum ScreenType type) {
     case NCM_SCREEN_TYPE_VISUALIZER:
         return ncm_action_show_visualizer();
 #endif
-    case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
         break;
     default:
@@ -2837,7 +2836,6 @@ action_runtime_current_menu(void) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
         break;
     default:
@@ -2921,7 +2919,6 @@ action_runtime_current_menu_height(void) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
     default:
         window = NULL;
@@ -2983,7 +2980,6 @@ action_runtime_current_tag_scroll_menu(void) {
 #if defined(HAVE_TAGLIB_H)
     case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
 #endif
-    case NCM_SCREEN_TYPE_UNKNOWN:
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
@@ -3104,7 +3100,6 @@ action_runtime_song_tag_at(int32 pos, enum NcmSongGetter getter,
 #if defined(HAVE_TAGLIB_H)
     case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
 #endif
-    case NCM_SCREEN_TYPE_UNKNOWN:
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
@@ -3231,7 +3226,6 @@ action_runtime_selected_songs(NcmSongArray *songs) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
         break;
     default:
@@ -3308,7 +3302,6 @@ action_runtime_current_song(NcmSong *song) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
         break;
     default:
@@ -3720,7 +3713,6 @@ action_runtime_browser_item_name(NcmMpdItem *item, StrBuilder *name) {
             return false;
         }
         break;
-    case NCM_MPD_ITEM_UNKNOWN:
     case NCM_MPD_ITEM_LAST:
     default:
         return false;
@@ -4846,7 +4838,6 @@ action_runtime_previous_column_available(void) {
 #if defined(HAVE_TAGLIB_H)
     case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
 #endif
-    case NCM_SCREEN_TYPE_UNKNOWN:
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
@@ -4887,7 +4878,6 @@ action_runtime_next_column_available(void) {
 #if defined(HAVE_TAGLIB_H)
     case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
 #endif
-    case NCM_SCREEN_TYPE_UNKNOWN:
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
@@ -4933,7 +4923,6 @@ action_runtime_previous_column(void) {
 #if defined(HAVE_TAGLIB_H)
     case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
 #endif
-    case NCM_SCREEN_TYPE_UNKNOWN:
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
@@ -4979,7 +4968,6 @@ action_runtime_next_column(void) {
 #if defined(HAVE_TAGLIB_H)
     case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
 #endif
-    case NCM_SCREEN_TYPE_UNKNOWN:
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
@@ -5428,7 +5416,6 @@ action_runtime_toggle_display_mode(void) {
     case NCM_SCREEN_TYPE_TAG_EDITOR:
     case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
 #endif
-    case NCM_SCREEN_TYPE_UNKNOWN:
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif

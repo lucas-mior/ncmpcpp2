@@ -1163,9 +1163,8 @@ browser_screen_render_item(BrowserScreen *screen,
                                  Config.browser_playlist_prefix.data,
                                  Config.browser_playlist_prefix.len);
         break;
-    case NCM_MPD_ITEM_UNKNOWN:
-        break;
     case NCM_MPD_ITEM_LAST:
+        break;
     default:
         return false;
     }
@@ -1222,9 +1221,8 @@ browser_screen_item_to_string(BrowserScreen *screen,
         SB_APPEND(buffer, path.data + basename,
                           path.len - basename);
         break;
-    case NCM_MPD_ITEM_UNKNOWN:
-        break;
     case NCM_MPD_ITEM_LAST:
+        break;
     default:
         return false;
     }
@@ -1963,7 +1961,7 @@ browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out,
     }
     out->size = 0;
     out->mtime = 0;
-    out->type = NCM_FS_ENTRY_UNKNOWN;
+    out->type = NCM_FS_ENTRY_LAST;
     out->exists = false;
 
     if (path == NULL) {
@@ -2005,7 +2003,7 @@ browser_local_mode_type(mode_t mode) {
     if (S_ISLNK(mode)) {
         return NCM_FS_ENTRY_SYMLINK;
     }
-    return NCM_FS_ENTRY_UNKNOWN;
+    return NCM_FS_ENTRY_LAST;
 }
 
 static bool
@@ -2084,9 +2082,8 @@ browser_collect_item_songs(BrowserScreen *screen,
         return ncm_song_array_append_copy(songs,
                                           ncm_mpd_item_song(item));
     case NCM_MPD_ITEM_PLAYLIST:
-    case NCM_MPD_ITEM_UNKNOWN:
-        return true;
     case NCM_MPD_ITEM_LAST:
+        return true;
     default:
         return false;
     }
@@ -2223,8 +2220,6 @@ browser_delete_item(BrowserScreen *screen,
     case NCM_MPD_ITEM_PLAYLIST:
         return browser_delete_playlist_item(screen, client, item,
                                                    error);
-    case NCM_MPD_ITEM_UNKNOWN:
-        break;
     case NCM_MPD_ITEM_LAST:
     default:
         break;
@@ -2757,9 +2752,8 @@ browser_compare_item_values(BrowserScreen *screen,
             return browser_compare_views(
                 browser_playlist_sort_view(left),
                 browser_playlist_sort_view(right));
-        case NCM_MPD_ITEM_UNKNOWN:
-            return 0;
         case NCM_MPD_ITEM_LAST:
+            return 0;
         default:
             break;
         }
@@ -2785,9 +2779,8 @@ browser_compare_item_values(BrowserScreen *screen,
             sb_free(&right_buffer);
             sb_free(&left_buffer);
             return result;
-        case NCM_MPD_ITEM_UNKNOWN:
-            return 0;
         case NCM_MPD_ITEM_LAST:
+            return 0;
         default:
             break;
         }
@@ -2810,9 +2803,8 @@ browser_compare_item_values(BrowserScreen *screen,
             return browser_compare_times(
                 ncm_song_mtime(ncm_mpd_item_song(left)),
                 ncm_song_mtime(ncm_mpd_item_song(right)));
-        case NCM_MPD_ITEM_UNKNOWN:
-            return 0;
         case NCM_MPD_ITEM_LAST:
+            return 0;
         default:
             break;
         }
@@ -2835,9 +2827,8 @@ browser_item_sort_rank(NcmMpdItem *item) {
         return 1;
     case NCM_MPD_ITEM_PLAYLIST:
         return 2;
-    case NCM_MPD_ITEM_UNKNOWN:
-        return 3;
     case NCM_MPD_ITEM_LAST:
+        return 3;
     default:
         break;
     }
