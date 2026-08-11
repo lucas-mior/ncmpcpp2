@@ -316,23 +316,23 @@ visualizer_fft_init(
     fft->hz_max = hz_max;
     fft->gain = gain;
 
-    fft->frequency_magnitudes_len = fft->results_len;
-    fft->frequency_magnitudes_cap = fft->results_len;
+    fft->freqs_mags_len = fft->results_len;
+    fft->freqs_mags_cap = fft->results_len;
     fft->dft_frequency_space_cap = NATIVE_VISUALIZER_FREQ_SPACE_CAP;
     fft->bar_heights_cap = NATIVE_VISUALIZER_BAR_HEIGHTS_CAP;
 
-    fft->frequency_magnitudes = malloc2(
-        fft->frequency_magnitudes_cap
-        *SIZEOF(*fft->frequency_magnitudes));
+    fft->freqs_mags = malloc2(
+        fft->freqs_mags_cap
+        *SIZEOF(*fft->freqs_mags));
     fft->dft_frequency_space = malloc2(
         fft->dft_frequency_space_cap
         *SIZEOF(*fft->dft_frequency_space));
     fft->bar_heights = malloc2(
         fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
 
-    memset64(fft->frequency_magnitudes, 0,
-             fft->frequency_magnitudes_cap
-             *SIZEOF(*fft->frequency_magnitudes));
+    memset64(fft->freqs_mags, 0,
+             fft->freqs_mags_cap
+             *SIZEOF(*fft->freqs_mags));
 
     fft->input = fftw_malloc(
         (size_t)(fft->dft_total_size*SIZEOF(*fft->input)));
@@ -376,10 +376,10 @@ visualizer_fft_destroy(NativeVisualizerScreen *screen) {
               fft->dft_frequency_space_cap
               *SIZEOF(*fft->dft_frequency_space));
     }
-    if (fft->frequency_magnitudes) {
-        free2(fft->frequency_magnitudes,
-              fft->frequency_magnitudes_cap
-              *SIZEOF(*fft->frequency_magnitudes));
+    if (fft->freqs_mags) {
+        free2(fft->freqs_mags,
+              fft->freqs_mags_cap
+              *SIZEOF(*fft->freqs_mags));
     }
     *fft = (NativeVisualizerFftState){0};
     return;
@@ -1726,7 +1726,7 @@ visualizer_draw_frequency(
 
         real = fft->output[i][0];
         imaginary = fft->output[i][1];
-        fft->frequency_magnitudes[i] =
+        fft->freqs_mags[i] =
             sqrt(real*real + imaginary*imaginary)
             /(double)fft->dft_nonzero_size;
     }
@@ -1758,7 +1758,7 @@ visualizer_draw_frequency(
             if ((x == 0)
                 || (visualizer_bin_to_hz(screen, current_bin)
                     >= fft->dft_frequency_space[x - 1])) {
-                bar_height += fft->frequency_magnitudes[current_bin];
+                bar_height += fft->freqs_mags[current_bin];
                 count += 1;
             }
             current_bin += 1;
