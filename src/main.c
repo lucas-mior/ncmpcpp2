@@ -135,8 +135,7 @@ app_redirect_stderr(void) {
     SB_APPEND(&path, Config.ncmpcpp_directory, Config.ncmpcpp_directory_len);
     SB_APPEND(&path, "error.log");
 
-    app_saved_stderr_fd = (int32)dup(STDERR_FILENO);
-    if (app_saved_stderr_fd < 0) {
+    if ((app_saved_stderr_fd = dup(STDERR_FILENO)) < 0) {
         sb_free(&path);
         return false;
     }
@@ -191,16 +190,17 @@ app_create_windows(void) {
     ncmpcpp_set_windows_dimensions();
     ncmpcpp_initialize_screens();
 
-    app_header_window = ncmpcpp_window_create(
-        0, 0, COLS, ncmpcpp_header_height(), Config.header_color);
+    app_header_window = ncmpcpp_window_create(0, 0,
+                                              COLS, ncmpcpp_header_height(),
+                                              Config.header_color);
     ui_state_set_header_window(app_header_window);
     if (Config.header_visibility || (Config.design == NCM_DESIGN_ALTERNATIVE)) {
         ncmpcpp_window_display(app_header_window);
     }
 
-    app_footer_window = ncmpcpp_window_create(
-        0, ncmpcpp_footer_start_y(), COLS,
-        ncmpcpp_footer_height(), Config.statusbar_color);
+    app_footer_window = ncmpcpp_window_create(0, ncmpcpp_footer_start_y(),
+                                              COLS, ncmpcpp_footer_height(),
+                                              Config.statusbar_color);
     ui_state_set_footer_window(app_footer_window);
     return;
 }
@@ -214,11 +214,9 @@ app_apply_startup_screen(void) {
     }
 
     if (Config.has_startup_slave_screen_type) {
-        bool screen_locked;
-        enum ScreenType slave_screen_type;
+        bool screen_locked = ncmpcpp_lock_current_screen();
+        enum ScreenType slave_screen_type = Config.startup_slave_screen_type;
 
-        slave_screen_type = Config.startup_slave_screen_type;
-        screen_locked = ncmpcpp_lock_current_screen();
         if (screen_locked
             && (slave_screen_type != ncmpcpp_current_screen_type())) {
             ASSERT(ncmpcpp_switch_to_screen_type(slave_screen_type));
@@ -244,11 +242,9 @@ app_connect_if_due(NcmTimePoint *connect_attempt) {
 
 static void
 app_execute_key(NcKey input) {
-    NcmBindingSlice bindings;
-    bool executed;
+    NcmBindingSlice bindings = ncm_bindings_configuration_get(&Bindings, input);
+    bool executed = false;
 
-    bindings = ncm_bindings_configuration_get(&Bindings, input);
-    executed = false;
     for (int32 i = 0; i < bindings.len; i += 1) {
         if (ncmpcpp_execute_binding(bindings.data + i)) {
             executed = true;
