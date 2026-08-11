@@ -199,6 +199,7 @@ check)
 test)
     require_command "$CC"
     CPPFLAGS="$CPPFLAGS -I$dir/tests"
+    TEST_REQUIRE_TESTING_MARKER=0
     test "$2" tests
     ;;
 install)
