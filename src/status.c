@@ -411,8 +411,8 @@ status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks) {
         return;
     }
 
-    highlighted = playlist_screen_locate_position(
-        app_screen_playlist(), position);
+    highlighted = playlist_screen_locate_position(app_screen_playlist(),
+                                                  position);
     if (!highlighted) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Song is filtered out");
