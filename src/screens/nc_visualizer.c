@@ -146,11 +146,8 @@ native_visualizer_data_source_system_hooks(NcmMpdClient *client) {
 }
 
 static void
-visualizer_copy_characters(
-    NativeVisualizerScreen *screen,
-    char *characters,
-    int32 characters_len
-) {
+visualizer_copy_characters(NativeVisualizerScreen *screen, char *characters,
+                           int32 characters_len) {
     int32 next;
 
     sb_set(&screen->visualizer_chars, characters, characters_len);
@@ -181,11 +178,9 @@ visualizer_destroy_colors(NativeVisualizerScreen *screen) {
 }
 
 static void
-visualizer_copy_colors(
-    NativeVisualizerScreen *screen,
-    NcFormattedColor *colors,
-    int32 colors_len
-) {
+visualizer_copy_colors(NativeVisualizerScreen *screen,
+                       NcFormattedColor *colors,
+                       int32 colors_len) {
     visualizer_destroy_colors(screen);
     if ((colors == NULL) || (colors_len <= 0)) {
         screen->visualizer_colors_cap = 1;
@@ -208,12 +203,8 @@ visualizer_copy_colors(
 }
 
 static NcFormattedColor *
-visualizer_color(
-    NativeVisualizerScreen *screen,
-    double number,
-    double max,
-    bool wrap
-) {
+visualizer_color(NativeVisualizerScreen *screen, double number, double max,
+                 bool wrap) {
     int32 index;
 
     if ((screen->visualizer_colors == NULL)
@@ -240,30 +231,20 @@ visualizer_color(
 }
 
 static void
-visualizer_draw_character(
-    NativeVisualizerScreen *screen,
-    int32 x,
-    int32 y,
-    NcFormattedColor *color,
-    bool reverse,
-    char *character,
-    int32 character_len
-) {
-    enum NcFormat *formats;
-    int32 count;
-    int32 width;
-    int32 height;
+visualizer_draw_character(NativeVisualizerScreen *screen, int32 x, int32 y,
+                          NcFormattedColor *color, bool reverse,
+                          char *character, int32 character_len) {
+    enum NcFormat *formats = NULL;
+    int32 count = 0;
+    int32 width = nc_window_width(&screen->window);
+    int32 height = nc_window_height(&screen->window);
 
-    width = nc_window_width(&screen->window);
-    height = nc_window_height(&screen->window);
     if ((x < 0) || (y < 0) || (x >= width) || (y >= height)
         || (character == NULL) || (character_len <= 0)) {
         return;
     }
 
     nc_window_go_to_xy(&screen->window, x, y);
-    formats = NULL;
-    count = 0;
     if (color) {
         nc_window_push_color(&screen->window, color->color);
         formats = nc_formatted_color_formats(color);
@@ -295,16 +276,10 @@ visualizer_draw_character(
 
 #if defined(HAVE_FFTW3_H)
 static void
-visualizer_fft_init(
-    NativeVisualizerScreen *screen,
-    int32 dft_size,
-    double gain,
-    double hz_min,
-    double hz_max
-) {
-    NativeVisualizerFftState *fft;
+visualizer_fft_init(NativeVisualizerScreen *screen, int32 dft_size,
+                    double gain, double hz_min, double hz_max) {
+    NativeVisualizerFftState *fft = &screen->fft;
 
-    fft = &screen->fft;
     *fft = (NativeVisualizerFftState){0};
     fft->dft_nonzero_size =
         NATIVE_VISUALIZER_DFT_BASE_SIZE
@@ -348,9 +323,8 @@ visualizer_fft_init(
 
 static void
 visualizer_fft_destroy(NativeVisualizerScreen *screen) {
-    NativeVisualizerFftState *fft;
+    NativeVisualizerFftState *fft = &screen->fft;
 
-    fft = &screen->fft;
     if (fft->plan) {
         fftw_destroy_plan(fft->plan);
     }
@@ -379,20 +353,15 @@ visualizer_fft_destroy(NativeVisualizerScreen *screen) {
 }
 
 static void
-visualizer_fft_reserve_frequency_space(
-    NativeVisualizerScreen *screen,
-    int32 capacity
-) {
-    NativeVisualizerFftState *fft;
-    int32 old_cap;
-    int32 new_cap;
+visualizer_fft_reserve_frequency_space(NativeVisualizerScreen *screen,
+                                       int32 capacity) {
+    NativeVisualizerFftState *fft = &screen->fft;
+    int32 old_cap = fft->dft_frequency_space_cap;
+    int32 new_cap = old_cap;
 
-    fft = &screen->fft;
     if (capacity <= fft->dft_frequency_space_cap) {
         return;
     }
-    old_cap = fft->dft_frequency_space_cap;
-    new_cap = old_cap;
     if (new_cap <= 0) {
         new_cap = NATIVE_VISUALIZER_FREQ_SPACE_CAP;
     }
@@ -411,20 +380,15 @@ visualizer_fft_reserve_frequency_space(
 }
 
 static void
-visualizer_fft_reserve_bar_heights(
-    NativeVisualizerScreen *screen,
-    int32 capacity
-) {
-    NativeVisualizerFftState *fft;
-    int32 old_cap;
-    int32 new_cap;
+visualizer_fft_reserve_bar_heights(NativeVisualizerScreen *screen,
+                                   int32 capacity) {
+    NativeVisualizerFftState *fft = &screen->fft;
+    int32 old_cap = fft->bar_heights_cap;
+    int32 new_cap = old_cap;
 
-    fft = &screen->fft;
     if (capacity <= fft->bar_heights_cap) {
         return;
     }
-    old_cap = fft->bar_heights_cap;
-    new_cap = old_cap;
     if (new_cap <= 0) {
         new_cap = NATIVE_VISUALIZER_BAR_HEIGHTS_CAP;
     }
@@ -444,12 +408,10 @@ visualizer_fft_reserve_bar_heights(
 #endif
 
 void
-native_visualizer_screen_init_data_source(
-    NativeVisualizerScreen *screen,
-    char *source_location,
-    int32 source_location_len
-) {
-    int32 colon;
+native_visualizer_screen_init_data_source(NativeVisualizerScreen *screen,
+                                          char *source_location,
+                                          int32 source_location_len) {
+    int32 colon = -1;
 
     if (screen == NULL) {
         return;
@@ -459,7 +421,6 @@ native_visualizer_screen_init_data_source(
         source_location_len = 0;
     }
 
-    colon = -1;
     for (int32 i = source_location_len - 1; i >= 0; i -= 1) {
         if (source_location[i] == ':') {
             colon = i;
@@ -473,24 +434,18 @@ native_visualizer_screen_init_data_source(
         && (colon >= 0)) {
         sb_set(&screen->source_location, source_location, colon);
         sb_set(&screen->source_port,
-                       source_location + colon + 1,
-                       source_location_len - colon - 1);
+               source_location + colon + 1,
+               source_location_len - colon - 1);
     } else {
         sb_set(&screen->source_location,
-                       source_location,
-                       source_location_len);
+               source_location,
+               source_location_len);
     }
     return;
 }
 
 bool
-native_visualizer_screen_open_data_source(
-    NativeVisualizerScreen *screen
-) {
-    char *location;
-    char *port;
-    int32 fd;
-
+native_visualizer_screen_open_data_source(NativeVisualizerScreen *screen) {
     if (screen == NULL) {
         return false;
     }
@@ -498,62 +453,64 @@ native_visualizer_screen_open_data_source(
         return true;
     }
 
-    location = screen->source_location.data;
-    if (location == NULL) {
-        location = "";
-    }
-    port = screen->source_port.data;
-    if (port == NULL) {
-        port = "";
-    }
+    {
+        char *location = screen->source_location.data;
+        char *port = screen->source_port.data;
+        int32 fd;
 
-    if (screen->source_port.len > 0) {
-        if (screen->data_source_hooks.open_udp == NULL) {
-            return false;
+        if (location == NULL) {
+            location = "";
         }
-        fd = screen->data_source_hooks.open_udp(
-            screen->data_source_hooks.user,
-            location,
-            screen->source_location.len,
-            port,
-            screen->source_port.len);
-    } else {
-        if (screen->data_source_hooks.open_fifo == NULL) {
-            return false;
+        if (port == NULL) {
+            port = "";
         }
-        fd = screen->data_source_hooks.open_fifo(
-            screen->data_source_hooks.user,
-            location,
-            screen->source_location.len);
-    }
 
-    screen->source_fd = fd;
-    return fd >= 0;
+        if (screen->source_port.len > 0) {
+            if (screen->data_source_hooks.open_udp == NULL) {
+                return false;
+            }
+            fd = screen->data_source_hooks.open_udp(
+                screen->data_source_hooks.user,
+                location,
+                screen->source_location.len,
+                port,
+                screen->source_port.len);
+        } else {
+            if (screen->data_source_hooks.open_fifo == NULL) {
+                return false;
+            }
+            fd = screen->data_source_hooks.open_fifo(
+                screen->data_source_hooks.user,
+                location,
+                screen->source_location.len);
+        }
+
+        screen->source_fd = fd;
+        return fd >= 0;
+    }
+    return false;
 }
 
 void
-native_visualizer_screen_close_data_source(
-    NativeVisualizerScreen *screen
-) {
-    int32 fd;
-
+native_visualizer_screen_close_data_source(NativeVisualizerScreen *screen) {
     if ((screen == NULL) || (screen->source_fd < 0)) {
         return;
     }
 
-    fd = screen->source_fd;
-    screen->source_fd = -1;
-    if (screen->data_source_hooks.close_source) {
-        screen->data_source_hooks.close_source(
-            screen->data_source_hooks.user, fd);
+    {
+        int32 fd = screen->source_fd;
+
+        screen->source_fd = -1;
+        if (screen->data_source_hooks.close_source) {
+            screen->data_source_hooks.close_source(
+                screen->data_source_hooks.user, fd);
+        }
     }
     return;
 }
 
 int32
-native_visualizer_screen_drain_data_source(
-    NativeVisualizerScreen *screen
-) {
+native_visualizer_screen_drain_data_source(NativeVisualizerScreen *screen) {
     int32 buffer_size;
     int32 bytes_read;
     int32 total_read;
@@ -587,12 +544,10 @@ native_visualizer_screen_drain_data_source(
 }
 
 bool
-native_visualizer_screen_find_output_id(
-    NativeVisualizerScreen *screen
-) {
+native_visualizer_screen_find_output_id(NativeVisualizerScreen *screen) {
     NcmMpdOutputList outputs;
     NcmError error;
-    bool found;
+    bool found = false;
 
     if (screen == NULL) {
         return false;
@@ -610,9 +565,9 @@ native_visualizer_screen_find_output_id(
     ncm_mpd_output_list_init(&outputs);
     if (!screen->data_source_hooks.get_outputs(
             screen->data_source_hooks.user, &outputs, &error)) {
-        NcmStringFormatArg arg;
+        NcmStringFormatArg arg =
+            ncm_string_format_arg_cstring(error.message);
 
-        arg = ncm_string_format_arg_cstring(error.message);
         ncm_statusbar_format(ncm_statusbar_message_delay_time(),
                              STRLIT("Could not fetch outputs: %1"),
                              &arg,
@@ -621,7 +576,6 @@ native_visualizer_screen_find_output_id(
         return false;
     }
 
-    found = false;
     for (int32 i = 0; i < outputs.count; i += 1) {
         NcmMpdOutput *output = outputs.items + i;
 
@@ -637,10 +591,10 @@ native_visualizer_screen_find_output_id(
     ncm_mpd_output_list_destroy(&outputs);
 
     if (!found) {
-        NcmStringFormatArg arg;
+        NcmStringFormatArg arg =
+            ncm_string_format_arg_string(screen->output_name.data,
+                                         screen->output_name.len);
 
-        arg = ncm_string_format_arg_string(screen->output_name.data,
-                                            screen->output_name.len);
         ncm_statusbar_format(ncm_statusbar_message_delay_time(),
                              STRLIT("There is no output named \"%1\""),
                              &arg,
@@ -650,58 +604,36 @@ native_visualizer_screen_find_output_id(
 }
 
 void
-native_visualizer_screen_init(
-    NativeVisualizerScreen *screen,
-    int32 start_x,
-    int32 start_y,
-    int32 width,
-    int32 height,
-    NcColor color,
-    NcBorder border,
-    NativeVisualizerScreenConfig *config
-) {
-    char *source_location;
-    char *output_name;
-    char *visualizer_chars;
-    NcFormattedColor *visualizer_colors;
-    int32 source_location_len;
-    int32 output_name_len;
-    int32 visualizer_chars_len;
-    int32 visualizer_colors_len;
-    int32 fps;
+native_visualizer_screen_init(NativeVisualizerScreen *screen, int32 start_x,
+                              int32 start_y, int32 width, int32 height,
+                              NcColor color, NcBorder border,
+                              NativeVisualizerScreenConfig *config) {
+    char *source_location = NULL;
+    char *output_name = NULL;
+    char *visualizer_chars = (char *)NATIVE_VISUALIZER_DEFAULT_CHARS;
+    NcFormattedColor *visualizer_colors = NULL;
+    int32 source_location_len = 0;
+    int32 output_name_len = 0;
+    int32 visualizer_chars_len =
+        STRLIT_LEN(NATIVE_VISUALIZER_DEFAULT_CHARS);
+    int32 visualizer_colors_len = 0;
+    int32 fps = NATIVE_VISUALIZER_DEFAULT_FPS;
 #if defined(HAVE_FFTW3_H)
     int32 spectrum_dft_size = NATIVE_VISUALIZER_DEFAULT_DFT_SIZE;
     double spectrum_gain = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_GAIN;
     double spectrum_hz_min = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MIN;
     double spectrum_hz_max = NATIVE_VISUALIZER_DEFAULT_SPECTRUM_HZ_MAX;
 #endif
-    NativeVisualizerDataSourceHooks data_source_hooks;
-    enum NativeVisualizerType visualization_type;
-    bool autoscale;
-    bool stereo;
-    bool spectrum_smooth_look;
-    bool spectrum_smooth_look_legacy_chars;
-    bool spectrum_log_scale_x;
-    bool spectrum_log_scale_y;
+    NativeVisualizerDataSourceHooks data_source_hooks =
+        native_visualizer_data_source_system_hooks(NULL);
+    enum NativeVisualizerType visualization_type = NATIVE_VISUALIZER_WAVE;
+    bool autoscale = false;
+    bool stereo = false;
+    bool spectrum_smooth_look = true;
+    bool spectrum_smooth_look_legacy_chars = true;
+    bool spectrum_log_scale_x = true;
+    bool spectrum_log_scale_y = true;
 
-    source_location = NULL;
-    output_name = NULL;
-    visualizer_chars = (char *)NATIVE_VISUALIZER_DEFAULT_CHARS;
-    visualizer_colors = NULL;
-    source_location_len = 0;
-    output_name_len = 0;
-    visualizer_chars_len = STRLIT_LEN(NATIVE_VISUALIZER_DEFAULT_CHARS);
-    visualizer_colors_len = 0;
-    fps = NATIVE_VISUALIZER_DEFAULT_FPS;
-    data_source_hooks = native_visualizer_data_source_system_hooks(NULL);
-
-    visualization_type = NATIVE_VISUALIZER_WAVE;
-    autoscale = false;
-    stereo = false;
-    spectrum_smooth_look = true;
-    spectrum_smooth_look_legacy_chars = true;
-    spectrum_log_scale_x = true;
-    spectrum_log_scale_y = true;
     if (config) {
         source_location = config->source_location;
         output_name = config->output_name;
@@ -865,13 +797,11 @@ native_visualizer_screen_window(NativeVisualizerScreen *screen) {
 }
 
 void
-native_visualizer_screen_set_geometry(
-    NativeVisualizerScreen *screen,
-    int32 start_x,
-    int32 start_y,
-    int32 width,
-    int32 height
-) {
+native_visualizer_screen_set_geometry(NativeVisualizerScreen *screen,
+                                      int32 start_x,
+                                      int32 start_y,
+                                      int32 width,
+                                      int32 height) {
     nc_window_resize(&screen->window, width, height);
     nc_window_move_to(&screen->window, start_x, start_y);
     native_visualizer_screen_init_visualization(screen);
@@ -879,9 +809,7 @@ native_visualizer_screen_set_geometry(
 }
 
 void
-native_visualizer_screen_init_visualization(
-    NativeVisualizerScreen *screen
-) {
+native_visualizer_screen_init_visualization(NativeVisualizerScreen *screen) {
     double samples_per_column;
     int32 rendered_samples;
     int32 incoming_samples;
@@ -954,15 +882,13 @@ native_visualizer_screen_init_visualization(
     ncm_sample_buffer_resize(&screen->left_channel, channel_cap);
     ncm_sample_buffer_resize(&screen->right_channel, channel_cap);
     memset64(screen->rendered_samples.data,
-         0,
-         rendered_cap*SIZEOF(*screen->rendered_samples.data));
+             0,
+             rendered_cap*SIZEOF(*screen->rendered_samples.data));
     return;
 }
 
 void
-native_visualizer_screen_reset_audio_state(
-    NativeVisualizerScreen *screen
-) {
+native_visualizer_screen_reset_audio_state(NativeVisualizerScreen *screen) {
     ncm_sample_buffer_clear(&screen->incoming_samples);
     ncm_sample_buffer_clear(&screen->buffered_samples);
     ncm_sample_buffer_clear(&screen->rendered_samples);
@@ -970,9 +896,9 @@ native_visualizer_screen_reset_audio_state(
     ncm_sample_buffer_clear(&screen->right_channel);
     if (screen->rendered_samples.cap > 0) {
         memset64(screen->rendered_samples.data,
-             0,
-             screen->rendered_samples.cap
-             *SIZEOF(*screen->rendered_samples.data));
+                 0,
+                 screen->rendered_samples.cap
+                 *SIZEOF(*screen->rendered_samples.data));
     }
     native_visualizer_screen_drain_data_source(screen);
     visualizer_reset_sample_clock(screen);
@@ -1018,7 +944,7 @@ native_visualizer_screen_requested_samples(NativeVisualizerScreen *screen) {
     int64 max_elapsed_ns;
     int64 max_frames;
     int64 scaled_frames;
-    int32 channels;
+    int32 channels = 1;
 
     if ((screen == NULL) || (screen->sample_rate <= 0)) {
         return 0;
@@ -1038,7 +964,6 @@ native_visualizer_screen_requested_samples(NativeVisualizerScreen *screen) {
         return 0;
     }
 
-    channels = 1;
     if (screen->stereo) {
         channels = 2;
     }
@@ -1063,11 +988,9 @@ native_visualizer_screen_requested_samples(NativeVisualizerScreen *screen) {
 }
 
 bool
-native_visualizer_screen_push_samples(
-    NativeVisualizerScreen *screen,
-    int16 *samples,
-    int32 samples_len
-) {
+native_visualizer_screen_push_samples(NativeVisualizerScreen *screen,
+                                      int16 *samples,
+                                      int32 samples_len) {
     if (screen == NULL) {
         return false;
     }
@@ -1085,11 +1008,9 @@ native_visualizer_screen_push_samples(
 }
 
 int32
-native_visualizer_screen_take_render_samples(
-    NativeVisualizerScreen *screen,
-    int16 *dest,
-    int32 dest_len
-) {
+native_visualizer_screen_take_render_samples(NativeVisualizerScreen *screen,
+                                             int16 *dest,
+                                             int32 dest_len) {
     int32 requested;
     int32 result;
 
@@ -1110,11 +1031,9 @@ native_visualizer_screen_take_render_samples(
 }
 
 int32
-native_visualizer_screen_split_stereo(
-    NativeVisualizerScreen *screen,
-    int16 *samples,
-    int32 samples_len
-) {
+native_visualizer_screen_split_stereo(NativeVisualizerScreen *screen,
+                                      int16 *samples,
+                                      int32 samples_len) {
     int32 pairs;
 
     if ((screen == NULL) || (samples == NULL) || (samples_len <= 1)) {
@@ -1142,11 +1061,9 @@ native_visualizer_screen_split_stereo(
 }
 
 void
-native_visualizer_screen_apply_auto_scale(
-    NativeVisualizerScreen *screen,
-    int16 *samples,
-    int32 samples_len
-) {
+native_visualizer_screen_apply_auto_scale(NativeVisualizerScreen *screen,
+                                          int16 *samples,
+                                          int32 samples_len) {
     double scale;
     int32 scaled;
 
@@ -1190,22 +1107,17 @@ native_visualizer_clamp_sample(int32 sample) {
 }
 
 static void
-visualizer_draw_wave(
-    NativeVisualizerScreen *screen,
-    int16 *samples,
-    int32 samples_len,
-    int32 y_offset,
-    int32 height
-) {
-    char *character;
-    int32 character_len;
-    int32 width;
+visualizer_draw_wave(NativeVisualizerScreen *screen, int16 *samples,
+                     int32 samples_len, int32 y_offset, int32 height) {
+    char *character = screen->visualizer_chars.data
+                      + screen->point_char_offset;
+    int32 character_len = screen->point_char_len;
+    int32 width = nc_window_width(&screen->window);
     int32 half_height;
     int32 base_y;
     int32 samples_per_column;
     int32 previous_y;
 
-    width = nc_window_width(&screen->window);
     if ((samples == NULL) || (samples_len <= 0)
         || (width <= 0) || (height <= 0)) {
         return;
@@ -1215,17 +1127,13 @@ visualizer_draw_wave(
         return;
     }
 
-    character = screen->visualizer_chars.data + screen->point_char_offset;
-    character_len = screen->point_char_len;
     half_height = height / 2;
     base_y = y_offset + half_height;
     previous_y = 0;
     for (int32 x = 0; x < width; x += 1) {
-        int32 sum;
+        int32 sum = 0;
         int32 point_y;
-        int32 half;
 
-        sum = 0;
         for (int32 j = 0; j < samples_per_column; j += 1) {
             sum += samples[x*samples_per_column + j];
         }
@@ -1240,7 +1148,8 @@ visualizer_draw_wave(
         if ((x > 0)
             && (((previous_y - point_y) > 1)
                 || ((point_y - previous_y) > 1))) {
-            half = (previous_y + point_y) / 2;
+            int32 half = (previous_y + point_y) / 2;
+
             if (previous_y < point_y) {
                 for (int32 y = previous_y; y < point_y; y += 1) {
                     visualizer_draw_character(
@@ -1263,20 +1172,16 @@ visualizer_draw_wave(
 }
 
 static void
-visualizer_draw_wave_filled(
-    NativeVisualizerScreen *screen,
-    int16 *samples,
-    int32 samples_len,
-    int32 y_offset,
-    int32 height
-) {
-    char *character;
-    int32 character_len;
-    int32 width;
+visualizer_draw_wave_filled(NativeVisualizerScreen *screen, int16 *samples,
+                            int32 samples_len, int32 y_offset,
+                            int32 height) {
+    char *character = screen->visualizer_chars.data
+                      + screen->bar_char_offset;
+    int32 character_len = screen->bar_char_len;
+    int32 width = nc_window_width(&screen->window);
     int32 samples_per_column;
-    bool flipped;
+    bool flipped = y_offset > 0;
 
-    width = nc_window_width(&screen->window);
     if ((samples == NULL) || (samples_len <= 0)
         || (width <= 0) || (height <= 0)) {
         return;
@@ -1286,15 +1191,11 @@ visualizer_draw_wave_filled(
         return;
     }
 
-    character = screen->visualizer_chars.data + screen->bar_char_offset;
-    character_len = screen->bar_char_len;
-    flipped = y_offset > 0;
     for (int32 x = 0; x < width; x += 1) {
-        int32 sum;
+        int32 sum = 0;
         int32 magnitude;
         int32 point_y;
 
-        sum = 0;
         for (int32 j = 0; j < samples_per_column; j += 1) {
             sum += samples[x*samples_per_column + j];
         }
@@ -1325,27 +1226,21 @@ visualizer_draw_wave_filled(
 }
 
 static void
-visualizer_draw_ellipse(
-    NativeVisualizerScreen *screen,
-    int16 *samples,
-    int32 samples_len,
-    int32 height
-) {
-    char *character;
-    int32 character_len;
-    int32 width;
+visualizer_draw_ellipse(NativeVisualizerScreen *screen, int16 *samples,
+                        int32 samples_len, int32 height) {
+    char *character = screen->visualizer_chars.data
+                      + screen->point_char_offset;
+    int32 character_len = screen->point_char_len;
+    int32 width = nc_window_width(&screen->window);
     int32 half_width;
     int32 half_height;
     double angle_multiplier;
 
-    width = nc_window_width(&screen->window);
     if ((samples == NULL) || (samples_len <= 0)
         || (width <= 0) || (height <= 0)) {
         return;
     }
 
-    character = screen->visualizer_chars.data + screen->point_char_offset;
-    character_len = screen->point_char_len;
     half_width = width / 2;
     half_height = height / 2;
     angle_multiplier = 2.0*NATIVE_VISUALIZER_PI/(double)samples_len;
@@ -1377,32 +1272,25 @@ visualizer_draw_ellipse(
 }
 
 static void
-visualizer_draw_ellipse_stereo(
-    NativeVisualizerScreen *screen,
-    int16 *left,
-    int16 *right,
-    int32 samples_len,
-    int32 half_height
-) {
-    char *character;
-    int32 character_len;
-    int32 width;
-    int32 height;
+visualizer_draw_ellipse_stereo(NativeVisualizerScreen *screen, int16 *left,
+                               int16 *right, int32 samples_len,
+                               int32 half_height) {
+    char *character = screen->visualizer_chars.data
+                      + screen->point_char_offset;
+    int32 character_len = screen->point_char_len;
+    int32 width = nc_window_width(&screen->window);
+    int32 height = nc_window_height(&screen->window);
     int32 left_half_width;
     int32 right_half_width;
     int32 top_half_height;
     int32 bottom_half_height;
     int32 radius;
 
-    width = nc_window_width(&screen->window);
-    height = nc_window_height(&screen->window);
     if ((left == NULL) || (right == NULL) || (samples_len <= 0)
         || (width <= 0) || (height <= 0)) {
         return;
     }
 
-    character = screen->visualizer_chars.data + screen->point_char_offset;
-    character_len = screen->point_char_len;
     left_half_width = width / 2;
     right_half_width = width - left_half_width;
     top_half_height = half_height;
@@ -1436,14 +1324,12 @@ visualizer_draw_ellipse_stereo(
 #if defined(HAVE_FFTW3_H)
 static void
 visualizer_generate_frequency_space(NativeVisualizerScreen *screen) {
-    NativeVisualizerFftState *fft;
+    NativeVisualizerFftState *fft = &screen->fft;
     double left_bins_value;
     double scale;
     int32 left_bins;
-    int32 width;
+    int32 width = nc_window_width(&screen->window);
 
-    fft = &screen->fft;
-    width = nc_window_width(&screen->window);
     fft->dft_frequency_space_len = 0;
     if ((width <= 0) || (fft->hz_min <= 0.0)
         || (fft->hz_max <= fft->hz_min)) {
@@ -1510,21 +1396,17 @@ visualizer_generate_frequency_space(NativeVisualizerScreen *screen) {
 }
 
 static void
-visualizer_apply_fft_window(
-    NativeVisualizerScreen *screen,
-    int16 *samples,
-    int32 samples_len
-) {
-    NativeVisualizerFftState *fft;
+visualizer_apply_fft_window(NativeVisualizerScreen *screen, int16 *samples,
+                            int32 samples_len) {
+    NativeVisualizerFftState *fft = &screen->fft;
     double alpha;
     double a0;
     double a1;
     double a2;
     int32 used_samples;
 
-    fft = &screen->fft;
     memset64(fft->input, 0,
-         fft->dft_total_size*SIZEOF(*fft->input));
+             fft->dft_total_size*SIZEOF(*fft->input));
     used_samples = samples_len;
     if (used_samples > fft->dft_nonzero_size) {
         used_samples = fft->dft_nonzero_size;
@@ -1566,20 +1448,12 @@ visualizer_bin_to_hz(NativeVisualizerScreen *screen, int32 bin) {
 }
 
 static double
-visualizer_interpolate_cubic(
-    NativeVisualizerScreen *screen,
-    int32 x,
-    int32 height_index
-) {
-    NativeVisualizerFftState *fft;
-    double x_next;
-    double h_next;
-    double delta;
-
-    fft = &screen->fft;
-    x_next = fft->bar_heights[height_index].column;
-    h_next = fft->bar_heights[height_index].height;
-    delta = 0.0;
+visualizer_interpolate_cubic(NativeVisualizerScreen *screen, int32 x,
+                             int32 height_index) {
+    NativeVisualizerFftState *fft = &screen->fft;
+    double x_next = fft->bar_heights[height_index].column;
+    double h_next = fft->bar_heights[height_index].height;
+    double delta = 0.0;
     if (height_index == 0) {
         if (height_index < fft->bar_heights_len - 1) {
             double x_next2;
@@ -1646,20 +1520,12 @@ visualizer_interpolate_cubic(
 }
 
 static double
-visualizer_interpolate_linear(
-    NativeVisualizerScreen *screen,
-    int32 x,
-    int32 height_index
-) {
-    NativeVisualizerFftState *fft;
-    double x_next;
-    double h_next;
-    double delta;
-
-    fft = &screen->fft;
-    x_next = fft->bar_heights[height_index].column;
-    h_next = fft->bar_heights[height_index].height;
-    delta = 0.0;
+visualizer_interpolate_linear(NativeVisualizerScreen *screen, int32 x,
+                              int32 height_index) {
+    NativeVisualizerFftState *fft = &screen->fft;
+    double x_next = fft->bar_heights[height_index].column;
+    double h_next = fft->bar_heights[height_index].height;
+    double delta = 0.0;
     if (height_index == 0) {
         if (fft->bar_heights_len > 1) {
             double x_next2;
@@ -1690,27 +1556,19 @@ visualizer_interpolate_linear(
 }
 
 static void
-visualizer_draw_frequency(
-    NativeVisualizerScreen *screen,
-    int16 *samples,
-    int32 samples_len,
-    int32 y_offset,
-    int32 height
-) {
-    NativeVisualizerFftState *fft;
-    int32 width;
+visualizer_draw_frequency(NativeVisualizerScreen *screen, int16 *samples,
+                          int32 samples_len, int32 y_offset, int32 height) {
+    NativeVisualizerFftState *fft = &screen->fft;
+    int32 width = nc_window_width(&screen->window);
     int32 current_bin;
-    bool flipped;
+    bool flipped = y_offset > 0;
 
-    fft = &screen->fft;
-    width = nc_window_width(&screen->window);
     if ((samples == NULL) || (samples_len <= 0)
         || (width <= 0) || (height <= 0) || (fft->plan == NULL)
         || (fft->input == NULL) || (fft->output == NULL)) {
         return;
     }
 
-    flipped = y_offset > 0;
     visualizer_apply_fft_window(screen, samples, samples_len);
     fftw_execute(fft->plan);
     for (int32 i = 0; i < fft->results_len; i += 1) {
@@ -1887,11 +1745,8 @@ visualizer_draw_frequency(
 #endif
 
 bool
-native_visualizer_screen_draw(
-    NativeVisualizerScreen *screen,
-    int16 *samples,
-    int32 samples_len
-) {
+native_visualizer_screen_draw(NativeVisualizerScreen *screen, int16 *samples,
+                              int32 samples_len) {
     int32 height;
     int32 half_height;
 
@@ -1906,10 +1761,9 @@ native_visualizer_screen_draw(
 
     nc_window_clear(&screen->window);
     if (screen->stereo) {
-        int32 channel_samples;
-
-        channel_samples = native_visualizer_screen_split_stereo(
+        int32 channel_samples = native_visualizer_screen_split_stereo(
             screen, samples, samples_len);
+
         if (channel_samples <= 0) {
             return false;
         }
@@ -1978,11 +1832,8 @@ native_visualizer_screen_draw(
 }
 
 static int32
-visualizer_system_open_fifo(
-    void *user,
-    char *location,
-    int32 location_len
-) {
+visualizer_system_open_fifo(void *user, char *location,
+                            int32 location_len) {
     int32 fd;
 
     (void)user;
@@ -2001,13 +1852,8 @@ visualizer_system_open_fifo(
 }
 
 static int32
-visualizer_system_open_udp(
-    void *user,
-    char *location,
-    int32 location_len,
-    char *port,
-    int32 port_len
-) {
+visualizer_system_open_udp(void *user, char *location, int32 location_len,
+                           char *port, int32 port_len) {
     struct addrinfo hints = {0};
     struct addrinfo *addresses;
     struct addrinfo *address;
@@ -2064,12 +1910,8 @@ visualizer_system_open_udp(
 }
 
 static int32
-visualizer_system_read_source(
-    void *user,
-    int32 fd,
-    void *buffer,
-    int32 buffer_size
-) {
+visualizer_system_read_source(void *user, int32 fd, void *buffer,
+                              int32 buffer_size) {
     int64 r;
     int32 r2;
     (void)user;
@@ -2091,14 +1933,10 @@ visualizer_system_close_source(void *user, int32 fd) {
 }
 
 static bool
-visualizer_system_get_outputs(
-    void *user,
-    NcmMpdOutputList *outputs,
-    NcmError *error
-) {
-    NcmMpdClient *client;
+visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
+                              NcmError *error) {
+    NcmMpdClient *client = user;
 
-    client = user;
     if (client == NULL) {
         ncm_error_set(error, EINVAL,
                       STRLIT("MPD client is not configured"));
@@ -2109,9 +1947,8 @@ visualizer_system_get_outputs(
 
 static bool
 visualizer_system_disable_output(void *user, int32 id, NcmError *error) {
-    NcmMpdClient *client;
+    NcmMpdClient *client = user;
 
-    client = user;
     if (client == NULL) {
         ncm_error_set(error, EINVAL,
                       STRLIT("MPD client is not configured"));
@@ -2122,9 +1959,8 @@ visualizer_system_disable_output(void *user, int32 id, NcmError *error) {
 
 static bool
 visualizer_system_enable_output(void *user, int32 id, NcmError *error) {
-    NcmMpdClient *client;
+    NcmMpdClient *client = user;
 
-    client = user;
     if (client == NULL) {
         ncm_error_set(error, EINVAL,
                       STRLIT("MPD client is not configured"));
@@ -2257,9 +2093,8 @@ visualizer_refresh_screen(NativeVisualizerScreen *screen) {
 
 static void
 visualizer_switch_to_callback(NcScreen *screen) {
-    NativeVisualizerScreen *visualizer;
+    NativeVisualizerScreen *visualizer = visualizer_from_screen(screen);
 
-    visualizer = visualizer_from_screen(screen);
     if (visualizer->source_fd < 0) {
         if (native_visualizer_screen_open_data_source(visualizer)) {
             (void)native_visualizer_screen_find_output_id(visualizer);
@@ -2274,11 +2109,10 @@ visualizer_switch_to_callback(NcScreen *screen) {
 
 static void
 visualizer_resize_callback(NcScreen *screen) {
-    NativeVisualizerScreen *visualizer;
+    NativeVisualizerScreen *visualizer = visualizer_from_screen(screen);
     int32 x;
     int32 width;
 
-    visualizer = visualizer_from_screen(screen);
     nc_screen_switcher_get_resize_params(screen, &x, &width, true);
     native_visualizer_screen_set_geometry(visualizer,
                                           x,
@@ -2292,9 +2126,8 @@ visualizer_resize_callback(NcScreen *screen) {
 
 static int32
 visualizer_window_timeout_callback(NcScreen *screen) {
-    NativeVisualizerScreen *visualizer;
+    NativeVisualizerScreen *visualizer = visualizer_from_screen(screen);
 
-    visualizer = visualizer_from_screen(screen);
     if ((visualizer->source_fd >= 0)
         && (visualizer->fps > 0)
         && (ncm_status_state_player() == NCM_STATUS_PLAYER_PLAY)) {
@@ -2305,10 +2138,9 @@ visualizer_window_timeout_callback(NcScreen *screen) {
 
 static void
 visualizer_update_callback(NcScreen *screen) {
-    NativeVisualizerScreen *visualizer;
+    NativeVisualizerScreen *visualizer = visualizer_from_screen(screen);
     int32 new_samples;
 
-    visualizer = visualizer_from_screen(screen);
     if (visualizer->source_fd < 0) {
         return;
     }
