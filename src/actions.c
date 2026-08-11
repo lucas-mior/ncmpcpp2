@@ -1949,7 +1949,7 @@ action_runtime_add_random_items(void) {
 
 static bool
 action_runtime_update_environment(void) {
-    return ncmpcpp_legacy_update_environment(true, true, true);
+    return ncmpcpp_update_environment(true, true, true);
 }
 
 static void
@@ -1981,7 +1981,7 @@ action_runtime_toggle_interface(void) {
         return false;
     }
 
-    ncmpcpp_legacy_resize_screen(false);
+    ncmpcpp_resize_screen(false);
     ncm_progressbar_scoped_lock_init(&lock);
     ncm_progressbar_scoped_lock_destroy(&lock);
     ncm_status_changes_mixer();
@@ -2472,7 +2472,7 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
 
 static bool
 action_runtime_execute_binding(NcmBinding *binding) {
-    return ncmpcpp_legacy_execute_binding(binding);
+    return ncmpcpp_execute_binding(binding);
 }
 
 static bool
