@@ -388,6 +388,7 @@ status_run_init_hooks(void) {
     status_run_init_setup_visualizer_datasource(hooks);
     status_run_init_register_mpd_fd_callback(hooks);
     status_run_init_show_connected_message(hooks);
+
     return;
 }
 
