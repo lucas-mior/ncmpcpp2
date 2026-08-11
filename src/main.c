@@ -258,8 +258,7 @@ app_execute_key(NcKey input) {
 
 static bool
 app_exit_requested(void) {
-    return ncmpcpp_exit_requested()
-           || ncm_action_runtime_exit_requested(NULL);
+    return ncmpcpp_exit_requested() || ncm_action_runtime_exit_requested(NULL);
 }
 
 int
