@@ -59,7 +59,7 @@ ncm_job_destroy(NcmJob *job) {
     job->complete = NULL;
     job->destroy = NULL;
     job->user = NULL;
-    ncm_error_clear(&job->error);
+    ncm_error_clear(&job->ncm_error);
     job->success = false;
 
     return;
@@ -123,12 +123,12 @@ ncm_job_queue_thread_main(void *user) {
         pthread_mutex_unlock(&queue->mutex);
 
         if (have_job) {
-            ncm_error_clear(&job.error);
+            ncm_error_clear(&job.ncm_error);
             if (job.run) {
-                job.success = job.run(job.user, &job.error);
+                job.success = job.run(job.user, &job.ncm_error);
             } else {
                 job.success = false;
-                ncm_error_set(&job.error, EINVAL,
+                ncm_error_set(&job.ncm_error, EINVAL,
                               STRLIT("job has no run callback"));
             }
 
@@ -198,7 +198,7 @@ ncm_job_queue_push(NcmJobQueue *queue, NcmJob job, NcmError *error) {
         return false;
     }
 
-    ncm_error_clear(&job.error);
+    ncm_error_clear(&job.ncm_error);
     job.success = false;
 
     pthread_mutex_lock(&queue->mutex);
@@ -239,7 +239,7 @@ ncm_job_queue_dispatch_completed(NcmJobQueue *queue) {
 
     for (int32 i = 0; i < len; i += 1) {
         if (items[i].complete) {
-            items[i].complete(items[i].success, &items[i].error,
+            items[i].complete(items[i].success, &items[i].ncm_error,
                               items[i].user);
         }
         ncm_job_destroy(&items[i]);

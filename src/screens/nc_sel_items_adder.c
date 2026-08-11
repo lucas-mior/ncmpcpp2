@@ -726,18 +726,18 @@ adder_add_to_stored_playlist(
     int32 playlist_len
 ) {
     NcmStringFormatArg arg;
-    NcmError error;
+    NcmError ncm_error;
 
     if ((screen == NULL) || !screen->ready || (screen->client == NULL)) {
         return false;
     }
 
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     if (!selected_items_adder_screen_add_to_existing_playlist(
-            screen, screen->client, playlist, &error)) {
-        if (error.message[0] != '\0') {
+            screen, screen->client, playlist, &ncm_error)) {
+        if (ncm_error.message[0] != '\0') {
             ncm_statusbar_print_cstring(
-                Config.message_delay_time, error.message);
+                Config.message_delay_time, ncm_error.message);
         } else {
             ncm_statusbar_print_cstring(
                 Config.message_delay_time,
@@ -760,29 +760,29 @@ adder_try_add_current_song(
     SelectedItemsAdderScreen *screen, NcmSong *song,
     int32 position, bool *added, bool *success
 ) {
-    NcmError error;
+    NcmError ncm_error;
     enum mpd_server_error server_error;
 
     *added = false;
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     if (ncm_mpd_client_add_song_value(screen->client, song, position,
-                                      NULL, &error)) {
+                                      NULL, &ncm_error)) {
         *added = true;
         return true;
     }
 
-    if (error.code == MPD_ERROR_SERVER) {
+    if (ncm_error.code == MPD_ERROR_SERVER) {
         server_error = ncm_mpd_client_server_error_code(screen->client);
         ncm_status_handle_server_error_value(
             screen->client, (int32)server_error,
-            error.message, optional_strlen32(error.message));
+            ncm_error.message, optional_strlen32(ncm_error.message));
         *success = false;
         return true;
     }
 
-    if (error.message[0] != '\0') {
+    if (ncm_error.message[0] != '\0') {
         ncm_statusbar_print_cstring(
-            Config.message_delay_time, error.message);
+            Config.message_delay_time, ncm_error.message);
     } else {
         ncm_statusbar_print_cstring(
             Config.message_delay_time,

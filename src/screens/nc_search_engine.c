@@ -839,7 +839,7 @@ search_engine_screen_run_current(SearchEngineScreen *screen) {
     enum SearchEnginePromptResult prompt_status;
     enum SearchEngineSearchMode mode;
     StrBuilder value = {0};
-    NcmError error;
+    NcmError ncm_error;
     NcMenu *menu;
     int32 pos;
     uint32 next_mode;
@@ -885,10 +885,10 @@ search_engine_screen_run_current(SearchEngineScreen *screen) {
         return search_engine_screen_set_search_mode(screen, mode);
     }
     if (pos == SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
-        ncm_error_clear(&error);
+        ncm_error_clear(&ncm_error);
         return search_engine_screen_start_searching(screen,
                                                    screen->hooks.client,
-                                                   &error);
+                                                   &ncm_error);
     }
     if (pos == SEARCH_ENGINE_RESET_BUTTON_ROW) {
         search_engine_screen_reset(screen);
@@ -1137,7 +1137,7 @@ search_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     NcMenu *menu;
     NcSearchRow *row;
     NcWindow *window = search_engine_screen_window(search);
-    NcmError error;
+    NcmError ncm_error;
     int32 x = event.x;
     int32 y = event.y;
     bool play;
@@ -1162,10 +1162,10 @@ search_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         }
 
         play = (event.bstate & BUTTON3_PRESSED) != 0;
-        ncm_error_clear(&error);
+        ncm_error_clear(&ncm_error);
         if (!search_engine_screen_add_song(
-                search, &row->song, play, &error)) {
-            search_print_error(search, &error);
+                search, &row->song, play, &ncm_error)) {
+            search_print_error(search, &ncm_error);
         }
         return;
     }

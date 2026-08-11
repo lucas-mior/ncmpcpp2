@@ -361,21 +361,21 @@ ncm_statusbar_format(int32 delay_seconds, char *format, int32 format_len,
 
 void
 ncm_statusbar_mpd_idle_callback(void) {
-    NcmError error;
+    NcmError ncm_error;
 
-    ncm_error_clear(&error);
-    (void)ncm_status_update_from_noidle(&global_mpd, NULL, &error);
+    ncm_error_clear(&ncm_error);
+    (void)ncm_status_update_from_noidle(&global_mpd, NULL, &ncm_error);
     return;
 }
 
 bool
 ncm_statusbar_main_hook(char *string, int32 string_len) {
-    NcmError error;
+    NcmError ncm_error;
 
     (void)string;
     (void)string_len;
-    ncm_error_clear(&error);
-    ncm_status_trace(&global_mpd, true, false, &error);
+    ncm_error_clear(&ncm_error);
+    ncm_status_trace(&global_mpd, true, false, &ncm_error);
     return true;
 }
 
