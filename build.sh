@@ -236,14 +236,14 @@ debug|build|fast_feedback|all)
     ;;
 check)
     set +e
-    # CC=gcc CFLAGS="-fanalyzer -fdiagnostics-color=never" "$0" debug
+    CC=gcc CFLAGS="-fanalyzer -fdiagnostics-color=never" "$0" debug 2>&1 | tee gcc-warnings.txt &
 
     CFLAGS="--analyze -Xanalyzer -analyzer-output=text"
     CFLAGS="$CFLAGS -Xanalyzer -analyzer-werror"
     CFLAGS="$CFLAGS -Xanalyzer -analyzer-opt-analyze-headers"
     CFLAGS="$CFLAGS -Wno-unused-command-line-argument"
     CFLAGS="$CFLAGS -fno-color-diagnostics"
-    CC=clang CFLAGS="$CFLAGS" "$0" debug
+    CC=clang CFLAGS="$CFLAGS" "$0" debug 2>&1 | tee clang-warnings.txt &
     exit
     ;;
 test)
