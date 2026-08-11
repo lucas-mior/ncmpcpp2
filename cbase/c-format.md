@@ -265,7 +265,6 @@ function_with_long_name_and_multiple_arguments_x(MyStruct *handle,
                                                  char *string, int32 string_len);
 function_with_long_name_and_multiple_arguments_x(handle,
                                                  string_name, string_name_len);
-
 ```
 
 In standalone declarations, if one is needed at all, put all in one line. Break
