@@ -1433,7 +1433,7 @@ ncm_action_toggle_visualization_type(void) {
 
 static bool
 action_runtime_switch_to_next_screen(bool reverse) {
-    ScreenTypeArray *sequence;
+    ScreenTypeArray *sequence = &Config.screen_sequence;
     NcScreen *current;
     bool selected_items_adder;
     int32 current_index;
@@ -1454,7 +1454,6 @@ action_runtime_switch_to_next_screen(bool reverse) {
             current, nc_screen_has_to_be_resized(current));
     }
 
-    sequence = &Config.screen_sequence;
     if (sequence->len <= 0) {
         return false;
     }
@@ -2907,30 +2906,31 @@ action_runtime_current_menu_height(void) {
 
 static NcMenu *
 action_runtime_current_tag_scroll_menu(void) {
-    PlaylistEditorScreen *playlist_editor;
-    MediaLibraryScreen *media_library;
-
     switch (app_screens_current_type()) {
     case NCM_SCREEN_TYPE_BROWSER:
         return browser_screen_menu(app_screen_browser());
     case NCM_SCREEN_TYPE_PLAYLIST:
         return playlist_screen_menu(app_screen_playlist());
-    case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
-        playlist_editor = app_screen_playlist_editor();
+    case NCM_SCREEN_TYPE_PLAYLIST_EDITOR: {
+        PlaylistEditorScreen *playlist_editor = app_screen_playlist_editor();
+
         if (!action_runtime_playlist_editor_content_active()) {
             return NULL;
         }
         return nc_song_menu_base(playlist_editor_screen_content(
             playlist_editor));
+    }
     case NCM_SCREEN_TYPE_SEARCH_ENGINE:
         return search_engine_screen_menu(app_screen_search_engine());
-    case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
-        media_library = app_screen_media_library();
+    case NCM_SCREEN_TYPE_MEDIA_LIBRARY: {
+        MediaLibraryScreen *media_library = app_screen_media_library();
+
         if (media_library_screen_active_column(media_library)
             != MEDIA_LIBRARY_COLUMN_SONGS) {
             return NULL;
         }
         return media_library_screen_active_menu(media_library);
+    }
 #if defined(HAVE_TAGLIB_H)
     case NCM_SCREEN_TYPE_TAG_EDITOR:
         if (app_screen_tag_editor()->active_focus
@@ -5179,7 +5179,6 @@ action_runtime_jump_to_tag_editor(void) {
 
 static bool
 action_runtime_edit_directory_name(void) {
-    BrowserScreen *browser;
     NcmStringView path;
     StrBuilder name = {0};
     NcmError ncm_error;
@@ -5187,7 +5186,8 @@ action_runtime_edit_directory_name(void) {
     bool success;
 
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
-        browser = app_screen_browser();
+        BrowserScreen *browser = app_screen_browser();
+
         if (!browser_screen_current_directory_path(browser, &path)) {
             return false;
         }
@@ -5326,11 +5326,10 @@ action_runtime_toggle_display_mode(void) {
     enum ScreenType screen_type = app_screens_current_type();
 
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_SEARCH_ENGINE)) {
-        SearchEngineScreen *screen;
+        SearchEngineScreen *screen = app_screen_search_engine();
         NcmStringFormatArg arg;
         enum DisplayMode search_mode;
 
-        screen = app_screen_search_engine();
         search_mode = search_engine_screen_toggle_display_mode(screen);
         arg = ncm_string_format_arg_cstring(ncm_display_mode_str(search_mode));
         ncm_statusbar_format(Config.message_delay_time,
@@ -6845,10 +6844,9 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER);
     case NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE:
         if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
-            MediaLibraryScreen *library;
+            MediaLibraryScreen *library = app_screen_media_library();
             enum MediaLibraryColumn column;
 
-            library = app_screen_media_library();
             column = media_library_screen_active_column(library);
             return (column == MEDIA_LIBRARY_COLUMN_TAGS)
                    || ((media_library_screen_column_count(library) == 2)
