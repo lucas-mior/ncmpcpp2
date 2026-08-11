@@ -72,8 +72,8 @@ app_legacy_bridge_dispatch_lyrics_jobs(void) {
     lyrics_screen_dispatch_jobs(app_screen_lyrics());
     if (lyrics_screen_try_take_consumer_message(app_screen_lyrics(),
                                                        &message)) {
-        ncm_statusbar_print(Config.message_delay_time, message.data,
-                            message.len);
+        ncm_statusbar_print(Config.message_delay_time,
+                            message.data, message.len);
     }
     sb_free(&message);
     return;
