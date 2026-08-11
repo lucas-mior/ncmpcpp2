@@ -190,7 +190,7 @@ EOF_HELP
 
 case "$target" in
 debug|test)
-    CFLAGS="$CFLAGS -g3 -O0"
+    CFLAGS="$CFLAGS -g3 -O0 -DDEBUGGING=1"
     ;;
 build)
     CFLAGS="$CFLAGS -O2 -flto"
