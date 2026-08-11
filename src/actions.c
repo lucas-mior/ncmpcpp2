@@ -3890,7 +3890,7 @@ action_runtime_clear_playlist(bool main_playlist) {
     StrBuilder question = {0};
     StrBuilder message = {0};
     NcmError ncm_error;
-    bool success;
+    bool success = false;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
         return false;
@@ -3976,7 +3976,6 @@ action_runtime_crop_playlist(bool main_playlist) {
     }
 
     ncm_song_array_init(&songs);
-    success = false;
     if (main_playlist) {
         if (playlist_screen_song_count(app_screen_playlist())
             <= 1) {
@@ -5613,7 +5612,7 @@ ncm_action_edit_song(NcmSong *song) {
     StrBuilder path = {0};
     int32 path_len;
     int32 path_width;
-    bool success;
+    bool success = false;
 
     if (song == NULL) {
         return false;
@@ -5630,7 +5629,6 @@ ncm_action_edit_song(NcmSong *song) {
         app_screen_tiny_tag_editor(), song, Config.mpd_music_dir,
         Config.mpd_music_dir_len, Config.tags_separator,
         Config.tags_separator_len, Config.show_duplicate_tags, &path);
-    success = false;
     switch (open_result) {
     case TINY_TAG_EDITOR_OPEN_SUCCESS:
         success = action_runtime_switch_to_screen(
@@ -5970,9 +5968,9 @@ action_runtime_edit_library_tag(void) {
     NcmError ncm_error;
     char *tag;
     int32 tag_len;
-    bool shared_directory_valid;
+    bool shared_directory_valid = false;
     bool prompted;
-    bool success;
+    bool success = false;
 
     if (!action_runtime_mpd_music_dir_is_set()) {
         return false;
@@ -5982,8 +5980,6 @@ action_runtime_edit_library_tag(void) {
     }
 
     ncm_mpd_song_list_init(&songs);
-    success = false;
-    shared_directory_valid = false;
 
     if (!sb_set(&current_tag, tag, tag_len)) {
         goto cleanup;
@@ -6088,9 +6084,9 @@ action_runtime_edit_library_album(void) {
     NcmError ncm_error;
     char *album;
     int32 album_len;
-    bool shared_directory_valid;
+    bool shared_directory_valid = false;
     bool prompted;
-    bool success;
+    bool success = false;
 
     if (!action_runtime_mpd_music_dir_is_set()) {
         return false;
@@ -6101,8 +6097,6 @@ action_runtime_edit_library_album(void) {
 
     ncm_song_array_init(&songs);
     ncm_error_clear(&ncm_error);
-    success = false;
-    shared_directory_valid = false;
 
     if (!sb_set(&current_album, album, album_len)) {
         goto cleanup;
