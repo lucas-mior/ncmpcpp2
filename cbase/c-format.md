@@ -273,6 +273,25 @@ side withtout going over 80 columns, put them in separate lines.
 In standalone declarations, if one is needed at all, put all in one line. Break
 long lines so the 80-character limit rule is followed.
 
+Prefer to break after an argument than before the equal sign, specially if the
+first argument fits in the first line:
+```c
+// bad
+    array->items
+        = realloc2(array->items, old_cap, new_cap, SIZEOF(*array->items));
+// good
+    array->items = realloc2(array->items,
+                            old_cap, new_cap, SIZEOF(*array->items));
+
+// bad
+    array->items = realloc2(extremelly_long_argument_that_does_not_fit_in_this_line,
+                            old_cap, new_cap, SIZEOF(*array->items));
+// good
+    array->items
+        = realloc2(extremelly_long_argument_that_does_not_fit_in_this_line,
+                   old_cap, new_cap, SIZEOF(*array->items));
+```
+
 ```c
 static int32 function(int32 arg);
 ```
