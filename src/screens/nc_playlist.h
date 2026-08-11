@@ -97,7 +97,7 @@ bool playlist_screen_reload_from_mpd(PlaylistScreen *screen,
                                             NcmMpdClient *client,
                                             int32 version,
                                             int32 playlist_length,
-                                            NcmError *error);
+                                            NcmError *ncm_error);
 int32 playlist_screen_song_count(PlaylistScreen *screen);
 bool playlist_screen_empty(PlaylistScreen *screen);
 bool playlist_screen_current_song(PlaylistScreen *screen,
@@ -115,19 +115,19 @@ bool playlist_screen_has_sortable_range(
     PlaylistScreen *screen);
 bool playlist_screen_copy_sort_range(
     PlaylistScreen *screen, NcmSongArray *songs,
-    int32 *start_position, NcmError *error);
+    int32 *start_position, NcmError *ncm_error);
 bool playlist_screen_apply_filter(PlaylistScreen *screen,
                                          char *pattern, int32 pattern_len,
-                                         NcmError *error);
+                                         NcmError *ncm_error);
 void playlist_screen_clear_filter(PlaylistScreen *screen);
 bool playlist_screen_search(PlaylistScreen *screen,
                                    char *pattern, int32 pattern_len,
                                    bool forward, bool wrap,
-                                   bool skip_current, NcmError *error);
+                                   bool skip_current, NcmError *ncm_error);
 bool playlist_screen_set_selected_priority(PlaylistScreen *screen,
                                                   NcmMpdClient *client,
                                                   int32 priority,
-                                                  NcmError *error);
+                                                  NcmError *ncm_error);
 void playlist_screen_reload_total_length(PlaylistScreen *screen);
 void playlist_screen_reload_remaining(PlaylistScreen *screen);
 

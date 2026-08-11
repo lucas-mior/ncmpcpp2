@@ -494,11 +494,11 @@ app_screen_selected_items_adder_init(void) {
 
 bool
 app_screen_selected_items_adder_open(NcmSongArray *songs,
-                                          NcmError *error) {
+                                          NcmError *ncm_error) {
     app_screen_selected_items_adder_register();
     return selected_items_adder_screen_open(
         app_screen_selected_items_adder(), songs,
-        app_screen_playlist(), &global_mpd, error);
+        app_screen_playlist(), &global_mpd, ncm_error);
 }
 
 void
@@ -534,7 +534,7 @@ app_screen_sort_playlist_dialog_switch_to(void) {
 
 static bool
 search_list_database_songs(
-    void *user, NcmSongArray *songs, NcmError *error
+    void *user, NcmSongArray *songs, NcmError *ncm_error
 ) {
     NcmMpdSongList source;
     bool result;
@@ -547,10 +547,10 @@ search_list_database_songs(
     ncm_song_array_clear(songs);
     ncm_mpd_song_list_init(&source);
     result = ncm_mpd_client_get_directory_recursive(
-        &global_mpd, "/", &source, error);
+        &global_mpd, "/", &source, ncm_error);
     if (result) {
         if (!(result = ncm_mpd_song_list_to_song_array(&source, songs))) {
-            ncm_error_set(error, EIO,
+            ncm_error_set(ncm_error, EIO,
                           STRLIT("failed to copy database songs"));
         }
     }
@@ -560,7 +560,7 @@ search_list_database_songs(
 
 static bool
 search_snapshot_playlist(
-    void *user, NcmSongArray *songs, NcmError *error
+    void *user, NcmSongArray *songs, NcmError *ncm_error
 ) {
     PlaylistScreen *playlist;
     NcSongMenu *song_menu;
@@ -569,7 +569,7 @@ search_snapshot_playlist(
     int32 count;
 
     (void)user;
-    (void)error;
+    (void)ncm_error;
     if (songs == NULL) {
         return false;
     }
@@ -585,7 +585,7 @@ search_snapshot_playlist(
             continue;
         }
         if (!ncm_song_array_append_copy(songs, song)) {
-            ncm_error_set(error, EIO,
+            ncm_error_set(ncm_error, EIO,
                           STRLIT("failed to copy playlist songs"));
             return false;
         }
@@ -671,10 +671,10 @@ search_status_message(
 
 static bool
 search_add_song(
-    void *user, NcmSong *song, bool play, NcmError *error
+    void *user, NcmSong *song, bool play, NcmError *ncm_error
 ) {
     (void)user;
-    (void)error;
+    (void)ncm_error;
     return ncm_action_add_song_to_playlist(song, play, -1);
 }
 

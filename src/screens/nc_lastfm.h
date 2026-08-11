@@ -63,15 +63,15 @@ void lastfm_screen_set_geometry(LastfmScreen *screen,
 bool lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                             char *artist, int32 artist_len,
                                             char *lang, int32 lang_len,
-                                            NcmError *error);
+                                            NcmError *ncm_error);
 int32 lastfm_screen_dispatch_jobs(LastfmScreen *screen);
 void lastfm_screen_update(LastfmScreen *screen);
 char *lastfm_screen_title(LastfmScreen *screen);
 bool lastfm_screen_take_refresh_request(LastfmScreen *screen);
 bool lastfm_buffer_find(NcBuffer *buffer, char *pattern,
-                                int32 pattern_len, NcmError *error);
+                                int32 pattern_len, NcmError *ncm_error);
 bool lastfm_screen_find(LastfmScreen *screen,
                                char *pattern, int32 pattern_len,
-                               NcmError *error);
+                               NcmError *ncm_error);
 
 #endif /* NCMPCPP_NC_LASTFM_H */

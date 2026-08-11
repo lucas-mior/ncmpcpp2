@@ -38,8 +38,8 @@ static bool lastfm_set_title(LastfmScreen *screen, char *title,
                              int32 title_len);
 static LastfmJob *lastfm_job_create(LastfmScreen *screen,
                                     NcmLastfmService *service);
-static bool lastfm_job_run(void *user, NcmError *error);
-static void lastfm_job_complete(bool success, NcmError *error, void *user);
+static bool lastfm_job_run(void *user, NcmError *ncm_error);
+static void lastfm_job_complete(bool success, NcmError *ncm_error, void *user);
 static void lastfm_job_destroy(void *user);
 static void lastfm_copy_result(LastfmScreen *screen, NcmLastfmResult *result);
 static void lastfm_render_result(LastfmScreen *screen);
@@ -218,13 +218,13 @@ bool
 lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                 char *artist, int32 artist_len,
                                 char *lang, int32 lang_len,
-                                NcmError *error) {
+                                NcmError *ncm_error) {
     LastfmJob *job;
     NcmLastfmService candidate;
     char *title;
 
     if ((screen == NULL) || (artist == NULL) || (artist_len <= 0)) {
-        ncm_error_set(error, EINVAL, STRLIT("missing artist"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing artist"));
         return false;
     }
 
@@ -232,18 +232,18 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     if (!ncm_lastfm_artist_info_init(&candidate, artist, artist_len,
                                      lang, lang_len)) {
         ncm_lastfm_service_destroy(&candidate);
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("invalid Last.fm service"));
         return false;
     }
     if (screen->has_service
         && ncm_lastfm_service_equal(&screen->service, &candidate)) {
         ncm_lastfm_service_destroy(&candidate);
-        ncm_error_clear(error);
+        ncm_error_clear(ncm_error);
         return true;
     }
 
-    if (!ncm_job_queue_start(&screen->jobs, error)) {
+    if (!ncm_job_queue_start(&screen->jobs, ncm_error)) {
         ncm_lastfm_service_destroy(&candidate);
         return false;
     }
@@ -251,7 +251,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     job = lastfm_job_create(screen, &candidate);
     ncm_lastfm_service_destroy(&candidate);
     if (job == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("failed to create job"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("failed to create job"));
         return false;
     }
 
@@ -262,7 +262,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                 .destroy = lastfm_job_destroy,
                                 .user = job,
                             },
-                            error)) {
+                            ncm_error)) {
         lastfm_job_destroy(job);
         return false;
     }
@@ -279,7 +279,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     nc_buffer_append_cstring(&screen->buffer,
                              (char *)LASTFM_FETCHING);
     screen->refresh_window = true;
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     return true;
 }
 
@@ -319,20 +319,20 @@ lastfm_screen_take_refresh_request(LastfmScreen *screen) {
 
 bool
 lastfm_buffer_find(NcBuffer *buffer, char *pattern,
-                   int32 pattern_len, NcmError *error) {
+                   int32 pattern_len, NcmError *ncm_error) {
     LastfmFindState state;
     NcmRegex regex;
     char *data;
     bool result;
 
     if (buffer == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing Last.fm buffer"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing Last.fm buffer"));
         return false;
     }
 
     nc_buffer_remove_properties(buffer, LASTFM_PROPERTY_ID);
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        ncm_error_clear(error);
+        ncm_error_clear(ncm_error);
         return true;
     }
 
@@ -340,7 +340,7 @@ lastfm_buffer_find(NcBuffer *buffer, char *pattern,
     if (!ncm_regex_compile(&regex,
                            pattern, pattern_len,
                            Config.regex_flags,
-                           error)) {
+                           ncm_error)) {
         ncm_regex_destroy(&regex);
         return false;
     }
@@ -357,18 +357,18 @@ lastfm_buffer_find(NcBuffer *buffer, char *pattern,
 bool
 lastfm_screen_find(LastfmScreen *screen,
                    char *pattern, int32 pattern_len,
-                   NcmError *error) {
+                   NcmError *ncm_error) {
     bool result;
 
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing Last.fm screen"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing Last.fm screen"));
         return false;
     }
 
-    result = lastfm_buffer_find(&screen->buffer, pattern, pattern_len, error);
+    result = lastfm_buffer_find(&screen->buffer, pattern, pattern_len, ncm_error);
     if ((pattern == NULL) || (pattern_len <= 0)) {
         sb_clear(&screen->search_constraint);
-    } else if (!ncm_error_is_set(error)) {
+    } else if (!ncm_error_is_set(ncm_error)) {
         (void)sb_set(&screen->search_constraint, pattern, pattern_len);
     }
     lastfm_flush(screen);
@@ -460,23 +460,23 @@ lastfm_job_create(LastfmScreen *screen, NcmLastfmService *service) {
 }
 
 static bool
-lastfm_job_run(void *user, NcmError *error) {
+lastfm_job_run(void *user, NcmError *ncm_error) {
     LastfmJob *job = user;
 
     (void)ncm_lastfm_service_fetch(&job->service, &job->result);
     if (!job->result.success) {
-        ncm_error_set(error, EINVAL, STRLIT("Last.fm fetch failed"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("Last.fm fetch failed"));
     }
     return job->result.success;
 }
 
 static void
-lastfm_job_complete(bool success, NcmError *error, void *user) {
+lastfm_job_complete(bool success, NcmError *ncm_error, void *user) {
     LastfmJob *job = user;
     LastfmScreen *screen;
 
     (void)success;
-    (void)error;
+    (void)ncm_error;
     if (job == NULL) {
         return;
     }

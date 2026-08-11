@@ -40,14 +40,14 @@ ncm_random_init(NcmRandom *random, uint64 seed) {
 }
 
 bool
-ncm_random_seed_from_time(NcmRandom *random, NcmError *error) {
+ncm_random_seed_from_time(NcmRandom *random, NcmError *ncm_error) {
     NcmTimePoint point;
 
     if (random == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing random state"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing random state"));
         return false;
     }
-    if (!ncm_time_monotonic_now(&point, error)) {
+    if (!ncm_time_monotonic_now(&point, ncm_error)) {
         return false;
     }
 

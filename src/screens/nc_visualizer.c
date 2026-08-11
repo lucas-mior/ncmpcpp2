@@ -96,11 +96,11 @@ static int32 visualizer_system_read_source(void *user, int32 fd,
                                            void *buffer, int32 buffer_size);
 static void visualizer_system_close_source(void *user, int32 fd);
 static bool visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
-                                          NcmError *error);
+                                          NcmError *ncm_error);
 static bool visualizer_system_disable_output(void *user, int32 id,
-                                             NcmError *error);
+                                             NcmError *ncm_error);
 static bool visualizer_system_enable_output(void *user, int32 id,
-                                            NcmError *error);
+                                            NcmError *ncm_error);
 static void visualizer_system_sleep_microseconds(void *user,
                                                  int32 microseconds);
 static void visualizer_reset_sample_clock(VisualizerScreen *screen);
@@ -1891,37 +1891,37 @@ visualizer_system_close_source(void *user, int32 fd) {
 
 static bool
 visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
-                              NcmError *error) {
+                              NcmError *ncm_error) {
     NcmMpdClient *client = user;
 
     if (client == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("MPD client is not configured"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("MPD client is not configured"));
         return false;
     }
-    return ncm_mpd_client_get_outputs(client, outputs, error);
+    return ncm_mpd_client_get_outputs(client, outputs, ncm_error);
 }
 
 static bool
-visualizer_system_disable_output(void *user, int32 id, NcmError *error) {
+visualizer_system_disable_output(void *user, int32 id, NcmError *ncm_error) {
     NcmMpdClient *client = user;
 
     if (client == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("MPD client is not configured"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("MPD client is not configured"));
         return false;
     }
-    return ncm_mpd_client_disable_output(client, id, error);
+    return ncm_mpd_client_disable_output(client, id, ncm_error);
 }
 
 static bool
-visualizer_system_enable_output(void *user, int32 id, NcmError *error) {
+visualizer_system_enable_output(void *user, int32 id, NcmError *ncm_error) {
     NcmMpdClient *client = user;
 
     if (client == NULL) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("MPD client is not configured"));
         return false;
     }
-    return ncm_mpd_client_enable_output(client, id, error);
+    return ncm_mpd_client_enable_output(client, id, ncm_error);
 }
 
 static void

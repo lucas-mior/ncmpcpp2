@@ -206,7 +206,7 @@ selected_items_adder_screen_active_window(
 bool
 selected_items_adder_screen_open(
     SelectedItemsAdderScreen *screen, NcmSongArray *songs,
-    PlaylistScreen *playlist, NcmMpdClient *client, NcmError *error
+    PlaylistScreen *playlist, NcmMpdClient *client, NcmError *ncm_error
 ) {
     NcmMpdPlaylistList playlists;
     NcmSongArray selected_songs;
@@ -215,32 +215,32 @@ selected_items_adder_screen_open(
     bool local_browser;
 
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing selected items dialog"));
         return false;
     }
     if ((songs == NULL) || (songs->len <= 0)) {
-        ncm_error_set(error, EINVAL, STRLIT("no selected songs"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("no selected songs"));
         return false;
     }
     if (playlist == NULL) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing playlist screen"));
         return false;
     }
     if (client == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing MPD client"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing MPD client"));
         return false;
     }
     if (screen->ready) {
-        ncm_error_set(error, EBUSY,
+        ncm_error_set(ncm_error, EBUSY,
                       STRLIT("selected items dialog is already open"));
         return false;
     }
 
     if (((current = nc_screen_switcher_current()) == NULL)
         || (current == selected_items_adder_screen_base(screen))) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing previous screen"));
         return false;
     }
@@ -248,7 +248,7 @@ selected_items_adder_screen_open(
     ncm_song_array_init(&selected_songs);
     if (!ncm_song_array_copy(&selected_songs, songs)) {
         ncm_song_array_destroy(&selected_songs);
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("failed to copy selected songs"));
         return false;
     }
@@ -296,12 +296,12 @@ selected_items_adder_screen_open(
         screen->previous_screen = NULL;
         screen->client = NULL;
         screen->ready = false;
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("selected items dialog is not registered"));
         return false;
     }
 
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     return true;
 }
 
@@ -435,36 +435,36 @@ selected_items_adder_screen_choose_current_playlist(
 bool
 selected_items_adder_screen_add_to_existing_playlist(
     SelectedItemsAdderScreen *screen, NcmMpdClient *client,
-    char *playlist, NcmError *error
+    char *playlist, NcmError *ncm_error
 ) {
     bool ok;
 
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing selected items dialog"));
         return false;
     }
     if (client == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing MPD client"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing MPD client"));
         return false;
     }
     if (playlist == NULL) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing stored playlist"));
         return false;
     }
     if (screen->selected_songs.len <= 0) {
-        ncm_error_set(error, EINVAL, STRLIT("no selected songs"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("no selected songs"));
         return false;
     }
 
-    ok = ncm_mpd_client_start_command_list(client, error);
+    ok = ncm_mpd_client_start_command_list(client, ncm_error);
     for (int32 i = 0; ok && i < screen->selected_songs.len; i += 1) {
         ok = ncm_mpd_client_add_song_to_playlist(
-            client, playlist, &screen->selected_songs.items[i], error);
+            client, playlist, &screen->selected_songs.items[i], ncm_error);
     }
     if (ok) {
-        ok = ncm_mpd_client_commit_command_list(client, error);
+        ok = ncm_mpd_client_commit_command_list(client, ncm_error);
     }
     if (!ok && client->command_list_active) {
         client->command_list_active = false;
@@ -476,7 +476,7 @@ bool
 selected_items_adder_screen_search(
     SelectedItemsAdderScreen *screen, char *pattern,
     int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,
-    bool skip_current, NcmError *error
+    bool skip_current, NcmError *ncm_error
 ) {
     NcmRegex regex;
     NcMenu *menu;
@@ -489,7 +489,7 @@ selected_items_adder_screen_search(
 
     ncm_regex_init(&regex);
     if (!ncm_regex_compile(&regex, pattern, pattern_len, regex_flags,
-                           error)) {
+                           ncm_error)) {
         ncm_regex_destroy(&regex);
         return false;
     }

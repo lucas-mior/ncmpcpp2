@@ -1072,15 +1072,15 @@ static bool action_runtime_builtin_run(NcmActionRuntime *runtime,
 static bool action_runtime_current_screen_is(enum ScreenType type);
 static bool action_runtime_switch_to_screen(enum ScreenType type);
 static bool action_runtime_switch_to_next_screen(bool reverse);
-static bool action_runtime_mpd_error(NcmError *error);
+static bool action_runtime_mpd_error(NcmError *ncm_error);
 static bool action_runtime_playlist_find_song(NcmSong *song,
                                               NcmSong **match);
 static bool action_runtime_playlist_remove_song(NcmSong *song,
-                                                NcmError *error);
+                                                NcmError *ncm_error);
 static bool action_runtime_mpd_simple(bool (*func)(NcmMpdClient *client,
-                                                   NcmError *error));
+                                                   NcmError *ncm_error));
 static bool action_runtime_mpd_toggle(bool (*func)(NcmMpdClient *client,
-                                                   bool mode, NcmError *error),
+                                                   bool mode, NcmError *ncm_error),
                                       bool current);
 static bool action_runtime_volume(int32 change);
 static bool action_runtime_update_database(void);
@@ -1105,10 +1105,10 @@ static void action_runtime_refresh_current_screen(void);
 static bool
 action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
                                         char *text, int32 text_len, bool *found,
-                                        NcmError *error);
+                                        NcmError *ncm_error);
 static bool action_runtime_search_prompt_apply(ActionRuntimeSearchPrompt *state,
                                                char *text, int32 text_len,
-                                               bool *found, NcmError *error);
+                                               bool *found, NcmError *ncm_error);
 static bool action_runtime_search_prompt_hook(char *text, void *user);
 static bool action_runtime_prompt_result(StrBuilder *result, NcPrompt *prompt,
                                          NcWindow *window);
@@ -1493,10 +1493,10 @@ action_runtime_switch_to_next_screen(bool reverse) {
 }
 
 static bool
-action_runtime_mpd_error(NcmError *error) {
-    if (error && ncm_error_is_set(error)) {
+action_runtime_mpd_error(NcmError *ncm_error) {
+    if (ncm_error && ncm_error_is_set(ncm_error)) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    error->message);
+                                    ncm_error->message);
     }
     return false;
 }
@@ -1538,7 +1538,7 @@ action_runtime_playlist_find_song(NcmSong *song, NcmSong **match) {
 }
 
 static bool
-action_runtime_playlist_remove_song(NcmSong *song, NcmError *error) {
+action_runtime_playlist_remove_song(NcmSong *song, NcmError *ncm_error) {
     PlaylistScreen *screen;
     NcSongMenu *song_menu;
     NcMenu *menu;
@@ -1548,20 +1548,20 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *error) {
     bool ok;
 
     if (song == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing MPD song"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing MPD song"));
         return false;
     }
 
     screen = app_screen_playlist();
     song_menu = playlist_screen_song_menu(screen);
     if (song_menu == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing playlist screen"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing playlist screen"));
         return false;
     }
     menu = nc_song_menu_base(song_menu);
     count = nc_menu_all_item_count(menu);
 
-    ok = ncm_mpd_client_start_command_list(&global_mpd, error);
+    ok = ncm_mpd_client_start_command_list(&global_mpd, ncm_error);
     for (int32 i = count; ok && (i > 0); i -= 1) {
         item = nc_song_menu_item_at(song_menu, NC_MENU_ITEMS_ALL, i - 1);
         if ((item == NULL) || !ncm_song_equal(item, song)) {
@@ -1571,10 +1571,10 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *error) {
         if (position < 0) {
             continue;
         }
-        ok = ncm_mpd_client_delete(&global_mpd, position, error);
+        ok = ncm_mpd_client_delete(&global_mpd, position, ncm_error);
     }
     if (ok) {
-        ok = ncm_mpd_client_commit_command_list(&global_mpd, error);
+        ok = ncm_mpd_client_commit_command_list(&global_mpd, ncm_error);
     }
     if (!ok && global_mpd.command_list_active) {
         global_mpd.command_list_active = false;
@@ -1584,7 +1584,7 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *error) {
 }
 
 static bool
-action_runtime_mpd_simple(bool (*func)(NcmMpdClient *client, NcmError *error)) {
+action_runtime_mpd_simple(bool (*func)(NcmMpdClient *client, NcmError *ncm_error)) {
     NcmError ncm_error;
 
     ncm_error_clear(&ncm_error);
@@ -1662,7 +1662,7 @@ ncm_action_add_song_to_playlist(NcmSong *song, bool play, int32 position) {
 
 static bool
 action_runtime_mpd_toggle(bool (*func)(NcmMpdClient *client, bool mode,
-                                       NcmError *error),
+                                       NcmError *ncm_error),
                           bool current) {
     NcmError ncm_error;
 
@@ -2208,7 +2208,7 @@ action_runtime_refresh_current_screen(void) {
 static bool
 action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
                                         char *text, int32 text_len, bool *found,
-                                        NcmError *error) {
+                                        NcmError *ncm_error) {
     NcMenu *menu;
     int32 old_beginning;
     int32 old_highlight;
@@ -2230,19 +2230,19 @@ action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
     }
 
     *found = current_screen_search(state->direction, text, text_len,
-                                   Config.wrapped_search, false, error);
-    if (restore && !*found && !ncm_error_is_set(error)) {
+                                   Config.wrapped_search, false, ncm_error);
+    if (restore && !*found && !ncm_error_is_set(ncm_error)) {
         menu->beginning = old_beginning;
         menu->highlight = old_highlight;
         action_runtime_refresh_current_screen();
     }
-    return !ncm_error_is_set(error);
+    return !ncm_error_is_set(ncm_error);
 }
 
 static bool
 action_runtime_search_prompt_apply(ActionRuntimeSearchPrompt *state, char *text,
                                    int32 text_len, bool *found,
-                                   NcmError *error) {
+                                   NcmError *ncm_error) {
     bool last_found;
     bool ok;
 
@@ -2259,9 +2259,9 @@ action_runtime_search_prompt_apply(ActionRuntimeSearchPrompt *state, char *text,
     }
 
     last_found = false;
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     ok = action_runtime_search_from_prompt_start(state, text, text_len,
-                                                 &last_found, error);
+                                                 &last_found, ncm_error);
     if (!ncm_search_prompt_state_finish_result(state, text, text_len, ok,
                                                last_found)) {
         return false;

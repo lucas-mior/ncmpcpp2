@@ -7,19 +7,19 @@
 #include "c/ncm_string.h"
 
 static bool
-ncm_fs_path_copy(char *path, int32 path_len, char **copy, NcmError *error) {
+ncm_fs_path_copy(char *path, int32 path_len, char **copy, NcmError *ncm_error) {
     if (copy == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing path copy output"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing path copy output"));
         return false;
     }
     *copy = NULL;
 
     if (path == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing path"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing path"));
         return false;
     }
     if (path_len < 0) {
-        ncm_error_set(error, EINVAL, STRLIT("negative path length"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("negative path length"));
         return false;
     }
 
@@ -30,7 +30,7 @@ ncm_fs_path_copy(char *path, int32 path_len, char **copy, NcmError *error) {
 }
 
 static void
-ncm_fs_set_errno_error(NcmError *error, int32 code, char *operation,
+ncm_fs_set_errno_error(NcmError *ncm_error, int32 code, char *operation,
                        char *path, int32 path_len) {
     char message[256];
     int32 message_len;
@@ -41,7 +41,7 @@ ncm_fs_set_errno_error(NcmError *error, int32 code, char *operation,
         message_len = SNPRINTF(message, "%s '%.*s': %s",
                                operation, path_len, path, strerror(code));
     }
-    ncm_error_set(error, code, message, message_len);
+    ncm_error_set(ncm_error, code, message, message_len);
 
     return;
 }
@@ -97,12 +97,12 @@ ncm_fs_entry_destroy(NcmFsEntry *entry) {
 }
 
 bool
-ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat, NcmError *error) {
+ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat, NcmError *ncm_error) {
     struct stat statbuf;
     char *path_copy;
 
     if (stat == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing stat output"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing stat output"));
         return false;
     }
 
@@ -111,17 +111,17 @@ ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat, NcmError *error) {
     stat->type = NCM_FS_ENTRY_LAST;
     stat->exists = false;
 
-    if (!ncm_fs_path_copy(path, path_len, &path_copy, error)) {
+    if (!ncm_fs_path_copy(path, path_len, &path_copy, ncm_error)) {
         return false;
     }
 
     if (lstat(path_copy, &statbuf) < 0) {
         if (errno == ENOENT) {
             free2(path_copy, path_len + 1);
-            ncm_error_clear(error);
+            ncm_error_clear(ncm_error);
             return true;
         }
-        ncm_fs_set_errno_error(error, errno, "stat", path, path_len);
+        ncm_fs_set_errno_error(ncm_error, errno, "stat", path, path_len);
         free2(path_copy, path_len + 1);
         return false;
     }
@@ -132,7 +132,7 @@ ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat, NcmError *error) {
     stat->exists = true;
 
     free2(path_copy, path_len + 1);
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
 
     return true;
 }
@@ -149,46 +149,46 @@ ncm_fs_exists(char *path, int32 path_len) {
 }
 
 bool
-ncm_fs_unlink(char *path, int32 path_len, NcmError *error) {
+ncm_fs_unlink(char *path, int32 path_len, NcmError *ncm_error) {
     char *path_copy;
 
-    if (!ncm_fs_path_copy(path, path_len, &path_copy, error)) {
+    if (!ncm_fs_path_copy(path, path_len, &path_copy, ncm_error)) {
         return false;
     }
 
     if (unlink(path_copy) != 0) {
         if (errno == ENOENT) {
             free2(path_copy, path_len + 1);
-            ncm_error_clear(error);
+            ncm_error_clear(ncm_error);
             return true;
         }
-        ncm_fs_set_errno_error(error, errno, "unlink", path,
+        ncm_fs_set_errno_error(ncm_error, errno, "unlink", path,
                                path_len);
         free2(path_copy, path_len + 1);
         return false;
     }
 
     free2(path_copy, path_len + 1);
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     return true;
 }
 
 bool
 ncm_fs_rename(char *old_path, int32 old_path_len, char *new_path,
-              int32 new_path_len, NcmError *error) {
+              int32 new_path_len, NcmError *ncm_error) {
     char *old_copy = NULL;
     char *new_copy = NULL;
 
-    if (!ncm_fs_path_copy(old_path, old_path_len, &old_copy, error)) {
+    if (!ncm_fs_path_copy(old_path, old_path_len, &old_copy, ncm_error)) {
         return false;
     }
-    if (!ncm_fs_path_copy(new_path, new_path_len, &new_copy, error)) {
+    if (!ncm_fs_path_copy(new_path, new_path_len, &new_copy, ncm_error)) {
         free2(old_copy, old_path_len + 1);
         return false;
     }
 
     if (rename(old_copy, new_copy) != 0) {
-        ncm_fs_set_errno_error(error, errno, "rename",
+        ncm_fs_set_errno_error(ncm_error, errno, "rename",
                                old_path, old_path_len);
         free2(new_copy, new_path_len + 1);
         free2(old_copy, old_path_len + 1);
@@ -197,16 +197,16 @@ ncm_fs_rename(char *old_path, int32 old_path_len, char *new_path,
 
     free2(new_copy, new_path_len + 1);
     free2(old_copy, old_path_len + 1);
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
 
     return true;
 }
 
 bool
-ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *error) {
+ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *ncm_error) {
     char *copy;
 
-    if (!ncm_fs_path_copy(path, path_len, &copy, error)) {
+    if (!ncm_fs_path_copy(path, path_len, &copy, ncm_error)) {
         return false;
     }
 
@@ -223,7 +223,7 @@ ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *error) {
 
         copy[i] = '\0';
         if ((mkdir(copy, 0700) < 0) && (errno != EEXIST)) {
-            ncm_fs_set_errno_error(error, errno, "mkdir", copy, i);
+            ncm_fs_set_errno_error(ncm_error, errno, "mkdir", copy, i);
             free2(copy, path_len + 1);
             return false;
         }
@@ -233,31 +233,31 @@ ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *error) {
     }
 
     free2(copy, path_len + 1);
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
 
     return true;
 }
 
 bool
 ncm_fs_directory_open(NcmFsDirectory *directory, char *path,
-                      int32 path_len, NcmError *error) {
+                      int32 path_len, NcmError *ncm_error) {
     DIR *dir;
     char *path_copy;
 
     if (directory == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing directory"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing directory"));
         return false;
     }
     directory->dir = NULL;
     directory->path = NULL;
     directory->path_len = 0;
 
-    if (!ncm_fs_path_copy(path, path_len, &path_copy, error)) {
+    if (!ncm_fs_path_copy(path, path_len, &path_copy, ncm_error)) {
         return false;
     }
 
     if ((dir = opendir(path_copy)) == NULL) {
-        ncm_fs_set_errno_error(error, errno, "opendir", path, path_len);
+        ncm_fs_set_errno_error(ncm_error, errno, "opendir", path, path_len);
         free2(path_copy, path_len + 1);
         return false;
     }
@@ -265,25 +265,25 @@ ncm_fs_directory_open(NcmFsDirectory *directory, char *path,
     directory->dir = dir;
     directory->path = path_copy;
     directory->path_len = path_len;
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     return true;
 }
 
 bool
 ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
-                      NcmError *error) {
+                      NcmError *ncm_error) {
     struct dirent *dirent;
     DIR *dir;
     int32 name_len;
 
     if (entry == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing directory entry"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing directory entry"));
         return false;
     }
     ncm_fs_entry_destroy(entry);
 
     if ((directory == NULL) || (directory->dir == NULL)) {
-        ncm_error_set(error, EINVAL, STRLIT("directory is not open"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("directory is not open"));
         return false;
     }
 
@@ -303,15 +303,15 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
         entry->type = ncm_fs_dirent_type(dirent->d_type);
         memcpy64(entry->name, dirent->d_name, name_len + 1);
 
-        ncm_error_clear(error);
+        ncm_error_clear(ncm_error);
         return true;
     }
 
     if (errno) {
-        ncm_fs_set_errno_error(error, errno,
+        ncm_fs_set_errno_error(ncm_error, errno,
                                "readdir", directory->path, directory->path_len);
     } else {
-        ncm_error_clear(error);
+        ncm_error_clear(ncm_error);
     }
 
     return false;

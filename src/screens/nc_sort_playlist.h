@@ -53,7 +53,7 @@ bool sort_playlist_dialog_add_row(SortPlaylistDialog *dialog,
                                          void *user);
 bool sort_playlist_dialog_open(
     SortPlaylistDialog *dialog, PlaylistScreen *playlist,
-    NcmMpdClient *client, bool ignore_leading_the, NcmError *error);
+    NcmMpdClient *client, bool ignore_leading_the, NcmError *ncm_error);
 bool sort_playlist_dialog_move_current_up(
     SortPlaylistDialog *dialog);
 bool sort_playlist_dialog_move_current_down(
