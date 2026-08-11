@@ -242,8 +242,12 @@ app_connect_if_due(NcmTimePoint *connect_attempt) {
 
 static void
 app_execute_key(NcKey input) {
-    NcmBindingSlice bindings = ncm_bindings_configuration_get(&Bindings, input);
+    NcmBindingSlice bindings;
     bool executed = false;
+
+    if (!ncm_bindings_configuration_get(&Bindings, input, &bindings)) {
+        return;
+    }
 
     for (int32 i = 0; i < bindings.len; i += 1) {
         if (ncmpcpp_execute_binding(bindings.data + i)) {
