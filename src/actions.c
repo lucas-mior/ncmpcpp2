@@ -1688,35 +1688,28 @@ action_runtime_volume(int32 change) {
     return true;
 }
 
-static char *
-action_runtime_update_database_path(void) {
+static bool
+action_runtime_update_database(void) {
     NcmStringView view;
+    NcmError ncm_error;
+    char *path = "/";
 
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)) {
         view = browser_screen_current_directory(app_screen_browser());
         if (view.data) {
-            return view.data;
+            path = view.data;
+        } else {
+            path = "";
         }
-        return "";
     }
 
 #if defined(HAVE_TAGLIB_H)
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
         if (tag_editor_screen_current_dir(app_screen_tag_editor(), &view)) {
-            return view.data;
+            path = view.data;
         }
     }
 #endif
-
-    return "/";
-}
-
-static bool
-action_runtime_update_database(void) {
-    NcmError ncm_error;
-    char *path;
-
-    path = action_runtime_update_database_path();
 
     ncm_error_clear(&ncm_error);
     if (!ncm_mpd_client_update_directory(&global_mpd, path, NULL, &ncm_error)) {
@@ -1728,9 +1721,8 @@ action_runtime_update_database(void) {
 static bool
 action_runtime_replay_song(void) {
     NcmError ncm_error;
-    int32 position;
+    int32 position = ncm_status_state_current_song_position();
 
-    position = ncm_status_state_current_song_position();
     if (position < 0) {
         return false;
     }
@@ -2357,11 +2349,9 @@ action_runtime_confirm(char *message, int32 message_len) {
         'y',
         'n',
     };
-    char answer;
-    bool prompted;
+    char answer = 'n';
+    bool prompted = false;
 
-    prompted = false;
-    answer = 'n';
     ncm_statusbar_scoped_lock_init(&lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, message, message_len);
@@ -3422,10 +3412,9 @@ action_runtime_load_prompt(void) {
     NcmError ncm_error;
     char *name_text;
     bool loaded;
-    bool prompted;
+    bool prompted = action_runtime_prompt_string(STRLIT("Load playlist: "), "",
+                                                false, NULL, NULL, &name);
 
-    prompted = action_runtime_prompt_string(STRLIT("Load playlist: "), "",
-                                            false, NULL, NULL, &name);
     if (!prompted) {
         sb_free(&name);
         return true;
