@@ -540,12 +540,11 @@ status_notify_statusbar(void) {
 
 static void
 statusbar_format_cstring(char *format, int32 format_len, char *value) {
-    NcmStringFormatArg arg;
+    NcmStringFormatArg arg = ncm_string_format_arg_cstring(value);
 
     status_notify_statusbar();
-    arg = ncm_string_format_arg_cstring(value);
-    ncm_statusbar_format(Config.message_delay_time, format, format_len,
-                         &arg, 1);
+    ncm_statusbar_format(Config.message_delay_time,
+                         format, format_len, &arg, 1);
     return;
 }
 
