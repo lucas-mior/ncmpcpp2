@@ -6,6 +6,7 @@
 #include "config.h"
 
 #if defined(HAVE_FFTW3_H)
+#define FFTW_NO_Complex 1
 #include <fftw3.h>
 #endif
 
