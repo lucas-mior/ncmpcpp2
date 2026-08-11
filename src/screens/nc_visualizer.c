@@ -167,8 +167,7 @@ visualizer_destroy_colors(NativeVisualizerScreen *screen) {
             nc_formatted_color_destroy(&screen->visualizer_colors[i]);
         }
         free2(screen->visualizer_colors,
-              screen->visualizer_colors_cap
-              *SIZEOF(*screen->visualizer_colors));
+              screen->visualizer_colors_cap*SIZEOF(*screen->visualizer_colors));
     }
     screen->visualizer_colors = NULL;
     screen->visualizer_colors_len = 0;
