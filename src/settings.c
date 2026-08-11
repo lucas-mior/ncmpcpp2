@@ -1754,11 +1754,10 @@ settings_read_file(Configuration *config, SettingsOption *options,
         error2("Reading configuration from %s...\n", path_buffer.data);
     }
     while (fgets(line, SIZEOF(line), file)) {
-        int32 line_len;
         NcmOptionLine parsed;
         SettingsOption *option;
+        int32 line_len = strlen32(line);
 
-        line_len = strlen32(line);
         while (
             (line_len > 0)
             && ((line[line_len - 1] == '\n') || (line[line_len - 1] == '\r'))) {
