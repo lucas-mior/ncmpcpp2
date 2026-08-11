@@ -170,7 +170,7 @@ lastfm_screen_init(LastfmScreen *screen,
 
     nc_window_set_timeout(&screen->window, lines_scrolled);
     (void)lastfm_set_title(screen,
-                                  STRLIT( LASTFM_DEFAULT_TITLE));
+                                  STRLIT(LASTFM_DEFAULT_TITLE));
     return;
 }
 
@@ -294,7 +294,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                           &screen->service)));
     nc_buffer_clear(&screen->buffer);
     nc_buffer_append_cstring(&screen->buffer,
-                             (char *) LASTFM_FETCHING);
+                             (char *)LASTFM_FETCHING);
     screen->refresh_window = true;
     ncm_error_clear(error);
     return true;
@@ -320,7 +320,7 @@ lastfm_screen_update(LastfmScreen *screen) {
 char *
 lastfm_screen_title(LastfmScreen *screen) {
     if (screen->title == NULL) {
-        return (char *) LASTFM_DEFAULT_TITLE;
+        return (char *)LASTFM_DEFAULT_TITLE;
     }
     return screen->title;
 }
@@ -448,8 +448,8 @@ lastfm_set_title(LastfmScreen *screen,
     int32 cap;
 
     if (title == NULL) {
-        title = (char *) LASTFM_DEFAULT_TITLE;
-        title_len = STRLIT_LEN( LASTFM_DEFAULT_TITLE);
+        title = (char *)LASTFM_DEFAULT_TITLE;
+        title_len = STRLIT_LEN(LASTFM_DEFAULT_TITLE);
     }
     cap = title_len + 1;
     if (cap > screen->title_cap) {
@@ -574,15 +574,12 @@ lastfm_render_failure(LastfmScreen *screen) {
 
     red = nc_color_make(COLOR_RED, NC_COLOR_CURRENT, false, false);
     nc_buffer_append_char(&screen->buffer, ' ');
-    nc_buffer_add_color(&screen->buffer,
-                        nc_buffer_len(&screen->buffer),
-                        red,
+    nc_buffer_add_color(&screen->buffer, nc_buffer_len(&screen->buffer), red,
                         LASTFM_DEFAULT_PROPERTY_ID);
     nc_buffer_append_data(&screen->buffer,
                           screen->result.text,
                           screen->result.text_len);
-    nc_buffer_add_color(&screen->buffer,
-                        nc_buffer_len(&screen->buffer),
+    nc_buffer_add_color(&screen->buffer, nc_buffer_len(&screen->buffer),
                         nc_color_end(),
                         LASTFM_DEFAULT_PROPERTY_ID);
     return;
@@ -590,17 +587,16 @@ lastfm_render_failure(LastfmScreen *screen) {
 
 static void
 lastfm_apply_literal_format(NcBuffer *buffer,
-                                   char *needle, int32 needle_len,
-                                   enum NcFormat start_format,
-                                   enum NcFormat end_format) {
+                            char *needle, int32 needle_len,
+                            enum NcFormat start_format,
+                            enum NcFormat end_format) {
     char *data;
     int32 len;
 
     data = buffer->data;
     len = buffer->len;
     for (int32 i = 0; i + needle_len <= len; i += 1) {
-        if (BEGINS_WITH(data + i, len - i,
-                                   needle, needle_len)) {
+        if (BEGINS_WITH(data + i, len - i, needle, needle_len)) {
             nc_buffer_add_format(buffer, i, start_format,
                                  LASTFM_PROPERTY_ID);
             nc_buffer_add_format(buffer, i + needle_len, end_format,
@@ -612,15 +608,14 @@ lastfm_apply_literal_format(NcBuffer *buffer,
 
 static void
 lastfm_apply_literal_color2(NcBuffer *buffer,
-                                  char *needle, int32 needle_len) {
+                            char *needle, int32 needle_len) {
     char *data;
     int32 len;
 
     data = buffer->data;
     len = buffer->len;
     for (int32 i = 0; i + needle_len <= len; i += 1) {
-        if (BEGINS_WITH(data + i, len - i,
-                                   needle, needle_len)) {
+        if (BEGINS_WITH(data + i, len - i, needle, needle_len)) {
             nc_buffer_add_formatted_color(buffer, i, &Config.color2,
                                           LASTFM_PROPERTY_ID);
             nc_buffer_add_formatted_color_end(buffer, i + needle_len,
@@ -649,7 +644,7 @@ lastfm_find_match_callback(int32 start, int32 len, void *user) {
 
 static void
 lastfm_mouse_scroll(LastfmScreen *screen,
-                           enum NcScroll where) {
+                    enum NcScroll where) {
     for (int32 i = 0; i < Config.lines_scrolled; i += 1) {
         nc_scrollpad_scroll(&screen->scrollpad, &screen->window, where);
     }

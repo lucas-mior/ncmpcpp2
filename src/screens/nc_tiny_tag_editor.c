@@ -531,10 +531,10 @@ tiny_tag_editor_screen_run_row(
         return false;
     }
 
-    if ((row >= (int32) TINY_TAG_EDITOR_FIRST_TAG_ROW)
-        && (row <= (int32) TINY_TAG_EDITOR_LAST_TAG_ROW)) {
+    if ((row >= (int32)TINY_TAG_EDITOR_FIRST_TAG_ROW)
+        && (row <= (int32)TINY_TAG_EDITOR_LAST_TAG_ROW)) {
         field = (enum NcmTagsField)(
-            row - (int32) TINY_TAG_EDITOR_FIRST_TAG_ROW);
+            row - (int32)TINY_TAG_EDITOR_FIRST_TAG_ROW);
         tag_value = ncm_mutable_song_tags_buffer(
             &screen->edited, field, screen->tag_separator.data,
             screen->tag_separator.len, screen->show_duplicate_tags);
@@ -893,8 +893,7 @@ tiny_editor_replace_filename_row(
     tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
                                  name.data, name.len);
     result = nc_menu_replace_item(
-        menu, NC_MENU_ITEMS_ALL,
-        TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW, &row);
+        menu, NC_MENU_ITEMS_ALL, TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW, &row);
     nc_buffer_destroy(&row);
     return result;
 }
