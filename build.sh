@@ -212,7 +212,6 @@ fast_feedback)
     CFLAGS="$CFLAGS -g3 -O0"
     ;;
 check)
-    CFLAGS="$CFLAGS -g3 -O0"
     ;;
 all)
     ;;
@@ -252,26 +251,16 @@ debug|build|fast_feedback|all)
     ;;
 check)
     check_no_foreign_sources
-    load_package_flags
-    require_command "$CC"
 
-    if ! detect_c_standard "$CC"; then
-        die 'clang analyzer does not support C11'
-    fi
+    CC=gcc CFLAGS="-fanalyzer -fdiagnostics-color=never" "$0" build
 
-    # Flag variables intentionally require shell word splitting.
-    run_command "$CC" \
-        -I. \
-        -Isrc \
-        -Icbase \
-        $CPPFLAGS \
-        $PKG_CFLAGS \
-        $READLINE_CFLAGS \
-        $CFLAGS \
-        --analyze \
-        -Xanalyzer -analyzer-output=text \
-        -fno-color-diagnostics \
-        "src/main.c"
+    CFLAGS="--analyze -Xanalyzer -analyzer-output=text"
+    CFLAGS="$CFLAGS -Xanalyzer -analyzer-werror"
+    CFLAGS="$CFLAGS -Xanalyzer -analyzer-opt-analyze-headers"
+    CFLAGS="$CFLAGS -Wno-unused-command-line-argument"
+    CFLAGS="$CFLAGS -fno-color-diagnostics"
+    CC=clang CFLAGS="$CFLAGS" "$0" build
+    exit
     ;;
 test)
     require_command "$CC"
