@@ -175,6 +175,7 @@ nc_screen_init_ops(NcScreen *screen, NcScreenOps ops,
     screen->type = type;
     screen->has_to_be_resized = false;
     screen->has_to_be_updated = false;
+
     return;
 }
 
@@ -340,9 +341,8 @@ nc_screen_resize_params(NcScreen *screen) {
 void
 nc_screen_get_resize_params(NcScreen *screen, int32 *x_offset,
                             int32 *width) {
-    NcScreenResizeParams params;
+    NcScreenResizeParams params = nc_screen_resize_params(screen);
 
-    params = nc_screen_resize_params(screen);
     if (x_offset) {
         *x_offset = params.x_offset;
     }
@@ -404,8 +404,7 @@ nc_screen_registry_unregister(NcScreenRegistry *registry,
                               NcScreen *screen) {
     int32 index;
 
-    index = nc_screen_registry_index_of(registry, screen);
-    if (index < 0) {
+    if ((index = nc_screen_registry_index_of(registry, screen)) < 0) {
         return false;
     }
 
@@ -475,12 +474,11 @@ NcScreenResizeParams
 nc_screen_registry_resize_params(NcScreenRegistry *registry,
                                  NcScreen *screen,
                                  bool adjust_locked_screen) {
-    NcScreenResizeParams params;
+    NcScreenResizeParams params = nc_screen_resize_params(screen);
     NcScreen *locked_screen;
     NcScreen *inactive_screen;
     int32 locked_width;
 
-    params = nc_screen_resize_params(screen);
     if (registry == NULL) {
         return params;
     }
