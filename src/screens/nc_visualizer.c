@@ -89,14 +89,13 @@ static int32 visualizer_window_timeout_callback(NcScreen *screen);
 static void visualizer_update_callback(NcScreen *screen);
 static enum NativeVisualizerType native_visualizer_next_type(
     enum NativeVisualizerType type);
-static int32 visualizer_system_open_fifo(void *user, char *location,
-                                         int32 location_len);
-static int32 visualizer_system_open_udp(void *user, char *location,
-                                        int32 location_len, char *port,
-                                        int32 port_len);
+static int32 visualizer_system_open_fifo(void *user,
+                                         char *location, int32 location_len);
+static int32 visualizer_system_open_udp(void *user,
+                                        char *location, int32 location_len,
+                                        char *port, int32 port_len);
 static int32 visualizer_system_read_source(void *user, int32 fd,
-                                           void *buffer,
-                                           int32 buffer_size);
+                                           void *buffer, int32 buffer_size);
 static void visualizer_system_close_source(void *user, int32 fd);
 static bool visualizer_system_get_outputs(void *user,
                                           NcmMpdOutputList *outputs,
@@ -146,8 +145,8 @@ native_visualizer_data_source_system_hooks(NcmMpdClient *client) {
 }
 
 static void
-visualizer_copy_characters(NativeVisualizerScreen *screen, char *characters,
-                           int32 characters_len) {
+visualizer_copy_characters(NativeVisualizerScreen *screen,
+                           char *characters, int32 characters_len) {
     int32 next;
 
     sb_set(&screen->visualizer_chars, characters, characters_len);
@@ -179,8 +178,7 @@ visualizer_destroy_colors(NativeVisualizerScreen *screen) {
 
 static void
 visualizer_copy_colors(NativeVisualizerScreen *screen,
-                       NcFormattedColor *colors,
-                       int32 colors_len) {
+                       NcFormattedColor *colors, int32 colors_len) {
     visualizer_destroy_colors(screen);
     if ((colors == NULL) || (colors_len <= 0)) {
         screen->visualizer_colors_cap = 1;
@@ -203,7 +201,8 @@ visualizer_copy_colors(NativeVisualizerScreen *screen,
 }
 
 static NcFormattedColor *
-visualizer_color(NativeVisualizerScreen *screen, double number, double max,
+visualizer_color(NativeVisualizerScreen *screen,
+                 double number, double max,
                  bool wrap) {
     int32 index;
 
@@ -231,7 +230,8 @@ visualizer_color(NativeVisualizerScreen *screen, double number, double max,
 }
 
 static void
-visualizer_draw_character(NativeVisualizerScreen *screen, int32 x, int32 y,
+visualizer_draw_character(NativeVisualizerScreen *screen,
+                          int32 x, int32 y,
                           NcFormattedColor *color, bool reverse,
                           char *character, int32 character_len) {
     enum NcFormat *formats = NULL;
@@ -276,7 +276,8 @@ visualizer_draw_character(NativeVisualizerScreen *screen, int32 x, int32 y,
 
 #if defined(HAVE_FFTW3_H)
 static void
-visualizer_fft_init(NativeVisualizerScreen *screen, int32 dft_size,
+visualizer_fft_init(NativeVisualizerScreen *screen,
+                    int32 dft_size,
                     double gain, double hz_min, double hz_max) {
     NativeVisualizerFftState *fft = &screen->fft;
 
@@ -604,8 +605,9 @@ native_visualizer_screen_find_output_id(NativeVisualizerScreen *screen) {
 }
 
 void
-native_visualizer_screen_init(NativeVisualizerScreen *screen, int32 start_x,
-                              int32 start_y, int32 width, int32 height,
+native_visualizer_screen_init(NativeVisualizerScreen *screen,
+                              int32 start_x, int32 start_y,
+                              int32 width, int32 height,
                               NcColor color, NcBorder border,
                               NativeVisualizerScreenConfig *config) {
     char *source_location = NULL;
@@ -798,10 +800,8 @@ native_visualizer_screen_window(NativeVisualizerScreen *screen) {
 
 void
 native_visualizer_screen_set_geometry(NativeVisualizerScreen *screen,
-                                      int32 start_x,
-                                      int32 start_y,
-                                      int32 width,
-                                      int32 height) {
+                                      int32 start_x, int32 start_y,
+                                      int32 width, int32 height) {
     nc_window_resize(&screen->window, width, height);
     nc_window_move_to(&screen->window, start_x, start_y);
     native_visualizer_screen_init_visualization(screen);
@@ -989,8 +989,7 @@ native_visualizer_screen_requested_samples(NativeVisualizerScreen *screen) {
 
 bool
 native_visualizer_screen_push_samples(NativeVisualizerScreen *screen,
-                                      int16 *samples,
-                                      int32 samples_len) {
+                                      int16 *samples, int32 samples_len) {
     if (screen == NULL) {
         return false;
     }
@@ -1009,8 +1008,7 @@ native_visualizer_screen_push_samples(NativeVisualizerScreen *screen,
 
 int32
 native_visualizer_screen_take_render_samples(NativeVisualizerScreen *screen,
-                                             int16 *dest,
-                                             int32 dest_len) {
+                                             int16 *dest, int32 dest_len) {
     int32 requested;
     int32 result;
 
@@ -1032,8 +1030,7 @@ native_visualizer_screen_take_render_samples(NativeVisualizerScreen *screen,
 
 int32
 native_visualizer_screen_split_stereo(NativeVisualizerScreen *screen,
-                                      int16 *samples,
-                                      int32 samples_len) {
+                                      int16 *samples, int32 samples_len) {
     int32 pairs;
 
     if ((screen == NULL) || (samples == NULL) || (samples_len <= 1)) {
@@ -1062,8 +1059,7 @@ native_visualizer_screen_split_stereo(NativeVisualizerScreen *screen,
 
 void
 native_visualizer_screen_apply_auto_scale(NativeVisualizerScreen *screen,
-                                          int16 *samples,
-                                          int32 samples_len) {
+                                          int16 *samples, int32 samples_len) {
     double scale;
     int32 scaled;
 
@@ -1107,8 +1103,9 @@ native_visualizer_clamp_sample(int32 sample) {
 }
 
 static void
-visualizer_draw_wave(NativeVisualizerScreen *screen, int16 *samples,
-                     int32 samples_len, int32 y_offset, int32 height) {
+visualizer_draw_wave(NativeVisualizerScreen *screen,
+                     int16 *samples, int32 samples_len,
+                     int32 y_offset, int32 height) {
     char *character = screen->visualizer_chars.data
                       + screen->point_char_offset;
     int32 character_len = screen->point_char_len;
@@ -1172,9 +1169,9 @@ visualizer_draw_wave(NativeVisualizerScreen *screen, int16 *samples,
 }
 
 static void
-visualizer_draw_wave_filled(NativeVisualizerScreen *screen, int16 *samples,
-                            int32 samples_len, int32 y_offset,
-                            int32 height) {
+visualizer_draw_wave_filled(NativeVisualizerScreen *screen,
+                            int16 *samples, int32 samples_len,
+                            int32 y_offset, int32 height) {
     char *character = screen->visualizer_chars.data
                       + screen->bar_char_offset;
     int32 character_len = screen->bar_char_len;
@@ -1226,8 +1223,9 @@ visualizer_draw_wave_filled(NativeVisualizerScreen *screen, int16 *samples,
 }
 
 static void
-visualizer_draw_ellipse(NativeVisualizerScreen *screen, int16 *samples,
-                        int32 samples_len, int32 height) {
+visualizer_draw_ellipse(NativeVisualizerScreen *screen,
+                        int16 *samples, int32 samples_len,
+                        int32 height) {
     char *character = screen->visualizer_chars.data
                       + screen->point_char_offset;
     int32 character_len = screen->point_char_len;
@@ -1272,8 +1270,9 @@ visualizer_draw_ellipse(NativeVisualizerScreen *screen, int16 *samples,
 }
 
 static void
-visualizer_draw_ellipse_stereo(NativeVisualizerScreen *screen, int16 *left,
-                               int16 *right, int32 samples_len,
+visualizer_draw_ellipse_stereo(NativeVisualizerScreen *screen,
+                               int16 *left, int16 *right,
+                               int32 samples_len,
                                int32 half_height) {
     char *character = screen->visualizer_chars.data
                       + screen->point_char_offset;
@@ -1396,8 +1395,8 @@ visualizer_generate_frequency_space(NativeVisualizerScreen *screen) {
 }
 
 static void
-visualizer_apply_fft_window(NativeVisualizerScreen *screen, int16 *samples,
-                            int32 samples_len) {
+visualizer_apply_fft_window(NativeVisualizerScreen *screen,
+                            int16 *samples, int32 samples_len) {
     NativeVisualizerFftState *fft = &screen->fft;
     double alpha;
     double a0;
@@ -1448,8 +1447,8 @@ visualizer_bin_to_hz(NativeVisualizerScreen *screen, int32 bin) {
 }
 
 static double
-visualizer_interpolate_cubic(NativeVisualizerScreen *screen, int32 x,
-                             int32 height_index) {
+visualizer_interpolate_cubic(NativeVisualizerScreen *screen,
+                             int32 x, int32 height_index) {
     NativeVisualizerFftState *fft = &screen->fft;
     double x_next = fft->bar_heights[height_index].column;
     double h_next = fft->bar_heights[height_index].height;
@@ -1520,8 +1519,8 @@ visualizer_interpolate_cubic(NativeVisualizerScreen *screen, int32 x,
 }
 
 static double
-visualizer_interpolate_linear(NativeVisualizerScreen *screen, int32 x,
-                              int32 height_index) {
+visualizer_interpolate_linear(NativeVisualizerScreen *screen,
+                              int32 x, int32 height_index) {
     NativeVisualizerFftState *fft = &screen->fft;
     double x_next = fft->bar_heights[height_index].column;
     double h_next = fft->bar_heights[height_index].height;
@@ -1556,8 +1555,9 @@ visualizer_interpolate_linear(NativeVisualizerScreen *screen, int32 x,
 }
 
 static void
-visualizer_draw_frequency(NativeVisualizerScreen *screen, int16 *samples,
-                          int32 samples_len, int32 y_offset, int32 height) {
+visualizer_draw_frequency(NativeVisualizerScreen *screen,
+                          int16 *samples, int32 samples_len,
+                          int32 y_offset, int32 height) {
     NativeVisualizerFftState *fft = &screen->fft;
     int32 width = nc_window_width(&screen->window);
     int32 current_bin;
@@ -1745,8 +1745,8 @@ visualizer_draw_frequency(NativeVisualizerScreen *screen, int16 *samples,
 #endif
 
 bool
-native_visualizer_screen_draw(NativeVisualizerScreen *screen, int16 *samples,
-                              int32 samples_len) {
+native_visualizer_screen_draw(NativeVisualizerScreen *screen,
+                              int16 *samples, int32 samples_len) {
     int32 height;
     int32 half_height;
 
@@ -1832,8 +1832,8 @@ native_visualizer_screen_draw(NativeVisualizerScreen *screen, int16 *samples,
 }
 
 static int32
-visualizer_system_open_fifo(void *user, char *location,
-                            int32 location_len) {
+visualizer_system_open_fifo(void *user,
+                            char *location, int32 location_len) {
     int32 fd;
 
     (void)user;
@@ -1852,7 +1852,8 @@ visualizer_system_open_fifo(void *user, char *location,
 }
 
 static int32
-visualizer_system_open_udp(void *user, char *location, int32 location_len,
+visualizer_system_open_udp(void *user,
+                           char *location, int32 location_len,
                            char *port, int32 port_len) {
     struct addrinfo hints = {0};
     struct addrinfo *addresses;
@@ -1910,8 +1911,8 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
 }
 
 static int32
-visualizer_system_read_source(void *user, int32 fd, void *buffer,
-                              int32 buffer_size) {
+visualizer_system_read_source(void *user, int32 fd,
+                              void *buffer, int32 buffer_size) {
     int64 r;
     int32 r2;
     (void)user;
@@ -1933,8 +1934,8 @@ visualizer_system_close_source(void *user, int32 fd) {
 }
 
 static bool
-visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
-                              NcmError *error) {
+visualizer_system_get_outputs(void *user,
+                              NcmMpdOutputList *outputs, NcmError *error) {
     NcmMpdClient *client = user;
 
     if (client == NULL) {
