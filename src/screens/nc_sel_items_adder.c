@@ -18,7 +18,7 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
-static void adder_display(NativeSelectedItemsAdderScreen *screen);
+static void adder_display(SelectedItemsAdderScreen *screen);
 static void adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
                            int32 pos, void *user);
 static bool adder_can_run_current_callback(NcScreen *screen);
@@ -44,15 +44,15 @@ static bool adder_add_action_row(NcEditorActionMenu *menu, char *label,
                                  int32 label_len, void (*run)(void *),
                                  void *user);
 static void adder_clear_playlist_selector(
-    NativeSelectedItemsAdderScreen *screen);
+    SelectedItemsAdderScreen *screen);
 static bool adder_previous_is_local_browser(NcScreen *previous);
-static void adder_sort_playlist_rows(NativeSelectedItemsAdderScreen *screen,
+static void adder_sort_playlist_rows(SelectedItemsAdderScreen *screen,
                                      int32 begin, int32 end);
-static void adder_apply_geometry(NativeSelectedItemsAdderScreen *screen);
-static void adder_finish(NativeSelectedItemsAdderScreen *screen);
+static void adder_apply_geometry(SelectedItemsAdderScreen *screen);
+static void adder_finish(SelectedItemsAdderScreen *screen);
 
 typedef struct ExistingPlaylistAction {
-    NativeSelectedItemsAdderScreen *screen;
+    SelectedItemsAdderScreen *screen;
     char *playlist;
     int32 playlist_len;
     int32 playlist_cap;
@@ -60,17 +60,17 @@ typedef struct ExistingPlaylistAction {
 
 static void existing_playlist_action_destroy(void *user);
 static ExistingPlaylistAction *existing_playlist_action_create(
-    NativeSelectedItemsAdderScreen *screen, char *playlist,
+    SelectedItemsAdderScreen *screen, char *playlist,
     int32 playlist_len);
 
-#define NC_SCREEN_IMPL_TYPE NativeSelectedItemsAdderScreen
+#define NC_SCREEN_IMPL_TYPE SelectedItemsAdderScreen
 #define NC_SCREEN_IMPL_PREFIX adder
-#define NC_SCREEN_IMPL_PUBLIC_PREFIX native_selected_items_adder_screen
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX selected_items_adder_screen
 #define NC_SCREEN_IMPL_BASE_FIELD screen
 #define NC_SCREEN_IMPL_WINDOW(screen) \
-    native_selected_items_adder_screen_active_window(screen)
+    selected_items_adder_screen_active_window(screen)
 #define NC_SCREEN_IMPL_MENU(screen) \
-    native_selected_items_adder_screen_active_menu(screen)
+    selected_items_adder_screen_active_menu(screen)
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK adder_display
 #define NC_SCREEN_IMPL_CAN_RUN_CURRENT_CALLBACK \
     adder_can_run_current_callback
@@ -80,12 +80,12 @@ static ExistingPlaylistAction *existing_playlist_action_create(
 #define NC_SCREEN_IMPL_UPDATE_CALLBACK adder_update_callback
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK adder_mouse_callback
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK \
-    native_selected_items_adder_screen_destroy
+    selected_items_adder_screen_destroy
 #include "screens/nc_screen_impl_template.h"
 
 void
-native_selected_items_adder_screen_init(
-    NativeSelectedItemsAdderScreen *screen, int32 start_x, int32 start_y,
+selected_items_adder_screen_init(
+    SelectedItemsAdderScreen *screen, int32 start_x, int32 start_y,
     int32 width, int32 height, NcColor color, NcBorder border
 ) {
     NcMenuDisplayCallbacks display_callbacks = {0};
@@ -121,7 +121,7 @@ native_selected_items_adder_screen_init(
     screen->playlist_height = height;
     screen->position_width = width;
     screen->position_height = height;
-    screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
+    screen->active_menu = SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
     screen->local_browser = false;
     screen->search_enabled = false;
     screen->registered = false;
@@ -137,19 +137,19 @@ native_selected_items_adder_screen_init(
     nc_menu_set_display_callbacks(nc_editor_action_menu_base(
                                       &screen->position_selector),
                                   display_callbacks);
-    native_selected_items_adder_screen_populate_position_selector(screen);
+    selected_items_adder_screen_populate_position_selector(screen);
     return;
 }
 
 void
-native_selected_items_adder_screen_destroy(
-    NativeSelectedItemsAdderScreen *screen
+selected_items_adder_screen_destroy(
+    SelectedItemsAdderScreen *screen
 ) {
     if (screen == NULL) {
         return;
     }
     (void)app_controller_unregister_screen(
-        native_selected_items_adder_screen_base(screen));
+        selected_items_adder_screen_base(screen));
     for (int32 i = 0; i < nc_menu_all_item_count(
              nc_editor_action_menu_base(&screen->playlist_selector));
          i += 1) {
@@ -178,35 +178,35 @@ native_selected_items_adder_screen_destroy(
 }
 
 NcMenu *
-native_selected_items_adder_screen_active_menu(
-    NativeSelectedItemsAdderScreen *screen
+selected_items_adder_screen_active_menu(
+    SelectedItemsAdderScreen *screen
 ) {
     if (screen == NULL) {
         return NULL;
     }
-    if (screen->active_menu == NATIVE_SELECTED_ITEMS_ADDER_MENU_POSITIONS) {
+    if (screen->active_menu == SELECTED_ITEMS_ADDER_MENU_POSITIONS) {
         return nc_editor_action_menu_base(&screen->position_selector);
     }
     return nc_editor_action_menu_base(&screen->playlist_selector);
 }
 
 NcWindow *
-native_selected_items_adder_screen_active_window(
-    NativeSelectedItemsAdderScreen *screen
+selected_items_adder_screen_active_window(
+    SelectedItemsAdderScreen *screen
 ) {
     if (screen == NULL) {
         return NULL;
     }
-    if (screen->active_menu == NATIVE_SELECTED_ITEMS_ADDER_MENU_POSITIONS) {
+    if (screen->active_menu == SELECTED_ITEMS_ADDER_MENU_POSITIONS) {
         return &screen->position_window;
     }
     return &screen->playlist_window;
 }
 
 bool
-native_selected_items_adder_screen_open(
-    NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs,
-    NativePlaylistScreen *playlist, NcmMpdClient *client, NcmError *error
+selected_items_adder_screen_open(
+    SelectedItemsAdderScreen *screen, NcmSongArray *songs,
+    PlaylistScreen *playlist, NcmMpdClient *client, NcmError *error
 ) {
     NcmMpdPlaylistList playlists;
     NcmSongArray selected_songs;
@@ -225,7 +225,7 @@ native_selected_items_adder_screen_open(
     }
     if (playlist == NULL) {
         ncm_error_set(error, EINVAL,
-                      STRLIT("missing native playlist"));
+                      STRLIT("missing playlist screen"));
         return false;
     }
     if (client == NULL) {
@@ -239,7 +239,7 @@ native_selected_items_adder_screen_open(
     }
 
     if (((current = nc_screen_switcher_current()) == NULL)
-        || (current == native_selected_items_adder_screen_base(screen))) {
+        || (current == selected_items_adder_screen_base(screen))) {
         ncm_error_set(error, EINVAL,
                       STRLIT("missing previous screen"));
         return false;
@@ -255,7 +255,7 @@ native_selected_items_adder_screen_open(
 
     nc_menu_reset(nc_editor_action_menu_base(&screen->playlist_selector));
     nc_menu_reset(nc_editor_action_menu_base(&screen->position_selector));
-    screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
+    screen->active_menu = SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
     screen->search_enabled = false;
     sb_clear(&screen->search_constraint);
     nc_menu_show_all_items(
@@ -278,7 +278,7 @@ native_selected_items_adder_screen_open(
                 STRLIT("Could not fetch playlists: %1"), &arg, 1);
         }
     }
-    native_selected_items_adder_screen_populate_playlist_selector(
+    selected_items_adder_screen_populate_playlist_selector(
         screen, &playlists, local_browser);
     ncm_mpd_playlist_list_destroy(&playlists);
     adder_apply_geometry(screen);
@@ -290,7 +290,7 @@ native_selected_items_adder_screen_open(
     screen->ready = true;
 
     if (!nc_screen_switcher_switch_to(
-            native_selected_items_adder_screen_base(screen), false)) {
+            selected_items_adder_screen_base(screen), false)) {
         ncm_song_array_clear(&screen->selected_songs);
         screen->playlist = NULL;
         screen->previous_screen = NULL;
@@ -306,8 +306,8 @@ native_selected_items_adder_screen_open(
 }
 
 void
-native_selected_items_adder_screen_populate_playlist_selector(
-    NativeSelectedItemsAdderScreen *screen, NcmMpdPlaylistList *playlists,
+selected_items_adder_screen_populate_playlist_selector(
+    SelectedItemsAdderScreen *screen, NcmMpdPlaylistList *playlists,
     bool local_browser
 ) {
     NcEditorActionMenu *menu;
@@ -357,13 +357,13 @@ native_selected_items_adder_screen_populate_playlist_selector(
     (void)adder_add_action_row(menu, STRLIT("Cancel"),
                                adder_action_cancel_target, screen);
     nc_menu_reset(base);
-    screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
+    screen->active_menu = SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
     return;
 }
 
 void
-native_selected_items_adder_screen_populate_position_selector(
-    NativeSelectedItemsAdderScreen *screen
+selected_items_adder_screen_populate_position_selector(
+    SelectedItemsAdderScreen *screen
 ) {
     NcEditorActionMenu *menu;
 
@@ -390,8 +390,8 @@ native_selected_items_adder_screen_populate_position_selector(
 }
 
 bool
-native_selected_items_adder_screen_run_current(
-    NativeSelectedItemsAdderScreen *screen
+selected_items_adder_screen_run_current(
+    SelectedItemsAdderScreen *screen
 ) {
     NcEditorActionRow *row;
 
@@ -399,7 +399,7 @@ native_selected_items_adder_screen_run_current(
         return false;
     }
     row = nc_menu_current_item(
-        native_selected_items_adder_screen_active_menu(screen));
+        selected_items_adder_screen_active_menu(screen));
     if ((row == NULL) || (row->run == NULL)) {
         return false;
     }
@@ -408,8 +408,8 @@ native_selected_items_adder_screen_run_current(
 }
 
 bool
-native_selected_items_adder_screen_return_to_previous(
-    NativeSelectedItemsAdderScreen *screen
+selected_items_adder_screen_return_to_previous(
+    SelectedItemsAdderScreen *screen
 ) {
     if ((screen == NULL) || !screen->ready
         || (screen->previous_screen == NULL)) {
@@ -421,20 +421,20 @@ native_selected_items_adder_screen_return_to_previous(
 }
 
 void
-native_selected_items_adder_screen_choose_current_playlist(
-    NativeSelectedItemsAdderScreen *screen
+selected_items_adder_screen_choose_current_playlist(
+    SelectedItemsAdderScreen *screen
 ) {
     if (screen == NULL) {
         return;
     }
-    screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_POSITIONS;
+    screen->active_menu = SELECTED_ITEMS_ADDER_MENU_POSITIONS;
     nc_menu_reset(nc_editor_action_menu_base(&screen->position_selector));
     return;
 }
 
 bool
-native_selected_items_adder_screen_add_to_existing_playlist(
-    NativeSelectedItemsAdderScreen *screen, NcmMpdClient *client,
+selected_items_adder_screen_add_to_existing_playlist(
+    SelectedItemsAdderScreen *screen, NcmMpdClient *client,
     char *playlist, NcmError *error
 ) {
     bool ok;
@@ -473,8 +473,8 @@ native_selected_items_adder_screen_add_to_existing_playlist(
 }
 
 bool
-native_selected_items_adder_screen_search(
-    NativeSelectedItemsAdderScreen *screen, char *pattern,
+selected_items_adder_screen_search(
+    SelectedItemsAdderScreen *screen, char *pattern,
     int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,
     bool skip_current, NcmError *error
 ) {
@@ -494,8 +494,8 @@ native_selected_items_adder_screen_search(
         return false;
     }
 
-    menu = native_selected_items_adder_screen_active_menu(screen);
-    window = native_selected_items_adder_screen_active_window(screen);
+    menu = selected_items_adder_screen_active_menu(screen);
+    window = selected_items_adder_screen_active_window(screen);
     result = nc_menu_search_selectable(menu, nc_window_height(window),
                                        forward, wrap, skip_current,
                                        adder_search_position, &regex,
@@ -532,12 +532,12 @@ adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
 }
 
 static void
-adder_display(NativeSelectedItemsAdderScreen *adder) {
+adder_display(SelectedItemsAdderScreen *adder) {
     NcMenu *menu;
     NcWindow *window;
 
     if (adder->active_menu
-        == NATIVE_SELECTED_ITEMS_ADDER_MENU_POSITIONS) {
+        == SELECTED_ITEMS_ADDER_MENU_POSITIONS) {
         menu = nc_editor_action_menu_base(&adder->playlist_selector);
         nc_menu_prepare_refresh(menu,
                                 nc_window_height(&adder->playlist_window),
@@ -548,8 +548,8 @@ adder_display(NativeSelectedItemsAdderScreen *adder) {
                         nc_window_height(&adder->playlist_window));
     }
 
-    menu = native_selected_items_adder_screen_active_menu(adder);
-    window = native_selected_items_adder_screen_active_window(adder);
+    menu = selected_items_adder_screen_active_menu(adder);
+    window = selected_items_adder_screen_active_window(adder);
     nc_menu_prepare_refresh(menu, nc_window_height(window), NULL, NULL);
     nc_window_display(window);
     nc_menu_refresh(menu, window, nc_window_width(window),
@@ -559,26 +559,26 @@ adder_display(NativeSelectedItemsAdderScreen *adder) {
 
 static bool
 adder_can_run_current_callback(NcScreen *screen) {
-    NativeSelectedItemsAdderScreen *adder;
+    SelectedItemsAdderScreen *adder;
     NcEditorActionRow *row;
 
     if (((adder = adder_from_screen(screen)) == NULL) || !adder->ready) {
         return false;
     }
     row = nc_menu_current_item(
-        native_selected_items_adder_screen_active_menu(adder));
+        selected_items_adder_screen_active_menu(adder));
     return row && row->run;
 }
 
 static bool
 adder_run_current_callback(NcScreen *screen) {
-    return native_selected_items_adder_screen_run_current(
+    return selected_items_adder_screen_run_current(
         adder_from_screen(screen));
 }
 
 static void
 adder_resize_callback(NcScreen *screen) {
-    NativeSelectedItemsAdderScreen *adder;
+    SelectedItemsAdderScreen *adder;
     NcScreen *previous;
 
     adder = adder_from_screen(screen);
@@ -596,7 +596,7 @@ adder_resize_callback(NcScreen *screen) {
 
 static char *
 adder_title_callback(NcScreen *screen) {
-    NativeSelectedItemsAdderScreen *adder;
+    SelectedItemsAdderScreen *adder;
 
     if ((adder = adder_from_screen(screen)) && adder->previous_screen) {
         return nc_screen_title(adder->previous_screen);
@@ -612,7 +612,7 @@ adder_update_callback(NcScreen *screen) {
 
 static void
 adder_mouse_callback(NcScreen *screen, MEVENT event) {
-    NativeSelectedItemsAdderScreen *adder;
+    SelectedItemsAdderScreen *adder;
     NcWindow *window;
     enum NcScroll where;
     int32 count;
@@ -620,7 +620,7 @@ adder_mouse_callback(NcScreen *screen, MEVENT event) {
     int32 y;
 
     adder = adder_from_screen(screen);
-    window = native_selected_items_adder_screen_active_window(adder);
+    window = selected_items_adder_screen_active_window(adder);
     x = event.x;
     y = event.y;
     if (!nc_window_has_coords(window, &x, &y)) {
@@ -628,9 +628,9 @@ adder_mouse_callback(NcScreen *screen, MEVENT event) {
     }
     if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
         (void)nc_menu_goto_selectable(
-            native_selected_items_adder_screen_active_menu(adder), y);
+            selected_items_adder_screen_active_menu(adder), y);
         if (event.bstate & BUTTON3_PRESSED) {
-            (void)native_selected_items_adder_screen_run_current(adder);
+            (void)selected_items_adder_screen_run_current(adder);
         }
         return;
     }
@@ -661,7 +661,7 @@ adder_mouse_callback(NcScreen *screen, MEVENT event) {
 
 static bool
 adder_filter_callback(NcMenu *menu, void *item, void *user) {
-    NativeSelectedItemsAdderScreen *screen;
+    SelectedItemsAdderScreen *screen;
 
     (void)menu;
     screen = user;
@@ -722,7 +722,7 @@ adder_statusbar_prompt_hook(char *text, void *user) {
 
 static bool
 adder_add_to_stored_playlist(
-    NativeSelectedItemsAdderScreen *screen, char *playlist,
+    SelectedItemsAdderScreen *screen, char *playlist,
     int32 playlist_len
 ) {
     NcmStringFormatArg arg;
@@ -733,7 +733,7 @@ adder_add_to_stored_playlist(
     }
 
     ncm_error_clear(&error);
-    if (!native_selected_items_adder_screen_add_to_existing_playlist(
+    if (!selected_items_adder_screen_add_to_existing_playlist(
             screen, screen->client, playlist, &error)) {
         if (error.message[0] != '\0') {
             ncm_statusbar_print_cstring(
@@ -757,7 +757,7 @@ adder_add_to_stored_playlist(
 
 static bool
 adder_try_add_current_song(
-    NativeSelectedItemsAdderScreen *screen, NcmSong *song,
+    SelectedItemsAdderScreen *screen, NcmSong *song,
     int32 position, bool *added, bool *success
 ) {
     NcmError error;
@@ -793,7 +793,7 @@ adder_try_add_current_song(
 
 static bool
 adder_add_to_current_playlist(
-    NativeSelectedItemsAdderScreen *screen, int32 position
+    SelectedItemsAdderScreen *screen, int32 position
 ) {
     StrBuilder message = {0};
     char *suffix;
@@ -870,16 +870,16 @@ adder_song_album_view(NcmSong *song, NcmStringView *album) {
 
 static void
 adder_action_current_playlist(void *user) {
-    NativeSelectedItemsAdderScreen *screen;
+    SelectedItemsAdderScreen *screen;
 
     screen = user;
-    native_selected_items_adder_screen_choose_current_playlist(screen);
+    selected_items_adder_screen_choose_current_playlist(screen);
     return;
 }
 
 static void
 adder_action_new_playlist(void *user) {
-    NativeSelectedItemsAdderScreen *screen;
+    SelectedItemsAdderScreen *screen;
     NcmStatusbarScopedLock lock;
     enum NcPromptStatus prompt_status;
     NcPrompt prompt;
@@ -926,7 +926,7 @@ adder_action_new_playlist(void *user) {
 
 static void
 adder_action_cancel_target(void *user) {
-    NativeSelectedItemsAdderScreen *screen;
+    SelectedItemsAdderScreen *screen;
 
     screen = user;
     adder_finish(screen);
@@ -935,7 +935,7 @@ adder_action_cancel_target(void *user) {
 
 static void
 adder_action_position_end(void *user) {
-    NativeSelectedItemsAdderScreen *screen;
+    SelectedItemsAdderScreen *screen;
 
     screen = user;
     (void)adder_add_to_current_playlist(screen, -1);
@@ -944,7 +944,7 @@ adder_action_position_end(void *user) {
 
 static void
 adder_action_position_beginning(void *user) {
-    NativeSelectedItemsAdderScreen *screen;
+    SelectedItemsAdderScreen *screen;
 
     screen = user;
     (void)adder_add_to_current_playlist(screen, 0);
@@ -953,7 +953,7 @@ adder_action_position_beginning(void *user) {
 
 static void
 adder_action_position_current_song(void *user) {
-    NativeSelectedItemsAdderScreen *screen;
+    SelectedItemsAdderScreen *screen;
     int32 position;
 
     screen = user;
@@ -971,7 +971,7 @@ adder_action_position_current_song(void *user) {
 
 static void
 adder_action_position_current_album(void *user) {
-    NativeSelectedItemsAdderScreen *screen;
+    SelectedItemsAdderScreen *screen;
     NcmSong current;
     NcmSong next;
     NcmStringView album;
@@ -989,7 +989,7 @@ adder_action_position_current_album(void *user) {
     }
 
     ncm_song_init(&current);
-    if (!native_playlist_screen_now_playing_song(
+    if (!playlist_screen_now_playing_song(
             screen->playlist, position, &current)) {
         ncm_song_destroy(&current);
         return;
@@ -999,7 +999,7 @@ adder_action_position_current_album(void *user) {
 
     while (true) {
         ncm_song_init(&next);
-        if (!native_playlist_screen_now_playing_song(
+        if (!playlist_screen_now_playing_song(
                 screen->playlist, position, &next)) {
             ncm_song_destroy(&next);
             break;
@@ -1025,12 +1025,12 @@ adder_action_position_current_album(void *user) {
 
 static void
 adder_action_position_highlighted(void *user) {
-    NativeSelectedItemsAdderScreen *screen = user;
+    SelectedItemsAdderScreen *screen = user;
     NcmSong song;
     int32 song_position;
 
     ncm_song_init(&song);
-    if (!native_playlist_screen_current_song(screen->playlist, &song)) {
+    if (!playlist_screen_current_song(screen->playlist, &song)) {
         ncm_song_destroy(&song);
         return;
     }
@@ -1043,10 +1043,10 @@ adder_action_position_highlighted(void *user) {
 
 static void
 adder_action_position_cancel(void *user) {
-    NativeSelectedItemsAdderScreen *screen;
+    SelectedItemsAdderScreen *screen;
 
     screen = user;
-    screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
+    screen->active_menu = SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
     return;
 }
 
@@ -1099,7 +1099,7 @@ existing_playlist_action_destroy(void *user) {
 }
 
 static ExistingPlaylistAction *
-existing_playlist_action_create(NativeSelectedItemsAdderScreen *screen,
+existing_playlist_action_create(SelectedItemsAdderScreen *screen,
                                 char *playlist, int32 playlist_len) {
     ExistingPlaylistAction *action;
 
@@ -1117,7 +1117,7 @@ existing_playlist_action_create(NativeSelectedItemsAdderScreen *screen,
 }
 
 static void
-adder_clear_playlist_selector(NativeSelectedItemsAdderScreen *screen) {
+adder_clear_playlist_selector(SelectedItemsAdderScreen *screen) {
     NcMenu *menu;
 
     if (screen == NULL) {
@@ -1140,7 +1140,7 @@ adder_clear_playlist_selector(NativeSelectedItemsAdderScreen *screen) {
 
 static bool
 adder_previous_is_local_browser(NcScreen *previous) {
-    NativeBrowserScreen *browser;
+    BrowserScreen *browser;
 
     if ((previous == NULL)
         || (nc_screen_type(previous) != NC_SCREEN_TYPE_BROWSER)) {
@@ -1151,11 +1151,11 @@ adder_previous_is_local_browser(NcScreen *previous) {
     }
 
     browser = nc_screen_user(previous);
-    return native_browser_screen_is_local(browser);
+    return browser_screen_is_local(browser);
 }
 
 static void
-adder_sort_playlist_rows(NativeSelectedItemsAdderScreen *screen,
+adder_sort_playlist_rows(SelectedItemsAdderScreen *screen,
                          int32 begin, int32 end) {
     NcMenu *menu;
 
@@ -1188,7 +1188,7 @@ adder_sort_playlist_rows(NativeSelectedItemsAdderScreen *screen,
 }
 
 static void
-adder_apply_geometry(NativeSelectedItemsAdderScreen *screen) {
+adder_apply_geometry(SelectedItemsAdderScreen *screen) {
     int32 main_height;
     int32 main_start_y;
     int32 screen_height;
@@ -1244,7 +1244,7 @@ adder_apply_geometry(NativeSelectedItemsAdderScreen *screen) {
 }
 
 static void
-adder_finish(NativeSelectedItemsAdderScreen *screen) {
+adder_finish(SelectedItemsAdderScreen *screen) {
     NcScreen *previous;
 
     if (screen == NULL) {
@@ -1262,7 +1262,7 @@ adder_finish(NativeSelectedItemsAdderScreen *screen) {
     screen->playlist = NULL;
     screen->previous_screen = NULL;
     screen->client = NULL;
-    screen->active_menu = NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
+    screen->active_menu = SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
     screen->search_enabled = false;
     sb_clear(&screen->search_constraint);
     nc_menu_show_all_items(

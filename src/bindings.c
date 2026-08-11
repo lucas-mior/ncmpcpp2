@@ -352,15 +352,15 @@ ncm_binding_runtime_run_action(enum NcmActionType type, void *user) {
 bool
 ncm_binding_runtime_current_screen_is(enum ScreenType screen_type, void *user) {
     NcScreen *screen;
-    int32 native_type;
+    int32 nc_type;
 
     (void)user;
     if ((screen = app_controller_current_screen()) == NULL) {
         return false;
     }
 
-    native_type = screen_type_to_native_type(screen_type);
-    return nc_screen_type(screen) == native_type;
+    nc_type = screen_type_to_nc_type(screen_type);
+    return nc_screen_type(screen) == nc_type;
 }
 
 void

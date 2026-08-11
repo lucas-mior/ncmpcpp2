@@ -39,118 +39,118 @@ static int32 playlist_editor_content_list_width(NcMenu *menu,
 static bool playlist_editor_playlist_matches_regex(NcmRegex *regex,
                                                    NcmPlaylist *playlist);
 static bool playlist_editor_content_matches_regex(
-    NativePlaylistEditorScreen *screen, NcmRegex *regex, NcmSong *song);
+    PlaylistEditorScreen *screen, NcmRegex *regex, NcmSong *song);
 static bool playlist_editor_format_content_search_text(
-    NativePlaylistEditorScreen *screen, NcmSong *song, NcBuffer *buffer);
+    PlaylistEditorScreen *screen, NcmSong *song, NcBuffer *buffer);
 static bool playlist_editor_search_text_matches(NcmRegex *regex,
                                                 char *data, int32 len);
 static void playlist_editor_initialize_buffers(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static void playlist_editor_destroy_buffers(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static void playlist_editor_initialize_regexes(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static void playlist_editor_apply_geometry(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static int32 playlist_editor_separator_width(int32 width);
 static void playlist_editor_configure_menus(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static void playlist_editor_update_menu_highlights(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static void playlist_editor_draw_separator(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static void playlist_editor_destroy_regexes(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static void playlist_editor_update_titles(
-    NativePlaylistEditorScreen *screen, bool update_windows);
+    PlaylistEditorScreen *screen, bool update_windows);
 static void playlist_editor_append_int64(StrBuilder *buffer, int32 value);
 static void playlist_editor_reset_content_timer(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static void playlist_editor_clear_playlist_filter(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static void playlist_editor_clear_content_filter(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static bool playlist_editor_find_playlist_position(
-    NativePlaylistEditorScreen *screen, char *path, int32 path_len,
+    PlaylistEditorScreen *screen, char *path, int32 path_len,
     int32 *pos);
 static bool playlist_editor_highlight_content_position(
-    NativePlaylistEditorScreen *screen, int32 pos);
+    PlaylistEditorScreen *screen, int32 pos);
 static int32 playlist_editor_find_song_in_content_range(
-    NativePlaylistEditorScreen *screen, NcmSong *song,
+    PlaylistEditorScreen *screen, NcmSong *song,
     int32 first, int32 last);
 static bool playlist_editor_locate_song_in_playlist_range(
-    NativePlaylistEditorScreen *screen, NcmMpdClient *client,
+    PlaylistEditorScreen *screen, NcmMpdClient *client,
     NcmSong *song, int32 first, int32 last, NcmError *error);
-static bool playlist_editor_show_screen(NativePlaylistEditorScreen *screen);
+static bool playlist_editor_show_screen(PlaylistEditorScreen *screen);
 static bool playlist_editor_store_current_playlist_path(
-    NativePlaylistEditorScreen *screen, StrBuilder *buffer);
+    PlaylistEditorScreen *screen, StrBuilder *buffer);
 static bool playlist_editor_restore_playlist_path(
-    NativePlaylistEditorScreen *screen, StrBuilder *buffer);
+    PlaylistEditorScreen *screen, StrBuilder *buffer);
 static bool playlist_editor_store_current_song(
-    NativePlaylistEditorScreen *screen, NcmSong *song);
+    PlaylistEditorScreen *screen, NcmSong *song);
 static bool playlist_editor_restore_content_song(
-    NativePlaylistEditorScreen *screen, NcmSong *song);
+    PlaylistEditorScreen *screen, NcmSong *song);
 static void playlist_editor_sort_playlists(NcmMpdPlaylistList *playlists);
 static int32 playlist_editor_compare_playlists(NcmPlaylist *left,
                                                NcmPlaylist *right);
 static bool playlist_editor_update_from_mpd(
-    NativePlaylistEditorScreen *screen, NcmMpdClient *client);
+    PlaylistEditorScreen *screen, NcmMpdClient *client);
 static void playlist_editor_observe_current_playlist(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static bool playlist_editor_displayed_playlist_is_current(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static void playlist_editor_clear_stale_content(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static void playlist_editor_finish_playlist_change(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static void playlist_editor_mouse_scroll(
-    NativePlaylistEditorScreen *screen, enum NcScroll where);
+    PlaylistEditorScreen *screen, enum NcScroll where);
 static bool playlist_editor_mouse_select_playlist(
-    NativePlaylistEditorScreen *screen, int32 y, bool load);
+    PlaylistEditorScreen *screen, int32 y, bool load);
 static bool playlist_editor_mouse_select_content(
-    NativePlaylistEditorScreen *screen, int32 y, bool play);
+    PlaylistEditorScreen *screen, int32 y, bool play);
 static bool playlist_editor_mouse_load_current_playlist(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 static bool playlist_editor_mouse_add_current_song(
-    NativePlaylistEditorScreen *screen, bool play);
+    PlaylistEditorScreen *screen, bool play);
 static void playlist_editor_print_playlist_loaded(NcmPlaylist *playlist);
 static void playlist_editor_set_displayed_playlist(
-    NativePlaylistEditorScreen *screen);
-static void playlist_editor_refresh_window(NativePlaylistEditorScreen *screen,
+    PlaylistEditorScreen *screen);
+static void playlist_editor_refresh_window(PlaylistEditorScreen *screen,
                                            NcWindow *window, NcMenu *menu);
-static bool append_current_content(NativePlaylistEditorScreen *screen,
+static bool append_current_content(PlaylistEditorScreen *screen,
                                    NcmSongArray *songs);
-static bool append_selected_content(NativePlaylistEditorScreen *screen,
+static bool append_selected_content(PlaylistEditorScreen *screen,
                                     NcmSongArray *songs);
 static bool append_selected_playlist_content(
-    NativePlaylistEditorScreen *screen, NcmSongArray *songs);
+    PlaylistEditorScreen *screen, NcmSongArray *songs);
 static bool append_playlist_content_from_mpd(
     NcmPlaylist *playlist, NcmSongArray *songs);
 static bool append_song_list_content(NcmMpdSongList *list,
                                      NcmSongArray *songs);
-static bool append_content_item(NativePlaylistEditorScreen *screen,
+static bool append_content_item(PlaylistEditorScreen *screen,
                                 int32 pos, NcmSongArray *songs);
 static bool append_content_item_from_source(
-    NativePlaylistEditorScreen *screen, enum NcMenuItemSource source,
+    PlaylistEditorScreen *screen, enum NcMenuItemSource source,
     int32 pos, NcmSongArray *songs);
 static bool playlist_editor_search_menu(
-    NativePlaylistEditorScreen *screen, NcMenu *menu, NcmRegex *regex,
+    PlaylistEditorScreen *screen, NcMenu *menu, NcmRegex *regex,
     bool forward, bool wrap, bool skip_current);
 static bool playlist_editor_search_item(
-    NativePlaylistEditorScreen *screen, NcMenu *menu, NcmRegex *regex,
+    PlaylistEditorScreen *screen, NcMenu *menu, NcmRegex *regex,
     int32 pos);
 static bool playlist_editor_search_position(NcMenu *menu, int32 pos,
                                             void *user);
 static void playlist_editor_set_display_callbacks(
-    NativePlaylistEditorScreen *screen);
+    PlaylistEditorScreen *screen);
 
 typedef struct PlaylistEditorSearchContext {
-    NativePlaylistEditorScreen *screen;
+    PlaylistEditorScreen *screen;
     NcmRegex *regex;
 } PlaylistEditorSearchContext;
 
 void
-native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
+playlist_editor_screen_init(PlaylistEditorScreen *screen,
                                    int32 start_x, int32 width,
                                    int32 main_start_y, int32 main_height,
                                    NcColor color, NcBorder border) {
@@ -179,7 +179,7 @@ native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
     playlist_editor_initialize_buffers(screen);
     playlist_editor_initialize_regexes(screen);
     playlist_editor_reset_content_timer(screen);
-    screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
+    screen->active_column = PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
     screen->column_ratio_left = 1;
     screen->column_ratio_right = 1;
     screen->playlists_update_requested = true;
@@ -193,8 +193,8 @@ native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
     screen->last_playlist_highlight = -1;
     screen->last_known_content_count = -1;
     if (Config.data_fetching_delay) {
-        screen->fetching_delay_ms = NATIVE_PLAYLIST_EDITOR_FETCH_DELAY_MS;
-        screen->window_timeout_ms = NATIVE_PLAYLIST_EDITOR_FETCH_DELAY_MS;
+        screen->fetching_delay_ms = PLAYLIST_EDITOR_FETCH_DELAY_MS;
+        screen->window_timeout_ms = PLAYLIST_EDITOR_FETCH_DELAY_MS;
     } else {
         screen->fetching_delay_ms = -1;
         screen->window_timeout_ms = NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
@@ -210,7 +210,7 @@ native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
                    initial_right_width, main_height,
                    screen->content_title.data, screen->content_title.len,
                    color, border);
-    native_playlist_editor_screen_set_geometry(screen, start_x, width,
+    playlist_editor_screen_set_geometry(screen, start_x, width,
                                                main_start_y, main_height);
     nc_screen_init_ops(&screen->screen, callbacks, screen,
                    NC_SCREEN_TYPE_PLAYLIST_EDITOR);
@@ -220,12 +220,12 @@ native_playlist_editor_screen_init(NativePlaylistEditorScreen *screen,
 }
 
 void
-native_playlist_editor_screen_destroy(NativePlaylistEditorScreen *screen) {
+playlist_editor_screen_destroy(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
     (void)app_controller_unregister_screen(
-        native_playlist_editor_screen_base(screen));
+        playlist_editor_screen_base(screen));
     nc_window_destroy(&screen->content_window);
     nc_window_destroy(&screen->playlists_window);
     nc_song_menu_destroy(&screen->content);
@@ -237,7 +237,7 @@ native_playlist_editor_screen_destroy(NativePlaylistEditorScreen *screen) {
 }
 
 NcScreen *
-native_playlist_editor_screen_base(NativePlaylistEditorScreen *screen) {
+playlist_editor_screen_base(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return NULL;
     }
@@ -245,7 +245,7 @@ native_playlist_editor_screen_base(NativePlaylistEditorScreen *screen) {
 }
 
 NcPlaylistEntryMenu *
-native_playlist_editor_screen_playlists(NativePlaylistEditorScreen *screen) {
+playlist_editor_screen_playlists(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return NULL;
     }
@@ -253,7 +253,7 @@ native_playlist_editor_screen_playlists(NativePlaylistEditorScreen *screen) {
 }
 
 NcSongMenu *
-native_playlist_editor_screen_content(NativePlaylistEditorScreen *screen) {
+playlist_editor_screen_content(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return NULL;
     }
@@ -261,34 +261,34 @@ native_playlist_editor_screen_content(NativePlaylistEditorScreen *screen) {
 }
 
 NcMenu *
-native_playlist_editor_screen_active_menu(
-    NativePlaylistEditorScreen *screen
+playlist_editor_screen_active_menu(
+    PlaylistEditorScreen *screen
 ) {
     if (screen == NULL) {
         return NULL;
     }
-    if (screen->active_column == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT) {
+    if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
         return nc_song_menu_base(&screen->content);
     }
     return nc_playlist_entry_menu_base(&screen->playlists);
 }
 
 NcWindow *
-native_playlist_editor_screen_active_window(
-    NativePlaylistEditorScreen *screen
+playlist_editor_screen_active_window(
+    PlaylistEditorScreen *screen
 ) {
     if (screen == NULL) {
         return NULL;
     }
-    if (screen->active_column == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT) {
+    if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
         return &screen->content_window;
     }
     return &screen->playlists_window;
 }
 
 void
-native_playlist_editor_screen_set_geometry(
-    NativePlaylistEditorScreen *screen, int32 start_x, int32 width,
+playlist_editor_screen_set_geometry(
+    PlaylistEditorScreen *screen, int32 start_x, int32 width,
     int32 main_start_y, int32 main_height
 ) {
     if (screen == NULL) {
@@ -303,8 +303,8 @@ native_playlist_editor_screen_set_geometry(
 }
 
 void
-native_playlist_editor_screen_set_column_ratio(
-    NativePlaylistEditorScreen *screen, int32 left, int32 right
+playlist_editor_screen_set_column_ratio(
+    PlaylistEditorScreen *screen, int32 left, int32 right
 ) {
     if (screen == NULL) {
         return;
@@ -322,8 +322,8 @@ native_playlist_editor_screen_set_column_ratio(
 }
 
 bool
-native_playlist_editor_screen_previous_column_available(
-    NativePlaylistEditorScreen *screen
+playlist_editor_screen_previous_column_available(
+    PlaylistEditorScreen *screen
 ) {
     NcMenu *playlists;
 
@@ -331,13 +331,13 @@ native_playlist_editor_screen_previous_column_available(
         return false;
     }
     playlists = nc_playlist_entry_menu_base(&screen->playlists);
-    return (screen->active_column == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT)
+    return (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT)
            && (nc_menu_all_item_count(playlists) > 0);
 }
 
 bool
-native_playlist_editor_screen_next_column_available(
-    NativePlaylistEditorScreen *screen
+playlist_editor_screen_next_column_available(
+    PlaylistEditorScreen *screen
 ) {
     NcMenu *content;
 
@@ -345,35 +345,35 @@ native_playlist_editor_screen_next_column_available(
         return false;
     }
     content = nc_song_menu_base(&screen->content);
-    return (screen->active_column == NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS)
+    return (screen->active_column == PLAYLIST_EDITOR_COLUMN_PLAYLISTS)
            && (nc_menu_all_item_count(content) > 0);
 }
 
 void
-native_playlist_editor_screen_previous_column(
-    NativePlaylistEditorScreen *screen
+playlist_editor_screen_previous_column(
+    PlaylistEditorScreen *screen
 ) {
-    if (native_playlist_editor_screen_previous_column_available(screen)) {
-        screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
+    if (playlist_editor_screen_previous_column_available(screen)) {
+        screen->active_column = PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
         playlist_editor_update_menu_highlights(screen);
     }
     return;
 }
 
 void
-native_playlist_editor_screen_next_column(
-    NativePlaylistEditorScreen *screen
+playlist_editor_screen_next_column(
+    PlaylistEditorScreen *screen
 ) {
-    if (native_playlist_editor_screen_next_column_available(screen)) {
-        screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT;
+    if (playlist_editor_screen_next_column_available(screen)) {
+        screen->active_column = PLAYLIST_EDITOR_COLUMN_CONTENT;
         playlist_editor_update_menu_highlights(screen);
     }
     return;
 }
 
 bool
-native_playlist_editor_screen_load_playlists(
-    NativePlaylistEditorScreen *screen, NcmMpdPlaylistList *playlists
+playlist_editor_screen_load_playlists(
+    PlaylistEditorScreen *screen, NcmMpdPlaylistList *playlists
 ) {
     StrBuilder preserved = {0};
     NcMenu *menu;
@@ -412,8 +412,8 @@ native_playlist_editor_screen_load_playlists(
 }
 
 bool
-native_playlist_editor_screen_reload_playlists_from_mpd(
-    NativePlaylistEditorScreen *screen, NcmMpdClient *client,
+playlist_editor_screen_reload_playlists_from_mpd(
+    PlaylistEditorScreen *screen, NcmMpdClient *client,
     NcmError *error
 ) {
     NcmMpdPlaylistList playlists;
@@ -425,7 +425,7 @@ native_playlist_editor_screen_reload_playlists_from_mpd(
     ncm_mpd_playlist_list_init(&playlists);
     if ((ok = ncm_mpd_client_get_playlists(client, &playlists, error))) {
         playlist_editor_sort_playlists(&playlists);
-        ok = native_playlist_editor_screen_load_playlists(screen,
+        ok = playlist_editor_screen_load_playlists(screen,
                                                           &playlists);
         if (!ok) {
             ncm_error_set(error, ENOMEM,
@@ -437,8 +437,8 @@ native_playlist_editor_screen_reload_playlists_from_mpd(
 }
 
 bool
-native_playlist_editor_screen_load_content(
-    NativePlaylistEditorScreen *screen, NcmMpdSongList *songs
+playlist_editor_screen_load_content(
+    PlaylistEditorScreen *screen, NcmMpdSongList *songs
 ) {
     NcMenu *menu;
     NcmSong preserved_song;
@@ -474,8 +474,8 @@ native_playlist_editor_screen_load_content(
 }
 
 bool
-native_playlist_editor_screen_reload_content_from_mpd(
-    NativePlaylistEditorScreen *screen, NcmMpdClient *client,
+playlist_editor_screen_reload_content_from_mpd(
+    PlaylistEditorScreen *screen, NcmMpdClient *client,
     NcmError *error
 ) {
     NcmMpdSongList songs;
@@ -494,14 +494,14 @@ native_playlist_editor_screen_reload_content_from_mpd(
     ncm_mpd_song_list_init(&songs);
     ok = ncm_mpd_client_get_playlist_content(client, playlist->path,
                                              &songs, error)
-         && native_playlist_editor_screen_load_content(screen, &songs);
+         && playlist_editor_screen_load_content(screen, &songs);
     ncm_mpd_song_list_destroy(&songs);
     return ok;
 }
 
 bool
-native_playlist_editor_screen_locate_playlist(
-    NativePlaylistEditorScreen *screen, NcmMpdClient *client,
+playlist_editor_screen_locate_playlist(
+    PlaylistEditorScreen *screen, NcmMpdClient *client,
     char *path, int32 path_len, NcmError *error
 ) {
     NcMenu *menu;
@@ -511,7 +511,7 @@ native_playlist_editor_screen_locate_playlist(
         ncm_error_set(error, EINVAL, STRLIT("missing playlist"));
         return false;
     }
-    if (!native_playlist_editor_screen_reload_playlists_from_mpd(
+    if (!playlist_editor_screen_reload_playlists_from_mpd(
             screen, client, error)) {
         return false;
     }
@@ -527,11 +527,11 @@ native_playlist_editor_screen_locate_playlist(
     nc_menu_highlight_position(menu, pos,
                                nc_window_height(
                                    &screen->playlists_window));
-    screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
+    screen->active_column = PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
     playlist_editor_update_menu_highlights(screen);
     playlist_editor_clear_content_filter(screen);
     playlist_editor_clear_stale_content(screen);
-    if (!native_playlist_editor_screen_reload_content_from_mpd(
+    if (!playlist_editor_screen_reload_content_from_mpd(
             screen, client, error)) {
         return false;
     }
@@ -539,8 +539,8 @@ native_playlist_editor_screen_locate_playlist(
 }
 
 bool
-native_playlist_editor_screen_locate_song(
-    NativePlaylistEditorScreen *screen, NcmMpdClient *client,
+playlist_editor_screen_locate_song(
+    PlaylistEditorScreen *screen, NcmMpdClient *client,
     NcmSong *song, NcmError *error
 ) {
     NcMenu *playlists;
@@ -558,7 +558,7 @@ native_playlist_editor_screen_locate_song(
     playlists = nc_playlist_entry_menu_base(&screen->playlists);
     if ((nc_menu_all_item_count(playlists) <= 0)
         || screen->playlists_update_requested) {
-        if (!native_playlist_editor_screen_reload_playlists_from_mpd(
+        if (!playlist_editor_screen_reload_playlists_from_mpd(
                 screen, client, error)) {
             return false;
         }
@@ -619,11 +619,11 @@ native_playlist_editor_screen_locate_song(
     }
 
     ncm_song_init(&current_song);
-    success = native_playlist_editor_screen_current_content_song(
+    success = playlist_editor_screen_current_content_song(
         screen, &current_song) && ncm_song_equal(&current_song, song);
     ncm_song_destroy(&current_song);
     if (success) {
-        screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT;
+        screen->active_column = PLAYLIST_EDITOR_COLUMN_CONTENT;
         playlist_editor_update_menu_highlights(screen);
         return playlist_editor_show_screen(screen);
     }
@@ -634,8 +634,8 @@ native_playlist_editor_screen_locate_song(
 }
 
 bool
-native_playlist_editor_screen_current_playlist(
-    NativePlaylistEditorScreen *screen, NcmPlaylist *playlist
+playlist_editor_screen_current_playlist(
+    PlaylistEditorScreen *screen, NcmPlaylist *playlist
 ) {
     NcmPlaylist *current;
 
@@ -650,15 +650,15 @@ native_playlist_editor_screen_current_playlist(
 }
 
 bool
-native_playlist_editor_screen_current_song(
-    NativePlaylistEditorScreen *screen, NcmSong *song
+playlist_editor_screen_current_song(
+    PlaylistEditorScreen *screen, NcmSong *song
 ) {
-    return native_playlist_editor_screen_current_content_song(screen, song);
+    return playlist_editor_screen_current_content_song(screen, song);
 }
 
 bool
-native_playlist_editor_screen_current_content_song(
-    NativePlaylistEditorScreen *screen, NcmSong *song
+playlist_editor_screen_current_content_song(
+    PlaylistEditorScreen *screen, NcmSong *song
 ) {
     NcmSong *current;
 
@@ -672,8 +672,8 @@ native_playlist_editor_screen_current_content_song(
 }
 
 int32
-native_playlist_editor_screen_selected_playlist_count(
-    NativePlaylistEditorScreen *screen
+playlist_editor_screen_selected_playlist_count(
+    PlaylistEditorScreen *screen
 ) {
     if (screen == NULL) {
         return 0;
@@ -683,8 +683,8 @@ native_playlist_editor_screen_selected_playlist_count(
 }
 
 bool
-native_playlist_editor_screen_selected_songs(
-    NativePlaylistEditorScreen *screen, NcmSongArray *songs
+playlist_editor_screen_selected_songs(
+    PlaylistEditorScreen *screen, NcmSongArray *songs
 ) {
     if (songs) {
         ncm_song_array_clear(songs);
@@ -692,18 +692,18 @@ native_playlist_editor_screen_selected_songs(
     if ((screen == NULL) || (songs == NULL)) {
         return false;
     }
-    if (screen->active_column == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT) {
+    if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
         return append_selected_content(screen, songs);
     }
-    if (native_playlist_editor_screen_selected_playlist_count(screen) > 0) {
+    if (playlist_editor_screen_selected_playlist_count(screen) > 0) {
         return append_selected_playlist_content(screen, songs);
     }
     return append_current_content(screen, songs);
 }
 
 bool
-native_playlist_editor_screen_apply_active_filter(
-    NativePlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
+playlist_editor_screen_apply_active_filter(
+    PlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, NcmError *error
 ) {
     NcMenu *menu;
@@ -714,8 +714,8 @@ native_playlist_editor_screen_apply_active_filter(
     if (screen == NULL) {
         return false;
     }
-    menu = native_playlist_editor_screen_active_menu(screen);
-    if (screen->active_column == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT) {
+    menu = playlist_editor_screen_active_menu(screen);
+    if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
         regex = &screen->content_filter_regex;
         constraint = &screen->content_filter_constraint;
         enabled = &screen->content_filter_enabled;
@@ -743,8 +743,8 @@ native_playlist_editor_screen_apply_active_filter(
 }
 
 bool
-native_playlist_editor_screen_search_active(
-    NativePlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
+playlist_editor_screen_search_active(
+    PlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, bool forward, bool wrap, bool skip_current,
     NcmError *error
 ) {
@@ -756,7 +756,7 @@ native_playlist_editor_screen_search_active(
     if (screen == NULL) {
         return false;
     }
-    if (screen->active_column == NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT) {
+    if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
         regex = &screen->content_search_regex;
         constraint = &screen->content_search_constraint;
         enabled = &screen->content_search_enabled;
@@ -775,7 +775,7 @@ native_playlist_editor_screen_search_active(
     }
     sb_set(constraint, pattern, pattern_len);
     *enabled = true;
-    menu = native_playlist_editor_screen_active_menu(screen);
+    menu = playlist_editor_screen_active_menu(screen);
     if (!playlist_editor_search_menu(screen, menu, regex, forward, wrap,
                                      skip_current)) {
         return false;
@@ -785,8 +785,8 @@ native_playlist_editor_screen_search_active(
 }
 
 void
-native_playlist_editor_screen_request_playlists_update(
-    NativePlaylistEditorScreen *screen
+playlist_editor_screen_request_playlists_update(
+    PlaylistEditorScreen *screen
 ) {
     if (screen == NULL) {
         return;
@@ -797,8 +797,8 @@ native_playlist_editor_screen_request_playlists_update(
 }
 
 void
-native_playlist_editor_screen_request_content_update(
-    NativePlaylistEditorScreen *screen
+playlist_editor_screen_request_content_update(
+    PlaylistEditorScreen *screen
 ) {
     if (screen == NULL) {
         return;
@@ -809,7 +809,7 @@ native_playlist_editor_screen_request_content_update(
     return;
 }
 
-static NativePlaylistEditorScreen *
+static PlaylistEditorScreen *
 playlist_editor_from_screen(NcScreen *screen) {
     return nc_screen_user(screen);
 }
@@ -838,15 +838,15 @@ playlist_editor_callbacks(void) {
 
 static NcWindow *
 playlist_editor_active_window_callback(NcScreen *screen) {
-    NativePlaylistEditorScreen *editor;
+    PlaylistEditorScreen *editor;
 
     editor = playlist_editor_from_screen(screen);
-    return native_playlist_editor_screen_active_window(editor);
+    return playlist_editor_screen_active_window(editor);
 }
 
 static void
 playlist_editor_refresh_callback(NcScreen *screen) {
-    NativePlaylistEditorScreen *editor;
+    PlaylistEditorScreen *editor;
 
     editor = playlist_editor_from_screen(screen);
     playlist_editor_update_titles(editor, true);
@@ -862,33 +862,33 @@ playlist_editor_refresh_callback(NcScreen *screen) {
 
 static void
 playlist_editor_refresh_window_callback(NcScreen *screen) {
-    NativePlaylistEditorScreen *editor;
+    PlaylistEditorScreen *editor;
     NcWindow *window;
     NcMenu *menu;
 
     editor = playlist_editor_from_screen(screen);
     playlist_editor_update_titles(editor, true);
     playlist_editor_update_menu_highlights(editor);
-    window = native_playlist_editor_screen_active_window(editor);
-    menu = native_playlist_editor_screen_active_menu(editor);
+    window = playlist_editor_screen_active_window(editor);
+    menu = playlist_editor_screen_active_menu(editor);
     playlist_editor_refresh_window(editor, window, menu);
     return;
 }
 
 static void
 playlist_editor_scroll_callback(NcScreen *screen, enum NcScroll where) {
-    NativePlaylistEditorScreen *editor;
+    PlaylistEditorScreen *editor;
     NcMenu *menu;
 
     editor = playlist_editor_from_screen(screen);
-    menu = native_playlist_editor_screen_active_menu(editor);
+    menu = playlist_editor_screen_active_menu(editor);
     nc_menu_scroll_selectable(menu, editor->main_height, where);
     return;
 }
 
 static void
 playlist_editor_finish_list_change_callback(NcScreen *screen) {
-    NativePlaylistEditorScreen *editor;
+    PlaylistEditorScreen *editor;
 
     editor = playlist_editor_from_screen(screen);
     playlist_editor_finish_playlist_change(editor);
@@ -903,12 +903,12 @@ playlist_editor_switch_to_callback(NcScreen *screen) {
 
 static void
 playlist_editor_resize_callback(NcScreen *screen) {
-    NativePlaylistEditorScreen *editor;
+    PlaylistEditorScreen *editor;
     NcScreenResizeParams params;
 
     editor = playlist_editor_from_screen(screen);
     params = nc_screen_resize_params(screen);
-    native_playlist_editor_screen_set_geometry(editor, params.x_offset,
+    playlist_editor_screen_set_geometry(editor, params.x_offset,
                                                params.width,
                                                editor->main_start_y,
                                                editor->main_height);
@@ -918,7 +918,7 @@ playlist_editor_resize_callback(NcScreen *screen) {
 
 static int32
 playlist_editor_timeout_callback(NcScreen *screen) {
-    NativePlaylistEditorScreen *editor;
+    PlaylistEditorScreen *editor;
 
     editor = playlist_editor_from_screen(screen);
     if ((editor->fetching_delay_ms >= 0)
@@ -938,7 +938,7 @@ playlist_editor_title_callback(NcScreen *screen) {
 
 static void
 playlist_editor_update_callback(NcScreen *screen) {
-    NativePlaylistEditorScreen *editor;
+    PlaylistEditorScreen *editor;
     bool changed;
 
     editor = playlist_editor_from_screen(screen);
@@ -953,7 +953,7 @@ playlist_editor_update_callback(NcScreen *screen) {
 
 static void
 playlist_editor_mouse_callback(NcScreen *screen, MEVENT event) {
-    NativePlaylistEditorScreen *editor;
+    PlaylistEditorScreen *editor;
     int32 x;
     int32 y;
 
@@ -965,12 +965,12 @@ playlist_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     y = event.y;
     if (nc_window_has_coords(&editor->playlists_window, &x, &y)) {
         if (editor->active_column
-            != NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS) {
-            if (!native_playlist_editor_screen_previous_column_available(
+            != PLAYLIST_EDITOR_COLUMN_PLAYLISTS) {
+            if (!playlist_editor_screen_previous_column_available(
                     editor)) {
                 return;
             }
-            native_playlist_editor_screen_previous_column(editor);
+            playlist_editor_screen_previous_column(editor);
         }
         if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
             (void)playlist_editor_mouse_select_playlist(
@@ -988,12 +988,12 @@ playlist_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     y = event.y;
     if (nc_window_has_coords(&editor->content_window, &x, &y)) {
         if (editor->active_column
-            != NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT) {
-            if (!native_playlist_editor_screen_next_column_available(
+            != PLAYLIST_EDITOR_COLUMN_CONTENT) {
+            if (!playlist_editor_screen_next_column_available(
                     editor)) {
                 return;
             }
-            native_playlist_editor_screen_next_column(editor);
+            playlist_editor_screen_next_column(editor);
         }
         if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
             (void)playlist_editor_mouse_select_content(
@@ -1011,13 +1011,13 @@ playlist_editor_mouse_callback(NcScreen *screen, MEVENT event) {
 
 static void
 playlist_editor_destroy_callback(NcScreen *screen) {
-    native_playlist_editor_screen_destroy(playlist_editor_from_screen(screen));
+    playlist_editor_screen_destroy(playlist_editor_from_screen(screen));
     return;
 }
 
 static bool
 playlist_filter_callback(NcMenu *menu, void *item, void *user) {
-    NativePlaylistEditorScreen *editor;
+    PlaylistEditorScreen *editor;
     NcmPlaylist *playlist;
 
     (void)menu;
@@ -1035,7 +1035,7 @@ playlist_filter_callback(NcMenu *menu, void *item, void *user) {
 
 static bool
 content_filter_callback(NcMenu *menu, void *item, void *user) {
-    NativePlaylistEditorScreen *editor;
+    PlaylistEditorScreen *editor;
 
     (void)menu;
     editor = user;
@@ -1164,7 +1164,7 @@ playlist_editor_playlist_matches_regex(NcmRegex *regex,
 }
 
 static bool
-playlist_editor_content_matches_regex(NativePlaylistEditorScreen *screen,
+playlist_editor_content_matches_regex(PlaylistEditorScreen *screen,
                                       NcmRegex *regex, NcmSong *song) {
     NcBuffer buffer;
     bool result;
@@ -1186,7 +1186,7 @@ playlist_editor_content_matches_regex(NativePlaylistEditorScreen *screen,
 
 static bool
 playlist_editor_format_content_search_text(
-    NativePlaylistEditorScreen *screen, NcmSong *song, NcBuffer *buffer
+    PlaylistEditorScreen *screen, NcmSong *song, NcBuffer *buffer
 ) {
     (void)screen;
     if ((song == NULL) || (buffer == NULL)) {
@@ -1214,7 +1214,7 @@ playlist_editor_search_text_matches(NcmRegex *regex, char *data,
 }
 
 static void
-playlist_editor_initialize_buffers(NativePlaylistEditorScreen *screen) {
+playlist_editor_initialize_buffers(PlaylistEditorScreen *screen) {
     sb_init(&screen->playlist_filter_constraint);
     sb_init(&screen->content_filter_constraint);
     sb_init(&screen->playlist_search_constraint);
@@ -1227,7 +1227,7 @@ playlist_editor_initialize_buffers(NativePlaylistEditorScreen *screen) {
 }
 
 static void
-playlist_editor_destroy_buffers(NativePlaylistEditorScreen *screen) {
+playlist_editor_destroy_buffers(PlaylistEditorScreen *screen) {
     sb_free(&screen->observed_playlist_path);
     sb_free(&screen->displayed_playlist_path);
     sb_free(&screen->content_title);
@@ -1240,7 +1240,7 @@ playlist_editor_destroy_buffers(NativePlaylistEditorScreen *screen) {
 }
 
 static void
-playlist_editor_initialize_regexes(NativePlaylistEditorScreen *screen) {
+playlist_editor_initialize_regexes(PlaylistEditorScreen *screen) {
     ncm_regex_init(&screen->playlist_filter_regex);
     ncm_regex_init(&screen->content_filter_regex);
     ncm_regex_init(&screen->playlist_search_regex);
@@ -1249,7 +1249,7 @@ playlist_editor_initialize_regexes(NativePlaylistEditorScreen *screen) {
 }
 
 static void
-playlist_editor_destroy_regexes(NativePlaylistEditorScreen *screen) {
+playlist_editor_destroy_regexes(PlaylistEditorScreen *screen) {
     ncm_regex_destroy(&screen->content_search_regex);
     ncm_regex_destroy(&screen->playlist_search_regex);
     ncm_regex_destroy(&screen->content_filter_regex);
@@ -1258,7 +1258,7 @@ playlist_editor_destroy_regexes(NativePlaylistEditorScreen *screen) {
 }
 
 static void
-playlist_editor_apply_geometry(NativePlaylistEditorScreen *screen) {
+playlist_editor_apply_geometry(PlaylistEditorScreen *screen) {
     int32 total;
     int32 separator_width;
     int32 left_width;
@@ -1322,7 +1322,7 @@ playlist_editor_separator_width(int32 width) {
 }
 
 static void
-playlist_editor_configure_menus(NativePlaylistEditorScreen *screen) {
+playlist_editor_configure_menus(PlaylistEditorScreen *screen) {
     NcMenu *playlists;
     NcMenu *content;
 
@@ -1348,7 +1348,7 @@ playlist_editor_configure_menus(NativePlaylistEditorScreen *screen) {
 
 static void
 playlist_editor_update_menu_highlights(
-    NativePlaylistEditorScreen *screen
+    PlaylistEditorScreen *screen
 ) {
     NcMenu *playlists;
     NcMenu *content;
@@ -1369,14 +1369,14 @@ playlist_editor_update_menu_highlights(
     nc_menu_set_highlight_suffix(
         content, &Config.current_item_inactive_column_suffix);
 
-    active = native_playlist_editor_screen_active_menu(screen);
+    active = playlist_editor_screen_active_menu(screen);
     nc_menu_set_highlight_prefix(active, &Config.current_item_prefix);
     nc_menu_set_highlight_suffix(active, &Config.current_item_suffix);
     return;
 }
 
 static void
-playlist_editor_draw_separator(NativePlaylistEditorScreen *screen) {
+playlist_editor_draw_separator(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
@@ -1388,7 +1388,7 @@ playlist_editor_draw_separator(NativePlaylistEditorScreen *screen) {
 }
 
 static void
-playlist_editor_update_titles(NativePlaylistEditorScreen *screen,
+playlist_editor_update_titles(PlaylistEditorScreen *screen,
                               bool update_windows) {
     if (screen == NULL) {
         return;
@@ -1452,7 +1452,7 @@ playlist_editor_append_int64(StrBuilder *buffer, int32 value) {
 }
 
 static void
-playlist_editor_reset_content_timer(NativePlaylistEditorScreen *screen) {
+playlist_editor_reset_content_timer(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
@@ -1461,7 +1461,7 @@ playlist_editor_reset_content_timer(NativePlaylistEditorScreen *screen) {
 }
 
 static bool
-playlist_editor_current_playlist_path(NativePlaylistEditorScreen *screen,
+playlist_editor_current_playlist_path(PlaylistEditorScreen *screen,
                                       char **path, int32 *path_len) {
     NcmPlaylist *playlist;
 
@@ -1479,7 +1479,7 @@ playlist_editor_current_playlist_path(NativePlaylistEditorScreen *screen,
 
 static void
 playlist_editor_clear_playlist_filter(
-    NativePlaylistEditorScreen *screen
+    PlaylistEditorScreen *screen
 ) {
     StrBuilder path = {0};
     bool has_path;
@@ -1502,7 +1502,7 @@ playlist_editor_clear_playlist_filter(
 
 static void
 playlist_editor_clear_content_filter(
-    NativePlaylistEditorScreen *screen
+    PlaylistEditorScreen *screen
 ) {
     NcmSong song;
     bool has_song;
@@ -1525,7 +1525,7 @@ playlist_editor_clear_content_filter(
 
 static bool
 playlist_editor_find_playlist_position(
-    NativePlaylistEditorScreen *screen, char *path, int32 path_len,
+    PlaylistEditorScreen *screen, char *path, int32 path_len,
     int32 *pos
 ) {
     NcMenu *menu;
@@ -1550,7 +1550,7 @@ playlist_editor_find_playlist_position(
 
 static bool
 playlist_editor_highlight_content_position(
-    NativePlaylistEditorScreen *screen, int32 pos
+    PlaylistEditorScreen *screen, int32 pos
 ) {
     NcMenu *menu;
 
@@ -1563,14 +1563,14 @@ playlist_editor_highlight_content_position(
     }
     nc_menu_highlight_position(menu, pos,
                                nc_window_height(&screen->content_window));
-    screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_CONTENT;
+    screen->active_column = PLAYLIST_EDITOR_COLUMN_CONTENT;
     playlist_editor_update_menu_highlights(screen);
     return true;
 }
 
 static int32
 playlist_editor_find_song_in_content_range(
-    NativePlaylistEditorScreen *screen, NcmSong *song,
+    PlaylistEditorScreen *screen, NcmSong *song,
     int32 first, int32 last
 ) {
     NcMenu *menu;
@@ -1633,7 +1633,7 @@ playlist_editor_find_song_in_mpd_playlist(
 
 static bool
 playlist_editor_locate_song_in_playlist_range(
-    NativePlaylistEditorScreen *screen, NcmMpdClient *client,
+    PlaylistEditorScreen *screen, NcmMpdClient *client,
     NcmSong *song, int32 first, int32 last, NcmError *error
 ) {
     NcMenu *menu;
@@ -1664,10 +1664,10 @@ playlist_editor_locate_song_in_playlist_range(
         nc_menu_highlight_position(menu, i,
                                    nc_window_height(
                                        &screen->playlists_window));
-        screen->active_column = NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
+        screen->active_column = PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
         playlist_editor_update_menu_highlights(screen);
         playlist_editor_clear_stale_content(screen);
-        if (!native_playlist_editor_screen_reload_content_from_mpd(
+        if (!playlist_editor_screen_reload_content_from_mpd(
                 screen, client, error)) {
             return false;
         }
@@ -1679,7 +1679,7 @@ playlist_editor_locate_song_in_playlist_range(
 }
 
 static bool
-playlist_editor_show_screen(NativePlaylistEditorScreen *screen) {
+playlist_editor_show_screen(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return false;
     }
@@ -1694,7 +1694,7 @@ playlist_editor_show_screen(NativePlaylistEditorScreen *screen) {
 }
 
 static bool
-playlist_editor_store_current_playlist_path(NativePlaylistEditorScreen *screen,
+playlist_editor_store_current_playlist_path(PlaylistEditorScreen *screen,
                                             StrBuilder *buffer) {
     char *path;
     int32 path_len;
@@ -1710,7 +1710,7 @@ playlist_editor_store_current_playlist_path(NativePlaylistEditorScreen *screen,
 }
 
 static bool
-playlist_editor_restore_playlist_path(NativePlaylistEditorScreen *screen,
+playlist_editor_restore_playlist_path(PlaylistEditorScreen *screen,
                                       StrBuilder *buffer) {
     NcMenu *menu;
 
@@ -1733,7 +1733,7 @@ playlist_editor_restore_playlist_path(NativePlaylistEditorScreen *screen,
 }
 
 static bool
-playlist_editor_store_current_song(NativePlaylistEditorScreen *screen,
+playlist_editor_store_current_song(PlaylistEditorScreen *screen,
                                    NcmSong *song) {
     NcmSong *current;
 
@@ -1747,7 +1747,7 @@ playlist_editor_store_current_song(NativePlaylistEditorScreen *screen,
 }
 
 static bool
-playlist_editor_restore_content_song(NativePlaylistEditorScreen *screen,
+playlist_editor_restore_content_song(PlaylistEditorScreen *screen,
                                      NcmSong *song) {
     NcMenu *menu;
 
@@ -1810,7 +1810,7 @@ playlist_editor_compare_playlists(NcmPlaylist *left, NcmPlaylist *right) {
 }
 
 static bool
-playlist_editor_content_fetch_due(NativePlaylistEditorScreen *screen) {
+playlist_editor_content_fetch_due(PlaylistEditorScreen *screen) {
     NcMenu *playlists;
     NcMenu *content;
 
@@ -1860,7 +1860,7 @@ playlist_editor_report_error(char *context, int32 context_len,
 }
 
 static bool
-playlist_editor_update_from_mpd(NativePlaylistEditorScreen *screen,
+playlist_editor_update_from_mpd(PlaylistEditorScreen *screen,
                                 NcmMpdClient *client) {
     NcmError error;
     bool changed;
@@ -1875,7 +1875,7 @@ playlist_editor_update_from_mpd(NativePlaylistEditorScreen *screen,
     ncm_error_clear(&error);
     if (screen->playlists_update_requested
         || nc_menu_empty(nc_playlist_entry_menu_base(&screen->playlists))) {
-        ok = native_playlist_editor_screen_reload_playlists_from_mpd(
+        ok = playlist_editor_screen_reload_playlists_from_mpd(
             screen, client, &error);
         if (!ok) {
             screen->playlists_update_requested = false;
@@ -1895,7 +1895,7 @@ playlist_editor_update_from_mpd(NativePlaylistEditorScreen *screen,
     }
 
     ncm_error_clear(&error);
-    ok = native_playlist_editor_screen_reload_content_from_mpd(
+    ok = playlist_editor_screen_reload_content_from_mpd(
         screen, client, &error);
     if (!ok) {
         screen->content_update_requested = false;
@@ -1911,7 +1911,7 @@ playlist_editor_update_from_mpd(NativePlaylistEditorScreen *screen,
 }
 
 static void
-playlist_editor_observe_current_playlist(NativePlaylistEditorScreen *screen) {
+playlist_editor_observe_current_playlist(PlaylistEditorScreen *screen) {
     char *path;
     int32 path_len;
     NcMenu *menu;
@@ -1933,7 +1933,7 @@ playlist_editor_observe_current_playlist(NativePlaylistEditorScreen *screen) {
 
 static bool
 playlist_editor_displayed_playlist_is_current(
-    NativePlaylistEditorScreen *screen
+    PlaylistEditorScreen *screen
 ) {
     char *path;
     int32 path_len;
@@ -1950,7 +1950,7 @@ playlist_editor_displayed_playlist_is_current(
 }
 
 static bool
-playlist_editor_playlist_row_changed(NativePlaylistEditorScreen *screen) {
+playlist_editor_playlist_row_changed(PlaylistEditorScreen *screen) {
     char *path;
     int32 path_len;
     NcMenu *menu;
@@ -1979,7 +1979,7 @@ playlist_editor_playlist_row_changed(NativePlaylistEditorScreen *screen) {
 }
 
 static void
-playlist_editor_clear_stale_content(NativePlaylistEditorScreen *screen) {
+playlist_editor_clear_stale_content(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
@@ -1994,11 +1994,11 @@ playlist_editor_clear_stale_content(NativePlaylistEditorScreen *screen) {
 }
 
 static void
-playlist_editor_finish_playlist_change(NativePlaylistEditorScreen *screen) {
+playlist_editor_finish_playlist_change(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
-    if (screen->active_column != NATIVE_PLAYLIST_EDITOR_COLUMN_PLAYLISTS) {
+    if (screen->active_column != PLAYLIST_EDITOR_COLUMN_PLAYLISTS) {
         return;
     }
     if (playlist_editor_playlist_row_changed(screen)) {
@@ -2008,7 +2008,7 @@ playlist_editor_finish_playlist_change(NativePlaylistEditorScreen *screen) {
 }
 
 static void
-playlist_editor_mouse_scroll(NativePlaylistEditorScreen *screen,
+playlist_editor_mouse_scroll(PlaylistEditorScreen *screen,
                              enum NcScroll where) {
     enum NcScroll effective;
     NcMenu *menu;
@@ -2017,7 +2017,7 @@ playlist_editor_mouse_scroll(NativePlaylistEditorScreen *screen,
     if (screen == NULL) {
         return;
     }
-    if ((menu = native_playlist_editor_screen_active_menu(screen)) == NULL) {
+    if ((menu = playlist_editor_screen_active_menu(screen)) == NULL) {
         return;
     }
 
@@ -2042,7 +2042,7 @@ playlist_editor_mouse_scroll(NativePlaylistEditorScreen *screen,
 }
 
 static bool
-playlist_editor_mouse_select_playlist(NativePlaylistEditorScreen *screen,
+playlist_editor_mouse_select_playlist(PlaylistEditorScreen *screen,
                                       int32 y, bool load) {
     NcMenu *menu;
 
@@ -2064,7 +2064,7 @@ playlist_editor_mouse_select_playlist(NativePlaylistEditorScreen *screen,
 }
 
 static bool
-playlist_editor_mouse_select_content(NativePlaylistEditorScreen *screen,
+playlist_editor_mouse_select_content(PlaylistEditorScreen *screen,
                                      int32 y, bool play) {
     NcMenu *menu;
 
@@ -2086,7 +2086,7 @@ playlist_editor_mouse_select_content(NativePlaylistEditorScreen *screen,
 
 static bool
 playlist_editor_mouse_load_current_playlist(
-    NativePlaylistEditorScreen *screen
+    PlaylistEditorScreen *screen
 ) {
     NcmPlaylist *playlist;
     NcmError error;
@@ -2116,7 +2116,7 @@ playlist_editor_mouse_load_current_playlist(
 }
 
 static bool
-playlist_editor_mouse_add_current_song(NativePlaylistEditorScreen *screen,
+playlist_editor_mouse_add_current_song(PlaylistEditorScreen *screen,
                                        bool play) {
     NcmSong *song;
 
@@ -2146,7 +2146,7 @@ playlist_editor_print_playlist_loaded(NcmPlaylist *playlist) {
 }
 
 static void
-playlist_editor_set_displayed_playlist(NativePlaylistEditorScreen *screen) {
+playlist_editor_set_displayed_playlist(PlaylistEditorScreen *screen) {
     char *path;
     int32 path_len;
 
@@ -2164,7 +2164,7 @@ playlist_editor_set_displayed_playlist(NativePlaylistEditorScreen *screen) {
 }
 
 static void
-playlist_editor_refresh_window(NativePlaylistEditorScreen *screen,
+playlist_editor_refresh_window(PlaylistEditorScreen *screen,
                                NcWindow *window, NcMenu *menu) {
     if ((screen == NULL) || (window == NULL) || (menu == NULL)) {
         return;
@@ -2177,7 +2177,7 @@ playlist_editor_refresh_window(NativePlaylistEditorScreen *screen,
 }
 
 static bool
-append_current_content(NativePlaylistEditorScreen *screen,
+append_current_content(PlaylistEditorScreen *screen,
                        NcmSongArray *songs) {
     NcMenu *menu;
 
@@ -2192,7 +2192,7 @@ append_current_content(NativePlaylistEditorScreen *screen,
 }
 
 static bool
-append_selected_content(NativePlaylistEditorScreen *screen,
+append_selected_content(PlaylistEditorScreen *screen,
                         NcmSongArray *songs) {
     NcMenu *menu;
 
@@ -2212,7 +2212,7 @@ append_selected_content(NativePlaylistEditorScreen *screen,
 }
 
 static bool
-append_selected_playlist_content(NativePlaylistEditorScreen *screen,
+append_selected_playlist_content(PlaylistEditorScreen *screen,
                                  NcmSongArray *songs) {
     NcMenu *menu;
 
@@ -2279,7 +2279,7 @@ append_song_list_content(NcmMpdSongList *list, NcmSongArray *songs) {
 }
 
 static bool
-append_content_item(NativePlaylistEditorScreen *screen, int32 pos,
+append_content_item(PlaylistEditorScreen *screen, int32 pos,
                     NcmSongArray *songs) {
     enum NcMenuItemSource source;
     NcMenu *menu;
@@ -2293,7 +2293,7 @@ append_content_item(NativePlaylistEditorScreen *screen, int32 pos,
 }
 
 static bool
-append_content_item_from_source(NativePlaylistEditorScreen *screen,
+append_content_item_from_source(PlaylistEditorScreen *screen,
                                 enum NcMenuItemSource source, int32 pos,
                                 NcmSongArray *songs) {
     NcmSong *song;
@@ -2307,7 +2307,7 @@ append_content_item_from_source(NativePlaylistEditorScreen *screen,
 }
 
 static bool
-playlist_editor_search_menu(NativePlaylistEditorScreen *screen,
+playlist_editor_search_menu(PlaylistEditorScreen *screen,
                             NcMenu *menu, NcmRegex *regex, bool forward,
                             bool wrap, bool skip_current) {
     PlaylistEditorSearchContext context;
@@ -2331,7 +2331,7 @@ playlist_editor_search_position(NcMenu *menu, int32 pos,
 }
 
 static bool
-playlist_editor_search_item(NativePlaylistEditorScreen *screen,
+playlist_editor_search_item(PlaylistEditorScreen *screen,
                             NcMenu *menu, NcmRegex *regex, int32 pos) {
     void *item;
 
@@ -2348,7 +2348,7 @@ playlist_editor_search_item(NativePlaylistEditorScreen *screen,
 }
 
 static void
-playlist_editor_set_display_callbacks(NativePlaylistEditorScreen *screen) {
+playlist_editor_set_display_callbacks(PlaylistEditorScreen *screen) {
     NcMenuDisplayCallbacks callbacks = {0};
 
     callbacks.draw = playlist_draw_callback;

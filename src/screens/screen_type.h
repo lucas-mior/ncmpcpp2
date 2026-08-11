@@ -13,8 +13,8 @@
 #define ENUM_FIELDS NCM_SCREEN_TYPE_ENUM_FIELDS
 #include "cbase/xenums.c"
 
-int32 screen_type_to_native_type(enum ScreenType screen_type);
-enum ScreenType screen_type_from_native_type(int32 native_type);
+int32 screen_type_to_nc_type(enum ScreenType screen_type);
+enum ScreenType screen_type_from_nc_type(int32 nc_type);
 bool screen_type_parse_startup(char *string, int32 string_len,
                                enum ScreenType *screen_type);
 bool screen_type_parse(char *string, int32 string_len,

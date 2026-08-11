@@ -14,13 +14,13 @@
 #include "lyrics_fetcher.h"
 #include "screens/nc_scrollpad_screen.h"
 
-typedef struct NativeLyricsJob NativeLyricsJob;
+typedef struct LyricsJob LyricsJob;
 
-typedef enum NativeLyricsMode {
-    NATIVE_LYRICS_MODE_PLAIN,
-    NATIVE_LYRICS_MODE_SYNCHRONIZED,
-    NATIVE_LYRICS_MODE_FETCH_LOG,
-} NativeLyricsMode;
+typedef enum LyricsMode {
+    LYRICS_MODE_PLAIN,
+    LYRICS_MODE_SYNCHRONIZED,
+    LYRICS_MODE_FETCH_LOG,
+} LyricsMode;
 
 typedef struct NcLyricsScreen {
     NcScrollpadScreen scrollpad_screen;
@@ -29,12 +29,12 @@ typedef struct NcLyricsScreen {
     bool refresh_window;
 } NcLyricsScreen;
 
-typedef struct NativeLyricsQueuedSong {
+typedef struct LyricsQueuedSong {
     NcmSong song;
     bool notify;
-} NativeLyricsQueuedSong;
+} LyricsQueuedSong;
 
-typedef struct NativeLyricsScreen {
+typedef struct LyricsScreen {
     NcLyricsScreen screen;
     NcWindow window;
     NcScrollpad scrollpad;
@@ -47,19 +47,19 @@ typedef struct NativeLyricsScreen {
     NcmLrcDocument lrc;
     NcmLyricsResult result;
     NcmJobQueue jobs;
-    NativeLyricsJob *foreground_job;
-    NativeLyricsQueuedSong *queued_songs;
+    LyricsJob *foreground_job;
+    LyricsQueuedSong *queued_songs;
     StrBuilder consumer_message;
 
     NcmLyricsFetcherDef *fetcher;
     int32 queued_songs_len;
     int32 queued_songs_cap;
     int32 active_lrc_line;
-    NativeLyricsMode mode;
+    LyricsMode mode;
 
     bool has_song;
     bool initialized;
-} NativeLyricsScreen;
+} LyricsScreen;
 
 void nc_lyrics_screen_init(NcLyricsScreen *screen,
                            NcScreenOps callbacks, void *user,
@@ -80,24 +80,24 @@ int32 nc_lyrics_screen_scroll_begin(NcLyricsScreen *screen);
 void nc_lyrics_screen_set_scroll_begin(NcLyricsScreen *screen,
                                        int32 scroll_begin);
 
-void native_lyrics_queued_song_init(NativeLyricsQueuedSong *queued);
-void native_lyrics_queued_song_destroy(NativeLyricsQueuedSong *queued);
-void native_lyrics_queued_song_move(NativeLyricsQueuedSong *dest,
-                                    NativeLyricsQueuedSong *source);
+void lyrics_queued_song_init(LyricsQueuedSong *queued);
+void lyrics_queued_song_destroy(LyricsQueuedSong *queued);
+void lyrics_queued_song_move(LyricsQueuedSong *dest,
+                                    LyricsQueuedSong *source);
 
-void native_lyrics_screen_init(NativeLyricsScreen *screen,
+void lyrics_screen_init(LyricsScreen *screen,
                                int32 start_x, int32 width,
                                int32 main_start_y, int32 main_height,
                                NcColor color, NcBorder border,
                                int32 lines_scrolled);
-void native_lyrics_screen_destroy(NativeLyricsScreen *screen);
-NcScreen *native_lyrics_screen_base(NativeLyricsScreen *screen);
-NcWindow *native_lyrics_screen_window(NativeLyricsScreen *screen);
-void native_lyrics_screen_set_geometry(NativeLyricsScreen *screen,
+void lyrics_screen_destroy(LyricsScreen *screen);
+NcScreen *lyrics_screen_base(LyricsScreen *screen);
+NcWindow *lyrics_screen_window(LyricsScreen *screen);
+void lyrics_screen_set_geometry(LyricsScreen *screen,
                                        int32 start_x, int32 width,
                                        int32 main_start_y,
                                        int32 main_height);
-bool native_lyrics_screen_build_filename(NativeLyricsScreen *screen,
+bool lyrics_screen_build_filename(LyricsScreen *screen,
                                          NcmSong *song,
                                          char *music_dir,
                                          int32 music_dir_len,
@@ -105,40 +105,40 @@ bool native_lyrics_screen_build_filename(NativeLyricsScreen *screen,
                                          int32 lyrics_dir_len,
                                          bool store_in_song_dir,
                                          bool win32_filename);
-bool native_lyrics_screen_load_file(NativeLyricsScreen *screen,
+bool lyrics_screen_load_file(LyricsScreen *screen,
                                     char *filename, int32 filename_len,
                                     NcmError *error);
-bool native_lyrics_screen_save_file(NativeLyricsScreen *screen,
+bool lyrics_screen_save_file(LyricsScreen *screen,
                                     char *filename, int32 filename_len,
                                     char *lyrics, int32 lyrics_len,
                                     NcmError *error);
-bool native_lyrics_screen_fetch(NativeLyricsScreen *screen,
+bool lyrics_screen_fetch(LyricsScreen *screen,
                                 NcmSong *song,
                                 NcmLyricsFetcherDef *fetcher,
                                 NcmError *error);
-bool native_lyrics_screen_fetch_in_background(NativeLyricsScreen *screen,
+bool lyrics_screen_fetch_in_background(LyricsScreen *screen,
                                               NcmSong *song,
                                               bool notify,
                                               NcmError *error);
-int32 native_lyrics_screen_dispatch_jobs(NativeLyricsScreen *screen);
-void native_lyrics_screen_update(NativeLyricsScreen *screen);
-void native_lyrics_screen_refetch_current(NativeLyricsScreen *screen,
+int32 lyrics_screen_dispatch_jobs(LyricsScreen *screen);
+void lyrics_screen_update(LyricsScreen *screen);
+void lyrics_screen_refetch_current(LyricsScreen *screen,
                                           NcmError *error);
-NcmLyricsFetcherDef *native_lyrics_screen_toggle_fetcher(
-    NativeLyricsScreen *screen, NcmLyricsFetcherRegistry *registry);
-bool native_lyrics_screen_try_take_consumer_message(
-    NativeLyricsScreen *screen, StrBuilder *message);
-NcmSong *native_lyrics_screen_song(NativeLyricsScreen *screen);
-StrBuilder *native_lyrics_screen_filename(NativeLyricsScreen *screen);
-NativeLyricsMode native_lyrics_screen_mode(NativeLyricsScreen *screen);
-NcmLrcDocument *native_lyrics_screen_lrc(NativeLyricsScreen *screen);
-int32 native_lyrics_screen_active_lrc_line(NativeLyricsScreen *screen);
-bool native_lyrics_buffer_find(NcBuffer *buffer, char *pattern,
+NcmLyricsFetcherDef *lyrics_screen_toggle_fetcher(
+    LyricsScreen *screen, NcmLyricsFetcherRegistry *registry);
+bool lyrics_screen_try_take_consumer_message(
+    LyricsScreen *screen, StrBuilder *message);
+NcmSong *lyrics_screen_song(LyricsScreen *screen);
+StrBuilder *lyrics_screen_filename(LyricsScreen *screen);
+LyricsMode lyrics_screen_mode(LyricsScreen *screen);
+NcmLrcDocument *lyrics_screen_lrc(LyricsScreen *screen);
+int32 lyrics_screen_active_lrc_line(LyricsScreen *screen);
+bool lyrics_buffer_find(NcBuffer *buffer, char *pattern,
                                int32 pattern_len, NcmError *error);
-void native_lyrics_buffer_clear_sync_highlight(NcBuffer *buffer);
-void native_lyrics_buffer_highlight_sync_line(NcBuffer *buffer,
+void lyrics_buffer_clear_sync_highlight(NcBuffer *buffer);
+void lyrics_buffer_highlight_sync_line(NcBuffer *buffer,
                                               int32 start, int32 end);
-bool native_lyrics_screen_find(NativeLyricsScreen *screen,
+bool lyrics_screen_find(LyricsScreen *screen,
                                char *pattern, int32 pattern_len,
                                NcmError *error);
 
