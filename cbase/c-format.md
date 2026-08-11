@@ -234,6 +234,21 @@ function_with_long_name_and_multiple_arguments(
 }
 ```
 
+For function with many arguments, it is a good idea to group by types/intent of
+the parameter, even if it adds more lines:
+```c
+// bad
+static void
+function_with_long_name_and_multiple_arguments(MyStruct *handle, int32 x,
+                                               int32 y, double a, double b);
+
+// good
+static void
+function_with_long_name_and_multiple_arguments(MyStruct *handle,
+                                               int32 x, int32 y,
+                                               double a, double b);
+```
+
 In standalone declarations, if one is needed at all, put all in one line. Break
 long lines so the 80-character limit rule is followed.
 
