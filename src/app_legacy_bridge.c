@@ -58,46 +58,6 @@ app_bridge_set_status_observers(void) {
 }
 
 static void
-app_bridge_set_resize_flags(void) {
-    app_screens_request_registered_resize();
-    app_screen_lyrics_set_resize();
-    return;
-}
-
-static void
-app_bridge_dispatch_lyrics_jobs(void) {
-    StrBuilder message = {0};
-
-    lyrics_screen_dispatch_jobs(app_screen_lyrics());
-    if (lyrics_screen_try_take_consumer_message(app_screen_lyrics(),
-                                                       &message)) {
-        ncm_statusbar_print(Config.message_delay_time,
-                            message.data, message.len);
-    }
-    sb_free(&message);
-    return;
-}
-
-static void
-app_bridge_refresh_header_if_due(void) {
-    bool current_screen_uses_header_timer;
-
-    current_screen_uses_header_timer = app_screen_playlist_is_current()
-                                       || app_screen_browser_is_current()
-                                       || app_screen_lyrics_is_current();
-    if (!current_screen_uses_header_timer) {
-        return;
-    }
-    if (global_timer_elapsed_ms(app_bridge_header_refresh_time) <= 500) {
-        return;
-    }
-
-    ncm_title_draw_current_header();
-    app_bridge_header_refresh_time = global_timer;
-    return;
-}
-
-static void
 app_bridge_noidle_status_update(int32 flags, void *user) {
     NcmError ncm_error;
 
@@ -107,28 +67,19 @@ app_bridge_noidle_status_update(int32 flags, void *user) {
     return;
 }
 
-static char *
-app_bridge_mpd_error_message(NcmError *ncm_error) {
-    char *message;
-
-    if (ncm_error && (ncm_error->message[0] != '\0')) {
-        return ncm_error->message;
-    }
-
-    if ((message = ncm_mpd_client_error_message(&global_mpd))
-        && (message[0] != '\0')) {
-        return message;
-    }
-
-    return "MPD command failed";
-}
-
 static void
 app_bridge_report_mpd_error(NcmError *ncm_error) {
     NcmStringFormatArg arg;
     char *message;
 
-    message = app_bridge_mpd_error_message(ncm_error);
+    if (ncm_error && (ncm_error->message[0] != '\0')) {
+        message = ncm_error->message;
+    } else {
+        message = ncm_mpd_client_error_message(&global_mpd);
+        if ((message == NULL) || (message[0] == '\0')) {
+            message = "MPD command failed";
+        }
+    }
     arg = ncm_string_format_arg_cstring(message);
 
     if ((ncm_mpd_client_error_code(&global_mpd) == MPD_ERROR_SERVER)
@@ -286,7 +237,8 @@ ncmpcpp_resize_screen(bool reload_main_window) {
     }
 
     ncmpcpp_set_windows_dimensions();
-    app_bridge_set_resize_flags();
+    app_screens_request_registered_resize();
+    app_screen_lyrics_set_resize();
     app_controller_resize_visible_screens();
 
     header = ui_state_header_window();
@@ -381,14 +333,31 @@ ncmpcpp_status_clear(void) {
 
 bool
 ncmpcpp_update_environment(bool update_timer, bool refresh_window,
-                                  bool mpd_sync) {
+                           bool mpd_sync) {
     NcmError ncm_error;
+    StrBuilder message = {0};
+    bool current_screen_uses_header_timer;
 
     app_bridge_set_status_observers();
     ncm_error_clear(&ncm_error);
     ncm_status_trace(&global_mpd, update_timer, true, &ncm_error);
-    app_bridge_dispatch_lyrics_jobs();
-    app_bridge_refresh_header_if_due();
+
+    lyrics_screen_dispatch_jobs(app_screen_lyrics());
+    if (lyrics_screen_try_take_consumer_message(app_screen_lyrics(),
+                                                &message)) {
+        ncm_statusbar_print(Config.message_delay_time,
+                            message.data, message.len);
+    }
+    sb_free(&message);
+
+    current_screen_uses_header_timer = app_screen_playlist_is_current()
+                                       || app_screen_browser_is_current()
+                                       || app_screen_lyrics_is_current();
+    if (current_screen_uses_header_timer
+        && (global_timer_elapsed_ms(app_bridge_header_refresh_time) > 500)) {
+        ncm_title_draw_current_header();
+        app_bridge_header_refresh_time = global_timer;
+    }
 
     if (refresh_window) {
         app_controller_refresh_current_window();

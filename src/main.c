@@ -264,7 +264,6 @@ app_exit_requested(void) {
 int
 main(int32 argc, char **argv) {
     bool key_pressed;
-    NcKey input;
     NcmTimePoint connect_attempt;
 
     app_init_state();
@@ -296,6 +295,8 @@ main(int32 argc, char **argv) {
     connect_attempt.ns = 0;
 
     while (!app_exit_requested()) {
+        NcKey input;
+
         app_connect_if_due(&connect_attempt);
 
         if (app_resize_requested) {
