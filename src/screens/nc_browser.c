@@ -1257,9 +1257,8 @@ browser_display(BrowserScreen *browser) {
 
 static void
 browser_switch_to(NcScreen *screen) {
-    BrowserScreen *browser;
+    BrowserScreen *browser = browser_from_screen(screen);
 
-    browser = browser_from_screen(screen);
     (void)nc_screen_switcher_finish_switch(screen);
     if (nc_menu_empty(browser_screen_menu(browser))) {
         browser_screen_request_update(browser);
@@ -1364,6 +1363,7 @@ browser_display_callbacks(BrowserScreen *screen) {
     callbacks.draw = browser_draw_item;
     callbacks.filter = browser_filter_item;
     callbacks.user = screen;
+
     return callbacks;
 }
 
@@ -1412,13 +1412,12 @@ browser_apply_menu_config(BrowserScreen *screen) {
 static void
 browser_draw_item(NcMenu *menu, NcWindow *window,
                          void *item, int32 pos, void *user) {
-    BrowserScreen *screen;
+    BrowserScreen *screen = user;
     NcBuffer buffer;
     int32 available_width;
     bool highlighted;
     bool selected;
 
-    screen = user;
     if ((menu == NULL) || (window == NULL) || (item == NULL)) {
         return;
     }
