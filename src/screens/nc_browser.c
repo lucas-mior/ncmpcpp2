@@ -1320,8 +1320,8 @@ static void
 browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     BrowserScreen *browser = browser_from_screen(screen);
     NcMenu *menu = browser_screen_menu(browser);
+    NcWindow *window = browser_screen_window(browser);
     NcmMpdItem *item;
-    NcWindow *window;
     int32 x;
     int32 y;
 
@@ -1329,7 +1329,6 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         return;
     }
 
-    window = browser_screen_window(browser);
     x = event.x;
     y = event.y;
     if (!nc_window_has_coords(window, &x, &y)) {
