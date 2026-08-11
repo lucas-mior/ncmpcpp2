@@ -1084,13 +1084,16 @@ search_find_position(NcMenu *menu, int32 pos, void *user) {
 
 static void
 search_display(SearchEngineScreen *search) {
+    NcMenu *menu;
+    NcWindow *window;
     if (!search->prepared) {
         search_engine_screen_prepare_static_rows(search);
     }
     search_engine_screen_update_column_title(search);
 
-    NcMenu *menu = search_engine_screen_menu(search);
-    NcWindow *window = search_engine_screen_window(search);
+    menu = search_engine_screen_menu(search);
+    window = search_engine_screen_window(search);
+
     nc_window_display(window);
     nc_menu_refresh(menu, window, nc_window_width(window),
                     nc_window_height(window));
@@ -1576,6 +1579,7 @@ search_collect_database_results(SearchEngineScreen *screen,
                                 NcmSongArray *songs, NcmError *ncm_error) {
     NcmMpdSongList result;
     bool ok;
+    bool exact_match;
 
     if ((screen == NULL) || (client == NULL) || (songs == NULL)) {
         ncm_error_set(ncm_error, EINVAL,
@@ -1583,7 +1587,7 @@ search_collect_database_results(SearchEngineScreen *screen,
         return false;
     }
 
-    bool exact_match = screen->search_mode == SEARCH_ENGINE_SEARCH_MODE_EXACT;
+    exact_match = screen->search_mode == SEARCH_ENGINE_SEARCH_MODE_EXACT;
     ncm_mpd_song_list_init(&result);
     if ((ok = ncm_mpd_client_start_search(client, exact_match, ncm_error))) {
         ok = search_add_database_constraints(
