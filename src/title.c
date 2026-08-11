@@ -175,9 +175,10 @@ ncm_title_draw_header_with_config(char *title, int32 title_len,
 
 void
 ncm_title_draw_header(char *title, int32 title_len) {
-    ncm_title_draw_header_with_config(
-        title, title_len, Config.header_visibility, Config.design,
-        &Config.volume_color, &Config.alternative_ui_separator_color);
+    ncm_title_draw_header_with_config(title, title_len,
+                                      Config.header_visibility, Config.design,
+                                      &Config.volume_color,
+                                      &Config.alternative_ui_separator_color);
     return;
 }
 
