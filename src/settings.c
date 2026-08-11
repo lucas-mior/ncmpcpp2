@@ -1386,8 +1386,9 @@ apply_startup_slave_screen(Configuration *config, char *value, int32 value_len,
 }
 
 static bool
-apply_locked_screen_width_part(Configuration *config, char *value,
-                               int32 value_len, NcmError *ncm_error) {
+apply_locked_screen_width_part(Configuration *config,
+                               char *value, int32 value_len,
+                               NcmError *ncm_error) {
     if (!ncm_parse_double(value, value_len,
                           &config->locked_screen_width_part, ncm_error)) {
         return false;
