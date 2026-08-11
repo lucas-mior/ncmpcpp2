@@ -24,6 +24,10 @@ ncm_regex_prepare_string(char *string, int32 string_len, StrBuilder *buffer,
     }
 
     SB_APPEND(buffer, string, string_len);
+    if (buffer->data == NULL) {
+        sb_reserve(buffer, 1);
+        buffer->data[0] = '\0';
+    }
     return true;
 }
 
@@ -144,8 +148,8 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
     }
 
     if (compiled_pattern.data == NULL) {
-        sb_append_byte(&compiled_pattern, '\0');
-        compiled_pattern.len = 0;
+        sb_reserve(&compiled_pattern, 1);
+        compiled_pattern.data[0] = '\0';
     }
 
     code = regcomp(&regex->regex, compiled_pattern.data, reg_flags);
