@@ -657,9 +657,8 @@ browser_screen_is_local(BrowserScreen *screen) {
 }
 
 bool
-browser_screen_change_browse_mode(
-    BrowserScreen *screen, NcmMpdClient *client, NcmError *ncm_error
-) {
+browser_screen_change_browse_mode(BrowserScreen *screen,
+                                  NcmMpdClient *client, NcmError *ncm_error) {
     StrBuilder directory = {0};
     char *hostname;
     bool local_browser;
