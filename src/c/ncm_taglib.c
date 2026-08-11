@@ -268,7 +268,7 @@ ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
 
         if ((values = taglib_property_get(handle,
                                           ncm_taglib_properties[i].property))
-                                          == NULL) {
+            == NULL) {
             continue;
         }
 

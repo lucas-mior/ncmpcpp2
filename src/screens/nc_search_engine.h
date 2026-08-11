@@ -89,10 +89,10 @@ typedef struct SearchEngineScreen {
 } SearchEngineScreen;
 
 void search_engine_screen_init(SearchEngineScreen *screen,
-                                      int32 start_x, int32 width,
-                                      int32 main_start_y,
-                                      int32 main_height, NcColor color,
-                                      NcBorder border);
+                               int32 start_x, int32 width,
+                               int32 main_start_y,
+                               int32 main_height, NcColor color,
+                               NcBorder border);
 void search_engine_screen_destroy(SearchEngineScreen *screen);
 NcScreen *search_engine_screen_base(SearchEngineScreen *screen);
 NcMenu *search_engine_screen_menu(SearchEngineScreen *screen);
@@ -183,8 +183,8 @@ bool search_engine_screen_apply_filter(
 void search_engine_screen_clear_filter(
     SearchEngineScreen *screen);
 bool search_engine_screen_search(SearchEngineScreen *screen,
-                                        char *pattern, int32 pattern_len,
-                                        bool forward, bool wrap,
-                                        bool skip_current,
-                                        NcmError *ncm_error);
+                                 char *pattern, int32 pattern_len,
+                                 bool forward, bool wrap,
+                                 bool skip_current,
+                                 NcmError *ncm_error);
 #endif /* NCMPCPP_NC_SEARCH_ENGINE_H */

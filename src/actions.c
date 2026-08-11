@@ -2684,11 +2684,11 @@ action_runtime_find_item(enum SearchDirection direction) {
                                     "Constraint unset");
     } else {
         if (!ncm_search_prompt_state_cached_result(
-                &state, constraint.data, constraint.len, NULL)) {
+            &state, constraint.data, constraint.len, NULL)) {
             ncm_error_clear(&ncm_error);
             if (!action_runtime_search_prompt_apply(
-                    &state, constraint.data, constraint.len, NULL,
-                    &ncm_error)) {
+                &state, constraint.data, constraint.len, NULL,
+                &ncm_error)) {
                 action_runtime_search_prompt_destroy(&state);
                 sb_free(&previous_constraint);
                 sb_free(&constraint);
@@ -3345,7 +3345,7 @@ action_runtime_add_prompt(void) {
         SB_APPEND(&message, STRLIT("Error while adding item: "));
         if (ncm_error_is_set(&ncm_error)) {
             SB_APPEND(&message, ncm_error.message,
-                              optional_strlen32(ncm_error.message));
+                      optional_strlen32(ncm_error.message));
         }
         ncm_statusbar_print(Config.message_delay_time, message.data,
                             message.len);
@@ -3363,7 +3363,7 @@ action_runtime_load_prompt(void) {
     StrBuilder name = {0};
     NcmError ncm_error;
     bool prompted = action_runtime_prompt_string(STRLIT("Load playlist: "), "",
-                                                false, NULL, NULL, &name);
+                                                 false, NULL, NULL, &name);
 
     if (!prompted) {
         sb_free(&name);
@@ -3476,7 +3476,7 @@ action_runtime_playlist_editor_has_playlists(void) {
         return false;
     }
     return nc_menu_all_item_count(nc_playlist_entry_menu_base(
-               playlist_editor_screen_playlists(screen)))
+        playlist_editor_screen_playlists(screen)))
            > 0;
 }
 
@@ -3488,7 +3488,7 @@ action_runtime_playlist_editor_has_content(void) {
         return false;
     }
     return nc_menu_all_item_count(
-               nc_song_menu_base(playlist_editor_screen_content(screen)))
+        nc_song_menu_base(playlist_editor_screen_content(screen)))
            > 0;
 }
 
@@ -3964,15 +3964,15 @@ action_runtime_crop_playlist(bool main_playlist) {
         success = playlist_screen_selected_songs(
             app_screen_playlist(), &songs);
     } else if (action_runtime_current_screen_is(
-                   NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
+        NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
         if (!action_runtime_playlist_editor_has_playlists()) {
             ncm_song_array_destroy(&songs);
             return false;
         }
         if (action_runtime_playlist_editor_has_content()
             && (nc_menu_all_item_count(
-                    nc_song_menu_base(playlist_editor_screen_content(
-                        app_screen_playlist_editor())))
+                nc_song_menu_base(playlist_editor_screen_content(
+                    app_screen_playlist_editor())))
                 <= 1)) {
             ncm_song_array_destroy(&songs);
             return true;
@@ -4564,7 +4564,7 @@ action_runtime_set_selected_items_priority(void) {
 
     ncm_error_clear(&ncm_error);
     if (!playlist_screen_set_selected_priority(
-            app_screen_playlist(), &global_mpd, priority, &ncm_error)) {
+        app_screen_playlist(), &global_mpd, priority, &ncm_error)) {
         return action_runtime_mpd_error(&ncm_error);
     }
     ncm_statusbar_print_cstring(Config.message_delay_time,
@@ -5563,7 +5563,7 @@ action_runtime_save_tag_changes(void) {
 #if defined(HAVE_TAGLIB_H)
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
         if (!tag_editor_screen_save_action_available(
-                app_screen_tag_editor())) {
+            app_screen_tag_editor())) {
             return false;
         }
         return tag_editor_screen_save_modified(
@@ -5782,7 +5782,7 @@ action_runtime_media_library_current_tag(char **tag, int32 *tag_len) {
         return false;
     }
     return media_library_screen_current_primary_tag_value(library, tag,
-                                                         tag_len);
+                                                          tag_len);
 }
 
 static bool
@@ -5801,7 +5801,7 @@ action_runtime_media_library_current_album(char **album, int32 *album_len) {
         return false;
     }
     return media_library_screen_current_album_value(library, album,
-                                                   album_len);
+                                                    album_len);
 }
 
 static bool
@@ -6089,7 +6089,7 @@ action_runtime_edit_library_album(void) {
     }
 
     if (!media_library_screen_copy_visible_songs(
-            app_screen_media_library(), &songs, &ncm_error)) {
+        app_screen_media_library(), &songs, &ncm_error)) {
         if (ncm_error_is_set(&ncm_error)) {
             ncm_statusbar_print_cstring(Config.message_delay_time,
                                         ncm_error.message);
@@ -6241,10 +6241,10 @@ action_runtime_edit_lyrics(void) {
     }
 
     if (!lyrics_screen_build_filename(
-            lyrics, song, Config.mpd_music_dir, Config.mpd_music_dir_len,
-            Config.lyrics_directory, Config.lyrics_directory_len,
-            Config.store_lyrics_in_song_dir,
-            Config.generate_win32_compatible_filenames)) {
+        lyrics, song, Config.mpd_music_dir, Config.mpd_music_dir_len,
+        Config.lyrics_directory, Config.lyrics_directory_len,
+        Config.store_lyrics_in_song_dir,
+        Config.generate_win32_compatible_filenames)) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "failed to build lyrics "
                                     "filename");
@@ -6308,7 +6308,7 @@ action_runtime_fetch_lyrics_background(void) {
     ncm_error_clear(&ncm_error);
     for (int32 i = 0; i < songs.len; i += 1) {
         if (!lyrics_screen_fetch_in_background(
-                app_screen_lyrics(), &songs.items[i], true, &ncm_error)) {
+            app_screen_lyrics(), &songs.items[i], true, &ncm_error)) {
             ncm_song_array_destroy(&songs);
             return action_runtime_mpd_error(&ncm_error);
         }
@@ -6372,7 +6372,7 @@ action_runtime_show_artist_info(void) {
 
     ncm_string_view_init(&artist);
     if (action_runtime_media_library_current_artist_tag(
-            &media_library_artist, &media_library_artist_len)) {
+        &media_library_artist, &media_library_artist_len)) {
         artist.data = media_library_artist;
         artist.len = media_library_artist_len;
         has_artist = true;
@@ -7095,7 +7095,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
         return action_runtime_move_selected_items_to();
     case NCM_ACTION_ADD:
         if (action_runtime_current_screen_is(
-                NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER)) {
+            NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER)) {
             return selected_items_adder_screen_run_current(
                 app_screen_selected_items_adder());
         }

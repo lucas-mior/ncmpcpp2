@@ -432,9 +432,9 @@ lastfm_set_title(LastfmScreen *screen, char *title, int32 title_len) {
     cap = title_len + 1;
     if (cap > screen->title_cap) {
         screen->title = realloc2(screen->title,
-                                  screen->title_cap,
-                                  cap,
-                                  SIZEOF(*screen->title));
+                                 screen->title_cap,
+                                 cap,
+                                 SIZEOF(*screen->title));
         screen->title_cap = cap;
     }
 

@@ -39,7 +39,7 @@ ncm_configuration_options_init(NcmConfigurationOptions *options) {
 
     SB_APPEND(&options->host, STRLIT("localhost"));
     SB_APPEND(&options->current_song_format,
-                      STRLIT("{{{(%l) }{{%a - }%t}}|{%f}}"));
+              STRLIT("{{{(%l) }{{%a - }%t}}|{%f}}"));
     options->port = 6600;
 
     options->host_provided = false;
@@ -95,7 +95,7 @@ configuration_append_default_file(StrBuilderArray *paths, char *filename,
     if ((xdg_config_home = getenv("XDG_CONFIG_HOME"))
         && (xdg_config_home[0] != '\0')) {
         SB_APPEND(&directory, xdg_config_home,
-                          strlen32(xdg_config_home));
+                  strlen32(xdg_config_home));
     } else {
         SB_APPEND(&directory, STRLIT("~/.config"));
     }
@@ -503,7 +503,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
         str_builder_array_init(&default_config_paths);
         str_builder_array_init(&default_bindings_paths);
         if (!configuration_discover_default_paths(
-                &default_config_paths, &default_bindings_paths, ncm_error)) {
+            &default_config_paths, &default_bindings_paths, ncm_error)) {
             str_builder_array_destroy(&default_config_paths);
             str_builder_array_destroy(&default_bindings_paths);
             return false;
@@ -747,7 +747,7 @@ configuration_apply_mpd_command_line(NcmConfigurationOptions *options,
         ncm_mpd_client_set_port(&global_mpd, (uint16)options->port);
     }
     if (!ncm_mpd_client_set_timeout_ms(
-            &global_mpd, Config.mpd_connection_timeout*1000, ncm_error)) {
+        &global_mpd, Config.mpd_connection_timeout*1000, ncm_error)) {
         return false;
     }
     return true;

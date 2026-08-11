@@ -545,7 +545,7 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
     ncm_error_clear(&ncm_error);
     ncm_mpd_output_list_init(&outputs);
     if (!screen->data_source_hooks.get_outputs(
-            screen->data_source_hooks.user, &outputs, &ncm_error)) {
+        screen->data_source_hooks.user, &outputs, &ncm_error)) {
         NcmStringFormatArg arg =
             ncm_string_format_arg_cstring(ncm_error.message);
 
@@ -1947,9 +1947,9 @@ visualizer_reset_output(VisualizerScreen *screen) {
 
     ncm_error_clear(&ncm_error);
     if (!screen->data_source_hooks.disable_output(
-            screen->data_source_hooks.user,
-            screen->output_id,
-            &ncm_error)) {
+        screen->data_source_hooks.user,
+        screen->output_id,
+        &ncm_error)) {
         NcmStringFormatArg arg;
 
         arg = ncm_string_format_arg_cstring(ncm_error.message);
@@ -1966,7 +1966,7 @@ visualizer_reset_output(VisualizerScreen *screen) {
 
     ncm_error_clear(&ncm_error);
     if (!screen->data_source_hooks.enable_output(
-            screen->data_source_hooks.user, screen->output_id, &ncm_error)) {
+        screen->data_source_hooks.user, screen->output_id, &ncm_error)) {
         NcmStringFormatArg arg;
 
         arg = ncm_string_format_arg_cstring(ncm_error.message);
@@ -2015,7 +2015,7 @@ visualizer_read_samples(VisualizerScreen *screen) {
         return 0;
     }
     if (!visualizer_screen_push_samples(
-            screen, screen->incoming_samples.data, samples_read)) {
+        screen, screen->incoming_samples.data, samples_read)) {
         return 0;
     }
     return samples_read;

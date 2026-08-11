@@ -40,7 +40,7 @@ void ncm_string_format_apply(StrBuilder *out, char *format,
                              NcmStringFormatArg *args,
                              int32 args_len);
 StrBuilder ncm_string_format_make(char *format, int32 format_len,
-                                 NcmStringFormatArg *args,
-                                 int32 args_len);
+                                  NcmStringFormatArg *args,
+                                  int32 args_len);
 
 #endif /* NCM_STRING_FORMAT_H */

@@ -623,8 +623,8 @@ lyrics_collect_direct_urls(NcmLyricsFetcherDef *fetcher,
     ok = true;
     for (int32 i = 0; i < LENGTH(pairs); i += 1) {
         if (!lyrics_build_direct_url_profiles(
-                fetcher, &candidate, artist, artist_len, title, title_len,
-                pairs[i].artist, pairs[i].title)) {
+            fetcher, &candidate, artist, artist_len, title, title_len,
+            pairs[i].artist, pairs[i].title)) {
             ok = false;
             break;
         }
@@ -652,7 +652,7 @@ ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher, StrBuilder *url,
 
     sb_clear(url);
     SB_APPEND(url,
-                      STRLIT("https://www.google.com/search?hl=en&q="));
+              STRLIT("https://www.google.com/search?hl=en&q="));
     if (fetcher->type == NCM_LYRICS_FETCHER_INTERNET) {
         SB_APPEND(url, STRLIT("lyrics+"));
     } else {
@@ -1427,7 +1427,7 @@ lyrics_find(char *data, int32 data_len, char *needle, int32 needle_len,
     }
     for (int32 i = start; i + needle_len <= data_len; i += 1) {
         if (BEGINS_WITH(data + i, data_len - i, needle,
-                                   needle_len)) {
+                        needle_len)) {
             return i;
         }
     }
@@ -1539,7 +1539,7 @@ lyrics_find_matching_div(char *data, int32 data_len, int32 content_start,
 
 static bool
 lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len, char *marker,
-                     int32 marker_len, bool append_all) {
+                    int32 marker_len, bool append_all) {
     int32 pos;
     bool found;
 
@@ -2860,7 +2860,7 @@ lyrics_fetch_page(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
     }
 
     extracted = lyrics_extract_content(fetcher, &lyrics, data.data, data.len,
-                                        &plain_text);
+                                       &plain_text);
     if (!extracted || (lyrics.len <= 0)) {
         ncm_lyrics_result_set(result, false, STRLIT(LYRICS_MSG_NOT_FOUND));
         *retry = true;
@@ -2950,7 +2950,7 @@ lyrics_fetch_internet(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                                       title_len);
     if (ok) {
         SB_APPEND(&message,
-                          STRLIT("The following search may contain lyrics "
+                  STRLIT("The following search may contain lyrics "
                                       "for this song: "));
         SB_APPEND(&message, url.data, url.len);
         ncm_lyrics_result_set(result, false, message.data, message.len);

@@ -90,7 +90,7 @@ ncm_job_queue_pop_pending_locked(NcmJobQueue *queue, NcmJob *job) {
     *job = queue->pending[0];
     if (queue->pending_len > 1) {
         memmove64(&queue->pending[0], &queue->pending[1],
-                (queue->pending_len - 1)*SIZEOF(*queue->pending));
+                  (queue->pending_len - 1)*SIZEOF(*queue->pending));
     }
     queue->pending_len -= 1;
     return true;

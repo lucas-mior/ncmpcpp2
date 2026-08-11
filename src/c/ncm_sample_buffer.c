@@ -45,13 +45,13 @@ ncm_sample_buffer_put(NcmSampleBuffer *buffer,
         kept = buffer->len - to_remove;
         if (kept > 0) {
             memmove64(buffer->data, buffer->data + to_remove,
-                    kept*SIZEOF(*buffer->data));
+                      kept*SIZEOF(*buffer->data));
         }
         buffer->len -= to_remove;
     }
 
     memcpy64(buffer->data + buffer->len, samples,
-           samples_len*SIZEOF(*buffer->data));
+             samples_len*SIZEOF(*buffer->data));
     buffer->len += samples_len;
     return true;
 }
@@ -80,7 +80,7 @@ ncm_sample_buffer_get(NcmSampleBuffer *buffer,
         samples_lost = result - dest_len;
         if (dest_len > 0) {
             memcpy64(dest, buffer->data + samples_lost,
-                   dest_len*SIZEOF(*dest));
+                     dest_len*SIZEOF(*dest));
         }
     } else {
         dest_move_len = dest_len - result;
@@ -89,14 +89,14 @@ ncm_sample_buffer_get(NcmSampleBuffer *buffer,
         }
         if (result > 0) {
             memcpy64(dest + dest_move_len, buffer->data,
-                   result*SIZEOF(*dest));
+                     result*SIZEOF(*dest));
         }
     }
 
     remove_len = buffer->len - result;
     if (remove_len > 0) {
         memmove64(buffer->data, buffer->data + result,
-                remove_len*SIZEOF(*buffer->data));
+                  remove_len*SIZEOF(*buffer->data));
     }
     buffer->len -= result;
 

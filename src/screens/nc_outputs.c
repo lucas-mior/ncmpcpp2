@@ -282,8 +282,8 @@ nc_outputs_item_copy(void *dest, void *source, void *user) {
     if (source_item->name_len > 0) {
         dest_item->name = malloc2(source_item->name_len + 1);
         memcpy64(dest_item->name,
-             source_item->name,
-             source_item->name_len);
+                 source_item->name,
+                 source_item->name_len);
         dest_item->name[source_item->name_len] = '\0';
     }
     return;

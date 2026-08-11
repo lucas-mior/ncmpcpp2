@@ -132,10 +132,10 @@ selected_items_adder_screen_init(
     display_callbacks.filter = adder_filter_callback;
     display_callbacks.user = screen;
     nc_menu_set_display_callbacks(nc_editor_action_menu_base(
-                                      &screen->playlist_selector),
+        &screen->playlist_selector),
                                   display_callbacks);
     nc_menu_set_display_callbacks(nc_editor_action_menu_base(
-                                      &screen->position_selector),
+        &screen->position_selector),
                                   display_callbacks);
     selected_items_adder_screen_populate_position_selector(screen);
     return;
@@ -151,7 +151,7 @@ selected_items_adder_screen_destroy(
     (void)app_controller_unregister_screen(
         selected_items_adder_screen_base(screen));
     for (int32 i = 0; i < nc_menu_all_item_count(
-             nc_editor_action_menu_base(&screen->playlist_selector));
+        nc_editor_action_menu_base(&screen->playlist_selector));
          i += 1) {
         NcEditorActionRow *row;
 
@@ -290,7 +290,7 @@ selected_items_adder_screen_open(
     screen->ready = true;
 
     if (!nc_screen_switcher_switch_to(
-            selected_items_adder_screen_base(screen), false)) {
+        selected_items_adder_screen_base(screen), false)) {
         ncm_song_array_clear(&screen->selected_songs);
         screen->playlist = NULL;
         screen->previous_screen = NULL;
@@ -734,7 +734,7 @@ adder_add_to_stored_playlist(
 
     ncm_error_clear(&ncm_error);
     if (!selected_items_adder_screen_add_to_existing_playlist(
-            screen, screen->client, playlist, &ncm_error)) {
+        screen, screen->client, playlist, &ncm_error)) {
         if (ncm_error.message[0] != '\0') {
             ncm_statusbar_print_cstring(
                 Config.message_delay_time, ncm_error.message);
@@ -817,8 +817,8 @@ adder_add_to_current_playlist(
     first = 0;
     while (first < screen->selected_songs.len) {
         if (!adder_try_add_current_song(
-                screen, &screen->selected_songs.items[first],
-                position, &added, &success)) {
+            screen, &screen->selected_songs.items[first],
+            position, &added, &success)) {
             return false;
         }
         if (added) {
@@ -832,8 +832,8 @@ adder_add_to_current_playlist(
             for (int32 i = first + 1;
                  i < screen->selected_songs.len; i += 1) {
                 if (!adder_try_add_current_song(
-                        screen, &screen->selected_songs.items[i], -1,
-                        &added, &success)) {
+                    screen, &screen->selected_songs.items[i], -1,
+                    &added, &success)) {
                     return false;
                 }
             }
@@ -842,8 +842,8 @@ adder_add_to_current_playlist(
             for (int32 i = screen->selected_songs.len - 1;
                  i > first; i -= 1) {
                 if (!adder_try_add_current_song(
-                        screen, &screen->selected_songs.items[i],
-                        insert_position, &added, &success)) {
+                    screen, &screen->selected_songs.items[i],
+                    insert_position, &added, &success)) {
                     return false;
                 }
             }
@@ -990,7 +990,7 @@ adder_action_position_current_album(void *user) {
 
     ncm_song_init(&current);
     if (!playlist_screen_now_playing_song(
-            screen->playlist, position, &current)) {
+        screen->playlist, position, &current)) {
         ncm_song_destroy(&current);
         return;
     }
@@ -1000,13 +1000,13 @@ adder_action_position_current_album(void *user) {
     while (true) {
         ncm_song_init(&next);
         if (!playlist_screen_now_playing_song(
-                screen->playlist, position, &next)) {
+            screen->playlist, position, &next)) {
             ncm_song_destroy(&next);
             break;
         }
         adder_song_album_view(&next, &next_album);
         if (!STREQUAL(album.data, album.len,
-                              next_album.data, next_album.len)) {
+                      next_album.data, next_album.len)) {
             ncm_song_destroy(&next);
             break;
         }
@@ -1174,9 +1174,9 @@ adder_sort_playlist_rows(SelectedItemsAdderScreen *screen,
                 &screen->playlist_selector, NC_MENU_ITEMS_ALL, j);
             if (left && right
                 && (ncm_compare_locale_strings(
-                        right->label, right->label_len,
-                        left->label, left->label_len,
-                        Config.ignore_leading_the) < 0)) {
+                    right->label, right->label_len,
+                    left->label, left->label_len,
+                    Config.ignore_leading_the) < 0)) {
                 smallest = j;
             }
         }

@@ -246,7 +246,7 @@ bool nc_window_fd_callbacks_empty(NcWindow *window);
 NcKey nc_window_read_key(NcWindow *window);
 void nc_window_push_key(NcWindow *window, NcKey ch);
 enum NcPromptStatus nc_window_prompt(NcWindow *window, NcPrompt *prompt,
-                                      char **result);
+                                     char **result);
 void nc_window_prompt_result_destroy(char *result);
 
 void nc_window_scroll(NcWindow *window, enum NcScroll where);

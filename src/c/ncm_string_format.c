@@ -40,7 +40,7 @@ ncm_string_format_append_arg(StrBuilder *out, NcmStringFormatArg *arg) {
     switch (arg->type) {
     case NCM_STRING_FORMAT_ARG_STRING:
         SB_APPEND(out, arg->value.string.data,
-                          arg->value.string.len);
+                  arg->value.string.len);
         break;
     case NCM_STRING_FORMAT_ARG_I64:
         ncm_string_format_append_number(out, "%" PRId64, arg);

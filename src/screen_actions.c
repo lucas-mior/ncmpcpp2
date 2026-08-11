@@ -150,12 +150,12 @@ current_screen_clear_current_search_constraint(void) {
     }
     if (current_screen_is(NC_SCREEN_TYPE_LASTFM)) {
         (void)lastfm_screen_find(app_screen_lastfm(), NULL, 0,
-                                        NULL);
+                                 NULL);
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_LYRICS)) {
         (void)lyrics_screen_find(app_screen_lyrics(), NULL, 0,
-                                        NULL);
+                                 NULL);
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
@@ -320,13 +320,13 @@ current_screen_search(enum SearchDirection direction, char *pattern,
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST)) {
         attempted = true;
         found = playlist_screen_search(app_screen_playlist(),
-                                              pattern, pattern_len, forward,
-                                              wrap, skip_current, ncm_error);
+                                       pattern, pattern_len, forward,
+                                       wrap, skip_current, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_BROWSER)) {
         attempted = true;
         found = browser_screen_search(app_screen_browser(), pattern,
-                                             pattern_len, forward, wrap,
-                                             skip_current, ncm_error);
+                                      pattern_len, forward, wrap,
+                                      skip_current, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
         attempted = true;
         found = playlist_editor_screen_search_active(
@@ -344,11 +344,11 @@ current_screen_search(enum SearchDirection direction, char *pattern,
     } else if (current_screen_is(NC_SCREEN_TYPE_LASTFM)) {
         attempted = true;
         found = lastfm_screen_find(app_screen_lastfm(), pattern,
-                                          pattern_len, ncm_error);
+                                   pattern_len, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_LYRICS)) {
         attempted = true;
         found = lyrics_screen_find(app_screen_lyrics(), pattern,
-                                          pattern_len, ncm_error);
+                                   pattern_len, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
         attempted = true;
         found = media_library_screen_search(
@@ -363,8 +363,8 @@ current_screen_search(enum SearchDirection direction, char *pattern,
     } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
         attempted = true;
         found = tag_editor_screen_search(app_screen_tag_editor(),
-                                                pattern, pattern_len, forward,
-                                                wrap, skip_current, ncm_error);
+                                         pattern, pattern_len, forward,
+                                         wrap, skip_current, ncm_error);
 #endif
     }
 

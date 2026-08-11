@@ -54,9 +54,9 @@ static void lyrics_mouse_button_pressed_callback(NcScreen *screen,
 static void lyrics_title_song_string(NcmSong *song, StrBuilder *title);
 static void lyrics_replace_search_separators(StrBuilder *buffer);
 static void lyrics_append_locale(NcBuffer *buffer, char *data,
-                                        int32 data_len);
+                                 int32 data_len);
 static bool lyrics_screen_render_lrc(LyricsScreen *screen,
-                                            NcmError *ncm_error);
+                                     NcmError *ncm_error);
 static bool lyrics_screen_update_sync_line(LyricsScreen *screen);
 static bool lyrics_screen_start_foreground_fetch(
     LyricsScreen *screen,
@@ -71,13 +71,13 @@ static void lyrics_screen_clear_sync_line(LyricsScreen *screen);
 static int32 lyrics_screen_sync_timeout(LyricsScreen *screen);
 static int32 lyrics_lrc_buffer_position(void *user);
 static void lyrics_lrc_buffer_append(void *user,
-                                            char *data, int32 data_len);
+                                     char *data, int32 data_len);
 static void lyrics_report_sidecar_status(StrBuilder *lrc_filename,
-                                                bool lrc_found,
-                                                StrBuilder *txt_filename,
-                                                bool txt_found);
+                                         bool lrc_found,
+                                         StrBuilder *txt_filename,
+                                         bool txt_found);
 static void lyrics_report_unlink_error(StrBuilder *filename,
-                                              NcmError *ncm_error);
+                                       NcmError *ncm_error);
 static void lyrics_screen_clear_lyrics_state(
     LyricsScreen *screen,
     LyricsMode mode);
@@ -91,52 +91,52 @@ static bool lyrics_filename_from_song_with_extension(
     bool win32_filename,
     char *extension, int32 extension_len);
 static bool lyrics_filename_from_song(StrBuilder *filename,
-                                             NcmSong *song,
-                                             char *music_dir,
-                                             int32 music_dir_len,
-                                             char *lyrics_dir,
-                                             int32 lyrics_dir_len,
-                                             bool store_in_song_dir,
-                                             bool win32_filename);
+                                      NcmSong *song,
+                                      char *music_dir,
+                                      int32 music_dir_len,
+                                      char *lyrics_dir,
+                                      int32 lyrics_dir_len,
+                                      bool store_in_song_dir,
+                                      bool win32_filename);
 static bool lyrics_preferred_filename_from_song(StrBuilder *filename,
-                                                       NcmSong *song,
-                                                       char *music_dir,
-                                                       int32 music_dir_len,
-                                                       char *lyrics_dir,
-                                                       int32 lyrics_dir_len,
-                                                       bool store_in_song_dir,
-                                                       bool win32_filename);
+                                                NcmSong *song,
+                                                char *music_dir,
+                                                int32 music_dir_len,
+                                                char *lyrics_dir,
+                                                int32 lyrics_dir_len,
+                                                bool store_in_song_dir,
+                                                bool win32_filename);
 static bool lyrics_queue_song(LyricsScreen *screen,
-                                     NcmSong *song, bool notify);
+                              NcmSong *song, bool notify);
 static LyricsJob *lyrics_job_create(LyricsScreen *screen,
-                                                 NcmSong *song,
-                                                 NcmLyricsFetcherDef *fetcher,
-                                                 bool notify,
-                                                 bool background);
+                                    NcmSong *song,
+                                    NcmLyricsFetcherDef *fetcher,
+                                    bool notify,
+                                    bool background);
 static NcmLyricsFetcherDef *lyrics_active_fetcher(
     LyricsScreen *screen, NcmLyricsFetcherDef *fetcher);
 static void lyrics_append_fetching(NcBuffer *buffer,
-                                          NcmLyricsFetcherDef *fetcher);
+                                   NcmLyricsFetcherDef *fetcher);
 static void lyrics_append_fetch_error(NcBuffer *buffer,
-                                             NcmLyricsResult *result);
+                                      NcmLyricsResult *result);
 static void lyrics_job_append_fetching(LyricsJob *job,
-                                              NcmLyricsFetcherDef *fetcher);
+                                       NcmLyricsFetcherDef *fetcher);
 static void lyrics_job_append_fetch_error(LyricsJob *job,
-                                                 NcmLyricsResult *result);
+                                          NcmLyricsResult *result);
 static bool lyrics_job_take_log(LyricsJob *job,
-                                       NcBuffer *buffer);
+                                NcBuffer *buffer);
 static void lyrics_screen_update_progress(LyricsScreen *screen);
 static bool lyrics_job_is_current(LyricsJob *job);
 static bool lyrics_job_run(void *user, NcmError *ncm_error);
 static void lyrics_job_complete(bool success, NcmError *ncm_error,
-                                       void *user);
+                                void *user);
 static void lyrics_job_destroy(void *user);
 static bool lyrics_start_next_background(LyricsScreen *screen,
-                                                NcmError *ncm_error);
+                                         NcmError *ncm_error);
 static bool lyrics_find_match_callback(int32 start, int32 len,
-                                              void *user);
+                                       void *user);
 static void lyrics_mouse_scroll(LyricsScreen *screen,
-                                       enum NcScroll where);
+                                enum NcScroll where);
 static void lyrics_display(LyricsScreen *screen);
 
 #define NC_SCREEN_IMPL_TYPE LyricsScreen
@@ -264,7 +264,7 @@ lyrics_queued_song_destroy(LyricsQueuedSong *queued) {
 
 void
 lyrics_queued_song_move(LyricsQueuedSong *dest,
-                               LyricsQueuedSong *source) {
+                        LyricsQueuedSong *source) {
     ncm_song_move(&dest->song, &source->song);
     dest->notify = source->notify;
     source->notify = false;
@@ -273,10 +273,10 @@ lyrics_queued_song_move(LyricsQueuedSong *dest,
 
 void
 lyrics_screen_init(LyricsScreen *screen,
-                          int32 start_x, int32 width,
-                          int32 main_start_y, int32 main_height,
-                          NcColor color, NcBorder border,
-                          int32 lines_scrolled) {
+                   int32 start_x, int32 width,
+                   int32 main_start_y, int32 main_height,
+                   NcColor color, NcBorder border,
+                   int32 lines_scrolled) {
     nc_lyrics_screen_init(&screen->screen,
                           lyrics_ops,
                           screen,
@@ -331,7 +331,7 @@ lyrics_screen_destroy(LyricsScreen *screen) {
     }
     if (screen->queued_songs) {
         free2(screen->queued_songs,
-            screen->queued_songs_cap*SIZEOF(*screen->queued_songs));
+              screen->queued_songs_cap*SIZEOF(*screen->queued_songs));
     }
 
     sb_free(&screen->consumer_message);
@@ -363,8 +363,8 @@ lyrics_screen_window(LyricsScreen *screen) {
 
 void
 lyrics_screen_set_geometry(LyricsScreen *screen,
-                                  int32 start_x, int32 width,
-                                  int32 main_start_y, int32 main_height) {
+                           int32 start_x, int32 width,
+                           int32 main_start_y, int32 main_height) {
     nc_lyrics_screen_set_geometry(&screen->screen,
                                   start_x,
                                   width,
@@ -392,25 +392,25 @@ lyrics_screen_set_geometry(LyricsScreen *screen,
 
 bool
 lyrics_screen_build_filename(LyricsScreen *screen,
-                                    NcmSong *song,
-                                    char *music_dir, int32 music_dir_len,
-                                    char *lyrics_dir, int32 lyrics_dir_len,
-                                    bool store_in_song_dir,
-                                    bool win32_filename) {
+                             NcmSong *song,
+                             char *music_dir, int32 music_dir_len,
+                             char *lyrics_dir, int32 lyrics_dir_len,
+                             bool store_in_song_dir,
+                             bool win32_filename) {
     return lyrics_preferred_filename_from_song(&screen->filename,
-                                                      song,
-                                                      music_dir,
-                                                      music_dir_len,
-                                                      lyrics_dir,
-                                                      lyrics_dir_len,
-                                                      store_in_song_dir,
-                                                      win32_filename);
+                                               song,
+                                               music_dir,
+                                               music_dir_len,
+                                               lyrics_dir,
+                                               lyrics_dir_len,
+                                               store_in_song_dir,
+                                               win32_filename);
 }
 
 bool
 lyrics_screen_load_file(LyricsScreen *screen,
-                               char *filename, int32 filename_len,
-                               NcmError *ncm_error) {
+                        char *filename, int32 filename_len,
+                        NcmError *ncm_error) {
     FILE *file;
     StrBuilder raw = {0};
     char line[1024];
@@ -484,9 +484,9 @@ lyrics_screen_load_file(LyricsScreen *screen,
 
 bool
 lyrics_screen_save_file(LyricsScreen *screen,
-                               char *filename, int32 filename_len,
-                               char *lyrics, int32 lyrics_len,
-                               NcmError *ncm_error) {
+                        char *filename, int32 filename_len,
+                        char *lyrics, int32 lyrics_len,
+                        NcmError *ncm_error) {
     FILE *file;
     int32 written;
     int32 close_result;
@@ -522,9 +522,9 @@ lyrics_screen_save_file(LyricsScreen *screen,
 
 bool
 lyrics_screen_fetch(LyricsScreen *screen,
-                           NcmSong *song,
-                           NcmLyricsFetcherDef *fetcher,
-                           NcmError *ncm_error) {
+                    NcmSong *song,
+                    NcmLyricsFetcherDef *fetcher,
+                    NcmError *ncm_error) {
     StrBuilder next_filename = {0};
     StrBuilder lrc_filename = {0};
     StrBuilder txt_filename = {0};
@@ -542,28 +542,28 @@ lyrics_screen_fetch(LyricsScreen *screen,
 
     win32_filename = Config.generate_win32_compatible_filenames;
     if (!lyrics_filename_from_song_with_extension(
-            &lrc_filename,
-            song,
-            Config.mpd_music_dir,
-            Config.mpd_music_dir_len,
-            Config.lyrics_directory,
-            Config.lyrics_directory_len,
-            Config.store_lyrics_in_song_dir,
-            win32_filename,
-            STRLIT(".lrc"))) {
+        &lrc_filename,
+        song,
+        Config.mpd_music_dir,
+        Config.mpd_music_dir_len,
+        Config.lyrics_directory,
+        Config.lyrics_directory_len,
+        Config.store_lyrics_in_song_dir,
+        win32_filename,
+        STRLIT(".lrc"))) {
         sb_free(&lrc_filename);
         ncm_error_set(ncm_error, EINVAL,
                       STRLIT("failed to build lyrics filename"));
         return false;
     }
     if (!lyrics_filename_from_song(&txt_filename,
-                                          song,
-                                          Config.mpd_music_dir,
-                                          Config.mpd_music_dir_len,
-                                          Config.lyrics_directory,
-                                          Config.lyrics_directory_len,
-                                          Config.store_lyrics_in_song_dir,
-                                          win32_filename)) {
+                                   song,
+                                   Config.mpd_music_dir,
+                                   Config.mpd_music_dir_len,
+                                   Config.lyrics_directory,
+                                   Config.lyrics_directory_len,
+                                   Config.store_lyrics_in_song_dir,
+                                   win32_filename)) {
         sb_free(&txt_filename);
         sb_free(&lrc_filename);
         ncm_error_set(ncm_error, EINVAL,
@@ -573,7 +573,7 @@ lyrics_screen_fetch(LyricsScreen *screen,
     lrc_found = ncm_fs_exists(lrc_filename.data, lrc_filename.len);
     txt_found = ncm_fs_exists(txt_filename.data, txt_filename.len);
     lyrics_report_sidecar_status(&lrc_filename, lrc_found,
-                                        &txt_filename, txt_found);
+                                 &txt_filename, txt_found);
     if (lrc_found) {
         sb_copy(&next_filename, &lrc_filename);
     } else {
@@ -590,9 +590,9 @@ lyrics_screen_fetch(LyricsScreen *screen,
 
     changed_song = !screen->has_song || !ncm_song_equal(&screen->song, song);
     changed_filename = !STREQUAL(screen->filename.data,
-                                         screen->filename.len,
-                                         next_filename.data,
-                                         next_filename.len);
+                                 screen->filename.len,
+                                 next_filename.data,
+                                 next_filename.len);
     changed = changed_song || changed_filename;
     if (changed) {
         lyrics_screen_clear_lyrics_state(
@@ -614,9 +614,9 @@ lyrics_screen_fetch(LyricsScreen *screen,
     }
 
     if (lyrics_screen_load_file(screen,
-                                       lrc_filename.data,
-                                       lrc_filename.len,
-                                       ncm_error)) {
+                                lrc_filename.data,
+                                lrc_filename.len,
+                                ncm_error)) {
         sb_copy(&screen->filename, &lrc_filename);
         sb_free(&txt_filename);
         sb_free(&lrc_filename);
@@ -624,9 +624,9 @@ lyrics_screen_fetch(LyricsScreen *screen,
         return true;
     }
     if (lyrics_screen_load_file(screen,
-                                       txt_filename.data,
-                                       txt_filename.len,
-                                       ncm_error)) {
+                                txt_filename.data,
+                                txt_filename.len,
+                                ncm_error)) {
         sb_copy(&screen->filename, &txt_filename);
         sb_free(&txt_filename);
         sb_free(&lrc_filename);
@@ -635,10 +635,10 @@ lyrics_screen_fetch(LyricsScreen *screen,
     }
 
     if (!lyrics_screen_start_foreground_fetch(screen,
-                                                     song,
-                                                     fetcher,
-                                                     &txt_filename,
-                                                     ncm_error)) {
+                                              song,
+                                              fetcher,
+                                              &txt_filename,
+                                              ncm_error)) {
         sb_free(&txt_filename);
         sb_free(&lrc_filename);
         return false;
@@ -652,9 +652,9 @@ lyrics_screen_fetch(LyricsScreen *screen,
 
 bool
 lyrics_screen_fetch_in_background(LyricsScreen *screen,
-                                         NcmSong *song,
-                                         bool notify,
-                                         NcmError *ncm_error) {
+                                  NcmSong *song,
+                                  bool notify,
+                                  NcmError *ncm_error) {
     if ((screen == NULL) || (song == NULL) || ncm_song_empty(song)) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("missing song"));
         return false;
@@ -695,7 +695,7 @@ lyrics_screen_update(LyricsScreen *screen) {
 
 void
 lyrics_screen_refetch_current(LyricsScreen *screen,
-                                     NcmError *ncm_error) {
+                              NcmError *ncm_error) {
     StrBuilder filename = {0};
     bool win32_filename;
 
@@ -706,13 +706,13 @@ lyrics_screen_refetch_current(LyricsScreen *screen,
 
     win32_filename = Config.generate_win32_compatible_filenames;
     if (!lyrics_filename_from_song(&filename,
-                                          &screen->song,
-                                          Config.mpd_music_dir,
-                                          Config.mpd_music_dir_len,
-                                          Config.lyrics_directory,
-                                          Config.lyrics_directory_len,
-                                          Config.store_lyrics_in_song_dir,
-                                          win32_filename)) {
+                                   &screen->song,
+                                   Config.mpd_music_dir,
+                                   Config.mpd_music_dir_len,
+                                   Config.lyrics_directory,
+                                   Config.lyrics_directory_len,
+                                   Config.store_lyrics_in_song_dir,
+                                   win32_filename)) {
         ncm_error_set(ncm_error, EINVAL,
                       STRLIT("failed to build lyrics filename"));
         sb_free(&filename);
@@ -725,10 +725,10 @@ lyrics_screen_refetch_current(LyricsScreen *screen,
     }
 
     if (!lyrics_screen_start_foreground_fetch(screen,
-                                                     &screen->song,
-                                                     screen->fetcher,
-                                                     &filename,
-                                                     ncm_error)) {
+                                              &screen->song,
+                                              screen->fetcher,
+                                              &filename,
+                                              ncm_error)) {
         sb_free(&filename);
         return;
     }
@@ -740,7 +740,7 @@ lyrics_screen_refetch_current(LyricsScreen *screen,
 
 NcmLyricsFetcherDef *
 lyrics_screen_toggle_fetcher(LyricsScreen *screen,
-                                    NcmLyricsFetcherRegistry *registry) {
+                             NcmLyricsFetcherRegistry *registry) {
     int32 idx;
 
     if ((registry == NULL) || (registry->fetchers.len <= 0)) {
@@ -770,7 +770,7 @@ lyrics_screen_toggle_fetcher(LyricsScreen *screen,
 
 bool
 lyrics_screen_try_take_consumer_message(LyricsScreen *screen,
-                                               StrBuilder *message) {
+                                        StrBuilder *message) {
     if ((screen == NULL) || (message == NULL)) {
         return false;
     }
@@ -815,7 +815,7 @@ lyrics_screen_active_lrc_line(LyricsScreen *screen) {
 
 bool
 lyrics_buffer_find(NcBuffer *buffer,
-                          char *pattern, int32 pattern_len, NcmError *ncm_error) {
+                   char *pattern, int32 pattern_len, NcmError *ncm_error) {
     LyricsFindState state;
     NcmRegex regex;
     char *data;
@@ -852,8 +852,8 @@ lyrics_buffer_find(NcBuffer *buffer,
 
 bool
 lyrics_screen_find(LyricsScreen *screen,
-                          char *pattern, int32 pattern_len,
-                          NcmError *ncm_error) {
+                   char *pattern, int32 pattern_len,
+                   NcmError *ncm_error) {
     bool result;
 
     if (screen == NULL) {
@@ -862,12 +862,12 @@ lyrics_screen_find(LyricsScreen *screen,
     }
 
     result = lyrics_buffer_find(&screen->display, pattern,
-                                       pattern_len, ncm_error);
+                                pattern_len, ncm_error);
     if ((pattern == NULL) || (pattern_len <= 0)) {
         sb_clear(&screen->search_constraint);
     } else if (!ncm_error_is_set(ncm_error)) {
         (void)sb_set(&screen->search_constraint, pattern,
-                             pattern_len);
+                     pattern_len);
     }
     nc_scrollpad_flush(&screen->scrollpad, &screen->window,
                        &screen->display);
@@ -887,7 +887,7 @@ lyrics_buffer_clear_sync_highlight(NcBuffer *buffer) {
 
 void
 lyrics_buffer_highlight_sync_line(NcBuffer *buffer,
-                                         int32 start, int32 end) {
+                                  int32 start, int32 end) {
     NcFormattedColor highlight;
 
     if (buffer == NULL) {
@@ -934,10 +934,10 @@ lyrics_resize_callback(NcScreen *screen) {
     lyrics = lyrics_from_screen(screen);
     nc_screen_switcher_get_resize_params(screen, &x, &width, true);
     lyrics_screen_set_geometry(lyrics,
-                                      x,
-                                      width,
-                                      ui_state_main_start_y(),
-                                      ui_state_main_height());
+                               x,
+                               width,
+                               ui_state_main_start_y(),
+                               ui_state_main_height());
     nc_screen_clear_resize_request(screen);
     return;
 }
@@ -986,8 +986,8 @@ lyrics_screen_update_sync_line_force(
 
     entry = &screen->lrc.entries[active_line];
     lyrics_buffer_highlight_sync_line(&screen->display,
-                                             entry->buffer_start,
-                                             entry->buffer_end);
+                                      entry->buffer_start,
+                                      entry->buffer_end);
     nc_scrollpad_center_on_buffer_position(&screen->scrollpad,
                                            &screen->window,
                                            &screen->display,
@@ -1122,7 +1122,7 @@ lyrics_title_callback(NcScreen *screen) {
     SB_APPEND(&lyrics->title, STRLIT(": "));
     scroll_begin = nc_lyrics_screen_scroll_begin(&lyrics->screen);
     scroll_width = COLS - utf8_width(lyrics->title.data,
-                                         lyrics->title.len);
+                                     lyrics->title.len);
     if (Config.design == NCM_DESIGN_ALTERNATIVE) {
         scroll_width -= 2;
     } else {
@@ -1187,7 +1187,7 @@ lyrics_title_song_string(NcmSong *song, StrBuilder *title) {
 
 static bool
 lyrics_song_artist_title(NcmSong *song,
-                                StrBuilder *artist, StrBuilder *title) {
+                         StrBuilder *artist, StrBuilder *title) {
     StrBuilder fallback = {0};
     NcmStringView artist_view;
     NcmStringView title_view;
@@ -1222,7 +1222,7 @@ lyrics_song_artist_title(NcmSong *song,
 
 static bool
 lyrics_fetch_artist_title(NcmSong *song,
-                                 StrBuilder *artist, StrBuilder *title) {
+                          StrBuilder *artist, StrBuilder *title) {
     if (!lyrics_song_artist_title(song, artist, title)) {
         return false;
     }
@@ -1252,7 +1252,7 @@ lyrics_append_locale(NcBuffer *buffer, char *data, int32 data_len) {
 
 static bool
 lyrics_screen_render_lrc(LyricsScreen *screen,
-                                NcmError *ncm_error) {
+                         NcmError *ncm_error) {
     NcmLrcRenderTarget target = {0};
 
     target.user = screen;
@@ -1281,7 +1281,7 @@ lyrics_lrc_buffer_position(void *user) {
 
 static void
 lyrics_lrc_buffer_append(void *user,
-                                char *data, int32 data_len) {
+                         char *data, int32 data_len) {
     LyricsScreen *screen = user;
 
     if (screen == NULL) {
@@ -1294,9 +1294,9 @@ lyrics_lrc_buffer_append(void *user,
 
 static void
 lyrics_report_sidecar_status(StrBuilder *lrc_filename,
-                                    bool lrc_found,
-                                    StrBuilder *txt_filename,
-                                    bool txt_found) {
+                             bool lrc_found,
+                             StrBuilder *txt_filename,
+                             bool txt_found) {
     NcmStringFormatArg args[4];
     char *lrc_status;
     char *txt_status;
@@ -1374,7 +1374,7 @@ lyrics_report_unlink_error(StrBuilder *filename, NcmError *ncm_error) {
 
 static void
 lyrics_screen_clear_lyrics_state(LyricsScreen *screen,
-                                        LyricsMode mode) {
+                                 LyricsMode mode) {
     nc_buffer_clear(&screen->display);
     ncm_lrc_document_clear(&screen->lrc);
     screen->active_lrc_line = LYRICS_NO_ACTIVE_LINE;
@@ -1459,41 +1459,41 @@ lyrics_filename_from_song_with_extension(
 
 static bool
 lyrics_filename_from_song(StrBuilder *filename, NcmSong *song,
-                                 char *music_dir, int32 music_dir_len,
-                                 char *lyrics_dir, int32 lyrics_dir_len,
-                                 bool store_in_song_dir, bool win32_filename) {
+                          char *music_dir, int32 music_dir_len,
+                          char *lyrics_dir, int32 lyrics_dir_len,
+                          bool store_in_song_dir, bool win32_filename) {
     return lyrics_filename_from_song_with_extension(filename,
-                                                          song,
-                                                          music_dir,
-                                                          music_dir_len,
-                                                          lyrics_dir,
-                                                          lyrics_dir_len,
-                                                          store_in_song_dir,
-                                                          win32_filename,
-                                                          STRLIT(".txt"));
+                                                    song,
+                                                    music_dir,
+                                                    music_dir_len,
+                                                    lyrics_dir,
+                                                    lyrics_dir_len,
+                                                    store_in_song_dir,
+                                                    win32_filename,
+                                                    STRLIT(".txt"));
 }
 
 static bool
 lyrics_preferred_filename_from_song(StrBuilder *filename,
-                                           NcmSong *song,
-                                           char *music_dir,
-                                           int32 music_dir_len,
-                                           char *lyrics_dir,
-                                           int32 lyrics_dir_len,
-                                           bool store_in_song_dir,
-                                           bool win32_filename) {
+                                    NcmSong *song,
+                                    char *music_dir,
+                                    int32 music_dir_len,
+                                    char *lyrics_dir,
+                                    int32 lyrics_dir_len,
+                                    bool store_in_song_dir,
+                                    bool win32_filename) {
     StrBuilder lrc_filename = {0};
     bool success;
 
     success = lyrics_filename_from_song_with_extension(&lrc_filename,
-                                                             song,
-                                                             music_dir,
-                                                             music_dir_len,
-                                                             lyrics_dir,
-                                                             lyrics_dir_len,
-                                                             store_in_song_dir,
-                                                             win32_filename,
-                                                             STRLIT(".lrc"));
+                                                       song,
+                                                       music_dir,
+                                                       music_dir_len,
+                                                       lyrics_dir,
+                                                       lyrics_dir_len,
+                                                       store_in_song_dir,
+                                                       win32_filename,
+                                                       STRLIT(".lrc"));
     if (!success) {
         sb_free(&lrc_filename);
         return false;
@@ -1506,18 +1506,18 @@ lyrics_preferred_filename_from_song(StrBuilder *filename,
     sb_free(&lrc_filename);
 
     return lyrics_filename_from_song(filename,
-                                           song,
-                                           music_dir,
-                                           music_dir_len,
-                                           lyrics_dir,
-                                           lyrics_dir_len,
-                                           store_in_song_dir,
-                                           win32_filename);
+                                     song,
+                                     music_dir,
+                                     music_dir_len,
+                                     lyrics_dir,
+                                     lyrics_dir_len,
+                                     store_in_song_dir,
+                                     win32_filename);
 }
 
 static bool
 lyrics_queue_song(LyricsScreen *screen,
-                         NcmSong *song, bool notify) {
+                  NcmSong *song, bool notify) {
     LyricsQueuedSong *queued;
     int32 new_cap;
 
@@ -1562,7 +1562,7 @@ lyrics_dequeue_song(LyricsScreen *screen) {
     lyrics_queued_song_move(queued, &screen->queued_songs[0]);
     for (int32 i = 1; i < screen->queued_songs_len; i += 1) {
         lyrics_queued_song_move(&screen->queued_songs[i - 1],
-                                       &screen->queued_songs[i]);
+                                &screen->queued_songs[i]);
     }
     screen->queued_songs_len -= 1;
     return queued;
@@ -1570,10 +1570,10 @@ lyrics_dequeue_song(LyricsScreen *screen) {
 
 static LyricsJob *
 lyrics_job_create(LyricsScreen *screen,
-                         NcmSong *song,
-                         NcmLyricsFetcherDef *fetcher,
-                         bool notify,
-                         bool background) {
+                  NcmSong *song,
+                  NcmLyricsFetcherDef *fetcher,
+                  bool notify,
+                  bool background) {
     bool win32_filename;
     LyricsJob *job = malloc2(SIZEOF(*job));
 
@@ -1588,13 +1588,13 @@ lyrics_job_create(LyricsScreen *screen,
     win32_filename = Config.generate_win32_compatible_filenames;
 
     (void)lyrics_filename_from_song(&job->filename,
-                                           song,
-                                           Config.mpd_music_dir,
-                                           Config.mpd_music_dir_len,
-                                           Config.lyrics_directory,
-                                           Config.lyrics_directory_len,
-                                           Config.store_lyrics_in_song_dir,
-                                           win32_filename);
+                                    song,
+                                    Config.mpd_music_dir,
+                                    Config.mpd_music_dir_len,
+                                    Config.lyrics_directory,
+                                    Config.lyrics_directory_len,
+                                    Config.store_lyrics_in_song_dir,
+                                    win32_filename);
 
     job->fetcher = fetcher;
     ncm_lyrics_result_init(&job->result);
@@ -1606,7 +1606,7 @@ lyrics_job_create(LyricsScreen *screen,
 
 static bool
 lyrics_job_fetch_one(LyricsJob *job, NcmLyricsFetcherDef *fetcher,
-                            StrBuilder *artist, StrBuilder *title) {
+                     StrBuilder *artist, StrBuilder *title) {
     if (fetcher == NULL) {
         return false;
     }
@@ -1630,18 +1630,18 @@ lyrics_job_fetch_one(LyricsJob *job, NcmLyricsFetcherDef *fetcher,
 
 static bool
 lyrics_job_fetch(LyricsJob *job,
-                        StrBuilder *artist, StrBuilder *title) {
+                 StrBuilder *artist, StrBuilder *title) {
     if (job->fetcher) {
         return lyrics_job_fetch_one(job,
-                                           job->fetcher,
-                                           artist,
-                                           title);
+                                    job->fetcher,
+                                    artist,
+                                    title);
     }
 
     for (int32 i = 0; i < Config.lyrics_fetchers.fetchers.len; i += 1) {
         if (lyrics_job_fetch_one(
-                job, &Config.lyrics_fetchers.fetchers.items[i],
-                artist, title)) {
+            job, &Config.lyrics_fetchers.fetchers.items[i],
+            artist, title)) {
             return true;
         }
     }
@@ -1700,15 +1700,15 @@ lyrics_job_complete(bool success, NcmError *ncm_error, void *user) {
             lyrics_screen_clear_lyrics_state(
                 screen, LYRICS_MODE_PLAIN);
             lyrics_append_locale(&screen->display,
-                                        job->result.text,
-                                        job->result.text_len);
+                                 job->result.text,
+                                 job->result.text_len);
             sb_copy(&screen->filename, &job->filename);
             if (!lyrics_screen_save_file(screen,
-                                                job->filename.data,
-                                                job->filename.len,
-                                                job->result.text,
-                                                job->result.text_len,
-                                                &save_error)) {
+                                         job->filename.data,
+                                         job->filename.len,
+                                         job->result.text,
+                                         job->result.text_len,
+                                         &save_error)) {
                 lyrics_report_save_error(&job->filename, &save_error);
             }
             ncm_error_clear(&save_error);
@@ -1726,11 +1726,11 @@ lyrics_job_complete(bool success, NcmError *ncm_error, void *user) {
             NcmError save_error = {0};
 
             (void)lyrics_screen_save_file(screen,
-                                                 job->filename.data,
-                                                 job->filename.len,
-                                                 job->result.text,
-                                                 job->result.text_len,
-                                                 &save_error);
+                                          job->filename.data,
+                                          job->filename.len,
+                                          job->result.text,
+                                          job->result.text_len,
+                                          &save_error);
             ncm_error_clear(&save_error);
         }
     }
@@ -1758,7 +1758,7 @@ lyrics_job_destroy(void *user) {
 
 static NcmLyricsFetcherDef *
 lyrics_active_fetcher(LyricsScreen *screen,
-                             NcmLyricsFetcherDef *fetcher) {
+                      NcmLyricsFetcherDef *fetcher) {
     if (fetcher) {
         return fetcher;
     }
@@ -1805,7 +1805,7 @@ lyrics_append_fetch_error(NcBuffer *buffer, NcmLyricsResult *result) {
 
 static void
 lyrics_job_append_fetching(LyricsJob *job,
-                                  NcmLyricsFetcherDef *fetcher) {
+                           NcmLyricsFetcherDef *fetcher) {
     if ((job == NULL) || (fetcher == NULL)) {
         return;
     }
@@ -1820,7 +1820,7 @@ lyrics_job_append_fetching(LyricsJob *job,
 
 static void
 lyrics_job_append_fetch_error(LyricsJob *job,
-                                     NcmLyricsResult *result) {
+                              NcmLyricsResult *result) {
     if ((job == NULL) || (result == NULL)) {
         return;
     }
@@ -1906,16 +1906,16 @@ lyrics_job_is_current(LyricsJob *job) {
 
 static void
 lyrics_set_consumer_fetch_message(LyricsScreen *screen,
-                                         NcmSong *song) {
+                                  NcmSong *song) {
     StrBuilder formatted = ncm_format_render_string(&Config.song_status_format,
-                                                   song);
+                                                    song);
     sb_clear(&screen->consumer_message);
 
     SB_APPEND(&screen->consumer_message,
-                      STRLIT("Fetching lyrics for \""));
+              STRLIT("Fetching lyrics for \""));
     SB_APPEND(&screen->consumer_message,
-                      formatted.data,
-                      formatted.len);
+              formatted.data,
+              formatted.len);
     SB_APPEND(&screen->consumer_message, STRLIT("\"..."));
 
     sb_free(&formatted);
@@ -1957,7 +1957,7 @@ lyrics_display(LyricsScreen *screen) {
 
 static bool
 lyrics_start_next_background(LyricsScreen *screen,
-                                    NcmError *ncm_error) {
+                             NcmError *ncm_error) {
     LyricsQueuedSong *queued;
     LyricsJob *job;
     StrBuilder filename = {0};
@@ -1991,14 +1991,14 @@ lyrics_start_next_background(LyricsScreen *screen,
         }
 
         if (!lyrics_preferred_filename_from_song(
-                &filename,
-                &queued->song,
-                Config.mpd_music_dir,
-                Config.mpd_music_dir_len,
-                Config.lyrics_directory,
-                Config.lyrics_directory_len,
-                Config.store_lyrics_in_song_dir,
-                win32_filename)) {
+            &filename,
+            &queued->song,
+            Config.mpd_music_dir,
+            Config.mpd_music_dir_len,
+            Config.lyrics_directory,
+            Config.lyrics_directory_len,
+            Config.store_lyrics_in_song_dir,
+            win32_filename)) {
             lyrics_queued_song_destroy(queued);
             free2(queued, SIZEOF(*queued));
             queued = NULL;
@@ -2026,10 +2026,10 @@ lyrics_start_next_background(LyricsScreen *screen,
         lyrics_set_consumer_fetch_message(screen, &queued->song);
     }
     job = lyrics_job_create(screen,
-                                   &queued->song,
-                                   screen->fetcher,
-                                   queued->notify,
-                                   true);
+                            &queued->song,
+                            screen->fetcher,
+                            queued->notify,
+                            true);
     if (!ncm_job_queue_push(&screen->jobs,
                             (NcmJob){
                                 .run = lyrics_job_run,

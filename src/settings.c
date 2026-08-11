@@ -198,7 +198,7 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
     if (result) {
         ncm_format_render_buffer(&ast, NULL, &tmp, NULL,
                                  NCM_FORMAT_FLAG_COLOR
-                                     | NCM_FORMAT_FLAG_FORMAT);
+                                 | NCM_FORMAT_FLAG_FORMAT);
         nc_buffer_destroy(buffer);
         nc_buffer_move(buffer, &tmp);
         if (width) {
@@ -645,8 +645,8 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
         Column *column = &config->columns.items[i];
 
         if (!ncm_format_ast_append_column_types(
-                &config->song_columns_mode_format, column->type,
-                column->type_len)) {
+            &config->song_columns_mode_format, column->type,
+            column->type_len)) {
             settings_error(ncm_error, STRLIT("failed to build column format"));
             return false;
         }
@@ -1811,8 +1811,8 @@ settings_initialize_defaults(Configuration *config, SettingsOption *options,
             continue;
         }
         if (!settings_apply_option(
-                config, &options[i], options[i].default_value,
-                options[i].default_value_len, true, ignore_errors, ncm_error)) {
+            config, &options[i], options[i].default_value,
+            options[i].default_value_len, true, ignore_errors, ncm_error)) {
             return false;
         }
     }

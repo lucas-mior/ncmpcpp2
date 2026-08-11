@@ -1210,7 +1210,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             if ((next != '\n') && (next != EOF)) {
                 error("Bindings configuration line %d in '%.*s' is too "
                       "long.\n",
-                      line_no, path_len, path);
+                    line_no, path_len, path);
                 fatal(EXIT_FAILURE);
             }
         }

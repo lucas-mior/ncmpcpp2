@@ -247,12 +247,12 @@ ncm_tags_read_lyrics(char *path, NcmTagsValueCallback *callback,
     context.callback = callback;
     context.user = user;
     found = ncm_taglib_read_property(&file, "LYRICS",
-                                      ncm_tags_forward_value_callback,
-                                      &context);
+                                     ncm_tags_forward_value_callback,
+                                     &context);
     if (!found) {
         found = ncm_taglib_read_property(&file, "UNSYNCEDLYRICS",
-                                          ncm_tags_forward_value_callback,
-                                          &context);
+                                         ncm_tags_forward_value_callback,
+                                         &context);
     }
 
     ncm_taglib_file_close(&file);

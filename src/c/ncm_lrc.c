@@ -210,7 +210,7 @@ ncm_lrc_document_entry_at_time(NcmLrcDocument *document,
 
 int32
 ncm_lrc_document_next_entry_after_time(NcmLrcDocument *document,
-                                           int64 elapsed_ms) {
+                                       int64 elapsed_ms) {
     int32 left;
     int32 right;
 
@@ -576,9 +576,9 @@ ncm_lrc_document_append_entry(NcmLrcDocument *document) {
             new_cap *= 2;
         }
         document->entries = realloc2(document->entries,
-                                      document->entries_cap,
-                                      new_cap,
-                                      SIZEOF(*document->entries));
+                                     document->entries_cap,
+                                     new_cap,
+                                     SIZEOF(*document->entries));
         document->entries_cap = new_cap;
     }
 

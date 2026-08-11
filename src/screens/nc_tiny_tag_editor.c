@@ -230,7 +230,7 @@ tiny_tag_editor_screen_open_song(
     }
     if (!sb_set(&screen->music_dir, music_dir, music_dir_len)
         || !sb_set(&screen->tag_separator, tag_separator,
-                           tag_separator_len)) {
+                   tag_separator_len)) {
         return TINY_TAG_EDITOR_OPEN_PREPARE_FAILED;
     }
     screen->show_duplicate_tags = show_duplicate_tags;
@@ -310,7 +310,7 @@ tiny_tag_editor_screen_reload_rows(
         return false;
     }
     if (!sb_set(&screen->tag_separator, tag_separator,
-                        tag_separator_len)) {
+                tag_separator_len)) {
         return false;
     }
     screen->show_duplicate_tags = show_duplicate_tags;
@@ -497,7 +497,7 @@ tiny_tag_editor_screen_set_filename_stem(
     SB_APPEND(&new_name, stem, stem_len);
     if (dot >= 0) {
         SB_APPEND(&new_name, &current_name.data[dot],
-                          current_name.len - dot);
+                  current_name.len - dot);
     }
     result = tiny_tag_editor_screen_set_filename(
         screen, new_name.data, new_name.len);
@@ -717,8 +717,8 @@ tiny_editor_resize(NcScreen *screen) {
 
     nc_screen_switcher_get_resize_params(screen, &start_x, &width, true);
     tiny_tag_editor_screen_set_geometry(editor, start_x, width,
-                                               ui_state_main_start_y(),
-                                               ui_state_main_height());
+                                        ui_state_main_start_y(),
+                                        ui_state_main_height());
     nc_screen_clear_resize_request(screen);
 
     return;

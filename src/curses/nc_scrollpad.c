@@ -37,7 +37,7 @@ nc_scrollpad_refresh(NcScrollpad *scrollpad, NcWindow *window) {
     ASSERT(scrollpad->real_height >= window->height);
 
     if (scrollpad->beginning > nc_scrollpad_max_beginning(scrollpad,
-                                                           window)) {
+                                                          window)) {
         scrollpad->beginning = nc_scrollpad_max_beginning(scrollpad,
                                                           window);
     }
@@ -326,7 +326,7 @@ nc_scrollpad_write_whitespace(NcScrollpadWriteState *state) {
 
 static void
 nc_scrollpad_write_word(NcScrollpadWriteState *state,
-                         bool load_properties) {
+                        bool load_properties) {
     char *data;
     int32 len;
 

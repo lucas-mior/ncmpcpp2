@@ -224,7 +224,7 @@ ncm_display_column_value(NcmSong *song, Column *column) {
     if (column->display_empty_tag && Config.empty_tag
         && (Config.empty_tag_len > 0)) {
         SB_APPEND(&result, Config.empty_tag,
-                          Config.empty_tag_len);
+                  Config.empty_tag_len);
     }
     return result;
 }
