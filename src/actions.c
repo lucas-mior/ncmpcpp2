@@ -5322,10 +5322,9 @@ action_runtime_edit_playlist_name(void) {
 
 static bool
 action_runtime_toggle_display_mode(void) {
-    enum DisplayMode *mode = NULL;
     enum ScreenType screen_type = app_screens_current_type();
 
-    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_SEARCH_ENGINE)) {
+    if (screen_type == NCM_SCREEN_TYPE_SEARCH_ENGINE) {
         SearchEngineScreen *screen = app_screen_search_engine();
         NcmStringFormatArg arg;
         enum DisplayMode search_mode;
@@ -5342,14 +5341,41 @@ action_runtime_toggle_display_mode(void) {
 
     switch (screen_type) {
     case NCM_SCREEN_TYPE_BROWSER:
-        mode = &Config.browser_display_mode;
-        break;
-    case NCM_SCREEN_TYPE_PLAYLIST:
-        mode = &Config.playlist_display_mode;
-        break;
+        if (Config.browser_display_mode == NCM_DISPLAY_MODE_CLASSIC) {
+            Config.browser_display_mode = NCM_DISPLAY_MODE_COLUMNS;
+        } else {
+            Config.browser_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+        }
+        browser_screen_set_display_mode(app_screen_browser(),
+                                        Config.browser_display_mode);
+        app_controller_request_current_screen_resize();
+        return true;
+    case NCM_SCREEN_TYPE_PLAYLIST: {
+        NcmStringFormatArg arg;
+
+        if (Config.playlist_display_mode == NCM_DISPLAY_MODE_CLASSIC) {
+            Config.playlist_display_mode = NCM_DISPLAY_MODE_COLUMNS;
+        } else {
+            Config.playlist_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+        }
+        playlist_screen_update_column_title(app_screen_playlist());
+        app_controller_request_current_screen_resize();
+        app_controller_refresh_current_screen();
+        arg = ncm_string_format_arg_cstring(ncm_display_mode_str(
+            Config.playlist_display_mode));
+        ncm_statusbar_format(Config.message_delay_time,
+                             STRLIT("Playlist display mode: %1%"), &arg,
+                             1);
+        return true;
+    }
     case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
-        mode = &Config.playlist_editor_display_mode;
-        break;
+        if (Config.playlist_editor_display_mode == NCM_DISPLAY_MODE_CLASSIC) {
+            Config.playlist_editor_display_mode = NCM_DISPLAY_MODE_COLUMNS;
+        } else {
+            Config.playlist_editor_display_mode = NCM_DISPLAY_MODE_CLASSIC;
+        }
+        app_controller_request_current_screen_resize();
+        return true;
     case NCM_SCREEN_TYPE_HELP:
     case NCM_SCREEN_TYPE_LASTFM:
     case NCM_SCREEN_TYPE_LYRICS:
@@ -5373,31 +5399,7 @@ action_runtime_toggle_display_mode(void) {
     default:
         break;
     }
-    if (mode == NULL) {
-        return false;
-    }
-
-    if (*mode == NCM_DISPLAY_MODE_CLASSIC) {
-        *mode = NCM_DISPLAY_MODE_COLUMNS;
-    } else {
-        *mode = NCM_DISPLAY_MODE_CLASSIC;
-    }
-    if (screen_type == NCM_SCREEN_TYPE_BROWSER) {
-        browser_screen_set_display_mode(app_screen_browser(), *mode);
-    }
-    if (screen_type == NCM_SCREEN_TYPE_PLAYLIST) {
-        playlist_screen_update_column_title(app_screen_playlist());
-    }
-    app_controller_request_current_screen_resize();
-    if (screen_type == NCM_SCREEN_TYPE_PLAYLIST) {
-        NcmStringFormatArg arg;
-        app_controller_refresh_current_screen();
-        arg = ncm_string_format_arg_cstring(ncm_display_mode_str(*mode));
-        ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT("Playlist display mode: %1%"), &arg,
-                             1);
-    }
-    return true;
+    return false;
 }
 
 static bool
