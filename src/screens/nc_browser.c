@@ -1282,8 +1282,8 @@ browser_resize(NcScreen *screen) {
 
     nc_screen_switcher_get_resize_params(screen, &x, &width, true);
     browser_screen_set_geometry(browser, x, width,
-                                       ui_state_main_start_y(),
-                                       ui_state_main_height());
+                                ui_state_main_start_y(),
+                                ui_state_main_height());
     browser->redraw_header = true;
     nc_screen_clear_resize_request(screen);
     return;
