@@ -793,7 +793,8 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
 
 bool
 ncm_status_initialize_from_mpd_status(NcmMpdStatus *mpd_status,
-                                      NcmStatusHooks *hooks, NcmError *ncm_error) {
+                                      NcmStatusHooks *hooks,
+                                      NcmError *ncm_error) {
     if (!ncm_status_apply_mpd_status(mpd_status, status_full_event_mask(),
                                      hooks, ncm_error)) {
         return false;
