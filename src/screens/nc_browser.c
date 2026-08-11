@@ -34,7 +34,6 @@ static void browser_apply_menu_config(BrowserScreen *screen);
 static void browser_draw_item(NcMenu *menu, NcWindow *window,
                                      void *item, int32 pos, void *user);
 static void browser_print_buffer(NcWindow *window, NcBuffer *buffer);
-static int32 browser_i32_width(int32 width);
 static void browser_mouse_scroll(BrowserScreen *screen,
                                         enum NcScroll where);
 static bool browser_filter_item(NcMenu *menu, void *item,
@@ -474,11 +473,11 @@ browser_screen_update_title_text(BrowserScreen *screen) {
 
     screen_width = ui_state_screen_width();
     if (screen_width <= 0) {
-        screen_width = browser_i32_width(screen->width);
+        screen_width = screen->width;
     }
 
     scroll_width = screen_width - utf8_width(screen->title_text.data,
-                                                 screen->title_text.len);
+                                             screen->title_text.len);
     if (Config.design == NCM_DESIGN_ALTERNATIVE) {
         scroll_width -= 2;
     } else {
@@ -516,7 +515,7 @@ browser_screen_update_column_title(BrowserScreen *screen) {
         return;
     }
 
-    width = browser_i32_width(screen->width);
+    width = screen->width;
     if (width <= 0) {
         nc_window_set_title(&screen->window, NULL, 0);
         return;
@@ -1145,7 +1144,7 @@ browser_screen_render_item(BrowserScreen *screen,
         if (screen->active_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
             render_width = browser_render_width(
                 screen, available_width, selected, highlighted);
-            list_width = browser_i32_width(render_width);
+            list_width = render_width;
             use_colors = !Config.discard_colors_if_item_is_selected
                          || !selected;
             ncm_display_song_columns(buffer, ncm_mpd_item_song(item),
@@ -1483,17 +1482,6 @@ browser_print_buffer(NcWindow *window, NcBuffer *buffer) {
     return;
 }
 
-static int32
-browser_i32_width(int32 width) {
-    if (width <= 0) {
-        return 0;
-    }
-    if (width > INT32_MAX) {
-        return INT32_MAX;
-    }
-    return width;
-}
-
 static void
 browser_mouse_scroll(BrowserScreen *screen,
                             enum NcScroll where) {
@@ -1569,8 +1557,8 @@ browser_sync_display_mode(BrowserScreen *screen) {
 
 static int32
 browser_render_width(BrowserScreen *screen,
-                            int32 available_width,
-                            bool selected, bool highlighted) {
+                     int32 available_width,
+                     bool selected, bool highlighted) {
     NcMenu *menu;
     int32 result;
 
