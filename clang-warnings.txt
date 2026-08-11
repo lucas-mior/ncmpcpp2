@@ -1,0 +1,362 @@
+
+build.sh [01;38;2;255;000;000mdebug [0;m
++ pkg-config --exists libmpdclient >= 2.8 ncursesw fftw3 >= 3 libcurl taglib_c
++ pkg-config --cflags libmpdclient >= 2.8 ncursesw fftw3 >= 3 libcurl taglib_c
++ pkg-config --libs libmpdclient >= 2.8 ncursesw fftw3 >= 3 libcurl taglib_c
++ pkg-config --cflags readline
++ pkg-config --libs readline
++ clang -I. -Isrc -Icbase -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -I/usr/include/taglib -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 --analyze -Xanalyzer -analyzer-output=text -Xanalyzer -analyzer-werror -Xanalyzer -analyzer-opt-analyze-headers -Wno-unused-command-line-argument -fno-color-diagnostics -std=c11 -Wfatal-errors -Wextra -Wall -Werror=all -Werror=extra -Werror -Weverything -Wno-assign-enum -Wno-c++-keyword -Wno-cast-align -Wno-cast-qual -Wno-constant-logical-operand -Wno-covered-switch-default -Wno-disabled-macro-expansion -Wno-float-equal -Wno-format-nonliteral -Wno-implicit-int-enum-cast -Wno-implicit-void-ptr-cast -Wno-nrvo -Wno-padded -Wno-pre-c11-compat -Wno-tentative-definition-compat -Wno-unsafe-buffer-usage -Wno-unused-macros -Wno-used-but-marked-unused -pthread -g3 -Og -DDEBUGGING=1 src/main.c -o bin/ncmpcpp2.tmp.2022365 -lreadline -lmpdclient -lncursesw -lfftw3 -lcurl -ltag_c -ltag -lz -lm
+In file included from src/main.c:68:
+src/lyrics_fetcher.c:2115:38: error: The right operand of '>' is a garbage value [core.UndefinedBinaryOperatorResult]
+ 2115 |     while ((pos > 0) && (scores[pos] > scores[pos - 1])) {
+      |                                      ^
+src/lyrics_fetcher.c:2153:12: note: Assuming 'pos' is < field 'len'
+ 2153 |     while (pos < unescaped.len) {
+      |            ^~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2153:5: note: Loop condition is true.  Entering loop body
+ 2153 |     while (pos < unescaped.len) {
+      |     ^
+src/lyrics_fetcher.c:2161:13: note: 'href' is >= 0
+ 2161 |         if (href < 0) {
+      |             ^~~~
+src/lyrics_fetcher.c:2161:9: note: Taking false branch
+ 2161 |         if (href < 0) {
+      |         ^
+src/lyrics_fetcher.c:2165:17: note: Assuming 'value_start' is < field 'len'
+ 2165 |         while ((value_start < unescaped.len)
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2165:16: note: Left side of '&&' is true
+ 2165 |         while ((value_start < unescaped.len)
+      |                ^
+src/lyrics_fetcher.c:2166:21: note: Assuming the condition is false
+ 2166 |                && ((unescaped.data[value_start] == ' ')
+      |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2166:20: note: Left side of '||' is false
+ 2166 |                && ((unescaped.data[value_start] == ' ')
+      |                    ^
+src/lyrics_fetcher.c:2167:24: note: Assuming the condition is false
+ 2167 |                    || (unescaped.data[value_start] == '\t')
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2166:20: note: Left side of '||' is false
+ 2166 |                && ((unescaped.data[value_start] == ' ')
+      |                    ^
+src/lyrics_fetcher.c:2168:24: note: Assuming the condition is false
+ 2168 |                    || (unescaped.data[value_start] == '\r')
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2166:20: note: Left side of '||' is false
+ 2166 |                && ((unescaped.data[value_start] == ' ')
+      |                    ^
+src/lyrics_fetcher.c:2169:24: note: Assuming the condition is false
+ 2169 |                    || (unescaped.data[value_start] == '\n'))) {
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2165:9: note: Loop condition is false. Execution continues on line 2172
+ 2165 |         while ((value_start < unescaped.len)
+      |         ^
+src/lyrics_fetcher.c:2172:14: note: 'value_start' is < field 'len'
+ 2172 |         if ((value_start >= unescaped.len)
+      |              ^~~~~~~~~~~
+src/lyrics_fetcher.c:2172:13: note: Left side of '||' is false
+ 2172 |         if ((value_start >= unescaped.len)
+      |             ^
+src/lyrics_fetcher.c:2173:17: note: Assuming the condition is false
+ 2173 |             || (unescaped.data[value_start] != '=')) {
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2172:9: note: Taking false branch
+ 2172 |         if ((value_start >= unescaped.len)
+      |         ^
+src/lyrics_fetcher.c:2178:17: note: Assuming 'value_start' is < field 'len'
+ 2178 |         while ((value_start < unescaped.len)
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2178:16: note: Left side of '&&' is true
+ 2178 |         while ((value_start < unescaped.len)
+      |                ^
+src/lyrics_fetcher.c:2179:21: note: Assuming the condition is false
+ 2179 |                && ((unescaped.data[value_start] == ' ')
+      |                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2179:20: note: Left side of '||' is false
+ 2179 |                && ((unescaped.data[value_start] == ' ')
+      |                    ^
+src/lyrics_fetcher.c:2180:24: note: Assuming the condition is false
+ 2180 |                    || (unescaped.data[value_start] == '\t')
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2179:20: note: Left side of '||' is false
+ 2179 |                && ((unescaped.data[value_start] == ' ')
+      |                    ^
+src/lyrics_fetcher.c:2181:24: note: Assuming the condition is false
+ 2181 |                    || (unescaped.data[value_start] == '\r')
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2179:20: note: Left side of '||' is false
+ 2179 |                && ((unescaped.data[value_start] == ' ')
+      |                    ^
+src/lyrics_fetcher.c:2182:24: note: Assuming the condition is false
+ 2182 |                    || (unescaped.data[value_start] == '\n'))) {
+      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2178:9: note: Loop condition is false. Execution continues on line 2185
+ 2178 |         while ((value_start < unescaped.len)
+      |         ^
+src/lyrics_fetcher.c:2185:13: note: 'value_start' is < field 'len'
+ 2185 |         if (value_start >= unescaped.len) {
+      |             ^~~~~~~~~~~
+src/lyrics_fetcher.c:2185:9: note: Taking false branch
+ 2185 |         if (value_start >= unescaped.len) {
+      |         ^
+src/lyrics_fetcher.c:2190:14: note: Assuming the condition is false
+ 2190 |         if ((quote == '\'') || (quote == '"')) {
+      |              ^~~~~~~~~~~~~
+src/lyrics_fetcher.c:2190:13: note: Left side of '||' is false
+ 2190 |         if ((quote == '\'') || (quote == '"')) {
+      |             ^
+src/lyrics_fetcher.c:2190:33: note: Assuming the condition is true
+ 2190 |         if ((quote == '\'') || (quote == '"')) {
+      |                                 ^~~~~~~~~~~~
+src/lyrics_fetcher.c:2190:9: note: Taking true branch
+ 2190 |         if ((quote == '\'') || (quote == '"')) {
+      |         ^
+src/lyrics_fetcher.c:2205:13: note: 'value_end' is >= 0
+ 2205 |         if (value_end < 0) {
+      |             ^~~~~~~~~
+src/lyrics_fetcher.c:2205:9: note: Taking false branch
+ 2205 |         if (value_end < 0) {
+      |         ^
+src/lyrics_fetcher.c:2208:13: note: Left side of '&&' is true
+ 2208 |         if (lyrics_unwrap_search_url(&candidate,
+      |             ^
+src/lyrics_fetcher.c:2211:27: note: Field 'data' is not equal to NULL
+ 2211 |             && (candidate.data != NULL)
+      |                           ^
+src/lyrics_fetcher.c:2208:13: note: Left side of '&&' is true
+ 2208 |         if (lyrics_unwrap_search_url(&candidate,
+      |             ^
+src/lyrics_fetcher.c:2212:27: note: Field 'len' is > 0
+ 2212 |             && (candidate.len > 0)
+      |                           ^
+src/lyrics_fetcher.c:2208:13: note: Left side of '&&' is true
+ 2208 |         if (lyrics_unwrap_search_url(&candidate,
+      |             ^
+src/lyrics_fetcher.c:2208:9: note: Taking true branch
+ 2208 |         if (lyrics_unwrap_search_url(&candidate,
+      |         ^
+src/lyrics_fetcher.c:2221:17: note: 'score' is > 0
+ 2221 |             if (score <= 0) {
+      |                 ^~~~~
+src/lyrics_fetcher.c:2221:13: note: Taking false branch
+ 2221 |             if (score <= 0) {
+      |             ^
+src/lyrics_fetcher.c:2225:18: note: Calling 'lyrics_insert_search_url'
+ 2225 |             if (!lyrics_insert_search_url(out, scores, candidate.data,
+      |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2226 |                                           candidate.len, score)) {
+      |                                           ~~~~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2102:16: note: Field 'len' is < LYRICS_SEARCH_MAX_CANDIDATES
+ 2102 |     if ((urls->len >= LYRICS_SEARCH_MAX_CANDIDATES)
+      |                ^
+src/lyrics_fetcher.c:2103:9: note: Left side of '&&' is false
+ 2103 |         && (score <= scores[LYRICS_SEARCH_MAX_CANDIDATES - 1])) {
+      |         ^
+src/lyrics_fetcher.c:2108:9: note: 'item' is not equal to NULL
+ 2108 |     if (item == NULL) {
+      |         ^~~~
+src/lyrics_fetcher.c:2108:5: note: Taking false branch
+ 2108 |     if (item == NULL) {
+      |     ^
+src/lyrics_fetcher.c:2115:13: note: 'pos' is > 0
+ 2115 |     while ((pos > 0) && (scores[pos] > scores[pos - 1])) {
+      |             ^~~
+src/lyrics_fetcher.c:2115:12: note: Left side of '&&' is true
+ 2115 |     while ((pos > 0) && (scores[pos] > scores[pos - 1])) {
+      |            ^
+src/lyrics_fetcher.c:2115:38: note: The right operand of '>' is a garbage value
+ 2115 |     while ((pos > 0) && (scores[pos] > scores[pos - 1])) {
+      |                                      ^ ~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2371:17: error: Array access (from variable 'data') results in a null pointer dereference [core.NullDereference]
+ 2371 |            && ((data[pos] == ' ') || (data[pos] == '\t')
+      |                 ^
+src/lyrics_fetcher.c:2758:5: note: Control jumps to 'case NCM_LYRICS_FETCHER_GENIUS:'  at line 2765
+ 2758 |     switch (fetcher->type) {
+      |     ^
+src/lyrics_fetcher.c:2766:16: note: Calling 'lyrics_extract_genius'
+ 2766 |         return lyrics_extract_genius(out, data, data_len);
+      |                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2393:5: note: 'json.data' initialized to a null pointer value
+ 2393 |     StrBuilder json = {0};
+      |     ^~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2407:9: note: 'marker' is >= 0
+ 2407 |     if (marker >= 0) {
+      |         ^~~~~~
+src/lyrics_fetcher.c:2407:5: note: Taking true branch
+ 2407 |     if (marker >= 0) {
+      |     ^
+src/lyrics_fetcher.c:2409:13: note: Calling 'lyrics_decode_quoted'
+ 2409 |         if (lyrics_decode_quoted(&json, data, data_len, marker, '\'',
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2410 |                                  &json_end)) {
+      |                                  ~~~~~~~~~~
+src/lyrics_fetcher.c:2277:5: note: Calling 'sb_clear'
+ 2277 |     sb_clear(out);
+      |     ^~~~~~~~~~~~~
+cbase/util.c:2023:22: note: Field 'data' is null
+ 2023 |     if (str_builder->data) {
+      |                      ^
+cbase/util.c:2023:5: note: Taking false branch
+ 2023 |     if (str_builder->data) {
+      |     ^
+cbase/util.c:2026:5: note: Returning without writing to 'str_builder->data'
+ 2026 |     return;
+      |     ^
+src/lyrics_fetcher.c:2277:5: note: Returning from 'sb_clear'
+ 2277 |     sb_clear(out);
+      |     ^~~~~~~~~~~~~
+src/lyrics_fetcher.c:2279:12: note: Assuming 'i' is < 'data_len'
+ 2279 |     while (i < data_len) {
+      |            ^~~~~~~~~~~~
+src/lyrics_fetcher.c:2279:5: note: Loop condition is true.  Entering loop body
+ 2279 |     while (i < data_len) {
+      |     ^
+src/lyrics_fetcher.c:2282:13: note: Assuming the condition is false
+ 2282 |         if (data[i] == quote) {
+      |             ^~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2282:9: note: Taking false branch
+ 2282 |         if (data[i] == quote) {
+      |         ^
+src/lyrics_fetcher.c:2286:13: note: Assuming the condition is false
+ 2286 |         if (data[i] != '\\') {
+      |             ^~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2286:9: note: Taking false branch
+ 2286 |         if (data[i] != '\\') {
+      |         ^
+src/lyrics_fetcher.c:2293:13: note: Assuming 'i' is < 'data_len'
+ 2293 |         if (i >= data_len) {
+      |             ^~~~~~~~~~~~~
+src/lyrics_fetcher.c:2293:9: note: Taking false branch
+ 2293 |         if (i >= data_len) {
+      |         ^
+src/lyrics_fetcher.c:2298:9: note: Control jumps to 'case 10:'  at line 2338
+ 2298 |         switch (escaped) {
+      |         ^
+src/lyrics_fetcher.c:2339:13: note:  Execution continues on line 2279
+ 2339 |             break;
+      |             ^
+src/lyrics_fetcher.c:2279:12: note: Assuming 'i' is < 'data_len'
+ 2279 |     while (i < data_len) {
+      |            ^~~~~~~~~~~~
+src/lyrics_fetcher.c:2279:5: note: Loop condition is true.  Entering loop body
+ 2279 |     while (i < data_len) {
+      |     ^
+src/lyrics_fetcher.c:2282:13: note: Assuming the condition is true
+ 2282 |         if (data[i] == quote) {
+      |             ^~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2282:9: note: Taking true branch
+ 2282 |         if (data[i] == quote) {
+      |         ^
+src/lyrics_fetcher.c:2284:13: note: Returning without writing to 'out->data'
+ 2284 |             return true;
+      |             ^
+src/lyrics_fetcher.c:2409:13: note: Returning from 'lyrics_decode_quoted'
+ 2409 |         if (lyrics_decode_quoted(&json, data, data_len, marker, '\'',
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2410 |                                  &json_end)) {
+      |                                  ~~~~~~~~~~
+src/lyrics_fetcher.c:2409:9: note: Taking true branch
+ 2409 |         if (lyrics_decode_quoted(&json, data, data_len, marker, '\'',
+      |         ^
+src/lyrics_fetcher.c:2413:18: note: Assuming 'lyrics_data' is >= 0
+ 2413 |             if ((lyrics_data >= 0)
+      |                  ^~~~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2413:17: note: Left side of '&&' is true
+ 2413 |             if ((lyrics_data >= 0)
+      |                 ^
+src/lyrics_fetcher.c:2414:44: note: Passing null pointer value via 1st parameter 'data'
+ 2414 |                 && lyrics_json_value_start(json.data, json.len,
+      |                                            ^~~~~~~~~
+src/lyrics_fetcher.c:2414:20: note: Calling 'lyrics_json_value_start'
+ 2414 |                 && lyrics_json_value_start(json.data, json.len,
+      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2415 |                                            STRLIT("html"), lyrics_data,
+      |                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2416 |                                            &value_start)
+      |                                            ~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2365:9: note: Assuming 'key_pos' is >= 0
+ 2365 |     if (key_pos < 0) {
+      |         ^~~~~~~~~~~
+src/lyrics_fetcher.c:2365:5: note: Taking false branch
+ 2365 |     if (key_pos < 0) {
+      |     ^
+src/lyrics_fetcher.c:2370:13: note: Assuming 'pos' is < 'data_len'
+ 2370 |     while ((pos < data_len)
+      |             ^~~~~~~~~~~~~~
+src/lyrics_fetcher.c:2370:12: note: Left side of '&&' is true
+ 2370 |     while ((pos < data_len)
+      |            ^
+src/lyrics_fetcher.c:2371:17: note: Array access (from variable 'data') results in a null pointer dereference
+ 2371 |            && ((data[pos] == ' ') || (data[pos] == '\t')
+      |                 ^~~~
+In file included from src/main.c:74:
+src/screens/nc_lyrics.c:509:9: error: Opened stream never closed. Potential resource leak [unix.Stream]
+  509 |         ncm_error_set(error, errno, STRLIT("failed to save lyrics"));
+      |         ^
+src/screens/nc_lyrics.c:1679:9: note: Assuming field 'background' is true
+ 1679 |     if (!job->background) {
+      |         ^~~~~~~~~~~~~~~~
+src/screens/nc_lyrics.c:1679:5: note: Taking false branch
+ 1679 |     if (!job->background) {
+      |     ^
+src/screens/nc_lyrics.c:1720:13: note: Assuming field 'success' is true
+ 1720 |         if (job->result.success) {
+      |             ^~~~~~~~~~~~~~~~~~~
+src/screens/nc_lyrics.c:1720:9: note: Taking true branch
+ 1720 |         if (job->result.success) {
+      |         ^
+src/screens/nc_lyrics.c:1723:19: note: Calling 'native_lyrics_screen_save_file'
+ 1723 |             (void)native_lyrics_screen_save_file(screen,
+      |                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1724 |                                                  job->filename.data,
+      |                                                  ~~~~~~~~~~~~~~~~~~~
+ 1725 |                                                  job->filename.len,
+      |                                                  ~~~~~~~~~~~~~~~~~~
+ 1726 |                                                  job->result.text,
+      |                                                  ~~~~~~~~~~~~~~~~~
+ 1727 |                                                  job->result.text_len,
+      |                                                  ~~~~~~~~~~~~~~~~~~~~~
+ 1728 |                                                  &save_error);
+      |                                                  ~~~~~~~~~~~~
+src/screens/nc_lyrics.c:494:10: note: Assuming 'filename' is not equal to NULL
+  494 |     if ((filename == NULL) || (filename_len <= 0)) {
+      |          ^~~~~~~~~~~~~~~~
+src/screens/nc_lyrics.c:494:9: note: Left side of '||' is false
+  494 |     if ((filename == NULL) || (filename_len <= 0)) {
+      |         ^
+src/screens/nc_lyrics.c:494:32: note: Assuming 'filename_len' is > 0
+  494 |     if ((filename == NULL) || (filename_len <= 0)) {
+      |                                ^~~~~~~~~~~~~~~~~
+src/screens/nc_lyrics.c:494:5: note: Taking false branch
+  494 |     if ((filename == NULL) || (filename_len <= 0)) {
+      |     ^
+src/screens/nc_lyrics.c:499:17: note: Stream opened here
+  499 |     if ((file = fopen(filename, "wb")) == NULL) {
+      |                 ^~~~~~~~~~~~~~~~~~~~~
+src/screens/nc_lyrics.c:499:17: note: Assuming that 'fopen' is successful
+  499 |     if ((file = fopen(filename, "wb")) == NULL) {
+      |                 ^~~~~~~~~~~~~~~~~~~~~
+src/screens/nc_lyrics.c:499:5: note: Taking false branch
+  499 |     if ((file = fopen(filename, "wb")) == NULL) {
+      |     ^
+src/screens/nc_lyrics.c:505:9: note: Assuming 'lyrics' is null
+  505 |     if (lyrics && (lyrics_len > 0)) {
+      |         ^~~~~~
+src/screens/nc_lyrics.c:505:16: note: Left side of '&&' is false
+  505 |     if (lyrics && (lyrics_len > 0)) {
+      |                ^
+src/screens/nc_lyrics.c:508:10: note: Assuming 'written' is not equal to 'lyrics_len'
+  508 |     if ((written != lyrics_len) || (fclose(file) != 0)) {
+      |          ^~~~~~~~~~~~~~~~~~~~~
+src/screens/nc_lyrics.c:508:33: note: Left side of '||' is true
+  508 |     if ((written != lyrics_len) || (fclose(file) != 0)) {
+      |                                 ^
+src/screens/nc_lyrics.c:509:9: note: Opened stream never closed. Potential resource leak
+  509 |         ncm_error_set(error, errno, STRLIT("failed to save lyrics"));
+      |         ^~~~~~~~~~~~~
+3 errors generated.
++ cleanup
++ [ -n bin/ncmpcpp2.tmp.2022365 ]
++ rm -f bin/ncmpcpp2.tmp.2022365
++ return 0
