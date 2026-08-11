@@ -617,7 +617,7 @@ default:
 - Prefer to declare variable at the top of blocks
   * Exception: for loop counters (`for (int32 i = 0; i < N; i += 1)`)
   * Another exception: generated code / meta programming.
-  * Avoid mixing declarations and code (`-Wdeclaration-after-statement`)
+  * Don't mix declarations and code (`-Wdeclaration-after-statement`)
   * Sometimes it is good practice is to create artificial blocks to reduce the
     scope of variables. Only do it for reasonably long functions, for short
     functions, declare variables at the top of the function and call it a day.
