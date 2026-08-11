@@ -722,8 +722,11 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
 static void
 test_provider_aware_slug_normalization(void) {
     NcmLyricsFetcherDef fetcher;
+    StrBuilder unwrapped = {0};
+    StrBuilderArray urls;
 
     ncm_lyrics_fetcher_def_init(&fetcher);
+    str_builder_array_init(&urls);
 
     assert(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT("vagalume")));
@@ -784,6 +787,22 @@ test_provider_aware_slug_normalization(void) {
                     "luis_fonsi/echame_la_culpa.html"),
         STRLIT("Luis Fonsi"), STRLIT("Despacito")) == 0);
 
+    assert(!lyrics_unwrap_search_url(&unwrapped, STRLIT("")));
+    assert(!lyrics_unwrap_search_url(&unwrapped, STRLIT("/url?q=")));
+    assert(lyrics_collect_search_urls(
+        &fetcher, &urls,
+        STRLIT("<a href=\"\"></a><a href=\"/url?q=\"></a>"
+               "<a href=\"https://www.amalgama-lab.com/songs/l/"
+               "luis_fonsi/despacito.html\"></a>"),
+        STRLIT("Luis Fonsi"), STRLIT("Despacito")));
+    assert(urls.len == 1);
+    assert(STREQUAL(
+        urls.items[0].data, urls.items[0].len,
+        STRLIT("https://www.amalgama-lab.com/songs/l/"
+               "luis_fonsi/despacito.html")));
+
+    str_builder_array_destroy(&urls);
+    sb_free(&unwrapped);
     ncm_lyrics_fetcher_def_destroy(&fetcher);
     return;
 }
