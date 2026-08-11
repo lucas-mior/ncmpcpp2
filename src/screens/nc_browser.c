@@ -32,31 +32,28 @@ static void browser_install_menu_callbacks(
     BrowserScreen *screen);
 static void browser_apply_menu_config(BrowserScreen *screen);
 static void browser_draw_item(NcMenu *menu, NcWindow *window,
-                                     void *item, int32 pos, void *user);
+                              void *item, int32 pos, void *user);
 static void browser_print_buffer(NcWindow *window, NcBuffer *buffer);
 static void browser_mouse_scroll(BrowserScreen *screen,
                                         enum NcScroll where);
-static bool browser_filter_item(NcMenu *menu, void *item,
-                                       void *user);
+static bool browser_filter_item(NcMenu *menu, void *item, void *user);
 static void browser_activate_item(NcMenu *menu, void *item,
-                                         int32 pos, void *user);
+                                  int32 pos, void *user);
 static void browser_set_item_selected(void *item, bool selected,
                                              void *user);
 static bool browser_enter_item(BrowserScreen *screen,
                                       NcmMpdItem *item);
 static void browser_sync_display_mode(BrowserScreen *screen);
 static int32 browser_render_width(BrowserScreen *screen,
-                                         int32 available_width,
-                                         bool selected, bool highlighted);
+                                  int32 available_width,
+                                  bool selected, bool highlighted);
 static bool browser_item_matches(BrowserScreen *screen,
                                         NcmMpdItem *item,
                                         NcmRegex *regex, bool filter);
-static bool browser_search_position(NcMenu *menu, int32 pos,
-                                           void *user);
-static bool browser_directory_is_root(char *directory,
-                                             int32 directory_len);
+static bool browser_search_position(NcMenu *menu, int32 pos, void *user);
+static bool browser_directory_is_root(char *directory, int32 directory_len);
 static bool browser_path_is_parent_directory(char *directory,
-                                                    int32 directory_len);
+                                             int32 directory_len);
 static bool browser_set_normalized_directory(
     BrowserScreen *screen, char *directory, int32 directory_len);
 static bool browser_set_parent_of_directory(
@@ -1109,14 +1106,12 @@ browser_screen_search(BrowserScreen *screen,
 }
 
 static bool
-browser_search_position(NcMenu *menu, int32 pos,
-                               void *user) {
-    BrowserSearchContext *context;
+browser_search_position(NcMenu *menu, int32 pos, void *user) {
+    BrowserSearchContext *context = user;
 
-    context = user;
-    return browser_item_matches(
-        context->screen, nc_menu_active_item_at(menu, pos),
-        context->regex, false);
+    return browser_item_matches(context->screen,
+                                nc_menu_active_item_at(menu, pos),
+                                context->regex, false);
 }
 
 bool
@@ -1486,13 +1481,12 @@ browser_filter_item(NcMenu *menu, void *item, void *user) {
 }
 
 static void
-browser_activate_item(NcMenu *menu, void *item, int32 pos,
-                             void *user) {
-    BrowserScreen *screen;
+browser_activate_item(NcMenu *menu, void *item, int32 pos, void *user) {
+    BrowserScreen *screen = user;
 
     (void)menu;
     (void)pos;
-    screen = user;
+
     if ((screen == NULL) || (item == NULL)) {
         return;
     }
