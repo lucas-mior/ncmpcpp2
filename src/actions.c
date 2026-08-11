@@ -3942,7 +3942,7 @@ action_runtime_crop_playlist(bool main_playlist) {
     StrBuilder question = {0};
     StrBuilder message = {0};
     NcmError ncm_error;
-    bool success;
+    bool success = false;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
         return false;
