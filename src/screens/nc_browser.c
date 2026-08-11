@@ -1322,15 +1322,13 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     NcMenu *menu = browser_screen_menu(browser);
     NcWindow *window = browser_screen_window(browser);
     NcmMpdItem *item;
-    int32 x;
-    int32 y;
+    int32 x = event.x;
+    int32 y = event.y;
 
     if (nc_menu_empty(menu)) {
         return;
     }
 
-    x = event.x;
-    y = event.y;
     if (!nc_window_has_coords(window, &x, &y)) {
         return;
     }
