@@ -344,19 +344,19 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
                         int32 *width, bool keep_existing) {
     NcmFormatAst ast;
     NcBuffer tmp;
-    NcmError error;
+    NcmError ncm_error;
     bool result;
 
     if (keep_existing && !nc_buffer_empty(buffer)) {
         return true;
     }
 
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     ncm_format_ast_init(&ast);
     nc_buffer_init(&tmp);
     result = ncm_format_parse(&ast, value, value_len,
                               NCM_FORMAT_FLAG_COLOR | NCM_FORMAT_FLAG_FORMAT,
-                              &error);
+                              &ncm_error);
     if (result) {
         ncm_format_render_buffer(&ast, NULL, &tmp, NULL,
                                  NCM_FORMAT_FLAG_COLOR

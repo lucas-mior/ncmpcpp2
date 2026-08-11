@@ -1165,7 +1165,7 @@ playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
 static void
 playlist_activate_song(NcMenu *menu, void *item, int32 pos,
                               void *user) {
-    NcmError error = {0};
+    NcmError ncm_error = {0};
 
     (void)menu;
     (void)pos;
@@ -1174,8 +1174,8 @@ playlist_activate_song(NcMenu *menu, void *item, int32 pos,
         return;
     }
     if (!ncm_mpd_client_play_id(&global_mpd, ncm_song_id(item),
-                                &error)) {
-        ncm_statusbar_print_cstring(1, error.message);
+                                &ncm_error)) {
+        ncm_statusbar_print_cstring(1, ncm_error.message);
     }
     return;
 }

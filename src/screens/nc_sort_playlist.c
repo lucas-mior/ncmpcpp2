@@ -486,7 +486,7 @@ static void
 sort_dialog_run_sort(void *user) {
     enum NcmSongGetter getters[16];
     SortPlaylistDialog *dialog;
-    NcmError error;
+    NcmError ncm_error;
     bool success;
     int32 getters_len;
 
@@ -499,20 +499,20 @@ sort_dialog_run_sort(void *user) {
         dialog, getters, LENGTH(getters));
     ncm_statusbar_print_cstring(Config.message_delay_time,
                                 "Sorting...");
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     success = ncm_playlist_sort_range(
         &dialog->songs, dialog->start_position, getters, getters_len,
-        dialog->ignore_leading_the, dialog->client, &error);
+        dialog->ignore_leading_the, dialog->client, &ncm_error);
     if (success) {
-        success = ncm_status_update_full(dialog->client, NULL, &error);
+        success = ncm_status_update_full(dialog->client, NULL, &ncm_error);
     }
 
     if (success) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Range sorted");
-    } else if (ncm_error_is_set(&error)) {
+    } else if (ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    error.message);
+                                    ncm_error.message);
     } else {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Could not sort playlist");

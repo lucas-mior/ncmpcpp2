@@ -1568,15 +1568,15 @@ bool
 media_library_screen_selected_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs
 ) {
-    NcmError error;
+    NcmError ncm_error;
     bool result;
 
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     result = media_library_screen_selected_songs_checked(
-        screen, songs, &error);
-    if (!result && ncm_error_is_set(&error)) {
+        screen, songs, &ncm_error);
+    if (!result && ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print_cstring(
-            Config.message_delay_time, error.message);
+            Config.message_delay_time, ncm_error.message);
     }
     return result;
 }
@@ -3323,7 +3323,7 @@ library_mouse_select(
     MediaLibraryScreen *screen, enum MediaLibraryColumn column,
     NcMenu *menu, int32 y, bool right_click
 ) {
-    NcmError error;
+    NcmError ncm_error;
     bool play;
 
     if ((menu == NULL)
@@ -3335,11 +3335,11 @@ library_mouse_select(
         return false;
     }
     if (right_click) {
-        ncm_error_clear(&error);
+        ncm_error_clear(&ncm_error);
         play = screen->active_column == MEDIA_LIBRARY_COLUMN_SONGS;
         if (!media_library_screen_add_item_to_playlist(
-                screen, play, &error)) {
-            library_print_add_error(&error);
+                screen, play, &ncm_error)) {
+            library_print_add_error(&ncm_error);
         }
     }
 
@@ -3407,16 +3407,16 @@ library_title(NcScreen *screen) {
 static void
 library_update(NcScreen *screen) {
     MediaLibraryScreen *library;
-    NcmError error;
+    NcmError ncm_error;
     bool update_due;
 
     library = library_from_screen(screen);
     update_due = library_update_due(library);
-    ncm_error_clear(&error);
-    if (!media_library_screen_update(library, &error)) {
-        if (ncm_error_is_set(&error)) {
+    ncm_error_clear(&ncm_error);
+    if (!media_library_screen_update(library, &ncm_error)) {
+        if (ncm_error_is_set(&ncm_error)) {
             ncm_statusbar_print_cstring(
-                Config.message_delay_time, error.message);
+                Config.message_delay_time, ncm_error.message);
         }
         return;
     }

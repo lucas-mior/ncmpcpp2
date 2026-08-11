@@ -239,7 +239,7 @@ status_request_exit(void) {
 static void
 status_prompt_mpd_password(NcmMpdClient *client) {
     enum NcPromptStatus prompt_status;
-    NcmError error;
+    NcmError ncm_error;
     NcPrompt prompt = {0};
     NcWindow *window;
     char *password;
@@ -272,9 +272,9 @@ status_prompt_mpd_password(NcmMpdClient *client) {
         password = "";
     }
 
-    ncm_error_clear(&error);
-    if (!ncm_mpd_client_set_password(client, password, -1, &error)) {
-        status_print_client_error(error.message, -1);
+    ncm_error_clear(&ncm_error);
+    if (!ncm_mpd_client_set_password(client, password, -1, &ncm_error)) {
+        status_print_client_error(ncm_error.message, -1);
         if (password_allocated) {
             nc_window_prompt_result_destroy(password);
         }
@@ -284,7 +284,7 @@ status_prompt_mpd_password(NcmMpdClient *client) {
         nc_window_prompt_result_destroy(password);
     }
 
-    if (!ncm_mpd_client_send_password(client, &error)) {
+    if (!ncm_mpd_client_send_password(client, &ncm_error)) {
         if (ncm_mpd_client_error_code(client) == MPD_ERROR_SERVER) {
             status_print_server_error(ncm_mpd_client_error_message(client), -1);
         } else {
@@ -1179,17 +1179,17 @@ status_call_ui_playlist_changed(int32 previous_version) {
 
 static void
 status_request_playlist_update(int32 previous_version) {
-    NcmError error;
+    NcmError ncm_error;
 
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     if (!playlist_screen_reload_from_mpd(
             app_screen_playlist(), &global_mpd, previous_version,
-            status_playlist_length, &error)) {
-        ncm_statusbar_print_cstring(Config.message_delay_time, error.message);
+            status_playlist_length, &ncm_error)) {
+        ncm_statusbar_print_cstring(Config.message_delay_time, ncm_error.message);
     } else if (status_playlist_update_observer) {
         status_playlist_update_observer(status_playlist_update_observer_user);
     }
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     return;
 }
 
@@ -1301,35 +1301,35 @@ status_player_state_env(void) {
 
 static void
 status_run_player_state_command(void) {
-    NcmError error;
+    NcmError ncm_error;
 
     if (Config.execute_on_player_state_change_len <= 0) {
         return;
     }
 
     (void)setenv("MPD_PLAYER_STATE", status_player_state_env(), 1);
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     (void)ncm_macro_run_external_command(
         Config.execute_on_player_state_change,
-        Config.execute_on_player_state_change_len, true, &error);
-    ncm_error_clear(&error);
+        Config.execute_on_player_state_change_len, true, &ncm_error);
+    ncm_error_clear(&ncm_error);
     (void)unsetenv("MPD_PLAYER_STATE");
     return;
 }
 
 static void
 status_run_song_change_command(void) {
-    NcmError error;
+    NcmError ncm_error;
 
     if (Config.execute_on_song_change_len <= 0) {
         return;
     }
 
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     (void)ncm_macro_run_external_command(Config.execute_on_song_change,
                                          Config.execute_on_song_change_len,
-                                         true, &error);
-    ncm_error_clear(&error);
+                                         true, &ncm_error);
+    ncm_error_clear(&ncm_error);
     return;
 }
 
@@ -1370,16 +1370,16 @@ status_clear_visible_visualizer(void) {
 
 static void
 status_fetch_background_lyrics(NcmSong *song) {
-    NcmError error;
+    NcmError ncm_error;
 
     if (!Config.fetch_lyrics_in_background) {
         return;
     }
 
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     (void)lyrics_screen_fetch_in_background(app_screen_lyrics(),
-                                                   song, false, &error);
-    ncm_error_clear(&error);
+                                                   song, false, &ncm_error);
+    ncm_error_clear(&ncm_error);
     return;
 }
 
@@ -1396,7 +1396,7 @@ status_autocenter_playlist(NcmSong *song) {
 
 static void
 status_fetch_now_playing_lyrics(NcmSong *song) {
-    NcmError error;
+    NcmError ncm_error;
 
     if (!Config.now_playing_lyrics) {
         return;
@@ -1408,10 +1408,10 @@ status_fetch_now_playing_lyrics(NcmSong *song) {
         return;
     }
 
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     (void)lyrics_screen_fetch(app_screen_lyrics(), song, NULL,
-                                     &error);
-    ncm_error_clear(&error);
+                                     &ncm_error);
+    ncm_error_clear(&ncm_error);
     return;
 }
 
@@ -1468,7 +1468,7 @@ status_draw_player_state_label(char *state, int32 state_len) {
 
 static bool
 status_current_song_for_change(NcmSong *song) {
-    NcmError error;
+    NcmError ncm_error;
 
     if (song == NULL) {
         return false;
@@ -1483,8 +1483,8 @@ status_current_song_for_change(NcmSong *song) {
         return false;
     }
 
-    ncm_error_clear(&error);
-    if (!ncm_mpd_client_get_current_song(&global_mpd, song, &error)) {
+    ncm_error_clear(&ncm_error);
+    if (!ncm_mpd_client_get_current_song(&global_mpd, song, &ncm_error)) {
         return false;
     }
     return !ncm_song_empty(song);
@@ -1694,7 +1694,7 @@ status_draw_alternative_elapsed_time(NcWindow *header, NcmSong *song,
 static void
 status_update_elapsed_from_mpd(void) {
     NcmMpdStatus mpd_status;
-    NcmError error;
+    NcmError ncm_error;
     int64 elapsed_ms;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
@@ -1703,8 +1703,8 @@ status_update_elapsed_from_mpd(void) {
         return;
     }
 
-    ncm_error_clear(&error);
-    if (!ncm_mpd_client_get_status(&global_mpd, &mpd_status, &error)) {
+    ncm_error_clear(&ncm_error);
+    if (!ncm_mpd_client_get_status(&global_mpd, &mpd_status, &ncm_error)) {
         elapsed_ms = status_elapsed_time_ms_now();
         status_rebase_elapsed_time(status_elapsed_time + 1, elapsed_ms);
         return;

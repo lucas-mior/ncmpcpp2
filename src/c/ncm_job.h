@@ -15,7 +15,7 @@ typedef struct NcmJob {
     NcmJobCompleteCallback *complete;
     NcmJobDestroyCallback *destroy;
     void *user;
-    NcmError error;
+    NcmError ncm_error;
     bool success;
 } NcmJob;
 

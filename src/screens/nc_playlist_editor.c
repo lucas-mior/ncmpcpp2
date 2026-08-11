@@ -1862,7 +1862,7 @@ playlist_editor_report_error(char *context, int32 context_len,
 static bool
 playlist_editor_update_from_mpd(PlaylistEditorScreen *screen,
                                 NcmMpdClient *client) {
-    NcmError error;
+    NcmError ncm_error;
     bool changed;
     bool ok;
 
@@ -1872,16 +1872,16 @@ playlist_editor_update_from_mpd(PlaylistEditorScreen *screen,
 
     changed = false;
 
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     if (screen->playlists_update_requested
         || nc_menu_empty(nc_playlist_entry_menu_base(&screen->playlists))) {
         ok = playlist_editor_screen_reload_playlists_from_mpd(
-            screen, client, &error);
+            screen, client, &ncm_error);
         if (!ok) {
             screen->playlists_update_requested = false;
             playlist_editor_report_error(
-                STRLIT("Could not fetch playlists"), &error);
-            ncm_error_clear(&error);
+                STRLIT("Could not fetch playlists"), &ncm_error);
+            ncm_error_clear(&ncm_error);
             playlist_editor_update_titles(screen, true);
             return changed;
         }
@@ -1894,14 +1894,14 @@ playlist_editor_update_from_mpd(PlaylistEditorScreen *screen,
         return changed;
     }
 
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     ok = playlist_editor_screen_reload_content_from_mpd(
-        screen, client, &error);
+        screen, client, &ncm_error);
     if (!ok) {
         screen->content_update_requested = false;
         playlist_editor_report_error(
-            STRLIT("Could not fetch playlist content"), &error);
-        ncm_error_clear(&error);
+            STRLIT("Could not fetch playlist content"), &ncm_error);
+        ncm_error_clear(&ncm_error);
         playlist_editor_update_titles(screen, true);
         return changed;
     }
@@ -2089,7 +2089,7 @@ playlist_editor_mouse_load_current_playlist(
     PlaylistEditorScreen *screen
 ) {
     NcmPlaylist *playlist;
-    NcmError error;
+    NcmError ncm_error;
     bool loaded;
 
     if (screen == NULL) {
@@ -2101,16 +2101,16 @@ playlist_editor_mouse_load_current_playlist(
     }
 
     loaded = false;
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     if (!ncm_mpd_client_load_playlist(&global_mpd, playlist->path, &loaded,
-                                      &error)) {
+                                      &ncm_error)) {
         playlist_editor_report_error(STRLIT("Could not load playlist"),
-                                     &error);
+                                     &ncm_error);
         return false;
     }
     if (loaded) {
         playlist_editor_print_playlist_loaded(playlist);
-        (void)ncm_status_update_full(&global_mpd, NULL, &error);
+        (void)ncm_status_update_full(&global_mpd, NULL, &ncm_error);
     }
     return loaded;
 }
@@ -2240,7 +2240,7 @@ static bool
 append_playlist_content_from_mpd(NcmPlaylist *playlist,
                                  NcmSongArray *songs) {
     NcmMpdSongList list;
-    NcmError error;
+    NcmError ncm_error;
     bool ok;
 
     if ((playlist == NULL) || (playlist->path == NULL)
@@ -2249,13 +2249,13 @@ append_playlist_content_from_mpd(NcmPlaylist *playlist,
     }
 
     ncm_mpd_song_list_init(&list);
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     ok = ncm_mpd_client_get_playlist_content(&global_mpd, playlist->path,
-                                             &list, &error);
+                                             &list, &ncm_error);
     if (!ok) {
         playlist_editor_report_error(
-            STRLIT("Could not fetch playlist content"), &error);
-        ncm_error_clear(&error);
+            STRLIT("Could not fetch playlist content"), &ncm_error);
+        ncm_error_clear(&ncm_error);
         ncm_mpd_song_list_destroy(&list);
         return false;
     }

@@ -536,14 +536,14 @@ static void
 configuration_print_usage(char *program_name) {
     StrBuilderArray config_paths;
     StrBuilderArray bindings_paths;
-    NcmError error;
+    NcmError ncm_error;
 
     str_builder_array_init(&config_paths);
     str_builder_array_init(&bindings_paths);
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     if (!configuration_discover_default_paths(&config_paths, &bindings_paths,
-                                              &error)) {
-        configuration_print_error("Failed to build default paths", &error);
+                                              &ncm_error)) {
+        configuration_print_error("Failed to build default paths", &ncm_error);
         str_builder_array_destroy(&bindings_paths);
         str_builder_array_destroy(&config_paths);
         return;
@@ -928,15 +928,15 @@ configuration_print_error(char *context, NcmError *error) {
 bool
 configure(int32 argc, char **argv) {
     NcmConfigurationOptions options;
-    NcmError error;
+    NcmError ncm_error;
     bool result;
 
     configuration_quiet = false;
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     ncm_configuration_options_init(&options);
-    if (!ncm_configuration_options_parse(&options, argc, argv, &error)) {
+    if (!ncm_configuration_options_parse(&options, argc, argv, &ncm_error)) {
         configuration_print_error("Error while processing configuration",
-                                  &error);
+                                  &ncm_error);
         ncm_configuration_options_destroy(&options);
         exit(EXIT_FAILURE);
     }
@@ -954,33 +954,33 @@ configure(int32 argc, char **argv) {
         return false;
     }
     if (options.test_lyrics_fetchers) {
-        result = configuration_test_lyrics_fetchers(&error);
+        result = configuration_test_lyrics_fetchers(&ncm_error);
         ncm_configuration_options_destroy(&options);
         if (!result) {
             configuration_print_error("Error while testing lyrics fetchers",
-                                      &error);
+                                      &ncm_error);
             exit(EXIT_FAILURE);
         }
         exit(EXIT_SUCCESS);
     }
 
-    if ((result = ncm_configuration_options_apply(&options, &error))
+    if ((result = ncm_configuration_options_apply(&options, &ncm_error))
         && !options.current_song) {
-        result = configuration_read_bindings(&options, &error);
+        result = configuration_read_bindings(&options, &ncm_error);
     }
     if (result && options.current_song) {
-        result = configuration_print_current_song(&options, &error);
+        result = configuration_print_current_song(&options, &ncm_error);
         ncm_configuration_options_destroy(&options);
         if (!result) {
             configuration_print_error("Error while printing current song",
-                                      &error);
+                                      &ncm_error);
             exit(EXIT_FAILURE);
         }
         return false;
     }
     if (!result) {
         configuration_print_error("Error while processing configuration",
-                                  &error);
+                                  &ncm_error);
         ncm_configuration_options_destroy(&options);
         exit(EXIT_FAILURE);
     }

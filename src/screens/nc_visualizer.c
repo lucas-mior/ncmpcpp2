@@ -527,7 +527,7 @@ visualizer_screen_drain_data_source(VisualizerScreen *screen) {
 bool
 visualizer_screen_find_output_id(VisualizerScreen *screen) {
     NcmMpdOutputList outputs;
-    NcmError error;
+    NcmError ncm_error;
     bool found = false;
 
     if (screen == NULL) {
@@ -542,12 +542,12 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
         return false;
     }
 
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     ncm_mpd_output_list_init(&outputs);
     if (!screen->data_source_hooks.get_outputs(
-            screen->data_source_hooks.user, &outputs, &error)) {
+            screen->data_source_hooks.user, &outputs, &ncm_error)) {
         NcmStringFormatArg arg =
-            ncm_string_format_arg_cstring(error.message);
+            ncm_string_format_arg_cstring(ncm_error.message);
 
         ncm_statusbar_format(ncm_statusbar_message_delay_time(),
                              STRLIT("Could not fetch outputs: %1"),
@@ -1935,7 +1935,7 @@ visualizer_system_sleep_microseconds(void *user, int32 microseconds) {
 
 static bool
 visualizer_reset_output(VisualizerScreen *screen) {
-    NcmError error;
+    NcmError ncm_error;
 
     if (!screen->reset_output || (screen->output_id < 0)) {
         return true;
@@ -1945,14 +1945,14 @@ visualizer_reset_output(VisualizerScreen *screen) {
         return false;
     }
 
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     if (!screen->data_source_hooks.disable_output(
             screen->data_source_hooks.user,
             screen->output_id,
-            &error)) {
+            &ncm_error)) {
         NcmStringFormatArg arg;
 
-        arg = ncm_string_format_arg_cstring(error.message);
+        arg = ncm_string_format_arg_cstring(ncm_error.message);
         ncm_statusbar_format(ncm_statusbar_message_delay_time(),
                              STRLIT("Could not disable visualizer output: %1"),
                              &arg,
@@ -1964,12 +1964,12 @@ visualizer_reset_output(VisualizerScreen *screen) {
             screen->data_source_hooks.user, 50000);
     }
 
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     if (!screen->data_source_hooks.enable_output(
-            screen->data_source_hooks.user, screen->output_id, &error)) {
+            screen->data_source_hooks.user, screen->output_id, &ncm_error)) {
         NcmStringFormatArg arg;
 
-        arg = ncm_string_format_arg_cstring(error.message);
+        arg = ncm_string_format_arg_cstring(ncm_error.message);
         ncm_statusbar_format(ncm_statusbar_message_delay_time(),
                              STRLIT("Could not enable visualizer output: %1"),
                              &arg,
