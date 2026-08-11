@@ -1446,8 +1446,8 @@ static void
 browser_print_buffer(NcWindow *window, NcBuffer *buffer) {
     NcBufferProperty *properties = nc_buffer_properties(buffer);
     char *data = nc_buffer_data(buffer);
+    int32 data_len = nc_buffer_len(buffer);
     int32 property_count = nc_buffer_property_count(buffer);
-    int32 len = nc_buffer_len(buffer);
     int32 property_index = 0;
 
     for (int32 i = 0;; i += 1) {
@@ -1456,7 +1456,7 @@ browser_print_buffer(NcWindow *window, NcBuffer *buffer) {
             nc_buffer_apply_property(window, &properties[property_index]);
             property_index += 1;
         }
-        if (i >= len) {
+        if (i >= data_len) {
             break;
         }
         nc_window_print_char(window, data[i]);
