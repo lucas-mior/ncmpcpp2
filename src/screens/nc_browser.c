@@ -1379,6 +1379,7 @@ browser_action_callbacks(BrowserScreen *screen) {
     callbacks.activate = browser_activate_item;
     callbacks.set_selected = browser_set_item_selected;
     callbacks.user = screen;
+
     return callbacks;
 }
 
@@ -1401,15 +1402,15 @@ browser_install_menu_callbacks(BrowserScreen *screen) {
 
 static void
 browser_apply_menu_config(BrowserScreen *screen) {
-    NcMenu *menu;
+    NcMenu *menu = browser_screen_menu(screen);
 
-    menu = browser_screen_menu(screen);
     nc_menu_set_highlight_prefix(menu, &Config.current_item_prefix);
     nc_menu_set_highlight_suffix(menu, &Config.current_item_suffix);
     nc_menu_set_selected_prefix(menu, &Config.selected_item_prefix);
     nc_menu_set_selected_suffix(menu, &Config.selected_item_suffix);
     nc_menu_set_cyclic_scrolling(menu, Config.use_cyclic_scrolling);
     nc_menu_set_centered_cursor(menu, Config.centered_cursor);
+
     return;
 }
 
