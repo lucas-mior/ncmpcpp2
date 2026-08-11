@@ -128,16 +128,16 @@ show_help() {
 usage: ./$script <target>
 
 targets:
-  build                    build with CFLAGS=-O2 -flto
-  debug                    build with CFLAGS=-g3 -Og (default)
-  fast_feedback            build with clang warning checks
-  all                      build with the current CFLAGS
-  check                    run the clang static analyzer
-  test                     build and run all tests
-  install                  build and install the program and documentation
-  uninstall                remove installed program and documentation
-  clean                    remove bin/
-  help                     show this help
+  build              build with CFLAGS=-O2 -flto
+  debug              build with CFLAGS=-g3 -Og (default)
+  fast_feedback      build with clang warning checks
+  all                build with the current CFLAGS
+  check              run the clang static analyzer
+  test               build and run all tests
+  install            build and install the program and documentation
+  uninstall          remove installed program and documentation
+  clean              remove bin/
+  help               show this help
 
 common variables:
   PREFIX             install prefix, default: /usr/local
