@@ -574,9 +574,9 @@ browser_screen_has_supported_extension(BrowserScreen *screen,
 }
 
 bool
-browser_screen_fetch_supported_extensions(
-    BrowserScreen *screen, NcmMpdClient *client, NcmError *ncm_error
-) {
+browser_screen_fetch_supported_extensions(BrowserScreen *screen,
+                                          NcmMpdClient *client,
+                                          NcmError *ncm_error) {
     NcmMpdStringList strings;
     StrBuilderArray extensions;
     NcmMpdString *string;
