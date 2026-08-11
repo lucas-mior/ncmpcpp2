@@ -162,8 +162,7 @@ ncm_fs_unlink(char *path, int32 path_len, NcmError *ncm_error) {
             ncm_error_clear(ncm_error);
             return true;
         }
-        ncm_fs_set_errno_error(ncm_error, errno, "unlink", path,
-                               path_len);
+        ncm_fs_set_errno_error(ncm_error, errno, "unlink", path, path_len);
         free2(path_copy, path_len + 1);
         return false;
     }
@@ -174,8 +173,9 @@ ncm_fs_unlink(char *path, int32 path_len, NcmError *ncm_error) {
 }
 
 bool
-ncm_fs_rename(char *old_path, int32 old_path_len, char *new_path,
-              int32 new_path_len, NcmError *ncm_error) {
+ncm_fs_rename(char *old_path, int32 old_path_len,
+              char *new_path, int32 new_path_len,
+              NcmError *ncm_error) {
     char *old_copy = NULL;
     char *new_copy = NULL;
 
@@ -239,8 +239,9 @@ ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *ncm_error) {
 }
 
 bool
-ncm_fs_directory_open(NcmFsDirectory *directory, char *path,
-                      int32 path_len, NcmError *ncm_error) {
+ncm_fs_directory_open(NcmFsDirectory *directory,
+                      char *path, int32 path_len,
+                      NcmError *ncm_error) {
     DIR *dir;
     char *path_copy;
 
