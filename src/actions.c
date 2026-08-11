@@ -1832,7 +1832,6 @@ action_runtime_add_random_items(void) {
     StrBuilder prompt;
     NcmError ncm_error;
     NcWindow *window;
-    enum mpd_tag_type tag_type;
     char values[] = {
         's',
         'a',
@@ -1840,21 +1839,20 @@ action_runtime_add_random_items(void) {
         'b',
     };
     char tag_name[32];
-    char random_type;
     char *plural;
     char *source_name;
     int32 count;
     int32 source_name_len;
     int32 number;
-    bool prompted;
+    enum mpd_tag_type tag_type = MPD_TAG_ARTIST;
+    char random_type = 0;
+    bool prompted = false;
     bool success;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
         return false;
     }
 
-    random_type = 0;
-    prompted = false;
     ncm_statusbar_scoped_lock_init(&lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window,
@@ -1868,7 +1866,6 @@ action_runtime_add_random_items(void) {
         return true;
     }
 
-    tag_type = MPD_TAG_ARTIST;
     if (random_type == 's') {
         source_name = "song";
         source_name_len = STRLIT_LEN("song");
@@ -2119,10 +2116,9 @@ ncm_action_immediate_command_prompt_should_stop(StrBuilder *previous,
 
 static bool
 action_runtime_command_prompt_hook(char *text, void *user) {
-    ActionRuntimeCommandPrompt *state;
+    ActionRuntimeCommandPrompt *state = user;
     int32 text_len;
 
-    state = user;
     text_len = optional_strlen32(text);
     if (!ncm_statusbar_main_hook(text, text_len)) {
         return false;
@@ -2199,16 +2195,12 @@ static bool
 action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
                                         char *text, int32 text_len, bool *found,
                                         NcmError *ncm_error) {
-    NcMenu *menu;
-    int32 old_beginning;
-    int32 old_highlight;
+    NcMenu *menu = action_runtime_current_menu();
+    int32 old_beginning = 0;
+    int32 old_highlight = 0;
     int32 count;
-    bool restore;
+    bool restore = false;
 
-    menu = action_runtime_current_menu();
-    old_beginning = 0;
-    old_highlight = 0;
-    restore = false;
     if (menu && state->has_start_position) {
         count = nc_menu_item_count(menu);
         if ((state->start_position >= 0) && (state->start_position < count)) {
@@ -2264,11 +2256,10 @@ action_runtime_search_prompt_apply(ActionRuntimeSearchPrompt *state, char *text,
 
 static bool
 action_runtime_search_prompt_hook(char *text, void *user) {
-    ActionRuntimeSearchPrompt *state;
+    ActionRuntimeSearchPrompt *state = user;
     NcmError ncm_error;
     int32 text_len;
 
-    state = user;
     text_len = optional_strlen32(text);
     if (!ncm_statusbar_main_hook(text, text_len)) {
         return false;
@@ -2284,7 +2275,7 @@ static bool
 action_runtime_prompt_result(StrBuilder *result, NcPrompt *prompt,
                              NcWindow *window) {
     enum NcPromptStatus status;
-    char *text;
+    char *text = NULL;
     int32 text_len;
     bool ok;
 
@@ -2296,7 +2287,6 @@ action_runtime_prompt_result(StrBuilder *result, NcPrompt *prompt,
         return false;
     }
 
-    text = NULL;
     status = nc_window_prompt(window, prompt, &text);
     if ((status != NC_PROMPT_ACCEPTED) || (text == NULL)) {
         nc_window_prompt_result_destroy(text);
@@ -2316,13 +2306,12 @@ action_runtime_prompt_string(char *prefix, int32 prefix_len, char *initial_text,
     NcmStatusbarScopedLock lock;
     NcPrompt prompt;
     NcWindow *window;
-    bool ok;
+    bool ok = false;
 
     if (initial_text == NULL) {
         initial_text = "";
     }
 
-    ok = false;
     ncm_statusbar_scoped_lock_init(&lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, prefix, prefix_len);
@@ -2375,16 +2364,14 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
     int32 second;
     int32 third;
     int32 result;
-    int32 first_colon;
-    int32 second_colon;
+    int32 first_colon = -1;
+    int32 second_colon = -1;
     int32 number_len;
 
     if ((text == NULL) || (text_len <= 0) || (position == NULL)) {
         return false;
     }
 
-    first_colon = -1;
-    second_colon = -1;
     for (int32 i = 0; i < text_len; i += 1) {
         if (text[i] != ':') {
             continue;
@@ -3344,9 +3331,6 @@ action_runtime_add_prompt(void) {
     StrBuilder message = {0};
     NcmError ncm_error;
     enum mpd_server_error server_error;
-    char *path_text;
-    bool added;
-    bool loaded;
     bool prompted;
     bool success;
 
@@ -3364,26 +3348,31 @@ action_runtime_add_prompt(void) {
         return true;
     }
 
-    path_text = path.data;
-    if (path_text == NULL) {
-        path_text = "";
-    }
+    {
+        char *path_text = path.data;
+        bool added = false;
 
-    ncm_statusbar_print_cstring(0, "Adding...");
-    added = false;
-    ncm_error_clear(&ncm_error);
-    success = ncm_mpd_client_add(&global_mpd, path_text, &added, &ncm_error);
-    server_error = ncm_mpd_client_server_error_code(&global_mpd);
-    if (!success && (server_error == MPD_SERVER_ERROR_NO_EXIST)) {
-        loaded = false;
-        ncm_error_clear(&ncm_error);
-        success = ncm_mpd_client_load_playlist(&global_mpd, path_text, &loaded,
-                                               &ncm_error);
-        sb_free(&path);
-        if (!success) {
-            return action_runtime_mpd_error(&ncm_error);
+        if (path_text == NULL) {
+            path_text = "";
         }
-        return true;
+
+        ncm_statusbar_print_cstring(0, "Adding...");
+        ncm_error_clear(&ncm_error);
+        success = ncm_mpd_client_add(&global_mpd, path_text, &added,
+                                     &ncm_error);
+        server_error = ncm_mpd_client_server_error_code(&global_mpd);
+        if (!success && (server_error == MPD_SERVER_ERROR_NO_EXIST)) {
+            bool loaded = false;
+
+            ncm_error_clear(&ncm_error);
+            success = ncm_mpd_client_load_playlist(
+                &global_mpd, path_text, &loaded, &ncm_error);
+            sb_free(&path);
+            if (!success) {
+                return action_runtime_mpd_error(&ncm_error);
+            }
+            return true;
+        }
     }
     sb_free(&path);
 
@@ -3408,8 +3397,6 @@ static bool
 action_runtime_load_prompt(void) {
     StrBuilder name = {0};
     NcmError ncm_error;
-    char *name_text;
-    bool loaded;
     bool prompted = action_runtime_prompt_string(STRLIT("Load playlist: "), "",
                                                 false, NULL, NULL, &name);
 
@@ -3418,18 +3405,21 @@ action_runtime_load_prompt(void) {
         return true;
     }
 
-    name_text = name.data;
-    if (name_text == NULL) {
-        name_text = "";
-    }
+    {
+        char *name_text = name.data;
+        bool loaded = false;
 
-    ncm_statusbar_print_cstring(0, "Loading...");
-    loaded = false;
-    ncm_error_clear(&ncm_error);
-    if (!ncm_mpd_client_load_playlist(&global_mpd, name_text, &loaded,
-                                      &ncm_error)) {
-        sb_free(&name);
-        return action_runtime_mpd_error(&ncm_error);
+        if (name_text == NULL) {
+            name_text = "";
+        }
+
+        ncm_statusbar_print_cstring(0, "Loading...");
+        ncm_error_clear(&ncm_error);
+        if (!ncm_mpd_client_load_playlist(&global_mpd, name_text, &loaded,
+                                          &ncm_error)) {
+            sb_free(&name);
+            return action_runtime_mpd_error(&ncm_error);
+        }
     }
 
     sb_free(&name);

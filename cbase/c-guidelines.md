@@ -621,6 +621,29 @@ default:
   * Sometimes it is good practice is to create artificial blocks to reduce the
     scope of variables. Only do it for reasonably long functions, for short
     functions, declare variables at the top of the function and call it a day.
+  * If a variable is only used inside a while/for loop, declare inside the
+    while/for block:
+    ```c
+    // bad
+    static void
+    function(int32 a, int32 b) {
+        int32 x;
+
+        while (a != b) {
+            x = a;
+            // some code
+        }
+    }
+
+    // good
+    static void
+    function(int32 a, int32 b) {
+        while (a != b) {
+            int32 x = a;
+            // some code
+        }
+    }
+    ```
 
 - Variable that have a "default return" value, or a "stub" value, shall be
   initialized with the declaration:
