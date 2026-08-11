@@ -542,8 +542,7 @@ browser_screen_draw_header(BrowserScreen *screen) {
 }
 
 void
-browser_screen_set_display_mode(BrowserScreen *screen,
-                                        enum DisplayMode mode) {
+browser_screen_set_display_mode(BrowserScreen *screen, enum DisplayMode mode) {
     if (screen == NULL) {
         return;
     }
