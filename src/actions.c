@@ -5723,7 +5723,7 @@ ncm_action_edit_song(NcmSong *song) {
 static bool
 action_runtime_media_library_current_artist_tag(char **artist,
                                                 int32 *artist_len) {
-    MediaLibraryScreen *library;
+    MediaLibraryScreen *library = app_screen_media_library();
     char *value;
     int32 value_len;
 
@@ -5734,7 +5734,6 @@ action_runtime_media_library_current_artist_tag(char **artist,
         return false;
     }
 
-    library = app_screen_media_library();
     if (media_library_screen_active_column(library)
         != MEDIA_LIBRARY_COLUMN_TAGS) {
         return false;
