@@ -2044,13 +2044,16 @@ lyrics_unwrap_search_url(StrBuilder *out, char *url, int32 url_len) {
     int32 query;
 
     sb_clear(out);
+    if ((url == NULL) || (url_len <= 0)) {
+        return false;
+    }
     if (!lyrics_search_wrapper(url, url_len)) {
         if (lyrics_starts_with_ignore_case(url, url_len,
                                            STRLIT("http://"))
             || lyrics_starts_with_ignore_case(url, url_len,
                                               STRLIT("https://"))) {
             SB_APPEND(out, url, url_len);
-            return true;
+            return (out->data != NULL) && (out->len > 0);
         }
         return false;
     }
@@ -2076,10 +2079,11 @@ lyrics_unwrap_search_url(StrBuilder *out, char *url, int32 url_len) {
                 || STREQUAL(url + query, equal - query,
                             STRLIT("uddg")))) {
             lyrics_percent_decode(out, url + equal + 1, end - equal - 1);
-            if (lyrics_starts_with_ignore_case(out->data, out->len,
-                                               STRLIT("http://"))
-                || lyrics_starts_with_ignore_case(out->data, out->len,
-                                                  STRLIT("https://"))) {
+            if ((out->data != NULL) && (out->len > 0)
+                && (lyrics_starts_with_ignore_case(out->data, out->len,
+                                                   STRLIT("http://"))
+                    || lyrics_starts_with_ignore_case(out->data, out->len,
+                                                      STRLIT("https://")))) {
                 return true;
             }
             sb_clear(out);
@@ -2204,6 +2208,8 @@ lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
         if (lyrics_unwrap_search_url(&candidate,
                                      unescaped.data + value_start,
                                      value_end - value_start)
+            && (candidate.data != NULL)
+            && (candidate.len > 0)
             && !lyrics_url_collected(out, candidate.data,
                                      candidate.len)) {
             int32 score;
