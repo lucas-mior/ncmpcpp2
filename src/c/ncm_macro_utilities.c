@@ -9,7 +9,6 @@
 static bool
 ncm_macro_system_command(char *command, int32 command_len,
                          bool block, int32 *status, NcmError *error) {
-    StrBuilder command_arg = {0};
     StrBuilder buffer = {0};
     Command process = {0};
     int32 rc;
@@ -21,8 +20,8 @@ ncm_macro_system_command(char *command, int32 command_len,
     }
 
     if (block) {
-        SB_APPEND(&command_arg, command, command_len);
-        COMMAND_PUSH(&process, "/bin/sh", "-c", command_arg.data);
+        COMMAND_PUSH(&process, "/bin/sh", "-c");
+        command_push_length(&process, command, command_len);
 
         success = command_run_sync(&process, &rc);
         if (success) {
@@ -35,7 +34,6 @@ ncm_macro_system_command(char *command, int32 command_len,
                           STRLIT("command failed"));
         }
         command_free(&process);
-        sb_free(&command_arg);
         return success;
     }
 
