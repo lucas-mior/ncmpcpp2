@@ -1165,8 +1165,8 @@ browser_screen_render_item(BrowserScreen *screen,
 
 bool
 browser_screen_item_to_string(BrowserScreen *screen,
-                                     NcmMpdItem *item,
-                                     StrBuilder *buffer) {
+                              NcmMpdItem *item,
+                              StrBuilder *buffer) {
     NcmStringView path;
     StrBuilder rendered;
     int32 basename;
