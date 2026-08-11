@@ -130,12 +130,8 @@ ncm_binding_action_init(NcmBindingAction *action) {
 
 void
 ncm_binding_action_destroy(NcmBindingAction *action) {
-    if (action->argument) {
-        free2(action->argument, action->argument_cap);
-    }
-    if (action->keys) {
-        free2(action->keys, action->keys_cap*SIZEOF(*action->keys));
-    }
+    free2(action->argument, action->argument_cap);
+    free2(action->keys, action->keys_cap*SIZEOF(*action->keys));
     ncm_binding_action_init(action);
     return;
 }
@@ -173,10 +169,7 @@ ncm_binding_init(NcmBinding *binding) {
 void
 ncm_binding_destroy(NcmBinding *binding) {
     ncm_binding_clear(binding);
-    if (binding->actions) {
-        free2(binding->actions,
-              binding->actions_cap*SIZEOF(*binding->actions));
-    }
+    free2(binding->actions, binding->actions_cap*SIZEOF(*binding->actions));
     ncm_binding_init(binding);
     return;
 }
@@ -465,9 +458,7 @@ ncm_command_init(NcmCommand *command) {
 
 void
 ncm_command_destroy(NcmCommand *command) {
-    if (command->name) {
-        free2(command->name, command->name_cap);
-    }
+    free2(command->name, command->name_cap);
     ncm_binding_destroy(&command->binding);
     ncm_command_init(command);
     return;
@@ -487,10 +478,8 @@ ncm_key_bindings_destroy(NcmKeyBindings *key_bindings) {
     for (int32 i = 0; i < key_bindings->bindings_len; i += 1) {
         ncm_binding_destroy(key_bindings->bindings + i);
     }
-    if (key_bindings->bindings) {
-        free2(key_bindings->bindings,
-              key_bindings->bindings_cap*SIZEOF(*key_bindings->bindings));
-    }
+    free2(key_bindings->bindings,
+          key_bindings->bindings_cap*SIZEOF(*key_bindings->bindings));
     ncm_key_bindings_init(key_bindings);
     return;
 }
@@ -509,13 +498,9 @@ ncm_bindings_configuration_init(NcmBindingsConfiguration *bindings) {
 void
 ncm_bindings_configuration_destroy(NcmBindingsConfiguration *bindings) {
     ncm_bindings_configuration_clear(bindings);
-    if (bindings->commands) {
-        free2(bindings->commands,
-              bindings->commands_cap*SIZEOF(*bindings->commands));
-    }
-    if (bindings->keys) {
-        free2(bindings->keys, bindings->keys_cap*SIZEOF(*bindings->keys));
-    }
+    free2(bindings->commands,
+          bindings->commands_cap*SIZEOF(*bindings->commands));
+    free2(bindings->keys, bindings->keys_cap*SIZEOF(*bindings->keys));
     ncm_bindings_configuration_init(bindings);
     return;
 }
@@ -1241,9 +1226,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                 ok = false;
                 break;
             }
-            if (command_name) {
-                free2(command_name, command_name_cap);
-            }
+            free2(command_name, command_name_cap);
             command_name = ncm_string_copy(enclosed.data, enclosed.len,
                                            &command_name_cap);
             command_name_len = enclosed.len;
@@ -1293,9 +1276,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                 ok = false;
                 break;
             }
-            if (key_name) {
-                free2(key_name, key_name_cap);
-            }
+            free2(key_name, key_name_cap);
             key_name
                 = ncm_string_copy(enclosed.data, enclosed.len, &key_name_cap);
             key_name_len = enclosed.len;
@@ -1328,12 +1309,8 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     }
 
     ncm_binding_destroy(&actions);
-    if (command_name) {
-        free2(command_name, command_name_cap);
-    }
-    if (key_name) {
-        free2(key_name, key_name_cap);
-    }
+    free2(command_name, command_name_cap);
+    free2(key_name, key_name_cap);
     fclose(file);
     free2(path_copy, path_cap);
     return ok;
