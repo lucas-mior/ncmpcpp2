@@ -1029,8 +1029,8 @@ ncm_status_changes_player_state(void) {
         break;
     }
 
-    player_state_len
-        = status_player_state_string(player_state, SIZEOF(player_state));
+    player_state_len = status_player_state_string(player_state,
+                                                  SIZEOF(player_state));
     status_draw_player_state_label(player_state, player_state_len);
     ncm_status_changes_elapsed_time(false);
     return;
