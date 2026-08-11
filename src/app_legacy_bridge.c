@@ -232,11 +232,9 @@ ncmpcpp_footer_start_y(void) {
 }
 
 NcWindow *
-ncmpcpp_window_create(int32 start_x, int32 start_y, int32 width,
-                             int32 height, NcColor color) {
-    NcWindow *window;
-
-    window = malloc2(SIZEOF(*window));
+ncmpcpp_window_create(int32 start_x, int32 start_y,
+                      int32 width, int32 height, NcColor color) {
+    NcWindow *window = malloc2(SIZEOF(*window));
     nc_window_init(window,
                    start_x, start_y, width, height,
                    STRLIT(""), color, nc_border_none());

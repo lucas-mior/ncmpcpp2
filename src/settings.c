@@ -45,203 +45,6 @@ typedef struct SettingsOption {
         .used = false, \
     }
 
-static bool apply_ncmpcpp_directory(Configuration *config,
-                                    char *value, int32 value_len,
-                                    NcmError *ncm_error);
-static bool apply_lyrics_directory(Configuration *config,
-                                   char *value, int32 value_len,
-                                   NcmError *ncm_error);
-static bool apply_mpd_music_dir(Configuration *config,
-                                char *value, int32 value_len,
-                                NcmError *ncm_error);
-static bool apply_random_exclude_pattern(Configuration *config,
-                                         char *value, int32 value_len,
-                                         NcmError *ncm_error);
-static bool apply_visualizer_data_source(Configuration *config,
-                                         char *value, int32 value_len,
-                                         NcmError *ncm_error);
-static bool apply_visualizer_output_name(Configuration *config,
-                                         char *value, int32 value_len,
-                                         NcmError *ncm_error);
-static bool apply_visualizer_in_stereo(Configuration *config,
-                                       char *value, int32 value_len,
-                                       NcmError *ncm_error);
-static bool apply_visualizer_autoscale(Configuration *config,
-                                       char *value, int32 value_len,
-                                       NcmError *ncm_error);
-static bool apply_visualizer_spectrum_smooth_look(Configuration *config,
-                                                  char *value, int32 value_len,
-                                                  NcmError *ncm_error);
-static bool apply_visualizer_spectrum_smooth_look_legacy_chars(
-    Configuration *config,
-    char *value, int32 value_len,
-    NcmError *ncm_error);
-static bool apply_visualizer_spectrum_log_scale_x(Configuration *config,
-                                                  char *value, int32 value_len,
-                                                  NcmError *ncm_error);
-static bool apply_visualizer_spectrum_log_scale_y(Configuration *config,
-                                                  char *value, int32 value_len,
-                                                  NcmError *ncm_error);
-static bool apply_message_delay_time(Configuration *config,
-                                     char *value, int32 value_len,
-                                     NcmError *ncm_error);
-static bool apply_execute_on_song_change(Configuration *config,
-                                         char *value, int32 value_len,
-                                         NcmError *ncm_error);
-static bool apply_execute_on_player_state_change(Configuration *config,
-                                                 char *value, int32 value_len,
-                                                 NcmError *ncm_error);
-static bool apply_playlist_show_mpd_host(Configuration *config,
-                                         char *value, int32 value_len,
-                                         NcmError *ncm_error);
-static bool apply_playlist_show_remaining_time(Configuration *config,
-                                               char *value, int32 value_len,
-                                               NcmError *ncm_error);
-static bool apply_playlist_shorten_total_times(Configuration *config,
-                                               char *value, int32 value_len,
-                                               NcmError *ncm_error);
-static bool apply_playlist_separate_albums(Configuration *config,
-                                           char *value, int32 value_len,
-                                           NcmError *ncm_error);
-static bool apply_discard_colors_if_item_is_selected(Configuration *config,
-                                                     char *value,
-                                                     int32 value_len,
-                                                     NcmError *ncm_error);
-static bool apply_show_duplicate_tags(Configuration *config,
-                                      char *value, int32 value_len,
-                                      NcmError *ncm_error);
-static bool apply_incremental_seeking(Configuration *config,
-                                      char *value, int32 value_len,
-                                      NcmError *ncm_error);
-static bool apply_seek_time(Configuration *config, char *value, int32 value_len,
-                            NcmError *ncm_error);
-static bool apply_volume_change_step(Configuration *config,
-                                     char *value, int32 value_len,
-                                     NcmError *ncm_error);
-static bool apply_autocenter_mode(Configuration *config,
-                                  char *value, int32 value_len,
-                                  NcmError *ncm_error);
-static bool apply_centered_cursor(Configuration *config,
-                                  char *value, int32 value_len,
-                                  NcmError *ncm_error);
-static bool apply_data_fetching_delay(Configuration *config,
-                                      char *value, int32 value_len,
-                                      NcmError *ncm_error);
-static bool apply_media_library_hide_album_dates(Configuration *config,
-                                                 char *value, int32 value_len,
-                                                 NcmError *ncm_error);
-static bool apply_media_library_albums_split_by_date(Configuration *config,
-                                                     char *value,
-                                                     int32 value_len,
-                                                     NcmError *ncm_error);
-static bool apply_default_tag_editor_pattern(Configuration *config,
-                                             char *value, int32 value_len,
-                                             NcmError *ncm_error);
-static bool apply_header_visibility(Configuration *config,
-                                    char *value, int32 value_len,
-                                    NcmError *ncm_error);
-static bool apply_statusbar_visibility(Configuration *config,
-                                       char *value, int32 value_len,
-                                       NcmError *ncm_error);
-static bool apply_connected_message_on_startup(Configuration *config,
-                                               char *value, int32 value_len,
-                                               NcmError *ncm_error);
-static bool apply_titles_visibility(Configuration *config,
-                                    char *value, int32 value_len,
-                                    NcmError *ncm_error);
-static bool apply_header_text_scrolling(Configuration *config,
-                                        char *value, int32 value_len,
-                                        NcmError *ncm_error);
-static bool apply_cyclic_scrolling(Configuration *config,
-                                   char *value, int32 value_len,
-                                   NcmError *ncm_error);
-static bool apply_follow_now_playing_lyrics(Configuration *config,
-                                            char *value, int32 value_len,
-                                            NcmError *ncm_error);
-static bool apply_fetch_lyrics_background(Configuration *config,
-                                          char *value, int32 value_len,
-                                          NcmError *ncm_error);
-static bool apply_store_lyrics_in_song_dir(Configuration *config,
-                                           char *value, int32 value_len,
-                                           NcmError *ncm_error);
-static bool apply_generate_win32_compatible_filenames(Configuration *config,
-                                                      char *value,
-                                                      int32 value_len,
-                                                      NcmError *ncm_error);
-static bool apply_allow_for_physical_item_deletion(Configuration *config,
-                                                   char *value,
-                                                   int32 value_len,
-                                                   NcmError *ncm_error);
-static bool apply_lastfm_preferred_language(Configuration *config,
-                                            char *value, int32 value_len,
-                                            NcmError *ncm_error);
-static bool apply_show_hidden_files_in_local_browser(Configuration *config,
-                                                     char *value,
-                                                     int32 value_len,
-                                                     NcmError *ncm_error);
-static bool apply_startup_slave_screen_focus(Configuration *config,
-                                             char *value, int32 value_len,
-                                             NcmError *ncm_error);
-static bool apply_ask_for_locked_screen_width_part(Configuration *config,
-                                                   char *value,
-                                                   int32 value_len,
-                                                   NcmError *ncm_error);
-static bool apply_jump_to_now_playing_song_at_start(Configuration *config,
-                                                    char *value,
-                                                    int32 value_len,
-                                                    NcmError *ncm_error);
-static bool apply_ask_before_clearing_playlists(Configuration *config,
-                                                char *value, int32 value_len,
-                                                NcmError *ncm_error);
-static bool apply_ask_before_shuffling_playlists(Configuration *config,
-                                                 char *value, int32 value_len,
-                                                 NcmError *ncm_error);
-static bool apply_display_volume_level(Configuration *config,
-                                       char *value, int32 value_len,
-                                       NcmError *ncm_error);
-static bool apply_display_bitrate(Configuration *config,
-                                  char *value, int32 value_len,
-                                  NcmError *ncm_error);
-static bool apply_display_remaining_time(Configuration *config,
-                                         char *value, int32 value_len,
-                                         NcmError *ncm_error);
-static bool apply_ignore_leading_the(Configuration *config,
-                                     char *value, int32 value_len,
-                                     NcmError *ncm_error);
-static bool apply_block_search_constraints_change(Configuration *config,
-                                                  char *value, int32 value_len,
-                                                  NcmError *ncm_error);
-static bool apply_mouse_support(Configuration *config,
-                                char *value, int32 value_len,
-                                NcmError *ncm_error);
-static bool apply_mouse_list_scroll_whole_page(Configuration *config,
-                                               char *value, int32 value_len,
-                                               NcmError *ncm_error);
-static bool apply_lines_scrolled(Configuration *config,
-                                 char *value, int32 value_len,
-                                 NcmError *ncm_error);
-static bool apply_empty_tag_marker(Configuration *config,
-                                   char *value, int32 value_len,
-                                   NcmError *ncm_error);
-static bool apply_tags_separator(Configuration *config,
-                                 char *value, int32 value_len,
-                                 NcmError *ncm_error);
-static bool apply_tag_editor_extended_numeration(Configuration *config,
-                                                 char *value, int32 value_len,
-                                                 NcmError *ncm_error);
-static bool apply_media_library_sort_by_mtime(Configuration *config,
-                                              char *value, int32 value_len,
-                                              NcmError *ncm_error);
-static bool apply_external_editor(Configuration *config,
-                                  char *value, int32 value_len,
-                                  NcmError *ncm_error);
-static bool apply_use_console_editor(Configuration *config,
-                                     char *value, int32 value_len,
-                                     NcmError *ncm_error);
-static bool apply_colors_enabled(Configuration *config,
-                                 char *value, int32 value_len,
-                                 NcmError *ncm_error);
-
 static void
 settings_error(NcmError *ncm_error, char *message, int32 message_len) {
     ncm_error_set(ncm_error, EINVAL, message, message_len);
@@ -372,13 +175,6 @@ settings_string_set_directory(char **data, int32 *len, int32 *cap, char *value,
     }
     sb_free(&buffer);
     return result;
-}
-
-static bool
-settings_copy_buffer(StrBuilder *buffer, char *value, int32 value_len) {
-    sb_clear(buffer);
-    SB_APPEND(buffer, value, value_len);
-    return true;
 }
 
 static bool
@@ -1135,7 +931,9 @@ apply_visualizer_look(Configuration *config, char *value, int32 value_len,
         settings_invalid_value(ncm_error, value, value_len);
         return false;
     }
-    return settings_copy_buffer(&config->visualizer_chars, value, value_len);
+    sb_clear(&config->visualizer_chars);
+    SB_APPEND(&config->visualizer_chars, value, value_len);
+    return true;
 }
 
 static bool
@@ -1650,8 +1448,8 @@ apply_enable_window_title(Configuration *config, char *value, int32 value_len,
     if (unsupported) {
         config->set_window_title = false;
         if (!settings_quiet) {
-            fprintf(stderr, "Terminal doesn't support window title, skipping "
-                            "'enable_window_title'.\n");
+            error2("Terminal doesn't support window title, skipping "
+                   "'enable_window_title'.\n");
         }
         return true;
     }
@@ -1885,7 +1683,7 @@ settings_set_duplicate_option_error(NcmError *ncm_error,
 static bool
 settings_report_or_ignore(NcmError *ncm_error, bool ignore_errors) {
     if (ncm_error_is_set(ncm_error)) {
-        fprintf(stderr, "%s\n", ncm_error->message);
+        error2("%s\n", ncm_error->message);
     }
     if (!ignore_errors) {
         return false;
@@ -1941,7 +1739,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
     }
 
     if (!quiet) {
-        fprintf(stderr, "Reading configuration from %s...\n", path_buffer.data);
+        error2("Reading configuration from %s...\n", path_buffer.data);
     }
     while (fgets(line, SIZEOF(line), file)) {
         int32 line_len;
