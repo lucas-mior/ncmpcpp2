@@ -375,9 +375,8 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
 
 static void
 status_run_init_hooks(void) {
-    NcmStatusInitHooks *hooks;
+    NcmStatusInitHooks *hooks = NULL;
 
-    hooks = NULL;
     if (status_init_hooks_set) {
         hooks = &status_init_hooks;
     }
