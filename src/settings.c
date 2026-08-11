@@ -1398,24 +1398,25 @@ apply_locked_screen_width_part(Configuration *config,
 }
 
 static bool
-apply_media_library_column_width_ratio_two(Configuration *config, char *value,
-                                           int32 value_len,
+apply_media_library_column_width_ratio_two(Configuration *config,
+                                           char *value, int32 value_len,
                                            NcmError *ncm_error) {
     return settings_parse_ratio(&config->media_library_column_width_ratio_two,
                                 value, value_len, 2, ncm_error);
 }
 
 static bool
-apply_media_library_column_width_ratio_three(Configuration *config, char *value,
-                                             int32 value_len,
+apply_media_library_column_width_ratio_three(Configuration *config,
+                                             char *value, int32 value_len,
                                              NcmError *ncm_error) {
     return settings_parse_ratio(&config->media_library_column_width_ratio_three,
                                 value, value_len, 3, ncm_error);
 }
 
 static bool
-apply_playlist_editor_column_width_ratio(Configuration *config, char *value,
-                                         int32 value_len, NcmError *ncm_error) {
+apply_playlist_editor_column_width_ratio(Configuration *config,
+                                         char *value, int32 value_len,
+                                         NcmError *ncm_error) {
     return settings_parse_ratio(&config->playlist_editor_column_width_ratio,
                                 value, value_len, 2, ncm_error);
 }
@@ -1466,8 +1467,9 @@ apply_enable_window_title(Configuration *config, char *value, int32 value_len,
 }
 
 static bool
-apply_search_engine_default_search_mode(Configuration *config, char *value,
-                                        int32 value_len, NcmError *ncm_error) {
+apply_search_engine_default_search_mode(Configuration *config,
+                                        char *value, int32 value_len,
+                                        NcmError *ncm_error) {
     int32 mode;
 
     if (!ncm_parse_int32(value, value_len, &mode, ncm_error)) {
@@ -1546,8 +1548,9 @@ apply_progressbar_color(Configuration *config, char *value, int32 value_len,
 }
 
 static bool
-apply_progressbar_elapsed_color(Configuration *config, char *value,
-                                int32 value_len, NcmError *ncm_error) {
+apply_progressbar_elapsed_color(Configuration *config,
+                                char *value, int32 value_len,
+                                NcmError *ncm_error) {
     return settings_parse_formatted_color(
         value, value_len, &config->progressbar_elapsed_color, ncm_error);
 }
