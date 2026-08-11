@@ -100,11 +100,11 @@ app_legacy_bridge_refresh_header_if_due(void) {
 
 static void
 app_legacy_bridge_noidle_status_update(int32 flags, void *user) {
-    NcmError error;
+    NcmError ncm_error;
 
     (void)user;
-    ncm_error_clear(&error);
-    (void)ncm_status_update(&global_mpd, flags, &error);
+    ncm_error_clear(&ncm_error);
+    (void)ncm_status_update(&global_mpd, flags, &ncm_error);
     return;
 }
 
@@ -359,19 +359,19 @@ ncmpcpp_legacy_mpd_connected(void) {
 
 void
 ncmpcpp_legacy_connect_or_report(void) {
-    NcmError error;
+    NcmError ncm_error;
 
-    ncm_error_clear(&error);
-    if (!ncm_mpd_client_connect(&global_mpd, &error)) {
-        app_legacy_bridge_report_mpd_error(&error);
+    ncm_error_clear(&ncm_error);
+    if (!ncm_mpd_client_connect(&global_mpd, &ncm_error)) {
+        app_legacy_bridge_report_mpd_error(&ncm_error);
         return;
     }
 
     if (ncm_mpd_client_version(&global_mpd) < 16) {
         ncm_mpd_client_disconnect(&global_mpd);
-        ncm_error_set(&error, MPD_ERROR_STATE,
+        ncm_error_set(&ncm_error, MPD_ERROR_STATE,
                       STRLIT("MPD < 0.16.0 is not supported"));
-        app_legacy_bridge_report_mpd_error(&error);
+        app_legacy_bridge_report_mpd_error(&ncm_error);
     }
     return;
 }
@@ -385,11 +385,11 @@ ncmpcpp_legacy_status_clear(void) {
 bool
 ncmpcpp_legacy_update_environment(bool update_timer, bool refresh_window,
                                   bool mpd_sync) {
-    NcmError error;
+    NcmError ncm_error;
 
     app_legacy_bridge_set_status_observers();
-    ncm_error_clear(&error);
-    ncm_status_trace(&global_mpd, update_timer, true, &error);
+    ncm_error_clear(&ncm_error);
+    ncm_status_trace(&global_mpd, update_timer, true, &ncm_error);
     app_legacy_bridge_dispatch_lyrics_jobs();
     app_legacy_bridge_refresh_header_if_due();
 
@@ -398,8 +398,8 @@ ncmpcpp_legacy_update_environment(bool update_timer, bool refresh_window,
     }
 
     if (mpd_sync) {
-        ncm_error_clear(&error);
-        (void)ncm_status_update_from_noidle(&global_mpd, NULL, &error);
+        ncm_error_clear(&ncm_error);
+        (void)ncm_status_update_from_noidle(&global_mpd, NULL, &ncm_error);
     }
     return true;
 }

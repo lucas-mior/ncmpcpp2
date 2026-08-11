@@ -377,25 +377,25 @@ ncm_binding_runtime_push_key(NcKey key, void *user) {
 bool
 ncm_binding_runtime_run_external_command(char *command, int32 command_len,
                                          void *user) {
-    NcmError error;
+    NcmError ncm_error;
 
     (void)user;
-    ncm_error_clear(&error);
-    return ncm_macro_run_external_command(command, command_len, true, &error);
+    ncm_error_clear(&ncm_error);
+    return ncm_macro_run_external_command(command, command_len, true, &ncm_error);
 }
 
 bool
 ncm_binding_runtime_run_external_console_command(char *command,
                                                  int32 command_len,
                                                  void *user) {
-    NcmError error;
+    NcmError ncm_error;
     bool result;
 
     (void)user;
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     nc_pause_screen();
     result
-        = ncm_macro_run_external_console_command(command, command_len, &error);
+        = ncm_macro_run_external_console_command(command, command_len, &ncm_error);
     nc_unpause_screen();
     return result;
 }

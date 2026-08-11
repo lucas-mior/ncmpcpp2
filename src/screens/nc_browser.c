@@ -844,19 +844,19 @@ browser_screen_delete_items(BrowserScreen *screen,
 bool
 browser_screen_current_directory_path(BrowserScreen *screen,
                                              NcmStringView *path) {
-    NcmError error;
+    NcmError ncm_error;
 
-    ncm_error_clear(&error);
-    return browser_current_directory_item_path(screen, path, &error);
+    ncm_error_clear(&ncm_error);
+    return browser_current_directory_item_path(screen, path, &ncm_error);
 }
 
 bool
 browser_screen_current_playlist_path(BrowserScreen *screen,
                                             NcmStringView *path) {
-    NcmError error;
+    NcmError ncm_error;
 
-    ncm_error_clear(&error);
-    return browser_current_playlist_item_path(screen, path, &error);
+    ncm_error_clear(&ncm_error);
+    return browser_current_playlist_item_path(screen, path, &ncm_error);
 }
 
 bool
@@ -864,10 +864,10 @@ browser_screen_rename_directory_available(
     BrowserScreen *screen
 ) {
     NcmStringView path;
-    NcmError error;
+    NcmError ncm_error;
 
-    ncm_error_clear(&error);
-    return browser_current_directory_item_path(screen, &path, &error)
+    ncm_error_clear(&ncm_error);
+    return browser_current_directory_item_path(screen, &path, &ncm_error)
         && (screen->local_browser || (Config.mpd_music_dir_len > 0));
 }
 
@@ -876,10 +876,10 @@ browser_screen_rename_playlist_available(
     BrowserScreen *screen
 ) {
     NcmStringView path;
-    NcmError error;
+    NcmError ncm_error;
 
-    ncm_error_clear(&error);
-    return browser_current_playlist_item_path(screen, &path, &error);
+    ncm_error_clear(&ncm_error);
+    return browser_current_playlist_item_path(screen, &path, &ncm_error);
 }
 
 bool
@@ -1307,16 +1307,16 @@ browser_title(NcScreen *screen) {
 static void
 browser_update(NcScreen *screen) {
     BrowserScreen *browser;
-    NcmError error;
+    NcmError ncm_error;
 
     browser = browser_from_screen(screen);
     if (browser_screen_update_requested(browser)) {
-        ncm_error_clear(&error);
+        ncm_error_clear(&ncm_error);
         if (browser_screen_is_local(browser)) {
-            (void)browser_reload_from_local(browser, &error);
+            (void)browser_reload_from_local(browser, &ncm_error);
         } else {
             (void)browser_screen_reload_from_mpd(
-                browser, &global_mpd, &error);
+                browser, &global_mpd, &ncm_error);
         }
     }
     if (browser->redraw_header) {
@@ -2070,11 +2070,11 @@ browser_collect_item_songs(BrowserScreen *screen,
             return false;
         }
         if (screen->local_browser) {
-            NcmError error;
+            NcmError ncm_error;
 
-            ncm_error_clear(&error);
+            ncm_error_clear(&ncm_error);
             return browser_collect_local_directory_songs(
-                screen, songs, path.data, path.len, &error);
+                screen, songs, path.data, path.len, &ncm_error);
         }
         return browser_collect_mpd_directory_songs(
             songs, path.data, path.len);
@@ -2094,7 +2094,7 @@ browser_collect_mpd_directory_songs(
     NcmSongArray *songs, char *path, int32 path_len
 ) {
     NcmMpdSongList source;
-    NcmError error;
+    NcmError ncm_error;
     char *directory;
     bool result;
 
@@ -2103,13 +2103,13 @@ browser_collect_mpd_directory_songs(
     }
 
     ncm_mpd_song_list_init(&source);
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     directory = path;
     if (path_len <= 0) {
         directory = "/";
     }
     result = ncm_mpd_client_get_directory_recursive(
-        &global_mpd, directory, &source, &error);
+        &global_mpd, directory, &source, &ncm_error);
     for (int32 i = 0; result && (i < source.count); i += 1) {
         if (!ncm_song_array_append_copy(songs, &source.items[i])) {
             result = false;

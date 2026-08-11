@@ -222,14 +222,14 @@ lastfm_append_escaped(StrBuilder *buffer, char *string, int32 string_len) {
 static bool
 lastfm_action_failed(char *data, int32 data_len) {
     NcmRegex regex;
-    NcmError error;
+    NcmError ncm_error;
     bool failed;
 
-    ncm_error_clear(&error);
+    ncm_error_clear(&ncm_error);
     ncm_regex_init(&regex);
     failed = false;
     if (ncm_regex_compile(&regex, STRLIT("status=\"failed\""),
-                          NCM_REGEX_EXTENDED, &error)) {
+                          NCM_REGEX_EXTENDED, &ncm_error)) {
         failed = ncm_regex_search(&regex, data, data_len);
     }
     ncm_regex_destroy(&regex);

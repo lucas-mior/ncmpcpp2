@@ -13,7 +13,7 @@
 
 typedef struct NcmMpdConnection {
     struct mpd_connection *mpd;
-    NcmError error;
+    NcmError ncm_error;
     enum mpd_error error_code;
     enum mpd_server_error server_error_code;
     bool error_clearable;
