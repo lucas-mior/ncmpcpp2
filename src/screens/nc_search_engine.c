@@ -1681,6 +1681,7 @@ search_collect_local_results(SearchEngineScreen *screen, NcmSongArray *source,
     NcmRegex regexes[SEARCH_ENGINE_CONSTRAINT_COUNT];
     NcmError regex_error;
     bool ok;
+    bool exact_match;
 
     if ((screen == NULL) || (source == NULL) || (songs == NULL)) {
         ncm_error_set(ncm_error, EINVAL,
@@ -1688,7 +1689,7 @@ search_collect_local_results(SearchEngineScreen *screen, NcmSongArray *source,
         return false;
     }
 
-    bool exact_match = screen->search_mode == SEARCH_ENGINE_SEARCH_MODE_EXACT;
+    exact_match = screen->search_mode == SEARCH_ENGINE_SEARCH_MODE_EXACT;
     for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
         ncm_regex_init(&regexes[i]);
     }
