@@ -2104,14 +2104,20 @@ lyrics_insert_search_url(StrBuilderArray *urls, int32 *scores, char *url,
         return true;
     }
 
-    item = str_builder_array_append(urls);
-    if (item == NULL) {
-        return false;
+    if (urls->len >= LYRICS_SEARCH_MAX_CANDIDATES) {
+        pos = LYRICS_SEARCH_MAX_CANDIDATES - 1;
+        item = &urls->items[pos];
+        sb_clear(item);
+    } else {
+        item = str_builder_array_append(urls);
+        if (item == NULL) {
+            return false;
+        }
+        pos = urls->len - 1;
     }
 
     SB_APPEND(item, url, url_len);
-    scores[urls->len - 1] = score;
-    pos = urls->len - 1;
+    scores[pos] = score;
     while ((pos > 0) && (scores[pos] > scores[pos - 1])) {
         StrBuilder temp_url;
         int32 temp_score;
@@ -2125,10 +2131,6 @@ lyrics_insert_search_url(StrBuilderArray *urls, int32 *scores, char *url,
         scores[pos] = temp_score;
         pos -= 1;
     }
-    if (urls->len > LYRICS_SEARCH_MAX_CANDIDATES) {
-        urls->len -= 1;
-        sb_free(&urls->items[urls->len]);
-    }
     return true;
 }
 
@@ -2139,7 +2141,7 @@ lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
     StrBuilder numeric_unescaped;
     StrBuilder unescaped;
     StrBuilder candidate = {0};
-    int32 scores[LYRICS_SEARCH_MAX_CANDIDATES];
+    int32 scores[LYRICS_SEARCH_MAX_CANDIDATES] = {0};
     int32 pos;
     bool ok;
 
