@@ -81,6 +81,8 @@ CAT(FUNC, 64)(void *dest, void *source, int64 n) {                \
     if (n == 0)                                                   \
         return;                                                   \
     if (DEBUGGING) {                                              \
+        ASSERT(dest != NULL);                                     \
+        ASSERT(source != NULL);                                   \
         if (n < 0) {                                              \
             error("Error: Invalid n = %lld\n", n);                \
             fatal(EXIT_FAILURE);                                  \

@@ -236,6 +236,7 @@ debug|build|fast_feedback|all)
     TEMP_FILE=
     ;;
 check)
+    set +e
     CC=gcc CFLAGS="-fanalyzer -fdiagnostics-color=never" "$0" debug
 
     CFLAGS="--analyze -Xanalyzer -analyzer-output=text"
