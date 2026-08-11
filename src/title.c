@@ -184,9 +184,7 @@ ncm_title_draw_header(char *title, int32 title_len) {
 
 void
 ncm_title_draw_current_header(void) {
-    char *title;
-
-    title = title_current_screen_title();
+    char *title = title_current_screen_title();
     ncm_title_draw_header(title, optional_strlen32(title));
     return;
 }
