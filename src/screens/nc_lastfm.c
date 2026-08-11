@@ -34,30 +34,24 @@ static char *lastfm_title_callback(NcScreen *screen);
 static void lastfm_update_callback(NcScreen *screen);
 static void lastfm_mouse_button_pressed_callback(NcScreen *screen,
                                                  MEVENT event);
-static bool lastfm_set_title(LastfmScreen *screen,
-                                    char *title, int32 title_len);
-static LastfmJob *lastfm_job_create(
-    LastfmScreen *screen, NcmLastfmService *service);
+static bool lastfm_set_title(LastfmScreen *screen, char *title,
+                             int32 title_len);
+static LastfmJob *lastfm_job_create(LastfmScreen *screen,
+                                    NcmLastfmService *service);
 static bool lastfm_job_run(void *user, NcmError *error);
-static void lastfm_job_complete(bool success, NcmError *error,
-                                       void *user);
+static void lastfm_job_complete(bool success, NcmError *error, void *user);
 static void lastfm_job_destroy(void *user);
-static void lastfm_copy_result(LastfmScreen *screen,
-                                      NcmLastfmResult *result);
+static void lastfm_copy_result(LastfmScreen *screen, NcmLastfmResult *result);
 static void lastfm_render_result(LastfmScreen *screen);
 static void lastfm_render_failure(LastfmScreen *screen);
 static void lastfm_apply_literal_format(NcBuffer *buffer,
-                                               char *needle,
-                                               int32 needle_len,
-                                               enum NcFormat start_format,
-                                               enum NcFormat end_format);
+                                        char *needle, int32 needle_len,
+                                        enum NcFormat start_format,
+                                        enum NcFormat end_format);
 static void lastfm_apply_literal_color2(NcBuffer *buffer,
-                                               char *needle,
-                                               int32 needle_len);
-static bool lastfm_find_match_callback(int32 start, int32 len,
-                                              void *user);
-static void lastfm_mouse_scroll(LastfmScreen *screen,
-                                       enum NcScroll where);
+                                        char *needle, int32 needle_len);
+static bool lastfm_find_match_callback(int32 start, int32 len, void *user);
+static void lastfm_mouse_scroll(LastfmScreen *screen, enum NcScroll where);
 static void lastfm_display(LastfmScreen *screen);
 static void lastfm_flush(LastfmScreen *screen);
 
@@ -90,8 +84,7 @@ nc_lastfm_screen_init(NcLastfmScreen *screen,
                              user,
                              NC_SCREEN_TYPE_LASTFM,
                              0, 0, 0, 0);
-    nc_lastfm_screen_set_geometry(screen,
-                                  start_x, width,
+    nc_lastfm_screen_set_geometry(screen, start_x, width,
                                   main_start_y, main_height);
     return;
 }
@@ -133,10 +126,10 @@ nc_lastfm_screen_height(NcLastfmScreen *screen) {
 
 void
 lastfm_screen_init(LastfmScreen *screen,
-                          int32 start_x, int32 width,
-                          int32 main_start_y, int32 main_height,
-                          NcColor color, NcBorder border,
-                          int32 lines_scrolled) {
+                   int32 start_x, int32 width,
+                   int32 main_start_y, int32 main_height,
+                   NcColor color, NcBorder border,
+                   int32 lines_scrolled) {
     nc_lastfm_screen_init(&screen->screen,
                           lastfm_ops,
                           screen,
@@ -148,9 +141,7 @@ lastfm_screen_init(LastfmScreen *screen,
                    nc_lastfm_screen_start_y(&screen->screen),
                    nc_lastfm_screen_width(&screen->screen),
                    nc_lastfm_screen_height(&screen->screen),
-                   STRLIT(""),
-                   color,
-                   border);
+                   STRLIT(""), color, border);
 
     nc_scrollpad_init(&screen->scrollpad,
                       nc_lastfm_screen_height(&screen->screen));
@@ -169,8 +160,7 @@ lastfm_screen_init(LastfmScreen *screen,
     screen->initialized = true;
 
     nc_window_set_timeout(&screen->window, lines_scrolled);
-    (void)lastfm_set_title(screen,
-                                  STRLIT(LASTFM_DEFAULT_TITLE));
+    (void)lastfm_set_title(screen, STRLIT(LASTFM_DEFAULT_TITLE));
     return;
 }
 
@@ -207,13 +197,10 @@ lastfm_screen_window(LastfmScreen *screen) {
 
 void
 lastfm_screen_set_geometry(LastfmScreen *screen,
-                                  int32 start_x, int32 width,
-                                  int32 main_start_y, int32 main_height) {
-    nc_lastfm_screen_set_geometry(&screen->screen,
-                                  start_x,
-                                  width,
-                                  main_start_y,
-                                  main_height);
+                           int32 start_x, int32 width,
+                           int32 main_start_y, int32 main_height) {
+    nc_lastfm_screen_set_geometry(&screen->screen, start_x, width,
+                                  main_start_y, main_height);
     nc_window_resize(&screen->window,
                      nc_lastfm_screen_width(&screen->screen),
                      nc_lastfm_screen_height(&screen->screen));
@@ -229,11 +216,12 @@ lastfm_screen_set_geometry(LastfmScreen *screen,
 
 bool
 lastfm_screen_queue_artist_info(LastfmScreen *screen,
-                                       char *artist, int32 artist_len,
-                                       char *lang, int32 lang_len,
-                                       NcmError *error) {
+                                char *artist, int32 artist_len,
+                                char *lang, int32 lang_len,
+                                NcmError *error) {
     LastfmJob *job;
     NcmLastfmService candidate;
+    char *title;
 
     if ((screen == NULL) || (artist == NULL) || (artist_len <= 0)) {
         ncm_error_set(error, EINVAL, STRLIT("missing artist"));
@@ -282,16 +270,11 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     ncm_lastfm_service_destroy(&screen->service);
     ncm_lastfm_service_init(&screen->service);
     (void)ncm_lastfm_artist_info_init(&screen->service,
-                                      artist,
-                                      artist_len,
-                                      lang,
-                                      lang_len);
+                                      artist, artist_len,
+                                      lang, lang_len);
     screen->has_service = true;
-    (void)lastfm_set_title(screen,
-                                  ncm_lastfm_service_name(&screen->service),
-                                  strlen32(
-                                      ncm_lastfm_service_name(
-                                          &screen->service)));
+    title = ncm_lastfm_service_name(&screen->service);
+    (void)lastfm_set_title(screen, title, strlen32(title));
     nc_buffer_clear(&screen->buffer);
     nc_buffer_append_cstring(&screen->buffer,
                              (char *)LASTFM_FETCHING);
@@ -336,7 +319,7 @@ lastfm_screen_take_refresh_request(LastfmScreen *screen) {
 
 bool
 lastfm_buffer_find(NcBuffer *buffer, char *pattern,
-                          int32 pattern_len, NcmError *error) {
+                   int32 pattern_len, NcmError *error) {
     LastfmFindState state;
     NcmRegex regex;
     char *data;
@@ -354,7 +337,9 @@ lastfm_buffer_find(NcBuffer *buffer, char *pattern,
     }
 
     ncm_regex_init(&regex);
-    if (!ncm_regex_compile(&regex, pattern, pattern_len, Config.regex_flags,
+    if (!ncm_regex_compile(&regex,
+                           pattern, pattern_len,
+                           Config.regex_flags,
                            error)) {
         ncm_regex_destroy(&regex);
         return false;
@@ -363,18 +348,16 @@ lastfm_buffer_find(NcBuffer *buffer, char *pattern,
     state.buffer = buffer;
     data = nc_buffer_data(buffer);
     result = ncm_regex_for_each_match(&regex,
-                                      data,
-                                      buffer->len,
-                                      lastfm_find_match_callback,
-                                      &state);
+                                      data, buffer->len,
+                                      lastfm_find_match_callback, &state);
     ncm_regex_destroy(&regex);
     return result;
 }
 
 bool
 lastfm_screen_find(LastfmScreen *screen,
-                          char *pattern, int32 pattern_len,
-                          NcmError *error) {
+                   char *pattern, int32 pattern_len,
+                   NcmError *error) {
     bool result;
 
     if (screen == NULL) {
@@ -382,13 +365,11 @@ lastfm_screen_find(LastfmScreen *screen,
         return false;
     }
 
-    result = lastfm_buffer_find(&screen->buffer, pattern, pattern_len,
-                                       error);
+    result = lastfm_buffer_find(&screen->buffer, pattern, pattern_len, error);
     if ((pattern == NULL) || (pattern_len <= 0)) {
         sb_clear(&screen->search_constraint);
     } else if (!ncm_error_is_set(error)) {
-        (void)sb_set(&screen->search_constraint, pattern,
-                             pattern_len);
+        (void)sb_set(&screen->search_constraint, pattern, pattern_len);
     }
     lastfm_flush(screen);
     return result;
@@ -396,8 +377,9 @@ lastfm_screen_find(LastfmScreen *screen,
 
 static void
 lastfm_switch_to_callback(NcScreen *screen) {
-    ncm_title_draw_header(nc_screen_title(screen),
-                          strlen32(nc_screen_title(screen)));
+    char *title = nc_screen_title(screen);
+
+    ncm_title_draw_header(title, strlen32(title));
     return;
 }
 
@@ -408,16 +390,13 @@ lastfm_resize_callback(NcScreen *screen) {
     LastfmScreen *lastfm = lastfm_from_screen(screen);
 
     nc_screen_switcher_get_resize_params(screen, &x, &width, true);
-    lastfm_screen_set_geometry(lastfm,
-                                      x,
-                                      width,
-                                      ui_state_main_start_y(),
-                                      ui_state_main_height());
+    lastfm_screen_set_geometry(lastfm, x, width,
+                               ui_state_main_start_y(),
+                               ui_state_main_height());
     nc_screen_clear_resize_request(screen);
 
     return;
 }
-
 
 static char *
 lastfm_title_callback(NcScreen *screen) {
@@ -443,8 +422,7 @@ lastfm_mouse_button_pressed_callback(NcScreen *screen, MEVENT event) {
 }
 
 static bool
-lastfm_set_title(LastfmScreen *screen,
-                        char *title, int32 title_len) {
+lastfm_set_title(LastfmScreen *screen, char *title, int32 title_len) {
     int32 cap;
 
     if (title == NULL) {
@@ -454,9 +432,9 @@ lastfm_set_title(LastfmScreen *screen,
     cap = title_len + 1;
     if (cap > screen->title_cap) {
         screen->title = realloc2(screen->title,
-                               screen->title_cap,
-                               cap,
-                               SIZEOF(*screen->title));
+                                  screen->title_cap,
+                                  cap,
+                                  SIZEOF(*screen->title));
         screen->title_cap = cap;
     }
 
@@ -468,18 +446,15 @@ lastfm_set_title(LastfmScreen *screen,
 }
 
 static LastfmJob *
-lastfm_job_create(LastfmScreen *screen,
-                         NcmLastfmService *service) {
+lastfm_job_create(LastfmScreen *screen, NcmLastfmService *service) {
     LastfmJob *job = malloc2(SIZEOF(*job));
     job->screen = screen;
 
     ncm_lastfm_service_init(&job->service);
     ncm_lastfm_result_init(&job->result);
     (void)ncm_lastfm_artist_info_init(&job->service,
-                                      service->artist,
-                                      service->artist_len,
-                                      service->lang,
-                                      service->lang_len);
+                                      service->artist, service->artist_len,
+                                      service->lang, service->lang_len);
 
     return job;
 }
@@ -497,12 +472,11 @@ lastfm_job_run(void *user, NcmError *error) {
 
 static void
 lastfm_job_complete(bool success, NcmError *error, void *user) {
-    LastfmJob *job;
+    LastfmJob *job = user;
     LastfmScreen *screen;
 
     (void)success;
     (void)error;
-    job = user;
     if (job == NULL) {
         return;
     }
@@ -520,9 +494,8 @@ lastfm_job_complete(bool success, NcmError *error, void *user) {
 
 static void
 lastfm_job_destroy(void *user) {
-    LastfmJob *job;
+    LastfmJob *job = user;
 
-    job = user;
     if (job == NULL) {
         return;
     }
@@ -533,8 +506,7 @@ lastfm_job_destroy(void *user) {
 }
 
 static void
-lastfm_copy_result(LastfmScreen *screen,
-                          NcmLastfmResult *result) {
+lastfm_copy_result(LastfmScreen *screen, NcmLastfmResult *result) {
     ncm_lastfm_result_clear(&screen->result);
     (void)ncm_lastfm_result_set(&screen->result,
                                 result->success,
@@ -559,7 +531,7 @@ lastfm_render_result(LastfmScreen *screen) {
                 &screen->buffer, STRLIT("\n\nSimilar tags:\n"),
                 NC_FORMAT_BOLD, NC_FORMAT_NO_BOLD);
             lastfm_apply_literal_color2(&screen->buffer,
-                                               STRLIT("\n * "));
+                                        STRLIT("\n * "));
         }
     } else {
         lastfm_render_failure(screen);
@@ -607,8 +579,7 @@ lastfm_apply_literal_format(NcBuffer *buffer,
 }
 
 static void
-lastfm_apply_literal_color2(NcBuffer *buffer,
-                            char *needle, int32 needle_len) {
+lastfm_apply_literal_color2(NcBuffer *buffer, char *needle, int32 needle_len) {
     char *data;
     int32 len;
 
@@ -628,13 +599,12 @@ lastfm_apply_literal_color2(NcBuffer *buffer,
 
 static bool
 lastfm_find_match_callback(int32 start, int32 len, void *user) {
-    LastfmFindState *state;
+    LastfmFindState *state = user;
 
     if (len <= 0) {
         return true;
     }
 
-    state = user;
     nc_buffer_add_format(state->buffer, start, NC_FORMAT_REVERSE,
                          LASTFM_PROPERTY_ID);
     nc_buffer_add_format(state->buffer, start + len, NC_FORMAT_NO_REVERSE,
@@ -643,8 +613,7 @@ lastfm_find_match_callback(int32 start, int32 len, void *user) {
 }
 
 static void
-lastfm_mouse_scroll(LastfmScreen *screen,
-                    enum NcScroll where) {
+lastfm_mouse_scroll(LastfmScreen *screen, enum NcScroll where) {
     for (int32 i = 0; i < Config.lines_scrolled; i += 1) {
         nc_scrollpad_scroll(&screen->scrollpad, &screen->window, where);
     }
