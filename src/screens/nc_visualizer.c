@@ -298,6 +298,7 @@ visualizer_fft_init(NativeVisualizerScreen *screen, int32 dft_size,
     fft->frequency_magnitudes_cap = fft->results_len;
     fft->dft_frequency_space_cap = NATIVE_VISUALIZER_FREQ_SPACE_CAP;
     fft->bar_heights_cap = NATIVE_VISUALIZER_BAR_HEIGHTS_CAP;
+
     fft->frequency_magnitudes = malloc2(
         fft->frequency_magnitudes_cap
         *SIZEOF(*fft->frequency_magnitudes));
@@ -306,6 +307,7 @@ visualizer_fft_init(NativeVisualizerScreen *screen, int32 dft_size,
         *SIZEOF(*fft->dft_frequency_space));
     fft->bar_heights = malloc2(
         fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
+
     memset64(fft->frequency_magnitudes, 0,
          fft->frequency_magnitudes_cap
          *SIZEOF(*fft->frequency_magnitudes));
