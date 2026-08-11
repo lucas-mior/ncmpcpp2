@@ -263,9 +263,8 @@ settings_string_set(char **data, int32 *len, int32 *cap, char *value,
     }
     new_data[value_len] = '\0';
 
-    if (*data) {
-        free2(*data, *cap);
-    }
+    free2(*data, *cap);
+
     *data = new_data;
     *len = value_len;
     *cap = new_cap;
@@ -688,9 +687,9 @@ settings_column_append_type(Column *column, char ch) {
     }
     new_data[column->type_len] = ch;
     new_data[new_len] = '\0';
-    if (column->type) {
-        free2(column->type, column->type_cap);
-    }
+
+    free2(column->type, column->type_cap);
+
     column->type = new_data;
     column->type_len = new_len;
     column->type_cap = new_cap;
