@@ -1435,12 +1435,11 @@ static bool
 action_runtime_switch_to_next_screen(bool reverse) {
     ScreenTypeArray *sequence = &Config.screen_sequence;
     NcScreen *current;
-    bool selected_items_adder;
+    bool selected_items_adder = action_runtime_current_screen_is(
+        NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
     int32 current_index;
     int32 next_index;
 
-    selected_items_adder = action_runtime_current_screen_is(
-        NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
     if (selected_items_adder && Config.screen_switcher_previous) {
         return selected_items_adder_screen_return_to_previous(
             app_screen_selected_items_adder());
@@ -1734,10 +1733,9 @@ action_runtime_replay_song(void) {
 static bool
 action_runtime_toggle_crossfade(void) {
     NcmError ncm_error;
-    int32 seconds;
+    int32 seconds = Config.crossfade_time;
 
     ncm_error_clear(&ncm_error);
-    seconds = Config.crossfade_time;
     if (ncm_status_state_crossfade()) {
         seconds = 0;
     }
@@ -1940,9 +1938,8 @@ action_runtime_update_environment(void) {
 
 static void
 action_runtime_print_toggle(char *format, int32 format_len, char *value) {
-    NcmStringFormatArg arg;
+    NcmStringFormatArg arg = ncm_string_format_arg_cstring(value);
 
-    arg = ncm_string_format_arg_cstring(value);
     ncm_statusbar_format(Config.message_delay_time, format, format_len,
                          &arg, 1);
     return;
@@ -2074,9 +2071,8 @@ action_runtime_toggle_bitrate_visibility(void) {
 static void
 action_runtime_print_format_string(char *format, int32 format_len, char *text,
                                    int32 text_len) {
-    NcmStringFormatArg arg;
+    NcmStringFormatArg arg = ncm_string_format_arg_string(text, text_len);
 
-    arg = ncm_string_format_arg_string(text, text_len);
     ncm_statusbar_format(Config.message_delay_time, format, format_len,
                          &arg, 1);
     return;
@@ -2116,9 +2112,8 @@ ncm_action_immediate_command_prompt_should_stop(StrBuilder *previous,
 static bool
 action_runtime_command_prompt_hook(char *text, void *user) {
     ActionRuntimeCommandPrompt *state = user;
-    int32 text_len;
+    int32 text_len = optional_strlen32(text);
 
-    text_len = optional_strlen32(text);
     if (!ncm_statusbar_main_hook(text, text_len)) {
         return false;
     }
@@ -2132,10 +2127,9 @@ action_runtime_command_prompt_hook(char *text, void *user) {
 static bool
 action_runtime_filter_prompt_hook(char *text, void *user) {
     NcmError ncm_error;
-    int32 text_len;
+    int32 text_len = optional_strlen32(text);
 
     (void)user;
-    text_len = optional_strlen32(text);
     if (!ncm_statusbar_main_hook(text, text_len)) {
         return false;
     }
@@ -2257,9 +2251,8 @@ static bool
 action_runtime_search_prompt_hook(char *text, void *user) {
     ActionRuntimeSearchPrompt *state = user;
     NcmError ncm_error;
-    int32 text_len;
+    int32 text_len = optional_strlen32(text);
 
-    text_len = optional_strlen32(text);
     if (!ncm_statusbar_main_hook(text, text_len)) {
         return false;
     }
@@ -3125,9 +3118,8 @@ action_runtime_scroll_by_tag(enum NcmSongGetter getter, bool down) {
     }
 
     while (true) {
-        int32 next;
+        int32 next = target + step;
 
-        next = target + step;
         if ((next < 0) || (next >= count)) {
             break;
         }
@@ -4196,14 +4188,13 @@ static bool
 action_runtime_move_selected_items(bool down) {
     NcmSongArray songs;
     NcMenu *menu;
-    enum ScreenType screen_type;
+    enum ScreenType screen_type = app_screens_current_type();
     bool success;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
         return false;
     }
 
-    screen_type = app_screens_current_type();
     if ((screen_type != NCM_SCREEN_TYPE_PLAYLIST)
         && (screen_type != NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
         return false;
@@ -4267,9 +4258,8 @@ action_runtime_move_main_playlist_items_to(void) {
     positions = malloc2(item_count*SIZEOF(*positions));
     count = 0;
     for (int32 i = 0; i < item_count; i += 1) {
-        uint32 flags;
+        uint32 flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
 
-        flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
         if (!(flags & NC_MENU_ITEM_SELECTED)) {
             continue;
         }
@@ -4363,9 +4353,8 @@ action_runtime_move_playlist_editor_items_to(void) {
     positions = malloc2(item_count*SIZEOF(*positions));
     count = 0;
     for (int32 i = 0; i < item_count; i += 1) {
-        uint32 flags;
+        uint32 flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
 
-        flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
         if (!(flags & NC_MENU_ITEM_SELECTED)) {
             continue;
         }
@@ -5006,10 +4995,9 @@ static bool
 action_runtime_jump_to_playing_song(void) {
     NcmSong song;
     NcmError ncm_error;
-    int32 position;
+    int32 position = ncm_status_state_current_song_position();
     bool success;
 
-    position = ncm_status_state_current_song_position();
     if (position < 0) {
         return false;
     }
