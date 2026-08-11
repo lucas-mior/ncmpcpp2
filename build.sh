@@ -16,7 +16,7 @@ printf "\n${script} ${RED}${1:-} ${2:-}$RES\n"
 PREFIX="${PREFIX:-/usr/local}"
 DESTDIR="${DESTDIR:-/}"
 
-exe="bin/$program"
+exe=bin/ncmpcpp
 mkdir -p "$(dirname "$exe")"
 
 CC=$(get_compiler "$target")
@@ -52,21 +52,6 @@ fi
 CFLAGS="$CFLAGS -pthread"
 
 LDFLAGS="$LDFLAGS -lm"
-
-TEMP_FILE=
-
-cleanup() {
-    if [ -n "$TEMP_FILE" ]; then
-        rm -f "$TEMP_FILE"
-    fi
-
-    return 0
-}
-
-trap cleanup 0
-trap 'cleanup; exit 129' 1
-trap 'cleanup; exit 130' 2
-trap 'cleanup; exit 143' 15
 
 die() {
     error '%s\n' "$1"
@@ -212,9 +197,6 @@ debug|build|fast_feedback|all)
         die 'C compiler does not support C11'
     fi
 
-    temporary_binary=$exe.tmp.$$
-    TEMP_FILE=$temporary_binary
-
     # Flag variables intentionally require shell word splitting.
     # shellcheck disable=SC2086
     run_command "$CC" \
@@ -226,13 +208,10 @@ debug|build|fast_feedback|all)
         $READLINE_CFLAGS \
         $CFLAGS \
         "src/main.c" \
-        -o "$temporary_binary" \
+        -o "$exe" \
         $READLINE_LIBS \
         $PKG_LIBS \
         $LDFLAGS
-
-    mv "$temporary_binary" "$exe"
-    TEMP_FILE=
     ;;
 check)
     set +e
