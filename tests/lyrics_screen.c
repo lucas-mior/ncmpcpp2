@@ -199,8 +199,9 @@ nc_window_adjust_dimensions(NcWindow *window,
 
 void
 nc_window_recreate(NcWindow *window, int32 width, int32 height) {
-    window->width = width;
-    window->height = height;
+    (void)window;
+    (void)width;
+    (void)height;
     lyrics_test_x = 0;
     lyrics_test_y = 0;
     return;
