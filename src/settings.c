@@ -647,7 +647,7 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
             end += 1;
         }
         if (!ncm_parse_int32(value + start, end - start, &parsed,
-                                  ncm_error)) {
+                             ncm_error)) {
             return false;
         }
         if ((slot = ncm_int32_array_append(array)) == NULL) {
@@ -734,7 +734,7 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
             width.data[width.len] = '\0';
         }
         if (!ncm_parse_int32(width.data, width.len, &parsed_width,
-                                   ncm_error)) {
+                             ncm_error)) {
             sb_free(&width);
             sb_free(&color);
             sb_free(&tag);
@@ -939,7 +939,7 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
     FUNC(Configuration *config, char *value, int32 value_len, \
          NcmError *ncm_error) { \
         return ncm_parse_int32(value, value_len, &config->FIELD, \
-                                     ncm_error); \
+                               ncm_error); \
     }
 
 APPLY_STRING_DIR(apply_ncmpcpp_directory, ncmpcpp_directory)
@@ -1066,7 +1066,7 @@ static bool
 apply_mpd_connection_timeout(Configuration *config, char *value,
                              int32 value_len, NcmError *ncm_error) {
     if (!ncm_parse_int32(value, value_len,
-                              &config->mpd_connection_timeout, ncm_error)) {
+                         &config->mpd_connection_timeout, ncm_error)) {
         return false;
     }
     return ncm_mpd_client_set_timeout_ms(
@@ -1077,7 +1077,7 @@ static bool
 apply_mpd_crossfade_time(Configuration *config, char *value, int32 value_len,
                          NcmError *ncm_error) {
     return ncm_parse_int32(value, value_len, &config->crossfade_time,
-                                ncm_error);
+                           ncm_error);
 }
 
 static bool
@@ -1105,18 +1105,19 @@ static bool
 apply_visualizer_fps(Configuration *config, char *value, int32 value_len,
                      NcmError *ncm_error) {
     if (!ncm_parse_int32(value, value_len, &config->visualizer_fps,
-                              ncm_error)) {
+                         ncm_error)) {
         return false;
     }
     return ncm_bounds_check_i64(config->visualizer_fps, 30, 1000, ncm_error);
 }
 
 static bool
-apply_visualizer_spectrum_dft_size(Configuration *config, char *value,
-                                   int32 value_len, NcmError *ncm_error) {
+apply_visualizer_spectrum_dft_size(Configuration *config,
+                                   char *value, int32 value_len,
+                                   NcmError *ncm_error) {
     if (!ncm_parse_int32(value, value_len,
-                              &config->visualizer_spectrum_dft_size,
-                              ncm_error)) {
+                         &config->visualizer_spectrum_dft_size,
+                         ncm_error)) {
         return false;
     }
     return ncm_bounds_check_i64(config->visualizer_spectrum_dft_size, 1, 5,
@@ -1127,7 +1128,7 @@ static bool
 apply_visualizer_spectrum_gain(Configuration *config, char *value,
                                int32 value_len, NcmError *ncm_error) {
     if (!ncm_parse_double(value, value_len,
-                               &config->visualizer_spectrum_gain, ncm_error)) {
+                          &config->visualizer_spectrum_gain, ncm_error)) {
         return false;
     }
     return ncm_bounds_check_f64(config->visualizer_spectrum_gain, 0, 100,
@@ -1138,8 +1139,8 @@ static bool
 apply_visualizer_spectrum_hz_min(Configuration *config, char *value,
                                  int32 value_len, NcmError *ncm_error) {
     if (!ncm_parse_double(value, value_len,
-                               &config->visualizer_spectrum_hz_min,
-                               ncm_error)) {
+                          &config->visualizer_spectrum_hz_min,
+                          ncm_error)) {
         return false;
     }
     return ncm_lower_bound_check_f64(config->visualizer_spectrum_hz_min, 1,
@@ -1150,8 +1151,8 @@ static bool
 apply_visualizer_spectrum_hz_max(Configuration *config, char *value,
                                  int32 value_len, NcmError *ncm_error) {
     if (!ncm_parse_double(value, value_len,
-                               &config->visualizer_spectrum_hz_max,
-                               ncm_error)) {
+                          &config->visualizer_spectrum_hz_max,
+                          ncm_error)) {
         return false;
     }
     return ncm_lower_bound_check_f64(config->visualizer_spectrum_hz_max,
@@ -1546,7 +1547,7 @@ static bool
 apply_locked_screen_width_part(Configuration *config, char *value,
                                int32 value_len, NcmError *ncm_error) {
     if (!ncm_parse_double(value, value_len,
-                               &config->locked_screen_width_part, ncm_error)) {
+                          &config->locked_screen_width_part, ncm_error)) {
         return false;
     }
     config->locked_screen_width_part /= 100.0;
