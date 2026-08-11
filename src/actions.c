@@ -3430,7 +3430,7 @@ static bool
 action_runtime_add_selected_songs(bool play) {
     NcmSongArray songs;
     bool success;
-    bool first;
+    bool first = true;
 
     if (!ncm_mpd_client_connected(&global_mpd)) {
         return false;
@@ -3442,7 +3442,6 @@ action_runtime_add_selected_songs(bool play) {
         return false;
     }
 
-    first = true;
     for (int32 i = 0; success && (i < songs.len); i += 1) {
         success = ncm_action_add_song_to_playlist(&songs.items[i],
                                                   play && first, -1);
@@ -5323,8 +5322,8 @@ action_runtime_edit_playlist_name(void) {
 
 static bool
 action_runtime_toggle_display_mode(void) {
-    enum DisplayMode *mode;
-    enum ScreenType screen_type;
+    enum DisplayMode *mode = NULL;
+    enum ScreenType screen_type = app_screens_current_type();
 
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_SEARCH_ENGINE)) {
         SearchEngineScreen *screen;
@@ -5342,8 +5341,6 @@ action_runtime_toggle_display_mode(void) {
         return true;
     }
 
-    mode = NULL;
-    screen_type = app_screens_current_type();
     switch (screen_type) {
     case NCM_SCREEN_TYPE_BROWSER:
         mode = &Config.browser_display_mode;
@@ -5483,7 +5480,7 @@ action_runtime_toggle_browser_sort_mode(void) {
 static bool
 action_runtime_toggle_library_tag_type(void) {
     MediaLibraryScreen *screen = app_screen_media_library();
-    enum mpd_tag_type tag_type;
+    enum mpd_tag_type tag_type = MPD_TAG_ARTIST;
     enum MediaLibraryColumn column;
 
     if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
@@ -5496,7 +5493,6 @@ action_runtime_toggle_library_tag_type(void) {
         return false;
     }
 
-    tag_type = MPD_TAG_ARTIST;
     if (Config.media_lib_primary_tag == MPD_TAG_ARTIST) {
         tag_type = MPD_TAG_ALBUM_ARTIST;
     } else if (Config.media_lib_primary_tag == MPD_TAG_ALBUM_ARTIST) {
@@ -5728,7 +5724,7 @@ action_runtime_toggle_screen_lock(void) {
     NcmError ncm_error;
     NcScreen *current;
     char initial[16];
-    int32 part;
+    int32 part = (int32)Config.locked_screen_width_part*100;
     bool prompted;
 
     if (app_controller_locked_screen()) {
@@ -5748,7 +5744,6 @@ action_runtime_toggle_screen_lock(void) {
         return true;
     }
 
-    part = (int32)Config.locked_screen_width_part*100;
     if (Config.ask_for_locked_screen_width_part) {
         SNPRINTF(initial, "%d", part);
         prompted = action_runtime_prompt_string(
@@ -5883,20 +5878,6 @@ action_runtime_song_name_or_uri_view(NcmSong *song, NcmStringView *view) {
 }
 
 static bool
-action_runtime_song_file_path(NcmSong *song, StrBuilder *path) {
-    NcmStringView uri;
-
-    sb_clear(path);
-    if (!action_runtime_song_uri_view(song, &uri)) {
-        return false;
-    }
-
-    SB_APPEND(path, Config.mpd_music_dir, Config.mpd_music_dir_len);
-    SB_APPEND(path, uri.data, uri.len);
-    return true;
-}
-
-static bool
 action_runtime_shared_directory_update(StrBuilder *shared_directory,
                                        bool *valid, char *directory,
                                        int32 directory_len) {
@@ -5939,24 +5920,6 @@ action_runtime_print_updating_song(NcmSong *song) {
 }
 
 static void
-action_runtime_print_song_write_error(NcmSong *song) {
-    NcmStringView name;
-    NcmStringFormatArg args[2];
-
-    if (!action_runtime_song_name_or_uri_view(song, &name)) {
-        return;
-    }
-
-    args[0] = ncm_string_format_arg_string(name.data, name.len);
-    args[1] = ncm_string_format_arg_cstring(strerror(errno));
-    ncm_statusbar_format(
-        Config.message_delay_time,
-        STRLIT("Error while writing tags to \"%1%\": %2%"), args,
-        LENGTH(args));
-    return;
-}
-
-static void
 action_runtime_print_album_file_error(char *format, int32 format_len,
                                       NcmSong *song) {
     NcmStringView uri;
@@ -5982,21 +5945,23 @@ action_runtime_print_album_file_error(char *format, int32 format_len,
 static bool
 action_runtime_update_tag_directory(StrBuilder *shared_directory, bool valid) {
     NcmError ncm_error;
-    char *directory;
 
     if (!valid) {
         return true;
     }
 
-    directory = shared_directory->data;
-    if (directory == NULL) {
-        directory = "";
-    }
+    {
+        char *directory = shared_directory->data;
 
-    ncm_error_clear(&ncm_error);
-    if (!ncm_mpd_client_update_directory(&global_mpd, directory, NULL,
-                                         &ncm_error)) {
-        return action_runtime_mpd_error(&ncm_error);
+        if (directory == NULL) {
+            directory = "";
+        }
+
+        ncm_error_clear(&ncm_error);
+        if (!ncm_mpd_client_update_directory(&global_mpd, directory, NULL,
+                                             &ncm_error)) {
+            return action_runtime_mpd_error(&ncm_error);
+        }
     }
     ncm_statusbar_print_cstring(Config.message_delay_time,
                                 "Tags updated successfully");
@@ -6070,9 +6035,8 @@ action_runtime_edit_library_tag(void) {
 
     success = true;
     for (int32 i = 0; i < ncm_mpd_song_list_count(&songs); i += 1) {
-        NcmSong *song;
+        NcmSong *song = ncm_mpd_song_list_at(&songs, i);
 
-        song = ncm_mpd_song_list_at(&songs, i);
         ncm_mutable_song_init(&mutable_song);
         if (!ncm_mutable_song_load_originals_from_song(&mutable_song, song)
             || !ncm_mutable_song_set_tags(&mutable_song, field, new_tag.data,
@@ -6085,7 +6049,17 @@ action_runtime_edit_library_tag(void) {
 
         action_runtime_print_updating_song(song);
         if (!ncm_mutable_song_write(&mutable_song, Config.mpd_music_dir)) {
-            action_runtime_print_song_write_error(song);
+            NcmStringView name;
+            NcmStringFormatArg args[2];
+
+            if (action_runtime_song_name_or_uri_view(song, &name)) {
+                args[0] = ncm_string_format_arg_string(name.data, name.len);
+                args[1] = ncm_string_format_arg_cstring(strerror(errno));
+                ncm_statusbar_format(
+                    Config.message_delay_time,
+                    STRLIT("Error while writing tags to \"%1%\": %2%"),
+                    args, LENGTH(args));
+            }
             ncm_mutable_song_destroy(&mutable_song);
             success = false;
             break;
@@ -6170,16 +6144,19 @@ action_runtime_edit_library_album(void) {
     ncm_statusbar_print_cstring(0, "Updating tags...");
     success = true;
     for (int32 i = 0; i < songs.len; i += 1) {
-        NcmSong *song;
+        NcmSong *song = &songs.items[i];
         NcmStringView directory;
+        NcmStringView uri;
         NcmTaglibFile file;
 
-        song = &songs.items[i];
         action_runtime_print_updating_song(song);
-        if (!action_runtime_song_file_path(song, &path)) {
+        sb_clear(&path);
+        if (!action_runtime_song_uri_view(song, &uri)) {
             success = false;
             break;
         }
+        SB_APPEND(&path, Config.mpd_music_dir, Config.mpd_music_dir_len);
+        SB_APPEND(&path, uri.data, uri.len);
         if (ncm_song_directory_view(song, 0, &directory)) {
             success = action_runtime_shared_directory_update(
                 &shared_directory, &shared_directory_valid, directory.data,
