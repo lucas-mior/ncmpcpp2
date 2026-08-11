@@ -836,8 +836,8 @@ settings_parse_screen_list(Configuration *config, char *value, int32 value_len,
         enum ScreenType *slot;
         enum ScreenType screen;
 
-        if (!settings_next_list_item(value, value_len, &pos, &item,
-                                     &item_len)) {
+        if (!settings_next_list_item(value, value_len, &pos,
+                                     &item, &item_len)) {
             break;
         }
         if (item_len <= 0) {
