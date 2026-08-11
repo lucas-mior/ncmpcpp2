@@ -1116,9 +1116,9 @@ browser_search_position(NcMenu *menu, int32 pos, void *user) {
 
 bool
 browser_screen_render_item(BrowserScreen *screen,
-                                  NcBuffer *buffer, NcmMpdItem *item,
-                                  int32 available_width, bool selected,
-                                  bool highlighted) {
+                           NcBuffer *buffer, NcmMpdItem *item,
+                           int32 available_width,
+                           bool selected, bool highlighted) {
     int32 render_width;
     int32 list_width;
     bool use_colors;
