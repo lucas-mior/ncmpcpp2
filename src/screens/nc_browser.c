@@ -1276,13 +1276,10 @@ browser_switch_to(NcScreen *screen) {
 
 static void
 browser_resize(NcScreen *screen) {
-    BrowserScreen *browser;
-    int32 x;
-    int32 width;
+    BrowserScreen *browser = browser_from_screen(screen);
+    int32 x = browser->start_x;
+    int32 width = browser->width;
 
-    browser = browser_from_screen(screen);
-    x = browser->start_x;
-    width = browser->width;
     nc_screen_switcher_get_resize_params(screen, &x, &width, true);
     browser_screen_set_geometry(browser, x, width,
                                        ui_state_main_start_y(),
