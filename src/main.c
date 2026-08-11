@@ -210,8 +210,7 @@ app_apply_startup_screen(void) {
     ncmpcpp_playlist_switch_to();
 
     if (Config.startup_screen_type != ncmpcpp_current_screen_type()) {
-        assert(
-            ncmpcpp_switch_to_screen_type(Config.startup_screen_type));
+        ASSERT(ncmpcpp_switch_to_screen_type(Config.startup_screen_type));
     }
 
     if (Config.has_startup_slave_screen_type) {
@@ -222,7 +221,7 @@ app_apply_startup_screen(void) {
         screen_locked = ncmpcpp_lock_current_screen();
         if (screen_locked
             && (slave_screen_type != ncmpcpp_current_screen_type())) {
-            assert(ncmpcpp_switch_to_screen_type(slave_screen_type));
+            ASSERT(ncmpcpp_switch_to_screen_type(slave_screen_type));
             if (!Config.startup_slave_screen_focus) {
                 ncmpcpp_execute_action(NCM_ACTION_MASTER_SCREEN);
             }
@@ -284,8 +283,7 @@ main(int32 argc, char **argv) {
     atexit(app_at_exit);
 #endif
     if (!app_redirect_stderr()) {
-        fprintf(stderr, "warning: could not redirect stderr: %s\n",
-                strerror(errno));
+        error2("warning: could not redirect stderr: %s\n", strerror(errno));
     }
 
     signal(SIGPIPE, SIG_IGN);
