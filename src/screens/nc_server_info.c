@@ -97,9 +97,8 @@ nc_server_info_switch_to(NcScreen *screen) {
 
 static void
 nc_server_info_resize(NcScreen *screen) {
-    NcServerInfoScreen *server_info;
+    NcServerInfoScreen *server_info = nc_server_info_from_screen(screen);
 
-    server_info = nc_server_info_from_screen(screen);
     if (server_info->hooks.resize_layout) {
         server_info->hooks.resize_layout(server_info->hooks.user);
     }
@@ -122,9 +121,8 @@ nc_server_info_resize(NcScreen *screen) {
 
 static char *
 nc_server_info_title(NcScreen *screen) {
-    NcServerInfoScreen *server_info;
+    NcServerInfoScreen *server_info = nc_server_info_from_screen(screen);
 
-    server_info = nc_server_info_from_screen(screen);
     if (server_info->hooks.title == NULL) {
         return NULL;
     }
@@ -133,10 +131,9 @@ nc_server_info_title(NcScreen *screen) {
 
 static void
 nc_server_info_update(NcScreen *screen) {
-    NcServerInfoScreen *server_info;
+    NcServerInfoScreen *server_info = nc_server_info_from_screen(screen);
     NcBuffer next_buffer;
 
-    server_info = nc_server_info_from_screen(screen);
     if (server_info->hooks.render == NULL) {
         return;
     }
@@ -160,9 +157,8 @@ nc_server_info_update(NcScreen *screen) {
 
 static void
 nc_server_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
-    NcServerInfoScreen *server_info;
+    NcServerInfoScreen *server_info = nc_server_info_from_screen(screen);
 
-    server_info = nc_server_info_from_screen(screen);
     if (event.bstate & BUTTON5_PRESSED) {
         nc_scrollpad_scroll(&server_info->scrollpad,
                             &server_info->window,
@@ -172,6 +168,7 @@ nc_server_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
                             &server_info->window,
                             NC_SCROLL_UP);
     }
+
     return;
 }
 
@@ -179,9 +176,8 @@ nc_server_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 
 static void
 nc_server_info_destroy_callback(NcScreen *screen) {
-    NcServerInfoScreen *server_info;
+    NcServerInfoScreen *server_info = nc_server_info_from_screen(screen);
 
-    server_info = nc_server_info_from_screen(screen);
     if (server_info->hooks.destroy) {
         server_info->hooks.destroy(server_info->hooks.user);
     }
