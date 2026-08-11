@@ -131,7 +131,6 @@ targets:
   build              build with CFLAGS=-O2 -flto
   debug              build with CFLAGS=-g3 -Og (default)
   fast_feedback      build with clang warning checks
-  all                build with the current CFLAGS
   check              run the clang static analyzer
   test               build and run all tests
   install            build and install the program and documentation
@@ -162,12 +161,10 @@ fast_feedback)
     ;;
 check)
     ;;
-all)
-    ;;
 esac
 
 case "$target" in
-debug|build|fast_feedback|all)
+debug|build|fast_feedback)
     load_package_flags
     require_command "$CC"
 
