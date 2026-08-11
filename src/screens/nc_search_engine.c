@@ -693,17 +693,20 @@ search_engine_screen_snapshot_playlist(SearchEngineScreen *screen,
 enum SearchEnginePromptResult
 search_engine_screen_prompt_constraint(SearchEngineScreen *screen, int32 idx,
                                        StrBuilder *result) {
+    char *label;
+    int32 label_len;
     if ((screen == NULL) || (result == NULL) || (idx < 0)
         || (idx >= SEARCH_ENGINE_CONSTRAINT_COUNT)
         || (screen->hooks.prompt_constraint == NULL)) {
         return SEARCH_ENGINE_PROMPT_ERROR;
     }
 
-    char *label = search_engine_constraint_name(idx);
-    int32 label_len = search_constraint_name_lengths[idx];
-    return screen->hooks.prompt_constraint(
-        screen->hooks.user, label, label_len,
-        &screen->constraints[idx], result);
+    label = search_engine_constraint_name(idx);
+    label_len = search_constraint_name_lengths[idx];
+
+    return screen->hooks.prompt_constraint(screen->hooks.user,
+                                           label, label_len,
+                                           &screen->constraints[idx], result);
 }
 
 void
