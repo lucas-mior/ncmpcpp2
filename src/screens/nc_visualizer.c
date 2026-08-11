@@ -336,8 +336,7 @@ visualizer_fft_init(
         visualizer_fft_destroy(screen);
         return;
     }
-    memset64(fft->input, 0,
-             fft->dft_total_size*SIZEOF(*fft->input));
+    memset64(fft->input, 0, fft->dft_total_size*SIZEOF(*fft->input));
     fft->plan = fftw_plan_dft_r2c_1d(fft->dft_total_size,
                                      fft->input, fft->output,
                                      FFTW_ESTIMATE);
