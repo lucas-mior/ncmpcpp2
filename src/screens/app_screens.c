@@ -711,7 +711,7 @@ app_screen_search_engine_init(void) {
 
     mode = SEARCH_ENGINE_SEARCH_MODE_LITERAL;
     if (Config.search_engine_default_search_mode
-        < (int32) SEARCH_ENGINE_SEARCH_MODE_LAST) {
+        < (int32)SEARCH_ENGINE_SEARCH_MODE_LAST) {
         mode = (enum SearchEngineSearchMode)
             Config.search_engine_default_search_mode;
     }

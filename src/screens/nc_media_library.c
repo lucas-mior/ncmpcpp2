@@ -3442,8 +3442,7 @@ library_tag_filter(NcMenu *menu, void *item, void *user) {
     screen = user;
     return library_tag_matches(
         screen, item,
-        &screen->column_state[
-            MEDIA_LIBRARY_COLUMN_TAGS].filter_regex);
+        &screen->column_state[MEDIA_LIBRARY_COLUMN_TAGS].filter_regex);
 }
 
 static bool
@@ -3459,8 +3458,7 @@ library_album_filter(NcMenu *menu, void *item, void *user) {
     }
     return library_album_matches(
         screen, row,
-        &screen->column_state[
-            MEDIA_LIBRARY_COLUMN_ALBUMS].filter_regex);
+        &screen->column_state[MEDIA_LIBRARY_COLUMN_ALBUMS].filter_regex);
 }
 
 static bool
@@ -3471,13 +3469,12 @@ library_song_filter(NcMenu *menu, void *item, void *user) {
     screen = user;
     return library_song_matches(
         screen, item,
-        &screen->column_state[ MEDIA_LIBRARY_COLUMN_SONGS]
-             .filter_regex);
+        &screen->column_state[MEDIA_LIBRARY_COLUMN_SONGS].filter_regex);
 }
 
 static void
 library_draw_tag(NcMenu *menu, NcWindow *window,
-                        void *item, int32 pos, void *user) {
+                 void *item, int32 pos, void *user) {
     StrBuilder text = {0};
 
     (void)menu;

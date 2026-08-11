@@ -22,12 +22,12 @@
 #include "ui_state.h"
 
 enum TagEditorParserActionRow {
-   TAG_EDITOR_PARSER_ACTION_PATTERN = 0,
-   TAG_EDITOR_PARSER_ACTION_PREVIEW = 1,
-   TAG_EDITOR_PARSER_ACTION_LEGEND = 2,
-   TAG_EDITOR_PARSER_ACTION_PROCEED = 4,
-   TAG_EDITOR_PARSER_ACTION_CANCEL = 5,
-   TAG_EDITOR_PARSER_ACTION_RECENT_START = 9,
+    TAG_EDITOR_PARSER_ACTION_PATTERN = 0,
+    TAG_EDITOR_PARSER_ACTION_PREVIEW = 1,
+    TAG_EDITOR_PARSER_ACTION_LEGEND = 2,
+    TAG_EDITOR_PARSER_ACTION_PROCEED = 4,
+    TAG_EDITOR_PARSER_ACTION_CANCEL = 5,
+    TAG_EDITOR_PARSER_ACTION_RECENT_START = 9,
 };
 
 #define TAG_EDITOR_PATTERN_HISTORY_MAX 30
@@ -5114,7 +5114,7 @@ tag_editor_prompt_pattern(TagEditorScreen *screen) {
         tag_editor_set_focus(screen, TAG_EDITOR_FOCUS_PARSER_ACTIONS);
         (void)nc_menu_goto_selectable(
             nc_editor_string_menu_base(&screen->parser_actions),
-           TAG_EDITOR_PARSER_ACTION_PATTERN);
+            TAG_EDITOR_PARSER_ACTION_PATTERN);
     }
     return result;
 }
@@ -5143,7 +5143,7 @@ tag_editor_apply_recent_pattern(TagEditorScreen *screen,
     tag_editor_set_focus(screen, TAG_EDITOR_FOCUS_PARSER_ACTIONS);
     return nc_menu_goto_selectable(
         nc_editor_string_menu_base(&screen->parser_actions),
-       TAG_EDITOR_PARSER_ACTION_PATTERN);
+        TAG_EDITOR_PARSER_ACTION_PATTERN);
 }
 
 static bool

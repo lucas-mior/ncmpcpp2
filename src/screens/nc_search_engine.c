@@ -1779,7 +1779,7 @@ search_collect_local_results(
     SearchEngineScreen *screen, NcmSongArray *source,
     NcmSongArray *songs, NcmError *error
 ) {
-    NcmRegex regexes[ SEARCH_ENGINE_CONSTRAINT_COUNT];
+    NcmRegex regexes[SEARCH_ENGINE_CONSTRAINT_COUNT];
     NcmError regex_error;
     bool exact_match;
     bool ok;

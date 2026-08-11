@@ -1088,8 +1088,7 @@ lyrics_screen_sync_timeout(LyricsScreen *screen) {
 
     remaining_ms = (int64)screen->lrc.entries[next_line].time_ms
                    - elapsed_ms;
-    remaining_ms = CLAMP(remaining_ms,
-                         LYRICS_SYNC_TIMEOUT_MIN_MS,
+    remaining_ms = CLAMP(remaining_ms, LYRICS_SYNC_TIMEOUT_MIN_MS,
                          LYRICS_SYNC_TIMEOUT_MAX_MS);
     return (int32)remaining_ms;
 }
@@ -1109,7 +1108,7 @@ lyrics_title_callback(NcScreen *screen) {
     LyricsScreen *lyrics = lyrics_from_screen(screen);
 
     sb_clear(&lyrics->title);
-    SB_APPEND(&lyrics->title, STRLIT( LYRICS_TITLE));
+    SB_APPEND(&lyrics->title, STRLIT(LYRICS_TITLE));
     if (!lyrics->has_song || ncm_song_empty(&lyrics->song)) {
         return lyrics->title.data;
     }
@@ -1781,14 +1780,10 @@ lyrics_append_fetching(NcBuffer *buffer, NcmLyricsFetcherDef *fetcher) {
 
     nc_buffer_append_cstring(buffer, "Fetching lyrics from ");
     fetcher_position = nc_buffer_len(buffer);
-    nc_buffer_add_format(buffer,
-                         fetcher_position,
-                         NC_FORMAT_BOLD,
+    nc_buffer_add_format(buffer, fetcher_position, NC_FORMAT_BOLD,
                          LYRICS_FETCH_PROPERTY_ID);
     nc_buffer_append_data(buffer, name, name_len);
-    nc_buffer_add_format(buffer,
-                         nc_buffer_len(buffer),
-                         NC_FORMAT_NO_BOLD,
+    nc_buffer_add_format(buffer, nc_buffer_len(buffer), NC_FORMAT_NO_BOLD,
                          LYRICS_FETCH_PROPERTY_ID);
     nc_buffer_append_cstring(buffer, "... ");
 
@@ -1798,14 +1793,10 @@ lyrics_append_fetching(NcBuffer *buffer, NcmLyricsFetcherDef *fetcher) {
 static void
 lyrics_append_fetch_error(NcBuffer *buffer, NcmLyricsResult *result) {
     NcColor red = nc_color_make(COLOR_RED, NC_COLOR_CURRENT, false, false);
-    nc_buffer_add_color(buffer,
-                        nc_buffer_len(buffer),
-                        red,
+    nc_buffer_add_color(buffer, nc_buffer_len(buffer), red,
                         LYRICS_FETCH_PROPERTY_ID);
     nc_buffer_append_data(buffer, result->text, result->text_len);
-    nc_buffer_add_color(buffer,
-                        nc_buffer_len(buffer),
-                        nc_color_end(),
+    nc_buffer_add_color(buffer, nc_buffer_len(buffer), nc_color_end(),
                         LYRICS_FETCH_PROPERTY_ID);
     nc_buffer_append_char(buffer, '\n');
 
