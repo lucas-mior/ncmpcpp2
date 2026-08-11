@@ -388,6 +388,7 @@ status_run_init_hooks(void) {
     status_run_init_setup_visualizer_datasource(hooks);
     status_run_init_register_mpd_fd_callback(hooks);
     status_run_init_show_connected_message(hooks);
+
     return;
 }
 
@@ -410,8 +411,8 @@ status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks) {
         return;
     }
 
-    highlighted = playlist_screen_locate_position(
-        app_screen_playlist(), position);
+    highlighted = playlist_screen_locate_position(app_screen_playlist(),
+                                                  position);
     if (!highlighted) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Song is filtered out");
