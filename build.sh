@@ -166,7 +166,7 @@ usage: ./$script <target>
 
 targets:
   build                    build with CFLAGS=-O2 -flto
-  debug                    build with CFLAGS=-g3 -O0 (default)
+  debug                    build with CFLAGS=-g3 -Og (default)
   fast_feedback            build with clang warning checks
   all                      build with the current CFLAGS
   check                    run the clang static analyzer
@@ -195,7 +195,7 @@ build)
     CFLAGS="$CFLAGS -O2 -flto"
     ;;
 fast_feedback)
-    CFLAGS="$CFLAGS -g3 -O0"
+    CFLAGS="$CFLAGS -g3 -Og"
     ;;
 check)
     ;;
