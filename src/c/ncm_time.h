@@ -9,7 +9,7 @@ typedef struct NcmTimePoint {
     int64 ns;
 } NcmTimePoint;
 
-bool ncm_time_monotonic_now(NcmTimePoint *point, NcmError *error);
+bool ncm_time_monotonic_now(NcmTimePoint *point, NcmError *ncm_error);
 int64 ncm_time_elapsed_ns(NcmTimePoint start, NcmTimePoint end);
 int64 ncm_time_elapsed_ms(NcmTimePoint start, NcmTimePoint end);
 

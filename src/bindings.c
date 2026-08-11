@@ -15,11 +15,11 @@
 
 NcmBindingsConfiguration Bindings;
 
-static void ncm_bindings_error(NcmError *error, char *format, ...)
+static void ncm_bindings_error(NcmError *ncm_error, char *format, ...)
     ATTR_PRINTF(2, 3);
 
 static void
-ncm_bindings_error(NcmError *error, char *format, ...) {
+ncm_bindings_error(NcmError *ncm_error, char *format, ...) {
     va_list args;
     char buffer[256];
     int32 len;
@@ -29,7 +29,7 @@ ncm_bindings_error(NcmError *error, char *format, ...) {
     va_end(args);
 
     if (len < 0) {
-        ncm_error_set(error, NCM_BINDINGS_ERROR_PARSE,
+        ncm_error_set(ncm_error, NCM_BINDINGS_ERROR_PARSE,
                       STRLIT("bindings parse error"));
         return;
     }
@@ -37,7 +37,7 @@ ncm_bindings_error(NcmError *error, char *format, ...) {
         len = SIZEOF(buffer) - 1;
     }
 
-    ncm_error_set(error, NCM_BINDINGS_ERROR_PARSE, buffer, len);
+    ncm_error_set(ncm_error, NCM_BINDINGS_ERROR_PARSE, buffer, len);
     return;
 }
 
@@ -713,7 +713,7 @@ ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len) {
 
 static bool
 ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
-                      NcmError *error) {
+                      NcmError *ncm_error) {
     int32 name_len;
     NcmStringView argument;
 
@@ -733,7 +733,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
 
     if (name_len == line_len) {
         if (!ncm_action_type_parse(line, name_len, &result->type)) {
-            ncm_bindings_error(error, "unknown action: '%.*s'", name_len, line);
+            ncm_bindings_error(ncm_error, "unknown action: '%.*s'", name_len, line);
             return false;
         }
         result->kind = NCM_BINDING_ACTION_NORMAL;
@@ -742,7 +742,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
 
     if (!ncm_extract_enclosed(line + name_len, line_len - name_len, '"', '"',
                               &argument)) {
-        ncm_bindings_error(error, "missing quoted argument: '%.*s'", line_len,
+        ncm_bindings_error(ncm_error, "missing quoted argument: '%.*s'", line_len,
                            line);
         return false;
     }
@@ -752,7 +752,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
 
         key = ncm_bindings_string_to_key(argument.data, argument.len);
         if (key == NC_KEY_NONE) {
-            ncm_bindings_error(error,
+            ncm_bindings_error(ncm_error,
                                "invalid character passed to "
                                "push_character: '%.*s'",
                                argument.len, argument.data);
@@ -768,7 +768,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
 
     if (STREQUAL(line, name_len, STRLIT("push_characters"))) {
         if (argument.len <= 0) {
-            ncm_bindings_error(error, "empty argument passed to "
+            ncm_bindings_error(ncm_error, "empty argument passed to "
                                       "push_characters");
             return false;
         }
@@ -785,7 +785,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
     if (STREQUAL(line, name_len, STRLIT("require_screen"))) {
         if (!screen_type_parse(argument.data, argument.len,
                                &result->screen_type)) {
-            ncm_bindings_error(error,
+            ncm_bindings_error(ncm_error,
                                "unknown screen passed to "
                                "require_screen: '%.*s'",
                                argument.len, argument.data);
@@ -798,7 +798,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
     if (STREQUAL(line, name_len, STRLIT("require_runnable"))) {
         if (!ncm_action_type_parse(argument.data, argument.len,
                                    &result->type)) {
-            ncm_bindings_error(error,
+            ncm_bindings_error(ncm_error,
                                "unknown action passed to "
                                "require_runnable: '%.*s'",
                                argument.len, argument.data);
@@ -810,7 +810,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
 
     if (STREQUAL(line, name_len, STRLIT("run_external_command"))) {
         if (argument.len <= 0) {
-            ncm_bindings_error(error, "empty command passed to "
+            ncm_bindings_error(ncm_error, "empty command passed to "
                                       "run_external_command");
             return false;
         }
@@ -823,7 +823,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
 
     if (STREQUAL(line, name_len, STRLIT("run_external_console_command"))) {
         if (argument.len <= 0) {
-            ncm_bindings_error(error, "empty command passed to "
+            ncm_bindings_error(ncm_error, "empty command passed to "
                                       "run_external_console_command");
             return false;
         }
@@ -834,7 +834,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
         return true;
     }
 
-    ncm_bindings_error(error, "unknown action: '%.*s'", line_len, line);
+    ncm_bindings_error(ncm_error, "unknown action: '%.*s'", line_len, line);
     return false;
 }
 
@@ -925,7 +925,7 @@ ncm_bindings_key_lower_bound(NcmBindingsConfiguration *bindings, NcKey key,
 
 static bool
 ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
-                            NcmCommand *command, NcmError *error) {
+                            NcmCommand *command, NcmError *ncm_error) {
     bool found;
     int32 at;
     NcmCommand copy;
@@ -933,7 +933,7 @@ ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
     at = ncm_bindings_command_lower_bound(bindings, command->name,
                                           command->name_len, &found);
     if (found) {
-        ncm_bindings_error(error, "redefinition of command '%.*s'",
+        ncm_bindings_error(ncm_error, "redefinition of command '%.*s'",
                            command->name_len, command->name);
         return false;
     }
@@ -1111,7 +1111,7 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
                                  int32 in_progress, NcmBinding *actions,
                                  NcKey key, char *key_name, int32 key_name_len,
                                  char *command_name, int32 command_name_len,
-                                 bool command_immediate, NcmError *error) {
+                                 bool command_immediate, NcmError *ncm_error) {
     NcmCommand command;
     bool result;
 
@@ -1120,11 +1120,11 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
     }
     if (actions->actions_len == 0) {
         if (in_progress == 1) {
-            ncm_bindings_error(error,
+            ncm_bindings_error(ncm_error,
                                "definition of command '%.*s' cannot be empty",
                                command_name_len, command_name);
         } else {
-            ncm_bindings_error(error,
+            ncm_bindings_error(ncm_error,
                                "definition of key '%.*s' cannot be empty",
                                key_name_len, key_name);
         }
@@ -1140,7 +1140,7 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
         if (!ncm_binding_copy(&command.binding, actions)) {
             return false;
         }
-        result = ncm_bindings_insert_command(bindings, &command, error);
+        result = ncm_bindings_insert_command(bindings, &command, ncm_error);
         ncm_binding_destroy(&command.binding);
         return result;
     }
@@ -1150,7 +1150,7 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
 
 bool
 ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
-                                int32 path_len, NcmError *error) {
+                                int32 path_len, NcmError *ncm_error) {
     enum {
         IN_PROGRESS_NONE = 0,
         IN_PROGRESS_COMMAND = 1,
@@ -1220,7 +1220,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             && STREQUAL(line + start, 11, STRLIT("def_command"))) {
             ok = ncm_bindings_finalize_definition(
                 bindings, in_progress, &actions, key, key_name, key_name_len,
-                command_name, command_name_len, command_immediate, error);
+                command_name, command_name_len, command_immediate, ncm_error);
             ncm_binding_clear(&actions);
             in_progress = IN_PROGRESS_NONE;
             if (!ok) {
@@ -1228,14 +1228,14 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             }
             if (!ncm_extract_enclosed(line + start, len - start, '"', '"',
                                       &enclosed)) {
-                ncm_bindings_error(error,
+                ncm_bindings_error(ncm_error,
                                    "%.*s:%d: command must have non-empty name",
                                    path_len, path, line_no);
                 ok = false;
                 break;
             }
             if (enclosed.len <= 0) {
-                ncm_bindings_error(error,
+                ncm_bindings_error(ncm_error,
                                    "%.*s:%d: command must have non-empty name",
                                    path_len, path, line_no);
                 ok = false;
@@ -1249,7 +1249,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             command_name_len = enclosed.len;
             if (!ncm_extract_enclosed(line + start, len - start, '[', ']',
                                       &enclosed)) {
-                ncm_bindings_error(error, "%.*s:%d: missing command type",
+                ncm_bindings_error(ncm_error, "%.*s:%d: missing command type",
                                    path_len, path, line_no);
                 ok = false;
                 break;
@@ -1262,7 +1262,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                 command_immediate = false;
             } else {
                 ncm_bindings_error(
-                    error, "%.*s:%d: invalid command type '%.*s'", path_len,
+                    ncm_error, "%.*s:%d: invalid command type '%.*s'", path_len,
                     path, line_no, enclosed.len, enclosed.data);
                 ok = false;
                 break;
@@ -1272,7 +1272,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                    && STREQUAL(line + start, 7, STRLIT("def_key"))) {
             ok = ncm_bindings_finalize_definition(
                 bindings, in_progress, &actions, key, key_name, key_name_len,
-                command_name, command_name_len, command_immediate, error);
+                command_name, command_name_len, command_immediate, ncm_error);
             ncm_binding_clear(&actions);
             in_progress = IN_PROGRESS_NONE;
             if (!ok) {
@@ -1280,14 +1280,14 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             }
             if (!ncm_extract_enclosed(line + start, len - start, '"', '"',
                                       &enclosed)) {
-                ncm_bindings_error(error, "%.*s:%d: invalid key", path_len,
+                ncm_bindings_error(ncm_error, "%.*s:%d: invalid key", path_len,
                                    path, line_no);
                 ok = false;
                 break;
             }
             key = ncm_bindings_string_to_key(enclosed.data, enclosed.len);
             if (key == NC_KEY_NONE) {
-                ncm_bindings_error(error, "%.*s:%d: invalid key '%.*s'",
+                ncm_bindings_error(ncm_error, "%.*s:%d: invalid key '%.*s'",
                                    path_len, path, line_no, enclosed.len,
                                    enclosed.data);
                 ok = false;
@@ -1308,14 +1308,14 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             action_start = ncm_trim_start(line, len);
             action_len = ncm_trim_end(line + action_start, len - action_start);
             if (!ncm_parse_action_line(line + action_start, action_len, &action,
-                                       error)) {
+                                       ncm_error)) {
                 ok = false;
                 break;
             }
             ok = ncm_binding_append_action(&actions, &action);
             ncm_binding_action_destroy(&action);
         } else {
-            ncm_bindings_error(error, "%.*s:%d: invalid line '%.*s'", path_len,
+            ncm_bindings_error(ncm_error, "%.*s:%d: invalid line '%.*s'", path_len,
                                path, line_no, len, line);
             ok = false;
         }
@@ -1324,7 +1324,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     if (ok) {
         ok = ncm_bindings_finalize_definition(
             bindings, in_progress, &actions, key, key_name, key_name_len,
-            command_name, command_name_len, command_immediate, error);
+            command_name, command_name_len, command_immediate, ncm_error);
     }
 
     ncm_binding_destroy(&actions);

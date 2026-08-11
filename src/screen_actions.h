@@ -10,12 +10,12 @@
 bool current_screen_allows_filter(void);
 NcmStringView current_screen_current_filter(void);
 bool current_screen_apply_filter(char *pattern, int32 pattern_len,
-                                 NcmError *error);
+                                 NcmError *ncm_error);
 bool current_screen_allows_search(void);
 NcmStringView current_screen_current_search_constraint(void);
 bool current_screen_search(enum SearchDirection direction, char *pattern,
                            int32 pattern_len, bool wrap, bool skip_current,
-                           NcmError *error);
+                           NcmError *ncm_error);
 void current_screen_clear_search_constraint(void);
 
 #endif /* NCMPCPP_SCREEN_ACTIONS_H */

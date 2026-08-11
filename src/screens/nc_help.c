@@ -92,13 +92,13 @@ nc_help_screen_reload(NcHelpScreen *screen) {
 bool
 nc_help_screen_find(NcHelpScreen *screen,
                     char *pattern, int32 pattern_len,
-                    NcmError *error) {
+                    NcmError *ncm_error) {
     NcmRegex regex;
     char *data;
     bool result;
 
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing help screen"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing help screen"));
         return false;
     }
 
@@ -107,7 +107,7 @@ nc_help_screen_find(NcHelpScreen *screen,
         sb_clear(&screen->search_constraint);
         nc_scrollpad_flush(&screen->scrollpad, &screen->window,
                            &screen->buffer);
-        ncm_error_clear(error);
+        ncm_error_clear(ncm_error);
         return true;
     }
 
@@ -115,14 +115,14 @@ nc_help_screen_find(NcHelpScreen *screen,
     if (!ncm_regex_compile(&regex,
                            pattern, pattern_len,
                            Config.regex_flags,
-                           error)) {
+                           ncm_error)) {
         ncm_regex_destroy(&regex);
         return false;
     }
 
     if (!sb_set(&screen->search_constraint, pattern, pattern_len)) {
         ncm_regex_destroy(&regex);
-        ncm_error_set(error, ENOMEM, STRLIT("failed to save search"));
+        ncm_error_set(ncm_error, ENOMEM, STRLIT("failed to save search"));
         return false;
     }
 

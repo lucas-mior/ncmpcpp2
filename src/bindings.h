@@ -136,7 +136,7 @@ void ncm_bindings_configuration_destroy(NcmBindingsConfiguration *bindings);
 void ncm_bindings_configuration_clear(NcmBindingsConfiguration *bindings);
 bool ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
                                      char *path, int32 path_len,
-                                     NcmError *error);
+                                     NcmError *ncm_error);
 void ncm_bindings_configuration_generate_defaults(
     NcmBindingsConfiguration *bindings);
 NcmCommand *

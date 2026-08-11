@@ -209,13 +209,13 @@ bool tag_editor_screen_save_action_available(
     TagEditorScreen *screen);
 bool tag_editor_screen_apply_directory_filter(
     TagEditorScreen *screen, char *pattern, int32 pattern_len,
-    uint32 regex_flags, NcmError *error);
+    uint32 regex_flags, NcmError *ncm_error);
 bool tag_editor_screen_apply_tag_filter(
     TagEditorScreen *screen, char *pattern, int32 pattern_len,
-    uint32 regex_flags, NcmError *error);
+    uint32 regex_flags, NcmError *ncm_error);
 bool tag_editor_screen_search(
     TagEditorScreen *screen, char *pattern, int32 pattern_len,
-    bool forward, bool wrap, bool skip_current, NcmError *error);
+    bool forward, bool wrap, bool skip_current, NcmError *ncm_error);
 bool tag_editor_screen_prepare_parser_rows(
     TagEditorScreen *screen, enum TagEditorParserMode mode,
     char *pattern, int32 pattern_len);

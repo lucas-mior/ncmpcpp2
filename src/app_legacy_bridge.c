@@ -109,11 +109,11 @@ app_legacy_bridge_noidle_status_update(int32 flags, void *user) {
 }
 
 static char *
-app_legacy_bridge_mpd_error_message(NcmError *error) {
+app_legacy_bridge_mpd_error_message(NcmError *ncm_error) {
     char *message;
 
-    if (error && (error->message[0] != '\0')) {
-        return error->message;
+    if (ncm_error && (ncm_error->message[0] != '\0')) {
+        return ncm_error->message;
     }
 
     if ((message = ncm_mpd_client_error_message(&global_mpd))
@@ -125,15 +125,15 @@ app_legacy_bridge_mpd_error_message(NcmError *error) {
 }
 
 static void
-app_legacy_bridge_report_mpd_error(NcmError *error) {
+app_legacy_bridge_report_mpd_error(NcmError *ncm_error) {
     NcmStringFormatArg arg;
     char *message;
 
-    message = app_legacy_bridge_mpd_error_message(error);
+    message = app_legacy_bridge_mpd_error_message(ncm_error);
     arg = ncm_string_format_arg_cstring(message);
 
     if ((ncm_mpd_client_error_code(&global_mpd) == MPD_ERROR_SERVER)
-        || (error && (error->code == MPD_ERROR_SERVER))) {
+        || (ncm_error && (ncm_error->code == MPD_ERROR_SERVER))) {
         ncm_statusbar_format(Config.message_delay_time,
                              STRLIT("MPD: %1%"), &arg, 1);
     } else {

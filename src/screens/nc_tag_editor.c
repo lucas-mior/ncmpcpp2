@@ -62,10 +62,10 @@ static bool tag_editor_update_from_mpd(TagEditorScreen *screen,
                                        NcmMpdClient *client);
 static bool tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
                                                    NcmMpdClient *client,
-                                                   NcmError *error);
+                                                   NcmError *ncm_error);
 static bool tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
                                              NcmMpdClient *client,
-                                             NcmError *error);
+                                             NcmError *ncm_error);
 static void tag_editor_mouse_callback(NcScreen *screen, MEVENT event);
 static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_scroll(TagEditorScreen *screen,
@@ -134,7 +134,7 @@ static bool tag_editor_set_buffer(StrBuilder *buffer, char *data,
 static bool tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
                                           int32 pattern_len,
                                           uint32 regex_flags,
-                                          NcmError *error);
+                                          NcmError *ncm_error);
 static void tag_editor_update_titles(TagEditorScreen *screen,
                                      bool update_windows);
 static void tag_editor_update_visible_counts(TagEditorScreen *screen);
@@ -170,7 +170,7 @@ static void tag_editor_status_directory_renamed(TagEditorScreen *screen,
 static void tag_editor_status_directory_rename_error(TagEditorScreen *screen,
                                                      char *name,
                                                      int32 name_len,
-                                                     NcmError *error);
+                                                     NcmError *ncm_error);
 static bool tag_editor_has_modified_songs(TagEditorScreen *screen);
 static int32 tag_editor_compare_directories(NcmDirectory *left,
                                             NcmDirectory *right);
@@ -1163,13 +1163,13 @@ bool
 tag_editor_screen_apply_directory_filter(TagEditorScreen *screen,
                                          char *pattern, int32 pattern_len,
                                          uint32 regex_flags,
-                                         NcmError *error) {
+                                         NcmError *ncm_error) {
     if (screen == NULL) {
         return false;
     }
     if (!tag_editor_compile_constraint(&screen->directory_filter_regex,
                                        pattern, pattern_len, regex_flags,
-                                       error)) {
+                                       ncm_error)) {
         return false;
     }
     sb_set(&screen->directory_filter_constraint, pattern, pattern_len);
@@ -1185,12 +1185,12 @@ tag_editor_screen_apply_directory_filter(TagEditorScreen *screen,
 bool
 tag_editor_screen_apply_tag_filter(TagEditorScreen *screen,
                                    char *pattern, int32 pattern_len,
-                                   uint32 regex_flags, NcmError *error) {
+                                   uint32 regex_flags, NcmError *ncm_error) {
     if (screen == NULL) {
         return false;
     }
     if (!tag_editor_compile_constraint(&screen->tag_filter_regex, pattern,
-                                       pattern_len, regex_flags, error)) {
+                                       pattern_len, regex_flags, ncm_error)) {
         return false;
     }
     sb_set(&screen->tag_filter_constraint, pattern, pattern_len);
@@ -1206,7 +1206,7 @@ bool
 tag_editor_screen_search(TagEditorScreen *screen,
                                 char *pattern, int32 pattern_len,
                                 bool forward, bool wrap,
-                                bool skip_current, NcmError *error) {
+                                bool skip_current, NcmError *ncm_error) {
     TagEditorSearchContext context;
     NcmRegex *regex;
     StrBuilder *constraint;
@@ -1233,7 +1233,7 @@ tag_editor_screen_search(TagEditorScreen *screen,
         enabled = &screen->directory_search_enabled;
     }
     if (!tag_editor_compile_constraint(regex, pattern, pattern_len,
-                                       Config.regex_flags, error)) {
+                                       Config.regex_flags, ncm_error)) {
         return false;
     }
     sb_set(constraint, pattern, pattern_len);
@@ -2631,7 +2631,7 @@ tag_editor_destroy_regexes(TagEditorScreen *screen) {
 static bool
 tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
                               int32 pattern_len, uint32 regex_flags,
-                              NcmError *error) {
+                              NcmError *ncm_error) {
     NcmRegex compiled;
 
     if (regex == NULL) {
@@ -2639,7 +2639,7 @@ tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
     }
     ncm_regex_init(&compiled);
     if (!ncm_regex_compile(&compiled, pattern, pattern_len, regex_flags,
-                           error)) {
+                           ncm_error)) {
         ncm_regex_destroy(&compiled);
         return false;
     }
@@ -2941,16 +2941,16 @@ tag_editor_status_directory_renamed(TagEditorScreen *screen,
 static void
 tag_editor_status_directory_rename_error(TagEditorScreen *screen,
                                          char *name, int32 name_len,
-                                         NcmError *error) {
+                                         NcmError *ncm_error) {
     StrBuilder message;
     int32 error_len;
 
     SB_APPEND(&message, STRLIT("Couldn't rename \""));
     SB_APPEND(&message, name, name_len);
     SB_APPEND(&message, STRLIT("\": "));
-    if (error && ncm_error_is_set(error)) {
-        error_len = strlen32(error->message);
-        SB_APPEND(&message, error->message, error_len);
+    if (ncm_error && ncm_error_is_set(ncm_error)) {
+        error_len = strlen32(ncm_error->message);
+        SB_APPEND(&message, ncm_error->message, error_len);
     } else {
         SB_APPEND(&message, STRLIT("unknown error"));
     }
@@ -3251,7 +3251,7 @@ tag_editor_update_from_mpd(TagEditorScreen *screen,
 static bool
 tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
                                        NcmMpdClient *client,
-                                       NcmError *error) {
+                                       NcmError *ncm_error) {
     NcmDirectoryArray directories;
     StrBuilder preserved = {0};
     char *dir;
@@ -3273,7 +3273,7 @@ tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
     }
 
     ok = ncm_mpd_client_get_directory_list(client, dir, &directories,
-                                           error);
+                                           ncm_error);
     if (ok) {
         tag_editor_sort_directories(&directories);
         nc_menu_show_all_items(nc_editor_pair_menu_base(
@@ -3317,7 +3317,7 @@ tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
 
 static bool
 tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
-                                 NcmMpdClient *client, NcmError *error) {
+                                 NcmMpdClient *client, NcmError *ncm_error) {
     NcmMpdSongList list;
     NcmSongArray songs;
     StrBuilder preserved_uri = {0};
@@ -3329,7 +3329,7 @@ tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
         return false;
     }
     if (!tag_editor_current_directory_path(screen, &path, &path_len)) {
-        ncm_error_set(error, EINVAL, STRLIT("missing directory"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing directory"));
         return false;
     }
 
@@ -3337,7 +3337,7 @@ tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
     ncm_song_array_init(&songs);
     tag_editor_preserve_current_song(screen, &preserved_uri);
 
-    if ((ok = ncm_mpd_client_get_songs(client, path, &list, error))) {
+    if ((ok = ncm_mpd_client_get_songs(client, path, &list, ncm_error))) {
         ok = ncm_mpd_song_list_to_song_array(&list, &songs);
     }
     if (ok) {

@@ -31,7 +31,7 @@ void ncm_regex_destroy(NcmRegex *regex);
 void ncm_regex_escape_literal(StrBuilder *buffer,
                               char *pattern, int32 pattern_len);
 bool ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
-                       uint32 flags, NcmError *error);
+                       uint32 flags, NcmError *ncm_error);
 bool ncm_regex_search(NcmRegex *regex, char *string, int32 string_len);
 bool ncm_regex_for_each_match(NcmRegex *regex,
                               char *string, int32 string_len,

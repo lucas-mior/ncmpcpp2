@@ -51,10 +51,10 @@ static bool library_song_matches(MediaLibraryScreen *screen,
                                         NcmSong *song, NcmRegex *regex);
 static bool library_collect_selected_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *error);
+    NcmError *ncm_error);
 static bool library_collect_current_item_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *error);
+    NcmError *ncm_error);
 static void library_mouse_scroll(MediaLibraryScreen *screen,
                                          enum NcScroll where);
 static bool library_mouse_select(
@@ -86,26 +86,26 @@ static void library_free_owned_string(char **data, int32 *len,
 static bool library_mpd_list_tags(void *user,
                                          enum mpd_tag_type tag_type,
                                          NcmMpdStringList *tags,
-                                         NcmError *error);
+                                         NcmError *ncm_error);
 static bool library_mpd_list_all_songs(void *user,
                                               NcmMpdSongList *songs,
-                                              NcmError *error);
+                                              NcmError *ncm_error);
 static bool library_mpd_search_songs(
     void *user, MediaLibrarySongQuery *query,
-    NcmMpdSongList *songs, NcmError *error);
+    NcmMpdSongList *songs, NcmError *ncm_error);
 static bool library_mpd_add_songs(void *user,
                                          NcmSongArray *songs,
-                                         bool play, NcmError *error);
+                                         bool play, NcmError *ncm_error);
 static void library_tag_array_item_init(void *item);
 static void library_tag_array_item_destroy(void *item);
 static void library_album_array_item_init(void *item);
 static void library_album_array_item_destroy(void *item);
 static bool library_update_tags(
-    MediaLibraryScreen *screen, NcmError *error);
+    MediaLibraryScreen *screen, NcmError *ncm_error);
 static bool library_update_albums(
-    MediaLibraryScreen *screen, NcmError *error);
+    MediaLibraryScreen *screen, NcmError *ncm_error);
 static bool library_update_songs(
-    MediaLibraryScreen *screen, NcmError *error);
+    MediaLibraryScreen *screen, NcmError *ncm_error);
 static bool library_replace_tags(
     MediaLibraryScreen *screen, MediaLibraryTagArray *tags);
 static bool library_replace_albums(
@@ -144,7 +144,7 @@ static bool library_songs_pending(
     MediaLibraryScreen *screen);
 static bool library_fetch_delay_elapsed(
     MediaLibraryScreen *screen);
-static void library_set_conversion_error(NcmError *error,
+static void library_set_conversion_error(NcmError *ncm_error,
                                                  char *message,
                                                  int32 message_len);
 static void library_request_all_updates(
@@ -1584,25 +1584,25 @@ media_library_screen_selected_songs(
 bool
 media_library_screen_selected_songs_checked(
     MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *error
+    NcmError *ncm_error
 ) {
     if ((screen == NULL) || (songs == NULL)) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing media-library songs"));
         return false;
     }
-    return library_collect_selected_songs(screen, songs, error);
+    return library_collect_selected_songs(screen, songs, ncm_error);
 }
 
 bool
 media_library_screen_copy_visible_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *error
+    NcmError *ncm_error
 ) {
     NcMenu *menu;
 
     if ((screen == NULL) || (songs == NULL)) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing media-library songs"));
         return false;
     }
@@ -1611,7 +1611,7 @@ media_library_screen_copy_visible_songs(
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (!library_copy_song_at(screen, songs, i)) {
             library_set_conversion_error(
-                error,
+                ncm_error,
                 STRLIT("failed to copy media-library songs"));
             return false;
         }
@@ -1622,14 +1622,14 @@ media_library_screen_copy_visible_songs(
 bool
 media_library_screen_apply_filter(
     MediaLibraryScreen *screen, char *pattern, int32 pattern_len,
-    NcmError *error
+    NcmError *ncm_error
 ) {
     MediaLibraryColumnState *state;
     NcMenuDisplayCallbacks callbacks;
     NcMenu *menu;
 
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing media library"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing media library"));
         return false;
     }
     if (pattern_len <= 0) {
@@ -1637,20 +1637,20 @@ media_library_screen_apply_filter(
         return true;
     }
     if (pattern == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing filter pattern"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing filter pattern"));
         return false;
     }
 
     if ((state = library_active_column_state(screen)) == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("invalid active column"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("invalid active column"));
         return false;
     }
     if (!ncm_regex_compile(&state->filter_regex, pattern, pattern_len,
-                           Config.regex_flags, error)) {
+                           Config.regex_flags, ncm_error)) {
         return false;
     }
     if (!sb_set(&state->filter_constraint, pattern, pattern_len)) {
-        ncm_error_set(error, ENOMEM, STRLIT("cannot save filter"));
+        ncm_error_set(ncm_error, ENOMEM, STRLIT("cannot save filter"));
         return false;
     }
 
@@ -1694,31 +1694,31 @@ bool
 media_library_screen_search(MediaLibraryScreen *screen,
                                    char *pattern, int32 pattern_len,
                                    bool forward, bool wrap,
-                                   bool skip_current, NcmError *error) {
+                                   bool skip_current, NcmError *ncm_error) {
     MediaLibrarySearchContext context;
     MediaLibraryColumnState *state;
     NcMenu *menu;
     bool result;
 
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing media library"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing media library"));
         return false;
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        ncm_error_set(error, EINVAL, STRLIT("missing search pattern"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing search pattern"));
         return false;
     }
 
     if ((state = library_active_column_state(screen)) == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("invalid active column"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("invalid active column"));
         return false;
     }
     if (!ncm_regex_compile(&state->search_regex, pattern, pattern_len,
-                           Config.regex_flags, error)) {
+                           Config.regex_flags, ncm_error)) {
         return false;
     }
     if (!sb_set(&state->search_constraint, pattern, pattern_len)) {
-        ncm_error_set(error, ENOMEM, STRLIT("cannot save search"));
+        ncm_error_set(ncm_error, ENOMEM, STRLIT("cannot save search"));
         return false;
     }
     state->search_enabled = true;
@@ -1863,29 +1863,29 @@ media_library_screen_finish_list_change(
 
 bool
 media_library_screen_update(MediaLibraryScreen *screen,
-                                   NcmError *error) {
+                                   NcmError *ncm_error) {
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing media library"));
         return false;
     }
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
 
     if (library_tags_pending(screen)) {
-        return library_update_tags(screen, error);
+        return library_update_tags(screen, ncm_error);
     }
 
     if (library_albums_pending(screen)
         && ((screen->mode != MEDIA_LIBRARY_MODE_THREE_COLUMNS)
             || screen->albums_update_request
             || library_fetch_delay_elapsed(screen))) {
-        return library_update_albums(screen, error);
+        return library_update_albums(screen, ncm_error);
     }
 
     if (library_songs_pending(screen)
         && (screen->songs_update_request
             || library_fetch_delay_elapsed(screen))) {
-        return library_update_songs(screen, error);
+        return library_update_songs(screen, ncm_error);
     }
 
     if (!library_tags_pending(screen)
@@ -1898,7 +1898,7 @@ media_library_screen_update(MediaLibraryScreen *screen,
 
 static bool
 library_update_tags(MediaLibraryScreen *screen,
-                           NcmError *error) {
+                           NcmError *ncm_error) {
     MediaLibraryTagArray tags;
     NcmMpdStringList strings;
     NcmMpdSongList songs;
@@ -1910,7 +1910,7 @@ library_update_tags(MediaLibraryScreen *screen,
 
     if (screen->sort_by_mtime) {
         result = media_library_screen_list_all_songs(
-            screen, &songs, error);
+            screen, &songs, ncm_error);
         if (!result) {
             screen->tags_update_request = true;
             if (screen->sort_by_mtime) {
@@ -1925,7 +1925,7 @@ library_update_tags(MediaLibraryScreen *screen,
             &tags, &songs, Config.media_lib_primary_tag);
     } else {
         result = media_library_screen_list_tags(
-            screen, Config.media_lib_primary_tag, &strings, error);
+            screen, Config.media_lib_primary_tag, &strings, ncm_error);
         if (!result) {
             screen->tags_update_request = true;
             ncm_mpd_song_list_destroy(&songs);
@@ -1939,12 +1939,12 @@ library_update_tags(MediaLibraryScreen *screen,
     if (!result) {
         screen->tags_update_request = true;
         library_set_conversion_error(
-            error, STRLIT("failed to build media-library tags"));
+            ncm_error, STRLIT("failed to build media-library tags"));
     } else {
         if (!(result = library_replace_tags(screen, &tags))) {
             screen->tags_update_request = true;
             library_set_conversion_error(
-                error, STRLIT("failed to replace media-library tags"));
+                ncm_error, STRLIT("failed to replace media-library tags"));
         } else {
             screen->tags_update_request = false;
         }
@@ -1958,7 +1958,7 @@ library_update_tags(MediaLibraryScreen *screen,
 
 static bool
 library_update_albums(MediaLibraryScreen *screen,
-                             NcmError *error) {
+                             NcmError *ncm_error) {
     MediaLibraryAlbumArray albums;
     MediaLibrarySongQuery query = {0};
     NcMediaLibraryTagRow *tag;
@@ -1985,10 +1985,10 @@ library_update_albums(MediaLibraryScreen *screen,
         query.primary_tag = Config.media_lib_primary_tag;
         query.match_primary_tag = true;
         result = media_library_screen_search_songs(
-            screen, &query, &songs, error);
+            screen, &query, &songs, ncm_error);
     } else {
         result = media_library_screen_list_all_songs(
-            screen, &songs, error);
+            screen, &songs, ncm_error);
         if (!result) {
             media_library_screen_toggle_mode(screen);
             library_request_all_updates(screen);
@@ -2008,12 +2008,12 @@ library_update_albums(MediaLibraryScreen *screen,
     if (!result) {
         screen->albums_update_request = true;
         library_set_conversion_error(
-            error, STRLIT("failed to build media-library albums"));
+            ncm_error, STRLIT("failed to build media-library albums"));
     } else {
         if (!(result = library_replace_albums(screen, &albums))) {
             screen->albums_update_request = true;
             library_set_conversion_error(
-                error,
+                ncm_error,
                 STRLIT("failed to replace media-library albums"));
         } else {
             screen->albums_update_request = false;
@@ -2027,7 +2027,7 @@ library_update_albums(MediaLibraryScreen *screen,
 
 static bool
 library_update_songs(MediaLibraryScreen *screen,
-                            NcmError *error) {
+                            NcmError *ncm_error) {
     MediaLibrarySongQuery query = {0};
     NcMediaLibraryAlbumRow *album;
     NcmMpdSongList source;
@@ -2058,7 +2058,7 @@ library_update_songs(MediaLibraryScreen *screen,
     ncm_mpd_song_list_init(&source);
     ncm_song_array_init(&songs);
     result = media_library_screen_search_songs(
-        screen, &query, &source, error);
+        screen, &query, &source, ncm_error);
     if (!result) {
         screen->songs_update_request = true;
         ncm_song_array_destroy(&songs);
@@ -2069,12 +2069,12 @@ library_update_songs(MediaLibraryScreen *screen,
     if (!(result = media_library_songs_from_list(&songs, &source))) {
         screen->songs_update_request = true;
         library_set_conversion_error(
-            error, STRLIT("failed to build media-library songs"));
+            ncm_error, STRLIT("failed to build media-library songs"));
     } else {
         if (!(result = library_replace_songs(screen, &songs))) {
             screen->songs_update_request = true;
             library_set_conversion_error(
-                error, STRLIT("failed to replace media-library songs"));
+                ncm_error, STRLIT("failed to replace media-library songs"));
         } else {
             screen->songs_update_request = false;
         }
@@ -2473,10 +2473,10 @@ library_update_due(MediaLibraryScreen *screen) {
 }
 
 static void
-library_set_conversion_error(NcmError *error, char *message,
+library_set_conversion_error(NcmError *ncm_error, char *message,
                                     int32 message_len) {
-    if (error && !ncm_error_is_set(error)) {
-        ncm_error_set(error, EINVAL, message, message_len);
+    if (ncm_error && !ncm_error_is_set(ncm_error)) {
+        ncm_error_set(ncm_error, EINVAL, message, message_len);
     }
     return;
 }
@@ -2792,21 +2792,21 @@ library_insert_locate_album(MediaLibraryScreen *screen,
 static bool
 library_locate_song_requirements(NcmSong *song,
                                         NcmStringView *primary_value,
-                                        NcmError *error) {
+                                        NcmError *ncm_error) {
     if ((song == NULL) || (primary_value == NULL)) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing locate-song argument"));
         return false;
     }
     if (!ncm_song_tag_view(song, Config.media_lib_primary_tag,
                            0, primary_value)
         || (primary_value->len <= 0)) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("song has no primary tag"));
         return false;
     }
     if (!ncm_song_is_from_database(song)) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("song is not from the database"));
         return false;
     }
@@ -2904,10 +2904,10 @@ library_print_add_status(MediaLibraryScreen *screen,
 }
 
 static void
-library_print_add_error(NcmError *error) {
-    if (error && ncm_error_is_set(error)) {
+library_print_add_error(NcmError *ncm_error) {
+    if (ncm_error && ncm_error_is_set(ncm_error)) {
         ncm_statusbar_print_cstring(
-            Config.message_delay_time, error->message);
+            Config.message_delay_time, ncm_error->message);
     }
     return;
 }
@@ -2915,96 +2915,96 @@ library_print_add_error(NcmError *error) {
 bool
 media_library_screen_list_tags(
     MediaLibraryScreen *screen, enum mpd_tag_type tag_type,
-    NcmMpdStringList *tags, NcmError *error
+    NcmMpdStringList *tags, NcmError *ncm_error
 ) {
     if ((screen == NULL) || (screen->hooks.list_tags == NULL)) {
-        ncm_error_set(error, ENOSYS, STRLIT("tag hook is unavailable"));
+        ncm_error_set(ncm_error, ENOSYS, STRLIT("tag hook is unavailable"));
         return false;
     }
     if (tags == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing tag list"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing tag list"));
         return false;
     }
     return screen->hooks.list_tags(screen->hooks.user, tag_type, tags,
-                                   error);
+                                   ncm_error);
 }
 
 bool
 media_library_screen_list_all_songs(
     MediaLibraryScreen *screen, NcmMpdSongList *songs,
-    NcmError *error
+    NcmError *ncm_error
 ) {
     if ((screen == NULL) || (screen->hooks.list_all_songs == NULL)) {
-        ncm_error_set(error, ENOSYS,
+        ncm_error_set(ncm_error, ENOSYS,
                       STRLIT("song-list hook is unavailable"));
         return false;
     }
     if (songs == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing song list"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing song list"));
         return false;
     }
-    return screen->hooks.list_all_songs(screen->hooks.user, songs, error);
+    return screen->hooks.list_all_songs(screen->hooks.user, songs, ncm_error);
 }
 
 bool
 media_library_screen_search_songs(
     MediaLibraryScreen *screen,
     MediaLibrarySongQuery *query, NcmMpdSongList *songs,
-    NcmError *error
+    NcmError *ncm_error
 ) {
     if ((screen == NULL) || (screen->hooks.search_songs == NULL)) {
-        ncm_error_set(error, ENOSYS,
+        ncm_error_set(ncm_error, ENOSYS,
                       STRLIT("song-search hook is unavailable"));
         return false;
     }
     if ((query == NULL) || (songs == NULL)) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing song search arguments"));
         return false;
     }
     return screen->hooks.search_songs(screen->hooks.user, query, songs,
-                                      error);
+                                      ncm_error);
 }
 
 bool
 media_library_screen_add_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs, bool play,
-    NcmError *error
+    NcmError *ncm_error
 ) {
     if ((screen == NULL) || (screen->hooks.add_songs == NULL)) {
-        ncm_error_set(error, ENOSYS,
+        ncm_error_set(ncm_error, ENOSYS,
                       STRLIT("add-songs hook is unavailable"));
         return false;
     }
     if ((songs == NULL) || (songs->len <= 0)) {
-        ncm_error_set(error, EINVAL, STRLIT("missing songs"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing songs"));
         return false;
     }
     return screen->hooks.add_songs(screen->hooks.user, songs, play,
-                                   error);
+                                   ncm_error);
 }
 
 bool
 media_library_screen_add_item_to_playlist(
-    MediaLibraryScreen *screen, bool play, NcmError *error
+    MediaLibraryScreen *screen, bool play, NcmError *ncm_error
 ) {
     NcmSongArray songs;
     bool result;
 
     if (screen == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing media library"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing media library"));
         return false;
     }
 
     ncm_song_array_init(&songs);
-    result = library_collect_current_item_songs(screen, &songs, error);
+    result = library_collect_current_item_songs(screen, &songs, ncm_error);
     if (result && (songs.len <= 0)) {
-        ncm_error_set(error, ENOENT, STRLIT("no selected songs"));
+        ncm_error_set(ncm_error, ENOENT, STRLIT("no selected songs"));
         result = false;
     }
     if (result) {
         result = media_library_screen_add_songs(screen, &songs,
-                                                       play, error);
+                                                       play, ncm_error);
     }
     library_print_add_status(screen, &songs, result);
     ncm_song_array_destroy(&songs);
@@ -3013,7 +3013,7 @@ media_library_screen_add_item_to_playlist(
 
 bool
 media_library_screen_locate_song(MediaLibraryScreen *screen,
-                                        NcmSong *song, NcmError *error) {
+                                        NcmSong *song, NcmError *ncm_error) {
     NcmStringView primary_value;
     NcmStringView album;
     NcmStringView date;
@@ -3026,13 +3026,13 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
     NcMenu *songs_menu;
 
     if ((screen == NULL) || (song == NULL)) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing locate-song argument"));
         return false;
     }
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     if (!library_locate_song_requirements(
-            song, &primary_value, error)) {
+            song, &primary_value, ncm_error)) {
         return false;
     }
 
@@ -3053,7 +3053,7 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
             screen, MEDIA_LIBRARY_COLUMN_TAGS);
         if (nc_menu_empty(tags_menu)) {
             media_library_screen_request_tags_update(screen);
-            if (!media_library_screen_update(screen, error)) {
+            if (!media_library_screen_update(screen, ncm_error)) {
                 return false;
             }
         }
@@ -3062,13 +3062,13 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
             if (!library_insert_locate_tag(
                     screen, primary_value.data, primary_value.len,
                     song->last_modified)) {
-                ncm_error_set(error, ENOMEM,
+                ncm_error_set(ncm_error, ENOMEM,
                               STRLIT("failed to insert locate tag"));
                 return false;
             }
             if (!library_move_to_tag(screen, primary_value.data,
                                             primary_value.len)) {
-                ncm_error_set(error, ENOENT,
+                ncm_error_set(ncm_error, ENOENT,
                               STRLIT("song tag is not in library"));
                 return false;
             }
@@ -3080,7 +3080,7 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
         screen, MEDIA_LIBRARY_COLUMN_ALBUMS);
     if (nc_menu_empty(albums_menu)) {
         media_library_screen_request_albums_update(screen);
-        if (!media_library_screen_update(screen, error)) {
+        if (!media_library_screen_update(screen, ncm_error)) {
             return false;
         }
     }
@@ -3089,7 +3089,7 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
         && nc_menu_empty(albums_menu)) {
         media_library_screen_set_active_column(
             screen, MEDIA_LIBRARY_COLUMN_TAGS);
-        ncm_error_set(error, ENOENT,
+        ncm_error_set(ncm_error, ENOENT,
                       STRLIT("song album is not in library"));
         return false;
     }
@@ -3107,14 +3107,14 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
         if (!library_insert_locate_album(
                 screen, album_tag, album_tag_len, album.data, album.len,
                 album_date, album_date_len, song->last_modified)) {
-            ncm_error_set(error, ENOMEM,
+            ncm_error_set(ncm_error, ENOMEM,
                           STRLIT("failed to insert locate album"));
             return false;
         }
         if (!library_move_to_album(
                 screen, primary_value.data, primary_value.len,
                 album.data, album.len, date.data, date.len, true)) {
-            ncm_error_set(error, ENOENT,
+            ncm_error_set(ncm_error, ENOENT,
                           STRLIT("song album is not in library"));
             return false;
         }
@@ -3126,28 +3126,28 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
     library_clear_column_filter(
         screen, MEDIA_LIBRARY_COLUMN_SONGS);
     media_library_screen_request_songs_update(screen);
-    if (!media_library_screen_update(screen, error)) {
+    if (!media_library_screen_update(screen, ncm_error)) {
         return false;
     }
     if (nc_menu_empty(songs_menu)) {
         nc_menu_clear_items(albums_menu);
         media_library_screen_set_active_column(
             screen, MEDIA_LIBRARY_COLUMN_ALBUMS);
-        ncm_error_set(error, ENOENT,
+        ncm_error_set(ncm_error, ENOENT,
                       STRLIT("song is not visible in media library"));
         return false;
     }
     if (!library_move_to_song(screen, song)) {
         media_library_screen_set_active_column(
             screen, MEDIA_LIBRARY_COLUMN_SONGS);
-        ncm_error_set(error, ENOENT,
+        ncm_error_set(ncm_error, ENOENT,
                       STRLIT("song is not visible in media library"));
         return false;
     }
 
     media_library_screen_set_active_column(
         screen, MEDIA_LIBRARY_COLUMN_SONGS);
-    ncm_error_clear(error);
+    ncm_error_clear(ncm_error);
     return true;
 }
 
@@ -3648,7 +3648,7 @@ library_query_from_album(MediaLibraryScreen *screen,
 static bool
 library_append_query_songs(
     MediaLibraryScreen *screen, MediaLibrarySongQuery *query,
-    NcmSongArray *songs, NcmError *error
+    NcmSongArray *songs, NcmError *ncm_error
 ) {
     NcmMpdSongList source;
     NcmSongArray sorted;
@@ -3657,12 +3657,12 @@ library_append_query_songs(
     ncm_mpd_song_list_init(&source);
     ncm_song_array_init(&sorted);
     result = media_library_screen_search_songs(
-        screen, query, &source, error);
+        screen, query, &source, ncm_error);
     if (result) {
         result = media_library_songs_from_list(&sorted, &source);
         if (!result) {
             library_set_conversion_error(
-                error, STRLIT("failed to build selected songs"));
+                ncm_error, STRLIT("failed to build selected songs"));
         }
     }
     if (result) {
@@ -3670,7 +3670,7 @@ library_append_query_songs(
             result = ncm_song_array_append_copy(songs, &sorted.items[i]);
             if (!result) {
                 library_set_conversion_error(
-                    error, STRLIT("failed to copy selected songs"));
+                    ncm_error, STRLIT("failed to copy selected songs"));
                 break;
             }
         }
@@ -3683,7 +3683,7 @@ library_append_query_songs(
 static bool
 library_collect_tag_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *error
+    NcmError *ncm_error
 ) {
     MediaLibrarySongQuery query;
     NcMediaLibraryTagRow *row;
@@ -3705,7 +3705,7 @@ library_collect_tag_songs(
         query = (MediaLibrarySongQuery){0};
         library_query_from_tag(screen, row, &query);
         if (!library_append_query_songs(
-                screen, &query, songs, error)) {
+                screen, &query, songs, ncm_error)) {
             return false;
         }
     }
@@ -3715,7 +3715,7 @@ library_collect_tag_songs(
 static bool
 library_collect_album_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *error
+    NcmError *ncm_error
 ) {
     MediaLibrarySongQuery query;
     NcMediaLibraryAlbumRow *row;
@@ -3740,7 +3740,7 @@ library_collect_album_songs(
         query = (MediaLibrarySongQuery){0};
         library_query_from_album(screen, row, &query);
         if (!library_append_query_songs(
-                screen, &query, songs, error)) {
+                screen, &query, songs, ncm_error)) {
             return false;
         }
     }
@@ -3773,13 +3773,13 @@ library_collect_visible_song_rows(
 static bool
 library_collect_selected_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *error
+    NcmError *ncm_error
 ) {
     if (screen->active_column == MEDIA_LIBRARY_COLUMN_TAGS) {
-        return library_collect_tag_songs(screen, songs, error);
+        return library_collect_tag_songs(screen, songs, ncm_error);
     }
     if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
-        return library_collect_album_songs(screen, songs, error);
+        return library_collect_album_songs(screen, songs, ncm_error);
     }
     return library_collect_visible_song_rows(screen, songs);
 }
@@ -3787,7 +3787,7 @@ library_collect_selected_songs(
 static bool
 library_collect_current_item_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *error
+    NcmError *ncm_error
 ) {
     MediaLibrarySongQuery query = {0};
     NcMediaLibraryTagRow *tag;
@@ -3800,7 +3800,7 @@ library_collect_current_item_songs(
         }
         library_query_from_tag(screen, tag, &query);
         return library_append_query_songs(screen, &query, songs,
-                                                 error);
+                                                 ncm_error);
     }
 
     if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
@@ -3810,7 +3810,7 @@ library_collect_current_item_songs(
         }
         library_query_from_album(screen, album, &query);
         return library_append_query_songs(screen, &query, songs,
-                                                 error);
+                                                 ncm_error);
     }
 
     menu = nc_media_library_song_menu_base(&screen->songs);
@@ -4182,36 +4182,36 @@ library_query_cstring(StrBuilder *buffer, char *string,
 
 static bool
 library_mpd_list_tags(void *user, enum mpd_tag_type tag_type,
-                             NcmMpdStringList *tags, NcmError *error) {
+                             NcmMpdStringList *tags, NcmError *ncm_error) {
     NcmMpdClient *client;
 
     client = user;
     if (client == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing MPD client"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing MPD client"));
         return false;
     }
-    return ncm_mpd_client_get_list(client, tag_type, tags, error);
+    return ncm_mpd_client_get_list(client, tag_type, tags, ncm_error);
 }
 
 static bool
 library_mpd_list_all_songs(void *user, NcmMpdSongList *songs,
-                                  NcmError *error) {
+                                  NcmError *ncm_error) {
     NcmMpdClient *client;
 
     client = user;
     if (client == NULL) {
-        ncm_error_set(error, EINVAL, STRLIT("missing MPD client"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing MPD client"));
         return false;
     }
     return ncm_mpd_client_get_directory_recursive(client, "/",
-                                                   songs, error);
+                                                   songs, ncm_error);
 }
 
 static bool
 library_mpd_search_songs(void *user,
                                 MediaLibrarySongQuery *query,
                                 NcmMpdSongList *songs,
-                                NcmError *error) {
+                                NcmError *ncm_error) {
     NcmMpdClient *client;
     StrBuilder primary = {0};
     StrBuilder album = {0};
@@ -4221,50 +4221,50 @@ library_mpd_search_songs(void *user,
 
     client = user;
     if ((client == NULL) || (query == NULL) || (songs == NULL)) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing MPD search argument"));
         return false;
     }
 
-    if ((result = ncm_mpd_client_start_search(client, true, error))
+    if ((result = ncm_mpd_client_start_search(client, true, ncm_error))
         && query->match_primary_tag) {
         value = library_query_cstring(
             &primary, query->primary_value, query->primary_value_len);
         if (value == NULL) {
-            ncm_error_set(error, EINVAL,
+            ncm_error_set(ncm_error, EINVAL,
                           STRLIT("missing primary tag value"));
             result = false;
         } else {
             result = ncm_mpd_client_add_search_tag(
-                client, query->primary_tag, value, error);
+                client, query->primary_tag, value, ncm_error);
         }
     }
     if (result && query->match_album) {
         value = library_query_cstring(
             &album, query->album, query->album_len);
         if (value == NULL) {
-            ncm_error_set(error, EINVAL,
+            ncm_error_set(ncm_error, EINVAL,
                           STRLIT("missing album value"));
             result = false;
         } else {
             result = ncm_mpd_client_add_search_tag(
-                client, MPD_TAG_ALBUM, value, error);
+                client, MPD_TAG_ALBUM, value, ncm_error);
         }
     }
     if (result && query->match_date) {
         value = library_query_cstring(
             &date, query->date, query->date_len);
         if (value == NULL) {
-            ncm_error_set(error, EINVAL,
+            ncm_error_set(ncm_error, EINVAL,
                           STRLIT("missing date value"));
             result = false;
         } else {
             result = ncm_mpd_client_add_search_tag(
-                client, MPD_TAG_DATE, value, error);
+                client, MPD_TAG_DATE, value, ncm_error);
         }
     }
     if (result) {
-        result = ncm_mpd_client_commit_search_songs(client, songs, error);
+        result = ncm_mpd_client_commit_search_songs(client, songs, ncm_error);
     }
     sb_free(&date);
     sb_free(&album);
@@ -4274,7 +4274,7 @@ library_mpd_search_songs(void *user,
 
 static bool
 library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
-                             NcmError *error) {
+                             NcmError *ncm_error) {
     NcmMpdClient *client;
     NcmMpdSongList additions;
     int32 play_pos;
@@ -4282,7 +4282,7 @@ library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
 
     client = user;
     if ((client == NULL) || (songs == NULL)) {
-        ncm_error_set(error, EINVAL,
+        ncm_error_set(ncm_error, EINVAL,
                       STRLIT("missing MPD add argument"));
         return false;
     }
@@ -4292,7 +4292,7 @@ library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
     for (int32 i = 0; i < songs->len; i += 1) {
         if (!ncm_mpd_song_list_append_copy(&additions,
                                            &songs->items[i])) {
-            ncm_error_set(error, ENOMEM,
+            ncm_error_set(ncm_error, ENOMEM,
                           STRLIT("cannot copy songs for MPD"));
             result = false;
             break;
@@ -4305,10 +4305,10 @@ library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
     }
     if (result) {
         result = ncm_mpd_client_add_song_list(client, &additions, -1,
-                                              error);
+                                              ncm_error);
     }
     if (result && play) {
-        result = ncm_mpd_client_play_pos(client, play_pos, error);
+        result = ncm_mpd_client_play_pos(client, play_pos, ncm_error);
     }
     ncm_mpd_song_list_destroy(&additions);
     return result;

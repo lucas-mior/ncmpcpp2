@@ -69,7 +69,7 @@ void browser_screen_add_item_move(BrowserScreen *screen,
                                          NcmMpdItem *item);
 bool browser_screen_reload_from_mpd(BrowserScreen *screen,
                                            NcmMpdClient *client,
-                                           NcmError *error);
+                                           NcmError *ncm_error);
 bool browser_screen_sort(BrowserScreen *screen);
 bool browser_screen_set_current_directory(
     BrowserScreen *screen, char *directory, int32 directory_len);
@@ -85,7 +85,7 @@ void browser_screen_set_display_mode(BrowserScreen *screen,
 bool browser_screen_has_supported_extension(
     BrowserScreen *screen, char *extension, int32 extension_len);
 bool browser_screen_fetch_supported_extensions(
-    BrowserScreen *screen, NcmMpdClient *client, NcmError *error);
+    BrowserScreen *screen, NcmMpdClient *client, NcmError *ncm_error);
 bool browser_screen_update_requested(BrowserScreen *screen);
 void browser_screen_clear_update_request(BrowserScreen *screen);
 bool browser_screen_in_root_directory(BrowserScreen *screen);
@@ -94,7 +94,7 @@ void browser_screen_set_local(BrowserScreen *screen,
 bool browser_screen_is_local(BrowserScreen *screen);
 bool browser_screen_change_browse_mode(BrowserScreen *screen,
                                               NcmMpdClient *client,
-                                              NcmError *error);
+                                              NcmError *ncm_error);
 NcmMpdItem *browser_screen_current_item(BrowserScreen *screen);
 bool browser_screen_current_song(BrowserScreen *screen,
                                         NcmSong *song);
@@ -102,7 +102,7 @@ bool browser_screen_selected_songs(BrowserScreen *screen,
                                           NcmSongArray *songs);
 bool browser_screen_delete_items(BrowserScreen *screen,
                                         NcmMpdClient *client,
-                                        NcmError *error);
+                                        NcmError *ncm_error);
 bool browser_screen_current_directory_path(
     BrowserScreen *screen, NcmStringView *path);
 bool browser_screen_current_playlist_path(
@@ -113,24 +113,24 @@ bool browser_screen_rename_playlist_available(
     BrowserScreen *screen);
 bool browser_screen_rename_current_directory(
     BrowserScreen *screen, char *new_path, int32 new_path_len,
-    NcmMpdClient *client, NcmError *error);
+    NcmMpdClient *client, NcmError *ncm_error);
 bool browser_screen_rename_current_playlist(
     BrowserScreen *screen, char *new_path, int32 new_path_len,
-    NcmMpdClient *client, NcmError *error);
+    NcmMpdClient *client, NcmError *ncm_error);
 bool browser_screen_locate_song(BrowserScreen *screen,
                                        NcmSong *song,
                                        NcmMpdClient *client,
-                                       NcmError *error);
+                                       NcmError *ncm_error);
 bool browser_screen_enter_directory(BrowserScreen *screen);
 bool browser_screen_go_to_parent(BrowserScreen *screen);
 bool browser_screen_apply_filter(BrowserScreen *screen,
                                         char *pattern, int32 pattern_len,
-                                        NcmError *error);
+                                        NcmError *ncm_error);
 void browser_screen_clear_filter(BrowserScreen *screen);
 bool browser_screen_search(BrowserScreen *screen,
                                   char *pattern, int32 pattern_len,
                                   bool forward, bool wrap,
-                                  bool skip_current, NcmError *error);
+                                  bool skip_current, NcmError *ncm_error);
 bool browser_screen_render_item(BrowserScreen *screen,
                                        NcBuffer *buffer,
                                        NcmMpdItem *item,

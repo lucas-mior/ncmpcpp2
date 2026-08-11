@@ -5,8 +5,8 @@
 
 #include "c/ncm_base.h"
 
-typedef bool NcmJobRunCallback(void *user, NcmError *error);
-typedef void NcmJobCompleteCallback(bool success, NcmError *error,
+typedef bool NcmJobRunCallback(void *user, NcmError *ncm_error);
+typedef void NcmJobCompleteCallback(bool success, NcmError *ncm_error,
                                     void *user);
 typedef void NcmJobDestroyCallback(void *user);
 
@@ -37,9 +37,9 @@ typedef struct NcmJobQueue {
 } NcmJobQueue;
 
 void ncm_job_queue_init(NcmJobQueue *queue);
-bool ncm_job_queue_start(NcmJobQueue *queue, NcmError *error);
+bool ncm_job_queue_start(NcmJobQueue *queue, NcmError *ncm_error);
 bool ncm_job_queue_push(NcmJobQueue *queue, NcmJob job,
-                        NcmError *error);
+                        NcmError *ncm_error);
 int32 ncm_job_queue_dispatch_completed(NcmJobQueue *queue);
 void ncm_job_queue_stop(NcmJobQueue *queue);
 void ncm_job_queue_destroy(NcmJobQueue *queue);
