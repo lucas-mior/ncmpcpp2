@@ -14,8 +14,7 @@
 #define ENUM_FIELDS \
     X(NCM_ITEM_DIRECTORY) \
     X(NCM_ITEM_SONG) \
-    X(NCM_ITEM_PLAYLIST) \
-    X(NCM_ITEM_UNKNOWN)
+    X(NCM_ITEM_PLAYLIST)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcmSongGetter

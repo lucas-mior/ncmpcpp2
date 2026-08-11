@@ -18,7 +18,6 @@ screen_type_to_nc_type(enum ScreenType screen_type) {
     NCM_SCREEN_TYPES(NCM_SCREEN_TO_NC_CASE)
 
     #undef NCM_SCREEN_TO_NC_CASE
-    case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
         break;
     default:
@@ -46,7 +45,7 @@ screen_type_from_nc_type(int32 nc_type) {
         break;
     }
 
-    return NCM_SCREEN_TYPE_UNKNOWN;
+    return NCM_SCREEN_TYPE_LAST;
 }
 
 bool
@@ -64,7 +63,7 @@ screen_type_parse_startup(char *string, int32 string_len,
     NCM_SCREEN_TYPES(NCM_SCREEN_PARSE_STARTUP)
 
     #undef NCM_SCREEN_PARSE_STARTUP
-    *screen_type = NCM_SCREEN_TYPE_UNKNOWN;
+    *screen_type = NCM_SCREEN_TYPE_LAST;
     return false;
 }
 
@@ -82,7 +81,7 @@ screen_type_parse(char *string, int32 string_len,
     NCM_SCREEN_TYPES(NCM_SCREEN_PARSE)
 
     #undef NCM_SCREEN_PARSE
-    *screen_type = NCM_SCREEN_TYPE_UNKNOWN;
+    *screen_type = NCM_SCREEN_TYPE_LAST;
     return false;
 }
 
