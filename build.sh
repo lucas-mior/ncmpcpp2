@@ -17,7 +17,7 @@ printf "\n${script} ${RED}${1:-} ${2:-}$RES\n"
 PREFIX="${PREFIX:-/usr/local}"
 DESTDIR="${DESTDIR:-/}"
 
-exe=bin/ncmpcpp2
+exe="bin/${program}"
 mkdir -p "$(dirname "$exe")"
 
 CC=$(get_compiler "$target")
