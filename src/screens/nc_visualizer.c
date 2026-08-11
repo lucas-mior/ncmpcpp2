@@ -1859,11 +1859,10 @@ visualizer_system_open_udp(void *user,
         args[1] = ncm_string_format_arg_string(port, port_len);
         args[2] = ncm_string_format_arg_cstring(
             (char *)gai_strerror(error_code));
-        ncm_statusbar_format(
-            ncm_statusbar_message_delay_time(),
-            STRLIT("Couldn't resolve \"%1:%2\": %3"),
-            args,
-            3);
+        ncm_statusbar_format(ncm_statusbar_message_delay_time(),
+                             STRLIT("Couldn't resolve \"%1:%2\": %3"),
+                             args,
+                             3);
         return -1;
     }
 
@@ -1924,8 +1923,7 @@ visualizer_system_get_outputs(void *user,
     NcmMpdClient *client = user;
 
     if (client == NULL) {
-        ncm_error_set(error, EINVAL,
-                      STRLIT("MPD client is not configured"));
+        ncm_error_set(error, EINVAL, STRLIT("MPD client is not configured"));
         return false;
     }
     return ncm_mpd_client_get_outputs(client, outputs, error);
@@ -1936,8 +1934,7 @@ visualizer_system_disable_output(void *user, int32 id, NcmError *error) {
     NcmMpdClient *client = user;
 
     if (client == NULL) {
-        ncm_error_set(error, EINVAL,
-                      STRLIT("MPD client is not configured"));
+        ncm_error_set(error, EINVAL, STRLIT("MPD client is not configured"));
         return false;
     }
     return ncm_mpd_client_disable_output(client, id, error);
@@ -1984,11 +1981,10 @@ visualizer_reset_output(VisualizerScreen *screen) {
         NcmStringFormatArg arg;
 
         arg = ncm_string_format_arg_cstring(error.message);
-        ncm_statusbar_format(
-            ncm_statusbar_message_delay_time(),
-            STRLIT("Could not disable visualizer output: %1"),
-            &arg,
-            1);
+        ncm_statusbar_format(ncm_statusbar_message_delay_time(),
+                             STRLIT("Could not disable visualizer output: %1"),
+                             &arg,
+                             1);
         return false;
     }
     if (screen->data_source_hooks.sleep_microseconds) {
@@ -1997,18 +1993,16 @@ visualizer_reset_output(VisualizerScreen *screen) {
     }
 
     ncm_error_clear(&error);
-    if (!screen->data_source_hooks.enable_output(
-            screen->data_source_hooks.user,
-            screen->output_id,
-            &error)) {
+    if (!screen->data_source_hooks.enable_output(screen->data_source_hooks.user,
+                                                 screen->output_id,
+                                                 &error)) {
         NcmStringFormatArg arg;
 
         arg = ncm_string_format_arg_cstring(error.message);
-        ncm_statusbar_format(
-            ncm_statusbar_message_delay_time(),
-            STRLIT("Could not enable visualizer output: %1"),
-            &arg,
-            1);
+        ncm_statusbar_format(ncm_statusbar_message_delay_time(),
+                             STRLIT("Could not enable visualizer output: %1"),
+                             &arg,
+                             1);
         return false;
     }
 
@@ -2101,10 +2095,8 @@ visualizer_resize_callback(NcScreen *screen) {
 
     nc_screen_switcher_get_resize_params(screen, &x, &width, true);
     visualizer_screen_set_geometry(visualizer,
-                                          x,
-                                          ui_state_main_start_y(),
-                                          width,
-                                          ui_state_main_height());
+                                   x, ui_state_main_start_y(),
+                                   width, ui_state_main_height());
     visualizer_prepare_drawing(visualizer);
     nc_screen_clear_resize_request(screen);
     return;
@@ -2143,10 +2135,9 @@ visualizer_update_callback(NcScreen *screen) {
         return;
     }
 
-    if (!visualizer_screen_draw(
-            visualizer,
-            visualizer->rendered_samples.data,
-            visualizer->rendered_samples.cap)) {
+    if (!visualizer_screen_draw(visualizer,
+                                visualizer->rendered_samples.data,
+                                visualizer->rendered_samples.cap)) {
         return;
     }
     nc_window_refresh(&visualizer->window);

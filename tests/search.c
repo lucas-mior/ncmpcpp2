@@ -415,6 +415,30 @@ search_song_context_destroy(SearchSongTestContext *context) {
 }
 
 static void
+test_regex_handles_empty_strings(void) {
+    NcmRegex regex;
+    NcmError error;
+
+    ncm_regex_init(&regex);
+    ncm_error_clear(&error);
+    assert(ncm_regex_compile(
+        &regex, STRLIT("ohne"), NCM_REGEX_LITERAL_CASE_INSENSITIVE,
+        &error));
+    assert(!ncm_regex_search(&regex, STRLIT("")));
+    ncm_regex_destroy(&regex);
+
+    ncm_regex_init(&regex);
+    ncm_error_clear(&error);
+    assert(ncm_regex_compile(
+        &regex, STRLIT(""), NCM_REGEX_LITERAL_CASE_INSENSITIVE,
+        &error));
+    assert(ncm_regex_search(&regex, STRLIT("")));
+    assert(ncm_regex_search(&regex, STRLIT("ohne")));
+    ncm_regex_destroy(&regex);
+    return;
+}
+
+static void
 search_column_format_init(NcmFormatAst *format) {
     ncm_format_ast_init(format);
     assert(ncm_format_ast_append_column_types(
@@ -957,6 +981,7 @@ test_playlist_fixture_finds_ohne_dich(void) {
 
 int
 main(void) {
+    test_regex_handles_empty_strings();
     test_prompt_search_accepts_current_match();
     test_forward_repeat_skips_current_match();
     test_forward_repeat_wraps_to_first_match();
