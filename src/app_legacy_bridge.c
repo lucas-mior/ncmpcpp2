@@ -8,7 +8,7 @@
 #include "bindings.h"
 #include "c/ncm_base.h"
 #include "global.h"
-#include "screens/native_c_screens.h"
+#include "screens/app_screens.h"
 #include "settings.h"
 #include "status.h"
 #include "statusbar.h"
@@ -28,8 +28,8 @@ static NcmTimePoint app_legacy_bridge_header_refresh_time;
 static void
 app_legacy_bridge_request_media_library_database_update(void *user) {
     (void)user;
-    native_media_library_screen_request_database_update(
-        native_c_screen_media_library());
+    media_library_screen_request_database_update(
+        app_screen_media_library());
     return;
 }
 
@@ -37,14 +37,14 @@ static void
 app_legacy_bridge_refresh_playlist_related_inactive_columns(void *user) {
     (void)user;
     if (app_controller_is_screen_visible(
-            native_c_screen_media_library_native())) {
-        native_media_library_screen_refresh_inactive_songs(
-            native_c_screen_media_library());
+            app_screen_media_library_base())) {
+        media_library_screen_refresh_inactive_songs(
+            app_screen_media_library());
     }
 
     if (app_controller_is_screen_visible(
-            native_c_screen_playlist_editor_native())) {
-        nc_screen_refresh(native_c_screen_playlist_editor_native());
+            app_screen_playlist_editor_base())) {
+        nc_screen_refresh(app_screen_playlist_editor_base());
     }
     return;
 }
@@ -60,8 +60,8 @@ app_legacy_bridge_set_status_observers(void) {
 
 static void
 app_legacy_bridge_set_resize_flags(void) {
-    native_c_screens_request_registered_resize();
-    native_c_screen_lyrics_set_resize();
+    app_screens_request_registered_resize();
+    app_screen_lyrics_set_resize();
     return;
 }
 
@@ -69,8 +69,8 @@ static void
 app_legacy_bridge_dispatch_lyrics_jobs(void) {
     StrBuilder message = {0};
 
-    native_lyrics_screen_dispatch_jobs(native_c_screen_lyrics());
-    if (native_lyrics_screen_try_take_consumer_message(native_c_screen_lyrics(),
+    lyrics_screen_dispatch_jobs(app_screen_lyrics());
+    if (lyrics_screen_try_take_consumer_message(app_screen_lyrics(),
                                                        &message)) {
         ncm_statusbar_print(Config.message_delay_time, message.data,
                             message.len);
@@ -83,9 +83,9 @@ static void
 app_legacy_bridge_refresh_header_if_due(void) {
     bool current_screen_uses_header_timer;
 
-    current_screen_uses_header_timer = native_c_screen_playlist_is_current()
-                                       || native_c_screen_browser_is_current()
-                                       || native_c_screen_lyrics_is_current();
+    current_screen_uses_header_timer = app_screen_playlist_is_current()
+                                       || app_screen_browser_is_current()
+                                       || app_screen_lyrics_is_current();
     if (!current_screen_uses_header_timer) {
         return;
     }
@@ -269,10 +269,10 @@ ncmpcpp_legacy_window_destroy(NcWindow *window) {
 void
 ncmpcpp_legacy_initialize_screens(void) {
     app_controller_init();
-    native_c_screens_init_all();
+    app_screens_init_all();
     app_legacy_bridge_set_status_observers();
-    native_c_screens_register_native_only();
-    native_c_screen_lyrics_register();
+    app_screens_register_initial();
+    app_screen_lyrics_register();
     return;
 }
 
@@ -318,31 +318,31 @@ ncmpcpp_legacy_resize_screen(bool reload_main_window) {
 
 void
 ncmpcpp_legacy_playlist_switch_to(void) {
-    (void)native_c_screens_switch_to_type(NCM_SCREEN_TYPE_PLAYLIST);
+    (void)app_screens_switch_to_type(NCM_SCREEN_TYPE_PLAYLIST);
     return;
 }
 
 void
 ncmpcpp_legacy_playlist_enable_highlighting_if_current(void) {
-    if (native_c_screen_playlist_is_current()) {
-        native_playlist_screen_request_highlighting(native_c_screen_playlist());
+    if (app_screen_playlist_is_current()) {
+        playlist_screen_request_highlighting(app_screen_playlist());
     }
     return;
 }
 
 bool
 ncmpcpp_legacy_switch_to_screen_type(enum ScreenType screen_type) {
-    return native_c_screens_switch_to_type(screen_type);
+    return app_screens_switch_to_type(screen_type);
 }
 
 bool
 ncmpcpp_legacy_lock_current_screen(void) {
-    return native_c_screens_lock_current();
+    return app_screens_lock_current();
 }
 
 enum ScreenType
 ncmpcpp_legacy_current_screen_type(void) {
-    return native_c_screens_current_type();
+    return app_screens_current_type();
 }
 
 void

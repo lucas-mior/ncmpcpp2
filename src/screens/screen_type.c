@@ -7,17 +7,17 @@
 #include "screens/screen_type.h"
 
 int32
-screen_type_to_native_type(enum ScreenType screen_type) {
+screen_type_to_nc_type(enum ScreenType screen_type) {
     switch (screen_type) {
-    #define NCM_SCREEN_TO_NATIVE_CASE( \
-        screen_type_value, native_type, native_value, alias, flags \
+    #define NCM_SCREEN_TO_NC_CASE( \
+        screen_type_value, nc_type, nc_value, alias, flags \
     ) \
         case screen_type_value: \
-            return native_type;
+            return nc_type;
 
-    NCM_SCREEN_TYPES(NCM_SCREEN_TO_NATIVE_CASE)
+    NCM_SCREEN_TYPES(NCM_SCREEN_TO_NC_CASE)
 
-    #undef NCM_SCREEN_TO_NATIVE_CASE
+    #undef NCM_SCREEN_TO_NC_CASE
     case NCM_SCREEN_TYPE_UNKNOWN:
     case NCM_SCREEN_TYPE_LAST:
         break;
@@ -29,17 +29,17 @@ screen_type_to_native_type(enum ScreenType screen_type) {
 }
 
 enum ScreenType
-screen_type_from_native_type(int32 native_type) {
-    switch (native_type) {
-    #define NCM_SCREEN_FROM_NATIVE_CASE( \
-        screen_type_value, native_type_value, native_value, alias, flags \
+screen_type_from_nc_type(int32 nc_type) {
+    switch (nc_type) {
+    #define NCM_SCREEN_FROM_NC_CASE( \
+        screen_type_value, nc_type_value, nc_value, alias, flags \
     ) \
-        case native_type_value: \
+        case nc_type_value: \
             return screen_type_value;
 
-    NCM_SCREEN_TYPES(NCM_SCREEN_FROM_NATIVE_CASE)
+    NCM_SCREEN_TYPES(NCM_SCREEN_FROM_NC_CASE)
 
-    #undef NCM_SCREEN_FROM_NATIVE_CASE
+    #undef NCM_SCREEN_FROM_NC_CASE
     case NC_SCREEN_TYPE_UNKNOWN:
         break;
     default:
@@ -53,7 +53,7 @@ bool
 screen_type_parse_startup(char *string, int32 string_len,
                           enum ScreenType *screen_type) {
     #define NCM_SCREEN_PARSE_STARTUP( \
-        screen_type_value, native_type, native_value, alias, flags \
+        screen_type_value, nc_type, nc_value, alias, flags \
     ) \
         if (((flags & NCM_SCREEN_FLAG_STARTUP) != 0) \
             && STREQUAL(string, string_len, #alias)) { \
@@ -72,7 +72,7 @@ bool
 screen_type_parse(char *string, int32 string_len,
                   enum ScreenType *screen_type) {
     #define NCM_SCREEN_PARSE( \
-        screen_type_value, native_type, native_value, alias, flags \
+        screen_type_value, nc_type, nc_value, alias, flags \
     ) \
         if (STREQUAL(string, string_len, #alias)) { \
             *screen_type = screen_type_value; \

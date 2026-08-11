@@ -10,15 +10,15 @@
 #include "screens/nc_screen.h"
 
 typedef struct NcmMpdClient NcmMpdClient;
-typedef struct NativePlaylistScreen NativePlaylistScreen;
+typedef struct PlaylistScreen PlaylistScreen;
 
-typedef struct NativeSortPlaylistDialog {
+typedef struct SortPlaylistDialog {
     NcScreen screen;
     NcEditorSortMenu rows;
     NcWindow window;
     NcmSongArray songs;
 
-    NativePlaylistScreen *playlist;
+    PlaylistScreen *playlist;
     NcScreen *previous_screen;
     NcmMpdClient *client;
 
@@ -30,38 +30,38 @@ typedef struct NativeSortPlaylistDialog {
 
     bool ignore_leading_the;
     bool ready;
-} NativeSortPlaylistDialog;
+} SortPlaylistDialog;
 
-void native_sort_playlist_dialog_init(NativeSortPlaylistDialog *dialog,
+void sort_playlist_dialog_init(SortPlaylistDialog *dialog,
                                       int32 start_x, int32 start_y,
                                       int32 width, int32 height,
                                       NcColor color, NcBorder border);
-void native_sort_playlist_dialog_destroy(NativeSortPlaylistDialog *dialog);
-NcScreen *native_sort_playlist_dialog_base(
-    NativeSortPlaylistDialog *dialog);
-NcEditorSortMenu *native_sort_playlist_dialog_menu(
-    NativeSortPlaylistDialog *dialog);
-void native_sort_playlist_dialog_set_geometry(
-    NativeSortPlaylistDialog *dialog, int32 start_x, int32 start_y,
+void sort_playlist_dialog_destroy(SortPlaylistDialog *dialog);
+NcScreen *sort_playlist_dialog_base(
+    SortPlaylistDialog *dialog);
+NcEditorSortMenu *sort_playlist_dialog_menu(
+    SortPlaylistDialog *dialog);
+void sort_playlist_dialog_set_geometry(
+    SortPlaylistDialog *dialog, int32 start_x, int32 start_y,
     int32 width, int32 height);
-void native_sort_playlist_dialog_populate_defaults(
-    NativeSortPlaylistDialog *dialog);
-bool native_sort_playlist_dialog_add_row(NativeSortPlaylistDialog *dialog,
+void sort_playlist_dialog_populate_defaults(
+    SortPlaylistDialog *dialog);
+bool sort_playlist_dialog_add_row(SortPlaylistDialog *dialog,
                                          char *label, int32 label_len,
                                          enum NcmSongGetter getter,
                                          void (*run)(void *user),
                                          void *user);
-bool native_sort_playlist_dialog_open(
-    NativeSortPlaylistDialog *dialog, NativePlaylistScreen *playlist,
+bool sort_playlist_dialog_open(
+    SortPlaylistDialog *dialog, PlaylistScreen *playlist,
     NcmMpdClient *client, bool ignore_leading_the, NcmError *error);
-bool native_sort_playlist_dialog_move_current_up(
-    NativeSortPlaylistDialog *dialog);
-bool native_sort_playlist_dialog_move_current_down(
-    NativeSortPlaylistDialog *dialog);
-bool native_sort_playlist_dialog_run_current(
-    NativeSortPlaylistDialog *dialog);
-int32 native_sort_playlist_dialog_get_order(
-    NativeSortPlaylistDialog *dialog, enum NcmSongGetter *getters,
+bool sort_playlist_dialog_move_current_up(
+    SortPlaylistDialog *dialog);
+bool sort_playlist_dialog_move_current_down(
+    SortPlaylistDialog *dialog);
+bool sort_playlist_dialog_run_current(
+    SortPlaylistDialog *dialog);
+int32 sort_playlist_dialog_get_order(
+    SortPlaylistDialog *dialog, enum NcmSongGetter *getters,
     int32 getters_cap);
 
 #endif /* NCMPCPP_NC_SORT_PLAYLIST_H */

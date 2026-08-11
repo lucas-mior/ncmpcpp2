@@ -10,48 +10,48 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-#define ENUM_NAME NativeTagEditorColumn
-#define ENUM_PREFIX_ NATIVE_TAG_EDITOR_COLUMN_
+#define ENUM_NAME TagEditorColumn
+#define ENUM_PREFIX_ TAG_EDITOR_COLUMN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NATIVE_TAG_EDITOR_COLUMN_DIRECTORIES) \
-    X(NATIVE_TAG_EDITOR_COLUMN_TAG_TYPES) \
-    X(NATIVE_TAG_EDITOR_COLUMN_TAGS)
+    X(TAG_EDITOR_COLUMN_DIRECTORIES) \
+    X(TAG_EDITOR_COLUMN_TAG_TYPES) \
+    X(TAG_EDITOR_COLUMN_TAGS)
 #include "cbase/xenums.c"
 
-#define ENUM_NAME NativeTagEditorParserMode
-#define ENUM_PREFIX_ NATIVE_TAG_EDITOR_PARSER_
+#define ENUM_NAME TagEditorParserMode
+#define ENUM_PREFIX_ TAG_EDITOR_PARSER_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NATIVE_TAG_EDITOR_PARSER_NONE) \
-    X(NATIVE_TAG_EDITOR_PARSER_TAGS_FROM_FILENAME) \
-    X(NATIVE_TAG_EDITOR_PARSER_RENAME_FILES)
+    X(TAG_EDITOR_PARSER_NONE) \
+    X(TAG_EDITOR_PARSER_TAGS_FROM_FILENAME) \
+    X(TAG_EDITOR_PARSER_RENAME_FILES)
 #include "cbase/xenums.c"
 
-#define ENUM_NAME NativeTagEditorFocus
-#define ENUM_PREFIX_ NATIVE_TAG_EDITOR_FOCUS_
+#define ENUM_NAME TagEditorFocus
+#define ENUM_PREFIX_ TAG_EDITOR_FOCUS_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NATIVE_TAG_EDITOR_FOCUS_DIRECTORIES) \
-    X(NATIVE_TAG_EDITOR_FOCUS_TAG_TYPES) \
-    X(NATIVE_TAG_EDITOR_FOCUS_TAGS) \
-    X(NATIVE_TAG_EDITOR_FOCUS_PARSER_CHOICE) \
-    X(NATIVE_TAG_EDITOR_FOCUS_PARSER_ACTIONS) \
-    X(NATIVE_TAG_EDITOR_FOCUS_PARSER_LEGEND) \
-    X(NATIVE_TAG_EDITOR_FOCUS_PARSER_PREVIEW)
+    X(TAG_EDITOR_FOCUS_DIRECTORIES) \
+    X(TAG_EDITOR_FOCUS_TAG_TYPES) \
+    X(TAG_EDITOR_FOCUS_TAGS) \
+    X(TAG_EDITOR_FOCUS_PARSER_CHOICE) \
+    X(TAG_EDITOR_FOCUS_PARSER_ACTIONS) \
+    X(TAG_EDITOR_FOCUS_PARSER_LEGEND) \
+    X(TAG_EDITOR_FOCUS_PARSER_PREVIEW)
 #include "cbase/xenums.c"
 
-#define ENUM_NAME NativeTagEditorPromptResult
-#define ENUM_PREFIX_ NATIVE_TAG_EDITOR_PROMPT_
+#define ENUM_NAME TagEditorPromptResult
+#define ENUM_PREFIX_ TAG_EDITOR_PROMPT_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NATIVE_TAG_EDITOR_PROMPT_ERROR) \
-    X(NATIVE_TAG_EDITOR_PROMPT_ABORTED) \
-    X(NATIVE_TAG_EDITOR_PROMPT_ACCEPTED)
+    X(TAG_EDITOR_PROMPT_ERROR) \
+    X(TAG_EDITOR_PROMPT_ABORTED) \
+    X(TAG_EDITOR_PROMPT_ACCEPTED)
 #include "cbase/xenums.c"
 
-typedef struct NativeTagEditorHooks {
-    enum NativeTagEditorPromptResult (*prompt)(
+typedef struct TagEditorHooks {
+    enum TagEditorPromptResult (*prompt)(
         void *user, char *label, int32 label_len, NcmStringView initial,
         StrBuilder *result);
     bool (*confirm)(void *user, char *message, int32 message_len);
@@ -59,9 +59,9 @@ typedef struct NativeTagEditorHooks {
     void (*update_directory)(void *user, char *directory,
                              int32 directory_len);
     void *user;
-} NativeTagEditorHooks;
+} TagEditorHooks;
 
-typedef struct NativeTagEditorScreen {
+typedef struct TagEditorScreen {
     NcScreen screen;
     NcEditorPairMenu directories;
     NcEditorStringMenu tag_types;
@@ -75,7 +75,7 @@ typedef struct NativeTagEditorScreen {
     NcWindow parser_dialog_window;
     NcWindow parser_window;
     NcWindow parser_helper_window;
-    NativeTagEditorHooks hooks;
+    TagEditorHooks hooks;
     StrBuilder current_dir;
     StrBuilder displayed_dir;
     StrBuilder observed_dir;
@@ -120,15 +120,15 @@ typedef struct NativeTagEditorScreen {
     int32 parser_width_two;
     int32 parser_height;
     int32 parser_helper_start_x;
-    enum NativeTagEditorColumn active_column;
+    enum TagEditorColumn active_column;
     int32 last_directory_highlight;
     int32 last_tag_type_highlight;
     int32 last_known_directory_count;
     int32 last_known_tag_count;
     int32 window_timeout_ms;
 
-    enum NativeTagEditorParserMode parser_mode;
-    enum NativeTagEditorFocus active_focus;
+    enum TagEditorParserMode parser_mode;
+    enum TagEditorFocus active_focus;
     bool directories_update_requested;
     bool tags_update_requested;
     bool directory_filter_enabled;
@@ -140,102 +140,102 @@ typedef struct NativeTagEditorScreen {
     bool displayed_dir_valid;
     bool observed_dir_valid;
     bool registered;
-} NativeTagEditorScreen;
+} TagEditorScreen;
 
-void native_tag_editor_screen_init(NativeTagEditorScreen *screen,
+void tag_editor_screen_init(TagEditorScreen *screen,
                                    int32 start_x, int32 width,
                                    int32 main_start_y,
                                    int32 main_height, NcColor color,
                                    NcBorder border);
-void native_tag_editor_screen_destroy(NativeTagEditorScreen *screen);
-NcScreen *native_tag_editor_screen_base(NativeTagEditorScreen *screen);
+void tag_editor_screen_destroy(TagEditorScreen *screen);
+NcScreen *tag_editor_screen_base(TagEditorScreen *screen);
 
-void native_tag_editor_screen_set_hooks(NativeTagEditorScreen *screen,
-                                        NativeTagEditorHooks hooks);
-NcMenu *native_tag_editor_screen_active_menu(NativeTagEditorScreen *screen);
-NcWindow *native_tag_editor_screen_active_window(NativeTagEditorScreen *screen);
-void native_tag_editor_screen_set_geometry(NativeTagEditorScreen *screen,
+void tag_editor_screen_set_hooks(TagEditorScreen *screen,
+                                        TagEditorHooks hooks);
+NcMenu *tag_editor_screen_active_menu(TagEditorScreen *screen);
+NcWindow *tag_editor_screen_active_window(TagEditorScreen *screen);
+void tag_editor_screen_set_geometry(TagEditorScreen *screen,
                                            int32 start_x, int32 width,
                                            int32 main_start_y,
                                            int32 main_height);
-void native_tag_editor_screen_clear_directories(
-    NativeTagEditorScreen *screen);
-void native_tag_editor_screen_clear_stale_tags(
-    NativeTagEditorScreen *screen);
-void native_tag_editor_screen_finish_directory_change(
-    NativeTagEditorScreen *screen);
-bool native_tag_editor_screen_set_current_dir(NativeTagEditorScreen *screen,
+void tag_editor_screen_clear_directories(
+    TagEditorScreen *screen);
+void tag_editor_screen_clear_stale_tags(
+    TagEditorScreen *screen);
+void tag_editor_screen_finish_directory_change(
+    TagEditorScreen *screen);
+bool tag_editor_screen_set_current_dir(TagEditorScreen *screen,
                                               char *dir, int32 dir_len);
-bool native_tag_editor_screen_current_dir(NativeTagEditorScreen *screen,
+bool tag_editor_screen_current_dir(TagEditorScreen *screen,
                                           NcmStringView *view);
-bool native_tag_editor_screen_current_directory_path(
-    NativeTagEditorScreen *screen, NcmStringView *view);
-bool native_tag_editor_screen_enter_directory(NativeTagEditorScreen *screen);
-bool native_tag_editor_screen_go_to_parent(NativeTagEditorScreen *screen);
-bool native_tag_editor_screen_locate_song(NativeTagEditorScreen *screen,
+bool tag_editor_screen_current_directory_path(
+    TagEditorScreen *screen, NcmStringView *view);
+bool tag_editor_screen_enter_directory(TagEditorScreen *screen);
+bool tag_editor_screen_go_to_parent(TagEditorScreen *screen);
+bool tag_editor_screen_locate_song(TagEditorScreen *screen,
                                           NcmSong *song);
-bool native_tag_editor_screen_rename_directory_available(
-    NativeTagEditorScreen *screen, char *music_dir, int32 music_dir_len);
-bool native_tag_editor_screen_rename_current_directory(
-    NativeTagEditorScreen *screen, char *music_dir, int32 music_dir_len);
-bool native_tag_editor_screen_add_directory(NativeTagEditorScreen *screen,
+bool tag_editor_screen_rename_directory_available(
+    TagEditorScreen *screen, char *music_dir, int32 music_dir_len);
+bool tag_editor_screen_rename_current_directory(
+    TagEditorScreen *screen, char *music_dir, int32 music_dir_len);
+bool tag_editor_screen_add_directory(TagEditorScreen *screen,
                                             char *label, int32 label_len,
                                             char *path, int32 path_len);
-bool native_tag_editor_screen_load_songs(NativeTagEditorScreen *screen,
+bool tag_editor_screen_load_songs(TagEditorScreen *screen,
                                          NcmSongArray *songs);
-bool native_tag_editor_screen_add_mutable_song(
-    NativeTagEditorScreen *screen, NcmMutableSong *song);
-bool native_tag_editor_screen_selected_songs(NativeTagEditorScreen *screen,
+bool tag_editor_screen_add_mutable_song(
+    TagEditorScreen *screen, NcmMutableSong *song);
+bool tag_editor_screen_selected_songs(TagEditorScreen *screen,
                                              NcmSongArray *songs);
-bool native_tag_editor_screen_previous_column_available(
-    NativeTagEditorScreen *screen);
-bool native_tag_editor_screen_next_column_available(
-    NativeTagEditorScreen *screen);
-void native_tag_editor_screen_previous_column(NativeTagEditorScreen *screen);
-void native_tag_editor_screen_next_column(NativeTagEditorScreen *screen);
-bool native_tag_editor_screen_apply_tag_to_selection(
-    NativeTagEditorScreen *screen, enum NcmTagsField field, char *value,
+bool tag_editor_screen_previous_column_available(
+    TagEditorScreen *screen);
+bool tag_editor_screen_next_column_available(
+    TagEditorScreen *screen);
+void tag_editor_screen_previous_column(TagEditorScreen *screen);
+void tag_editor_screen_next_column(TagEditorScreen *screen);
+bool tag_editor_screen_apply_tag_to_selection(
+    TagEditorScreen *screen, enum NcmTagsField field, char *value,
     int32 value_len, char *separator, int32 separator_len);
-bool native_tag_editor_screen_number_tracks(NativeTagEditorScreen *screen,
+bool tag_editor_screen_number_tracks(TagEditorScreen *screen,
                                             bool extended);
-void native_tag_editor_screen_capitalize_first_letters(
-    NativeTagEditorScreen *screen);
-void native_tag_editor_screen_lower_all_letters(NativeTagEditorScreen *screen);
-void native_tag_editor_screen_clear_modifications(
-    NativeTagEditorScreen *screen);
-bool native_tag_editor_screen_save_modified(NativeTagEditorScreen *screen,
+void tag_editor_screen_capitalize_first_letters(
+    TagEditorScreen *screen);
+void tag_editor_screen_lower_all_letters(TagEditorScreen *screen);
+void tag_editor_screen_clear_modifications(
+    TagEditorScreen *screen);
+bool tag_editor_screen_save_modified(TagEditorScreen *screen,
                                             char *music_dir);
-bool native_tag_editor_screen_save_action_available(
-    NativeTagEditorScreen *screen);
-bool native_tag_editor_screen_apply_directory_filter(
-    NativeTagEditorScreen *screen, char *pattern, int32 pattern_len,
+bool tag_editor_screen_save_action_available(
+    TagEditorScreen *screen);
+bool tag_editor_screen_apply_directory_filter(
+    TagEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, NcmError *error);
-bool native_tag_editor_screen_apply_tag_filter(
-    NativeTagEditorScreen *screen, char *pattern, int32 pattern_len,
+bool tag_editor_screen_apply_tag_filter(
+    TagEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, NcmError *error);
-bool native_tag_editor_screen_search(
-    NativeTagEditorScreen *screen, char *pattern, int32 pattern_len,
+bool tag_editor_screen_search(
+    TagEditorScreen *screen, char *pattern, int32 pattern_len,
     bool forward, bool wrap, bool skip_current, NcmError *error);
-bool native_tag_editor_screen_prepare_parser_rows(
-    NativeTagEditorScreen *screen, enum NativeTagEditorParserMode mode,
+bool tag_editor_screen_prepare_parser_rows(
+    TagEditorScreen *screen, enum TagEditorParserMode mode,
     char *pattern, int32 pattern_len);
-void native_tag_editor_screen_show_parser_dialog(
-    NativeTagEditorScreen *screen);
-void native_tag_editor_screen_show_parser_actions(
-    NativeTagEditorScreen *screen, enum NativeTagEditorParserMode mode);
-void native_tag_editor_screen_show_parser_legend(
-    NativeTagEditorScreen *screen);
-void native_tag_editor_screen_show_parser_preview(
-    NativeTagEditorScreen *screen);
-void native_tag_editor_screen_close_parser(
-    NativeTagEditorScreen *screen);
-bool native_tag_editor_parse_filename(NcmMutableSong *song, char *mask,
+void tag_editor_screen_show_parser_dialog(
+    TagEditorScreen *screen);
+void tag_editor_screen_show_parser_actions(
+    TagEditorScreen *screen, enum TagEditorParserMode mode);
+void tag_editor_screen_show_parser_legend(
+    TagEditorScreen *screen);
+void tag_editor_screen_show_parser_preview(
+    TagEditorScreen *screen);
+void tag_editor_screen_close_parser(
+    TagEditorScreen *screen);
+bool tag_editor_parse_filename(NcmMutableSong *song, char *mask,
                                       int32 mask_len, bool preview,
                                       StrBuilder *preview_buffer);
-bool native_tag_editor_generate_filename(NcmMutableSong *song,
+bool tag_editor_generate_filename(NcmMutableSong *song,
                                          char *pattern, int32 pattern_len,
                                          StrBuilder *filename);
-bool native_tag_editor_song_display_value(NcmMutableSong *song,
+bool tag_editor_song_display_value(NcmMutableSong *song,
                                           enum NcmTagsField field,
                                           StrBuilder *buffer);
 

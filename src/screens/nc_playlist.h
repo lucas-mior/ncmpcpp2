@@ -25,7 +25,7 @@ typedef struct NcPlaylistScreen {
     bool mouse_list_scroll_whole_page;
 } NcPlaylistScreen;
 
-typedef struct NativePlaylistScreen {
+typedef struct PlaylistScreen {
     NcPlaylistScreen screen;
     NcSongMenu songs;
     NcWindow window;
@@ -44,7 +44,7 @@ typedef struct NativePlaylistScreen {
     bool reload_remaining;
     bool registered;
     bool highlighting_requested;
-} NativePlaylistScreen;
+} PlaylistScreen;
 
 void nc_playlist_screen_init(NcPlaylistScreen *screen,
                              NcScreenOps callbacks, void *user,
@@ -68,67 +68,67 @@ bool nc_playlist_screen_activate_current(NcPlaylistScreen *screen);
 void nc_playlist_screen_mouse_button_pressed(NcPlaylistScreen *screen,
                                              MEVENT event);
 
-void native_playlist_screen_init(NativePlaylistScreen *screen,
+void playlist_screen_init(PlaylistScreen *screen,
                                  int32 start_x, int32 width,
                                  int32 main_start_y, int32 main_height,
                                  NcColor color, NcBorder border);
-void native_playlist_screen_destroy(NativePlaylistScreen *screen);
-bool native_playlist_screen_unregister(NativePlaylistScreen *screen);
-NcScreen *native_playlist_screen_base(NativePlaylistScreen *screen);
-NcPlaylistScreen *native_playlist_screen_playlist(NativePlaylistScreen *screen);
-NcSongMenu *native_playlist_screen_song_menu(NativePlaylistScreen *screen);
-NcMenu *native_playlist_screen_menu(NativePlaylistScreen *screen);
-NcWindow *native_playlist_screen_window(NativePlaylistScreen *screen);
-void native_playlist_screen_update_column_title(
-    NativePlaylistScreen *screen);
-void native_playlist_screen_set_geometry(NativePlaylistScreen *screen,
+void playlist_screen_destroy(PlaylistScreen *screen);
+bool playlist_screen_unregister(PlaylistScreen *screen);
+NcScreen *playlist_screen_base(PlaylistScreen *screen);
+NcPlaylistScreen *playlist_screen_playlist(PlaylistScreen *screen);
+NcSongMenu *playlist_screen_song_menu(PlaylistScreen *screen);
+NcMenu *playlist_screen_menu(PlaylistScreen *screen);
+NcWindow *playlist_screen_window(PlaylistScreen *screen);
+void playlist_screen_update_column_title(
+    PlaylistScreen *screen);
+void playlist_screen_set_geometry(PlaylistScreen *screen,
                                          int32 start_x, int32 width,
                                          int32 main_start_y,
                                          int32 main_height);
-void native_playlist_screen_set_mouse_config(NativePlaylistScreen *screen,
+void playlist_screen_set_mouse_config(PlaylistScreen *screen,
                                              int32 lines_scrolled,
                                              bool scroll_whole_page);
-void native_playlist_screen_set_highlighting(NativePlaylistScreen *screen,
+void playlist_screen_set_highlighting(PlaylistScreen *screen,
                                              bool enabled);
-bool native_playlist_screen_highlighting(NativePlaylistScreen *screen);
-void native_playlist_screen_request_highlighting(NativePlaylistScreen *screen);
-void native_playlist_screen_clear(NativePlaylistScreen *screen);
-bool native_playlist_screen_reload_from_mpd(NativePlaylistScreen *screen,
+bool playlist_screen_highlighting(PlaylistScreen *screen);
+void playlist_screen_request_highlighting(PlaylistScreen *screen);
+void playlist_screen_clear(PlaylistScreen *screen);
+bool playlist_screen_reload_from_mpd(PlaylistScreen *screen,
                                             NcmMpdClient *client,
                                             int32 version,
                                             int32 playlist_length,
                                             NcmError *error);
-int32 native_playlist_screen_song_count(NativePlaylistScreen *screen);
-bool native_playlist_screen_empty(NativePlaylistScreen *screen);
-bool native_playlist_screen_current_song(NativePlaylistScreen *screen,
+int32 playlist_screen_song_count(PlaylistScreen *screen);
+bool playlist_screen_empty(PlaylistScreen *screen);
+bool playlist_screen_current_song(PlaylistScreen *screen,
                                          NcmSong *song);
-bool native_playlist_screen_update_current_mutable_song(
-    NativePlaylistScreen *screen, NcmMutableSong *song);
-bool native_playlist_screen_now_playing_song(NativePlaylistScreen *screen,
+bool playlist_screen_update_current_mutable_song(
+    PlaylistScreen *screen, NcmMutableSong *song);
+bool playlist_screen_now_playing_song(PlaylistScreen *screen,
                                              int32 position,
                                              NcmSong *song);
-bool native_playlist_screen_locate_position(NativePlaylistScreen *screen,
+bool playlist_screen_locate_position(PlaylistScreen *screen,
                                             int32 position);
-bool native_playlist_screen_selected_songs(NativePlaylistScreen *screen,
+bool playlist_screen_selected_songs(PlaylistScreen *screen,
                                            NcmSongArray *songs);
-bool native_playlist_screen_has_sortable_range(
-    NativePlaylistScreen *screen);
-bool native_playlist_screen_copy_sort_range(
-    NativePlaylistScreen *screen, NcmSongArray *songs,
+bool playlist_screen_has_sortable_range(
+    PlaylistScreen *screen);
+bool playlist_screen_copy_sort_range(
+    PlaylistScreen *screen, NcmSongArray *songs,
     int32 *start_position, NcmError *error);
-bool native_playlist_screen_apply_filter(NativePlaylistScreen *screen,
+bool playlist_screen_apply_filter(PlaylistScreen *screen,
                                          char *pattern, int32 pattern_len,
                                          NcmError *error);
-void native_playlist_screen_clear_filter(NativePlaylistScreen *screen);
-bool native_playlist_screen_search(NativePlaylistScreen *screen,
+void playlist_screen_clear_filter(PlaylistScreen *screen);
+bool playlist_screen_search(PlaylistScreen *screen,
                                    char *pattern, int32 pattern_len,
                                    bool forward, bool wrap,
                                    bool skip_current, NcmError *error);
-bool native_playlist_screen_set_selected_priority(NativePlaylistScreen *screen,
+bool playlist_screen_set_selected_priority(PlaylistScreen *screen,
                                                   NcmMpdClient *client,
                                                   int32 priority,
                                                   NcmError *error);
-void native_playlist_screen_reload_total_length(NativePlaylistScreen *screen);
-void native_playlist_screen_reload_remaining(NativePlaylistScreen *screen);
+void playlist_screen_reload_total_length(PlaylistScreen *screen);
+void playlist_screen_reload_remaining(PlaylistScreen *screen);
 
 #endif /* NCMPCPP_NC_PLAYLIST_H */

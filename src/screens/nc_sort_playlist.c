@@ -15,7 +15,7 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
-static void sort_dialog_refresh_rows(NativeSortPlaylistDialog *dialog);
+static void sort_dialog_refresh_rows(SortPlaylistDialog *dialog);
 static void sort_dialog_draw_row(NcMenu *menu, NcWindow *window,
                                  void *item, int32 pos,
                                  void *user);
@@ -32,12 +32,12 @@ static void sort_dialog_run_sort(void *user);
 static void sort_dialog_cancel(void *user);
 static bool sort_dialog_label_set(NcEditorSortRow *row, char *label,
                                   int32 label_len);
-static void sort_dialog_apply_geometry(NativeSortPlaylistDialog *dialog);
-static void sort_dialog_finish(NativeSortPlaylistDialog *dialog);
+static void sort_dialog_apply_geometry(SortPlaylistDialog *dialog);
+static void sort_dialog_finish(SortPlaylistDialog *dialog);
 
-#define NC_SCREEN_IMPL_TYPE NativeSortPlaylistDialog
+#define NC_SCREEN_IMPL_TYPE SortPlaylistDialog
 #define NC_SCREEN_IMPL_PREFIX sort_dialog
-#define NC_SCREEN_IMPL_PUBLIC_PREFIX native_sort_playlist_dialog
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX sort_playlist_dialog
 #define NC_SCREEN_IMPL_BASE_FIELD screen
 #define NC_SCREEN_IMPL_WINDOW_FIELD window
 #define NC_SCREEN_IMPL_MENU(dialog) nc_editor_sort_menu_base(&(dialog)->rows)
@@ -51,11 +51,11 @@ static void sort_dialog_finish(NativeSortPlaylistDialog *dialog);
 #define NC_SCREEN_IMPL_UPDATE_CALLBACK sort_dialog_update_callback
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK sort_dialog_mouse_callback
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK \
-    native_sort_playlist_dialog_destroy
+    sort_playlist_dialog_destroy
 #include "screens/nc_screen_impl_template.h"
 
 void
-native_sort_playlist_dialog_init(NativeSortPlaylistDialog *dialog,
+sort_playlist_dialog_init(SortPlaylistDialog *dialog,
                                  int32 start_x, int32 start_y,
                                  int32 width, int32 height,
                                  NcColor color, NcBorder border) {
@@ -85,17 +85,17 @@ native_sort_playlist_dialog_init(NativeSortPlaylistDialog *dialog,
     dialog->ready = false;
     nc_screen_init_ops(&dialog->screen, sort_dialog_ops, dialog,
                        NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
-    native_sort_playlist_dialog_populate_defaults(dialog);
+    sort_playlist_dialog_populate_defaults(dialog);
     return;
 }
 
 void
-native_sort_playlist_dialog_destroy(NativeSortPlaylistDialog *dialog) {
+sort_playlist_dialog_destroy(SortPlaylistDialog *dialog) {
     if (dialog == NULL) {
         return;
     }
     (void)app_controller_unregister_screen(
-        native_sort_playlist_dialog_base(dialog));
+        sort_playlist_dialog_base(dialog));
     ncm_song_array_destroy(&dialog->songs);
     nc_editor_sort_menu_destroy(&dialog->rows);
     nc_window_destroy(&dialog->window);
@@ -107,7 +107,7 @@ native_sort_playlist_dialog_destroy(NativeSortPlaylistDialog *dialog) {
 }
 
 NcEditorSortMenu *
-native_sort_playlist_dialog_menu(NativeSortPlaylistDialog *dialog) {
+sort_playlist_dialog_menu(SortPlaylistDialog *dialog) {
     if (dialog == NULL) {
         return NULL;
     }
@@ -115,7 +115,7 @@ native_sort_playlist_dialog_menu(NativeSortPlaylistDialog *dialog) {
 }
 
 void
-native_sort_playlist_dialog_set_geometry(NativeSortPlaylistDialog *dialog,
+sort_playlist_dialog_set_geometry(SortPlaylistDialog *dialog,
                                          int32 start_x, int32 start_y,
                                          int32 width, int32 height) {
     if (dialog == NULL) {
@@ -131,58 +131,58 @@ native_sort_playlist_dialog_set_geometry(NativeSortPlaylistDialog *dialog,
 }
 
 void
-native_sort_playlist_dialog_populate_defaults(
-    NativeSortPlaylistDialog *dialog
+sort_playlist_dialog_populate_defaults(
+    SortPlaylistDialog *dialog
 ) {
     if (dialog == NULL) {
         return;
     }
     nc_menu_clear_items(nc_editor_sort_menu_base(&dialog->rows));
-    (void)native_sort_playlist_dialog_add_row(
+    (void)sort_playlist_dialog_add_row(
         dialog, STRLIT("Artist"), NCM_SONG_GETTER_ARTIST,
         sort_dialog_show_move_hint, dialog);
-    (void)native_sort_playlist_dialog_add_row(
+    (void)sort_playlist_dialog_add_row(
         dialog, STRLIT("Album artist"),
         NCM_SONG_GETTER_ALBUM_ARTIST, sort_dialog_show_move_hint, dialog);
-    (void)native_sort_playlist_dialog_add_row(
+    (void)sort_playlist_dialog_add_row(
         dialog, STRLIT("Album"), NCM_SONG_GETTER_ALBUM,
         sort_dialog_show_move_hint, dialog);
-    (void)native_sort_playlist_dialog_add_row(
+    (void)sort_playlist_dialog_add_row(
         dialog, STRLIT("Disc"), NCM_SONG_GETTER_DISC,
         sort_dialog_show_move_hint, dialog);
-    (void)native_sort_playlist_dialog_add_row(
+    (void)sort_playlist_dialog_add_row(
         dialog, STRLIT("Track"), NCM_SONG_GETTER_TRACK,
         sort_dialog_show_move_hint, dialog);
-    (void)native_sort_playlist_dialog_add_row(
+    (void)sort_playlist_dialog_add_row(
         dialog, STRLIT("Genre"), NCM_SONG_GETTER_GENRE,
         sort_dialog_show_move_hint, dialog);
-    (void)native_sort_playlist_dialog_add_row(
+    (void)sort_playlist_dialog_add_row(
         dialog, STRLIT("Date"), NCM_SONG_GETTER_DATE,
         sort_dialog_show_move_hint, dialog);
-    (void)native_sort_playlist_dialog_add_row(
+    (void)sort_playlist_dialog_add_row(
         dialog, STRLIT("Composer"), NCM_SONG_GETTER_COMPOSER,
         sort_dialog_show_move_hint, dialog);
-    (void)native_sort_playlist_dialog_add_row(
+    (void)sort_playlist_dialog_add_row(
         dialog, STRLIT("Performer"), NCM_SONG_GETTER_PERFORMER,
         sort_dialog_show_move_hint, dialog);
-    (void)native_sort_playlist_dialog_add_row(
+    (void)sort_playlist_dialog_add_row(
         dialog, STRLIT("Title"), NCM_SONG_GETTER_TITLE,
         sort_dialog_show_move_hint, dialog);
-    (void)native_sort_playlist_dialog_add_row(
+    (void)sort_playlist_dialog_add_row(
         dialog, STRLIT("Filename"), NCM_SONG_GETTER_URI,
         sort_dialog_show_move_hint, dialog);
     nc_editor_sort_menu_add_separator(&dialog->rows);
-    (void)native_sort_playlist_dialog_add_row(
+    (void)sort_playlist_dialog_add_row(
         dialog, STRLIT("Sort"), NCM_SONG_GETTER_NONE,
         sort_dialog_run_sort, dialog);
-    (void)native_sort_playlist_dialog_add_row(
+    (void)sort_playlist_dialog_add_row(
         dialog, STRLIT("Cancel"), NCM_SONG_GETTER_NONE,
         sort_dialog_cancel, dialog);
     return;
 }
 
 bool
-native_sort_playlist_dialog_add_row(NativeSortPlaylistDialog *dialog,
+sort_playlist_dialog_add_row(SortPlaylistDialog *dialog,
                                     char *label, int32 label_len,
                                     enum NcmSongGetter getter,
                                     void (*run)(void *user), void *user) {
@@ -204,8 +204,8 @@ native_sort_playlist_dialog_add_row(NativeSortPlaylistDialog *dialog,
 }
 
 bool
-native_sort_playlist_dialog_open(
-    NativeSortPlaylistDialog *dialog, NativePlaylistScreen *playlist,
+sort_playlist_dialog_open(
+    SortPlaylistDialog *dialog, PlaylistScreen *playlist,
     NcmMpdClient *client, bool ignore_leading_the, NcmError *error
 ) {
     NcmSongArray songs;
@@ -218,7 +218,7 @@ native_sort_playlist_dialog_open(
     }
     if (playlist == NULL) {
         ncm_error_set(error, EINVAL,
-                      STRLIT("missing native playlist"));
+                      STRLIT("missing playlist screen"));
         return false;
     }
     if (client == NULL) {
@@ -227,20 +227,20 @@ native_sort_playlist_dialog_open(
     }
 
     current = nc_screen_switcher_current();
-    if (current != native_playlist_screen_base(playlist)) {
+    if (current != playlist_screen_base(playlist)) {
         ncm_error_set(error, EINVAL,
-                      STRLIT("sort dialog requires native playlist"));
+                      STRLIT("sort dialog requires playlist screen"));
         return false;
     }
 
     ncm_song_array_init(&songs);
-    if (!native_playlist_screen_copy_sort_range(
+    if (!playlist_screen_copy_sort_range(
             playlist, &songs, &start_position, error)) {
         ncm_song_array_destroy(&songs);
         return false;
     }
 
-    native_sort_playlist_dialog_populate_defaults(dialog);
+    sort_playlist_dialog_populate_defaults(dialog);
     nc_menu_reset(nc_editor_sort_menu_base(&dialog->rows));
     sort_dialog_apply_geometry(dialog);
 
@@ -255,7 +255,7 @@ native_sort_playlist_dialog_open(
     dialog->ready = true;
 
     if (!nc_screen_switcher_switch_to(
-            native_sort_playlist_dialog_base(dialog), false)) {
+            sort_playlist_dialog_base(dialog), false)) {
         ncm_song_array_clear(&dialog->songs);
         dialog->playlist = NULL;
         dialog->previous_screen = NULL;
@@ -271,8 +271,8 @@ native_sort_playlist_dialog_open(
 }
 
 bool
-native_sort_playlist_dialog_move_current_up(
-    NativeSortPlaylistDialog *dialog
+sort_playlist_dialog_move_current_up(
+    SortPlaylistDialog *dialog
 ) {
     NcMenu *menu;
     int32 pos;
@@ -294,8 +294,8 @@ native_sort_playlist_dialog_move_current_up(
 }
 
 bool
-native_sort_playlist_dialog_move_current_down(
-    NativeSortPlaylistDialog *dialog
+sort_playlist_dialog_move_current_down(
+    SortPlaylistDialog *dialog
 ) {
     NcMenu *menu;
     int32 pos;
@@ -317,7 +317,7 @@ native_sort_playlist_dialog_move_current_down(
 }
 
 bool
-native_sort_playlist_dialog_run_current(NativeSortPlaylistDialog *dialog) {
+sort_playlist_dialog_run_current(SortPlaylistDialog *dialog) {
     NcEditorSortRow *row;
 
     if ((dialog == NULL) || !dialog->ready) {
@@ -332,8 +332,8 @@ native_sort_playlist_dialog_run_current(NativeSortPlaylistDialog *dialog) {
 }
 
 int32
-native_sort_playlist_dialog_get_order(
-    NativeSortPlaylistDialog *dialog, enum NcmSongGetter *getters,
+sort_playlist_dialog_get_order(
+    SortPlaylistDialog *dialog, enum NcmSongGetter *getters,
     int32 getters_cap
 ) {
     NcMenu *menu;
@@ -380,7 +380,7 @@ sort_dialog_draw_row(NcMenu *menu, NcWindow *window, void *item,
 }
 
 static void
-sort_dialog_refresh_rows(NativeSortPlaylistDialog *dialog) {
+sort_dialog_refresh_rows(SortPlaylistDialog *dialog) {
     NcMenu *menu;
 
     menu = nc_editor_sort_menu_base(&dialog->rows);
@@ -393,7 +393,7 @@ sort_dialog_refresh_rows(NativeSortPlaylistDialog *dialog) {
 
 static bool
 sort_dialog_can_run_current_callback(NcScreen *screen) {
-    NativeSortPlaylistDialog *dialog;
+    SortPlaylistDialog *dialog;
     NcEditorSortRow *row;
 
     if (((dialog = sort_dialog_from_screen(screen)) == NULL)
@@ -406,7 +406,7 @@ sort_dialog_can_run_current_callback(NcScreen *screen) {
 
 static bool
 sort_dialog_run_current_callback(NcScreen *screen) {
-    return native_sort_playlist_dialog_run_current(
+    return sort_playlist_dialog_run_current(
         sort_dialog_from_screen(screen));
 }
 
@@ -426,7 +426,7 @@ sort_dialog_resize_callback(NcScreen *screen) {
 
 static char *
 sort_dialog_title_callback(NcScreen *screen) {
-    NativeSortPlaylistDialog *dialog;
+    SortPlaylistDialog *dialog;
 
     dialog = sort_dialog_from_screen(screen);
     if (dialog->previous_screen) {
@@ -443,7 +443,7 @@ sort_dialog_update_callback(NcScreen *screen) {
 
 static void
 sort_dialog_mouse_callback(NcScreen *screen, MEVENT event) {
-    NativeSortPlaylistDialog *dialog;
+    SortPlaylistDialog *dialog;
     int32 x;
     int32 y;
 
@@ -457,7 +457,7 @@ sort_dialog_mouse_callback(NcScreen *screen, MEVENT event) {
         (void)nc_menu_goto_selectable(nc_editor_sort_menu_base(
                                           &dialog->rows), y);
         if (event.bstate & BUTTON3_PRESSED) {
-            (void)native_sort_playlist_dialog_run_current(dialog);
+            (void)sort_playlist_dialog_run_current(dialog);
         }
     }
     return;
@@ -485,7 +485,7 @@ sort_dialog_show_move_hint(void *user) {
 static void
 sort_dialog_run_sort(void *user) {
     enum NcmSongGetter getters[16];
-    NativeSortPlaylistDialog *dialog;
+    SortPlaylistDialog *dialog;
     NcmError error;
     bool success;
     int32 getters_len;
@@ -495,7 +495,7 @@ sort_dialog_run_sort(void *user) {
         return;
     }
 
-    getters_len = native_sort_playlist_dialog_get_order(
+    getters_len = sort_playlist_dialog_get_order(
         dialog, getters, LENGTH(getters));
     ncm_statusbar_print_cstring(Config.message_delay_time,
                                 "Sorting...");
@@ -524,7 +524,7 @@ sort_dialog_run_sort(void *user) {
 
 static void
 sort_dialog_cancel(void *user) {
-    NativeSortPlaylistDialog *dialog;
+    SortPlaylistDialog *dialog;
 
     dialog = user;
     if ((dialog == NULL) || !dialog->ready) {
@@ -551,7 +551,7 @@ sort_dialog_label_set(NcEditorSortRow *row, char *label, int32 label_len) {
 }
 
 static void
-sort_dialog_apply_geometry(NativeSortPlaylistDialog *dialog) {
+sort_dialog_apply_geometry(SortPlaylistDialog *dialog) {
     int32 main_height;
     int32 height;
     int32 width;
@@ -569,13 +569,13 @@ sort_dialog_apply_geometry(NativeSortPlaylistDialog *dialog) {
     width = 30;
     start_x = (ui_state_screen_width() - width)/2;
     start_y = (main_height - height)/2 + ui_state_main_start_y();
-    native_sort_playlist_dialog_set_geometry(
+    sort_playlist_dialog_set_geometry(
         dialog, start_x, start_y, width, height);
     return;
 }
 
 static void
-sort_dialog_finish(NativeSortPlaylistDialog *dialog) {
+sort_dialog_finish(SortPlaylistDialog *dialog) {
     NcScreen *previous;
 
     previous = dialog->previous_screen;

@@ -6,7 +6,7 @@
 #include "c/ncm_defs.h"
 #include "c/ncm_tags.h"
 #include "c/ncm_type_conversions.h"
-#include "screens/native_c_screens.h"
+#include "screens/app_screens.h"
 
 typedef struct NcmSongInfoMetadata {
     char *name;

@@ -17,31 +17,31 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-#define NATIVE_VISUALIZER_PI 3.14159265358979323846
+#define VISUALIZER_PI 3.14159265358979323846
 
 #if defined(HAVE_FFTW3_H)
-#define NATIVE_VISUALIZER_FREQUENCY_FIELD \
-    X(NATIVE_VISUALIZER_FREQUENCY)
+#define VISUALIZER_FREQUENCY_FIELD \
+    X(VISUALIZER_FREQUENCY)
 #else
-#define NATIVE_VISUALIZER_FREQUENCY_FIELD
+#define VISUALIZER_FREQUENCY_FIELD
 #endif
 
-#define ENUM_NAME NativeVisualizerType
-#define ENUM_PREFIX_ NATIVE_VISUALIZER_TYPE_
+#define ENUM_NAME VisualizerScreenType
+#define ENUM_PREFIX_ VISUALIZER_TYPE_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NATIVE_VISUALIZER_WAVE) \
-    X(NATIVE_VISUALIZER_WAVE_FILLED) \
-    NATIVE_VISUALIZER_FREQUENCY_FIELD \
-    X(NATIVE_VISUALIZER_ELLIPSE)
+    X(VISUALIZER_WAVE) \
+    X(VISUALIZER_WAVE_FILLED) \
+    VISUALIZER_FREQUENCY_FIELD \
+    X(VISUALIZER_ELLIPSE)
 #include "cbase/xenums.c"
-#undef NATIVE_VISUALIZER_FREQUENCY_FIELD
+#undef VISUALIZER_FREQUENCY_FIELD
 
 struct NcmError;
 struct NcmMpdClient;
 struct NcmMpdOutputList;
 
-typedef struct NativeVisualizerDataSourceHooks {
+typedef struct VisualizerDataSourceHooks {
     int32 (*open_fifo)(void *user, char *location, int32 location_len);
     int32 (*open_udp)(void *user, char *location, int32 location_len,
                       char *port, int32 port_len);
@@ -53,9 +53,9 @@ typedef struct NativeVisualizerDataSourceHooks {
     bool (*enable_output)(void *user, int32 id, struct NcmError *error);
     void (*sleep_microseconds)(void *user, int32 microseconds);
     void *user;
-} NativeVisualizerDataSourceHooks;
+} VisualizerDataSourceHooks;
 
-typedef struct NativeVisualizerScreenConfig {
+typedef struct VisualizerScreenConfig {
     char *source_location;
     char *output_name;
     char *visualizer_chars;
@@ -72,30 +72,30 @@ typedef struct NativeVisualizerScreenConfig {
     double spectrum_hz_min;
     double spectrum_hz_max;
 
-    NativeVisualizerDataSourceHooks data_source_hooks;
-    enum NativeVisualizerType visualization_type;
+    VisualizerDataSourceHooks data_source_hooks;
+    enum VisualizerScreenType visualization_type;
     bool autoscale;
     bool stereo;
     bool spectrum_smooth_look;
     bool spectrum_smooth_look_legacy_chars;
     bool spectrum_log_scale_x;
     bool spectrum_log_scale_y;
-} NativeVisualizerScreenConfig;
+} VisualizerScreenConfig;
 
 #if defined(HAVE_FFTW3_H)
-typedef struct NativeVisualizerBarHeight {
+typedef struct VisualizerBarHeight {
     int32 column;
     double height;
-} NativeVisualizerBarHeight;
+} VisualizerBarHeight;
 
-typedef struct NativeVisualizerFftState {
+typedef struct VisualizerFftState {
     double *input;
     fftw_complex *output;
     fftw_plan plan;
 
     double *freqs_mags;
     double *dft_frequency_space;
-    NativeVisualizerBarHeight *bar_heights;
+    VisualizerBarHeight *bar_heights;
 
     int32 results_len;
     int32 dft_nonzero_size;
@@ -112,10 +112,10 @@ typedef struct NativeVisualizerFftState {
     double hz_min;
     double hz_max;
     double gain;
-} NativeVisualizerFftState;
+} VisualizerFftState;
 #endif
 
-typedef struct NativeVisualizerScreen {
+typedef struct VisualizerScreen {
     NcScreen screen;
     NcWindow window;
 
@@ -124,7 +124,7 @@ typedef struct NativeVisualizerScreen {
     StrBuilder output_name;
     StrBuilder visualizer_chars;
     NcFormattedColor *visualizer_colors;
-    NativeVisualizerDataSourceHooks data_source_hooks;
+    VisualizerDataSourceHooks data_source_hooks;
 
     NcmSampleBuffer incoming_samples;
     NcmSampleBuffer buffered_samples;
@@ -133,11 +133,11 @@ typedef struct NativeVisualizerScreen {
     NcmSampleBuffer right_channel;
 
 #if defined(HAVE_FFTW3_H)
-    NativeVisualizerFftState fft;
+    VisualizerFftState fft;
 #endif
 
     double auto_scale_multiplier;
-    enum NativeVisualizerType visualization_type;
+    enum VisualizerScreenType visualization_type;
 
     int32 source_fd;
     int32 output_id;
@@ -161,55 +161,55 @@ typedef struct NativeVisualizerScreen {
     bool spectrum_log_scale_x;
     bool spectrum_log_scale_y;
     bool initialized;
-} NativeVisualizerScreen;
+} VisualizerScreen;
 
-void native_visualizer_screen_init(NativeVisualizerScreen *screen,
+void visualizer_screen_init(VisualizerScreen *screen,
                                    int32 start_x, int32 start_y,
                                    int32 width, int32 height,
                                    NcColor color, NcBorder border,
-                                   NativeVisualizerScreenConfig *config);
-void native_visualizer_screen_destroy(NativeVisualizerScreen *screen);
-NativeVisualizerDataSourceHooks native_visualizer_data_source_system_hooks(
+                                   VisualizerScreenConfig *config);
+void visualizer_screen_destroy(VisualizerScreen *screen);
+VisualizerDataSourceHooks visualizer_data_source_system_hooks(
     struct NcmMpdClient *client);
-void native_visualizer_screen_init_data_source(
-    NativeVisualizerScreen *screen, char *source_location,
+void visualizer_screen_init_data_source(
+    VisualizerScreen *screen, char *source_location,
     int32 source_location_len);
-bool native_visualizer_screen_open_data_source(
-    NativeVisualizerScreen *screen);
-void native_visualizer_screen_close_data_source(
-    NativeVisualizerScreen *screen);
-int32 native_visualizer_screen_drain_data_source(
-    NativeVisualizerScreen *screen);
-bool native_visualizer_screen_find_output_id(
-    NativeVisualizerScreen *screen);
-NcScreen *native_visualizer_screen_base(NativeVisualizerScreen *screen);
-NcWindow *native_visualizer_screen_window(NativeVisualizerScreen *screen);
-void native_visualizer_screen_set_geometry(NativeVisualizerScreen *screen,
+bool visualizer_screen_open_data_source(
+    VisualizerScreen *screen);
+void visualizer_screen_close_data_source(
+    VisualizerScreen *screen);
+int32 visualizer_screen_drain_data_source(
+    VisualizerScreen *screen);
+bool visualizer_screen_find_output_id(
+    VisualizerScreen *screen);
+NcScreen *visualizer_screen_base(VisualizerScreen *screen);
+NcWindow *visualizer_screen_window(VisualizerScreen *screen);
+void visualizer_screen_set_geometry(VisualizerScreen *screen,
                                            int32 start_x, int32 start_y,
                                            int32 width, int32 height);
-void native_visualizer_screen_init_visualization(
-    NativeVisualizerScreen *screen);
-void native_visualizer_screen_clear(NativeVisualizerScreen *screen);
-void native_visualizer_screen_reset_audio_state(
-    NativeVisualizerScreen *screen);
-void native_visualizer_screen_reset_auto_scale_multiplier(
-    NativeVisualizerScreen *screen);
-void native_visualizer_screen_toggle_type(NativeVisualizerScreen *screen);
-int32 native_visualizer_screen_requested_samples(
-    NativeVisualizerScreen *screen);
-bool native_visualizer_screen_push_samples(NativeVisualizerScreen *screen,
+void visualizer_screen_init_visualization(
+    VisualizerScreen *screen);
+void visualizer_screen_clear(VisualizerScreen *screen);
+void visualizer_screen_reset_audio_state(
+    VisualizerScreen *screen);
+void visualizer_screen_reset_auto_scale_multiplier(
+    VisualizerScreen *screen);
+void visualizer_screen_toggle_type(VisualizerScreen *screen);
+int32 visualizer_screen_requested_samples(
+    VisualizerScreen *screen);
+bool visualizer_screen_push_samples(VisualizerScreen *screen,
                                            int16 *samples,
                                            int32 samples_len);
-int32 native_visualizer_screen_take_render_samples(
-    NativeVisualizerScreen *screen, int16 *dest, int32 dest_len);
-int32 native_visualizer_screen_split_stereo(NativeVisualizerScreen *screen,
+int32 visualizer_screen_take_render_samples(
+    VisualizerScreen *screen, int16 *dest, int32 dest_len);
+int32 visualizer_screen_split_stereo(VisualizerScreen *screen,
                                             int16 *samples,
                                             int32 samples_len);
-void native_visualizer_screen_apply_auto_scale(NativeVisualizerScreen *screen,
+void visualizer_screen_apply_auto_scale(VisualizerScreen *screen,
                                                int16 *samples,
                                                int32 samples_len);
-bool native_visualizer_screen_draw(NativeVisualizerScreen *screen,
+bool visualizer_screen_draw(VisualizerScreen *screen,
                                    int16 *samples, int32 samples_len);
-int16 native_visualizer_clamp_sample(int32 sample);
+int16 visualizer_clamp_sample(int32 sample);
 
 #endif /* NCMPCPP_NC_VISUALIZER_H */

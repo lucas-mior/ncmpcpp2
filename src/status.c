@@ -19,7 +19,7 @@
 #include "curses/nc_cyclic_buffer.h"
 #include "global.h"
 #include "helpers.h"
-#include "screens/native_c_screens.h"
+#include "screens/app_screens.h"
 #include "settings.h"
 #include "status.h"
 #include "statusbar.h"
@@ -412,15 +412,15 @@ status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks) {
         return;
     }
 
-    highlighted = native_playlist_screen_locate_position(
-        native_c_screen_playlist(), position);
+    highlighted = playlist_screen_locate_position(
+        app_screen_playlist(), position);
     if (!highlighted) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Song is filtered out");
     }
 
     {
-        NcScreen *playlist_screen2 = native_c_screen_playlist_native();
+        NcScreen *playlist_screen2 = app_screen_playlist_base();
         if (highlighted && app_controller_is_screen_visible(playlist_screen2)) {
             nc_screen_refresh(playlist_screen2);
         }
@@ -458,7 +458,7 @@ status_run_init_load_browser_supported_extensions(NcmStatusInitHooks *hooks) {
         hooks->load_browser_supported_extensions(hooks->user);
         return;
     }
-    native_c_screen_browser_fetch_supported_extensions();
+    app_screen_browser_fetch_supported_extensions();
     return;
 }
 
@@ -470,7 +470,7 @@ status_run_init_fetch_outputs(NcmStatusInitHooks *hooks) {
     }
 
 #if defined(ENABLE_OUTPUTS)
-    native_c_screen_outputs_fetch_list();
+    app_screen_outputs_fetch_list();
 #endif
     return;
 }
@@ -484,10 +484,10 @@ status_run_init_setup_visualizer_datasource(NcmStatusInitHooks *hooks) {
 
 #if defined(ENABLE_VISUALIZER)
     {
-        NativeVisualizerScreen *visualizer2 = native_c_screen_visualizer();
-        native_visualizer_screen_close_data_source(visualizer2);
-        (void)native_visualizer_screen_open_data_source(visualizer2);
-        (void)native_visualizer_screen_find_output_id(visualizer2);
+        VisualizerScreen *visualizer2 = app_screen_visualizer();
+        visualizer_screen_close_data_source(visualizer2);
+        (void)visualizer_screen_open_data_source(visualizer2);
+        (void)visualizer_screen_find_output_id(visualizer2);
     }
 #endif
     return;
@@ -997,19 +997,19 @@ ncm_status_changes_player_state(void) {
     switch (status_player_state) {
     case NCM_STATUS_PLAYER_PLAY:
         ncm_song_init(&song);
-        if (native_playlist_screen_now_playing_song(
-                native_c_screen_playlist(), status_current_song_pos, &song)) {
+        if (playlist_screen_now_playing_song(
+                app_screen_playlist(), status_current_song_pos, &song)) {
             status_draw_song_title(&song);
         }
         ncm_song_destroy(&song);
-        native_playlist_screen_reload_remaining(native_c_screen_playlist());
+        playlist_screen_reload_remaining(app_screen_playlist());
         break;
     case NCM_STATUS_PLAYER_STOP:
         ncm_window_title_set(STRLIT("ncmpcpp " VERSION));
         if (ncm_progressbar_is_unlocked()) {
             ncm_progressbar_draw(0, 0);
         }
-        native_playlist_screen_reload_remaining(native_c_screen_playlist());
+        playlist_screen_reload_remaining(app_screen_playlist());
         if (Config.design == NCM_DESIGN_ALTERNATIVE) {
             if ((header = ui_state_header_window())) {
                 nc_window_go_to_xy(header, 0, 0);
@@ -1049,7 +1049,7 @@ void
 ncm_status_changes_song_id(int32 song_id) {
     NcmSong song;
 
-    native_playlist_screen_reload_remaining(native_c_screen_playlist());
+    playlist_screen_reload_remaining(app_screen_playlist());
     ncm_status_changes_reset_song_scroll();
     status_reset_visualizer_autoscale();
     status_call_ui_song_id_changed(song_id);
@@ -1182,8 +1182,8 @@ status_request_playlist_update(int32 previous_version) {
     NcmError error;
 
     ncm_error_clear(&error);
-    if (!native_playlist_screen_reload_from_mpd(
-            native_c_screen_playlist(), &global_mpd, previous_version,
+    if (!playlist_screen_reload_from_mpd(
+            app_screen_playlist(), &global_mpd, previous_version,
             status_playlist_length, &error)) {
         ncm_statusbar_print_cstring(Config.message_delay_time, error.message);
     } else if (status_playlist_update_observer) {
@@ -1212,33 +1212,33 @@ status_call_ui_database_changed(void) {
 
 static void
 status_request_stored_playlists_update(void) {
-    NativeBrowserScreen *browser;
-    NativePlaylistEditorScreen *editor;
+    BrowserScreen *browser;
+    PlaylistEditorScreen *editor;
 
-    editor = native_c_screen_playlist_editor();
-    native_playlist_editor_screen_request_playlists_update(editor);
-    native_playlist_editor_screen_request_content_update(editor);
+    editor = app_screen_playlist_editor();
+    playlist_editor_screen_request_playlists_update(editor);
+    playlist_editor_screen_request_content_update(editor);
 
-    if ((browser = native_c_screen_browser())
-        && !native_browser_screen_is_local(browser)
-        && native_browser_screen_in_root_directory(browser)) {
-        native_browser_screen_request_update(browser);
+    if ((browser = app_screen_browser())
+        && !browser_screen_is_local(browser)
+        && browser_screen_in_root_directory(browser)) {
+        browser_screen_request_update(browser);
     }
     return;
 }
 
 static void
 status_request_database_update(void) {
-    native_browser_screen_request_update(native_c_screen_browser());
+    browser_screen_request_update(app_screen_browser());
 #if defined(HAVE_TAGLIB_H)
-    native_tag_editor_screen_clear_directories(native_c_screen_tag_editor());
+    tag_editor_screen_clear_directories(app_screen_tag_editor());
 #endif
-    native_media_library_screen_request_tags_update(
-        native_c_screen_media_library());
-    native_media_library_screen_request_albums_update(
-        native_c_screen_media_library());
-    native_media_library_screen_request_songs_update(
-        native_c_screen_media_library());
+    media_library_screen_request_tags_update(
+        app_screen_media_library());
+    media_library_screen_request_albums_update(
+        app_screen_media_library());
+    media_library_screen_request_songs_update(
+        app_screen_media_library());
     if (status_database_update_observer) {
         status_database_update_observer(status_database_update_observer_user);
     }
@@ -1337,8 +1337,8 @@ static void
 status_reset_visualizer_for_player_event(int32 event) {
 #if defined(ENABLE_VISUALIZER)
     if ((event & MPD_IDLE_PLAYER) != 0) {
-        native_visualizer_screen_reset_audio_state(
-            native_c_screen_visualizer());
+        visualizer_screen_reset_audio_state(
+            app_screen_visualizer());
     }
 #else
     (void)event;
@@ -1349,8 +1349,8 @@ status_reset_visualizer_for_player_event(int32 event) {
 static void
 status_reset_visualizer_autoscale(void) {
 #if defined(ENABLE_VISUALIZER)
-    native_visualizer_screen_reset_auto_scale_multiplier(
-        native_c_screen_visualizer());
+    visualizer_screen_reset_auto_scale_multiplier(
+        app_screen_visualizer());
 #endif
     return;
 }
@@ -1360,9 +1360,9 @@ status_clear_visible_visualizer(void) {
 #if defined(ENABLE_VISUALIZER)
     NcScreen *visualizer;
 
-    visualizer = native_c_screen_visualizer_native();
+    visualizer = app_screen_visualizer_base();
     if (app_controller_is_screen_visible(visualizer)) {
-        native_visualizer_screen_clear(native_c_screen_visualizer());
+        visualizer_screen_clear(app_screen_visualizer());
     }
 #endif
     return;
@@ -1377,7 +1377,7 @@ status_fetch_background_lyrics(NcmSong *song) {
     }
 
     ncm_error_clear(&error);
-    (void)native_lyrics_screen_fetch_in_background(native_c_screen_lyrics(),
+    (void)lyrics_screen_fetch_in_background(app_screen_lyrics(),
                                                    song, false, &error);
     ncm_error_clear(&error);
     return;
@@ -1389,7 +1389,7 @@ status_autocenter_playlist(NcmSong *song) {
         return;
     }
 
-    (void)native_playlist_screen_locate_position(native_c_screen_playlist(),
+    (void)playlist_screen_locate_position(app_screen_playlist(),
                                                  ncm_song_position(song));
     return;
 }
@@ -1401,15 +1401,15 @@ status_fetch_now_playing_lyrics(NcmSong *song) {
     if (!Config.now_playing_lyrics) {
         return;
     }
-    if (!app_controller_is_screen_visible(native_c_screen_lyrics_native())) {
+    if (!app_controller_is_screen_visible(app_screen_lyrics_base())) {
         return;
     }
-    if (app_controller_previous_screen() != native_c_screen_playlist_native()) {
+    if (app_controller_previous_screen() != app_screen_playlist_base()) {
         return;
     }
 
     ncm_error_clear(&error);
-    (void)native_lyrics_screen_fetch(native_c_screen_lyrics(), song, NULL,
+    (void)lyrics_screen_fetch(app_screen_lyrics(), song, NULL,
                                      &error);
     ncm_error_clear(&error);
     return;
@@ -1474,8 +1474,8 @@ status_current_song_for_change(NcmSong *song) {
         return false;
     }
 
-    if (native_playlist_screen_now_playing_song(
-            native_c_screen_playlist(), status_current_song_pos, song)) {
+    if (playlist_screen_now_playing_song(
+            app_screen_playlist(), status_current_song_pos, song)) {
         return true;
     }
 
@@ -1742,8 +1742,8 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
     }
 
     ncm_song_init(&song);
-    if (!native_playlist_screen_now_playing_song(
-            native_c_screen_playlist(), status_current_song_pos, &song)) {
+    if (!playlist_screen_now_playing_song(
+            app_screen_playlist(), status_current_song_pos, &song)) {
         ncm_song_destroy(&song);
         if ((footer = ui_state_footer_window()) && ncm_statusbar_is_unlocked()
             && Config.statusbar_visibility) {
@@ -1946,8 +1946,8 @@ ncm_status_changes_mixer(void) {
 void
 ncm_status_changes_outputs(void) {
 #if ENABLE_OUTPUTS
-    native_c_screen_outputs_fetch_list();
-    native_c_screen_outputs_refresh_if_visible();
+    app_screen_outputs_fetch_list();
+    app_screen_outputs_refresh_if_visible();
 #endif
     return;
 }

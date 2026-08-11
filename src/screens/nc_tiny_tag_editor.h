@@ -9,52 +9,52 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-#define NATIVE_TINY_TAG_EDITOR_TAG_ROW(FIELD) \
-    ((int32)NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW + (int32)(FIELD))
+#define TINY_TAG_EDITOR_TAG_ROW(FIELD) \
+    ((int32) TINY_TAG_EDITOR_FIRST_TAG_ROW + (int32)(FIELD))
 
-enum NativeTinyTagEditorRow {
-    NATIVE_TINY_TAG_EDITOR_FILE_NAME_INFO_ROW,
-    NATIVE_TINY_TAG_EDITOR_DIRECTORY_INFO_ROW,
-    NATIVE_TINY_TAG_EDITOR_UNUSED_INFO_ROW,
-    NATIVE_TINY_TAG_EDITOR_LENGTH_INFO_ROW,
-    NATIVE_TINY_TAG_EDITOR_BITRATE_INFO_ROW,
-    NATIVE_TINY_TAG_EDITOR_SAMPLE_RATE_INFO_ROW,
-    NATIVE_TINY_TAG_EDITOR_CHANNELS_INFO_ROW,
-    NATIVE_TINY_TAG_EDITOR_FIRST_SEPARATOR_ROW,
-    NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW,
-    NATIVE_TINY_TAG_EDITOR_LAST_TAG_ROW =
-        NATIVE_TINY_TAG_EDITOR_FIRST_TAG_ROW + NCM_TAGS_FIELD_LAST - 1,
-    NATIVE_TINY_TAG_EDITOR_SECOND_SEPARATOR_ROW,
-    NATIVE_TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW,
-    NATIVE_TINY_TAG_EDITOR_THIRD_SEPARATOR_ROW,
-    NATIVE_TINY_TAG_EDITOR_SAVE_ROW,
-    NATIVE_TINY_TAG_EDITOR_CANCEL_ROW,
-    NATIVE_TINY_TAG_EDITOR_ROW_COUNT,
+enum TinyTagEditorRow {
+    TINY_TAG_EDITOR_FILE_NAME_INFO_ROW,
+    TINY_TAG_EDITOR_DIRECTORY_INFO_ROW,
+    TINY_TAG_EDITOR_UNUSED_INFO_ROW,
+    TINY_TAG_EDITOR_LENGTH_INFO_ROW,
+    TINY_TAG_EDITOR_BITRATE_INFO_ROW,
+    TINY_TAG_EDITOR_SAMPLE_RATE_INFO_ROW,
+    TINY_TAG_EDITOR_CHANNELS_INFO_ROW,
+    TINY_TAG_EDITOR_FIRST_SEPARATOR_ROW,
+    TINY_TAG_EDITOR_FIRST_TAG_ROW,
+    TINY_TAG_EDITOR_LAST_TAG_ROW =
+        TINY_TAG_EDITOR_FIRST_TAG_ROW + NCM_TAGS_FIELD_LAST - 1,
+    TINY_TAG_EDITOR_SECOND_SEPARATOR_ROW,
+    TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW,
+    TINY_TAG_EDITOR_THIRD_SEPARATOR_ROW,
+    TINY_TAG_EDITOR_SAVE_ROW,
+    TINY_TAG_EDITOR_CANCEL_ROW,
+    TINY_TAG_EDITOR_ROW_COUNT,
 };
 
-#define ENUM_NAME NativeTinyTagEditorOpenResult
-#define ENUM_PREFIX_ NATIVE_TINY_TAG_EDITOR_OPEN_
+#define ENUM_NAME TinyTagEditorOpenResult
+#define ENUM_PREFIX_ TINY_TAG_EDITOR_OPEN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NATIVE_TINY_TAG_EDITOR_OPEN_SUCCESS) \
-    X(NATIVE_TINY_TAG_EDITOR_OPEN_INVALID_ARGUMENT) \
-    X(NATIVE_TINY_TAG_EDITOR_OPEN_STREAM) \
-    X(NATIVE_TINY_TAG_EDITOR_OPEN_MISSING_MUSIC_DIRECTORY) \
-    X(NATIVE_TINY_TAG_EDITOR_OPEN_UNREADABLE_FILE) \
-    X(NATIVE_TINY_TAG_EDITOR_OPEN_PREPARE_FAILED)
+    X(TINY_TAG_EDITOR_OPEN_SUCCESS) \
+    X(TINY_TAG_EDITOR_OPEN_INVALID_ARGUMENT) \
+    X(TINY_TAG_EDITOR_OPEN_STREAM) \
+    X(TINY_TAG_EDITOR_OPEN_MISSING_MUSIC_DIRECTORY) \
+    X(TINY_TAG_EDITOR_OPEN_UNREADABLE_FILE) \
+    X(TINY_TAG_EDITOR_OPEN_PREPARE_FAILED)
 #include "cbase/xenums.c"
 
-#define ENUM_NAME NativeTinyTagEditorPromptResult
-#define ENUM_PREFIX_ NATIVE_TINY_TAG_EDITOR_PROMPT_
+#define ENUM_NAME TinyTagEditorPromptResult
+#define ENUM_PREFIX_ TINY_TAG_EDITOR_PROMPT_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NATIVE_TINY_TAG_EDITOR_PROMPT_ERROR) \
-    X(NATIVE_TINY_TAG_EDITOR_PROMPT_ABORTED) \
-    X(NATIVE_TINY_TAG_EDITOR_PROMPT_ACCEPTED)
+    X(TINY_TAG_EDITOR_PROMPT_ERROR) \
+    X(TINY_TAG_EDITOR_PROMPT_ABORTED) \
+    X(TINY_TAG_EDITOR_PROMPT_ACCEPTED)
 #include "cbase/xenums.c"
 
-typedef struct NativeTinyTagEditorHooks {
-    enum NativeTinyTagEditorPromptResult (*prompt)(
+typedef struct TinyTagEditorHooks {
+    enum TinyTagEditorPromptResult (*prompt)(
         void *user, char *label, int32 label_len, NcmStringView initial,
         StrBuilder *result);
     void (*status_message)(void *user, char *message, int32 message_len);
@@ -72,13 +72,13 @@ typedef struct NativeTinyTagEditorHooks {
     void (*request_browser_update)(void *user);
     void (*switch_to_screen)(void *user, NcScreen *screen);
     void *user;
-} NativeTinyTagEditorHooks;
+} TinyTagEditorHooks;
 
-typedef struct NativeTinyTagEditorScreen {
+typedef struct TinyTagEditorScreen {
     NcScreen screen;
     NcEditorBufferMenu rows;
     NcWindow window;
-    NativeTinyTagEditorHooks hooks;
+    TinyTagEditorHooks hooks;
     NcmMutableSong edited;
     StrBuilder music_dir;
     StrBuilder tag_separator;
@@ -92,47 +92,47 @@ typedef struct NativeTinyTagEditorScreen {
     bool has_edited;
     bool show_duplicate_tags;
     bool registered;
-} NativeTinyTagEditorScreen;
+} TinyTagEditorScreen;
 
-void native_tiny_tag_editor_screen_init(
-    NativeTinyTagEditorScreen *screen, int32 start_x, int32 width,
+void tiny_tag_editor_screen_init(
+    TinyTagEditorScreen *screen, int32 start_x, int32 width,
     int32 main_start_y, int32 main_height, NcColor color, NcBorder border);
-void native_tiny_tag_editor_screen_destroy(
-    NativeTinyTagEditorScreen *screen);
-NcScreen *native_tiny_tag_editor_screen_base(
-    NativeTinyTagEditorScreen *screen);
+void tiny_tag_editor_screen_destroy(
+    TinyTagEditorScreen *screen);
+NcScreen *tiny_tag_editor_screen_base(
+    TinyTagEditorScreen *screen);
 
-void native_tiny_tag_editor_screen_set_hooks(
-    NativeTinyTagEditorScreen *screen, NativeTinyTagEditorHooks hooks);
-NcEditorBufferMenu *native_tiny_tag_editor_screen_rows(
-    NativeTinyTagEditorScreen *screen);
-void native_tiny_tag_editor_screen_set_geometry(
-    NativeTinyTagEditorScreen *screen, int32 start_x, int32 width,
+void tiny_tag_editor_screen_set_hooks(
+    TinyTagEditorScreen *screen, TinyTagEditorHooks hooks);
+NcEditorBufferMenu *tiny_tag_editor_screen_rows(
+    TinyTagEditorScreen *screen);
+void tiny_tag_editor_screen_set_geometry(
+    TinyTagEditorScreen *screen, int32 start_x, int32 width,
     int32 main_start_y, int32 main_height);
-bool native_tiny_tag_editor_screen_set_edited_song(
-    NativeTinyTagEditorScreen *screen, NcmSong *song);
-enum NativeTinyTagEditorOpenResult
-native_tiny_tag_editor_screen_open_song(
-    NativeTinyTagEditorScreen *screen, NcmSong *song,
+bool tiny_tag_editor_screen_set_edited_song(
+    TinyTagEditorScreen *screen, NcmSong *song);
+enum TinyTagEditorOpenResult
+tiny_tag_editor_screen_open_song(
+    TinyTagEditorScreen *screen, NcmSong *song,
     char *music_dir, int32 music_dir_len, char *tag_separator,
     int32 tag_separator_len, bool show_duplicate_tags, StrBuilder *path);
-bool native_tiny_tag_editor_screen_reload_rows(
-    NativeTinyTagEditorScreen *screen,
+bool tiny_tag_editor_screen_reload_rows(
+    TinyTagEditorScreen *screen,
     NcmTaglibAudioProperties *properties,
     bool extended_tags_supported, char *tag_separator,
     int32 tag_separator_len, bool show_duplicate_tags);
-bool native_tiny_tag_editor_screen_set_tag_value(
-    NativeTinyTagEditorScreen *screen, enum NcmTagsField field,
+bool tiny_tag_editor_screen_set_tag_value(
+    TinyTagEditorScreen *screen, enum NcmTagsField field,
     char *value, int32 value_len, char *separator, int32 separator_len);
-bool native_tiny_tag_editor_screen_set_filename(
-    NativeTinyTagEditorScreen *screen, char *name, int32 name_len);
-bool native_tiny_tag_editor_screen_set_filename_stem(
-    NativeTinyTagEditorScreen *screen, char *stem, int32 stem_len);
-bool native_tiny_tag_editor_screen_run_row(
-    NativeTinyTagEditorScreen *screen, int32 row);
-bool native_tiny_tag_editor_screen_run_current(
-    NativeTinyTagEditorScreen *screen);
-bool native_tiny_tag_editor_screen_action_runnable(
-    NativeTinyTagEditorScreen *screen);
+bool tiny_tag_editor_screen_set_filename(
+    TinyTagEditorScreen *screen, char *name, int32 name_len);
+bool tiny_tag_editor_screen_set_filename_stem(
+    TinyTagEditorScreen *screen, char *stem, int32 stem_len);
+bool tiny_tag_editor_screen_run_row(
+    TinyTagEditorScreen *screen, int32 row);
+bool tiny_tag_editor_screen_run_current(
+    TinyTagEditorScreen *screen);
+bool tiny_tag_editor_screen_action_runnable(
+    TinyTagEditorScreen *screen);
 
 #endif /* NCMPCPP_NC_TINY_TAG_EDITOR_H */

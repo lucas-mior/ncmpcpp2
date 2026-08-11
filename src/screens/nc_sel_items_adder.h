@@ -10,17 +10,17 @@
 #include "curses/nc_window.h"
 #include "screens/nc_screen.h"
 
-typedef struct NativePlaylistScreen NativePlaylistScreen;
+typedef struct PlaylistScreen PlaylistScreen;
 
-#define ENUM_NAME NativeSelectedItemsAdderMenu
-#define ENUM_PREFIX_ NATIVE_SELECTED_ITEMS_ADDER_MENU_
+#define ENUM_NAME SelectedItemsAdderMenu
+#define ENUM_PREFIX_ SELECTED_ITEMS_ADDER_MENU_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NATIVE_SELECTED_ITEMS_ADDER_MENU_PLAYLISTS) \
-    X(NATIVE_SELECTED_ITEMS_ADDER_MENU_POSITIONS)
+    X(SELECTED_ITEMS_ADDER_MENU_PLAYLISTS) \
+    X(SELECTED_ITEMS_ADDER_MENU_POSITIONS)
 #include "cbase/xenums.c"
 
-typedef struct NativeSelectedItemsAdderScreen {
+typedef struct SelectedItemsAdderScreen {
     NcScreen screen;
     NcEditorActionMenu playlist_selector;
     NcEditorActionMenu position_selector;
@@ -29,7 +29,7 @@ typedef struct NativeSelectedItemsAdderScreen {
     NcmSongArray selected_songs;
     NcmRegex search_regex;
     StrBuilder search_constraint;
-    NativePlaylistScreen *playlist;
+    PlaylistScreen *playlist;
     NcScreen *previous_screen;
     NcmMpdClient *client;
 
@@ -43,38 +43,38 @@ typedef struct NativeSelectedItemsAdderScreen {
     bool search_enabled;
     bool registered;
     bool ready;
-} NativeSelectedItemsAdderScreen;
+} SelectedItemsAdderScreen;
 
-void native_selected_items_adder_screen_init(
-    NativeSelectedItemsAdderScreen *screen, int32 start_x, int32 start_y,
+void selected_items_adder_screen_init(
+    SelectedItemsAdderScreen *screen, int32 start_x, int32 start_y,
     int32 width, int32 height, NcColor color, NcBorder border);
-void native_selected_items_adder_screen_destroy(
-    NativeSelectedItemsAdderScreen *screen);
-NcScreen *native_selected_items_adder_screen_base(
-    NativeSelectedItemsAdderScreen *screen);
-NcMenu *native_selected_items_adder_screen_active_menu(
-    NativeSelectedItemsAdderScreen *screen);
-NcWindow *native_selected_items_adder_screen_active_window(
-    NativeSelectedItemsAdderScreen *screen);
-bool native_selected_items_adder_screen_open(
-    NativeSelectedItemsAdderScreen *screen, NcmSongArray *songs,
-    NativePlaylistScreen *playlist, NcmMpdClient *client, NcmError *error);
-void native_selected_items_adder_screen_populate_playlist_selector(
-    NativeSelectedItemsAdderScreen *screen, NcmMpdPlaylistList *playlists,
+void selected_items_adder_screen_destroy(
+    SelectedItemsAdderScreen *screen);
+NcScreen *selected_items_adder_screen_base(
+    SelectedItemsAdderScreen *screen);
+NcMenu *selected_items_adder_screen_active_menu(
+    SelectedItemsAdderScreen *screen);
+NcWindow *selected_items_adder_screen_active_window(
+    SelectedItemsAdderScreen *screen);
+bool selected_items_adder_screen_open(
+    SelectedItemsAdderScreen *screen, NcmSongArray *songs,
+    PlaylistScreen *playlist, NcmMpdClient *client, NcmError *error);
+void selected_items_adder_screen_populate_playlist_selector(
+    SelectedItemsAdderScreen *screen, NcmMpdPlaylistList *playlists,
     bool local_browser);
-void native_selected_items_adder_screen_populate_position_selector(
-    NativeSelectedItemsAdderScreen *screen);
-bool native_selected_items_adder_screen_run_current(
-    NativeSelectedItemsAdderScreen *screen);
-bool native_selected_items_adder_screen_return_to_previous(
-    NativeSelectedItemsAdderScreen *screen);
-void native_selected_items_adder_screen_choose_current_playlist(
-    NativeSelectedItemsAdderScreen *screen);
-bool native_selected_items_adder_screen_add_to_existing_playlist(
-    NativeSelectedItemsAdderScreen *screen, NcmMpdClient *client,
+void selected_items_adder_screen_populate_position_selector(
+    SelectedItemsAdderScreen *screen);
+bool selected_items_adder_screen_run_current(
+    SelectedItemsAdderScreen *screen);
+bool selected_items_adder_screen_return_to_previous(
+    SelectedItemsAdderScreen *screen);
+void selected_items_adder_screen_choose_current_playlist(
+    SelectedItemsAdderScreen *screen);
+bool selected_items_adder_screen_add_to_existing_playlist(
+    SelectedItemsAdderScreen *screen, NcmMpdClient *client,
     char *playlist, NcmError *error);
-bool native_selected_items_adder_screen_search(
-    NativeSelectedItemsAdderScreen *screen, char *pattern,
+bool selected_items_adder_screen_search(
+    SelectedItemsAdderScreen *screen, char *pattern,
     int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,
     bool skip_current, NcmError *error);
 
