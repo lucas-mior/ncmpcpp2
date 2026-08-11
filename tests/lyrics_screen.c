@@ -744,7 +744,7 @@ lyrics_screen_test_clear_pushed_job(void) {
     return;
 }
 
-static NativeLyricsJob *
+static LyricsJob *
 lyrics_screen_test_pushed_lyrics_job(void) {
     ASSERT(lyrics_test_has_pushed_job);
     return lyrics_test_pushed_job.user;
@@ -824,8 +824,8 @@ lyrics_screen_test_song(NcmSong *song) {
 }
 
 static void
-lyrics_screen_test_init(NativeLyricsScreen *screen) {
-    native_lyrics_screen_init(screen,
+lyrics_screen_test_init(LyricsScreen *screen) {
+    lyrics_screen_init(screen,
                               0,
                               40,
                               0,
@@ -876,7 +876,7 @@ lyrics_screen_test_has_sync_property(NcBuffer *buffer, int32 position,
 
     properties = nc_buffer_properties(buffer);
     for (int32 i = 0; i < nc_buffer_property_count(buffer); i += 1) {
-        if ((properties[i].id == NATIVE_LYRICS_SYNC_PROPERTY_ID)
+        if ((properties[i].id == LYRICS_SYNC_PROPERTY_ID)
             && (properties[i].position == position)
             && (properties[i].type == type)
             && lyrics_screen_test_formatted_color_matches(
@@ -888,7 +888,7 @@ lyrics_screen_test_has_sync_property(NcBuffer *buffer, int32 position,
 }
 
 static void
-lyrics_screen_test_assert_sync_highlight(NativeLyricsScreen *screen,
+lyrics_screen_test_assert_sync_highlight(LyricsScreen *screen,
                                          int32 entry_index) {
     NcmLrcEntry *entry;
 
@@ -912,10 +912,10 @@ lyrics_screen_test_dummy_is_mergable(NcScreen *screen) {
 
 static void
 lyrics_screen_test_lrc_preferred_over_txt(void) {
-    NativeLyricsScreen screen;
+    LyricsScreen screen;
     NcmSong song;
     NcmError error = {0};
-    NativeLyricsMode mode;
+    LyricsMode mode;
     char directory[256];
     char lrc_path[512];
     char txt_path[512];
@@ -932,17 +932,17 @@ lyrics_screen_test_lrc_preferred_over_txt(void) {
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
     lyrics_screen_test_clear_status_message();
-    ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error));
     lyrics_screen_test_assert_status_message(
         STRLIT("Artist - Title.lrc found; Artist - Title.txt found"));
-    mode = native_lyrics_screen_mode(&screen);
-    ASSERT_EQUAL((int32)mode, (int32)NATIVE_LYRICS_MODE_SYNCHRONIZED);
+    mode = lyrics_screen_mode(&screen);
+    ASSERT_EQUAL((int32)mode, (int32) LYRICS_MODE_SYNCHRONIZED);
     ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
                     lrc_path, strlen32(lrc_path)));
     ASSERT(STREQUAL(screen.display.data, screen.display.len,
                     STRLIT("synced")));
 
-    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_destroy(&screen);
     ncm_song_destroy(&song);
     lyrics_screen_test_remove_file(lrc_path);
     lyrics_screen_test_remove_file(txt_path);
@@ -952,10 +952,10 @@ lyrics_screen_test_lrc_preferred_over_txt(void) {
 
 static void
 lyrics_screen_test_txt_used_when_lrc_missing(void) {
-    NativeLyricsScreen screen;
+    LyricsScreen screen;
     NcmSong song;
     NcmError error = {0};
-    NativeLyricsMode mode;
+    LyricsMode mode;
     char directory[256];
     char txt_path[512];
 
@@ -968,17 +968,17 @@ lyrics_screen_test_txt_used_when_lrc_missing(void) {
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
     lyrics_screen_test_clear_status_message();
-    ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error));
     lyrics_screen_test_assert_status_message(
         STRLIT("Artist - Title.lrc not found; Artist - Title.txt found"));
-    mode = native_lyrics_screen_mode(&screen);
-    ASSERT_EQUAL((int32)mode, (int32)NATIVE_LYRICS_MODE_PLAIN);
+    mode = lyrics_screen_mode(&screen);
+    ASSERT_EQUAL((int32)mode, (int32) LYRICS_MODE_PLAIN);
     ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
                     txt_path, strlen32(txt_path)));
     ASSERT(STREQUAL(screen.display.data, screen.display.len,
                     STRLIT("plain\nline")));
 
-    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_destroy(&screen);
     ncm_song_destroy(&song);
     lyrics_screen_test_remove_file(txt_path);
     ASSERT(rmdir(directory) == 0);
@@ -987,10 +987,10 @@ lyrics_screen_test_txt_used_when_lrc_missing(void) {
 
 static void
 lyrics_screen_test_invalid_lrc_falls_back_to_txt(void) {
-    NativeLyricsScreen screen;
+    LyricsScreen screen;
     NcmSong song;
     NcmError error = {0};
-    NativeLyricsMode mode;
+    LyricsMode mode;
     char directory[256];
     char lrc_path[512];
     char txt_path[512];
@@ -1007,18 +1007,18 @@ lyrics_screen_test_invalid_lrc_falls_back_to_txt(void) {
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
     lyrics_screen_test_clear_status_message();
-    ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error));
     lyrics_screen_test_assert_status_message(
         STRLIT("Artist - Title.lrc found; Artist - Title.txt found"));
-    mode = native_lyrics_screen_mode(&screen);
-    ASSERT_EQUAL((int32)mode, (int32)NATIVE_LYRICS_MODE_PLAIN);
+    mode = lyrics_screen_mode(&screen);
+    ASSERT_EQUAL((int32)mode, (int32) LYRICS_MODE_PLAIN);
     ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
                     txt_path, strlen32(txt_path)));
     ASSERT(STREQUAL(screen.display.data, screen.display.len,
                     STRLIT("fallback")));
     ASSERT_EQUAL(screen.lrc.entries_len, 0);
 
-    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_destroy(&screen);
     ncm_song_destroy(&song);
     lyrics_screen_test_remove_file(lrc_path);
     lyrics_screen_test_remove_file(txt_path);
@@ -1028,7 +1028,7 @@ lyrics_screen_test_invalid_lrc_falls_back_to_txt(void) {
 
 static void
 lyrics_screen_test_missing_sidecars_report_status(void) {
-    NativeLyricsScreen screen;
+    LyricsScreen screen;
     NcmSong song;
     NcmError error = {0};
     char directory[256];
@@ -1040,12 +1040,12 @@ lyrics_screen_test_missing_sidecars_report_status(void) {
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
     lyrics_screen_test_clear_status_message();
-    ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error));
     lyrics_screen_test_assert_status_message(
         STRLIT("Artist - Title.lrc not found; Artist - Title.txt not found"));
 
     lyrics_screen_test_clear_pushed_job();
-    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_destroy(&screen);
     ncm_song_destroy(&song);
     ASSERT(rmdir(directory) == 0);
     return;
@@ -1053,19 +1053,19 @@ lyrics_screen_test_missing_sidecars_report_status(void) {
 
 static void
 lyrics_screen_test_update_at(int64 elapsed_ms,
-                             NativeLyricsScreen *screen,
+                             LyricsScreen *screen,
                              int32 expected_line) {
     lyrics_test_elapsed_ms = elapsed_ms;
     lyrics_test_player_state = NCM_STATUS_PLAYER_PLAY;
-    native_lyrics_screen_update(screen);
-    ASSERT_EQUAL(native_lyrics_screen_active_lrc_line(screen),
+    lyrics_screen_update(screen);
+    ASSERT_EQUAL(lyrics_screen_active_lrc_line(screen),
                  expected_line);
     return;
 }
 
 static void
 lyrics_screen_test_active_line_selection(void) {
-    NativeLyricsScreen screen;
+    LyricsScreen screen;
     NcmError error = {0};
     char path[] = "/tmp/ncmpcpp2-lyrics-screen-active.lrc";
 
@@ -1075,7 +1075,7 @@ lyrics_screen_test_active_line_selection(void) {
                                          "[00:10.00]ten\n"
                                          "[00:12.50]twelve\n"));
     lyrics_screen_test_init(&screen);
-    ASSERT(native_lyrics_screen_load_file(&screen,
+    ASSERT(lyrics_screen_load_file(&screen,
                                           path,
                                           strlen32(path),
                                           &error));
@@ -1087,14 +1087,14 @@ lyrics_screen_test_active_line_selection(void) {
     lyrics_screen_test_update_at(12500, &screen, 2);
     lyrics_screen_test_update_at(999999, &screen, 2);
 
-    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_destroy(&screen);
     lyrics_screen_test_remove_file(path);
     return;
 }
 
 static void
 lyrics_screen_test_search_and_sync_properties_are_independent(void) {
-    NativeLyricsScreen screen;
+    LyricsScreen screen;
     NcmError error = {0};
     char path[] = "/tmp/ncmpcpp2-lyrics-screen-highlight.lrc";
 
@@ -1103,34 +1103,34 @@ lyrics_screen_test_search_and_sync_properties_are_independent(void) {
                                   STRLIT("[00:01.00]alpha\n"
                                          "[00:02.00]beta\n"));
     lyrics_screen_test_init(&screen);
-    ASSERT(native_lyrics_screen_load_file(&screen,
+    ASSERT(lyrics_screen_load_file(&screen,
                                           path,
                                           strlen32(path),
                                           &error));
-    ASSERT(native_lyrics_screen_find(&screen, STRLIT("alpha"), &error));
+    ASSERT(lyrics_screen_find(&screen, STRLIT("alpha"), &error));
     ASSERT(lyrics_screen_test_has_property(
-        &screen.display, NATIVE_LYRICS_SEARCH_PROPERTY_ID));
+        &screen.display, LYRICS_SEARCH_PROPERTY_ID));
 
     lyrics_screen_test_update_at(1000, &screen, 0);
     ASSERT(lyrics_screen_test_has_property(
-        &screen.display, NATIVE_LYRICS_SEARCH_PROPERTY_ID));
+        &screen.display, LYRICS_SEARCH_PROPERTY_ID));
     ASSERT(lyrics_screen_test_has_property(
-        &screen.display, NATIVE_LYRICS_SYNC_PROPERTY_ID));
+        &screen.display, LYRICS_SYNC_PROPERTY_ID));
 
-    native_lyrics_buffer_clear_sync_highlight(&screen.display);
+    lyrics_buffer_clear_sync_highlight(&screen.display);
     ASSERT(lyrics_screen_test_has_property(
-        &screen.display, NATIVE_LYRICS_SEARCH_PROPERTY_ID));
+        &screen.display, LYRICS_SEARCH_PROPERTY_ID));
     ASSERT(!lyrics_screen_test_has_property(
-        &screen.display, NATIVE_LYRICS_SYNC_PROPERTY_ID));
+        &screen.display, LYRICS_SYNC_PROPERTY_ID));
 
-    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_destroy(&screen);
     lyrics_screen_test_remove_file(path);
     return;
 }
 
 static void
 lyrics_screen_test_auto_scroll_clamps(void) {
-    NativeLyricsScreen screen;
+    LyricsScreen screen;
     NcmError error = {0};
     char path[] = "/tmp/ncmpcpp2-lyrics-screen-scroll.lrc";
 
@@ -1143,7 +1143,7 @@ lyrics_screen_test_auto_scroll_clamps(void) {
                                          "[00:05.00]four\n"
                                          "[00:06.00]five\n"));
     lyrics_screen_test_init(&screen);
-    ASSERT(native_lyrics_screen_load_file(&screen,
+    ASSERT(lyrics_screen_load_file(&screen,
                                           path,
                                           strlen32(path),
                                           &error));
@@ -1157,39 +1157,39 @@ lyrics_screen_test_auto_scroll_clamps(void) {
                  nc_scrollpad_max_beginning(&screen.scrollpad,
                                             &screen.window));
 
-    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_destroy(&screen);
     lyrics_screen_test_remove_file(path);
     return;
 }
 
 static void
 lyrics_screen_test_resize_reflushes_plain_lyrics(void) {
-    NativeLyricsScreen screen;
+    LyricsScreen screen;
     NcmError error = {0};
     char path[] = "/tmp/ncmpcpp2-lyrics-screen-resize.txt";
 
     lyrics_screen_test_setup_config("/tmp");
     lyrics_screen_test_write_file(path, STRLIT("alpha\nbeta\n"));
     lyrics_screen_test_init(&screen);
-    ASSERT(native_lyrics_screen_load_file(&screen,
+    ASSERT(lyrics_screen_load_file(&screen,
                                           path,
                                           strlen32(path),
                                           &error));
-    ASSERT(native_lyrics_screen_mode(&screen) == NATIVE_LYRICS_MODE_PLAIN);
+    ASSERT(lyrics_screen_mode(&screen) == LYRICS_MODE_PLAIN);
 
     lyrics_test_print_count = 0;
-    native_lyrics_screen_set_geometry(&screen, 0, 20, 0, 4);
+    lyrics_screen_set_geometry(&screen, 0, 20, 0, 4);
     ASSERT(lyrics_test_print_count > 0);
 
-    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_destroy(&screen);
     lyrics_screen_test_remove_file(path);
     return;
 }
 
 static void
 lyrics_screen_test_lrc_integration_fixture(void) {
-    NativeLyricsScreen screen;
-    NativeLyricsScreen plain_screen;
+    LyricsScreen screen;
+    LyricsScreen plain_screen;
     NcmSong song;
     NcmError error = {0};
     char directory[256];
@@ -1215,9 +1215,9 @@ lyrics_screen_test_lrc_integration_fixture(void) {
 
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
-    ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
-    ASSERT(native_lyrics_screen_mode(&screen)
-           == NATIVE_LYRICS_MODE_SYNCHRONIZED);
+    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_mode(&screen)
+           == LYRICS_MODE_SYNCHRONIZED);
     ASSERT(STREQUAL(screen.display.data, screen.display.len,
                     STRLIT("first line\n"
                            "second line\n"
@@ -1238,17 +1238,17 @@ lyrics_screen_test_lrc_integration_fixture(void) {
     lyrics_screen_test_assert_sync_highlight(&screen, 6);
     ASSERT(screen.scrollpad.beginning > first_beginning);
 
-    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_destroy(&screen);
 
     lyrics_screen_test_remove_file(lrc_path);
     lyrics_screen_test_init(&plain_screen);
-    ASSERT(native_lyrics_screen_fetch(&plain_screen, &song, NULL, &error));
-    ASSERT(native_lyrics_screen_mode(&plain_screen)
-           == NATIVE_LYRICS_MODE_PLAIN);
+    ASSERT(lyrics_screen_fetch(&plain_screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_mode(&plain_screen)
+           == LYRICS_MODE_PLAIN);
     ASSERT(STREQUAL(plain_screen.display.data, plain_screen.display.len,
                     STRLIT("plain fallback")));
 
-    native_lyrics_screen_destroy(&plain_screen);
+    lyrics_screen_destroy(&plain_screen);
     ncm_song_destroy(&song);
     lyrics_screen_test_remove_file(txt_path);
     ASSERT(rmdir(directory) == 0);
@@ -1257,8 +1257,8 @@ lyrics_screen_test_lrc_integration_fixture(void) {
 
 static void
 lyrics_screen_test_refetch_writes_txt_without_removing_lrc(void) {
-    NativeLyricsScreen screen;
-    NativeLyricsJob *job;
+    LyricsScreen screen;
+    LyricsJob *job;
     NcmSong song;
     NcmError error = {0};
     char directory[256];
@@ -1277,11 +1277,11 @@ lyrics_screen_test_refetch_writes_txt_without_removing_lrc(void) {
 
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
-    ASSERT(native_lyrics_screen_fetch(&screen, &song, NULL, &error));
-    ASSERT(native_lyrics_screen_mode(&screen)
-           == NATIVE_LYRICS_MODE_SYNCHRONIZED);
+    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_mode(&screen)
+           == LYRICS_MODE_SYNCHRONIZED);
 
-    native_lyrics_screen_refetch_current(&screen, &error);
+    lyrics_screen_refetch_current(&screen, &error);
     ASSERT(lyrics_test_has_pushed_job);
     ASSERT(ncm_fs_exists(lrc_path, strlen32(lrc_path)));
     ASSERT(!ncm_fs_exists(txt_path, strlen32(txt_path)));
@@ -1297,10 +1297,10 @@ lyrics_screen_test_refetch_writes_txt_without_removing_lrc(void) {
     ASSERT(ncm_fs_exists(lrc_path, strlen32(lrc_path)));
     lyrics_screen_test_assert_file_text(txt_path,
                                         STRLIT("downloaded plain\n"));
-    ASSERT(native_lyrics_screen_mode(&screen) == NATIVE_LYRICS_MODE_PLAIN);
+    ASSERT(lyrics_screen_mode(&screen) == LYRICS_MODE_PLAIN);
 
     lyrics_screen_test_clear_pushed_job();
-    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_destroy(&screen);
     ncm_song_destroy(&song);
     lyrics_screen_test_remove_file(lrc_path);
     lyrics_screen_test_remove_file(txt_path);
@@ -1310,8 +1310,8 @@ lyrics_screen_test_refetch_writes_txt_without_removing_lrc(void) {
 
 static void
 lyrics_screen_test_background_fetch_respects_lrc_and_txt(void) {
-    NativeLyricsScreen screen;
-    NativeLyricsJob *job;
+    LyricsScreen screen;
+    LyricsJob *job;
     NcmSong song;
     NcmError error = {0};
     char directory[256];
@@ -1329,18 +1329,18 @@ lyrics_screen_test_background_fetch_respects_lrc_and_txt(void) {
 
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
-    ASSERT(native_lyrics_screen_fetch_in_background(
+    ASSERT(lyrics_screen_fetch_in_background(
         &screen, &song, false, &error));
     ASSERT(!lyrics_test_has_pushed_job);
 
     lyrics_screen_test_remove_file(lrc_path);
     lyrics_screen_test_write_file(txt_path, STRLIT("plain\n"));
-    ASSERT(native_lyrics_screen_fetch_in_background(
+    ASSERT(lyrics_screen_fetch_in_background(
         &screen, &song, false, &error));
     ASSERT(!lyrics_test_has_pushed_job);
 
     lyrics_screen_test_remove_file(txt_path);
-    ASSERT(native_lyrics_screen_fetch_in_background(
+    ASSERT(lyrics_screen_fetch_in_background(
         &screen, &song, false, &error));
     ASSERT(lyrics_test_has_pushed_job);
     job = lyrics_screen_test_pushed_lyrics_job();
@@ -1348,7 +1348,7 @@ lyrics_screen_test_background_fetch_respects_lrc_and_txt(void) {
                     txt_path, strlen32(txt_path)));
 
     lyrics_screen_test_clear_pushed_job();
-    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_destroy(&screen);
     ncm_song_destroy(&song);
     lyrics_screen_test_remove_file(txt_path);
     ASSERT(rmdir(directory) == 0);
@@ -1357,7 +1357,7 @@ lyrics_screen_test_background_fetch_respects_lrc_and_txt(void) {
 
 static void
 lyrics_screen_test_locked_visible_update_refreshes_lrc(void) {
-    NativeLyricsScreen screen;
+    LyricsScreen screen;
     NcScreenRegistry registry;
     NcScreenCallbacks callbacks = {0};
     NcScreen dummy;
@@ -1368,7 +1368,7 @@ lyrics_screen_test_locked_visible_update_refreshes_lrc(void) {
     lyrics_screen_test_write_file(path,
                                   STRLIT("[00:01.00]visible\n"));
     lyrics_screen_test_init(&screen);
-    ASSERT(native_lyrics_screen_load_file(&screen,
+    ASSERT(lyrics_screen_load_file(&screen,
                                           path,
                                           strlen32(path),
                                           &error));
@@ -1377,20 +1377,20 @@ lyrics_screen_test_locked_visible_update_refreshes_lrc(void) {
     nc_screen_init(&dummy, callbacks, NULL, NC_SCREEN_TYPE_BROWSER);
     nc_screen_registry_init(&registry);
     ASSERT(nc_screen_registry_register(
-        &registry, native_lyrics_screen_base(&screen)));
+        &registry, lyrics_screen_base(&screen)));
     ASSERT(nc_screen_registry_register(&registry, &dummy));
     ASSERT(nc_screen_registry_switch_to(
-        &registry, native_lyrics_screen_base(&screen)));
+        &registry, lyrics_screen_base(&screen)));
     ASSERT(nc_screen_registry_lock_current(&registry));
     ASSERT(nc_screen_registry_switch_to(&registry, &dummy));
 
     lyrics_test_elapsed_ms = 1000;
     lyrics_test_player_state = NCM_STATUS_PLAYER_PLAY;
     nc_screen_registry_update_visible(&registry);
-    ASSERT_EQUAL(native_lyrics_screen_active_lrc_line(&screen), 0);
+    ASSERT_EQUAL(lyrics_screen_active_lrc_line(&screen), 0);
     lyrics_screen_test_assert_sync_highlight(&screen, 0);
 
-    native_lyrics_screen_destroy(&screen);
+    lyrics_screen_destroy(&screen);
     lyrics_screen_test_remove_file(path);
     return;
 }

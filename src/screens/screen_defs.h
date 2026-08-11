@@ -128,13 +128,13 @@
     NCM_SCREEN_TYPES_BEFORE_UNKNOWN(X) \
     NCM_SCREEN_TYPES_AFTER_UNKNOWN(X)
 
-#define NCM_SCREEN_NATIVE_TYPE_ENUM_FIELD( \
-    screen_type, native_type, native_value, alias, flags \
+#define NCM_SCREEN_NC_TYPE_ENUM_FIELD( \
+    screen_type, nc_type, nc_value, alias, flags \
 ) \
-    native_type = native_value,
+    nc_type = nc_value,
 
 #define NCM_SCREEN_TYPE_XENUM_FIELD( \
-    screen_type, native_type, native_value, alias, flags \
+    screen_type, nc_type, nc_value, alias, flags \
 ) \
     X(screen_type, alias)
 
@@ -144,27 +144,27 @@
     NCM_SCREEN_TYPES_AFTER_UNKNOWN(NCM_SCREEN_TYPE_XENUM_FIELD)
 
 
-#define NCM_NATIVE_DIRECT_STORAGE_TYPES(X) \
-    X(NativeBrowserScreen, browser_screen) \
-    X(NativeLastfmScreen, lastfm_screen) \
-    X(NativeLyricsScreen, lyrics_screen) \
-    X(NativeVisualizerScreen, visualizer_screen) \
-    X(NativePlaylistScreen, playlist_screen) \
-    X(NativePlaylistEditorScreen, playlist_editor_screen) \
-    X(NativeSelectedItemsAdderScreen, selected_items_adder_screen) \
-    X(NativeSortPlaylistDialog, sort_playlist_dialog) \
-    X(NativeSearchEngineScreen, search_engine_screen) \
-    X(NativeMediaLibraryScreen, media_library_screen) \
-    X(NativeTagEditorScreen, tag_editor_screen) \
-    X(NativeTinyTagEditorScreen, tiny_tag_editor_screen)
+#define NCM_APP_SCREEN_DIRECT_STORAGE_TYPES(X) \
+    X(BrowserScreen, browser_screen) \
+    X(LastfmScreen, lastfm_screen) \
+    X(LyricsScreen, lyrics_screen) \
+    X(VisualizerScreen, visualizer_screen) \
+    X(PlaylistScreen, playlist_screen) \
+    X(PlaylistEditorScreen, playlist_editor_screen) \
+    X(SelectedItemsAdderScreen, selected_items_adder_screen) \
+    X(SortPlaylistDialog, sort_playlist_dialog) \
+    X(SearchEngineScreen, search_engine_screen) \
+    X(MediaLibraryScreen, media_library_screen) \
+    X(TagEditorScreen, tag_editor_screen) \
+    X(TinyTagEditorScreen, tiny_tag_editor_screen)
 
-#define NCM_NATIVE_WRAPPED_STORAGE_TYPES(X) \
-    X(NativeHelpScreen, help_screen) \
-    X(NativeOutputsScreen, outputs_screen) \
-    X(NativeServerInfoScreen, server_info_screen) \
-    X(NativeSongInfoScreen, song_info_screen)
+#define NCM_APP_SCREEN_WRAPPED_STORAGE_TYPES(X) \
+    X(HelpScreen, help_screen) \
+    X(OutputsScreen, outputs_screen) \
+    X(ServerInfoScreen, server_info_screen) \
+    X(SongInfoScreen, song_info_screen)
 
-#define NCM_NATIVE_INIT_FLAGS(X) \
+#define NCM_APP_SCREEN_INIT_FLAGS(X) \
     X(browser_screen_initialized) \
     X(lastfm_screen_initialized) \
     X(lyrics_screen_initialized) \
@@ -178,40 +178,40 @@
     X(tiny_tag_editor_screen_initialized) \
     X(playlist_screen_initialized)
 
-#define NCM_NATIVE_DIRECT_ACCESSOR_TYPES(X) \
-    X(browser, NativeBrowserScreen, browser_screen, \
-      native_browser_screen_base(&browser_screen)) \
-    X(lastfm, NativeLastfmScreen, lastfm_screen, \
-      native_lastfm_screen_base(&lastfm_screen)) \
-    X(lyrics, NativeLyricsScreen, lyrics_screen, \
-      native_lyrics_screen_base(&lyrics_screen)) \
-    X(playlist, NativePlaylistScreen, playlist_screen, \
-      native_playlist_screen_base(&playlist_screen)) \
-    X(playlist_editor, NativePlaylistEditorScreen, playlist_editor_screen, \
-      native_playlist_editor_screen_base(&playlist_editor_screen)) \
-    X(selected_items_adder, NativeSelectedItemsAdderScreen, \
+#define NCM_APP_SCREEN_DIRECT_ACCESSOR_TYPES(X) \
+    X(browser, BrowserScreen, browser_screen, \
+      browser_screen_base(&browser_screen)) \
+    X(lastfm, LastfmScreen, lastfm_screen, \
+      lastfm_screen_base(&lastfm_screen)) \
+    X(lyrics, LyricsScreen, lyrics_screen, \
+      lyrics_screen_base(&lyrics_screen)) \
+    X(playlist, PlaylistScreen, playlist_screen, \
+      playlist_screen_base(&playlist_screen)) \
+    X(playlist_editor, PlaylistEditorScreen, playlist_editor_screen, \
+      playlist_editor_screen_base(&playlist_editor_screen)) \
+    X(selected_items_adder, SelectedItemsAdderScreen, \
       selected_items_adder_screen, \
-      native_selected_items_adder_screen_base(&selected_items_adder_screen)) \
-    X(sort_playlist_dialog, NativeSortPlaylistDialog, sort_playlist_dialog, \
-      native_sort_playlist_dialog_base(&sort_playlist_dialog)) \
-    X(search_engine, NativeSearchEngineScreen, search_engine_screen, \
-      native_search_engine_screen_base(&search_engine_screen)) \
-    X(media_library, NativeMediaLibraryScreen, media_library_screen, \
-      native_media_library_screen_base(&media_library_screen)) \
-    X(tag_editor, NativeTagEditorScreen, tag_editor_screen, \
-      native_tag_editor_screen_base(&tag_editor_screen)) \
-    X(tiny_tag_editor, NativeTinyTagEditorScreen, tiny_tag_editor_screen, \
-      native_tiny_tag_editor_screen_base(&tiny_tag_editor_screen))
+      selected_items_adder_screen_base(&selected_items_adder_screen)) \
+    X(sort_playlist_dialog, SortPlaylistDialog, sort_playlist_dialog, \
+      sort_playlist_dialog_base(&sort_playlist_dialog)) \
+    X(search_engine, SearchEngineScreen, search_engine_screen, \
+      search_engine_screen_base(&search_engine_screen)) \
+    X(media_library, MediaLibraryScreen, media_library_screen, \
+      media_library_screen_base(&media_library_screen)) \
+    X(tag_editor, TagEditorScreen, tag_editor_screen, \
+      tag_editor_screen_base(&tag_editor_screen)) \
+    X(tiny_tag_editor, TinyTagEditorScreen, tiny_tag_editor_screen, \
+      tiny_tag_editor_screen_base(&tiny_tag_editor_screen))
 
-#define NCM_NATIVE_WRAPPED_ACCESSOR_TYPES(X) \
+#define NCM_APP_SCREEN_WRAPPED_ACCESSOR_TYPES(X) \
     X(help, nc_help_screen_base(&help_screen.screen)) \
     X(server_info, nc_server_info_screen_base(&server_info_screen.screen)) \
     X(song_info, nc_song_info_screen_base(&song_info_screen.screen))
 
-#define NCM_NATIVE_TYPED_WRAPPED_ACCESSOR_TYPES(X) \
-    X(help, native_c_screen_help_typed, NcHelpScreen, &help_screen.screen)
+#define NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(X) \
+    X(help, app_screen_help, NcHelpScreen, &help_screen.screen)
 
-#define NCM_NATIVE_STANDARD_REGISTER_TYPES(X) \
+#define NCM_APP_SCREEN_STANDARD_REGISTER_TYPES(X) \
     X(browser) \
     X(help) \
     X(lastfm) \
@@ -227,11 +227,11 @@
     X(server_info) \
     X(outputs)
 
-#define NCM_NATIVE_REPLACE_REGISTER_TYPES(X) \
+#define NCM_APP_SCREEN_REPLACE_REGISTER_TYPES(X) \
     X(selected_items_adder, NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER) \
     X(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG)
 
-#define NCM_NATIVE_SIMPLE_SWITCH_TYPES(X) \
+#define NCM_APP_SCREEN_SIMPLE_SWITCH_TYPES(X) \
     X(browser) \
     X(help) \
     X(playlist) \
@@ -244,10 +244,10 @@
     X(server_info) \
     X(outputs)
 
-#define NCM_NATIVE_REGISTER_SWITCH_TYPES(X) \
+#define NCM_APP_SCREEN_REGISTER_SWITCH_TYPES(X) \
     X(tiny_tag_editor)
 
-#define NCM_NATIVE_IS_CURRENT_TYPES(X) \
+#define NCM_APP_SCREEN_IS_CURRENT_TYPES(X) \
     X(browser) \
     X(help) \
     X(lastfm) \
@@ -266,36 +266,36 @@
     X(outputs)
 
 #if defined(ENABLE_OUTPUTS)
-  #define NCM_NATIVE_ENABLED_OUTPUTS(X) X(outputs)
-  #define NCM_NATIVE_ENABLED_OUTPUTS_RESIZE(X) \
+  #define NCM_APP_SCREEN_ENABLED_OUTPUTS(X) X(outputs)
+  #define NCM_APP_SCREEN_ENABLED_OUTPUTS_RESIZE(X) \
       X(outputs, NC_SCREEN_TYPE_OUTPUTS)
 #else
-  #define NCM_NATIVE_ENABLED_OUTPUTS(X)
-  #define NCM_NATIVE_ENABLED_OUTPUTS_RESIZE(X)
+  #define NCM_APP_SCREEN_ENABLED_OUTPUTS(X)
+  #define NCM_APP_SCREEN_ENABLED_OUTPUTS_RESIZE(X)
 #endif
 
 #if defined(HAVE_TAGLIB_H)
-  #define NCM_NATIVE_ENABLED_TAG_EDITOR(X) \
+  #define NCM_APP_SCREEN_ENABLED_TAG_EDITOR(X) \
       X(tag_editor) \
       X(tiny_tag_editor)
-  #define NCM_NATIVE_ENABLED_TAG_EDITOR_RESIZE(X) \
+  #define NCM_APP_SCREEN_ENABLED_TAG_EDITOR_RESIZE(X) \
       X(tag_editor, NC_SCREEN_TYPE_TAG_EDITOR) \
       X(tiny_tag_editor, NC_SCREEN_TYPE_TINY_TAG_EDITOR)
 #else
-  #define NCM_NATIVE_ENABLED_TAG_EDITOR(X)
-  #define NCM_NATIVE_ENABLED_TAG_EDITOR_RESIZE(X)
+  #define NCM_APP_SCREEN_ENABLED_TAG_EDITOR(X)
+  #define NCM_APP_SCREEN_ENABLED_TAG_EDITOR_RESIZE(X)
 #endif
 
 #if defined(ENABLE_VISUALIZER)
-  #define NCM_NATIVE_ENABLED_VISUALIZER(X) X(visualizer)
-  #define NCM_NATIVE_ENABLED_VISUALIZER_RESIZE(X) \
+  #define NCM_APP_SCREEN_ENABLED_VISUALIZER(X) X(visualizer)
+  #define NCM_APP_SCREEN_ENABLED_VISUALIZER_RESIZE(X) \
       X(visualizer, NC_SCREEN_TYPE_VISUALIZER)
 #else
-  #define NCM_NATIVE_ENABLED_VISUALIZER(X)
-  #define NCM_NATIVE_ENABLED_VISUALIZER_RESIZE(X)
+  #define NCM_APP_SCREEN_ENABLED_VISUALIZER(X)
+  #define NCM_APP_SCREEN_ENABLED_VISUALIZER_RESIZE(X)
 #endif
 
-#define NCM_NATIVE_INIT_ALL_TYPES(X) \
+#define NCM_APP_SCREEN_INIT_ALL_TYPES(X) \
     X(browser) \
     X(help) \
     X(lastfm) \
@@ -308,11 +308,11 @@
     X(server_info) \
     X(song_info) \
     X(sort_playlist_dialog) \
-    NCM_NATIVE_ENABLED_TAG_EDITOR(X) \
-    NCM_NATIVE_ENABLED_VISUALIZER(X) \
-    NCM_NATIVE_ENABLED_OUTPUTS(X)
+    NCM_APP_SCREEN_ENABLED_TAG_EDITOR(X) \
+    NCM_APP_SCREEN_ENABLED_VISUALIZER(X) \
+    NCM_APP_SCREEN_ENABLED_OUTPUTS(X)
 
-#define NCM_NATIVE_REGISTER_NATIVE_ONLY_TYPES(X) \
+#define NCM_APP_SCREEN_REGISTER_INITIAL_TYPES(X) \
     X(browser) \
     X(help) \
     X(lastfm) \
@@ -321,13 +321,13 @@
     X(selected_items_adder) \
     X(song_info) \
     X(server_info) \
-    NCM_NATIVE_ENABLED_VISUALIZER(X) \
-    NCM_NATIVE_ENABLED_TAG_EDITOR(X) \
-    NCM_NATIVE_ENABLED_OUTPUTS(X) \
+    NCM_APP_SCREEN_ENABLED_VISUALIZER(X) \
+    NCM_APP_SCREEN_ENABLED_TAG_EDITOR(X) \
+    NCM_APP_SCREEN_ENABLED_OUTPUTS(X) \
     X(playlist) \
     X(playlist_editor)
 
-#define NCM_NATIVE_RESIZE_REQUEST_TYPES(X) \
+#define NCM_APP_SCREEN_RESIZE_REQUEST_TYPES(X) \
     X(browser, NC_SCREEN_TYPE_BROWSER) \
     X(help, NC_SCREEN_TYPE_HELP) \
     X(lastfm, NC_SCREEN_TYPE_LASTFM) \
@@ -340,8 +340,8 @@
     X(server_info, NC_SCREEN_TYPE_SERVER_INFO) \
     X(song_info, NC_SCREEN_TYPE_SONG_INFO) \
     X(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG) \
-    NCM_NATIVE_ENABLED_TAG_EDITOR_RESIZE(X) \
-    NCM_NATIVE_ENABLED_VISUALIZER_RESIZE(X) \
-    NCM_NATIVE_ENABLED_OUTPUTS_RESIZE(X)
+    NCM_APP_SCREEN_ENABLED_TAG_EDITOR_RESIZE(X) \
+    NCM_APP_SCREEN_ENABLED_VISUALIZER_RESIZE(X) \
+    NCM_APP_SCREEN_ENABLED_OUTPUTS_RESIZE(X)
 
 #endif /* NCMPCPP_SCREEN_DEFS_H */

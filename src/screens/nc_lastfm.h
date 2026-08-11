@@ -14,7 +14,7 @@ typedef struct NcLastfmScreen {
     NcScrollpadScreen scrollpad_screen;
 } NcLastfmScreen;
 
-typedef struct NativeLastfmScreen {
+typedef struct LastfmScreen {
     NcLastfmScreen screen;
     NcWindow window;
     NcScrollpad scrollpad;
@@ -32,7 +32,7 @@ typedef struct NativeLastfmScreen {
     bool has_service;
     bool refresh_window;
     bool initialized;
-} NativeLastfmScreen;
+} LastfmScreen;
 
 void nc_lastfm_screen_init(NcLastfmScreen *screen,
                            NcScreenOps callbacks, void *user,
@@ -48,29 +48,29 @@ int32 nc_lastfm_screen_start_y(NcLastfmScreen *screen);
 int32 nc_lastfm_screen_width(NcLastfmScreen *screen);
 int32 nc_lastfm_screen_height(NcLastfmScreen *screen);
 
-void native_lastfm_screen_init(NativeLastfmScreen *screen,
+void lastfm_screen_init(LastfmScreen *screen,
                                int32 start_x, int32 width,
                                int32 main_start_y, int32 main_height,
                                NcColor color, NcBorder border,
                                int32 lines_scrolled);
-void native_lastfm_screen_destroy(NativeLastfmScreen *screen);
-NcScreen *native_lastfm_screen_base(NativeLastfmScreen *screen);
-NcWindow *native_lastfm_screen_window(NativeLastfmScreen *screen);
-void native_lastfm_screen_set_geometry(NativeLastfmScreen *screen,
+void lastfm_screen_destroy(LastfmScreen *screen);
+NcScreen *lastfm_screen_base(LastfmScreen *screen);
+NcWindow *lastfm_screen_window(LastfmScreen *screen);
+void lastfm_screen_set_geometry(LastfmScreen *screen,
                                        int32 start_x, int32 width,
                                        int32 main_start_y,
                                        int32 main_height);
-bool native_lastfm_screen_queue_artist_info(NativeLastfmScreen *screen,
+bool lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                             char *artist, int32 artist_len,
                                             char *lang, int32 lang_len,
                                             NcmError *error);
-int32 native_lastfm_screen_dispatch_jobs(NativeLastfmScreen *screen);
-void native_lastfm_screen_update(NativeLastfmScreen *screen);
-char *native_lastfm_screen_title(NativeLastfmScreen *screen);
-bool native_lastfm_screen_take_refresh_request(NativeLastfmScreen *screen);
-bool native_lastfm_buffer_find(NcBuffer *buffer, char *pattern,
+int32 lastfm_screen_dispatch_jobs(LastfmScreen *screen);
+void lastfm_screen_update(LastfmScreen *screen);
+char *lastfm_screen_title(LastfmScreen *screen);
+bool lastfm_screen_take_refresh_request(LastfmScreen *screen);
+bool lastfm_buffer_find(NcBuffer *buffer, char *pattern,
                                 int32 pattern_len, NcmError *error);
-bool native_lastfm_screen_find(NativeLastfmScreen *screen,
+bool lastfm_screen_find(LastfmScreen *screen,
                                char *pattern, int32 pattern_len,
                                NcmError *error);
 

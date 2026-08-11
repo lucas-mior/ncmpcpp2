@@ -67,7 +67,7 @@
 #include "lastfm_service.c"
 #include "lyrics_fetcher.c"
 #include "screen_actions.c"
-#include "screens/native_c_screens.c"
+#include "screens/app_screens.c"
 #include "screens/nc_browser.c"
 #include "screens/nc_help.c"
 #include "screens/nc_lastfm.c"
