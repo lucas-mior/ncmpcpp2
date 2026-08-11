@@ -321,12 +321,9 @@ visualizer_fft_init(
     fft->dft_frequency_space_cap = NATIVE_VISUALIZER_FREQ_SPACE_CAP;
     fft->bar_heights_cap = NATIVE_VISUALIZER_BAR_HEIGHTS_CAP;
 
-    fft->freqs_mags = malloc2(
-        fft->freqs_mags_cap
-        *SIZEOF(*fft->freqs_mags));
-    fft->dft_frequency_space = malloc2(
-        fft->dft_frequency_space_cap
-        *SIZEOF(*fft->dft_frequency_space));
+    fft->freqs_mags = malloc2(fft->freqs_mags_cap*SIZEOF(*fft->freqs_mags));
+    fft->dft_frequency_space = malloc2(fft->dft_frequency_space_cap
+                                       *SIZEOF(*fft->dft_frequency_space));
     fft->bar_heights = malloc2(
         fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
 
