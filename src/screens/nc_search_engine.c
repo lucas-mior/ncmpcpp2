@@ -921,11 +921,12 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
 
 enum DisplayMode
 search_engine_screen_toggle_display_mode(SearchEngineScreen *screen) {
+    enum DisplayMode mode = Config.search_engine_display_mode;
+
     if (screen == NULL) {
         return Config.search_engine_display_mode;
     }
 
-    enum DisplayMode mode = Config.search_engine_display_mode;
     if (mode == NCM_DISPLAY_MODE_CLASSIC) {
         mode = NCM_DISPLAY_MODE_COLUMNS;
     } else {
