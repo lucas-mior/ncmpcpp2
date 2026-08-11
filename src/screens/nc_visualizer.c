@@ -326,29 +326,15 @@ static void
 visualizer_fft_destroy(NativeVisualizerScreen *screen) {
     NativeVisualizerFftState *fft = &screen->fft;
 
-    if (fft->plan) {
-        fftw_destroy_plan(fft->plan);
-    }
-    if (fft->output) {
-        fftw_free(fft->output);
-    }
-    if (fft->input) {
-        fftw_free(fft->input);
-    }
-    if (fft->bar_heights) {
-        free2(fft->bar_heights,
-              fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
-    }
-    if (fft->dft_frequency_space) {
-        free2(fft->dft_frequency_space,
-              fft->dft_frequency_space_cap
-              *SIZEOF(*fft->dft_frequency_space));
-    }
-    if (fft->freqs_mags) {
-        free2(fft->freqs_mags,
-              fft->freqs_mags_cap
-              *SIZEOF(*fft->freqs_mags));
-    }
+    fftw_destroy_plan(fft->plan);
+    fftw_free(fft->output);
+    fftw_free(fft->input);
+
+    free2(fft->bar_heights, fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
+    free2(fft->dft_frequency_space,
+          fft->dft_frequency_space_cap*SIZEOF(*fft->dft_frequency_space));
+    free2(fft->freqs_mags, fft->freqs_mags_cap*SIZEOF(*fft->freqs_mags));
+
     *fft = (NativeVisualizerFftState){0};
     return;
 }
