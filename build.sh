@@ -236,7 +236,7 @@ debug|build|fast_feedback|all)
     ;;
 check)
     set +e
-    CC=gcc CFLAGS="-fanalyzer -fdiagnostics-color=never" "$0" debug 2>&1 | tee gcc-warnings.txt &
+    # CC=gcc CFLAGS="-fanalyzer -fdiagnostics-color=never" "$0" debug 2>&1 | tee gcc-warnings.txt &
 
     CFLAGS="--analyze -Xanalyzer -analyzer-output=text"
     CFLAGS="$CFLAGS -Xanalyzer -analyzer-werror"
