@@ -1475,10 +1475,10 @@ browser_mouse_scroll(BrowserScreen *screen, enum NcScroll where) {
 
 static bool
 browser_filter_item(NcMenu *menu, void *item, void *user) {
-    BrowserScreen *screen;
+    BrowserScreen *screen = user;
 
     (void)menu;
-    screen = user;
+
     if ((screen == NULL) || !screen->filter_enabled) {
         return true;
     }
