@@ -1318,15 +1318,13 @@ browser_update(NcScreen *screen) {
 
 static void
 browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
-    BrowserScreen *browser;
-    NcMenu *menu;
+    BrowserScreen *browser = browser_from_screen(screen);
+    NcMenu *menu = browser_screen_menu(browser);
     NcmMpdItem *item;
     NcWindow *window;
     int32 x;
     int32 y;
 
-    browser = browser_from_screen(screen);
-    menu = browser_screen_menu(browser);
     if (nc_menu_empty(menu)) {
         return;
     }
