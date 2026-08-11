@@ -489,10 +489,15 @@ native_lyrics_screen_save_file(NativeLyricsScreen *screen,
                                NcmError *error) {
     FILE *file;
     int32 written;
+    int32 close_result;
 
     (void)screen;
     if ((filename == NULL) || (filename_len <= 0)) {
         ncm_error_set(error, EINVAL, STRLIT("missing lyrics file"));
+        return false;
+    }
+    if ((lyrics_len < 0) || ((lyrics == NULL) && (lyrics_len > 0))) {
+        ncm_error_set(error, EINVAL, STRLIT("missing lyrics buffer"));
         return false;
     }
 
@@ -505,7 +510,8 @@ native_lyrics_screen_save_file(NativeLyricsScreen *screen,
     if (lyrics && (lyrics_len > 0)) {
         written = (int32)fwrite64(lyrics, 1, lyrics_len, file);
     }
-    if ((written != lyrics_len) || (fclose(file) != 0)) {
+    close_result = fclose(file);
+    if ((written != lyrics_len) || (close_result != 0)) {
         ncm_error_set(error, errno, STRLIT("failed to save lyrics"));
         return false;
     }
