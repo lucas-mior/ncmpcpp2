@@ -279,8 +279,8 @@ str_builder_test_steal_transfers_exact_allocation(void) {
     sb_init(&str_builder);
     stolen = sb_steal(&str_builder, &len, &cap);
     ASSERT(stolen == NULL);
-    ASSERT_EQUAL(len, 0);
-    ASSERT_EQUAL(cap, 0);
+    ASSERT_ZERO(len);
+    ASSERT_ZERO(cap);
 
     sb_append(&str_builder, bytes, LENGTH(bytes));
     allocation = str_builder.data;
