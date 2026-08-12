@@ -115,7 +115,7 @@ debug)
     load_package_flags
 
     common_build_incremental_binary \
-        "$exe" \
+        $exe \
         src \
         src/main.c \
         "$CPPFLAGS $PKG_CFLAGS $CFLAGS" \
@@ -129,7 +129,7 @@ build|fast_feedback)
         $CPPFLAGS \
         $PKG_CFLAGS \
         $CFLAGS \
-        -o "$exe" \
+        -o $exe \
         src/main.c \
         $PKG_LIBS \
         $LDFLAGS
