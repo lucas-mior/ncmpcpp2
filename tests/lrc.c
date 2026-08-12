@@ -155,7 +155,7 @@ lrc_test_preserves_blank_lyric_lines(void) {
     ASSERT_EQUAL(document.entries_len, 2);
 
     text = ncm_lrc_entry_text(&document, &document.entries[0]);
-    ASSERT_EQUAL(text.len, 0);
+    ASSERT_ZERO(text.len);
     text = ncm_lrc_entry_text(&document, &document.entries[1]);
     ASSERT_EQUAL(text.len, STRLIT_LEN("after blank"));
     ASSERT(memcmp64(text.data, STRLIT("after blank")) == 0);
@@ -184,7 +184,7 @@ lrc_test_renders_plain_text_and_buffer_ranges(void) {
 
     ASSERT_EQUAL(target.text.len, STRLIT_LEN("one\ntwo\nthree\n"));
     ASSERT(memcmp64(target.text.data, STRLIT("one\ntwo\nthree\n")) == 0);
-    ASSERT_EQUAL(document.entries[0].buffer_start, 0);
+    ASSERT_ZERO(document.entries[0].buffer_start);
     ASSERT_EQUAL(document.entries[0].buffer_end, 3);
     ASSERT_EQUAL(document.entries[1].buffer_start, 4);
     ASSERT_EQUAL(document.entries[1].buffer_end, 7);
@@ -218,8 +218,8 @@ lrc_test_finds_active_entry_at_time(void) {
     ASSERT_EQUAL(ncm_lrc_document_entry_at_time(&document, 12500), 3);
     ASSERT_EQUAL(ncm_lrc_document_entry_at_time(&document, 20000), 3);
 
-    ASSERT_EQUAL(ncm_lrc_document_next_entry_after_time(&document, -1), 0);
-    ASSERT_EQUAL(ncm_lrc_document_next_entry_after_time(&document, 4999), 0);
+    ASSERT_ZERO(ncm_lrc_document_next_entry_after_time(&document, -1));
+    ASSERT_ZERO(ncm_lrc_document_next_entry_after_time(&document, 4999));
     ASSERT_EQUAL(ncm_lrc_document_next_entry_after_time(&document, 5000), 2);
     ASSERT_EQUAL(ncm_lrc_document_next_entry_after_time(&document, 9999), 2);
     ASSERT_EQUAL(ncm_lrc_document_next_entry_after_time(&document, 10000), 3);
@@ -240,7 +240,7 @@ lrc_test_rejects_untimed_or_malformed_text(void) {
     ncm_lrc_document_init(&document);
     ASSERT(!ncm_lrc_parse(&document, untimed, strlen32(untimed), &error));
     ASSERT(ncm_error_is_set(&error));
-    ASSERT_EQUAL(document.entries_len, 0);
+    ASSERT_ZERO(document.entries_len);
 
     ncm_error_clear(&error);
     ASSERT(!ncm_lrc_parse(&document,
@@ -248,7 +248,7 @@ lrc_test_rejects_untimed_or_malformed_text(void) {
                           strlen32(malformed),
                           &error));
     ASSERT(ncm_error_is_set(&error));
-    ASSERT_EQUAL(document.entries_len, 0);
+    ASSERT_ZERO(document.entries_len);
     ncm_lrc_document_destroy(&document);
     return;
 }

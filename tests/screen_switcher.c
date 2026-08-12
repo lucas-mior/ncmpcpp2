@@ -194,7 +194,7 @@ test_failed_switch_does_not_redraw_header(void) {
                                      NC_SCREEN_TYPE_PLAYLIST);
 
     ASSERT(!nc_screen_switcher_switch_to(&playlist.screen, false));
-    ASSERT_EQUAL(screen_switcher_header_draws, 0);
+    ASSERT_ZERO(screen_switcher_header_draws);
     ASSERT(strequal(screen_switcher_header, ""));
     return;
 }
