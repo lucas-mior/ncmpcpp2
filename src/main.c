@@ -1,6 +1,3 @@
-#if !defined(NCMPCPP_MAIN_C)
-#define NCMPCPP_MAIN_C
-
 #define CBASE_IMPLEMENT
 #include "cbase.h"
 
@@ -279,5 +276,3 @@ main(int32 argc, char **argv) {
 
     exit(EXIT_SUCCESS);
 }
-
-#endif /* NCMPCPP_MAIN_C */
