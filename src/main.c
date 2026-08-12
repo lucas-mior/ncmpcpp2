@@ -20,8 +20,7 @@
 #include "app_state.c"
 #include "bindings.c"
 
-#if defined(PROJECT_INCREMENTAL_BUILD)
-#else
+#if !defined(PROJECT_INCREMENTAL_BUILD)
 #include "c/ncm_c.c"
 #endif
 
