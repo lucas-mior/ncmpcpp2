@@ -138,7 +138,107 @@ check)
 esac
 
 case "$mode" in
-debug|build|fast_feedback)
+debug)
+    load_package_flags
+    require_command "$CC"
+
+    objdir="bin/obj/$mode"
+    main_obj="$objdir/src/main.o"
+    c_obj="$objdir/src/c/ncm_c.o"
+    curses_obj="$objdir/src/curses/nc_curses.o"
+    screens_obj="$objdir/src/screens/nc_screens.o"
+
+    mkdir -p \
+        "$(dirname "$main_obj")" \
+        "$(dirname "$c_obj")" \
+        "$(dirname "$curses_obj")" \
+        "$(dirname "$screens_obj")"
+
+    if [ ! -f "$c_obj" ] \
+            || find src/c -maxdepth 1 -type f \
+                \( -name '*.c' -o -name '*.h' \) \
+                -newer "$c_obj" -print | grep -q . \
+            || find cbase -type f -newer "$c_obj" -print | grep -q .; then
+        trace_on
+        $CC \
+            $CPPFLAGS \
+            $PKG_CFLAGS \
+            $READLINE_CFLAGS \
+            $CFLAGS \
+            -c src/c/ncm_c.c \
+            -o "$c_obj"
+        trace_off
+    fi
+
+    if [ ! -f "$curses_obj" ] \
+            || find src/curses -maxdepth 1 -type f \
+                \( -name '*.c' -o -name '*.h' \) \
+                -newer "$curses_obj" -print | grep -q . \
+            || find cbase -type f -newer "$curses_obj" -print | grep -q .; then
+        trace_on
+        $CC \
+            $CPPFLAGS \
+            $PKG_CFLAGS \
+            $READLINE_CFLAGS \
+            $CFLAGS \
+            -c src/curses/nc_curses.c \
+            -o "$curses_obj"
+        trace_off
+    fi
+
+    if [ ! -f "$screens_obj" ] \
+            || find src/screens -maxdepth 1 -type f \
+                \( -name '*.c' -o -name '*.h' \) \
+                -newer "$screens_obj" -print | grep -q . \
+            || find src/curses -maxdepth 1 -type f -name '*.h' \
+                -newer "$screens_obj" -print | grep -q . \
+            || find src/c -maxdepth 1 -type f -name '*.h' \
+                -newer "$screens_obj" -print | grep -q . \
+            || find cbase -type f -newer "$screens_obj" -print | grep -q .; then
+        trace_on
+        $CC \
+            $CPPFLAGS \
+            $PKG_CFLAGS \
+            $READLINE_CFLAGS \
+            $CFLAGS \
+            -c src/screens/nc_screens.c \
+            -o "$screens_obj"
+        trace_off
+    fi
+
+    if [ ! -f "$main_obj" ] \
+            || find src -maxdepth 1 -type f \
+                \( -name '*.c' -o -name '*.h' \) \
+                -newer "$main_obj" -print | grep -q . \
+            || find src/c src/curses src/screens -maxdepth 1 \
+                -type f -name '*.h' \
+                -newer "$main_obj" -print | grep -q . \
+            || find cbase -type f -newer "$main_obj" -print | grep -q .; then
+        trace_on
+        $CC \
+            $CPPFLAGS \
+            $PKG_CFLAGS \
+            $READLINE_CFLAGS \
+            $CFLAGS \
+            -DNCMPCPP_INCREMENTAL_BUILD=1 \
+            -c src/main.c \
+            -o "$main_obj"
+        trace_off
+    fi
+
+    trace_on
+    $CC \
+        -o "$exe" \
+        "$main_obj" \
+        "$c_obj" \
+        "$curses_obj" \
+        "$screens_obj" \
+        $READLINE_LIBS \
+        $PKG_LIBS \
+        $LDFLAGS
+    trace_off
+    ;;
+build|fast_feedback)
     load_package_flags
     require_command "$CC"
 
