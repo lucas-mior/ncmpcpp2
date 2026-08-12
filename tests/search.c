@@ -839,12 +839,16 @@ test_column_search_uses_every_displayed_column(void) {
     NcmSong choros_song = {0};
     NcmSong ohne_song = {0};
     SearchTestContext context;
+    int32 choros_len;
+    int32 ohne_len;
 
     choros_song.id = SEARCH_TEST_SONG_CHOROS;
     ohne_song.id = SEARCH_TEST_SONG_OHNE_DICH;
     search_column_format_init(&format);
     choros = ncm_format_render_string(&format, &choros_song);
     ohne = ncm_format_render_string(&format, &ohne_song);
+    choros_len = strlen32(choros.data);
+    ohne_len = strlen32(ohne.data);
     search_context_init(&context, "ohn");
 
     assert(ncm_regex_search(&context.regex, choros.data, choros.len));
@@ -852,10 +856,10 @@ test_column_search_uses_every_displayed_column(void) {
     search_context_init(&context, "ohne");
     assert(!ncm_regex_search(&context.regex, choros.data, choros.len));
     assert(ncm_regex_search(&context.regex, ohne.data, ohne.len));
-    assert(strstr(choros.data, "John Neschling") != NULL);
-    assert(strstr(choros.data, "Choros No 6") != NULL);
-    assert(strstr(ohne.data, "Rammstein") != NULL);
-    assert(strstr(ohne.data, "Ohne Dich") != NULL);
+    assert(MEMMEM(choros.data, choros_len, "John Neschling") != NULL);
+    assert(MEMMEM(choros.data, choros_len, "Choros No 6") != NULL);
+    assert(MEMMEM(ohne.data, ohne_len, "Rammstein") != NULL);
+    assert(MEMMEM(ohne.data, ohne_len, "Ohne Dich") != NULL);
 
     search_context_destroy(&context);
     sb_free(&ohne);
