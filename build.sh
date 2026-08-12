@@ -8,11 +8,11 @@ cd "$dir" || exit
 # shellcheck source=./cbase/common.sh
 . ./cbase/common.sh
 
-program=$(get_program "$0")
+program=$(common_get_program "$0")
 script=$(basename "$0")
-build_parse_args "$@"
+common_build_parse_args "$@"
 
-build_print_invocation "$script"
+common_build_print_invocation "$script"
 
 PREFIX="${PREFIX:-/usr/local}"
 DESTDIR="${DESTDIR:-/}"
@@ -20,7 +20,7 @@ DESTDIR="${DESTDIR:-/}"
 exe="bin/${program}"
 mkdir -p "$(dirname "$exe")"
 
-CC=$(get_compiler "$mode")
+CC=$(common_get_compiler "$mode")
 
 CPPFLAGS="$CPPFLAGS -I$dir -I$dir/src -I$dir/cbase"
 
@@ -57,7 +57,7 @@ CFLAGS="$CFLAGS -pthread"
 LDFLAGS="$LDFLAGS -lm"
 
 die() {
-    error '%s\n' "$1"
+    common_error '%s\n' "$1"
     exit 1
 }
 
@@ -132,7 +132,7 @@ modes:
   debug              build with CFLAGS=-g3 -Og (default)
   fast_feedback      build with clang warning checks
   check              run the clang static analyzer
-  test               build and run all tests
+  test                      build and run all tests
   install            build and install the program and documentation
   uninstall          remove installed program and documentation
   clean              remove bin/
@@ -197,7 +197,7 @@ test)
     require_command "$CC"
     CPPFLAGS="$CPPFLAGS -I$dir/tests"
     TEST_REQUIRE_TESTING_MARKER=0
-    test "$target" tests
+    common_test "$target" tests
     ;;
 install)
     if [ ! -f "$exe" ]; then
