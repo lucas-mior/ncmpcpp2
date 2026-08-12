@@ -22,7 +22,7 @@ mkdir -p "$(dirname "$exe")"
 
 CC=$(common_get_compiler "$mode")
 
-CPPFLAGS="$CPPFLAGS -I$dir -I$dir/src -I$dir/cbase"
+CPPFLAGS="$CPPFLAGS -I. -Isrc -Icbase"
 
 CFLAGS="$CFLAGS -std=c11"
 CFLAGS="$CFLAGS -Wfatal-errors"
@@ -289,7 +289,7 @@ check)
     exit
     ;;
 test)
-    CPPFLAGS="$CPPFLAGS -I$dir/tests"
+    CPPFLAGS="$CPPFLAGS -Itests"
     TEST_REQUIRE_TESTING_MARKER=0
     common_test "$target" tests
     ;;
