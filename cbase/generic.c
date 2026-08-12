@@ -93,7 +93,7 @@ snprint_0(char *restrict buf, int64 bufSize, ... /* strings, NULL */) {
     char *dst = buf;
     char *s;
 
-    assert(bufSize >= 0);
+    ASSERT(bufSize >= 0);
     if (bufSize) {
         remainingLen = bufSize - 1;
     } else {
@@ -136,9 +136,9 @@ static inline char *
 toString(char *restrict buf, int64 bufSize, char *restrict fmt, ...) {
     va_list ap;
 
-    assert(buf);
-    assert(bufSize > 0);
-    assert(fmt);
+    ASSERT(buf);
+    ASSERT(bufSize > 0);
+    ASSERT(fmt);
 
     va_start(ap, fmt);
     vsnprintf(buf, (size_t)bufSize, fmt, ap);
@@ -711,23 +711,23 @@ main(void) {
         FILE *fp;
         int n;
 
-        assert(strequal(S_(a), "i"));
-        assert(strequal(S_(b), "able"));
-        assert(strequal(S_(c), "1"));
-        assert(strequal(S_((uint)42), "42"));
-        assert(strequal(S_((long)-42), "-42"));
-        assert(strequal(S_((ullong)42), "42"));
-        assert(strequal(S_(true), "1"));
-        assert(strequal(S_(false), "0"));
-        assert(strequal(SF("0x%02x", 10), "0x0a"));
+        ASSERT(strequal(S_(a), "i"));
+        ASSERT(strequal(S_(b), "able"));
+        ASSERT(strequal(S_(c), "1"));
+        ASSERT(strequal(S_((uint)42), "42"));
+        ASSERT(strequal(S_((long)-42), "-42"));
+        ASSERT(strequal(S_((ullong)42), "42"));
+        ASSERT(strequal(S_(true), "1"));
+        ASSERT(strequal(S_(false), "0"));
+        ASSERT(strequal(SF("0x%02x", 10), "0x0a"));
 
         n = snprint(buf, SIZEOF(buf),
                     "Now you can insert var" V(a) V(b) "s in situ:\n"
                     V(c) " divided by " V(d) " equals " V(c/d) "\n");
-        assert(n == strlen2("Now you can insert variables in situ:\n"
+        ASSERT(n == strlen2("Now you can insert variables in situ:\n"
                             "1 divided by 8 equals 0.125\n"));
 
-        assert(strequal(buf, "Now you can insert variables in situ:\n"
+        ASSERT(strequal(buf, "Now you can insert variables in situ:\n"
                             "1 divided by 8 equals 0.125\n"));
 
         n = snprint(buf, SIZEOF(buf),
@@ -735,32 +735,32 @@ main(void) {
         snprintf(expected, SIZEOF(expected),
                  "This is %s It's %lu characters long\n",
                  e, (ulong)strlen(e));
-        assert(n == strlen2(expected));
-        assert(strequal(buf, expected));
+        ASSERT(n == strlen2(expected));
+        ASSERT(strequal(buf, expected));
 
         n = snprint(buf, SIZEOF(buf),
                     "custom " VF("%04i", c) " " VF("%c", a) "\n");
-        assert(n == strlen2("custom 0001 i\n"));
-        assert(strequal(buf, "custom 0001 i\n"));
+        ASSERT(n == strlen2("custom 0001 i\n"));
+        ASSERT(strequal(buf, "custom 0001 i\n"));
 
         n = snprint(small2, SIZEOF(small2), "prefix-" W(e));
-        assert(n == (int)(strlen("prefix-") + strlen(e)));
-        assert(strequal(small2, "prefix-"));
+        ASSERT(n == (int)(strlen("prefix-") + strlen(e)));
+        ASSERT(strequal(small2, "prefix-"));
 
         fp = tmpfile();
-        assert(fp);
+        ASSERT(fp);
         n = fprint(fp, "file ", V(c), " ", VF("%04i", c), "\n");
-        assert(n == strlen2("file 1 0001\n"));
+        ASSERT(n == strlen2("file 1 0001\n"));
         rewind(fp);
-        assert(fgets(buf, SIZEOF(buf), fp));
-        assert(strequal(buf, "file 1 0001\n"));
+        ASSERT(fgets(buf, SIZEOF(buf), fp));
+        ASSERT(strequal(buf, "file 1 0001\n"));
         fclose(fp);
 
         n = print0("print ", V(a), " ", W(b), "\n");
-        assert(n == strlen2("print i able\n"));
+        ASSERT(n == strlen2("print i able\n"));
         {
             char buffer[16];
-            assert((print0(V(c), "\n")
+            ASSERT((print0(V(c), "\n")
                     == snprintf(buffer, SIZEOF(buffer), "%d\n", c)));
         }
         print0("PRINTING a=", V(a), "; b=", V(b), "\n");
