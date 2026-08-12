@@ -215,6 +215,8 @@ SUBDIR_SOURCES=$subdir_sources"
         printf '%s\n' "$debug_flags" > "$debug_flags_file"
     fi
 
+    compile_pids=
+
     for subdir_source in $subdir_sources; do
         subdir_object="$objdir/${subdir_source%.c}.o"
         source_dir=$(dirname "$subdir_source")
@@ -230,15 +232,18 @@ SUBDIR_SOURCES=$subdir_sources"
                     -newer "$subdir_object" -print | grep -q . \
                 || find cbase -type f -newer "$subdir_object" \
                     -print | grep -q .; then
-            trace_on
-            $CC \
-                $CPPFLAGS \
-                $PKG_CFLAGS \
-                $READLINE_CFLAGS \
-                $CFLAGS \
-                -c "$subdir_source" \
-                -o "$subdir_object"
-            trace_off
+            (
+                trace_on
+                $CC \
+                    $CPPFLAGS \
+                    $PKG_CFLAGS \
+                    $READLINE_CFLAGS \
+                    $CFLAGS \
+                    -c "$subdir_source" \
+                    -o "$subdir_object"
+                trace_off
+            ) &
+            compile_pids="$compile_pids $!"
         fi
     done
 
@@ -249,16 +254,29 @@ SUBDIR_SOURCES=$subdir_sources"
             || find src -mindepth 2 -maxdepth 2 -type f -name '*.h' \
                 -newer "$main_obj" -print | grep -q . \
             || find cbase -type f -newer "$main_obj" -print | grep -q .; then
-        trace_on
-        $CC \
-            $CPPFLAGS \
-            $PKG_CFLAGS \
-            $READLINE_CFLAGS \
-            $CFLAGS \
-            -DNCMPCPP_INCREMENTAL_BUILD=1 \
-            -c src/main.c \
-            -o "$main_obj"
-        trace_off
+        (
+            trace_on
+            $CC \
+                $CPPFLAGS \
+                $PKG_CFLAGS \
+                $READLINE_CFLAGS \
+                $CFLAGS \
+                -DNCMPCPP_INCREMENTAL_BUILD=1 \
+                -c src/main.c \
+                -o "$main_obj"
+            trace_off
+        ) &
+        compile_pids="$compile_pids $!"
+    fi
+
+    compile_failed=0
+    for compile_pid in $compile_pids; do
+        if ! wait "$compile_pid"; then
+            compile_failed=1
+        fi
+    done
+    if [ "$compile_failed" != 0 ]; then
+        exit 1
     fi
 
     trace_on
