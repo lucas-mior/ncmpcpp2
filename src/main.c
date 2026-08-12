@@ -14,6 +14,11 @@
 #include "curses/nc_curses.c"
 #endif
 
+#include "screens/nc_screens.h"
+#if !defined(PROJECT_INCREMENTAL_BUILD)
+#include "screens/nc_screens.c"
+#endif
+
 #include "app_legacy_bridge.h"
 #include "bindings.h"
 #include "configuration.h"
@@ -36,11 +41,6 @@
 #include "lastfm_service.c"
 #include "lyrics_fetcher.c"
 #include "screen_actions.c"
-
-#include "screens/nc_screens.h"
-#if !defined(PROJECT_INCREMENTAL_BUILD)
-#include "screens/nc_screens.c"
-#endif
 
 #include "settings.c"
 #include "settings_types.c"
