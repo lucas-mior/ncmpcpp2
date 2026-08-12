@@ -123,32 +123,6 @@ load_package_flags() {
     return 0
 }
 
-show_help() {
-    cat <<EOF_HELP
-usage: ./$script <mode> [target]
-
-modes:
-  build              build with CFLAGS=-O2 -flto
-  debug              build with CFLAGS=-g3 -Og (default)
-  fast_feedback      build with clang warning checks
-  check              run the clang static analyzer
-  test                      build and run all tests
-  install            build and install the program and documentation
-  uninstall          remove installed program and documentation
-  clean              remove bin/
-  help               show this help
-
-common variables:
-  PREFIX             install prefix, default: /usr/local
-  DESTDIR            destination root, default: /
-  CPPFLAGS           extra preprocessor flags
-  CFLAGS             extra compiler flags
-  LDFLAGS            extra linker flags and libraries
-EOF_HELP
-
-    return 0
-}
-
 case "$mode" in
 debug|test)
     CFLAGS="$CFLAGS -g3 -Og -DDEBUGGING=1"
@@ -227,12 +201,8 @@ uninstall)
 clean)
     rm -rf bin/
     ;;
-help|-h|--help)
-    show_help
-    ;;
 *)
     printf 'unknown mode: %s\n\n' "$mode" >&2
-    show_help >&2
     exit 1
     ;;
 esac
