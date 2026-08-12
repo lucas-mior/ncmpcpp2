@@ -144,87 +144,109 @@ debug)
 
     objdir="bin/obj/$mode"
     main_obj="$objdir/src/main.o"
-    c_obj="$objdir/src/c/ncm_c.o"
-    curses_obj="$objdir/src/curses/nc_curses.o"
-    screens_obj="$objdir/src/screens/nc_screens.o"
     debug_flags_file="$objdir/flags"
+    subdir_sources=
+    subdir_objects=
 
-    mkdir -p \
-        "$(dirname "$main_obj")" \
-        "$(dirname "$c_obj")" \
-        "$(dirname "$curses_obj")" \
-        "$(dirname "$screens_obj")"
+    for source_dir in src/*; do
+        if [ ! -d "$source_dir" ]; then
+            continue
+        fi
+
+        source_subdir=${source_dir#src/}
+        wrapper_src=
+
+        for source_file in "$source_dir"/*.c; do
+            if [ ! -f "$source_file" ]; then
+                continue
+            fi
+
+            if awk -v source_subdir="$source_subdir" '
+                /^[[:space:]]*#[[:space:]]*include[[:space:]]*"/ {
+                    include = $0
+                    sub(/^[^"]*"/, "", include)
+                    sub(/".*$/, "", include)
+
+                    pattern = "^" source_subdir "/.*\\.c$"
+                    if (include ~ pattern) {
+                        found = 1
+                    }
+                }
+                END { exit !found }
+            ' "$source_file"; then
+                if [ -n "$wrapper_src" ]; then
+                    die "multiple incremental source files in $source_dir"
+                fi
+
+                wrapper_src=$source_file
+            fi
+        done
+
+        if [ -n "$wrapper_src" ]; then
+            subdir_sources="$subdir_sources $wrapper_src"
+            subdir_objects="$subdir_objects $objdir/${wrapper_src%.c}.o"
+        fi
+    done
+
+    if [ -z "$subdir_sources" ]; then
+        die "no incremental source files found under src subfolders"
+    fi
+
+    mkdir -p "$(dirname "$main_obj")"
+
+    for subdir_object in $subdir_objects; do
+        mkdir -p "$(dirname "$subdir_object")"
+    done
 
     debug_flags="CC=$CC
 CPPFLAGS=$CPPFLAGS
 PKG_CFLAGS=$PKG_CFLAGS
 READLINE_CFLAGS=$READLINE_CFLAGS
-CFLAGS=$CFLAGS"
+CFLAGS=$CFLAGS
+SUBDIR_SOURCES=$subdir_sources"
     if [ ! -f "$debug_flags_file" ] \
             || ! printf '%s\n' "$debug_flags" \
                 | cmp -s - "$debug_flags_file"; then
-        rm -f "$main_obj" "$c_obj" "$curses_obj" "$screens_obj"
+        rm -f "$main_obj"
+        for subdir_object in $subdir_objects; do
+            rm -f "$subdir_object"
+        done
+
         printf '%s\n' "$debug_flags" > "$debug_flags_file"
     fi
 
-    if [ ! -f "$c_obj" ] \
-            || find src/c -maxdepth 1 -type f \
-                \( -name '*.c' -o -name '*.h' \) \
-                -newer "$c_obj" -print | grep -q . \
-            || find cbase -type f -newer "$c_obj" -print | grep -q .; then
-        trace_on
-        $CC \
-            $CPPFLAGS \
-            $PKG_CFLAGS \
-            $READLINE_CFLAGS \
-            $CFLAGS \
-            -c src/c/ncm_c.c \
-            -o "$c_obj"
-        trace_off
-    fi
+    for subdir_source in $subdir_sources; do
+        subdir_object="$objdir/${subdir_source%.c}.o"
+        source_dir=$(dirname "$subdir_source")
 
-    if [ ! -f "$curses_obj" ] \
-            || find src/curses -maxdepth 1 -type f \
-                \( -name '*.c' -o -name '*.h' \) \
-                -newer "$curses_obj" -print | grep -q . \
-            || find cbase -type f -newer "$curses_obj" -print | grep -q .; then
-        trace_on
-        $CC \
-            $CPPFLAGS \
-            $PKG_CFLAGS \
-            $READLINE_CFLAGS \
-            $CFLAGS \
-            -c src/curses/nc_curses.c \
-            -o "$curses_obj"
-        trace_off
-    fi
-
-    if [ ! -f "$screens_obj" ] \
-            || find src/screens -maxdepth 1 -type f \
-                \( -name '*.c' -o -name '*.h' \) \
-                -newer "$screens_obj" -print | grep -q . \
-            || find src/curses -maxdepth 1 -type f -name '*.h' \
-                -newer "$screens_obj" -print | grep -q . \
-            || find src/c -maxdepth 1 -type f -name '*.h' \
-                -newer "$screens_obj" -print | grep -q . \
-            || find cbase -type f -newer "$screens_obj" -print | grep -q .; then
-        trace_on
-        $CC \
-            $CPPFLAGS \
-            $PKG_CFLAGS \
-            $READLINE_CFLAGS \
-            $CFLAGS \
-            -c src/screens/nc_screens.c \
-            -o "$screens_obj"
-        trace_off
-    fi
+        if [ ! -f "$subdir_object" ] \
+                || find "$source_dir" -maxdepth 1 -type f \
+                    \( -name '*.c' -o -name '*.h' \) \
+                    -newer "$subdir_object" -print | grep -q . \
+                || find src -mindepth 2 -maxdepth 2 -type f \
+                    -name '*.h' \
+                    -newer "$subdir_object" -print | grep -q . \
+                || find src -maxdepth 1 -type f -name '*.h' \
+                    -newer "$subdir_object" -print | grep -q . \
+                || find cbase -type f -newer "$subdir_object" \
+                    -print | grep -q .; then
+            trace_on
+            $CC \
+                $CPPFLAGS \
+                $PKG_CFLAGS \
+                $READLINE_CFLAGS \
+                $CFLAGS \
+                -c "$subdir_source" \
+                -o "$subdir_object"
+            trace_off
+        fi
+    done
 
     if [ ! -f "$main_obj" ] \
             || find src -maxdepth 1 -type f \
                 \( -name '*.c' -o -name '*.h' \) \
                 -newer "$main_obj" -print | grep -q . \
-            || find src/c src/curses src/screens -maxdepth 1 \
-                -type f -name '*.h' \
+            || find src -mindepth 2 -maxdepth 2 -type f -name '*.h' \
                 -newer "$main_obj" -print | grep -q . \
             || find cbase -type f -newer "$main_obj" -print | grep -q .; then
         trace_on
@@ -243,9 +265,7 @@ CFLAGS=$CFLAGS"
     $CC \
         -o "$exe" \
         "$main_obj" \
-        "$c_obj" \
-        "$curses_obj" \
-        "$screens_obj" \
+        $subdir_objects \
         $READLINE_LIBS \
         $PKG_LIBS \
         $LDFLAGS
