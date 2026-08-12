@@ -23,8 +23,7 @@ static bool UNUSED timezone_initialized = false;
 static time_t UNUSED timezone_offset = 0;
 static int64 UNUSED here_counter = 0;
 
-#define error(...) \
-    error_impl(__FILE__, __LINE__, FUNC__, __VA_ARGS__)
+#define error(...)  error_impl(__FILE__, __LINE__, FUNC__, __VA_ARGS__)
 #define error2(...) fprintf(stderr, __VA_ARGS__)
 extern int32 optional_strlen32(char *);
 extern int32 strlen32(char *);
