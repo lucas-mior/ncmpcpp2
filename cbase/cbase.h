@@ -17,7 +17,7 @@
 #include "primitives.h"
 #include "base_macros.h"
 
-static char *program = __FILE__;
+static char UNUSED *program = __FILE__;
 static int32 UNUSED program_len;
 static bool UNUSED timezone_initialized = false;
 static time_t UNUSED timezone_offset = 0;
