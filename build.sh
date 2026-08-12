@@ -252,6 +252,7 @@ SUBDIR_SOURCES=$subdir_sources"
 
     trace_on
     $CC \
+        $CFLAGS \
         -o "$exe" \
         "$main_obj" \
         $subdir_objects \
