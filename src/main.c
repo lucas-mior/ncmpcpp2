@@ -27,9 +27,8 @@
 #include "configuration.c"
 #include "curl_handle.c"
 
-#if defined(PROJECT_INCREMENTAL_BUILD)
 #include "curses/nc_curses.h"
-#else
+#if !defined(PROJECT_INCREMENTAL_BUILD)
 #include "curses/nc_curses.c"
 #endif
 
