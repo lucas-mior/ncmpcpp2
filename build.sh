@@ -10,9 +10,9 @@ cd "$dir" || exit
 
 program=$(get_program "$0")
 script=$(basename "$0")
-target="${1:-debug}"
+build_parse_args "$@"
 
-printf "\n${script} ${RED}${1:-} ${2:-}$RES\n"
+build_print_invocation "$script"
 
 PREFIX="${PREFIX:-/usr/local}"
 DESTDIR="${DESTDIR:-/}"
@@ -20,7 +20,7 @@ DESTDIR="${DESTDIR:-/}"
 exe="bin/${program}"
 mkdir -p "$(dirname "$exe")"
 
-CC=$(get_compiler "$target")
+CC=$(get_compiler "$mode")
 
 CPPFLAGS="$CPPFLAGS -I$dir -I$dir/src -I$dir/cbase"
 
@@ -125,9 +125,9 @@ load_package_flags() {
 
 show_help() {
     cat <<EOF_HELP
-usage: ./$script <target>
+usage: ./$script <mode> [target]
 
-targets:
+modes:
   build              build with CFLAGS=-O2 -flto
   debug              build with CFLAGS=-g3 -Og (default)
   fast_feedback      build with clang warning checks
@@ -149,7 +149,7 @@ EOF_HELP
     return 0
 }
 
-case "$target" in
+case "$mode" in
 debug|test)
     CFLAGS="$CFLAGS -g3 -Og -DDEBUGGING=1"
     ;;
@@ -163,7 +163,7 @@ check)
     ;;
 esac
 
-case "$target" in
+case "$mode" in
 debug|build|fast_feedback)
     load_package_flags
     require_command "$CC"
@@ -197,7 +197,7 @@ test)
     require_command "$CC"
     CPPFLAGS="$CPPFLAGS -I$dir/tests"
     TEST_REQUIRE_TESTING_MARKER=0
-    test "$2" tests
+    test "$target" tests
     ;;
 install)
     if [ ! -f "$exe" ]; then
@@ -231,7 +231,7 @@ help|-h|--help)
     show_help
     ;;
 *)
-    printf 'unknown target: %s\n\n' "$target" >&2
+    printf 'unknown mode: %s\n\n' "$mode" >&2
     show_help >&2
     exit 1
     ;;
