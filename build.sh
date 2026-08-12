@@ -65,7 +65,7 @@ load_package_flags() {
         taglib_c; then
         missing_packages='libmpdclient >= 2.8, ncursesw, fftw3 >= 3,'
         missing_packages="$missing_packages libcurl, taglib_c"
-        common_error "missing pkg-config packages: $missing_packages"
+        error "missing pkg-config packages: $missing_packages"
         exit 1
     fi
 
@@ -144,7 +144,7 @@ debug)
                 END { exit !found }
             ' "$source_file"; then
                 if [ -n "$wrapper_src" ]; then
-                    common_error "multiple incremental source files in $source_dir"
+                    error "multiple incremental source files in $source_dir"
                     exit 1
                 fi
 
@@ -159,7 +159,7 @@ debug)
     done
 
     if [ -z "$subdir_sources" ]; then
-        common_error "no incremental source files found under src subfolders"
+        error "no incremental source files found under src subfolders"
         exit 1
     fi
 
