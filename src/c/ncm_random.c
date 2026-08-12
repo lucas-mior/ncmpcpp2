@@ -3,8 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_random.h"
+#include "c/ncm_c.h"
 
 static uint64
 ncm_random_splitmix64(uint64 *state) {

@@ -3,8 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_fs.h"
-#include "c/ncm_string.h"
+#include "c/ncm_c.h"
 
 static bool
 ncm_fs_path_copy(char *path, int32 path_len, char **copy, NcmError *ncm_error) {

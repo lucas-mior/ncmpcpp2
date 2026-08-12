@@ -4,11 +4,9 @@
 #include "cbase.h"
 
 #include "app_controller.h"
-#include "c/ncm_base.h"
-#include "c/ncm_display.h"
-#include "c/ncm_type_conversions.h"
+#include "c/ncm_c.h"
 #include "global.h"
-#include "screens/nc_playlist.h"
+#include "screens/nc_screens.h"
 #include "settings.h"
 #include "status.h"
 #include "statusbar.h"

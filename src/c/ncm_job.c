@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_job.h"
+#include "c/ncm_c.h"
 
 static void
 ncm_job_set_errno_error(NcmError *ncm_error, int32 code, char *operation) {

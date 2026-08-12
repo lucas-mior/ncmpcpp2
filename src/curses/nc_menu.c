@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "curses/nc_menu.h"
+#include "curses/nc_curses.h"
 
 #define NC_MENU_SCROLL_DEPTH_MARGIN 4
 

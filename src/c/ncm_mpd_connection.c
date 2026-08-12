@@ -3,8 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_mpd_connection.h"
+#include "c/ncm_c.h"
 
 static void
 ncm_mpd_connection_cstring_copy(char *dst, int32 dst_cap, char *src) {

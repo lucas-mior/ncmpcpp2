@@ -3,11 +3,8 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_comparators.h"
-#include "c/ncm_display.h"
-#include "c/ncm_string.h"
-#include "screens/nc_search_engine.h"
+#include "c/ncm_c.h"
+#include "screens/nc_screens.h"
 #include "settings.h"
 #include "ui_state.h"
 

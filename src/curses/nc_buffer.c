@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "curses/nc_buffer.h"
+#include "curses/nc_curses.h"
 
 static void nc_buffer_reserve(NcBuffer *buffer, int32 extra);
 static void nc_buffer_add_property(NcBuffer *buffer,

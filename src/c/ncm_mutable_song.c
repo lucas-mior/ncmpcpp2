@@ -3,9 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_mutable_song.h"
-#include "c/ncm_string.h"
+#include "c/ncm_c.h"
 
 static void ncm_mutable_song_tag_init(NcmMutableSongTag *tag);
 

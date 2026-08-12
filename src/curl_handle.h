@@ -5,7 +5,7 @@
 
 #include <curl/curl.h>
 
-#include "c/ncm_defs.h"
+#include "c/ncm_c.h"
 
 typedef struct NcmCurlResponseWriter {
     StrBuilder *buffer;

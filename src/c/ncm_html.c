@@ -3,8 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_html.h"
-#include "c/ncm_string.h"
+#include "c/ncm_c.h"
 
 typedef struct HtmlEntity {
     char *from;

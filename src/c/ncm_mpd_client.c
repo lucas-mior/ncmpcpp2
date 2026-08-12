@@ -3,8 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_mpd_client.h"
-#include "c/ncm_regex.h"
+#include "c/ncm_c.h"
 
 static void
 ncm_mpd_client_set_buffer(StrBuilder *buffer, char *string, int32 string_len) {

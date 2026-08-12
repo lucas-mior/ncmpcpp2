@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_search_prompt.h"
+#include "c/ncm_c.h"
 
 void
 ncm_search_prompt_state_init(NcmSearchPromptState *state,

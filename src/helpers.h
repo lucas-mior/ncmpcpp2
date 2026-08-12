@@ -3,10 +3,8 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_enums.h"
-#include "c/ncm_mpd_connection.h"
-#include "curses/nc_menu.h"
+#include "c/ncm_c.h"
+#include "curses/nc_curses.h"
 
 enum NcmReapplyFilter {
     NCM_REAPPLY_FILTER_YES,

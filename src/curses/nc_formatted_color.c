@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "curses/nc_formatted_color.h"
+#include "curses/nc_curses.h"
 
 void
 nc_formatted_color_init(NcFormattedColor *formatted_color) {

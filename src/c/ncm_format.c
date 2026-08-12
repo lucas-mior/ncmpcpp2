@@ -3,9 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_format.h"
-#include "c/ncm_string.h"
-#include "c/ncm_type_conversions.h"
+#include "c/ncm_c.h"
 
 static void ncm_format_expr_init(NcmFormatExpr *expr);
 static void ncm_format_expr_destroy(NcmFormatExpr *expr);

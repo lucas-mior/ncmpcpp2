@@ -5,8 +5,7 @@
 
 #include <curl/curl.h>
 
-#include "c/ncm_array.h"
-#include "c/ncm_defs.h"
+#include "c/ncm_c.h"
 
 #define NCM_LYRICS_FETCHER_LIST(X) \
     X(AMALGAMA, "amalgama-lab.com") \

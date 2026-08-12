@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
+#include "c/ncm_c.h"
 #include "settings.h"
 
 static NcmArrayItemCallbacks settings_no_callbacks = {0};

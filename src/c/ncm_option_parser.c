@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_option_parser.h"
+#include "c/ncm_c.h"
 
 static bool
 ncm_option_is_word_char(char c) {

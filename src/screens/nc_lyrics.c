@@ -3,15 +3,10 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_charset.h"
-#include "c/ncm_format.h"
-#include "c/ncm_regex.h"
-#include "c/ncm_string.h"
-#include "curses/nc_cyclic_buffer.h"
+#include "c/ncm_c.h"
+#include "curses/nc_curses.h"
 #include "global.h"
-#include "screens/nc_lyrics.h"
-#include "screens/screen_switcher.h"
+#include "screens/nc_screens.h"
 #include "settings.h"
 #include "status.h"
 #include "statusbar.h"

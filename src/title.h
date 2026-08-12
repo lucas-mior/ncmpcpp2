@@ -3,9 +3,8 @@
 
 #include "cbase.h"
 
-#include "c/ncm_defs.h"
-#include "c/ncm_enums.h"
-#include "curses/nc_formatted_color.h"
+#include "c/ncm_c.h"
+#include "curses/nc_curses.h"
 
 void ncm_window_title_write(char *title, int32 title_len);
 void ncm_window_title_set(char *title, int32 title_len);

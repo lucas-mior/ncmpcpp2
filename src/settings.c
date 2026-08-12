@@ -5,13 +5,7 @@
 
 #include <mpd/tag.h>
 
-#include "c/ncm_base.h"
-#include "c/ncm_conversion.h"
-#include "c/ncm_fs.h"
-#include "c/ncm_mpd_client.h"
-#include "c/ncm_option_parser.h"
-#include "c/ncm_string.h"
-#include "c/ncm_type_conversions.h"
+#include "c/ncm_c.h"
 #include "config.h"
 #include "global.h"
 #include "settings.h"

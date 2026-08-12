@@ -4,10 +4,9 @@
 #include "cbase.h"
 
 #include "actions.h"
-#include "c/ncm_defs.h"
-#include "c/ncm_error.h"
-#include "curses/nc_window.h"
-#include "screens/screen_type.h"
+#include "c/ncm_c.h"
+#include "curses/nc_curses.h"
+#include "screens/nc_screens.h"
 
 enum NcmBindingActionKind {
     NCM_BINDING_ACTION_NORMAL,

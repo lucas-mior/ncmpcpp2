@@ -19,7 +19,7 @@
 #error "readline is not available"
 #endif
 
-#include "curses/nc_window.h"
+#include "curses/nc_curses.h"
 
 #define NC_COLOR_COMPONENT_COUNT 256
 #define NC_COLOR_PAIR_MAP_SIZE \

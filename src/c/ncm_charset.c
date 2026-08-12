@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_charset.h"
+#include "c/ncm_c.h"
 
 static StrBuilder
 ncm_charset_copy(char *string, int32 string_len) {

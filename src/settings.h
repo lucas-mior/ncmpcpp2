@@ -5,18 +5,10 @@
 
 #include <mpd/tag.h>
 
-#include "c/ncm_app_arrays.h"
-#include "c/ncm_array.h"
-#include "c/ncm_enums.h"
-#include "c/ncm_error.h"
-#include "c/ncm_format.h"
-#include "c/ncm_regex.h"
-#include "c/ncm_song.h"
-#include "curses/nc_buffer.h"
-#include "curses/nc_formatted_color.h"
-#include "curses/nc_window.h"
+#include "c/ncm_c.h"
+#include "curses/nc_curses.h"
 #include "lyrics_fetcher.h"
-#include "screens/screen_type.h"
+#include "screens/nc_screens.h"
 
 typedef struct Column {
     char *name;

@@ -3,8 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_sample_buffer.h"
+#include "c/ncm_c.h"
 
 void
 ncm_sample_buffer_init(NcmSampleBuffer *buffer) {

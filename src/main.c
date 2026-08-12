@@ -4,7 +4,7 @@
 #define CBASE_IMPLEMENT
 #include "cbase.h"
 
-#include "c/ncm_base.h"
+#include "c/ncm_c.h"
 
 #include "app_legacy_bridge.h"
 #include "bindings.h"
@@ -21,7 +21,6 @@
 #include "bindings.c"
 
 #if defined(PROJECT_INCREMENTAL_BUILD)
-#include "c/ncm_c.h"
 #else
 #include "c/ncm_c.c"
 #endif

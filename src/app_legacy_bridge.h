@@ -5,9 +5,9 @@
 
 #include "actions.h"
 #include "bindings.h"
-#include "c/ncm_defs.h"
-#include "curses/nc_window.h"
-#include "screens/screen_type.h"
+#include "c/ncm_c.h"
+#include "curses/nc_curses.h"
+#include "screens/nc_screens.h"
 
 void ncmpcpp_init_screen(bool enable_colors, bool enable_mouse);
 void ncmpcpp_destroy_screen(void);

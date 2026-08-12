@@ -3,16 +3,10 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_charset.h"
-#include "c/ncm_comparators.h"
-#include "c/ncm_display.h"
-#include "c/ncm_format.h"
-#include "c/ncm_string.h"
+#include "c/ncm_c.h"
 #include "global.h"
 #include "helpers.h"
-#include "screens/nc_media_library.h"
-#include "screens/screen_switcher.h"
+#include "screens/nc_screens.h"
 #include "settings.h"
 #include "status.h"
 #include "statusbar.h"

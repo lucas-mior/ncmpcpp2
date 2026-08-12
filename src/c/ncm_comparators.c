@@ -3,8 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_comparators.h"
+#include "c/ncm_c.h"
 
 static bool
 ncm_compare_has_the_word(char *string, int32 string_len) {

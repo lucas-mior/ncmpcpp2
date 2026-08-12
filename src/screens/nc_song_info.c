@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "screens/nc_song_info.h"
+#include "screens/nc_screens.h"
 
 static void nc_song_info_switch_to(NcScreen *screen);
 static void nc_song_info_resize(NcScreen *screen);

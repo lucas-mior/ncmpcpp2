@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "screens/nc_outputs.h"
+#include "screens/nc_screens.h"
 
 static NcMenuItemCallbacks nc_outputs_item_callbacks(void);
 static NcMenuDisplayCallbacks nc_outputs_display_callbacks(void);

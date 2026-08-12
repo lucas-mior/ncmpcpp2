@@ -3,8 +3,8 @@
 
 #include "cbase.h"
 
-#include "c/ncm_string.h"
-#include "screens/screen_type.h"
+#include "c/ncm_c.h"
+#include "screens/nc_screens.h"
 
 int32
 screen_type_to_nc_type(enum ScreenType screen_type) {
