@@ -14,12 +14,14 @@
 #include "title.h"
 #include "ui_state.h"
 
-/* Single translation unit source inclusions. */
 #include "actions.c"
 #include "app_controller.c"
 #include "app_legacy_bridge.c"
 #include "app_state.c"
 #include "bindings.c"
+#if defined(NCMPCPP_INCREMENTAL_BUILD)
+#include "c/ncm_c.h"
+#else
 #include "c/ncm_app_arrays.c"
 #include "c/ncm_charset.c"
 #include "c/ncm_comparators.c"
@@ -53,8 +55,12 @@
 #include "c/ncm_tags.c"
 #include "c/ncm_time.c"
 #include "c/ncm_type_conversions.c"
+#endif
 #include "configuration.c"
 #include "curl_handle.c"
+#if defined(NCMPCPP_INCREMENTAL_BUILD)
+#include "curses/nc_curses.h"
+#else
 #include "curses/nc_app_menus.c"
 #include "curses/nc_buffer.c"
 #include "curses/nc_cyclic_buffer.c"
@@ -62,11 +68,15 @@
 #include "curses/nc_menu.c"
 #include "curses/nc_scrollpad.c"
 #include "curses/nc_window.c"
+#endif
 #include "global.c"
 #include "helpers.c"
 #include "lastfm_service.c"
 #include "lyrics_fetcher.c"
 #include "screen_actions.c"
+#if defined(NCMPCPP_INCREMENTAL_BUILD)
+#include "screens/nc_screens.h"
+#else
 #include "screens/app_screens.c"
 #include "screens/nc_browser.c"
 #include "screens/nc_help.c"
@@ -88,6 +98,7 @@
 #include "screens/nc_tiny_tag_editor.c"
 #include "screens/nc_visualizer.c"
 #include "screens/screen_type.c"
+#endif
 #include "settings.c"
 #include "settings_types.c"
 #include "status.c"
