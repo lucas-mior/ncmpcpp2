@@ -99,6 +99,7 @@
 #include "screens/nc_visualizer.c"
 #include "screens/screen_type.c"
 #endif
+
 #include "settings.c"
 #include "settings_types.c"
 #include "status.c"
