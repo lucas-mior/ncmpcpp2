@@ -28,7 +28,7 @@ CFLAGS="$CFLAGS -std=c11"
 CFLAGS="$CFLAGS -Wfatal-errors"
 CFLAGS="$CFLAGS -Wextra -Wall"
 CFLAGS="$CFLAGS -Werror=all -Werror=extra"
-# CFLAGS="$CFLAGS -Werror"  # Only uncomment occasionally, keep this line
+CFLAGS="$CFLAGS -Werror"  # Only uncomment occasionally, keep this line
 
 if [ "$CC" = "clang" ] || [ "$CC" = "zig cc" ]; then
     CFLAGS="$CFLAGS -Weverything"
@@ -56,11 +56,6 @@ CFLAGS="$CFLAGS -pthread"
 
 LDFLAGS="$LDFLAGS -lm"
 
-die() {
-    common_error '%s\n' "$1"
-    exit 1
-}
-
 load_package_flags() {
     if ! pkg-config --exists \
         'libmpdclient >= 2.8' \
@@ -70,7 +65,8 @@ load_package_flags() {
         taglib_c; then
         missing_packages='libmpdclient >= 2.8, ncursesw, fftw3 >= 3,'
         missing_packages="$missing_packages libcurl, taglib_c"
-        die "missing pkg-config packages: $missing_packages"
+        common_error "missing pkg-config packages: $missing_packages"
+        exit 1
     fi
 
     PKG_CFLAGS=$(pkg-config --cflags \
@@ -148,7 +144,8 @@ debug)
                 END { exit !found }
             ' "$source_file"; then
                 if [ -n "$wrapper_src" ]; then
-                    die "multiple incremental source files in $source_dir"
+                    common_error "multiple incremental source files in $source_dir"
+                    exit 1
                 fi
 
                 wrapper_src=$source_file
@@ -162,7 +159,8 @@ debug)
     done
 
     if [ -z "$subdir_sources" ]; then
-        die "no incremental source files found under src subfolders"
+        common_error "no incremental source files found under src subfolders"
+        exit 1
     fi
 
     mkdir -p "$(dirname "$main_obj")"
