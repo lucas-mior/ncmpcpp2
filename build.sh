@@ -274,14 +274,7 @@ test)
     common_test "$target" tests
     ;;
 install)
-    if [ ! -f "$exe" ]; then
-        "$0" build
-    elif find src cbase -type f \
-        \( -name '*.c' -o -name '*.h' \) \
-        -newer "$exe" -print \
-        | grep -q .; then
-        "$0" build
-    fi
+    "$0" build
 
     install -d "${DESTDIR}${PREFIX}/bin"
     install -m 755 "$exe" "${DESTDIR}${PREFIX}/bin/$program"
@@ -299,6 +292,7 @@ uninstall)
     rm -rf "${DESTDIR}${PREFIX}/share/doc/$program"
     ;;
 clean)
+    rm -rf bin/obj/
     rm -rf bin/
     ;;
 *)
