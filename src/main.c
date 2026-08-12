@@ -36,9 +36,9 @@
 #include "lastfm_service.c"
 #include "lyrics_fetcher.c"
 #include "screen_actions.c"
-#if defined(PROJECT_INCREMENTAL_BUILD)
+
 #include "screens/nc_screens.h"
-#else
+#if !defined(PROJECT_INCREMENTAL_BUILD)
 #include "screens/nc_screens.c"
 #endif
 
