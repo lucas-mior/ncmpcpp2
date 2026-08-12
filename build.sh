@@ -90,6 +90,9 @@ load_package_flags() {
         READLINE_LIBS='-lreadline -lhistory'
     fi
 
+    CFLAGS="$CFLAGS $READLINE_CFLAGS"
+    LDFLAGS="$LDFLAGS $READLINE_LIBS"
+
     return 0
 }
 
@@ -115,8 +118,8 @@ debug)
         "$exe" \
         src \
         src/main.c \
-        "$CPPFLAGS $PKG_CFLAGS $READLINE_CFLAGS $CFLAGS" \
-        "$READLINE_LIBS $PKG_LIBS $LDFLAGS"
+        "$CPPFLAGS $PKG_CFLAGS $CFLAGS" \
+        "$PKG_LIBS $LDFLAGS"
     ;;
 build|fast_feedback)
     load_package_flags
@@ -125,11 +128,9 @@ build|fast_feedback)
     $CC \
         $CPPFLAGS \
         $PKG_CFLAGS \
-        $READLINE_CFLAGS \
         $CFLAGS \
         -o "$exe" \
         src/main.c \
-        $READLINE_LIBS \
         $PKG_LIBS \
         $LDFLAGS
     trace_off
