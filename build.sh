@@ -80,15 +80,10 @@ require_command() {
     return 0
 }
 
-pkg_config() {
-    pkg-config "$@"
-    return 0
-}
-
 load_package_flags() {
     require_command pkg-config
 
-    if ! pkg_config --exists \
+    if ! pkg-config --exists \
         'libmpdclient >= 2.8' \
         ncursesw \
         'fftw3 >= 3' \
@@ -99,22 +94,22 @@ load_package_flags() {
         die "missing pkg-config packages: $missing_packages"
     fi
 
-    PKG_CFLAGS=$(pkg_config --cflags \
+    PKG_CFLAGS=$(pkg-config --cflags \
         'libmpdclient >= 2.8' \
         ncursesw \
         'fftw3 >= 3' \
         libcurl \
         taglib_c)
-    PKG_LIBS=$(pkg_config --libs \
+    PKG_LIBS=$(pkg-config --libs \
         'libmpdclient >= 2.8' \
         ncursesw \
         'fftw3 >= 3' \
         libcurl \
         taglib_c)
 
-    if pkg_config --exists readline 2>/dev/null; then
-        READLINE_CFLAGS=$(pkg_config --cflags readline)
-        READLINE_LIBS=$(pkg_config --libs readline)
+    if pkg-config --exists readline 2>/dev/null; then
+        READLINE_CFLAGS=$(pkg-config --cflags readline)
+        READLINE_LIBS=$(pkg-config --libs readline)
     else
         READLINE_CFLAGS=
         READLINE_LIBS='-lreadline -lhistory'
