@@ -281,6 +281,8 @@ main(int32 argc, char **argv) {
     bool key_pressed;
     NcmTimePoint connect_attempt;
 
+    program = argv[0];
+
     app_init_state();
     setlocale(LC_ALL, "");
 
