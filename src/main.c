@@ -19,7 +19,7 @@
 #include "app_legacy_bridge.c"
 #include "app_state.c"
 #include "bindings.c"
-#if defined(NCMPCPP_INCREMENTAL_BUILD)
+#if defined(PROJECT_INCREMENTAL_BUILD)
 #include "c/ncm_c.h"
 #else
 #include "c/ncm_app_arrays.c"
@@ -58,7 +58,7 @@
 #endif
 #include "configuration.c"
 #include "curl_handle.c"
-#if defined(NCMPCPP_INCREMENTAL_BUILD)
+#if defined(PROJECT_INCREMENTAL_BUILD)
 #include "curses/nc_curses.h"
 #else
 #include "curses/nc_app_menus.c"
@@ -74,7 +74,7 @@
 #include "lastfm_service.c"
 #include "lyrics_fetcher.c"
 #include "screen_actions.c"
-#if defined(NCMPCPP_INCREMENTAL_BUILD)
+#if defined(PROJECT_INCREMENTAL_BUILD)
 #include "screens/nc_screens.h"
 #else
 #include "screens/app_screens.c"

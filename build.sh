@@ -256,7 +256,7 @@ SUBDIR_SOURCES=$subdir_sources"
                 $PKG_CFLAGS \
                 $READLINE_CFLAGS \
                 $CFLAGS \
-                -DNCMPCPP_INCREMENTAL_BUILD=1 \
+                -DPROJECT_INCREMENTAL_BUILD=1 \
                 -c src/main.c \
                 -o "$main_obj"
             trace_off
