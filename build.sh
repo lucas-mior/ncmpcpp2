@@ -147,12 +147,25 @@ debug)
     c_obj="$objdir/src/c/ncm_c.o"
     curses_obj="$objdir/src/curses/nc_curses.o"
     screens_obj="$objdir/src/screens/nc_screens.o"
+    debug_flags_file="$objdir/flags"
 
     mkdir -p \
         "$(dirname "$main_obj")" \
         "$(dirname "$c_obj")" \
         "$(dirname "$curses_obj")" \
         "$(dirname "$screens_obj")"
+
+    debug_flags="CC=$CC
+CPPFLAGS=$CPPFLAGS
+PKG_CFLAGS=$PKG_CFLAGS
+READLINE_CFLAGS=$READLINE_CFLAGS
+CFLAGS=$CFLAGS"
+    if [ ! -f "$debug_flags_file" ] \
+            || ! printf '%s\n' "$debug_flags" \
+                | cmp -s - "$debug_flags_file"; then
+        rm -f "$main_obj" "$c_obj" "$curses_obj" "$screens_obj"
+        printf '%s\n' "$debug_flags" > "$debug_flags_file"
+    fi
 
     if [ ! -f "$c_obj" ] \
             || find src/c -maxdepth 1 -type f \
