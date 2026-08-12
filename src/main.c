@@ -31,13 +31,7 @@
 #if defined(PROJECT_INCREMENTAL_BUILD)
 #include "curses/nc_curses.h"
 #else
-#include "curses/nc_app_menus.c"
-#include "curses/nc_buffer.c"
-#include "curses/nc_cyclic_buffer.c"
-#include "curses/nc_formatted_color.c"
-#include "curses/nc_menu.c"
-#include "curses/nc_scrollpad.c"
-#include "curses/nc_window.c"
+#include "curses/nc_curses.c"
 #endif
 #include "global.c"
 #include "helpers.c"
@@ -47,27 +41,7 @@
 #if defined(PROJECT_INCREMENTAL_BUILD)
 #include "screens/nc_screens.h"
 #else
-#include "screens/app_screens.c"
-#include "screens/nc_browser.c"
-#include "screens/nc_help.c"
-#include "screens/nc_lastfm.c"
-#include "screens/nc_lyrics.c"
-#include "screens/nc_media_library.c"
-#include "screens/nc_outputs.c"
-#include "screens/nc_playlist.c"
-#include "screens/nc_playlist_editor.c"
-#include "screens/nc_screen.c"
-#include "screens/nc_screen_switcher.c"
-#include "screens/nc_scrollpad_screen.c"
-#include "screens/nc_search_engine.c"
-#include "screens/nc_sel_items_adder.c"
-#include "screens/nc_server_info.c"
-#include "screens/nc_song_info.c"
-#include "screens/nc_sort_playlist.c"
-#include "screens/nc_tag_editor.c"
-#include "screens/nc_tiny_tag_editor.c"
-#include "screens/nc_visualizer.c"
-#include "screens/screen_type.c"
+#include "screens/nc_screens.c"
 #endif
 
 #include "settings.c"
