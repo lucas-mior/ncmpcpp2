@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "screens/nc_scrollpad_screen.h"
+#include "screens/nc_screens.h"
 
 void
 nc_scrollpad_screen_init(NcScrollpadScreen *screen,

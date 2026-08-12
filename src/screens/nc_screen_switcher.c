@@ -4,7 +4,7 @@
 #include "cbase.h"
 
 #include "app_controller.h"
-#include "screens/screen_switcher.h"
+#include "screens/nc_screens.h"
 #include "title.h"
 
 NcScreen *

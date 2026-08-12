@@ -3,10 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_defs.h"
-#include "c/ncm_enums.h"
-#include "c/ncm_error.h"
-#include "c/ncm_song.h"
+#include "c/ncm_c.h"
 
 enum NcmActionType {
     NCM_ACTION_MACRO_UTILITY = -1,

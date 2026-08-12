@@ -9,7 +9,7 @@
 #include <tag_c.h>
 #endif
 
-#include "c/ncm_taglib.h"
+#include "c/ncm_c.h"
 
 #if defined(HAVE_TAGLIB_H)
 

@@ -5,8 +5,7 @@
 
 #include <mpd/client.h>
 
-#include "c/ncm_taglib.h"
-#include "c/ncm_tags.h"
+#include "c/ncm_c.h"
 
 typedef struct NcmTagsFirstPropertyContext {
     NcmStringView *value;

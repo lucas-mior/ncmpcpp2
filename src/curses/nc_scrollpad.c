@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "curses/nc_scrollpad.h"
+#include "curses/nc_curses.h"
 
 typedef struct NcScrollpadWriteState {
     NcBuffer *buffer;

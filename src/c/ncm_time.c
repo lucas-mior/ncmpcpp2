@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_time.h"
+#include "c/ncm_c.h"
 
 static void
 ncm_time_set_errno_error(NcmError *ncm_error, int32 code, char *operation) {

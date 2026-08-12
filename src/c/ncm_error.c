@@ -3,8 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_error.h"
+#include "c/ncm_c.h"
 
 void
 ncm_error_clear(NcmError *ncm_error) {

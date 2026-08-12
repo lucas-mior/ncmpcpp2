@@ -4,10 +4,9 @@
 #include "cbase.h"
 
 #include "app_controller.h"
-#include "c/ncm_base.h"
+#include "c/ncm_c.h"
 #include "screen_actions.h"
-#include "screens/app_screens.h"
-#include "screens/nc_search_engine.h"
+#include "screens/nc_screens.h"
 #include "settings.h"
 
 static NcScreen *

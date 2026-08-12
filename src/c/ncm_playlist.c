@@ -5,8 +5,7 @@
 
 #include <mpd/client.h>
 
-#include "c/ncm_base.h"
-#include "c/ncm_playlist.h"
+#include "c/ncm_c.h"
 
 void
 ncm_playlist_init(NcmPlaylist *playlist) {

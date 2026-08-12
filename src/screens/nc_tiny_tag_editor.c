@@ -4,11 +4,8 @@
 #include "cbase.h"
 
 #include "app_controller.h"
-#include "c/ncm_base.h"
-#include "c/ncm_string.h"
-#include "c/ncm_type_conversions.h"
-#include "screens/nc_tiny_tag_editor.h"
-#include "screens/screen_switcher.h"
+#include "c/ncm_c.h"
+#include "screens/nc_screens.h"
 #include "settings.h"
 #include "title.h"
 #include "ui_state.h"

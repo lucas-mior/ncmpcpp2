@@ -3,8 +3,8 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "curses/nc_app_menus.h"
+#include "c/ncm_c.h"
+#include "curses/nc_curses.h"
 
 static void ncm_song_menu_item_init(void *item, void *user);
 static void ncm_song_menu_item_copy(void *dest, void *source, void *user);

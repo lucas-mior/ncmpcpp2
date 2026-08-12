@@ -3,11 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_display.h"
-#include "c/ncm_path.h"
-#include "c/ncm_string.h"
-#include "c/ncm_type_conversions.h"
+#include "c/ncm_c.h"
 #include "settings.h"
 
 static StrBuilder ncm_display_column_value(NcmSong *song, Column *column);

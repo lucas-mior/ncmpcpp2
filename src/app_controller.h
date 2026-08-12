@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "screens/nc_screen.h"
+#include "screens/nc_screens.h"
 
 void app_controller_init(void);
 NcScreen *app_controller_current_screen(void);

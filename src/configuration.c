@@ -4,20 +4,12 @@
 #include "cbase.h"
 
 #include "bindings.h"
-#include "c/ncm_app_arrays.h"
-#include "c/ncm_base.h"
-#include "c/ncm_conversion.h"
-#include "c/ncm_format.h"
-#include "c/ncm_fs.h"
-#include "c/ncm_mpd_client.h"
-#include "c/ncm_path.h"
-#include "c/ncm_song.h"
-#include "c/ncm_string.h"
+#include "c/ncm_c.h"
 #include "config.h"
 #include "configuration.h"
 #include "global.h"
 #include "lyrics_fetcher.h"
-#include "screens/screen_type.h"
+#include "screens/nc_screens.h"
 #include "settings.h"
 
 #if !defined(VERSION)

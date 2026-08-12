@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_string_format.h"
+#include "c/ncm_c.h"
 
 static void
 ncm_string_format_append_number(StrBuilder *out, char *format,

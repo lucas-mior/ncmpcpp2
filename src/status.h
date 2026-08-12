@@ -3,8 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_error.h"
-#include "c/ncm_mpd_client.h"
+#include "c/ncm_c.h"
 
 enum NcmStatusPlayerState {
     NCM_STATUS_PLAYER_UNKNOWN,
