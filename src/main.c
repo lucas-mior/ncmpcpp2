@@ -4,6 +4,16 @@
 #define CBASE_IMPLEMENT
 #include "cbase.h"
 
+#include "c/ncm_c.h"
+#if !defined(PROJECT_INCREMENTAL_BUILD)
+#include "c/ncm_c.c"
+#endif
+
+#include "curses/nc_curses.h"
+#if !defined(PROJECT_INCREMENTAL_BUILD)
+#include "curses/nc_curses.c"
+#endif
+
 #include "app_legacy_bridge.h"
 #include "bindings.h"
 #include "configuration.h"
@@ -18,18 +28,8 @@
 #include "app_state.c"
 #include "bindings.c"
 
-#include "c/ncm_c.h"
-#if !defined(PROJECT_INCREMENTAL_BUILD)
-#include "c/ncm_c.c"
-#endif
-
 #include "configuration.c"
 #include "curl_handle.c"
-
-#include "curses/nc_curses.h"
-#if !defined(PROJECT_INCREMENTAL_BUILD)
-#include "curses/nc_curses.c"
-#endif
 
 #include "global.c"
 #include "helpers.c"
