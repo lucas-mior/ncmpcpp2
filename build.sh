@@ -61,28 +61,7 @@ die() {
     exit 1
 }
 
-require_command() {
-    command_string=$1
-
-    # Command variables may contain wrappers.
-    # shellcheck disable=SC2086
-    set -- $command_string
-    if [ "$#" -eq 0 ]; then
-        required_command=
-    else
-        required_command=$1
-    fi
-
-    if ! command -v "$required_command" >/dev/null 2>&1; then
-        die "missing command: $required_command"
-    fi
-
-    return 0
-}
-
 load_package_flags() {
-    require_command pkg-config
-
     if ! pkg-config --exists \
         'libmpdclient >= 2.8' \
         ncursesw \
@@ -135,7 +114,6 @@ esac
 case "$mode" in
 debug)
     load_package_flags
-    require_command "$CC"
 
     objdir="bin/obj/$mode"
     main_obj="$objdir/src/main.o"
@@ -286,7 +264,6 @@ SUBDIR_SOURCES=$subdir_sources"
     ;;
 build|fast_feedback)
     load_package_flags
-    require_command "$CC"
 
     trace_on
     $CC \
@@ -314,7 +291,6 @@ check)
     exit
     ;;
 test)
-    require_command "$CC"
     CPPFLAGS="$CPPFLAGS -I$dir/tests"
     TEST_REQUIRE_TESTING_MARKER=0
     common_test "$target" tests
