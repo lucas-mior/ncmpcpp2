@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "screens/nc_server_info.h"
+#include "screens/nc_screens.h"
 
 static void nc_server_info_switch_to(NcScreen *screen);
 static void nc_server_info_resize(NcScreen *screen);

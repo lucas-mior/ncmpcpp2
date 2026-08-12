@@ -3,9 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_enums.h"
-#include "c/ncm_error.h"
-#include "c/ncm_string.h"
+#include "c/ncm_c.h"
 
 bool current_screen_allows_filter(void);
 NcmStringView current_screen_current_filter(void);

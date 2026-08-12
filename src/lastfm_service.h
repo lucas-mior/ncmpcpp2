@@ -5,7 +5,7 @@
 
 #include <curl/curl.h>
 
-#include "c/ncm_defs.h"
+#include "c/ncm_c.h"
 
 enum NcmLastfmServiceType {
     NCM_LASTFM_SERVICE_NONE,

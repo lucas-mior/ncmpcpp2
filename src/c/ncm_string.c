@@ -3,9 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_path.h"
-#include "c/ncm_string.h"
+#include "c/ncm_c.h"
 
 void
 ncm_string_view_init(NcmStringView *view) {

@@ -3,8 +3,8 @@
 
 #include "cbase.h"
 
-#include "c/ncm_regex.h"
-#include "screens/nc_help.h"
+#include "c/ncm_c.h"
+#include "screens/nc_screens.h"
 #include "settings.h"
 
 static void nc_help_switch_to(NcScreen *screen);

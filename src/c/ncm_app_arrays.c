@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_app_arrays.h"
+#include "c/ncm_c.h"
 
 static void ncm_app_array_song_init(void *item);
 static void ncm_app_array_song_destroy(void *item);

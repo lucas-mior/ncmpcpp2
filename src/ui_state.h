@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "curses/nc_window.h"
+#include "curses/nc_curses.h"
 
 void ui_state_set_header_window(NcWindow *window);
 NcWindow *ui_state_header_window(void);

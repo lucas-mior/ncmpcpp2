@@ -5,10 +5,7 @@
 
 #include <mpd/client.h>
 
-#include "c/ncm_base.h"
-#include "c/ncm_path.h"
-#include "c/ncm_song.h"
-#include "c/ncm_string.h"
+#include "c/ncm_c.h"
 
 static bool
 ncm_song_needs_numeric_zero(char *tag, int32 tag_len) {

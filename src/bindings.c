@@ -5,9 +5,8 @@
 
 #include "app_controller.h"
 #include "bindings.h"
-#include "c/ncm_base.h"
-#include "c/ncm_macro_utilities.h"
-#include "screens/screen_type.h"
+#include "c/ncm_c.h"
+#include "screens/nc_screens.h"
 #include "ui_state.h"
 
 #define NCM_BINDINGS_ERROR_PARSE 1

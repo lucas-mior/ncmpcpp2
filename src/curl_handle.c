@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
+#include "c/ncm_c.h"
 #include "curl_handle.h"
 
 static size_t write_data(char *buffer, size_t size, size_t nmemb, void *data);

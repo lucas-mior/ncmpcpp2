@@ -3,11 +3,8 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_mpd_client.h"
-#include "c/ncm_string.h"
-#include "screens/nc_visualizer.h"
-#include "screens/screen_switcher.h"
+#include "c/ncm_c.h"
+#include "screens/nc_screens.h"
 #include "status.h"
 #include "statusbar.h"
 #include "title.h"

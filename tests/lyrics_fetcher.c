@@ -9,7 +9,7 @@
 #pragma GCC diagnostic ignored "-Wunused-function"
 #endif
 
-#include "c/ncm_string.h"
+#include "c/ncm_c.h"
 
 #include "c/ncm_html.c"
 #include "curl_handle.h"

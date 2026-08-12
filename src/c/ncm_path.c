@@ -3,9 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_path.h"
-#include "c/ncm_string.h"
+#include "c/ncm_c.h"
 
 static int32
 ncm_path_last_index_of(char *path, int32 path_len, char needle) {

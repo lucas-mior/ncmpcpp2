@@ -3,9 +3,8 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_string_format.h"
-#include "curses/nc_window.h"
+#include "c/ncm_c.h"
+#include "curses/nc_curses.h"
 
 typedef struct NcmStatusbarScopedLock {
     bool locked_statusbar;

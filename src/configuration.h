@@ -3,8 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_app_arrays.h"
-#include "c/ncm_error.h"
+#include "c/ncm_c.h"
 
 typedef struct NcmConfigurationOptions {
     StrBuilder host;

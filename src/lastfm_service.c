@@ -3,10 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_html.h"
-#include "c/ncm_regex.h"
-#include "c/ncm_string.h"
+#include "c/ncm_c.h"
 #include "curl_handle.h"
 #include "lastfm_service.h"
 

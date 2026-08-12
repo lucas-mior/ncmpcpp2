@@ -3,8 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_conversion.h"
+#include "c/ncm_c.h"
 
 static bool
 ncm_conversion_copy_source(StrBuilder *buffer, char *source,

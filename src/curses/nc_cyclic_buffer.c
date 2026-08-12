@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "curses/nc_cyclic_buffer.h"
+#include "curses/nc_curses.h"
 
 static int32 nc_cyclic_normalize_start(int32 *start_pos,
                                        int32 total_characters);

@@ -3,8 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_lrc.h"
+#include "c/ncm_c.h"
 
 #define NCM_LRC_MAX_LINE_TIMESTAMPS 64
 

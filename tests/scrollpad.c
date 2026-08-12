@@ -4,7 +4,7 @@
 #define CBASE_IMPLEMENT
 #include "cbase.h"
 
-#include "curses/nc_scrollpad.h"
+#include "curses/nc_curses.h"
 
 static int32 scrollpad_test_x;
 static int32 scrollpad_test_y;

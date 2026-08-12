@@ -3,10 +3,7 @@
 
 #include "cbase.h"
 
-#include "c/ncm_base.h"
-#include "c/ncm_mpd_client.h"
-#include "c/ncm_random.h"
-#include "c/ncm_time.h"
+#include "c/ncm_c.h"
 
 extern bool global_show_messages;
 extern bool global_seeking_in_progress;
