@@ -18,10 +18,10 @@
 #include "base_macros.h"
 
 static char *program = __FILE__;
-static int32 program_len UNUSED;
-static bool timezone_initialized = false;
-static time_t timezone_offset = 0;
-static int64 here_counter = 0;
+static int32 UNUSED program_len;
+static bool UNUSED timezone_initialized = false;
+static time_t UNUSED timezone_offset = 0;
+static int64 UNUSED here_counter = 0;
 
 #define error(...) \
     error_impl(__FILE__, __LINE__, FUNC__, __VA_ARGS__)
