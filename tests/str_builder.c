@@ -10,21 +10,21 @@ str_builder_test_init_and_empty_free(void) {
     StrBuilder zeroed = {0};
 
     ASSERT(zeroed.data == NULL);
-    ASSERT_EQUAL(zeroed.len, 0);
-    ASSERT_EQUAL(zeroed.cap, 0);
+    ASSERT_ZERO(zeroed.len);
+    ASSERT_ZERO(zeroed.cap);
     sb_append(&zeroed, STRLIT("zero initialized"));
     ASSERT_EQUAL(zeroed.data, "zero initialized");
     sb_free(&zeroed);
 
     sb_init(&str_builder);
     ASSERT(str_builder.data == NULL);
-    ASSERT_EQUAL(str_builder.len, 0);
-    ASSERT_EQUAL(str_builder.cap, 0);
+    ASSERT_ZERO(str_builder.len);
+    ASSERT_ZERO(str_builder.cap);
 
     sb_free(&str_builder);
     ASSERT(str_builder.data == NULL);
-    ASSERT_EQUAL(str_builder.len, 0);
-    ASSERT_EQUAL(str_builder.cap, 0);
+    ASSERT_ZERO(str_builder.len);
+    ASSERT_ZERO(str_builder.cap);
     return;
 }
 
@@ -44,7 +44,7 @@ str_builder_test_append_clear_and_reuse(void) {
     capacity = str_builder.cap;
     sb_clear(&str_builder);
     ASSERT(str_builder.data == allocation);
-    ASSERT_EQUAL(str_builder.len, 0);
+    ASSERT_ZERO(str_builder.len);
     ASSERT_EQUAL(str_builder.cap, capacity);
     ASSERT_EQUAL(str_builder.data, "");
 
@@ -108,14 +108,14 @@ str_builder_test_copy_and_self_copy(void) {
         ASSERT(sb_copy(&dest, &source));
         ASSERT(dest.data == allocation);
         ASSERT_EQUAL(dest.data, "");
-        ASSERT_EQUAL(dest.len, 0);
+        ASSERT_ZERO(dest.len);
         ASSERT_EQUAL(dest.cap, capacity);
     }
 
     ASSERT(sb_copy(&dest, NULL));
     ASSERT(dest.data == NULL);
-    ASSERT_EQUAL(dest.len, 0);
-    ASSERT_EQUAL(dest.cap, 0);
+    ASSERT_ZERO(dest.len);
+    ASSERT_ZERO(dest.cap);
     ASSERT(!sb_copy(NULL, &source));
 
     sb_free(&source);
@@ -143,8 +143,8 @@ str_builder_test_move_transfers_ownership(void) {
     ASSERT_EQUAL(dest.len, STRLIT_LEN("source value"));
     ASSERT_EQUAL(dest.cap, capacity);
     ASSERT(source.data == NULL);
-    ASSERT_EQUAL(source.len, 0);
-    ASSERT_EQUAL(source.cap, 0);
+    ASSERT_ZERO(source.len);
+    ASSERT_ZERO(source.cap);
 
     sb_move(&dest, &dest);
     ASSERT(dest.data == allocation);
@@ -152,8 +152,8 @@ str_builder_test_move_transfers_ownership(void) {
 
     sb_move(&dest, NULL);
     ASSERT(dest.data == NULL);
-    ASSERT_EQUAL(dest.len, 0);
-    ASSERT_EQUAL(dest.cap, 0);
+    ASSERT_ZERO(dest.len);
+    ASSERT_ZERO(dest.cap);
 
     sb_append(&source, STRLIT("kept"));
     allocation = source.data;
@@ -196,7 +196,7 @@ str_builder_test_set_validation_and_self_shrink(void) {
     ASSERT(sb_set(&str_builder, NULL, 0));
     ASSERT(str_builder.data == allocation);
     ASSERT_EQUAL(str_builder.data, "");
-    ASSERT_EQUAL(str_builder.len, 0);
+    ASSERT_ZERO(str_builder.len);
     ASSERT_EQUAL(str_builder.cap, capacity);
 
     sb_free(&str_builder);
@@ -294,8 +294,8 @@ str_builder_test_steal_transfers_exact_allocation(void) {
     ASSERT(memcmp64(stolen, bytes, LENGTH(bytes)) == 0);
     ASSERT_EQUAL(stolen[len], '\0');
     ASSERT(str_builder.data == NULL);
-    ASSERT_EQUAL(str_builder.len, 0);
-    ASSERT_EQUAL(str_builder.cap, 0);
+    ASSERT_ZERO(str_builder.len);
+    ASSERT_ZERO(str_builder.cap);
 
     free2(stolen, cap);
 
@@ -304,8 +304,8 @@ str_builder_test_steal_transfers_exact_allocation(void) {
     stolen = sb_steal(&str_builder, NULL, NULL);
     ASSERT_EQUAL(stolen, "reused");
     ASSERT(str_builder.data == NULL);
-    ASSERT_EQUAL(str_builder.len, 0);
-    ASSERT_EQUAL(str_builder.cap, 0);
+    ASSERT_ZERO(str_builder.len);
+    ASSERT_ZERO(str_builder.cap);
     free2(stolen, expected_cap);
     return;
 }
@@ -340,15 +340,15 @@ str_builder_test_array_append_clear_and_destroy(void) {
 
     str_builder_array_clear(&array);
     ASSERT(array.items == allocation);
-    ASSERT_EQUAL(array.len, 0);
+    ASSERT_ZERO(array.len);
     ASSERT_EQUAL(array.cap, capacity);
     ASSERT(array.items[1].data == NULL);
 
     sb_free(&source);
     str_builder_array_destroy(&array);
     ASSERT(array.items == NULL);
-    ASSERT_EQUAL(array.len, 0);
-    ASSERT_EQUAL(array.cap, 0);
+    ASSERT_ZERO(array.len);
+    ASSERT_ZERO(array.cap);
     return;
 }
 
@@ -387,8 +387,8 @@ str_builder_test_array_copy_move_and_swap(void) {
     ASSERT(other.items == source_allocation);
     ASSERT_EQUAL(other.len, 2);
     ASSERT(source.items == NULL);
-    ASSERT_EQUAL(source.len, 0);
-    ASSERT_EQUAL(source.cap, 0);
+    ASSERT_ZERO(source.len);
+    ASSERT_ZERO(source.cap);
 
     str_builder_array_swap(&dest, &other);
     ASSERT(dest.items == source_allocation);
@@ -398,8 +398,8 @@ str_builder_test_array_copy_move_and_swap(void) {
 
     str_builder_array_move(&dest, NULL);
     ASSERT(dest.items == NULL);
-    ASSERT_EQUAL(dest.len, 0);
-    ASSERT_EQUAL(dest.cap, 0);
+    ASSERT_ZERO(dest.len);
+    ASSERT_ZERO(dest.cap);
 
     ASSERT(str_builder_array_append_copy(&source, NULL) == false);
 

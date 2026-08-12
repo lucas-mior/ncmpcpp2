@@ -1016,7 +1016,7 @@ lyrics_screen_test_invalid_lrc_falls_back_to_txt(void) {
                     txt_path, strlen32(txt_path)));
     ASSERT(STREQUAL(screen.display.data, screen.display.len,
                     STRLIT("fallback")));
-    ASSERT_EQUAL(screen.lrc.entries_len, 0);
+    ASSERT_ZERO(screen.lrc.entries_len);
 
     lyrics_screen_destroy(&screen);
     ncm_song_destroy(&song);
@@ -1150,7 +1150,7 @@ lyrics_screen_test_auto_scroll_clamps(void) {
     nc_scrollpad_flush(&screen.scrollpad, &screen.window, &screen.display);
 
     lyrics_screen_test_update_at(1000, &screen, 0);
-    ASSERT_EQUAL(screen.scrollpad.beginning, 0);
+    ASSERT_ZERO(screen.scrollpad.beginning);
 
     lyrics_screen_test_update_at(6000, &screen, 5);
     ASSERT_EQUAL(screen.scrollpad.beginning,
@@ -1387,7 +1387,7 @@ lyrics_screen_test_locked_visible_update_refreshes_lrc(void) {
     lyrics_test_elapsed_ms = 1000;
     lyrics_test_player_state = NCM_STATUS_PLAYER_PLAY;
     nc_screen_registry_update_visible(&registry);
-    ASSERT_EQUAL(lyrics_screen_active_lrc_line(&screen), 0);
+    ASSERT_ZERO(lyrics_screen_active_lrc_line(&screen));
     lyrics_screen_test_assert_sync_highlight(&screen, 0);
 
     lyrics_screen_destroy(&screen);

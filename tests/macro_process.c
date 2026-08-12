@@ -96,7 +96,7 @@ macro_process_test_empty_blocking_command_matches_shell(void) {
                                        true, &status, &error);
 
     ASSERT(success);
-    ASSERT_EQUAL(status, 0);
+    ASSERT_ZERO(status);
     ASSERT(!ncm_error_is_set(&error));
     return;
 }
@@ -187,7 +187,7 @@ macro_process_test_nonblocking_launches_shell_background_command(void) {
                                        false, &status, &error);
 
     ASSERT(success);
-    ASSERT_EQUAL(status, 0);
+    ASSERT_ZERO(status);
     ASSERT(!ncm_error_is_set(&error));
     macro_process_wait_for_file(path);
     unlink(path);
