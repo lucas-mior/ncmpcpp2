@@ -175,7 +175,7 @@ clean)
     rm -rf bin/
     ;;
 *)
-    printf 'unknown mode: %s\n\n' "$mode" >&2
+    echo "Unknown mode $mode"
     exit 1
     ;;
 esac
