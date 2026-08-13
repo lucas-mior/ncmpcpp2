@@ -104,7 +104,8 @@ ncm_conversion_set_f64_lower_error(NcmError *ncm_error,
 }
 
 bool
-ncm_parse_int64(char *source, int32 source_len, int32 *out, NcmError *ncm_error) {
+ncm_parse_int64(char *source, int32 source_len, int32 *out,
+                NcmError *ncm_error) {
     StrBuilder buffer = {0};
     char *end;
     int64 value;
@@ -116,6 +117,12 @@ ncm_parse_int64(char *source, int32 source_len, int32 *out, NcmError *ncm_error)
     }
 
     if (!ncm_conversion_copy_source(&buffer, source, source_len, ncm_error)) {
+        sb_free(&buffer);
+        return false;
+    }
+
+    if (buffer.len <= 0) {
+        ncm_conversion_set_parse_error(ncm_error, source, source_len);
         sb_free(&buffer);
         return false;
     }
@@ -139,7 +146,8 @@ ncm_parse_int64(char *source, int32 source_len, int32 *out, NcmError *ncm_error)
 }
 
 bool
-ncm_parse_int32(char *source, int32 source_len, int32 *out, NcmError *ncm_error) {
+ncm_parse_int32(char *source, int32 source_len, int32 *out,
+                NcmError *ncm_error) {
     int32 value;
 
     if (out == NULL) {
@@ -160,7 +168,8 @@ ncm_parse_int32(char *source, int32 source_len, int32 *out, NcmError *ncm_error)
 }
 
 bool
-ncm_parse_double(char *source, int32 source_len, double *out, NcmError *ncm_error) {
+ncm_parse_double(char *source, int32 source_len, double *out,
+                 NcmError *ncm_error) {
     StrBuilder buffer = {0};
     char *end;
     double value;
@@ -172,6 +181,12 @@ ncm_parse_double(char *source, int32 source_len, double *out, NcmError *ncm_erro
     }
 
     if (!ncm_conversion_copy_source(&buffer, source, source_len, ncm_error)) {
+        sb_free(&buffer);
+        return false;
+    }
+
+    if (buffer.len <= 0) {
+        ncm_conversion_set_parse_error(ncm_error, source, source_len);
         sb_free(&buffer);
         return false;
     }
@@ -193,7 +208,8 @@ ncm_parse_double(char *source, int32 source_len, double *out, NcmError *ncm_erro
 }
 
 bool
-ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound, NcmError *ncm_error) {
+ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound,
+                     NcmError *ncm_error) {
     if ((value < lbound) || (value > ubound)) {
         ncm_conversion_set_i64_bounds_error(ncm_error, value, lbound, ubound);
         return false;

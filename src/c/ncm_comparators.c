@@ -55,12 +55,17 @@ ncm_compare_parse_decimal(char *string, int32 string_len) {
     return n;
 }
 
-static int32
+static void
 ncm_compare_copy_to_buffer(StrBuilder *buffer,
                            char *string, int32 string_len) {
     sb_clear(buffer);
+    if ((string == NULL) || (string_len <= 0)) {
+        sb_reserve(buffer, 1);
+        buffer->data[0] = '\0';
+        return;
+    }
     SB_APPEND(buffer, string, string_len);
-    return buffer->len - 1;
+    return;
 }
 
 int32
@@ -74,6 +79,17 @@ ncm_compare_locale_strings(char *left, int32 left_len,
     int32 left_offset;
     int32 right_offset;
     int32 result;
+
+    static char empty_string[] = "";
+
+    if ((left == NULL) || (left_len <= 0)) {
+        left = empty_string;
+        left_len = 0;
+    }
+    if ((right == NULL) || (right_len <= 0)) {
+        right = empty_string;
+        right_len = 0;
+    }
 
     if (ncm_compare_is_decimal_number(left, left_len)
         && ncm_compare_is_decimal_number(right, right_len)) {
@@ -99,15 +115,11 @@ ncm_compare_locale_strings(char *left, int32 left_len,
         }
     }
 
-    left_len = ncm_compare_copy_to_buffer(&left_buffer,
-                                          left + left_offset,
-                                          left_len - left_offset);
-    right_len = ncm_compare_copy_to_buffer(&right_buffer,
-                                           right + right_offset,
-                                           right_len - right_offset);
+    ncm_compare_copy_to_buffer(&left_buffer, left + left_offset,
+                               left_len - left_offset);
+    ncm_compare_copy_to_buffer(&right_buffer, right + right_offset,
+                               right_len - right_offset);
 
-    (void)left_len;
-    (void)right_len;
     result = strcoll(left_buffer.data, right_buffer.data);
     sb_free(&left_buffer);
     sb_free(&right_buffer);
