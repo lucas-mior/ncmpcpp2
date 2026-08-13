@@ -1166,6 +1166,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     int32 in_progress;
     int32 line_no;
     bool ok;
+    bool last_line;
     NcmBinding actions;
     char *command_name;
     char *key_name;
@@ -1185,6 +1186,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     in_progress = IN_PROGRESS_NONE;
     line_no = 0;
     ok = true;
+    last_line = false;
     command_name = NULL;
     key_name = NULL;
     command_name_len = 0;
@@ -1195,18 +1197,39 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     command_immediate = false;
     ncm_binding_init(&actions);
 
-    while (ok && fgets(line, SIZEOF(line), file)) {
+    while (ok && !last_line) {
         int32 len;
         int32 start;
         NcmStringView enclosed;
+
+        errno = 0;
+        if (fgets(line, SIZEOF(line), file) == NULL) {
+            break;
+        }
 
         line_no += 1;
         len = strlen32(line);
         if ((len == SIZEOF(line) - 1) && (line[len - 1] != '\n')) {
             int32 next;
 
+            errno = 0;
             next = fgetc(file);
-            if ((next != '\n') && (next != EOF)) {
+            if (next == EOF) {
+                if (ferror(file)) {
+                    int32 code;
+
+                    code = errno;
+                    if (code == 0) {
+                        code = EIO;
+                    }
+                    ncm_bindings_error(ncm_error, "%.*s:%d: read error: %s",
+                                       path_len, path, line_no,
+                                       strerror(code));
+                    ok = false;
+                    break;
+                }
+                last_line = true;
+            } else if (next != '\n') {
                 error("Bindings configuration line %d in '%.*s' is too "
                       "long.\n",
                     line_no, path_len, path);
@@ -1318,6 +1341,18 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                                path_len, path, line_no, len, line);
             ok = false;
         }
+    }
+
+    if (ok && ferror(file)) {
+        int32 code;
+
+        code = errno;
+        if (code == 0) {
+            code = EIO;
+        }
+        ncm_bindings_error(ncm_error, "%.*s:%d: read error: %s", path_len,
+                           path, line_no + 1, strerror(code));
+        ok = false;
     }
 
     if (ok) {
