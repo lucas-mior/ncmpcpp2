@@ -515,19 +515,13 @@ lyrics_test_timeout(StrBuilder *data, char *url, int32 url_len, char *referer,
 static void
 lyrics_test_assert_result(LyricsFetcherTestCase *test,
                           NcmLyricsResult *result) {
-    assert(result->success == test->success);
-    assert(result->text != NULL);
-    assert(memmem64(result->text, result->text_len, test->expected_text,
-                    test->expected_text_len)
-           != NULL);
+    ASSERT_EQUAL(result->success, test->success);
+    ASSERT(result->text != NULL);
+    ASSERT_CONTAINS(result->text, result->text_len, test->expected_text);
     if (result->success) {
-        assert(result->text_len > 100);
-        assert(memmem64(result->text, result->text_len,
-                        STRLIT("<div"))
-               == NULL);
-        assert(memmem64(result->text, result->text_len,
-                        STRLIT("<br"))
-               == NULL);
+        ASSERT(result->text_len > 100);
+        ASSERT_NOT_CONTAINS(result->text, result->text_len, "<div");
+        ASSERT_NOT_CONTAINS(result->text, result->text_len, "<br");
     }
     return;
 }
