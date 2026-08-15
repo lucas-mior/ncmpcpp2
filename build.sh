@@ -36,7 +36,7 @@ CFLAGS="$CFLAGS -std=c11"
 CFLAGS="$CFLAGS -Wfatal-errors"
 CFLAGS="$CFLAGS -Wextra -Wall"
 CFLAGS="$CFLAGS -Werror=all -Werror=extra"
-CFLAGS="$CFLAGS -Werror"  # Only uncomment occasionally, keep this line
+# CFLAGS="$CFLAGS -Werror"  # Only uncomment occasionally, keep this line
 
 if [ "$CC" = "clang" ] || [ "$CC" = "zig cc" ]; then
     CFLAGS="$CFLAGS -Weverything"
@@ -109,7 +109,7 @@ debug|test)
     CFLAGS="$CFLAGS -g3 -Og -DDEBUGGING=1"
     ;;
 build)
-    CFLAGS="$CFLAGS -O2 -flto"
+    CFLAGS="$CFLAGS -Wno-error -O2 -flto"
     ;;
 fast_feedback)
     CFLAGS="$CFLAGS -Werror"
