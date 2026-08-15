@@ -15,8 +15,8 @@ time_test_elapsed_from_zero(void) {
     start.ns = 0;
     end.ns = 3000000000ll;
 
-    assert(ncm_time_elapsed_ns(start, end) == 3000000000ll);
-    assert(ncm_time_elapsed_ms(start, end) == 3000);
+    ASSERT(ncm_time_elapsed_ns(start, end) == 3000000000ll);
+    ASSERT(ncm_time_elapsed_ms(start, end) == 3000);
     return;
 }
 
@@ -28,8 +28,8 @@ time_test_elapsed_across_old_wrap_boundary(void) {
     start.ns = 4000000000ll;
     end.ns = 5500000000ll;
 
-    assert(ncm_time_elapsed_ns(start, end) == 1500000000ll);
-    assert(ncm_time_elapsed_ms(start, end) == 1500);
+    ASSERT(ncm_time_elapsed_ns(start, end) == 1500000000ll);
+    ASSERT(ncm_time_elapsed_ms(start, end) == 1500);
     return;
 }
 

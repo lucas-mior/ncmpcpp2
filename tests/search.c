@@ -373,10 +373,10 @@ search_compile_literal(SearchTestContext *context, char *pattern) {
     NcmError error;
 
     ncm_error_clear(&error);
-    assert(ncm_regex_compile(&context->regex, pattern, strlen32(pattern),
+    ASSERT(ncm_regex_compile(&context->regex, pattern, strlen32(pattern),
                              NCM_REGEX_LITERAL_CASE_INSENSITIVE,
                              &error));
-    assert(!ncm_error_is_set(&error));
+    ASSERT(!ncm_error_is_set(&error));
     return;
 }
 
@@ -401,10 +401,10 @@ search_song_context_init(SearchSongTestContext *context,
     context->format = format;
     ncm_regex_init(&context->regex);
     ncm_error_clear(&error);
-    assert(ncm_regex_compile(&context->regex, pattern, strlen32(pattern),
+    ASSERT(ncm_regex_compile(&context->regex, pattern, strlen32(pattern),
                              NCM_REGEX_LITERAL_CASE_INSENSITIVE,
                              &error));
-    assert(!ncm_error_is_set(&error));
+    ASSERT(!ncm_error_is_set(&error));
     return;
 }
 
@@ -421,19 +421,19 @@ test_regex_handles_empty_strings(void) {
 
     ncm_regex_init(&regex);
     ncm_error_clear(&error);
-    assert(ncm_regex_compile(
+    ASSERT(ncm_regex_compile(
         &regex, STRLIT("ohne"), NCM_REGEX_LITERAL_CASE_INSENSITIVE,
         &error));
-    assert(!ncm_regex_search(&regex, STRLIT("")));
+    ASSERT(!ncm_regex_search(&regex, STRLIT("")));
     ncm_regex_destroy(&regex);
 
     ncm_regex_init(&regex);
     ncm_error_clear(&error);
-    assert(ncm_regex_compile(
+    ASSERT(ncm_regex_compile(
         &regex, STRLIT(""), NCM_REGEX_LITERAL_CASE_INSENSITIVE,
         &error));
-    assert(ncm_regex_search(&regex, STRLIT("")));
-    assert(ncm_regex_search(&regex, STRLIT("ohne")));
+    ASSERT(ncm_regex_search(&regex, STRLIT("")));
+    ASSERT(ncm_regex_search(&regex, STRLIT("ohne")));
     ncm_regex_destroy(&regex);
     return;
 }
@@ -441,15 +441,15 @@ test_regex_handles_empty_strings(void) {
 static void
 search_column_format_init(NcmFormatAst *format) {
     ncm_format_ast_init(format);
-    assert(ncm_format_ast_append_column_types(
+    ASSERT(ncm_format_ast_append_column_types(
         format, STRLIT("a")));
-    assert(ncm_format_ast_append_column_types(
+    ASSERT(ncm_format_ast_append_column_types(
         format, STRLIT("N")));
-    assert(ncm_format_ast_append_column_types(
+    ASSERT(ncm_format_ast_append_column_types(
         format, STRLIT("tf")));
-    assert(ncm_format_ast_append_column_types(
+    ASSERT(ncm_format_ast_append_column_types(
         format, STRLIT("b")));
-    assert(ncm_format_ast_append_column_types(
+    ASSERT(ncm_format_ast_append_column_types(
         format, STRLIT("l")));
     return;
 }
@@ -480,10 +480,10 @@ test_prompt_search_accepts_current_match(void) {
     menu.highlight = 0;
 
     found = -1;
-    assert(nc_menu_search_selectable(&menu, 3, true, true, false,
+    ASSERT(nc_menu_search_selectable(&menu, 3, true, true, false,
                                      search_matches, &context, &found));
-    assert(found == 0);
-    assert(nc_menu_highlight(&menu) == 0);
+    ASSERT(found == 0);
+    ASSERT(nc_menu_highlight(&menu) == 0);
 
     search_context_destroy(&context);
     nc_menu_destroy(&menu);
@@ -508,11 +508,11 @@ test_forward_repeat_skips_current_match(void) {
     menu.highlight = 0;
 
     found = -1;
-    assert(nc_menu_search_selectable(&menu, 3, true, true, true,
+    ASSERT(nc_menu_search_selectable(&menu, 3, true, true, true,
                                      search_matches, &context, &found));
-    assert(found == 2);
-    assert(nc_menu_highlight(&menu) == 2);
-    assert(menu.beginning == 1);
+    ASSERT(found == 2);
+    ASSERT(nc_menu_highlight(&menu) == 2);
+    ASSERT(menu.beginning == 1);
 
     search_context_destroy(&context);
     nc_menu_destroy(&menu);
@@ -537,11 +537,11 @@ test_forward_repeat_wraps_to_first_match(void) {
     menu.highlight = 3;
 
     found = -1;
-    assert(nc_menu_search_selectable(&menu, 3, true, true, true,
+    ASSERT(nc_menu_search_selectable(&menu, 3, true, true, true,
                                      search_matches, &context, &found));
-    assert(found == 0);
-    assert(nc_menu_highlight(&menu) == 0);
-    assert(menu.beginning == 0);
+    ASSERT(found == 0);
+    ASSERT(nc_menu_highlight(&menu) == 0);
+    ASSERT(menu.beginning == 0);
 
     search_context_destroy(&context);
     nc_menu_destroy(&menu);
@@ -567,11 +567,11 @@ test_backward_repeat_wraps_to_previous_match(void) {
     menu.highlight = 0;
 
     found = -1;
-    assert(nc_menu_search_selectable(&menu, 4, false, true, true,
+    ASSERT(nc_menu_search_selectable(&menu, 4, false, true, true,
                                      search_matches, &context, &found));
-    assert(found == 4);
-    assert(nc_menu_highlight(&menu) == 4);
-    assert(menu.beginning == 2);
+    ASSERT(found == 4);
+    ASSERT(nc_menu_highlight(&menu) == 4);
+    ASSERT(menu.beginning == 2);
 
     search_context_destroy(&context);
     nc_menu_destroy(&menu);
@@ -602,10 +602,10 @@ test_search_skips_unselectable_matches(void) {
     menu.highlight = 0;
 
     found = -1;
-    assert(nc_menu_search_selectable(&menu, 3, true, true, true,
+    ASSERT(nc_menu_search_selectable(&menu, 3, true, true, true,
                                      search_matches, &context, &found));
-    assert(found == 3);
-    assert(nc_menu_highlight(&menu) == 3);
+    ASSERT(found == 3);
+    ASSERT(nc_menu_highlight(&menu) == 3);
 
     search_context_destroy(&context);
     nc_menu_destroy(&menu);
@@ -630,11 +630,11 @@ test_search_without_wrap_preserves_position_on_failure(void) {
     menu.beginning = 1;
 
     found = -7;
-    assert(!nc_menu_search_selectable(&menu, 2, true, false, true,
+    ASSERT(!nc_menu_search_selectable(&menu, 2, true, false, true,
                                       search_matches, &context, &found));
-    assert(found == -7);
-    assert(nc_menu_highlight(&menu) == 2);
-    assert(menu.beginning == 1);
+    ASSERT(found == -7);
+    ASSERT(nc_menu_highlight(&menu) == 2);
+    ASSERT(menu.beginning == 1);
 
     search_context_destroy(&context);
     nc_menu_destroy(&menu);
@@ -647,16 +647,16 @@ test_prompt_state_reuses_successful_result(void) {
     bool found;
 
     ncm_search_prompt_state_init(&state, NCM_SEARCH_DIRECTION_FORWARD);
-    assert(!ncm_search_prompt_state_cached_result(
+    ASSERT(!ncm_search_prompt_state_cached_result(
         &state, STRLIT("alp"), &found));
 
-    assert(ncm_search_prompt_state_finish_result(
+    ASSERT(ncm_search_prompt_state_finish_result(
         &state, STRLIT("alp"), true, true));
     found = false;
-    assert(ncm_search_prompt_state_cached_result(
+    ASSERT(ncm_search_prompt_state_cached_result(
         &state, STRLIT("alp"), &found));
-    assert(found);
-    assert(!ncm_search_prompt_state_cached_result(
+    ASSERT(found);
+    ASSERT(!ncm_search_prompt_state_cached_result(
         &state, STRLIT("alpha"), &found));
 
     ncm_search_prompt_state_destroy(&state);
@@ -669,22 +669,22 @@ test_prompt_state_does_not_cache_search_error(void) {
     bool found;
 
     ncm_search_prompt_state_init(&state, NCM_SEARCH_DIRECTION_FORWARD);
-    assert(ncm_search_prompt_state_finish_result(
+    ASSERT(ncm_search_prompt_state_finish_result(
         &state, STRLIT("alp"), true, true));
-    assert(ncm_search_prompt_state_finish_result(
+    ASSERT(ncm_search_prompt_state_finish_result(
         &state, STRLIT("alp["), false, false));
 
     found = true;
-    assert(!ncm_search_prompt_state_cached_result(
+    ASSERT(!ncm_search_prompt_state_cached_result(
         &state, STRLIT("alp["), &found));
-    assert(found);
+    ASSERT(found);
 
-    assert(ncm_search_prompt_state_finish_result(
+    ASSERT(ncm_search_prompt_state_finish_result(
         &state, STRLIT("alp[ha]"), true, true));
     found = false;
-    assert(ncm_search_prompt_state_cached_result(
+    ASSERT(ncm_search_prompt_state_cached_result(
         &state, STRLIT("alp[ha]"), &found));
-    assert(found);
+    ASSERT(found);
 
     ncm_search_prompt_state_destroy(&state);
     return;
@@ -708,11 +708,11 @@ test_backward_search_without_wrap_preserves_position(void) {
     menu.beginning = 0;
 
     found = -5;
-    assert(!nc_menu_search_selectable(&menu, 2, false, false, true,
+    ASSERT(!nc_menu_search_selectable(&menu, 2, false, false, true,
                                       search_matches, &context, &found));
-    assert(found == -5);
-    assert(nc_menu_highlight(&menu) == 0);
-    assert(menu.beginning == 0);
+    ASSERT(found == -5);
+    ASSERT(nc_menu_highlight(&menu) == 0);
+    ASSERT(menu.beginning == 0);
 
     search_context_destroy(&context);
     nc_menu_destroy(&menu);
@@ -737,11 +737,11 @@ test_search_failure_with_wrap_preserves_position(void) {
     menu.beginning = 1;
 
     found = -9;
-    assert(!nc_menu_search_selectable(&menu, 2, true, true, true,
+    ASSERT(!nc_menu_search_selectable(&menu, 2, true, true, true,
                                       search_matches, &context, &found));
-    assert(found == -9);
-    assert(nc_menu_highlight(&menu) == 1);
-    assert(menu.beginning == 1);
+    ASSERT(found == -9);
+    ASSERT(nc_menu_highlight(&menu) == 1);
+    ASSERT(menu.beginning == 1);
 
     search_context_destroy(&context);
     nc_menu_destroy(&menu);
@@ -766,11 +766,11 @@ test_single_match_repeat_does_not_reselect_current(void) {
     menu.beginning = 0;
 
     found = -1;
-    assert(!nc_menu_search_selectable(&menu, 3, true, true, true,
+    ASSERT(!nc_menu_search_selectable(&menu, 3, true, true, true,
                                       search_matches, &context, &found));
-    assert(found == -1);
-    assert(nc_menu_highlight(&menu) == 1);
-    assert(menu.beginning == 0);
+    ASSERT(found == -1);
+    ASSERT(nc_menu_highlight(&menu) == 1);
+    ASSERT(menu.beginning == 0);
 
     search_context_destroy(&context);
     nc_menu_destroy(&menu);
@@ -802,11 +802,11 @@ test_search_uses_only_active_filtered_items(void) {
     menu.highlight = 0;
 
     found = -1;
-    assert(nc_menu_search_selectable(&menu, 2, true, true, false,
+    ASSERT(nc_menu_search_selectable(&menu, 2, true, true, false,
                                      search_matches, &context, &found));
-    assert(found == 1);
-    assert(nc_menu_highlight(&menu) == 1);
-    assert(*(char **)nc_menu_current_item(&menu) == third);
+    ASSERT(found == 1);
+    ASSERT(nc_menu_highlight(&menu) == 1);
+    ASSERT(*(char **)nc_menu_current_item(&menu) == third);
 
     search_context_destroy(&context);
     nc_menu_destroy(&menu);
@@ -819,13 +819,13 @@ test_prompt_state_caches_no_match(void) {
     bool found;
 
     ncm_search_prompt_state_init(&state, NCM_SEARCH_DIRECTION_FORWARD);
-    assert(ncm_search_prompt_state_finish_result(
+    ASSERT(ncm_search_prompt_state_finish_result(
         &state, STRLIT("ohne"), true, false));
 
     found = true;
-    assert(ncm_search_prompt_state_cached_result(
+    ASSERT(ncm_search_prompt_state_cached_result(
         &state, STRLIT("ohne"), &found));
-    assert(!found);
+    ASSERT(!found);
 
     ncm_search_prompt_state_destroy(&state);
     return;
@@ -851,15 +851,15 @@ test_column_search_uses_every_displayed_column(void) {
     ohne_len = strlen32(ohne.data);
     search_context_init(&context, "ohn");
 
-    assert(ncm_regex_search(&context.regex, choros.data, choros.len));
+    ASSERT(ncm_regex_search(&context.regex, choros.data, choros.len));
     search_context_destroy(&context);
     search_context_init(&context, "ohne");
-    assert(!ncm_regex_search(&context.regex, choros.data, choros.len));
-    assert(ncm_regex_search(&context.regex, ohne.data, ohne.len));
-    assert(MEMMEM(choros.data, choros_len, "John Neschling") != NULL);
-    assert(MEMMEM(choros.data, choros_len, "Choros No 6") != NULL);
-    assert(MEMMEM(ohne.data, ohne_len, "Rammstein") != NULL);
-    assert(MEMMEM(ohne.data, ohne_len, "Ohne Dich") != NULL);
+    ASSERT(!ncm_regex_search(&context.regex, choros.data, choros.len));
+    ASSERT(ncm_regex_search(&context.regex, ohne.data, ohne.len));
+    ASSERT(MEMMEM(choros.data, choros_len, "John Neschling") != NULL);
+    ASSERT(MEMMEM(choros.data, choros_len, "Choros No 6") != NULL);
+    ASSERT(MEMMEM(ohne.data, ohne_len, "Rammstein") != NULL);
+    ASSERT(MEMMEM(ohne.data, ohne_len, "Ohne Dich") != NULL);
 
     search_context_destroy(&context);
     sb_free(&ohne);
@@ -890,32 +890,32 @@ test_repeat_search_advances_between_column_matches(void) {
     menu.highlight = 0;
 
     found = -1;
-    assert(nc_menu_search_selectable(&menu, 3, true, true, true,
+    ASSERT(nc_menu_search_selectable(&menu, 3, true, true, true,
                                      search_song_matches, &context,
                                      &found));
-    assert(found == 1);
-    assert(nc_menu_highlight(&menu) == 1);
+    ASSERT(found == 1);
+    ASSERT(nc_menu_highlight(&menu) == 1);
 
     found = -1;
-    assert(nc_menu_search_selectable(&menu, 3, true, true, true,
+    ASSERT(nc_menu_search_selectable(&menu, 3, true, true, true,
                                      search_song_matches, &context,
                                      &found));
-    assert(found == 2);
-    assert(nc_menu_highlight(&menu) == 2);
+    ASSERT(found == 2);
+    ASSERT(nc_menu_highlight(&menu) == 2);
 
     found = -1;
-    assert(nc_menu_search_selectable(&menu, 3, true, true, true,
+    ASSERT(nc_menu_search_selectable(&menu, 3, true, true, true,
                                      search_song_matches, &context,
                                      &found));
-    assert(found == 1);
-    assert(nc_menu_highlight(&menu) == 1);
+    ASSERT(found == 1);
+    ASSERT(nc_menu_highlight(&menu) == 1);
 
     found = -1;
-    assert(nc_menu_search_selectable(&menu, 3, false, true, true,
+    ASSERT(nc_menu_search_selectable(&menu, 3, false, true, true,
                                      search_song_matches, &context,
                                      &found));
-    assert(found == 2);
-    assert(nc_menu_highlight(&menu) == 2);
+    ASSERT(found == 2);
+    ASSERT(nc_menu_highlight(&menu) == 2);
 
     search_song_context_destroy(&context);
     ncm_format_ast_destroy(&format);
@@ -961,21 +961,21 @@ test_playlist_fixture_finds_ohne_dich(void) {
         }
         search_add_item(&menu, lines[i], NC_MENU_ITEM_SELECTABLE);
     }
-    assert(target == 62);
+    ASSERT(target == 62);
     search_context_init(&context, "ohne");
     menu.highlight = 25;
 
     found = -1;
-    assert(nc_menu_search_selectable(&menu, 10, true, true, true,
+    ASSERT(nc_menu_search_selectable(&menu, 10, true, true, true,
                                      search_matches, &context, &found));
-    assert(found == target);
-    assert(nc_menu_highlight(&menu) == target);
+    ASSERT(found == target);
+    ASSERT(nc_menu_highlight(&menu) == target);
 
     found = -1;
-    assert(!nc_menu_search_selectable(&menu, 10, true, true, true,
+    ASSERT(!nc_menu_search_selectable(&menu, 10, true, true, true,
                                       search_matches, &context, &found));
-    assert(found == -1);
-    assert(nc_menu_highlight(&menu) == target);
+    ASSERT(found == -1);
+    ASSERT(nc_menu_highlight(&menu) == target);
 
     search_context_destroy(&context);
     nc_menu_destroy(&menu);
