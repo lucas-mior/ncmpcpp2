@@ -1925,7 +1925,12 @@ static void
 visualizer_system_sleep_microseconds(void *user, int32 microseconds) {
     (void)user;
     if (microseconds > 0) {
-        usleep((useconds_t)microseconds);
+        struct timespec duration;
+
+        duration.tv_sec = microseconds / 1000000;
+        duration.tv_nsec = (long)(microseconds % 1000000)*1000l;
+        while ((nanosleep(&duration, &duration) != 0) && (errno == EINTR)) {
+        }
     }
     return;
 }
