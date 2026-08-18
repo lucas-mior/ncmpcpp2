@@ -64,14 +64,35 @@ CFLAGS="$CFLAGS -pthread"
 
 LDFLAGS="$LDFLAGS -lm"
 
+find_curses_pkg() {
+    if [ -n "${CURSES_PKG:-}" ]; then
+        if pkg-config --exists "$CURSES_PKG"; then
+            return 0
+        fi
+
+        return 1
+    fi
+
+    for package in ncursesw ncurses; do
+        if pkg-config --exists "$package"; then
+            CURSES_PKG=$package
+            return 0
+        fi
+    done
+
+    CURSES_PKG=ncursesw
+    return 1
+}
+
 load_package_flags() {
-    if ! pkg-config --exists \
-        'libmpdclient >= 2.8' \
-        ncursesw \
-        'fftw3 >= 3' \
-        libcurl \
-        taglib_c; then
-        missing_packages='libmpdclient >= 2.8, ncursesw, fftw3 >= 3,'
+    if ! find_curses_pkg \
+            || ! pkg-config --exists \
+                'libmpdclient >= 2.8' \
+                "$CURSES_PKG" \
+                'fftw3 >= 3' \
+                libcurl \
+                taglib_c; then
+        missing_packages='libmpdclient >= 2.8, ncursesw/ncurses, fftw3 >= 3,'
         missing_packages="$missing_packages libcurl, taglib_c"
         error "missing pkg-config packages: $missing_packages"
         exit 1
@@ -79,13 +100,13 @@ load_package_flags() {
 
     PKG_CFLAGS=$(pkg-config --cflags \
         'libmpdclient >= 2.8' \
-        ncursesw \
+        "$CURSES_PKG" \
         'fftw3 >= 3' \
         libcurl \
         taglib_c)
     PKG_LIBS=$(pkg-config --libs \
         'libmpdclient >= 2.8' \
-        ncursesw \
+        "$CURSES_PKG" \
         'fftw3 >= 3' \
         libcurl \
         taglib_c)
