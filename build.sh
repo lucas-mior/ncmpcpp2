@@ -172,7 +172,11 @@ check)
     common_build_run_analyzers build
     ;;
 test)
+    load_package_flags
+
     CPPFLAGS="$CPPFLAGS -Itests"
+    TEST_CPPFLAGS="$TEST_CPPFLAGS $PKG_CFLAGS"
+    LDFLAGS="$PKG_LIBS $LDFLAGS"
     TEST_REQUIRE_TESTING_MARKER=0
     common_test "$target" tests
     ;;
