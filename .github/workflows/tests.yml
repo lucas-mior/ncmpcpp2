@@ -57,7 +57,22 @@ jobs:
       - name: Build and Test
         run: |
           ./build.sh build
-          ./build.sh test
+
+          TEST_CPPFLAGS=$(pkg-config --cflags \
+            libmpdclient \
+            ncursesw \
+            fftw3 \
+            libcurl \
+            taglib_c \
+            readline)
+          TEST_LDFLAGS=$(pkg-config --libs \
+            libmpdclient \
+            ncursesw \
+            fftw3 \
+            libcurl \
+            taglib_c \
+            readline)
+          CPPFLAGS="$TEST_CPPFLAGS" LDFLAGS="$TEST_LDFLAGS" ./build.sh test
 
   ubuntu:
     runs-on: ubuntu-24.04
