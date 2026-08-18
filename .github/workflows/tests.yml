@@ -73,12 +73,23 @@ jobs:
             curl \
             libcurl4-openssl-dev \
             libfftw3-dev \
-            libmpdclient-dev \
             libncurses-dev \
             libreadline-dev \
             libutfcpp-dev \
+            meson \
+            ninja-build \
             pkg-config \
             zlib1g-dev
+
+          curl -L -o libmpdclient.tar.gz \
+            https://github.com/MusicPlayerDaemon/libmpdclient/archive/refs/tags/v2.27.tar.gz
+          tar -xzf libmpdclient.tar.gz
+          meson setup libmpdclient-build libmpdclient-2.27 \
+            --buildtype=release \
+            --prefix=/usr/local \
+            --libdir=lib
+          meson compile -C libmpdclient-build
+          sudo meson install -C libmpdclient-build
 
           curl -L -o taglib.tar.gz \
             https://github.com/taglib/taglib/archive/refs/tags/v2.2.tar.gz
@@ -93,6 +104,7 @@ jobs:
 
           cc --version
           pkg-config --version
+          pkg-config --atleast-version=2.25 libmpdclient
           pkg-config --atleast-version=2.0 taglib_c
           pkg-config --libs \
             libmpdclient \
