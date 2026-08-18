@@ -146,114 +146,106 @@ jobs:
           ./build.sh build
           ./build.sh test
 
-  freebsd:
+  bsd:
     runs-on: ubuntu-24.04
-    name: FreeBSD VM
-    timeout-minutes: 30
+    name: ${{ matrix.name }} VM
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: cpa.sh {0} --sync-files runner-to-vm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: FreeBSD
+            os: freebsd
+            version: "15.1"
+          - name: OpenBSD
+            os: openbsd
+            version: "7.9"
+          - name: NetBSD
+            os: netbsd
+            version: "11.0"
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build and Test
-        uses: vmactions/freebsd-vm@v1
+      - name: Start VM
+        uses: cross-platform-actions/action@v1.4.0
         with:
-          usesh: true
-          run: |
-            pkg install -y \
-              curl \
-              fftw3 \
-              libmpdclient \
-              ncurses \
-              pkgconf \
-              readline \
-              taglib
-            export PKG_CONFIG_PATH=/usr/local/libdata/pkgconfig:/usr/local/lib/pkgconfig
-            cc --version
-            pkg-config --version
-            pkg-config --libs \
-              libmpdclient \
-              ncursesw \
-              fftw3 \
-              libcurl \
-              taglib_c \
-              readline
-            ./build.sh build
-            ./build.sh test
+          operating_system: ${{ matrix.os }}
+          version: ${{ matrix.version }}
+          shell: sh
+          memory: 4G
+          cpu_count: 2
 
-  openbsd:
-    runs-on: ubuntu-24.04
-    name: OpenBSD VM
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build and Test
-        uses: vmactions/openbsd-vm@v1
-        with:
-          usesh: true
-          run: |
-            pkg_add \
-              curl \
-              fftw3 \
-              libmpdclient \
-              readline \
-              taglib
-            export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig
-            cc --version
-            pkg-config --version
-            pkg-config --libs \
-              libmpdclient \
-              ncursesw \
-              fftw3 \
-              libcurl \
-              taglib_c \
-              readline
-            ./build.sh build
-            ./build.sh test
-
-  netbsd:
-    runs-on: ubuntu-24.04
-    name: NetBSD VM
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
+      - name: Install build deps
+        run: |
+          case "$(uname -s)" in
+          FreeBSD)
+              sudo pkg install -y \
+                curl \
+                fftw3 \
+                libmpdclient \
+                ncurses \
+                pkgconf \
+                readline \
+                taglib
+              ;;
+          OpenBSD)
+              sudo pkg_add \
+                curl \
+                fftw3 \
+                libmpdclient \
+                readline \
+                taglib
+              ;;
+          NetBSD)
+              if ! command -v pkgin >/dev/null 2>&1; then
+                sudo pkg_add pkgin
+              fi
+              sudo pkgin -y install \
+                curl \
+                fftw \
+                libmpdclient \
+                ncurses \
+                pkgconf \
+                readline \
+                taglib
+              ;;
+          esac
 
       - name: Build and Test
-        uses: vmactions/netbsd-vm@v1
-        with:
-          usesh: true
-          run: |
-            if ! command -v pkgin >/dev/null 2>&1; then
-              pkg_add pkgin
-            fi
-            pkgin -y install \
-              curl \
-              fftw \
-              libmpdclient \
-              ncurses \
-              pkgconf \
-              readline \
-              taglib
+        run: |
+          case "$(uname -s)" in
+          FreeBSD)
+              export PKG_CONFIG_PATH=/usr/local/libdata/pkgconfig:/usr/local/lib/pkgconfig
+              CURSES_PKG=ncursesw
+              ;;
+          OpenBSD)
+              export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig
+              CURSES_PKG=ncursesw
+              ;;
+          NetBSD)
+              export PKG_CONFIG_PATH=/usr/pkg/lib/pkgconfig:/usr/pkg/share/pkgconfig
+              export LD_LIBRARY_PATH="/usr/pkg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+              LDFLAGS="${LDFLAGS:-} -Wl,-rpath,/usr/pkg/lib"
+              export LDFLAGS
+              CURSES_PKG=ncursesw
+              if ! pkg-config --exists "$CURSES_PKG"; then
+                CURSES_PKG=ncurses
+              fi
+              ;;
+          esac
+          export CURSES_PKG
 
-            export PKG_CONFIG_PATH=/usr/pkg/lib/pkgconfig:/usr/pkg/share/pkgconfig
-            export LD_LIBRARY_PATH="/usr/pkg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-            LDFLAGS="${LDFLAGS:-} -Wl,-rpath,/usr/pkg/lib"
-            export LDFLAGS
-            CURSES_PKG=ncursesw
-            if ! pkg-config --exists "$CURSES_PKG"; then
-              CURSES_PKG=ncurses
-            fi
-            export CURSES_PKG
-
-            cc --version
-            pkg-config --version
-            pkg-config --libs \
-              libmpdclient \
-              "$CURSES_PKG" \
-              fftw3 \
-              libcurl \
-              taglib_c \
-              readline
-            ./build.sh build
-
-            TEST_CPPFLAGS=$(pkg-config --cflags fftw3 libcurl)
-            CPPFLAGS="$TEST_CPPFLAGS" ./build.sh test
+          cc --version
+          pkg-config --version
+          pkg-config --libs \
+            libmpdclient \
+            "$CURSES_PKG" \
+            fftw3 \
+            libcurl \
+            taglib_c \
+            readline
+          ./build.sh build
+          ./build.sh test
