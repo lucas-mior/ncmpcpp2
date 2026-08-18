@@ -149,6 +149,7 @@ jobs:
   freebsd:
     runs-on: ubuntu-24.04
     name: FreeBSD VM
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -181,6 +182,7 @@ jobs:
   openbsd:
     runs-on: ubuntu-24.04
     name: OpenBSD VM
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -211,6 +213,7 @@ jobs:
   netbsd:
     runs-on: ubuntu-24.04
     name: NetBSD VM
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
