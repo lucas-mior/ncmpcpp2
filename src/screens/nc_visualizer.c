@@ -1816,7 +1816,7 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
     int32 fd;
 
     (void)user;
-    hints.ai_family = PF_UNSPEC;
+    hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_protocol = IPPROTO_UDP;
 
