@@ -62,8 +62,6 @@ fi
 
 CFLAGS="$CFLAGS -pthread"
 
-LDFLAGS="$LDFLAGS -lm"
-
 find_curses_pkg() {
     if [ -n "${CURSES_PKG:-}" ]; then
         if pkg-config --exists "$CURSES_PKG"; then
