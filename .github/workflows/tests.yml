@@ -1,0 +1,194 @@
+name: Test on various platforms CI
+
+on:
+  push:
+    branches:
+  pull_request:
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Homebrew cache dir
+        run: mkdir -p .cache/homebrew
+
+      - name: Cache Homebrew downloads
+        uses: actions/cache@v5
+        with:
+          path: .cache/homebrew
+          key: ${{ runner.os }}-homebrew-${{ runner.arch }}-ncmpcpp2-v1
+          restore-keys: |
+            ${{ runner.os }}-homebrew-${{ runner.arch }}-ncmpcpp2-
+
+      - name: Install build deps
+        env:
+          HOMEBREW_CACHE: ${{ github.workspace }}/.cache/homebrew
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+        run: |
+          brew --cache
+          brew install \
+            curl \
+            fftw \
+            libmpdclient \
+            ncurses \
+            pkgconf \
+            readline \
+            taglib
+
+          PKG_CONFIG_PATH="$(brew --prefix curl)/lib/pkgconfig"
+          PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(brew --prefix ncurses)/lib/pkgconfig"
+          PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$(brew --prefix readline)/lib/pkgconfig"
+          export PKG_CONFIG_PATH
+
+          cc --version
+          pkg-config --version
+          pkg-config --libs \
+            libmpdclient \
+            ncursesw \
+            fftw3 \
+            libcurl \
+            taglib_c \
+            readline
+
+          echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> "$GITHUB_ENV"
+
+      - name: Build and Test
+        run: |
+          ./build.sh build
+          ./build.sh test
+
+  ubuntu:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libcurl4-openssl-dev \
+            libfftw3-dev \
+            libmpdclient-dev \
+            libncurses-dev \
+            libreadline-dev \
+            libtagc0-dev \
+            pkg-config
+          cc --version
+          pkg-config --version
+          pkg-config --libs \
+            libmpdclient \
+            ncursesw \
+            fftw3 \
+            libcurl \
+            taglib_c \
+            readline
+
+      - name: Build and Test
+        run: |
+          ./build.sh build
+          ./build.sh test
+
+  freebsd:
+    runs-on: ubuntu-24.04
+    name: FreeBSD VM
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and Test
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          run: |
+            pkg install -y \
+              curl \
+              fftw3 \
+              libmpdclient \
+              ncurses \
+              pkgconf \
+              readline \
+              taglib
+            export PKG_CONFIG_PATH=/usr/local/libdata/pkgconfig:/usr/local/lib/pkgconfig
+            cc --version
+            pkg-config --version
+            pkg-config --libs \
+              libmpdclient \
+              ncursesw \
+              fftw3 \
+              libcurl \
+              taglib_c \
+              readline
+            ./build.sh build
+            ./build.sh test
+
+  openbsd:
+    runs-on: ubuntu-24.04
+    name: OpenBSD VM
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and Test
+        uses: vmactions/openbsd-vm@v1
+        with:
+          usesh: true
+          run: |
+            pkg_add \
+              curl \
+              fftw3 \
+              libmpdclient \
+              readline \
+              taglib
+            export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig
+            cc --version
+            pkg-config --version
+            pkg-config --libs \
+              libmpdclient \
+              ncursesw \
+              fftw3 \
+              libcurl \
+              taglib_c \
+              readline
+            ./build.sh build
+            ./build.sh test
+
+  netbsd:
+    runs-on: ubuntu-24.04
+    name: NetBSD VM
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and Test
+        uses: vmactions/netbsd-vm@v1
+        with:
+          usesh: true
+          run: |
+            if ! command -v pkgin >/dev/null 2>&1; then
+              pkg_add pkgin
+            fi
+            pkgin -y install \
+              curl \
+              fftw \
+              libmpdclient \
+              ncurses \
+              pkgconf \
+              readline \
+              taglib
+
+            export PKG_CONFIG_PATH=/usr/pkg/lib/pkgconfig:/usr/pkg/share/pkgconfig
+            export LD_LIBRARY_PATH="/usr/pkg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+            LDFLAGS="${LDFLAGS:-} -Wl,-rpath,/usr/pkg/lib"
+            export LDFLAGS
+
+            cc --version
+            pkg-config --version
+            pkg-config --libs \
+              libmpdclient \
+              ncursesw \
+              fftw3 \
+              libcurl \
+              taglib_c \
+              readline
+            ./build.sh build
+            ./build.sh test
