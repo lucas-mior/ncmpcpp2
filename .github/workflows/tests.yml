@@ -235,15 +235,22 @@ jobs:
             export LD_LIBRARY_PATH="/usr/pkg/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
             LDFLAGS="${LDFLAGS:-} -Wl,-rpath,/usr/pkg/lib"
             export LDFLAGS
+            CURSES_PKG=ncursesw
+            if ! pkg-config --exists "$CURSES_PKG"; then
+              CURSES_PKG=ncurses
+            fi
+            export CURSES_PKG
 
             cc --version
             pkg-config --version
             pkg-config --libs \
               libmpdclient \
-              ncursesw \
+              "$CURSES_PKG" \
               fftw3 \
               libcurl \
               taglib_c \
               readline
             ./build.sh build
-            ./build.sh test
+
+            TEST_CPPFLAGS=$(pkg-config --cflags fftw3 libcurl)
+            CPPFLAGS="$TEST_CPPFLAGS" ./build.sh test
