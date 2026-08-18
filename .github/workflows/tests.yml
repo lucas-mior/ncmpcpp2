@@ -249,7 +249,14 @@ jobs:
           if pkg-config --exists readline 2>/dev/null; then
             pkg-config --libs readline
           else
-            printf '%s\n' '-lreadline -lhistory'
+            case "$(uname -s)" in
+            OpenBSD)
+                printf '%s\n' '-lreadline'
+                ;;
+            *)
+                printf '%s\n' '-lreadline -lhistory'
+                ;;
+            esac
           fi
           ./build.sh build
           ./build.sh test
