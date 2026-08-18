@@ -245,7 +245,11 @@ jobs:
             "$CURSES_PKG" \
             fftw3 \
             libcurl \
-            taglib_c \
-            readline
+            taglib_c
+          if pkg-config --exists readline 2>/dev/null; then
+            pkg-config --libs readline
+          else
+            printf '%s\n' '-lreadline -lhistory'
+          fi
           ./build.sh build
           ./build.sh test
