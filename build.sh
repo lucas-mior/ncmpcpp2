@@ -115,7 +115,14 @@ load_package_flags() {
         READLINE_LIBS=$(pkg-config --libs readline)
     else
         READLINE_CFLAGS=
-        READLINE_LIBS='-lreadline -lhistory'
+        case "$(uname -s)" in
+        OpenBSD)
+            READLINE_LIBS='-lreadline'
+            ;;
+        *)
+            READLINE_LIBS='-lreadline -lhistory'
+            ;;
+        esac
     fi
 
     CFLAGS="$CFLAGS $READLINE_CFLAGS"
