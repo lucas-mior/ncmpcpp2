@@ -61,6 +61,7 @@ if [ "$CC" = "clang" ] || [ "$CC" = "zig cc" ]; then
 fi
 
 CFLAGS="$CFLAGS -pthread"
+LDFLAGS="$LDFLAGS -lm"
 
 find_curses_pkg() {
     if [ -n "${CURSES_PKG:-}" ]; then
