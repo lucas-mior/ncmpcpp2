@@ -5,6 +5,16 @@
 
 #include "c/ncm_c.h"
 
+#include <mpd/version.h>
+
+#define NCM_LIBMPDCLIENT_CHECK_VERSION(major, minor, patch) \
+    ((LIBMPDCLIENT_MAJOR_VERSION > (major)) \
+     || ((LIBMPDCLIENT_MAJOR_VERSION == (major)) \
+         && (LIBMPDCLIENT_MINOR_VERSION > (minor))) \
+     || ((LIBMPDCLIENT_MAJOR_VERSION == (major)) \
+         && (LIBMPDCLIENT_MINOR_VERSION == (minor)) \
+         && (LIBMPDCLIENT_PATCH_VERSION >= (patch))))
+
 int32
 ncm_channels_to_string(int32 channels, char *buffer, int32 buffer_cap) {
     int32 result;
@@ -95,26 +105,40 @@ ncm_tag_type_name(enum mpd_tag_type tag) {
     case MPD_TAG_MUSICBRAINZ_ALBUMID:
     case MPD_TAG_MUSICBRAINZ_ALBUMARTISTID:
     case MPD_TAG_MUSICBRAINZ_TRACKID:
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
     case MPD_TAG_MUSICBRAINZ_RELEASETRACKID:
+#endif
     case MPD_TAG_ORIGINAL_DATE:
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
     case MPD_TAG_ARTIST_SORT:
     case MPD_TAG_ALBUM_ARTIST_SORT:
+#endif
     case MPD_TAG_ALBUM_SORT:
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 17, 0)
     case MPD_TAG_LABEL:
     case MPD_TAG_MUSICBRAINZ_WORKID:
     case MPD_TAG_GROUPING:
     case MPD_TAG_WORK:
     case MPD_TAG_CONDUCTOR:
+#endif
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 20, 0)
     case MPD_TAG_COMPOSER_SORT:
     case MPD_TAG_ENSEMBLE:
     case MPD_TAG_MOVEMENT:
     case MPD_TAG_MOVEMENTNUMBER:
     case MPD_TAG_LOCATION:
+#endif
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 21, 0)
     case MPD_TAG_MOOD:
     case MPD_TAG_TITLE_SORT:
     case MPD_TAG_MUSICBRAINZ_RELEASEGROUPID:
+#endif
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 23, 0)
     case MPD_TAG_SHOWMOVEMENT:
+#endif
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 25, 0)
     case MPD_TAG_DISCSUBTITLE:
+#endif
     case MPD_TAG_COUNT:
     default:
         return "";
@@ -267,26 +291,40 @@ ncm_tags_field_from_tag_type(enum mpd_tag_type tag) {
     case MPD_TAG_MUSICBRAINZ_ALBUMID:
     case MPD_TAG_MUSICBRAINZ_ALBUMARTISTID:
     case MPD_TAG_MUSICBRAINZ_TRACKID:
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
     case MPD_TAG_MUSICBRAINZ_RELEASETRACKID:
+#endif
     case MPD_TAG_ORIGINAL_DATE:
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
     case MPD_TAG_ARTIST_SORT:
     case MPD_TAG_ALBUM_ARTIST_SORT:
+#endif
     case MPD_TAG_ALBUM_SORT:
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 17, 0)
     case MPD_TAG_LABEL:
     case MPD_TAG_MUSICBRAINZ_WORKID:
     case MPD_TAG_GROUPING:
     case MPD_TAG_WORK:
     case MPD_TAG_CONDUCTOR:
+#endif
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 20, 0)
     case MPD_TAG_COMPOSER_SORT:
     case MPD_TAG_ENSEMBLE:
     case MPD_TAG_MOVEMENT:
     case MPD_TAG_MOVEMENTNUMBER:
     case MPD_TAG_LOCATION:
+#endif
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 21, 0)
     case MPD_TAG_MOOD:
     case MPD_TAG_TITLE_SORT:
     case MPD_TAG_MUSICBRAINZ_RELEASEGROUPID:
+#endif
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 23, 0)
     case MPD_TAG_SHOWMOVEMENT:
+#endif
+#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 25, 0)
     case MPD_TAG_DISCSUBTITLE:
+#endif
     case MPD_TAG_COUNT:
     default:
         return NCM_TAGS_FIELD_LAST;
@@ -423,5 +461,7 @@ ncm_tags_field_name(enum NcmTagsField field) {
         return "";
     }
 }
+
+#undef NCM_LIBMPDCLIENT_CHECK_VERSION
 
 #endif /* NCM_TYPE_CONVERSIONS_C */
