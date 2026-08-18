@@ -89,9 +89,6 @@
 #endif
 #endif
 
-#if !defined(_MSC_VER)
-#include <tgmath.h>
-#endif
 #include <time.h>
 #include <wchar.h>
 #include <wctype.h>
