@@ -39,18 +39,11 @@ macro_process_file_exists(char *path) {
 
 static void
 macro_process_wait_for_file(char *path) {
-    struct timespec duration;
-
-    duration.tv_sec = 0;
-    duration.tv_nsec = 10000000l;
     for (int32 i = 0; i < 200; i += 1) {
         if (macro_process_file_exists(path)) {
             return;
         }
-        while ((nanosleep(&duration, &duration) != 0) && (errno == EINTR)) {
-        }
-        duration.tv_sec = 0;
-        duration.tv_nsec = 10000000l;
+        sleep_ms(10);
     }
 
     ASSERT(macro_process_file_exists(path));
