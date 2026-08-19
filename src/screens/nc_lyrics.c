@@ -324,10 +324,8 @@ lyrics_screen_destroy(LyricsScreen *screen) {
     for (int32 i = 0; i < screen->queued_songs_len; i += 1) {
         lyrics_queued_song_destroy(&screen->queued_songs[i]);
     }
-    if (screen->queued_songs) {
-        free2(screen->queued_songs,
-              screen->queued_songs_cap*SIZEOF(*screen->queued_songs));
-    }
+    free2(screen->queued_songs,
+          screen->queued_songs_cap*SIZEOF(*screen->queued_songs));
 
     sb_free(&screen->consumer_message);
     ncm_lyrics_result_destroy(&screen->result);

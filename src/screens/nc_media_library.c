@@ -4144,9 +4144,7 @@ library_set_owned_string(char **dest, int32 *dest_len,
 
 static void
 library_free_owned_string(char **data, int32 *len, int32 *cap) {
-    if (*data) {
-        free2(*data, *cap);
-    }
+    free2(*data, *cap);
     *data = NULL;
     *len = 0;
     *cap = 0;

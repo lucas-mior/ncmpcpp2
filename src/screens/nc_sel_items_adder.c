@@ -1085,9 +1085,7 @@ existing_playlist_action_destroy(void *user) {
     if (action == NULL) {
         return;
     }
-    if (action->playlist) {
-        free2(action->playlist, action->playlist_cap);
-    }
+    free2(action->playlist, action->playlist_cap);
     free2(action, SIZEOF(*action));
     return;
 }

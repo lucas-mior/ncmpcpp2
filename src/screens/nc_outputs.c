@@ -295,9 +295,7 @@ nc_outputs_item_destroy(void *item, void *user) {
 
     (void)user;
     output = item;
-    if (output->name) {
-        free2(output->name, output->name_len + 1);
-    }
+    free2(output->name, output->name_len + 1);
     *output = (NcOutputsItem){0};
     return;
 }

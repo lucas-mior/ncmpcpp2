@@ -50,9 +50,7 @@ nc_buffer_destroy(NcBuffer *buffer) {
         nc_buffer_property_destroy(&buffer->properties[i]);
     }
     ARRAY_FREE(buffer->properties);
-    if (buffer->data) {
-        free2(buffer->data, buffer->cap);
-    }
+    free2(buffer->data, buffer->cap);
     nc_buffer_init(buffer);
     return;
 }

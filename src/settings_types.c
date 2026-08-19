@@ -33,9 +33,7 @@ NCM_ARRAY_DEFINE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
 
 static void
 settings_string_destroy(char **data, int32 *len, int32 *cap) {
-    if (*data) {
-        free2(*data, *cap);
-    }
+    free2(*data, *cap);
     *data = NULL;
     *len = 0;
     *cap = 0;
@@ -98,9 +96,7 @@ column_array_destroy(ColumnArray *array) {
         return;
     }
     column_array_clear(array);
-    if (array->items) {
-        free2(array->items, array->cap*SIZEOF(*array->items));
-    }
+    free2(array->items, array->cap*SIZEOF(*array->items));
     column_array_init(array);
     return;
 }
@@ -174,9 +170,7 @@ screen_type_array_destroy(ScreenTypeArray *array) {
     if (array == NULL) {
         return;
     }
-    if (array->items) {
-        free2(array->items, array->cap*SIZEOF(*array->items));
-    }
+    free2(array->items, array->cap*SIZEOF(*array->items));
     screen_type_array_init(array);
     return;
 }
