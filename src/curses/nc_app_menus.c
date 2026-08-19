@@ -127,9 +127,7 @@ static NcMenuItemCallbacks nc_buffer_menu_callbacks = {
 
 static void
 nc_menu_owned_string_destroy(char **data, int32 *len, int32 *cap) {
-    if (*data) {
-        free2(*data, *cap);
-    }
+    free2(*data, *cap);
     *data = NULL;
     *len = 0;
     *cap = 0;

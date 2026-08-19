@@ -487,9 +487,7 @@ nc_window_destroy(NcWindow *window) {
     if (window->window) {
         delwin(window->window);
     }
-    if (window->title) {
-        free2(window->title, window->title_cap);
-    }
+    free2(window->title, window->title_cap);
     ARRAY_FREE(window->color_stack);
     ARRAY_FREE(window->input_queue);
     ARRAY_FREE(window->fd_callbacks);
@@ -1329,9 +1327,7 @@ nc_window_assign_title(NcWindow *window, char *title, int32 title_len) {
         fatal(EXIT_FAILURE);
     }
     if (title_len >= window->title_cap) {
-        if (window->title) {
-            free2(window->title, window->title_cap);
-        }
+        free2(window->title, window->title_cap);
         window->title_cap = title_len + 1;
         window->title = malloc2(window->title_cap);
     }

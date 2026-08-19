@@ -61,10 +61,7 @@ ncm_lrc_document_destroy(NcmLrcDocument *document) {
     }
 
     sb_free(&document->text);
-    if (document->entries) {
-        free2(document->entries,
-              document->entries_cap*SIZEOF(*document->entries));
-    }
+    free2(document->entries, document->entries_cap*SIZEOF(*document->entries));
     ncm_lrc_document_init(document);
     return;
 }

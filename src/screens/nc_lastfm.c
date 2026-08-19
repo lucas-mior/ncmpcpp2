@@ -170,9 +170,7 @@ lastfm_screen_destroy(LastfmScreen *screen) {
     ncm_job_queue_destroy(&screen->jobs);
     ncm_lastfm_service_destroy(&screen->service);
     ncm_lastfm_result_destroy(&screen->result);
-    if (screen->title) {
-        free2(screen->title, screen->title_cap);
-    }
+    free2(screen->title, screen->title_cap);
     sb_free(&screen->search_constraint);
     nc_buffer_destroy(&screen->buffer);
     nc_window_destroy(&screen->window);

@@ -255,9 +255,7 @@ lyrics_string_set(char **data, int32 *len, int32 *cap,
 
 static void
 lyrics_string_destroy(char **data, int32 *len, int32 *cap) {
-    if (*data) {
-        free2(*data, *cap);
-    }
+    free2(*data, *cap);
     *data = NULL;
     *len = 0;
     *cap = 0;
