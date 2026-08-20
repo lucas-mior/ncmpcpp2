@@ -22,11 +22,8 @@ ncm_mpd_client_copy_connection_error(NcmMpdClient *client, NcmError *ncm_error) 
     char *message;
     int32 message_len;
 
+    ASSERT(client != NULL);
     if (ncm_error == NULL) {
-        return;
-    }
-    if (client == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing MPD client"));
         return;
     }
 
