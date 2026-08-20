@@ -188,8 +188,6 @@ test)
     common_test "$target" tests
     ;;
 install)
-    "$0" build
-
     install -d "${DESTDIR}${PREFIX}/bin"
     install -m 755 "$exe" "${DESTDIR}${PREFIX}/bin/$program"
     install -d "${DESTDIR}${PREFIX}/share/doc/$program"
