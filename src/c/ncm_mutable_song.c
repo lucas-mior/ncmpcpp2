@@ -63,9 +63,7 @@ ncm_mutable_song_set_string(char **dest, int32 *dest_len,
 static NcmMutableSongTag *
 ncm_mutable_song_find_tag(NcmMutableSong *song, enum NcmTagsField field,
                           int32 idx) {
-    if (song == NULL) {
-        return NULL;
-    }
+    ASSERT(song != NULL);
     if (idx < 0) {
         return NULL;
     }
@@ -85,9 +83,7 @@ static bool
 ncm_mutable_song_grow_tags(NcmMutableSong *song) {
     int32 new_cap;
 
-    if (song == NULL) {
-        return false;
-    }
+    ASSERT(song != NULL);
     if (song->tags_len < song->tags_cap) {
         return true;
     }
@@ -112,9 +108,7 @@ ncm_mutable_song_add_tag(NcmMutableSong *song, enum NcmTagsField field,
                          int32 idx) {
     NcmMutableSongTag *tag;
 
-    if (song == NULL) {
-        return NULL;
-    }
+    ASSERT(song != NULL);
     if (idx < 0) {
         return NULL;
     }
@@ -131,9 +125,7 @@ ncm_mutable_song_add_tag(NcmMutableSong *song, enum NcmTagsField field,
 
 static void
 ncm_mutable_song_tag_init(NcmMutableSongTag *tag) {
-    if (tag == NULL) {
-        return;
-    }
+    ASSERT(tag != NULL);
 
     tag->original = NULL;
     tag->value = NULL;
@@ -147,9 +139,7 @@ ncm_mutable_song_tag_init(NcmMutableSongTag *tag) {
 
 static void
 ncm_mutable_song_tag_destroy(NcmMutableSongTag *tag) {
-    if (tag == NULL) {
-        return;
-    }
+    ASSERT(tag != NULL);
 
     ncm_mutable_song_free_string(&tag->original, &tag->original_len);
     ncm_mutable_song_free_string(&tag->value, &tag->value_len);
@@ -162,12 +152,8 @@ ncm_mutable_song_tag_destroy(NcmMutableSongTag *tag) {
 static bool
 ncm_mutable_song_tag_copy(NcmMutableSongTag *dest,
                           NcmMutableSongTag *source) {
-    if (dest == NULL) {
-        return false;
-    }
-    if (source == NULL) {
-        return false;
-    }
+    ASSERT(dest != NULL);
+    ASSERT(source != NULL);
 
     ncm_mutable_song_tag_destroy(dest);
     dest->field = source->field;

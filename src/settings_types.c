@@ -107,9 +107,7 @@ column_array_reserve(ColumnArray *array, int32 extra) {
     int32 old_cap;
     int32 new_cap;
 
-    if (array == NULL) {
-        return false;
-    }
+    ASSERT(array != NULL);
     if (extra <= 0) {
         return true;
     }
@@ -138,6 +136,9 @@ Column *
 column_array_append(ColumnArray *array) {
     Column *column;
 
+    if (array == NULL) {
+        return NULL;
+    }
     if (!column_array_reserve(array, 1)) {
         return NULL;
     }
@@ -181,9 +182,7 @@ screen_type_array_reserve(ScreenTypeArray *array, int32 extra) {
     int32 old_cap;
     int32 new_cap;
 
-    if (array == NULL) {
-        return false;
-    }
+    ASSERT(array != NULL);
     if (extra <= 0) {
         return true;
     }
@@ -212,6 +211,9 @@ enum ScreenType *
 screen_type_array_append(ScreenTypeArray *array) {
     enum ScreenType *screen_type;
 
+    if (array == NULL) {
+        return NULL;
+    }
     if (!screen_type_array_reserve(array, 1)) {
         return NULL;
     }
@@ -223,12 +225,14 @@ screen_type_array_append(ScreenTypeArray *array) {
 
 static void
 settings_formatted_color_array_init_item(void *item) {
+    ASSERT(item != NULL);
     nc_formatted_color_init(item);
     return;
 }
 
 static void
 settings_formatted_color_array_destroy_item(void *item) {
+    ASSERT(item != NULL);
     nc_formatted_color_destroy(item);
     return;
 }
