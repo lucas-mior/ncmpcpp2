@@ -1,0 +1,107 @@
+
+build.sh [01;38;2;255;000;000mtest[0m
+
+Testing [01;38;2;255;000;000mtests/lrc.c[0m ...
++ tcc -I. -Isrc -Icbase -Itests -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -I/usr/include/taglib -std=c11 -Wfatal-errors -Wextra -Wall -Werror=all -Werror=extra -pthread -g3 -Og -DDEBUGGING=1 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -Wno-unused-variable -DTESTING_lrc=1 -DTESTING=1 -o /tmp/lrc_test tests/lrc.c -lmpdclient -lncursesw -lfftw3 -lcurl -ltag_c -ltag -lz -lm -lreadline
++ [ 1 != 0 ]
++ common_test_run_binary /tmp/lrc_test
++ test_exe=/tmp/lrc_test
++ test_status=0
++ [ -n  ]
++ /tmp/lrc_test
++ [ 0 != 0 ]
++ return 0
+
+Testing [01;38;2;255;000;000mtests/lyrics_fetcher.c[0m ...
++ tcc -I. -Isrc -Icbase -Itests -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -I/usr/include/taglib -std=c11 -Wfatal-errors -Wextra -Wall -Werror=all -Werror=extra -pthread -g3 -Og -DDEBUGGING=1 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -Wno-unused-variable -DTESTING_lyrics_fetcher=1 -DTESTING=1 -o /tmp/lyrics_fetcher_test tests/lyrics_fetcher.c -lmpdclient -lncursesw -lfftw3 -lcurl -ltag_c -ltag -lz -lm -lreadline
++ [ 1 != 0 ]
++ common_test_run_binary /tmp/lyrics_fetcher_test
++ test_exe=/tmp/lyrics_fetcher_test
++ test_status=0
++ [ -n  ]
++ /tmp/lyrics_fetcher_test
++ [ 0 != 0 ]
++ return 0
+
+Testing [01;38;2;255;000;000mtests/lyrics_screen.c[0m ...
++ tcc -I. -Isrc -Icbase -Itests -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -I/usr/include/taglib -std=c11 -Wfatal-errors -Wextra -Wall -Werror=all -Werror=extra -pthread -g3 -Og -DDEBUGGING=1 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -Wno-unused-variable -DTESTING_lyrics_screen=1 -DTESTING=1 -o /tmp/lyrics_screen_test tests/lyrics_screen.c -lmpdclient -lncursesw -lfftw3 -lcurl -ltag_c -ltag -lz -lm -lreadline
++ [ 1 != 0 ]
++ common_test_run_binary /tmp/lyrics_screen_test
++ test_exe=/tmp/lyrics_screen_test
++ test_status=0
++ [ -n  ]
++ /tmp/lyrics_screen_test
++ [ 0 != 0 ]
++ return 0
+
+Testing [01;38;2;255;000;000mtests/macro_process.c[0m ...
++ tcc -I. -Isrc -Icbase -Itests -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -I/usr/include/taglib -std=c11 -Wfatal-errors -Wextra -Wall -Werror=all -Werror=extra -pthread -g3 -Og -DDEBUGGING=1 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -Wno-unused-variable -DTESTING_macro_process=1 -DTESTING=1 -o /tmp/macro_process_test tests/macro_process.c -lmpdclient -lncursesw -lfftw3 -lcurl -ltag_c -ltag -lz -lm -lreadline
++ [ 1 != 0 ]
++ common_test_run_binary /tmp/macro_process_test
++ test_exe=/tmp/macro_process_test
++ test_status=0
++ [ -n  ]
++ /tmp/macro_process_test
+Running /bin/sh -c exit $((6*7)) 
+Running /bin/sh -c exit 37 
+Running /bin/sh -c  
+Running /bin/sh -c if true; then exit 0; else exit 31; fi 
+Running /bin/sh -c exit 19 
+Running /bin/sh -c touch '/tmp/ncmpcpp2-macro-process-2166970-async' >/dev/null 2>&1 & 
++ [ 0 != 0 ]
++ return 0
+
+Testing [01;38;2;255;000;000mtests/ncmpcpp2_time.c[0m ...
++ tcc -I. -Isrc -Icbase -Itests -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -I/usr/include/taglib -std=c11 -Wfatal-errors -Wextra -Wall -Werror=all -Werror=extra -pthread -g3 -Og -DDEBUGGING=1 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -Wno-unused-variable -DTESTING_ncmpcpp2_time=1 -DTESTING=1 -o /tmp/ncmpcpp2_time_test tests/ncmpcpp2_time.c -lmpdclient -lncursesw -lfftw3 -lcurl -ltag_c -ltag -lz -lm -lreadline
++ [ 1 != 0 ]
++ common_test_run_binary /tmp/ncmpcpp2_time_test
++ test_exe=/tmp/ncmpcpp2_time_test
++ test_status=0
++ [ -n  ]
++ /tmp/ncmpcpp2_time_test
++ [ 0 != 0 ]
++ return 0
+
+Testing [01;38;2;255;000;000mtests/screen_switcher.c[0m ...
++ tcc -I. -Isrc -Icbase -Itests -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -I/usr/include/taglib -std=c11 -Wfatal-errors -Wextra -Wall -Werror=all -Werror=extra -pthread -g3 -Og -DDEBUGGING=1 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -Wno-unused-variable -DTESTING_screen_switcher=1 -DTESTING=1 -o /tmp/screen_switcher_test tests/screen_switcher.c -lmpdclient -lncursesw -lfftw3 -lcurl -ltag_c -ltag -lz -lm -lreadline
++ [ 1 != 0 ]
++ common_test_run_binary /tmp/screen_switcher_test
++ test_exe=/tmp/screen_switcher_test
++ test_status=0
++ [ -n  ]
++ /tmp/screen_switcher_test
++ [ 0 != 0 ]
++ return 0
+
+Testing [01;38;2;255;000;000mtests/scrollpad.c[0m ...
++ tcc -I. -Isrc -Icbase -Itests -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -I/usr/include/taglib -std=c11 -Wfatal-errors -Wextra -Wall -Werror=all -Werror=extra -pthread -g3 -Og -DDEBUGGING=1 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -Wno-unused-variable -DTESTING_scrollpad=1 -DTESTING=1 -o /tmp/scrollpad_test tests/scrollpad.c -lmpdclient -lncursesw -lfftw3 -lcurl -ltag_c -ltag -lz -lm -lreadline
++ [ 1 != 0 ]
++ common_test_run_binary /tmp/scrollpad_test
++ test_exe=/tmp/scrollpad_test
++ test_status=0
++ [ -n  ]
++ /tmp/scrollpad_test
++ [ 0 != 0 ]
++ return 0
+
+Testing [01;38;2;255;000;000mtests/search.c[0m ...
++ tcc -I. -Isrc -Icbase -Itests -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -I/usr/include/taglib -std=c11 -Wfatal-errors -Wextra -Wall -Werror=all -Werror=extra -pthread -g3 -Og -DDEBUGGING=1 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -Wno-unused-variable -DTESTING_search=1 -DTESTING=1 -o /tmp/search_test tests/search.c -lmpdclient -lncursesw -lfftw3 -lcurl -ltag_c -ltag -lz -lm -lreadline
++ [ 1 != 0 ]
++ common_test_run_binary /tmp/search_test
++ test_exe=/tmp/search_test
++ test_status=0
++ [ -n  ]
++ /tmp/search_test
++ [ 0 != 0 ]
++ return 0
+
+Testing [01;38;2;255;000;000mtests/str_builder.c[0m ...
++ tcc -I. -Isrc -Icbase -Itests -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -I/usr/include/taglib -std=c11 -Wfatal-errors -Wextra -Wall -Werror=all -Werror=extra -pthread -g3 -Og -DDEBUGGING=1 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -Wno-unused-variable -DTESTING_str_builder=1 -DTESTING=1 -o /tmp/str_builder_test tests/str_builder.c -lmpdclient -lncursesw -lfftw3 -lcurl -ltag_c -ltag -lz -lm -lreadline
++ [ 1 != 0 ]
++ common_test_run_binary /tmp/str_builder_test
++ test_exe=/tmp/str_builder_test
++ test_status=0
++ [ -n  ]
++ /tmp/str_builder_test
++ [ 0 != 0 ]
++ return 0
