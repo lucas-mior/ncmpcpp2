@@ -417,7 +417,8 @@ ncm_lyrics_fetcher_registry_append_name(NcmLyricsFetcherRegistry *registry,
 
 static bool
 lyrics_url_collected(StrBuilderArray *urls, char *url, int32 url_len) {
-    if ((urls == NULL) || (url == NULL) || (url_len <= 0)) {
+    ASSERT(urls != NULL);
+    if ((url == NULL) || (url_len <= 0)) {
         return false;
     }
 
@@ -434,7 +435,8 @@ static bool
 lyrics_append_url_if_new(StrBuilderArray *urls, char *url, int32 url_len) {
     StrBuilder *item;
 
-    if ((urls == NULL) || (url == NULL) || (url_len <= 0)) {
+    ASSERT(urls != NULL);
+    if ((url == NULL) || (url_len <= 0)) {
         return false;
     }
     if (lyrics_url_collected(urls, url, url_len)) {
@@ -486,11 +488,13 @@ lyrics_build_direct_url_profiles(
 ) {
     bool valid;
 
-    if ((fetcher == NULL) || (url == NULL) || !fetcher->enabled
-        || (artist == NULL) || (artist_len <= 0) || (title == NULL)
-        || (title_len <= 0)) {
-        return false;
-    }
+    ASSERT(fetcher != NULL);
+    ASSERT(url != NULL);
+    ASSERT(fetcher->enabled);
+    ASSERT(artist != NULL);
+    ASSERT(artist_len > 0);
+    ASSERT(title != NULL);
+    ASSERT(title_len > 0);
 
     sb_clear(url);
     switch (fetcher->type) {
@@ -594,9 +598,10 @@ lyrics_collect_direct_urls(NcmLyricsFetcherDef *fetcher,
     StrBuilder candidate = {0};
     bool ok;
 
-    if ((fetcher == NULL) || (urls == NULL) || !fetcher->enabled
-        || (artist == NULL) || (artist_len <= 0) || (title == NULL)
-        || (title_len <= 0)) {
+    ASSERT(fetcher != NULL);
+    ASSERT(urls != NULL);
+    if (!fetcher->enabled || (artist == NULL) || (artist_len <= 0)
+        || (title == NULL) || (title_len <= 0)) {
         return false;
     }
 
@@ -736,12 +741,14 @@ ncm_lyrics_cleanup_html(StrBuilder *out, char *data, int32 data_len) {
 
 static void
 lyrics_fetcher_array_init_item(void *item) {
+    ASSERT(item != NULL);
     ncm_lyrics_fetcher_def_init(item);
     return;
 }
 
 static void
 lyrics_fetcher_array_destroy_item(void *item) {
+    ASSERT(item != NULL);
     ncm_lyrics_fetcher_def_destroy(item);
     return;
 }
