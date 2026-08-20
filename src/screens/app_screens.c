@@ -1212,9 +1212,7 @@ app_request_registered_resize(int32 type) {
 
 static void
 app_screen_register_once(NcScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
     ASSERT(app_register_screen(screen));
     return;
 }
@@ -1224,9 +1222,7 @@ app_screen_register_replacing(NcScreen *screen, int32 type) {
     NcScreen *registered;
     bool success;
 
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
 
     registered = app_controller_find_screen_type(type);
     if (registered && (registered != screen)) {
@@ -1244,17 +1240,13 @@ app_screen_register_replacing(NcScreen *screen, int32 type) {
 
 static bool
 app_screen_is_current(NcScreen *screen) {
-    if (screen == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
     return nc_screen_switcher_is_current(screen);
 }
 
 static void
 app_screen_switch_to(NcScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
     (void)nc_screen_switcher_switch_to(screen,
                                        nc_screen_has_to_be_resized(screen));
     return;
@@ -1264,9 +1256,7 @@ static void
 app_screen_toggle_or_switch_to(NcScreen *screen) {
     NcScreen *previous;
 
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
     if (nc_screen_switcher_is_current(screen)) {
         previous = nc_screen_switcher_previous();
         if (previous && app_controller_is_screen_registered(previous)) {

@@ -78,9 +78,7 @@ ncm_song_tag_init(NcmSongTag *tag) {
 
 static void
 ncm_song_tag_destroy(NcmSongTag *tag) {
-    if (tag == NULL) {
-        return;
-    }
+    ASSERT(tag != NULL);
 
     free2(tag->value, tag->value_len + 1);
     ncm_song_tag_init(tag);
@@ -90,12 +88,8 @@ ncm_song_tag_destroy(NcmSongTag *tag) {
 
 static bool
 ncm_song_tag_copy(NcmSongTag *dest, NcmSongTag *source) {
-    if (dest == NULL) {
-        return false;
-    }
-    if (source == NULL) {
-        return false;
-    }
+    ASSERT(dest != NULL);
+    ASSERT(source != NULL);
     if (source->value == NULL) {
         ncm_song_tag_destroy(dest);
         return true;

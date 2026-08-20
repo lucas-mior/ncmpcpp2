@@ -20,9 +20,7 @@ ncm_helpers_show_song_time(int32 length, char *buffer, int32 buffer_cap) {
 
 static int32
 menu_item_count(NcMenu *menu, enum NcMenuItemSource source) {
-    if (menu == NULL) {
-        return 0;
-    }
+    ASSERT(menu != NULL);
 
     switch (source) {
     case NC_MENU_ITEMS_FILTERED:
@@ -41,9 +39,7 @@ menu_position_is_selected(NcMenu *menu, enum NcMenuItemSource source,
     uint32 flags;
     void *item;
 
-    if (menu == NULL) {
-        return false;
-    }
+    ASSERT(menu != NULL);
 
     flags = nc_menu_item_flags_at(menu, source, pos);
     if (flags & NC_MENU_ITEM_SELECTED) {
@@ -68,9 +64,7 @@ menu_set_position_selected(NcMenu *menu, enum NcMenuItemSource source,
     uint32 flags;
     void *item;
 
-    if (menu == NULL) {
-        return false;
-    }
+    ASSERT(menu != NULL);
 
     if ((item = nc_menu_item_at(menu, source, pos)) == NULL) {
         return false;
@@ -94,8 +88,13 @@ menu_set_position_selected(NcMenu *menu, enum NcMenuItemSource source,
 void
 ncm_menu_reverse_selection(NcMenu *menu, enum NcMenuItemSource source) {
     bool selected;
-    int32 count = menu_item_count(menu, source);
+    int32 count;
 
+    if (menu == NULL) {
+        return;
+    }
+
+    count = menu_item_count(menu, source);
     for (int32 i = 0; i < count; i += 1) {
         selected = menu_position_is_selected(menu, source, i);
         menu_set_position_selected(menu, source, i, !selected);
@@ -107,11 +106,19 @@ bool
 ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
                              int32 *first, int32 *last) {
     int32 range_first;
-    int32 count = menu_item_count(menu, source);
+    int32 count;
 
     if (first) {
         *first = 0;
     }
+    if (menu == NULL) {
+        if (last) {
+            *last = 0;
+        }
+        return false;
+    }
+
+    count = menu_item_count(menu, source);
     if (last) {
         *last = count;
     }
