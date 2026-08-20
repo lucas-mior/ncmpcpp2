@@ -1219,7 +1219,8 @@ search_row_matches(SearchEngineScreen *screen,
 static bool
 search_row_label(SearchEngineScreen *screen,
                  NcSearchRow *row, NcmStringView *view) {
-    if ((screen == NULL) || (row == NULL) || (view == NULL)) {
+    ASSERT(screen != NULL);
+    if ((row == NULL) || (view == NULL)) {
         return false;
     }
     if (row->is_song) {
@@ -1445,7 +1446,8 @@ search_draw_columns_song(SearchEngineScreen *screen, NcMenu *menu,
 static bool
 search_format_columns(SearchEngineScreen *screen, NcmSong *song,
                       NcBuffer *buffer, int32 list_width) {
-    if ((screen == NULL) || (song == NULL) || (buffer == NULL)) {
+    ASSERT(screen != NULL);
+    if ((song == NULL) || (buffer == NULL)) {
         return false;
     }
 
@@ -1456,7 +1458,8 @@ search_format_columns(SearchEngineScreen *screen, NcmSong *song,
 
 static int32
 search_screen_width(SearchEngineScreen *screen) {
-    if ((screen == NULL) || (screen->width <= 0)) {
+    ASSERT(screen != NULL);
+    if (screen->width <= 0) {
         return 0;
     }
     if (screen->width > INT32_MAX) {
@@ -1558,9 +1561,7 @@ search_mouse_scroll(SearchEngineScreen *screen,
 
 static bool
 search_has_constraints(SearchEngineScreen *screen) {
-    if (screen == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
 
     for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
         if (screen->constraints[i].len > 0) {
@@ -1731,7 +1732,8 @@ search_collect_local_results(SearchEngineScreen *screen, NcmSongArray *source,
 static bool
 search_song_matches(SearchEngineScreen *screen, NcmSong *song,
                     NcmRegex *regexes) {
-    if ((screen == NULL) || (song == NULL) || (regexes == NULL)) {
+    ASSERT(screen != NULL);
+    if ((song == NULL) || (regexes == NULL)) {
         return false;
     }
 
@@ -1847,7 +1849,8 @@ search_song_field_view(NcmSong *song, int32 field,
 
 static bool
 search_append_result_rows(SearchEngineScreen *screen, NcmSongArray *songs) {
-    if ((screen == NULL) || (songs == NULL) || (songs->len <= 0)) {
+    ASSERT(screen != NULL);
+    if ((songs == NULL) || (songs->len <= 0)) {
         return false;
     }
 

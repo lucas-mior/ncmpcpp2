@@ -1335,10 +1335,8 @@ playlist_truncate_storage(PlaylistScreen *screen,
     NcMenu *menu;
     int32 new_count;
     int32 old_count;
-    if (screen == NULL) {
-        return false;
-    }
 
+    ASSERT(screen != NULL);
     menu = playlist_storage_menu(screen);
     new_count = playlist_length;
     old_count = nc_menu_all_item_count(menu);
