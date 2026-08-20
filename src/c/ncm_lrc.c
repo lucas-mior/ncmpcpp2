@@ -585,9 +585,7 @@ ncm_lrc_document_append_entry(NcmLrcDocument *document) {
 
 static void
 ncm_lrc_document_clear_buffer_positions(NcmLrcDocument *document) {
-    if (document == NULL) {
-        return;
-    }
+    ASSERT(document != NULL);
 
     for (int32 i = 0; i < document->entries_len; i += 1) {
         document->entries[i].buffer_start = NCM_LRC_NO_BUFFER_POSITION;
