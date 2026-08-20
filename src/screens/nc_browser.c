@@ -1513,9 +1513,7 @@ browser_enter_item(BrowserScreen *screen, NcmMpdItem *item) {
 
 static void
 browser_sync_display_mode(BrowserScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
     browser_screen_set_display_mode(screen, Config.browser_display_mode);
     return;
 }
@@ -1546,7 +1544,8 @@ browser_render_width(BrowserScreen *screen,
 static bool
 browser_item_matches(BrowserScreen *screen, NcmMpdItem *item,
                      NcmRegex *regex, bool filter) {
-    if ((screen == NULL) || (regex == NULL)) {
+    ASSERT(screen != NULL);
+    if (regex == NULL) {
         return false;
     }
     if (browser_screen_item_is_parent(item)) {
@@ -1584,9 +1583,7 @@ static bool
 browser_set_normalized_directory(BrowserScreen *screen,
                                  char *directory,
                                  int32 directory_len) {
-    if (screen == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
     if (directory_len < 0) {
         return false;
     }
@@ -1612,9 +1609,7 @@ browser_set_parent_of_directory(BrowserScreen *screen,
                                 int32 directory_len) {
     int32 parent_len;
 
-    if (screen == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
     if (directory_len < 0) {
         return false;
     }
@@ -1638,9 +1633,7 @@ static bool
 browser_prepare_mpd_reload_directory(
     BrowserScreen *screen
 ) {
-    if (screen == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
     if (screen->current_directory.len <= 0) {
         return browser_screen_set_current_directory(
             screen, STRLIT("/"));
@@ -1790,9 +1783,7 @@ browser_reload_from_local(BrowserScreen *screen,
 static bool
 browser_prepare_local_reload_directory(BrowserScreen *screen,
                                        NcmError *ncm_error) {
-    if (screen == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
     if (screen->current_directory.len <= 0) {
         if (!sb_set(&screen->current_directory, STRLIT("~"))) {
             return false;
@@ -2444,6 +2435,7 @@ browser_update_renamed_directory(NcmMpdClient *client,
 static bool
 browser_real_path(BrowserScreen *screen, NcmStringView path,
                   StrBuilder *real_path, NcmError *ncm_error) {
+    ASSERT(screen != NULL);
     if (real_path == NULL) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("missing real path output"));
         return false;
@@ -2458,7 +2450,7 @@ browser_real_path(BrowserScreen *screen, NcmStringView path,
     }
 
     sb_clear(real_path);
-    if (screen && screen->local_browser) {
+    if (screen->local_browser) {
         return sb_set(real_path, path.data, path.len);
     }
 

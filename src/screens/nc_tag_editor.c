@@ -1254,9 +1254,7 @@ tag_editor_search_position(NcMenu *menu, int32 pos, void *user) {
 
 static void
 tag_editor_reset_parser_navigation(TagEditorScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
     nc_menu_reset(nc_editor_string_menu_base(&screen->parser_dialog));
     nc_menu_reset(nc_editor_string_menu_base(&screen->parser_rows));
     nc_menu_reset(nc_editor_string_menu_base(&screen->parser_actions));
@@ -2084,16 +2082,15 @@ tag_editor_mouse_select_parser_row(TagEditorScreen *screen,
 
 static bool
 tag_editor_run_current_action(TagEditorScreen *screen) {
-    if (screen == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
     return nc_screen_run_current(tag_editor_screen_base(screen));
 }
 
 static bool
 tag_editor_mouse_move_to_column(TagEditorScreen *screen,
                                 enum TagEditorColumn column) {
-    if ((screen == NULL) || !tag_editor_focus_is_main(screen->active_focus)) {
+    ASSERT(screen != NULL);
+    if (!tag_editor_focus_is_main(screen->active_focus)) {
         return false;
     }
     if (tag_editor_focus_is_main_column(screen->active_focus, column)) {
@@ -2118,9 +2115,7 @@ tag_editor_mouse_move_to_column(TagEditorScreen *screen,
 static bool
 tag_editor_mouse_move_to_parser_focus(TagEditorScreen *screen,
                                       enum TagEditorFocus focus) {
-    if (screen == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
     if (focus == TAG_EDITOR_FOCUS_PARSER_CHOICE) {
         tag_editor_set_focus(screen, focus);
         return true;
@@ -2480,9 +2475,7 @@ tag_editor_column_focus(enum TagEditorColumn column) {
 static void
 tag_editor_set_focus(TagEditorScreen *screen,
                      enum TagEditorFocus focus) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
 
     screen->active_focus = focus;
 
@@ -2504,7 +2497,8 @@ tag_editor_set_focus(TagEditorScreen *screen,
 
 static enum TagEditorFocus
 tag_editor_current_helper_focus(TagEditorScreen *screen) {
-    if (screen && !screen->parser_preview_enabled) {
+    ASSERT(screen != NULL);
+    if (!screen->parser_preview_enabled) {
         return TAG_EDITOR_FOCUS_PARSER_LEGEND;
     }
     return TAG_EDITOR_FOCUS_PARSER_PREVIEW;
@@ -2516,9 +2510,7 @@ tag_editor_tag_type_row_changed(TagEditorScreen *screen) {
     int32 highlight;
     bool changed;
 
-    if (screen == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
 
     menu = nc_editor_string_menu_base(&screen->tag_types);
     highlight = nc_menu_highlight(menu);
@@ -2531,9 +2523,7 @@ tag_editor_tag_type_row_changed(TagEditorScreen *screen) {
 static void
 tag_editor_finish_tag_type_change(TagEditorScreen *screen,
                                   bool refresh_tags) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
     if (screen->active_focus != TAG_EDITOR_FOCUS_TAG_TYPES) {
         return;
     }
@@ -2653,9 +2643,7 @@ tag_editor_set_buffer(StrBuilder *buffer, char *data, int32 data_len) {
 static void
 tag_editor_update_titles(TagEditorScreen *screen,
                          bool update_windows) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
 
     tag_editor_update_visible_counts(screen);
     sb_clear(&screen->directories_title);
@@ -2718,9 +2706,7 @@ tag_editor_update_titles(TagEditorScreen *screen,
 
 static void
 tag_editor_update_visible_counts(TagEditorScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
     screen->last_known_directory_count = nc_menu_item_count(
         nc_editor_pair_menu_base(&screen->directories));
     screen->last_known_tag_count = nc_menu_item_count(
@@ -3496,9 +3482,7 @@ tag_editor_min_int64(int32 left, int32 right) {
 
 static int32
 tag_editor_separator_width(TagEditorScreen *screen) {
-    if (screen == NULL) {
-        return 0;
-    }
+    ASSERT(screen != NULL);
     if (screen->width >= 5) {
         return 1;
     }

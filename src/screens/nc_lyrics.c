@@ -990,9 +990,7 @@ lyrics_screen_update_sync_line_force(
 
 static void
 lyrics_screen_clear_sync_line(LyricsScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
 
     screen->active_lrc_line = LYRICS_NO_ACTIVE_LINE;
     lyrics_buffer_clear_sync_highlight(&screen->display);
@@ -1600,9 +1598,10 @@ lyrics_job_create(LyricsScreen *screen,
 static bool
 lyrics_job_fetch_one(LyricsJob *job, NcmLyricsFetcherDef *fetcher,
                      StrBuilder *artist, StrBuilder *title) {
-    if (fetcher == NULL) {
-        return false;
-    }
+    ASSERT(job != NULL);
+    ASSERT(fetcher != NULL);
+    ASSERT(artist != NULL);
+    ASSERT(title != NULL);
 
     lyrics_job_append_fetching(job, fetcher);
     if (!ncm_lyrics_fetcher_fetch(fetcher,
@@ -1799,9 +1798,8 @@ lyrics_append_fetch_error(NcBuffer *buffer, NcmLyricsResult *result) {
 static void
 lyrics_job_append_fetching(LyricsJob *job,
                            NcmLyricsFetcherDef *fetcher) {
-    if ((job == NULL) || (fetcher == NULL)) {
-        return;
-    }
+    ASSERT(job != NULL);
+    ASSERT(fetcher != NULL);
 
     pthread_mutex_lock(&job->log_mutex);
     lyrics_append_fetching(&job->log, fetcher);
@@ -1814,9 +1812,8 @@ lyrics_job_append_fetching(LyricsJob *job,
 static void
 lyrics_job_append_fetch_error(LyricsJob *job,
                               NcmLyricsResult *result) {
-    if ((job == NULL) || (result == NULL)) {
-        return;
-    }
+    ASSERT(job != NULL);
+    ASSERT(result != NULL);
 
     pthread_mutex_lock(&job->log_mutex);
     lyrics_append_fetch_error(&job->log, result);

@@ -1372,9 +1372,7 @@ playlist_editor_update_menu_highlights(
 
 static void
 playlist_editor_draw_separator(PlaylistEditorScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
     if (playlist_editor_separator_width(screen->width) <= 0) {
         return;
     }
@@ -1385,9 +1383,7 @@ playlist_editor_draw_separator(PlaylistEditorScreen *screen) {
 static void
 playlist_editor_update_titles(PlaylistEditorScreen *screen,
                               bool update_windows) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
 
     if (screen->last_known_content_count >= 0) {
         screen->last_known_content_count = nc_menu_item_count(
@@ -1448,9 +1444,7 @@ playlist_editor_append_int64(StrBuilder *buffer, int32 value) {
 
 static void
 playlist_editor_reset_content_timer(PlaylistEditorScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
     screen->timer = global_timer;
     return;
 }
@@ -1675,9 +1669,7 @@ playlist_editor_locate_song_in_playlist_range(
 
 static bool
 playlist_editor_show_screen(PlaylistEditorScreen *screen) {
-    if (screen == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
     if (!app_controller_is_screen_registered(&screen->screen)) {
         if (!app_controller_register_screen(&screen->screen)) {
             return false;
@@ -1861,10 +1853,7 @@ playlist_editor_update_from_mpd(PlaylistEditorScreen *screen,
     bool changed;
     bool ok;
 
-    if (screen == NULL) {
-        return false;
-    }
-
+    ASSERT(screen != NULL);
     changed = false;
 
     ncm_error_clear(&ncm_error);
@@ -1975,9 +1964,7 @@ playlist_editor_playlist_row_changed(PlaylistEditorScreen *screen) {
 
 static void
 playlist_editor_clear_stale_content(PlaylistEditorScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
     nc_menu_clear_items(nc_song_menu_base(&screen->content));
     sb_clear(&screen->displayed_playlist_path);
     screen->displayed_playlist_valid = false;
@@ -1990,9 +1977,7 @@ playlist_editor_clear_stale_content(PlaylistEditorScreen *screen) {
 
 static void
 playlist_editor_finish_playlist_change(PlaylistEditorScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
     if (screen->active_column != PLAYLIST_EDITOR_COLUMN_PLAYLISTS) {
         return;
     }
@@ -2161,7 +2146,8 @@ playlist_editor_set_displayed_playlist(PlaylistEditorScreen *screen) {
 static void
 playlist_editor_refresh_window(PlaylistEditorScreen *screen,
                                NcWindow *window, NcMenu *menu) {
-    if ((screen == NULL) || (window == NULL) || (menu == NULL)) {
+    ASSERT(screen != NULL);
+    if ((window == NULL) || (menu == NULL)) {
         return;
     }
     nc_menu_prepare_refresh(menu, nc_window_height(window), NULL, NULL);
