@@ -85,6 +85,8 @@ ncm_curl_escape(StrBuilder *out, char *string, int32 string_len) {
     return CURLE_OK;
 }
 
+// Note: write_data is a callback used from curl lib,
+// so we are forced to use stupid size_t
 static size_t
 write_data(char *buffer, size_t size, size_t nmemb, void *data) {
     NcmCurlResponseWriter *writer;
