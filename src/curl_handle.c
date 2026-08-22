@@ -6,8 +6,6 @@
 #include "c/ncm_c.h"
 #include "curl_handle.h"
 
-static size_t write_data(char *buffer, size_t size, size_t nmemb, void *data);
-
 void
 ncm_curl_response_writer_init(NcmCurlResponseWriter *writer,
                               StrBuilder *buffer) {
@@ -19,6 +17,32 @@ void
 ncm_curl_response_writer_destroy(NcmCurlResponseWriter *writer) {
     writer->buffer = NULL;
     return;
+}
+
+// Note: write_data is a callback used from curl lib,
+// so we are forced to use stupid size_t
+static size_t
+write_data(char *buffer, size_t size, size_t nmemb, void *data) {
+    NcmCurlResponseWriter *writer;
+    size_t bytes;
+
+    if ((size != 0) && (nmemb > SIZE_MAX/size)) {
+        return 0;
+    }
+    bytes = size*nmemb;
+    writer = data;
+    if ((writer == NULL) || (writer->buffer == NULL)) {
+        return 0;
+    }
+    if ((writer->buffer->len >= INT32_MAX)
+        || (bytes > (size_t)(INT32_MAX - writer->buffer->len - 1))) {
+        return 0;
+    }
+    if (bytes > 0) {
+        SB_APPEND(writer->buffer, buffer, (int32)bytes);
+    }
+
+    return bytes;
 }
 
 CURLcode
@@ -83,32 +107,6 @@ ncm_curl_escape(StrBuilder *out, char *string, int32 string_len) {
     }
     curl_free(escaped);
     return CURLE_OK;
-}
-
-// Note: write_data is a callback used from curl lib,
-// so we are forced to use stupid size_t
-static size_t
-write_data(char *buffer, size_t size, size_t nmemb, void *data) {
-    NcmCurlResponseWriter *writer;
-    size_t bytes;
-
-    if ((size != 0) && (nmemb > SIZE_MAX/size)) {
-        return 0;
-    }
-    bytes = size*nmemb;
-    writer = data;
-    if ((writer == NULL) || (writer->buffer == NULL)) {
-        return 0;
-    }
-    if ((writer->buffer->len >= INT32_MAX)
-        || (bytes > (size_t)(INT32_MAX - writer->buffer->len - 1))) {
-        return 0;
-    }
-    if (bytes > 0) {
-        SB_APPEND(writer->buffer, buffer, (int32)bytes);
-    }
-
-    return bytes;
 }
 
 #endif /* NCMPCPP_CURL_HANDLE_C */
