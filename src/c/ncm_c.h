@@ -66,8 +66,7 @@ typedef struct NcmTagsReplayGainInfo {
     NcmStringView album_peak;
 } NcmTagsReplayGainInfo;
 
-typedef void NcmTagsValueCallback(char *value, int32 value_len,
-                                  void *user);
+typedef void NcmTagsValueCallback(char *value, int32 value_len, void *user);
 typedef bool NcmTagsGetFieldCallback(enum NcmTagsField field,
                                      int32 idx, NcmStringView *value,
                                      void *user);
