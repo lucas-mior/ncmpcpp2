@@ -537,17 +537,17 @@ _Generic((VAR1),                                                        \
                                                                                \
     if (ASSERT_EQUAL_VAR1_LEN != ASSERT_EQUAL_VAR2_LEN) {                      \
         assert_error(__FILE__, __LINE__, FUNC__,                               \
-                     "%s length = %d == %s length = %d\n",                     \
+                     "len(%s) = %d == %d = len(%s)\n",                         \
                      #VAR1, ASSERT_EQUAL_VAR1_LEN,                             \
-                     #VAR2, ASSERT_EQUAL_VAR2_LEN);                            \
+                     ASSERT_EQUAL_VAR2_LEN, #VAR2);                            \
         TRAP();                                                                \
     }                                                                          \
     if (memcmp64(ASSERT_EQUAL_VAR1, ASSERT_EQUAL_VAR2,                         \
                  ASSERT_EQUAL_VAR1_LEN) != 0) {                                \
         assert_error(__FILE__, __LINE__, FUNC__,                               \
-                     "%s = %.*s == %s = %.*s\n",                               \
+                     "%s = %.*s == %.*s = %s\n",                               \
                      #VAR1, ASSERT_EQUAL_VAR1_LEN, ASSERT_EQUAL_VAR1,          \
-                     #VAR2, ASSERT_EQUAL_VAR2_LEN, ASSERT_EQUAL_VAR2);         \
+                     ASSERT_EQUAL_VAR2_LEN, ASSERT_EQUAL_VAR2, #VAR2);         \
         TRAP();                                                                \
     }                                                                          \
 } while (0)
