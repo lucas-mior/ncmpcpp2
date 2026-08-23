@@ -233,8 +233,8 @@ scroll_internal(NcMenu *menu, int32 height, enum NcScroll where,
         }
         menu->highlight += height;
         menu->beginning += height;
-        menu->beginning = (int32)MIN(menu->beginning, max_beginning);
-        menu->highlight = (int32)MIN(menu->highlight, max_highlight);
+        menu->beginning = MIN(menu->beginning, max_beginning);
+        menu->highlight = MIN(menu->highlight, max_highlight);
         if (!menu_is_highlightable(menu, menu->highlight, is_highlightable,
                                    user)) {
             if ((menu->highlight == max_highlight)
