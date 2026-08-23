@@ -91,9 +91,9 @@ ASSERT_DECLARE_INTEGERS(unsigned, more)
 ASSERT_DECLARE_INTEGERS(unsigned, more_equal)
 #undef ASSERT_DECLARE_INTEGERS
 
-#define ASSERT_DECLARE_SIGNED_UNSIGNED(MODE) \
-extern void a_signed_unsigned##MODE(char *, int32, char *, \
-                                           char *, char *, char *, char *, \
+#define ASSERT_DECLARE_SIGNED_UNSIGNED(MODE)                                \
+extern void a_signed_unsigned##MODE(char *, int32, char *,                  \
+                                           char *, char *, char *, char *,  \
                                            llong, llong, llong, ullong);
 ASSERT_DECLARE_SIGNED_UNSIGNED(less)
 ASSERT_DECLARE_SIGNED_UNSIGNED(less_equal)
