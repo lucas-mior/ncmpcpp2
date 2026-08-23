@@ -50,9 +50,9 @@ extern void assert_glob_match_failed(char *, int32, char *,
                                      char *, char *, char *, int32,
                                      char *, int32, bool);
 
-#define ASSERT_DECLARE_STRINGS(MODE) \
-extern void a_strings_##MODE(char *, int32, char *, \
-                                    char *, char *, char *, char *);
+#define ASSERT_DECLARE_STRINGS(MODE)                                           \
+extern void a_strings_##MODE(char *, int32, char *,                            \
+                             char *, char *, char *, char *);
 ASSERT_DECLARE_STRINGS(less)
 ASSERT_DECLARE_STRINGS(less_equal)
 ASSERT_DECLARE_STRINGS(equal)
@@ -61,9 +61,9 @@ ASSERT_DECLARE_STRINGS(more)
 ASSERT_DECLARE_STRINGS(more_equal)
 #undef ASSERT_DECLARE_STRINGS
 
-#define ASSERT_DECLARE_POINTERS(MODE) \
-extern void a_pointers_##MODE(char *, int32, char *, \
-                                     char *, char *, void *, void *);
+#define ASSERT_DECLARE_POINTERS(MODE)                                          \
+extern void a_pointers_##MODE(char *, int32, char *,                           \
+                              char *, char *, void *, void *);
 ASSERT_DECLARE_POINTERS(less)
 ASSERT_DECLARE_POINTERS(less_equal)
 ASSERT_DECLARE_POINTERS(equal)
@@ -72,11 +72,11 @@ ASSERT_DECLARE_POINTERS(more)
 ASSERT_DECLARE_POINTERS(more_equal)
 #undef ASSERT_DECLARE_POINTERS
 
-#define ASSERT_DECLARE_INTEGERS(SIGN, MODE) \
-extern void a_both_##SIGN##_##MODE(char *, int32, char *, \
-                                         char *, char *, char *, char *, \
-                                         llong, llong, SIGN long long, \
-                                         SIGN long long);
+#define ASSERT_DECLARE_INTEGERS(SIGN, MODE)                                    \
+extern void a_both_##SIGN##_##MODE(char *, int32, char *,                      \
+                                   char *, char *, char *, char *,             \
+                                   llong, llong, SIGN long long,               \
+                                   SIGN long long);
 ASSERT_DECLARE_INTEGERS(signed, less)
 ASSERT_DECLARE_INTEGERS(signed, less_equal)
 ASSERT_DECLARE_INTEGERS(signed, equal)
@@ -91,10 +91,10 @@ ASSERT_DECLARE_INTEGERS(unsigned, more)
 ASSERT_DECLARE_INTEGERS(unsigned, more_equal)
 #undef ASSERT_DECLARE_INTEGERS
 
-#define ASSERT_DECLARE_SIGNED_UNSIGNED(MODE)                                \
-extern void a_signed_unsigned##MODE(char *, int32, char *,                  \
-                                           char *, char *, char *, char *,  \
-                                           llong, llong, llong, ullong);
+#define ASSERT_DECLARE_SIGNED_UNSIGNED(MODE)                                   \
+extern void a_signed_unsigned##MODE(char *, int32, char *,                     \
+                                    char *, char *, char *, char *,            \
+                                    llong, llong, llong, ullong);
 ASSERT_DECLARE_SIGNED_UNSIGNED(less)
 ASSERT_DECLARE_SIGNED_UNSIGNED(less_equal)
 ASSERT_DECLARE_SIGNED_UNSIGNED(equal)
