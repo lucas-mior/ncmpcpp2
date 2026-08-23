@@ -1283,11 +1283,9 @@ lyrics_screen_test_refetch_writes_txt_without_removing_lrc(void) {
     ASSERT(lyrics_test_has_pushed_job);
     ASSERT(ncm_fs_exists(lrc_path, strlen32(lrc_path)));
     ASSERT(!ncm_fs_exists(txt_path, strlen32(txt_path)));
-    ASSERT_EQUAL(screen.filename.len, strlen32(txt_path));
     ASSERT_EQUAL(screen.filename.data, screen.filename.len, txt_path);
 
     job = lyrics_screen_test_pushed_lyrics_job();
-    ASSERT_EQUAL(job->filename.len, strlen32(txt_path));
     ASSERT_EQUAL(job->filename.data, job->filename.len, txt_path);
     ASSERT(ncm_lyrics_result_set(&job->result, true,
                                  STRLIT("downloaded plain\n")));
