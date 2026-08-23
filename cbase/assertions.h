@@ -245,16 +245,16 @@ void UNSUPPORTED_TYPE_FOR_GENERIC_ASSERT_CLOSE_SECOND(void);
     }                                                                          \
 } while (0)
 
-#define ASSERT_FILE_CONTAINS(PATH, NEEDLE)           \
-    assert_file_contains(__FILE__, __LINE__, FUNC__, \
+#define ASSERT_FILE_CONTAINS(PATH, NEEDLE)                                \
+    assert_file_contains(__FILE__, __LINE__, FUNC__,                      \
                          PATH, NEEDLE)
 
-#define ASSERT_CONTAINS(HAYSTACK, HAYSTACK_LEN, NEEDLE) \
-    assert_contains(__FILE__, __LINE__, FUNC__,         \
+#define ASSERT_CONTAINS(HAYSTACK, HAYSTACK_LEN, NEEDLE)                   \
+    assert_contains(__FILE__, __LINE__, FUNC__,                           \
                     HAYSTACK, HAYSTACK_LEN, NEEDLE)
 
-#define ASSERT_NOT_CONTAINS(HAYSTACK, HAYSTACK_LEN, NEEDLE) \
-    assert_not_contains(__FILE__, __LINE__, FUNC__,         \
+#define ASSERT_NOT_CONTAINS(HAYSTACK, HAYSTACK_LEN, NEEDLE)               \
+    assert_not_contains(__FILE__, __LINE__, FUNC__,                       \
                         HAYSTACK, HAYSTACK_LEN, NEEDLE)
 
 #define ASSERT_GLOB_MATCH_IMPL(STRING, STRING_LEN, GLOB, GLOB_LEN, EXPECTED)  \
