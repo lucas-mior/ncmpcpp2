@@ -127,25 +127,25 @@ ASSERT_DECLARE_DOUBLE(more)
 ASSERT_DECLARE_DOUBLE(more_equal)
 #undef ASSERT_DECLARE_DOUBLE
 
-#define ASSERT_DECLARE_DOUBLE_CLOSE(MODE) \
-extern void a_double_##MODE(char *, int32, char *, \
-                                  char *, char *, char *, char *, \
+#define ASSERT_DECLARE_DOUBLE_CLOSE(MODE)                                  \
+extern void a_double_##MODE(char *, int32, char *,                         \
+                                  char *, char *, char *, char *,          \
                                   llong, llong, int, int, double, double);
 ASSERT_DECLARE_DOUBLE_CLOSE(close)
 ASSERT_DECLARE_DOUBLE_CLOSE(not_close)
 #undef ASSERT_DECLARE_DOUBLE_CLOSE
 
-#define ASSERT_DECLARE_DOUBLE_CLOSE_TOL(MODE) \
-extern void a_double_##MODE(char *, int32, char *, \
-                                  char *, char *, char *, char *, \
+#define ASSERT_DECLARE_DOUBLE_CLOSE_TOL(MODE)                              \
+extern void a_double_##MODE(char *, int32, char *,                         \
+                                  char *, char *, char *, char *,          \
                                   llong, llong, double, double, double);
 ASSERT_DECLARE_DOUBLE_CLOSE_TOL(close_tol)
 ASSERT_DECLARE_DOUBLE_CLOSE_TOL(not_close_tol)
 #undef ASSERT_DECLARE_DOUBLE_CLOSE_TOL
 
-#define ASSERT_DECLARE_BOOL(MODE) \
-extern void a_bool_##MODE(char *, int32, char *, \
-                                char *, char *, char *, char *, \
+#define ASSERT_DECLARE_BOOL(MODE)                                          \
+extern void a_bool_##MODE(char *, int32, char *,                           \
+                                char *, char *, char *, char *,            \
                                 llong, llong, bool, bool);
 ASSERT_DECLARE_BOOL(equal)
 ASSERT_DECLARE_BOOL(not_equal)
