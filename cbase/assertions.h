@@ -494,7 +494,7 @@ _Generic((VAR1),                                                        \
 #define ASSERT_MORE_EQUAL(VAR1, VAR2) ASSERT_COMPARE(more_equal, VAR1, VAR2)
 #endif
 
-#define ASSERT_EQUAL_3(VAR1, VAR1_LEN, VAR2) do {                             \
+#define ASSERT_EQUAL_3(VAR1, VAR1_LEN, VAR2) do {                              \
     char *ASSERT_EQUAL_VAR1 = VAR1;                                            \
     int32 ASSERT_EQUAL_VAR1_LEN = VAR1_LEN;                                    \
     char *ASSERT_EQUAL_VAR2 = VAR2;                                            \
@@ -511,7 +511,7 @@ _Generic((VAR1),                                                        \
     if (!strequal2(ASSERT_EQUAL_VAR1, ASSERT_EQUAL_VAR1_LEN,                   \
                    ASSERT_EQUAL_VAR2, ASSERT_EQUAL_VAR2_LEN)) {                \
         assert_error(__FILE__, __LINE__, FUNC__,                               \
-                     "%s = %.*s == %s = %s\n",                                \
+                     "%s = %.*s == %s = %s\n",                                 \
                      #VAR1, ASSERT_EQUAL_VAR1_LEN, ASSERT_EQUAL_VAR1,          \
                      #VAR2, ASSERT_EQUAL_VAR2);                                \
         TRAP();                                                                \
