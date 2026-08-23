@@ -271,15 +271,13 @@ lyrics_test_download(StrBuilder *data, char *url, int32 url_len, char *referer,
     ASSERT(timeout_seconds == 15);
 
     if (context->calls == 1) {
-        ASSERT_EQUAL(url_len, test->direct_url_len);
-        ASSERT_EQUAL(url, url_len, test->direct_url);
+        ASSERT_EQUAL(url, url_len, test->direct_url, test->direct_url_len);
         ASSERT(referer == NULL);
         ASSERT(referer_len == 0);
         return CURLE_HTTP_RETURNED_ERROR;
     }
     if (context->calls == 2) {
-        ASSERT_EQUAL(url_len, test->search_url_len);
-        ASSERT_EQUAL(url, url_len, test->search_url);
+        ASSERT_EQUAL(url, url_len, test->search_url, test->search_url_len);
         ASSERT(referer == NULL);
         ASSERT(referer_len == 0);
         sb_clear(data);
@@ -296,10 +294,9 @@ lyrics_test_download(StrBuilder *data, char *url, int32 url_len, char *referer,
     }
 
     ASSERT(context->calls == 3);
-    ASSERT_EQUAL(url_len, test->page_url_len);
-    ASSERT_EQUAL(url, url_len, test->page_url);
-    ASSERT_EQUAL(referer_len, test->search_url_len);
-    ASSERT_EQUAL(referer, referer_len, test->search_url);
+    ASSERT_EQUAL(url, url_len, test->page_url, test->page_url_len);
+    ASSERT_EQUAL(referer, referer_len, test->search_url,
+                 test->search_url_len);
     lyrics_test_append_fixture(data, test);
     return CURLE_OK;
 }
@@ -352,8 +349,7 @@ lyrics_test_musica_search_download(
     ASSERT(timeout_seconds == 15);
 
     if (context->calls == 1) {
-        ASSERT_EQUAL(url_len, test->search_url_len);
-        ASSERT_EQUAL(url, url_len, test->search_url);
+        ASSERT_EQUAL(url, url_len, test->search_url, test->search_url_len);
         ASSERT(referer == NULL);
         ASSERT(referer_len == 0);
         sb_clear(data);
@@ -367,10 +363,10 @@ lyrics_test_musica_search_download(
         return CURLE_OK;
     }
     if (context->calls == 2) {
-        ASSERT_EQUAL(url_len, test->bad_page_url_len);
-        ASSERT_EQUAL(url, url_len, test->bad_page_url);
-        ASSERT_EQUAL(referer_len, test->search_url_len);
-        ASSERT_EQUAL(referer, referer_len, test->search_url);
+        ASSERT_EQUAL(url, url_len, test->bad_page_url,
+                     test->bad_page_url_len);
+        ASSERT_EQUAL(referer, referer_len, test->search_url,
+                     test->search_url_len);
         sb_clear(data);
         sb_append(data, STRLIT("<html><body><h1>Wrong song</h1>"
                                     "</body></html>"));
@@ -378,10 +374,9 @@ lyrics_test_musica_search_download(
     }
 
     ASSERT(context->calls == 3);
-    ASSERT_EQUAL(url_len, test->page_url_len);
-    ASSERT_EQUAL(url, url_len, test->page_url);
-    ASSERT_EQUAL(referer_len, test->search_url_len);
-    ASSERT_EQUAL(referer, referer_len, test->search_url);
+    ASSERT_EQUAL(url, url_len, test->page_url, test->page_url_len);
+    ASSERT_EQUAL(referer, referer_len, test->search_url,
+                 test->search_url_len);
     lyrics_test_append_fixture(data, test);
     return CURLE_OK;
 }
@@ -403,8 +398,7 @@ lyrics_test_lacoccinelle_search_download(
     ASSERT(timeout_seconds == 15);
 
     if (context->calls == 1) {
-        ASSERT_EQUAL(url_len, test->search_url_len);
-        ASSERT_EQUAL(url, url_len, test->search_url);
+        ASSERT_EQUAL(url, url_len, test->search_url, test->search_url_len);
         ASSERT(referer == NULL);
         ASSERT(referer_len == 0);
         sb_clear(data);
@@ -421,10 +415,9 @@ lyrics_test_lacoccinelle_search_download(
     }
 
     ASSERT(context->calls == 2);
-    ASSERT_EQUAL(url_len, test->page_url_len);
-    ASSERT_EQUAL(url, url_len, test->page_url);
-    ASSERT_EQUAL(referer_len, test->search_url_len);
-    ASSERT_EQUAL(referer, referer_len, test->search_url);
+    ASSERT_EQUAL(url, url_len, test->page_url, test->page_url_len);
+    ASSERT_EQUAL(referer, referer_len, test->search_url,
+                 test->search_url_len);
     lyrics_test_append_fixture(data, test);
     return CURLE_OK;
 }
@@ -533,8 +526,8 @@ lyrics_test_assert_first_direct_url(
     ASSERT(lyrics_collect_direct_urls(fetcher, &urls, artist, artist_len,
                                       title, title_len));
     ASSERT(urls.len > 0);
-    ASSERT_EQUAL(urls.items[0].len, expected_len);
-    ASSERT_EQUAL(urls.items[0].data, urls.items[0].len, expected);
+    ASSERT_EQUAL(urls.items[0].data, urls.items[0].len,
+                 expected, expected_len);
     str_builder_array_destroy(&urls);
     return;
 }
@@ -690,9 +683,9 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
         ASSERT(ncm_lyrics_fetcher_build_url(
             &fetcher, &search_url, STRLIT("luis fonsi"),
             STRLIT("despacito")));
-        ASSERT_EQUAL(search_url.len, context.test->search_url_len);
         ASSERT_EQUAL(search_url.data, search_url.len,
-                     context.test->search_url);
+                     context.test->search_url,
+                     context.test->search_url_len);
 
         lyrics_test_set_download(lyrics_test_download, &context);
         ASSERT(ncm_lyrics_fetcher_fetch(
@@ -819,8 +812,8 @@ test_musica_search_download_and_parse_fixture(void) {
     ASSERT(ncm_lyrics_fetcher_build_url(
         &fetcher, &search_url, STRLIT("luis fonsi"),
         STRLIT("despacito")));
-    ASSERT_EQUAL(search_url.len, context.test->search_url_len);
-    ASSERT_EQUAL(search_url.data, search_url.len, context.test->search_url);
+    ASSERT_EQUAL(search_url.data, search_url.len,
+                 context.test->search_url, context.test->search_url_len);
     ASSERT(lyrics_search_candidate_score(
         &fetcher,
         STRLIT("https://www.musica.com/letras.asp?letra=2276162"),
@@ -870,8 +863,8 @@ test_lacoccinelle_search_download_and_parse_fixture(void) {
     ASSERT(ncm_lyrics_fetcher_build_url(
         &fetcher, &search_url, STRLIT("luis fonsi"),
         STRLIT("despacito")));
-    ASSERT_EQUAL(search_url.len, context.test->search_url_len);
-    ASSERT_EQUAL(search_url.data, search_url.len, context.test->search_url);
+    ASSERT_EQUAL(search_url.data, search_url.len,
+                 context.test->search_url, context.test->search_url_len);
     ASSERT(lyrics_search_candidate_score(
         &fetcher,
         STRLIT("https://www.lacoccinelle.net/1225780-luis-fonsi-"
