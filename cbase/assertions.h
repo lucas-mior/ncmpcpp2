@@ -104,9 +104,9 @@ ASSERT_DECLARE_SIGNED_UNSIGNED(more_equal)
 #undef ASSERT_DECLARE_SIGNED_UNSIGNED
 
 #define ASSERT_DECLARE_UNSIGNED_SIGNED(MODE) \
-extern void a_unsigned_signed_##MODE(char *, int32, char *, \
-                                           char *, char *, char *, char *, \
-                                           llong, llong, ullong, llong);
+extern void a_unsigned_signed_##MODE(char *, int32, char *,            \
+                                     char *, char *, char *, char *,   \
+                                     llong, llong, ullong, llong);
 ASSERT_DECLARE_UNSIGNED_SIGNED(less)
 ASSERT_DECLARE_UNSIGNED_SIGNED(less_equal)
 ASSERT_DECLARE_UNSIGNED_SIGNED(equal)
@@ -115,10 +115,10 @@ ASSERT_DECLARE_UNSIGNED_SIGNED(more)
 ASSERT_DECLARE_UNSIGNED_SIGNED(more_equal)
 #undef ASSERT_DECLARE_UNSIGNED_SIGNED
 
-#define ASSERT_DECLARE_DOUBLE(MODE) \
-extern void a_double_##MODE(char *, int32, char *, \
-                                  char *, char *, char *, char *, \
-                                  llong, llong, double, double);
+#define ASSERT_DECLARE_DOUBLE(MODE)                                    \
+extern void a_double_##MODE(char *, int32, char *,                     \
+                            char *, char *, char *, char *,            \
+                            llong, llong, double, double);
 ASSERT_DECLARE_DOUBLE(less)
 ASSERT_DECLARE_DOUBLE(less_equal)
 ASSERT_DECLARE_DOUBLE(equal)
