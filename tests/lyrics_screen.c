@@ -756,7 +756,8 @@ lyrics_screen_test_assert_file_text(char *path, char *text, int32 text_len) {
     int32 bytes_len;
 
     ASSERT(read_entire_file(path, &bytes, &bytes_len));
-    ASSERT(STREQUAL(bytes, bytes_len, text, text_len));
+    ASSERT_EQUAL(bytes_len, text_len);
+    ASSERT_EQUAL(bytes, bytes_len, text);
     free2(bytes, bytes_len + 1);
     return;
 }
@@ -770,10 +771,10 @@ lyrics_screen_test_clear_status_message(void) {
 static void
 lyrics_screen_test_assert_status_message(char *message,
                                          int32 message_len) {
-    ASSERT(STREQUAL(lyrics_test_status_message.data,
-                    lyrics_test_status_message.len,
-                    message,
-                    message_len));
+    ASSERT_EQUAL(lyrics_test_status_message.len, message_len);
+    ASSERT_EQUAL(lyrics_test_status_message.data,
+                 lyrics_test_status_message.len,
+                 message);
     return;
 }
 
@@ -937,10 +938,9 @@ lyrics_screen_test_lrc_preferred_over_txt(void) {
         STRLIT("Artist - Title.lrc found; Artist - Title.txt found"));
     mode = lyrics_screen_mode(&screen);
     ASSERT(mode == LYRICS_MODE_SYNCHRONIZED);
-    ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
-                    lrc_path, strlen32(lrc_path)));
-    ASSERT(STREQUAL(screen.display.data, screen.display.len,
-                    STRLIT("synced")));
+    ASSERT_EQUAL(screen.filename.len, strlen32(lrc_path));
+    ASSERT_EQUAL(screen.filename.data, screen.filename.len, lrc_path);
+    ASSERT_EQUAL(screen.display.data, screen.display.len, "synced");
 
     lyrics_screen_destroy(&screen);
     ncm_song_destroy(&song);
@@ -973,10 +973,9 @@ lyrics_screen_test_txt_used_when_lrc_missing(void) {
         STRLIT("Artist - Title.lrc not found; Artist - Title.txt found"));
     mode = lyrics_screen_mode(&screen);
     ASSERT(mode == LYRICS_MODE_PLAIN);
-    ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
-                    txt_path, strlen32(txt_path)));
-    ASSERT(STREQUAL(screen.display.data, screen.display.len,
-                    STRLIT("plain\nline")));
+    ASSERT_EQUAL(screen.filename.len, strlen32(txt_path));
+    ASSERT_EQUAL(screen.filename.data, screen.filename.len, txt_path);
+    ASSERT_EQUAL(screen.display.data, screen.display.len, "plain\nline");
 
     lyrics_screen_destroy(&screen);
     ncm_song_destroy(&song);
@@ -1012,10 +1011,9 @@ lyrics_screen_test_invalid_lrc_falls_back_to_txt(void) {
         STRLIT("Artist - Title.lrc found; Artist - Title.txt found"));
     mode = lyrics_screen_mode(&screen);
     ASSERT(mode == LYRICS_MODE_PLAIN);
-    ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
-                    txt_path, strlen32(txt_path)));
-    ASSERT(STREQUAL(screen.display.data, screen.display.len,
-                    STRLIT("fallback")));
+    ASSERT_EQUAL(screen.filename.len, strlen32(txt_path));
+    ASSERT_EQUAL(screen.filename.data, screen.filename.len, txt_path);
+    ASSERT_EQUAL(screen.display.data, screen.display.len, "fallback");
     ASSERT_ZERO(screen.lrc.entries_len);
 
     lyrics_screen_destroy(&screen);
@@ -1218,14 +1216,14 @@ lyrics_screen_test_lrc_integration_fixture(void) {
     ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error));
     ASSERT(lyrics_screen_mode(&screen)
            == LYRICS_MODE_SYNCHRONIZED);
-    ASSERT(STREQUAL(screen.display.data, screen.display.len,
-                    STRLIT("first line\n"
-                           "second line\n"
-                           "third line\n"
-                           "fourth line\n"
-                           "fifth line\n"
-                           "sixth line\n"
-                           "seventh line")));
+    ASSERT_EQUAL(screen.display.data, screen.display.len,
+                 "first line\n"
+                 "second line\n"
+                 "third line\n"
+                 "fourth line\n"
+                 "fifth line\n"
+                 "sixth line\n"
+                 "seventh line");
     ASSERT(memmem64(screen.display.data,
                     screen.display.len,
                     STRLIT("[00:")) == NULL);
@@ -1245,8 +1243,8 @@ lyrics_screen_test_lrc_integration_fixture(void) {
     ASSERT(lyrics_screen_fetch(&plain_screen, &song, NULL, &error));
     ASSERT(lyrics_screen_mode(&plain_screen)
            == LYRICS_MODE_PLAIN);
-    ASSERT(STREQUAL(plain_screen.display.data, plain_screen.display.len,
-                    STRLIT("plain fallback")));
+    ASSERT_EQUAL(plain_screen.display.data, plain_screen.display.len,
+                 "plain fallback");
 
     lyrics_screen_destroy(&plain_screen);
     ncm_song_destroy(&song);
@@ -1285,12 +1283,12 @@ lyrics_screen_test_refetch_writes_txt_without_removing_lrc(void) {
     ASSERT(lyrics_test_has_pushed_job);
     ASSERT(ncm_fs_exists(lrc_path, strlen32(lrc_path)));
     ASSERT(!ncm_fs_exists(txt_path, strlen32(txt_path)));
-    ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
-                    txt_path, strlen32(txt_path)));
+    ASSERT_EQUAL(screen.filename.len, strlen32(txt_path));
+    ASSERT_EQUAL(screen.filename.data, screen.filename.len, txt_path);
 
     job = lyrics_screen_test_pushed_lyrics_job();
-    ASSERT(STREQUAL(job->filename.data, job->filename.len,
-                    txt_path, strlen32(txt_path)));
+    ASSERT_EQUAL(job->filename.len, strlen32(txt_path));
+    ASSERT_EQUAL(job->filename.data, job->filename.len, txt_path);
     ASSERT(ncm_lyrics_result_set(&job->result, true,
                                  STRLIT("downloaded plain\n")));
     lyrics_test_pushed_job.complete(true, &error, job);
@@ -1344,8 +1342,8 @@ lyrics_screen_test_background_fetch_respects_lrc_and_txt(void) {
         &screen, &song, false, &error));
     ASSERT(lyrics_test_has_pushed_job);
     job = lyrics_screen_test_pushed_lyrics_job();
-    ASSERT(STREQUAL(job->filename.data, job->filename.len,
-                    txt_path, strlen32(txt_path)));
+    ASSERT_EQUAL(job->filename.len, strlen32(txt_path));
+    ASSERT_EQUAL(job->filename.data, job->filename.len, txt_path);
 
     lyrics_screen_test_clear_pushed_job();
     lyrics_screen_destroy(&screen);

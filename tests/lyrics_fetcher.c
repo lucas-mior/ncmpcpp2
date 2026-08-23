@@ -271,15 +271,15 @@ lyrics_test_download(StrBuilder *data, char *url, int32 url_len, char *referer,
     ASSERT(timeout_seconds == 15);
 
     if (context->calls == 1) {
-        ASSERT(STREQUAL(url, url_len, test->direct_url,
-                        test->direct_url_len));
+        ASSERT_EQUAL(url_len, test->direct_url_len);
+        ASSERT_EQUAL(url, url_len, test->direct_url);
         ASSERT(referer == NULL);
         ASSERT(referer_len == 0);
         return CURLE_HTTP_RETURNED_ERROR;
     }
     if (context->calls == 2) {
-        ASSERT(STREQUAL(url, url_len, test->search_url,
-                        test->search_url_len));
+        ASSERT_EQUAL(url_len, test->search_url_len);
+        ASSERT_EQUAL(url, url_len, test->search_url);
         ASSERT(referer == NULL);
         ASSERT(referer_len == 0);
         sb_clear(data);
@@ -296,9 +296,10 @@ lyrics_test_download(StrBuilder *data, char *url, int32 url_len, char *referer,
     }
 
     ASSERT(context->calls == 3);
-    ASSERT(STREQUAL(url, url_len, test->page_url, test->page_url_len));
-    ASSERT(STREQUAL(referer, referer_len, test->search_url,
-                    test->search_url_len));
+    ASSERT_EQUAL(url_len, test->page_url_len);
+    ASSERT_EQUAL(url, url_len, test->page_url);
+    ASSERT_EQUAL(referer_len, test->search_url_len);
+    ASSERT_EQUAL(referer, referer_len, test->search_url);
     lyrics_test_append_fixture(data, test);
     return CURLE_OK;
 }
@@ -320,18 +321,16 @@ lyrics_test_direct_candidate_download(
     ASSERT(referer_len == 0);
 
     if (context->calls == 1) {
-        ASSERT(STREQUAL(
-            url, url_len,
-            STRLIT("https://www.vagalume.com.br/jorge-ben/"
-                        "que-nega-e-essa.html")));
+        ASSERT_EQUAL(url, url_len,
+                     "https://www.vagalume.com.br/jorge-ben/"
+                     "que-nega-e-essa.html");
         return CURLE_HTTP_RETURNED_ERROR;
     }
 
     ASSERT(context->calls == 2);
-    ASSERT(STREQUAL(
-        url, url_len,
-        STRLIT("https://www.vagalume.com.br/jorge-ben/"
-                    "que-nega-%C3%A9-essa.html")));
+    ASSERT_EQUAL(url, url_len,
+                 "https://www.vagalume.com.br/jorge-ben/"
+                 "que-nega-%C3%A9-essa.html");
     lyrics_test_append_fixture(data, context->test);
     return CURLE_OK;
 }
@@ -353,8 +352,8 @@ lyrics_test_musica_search_download(
     ASSERT(timeout_seconds == 15);
 
     if (context->calls == 1) {
-        ASSERT(STREQUAL(url, url_len, test->search_url,
-                        test->search_url_len));
+        ASSERT_EQUAL(url_len, test->search_url_len);
+        ASSERT_EQUAL(url, url_len, test->search_url);
         ASSERT(referer == NULL);
         ASSERT(referer_len == 0);
         sb_clear(data);
@@ -368,10 +367,10 @@ lyrics_test_musica_search_download(
         return CURLE_OK;
     }
     if (context->calls == 2) {
-        ASSERT(STREQUAL(url, url_len, test->bad_page_url,
-                        test->bad_page_url_len));
-        ASSERT(STREQUAL(referer, referer_len, test->search_url,
-                        test->search_url_len));
+        ASSERT_EQUAL(url_len, test->bad_page_url_len);
+        ASSERT_EQUAL(url, url_len, test->bad_page_url);
+        ASSERT_EQUAL(referer_len, test->search_url_len);
+        ASSERT_EQUAL(referer, referer_len, test->search_url);
         sb_clear(data);
         sb_append(data, STRLIT("<html><body><h1>Wrong song</h1>"
                                     "</body></html>"));
@@ -379,9 +378,10 @@ lyrics_test_musica_search_download(
     }
 
     ASSERT(context->calls == 3);
-    ASSERT(STREQUAL(url, url_len, test->page_url, test->page_url_len));
-    ASSERT(STREQUAL(referer, referer_len, test->search_url,
-                    test->search_url_len));
+    ASSERT_EQUAL(url_len, test->page_url_len);
+    ASSERT_EQUAL(url, url_len, test->page_url);
+    ASSERT_EQUAL(referer_len, test->search_url_len);
+    ASSERT_EQUAL(referer, referer_len, test->search_url);
     lyrics_test_append_fixture(data, test);
     return CURLE_OK;
 }
@@ -403,8 +403,8 @@ lyrics_test_lacoccinelle_search_download(
     ASSERT(timeout_seconds == 15);
 
     if (context->calls == 1) {
-        ASSERT(STREQUAL(url, url_len, test->search_url,
-                        test->search_url_len));
+        ASSERT_EQUAL(url_len, test->search_url_len);
+        ASSERT_EQUAL(url, url_len, test->search_url);
         ASSERT(referer == NULL);
         ASSERT(referer_len == 0);
         sb_clear(data);
@@ -421,9 +421,10 @@ lyrics_test_lacoccinelle_search_download(
     }
 
     ASSERT(context->calls == 2);
-    ASSERT(STREQUAL(url, url_len, test->page_url, test->page_url_len));
-    ASSERT(STREQUAL(referer, referer_len, test->search_url,
-                    test->search_url_len));
+    ASSERT_EQUAL(url_len, test->page_url_len);
+    ASSERT_EQUAL(url, url_len, test->page_url);
+    ASSERT_EQUAL(referer_len, test->search_url_len);
+    ASSERT_EQUAL(referer, referer_len, test->search_url);
     lyrics_test_append_fixture(data, test);
     return CURLE_OK;
 }
@@ -443,29 +444,26 @@ lyrics_test_jorge_ben_search_download(
     ASSERT(timeout_seconds == 15);
 
     if (context->calls == 1) {
-        ASSERT(STREQUAL(
-            url, url_len,
-            STRLIT("https://www.vagalume.com.br/jorge-ben/"
-                        "que-nega-e-essa.html")));
+        ASSERT_EQUAL(url, url_len,
+                     "https://www.vagalume.com.br/jorge-ben/"
+                     "que-nega-e-essa.html");
         ASSERT(referer == NULL);
         ASSERT(referer_len == 0);
         return CURLE_HTTP_RETURNED_ERROR;
     }
     if (context->calls == 2) {
-        ASSERT(STREQUAL(
-            url, url_len,
-            STRLIT("https://www.vagalume.com.br/jorge-ben/"
-                        "que-nega-%C3%A9-essa.html")));
+        ASSERT_EQUAL(url, url_len,
+                     "https://www.vagalume.com.br/jorge-ben/"
+                     "que-nega-%C3%A9-essa.html");
         ASSERT(referer == NULL);
         ASSERT(referer_len == 0);
         return CURLE_HTTP_RETURNED_ERROR;
     }
     if (context->calls == 3) {
-        ASSERT(STREQUAL(
-            url, url_len,
-            STRLIT("https://www.google.com/search?hl=en&q=site%3A"
-                        "vagalume.com.br+Jorge+Ben+Que+nega+%C3%A9+"
-                        "essa+lyrics")));
+        ASSERT_EQUAL(url, url_len,
+                     "https://www.google.com/search?hl=en&q=site%3A"
+                     "vagalume.com.br+Jorge+Ben+Que+nega+%C3%A9+"
+                     "essa+lyrics");
         ASSERT(referer == NULL);
         ASSERT(referer_len == 0);
         sb_clear(data);
@@ -481,15 +479,13 @@ lyrics_test_jorge_ben_search_download(
     }
 
     ASSERT(context->calls == 4);
-    ASSERT(STREQUAL(
-        url, url_len,
-        STRLIT("https://www.vagalume.com.br/jorge-ben-jor/"
-                    "que-nega-e-essa.html")));
-    ASSERT(STREQUAL(
-        referer, referer_len,
-        STRLIT("https://www.google.com/search?hl=en&q=site%3A"
-                    "vagalume.com.br+Jorge+Ben+Que+nega+%C3%A9+"
-                    "essa+lyrics")));
+    ASSERT_EQUAL(url, url_len,
+                 "https://www.vagalume.com.br/jorge-ben-jor/"
+                 "que-nega-e-essa.html");
+    ASSERT_EQUAL(referer, referer_len,
+                 "https://www.google.com/search?hl=en&q=site%3A"
+                 "vagalume.com.br+Jorge+Ben+Que+nega+%C3%A9+"
+                 "essa+lyrics");
     lyrics_test_append_fixture(data, context->test);
     return CURLE_OK;
 }
@@ -537,8 +533,8 @@ lyrics_test_assert_first_direct_url(
     ASSERT(lyrics_collect_direct_urls(fetcher, &urls, artist, artist_len,
                                       title, title_len));
     ASSERT(urls.len > 0);
-    ASSERT(STREQUAL(urls.items[0].data, urls.items[0].len,
-                    expected, expected_len));
+    ASSERT_EQUAL(urls.items[0].len, expected_len);
+    ASSERT_EQUAL(urls.items[0].data, urls.items[0].len, expected);
     str_builder_array_destroy(&urls);
     return;
 }
@@ -596,13 +592,13 @@ test_provider_profiles_drive_metadata(void) {
     int32 len;
 
     value = lyrics_type_name(NCM_LYRICS_FETCHER_MUSICA, &len);
-    ASSERT(STREQUAL(value, len, STRLIT("musica.com")));
+    ASSERT_EQUAL(value, len, "musica.com");
     ASSERT(len == STRLIT_LEN("musica.com"));
     value = lyrics_type_name(NCM_LYRICS_FETCHER_AMALGAMA, &len);
-    ASSERT(STREQUAL(value, len, STRLIT("amalgama-lab.com")));
+    ASSERT_EQUAL(value, len, "amalgama-lab.com");
     ASSERT(len == STRLIT_LEN("amalgama-lab.com"));
     value = lyrics_type_domain(NCM_LYRICS_FETCHER_PAROLES, &len);
-    ASSERT(STREQUAL(value, len, STRLIT("paroles.net")));
+    ASSERT_EQUAL(value, len, "paroles.net");
     ASSERT(len == STRLIT_LEN("paroles.net"));
     ASSERT(lyrics_slug_profile(NCM_LYRICS_FETCHER_AZLYRICS)
            == LYRICS_SLUG_PROFILE_COMPACT_FOLDED);
@@ -694,9 +690,9 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
         ASSERT(ncm_lyrics_fetcher_build_url(
             &fetcher, &search_url, STRLIT("luis fonsi"),
             STRLIT("despacito")));
-        ASSERT(STREQUAL(search_url.data, search_url.len,
-                        context.test->search_url,
-                        context.test->search_url_len));
+        ASSERT_EQUAL(search_url.len, context.test->search_url_len);
+        ASSERT_EQUAL(search_url.data, search_url.len,
+                     context.test->search_url);
 
         lyrics_test_set_download(lyrics_test_download, &context);
         ASSERT(ncm_lyrics_fetcher_fetch(
@@ -790,10 +786,9 @@ test_provider_aware_slug_normalization(void) {
                "luis_fonsi/despacito.html\"></a>"),
         STRLIT("Luis Fonsi"), STRLIT("Despacito")));
     ASSERT(urls.len == 1);
-    ASSERT(STREQUAL(
-        urls.items[0].data, urls.items[0].len,
-        STRLIT("https://www.amalgama-lab.com/songs/l/"
-               "luis_fonsi/despacito.html")));
+    ASSERT_EQUAL(urls.items[0].data, urls.items[0].len,
+                 "https://www.amalgama-lab.com/songs/l/"
+                 "luis_fonsi/despacito.html");
 
     str_builder_array_destroy(&urls);
     sb_free(&unwrapped);
@@ -816,16 +811,16 @@ test_musica_search_download_and_parse_fixture(void) {
 
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT("musica")));
-    ASSERT(STREQUAL(ncm_lyrics_fetcher_name(&fetcher),
-                    ncm_lyrics_fetcher_name_len(&fetcher),
-                    STRLIT("musica.com")));
+    ASSERT_EQUAL(ncm_lyrics_fetcher_name(&fetcher),
+                 ncm_lyrics_fetcher_name_len(&fetcher),
+                 "musica.com");
     lyrics_test_assert_no_direct_urls(
         &fetcher, STRLIT("luis fonsi"), STRLIT("despacito"));
     ASSERT(ncm_lyrics_fetcher_build_url(
         &fetcher, &search_url, STRLIT("luis fonsi"),
         STRLIT("despacito")));
-    ASSERT(STREQUAL(search_url.data, search_url.len,
-                    context.test->search_url, context.test->search_url_len));
+    ASSERT_EQUAL(search_url.len, context.test->search_url_len);
+    ASSERT_EQUAL(search_url.data, search_url.len, context.test->search_url);
     ASSERT(lyrics_search_candidate_score(
         &fetcher,
         STRLIT("https://www.musica.com/letras.asp?letra=2276162"),
@@ -867,16 +862,16 @@ test_lacoccinelle_search_download_and_parse_fixture(void) {
 
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT("lacoccinelle")));
-    ASSERT(STREQUAL(ncm_lyrics_fetcher_name(&fetcher),
-                    ncm_lyrics_fetcher_name_len(&fetcher),
-                    STRLIT("lacoccinelle.net")));
+    ASSERT_EQUAL(ncm_lyrics_fetcher_name(&fetcher),
+                 ncm_lyrics_fetcher_name_len(&fetcher),
+                 "lacoccinelle.net");
     lyrics_test_assert_no_direct_urls(
         &fetcher, STRLIT("luis fonsi"), STRLIT("despacito"));
     ASSERT(ncm_lyrics_fetcher_build_url(
         &fetcher, &search_url, STRLIT("luis fonsi"),
         STRLIT("despacito")));
-    ASSERT(STREQUAL(search_url.data, search_url.len,
-                    context.test->search_url, context.test->search_url_len));
+    ASSERT_EQUAL(search_url.len, context.test->search_url_len);
+    ASSERT_EQUAL(search_url.data, search_url.len, context.test->search_url);
     ASSERT(lyrics_search_candidate_score(
         &fetcher,
         STRLIT("https://www.lacoccinelle.net/1225780-luis-fonsi-"
@@ -1018,11 +1013,9 @@ test_internet_fetcher_returns_search_url_without_download(void) {
     ASSERT(ncm_lyrics_fetcher_build_url(
         &fetcher, &url, STRLIT("luis fonsi"),
         STRLIT("despacito")));
-    ASSERT(STREQUAL(
-        url.data, url.len,
-        STRLIT(
-            "https://www.google.com/search?hl=en&q=lyrics+luis+fonsi+"
-            "despacito")));
+    ASSERT_EQUAL(url.data, url.len,
+                 "https://www.google.com/search?hl=en&q=lyrics+luis+fonsi+"
+                 "despacito");
     ASSERT(ncm_lyrics_fetcher_fetch(
         &fetcher, &result, STRLIT("luis fonsi"),
         STRLIT("despacito")));
@@ -1052,8 +1045,7 @@ test_transport_error_is_reported(void) {
         STRLIT("despacito")));
     ASSERT(calls == 1);
     ASSERT(!result.success);
-    ASSERT(STREQUAL(result.text, result.text_len,
-                    STRLIT("Request timed out")));
+    ASSERT_EQUAL(result.text, result.text_len, "Request timed out");
 
     lyrics_test_set_download(NULL, NULL);
     ncm_lyrics_result_destroy(&result);
