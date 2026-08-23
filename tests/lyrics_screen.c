@@ -936,7 +936,7 @@ lyrics_screen_test_lrc_preferred_over_txt(void) {
     lyrics_screen_test_assert_status_message(
         STRLIT("Artist - Title.lrc found; Artist - Title.txt found"));
     mode = lyrics_screen_mode(&screen);
-    ASSERT_EQUAL((int32)mode, (int32) LYRICS_MODE_SYNCHRONIZED);
+    ASSERT(mode == LYRICS_MODE_SYNCHRONIZED);
     ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
                     lrc_path, strlen32(lrc_path)));
     ASSERT(STREQUAL(screen.display.data, screen.display.len,
@@ -972,7 +972,7 @@ lyrics_screen_test_txt_used_when_lrc_missing(void) {
     lyrics_screen_test_assert_status_message(
         STRLIT("Artist - Title.lrc not found; Artist - Title.txt found"));
     mode = lyrics_screen_mode(&screen);
-    ASSERT_EQUAL((int32)mode, (int32) LYRICS_MODE_PLAIN);
+    ASSERT(mode == LYRICS_MODE_PLAIN);
     ASSERT(STREQUAL(screen.filename.data, screen.filename.len,
                     txt_path, strlen32(txt_path)));
     ASSERT(STREQUAL(screen.display.data, screen.display.len,
