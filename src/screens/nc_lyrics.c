@@ -407,6 +407,7 @@ lyrics_screen_load_file(LyricsScreen *screen,
     FILE *file;
     StrBuilder raw = {0};
     char line[1024];
+    int close_err;
     int32 line_len;
     bool first;
     bool lrc_file;
@@ -446,7 +447,13 @@ lyrics_screen_load_file(LyricsScreen *screen,
         first = false;
     }
 
-    XFCLOSE(file, filename);
+    if ((close_err = XFCLOSE(file, filename)) < 0) {
+        sb_free(&raw);
+        lyrics_screen_clear_lyrics_state(
+            screen, LYRICS_MODE_FETCH_LOG);
+        ncm_error_set(ncm_error, -close_err, STRLIT("failed to close lyrics"));
+        return false;
+    }
     if (lrc_file
         && !ncm_lrc_parse(&screen->lrc, raw.data, raw.len, ncm_error)) {
         sb_free(&raw);
