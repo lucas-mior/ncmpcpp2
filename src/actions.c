@@ -1807,7 +1807,7 @@ action_runtime_set_volume(void) {
 
 static bool
 action_runtime_add_random_items(void) {
-    NcmStatusbarScopedLock lock;
+    NcmStatusbarScopedLock scoped_lock;
     NcmStringFormatArg args[3];
     StrBuilder input = {0};
     StrBuilder prompt;
@@ -1834,7 +1834,7 @@ action_runtime_add_random_items(void) {
         return false;
     }
 
-    ncm_statusbar_scoped_lock_init(&lock);
+    ncm_statusbar_scoped_lock_init(&scoped_lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window,
                              STRLIT("Add random? [s]ongs/[a]rtists/"
@@ -1842,7 +1842,7 @@ action_runtime_add_random_items(void) {
         prompted = ncm_statusbar_prompt_return_one_of(
             window, values, LENGTH(values), &random_type);
     }
-    ncm_statusbar_scoped_lock_destroy(&lock);
+    ncm_statusbar_scoped_lock_destroy(&scoped_lock);
     if (!prompted) {
         return true;
     }
@@ -1926,7 +1926,7 @@ action_runtime_print_toggle(char *format, int32 format_len, char *value) {
 
 static bool
 action_runtime_toggle_interface(void) {
-    NcmStatusbarScopedLock lock;
+    NcmStatusbarScopedLock scoped_lock;
 
     switch (Config.design) {
     case NCM_DESIGN_CLASSIC:
@@ -1944,8 +1944,8 @@ action_runtime_toggle_interface(void) {
     }
 
     ncmpcpp_resize_screen(false);
-    ncm_progressbar_scoped_lock_init(&lock);
-    ncm_progressbar_scoped_lock_destroy(&lock);
+    ncm_progressbar_scoped_lock_init(&scoped_lock);
+    ncm_progressbar_scoped_lock_destroy(&scoped_lock);
     ncm_status_changes_mixer();
     ncm_status_changes_elapsed_time(false);
     action_runtime_print_toggle(STRLIT("User interface: %1%"),
@@ -2262,7 +2262,7 @@ static bool
 action_runtime_prompt_string(char *prefix, int32 prefix_len, char *initial_text,
                              bool remember, NcPromptHook hook, void *hook_user,
                              StrBuilder *result) {
-    NcmStatusbarScopedLock lock;
+    NcmStatusbarScopedLock scoped_lock;
     NcPrompt prompt;
     NcWindow *window;
     bool ok = false;
@@ -2271,7 +2271,7 @@ action_runtime_prompt_string(char *prefix, int32 prefix_len, char *initial_text,
         initial_text = "";
     }
 
-    ncm_statusbar_scoped_lock_init(&lock);
+    ncm_statusbar_scoped_lock_init(&scoped_lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, prefix, prefix_len);
         prompt = (NcPrompt){0};
@@ -2283,13 +2283,13 @@ action_runtime_prompt_string(char *prefix, int32 prefix_len, char *initial_text,
         prompt.remember = remember;
         ok = action_runtime_prompt_result(result, &prompt, window);
     }
-    ncm_statusbar_scoped_lock_destroy(&lock);
+    ncm_statusbar_scoped_lock_destroy(&scoped_lock);
     return ok;
 }
 
 static bool
 action_runtime_confirm(char *message, int32 message_len) {
-    NcmStatusbarScopedLock lock;
+    NcmStatusbarScopedLock scoped_lock;
     NcWindow *window;
     char values[] = {
         'y',
@@ -2298,14 +2298,14 @@ action_runtime_confirm(char *message, int32 message_len) {
     char answer = 'n';
     bool prompted = false;
 
-    ncm_statusbar_scoped_lock_init(&lock);
+    ncm_statusbar_scoped_lock_init(&scoped_lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, message, message_len);
         nc_window_print_data(window, STRLIT(" [y/n] "));
         prompted = ncm_statusbar_prompt_return_one_of(window, values,
                                                       LENGTH(values), &answer);
     }
-    ncm_statusbar_scoped_lock_destroy(&lock);
+    ncm_statusbar_scoped_lock_destroy(&scoped_lock);
 
     if (!prompted || (answer == 'n')) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
