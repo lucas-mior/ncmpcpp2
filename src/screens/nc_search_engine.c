@@ -338,7 +338,7 @@ search_engine_screen_format_song_text(SearchEngineScreen *screen,
         result = true;
     }
     if (result) {
-        result = sb_set(text, formatted.data, formatted.len);
+        result = sb_set(text, formatted.data, formatted.len) >= 0;
     }
     nc_buffer_destroy(&formatted);
     return result;
@@ -607,7 +607,7 @@ search_engine_screen_set_constraint(SearchEngineScreen *screen,
         || (idx >= SEARCH_ENGINE_CONSTRAINT_COUNT)) {
         return false;
     }
-    if (!sb_set(&screen->constraints[idx], data, data_len)) {
+    if (sb_set(&screen->constraints[idx], data, data_len) < 0) {
         return false;
     }
     if (screen->prepared) {
@@ -1008,7 +1008,7 @@ search_engine_screen_apply_filter(SearchEngineScreen *screen,
                            NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) {
         return false;
     }
-    if (!sb_set(&screen->filter_constraint, pattern, pattern_len)) {
+    if (sb_set(&screen->filter_constraint, pattern, pattern_len) < 0) {
         return false;
     }
     callbacks = search_display_callbacks(screen, true);

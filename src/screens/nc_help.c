@@ -120,7 +120,7 @@ nc_help_screen_find(NcHelpScreen *screen,
         return false;
     }
 
-    if (!sb_set(&screen->search_constraint, pattern, pattern_len)) {
+    if (sb_set(&screen->search_constraint, pattern, pattern_len) < 0) {
         ncm_regex_destroy(&regex);
         ncm_error_set(ncm_error, ENOMEM, STRLIT("failed to save search"));
         return false;

@@ -408,15 +408,15 @@ browser_screen_set_current_directory(BrowserScreen *screen,
                                    screen->current_directory.len);
     replacement = ncm_string_view_make(directory, directory_len);
     if (!browser_string_views_equal(current, replacement)) {
-        if (!sb_set(&screen->last_highlighted_directory,
-                    current.data, current.len)) {
+        if (sb_set(&screen->last_highlighted_directory,
+                   current.data, current.len) < 0) {
             return false;
         }
         screen->title_scroll_beginning = 0;
         screen->redraw_header = true;
     }
     return sb_set(&screen->current_directory, directory,
-                  directory_len);
+                  directory_len) >= 0;
 }
 
 NcmStringView
@@ -669,7 +669,7 @@ browser_screen_change_browse_mode(BrowserScreen *screen,
 
     local_browser = !screen->local_browser;
     if (local_browser) {
-        if (!sb_set(&directory, STRLIT("~"))) {
+        if (sb_set(&directory, STRLIT("~")) < 0) {
             sb_free(&directory);
             return false;
         }
@@ -677,7 +677,7 @@ browser_screen_change_browse_mode(BrowserScreen *screen,
             sb_free(&directory);
             return false;
         }
-    } else if (!sb_set(&directory, STRLIT("/"))) {
+    } else if (sb_set(&directory, STRLIT("/")) < 0) {
         sb_free(&directory);
         return false;
     }
@@ -1037,7 +1037,7 @@ browser_screen_apply_filter(BrowserScreen *screen,
                            NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) {
         return false;
     }
-    if (!sb_set(&screen->filter_constraint, pattern, pattern_len)) {
+    if (sb_set(&screen->filter_constraint, pattern, pattern_len) < 0) {
         return false;
     }
     screen->filter_enabled = true;
@@ -1080,7 +1080,7 @@ browser_screen_search(BrowserScreen *screen,
         ncm_regex_destroy(&regex);
         return false;
     }
-    if (!sb_set(&screen->search_constraint, pattern, pattern_len)) {
+    if (sb_set(&screen->search_constraint, pattern, pattern_len) < 0) {
         ncm_regex_destroy(&regex);
         return false;
     }
@@ -1785,7 +1785,7 @@ browser_prepare_local_reload_directory(BrowserScreen *screen,
                                        NcmError *ncm_error) {
     ASSERT(screen != NULL);
     if (screen->current_directory.len <= 0) {
-        if (!sb_set(&screen->current_directory, STRLIT("~"))) {
+        if (sb_set(&screen->current_directory, STRLIT("~")) < 0) {
             return false;
         }
         if (!ncm_path_expand_home(&screen->current_directory, ncm_error)) {
@@ -2327,9 +2327,9 @@ browser_load_mpd_song_directory(
     }
 
     if (directory.len <= 0) {
-        result = sb_set(&path, STRLIT("/"));
+        result = sb_set(&path, STRLIT("/")) >= 0;
     } else {
-        result = sb_set(&path, directory.data, directory.len);
+        result = sb_set(&path, directory.data, directory.len) >= 0;
     }
     if (!result) {
         sb_free(&path);
@@ -2451,7 +2451,7 @@ browser_real_path(BrowserScreen *screen, NcmStringView path,
 
     sb_clear(real_path);
     if (screen->local_browser) {
-        return sb_set(real_path, path.data, path.len);
+        return sb_set(real_path, path.data, path.len) >= 0;
     }
 
     if (Config.mpd_music_dir_len <= 0) {
@@ -2600,11 +2600,11 @@ browser_supported_extensions_add(StrBuilderArray *extensions,
     }
 
     if ((extension_len <= 0) || (extension[0] != '.')) {
-        if ((result = sb_set(&buffer, STRLIT(".")))) {
+        if ((result = sb_set(&buffer, STRLIT(".")) >= 0)) {
             SB_APPEND(&buffer, extension, extension_len);
         }
     } else {
-        result = sb_set(&buffer, extension, extension_len);
+        result = sb_set(&buffer, extension, extension_len) >= 0;
     }
 
     if (result

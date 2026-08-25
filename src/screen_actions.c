@@ -123,7 +123,7 @@ current_screen_set_search_constraint(char *pattern, int32 pattern_len) {
     if ((buffer = current_screen_search_buffer()) == NULL) {
         return false;
     }
-    return sb_set(buffer, pattern, pattern_len);
+    return sb_set(buffer, pattern, pattern_len) >= 0;
 }
 
 static bool

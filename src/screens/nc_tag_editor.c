@@ -698,9 +698,9 @@ tag_editor_screen_locate_song(TagEditorScreen *screen,
     parent_len = ncm_string_parent_directory_len(directory.data,
                                                  directory.len);
     if (parent_len <= 0) {
-        ok = sb_set(&parent, STRLIT("/"));
+        ok = sb_set(&parent, STRLIT("/")) >= 0;
     } else {
-        ok = sb_set(&parent, directory.data, parent_len);
+        ok = sb_set(&parent, directory.data, parent_len) >= 0;
     }
     if (!ok) {
         sb_free(&parent);
@@ -709,8 +709,8 @@ tag_editor_screen_locate_song(TagEditorScreen *screen,
 
     ok = tag_editor_screen_set_current_dir(screen, parent.data,
                                            parent.len)
-         && sb_set(&screen->highlighted_dir, directory.data,
-                   directory.len);
+         && (sb_set(&screen->highlighted_dir, directory.data,
+                    directory.len) >= 0);
     if (ok) {
         nc_menu_clear_items(nc_editor_pair_menu_base(&screen->directories));
         ncm_error_clear(&ncm_error);
@@ -847,8 +847,8 @@ tag_editor_screen_add_directory(TagEditorScreen *screen,
         return false;
     }
     nc_menu_string_pair_init(&pair);
-    ok = sb_set(&first, label, label_len)
-         && sb_set(&second, path, path_len);
+    ok = (sb_set(&first, label, label_len) >= 0)
+         && (sb_set(&second, path, path_len) >= 0);
     if (ok) {
         pair.first = sb_steal(&first, &pair.first_len, &pair.first_cap);
         pair.second = sb_steal(&second, &pair.second_len, &pair.second_cap);
@@ -2631,7 +2631,7 @@ tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
 
 static bool
 tag_editor_set_buffer(StrBuilder *buffer, char *data, int32 data_len) {
-    if (!sb_set(buffer, data, data_len)) {
+    if (sb_set(buffer, data, data_len) < 0) {
         return false;
     }
     if (buffer->data) {

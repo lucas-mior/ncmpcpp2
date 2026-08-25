@@ -225,9 +225,9 @@ tiny_tag_editor_screen_open_song(
     if (ncm_song_is_from_database(song) && (music_dir_len <= 0)) {
         return TINY_TAG_EDITOR_OPEN_MISSING_MUSIC_DIRECTORY;
     }
-    if (!sb_set(&screen->music_dir, music_dir, music_dir_len)
-        || !sb_set(&screen->tag_separator, tag_separator,
-                   tag_separator_len)) {
+    if ((sb_set(&screen->music_dir, music_dir, music_dir_len) < 0)
+        || (sb_set(&screen->tag_separator, tag_separator,
+                   tag_separator_len) < 0)) {
         return TINY_TAG_EDITOR_OPEN_PREPARE_FAILED;
     }
     screen->show_duplicate_tags = show_duplicate_tags;
@@ -306,8 +306,8 @@ tiny_tag_editor_screen_reload_rows(
         || ((tag_separator == NULL) && (tag_separator_len > 0))) {
         return false;
     }
-    if (!sb_set(&screen->tag_separator, tag_separator,
-                tag_separator_len)) {
+    if (sb_set(&screen->tag_separator, tag_separator,
+               tag_separator_len) < 0) {
         return false;
     }
     screen->show_duplicate_tags = show_duplicate_tags;

@@ -69,7 +69,7 @@ ncm_search_prompt_state_finish_result(NcmSearchPromptState *state,
         text = "";
         text_len = 0;
     }
-    if (!sb_set(&state->last_text, text, text_len)) {
+    if (sb_set(&state->last_text, text, text_len) < 0) {
         return false;
     }
 

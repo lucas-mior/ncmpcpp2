@@ -834,7 +834,7 @@ playlist_screen_apply_filter(PlaylistScreen *screen,
                            Config.regex_flags, ncm_error)) {
         return false;
     }
-    if (!sb_set(&screen->filter_constraint, pattern, pattern_len)) {
+    if (sb_set(&screen->filter_constraint, pattern, pattern_len) < 0) {
         return false;
     }
     callbacks = playlist_display_callbacks();
@@ -878,7 +878,7 @@ playlist_screen_search(PlaylistScreen *screen,
         ncm_regex_destroy(&regex);
         return false;
     }
-    if (!sb_set(&screen->search_constraint, pattern, pattern_len)) {
+    if (sb_set(&screen->search_constraint, pattern, pattern_len) < 0) {
         ncm_regex_destroy(&regex);
         return false;
     }
