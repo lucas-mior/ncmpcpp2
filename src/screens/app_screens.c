@@ -601,7 +601,7 @@ search_prompt_constraint(
     char *input;
     char *initial_text;
     int32 input_len;
-    bool copied;
+    int32 copied;
 
     (void)user;
     if ((label == NULL) || (label_len < 0) || (initial == NULL)
@@ -643,7 +643,7 @@ search_prompt_constraint(
     input_len = optional_strlen32(input);
     copied = sb_set(result, input, input_len);
     nc_window_prompt_result_destroy(input);
-    if (!copied) {
+    if (copied < 0) {
         return SEARCH_ENGINE_PROMPT_ERROR;
     }
     return SEARCH_ENGINE_PROMPT_ACCEPTED;
@@ -784,7 +784,7 @@ prompt_buffer(char *label, int32 label_len,
     char *input;
     char *initial_text;
     int32 input_len;
-    bool copied;
+    int32 copied;
 
     if ((label == NULL) || (label_len < 0) || (initial.len < 0)
         || (result == NULL)
@@ -832,7 +832,7 @@ prompt_buffer(char *label, int32 label_len,
     input_len = optional_strlen32(input);
     copied = sb_set(result, input, input_len);
     nc_window_prompt_result_destroy(input);
-    if (!copied) {
+    if (copied < 0) {
         return PROMPT_RESULT_ERROR;
     }
     return PROMPT_RESULT_ACCEPTED;

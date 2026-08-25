@@ -1643,7 +1643,7 @@ media_library_screen_apply_filter(
                            Config.regex_flags, ncm_error)) {
         return false;
     }
-    if (!sb_set(&state->filter_constraint, pattern, pattern_len)) {
+    if (sb_set(&state->filter_constraint, pattern, pattern_len) < 0) {
         ncm_error_set(ncm_error, ENOMEM, STRLIT("cannot save filter"));
         return false;
     }
@@ -1711,7 +1711,7 @@ media_library_screen_search(MediaLibraryScreen *screen,
                            Config.regex_flags, ncm_error)) {
         return false;
     }
-    if (!sb_set(&state->search_constraint, pattern, pattern_len)) {
+    if (sb_set(&state->search_constraint, pattern, pattern_len) < 0) {
         ncm_error_set(ncm_error, ENOMEM, STRLIT("cannot save search"));
         return false;
     }

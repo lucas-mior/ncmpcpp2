@@ -173,27 +173,27 @@ str_builder_test_set_validation_and_self_shrink(void) {
     int32 capacity;
 
     sb_init(&str_builder);
-    ASSERT(sb_set(&str_builder, STRLIT("abcdef")));
+    ASSERT_EQUAL(sb_set(&str_builder, STRLIT("abcdef")), 6);
     allocation = str_builder.data;
     capacity = str_builder.cap;
 
-    ASSERT(!sb_set(NULL, STRLIT("value")));
-    ASSERT(!sb_set(&str_builder, "value", -1));
-    ASSERT(!sb_set(&str_builder, NULL, 1));
+    ASSERT_NEGATIVE(sb_set(NULL, STRLIT("value")));
+    ASSERT_NEGATIVE(sb_set(&str_builder, "value", -1));
+    ASSERT_NEGATIVE(sb_set(&str_builder, NULL, 1));
     ASSERT_EQUAL(str_builder.data, "abcdef");
     ASSERT_EQUAL(str_builder.len, 6);
 
-    ASSERT(sb_set(&str_builder, str_builder.data, 3));
+    ASSERT_EQUAL(sb_set(&str_builder, str_builder.data, 3), 3);
     ASSERT(str_builder.data == allocation);
     ASSERT_EQUAL(str_builder.data, "abc");
     ASSERT_EQUAL(str_builder.len, 3);
     ASSERT_EQUAL(str_builder.cap, capacity);
 
-    ASSERT(!sb_set(&str_builder, str_builder.data, 4));
+    ASSERT_NEGATIVE(sb_set(&str_builder, str_builder.data, 4));
     ASSERT_EQUAL(str_builder.data, "abc");
     ASSERT_EQUAL(str_builder.len, 3);
 
-    ASSERT(sb_set(&str_builder, NULL, 0));
+    ASSERT_ZERO(sb_set(&str_builder, NULL, 0));
     ASSERT(str_builder.data == allocation);
     ASSERT_EQUAL(str_builder.data, "");
     ASSERT_ZERO(str_builder.len);

@@ -1693,7 +1693,7 @@ playlist_editor_store_current_playlist_path(PlaylistEditorScreen *screen,
     if (!playlist_editor_current_playlist_path(screen, &path, &path_len)) {
         return false;
     }
-    return sb_set(buffer, path, path_len);
+    return sb_set(buffer, path, path_len) >= 0;
 }
 
 static bool

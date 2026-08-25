@@ -2076,7 +2076,7 @@ ncm_action_immediate_command_prompt_should_stop(StrBuilder *previous,
         return false;
     }
 
-    if (!sb_set(previous, text, text_len)) {
+    if (sb_set(previous, text, text_len) < 0) {
         return false;
     }
 
@@ -2253,7 +2253,7 @@ action_runtime_prompt_result(StrBuilder *result, NcPrompt *prompt,
     }
 
     text_len = optional_strlen32(text);
-    ok = sb_set(result, text, text_len);
+    ok = sb_set(result, text, text_len) >= 0;
     nc_window_prompt_result_destroy(text);
     return ok;
 }
@@ -5842,7 +5842,7 @@ action_runtime_shared_directory_update(StrBuilder *shared_directory,
 
     if (!*valid) {
         *valid = true;
-        return sb_set(shared_directory, directory, directory_len);
+        return sb_set(shared_directory, directory, directory_len) >= 0;
     }
 
     shared = ncm_string_shared_directory(shared_directory->data,
@@ -5943,7 +5943,7 @@ action_runtime_edit_library_tag(void) {
 
     ncm_mpd_song_list_init(&songs);
 
-    if (!sb_set(&current_tag, tag, tag_len)) {
+    if (sb_set(&current_tag, tag, tag_len) < 0) {
         goto cleanup;
     }
     SB_APPEND(
@@ -6060,7 +6060,7 @@ action_runtime_edit_library_album(void) {
     ncm_song_array_init(&songs);
     ncm_error_clear(&ncm_error);
 
-    if (!sb_set(&current_album, album, album_len)) {
+    if (sb_set(&current_album, album, album_len) < 0) {
         goto cleanup;
     }
     prompted = action_runtime_prompt_string(STRLIT("Album: "),
