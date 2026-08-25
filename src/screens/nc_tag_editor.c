@@ -4933,7 +4933,7 @@ tag_editor_move_pattern_to_front(TagEditorScreen *screen,
     }
     str_builder_array_init(&replacement);
     ok = tag_editor_set_buffer(&first, pattern, pattern_len)
-         && str_builder_array_append_copy(&replacement, &first);
+         && (str_builder_array_append_copy(&replacement, &first) >= 0);
     sb_free(&first);
     if (!ok) {
         str_builder_array_destroy(&replacement);
@@ -4944,8 +4944,8 @@ tag_editor_move_pattern_to_front(TagEditorScreen *screen,
         if (i == existing) {
             continue;
         }
-        if (!str_builder_array_append_copy(&replacement,
-                                           &screen->recent_patterns.items[i])) {
+        if (str_builder_array_append_copy(
+                &replacement, &screen->recent_patterns.items[i]) < 0) {
             str_builder_array_destroy(&replacement);
             return false;
         }
