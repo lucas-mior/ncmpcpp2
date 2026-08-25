@@ -755,7 +755,7 @@ lyrics_screen_test_assert_file_text(char *path, char *text, int32 text_len) {
     char *bytes;
     int32 bytes_len;
 
-    ASSERT(read_entire_file(path, &bytes, &bytes_len));
+    ASSERT((bytes_len = read_entire_file(path, &bytes)) >= 0);
     ASSERT_EQUAL(bytes, bytes_len, text, text_len);
     free2(bytes, bytes_len + 1);
     return;

@@ -934,7 +934,7 @@ test_playlist_fixture_finds_ohne_dich(void) {
     int32 target;
     int32 found;
 
-    if (!read_entire_file("tests/playlist.m3u", &data, &data_len)) {
+    if ((data_len = read_entire_file("tests/playlist.m3u", &data)) < 0) {
         ASSERT(false);
     }
     count = 0;
