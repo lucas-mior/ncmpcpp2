@@ -598,7 +598,7 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
 
         memcpy64(buffer, string + 1, string_len - 1);
         buffer[string_len - 1] = '\0';
-        n = (int32)atoi2(buffer);
+        n = (int32)atoi2(buffer, string_len);
         if ((n >= 1) && (n <= 12)) {
             result = NC_KEY_F1 + (NcKey)n - 1;
         }
