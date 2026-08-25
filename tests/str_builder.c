@@ -90,13 +90,13 @@ str_builder_test_copy_and_self_copy(void) {
     sb_append(&source, bytes, LENGTH(bytes));
     sb_append(&dest, STRLIT("old destination"));
 
-    ASSERT(sb_copy(&dest, &source));
+    ASSERT_EQUAL(sb_copy(&dest, &source), source.len);
     ASSERT(dest.data != source.data);
     ASSERT_EQUAL(dest.len, source.len);
     ASSERT(memcmp64(dest.data, source.data, source.len) == 0);
     ASSERT_EQUAL(dest.data[dest.len], '\0');
 
-    ASSERT(sb_copy(&dest, &dest));
+    ASSERT_EQUAL(sb_copy(&dest, &dest), dest.len);
     ASSERT_EQUAL(dest.len, source.len);
     ASSERT(memcmp64(dest.data, source.data, source.len) == 0);
 
@@ -105,18 +105,18 @@ str_builder_test_copy_and_self_copy(void) {
         int32 capacity = dest.cap;
 
         sb_clear(&source);
-        ASSERT(sb_copy(&dest, &source));
+        ASSERT_EQUAL(sb_copy(&dest, &source), source.len);
         ASSERT(dest.data == allocation);
         ASSERT_EQUAL(dest.data, "");
         ASSERT_ZERO(dest.len);
         ASSERT_EQUAL(dest.cap, capacity);
     }
 
-    ASSERT(sb_copy(&dest, NULL));
+    ASSERT_ZERO(sb_copy(&dest, NULL));
     ASSERT(dest.data == NULL);
     ASSERT_ZERO(dest.len);
     ASSERT_ZERO(dest.cap);
-    ASSERT(!sb_copy(NULL, &source));
+    ASSERT_NEGATIVE(sb_copy(NULL, &source));
 
     sb_free(&source);
     sb_free(&dest);
@@ -321,7 +321,8 @@ str_builder_test_array_append_clear_and_destroy(void) {
 
     str_builder_array_init(&array);
     sb_init(&source);
-    ASSERT(str_builder_array_reserve(&array, 2));
+    capacity = str_builder_array_reserve(&array, 2);
+    ASSERT_EQUAL(capacity, array.cap);
     allocation = array.items;
     capacity = array.cap;
 
@@ -330,7 +331,7 @@ str_builder_test_array_append_clear_and_destroy(void) {
     sb_append(item, STRLIT("first"));
 
     sb_append(&source, bytes, LENGTH(bytes));
-    ASSERT(str_builder_array_append_copy(&array, &source));
+    ASSERT_EQUAL(str_builder_array_append_copy(&array, &source), 1);
     ASSERT_EQUAL(array.len, 2);
     ASSERT(array.items == allocation);
     ASSERT_EQUAL(array.items[0].data, "first");
@@ -371,14 +372,14 @@ str_builder_test_array_copy_move_and_swap(void) {
     ASSERT(item);
     sb_append(item, STRLIT("second"));
 
-    ASSERT(str_builder_array_copy(&dest, &source));
+    ASSERT_EQUAL(str_builder_array_copy(&dest, &source), 2);
     ASSERT_EQUAL(dest.len, source.len);
     ASSERT(dest.items != source.items);
     ASSERT(dest.items[0].data != source.items[0].data);
     ASSERT_EQUAL(dest.items[0].data, "source");
     ASSERT_EQUAL(dest.items[1].data, "second");
 
-    ASSERT(str_builder_array_copy(&dest, &dest));
+    ASSERT_EQUAL(str_builder_array_copy(&dest, &dest), 2);
     ASSERT_EQUAL(dest.len, 2);
     ASSERT_EQUAL(dest.items[0].data, "source");
 
@@ -401,7 +402,7 @@ str_builder_test_array_copy_move_and_swap(void) {
     ASSERT_ZERO(dest.len);
     ASSERT_ZERO(dest.cap);
 
-    ASSERT(str_builder_array_append_copy(&source, NULL) == false);
+    ASSERT_NEGATIVE(str_builder_array_append_copy(&source, NULL));
 
     str_builder_array_destroy(&source);
     str_builder_array_destroy(&dest);

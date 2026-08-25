@@ -2610,7 +2610,7 @@ browser_supported_extensions_add(StrBuilderArray *extensions,
     if (result
         && !browser_supported_extensions_contains(
             extensions, buffer.data, buffer.len)) {
-        result = str_builder_array_append_copy(extensions, &buffer);
+        result = str_builder_array_append_copy(extensions, &buffer) >= 0;
     }
     sb_free(&buffer);
     return result;
