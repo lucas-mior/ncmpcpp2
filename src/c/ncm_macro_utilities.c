@@ -22,7 +22,7 @@ ncm_macro_system_command(char *command, int32 command_len,
         COMMAND_PUSH(&process, "/bin/sh", "-c");
         command_push_length(&process, command, command_len);
 
-        success = command_run_sync(&process, &rc);
+        success = command_run_sync(&process, &rc) == 0;
         if (success) {
             if (status) {
                 *status = rc;
@@ -41,7 +41,7 @@ ncm_macro_system_command(char *command, int32 command_len,
 
     COMMAND_PUSH(&process, "/bin/sh", "-c", buffer.data);
 
-    success = command_run_sync(&process, &rc);
+    success = command_run_sync(&process, &rc) == 0;
     sb_free(&buffer);
     if (success) {
         if (status) {
