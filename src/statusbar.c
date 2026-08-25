@@ -162,18 +162,18 @@ statusbar_progressbar_split(NcmStringView items[3]) {
 }
 
 void
-ncm_progressbar_scoped_lock_init(NcmStatusbarScopedLock *lock) {
-    if (lock) {
-        lock->locked_progressbar = true;
-        lock->locked_statusbar = false;
+ncm_progressbar_scoped_lock_init(NcmStatusbarScopedLock *scoped_lock) {
+    if (scoped_lock) {
+        scoped_lock->locked_progressbar = true;
+        scoped_lock->locked_statusbar = false;
     }
     progressbar_block_update = true;
     return;
 }
 
 void
-ncm_progressbar_scoped_lock_destroy(NcmStatusbarScopedLock *lock) {
-    (void)lock;
+ncm_progressbar_scoped_lock_destroy(NcmStatusbarScopedLock *scoped_lock) {
+    (void)scoped_lock;
     progressbar_block_update = false;
     return;
 }
@@ -244,10 +244,10 @@ ncm_progressbar_draw(int32 elapsed, int32 time) {
 }
 
 void
-ncm_statusbar_scoped_lock_init(NcmStatusbarScopedLock *lock) {
-    if (lock) {
-        lock->locked_statusbar = Config.statusbar_visibility;
-        lock->locked_progressbar = !Config.statusbar_visibility;
+ncm_statusbar_scoped_lock_init(NcmStatusbarScopedLock *scoped_lock) {
+    if (scoped_lock) {
+        scoped_lock->locked_statusbar = Config.statusbar_visibility;
+        scoped_lock->locked_progressbar = !Config.statusbar_visibility;
     }
 
     if (Config.statusbar_visibility) {
@@ -260,8 +260,8 @@ ncm_statusbar_scoped_lock_init(NcmStatusbarScopedLock *lock) {
 }
 
 void
-ncm_statusbar_scoped_lock_destroy(NcmStatusbarScopedLock *lock) {
-    (void)lock;
+ncm_statusbar_scoped_lock_destroy(NcmStatusbarScopedLock *scoped_lock) {
+    (void)scoped_lock;
     statusbar_allow_unlock = true;
     if (statusbar_lock_delay_seconds < 0) {
         statusbar_set_active_footer_line_locked(false);

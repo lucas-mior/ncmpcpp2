@@ -874,7 +874,7 @@ adder_action_current_playlist(void *user) {
 static void
 adder_action_new_playlist(void *user) {
     SelectedItemsAdderScreen *screen;
-    NcmStatusbarScopedLock lock;
+    NcmStatusbarScopedLock scoped_lock;
     enum NcPromptStatus prompt_status;
     NcPrompt prompt;
     NcWindow *window;
@@ -885,7 +885,7 @@ adder_action_new_playlist(void *user) {
     screen = user;
     input = NULL;
     prompt_status = NC_PROMPT_ABORTED;
-    ncm_statusbar_scoped_lock_init(&lock);
+    ncm_statusbar_scoped_lock_init(&scoped_lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window,
                              STRLIT("Save playlist as: "));
@@ -898,7 +898,7 @@ adder_action_new_playlist(void *user) {
         prompt.remember = true;
         prompt_status = nc_window_prompt(window, &prompt, &input);
     }
-    ncm_statusbar_scoped_lock_destroy(&lock);
+    ncm_statusbar_scoped_lock_destroy(&scoped_lock);
 
     if (prompt_status != NC_PROMPT_ACCEPTED) {
         nc_window_prompt_result_destroy(input);

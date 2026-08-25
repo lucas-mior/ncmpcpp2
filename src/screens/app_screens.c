@@ -594,7 +594,7 @@ search_prompt_constraint(
     void *user, char *label, int32 label_len, StrBuilder *initial,
     StrBuilder *result
 ) {
-    NcmStatusbarScopedLock lock;
+    NcmStatusbarScopedLock scoped_lock;
     enum NcPromptStatus status;
     NcPrompt prompt = {0};
     NcWindow *window;
@@ -615,9 +615,9 @@ search_prompt_constraint(
         initial_text = "";
     }
 
-    ncm_statusbar_scoped_lock_init(&lock);
+    ncm_statusbar_scoped_lock_init(&scoped_lock);
     if ((window = ncm_statusbar_put()) == NULL) {
-        ncm_statusbar_scoped_lock_destroy(&lock);
+        ncm_statusbar_scoped_lock_destroy(&scoped_lock);
         return SEARCH_ENGINE_PROMPT_ERROR;
     }
     nc_window_print_data(window, label, label_len);
@@ -630,7 +630,7 @@ search_prompt_constraint(
     prompt.encrypted = false;
     prompt.remember = true;
     status = nc_window_prompt(window, &prompt, &input);
-    ncm_statusbar_scoped_lock_destroy(&lock);
+    ncm_statusbar_scoped_lock_destroy(&scoped_lock);
 
     if ((status != NC_PROMPT_ACCEPTED) || (input == NULL)) {
         nc_window_prompt_result_destroy(input);
@@ -777,7 +777,7 @@ static enum PromptResult
 prompt_buffer(char *label, int32 label_len,
               NcmStringView initial, StrBuilder *result,
               bool bold_label) {
-    NcmStatusbarScopedLock lock;
+    NcmStatusbarScopedLock scoped_lock;
     enum NcPromptStatus status;
     NcPrompt prompt = {0};
     NcWindow *window;
@@ -798,9 +798,9 @@ prompt_buffer(char *label, int32 label_len,
         initial_text = "";
     }
 
-    ncm_statusbar_scoped_lock_init(&lock);
+    ncm_statusbar_scoped_lock_init(&scoped_lock);
     if ((window = ncm_statusbar_put()) == NULL) {
-        ncm_statusbar_scoped_lock_destroy(&lock);
+        ncm_statusbar_scoped_lock_destroy(&scoped_lock);
         return PROMPT_RESULT_ERROR;
     }
     if (bold_label) {
@@ -819,7 +819,7 @@ prompt_buffer(char *label, int32 label_len,
     prompt.encrypted = false;
     prompt.remember = true;
     status = nc_window_prompt(window, &prompt, &input);
-    ncm_statusbar_scoped_lock_destroy(&lock);
+    ncm_statusbar_scoped_lock_destroy(&scoped_lock);
 
     if ((status != NC_PROMPT_ACCEPTED) || (input == NULL)) {
         nc_window_prompt_result_destroy(input);
@@ -861,7 +861,7 @@ static bool
 tag_editor_hook_confirm(
     void *user, char *message, int32 message_len
 ) {
-    NcmStatusbarScopedLock lock;
+    NcmStatusbarScopedLock scoped_lock;
     NcWindow *window;
     char values[2];
     char answer;
@@ -877,14 +877,14 @@ tag_editor_hook_confirm(
     answer = 'n';
     prompted = false;
 
-    ncm_statusbar_scoped_lock_init(&lock);
+    ncm_statusbar_scoped_lock_init(&scoped_lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, message, message_len);
         nc_window_print_data(window, STRLIT(" [y/n] "));
         prompted = ncm_statusbar_prompt_return_one_of(
             window, values, LENGTH(values), &answer);
     }
-    ncm_statusbar_scoped_lock_destroy(&lock);
+    ncm_statusbar_scoped_lock_destroy(&scoped_lock);
 
     if (!prompted || (answer != 'y')) {
         ncm_statusbar_print_cstring(
