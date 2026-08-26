@@ -110,43 +110,43 @@ typedef struct NcFdCallback {
 #define ENUM_PREFIX_ NC_TERM_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NC_TERM_CLEAR_TO_EOL)
+    XX(NC_TERM_CLEAR_TO_EOL)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcFormat
 #define ENUM_PREFIX_ NC_FORMAT_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NC_FORMAT_BOLD) \
-    X(NC_FORMAT_NO_BOLD) \
-    X(NC_FORMAT_UNDERLINE) \
-    X(NC_FORMAT_NO_UNDERLINE) \
-    X(NC_FORMAT_REVERSE) \
-    X(NC_FORMAT_NO_REVERSE) \
-    X(NC_FORMAT_ALT_CHARSET) \
-    X(NC_FORMAT_NO_ALT_CHARSET) \
-    X(NC_FORMAT_ITALIC) \
-    X(NC_FORMAT_NO_ITALIC)
+    XX(NC_FORMAT_BOLD) \
+    XX(NC_FORMAT_NO_BOLD) \
+    XX(NC_FORMAT_UNDERLINE) \
+    XX(NC_FORMAT_NO_UNDERLINE) \
+    XX(NC_FORMAT_REVERSE) \
+    XX(NC_FORMAT_NO_REVERSE) \
+    XX(NC_FORMAT_ALT_CHARSET) \
+    XX(NC_FORMAT_NO_ALT_CHARSET) \
+    XX(NC_FORMAT_ITALIC) \
+    XX(NC_FORMAT_NO_ITALIC)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcScroll
 #define ENUM_PREFIX_ NC_SCROLL_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NC_SCROLL_UP) \
-    X(NC_SCROLL_DOWN) \
-    X(NC_SCROLL_PAGE_UP) \
-    X(NC_SCROLL_PAGE_DOWN) \
-    X(NC_SCROLL_HOME) \
-    X(NC_SCROLL_END)
+    XX(NC_SCROLL_UP) \
+    XX(NC_SCROLL_DOWN) \
+    XX(NC_SCROLL_PAGE_UP) \
+    XX(NC_SCROLL_PAGE_DOWN) \
+    XX(NC_SCROLL_HOME) \
+    XX(NC_SCROLL_END)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcPromptStatus
 #define ENUM_PREFIX_ NC_PROMPT_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NC_PROMPT_ACCEPTED) \
-    X(NC_PROMPT_ABORTED)
+    XX(NC_PROMPT_ACCEPTED) \
+    XX(NC_PROMPT_ABORTED)
 #include "cbase/xenums.c"
 
 typedef bool NcPromptHook(char *text, void *user_data);
@@ -292,10 +292,10 @@ int32 nc_formatted_color_format_count(NcFormattedColor *formatted_color);
 #define ENUM_PREFIX_ NC_BUFFER_PROPERTY_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NC_BUFFER_PROPERTY_COLOR) \
-    X(NC_BUFFER_PROPERTY_FORMAT) \
-    X(NC_BUFFER_PROPERTY_FORMATTED_COLOR) \
-    X(NC_BUFFER_PROPERTY_FORMATTED_COLOR_END)
+    XX(NC_BUFFER_PROPERTY_COLOR) \
+    XX(NC_BUFFER_PROPERTY_FORMAT) \
+    XX(NC_BUFFER_PROPERTY_FORMATTED_COLOR) \
+    XX(NC_BUFFER_PROPERTY_FORMATTED_COLOR_END)
 #include "cbase/xenums.c"
 
 typedef struct NcBufferProperty {
@@ -359,18 +359,18 @@ typedef bool NcMenuSearchFunc(NcMenu *menu, int32 pos, void *user);
 #define ENUM_PREFIX_ NC_MENU_ITEMS_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS \
-    X(NC_MENU_ITEMS_ALL) \
-    X(NC_MENU_ITEMS_FILTERED)
+    XX(NC_MENU_ITEMS_ALL) \
+    XX(NC_MENU_ITEMS_FILTERED)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcMenuItemFlag
 #define ENUM_PREFIX_ NC_MENU_ITEM_
 #define ENUM_BITFLAGS 1
 #define ENUM_FIELDS \
-    X(NC_MENU_ITEM_SELECTABLE) \
-    X(NC_MENU_ITEM_SELECTED) \
-    X(NC_MENU_ITEM_INACTIVE) \
-    X(NC_MENU_ITEM_SEPARATOR)
+    XX(NC_MENU_ITEM_SELECTABLE) \
+    XX(NC_MENU_ITEM_SELECTED) \
+    XX(NC_MENU_ITEM_INACTIVE) \
+    XX(NC_MENU_ITEM_SEPARATOR)
 #include "cbase/xenums.c"
 
 typedef struct NcMenuItemCallbacks {
