@@ -1573,6 +1573,7 @@ typedef struct NcmLrcEntry {
     int32 buffer_start;
     int32 buffer_end;
     int32 source_order;
+    int32 blank_lines_before;
 } NcmLrcEntry;
 
 typedef struct NcmLrcDocument {
