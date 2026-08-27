@@ -691,7 +691,7 @@ ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap) {
                            "%d:%02d:%02d", hours, minutes, seconds);
     } else {
         result = snprintf2(buffer, buffer_cap,
-                           "%d:%d", minutes, seconds);
+                           "%d:%02d", minutes, seconds);
     }
 
     if (result < 0) {
