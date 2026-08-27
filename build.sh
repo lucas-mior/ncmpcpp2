@@ -13,7 +13,7 @@ script=$(basename "$0")
 common_build_parse_args "$@"
 
 case "$mode" in
-build|check|clean|debug|fast_feedback|install|test|uninstall)
+build|check|clean|debug|debug-fast|fast_feedback|install|test|uninstall)
     ;;
 *)
     common_build_unknown_mode
@@ -135,6 +135,10 @@ case "$mode" in
 debug|test)
     CFLAGS="$CFLAGS -g3 -Og -DDEBUGGING=1"
     ;;
+debug-fast)
+    CFLAGS="$CFLAGS -Wno-error -g2 -O2 -flto"
+    CPPFLAGS="$CPPFLAGS -DDEBUGGING=1"
+    ;;
 build)
     CFLAGS="$CFLAGS -Wno-error -O2 -flto"
     ;;
@@ -143,7 +147,7 @@ fast_feedback)
     ;;
 check)
     ;;
-build|check|clean|debug|fast_feedback|install|test|uninstall)
+build|check|clean|debug|debug-fast|fast_feedback|install|test|uninstall)
     ;;
 *)
     common_build_unknown_mode
@@ -161,7 +165,7 @@ debug)
         "$CPPFLAGS $PKG_CFLAGS $CFLAGS" \
         "$PKG_LIBS $LDFLAGS"
     ;;
-build|fast_feedback)
+build|debug-fast|fast_feedback)
     load_package_flags
 
     trace_on
