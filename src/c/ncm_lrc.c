@@ -23,7 +23,8 @@ static void ncm_lrc_parse_offset_tags(NcmLrcDocument *document,
                                       char *data, int32 data_len);
 static bool ncm_lrc_parse_line(NcmLrcDocument *document,
                                char *line, int32 line_len,
-                               int32 *source_order);
+                               int32 *source_order,
+                               int32 blank_lines_before);
 static NcmLrcEntry *ncm_lrc_document_append_entry(
     NcmLrcDocument *document);
 static void ncm_lrc_document_clear_buffer_positions(
@@ -74,6 +75,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
     int32 source_order;
     int32 raw_line_len;
     int32 line_len;
+    int32 blank_lines_before;
     int32 pos;
 
     if (document == NULL) {
@@ -89,14 +91,24 @@ ncm_lrc_parse(NcmLrcDocument *document,
     ncm_lrc_parse_offset_tags(&parsed, data, data_len);
 
     source_order = 0;
+    blank_lines_before = 0;
     pos = 0;
     while (pos < data_len) {
         raw_line_len = ncm_lrc_raw_line_len(data, data_len, pos);
         line_len = ncm_lrc_trim_line_end(data + pos, raw_line_len);
-        (void)ncm_lrc_parse_line(&parsed,
-                                 data + pos,
-                                 line_len,
-                                 &source_order);
+        if (line_len <= 0) {
+            if (source_order > 0) {
+                blank_lines_before += 1;
+            }
+        } else if (ncm_lrc_parse_line(&parsed,
+                                      data + pos,
+                                      line_len,
+                                      &source_order,
+                                      blank_lines_before)) {
+            blank_lines_before = 0;
+        } else {
+            blank_lines_before = 0;
+        }
         pos += raw_line_len;
         if ((pos < data_len) && (data[pos] == '\n')) {
             pos += 1;
@@ -165,11 +177,14 @@ ncm_lrc_document_render_plain(NcmLrcDocument *document,
         NcmLrcEntry *entry;
         NcmStringView text;
 
+        entry = &document->entries[i];
         if (i > 0) {
             target->append(target->user, line_break, STRLIT_LEN("\n"));
+            for (int32 j = 0; j < entry->blank_lines_before; j += 1) {
+                target->append(target->user, line_break, STRLIT_LEN("\n"));
+            }
         }
 
-        entry = &document->entries[i];
         text = ncm_lrc_entry_text(document, entry);
         if ((text.len > 0) && (text.data == NULL)) {
             ncm_lrc_document_clear_buffer_positions(document);
@@ -501,7 +516,8 @@ ncm_lrc_parse_offset_tags(NcmLrcDocument *document,
 static bool
 ncm_lrc_parse_line(NcmLrcDocument *document,
                    char *line, int32 line_len,
-                   int32 *source_order) {
+                   int32 *source_order,
+                   int32 blank_lines_before) {
     int32 times[NCM_LRC_MAX_LINE_TIMESTAMPS];
     int32 times_len;
     int32 cursor;
@@ -552,6 +568,11 @@ ncm_lrc_parse_line(NcmLrcDocument *document,
         entry->buffer_start = NCM_LRC_NO_BUFFER_POSITION;
         entry->buffer_end = NCM_LRC_NO_BUFFER_POSITION;
         entry->source_order = *source_order;
+        if (i == 0) {
+            entry->blank_lines_before = blank_lines_before;
+        } else {
+            entry->blank_lines_before = 0;
+        }
         *source_order += 1;
         SB_APPEND(&document->text, text, text_len);
     }

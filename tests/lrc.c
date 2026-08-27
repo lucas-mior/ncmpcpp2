@@ -199,6 +199,42 @@ lrc_test_renders_plain_text_and_buffer_ranges(void) {
 }
 
 static void
+lrc_test_preserves_source_empty_lines_on_render(void) {
+    LrcTestRenderTarget target = {0};
+    NcmLrcRenderTarget render_target = {0};
+    NcmLrcDocument document;
+    NcmError error = {0};
+    char data[] = "[00:01.00]first\n"
+                  "\n"
+                  "[00:02.00]second\n"
+                  "\n"
+                  "\n"
+                  "[00:03.00]third\n";
+
+    ncm_lrc_document_init(&document);
+    ASSERT(ncm_lrc_parse(&document, data, strlen32(data), &error));
+
+    render_target.user = &target;
+    render_target.position = lrc_test_render_position;
+    render_target.append = lrc_test_render_append;
+    ASSERT(ncm_lrc_document_render_plain(&document, &render_target));
+
+    ASSERT_EQUAL(target.text.len, STRLIT_LEN("first\n\nsecond\n\n\nthird"));
+    ASSERT(memcmp64(target.text.data,
+                    STRLIT("first\n\nsecond\n\n\nthird")) == 0);
+    ASSERT_ZERO(document.entries[0].buffer_start);
+    ASSERT_EQUAL(document.entries[0].buffer_end, 5);
+    ASSERT_EQUAL(document.entries[1].buffer_start, 7);
+    ASSERT_EQUAL(document.entries[1].buffer_end, 13);
+    ASSERT_EQUAL(document.entries[2].buffer_start, 16);
+    ASSERT_EQUAL(document.entries[2].buffer_end, 21);
+
+    sb_free(&target.text);
+    ncm_lrc_document_destroy(&document);
+    return;
+}
+
+static void
 lrc_test_finds_active_entry_at_time(void) {
     NcmLrcDocument document;
     NcmError error = {0};
@@ -262,6 +298,7 @@ main(void) {
     lrc_test_sorts_entries_with_stable_equal_times();
     lrc_test_preserves_blank_lyric_lines();
     lrc_test_renders_plain_text_and_buffer_ranges();
+    lrc_test_preserves_source_empty_lines_on_render();
     lrc_test_finds_active_entry_at_time();
     lrc_test_rejects_untimed_or_malformed_text();
     exit(EXIT_SUCCESS);
