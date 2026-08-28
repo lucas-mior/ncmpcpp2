@@ -454,7 +454,7 @@ tag_editor_screen_active_menu(TagEditorScreen *screen) {
     case TAG_EDITOR_FOCUS_PARSER_LEGEND:
     case TAG_EDITOR_FOCUS_PARSER_PREVIEW:
         return NULL;
-    case TAG_EDITOR_FOCUS_LAST:
+    case TAG_EDITOR_FOCUS_COUNT:
     default:
         break;
     }
@@ -480,7 +480,7 @@ tag_editor_screen_active_window(TagEditorScreen *screen) {
     case TAG_EDITOR_FOCUS_PARSER_LEGEND:
     case TAG_EDITOR_FOCUS_PARSER_PREVIEW:
         return &screen->parser_helper_window;
-    case TAG_EDITOR_FOCUS_LAST:
+    case TAG_EDITOR_FOCUS_COUNT:
     default:
         break;
     }
@@ -1471,7 +1471,7 @@ tag_editor_parse_filename(NcmMutableSong *song, char *mask,
         }
 
         field = ncm_tags_field_from_char(tag_char);
-        if (field != NCM_TAGS_FIELD_LAST) {
+        if (field != NCM_TAGS_FIELD_COUNT) {
             for (int32 i = file_pos; i < value_end; i += 1) {
                 if (file.data[i] == '_') {
                     file.data[i] = ' ';
@@ -1551,7 +1551,7 @@ tag_editor_song_display_value(NcmMutableSong *song,
     if ((song == NULL) || (buffer == NULL)) {
         return false;
     }
-    if (field == NCM_TAGS_FIELD_LAST) {
+    if (field == NCM_TAGS_FIELD_COUNT) {
         SB_APPEND(buffer, song->name, song->name_len);
         if (song->new_name && (song->new_name_len > 0)) {
             SB_APPEND(buffer, STRLIT(" -> "));
@@ -1705,7 +1705,7 @@ tag_editor_can_run_current(NcScreen *screen) {
         case TAG_EDITOR_TAG_TYPE_ACTION_RESET:
         case TAG_EDITOR_TAG_TYPE_ACTION_SAVE:
             return false;
-        case TAG_EDITOR_TAG_TYPE_ACTION_LAST:
+        case TAG_EDITOR_TAG_TYPE_ACTION_COUNT:
         default:
             break;
         }
@@ -1713,7 +1713,7 @@ tag_editor_can_run_current(NcScreen *screen) {
     case TAG_EDITOR_FOCUS_PARSER_LEGEND:
     case TAG_EDITOR_FOCUS_PARSER_PREVIEW:
         return false;
-    case TAG_EDITOR_FOCUS_LAST:
+    case TAG_EDITOR_FOCUS_COUNT:
     default:
         break;
     }
@@ -1742,7 +1742,7 @@ tag_editor_run_current(NcScreen *screen) {
     case TAG_EDITOR_FOCUS_PARSER_LEGEND:
     case TAG_EDITOR_FOCUS_PARSER_PREVIEW:
         return false;
-    case TAG_EDITOR_FOCUS_LAST:
+    case TAG_EDITOR_FOCUS_COUNT:
     default:
         break;
     }
@@ -2177,7 +2177,7 @@ tag_editor_run_tag_type_current(TagEditorScreen *screen) {
             screen, Config.mpd_music_dir);
     case TAG_EDITOR_TAG_TYPE_ACTION_NONE:
         return false;
-    case TAG_EDITOR_TAG_TYPE_ACTION_LAST:
+    case TAG_EDITOR_TAG_TYPE_ACTION_COUNT:
     default:
         break;
     }
@@ -2302,7 +2302,7 @@ tag_editor_prompt_tag_value(TagEditorScreen *screen,
     enum TagEditorPromptResult prompt_result;
     bool result;
 
-    if ((screen == NULL) || (field == NCM_TAGS_FIELD_LAST)) {
+    if ((screen == NULL) || (field == NCM_TAGS_FIELD_COUNT)) {
         return false;
     }
     if ((song = nc_tag_row_menu_current(&screen->tags)) == NULL) {
@@ -2465,7 +2465,7 @@ tag_editor_column_focus(enum TagEditorColumn column) {
         return TAG_EDITOR_FOCUS_TAG_TYPES;
     case TAG_EDITOR_COLUMN_TAGS:
         return TAG_EDITOR_FOCUS_TAGS;
-    case TAG_EDITOR_COLUMN_LAST:
+    case TAG_EDITOR_COLUMN_COUNT:
     default:
         break;
     }
@@ -4353,7 +4353,7 @@ tag_editor_tag_search_field(TagEditorScreen *screen,
         return true;
     }
     if (choice == 12) {
-        *field = NCM_TAGS_FIELD_LAST;
+        *field = NCM_TAGS_FIELD_COUNT;
         return true;
     }
     return false;
@@ -4372,7 +4372,7 @@ tag_editor_current_tag_type_action(TagEditorScreen *screen,
     int32 choice;
 
     if (field) {
-        *field = NCM_TAGS_FIELD_LAST;
+        *field = NCM_TAGS_FIELD_COUNT;
     }
     if (screen == NULL) {
         return TAG_EDITOR_TAG_TYPE_ACTION_NONE;

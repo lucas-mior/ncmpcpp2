@@ -98,7 +98,7 @@ NcmSongInfoMetadata ncm_song_info_tags[] = {
     {
         .name = NULL,
         .get = NCM_SONG_GETTER_NONE,
-        .field = NCM_TAGS_FIELD_LAST,
+        .field = NCM_TAGS_FIELD_COUNT,
     },
 };
 
@@ -701,7 +701,7 @@ app_screen_search_engine_init(void) {
 
     mode = SEARCH_ENGINE_SEARCH_MODE_LITERAL;
     if (Config.search_engine_default_search_mode
-        < (int32)SEARCH_ENGINE_SEARCH_MODE_LAST) {
+        < (int32)SEARCH_ENGINE_SEARCH_MODE_COUNT) {
         mode = (enum SearchEngineSearchMode)
             Config.search_engine_default_search_mode;
     }
@@ -1195,7 +1195,7 @@ app_screens_current_type(void) {
     NcScreen *screen;
 
     if ((screen = app_controller_current_screen()) == NULL) {
-        return NCM_SCREEN_TYPE_LAST;
+        return NCM_SCREEN_TYPE_COUNT;
     }
     return screen_type_from_nc_type(nc_screen_type(screen));
 }

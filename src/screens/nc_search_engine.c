@@ -304,7 +304,7 @@ search_engine_constraint_name(int32 idx) {
 char *
 search_engine_search_mode_name(enum SearchEngineSearchMode mode) {
     if ((mode < SEARCH_ENGINE_SEARCH_MODE_LITERAL)
-        || (mode >= SEARCH_ENGINE_SEARCH_MODE_LAST)) {
+        || (mode >= SEARCH_ENGINE_SEARCH_MODE_COUNT)) {
         return search_mode_names[0];
     }
     return search_mode_names[mode];
@@ -630,7 +630,7 @@ bool
 search_engine_screen_set_search_mode(SearchEngineScreen *screen,
                                      enum SearchEngineSearchMode mode) {
     if ((screen == NULL) || (mode < SEARCH_ENGINE_SEARCH_MODE_LITERAL)
-        || (mode >= SEARCH_ENGINE_SEARCH_MODE_LAST)) {
+        || (mode >= SEARCH_ENGINE_SEARCH_MODE_COUNT)) {
         return false;
     }
     screen->search_mode = mode;
@@ -878,7 +878,7 @@ search_engine_screen_run_current(SearchEngineScreen *screen) {
     }
     if (pos == SEARCH_ENGINE_SEARCH_MODE_ROW) {
         next_mode = (uint32)screen->search_mode + 1;
-        if (next_mode >= SEARCH_ENGINE_SEARCH_MODE_LAST) {
+        if (next_mode >= SEARCH_ENGINE_SEARCH_MODE_COUNT) {
             next_mode = SEARCH_ENGINE_SEARCH_MODE_LITERAL;
         }
         mode = (enum SearchEngineSearchMode)next_mode;

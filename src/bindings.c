@@ -123,7 +123,7 @@ ncm_binding_action_init(NcmBindingAction *action) {
     action->keys_cap = 0;
     action->type = NCM_ACTION_DUMMY;
     action->kind = NCM_BINDING_ACTION_NORMAL;
-    action->screen_type = NCM_SCREEN_TYPE_LAST;
+    action->screen_type = NCM_SCREEN_TYPE_COUNT;
     return;
 }
 

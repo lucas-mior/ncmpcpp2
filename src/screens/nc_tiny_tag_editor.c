@@ -387,7 +387,7 @@ tiny_tag_editor_screen_reload_rows(
     nc_buffer_destroy(&row);
     nc_editor_buffer_menu_add_separator(&screen->rows);
 
-    for (uint32 field = 0; field < NCM_TAGS_FIELD_LAST; field += 1) {
+    for (uint32 field = 0; field < NCM_TAGS_FIELD_COUNT; field += 1) {
         bool inactive;
 
         nc_buffer_init(&row);

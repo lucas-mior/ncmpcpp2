@@ -265,7 +265,7 @@ scroll_internal(NcMenu *menu, int32 height, enum NcScroll where,
                             user, depth + 1);
         }
         break;
-    case NC_SCROLL_LAST:
+    case NC_SCROLL_COUNT:
     default:
         break;
     }

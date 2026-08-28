@@ -1249,7 +1249,7 @@ playlist_build_mutable_song(
             continue;
         }
         field = ncm_tags_field_from_tag_type(current->tags[i].type);
-        if (field != NCM_TAGS_FIELD_LAST) {
+        if (field != NCM_TAGS_FIELD_COUNT) {
             continue;
         }
         if (!ncm_song_add_tag(replacement, current->tags[i].type,
@@ -1259,7 +1259,7 @@ playlist_build_mutable_song(
         }
     }
 
-    for (uint32 i = 0; i < NCM_TAGS_FIELD_LAST; i += 1) {
+    for (uint32 i = 0; i < NCM_TAGS_FIELD_COUNT; i += 1) {
         type = ncm_tags_field_to_tag_type(i);
         for (int32 j = 0; ; j += 1) {
             if (!ncm_mutable_song_get_tag(edited, i, j, &value)) {

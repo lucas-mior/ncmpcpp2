@@ -27,7 +27,7 @@ menu_item_count(NcMenu *menu, enum NcMenuItemSource source) {
         return nc_menu_filtered_item_count(menu);
     case NC_MENU_ITEMS_ALL:
         return nc_menu_all_item_count(menu);
-    case NC_MENU_ITEMS_LAST:
+    case NC_MENU_ITEMS_COUNT:
     default:
         return 0;
     }
