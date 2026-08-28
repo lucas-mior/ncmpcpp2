@@ -82,7 +82,7 @@ search_song_value(NcmSong *song, enum NcmSongGetter getter) {
         case NCM_SONG_GETTER_DISC:
         case NCM_SONG_GETTER_COMMENT:
         case NCM_SONG_GETTER_PRIORITY:
-        case NCM_SONG_GETTER_LAST:
+        case NCM_SONG_GETTER_COUNT:
         default:
             return NULL;
         }
@@ -111,7 +111,7 @@ search_song_value(NcmSong *song, enum NcmSongGetter getter) {
         case NCM_SONG_GETTER_DISC:
         case NCM_SONG_GETTER_COMMENT:
         case NCM_SONG_GETTER_PRIORITY:
-        case NCM_SONG_GETTER_LAST:
+        case NCM_SONG_GETTER_COUNT:
         default:
             return NULL;
         }
@@ -139,7 +139,7 @@ search_song_value(NcmSong *song, enum NcmSongGetter getter) {
         case NCM_SONG_GETTER_DISC:
         case NCM_SONG_GETTER_COMMENT:
         case NCM_SONG_GETTER_PRIORITY:
-        case NCM_SONG_GETTER_LAST:
+        case NCM_SONG_GETTER_COUNT:
         default:
             return NULL;
         }

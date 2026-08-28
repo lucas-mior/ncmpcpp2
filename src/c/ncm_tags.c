@@ -159,7 +159,7 @@ ncm_tags_field_property(enum NcmTagsField field) {
         return "DISCNUMBER";
     case NCM_TAGS_FIELD_COMMENT:
         return "COMMENT";
-    case NCM_TAGS_FIELD_LAST:
+    case NCM_TAGS_FIELD_COUNT:
         break;
     default:
         break;
@@ -329,7 +329,7 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
     }
 
     ncm_tags_clear_write_aliases(&file);
-    for (uint32 i = 0; i < NCM_TAGS_FIELD_LAST; i += 1) {
+    for (uint32 i = 0; i < NCM_TAGS_FIELD_COUNT; i += 1) {
         ncm_tags_write_field(&file, (enum NcmTagsField)i, callback, user);
     }
 

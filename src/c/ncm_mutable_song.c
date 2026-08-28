@@ -132,7 +132,7 @@ ncm_mutable_song_tag_init(NcmMutableSongTag *tag) {
     tag->original_len = 0;
     tag->value_len = 0;
     tag->idx = 0;
-    tag->field = NCM_TAGS_FIELD_LAST;
+    tag->field = NCM_TAGS_FIELD_COUNT;
     tag->modified = false;
     return;
 }
@@ -144,7 +144,7 @@ ncm_mutable_song_tag_destroy(NcmMutableSongTag *tag) {
     ncm_mutable_song_free_string(&tag->original, &tag->original_len);
     ncm_mutable_song_free_string(&tag->value, &tag->value_len);
     tag->idx = 0;
-    tag->field = NCM_TAGS_FIELD_LAST;
+    tag->field = NCM_TAGS_FIELD_COUNT;
     tag->modified = false;
     return;
 }
@@ -353,7 +353,7 @@ ncm_mutable_song_set_original_tag(NcmMutableSong *song,
     if (idx < 0) {
         return false;
     }
-    if (field >= NCM_TAGS_FIELD_LAST) {
+    if (field >= NCM_TAGS_FIELD_COUNT) {
         return false;
     }
 
@@ -379,7 +379,7 @@ ncm_mutable_song_set_tag(NcmMutableSong *song, enum NcmTagsField field,
     if (idx < 0) {
         return false;
     }
-    if (field >= NCM_TAGS_FIELD_LAST) {
+    if (field >= NCM_TAGS_FIELD_COUNT) {
         return false;
     }
     if (value_len < 0) {
@@ -427,7 +427,7 @@ ncm_mutable_song_set_tags(NcmMutableSong *song, enum NcmTagsField field,
     if (value_len < 0) {
         return false;
     }
-    if (field >= NCM_TAGS_FIELD_LAST) {
+    if (field >= NCM_TAGS_FIELD_COUNT) {
         return false;
     }
 
@@ -479,7 +479,7 @@ ncm_mutable_song_get_tag(NcmMutableSong *song, enum NcmTagsField field,
     if (idx < 0) {
         return false;
     }
-    if (field >= NCM_TAGS_FIELD_LAST) {
+    if (field >= NCM_TAGS_FIELD_COUNT) {
         return false;
     }
 
@@ -544,7 +544,7 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
     if (song == NULL) {
         return result;
     }
-    if (field >= NCM_TAGS_FIELD_LAST) {
+    if (field >= NCM_TAGS_FIELD_COUNT) {
         return result;
     }
     if ((separator == NULL) || (separator_len < 0)) {
@@ -626,7 +626,7 @@ ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
     ncm_mutable_song_set_from_database(dest,
                                        ncm_song_is_from_database(source));
 
-    for (uint32 field = 0; field < NCM_TAGS_FIELD_LAST; field += 1) {
+    for (uint32 field = 0; field < NCM_TAGS_FIELD_COUNT; field += 1) {
         enum NcmSongGetter getter = ncm_tags_field_to_song_getter(field);
 
         if (getter == NCM_SONG_GETTER_NONE) {

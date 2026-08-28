@@ -21,7 +21,7 @@ ncm_string_format_append_number(StrBuilder *out, char *format,
     case NCM_STRING_FORMAT_ARG_STRING:
     case NCM_STRING_FORMAT_ARG_CHAR:
     case NCM_STRING_FORMAT_ARG_BOOL:
-    case NCM_STRING_FORMAT_ARG_LAST:
+    case NCM_STRING_FORMAT_ARG_COUNT:
     default:
         break;
     }
@@ -62,7 +62,7 @@ ncm_string_format_append_arg(StrBuilder *out, NcmStringFormatArg *arg) {
             SB_APPEND(out, STRLIT("0"));
         }
         break;
-    case NCM_STRING_FORMAT_ARG_LAST:
+    case NCM_STRING_FORMAT_ARG_COUNT:
     default:
         break;
     }

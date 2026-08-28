@@ -666,7 +666,7 @@ visualizer_screen_init(VisualizerScreen *screen,
     if (fps <= 0) {
         fps = VISUALIZER_DEFAULT_FPS;
     }
-    if (visualization_type >= VISUALIZER_TYPE_LAST) {
+    if (visualization_type >= VISUALIZER_TYPE_COUNT) {
         visualization_type = VISUALIZER_WAVE;
     }
 #if defined(HAVE_FFTW3_H)
@@ -808,7 +808,7 @@ visualizer_screen_init_visualization(VisualizerScreen *screen) {
     case VISUALIZER_ELLIPSE:
         rendered_samples = screen->sample_rate / 30;
         break;
-    case VISUALIZER_TYPE_LAST:
+    case VISUALIZER_TYPE_COUNT:
     default:
         screen->visualization_type = VISUALIZER_WAVE;
         samples_per_column = ceil(
@@ -1756,7 +1756,7 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
                 screen->right_channel.data, channel_samples,
                 half_height);
             break;
-        case VISUALIZER_TYPE_LAST:
+        case VISUALIZER_TYPE_COUNT:
         default:
             return false;
         }
@@ -1780,7 +1780,7 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
     case VISUALIZER_ELLIPSE:
         visualizer_draw_ellipse(screen, samples, samples_len, height);
         break;
-    case VISUALIZER_TYPE_LAST:
+    case VISUALIZER_TYPE_COUNT:
     default:
         return false;
     }
@@ -2122,7 +2122,7 @@ visualizer_next_type(enum VisualizerScreenType type) {
 #endif
         return VISUALIZER_ELLIPSE;
     case VISUALIZER_ELLIPSE:
-    case VISUALIZER_TYPE_LAST:
+    case VISUALIZER_TYPE_COUNT:
         return VISUALIZER_WAVE;
     default:
         return VISUALIZER_WAVE;

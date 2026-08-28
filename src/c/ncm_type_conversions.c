@@ -249,7 +249,7 @@ ncm_song_getter_to_tag_type(enum NcmSongGetter getter) {
     case NCM_SONG_GETTER_URI:
     case NCM_SONG_GETTER_TRACK_NUMBER:
     case NCM_SONG_GETTER_PRIORITY:
-    case NCM_SONG_GETTER_LAST:
+    case NCM_SONG_GETTER_COUNT:
     default:
         return MPD_TAG_UNKNOWN;
     }
@@ -327,7 +327,7 @@ ncm_tags_field_from_tag_type(enum mpd_tag_type tag) {
 #endif
     case MPD_TAG_COUNT:
     default:
-        return NCM_TAGS_FIELD_LAST;
+        return NCM_TAGS_FIELD_COUNT;
     }
 }
 
@@ -356,7 +356,7 @@ ncm_tags_field_to_tag_type(enum NcmTagsField field) {
         return MPD_TAG_DISC;
     case NCM_TAGS_FIELD_COMMENT:
         return MPD_TAG_COMMENT;
-    case NCM_TAGS_FIELD_LAST:
+    case NCM_TAGS_FIELD_COUNT:
     default:
         return MPD_TAG_UNKNOWN;
     }
@@ -387,7 +387,7 @@ ncm_tags_field_to_song_getter(enum NcmTagsField field) {
         return NCM_SONG_GETTER_DISC;
     case NCM_TAGS_FIELD_COMMENT:
         return NCM_SONG_GETTER_COMMENT;
-    case NCM_TAGS_FIELD_LAST:
+    case NCM_TAGS_FIELD_COUNT:
     default:
         return NCM_SONG_GETTER_NONE;
     }
@@ -425,9 +425,9 @@ ncm_song_getter_to_tags_field(enum NcmSongGetter getter) {
     case NCM_SONG_GETTER_NAME:
     case NCM_SONG_GETTER_URI:
     case NCM_SONG_GETTER_PRIORITY:
-    case NCM_SONG_GETTER_LAST:
+    case NCM_SONG_GETTER_COUNT:
     default:
-        return NCM_TAGS_FIELD_LAST;
+        return NCM_TAGS_FIELD_COUNT;
     }
 }
 
@@ -456,7 +456,7 @@ ncm_tags_field_name(enum NcmTagsField field) {
         return "Disc";
     case NCM_TAGS_FIELD_COMMENT:
         return "Comment";
-    case NCM_TAGS_FIELD_LAST:
+    case NCM_TAGS_FIELD_COUNT:
     default:
         return "";
     }

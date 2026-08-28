@@ -1367,7 +1367,7 @@ apply_startup_slave_screen(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
     if (value_len <= 0) {
         config->has_startup_slave_screen_type = false;
-        config->startup_slave_screen_type = NCM_SCREEN_TYPE_LAST;
+        config->startup_slave_screen_type = NCM_SCREEN_TYPE_COUNT;
         return true;
     }
     if (!screen_type_parse_startup(value, value_len,

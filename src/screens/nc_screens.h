@@ -1256,7 +1256,7 @@ typedef struct MediaLibraryScreen {
     MediaLibraryHooks hooks;
 
     MediaLibraryColumnState column_state[
-        MEDIA_LIBRARY_COLUMN_LAST];
+        MEDIA_LIBRARY_COLUMN_COUNT];
     StrBuilder tags_title;
     StrBuilder albums_title;
     StrBuilder songs_title;
@@ -2233,7 +2233,7 @@ enum TinyTagEditorRow {
     TINY_TAG_EDITOR_FIRST_SEPARATOR_ROW,
     TINY_TAG_EDITOR_FIRST_TAG_ROW,
     TINY_TAG_EDITOR_LAST_TAG_ROW =
-        TINY_TAG_EDITOR_FIRST_TAG_ROW + NCM_TAGS_FIELD_LAST - 1,
+        TINY_TAG_EDITOR_FIRST_TAG_ROW + NCM_TAGS_FIELD_COUNT - 1,
     TINY_TAG_EDITOR_SECOND_SEPARATOR_ROW,
     TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW,
     TINY_TAG_EDITOR_THIRD_SEPARATOR_ROW,

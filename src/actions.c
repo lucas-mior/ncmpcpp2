@@ -1383,7 +1383,7 @@ action_runtime_switch_to_screen(enum ScreenType type) {
     case NCM_SCREEN_TYPE_VISUALIZER:
         return ncm_action_show_visualizer();
 #endif
-    case NCM_SCREEN_TYPE_LAST:
+    case NCM_SCREEN_TYPE_COUNT:
         break;
     default:
         break;
@@ -1937,7 +1937,7 @@ action_runtime_toggle_interface(void) {
         Config.design = NCM_DESIGN_CLASSIC;
         Config.statusbar_visibility = ui_state_statusbar_visibility_baseline();
         break;
-    case NCM_DESIGN_LAST:
+    case NCM_DESIGN_COUNT:
         return false;
     default:
         return false;
@@ -2011,7 +2011,7 @@ action_runtime_toggle_add_mode(void) {
         Config.space_add_mode = NCM_SPACE_ADD_MODE_ADD_REMOVE;
         mode_desc = "add an item to playlist or remove if already added";
         break;
-    case NCM_SPACE_ADD_MODE_LAST:
+    case NCM_SPACE_ADD_MODE_COUNT:
     default:
         return false;
     }
@@ -2767,7 +2767,7 @@ action_runtime_current_menu(void) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_LAST:
+    case NCM_SCREEN_TYPE_COUNT:
         break;
     default:
         break;
@@ -2847,7 +2847,7 @@ action_runtime_current_menu_height(void) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_LAST:
+    case NCM_SCREEN_TYPE_COUNT:
     default:
         window = NULL;
         break;
@@ -2910,7 +2910,7 @@ action_runtime_current_tag_scroll_menu(void) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_LAST:
+    case NCM_SCREEN_TYPE_COUNT:
     default:
         break;
     }
@@ -2997,7 +2997,7 @@ action_runtime_song_tag_at(int32 pos, enum NcmSongGetter getter,
             return false;
         }
         field = ncm_song_getter_to_tags_field(getter);
-        if (field == NCM_TAGS_FIELD_LAST) {
+        if (field == NCM_TAGS_FIELD_COUNT) {
             return false;
         }
         menu = tag_editor_screen_active_menu(app_screen_tag_editor());
@@ -3026,7 +3026,7 @@ action_runtime_song_tag_at(int32 pos, enum NcmSongGetter getter,
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_LAST:
+    case NCM_SCREEN_TYPE_COUNT:
     default:
         break;
     }
@@ -3148,7 +3148,7 @@ action_runtime_selected_songs(NcmSongArray *songs) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_LAST:
+    case NCM_SCREEN_TYPE_COUNT:
         break;
     default:
         break;
@@ -3222,7 +3222,7 @@ action_runtime_current_song(NcmSong *song) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_LAST:
+    case NCM_SCREEN_TYPE_COUNT:
         break;
     default:
         break;
@@ -3628,7 +3628,7 @@ action_runtime_browser_item_name(NcmMpdItem *item, StrBuilder *name) {
             return false;
         }
         break;
-    case NCM_MPD_ITEM_LAST:
+    case NCM_MPD_ITEM_COUNT:
     default:
         return false;
     }
@@ -4751,7 +4751,7 @@ action_runtime_previous_column_available(void) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_LAST:
+    case NCM_SCREEN_TYPE_COUNT:
     default:
         break;
     }
@@ -4791,7 +4791,7 @@ action_runtime_next_column_available(void) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_LAST:
+    case NCM_SCREEN_TYPE_COUNT:
     default:
         break;
     }
@@ -4834,7 +4834,7 @@ action_runtime_previous_column(void) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_LAST:
+    case NCM_SCREEN_TYPE_COUNT:
     default:
         break;
     }
@@ -4877,7 +4877,7 @@ action_runtime_next_column(void) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_LAST:
+    case NCM_SCREEN_TYPE_COUNT:
     default:
         break;
     }
@@ -5344,7 +5344,7 @@ action_runtime_toggle_display_mode(void) {
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
 #endif
-    case NCM_SCREEN_TYPE_LAST:
+    case NCM_SCREEN_TYPE_COUNT:
     default:
         break;
     }
@@ -5393,7 +5393,7 @@ action_runtime_toggle_browser_sort_mode(void) {
         return false;
     }
     Config.browser_sort_mode += 1;
-    if (Config.browser_sort_mode >= NCM_SORT_MODE_LAST) {
+    if (Config.browser_sort_mode >= NCM_SORT_MODE_COUNT) {
         Config.browser_sort_mode = NCM_SORT_MODE_TYPE;
     }
 
@@ -5413,7 +5413,7 @@ action_runtime_toggle_browser_sort_mode(void) {
     case NCM_SORT_MODE_NONE:
         message = "Do not sort songs";
         break;
-    case NCM_SORT_MODE_LAST:
+    case NCM_SORT_MODE_COUNT:
         message = "Sort songs by: type";
         break;
     default:
@@ -5498,7 +5498,7 @@ action_runtime_replay_gain_mode_name(enum NcmMpdReplayGainMode mode) {
         return "track";
     case NCM_MPD_REPLAY_GAIN_ALBUM:
         return "album";
-    case NCM_MPD_REPLAY_GAIN_LAST:
+    case NCM_MPD_REPLAY_GAIN_COUNT:
     default:
         break;
     }
@@ -5622,7 +5622,7 @@ ncm_action_edit_song(NcmSong *song) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Couldn't prepare tiny tag editor");
         break;
-    case TINY_TAG_EDITOR_OPEN_LAST:
+    case TINY_TAG_EDITOR_OPEN_COUNT:
     default:
         break;
     }
@@ -5964,7 +5964,7 @@ action_runtime_edit_library_tag(void) {
     }
 
     field = ncm_tags_field_from_tag_type(Config.media_lib_primary_tag);
-    if (field == NCM_TAGS_FIELD_LAST) {
+    if (field == NCM_TAGS_FIELD_COUNT) {
         goto cleanup;
     }
 

@@ -262,7 +262,7 @@ nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
                 window, nc_buffer_reverse_format(formats[i]));
         }
         break;
-    case NC_BUFFER_PROPERTY_LAST:
+    case NC_BUFFER_PROPERTY_COUNT:
     default:
         break;
     }
@@ -334,7 +334,7 @@ nc_buffer_property_copy(NcBufferProperty *dest,
         nc_formatted_color_copy(&dest->value.formatted_color,
                                 &source->value.formatted_color);
         break;
-    case NC_BUFFER_PROPERTY_LAST:
+    case NC_BUFFER_PROPERTY_COUNT:
     default:
         break;
     }
@@ -360,7 +360,7 @@ nc_buffer_property_destroy(NcBufferProperty *property) {
     case NC_BUFFER_PROPERTY_FORMATTED_COLOR_END:
         nc_formatted_color_destroy(&property->value.formatted_color);
         break;
-    case NC_BUFFER_PROPERTY_LAST:
+    case NC_BUFFER_PROPERTY_COUNT:
     default:
         break;
     }
@@ -390,7 +390,7 @@ nc_buffer_reverse_format(enum NcFormat format) {
         return NC_FORMAT_NO_ITALIC;
     case NC_FORMAT_NO_ITALIC:
         return NC_FORMAT_ITALIC;
-    case NC_FORMAT_LAST:
+    case NC_FORMAT_COUNT:
     default:
         break;
     }

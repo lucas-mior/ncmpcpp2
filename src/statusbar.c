@@ -51,7 +51,7 @@ statusbar_redraw_after_stop_unlock(void) {
         ncm_progressbar_draw(ncm_status_state_elapsed_time(),
                              ncm_status_state_total_time());
         break;
-    case NCM_DESIGN_LAST:
+    case NCM_DESIGN_COUNT:
         break;
     default:
         break;
@@ -91,7 +91,7 @@ statusbar_redraw_after_unlock(void) {
         ncm_progressbar_draw(ncm_status_state_elapsed_time(),
                              ncm_status_state_total_time());
         break;
-    case NCM_DESIGN_LAST:
+    case NCM_DESIGN_COUNT:
         break;
     default:
         break;

@@ -12,7 +12,7 @@ ncm_search_direction_str(enum SearchDirection value) {
         return "backward";
     case NCM_SEARCH_DIRECTION_FORWARD:
         return "forward";
-    case NCM_SEARCH_DIRECTION_LAST:
+    case NCM_SEARCH_DIRECTION_COUNT:
         break;
     default:
         break;
@@ -70,7 +70,7 @@ ncm_display_mode_str(enum DisplayMode value) {
         return "classic";
     case NCM_DISPLAY_MODE_COLUMNS:
         return "columns";
-    case NCM_DISPLAY_MODE_LAST:
+    case NCM_DISPLAY_MODE_COUNT:
         break;
     default:
         break;
@@ -101,7 +101,7 @@ ncm_design_str(enum Design value) {
         return "classic";
     case NCM_DESIGN_ALTERNATIVE:
         return "alternative";
-    case NCM_DESIGN_LAST:
+    case NCM_DESIGN_COUNT:
         break;
     default:
         break;

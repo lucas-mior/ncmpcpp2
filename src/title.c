@@ -163,7 +163,7 @@ ncm_title_draw_header_with_config(char *title, int32 title_len,
     case NCM_DESIGN_ALTERNATIVE:
         title_draw_alternative(window, title, title_len, separator_color);
         break;
-    case NCM_DESIGN_LAST:
+    case NCM_DESIGN_COUNT:
         break;
     default:
         break;

@@ -1455,7 +1455,7 @@ status_draw_player_state_label(char *state, int32 state_len) {
             nc_window_apply_format(window, NC_FORMAT_NO_BOLD);
         }
         break;
-    case NCM_DESIGN_LAST:
+    case NCM_DESIGN_COUNT:
         break;
     default:
         break;
@@ -1767,7 +1767,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
         status_draw_alternative_elapsed_time(header, &song, player_state,
                                              player_state_len);
         break;
-    case NCM_DESIGN_LAST:
+    case NCM_DESIGN_COUNT:
         break;
     default:
         break;
@@ -1875,7 +1875,7 @@ ncm_status_changes_flags(void) {
                 header, &Config.alternative_ui_separator_color);
         }
         break;
-    case NCM_DESIGN_LAST:
+    case NCM_DESIGN_COUNT:
         break;
     default:
         break;
@@ -1910,7 +1910,7 @@ ncm_status_changes_mixer(void) {
     case NCM_DESIGN_ALTERNATIVE:
         global_volume_state_set(" Vol: ", STRLIT_LEN(" Vol: "));
         break;
-    case NCM_DESIGN_LAST:
+    case NCM_DESIGN_COUNT:
         break;
     default:
         break;

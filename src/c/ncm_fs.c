@@ -57,7 +57,7 @@ ncm_fs_mode_type(mode_t mode) {
         return NCM_FS_ENTRY_SYMLINK;
     }
 
-    return NCM_FS_ENTRY_LAST;
+    return NCM_FS_ENTRY_COUNT;
 }
 
 static enum NcmFsEntryType
@@ -76,7 +76,7 @@ ncm_fs_dirent_type(int32 type) {
         return NCM_FS_ENTRY_SYMLINK;
 #endif
     default:
-        return NCM_FS_ENTRY_LAST;
+        return NCM_FS_ENTRY_COUNT;
     }
 }
 
@@ -84,7 +84,7 @@ void
 ncm_fs_entry_init(NcmFsEntry *entry) {
     entry->name = NULL;
     entry->name_len = 0;
-    entry->type = NCM_FS_ENTRY_LAST;
+    entry->type = NCM_FS_ENTRY_COUNT;
     return;
 }
 
@@ -107,7 +107,7 @@ ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat, NcmError *ncm_error) {
 
     stat->size = 0;
     stat->mtime = 0;
-    stat->type = NCM_FS_ENTRY_LAST;
+    stat->type = NCM_FS_ENTRY_COUNT;
     stat->exists = false;
 
     if (!ncm_fs_path_copy(path, path_len, &path_copy, ncm_error)) {

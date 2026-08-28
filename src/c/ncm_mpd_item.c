@@ -65,7 +65,7 @@ ncm_mpd_item_set_playlist_from_mpd(NcmMpdItem *item,
 
 void
 ncm_mpd_item_init(NcmMpdItem *item) {
-    item->kind = NCM_MPD_ITEM_LAST;
+    item->kind = NCM_MPD_ITEM_COUNT;
     return;
 }
 
@@ -85,12 +85,12 @@ ncm_mpd_item_destroy(NcmMpdItem *item) {
     case NCM_MPD_ITEM_PLAYLIST:
         ncm_playlist_destroy(&item->value.playlist);
         break;
-    case NCM_MPD_ITEM_LAST:
+    case NCM_MPD_ITEM_COUNT:
     default:
         break;
     }
 
-    item->kind = NCM_MPD_ITEM_LAST;
+    item->kind = NCM_MPD_ITEM_COUNT;
     return;
 }
 
@@ -193,7 +193,7 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
         copied = ncm_playlist_copy(&replacement.value.playlist,
                                    &source->value.playlist);
         break;
-    case NCM_MPD_ITEM_LAST:
+    case NCM_MPD_ITEM_COUNT:
     default:
         break;
     }
@@ -238,7 +238,7 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item,
 enum NcmMpdItemKind
 ncm_mpd_item_kind(NcmMpdItem *item) {
     if (item == NULL) {
-        return NCM_MPD_ITEM_LAST;
+        return NCM_MPD_ITEM_COUNT;
     }
 
     return item->kind;
