@@ -297,9 +297,8 @@ playlist_editor_screen_set_geometry(PlaylistEditorScreen *screen,
 }
 
 void
-playlist_editor_screen_set_column_ratio(
-    PlaylistEditorScreen *screen, int32 left, int32 right
-) {
+playlist_editor_screen_set_column_ratio(PlaylistEditorScreen *screen,
+                                        int32 left, int32 right) {
     if (screen == NULL) {
         return;
     }
