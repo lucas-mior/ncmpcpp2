@@ -189,6 +189,7 @@ playlist_editor_screen_init(PlaylistEditorScreen *screen,
     screen->observed_playlist_valid = false;
     screen->last_playlist_highlight = -1;
     screen->last_known_content_count = -1;
+
     if (Config.data_fetching_delay) {
         screen->fetching_delay_ms = PLAYLIST_EDITOR_FETCH_DELAY_MS;
         screen->window_timeout_ms = PLAYLIST_EDITOR_FETCH_DELAY_MS;
@@ -197,6 +198,7 @@ playlist_editor_screen_init(PlaylistEditorScreen *screen,
         screen->window_timeout_ms = NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
     }
     screen->registered = false;
+
     playlist_editor_update_titles(screen, false);
     nc_window_init(&screen->playlists_window, start_x, main_start_y,
                    initial_left_width, main_height,
@@ -213,6 +215,7 @@ playlist_editor_screen_init(PlaylistEditorScreen *screen,
                        NC_SCREEN_TYPE_PLAYLIST_EDITOR);
     playlist_editor_configure_menus(screen);
     playlist_editor_set_display_callbacks(screen);
+
     return;
 }
 
@@ -221,8 +224,7 @@ playlist_editor_screen_destroy(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
-    (void)app_controller_unregister_screen(
-        playlist_editor_screen_base(screen));
+    (void)app_controller_unregister_screen(playlist_editor_screen_base(screen));
     nc_window_destroy(&screen->content_window);
     nc_window_destroy(&screen->playlists_window);
     nc_song_menu_destroy(&screen->content);
@@ -258,9 +260,7 @@ playlist_editor_screen_content(PlaylistEditorScreen *screen) {
 }
 
 NcMenu *
-playlist_editor_screen_active_menu(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_active_menu(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return NULL;
     }
@@ -271,9 +271,7 @@ playlist_editor_screen_active_menu(
 }
 
 NcWindow *
-playlist_editor_screen_active_window(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_active_window(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return NULL;
     }
@@ -284,10 +282,9 @@ playlist_editor_screen_active_window(
 }
 
 void
-playlist_editor_screen_set_geometry(
-    PlaylistEditorScreen *screen, int32 start_x, int32 width,
-    int32 main_start_y, int32 main_height
-) {
+playlist_editor_screen_set_geometry(PlaylistEditorScreen *screen,
+                                    int32 start_x, int32 width,
+                                    int32 main_start_y, int32 main_height) {
     if (screen == NULL) {
         return;
     }
@@ -300,9 +297,8 @@ playlist_editor_screen_set_geometry(
 }
 
 void
-playlist_editor_screen_set_column_ratio(
-    PlaylistEditorScreen *screen, int32 left, int32 right
-) {
+playlist_editor_screen_set_column_ratio(PlaylistEditorScreen *screen,
+                                        int32 left, int32 right) {
     if (screen == NULL) {
         return;
     }
@@ -319,9 +315,7 @@ playlist_editor_screen_set_column_ratio(
 }
 
 bool
-playlist_editor_screen_previous_column_available(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_previous_column_available(PlaylistEditorScreen *screen) {
     NcMenu *playlists;
 
     if (screen == NULL) {
@@ -333,9 +327,7 @@ playlist_editor_screen_previous_column_available(
 }
 
 bool
-playlist_editor_screen_next_column_available(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_next_column_available(PlaylistEditorScreen *screen) {
     NcMenu *content;
 
     if (screen == NULL) {
@@ -358,9 +350,7 @@ playlist_editor_screen_previous_column(
 }
 
 void
-playlist_editor_screen_next_column(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_next_column(PlaylistEditorScreen *screen) {
     if (playlist_editor_screen_next_column_available(screen)) {
         screen->active_column = PLAYLIST_EDITOR_COLUMN_CONTENT;
         playlist_editor_update_menu_highlights(screen);
@@ -369,9 +359,8 @@ playlist_editor_screen_next_column(
 }
 
 bool
-playlist_editor_screen_load_playlists(
-    PlaylistEditorScreen *screen, NcmMpdPlaylistList *playlists
-) {
+playlist_editor_screen_load_playlists(PlaylistEditorScreen *screen,
+                                      NcmMpdPlaylistList *playlists) {
     StrBuilder preserved = {0};
     NcMenu *menu;
     bool had_preserved;
@@ -409,10 +398,9 @@ playlist_editor_screen_load_playlists(
 }
 
 bool
-playlist_editor_screen_reload_playlists_from_mpd(
-    PlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmError *ncm_error
-) {
+playlist_editor_screen_reload_playlists_from_mpd(PlaylistEditorScreen *screen,
+                                                 NcmMpdClient *client,
+                                                 NcmError *ncm_error) {
     NcmMpdPlaylistList playlists;
     bool ok;
 
@@ -422,8 +410,7 @@ playlist_editor_screen_reload_playlists_from_mpd(
     playlists = (NcmMpdPlaylistList){0};
     if ((ok = ncm_mpd_client_get_playlists(client, &playlists, ncm_error))) {
         playlist_editor_sort_playlists(&playlists);
-        ok = playlist_editor_screen_load_playlists(screen,
-                                                   &playlists);
+        ok = playlist_editor_screen_load_playlists(screen, &playlists);
         if (!ok) {
             ncm_error_set(ncm_error, ENOMEM,
                           STRLIT("could not copy playlists"));
@@ -434,9 +421,8 @@ playlist_editor_screen_reload_playlists_from_mpd(
 }
 
 bool
-playlist_editor_screen_load_content(
-    PlaylistEditorScreen *screen, NcmMpdSongList *songs
-) {
+playlist_editor_screen_load_content(PlaylistEditorScreen *screen,
+                                    NcmMpdSongList *songs) {
     NcMenu *menu;
     NcmSong preserved_song;
     bool had_preserved_song;
