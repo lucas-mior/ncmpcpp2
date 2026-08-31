@@ -20,6 +20,7 @@ build|check|clean|debug|debug-fast|fast_feedback|install|test|uninstall)
     ;;
 esac
 
+common_build_tags
 common_build_print_invocation "$script"
 
 PREFIX="${PREFIX:-/usr/local}"
