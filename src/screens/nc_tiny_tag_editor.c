@@ -24,8 +24,8 @@ static void tiny_editor_print_buffer(NcWindow *window, NcBuffer *buffer);
 static bool tiny_editor_add_row(TinyTagEditorScreen *screen,
                                 NcBuffer *buffer, uint32 flags);
 static int32 tiny_editor_current_row(TinyTagEditorScreen *screen);
-static void tiny_editor_status_message(
-    TinyTagEditorScreen *screen, char *message, int32 message_len);
+static void tiny_editor_status_message(TinyTagEditorScreen *screen,
+                                       char *message, int32 message_len);
 static bool tiny_editor_replace_tag_row(TinyTagEditorScreen *screen,
                                         enum NcmTagsField field);
 static bool tiny_editor_replace_filename_row(TinyTagEditorScreen *screen);
