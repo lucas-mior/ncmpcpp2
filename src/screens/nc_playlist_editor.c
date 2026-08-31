@@ -189,6 +189,7 @@ playlist_editor_screen_init(PlaylistEditorScreen *screen,
     screen->observed_playlist_valid = false;
     screen->last_playlist_highlight = -1;
     screen->last_known_content_count = -1;
+
     if (Config.data_fetching_delay) {
         screen->fetching_delay_ms = PLAYLIST_EDITOR_FETCH_DELAY_MS;
         screen->window_timeout_ms = PLAYLIST_EDITOR_FETCH_DELAY_MS;
@@ -197,6 +198,7 @@ playlist_editor_screen_init(PlaylistEditorScreen *screen,
         screen->window_timeout_ms = NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
     }
     screen->registered = false;
+
     playlist_editor_update_titles(screen, false);
     nc_window_init(&screen->playlists_window, start_x, main_start_y,
                    initial_left_width, main_height,
@@ -213,6 +215,7 @@ playlist_editor_screen_init(PlaylistEditorScreen *screen,
                        NC_SCREEN_TYPE_PLAYLIST_EDITOR);
     playlist_editor_configure_menus(screen);
     playlist_editor_set_display_callbacks(screen);
+
     return;
 }
 
