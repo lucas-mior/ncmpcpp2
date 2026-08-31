@@ -327,9 +327,7 @@ playlist_editor_screen_previous_column_available(PlaylistEditorScreen *screen) {
 }
 
 bool
-playlist_editor_screen_next_column_available(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_next_column_available(PlaylistEditorScreen *screen) {
     NcMenu *content;
 
     if (screen == NULL) {
