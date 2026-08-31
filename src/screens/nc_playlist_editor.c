@@ -315,9 +315,7 @@ playlist_editor_screen_set_column_ratio(PlaylistEditorScreen *screen,
 }
 
 bool
-playlist_editor_screen_previous_column_available(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_previous_column_available(PlaylistEditorScreen *screen) {
     NcMenu *playlists;
 
     if (screen == NULL) {
