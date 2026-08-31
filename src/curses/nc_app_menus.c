@@ -138,7 +138,7 @@ nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
 #define NC_TYPED_MENU_DEFINE_INIT(TYPE_NAME, PREFIX, CALLBACKS) \
     void \
     PREFIX##_init(TYPE_NAME *menu) { \
-        nc_menu_init(&menu->menu); \
+        menu->menu = (NcMenu){0}; \
         nc_menu_set_item_callbacks(&menu->menu, *(CALLBACKS)); \
         return; \
     }

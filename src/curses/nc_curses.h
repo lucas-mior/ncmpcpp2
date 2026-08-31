@@ -416,12 +416,11 @@ struct NcMenu {
     int32 highlight;
     int32 drawn_position;
 
-    bool highlight_enabled;
+    bool highlight_disabled;
     bool cyclic_scroll_enabled;
     bool autocenter_cursor;
 };
 
-void nc_menu_init(NcMenu *menu);
 void nc_menu_destroy(NcMenu *menu);
 void nc_menu_copy(NcMenu *dest, NcMenu *source);
 void nc_menu_swap(NcMenu *left, NcMenu *right);

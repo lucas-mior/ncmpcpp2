@@ -310,7 +310,7 @@ static void
 search_menu_init(NcMenu *menu) {
     NcMenuItemCallbacks callbacks;
 
-    nc_menu_init(menu);
+    *menu = (NcMenu){0};
     callbacks.item_size = SIZEOF(char *);
     callbacks.construct = NULL;
     callbacks.copy = search_item_copy;

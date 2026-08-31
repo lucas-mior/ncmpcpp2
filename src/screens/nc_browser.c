@@ -1416,7 +1416,7 @@ browser_draw_item(NcMenu *menu, NcWindow *window,
 
     available_width = nc_window_width(window) - nc_window_get_x(window);
     selected = nc_menu_position_is_selected(menu, pos);
-    highlighted = menu->highlight_enabled && (pos == menu->highlight);
+    highlighted = !menu->highlight_disabled && (pos == menu->highlight);
 
     buffer = (NcBuffer){0};
     if (browser_screen_render_item(screen, &buffer, item,
