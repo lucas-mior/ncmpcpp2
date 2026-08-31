@@ -359,9 +359,8 @@ playlist_editor_screen_next_column(PlaylistEditorScreen *screen) {
 }
 
 bool
-playlist_editor_screen_load_playlists(
-    PlaylistEditorScreen *screen, NcmMpdPlaylistList *playlists
-) {
+playlist_editor_screen_load_playlists(PlaylistEditorScreen *screen,
+                                      NcmMpdPlaylistList *playlists) {
     StrBuilder preserved = {0};
     NcMenu *menu;
     bool had_preserved;
