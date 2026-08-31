@@ -51,13 +51,6 @@ ncm_regex_set_error(NcmRegex *regex, int32 code, NcmError *ncm_error) {
 }
 
 void
-ncm_regex_init(NcmRegex *regex) {
-    regex->compiled = false;
-    regex->flags = 0;
-    return;
-}
-
-void
 ncm_regex_destroy(NcmRegex *regex) {
     if (regex == NULL) {
         return;

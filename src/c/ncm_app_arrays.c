@@ -44,7 +44,7 @@ static NcmArrayItemCallbacks ncm_app_array_mpd_item_callbacks = {
 
 static void
 ncm_app_array_song_init(void *item) {
-    ncm_song_init(item);
+    *(NcmSong *)item = (NcmSong){0};
     return;
 }
 
@@ -67,7 +67,7 @@ ncm_app_array_song_move(void *dest, void *source) {
 
 static void
 ncm_app_array_directory_init(void *item) {
-    ncm_directory_init(item);
+    *(NcmDirectory *)item = (NcmDirectory){0};
     return;
 }
 
@@ -84,7 +84,7 @@ ncm_app_array_directory_copy(void *dest, void *source) {
 
 static void
 ncm_app_array_playlist_init(void *item) {
-    ncm_playlist_init(item);
+    *(NcmPlaylist *)item = (NcmPlaylist){0};
     return;
 }
 
@@ -116,7 +116,6 @@ ncm_app_array_mpd_item_copy(void *dest, void *source) {
     return ncm_mpd_item_copy(dest, source);
 }
 
-NCM_ARRAY_DEFINE_INIT(ncm_string_view_array, NcmStringViewArray)
 NCM_ARRAY_DEFINE_CLEAR(ncm_string_view_array,
                        NcmStringViewArray,
                        &ncm_app_array_no_callbacks)
@@ -128,7 +127,6 @@ NCM_ARRAY_DEFINE_APPEND(ncm_string_view_array,
                         &ncm_app_array_no_callbacks)
 
 
-NCM_ARRAY_DEFINE_INIT(ncm_song_array, NcmSongArray)
 NCM_ARRAY_DEFINE_CLEAR(ncm_song_array,
                        NcmSongArray,
                        &ncm_app_array_song_callbacks)
@@ -149,7 +147,6 @@ NCM_ARRAY_DEFINE_APPEND_MOVE(ncm_song_array,
                              NcmSong,
                              &ncm_app_array_song_callbacks)
 
-NCM_ARRAY_DEFINE_INIT(ncm_directory_array, NcmDirectoryArray)
 NCM_ARRAY_DEFINE_CLEAR(ncm_directory_array,
                        NcmDirectoryArray,
                        &ncm_app_array_directory_callbacks)
@@ -166,7 +163,6 @@ NCM_ARRAY_DEFINE_APPEND_COPY(ncm_directory_array,
                              NcmDirectory,
                              &ncm_app_array_directory_callbacks)
 
-NCM_ARRAY_DEFINE_INIT(ncm_playlist_array, NcmPlaylistArray)
 NCM_ARRAY_DEFINE_CLEAR(ncm_playlist_array,
                        NcmPlaylistArray,
                        &ncm_app_array_playlist_callbacks)
@@ -182,7 +178,6 @@ NCM_ARRAY_DEFINE_APPEND_COPY(ncm_playlist_array,
                              NcmPlaylist,
                              &ncm_app_array_playlist_callbacks)
 
-NCM_ARRAY_DEFINE_INIT(ncm_mpd_item_array, NcmMpdItemArray)
 NCM_ARRAY_DEFINE_CLEAR(ncm_mpd_item_array,
                        NcmMpdItemArray,
                        &ncm_app_array_mpd_item_callbacks)

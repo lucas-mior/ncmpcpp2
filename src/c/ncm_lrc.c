@@ -32,17 +32,6 @@ static void ncm_lrc_document_clear_buffer_positions(
 static int ncm_lrc_entry_compare(void *left_ptr, void *right_ptr);
 
 void
-ncm_lrc_document_init(NcmLrcDocument *document) {
-    document->text = (StrBuilder){0};
-    document->entries = NULL;
-    document->entries_len = 0;
-    document->entries_cap = 0;
-    document->offset_ms = 0;
-    document->has_offset = false;
-    return;
-}
-
-void
 ncm_lrc_document_clear(NcmLrcDocument *document) {
     if (document == NULL) {
         return;
@@ -63,7 +52,7 @@ ncm_lrc_document_destroy(NcmLrcDocument *document) {
 
     sb_free(&document->text);
     free2(document->entries, document->entries_cap*SIZEOF(*document->entries));
-    ncm_lrc_document_init(document);
+    *document = (NcmLrcDocument){0};
     return;
 }
 
@@ -87,7 +76,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
         return false;
     }
 
-    ncm_lrc_document_init(&parsed);
+    parsed = (NcmLrcDocument){0};
     ncm_lrc_parse_offset_tags(&parsed, data, data_len);
 
     source_order = 0;

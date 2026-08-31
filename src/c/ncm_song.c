@@ -149,21 +149,6 @@ ncm_song_load_mpd_tag(NcmSong *song, struct mpd_song *source,
 }
 
 void
-ncm_song_init(NcmSong *song) {
-    song->uri = NULL;
-    song->uri_len = 0;
-    song->tags = NULL;
-    song->tags_len = 0;
-    song->tags_cap = 0;
-    song->duration = 0;
-    song->position = 0;
-    song->id = 0;
-    song->priority = 0;
-    song->last_modified = 0;
-    return;
-}
-
-void
 ncm_song_destroy(NcmSong *song) {
     if (song == NULL) {
         return;
@@ -175,7 +160,7 @@ ncm_song_destroy(NcmSong *song) {
     }
     free2(song->tags, song->tags_cap*SIZEOF(*song->tags));
 
-    ncm_song_init(song);
+    *song = (NcmSong){0};
     return;
 }
 
@@ -191,7 +176,7 @@ ncm_song_move(NcmSong *dest, NcmSong *source) {
 
     ncm_song_destroy(dest);
     *dest = *source;
-    ncm_song_init(source);
+    *source = (NcmSong){0};
     return;
 }
 
@@ -206,7 +191,7 @@ ncm_song_copy(NcmSong *dest, NcmSong *source) {
         return false;
     }
 
-    ncm_song_init(&replacement);
+    replacement = (NcmSong){0};
     if (source->uri) {
         if (!ncm_song_set_uri(&replacement, source->uri,
                               source->uri_len)) {
@@ -260,7 +245,7 @@ ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source) {
         return false;
     }
 
-    ncm_song_init(&replacement);
+    replacement = (NcmSong){0};
     if (!ncm_song_set_uri(&replacement, uri, optional_strlen32(uri))) {
         ncm_song_destroy(&replacement);
         return false;

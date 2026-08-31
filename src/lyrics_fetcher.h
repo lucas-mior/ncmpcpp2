@@ -49,7 +49,6 @@ typedef struct NcmLyricsFetcherDef {
 } NcmLyricsFetcherDef;
 
 NCM_ARRAY_DECLARE_TYPE(NcmLyricsFetcherArray, NcmLyricsFetcherDef)
-NCM_ARRAY_DECLARE_INIT(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
 NCM_ARRAY_DECLARE_CLEAR(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
 NCM_ARRAY_DECLARE_DESTROY(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
 NCM_ARRAY_DECLARE_RESERVE(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
@@ -66,20 +65,17 @@ typedef CURLcode (*NcmLyricsCurlPerformFn)(StrBuilder *data, char *url,
                                            bool follow_redirect,
                                            int32 timeout_seconds, void *user);
 
-void ncm_lyrics_result_init(NcmLyricsResult *result);
 void ncm_lyrics_result_destroy(NcmLyricsResult *result);
 void ncm_lyrics_result_clear(NcmLyricsResult *result);
 bool ncm_lyrics_result_set(NcmLyricsResult *result, bool success, char *text,
                            int32 text_len);
 
-void ncm_lyrics_fetcher_def_init(NcmLyricsFetcherDef *fetcher);
 void ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher);
 bool ncm_lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *fetcher, char *name,
                                      int32 name_len);
 char *ncm_lyrics_fetcher_name(NcmLyricsFetcherDef *fetcher);
 int32 ncm_lyrics_fetcher_name_len(NcmLyricsFetcherDef *fetcher);
 
-void ncm_lyrics_fetcher_registry_init(NcmLyricsFetcherRegistry *registry);
 void ncm_lyrics_fetcher_registry_destroy(NcmLyricsFetcherRegistry *registry);
 void ncm_lyrics_fetcher_registry_clear(NcmLyricsFetcherRegistry *registry);
 NcmLyricsFetcherDef *

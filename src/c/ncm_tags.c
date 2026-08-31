@@ -22,17 +22,6 @@ typedef struct NcmTagsMappedContext {
 } NcmTagsMappedContext;
 
 static void
-ncm_tags_view_init(NcmStringView *view) {
-    if (view == NULL) {
-        return;
-    }
-
-    view->data = NULL;
-    view->len = 0;
-    return;
-}
-
-static void
 ncm_tags_forward_value_callback(char *value, void *user) {
     NcmTagsForwardContext *context;
 
@@ -181,7 +170,7 @@ ncm_tags_write_field(NcmTaglibFile *file, enum NcmTagsField field,
     for (int32 i = 0; ; i += 1) {
         NcmStringView value;
 
-        ncm_tags_view_init(&value);
+        value = (NcmStringView){0};
         if (!callback(field, i, &value, user)) {
             break;
         }
@@ -238,7 +227,7 @@ ncm_tags_read_lyrics(char *path, NcmTagsValueCallback *callback,
         return NCM_TAGS_READ_NOT_FOUND;
     }
 
-    ncm_taglib_file_init(&file);
+    file = (NcmTaglibFile){0};
     if (!ncm_taglib_file_open(&file, path)) {
         return NCM_TAGS_READ_OPEN_FAILED;
     }
@@ -274,7 +263,7 @@ ncm_tags_read_song(struct mpd_song *song) {
         return false;
     }
 
-    ncm_taglib_file_init(&file);
+    file = (NcmTaglibFile){0};
     if (!ncm_taglib_file_open(&file, (char *)mpd_song_get_uri(song))) {
         return false;
     }
@@ -322,7 +311,7 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
         return false;
     }
 
-    ncm_taglib_file_init(&file);
+    file = (NcmTaglibFile){0};
     if (!ncm_taglib_file_open(&file, old_path)) {
         free2(old_path, old_path_len + 1);
         return false;

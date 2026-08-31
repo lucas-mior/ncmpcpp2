@@ -6,14 +6,6 @@
 #include "c/ncm_c.h"
 
 void
-ncm_sample_buffer_init(NcmSampleBuffer *buffer) {
-    buffer->data = NULL;
-    buffer->len = 0;
-    buffer->cap = 0;
-    return;
-}
-
-void
 ncm_sample_buffer_destroy(NcmSampleBuffer *buffer) {
     free2(buffer->data, buffer->cap*SIZEOF(*buffer->data));
 

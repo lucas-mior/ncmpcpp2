@@ -92,7 +92,6 @@ void ncm_binding_action_init(NcmBindingAction *action);
 void ncm_binding_action_destroy(NcmBindingAction *action);
 bool ncm_binding_action_copy(NcmBindingAction *dest, NcmBindingAction *source);
 
-void ncm_binding_init(NcmBinding *binding);
 void ncm_binding_destroy(NcmBinding *binding);
 void ncm_binding_clear(NcmBinding *binding);
 bool ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action);
@@ -124,13 +123,11 @@ bool ncm_binding_execute_default(NcmBinding *binding);
 bool ncm_binding_is_single_action_type(NcmBinding *binding,
                                        enum NcmActionType type);
 
-void ncm_command_init(NcmCommand *command);
 void ncm_command_destroy(NcmCommand *command);
 
 void ncm_key_bindings_init(NcmKeyBindings *key_bindings);
 void ncm_key_bindings_destroy(NcmKeyBindings *key_bindings);
 
-void ncm_bindings_configuration_init(NcmBindingsConfiguration *bindings);
 void ncm_bindings_configuration_destroy(NcmBindingsConfiguration *bindings);
 void ncm_bindings_configuration_clear(NcmBindingsConfiguration *bindings);
 bool ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,

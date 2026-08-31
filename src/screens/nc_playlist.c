@@ -251,7 +251,7 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
     screen->filter_constraint = (StrBuilder){0};
     screen->search_constraint = (StrBuilder){0};
 
-    ncm_regex_init(&screen->filter_regex);
+    screen->filter_regex = (NcmRegex){0};
     screen->total_length = 0;
     screen->remaining_time = 0;
     screen->scroll_begin = 0;
@@ -478,7 +478,7 @@ playlist_screen_reload_from_mpd(PlaylistScreen *screen,
         return false;
     }
 
-    ncm_mpd_song_list_init(&songs);
+    songs = (NcmMpdSongList){0};
     if (playlist_should_reload_full(screen, version,
                                     playlist_length, NULL)) {
         result = ncm_mpd_client_get_queue(client, &songs, ncm_error);
@@ -555,7 +555,7 @@ playlist_screen_update_current_mutable_song(
         return false;
     }
 
-    ncm_song_init(&replacement);
+    replacement = (NcmSong){0};
     if (!playlist_build_mutable_song(&replacement, current, song)) {
         ncm_song_destroy(&replacement);
         return false;
@@ -796,7 +796,7 @@ playlist_screen_copy_sort_range(
     }
 
     menu = playlist_storage_menu(screen);
-    ncm_song_array_init(&replacement);
+    replacement = (NcmSongArray){0};
     for (int32 i = first; i < last; i += 1) {
         if ((song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i)) == NULL) {
             ncm_error_set(ncm_error, EINVAL,
@@ -854,7 +854,7 @@ playlist_screen_clear_filter(PlaylistScreen *screen) {
         return;
     }
     ncm_regex_destroy(&screen->filter_regex);
-    ncm_regex_init(&screen->filter_regex);
+    screen->filter_regex = (NcmRegex){0};
     sb_clear(&screen->filter_constraint);
     nc_menu_set_display_callbacks(playlist_storage_menu(screen),
                                   playlist_display_callbacks());
@@ -874,7 +874,7 @@ playlist_screen_search(PlaylistScreen *screen,
         return false;
     }
 
-    ncm_regex_init(&regex);
+    regex = (NcmRegex){0};
     if (!ncm_regex_compile(&regex, pattern, pattern_len,
                            Config.regex_flags, ncm_error)) {
         ncm_regex_destroy(&regex);
@@ -908,7 +908,7 @@ playlist_screen_set_selected_priority(PlaylistScreen *screen,
         return false;
     }
 
-    ncm_song_array_init(&songs);
+    songs = (NcmSongArray){0};
     if (!playlist_screen_selected_songs(screen, &songs)) {
         ncm_song_array_destroy(&songs);
         return false;
@@ -1117,7 +1117,7 @@ playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
         playlist_print_buffer(window, &Config.now_playing_prefix);
     }
 
-    nc_buffer_init(&buffer);
+    buffer = (NcBuffer){0};
     if (Config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
         int32 available_width;
         int32 list_width;

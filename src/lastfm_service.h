@@ -40,13 +40,11 @@ typedef struct NcmLastfmService {
     enum NcmLastfmServiceType type;
 } NcmLastfmService;
 
-void ncm_lastfm_result_init(NcmLastfmResult *result);
 void ncm_lastfm_result_destroy(NcmLastfmResult *result);
 void ncm_lastfm_result_clear(NcmLastfmResult *result);
 bool ncm_lastfm_result_set(NcmLastfmResult *result, bool success, char *text,
                            int32 text_len);
 
-void ncm_lastfm_service_init(NcmLastfmService *service);
 void ncm_lastfm_service_destroy(NcmLastfmService *service);
 bool ncm_lastfm_artist_info_init(NcmLastfmService *service, char *artist,
                                  int32 artist_len, char *lang, int32 lang_len);

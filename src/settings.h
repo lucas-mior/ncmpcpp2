@@ -41,14 +41,12 @@ typedef struct ScreenTypeArray {
 } ScreenTypeArray;
 
 NCM_ARRAY_DECLARE_TYPE(NcmInt32Array, int32)
-NCM_ARRAY_DECLARE_INIT(ncm_int32_array, NcmInt32Array)
 NCM_ARRAY_DECLARE_CLEAR(ncm_int32_array, NcmInt32Array)
 NCM_ARRAY_DECLARE_DESTROY(ncm_int32_array, NcmInt32Array)
 NCM_ARRAY_DECLARE_RESERVE(ncm_int32_array, NcmInt32Array)
 NCM_ARRAY_DECLARE_APPEND(ncm_int32_array, NcmInt32Array, int32)
 
 NCM_ARRAY_DECLARE_TYPE(NcmFormattedColorArray, NcFormattedColor)
-NCM_ARRAY_DECLARE_INIT(ncm_formatted_color_array, NcmFormattedColorArray)
 NCM_ARRAY_DECLARE_CLEAR(ncm_formatted_color_array, NcmFormattedColorArray)
 NCM_ARRAY_DECLARE_DESTROY(ncm_formatted_color_array, NcmFormattedColorArray)
 NCM_ARRAY_DECLARE_RESERVE(ncm_formatted_color_array, NcmFormattedColorArray)
@@ -251,12 +249,10 @@ typedef struct Configuration {
 void column_init(Column *column);
 void column_destroy(Column *column);
 
-void column_array_init(ColumnArray *array);
 void column_array_destroy(ColumnArray *array);
 Column *column_array_append(ColumnArray *array);
 void column_array_clear(ColumnArray *array);
 
-void screen_type_array_init(ScreenTypeArray *array);
 void screen_type_array_destroy(ScreenTypeArray *array);
 enum ScreenType *screen_type_array_append(ScreenTypeArray *array);
 void screen_type_array_clear(ScreenTypeArray *array);

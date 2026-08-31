@@ -281,14 +281,6 @@ ncm_format_expr_list_reserve(NcmFormatExprList *list, int32 extra) {
 }
 
 void
-ncm_format_expr_list_init(NcmFormatExprList *list) {
-    list->items = NULL;
-    list->len = 0;
-    list->cap = 0;
-    return;
-}
-
-void
 ncm_format_expr_list_clear(NcmFormatExprList *list) {
     if (list == NULL) {
         return;
@@ -308,7 +300,7 @@ ncm_format_expr_list_destroy(NcmFormatExprList *list) {
 
     ncm_format_expr_list_clear(list);
     free2(list->items, list->cap*SIZEOF(*list->items));
-    ncm_format_expr_list_init(list);
+    *list = (NcmFormatExprList){0};
 
     return;
 }
@@ -316,7 +308,7 @@ ncm_format_expr_list_destroy(NcmFormatExprList *list) {
 void
 ncm_format_expr_list_move(NcmFormatExprList *dest, NcmFormatExprList *source) {
     *dest = *source;
-    ncm_format_expr_list_init(source);
+    *source = (NcmFormatExprList){0};
     return;
 }
 
@@ -361,12 +353,6 @@ ncm_format_expr_destroy(NcmFormatExpr *expr) {
         break;
     }
     ncm_format_expr_init(expr);
-    return;
-}
-
-void
-ncm_format_ast_init(NcmFormatAst *ast) {
-    ncm_format_expr_list_init(&ast->root);
     return;
 }
 
@@ -417,7 +403,7 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
         return false;
     }
     first->type = NCM_FORMAT_EXPR_FIRST_OF;
-    ncm_format_expr_list_init(&first->value.list);
+    first->value.list = (NcmFormatExprList){0};
 
     for (int32 i = 0; i < types_len; i += 1) {
         NcmFormatExpr *tag;
@@ -626,7 +612,7 @@ ncm_format_parse_first_of(NcmFormatExprList *out, char *data,
         return false;
     }
     first->type = NCM_FORMAT_EXPR_FIRST_OF;
-    ncm_format_expr_list_init(&first->value.list);
+    first->value.list = (NcmFormatExprList){0};
 
     i = *pos;
     done = false;
@@ -639,7 +625,7 @@ ncm_format_parse_first_of(NcmFormatExprList *out, char *data,
             return false;
         }
 
-        ncm_format_expr_list_init(&inner);
+        inner = (NcmFormatExprList){0};
         if (!ncm_format_parse_bracket(&inner, data, i + 1, close,
                                       flags, ncm_error)) {
             ncm_format_expr_list_destroy(&inner);
@@ -708,7 +694,7 @@ ncm_format_parse(NcmFormatAst *ast, char *data, int32 data_len,
                  uint32 flags, NcmError *ncm_error) {
     NcmFormatAst tmp;
 
-    ncm_format_ast_init(&tmp);
+    tmp = (NcmFormatAst){0};
     if (!ncm_format_parse_bracket(&tmp.root, data, 0, data_len,
                                   flags, ncm_error)) {
         ncm_format_ast_destroy(&tmp);

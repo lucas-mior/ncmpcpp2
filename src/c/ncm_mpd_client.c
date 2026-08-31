@@ -1256,7 +1256,7 @@ ncm_mpd_client_get_directory_entries(NcmMpdClient *client, char *path,
         return false;
     }
 
-    ncm_mpd_item_list_init(&list);
+    list = (NcmMpdItemList){0};
     if ((ok = ncm_mpd_client_get_directory(client, path, &list, ncm_error))) {
         ok = ncm_mpd_item_list_to_item_array(&list, items);
     }
@@ -1276,7 +1276,7 @@ ncm_mpd_client_get_directory_list(NcmMpdClient *client, char *path,
         return false;
     }
 
-    ncm_mpd_item_list_init(&items);
+    items = (NcmMpdItemList){0};
     if ((ok = ncm_mpd_client_get_directory(client, path, &items, ncm_error))) {
         ok = ncm_mpd_item_list_to_directory_array(&items, directories);
     }
@@ -1329,8 +1329,8 @@ ncm_mpd_client_add_random_tag(NcmMpdClient *client,
         return false;
     }
 
-    ncm_mpd_string_list_init(&tags);
-    ncm_mpd_song_list_init(&songs);
+    tags = (NcmMpdStringList){0};
+    songs = (NcmMpdSongList){0};
     if (!ncm_mpd_client_get_list(client, tag, &tags, ncm_error)) {
         goto cleanup;
     }
@@ -1398,8 +1398,8 @@ ncm_mpd_client_add_random_songs(NcmMpdClient *client,
         exclude_pattern_len = optional_strlen32(exclude_pattern);
     }
 
-    ncm_mpd_string_list_init(&files);
-    ncm_regex_init(&regex);
+    files = (NcmMpdStringList){0};
+    regex = (NcmRegex){0};
     have_regex = false;
 
     if (!ncm_mpd_client_prechecks_no_commands(client, ncm_error)) {

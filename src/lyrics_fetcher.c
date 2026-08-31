@@ -126,7 +126,6 @@ static NcmArrayItemCallbacks lyrics_fetcher_callbacks = {
     .destroy = lyrics_fetcher_array_destroy_item,
 };
 
-NCM_ARRAY_DEFINE_INIT(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
 NCM_ARRAY_DEFINE_CLEAR(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray,
                        &lyrics_fetcher_callbacks)
 NCM_ARRAY_DEFINE_DESTROY(ncm_lyrics_fetcher_array, NcmLyricsFetcherArray)
@@ -263,15 +262,6 @@ lyrics_string_destroy(char **data, int32 *len, int32 *cap) {
 }
 
 void
-ncm_lyrics_result_init(NcmLyricsResult *result) {
-    result->text = NULL;
-    result->text_len = 0;
-    result->text_cap = 0;
-    result->success = false;
-    return;
-}
-
-void
 ncm_lyrics_result_destroy(NcmLyricsResult *result) {
     if (result == NULL) {
         return;
@@ -306,16 +296,6 @@ ncm_lyrics_result_set(NcmLyricsResult *result, bool success,
 }
 
 void
-ncm_lyrics_fetcher_def_init(NcmLyricsFetcherDef *fetcher) {
-    fetcher->name = NULL;
-    fetcher->name_len = 0;
-    fetcher->name_cap = 0;
-    fetcher->type = NCM_LYRICS_FETCHER_UNKNOWN;
-    fetcher->enabled = false;
-    return;
-}
-
-void
 ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher) {
     if (fetcher == NULL) {
         return;
@@ -343,7 +323,7 @@ ncm_lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *fetcher,
 
     display_name = lyrics_type_name(type, &display_name_len);
     ncm_lyrics_fetcher_def_destroy(fetcher);
-    ncm_lyrics_fetcher_def_init(fetcher);
+    *fetcher = (NcmLyricsFetcherDef){0};
     fetcher->type = type;
     fetcher->enabled = true;
     return lyrics_string_set(&fetcher->name, &fetcher->name_len,
@@ -365,12 +345,6 @@ ncm_lyrics_fetcher_name_len(NcmLyricsFetcherDef *fetcher) {
         return 0;
     }
     return fetcher->name_len;
-}
-
-void
-ncm_lyrics_fetcher_registry_init(NcmLyricsFetcherRegistry *registry) {
-    ncm_lyrics_fetcher_array_init(&registry->fetchers);
-    return;
 }
 
 void
@@ -742,7 +716,7 @@ ncm_lyrics_cleanup_html(StrBuilder *out, char *data, int32 data_len) {
 static void
 lyrics_fetcher_array_init_item(void *item) {
     ASSERT(item != NULL);
-    ncm_lyrics_fetcher_def_init(item);
+    *(NcmLyricsFetcherDef *)item = (NcmLyricsFetcherDef){0};
     return;
 }
 

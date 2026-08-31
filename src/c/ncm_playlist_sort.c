@@ -13,25 +13,13 @@ typedef struct NcmPlaylistSortContext {
 } NcmPlaylistSortContext;
 
 void
-ncm_playlist_sort_plan_init(NcmPlaylistSortPlan *plan) {
-    if (plan == NULL) {
-        return;
-    }
-
-    plan->items = NULL;
-    plan->len = 0;
-    plan->cap = 0;
-    return;
-}
-
-void
 ncm_playlist_sort_plan_destroy(NcmPlaylistSortPlan *plan) {
     if (plan == NULL) {
         return;
     }
 
     free2(plan->items, plan->cap*SIZEOF(*plan->items));
-    ncm_playlist_sort_plan_init(plan);
+    *plan = (NcmPlaylistSortPlan){0};
 
     return;
 }
@@ -202,7 +190,7 @@ ncm_playlist_sort_plan_build(
         }
     }
 
-    ncm_playlist_sort_plan_init(&replacement);
+    replacement = (NcmPlaylistSortPlan){0};
     if (songs->len <= 1) {
         ncm_playlist_sort_plan_destroy(plan);
         *plan = replacement;
@@ -319,7 +307,7 @@ ncm_playlist_sort_range(
     NcmPlaylistSortPlan plan;
     bool success;
 
-    ncm_playlist_sort_plan_init(&plan);
+    plan = (NcmPlaylistSortPlan){0};
     success = ncm_playlist_sort_plan_build(
         &plan, songs, start_position, getters, getters_len,
         ignore_leading_the, ncm_error);

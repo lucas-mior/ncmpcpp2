@@ -92,7 +92,7 @@ tiny_tag_editor_screen_init(
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, NULL, 0, color, border);
     screen->hooks = (TinyTagEditorHooks){0};
-    ncm_mutable_song_init(&screen->edited);
+    screen->edited = (NcmMutableSong){0};
 
     screen->music_dir = (StrBuilder){0};
     screen->tag_separator (StrBuilder){0};
@@ -186,7 +186,7 @@ tiny_tag_editor_screen_set_edited_song(
         return false;
     }
 
-    ncm_mutable_song_init(&edited);
+    edited = (NcmMutableSong){0};
     if (!ncm_mutable_song_load_originals_from_song(&edited, song)) {
         ncm_mutable_song_destroy(&edited);
         return false;
@@ -240,7 +240,7 @@ tiny_tag_editor_screen_open_song(
     }
     SB_APPEND(path, screen->edited.uri, screen->edited.uri_len);
 
-    ncm_taglib_file_init(&file);
+    file = (NcmTaglibFile){0};
     if (screen->hooks.taglib_open) {
         opened = screen->hooks.taglib_open(
             screen->hooks.user, &file, path->data, path->len);
@@ -312,7 +312,7 @@ tiny_tag_editor_screen_reload_rows(
     }
     screen->show_duplicate_tags = show_duplicate_tags;
     nc_menu_clear_items(nc_editor_buffer_menu_base(&screen->rows));
-    nc_buffer_init(&row);
+    row = (NcBuffer){0};
     tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
                                  screen->edited.name,
                                  screen->edited.name_len);
@@ -390,7 +390,7 @@ tiny_tag_editor_screen_reload_rows(
     for (uint32 field = 0; field < NCM_TAGS_FIELD_COUNT; field += 1) {
         bool inactive;
 
-        nc_buffer_init(&row);
+        row = (NcBuffer){0};
         tiny_editor_buffer_mutable_tag(
             &row, &screen->edited, (enum NcmTagsField)field,
             tag_separator, tag_separator_len, show_duplicate_tags);
@@ -414,7 +414,7 @@ tiny_tag_editor_screen_reload_rows(
     }
 
     nc_editor_buffer_menu_add_separator(&screen->rows);
-    nc_buffer_init(&row);
+    row = (NcBuffer){0};
     tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
                                  screen->edited.name,
                                  screen->edited.name_len);
@@ -424,7 +424,7 @@ tiny_tag_editor_screen_reload_rows(
     }
     nc_buffer_destroy(&row);
     nc_editor_buffer_menu_add_separator(&screen->rows);
-    nc_buffer_init(&row);
+    row = (NcBuffer){0};
     nc_buffer_append_data(&row, STRLIT("Save"));
     if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE)) {
         nc_buffer_destroy(&row);
@@ -862,7 +862,7 @@ tiny_editor_replace_tag_row(
 
     row_index = TINY_TAG_EDITOR_TAG_ROW(field);
     menu = nc_editor_buffer_menu_base(&screen->rows);
-    nc_buffer_init(&row);
+    row = (NcBuffer){0};
     tiny_editor_buffer_mutable_tag(
         &row, &screen->edited, field, screen->tag_separator.data,
         screen->tag_separator.len, screen->show_duplicate_tags);
@@ -886,7 +886,7 @@ tiny_editor_replace_filename_row(
         name.len = screen->edited.name_len;
     }
     menu = nc_editor_buffer_menu_base(&screen->rows);
-    nc_buffer_init(&row);
+    row = (NcBuffer){0};
     tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
                                  name.data, name.len);
     result = nc_menu_replace_item(

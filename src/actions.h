@@ -153,7 +153,6 @@ typedef struct NcmActionRuntime {
     bool exit_requested;
 } NcmActionRuntime;
 
-void ncm_action_runtime_init(NcmActionRuntime *runtime);
 NcmActionRuntime *ncm_action_runtime_global(void);
 bool ncm_action_runtime_exit_requested(NcmActionRuntime *runtime);
 void ncm_action_runtime_request_exit(NcmActionRuntime *runtime);

@@ -186,7 +186,7 @@ browser_screen_init(BrowserScreen *screen,
     screen->scratch_buffer = (StrBuilder){0};
 
     str_builder_array_init(&screen->supported_extensions);
-    ncm_regex_init(&screen->filter_regex);
+    screen->filter_regex = (NcmRegex){0};
 
     screen->start_x = start_x;
     screen->width = width;
@@ -365,7 +365,7 @@ browser_screen_reload_from_mpd(BrowserScreen *screen,
     }
 
     while (true) {
-        ncm_mpd_item_array_init(&items);
+        items = (NcmMpdItemArray){0};
         result = ncm_mpd_client_get_directory_entries(
             client, screen->current_directory.data, &items, ncm_error);
         if (result) {
@@ -577,7 +577,7 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
         return false;
     }
 
-    ncm_mpd_string_list_init(&strings);
+    strings = (NcmMpdStringList){0};
     if (!ncm_mpd_client_get_supported_extensions(client, &strings, ncm_error)) {
         ncm_mpd_string_list_destroy(&strings);
         return false;
@@ -1052,7 +1052,7 @@ browser_screen_clear_filter(BrowserScreen *screen) {
         return;
     }
     ncm_regex_destroy(&screen->filter_regex);
-    ncm_regex_init(&screen->filter_regex);
+    screen->filter_regex = (NcmRegex){0};
     sb_clear(&screen->filter_constraint);
     screen->filter_enabled = false;
     browser_install_menu_callbacks(screen);
@@ -1074,7 +1074,7 @@ browser_screen_search(BrowserScreen *screen,
         return false;
     }
 
-    ncm_regex_init(&regex);
+    regex = (NcmRegex){0};
     if (!ncm_regex_compile(&regex, pattern, pattern_len,
                            NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) {
         ncm_regex_destroy(&regex);
@@ -1418,7 +1418,7 @@ browser_draw_item(NcMenu *menu, NcWindow *window,
     selected = nc_menu_position_is_selected(menu, pos);
     highlighted = menu->highlight_enabled && (pos == menu->highlight);
 
-    nc_buffer_init(&buffer);
+    buffer = (NcBuffer){0};
     if (browser_screen_render_item(screen, &buffer, item,
                                    available_width, selected,
                                    highlighted)) {
@@ -1668,7 +1668,7 @@ browser_add_parent_directory_item(
               screen->current_directory.len);
     SB_APPEND(&screen->scratch_buffer, STRLIT("/.."));
 
-    ncm_directory_init(&directory);
+    directory = (NcmDirectory){0};
     ncm_mpd_item_init(&item);
     result = ncm_directory_set(&directory, screen->scratch_buffer.data,
                                screen->scratch_buffer.len, 0)
@@ -1810,7 +1810,7 @@ browser_add_local_directory_item(BrowserScreen *screen,
     NcmMpdItem item;
     bool result;
 
-    ncm_directory_init(&directory);
+    directory = (NcmDirectory){0};
     ncm_mpd_item_init(&item);
     result = ncm_directory_set(&directory, path->data, path->len, mtime)
              && ncm_mpd_item_set_directory(&item, &directory);
@@ -1829,7 +1829,7 @@ browser_add_local_song_item(BrowserScreen *screen,
     NcmMpdItem item;
     bool result;
 
-    ncm_song_init(&song);
+    song = (NcmSong){0};
     ncm_mpd_item_init(&item);
     result = browser_make_local_song(&song, path->data, path->len,
                                      mtime);
@@ -2046,7 +2046,7 @@ browser_collect_mpd_directory_songs(
         return false;
     }
 
-    ncm_mpd_song_list_init(&source);
+    source = (NcmMpdSongList){0};
     ncm_error_clear(&ncm_error);
     directory = path;
     if (path_len <= 0) {
@@ -2130,7 +2130,7 @@ browser_collect_local_entry_songs(
     } else if (result && stat.exists && (stat.type == NCM_FS_ENTRY_FILE)
                && browser_local_path_has_supported_extension(
                    screen, path.data, path.len)) {
-        ncm_song_init(&song);
+        song = (NcmSong){0};
         result = browser_make_local_song(&song, path.data, path.len,
                                          (time_t)stat.mtime)
                  && ncm_song_array_append_copy(songs, &song);
@@ -2336,7 +2336,7 @@ browser_load_mpd_song_directory(
         return false;
     }
 
-    ncm_mpd_item_array_init(&items);
+    items = (NcmMpdItemArray){0};
     result = ncm_mpd_client_get_directory_entries(client, path.data,
                                                   &items, ncm_error);
     if (result) {
