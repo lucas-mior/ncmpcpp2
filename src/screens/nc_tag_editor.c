@@ -5152,9 +5152,9 @@ static bool
 tag_editor_mutable_song_get_field(NcmMutableSong *song,
                                   enum NcmTagsField field,
                                   StrBuilder *buffer) {
-    StrBuilder tag;
+    StrBuilder tag = {0};
 
-    tag = ncm_mutable_song_get_tag_buffer(song, field, 0);
+    ncm_mutable_song_get_tag_buffer(song, field, 0, &tag);
     SB_APPEND(buffer, tag.data, tag.len);
     sb_free(&tag);
     return true;

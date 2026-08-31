@@ -497,41 +497,34 @@ ncm_mutable_song_get_tag(NcmMutableSong *song, enum NcmTagsField field,
     return true;
 }
 
-StrBuilder
-ncm_mutable_song_get_numeric_tag_buffer(NcmMutableSong *song,
-                                        enum NcmTagsField field,
-                                        int32 idx) {
-    StrBuilder buffer = {0};
+void
+ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
+                                enum NcmTagsField field, int32 idx,
+                                StrBuilder *buffer) {
     NcmStringView view;
     int32 len;
 
-    if (!ncm_mutable_song_get_tag(song, field, idx, &view)) {
-        return buffer;
+    if (buffer == NULL) {
+        return;
     }
-
-    len = ncm_song_numeric_tag_len(view.data, view.len);
-    sb_reserve(&buffer, len);
-    buffer.len = ncm_song_format_numeric_tag(buffer.data, buffer.cap,
-                                             view.data, view.len);
-    return buffer;
-}
-
-StrBuilder
-ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
-                                enum NcmTagsField field, int32 idx) {
-    StrBuilder buffer = {0};
-    NcmStringView view;
-
+    sb_clear(buffer);
     if (field == NCM_TAGS_FIELD_TRACK) {
-        sb_free(&buffer);
-        return ncm_mutable_song_get_numeric_tag_buffer(song, field, idx);
+        if (!ncm_mutable_song_get_tag(song, field, idx, &view)) {
+            return;
+        }
+
+        len = ncm_song_numeric_tag_len(view.data, view.len);
+        sb_reserve(buffer, len);
+        buffer->len = ncm_song_format_numeric_tag(buffer->data, buffer->cap,
+                                                  view.data, view.len);
+        return;
     }
     if (!ncm_mutable_song_get_tag(song, field, idx, &view)) {
-        return buffer;
+        return;
     }
 
-    SB_APPEND(&buffer, view.data, view.len);
-    return buffer;
+    SB_APPEND(buffer, view.data, view.len);
+    return;
 }
 
 StrBuilder
@@ -553,9 +546,10 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
     }
 
     for (int32 i = 0; ; i += 1) {
-        StrBuilder tag = ncm_mutable_song_get_tag_buffer(song, field, i);
+        StrBuilder tag = {0};
         bool already_present;
 
+        ncm_mutable_song_get_tag_buffer(song, field, i, &tag);
         if (tag.len <= 0) {
             sb_free(&tag);
             break;
@@ -564,10 +558,9 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
         already_present = false;
         if (!show_duplicates) {
             for (int32 j = 0; j < i; j += 1) {
-                StrBuilder previous = ncm_mutable_song_get_tag_buffer(song,
-                                                                      field,
-                                                                      j);
+                StrBuilder previous = {0};
 
+                ncm_mutable_song_get_tag_buffer(song, field, j, &previous);
                 if (optional_strequal(previous.data, previous.len,
                                       tag.data, tag.len)) {
                     already_present = true;
