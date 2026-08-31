@@ -8,13 +8,6 @@
 static NcScreenRegistry screen_registry;
 static bool last_switch_changed_screen;
 
-void
-app_state_init(void) {
-    screen_registry = (NcScreenRegistry){0};
-    last_switch_changed_screen = false;
-    return;
-}
-
 NcScreen *
 app_state_get_screen(void) {
     return nc_screen_registry_current(&screen_registry);

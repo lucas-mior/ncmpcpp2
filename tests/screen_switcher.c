@@ -139,7 +139,8 @@ static void
 screen_switcher_reset_header(void) {
     screen_switcher_header_draws = 0;
     screen_switcher_header[0] = '\0';
-    app_controller_init();
+    screen_registry = (NcScreenRegistry){0};
+    last_switch_changed_screen = false;
     return;
 }
 

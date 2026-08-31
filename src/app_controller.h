@@ -5,7 +5,6 @@
 
 #include "screens/nc_screens.h"
 
-void app_controller_init(void);
 NcScreen *app_controller_current_screen(void);
 NcScreen *app_controller_previous_screen(void);
 NcScreen *app_controller_locked_screen(void);

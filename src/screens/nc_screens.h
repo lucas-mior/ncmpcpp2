@@ -745,7 +745,6 @@ int32 nc_lyrics_screen_scroll_begin(NcLyricsScreen *screen);
 void nc_lyrics_screen_set_scroll_begin(NcLyricsScreen *screen,
                                        int32 scroll_begin);
 
-void lyrics_queued_song_init(LyricsQueuedSong *queued);
 void lyrics_queued_song_destroy(LyricsQueuedSong *queued);
 void lyrics_queued_song_move(LyricsQueuedSong *dest,
                              LyricsQueuedSong *source);

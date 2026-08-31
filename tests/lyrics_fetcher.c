@@ -548,7 +548,7 @@ lyrics_test_assert_no_direct_urls(NcmLyricsFetcherDef *fetcher, char *artist,
 
 static void
 test_registry_has_only_supported_fetchers(void) {
-    NcmLyricsFetcherRegistry registry;
+    NcmLyricsFetcherRegistry registry = {0};
     char *removed[] = {
         "justsomelyrics",
         "jahlyrics",
@@ -556,8 +556,6 @@ test_registry_has_only_supported_fetchers(void) {
         "zeneszoveg",
         "tags",
     };
-
-    ncm_lyrics_fetcher_registry_init(&registry);
     for (int32 i = 0; i < LENGTH(lyrics_tests); i += 1) {
         ASSERT(ncm_lyrics_fetcher_registry_append_name(
             &registry, lyrics_tests[i].name, lyrics_tests[i].name_len));
@@ -637,13 +635,11 @@ static void
 test_site_fetchers_direct_download_and_parse_fixtures(void) {
     for (int32 i = 0; i < LENGTH(lyrics_tests); i += 1) {
         LyricsFetcherTestContext context;
-        NcmLyricsFetcherDef fetcher;
-        NcmLyricsResult result;
+        NcmLyricsFetcherDef fetcher = {0};
+        NcmLyricsResult result = {0};
 
         context.test = &lyrics_tests[i];
         context.calls = 0;
-        ncm_lyrics_fetcher_def_init(&fetcher);
-        ncm_lyrics_result_init(&result);
         ASSERT(ncm_lyrics_fetcher_def_set_name(
             &fetcher, context.test->name, context.test->name_len));
 
@@ -665,14 +661,12 @@ static void
 test_site_fetchers_search_download_and_parse_fixtures(void) {
     for (int32 i = 0; i < LENGTH(lyrics_tests); i += 1) {
         LyricsFetcherTestContext context;
-        NcmLyricsFetcherDef fetcher;
-        NcmLyricsResult result;
+        NcmLyricsFetcherDef fetcher = {0};
+        NcmLyricsResult result = {0};
         StrBuilder search_url;
 
         context.test = &lyrics_tests[i];
         context.calls = 0;
-        ncm_lyrics_fetcher_def_init(&fetcher);
-        ncm_lyrics_result_init(&result);
         search_url = (StrBuilder){0};
 
         ASSERT(ncm_lyrics_fetcher_def_set_name(
@@ -704,11 +698,9 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
 
 static void
 test_provider_aware_slug_normalization(void) {
-    NcmLyricsFetcherDef fetcher;
+    NcmLyricsFetcherDef fetcher = {0};
     StrBuilder unwrapped = {0};
     StrBuilderArray urls;
-
-    ncm_lyrics_fetcher_def_init(&fetcher);
     str_builder_array_init(&urls);
 
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
@@ -792,14 +784,12 @@ test_provider_aware_slug_normalization(void) {
 static void
 test_musica_search_download_and_parse_fixture(void) {
     LyricsFetcherTestContext context;
-    NcmLyricsFetcherDef fetcher;
-    NcmLyricsResult result;
+    NcmLyricsFetcherDef fetcher = {0};
+    NcmLyricsResult result = {0};
     StrBuilder search_url;
 
     context.test = &lyrics_musica_test;
     context.calls = 0;
-    ncm_lyrics_fetcher_def_init(&fetcher);
-    ncm_lyrics_result_init(&result);
     search_url = (StrBuilder){0};
 
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
@@ -843,14 +833,12 @@ test_musica_search_download_and_parse_fixture(void) {
 static void
 test_lacoccinelle_search_download_and_parse_fixture(void) {
     LyricsFetcherTestContext context;
-    NcmLyricsFetcherDef fetcher;
-    NcmLyricsResult result;
+    NcmLyricsFetcherDef fetcher = {0};
+    NcmLyricsResult result = {0};
     StrBuilder search_url;
 
     context.test = &lyrics_lacoccinelle_test;
     context.calls = 0;
-    ncm_lyrics_fetcher_def_init(&fetcher);
-    ncm_lyrics_result_init(&result);
     search_url = (StrBuilder){0};
 
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
@@ -909,14 +897,12 @@ static void
 test_amalgama_extracts_original_without_translation(void) {
     LyricsFetcherTestContext context;
     LyricsFetcherTestCase *test;
-    NcmLyricsFetcherDef fetcher;
-    NcmLyricsResult result;
+    NcmLyricsFetcherDef fetcher = {0};
+    NcmLyricsResult result = {0};
 
     test = lyrics_test_case_named(STRLIT("amalgama"));
     context.test = test;
     context.calls = 0;
-    ncm_lyrics_fetcher_def_init(&fetcher);
-    ncm_lyrics_result_init(&result);
 
     ASSERT(test != NULL);
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
@@ -943,13 +929,11 @@ test_amalgama_extracts_original_without_translation(void) {
 static void
 test_site_fetcher_tries_multiple_direct_urls(void) {
     LyricsFetcherTestContext context;
-    NcmLyricsFetcherDef fetcher;
-    NcmLyricsResult result;
+    NcmLyricsFetcherDef fetcher = {0};
+    NcmLyricsResult result = {0};
 
     context.test = lyrics_test_case_named(STRLIT("vagalume"));
     context.calls = 0;
-    ncm_lyrics_fetcher_def_init(&fetcher);
-    ncm_lyrics_result_init(&result);
 
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT("vagalume")));
@@ -969,13 +953,11 @@ test_site_fetcher_tries_multiple_direct_urls(void) {
 static void
 test_vagalume_search_finds_jorge_ben_jor_alias(void) {
     LyricsFetcherTestContext context;
-    NcmLyricsFetcherDef fetcher;
-    NcmLyricsResult result;
+    NcmLyricsFetcherDef fetcher = {0};
+    NcmLyricsResult result = {0};
 
     context.test = lyrics_test_case_named(STRLIT("vagalume"));
     context.calls = 0;
-    ncm_lyrics_fetcher_def_init(&fetcher);
-    ncm_lyrics_result_init(&result);
 
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT("vagalume")));
@@ -994,12 +976,9 @@ test_vagalume_search_finds_jorge_ben_jor_alias(void) {
 
 static void
 test_internet_fetcher_returns_search_url_without_download(void) {
-    NcmLyricsFetcherDef fetcher;
-    NcmLyricsResult result;
+    NcmLyricsFetcherDef fetcher = {0};
+    NcmLyricsResult result = {0};
     StrBuilder url;
-
-    ncm_lyrics_fetcher_def_init(&fetcher);
-    ncm_lyrics_result_init(&result);
     url = (StrBuilder){0};
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT("internet")));
@@ -1023,13 +1002,11 @@ test_internet_fetcher_returns_search_url_without_download(void) {
 
 static void
 test_transport_error_is_reported(void) {
-    NcmLyricsFetcherDef fetcher;
-    NcmLyricsResult result;
+    NcmLyricsFetcherDef fetcher = {0};
+    NcmLyricsResult result = {0};
     int32 calls;
 
     calls = 0;
-    ncm_lyrics_fetcher_def_init(&fetcher);
-    ncm_lyrics_result_init(&result);
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT("genius")));
     lyrics_test_set_download(lyrics_test_timeout, &calls);

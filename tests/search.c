@@ -382,7 +382,7 @@ search_compile_literal(SearchTestContext *context, char *pattern) {
 
 static void
 search_context_init(SearchTestContext *context, char *pattern) {
-    ncm_regex_init(&context->regex);
+    context->regex = (NcmRegex){0};
     search_compile_literal(context, pattern);
     return;
 }
@@ -399,7 +399,7 @@ search_song_context_init(SearchSongTestContext *context,
     NcmError error;
 
     context->format = format;
-    ncm_regex_init(&context->regex);
+    context->regex = (NcmRegex){0};
     ncm_error_clear(&error);
     ASSERT(ncm_regex_compile(&context->regex, pattern, strlen32(pattern),
                              NCM_REGEX_LITERAL_CASE_INSENSITIVE,
@@ -416,10 +416,9 @@ search_song_context_destroy(SearchSongTestContext *context) {
 
 static void
 test_regex_handles_empty_strings(void) {
-    NcmRegex regex;
+    NcmRegex regex = {0};
     NcmError error;
 
-    ncm_regex_init(&regex);
     ncm_error_clear(&error);
     ASSERT(ncm_regex_compile(
         &regex, STRLIT("ohne"), NCM_REGEX_LITERAL_CASE_INSENSITIVE,
@@ -427,7 +426,7 @@ test_regex_handles_empty_strings(void) {
     ASSERT(!ncm_regex_search(&regex, STRLIT("")));
     ncm_regex_destroy(&regex);
 
-    ncm_regex_init(&regex);
+    regex = (NcmRegex){0};
     ncm_error_clear(&error);
     ASSERT(ncm_regex_compile(
         &regex, STRLIT(""), NCM_REGEX_LITERAL_CASE_INSENSITIVE,
@@ -440,7 +439,7 @@ test_regex_handles_empty_strings(void) {
 
 static void
 search_column_format_init(NcmFormatAst *format) {
-    ncm_format_ast_init(format);
+    *format = (NcmFormatAst){0};
     ASSERT(ncm_format_ast_append_column_types(
         format, STRLIT("a")));
     ASSERT(ncm_format_ast_append_column_types(

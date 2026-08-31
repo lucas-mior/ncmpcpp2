@@ -5,7 +5,6 @@
 
 #include "screens/nc_screens.h"
 
-void app_state_init(void);
 NcScreen *app_state_get_screen(void);
 NcScreen *app_state_get_previous_screen(void);
 NcScreen *app_state_get_locked_screen(void);

@@ -146,7 +146,7 @@ nc_window_get_y(NcWindow *window) {
 
 static void
 scrollpad_test_init_buffer(NcBuffer *buffer, char *data, int32 data_len) {
-    nc_buffer_init(buffer);
+    *buffer = (NcBuffer){0};
     nc_buffer_append_data(buffer, data, data_len);
     return;
 }

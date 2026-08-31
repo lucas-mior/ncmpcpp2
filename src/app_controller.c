@@ -8,12 +8,6 @@
 
 static void app_controller_refresh_one(NcScreen *screen, void *user);
 
-void
-app_controller_init(void) {
-    app_state_init();
-    return;
-}
-
 NcScreen *
 app_controller_current_screen(void) {
     return app_state_get_screen();

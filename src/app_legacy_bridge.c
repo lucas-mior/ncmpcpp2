@@ -216,7 +216,6 @@ ncmpcpp_window_destroy(NcWindow *window) {
 
 void
 ncmpcpp_initialize_screens(void) {
-    app_controller_init();
     app_screens_init_all();
     app_bridge_set_status_observers();
     app_screens_register_initial();

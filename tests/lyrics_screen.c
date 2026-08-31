@@ -1371,7 +1371,7 @@ lyrics_screen_test_locked_visible_update_refreshes_lrc(void) {
 
     callbacks.is_mergable = lyrics_screen_test_dummy_is_mergable;
     nc_screen_init(&dummy, callbacks, NULL, NC_SCREEN_TYPE_BROWSER);
-    nc_screen_registry_init(&registry);
+    registry = (NcScreenRegistry){0};
     ASSERT(nc_screen_registry_register(
         &registry, lyrics_screen_base(&screen)));
     ASSERT(nc_screen_registry_register(&registry, &dummy));

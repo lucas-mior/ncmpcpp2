@@ -28,13 +28,12 @@ lrc_test_render_append(void *user, char *data, int32 data_len) {
 
 static void
 lrc_test_parse_simple_lines(void) {
-    NcmLrcDocument document;
+    NcmLrcDocument document = {0};
     NcmStringView text;
     NcmError error = {0};
     char data[] = "[00:15.60]Come on come on\n"
                   "[00:16.300]I see no changes\n";
 
-    ncm_lrc_document_init(&document);
     ASSERT(ncm_lrc_parse(&document, data, strlen32(data), &error));
     ASSERT_EQUAL(document.entries_len, 2);
     ASSERT_EQUAL(document.entries[0].time_ms, 15600);
@@ -53,13 +52,12 @@ lrc_test_parse_simple_lines(void) {
 
 static void
 lrc_test_repeated_timestamps_share_line_text(void) {
-    NcmLrcDocument document;
+    NcmLrcDocument document = {0};
     NcmStringView first_text;
     NcmStringView second_text;
     NcmError error = {0};
     char data[] = "[00:12.00][00:34.50]chorus\n";
 
-    ncm_lrc_document_init(&document);
     ASSERT(ncm_lrc_parse(&document, data, strlen32(data), &error));
     ASSERT_EQUAL(document.entries_len, 2);
     ASSERT_EQUAL(document.entries[0].time_ms, 12000);
@@ -77,7 +75,7 @@ lrc_test_repeated_timestamps_share_line_text(void) {
 
 static void
 lrc_test_ignores_metadata_and_applies_offset(void) {
-    NcmLrcDocument document;
+    NcmLrcDocument document = {0};
     NcmStringView text;
     NcmError error = {0};
     char data[] = "[ar:Example Artist]\n"
@@ -86,7 +84,6 @@ lrc_test_ignores_metadata_and_applies_offset(void) {
                   "[00:01.00]one\n"
                   "[00:02.000]two\n";
 
-    ncm_lrc_document_init(&document);
     ASSERT(ncm_lrc_parse(&document, data, strlen32(data), &error));
     ASSERT(document.has_offset);
     ASSERT_EQUAL(document.offset_ms, 250);
@@ -103,11 +100,10 @@ lrc_test_ignores_metadata_and_applies_offset(void) {
 
 static void
 lrc_test_negative_offset_is_allowed(void) {
-    NcmLrcDocument document;
+    NcmLrcDocument document = {0};
     NcmError error = {0};
     char data[] = "[offset:-750]\n[00:01.00]early\n";
 
-    ncm_lrc_document_init(&document);
     ASSERT(ncm_lrc_parse(&document, data, strlen32(data), &error));
     ASSERT(document.has_offset);
     ASSERT_EQUAL(document.offset_ms, -750);
@@ -119,14 +115,13 @@ lrc_test_negative_offset_is_allowed(void) {
 
 static void
 lrc_test_sorts_entries_with_stable_equal_times(void) {
-    NcmLrcDocument document;
+    NcmLrcDocument document = {0};
     NcmStringView text;
     NcmError error = {0};
     char data[] = "[00:10.00]ten\n"
                   "[00:05.00]five\n"
                   "[00:05.00]five again\n";
 
-    ncm_lrc_document_init(&document);
     ASSERT(ncm_lrc_parse(&document, data, strlen32(data), &error));
     ASSERT_EQUAL(document.entries_len, 3);
     ASSERT_EQUAL(document.entries[0].time_ms, 5000);
@@ -145,12 +140,11 @@ lrc_test_sorts_entries_with_stable_equal_times(void) {
 
 static void
 lrc_test_preserves_blank_lyric_lines(void) {
-    NcmLrcDocument document;
+    NcmLrcDocument document = {0};
     NcmStringView text;
     NcmError error = {0};
     char data[] = "[00:00.50]\n[00:01.00]after blank\r\n";
 
-    ncm_lrc_document_init(&document);
     ASSERT(ncm_lrc_parse(&document, data, strlen32(data), &error));
     ASSERT_EQUAL(document.entries_len, 2);
 
@@ -167,14 +161,13 @@ static void
 lrc_test_renders_plain_text_and_buffer_ranges(void) {
     LrcTestRenderTarget target = {0};
     NcmLrcRenderTarget render_target = {0};
-    NcmLrcDocument document;
+    NcmLrcDocument document = {0};
     NcmError error = {0};
     char data[] = "[00:03.00]three\n"
                   "[00:01.00]one\n"
                   "[00:02.00]two\n"
                   "[00:04.00]\n";
 
-    ncm_lrc_document_init(&document);
     ASSERT(ncm_lrc_parse(&document, data, strlen32(data), &error));
 
     render_target.user = &target;
@@ -202,7 +195,7 @@ static void
 lrc_test_preserves_source_empty_lines_on_render(void) {
     LrcTestRenderTarget target = {0};
     NcmLrcRenderTarget render_target = {0};
-    NcmLrcDocument document;
+    NcmLrcDocument document = {0};
     NcmError error = {0};
     char data[] = "[00:01.00]first\n"
                   "\n"
@@ -211,7 +204,6 @@ lrc_test_preserves_source_empty_lines_on_render(void) {
                   "\n"
                   "[00:03.00]third\n";
 
-    ncm_lrc_document_init(&document);
     ASSERT(ncm_lrc_parse(&document, data, strlen32(data), &error));
 
     render_target.user = &target;
@@ -236,14 +228,13 @@ lrc_test_preserves_source_empty_lines_on_render(void) {
 
 static void
 lrc_test_finds_active_entry_at_time(void) {
-    NcmLrcDocument document;
+    NcmLrcDocument document = {0};
     NcmError error = {0};
     char data[] = "[00:10.00]ten\n"
                   "[00:05.00]five\n"
                   "[00:05.00]five again\n"
                   "[00:12.50]later\n";
 
-    ncm_lrc_document_init(&document);
     ASSERT(ncm_lrc_parse(&document, data, strlen32(data), &error));
 
     ASSERT_EQUAL(ncm_lrc_document_entry_at_time(&document, -1), -1);
@@ -268,12 +259,11 @@ lrc_test_finds_active_entry_at_time(void) {
 
 static void
 lrc_test_rejects_untimed_or_malformed_text(void) {
-    NcmLrcDocument document;
+    NcmLrcDocument document = {0};
     NcmError error = {0};
     char untimed[] = "plain text\nmore text\n";
     char malformed[] = "[00:61.00]bad seconds\n[00:01.0000]bad ms\n";
 
-    ncm_lrc_document_init(&document);
     ASSERT(!ncm_lrc_parse(&document, untimed, strlen32(untimed), &error));
     ASSERT(ncm_error_is_set(&error));
     ASSERT_ZERO(document.entries_len);

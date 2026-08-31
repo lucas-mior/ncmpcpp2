@@ -90,7 +90,7 @@ ncm_mpd_client_init(NcmMpdClient *client) {
         return;
     }
 
-    ncm_mpd_connection_init(&client->connection);
+    client->connection = (NcmMpdConnection){0};
     client->host = (StrBuilder){0};
     client->password = (StrBuilder){0};
     ncm_mpd_client_set_buffer(&client->host, STRLIT("localhost"));
