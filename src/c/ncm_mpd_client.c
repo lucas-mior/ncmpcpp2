@@ -91,8 +91,8 @@ ncm_mpd_client_init(NcmMpdClient *client) {
     }
 
     ncm_mpd_connection_init(&client->connection);
-    sb_init(&client->host);
-    sb_init(&client->password);
+    client->host = (StrBuilder){0};
+    client->password = (StrBuilder){0};
     ncm_mpd_client_set_buffer(&client->host, STRLIT("localhost"));
     ncm_mpd_client_set_buffer(&client->password, NULL, 0);
     client->port = 6600;

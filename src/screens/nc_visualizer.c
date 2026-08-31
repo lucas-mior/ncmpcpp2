@@ -681,10 +681,12 @@ visualizer_screen_init(VisualizerScreen *screen,
     nc_window_init(&screen->window, start_x, start_y, width, height,
                    STRLIT(""),
                    color, border);
-    sb_init(&screen->source_location);
-    sb_init(&screen->source_port);
-    sb_init(&screen->output_name);
-    sb_init(&screen->visualizer_chars);
+
+    screen->source_location = (StrBuilder){0};
+    screen->source_port = (StrBuilder){0};
+    screen->output_name = (StrBuilder){0};
+    screen->visualizer_chars = (StrBuilder){0};
+
     screen->visualizer_colors = NULL;
     screen->visualizer_colors_len = 0;
     screen->visualizer_colors_cap = 0;

@@ -292,8 +292,9 @@ configuration_destroy_strings(Configuration *config) {
 
 static void
 configuration_init_buffers(Configuration *config) {
-    sb_init(&config->progressbar);
-    sb_init(&config->visualizer_chars);
+    config->progressbar = (StrBuilder){0};
+    config->visualizer_chars = (StrBuilder){0};
+
     nc_buffer_init(&config->browser_playlist_prefix);
     nc_buffer_init(&config->selected_item_prefix);
     nc_buffer_init(&config->selected_item_suffix);

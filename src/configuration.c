@@ -22,10 +22,11 @@ static void configuration_print_error(char *context, NcmError *ncm_error);
 
 void
 ncm_configuration_options_init(NcmConfigurationOptions *options) {
-    sb_init(&options->host);
-    sb_init(&options->current_song_format);
-    sb_init(&options->screen_name);
-    sb_init(&options->slave_screen_name);
+    options->host = (StrBuilder){0};
+    options->current_song_format = (StrBuilder){0};
+    options->screen_name = (StrBuilder){0};
+    options->slave_screen_name = (StrBuilder){0};
+
     str_builder_array_init(&options->config_paths);
     str_builder_array_init(&options->bindings_paths);
 

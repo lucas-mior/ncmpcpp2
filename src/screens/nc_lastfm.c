@@ -144,7 +144,7 @@ lastfm_screen_init(LastfmScreen *screen,
                       nc_lastfm_screen_height(&screen->screen));
 
     nc_buffer_init(&screen->buffer);
-    sb_init(&screen->search_constraint);
+    screen->search_constraint = (StrBuilder){0};
     ncm_lastfm_service_init(&screen->service);
     ncm_lastfm_result_init(&screen->result);
     ncm_job_queue_init(&screen->jobs);

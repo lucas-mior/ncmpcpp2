@@ -155,13 +155,15 @@ search_engine_screen_init(SearchEngineScreen *screen,
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, NULL, 0, color, border);
     for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
-        sb_init(&screen->constraints[i]);
+        screen->constraints[i] = (StrBuilder){0};
     }
-    sb_init(&screen->filter_constraint);
-    sb_init(&screen->search_constraint);
-    sb_init(&screen->row_text);
-    sb_init(&screen->title);
-    sb_init(&screen->column_title);
+
+    screen->filter_constraint = (StrBuilder){0};
+    screen->search_constraint = (StrBuilder){0};
+    screen->row_text = (StrBuilder){0};
+    screen->title = (StrBuilder){0};
+    screen->column_title = (StrBuilder){0};
+
     SB_APPEND(&screen->title, STRLIT("Search engine"));
     ncm_regex_init(&screen->filter_regex);
 

@@ -14,7 +14,7 @@ NcmMpdClient global_mpd;
 
 void
 global_state_init(void) {
-    sb_init(&global_volume_state);
+    global_volume_state = (StrBuilder){0};
     ncm_mpd_client_init(&global_mpd);
     return;
 }

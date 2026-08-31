@@ -1121,7 +1121,7 @@ tag_editor_screen_save_modified(TagEditorScreen *screen,
     context.screen = screen;
     context.music_dir = music_dir;
     context.ok = true;
-    sb_init(&context.shared_directory);
+    context.shared_directory = (StrBuilder){0};
 
     iterated = tag_editor_for_each_target(
         screen, tag_editor_save_song_callback, &context);
@@ -2547,24 +2547,26 @@ tag_editor_destroy_callback(NcScreen *screen) {
 
 static void
 tag_editor_initialize_buffers(TagEditorScreen *screen) {
-    sb_init(&screen->current_dir);
-    sb_init(&screen->displayed_dir);
-    sb_init(&screen->observed_dir);
-    sb_init(&screen->highlighted_dir);
-    sb_init(&screen->directories_title);
-    sb_init(&screen->tag_types_title);
-    sb_init(&screen->tags_title);
-    sb_init(&screen->parser_dialog_title);
-    sb_init(&screen->parser_title);
-    sb_init(&screen->parser_helper_title);
-    sb_init(&screen->parser_legend);
-    sb_init(&screen->parser_preview);
+    screen->current_dir = (StrBuilder){0};
+    screen->displayed_dir = (StrBuilder){0};
+    screen->observed_dir = (StrBuilder){0};
+    screen->highlighted_dir = (StrBuilder){0};
+    screen->directories_title = (StrBuilder){0};
+    screen->tag_types_title = (StrBuilder){0};
+    screen->tags_title = (StrBuilder){0};
+    screen->parser_dialog_title = (StrBuilder){0};
+    screen->parser_title = (StrBuilder){0};
+    screen->parser_helper_title = (StrBuilder){0};
+    screen->parser_legend = (StrBuilder){0};
+    screen->parser_preview = (StrBuilder){0};
+
     str_builder_array_init(&screen->recent_patterns);
-    sb_init(&screen->directory_filter_constraint);
-    sb_init(&screen->tag_filter_constraint);
-    sb_init(&screen->directory_search_constraint);
-    sb_init(&screen->tag_search_constraint);
-    sb_init(&screen->pattern);
+
+    screen->directory_filter_constraint = (StrBuilder){0};
+    screen->tag_filter_constraint = (StrBuilder){0};
+    screen->directory_search_constraint = (StrBuilder){0};
+    screen->tag_search_constraint = (StrBuilder){0};
+    screen->pattern = (StrBuilder){0};
     return;
 }
 

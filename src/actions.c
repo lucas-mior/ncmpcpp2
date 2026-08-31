@@ -2416,7 +2416,7 @@ action_runtime_execute_command(void) {
     bool prompted;
     bool result;
 
-    sb_init(&state.previous);
+    state.previous = (StrBuilder){0};
     prompted = action_runtime_prompt_string(STRLIT(":"), "", true,
                                             action_runtime_command_prompt_hook,
                                             &state, &command_name);

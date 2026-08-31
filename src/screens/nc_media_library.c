@@ -240,16 +240,16 @@ media_library_screen_init(MediaLibraryScreen *screen,
     screen->hooks = hooks;
 
     for (uint32 i = 0; i < MEDIA_LIBRARY_COLUMN_COUNT; i += 1) {
-        sb_init(&screen->column_state[i].filter_constraint);
-        sb_init(&screen->column_state[i].search_constraint);
+        screen->column_state[i].filter_constraint = (StrBuilder){0};
+        screen->column_state[i].search_constraint = (StrBuilder){0};
         ncm_regex_init(&screen->column_state[i].filter_regex);
         ncm_regex_init(&screen->column_state[i].search_regex);
         screen->column_state[i].filter_enabled = false;
         screen->column_state[i].search_enabled = false;
     }
-    sb_init(&screen->tags_title);
-    sb_init(&screen->albums_title);
-    sb_init(&screen->songs_title);
+    screen->tags_title = (StrBuilder){0};
+    screen->albums_title = (StrBuilder){0};
+    screen->songs_title = (StrBuilder){0};
     nc_media_library_tag_row_init(&screen->observed_tag);
     nc_media_library_album_row_init(&screen->observed_album);
 

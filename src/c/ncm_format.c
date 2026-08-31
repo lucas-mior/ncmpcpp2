@@ -222,7 +222,7 @@ ncm_format_text_append(NcmFormatExprList *list, StrBuilder *token) {
 
     expr->type = NCM_FORMAT_EXPR_TEXT;
     expr->value.text = *token;
-    sb_init(token);
+    *token = (StrBuilder){0};
 
     return true;
 }
@@ -238,7 +238,7 @@ ncm_format_append_group_or_single(NcmFormatExprList *list,
         }
         *expr = source->items[0];
         source->items[0].type = NCM_FORMAT_EXPR_TEXT;
-        sb_init(&source->items[0].value.text);
+        source->items[0].value.text = (StrBuilder){0};
         source->len = 0;
         return true;
     }
@@ -337,7 +337,7 @@ ncm_format_expr_list_append(NcmFormatExprList *list) {
 static void
 ncm_format_expr_init(NcmFormatExpr *expr) {
     expr->type = NCM_FORMAT_EXPR_TEXT;
-    sb_init(&expr->value.text);
+    expr->value.text = (StrBuilder){0};
     return;
 }
 

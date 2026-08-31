@@ -46,7 +46,7 @@ nc_help_screen_init(NcHelpScreen *screen,
                              NC_SCREEN_TYPE_HELP,
                              0, 0, 0, 0);
     nc_buffer_init(&screen->buffer);
-    sb_init(&screen->search_constraint);
+    screen->search_constraint = (StrBuilder){0};
     nc_help_screen_set_geometry(screen, start_x, width, main_start_y,
                                 main_height);
     nc_window_init(&screen->window,
