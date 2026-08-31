@@ -171,9 +171,11 @@ playlist_editor_screen_init(PlaylistEditorScreen *screen,
     callbacks = playlist_editor_callbacks();
     nc_playlist_entry_menu_init(&screen->playlists);
     nc_song_menu_init(&screen->content);
+
     playlist_editor_initialize_buffers(screen);
     playlist_editor_initialize_regexes(screen);
     playlist_editor_reset_content_timer(screen);
+
     screen->active_column = PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
     screen->column_ratio_left = 1;
     screen->column_ratio_right = 1;
