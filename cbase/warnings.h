@@ -36,6 +36,7 @@
   #pragma clang diagnostic ignored "-Wunused-macros"
   #pragma clang diagnostic ignored "-Wused-but-marked-unused"
   #pragma clang diagnostic ignored "-Wpadded"
+  #pragma clang diagnostic ignored "-Wtentative-definition-compat"
 #endif
 
 #if DEBUGGING || TESTING
