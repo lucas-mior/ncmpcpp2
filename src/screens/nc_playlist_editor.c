@@ -421,9 +421,8 @@ playlist_editor_screen_reload_playlists_from_mpd(PlaylistEditorScreen *screen,
 }
 
 bool
-playlist_editor_screen_load_content(
-    PlaylistEditorScreen *screen, NcmMpdSongList *songs
-) {
+playlist_editor_screen_load_content(PlaylistEditorScreen *screen,
+                                    NcmMpdSongList *songs) {
     NcMenu *menu;
     NcmSong preserved_song;
     bool had_preserved_song;
