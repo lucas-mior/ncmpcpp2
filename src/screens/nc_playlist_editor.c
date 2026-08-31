@@ -398,10 +398,9 @@ playlist_editor_screen_load_playlists(PlaylistEditorScreen *screen,
 }
 
 bool
-playlist_editor_screen_reload_playlists_from_mpd(
-    PlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmError *ncm_error
-) {
+playlist_editor_screen_reload_playlists_from_mpd(PlaylistEditorScreen *screen,
+                                                 NcmMpdClient *client,
+                                                 NcmError *ncm_error) {
     NcmMpdPlaylistList playlists;
     bool ok;
 
