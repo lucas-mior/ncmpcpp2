@@ -224,8 +224,7 @@ playlist_editor_screen_destroy(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
-    (void)app_controller_unregister_screen(
-        playlist_editor_screen_base(screen));
+    (void)app_controller_unregister_screen(playlist_editor_screen_base(screen));
     nc_window_destroy(&screen->content_window);
     nc_window_destroy(&screen->playlists_window);
     nc_song_menu_destroy(&screen->content);
