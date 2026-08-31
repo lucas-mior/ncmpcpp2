@@ -184,8 +184,8 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
     }
 
     ncm_error_clear(&ncm_error);
-    ncm_format_ast_init(&ast);
-    nc_buffer_init(&tmp);
+    ast = (NcmFormatAst){0};
+    tmp = (NcBuffer){0};
     result = ncm_format_parse(&ast, value, value_len,
                               NCM_FORMAT_FLAG_COLOR | NCM_FORMAT_FLAG_FORMAT,
                               &ncm_error);

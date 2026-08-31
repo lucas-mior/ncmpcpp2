@@ -68,7 +68,7 @@ sort_playlist_dialog_init(SortPlaylistDialog *dialog,
     nc_menu_set_centered_cursor(menu, Config.centered_cursor);
     nc_window_init(&dialog->window, start_x, start_y, width, height,
                    STRLIT("Sort songs by..."), color, border);
-    ncm_song_array_init(&dialog->songs);
+    dialog->songs = (NcmSongArray){0};
     dialog->playlist = NULL;
     dialog->previous_screen = NULL;
     dialog->client = NULL;
@@ -229,7 +229,7 @@ sort_playlist_dialog_open(
         return false;
     }
 
-    ncm_song_array_init(&songs);
+    songs = (NcmSongArray){0};
     if (!playlist_screen_copy_sort_range(
         playlist, &songs, &start_position, ncm_error)) {
         ncm_song_array_destroy(&songs);

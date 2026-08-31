@@ -45,7 +45,7 @@ nc_server_info_screen_init(NcServerInfoScreen *screen,
                              0,
                              0,
                              0);
-    nc_buffer_init(&screen->buffer);
+    screen->buffer = (NcBuffer){0};
     nc_server_info_screen_set_dimensions(screen,
                                          cols,
                                          lines,
@@ -137,7 +137,7 @@ nc_server_info_update(NcScreen *screen) {
     if (server_info->hooks.render == NULL) {
         return;
     }
-    nc_buffer_init(&next_buffer);
+    next_buffer = (NcBuffer){0};
     if (!server_info->hooks.render(server_info->hooks.user,
                                    &next_buffer)) {
         nc_buffer_destroy(&next_buffer);

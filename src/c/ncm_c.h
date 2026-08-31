@@ -165,7 +165,6 @@ typedef struct NcmSong {
     time_t last_modified;
 } NcmSong;
 
-void ncm_song_init(NcmSong *song);
 void ncm_song_destroy(NcmSong *song);
 void ncm_song_move(NcmSong *dest, NcmSong *source);
 bool ncm_song_copy(NcmSong *dest, NcmSong *source);
@@ -246,7 +245,6 @@ typedef struct NcmMutableSong {
     int32 tags_cap;
 } NcmMutableSong;
 
-void ncm_mutable_song_init(NcmMutableSong *song);
 void ncm_mutable_song_destroy(NcmMutableSong *song);
 bool ncm_mutable_song_copy(NcmMutableSong *dest, NcmMutableSong *source);
 void ncm_mutable_song_move(NcmMutableSong *dest, NcmMutableSong *source);
@@ -301,7 +299,6 @@ typedef struct NcmDirectory {
     time_t last_modified;
 } NcmDirectory;
 
-void ncm_directory_init(NcmDirectory *directory);
 void ncm_directory_destroy(NcmDirectory *directory);
 void ncm_directory_move(NcmDirectory *dest, NcmDirectory *source);
 bool ncm_directory_set(NcmDirectory *directory, char *path,
@@ -321,7 +318,6 @@ typedef struct NcmPlaylist {
     time_t last_modified;
 } NcmPlaylist;
 
-void ncm_playlist_init(NcmPlaylist *playlist);
 void ncm_playlist_destroy(NcmPlaylist *playlist);
 void ncm_playlist_move(NcmPlaylist *dest, NcmPlaylist *source);
 bool ncm_playlist_set(NcmPlaylist *playlist, char *path,
@@ -704,7 +700,6 @@ typedef struct NcmSampleBuffer {
     int32 cap;
 } NcmSampleBuffer;
 
-void ncm_sample_buffer_init(NcmSampleBuffer *buffer);
 void ncm_sample_buffer_destroy(NcmSampleBuffer *buffer);
 bool ncm_sample_buffer_put(NcmSampleBuffer *buffer,
                            int16 *samples, int32 samples_len);
@@ -720,7 +715,6 @@ int32 ncm_sample_buffer_capacity(NcmSampleBuffer *buffer);
 
 /* c/ncm_app_arrays.h */
 NCM_ARRAY_DECLARE_TYPE(NcmStringViewArray, NcmStringView)
-NCM_ARRAY_DECLARE_INIT(ncm_string_view_array, NcmStringViewArray)
 NCM_ARRAY_DECLARE_CLEAR(ncm_string_view_array, NcmStringViewArray)
 NCM_ARRAY_DECLARE_DESTROY(ncm_string_view_array, NcmStringViewArray)
 NCM_ARRAY_DECLARE_RESERVE(ncm_string_view_array, NcmStringViewArray)
@@ -730,7 +724,6 @@ NCM_ARRAY_DECLARE_APPEND(ncm_string_view_array,
 
 
 NCM_ARRAY_DECLARE_TYPE(NcmSongArray, NcmSong)
-NCM_ARRAY_DECLARE_INIT(ncm_song_array, NcmSongArray)
 NCM_ARRAY_DECLARE_CLEAR(ncm_song_array, NcmSongArray)
 NCM_ARRAY_DECLARE_DESTROY(ncm_song_array, NcmSongArray)
 NCM_ARRAY_DECLARE_COPY(ncm_song_array, NcmSongArray)
@@ -741,7 +734,6 @@ NCM_ARRAY_DECLARE_APPEND_COPY(ncm_song_array, NcmSongArray, NcmSong)
 NCM_ARRAY_DECLARE_APPEND_MOVE(ncm_song_array, NcmSongArray, NcmSong)
 
 NCM_ARRAY_DECLARE_TYPE(NcmDirectoryArray, NcmDirectory)
-NCM_ARRAY_DECLARE_INIT(ncm_directory_array, NcmDirectoryArray)
 NCM_ARRAY_DECLARE_CLEAR(ncm_directory_array, NcmDirectoryArray)
 NCM_ARRAY_DECLARE_DESTROY(ncm_directory_array, NcmDirectoryArray)
 NCM_ARRAY_DECLARE_COPY(ncm_directory_array, NcmDirectoryArray)
@@ -755,7 +747,6 @@ NCM_ARRAY_DECLARE_APPEND_COPY(ncm_directory_array,
                               NcmDirectory)
 
 NCM_ARRAY_DECLARE_TYPE(NcmPlaylistArray, NcmPlaylist)
-NCM_ARRAY_DECLARE_INIT(ncm_playlist_array, NcmPlaylistArray)
 NCM_ARRAY_DECLARE_CLEAR(ncm_playlist_array, NcmPlaylistArray)
 NCM_ARRAY_DECLARE_DESTROY(ncm_playlist_array, NcmPlaylistArray)
 NCM_ARRAY_DECLARE_MOVE(ncm_playlist_array, NcmPlaylistArray)
@@ -768,7 +759,6 @@ NCM_ARRAY_DECLARE_APPEND_COPY(ncm_playlist_array,
                               NcmPlaylist)
 
 NCM_ARRAY_DECLARE_TYPE(NcmMpdItemArray, NcmMpdItem)
-NCM_ARRAY_DECLARE_INIT(ncm_mpd_item_array, NcmMpdItemArray)
 NCM_ARRAY_DECLARE_CLEAR(ncm_mpd_item_array, NcmMpdItemArray)
 NCM_ARRAY_DECLARE_DESTROY(ncm_mpd_item_array, NcmMpdItemArray)
 NCM_ARRAY_DECLARE_MOVE(ncm_mpd_item_array, NcmMpdItemArray)
@@ -826,7 +816,6 @@ typedef struct NcmRegex {
     uint32 flags;
 } NcmRegex;
 
-void ncm_regex_init(NcmRegex *regex);
 void ncm_regex_destroy(NcmRegex *regex);
 void ncm_regex_escape_literal(StrBuilder *buffer,
                               char *pattern, int32 pattern_len);
@@ -895,9 +884,7 @@ typedef struct NcmMpdOutputList {
     int32 capacity;
 } NcmMpdOutputList;
 
-void ncm_mpd_string_init(NcmMpdString *string);
 void ncm_mpd_string_destroy(NcmMpdString *string);
-void ncm_mpd_output_init(NcmMpdOutput *output);
 void ncm_mpd_output_destroy(NcmMpdOutput *output);
 
 typedef struct NcmMpdPlaylistList {
@@ -991,7 +978,6 @@ bool ncm_mpd_connection_get_url_handlers(NcmMpdConnection *connection,
 bool ncm_mpd_connection_get_tag_types(NcmMpdConnection *connection,
                                       NcmMpdStringList *strings);
 
-void ncm_mpd_song_list_init(NcmMpdSongList *list);
 void ncm_mpd_song_list_destroy(NcmMpdSongList *list);
 void ncm_mpd_song_list_clear(NcmMpdSongList *list);
 int32 ncm_mpd_song_list_count(NcmMpdSongList *list);
@@ -1001,7 +987,6 @@ bool ncm_mpd_song_list_append_copy(NcmMpdSongList *list,
 bool ncm_mpd_song_list_to_song_array(NcmMpdSongList *list,
                                      NcmSongArray *songs);
 
-void ncm_mpd_item_list_init(NcmMpdItemList *list);
 void ncm_mpd_item_list_destroy(NcmMpdItemList *list);
 void ncm_mpd_item_list_clear(NcmMpdItemList *list);
 bool ncm_mpd_item_list_to_item_array(NcmMpdItemList *list,
@@ -1009,18 +994,15 @@ bool ncm_mpd_item_list_to_item_array(NcmMpdItemList *list,
 bool ncm_mpd_item_list_to_directory_array(NcmMpdItemList *list,
                                           NcmDirectoryArray *directories);
 
-void ncm_mpd_string_list_init(NcmMpdStringList *list);
 void ncm_mpd_string_list_destroy(NcmMpdStringList *list);
 void ncm_mpd_string_list_clear(NcmMpdStringList *list);
 int32 ncm_mpd_string_list_count(NcmMpdStringList *list);
 NcmMpdString *ncm_mpd_string_list_at(NcmMpdStringList *list,
                                      int32 idx);
 
-void ncm_mpd_output_list_init(NcmMpdOutputList *list);
 void ncm_mpd_output_list_destroy(NcmMpdOutputList *list);
 void ncm_mpd_output_list_clear(NcmMpdOutputList *list);
 
-void ncm_mpd_playlist_list_init(NcmMpdPlaylistList *list);
 void ncm_mpd_playlist_list_destroy(NcmMpdPlaylistList *list);
 void ncm_mpd_playlist_list_clear(NcmMpdPlaylistList *list);
 
@@ -1589,7 +1571,6 @@ typedef struct NcmLrcRenderTarget {
     void (*append)(void *user, char *data, int32 data_len);
 } NcmLrcRenderTarget;
 
-void ncm_lrc_document_init(NcmLrcDocument *document);
 void ncm_lrc_document_clear(NcmLrcDocument *document);
 void ncm_lrc_document_destroy(NcmLrcDocument *document);
 bool ncm_lrc_parse(NcmLrcDocument *document,
@@ -1644,7 +1625,6 @@ typedef struct NcmPlaylistSortPlan {
     int32 cap;
 } NcmPlaylistSortPlan;
 
-void ncm_playlist_sort_plan_init(NcmPlaylistSortPlan *plan);
 void ncm_playlist_sort_plan_destroy(NcmPlaylistSortPlan *plan);
 bool ncm_playlist_sort_plan_build(
     NcmPlaylistSortPlan *plan, NcmSongArray *songs,
@@ -1683,7 +1663,6 @@ bool ncm_search_prompt_state_finish_result(NcmSearchPromptState *state,
                                            bool search_ok, bool found);
 
 /* c/ncm_string.h */
-void ncm_string_view_init(NcmStringView *view);
 NcmStringView ncm_string_view_make(char *data, int32 len);
 void ncm_string_view_set(NcmStringView *view, char *data, int32 len);
 void ncm_string_view_clear(NcmStringView *view);
@@ -1761,7 +1740,6 @@ typedef void NcmTaglibPairCallback(char *name, char *value, void *user);
 typedef void NcmTaglibValueCallback(char *value, void *user);
 
 void ncm_taglib_init(void);
-void ncm_taglib_file_init(NcmTaglibFile *file);
 bool ncm_taglib_file_open(NcmTaglibFile *file, char *path);
 void ncm_taglib_file_close(NcmTaglibFile *file);
 bool ncm_taglib_file_save(NcmTaglibFile *file);
@@ -1854,14 +1832,12 @@ typedef struct NcmFormatCallbacks {
     void (*format)(void *user, enum NcFormat format);
 } NcmFormatCallbacks;
 
-void ncm_format_expr_list_init(NcmFormatExprList *list);
 void ncm_format_expr_list_destroy(NcmFormatExprList *list);
 void ncm_format_expr_list_clear(NcmFormatExprList *list);
 void ncm_format_expr_list_move(NcmFormatExprList *dest,
                                NcmFormatExprList *source);
 NcmFormatExpr *ncm_format_expr_list_append(NcmFormatExprList *list);
 
-void ncm_format_ast_init(NcmFormatAst *ast);
 void ncm_format_ast_destroy(NcmFormatAst *ast);
 void ncm_format_ast_clear(NcmFormatAst *ast);
 void ncm_format_ast_move(NcmFormatAst *dest, NcmFormatAst *source);

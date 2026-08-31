@@ -5,17 +5,6 @@
 
 #include "c/ncm_c.h"
 
-void
-ncm_string_view_init(NcmStringView *view) {
-    if (view == NULL) {
-        return;
-    }
-
-    view->data = NULL;
-    view->len = 0;
-    return;
-}
-
 NcmStringView
 ncm_string_view_make(char *data, int32 len) {
     NcmStringView result;
@@ -43,7 +32,9 @@ ncm_string_view_set(NcmStringView *view, char *data, int32 len) {
 
 void
 ncm_string_view_clear(NcmStringView *view) {
-    ncm_string_view_init(view);
+    if (view) {
+        *view = (NcmStringView){0};
+    }
     return;
 }
 

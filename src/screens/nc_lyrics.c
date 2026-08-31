@@ -245,7 +245,7 @@ nc_lyrics_screen_set_scroll_begin(NcLyricsScreen *screen,
 
 void
 lyrics_queued_song_init(LyricsQueuedSong *queued) {
-    ncm_song_init(&queued->song);
+    queued->song = (NcmSong){0};
     queued->notify = false;
     return;
 }
@@ -289,15 +289,15 @@ lyrics_screen_init(LyricsScreen *screen,
                    border);
     nc_scrollpad_init(&screen->scrollpad,
                       nc_lyrics_screen_height(&screen->screen));
-    nc_buffer_init(&screen->display);
+    screen->display = (NcBuffer){0};
 
     screen->search_constraint = (StrBuilder){0};
     screen->title = (StrBuilder){0};
-    ncm_song_init(&screen->song);
+    screen->song = (NcmSong){0};
     screen->filename = (StrBuilder){0};
 
-    ncm_lrc_document_init(&screen->lrc);
-    ncm_lyrics_result_init(&screen->result);
+    screen->lrc = (NcmLrcDocument){0};
+    screen->result = (NcmLyricsResult){0};
     ncm_job_queue_init(&screen->jobs);
     screen->foreground_job = NULL;
     screen->queued_songs = NULL;
@@ -834,7 +834,7 @@ lyrics_buffer_find(NcBuffer *buffer,
         return true;
     }
 
-    ncm_regex_init(&regex);
+    regex = (NcmRegex){0};
     if (!ncm_regex_compile(&regex, pattern, pattern_len, Config.regex_flags,
                            ncm_error)) {
         ncm_regex_destroy(&regex);
@@ -1165,9 +1165,9 @@ lyrics_title_song_string(NcmSong *song, StrBuilder *title) {
     NcmStringView title_view;
     NcmStringView name_view;
 
-    ncm_string_view_init(&artist_view);
-    ncm_string_view_init(&title_view);
-    ncm_string_view_init(&name_view);
+    artist_view = (NcmStringView){0};
+    title_view = (NcmStringView){0};
+    name_view = (NcmStringView){0};
 
     sb_clear(title);
 
@@ -1193,9 +1193,9 @@ lyrics_song_artist_title(NcmSong *song,
     NcmStringView title_view;
     NcmStringView name_view;
 
-    ncm_string_view_init(&artist_view);
-    ncm_string_view_init(&title_view);
-    ncm_string_view_init(&name_view);
+    artist_view = (NcmStringView){0};
+    title_view = (NcmStringView){0};
+    name_view = (NcmStringView){0};
 
     sb_clear(artist);
     sb_clear(title);
@@ -1413,7 +1413,7 @@ lyrics_filename_from_song_with_extension(
     int32 basename_start;
     int32 basename_len;
 
-    ncm_string_view_init(&uri);
+    uri = (NcmStringView){0};
     sb_clear(filename);
 
     if (store_in_song_dir && !ncm_song_is_stream(song)) {
@@ -1578,10 +1578,10 @@ lyrics_job_create(LyricsScreen *screen,
     LyricsJob *job = malloc2(SIZEOF(*job));
 
     job->screen = screen;
-    ncm_song_init(&job->song);
+    job->song = (NcmSong){0};
     ncm_song_copy(&job->song, song);
     job->filename = (StrBuilder){0};
-    nc_buffer_init(&job->log);
+    job->log = (NcBuffer){0};
     pthread_mutex_init(&job->log_mutex, NULL);
     job->log_dirty = false;
 
@@ -1597,7 +1597,7 @@ lyrics_job_create(LyricsScreen *screen,
                                     win32_filename);
 
     job->fetcher = fetcher;
-    ncm_lyrics_result_init(&job->result);
+    job->result = (NcmLyricsResult){0};
     job->notify = notify;
     job->background = background;
 
@@ -1841,7 +1841,7 @@ lyrics_job_take_log(LyricsJob *job, NcBuffer *buffer) {
         return false;
     }
 
-    nc_buffer_init(&copy);
+    copy = (NcBuffer){0};
     pthread_mutex_lock(&job->log_mutex);
     if (job->log_dirty) {
         nc_buffer_copy(&copy, &job->log);

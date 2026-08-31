@@ -16,17 +16,8 @@ static void nc_buffer_property_destroy(NcBufferProperty *property);
 static enum NcFormat nc_buffer_reverse_format(enum NcFormat format);
 
 void
-nc_buffer_init(NcBuffer *buffer) {
-    buffer->data = NULL;
-    buffer->properties = NULL;
-    buffer->len = 0;
-    buffer->cap = 0;
-    return;
-}
-
-void
 nc_buffer_copy(NcBuffer *dest, NcBuffer *source) {
-    nc_buffer_init(dest);
+    *dest = (NcBuffer){0};
     nc_buffer_append_data(dest, source->data, source->len);
     for (int32 i = 0; i < ARRAY_LEN(source->properties); i += 1) {
         NcBufferProperty property;
@@ -40,7 +31,7 @@ nc_buffer_copy(NcBuffer *dest, NcBuffer *source) {
 void
 nc_buffer_move(NcBuffer *dest, NcBuffer *source) {
     *dest = *source;
-    nc_buffer_init(source);
+    *source = (NcBuffer){0};
     return;
 }
 
@@ -51,7 +42,7 @@ nc_buffer_destroy(NcBuffer *buffer) {
     }
     ARRAY_FREE(buffer->properties);
     free2(buffer->data, buffer->cap);
-    nc_buffer_init(buffer);
+    *buffer = (NcBuffer){0};
     return;
 }
 

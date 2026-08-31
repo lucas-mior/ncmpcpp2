@@ -8,14 +8,6 @@
 #include "c/ncm_c.h"
 
 void
-ncm_directory_init(NcmDirectory *directory) {
-    directory->path = NULL;
-    directory->path_len = 0;
-    directory->last_modified = 0;
-    return;
-}
-
-void
 ncm_directory_destroy(NcmDirectory *directory) {
     free2(directory->path, directory->path_len + 1);
 
@@ -41,7 +33,7 @@ ncm_directory_set(NcmDirectory *directory, char *path,
         return false;
     }
 
-    ncm_directory_init(&replacement);
+    replacement = (NcmDirectory){0};
     replacement.path = malloc2(path_len + 1);
     replacement.path_len = path_len;
     replacement.last_modified = last_modified;
@@ -81,12 +73,12 @@ ncm_directory_move(NcmDirectory *dest, NcmDirectory *source) {
 
     ncm_directory_destroy(dest);
     if (source == NULL) {
-        ncm_directory_init(dest);
+        *dest = (NcmDirectory){0};
         return;
     }
 
     *dest = *source;
-    ncm_directory_init(source);
+    *source = (NcmDirectory){0};
     return;
 }
 

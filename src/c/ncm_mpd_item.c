@@ -14,7 +14,7 @@ ncm_mpd_item_set_song_copy(NcmMpdItem *item,
 
     ncm_mpd_item_init(&replacement);
     replacement.kind = NCM_MPD_ITEM_SONG;
-    ncm_song_init(&replacement.value.song);
+    replacement.value.song = (NcmSong){0};
     if (!ncm_song_from_mpd_song_copy(&replacement.value.song, source)) {
         ncm_mpd_item_destroy(&replacement);
         return false;
@@ -32,7 +32,7 @@ ncm_mpd_item_set_directory_from_mpd(NcmMpdItem *item,
 
     ncm_mpd_item_init(&replacement);
     replacement.kind = NCM_MPD_ITEM_DIRECTORY;
-    ncm_directory_init(&replacement.value.directory);
+    replacement.value.directory = (NcmDirectory){0};
     if (!ncm_directory_from_mpd_directory(&replacement.value.directory,
                                           source)) {
         ncm_mpd_item_destroy(&replacement);
@@ -51,7 +51,7 @@ ncm_mpd_item_set_playlist_from_mpd(NcmMpdItem *item,
 
     ncm_mpd_item_init(&replacement);
     replacement.kind = NCM_MPD_ITEM_PLAYLIST;
-    ncm_playlist_init(&replacement.value.playlist);
+    replacement.value.playlist = (NcmPlaylist){0};
     if (!ncm_playlist_from_mpd_playlist(&replacement.value.playlist,
                                         source)) {
         ncm_mpd_item_destroy(&replacement);
@@ -127,7 +127,7 @@ ncm_mpd_item_set_song(NcmMpdItem *item, NcmSong *source) {
 
     ncm_mpd_item_init(&replacement);
     replacement.kind = NCM_MPD_ITEM_SONG;
-    ncm_song_init(&replacement.value.song);
+    replacement.value.song = (NcmSong){0};
     if (!ncm_song_copy(&replacement.value.song, source)) {
         ncm_mpd_item_destroy(&replacement);
         return false;
@@ -151,7 +151,7 @@ ncm_mpd_item_set_directory(NcmMpdItem *item, NcmDirectory *source) {
 
     ncm_mpd_item_init(&replacement);
     replacement.kind = NCM_MPD_ITEM_DIRECTORY;
-    ncm_directory_init(&replacement.value.directory);
+    replacement.value.directory = (NcmDirectory){0};
     if (!ncm_directory_copy(&replacement.value.directory, source)) {
         ncm_mpd_item_destroy(&replacement);
         return false;
@@ -179,17 +179,17 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
     copied = true;
     switch (source->kind) {
     case NCM_MPD_ITEM_SONG:
-        ncm_song_init(&replacement.value.song);
+        replacement.value.song = (NcmSong){0};
         copied = ncm_song_copy(&replacement.value.song,
                                &source->value.song);
         break;
     case NCM_MPD_ITEM_DIRECTORY:
-        ncm_directory_init(&replacement.value.directory);
+        replacement.value.directory = (NcmDirectory){0};
         copied = ncm_directory_copy(&replacement.value.directory,
                                     &source->value.directory);
         break;
     case NCM_MPD_ITEM_PLAYLIST:
-        ncm_playlist_init(&replacement.value.playlist);
+        replacement.value.playlist = (NcmPlaylist){0};
         copied = ncm_playlist_copy(&replacement.value.playlist,
                                    &source->value.playlist);
         break;

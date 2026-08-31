@@ -67,7 +67,7 @@ static void
 app_init_state(void) {
     global_state_init();
     configuration_init(&Config);
-    ncm_bindings_configuration_init(&Bindings);
+    Bindings = (NcmBindingsConfiguration){0};
     return;
 }
 

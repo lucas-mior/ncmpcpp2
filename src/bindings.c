@@ -158,18 +158,10 @@ ncm_binding_action_copy(NcmBindingAction *dest, NcmBindingAction *source) {
 }
 
 void
-ncm_binding_init(NcmBinding *binding) {
-    binding->actions = NULL;
-    binding->actions_len = 0;
-    binding->actions_cap = 0;
-    return;
-}
-
-void
 ncm_binding_destroy(NcmBinding *binding) {
     ncm_binding_clear(binding);
     free2(binding->actions, binding->actions_cap*SIZEOF(*binding->actions));
-    ncm_binding_init(binding);
+    *binding = (NcmBinding){0};
     return;
 }
 
@@ -209,7 +201,7 @@ ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action) {
 
 bool
 ncm_binding_copy(NcmBinding *dest, NcmBinding *source) {
-    ncm_binding_init(dest);
+    *dest = (NcmBinding){0};
     for (int32 i = 0; i < source->actions_len; i += 1) {
         if (!ncm_binding_append_action(dest, source->actions + i)) {
             ncm_binding_destroy(dest);
@@ -448,20 +440,10 @@ ncm_binding_is_single_action_type(NcmBinding *binding,
 }
 
 void
-ncm_command_init(NcmCommand *command) {
-    command->name = NULL;
-    command->name_len = 0;
-    command->name_cap = 0;
-    command->immediate = false;
-    ncm_binding_init(&command->binding);
-    return;
-}
-
-void
 ncm_command_destroy(NcmCommand *command) {
     free2(command->name, command->name_cap);
     ncm_binding_destroy(&command->binding);
-    ncm_command_init(command);
+    *command = (NcmCommand){0};
     return;
 }
 
@@ -486,23 +468,12 @@ ncm_key_bindings_destroy(NcmKeyBindings *key_bindings) {
 }
 
 void
-ncm_bindings_configuration_init(NcmBindingsConfiguration *bindings) {
-    bindings->commands = NULL;
-    bindings->keys = NULL;
-    bindings->commands_len = 0;
-    bindings->commands_cap = 0;
-    bindings->keys_len = 0;
-    bindings->keys_cap = 0;
-    return;
-}
-
-void
 ncm_bindings_configuration_destroy(NcmBindingsConfiguration *bindings) {
     ncm_bindings_configuration_clear(bindings);
     free2(bindings->commands,
           bindings->commands_cap*SIZEOF(*bindings->commands));
     free2(bindings->keys, bindings->keys_cap*SIZEOF(*bindings->keys));
-    ncm_bindings_configuration_init(bindings);
+    *bindings = (NcmBindingsConfiguration){0};
     return;
 }
 
@@ -951,7 +922,7 @@ ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
         bindings->commands_cap = new_cap;
     }
 
-    ncm_command_init(&copy);
+    copy = (NcmCommand){0};
     copy.name
         = ncm_string_copy(command->name, command->name_len, &copy.name_cap);
     copy.name_len = command->name_len;
@@ -1051,7 +1022,7 @@ ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
     if (!ncm_bindings_not_bound(bindings, key)) {
         return true;
     }
-    ncm_binding_init(&binding);
+    binding = (NcmBinding){0};
     if ((result = ncm_binding_append_normal(&binding, type))) {
         result = ncm_bindings_bind(bindings, key, &binding);
     }
@@ -1071,7 +1042,7 @@ ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
     if (!ncm_bindings_not_bound(bindings, key)) {
         return true;
     }
-    ncm_binding_init(&binding);
+    binding = (NcmBinding){0};
     if ((result = ncm_binding_append_normal(&binding, first))) {
         result = ncm_binding_append_normal(&binding, second);
     }
@@ -1097,7 +1068,7 @@ ncm_bindings_bind_group(NcmBindingsConfiguration *bindings, char *key_name,
         NcmBinding binding;
         bool result;
 
-        ncm_binding_init(&binding);
+        binding = (NcmBinding){0};
         if ((result = ncm_binding_append_normal(&binding, actions[i]))) {
             result = ncm_bindings_bind(bindings, key, &binding);
         }
@@ -1135,7 +1106,7 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
     }
 
     if (in_progress == 1) {
-        ncm_command_init(&command);
+        command = (NcmCommand){0};
         command.name = command_name;
         command.name_len = command_name_len;
         command.name_cap = command_name_len + 1;
@@ -1195,7 +1166,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     key_name_cap = 0;
     key = NC_KEY_NONE;
     command_immediate = false;
-    ncm_binding_init(&actions);
+    actions = (NcmBinding){0};
 
     while (ok && !last_line) {
         int32 len;
@@ -1375,7 +1346,7 @@ ncm_bindings_configuration_generate_defaults(
 ) {
     NcmBinding binding;
 
-    ncm_binding_init(&binding);
+    binding = (NcmBinding){0};
     ncm_binding_append_normal(&binding, NCM_ACTION_QUIT);
     ncm_bindings_bind(bindings, NC_KEY_EOF, &binding);
     ncm_binding_destroy(&binding);

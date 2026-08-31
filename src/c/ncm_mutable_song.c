@@ -182,29 +182,6 @@ ncm_mutable_song_write_callback(enum NcmTagsField field, int32 idx,
 }
 
 void
-ncm_mutable_song_init(NcmMutableSong *song) {
-    if (song == NULL) {
-        return;
-    }
-
-    song->uri = NULL;
-    song->directory = NULL;
-    song->name = NULL;
-    song->new_name = NULL;
-    song->uri_len = 0;
-    song->directory_len = 0;
-    song->name_len = 0;
-    song->new_name_len = 0;
-    song->mtime = 0;
-    song->duration = 0;
-    song->is_from_database = false;
-    song->tags = NULL;
-    song->tags_len = 0;
-    song->tags_cap = 0;
-    return;
-}
-
-void
 ncm_mutable_song_destroy(NcmMutableSong *song) {
     if (song == NULL) {
         return;
@@ -220,7 +197,7 @@ ncm_mutable_song_destroy(NcmMutableSong *song) {
     }
 
     free2(song->tags, song->tags_cap*SIZEOF(*song->tags));
-    ncm_mutable_song_init(song);
+    *song = (NcmMutableSong){0};
     return;
 }
 
@@ -236,7 +213,7 @@ ncm_mutable_song_copy(NcmMutableSong *dest, NcmMutableSong *source) {
         return true;
     }
 
-    ncm_mutable_song_init(&copy);
+    copy = (NcmMutableSong){0};
     if (!ncm_mutable_song_set_uri(&copy, source->uri, source->uri_len)) {
         ncm_mutable_song_destroy(&copy);
         return false;
@@ -290,12 +267,12 @@ ncm_mutable_song_move(NcmMutableSong *dest, NcmMutableSong *source) {
 
     ncm_mutable_song_destroy(dest);
     if (source == NULL) {
-        ncm_mutable_song_init(dest);
+        *dest = (NcmMutableSong){0};
         return;
     }
 
     *dest = *source;
-    ncm_mutable_song_init(source);
+    *source = (NcmMutableSong){0};
     return;
 }
 
@@ -472,7 +449,9 @@ ncm_mutable_song_get_tag(NcmMutableSong *song, enum NcmTagsField field,
                          int32 idx, NcmStringView *view) {
     NcmMutableSongTag *tag;
 
-    ncm_string_view_init(view);
+    if (view) {
+        *view = (NcmStringView){0};
+    }
     if (song == NULL) {
         return false;
     }
@@ -671,7 +650,9 @@ ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
 
 bool
 ncm_mutable_song_get_new_name(NcmMutableSong *song, NcmStringView *view) {
-    ncm_string_view_init(view);
+    if (view) {
+        *view = (NcmStringView){0};
+    }
     if (song == NULL) {
         return false;
     }

@@ -366,19 +366,6 @@ nc_screen_user(NcScreen *screen) {
     return screen->user;
 }
 
-void
-nc_screen_registry_init(NcScreenRegistry *registry) {
-    for (int32 i = 0; i < NC_SCREEN_REGISTRY_MAX_SCREENS; i += 1) {
-        registry->screens[i] = NULL;
-    }
-    registry->current_screen = NULL;
-    registry->previous_screen = NULL;
-    registry->locked_screen = NULL;
-    registry->inactive_screen = NULL;
-    registry->screens_len = 0;
-    return;
-}
-
 bool
 nc_screen_registry_register(NcScreenRegistry *registry, NcScreen *screen) {
     if (screen == NULL) {

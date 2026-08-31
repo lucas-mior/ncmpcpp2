@@ -298,10 +298,10 @@ nc_menu_init(NcMenu *menu) {
     menu->action_callbacks.activate = NULL;
     menu->action_callbacks.set_selected = NULL;
     menu->action_callbacks.user = NULL;
-    nc_buffer_init(&menu->highlight_prefix);
-    nc_buffer_init(&menu->highlight_suffix);
-    nc_buffer_init(&menu->selected_prefix);
-    nc_buffer_init(&menu->selected_suffix);
+    menu->highlight_prefix = (NcBuffer){0};
+    menu->highlight_suffix = (NcBuffer){0};
+    menu->selected_prefix = (NcBuffer){0};
+    menu->selected_suffix = (NcBuffer){0};
     menu->item_count = 0;
     menu->beginning = 0;
     menu->highlight = 0;
@@ -1326,7 +1326,7 @@ menu_copy_buffer(NcBuffer *dest, NcBuffer *source) {
     if (source) {
         nc_buffer_copy(dest, source);
     } else {
-        nc_buffer_init(dest);
+        *dest = (NcBuffer){0};
     }
     return;
 }

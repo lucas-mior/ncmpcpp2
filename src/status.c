@@ -993,7 +993,7 @@ ncm_status_changes_player_state(void) {
 
     switch (status_player_state) {
     case NCM_STATUS_PLAYER_PLAY:
-        ncm_song_init(&song);
+        song = (NcmSong){0};
         if (playlist_screen_now_playing_song(
             app_screen_playlist(), status_current_song_pos, &song)) {
             status_draw_song_title(&song);
@@ -1052,7 +1052,7 @@ ncm_status_changes_song_id(int32 song_id) {
 
     if (status_player_state != NCM_STATUS_PLAYER_STOP) {
         NcmSong song;
-        ncm_song_init(&song);
+        song = (NcmSong){0};
 
         if (status_current_song_for_change(&song)) {
             status_handle_current_song_changed(&song);
@@ -1553,7 +1553,7 @@ status_draw_classic_elapsed_time(NcWindow *footer, NcmSong *song,
         return;
     }
 
-    nc_buffer_init(&rendered_song);
+    rendered_song = (NcBuffer){0};
     status_tracklength_buffer(&tracklength);
     ncm_format_render_buffer(&Config.song_status_format, song, &rendered_song,
                              &rendered_song, NCM_FORMAT_FLAG_ALL);
@@ -1610,8 +1610,8 @@ status_draw_alternative_elapsed_time(NcWindow *header, NcmSong *song,
         return;
     }
 
-    nc_buffer_init(&first);
-    nc_buffer_init(&second);
+    first = (NcBuffer){0};
+    second = (NcBuffer){0};
     status_tracklength_buffer(&tracklength);
 
     ncm_format_render_buffer(&Config.new_header_first_line, song, &first,
@@ -1738,7 +1738,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
         return;
     }
 
-    ncm_song_init(&song);
+    song = (NcmSong){0};
     if (!playlist_screen_now_playing_song(
         app_screen_playlist(), status_current_song_pos, &song)) {
         ncm_song_destroy(&song);

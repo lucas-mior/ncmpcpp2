@@ -143,10 +143,10 @@ lastfm_screen_init(LastfmScreen *screen,
     nc_scrollpad_init(&screen->scrollpad,
                       nc_lastfm_screen_height(&screen->screen));
 
-    nc_buffer_init(&screen->buffer);
+    screen->buffer = (NcBuffer){0};
     screen->search_constraint = (StrBuilder){0};
-    ncm_lastfm_service_init(&screen->service);
-    ncm_lastfm_result_init(&screen->result);
+    screen->service = (NcmLastfmService){0};
+    screen->result = (NcmLastfmResult){0};
     ncm_job_queue_init(&screen->jobs);
 
     screen->title = NULL;
@@ -223,7 +223,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
         return false;
     }
 
-    ncm_lastfm_service_init(&candidate);
+    candidate = (NcmLastfmService){0};
     if (!ncm_lastfm_artist_info_init(&candidate, artist, artist_len,
                                      lang, lang_len)) {
         ncm_lastfm_service_destroy(&candidate);
@@ -263,7 +263,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     }
 
     ncm_lastfm_service_destroy(&screen->service);
-    ncm_lastfm_service_init(&screen->service);
+    screen->service = (NcmLastfmService){0};
     (void)ncm_lastfm_artist_info_init(&screen->service,
                                       artist, artist_len,
                                       lang, lang_len);
@@ -331,7 +331,7 @@ lastfm_buffer_find(NcBuffer *buffer, char *pattern,
         return true;
     }
 
-    ncm_regex_init(&regex);
+    regex = (NcmRegex){0};
     if (!ncm_regex_compile(&regex,
                            pattern, pattern_len,
                            Config.regex_flags,
@@ -445,8 +445,8 @@ lastfm_job_create(LastfmScreen *screen, NcmLastfmService *service) {
     LastfmJob *job = malloc2(SIZEOF(*job));
     job->screen = screen;
 
-    ncm_lastfm_service_init(&job->service);
-    ncm_lastfm_result_init(&job->result);
+    job->service = (NcmLastfmService){0};
+    job->result = (NcmLastfmResult){0};
     (void)ncm_lastfm_artist_info_init(&job->service,
                                       service->artist, service->artist_len,
                                       service->lang, service->lang_len);

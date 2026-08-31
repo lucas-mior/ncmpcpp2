@@ -50,15 +50,6 @@ lastfm_string_destroy(char **data, int32 *len, int32 *cap) {
 }
 
 void
-ncm_lastfm_result_init(NcmLastfmResult *result) {
-    result->text = NULL;
-    result->text_len = 0;
-    result->text_cap = 0;
-    result->success = false;
-    return;
-}
-
-void
 ncm_lastfm_result_destroy(NcmLastfmResult *result) {
     if (result == NULL) {
         return;
@@ -93,18 +84,6 @@ ncm_lastfm_result_set(NcmLastfmResult *result, bool success, char *text,
 }
 
 void
-ncm_lastfm_service_init(NcmLastfmService *service) {
-    service->artist = NULL;
-    service->lang = NULL;
-    service->artist_len = 0;
-    service->artist_cap = 0;
-    service->lang_len = 0;
-    service->lang_cap = 0;
-    service->type = NCM_LASTFM_SERVICE_NONE;
-    return;
-}
-
-void
 ncm_lastfm_service_destroy(NcmLastfmService *service) {
     if (service == NULL) {
         return;
@@ -124,7 +103,7 @@ ncm_lastfm_artist_info_init(NcmLastfmService *service, char *artist,
         return false;
     }
     ncm_lastfm_service_destroy(service);
-    ncm_lastfm_service_init(service);
+    *service = (NcmLastfmService){0};
     service->type = NCM_LASTFM_SERVICE_ARTIST_INFO;
     if (!lastfm_string_set(&service->artist, &service->artist_len,
                            &service->artist_cap, artist, artist_len)) {
@@ -221,7 +200,7 @@ lastfm_action_failed(char *data, int32 data_len) {
     bool failed;
 
     ncm_error_clear(&ncm_error);
-    ncm_regex_init(&regex);
+    regex = (NcmRegex){0};
     failed = false;
     if (ncm_regex_compile(&regex, STRLIT("status=\"failed\""),
                           NCM_REGEX_EXTENDED, &ncm_error)) {

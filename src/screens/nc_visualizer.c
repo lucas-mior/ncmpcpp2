@@ -540,7 +540,7 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
     }
 
     ncm_error_clear(&ncm_error);
-    ncm_mpd_output_list_init(&outputs);
+    outputs = (NcmMpdOutputList){0};
     if (!screen->data_source_hooks.get_outputs(
         screen->data_source_hooks.user, &outputs, &ncm_error)) {
         NcmStringFormatArg arg =
@@ -699,11 +699,11 @@ visualizer_screen_init(VisualizerScreen *screen,
                            visualizer_colors_len);
     screen->data_source_hooks = data_source_hooks;
 
-    ncm_sample_buffer_init(&screen->incoming_samples);
-    ncm_sample_buffer_init(&screen->buffered_samples);
-    ncm_sample_buffer_init(&screen->rendered_samples);
-    ncm_sample_buffer_init(&screen->left_channel);
-    ncm_sample_buffer_init(&screen->right_channel);
+    screen->incoming_samples = (NcmSampleBuffer){0};
+    screen->buffered_samples = (NcmSampleBuffer){0};
+    screen->rendered_samples = (NcmSampleBuffer){0};
+    screen->left_channel = (NcmSampleBuffer){0};
+    screen->right_channel = (NcmSampleBuffer){0};
 
 #if defined(HAVE_FFTW3_H)
     visualizer_fft_init(screen, spectrum_dft_size, spectrum_gain,

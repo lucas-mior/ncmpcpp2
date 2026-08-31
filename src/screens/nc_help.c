@@ -45,7 +45,7 @@ nc_help_screen_init(NcHelpScreen *screen,
                              hooks.user,
                              NC_SCREEN_TYPE_HELP,
                              0, 0, 0, 0);
-    nc_buffer_init(&screen->buffer);
+    screen->buffer = (NcBuffer){0};
     screen->search_constraint = (StrBuilder){0};
     nc_help_screen_set_geometry(screen, start_x, width, main_start_y,
                                 main_height);
@@ -77,7 +77,7 @@ nc_help_screen_reload(NcHelpScreen *screen) {
         return false;
     }
 
-    nc_buffer_init(&next_buffer);
+    next_buffer = (NcBuffer){0};
     if (!screen->hooks.render(screen->hooks.user, &next_buffer)) {
         nc_buffer_destroy(&next_buffer);
         return false;
@@ -111,7 +111,7 @@ nc_help_screen_find(NcHelpScreen *screen,
         return true;
     }
 
-    ncm_regex_init(&regex);
+    regex = (NcmRegex){0};
     if (!ncm_regex_compile(&regex,
                            pattern, pattern_len,
                            Config.regex_flags,

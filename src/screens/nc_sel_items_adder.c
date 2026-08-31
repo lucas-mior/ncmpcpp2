@@ -105,8 +105,8 @@ selected_items_adder_screen_init(
                    color, border);
     nc_window_init(&screen->position_window, start_x, start_y, width,
                    height, STRLIT("Where?"), color, border);
-    ncm_song_array_init(&screen->selected_songs);
-    ncm_regex_init(&screen->search_regex);
+    screen->selected_songs = (NcmSongArray){0};
+    screen->search_regex = (NcmRegex){0};
 
     screen->search_constraint = (StrBuilder){0};
 
@@ -241,7 +241,7 @@ selected_items_adder_screen_open(
         return false;
     }
 
-    ncm_song_array_init(&selected_songs);
+    selected_songs = (NcmSongArray){0};
     if (!ncm_song_array_copy(&selected_songs, songs)) {
         ncm_song_array_destroy(&selected_songs);
         ncm_error_set(ncm_error, EINVAL,
@@ -260,7 +260,7 @@ selected_items_adder_screen_open(
         nc_editor_action_menu_base(&screen->position_selector));
 
     local_browser = adder_previous_is_local_browser(current);
-    ncm_mpd_playlist_list_init(&playlists);
+    playlists = (NcmMpdPlaylistList){0};
     if (!local_browser) {
         ncm_error_clear(&playlist_error);
         if (!ncm_mpd_client_get_playlists(client, &playlists,
@@ -483,7 +483,7 @@ selected_items_adder_screen_search(
         return false;
     }
 
-    ncm_regex_init(&regex);
+    regex = (NcmRegex){0};
     if (!ncm_regex_compile(&regex, pattern, pattern_len, regex_flags,
                            ncm_error)) {
         ncm_regex_destroy(&regex);
@@ -984,7 +984,7 @@ adder_action_position_current_album(void *user) {
         return;
     }
 
-    ncm_song_init(&current);
+    current = (NcmSong){0};
     if (!playlist_screen_now_playing_song(
         screen->playlist, position, &current)) {
         ncm_song_destroy(&current);
@@ -994,7 +994,7 @@ adder_action_position_current_album(void *user) {
     position += 1;
 
     while (true) {
-        ncm_song_init(&next);
+        next = (NcmSong){0};
         if (!playlist_screen_now_playing_song(
             screen->playlist, position, &next)) {
             ncm_song_destroy(&next);
@@ -1025,7 +1025,7 @@ adder_action_position_highlighted(void *user) {
     NcmSong song;
     int32 song_position;
 
-    ncm_song_init(&song);
+    song = (NcmSong){0};
     if (!playlist_screen_current_song(screen->playlist, &song)) {
         ncm_song_destroy(&song);
         return;
@@ -1062,7 +1062,7 @@ adder_add_action_row(NcEditorActionMenu *menu, char *label,
     NcEditorActionRow row;
     bool ok;
 
-    nc_editor_action_row_init(&row);
+    row = (NcEditorActionRow){0};
     if ((ok = adder_action_row_set(&row, label, label_len, run, user))) {
         nc_editor_action_menu_add(menu, &row);
     }

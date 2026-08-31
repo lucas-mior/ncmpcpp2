@@ -471,7 +471,6 @@ void nc_screen_get_resize_params(NcScreen *screen, int32 *x_offset,
 void nc_screen_draw_vertical_separator(int32 x);
 void *nc_screen_user(NcScreen *screen);
 
-void nc_screen_registry_init(NcScreenRegistry *registry);
 bool nc_screen_registry_register(NcScreenRegistry *registry,
                                  NcScreen *screen);
 bool nc_screen_registry_unregister(NcScreenRegistry *registry,
@@ -1173,8 +1172,6 @@ typedef struct MediaLibraryAlbumItem {
 
 NCM_ARRAY_DECLARE_TYPE(MediaLibraryTagArray,
                        NcMediaLibraryTagRow)
-NCM_ARRAY_DECLARE_INIT(media_library_tag_array,
-                       MediaLibraryTagArray)
 NCM_ARRAY_DECLARE_CLEAR(media_library_tag_array,
                         MediaLibraryTagArray)
 NCM_ARRAY_DECLARE_DESTROY(media_library_tag_array,
@@ -1191,8 +1188,6 @@ NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_tag_array,
 
 NCM_ARRAY_DECLARE_TYPE(MediaLibraryAlbumArray,
                        MediaLibraryAlbumItem)
-NCM_ARRAY_DECLARE_INIT(media_library_album_array,
-                       MediaLibraryAlbumArray)
 NCM_ARRAY_DECLARE_CLEAR(media_library_album_array,
                         MediaLibraryAlbumArray)
 NCM_ARRAY_DECLARE_DESTROY(media_library_album_array,

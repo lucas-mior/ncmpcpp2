@@ -101,16 +101,6 @@ ncm_taglib_init(void) {
     return;
 }
 
-void
-ncm_taglib_file_init(NcmTaglibFile *file) {
-    if (file == NULL) {
-        return;
-    }
-
-    file->handle = NULL;
-    return;
-}
-
 bool
 ncm_taglib_file_open(NcmTaglibFile *file, char *path) {
 #if defined(HAVE_TAGLIB_H)

@@ -617,7 +617,7 @@ configuration_print_version(void) {
 static bool
 configuration_make_string_views(NcmStringViewArray *views,
                                 StrBuilderArray *buffers) {
-    ncm_string_view_array_init(views);
+    *views = (NcmStringViewArray){0};
     for (int32 i = 0; i < buffers->len; i += 1) {
         NcmStringView *view;
         StrBuilder *buffer;
@@ -787,8 +787,8 @@ configuration_print_current_song(NcmConfigurationOptions *options,
     StrBuilder output = {0};
     bool result;
 
-    ncm_song_init(&song);
-    ncm_format_ast_init(&format);
+    song = (NcmSong){0};
+    format = (NcmFormatAst){0};
 
     result = ncm_mpd_client_connect(&global_mpd, ncm_error)
              && ncm_mpd_client_get_current_song(&global_mpd, &song, ncm_error);
@@ -879,8 +879,8 @@ configuration_test_lyrics_fetchers(NcmError *ncm_error) {
         NcmLyricsFetcherDef fetcher;
         NcmLyricsResult result;
 
-        ncm_lyrics_fetcher_def_init(&fetcher);
-        ncm_lyrics_result_init(&result);
+        fetcher = (NcmLyricsFetcherDef){0};
+        result = (NcmLyricsResult){0};
         if (!ncm_lyrics_fetcher_def_set_name(&fetcher, tests[i].name,
                                              tests[i].name_len)) {
             ncm_error_set(ncm_error, EINVAL, STRLIT("unknown lyrics fetcher"));

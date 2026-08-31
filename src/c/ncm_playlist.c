@@ -8,14 +8,6 @@
 #include "c/ncm_c.h"
 
 void
-ncm_playlist_init(NcmPlaylist *playlist) {
-    playlist->path = NULL;
-    playlist->path_len = 0;
-    playlist->last_modified = 0;
-    return;
-}
-
-void
 ncm_playlist_destroy(NcmPlaylist *playlist) {
     free2(playlist->path, playlist->path_len + 1);
 
@@ -41,7 +33,7 @@ ncm_playlist_set(NcmPlaylist *playlist, char *path,
         return false;
     }
 
-    ncm_playlist_init(&replacement);
+    replacement = (NcmPlaylist){0};
     replacement.path = malloc2(path_len + 1);
     replacement.path_len = path_len;
     replacement.last_modified = last_modified;
@@ -101,12 +93,12 @@ ncm_playlist_move(NcmPlaylist *dest, NcmPlaylist *source) {
 
     ncm_playlist_destroy(dest);
     if (source == NULL) {
-        ncm_playlist_init(dest);
+        *dest = (NcmPlaylist){0};
         return;
     }
 
     *dest = *source;
-    ncm_playlist_init(source);
+    *source = (NcmPlaylist){0};
     return;
 }
 

@@ -44,7 +44,7 @@ nc_song_info_screen_init(NcSongInfoScreen *screen,
                              0,
                              0,
                              0);
-    nc_buffer_init(&screen->buffer);
+    screen->buffer = (NcBuffer){0};
     nc_song_info_screen_set_geometry(screen,
                                      start_x,
                                      width,
@@ -84,7 +84,7 @@ nc_song_info_screen_prepare_current(NcSongInfoScreen *screen) {
         return false;
     }
 
-    nc_buffer_init(&next_buffer);
+    next_buffer = (NcBuffer){0};
     if (!screen->hooks.render(screen->hooks.user, screen, &next_buffer)) {
         nc_buffer_destroy(&next_buffer);
         return false;

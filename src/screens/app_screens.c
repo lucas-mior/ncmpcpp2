@@ -535,7 +535,7 @@ search_list_database_songs(
     }
 
     ncm_song_array_clear(songs);
-    ncm_mpd_song_list_init(&source);
+    source = (NcmMpdSongList){0};
     result = ncm_mpd_client_get_directory_recursive(
         &global_mpd, "/", &source, ncm_error);
     if (result) {
@@ -1026,7 +1026,7 @@ app_screen_song_info_init(void) {
         return;
     }
 
-    ncm_song_init(&song_info_screen.song);
+    song_info_screen.song = (NcmSong){0};
     nc_song_info_screen_init(&song_info_screen.screen,
                              song_info_hooks(),
                              0,
@@ -1046,8 +1046,8 @@ app_screen_server_info_init(void) {
         return;
     }
 
-    ncm_mpd_string_list_init(&server_info_screen.url_handlers);
-    ncm_mpd_string_list_init(&server_info_screen.tag_types);
+    server_info_screen.url_handlers = (NcmMpdStringList){0};
+    server_info_screen.tag_types = (NcmMpdStringList){0};
     nc_server_info_screen_init(&server_info_screen.screen,
                                server_info_hooks(),
                                ui_state_screen_width(),
@@ -1080,8 +1080,8 @@ app_screen_outputs_init(void) {
                            Config.window_border,
                            Config.lines_scrolled,
                            Config.mouse_list_scroll_whole_page);
-    nc_buffer_init(&prefix);
-    nc_buffer_init(&suffix);
+    prefix = (NcBuffer){0};
+    suffix = (NcBuffer){0};
     nc_buffer_copy(&prefix, &Config.current_item_prefix);
     nc_buffer_copy(&suffix, &Config.current_item_suffix);
     nc_outputs_screen_set_highlight_prefix(&outputs_screen.screen, &prefix);
@@ -1557,7 +1557,7 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
 
     (void)user;
     ncm_error_clear(&ncm_error);
-    ncm_mpd_output_list_init(&outputs);
+    outputs = (NcmMpdOutputList){0};
     if (!ncm_mpd_client_get_outputs(&global_mpd, &outputs, &ncm_error)) {
         NcmStringFormatArg arg;
 
@@ -1894,7 +1894,7 @@ song_info_switch_to(void *user, NcSongInfoScreen *screen) {
     owner = user;
     ncm_error_clear(&ncm_error);
     ncm_song_destroy(&owner->song);
-    ncm_song_init(&owner->song);
+    owner->song = (NcmSong){0};
     owner->has_song = ncm_mpd_client_get_current_song(&global_mpd,
                                                       &owner->song,
                                                       &ncm_error);
