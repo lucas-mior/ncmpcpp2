@@ -260,9 +260,7 @@ playlist_editor_screen_content(PlaylistEditorScreen *screen) {
 }
 
 NcMenu *
-playlist_editor_screen_active_menu(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_active_menu(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return NULL;
     }
