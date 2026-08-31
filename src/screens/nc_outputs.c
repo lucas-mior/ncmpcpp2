@@ -70,7 +70,7 @@ nc_outputs_screen_init(NcOutputsScreen *screen,
                    STRLIT(""),
                    color,
                    border);
-    nc_menu_init(&screen->menu);
+    screen->menu = (NcMenu){0};
     nc_menu_set_item_callbacks(&screen->menu,
                                nc_outputs_item_callbacks());
     nc_menu_set_display_callbacks(&screen->menu,

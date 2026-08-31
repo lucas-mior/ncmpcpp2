@@ -1133,7 +1133,7 @@ playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
             available_width -= utf8_width(
                 menu->selected_suffix.data, menu->selected_suffix.len);
         }
-        if (menu->highlight_enabled && (pos == menu->highlight)) {
+        if (!menu->highlight_disabled && (pos == menu->highlight)) {
             available_width -= utf8_width(
                 menu->highlight_suffix.data, menu->highlight_suffix.len);
         }

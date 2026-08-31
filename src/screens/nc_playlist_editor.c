@@ -1135,7 +1135,7 @@ playlist_editor_content_list_width(NcMenu *menu, NcWindow *window,
         available_width -= utf8_width(
             menu->selected_suffix.data, menu->selected_suffix.len);
     }
-    if (menu->highlight_enabled && (pos == menu->highlight)) {
+    if (!menu->highlight_disabled && (pos == menu->highlight)) {
         available_width -= utf8_width(
             menu->highlight_suffix.data, menu->highlight_suffix.len);
     }

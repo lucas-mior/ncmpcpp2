@@ -1479,7 +1479,7 @@ search_menu_prefix_width(NcMenu *menu, int32 pos) {
     }
 
     width = 0;
-    if (menu->highlight_enabled && (pos == menu->highlight)) {
+    if (!menu->highlight_disabled && (pos == menu->highlight)) {
         width += search_buffer_width(&menu->highlight_prefix);
     }
     if (nc_menu_position_is_selected(menu, pos)) {
@@ -1500,7 +1500,7 @@ search_menu_suffix_width(NcMenu *menu, int32 pos) {
     if (nc_menu_position_is_selected(menu, pos)) {
         width += search_buffer_width(&menu->selected_suffix);
     }
-    if (menu->highlight_enabled && (pos == menu->highlight)) {
+    if (!menu->highlight_disabled && (pos == menu->highlight)) {
         width += search_buffer_width(&menu->highlight_suffix);
     }
     return width;

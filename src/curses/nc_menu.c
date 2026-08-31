@@ -280,41 +280,6 @@ scroll_internal(NcMenu *menu, int32 height, enum NcScroll where,
 }
 
 void
-nc_menu_init(NcMenu *menu) {
-    menu->all_items = NULL;
-    menu->filtered_items = NULL;
-    menu->all_item_flags = NULL;
-    menu->filtered_item_flags = NULL;
-    menu->active_items = NC_MENU_ITEMS_ALL;
-    menu->item_callbacks.item_size = 0;
-    menu->item_callbacks.construct = NULL;
-    menu->item_callbacks.copy = NULL;
-    menu->item_callbacks.destroy = NULL;
-    menu->item_callbacks.user = NULL;
-    menu->display_callbacks.draw = NULL;
-    menu->display_callbacks.filter = NULL;
-    menu->display_callbacks.is_separator = NULL;
-    menu->display_callbacks.is_selected = NULL;
-    menu->display_callbacks.is_inactive = NULL;
-    menu->display_callbacks.user = NULL;
-    menu->action_callbacks.activate = NULL;
-    menu->action_callbacks.set_selected = NULL;
-    menu->action_callbacks.user = NULL;
-    menu->highlight_prefix = (NcBuffer){0};
-    menu->highlight_suffix = (NcBuffer){0};
-    menu->selected_prefix = (NcBuffer){0};
-    menu->selected_suffix = (NcBuffer){0};
-    menu->item_count = 0;
-    menu->beginning = 0;
-    menu->highlight = 0;
-    menu->drawn_position = 0;
-    menu->highlight_enabled = true;
-    menu->cyclic_scroll_enabled = false;
-    menu->autocenter_cursor = false;
-    return;
-}
-
-void
 nc_menu_destroy(NcMenu *menu) {
     nc_menu_clear_items(menu);
     nc_buffer_destroy(&menu->highlight_prefix);
@@ -342,7 +307,7 @@ nc_menu_copy(NcMenu *dest, NcMenu *source) {
     dest->beginning = source->beginning;
     dest->highlight = source->highlight;
     dest->drawn_position = source->drawn_position;
-    dest->highlight_enabled = source->highlight_enabled;
+    dest->highlight_disabled = source->highlight_disabled;
     dest->cyclic_scroll_enabled = source->cyclic_scroll_enabled;
     dest->autocenter_cursor = source->autocenter_cursor;
     return;
@@ -410,7 +375,7 @@ nc_menu_highlight(NcMenu *menu) {
 
 bool
 nc_menu_highlight_enabled(NcMenu *menu) {
-    return menu->highlight_enabled;
+    return !menu->highlight_disabled;
 }
 
 void
@@ -439,7 +404,7 @@ nc_menu_set_selected_suffix(NcMenu *menu, NcBuffer *buffer) {
 
 void
 nc_menu_set_highlighting(NcMenu *menu, bool state) {
-    menu->highlight_enabled = state;
+    menu->highlight_disabled = !state;
     return;
 }
 
@@ -646,7 +611,7 @@ nc_menu_refresh(NcMenu *menu, NcWindow *window, int32 width, int32 height) {
             continue;
         }
 
-        highlighted = menu->highlight_enabled && (pos == menu->highlight);
+        highlighted = !menu->highlight_disabled && (pos == menu->highlight);
         selected = menu_is_selected(menu, item);
         if (highlighted) {
             menu_print_buffer(window, &menu->highlight_prefix);
