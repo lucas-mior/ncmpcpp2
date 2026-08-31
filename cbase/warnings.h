@@ -3,6 +3,14 @@
 
 #include "platform_detection.h"
 
+#if !defined(DEBUGGING)
+#define DEBUGGING 0
+#endif
+
+#if !defined(TESTING)
+#define TESTING 0
+#endif
+
 #if CC_GCC || CC_CLANG
   #pragma GCC diagnostic warning "-Wall"
   #pragma GCC diagnostic warning "-Wextra"
