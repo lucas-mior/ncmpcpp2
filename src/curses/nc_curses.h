@@ -801,7 +801,6 @@ void nc_menu_string_pair_destroy(NcMenuStringPair *pair);
 bool nc_menu_string_pair_copy(NcMenuStringPair *dest,
                               NcMenuStringPair *source);
 
-void nc_search_row_init(NcSearchRow *row);
 void nc_search_row_destroy(NcSearchRow *row);
 bool nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source);
 
@@ -817,7 +816,6 @@ void nc_editor_action_row_destroy(NcEditorActionRow *row);
 bool nc_editor_action_row_copy(NcEditorActionRow *dest,
                                NcEditorActionRow *source);
 
-void nc_editor_sort_row_init(NcEditorSortRow *row);
 void nc_editor_sort_row_destroy(NcEditorSortRow *row);
 bool nc_editor_sort_row_copy(NcEditorSortRow *dest,
                              NcEditorSortRow *source);

@@ -188,7 +188,7 @@ sort_playlist_dialog_add_row(SortPlaylistDialog *dialog,
     if (dialog == NULL) {
         return false;
     }
-    nc_editor_sort_row_init(&row);
+    row = (NcEditorSortRow){0};
     row.getter = getter;
     row.action.run = run;
     row.action.user = user;

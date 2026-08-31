@@ -95,7 +95,7 @@ tiny_tag_editor_screen_init(
     screen->edited = (NcmMutableSong){0};
 
     screen->music_dir = (StrBuilder){0};
-    screen->tag_separator (StrBuilder){0};
+    screen->tag_separator = (StrBuilder){0};
 
     screen->previous_screen = NULL;
     screen->start_x = start_x;

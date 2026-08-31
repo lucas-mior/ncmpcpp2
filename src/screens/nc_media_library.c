@@ -90,7 +90,6 @@ static bool library_mpd_search_songs(
 static bool library_mpd_add_songs(void *user,
                                   NcmSongArray *songs,
                                   bool play, NcmError *ncm_error);
-static void library_tag_array_item_init(void *item);
 static void library_tag_array_item_destroy(void *item);
 static void library_album_array_item_init(void *item);
 static void library_album_array_item_destroy(void *item);
@@ -167,7 +166,6 @@ static NcScreenOps library_callbacks = {
 };
 
 static NcmArrayItemCallbacks library_tag_array_callbacks = {
-    .init = library_tag_array_item_init,
     .destroy = library_tag_array_item_destroy,
 };
 
@@ -749,12 +747,6 @@ media_library_screen_format_song_row(
     }
     ncm_display_song_row(output, &Config.song_library_format, song,
                          NCM_FORMAT_FLAG_ALL);
-    return;
-}
-
-static void
-library_tag_array_item_init(void *item) {
-    *(NcMediaLibraryTagRow *)item = (NcMediaLibraryTagRow){0};
     return;
 }
 
