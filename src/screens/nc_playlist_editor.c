@@ -282,10 +282,9 @@ playlist_editor_screen_active_window(PlaylistEditorScreen *screen) {
 }
 
 void
-playlist_editor_screen_set_geometry(
-    PlaylistEditorScreen *screen, int32 start_x, int32 width,
-    int32 main_start_y, int32 main_height
-) {
+playlist_editor_screen_set_geometry(PlaylistEditorScreen *screen,
+                                    int32 start_x, int32 width,
+                                    int32 main_start_y, int32 main_height) {
     if (screen == NULL) {
         return;
     }
