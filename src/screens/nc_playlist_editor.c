@@ -350,9 +350,7 @@ playlist_editor_screen_previous_column(
 }
 
 void
-playlist_editor_screen_next_column(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_next_column(PlaylistEditorScreen *screen) {
     if (playlist_editor_screen_next_column_available(screen)) {
         screen->active_column = PLAYLIST_EDITOR_COLUMN_CONTENT;
         playlist_editor_update_menu_highlights(screen);
