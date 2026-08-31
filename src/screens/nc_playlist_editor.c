@@ -410,8 +410,7 @@ playlist_editor_screen_reload_playlists_from_mpd(PlaylistEditorScreen *screen,
     playlists = (NcmMpdPlaylistList){0};
     if ((ok = ncm_mpd_client_get_playlists(client, &playlists, ncm_error))) {
         playlist_editor_sort_playlists(&playlists);
-        ok = playlist_editor_screen_load_playlists(screen,
-                                                   &playlists);
+        ok = playlist_editor_screen_load_playlists(screen, &playlists);
         if (!ok) {
             ncm_error_set(ncm_error, ENOMEM,
                           STRLIT("could not copy playlists"));
