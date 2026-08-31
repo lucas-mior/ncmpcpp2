@@ -574,7 +574,7 @@ search_engine_screen_add_song_copy_with_flags(SearchEngineScreen *screen,
     if ((screen == NULL) || (song == NULL)) {
         return false;
     }
-    nc_search_row_init(&row);
+    row = (NcSearchRow){0};
     row.is_song = true;
     if (!ncm_song_copy(&row.song, song)) {
         nc_search_row_destroy(&row);
@@ -593,7 +593,7 @@ search_engine_screen_add_buffer_with_flags(SearchEngineScreen *screen,
     if ((screen == NULL) || (buffer == NULL)) {
         return false;
     }
-    nc_search_row_init(&row);
+    row = (NcSearchRow){0};
     row.is_song = false;
     nc_buffer_copy(&row.buffer, buffer);
     nc_search_row_menu_add_with_flags(&screen->rows, &row, flags);
@@ -1257,7 +1257,7 @@ search_insert_buffer_with_flags(SearchEngineScreen *screen,
     if ((screen == NULL) || (buffer == NULL)) {
         return false;
     }
-    nc_search_row_init(&row);
+    row = (NcSearchRow){0};
     nc_buffer_copy(&row.buffer, buffer);
     nc_search_row_menu_insert_with_flags(&screen->rows, pos, &row, flags);
     nc_search_row_destroy(&row);

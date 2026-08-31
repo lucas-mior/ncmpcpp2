@@ -6,10 +6,8 @@
 #include "c/ncm_c.h"
 #include "curses/nc_curses.h"
 
-static void ncm_song_menu_item_init(void *item, void *user);
 static void ncm_song_menu_item_copy(void *dest, void *source, void *user);
 static void ncm_song_menu_item_destroy(void *item, void *user);
-static void ncm_mutable_song_menu_item_init(void *item, void *user);
 static void ncm_mutable_song_menu_item_copy(void *dest, void *source,
                                             void *user);
 static void ncm_mutable_song_menu_item_destroy(void *item, void *user);
@@ -17,50 +15,39 @@ static void ncm_mpd_item_menu_item_init(void *item, void *user);
 static void ncm_mpd_item_menu_item_copy(void *dest, void *source,
                                         void *user);
 static void ncm_mpd_item_menu_item_destroy(void *item, void *user);
-static void ncm_playlist_menu_item_init(void *item, void *user);
 static void ncm_playlist_menu_item_copy(void *dest, void *source,
                                         void *user);
 static void ncm_playlist_menu_item_destroy(void *item, void *user);
-static void nc_search_row_menu_item_init(void *item, void *user);
 static void nc_search_row_menu_item_copy(void *dest, void *source,
                                          void *user);
 static void nc_search_row_menu_item_destroy(void *item, void *user);
-static void nc_media_library_tag_menu_item_init(void *item, void *user);
 static void nc_media_library_tag_menu_item_copy(void *dest, void *source,
                                                 void *user);
 static void nc_media_library_tag_menu_item_destroy(void *item, void *user);
-static void nc_media_library_album_menu_item_init(void *item, void *user);
 static void nc_media_library_album_menu_item_copy(void *dest, void *source,
                                                   void *user);
 static void nc_media_library_album_menu_item_destroy(void *item, void *user);
-static void nc_menu_string_item_init(void *item, void *user);
 static void nc_menu_string_item_copy(void *dest, void *source, void *user);
 static void nc_menu_string_item_destroy(void *item, void *user);
-static void nc_menu_string_pair_item_init(void *item, void *user);
 static void nc_menu_string_pair_item_copy(void *dest, void *source,
                                           void *user);
 static void nc_menu_string_pair_item_destroy(void *item, void *user);
-static void nc_editor_action_menu_item_init(void *item, void *user);
 static void nc_editor_action_menu_item_copy(void *dest, void *source,
                                             void *user);
 static void nc_editor_action_menu_item_destroy(void *item, void *user);
-static void nc_editor_sort_menu_item_init(void *item, void *user);
 static void nc_editor_sort_menu_item_copy(void *dest, void *source,
                                           void *user);
 static void nc_editor_sort_menu_item_destroy(void *item, void *user);
-static void nc_buffer_menu_item_init(void *item, void *user);
 static void nc_buffer_menu_item_copy(void *dest, void *source, void *user);
 static void nc_buffer_menu_item_destroy(void *item, void *user);
 
 static NcMenuItemCallbacks ncm_song_menu_callbacks = {
     .item_size = SIZEOF(NcmSong),
-    .construct = ncm_song_menu_item_init,
     .copy = ncm_song_menu_item_copy,
     .destroy = ncm_song_menu_item_destroy,
 };
 static NcMenuItemCallbacks ncm_mutable_song_menu_callbacks = {
     .item_size = SIZEOF(NcmMutableSong),
-    .construct = ncm_mutable_song_menu_item_init,
     .copy = ncm_mutable_song_menu_item_copy,
     .destroy = ncm_mutable_song_menu_item_destroy,
 };
@@ -72,55 +59,46 @@ static NcMenuItemCallbacks ncm_mpd_item_menu_callbacks = {
 };
 static NcMenuItemCallbacks ncm_playlist_menu_callbacks = {
     .item_size = SIZEOF(NcmPlaylist),
-    .construct = ncm_playlist_menu_item_init,
     .copy = ncm_playlist_menu_item_copy,
     .destroy = ncm_playlist_menu_item_destroy,
 };
 static NcMenuItemCallbacks nc_search_row_menu_callbacks = {
     .item_size = SIZEOF(NcSearchRow),
-    .construct = nc_search_row_menu_item_init,
     .copy = nc_search_row_menu_item_copy,
     .destroy = nc_search_row_menu_item_destroy,
 };
 static NcMenuItemCallbacks nc_media_library_tag_menu_callbacks = {
     .item_size = SIZEOF(NcMediaLibraryTagRow),
-    .construct = nc_media_library_tag_menu_item_init,
     .copy = nc_media_library_tag_menu_item_copy,
     .destroy = nc_media_library_tag_menu_item_destroy,
 };
 static NcMenuItemCallbacks nc_media_library_album_menu_callbacks = {
     .item_size = SIZEOF(NcMediaLibraryAlbumRow),
-    .construct = nc_media_library_album_menu_item_init,
     .copy = nc_media_library_album_menu_item_copy,
     .destroy = nc_media_library_album_menu_item_destroy,
 };
 static NcMenuItemCallbacks nc_menu_string_callbacks = {
     .item_size = SIZEOF(NcMenuString),
-    .construct = nc_menu_string_item_init,
     .copy = nc_menu_string_item_copy,
     .destroy = nc_menu_string_item_destroy,
 };
 static NcMenuItemCallbacks nc_menu_string_pair_callbacks = {
     .item_size = SIZEOF(NcMenuStringPair),
-    .construct = nc_menu_string_pair_item_init,
     .copy = nc_menu_string_pair_item_copy,
     .destroy = nc_menu_string_pair_item_destroy,
 };
 static NcMenuItemCallbacks nc_editor_action_menu_callbacks = {
     .item_size = SIZEOF(NcEditorActionRow),
-    .construct = nc_editor_action_menu_item_init,
     .copy = nc_editor_action_menu_item_copy,
     .destroy = nc_editor_action_menu_item_destroy,
 };
 static NcMenuItemCallbacks nc_editor_sort_menu_callbacks = {
     .item_size = SIZEOF(NcEditorSortRow),
-    .construct = nc_editor_sort_menu_item_init,
     .copy = nc_editor_sort_menu_item_copy,
     .destroy = nc_editor_sort_menu_item_destroy,
 };
 static NcMenuItemCallbacks nc_buffer_menu_callbacks = {
     .item_size = SIZEOF(NcBuffer),
-    .construct = nc_buffer_menu_item_init,
     .copy = nc_buffer_menu_item_copy,
     .destroy = nc_buffer_menu_item_destroy,
 };
@@ -462,21 +440,13 @@ nc_menu_string_pair_copy(NcMenuStringPair *dest,
 }
 
 void
-nc_search_row_init(NcSearchRow *row) {
-    row->song = (NcmSong){0};
-    row->buffer = (NcBuffer){0};
-    row->is_song = false;
-    return;
-}
-
-void
 nc_search_row_destroy(NcSearchRow *row) {
     if (row == NULL) {
         return;
     }
     ncm_song_destroy(&row->song);
     nc_buffer_destroy(&row->buffer);
-    nc_search_row_init(row);
+    *row = (NcSearchRow){0};
     return;
 }
 
@@ -488,7 +458,7 @@ nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source) {
         return false;
     }
 
-    nc_search_row_init(&tmp);
+    tmp = (NcSearchRow){0};
     tmp.is_song = source->is_song;
     if (!ncm_song_copy(&tmp.song, &source->song)) {
         nc_search_row_destroy(&tmp);
@@ -621,13 +591,6 @@ nc_editor_action_row_copy(NcEditorActionRow *dest,
 }
 
 void
-nc_editor_sort_row_init(NcEditorSortRow *row) {
-    row->action = (NcEditorActionRow){0};
-    row->getter = NCM_SONG_GETTER_NONE;
-    return;
-}
-
-void
 nc_editor_sort_row_destroy(NcEditorSortRow *row) {
     if (row == NULL) {
         return;
@@ -645,7 +608,7 @@ nc_editor_sort_row_copy(NcEditorSortRow *dest, NcEditorSortRow *source) {
         return false;
     }
 
-    nc_editor_sort_row_init(&tmp);
+    tmp = (NcEditorSortRow){0};
     if (!nc_editor_action_row_copy(&tmp.action, &source->action)) {
         nc_editor_sort_row_destroy(&tmp);
         return false;
@@ -655,13 +618,6 @@ nc_editor_sort_row_copy(NcEditorSortRow *dest, NcEditorSortRow *source) {
     nc_editor_sort_row_destroy(dest);
     *dest = tmp;
     return true;
-}
-
-static void
-ncm_song_menu_item_init(void *item, void *user) {
-    (void)user;
-    *(NcmSong *)item = (NcmSong){0};
-    return;
 }
 
 static void
@@ -675,13 +631,6 @@ static void
 ncm_song_menu_item_destroy(void *item, void *user) {
     (void)user;
     ncm_song_destroy(item);
-    return;
-}
-
-static void
-ncm_mutable_song_menu_item_init(void *item, void *user) {
-    (void)user;
-    *(NcmMutableSong *)item = (NcmMutableSong){0};
     return;
 }
 
@@ -721,13 +670,6 @@ ncm_mpd_item_menu_item_destroy(void *item, void *user) {
 }
 
 static void
-ncm_playlist_menu_item_init(void *item, void *user) {
-    (void)user;
-    *(NcmPlaylist *)item = (NcmPlaylist){0};
-    return;
-}
-
-static void
 ncm_playlist_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
     ncm_playlist_copy(dest, source);
@@ -738,13 +680,6 @@ static void
 ncm_playlist_menu_item_destroy(void *item, void *user) {
     (void)user;
     ncm_playlist_destroy(item);
-    return;
-}
-
-static void
-nc_search_row_menu_item_init(void *item, void *user) {
-    (void)user;
-    nc_search_row_init(item);
     return;
 }
 
@@ -763,13 +698,6 @@ nc_search_row_menu_item_destroy(void *item, void *user) {
 }
 
 static void
-nc_media_library_tag_menu_item_init(void *item, void *user) {
-    (void)user;
-    *(NcMediaLibraryTagRow *)item = (NcMediaLibraryTagRow){0};
-    return;
-}
-
-static void
 nc_media_library_tag_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
     nc_media_library_tag_row_copy(dest, source);
@@ -780,13 +708,6 @@ static void
 nc_media_library_tag_menu_item_destroy(void *item, void *user) {
     (void)user;
     nc_media_library_tag_row_destroy(item);
-    return;
-}
-
-static void
-nc_media_library_album_menu_item_init(void *item, void *user) {
-    (void)user;
-    *(NcMediaLibraryAlbumRow *)item = (NcMediaLibraryAlbumRow){0};
     return;
 }
 
@@ -806,13 +727,6 @@ nc_media_library_album_menu_item_destroy(void *item, void *user) {
 }
 
 static void
-nc_menu_string_item_init(void *item, void *user) {
-    (void)user;
-    *(NcMenuString *)item = (NcMenuString){0};
-    return;
-}
-
-static void
 nc_menu_string_item_copy(void *dest, void *source, void *user) {
     (void)user;
     nc_menu_string_copy(dest, source);
@@ -823,13 +737,6 @@ static void
 nc_menu_string_item_destroy(void *item, void *user) {
     (void)user;
     nc_menu_string_destroy(item);
-    return;
-}
-
-static void
-nc_menu_string_pair_item_init(void *item, void *user) {
-    (void)user;
-    *(NcMenuStringPair *)item = (NcMenuStringPair){0};
     return;
 }
 
@@ -848,13 +755,6 @@ nc_menu_string_pair_item_destroy(void *item, void *user) {
 }
 
 static void
-nc_editor_action_menu_item_init(void *item, void *user) {
-    (void)user;
-    *(NcEditorActionRow *)item = (NcEditorActionRow){0};
-    return;
-}
-
-static void
 nc_editor_action_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
     nc_editor_action_row_copy(dest, source);
@@ -869,13 +769,6 @@ nc_editor_action_menu_item_destroy(void *item, void *user) {
 }
 
 static void
-nc_editor_sort_menu_item_init(void *item, void *user) {
-    (void)user;
-    nc_editor_sort_row_init(item);
-    return;
-}
-
-static void
 nc_editor_sort_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
     nc_editor_sort_row_copy(dest, source);
@@ -886,13 +779,6 @@ static void
 nc_editor_sort_menu_item_destroy(void *item, void *user) {
     (void)user;
     nc_editor_sort_row_destroy(item);
-    return;
-}
-
-static void
-nc_buffer_menu_item_init(void *item, void *user) {
-    (void)user;
-    *(NcBuffer *)item = (NcBuffer){0};
     return;
 }
 

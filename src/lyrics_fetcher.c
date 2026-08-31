@@ -53,7 +53,6 @@ typedef struct LyricsDirectSlugPair {
 } LyricsDirectSlugPair;
 
 static void lyrics_string_destroy(char **data, int32 *len, int32 *cap);
-static void lyrics_fetcher_array_init_item(void *item);
 static void lyrics_fetcher_array_destroy_item(void *item);
 static bool lyrics_name_to_type(char *name, int32 name_len,
                                 enum NcmLyricsFetcherType *type);
@@ -122,7 +121,6 @@ static void lyrics_append_clean_lines(StrBuilder *out, char *data,
                                       int32 data_len);
 
 static NcmArrayItemCallbacks lyrics_fetcher_callbacks = {
-    .init = lyrics_fetcher_array_init_item,
     .destroy = lyrics_fetcher_array_destroy_item,
 };
 
@@ -710,13 +708,6 @@ ncm_lyrics_cleanup_html(StrBuilder *out, char *data, int32 data_len) {
     lyrics_append_clean_lines(out, stripped.data, stripped.len);
     sb_free(&stripped);
     sb_free(&unescaped);
-    return;
-}
-
-static void
-lyrics_fetcher_array_init_item(void *item) {
-    ASSERT(item != NULL);
-    *(NcmLyricsFetcherDef *)item = (NcmLyricsFetcherDef){0};
     return;
 }
 

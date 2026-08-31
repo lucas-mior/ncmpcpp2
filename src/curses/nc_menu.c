@@ -91,6 +91,8 @@ menu_construct_item(NcMenu *menu) {
     item = menu_allocate_item(menu);
     if (menu->item_callbacks.construct) {
         menu->item_callbacks.construct(item, menu->item_callbacks.user);
+    } else {
+        memset64(item, 0, menu->item_callbacks.item_size);
     }
     return item;
 }

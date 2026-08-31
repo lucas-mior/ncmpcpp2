@@ -384,9 +384,6 @@ typedef struct NcmArrayItemCallbacks {
         int32 cap;                                    \
     } ARRAY_TYPE;
 
-#define NCM_ARRAY_DECLARE_INIT(PREFIX, ARRAY_TYPE) \
-    void PREFIX##_init(ARRAY_TYPE *array);
-
 #define NCM_ARRAY_DECLARE_CLEAR(PREFIX, ARRAY_TYPE) \
     void PREFIX##_clear(ARRAY_TYPE *array);
 
@@ -417,15 +414,6 @@ typedef struct NcmArrayItemCallbacks {
 #define NCM_ARRAY_DECLARE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE) \
     void PREFIX##_remove_ordered(ARRAY_TYPE *array, int32 idx);
 
-#define NCM_ARRAY_DEFINE_INIT(PREFIX, ARRAY_TYPE) \
-    void                                           \
-    PREFIX##_init(ARRAY_TYPE *array) {             \
-        array->items = NULL;                       \
-        array->len = 0;                            \
-        array->cap = 0;                            \
-        return;                                    \
-    }
-
 #define NCM_ARRAY_DEFINE_CLEAR(PREFIX, ARRAY_TYPE, CALLBACKS)       \
     void                                                            \
     PREFIX##_clear(ARRAY_TYPE *array) {                              \
@@ -455,7 +443,7 @@ typedef struct NcmArrayItemCallbacks {
             free2(array->items,                              \
                   array->cap*SIZEOF(*array->items));         \
         }                                                   \
-        PREFIX##_init(array);                                \
+        *array = (ARRAY_TYPE){0};                            \
         return;                                              \
     }
 
@@ -471,7 +459,7 @@ typedef struct NcmArrayItemCallbacks {
             return true;                                          \
         }                                                         \
                                                                   \
-        PREFIX##_init(&replacement);                              \
+        replacement = (ARRAY_TYPE){0};                           \
         if (source) {                                             \
             if (!PREFIX##_reserve(&replacement, source->len)) {   \
                 PREFIX##_destroy(&replacement);                   \
@@ -503,11 +491,11 @@ typedef struct NcmArrayItemCallbacks {
                                                             \
         PREFIX##_destroy(dest);                             \
         if (source == NULL) {                               \
-            PREFIX##_init(dest);                            \
+            *dest = (ARRAY_TYPE){0};                       \
             return;                                         \
         }                                                   \
         *dest = *source;                                    \
-        PREFIX##_init(source);                              \
+        *source = (ARRAY_TYPE){0};                          \
         return;                                             \
     }
 
@@ -666,7 +654,6 @@ typedef struct NcmArrayItemCallbacks {
 
 #define NCM_ARRAY_DECLARE(PREFIX, ARRAY_TYPE, ITEM_TYPE)          \
     NCM_ARRAY_DECLARE_TYPE(ARRAY_TYPE, ITEM_TYPE)                 \
-    NCM_ARRAY_DECLARE_INIT(PREFIX, ARRAY_TYPE)                    \
     NCM_ARRAY_DECLARE_CLEAR(PREFIX, ARRAY_TYPE)                   \
     NCM_ARRAY_DECLARE_DESTROY(PREFIX, ARRAY_TYPE)                 \
     NCM_ARRAY_DECLARE_COPY(PREFIX, ARRAY_TYPE)                    \
@@ -679,7 +666,6 @@ typedef struct NcmArrayItemCallbacks {
     NCM_ARRAY_DECLARE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE)
 
 #define NCM_ARRAY_DEFINE(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS)       \
-    NCM_ARRAY_DEFINE_INIT(PREFIX, ARRAY_TYPE)                            \
     NCM_ARRAY_DEFINE_CLEAR(PREFIX, ARRAY_TYPE, CALLBACKS)                \
     NCM_ARRAY_DEFINE_DESTROY(PREFIX, ARRAY_TYPE)                         \
     NCM_ARRAY_DEFINE_COPY(PREFIX, ARRAY_TYPE)                            \
