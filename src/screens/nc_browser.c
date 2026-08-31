@@ -175,15 +175,15 @@ browser_screen_init(BrowserScreen *screen,
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, NULL, 0, color, border);
 
-    sb_init(&screen->current_directory);
-    sb_init(&screen->last_highlighted_directory);
-    sb_init(&screen->title_text);
-    sb_init(&screen->column_title_text);
-    sb_init(&screen->filter_constraint);
-    sb_init(&screen->search_constraint);
-    sb_init(&screen->item_text_buffer);
-    sb_init(&screen->path_buffer);
-    sb_init(&screen->scratch_buffer);
+    screen->current_directory = (StrBuilder){0};
+    screen->last_highlighted_directory = (StrBuilder){0};
+    screen->title_text = (StrBuilder){0};
+    screen->column_title_text = (StrBuilder){0};
+    screen->filter_constraint = (StrBuilder){0};
+    screen->search_constraint = (StrBuilder){0};
+    screen->item_text_buffer = (StrBuilder){0};
+    screen->path_buffer = (StrBuilder){0};
+    screen->scratch_buffer = (StrBuilder){0};
 
     str_builder_array_init(&screen->supported_extensions);
     ncm_regex_init(&screen->filter_regex);

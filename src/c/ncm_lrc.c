@@ -33,7 +33,7 @@ static int ncm_lrc_entry_compare(void *left_ptr, void *right_ptr);
 
 void
 ncm_lrc_document_init(NcmLrcDocument *document) {
-    sb_init(&document->text);
+    document->text = (StrBuilder){0};
     document->entries = NULL;
     document->entries_len = 0;
     document->entries_cap = 0;

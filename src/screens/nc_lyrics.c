@@ -290,10 +290,12 @@ lyrics_screen_init(LyricsScreen *screen,
     nc_scrollpad_init(&screen->scrollpad,
                       nc_lyrics_screen_height(&screen->screen));
     nc_buffer_init(&screen->display);
-    sb_init(&screen->search_constraint);
-    sb_init(&screen->title);
+
+    screen->search_constraint = (StrBuilder){0};
+    screen->title = (StrBuilder){0};
     ncm_song_init(&screen->song);
-    sb_init(&screen->filename);
+    screen->filename = (StrBuilder){0};
+
     ncm_lrc_document_init(&screen->lrc);
     ncm_lyrics_result_init(&screen->result);
     ncm_job_queue_init(&screen->jobs);
@@ -303,7 +305,7 @@ lyrics_screen_init(LyricsScreen *screen,
     screen->queued_songs_cap = 0;
     screen->active_lrc_line = LYRICS_NO_ACTIVE_LINE;
 
-    sb_init(&screen->consumer_message);
+    screen->consumer_message = (StrBuilder){0};
 
     screen->fetcher = NULL;
     screen->mode = LYRICS_MODE_PLAIN;
@@ -1578,7 +1580,7 @@ lyrics_job_create(LyricsScreen *screen,
     job->screen = screen;
     ncm_song_init(&job->song);
     ncm_song_copy(&job->song, song);
-    sb_init(&job->filename);
+    job->filename = (StrBuilder){0};
     nc_buffer_init(&job->log);
     pthread_mutex_init(&job->log_mutex, NULL);
     job->log_dirty = false;

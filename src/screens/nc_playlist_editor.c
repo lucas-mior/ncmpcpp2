@@ -1210,14 +1210,14 @@ playlist_editor_search_text_matches(NcmRegex *regex, char *data,
 
 static void
 playlist_editor_initialize_buffers(PlaylistEditorScreen *screen) {
-    sb_init(&screen->playlist_filter_constraint);
-    sb_init(&screen->content_filter_constraint);
-    sb_init(&screen->playlist_search_constraint);
-    sb_init(&screen->content_search_constraint);
-    sb_init(&screen->playlists_title);
-    sb_init(&screen->content_title);
-    sb_init(&screen->displayed_playlist_path);
-    sb_init(&screen->observed_playlist_path);
+    screen->playlist_filter_constraint = (StrBuilder){0};
+    screen->content_filter_constraint = (StrBuilder){0};
+    screen->playlist_search_constraint = (StrBuilder){0};
+    screen->content_search_constraint = (StrBuilder){0};
+    screen->playlists_title = (StrBuilder){0};
+    screen->content_title = (StrBuilder){0};
+    screen->displayed_playlist_path = (StrBuilder){0};
+    screen->observed_playlist_path = (StrBuilder){0};
     return;
 }
 

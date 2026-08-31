@@ -245,10 +245,12 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
     nc_song_menu_init(&screen->songs);
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, "", 0, color, border);
-    sb_init(&screen->title_cache);
-    sb_init(&screen->column_title);
-    sb_init(&screen->filter_constraint);
-    sb_init(&screen->search_constraint);
+
+    screen->title_cache = (StrBuilder){0};
+    screen->column_title = (StrBuilder){0};
+    screen->filter_constraint = (StrBuilder){0};
+    screen->search_constraint = (StrBuilder){0};
+
     ncm_regex_init(&screen->filter_regex);
     screen->total_length = 0;
     screen->remaining_time = 0;

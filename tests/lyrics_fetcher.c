@@ -673,7 +673,7 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
         context.calls = 0;
         ncm_lyrics_fetcher_def_init(&fetcher);
         ncm_lyrics_result_init(&result);
-        sb_init(&search_url);
+        search_url = (StrBuilder){0};
 
         ASSERT(ncm_lyrics_fetcher_def_set_name(
             &fetcher, context.test->name, context.test->name_len));
@@ -800,7 +800,7 @@ test_musica_search_download_and_parse_fixture(void) {
     context.calls = 0;
     ncm_lyrics_fetcher_def_init(&fetcher);
     ncm_lyrics_result_init(&result);
-    sb_init(&search_url);
+    search_url = (StrBuilder){0};
 
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT("musica")));
@@ -851,7 +851,7 @@ test_lacoccinelle_search_download_and_parse_fixture(void) {
     context.calls = 0;
     ncm_lyrics_fetcher_def_init(&fetcher);
     ncm_lyrics_result_init(&result);
-    sb_init(&search_url);
+    search_url = (StrBuilder){0};
 
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT("lacoccinelle")));
@@ -1000,7 +1000,7 @@ test_internet_fetcher_returns_search_url_without_download(void) {
 
     ncm_lyrics_fetcher_def_init(&fetcher);
     ncm_lyrics_result_init(&result);
-    sb_init(&url);
+    url = (StrBuilder){0};
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT("internet")));
     ASSERT(ncm_lyrics_fetcher_build_url(

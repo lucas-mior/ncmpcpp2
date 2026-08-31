@@ -107,7 +107,9 @@ selected_items_adder_screen_init(
                    height, STRLIT("Where?"), color, border);
     ncm_song_array_init(&screen->selected_songs);
     ncm_regex_init(&screen->search_regex);
-    sb_init(&screen->search_constraint);
+
+    screen->search_constraint = (StrBuilder){0};
+
     screen->playlist = NULL;
     screen->previous_screen = NULL;
     screen->client = NULL;
