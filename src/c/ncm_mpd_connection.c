@@ -808,17 +808,6 @@ ncm_mpd_playlist_list_clear(NcmMpdPlaylistList *list) {
 }
 
 void
-ncm_mpd_connection_init(NcmMpdConnection *connection) {
-    if (connection == NULL) {
-        return;
-    }
-
-    connection->mpd = NULL;
-    ncm_mpd_connection_clear_error(connection);
-    return;
-}
-
-void
 ncm_mpd_connection_destroy(NcmMpdConnection *connection) {
     if (connection == NULL) {
         return;

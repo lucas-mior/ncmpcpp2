@@ -5,7 +5,6 @@
 
 #include "c/ncm_c.h"
 
-static void ncm_format_expr_init(NcmFormatExpr *expr);
 static void ncm_format_expr_destroy(NcmFormatExpr *expr);
 static bool ncm_format_parse_bracket(NcmFormatExprList *out,
                                      char *data, int32 start, int32 end,
@@ -322,15 +321,8 @@ ncm_format_expr_list_append(NcmFormatExprList *list) {
 
     expr = &list->items[list->len];
     list->len += 1;
-    ncm_format_expr_init(expr);
+    *expr = (NcmFormatExpr){0};
     return expr;
-}
-
-static void
-ncm_format_expr_init(NcmFormatExpr *expr) {
-    expr->type = NCM_FORMAT_EXPR_TEXT;
-    expr->value.text = (StrBuilder){0};
-    return;
 }
 
 static void
@@ -352,7 +344,7 @@ ncm_format_expr_destroy(NcmFormatExpr *expr) {
     default:
         break;
     }
-    ncm_format_expr_init(expr);
+    *expr = (NcmFormatExpr){0};
     return;
 }
 

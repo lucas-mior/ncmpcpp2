@@ -244,13 +244,6 @@ nc_lyrics_screen_set_scroll_begin(NcLyricsScreen *screen,
 }
 
 void
-lyrics_queued_song_init(LyricsQueuedSong *queued) {
-    queued->song = (NcmSong){0};
-    queued->notify = false;
-    return;
-}
-
-void
 lyrics_queued_song_destroy(LyricsQueuedSong *queued) {
     ncm_song_destroy(&queued->song);
     queued->notify = false;
@@ -1537,7 +1530,7 @@ lyrics_queue_song(LyricsScreen *screen,
             new_cap,
             SIZEOF(*screen->queued_songs));
         for (int32 i = screen->queued_songs_cap; i < new_cap; i += 1) {
-            lyrics_queued_song_init(&screen->queued_songs[i]);
+            screen->queued_songs[i] = (LyricsQueuedSong){0};
         }
         screen->queued_songs_cap = new_cap;
     }
@@ -1558,7 +1551,7 @@ lyrics_dequeue_song(LyricsScreen *screen) {
         return NULL;
     }
     queued = malloc2(SIZEOF(*queued));
-    lyrics_queued_song_init(queued);
+    *queued = (LyricsQueuedSong){0};
     lyrics_queued_song_move(queued, &screen->queued_songs[0]);
     for (int32 i = 1; i < screen->queued_songs_len; i += 1) {
         lyrics_queued_song_move(&screen->queued_songs[i - 1],

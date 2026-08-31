@@ -910,7 +910,6 @@ typedef struct NcmMpdStatus {
     char error[256];
 } NcmMpdStatus;
 
-void ncm_mpd_connection_init(NcmMpdConnection *connection);
 void ncm_mpd_connection_destroy(NcmMpdConnection *connection);
 bool ncm_mpd_connection_connect(NcmMpdConnection *connection,
                                 char *host,

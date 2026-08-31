@@ -1071,15 +1071,6 @@ adder_add_action_row(NcEditorActionMenu *menu, char *label,
 }
 
 static void
-existing_playlist_action_init(ExistingPlaylistAction *action) {
-    action->screen = NULL;
-    action->playlist = NULL;
-    action->playlist_len = 0;
-    action->playlist_cap = 0;
-    return;
-}
-
-static void
 existing_playlist_action_destroy(void *user) {
     ExistingPlaylistAction *action;
 
@@ -1098,7 +1089,7 @@ existing_playlist_action_create(SelectedItemsAdderScreen *screen,
     ExistingPlaylistAction *action;
 
     action = malloc2(SIZEOF(*action));
-    existing_playlist_action_init(action);
+    *action = (ExistingPlaylistAction){0};
     action->screen = screen;
     if (!adder_action_set_playlist(&action->playlist,
                                    &action->playlist_len,
