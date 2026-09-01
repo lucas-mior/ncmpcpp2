@@ -1584,8 +1584,8 @@ lyrics_url_path_start(char *url, int32 url_len) {
     int32 scheme;
     int32 path_start;
 
-    scheme = lyrics_find_ignore_case(url, url_len, STRLIT("://"), 0);
-    if (scheme < 0) {
+    if ((scheme = lyrics_find_ignore_case(url, url_len,
+                                          STRLIT("://"), 0)) < 0) {
         return -1;
     }
 
