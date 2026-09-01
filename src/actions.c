@@ -492,17 +492,17 @@ action_runtime_call_hook(NcmActionRuntimeHook hook, enum NcmActionType type,
 
 static bool
 action_runtime_hook_allowed(int32 result, bool *handled) {
-    if (handled) {
-        *handled = result != NCM_ACTION_RUNTIME_DEFER;
-    }
+    ASSERT(handled != NULL);
+
+    *handled = result != NCM_ACTION_RUNTIME_DEFER;
     return result == NCM_ACTION_RUNTIME_ALLOW;
 }
 
 static bool
 action_runtime_hook_denied(int32 result, bool *handled) {
-    if (handled) {
-        *handled = result != NCM_ACTION_RUNTIME_DEFER;
-    }
+    ASSERT(handled != NULL);
+
+    *handled = result != NCM_ACTION_RUNTIME_DEFER;
     return result == NCM_ACTION_RUNTIME_DENY;
 }
 
@@ -704,9 +704,9 @@ action_runtime_playlist_find_song(NcmSong *song, NcmSong **match) {
     NcmSong *item;
     int32 count;
 
-    if (match) {
-        *match = NULL;
-    }
+    ASSERT(match != NULL);
+
+    *match = NULL;
     if (song == NULL) {
         return false;
     }
@@ -722,9 +722,7 @@ action_runtime_playlist_find_song(NcmSong *song, NcmSong **match) {
             || !ncm_song_equal(item, song)) {
             continue;
         }
-        if (match) {
-            *match = item;
-        }
+        *match = item;
         return true;
     }
 
@@ -1451,9 +1449,7 @@ action_runtime_prompt_result(StrBuilder *result, NcPrompt *prompt,
     int32 text_len;
     bool ok;
 
-    if (result == NULL) {
-        return false;
-    }
+    ASSERT(result != NULL);
 
     if (window == NULL) {
         return false;
@@ -1540,7 +1536,9 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
     int32 second_colon = -1;
     int32 number_len;
 
-    if ((text == NULL) || (text_len <= 0) || (position == NULL)) {
+    ASSERT(position != NULL);
+
+    if ((text == NULL) || (text_len <= 0)) {
         return false;
     }
 
@@ -2149,9 +2147,7 @@ action_runtime_song_tag_at(int32 pos, enum NcmSongGetter getter,
     NcMenu *menu;
     NcmSong *song;
 
-    if (tag == NULL) {
-        return false;
-    }
+    ASSERT(tag != NULL);
 
     switch (app_screens_current_type()) {
     case NCM_SCREEN_TYPE_BROWSER:
@@ -2319,9 +2315,7 @@ action_runtime_scroll_by_tag(enum NcmSongGetter getter, bool down) {
 
 static bool
 action_runtime_selected_songs(NcmSongArray *songs) {
-    if (songs == NULL) {
-        return false;
-    }
+    ASSERT(songs != NULL);
 
     switch (app_screens_current_type()) {
     case NCM_SCREEN_TYPE_BROWSER:
@@ -2394,9 +2388,7 @@ static bool
 action_runtime_current_song(NcmSong *song) {
     NcmSong *lyrics_song;
 
-    if (song == NULL) {
-        return false;
-    }
+    ASSERT(song != NULL);
 
     switch (app_screens_current_type()) {
     case NCM_SCREEN_TYPE_BROWSER:
@@ -2473,7 +2465,10 @@ action_runtime_song_positions(NcmSongArray *songs,
                               int32 **positions, int32 *count) {
     int32 *result;
 
-    if ((songs == NULL) || (positions == NULL) || (count == NULL)) {
+    ASSERT(positions != NULL);
+    ASSERT(count != NULL);
+
+    if (songs == NULL) {
         return false;
     }
     if (songs->len <= 0) {
@@ -2816,7 +2811,9 @@ action_runtime_browser_item_name(NcmMpdItem *item, StrBuilder *name) {
     NcmStringView view;
     int32 basename;
 
-    if ((item == NULL) || (name == NULL)) {
+    ASSERT(name != NULL);
+
+    if (item == NULL) {
         return false;
     }
     sb_clear(name);
@@ -2853,9 +2850,7 @@ static void
 action_runtime_print_renamed(char *prefix, int32 prefix_len, StrBuilder *name) {
     StrBuilder message = {0};
 
-    if (name == NULL) {
-        return;
-    }
+    ASSERT(name != NULL);
 
     SB_APPEND(&message, prefix, prefix_len);
     SB_APPEND(&message, name->data, name->len);
@@ -3609,7 +3604,10 @@ action_runtime_playlist_range(NcMenu *menu, int32 *first, int32 *last) {
     int32 range_last;
     NcmSong *song;
 
-    if ((menu == NULL) || (first == NULL) || (last == NULL)) {
+    ASSERT(first != NULL);
+    ASSERT(last != NULL);
+
+    if (menu == NULL) {
         return false;
     }
     source = action_runtime_menu_item_source(menu);
@@ -4970,9 +4968,9 @@ static bool
 action_runtime_media_library_current_tag(char **tag, int32 *tag_len) {
     MediaLibraryScreen *library = app_screen_media_library();
 
-    if ((tag == NULL) || (tag_len == NULL)) {
-        return false;
-    }
+    ASSERT(tag != NULL);
+    ASSERT(tag_len != NULL);
+
     if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
         return false;
     }
@@ -4989,9 +4987,9 @@ static bool
 action_runtime_media_library_current_album(char **album, int32 *album_len) {
     MediaLibraryScreen *library = app_screen_media_library();
 
-    if ((album == NULL) || (album_len == NULL)) {
-        return false;
-    }
+    ASSERT(album != NULL);
+    ASSERT(album_len != NULL);
+
     if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
         return false;
     }
@@ -5024,17 +5022,17 @@ action_runtime_can_edit_library_album(void) {
 
 static bool
 action_runtime_song_uri_view(NcmSong *song, NcmStringView *uri) {
-    if (uri) {
-        *uri = (NcmStringView){0};
-    }
+    ASSERT(uri != NULL);
+
+    *uri = (NcmStringView){0};
     return ncm_song_uri_view(song, 0, uri);
 }
 
 static bool
 action_runtime_song_name_or_uri_view(NcmSong *song, NcmStringView *view) {
-    if (view) {
-        *view = (NcmStringView){0};
-    }
+    ASSERT(view != NULL);
+
+    *view = (NcmStringView){0};
     if (ncm_song_name_view(song, 0, view)) {
         return true;
     }
@@ -5047,9 +5045,9 @@ action_runtime_shared_directory_update(StrBuilder *shared_directory,
                                        int32 directory_len) {
     StrBuilder shared;
 
-    if ((shared_directory == NULL) || (valid == NULL)) {
-        return false;
-    }
+    ASSERT(shared_directory != NULL);
+    ASSERT(valid != NULL);
+
     if (directory == NULL) {
         directory = "";
         directory_len = 0;
