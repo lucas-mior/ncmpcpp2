@@ -1342,15 +1342,16 @@ bool media_library_screen_next_column_available(MediaLibraryScreen *screen);
 void media_library_screen_previous_column(MediaLibraryScreen *screen);
 void media_library_screen_next_column(MediaLibraryScreen *screen);
 void media_library_screen_clear(MediaLibraryScreen *screen);
-bool media_library_screen_current_song(
-    MediaLibraryScreen *screen, NcmSong *song);
-bool media_library_screen_selected_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs);
-bool media_library_screen_selected_songs_checked(
-    MediaLibraryScreen *screen, NcmSongArray *songs, NcmError *ncm_error);
-bool media_library_screen_copy_visible_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *ncm_error);
+bool media_library_screen_current_song(MediaLibraryScreen *screen,
+                                       NcmSong *song);
+bool media_library_screen_selected_songs(MediaLibraryScreen *screen,
+                                         NcmSongArray *songs);
+bool media_library_screen_selected_songs_checked(MediaLibraryScreen *screen,
+                                                 NcmSongArray *songs,
+                                                 NcmError *ncm_error);
+bool media_library_screen_copy_visible_songs(MediaLibraryScreen *screen,
+                                             NcmSongArray *songs,
+                                             NcmError *ncm_error);
 bool media_library_screen_apply_filter(
     MediaLibraryScreen *screen, char *pattern, int32 pattern_len,
     NcmError *ncm_error);
