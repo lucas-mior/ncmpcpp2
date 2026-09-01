@@ -521,10 +521,10 @@ playlist_editor_screen_locate_playlist(
 }
 
 bool
-playlist_editor_screen_locate_song(
-    PlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmSong *song, NcmError *ncm_error
-) {
+playlist_editor_screen_locate_song(PlaylistEditorScreen *screen,
+                                   NcmMpdClient *client,
+                                   NcmSong *song,
+                                   NcmError *ncm_error) {
     NcMenu *playlists;
     NcMenu *content;
     NcmSong current_song;
