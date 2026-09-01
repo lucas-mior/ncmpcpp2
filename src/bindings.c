@@ -494,7 +494,7 @@ NcKey
 ncm_bindings_string_to_key(char *string, int32 string_len) {
     NcKey result = NC_KEY_NONE;
 
-    if ((string_len == 6) && STREQUAL(string, 4, STRLIT("ctrl"))
+    if ((string_len == 6) && STREQUAL(string, 4, "ctrl")
         && (string[4] == '-')) {
         char c;
 
@@ -512,55 +512,55 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
         } else if (c == '_') {
             result = NC_KEY_CTRL_UNDERSCORE;
         }
-    } else if ((string_len > 4) && STREQUAL(string, 3, STRLIT("alt"))
+    } else if ((string_len > 4) && STREQUAL(string, 3, "alt")
                && (string[3] == '-')) {
         result = ncm_bindings_string_to_key(string + 4, string_len - 4);
         if (result != NC_KEY_NONE) {
             result |= NC_KEY_ALT;
         }
-    } else if ((string_len > 5) && STREQUAL(string, 4, STRLIT("ctrl"))
+    } else if ((string_len > 5) && STREQUAL(string, 4, "ctrl")
                && (string[4] == '-')) {
         result = ncm_bindings_string_to_key(string + 5, string_len - 5);
         if (result != NC_KEY_NONE) {
             result |= NC_KEY_CTRL;
         }
-    } else if ((string_len > 6) && STREQUAL(string, 5, STRLIT("shift"))
+    } else if ((string_len > 6) && STREQUAL(string, 5, "shift")
                && (string[5] == '-')) {
         result = ncm_bindings_string_to_key(string + 6, string_len - 6);
         if (result != NC_KEY_NONE) {
             result |= NC_KEY_SHIFT;
         }
-    } else if (STREQUAL(string, string_len, STRLIT("escape"))) {
+    } else if (STREQUAL(string, string_len, "escape")) {
         result = NC_KEY_ESCAPE;
-    } else if (STREQUAL(string, string_len, STRLIT("mouse"))) {
+    } else if (STREQUAL(string, string_len, "mouse")) {
         result = NC_KEY_MOUSE;
-    } else if (STREQUAL(string, string_len, STRLIT("up"))) {
+    } else if (STREQUAL(string, string_len, "up")) {
         result = NC_KEY_UP;
-    } else if (STREQUAL(string, string_len, STRLIT("down"))) {
+    } else if (STREQUAL(string, string_len, "down")) {
         result = NC_KEY_DOWN;
-    } else if (STREQUAL(string, string_len, STRLIT("page_up"))) {
+    } else if (STREQUAL(string, string_len, "page_up")) {
         result = NC_KEY_PAGE_UP;
-    } else if (STREQUAL(string, string_len, STRLIT("page_down"))) {
+    } else if (STREQUAL(string, string_len, "page_down")) {
         result = NC_KEY_PAGE_DOWN;
-    } else if (STREQUAL(string, string_len, STRLIT("home"))) {
+    } else if (STREQUAL(string, string_len, "home")) {
         result = NC_KEY_HOME;
-    } else if (STREQUAL(string, string_len, STRLIT("end"))) {
+    } else if (STREQUAL(string, string_len, "end")) {
         result = NC_KEY_END;
-    } else if (STREQUAL(string, string_len, STRLIT("space"))) {
+    } else if (STREQUAL(string, string_len, "space")) {
         result = NC_KEY_SPACE;
-    } else if (STREQUAL(string, string_len, STRLIT("enter"))) {
+    } else if (STREQUAL(string, string_len, "enter")) {
         result = NC_KEY_ENTER;
-    } else if (STREQUAL(string, string_len, STRLIT("insert"))) {
+    } else if (STREQUAL(string, string_len, "insert")) {
         result = NC_KEY_INSERT;
-    } else if (STREQUAL(string, string_len, STRLIT("delete"))) {
+    } else if (STREQUAL(string, string_len, "delete")) {
         result = NC_KEY_DELETE;
-    } else if (STREQUAL(string, string_len, STRLIT("left"))) {
+    } else if (STREQUAL(string, string_len, "left")) {
         result = NC_KEY_LEFT;
-    } else if (STREQUAL(string, string_len, STRLIT("right"))) {
+    } else if (STREQUAL(string, string_len, "right")) {
         result = NC_KEY_RIGHT;
-    } else if (STREQUAL(string, string_len, STRLIT("tab"))) {
+    } else if (STREQUAL(string, string_len, "tab")) {
         result = NC_KEY_TAB;
-    } else if (STREQUAL(string, string_len, STRLIT("backspace"))) {
+    } else if (STREQUAL(string, string_len, "backspace")) {
         result = NC_KEY_BACKSPACE;
     } else if ((string_len >= 2) && (string_len <= 3) && (string[0] == 'f')) {
         int32 n;
