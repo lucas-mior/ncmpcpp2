@@ -1352,11 +1352,10 @@ bool media_library_screen_selected_songs_checked(MediaLibraryScreen *screen,
 bool media_library_screen_copy_visible_songs(MediaLibraryScreen *screen,
                                              NcmSongArray *songs,
                                              NcmError *ncm_error);
-bool media_library_screen_apply_filter(
-    MediaLibraryScreen *screen, char *pattern, int32 pattern_len,
-    NcmError *ncm_error);
-void media_library_screen_clear_filter(
-    MediaLibraryScreen *screen);
+bool media_library_screen_apply_filter(MediaLibraryScreen *screen,
+                                       char *pattern, int32 pattern_len,
+                                       NcmError *ncm_error);
+void media_library_screen_clear_filter(MediaLibraryScreen *screen);
 bool media_library_screen_search(
     MediaLibraryScreen *screen, char *pattern, int32 pattern_len,
     bool forward, bool wrap, bool skip_current, NcmError *ncm_error);
