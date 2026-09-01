@@ -1455,11 +1455,9 @@ lyrics_find_tag_end(char *data, int32 data_len, int32 start) {
 static int32
 lyrics_find_matching_div(char *data, int32 data_len, int32 content_start,
                          int32 *close_end) {
-    int32 depth;
-    int32 pos;
+    int32 depth = 1;
+    int32 pos = content_start;
 
-    depth = 1;
-    pos = content_start;
     while (pos < data_len) {
         int32 open;
         int32 close;
