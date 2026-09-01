@@ -1466,20 +1466,16 @@ lyrics_find_matching_div(char *data, int32 data_len, int32 content_start,
             return -1;
         }
         if ((open >= 0) && (open < close)) {
-            int32 tag_end;
-
-            tag_end = lyrics_find_tag_end(data, data_len,
-                                          open + STRLIT_LEN("<div"));
+            int32 tag_end = lyrics_find_tag_end(data, data_len,
+                                                open + STRLIT_LEN("<div"));
             if (tag_end < 0) {
                 return -1;
             }
             depth += 1;
             pos = tag_end + 1;
         } else {
-            int32 tag_end;
-
-            tag_end = lyrics_find_tag_end(data, data_len,
-                                          close + STRLIT_LEN("</div"));
+            int32 tag_end = lyrics_find_tag_end(data, data_len,
+                                                close + STRLIT_LEN("</div"));
             if (tag_end < 0) {
                 return -1;
             }
