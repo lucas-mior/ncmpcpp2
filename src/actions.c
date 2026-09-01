@@ -643,8 +643,7 @@ action_runtime_switch_to_next_screen(bool reverse) {
             app_screen_selected_items_adder());
     }
     if (Config.screen_switcher_previous) {
-        current = app_controller_previous_screen();
-        if (current == NULL) {
+        if ((current = app_controller_previous_screen()) == NULL) {
             return false;
         }
         return nc_screen_switcher_switch_to(
@@ -712,15 +711,15 @@ action_runtime_playlist_find_song(NcmSong *song, NcmSong **match) {
         return false;
     }
 
-    song_menu = playlist_screen_song_menu(screen);
-    if (song_menu == NULL) {
+    if ((song_menu = playlist_screen_song_menu(screen)) == NULL) {
         return false;
     }
     menu = nc_song_menu_base(song_menu);
     count = nc_menu_all_item_count(menu);
     for (int32 i = 0; i < count; i += 1) {
-        item = nc_song_menu_item_at(song_menu, NC_MENU_ITEMS_ALL, i);
-        if ((item == NULL) || !ncm_song_equal(item, song)) {
+        if (((item = nc_song_menu_item_at(song_menu, NC_MENU_ITEMS_ALL,
+                                          i)) == NULL)
+            || !ncm_song_equal(item, song)) {
             continue;
         }
         if (match) {
@@ -747,8 +746,7 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *ncm_error) {
         return false;
     }
 
-    song_menu = playlist_screen_song_menu(screen);
-    if (song_menu == NULL) {
+    if ((song_menu = playlist_screen_song_menu(screen)) == NULL) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("missing playlist screen"));
         return false;
     }
@@ -757,8 +755,9 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *ncm_error) {
 
     ok = ncm_mpd_client_start_command_list(&global_mpd, ncm_error);
     for (int32 i = count; ok && (i > 0); i -= 1) {
-        item = nc_song_menu_item_at(song_menu, NC_MENU_ITEMS_ALL, i - 1);
-        if ((item == NULL) || !ncm_song_equal(item, song)) {
+        if (((item = nc_song_menu_item_at(song_menu, NC_MENU_ITEMS_ALL,
+                                          i - 1)) == NULL)
+            || !ncm_song_equal(item, song)) {
             continue;
         }
         position = ncm_song_position(item);
@@ -2414,8 +2413,7 @@ action_runtime_current_song(NcmSong *song) {
         return media_library_screen_current_song(
             app_screen_media_library(), song);
     case NCM_SCREEN_TYPE_LYRICS:
-        lyrics_song = lyrics_screen_song(app_screen_lyrics());
-        if (lyrics_song == NULL) {
+        if ((lyrics_song = lyrics_screen_song(app_screen_lyrics())) == NULL) {
             return false;
         }
         return ncm_song_copy(song, lyrics_song);
@@ -3422,8 +3420,8 @@ action_runtime_move_main_playlist_items_to(void) {
         || !nc_menu_has_selected(menu)) {
         return false;
     }
-    song = nc_menu_active_item_at(menu, nc_menu_highlight(menu));
-    if (song == NULL) {
+    if ((song = nc_menu_active_item_at(menu,
+                                        nc_menu_highlight(menu))) == NULL) {
         return false;
     }
     target = ncm_song_position(song);
@@ -3506,8 +3504,9 @@ action_runtime_move_playlist_editor_items_to(void) {
         return false;
     }
 
-    menu = nc_song_menu_base(playlist_editor_screen_content(screen));
-    if ((menu == NULL) || !nc_menu_has_selected(menu)) {
+    if (((menu = nc_song_menu_base(
+             playlist_editor_screen_content(screen))) == NULL)
+        || !nc_menu_has_selected(menu)) {
         return false;
     }
     if (nc_menu_is_filtered(menu)) {
@@ -3517,8 +3516,8 @@ action_runtime_move_playlist_editor_items_to(void) {
         return true;
     }
 
-    song = nc_menu_active_item_at(menu, nc_menu_highlight(menu));
-    if (song == NULL) {
+    if ((song = nc_menu_active_item_at(menu,
+                                        nc_menu_highlight(menu))) == NULL) {
         return false;
     }
     target = ncm_song_position(song);
@@ -3666,8 +3665,7 @@ action_runtime_reverse_playlist(void) {
     ncm_error_clear(&ncm_error);
     success = ncm_mpd_client_start_command_list(&global_mpd, &ncm_error);
     while (success && (first < last)) {
-        left = nc_menu_active_item_at(menu, first);
-        if ((left == NULL)
+        if (((left = nc_menu_active_item_at(menu, first)) == NULL)
             || ((right = nc_menu_active_item_at(menu, last)) == NULL)) {
             success = false;
             break;
@@ -5548,8 +5546,8 @@ action_runtime_show_lyrics(void) {
 
     song = (NcmSong){0};
     if ((success = action_runtime_current_song(&song))) {
-        lyrics_song = lyrics_screen_song(app_screen_lyrics());
-        if ((lyrics_song == NULL) || !ncm_song_equal(lyrics_song, &song)) {
+        if (((lyrics_song = lyrics_screen_song(app_screen_lyrics())) == NULL)
+            || !ncm_song_equal(lyrics_song, &song)) {
             ncm_error_clear(&ncm_error);
             success = lyrics_screen_fetch(app_screen_lyrics(), &song, NULL,
                                           &ncm_error);
