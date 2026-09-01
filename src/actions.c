@@ -1624,13 +1624,12 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
 
 static bool
 action_runtime_execute_command(void) {
-    ActionRuntimeCommandPrompt state;
+    ActionRuntimeCommandPrompt state = {0};
     StrBuilder command_name = {0};
     NcmCommand *command;
     bool prompted;
     bool result;
 
-    state.previous = (StrBuilder){0};
     prompted = action_runtime_prompt_string(STRLIT(":"), "", true,
                                             action_runtime_command_prompt_hook,
                                             &state, &command_name);

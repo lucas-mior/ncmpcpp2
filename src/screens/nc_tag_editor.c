@@ -1125,7 +1125,6 @@ tag_editor_screen_save_modified(TagEditorScreen *screen,
     context.screen = screen;
     context.music_dir = music_dir;
     context.ok = true;
-    context.shared_directory = (StrBuilder){0};
 
     iterated = tag_editor_for_each_target(
         screen, tag_editor_save_song_callback, &context);
