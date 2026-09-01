@@ -1633,11 +1633,11 @@ bool playlist_screen_locate_position(PlaylistScreen *screen,
                                      int32 position);
 bool playlist_screen_selected_songs(PlaylistScreen *screen,
                                     NcmSongArray *songs);
-bool playlist_screen_has_sortable_range(
-    PlaylistScreen *screen);
-bool playlist_screen_copy_sort_range(
-    PlaylistScreen *screen, NcmSongArray *songs,
-    int32 *start_position, NcmError *ncm_error);
+bool playlist_screen_has_sortable_range(PlaylistScreen *screen);
+bool playlist_screen_copy_sort_range(PlaylistScreen *screen,
+                                     NcmSongArray *songs,
+                                     int32 *start_position,
+                                     NcmError *ncm_error);
 bool playlist_screen_apply_filter(PlaylistScreen *screen,
                                   char *pattern, int32 pattern_len,
                                   NcmError *ncm_error);
