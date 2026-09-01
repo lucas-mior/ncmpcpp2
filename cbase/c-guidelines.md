@@ -920,6 +920,7 @@ appropriate cbase/ C file.
   * Also, try to put a new line after an `if` block, unless the following code
     is directly related to the computations of the `if` block.
   * Try to group related statements together.
+  * Add empty lines before and after a group of 2 or more assertions.
   * Another good practice is group assignments to the same struct together:
   ```c
   char *some_string = "abc";
