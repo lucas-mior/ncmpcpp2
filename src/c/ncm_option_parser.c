@@ -24,9 +24,8 @@ ncm_option_trim_start(char *string, int32 string_len) {
 
     result = 0;
     while (result < string_len) {
-        char c;
+        char c = string[result];
 
-        c = string[result];
         if ((c != ' ') && (c != '\t')) {
             break;
         }
