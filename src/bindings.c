@@ -398,8 +398,8 @@ ncm_binding_runtime_init(NcmBindingRuntime *runtime,
     runtime->current_screen_is = ncm_binding_runtime_current_screen_is;
     runtime->push_key = ncm_binding_runtime_push_key;
     runtime->run_external_command = ncm_binding_runtime_run_external_command;
-    runtime->run_external_console_command
-        = ncm_binding_runtime_run_external_console_command;
+    runtime->run_external_console_command =
+        ncm_binding_runtime_run_external_console_command;
     runtime->user = action_runtime;
     return;
 }
@@ -915,15 +915,15 @@ ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
         } else {
             new_cap = bindings->commands_cap*2;
         }
-        bindings->commands
-            = realloc2(bindings->commands, bindings->commands_cap, new_cap,
-                       SIZEOF(*bindings->commands));
+        bindings->commands = realloc2(bindings->commands,
+                                      bindings->commands_cap, new_cap,
+                                      SIZEOF(*bindings->commands));
         bindings->commands_cap = new_cap;
     }
 
     copy = (NcmCommand){0};
-    copy.name
-        = ncm_string_copy(command->name, command->name_len, &copy.name_cap);
+    copy.name = ncm_string_copy(command->name, command->name_len,
+                                &copy.name_cap);
     copy.name_len = command->name_len;
     copy.immediate = command->immediate;
     if (!ncm_binding_copy(&copy.binding, &command->binding)) {
@@ -1288,8 +1288,8 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                 break;
             }
             free2(key_name, key_name_cap);
-            key_name
-                = ncm_string_copy(enclosed.data, enclosed.len, &key_name_cap);
+            key_name = ncm_string_copy(enclosed.data, enclosed.len,
+                                       &key_name_cap);
             key_name_len = enclosed.len;
             in_progress = IN_PROGRESS_KEY;
         } else if (isspace((uint8)line[0])) {
