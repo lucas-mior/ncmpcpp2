@@ -1841,8 +1841,7 @@ lyrics_url_segment_slug_score(NcmLyricsFetcherDef *fetcher, char *segment,
     }
 
     lyrics_percent_decode(&decoded, segment, segment_len);
-    if (!lyrics_append_slug(&slug, fetcher->type, decoded.data,
-                            decoded.len)) {
+    if (!lyrics_append_slug(&slug, fetcher->type, decoded.data, decoded.len)) {
         score = 0;
     } else {
         score = lyrics_slug_match_score(wanted->data, wanted->len,
@@ -1854,8 +1853,8 @@ lyrics_url_segment_slug_score(NcmLyricsFetcherDef *fetcher, char *segment,
 }
 
 static int32
-lyrics_url_best_slug_score(NcmLyricsFetcherDef *fetcher, char *url,
-                           int32 url_len, StrBuilder *wanted) {
+lyrics_url_best_slug_score(NcmLyricsFetcherDef *fetcher,
+                           char *url, int32 url_len, StrBuilder *wanted) {
     int32 path_start;
     int32 path_end;
     int32 segment_start;
