@@ -1,6 +1,8 @@
 WARNING: READ cbase/c-format.md, cbase/c-guidelines.md and
-ncmpcpp2-c-guidelines.md VERY CAREFULLY BEFORE DOING ANYTHING.
-YOU HAVE A HISTORY OF DOING CHANGES NOT ENDORSED BY MY GUIDELINES.
+ncmpcpp2-c-guidelines.md VERY CAREFULLY BEFORE DOING ANYTHING.  ALSO READ
+cbase/c-format.md, cbase/c-guidelines.md before sending me any tar ball and make
+sure it complies.  YOU HAVE A HISTORY OF DOING CHANGES NOT ENDORSED BY MY
+GUIDELINES.
 
 Your job is: consider the first $file.c (and correspondent header $file.h if
 present) in the list below. Check which of the rules/guidelines in
