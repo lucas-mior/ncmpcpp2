@@ -90,6 +90,7 @@ static bool
 ncm_song_tag_copy(NcmSongTag *dest, NcmSongTag *source) {
     ASSERT(dest != NULL);
     ASSERT(source != NULL);
+
     if (source->value == NULL) {
         ncm_song_tag_destroy(dest);
         return true;
@@ -333,6 +334,7 @@ ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
     memcpy64(tag->value, value, value_len);
     tag->value[value_len] = '\0';
     song->tags_len += 1;
+
     return true;
 }
 
