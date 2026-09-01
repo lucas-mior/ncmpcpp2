@@ -1666,8 +1666,7 @@ lyrics_url_query_has_key(char *url, int32 url_len, char *key,
                          int32 key_len) {
     int32 query;
 
-    query = lyrics_find_char(url, url_len, '?', 0);
-    if (query < 0) {
+    if ((query = lyrics_find_char(url, url_len, '?', 0)) < 0) {
         return false;
     }
 
