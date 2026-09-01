@@ -2014,11 +2014,9 @@ lyrics_unwrap_search_url(StrBuilder *out, char *url, int32 url_len) {
             end = url_len;
         }
         if ((equal > query) && (equal < end)
-            && (STREQUAL(url + query, equal - query, STRLIT("q"))
-                || STREQUAL(url + query, equal - query,
-                            STRLIT("url"))
-                || STREQUAL(url + query, equal - query,
-                            STRLIT("uddg")))) {
+            && (STREQUAL(url + query, equal - query, "q")
+                || STREQUAL(url + query, equal - query, "url")
+                || STREQUAL(url + query, equal - query, "uddg"))) {
             lyrics_percent_decode(out, url + equal + 1, end - equal - 1);
             if ((out->data != NULL) && (out->len > 0)
                 && (lyrics_starts_with_ignore_case(out->data, out->len,
