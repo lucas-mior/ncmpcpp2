@@ -56,9 +56,9 @@ app_state_lock_current_screen(void) {
 
 void
 app_state_unlock_screen(void) {
-    last_switch_changed_screen
-        = screen_registry.inactive_screen
-          && (screen_registry.inactive_screen != screen_registry.locked_screen);
+    last_switch_changed_screen = screen_registry.inactive_screen
+                                 && (screen_registry.inactive_screen
+                                     != screen_registry.locked_screen);
     nc_screen_registry_unlock(&screen_registry);
     return;
 }
