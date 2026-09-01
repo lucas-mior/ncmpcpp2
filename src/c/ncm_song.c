@@ -90,6 +90,7 @@ static bool
 ncm_song_tag_copy(NcmSongTag *dest, NcmSongTag *source) {
     ASSERT(dest != NULL);
     ASSERT(source != NULL);
+
     if (source->value == NULL) {
         ncm_song_tag_destroy(dest);
         return true;
