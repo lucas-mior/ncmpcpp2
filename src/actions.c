@@ -971,14 +971,16 @@ ncm_action_table_get(NcmActionDef *defs, int32 defs_len,
 }
 
 NcmActionDef *
-ncm_action_table_find(NcmActionDef *defs, int32 defs_len, char *name,
-                      int32 name_len) {
+ncm_action_table_find(NcmActionDef *defs, int32 defs_len,
+                      char *name, int32 name_len) {
     if ((defs == NULL) || (name == NULL) || (name_len <= 0)) {
         return NULL;
     }
 
     for (int32 i = 0; i < defs_len; i += 1) {
-        if (defs[i].name && STREQUAL(name, name_len, defs[i].name)) {
+        char *def_name = defs[i].name;
+        int32 def_name_len = strlen32(def_name);
+        if (def_name && STREQUAL(name, name_len, def_name, def_name_len)) {
             return defs + i;
         }
     }
@@ -992,8 +994,8 @@ ncm_action_get(enum NcmActionType type) {
 
 NcmActionDef *
 ncm_action_find(char *name, int32 name_len) {
-    return ncm_action_table_find(action_defs, LENGTH(action_defs), name,
-                                 name_len);
+    return ncm_action_table_find(action_defs, LENGTH(action_defs),
+                                 name, name_len);
 }
 
 bool

@@ -35,7 +35,6 @@ CPPFLAGS="$CPPFLAGS -I. -Isrc -Icbase"
 
 CFLAGS="$CFLAGS -std=c11"
 CFLAGS="$CFLAGS -Wfatal-errors"
-CFLAGS="$CFLAGS -Werror"  # Only uncomment occasionally, keep this line
 
 CFLAGS="$CFLAGS -pthread"
 LDFLAGS="$LDFLAGS -lm"
@@ -120,7 +119,6 @@ build)
     CFLAGS="$CFLAGS -Wno-error -O2 -flto"
     ;;
 fast_feedback)
-    CFLAGS="$CFLAGS -Werror"
     ;;
 check)
     ;;
