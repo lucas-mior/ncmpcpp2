@@ -1084,8 +1084,6 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
                                  NcKey key, char *key_name, int32 key_name_len,
                                  char *command_name, int32 command_name_len,
                                  bool command_immediate, NcmError *ncm_error) {
-    bool result;
-
     if (in_progress == 0) {
         return true;
     }
@@ -1103,6 +1101,7 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
     }
 
     if (in_progress == 1) {
+        bool result;
         NcmCommand command = (NcmCommand){0};
 
         command.name = command_name;
