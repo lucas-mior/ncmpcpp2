@@ -123,7 +123,7 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
     ncm_regex_destroy(regex);
 
     if (pattern_len == 0) {
-        SB_APPEND(&compiled_pattern, STRLIT("^"));
+        SB_APPEND(&compiled_pattern, "^");
     } else if (flags & NCM_REGEX_LITERAL) {
         ncm_regex_escape_literal(&escaped, pattern, pattern_len);
         SB_APPEND(&compiled_pattern, escaped.data, escaped.len);

@@ -164,7 +164,7 @@ search_engine_screen_init(SearchEngineScreen *screen,
     screen->title = (StrBuilder){0};
     screen->column_title = (StrBuilder){0};
 
-    SB_APPEND(&screen->title, STRLIT("Search engine"));
+    SB_APPEND(&screen->title, "Search engine");
     screen->filter_regex = (NcmRegex){0};
 
     screen->hooks = (SearchEngineHooks){0};

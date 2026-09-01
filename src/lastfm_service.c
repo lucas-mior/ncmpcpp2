@@ -351,9 +351,9 @@ lastfm_append_similars(StrBuilder *out, char *data, int32 data_len,
                 SB_APPEND(out, heading, heading_len);
                 wrote_heading = true;
             }
-            SB_APPEND(out, STRLIT("\n*"));
+            SB_APPEND(out, "\n*");
             SB_APPEND(out, clean_name.data, clean_name.len);
-            SB_APPEND(out, STRLIT(" ("));
+            SB_APPEND(out, " (");
             SB_APPEND(out, clean_url.data, clean_url.len);
             sb_append_byte(out, ')');
         }
@@ -380,10 +380,10 @@ lastfm_fetch_artist_info(NcmLastfmService *service, NcmLastfmResult *result) {
     ok = true;
 
     SB_APPEND(&url, STRLIT(LASTFM_API_URL));
-    SB_APPEND(&url, STRLIT("artist.getinfo&artist="));
+    SB_APPEND(&url, "artist.getinfo&artist=");
     lastfm_append_escaped(&url, service->artist, service->artist_len);
     if (service->lang_len > 0) {
-        SB_APPEND(&url, STRLIT("&lang="));
+        SB_APPEND(&url, "&lang=");
         lastfm_append_escaped(&url, service->lang, service->lang_len);
     }
 
@@ -427,7 +427,7 @@ lastfm_fetch_artist_info(NcmLastfmService *service, NcmLastfmResult *result) {
         lastfm_strip_unescape_trim(&clean_url, original_link.data,
                                    original_link.len);
         if (clean_url.len > 0) {
-            SB_APPEND(&output, STRLIT("\n\n"));
+            SB_APPEND(&output, "\n\n");
             SB_APPEND(&output, clean_url.data, clean_url.len);
         }
         sb_free(&clean_url);

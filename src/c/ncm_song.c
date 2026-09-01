@@ -714,7 +714,7 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
                                      LENGTH(number_buffer));
             SB_APPEND(&buffer, number_buffer, len);
         } else {
-            SB_APPEND(&buffer, STRLIT("-:--"));
+            SB_APPEND(&buffer, "-:--");
         }
         return buffer;
     case NCM_SONG_GETTER_DIRECTORY:
