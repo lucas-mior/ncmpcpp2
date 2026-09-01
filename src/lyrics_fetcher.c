@@ -2386,15 +2386,15 @@ lyrics_extract_musixmatch(StrBuilder *out, char *data, int32 data_len) {
     int32 value_start;
     int32 value_end;
 
-    track_info = lyrics_find(data, data_len, STRLIT("\"trackInfo\""), 0);
-    if (track_info < 0) {
+    if ((track_info = lyrics_find(data, data_len,
+                                  STRLIT("\"trackInfo\""), 0)) < 0) {
         track_info = 0;
     }
-    lyrics = lyrics_find(data, data_len, STRLIT("\"lyrics\""),
-                         track_info);
-    if (lyrics < 0) {
+    if ((lyrics = lyrics_find(data, data_len,
+                              STRLIT("\"lyrics\""), track_info)) < 0) {
         return false;
     }
+
     if (!lyrics_json_value_start(data, data_len, STRLIT("body"), lyrics,
                                  &value_start)) {
         return false;
