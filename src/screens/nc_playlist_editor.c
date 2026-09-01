@@ -39,9 +39,9 @@ static bool playlist_editor_format_content_search_text(
     PlaylistEditorScreen *screen, NcmSong *song, NcBuffer *buffer);
 static bool playlist_editor_search_text_matches(NcmRegex *regex,
                                                 char *data, int32 len);
-static void playlist_editor_initialize_buffers(PlaylistEditorScreen *screen);
+static void playlist_editor_init_buffers(PlaylistEditorScreen *screen);
 static void playlist_editor_destroy_buffers(PlaylistEditorScreen *screen);
-static void playlist_editor_initialize_regexes(PlaylistEditorScreen *screen);
+static void playlist_editor_init_regexes(PlaylistEditorScreen *screen);
 static void playlist_editor_apply_geometry(PlaylistEditorScreen *screen);
 static int32 playlist_editor_separator_width(int32 width);
 static void playlist_editor_configure_menus(PlaylistEditorScreen *screen);
@@ -161,8 +161,8 @@ playlist_editor_screen_init(PlaylistEditorScreen *screen,
     nc_playlist_entry_menu_init(&screen->playlists);
     nc_song_menu_init(&screen->content);
 
-    playlist_editor_initialize_buffers(screen);
-    playlist_editor_initialize_regexes(screen);
+    playlist_editor_init_buffers(screen);
+    playlist_editor_init_regexes(screen);
     playlist_editor_reset_content_timer(screen);
 
     screen->active_column = PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
@@ -1183,7 +1183,7 @@ playlist_editor_search_text_matches(NcmRegex *regex, char *data,
 }
 
 static void
-playlist_editor_initialize_buffers(PlaylistEditorScreen *screen) {
+playlist_editor_init_buffers(PlaylistEditorScreen *screen) {
     screen->playlist_filter_constraint = (StrBuilder){0};
     screen->content_filter_constraint = (StrBuilder){0};
     screen->playlist_search_constraint = (StrBuilder){0};
@@ -1209,7 +1209,7 @@ playlist_editor_destroy_buffers(PlaylistEditorScreen *screen) {
 }
 
 static void
-playlist_editor_initialize_regexes(PlaylistEditorScreen *screen) {
+playlist_editor_init_regexes(PlaylistEditorScreen *screen) {
     screen->playlist_filter_regex = (NcmRegex){0};
     screen->content_filter_regex = (NcmRegex){0};
     screen->playlist_search_regex = (NcmRegex){0};

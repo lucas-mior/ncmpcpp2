@@ -84,7 +84,7 @@ static void tag_editor_layout(TagEditorScreen *screen);
 static int32 tag_editor_min_int64(int32 left, int32 right);
 static int32 tag_editor_separator_width(TagEditorScreen *screen);
 static void tag_editor_configure_menus(TagEditorScreen *screen);
-static bool tag_editor_initialize_tag_types(TagEditorScreen *screen);
+static bool tag_editor_init_tag_types(TagEditorScreen *screen);
 static bool tag_editor_append_string_row(NcEditorStringMenu *menu,
                                          char *data, int32 data_len,
                                          uint32 flags);
@@ -116,9 +116,9 @@ static void tag_editor_append_formatted_color_end(NcBuffer *buffer,
 static void tag_editor_append_locale(NcBuffer *buffer, char *data,
                                      int32 data_len);
 static void tag_editor_print_buffer(NcWindow *window, NcBuffer *buffer);
-static void tag_editor_initialize_buffers(TagEditorScreen *screen);
+static void tag_editor_init_buffers(TagEditorScreen *screen);
 static void tag_editor_destroy_buffers(TagEditorScreen *screen);
-static void tag_editor_initialize_regexes(TagEditorScreen *screen);
+static void tag_editor_init_regexes(TagEditorScreen *screen);
 static void tag_editor_destroy_regexes(TagEditorScreen *screen);
 static bool tag_editor_set_buffer(StrBuilder *buffer, char *data,
                                   int32 data_len);
@@ -331,8 +331,8 @@ tag_editor_screen_init(TagEditorScreen *screen,
     nc_editor_string_menu_init(&screen->parser_rows);
     nc_editor_string_menu_init(&screen->parser_actions);
     screen->hooks = (TagEditorHooks){0};
-    tag_editor_initialize_buffers(screen);
-    tag_editor_initialize_regexes(screen);
+    tag_editor_init_buffers(screen);
+    tag_editor_init_regexes(screen);
     tag_editor_update_titles(screen, false);
     nc_window_init(&screen->directories_window, start_x, main_start_y,
                    width, main_height, screen->directories_title.data,
@@ -381,7 +381,7 @@ tag_editor_screen_init(TagEditorScreen *screen,
 
     (void)tag_editor_screen_set_current_dir(screen,
                                             STRLIT("/"));
-    (void)tag_editor_initialize_tag_types(screen);
+    (void)tag_editor_init_tag_types(screen);
     tag_editor_layout(screen);
     tag_editor_configure_menus(screen);
     tag_editor_observe_current_directory(screen);
@@ -2536,7 +2536,7 @@ tag_editor_destroy_callback(NcScreen *screen) {
 }
 
 static void
-tag_editor_initialize_buffers(TagEditorScreen *screen) {
+tag_editor_init_buffers(TagEditorScreen *screen) {
     screen->current_dir = (StrBuilder){0};
     screen->displayed_dir = (StrBuilder){0};
     screen->observed_dir = (StrBuilder){0};
@@ -2584,7 +2584,7 @@ tag_editor_destroy_buffers(TagEditorScreen *screen) {
 }
 
 static void
-tag_editor_initialize_regexes(TagEditorScreen *screen) {
+tag_editor_init_regexes(TagEditorScreen *screen) {
     screen->directory_filter_regex = (NcmRegex){0};
     screen->tag_filter_regex = (NcmRegex){0};
     screen->directory_search_regex = (NcmRegex){0};
@@ -3466,7 +3466,7 @@ tag_editor_separator_width(TagEditorScreen *screen) {
 }
 
 static bool
-tag_editor_initialize_tag_types(TagEditorScreen *screen) {
+tag_editor_init_tag_types(TagEditorScreen *screen) {
     NcEditorStringMenu *menu;
 
     if (screen == NULL) {
