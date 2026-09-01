@@ -2297,8 +2297,10 @@ lyrics_json_value_start(char *data, int32 data_len, char *key,
     int32 key_pos;
     int32 pos;
 
-    if ((data == NULL) || (data_len <= 0) || (key == NULL) || (key_len <= 0)
-        || (start < 0) || (value_start == NULL)) {
+    if ((data == NULL) || (key == NULL) || (value_start == NULL)) {
+        return false;
+    }
+    if ((data_len <= 0) || (key_len <= 0) || (start < 0)) {
         return false;
     }
 
