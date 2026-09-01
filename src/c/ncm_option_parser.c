@@ -20,9 +20,8 @@ ncm_option_is_word_char(char c) {
 
 static int32
 ncm_option_trim_start(char *string, int32 string_len) {
-    int32 result;
+    int32 result = 0;
 
-    result = 0;
     while (result < string_len) {
         char c = string[result];
 
