@@ -58,9 +58,8 @@ ncm_trim_start(char *string, int32 string_len) {
     int32 result = 0;
 
     while (result < string_len) {
-        uint8 c;
+        uint8 c = (uint8)string[result];
 
-        c = (uint8)string[result];
         if (!isspace(c)) {
             break;
         }
@@ -73,9 +72,8 @@ ncm_trim_start(char *string, int32 string_len) {
 static int32
 ncm_trim_end(char *string, int32 string_len) {
     while (string_len > 0) {
-        uint8 c;
+        uint8 c = (uint8)string[string_len - 1];
 
-        c = (uint8)string[string_len - 1];
         if (!isspace(c)) {
             break;
         }
