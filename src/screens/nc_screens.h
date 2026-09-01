@@ -1390,8 +1390,8 @@ bool media_library_screen_locate_song(MediaLibraryScreen *screen,
 #define ENUM_NAME PlaylistEditorColumn
 #define ENUM_PREFIX_ PLAYLIST_EDITOR_COLUMN_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(PLAYLIST_EDITOR_COLUMN_PLAYLISTS) \
+#define ENUM_FIELDS                               \
+    XX(PLAYLIST_EDITOR_COLUMN_PLAYLISTS)          \
     XX(PLAYLIST_EDITOR_COLUMN_CONTENT)
 #include "cbase/xenums.c"
 
@@ -1400,11 +1400,11 @@ bool media_library_screen_locate_song(MediaLibraryScreen *screen,
 #define ENUM_NAME PlaylistEditorCommandType
 #define ENUM_PREFIX_ PLAYLIST_EDITOR_COMMAND_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(PLAYLIST_EDITOR_COMMAND_NONE) \
-    XX(PLAYLIST_EDITOR_COMMAND_LOAD) \
-    XX(PLAYLIST_EDITOR_COMMAND_SAVE) \
-    XX(PLAYLIST_EDITOR_COMMAND_RENAME) \
+#define ENUM_FIELDS                               \
+    XX(PLAYLIST_EDITOR_COMMAND_NONE)              \
+    XX(PLAYLIST_EDITOR_COMMAND_LOAD)              \
+    XX(PLAYLIST_EDITOR_COMMAND_SAVE)              \
+    XX(PLAYLIST_EDITOR_COMMAND_RENAME)            \
     XX(PLAYLIST_EDITOR_COMMAND_DELETE)
 #include "cbase/xenums.c"
 
