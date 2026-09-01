@@ -1614,9 +1614,7 @@ lyrics_url_path_end(char *url, int32 url_len, int32 path_start) {
 static bool
 lyrics_url_path_starts_with(char *url, int32 url_len, int32 path_start,
                             char *prefix, int32 prefix_len) {
-    int32 path_end;
-
-    path_end = lyrics_url_path_end(url, url_len, path_start);
+    int32 path_end = lyrics_url_path_end(url, url_len, path_start);
     return lyrics_starts_with_ignore_case(url + path_start,
                                           path_end - path_start, prefix,
                                           prefix_len);
