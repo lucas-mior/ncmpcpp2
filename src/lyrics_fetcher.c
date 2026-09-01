@@ -721,61 +721,61 @@ lyrics_fetcher_array_destroy_item(void *item) {
 static bool
 lyrics_name_to_type(char *name, int32 name_len,
                     enum NcmLyricsFetcherType *type) {
-    if (STREQUAL(name, name_len, STRLIT("amalgama"))
-        || STREQUAL(name, name_len, STRLIT("amalgamalab"))
-        || STREQUAL(name, name_len, STRLIT("amalgama-lab"))
-        || STREQUAL(name, name_len, STRLIT("amalgama-lab.com"))) {
+    if (STREQUAL(name, name_len, "amalgama")
+        || STREQUAL(name, name_len, "amalgamalab")
+        || STREQUAL(name, name_len, "amalgama-lab")
+        || STREQUAL(name, name_len, "amalgama-lab.com")) {
         *type = NCM_LYRICS_FETCHER_AMALGAMA;
         return true;
     }
-    if (STREQUAL(name, name_len, STRLIT("azlyrics"))
-        || STREQUAL(name, name_len, STRLIT("azlyrics.com"))) {
+    if (STREQUAL(name, name_len, "azlyrics")
+        || STREQUAL(name, name_len, "azlyrics.com")) {
         *type = NCM_LYRICS_FETCHER_AZLYRICS;
         return true;
     }
-    if (STREQUAL(name, name_len, STRLIT("genius"))
-        || STREQUAL(name, name_len, STRLIT("genius.com"))) {
+    if (STREQUAL(name, name_len, "genius")
+        || STREQUAL(name, name_len, "genius.com")) {
         *type = NCM_LYRICS_FETCHER_GENIUS;
         return true;
     }
-    if (STREQUAL(name, name_len, STRLIT("letras"))
-        || STREQUAL(name, name_len, STRLIT("letrasmus"))
-        || STREQUAL(name, name_len, STRLIT("letras.mus.br"))) {
+    if (STREQUAL(name, name_len, "letras")
+        || STREQUAL(name, name_len, "letrasmus")
+        || STREQUAL(name, name_len, "letras.mus.br")) {
         *type = NCM_LYRICS_FETCHER_LETRASMUS;
         return true;
     }
-    if (STREQUAL(name, name_len, STRLIT("lacoccinelle"))
-        || STREQUAL(name, name_len, STRLIT("lacoccinelle.net"))) {
+    if (STREQUAL(name, name_len, "lacoccinelle")
+        || STREQUAL(name, name_len, "lacoccinelle.net")) {
         *type = NCM_LYRICS_FETCHER_LACOCCINELLE;
         return true;
     }
-    if (STREQUAL(name, name_len, STRLIT("musica"))
-        || STREQUAL(name, name_len, STRLIT("musica.com"))) {
+    if (STREQUAL(name, name_len, "musica")
+        || STREQUAL(name, name_len, "musica.com")) {
         *type = NCM_LYRICS_FETCHER_MUSICA;
         return true;
     }
-    if (STREQUAL(name, name_len, STRLIT("paroles"))
-        || STREQUAL(name, name_len, STRLIT("paroles.net"))) {
+    if (STREQUAL(name, name_len, "paroles")
+        || STREQUAL(name, name_len, "paroles.net")) {
         *type = NCM_LYRICS_FETCHER_PAROLES;
         return true;
     }
-    if (STREQUAL(name, name_len, STRLIT("musixmatch"))
-        || STREQUAL(name, name_len, STRLIT("musixmatch.com"))) {
+    if (STREQUAL(name, name_len, "musixmatch")
+        || STREQUAL(name, name_len, "musixmatch.com")) {
         *type = NCM_LYRICS_FETCHER_MUSIXMATCH;
         return true;
     }
-    if (STREQUAL(name, name_len, STRLIT("tekstowo"))
-        || STREQUAL(name, name_len, STRLIT("tekstowo.pl"))) {
+    if (STREQUAL(name, name_len, "tekstowo")
+        || STREQUAL(name, name_len, "tekstowo.pl")) {
         *type = NCM_LYRICS_FETCHER_TEKSTOWO;
         return true;
     }
-    if (STREQUAL(name, name_len, STRLIT("vagalume"))
-        || STREQUAL(name, name_len, STRLIT("vagalume.com.br"))) {
+    if (STREQUAL(name, name_len, "vagalume")
+        || STREQUAL(name, name_len, "vagalume.com.br")) {
         *type = NCM_LYRICS_FETCHER_VAGALUME;
         return true;
     }
-    if (STREQUAL(name, name_len, STRLIT("internet"))
-        || STREQUAL(name, name_len, STRLIT("the Internet"))) {
+    if (STREQUAL(name, name_len, "internet")
+        || STREQUAL(name, name_len, "the Internet")) {
         *type = NCM_LYRICS_FETCHER_INTERNET;
         return true;
     }
