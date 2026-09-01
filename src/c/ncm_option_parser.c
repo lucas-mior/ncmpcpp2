@@ -37,9 +37,8 @@ ncm_option_trim_start(char *string, int32 string_len) {
 static int32
 ncm_option_trim_end(char *string, int32 string_len) {
     while (string_len > 0) {
-        char c;
+        char c = string[string_len - 1];
 
-        c = string[string_len - 1];
         if ((c != ' ') && (c != '\t')) {
             break;
         }
@@ -51,9 +50,8 @@ ncm_option_trim_end(char *string, int32 string_len) {
 
 static int32
 ncm_option_comment_start(char *line, int32 line_len) {
-    bool quoted;
+    bool quoted = false;
 
-    quoted = false;
     for (int32 i = 0; i < line_len; i += 1) {
         if (line[i] == '"') {
             quoted = !quoted;
