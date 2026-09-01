@@ -978,7 +978,8 @@ typedef struct VisualizerDataSourceHooks {
                       char *port, int32 port_len);
     int32 (*read_source)(void *user, int32 fd, void *buffer, int32 buffer_size);
     void (*close_source)(void *user, int32 fd);
-    bool (*get_outputs)(void *user, struct NcmMpdOutputList *outputs,
+    bool (*get_outputs)(void *user,
+                        struct NcmMpdOutputList *outputs,
                         struct NcmError *ncm_error);
     bool (*disable_output)(void *user, int32 id, struct NcmError *ncm_error);
     bool (*enable_output)(void *user, int32 id, struct NcmError *ncm_error);
@@ -1102,17 +1103,13 @@ void visualizer_screen_init(VisualizerScreen *screen,
 void visualizer_screen_destroy(VisualizerScreen *screen);
 VisualizerDataSourceHooks visualizer_data_source_system_hooks(
     struct NcmMpdClient *client);
-void visualizer_screen_init_data_source(
-    VisualizerScreen *screen, char *source_location,
-    int32 source_location_len);
-bool visualizer_screen_open_data_source(
-    VisualizerScreen *screen);
-void visualizer_screen_close_data_source(
-    VisualizerScreen *screen);
-int32 visualizer_screen_drain_data_source(
-    VisualizerScreen *screen);
-bool visualizer_screen_find_output_id(
-    VisualizerScreen *screen);
+void visualizer_screen_init_data_source(VisualizerScreen *screen,
+                                        char *source_location,
+                                        int32 source_location_len);
+bool visualizer_screen_open_data_source(VisualizerScreen *screen);
+void visualizer_screen_close_data_source(VisualizerScreen *screen);
+int32 visualizer_screen_drain_data_source(VisualizerScreen *screen);
+bool visualizer_screen_find_output_id(VisualizerScreen *screen);
 NcScreen *visualizer_screen_base(VisualizerScreen *screen);
 NcWindow *visualizer_screen_window(VisualizerScreen *screen);
 void visualizer_screen_set_geometry(VisualizerScreen *screen,
@@ -1145,18 +1142,18 @@ int16 visualizer_clamp_sample(int32 sample);
 #define ENUM_NAME MediaLibraryMode
 #define ENUM_PREFIX_ MEDIA_LIBRARY_MODE_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(MEDIA_LIBRARY_MODE_THREE_COLUMNS) \
-    XX(MEDIA_LIBRARY_MODE_TWO_COLUMNS) \
+#define ENUM_FIELDS                                \
+    XX(MEDIA_LIBRARY_MODE_THREE_COLUMNS)           \
+    XX(MEDIA_LIBRARY_MODE_TWO_COLUMNS)             \
     XX(MEDIA_LIBRARY_MODE_ALBUM_ONLY)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME MediaLibraryColumn
 #define ENUM_PREFIX_ MEDIA_LIBRARY_COLUMN_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(MEDIA_LIBRARY_COLUMN_TAGS) \
-    XX(MEDIA_LIBRARY_COLUMN_ALBUMS) \
+#define ENUM_FIELDS                                \
+    XX(MEDIA_LIBRARY_COLUMN_TAGS)                  \
+    XX(MEDIA_LIBRARY_COLUMN_ALBUMS)                \
     XX(MEDIA_LIBRARY_COLUMN_SONGS)
 #include "cbase/xenums.c"
 
@@ -1165,37 +1162,27 @@ typedef struct MediaLibraryAlbumItem {
     uint32 menu_flags;
 } MediaLibraryAlbumItem;
 
-NCM_ARRAY_DECLARE_TYPE(MediaLibraryTagArray,
-                       NcMediaLibraryTagRow)
-NCM_ARRAY_DECLARE_CLEAR(media_library_tag_array,
-                        MediaLibraryTagArray)
-NCM_ARRAY_DECLARE_DESTROY(media_library_tag_array,
-                          MediaLibraryTagArray)
-NCM_ARRAY_DECLARE_MOVE(media_library_tag_array,
-                       MediaLibraryTagArray)
-NCM_ARRAY_DECLARE_RESERVE(media_library_tag_array,
-                          MediaLibraryTagArray)
-NCM_ARRAY_DECLARE_APPEND(media_library_tag_array,
-                         MediaLibraryTagArray,
-                         NcMediaLibraryTagRow)
-NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_tag_array,
-                                 MediaLibraryTagArray)
+NCM_ARRAY_DECLARE_TYPE(MediaLibraryTagArray, NcMediaLibraryTagRow)
+NCM_ARRAY_DECLARE_CLEAR(media_library_tag_array, MediaLibraryTagArray)
+NCM_ARRAY_DECLARE_DESTROY(media_library_tag_array, MediaLibraryTagArray)
+NCM_ARRAY_DECLARE_MOVE(media_library_tag_array, MediaLibraryTagArray)
+NCM_ARRAY_DECLARE_RESERVE(media_library_tag_array, MediaLibraryTagArray)
 
-NCM_ARRAY_DECLARE_TYPE(MediaLibraryAlbumArray,
-                       MediaLibraryAlbumItem)
-NCM_ARRAY_DECLARE_CLEAR(media_library_album_array,
-                        MediaLibraryAlbumArray)
-NCM_ARRAY_DECLARE_DESTROY(media_library_album_array,
-                          MediaLibraryAlbumArray)
-NCM_ARRAY_DECLARE_MOVE(media_library_album_array,
-                       MediaLibraryAlbumArray)
-NCM_ARRAY_DECLARE_RESERVE(media_library_album_array,
-                          MediaLibraryAlbumArray)
-NCM_ARRAY_DECLARE_APPEND(media_library_album_array,
-                         MediaLibraryAlbumArray,
+NCM_ARRAY_DECLARE_APPEND(media_library_tag_array, MediaLibraryTagArray,
+                         NcMediaLibraryTagRow)
+
+NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_tag_array, MediaLibraryTagArray)
+
+NCM_ARRAY_DECLARE_TYPE(MediaLibraryAlbumArray, MediaLibraryAlbumItem)
+NCM_ARRAY_DECLARE_CLEAR(media_library_album_array, MediaLibraryAlbumArray)
+NCM_ARRAY_DECLARE_DESTROY(media_library_album_array, MediaLibraryAlbumArray)
+NCM_ARRAY_DECLARE_MOVE(media_library_album_array, MediaLibraryAlbumArray)
+NCM_ARRAY_DECLARE_RESERVE(media_library_album_array, MediaLibraryAlbumArray)
+
+NCM_ARRAY_DECLARE_APPEND(media_library_album_array, MediaLibraryAlbumArray,
                          MediaLibraryAlbumItem)
-NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_album_array,
-                                 MediaLibraryAlbumArray)
+
+NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_album_array, MediaLibraryAlbumArray)
 
 typedef struct MediaLibrarySongQuery {
     char *primary_value;
@@ -1291,10 +1278,10 @@ void media_library_screen_set_geometry(
     MediaLibraryScreen *screen, int32 start_x, int32 width,
     int32 main_start_y, int32 main_height);
 
-int32 media_library_screen_column_count(
-    MediaLibraryScreen *screen);
-bool media_library_screen_set_mode(
-    MediaLibraryScreen *screen, enum MediaLibraryMode mode);
+int32 media_library_screen_column_count(MediaLibraryScreen *screen);
+bool media_library_screen_set_mode(MediaLibraryScreen *screen,
+                                   enum MediaLibraryMode mode);
+
 enum MediaLibraryMode media_library_screen_toggle_mode(
     MediaLibraryScreen *screen);
 enum MediaLibraryColumn media_library_screen_active_column(
@@ -1318,6 +1305,7 @@ NcMediaLibraryTagRow *media_library_screen_current_tag(
     MediaLibraryScreen *screen);
 NcMediaLibraryAlbumRow *media_library_screen_current_album(
     MediaLibraryScreen *screen);
+
 bool media_library_screen_current_primary_tag_value(
     MediaLibraryScreen *screen, char **value, int32 *value_len);
 bool media_library_screen_current_album_value(
@@ -1343,63 +1331,53 @@ bool media_library_albums_from_songs(
 bool media_library_songs_from_list(
     NcmSongArray *songs, NcmMpdSongList *source);
 
-bool media_library_screen_toggle_sort_mode(
-    MediaLibraryScreen *screen);
-bool media_library_screen_set_primary_tag_type(
-    MediaLibraryScreen *screen, enum mpd_tag_type tag_type);
-void media_library_screen_request_database_update(
-    MediaLibraryScreen *screen);
-bool media_library_screen_refresh_inactive_songs(
-    MediaLibraryScreen *screen);
+bool media_library_screen_toggle_sort_mode(MediaLibraryScreen *screen);
+bool media_library_screen_set_primary_tag_type(MediaLibraryScreen *screen,
+                                               enum mpd_tag_type tag_type);
+void media_library_screen_request_database_update(MediaLibraryScreen *screen);
+bool media_library_screen_refresh_inactive_songs(MediaLibraryScreen *screen);
 
-bool media_library_screen_previous_column_available(
-    MediaLibraryScreen *screen);
-bool media_library_screen_next_column_available(
-    MediaLibraryScreen *screen);
-void media_library_screen_previous_column(
-    MediaLibraryScreen *screen);
+bool media_library_screen_previous_column_available(MediaLibraryScreen *screen);
+bool media_library_screen_next_column_available(MediaLibraryScreen *screen);
+void media_library_screen_previous_column(MediaLibraryScreen *screen);
 void media_library_screen_next_column(MediaLibraryScreen *screen);
 void media_library_screen_clear(MediaLibraryScreen *screen);
-bool media_library_screen_current_song(
-    MediaLibraryScreen *screen, NcmSong *song);
-bool media_library_screen_selected_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs);
-bool media_library_screen_selected_songs_checked(
-    MediaLibraryScreen *screen, NcmSongArray *songs, NcmError *ncm_error);
-bool media_library_screen_copy_visible_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *ncm_error);
-bool media_library_screen_apply_filter(
-    MediaLibraryScreen *screen, char *pattern, int32 pattern_len,
-    NcmError *ncm_error);
-void media_library_screen_clear_filter(
-    MediaLibraryScreen *screen);
-bool media_library_screen_search(
-    MediaLibraryScreen *screen, char *pattern, int32 pattern_len,
-    bool forward, bool wrap, bool skip_current, NcmError *ncm_error);
-void media_library_screen_clear_search(
-    MediaLibraryScreen *screen);
-void media_library_screen_request_tags_update(
-    MediaLibraryScreen *screen);
-void media_library_screen_request_albums_update(
-    MediaLibraryScreen *screen);
-void media_library_screen_request_songs_update(
-    MediaLibraryScreen *screen);
-void media_library_screen_finish_list_change(
-    MediaLibraryScreen *screen);
-bool media_library_screen_update(
-    MediaLibraryScreen *screen, NcmError *ncm_error);
+bool media_library_screen_current_song(MediaLibraryScreen *screen,
+                                       NcmSong *song);
+bool media_library_screen_selected_songs(MediaLibraryScreen *screen,
+                                         NcmSongArray *songs);
+bool media_library_screen_selected_songs_checked(MediaLibraryScreen *screen,
+                                                 NcmSongArray *songs,
+                                                 NcmError *ncm_error);
+bool media_library_screen_copy_visible_songs(MediaLibraryScreen *screen,
+                                             NcmSongArray *songs,
+                                             NcmError *ncm_error);
+bool media_library_screen_apply_filter(MediaLibraryScreen *screen,
+                                       char *pattern, int32 pattern_len,
+                                       NcmError *ncm_error);
+void media_library_screen_clear_filter(MediaLibraryScreen *screen);
+bool media_library_screen_search(MediaLibraryScreen *screen,
+                                 char *pattern, int32 pattern_len,
+                                 bool forward, bool wrap, bool skip_current,
+                                 NcmError *ncm_error);
+void media_library_screen_clear_search(MediaLibraryScreen *screen);
+void media_library_screen_request_tags_update(MediaLibraryScreen *screen);
+void media_library_screen_request_albums_update(MediaLibraryScreen *screen);
+void media_library_screen_request_songs_update(MediaLibraryScreen *screen);
+void media_library_screen_finish_list_change(MediaLibraryScreen *screen);
+bool media_library_screen_update(MediaLibraryScreen *screen,
+                                 NcmError *ncm_error);
 
-bool media_library_screen_list_tags(
-    MediaLibraryScreen *screen, enum mpd_tag_type tag_type,
+bool media_library_screen_list_tags(MediaLibraryScreen *screen,
+                                    enum mpd_tag_type tag_type,
     NcmMpdStringList *tags, NcmError *ncm_error);
-bool media_library_screen_list_all_songs(
-    MediaLibraryScreen *screen, NcmMpdSongList *songs,
-    NcmError *ncm_error);
-bool media_library_screen_search_songs(
-    MediaLibraryScreen *screen,
-    MediaLibrarySongQuery *query, NcmMpdSongList *songs,
-    NcmError *ncm_error);
+bool media_library_screen_list_all_songs(MediaLibraryScreen *screen,
+                                         NcmMpdSongList *songs,
+                                         NcmError *ncm_error);
+bool media_library_screen_search_songs(MediaLibraryScreen *screen,
+                                       MediaLibrarySongQuery *query,
+                                       NcmMpdSongList *songs,
+                                       NcmError *ncm_error);
 bool media_library_screen_add_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs, bool play,
     NcmError *ncm_error);
