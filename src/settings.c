@@ -1797,7 +1797,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
 }
 
 static bool
-settings_initialize_defaults(Configuration *config, SettingsOption *options,
+settings_init_defaults(Configuration *config, SettingsOption *options,
                              int32 option_count, bool ignore_errors,
                              NcmError *ncm_error) {
     for (int32 i = 0; i < option_count; i += 1) {
@@ -2074,7 +2074,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
             }
         }
     }
-    return settings_initialize_defaults(config, options, option_count,
+    return settings_init_defaults(config, options, option_count,
                                         ignore_errors, ncm_error);
 }
 

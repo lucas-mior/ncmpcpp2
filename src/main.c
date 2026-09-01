@@ -139,7 +139,7 @@ app_create_windows(void) {
     }
 
     ncmpcpp_set_windows_dimensions();
-    ncmpcpp_initialize_screens();
+    ncmpcpp_init_screens();
 
     app_header_window = ncmpcpp_window_create(0, 0,
                                               COLS, ncmpcpp_header_height(),

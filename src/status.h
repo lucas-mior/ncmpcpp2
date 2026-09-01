@@ -66,10 +66,10 @@ void ncm_status_set_playlist_update_observer(void (*callback)(void *user),
 bool ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                                  NcmStatusHooks *hooks, NcmError *ncm_error);
 bool ncm_status_update(NcmMpdClient *client, int32 event, NcmError *ncm_error);
-bool ncm_status_initialize_from_mpd_status(NcmMpdStatus *mpd_status,
+bool ncm_status_init_from_mpd_status(NcmMpdStatus *mpd_status,
                                            NcmStatusHooks *hooks,
                                            NcmError *ncm_error);
-bool ncm_status_initialize_connection(NcmMpdClient *client, NcmError *ncm_error);
+bool ncm_status_init_connection(NcmMpdClient *client, NcmError *ncm_error);
 bool ncm_status_update_full(NcmMpdClient *client, NcmStatusHooks *hooks,
                             NcmError *ncm_error);
 bool ncm_status_update_from_noidle(NcmMpdClient *client, NcmStatusHooks *hooks,

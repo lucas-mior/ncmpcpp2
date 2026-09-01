@@ -23,7 +23,7 @@ NcWindow *ncmpcpp_window_create(int32 start_x, int32 start_y,
 void ncmpcpp_window_display(NcWindow *window);
 void ncmpcpp_window_destroy(NcWindow *window);
 
-void ncmpcpp_initialize_screens(void);
+void ncmpcpp_init_screens(void);
 void ncmpcpp_resize_screen(bool reload_main_window);
 void ncmpcpp_playlist_switch_to(void);
 void ncmpcpp_playlist_enable_highlighting_if_current(void);
