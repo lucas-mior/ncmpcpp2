@@ -5,15 +5,132 @@
 
 #include "curses/nc_curses.h"
 
-static void nc_buffer_reserve(NcBuffer *buffer, int32 extra);
-static void nc_buffer_add_property(NcBuffer *buffer,
-                                   NcBufferProperty *property);
-static void nc_buffer_property_copy(NcBufferProperty *dest,
-                                    NcBufferProperty *source);
-static void nc_buffer_property_move(NcBufferProperty *dest,
-                                    NcBufferProperty *source);
-static void nc_buffer_property_destroy(NcBufferProperty *property);
-static enum NcFormat nc_buffer_reverse_format(enum NcFormat format);
+static void
+nc_buffer_reserve(NcBuffer *buffer, int32 extra) {
+    int32 needed;
+    int32 new_cap;
+    int32 old_cap;
+
+    needed = buffer->len + extra + 1;
+    if (buffer->data && (needed <= buffer->cap)) {
+        return;
+    }
+
+    old_cap = buffer->cap;
+    new_cap = buffer->cap;
+    if (new_cap <= 0) {
+        new_cap = 16;
+    }
+    while (new_cap < needed) {
+        new_cap *= 2;
+    }
+
+    buffer->data = realloc2(buffer->data, old_cap, new_cap,
+                            SIZEOF(*buffer->data));
+    buffer->cap = new_cap;
+    if (buffer->len <= 0) {
+        buffer->data[0] = '\0';
+    }
+    return;
+}
+
+static void
+nc_buffer_add_property(NcBuffer *buffer, NcBufferProperty *property) {
+    int32 i;
+    int32 count;
+
+    count = ARRAY_LEN(buffer->properties);
+    ARRAY_PUSH(buffer->properties, *property);
+    i = count;
+    while ((i > 0) && (buffer->properties[i - 1].position
+                       > property->position)) {
+        buffer->properties[i] = buffer->properties[i - 1];
+        i -= 1;
+    }
+    buffer->properties[i] = *property;
+    return;
+}
+
+static void
+nc_buffer_property_copy(NcBufferProperty *dest, NcBufferProperty *source) {
+    dest->id = source->id;
+    dest->position = source->position;
+    dest->type = source->type;
+
+    switch (source->type) {
+    case NC_BUFFER_PROPERTY_COLOR:
+        dest->value.color = source->value.color;
+        break;
+    case NC_BUFFER_PROPERTY_FORMAT:
+        dest->value.format = source->value.format;
+        break;
+    case NC_BUFFER_PROPERTY_FORMATTED_COLOR:
+    case NC_BUFFER_PROPERTY_FORMATTED_COLOR_END:
+        nc_formatted_color_copy(&dest->value.formatted_color,
+                                &source->value.formatted_color);
+        break;
+    case NC_BUFFER_PROPERTY_COUNT:
+    default:
+        break;
+    }
+    return;
+}
+
+static void
+nc_buffer_property_move(NcBufferProperty *dest, NcBufferProperty *source) {
+    *dest = *source;
+    source->type = NC_BUFFER_PROPERTY_COLOR;
+    source->value.color = nc_color_default();
+    return;
+}
+
+static void
+nc_buffer_property_destroy(NcBufferProperty *property) {
+    switch (property->type) {
+    case NC_BUFFER_PROPERTY_COLOR:
+    case NC_BUFFER_PROPERTY_FORMAT:
+        break;
+    case NC_BUFFER_PROPERTY_FORMATTED_COLOR:
+    case NC_BUFFER_PROPERTY_FORMATTED_COLOR_END:
+        nc_formatted_color_destroy(&property->value.formatted_color);
+        break;
+    case NC_BUFFER_PROPERTY_COUNT:
+    default:
+        break;
+    }
+    return;
+}
+
+static enum NcFormat
+nc_buffer_reverse_format(enum NcFormat format) {
+    switch (format) {
+    case NC_FORMAT_BOLD:
+        return NC_FORMAT_NO_BOLD;
+    case NC_FORMAT_NO_BOLD:
+        return NC_FORMAT_BOLD;
+    case NC_FORMAT_UNDERLINE:
+        return NC_FORMAT_NO_UNDERLINE;
+    case NC_FORMAT_NO_UNDERLINE:
+        return NC_FORMAT_UNDERLINE;
+    case NC_FORMAT_REVERSE:
+        return NC_FORMAT_NO_REVERSE;
+    case NC_FORMAT_NO_REVERSE:
+        return NC_FORMAT_REVERSE;
+    case NC_FORMAT_ALT_CHARSET:
+        return NC_FORMAT_NO_ALT_CHARSET;
+    case NC_FORMAT_NO_ALT_CHARSET:
+        return NC_FORMAT_ALT_CHARSET;
+    case NC_FORMAT_ITALIC:
+        return NC_FORMAT_NO_ITALIC;
+    case NC_FORMAT_NO_ITALIC:
+        return NC_FORMAT_ITALIC;
+    case NC_FORMAT_COUNT:
+    default:
+        break;
+    }
+
+    return NC_FORMAT_NO_BOLD;
+}
 
 void
 nc_buffer_copy(NcBuffer *dest, NcBuffer *source) {
@@ -171,8 +288,7 @@ nc_buffer_add_formatted_color(NcBuffer *buffer, int32 position,
                               int64 id) {
     NcBufferProperty property;
 
-    nc_formatted_color_copy(&property.value.formatted_color,
-                            formatted_color);
+    nc_formatted_color_copy(&property.value.formatted_color, formatted_color);
     property.id = id;
     property.position = position;
     property.type = NC_BUFFER_PROPERTY_FORMATTED_COLOR;
@@ -186,8 +302,7 @@ nc_buffer_add_formatted_color_end(NcBuffer *buffer, int32 position,
                                   int64 id) {
     NcBufferProperty property;
 
-    nc_formatted_color_copy(&property.value.formatted_color,
-                            formatted_color);
+    nc_formatted_color_copy(&property.value.formatted_color, formatted_color);
     property.id = id;
     property.position = position;
     property.type = NC_BUFFER_PROPERTY_FORMATTED_COLOR_END;
@@ -223,6 +338,7 @@ void
 nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
     NcFormattedColor *formatted_color;
     enum NcFormat *formats;
+    enum NcFormat format;
     int32 count;
 
     switch (property->type) {
@@ -249,8 +365,8 @@ nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
         formats = nc_formatted_color_formats(formatted_color);
         count = nc_formatted_color_format_count(formatted_color);
         for (int32 i = count - 1; i >= 0; i -= 1) {
-            nc_window_apply_format(
-                window, nc_buffer_reverse_format(formats[i]));
+            format = nc_buffer_reverse_format(formats[i]);
+            nc_window_apply_format(window, format);
         }
         break;
     case NC_BUFFER_PROPERTY_COUNT:
@@ -258,135 +374,6 @@ nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
         break;
     }
     return;
-}
-
-static void
-nc_buffer_reserve(NcBuffer *buffer, int32 extra) {
-    int32 needed;
-    int32 new_cap;
-    int32 old_cap;
-
-    needed = buffer->len + extra + 1;
-    if ((buffer->data != NULL) && (needed <= buffer->cap)) {
-        return;
-    }
-
-    old_cap = buffer->cap;
-    new_cap = buffer->cap;
-    if (new_cap <= 0) {
-        new_cap = 16;
-    }
-    while (new_cap < needed) {
-        new_cap *= 2;
-    }
-
-    buffer->data = realloc2(buffer->data, old_cap, new_cap,
-                            SIZEOF(*buffer->data));
-    buffer->cap = new_cap;
-    if (buffer->len <= 0) {
-        buffer->data[0] = '\0';
-    }
-    return;
-}
-
-static void
-nc_buffer_add_property(NcBuffer *buffer, NcBufferProperty *property) {
-    int32 i;
-    int32 count;
-
-    count = ARRAY_LEN(buffer->properties);
-    ARRAY_PUSH(buffer->properties, *property);
-    i = count;
-    while ((i > 0) && (buffer->properties[i - 1].position
-                       > property->position)) {
-        buffer->properties[i] = buffer->properties[i - 1];
-        i -= 1;
-    }
-    buffer->properties[i] = *property;
-    return;
-}
-
-static void
-nc_buffer_property_copy(NcBufferProperty *dest,
-                        NcBufferProperty *source) {
-    dest->id = source->id;
-    dest->position = source->position;
-    dest->type = source->type;
-
-    switch (source->type) {
-    case NC_BUFFER_PROPERTY_COLOR:
-        dest->value.color = source->value.color;
-        break;
-    case NC_BUFFER_PROPERTY_FORMAT:
-        dest->value.format = source->value.format;
-        break;
-    case NC_BUFFER_PROPERTY_FORMATTED_COLOR:
-    case NC_BUFFER_PROPERTY_FORMATTED_COLOR_END:
-        nc_formatted_color_copy(&dest->value.formatted_color,
-                                &source->value.formatted_color);
-        break;
-    case NC_BUFFER_PROPERTY_COUNT:
-    default:
-        break;
-    }
-    return;
-}
-
-static void
-nc_buffer_property_move(NcBufferProperty *dest,
-                        NcBufferProperty *source) {
-    *dest = *source;
-    source->type = NC_BUFFER_PROPERTY_COLOR;
-    source->value.color = nc_color_default();
-    return;
-}
-
-static void
-nc_buffer_property_destroy(NcBufferProperty *property) {
-    switch (property->type) {
-    case NC_BUFFER_PROPERTY_COLOR:
-    case NC_BUFFER_PROPERTY_FORMAT:
-        break;
-    case NC_BUFFER_PROPERTY_FORMATTED_COLOR:
-    case NC_BUFFER_PROPERTY_FORMATTED_COLOR_END:
-        nc_formatted_color_destroy(&property->value.formatted_color);
-        break;
-    case NC_BUFFER_PROPERTY_COUNT:
-    default:
-        break;
-    }
-    return;
-}
-
-static enum NcFormat
-nc_buffer_reverse_format(enum NcFormat format) {
-    switch (format) {
-    case NC_FORMAT_BOLD:
-        return NC_FORMAT_NO_BOLD;
-    case NC_FORMAT_NO_BOLD:
-        return NC_FORMAT_BOLD;
-    case NC_FORMAT_UNDERLINE:
-        return NC_FORMAT_NO_UNDERLINE;
-    case NC_FORMAT_NO_UNDERLINE:
-        return NC_FORMAT_UNDERLINE;
-    case NC_FORMAT_REVERSE:
-        return NC_FORMAT_NO_REVERSE;
-    case NC_FORMAT_NO_REVERSE:
-        return NC_FORMAT_REVERSE;
-    case NC_FORMAT_ALT_CHARSET:
-        return NC_FORMAT_NO_ALT_CHARSET;
-    case NC_FORMAT_NO_ALT_CHARSET:
-        return NC_FORMAT_ALT_CHARSET;
-    case NC_FORMAT_ITALIC:
-        return NC_FORMAT_NO_ITALIC;
-    case NC_FORMAT_NO_ITALIC:
-        return NC_FORMAT_ITALIC;
-    case NC_FORMAT_COUNT:
-    default:
-        break;
-    }
-
-    return NC_FORMAT_NO_BOLD;
 }
 
 #endif /* NCMPCPP_NC_BUFFER_C */
