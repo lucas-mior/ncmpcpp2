@@ -1602,9 +1602,8 @@ lyrics_url_path_start(char *url, int32 url_len) {
 
 static int32
 lyrics_url_path_end(char *url, int32 url_len, int32 path_start) {
-    int32 path_end;
+    int32 path_end = path_start;
 
-    path_end = path_start;
     while ((path_end < url_len) && (url[path_end] != '?')
            && (url[path_end] != '#')) {
         path_end += 1;
