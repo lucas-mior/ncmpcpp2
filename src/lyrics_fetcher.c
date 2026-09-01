@@ -1363,11 +1363,9 @@ lyrics_percent_decode(StrBuilder *out, char *data, int32 data_len) {
     sb_clear(out);
     for (int32 i = 0; i < data_len; i += 1) {
         if ((data[i] == '%') && (i + 2 < data_len)) {
-            int32 high;
-            int32 low;
+            int32 high = lyrics_hex_value(data[i + 1]);
+            int32 low = lyrics_hex_value(data[i + 2]);
 
-            high = lyrics_hex_value(data[i + 1]);
-            low = lyrics_hex_value(data[i + 2]);
             if ((high >= 0) && (low >= 0)) {
                 sb_append_byte(out, (char)((high << 4) | low));
                 i += 2;
