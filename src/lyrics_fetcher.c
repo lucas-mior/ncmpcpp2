@@ -2888,8 +2888,8 @@ lyrics_fetch_internet(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                                       title_len);
     if (ok) {
         SB_APPEND(&message,
-                  STRLIT("The following search may contain lyrics "
-                                      "for this song: "));
+                  "The following search may contain lyrics "
+                  "for this song: ");
         SB_APPEND(&message, url.data, url.len);
         ncm_lyrics_result_set(result, false, message.data, message.len);
     }
