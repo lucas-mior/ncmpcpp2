@@ -1508,7 +1508,6 @@ lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len, char *marker,
         if ((open = lyrics_find(data, data_len, STRLIT("<div"), pos)) < 0) {
             break;
         }
-        
         if ((open_end = lyrics_find_tag_end(data, data_len,
                                             open + STRLIT_LEN("<div"))) < 0) {
             break;
@@ -1518,11 +1517,11 @@ lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len, char *marker,
             pos = open_end + 1;
             continue;
         }
-
         if ((close = lyrics_find_matching_div(data, data_len,
                                               open_end + 1, &close_end)) < 0) {
             break;
         }
+
         if (found) {
             SB_APPEND(out, STRLIT("\n\n"));
         }
