@@ -1236,13 +1236,12 @@ lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile,
     pending_separator = false;
     wrote = false;
     for (int32 i = 0; i < string_len; i += 1) {
-        uint8 byte;
+        uint8 byte = (uint8)string[i];
         uint32 rune;
         int32 rune_len;
         char folded[2];
         int32 folded_len;
 
-        byte = (uint8)string[i];
         if (lyrics_ascii_alnum(string[i])) {
             if (pending_separator && wrote && !compact) {
                 sb_append_byte(buffer, separator);
