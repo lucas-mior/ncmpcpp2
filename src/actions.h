@@ -168,6 +168,7 @@ bool ncm_action_add_song_to_playlist(NcmSong *song, bool play, int32 position);
 
 typedef struct NcmActionDef {
     char *name;
+    int32 name_len;
 
     enum NcmActionType type;
     NcmActionCanRunFn can_run;
