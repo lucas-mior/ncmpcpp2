@@ -89,7 +89,7 @@ configuration_append_default_file(StrBuilderArray *paths, char *filename,
         SB_APPEND(&directory, xdg_config_home,
                   strlen32(xdg_config_home));
     } else {
-        SB_APPEND(&directory, STRLIT("~/.config"));
+        SB_APPEND(&directory, "~/.config");
     }
     result = ncm_fs_join(&directory, directory.data, directory.len,
                          STRLIT("ncmpcpp"));
@@ -114,7 +114,7 @@ configuration_append_legacy_file(StrBuilderArray *paths, char *filename,
     bool result;
 
 
-    SB_APPEND(&directory, STRLIT("~/.ncmpcpp"));
+    SB_APPEND(&directory, "~/.ncmpcpp");
     result = ncm_fs_join(&path, directory.data, directory.len, filename,
                          filename_len);
     if (result) {
@@ -133,8 +133,7 @@ configuration_discover_default_paths(StrBuilderArray *config_paths,
     bool result;
 
     if ((config_paths == NULL) || (bindings_paths == NULL)) {
-        ncm_error_set(ncm_error, EINVAL,
-                      STRLIT("missing default path output"));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("missing default path output"));
         return false;
     }
 
@@ -375,18 +374,18 @@ configuration_parse_long_option(NcmConfigurationOptions *options, int32 argc,
         } \
     } while (0)
 
-    if (STREQUAL(name, name_len, STRLIT("host"))) {
+    if (STREQUAL(name, name_len, "host")) {
         REQUIRE_LONG_VALUE();
         configuration_copy_string(&options->host, value, value_len);
         options->host_provided = true;
-    } else if (STREQUAL(name, name_len, STRLIT("port"))) {
+    } else if (STREQUAL(name, name_len, "port")) {
         REQUIRE_LONG_VALUE();
         if (!configuration_parse_port(value, value_len, arg, name_len + 2,
                                       &options->port, ncm_error)) {
             return false;
         }
         options->port_provided = true;
-    } else if (STREQUAL(name, name_len, STRLIT("current-song"))) {
+    } else if (STREQUAL(name, name_len, "current-song")) {
         options->current_song = true;
         if (value) {
             configuration_copy_string(&options->current_song_format, value,
@@ -398,36 +397,36 @@ configuration_parse_long_option(NcmConfigurationOptions *options, int32 argc,
             configuration_copy_string(&options->current_song_format, argv[*i],
                                       strlen32(argv[*i]));
         }
-    } else if (STREQUAL(name, name_len, STRLIT("config"))) {
+    } else if (STREQUAL(name, name_len, "config")) {
         REQUIRE_LONG_VALUE();
         command_line_options_append_path(&options->config_paths, value,
                                          value_len);
-    } else if (STREQUAL(name, name_len, STRLIT("ignore-config-errors"))) {
+    } else if (STREQUAL(name, name_len, "ignore-config-errors")) {
         REJECT_LONG_VALUE();
         options->ignore_config_errors = true;
-    } else if (STREQUAL(name, name_len, STRLIT("test-lyrics-fetchers"))) {
+    } else if (STREQUAL(name, name_len, "test-lyrics-fetchers")) {
         REJECT_LONG_VALUE();
         options->test_lyrics_fetchers = true;
-    } else if (STREQUAL(name, name_len, STRLIT("bindings"))) {
+    } else if (STREQUAL(name, name_len, "bindings")) {
         REQUIRE_LONG_VALUE();
         command_line_options_append_path(&options->bindings_paths, value,
                                          value_len);
-    } else if (STREQUAL(name, name_len, STRLIT("screen"))) {
+    } else if (STREQUAL(name, name_len, "screen")) {
         REQUIRE_LONG_VALUE();
         options->screen = true;
         configuration_copy_string(&options->screen_name, value, value_len);
-    } else if (STREQUAL(name, name_len, STRLIT("slave-screen"))) {
+    } else if (STREQUAL(name, name_len, "slave-screen")) {
         REQUIRE_LONG_VALUE();
         options->slave_screen = true;
         configuration_copy_string(&options->slave_screen_name, value,
                                   value_len);
-    } else if (STREQUAL(name, name_len, STRLIT("help"))) {
+    } else if (STREQUAL(name, name_len, "help")) {
         REJECT_LONG_VALUE();
         options->help = true;
-    } else if (STREQUAL(name, name_len, STRLIT("version"))) {
+    } else if (STREQUAL(name, name_len, "version")) {
         REJECT_LONG_VALUE();
         options->version = true;
-    } else if (STREQUAL(name, name_len, STRLIT("quiet"))) {
+    } else if (STREQUAL(name, name_len, "quiet")) {
         REJECT_LONG_VALUE();
         options->quiet = true;
     } else {
