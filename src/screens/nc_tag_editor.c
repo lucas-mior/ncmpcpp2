@@ -550,8 +550,8 @@ tag_editor_screen_set_current_dir(TagEditorScreen *screen,
         return false;
     }
     changed = screen->current_dir.data
-              && !STREQUAL(screen->current_dir.data,
-                           screen->current_dir.len, dir, dir_len);
+              && !STREQUAL(screen->current_dir.data, screen->current_dir.len,
+                           dir, dir_len);
     if (!tag_editor_set_buffer(&screen->current_dir, dir, dir_len)) {
         return false;
     }
@@ -641,8 +641,7 @@ tag_editor_screen_go_to_parent(TagEditorScreen *screen) {
     }
     if ((screen->current_dir.data == NULL)
         || (screen->current_dir.len <= 0)
-        || STREQUAL(screen->current_dir.data,
-                    screen->current_dir.len, STRLIT("/"))) {
+        || STREQUAL(screen->current_dir.data, screen->current_dir.len, "/")) {
         return false;
     }
 
@@ -797,8 +796,7 @@ tag_editor_screen_rename_current_directory(TagEditorScreen *screen,
         return false;
     }
     if ((name.len <= 0)
-        || STREQUAL(name.data, name.len, pair->first,
-                    pair->first_len)) {
+        || STREQUAL(name.data, name.len, pair->first, pair->first_len)) {
         sb_free(&name);
         return true;
     }
@@ -2737,9 +2735,8 @@ tag_editor_directory_row_changed(TagEditorScreen *screen) {
         return changed;
     }
     changed = !screen->observed_dir_valid
-              || !STREQUAL(screen->observed_dir.data,
-                           screen->observed_dir.len, path,
-                           path_len)
+              || !STREQUAL(screen->observed_dir.data, screen->observed_dir.len,
+                           path, path_len)
               || (screen->last_directory_highlight
                   != nc_menu_highlight(menu));
     if (changed) {
@@ -2792,8 +2789,8 @@ tag_editor_directory_has_subdirectories(TagEditorScreen *screen,
 
 static bool
 tag_editor_directory_is_control(char *label, int32 label_len) {
-    return STREQUAL(label, label_len, STRLIT("."))
-           || STREQUAL(label, label_len, STRLIT(".."));
+    return STREQUAL(label, label_len, ".")
+           || STREQUAL(label, label_len, "..");
 }
 
 static bool
@@ -2813,8 +2810,7 @@ tag_editor_highlight_directory_path(TagEditorScreen *screen,
             || (pair->second == NULL)) {
             continue;
         }
-        if (STREQUAL(pair->second, pair->second_len,
-                     path, path_len)) {
+        if (STREQUAL(pair->second, pair->second_len, path, path_len)) {
             (void)nc_menu_goto_selectable(menu, i);
             tag_editor_observe_current_directory(screen);
             return true;
@@ -3026,7 +3022,7 @@ tag_editor_add_control_directory(TagEditorScreen *screen) {
     dir = screen->current_dir.data;
     dir_len = screen->current_dir.len;
     if ((dir == NULL) || (dir_len <= 0)
-        || STREQUAL(dir, dir_len, STRLIT("/"))) {
+        || STREQUAL(dir, dir_len, "/")) {
         return tag_editor_screen_add_directory(
             screen, STRLIT("."), STRLIT("/"));
     }
@@ -4420,10 +4416,10 @@ tag_editor_directory_matches_regex(NcMenuStringPair *pair,
     if ((pair == NULL) || (pair->first == NULL)) {
         return false;
     }
-    if (STREQUAL(pair->first, pair->first_len, STRLIT("."))) {
+    if (STREQUAL(pair->first, pair->first_len, ".")) {
         return filter;
     }
-    if (STREQUAL(pair->first, pair->first_len, STRLIT(".."))) {
+    if (STREQUAL(pair->first, pair->first_len, "..")) {
         return filter;
     }
     return ncm_regex_search(regex, pair->first, pair->first_len);
@@ -4848,8 +4844,7 @@ tag_editor_find_recent_pattern(TagEditorScreen *screen,
         StrBuilder *item;
 
         item = &screen->recent_patterns.items[i];
-        if (STREQUAL(item->data, item->len, pattern,
-                     pattern_len)) {
+        if (STREQUAL(item->data, item->len, pattern, pattern_len)) {
             return i;
         }
     }
