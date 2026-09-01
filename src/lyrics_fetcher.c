@@ -1841,8 +1841,7 @@ lyrics_url_segment_slug_score(NcmLyricsFetcherDef *fetcher, char *segment,
     }
 
     lyrics_percent_decode(&decoded, segment, segment_len);
-    if (!lyrics_append_slug(&slug, fetcher->type, decoded.data,
-                            decoded.len)) {
+    if (!lyrics_append_slug(&slug, fetcher->type, decoded.data, decoded.len)) {
         score = 0;
     } else {
         score = lyrics_slug_match_score(wanted->data, wanted->len,
