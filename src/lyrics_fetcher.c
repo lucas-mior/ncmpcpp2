@@ -1921,8 +1921,6 @@ lyrics_search_candidate_score(NcmLyricsFetcherDef *fetcher, char *url,
     StrBuilder wanted_title = {0};
     char *domain;
     int32 domain_len;
-    int32 artist_score;
-    int32 title_score;
     int32 score;
 
     domain = lyrics_type_domain(fetcher->type, &domain_len);
@@ -1943,19 +1941,21 @@ lyrics_search_candidate_score(NcmLyricsFetcherDef *fetcher, char *url,
         goto cleanup;
     }
 
-    artist_score = lyrics_url_best_slug_score(fetcher, url, url_len,
-                                              &wanted_artist);
-    title_score = lyrics_url_best_slug_score(fetcher, url, url_len,
-                                             &wanted_title);
-    if ((artist_score > 0) && (title_score > 0)) {
-        score = title_score*2 + artist_score;
-    } else if (lyrics_provider_has_flag(fetcher->type,
-                                        LYRICS_PROVIDER_NUMERIC_PAGE_IDS)
-               && (artist_score == 0) && (title_score == 0)
-               && !lyrics_url_path_has_ascii_letter(url, url_len)) {
-        score = 1;
-    } else {
-        score = 0;
+    {
+        int32 artist_score = lyrics_url_best_slug_score(fetcher, url, url_len,
+                                                        &wanted_artist);
+        int32 title_score = lyrics_url_best_slug_score(fetcher, url, url_len,
+                                                       &wanted_title);
+        if ((artist_score > 0) && (title_score > 0)) {
+            score = title_score*2 + artist_score;
+        } else if (lyrics_provider_has_flag(fetcher->type,
+                                            LYRICS_PROVIDER_NUMERIC_PAGE_IDS)
+                   && (artist_score == 0) && (title_score == 0)
+                   && !lyrics_url_path_has_ascii_letter(url, url_len)) {
+            score = 1;
+        } else {
+            score = 0;
+        }
     }
 
 cleanup:
