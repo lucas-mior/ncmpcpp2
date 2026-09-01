@@ -1602,8 +1602,7 @@ NcPlaylistScreen *playlist_screen_playlist(PlaylistScreen *screen);
 NcSongMenu *playlist_screen_song_menu(PlaylistScreen *screen);
 NcMenu *playlist_screen_menu(PlaylistScreen *screen);
 NcWindow *playlist_screen_window(PlaylistScreen *screen);
-void playlist_screen_update_column_title(
-    PlaylistScreen *screen);
+void playlist_screen_update_column_title(PlaylistScreen *screen);
 void playlist_screen_set_geometry(PlaylistScreen *screen,
                                   int32 start_x, int32 width,
                                   int32 main_start_y,
