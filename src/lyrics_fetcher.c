@@ -1513,9 +1513,8 @@ lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len, char *marker,
                                             open + STRLIT_LEN("<div"))) < 0) {
             break;
         }
-        if (lyrics_find(data + open, open_end - open + 1, marker, marker_len,
-                        0)
-            < 0) {
+        if (lyrics_find(data + open, open_end - open + 1,
+                        marker, marker_len, 0) < 0) {
             pos = open_end + 1;
             continue;
         }
