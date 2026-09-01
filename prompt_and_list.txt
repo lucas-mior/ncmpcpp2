@@ -1,3 +1,8 @@
+Your job is: read the guidelines in
+cbase/c-format.md, cbase/c-guidelines.md and ncmpcpp2-c-guidelines.md,
+and then apply ALL of the rules and guidelines to the first file in the list
+below. Then, remove the file from the list below.
+
 src/curses/nc_app_menus.c
 src/curses/nc_buffer.c
 src/curses/nc_curses.c
