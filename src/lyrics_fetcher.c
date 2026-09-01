@@ -1765,8 +1765,8 @@ lyrics_slug_match_separator(char ch) {
 }
 
 static int32
-lyrics_slug_match_score(char *wanted, int32 wanted_len, char *candidate,
-                        int32 candidate_len) {
+lyrics_slug_match_score(char *wanted, int32 wanted_len,
+                        char *candidate, int32 candidate_len) {
     if ((wanted == NULL) || (candidate == NULL) || (wanted_len <= 0)
         || (candidate_len <= 0)) {
         return 0;
