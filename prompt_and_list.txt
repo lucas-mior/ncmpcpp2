@@ -10,8 +10,6 @@ cbase/c-format.md and cbase/c-guidelines.md are being the most disrespected in
 them. Make them follow that specific rule, and then remove the $file.c (and
 $file.h if present) from the list below.
 
-src/app_legacy_bridge.c
-src/app_legacy_bridge.h
 src/app_state.c
 src/app_state.h
 src/bindings.c

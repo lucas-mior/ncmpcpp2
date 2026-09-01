@@ -27,22 +27,18 @@ static NcmTimePoint app_bridge_header_refresh_time;
 static void
 app_bridge_request_media_library_database_update(void *user) {
     (void)user;
-    media_library_screen_request_database_update(
-        app_screen_media_library());
+    media_library_screen_request_database_update(app_screen_media_library());
     return;
 }
 
 static void
 app_bridge_refresh_playlist_related_inactive_columns(void *user) {
     (void)user;
-    if (app_controller_is_screen_visible(
-        app_screen_media_library_base())) {
-        media_library_screen_refresh_inactive_songs(
-            app_screen_media_library());
+    if (app_controller_is_screen_visible(app_screen_media_library_base())) {
+        media_library_screen_refresh_inactive_songs(app_screen_media_library());
     }
 
-    if (app_controller_is_screen_visible(
-        app_screen_playlist_editor_base())) {
+    if (app_controller_is_screen_visible(app_screen_playlist_editor_base())) {
         nc_screen_refresh(app_screen_playlist_editor_base());
     }
     return;
