@@ -1459,11 +1459,9 @@ lyrics_find_matching_div(char *data, int32 data_len, int32 content_start,
     int32 pos = content_start;
 
     while (pos < data_len) {
-        int32 open;
-        int32 close;
+        int32 open = lyrics_find(data, data_len, STRLIT("<div"), pos);
+        int32 close = lyrics_find(data, data_len, STRLIT("</div"), pos);
 
-        open = lyrics_find(data, data_len, STRLIT("<div"), pos);
-        close = lyrics_find(data, data_len, STRLIT("</div"), pos);
         if (close < 0) {
             return -1;
         }
