@@ -492,9 +492,8 @@ ncm_bindings_configuration_clear(NcmBindingsConfiguration *bindings) {
 
 NcKey
 ncm_bindings_string_to_key(char *string, int32 string_len) {
-    NcKey result;
+    NcKey result = NC_KEY_NONE;
 
-    result = NC_KEY_NONE;
     if ((string_len == 6) && STREQUAL(string, 4, STRLIT("ctrl"))
         && (string[4] == '-')) {
         char c;
