@@ -148,11 +148,11 @@ ncm_format_parse_named_color(char *data, int32 data_len, NcColor *color) {
     int16 foreground;
     int16 background;
 
-    if (STREQUAL(data, data_len, STRLIT("default"))) {
+    if (STREQUAL(data, data_len, "default")) {
         *color = nc_color_default();
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT("end"))) {
+    if (STREQUAL(data, data_len, "end")) {
         *color = nc_color_end();
         return true;
     }
