@@ -1624,8 +1624,8 @@ int32 playlist_screen_song_count(PlaylistScreen *screen);
 bool playlist_screen_empty(PlaylistScreen *screen);
 bool playlist_screen_current_song(PlaylistScreen *screen,
                                   NcmSong *song);
-bool playlist_screen_update_current_mutable_song(
-    PlaylistScreen *screen, NcmMutableSong *song);
+bool playlist_screen_update_current_mutable_song(PlaylistScreen *screen,
+                                                 NcmMutableSong *song);
 bool playlist_screen_now_playing_song(PlaylistScreen *screen,
                                       int32 position,
                                       NcmSong *song);
