@@ -2421,9 +2421,8 @@ lyrics_amalgama_content_start(char *data, int32 data_len) {
     int32 marker;
     int32 content_start;
 
-    marker = lyrics_find_ignore_case(data, data_len,
-                                     STRLIT("(оригинал"), 0);
-    if (marker < 0) {
+    if ((marker = lyrics_find_ignore_case(data, data_len,
+                                          STRLIT("(оригинал"), 0)) < 0) {
         marker = lyrics_find_ignore_case(data, data_len,
                                          STRLIT("original"), 0);
     }
