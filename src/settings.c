@@ -296,11 +296,11 @@ settings_parse_color(char *value, int32 value_len, NcColor *color,
     int16 foreground;
     int16 background;
 
-    if (STREQUAL(value, value_len, STRLIT("default"))) {
+    if (STREQUAL(value, value_len, "default")) {
         *color = nc_color_default();
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT("end"))) {
+    if (STREQUAL(value, value_len, "end")) {
         *color = nc_color_end();
         return true;
     }
@@ -1162,7 +1162,7 @@ apply_song_window_title_format(Configuration *config,
 static bool
 apply_browser_sort_mode(Configuration *config, char *value, int32 value_len,
                         NcmError *ncm_error) {
-    if (STREQUAL(value, value_len, STRLIT("noop"))) {
+    if (STREQUAL(value, value_len, "noop")) {
         value = "none";
         value_len = STRLIT_LEN("none");
     }
@@ -1254,11 +1254,11 @@ static bool
 apply_default_place_to_search_in(Configuration *config,
                                  char *value, int32 value_len,
                                  NcmError *ncm_error) {
-    if (STREQUAL(value, value_len, STRLIT("database"))) {
+    if (STREQUAL(value, value_len, "database")) {
         config->search_in_db = true;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT("playlist"))) {
+    if (STREQUAL(value, value_len, "playlist")) {
         config->search_in_db = false;
         return true;
     }
@@ -1280,27 +1280,27 @@ static bool
 apply_media_library_primary_tag(Configuration *config,
                                 char *value, int32 value_len,
                                 NcmError *ncm_error) {
-    if (STREQUAL(value, value_len, STRLIT("artist"))) {
+    if (STREQUAL(value, value_len, "artist")) {
         config->media_lib_primary_tag = MPD_TAG_ARTIST;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT("album_artist"))) {
+    if (STREQUAL(value, value_len, "album_artist")) {
         config->media_lib_primary_tag = MPD_TAG_ALBUM_ARTIST;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT("date"))) {
+    if (STREQUAL(value, value_len, "date")) {
         config->media_lib_primary_tag = MPD_TAG_DATE;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT("genre"))) {
+    if (STREQUAL(value, value_len, "genre")) {
         config->media_lib_primary_tag = MPD_TAG_GENRE;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT("composer"))) {
+    if (STREQUAL(value, value_len, "composer")) {
         config->media_lib_primary_tag = MPD_TAG_COMPOSER;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT("performer"))) {
+    if (STREQUAL(value, value_len, "performer")) {
         config->media_lib_primary_tag = MPD_TAG_PERFORMER;
         return true;
     }
@@ -1311,11 +1311,11 @@ apply_media_library_primary_tag(Configuration *config,
 static bool
 apply_default_find_mode(Configuration *config, char *value, int32 value_len,
                         NcmError *ncm_error) {
-    if (STREQUAL(value, value_len, STRLIT("wrapped"))) {
+    if (STREQUAL(value, value_len, "wrapped")) {
         config->wrapped_search = true;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT("normal"))) {
+    if (STREQUAL(value, value_len, "normal")) {
         config->wrapped_search = false;
         return true;
     }
@@ -1342,7 +1342,7 @@ apply_space_add_mode(Configuration *config, char *value, int32 value_len,
 static bool
 apply_screen_switcher_mode(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
-    if (STREQUAL(value, value_len, STRLIT("previous"))) {
+    if (STREQUAL(value, value_len, "previous")) {
         config->screen_switcher_previous = true;
         screen_type_array_clear(&config->screen_sequence);
         return true;
@@ -1418,15 +1418,15 @@ apply_playlist_editor_column_width_ratio(Configuration *config,
 static bool
 apply_regular_expressions(Configuration *config, char *value, int32 value_len,
                           NcmError *ncm_error) {
-    if (STREQUAL(value, value_len, STRLIT("none"))) {
+    if (STREQUAL(value, value_len, "none")) {
         config->regex_flags = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT("basic"))) {
+    if (STREQUAL(value, value_len, "basic")) {
         config->regex_flags = NCM_REGEX_BASIC_CASE_INSENSITIVE;
         return true;
     }
-    if (STREQUAL(value, value_len, STRLIT("extended"))) {
+    if (STREQUAL(value, value_len, "extended")) {
         config->regex_flags = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
         return true;
     }
@@ -1445,7 +1445,7 @@ apply_enable_window_title(Configuration *config, char *value, int32 value_len,
     unsupported = term == NULL;
     if (!unsupported) {
         term_len = strlen32(term);
-        unsupported = memmem64(term, term_len, STRLIT("linux"))
+        unsupported = memmem64(term, term_len, "linux")
                       || BEGINS_WITH(term, term_len, "eterm");
     }
     if (unsupported) {
