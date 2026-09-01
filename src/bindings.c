@@ -678,8 +678,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
         name_len += 1;
     }
 
-    if (STREQUAL(line, name_len,
-                 STRLIT("set_visualizer_sample_multiplier"))) {
+    if (STREQUAL(line, name_len, "set_visualizer_sample_multiplier")) {
         result->kind = NCM_BINDING_ACTION_NORMAL;
         result->type = NCM_ACTION_DUMMY;
         return true;
@@ -702,7 +701,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
         return false;
     }
 
-    if (STREQUAL(line, name_len, STRLIT("push_character"))) {
+    if (STREQUAL(line, name_len, "push_character")) {
         NcKey key;
 
         key = ncm_bindings_string_to_key(argument.data, argument.len);
@@ -721,7 +720,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
         return true;
     }
 
-    if (STREQUAL(line, name_len, STRLIT("push_characters"))) {
+    if (STREQUAL(line, name_len, "push_characters")) {
         if (argument.len <= 0) {
             ncm_bindings_error(ncm_error, "empty argument passed to "
                                           "push_characters");
@@ -737,7 +736,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
         return true;
     }
 
-    if (STREQUAL(line, name_len, STRLIT("require_screen"))) {
+    if (STREQUAL(line, name_len, "require_screen")) {
         if (!screen_type_parse(argument.data, argument.len,
                                &result->screen_type)) {
             ncm_bindings_error(ncm_error,
@@ -750,7 +749,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
         return true;
     }
 
-    if (STREQUAL(line, name_len, STRLIT("require_runnable"))) {
+    if (STREQUAL(line, name_len, "require_runnable")) {
         if (!ncm_action_type_parse(argument.data, argument.len,
                                    &result->type)) {
             ncm_bindings_error(ncm_error,
@@ -763,7 +762,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
         return true;
     }
 
-    if (STREQUAL(line, name_len, STRLIT("run_external_command"))) {
+    if (STREQUAL(line, name_len, "run_external_command")) {
         if (argument.len <= 0) {
             ncm_bindings_error(ncm_error, "empty command passed to "
                                           "run_external_command");
@@ -776,7 +775,7 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
         return true;
     }
 
-    if (STREQUAL(line, name_len, STRLIT("run_external_console_command"))) {
+    if (STREQUAL(line, name_len, "run_external_console_command")) {
         if (argument.len <= 0) {
             ncm_bindings_error(ncm_error, "empty command passed to "
                                           "run_external_console_command");
@@ -1211,7 +1210,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
         start = ncm_trim_start(line, len);
 
         if ((len - start >= 11)
-            && STREQUAL(line + start, 11, STRLIT("def_command"))) {
+            && STREQUAL(line + start, 11, "def_command")) {
             ok = ncm_bindings_finalize_definition(
                 bindings, in_progress, &actions, key, key_name, key_name_len,
                 command_name, command_name_len, command_immediate, ncm_error);
@@ -1246,11 +1245,9 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                 ok = false;
                 break;
             }
-            if (STREQUAL(enclosed.data, enclosed.len,
-                         STRLIT("immediate"))) {
+            if (STREQUAL(enclosed.data, enclosed.len, "immediate")) {
                 command_immediate = true;
-            } else if (STREQUAL(enclosed.data, enclosed.len,
-                                STRLIT("deferred"))) {
+            } else if (STREQUAL(enclosed.data, enclosed.len, "deferred")) {
                 command_immediate = false;
             } else {
                 ncm_bindings_error(
@@ -1261,7 +1258,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             }
             in_progress = IN_PROGRESS_COMMAND;
         } else if ((len - start >= 7)
-                   && STREQUAL(line + start, 7, STRLIT("def_key"))) {
+                   && STREQUAL(line + start, 7, "def_key")) {
             ok = ncm_bindings_finalize_definition(
                 bindings, in_progress, &actions, key, key_name, key_name_len,
                 command_name, command_name_len, command_immediate, ncm_error);
