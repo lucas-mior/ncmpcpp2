@@ -455,7 +455,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
 
         arg = argv[i];
         arg_len = strlen32(arg);
-        if (STREQUAL(arg, arg_len, STRLIT("--"))) {
+        if (STREQUAL(arg, arg_len, "--")) {
             if (i + 1 < argc) {
                 char message[192];
                 int32 len;
