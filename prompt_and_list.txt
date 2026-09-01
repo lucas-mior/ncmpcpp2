@@ -1,10 +1,12 @@
+WARNING: READ cbase/c-format.md, cbase/c-guidelines.md and
+ncmpcpp2-c-guidelines.md VERY CAREFULLY BEFORE DOING ANYTHING.
+YOU HAVE A HISTORY OF DOING CHANGES NOT ENDORSED BY MY GUIDELINES.
+
 Your job is: read the guidelines in cbase/c-format.md, cbase/c-guidelines.md and
 ncmpcpp2-c-guidelines.md, and then apply ALL of the rules and guidelines to the
 first $file.c (and correspondent header $file.h if present) in the list below.
 Then, remove the $file.c (and $file.h if present) from the list below.
 
-src/app_controller.c
-src/app_controller.h
 src/app_legacy_bridge.c
 src/app_legacy_bridge.h
 src/app_state.c

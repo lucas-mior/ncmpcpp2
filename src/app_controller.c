@@ -6,7 +6,12 @@
 #include "app_controller.h"
 #include "app_state.h"
 
-static void app_controller_refresh_one(NcScreen *screen, void *user);
+static void
+app_controller_refresh_one(NcScreen *screen, void *user) {
+    (void)user;
+    nc_screen_refresh(screen);
+    return;
+}
 
 NcScreen *
 app_controller_current_screen(void) {
@@ -84,7 +89,7 @@ app_controller_each_visible_screen(NcScreenEachCallback callback, void *user) {
 
 bool
 app_controller_switch_to_screen(NcScreen *screen) {
-    if (screen == NULL) {
+    if (!screen) {
         return false;
     }
     return app_state_switch_to_screen(screen);
@@ -123,11 +128,12 @@ app_controller_show_inactive_screen(void) {
 
 NcWindow *
 app_controller_active_window(void) {
-    NcScreen *screen;
+    NcScreen *screen = app_controller_current_screen();
 
-    if ((screen = app_controller_current_screen()) == NULL) {
+    if (!screen) {
         return NULL;
     }
+
     return nc_screen_active_window(screen);
 }
 
@@ -139,9 +145,9 @@ app_controller_update_visible_screens(void) {
 
 void
 app_controller_refresh_current_screen(void) {
-    NcScreen *screen;
+    NcScreen *screen = app_controller_current_screen();
 
-    if ((screen = app_controller_current_screen())) {
+    if (screen) {
         nc_screen_refresh(screen);
     }
     return;
@@ -149,9 +155,9 @@ app_controller_refresh_current_screen(void) {
 
 void
 app_controller_refresh_current_window(void) {
-    NcScreen *screen;
+    NcScreen *screen = app_controller_current_screen();
 
-    if ((screen = app_controller_current_screen())) {
+    if (screen) {
         nc_screen_refresh_window(screen);
     }
     return;
@@ -177,9 +183,9 @@ app_controller_resize_visible_screens(void) {
 
 void
 app_controller_scroll_current_screen(enum NcScroll where) {
-    NcScreen *screen;
+    NcScreen *screen = app_controller_current_screen();
 
-    if ((screen = app_controller_current_screen())) {
+    if (screen) {
         nc_screen_scroll(screen, where);
     }
     return;
@@ -187,18 +193,11 @@ app_controller_scroll_current_screen(enum NcScroll where) {
 
 void
 app_controller_mouse_button_pressed_current(MEVENT event) {
-    NcScreen *screen;
+    NcScreen *screen = app_controller_current_screen();
 
-    if ((screen = app_controller_current_screen())) {
+    if (screen) {
         nc_screen_mouse_button_pressed(screen, event);
     }
-    return;
-}
-
-static void
-app_controller_refresh_one(NcScreen *screen, void *user) {
-    (void)user;
-    nc_screen_refresh(screen);
     return;
 }
 
