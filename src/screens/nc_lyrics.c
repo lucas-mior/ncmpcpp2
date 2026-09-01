@@ -417,8 +417,7 @@ lyrics_screen_load_file(LyricsScreen *screen,
                            STRLIT_LEN(".lrc"),
                            STRLIT(".lrc"));
     if ((file = fopen(filename, "rb")) == NULL) {
-        lyrics_screen_clear_lyrics_state(
-            screen, LYRICS_MODE_FETCH_LOG);
+        lyrics_screen_clear_lyrics_state(screen, LYRICS_MODE_FETCH_LOG);
         ncm_error_set(ncm_error, errno, STRLIT("failed to open lyrics"));
         return false;
     }
