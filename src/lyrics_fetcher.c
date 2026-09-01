@@ -1766,37 +1766,37 @@ lyrics_slug_match_separator(char ch) {
 
 static int32
 lyrics_slug_match_score(char *wanted, int32 wanted_len,
-                        char *candidate, int32 candidate_len) {
-    if ((wanted == NULL) || (candidate == NULL) || (wanted_len <= 0)
-        || (candidate_len <= 0)) {
+                        char *candid, int32 candid_len) {
+    if ((wanted == NULL) || (candid == NULL) || (wanted_len <= 0)
+        || (candid_len <= 0)) {
         return 0;
     }
 
-    if (STREQUAL(wanted, wanted_len, candidate, candidate_len)) {
+    if (STREQUAL(wanted, wanted_len, candid, candid_len)) {
         return 50;
     }
-    if (candidate_len > wanted_len) {
-        if (lyrics_starts_with_ignore_case(candidate, candidate_len, wanted, wanted_len)
-            && lyrics_slug_match_separator(candidate[wanted_len])) {
+    if (candid_len > wanted_len) {
+        if (lyrics_starts_with_ignore_case(candid, candid_len, wanted, wanted_len)
+            && lyrics_slug_match_separator(candid[wanted_len])) {
             return 40;
         }
-        if (lyrics_starts_with_ignore_case(candidate + candidate_len - wanted_len, wanted_len, wanted, wanted_len)
-            && lyrics_slug_match_separator(candidate[candidate_len - wanted_len - 1])) {
+        if (lyrics_starts_with_ignore_case(candid + candid_len - wanted_len, wanted_len, wanted, wanted_len)
+            && lyrics_slug_match_separator(candid[candid_len - wanted_len - 1])) {
             return 35;
         }
-        if (lyrics_find(candidate, candidate_len, wanted, wanted_len, 0) > 0) {
-            int32 pos = lyrics_find(candidate, candidate_len, wanted, wanted_len, 0);
-            if (lyrics_slug_match_separator(candidate[pos - 1])
-                && (pos + wanted_len < candidate_len)
-                && lyrics_slug_match_separator(candidate[pos + wanted_len])) {
+        if (lyrics_find(candid, candid_len, wanted, wanted_len, 0) > 0) {
+            int32 pos = lyrics_find(candid, candid_len, wanted, wanted_len, 0);
+            if (lyrics_slug_match_separator(candid[pos - 1])
+                && (pos + wanted_len < candid_len)
+                && lyrics_slug_match_separator(candid[pos + wanted_len])) {
                 return 30;
             }
         }
     }
-    if ((wanted_len > candidate_len)
-        && lyrics_starts_with_ignore_case(wanted, wanted_len, candidate,
-                                          candidate_len)
-        && lyrics_slug_match_separator(wanted[candidate_len])) {
+    if ((wanted_len > candid_len)
+        && lyrics_starts_with_ignore_case(wanted, wanted_len, candid,
+                                          candid_len)
+        && lyrics_slug_match_separator(wanted[candid_len])) {
         return 20;
     }
     return 0;
