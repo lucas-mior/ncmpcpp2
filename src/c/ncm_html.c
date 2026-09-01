@@ -96,22 +96,22 @@ parse_entity_number(char *data, int32 data_len, uint32 *rune) {
 
 static bool
 is_newline_tag(char *tag, int32 tag_len) {
-    if (BEGINS_WITH(tag, tag_len, STRLIT("<p "))) {
+    if (BEGINS_WITH(tag, tag_len, "<p ")) {
         return true;
     }
-    if (STREQUAL(tag, tag_len, STRLIT("<p>"))) {
+    if (STREQUAL(tag, tag_len, "<p>")) {
         return true;
     }
-    if (STREQUAL(tag, tag_len, STRLIT("</p>"))) {
+    if (STREQUAL(tag, tag_len, "</p>")) {
         return true;
     }
-    if (STREQUAL(tag, tag_len, STRLIT("<br>"))) {
+    if (STREQUAL(tag, tag_len, "<br>")) {
         return true;
     }
-    if (STREQUAL(tag, tag_len, STRLIT("<br/>"))) {
+    if (STREQUAL(tag, tag_len, "<br/>")) {
         return true;
     }
-    if (BEGINS_WITH(tag, tag_len, STRLIT("<br "))) {
+    if (BEGINS_WITH(tag, tag_len, "<br ")) {
         return true;
     }
 
