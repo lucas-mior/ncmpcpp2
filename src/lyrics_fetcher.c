@@ -1776,11 +1776,14 @@ lyrics_slug_match_score(char *wanted, int32 wanted_len,
         return 50;
     }
     if (candid_len > wanted_len) {
-        if (lyrics_starts_with_ignore_case(candid, candid_len, wanted, wanted_len)
+        if (lyrics_starts_with_ignore_case(candid, candid_len,
+                                           wanted, wanted_len)
             && lyrics_slug_match_separator(candid[wanted_len])) {
             return 40;
         }
-        if (lyrics_starts_with_ignore_case(candid + candid_len - wanted_len, wanted_len, wanted, wanted_len)
+        if (lyrics_starts_with_ignore_case(candid + candid_len - wanted_len,
+                                           wanted_len,
+                                           wanted, wanted_len)
             && lyrics_slug_match_separator(candid[candid_len - wanted_len - 1])) {
             return 35;
         }
