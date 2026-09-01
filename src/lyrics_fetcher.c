@@ -1505,13 +1505,12 @@ lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len, char *marker,
         int32 close;
         int32 close_end;
 
-        open = lyrics_find(data, data_len, STRLIT("<div"), pos);
-        if (open < 0) {
+        if ((open = lyrics_find(data, data_len, STRLIT("<div"), pos)) < 0) {
             break;
         }
-        open_end = lyrics_find_tag_end(data, data_len,
-                                       open + STRLIT_LEN("<div"));
-        if (open_end < 0) {
+        
+        if ((open_end = lyrics_find_tag_end(data, data_len,
+                                            open + STRLIT_LEN("<div"))) < 0) {
             break;
         }
         if (lyrics_find(data + open, open_end - open + 1, marker, marker_len,
