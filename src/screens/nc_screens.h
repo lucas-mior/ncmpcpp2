@@ -1118,16 +1118,12 @@ NcWindow *visualizer_screen_window(VisualizerScreen *screen);
 void visualizer_screen_set_geometry(VisualizerScreen *screen,
                                     int32 start_x, int32 start_y,
                                     int32 width, int32 height);
-void visualizer_screen_init_visualization(
-    VisualizerScreen *screen);
+void visualizer_screen_init_visualization(VisualizerScreen *screen);
 void visualizer_screen_clear(VisualizerScreen *screen);
-void visualizer_screen_reset_audio_state(
-    VisualizerScreen *screen);
-void visualizer_screen_reset_auto_scale_multiplier(
-    VisualizerScreen *screen);
+void visualizer_screen_reset_audio_state(VisualizerScreen *screen);
+void visualizer_screen_reset_auto_scale_multiplier(VisualizerScreen *screen);
 void visualizer_screen_toggle_type(VisualizerScreen *screen);
-int32 visualizer_screen_requested_samples(
-    VisualizerScreen *screen);
+int32 visualizer_screen_requested_samples(VisualizerScreen *screen);
 bool visualizer_screen_push_samples(VisualizerScreen *screen,
                                     int16 *samples,
                                     int32 samples_len);
