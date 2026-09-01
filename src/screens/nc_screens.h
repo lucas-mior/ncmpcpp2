@@ -1360,18 +1360,13 @@ bool media_library_screen_search(MediaLibraryScreen *screen,
                                  char *pattern, int32 pattern_len,
                                  bool forward, bool wrap, bool skip_current,
                                  NcmError *ncm_error);
-void media_library_screen_clear_search(
-    MediaLibraryScreen *screen);
-void media_library_screen_request_tags_update(
-    MediaLibraryScreen *screen);
-void media_library_screen_request_albums_update(
-    MediaLibraryScreen *screen);
-void media_library_screen_request_songs_update(
-    MediaLibraryScreen *screen);
-void media_library_screen_finish_list_change(
-    MediaLibraryScreen *screen);
-bool media_library_screen_update(
-    MediaLibraryScreen *screen, NcmError *ncm_error);
+void media_library_screen_clear_search(MediaLibraryScreen *screen);
+void media_library_screen_request_tags_update(MediaLibraryScreen *screen);
+void media_library_screen_request_albums_update(MediaLibraryScreen *screen);
+void media_library_screen_request_songs_update(MediaLibraryScreen *screen);
+void media_library_screen_finish_list_change(MediaLibraryScreen *screen);
+bool media_library_screen_update(MediaLibraryScreen *screen,
+                                 NcmError *ncm_error);
 
 bool media_library_screen_list_tags(
     MediaLibraryScreen *screen, enum mpd_tag_type tag_type,
