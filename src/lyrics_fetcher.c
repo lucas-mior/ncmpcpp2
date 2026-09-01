@@ -2096,9 +2096,8 @@ lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
         int32 value_end;
         char quote;
 
-        href = lyrics_find_ignore_case(unescaped.data, unescaped.len,
-                                       STRLIT("href"), pos);
-        if (href < 0) {
+        if ((href = lyrics_find_ignore_case(unescaped.data, unescaped.len,
+                                            STRLIT("href"), pos)) < 0) {
             break;
         }
         value_start = href + STRLIT_LEN("href");
