@@ -1767,8 +1767,10 @@ lyrics_slug_match_separator(char ch) {
 static int32
 lyrics_slug_match_score(char *wanted, int32 wanted_len,
                         char *candid, int32 candid_len) {
-    if ((wanted == NULL) || (candid == NULL) || (wanted_len <= 0)
-        || (candid_len <= 0)) {
+    if ((wanted == NULL) || (candid == NULL)) {
+        return 0;
+    }
+    if ((wanted_len <= 0) || (candid_len <= 0)) {
         return 0;
     }
 
