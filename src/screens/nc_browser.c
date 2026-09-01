@@ -1561,7 +1561,7 @@ browser_directory_is_root(char *directory, int32 directory_len) {
     if (directory_len <= 0) {
         return true;
     }
-    return STREQUAL(directory, directory_len, STRLIT("/"));
+    return STREQUAL(directory, directory_len, "/");
 }
 
 static bool
@@ -1570,10 +1570,10 @@ browser_path_is_parent_directory(char *directory,
     if (directory_len <= 0) {
         return false;
     }
-    if (STREQUAL(directory, directory_len, STRLIT(".."))) {
+    if (STREQUAL(directory, directory_len, "..")) {
         return true;
     }
-    return ENDS_WITH(directory, directory_len, STRLIT("/.."));
+    return ENDS_WITH(directory, directory_len, "/..");
 }
 
 static bool
@@ -1588,7 +1588,7 @@ browser_set_normalized_directory(BrowserScreen *screen,
         return false;
     }
     if (browser_path_is_parent_directory(directory, directory_len)) {
-        if (STREQUAL(directory, directory_len, STRLIT(".."))) {
+        if (STREQUAL(directory, directory_len, "..")) {
             return browser_set_parent_of_directory(
                 screen, screen->current_directory.data,
                 screen->current_directory.len);
@@ -1619,8 +1619,7 @@ browser_set_parent_of_directory(BrowserScreen *screen,
 
     parent_len = ncm_string_parent_directory_len(directory, directory_len);
     if (parent_len <= 0) {
-        return browser_screen_set_current_directory(
-            screen, STRLIT("/"));
+        return browser_screen_set_current_directory(screen, STRLIT("/"));
     }
     return browser_screen_set_current_directory(
         screen, directory, parent_len);
@@ -1632,8 +1631,7 @@ browser_prepare_mpd_reload_directory(
 ) {
     ASSERT(screen != NULL);
     if (screen->current_directory.len <= 0) {
-        return browser_screen_set_current_directory(
-            screen, STRLIT("/"));
+        return browser_screen_set_current_directory(screen, STRLIT("/"));
     }
     if (browser_path_is_parent_directory(
         screen->current_directory.data, screen->current_directory.len)) {
@@ -1661,7 +1659,7 @@ browser_add_parent_directory_item(
     SB_APPEND(&screen->scratch_buffer,
               screen->current_directory.data,
               screen->current_directory.len);
-    SB_APPEND(&screen->scratch_buffer, STRLIT("/.."));
+    SB_APPEND(&screen->scratch_buffer, "/..");
 
     directory = (NcmDirectory){0};
     ncm_mpd_item_init(&item);
@@ -2133,9 +2131,8 @@ browser_delete_item(BrowserScreen *screen,
         return false;
     }
     if (browser_screen_item_is_parent(item)) {
-        ncm_error_set(
-            ncm_error, EINVAL,
-            STRLIT("deletion of parent directory is forbidden"));
+        ncm_error_set(ncm_error, EINVAL,
+                      STRLIT("deletion of parent directory is forbidden"));
         return false;
     }
 
