@@ -457,10 +457,9 @@ playlist_editor_screen_load_content(PlaylistEditorScreen *screen,
 }
 
 bool
-playlist_editor_screen_reload_content_from_mpd(
-    PlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmError *ncm_error
-) {
+playlist_editor_screen_reload_content_from_mpd(PlaylistEditorScreen *screen,
+                                               NcmMpdClient *client,
+                                               NcmError *ncm_error) {
     NcmMpdSongList songs;
     NcmPlaylist *playlist;
     bool ok;
