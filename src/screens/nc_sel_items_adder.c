@@ -678,9 +678,7 @@ adder_row_matches(NcEditorActionRow *row, NcmRegex *regex) {
 static bool
 adder_action_row_set(NcEditorActionRow *row, char *label,
                      int32 label_len, void (*run)(void *), void *user) {
-    if (row == NULL) {
-        return false;
-    }
+    ASSERT(row != NULL);
     if (label && (label_len > 0)) {
         row->label_cap = label_len + 1;
         row->label = malloc2(row->label_cap);

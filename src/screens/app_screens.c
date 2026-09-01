@@ -530,9 +530,7 @@ search_list_database_songs(
     bool result;
 
     (void)user;
-    if (songs == NULL) {
-        return false;
-    }
+    ASSERT(songs != NULL);
 
     ncm_song_array_clear(songs);
     source = (NcmMpdSongList){0};
@@ -560,9 +558,7 @@ search_snapshot_playlist(
 
     (void)user;
     (void)ncm_error;
-    if (songs == NULL) {
-        return false;
-    }
+    ASSERT(songs != NULL);
 
     ncm_song_array_clear(songs);
     playlist = app_screen_playlist();
@@ -675,9 +671,9 @@ search_format_song(
     SearchEngineScreen *screen;
 
     screen = user;
-    if ((screen == NULL) || (song == NULL) || (text == NULL)) {
-        return false;
-    }
+    ASSERT(screen != NULL);
+    ASSERT(song != NULL);
+    ASSERT(text != NULL);
     return search_engine_screen_format_song_text(
         screen, song, text);
 }

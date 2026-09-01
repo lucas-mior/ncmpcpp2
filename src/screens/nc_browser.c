@@ -1374,10 +1374,7 @@ static void
 browser_install_menu_callbacks(BrowserScreen *screen) {
     NcMenu *menu;
 
-    if (screen == NULL) {
-        return;
-    }
-
+    ASSERT(screen != NULL);
     menu = browser_screen_menu(screen);
     nc_menu_set_display_callbacks(menu,
                                   browser_display_callbacks(screen));
@@ -1410,9 +1407,10 @@ browser_draw_item(NcMenu *menu, NcWindow *window,
     bool highlighted;
     bool selected;
 
-    if ((menu == NULL) || (window == NULL) || (item == NULL)) {
-        return;
-    }
+    ASSERT(menu != NULL);
+    ASSERT(window != NULL);
+    ASSERT(item != NULL);
+    ASSERT(screen != NULL);
 
     available_width = nc_window_width(window) - nc_window_get_x(window);
     selected = nc_menu_position_is_selected(menu, pos);
@@ -1465,7 +1463,8 @@ browser_filter_item(NcMenu *menu, void *item, void *user) {
 
     (void)menu;
 
-    if ((screen == NULL) || !screen->filter_enabled) {
+    ASSERT(screen != NULL);
+    if (!screen->filter_enabled) {
         return true;
     }
     return browser_item_matches(screen, item, &screen->filter_regex, true);
@@ -1478,9 +1477,8 @@ browser_activate_item(NcMenu *menu, void *item, int32 pos, void *user) {
     (void)menu;
     (void)pos;
 
-    if ((screen == NULL) || (item == NULL)) {
-        return;
-    }
+    ASSERT(screen != NULL);
+    ASSERT(item != NULL);
     if (browser_enter_item(screen, item)) {
         browser_screen_request_update(screen);
     }
@@ -1499,9 +1497,8 @@ static bool
 browser_enter_item(BrowserScreen *screen, NcmMpdItem *item) {
     NcmDirectory *directory;
 
-    if ((screen == NULL) || (item == NULL)) {
-        return false;
-    }
+    ASSERT(screen != NULL);
+    ASSERT(item != NULL);
     if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_DIRECTORY) {
         return false;
     }
@@ -1655,9 +1652,7 @@ browser_add_parent_directory_item(
     NcmMpdItem item;
     bool result;
 
-    if (screen == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
     if (browser_screen_in_root_directory(screen)) {
         return true;
     }
@@ -1686,9 +1681,8 @@ browser_load_mpd_items(BrowserScreen *screen,
                        NcmMpdItemArray *items) {
     NcMenu *menu;
 
-    if ((screen == NULL) || (items == NULL)) {
-        return false;
-    }
+    ASSERT(screen != NULL);
+    ASSERT(items != NULL);
 
     menu = browser_screen_menu(screen);
     screen->title_scroll_beginning = 0;
@@ -1724,9 +1718,7 @@ browser_reload_from_local(BrowserScreen *screen,
     NcMenu *menu;
     bool result;
 
-    if (screen == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
     if (!browser_prepare_local_reload_directory(screen, ncm_error)) {
         return false;
     }
@@ -1852,10 +1844,9 @@ browser_load_local_entry(BrowserScreen *screen,
     NcmFsStat stat;
     bool result;
 
-    if ((screen == NULL) || (directory == NULL) || (entry == NULL)) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing local entry"));
-        return false;
-    }
+    ASSERT(screen != NULL);
+    ASSERT(directory != NULL);
+    ASSERT(entry != NULL);
     if (!Config.local_browser_show_hidden_files
         && (entry->name_len > 0) && (entry->name[0] == '.')) {
         return true;
@@ -1899,19 +1890,13 @@ browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out,
     char message[256];
     int32 message_len;
 
-    if (out == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing stat output"));
-        return false;
-    }
+    ASSERT(out != NULL);
     out->size = 0;
     out->mtime = 0;
     out->type = NCM_FS_ENTRY_COUNT;
     out->exists = false;
 
-    if (path == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing path"));
-        return false;
-    }
+    ASSERT(path != NULL);
     if (path_len < 0) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("negative path length"));
         return false;
@@ -1973,9 +1958,9 @@ browser_make_local_song(NcmSong *song, char *path, int32 path_len,
 #endif
     bool result;
 
-    if ((song == NULL) || (path == NULL) || (path_len < 0)) {
-        return false;
-    }
+    ASSERT(song != NULL);
+    ASSERT(path != NULL);
+    ASSERT(path_len >= 0);
 
     if ((result = ncm_song_set_uri(song, path, path_len))) {
         ncm_song_set_mtime(song, mtime);
@@ -2004,9 +1989,9 @@ browser_collect_item_songs(BrowserScreen *screen,
                            NcmSongArray *songs, NcmMpdItem *item) {
     NcmStringView path;
 
-    if ((screen == NULL) || (songs == NULL) || (item == NULL)) {
-        return false;
-    }
+    ASSERT(screen != NULL);
+    ASSERT(songs != NULL);
+    ASSERT(item != NULL);
 
     switch (ncm_mpd_item_kind(item)) {
     case NCM_MPD_ITEM_DIRECTORY:
@@ -2042,9 +2027,9 @@ browser_collect_mpd_directory_songs(
     char *directory;
     bool result;
 
-    if ((songs == NULL) || (path == NULL) || (path_len < 0)) {
-        return false;
-    }
+    ASSERT(songs != NULL);
+    ASSERT(path != NULL);
+    ASSERT(path_len >= 0);
 
     source = (NcmMpdSongList){0};
     ncm_error_clear(&ncm_error);
@@ -2072,11 +2057,10 @@ browser_collect_local_directory_songs(
     NcmFsEntry entry;
     bool result;
 
-    if ((screen == NULL) || (songs == NULL) || (path == NULL)
-        || (path_len < 0)) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing local directory"));
-        return false;
-    }
+    ASSERT(screen != NULL);
+    ASSERT(songs != NULL);
+    ASSERT(path != NULL);
+    ASSERT(path_len >= 0);
 
     if (!ncm_fs_directory_open(&directory, path, path_len, ncm_error)) {
         return false;
@@ -2106,11 +2090,10 @@ browser_collect_local_entry_songs(
     NcmSong song;
     bool result;
 
-    if ((screen == NULL) || (songs == NULL) || (directory == NULL)
-        || (entry == NULL)) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing local entry"));
-        return false;
-    }
+    ASSERT(screen != NULL);
+    ASSERT(songs != NULL);
+    ASSERT(directory != NULL);
+    ASSERT(entry != NULL);
     if (!Config.local_browser_show_hidden_files
         && (entry->name_len > 0) && (entry->name[0] == '.')) {
         return true;
@@ -2558,9 +2541,7 @@ static bool
 browser_supported_extensions_contains(StrBuilderArray *extensions,
                                       char *extension,
                                       int32 extension_len) {
-    if (extensions == NULL) {
-        return false;
-    }
+    ASSERT(extensions != NULL);
     if (extension == NULL) {
         extension = "";
         extension_len = 0;

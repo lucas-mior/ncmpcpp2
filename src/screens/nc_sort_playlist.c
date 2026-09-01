@@ -532,9 +532,7 @@ sort_dialog_cancel(void *user) {
 
 static bool
 sort_dialog_label_set(NcEditorSortRow *row, char *label, int32 label_len) {
-    if (row == NULL) {
-        return false;
-    }
+    ASSERT(row != NULL);
     if ((label == NULL) || (label_len <= 0)) {
         return true;
     }

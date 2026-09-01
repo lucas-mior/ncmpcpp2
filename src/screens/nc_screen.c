@@ -391,6 +391,9 @@ nc_screen_registry_unregister(NcScreenRegistry *registry,
                               NcScreen *screen) {
     int32 index;
 
+    if (screen == NULL) {
+        return false;
+    }
     if ((index = nc_screen_registry_index_of(registry, screen)) < 0) {
         return false;
     }
@@ -432,6 +435,9 @@ nc_screen_registry_locked(NcScreenRegistry *registry) {
 bool
 nc_screen_registry_is_registered(NcScreenRegistry *registry,
                                  NcScreen *screen) {
+    if (screen == NULL) {
+        return false;
+    }
     return nc_screen_registry_index_of(registry, screen) >= 0;
 }
 
@@ -846,9 +852,7 @@ nc_screen_ops_apply_defaults(NcScreenOps *ops) {
 static int32
 nc_screen_registry_index_of(NcScreenRegistry *registry,
                             NcScreen *screen) {
-    if (screen == NULL) {
-        return -1;
-    }
+    ASSERT(screen != NULL);
     for (int32 i = 0; i < registry->screens_len; i += 1) {
         if (registry->screens[i] == screen) {
             return i;

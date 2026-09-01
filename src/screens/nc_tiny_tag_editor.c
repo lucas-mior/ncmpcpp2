@@ -898,7 +898,8 @@ tiny_editor_replace_filename_row(
 static bool
 tiny_editor_write_song(TinyTagEditorScreen *screen,
                        char *music_dir) {
-    if ((screen == NULL) || !screen->has_edited) {
+    ASSERT(screen != NULL);
+    if (!screen->has_edited) {
         return false;
     }
     if (screen->hooks.write_song) {
