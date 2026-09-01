@@ -31,8 +31,7 @@ ncm_configuration_options_init(NcmConfigurationOptions *options) {
     str_builder_array_init(&options->bindings_paths);
 
     SB_APPEND(&options->host, STRLIT("localhost"));
-    SB_APPEND(&options->current_song_format,
-              STRLIT("{{{(%l) }{{%a - }%t}}|{%f}}"));
+    SB_APPEND(&options->current_song_format, "{{{(%l) }{{%a - }%t}}|{%f}}");
     options->port = 6600;
 
     options->host_provided = false;
@@ -467,7 +466,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
             }
             break;
         }
-        if (BEGINS_WITH(arg, arg_len, STRLIT("--"))) {
+        if (BEGINS_WITH(arg, arg_len, "--")) {
             if (!configuration_parse_long_option(options, argc, argv, &i,
                                                  ncm_error)) {
                 return false;
