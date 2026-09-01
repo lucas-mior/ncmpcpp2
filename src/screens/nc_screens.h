@@ -978,7 +978,8 @@ typedef struct VisualizerDataSourceHooks {
                       char *port, int32 port_len);
     int32 (*read_source)(void *user, int32 fd, void *buffer, int32 buffer_size);
     void (*close_source)(void *user, int32 fd);
-    bool (*get_outputs)(void *user, struct NcmMpdOutputList *outputs,
+    bool (*get_outputs)(void *user,
+                        struct NcmMpdOutputList *outputs,
                         struct NcmError *ncm_error);
     bool (*disable_output)(void *user, int32 id, struct NcmError *ncm_error);
     bool (*enable_output)(void *user, int32 id, struct NcmError *ncm_error);
