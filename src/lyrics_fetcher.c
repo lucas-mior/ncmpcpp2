@@ -1415,14 +1415,16 @@ lyrics_extract_after_until(StrBuilder *out, char *data, int32 data_len,
     int32 b;
 
     sb_clear(out);
-    a = lyrics_find(data, data_len, start, start_len, 0);
-    if (a < 0) {
+
+    if ((a = lyrics_find(data, data_len, start, start_len, 0)) < 0) {
         return false;
     }
-    a = lyrics_find(data, data_len, after, after_len, a + start_len);
-    if (a < 0) {
+
+    if ((a = lyrics_find(data, data_len,
+                         after, after_len, a + start_len)) < 0) {
         return false;
     }
+
     a += after_len;
     b = lyrics_find(data, data_len, end, end_len, a);
     if (b < 0) {
