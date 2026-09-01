@@ -1368,16 +1368,16 @@ void media_library_screen_finish_list_change(MediaLibraryScreen *screen);
 bool media_library_screen_update(MediaLibraryScreen *screen,
                                  NcmError *ncm_error);
 
-bool media_library_screen_list_tags(
-    MediaLibraryScreen *screen, enum mpd_tag_type tag_type,
+bool media_library_screen_list_tags(MediaLibraryScreen *screen,
+                                    enum mpd_tag_type tag_type,
     NcmMpdStringList *tags, NcmError *ncm_error);
-bool media_library_screen_list_all_songs(
-    MediaLibraryScreen *screen, NcmMpdSongList *songs,
-    NcmError *ncm_error);
-bool media_library_screen_search_songs(
-    MediaLibraryScreen *screen,
-    MediaLibrarySongQuery *query, NcmMpdSongList *songs,
-    NcmError *ncm_error);
+bool media_library_screen_list_all_songs(MediaLibraryScreen *screen,
+                                         NcmMpdSongList *songs,
+                                         NcmError *ncm_error);
+bool media_library_screen_search_songs(MediaLibraryScreen *screen,
+                                       MediaLibrarySongQuery *query,
+                                       NcmMpdSongList *songs,
+                                       NcmError *ncm_error);
 bool media_library_screen_add_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs, bool play,
     NcmError *ncm_error);
