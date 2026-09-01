@@ -458,7 +458,7 @@ void function(void) {
 }
 ```
 
-But do initialize if the initialization is clear:
+But do initialize if the initialization is clear and never fails:
 ```c
 // bad
 for (int32 i = 0; i < LENGTH(some_array); i += 1) {
@@ -470,6 +470,19 @@ for (int32 i = 0; i < LENGTH(some_array); i += 1) {
 // good
 for (int32 i = 0; i < LENGTH(some_array); i += 1) {
     char *string = some_array[i];
+}
+```
+
+When getting a pointer that may return NULL:
+```c
+// bad
+char *alias = function();
+
+// good
+char *alias;
+
+if ((alias = function()) == NULL) {
+    ·// handle that case
 }
 ```
 
