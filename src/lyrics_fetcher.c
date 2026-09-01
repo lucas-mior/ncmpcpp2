@@ -818,8 +818,8 @@ static char *
 lyrics_type_domain(enum NcmLyricsFetcherType type, int32 *len) {
     LyricsProviderProfile *profile;
 
-    profile = lyrics_provider_profile(type);
-    if ((profile == NULL) || (profile->domain == NULL)) {
+    if (((profile = lyrics_provider_profile(type)) == NULL)
+        || (profile->domain == NULL)) {
         *len = 0;
         return "";
     }
