@@ -89,7 +89,7 @@ app_controller_each_visible_screen(NcScreenEachCallback callback, void *user) {
 
 bool
 app_controller_switch_to_screen(NcScreen *screen) {
-    if (!screen) {
+    if (screen == NULL) {
         return false;
     }
     return app_state_switch_to_screen(screen);
@@ -130,7 +130,7 @@ NcWindow *
 app_controller_active_window(void) {
     NcScreen *screen = app_controller_current_screen();
 
-    if (!screen) {
+    if (screen == NULL) {
         return NULL;
     }
 
