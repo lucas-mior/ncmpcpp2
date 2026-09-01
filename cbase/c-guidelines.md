@@ -645,7 +645,7 @@ if (pointer == NULL) {
 }
 ```
 
-Don't use `!= NULL` to check if a pointer is not null:
+Don't use `!= NULL` to check if a pointer is not null (except in assertions):
 ```c
 // bad
 if (pointer != NULL) {
@@ -656,6 +656,9 @@ if (pointer != NULL) {
 if (pointer) {
     // pointer is not NULL
 }
+
+// good
+ASSERT(pointer != NULL);
 ```
 
 ## Assertions
