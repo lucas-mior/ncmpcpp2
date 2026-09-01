@@ -7,17 +7,17 @@
 
 #include "c/ncm_c.h"
 
-#define NCM_LYRICS_FETCHER_LIST(XX) \
-    XX(AMALGAMA, "amalgama-lab.com") \
-    XX(AZLYRICS, "azlyrics.com") \
-    XX(GENIUS, "genius.com") \
-    XX(LETRASMUS, "letras.mus.br") \
-    XX(LACOCCINELLE, "lacoccinelle.net") \
-    XX(MUSICA, "musica.com") \
-    XX(PAROLES, "paroles.net") \
-    XX(MUSIXMATCH, "musixmatch.com") \
-    XX(TEKSTOWO, "tekstowo.pl") \
-    XX(VAGALUME, "vagalume.com.br") \
+#define NCM_LYRICS_FETCHER_LIST(XX)                 \
+    XX(AMALGAMA, "amalgama-lab.com")                \
+    XX(AZLYRICS, "azlyrics.com")                    \
+    XX(GENIUS, "genius.com")                        \
+    XX(LETRASMUS, "letras.mus.br")                  \
+    XX(LACOCCINELLE, "lacoccinelle.net")            \
+    XX(MUSICA, "musica.com")                        \
+    XX(PAROLES, "paroles.net")                      \
+    XX(MUSIXMATCH, "musixmatch.com")                \
+    XX(TEKSTOWO, "tekstowo.pl")                     \
+    XX(VAGALUME, "vagalume.com.br")                 \
     XX(INTERNET, "the Internet")
 
 enum NcmLyricsFetcherType {
