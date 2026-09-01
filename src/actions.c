@@ -167,13 +167,13 @@ XX(show_server_info, SHOW_SERVER_INFO)
 NCM_ACTION_TABLE_DEFS(XX)
 #undef XX
 
-#define XX(SUFFIX, TYPE)                                                \
-    {                                                                   \
-        #SUFFIX,                                                        \
-        STRLIT_LEN(#SUFFIX),                                            \
-        NCM_ACTION_##TYPE,                                              \
-        ncm_action_can_run_##SUFFIX,                                    \
-        ncm_action_run_##SUFFIX,                                        \
+#define XX(SUFFIX, TYPE)                    \
+    {                                       \
+        #SUFFIX,                            \
+        STRLIT_LEN(#SUFFIX),                \
+        NCM_ACTION_##TYPE,                  \
+        ncm_action_can_run_##SUFFIX,        \
+        ncm_action_run_##SUFFIX,            \
     },
 static NcmActionDef action_defs[] = {
     NCM_ACTION_TABLE_DEFS(XX)
