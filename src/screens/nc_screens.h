@@ -1390,8 +1390,8 @@ bool media_library_screen_locate_song(MediaLibraryScreen *screen,
 #define ENUM_NAME PlaylistEditorColumn
 #define ENUM_PREFIX_ PLAYLIST_EDITOR_COLUMN_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(PLAYLIST_EDITOR_COLUMN_PLAYLISTS) \
+#define ENUM_FIELDS                               \
+    XX(PLAYLIST_EDITOR_COLUMN_PLAYLISTS)          \
     XX(PLAYLIST_EDITOR_COLUMN_CONTENT)
 #include "cbase/xenums.c"
 
@@ -1400,11 +1400,11 @@ bool media_library_screen_locate_song(MediaLibraryScreen *screen,
 #define ENUM_NAME PlaylistEditorCommandType
 #define ENUM_PREFIX_ PLAYLIST_EDITOR_COMMAND_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(PLAYLIST_EDITOR_COMMAND_NONE) \
-    XX(PLAYLIST_EDITOR_COMMAND_LOAD) \
-    XX(PLAYLIST_EDITOR_COMMAND_SAVE) \
-    XX(PLAYLIST_EDITOR_COMMAND_RENAME) \
+#define ENUM_FIELDS                               \
+    XX(PLAYLIST_EDITOR_COMMAND_NONE)              \
+    XX(PLAYLIST_EDITOR_COMMAND_LOAD)              \
+    XX(PLAYLIST_EDITOR_COMMAND_SAVE)              \
+    XX(PLAYLIST_EDITOR_COMMAND_RENAME)            \
     XX(PLAYLIST_EDITOR_COMMAND_DELETE)
 #include "cbase/xenums.c"
 
@@ -1472,8 +1472,8 @@ void playlist_editor_screen_init(PlaylistEditorScreen *screen,
                                  int32 main_height,
                                  NcColor color, NcBorder border);
 void playlist_editor_screen_destroy(PlaylistEditorScreen *screen);
-NcScreen *playlist_editor_screen_base(
-    PlaylistEditorScreen *screen);
+NcScreen *playlist_editor_screen_base(PlaylistEditorScreen *screen);
+
 NcPlaylistEntryMenu *playlist_editor_screen_playlists(
     PlaylistEditorScreen *screen);
 NcSongMenu *playlist_editor_screen_content(
@@ -1482,6 +1482,7 @@ NcMenu *playlist_editor_screen_active_menu(
     PlaylistEditorScreen *screen);
 NcWindow *playlist_editor_screen_active_window(
     PlaylistEditorScreen *screen);
+
 void playlist_editor_screen_set_geometry(
     PlaylistEditorScreen *screen, int32 start_x, int32 width,
     int32 main_start_y, int32 main_height);
@@ -1601,8 +1602,7 @@ NcPlaylistScreen *playlist_screen_playlist(PlaylistScreen *screen);
 NcSongMenu *playlist_screen_song_menu(PlaylistScreen *screen);
 NcMenu *playlist_screen_menu(PlaylistScreen *screen);
 NcWindow *playlist_screen_window(PlaylistScreen *screen);
-void playlist_screen_update_column_title(
-    PlaylistScreen *screen);
+void playlist_screen_update_column_title(PlaylistScreen *screen);
 void playlist_screen_set_geometry(PlaylistScreen *screen,
                                   int32 start_x, int32 width,
                                   int32 main_start_y,
@@ -1624,8 +1624,8 @@ int32 playlist_screen_song_count(PlaylistScreen *screen);
 bool playlist_screen_empty(PlaylistScreen *screen);
 bool playlist_screen_current_song(PlaylistScreen *screen,
                                   NcmSong *song);
-bool playlist_screen_update_current_mutable_song(
-    PlaylistScreen *screen, NcmMutableSong *song);
+bool playlist_screen_update_current_mutable_song(PlaylistScreen *screen,
+                                                 NcmMutableSong *song);
 bool playlist_screen_now_playing_song(PlaylistScreen *screen,
                                       int32 position,
                                       NcmSong *song);
@@ -1633,11 +1633,11 @@ bool playlist_screen_locate_position(PlaylistScreen *screen,
                                      int32 position);
 bool playlist_screen_selected_songs(PlaylistScreen *screen,
                                     NcmSongArray *songs);
-bool playlist_screen_has_sortable_range(
-    PlaylistScreen *screen);
-bool playlist_screen_copy_sort_range(
-    PlaylistScreen *screen, NcmSongArray *songs,
-    int32 *start_position, NcmError *ncm_error);
+bool playlist_screen_has_sortable_range(PlaylistScreen *screen);
+bool playlist_screen_copy_sort_range(PlaylistScreen *screen,
+                                     NcmSongArray *songs,
+                                     int32 *start_position,
+                                     NcmError *ncm_error);
 bool playlist_screen_apply_filter(PlaylistScreen *screen,
                                   char *pattern, int32 pattern_len,
                                   NcmError *ncm_error);
@@ -1669,18 +1669,18 @@ void playlist_screen_reload_remaining(PlaylistScreen *screen);
 #define ENUM_NAME SearchEngineSearchMode
 #define ENUM_PREFIX_ SEARCH_ENGINE_SEARCH_MODE_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(SEARCH_ENGINE_SEARCH_MODE_LITERAL) \
-    XX(SEARCH_ENGINE_SEARCH_MODE_REGEX) \
+#define ENUM_FIELDS                                   \
+    XX(SEARCH_ENGINE_SEARCH_MODE_LITERAL)             \
+    XX(SEARCH_ENGINE_SEARCH_MODE_REGEX)               \
     XX(SEARCH_ENGINE_SEARCH_MODE_EXACT)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME SearchEnginePromptResult
 #define ENUM_PREFIX_ SEARCH_ENGINE_PROMPT_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(SEARCH_ENGINE_PROMPT_ERROR) \
-    XX(SEARCH_ENGINE_PROMPT_ABORTED) \
+#define ENUM_FIELDS                                   \
+    XX(SEARCH_ENGINE_PROMPT_ERROR)                    \
+    XX(SEARCH_ENGINE_PROMPT_ABORTED)                  \
     XX(SEARCH_ENGINE_PROMPT_ACCEPTED)
 #include "cbase/xenums.c"
 
