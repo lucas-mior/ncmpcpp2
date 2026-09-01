@@ -6,7 +6,7 @@
 
 static void
 str_builder_test_init_and_empty_free(void) {
-    StrBuilder str_builder;
+    StrBuilder str_builder = {0};
     StrBuilder zeroed = {0};
 
     ASSERT(zeroed.data == NULL);
@@ -16,7 +16,6 @@ str_builder_test_init_and_empty_free(void) {
     ASSERT_EQUAL(zeroed.data, "zero initialized");
     sb_free(&zeroed);
 
-    str_builder = (StrBuilder){0};
     ASSERT(str_builder.data == NULL);
     ASSERT_ZERO(str_builder.len);
     ASSERT_ZERO(str_builder.cap);
@@ -30,11 +29,10 @@ str_builder_test_init_and_empty_free(void) {
 
 static void
 str_builder_test_append_clear_and_reuse(void) {
-    StrBuilder str_builder;
+    StrBuilder str_builder = {0};
     char *allocation;
     int32 capacity;
 
-    str_builder = (StrBuilder){0};
     sb_append(&str_builder, STRLIT("first"));
     ASSERT_EQUAL(str_builder.data, "first");
     ASSERT_EQUAL(str_builder.len, STRLIT_LEN("first"));
@@ -60,9 +58,8 @@ str_builder_test_append_clear_and_reuse(void) {
 
 static void
 str_builder_test_nonpositive_operations_are_noops(void) {
-    StrBuilder str_builder;
+    StrBuilder str_builder = {0};
 
-    str_builder = (StrBuilder){0};
     sb_append(&str_builder, NULL, 0);
     sb_append(&str_builder, NULL, -1);
     sb_reserve(&str_builder, 0);
@@ -81,12 +78,10 @@ str_builder_test_nonpositive_operations_are_noops(void) {
 
 static void
 str_builder_test_copy_and_self_copy(void) {
-    StrBuilder source;
-    StrBuilder dest;
+    StrBuilder source = {0};
+    StrBuilder dest = {0};
     char bytes[] = {'a', '\0', 'b'};
 
-    source = (StrBuilder){0};
-    dest = (StrBuilder){0};
     sb_append(&source, bytes, LENGTH(bytes));
     sb_append(&dest, STRLIT("old destination"));
 
@@ -125,13 +120,11 @@ str_builder_test_copy_and_self_copy(void) {
 
 static void
 str_builder_test_move_transfers_ownership(void) {
-    StrBuilder source;
-    StrBuilder dest;
+    StrBuilder source = {0};
+    StrBuilder dest = {0};
     char *allocation;
     int32 capacity;
 
-    source = (StrBuilder){0};
-    dest = (StrBuilder){0};
     sb_append(&source, STRLIT("source value"));
     sb_append(&dest, STRLIT("destination value"));
     allocation = source.data;
@@ -168,11 +161,10 @@ str_builder_test_move_transfers_ownership(void) {
 
 static void
 str_builder_test_set_validation_and_self_shrink(void) {
-    StrBuilder str_builder;
+    StrBuilder str_builder = {0};
     char *allocation;
     int32 capacity;
 
-    str_builder = (StrBuilder){0};
     ASSERT_EQUAL(sb_set(&str_builder, STRLIT("abcdef")), 6);
     allocation = str_builder.data;
     capacity = str_builder.cap;
@@ -205,9 +197,8 @@ str_builder_test_set_validation_and_self_shrink(void) {
 
 static void
 str_builder_test_embedded_null_and_append_byte(void) {
-    StrBuilder str_builder;
+    StrBuilder str_builder = {0};
 
-    str_builder = (StrBuilder){0};
     sb_append_byte(&str_builder, 'A');
     sb_append_byte(&str_builder, '\0');
     sb_append_byte(&str_builder, 'B');
@@ -223,12 +214,11 @@ str_builder_test_embedded_null_and_append_byte(void) {
 
 static void
 str_builder_test_reserve_direct_write_and_growth(void) {
-    StrBuilder str_builder;
+    StrBuilder str_builder = {0};
     char long_string[] = "0123456789abcdefghijklmnopqrstuv";
     int32 long_string_len = LENGTH(long_string) - 1;
     int32 direct_len = STRLIT_LEN("direct");
 
-    str_builder = (StrBuilder){0};
     sb_reserve(&str_builder, 8);
     ASSERT(str_builder.data);
     ASSERT_EQUAL(str_builder.cap, STR_BUILDER_INITIAL_CAPACITY);
@@ -253,9 +243,8 @@ str_builder_test_reserve_direct_write_and_growth(void) {
 
 static void
 str_builder_test_printf_appends(void) {
-    StrBuilder str_builder;
+    StrBuilder str_builder = {0};
 
-    str_builder = (StrBuilder){0};
     sb_append(&str_builder, STRLIT("prefix "));
     sb_printf(&str_builder, "%s %d", "value", 42);
     ASSERT_EQUAL(str_builder.data, "prefix value 42");
@@ -267,7 +256,7 @@ str_builder_test_printf_appends(void) {
 
 static void
 str_builder_test_steal_transfers_exact_allocation(void) {
-    StrBuilder str_builder;
+    StrBuilder str_builder = {0};
     char bytes[] = {'x', '\0', 'y'};
     char *allocation;
     char *stolen;
@@ -276,7 +265,6 @@ str_builder_test_steal_transfers_exact_allocation(void) {
     int32 len = -1;
     int32 cap = -1;
 
-    str_builder = (StrBuilder){0};
     stolen = sb_steal(&str_builder, &len, &cap);
     ASSERT(stolen == NULL);
     ASSERT_ZERO(len);
@@ -314,13 +302,12 @@ static void
 str_builder_test_array_append_clear_and_destroy(void) {
     StrBuilderArray array;
     StrBuilder *item;
-    StrBuilder source;
+    StrBuilder source = {0};
     char bytes[] = {'a', '\0', 'b'};
     StrBuilder *allocation;
     int32 capacity;
 
     str_builder_array_init(&array);
-    source = (StrBuilder){0};
     capacity = str_builder_array_reserve(&array, 2);
     ASSERT_EQUAL(capacity, array.cap);
     allocation = array.items;

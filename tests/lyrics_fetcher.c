@@ -663,11 +663,10 @@ test_site_fetchers_search_download_and_parse_fixtures(void) {
         LyricsFetcherTestContext context;
         NcmLyricsFetcherDef fetcher = {0};
         NcmLyricsResult result = {0};
-        StrBuilder search_url;
+        StrBuilder search_url = {0};
 
         context.test = &lyrics_tests[i];
         context.calls = 0;
-        search_url = (StrBuilder){0};
 
         ASSERT(ncm_lyrics_fetcher_def_set_name(
             &fetcher, context.test->name, context.test->name_len));
@@ -786,11 +785,10 @@ test_musica_search_download_and_parse_fixture(void) {
     LyricsFetcherTestContext context;
     NcmLyricsFetcherDef fetcher = {0};
     NcmLyricsResult result = {0};
-    StrBuilder search_url;
+    StrBuilder search_url = {0};
 
     context.test = &lyrics_musica_test;
     context.calls = 0;
-    search_url = (StrBuilder){0};
 
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT("musica")));
@@ -835,11 +833,10 @@ test_lacoccinelle_search_download_and_parse_fixture(void) {
     LyricsFetcherTestContext context;
     NcmLyricsFetcherDef fetcher = {0};
     NcmLyricsResult result = {0};
-    StrBuilder search_url;
+    StrBuilder search_url = {0};
 
     context.test = &lyrics_lacoccinelle_test;
     context.calls = 0;
-    search_url = (StrBuilder){0};
 
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT("lacoccinelle")));
@@ -978,8 +975,8 @@ static void
 test_internet_fetcher_returns_search_url_without_download(void) {
     NcmLyricsFetcherDef fetcher = {0};
     NcmLyricsResult result = {0};
-    StrBuilder url;
-    url = (StrBuilder){0};
+    StrBuilder url = {0};
+
     ASSERT(ncm_lyrics_fetcher_def_set_name(&fetcher,
                                            STRLIT("internet")));
     ASSERT(ncm_lyrics_fetcher_build_url(

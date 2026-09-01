@@ -152,14 +152,12 @@ StrBuilder
 ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
                      char *separator, int32 separator_len,
                      bool show_duplicates) {
-    StrBuilder result;
+    StrBuilder result = {0};
     char *value;
 
     (void)separator;
     (void)separator_len;
     (void)show_duplicates;
-
-    result = (StrBuilder){0};
 
     if ((value = search_song_value(song, getter))) {
         sb_append(&result, value, strlen32(value));
