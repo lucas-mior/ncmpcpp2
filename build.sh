@@ -35,13 +35,7 @@ CPPFLAGS="$CPPFLAGS -I. -Isrc -Icbase"
 
 CFLAGS="$CFLAGS -std=c11"
 CFLAGS="$CFLAGS -Wfatal-errors"
-# CFLAGS="$CFLAGS -Werror"  # Only uncomment occasionally, keep this line
-
-if [ "$CC" = "clang" ] || [ "$CC" = "zig cc" ]; then
-    CFLAGS="$CFLAGS -Wno-cast-align"
-    CFLAGS="$CFLAGS -Wno-nrvo"
-    CFLAGS="$CFLAGS -Wno-tentative-definition-compat"
-fi
+CFLAGS="$CFLAGS -Werror"  # Only uncomment occasionally, keep this line
 
 CFLAGS="$CFLAGS -pthread"
 LDFLAGS="$LDFLAGS -lm"
