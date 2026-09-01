@@ -1519,9 +1519,8 @@ lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len, char *marker,
             continue;
         }
 
-        close = lyrics_find_matching_div(data, data_len, open_end + 1,
-                                         &close_end);
-        if (close < 0) {
+        if ((close = lyrics_find_matching_div(data, data_len,
+                                              open_end + 1, &close_end)) < 0) {
             break;
         }
         if (found) {
