@@ -1105,14 +1105,10 @@ VisualizerDataSourceHooks visualizer_data_source_system_hooks(
 void visualizer_screen_init_data_source(
     VisualizerScreen *screen, char *source_location,
     int32 source_location_len);
-bool visualizer_screen_open_data_source(
-    VisualizerScreen *screen);
-void visualizer_screen_close_data_source(
-    VisualizerScreen *screen);
-int32 visualizer_screen_drain_data_source(
-    VisualizerScreen *screen);
-bool visualizer_screen_find_output_id(
-    VisualizerScreen *screen);
+bool visualizer_screen_open_data_source(VisualizerScreen *screen);
+void visualizer_screen_close_data_source(VisualizerScreen *screen);
+int32 visualizer_screen_drain_data_source(VisualizerScreen *screen);
+bool visualizer_screen_find_output_id(VisualizerScreen *screen);
 NcScreen *visualizer_screen_base(VisualizerScreen *screen);
 NcWindow *visualizer_screen_window(VisualizerScreen *screen);
 void visualizer_screen_set_geometry(VisualizerScreen *screen,
