@@ -795,8 +795,7 @@ static bool
 lyrics_provider_has_flag(enum NcmLyricsFetcherType type, uint32 flag) {
     LyricsProviderProfile *profile;
 
-    profile = lyrics_provider_profile(type);
-    if (profile == NULL) {
+    if ((profile = lyrics_provider_profile(type)) == NULL) {
         return false;
     }
     return (profile->flags & flag) != 0;
