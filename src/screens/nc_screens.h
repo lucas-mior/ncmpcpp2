@@ -1331,21 +1331,15 @@ bool media_library_albums_from_songs(
 bool media_library_songs_from_list(
     NcmSongArray *songs, NcmMpdSongList *source);
 
-bool media_library_screen_toggle_sort_mode(
-    MediaLibraryScreen *screen);
-bool media_library_screen_set_primary_tag_type(
-    MediaLibraryScreen *screen, enum mpd_tag_type tag_type);
-void media_library_screen_request_database_update(
-    MediaLibraryScreen *screen);
-bool media_library_screen_refresh_inactive_songs(
-    MediaLibraryScreen *screen);
+bool media_library_screen_toggle_sort_mode(MediaLibraryScreen *screen);
+bool media_library_screen_set_primary_tag_type(MediaLibraryScreen *screen,
+                                               enum mpd_tag_type tag_type);
+void media_library_screen_request_database_update(MediaLibraryScreen *screen);
+bool media_library_screen_refresh_inactive_songs(MediaLibraryScreen *screen);
 
-bool media_library_screen_previous_column_available(
-    MediaLibraryScreen *screen);
-bool media_library_screen_next_column_available(
-    MediaLibraryScreen *screen);
-void media_library_screen_previous_column(
-    MediaLibraryScreen *screen);
+bool media_library_screen_previous_column_available(MediaLibraryScreen *screen);
+bool media_library_screen_next_column_available(MediaLibraryScreen *screen);
+void media_library_screen_previous_column(MediaLibraryScreen *screen);
 void media_library_screen_next_column(MediaLibraryScreen *screen);
 void media_library_screen_clear(MediaLibraryScreen *screen);
 bool media_library_screen_current_song(
