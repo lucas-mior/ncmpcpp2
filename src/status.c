@@ -343,7 +343,7 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
 
     if (client && ncm_mpd_client_connected(client)) {
         if (!status_initialized) {
-            (void)ncm_status_initialize_connection(client, ncm_error);
+            (void)ncm_status_init_connection(client, ncm_error);
             hooks = status_active_hooks(NULL);
         }
 
@@ -790,7 +790,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
 }
 
 bool
-ncm_status_initialize_from_mpd_status(NcmMpdStatus *mpd_status,
+ncm_status_init_from_mpd_status(NcmMpdStatus *mpd_status,
                                       NcmStatusHooks *hooks,
                                       NcmError *ncm_error) {
     if (!ncm_status_apply_mpd_status(mpd_status, status_full_event_mask(),
@@ -803,7 +803,7 @@ ncm_status_initialize_from_mpd_status(NcmMpdStatus *mpd_status,
 }
 
 bool
-ncm_status_initialize_connection(NcmMpdClient *client, NcmError *ncm_error) {
+ncm_status_init_connection(NcmMpdClient *client, NcmError *ncm_error) {
     NcmMpdStatus mpd_status;
 
     if (client == NULL) {
@@ -815,7 +815,7 @@ ncm_status_initialize_connection(NcmMpdClient *client, NcmError *ncm_error) {
         return false;
     }
 
-    return ncm_status_initialize_from_mpd_status(&mpd_status, NULL, ncm_error);
+    return ncm_status_init_from_mpd_status(&mpd_status, NULL, ncm_error);
 }
 
 bool
