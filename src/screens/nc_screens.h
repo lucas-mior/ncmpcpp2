@@ -1356,9 +1356,10 @@ bool media_library_screen_apply_filter(MediaLibraryScreen *screen,
                                        char *pattern, int32 pattern_len,
                                        NcmError *ncm_error);
 void media_library_screen_clear_filter(MediaLibraryScreen *screen);
-bool media_library_screen_search(
-    MediaLibraryScreen *screen, char *pattern, int32 pattern_len,
-    bool forward, bool wrap, bool skip_current, NcmError *ncm_error);
+bool media_library_screen_search(MediaLibraryScreen *screen,
+                                 char *pattern, int32 pattern_len,
+                                 bool forward, bool wrap, bool skip_current,
+                                 NcmError *ncm_error);
 void media_library_screen_clear_search(
     MediaLibraryScreen *screen);
 void media_library_screen_request_tags_update(
