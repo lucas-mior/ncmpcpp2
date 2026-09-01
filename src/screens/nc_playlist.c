@@ -1302,7 +1302,7 @@ playlist_set_mutable_uri(NcmSong *song, NcmMutableSong *edited) {
     if (edited->directory_len > 0) {
         SB_APPEND(&uri, edited->directory, edited->directory_len);
         if (edited->directory[edited->directory_len - 1] != '/') {
-            SB_APPEND(&uri, STRLIT("/"));
+            SB_APPEND(&uri, "/");
         }
     }
     SB_APPEND(&uri, new_name.data, new_name.len);
@@ -1316,13 +1316,13 @@ playlist_refresh_stats(PlaylistScreen *screen) {
     int32 count;
 
     sb_clear(&screen->title_cache);
-    SB_APPEND(&screen->title_cache, STRLIT("Playlist ("));
+    SB_APPEND(&screen->title_cache, "Playlist (");
     count = playlist_screen_song_count(screen);
     sb_printf(&screen->title_cache, "%d", count);
     if (count == 1) {
-        SB_APPEND(&screen->title_cache, STRLIT(" item)"));
+        SB_APPEND(&screen->title_cache, " item)");
     } else {
-        SB_APPEND(&screen->title_cache, STRLIT(" items)"));
+        SB_APPEND(&screen->title_cache, " items)");
     }
     return;
 }

@@ -1370,18 +1370,18 @@ playlist_editor_update_titles(PlaylistEditorScreen *screen,
     sb_clear(&screen->content_title);
     if (Config.titles_visibility) {
         SB_APPEND(&screen->playlists_title,
-                  STRLIT("Playlists"));
-        SB_APPEND(&screen->content_title, STRLIT("Content"));
+                  "Playlists");
+        SB_APPEND(&screen->content_title, "Content");
         if (screen->last_known_content_count >= 0) {
-            SB_APPEND(&screen->content_title, STRLIT(" ("));
+            SB_APPEND(&screen->content_title, " (");
             playlist_editor_append_int64(&screen->content_title,
                                          screen->last_known_content_count);
             if (screen->last_known_content_count == 1) {
                 SB_APPEND(&screen->content_title,
-                          STRLIT(" item)"));
+                          " item)");
             } else {
                 SB_APPEND(&screen->content_title,
-                          STRLIT(" items)"));
+                          " items)");
             }
         }
     }
@@ -1826,7 +1826,7 @@ playlist_editor_report_error(char *context, int32 context_len,
 
     SB_APPEND(&message, context, context_len);
     if (ncm_error->message[0] != 0) {
-        SB_APPEND(&message, STRLIT(": "));
+        SB_APPEND(&message, ": ");
         SB_APPEND(&message, ncm_error->message);
     }
     ncm_statusbar_print_cstring(Config.message_delay_time, message.data);
@@ -2104,9 +2104,9 @@ playlist_editor_print_playlist_loaded(NcmPlaylist *playlist) {
     if ((playlist == NULL) || (playlist->path == NULL)) {
         return;
     }
-    SB_APPEND(&message, STRLIT("Playlist \""));
+    SB_APPEND(&message, "Playlist \"");
     SB_APPEND(&message, playlist->path, playlist->path_len);
-    SB_APPEND(&message, STRLIT("\" loaded"));
+    SB_APPEND(&message, "\" loaded");
     ncm_statusbar_print(Config.message_delay_time,
                         message.data, message.len);
     sb_free(&message);

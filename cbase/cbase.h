@@ -504,13 +504,13 @@ _Generic((char (*)[STRLIT_LEN(LITERAL)])0, \
 
 #define HERE here_impl(__FILE__, __LINE__, FUNC__)
 
-#define NCALLS(INTERVAL) do { \
-    static int64 ncalls_ncalls = 1; \
-    if ((ncalls_ncalls % (INTERVAL)) == 0) { \
-        fprintf(stderr, "%s:%d:%s: called %lld times\n", \
-                __FILE__, __LINE__, FUNC__, ncalls_ncalls); \
-    } \
-    ncalls_ncalls += 1; \
+#define NCALLS(INTERVAL) do {                                            \
+    static int64 ncalls_ncalls = 1;                                      \
+    if ((ncalls_ncalls % (INTERVAL)) == 0) {                             \
+        fprintf(stderr, "%s:%d:%s: called %lld times\n",                 \
+                        __FILE__, __LINE__, FUNC__, ncalls_ncalls);      \
+    }                                                                    \
+    ncalls_ncalls += 1;                                                  \
 } while (0)
 
 #define PRINT_TIMINGS_3(N, T0, T1) \

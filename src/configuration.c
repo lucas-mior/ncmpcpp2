@@ -30,7 +30,7 @@ ncm_configuration_options_init(NcmConfigurationOptions *options) {
     str_builder_array_init(&options->config_paths);
     str_builder_array_init(&options->bindings_paths);
 
-    SB_APPEND(&options->host, STRLIT("localhost"));
+    SB_APPEND(&options->host, "localhost");
     SB_APPEND(&options->current_song_format, "{{{(%l) }{{%a - }%t}}|{%f}}");
     options->port = 6600;
 

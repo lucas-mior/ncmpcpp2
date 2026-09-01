@@ -1109,7 +1109,7 @@ lyrics_title_callback(NcScreen *screen) {
         return lyrics->title.data;
     }
 
-    SB_APPEND(&lyrics->title, STRLIT(": "));
+    SB_APPEND(&lyrics->title, ": ");
     scroll_begin = nc_lyrics_screen_scroll_begin(&lyrics->screen);
     scroll_width = COLS - utf8_width(lyrics->title.data,
                                      lyrics->title.len);
@@ -1164,7 +1164,7 @@ lyrics_title_song_string(NcmSong *song, StrBuilder *title) {
     if (ncm_song_tag_view(song, MPD_TAG_ARTIST, 0, &artist_view)
         && ncm_song_tag_view(song, MPD_TAG_TITLE, 0, &title_view)) {
         SB_APPEND(title, artist_view.data, artist_view.len);
-        SB_APPEND(title, STRLIT(" - "));
+        SB_APPEND(title, " - ");
         SB_APPEND(title, title_view.data, title_view.len);
         return;
     }
@@ -1424,7 +1424,7 @@ lyrics_filename_from_song_with_extension(
         basename_start = filename->len;
         if ((artist.len > 0) && (title.len > 0)) {
             SB_APPEND(filename, artist.data, artist.len);
-            SB_APPEND(filename, STRLIT(" - "));
+            SB_APPEND(filename, " - ");
             SB_APPEND(filename, title.data, title.len);
         } else {
             SB_APPEND(filename, title.data, title.len);
@@ -1901,11 +1901,11 @@ lyrics_set_consumer_fetch_message(LyricsScreen *screen,
     sb_clear(&screen->consumer_message);
 
     SB_APPEND(&screen->consumer_message,
-              STRLIT("Fetching lyrics for \""));
+              "Fetching lyrics for \"");
     SB_APPEND(&screen->consumer_message,
               formatted.data,
               formatted.len);
-    SB_APPEND(&screen->consumer_message, STRLIT("\"..."));
+    SB_APPEND(&screen->consumer_message, "\"...");
 
     sb_free(&formatted);
 

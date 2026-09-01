@@ -453,7 +453,7 @@ browser_screen_update_title_text(BrowserScreen *screen) {
     }
 
     sb_clear(&screen->title_text);
-    SB_APPEND(&screen->title_text, STRLIT("Browse: "));
+    SB_APPEND(&screen->title_text, "Browse: ");
 
     directory = browser_screen_current_directory(screen);
     if (directory.len <= 0) {

@@ -57,9 +57,9 @@ ncm_string_format_append_arg(StrBuilder *out, NcmStringFormatArg *arg) {
         break;
     case NCM_STRING_FORMAT_ARG_BOOL:
         if (arg->value.boolean) {
-            SB_APPEND(out, STRLIT("1"));
+            SB_APPEND(out, "1");
         } else {
-            SB_APPEND(out, STRLIT("0"));
+            SB_APPEND(out, "0");
         }
         break;
     case NCM_STRING_FORMAT_ARG_COUNT:

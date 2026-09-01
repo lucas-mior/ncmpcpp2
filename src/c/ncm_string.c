@@ -77,7 +77,7 @@ ncm_string_shared_directory(char *left, int32 left_len,
     int32 slash;
 
     if ((left == NULL) || (right == NULL)) {
-        SB_APPEND(&result, STRLIT("/"));
+        SB_APPEND(&result, "/");
         return result;
     }
     if (left_len < 0) {
@@ -105,7 +105,7 @@ ncm_string_shared_directory(char *left, int32 left_len,
     }
 
     if (slash < 0) {
-        SB_APPEND(&result, STRLIT("/"));
+        SB_APPEND(&result, "/");
     } else if (slash > 0) {
         SB_APPEND(&result, left, slash);
     }
@@ -228,7 +228,7 @@ ncm_string_append_shell_escaped_single_quotes(StrBuilder *buffer,
                                               int32 string_len) {
     for (int32 i = 0; i < string_len; i += 1) {
         if (string[i] == '\'') {
-            SB_APPEND(buffer, STRLIT("'\\''"));
+            SB_APPEND(buffer, "'\\''");
         } else {
             sb_append_byte(buffer, string[i]);
         }

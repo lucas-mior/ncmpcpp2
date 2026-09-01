@@ -437,13 +437,13 @@ lyrics_build_amalgama_direct_url(
             && lyrics_append_slug_profile(&title_slug, title_profile,
                                           title, title_len);
     if (valid) {
-        SB_APPEND(url, STRLIT("https://www.amalgama-lab.com/songs/"));
+        SB_APPEND(url, "https://www.amalgama-lab.com/songs/");
         sb_append_byte(url, artist_slug.data[0]);
         sb_append_byte(url, '/');
         SB_APPEND(url, artist_slug.data, artist_slug.len);
         sb_append_byte(url, '/');
         SB_APPEND(url, title_slug.data, title_slug.len);
-        SB_APPEND(url, STRLIT(".html"));
+        SB_APPEND(url, ".html");
     }
 
     sb_free(&title_slug);
@@ -475,27 +475,27 @@ lyrics_build_direct_url_profiles(
             title_profile);
         break;
     case NCM_LYRICS_FETCHER_AZLYRICS:
-        SB_APPEND(url, STRLIT("https://www.azlyrics.com/lyrics/"));
+        SB_APPEND(url, "https://www.azlyrics.com/lyrics/");
         valid = lyrics_append_slug_profile(url, artist_profile,
                                            artist, artist_len);
         sb_append_byte(url, '/');
         valid = valid
                 && lyrics_append_slug_profile(url, title_profile,
                                               title, title_len);
-        SB_APPEND(url, STRLIT(".html"));
+        SB_APPEND(url, ".html");
         break;
     case NCM_LYRICS_FETCHER_GENIUS:
-        SB_APPEND(url, STRLIT("https://genius.com/"));
+        SB_APPEND(url, "https://genius.com/");
         valid = lyrics_append_slug_profile(url, artist_profile,
                                            artist, artist_len);
         sb_append_byte(url, '-');
         valid = valid
                 && lyrics_append_slug_profile(url, title_profile,
                                               title, title_len);
-        SB_APPEND(url, STRLIT("-lyrics"));
+        SB_APPEND(url, "-lyrics");
         break;
     case NCM_LYRICS_FETCHER_LETRASMUS:
-        SB_APPEND(url, STRLIT("https://www.letras.mus.br/"));
+        SB_APPEND(url, "https://www.letras.mus.br/");
         valid = lyrics_append_slug_profile(url, artist_profile,
                                            artist, artist_len);
         sb_append_byte(url, '/');
@@ -509,16 +509,16 @@ lyrics_build_direct_url_profiles(
         valid = false;
         break;
     case NCM_LYRICS_FETCHER_PAROLES:
-        SB_APPEND(url, STRLIT("https://www.paroles.net/"));
+        SB_APPEND(url, "https://www.paroles.net/");
         valid = lyrics_append_slug_profile(url, artist_profile,
                                            artist, artist_len);
-        SB_APPEND(url, STRLIT("/paroles-"));
+        SB_APPEND(url, "/paroles-");
         valid = valid
                 && lyrics_append_slug_profile(url, title_profile,
                                               title, title_len);
         break;
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
-        SB_APPEND(url, STRLIT("https://www.musixmatch.com/lyrics/"));
+        SB_APPEND(url, "https://www.musixmatch.com/lyrics/");
         valid = lyrics_append_slug_profile(url, artist_profile,
                                            artist, artist_len);
         sb_append_byte(url, '/');
@@ -527,7 +527,7 @@ lyrics_build_direct_url_profiles(
                                               title, title_len);
         break;
     case NCM_LYRICS_FETCHER_TEKSTOWO:
-        SB_APPEND(url, STRLIT("https://www.tekstowo.pl/"));
+        SB_APPEND(url, "https://www.tekstowo.pl/");
         valid = lyrics_append_slug_profile(url, artist_profile,
                                            artist, artist_len);
         sb_append_byte(url, '/');
@@ -536,14 +536,14 @@ lyrics_build_direct_url_profiles(
                                               title, title_len);
         break;
     case NCM_LYRICS_FETCHER_VAGALUME:
-        SB_APPEND(url, STRLIT("https://www.vagalume.com.br/"));
+        SB_APPEND(url, "https://www.vagalume.com.br/");
         valid = lyrics_append_slug_profile(url, artist_profile,
                                            artist, artist_len);
         sb_append_byte(url, '/');
         valid = valid
                 && lyrics_append_slug_profile(url, title_profile,
                                               title, title_len);
-        SB_APPEND(url, STRLIT(".html"));
+        SB_APPEND(url, ".html");
         break;
     case NCM_LYRICS_FETCHER_UNKNOWN:
     case NCM_LYRICS_FETCHER_INTERNET:
@@ -624,9 +624,9 @@ ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher, StrBuilder *url,
 
     sb_clear(url);
     SB_APPEND(url,
-              STRLIT("https://www.google.com/search?hl=en&q="));
+              "https://www.google.com/search?hl=en&q=");
     if (fetcher->type == NCM_LYRICS_FETCHER_INTERNET) {
-        SB_APPEND(url, STRLIT("lyrics+"));
+        SB_APPEND(url, "lyrics+");
     } else {
         domain = lyrics_type_domain(fetcher->type, &domain_len);
         if (domain_len <= 0) {
@@ -641,7 +641,7 @@ ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher, StrBuilder *url,
     sb_append_byte(url, '+');
     lyrics_append_query(url, title, title_len);
     if (fetcher->type != NCM_LYRICS_FETCHER_INTERNET) {
-        SB_APPEND(url, STRLIT("+lyrics"));
+        SB_APPEND(url, "+lyrics");
     }
     return true;
 }
@@ -1523,7 +1523,7 @@ lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len, char *marker,
         }
 
         if (found) {
-            SB_APPEND(out, STRLIT("\n\n"));
+            SB_APPEND(out, "\n\n");
         }
         SB_APPEND(out, data + open_end + 1, close - open_end - 1);
         found = true;
