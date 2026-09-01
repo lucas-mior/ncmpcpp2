@@ -415,8 +415,7 @@ lyrics_append_url_if_new(StrBuilderArray *urls, char *url, int32 url_len) {
         return true;
     }
 
-    item = str_builder_array_append(urls);
-    if (item == NULL) {
+    if ((item = str_builder_array_append(urls)) == NULL) {
         return false;
     }
     SB_APPEND(item, url, url_len);
@@ -805,8 +804,8 @@ static char *
 lyrics_type_name(enum NcmLyricsFetcherType type, int32 *len) {
     LyricsProviderProfile *profile;
 
-    profile = lyrics_provider_profile(type);
-    if ((profile == NULL) || (profile->name == NULL)) {
+    if (((profile = lyrics_provider_profile(type)) == NULL)
+        || (profile->name == NULL)) {
         *len = 0;
         return "";
     }
@@ -831,8 +830,7 @@ static LyricsSlugProfile
 lyrics_slug_profile(enum NcmLyricsFetcherType type) {
     LyricsProviderProfile *profile;
 
-    profile = lyrics_provider_profile(type);
-    if (profile == NULL) {
+    if ((profile = lyrics_provider_profile(type)) == NULL) {
         return LYRICS_SLUG_PROFILE_NONE;
     }
     return profile->slug_profile;
@@ -2076,8 +2074,7 @@ lyrics_insert_search_url(StrBuilderArray *urls, int32 *scores, char *url,
         item = &urls->items[pos];
         sb_clear(item);
     } else {
-        item = str_builder_array_append(urls);
-        if (item == NULL) {
+        if ((item = str_builder_array_append(urls)) == NULL) {
             return false;
         }
         pos = urls->len - 1;
