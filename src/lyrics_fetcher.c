@@ -1894,8 +1894,7 @@ lyrics_url_path_has_ascii_letter(char *url, int32 url_len) {
     int32 path_start;
     int32 path_end;
 
-    path_start = lyrics_url_path_start(url, url_len);
-    if (path_start < 0) {
+    if ((path_start = lyrics_url_path_start(url, url_len)) < 0) {
         return false;
     }
 
