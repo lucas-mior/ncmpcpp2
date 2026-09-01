@@ -1222,9 +1222,8 @@ static bool
 search_row_label(SearchEngineScreen *screen,
                  NcSearchRow *row, NcmStringView *view) {
     ASSERT(screen != NULL);
-    if ((row == NULL) || (view == NULL)) {
-        return false;
-    }
+    ASSERT(row != NULL);
+    ASSERT(view != NULL);
     if (row->is_song) {
         if (screen->hooks.format_song) {
             sb_clear(&screen->row_text);
@@ -1254,9 +1253,8 @@ search_insert_buffer_with_flags(SearchEngineScreen *screen,
                                 uint32 flags) {
     NcSearchRow row;
 
-    if ((screen == NULL) || (buffer == NULL)) {
-        return false;
-    }
+    ASSERT(screen != NULL);
+    ASSERT(buffer != NULL);
     row = (NcSearchRow){0};
     nc_buffer_copy(&row.buffer, buffer);
     nc_search_row_menu_insert_with_flags(&screen->rows, pos, &row, flags);
@@ -1375,9 +1373,9 @@ search_draw_row(NcMenu *menu, NcWindow *window, void *item,
     SearchEngineScreen *screen = user;
     NcSearchRow *row = item;
 
-    if ((screen == NULL) || (window == NULL) || (row == NULL)) {
-        return;
-    }
+    ASSERT(screen != NULL);
+    ASSERT(window != NULL);
+    ASSERT(row != NULL);
 
     if (!row->is_song) {
         search_print_buffer(window, &row->buffer);
@@ -1449,9 +1447,8 @@ static bool
 search_format_columns(SearchEngineScreen *screen, NcmSong *song,
                       NcBuffer *buffer, int32 list_width) {
     ASSERT(screen != NULL);
-    if ((song == NULL) || (buffer == NULL)) {
-        return false;
-    }
+    ASSERT(song != NULL);
+    ASSERT(buffer != NULL);
 
     ncm_display_song_columns(buffer, song, Config.columns.items,
                              Config.columns.len, list_width, true);
@@ -1735,9 +1732,8 @@ static bool
 search_song_matches(SearchEngineScreen *screen, NcmSong *song,
                     NcmRegex *regexes) {
     ASSERT(screen != NULL);
-    if ((song == NULL) || (regexes == NULL)) {
-        return false;
-    }
+    ASSERT(song != NULL);
+    ASSERT(regexes != NULL);
 
     if ((screen->constraints[0].len > 0)
         && !search_song_any_matches(screen, song, &regexes[0])) {
@@ -1808,9 +1804,8 @@ search_song_field_view(NcmSong *song, int32 field,
                        NcmStringView *view) {
     enum mpd_tag_type tag;
 
-    if ((song == NULL) || (view == NULL)) {
-        return false;
-    }
+    ASSERT(song != NULL);
+    ASSERT(view != NULL);
     if (field == 5) {
         return ncm_song_name_view(song, 0, view);
     }
@@ -1852,7 +1847,8 @@ search_song_field_view(NcmSong *song, int32 field,
 static bool
 search_append_result_rows(SearchEngineScreen *screen, NcmSongArray *songs) {
     ASSERT(screen != NULL);
-    if ((songs == NULL) || (songs->len <= 0)) {
+    ASSERT(songs != NULL);
+    if (songs->len <= 0) {
         return false;
     }
 

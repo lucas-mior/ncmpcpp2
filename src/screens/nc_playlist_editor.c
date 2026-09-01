@@ -1059,9 +1059,9 @@ content_draw_callback(NcMenu *menu, NcWindow *window, void *item,
     bool use_colors;
 
     (void)user;
-    if ((menu == NULL) || (window == NULL) || (item == NULL)) {
-        return;
-    }
+    ASSERT(menu != NULL);
+    ASSERT(window != NULL);
+    ASSERT(item != NULL);
 
     buffer = (NcBuffer){0};
     if (Config.playlist_editor_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
@@ -1089,9 +1089,8 @@ playlist_editor_print_buffer(NcWindow *window, NcBuffer *buffer) {
     int32 property_index;
     int32 len;
 
-    if ((window == NULL) || (buffer == NULL)) {
-        return;
-    }
+    ASSERT(window != NULL);
+    ASSERT(buffer != NULL);
 
     data = nc_buffer_data(buffer);
     len = nc_buffer_len(buffer);
@@ -1172,9 +1171,8 @@ playlist_editor_format_content_search_text(
     PlaylistEditorScreen *screen, NcmSong *song, NcBuffer *buffer
 ) {
     (void)screen;
-    if ((song == NULL) || (buffer == NULL)) {
-        return false;
-    }
+    ASSERT(song != NULL);
+    ASSERT(buffer != NULL);
 
     if (Config.playlist_editor_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
         ncm_display_song_row(buffer, &Config.song_columns_mode_format,
@@ -1744,9 +1742,7 @@ playlist_editor_restore_content_song(PlaylistEditorScreen *screen,
 
 static void
 playlist_editor_sort_playlists(NcmMpdPlaylistList *playlists) {
-    if (playlists == NULL) {
-        return;
-    }
+    ASSERT(playlists != NULL);
 
     for (int32 i = 1; i < playlists->count; i += 1) {
         NcmPlaylist current;
@@ -2135,9 +2131,8 @@ static void
 playlist_editor_refresh_window(PlaylistEditorScreen *screen,
                                NcWindow *window, NcMenu *menu) {
     ASSERT(screen != NULL);
-    if ((window == NULL) || (menu == NULL)) {
-        return;
-    }
+    ASSERT(window != NULL);
+    ASSERT(menu != NULL);
     nc_menu_prepare_refresh(menu, nc_window_height(window), NULL, NULL);
     nc_window_display(window);
     nc_menu_refresh(menu, window, nc_window_width(window),

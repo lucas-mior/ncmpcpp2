@@ -1045,9 +1045,7 @@ playlist_song_matches(PlaylistScreen *screen,
     bool result;
 
     (void)screen;
-    if (song == NULL) {
-        return false;
-    }
+    ASSERT(song != NULL);
 
     if (Config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
         buffer = ncm_format_render_string(&Config.song_columns_mode_format,
@@ -1109,9 +1107,9 @@ playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
     bool is_now_playing;
 
     (void)user;
-    if ((menu == NULL) || (window == NULL) || (item == NULL)) {
-        return;
-    }
+    ASSERT(menu != NULL);
+    ASSERT(window != NULL);
+    ASSERT(item != NULL);
 
     if ((is_now_playing = playlist_song_is_now_playing(item))) {
         playlist_print_buffer(window, &Config.now_playing_prefix);
@@ -1170,9 +1168,7 @@ playlist_activate_song(NcMenu *menu, void *item, int32 pos,
     (void)menu;
     (void)pos;
     (void)user;
-    if (item == NULL) {
-        return;
-    }
+    ASSERT(item != NULL);
     if (!ncm_mpd_client_play_id(&global_mpd, ncm_song_id(item),
                                 &ncm_error)) {
         ncm_statusbar_print_cstring(1, ncm_error.message);
@@ -1357,12 +1353,8 @@ playlist_apply_changed_song_to_storage(PlaylistScreen *screen,
     NcMenu *menu;
     int32 position;
 
-    if (screen == NULL) {
-        return false;
-    }
-    if (song == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
+    ASSERT(song != NULL);
 
     menu = playlist_storage_menu(screen);
     position = ncm_song_position(song);
@@ -1421,12 +1413,8 @@ playlist_apply_changed_songs(PlaylistScreen *screen,
     bool result;
     bool was_filtered;
 
-    if (screen == NULL) {
-        return false;
-    }
-    if (songs == NULL) {
-        return false;
-    }
+    ASSERT(screen != NULL);
+    ASSERT(songs != NULL);
 
     menu = playlist_storage_menu(screen);
     result = true;
