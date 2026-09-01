@@ -1383,7 +1383,7 @@ bool media_library_screen_add_songs(MediaLibraryScreen *screen,
                                     NcmError *ncm_error);
 bool media_library_screen_add_item_to_playlist(MediaLibraryScreen *screen,
                                                bool play, NcmError *ncm_error);
-bool media_library_screen_locate_song(MediaLibraryScreen *screen 
+bool media_library_screen_locate_song(MediaLibraryScreen *screen,
                                       NcmSong *song, NcmError *ncm_error);
 
 /* screens/nc_playlist_editor.h */
