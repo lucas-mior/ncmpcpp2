@@ -1436,9 +1436,8 @@ lyrics_extract_after_until(StrBuilder *out, char *data, int32 data_len,
 
 static int32
 lyrics_find_tag_end(char *data, int32 data_len, int32 start) {
-    char quote;
+    char quote = '\0';
 
-    quote = '\0';
     for (int32 i = start; i < data_len; i += 1) {
         if (quote != '\0') {
             if (data[i] == quote) {
