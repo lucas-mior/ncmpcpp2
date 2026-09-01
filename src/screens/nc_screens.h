@@ -1278,10 +1278,10 @@ void media_library_screen_set_geometry(
     MediaLibraryScreen *screen, int32 start_x, int32 width,
     int32 main_start_y, int32 main_height);
 
-int32 media_library_screen_column_count(
-    MediaLibraryScreen *screen);
-bool media_library_screen_set_mode(
-    MediaLibraryScreen *screen, enum MediaLibraryMode mode);
+int32 media_library_screen_column_count(MediaLibraryScreen *screen);
+bool media_library_screen_set_mode(MediaLibraryScreen *screen,
+                                   enum MediaLibraryMode mode);
+
 enum MediaLibraryMode media_library_screen_toggle_mode(
     MediaLibraryScreen *screen);
 enum MediaLibraryColumn media_library_screen_active_column(
@@ -1305,6 +1305,7 @@ NcMediaLibraryTagRow *media_library_screen_current_tag(
     MediaLibraryScreen *screen);
 NcMediaLibraryAlbumRow *media_library_screen_current_album(
     MediaLibraryScreen *screen);
+
 bool media_library_screen_current_primary_tag_value(
     MediaLibraryScreen *screen, char **value, int32 *value_len);
 bool media_library_screen_current_album_value(
