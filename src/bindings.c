@@ -1053,9 +1053,9 @@ ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
 }
 
 static bool
-ncm_bindings_bind_group(NcmBindingsConfiguration *bindings, char *key_name,
-                        int32 key_name_len, enum NcmActionType *actions,
-                        int32 actions_len) {
+ncm_bindings_bind_group(NcmBindingsConfiguration *bindings,
+                        char *key_name, int32 key_name_len,
+                        enum NcmActionType *actions, int32 actions_len) {
     NcKey key;
 
     key = ncm_bindings_string_to_key(key_name, key_name_len);
