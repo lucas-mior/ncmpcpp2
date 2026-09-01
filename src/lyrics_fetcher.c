@@ -1307,9 +1307,8 @@ lyrics_query_safe(char ch) {
 static void
 lyrics_append_query(StrBuilder *buffer, char *string, int32 string_len) {
     for (int32 i = 0; i < string_len; i += 1) {
-        uint8 byte;
+        uint8 byte = (uint8)string[i];
 
-        byte = (uint8)string[i];
         if (lyrics_query_safe(string[i])) {
             sb_append_byte(buffer, string[i]);
         } else if ((string[i] == ' ') || (string[i] == '\t')) {
