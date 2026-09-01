@@ -77,45 +77,45 @@ ncm_format_parse_color_component(char *data, int32 data_len,
     int32 value;
     int32 lower_bound;
 
-    if (STREQUAL(data, data_len, STRLIT("black"))) {
+    if (STREQUAL(data, data_len, "black")) {
         *result = COLOR_BLACK;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT("red"))) {
+    if (STREQUAL(data, data_len, "red")) {
         *result = COLOR_RED;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT("green"))) {
+    if (STREQUAL(data, data_len, "green")) {
         *result = COLOR_GREEN;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT("yellow"))) {
+    if (STREQUAL(data, data_len, "yellow")) {
         *result = COLOR_YELLOW;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT("blue"))) {
+    if (STREQUAL(data, data_len, "blue")) {
         *result = COLOR_BLUE;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT("magenta"))) {
+    if (STREQUAL(data, data_len, "magenta")) {
         *result = COLOR_MAGENTA;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT("cyan"))) {
+    if (STREQUAL(data, data_len, "cyan")) {
         *result = COLOR_CYAN;
         return true;
     }
-    if (STREQUAL(data, data_len, STRLIT("white"))) {
+    if (STREQUAL(data, data_len, "white")) {
         *result = COLOR_WHITE;
         return true;
     }
     if (background
-        && STREQUAL(data, data_len, STRLIT("transparent"))) {
+        && STREQUAL(data, data_len, "transparent")) {
         *result = -1;
         return true;
     }
     if (background
-        && STREQUAL(data, data_len, STRLIT("current"))) {
+        && STREQUAL(data, data_len, "current")) {
         *result = -2;
         return true;
     }
