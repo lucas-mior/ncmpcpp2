@@ -2347,8 +2347,7 @@ lyrics_extract_genius(StrBuilder *out, char *data, int32 data_len) {
     bool ok;
 
     marker = lyrics_find(data, data_len,
-                         STRLIT("window.__PRELOADED_STATE__ = "
-                                     "JSON.parse('"),
+                         STRLIT("window.__PRELOADED_STATE__ = JSON.parse('"),
                          0);
     ok = false;
     if (marker >= 0) {
