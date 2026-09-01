@@ -1669,18 +1669,18 @@ void playlist_screen_reload_remaining(PlaylistScreen *screen);
 #define ENUM_NAME SearchEngineSearchMode
 #define ENUM_PREFIX_ SEARCH_ENGINE_SEARCH_MODE_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(SEARCH_ENGINE_SEARCH_MODE_LITERAL) \
-    XX(SEARCH_ENGINE_SEARCH_MODE_REGEX) \
+#define ENUM_FIELDS                                   \
+    XX(SEARCH_ENGINE_SEARCH_MODE_LITERAL)             \
+    XX(SEARCH_ENGINE_SEARCH_MODE_REGEX)               \
     XX(SEARCH_ENGINE_SEARCH_MODE_EXACT)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME SearchEnginePromptResult
 #define ENUM_PREFIX_ SEARCH_ENGINE_PROMPT_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(SEARCH_ENGINE_PROMPT_ERROR) \
-    XX(SEARCH_ENGINE_PROMPT_ABORTED) \
+#define ENUM_FIELDS                                   \
+    XX(SEARCH_ENGINE_PROMPT_ERROR)                    \
+    XX(SEARCH_ENGINE_PROMPT_ABORTED)                  \
     XX(SEARCH_ENGINE_PROMPT_ACCEPTED)
 #include "cbase/xenums.c"
 
