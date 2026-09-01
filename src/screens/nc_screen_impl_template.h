@@ -146,9 +146,8 @@ NC_SCREEN_IMPL_FROM_SCREEN(NcScreen *screen) {
 
 static NcWindow *
 NC_SCREEN_IMPL_ACTIVE_WINDOW(NcScreen *screen) {
-    NC_SCREEN_IMPL_TYPE *impl;
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
 
-    impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
     return NC_SCREEN_IMPL_WINDOW(impl);
 }
 
@@ -167,9 +166,8 @@ NC_SCREEN_IMPL_REFRESH_WINDOW(NcScreen *screen) {
 #if defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD)
 static void
 NC_SCREEN_IMPL_SCROLL(NcScreen *screen, enum NcScroll where) {
-    NC_SCREEN_IMPL_TYPE *impl;
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
 
-    impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
     nc_scrollpad_scroll(&impl->NC_SCREEN_IMPL_SCROLLPAD_FIELD,
                         NC_SCREEN_IMPL_WINDOW(impl),
                         where);
@@ -178,9 +176,8 @@ NC_SCREEN_IMPL_SCROLL(NcScreen *screen, enum NcScroll where) {
 #elif defined(NC_SCREEN_IMPL_SCROLL_MENU)
 static void
 NC_SCREEN_IMPL_SCROLL(NcScreen *screen, enum NcScroll where) {
-    NC_SCREEN_IMPL_TYPE *impl;
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
 
-    impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
     nc_menu_scroll_selectable(NC_SCREEN_IMPL_SCROLL_MENU(impl),
                               NC_SCREEN_IMPL_SCROLL_HEIGHT(impl),
                               where);
