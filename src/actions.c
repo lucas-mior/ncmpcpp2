@@ -125,7 +125,7 @@ XX(show_outputs, SHOW_OUTPUTS)                                                 \
 XX(show_playlist, SHOW_PLAYLIST)                                               \
 XX(show_playlist_editor, SHOW_PLAYLIST_EDITOR)                                 \
 XX(show_search_engine, SHOW_SEARCH_ENGINE)                                     \
-XX(show_server_info, SHOW_SERVER_INFO)
+XX(show_server_info, SHOW_SERVER_INFO)                                         \
 XX(show_song_info, SHOW_SONG_INFO)                                             \
 XX(show_tag_editor, SHOW_TAG_EDITOR)                                           \
 XX(show_visualizer, SHOW_VISUALIZER)                                           \
@@ -161,7 +161,7 @@ XX(toggle_visualization_type, TOGGLE_VISUALIZATION_TYPE)                       \
 XX(update_database, UPDATE_DATABASE)                                           \
 XX(update_environment, UPDATE_ENVIRONMENT)                                     \
 XX(volume_down, VOLUME_DOWN)                                                   \
-XX(volume_up, VOLUME_UP)                                                       \
+XX(volume_up, VOLUME_UP)
 
 #define XX(SUFFIX, TYPE) NCM_ACTION_TABLE_CALLBACKS(SUFFIX, TYPE)
 NCM_ACTION_TABLE_DEFS(XX)
