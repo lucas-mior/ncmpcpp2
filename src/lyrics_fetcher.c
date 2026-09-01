@@ -1853,8 +1853,8 @@ lyrics_url_segment_slug_score(NcmLyricsFetcherDef *fetcher, char *segment,
 }
 
 static int32
-lyrics_url_best_slug_score(NcmLyricsFetcherDef *fetcher, char *url,
-                           int32 url_len, StrBuilder *wanted) {
+lyrics_url_best_slug_score(NcmLyricsFetcherDef *fetcher,
+                           char *url, int32 url_len, StrBuilder *wanted) {
     int32 path_start;
     int32 path_end;
     int32 segment_start;
