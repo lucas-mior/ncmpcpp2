@@ -1084,7 +1084,6 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
                                  NcKey key, char *key_name, int32 key_name_len,
                                  char *command_name, int32 command_name_len,
                                  bool command_immediate, NcmError *ncm_error) {
-    NcmCommand command;
     bool result;
 
     if (in_progress == 0) {
@@ -1104,14 +1103,17 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
     }
 
     if (in_progress == 1) {
-        command = (NcmCommand){0};
+        NcmCommand command = (NcmCommand){0};
+
         command.name = command_name;
         command.name_len = command_name_len;
         command.name_cap = command_name_len + 1;
         command.immediate = command_immediate;
+
         if (!ncm_binding_copy(&command.binding, actions)) {
             return false;
         }
+
         result = ncm_bindings_insert_command(bindings, &command, ncm_error);
         ncm_binding_destroy(&command.binding);
         return result;
