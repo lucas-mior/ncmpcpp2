@@ -456,8 +456,8 @@ playlist_editor_screen_reload_content_from_mpd(PlaylistEditorScreen *screen,
     if (screen == NULL) {
         return false;
     }
-    playlist = nc_playlist_entry_menu_current(&screen->playlists);
-    if ((playlist == NULL) || (playlist->path == NULL)) {
+    if ((playlist = nc_playlist_entry_menu_current(&screen->playlists)) == NULL
+        || (playlist->path == NULL)) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("missing playlist"));
         return false;
     }
@@ -613,8 +613,8 @@ playlist_editor_screen_current_playlist(
     if ((screen == NULL) || (playlist == NULL)) {
         return false;
     }
-    current = nc_playlist_entry_menu_current(&screen->playlists);
-    if (current == NULL) {
+    if ((current = nc_playlist_entry_menu_current(&screen->playlists))
+        == NULL) {
         return false;
     }
     return ncm_playlist_copy(playlist, current);
@@ -1026,8 +1026,7 @@ playlist_draw_callback(NcMenu *menu, NcWindow *window, void *item,
     (void)menu;
     (void)pos;
     (void)user;
-    playlist = item;
-    if ((window == NULL) || (playlist == NULL)
+    if ((window == NULL) || ((playlist = item) == NULL)
         || (playlist->path == NULL) || (playlist->path_len <= 0)) {
         return;
     }
@@ -1431,8 +1430,8 @@ playlist_editor_current_playlist_path(PlaylistEditorScreen *screen,
     if ((screen == NULL) || (path == NULL) || (path_len == NULL)) {
         return false;
     }
-    playlist = nc_playlist_entry_menu_current(&screen->playlists);
-    if ((playlist == NULL) || (playlist->path == NULL)) {
+    if ((playlist = nc_playlist_entry_menu_current(&screen->playlists)) == NULL
+        || (playlist->path == NULL)) {
         return false;
     }
     *path = playlist->path;
@@ -2047,8 +2046,8 @@ playlist_editor_mouse_load_current_playlist(
     if (screen == NULL) {
         return false;
     }
-    playlist = nc_playlist_entry_menu_current(&screen->playlists);
-    if ((playlist == NULL) || (playlist->path == NULL)) {
+    if ((playlist = nc_playlist_entry_menu_current(&screen->playlists)) == NULL
+        || (playlist->path == NULL)) {
         return false;
     }
 
@@ -2250,9 +2249,8 @@ append_content_item_from_source(PlaylistEditorScreen *screen,
                                 NcmSongArray *songs) {
     NcmSong *song;
 
-    song = nc_menu_item_at(nc_song_menu_base(&screen->content), source,
-                           pos);
-    if (song == NULL) {
+    if ((song = nc_menu_item_at(nc_song_menu_base(&screen->content),
+                                 source, pos)) == NULL) {
         return false;
     }
     return ncm_song_array_append_copy(songs, song);
