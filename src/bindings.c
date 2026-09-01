@@ -55,9 +55,8 @@ ncm_string_copy(char *string, int32 string_len, int32 *cap) {
 
 static int32
 ncm_trim_start(char *string, int32 string_len) {
-    int32 result;
+    int32 result = 0;
 
-    result = 0;
     while (result < string_len) {
         uint8 c;
 
@@ -67,6 +66,7 @@ ncm_trim_start(char *string, int32 string_len) {
         }
         result += 1;
     }
+
     return result;
 }
 
