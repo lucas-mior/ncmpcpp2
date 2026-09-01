@@ -34,926 +34,278 @@
         return ncm_action_runtime_run(NULL, TYPE);                        \
     }
 
-NCM_ACTION_TABLE_CALLBACKS(dummy, NCM_ACTION_DUMMY)
-NCM_ACTION_TABLE_CALLBACKS(update_environment, NCM_ACTION_UPDATE_ENVIRONMENT)
-NCM_ACTION_TABLE_CALLBACKS(mouse_event, NCM_ACTION_MOUSE_EVENT)
-NCM_ACTION_TABLE_CALLBACKS(scroll_up, NCM_ACTION_SCROLL_UP)
-NCM_ACTION_TABLE_CALLBACKS(scroll_down, NCM_ACTION_SCROLL_DOWN)
-NCM_ACTION_TABLE_CALLBACKS(scroll_up_artist, NCM_ACTION_SCROLL_UP_ARTIST)
-NCM_ACTION_TABLE_CALLBACKS(scroll_up_album, NCM_ACTION_SCROLL_UP_ALBUM)
-NCM_ACTION_TABLE_CALLBACKS(scroll_down_artist, NCM_ACTION_SCROLL_DOWN_ARTIST)
-NCM_ACTION_TABLE_CALLBACKS(scroll_down_album, NCM_ACTION_SCROLL_DOWN_ALBUM)
-NCM_ACTION_TABLE_CALLBACKS(page_up, NCM_ACTION_PAGE_UP)
-NCM_ACTION_TABLE_CALLBACKS(page_down, NCM_ACTION_PAGE_DOWN)
-NCM_ACTION_TABLE_CALLBACKS(move_home, NCM_ACTION_MOVE_HOME)
-NCM_ACTION_TABLE_CALLBACKS(move_end, NCM_ACTION_MOVE_END)
-NCM_ACTION_TABLE_CALLBACKS(toggle_interface, NCM_ACTION_TOGGLE_INTERFACE)
-NCM_ACTION_TABLE_CALLBACKS(jump_to_parent_directory,
-                           NCM_ACTION_JUMP_TO_PARENT_DIRECTORY)
-NCM_ACTION_TABLE_CALLBACKS(run_action, NCM_ACTION_RUN_ACTION)
-NCM_ACTION_TABLE_CALLBACKS(previous_column, NCM_ACTION_PREVIOUS_COLUMN)
-NCM_ACTION_TABLE_CALLBACKS(next_column, NCM_ACTION_NEXT_COLUMN)
-NCM_ACTION_TABLE_CALLBACKS(master_screen, NCM_ACTION_MASTER_SCREEN)
-NCM_ACTION_TABLE_CALLBACKS(slave_screen, NCM_ACTION_SLAVE_SCREEN)
-NCM_ACTION_TABLE_CALLBACKS(volume_up, NCM_ACTION_VOLUME_UP)
-NCM_ACTION_TABLE_CALLBACKS(volume_down, NCM_ACTION_VOLUME_DOWN)
-NCM_ACTION_TABLE_CALLBACKS(add_item_to_playlist,
-                           NCM_ACTION_ADD_ITEM_TO_PLAYLIST)
-NCM_ACTION_TABLE_CALLBACKS(play_item, NCM_ACTION_PLAY_ITEM)
-NCM_ACTION_TABLE_CALLBACKS(delete_playlist_items,
-                           NCM_ACTION_DELETE_PLAYLIST_ITEMS)
-NCM_ACTION_TABLE_CALLBACKS(delete_stored_playlist,
-                           NCM_ACTION_DELETE_STORED_PLAYLIST)
-NCM_ACTION_TABLE_CALLBACKS(delete_browser_items,
-                           NCM_ACTION_DELETE_BROWSER_ITEMS)
-NCM_ACTION_TABLE_CALLBACKS(replay_song, NCM_ACTION_REPLAY_SONG)
-NCM_ACTION_TABLE_CALLBACKS(previous, NCM_ACTION_PREVIOUS)
-NCM_ACTION_TABLE_CALLBACKS(next, NCM_ACTION_NEXT)
-NCM_ACTION_TABLE_CALLBACKS(pause, NCM_ACTION_PAUSE)
-NCM_ACTION_TABLE_CALLBACKS(stop, NCM_ACTION_STOP)
-NCM_ACTION_TABLE_CALLBACKS(play, NCM_ACTION_PLAY)
-NCM_ACTION_TABLE_CALLBACKS(execute_command, NCM_ACTION_EXECUTE_COMMAND)
-NCM_ACTION_TABLE_CALLBACKS(save_playlist, NCM_ACTION_SAVE_PLAYLIST)
-NCM_ACTION_TABLE_CALLBACKS(move_sort_order_up, NCM_ACTION_MOVE_SORT_ORDER_UP)
-NCM_ACTION_TABLE_CALLBACKS(move_sort_order_down,
-                           NCM_ACTION_MOVE_SORT_ORDER_DOWN)
-NCM_ACTION_TABLE_CALLBACKS(move_selected_items_up,
-                           NCM_ACTION_MOVE_SELECTED_ITEMS_UP)
-NCM_ACTION_TABLE_CALLBACKS(move_selected_items_down,
-                           NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN)
-NCM_ACTION_TABLE_CALLBACKS(move_selected_items_to,
-                           NCM_ACTION_MOVE_SELECTED_ITEMS_TO)
-NCM_ACTION_TABLE_CALLBACKS(add, NCM_ACTION_ADD)
-NCM_ACTION_TABLE_CALLBACKS(load, NCM_ACTION_LOAD)
-NCM_ACTION_TABLE_CALLBACKS(seek_forward, NCM_ACTION_SEEK_FORWARD)
-NCM_ACTION_TABLE_CALLBACKS(seek_backward, NCM_ACTION_SEEK_BACKWARD)
-NCM_ACTION_TABLE_CALLBACKS(toggle_display_mode, NCM_ACTION_TOGGLE_DISPLAY_MODE)
-NCM_ACTION_TABLE_CALLBACKS(toggle_separators_between_albums,
-                           NCM_ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS)
-NCM_ACTION_TABLE_CALLBACKS(toggle_lyrics_update_on_song_change,
-                           NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE)
-NCM_ACTION_TABLE_CALLBACKS(toggle_lyrics_fetcher,
-                           NCM_ACTION_TOGGLE_LYRICS_FETCHER)
-NCM_ACTION_TABLE_CALLBACKS(toggle_fetching_lyrics_in_background,
-                           NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND)
-NCM_ACTION_TABLE_CALLBACKS(toggle_playing_song_centering,
-                           NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING)
-NCM_ACTION_TABLE_CALLBACKS(update_database, NCM_ACTION_UPDATE_DATABASE)
-NCM_ACTION_TABLE_CALLBACKS(jump_to_playing_song,
-                           NCM_ACTION_JUMP_TO_PLAYING_SONG)
-NCM_ACTION_TABLE_CALLBACKS(toggle_repeat, NCM_ACTION_TOGGLE_REPEAT)
-NCM_ACTION_TABLE_CALLBACKS(shuffle, NCM_ACTION_SHUFFLE)
-NCM_ACTION_TABLE_CALLBACKS(toggle_random, NCM_ACTION_TOGGLE_RANDOM)
-NCM_ACTION_TABLE_CALLBACKS(start_searching, NCM_ACTION_START_SEARCHING)
-NCM_ACTION_TABLE_CALLBACKS(save_tag_changes, NCM_ACTION_SAVE_TAG_CHANGES)
-NCM_ACTION_TABLE_CALLBACKS(toggle_single, NCM_ACTION_TOGGLE_SINGLE)
-NCM_ACTION_TABLE_CALLBACKS(toggle_consume, NCM_ACTION_TOGGLE_CONSUME)
-NCM_ACTION_TABLE_CALLBACKS(toggle_crossfade, NCM_ACTION_TOGGLE_CROSSFADE)
-NCM_ACTION_TABLE_CALLBACKS(set_crossfade, NCM_ACTION_SET_CROSSFADE)
-NCM_ACTION_TABLE_CALLBACKS(set_volume, NCM_ACTION_SET_VOLUME)
-NCM_ACTION_TABLE_CALLBACKS(enter_directory, NCM_ACTION_ENTER_DIRECTORY)
-NCM_ACTION_TABLE_CALLBACKS(edit_song, NCM_ACTION_EDIT_SONG)
-NCM_ACTION_TABLE_CALLBACKS(edit_library_tag, NCM_ACTION_EDIT_LIBRARY_TAG)
-NCM_ACTION_TABLE_CALLBACKS(edit_library_album, NCM_ACTION_EDIT_LIBRARY_ALBUM)
-NCM_ACTION_TABLE_CALLBACKS(edit_directory_name, NCM_ACTION_EDIT_DIRECTORY_NAME)
-NCM_ACTION_TABLE_CALLBACKS(edit_playlist_name, NCM_ACTION_EDIT_PLAYLIST_NAME)
-NCM_ACTION_TABLE_CALLBACKS(edit_lyrics, NCM_ACTION_EDIT_LYRICS)
-NCM_ACTION_TABLE_CALLBACKS(jump_to_browser, NCM_ACTION_JUMP_TO_BROWSER)
-NCM_ACTION_TABLE_CALLBACKS(jump_to_media_library,
-                           NCM_ACTION_JUMP_TO_MEDIA_LIBRARY)
-NCM_ACTION_TABLE_CALLBACKS(jump_to_playlist_editor,
-                           NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR)
-NCM_ACTION_TABLE_CALLBACKS(toggle_screen_lock, NCM_ACTION_TOGGLE_SCREEN_LOCK)
-NCM_ACTION_TABLE_CALLBACKS(jump_to_tag_editor, NCM_ACTION_JUMP_TO_TAG_EDITOR)
-NCM_ACTION_TABLE_CALLBACKS(jump_to_position_in_song,
-                           NCM_ACTION_JUMP_TO_POSITION_IN_SONG)
-NCM_ACTION_TABLE_CALLBACKS(select_item, NCM_ACTION_SELECT_ITEM)
-NCM_ACTION_TABLE_CALLBACKS(select_range, NCM_ACTION_SELECT_RANGE)
-NCM_ACTION_TABLE_CALLBACKS(reverse_selection, NCM_ACTION_REVERSE_SELECTION)
-NCM_ACTION_TABLE_CALLBACKS(remove_selection, NCM_ACTION_REMOVE_SELECTION)
-NCM_ACTION_TABLE_CALLBACKS(select_album, NCM_ACTION_SELECT_ALBUM)
-NCM_ACTION_TABLE_CALLBACKS(select_found_items, NCM_ACTION_SELECT_FOUND_ITEMS)
-NCM_ACTION_TABLE_CALLBACKS(add_selected_items, NCM_ACTION_ADD_SELECTED_ITEMS)
-NCM_ACTION_TABLE_CALLBACKS(crop_main_playlist, NCM_ACTION_CROP_MAIN_PLAYLIST)
-NCM_ACTION_TABLE_CALLBACKS(crop_playlist, NCM_ACTION_CROP_PLAYLIST)
-NCM_ACTION_TABLE_CALLBACKS(clear_main_playlist, NCM_ACTION_CLEAR_MAIN_PLAYLIST)
-NCM_ACTION_TABLE_CALLBACKS(clear_playlist, NCM_ACTION_CLEAR_PLAYLIST)
-NCM_ACTION_TABLE_CALLBACKS(sort_playlist, NCM_ACTION_SORT_PLAYLIST)
-NCM_ACTION_TABLE_CALLBACKS(reverse_playlist, NCM_ACTION_REVERSE_PLAYLIST)
-NCM_ACTION_TABLE_CALLBACKS(apply_filter, NCM_ACTION_APPLY_FILTER)
-NCM_ACTION_TABLE_CALLBACKS(find, NCM_ACTION_FIND)
-NCM_ACTION_TABLE_CALLBACKS(find_item_forward, NCM_ACTION_FIND_ITEM_FORWARD)
-NCM_ACTION_TABLE_CALLBACKS(find_item_backward, NCM_ACTION_FIND_ITEM_BACKWARD)
-NCM_ACTION_TABLE_CALLBACKS(next_found_item, NCM_ACTION_NEXT_FOUND_ITEM)
-NCM_ACTION_TABLE_CALLBACKS(previous_found_item, NCM_ACTION_PREVIOUS_FOUND_ITEM)
-NCM_ACTION_TABLE_CALLBACKS(toggle_find_mode, NCM_ACTION_TOGGLE_FIND_MODE)
-NCM_ACTION_TABLE_CALLBACKS(toggle_replay_gain_mode,
-                           NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE)
-NCM_ACTION_TABLE_CALLBACKS(toggle_add_mode, NCM_ACTION_TOGGLE_ADD_MODE)
-NCM_ACTION_TABLE_CALLBACKS(toggle_mouse, NCM_ACTION_TOGGLE_MOUSE)
-NCM_ACTION_TABLE_CALLBACKS(toggle_bitrate_visibility,
-                           NCM_ACTION_TOGGLE_BITRATE_VISIBILITY)
-NCM_ACTION_TABLE_CALLBACKS(add_random_items, NCM_ACTION_ADD_RANDOM_ITEMS)
-NCM_ACTION_TABLE_CALLBACKS(toggle_browser_sort_mode,
-                           NCM_ACTION_TOGGLE_BROWSER_SORT_MODE)
-NCM_ACTION_TABLE_CALLBACKS(toggle_library_tag_type,
-                           NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE)
-NCM_ACTION_TABLE_CALLBACKS(toggle_media_library_sort_mode,
-                           NCM_ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE)
-NCM_ACTION_TABLE_CALLBACKS(fetch_lyrics_in_background,
-                           NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND)
-NCM_ACTION_TABLE_CALLBACKS(refetch_lyrics, NCM_ACTION_REFETCH_LYRICS)
-NCM_ACTION_TABLE_CALLBACKS(set_selected_items_priority,
-                           NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY)
-NCM_ACTION_TABLE_CALLBACKS(toggle_output, NCM_ACTION_TOGGLE_OUTPUT)
-NCM_ACTION_TABLE_CALLBACKS(toggle_visualization_type,
-                           NCM_ACTION_TOGGLE_VISUALIZATION_TYPE)
-NCM_ACTION_TABLE_CALLBACKS(show_song_info, NCM_ACTION_SHOW_SONG_INFO)
-NCM_ACTION_TABLE_CALLBACKS(show_artist_info, NCM_ACTION_SHOW_ARTIST_INFO)
-NCM_ACTION_TABLE_CALLBACKS(show_lyrics, NCM_ACTION_SHOW_LYRICS)
-NCM_ACTION_TABLE_CALLBACKS(quit, NCM_ACTION_QUIT)
-NCM_ACTION_TABLE_CALLBACKS(next_screen, NCM_ACTION_NEXT_SCREEN)
-NCM_ACTION_TABLE_CALLBACKS(previous_screen, NCM_ACTION_PREVIOUS_SCREEN)
-NCM_ACTION_TABLE_CALLBACKS(show_help, NCM_ACTION_SHOW_HELP)
-NCM_ACTION_TABLE_CALLBACKS(show_playlist, NCM_ACTION_SHOW_PLAYLIST)
-NCM_ACTION_TABLE_CALLBACKS(show_browser, NCM_ACTION_SHOW_BROWSER)
-NCM_ACTION_TABLE_CALLBACKS(change_browse_mode, NCM_ACTION_CHANGE_BROWSE_MODE)
-NCM_ACTION_TABLE_CALLBACKS(show_search_engine, NCM_ACTION_SHOW_SEARCH_ENGINE)
-NCM_ACTION_TABLE_CALLBACKS(reset_search_engine, NCM_ACTION_RESET_SEARCH_ENGINE)
-NCM_ACTION_TABLE_CALLBACKS(show_media_library, NCM_ACTION_SHOW_MEDIA_LIBRARY)
-NCM_ACTION_TABLE_CALLBACKS(toggle_media_library_columns_mode,
-                           NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE)
-NCM_ACTION_TABLE_CALLBACKS(show_playlist_editor,
-                           NCM_ACTION_SHOW_PLAYLIST_EDITOR)
-NCM_ACTION_TABLE_CALLBACKS(show_tag_editor, NCM_ACTION_SHOW_TAG_EDITOR)
-NCM_ACTION_TABLE_CALLBACKS(show_outputs, NCM_ACTION_SHOW_OUTPUTS)
-NCM_ACTION_TABLE_CALLBACKS(show_visualizer, NCM_ACTION_SHOW_VISUALIZER)
-NCM_ACTION_TABLE_CALLBACKS(show_server_info, NCM_ACTION_SHOW_SERVER_INFO)
+#define NCM_ACTION_TABLE_DEFS(XX) \
+    XX(dummy, \
+       NCM_ACTION_DUMMY) \
+    XX(update_environment, \
+       NCM_ACTION_UPDATE_ENVIRONMENT) \
+    XX(mouse_event, \
+       NCM_ACTION_MOUSE_EVENT) \
+    XX(scroll_up, \
+       NCM_ACTION_SCROLL_UP) \
+    XX(scroll_down, \
+       NCM_ACTION_SCROLL_DOWN) \
+    XX(scroll_up_artist, \
+       NCM_ACTION_SCROLL_UP_ARTIST) \
+    XX(scroll_up_album, \
+       NCM_ACTION_SCROLL_UP_ALBUM) \
+    XX(scroll_down_artist, \
+       NCM_ACTION_SCROLL_DOWN_ARTIST) \
+    XX(scroll_down_album, \
+       NCM_ACTION_SCROLL_DOWN_ALBUM) \
+    XX(page_up, \
+       NCM_ACTION_PAGE_UP) \
+    XX(page_down, \
+       NCM_ACTION_PAGE_DOWN) \
+    XX(move_home, \
+       NCM_ACTION_MOVE_HOME) \
+    XX(move_end, \
+       NCM_ACTION_MOVE_END) \
+    XX(toggle_interface, \
+       NCM_ACTION_TOGGLE_INTERFACE) \
+    XX(jump_to_parent_directory, \
+       NCM_ACTION_JUMP_TO_PARENT_DIRECTORY) \
+    XX(run_action, \
+       NCM_ACTION_RUN_ACTION) \
+    XX(previous_column, \
+       NCM_ACTION_PREVIOUS_COLUMN) \
+    XX(next_column, \
+       NCM_ACTION_NEXT_COLUMN) \
+    XX(master_screen, \
+       NCM_ACTION_MASTER_SCREEN) \
+    XX(slave_screen, \
+       NCM_ACTION_SLAVE_SCREEN) \
+    XX(volume_up, \
+       NCM_ACTION_VOLUME_UP) \
+    XX(volume_down, \
+       NCM_ACTION_VOLUME_DOWN) \
+    XX(add_item_to_playlist, \
+       NCM_ACTION_ADD_ITEM_TO_PLAYLIST) \
+    XX(play_item, \
+       NCM_ACTION_PLAY_ITEM) \
+    XX(delete_playlist_items, \
+       NCM_ACTION_DELETE_PLAYLIST_ITEMS) \
+    XX(delete_stored_playlist, \
+       NCM_ACTION_DELETE_STORED_PLAYLIST) \
+    XX(delete_browser_items, \
+       NCM_ACTION_DELETE_BROWSER_ITEMS) \
+    XX(replay_song, \
+       NCM_ACTION_REPLAY_SONG) \
+    XX(previous, \
+       NCM_ACTION_PREVIOUS) \
+    XX(next, \
+       NCM_ACTION_NEXT) \
+    XX(pause, \
+       NCM_ACTION_PAUSE) \
+    XX(stop, \
+       NCM_ACTION_STOP) \
+    XX(play, \
+       NCM_ACTION_PLAY) \
+    XX(execute_command, \
+       NCM_ACTION_EXECUTE_COMMAND) \
+    XX(save_playlist, \
+       NCM_ACTION_SAVE_PLAYLIST) \
+    XX(move_sort_order_up, \
+       NCM_ACTION_MOVE_SORT_ORDER_UP) \
+    XX(move_sort_order_down, \
+       NCM_ACTION_MOVE_SORT_ORDER_DOWN) \
+    XX(move_selected_items_up, \
+       NCM_ACTION_MOVE_SELECTED_ITEMS_UP) \
+    XX(move_selected_items_down, \
+       NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN) \
+    XX(move_selected_items_to, \
+       NCM_ACTION_MOVE_SELECTED_ITEMS_TO) \
+    XX(add, \
+       NCM_ACTION_ADD) \
+    XX(load, \
+       NCM_ACTION_LOAD) \
+    XX(seek_forward, \
+       NCM_ACTION_SEEK_FORWARD) \
+    XX(seek_backward, \
+       NCM_ACTION_SEEK_BACKWARD) \
+    XX(toggle_display_mode, \
+       NCM_ACTION_TOGGLE_DISPLAY_MODE) \
+    XX(toggle_separators_between_albums, \
+       NCM_ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS) \
+    XX(toggle_lyrics_update_on_song_change, \
+       NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE) \
+    XX(toggle_lyrics_fetcher, \
+       NCM_ACTION_TOGGLE_LYRICS_FETCHER) \
+    XX(toggle_fetching_lyrics_in_background, \
+       NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND) \
+    XX(toggle_playing_song_centering, \
+       NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING) \
+    XX(update_database, \
+       NCM_ACTION_UPDATE_DATABASE) \
+    XX(jump_to_playing_song, \
+       NCM_ACTION_JUMP_TO_PLAYING_SONG) \
+    XX(toggle_repeat, \
+       NCM_ACTION_TOGGLE_REPEAT) \
+    XX(shuffle, \
+       NCM_ACTION_SHUFFLE) \
+    XX(toggle_random, \
+       NCM_ACTION_TOGGLE_RANDOM) \
+    XX(start_searching, \
+       NCM_ACTION_START_SEARCHING) \
+    XX(save_tag_changes, \
+       NCM_ACTION_SAVE_TAG_CHANGES) \
+    XX(toggle_single, \
+       NCM_ACTION_TOGGLE_SINGLE) \
+    XX(toggle_consume, \
+       NCM_ACTION_TOGGLE_CONSUME) \
+    XX(toggle_crossfade, \
+       NCM_ACTION_TOGGLE_CROSSFADE) \
+    XX(set_crossfade, \
+       NCM_ACTION_SET_CROSSFADE) \
+    XX(set_volume, \
+       NCM_ACTION_SET_VOLUME) \
+    XX(enter_directory, \
+       NCM_ACTION_ENTER_DIRECTORY) \
+    XX(edit_song, \
+       NCM_ACTION_EDIT_SONG) \
+    XX(edit_library_tag, \
+       NCM_ACTION_EDIT_LIBRARY_TAG) \
+    XX(edit_library_album, \
+       NCM_ACTION_EDIT_LIBRARY_ALBUM) \
+    XX(edit_directory_name, \
+       NCM_ACTION_EDIT_DIRECTORY_NAME) \
+    XX(edit_playlist_name, \
+       NCM_ACTION_EDIT_PLAYLIST_NAME) \
+    XX(edit_lyrics, \
+       NCM_ACTION_EDIT_LYRICS) \
+    XX(jump_to_browser, \
+       NCM_ACTION_JUMP_TO_BROWSER) \
+    XX(jump_to_media_library, \
+       NCM_ACTION_JUMP_TO_MEDIA_LIBRARY) \
+    XX(jump_to_playlist_editor, \
+       NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR) \
+    XX(toggle_screen_lock, \
+       NCM_ACTION_TOGGLE_SCREEN_LOCK) \
+    XX(jump_to_tag_editor, \
+       NCM_ACTION_JUMP_TO_TAG_EDITOR) \
+    XX(jump_to_position_in_song, \
+       NCM_ACTION_JUMP_TO_POSITION_IN_SONG) \
+    XX(select_item, \
+       NCM_ACTION_SELECT_ITEM) \
+    XX(select_range, \
+       NCM_ACTION_SELECT_RANGE) \
+    XX(reverse_selection, \
+       NCM_ACTION_REVERSE_SELECTION) \
+    XX(remove_selection, \
+       NCM_ACTION_REMOVE_SELECTION) \
+    XX(select_album, \
+       NCM_ACTION_SELECT_ALBUM) \
+    XX(select_found_items, \
+       NCM_ACTION_SELECT_FOUND_ITEMS) \
+    XX(add_selected_items, \
+       NCM_ACTION_ADD_SELECTED_ITEMS) \
+    XX(crop_main_playlist, \
+       NCM_ACTION_CROP_MAIN_PLAYLIST) \
+    XX(crop_playlist, \
+       NCM_ACTION_CROP_PLAYLIST) \
+    XX(clear_main_playlist, \
+       NCM_ACTION_CLEAR_MAIN_PLAYLIST) \
+    XX(clear_playlist, \
+       NCM_ACTION_CLEAR_PLAYLIST) \
+    XX(sort_playlist, \
+       NCM_ACTION_SORT_PLAYLIST) \
+    XX(reverse_playlist, \
+       NCM_ACTION_REVERSE_PLAYLIST) \
+    XX(apply_filter, \
+       NCM_ACTION_APPLY_FILTER) \
+    XX(find, \
+       NCM_ACTION_FIND) \
+    XX(find_item_forward, \
+       NCM_ACTION_FIND_ITEM_FORWARD) \
+    XX(find_item_backward, \
+       NCM_ACTION_FIND_ITEM_BACKWARD) \
+    XX(next_found_item, \
+       NCM_ACTION_NEXT_FOUND_ITEM) \
+    XX(previous_found_item, \
+       NCM_ACTION_PREVIOUS_FOUND_ITEM) \
+    XX(toggle_find_mode, \
+       NCM_ACTION_TOGGLE_FIND_MODE) \
+    XX(toggle_replay_gain_mode, \
+       NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE) \
+    XX(toggle_add_mode, \
+       NCM_ACTION_TOGGLE_ADD_MODE) \
+    XX(toggle_mouse, \
+       NCM_ACTION_TOGGLE_MOUSE) \
+    XX(toggle_bitrate_visibility, \
+       NCM_ACTION_TOGGLE_BITRATE_VISIBILITY) \
+    XX(add_random_items, \
+       NCM_ACTION_ADD_RANDOM_ITEMS) \
+    XX(toggle_browser_sort_mode, \
+       NCM_ACTION_TOGGLE_BROWSER_SORT_MODE) \
+    XX(toggle_library_tag_type, \
+       NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE) \
+    XX(toggle_media_library_sort_mode, \
+       NCM_ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE) \
+    XX(fetch_lyrics_in_background, \
+       NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND) \
+    XX(refetch_lyrics, \
+       NCM_ACTION_REFETCH_LYRICS) \
+    XX(set_selected_items_priority, \
+       NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY) \
+    XX(toggle_output, \
+       NCM_ACTION_TOGGLE_OUTPUT) \
+    XX(toggle_visualization_type, \
+       NCM_ACTION_TOGGLE_VISUALIZATION_TYPE) \
+    XX(show_song_info, \
+       NCM_ACTION_SHOW_SONG_INFO) \
+    XX(show_artist_info, \
+       NCM_ACTION_SHOW_ARTIST_INFO) \
+    XX(show_lyrics, \
+       NCM_ACTION_SHOW_LYRICS) \
+    XX(quit, \
+       NCM_ACTION_QUIT) \
+    XX(next_screen, \
+       NCM_ACTION_NEXT_SCREEN) \
+    XX(previous_screen, \
+       NCM_ACTION_PREVIOUS_SCREEN) \
+    XX(show_help, \
+       NCM_ACTION_SHOW_HELP) \
+    XX(show_playlist, \
+       NCM_ACTION_SHOW_PLAYLIST) \
+    XX(show_browser, \
+       NCM_ACTION_SHOW_BROWSER) \
+    XX(change_browse_mode, \
+       NCM_ACTION_CHANGE_BROWSE_MODE) \
+    XX(show_search_engine, \
+       NCM_ACTION_SHOW_SEARCH_ENGINE) \
+    XX(reset_search_engine, \
+       NCM_ACTION_RESET_SEARCH_ENGINE) \
+    XX(show_media_library, \
+       NCM_ACTION_SHOW_MEDIA_LIBRARY) \
+    XX(toggle_media_library_columns_mode, \
+       NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE) \
+    XX(show_playlist_editor, \
+       NCM_ACTION_SHOW_PLAYLIST_EDITOR) \
+    XX(show_tag_editor, \
+       NCM_ACTION_SHOW_TAG_EDITOR) \
+    XX(show_outputs, \
+       NCM_ACTION_SHOW_OUTPUTS) \
+    XX(show_visualizer, \
+       NCM_ACTION_SHOW_VISUALIZER) \
+    XX(show_server_info, \
+       NCM_ACTION_SHOW_SERVER_INFO)
 
+#define XX(SUFFIX, TYPE) NCM_ACTION_TABLE_CALLBACKS(SUFFIX, TYPE)
+NCM_ACTION_TABLE_DEFS(XX)
+#undef XX
+
+#define XX(SUFFIX, TYPE)                                                \
+    {                                                                   \
+        #SUFFIX,                                                        \
+        STRLIT_LEN(#SUFFIX),                                            \
+        TYPE,                                                           \
+        ncm_action_can_run_##SUFFIX,                                    \
+        ncm_action_run_##SUFFIX,                                        \
+    },
 static NcmActionDef action_defs[] = {
-    {
-        "dummy",
-        NCM_ACTION_DUMMY,
-        ncm_action_can_run_dummy,
-        ncm_action_run_dummy,
-    },
-    {
-        "update_environment",
-        NCM_ACTION_UPDATE_ENVIRONMENT,
-        ncm_action_can_run_update_environment,
-        ncm_action_run_update_environment,
-    },
-    {
-        "mouse_event",
-        NCM_ACTION_MOUSE_EVENT,
-        ncm_action_can_run_mouse_event,
-        ncm_action_run_mouse_event,
-    },
-    {
-        "scroll_up",
-        NCM_ACTION_SCROLL_UP,
-        ncm_action_can_run_scroll_up,
-        ncm_action_run_scroll_up,
-    },
-    {
-        "scroll_down",
-        NCM_ACTION_SCROLL_DOWN,
-        ncm_action_can_run_scroll_down,
-        ncm_action_run_scroll_down,
-    },
-    {
-        "scroll_up_artist",
-        NCM_ACTION_SCROLL_UP_ARTIST,
-        ncm_action_can_run_scroll_up_artist,
-        ncm_action_run_scroll_up_artist,
-    },
-    {
-        "scroll_up_album",
-        NCM_ACTION_SCROLL_UP_ALBUM,
-        ncm_action_can_run_scroll_up_album,
-        ncm_action_run_scroll_up_album,
-    },
-    {
-        "scroll_down_artist",
-        NCM_ACTION_SCROLL_DOWN_ARTIST,
-        ncm_action_can_run_scroll_down_artist,
-        ncm_action_run_scroll_down_artist,
-    },
-    {
-        "scroll_down_album",
-        NCM_ACTION_SCROLL_DOWN_ALBUM,
-        ncm_action_can_run_scroll_down_album,
-        ncm_action_run_scroll_down_album,
-    },
-    {
-        "page_up",
-        NCM_ACTION_PAGE_UP,
-        ncm_action_can_run_page_up,
-        ncm_action_run_page_up,
-    },
-    {
-        "page_down",
-        NCM_ACTION_PAGE_DOWN,
-        ncm_action_can_run_page_down,
-        ncm_action_run_page_down,
-    },
-    {
-        "move_home",
-        NCM_ACTION_MOVE_HOME,
-        ncm_action_can_run_move_home,
-        ncm_action_run_move_home,
-    },
-    {
-        "move_end",
-        NCM_ACTION_MOVE_END,
-        ncm_action_can_run_move_end,
-        ncm_action_run_move_end,
-    },
-    {
-        "toggle_interface",
-        NCM_ACTION_TOGGLE_INTERFACE,
-        ncm_action_can_run_toggle_interface,
-        ncm_action_run_toggle_interface,
-    },
-    {
-        "jump_to_parent_directory",
-        NCM_ACTION_JUMP_TO_PARENT_DIRECTORY,
-        ncm_action_can_run_jump_to_parent_directory,
-        ncm_action_run_jump_to_parent_directory,
-    },
-    {
-        "run_action",
-        NCM_ACTION_RUN_ACTION,
-        ncm_action_can_run_run_action,
-        ncm_action_run_run_action,
-    },
-    {
-        "previous_column",
-        NCM_ACTION_PREVIOUS_COLUMN,
-        ncm_action_can_run_previous_column,
-        ncm_action_run_previous_column,
-    },
-    {
-        "next_column",
-        NCM_ACTION_NEXT_COLUMN,
-        ncm_action_can_run_next_column,
-        ncm_action_run_next_column,
-    },
-    {
-        "master_screen",
-        NCM_ACTION_MASTER_SCREEN,
-        ncm_action_can_run_master_screen,
-        ncm_action_run_master_screen,
-    },
-    {
-        "slave_screen",
-        NCM_ACTION_SLAVE_SCREEN,
-        ncm_action_can_run_slave_screen,
-        ncm_action_run_slave_screen,
-    },
-    {
-        "volume_up",
-        NCM_ACTION_VOLUME_UP,
-        ncm_action_can_run_volume_up,
-        ncm_action_run_volume_up,
-    },
-    {
-        "volume_down",
-        NCM_ACTION_VOLUME_DOWN,
-        ncm_action_can_run_volume_down,
-        ncm_action_run_volume_down,
-    },
-    {
-        "add_item_to_playlist",
-        NCM_ACTION_ADD_ITEM_TO_PLAYLIST,
-        ncm_action_can_run_add_item_to_playlist,
-        ncm_action_run_add_item_to_playlist,
-    },
-    {
-        "play_item",
-        NCM_ACTION_PLAY_ITEM,
-        ncm_action_can_run_play_item,
-        ncm_action_run_play_item,
-    },
-    {
-        "delete_playlist_items",
-        NCM_ACTION_DELETE_PLAYLIST_ITEMS,
-        ncm_action_can_run_delete_playlist_items,
-        ncm_action_run_delete_playlist_items,
-    },
-    {
-        "delete_stored_playlist",
-        NCM_ACTION_DELETE_STORED_PLAYLIST,
-        ncm_action_can_run_delete_stored_playlist,
-        ncm_action_run_delete_stored_playlist,
-    },
-    {
-        "delete_browser_items",
-        NCM_ACTION_DELETE_BROWSER_ITEMS,
-        ncm_action_can_run_delete_browser_items,
-        ncm_action_run_delete_browser_items,
-    },
-    {
-        "replay_song",
-        NCM_ACTION_REPLAY_SONG,
-        ncm_action_can_run_replay_song,
-        ncm_action_run_replay_song,
-    },
-    {
-        "previous",
-        NCM_ACTION_PREVIOUS,
-        ncm_action_can_run_previous,
-        ncm_action_run_previous,
-    },
-    {
-        "next",
-        NCM_ACTION_NEXT,
-        ncm_action_can_run_next,
-        ncm_action_run_next,
-    },
-    {
-        "pause",
-        NCM_ACTION_PAUSE,
-        ncm_action_can_run_pause,
-        ncm_action_run_pause,
-    },
-    {
-        "stop",
-        NCM_ACTION_STOP,
-        ncm_action_can_run_stop,
-        ncm_action_run_stop,
-    },
-    {
-        "play",
-        NCM_ACTION_PLAY,
-        ncm_action_can_run_play,
-        ncm_action_run_play,
-    },
-    {
-        "execute_command",
-        NCM_ACTION_EXECUTE_COMMAND,
-        ncm_action_can_run_execute_command,
-        ncm_action_run_execute_command,
-    },
-    {
-        "save_playlist",
-        NCM_ACTION_SAVE_PLAYLIST,
-        ncm_action_can_run_save_playlist,
-        ncm_action_run_save_playlist,
-    },
-    {
-        "move_sort_order_up",
-        NCM_ACTION_MOVE_SORT_ORDER_UP,
-        ncm_action_can_run_move_sort_order_up,
-        ncm_action_run_move_sort_order_up,
-    },
-    {
-        "move_sort_order_down",
-        NCM_ACTION_MOVE_SORT_ORDER_DOWN,
-        ncm_action_can_run_move_sort_order_down,
-        ncm_action_run_move_sort_order_down,
-    },
-    {
-        "move_selected_items_up",
-        NCM_ACTION_MOVE_SELECTED_ITEMS_UP,
-        ncm_action_can_run_move_selected_items_up,
-        ncm_action_run_move_selected_items_up,
-    },
-    {
-        "move_selected_items_down",
-        NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN,
-        ncm_action_can_run_move_selected_items_down,
-        ncm_action_run_move_selected_items_down,
-    },
-    {
-        "move_selected_items_to",
-        NCM_ACTION_MOVE_SELECTED_ITEMS_TO,
-        ncm_action_can_run_move_selected_items_to,
-        ncm_action_run_move_selected_items_to,
-    },
-    {
-        "add",
-        NCM_ACTION_ADD,
-        ncm_action_can_run_add,
-        ncm_action_run_add,
-    },
-    {
-        "load",
-        NCM_ACTION_LOAD,
-        ncm_action_can_run_load,
-        ncm_action_run_load,
-    },
-    {
-        "seek_forward",
-        NCM_ACTION_SEEK_FORWARD,
-        ncm_action_can_run_seek_forward,
-        ncm_action_run_seek_forward,
-    },
-    {
-        "seek_backward",
-        NCM_ACTION_SEEK_BACKWARD,
-        ncm_action_can_run_seek_backward,
-        ncm_action_run_seek_backward,
-    },
-    {
-        "toggle_display_mode",
-        NCM_ACTION_TOGGLE_DISPLAY_MODE,
-        ncm_action_can_run_toggle_display_mode,
-        ncm_action_run_toggle_display_mode,
-    },
-    {
-        "toggle_separators_between_albums",
-        NCM_ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS,
-        ncm_action_can_run_toggle_separators_between_albums,
-        ncm_action_run_toggle_separators_between_albums,
-    },
-    {
-        "toggle_lyrics_update_on_song_change",
-        NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,
-        ncm_action_can_run_toggle_lyrics_update_on_song_change,
-        ncm_action_run_toggle_lyrics_update_on_song_change,
-    },
-    {
-        "toggle_lyrics_fetcher",
-        NCM_ACTION_TOGGLE_LYRICS_FETCHER,
-        ncm_action_can_run_toggle_lyrics_fetcher,
-        ncm_action_run_toggle_lyrics_fetcher,
-    },
-    {
-        "toggle_fetching_lyrics_in_background",
-        NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND,
-        ncm_action_can_run_toggle_fetching_lyrics_in_background,
-        ncm_action_run_toggle_fetching_lyrics_in_background,
-    },
-    {
-        "toggle_playing_song_centering",
-        NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING,
-        ncm_action_can_run_toggle_playing_song_centering,
-        ncm_action_run_toggle_playing_song_centering,
-    },
-    {
-        "update_database",
-        NCM_ACTION_UPDATE_DATABASE,
-        ncm_action_can_run_update_database,
-        ncm_action_run_update_database,
-    },
-    {
-        "jump_to_playing_song",
-        NCM_ACTION_JUMP_TO_PLAYING_SONG,
-        ncm_action_can_run_jump_to_playing_song,
-        ncm_action_run_jump_to_playing_song,
-    },
-    {
-        "toggle_repeat",
-        NCM_ACTION_TOGGLE_REPEAT,
-        ncm_action_can_run_toggle_repeat,
-        ncm_action_run_toggle_repeat,
-    },
-    {
-        "shuffle",
-        NCM_ACTION_SHUFFLE,
-        ncm_action_can_run_shuffle,
-        ncm_action_run_shuffle,
-    },
-    {
-        "toggle_random",
-        NCM_ACTION_TOGGLE_RANDOM,
-        ncm_action_can_run_toggle_random,
-        ncm_action_run_toggle_random,
-    },
-    {
-        "start_searching",
-        NCM_ACTION_START_SEARCHING,
-        ncm_action_can_run_start_searching,
-        ncm_action_run_start_searching,
-    },
-    {
-        "save_tag_changes",
-        NCM_ACTION_SAVE_TAG_CHANGES,
-        ncm_action_can_run_save_tag_changes,
-        ncm_action_run_save_tag_changes,
-    },
-    {
-        "toggle_single",
-        NCM_ACTION_TOGGLE_SINGLE,
-        ncm_action_can_run_toggle_single,
-        ncm_action_run_toggle_single,
-    },
-    {
-        "toggle_consume",
-        NCM_ACTION_TOGGLE_CONSUME,
-        ncm_action_can_run_toggle_consume,
-        ncm_action_run_toggle_consume,
-    },
-    {
-        "toggle_crossfade",
-        NCM_ACTION_TOGGLE_CROSSFADE,
-        ncm_action_can_run_toggle_crossfade,
-        ncm_action_run_toggle_crossfade,
-    },
-    {
-        "set_crossfade",
-        NCM_ACTION_SET_CROSSFADE,
-        ncm_action_can_run_set_crossfade,
-        ncm_action_run_set_crossfade,
-    },
-    {
-        "set_volume",
-        NCM_ACTION_SET_VOLUME,
-        ncm_action_can_run_set_volume,
-        ncm_action_run_set_volume,
-    },
-    {
-        "enter_directory",
-        NCM_ACTION_ENTER_DIRECTORY,
-        ncm_action_can_run_enter_directory,
-        ncm_action_run_enter_directory,
-    },
-    {
-        "edit_song",
-        NCM_ACTION_EDIT_SONG,
-        ncm_action_can_run_edit_song,
-        ncm_action_run_edit_song,
-    },
-    {
-        "edit_library_tag",
-        NCM_ACTION_EDIT_LIBRARY_TAG,
-        ncm_action_can_run_edit_library_tag,
-        ncm_action_run_edit_library_tag,
-    },
-    {
-        "edit_library_album",
-        NCM_ACTION_EDIT_LIBRARY_ALBUM,
-        ncm_action_can_run_edit_library_album,
-        ncm_action_run_edit_library_album,
-    },
-    {
-        "edit_directory_name",
-        NCM_ACTION_EDIT_DIRECTORY_NAME,
-        ncm_action_can_run_edit_directory_name,
-        ncm_action_run_edit_directory_name,
-    },
-    {
-        "edit_playlist_name",
-        NCM_ACTION_EDIT_PLAYLIST_NAME,
-        ncm_action_can_run_edit_playlist_name,
-        ncm_action_run_edit_playlist_name,
-    },
-    {
-        "edit_lyrics",
-        NCM_ACTION_EDIT_LYRICS,
-        ncm_action_can_run_edit_lyrics,
-        ncm_action_run_edit_lyrics,
-    },
-    {
-        "jump_to_browser",
-        NCM_ACTION_JUMP_TO_BROWSER,
-        ncm_action_can_run_jump_to_browser,
-        ncm_action_run_jump_to_browser,
-    },
-    {
-        "jump_to_media_library",
-        NCM_ACTION_JUMP_TO_MEDIA_LIBRARY,
-        ncm_action_can_run_jump_to_media_library,
-        ncm_action_run_jump_to_media_library,
-    },
-    {
-        "jump_to_playlist_editor",
-        NCM_ACTION_JUMP_TO_PLAYLIST_EDITOR,
-        ncm_action_can_run_jump_to_playlist_editor,
-        ncm_action_run_jump_to_playlist_editor,
-    },
-    {
-        "toggle_screen_lock",
-        NCM_ACTION_TOGGLE_SCREEN_LOCK,
-        ncm_action_can_run_toggle_screen_lock,
-        ncm_action_run_toggle_screen_lock,
-    },
-    {
-        "jump_to_tag_editor",
-        NCM_ACTION_JUMP_TO_TAG_EDITOR,
-        ncm_action_can_run_jump_to_tag_editor,
-        ncm_action_run_jump_to_tag_editor,
-    },
-    {
-        "jump_to_position_in_song",
-        NCM_ACTION_JUMP_TO_POSITION_IN_SONG,
-        ncm_action_can_run_jump_to_position_in_song,
-        ncm_action_run_jump_to_position_in_song,
-    },
-    {
-        "select_item",
-        NCM_ACTION_SELECT_ITEM,
-        ncm_action_can_run_select_item,
-        ncm_action_run_select_item,
-    },
-    {
-        "select_range",
-        NCM_ACTION_SELECT_RANGE,
-        ncm_action_can_run_select_range,
-        ncm_action_run_select_range,
-    },
-    {
-        "reverse_selection",
-        NCM_ACTION_REVERSE_SELECTION,
-        ncm_action_can_run_reverse_selection,
-        ncm_action_run_reverse_selection,
-    },
-    {
-        "remove_selection",
-        NCM_ACTION_REMOVE_SELECTION,
-        ncm_action_can_run_remove_selection,
-        ncm_action_run_remove_selection,
-    },
-    {
-        "select_album",
-        NCM_ACTION_SELECT_ALBUM,
-        ncm_action_can_run_select_album,
-        ncm_action_run_select_album,
-    },
-    {
-        "select_found_items",
-        NCM_ACTION_SELECT_FOUND_ITEMS,
-        ncm_action_can_run_select_found_items,
-        ncm_action_run_select_found_items,
-    },
-    {
-        "add_selected_items",
-        NCM_ACTION_ADD_SELECTED_ITEMS,
-        ncm_action_can_run_add_selected_items,
-        ncm_action_run_add_selected_items,
-    },
-    {
-        "crop_main_playlist",
-        NCM_ACTION_CROP_MAIN_PLAYLIST,
-        ncm_action_can_run_crop_main_playlist,
-        ncm_action_run_crop_main_playlist,
-    },
-    {
-        "crop_playlist",
-        NCM_ACTION_CROP_PLAYLIST,
-        ncm_action_can_run_crop_playlist,
-        ncm_action_run_crop_playlist,
-    },
-    {
-        "clear_main_playlist",
-        NCM_ACTION_CLEAR_MAIN_PLAYLIST,
-        ncm_action_can_run_clear_main_playlist,
-        ncm_action_run_clear_main_playlist,
-    },
-    {
-        "clear_playlist",
-        NCM_ACTION_CLEAR_PLAYLIST,
-        ncm_action_can_run_clear_playlist,
-        ncm_action_run_clear_playlist,
-    },
-    {
-        "sort_playlist",
-        NCM_ACTION_SORT_PLAYLIST,
-        ncm_action_can_run_sort_playlist,
-        ncm_action_run_sort_playlist,
-    },
-    {
-        "reverse_playlist",
-        NCM_ACTION_REVERSE_PLAYLIST,
-        ncm_action_can_run_reverse_playlist,
-        ncm_action_run_reverse_playlist,
-    },
-    {
-        "apply_filter",
-        NCM_ACTION_APPLY_FILTER,
-        ncm_action_can_run_apply_filter,
-        ncm_action_run_apply_filter,
-    },
-    {
-        "find",
-        NCM_ACTION_FIND,
-        ncm_action_can_run_find,
-        ncm_action_run_find,
-    },
-    {
-        "find_item_forward",
-        NCM_ACTION_FIND_ITEM_FORWARD,
-        ncm_action_can_run_find_item_forward,
-        ncm_action_run_find_item_forward,
-    },
-    {
-        "find_item_backward",
-        NCM_ACTION_FIND_ITEM_BACKWARD,
-        ncm_action_can_run_find_item_backward,
-        ncm_action_run_find_item_backward,
-    },
-    {
-        "next_found_item",
-        NCM_ACTION_NEXT_FOUND_ITEM,
-        ncm_action_can_run_next_found_item,
-        ncm_action_run_next_found_item,
-    },
-    {
-        "previous_found_item",
-        NCM_ACTION_PREVIOUS_FOUND_ITEM,
-        ncm_action_can_run_previous_found_item,
-        ncm_action_run_previous_found_item,
-    },
-    {
-        "toggle_find_mode",
-        NCM_ACTION_TOGGLE_FIND_MODE,
-        ncm_action_can_run_toggle_find_mode,
-        ncm_action_run_toggle_find_mode,
-    },
-    {
-        "toggle_replay_gain_mode",
-        NCM_ACTION_TOGGLE_REPLAY_GAIN_MODE,
-        ncm_action_can_run_toggle_replay_gain_mode,
-        ncm_action_run_toggle_replay_gain_mode,
-    },
-    {
-        "toggle_add_mode",
-        NCM_ACTION_TOGGLE_ADD_MODE,
-        ncm_action_can_run_toggle_add_mode,
-        ncm_action_run_toggle_add_mode,
-    },
-    {
-        "toggle_mouse",
-        NCM_ACTION_TOGGLE_MOUSE,
-        ncm_action_can_run_toggle_mouse,
-        ncm_action_run_toggle_mouse,
-    },
-    {
-        "toggle_bitrate_visibility",
-        NCM_ACTION_TOGGLE_BITRATE_VISIBILITY,
-        ncm_action_can_run_toggle_bitrate_visibility,
-        ncm_action_run_toggle_bitrate_visibility,
-    },
-    {
-        "add_random_items",
-        NCM_ACTION_ADD_RANDOM_ITEMS,
-        ncm_action_can_run_add_random_items,
-        ncm_action_run_add_random_items,
-    },
-    {
-        "toggle_browser_sort_mode",
-        NCM_ACTION_TOGGLE_BROWSER_SORT_MODE,
-        ncm_action_can_run_toggle_browser_sort_mode,
-        ncm_action_run_toggle_browser_sort_mode,
-    },
-    {
-        "toggle_library_tag_type",
-        NCM_ACTION_TOGGLE_LIBRARY_TAG_TYPE,
-        ncm_action_can_run_toggle_library_tag_type,
-        ncm_action_run_toggle_library_tag_type,
-    },
-    {
-        "toggle_media_library_sort_mode",
-        NCM_ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE,
-        ncm_action_can_run_toggle_media_library_sort_mode,
-        ncm_action_run_toggle_media_library_sort_mode,
-    },
-    {
-        "fetch_lyrics_in_background",
-        NCM_ACTION_FETCH_LYRICS_IN_BACKGROUND,
-        ncm_action_can_run_fetch_lyrics_in_background,
-        ncm_action_run_fetch_lyrics_in_background,
-    },
-    {
-        "refetch_lyrics",
-        NCM_ACTION_REFETCH_LYRICS,
-        ncm_action_can_run_refetch_lyrics,
-        ncm_action_run_refetch_lyrics,
-    },
-    {
-        "set_selected_items_priority",
-        NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY,
-        ncm_action_can_run_set_selected_items_priority,
-        ncm_action_run_set_selected_items_priority,
-    },
-    {
-        "toggle_output",
-        NCM_ACTION_TOGGLE_OUTPUT,
-        ncm_action_can_run_toggle_output,
-        ncm_action_run_toggle_output,
-    },
-    {
-        "toggle_visualization_type",
-        NCM_ACTION_TOGGLE_VISUALIZATION_TYPE,
-        ncm_action_can_run_toggle_visualization_type,
-        ncm_action_run_toggle_visualization_type,
-    },
-    {
-        "show_song_info",
-        NCM_ACTION_SHOW_SONG_INFO,
-        ncm_action_can_run_show_song_info,
-        ncm_action_run_show_song_info,
-    },
-    {
-        "show_artist_info",
-        NCM_ACTION_SHOW_ARTIST_INFO,
-        ncm_action_can_run_show_artist_info,
-        ncm_action_run_show_artist_info,
-    },
-    {
-        "show_lyrics",
-        NCM_ACTION_SHOW_LYRICS,
-        ncm_action_can_run_show_lyrics,
-        ncm_action_run_show_lyrics,
-    },
-    {
-        "quit",
-        NCM_ACTION_QUIT,
-        ncm_action_can_run_quit,
-        ncm_action_run_quit,
-    },
-    {
-        "next_screen",
-        NCM_ACTION_NEXT_SCREEN,
-        ncm_action_can_run_next_screen,
-        ncm_action_run_next_screen,
-    },
-    {
-        "previous_screen",
-        NCM_ACTION_PREVIOUS_SCREEN,
-        ncm_action_can_run_previous_screen,
-        ncm_action_run_previous_screen,
-    },
-    {
-        "show_help",
-        NCM_ACTION_SHOW_HELP,
-        ncm_action_can_run_show_help,
-        ncm_action_run_show_help,
-    },
-    {
-        "show_playlist",
-        NCM_ACTION_SHOW_PLAYLIST,
-        ncm_action_can_run_show_playlist,
-        ncm_action_run_show_playlist,
-    },
-    {
-        "show_browser",
-        NCM_ACTION_SHOW_BROWSER,
-        ncm_action_can_run_show_browser,
-        ncm_action_run_show_browser,
-    },
-    {
-        "change_browse_mode",
-        NCM_ACTION_CHANGE_BROWSE_MODE,
-        ncm_action_can_run_change_browse_mode,
-        ncm_action_run_change_browse_mode,
-    },
-    {
-        "show_search_engine",
-        NCM_ACTION_SHOW_SEARCH_ENGINE,
-        ncm_action_can_run_show_search_engine,
-        ncm_action_run_show_search_engine,
-    },
-    {
-        "reset_search_engine",
-        NCM_ACTION_RESET_SEARCH_ENGINE,
-        ncm_action_can_run_reset_search_engine,
-        ncm_action_run_reset_search_engine,
-    },
-    {
-        "show_media_library",
-        NCM_ACTION_SHOW_MEDIA_LIBRARY,
-        ncm_action_can_run_show_media_library,
-        ncm_action_run_show_media_library,
-    },
-    {
-        "toggle_media_library_columns_mode",
-        NCM_ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE,
-        ncm_action_can_run_toggle_media_library_columns_mode,
-        ncm_action_run_toggle_media_library_columns_mode,
-    },
-    {
-        "show_playlist_editor",
-        NCM_ACTION_SHOW_PLAYLIST_EDITOR,
-        ncm_action_can_run_show_playlist_editor,
-        ncm_action_run_show_playlist_editor,
-    },
-    {
-        "show_tag_editor",
-        NCM_ACTION_SHOW_TAG_EDITOR,
-        ncm_action_can_run_show_tag_editor,
-        ncm_action_run_show_tag_editor,
-    },
-    {
-        "show_outputs",
-        NCM_ACTION_SHOW_OUTPUTS,
-        ncm_action_can_run_show_outputs,
-        ncm_action_run_show_outputs,
-    },
-    {
-        "show_visualizer",
-        NCM_ACTION_SHOW_VISUALIZER,
-        ncm_action_can_run_show_visualizer,
-        ncm_action_run_show_visualizer,
-    },
-    {
-        "show_server_info",
-        NCM_ACTION_SHOW_SERVER_INFO,
-        ncm_action_can_run_show_server_info,
-        ncm_action_run_show_server_info,
-    },
+    NCM_ACTION_TABLE_DEFS(XX)
 };
+#undef XX
 
 NcmActionDef *
 ncm_action_table_get(NcmActionDef *defs, int32 defs_len,
@@ -979,7 +331,7 @@ ncm_action_table_find(NcmActionDef *defs, int32 defs_len,
 
     for (int32 i = 0; i < defs_len; i += 1) {
         char *def_name = defs[i].name;
-        int32 def_name_len = strlen32(def_name);
+        int32 def_name_len = defs[i].name_len;
         if (def_name && STREQUAL(name, name_len, def_name, def_name_len)) {
             return defs + i;
         }
