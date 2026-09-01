@@ -39,35 +39,24 @@ static bool playlist_editor_format_content_search_text(
     PlaylistEditorScreen *screen, NcmSong *song, NcBuffer *buffer);
 static bool playlist_editor_search_text_matches(NcmRegex *regex,
                                                 char *data, int32 len);
-static void playlist_editor_initialize_buffers(
-    PlaylistEditorScreen *screen);
-static void playlist_editor_destroy_buffers(
-    PlaylistEditorScreen *screen);
-static void playlist_editor_initialize_regexes(
-    PlaylistEditorScreen *screen);
-static void playlist_editor_apply_geometry(
-    PlaylistEditorScreen *screen);
+static void playlist_editor_initialize_buffers(PlaylistEditorScreen *screen);
+static void playlist_editor_destroy_buffers(PlaylistEditorScreen *screen);
+static void playlist_editor_initialize_regexes(PlaylistEditorScreen *screen);
+static void playlist_editor_apply_geometry(PlaylistEditorScreen *screen);
 static int32 playlist_editor_separator_width(int32 width);
-static void playlist_editor_configure_menus(
-    PlaylistEditorScreen *screen);
-static void playlist_editor_update_menu_highlights(
-    PlaylistEditorScreen *screen);
-static void playlist_editor_draw_separator(
-    PlaylistEditorScreen *screen);
-static void playlist_editor_destroy_regexes(
-    PlaylistEditorScreen *screen);
-static void playlist_editor_update_titles(
-    PlaylistEditorScreen *screen, bool update_windows);
+static void playlist_editor_configure_menus(PlaylistEditorScreen *screen);
+static void playlist_editor_update_menu_highlights(PlaylistEditorScreen *screen);
+static void playlist_editor_draw_separator(PlaylistEditorScreen *screen);
+static void playlist_editor_destroy_regexes(PlaylistEditorScreen *screen);
+static void playlist_editor_update_titles(PlaylistEditorScreen *screen,
+                                          bool update_windows);
 static void playlist_editor_append_int64(StrBuilder *buffer, int32 value);
-static void playlist_editor_reset_content_timer(
-    PlaylistEditorScreen *screen);
-static void playlist_editor_clear_playlist_filter(
-    PlaylistEditorScreen *screen);
-static void playlist_editor_clear_content_filter(
-    PlaylistEditorScreen *screen);
-static bool playlist_editor_find_playlist_position(
-    PlaylistEditorScreen *screen, char *path, int32 path_len,
-    int32 *pos);
+static void playlist_editor_reset_content_timer(PlaylistEditorScreen *screen);
+static void playlist_editor_clear_playlist_filter(PlaylistEditorScreen *screen);
+static void playlist_editor_clear_content_filter(PlaylistEditorScreen *screen);
+static bool playlist_editor_find_playlist_position(PlaylistEditorScreen *screen,
+                                                   char *path, int32 path_len,
+                                                   int32 *pos);
 static bool playlist_editor_highlight_content_position(
     PlaylistEditorScreen *screen, int32 pos);
 static int32 playlist_editor_find_song_in_content_range(
@@ -457,10 +446,9 @@ playlist_editor_screen_load_content(PlaylistEditorScreen *screen,
 }
 
 bool
-playlist_editor_screen_reload_content_from_mpd(
-    PlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmError *ncm_error
-) {
+playlist_editor_screen_reload_content_from_mpd(PlaylistEditorScreen *screen,
+                                               NcmMpdClient *client,
+                                               NcmError *ncm_error) {
     NcmMpdSongList songs;
     NcmPlaylist *playlist;
     bool ok;
@@ -522,10 +510,10 @@ playlist_editor_screen_locate_playlist(
 }
 
 bool
-playlist_editor_screen_locate_song(
-    PlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmSong *song, NcmError *ncm_error
-) {
+playlist_editor_screen_locate_song(PlaylistEditorScreen *screen,
+                                   NcmMpdClient *client,
+                                   NcmSong *song,
+                                   NcmError *ncm_error) {
     NcMenu *playlists;
     NcMenu *content;
     NcmSong current_song;
