@@ -1797,8 +1797,8 @@ lyrics_slug_match_score(char *wanted, int32 wanted_len,
         }
     }
     if ((wanted_len > candid_len)
-        && lyrics_starts_with_ignore_case(wanted, wanted_len, candid,
-                                          candid_len)
+        && lyrics_starts_with_ignore_case(wanted, wanted_len,
+                                          candid, candid_len)
         && lyrics_slug_match_separator(wanted[candid_len])) {
         return 20;
     }
