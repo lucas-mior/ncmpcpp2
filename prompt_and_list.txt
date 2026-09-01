@@ -3,8 +3,6 @@ ncmpcpp2-c-guidelines.md, and then apply ALL of the rules and guidelines to the
 first $file.c (and correspondent header $file.h if present) in the list below.
 Then, remove the $file.c (and $file.h if present) from the list below.
 
-src/curses/nc_buffer.c
-
 src/actions.c
 src/actions.h
 src/app_controller.c
