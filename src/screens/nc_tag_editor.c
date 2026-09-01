@@ -4290,6 +4290,7 @@ tag_editor_tag_search_text(TagEditorScreen *screen,
     ASSERT(screen != NULL);
     ASSERT(song != NULL);
     ASSERT(buffer != NULL);
+
     if (!tag_editor_tag_search_field(screen, &field)) {
         return false;
     }
@@ -4310,6 +4311,7 @@ tag_editor_tag_search_field(TagEditorScreen *screen,
 
     ASSERT(screen != NULL);
     ASSERT(field != NULL);
+
     tag_types = nc_editor_string_menu_base(&screen->tag_types);
     choice = nc_menu_highlight(tag_types);
     if ((choice >= 0) && (choice < 11)) {
