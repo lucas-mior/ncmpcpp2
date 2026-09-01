@@ -2182,6 +2182,7 @@ lyrics_parse_hex4(char *data, int32 data_len, int32 start, uint32 *value) {
     if ((start < 0) || (start + 4 > data_len)) {
         return false;
     }
+
     result = 0;
     for (int32 i = 0; i < 4; i += 1) {
         int32 digit;
