@@ -1426,8 +1426,8 @@ lyrics_extract_after_until(StrBuilder *out, char *data, int32 data_len,
     }
 
     a += after_len;
-    b = lyrics_find(data, data_len, end, end_len, a);
-    if (b < 0) {
+    
+    if ((b = lyrics_find(data, data_len, end, end_len, a)) < 0) {
         return false;
     }
     SB_APPEND(out, data + a, b - a);
