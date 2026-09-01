@@ -1033,15 +1033,14 @@ static bool
 ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
                          int32 key_name_len, enum NcmActionType first,
                          enum NcmActionType second) {
-    NcmBinding binding;
-    NcKey key;
+    NcmBinding binding = (NcmBinding){0};
+    NcKey key = ncm_bindings_string_to_key(key_name, key_name_len);
     bool result;
 
-    key = ncm_bindings_string_to_key(key_name, key_name_len);
     if (!ncm_bindings_not_bound(bindings, key)) {
         return true;
     }
-    binding = (NcmBinding){0};
+
     if ((result = ncm_binding_append_normal(&binding, first))) {
         result = ncm_binding_append_normal(&binding, second);
     }
@@ -1049,6 +1048,7 @@ ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
         result = ncm_bindings_bind(bindings, key, &binding);
     }
     ncm_binding_destroy(&binding);
+
     return result;
 }
 
