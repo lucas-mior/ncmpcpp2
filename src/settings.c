@@ -1445,7 +1445,7 @@ apply_enable_window_title(Configuration *config, char *value, int32 value_len,
     unsupported = term == NULL;
     if (!unsupported) {
         term_len = strlen32(term);
-        unsupported = memmem64(term, term_len, "linux")
+        unsupported = memmem64(term, term_len, STRLIT("linux"))
                       || BEGINS_WITH(term, term_len, "eterm");
     }
     if (unsupported) {
