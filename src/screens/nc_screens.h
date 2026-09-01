@@ -1162,37 +1162,27 @@ typedef struct MediaLibraryAlbumItem {
     uint32 menu_flags;
 } MediaLibraryAlbumItem;
 
-NCM_ARRAY_DECLARE_TYPE(MediaLibraryTagArray,
-                       NcMediaLibraryTagRow)
-NCM_ARRAY_DECLARE_CLEAR(media_library_tag_array,
-                        MediaLibraryTagArray)
-NCM_ARRAY_DECLARE_DESTROY(media_library_tag_array,
-                          MediaLibraryTagArray)
-NCM_ARRAY_DECLARE_MOVE(media_library_tag_array,
-                       MediaLibraryTagArray)
-NCM_ARRAY_DECLARE_RESERVE(media_library_tag_array,
-                          MediaLibraryTagArray)
-NCM_ARRAY_DECLARE_APPEND(media_library_tag_array,
-                         MediaLibraryTagArray,
-                         NcMediaLibraryTagRow)
-NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_tag_array,
-                                 MediaLibraryTagArray)
+NCM_ARRAY_DECLARE_TYPE(MediaLibraryTagArray, NcMediaLibraryTagRow)
+NCM_ARRAY_DECLARE_CLEAR(media_library_tag_array, MediaLibraryTagArray)
+NCM_ARRAY_DECLARE_DESTROY(media_library_tag_array, MediaLibraryTagArray)
+NCM_ARRAY_DECLARE_MOVE(media_library_tag_array, MediaLibraryTagArray)
+NCM_ARRAY_DECLARE_RESERVE(media_library_tag_array, MediaLibraryTagArray)
 
-NCM_ARRAY_DECLARE_TYPE(MediaLibraryAlbumArray,
-                       MediaLibraryAlbumItem)
-NCM_ARRAY_DECLARE_CLEAR(media_library_album_array,
-                        MediaLibraryAlbumArray)
-NCM_ARRAY_DECLARE_DESTROY(media_library_album_array,
-                          MediaLibraryAlbumArray)
-NCM_ARRAY_DECLARE_MOVE(media_library_album_array,
-                       MediaLibraryAlbumArray)
-NCM_ARRAY_DECLARE_RESERVE(media_library_album_array,
-                          MediaLibraryAlbumArray)
-NCM_ARRAY_DECLARE_APPEND(media_library_album_array,
-                         MediaLibraryAlbumArray,
+NCM_ARRAY_DECLARE_APPEND(media_library_tag_array, MediaLibraryTagArray,
+                         NcMediaLibraryTagRow)
+
+NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_tag_array, MediaLibraryTagArray)
+
+NCM_ARRAY_DECLARE_TYPE(MediaLibraryAlbumArray, MediaLibraryAlbumItem)
+NCM_ARRAY_DECLARE_CLEAR(media_library_album_array, MediaLibraryAlbumArray)
+NCM_ARRAY_DECLARE_DESTROY(media_library_album_array, MediaLibraryAlbumArray)
+NCM_ARRAY_DECLARE_MOVE(media_library_album_array, MediaLibraryAlbumArray)
+NCM_ARRAY_DECLARE_RESERVE(media_library_album_array, MediaLibraryAlbumArray)
+
+NCM_ARRAY_DECLARE_APPEND(media_library_album_array, MediaLibraryAlbumArray,
                          MediaLibraryAlbumItem)
-NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_album_array,
-                                 MediaLibraryAlbumArray)
+
+NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_album_array, MediaLibraryAlbumArray)
 
 typedef struct MediaLibrarySongQuery {
     char *primary_value;
