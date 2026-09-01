@@ -8,10 +8,6 @@
 
 static void
 nc_menu_owned_string_destroy(char **data, int32 *len, int32 *cap) {
-    ASSERT(data != NULL);
-    ASSERT(len != NULL);
-    ASSERT(cap != NULL);
-
     free2(*data, *cap);
     *data = NULL;
     *len = 0;
@@ -25,10 +21,6 @@ nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
                           int32 source_len) {
     char *data;
     int32 cap;
-
-    ASSERT(dest_data != NULL);
-    ASSERT(dest_len != NULL);
-    ASSERT(dest_cap != NULL);
 
     nc_menu_owned_string_destroy(dest_data, dest_len, dest_cap);
     if ((source_data == NULL) || (source_len <= 0)) {
@@ -265,8 +257,6 @@ nc_editor_sort_row_copy(NcEditorSortRow *dest, NcEditorSortRow *source) {
 
 static void
 ncm_song_menu_item_copy(void *dest, void *source, void *user) {
-    ASSERT(dest != NULL);
-    ASSERT(source != NULL);
     (void)user;
     ncm_song_copy(dest, source);
     return;
@@ -274,7 +264,6 @@ ncm_song_menu_item_copy(void *dest, void *source, void *user) {
 
 static void
 ncm_song_menu_item_destroy(void *item, void *user) {
-    ASSERT(item != NULL);
     (void)user;
     ncm_song_destroy(item);
     return;
@@ -282,8 +271,6 @@ ncm_song_menu_item_destroy(void *item, void *user) {
 
 static void
 ncm_mutable_song_menu_item_copy(void *dest, void *source, void *user) {
-    ASSERT(dest != NULL);
-    ASSERT(source != NULL);
     (void)user;
     ncm_mutable_song_copy(dest, source);
     return;
@@ -291,7 +278,6 @@ ncm_mutable_song_menu_item_copy(void *dest, void *source, void *user) {
 
 static void
 ncm_mutable_song_menu_item_destroy(void *item, void *user) {
-    ASSERT(item != NULL);
     (void)user;
     ncm_mutable_song_destroy(item);
     return;
@@ -299,7 +285,6 @@ ncm_mutable_song_menu_item_destroy(void *item, void *user) {
 
 static void
 ncm_mpd_item_menu_item_init(void *item, void *user) {
-    ASSERT(item != NULL);
     (void)user;
     ncm_mpd_item_init(item);
     return;
@@ -307,8 +292,6 @@ ncm_mpd_item_menu_item_init(void *item, void *user) {
 
 static void
 ncm_mpd_item_menu_item_copy(void *dest, void *source, void *user) {
-    ASSERT(dest != NULL);
-    ASSERT(source != NULL);
     (void)user;
     ncm_mpd_item_copy(dest, source);
     return;
@@ -316,7 +299,6 @@ ncm_mpd_item_menu_item_copy(void *dest, void *source, void *user) {
 
 static void
 ncm_mpd_item_menu_item_destroy(void *item, void *user) {
-    ASSERT(item != NULL);
     (void)user;
     ncm_mpd_item_destroy(item);
     return;
@@ -324,8 +306,6 @@ ncm_mpd_item_menu_item_destroy(void *item, void *user) {
 
 static void
 ncm_playlist_menu_item_copy(void *dest, void *source, void *user) {
-    ASSERT(dest != NULL);
-    ASSERT(source != NULL);
     (void)user;
     ncm_playlist_copy(dest, source);
     return;
@@ -333,7 +313,6 @@ ncm_playlist_menu_item_copy(void *dest, void *source, void *user) {
 
 static void
 ncm_playlist_menu_item_destroy(void *item, void *user) {
-    ASSERT(item != NULL);
     (void)user;
     ncm_playlist_destroy(item);
     return;
@@ -341,8 +320,6 @@ ncm_playlist_menu_item_destroy(void *item, void *user) {
 
 static void
 nc_search_row_menu_item_copy(void *dest, void *source, void *user) {
-    ASSERT(dest != NULL);
-    ASSERT(source != NULL);
     (void)user;
     nc_search_row_copy(dest, source);
     return;
@@ -350,7 +327,6 @@ nc_search_row_menu_item_copy(void *dest, void *source, void *user) {
 
 static void
 nc_search_row_menu_item_destroy(void *item, void *user) {
-    ASSERT(item != NULL);
     (void)user;
     nc_search_row_destroy(item);
     return;
@@ -358,8 +334,6 @@ nc_search_row_menu_item_destroy(void *item, void *user) {
 
 static void
 nc_media_library_tag_menu_item_copy(void *dest, void *source, void *user) {
-    ASSERT(dest != NULL);
-    ASSERT(source != NULL);
     (void)user;
     nc_media_library_tag_row_copy(dest, source);
     return;
@@ -367,7 +341,6 @@ nc_media_library_tag_menu_item_copy(void *dest, void *source, void *user) {
 
 static void
 nc_media_library_tag_menu_item_destroy(void *item, void *user) {
-    ASSERT(item != NULL);
     (void)user;
     nc_media_library_tag_row_destroy(item);
     return;
@@ -376,8 +349,6 @@ nc_media_library_tag_menu_item_destroy(void *item, void *user) {
 static void
 nc_media_library_album_menu_item_copy(void *dest, void *source,
                                       void *user) {
-    ASSERT(dest != NULL);
-    ASSERT(source != NULL);
     (void)user;
     nc_media_library_album_row_copy(dest, source);
     return;
@@ -385,7 +356,6 @@ nc_media_library_album_menu_item_copy(void *dest, void *source,
 
 static void
 nc_media_library_album_menu_item_destroy(void *item, void *user) {
-    ASSERT(item != NULL);
     (void)user;
     nc_media_library_album_row_destroy(item);
     return;
@@ -393,8 +363,6 @@ nc_media_library_album_menu_item_destroy(void *item, void *user) {
 
 static void
 nc_menu_string_item_copy(void *dest, void *source, void *user) {
-    ASSERT(dest != NULL);
-    ASSERT(source != NULL);
     (void)user;
     nc_menu_string_copy(dest, source);
     return;
@@ -402,7 +370,6 @@ nc_menu_string_item_copy(void *dest, void *source, void *user) {
 
 static void
 nc_menu_string_item_destroy(void *item, void *user) {
-    ASSERT(item != NULL);
     (void)user;
     nc_menu_string_destroy(item);
     return;
@@ -410,8 +377,6 @@ nc_menu_string_item_destroy(void *item, void *user) {
 
 static void
 nc_menu_string_pair_item_copy(void *dest, void *source, void *user) {
-    ASSERT(dest != NULL);
-    ASSERT(source != NULL);
     (void)user;
     nc_menu_string_pair_copy(dest, source);
     return;
@@ -419,7 +384,6 @@ nc_menu_string_pair_item_copy(void *dest, void *source, void *user) {
 
 static void
 nc_menu_string_pair_item_destroy(void *item, void *user) {
-    ASSERT(item != NULL);
     (void)user;
     nc_menu_string_pair_destroy(item);
     return;
@@ -427,8 +391,6 @@ nc_menu_string_pair_item_destroy(void *item, void *user) {
 
 static void
 nc_editor_action_menu_item_copy(void *dest, void *source, void *user) {
-    ASSERT(dest != NULL);
-    ASSERT(source != NULL);
     (void)user;
     nc_editor_action_row_copy(dest, source);
     return;
@@ -436,7 +398,6 @@ nc_editor_action_menu_item_copy(void *dest, void *source, void *user) {
 
 static void
 nc_editor_action_menu_item_destroy(void *item, void *user) {
-    ASSERT(item != NULL);
     (void)user;
     nc_editor_action_row_destroy(item);
     return;
@@ -444,8 +405,6 @@ nc_editor_action_menu_item_destroy(void *item, void *user) {
 
 static void
 nc_editor_sort_menu_item_copy(void *dest, void *source, void *user) {
-    ASSERT(dest != NULL);
-    ASSERT(source != NULL);
     (void)user;
     nc_editor_sort_row_copy(dest, source);
     return;
@@ -453,7 +412,6 @@ nc_editor_sort_menu_item_copy(void *dest, void *source, void *user) {
 
 static void
 nc_editor_sort_menu_item_destroy(void *item, void *user) {
-    ASSERT(item != NULL);
     (void)user;
     nc_editor_sort_row_destroy(item);
     return;
@@ -461,8 +419,6 @@ nc_editor_sort_menu_item_destroy(void *item, void *user) {
 
 static void
 nc_buffer_menu_item_copy(void *dest, void *source, void *user) {
-    ASSERT(dest != NULL);
-    ASSERT(source != NULL);
     (void)user;
     nc_buffer_copy(dest, source);
     return;
@@ -470,7 +426,6 @@ nc_buffer_menu_item_copy(void *dest, void *source, void *user) {
 
 static void
 nc_buffer_menu_item_destroy(void *item, void *user) {
-    ASSERT(item != NULL);
     (void)user;
     nc_buffer_destroy(item);
     return;
