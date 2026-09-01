@@ -333,6 +333,7 @@ ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
     memcpy64(tag->value, value, value_len);
     tag->value[value_len] = '\0';
     song->tags_len += 1;
+
     return true;
 }
 
