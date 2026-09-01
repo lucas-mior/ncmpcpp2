@@ -587,8 +587,8 @@ ncm_song_uri_is_stream(char *uri, int32 uri_len) {
         return false;
     }
 
-    return BEGINS_WITH(uri, uri_len, STRLIT("http://"))
-           || BEGINS_WITH(uri, uri_len, STRLIT("https://"));
+    return BEGINS_WITH(uri, uri_len, "http://")
+           || BEGINS_WITH(uri, uri_len, "https://");
 }
 
 int32
