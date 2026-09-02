@@ -274,14 +274,14 @@ ncmpcpp_playlist_enable_highlighting_if_current(void) {
     return;
 }
 
-bool
+int32
 ncmpcpp_switch_to_screen_type(enum ScreenType screen_type) {
-    return app_screens_switch_to_type(screen_type) == 0;
+    return app_screens_switch_to_type(screen_type);
 }
 
-bool
+int32
 ncmpcpp_lock_current_screen(void) {
-    return app_screens_lock_current() == 0;
+    return app_screens_lock_current();
 }
 
 enum ScreenType
@@ -297,7 +297,7 @@ ncmpcpp_set_noidle_status_callback(void) {
 }
 
 bool
-ncmpcpp_mpd_connected(void) {
+ncmpcpp_mpd_is_connected(void) {
     return ncm_mpd_client_is_connected(&global_mpd);
 }
 
@@ -326,12 +326,13 @@ ncmpcpp_status_clear(void) {
     return;
 }
 
-bool
+int32
 ncmpcpp_update_environment(bool update_timer, bool refresh_window,
                            bool mpd_sync) {
     NcmError ncm_error;
     StrBuilder message = {0};
     bool current_screen_uses_header_timer;
+    int32 status;
 
     app_bridge_set_status_observers();
     ncm_error_clear(&ncm_error);
@@ -360,26 +361,35 @@ ncmpcpp_update_environment(bool update_timer, bool refresh_window,
 
     if (mpd_sync) {
         ncm_error_clear(&ncm_error);
-        (void)ncm_status_update_from_noidle(&global_mpd, NULL, &ncm_error);
+        if (!ncm_status_update_from_noidle(&global_mpd, NULL, &ncm_error)) {
+            status = ncm_error_status(&ncm_error);
+            if (status >= 0) {
+                status = -NCM_ERROR_INVALID_STATE;
+            }
+            return status;
+        }
     }
-    return true;
+    return 0;
 }
 
-bool
+int32
 ncmpcpp_execute_binding(NcmBinding *binding) {
-    if (!ncm_binding_can_execute_default(binding)) {
-        return false;
+    if (binding == NULL) {
+        return -EINVAL;
     }
-    return ncm_binding_execute_default(binding) == 0;
+    if (!ncm_binding_can_execute_default(binding)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    return ncm_binding_execute_default(binding);
 }
 
-bool
+int32
 ncmpcpp_execute_action(enum NcmActionType type) {
-    return ncm_action_runtime_run(NULL, type) == 0;
+    return ncm_action_runtime_run(NULL, type);
 }
 
 bool
-ncmpcpp_exit_requested(void) {
+ncmpcpp_has_exit_request(void) {
     return ncm_action_runtime_exit_requested(NULL);
 }
 
