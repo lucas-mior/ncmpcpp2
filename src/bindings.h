@@ -57,14 +57,15 @@ typedef struct NcmBindingSlice {
     int32 len;
 } NcmBindingSlice;
 
-typedef bool (*NcmBindingActionRunner)(NcmBindingAction *action, void *user);
+typedef int32 (*NcmBindingActionRunner)(NcmBindingAction *action, void *user);
 
 typedef bool (*NcmBindingCanRunActionFn)(enum NcmActionType type, void *user);
-typedef bool (*NcmBindingRunActionFn)(enum NcmActionType type, void *user);
+typedef int32 (*NcmBindingRunActionFn)(enum NcmActionType type, void *user);
 typedef bool (*NcmBindingCurrentScreenIsFn)(enum ScreenType screen_type,
                                             void *user);
 typedef void (*NcmBindingPushKeyFn)(NcKey key, void *user);
-typedef bool (*NcmBindingRunExternalCommandFn)(char *command, int32 command_len,
+typedef int32 (*NcmBindingRunExternalCommandFn)(char *command,
+                                               int32 command_len,
                                                void *user);
 
 typedef struct NcmBindingRuntime {
@@ -90,36 +91,36 @@ extern NcmBindingsConfiguration Bindings;
 
 void ncm_binding_action_init(NcmBindingAction *action);
 void ncm_binding_action_destroy(NcmBindingAction *action);
-bool ncm_binding_action_copy(NcmBindingAction *dest, NcmBindingAction *source);
+int32 ncm_binding_action_copy(NcmBindingAction *dest, NcmBindingAction *source);
 
 void ncm_binding_destroy(NcmBinding *binding);
 void ncm_binding_clear(NcmBinding *binding);
-bool ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action);
-bool ncm_binding_copy(NcmBinding *dest, NcmBinding *source);
+int32 ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action);
+int32 ncm_binding_copy(NcmBinding *dest, NcmBinding *source);
 bool ncm_binding_is_single(NcmBinding *binding);
 bool ncm_binding_action_can_run(NcmBindingAction *action,
                                 NcmBindingRuntime *runtime);
-bool ncm_binding_action_run(NcmBindingAction *action,
-                            NcmBindingRuntime *runtime);
+int32 ncm_binding_action_run(NcmBindingAction *action,
+                             NcmBindingRuntime *runtime);
 bool ncm_binding_can_execute_runtime(NcmBinding *binding,
                                      NcmBindingRuntime *runtime);
-bool ncm_binding_execute_runtime(NcmBinding *binding,
-                                 NcmBindingRuntime *runtime);
+int32 ncm_binding_execute_runtime(NcmBinding *binding,
+                                  NcmBindingRuntime *runtime);
 bool ncm_binding_runtime_can_run_action(enum NcmActionType type, void *user);
-bool ncm_binding_runtime_run_action(enum NcmActionType type, void *user);
+int32 ncm_binding_runtime_run_action(enum NcmActionType type, void *user);
 bool ncm_binding_runtime_current_screen_is(enum ScreenType screen_type,
                                            void *user);
 void ncm_binding_runtime_push_key(NcKey key, void *user);
-bool ncm_binding_runtime_run_external_command(char *command, int32 command_len,
+int32 ncm_binding_runtime_run_external_command(char *command, int32 command_len,
                                               void *user);
-bool ncm_binding_runtime_run_external_console_command(char *command,
+int32 ncm_binding_runtime_run_external_console_command(char *command,
                                                       int32 command_len,
                                                       void *user);
 void ncm_binding_runtime_init(NcmBindingRuntime *runtime,
                               NcmActionRuntime *action_runtime);
 NcmBindingRuntime *ncm_binding_default_runtime(void);
 bool ncm_binding_can_execute_default(NcmBinding *binding);
-bool ncm_binding_execute_default(NcmBinding *binding);
+int32 ncm_binding_execute_default(NcmBinding *binding);
 bool ncm_binding_is_single_action_type(NcmBinding *binding,
                                        enum NcmActionType type);
 
@@ -130,16 +131,16 @@ void ncm_key_bindings_destroy(NcmKeyBindings *key_bindings);
 
 void ncm_bindings_configuration_destroy(NcmBindingsConfiguration *bindings);
 void ncm_bindings_configuration_clear(NcmBindingsConfiguration *bindings);
-bool ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
-                                     char *path, int32 path_len,
-                                     NcmError *ncm_error);
+int32 ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings,
+                                       char *path, int32 path_len,
+                                       NcmError *ncm_error);
 void ncm_bindings_configuration_generate_defaults(
     NcmBindingsConfiguration *bindings);
 NcmCommand *
 ncm_bindings_configuration_find_command(NcmBindingsConfiguration *bindings,
                                         char *name, int32 name_len);
-bool ncm_bindings_configuration_get(NcmBindingsConfiguration *bindings,
-                                    NcKey key, NcmBindingSlice *result);
+int32 ncm_bindings_configuration_get(NcmBindingsConfiguration *bindings,
+                                      NcKey key, NcmBindingSlice *result);
 
 NcKey ncm_bindings_string_to_key(char *string, int32 string_len);
 void ncm_bindings_format_key(StrBuilder *buffer, NcKey key);

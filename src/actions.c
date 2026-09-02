@@ -5294,7 +5294,7 @@ action_runtime_edit_lyrics(void) {
         nc_pause_screen();
         success = ncm_macro_run_external_console_command(command.data,
                                                          command.len,
-                                                         &ncm_error);
+                                                         &ncm_error) == 0;
         nc_unpause_screen();
         if (!success) {
             sb_free(&command);
@@ -5309,7 +5309,7 @@ action_runtime_edit_lyrics(void) {
         }
     } else {
         success = ncm_macro_run_external_command(command.data, command.len,
-                                                 false, &ncm_error);
+                                                 false, &ncm_error) == 0;
     }
 
     sb_free(&command);

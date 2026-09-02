@@ -55,13 +55,13 @@ macro_process_test_blocking_shell_syntax_and_status(void) {
     char command[] = "exit $((6*7))";
     NcmError error = {0};
     int32 status;
-    bool success;
+    int32 result;
 
     macro_process_seed_error(&error);
-    success = ncm_macro_system_command(command, strlen32(command),
+    result = ncm_macro_system_command(command, strlen32(command),
                                        true, &status, &error);
 
-    ASSERT(success);
+    ASSERT_ZERO(result);
     ASSERT_EQUAL(status, 42);
     ASSERT(!ncm_error_is_set(&error));
     return;
@@ -72,13 +72,13 @@ macro_process_test_blocking_nonzero_exit_is_not_process_error(void) {
     char command[] = "exit 37";
     NcmError error = {0};
     int32 status;
-    bool success;
+    int32 result;
 
     macro_process_seed_error(&error);
-    success = ncm_macro_system_command(command, strlen32(command),
+    result = ncm_macro_system_command(command, strlen32(command),
                                        true, &status, &error);
 
-    ASSERT(success);
+    ASSERT_ZERO(result);
     ASSERT_EQUAL(status, 37);
     ASSERT(!ncm_error_is_set(&error));
     return;
@@ -89,13 +89,13 @@ macro_process_test_empty_blocking_command_matches_shell(void) {
     char command[] = "";
     NcmError error = {0};
     int32 status;
-    bool success;
+    int32 result;
 
     macro_process_seed_error(&error);
-    success = ncm_macro_system_command(command, 0,
+    result = ncm_macro_system_command(command, 0,
                                        true, &status, &error);
 
-    ASSERT(success);
+    ASSERT_ZERO(result);
     ASSERT_ZERO(status);
     ASSERT(!ncm_error_is_set(&error));
     return;
@@ -105,14 +105,14 @@ static void
 macro_process_test_external_console_command_uses_shell(void) {
     char command[] = "if true; then exit 0; else exit 31; fi";
     NcmError error = {0};
-    bool success;
+    int32 result;
 
     macro_process_seed_error(&error);
-    success = ncm_macro_run_external_console_command(command,
+    result = ncm_macro_run_external_console_command(command,
                                                      strlen32(command),
                                                      &error);
 
-    ASSERT(success);
+    ASSERT_ZERO(result);
     ASSERT(!ncm_error_is_set(&error));
     return;
 }
@@ -121,13 +121,13 @@ static void
 macro_process_test_external_command_nonzero_exit_still_succeeds(void) {
     char command[] = "exit 19";
     NcmError error = {0};
-    bool success;
+    int32 result;
 
     macro_process_seed_error(&error);
-    success = ncm_macro_run_external_command(command, strlen32(command),
+    result = ncm_macro_run_external_command(command, strlen32(command),
                                              true, &error);
 
-    ASSERT(success);
+    ASSERT_ZERO(result);
     ASSERT(!ncm_error_is_set(&error));
     return;
 }
@@ -136,12 +136,12 @@ static void
 macro_process_test_invalid_blocking_command_sets_error(void) {
     NcmError error = {0};
     int32 status = -123;
-    bool success;
+    int32 result;
 
-    success = ncm_macro_system_command(NULL, 1,
+    result = ncm_macro_system_command(NULL, 1,
                                        true, &status, &error);
 
-    ASSERT(!success);
+    ASSERT(result < 0);
     ASSERT_EQUAL(status, -123);
     ASSERT(ncm_error_is_set(&error));
     ASSERT_EQUAL(error.code, EINVAL);
@@ -154,12 +154,12 @@ macro_process_test_invalid_blocking_command_length_sets_error(void) {
     char command[] = "exit 0";
     NcmError error = {0};
     int32 status = -123;
-    bool success;
+    int32 result;
 
-    success = ncm_macro_system_command(command, -1,
+    result = ncm_macro_system_command(command, -1,
                                        true, &status, &error);
 
-    ASSERT(!success);
+    ASSERT(result < 0);
     ASSERT_EQUAL(status, -123);
     ASSERT(ncm_error_is_set(&error));
     ASSERT_EQUAL(error.code, EINVAL);
@@ -175,7 +175,7 @@ macro_process_test_nonblocking_launches_shell_background_command(void) {
     int32 path_len;
     int32 command_len;
     int32 status;
-    bool success;
+    int32 result;
 
     path_len = macro_process_temp_path(path, SIZEOF(path), "async");
     unlink(path);
@@ -183,10 +183,10 @@ macro_process_test_nonblocking_launches_shell_background_command(void) {
                             "touch '%.*s'", path_len, path);
 
     macro_process_seed_error(&error);
-    success = ncm_macro_system_command(command, command_len,
+    result = ncm_macro_system_command(command, command_len,
                                        false, &status, &error);
 
-    ASSERT(success);
+    ASSERT_ZERO(result);
     ASSERT_ZERO(status);
     ASSERT(!ncm_error_is_set(&error));
     macro_process_wait_for_file(path);
