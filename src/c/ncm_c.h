@@ -1609,13 +1609,13 @@ typedef struct NcmLrcRenderTarget {
 
 void ncm_lrc_document_clear(NcmLrcDocument *document);
 void ncm_lrc_document_destroy(NcmLrcDocument *document);
-bool ncm_lrc_parse(NcmLrcDocument *document,
-                   char *data, int32 data_len,
-                   NcmError *ncm_error);
+int32 ncm_lrc_parse(NcmLrcDocument *document,
+                    char *data, int32 data_len,
+                    NcmError *ncm_error);
 NcmStringView ncm_lrc_entry_text(NcmLrcDocument *document,
                                  NcmLrcEntry *entry);
-bool ncm_lrc_document_render_plain(NcmLrcDocument *document,
-                                   NcmLrcRenderTarget *target);
+int32 ncm_lrc_document_render_plain(NcmLrcDocument *document,
+                                     NcmLrcRenderTarget *target);
 int32 ncm_lrc_document_entry_at_time(NcmLrcDocument *document,
                                      int64 elapsed_ms);
 int32 ncm_lrc_document_next_entry_after_time(NcmLrcDocument *document,
