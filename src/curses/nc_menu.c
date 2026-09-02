@@ -111,7 +111,7 @@ menu_destroy_item(NcMenu *menu, void *item) {
 
 static bool
 menu_is_highlightable(NcMenu *menu, int32 pos,
-                      NcMenuHighlightableFunc *is_highlightable,
+                      NcMenuPositionIsHighlightableFunc *is_highlightable,
                       void *user) {
     if ((pos < 0) || (pos >= menu->item_count)) {
         return false;
@@ -124,7 +124,7 @@ menu_is_highlightable(NcMenu *menu, int32 pos,
 
 static void
 scroll_internal(NcMenu *menu, int32 height, enum NcScroll where,
-                NcMenuHighlightableFunc *is_highlightable, void *user,
+                NcMenuPositionIsHighlightableFunc *is_highlightable, void *user,
                 int32 depth) {
     int32 max_beginning;
     int32 max_highlight;
@@ -374,7 +374,7 @@ nc_menu_highlight(NcMenu *menu) {
 }
 
 bool
-nc_menu_highlight_enabled(NcMenu *menu) {
+nc_menu_highlight_is_enabled(NcMenu *menu) {
     return !menu->highlight_disabled;
 }
 
@@ -422,7 +422,7 @@ nc_menu_set_centered_cursor(NcMenu *menu, bool state) {
 
 int32
 nc_menu_goto(NcMenu *menu, int32 y,
-             NcMenuHighlightableFunc *is_highlightable, void *user) {
+             NcMenuPositionIsHighlightableFunc *is_highlightable, void *user) {
     int32 pos;
 
     pos = menu->beginning + y;
@@ -450,7 +450,7 @@ nc_menu_goto_selectable_position(NcMenu *menu, int32 pos, int32 height) {
 int32
 nc_menu_search_selectable(NcMenu *menu, int32 height, bool forward,
                           bool wrap, bool skip_current,
-                          NcMenuSearchFunc *matches, void *user,
+                          NcMenuPositionMatchesFunc *matches, void *user,
                           int32 *found_pos) {
     int32 count;
     int32 current;
@@ -525,7 +525,7 @@ nc_menu_search_selectable(NcMenu *menu, int32 height, bool forward,
 
 void
 nc_menu_prepare_refresh(NcMenu *menu, int32 height,
-                        NcMenuHighlightableFunc *is_highlightable,
+                        NcMenuPositionIsHighlightableFunc *is_highlightable,
                         void *user) {
     int32 max_beginning;
     int32 max_visible_highlight;
@@ -639,7 +639,8 @@ nc_menu_refresh(NcMenu *menu, NcWindow *window, int32 width, int32 height) {
 
 void
 nc_menu_scroll(NcMenu *menu, int32 height, enum NcScroll where,
-               NcMenuHighlightableFunc *is_highlightable, void *user) {
+               NcMenuPositionIsHighlightableFunc *is_highlightable,
+               void *user) {
     nc_menu_sync_item_count(menu);
     scroll_internal(menu, height, where, is_highlightable, user, 0);
     return;
@@ -816,8 +817,8 @@ nc_menu_apply_filter(NcMenu *menu) {
         void *item;
 
         item = menu->all_items[i];
-        if (menu->display_callbacks.filter
-            && menu->display_callbacks.filter(
+        if (menu->display_callbacks.matches_filter
+            && menu->display_callbacks.matches_filter(
                 menu, item, menu->display_callbacks.user)) {
             nc_menu_add_filtered_item_ref(menu, item);
         }

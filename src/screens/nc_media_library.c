@@ -3807,19 +3807,19 @@ library_display_callbacks(
     case MEDIA_LIBRARY_COLUMN_TAGS:
         callbacks.draw = library_draw_tag;
         if (filter_enabled) {
-            callbacks.filter = library_tag_filter;
+            callbacks.matches_filter = library_tag_filter;
         }
         break;
     case MEDIA_LIBRARY_COLUMN_ALBUMS:
         callbacks.draw = library_draw_album;
         if (filter_enabled) {
-            callbacks.filter = library_album_filter;
+            callbacks.matches_filter = library_album_filter;
         }
         break;
     case MEDIA_LIBRARY_COLUMN_SONGS:
         callbacks.draw = library_draw_song;
         if (filter_enabled) {
-            callbacks.filter = library_song_filter;
+            callbacks.matches_filter = library_song_filter;
         }
         break;
     case MEDIA_LIBRARY_COLUMN_COUNT:

@@ -35,8 +35,8 @@ static struct termios orig_termios;
 typedef struct NcReadlineState {
     NcWindow *window;
     char *initial_text;
-    NcPromptHook *hook;
-    void *hook_user_data;
+    NcPromptShouldContinueFunc *should_continue;
+    void *should_continue_user_data;
     int32 start_x;
     int32 start_y;
     int32 width;
@@ -75,7 +75,7 @@ static void nc_prompt_display_string(void);
 static void nc_prompt_print_data(char *string, int32 string_len);
 static void nc_prompt_print_mask(char *string, int32 string_len);
 static void nc_prompt_print_visible_suffix(char *string, int32 string_len);
-static bool nc_prompt_run_hook(char *line);
+static bool nc_prompt_should_continue(char *line);
 
 NcColor
 nc_color_make(int16 foreground, int16 background,
@@ -101,7 +101,7 @@ nc_color_end(void) {
 }
 
 bool
-nc_color_equal(NcColor left, NcColor right) {
+nc_color_is_equal(NcColor left, NcColor right) {
     if (left.foreground != right.foreground) {
         return false;
     }
@@ -129,7 +129,7 @@ nc_color_is_end(NcColor color) {
 }
 
 bool
-nc_color_current_background(NcColor color) {
+nc_color_has_current_background(NcColor color) {
     return color.background == NC_COLOR_CURRENT;
 }
 
@@ -292,7 +292,7 @@ nc_color_pair_number(NcColor color) {
         return 0;
     }
     if (!nc_color_is_default(color)) {
-        if (!nc_color_current_background(color)) {
+        if (!nc_color_has_current_background(color)) {
             result = (color.background + 1) % nc_color_count();
         }
         result *= NC_COLOR_COMPONENT_COUNT;
@@ -558,8 +558,8 @@ nc_window_set_color(NcWindow *window, NcColor color) {
     if (nc_color_is_default(color)) {
         color = window->base_color;
     }
-    if (!nc_color_equal(color, nc_color_default())) {
-        ASSERT(!nc_color_current_background(color));
+    if (!nc_color_is_equal(color, nc_color_default())) {
+        ASSERT(!nc_color_has_current_background(color));
         wcolor_set(window->window, (int16)nc_color_pair_number(color), NULL);
     } else {
         wcolor_set(window->window,
@@ -571,7 +571,7 @@ nc_window_set_color(NcWindow *window, NcColor color) {
 
 void
 nc_window_set_base_color(NcWindow *window, NcColor color) {
-    if (nc_color_current_background(color)) {
+    if (nc_color_has_current_background(color)) {
         window->base_color = nc_color_make(color.foreground,
                                            NC_COLOR_TRANSPARENT,
                                            color.is_default,
@@ -775,7 +775,7 @@ nc_window_clear_fd_callbacks(NcWindow *window) {
 }
 
 bool
-nc_window_fd_callbacks_empty(NcWindow *window) {
+nc_window_fd_callbacks_is_empty(NcWindow *window) {
     return ARRAY_LEN(window->fd_callbacks) <= 0;
 }
 
@@ -870,8 +870,8 @@ nc_window_prompt(NcWindow *window, NcPrompt *prompt, char **result) {
 
     nc_readline_state.window = window;
     nc_readline_state.initial_text = "";
-    nc_readline_state.hook = NULL;
-    nc_readline_state.hook_user_data = NULL;
+    nc_readline_state.should_continue = NULL;
+    nc_readline_state.should_continue_user_data = NULL;
     nc_readline_state.encrypted = false;
     nc_readline_state.aborted = false;
 
@@ -879,8 +879,9 @@ nc_window_prompt(NcWindow *window, NcPrompt *prompt, char **result) {
         if (prompt->initial_text) {
             nc_readline_state.initial_text = prompt->initial_text;
         }
-        nc_readline_state.hook = prompt->hook;
-        nc_readline_state.hook_user_data = prompt->hook_user_data;
+        nc_readline_state.should_continue = prompt->should_continue;
+        nc_readline_state.should_continue_user_data =
+            prompt->should_continue_user_data;
         nc_readline_state.encrypted = prompt->encrypted;
         requested_width = prompt->width;
     } else {
@@ -936,8 +937,8 @@ nc_window_prompt(NcWindow *window, NcPrompt *prompt, char **result) {
 
     nc_readline_state.window = NULL;
     nc_readline_state.initial_text = NULL;
-    nc_readline_state.hook = NULL;
-    nc_readline_state.hook_user_data = NULL;
+    nc_readline_state.should_continue = NULL;
+    nc_readline_state.should_continue_user_data = NULL;
     nc_readline_state.encrypted = false;
     nc_readline_state.aborted = false;
 
@@ -1065,7 +1066,7 @@ nc_window_push_color(NcWindow *window, NcColor color) {
             nc_window_set_color(window, window->base_color);
         }
     } else {
-        if (nc_color_current_background(color)) {
+        if (nc_color_has_current_background(color)) {
             NcColor current_color;
             int16 background;
 
@@ -1195,7 +1196,7 @@ nc_prompt_read_key(FILE *file) {
 
     do {
         x = nc_window_get_x(window);
-        if (!nc_prompt_run_hook(rl_line_buffer)) {
+        if (!nc_prompt_should_continue(rl_line_buffer)) {
             if (!RL_ISSTATE(RL_STATE_DISPATCHING)) {
                 rl_done = 1;
                 return EOF;
@@ -1209,7 +1210,7 @@ nc_prompt_read_key(FILE *file) {
             rl_done = 1;
             return EOF;
         }
-        if (!nc_window_fd_callbacks_empty(window)) {
+        if (!nc_window_fd_callbacks_is_empty(window)) {
             nc_window_go_to_xy(window, x, nc_readline_state.start_y);
             nc_window_refresh(window);
         }
@@ -1307,14 +1308,15 @@ nc_prompt_print_visible_suffix(char *string, int32 string_len) {
 }
 
 static bool
-nc_prompt_run_hook(char *line) {
+nc_prompt_should_continue(char *line) {
     if (line == NULL) {
         line = "";
     }
-    if (nc_readline_state.hook == NULL) {
+    if (nc_readline_state.should_continue == NULL) {
         return true;
     }
-    return nc_readline_state.hook(line, nc_readline_state.hook_user_data);
+    return nc_readline_state.should_continue(
+        line, nc_readline_state.should_continue_user_data);
 }
 
 static void

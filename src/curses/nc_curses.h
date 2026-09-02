@@ -149,13 +149,13 @@ typedef struct NcFdCallback {
     XX(NC_PROMPT_ABORTED)
 #include "cbase/xenums.c"
 
-typedef bool NcPromptHook(char *text, void *user_data);
+typedef bool NcPromptShouldContinueFunc(char *text, void *user_data);
 
 typedef struct NcPrompt {
     char *initial_text;
     int32 width;
-    NcPromptHook *hook;
-    void *hook_user_data;
+    NcPromptShouldContinueFunc *should_continue;
+    void *should_continue_user_data;
     bool encrypted;
     bool remember;
 } NcPrompt;
@@ -194,10 +194,10 @@ NcColor nc_color_make(int16 foreground, int16 background,
                       bool is_default, bool is_end);
 NcColor nc_color_default(void);
 NcColor nc_color_end(void);
-bool nc_color_equal(NcColor left, NcColor right);
+bool nc_color_is_equal(NcColor left, NcColor right);
 bool nc_color_is_default(NcColor color);
 bool nc_color_is_end(NcColor color);
-bool nc_color_current_background(NcColor color);
+bool nc_color_has_current_background(NcColor color);
 int32 nc_color_pair_number(NcColor color);
 
 NcBorder nc_border_none(void);
@@ -248,7 +248,7 @@ void nc_window_clear(NcWindow *window);
 void nc_window_add_fd_callback(NcWindow *window,
                                int32 fd, void (*callback)(void));
 void nc_window_clear_fd_callbacks(NcWindow *window);
-bool nc_window_fd_callbacks_empty(NcWindow *window);
+bool nc_window_fd_callbacks_is_empty(NcWindow *window);
 NcKey nc_window_read_key(NcWindow *window);
 void nc_window_push_key(NcWindow *window, NcKey ch);
 enum NcPromptStatus nc_window_prompt(NcWindow *window, NcPrompt *prompt,
@@ -351,8 +351,8 @@ void nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property);
 /* curses/nc_menu.h */
 typedef struct NcMenu NcMenu;
 
-typedef bool NcMenuHighlightableFunc(int32 pos, void *user);
-typedef bool NcMenuSearchFunc(NcMenu *menu, int32 pos, void *user);
+typedef bool NcMenuPositionIsHighlightableFunc(int32 pos, void *user);
+typedef bool NcMenuPositionMatchesFunc(NcMenu *menu, int32 pos, void *user);
 
 #define ENUM_NAME NcMenuItemSource
 #define ENUM_PREFIX_ NC_MENU_ITEMS_
@@ -383,7 +383,7 @@ typedef struct NcMenuItemCallbacks {
 typedef struct NcMenuDisplayCallbacks {
     void (*draw)(NcMenu *menu, NcWindow *window, void *item,
                  int32 pos, void *user);
-    bool (*filter)(NcMenu *menu, void *item, void *user);
+    bool (*matches_filter)(NcMenu *menu, void *item, void *user);
     bool (*is_separator)(void *item, void *user);
     bool (*is_selected)(void *item, void *user);
     bool (*is_inactive)(void *item, void *user);
@@ -434,7 +434,7 @@ int32 nc_menu_item_count(NcMenu *menu);
 int32 nc_menu_all_item_count(NcMenu *menu);
 int32 nc_menu_filtered_item_count(NcMenu *menu);
 int32 nc_menu_highlight(NcMenu *menu);
-bool nc_menu_highlight_enabled(NcMenu *menu);
+bool nc_menu_highlight_is_enabled(NcMenu *menu);
 void nc_menu_set_highlight_prefix(NcMenu *menu, NcBuffer *buffer);
 void nc_menu_set_highlight_suffix(NcMenu *menu, NcBuffer *buffer);
 void nc_menu_set_selected_prefix(NcMenu *menu, NcBuffer *buffer);
@@ -442,22 +442,27 @@ void nc_menu_set_selected_suffix(NcMenu *menu, NcBuffer *buffer);
 void nc_menu_set_highlighting(NcMenu *menu, bool state);
 void nc_menu_set_cyclic_scrolling(NcMenu *menu, bool state);
 void nc_menu_set_centered_cursor(NcMenu *menu, bool state);
-int32 nc_menu_goto(NcMenu *menu, int32 y,
-                   NcMenuHighlightableFunc *is_highlightable, void *user);
+int32 nc_menu_goto(
+    NcMenu *menu, int32 y,
+    NcMenuPositionIsHighlightableFunc *is_highlightable, void *user
+);
 int32 nc_menu_goto_selectable(NcMenu *menu, int32 y);
 int32 nc_menu_goto_selectable_position(NcMenu *menu, int32 pos,
                                        int32 height);
 int32 nc_menu_search_selectable(NcMenu *menu, int32 height, bool forward,
                                 bool wrap, bool skip_current,
-                                NcMenuSearchFunc *matches, void *user,
+                                NcMenuPositionMatchesFunc *matches, void *user,
                                 int32 *found_pos);
-void nc_menu_prepare_refresh(NcMenu *menu, int32 height,
-                             NcMenuHighlightableFunc *is_highlightable,
-                             void *user);
+void nc_menu_prepare_refresh(
+    NcMenu *menu, int32 height,
+    NcMenuPositionIsHighlightableFunc *is_highlightable, void *user
+);
 void nc_menu_refresh(NcMenu *menu, NcWindow *window, int32 width,
                      int32 height);
-void nc_menu_scroll(NcMenu *menu, int32 height, enum NcScroll where,
-                    NcMenuHighlightableFunc *is_highlightable, void *user);
+void nc_menu_scroll(
+    NcMenu *menu, int32 height, enum NcScroll where,
+    NcMenuPositionIsHighlightableFunc *is_highlightable, void *user
+);
 void nc_menu_scroll_selectable(NcMenu *menu, int32 height,
                                enum NcScroll where);
 void nc_menu_reset(NcMenu *menu);

@@ -435,7 +435,7 @@ playlist_screen_highlighting(PlaylistScreen *screen) {
     if (screen == NULL) {
         return false;
     }
-    return nc_menu_highlight_enabled(playlist_screen_menu(screen));
+    return nc_menu_highlight_is_enabled(playlist_screen_menu(screen));
 }
 
 void
@@ -841,7 +841,7 @@ playlist_screen_apply_filter(PlaylistScreen *screen,
         return false;
     }
     callbacks = playlist_display_callbacks();
-    callbacks.filter = playlist_filter_song;
+    callbacks.matches_filter = playlist_filter_song;
     callbacks.user = screen;
     nc_menu_set_display_callbacks(playlist_storage_menu(screen),
                                   callbacks);

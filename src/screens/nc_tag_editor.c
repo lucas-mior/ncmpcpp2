@@ -3719,7 +3719,7 @@ tag_editor_directory_display_callbacks(TagEditorScreen *screen) {
     NcMenuDisplayCallbacks callbacks = {0};
 
     callbacks.draw = tag_editor_draw_directory;
-    callbacks.filter = tag_editor_directory_filter;
+    callbacks.matches_filter = tag_editor_directory_filter;
     callbacks.user = screen;
     return callbacks;
 }
@@ -3738,7 +3738,7 @@ tag_editor_tag_display_callbacks(TagEditorScreen *screen) {
     NcMenuDisplayCallbacks callbacks = {0};
 
     callbacks.draw = tag_editor_draw_tag;
-    callbacks.filter = tag_editor_tag_filter;
+    callbacks.matches_filter = tag_editor_tag_filter;
     callbacks.user = screen;
     return callbacks;
 }

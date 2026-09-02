@@ -889,11 +889,11 @@ ncm_action_immediate_command_prompt_should_stop(StrBuilder *previous,
 }
 
 static bool
-action_runtime_command_prompt_hook(char *text, void *user) {
+action_runtime_command_prompt_should_continue(char *text, void *user) {
     ActionRuntimeCommandPrompt *state = user;
     int32 text_len = optional_strlen32(text);
 
-    if (!ncm_statusbar_main_hook(text, text_len)) {
+    if (!ncm_statusbar_prompt_should_continue(text, text_len)) {
         return false;
     }
     if (ncm_action_immediate_command_prompt_should_stop(&state->previous, text,
@@ -904,12 +904,12 @@ action_runtime_command_prompt_hook(char *text, void *user) {
 }
 
 static bool
-action_runtime_filter_prompt_hook(char *text, void *user) {
+action_runtime_filter_prompt_should_continue(char *text, void *user) {
     NcmError ncm_error;
     int32 text_len = optional_strlen32(text);
 
     (void)user;
-    if (!ncm_statusbar_main_hook(text, text_len)) {
+    if (!ncm_statusbar_prompt_should_continue(text, text_len)) {
         return false;
     }
 
@@ -1015,12 +1015,12 @@ action_runtime_search_prompt_apply(ActionRuntimeSearchPrompt *state, char *text,
 }
 
 static bool
-action_runtime_search_prompt_hook(char *text, void *user) {
+action_runtime_search_prompt_should_continue(char *text, void *user) {
     ActionRuntimeSearchPrompt *state = user;
     NcmError ncm_error;
     int32 text_len = optional_strlen32(text);
 
-    if (!ncm_statusbar_main_hook(text, text_len)) {
+    if (!ncm_statusbar_prompt_should_continue(text, text_len)) {
         return false;
     }
 
@@ -1058,7 +1058,9 @@ action_runtime_prompt_result(StrBuilder *result, NcPrompt *prompt,
 
 static bool
 action_runtime_prompt_string(char *prefix, int32 prefix_len, char *initial_text,
-                             bool remember, NcPromptHook hook, void *hook_user,
+                             bool remember,
+                             NcPromptShouldContinueFunc *should_continue,
+                             void *should_continue_user,
                              StrBuilder *result) {
     NcmStatusbarScopedLock scoped_lock;
     NcPrompt prompt;
@@ -1075,8 +1077,8 @@ action_runtime_prompt_string(char *prefix, int32 prefix_len, char *initial_text,
         prompt = (NcPrompt){0};
         prompt.initial_text = initial_text;
         prompt.width = -1;
-        prompt.hook = hook;
-        prompt.hook_user_data = hook_user;
+        prompt.should_continue = should_continue;
+        prompt.should_continue_user_data = should_continue_user;
         prompt.encrypted = false;
         prompt.remember = remember;
         ok = action_runtime_prompt_result(result, &prompt, window);
@@ -1535,9 +1537,10 @@ action_runtime_execute_command(void) {
     bool prompted;
     bool result;
 
-    prompted = action_runtime_prompt_string(STRLIT(":"), "", true,
-                                            action_runtime_command_prompt_hook,
-                                            &state, &command_name);
+    prompted = action_runtime_prompt_string(
+        STRLIT(":"), "", true,
+        action_runtime_command_prompt_should_continue,
+        &state, &command_name);
     if (!prompted && (state.previous.len > 0)) {
         sb_copy(&command_name, &state.previous);
         prompted = true;
@@ -1659,7 +1662,7 @@ action_runtime_apply_filter(void) {
     Config.autocenter_mode = false;
     prompted = action_runtime_prompt_string(
         STRLIT("Apply filter: "), filter.data, false,
-        action_runtime_filter_prompt_hook, NULL, &filter);
+        action_runtime_filter_prompt_should_continue, NULL, &filter);
     Config.autocenter_mode = old_autocenter_mode;
 
     if (!prompted) {
@@ -1763,9 +1766,10 @@ action_runtime_find_item(enum SearchDirection direction) {
 
     old_autocenter_mode = Config.autocenter_mode;
     Config.autocenter_mode = false;
-    prompted = action_runtime_prompt_string(prompt, prompt_len, "", false,
-                                            action_runtime_search_prompt_hook,
-                                            &state, &constraint);
+    prompted = action_runtime_prompt_string(
+        prompt, prompt_len, "", false,
+        action_runtime_search_prompt_should_continue,
+        &state, &constraint);
     Config.autocenter_mode = old_autocenter_mode;
 
     if (!prompted) {

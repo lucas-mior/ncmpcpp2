@@ -125,7 +125,7 @@ selected_items_adder_screen_init(
     nc_screen_init_ops(&screen->screen, adder_ops, screen,
                        NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
     display_callbacks.draw = adder_draw_row;
-    display_callbacks.filter = adder_filter_callback;
+    display_callbacks.matches_filter = adder_filter_callback;
     display_callbacks.user = screen;
     nc_menu_set_display_callbacks(nc_editor_action_menu_base(
         &screen->playlist_selector),
@@ -711,9 +711,9 @@ adder_action_set_playlist(char **dest, int32 *dest_len, int32 *dest_cap,
 }
 
 static bool
-adder_statusbar_prompt_hook(char *text, void *user) {
+adder_statusbar_prompt_should_continue(char *text, void *user) {
     (void)user;
-    return ncm_statusbar_main_hook(text, optional_strlen32(text));
+    return ncm_statusbar_prompt_should_continue(text, optional_strlen32(text));
 }
 
 static bool
@@ -894,8 +894,8 @@ adder_action_new_playlist(void *user) {
         prompt = (NcPrompt){0};
         prompt.initial_text = "";
         prompt.width = -1;
-        prompt.hook = adder_statusbar_prompt_hook;
-        prompt.hook_user_data = NULL;
+        prompt.should_continue = adder_statusbar_prompt_should_continue;
+        prompt.should_continue_user_data = NULL;
         prompt.encrypted = false;
         prompt.remember = true;
         prompt_status = nc_window_prompt(window, &prompt, &input);
