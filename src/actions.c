@@ -420,8 +420,7 @@ int32
 ncm_action_show_visualizer(void) {
 #if defined(ENABLE_VISUALIZER)
     app_screen_visualizer_register();
-    return action_runtime_status_from_bool(
-        app_screens_switch_to_type(NCM_SCREEN_TYPE_VISUALIZER));
+    return app_screens_switch_to_type(NCM_SCREEN_TYPE_VISUALIZER);
 #else
     return -NCM_ERROR_UNAVAILABLE;
 #endif
@@ -458,7 +457,7 @@ action_runtime_switch_to_next_screen(bool reverse) {
             return false;
         }
         return nc_screen_switcher_switch_to(
-            current, nc_screen_has_to_be_resized(current));
+            current, nc_screen_has_to_be_resized(current)) == 0;
     }
 
     if (sequence->len <= 0) {
@@ -4779,7 +4778,7 @@ action_runtime_toggle_screen_lock(void) {
     }
 
     Config.locked_screen_width_part = part / 100.0;
-    if (app_controller_lock_current_screen()) {
+    if (app_controller_lock_current_screen() == 0) {
         args[0] = ncm_string_format_arg_u64((uint32)part);
         ncm_statusbar_format(Config.message_delay_time,
                              STRLIT("Screen locked (with %1%%% width)"),
@@ -6082,13 +6081,13 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
     case NCM_ACTION_NEXT_COLUMN:
         return action_runtime_next_column();
     case NCM_ACTION_MASTER_SCREEN:
-        if (!app_controller_show_locked_screen()) {
+        if (app_controller_show_locked_screen() < 0) {
             return false;
         }
         ncm_title_draw_current_header();
         return true;
     case NCM_ACTION_SLAVE_SCREEN:
-        if (!app_controller_show_inactive_screen()) {
+        if (app_controller_show_inactive_screen() < 0) {
             return false;
         }
         ncm_title_draw_current_header();

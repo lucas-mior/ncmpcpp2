@@ -286,8 +286,8 @@ selected_items_adder_screen_open(
     screen->client = client;
     screen->ready = true;
 
-    if (!nc_screen_switcher_switch_to(
-        selected_items_adder_screen_base(screen), false)) {
+    if (nc_screen_switcher_switch_to(
+        selected_items_adder_screen_base(screen), false) < 0) {
         ncm_song_array_clear(&screen->selected_songs);
         screen->playlist = NULL;
         screen->previous_screen = NULL;

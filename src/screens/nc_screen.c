@@ -366,36 +366,36 @@ nc_screen_user(NcScreen *screen) {
     return screen->user;
 }
 
-bool
+int32
 nc_screen_registry_register(NcScreenRegistry *registry, NcScreen *screen) {
-    if (screen == NULL) {
-        return false;
+    if ((registry == NULL) || (screen == NULL)) {
+        return -EINVAL;
     }
     if (nc_screen_registry_is_registered(registry, screen)) {
-        return false;
+        return -EEXIST;
     }
     if (nc_screen_registry_has_type(registry, screen->type)) {
-        return false;
+        return -EEXIST;
     }
     if (registry->screens_len >= NC_SCREEN_REGISTRY_MAX_SCREENS) {
-        return false;
+        return -ENOSPC;
     }
 
     registry->screens[registry->screens_len] = screen;
     registry->screens_len += 1;
-    return true;
+    return 0;
 }
 
-bool
+int32
 nc_screen_registry_unregister(NcScreenRegistry *registry,
                               NcScreen *screen) {
     int32 index;
 
-    if (screen == NULL) {
-        return false;
+    if ((registry == NULL) || (screen == NULL)) {
+        return -EINVAL;
     }
     if ((index = nc_screen_registry_index_of(registry, screen)) < 0) {
-        return false;
+        return -ENOENT;
     }
 
     for (int32 i = index; i < registry->screens_len - 1; i += 1) {
@@ -404,7 +404,7 @@ nc_screen_registry_unregister(NcScreenRegistry *registry,
     registry->screens_len -= 1;
     registry->screens[registry->screens_len] = NULL;
     nc_screen_registry_clear_refs(registry, screen);
-    return true;
+    return 0;
 }
 
 NcScreen *
@@ -509,17 +509,20 @@ nc_screen_registry_resize_params(NcScreenRegistry *registry,
     return params;
 }
 
-bool
+int32
 nc_screen_registry_switch_to(NcScreenRegistry *registry,
                              NcScreen *screen) {
     bool is_screen_mergable;
 
+    if ((registry == NULL) || (screen == NULL)) {
+        return -EINVAL;
+    }
     if (!nc_screen_registry_is_registered(registry, screen)) {
-        return false;
+        return -ENOENT;
     }
     if (registry->current_screen == screen) {
         nc_screen_switch_to(screen);
-        return true;
+        return 0;
     }
 
     is_screen_mergable = registry->locked_screen
@@ -539,22 +542,25 @@ nc_screen_registry_switch_to(NcScreenRegistry *registry,
     registry->previous_screen = registry->current_screen;
     registry->current_screen = screen;
     nc_screen_switch_to(screen);
-    return true;
+    return 0;
 }
 
-bool
+int32
 nc_screen_registry_lock_current(NcScreenRegistry *registry) {
+    if (registry == NULL) {
+        return -EINVAL;
+    }
     if (registry->locked_screen) {
-        return false;
+        return -EBUSY;
     }
     if (registry->current_screen == NULL) {
-        return false;
+        return -ENOENT;
     }
     if (!nc_screen_is_lockable(registry->current_screen)) {
-        return false;
+        return -EPERM;
     }
     registry->locked_screen = registry->current_screen;
-    return true;
+    return 0;
 }
 
 void

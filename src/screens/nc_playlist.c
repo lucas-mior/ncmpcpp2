@@ -311,8 +311,8 @@ playlist_screen_unregister(PlaylistScreen *screen) {
     if (!screen->registered) {
         return true;
     }
-    if (!app_controller_unregister_screen(
-        playlist_screen_base(screen))) {
+    if (app_controller_unregister_screen(
+        playlist_screen_base(screen)) < 0) {
         return false;
     }
     screen->registered = false;

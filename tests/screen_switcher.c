@@ -140,7 +140,7 @@ screen_switcher_reset_header(void) {
     screen_switcher_header_draws = 0;
     screen_switcher_header[0] = '\0';
     screen_registry = (NcScreenRegistry){0};
-    last_switch_changed_screen = false;
+    last_switch_has_changed_screen = false;
     return;
 }
 
@@ -155,14 +155,14 @@ test_switch_updates_header(void) {
     screen_switcher_test_screen_init(&search, "Old title",
                                      NC_SCREEN_TYPE_SEARCH_ENGINE);
     search.switch_title = "Search engine";
-    ASSERT(app_controller_register_screen(&playlist.screen));
-    ASSERT(app_controller_register_screen(&search.screen));
+    ASSERT(app_controller_register_screen(&playlist.screen) == 0);
+    ASSERT(app_controller_register_screen(&search.screen) == 0);
 
-    ASSERT(nc_screen_switcher_switch_to(&playlist.screen, false));
+    ASSERT(nc_screen_switcher_switch_to(&playlist.screen, false) == 0);
     ASSERT_EQUAL(screen_switcher_header_draws, 1);
     ASSERT(strequal(screen_switcher_header, "Playlist"));
 
-    ASSERT(nc_screen_switcher_switch_to(&search.screen, false));
+    ASSERT(nc_screen_switcher_switch_to(&search.screen, false) == 0);
     ASSERT_EQUAL(search.switch_count, 1);
     ASSERT_EQUAL(screen_switcher_header_draws, 2);
     ASSERT(strequal(screen_switcher_header, "Search engine"));
@@ -176,10 +176,10 @@ test_switch_to_same_screen_does_not_redraw_header(void) {
     screen_switcher_reset_header();
     screen_switcher_test_screen_init(&playlist, "Playlist",
                                      NC_SCREEN_TYPE_PLAYLIST);
-    ASSERT(app_controller_register_screen(&playlist.screen));
+    ASSERT(app_controller_register_screen(&playlist.screen) == 0);
 
-    ASSERT(nc_screen_switcher_switch_to(&playlist.screen, false));
-    ASSERT(nc_screen_switcher_switch_to(&playlist.screen, false));
+    ASSERT(nc_screen_switcher_switch_to(&playlist.screen, false) == 0);
+    ASSERT(nc_screen_switcher_switch_to(&playlist.screen, false) == 0);
     ASSERT_EQUAL(playlist.switch_count, 2);
     ASSERT_EQUAL(screen_switcher_header_draws, 1);
     ASSERT(strequal(screen_switcher_header, "Playlist"));
@@ -194,7 +194,7 @@ test_failed_switch_does_not_redraw_header(void) {
     screen_switcher_test_screen_init(&playlist, "Playlist",
                                      NC_SCREEN_TYPE_PLAYLIST);
 
-    ASSERT(!nc_screen_switcher_switch_to(&playlist.screen, false));
+    ASSERT(nc_screen_switcher_switch_to(&playlist.screen, false) < 0);
     ASSERT_ZERO(screen_switcher_header_draws);
     ASSERT(strequal(screen_switcher_header, ""));
     return;

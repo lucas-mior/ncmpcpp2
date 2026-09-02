@@ -29,16 +29,16 @@ app_controller_locked_screen(void) {
 }
 
 bool
-app_controller_last_switch_changed_screen(void) {
-    return app_state_last_switch_changed_screen();
+app_controller_last_switch_has_changed_screen(void) {
+    return app_state_last_switch_has_changed_screen();
 }
 
-bool
+int32
 app_controller_register_screen(NcScreen *screen) {
     return app_state_register_screen(screen);
 }
 
-bool
+int32
 app_controller_unregister_screen(NcScreen *screen) {
     return app_state_unregister_screen(screen);
 }
@@ -87,15 +87,15 @@ app_controller_each_visible_screen(NcScreenEachCallback callback, void *user) {
     return;
 }
 
-bool
+int32
 app_controller_switch_to_screen(NcScreen *screen) {
     if (screen == NULL) {
-        return false;
+        return -EINVAL;
     }
     return app_state_switch_to_screen(screen);
 }
 
-bool
+int32
 app_controller_lock_current_screen(void) {
     return app_state_lock_current_screen();
 }
@@ -111,7 +111,7 @@ app_controller_can_show_locked_screen(void) {
     return app_state_can_show_locked_screen();
 }
 
-bool
+int32
 app_controller_show_locked_screen(void) {
     return app_state_show_locked_screen();
 }
@@ -121,7 +121,7 @@ app_controller_can_show_inactive_screen(void) {
     return app_state_can_show_inactive_screen();
 }
 
-bool
+int32
 app_controller_show_inactive_screen(void) {
     return app_state_show_inactive_screen();
 }

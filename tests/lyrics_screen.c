@@ -1373,12 +1373,12 @@ lyrics_screen_test_locked_visible_update_refreshes_lrc(void) {
     nc_screen_init(&dummy, callbacks, NULL, NC_SCREEN_TYPE_BROWSER);
     registry = (NcScreenRegistry){0};
     ASSERT(nc_screen_registry_register(
-        &registry, lyrics_screen_base(&screen)));
-    ASSERT(nc_screen_registry_register(&registry, &dummy));
+        &registry, lyrics_screen_base(&screen)) == 0);
+    ASSERT(nc_screen_registry_register(&registry, &dummy) == 0);
     ASSERT(nc_screen_registry_switch_to(
-        &registry, lyrics_screen_base(&screen)));
-    ASSERT(nc_screen_registry_lock_current(&registry));
-    ASSERT(nc_screen_registry_switch_to(&registry, &dummy));
+        &registry, lyrics_screen_base(&screen)) == 0);
+    ASSERT(nc_screen_registry_lock_current(&registry) == 0);
+    ASSERT(nc_screen_registry_switch_to(&registry, &dummy) == 0);
 
     lyrics_test_elapsed_ms = 1000;
     lyrics_test_player_state = NCM_STATUS_PLAYER_PLAY;

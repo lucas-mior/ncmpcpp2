@@ -27,26 +27,26 @@ nc_screen_switcher_is_visible(NcScreen *screen) {
     return app_controller_is_screen_visible(screen);
 }
 
-bool
+int32
 nc_screen_switcher_switch_to(NcScreen *screen,
                              bool has_to_be_resized) {
-    bool switched;
+    int32 status;
 
     if (screen == NULL) {
-        return false;
+        return -EINVAL;
     }
     nc_screen_set_has_to_be_resized(screen, has_to_be_resized);
-    switched = app_controller_switch_to_screen(screen);
-    if (switched && app_controller_last_switch_changed_screen()) {
+    status = app_controller_switch_to_screen(screen);
+    if ((status == 0) && app_controller_last_switch_has_changed_screen()) {
         ncm_title_draw_current_header();
     }
-    return switched;
+    return status;
 }
 
-bool
+void
 nc_screen_switcher_finish_switch(NcScreen *screen) {
     (void)screen;
-    return app_controller_last_switch_changed_screen();
+    return;
 }
 
 NcScreenResizeParams

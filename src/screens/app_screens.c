@@ -133,7 +133,7 @@ static bool app_screen_is_current(NcScreen *screen);
 static void app_screen_switch_to(NcScreen *screen);
 static void app_screen_toggle_or_switch_to(NcScreen *screen);
 static NcBorder no_border(void);
-static bool app_register_screen(NcScreen *screen);
+static int32 app_register_screen(NcScreen *screen);
 static TagEditorHooks tag_editor_hooks(void);
 static NcHelpHooks help_hooks(void);
 static NcOutputsHooks outputs_hooks(void);
@@ -1172,18 +1172,18 @@ app_screens_find_type(enum ScreenType screen_type) {
     return app_controller_find_screen_type(type);
 }
 
-bool
+int32
 app_screens_switch_to_type(enum ScreenType screen_type) {
     NcScreen *screen;
 
     if ((screen = app_screens_find_type(screen_type)) == NULL) {
-        return false;
+        return -ENOENT;
     }
     return nc_screen_switcher_switch_to(screen,
                                         nc_screen_has_to_be_resized(screen));
 }
 
-bool
+int32
 app_screens_lock_current(void) {
     return app_controller_lock_current_screen();
 }
@@ -1210,29 +1210,33 @@ app_request_registered_resize(int32 type) {
 
 static void
 app_screen_register_once(NcScreen *screen) {
+    int32 status;
+
     ASSERT(screen != NULL);
-    ASSERT(app_register_screen(screen));
+    status = app_register_screen(screen);
+    ASSERT(status == 0);
+    (void)status;
     return;
 }
 
 static void
 app_screen_register_replacing(NcScreen *screen, int32 type) {
     NcScreen *registered;
-    bool success;
+    int32 status;
 
     ASSERT(screen != NULL);
 
     registered = app_controller_find_screen_type(type);
     if (registered && (registered != screen)) {
-        success = app_controller_unregister_screen(registered);
-        ASSERT(success);
-        if (!success) {
+        status = app_controller_unregister_screen(registered);
+        ASSERT(status == 0);
+        if (status < 0) {
             return;
         }
     }
-    success = app_register_screen(screen);
-    ASSERT(success);
-    (void)success;
+    status = app_register_screen(screen);
+    ASSERT(status == 0);
+    (void)status;
     return;
 }
 
@@ -1282,10 +1286,10 @@ draw_screen_header(NcScreen *screen) {
     return;
 }
 
-static bool
+static int32
 app_register_screen(NcScreen *screen) {
     if (app_controller_is_screen_registered(screen)) {
-        return true;
+        return 0;
     }
     return app_controller_register_screen(screen);
 }
