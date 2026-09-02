@@ -101,30 +101,30 @@ ncm_taglib_init(void) {
     return;
 }
 
-bool
+int32
 ncm_taglib_file_open(NcmTaglibFile *file, char *path) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
 
     if (file == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (path == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     ncm_taglib_init();
     ncm_taglib_file_close(file);
 
     if ((handle = taglib_file_new(path)) == NULL) {
-        return false;
+        return -NCM_ERROR_TAGLIB;
     }
     file->handle = handle;
-    return true;
+    return 0;
 #else
     (void)file;
     (void)path;
-    return false;
+    return -NCM_ERROR_TAGLIB;
 #endif
 }
 
@@ -133,33 +133,36 @@ ncm_taglib_file_close(NcmTaglibFile *file) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
 
-    if ((handle = ncm_taglib_handle(file))) {
+    if ((handle = ncm_taglib_handle(file)) != NULL) {
         taglib_file_free(handle);
     }
 #endif
-    if (file) {
+    if (file != NULL) {
         file->handle = NULL;
     }
     return;
 }
 
-bool
+int32
 ncm_taglib_file_save(NcmTaglibFile *file) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
 
     if ((handle = ncm_taglib_handle(file)) == NULL) {
-        return false;
+        return -EINVAL;
+    }
+    if (taglib_file_save(handle) == 0) {
+        return -NCM_ERROR_TAGLIB;
     }
 
-    return taglib_file_save(handle) != 0;
+    return 0;
 #else
     (void)file;
-    return false;
+    return -NCM_ERROR_TAGLIB;
 #endif
 }
 
-bool
+int32
 ncm_taglib_file_audio_properties(NcmTaglibFile *file,
                                  NcmTaglibAudioProperties *properties) {
 #if defined(HAVE_TAGLIB_H)
@@ -167,7 +170,7 @@ ncm_taglib_file_audio_properties(NcmTaglibFile *file,
     TagLib_AudioProperties *audio;
 
     if (properties == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     properties->length = 0;
@@ -176,83 +179,83 @@ ncm_taglib_file_audio_properties(NcmTaglibFile *file,
     properties->channels = 0;
 
     if ((handle = ncm_taglib_handle(file)) == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     audio = (TagLib_AudioProperties *)taglib_file_audioproperties(handle);
     if (audio == NULL) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
 
     properties->length = (int32)taglib_audioproperties_length(audio);
     properties->bitrate = (int32)taglib_audioproperties_bitrate(audio);
     properties->sample_rate = (int32)taglib_audioproperties_samplerate(audio);
     properties->channels = (int32)taglib_audioproperties_channels(audio);
-    return true;
+    return 0;
 #else
     (void)file;
     (void)properties;
-    return false;
+    return -NCM_ERROR_TAGLIB;
 #endif
 }
 
-bool
+int32
 ncm_taglib_read_property(NcmTaglibFile *file, char *property,
                          NcmTaglibValueCallback *callback, void *user) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
     char **values;
-    bool found;
+    int32 count;
 
     if ((handle = ncm_taglib_handle(file)) == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (property == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (callback == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     if ((values = taglib_property_get(handle, property)) == NULL) {
-        return false;
+        return 0;
     }
 
-    found = false;
-    for (int32 i = 0; values[i]; i += 1) {
+    count = 0;
+    for (int32 i = 0; values[i] != NULL; i += 1) {
         if (!ncm_taglib_value_is_empty(values[i])) {
             callback(values[i], user);
-            found = true;
+            count += 1;
         }
     }
 
     taglib_property_free(values);
-    return found;
+    return count;
 #else
     (void)file;
     (void)property;
     (void)callback;
     (void)user;
-    return false;
+    return -NCM_ERROR_TAGLIB;
 #endif
 }
 
-bool
+int32
 ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
                                   NcmTaglibPairCallback *callback,
                                   void *user) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
-    bool found;
+    int32 count;
 
     if ((handle = ncm_taglib_handle(file)) == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (callback == NULL) {
-        return false;
+        return -EINVAL;
     }
 
-    found = false;
+    count = 0;
     for (int32 i = 0; i < LENGTH(ncm_taglib_properties); i += 1) {
         char **values;
 
@@ -262,73 +265,75 @@ ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
             continue;
         }
 
-        for (int32 j = 0; values[j]; j += 1) {
+        for (int32 j = 0; values[j] != NULL; j += 1) {
             if (!ncm_taglib_value_is_empty(values[j])) {
                 callback(ncm_taglib_properties[i].name, values[j], user);
-                found = true;
+                count += 1;
             }
         }
 
         taglib_property_free(values);
     }
 
-    return found;
+    return count;
 #else
     (void)file;
     (void)callback;
     (void)user;
-    return false;
+    return -NCM_ERROR_TAGLIB;
 #endif
 }
 
-void
+int32
 ncm_taglib_clear_property(NcmTaglibFile *file, char *property) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
 
     if ((handle = ncm_taglib_handle(file)) == NULL) {
-        return;
+        return -EINVAL;
     }
     if (property == NULL) {
-        return;
+        return -EINVAL;
     }
 
     taglib_property_set(handle, property, NULL);
+    return 0;
 #else
     (void)file;
     (void)property;
+    return -NCM_ERROR_TAGLIB;
 #endif
-    return;
 }
 
-void
+int32
 ncm_taglib_append_property(NcmTaglibFile *file, char *property, char *value) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
 
     if ((handle = ncm_taglib_handle(file)) == NULL) {
-        return;
+        return -EINVAL;
     }
     if (property == NULL) {
-        return;
+        return -EINVAL;
     }
     if (value == NULL) {
-        return;
+        return -EINVAL;
     }
 
     taglib_property_set_append(handle, property, value);
+    return 0;
 #else
     (void)file;
     (void)property;
     (void)value;
+    return -NCM_ERROR_TAGLIB;
 #endif
-    return;
 }
 
 bool
 ncm_taglib_extended_set_supported(NcmTaglibFile *file) {
 #if defined(HAVE_TAGLIB_H)
-    return ncm_taglib_handle(file);
+    return ncm_taglib_handle(file) != NULL;
 #else
     (void)file;
     return false;

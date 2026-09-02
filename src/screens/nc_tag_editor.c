@@ -4124,7 +4124,8 @@ tag_editor_lower_song_callback(NcmMutableSong *song, void *user) {
 static bool
 tag_editor_save_song_callback(NcmMutableSong *song, void *user) {
     SaveContext *context = user;
-    int32 error;
+    int32 status;
+    int32 error_code;
 
     if ((context == NULL) || (song == NULL)) {
         return false;
@@ -4140,14 +4141,13 @@ tag_editor_save_song_callback(NcmMutableSong *song, void *user) {
     tag_editor_save_status_with_name(
         context->screen, STRLIT("Writing tags in \""), song,
         STRLIT("\"..."));
-    errno = 0;
-    if (ncm_mutable_song_write(song, context->music_dir) < 0) {
-        error = errno;
-        if (error == 0) {
-            error = EIO;
+    if ((status = ncm_mutable_song_write(song, context->music_dir)) < 0) {
+        error_code = -status;
+        if (error_code >= NCM_ERROR_PROJECT_BASE) {
+            error_code = EIO;
         }
         context->ok = false;
-        tag_editor_save_status_error(context->screen, song, error);
+        tag_editor_save_status_error(context->screen, song, error_code);
         return false;
     }
 

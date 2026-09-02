@@ -5109,6 +5109,7 @@ action_runtime_edit_library_album(void) {
         NcmStringView directory;
         NcmStringView uri;
         NcmTaglibFile file;
+        int32 status;
 
         action_runtime_print_updating_song(song);
         sb_clear(&path);
@@ -5128,22 +5129,27 @@ action_runtime_edit_library_album(void) {
         }
 
         file = (NcmTaglibFile){0};
-        if (!ncm_taglib_file_open(&file, path.data)) {
+        if (ncm_taglib_file_open(&file, path.data) < 0) {
             action_runtime_print_album_file_error(
                 STRLIT("Error while opening file \"%1%\""), song);
             success = false;
             break;
         }
-        ncm_taglib_clear_property(&file, "ALBUM");
-        ncm_taglib_append_property(&file, "ALBUM", new_album.data);
-        if (!ncm_taglib_file_save(&file)) {
+        status = ncm_taglib_clear_property(&file, "ALBUM");
+        if (status == 0) {
+            status = ncm_taglib_append_property(&file, "ALBUM",
+                                                new_album.data);
+        }
+        if (status == 0) {
+            status = ncm_taglib_file_save(&file);
+        }
+        ncm_taglib_file_close(&file);
+        if (status < 0) {
             action_runtime_print_album_file_error(
                 STRLIT("Error while writing tags in \"%1%\""), song);
-            ncm_taglib_file_close(&file);
             success = false;
             break;
         }
-        ncm_taglib_file_close(&file);
     }
 
     if (success) {

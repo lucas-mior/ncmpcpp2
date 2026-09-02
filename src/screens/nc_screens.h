@@ -2236,14 +2236,14 @@ typedef struct TinyTagEditorHooks {
         void *user, char *label, int32 label_len, NcmStringView initial,
         StrBuilder *result);
     void (*status_message)(void *user, char *message, int32 message_len);
-    bool (*taglib_open)(void *user, NcmTaglibFile *file, char *path,
-                        int32 path_len);
-    bool (*taglib_audio_properties)(
+    int32 (*taglib_open)(void *user, NcmTaglibFile *file, char *path,
+                          int32 path_len);
+    int32 (*taglib_audio_properties)(
         void *user, NcmTaglibFile *file,
         NcmTaglibAudioProperties *properties);
     bool (*taglib_extended_set_supported)(void *user, NcmTaglibFile *file);
     void (*taglib_close)(void *user, NcmTaglibFile *file);
-    bool (*write_song)(void *user, NcmMutableSong *song, char *music_dir);
+    int32 (*write_song)(void *user, NcmMutableSong *song, char *music_dir);
     void (*update_directory)(void *user, char *directory,
                              int32 directory_len);
     void (*update_playlist_song)(void *user, NcmMutableSong *song);

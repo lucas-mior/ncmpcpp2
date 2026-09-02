@@ -207,8 +207,8 @@ tiny_tag_editor_screen_open_song(
     NcmTaglibAudioProperties properties = {0};
     NcmTaglibFile file;
     bool extended_tags_supported;
-    bool opened;
     bool rows_loaded;
+    int32 status;
 
     if (path) {
         sb_clear(path);
@@ -242,12 +242,12 @@ tiny_tag_editor_screen_open_song(
 
     file = (NcmTaglibFile){0};
     if (screen->hooks.taglib_open) {
-        opened = screen->hooks.taglib_open(
+        status = screen->hooks.taglib_open(
             screen->hooks.user, &file, path->data, path->len);
     } else {
-        opened = ncm_taglib_file_open(&file, path->data);
+        status = ncm_taglib_file_open(&file, path->data);
     }
-    if (!opened) {
+    if (status < 0) {
         if (screen->hooks.taglib_close) {
             screen->hooks.taglib_close(screen->hooks.user, &file);
         } else {
@@ -906,7 +906,7 @@ tiny_editor_write_song(TinyTagEditorScreen *screen,
     }
     if (screen->hooks.write_song) {
         return screen->hooks.write_song(
-            screen->hooks.user, &screen->edited, music_dir);
+            screen->hooks.user, &screen->edited, music_dir) == 0;
     }
     return ncm_mutable_song_write(&screen->edited, music_dir) == 0;
 }
