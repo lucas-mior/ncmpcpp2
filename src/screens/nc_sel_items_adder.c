@@ -264,8 +264,8 @@ selected_items_adder_screen_open(
     playlists = (NcmMpdPlaylistList){0};
     if (!local_browser) {
         ncm_error_clear(&playlist_error);
-        if (!ncm_mpd_client_get_playlists(client, &playlists,
-                                          &playlist_error)) {
+        if (ncm_mpd_client_get_playlists(client, &playlists,
+                                         &playlist_error) < 0) {
             NcmStringFormatArg arg;
 
             ncm_mpd_playlist_list_clear(&playlists);
@@ -455,13 +455,14 @@ selected_items_adder_screen_add_to_existing_playlist(
         return false;
     }
 
-    ok = ncm_mpd_client_start_command_list(client, ncm_error);
+    ok = ncm_mpd_client_start_command_list(client, ncm_error) == 0;
     for (int32 i = 0; ok && i < screen->selected_songs.len; i += 1) {
         ok = ncm_mpd_client_add_song_to_playlist(
-            client, playlist, &screen->selected_songs.items[i], ncm_error);
+            client, playlist, &screen->selected_songs.items[i],
+            ncm_error) == 0;
     }
     if (ok) {
-        ok = ncm_mpd_client_commit_command_list(client, ncm_error);
+        ok = ncm_mpd_client_commit_command_list(client, ncm_error) == 0;
     }
     if (!ok && client->command_list_active) {
         client->command_list_active = false;
@@ -761,7 +762,7 @@ adder_try_add_current_song(
     *added = false;
     ncm_error_clear(&ncm_error);
     if (ncm_mpd_client_add_song_value(screen->client, song, position,
-                                      NULL, &ncm_error)) {
+                                      NULL, &ncm_error) == 0) {
         *added = true;
         return true;
     }

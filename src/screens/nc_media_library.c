@@ -4148,7 +4148,7 @@ library_mpd_list_tags(void *user, enum mpd_tag_type tag_type,
         ncm_error_set(ncm_error, EINVAL, STRLIT("missing MPD client"));
         return false;
     }
-    return ncm_mpd_client_get_list(client, tag_type, tags, ncm_error);
+    return ncm_mpd_client_get_list(client, tag_type, tags, ncm_error) == 0;
 }
 
 static bool
@@ -4161,7 +4161,7 @@ library_mpd_list_all_songs(void *user, NcmMpdSongList *songs,
         return false;
     }
     return ncm_mpd_client_get_directory_recursive(client, "/",
-                                                  songs, ncm_error);
+                                                  songs, ncm_error) == 0;
 }
 
 static bool
@@ -4181,7 +4181,8 @@ library_mpd_search_songs(void *user,
     ASSERT(query != NULL);
     ASSERT(songs != NULL);
 
-    if ((result = ncm_mpd_client_start_search(client, true, ncm_error))
+    if ((result = ncm_mpd_client_start_search(client, true,
+                                              ncm_error) == 0)
         && query->match_primary_tag) {
         if ((value = library_query_cstring(
                  &primary, query->primary_value, query->primary_value_len))
@@ -4191,7 +4192,7 @@ library_mpd_search_songs(void *user,
             result = false;
         } else {
             result = ncm_mpd_client_add_search_tag(
-                client, query->primary_tag, value, ncm_error);
+                client, query->primary_tag, value, ncm_error) == 0;
         }
     }
     if (result && query->match_album) {
@@ -4202,7 +4203,7 @@ library_mpd_search_songs(void *user,
             result = false;
         } else {
             result = ncm_mpd_client_add_search_tag(
-                client, MPD_TAG_ALBUM, value, ncm_error);
+                client, MPD_TAG_ALBUM, value, ncm_error) == 0;
         }
     }
     if (result && query->match_date) {
@@ -4213,11 +4214,12 @@ library_mpd_search_songs(void *user,
             result = false;
         } else {
             result = ncm_mpd_client_add_search_tag(
-                client, MPD_TAG_DATE, value, ncm_error);
+                client, MPD_TAG_DATE, value, ncm_error) == 0;
         }
     }
     if (result) {
-        result = ncm_mpd_client_commit_search_songs(client, songs, ncm_error);
+        result = ncm_mpd_client_commit_search_songs(client, songs,
+                                                    ncm_error) == 0;
     }
     sb_free(&date);
     sb_free(&album);
@@ -4256,10 +4258,10 @@ library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
     }
     if (result) {
         result = ncm_mpd_client_add_song_list(client, &additions, -1,
-                                              ncm_error);
+                                              ncm_error) == 0;
     }
     if (result && play) {
-        result = ncm_mpd_client_play_pos(client, play_pos, ncm_error);
+        result = ncm_mpd_client_play_pos(client, play_pos, ncm_error) == 0;
     }
     ncm_mpd_song_list_destroy(&additions);
     return result;

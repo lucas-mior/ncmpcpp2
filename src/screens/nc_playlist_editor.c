@@ -398,7 +398,8 @@ playlist_editor_screen_reload_playlists_from_mpd(PlaylistEditorScreen *screen,
         return false;
     }
     playlists = (NcmMpdPlaylistList){0};
-    if ((ok = ncm_mpd_client_get_playlists(client, &playlists, ncm_error))) {
+    if ((ok = ncm_mpd_client_get_playlists(client, &playlists,
+                                           ncm_error) == 0)) {
         playlist_editor_sort_playlists(&playlists);
         ok = playlist_editor_screen_load_playlists(screen, &playlists);
         if (!ok) {
@@ -464,8 +465,8 @@ playlist_editor_screen_reload_content_from_mpd(PlaylistEditorScreen *screen,
     }
 
     songs = (NcmMpdSongList){0};
-    ok = ncm_mpd_client_get_playlist_content(client, playlist->path,
-                                             &songs, ncm_error)
+    ok = (ncm_mpd_client_get_playlist_content(client, playlist->path,
+                                              &songs, ncm_error) == 0)
          && playlist_editor_screen_load_content(screen, &songs);
     ncm_mpd_song_list_destroy(&songs);
     return ok;
@@ -1584,7 +1585,7 @@ playlist_editor_find_song_in_mpd_playlist(
 
     songs = (NcmMpdSongList){0};
     success = ncm_mpd_client_get_playlist_content_no_info(
-        client, playlist->path, &songs, ncm_error);
+        client, playlist->path, &songs, ncm_error) == 0;
     if (!success) {
         ncm_mpd_song_list_destroy(&songs);
         return false;
@@ -2070,8 +2071,8 @@ playlist_editor_mouse_load_current_playlist(
 
     loaded = false;
     ncm_error_clear(&ncm_error);
-    if (!ncm_mpd_client_load_playlist(&global_mpd, playlist->path, &loaded,
-                                      &ncm_error)) {
+    if (ncm_mpd_client_load_playlist(&global_mpd, playlist->path, &loaded,
+                                     &ncm_error) < 0) {
         playlist_editor_report_error(STRLIT("Could not load playlist"),
                                      &ncm_error);
         return false;
@@ -2219,7 +2220,7 @@ append_playlist_content_from_mpd(NcmPlaylist *playlist,
     list = (NcmMpdSongList){0};
     ncm_error_clear(&ncm_error);
     ok = ncm_mpd_client_get_playlist_content(&global_mpd, playlist->path,
-                                             &list, &ncm_error);
+                                             &list, &ncm_error) == 0;
     if (!ok) {
         playlist_editor_report_error(
             STRLIT("Could not fetch playlist content"), &ncm_error);

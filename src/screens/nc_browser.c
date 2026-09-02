@@ -367,7 +367,7 @@ browser_screen_reload_from_mpd(BrowserScreen *screen,
     while (true) {
         items = (NcmMpdItemArray){0};
         result = ncm_mpd_client_get_directory_entries(
-            client, screen->current_directory.data, &items, ncm_error);
+            client, screen->current_directory.data, &items, ncm_error) == 0;
         if (result) {
             if ((result = browser_load_mpd_items(screen, &items))) {
                 browser_screen_clear_update_request(screen);
@@ -578,7 +578,8 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
     }
 
     strings = (NcmMpdStringList){0};
-    if (!ncm_mpd_client_get_supported_extensions(client, &strings, ncm_error)) {
+    if (ncm_mpd_client_get_supported_extensions(client, &strings,
+                                                ncm_error) < 0) {
         ncm_mpd_string_list_destroy(&strings);
         return false;
     }
@@ -816,8 +817,8 @@ browser_screen_delete_items(BrowserScreen *screen,
         if (screen->current_directory.len <= 0) {
             directory = "/";
         }
-        if (!ncm_mpd_client_update_directory(
-            client, directory, NULL, ncm_error)) {
+        if (ncm_mpd_client_update_directory(
+            client, directory, NULL, ncm_error) < 0) {
             return false;
         }
     }
@@ -931,8 +932,8 @@ browser_screen_rename_current_playlist(
         return true;
     }
 
-    if (!ncm_mpd_client_rename_playlist(client, old_path.data, new_path,
-                                        ncm_error)) {
+    if (ncm_mpd_client_rename_playlist(client, old_path.data, new_path,
+                                       ncm_error) < 0) {
         return false;
     }
 
@@ -2045,7 +2046,7 @@ browser_collect_mpd_directory_songs(
         directory = "/";
     }
     result = ncm_mpd_client_get_directory_recursive(
-        &global_mpd, directory, &source, &ncm_error);
+        &global_mpd, directory, &source, &ncm_error) == 0;
     for (int32 i = 0; result && (i < source.count); i += 1) {
         if (ncm_song_array_append_copy(songs, &source.items[i]) < 0) {
             result = false;
@@ -2227,7 +2228,7 @@ browser_delete_playlist_item(BrowserScreen *screen,
         return false;
     }
 
-    if (ncm_mpd_client_delete_playlist(client, path.data, ncm_error)) {
+    if (ncm_mpd_client_delete_playlist(client, path.data, ncm_error) == 0) {
         return true;
     }
     if (ncm_mpd_client_server_error_code(client)
@@ -2341,7 +2342,7 @@ browser_load_mpd_song_directory(
 
     items = (NcmMpdItemArray){0};
     result = ncm_mpd_client_get_directory_entries(client, path.data,
-                                                  &items, ncm_error);
+                                                  &items, ncm_error) == 0;
     if (result) {
         result = browser_screen_set_current_directory(
             screen, path.data, path.len)
@@ -2435,7 +2436,7 @@ browser_update_renamed_directory(NcmMpdClient *client,
         directory = "/";
     }
     result = ncm_mpd_client_update_directory(client, directory, NULL,
-                                             ncm_error);
+                                             ncm_error) == 0;
     sb_free(&shared);
     return result;
 }

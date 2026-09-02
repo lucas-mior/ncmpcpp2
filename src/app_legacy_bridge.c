@@ -306,7 +306,7 @@ ncmpcpp_connect_or_report(void) {
     NcmError ncm_error;
 
     ncm_error_clear(&ncm_error);
-    if (!ncm_mpd_client_connect(&global_mpd, &ncm_error)) {
+    if (ncm_mpd_client_connect(&global_mpd, &ncm_error) < 0) {
         app_bridge_report_mpd_error(&ncm_error);
         return;
     }

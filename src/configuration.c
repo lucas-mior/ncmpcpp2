@@ -707,13 +707,13 @@ configuration_apply_mpd_environment(NcmError *ncm_error) {
 
     env_host = getenv("MPD_HOST");
     env_port = getenv("MPD_PORT");
-    if (env_host) {
-        if (!ncm_mpd_client_set_hostname(&global_mpd, env_host,
-                                         strlen32(env_host), ncm_error)) {
+    if (env_host != NULL) {
+        if (ncm_mpd_client_set_hostname(&global_mpd, env_host,
+                                        strlen32(env_host), ncm_error) < 0) {
             return false;
         }
     }
-    if (env_port) {
+    if (env_port != NULL) {
         if (ncm_parse_int32(env_port, strlen32(env_port),
                             &port, ncm_error) < 0) {
             return false;
@@ -732,16 +732,16 @@ static bool
 configuration_apply_mpd_command_line(NcmConfigurationOptions *options,
                                      NcmError *ncm_error) {
     if (options->host_provided) {
-        if (!ncm_mpd_client_set_hostname(&global_mpd, options->host.data,
-                                         options->host.len, ncm_error)) {
+        if (ncm_mpd_client_set_hostname(&global_mpd, options->host.data,
+                                        options->host.len, ncm_error) < 0) {
             return false;
         }
     }
     if (options->port_provided) {
         ncm_mpd_client_set_port(&global_mpd, (uint16)options->port);
     }
-    if (!ncm_mpd_client_set_timeout_ms(
-        &global_mpd, Config.mpd_connection_timeout*1000, ncm_error)) {
+    if (ncm_mpd_client_set_timeout_ms(
+        &global_mpd, Config.mpd_connection_timeout*1000, ncm_error) < 0) {
         return false;
     }
     return true;
@@ -791,8 +791,9 @@ configuration_print_current_song(NcmConfigurationOptions *options,
     song = (NcmSong){0};
     format = (NcmFormatAst){0};
 
-    result = ncm_mpd_client_connect(&global_mpd, ncm_error)
-             && ncm_mpd_client_get_current_song(&global_mpd, &song, ncm_error);
+    result = (ncm_mpd_client_connect(&global_mpd, ncm_error) == 0)
+             && (ncm_mpd_client_get_current_song(&global_mpd, &song,
+                                                 ncm_error) == 0);
     if (result && !ncm_song_is_empty(&song)) {
         result = ncm_format_parse(&format, options->current_song_format.data,
                                   options->current_song_format.len,

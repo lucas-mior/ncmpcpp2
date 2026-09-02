@@ -2787,9 +2787,9 @@ tag_editor_directory_has_subdirectories(TagEditorScreen *screen,
 
     ncm_error_clear(&ncm_error);
     directories = (NcmDirectoryArray){0};
-    result = ncm_mpd_client_get_directory_list(
-        &global_mpd, path, &directories, &ncm_error)
-        && (directories.len > 0);
+    result = (ncm_mpd_client_get_directory_list(
+                  &global_mpd, path, &directories, &ncm_error) == 0)
+             && (directories.len > 0);
     ncm_error_clear(&ncm_error);
     ncm_directory_array_destroy(&directories);
     return result;
@@ -3225,7 +3225,7 @@ tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
     }
 
     ok = ncm_mpd_client_get_directory_list(client, dir, &directories,
-                                           ncm_error);
+                                           ncm_error) == 0;
     if (ok) {
         tag_editor_sort_directories(&directories);
         nc_menu_show_all_items(nc_editor_pair_menu_base(
@@ -3290,7 +3290,8 @@ tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
     songs = (NcmSongArray){0};
     tag_editor_preserve_current_song(screen, &preserved_uri);
 
-    if ((ok = ncm_mpd_client_get_songs(client, path, &list, ncm_error))) {
+    if ((ok = ncm_mpd_client_get_songs(client, path, &list,
+                                       ncm_error) == 0)) {
         if ((err = ncm_mpd_song_list_to_song_array(&list, &songs)) < 0) {
             ncm_error_set_status(ncm_error, err,
                                  STRLIT("failed to copy directory songs"));

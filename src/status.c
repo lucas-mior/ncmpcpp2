@@ -271,7 +271,7 @@ status_prompt_mpd_password(NcmMpdClient *client) {
     }
 
     ncm_error_clear(&ncm_error);
-    if (!ncm_mpd_client_set_password(client, password, -1, &ncm_error)) {
+    if (ncm_mpd_client_set_password(client, password, -1, &ncm_error) < 0) {
         status_print_client_error(ncm_error.message, -1);
         if (password_allocated) {
             nc_window_prompt_result_destroy(password);
@@ -282,7 +282,7 @@ status_prompt_mpd_password(NcmMpdClient *client) {
         nc_window_prompt_result_destroy(password);
     }
 
-    if (!ncm_mpd_client_send_password(client, &ncm_error)) {
+    if (ncm_mpd_client_send_password(client, &ncm_error) < 0) {
         if (ncm_mpd_client_error_code(client) == MPD_ERROR_SERVER) {
             status_print_server_error(ncm_mpd_client_error_message(client), -1);
         } else {
@@ -811,7 +811,7 @@ ncm_status_init_connection(NcmMpdClient *client, NcmError *ncm_error) {
         return false;
     }
 
-    if (!ncm_mpd_client_get_status(client, &mpd_status, ncm_error)) {
+    if (ncm_mpd_client_get_status(client, &mpd_status, ncm_error) < 0) {
         return false;
     }
 
@@ -827,7 +827,7 @@ ncm_status_update(NcmMpdClient *client, int32 event, NcmError *ncm_error) {
         return false;
     }
 
-    if (!ncm_mpd_client_get_status(client, &mpd_status, ncm_error)) {
+    if (ncm_mpd_client_get_status(client, &mpd_status, ncm_error) < 0) {
         return false;
     }
     status_reset_visualizer_for_player_event(event);
@@ -845,7 +845,7 @@ ncm_status_update_full(NcmMpdClient *client, NcmStatusHooks *hooks,
         return false;
     }
 
-    if (!ncm_mpd_client_get_status(client, &mpd_status, ncm_error)) {
+    if (ncm_mpd_client_get_status(client, &mpd_status, ncm_error) < 0) {
         return false;
     }
 
@@ -865,11 +865,11 @@ ncm_status_update_from_noidle(NcmMpdClient *client, NcmStatusHooks *hooks,
     }
 
     flags = 0;
-    if (!ncm_mpd_client_noidle(client, &flags, ncm_error)) {
+    if (ncm_mpd_client_noidle(client, &flags, ncm_error) < 0) {
         return false;
     }
 
-    if (!ncm_mpd_client_get_status(client, &mpd_status, ncm_error)) {
+    if (ncm_mpd_client_get_status(client, &mpd_status, ncm_error) < 0) {
         return false;
     }
     status_reset_visualizer_for_player_event(flags);
@@ -1481,7 +1481,7 @@ status_current_song_for_change(NcmSong *song) {
     }
 
     ncm_error_clear(&ncm_error);
-    if (!ncm_mpd_client_get_current_song(&global_mpd, song, &ncm_error)) {
+    if (ncm_mpd_client_get_current_song(&global_mpd, song, &ncm_error) < 0) {
         return false;
     }
     return !ncm_song_is_empty(song);
@@ -1701,7 +1701,7 @@ status_update_elapsed_from_mpd(void) {
     }
 
     ncm_error_clear(&ncm_error);
-    if (!ncm_mpd_client_get_status(&global_mpd, &mpd_status, &ncm_error)) {
+    if (ncm_mpd_client_get_status(&global_mpd, &mpd_status, &ncm_error) < 0) {
         elapsed_ms = status_elapsed_time_ms_now();
         status_rebase_elapsed_time(status_elapsed_time + 1, elapsed_ms);
         return;
