@@ -112,11 +112,11 @@ debug|test)
     CFLAGS="$CFLAGS -g3 -Og -DDEBUGGING=1"
     ;;
 debug-fast)
-    CFLAGS="$CFLAGS -Wno-error -g2 -O2 -flto"
+    CFLAGS="$CFLAGS -g2 -O2 -flto"
     CPPFLAGS="$CPPFLAGS -DDEBUGGING=1"
     ;;
 build)
-    CFLAGS="$CFLAGS -Wno-error -O2 -flto"
+    CFLAGS="$CFLAGS -O2 -flto"
     ;;
 fast_feedback)
     ;;
