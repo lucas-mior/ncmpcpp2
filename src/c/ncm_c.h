@@ -190,12 +190,12 @@ typedef struct NcmSong {
 
 void ncm_song_destroy(NcmSong *song);
 void ncm_song_move(NcmSong *dest, NcmSong *source);
-bool ncm_song_copy(NcmSong *dest, NcmSong *source);
-bool ncm_song_from_mpd_song(NcmSong *dest, struct mpd_song *source);
-bool ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source);
-bool ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len);
-bool ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
-                      char *value, int32 value_len);
+int32 ncm_song_copy(NcmSong *dest, NcmSong *source);
+int32 ncm_song_from_mpd_song(NcmSong *dest, struct mpd_song *source);
+int32 ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source);
+int32 ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len);
+int32 ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
+                       char *value, int32 value_len);
 void ncm_song_set_duration(NcmSong *song, int32 duration);
 void ncm_song_set_position(NcmSong *song, int32 position);
 void ncm_song_set_id(NcmSong *song, int32 id);
@@ -206,7 +206,7 @@ int32 ncm_song_position(NcmSong *song);
 int32 ncm_song_id(NcmSong *song);
 int32 ncm_song_priority(NcmSong *song);
 time_t ncm_song_mtime(NcmSong *song);
-bool ncm_song_empty(NcmSong *song);
+bool ncm_song_is_empty(NcmSong *song);
 
 bool ncm_song_tag_view(NcmSong *song, enum mpd_tag_type tag,
                        int32 idx, NcmStringView *view);
@@ -233,7 +233,7 @@ StrBuilder ncm_song_getter_buffer(NcmSong *song,
 StrBuilder ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
                                 char *separator, int32 separator_len,
                                 bool show_duplicates);
-bool ncm_song_equal(NcmSong *a, NcmSong *b);
+bool ncm_song_is_equal(NcmSong *a, NcmSong *b);
 
 /* c/ncm_mutable_song.h */
 typedef struct NcmMutableSongTag {
@@ -269,25 +269,25 @@ typedef struct NcmMutableSong {
 } NcmMutableSong;
 
 void ncm_mutable_song_destroy(NcmMutableSong *song);
-bool ncm_mutable_song_copy(NcmMutableSong *dest, NcmMutableSong *source);
+int32 ncm_mutable_song_copy(NcmMutableSong *dest, NcmMutableSong *source);
 void ncm_mutable_song_move(NcmMutableSong *dest, NcmMutableSong *source);
 
-bool ncm_mutable_song_set_uri(NcmMutableSong *song, char *uri, int32 uri_len);
-bool ncm_mutable_song_set_directory(NcmMutableSong *song, char *directory,
-                                    int32 directory_len);
-bool ncm_mutable_song_set_name(NcmMutableSong *song, char *name,
-                               int32 name_len);
+int32 ncm_mutable_song_set_uri(NcmMutableSong *song, char *uri, int32 uri_len);
+int32 ncm_mutable_song_set_directory(NcmMutableSong *song, char *directory,
+                                     int32 directory_len);
+int32 ncm_mutable_song_set_name(NcmMutableSong *song, char *name,
+                                int32 name_len);
 void ncm_mutable_song_set_from_database(NcmMutableSong *song,
                                         bool is_from_database);
 
-bool ncm_mutable_song_set_original_tag(NcmMutableSong *song,
-                                       enum NcmTagsField field, int32 idx,
-                                       char *value, int32 value_len);
-bool ncm_mutable_song_set_tag(NcmMutableSong *song, enum NcmTagsField field,
-                              int32 idx, char *value, int32 value_len);
-bool ncm_mutable_song_set_tags(NcmMutableSong *song, enum NcmTagsField field,
-                               char *value, int32 value_len,
-                               char *separator, int32 separator_len);
+int32 ncm_mutable_song_set_original_tag(NcmMutableSong *song,
+                                        enum NcmTagsField field, int32 idx,
+                                        char *value, int32 value_len);
+int32 ncm_mutable_song_set_tag(NcmMutableSong *song, enum NcmTagsField field,
+                               int32 idx, char *value, int32 value_len);
+int32 ncm_mutable_song_set_tags(NcmMutableSong *song, enum NcmTagsField field,
+                                char *value, int32 value_len,
+                                char *separator, int32 separator_len);
 bool ncm_mutable_song_get_tag(NcmMutableSong *song, enum NcmTagsField field,
                               int32 idx, NcmStringView *view);
 void ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
@@ -297,10 +297,10 @@ StrBuilder ncm_mutable_song_tags_buffer(NcmMutableSong *song,
                                         enum NcmTagsField field,
                                         char *separator, int32 separator_len,
                                         bool show_duplicates);
-bool ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
+int32 ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
                                                NcmSong *source);
 
-bool ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
+int32 ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
                                    int32 new_name_len);
 bool ncm_mutable_song_get_new_name(NcmMutableSong *song, NcmStringView *view);
 
@@ -311,7 +311,7 @@ int32 ncm_mutable_song_mtime(NcmMutableSong *song);
 
 bool ncm_mutable_song_is_modified(NcmMutableSong *song);
 void ncm_mutable_song_clear_modifications(NcmMutableSong *song);
-bool ncm_mutable_song_write(NcmMutableSong *song, char *music_dir);
+int32 ncm_mutable_song_write(NcmMutableSong *song, char *music_dir);
 
 /* c/ncm_directory.h */
 struct mpd_directory;
@@ -324,13 +324,13 @@ typedef struct NcmDirectory {
 
 void ncm_directory_destroy(NcmDirectory *directory);
 void ncm_directory_move(NcmDirectory *dest, NcmDirectory *source);
-bool ncm_directory_set(NcmDirectory *directory, char *path,
-                       int32 path_len, time_t last_modified);
-bool ncm_directory_copy(NcmDirectory *dest, NcmDirectory *source);
+int32 ncm_directory_set(NcmDirectory *directory, char *path,
+                        int32 path_len, time_t last_modified);
+int32 ncm_directory_copy(NcmDirectory *dest, NcmDirectory *source);
 bool ncm_directory_path_view(NcmDirectory *directory, NcmStringView *view);
 time_t ncm_directory_last_modified(NcmDirectory *directory);
-bool ncm_directory_from_mpd_directory(NcmDirectory *dest,
-                                      struct mpd_directory *source);
+int32 ncm_directory_from_mpd_directory(NcmDirectory *dest,
+                                       struct mpd_directory *source);
 
 /* c/ncm_playlist.h */
 struct mpd_playlist;
@@ -343,13 +343,13 @@ typedef struct NcmPlaylist {
 
 void ncm_playlist_destroy(NcmPlaylist *playlist);
 void ncm_playlist_move(NcmPlaylist *dest, NcmPlaylist *source);
-bool ncm_playlist_set(NcmPlaylist *playlist, char *path,
-                      int32 path_len, time_t last_modified);
-bool ncm_playlist_copy(NcmPlaylist *dest, NcmPlaylist *source);
+int32 ncm_playlist_set(NcmPlaylist *playlist, char *path,
+                       int32 path_len, time_t last_modified);
+int32 ncm_playlist_copy(NcmPlaylist *dest, NcmPlaylist *source);
 bool ncm_playlist_path_view(NcmPlaylist *playlist, NcmStringView *view);
 time_t ncm_playlist_last_modified(NcmPlaylist *playlist);
-bool ncm_playlist_from_mpd_playlist(NcmPlaylist *dest,
-                                    struct mpd_playlist *source);
+int32 ncm_playlist_from_mpd_playlist(NcmPlaylist *dest,
+                                     struct mpd_playlist *source);
 
 /* c/ncm_mpd_item.h */
 struct mpd_entity;
@@ -377,10 +377,10 @@ typedef struct NcmMpdItem {
 void ncm_mpd_item_init(NcmMpdItem *item);
 void ncm_mpd_item_destroy(NcmMpdItem *item);
 void ncm_mpd_item_move(NcmMpdItem *dest, NcmMpdItem *source);
-bool ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source);
-bool ncm_mpd_item_set_song(NcmMpdItem *item, NcmSong *source);
-bool ncm_mpd_item_set_directory(NcmMpdItem *item, NcmDirectory *source);
-bool ncm_mpd_item_from_entity_copy(NcmMpdItem *item,
+int32 ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source);
+int32 ncm_mpd_item_set_song(NcmMpdItem *item, NcmSong *source);
+int32 ncm_mpd_item_set_directory(NcmMpdItem *item, NcmDirectory *source);
+int32 ncm_mpd_item_from_entity_copy(NcmMpdItem *item,
                                    struct mpd_entity *entity);
 enum NcmMpdItemKind ncm_mpd_item_kind(NcmMpdItem *item);
 NcmSong *ncm_mpd_item_song(NcmMpdItem *item);

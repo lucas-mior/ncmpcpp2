@@ -721,7 +721,7 @@ browser_screen_current_song(BrowserScreen *screen,
     if (!browser_item_is_song(item)) {
         return false;
     }
-    return ncm_song_copy(song, ncm_mpd_item_song(item));
+    return ncm_song_copy(song, ncm_mpd_item_song(item)) == 0;
 }
 
 bool
@@ -1663,9 +1663,9 @@ browser_add_parent_directory_item(
 
     directory = (NcmDirectory){0};
     ncm_mpd_item_init(&item);
-    result = ncm_directory_set(&directory, screen->scratch_buffer.data,
-                               screen->scratch_buffer.len, 0)
-             && ncm_mpd_item_set_directory(&item, &directory);
+    result = (ncm_directory_set(&directory, screen->scratch_buffer.data,
+                                screen->scratch_buffer.len, 0) == 0)
+             && (ncm_mpd_item_set_directory(&item, &directory) == 0);
     if (result) {
         browser_screen_add_item_move(screen, &item);
     }
@@ -1802,8 +1802,9 @@ browser_add_local_directory_item(BrowserScreen *screen,
 
     directory = (NcmDirectory){0};
     ncm_mpd_item_init(&item);
-    result = ncm_directory_set(&directory, path->data, path->len, mtime)
-             && ncm_mpd_item_set_directory(&item, &directory);
+    result = (ncm_directory_set(&directory, path->data, path->len,
+                                mtime) == 0)
+             && (ncm_mpd_item_set_directory(&item, &directory) == 0);
     if (result) {
         browser_screen_add_item_move(screen, &item);
     }
@@ -1824,7 +1825,7 @@ browser_add_local_song_item(BrowserScreen *screen,
     result = browser_make_local_song(&song, path->data, path->len,
                                      mtime);
     if (result) {
-        result = ncm_mpd_item_set_song(&item, &song);
+        result = ncm_mpd_item_set_song(&item, &song) == 0;
     }
     if (result) {
         browser_screen_add_item_move(screen, &item);
@@ -1960,7 +1961,8 @@ browser_make_local_song(NcmSong *song, char *path, int32 path_len,
     ASSERT(path != NULL);
     ASSERT(path_len >= 0);
 
-    if ((result = ncm_song_set_uri(song, path, path_len))) {
+    result = ncm_song_set_uri(song, path, path_len) == 0;
+    if (result) {
         ncm_song_set_mtime(song, mtime);
     }
 
@@ -1970,7 +1972,8 @@ browser_make_local_song(NcmSong *song, char *path, int32 path_len,
         pair.value = path;
         if ((mpd_song = mpd_song_begin(&pair))) {
             if (ncm_tags_read_song(mpd_song)) {
-                if ((result = ncm_song_from_mpd_song(song, mpd_song))) {
+                result = ncm_song_from_mpd_song(song, mpd_song) == 0;
+                if (result) {
                     ncm_song_set_mtime(song, mtime);
                 }
             }
@@ -2362,7 +2365,7 @@ browser_item_song_equal(NcmMpdItem *item, NcmSong *song) {
     if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_SONG) {
         return false;
     }
-    return ncm_song_equal(ncm_mpd_item_song(item), song);
+    return ncm_song_is_equal(ncm_mpd_item_song(item), song);
 }
 
 static bool

@@ -124,7 +124,7 @@ nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source) {
         return false;
     }
     tmp.is_song = source->is_song;
-    if (!ncm_song_copy(&tmp.song, &source->song)) {
+    if (ncm_song_copy(&tmp.song, &source->song) < 0) {
         nc_search_row_destroy(&tmp);
         return false;
     }
@@ -258,7 +258,7 @@ nc_editor_sort_row_copy(NcEditorSortRow *dest, NcEditorSortRow *source) {
 static void
 ncm_song_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    ncm_song_copy(dest, source);
+    ASSERT(ncm_song_copy(dest, source) == 0);
     return;
 }
 
@@ -272,7 +272,7 @@ ncm_song_menu_item_destroy(void *item, void *user) {
 static void
 ncm_mutable_song_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    ncm_mutable_song_copy(dest, source);
+    ASSERT(ncm_mutable_song_copy(dest, source) == 0);
     return;
 }
 
@@ -293,7 +293,7 @@ ncm_mpd_item_menu_item_init(void *item, void *user) {
 static void
 ncm_mpd_item_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    ncm_mpd_item_copy(dest, source);
+    ASSERT(ncm_mpd_item_copy(dest, source) == 0);
     return;
 }
 
@@ -307,7 +307,7 @@ ncm_mpd_item_menu_item_destroy(void *item, void *user) {
 static void
 ncm_playlist_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    ncm_playlist_copy(dest, source);
+    ASSERT(ncm_playlist_copy(dest, source) == 0);
     return;
 }
 

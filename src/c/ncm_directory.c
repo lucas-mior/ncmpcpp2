@@ -18,19 +18,19 @@ ncm_directory_destroy(NcmDirectory *directory) {
     return;
 }
 
-bool
+int32
 ncm_directory_set(NcmDirectory *directory, char *path,
                   int32 path_len, time_t last_modified) {
     NcmDirectory replacement;
 
     if (directory == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (path == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (path_len < 0) {
-        return false;
+        return -EINVAL;
     }
 
     replacement = (NcmDirectory){0};
@@ -42,20 +42,20 @@ ncm_directory_set(NcmDirectory *directory, char *path,
 
     ncm_directory_destroy(directory);
     *directory = replacement;
-    return true;
+    return 0;
 }
 
-bool
+int32
 ncm_directory_copy(NcmDirectory *dest, NcmDirectory *source) {
     if (dest == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (source == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (source->path == NULL) {
         ncm_directory_destroy(dest);
-        return true;
+        return 0;
     }
 
     return ncm_directory_set(dest, source->path, source->path_len,
@@ -111,19 +111,22 @@ ncm_directory_last_modified(NcmDirectory *directory) {
     return directory->last_modified;
 }
 
-bool
+int32
 ncm_directory_from_mpd_directory(NcmDirectory *dest,
                                  struct mpd_directory *source) {
     char *path;
     int32 path_len;
     time_t last_modified;
 
+    if (dest == NULL) {
+        return -EINVAL;
+    }
     if (source == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     if ((path = (char *)mpd_directory_get_path(source)) == NULL) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
 
     path_len = optional_strlen32(path);

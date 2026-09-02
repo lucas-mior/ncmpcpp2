@@ -7,60 +7,66 @@
 
 #include "c/ncm_c.h"
 
-static bool
+static int32
 ncm_mpd_item_set_song_copy(NcmMpdItem *item,
                            struct mpd_song *source) {
     NcmMpdItem replacement;
+    int32 status;
 
     ncm_mpd_item_init(&replacement);
     replacement.kind = NCM_MPD_ITEM_SONG;
     replacement.value.song = (NcmSong){0};
-    if (!ncm_song_from_mpd_song_copy(&replacement.value.song, source)) {
+    if ((status = ncm_song_from_mpd_song_copy(&replacement.value.song,
+                                              source)) < 0) {
         ncm_mpd_item_destroy(&replacement);
-        return false;
+        return status;
     }
 
     ncm_mpd_item_destroy(item);
     *item = replacement;
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 ncm_mpd_item_set_directory_from_mpd(NcmMpdItem *item,
                                     struct mpd_directory *source) {
     NcmMpdItem replacement;
+    int32 status;
 
     ncm_mpd_item_init(&replacement);
     replacement.kind = NCM_MPD_ITEM_DIRECTORY;
     replacement.value.directory = (NcmDirectory){0};
-    if (!ncm_directory_from_mpd_directory(&replacement.value.directory,
-                                          source)) {
+    status = ncm_directory_from_mpd_directory(&replacement.value.directory,
+                                             source);
+    if (status < 0) {
         ncm_mpd_item_destroy(&replacement);
-        return false;
+        return status;
     }
 
     ncm_mpd_item_destroy(item);
     *item = replacement;
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 ncm_mpd_item_set_playlist_from_mpd(NcmMpdItem *item,
                                    struct mpd_playlist *source) {
     NcmMpdItem replacement;
+    int32 status;
 
     ncm_mpd_item_init(&replacement);
     replacement.kind = NCM_MPD_ITEM_PLAYLIST;
     replacement.value.playlist = (NcmPlaylist){0};
-    if (!ncm_playlist_from_mpd_playlist(&replacement.value.playlist,
-                                        source)) {
+    status = ncm_playlist_from_mpd_playlist(&replacement.value.playlist,
+                                           source);
+    if (status < 0) {
         ncm_mpd_item_destroy(&replacement);
-        return false;
+        return status;
     }
 
     ncm_mpd_item_destroy(item);
     *item = replacement;
-    return true;
+    return 0;
 }
 
 void
@@ -114,83 +120,86 @@ ncm_mpd_item_move(NcmMpdItem *dest, NcmMpdItem *source) {
     return;
 }
 
-bool
+int32
 ncm_mpd_item_set_song(NcmMpdItem *item, NcmSong *source) {
     NcmMpdItem replacement;
+    int32 status;
 
     if (item == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (source == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     ncm_mpd_item_init(&replacement);
     replacement.kind = NCM_MPD_ITEM_SONG;
     replacement.value.song = (NcmSong){0};
-    if (!ncm_song_copy(&replacement.value.song, source)) {
+    if ((status = ncm_song_copy(&replacement.value.song, source)) < 0) {
         ncm_mpd_item_destroy(&replacement);
-        return false;
+        return status;
     }
 
     ncm_mpd_item_destroy(item);
     *item = replacement;
-    return true;
+    return 0;
 }
 
-bool
+int32
 ncm_mpd_item_set_directory(NcmMpdItem *item, NcmDirectory *source) {
     NcmMpdItem replacement;
+    int32 status;
 
     if (item == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (source == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     ncm_mpd_item_init(&replacement);
     replacement.kind = NCM_MPD_ITEM_DIRECTORY;
     replacement.value.directory = (NcmDirectory){0};
-    if (!ncm_directory_copy(&replacement.value.directory, source)) {
+    if ((status = ncm_directory_copy(&replacement.value.directory,
+                                     source)) < 0) {
         ncm_mpd_item_destroy(&replacement);
-        return false;
+        return status;
     }
 
     ncm_mpd_item_destroy(item);
     *item = replacement;
-    return true;
+    return 0;
 }
 
-bool
+int32
 ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
     NcmMpdItem replacement;
-    bool copied;
+    int32 status;
 
     if (dest == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (source == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     ncm_mpd_item_init(&replacement);
     replacement.kind = source->kind;
-    copied = true;
+    status = 0;
     switch (source->kind) {
     case NCM_MPD_ITEM_SONG:
         replacement.value.song = (NcmSong){0};
-        copied = ncm_song_copy(&replacement.value.song,
+        status = ncm_song_copy(&replacement.value.song,
                                &source->value.song);
         break;
     case NCM_MPD_ITEM_DIRECTORY:
         replacement.value.directory = (NcmDirectory){0};
-        copied = ncm_directory_copy(&replacement.value.directory,
+        status = ncm_directory_copy(&replacement.value.directory,
                                     &source->value.directory);
         break;
     case NCM_MPD_ITEM_PLAYLIST:
         replacement.value.playlist = (NcmPlaylist){0};
-        copied = ncm_playlist_copy(&replacement.value.playlist,
+        status = ncm_playlist_copy(&replacement.value.playlist,
                                    &source->value.playlist);
         break;
     case NCM_MPD_ITEM_COUNT:
@@ -198,24 +207,24 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
         break;
     }
 
-    if (!copied) {
+    if (status < 0) {
         ncm_mpd_item_destroy(&replacement);
-        return false;
+        return status;
     }
 
     ncm_mpd_item_destroy(dest);
     *dest = replacement;
-    return true;
+    return 0;
 }
 
-bool
+int32
 ncm_mpd_item_from_entity_copy(NcmMpdItem *item,
                               struct mpd_entity *entity) {
     if (item == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (entity == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     switch (mpd_entity_get_type(entity)) {
@@ -229,9 +238,9 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item,
         return ncm_mpd_item_set_playlist_from_mpd(
             item, (struct mpd_playlist *)mpd_entity_get_playlist(entity));
     case MPD_ENTITY_TYPE_UNKNOWN:
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     default:
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 }
 

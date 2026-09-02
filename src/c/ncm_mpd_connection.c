@@ -232,7 +232,7 @@ ncm_mpd_playlist_list_push(NcmMpdPlaylistList *list,
     }
 
     item = (NcmPlaylist){0};
-    if (!ncm_playlist_from_mpd_playlist(&item, playlist)) {
+    if (ncm_playlist_from_mpd_playlist(&item, playlist) < 0) {
         ncm_playlist_destroy(&item);
         return false;
     }
@@ -259,7 +259,7 @@ ncm_mpd_connection_mpd_directory(char *directory) {
 static bool
 ncm_mpd_connection_recv_song(NcmMpdConnection *connection, NcmSong *song) {
     struct mpd_song *mpd_song;
-    bool ok;
+    int32 status;
 
     if (!ncm_mpd_connection_require_connected(connection)) {
         return false;
@@ -272,9 +272,9 @@ ncm_mpd_connection_recv_song(NcmMpdConnection *connection, NcmSong *song) {
         return true;
     }
 
-    ok = ncm_song_from_mpd_song_copy(song, mpd_song);
+    status = ncm_song_from_mpd_song_copy(song, mpd_song);
     mpd_song_free(mpd_song);
-    if (!ok) {
+    if (status < 0) {
         ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
                                      (enum mpd_server_error)0, false,
                                      "Could not read MPD song");
@@ -304,7 +304,7 @@ ncm_mpd_connection_recv_song_list(NcmMpdConnection *connection,
             mpd_response_finish(connection->mpd);
             return false;
         }
-        if (ncm_song_empty(&song)) {
+        if (ncm_song_is_empty(&song)) {
             ncm_song_destroy(&song);
             break;
         }
@@ -353,7 +353,8 @@ ncm_mpd_connection_recv_entity_song_list(NcmMpdConnection *connection,
             }
 
             song = (NcmSong){0};
-            if ((ok = ncm_song_from_mpd_song_copy(&song, mpd_song))) {
+            ok = ncm_song_from_mpd_song_copy(&song, mpd_song) == 0;
+            if (ok) {
                 ok = ncm_mpd_song_list_push(songs, &song);
             }
             ncm_song_destroy(&song);
@@ -395,7 +396,7 @@ ncm_mpd_connection_recv_item_list(NcmMpdConnection *connection,
         }
 
         ncm_mpd_item_init(&item);
-        ok = ncm_mpd_item_from_entity_copy(&item, entity);
+        ok = ncm_mpd_item_from_entity_copy(&item, entity) == 0;
         mpd_entity_free(entity);
         if (ok) {
             ok = ncm_mpd_item_list_push(items, &item);
@@ -599,7 +600,8 @@ ncm_mpd_song_list_append_copy(NcmMpdSongList *list, NcmSong *song) {
     bool ok;
 
     copy = (NcmSong){0};
-    if ((ok = ncm_song_copy(&copy, song))) {
+    ok = ncm_song_copy(&copy, song) == 0;
+    if (ok) {
         ok = ncm_mpd_song_list_push(list, &copy);
     }
     ncm_song_destroy(&copy);

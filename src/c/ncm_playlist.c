@@ -18,19 +18,19 @@ ncm_playlist_destroy(NcmPlaylist *playlist) {
     return;
 }
 
-bool
+int32
 ncm_playlist_set(NcmPlaylist *playlist, char *path,
                  int32 path_len, time_t last_modified) {
     NcmPlaylist replacement;
 
     if (playlist == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (path == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (path_len < 0) {
-        return false;
+        return -EINVAL;
     }
 
     replacement = (NcmPlaylist){0};
@@ -42,39 +42,42 @@ ncm_playlist_set(NcmPlaylist *playlist, char *path,
 
     ncm_playlist_destroy(playlist);
     *playlist = replacement;
-    return true;
+    return 0;
 }
 
-bool
+int32
 ncm_playlist_copy(NcmPlaylist *dest, NcmPlaylist *source) {
     if (dest == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (source == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (source->path == NULL) {
         ncm_playlist_destroy(dest);
-        return true;
+        return 0;
     }
 
     return ncm_playlist_set(dest, source->path, source->path_len,
                             source->last_modified);
 }
 
-bool
+int32
 ncm_playlist_from_mpd_playlist(NcmPlaylist *dest,
                                struct mpd_playlist *source) {
     char *path;
     int32 path_len;
     time_t last_modified;
 
+    if (dest == NULL) {
+        return -EINVAL;
+    }
     if (source == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     if ((path = (char *)mpd_playlist_get_path(source)) == NULL) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
 
     path_len = optional_strlen32(path);

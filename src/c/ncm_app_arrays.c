@@ -44,7 +44,7 @@ ncm_app_array_song_destroy(void *item) {
 
 static bool
 ncm_app_array_song_copy(void *dest, void *source) {
-    return ncm_song_copy(dest, source);
+    return ncm_song_copy(dest, source) == 0;
 }
 
 static void
@@ -61,7 +61,7 @@ ncm_app_array_directory_destroy(void *item) {
 
 static bool
 ncm_app_array_directory_copy(void *dest, void *source) {
-    return ncm_directory_copy(dest, source);
+    return ncm_directory_copy(dest, source) == 0;
 }
 
 static void
@@ -72,7 +72,7 @@ ncm_app_array_playlist_destroy(void *item) {
 
 static bool
 ncm_app_array_playlist_copy(void *dest, void *source) {
-    return ncm_playlist_copy(dest, source);
+    return ncm_playlist_copy(dest, source) == 0;
 }
 
 static void
@@ -89,7 +89,7 @@ ncm_app_array_mpd_item_destroy(void *item) {
 
 static bool
 ncm_app_array_mpd_item_copy(void *dest, void *source) {
-    return ncm_mpd_item_copy(dest, source);
+    return ncm_mpd_item_copy(dest, source) == 0;
 }
 
 NCM_ARRAY_DEFINE_CLEAR(ncm_string_view_array,

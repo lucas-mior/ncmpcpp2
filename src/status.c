@@ -1270,7 +1270,7 @@ status_call_ui_song_id_changed(int32 song_id) {
 
 static void
 status_call_ui_current_song_changed(NcmSong *song) {
-    if ((song == NULL) || ncm_song_empty(song)) {
+    if ((song == NULL) || ncm_song_is_empty(song)) {
         return;
     }
     if (status_ui_hooks_set && status_ui_hooks.current_song_changed) {
@@ -1414,7 +1414,7 @@ status_fetch_now_playing_lyrics(NcmSong *song) {
 
 static void
 status_handle_current_song_changed(NcmSong *song) {
-    if ((song == NULL) || ncm_song_empty(song)) {
+    if ((song == NULL) || ncm_song_is_empty(song)) {
         return;
     }
 
@@ -1484,7 +1484,7 @@ status_current_song_for_change(NcmSong *song) {
     if (!ncm_mpd_client_get_current_song(&global_mpd, song, &ncm_error)) {
         return false;
     }
-    return !ncm_song_empty(song);
+    return !ncm_song_is_empty(song);
 }
 
 static void

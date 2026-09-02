@@ -520,7 +520,7 @@ action_runtime_playlist_find_song(NcmSong *song, NcmSong **match) {
     for (int32 i = 0; i < count; i += 1) {
         if (((item = nc_song_menu_item_at(song_menu, NC_MENU_ITEMS_ALL,
                                           i)) == NULL)
-            || !ncm_song_equal(item, song)) {
+            || !ncm_song_is_equal(item, song)) {
             continue;
         }
         *match = item;
@@ -556,7 +556,7 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *ncm_error) {
     for (int32 i = count; ok && (i > 0); i -= 1) {
         if (((item = nc_song_menu_item_at(song_menu, NC_MENU_ITEMS_ALL,
                                           i - 1)) == NULL)
-            || !ncm_song_equal(item, song)) {
+            || !ncm_song_is_equal(item, song)) {
             continue;
         }
         position = ncm_song_position(item);
@@ -2245,7 +2245,7 @@ action_runtime_current_song(NcmSong *song) {
         if ((lyrics_song = lyrics_screen_song(app_screen_lyrics())) == NULL) {
             return false;
         }
-        return ncm_song_copy(song, lyrics_song);
+        return ncm_song_copy(song, lyrics_song) == 0;
     case NCM_SCREEN_TYPE_HELP:
     case NCM_SCREEN_TYPE_LASTFM:
 #if defined(ENABLE_OUTPUTS)
@@ -4999,17 +4999,19 @@ action_runtime_edit_library_tag(void) {
         NcmSong *song = ncm_mpd_song_list_at(&songs, i);
 
         mutable_song = (NcmMutableSong){0};
-        if (!ncm_mutable_song_load_originals_from_song(&mutable_song, song)
-            || !ncm_mutable_song_set_tags(&mutable_song, field, new_tag.data,
+        if ((ncm_mutable_song_load_originals_from_song(&mutable_song,
+                                                       song) < 0)
+            || (ncm_mutable_song_set_tags(&mutable_song, field, new_tag.data,
                                           new_tag.len, Config.tags_separator,
-                                          Config.tags_separator_len)) {
+                                          Config.tags_separator_len) < 0)) {
             ncm_mutable_song_destroy(&mutable_song);
             success = false;
             break;
         }
 
         action_runtime_print_updating_song(song);
-        if (!ncm_mutable_song_write(&mutable_song, Config.mpd_music_dir)) {
+        if (ncm_mutable_song_write(&mutable_song,
+                                   Config.mpd_music_dir) < 0) {
             NcmStringView name;
             NcmStringFormatArg args[2];
 
@@ -5346,7 +5348,7 @@ action_runtime_show_lyrics(void) {
     song = (NcmSong){0};
     if ((success = action_runtime_current_song(&song))) {
         if (((lyrics_song = lyrics_screen_song(app_screen_lyrics())) == NULL)
-            || !ncm_song_equal(lyrics_song, &song)) {
+            || !ncm_song_is_equal(lyrics_song, &song)) {
             ncm_error_clear(&ncm_error);
             success = lyrics_screen_fetch(app_screen_lyrics(), &song, NULL,
                                           &ncm_error);

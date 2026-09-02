@@ -576,7 +576,7 @@ search_engine_screen_add_song_copy_with_flags(SearchEngineScreen *screen,
     }
     row = (NcSearchRow){0};
     row.is_song = true;
-    if (!ncm_song_copy(&row.song, song)) {
+    if (ncm_song_copy(&row.song, song) < 0) {
         nc_search_row_destroy(&row);
         return false;
     }
@@ -967,7 +967,7 @@ search_engine_screen_current_song(SearchEngineScreen *screen,
         || !row->is_song) {
         return false;
     }
-    return ncm_song_copy(song, &row->song);
+    return ncm_song_copy(song, &row->song) == 0;
 }
 
 bool

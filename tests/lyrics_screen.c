@@ -457,14 +457,14 @@ ncm_song_move(NcmSong *dest, NcmSong *source) {
     return;
 }
 
-bool
+int32
 ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len) {
     free2(song->uri, song->uri_len + 1);
     song->uri = malloc2(uri_len + 1);
     memcpy64(song->uri, uri, uri_len);
     song->uri[uri_len] = '\0';
     song->uri_len = uri_len;
-    return true;
+    return 0;
 }
 
 static bool
@@ -492,7 +492,7 @@ lyrics_test_song_reserve_tags(NcmSong *song) {
     return true;
 }
 
-bool
+int32
 ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
                  char *value, int32 value_len) {
     NcmSongTag *tag;
@@ -505,30 +505,30 @@ ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
     memcpy64(tag->value, value, value_len);
     tag->value[value_len] = '\0';
     song->tags_len += 1;
-    return true;
+    return 0;
 }
 
-bool
+int32
 ncm_song_copy(NcmSong *dest, NcmSong *source) {
     ncm_song_destroy(dest);
     if (source->uri) {
-        ASSERT(ncm_song_set_uri(dest, source->uri, source->uri_len));
+        ASSERT(ncm_song_set_uri(dest, source->uri, source->uri_len) == 0);
     }
     for (int32 i = 0; i < source->tags_len; i += 1) {
         ASSERT(ncm_song_add_tag(dest, source->tags[i].type,
                                 source->tags[i].value,
-                                source->tags[i].value_len));
+                                source->tags[i].value_len) == 0);
     }
     dest->duration = source->duration;
     dest->position = source->position;
     dest->id = source->id;
     dest->priority = source->priority;
     dest->last_modified = source->last_modified;
-    return true;
+    return 0;
 }
 
 bool
-ncm_song_empty(NcmSong *song) {
+ncm_song_is_empty(NcmSong *song) {
     return (song == NULL) || (song->uri_len <= 0);
 }
 
@@ -596,7 +596,7 @@ ncm_song_is_stream(NcmSong *song) {
 }
 
 bool
-ncm_song_equal(NcmSong *a, NcmSong *b) {
+ncm_song_is_equal(NcmSong *a, NcmSong *b) {
     if ((a == NULL) || (b == NULL)) {
         return false;
     }
@@ -816,9 +816,9 @@ lyrics_screen_test_setup_config(char *directory) {
 static void
 lyrics_screen_test_song(NcmSong *song) {
     ncm_song_init(song);
-    ASSERT(ncm_song_set_uri(song, STRLIT("song.flac")));
-    ASSERT(ncm_song_add_tag(song, MPD_TAG_ARTIST, STRLIT("Artist")));
-    ASSERT(ncm_song_add_tag(song, MPD_TAG_TITLE, STRLIT("Title")));
+    ASSERT(ncm_song_set_uri(song, STRLIT("song.flac")) == 0);
+    ASSERT(ncm_song_add_tag(song, MPD_TAG_ARTIST, STRLIT("Artist")) == 0);
+    ASSERT(ncm_song_add_tag(song, MPD_TAG_TITLE, STRLIT("Title")) == 0);
     return;
 }
 

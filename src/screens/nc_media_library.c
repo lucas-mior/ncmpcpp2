@@ -1545,7 +1545,7 @@ media_library_screen_current_song(MediaLibraryScreen *screen,
         == NULL) {
         return false;
     }
-    return ncm_song_copy(song, current);
+    return ncm_song_copy(song, current) == 0;
 }
 
 bool
@@ -2178,8 +2178,8 @@ library_replace_songs(MediaLibraryScreen *screen,
     highlight = nc_menu_highlight(menu);
     identity_valid = false;
     identity = (NcmSong){0};
-    if (current) {
-        identity_valid = ncm_song_copy(&identity, current);
+    if (current != NULL) {
+        identity_valid = ncm_song_copy(&identity, current) == 0;
     }
 
     nc_media_library_song_menu_init(&replacement);
@@ -2304,7 +2304,7 @@ library_restore_song_identity(
 
             candidate = nc_media_library_song_menu_item_at(
                 menu, base->active_items, i);
-            if (candidate && ncm_song_equal(candidate, identity)
+            if (candidate && ncm_song_is_equal(candidate, identity)
                 && nc_menu_goto_selectable(base, i)) {
                 return;
             }
@@ -2689,7 +2689,7 @@ library_move_to_song(MediaLibraryScreen *screen,
         NcmSong *candidate;
 
         if ((candidate = nc_menu_active_item_at(menu, i))
-            && ncm_song_equal(candidate, song)) {
+            && ncm_song_is_equal(candidate, song)) {
             return nc_menu_goto_selectable(menu, i);
         }
     }

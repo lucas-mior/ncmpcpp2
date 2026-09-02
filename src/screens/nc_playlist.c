@@ -534,7 +534,7 @@ playlist_screen_current_song(PlaylistScreen *screen,
     if (current == NULL) {
         return false;
     }
-    return ncm_song_copy(song, current);
+    return ncm_song_copy(song, current) == 0;
 }
 
 bool
@@ -599,7 +599,7 @@ playlist_screen_now_playing_song(PlaylistScreen *screen,
         item = nc_song_menu_item_at(menu, NC_MENU_ITEMS_ALL, position);
         if (item
             && (ncm_song_position(item) == queue_position)) {
-            return ncm_song_copy(song, item);
+            return ncm_song_copy(song, item) == 0;
         }
     }
 
@@ -610,7 +610,7 @@ playlist_screen_now_playing_song(PlaylistScreen *screen,
         item = nc_song_menu_item_at(menu, NC_MENU_ITEMS_ALL, i);
         if (item
             && (ncm_song_position(item) == queue_position)) {
-            return ncm_song_copy(song, item);
+            return ncm_song_copy(song, item) == 0;
         }
     }
     return false;
@@ -1250,9 +1250,9 @@ playlist_build_mutable_song(
         if (field != NCM_TAGS_FIELD_COUNT) {
             continue;
         }
-        if (!ncm_song_add_tag(replacement, current->tags[i].type,
-                              current->tags[i].value,
-                              current->tags[i].value_len)) {
+        if (ncm_song_add_tag(replacement, current->tags[i].type,
+                             current->tags[i].value,
+                             current->tags[i].value_len) < 0) {
             return false;
         }
     }
@@ -1266,8 +1266,8 @@ playlist_build_mutable_song(
             if (value.len <= 0) {
                 continue;
             }
-            if (!ncm_song_add_tag(replacement, type,
-                                  value.data, value.len)) {
+            if (ncm_song_add_tag(replacement, type,
+                                 value.data, value.len) < 0) {
                 return false;
             }
         }
@@ -1293,10 +1293,10 @@ static bool
 playlist_set_mutable_uri(NcmSong *song, NcmMutableSong *edited) {
     NcmStringView new_name;
     StrBuilder uri = {0};
-    bool result;
+    int32 status;
 
     if (!ncm_mutable_song_get_new_name(edited, &new_name)) {
-        return ncm_song_set_uri(song, edited->uri, edited->uri_len);
+        return ncm_song_set_uri(song, edited->uri, edited->uri_len) == 0;
     }
 
     if (edited->directory_len > 0) {
@@ -1306,9 +1306,9 @@ playlist_set_mutable_uri(NcmSong *song, NcmMutableSong *edited) {
         }
     }
     SB_APPEND(&uri, new_name.data, new_name.len);
-    result = ncm_song_set_uri(song, uri.data, uri.len);
+    status = ncm_song_set_uri(song, uri.data, uri.len);
     sb_free(&uri);
-    return result;
+    return status == 0;
 }
 
 static void

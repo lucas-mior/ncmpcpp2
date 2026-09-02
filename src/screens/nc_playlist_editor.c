@@ -592,7 +592,7 @@ playlist_editor_screen_locate_song(PlaylistEditorScreen *screen,
 
     current_song = (NcmSong){0};
     success = playlist_editor_screen_current_content_song(
-        screen, &current_song) && ncm_song_equal(&current_song, song);
+        screen, &current_song) && ncm_song_is_equal(&current_song, song);
     ncm_song_destroy(&current_song);
     if (success) {
         screen->active_column = PLAYLIST_EDITOR_COLUMN_CONTENT;
@@ -618,7 +618,7 @@ playlist_editor_screen_current_playlist(
         == NULL) {
         return false;
     }
-    return ncm_playlist_copy(playlist, current);
+    return ncm_playlist_copy(playlist, current) == 0;
 }
 
 bool
@@ -640,7 +640,7 @@ playlist_editor_screen_current_content_song(
     if ((current = nc_song_menu_current(&screen->content)) == NULL) {
         return false;
     }
-    return ncm_song_copy(song, current);
+    return ncm_song_copy(song, current) == 0;
 }
 
 int32
@@ -1559,7 +1559,7 @@ playlist_editor_find_song_in_content_range(
         NcmSong *candidate;
 
         if ((candidate = nc_menu_active_item_at(menu, i))
-            && ncm_song_equal(candidate, song)) {
+            && ncm_song_is_equal(candidate, song)) {
             return i;
         }
     }
@@ -1591,7 +1591,7 @@ playlist_editor_find_song_in_mpd_playlist(
     }
 
     for (int32 i = 0; i < songs.count; i += 1) {
-        if (ncm_song_equal(&songs.items[i], song)) {
+        if (ncm_song_is_equal(&songs.items[i], song)) {
             *song_index = i;
             ncm_mpd_song_list_destroy(&songs);
             return true;
@@ -1716,7 +1716,7 @@ playlist_editor_store_current_song(PlaylistEditorScreen *screen,
     if ((current = nc_song_menu_current(&screen->content)) == NULL) {
         return false;
     }
-    return ncm_song_copy(song, current);
+    return ncm_song_copy(song, current) == 0;
 }
 
 static bool
@@ -1734,7 +1734,7 @@ playlist_editor_restore_content_song(PlaylistEditorScreen *screen,
         NcmSong *item;
 
         if ((item = nc_menu_active_item_at(menu, i))
-            && ncm_song_equal(item, song)) {
+            && ncm_song_is_equal(item, song)) {
             nc_menu_highlight_position(menu, i, screen->main_height);
             return true;
         }
