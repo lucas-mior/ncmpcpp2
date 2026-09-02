@@ -133,7 +133,7 @@ ncm_playlist_sort_indices(NcmPlaylistSortContext *context,
     return;
 }
 
-bool
+int32
 ncm_playlist_sort_plan_build(
     NcmPlaylistSortPlan *plan, NcmSongArray *songs,
     int32 start_position, enum NcmSongGetter *getters,
@@ -147,28 +147,32 @@ ncm_playlist_sort_plan_build(
     int64 last_position;
 
     if (plan == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing sort plan"));
-        return false;
+        return ncm_error_set_code(ncm_error, EINVAL,
+                                  STRLIT("missing sort plan"));
     }
     if (songs == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing song array"));
-        return false;
+        return ncm_error_set_code(ncm_error, EINVAL,
+                                  STRLIT("missing song array"));
     }
     if (songs->len < 0) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("invalid song count"));
-        return false;
+        return ncm_error_set_code(ncm_error, EINVAL,
+                                  STRLIT("invalid song count"));
     }
     if ((songs->len > 0) && (songs->items == NULL)) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing songs"));
-        return false;
+        return ncm_error_set_code(ncm_error, EINVAL,
+                                  STRLIT("missing songs"));
+    }
+    if (start_position < 0) {
+        return ncm_error_set_code(ncm_error, EINVAL,
+                                  STRLIT("invalid sort start position"));
     }
     if (getters_len < 0) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("invalid sort key count"));
-        return false;
+        return ncm_error_set_code(ncm_error, EINVAL,
+                                  STRLIT("invalid sort key count"));
     }
     if ((getters_len > 0) && (getters == NULL)) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing sort keys"));
-        return false;
+        return ncm_error_set_code(ncm_error, EINVAL,
+                                  STRLIT("missing sort keys"));
     }
     for (int32 i = 0; i < getters_len; i += 1) {
         if (getters[i] == NCM_SONG_GETTER_NONE) {
@@ -176,17 +180,15 @@ ncm_playlist_sort_plan_build(
         }
         if ((getters[i] < NCM_SONG_GETTER_NONE)
             || (getters[i] > NCM_SONG_GETTER_PRIORITY)) {
-            ncm_error_set(ncm_error, EINVAL,
-                          STRLIT("invalid playlist sort key"));
-            return false;
+            return ncm_error_set_code(ncm_error, EINVAL,
+                                      STRLIT("invalid playlist sort key"));
         }
     }
     if (songs->len > 0) {
-        last_position = start_position + songs->len - 1;
+        last_position = (int64)start_position + songs->len - 1;
         if (last_position > UINT32_MAX) {
-            ncm_error_set(ncm_error, EOVERFLOW,
-                          STRLIT("playlist sort range overflow"));
-            return false;
+            return ncm_error_set_code(ncm_error, EOVERFLOW,
+                                      STRLIT("playlist sort range overflow"));
         }
     }
 
@@ -194,8 +196,7 @@ ncm_playlist_sort_plan_build(
     if (songs->len <= 1) {
         ncm_playlist_sort_plan_destroy(plan);
         *plan = replacement;
-        ncm_error_clear(ncm_error);
-        return true;
+        return ncm_error_ok(ncm_error);
     }
 
     order = malloc2(songs->len*SIZEOF(*order));
@@ -247,57 +248,55 @@ ncm_playlist_sort_plan_build(
 
     ncm_playlist_sort_plan_destroy(plan);
     *plan = replacement;
-    ncm_error_clear(ncm_error);
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
-bool
+int32
 ncm_playlist_sort_plan_execute(NcmPlaylistSortPlan *plan,
                                NcmMpdClient *client,
                                NcmError *ncm_error) {
     bool started;
-    bool success;
+    int32 status;
 
     if (plan == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing sort plan"));
-        return false;
+        return ncm_error_set_code(ncm_error, EINVAL,
+                                  STRLIT("missing sort plan"));
     }
     if ((plan->len < 0) || (plan->cap < plan->len)) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("invalid sort plan"));
-        return false;
+        return ncm_error_set_code(ncm_error, EINVAL,
+                                  STRLIT("invalid sort plan"));
     }
     if ((plan->len > 0) && (plan->items == NULL)) {
-        ncm_error_set(ncm_error, EINVAL,
-                      STRLIT("missing sort operations"));
-        return false;
+        return ncm_error_set_code(ncm_error, EINVAL,
+                                  STRLIT("missing sort operations"));
     }
     if (client == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing MPD client"));
-        return false;
+        return ncm_error_set_code(ncm_error, EINVAL,
+                                  STRLIT("missing MPD client"));
     }
     if (plan->len <= 0) {
-        ncm_error_clear(ncm_error);
-        return true;
+        return ncm_error_ok(ncm_error);
     }
 
     started = false;
-    if ((success = ncm_mpd_client_start_command_list(client, ncm_error) == 0)) {
+    status = ncm_mpd_client_start_command_list(client, ncm_error);
+    if (status == 0) {
         started = true;
     }
-    for (int32 i = 0; success && (i < plan->len); i += 1) {
-        success = ncm_mpd_client_swap(client, plan->items[i].from,
-                                      plan->items[i].to, ncm_error) == 0;
+    for (int32 i = 0; (status == 0) && (i < plan->len); i += 1) {
+        status = ncm_mpd_client_swap(client, plan->items[i].from,
+                                     plan->items[i].to, ncm_error);
     }
-    if (success) {
-        success = ncm_mpd_client_commit_command_list(client, ncm_error) == 0;
+    if (status == 0) {
+        status = ncm_mpd_client_commit_command_list(client, ncm_error);
     }
-    if (!success && started && client->command_list_active) {
+    if ((status < 0) && started && client->command_list_active) {
         client->command_list_active = false;
     }
-    return success;
+    return status;
 }
 
-bool
+int32
 ncm_playlist_sort_range(
     NcmSongArray *songs, int32 start_position,
     enum NcmSongGetter *getters, int32 getters_len,
@@ -305,17 +304,17 @@ ncm_playlist_sort_range(
     NcmError *ncm_error
 ) {
     NcmPlaylistSortPlan plan;
-    bool success;
+    int32 status;
 
     plan = (NcmPlaylistSortPlan){0};
-    success = ncm_playlist_sort_plan_build(
+    status = ncm_playlist_sort_plan_build(
         &plan, songs, start_position, getters, getters_len,
         ignore_leading_the, ncm_error);
-    if (success) {
-        success = ncm_playlist_sort_plan_execute(&plan, client, ncm_error);
+    if (status == 0) {
+        status = ncm_playlist_sort_plan_execute(&plan, client, ncm_error);
     }
     ncm_playlist_sort_plan_destroy(&plan);
-    return success;
+    return status;
 }
 
 #endif /* NCM_PLAYLIST_SORT_C */
